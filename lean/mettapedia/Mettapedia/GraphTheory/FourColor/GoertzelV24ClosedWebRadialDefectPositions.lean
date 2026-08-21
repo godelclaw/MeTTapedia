@@ -26,7 +26,9 @@ namespace Mettapedia.GraphTheory.FourColor
 namespace GoertzelV24ClosedWebRadialDefectPositions
 
 open GoertzelV24BulkCorridor
+open GoertzelV24AnnularFrontierExcess.AnnularFrontierEmbeddingExcess
 open GoertzelV24AnnularFrontierWeightedCurvature.AnnularFrontier
+open GoertzelV24BoundedDegreePath
 open GoertzelV24ClosedWebAtGoodWord
 open GoertzelV24ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebAnnularEmbedding.ClosedWebAnnularEmbedding
@@ -39,6 +41,7 @@ open GoertzelV24ClosedWebRadialPathSectorAnchors
 open GoertzelV24ClosedWebSectorAlternation
 open GoertzelV24ClosedWebSourceLengthDepth
 open GoertzelV24ClosedWebSourceLengthDepth.Instance
+open GoertzelV24CleanHexCorridor
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24FramedAnnularExcess
 open SimpleGraph
@@ -50,7 +53,9 @@ variable {V : Type*} [Fintype V] [DecidableEq V]
 noncomputable section
 
 attribute [-instance]
+  GoertzelV24RetainedVertexRotationSplice.retainedVertexFintype
   GoertzelV24RetainedVertexRotationSplice.retainedVertexDecidableEq
+  GoertzelV24SeamFaceArcPartition.hitPointFintype
 
 variable {data : AnnularBoundaryData G outerCount}
 
@@ -62,39 +67,278 @@ def radialForbiddenEdgeSupport (embedded : ClosedWebAnnularEmbedding data) :
   exact embedded.corridorForbiddenFaces.biUnion fun face =>
     orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem face.1
 
-/-- A convenient explicit budget for the edge support of all forbidden
-faces.  It retains the weighted-curvature dependence rather than replacing it
-with the manuscript's invalid constant pentagon count. -/
-def radialForbiddenEdgeBudget (embedded : ClosedWebAnnularEmbedding data) : Nat :=
-  embedded.boundaryCleanContaminationBudget *
-    (interiorNegativeCurvatureWeight embedded + 6)
+/-- Total boundary length of the actual internal nonhexagonal faces, written
+on the ambient-face subtype used by the clean-neighborhood construction. -/
+def radialDefectBoundaryLength
+    (embedded : ClosedWebAnnularEmbedding data) : Nat :=
+  let boundary := orbitFaceBoundary
+    embedded.cellulation.rotation.toRotationSystem
+  ∑ face ∈ ambientFaceDefectSet boundary
+      embedded.cellulation.interiorFaces,
+    (boundary face.1).card
 
-/-- The forbidden-face edge union is bounded by the already-computed number
-of forbidden faces times the largest possible internal face boundary. -/
+/-- The ambient-face presentation of defect-boundary length agrees with the
+weighted-curvature multiset presentation. -/
+theorem radialDefectBoundaryLength_eq_nonHexagonalBoundaryLength
+    (embedded : ClosedWebAnnularEmbedding data) :
+    radialDefectBoundaryLength embedded =
+      nonHexagonalBoundaryLength (interiorFaceLengths embedded) := by
+  classical
+  rw [← sum_interiorFaceDefectSet_boundary_card_eq_nonHexagonalBoundaryLength
+    embedded]
+  unfold radialDefectBoundaryLength
+  let boundary := orbitFaceBoundary
+    embedded.cellulation.rotation.toRotationSystem
+  dsimp only
+  refine Finset.sum_bij
+    (fun face _hface => face.1)
+    ?_ ?_ ?_ (fun _face _hface => rfl)
+  · intro face hface
+    have hdefect :=
+      (mem_ambientFaceDefectSet_iff boundary
+        embedded.cellulation.interiorFaces face).1 hface
+    exact Finset.mem_filter.2 ⟨face.2, hdefect⟩
+  · intro left _hleft right _hright heq
+    exact Subtype.ext heq
+  · intro face hface
+    have hparts := Finset.mem_filter.1 hface
+    let ambient : AmbientFace embedded.cellulation.interiorFaces :=
+      ⟨face, hparts.1⟩
+    refine ⟨ambient, ?_, rfl⟩
+    exact (mem_ambientFaceDefectSet_iff boundary
+      embedded.cellulation.interiorFaces ambient).2 hparts.2
+
+/-- Linear weighted bound for the actual internal defect-boundary length. -/
+theorem radialDefectBoundaryLength_le
+    (embedded : ClosedWebAnnularEmbedding data) (hdata : data.WellFormed)
+    (geometry : AnnularFrontierGeometry embedded) :
+    radialDefectBoundaryLength embedded ≤
+      12 * interiorNegativeCurvatureWeight embedded +
+        5 * boundarySurplus embedded := by
+  rw [radialDefectBoundaryLength_eq_nonHexagonalBoundaryLength]
+  exact nonHexagonalBoundaryLength_interiorFaceLengths_le
+    embedded hdata geometry
+
+/-- The whole closed dual neighborhood of the defects has cardinality at
+most twice their total boundary length.  This sums the actual dual degrees
+instead of multiplying the defect count by one global maximum face size. -/
+theorem card_faceDefectClosedNeighborhood_le_two_mul_defectBoundaryLength
+    (embedded : ClosedWebAnnularEmbedding data)
+    (geometry : AnnularFrontierGeometry embedded) :
+    (faceDefectClosedNeighborhood
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      embedded.cellulation.interiorFaces).card ≤
+        2 * radialDefectBoundaryLength embedded := by
+  classical
+  let boundary := orbitFaceBoundary
+    embedded.cellulation.rotation.toRotationSystem
+  let allFaces := embedded.cellulation.interiorFaces
+  let defects := ambientFaceDefectSet boundary allFaces
+  let dual := interiorDualGraph boundary allFaces
+  letI : DecidableRel dual.Adj := Classical.decRel _
+  have hdegree : ∀ face : AmbientFace allFaces,
+      dual.degree face ≤ (boundary face.1).card := by
+    intro face
+    exact interiorDualGraph_degree_le_faceBoundary_card
+      boundary allFaces (internalFace_incidence_le_two embedded) face
+  have hdefectCard : defects.card ≤ radialDefectBoundaryLength embedded := by
+    calc
+      defects.card = ∑ _face ∈ defects, 1 := by simp
+      _ ≤ ∑ face ∈ defects, (boundary face.1).card := by
+        apply Finset.sum_le_sum
+        intro face _hface
+        have hminimum := geometry.internalMinimumFive face.1 face.2
+        exact (by norm_num : 1 ≤ 5).trans hminimum
+      _ = radialDefectBoundaryLength embedded := by
+        simp [radialDefectBoundaryLength, defects, boundary, allFaces]
+  calc
+    (faceDefectClosedNeighborhood boundary allFaces).card ≤
+        ∑ defect ∈ defects, ((boundary defect.1).card + 1) := by
+      unfold faceDefectClosedNeighborhood
+      calc
+        (defects.biUnion fun defect =>
+            Finset.univ.filter fun face =>
+              face = defect ∨ dual.Adj face defect).card ≤
+            ∑ defect ∈ defects,
+              (Finset.univ.filter fun face =>
+                face = defect ∨ dual.Adj face defect).card :=
+          Finset.card_biUnion_le
+        _ ≤ ∑ defect ∈ defects, ((boundary defect.1).card + 1) := by
+          apply Finset.sum_le_sum
+          intro defect _hdefect
+          have hsubset :
+              (Finset.univ.filter fun face : AmbientFace allFaces =>
+                face = defect ∨ dual.Adj face defect) ⊆
+                insert defect (dual.neighborFinset defect) := by
+            intro face hface
+            rcases (Finset.mem_filter.1 hface).2 with rfl | hadj
+            · simp
+            · exact Finset.mem_insert.2 (Or.inr (by simpa using hadj.symm))
+          calc
+            (Finset.univ.filter fun face : AmbientFace allFaces =>
+                face = defect ∨ dual.Adj face defect).card ≤
+                (insert defect (dual.neighborFinset defect)).card :=
+              Finset.card_le_card hsubset
+            _ ≤ dual.degree defect + 1 := by
+              simp only [← SimpleGraph.card_neighborFinset_eq_degree]
+              exact Finset.card_insert_le defect (dual.neighborFinset defect)
+            _ ≤ (boundary defect.1).card + 1 :=
+              Nat.add_le_add_right (hdegree defect) 1
+    _ = radialDefectBoundaryLength embedded + defects.card := by
+      simp [radialDefectBoundaryLength, defects, boundary, allFaces,
+        Finset.sum_add_distrib]
+    _ ≤ radialDefectBoundaryLength embedded +
+        radialDefectBoundaryLength embedded :=
+      Nat.add_le_add_left hdefectCard _
+    _ = 2 * radialDefectBoundaryLength embedded := by omega
+
+/-- Any selected family of internal faces pays six edges per face, plus one
+global copy of the actual defect-boundary length.  Hexagons pay the first
+term; every nonhexagon belongs to the global defect family. -/
+theorem sum_internalFaceBoundaries_le_six_mul_card_add_defectBoundaryLength
+    (embedded : ClosedWebAnnularEmbedding data)
+    (faces : Finset (AmbientFace embedded.cellulation.interiorFaces)) :
+    (∑ face ∈ faces,
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem
+        face.1).card) ≤
+      6 * faces.card + radialDefectBoundaryLength embedded := by
+  classical
+  let boundary := orbitFaceBoundary
+    embedded.cellulation.rotation.toRotationSystem
+  let defects := ambientFaceDefectSet boundary
+    embedded.cellulation.interiorFaces
+  let hexFaces := faces.filter fun face => (boundary face.1).card = 6
+  let defectFaces := faces.filter fun face => (boundary face.1).card ≠ 6
+  have hhex :
+      (∑ face ∈ hexFaces, (boundary face.1).card) =
+        6 * hexFaces.card := by
+    calc
+      (∑ face ∈ hexFaces, (boundary face.1).card) =
+          ∑ _face ∈ hexFaces, 6 := by
+        apply Finset.sum_congr rfl
+        intro face hface
+        exact (Finset.mem_filter.1 hface).2
+      _ = 6 * hexFaces.card := by simp [Nat.mul_comm]
+  have hdefectSubset : defectFaces ⊆ defects := by
+    intro face hface
+    have hnonhex := (Finset.mem_filter.1 hface).2
+    exact (mem_ambientFaceDefectSet_iff boundary
+      embedded.cellulation.interiorFaces face).2 hnonhex
+  have hdefectSum :
+      (∑ face ∈ defectFaces, (boundary face.1).card) ≤
+        radialDefectBoundaryLength embedded := by
+    calc
+      (∑ face ∈ defectFaces, (boundary face.1).card) ≤
+          ∑ face ∈ defects, (boundary face.1).card :=
+        Finset.sum_le_sum_of_subset hdefectSubset
+      _ = radialDefectBoundaryLength embedded := by
+        simp [radialDefectBoundaryLength, defects, boundary]
+  have hpartition :
+      (∑ face ∈ faces, (boundary face.1).card) =
+        (∑ face ∈ hexFaces, (boundary face.1).card) +
+          ∑ face ∈ defectFaces, (boundary face.1).card := by
+    simpa [hexFaces, defectFaces] using
+      (Finset.sum_filter_add_sum_filter_not
+        (s := faces) (p := fun face => (boundary face.1).card = 6)
+        (f := fun face => (boundary face.1).card)).symm
+  rw [hpartition, hhex]
+  exact Nat.add_le_add
+    (Nat.mul_le_mul_left 6 (Finset.card_le_card (Finset.filter_subset _ _)))
+    hdefectSum
+
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+/-- A union sum is bounded by paying each of its two inputs separately. -/
+private theorem sum_union_le_add {α : Type*} [DecidableEq α]
+    (left right : Finset α) (value : α → Nat) :
+    (∑ item ∈ left ∪ right, value item) ≤
+      (∑ item ∈ left, value item) + ∑ item ∈ right, value item := by
+  classical
+  let remainder := right \ left
+  have hunion : left ∪ right = left ∪ remainder := by
+    ext item
+    by_cases hleft : item ∈ left <;> simp [remainder, hleft]
+  have hdisjoint : Disjoint left remainder := by
+    refine Finset.disjoint_left.2 ?_
+    intro item hleft hrem
+    exact (Finset.mem_sdiff.1 hrem).2 hleft
+  rw [hunion, Finset.sum_union hdisjoint]
+  exact Nat.add_le_add_left
+    (Finset.sum_le_sum_of_subset Finset.sdiff_subset) _
+
+/-- Linear edge-incidence budget for the complete forbidden facial zone.
+The coefficient is deliberately conservative.  Its important feature is
+linearity in the honest negative-curvature weight, rather than the former
+product of a defect-count bound and a maximum face size. -/
+def radialForbiddenEdgeBudget (embedded : ClosedWebAnnularEmbedding data) : Nat :=
+  14 * (12 * interiorNegativeCurvatureWeight embedded +
+    5 * boundarySurplus embedded) + 6 * embedded.cellulation.holePerimeter
+
+/-- The forbidden-face edge union obeys the linear weighted budget.  The
+proof sums actual facial incidences, charges the closed defect neighborhood
+to dual degrees, and charges the two hole neighborhoods to their literal
+perimeter. -/
 theorem card_radialForbiddenEdgeSupport_le
     (embedded : ClosedWebAnnularEmbedding data) (hdata : data.WellFormed)
     (geometry : AnnularFrontierGeometry embedded) :
     (radialForbiddenEdgeSupport embedded).card ≤
       radialForbiddenEdgeBudget embedded := by
   classical
-  let weight := interiorNegativeCurvatureWeight embedded
+  let boundary := orbitFaceBoundary
+    embedded.cellulation.rotation.toRotationSystem
+  let closed := faceDefectClosedNeighborhood boundary
+    embedded.cellulation.interiorFaces
+  let holes := embedded.holeAdjacentInteriorFaces
+  let defectLength := radialDefectBoundaryLength embedded
+  have hclosedCard : closed.card ≤ 2 * defectLength := by
+    exact card_faceDefectClosedNeighborhood_le_two_mul_defectBoundaryLength
+      embedded geometry
+  have hclosedSum :
+      (∑ face ∈ closed, (boundary face.1).card) ≤
+        13 * defectLength := by
+    calc
+      (∑ face ∈ closed, (boundary face.1).card) ≤
+          6 * closed.card + defectLength :=
+        sum_internalFaceBoundaries_le_six_mul_card_add_defectBoundaryLength
+          embedded closed
+      _ ≤ 6 * (2 * defectLength) + defectLength :=
+        Nat.add_le_add_right (Nat.mul_le_mul_left 6 hclosedCard) _
+      _ = 13 * defectLength := by ring
+  have hholeSum :
+      (∑ face ∈ holes, (boundary face.1).card) ≤
+        6 * embedded.cellulation.holePerimeter + defectLength := by
+    calc
+      (∑ face ∈ holes, (boundary face.1).card) ≤
+          6 * holes.card + defectLength :=
+        sum_internalFaceBoundaries_le_six_mul_card_add_defectBoundaryLength
+          embedded holes
+      _ ≤ 6 * embedded.cellulation.holePerimeter + defectLength :=
+        Nat.add_le_add_right
+          (Nat.mul_le_mul_left 6
+            embedded.card_holeAdjacentInteriorFaces_le_holePerimeter) _
+  have hdefectLength :
+      defectLength ≤ 12 * interiorNegativeCurvatureWeight embedded +
+        5 * boundarySurplus embedded := by
+    exact radialDefectBoundaryLength_le embedded hdata geometry
   calc
     (radialForbiddenEdgeSupport embedded).card ≤
         ∑ face ∈ embedded.corridorForbiddenFaces,
-          (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem
-            face.1).card := by
+          (boundary face.1).card := by
       unfold radialForbiddenEdgeSupport
       exact Finset.card_biUnion_le
-    _ ≤ ∑ _face ∈ embedded.corridorForbiddenFaces, (weight + 6) := by
-      apply Finset.sum_le_sum
-      intro face hface
-      exact internalFaceBoundary_card_le_weight_add_six embedded face.2
-    _ = embedded.corridorForbiddenFaces.card * (weight + 6) := by
-      simp
-    _ ≤ embedded.boundaryCleanContaminationBudget * (weight + 6) :=
-      Nat.mul_le_mul_right (weight + 6)
-        (embedded.card_corridorForbiddenFaces_le_boundaryCleanContaminationBudget
-          hdata geometry)
+    _ ≤ (∑ face ∈ closed, (boundary face.1).card) +
+          ∑ face ∈ holes, (boundary face.1).card := by
+      simpa [ClosedWebAnnularEmbedding.corridorForbiddenFaces,
+        closed, holes, boundary] using
+        sum_union_le_add closed holes fun face => (boundary face.1).card
+    _ ≤ 13 * defectLength +
+          (6 * embedded.cellulation.holePerimeter + defectLength) :=
+      Nat.add_le_add hclosedSum hholeSum
+    _ = 14 * defectLength + 6 * embedded.cellulation.holePerimeter := by
+      ring
+    _ ≤ 14 * (12 * interiorNegativeCurvatureWeight embedded +
+          5 * boundarySurplus embedded) +
+          6 * embedded.cellulation.holePerimeter :=
+      Nat.add_le_add_right (Nat.mul_le_mul_left 14 hdefectLength) _
     _ = radialForbiddenEdgeBudget embedded := by
       rfl
 

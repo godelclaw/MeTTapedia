@@ -160,6 +160,44 @@ theorem card_interiorFaceDefectSet_eq_nonHexagonalFaceCount
   rw [Multiset.filter_map, Multiset.card_map]
   rfl
 
+/-- Summing the actual internal defect-face boundaries is the filtered
+boundary-length quantity.  This retains multiplicity when one long face meets
+many candidate radial cuts. -/
+theorem sum_interiorFaceDefectSet_boundary_card_eq_nonHexagonalBoundaryLength
+    (embedded : ClosedWebAnnularEmbedding data) :
+    (∑ face ∈ interiorFaceDefectSet embedded,
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem
+        face).card) =
+      nonHexagonalBoundaryLength (interiorFaceLengths embedded) := by
+  classical
+  unfold interiorFaceDefectSet nonHexagonalBoundaryLength interiorFaceLengths
+  rw [Multiset.filter_map]
+  rfl
+
+/-- The total internal defect-boundary length is linear in the honest
+weighted annular quantities.  Unlike a defect-face count, this pays for every
+possible path-edge incidence with a long face. -/
+theorem nonHexagonalBoundaryLength_interiorFaceLengths_le
+    (embedded : ClosedWebAnnularEmbedding data) (hdata : data.WellFormed)
+    (geometry : AnnularFrontierGeometry embedded) :
+    nonHexagonalBoundaryLength (interiorFaceLengths embedded) ≤
+      12 * interiorNegativeCurvatureWeight embedded +
+        5 * boundarySurplus embedded := by
+  calc
+    nonHexagonalBoundaryLength (interiorFaceLengths embedded) ≤
+        5 * (interiorFaceLengths embedded).count 5 +
+          7 * interiorNegativeCurvatureWeight embedded :=
+      nonHexagonalBoundaryLength_le_five_mul_pentagonCount_add_seven_mul_negativeWeight
+        (interiorFaceLengths embedded)
+        (interiorFaceLengths_minimumFive embedded geometry)
+    _ ≤ 12 * interiorNegativeCurvatureWeight embedded +
+        5 * boundarySurplus embedded := by
+      have hpentagons :=
+        interiorPentagonCount_add_annularInterfaceConstant_eq_weight_add_boundarySurplus
+          embedded hdata geometry
+      unfold annularInterfaceCurvatureConstant at hpentagons
+      omega
+
 /-- The annular defect count is bounded by the retained negative-curvature
 weight and the actual boundary surplus, not by signed excess alone. -/
 theorem card_interiorFaceDefectSet_le_twiceWeight_add_boundarySurplus

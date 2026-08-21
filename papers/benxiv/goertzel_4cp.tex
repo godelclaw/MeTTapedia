@@ -4502,6 +4502,22 @@ edge-incidence budgets rather than mere face counts.  The framed source-trail
 and closed-web annular-frontier packages are kept as distinct carriers; no
 comparison theorem between them is being assumed here.
 
+The initial source-annulus estimate paid for every forbidden face as though it
+had the largest boundary in the instance.  That safe estimate obscured the
+actual scaling.  The strengthened incidence proof instead sums the real
+boundaries: the closed dual neighborhood of all defects has cardinality at
+most twice the total defect-boundary length, an arbitrary internal face family
+costs six edges per face plus one copy of the global defect support, and the
+two hole neighborhoods are charged to their literal perimeter.  The resulting
+bound on the actual forbidden radial-edge support is
+\[
+  14(12W_-+5\rho)+6P_{\mathrm{holes}}.
+\]
+Thus the quantitative entrance is linear, rather than polynomially wasteful,
+in the honest curvature weight.  This improves the eventual cutoff
+substantially but does not make it uniform: $W_-$ itself remains unbounded by
+the signed excess identity.
+
 This is still not a uniform $V_0$.  The constructed closed-web budget grows
 with $W_-$, so a sufficiently long radial path is obtained only relative to
 the instance's curvature.  The remaining numerical problem is now sharply
