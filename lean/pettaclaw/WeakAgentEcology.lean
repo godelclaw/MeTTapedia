@@ -192,18 +192,29 @@ theorem future_events_do_not_change_started_turn
   rw [ContextProjection.take_append_before_boundary past future frontier within]
 
 /-! The open context interface can supply information that the reference Iter
-request surface intentionally leaves to tools and transformations. -/
+request surface leaves to tools and transformations once its aggregate memory
+budget is exceeded. -/
 
 def memoryContentContext
     (artifacts : List IterArchitecture.MemoryArtifact) : List Nat :=
   artifacts.flatMap IterArchitecture.MemoryArtifact.content
 
-theorem replaceable_context_can_observe_memory_content :
-    let left : List IterArchitecture.MemoryArtifact := [⟨7, [1]⟩]
-    let right : List IterArchitecture.MemoryArtifact := [⟨7, [2]⟩]
-    IterArchitecture.memoryListing left = IterArchitecture.memoryListing right ∧
+theorem replaceable_context_can_observe_memory_content
+    (leftContent rightContent : List Nat)
+    (different : leftContent ≠ rightContent)
+    (leftLarge : IterArchitecture.maxMemoryChars < leftContent.length)
+    (rightLarge : IterArchitecture.maxMemoryChars < rightContent.length) :
+    let left : List IterArchitecture.MemoryArtifact :=
+      [⟨7, leftContent⟩]
+    let right : List IterArchitecture.MemoryArtifact :=
+      [⟨7, rightContent⟩]
+    IterArchitecture.memorySurface left = IterArchitecture.memorySurface right ∧
       memoryContentContext left ≠ memoryContentContext right := by
-  decide
+  dsimp
+  constructor
+  · exact (IterArchitecture.large_memory_contents_are_not_automatically_visible
+      leftContent rightContent different leftLarge rightLarge).2
+  · simpa [memoryContentContext] using different
 
 /-! ## An open, self-replaceable policy ecology -/
 

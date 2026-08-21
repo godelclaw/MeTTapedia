@@ -5,7 +5,7 @@ import PresentMoment
 # IterArchitecture — the current reference loop and the PettaClaw hosting gap
 
 An executable model of the architectural core in `patham9/iter` at upstream
-commit `f6f2d1e137c179cbe951defd543527c43cb97da0` (2026-08-20), compared
+commit `bdf4578c45228efb310c13ed243518dfed8a55f0` (2026-08-21), compared
 with the deployed PettaClaw model in `ClawArchitectures.lean` and the
 restart invariant in `PresentMoment.lean`.
 
@@ -21,16 +21,17 @@ encoding.  It records what the reference loop actually does:
 * every channel event has the same pacing effect, independent of origin;
 * `nop` enters a timed slow wait and then starts a new autonomous burst;
 * persistence saves experience but not the control state of the burst; and
-* the automatic memory surface contains paths, not file contents.
+* the automatic memory surface contains small memory contents and falls back
+  to paths when the aggregate content exceeds its fixed budget.
 
 The final feature record is only a necessary compatibility check.  Passing it
 would not by itself prove that an adapted Iter implements PettaClaw.
 
 Trusted boundary: correspondence between these definitions and `iter.py` is
 maintained by hand, as is the existing PettaClaw model-to-code boundary.
-At the pinned commit, the invalid no-tool response branch reads an undefined
-`llm_result` name.  The model records the intended valid tool-calling path; it
-does not turn that implementation defect into architectural semantics.
+The pinned revision also changes request compaction and reasoning retention;
+those are context-policy details rather than transformation semantics.  This
+file models only the distinctions used by the hosting and preservation results.
 -/
 
 namespace IterArchitecture
@@ -101,26 +102,56 @@ theorem thirty_first_sorted_tool_is_omitted :
     30 ∉ loadBounded (List.range 31) := by
   decide
 
-/-! ## The automatic memory surface is a path index -/
+/-! ## The automatic memory surface switches from contents to a path index -/
 
 structure MemoryArtifact where
   name : Nat
   content : List Nat
 deriving Repr, DecidableEq
 
-/-- The current request builder enumerates memory paths.  Reading and
-selecting their contents is delegated to tools or transformations. -/
+/-- The path-only fallback used when aggregate memory content exceeds the
+request budget. -/
 def memoryListing (artifacts : List MemoryArtifact) : List Nat :=
   artifacts.map MemoryArtifact.name
 
-/-- Two materially different memories can therefore have the same automatic
-request surface.  This is not a defect in the weak loop; it identifies the
-replaceable context-policy work that a hosted agent must supply. -/
-theorem memory_contents_are_not_automatically_visible :
-    let left : List MemoryArtifact := [⟨7, [1]⟩]
-    let right : List MemoryArtifact := [⟨7, [2]⟩]
-    left ≠ right ∧ memoryListing left = memoryListing right := by
+def maxMemoryChars : Nat := 1000
+
+def memoryChars : List MemoryArtifact → Nat
+  | [] => 0
+  | artifact :: rest => artifact.content.length + memoryChars rest
+
+inductive MemorySurface
+  | contents (artifacts : List MemoryArtifact)
+  | paths (names : List Nat)
+deriving Repr, DecidableEq
+
+/-- Current Iter includes contents exactly while they fit and otherwise emits
+only the recursive path index. -/
+def memorySurface (artifacts : List MemoryArtifact) : MemorySurface :=
+  if memoryChars artifacts ≤ maxMemoryChars then .contents artifacts
+  else .paths (memoryListing artifacts)
+
+theorem small_memory_contents_are_automatically_visible :
+    memorySurface [⟨7, [1, 2]⟩] = .contents [⟨7, [1, 2]⟩] := by
   decide
+
+/-- Once the budget is exceeded, materially different contents can again have
+the same automatic request surface. -/
+theorem large_memory_contents_are_not_automatically_visible
+    (leftContent rightContent : List Nat)
+    (different : leftContent ≠ rightContent)
+    (leftLarge : maxMemoryChars < leftContent.length)
+    (rightLarge : maxMemoryChars < rightContent.length) :
+    let left : List MemoryArtifact := [⟨7, leftContent⟩]
+    let right : List MemoryArtifact := [⟨7, rightContent⟩]
+    left ≠ right ∧ memorySurface left = memorySurface right := by
+  dsimp
+  constructor
+  · intro same
+    apply different
+    simpa using same
+  · simp [memorySurface, memoryChars, memoryListing,
+      Nat.not_le.mpr leftLarge, Nat.not_le.mpr rightLarge]
 
 /-- `loaded` is the `INOPS` snapshot used for dispatch; `advertised` is the
 possibly transformed schema list sent to the model. -/
@@ -349,7 +380,8 @@ end IterArchitecture
 #print axioms IterArchitecture.applyTransformations_append
 #print axioms IterArchitecture.transformation_order_observable
 #print axioms IterArchitecture.thirty_first_sorted_tool_is_omitted
-#print axioms IterArchitecture.memory_contents_are_not_automatically_visible
+#print axioms IterArchitecture.small_memory_contents_are_automatically_visible
+#print axioms IterArchitecture.large_memory_contents_are_not_automatically_visible
 #print axioms IterArchitecture.hiding_does_not_revoke
 #print axioms IterArchitecture.hidden_tool_remains_executable
 #print axioms IterArchitecture.advertised_schema_is_not_implementation
