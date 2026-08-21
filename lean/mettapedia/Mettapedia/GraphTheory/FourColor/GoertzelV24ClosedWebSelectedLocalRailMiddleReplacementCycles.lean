@@ -364,6 +364,119 @@ noncomputable def squareDualCycle_of_firstThirdSquare
     MiddleReplacementSquareDualCycle (web := web) face :=
   firstThirdSquareCycle (rungs := rungs) hfirst hthird hfaceSecond
 
+/-! ### L1: public coordinates of the canonical first--third square
+
+The construction above deliberately hides its concrete four-cons walk.  The
+following small interface exposes only the four vertices in their source
+order.  Later pointed-crossing arguments can therefore name the two
+collision-adjacent sides without unfolding the cycle constructor or replacing
+the source square by an arbitrary four-cycle.
+-/
+
+@[simp] theorem squareDualCycle_of_firstThirdSquare_getVert_zero
+    {face : SelectedFace (web := web)}
+    (hfirst : SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        firstInterior.center) face)
+    (hthird : SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+      face)
+    (hfaceSecond : face ≠
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center) :
+    ((squareDualCycle_of_firstThirdSquare (rungs := rungs)
+      hfirst hthird hfaceSecond).cycle.walk.getVert 0) =
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        firstInterior.center := by
+  rfl
+
+@[simp] theorem squareDualCycle_of_firstThirdSquare_getVert_one
+    {face : SelectedFace (web := web)}
+    (hfirst : SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        firstInterior.center) face)
+    (hthird : SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+      face)
+    (hfaceSecond : face ≠
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center) :
+    ((squareDualCycle_of_firstThirdSquare (rungs := rungs)
+      hfirst hthird hfaceSecond).cycle.walk.getVert 1) =
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center := by
+  rfl
+
+@[simp] theorem squareDualCycle_of_firstThirdSquare_getVert_two
+    {face : SelectedFace (web := web)}
+    (hfirst : SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        firstInterior.center) face)
+    (hthird : SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+      face)
+    (hfaceSecond : face ≠
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center) :
+    ((squareDualCycle_of_firstThirdSquare (rungs := rungs)
+      hfirst hthird hfaceSecond).cycle.walk.getVert 2) =
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center := by
+  rfl
+
+@[simp] theorem squareDualCycle_of_firstThirdSquare_getVert_three
+    {face : SelectedFace (web := web)}
+    (hfirst : SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        firstInterior.center) face)
+    (hthird : SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+      face)
+    (hfaceSecond : face ≠
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center) :
+    ((squareDualCycle_of_firstThirdSquare (rungs := rungs)
+      hfirst hthird hfaceSecond).cycle.walk.getVert 3) = face := by
+  rfl
+
+/-- **L1 second source anchor of the first--third square.**  Besides the
+distinguished first outgoing rung stored in the cycle packet, the next
+centre-to-centre side is crossed by the literal outgoing rung of the second
+corridor interior.  This is crossing provenance only; it does not identify a
+pointed rail edge with either collision-adjacent square side. -/
+theorem squareDualCycle_of_firstThirdSquare_secondRung_mem_shared
+    {face : SelectedFace (web := web)}
+    (hfirst : SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        firstInterior.center) face)
+    (hthird : SelectedDualGraph (web := web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+      face)
+    (hfaceSecond : face ≠
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center) :
+    rungs.edge (nextCorridorInterior firstInterior hfirstNext).outgoing ∈
+      sharedInteriorEdges
+        (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))
+        ((squareDualCycle_of_firstThirdSquare (rungs := rungs)
+          hfirst hthird hfaceSecond).cycle.walk.getVert 1).1
+        ((squareDualCycle_of_firstThirdSquare (rungs := rungs)
+          hfirst hthird hfaceSecond).cycle.walk.getVert 2).1 := by
+  simpa using rungs.mem_shared
+    (nextCorridorInterior firstInterior hfirstNext).outgoing
+
 /-- Public constructor for the typed second-to-fourth square packet. -/
 noncomputable def squareDualCycle_of_secondFourthSquare
     {face : SelectedFace (web := web)}
