@@ -3179,6 +3179,24 @@ endpoint-triangle packet, followed by splicing this bounded bypass into the
 retained rail and rechecking separation from its companion.  Arbitrary-length
 iteration, both end caps, and L1 remain open.
 
+That consumer boundary is now sharper.  The selected square residue is a
+literal two-vertex component, so membership of a named source corner in its
+support proves that the corner is one of the two bond endpoints.  With this
+premise for both pointed crossing origins, Lean consumes both the shared- and
+opposite-endpoint allocations and constructs the bounded bypass.  The premise
+is stated explicitly: the actual source placement has not yet been proved to
+put both corners on that component side.
+
+The bounded bypass is now also installed in the entire selected rail.  Path
+simplicity identifies the strict occurrence with the unique support index;
+this proves that the bypass endpoints are exactly the predecessor and
+successor exposed by splitting the rail.  Generic bridge splicing and loop
+erasure then produce a path with the original outer endpoints, omit the
+collision face, and prove that every retained face came from the old rail or
+the two-hop bypass.  This is a whole-rail repair, not yet a paired-rail one:
+separation from the companion, source-corner component membership,
+arbitrary-length iteration, both end caps, and L1 remain open.
+
 The sibling parallel face-pair residue also remains open.  The existing generic
 shared-face two-edge separator theorem is stated for a connected spherical
 cubic rotation map with globally two-sided faces.  The present carrier is an
