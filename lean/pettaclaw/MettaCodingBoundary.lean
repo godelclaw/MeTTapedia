@@ -183,6 +183,40 @@ theorem prepareWithIter_preserves_authority
         boundary.permitted := by
   exact prepare_preserves_authority (transformations.map liftIter) boundary
 
+/-! The runtime selects this adapter with policy data.  `false` is a genuine
+disabled path, not an empty special transformation. -/
+def prepareSelected (runIter : Bool)
+    (transformations : List IterArchitecture.Transformation)
+    (boundary : Boundary Nat Nat) : Boundary Nat Nat :=
+  if runIter then prepareWithIter transformations boundary else boundary
+
+theorem disabled_iter_request_is_identity
+    (transformations : List IterArchitecture.Transformation)
+    (boundary : Boundary Nat Nat) :
+    prepareSelected false transformations boundary = boundary := by
+  rfl
+
+theorem enabled_iter_request_is_exact
+    (transformations : List IterArchitecture.Transformation)
+    (boundary : Boundary Nat Nat) :
+    visible (prepareSelected true transformations boundary) =
+      fromIterBoundary
+        (IterArchitecture.applyTransformations transformations
+          (toIterBoundary (visible boundary))) := by
+  exact prepareWithIter_is_exact transformations boundary
+
+theorem selected_request_preserves_authority
+    (runIter : Bool)
+    (transformations : List IterArchitecture.Transformation)
+    (boundary : Boundary Nat Nat) :
+    (prepareSelected runIter transformations boundary).executable =
+        boundary.executable ∧
+      (prepareSelected runIter transformations boundary).permitted =
+        boundary.permitted := by
+  cases runIter
+  · exact ⟨rfl, rfl⟩
+  · exact prepareWithIter_preserves_authority transformations boundary
+
 /-! ## Brokered MeTTa command evidence -/
 
 structure Command (Capability Payload : Type) where
@@ -279,6 +313,18 @@ def codingStep {Message Capability Payload Workspace Result Error : Type}
   { boundary := record encode state.boundary outcome.2
     workspace := outcome.1 }
 
+def selectedCodingStep {Payload Workspace Result Error : Type}
+    (runIter : Bool)
+    (transformations : List IterArchitecture.Transformation)
+    (encode : Observation Nat Result Error → Nat)
+    (execute : Executor Nat Payload Workspace Result Error)
+    (state : State Nat Nat Workspace) (command : Command Nat Payload) :
+    State Nat Nat Workspace :=
+  codingStep encode execute
+    { state with
+      boundary := prepareSelected runIter transformations state.boundary }
+    command
+
 /-- Every broker attempt, including denial and failure, becomes the newest
 message before a later model step can inspect the state. -/
 theorem coding_step_records_broker_observation
@@ -293,6 +339,24 @@ theorem coding_step_records_broker_observation
         [encode (broker state.boundary execute state.workspace command).2] := by
   rfl
 
+/-- Request preparation and effect evidence compose without an intermediate
+model step: the newest message is the broker observation over the exact
+prepared request boundary. -/
+theorem selected_coding_step_records_prepared_observation
+    {Payload Workspace Result Error : Type}
+    (runIter : Bool)
+    (transformations : List IterArchitecture.Transformation)
+    (encode : Observation Nat Result Error → Nat)
+    (execute : Executor Nat Payload Workspace Result Error)
+    (state : State Nat Nat Workspace) (command : Command Nat Payload) :
+    (selectedCodingStep runIter transformations encode execute state command
+      ).boundary.messages =
+      (prepareSelected runIter transformations state.boundary).messages ++
+        [encode
+          (broker (prepareSelected runIter transformations state.boundary)
+            execute state.workspace command).2] := by
+  rfl
+
 end MettaCodingBoundary
 
 #print axioms MettaCodingBoundary.prepare_visible_is_exact
@@ -302,7 +366,11 @@ end MettaCodingBoundary
 #print axioms MettaCodingBoundary.transformation_order_remains_expressive
 #print axioms MettaCodingBoundary.prepareWithIter_is_exact
 #print axioms MettaCodingBoundary.prepareWithIter_preserves_authority
+#print axioms MettaCodingBoundary.disabled_iter_request_is_identity
+#print axioms MettaCodingBoundary.enabled_iter_request_is_exact
+#print axioms MettaCodingBoundary.selected_request_preserves_authority
 #print axioms MettaCodingBoundary.unknown_command_preserves_workspace
 #print axioms MettaCodingBoundary.denied_command_preserves_workspace
 #print axioms MettaCodingBoundary.failed_command_preserves_workspace
 #print axioms MettaCodingBoundary.coding_step_records_broker_observation
+#print axioms MettaCodingBoundary.selected_coding_step_records_prepared_observation
