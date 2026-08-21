@@ -5096,6 +5096,30 @@ reachable closure, derive a numerical $V_0$, or verify the resulting bounded
 base.  Those are the next distinct obligations rather than consequences
 claimed by the present packaging.
 
+The source-image relation is now executable as a conservative finite letter.
+Module
+\texttt{GoertzelV24FramedCorridorSerialFullTransitionDecoder} packages the
+dependent input and output fragment counts with the five-coordinate receipt
+and defines a graph-free deterministic decoder.  Lean proves that every
+literal source transition is the decoded output of some such finite letter.
+This is sufficient for sound over-approximation: adding abstract letters can
+add reachable states but cannot hide a literal source state.  It is not yet an
+exact local alphabet.  In particular, the tracked and facial residue fields
+may still depend on old-prefix information not represented at the displayed
+input cut.  Exact portal/residue control, or an equivalent state
+augmentation, is therefore the remaining transition-locality obligation
+before a small reachable closure can be claimed.
+
+The scale of the state side is no longer unknown.  The already proved
+port-incidence semantic carrier has exactly $1{,}541{,}184$ states at the
+four-fragment bound, while the three-fragment L6/L7 calibration gives the
+checked closed-web entrance $1{,}529{,}490$.  These are conservative carrier
+bounds rather than measured reachable counts, and neither number verifies
+the route-native base below it.  The finite-state explosion has thus been
+reduced from the raw profile encoding to a million-scale semantic carrier;
+the remaining major risk is exact transition admissibility followed by the
+separate bounded-base proof.
+
 The inter-Cell presentation change is now explicit rather than hidden behind
 a false equality of cuts.  Module
 \texttt{GoertzelV24FramedCorridorSerialBoundaryRebase} proves that, after one
