@@ -91,6 +91,63 @@ theorem MiddleReplacementShortDualCycle.SquareBondRealization.edge_mem_endpointT
     · exact Finset.mem_union.2 (.inr (by
         simpa [incidentEdgeFinset] using hvertexEdge))
 
+/-- Every primal edge selected on the short dual cycle meets the component on
+the side opposite the outer root.  This is the constructive endpoint content
+of the already-proved exact component-boundary theorem. -/
+theorem MiddleReplacementShortDualCycle.edge_meets_component_of_mem_crossingEdges
+    {face : SelectedFace web}
+    (cycle : MiddleReplacementShortDualCycle (web := web) face)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp)
+    (edge : G.edgeSet)
+    (hedge : edge ∈ cycle.selectedCycle.crossingEdges) :
+    ∃ vertex, vertex ∈ (edge.1 : Sym2 V) ∧ vertex ∈ component.supp := by
+  have hboundary : edge ∈
+      componentCrossingEdges cycle.selectedCycle.crossingEdges component := by
+    rw [cycle.componentCrossingEdges_eq_crossingEdges component hroot]
+    exact hedge
+  rcases (mem_componentCrossingEdges_iff
+      cycle.selectedCycle.crossingEdges component edge).1 hboundary with
+    ⟨inside, _outside, hinsideEdge, _houtsideEdge,
+      hinsideComponent, _houtsideComponent⟩
+  exact ⟨inside, hinsideEdge, hinsideComponent⟩
+
+/-- Step-indexed form of `edge_meets_component_of_mem_crossingEdges`: every
+literal selected crossing of the short cycle carries an inside endpoint. -/
+theorem MiddleReplacementShortDualCycle.crossingEdge_meets_component
+    {face : SelectedFace web}
+    (cycle : MiddleReplacementShortDualCycle (web := web) face)
+    (component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent)
+    (hroot : web.annular.RS.outer.fst ∉ component.supp)
+    (step : Fin cycle.walk.length) :
+    ∃ vertex,
+      vertex ∈ (cycle.selectedCycle.crossingEdge step).1 ∧
+        vertex ∈ component.supp := by
+  apply cycle.edge_meets_component_of_mem_crossingEdges component hroot
+  exact (cycle.selectedCycle.mem_crossingEdges_iff _).2 ⟨step, rfl⟩
+
+/-- A pointed receipt whose primal crossing is one of the selected short-cycle
+crossings belongs to the endpoint-triangle packet automatically.  The inside
+endpoint is computed from the component boundary rather than supplied as a
+separate orientation receipt. -/
+theorem SelectedAdjacentTerminalEdgeCrossingReceipt.crossing_mem_endpointTrianglePacket_of_mem_crossingEdges
+    {edge : Sym2 (SelectedFace web)}
+    (receipt : SelectedAdjacentTerminalEdgeCrossingReceipt edge)
+    {face : SelectedFace web}
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    {bond : MiddleReplacementShortDualCycle.SquareBondRealization cycle component}
+    (hcrossing : receipt.crossing ∈ cycle.selectedCycle.crossingEdges) :
+    receipt.crossing ∈
+      insert bond.internalEdge cycle.selectedCycle.crossingEdges := by
+  exact Finset.mem_insert_of_mem hcrossing
+
 /-- A pointed crossing that meets the selected square component belongs to the
 exact packet consumed by the endpoint-triangle comparison. -/
 theorem SelectedAdjacentTerminalEdgeCrossingReceipt.crossing_mem_endpointTrianglePacket_of_meets_component
@@ -154,6 +211,53 @@ theorem InteriorOccurrence.exists_twoHopBypass_of_crossingReceipts_of_meet_compo
       (outgoingReceipt
         |>.crossing_mem_endpointTrianglePacket_of_meets_component
           hroot houtgoingMeets)
+  rcases hallocation with hadj | hopposite
+  · exact InteriorOccurrence.exists_twoHopBypass_of_adjacent occurrence hadj
+  · exact InteriorOccurrence.exists_twoHopBypass_of_opposite_endpointTriangles
+      occurrence hpath firstTriangle secondTriangle hinter hopposite
+
+/-- **L1 selected-boundary pointed bypass.**  If both literal pointed
+crossings are selected boundary crossings of the short square, the endpoint
+triangles construct the collision-free replacement without any additional
+component-incidence premise.  The internal-bond alternative is intentionally
+outside this statement. -/
+theorem InteriorOccurrence.exists_twoHopBypass_of_crossingReceipts_of_mem_crossingEdges
+    {start finish current : SelectedFace web}
+    {rail : (SelectedDualGraph web).Walk start finish}
+    (occurrence : InteriorOccurrence (current := current) rail)
+    (hpath : rail.IsPath)
+    (incomingReceipt :
+      SelectedAdjacentTerminalEdgeCrossingReceipt occurrence.incomingEdge)
+    (outgoingReceipt :
+      SelectedAdjacentTerminalEdgeCrossingReceipt occurrence.outgoingEdge)
+    {face : SelectedFace web}
+    {cycle : MiddleReplacementShortDualCycle (web := web) face}
+    {component :
+      (G.deleteEdges (edgeFinsetValueSet
+        cycle.selectedCycle.crossingEdges)).ConnectedComponent}
+    {bond : MiddleReplacementShortDualCycle.SquareBondRealization cycle component}
+    (firstTriangle secondTriangle : bond.EndpointSelectedTriangle)
+    (hunion :
+      firstTriangle.selectedCycle.crossingEdges ∪
+          secondTriangle.selectedCycle.crossingEdges =
+        insert bond.internalEdge cycle.selectedCycle.crossingEdges)
+    (hinter : firstTriangle.selectedCycle.crossingEdges ∩
+        secondTriangle.selectedCycle.crossingEdges = {bond.internalEdge})
+    (hincoming :
+      incomingReceipt.crossing ∈ cycle.selectedCycle.crossingEdges)
+    (houtgoing :
+      outgoingReceipt.crossing ∈ cycle.selectedCycle.crossingEdges) :
+    Nonempty (InteriorOccurrence.TwoHopBypass occurrence) := by
+  have hallocation :=
+    InteriorOccurrence.endpointTriangle_bypass_or_opposite_of_crossingReceipts_of_union
+      occurrence hpath incomingReceipt outgoingReceipt firstTriangle
+      secondTriangle hunion
+      (incomingReceipt
+        |>.crossing_mem_endpointTrianglePacket_of_mem_crossingEdges
+          hincoming)
+      (outgoingReceipt
+        |>.crossing_mem_endpointTrianglePacket_of_mem_crossingEdges
+          houtgoing)
   rcases hallocation with hadj | hopposite
   · exact InteriorOccurrence.exists_twoHopBypass_of_adjacent occurrence hadj
   · exact InteriorOccurrence.exists_twoHopBypass_of_opposite_endpointTriangles
