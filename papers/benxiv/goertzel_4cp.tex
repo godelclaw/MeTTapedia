@@ -4810,6 +4810,24 @@ original profiles.  It fixes the types of the finite transition but does not
 yet construct that transition or identify literal Cells having different
 local data merely because they share one of the three geometric orientations.
 
+The bound is now sharpened to exact semantic coordinates.  Module
+\texttt{GoertzelV24FramedCorridorRightFaceRoles} proves that the three
+occurrence-sensitive outgoing fragments correspond canonically to the first,
+centre, and second faces of the literal two-step dual path.  This is not an
+arbitrary enumeration of a three-element type: each coordinate is tied to its
+named ambient face by a proved equivalence.  Module
+\texttt{GoertzelV24FramedCorridorFiniteRightFaceUpdate} consequently computes
+the two purely outgoing face fields.  Face continuation is equality of the
+three roles, while their two crossing-incidence rows are respectively
+\[
+ (1,0),\qquad (1,1),\qquad (0,1).
+\]
+These matrices are theorems about the actual source path, not freely chosen
+Boolean masks.  The result removes two further over-encoded coordinates from
+the reachable-state problem.  It does not yet package the attachment and
+capped-length receipt with the finite connectivity law, so it is not by itself
+the complete one-Cell support relation.
+
 This result sharpens the remaining finite-state programme without changing
 the meaning of the base.  The old twenty-mode Lemma~8.18 closure concerns the
 narrow $\tau$/mirror-$\tau$ laboratory; no typed map currently identifies
