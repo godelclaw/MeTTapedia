@@ -3734,6 +3734,26 @@ audit rather than a supplier for arbitrary large inputs: the physical L1
 crosscuts, the two remaining output topology facts, and total closure are not
 yet constructed.
 
+The remaining topology is now stated on only one representation.  The module
+	exttt{GoertzelV24RotationSystemPrimalGeometryTransport} proves that canonical
+simple-graph backing sends the boundary support of every literal quotient face
+exactly to the corresponding graph-backed support.  It also constructs a graph
+isomorphism between the facial duals induced on any selected literal face set
+and its canonical image.  The splice specialization identifies the internal
+faces of the computed output cellulation with the image of the literal
+non-hole faces.  Hence 	exttt{outputGeometryOfLiteral} takes facial-boundary
+simplicity and internal-dual connectedness on the literal splice rotation and
+transports them to the actual graph-backed output.
+
+This removes a representation debt, not a topological hypothesis.  The
+literal splice still has to be proved to have simple internal facial
+boundaries and connected internal dual, and the resulting output still needs
+	exttt{TotallyClosedWeb}.  The ignored end-to-end probe typechecks through an
+actual 	exttt{StrictReductionCertificate} with precisely those receipts (and
+the already-listed physical splice data) exposed.  It therefore verifies that
+the current interfaces compose without presenting the conditional probe as a
+source construction, reductive-system instance, or Four-Color theorem.
+
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
 is a finiteness witness, not a practical base census.  The eventual base must

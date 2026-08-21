@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebSpliceGraphAnnularEmbedding
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularFrontierWeightedCurvature
+import Mettapedia.GraphTheory.FourColor.GoertzelV24RotationSystemPrimalGeometryTransport
 
 /-!
 # Minimum-face geometry on the graph-backed shortened splice
@@ -39,6 +40,7 @@ open GoertzelV24RetainedSplicePrimalGraph
 open GoertzelV24RetainedSpliceEdgeDecomposition
 open GoertzelV24RetainedVertexRotationSplice
 open GoertzelV24RotationSystemPrimalFaceTransport
+open GoertzelV24RotationSystemPrimalGeometryTransport
 open GoertzelV24RotationSystemPrimalGraphBacking
 open GoertzelV24RotationSystemPrimalGraphBacking.OrderedCutSpliceData
 open GoertzelV24RotationSystemPrimalEdgePresentation
@@ -63,61 +65,6 @@ local instance rotationPrimalGraphAdjDecidable (RS : RotationSystem V E) :
 local instance rotationPrimalGraphEdgeSetDecidableEq (RS : RotationSystem V E) :
     DecidableEq (rotationPrimalGraph RS).edgeSet :=
   Subtype.instDecidableEq
-
-/-- The canonical graph-backing dart equivalence restricts to an equivalence
-on every complete facial orbit. -/
-def graphFaceDartEquiv
-    (RS : RotationSystem V E)
-    (hinjective : Function.Injective RS.endpoints)
-    (face : OrbitFace RS) :
-    {dart : RS.D // dart ∈ orbitFaceDarts RS face} ≃
-      {dart : (graphData RS hinjective).toRotationSystem.D //
-        dart ∈ orbitFaceDarts (graphData RS hinjective).toRotationSystem
-          (graphFaceEquiv RS hinjective face)} where
-  toFun dart := ⟨primalDartEquiv RS hinjective dart.1, by
-    rw [mem_orbitFaceDarts_iff, ← graphFaceEquiv_dartOrbitFace]
-    exact congrArg (graphFaceEquiv RS hinjective)
-      ((mem_orbitFaceDarts_iff RS face dart.1).1 dart.2)⟩
-  invFun dart := ⟨(primalDartEquiv RS hinjective).symm dart.1, by
-    rw [mem_orbitFaceDarts_iff]
-    apply (graphFaceEquiv RS hinjective).injective
-    rw [graphFaceEquiv_dartOrbitFace]
-    have hface := (mem_orbitFaceDarts_iff
-      (graphData RS hinjective).toRotationSystem
-      (graphFaceEquiv RS hinjective face) dart.1).1 dart.2
-    simpa using hface⟩
-  left_inv dart := by
-    apply Subtype.ext
-    exact (primalDartEquiv RS hinjective).symm_apply_apply dart.1
-  right_inv dart := by
-    apply Subtype.ext
-    exact (primalDartEquiv RS hinjective).apply_symm_apply dart.1
-
-/-- Graph backing preserves the number of darts in every quotient face. -/
-theorem graphFaceEquiv_orbitFaceDarts_card
-    (RS : RotationSystem V E)
-    (hinjective : Function.Injective RS.endpoints)
-    (face : OrbitFace RS) :
-    (orbitFaceDarts (graphData RS hinjective).toRotationSystem
-      (graphFaceEquiv RS hinjective face)).card =
-      (orbitFaceDarts RS face).card := by
-  have hcard := Fintype.card_congr (graphFaceDartEquiv RS hinjective face)
-  rw [Fintype.card_coe, Fintype.card_coe] at hcard
-  exact hcard.symm
-
-/-- Representative-level form of facial-orbit cardinality preservation. -/
-theorem graphData_faceOrbit_card_eq
-    (RS : RotationSystem V E)
-    (hinjective : Function.Injective RS.endpoints)
-    (dart : RS.D) :
-    ((graphData RS hinjective).toRotationSystem.faceOrbit
-      (primalDartEquiv RS hinjective dart)).card =
-      (RS.faceOrbit dart).card := by
-  rw [← orbitFaceDarts_dartOrbitFace_eq_faceOrbit,
-    ← orbitFaceDarts_dartOrbitFace_eq_faceOrbit,
-    ← graphFaceEquiv_dartOrbitFace]
-  exact graphFaceEquiv_orbitFaceDarts_card RS hinjective
-    (dartOrbitFace RS dart)
 
 namespace Instance
 
@@ -214,6 +161,194 @@ theorem outputGraph_all_faceOrbits_minimumFive
         dart).card := by rw [show outputDartEquiv sourceDart = dart from
           outputDartEquiv.apply_symm_apply dart]
 
+/-- The two named hole faces on the literal splice rotation, before graph
+backing. -/
+noncomputable def outputRotationHoleFaces
+    (splice : OrderedCutSpliceData web.annular.RS n terminalCount
+      faceFragmentCount)
+    (hinner : HoleFaceKept splice web.annular.cellulation.innerHole)
+    (houter : HoleFaceKept splice web.annular.cellulation.outerHole) :
+    Finset (OrbitFace splice.output) :=
+  {(outputFaceOrbit_of_holeFaceKept splice
+      web.annular.cellulation.innerHole hinner).1,
+    (outputFaceOrbit_of_holeFaceKept splice
+      web.annular.cellulation.outerHole houter).1}
+
+/-- Literal quotient faces other than the two transported holes.  This is
+the face carrier on which the splice's remaining topology should be proved. -/
+noncomputable def outputRotationInteriorFaces
+    (splice : OrderedCutSpliceData web.annular.RS n terminalCount
+      faceFragmentCount)
+    (hinner : HoleFaceKept splice web.annular.cellulation.innerHole)
+    (houter : HoleFaceKept splice web.annular.cellulation.outerHole) :
+    Finset (OrbitFace splice.output) :=
+  Finset.univ \ outputRotationHoleFaces splice hinner houter
+
+/-- The two literal protected holes map to the two graph-backed holes used by
+the computed output cellulation. -/
+theorem graphFaceFinset_outputRotationHoleFaces
+    (splice : OrderedCutSpliceData web.annular.RS n terminalCount
+      faceFragmentCount)
+    (hinner : HoleFaceKept splice web.annular.cellulation.innerHole)
+    (houter : HoleFaceKept splice web.annular.cellulation.outerHole)
+    (hsimple : OrderedCutEndpointSimple web.annular.RS splice.keep
+      splice.left.crossingEdge splice.right.crossingEdge
+      splice.leftCrosses splice.rightCrosses) :
+    graphFaceFinset splice.output
+        (output_endpoints_injective splice ambientEndpointsInjective hsimple)
+        (outputRotationHoleFaces splice hinner houter) =
+      {outputGraphFaceOfHoleFaceKept splice
+          web.annular.cellulation.innerHole hinner hsimple,
+        outputGraphFaceOfHoleFaceKept splice
+          web.annular.cellulation.outerHole houter hsimple} := by
+  let hinjective : Function.Injective splice.output.endpoints :=
+    output_endpoints_injective splice ambientEndpointsInjective hsimple
+  let faceEquiv := graphFaceEquiv splice.output hinjective
+  let innerFace : OrbitFace splice.output :=
+    (outputFaceOrbit_of_holeFaceKept splice
+      web.annular.cellulation.innerHole hinner).1
+  let outerFace : OrbitFace splice.output :=
+    (outputFaceOrbit_of_holeFaceKept splice
+      web.annular.cellulation.outerHole houter).1
+  change graphFaceFinset splice.output hinjective {innerFace, outerFace} =
+    {faceEquiv innerFace, faceEquiv outerFace}
+  unfold graphFaceFinset
+  ext graphFace
+  constructor
+  · intro hgraphFace
+    rcases Finset.mem_map.1 hgraphFace with
+      ⟨sourceFace, hsourceFace, hsourceEq⟩
+    rw [Finset.mem_insert, Finset.mem_singleton] at hsourceFace ⊢
+    rcases hsourceFace with hinnerFace | houterFace
+    · left
+      simpa [hinnerFace] using hsourceEq.symm
+    · right
+      simpa [houterFace] using hsourceEq.symm
+  · intro hgraphFace
+    rw [Finset.mem_insert, Finset.mem_singleton] at hgraphFace
+    apply Finset.mem_map.2
+    rcases hgraphFace with hinnerFace | houterFace
+    · exact ⟨innerFace, by simp, hinnerFace.symm⟩
+    · exact ⟨outerFace, by simp, houterFace.symm⟩
+
+/-- The output cellulation's graph-backed internal faces are exactly the
+canonical images of the literal splice's non-hole faces. -/
+theorem outputCellulation_interiorFaces_eq_graphFaceFinset
+    (splice : OrderedCutSpliceData web.annular.RS n terminalCount
+      faceFragmentCount)
+    (hinner : HoleFaceKept splice web.annular.cellulation.innerHole)
+    (houter : HoleFaceKept splice web.annular.cellulation.outerHole)
+    (hsimple : OrderedCutEndpointSimple web.annular.RS splice.keep
+      splice.left.crossingEdge splice.right.crossingEdge
+      splice.leftCrosses splice.rightCrosses)
+    (hretained :
+      (retainedAmbientPrimalGraph web.annular.RS splice.keep).Connected)
+    (hbalance : splice.LocalEulerBalance) :
+    (outputCellulation splice hinner houter hsimple hretained hbalance).interiorFaces =
+      graphFaceFinset splice.output
+        (output_endpoints_injective splice ambientEndpointsInjective hsimple)
+        (outputRotationInteriorFaces splice hinner houter) := by
+  unfold FramedAnnularCellulation.interiorFaces
+  unfold FramedAnnularCellulation.holeFaces
+  unfold outputRotationInteriorFaces
+  rw [graphFaceFinset_sdiff, graphFaceFinset_univ]
+  rw [graphFaceFinset_outputRotationHoleFaces splice hinner houter hsimple]
+  rfl
+
+/-- Literal simplicity of the non-hole splice faces transports to the actual
+graph-backed annular cellulation. -/
+theorem outputGraph_internalBoundarySimple_of_literal
+    (splice : OrderedCutSpliceData web.annular.RS n terminalCount
+      faceFragmentCount)
+    (hinner : HoleFaceKept splice web.annular.cellulation.innerHole)
+    (houter : HoleFaceKept splice web.annular.cellulation.outerHole)
+    (hsimple : OrderedCutEndpointSimple web.annular.RS splice.keep
+      splice.left.crossingEdge splice.right.crossingEdge
+      splice.leftCrosses splice.rightCrosses)
+    (hretained :
+      (retainedAmbientPrimalGraph web.annular.RS splice.keep).Connected)
+    (hbalance : splice.LocalEulerBalance)
+    (hliteral : ∀ face ∈ outputRotationInteriorFaces splice hinner houter,
+      (orbitFaceBoundary splice.output face).card =
+        (orbitFaceDarts splice.output face).card) :
+    let embedded := outputAnnularEmbedding splice hinner houter hsimple
+      hretained hbalance
+    ∀ face ∈ embedded.cellulation.interiorFaces,
+      (orbitFaceBoundary embedded.RS face).card =
+        embedded.cellulation.faceLength face := by
+  dsimp only
+  let hinjective :=
+    output_endpoints_injective splice ambientEndpointsInjective hsimple
+  let faceEquiv := graphFaceEquiv splice.output hinjective
+  let literalFaces := outputRotationInteriorFaces splice hinner houter
+  let embedded := outputAnnularEmbedding splice hinner houter hsimple
+    hretained hbalance
+  intro graphFace hgraphFace
+  let literalFace := faceEquiv.symm graphFace
+  have hgraphFace' : graphFace ∈ graphFaceFinset splice.output
+      hinjective literalFaces := by
+    rw [← outputCellulation_interiorFaces_eq_graphFaceFinset
+      splice hinner houter hsimple hretained hbalance]
+    exact hgraphFace
+  have hliteralFace : literalFace ∈ literalFaces := by
+    rcases Finset.mem_map.1 hgraphFace' with
+      ⟨sourceFace, hsourceFace, hsourceEq⟩
+    have hsource : sourceFace = literalFace := by
+      calc
+        sourceFace = faceEquiv.symm (faceEquiv sourceFace) :=
+          (faceEquiv.symm_apply_apply sourceFace).symm
+        _ = faceEquiv.symm graphFace := congrArg faceEquiv.symm hsourceEq
+        _ = literalFace := rfl
+    exact hsource ▸ hsourceFace
+  have hsimpleFace := hliteral literalFace hliteralFace
+  have hface : faceEquiv literalFace = graphFace :=
+    faceEquiv.apply_symm_apply graphFace
+  change (orbitFaceBoundary
+      (graphData splice.output hinjective).toRotationSystem graphFace).card =
+    (orbitFaceDarts
+      (graphData splice.output hinjective).toRotationSystem graphFace).card
+  calc
+    (orbitFaceBoundary
+        (graphData splice.output hinjective).toRotationSystem graphFace).card =
+        (orbitFaceBoundary splice.output literalFace).card := by
+      rw [← hface]
+      exact graphFaceEquiv_orbitFaceBoundary_card splice.output
+        hinjective literalFace
+    _ = (orbitFaceDarts splice.output literalFace).card := hsimpleFace
+    _ = (orbitFaceDarts
+        (graphData splice.output hinjective).toRotationSystem graphFace).card := by
+      rw [← hface]
+      exact (graphFaceEquiv_orbitFaceDarts_card splice.output
+        hinjective literalFace).symm
+
+/-- Literal internal-dual connectedness transports to the actual graph-backed
+annular cellulation. -/
+theorem outputGraph_internalDualConnected_of_literal
+    (splice : OrderedCutSpliceData web.annular.RS n terminalCount
+      faceFragmentCount)
+    (hinner : HoleFaceKept splice web.annular.cellulation.innerHole)
+    (houter : HoleFaceKept splice web.annular.cellulation.outerHole)
+    (hsimple : OrderedCutEndpointSimple web.annular.RS splice.keep
+      splice.left.crossingEdge splice.right.crossingEdge
+      splice.leftCrosses splice.rightCrosses)
+    (hretained :
+      (retainedAmbientPrimalGraph web.annular.RS splice.keep).Connected)
+    (hbalance : splice.LocalEulerBalance)
+    (hliteral : (interiorDualGraph (orbitFaceBoundary splice.output)
+      (outputRotationInteriorFaces splice hinner houter)).Connected) :
+    let embedded := outputAnnularEmbedding splice hinner houter hsimple
+      hretained hbalance
+    (interiorDualGraph (orbitFaceBoundary embedded.RS)
+      embedded.cellulation.interiorFaces).Connected := by
+  dsimp only
+  let hinjective :=
+    output_endpoints_injective splice ambientEndpointsInjective hsimple
+  have hgraph := (graphInteriorDual_connected_iff splice.output hinjective
+    (outputRotationInteriorFaces splice hinner houter)).2 hliteral
+  rw [← outputCellulation_interiorFaces_eq_graphFaceFinset
+    splice hinner houter hsimple hretained hbalance] at hgraph
+  exact hgraph
+
 /-- Two topological receipts plus the computed seam return profile assemble
 the output frontier geometry.  Minimum face size is derived, not assumed. -/
 theorem outputGeometry
@@ -258,6 +393,35 @@ theorem outputGeometry
   have hsimpleFace := hboundarySimple face hface
   rw [hsimpleFace, FramedAnnularCellulation.faceLength]
   exact hdarts
+
+/-- The graph-backed geometry constructor with both remaining topological
+receipts stated on the literal splice rotation where the seam calculus lives. -/
+theorem outputGeometryOfLiteral
+    (splice : OrderedCutSpliceData web.annular.RS n terminalCount
+      faceFragmentCount)
+    (hinner : HoleFaceKept splice web.annular.cellulation.innerHole)
+    (houter : HoleFaceKept splice web.annular.cellulation.outerHole)
+    (hsimple : OrderedCutEndpointSimple web.annular.RS splice.keep
+      splice.left.crossingEdge splice.right.crossingEdge
+      splice.leftCrosses splice.rightCrosses)
+    (hretained :
+      (retainedAmbientPrimalGraph web.annular.RS splice.keep).Connected)
+    (hbalance : splice.LocalEulerBalance)
+    (hprofile : splice.SeamFacesMeetFive)
+    (hboundarySimple :
+      ∀ face ∈ outputRotationInteriorFaces splice hinner houter,
+        (orbitFaceBoundary splice.output face).card =
+          (orbitFaceDarts splice.output face).card)
+    (hdualConnected :
+      (interiorDualGraph (orbitFaceBoundary splice.output)
+        (outputRotationInteriorFaces splice hinner houter)).Connected) :
+    AnnularFrontierGeometry
+      (outputAnnularEmbedding splice hinner houter hsimple hretained hbalance) := by
+  apply outputGeometry splice hinner houter hsimple hretained hbalance hprofile
+  · exact outputGraph_internalBoundarySimple_of_literal splice hinner houter
+      hsimple hretained hbalance hboundarySimple
+  · exact outputGraph_internalDualConnected_of_literal splice hinner houter
+      hsimple hretained hbalance hdualConnected
 
 end Instance
 
