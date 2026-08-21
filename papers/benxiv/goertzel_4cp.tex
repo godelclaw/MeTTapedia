@@ -4767,6 +4767,23 @@ quantifies over graph-dependent prefix factors, and must be replaced by a
 bounded coordinate code with a proved adequacy theorem before a closure
 measurement is meaningful.
 
+The connectivity relation itself is now graph-free as well.  Module
+\texttt{GoertzelV24FramedCorridorFiniteConnectivityCode} defines the
+old-prefix, six-edge Cell, and two-edge seam steps on the fixed carrier
+$\operatorname{Fin}2\mathbin{\sqcup}\operatorname{Fin}6$, constructs an
+explicit graph isomorphism to the literal eight-edge interface, and proves
+that reflexive-transitive reachability is preserved exactly.  Its finite
+geometry receipt records one shared-rung and two outgoing Cell positions, so
+the raw receipt alphabet has exactly
+\[
+  6\cdot 6^2=216
+\]
+elements.  Every actual graph-derived one-Cell transition is proved to satisfy
+this relation.  The number 216 is an ambient upper bound rather than a measured
+reachable count, and the relation becomes a complete source letter only after
+it is joined, for the same literal coloring, with the at-most-125 face-update
+receipt below.
+
 That face-factor dependency has now been removed for one literal outgoing
 fragment.  Module
 \texttt{GoertzelV24FramedCorridorPrefixFactorSubsingleton} proves that the
