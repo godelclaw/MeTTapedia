@@ -3683,11 +3683,28 @@ coloring transported to the source rotation system, the five output colors
 are definitionally the source inner word, so the source's proved
 \((3,1,1)\) block supplies the output good-word field.  The coloring-alignment
 premise is essential: an arbitrary coloring with equal cut profiles need not
-preserve the distinguished source boundary word.  The type probe now has four
-output transports left---connectedness, annular embedding, frontier geometry,
-and total closure.  This remains an assembly audit, not a supplier for
-arbitrary large inputs; the physical crosscuts and those four output
-transports remain open.
+preserve the distinguished source boundary word.
+
+The output annular cellulation is now constructed as well, rather than passed
+to the type probe.  The module
+\texttt{GoertzelV24ClosedWebSpliceGraphAnnularCellulation} proves that ordered
+deletion and sewing preserve cyclic vertex rotations, transports connectedness
+from the retained ambient primal carrier, derives the output Euler equation
+from the splice's local vertex--edge--face balance, and packages the two
+already-transported distinct hole orbits into a literal
+\texttt{FramedAnnularCellulation} on the computed output graph.  This uses no
+global cubicity premise on the stub-bearing annulus.
+
+The distinction between a cellulation and the stronger source embedding
+remains explicit.  To construct the latter, three per-dart incidences must
+still identify the output root with the outer hole and both ordered boundary
+edge fibers with their corresponding transported holes.  The ignored
+end-to-end probe now typechecks after replacing the former opaque connectedness
+and annular-cellulation arguments by retained-carrier connectedness, local
+Euler balance, and precisely those three incidences.  Frontier geometry and
+total closure also remain open.  This is an assembly audit, not a supplier for
+arbitrary large inputs; the physical crosscuts, endpoint-simplicity receipt,
+boundary incidences, geometry, and closure still have to be constructed.
 
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
