@@ -5042,14 +5042,19 @@ disjoint partition
   \text{old-input residue}
 \]
 and the corresponding cap-at-five sum law.  The residue itself is observed by
-one value in $\mathrm{Fin}\,6$.  Consequently the old-prefix dependence has
-been localized to the precise proposition that this residue is empty for
-every literal serial update.  That proposition is not asserted here: the
-current vertex-side development classifies every true prefix-frontier edge as
-some Cell input or output, but does not yet prove the internal-interface
-cancellation that reduces the frontier to the displayed ends.  Thus this is a
-strict narrowing of the finite-letter obligation, not yet the executable
-transition or a reachable-state count.
+one value in $\mathrm{Fin}\,6$.  Empty residue is therefore an optional
+strengthening, not a prerequisite for finite-state compression.  Module
+\texttt{GoertzelV24FramedCorridorSerialFaceResidualCode} keeps the residue as
+an explicit finite coordinate and removes the receipt's redundant old-cap
+field.  Lean proves that the selected incoming fragments are pairwise
+edge-disjoint, so their capped contribution is computed directly from the
+incoming profile's face caps and the occurrence-sensitive incidence matrix.
+Together with the residue, literal-Cell, and overlap caps, this gives an exact
+finite decoder for every outgoing face-length cap.  Thus no uncapped prefix
+cardinality and no global internal-interface cancellation enter this part of
+the serial letter.  Abstract-code realizability, the joint five-coordinate
+support relation, the reachable-state count, and the resulting $V_0$ and base
+verification remain open and are not claimed here.
 
 The inter-Cell presentation change is now explicit rather than hidden behind
 a false equality of cuts.  Module
