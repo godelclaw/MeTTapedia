@@ -4101,6 +4101,21 @@ as one of the four square-boundary crossings or as the endpoint triangles'
 internal bond.  Companion separation, rolling iteration, both end caps, the
 separated-crosscut constructor, and L1 therefore remain open.
 
+The six cases now have an exact geometric consequence rather than a diagrammatic
+one.  Module
+\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementSquareCornerResolution}
+proves that two distinct packet edges sharing a source corner force precisely
+one of three alternatives: the corner is the first bond endpoint, it is the
+second bond endpoint, or it is exterior and the two edges are exactly the two
+arms joining that corner to the two endpoints, with their orientation retained.
+The exterior fan is not assumed impossible.  This also explains why the later
+pointed receipts cannot be replaced by mere first-window membership: that
+membership does not determine which way the complete rail leaves the collision.
+The next finite comparison must apply this trichotomy to the literal pointed
+origins and either establish their bond/component incidence or retain the
+exterior fan as an explicit obstruction.  No companion separation, iteration,
+end cap, separated-crosscut constructor, or L1 closure is claimed here.
+
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
 is a finiteness witness, not a practical base census.  The eventual base must
