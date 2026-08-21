@@ -4943,22 +4943,31 @@ one-Cell receipt as the literal transition; the decoder reconstructs all five
 coordinates of the complete outgoing profile; and equality of compact codes
 is proved to reflect equality of those profiles.  Module
 \texttt{GoertzelV24FramedCorridorSourceOutgoingProfileRepeat} then samples this
-code at every literal Cell in the heterogeneous source corridor.  Four residue
-classes force two positions at gap at least four, so Lean obtains equality of
-the complete original outgoing cumulative-prefix profiles from
+code at every literal Cell in the heterogeneous source corridor, using the
+older complete-hex geometric prefix.  Four residue classes force two positions
+at gap at least four, so Lean obtains equality of the complete original
+outgoing geometric-prefix profiles from
 \[
   4\cdot 18000+1=72001
 \]
-indexed Cells.  Thus the smaller carrier now gives a source-shaped
-witness-level L7 repeat; it is not merely a proposed compression.
+indexed Cells.  This is a proved compression laboratory, not merely a proposed
+count.
 
-The reachable-state and threshold claims remain narrower than this result.
-Iterating the terminal-aware one-Cell support still requires a successor/shift
-theorem identifying one Cell's output with the next Cell's input, together
-with an entrance convention.  The currently packaged graph-size threshold
-still uses the earlier $191184$-state theorem until that downstream calibration
-is replaced.  No reachable closure, new numerical $V_0$, or bounded-base
-verification is claimed here.
+The route-correct reachable-state and threshold claims do not yet inherit this
+number.  The compositional prefix is the source-ordered union of literal
+complementary Cell regions in
+\texttt{GoertzelV24FramedCorridorSerialPrefixRegion}; it is not the union of
+complete hex boundaries used by the geometric-prefix sampler above.  Moreover,
+one local receipt exits around the next hexagon's incoming rung, whereas the
+next receipt enters around that hexagon's outgoing rung; no uniform equality
+between those differently presented cuts is proved.  The live finite-state
+obligation is therefore a lossless finite code for
+\texttt{sourceCorridorSerialInputBoundedProfileAt}, or a proved factorization
+of that serial-prefix state through the local code, followed by a verified
+reachable closure.  The currently packaged graph-size threshold still uses
+the earlier $191184$-state geometric-prefix theorem.  No route-correct
+reachable closure, new numerical $V_0$, or bounded-base verification is
+claimed here.
 
 \subsection{What the programme may explain---and what is not yet a theorem}
 

@@ -2,21 +2,27 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorSourceOutgoingP
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorSourceProfileWord
 
 /-!
-# Repetition of literal outgoing source profiles
+# Repetition of geometric-prefix outgoing source profiles
 
 Every indexed Cell of the heterogeneous source corridor produces a complete
-outgoing cumulative-prefix profile.  The joint one-Cell receipt compresses
-that profile into the exact `18000`-element source-shaped carrier, and the
-codec proves that this compression is lossless on those literal outputs.
+outgoing profile over the older complete-hex geometric prefix.  The joint
+one-Cell receipt compresses that profile into the exact `18000`-element
+source-shaped carrier, and the codec proves that this compression is lossless
+on those literal outputs.
 
 This file applies the separated pigeonhole argument directly to that outgoing
-word.  It lowers the witness-level L7 length demand from the conservative raw
-profile carrier to `4 * 18000 + 1 = 72001`, while concluding equality of the
-complete original four-bound profiles.
+geometric-prefix word.  It lowers this earlier witness-level repeat demand to
+`4 * 18000 + 1 = 72001`, while concluding equality of the complete original
+four-bound profiles.
 
-This is not yet a reachable-closure theorem or a numerical `V0`: iteration of
-the one-Cell support still requires the successor identification between one
-Cell's outgoing cut and the next Cell's terminal-aware input cut.
+This is not yet the route-correct serial-prefix repeat, a reachable-closure
+theorem, or a numerical `V0`.  The compositional carrier is the union of
+literal complementary Cell regions in
+`GoertzelV24FramedCorridorSerialPrefixRegion`, not the complete-hex prefix used
+here.  Compressing its `sourceCorridorSerialInputBoundedProfileAt` states is a
+separate obligation.  Moreover, the outgoing cut is defined around one Cell's
+incoming rung while the next local receipt's cut is defined around its outgoing
+rung; no uniform equality between those differently presented cuts is proved.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -51,7 +57,8 @@ namespace SourceTrail
 
 namespace AnnularEmbedding
 
-/-- The complete four-bound outgoing profile at one literal source Cell. -/
+/-- The complete four-bound outgoing profile over the geometric hex prefix at
+one literal source Cell. -/
 noncomputable def sourceSlabOutgoingProfile
     {source : SourceTrail G}
     {embedded : source.AnnularEmbedding} {blockLength : Nat}
@@ -162,9 +169,10 @@ theorem decode_sourceSlabOutgoingProfileCode
     (aligned.exists_localLayerFiniteOneCellReceipt_of_tait
       hcubic hrotation coloring hcoloring)
 
-/-- Literal outgoing source profiles repeat at gap at least four once the
-corridor contains `72001` indexed Cells.  The conclusion is equality of the
-complete four-bound cumulative-prefix profiles, not merely their codes. -/
+/-- Geometric-prefix outgoing source profiles repeat at gap at least four once
+the corridor contains `72001` indexed Cells.  The conclusion is equality of
+the complete four-bound profiles, not merely their codes.  It is deliberately
+not stated for the distinct literal serial-prefix carrier. -/
 theorem exists_equal_sourceSlabOutgoingProfiles_separated
     {source : SourceTrail G}
     {embedded : source.AnnularEmbedding} {blockLength : Nat}
