@@ -4206,6 +4206,22 @@ been reduced to one coordinate proposition, but that proposition is not yet
 proved; neither the bypass, rolling repair, end caps, separated crosscuts, nor
 L1 is claimed.
 
+The occurrence-sensitive face allocation changes how that endpoint criterion
+is consumed.  At an actual pointed collision on the canonical first--third
+square, an old-forward origin based at the second Cell--3 placement makes the
+collision face one of that placement's side faces.  It is therefore adjacent
+to the second corridor centre, the opposite vertex of the four-cycle.  Lean
+now proves that this is the literal missing diagonal of the source square
+(\texttt{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeOldForwardSquareChord}).
+For each of the incoming and outgoing pointed edges, and jointly for the pair,
+the result is fail-closed: either this chord is exhibited or the corresponding
+proof-relevant origin is not old-forward.  Thus the actual old-forward branch
+does not require an unsupported far-end-membership assertion; it enters the
+already named square-chord reduction lane.  Consuming that chord and finishing
+the remaining successor-forward/old-centre origin combinations, companion
+separation, rolling iteration, both end caps, the separated-crosscut
+constructor, and L1 remain open.
+
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
 is a finiteness witness, not a practical base census.  The eventual base must
