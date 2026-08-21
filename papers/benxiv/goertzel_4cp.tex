@@ -5256,6 +5256,21 @@ particular, the construction does not replace the explicit residual data by
 the false assertion that the two displayed portals are the whole accumulated
 frontier.
 
+The permissible scope of the older abstract executable transition is now
+machine checked rather than inferred from its finite type.  Module
+\texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
+constructs, for every input and every output whose asserted tracked strands
+have the colours named by their tracked pair, an abstract letter decoding that
+input to that output.  The construction uses no incoming coordinate: it stores
+the output tracked relation in the hidden residue and stores each output face
+cap in the facial residue.  Thus the abstract transition remains a sound
+conservative envelope for source transitions, but its reachable closure is
+not a geometric compression and must not be measured as one.  The live
+restriction is now exact: admissible letters must be tied to the literal Cell
+and boundary-rebase receipts, including their attachment to the incoming
+profile.  No reachable count or smaller threshold follows from this negative
+scope theorem.
+
 \subsection{What the programme may explain---and what is not yet a theorem}
 
 The finite-state route suggests an information-theoretic explanation for why a
