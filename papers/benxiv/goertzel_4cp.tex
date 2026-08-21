@@ -3670,11 +3670,24 @@ The ignored end-to-end type probe now reaches an actual
 receipts (equal profile, both holes retained, and endpoint simplicity), the
 boundary-validity and output Tait fields are constructed, and strict decrease
 is discharged by the retained-vertex count.  The remaining output-instance
-arguments are therefore explicit: connectedness, the graph-backed annular
+arguments were therefore explicit: connectedness, the graph-backed annular
 embedding, its frontier geometry, total closure, and preservation of the good
-inner word.  This is a type-level assembly audit, not a supplier for arbitrary
-large inputs; the physical crosscuts and those five output transports remain
-open.
+inner word.
+
+The good-word item is now constructed rather than passed to that probe.
+\texttt{GoertzelV24ClosedWebSpliceGraphGoodWordTransport} traces each ordered
+inner boundary edge through the retained internal splice edge and the
+canonical graph-edge presentation, proving that its output color is the
+literal equal-profile color.  When that profile coloring is the source graph
+coloring transported to the source rotation system, the five output colors
+are definitionally the source inner word, so the source's proved
+\((3,1,1)\) block supplies the output good-word field.  The coloring-alignment
+premise is essential: an arbitrary coloring with equal cut profiles need not
+preserve the distinguished source boundary word.  The type probe now has four
+output transports left---connectedness, annular embedding, frontier geometry,
+and total closure.  This remains an assembly audit, not a supplier for
+arbitrary large inputs; the physical crosscuts and those four output
+transports remain open.
 
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
