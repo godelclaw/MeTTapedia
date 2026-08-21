@@ -4045,6 +4045,19 @@ selected crossing set.  It does not choose the endpoint met by either rung,
 place either pointed rail corner in the component, or yet construct the local
 bypass; that finite source-coordinate comparison remains the live L1 atom.
 
+The two independent rung incidences are now retained as one finite source
+packet.  Module
+\texttt{GoertzelV24ClosedWebSelectedLocalRailMiddleReplacementSquareSourceRungAllocation}
+classifies the literal first and second rungs into exactly four cases: both
+meet the first bond endpoint, both meet the second, or they split in either
+orientation.  It then constructs the two exact endpoint triangles, preserves
+their singleton internal-edge intersection and their union with the selected
+square boundary, and transports the same four-way allocation to the triangles'
+selected crossing sets.  This is the bounded case distinction required before
+the pointed comparison; it still does not prove that either pointed crossing
+meets the bond, so no bypass, rolling iteration, end cap, or L1 closure is
+claimed.
+
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
 is a finiteness witness, not a practical base census.  The eventual base must
