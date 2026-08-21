@@ -4317,6 +4317,22 @@ avoid their centre by irreflexivity.  The cardinality bound is not asserted
 globally.  Its complementary double-edge case remains an explicit bounded L1
 collision to reduce or bypass before the whole rolling pair is constructed.
 
+The mirror terminal calculation and the four-cell provenance layer now carry
+that local exclusion to the actual companion candidates.  Module
+\texttt{GoertzelV24ClosedWebSelectedLocalRailTerminalPreviousCenterAvoidance}
+proves that either exact terminal track also avoids the immediately preceding
+Cell--3 centre under the analogous one-shared-edge bound.  Module
+\texttt{GoertzelV24ClosedWebSelectedLocalRailFourCellMiddleCenterAvoidance}
+then observes that the first terminal window avoids its right centre and the
+last terminal window avoids its previous centre---the same middle face---and
+uses the already-proved terminal-window support provenance to exclude that
+face from both rails of either successful four-cell outcome.  Thus the
+third-centre premise needed by the source-square companion-separation splice
+is available for a successful shifted four-cell companion under two explicit
+local cardinality bounds.  This remains the good branch of the finite L1
+classification: neither cardinality bound is asserted globally, and each
+double-edge complement remains a named collision branch.
+
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
 is a finiteness witness, not a practical base census.  The eventual base must

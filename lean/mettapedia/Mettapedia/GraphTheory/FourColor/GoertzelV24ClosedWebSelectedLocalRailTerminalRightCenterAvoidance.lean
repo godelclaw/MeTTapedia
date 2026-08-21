@@ -66,7 +66,7 @@ private abbrev SelectedFace :=
 
 /-- Every support face of a rail whose edges retain selected forward origins
 is one of the placement's selected side faces. -/
-private theorem exists_selectedSidePosition_of_mem_support
+theorem exists_selectedSidePosition_of_mem_support
     {incoming outgoing :
       {position // position ∈ selectedPlacementSidePositions leftPlacement}}
     (rail : (interiorDualGraph (orbitFaceBoundary web.annular.RS)
