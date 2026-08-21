@@ -71,6 +71,57 @@ variable
       (nextCorridorInterior
         (nextCorridorInterior firstInterior hfirstNext) hbridgeNext)}
 
+/-- The exact source-square support receipt reduces bypass separation to the
+old rail and the single new third-centre face. -/
+theorem InteriorOccurrence.SourceSquareTwoHopBypass.support_disjoint_companion
+    {start finish face companionStart companionFinish : SelectedFace web}
+    {walk : (SelectedDualGraph web).Walk start finish}
+    {companion : (SelectedDualGraph web).Walk companionStart companionFinish}
+    {occurrence : InteriorOccurrence (current := face) walk}
+    (bypass : InteriorOccurrence.SourceSquareTwoHopBypass
+      (corridor := corridor) (firstInterior := firstInterior)
+      (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext) occurrence)
+    (hold : walk.support.Disjoint companion.support)
+    (hthird :
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (nextCorridorInterior
+            (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center ∉
+        companion.support) :
+    bypass.toTwoHopBypass.walk.support.Disjoint companion.support := by
+  rw [List.disjoint_left]
+  intro vertex hvertex hcompanion
+  rcases bypass.support_subset vertex hvertex with
+    hpredecessor | hthirdCenter | hsuccessor
+  · subst vertex
+    exact (List.disjoint_left.mp hold
+      (walk.getVert_mem_support (occurrence.index - 1))) hcompanion
+  · subst vertex
+    exact hthird hcompanion
+  · subst vertex
+    exact (List.disjoint_left.mp hold
+      (walk.getVert_mem_support (occurrence.index + 1))) hcompanion
+
+/-- Installing a support-sensitive source-square bypass preserves separation
+from a companion rail once the one genuinely new face is known to avoid it. -/
+theorem InteriorOccurrence.SpliceRepair.support_disjoint_companion_of_sourceSquare
+    {start finish face companionStart companionFinish : SelectedFace web}
+    {walk : (SelectedDualGraph web).Walk start finish}
+    {companion : (SelectedDualGraph web).Walk companionStart companionFinish}
+    {occurrence : InteriorOccurrence (current := face) walk}
+    {bypass : InteriorOccurrence.SourceSquareTwoHopBypass
+      (corridor := corridor) (firstInterior := firstInterior)
+      (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext) occurrence}
+    (repair : InteriorOccurrence.SpliceRepair occurrence bypass.toTwoHopBypass)
+    (hold : walk.support.Disjoint companion.support)
+    (hthird :
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (nextCorridorInterior
+            (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center ∉
+        companion.support) :
+    repair.walk.support.Disjoint companion.support :=
+  repair.support_disjoint_of_parts hold
+    (bypass.support_disjoint_companion hold hthird)
+
 /-- **L1 source-square whole-rail alternative.**  A literal non-flank
 source-square collision either exhibits a selected chord triangle with a
 cyclic inner side, or it produces a two-hop bypass already installed in the
@@ -121,16 +172,20 @@ theorem InteriorOccurrence.SelectedAdjacentPointedFaceAllocation.exists_sourceSq
             selected.secondShortCycle.selectedCycle.crossingEdges)).ConnectedComponent,
         web.annular.RS.outer.fst ∉ component.supp ∧
           HasCycleOnSide G (fun vertex => vertex ∈ component.supp)) ∨
-      ∃ bypass : InteriorOccurrence.TwoHopBypass occurrence,
-        Nonempty (InteriorOccurrence.SpliceRepair occurrence bypass)) := by
+      ∃ bypass : InteriorOccurrence.SourceSquareTwoHopBypass
+          (corridor := corridor) (firstInterior := firstInterior)
+          (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext) occurrence,
+        Nonempty (InteriorOccurrence.SpliceRepair occurrence
+          bypass.toTwoHopBypass)) := by
   dsimp only
-  rcases allocation.exists_sourceSquare_chordTriangleCycle_or_twoHopBypass
+  rcases allocation.exists_sourceSquare_chordTriangleCycle_or_sourceSquareTwoHopBypass
       hpath hfirst hsecond hthird hfaceSecond successor hneBefore hneAfter with
     hcycles | hbypass
   · exact .inl hcycles
   · rcases hbypass with ⟨bypass⟩
     exact .inr ⟨bypass,
-      InteriorOccurrence.nonempty_spliceRepair occurrence hpath bypass⟩
+      InteriorOccurrence.nonempty_spliceRepair occurrence hpath
+        bypass.toTwoHopBypass⟩
 
 end Instance.SelectedLocalLayerFormation.SelectedSourceLocalRailAssembly
 

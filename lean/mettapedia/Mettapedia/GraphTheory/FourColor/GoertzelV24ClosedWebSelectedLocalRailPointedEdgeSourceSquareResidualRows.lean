@@ -90,10 +90,28 @@ private theorem secondCenter_adj_thirdCenter :
       (nextCorridorInterior
         (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center rfl
 
+/-- A residual source-square bypass together with the exact local support
+receipt which the paired-rail construction needs.  The two endpoints already
+belong to the old rail; the displayed third Cell--3 centre is the only new
+face whose separation from the companion rail remains to be proved. -/
+structure InteriorOccurrence.SourceSquareTwoHopBypass
+    {start finish face : SelectedFace web}
+    {walk : (SelectedDualGraph web).Walk start finish}
+    (occurrence : InteriorOccurrence (current := face) walk) where
+  toTwoHopBypass : InteriorOccurrence.TwoHopBypass occurrence
+  support_subset : ∀ vertex ∈ toTwoHopBypass.walk.support,
+    vertex = occurrence.predecessor ∨
+      vertex =
+        corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+          (nextCorridorInterior
+            (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center ∨
+      vertex = occurrence.successor
+
 /-- **L1 finite residual-row bypass.**  Each of the three non-old-forward
 origin rows constructs a two-step pointed bypass through the successor
-Cell--3 centre. -/
-theorem InteriorOccurrence.SelectedAdjacentPointedFaceAllocation.exists_twoHopBypass_of_three_origin_rows
+Cell--3 centre, retaining the fact that this centre is its only new support
+face. -/
+theorem InteriorOccurrence.SelectedAdjacentPointedFaceAllocation.exists_sourceSquareTwoHopBypass_of_three_origin_rows
     {start finish face : SelectedFace web}
     {walk : (SelectedDualGraph web).Walk start finish}
     {occurrence : InteriorOccurrence (current := face) walk}
@@ -115,7 +133,9 @@ theorem InteriorOccurrence.SelectedAdjacentPointedFaceAllocation.exists_twoHopBy
           allocation.outgoingOrigin.IsOldCenter) ∨
         (allocation.incomingOrigin.IsOldCenter ∧
           allocation.outgoingOrigin.IsSuccessorForward)) :
-    Nonempty (InteriorOccurrence.TwoHopBypass occurrence) := by
+    Nonempty (InteriorOccurrence.SourceSquareTwoHopBypass
+      (corridor := corridor) (firstInterior := firstInterior)
+      (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext) occurrence) := by
   let secondCenter :=
     corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
       (nextCorridorInterior firstInterior hfirstNext).center
@@ -161,11 +181,14 @@ theorem InteriorOccurrence.SelectedAdjacentPointedFaceAllocation.exists_twoHopBy
               exact selectedPlacementSideFace_adjacent_center
                 (corridor := corridor) thirdPlacement outgoingLeft
           exact ⟨{
-            walk := .cons hpredecessorThird (.cons hthirdSuccessor .nil)
-            length_le_two := by simp
-            current_not_mem_support := by
-              simp [occurrence.predecessor_ne_current.symm,
-                occurrence.current_ne_successor, hfaceThird]
+            toTwoHopBypass := {
+              walk := .cons hpredecessorThird (.cons hthirdSuccessor .nil)
+              length_le_two := by simp
+              current_not_mem_support := by
+                simp [occurrence.predecessor_ne_current.symm,
+                  occurrence.current_ne_successor, hfaceThird]
+            }
+            support_subset := by simp [thirdCenter]
           }⟩
       | oldCenter outgoingPosition outgoingStep =>
           have hsuccessorSecond : occurrence.successor = secondCenter := by
@@ -176,11 +199,14 @@ theorem InteriorOccurrence.SelectedAdjacentPointedFaceAllocation.exists_twoHopBy
             rw [hsuccessorSecond]
             exact hcenters.symm
           exact ⟨{
-            walk := .cons hpredecessorThird (.cons hthirdSuccessor .nil)
-            length_le_two := by simp
-            current_not_mem_support := by
-              simp [occurrence.predecessor_ne_current.symm,
-                occurrence.current_ne_successor, hfaceThird]
+            toTwoHopBypass := {
+              walk := .cons hpredecessorThird (.cons hthirdSuccessor .nil)
+              length_le_two := by simp
+              current_not_mem_support := by
+                simp [occurrence.predecessor_ne_current.symm,
+                  occurrence.current_ne_successor, hfaceThird]
+            }
+            support_subset := by simp [thirdCenter]
           }⟩
   | oldCenter incomingPosition incomingStep =>
       have hpredecessorSecond : occurrence.predecessor = secondCenter := by
@@ -208,15 +234,47 @@ theorem InteriorOccurrence.SelectedAdjacentPointedFaceAllocation.exists_twoHopBy
               exact selectedPlacementSideFace_adjacent_center
                 (corridor := corridor) thirdPlacement outgoingLeft
           exact ⟨{
-            walk := .cons hpredecessorThird (.cons hthirdSuccessor .nil)
-            length_le_two := by simp
-            current_not_mem_support := by
-              simp [occurrence.predecessor_ne_current.symm,
-                occurrence.current_ne_successor, hfaceThird]
+            toTwoHopBypass := {
+              walk := .cons hpredecessorThird (.cons hthirdSuccessor .nil)
+              length_le_two := by simp
+              current_not_mem_support := by
+                simp [occurrence.predecessor_ne_current.symm,
+                  occurrence.current_ne_successor, hfaceThird]
+            }
+            support_subset := by simp [thirdCenter]
           }⟩
       | oldCenter outgoingPosition outgoingStep =>
           simp [SelectedAdjacentTerminalEdgeCrossingOrigin.IsSuccessorForward,
             SelectedAdjacentTerminalEdgeCrossingOrigin.IsOldCenter] at hrows
+
+/-- The support-sensitive residual constructor implies the earlier plain
+two-hop existence interface. -/
+theorem InteriorOccurrence.SelectedAdjacentPointedFaceAllocation.exists_twoHopBypass_of_three_origin_rows
+    {start finish face : SelectedFace web}
+    {walk : (SelectedDualGraph web).Walk start finish}
+    {occurrence : InteriorOccurrence (current := face) walk}
+    (allocation : InteriorOccurrence.SelectedAdjacentPointedFaceAllocation
+      (leftPlacement := secondPlacement) (rightPlacement := thirdPlacement)
+      occurrence)
+    (hthird : (SelectedDualGraph web).Adj
+      (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior
+          (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center)
+      face)
+    (hfaceSecond : face ≠
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
+        (nextCorridorInterior firstInterior hfirstNext).center)
+    (hrows :
+      (allocation.incomingOrigin.IsSuccessorForward ∧
+          allocation.outgoingOrigin.IsSuccessorForward) ∨
+        (allocation.incomingOrigin.IsSuccessorForward ∧
+          allocation.outgoingOrigin.IsOldCenter) ∨
+        (allocation.incomingOrigin.IsOldCenter ∧
+          allocation.outgoingOrigin.IsSuccessorForward)) :
+    Nonempty (InteriorOccurrence.TwoHopBypass occurrence) := by
+  rcases allocation.exists_sourceSquareTwoHopBypass_of_three_origin_rows
+      hthird hfaceSecond hrows with ⟨bypass⟩
+  exact ⟨bypass.toTwoHopBypass⟩
 
 /-- **L1 complete source-square local alternative.**  The actual pointed
 allocation at a non-flank collision produces either a selected chord triangle
@@ -225,7 +283,7 @@ with a cyclic inner side or an explicit two-step bypass around the collision.
 Thus the three residual origin rows are fully consumed.  The cyclic separator,
 whole-rail splice, rolling iteration, end caps, separated crosscuts, and L1
 remain open. -/
-theorem InteriorOccurrence.SelectedAdjacentPointedFaceAllocation.exists_sourceSquare_chordTriangleCycle_or_twoHopBypass
+theorem InteriorOccurrence.SelectedAdjacentPointedFaceAllocation.exists_sourceSquare_chordTriangleCycle_or_sourceSquareTwoHopBypass
     {start finish face : SelectedFace web}
     {walk : (SelectedDualGraph web).Walk start finish}
     {occurrence : InteriorOccurrence (current := face) walk}
@@ -267,14 +325,16 @@ theorem InteriorOccurrence.SelectedAdjacentPointedFaceAllocation.exists_sourceSq
             selected.secondShortCycle.selectedCycle.crossingEdges)).ConnectedComponent,
         web.annular.RS.outer.fst ∉ component.supp ∧
           HasCycleOnSide G (fun vertex => vertex ∈ component.supp)) ∨
-      Nonempty (InteriorOccurrence.TwoHopBypass occurrence) := by
+      Nonempty (InteriorOccurrence.SourceSquareTwoHopBypass
+        (corridor := corridor) (firstInterior := firstInterior)
+        (hfirstNext := hfirstNext) (hbridgeNext := hbridgeNext) occurrence) := by
   dsimp only
   rcases allocation.exists_sourceSquare_chordTriangleCycle_or_three_origin_rows
       hpath hfirst hsecond hthird hfaceSecond successor hneBefore hneAfter with
     hcycle | hrows
   · exact .inl hcycle
   · exact .inr
-      (allocation.exists_twoHopBypass_of_three_origin_rows
+      (allocation.exists_sourceSquareTwoHopBypass_of_three_origin_rows
         hthird hfaceSecond hrows)
 
 end Instance.SelectedLocalLayerFormation.SelectedSourceLocalRailAssembly

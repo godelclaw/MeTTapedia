@@ -4293,6 +4293,18 @@ This does not yet eliminate the cyclic branch, prove separation from the
 companion rail, iterate the repair, attach the end caps, construct the separated
 crosscuts, or close L1.
 
+The residual-row constructor now retains a stronger proof-relevant receipt:
+the bypass support is contained in its predecessor, the displayed third
+Cell--3 centre, and its successor.  Since the two endpoints already lie on the
+old rail, companion separation after the splice reduces to one source-local
+fact, namely that the companion support does not contain that third centre.
+The theorem
+\texttt{support\_disjoint\_companion\_of\_sourceSquare} proves the complete
+implication from the old pair's separation and this one centre-avoidance fact
+to separation of the repaired whole rail.  This is a preservation theorem,
+not yet a proof of the centre-avoidance premise; the latter is the exact live
+geometric obligation before this repair can enter the rolling pair assembly.
+
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
 is a finiteness witness, not a practical base census.  The eventual base must
