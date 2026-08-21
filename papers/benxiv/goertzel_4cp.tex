@@ -4784,6 +4784,25 @@ reachable count, and the relation becomes a complete source letter only after
 it is joined, for the same literal coloring, with the at-most-125 face-update
 receipt below.
 
+That join is now a single checked interface.  Module
+\texttt{GoertzelV24FramedCorridorFiniteOneCellSupport} defines the exact
+support of a literal Cell as existence of one Tait coloring realizing the
+fixed three-face input and output profiles.  It then packages, from that same
+coloring, the full six-edge Cell profile, the 216-way connectivity geometry
+receipt, the semantic first/centre/second output-face coordinates, and the
+at-most-125 face-update table.  The receipt checks all five profile fields:
+crossing colors, tracked two-colour connectivity, face identity, port
+incidence, and capped face progress.  The resulting theorem is deliberately
+one-way:
+\[
+  \text{exact literal support}\quad\Longrightarrow\quad
+  \text{joint finite receipt}.
+\]
+The converse adequacy theorem is still open.  Until it is proved, enumerating
+abstract receipts may over-approximate the source geometry and therefore may
+not be substituted for the exact heterogeneous support relation in a
+reachable-closure computation.
+
 That face-factor dependency has now been removed for one literal outgoing
 fragment.  Module
 \texttt{GoertzelV24FramedCorridorPrefixFactorSubsingleton} proves that the

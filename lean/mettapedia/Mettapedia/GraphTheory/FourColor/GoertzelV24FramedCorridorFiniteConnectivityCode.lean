@@ -508,7 +508,7 @@ theorem localLayerFiniteProfileComponentStep_iff_coordinateStep
 
 /-- Actual graph-derived profiles satisfy the graph-free connectivity update
 with the finite geometry code extracted from the same literal Cell. -/
-theorem localLayerFiniteConnectivityUpdateCode_of_tait
+theorem localLayerFiniteConnectivityUpdateCode
     (aligned : SourceCornerAlignedSlabInterface realization htwoSided hunique
       leftInterior hnext)
     (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
@@ -516,25 +516,25 @@ theorem localLayerFiniteConnectivityUpdateCode_of_tait
       embedded.cellulation.rotation.toRotationSystem)
     (color : embedded.cellulation.rotation.toRotationSystem.EdgeColoring Color)
     (hcolor : embedded.cellulation.rotation.toRotationSystem
-      |>.IsTaitEdgeColoring color) :
+      |>.IsTaitEdgeColoring color)
+    (hleftColor : ∀ step,
+      color (aligned.toInterface.localLayerPrefixCrossing step) ≠ 0)
+    (hrightColor : ∀ step,
+      color (aligned.toInterface.nextLocalLayerPrefixCrossing step) ≠ 0) :
     LocalLayerFiniteConnectivityUpdateCode
-      (aligned.localLayerLeftPrefixSharedRungBoundedProfile color
-        (fun step => hcolor
-          (aligned.toInterface.localLayerPrefixCrossing step)))
+      (aligned.localLayerLeftPrefixSharedRungBoundedProfile color hleftColor)
       (aligned.localLayerCellBoundaryProfile color hcolor)
       aligned.localLayerFiniteConnectivityGeometryCode
       (aligned.toInterface.localLayerRightPrefixBoundedProfile color
-        (fun step => hcolor
-          (aligned.toInterface.nextLocalLayerPrefixCrossing step))) := by
+        hrightColor) := by
   let incoming := aligned.localLayerLeftPrefixSharedRungBoundedProfile color
-    (fun step => hcolor (aligned.toInterface.localLayerPrefixCrossing step))
+    hleftColor
   let cellProfile := aligned.localLayerCellBoundaryProfile color hcolor
   let output := aligned.toInterface.localLayerRightPrefixBoundedProfile color
-    (fun step => hcolor
-      (aligned.toInterface.nextLocalLayerPrefixCrossing step))
+    hrightColor
   intro pair first second
-  have hupdate := aligned.localLayerFiniteConnectivityUpdate_of_tait
-    hcubic hrotation color hcolor pair first second
+  have hupdate := aligned.localLayerFiniteConnectivityUpdate
+    hcubic hrotation color hcolor hleftColor hrightColor pair first second
   have hfirst :
       (⟨aligned.toInterface.nextLocalLayerPrefixCrossing first,
           aligned.nextLocalLayerPrefixCrossing_mem_finiteConnectivityInterface
@@ -567,6 +567,32 @@ theorem localLayerFiniteConnectivityUpdateCode_of_tait
     (aligned.localLayerFiniteConnectivityGeometryCode.outgoingPort second)
   rw [hclosure] at hupdate
   exact hupdate
+
+/-- Tait nonzeroness supplies the two displayed-cut premises of the exact
+graph-free connectivity update. -/
+theorem localLayerFiniteConnectivityUpdateCode_of_tait
+    (aligned : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (color : embedded.cellulation.rotation.toRotationSystem.EdgeColoring Color)
+    (hcolor : embedded.cellulation.rotation.toRotationSystem
+      |>.IsTaitEdgeColoring color) :
+    LocalLayerFiniteConnectivityUpdateCode
+      (aligned.localLayerLeftPrefixSharedRungBoundedProfile color
+        (fun step => hcolor
+          (aligned.toInterface.localLayerPrefixCrossing step)))
+      (aligned.localLayerCellBoundaryProfile color hcolor)
+      aligned.localLayerFiniteConnectivityGeometryCode
+      (aligned.toInterface.localLayerRightPrefixBoundedProfile color
+        (fun step => hcolor
+          (aligned.toInterface.nextLocalLayerPrefixCrossing step))) := by
+  exact aligned.localLayerFiniteConnectivityUpdateCode hcubic hrotation color
+    hcolor
+    (fun step => hcolor (aligned.toInterface.localLayerPrefixCrossing step))
+    (fun step => hcolor
+      (aligned.toInterface.nextLocalLayerPrefixCrossing step))
 
 end SourceCornerAlignedSlabInterface
 
