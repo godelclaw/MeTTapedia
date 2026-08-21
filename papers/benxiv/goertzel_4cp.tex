@@ -4345,6 +4345,19 @@ local branch.  It does not prove the two cardinality bounds, eliminate their
 double-edge complements, iterate the rolling transition, attach end caps, or
 construct the separated crosscut pair.
 
+The good branch now returns an assembly rather than a detached repair
+certificate.  The module
+\texttt{GoertzelV24ClosedWebSelectedLocalRailFourCellSourceSquareRepairOutcome}
+reconstructs the complete two-rail object after the splice: the repaired rail
+retains its original endpoints and is simple, the untouched rail is unchanged,
+and their full supports are disjoint.  All four cases are explicit ---
+straight or exchanged endpoint order, with either rail repaired.  The finite
+source classifier therefore returns either this actual separated assembly or
+the already exhibited selected chord triangle with a cyclic inner side.  It
+does not suppress that cyclic residue or the two local double-edge branches,
+and it does not yet iterate the repaired transition, attach the end caps,
+construct the separated crosscuts, or close L1.
+
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
 is a finiteness witness, not a practical base census.  The eventual base must
