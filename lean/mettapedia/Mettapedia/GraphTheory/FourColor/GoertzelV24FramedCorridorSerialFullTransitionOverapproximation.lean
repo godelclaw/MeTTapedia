@@ -103,6 +103,30 @@ theorem boundedSerialFullTransition_of_trackedSound
   · intro fragment
     exact (unrestrictedOutputTransitionCode_outputCap input output fragment).symm
 
+/-- Every abstract transition has the endpoint-colour validity required by
+`BoundedWidthTwoTrackedSound`.  Together with the construction above, this
+shows that the unrestricted transition remembers no further input-dependent
+geometric constraint. -/
+theorem trackedSound_of_boundedSerialFullTransition
+    (input output : BoundedCorridorCutProfile 2 0 4)
+    (htransition : BoundedSerialFullTransition input output) :
+    BoundedWidthTwoTrackedSound output := by
+  rcases htransition with
+    ⟨_code, _hedge, htracked, _hface, _hports, _hcaps⟩
+  intro pair left right hconnected
+  exact ⟨(htracked pair left right |>.mp hconnected).1,
+    (htracked pair left right |>.mp hconnected).2.1⟩
+
+/-- Exact scope theorem: the abstract serial relation depends only on the
+output's tracked endpoint colours, and not on the input profile. -/
+theorem boundedSerialFullTransition_iff_trackedSound
+    (input output : BoundedCorridorCutProfile 2 0 4) :
+    BoundedSerialFullTransition input output ↔
+      BoundedWidthTwoTrackedSound output := by
+  constructor
+  · exact trackedSound_of_boundedSerialFullTransition input output
+  · exact boundedSerialFullTransition_of_trackedSound input output
+
 /-- The executable presentation inherits the same scope: some finite letter
 decodes every tracked-sound output from every input. -/
 theorem exists_fullLetter_decode_eq_some_of_trackedSound
@@ -112,6 +136,15 @@ theorem exists_fullLetter_decode_eq_some_of_trackedSound
       code.decode input = some output :=
   exists_letter_decode_eq_some_of_fullTransition
     (boundedSerialFullTransition_of_trackedSound input output hsound)
+
+/-- The executable presentation has the same exact degeneracy: one decoder
+step from any input reaches precisely the tracked-sound outputs. -/
+theorem boundedSerialFullDecoderStep_iff_trackedSound
+    (input output : BoundedCorridorCutProfile 2 0 4) :
+    BoundedSerialFullDecoderStep input output ↔
+      BoundedWidthTwoTrackedSound output := by
+  rw [boundedSerialFullDecoderStep_iff_fullTransition,
+    boundedSerialFullTransition_iff_trackedSound]
 
 end GoertzelV24FramedTrail
 

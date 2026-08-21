@@ -5261,7 +5261,10 @@ machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
 constructs, for every input and every output whose asserted tracked strands
 have the colours named by their tracked pair, an abstract letter decoding that
-input to that output.  The construction uses no incoming coordinate: it stores
+input to that output.  Conversely every admitted abstract transition satisfies
+exactly that endpoint-colour condition.  Hence the relation is characterized
+by the output condition alone and is independent of the input.  The
+construction uses no incoming coordinate: it stores
 the output tracked relation in the hidden residue and stores each output face
 cap in the facial residue.  Thus the abstract transition remains a sound
 conservative envelope for source transitions, but its reachable closure is
