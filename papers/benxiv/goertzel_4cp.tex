@@ -4396,11 +4396,17 @@ long, Lean proves the explicit capacity bound
 where $F_{\mathrm{int}}$ is the number of internal faces, $B(W_-)$ is the
 already proved contamination budget, and $L$ is the requested block length.
 Thus the long-route half of the high-curvature entrance now reaches the
-literal L1 corridor object.  This is not yet a uniform cutoff: the other half
-still depends on $W_-$ itself.  The remaining source-facing obligation is to
-use the annular noncrossing or laminar organization of these short routes to
-force depth or remove that self-dependence; no fixed twelve-pentagon bound is
-being assumed.
+literal L1 corridor object.  A further audit also proves why the displayed
+global congestion inequality cannot be the missing half: paired routes have
+distinct pentagon endpoints, so their total number is already at most
+$F_{\mathrm{int}}$, while $(W_-+7)^R\geq1$.  Consequently the inequality holds
+for every radius even without the short-route hypothesis
+(\texttt{pair\_count\_le\_global\_pow\_capacity}).  This is a
+kernel-checked refutation of the naive bounded-ball strategy, not a uniform
+cutoff.  The remaining source-facing obligation must retain geometry discarded
+by the arbitrary exact-cardinality pairing---cyclic order, separation, or the
+actual two-sector laminar depth---rather than merely sharpen this global
+count.  No fixed twelve-pentagon bound is being assumed.
 
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier

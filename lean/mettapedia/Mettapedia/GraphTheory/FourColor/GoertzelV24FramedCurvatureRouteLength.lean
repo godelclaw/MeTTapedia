@@ -14,8 +14,12 @@ For routes emitted by one negative-curvature face, either one route is
 longer than a chosen radius or their distinct pentagon endpoints fit in the
 closed dual ball of that radius.  Bounding the dual degree by the already
 proved `W + 6` face-size bound gives an explicit capacity `(W + 7)^r`.
-Pigeonhole over all internal source faces then gives the corresponding
-global alternative.
+Pigeonhole over all internal source faces gives a formally correct global
+alternative.  The final theorem below also records the decisive limitation:
+that global capacity branch is automatic, because distinct paired routes
+already have distinct pentagon endpoints.  Thus bounded-radius counting alone
+cannot discharge high curvature; the next step must retain cyclic-order or
+laminar information that this arbitrary exact-cardinality pairing forgets.
 
 This is an L6 high-curvature entrance, not the missing planar depth theorem.
 Its capacity still depends on the negative-curvature weight `W`; removing
@@ -158,9 +162,11 @@ theorem hasBoundaryCleanHexagonalGeodesicBlock_of_curvatureRoute
   · exact hpositive
   · exact hlong
 
-/-- Global L6 length/congestion alternative for the actual curvature-route
+/-- Global length/congestion alternative for the actual curvature-route
 family.  If no paired route is longer than `radius`, all pairs fit into the
-number of internal source faces times the one-face capacity. -/
+number of internal source faces times the one-face capacity.  The theorem is
+correct, but `pair_count_le_global_pow_capacity` below proves that its second
+branch carries no new information globally. -/
 theorem exists_long_curvatureRoute_or_pair_count_le
     {source : SourceTrail G} (hsource : source.WellFormed)
     (embedded : source.AnnularEmbedding)
@@ -189,11 +195,66 @@ theorem exists_long_curvatureRoute_or_pair_count_le
   · right
     exact Nat.le_of_not_gt hlarge
 
+/-- The complete paired route family has at most one route per internal face,
+because its pentagon endpoints are distinct.  This is the global bound against
+which any proposed curvature-route pigeonhole must be measured. -/
+theorem card_pentagonPairedNegativeCurvatureToken_le_internalFaces
+    {source : SourceTrail G} (hsource : source.WellFormed)
+    (embedded : source.AnnularEmbedding)
+    (geometry : embedded.CorridorGeometry) :
+    Fintype.card
+        (PentagonPairedNegativeCurvatureToken hsource embedded geometry) ≤
+      Fintype.card (AmbientFace embedded.cellulation.interiorFaces) := by
+  calc
+    Fintype.card
+          (PentagonPairedNegativeCurvatureToken hsource embedded geometry) ≤
+        embedded.interiorFaceLengths.count 5 :=
+      embedded.card_pentagonPairedNegativeCurvatureToken_le_pentagons
+        hsource geometry
+    _ ≤ embedded.interiorFaceLengths.card := Multiset.count_le_card _ _
+    _ = Fintype.card
+          (AmbientFace embedded.cellulation.interiorFaces) := by
+      simp [interiorFaceLengths]
+
+/-- Kernel-checked refutation of the naive global bounded-ball strategy: its
+displayed capacity bound holds for every radius, without assuming that the
+curvature routes are short.  The factor `(W + 7)^radius` is at least one, while
+the route family already injects into the internal faces through its distinct
+pentagon endpoints.  Therefore this inequality cannot yield the missing
+uniform `V₀`; a repair must use order, separation, or laminar depth. -/
+theorem pair_count_le_global_pow_capacity
+    {source : SourceTrail G} (hsource : source.WellFormed)
+    (embedded : source.AnnularEmbedding)
+    (geometry : embedded.CorridorGeometry)
+    (radius : Nat) :
+    Fintype.card
+        (PentagonPairedNegativeCurvatureToken hsource embedded geometry) ≤
+      Fintype.card (AmbientFace embedded.cellulation.interiorFaces) *
+        (embedded.interiorNegativeCurvatureWeight + 7) ^ radius := by
+  have hpow : 1 ≤
+      (embedded.interiorNegativeCurvatureWeight + 7) ^ radius := by
+    have hpositive : 0 <
+        (embedded.interiorNegativeCurvatureWeight + 7) ^ radius :=
+      Nat.pow_pos (by omega)
+    omega
+  calc
+    Fintype.card
+          (PentagonPairedNegativeCurvatureToken hsource embedded geometry) ≤
+        Fintype.card (AmbientFace embedded.cellulation.interiorFaces) :=
+      embedded.card_pentagonPairedNegativeCurvatureToken_le_internalFaces
+        hsource geometry
+    _ = Fintype.card (AmbientFace embedded.cellulation.interiorFaces) * 1 := by
+      omega
+    _ ≤ Fintype.card (AmbientFace embedded.cellulation.interiorFaces) *
+          (embedded.interiorNegativeCurvatureWeight + 7) ^ radius :=
+      Nat.mul_le_mul_left _ hpow
+
 /-- Quantitative high-curvature L1 alternative.  Either one of the actual
 weighted-L9 routes contains a boundary-clean corridor of the requested
 length, or the entire pentagon-backed route family obeys the displayed
-self-dependent congestion bound.  The second branch is the precise input
-still requiring annular laminar-depth organization. -/
+self-dependent congestion bound.  The latter inequality is exposed for
+diagnosis, but `pair_count_le_global_pow_capacity` shows that it is automatic;
+it is not itself the missing laminar-depth input. -/
 theorem hasBoundaryCleanHexagonalGeodesicBlock_or_pair_count_le
     {source : SourceTrail G} (hsource : source.WellFormed)
     (embedded : source.AnnularEmbedding)
