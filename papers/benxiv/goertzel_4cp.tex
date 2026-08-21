@@ -4447,6 +4447,20 @@ to an arbitrary exact-cardinality pairing.  It does not yet make the canonical
 geodesics simultaneously noncrossing: that requires a secondary finite
 route-choice optimization and a rotation-sensitive strict-decrease theorem.
 
+The simultaneous finite optimizer is now constructed.  Module
+\texttt{GoertzelV24FramedMinimumCurvatureRoutingSelection} ranges over every
+weighted-L9 assignment attaining the minimum total dual distance and over a
+finite table of geodesics for every possible pentagon/negative-curvature
+endpoint pair.  The full table is deliberate: an uncrossing move may swap two
+assigned endpoints, so selecting routes only after freezing one assignment
+would not be closed under the move.  For any natural-valued secondary
+complexity the module chooses a globally least candidate and proves its
+universal minimality property.  The next theorem must instantiate that
+complexity with actual rotation-sensitive crossings and prove that a forbidden
+crossing yields a strictly smaller candidate.  The generic optimizer itself is
+a construction, but it is not that geometric strict-decrease theorem and does
+not close L6.
+
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
 is a finiteness witness, not a practical base census.  The eventual base must
