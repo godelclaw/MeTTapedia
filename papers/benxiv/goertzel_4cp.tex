@@ -4279,8 +4279,19 @@ successor side face to the old centre across the displayed corridor interface.
 All three walks have length two and avoid the collision face.  Consequently
 the complete source-square local alternative is now a concrete cyclic selected
 chord triangle or a concrete pointed two-hop bypass.  The cyclic separator,
-whole-rail splice, rolling iteration, end caps, separated crosscuts, and L1
-remain open.
+rolling iteration, end caps, separated crosscuts, and L1 remain open.
+
+The bypass alternative now reaches the whole selected rail rather than ending
+as a local walk.  The module
+\texttt{GoertzelV24ClosedWebSelectedLocalRailPointedEdgeSourceSquareBypassSplice}
+feeds each of the three constructed two-hop bypasses to the generic interior
+cross-splice.  Its output is a simple rail with the original endpoints, with
+the collision face removed from its support, and with every new support face
+accounted for by the old rail or the bypass.  Thus the exact source-square
+alternative is now a cyclic selected chord triangle or a repaired whole rail.
+This does not yet eliminate the cyclic branch, prove separation from the
+companion rail, iterate the repair, attach the end caps, construct the separated
+crosscuts, or close L1.
 
 The v23 three-cell micro-enumeration is base material, not a serial corridor
 generator.  Conversely, a raw bound on the entire over-encoded profile carrier
