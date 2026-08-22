@@ -5829,6 +5829,22 @@ rather than computed from the incoming finite state.  That recurrence, the
 distinct Cell/rebase composition, reachable-closure measurement, numerical
 $V_0$, and bounded-base verification remain open.
 
+The remaining tracked matrix has now been given an exhaustive literal
+coordinate presentation rather than a padded one.  Module
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseTrackedSwitchRoles}
+proves that every position of the at-most-eight-edge switch is named either by
+one of the at-most-six old-prefix attachment roles or by one of the two newly
+displayed successor crossings.  The resulting map onto switch coordinates is
+surjective and has a chosen right inverse; it is deliberately not asserted
+injective, because the same literal edge may have more than one valid source
+role.  On the entire old/old block, the accumulated component bit is already
+the exact residual-or-port relation computed from the incoming finite state.
+Consequently the live tracked recurrence has been narrowed to the matrix
+blocks involving a newly displayed crossing.  Computing those blocks through
+the distinct rebase and Cell receipts, composing the heterogeneous letters,
+measuring their reachable closure, deriving $V_0$, and verifying the bounded
+base remain open.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
