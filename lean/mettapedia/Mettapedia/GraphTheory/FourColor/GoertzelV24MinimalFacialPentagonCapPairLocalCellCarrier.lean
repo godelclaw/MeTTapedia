@@ -172,6 +172,102 @@ theorem sourceLocalLayerCellRegionAt_card_le_six
     GoertzelV24RotationBoundaryFaceCutProfile.vertexSetBoundaryGraphCutDataWithIndexing] using
     hcard
 
+/-- The four distinguished positions of an indexed Cell, in source order:
+the two incoming crossings followed by the two outgoing crossings. -/
+noncomputable def sourceLocalLayerCellPortAt
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : GoertzelV24ClosedWebAtGoodWord.Instance data coloring}
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3)) :
+    Fin 4 → {edge // edge ∈ sourceLocalLayerCellRegionAt corridor hunique offset} :=
+  fun index => by
+    let localPort :=
+      GoertzelV24ClosedWebAtGoodWord.Instance.LocalLayerFormation.sourceLocalLayerCellPort
+        corridor hunique (sourceLocalLayerInteriorAt offset)
+          (sourceLocalLayerInteriorAt_hasNext offset) index
+    refine ⟨localPort.1, ?_⟩
+    have hregion : sourceLocalLayerCellRegionAt corridor hunique offset =
+        vertexSetRegionEdges web.annular.RS
+          (sourceLocalLayerCellVertexSide corridor hunique
+            (sourceLocalLayerInteriorAt offset)
+            (sourceLocalLayerInteriorAt_hasNext offset)) := by
+      rw [sourceLocalLayerCellVertexSide_eq_retained_compl]
+      rfl
+    rw [hregion]
+    exact localPort.2
+
+/-- The indexed literal word carries an exact six-slot tracked-family code at
+every offset.  The code is indexed by the physical Cell, not only by its
+coarse orientation. -/
+noncomputable def sourceLocalLayerCellTrackedFamilyCodeAt
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3)) :
+    BoundedCarrierGraphFamilyCode 6 4
+      GoertzelV24CorridorProfile.TrackedColorPair :=
+  boundedCarrierGraphFamilyCode
+    (sourceLocalLayerCellRegionAt corridor hunique offset) 6 4
+    (sourceLocalLayerCellRegionAt_card_le_six graphData minimal caps coloring web
+      corridor hunique offset)
+    (sourceLocalLayerCellPortAt corridor hunique offset)
+    (fun pair => regionalTrackedEdgeGraph web.annular.RS
+      (sourceLocalLayerCellRegionAt corridor hunique offset) coloring
+      (trackedColorPairColors pair).1 (trackedColorPairColors pair).2)
+
+/-- Decoding the indexed code preserves complete tracked reachability on the
+literal Cell region, in both directions. -/
+theorem sourceLocalLayerCellTrackedFamilyCodeAt_reachable_iff
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (pair : GoertzelV24CorridorProfile.TrackedColorPair)
+    (first second : {edge // edge ∈
+      sourceLocalLayerCellRegionAt corridor hunique offset}) :
+    ((sourceLocalLayerCellTrackedFamilyCodeAt graphData minimal caps coloring web
+      corridor hunique offset).graph pair).Reachable
+        (carrierCoordinate _ first) (carrierCoordinate _ second) ↔
+      (regionalTrackedEdgeGraph web.annular.RS
+        (sourceLocalLayerCellRegionAt corridor hunique offset)
+        coloring (trackedColorPairColors pair).1
+          (trackedColorPairColors pair).2).Reachable first.1 second.1 := by
+  refine boundedCarrierGraphFamilyCode_reachable_iff_of_support_subset
+    (sourceLocalLayerCellRegionAt corridor hunique offset) 6 4
+    (sourceLocalLayerCellRegionAt_card_le_six graphData minimal caps coloring web
+      corridor hunique offset)
+    (sourceLocalLayerCellPortAt corridor hunique offset)
+    (fun trackedPair => regionalTrackedEdgeGraph web.annular.RS
+      (sourceLocalLayerCellRegionAt corridor hunique offset) coloring
+      (trackedColorPairColors trackedPair).1
+        (trackedColorPairColors trackedPair).2)
+    pair ?_ first second
+  intro edge hedge
+  rcases hedge with ⟨other, hadj⟩
+  exact hadj.2.1
+
 /-- The preceding unconditional bound instantiates the existing common
 six-slot code for all three tracked colour-pair graphs of the literal Cell. -/
 noncomputable def sourceLocalLayerCellTrackedFamilyCode
