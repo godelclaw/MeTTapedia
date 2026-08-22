@@ -50,10 +50,12 @@ theorem edgeAdjacencyFinset_subset_endpointIncidentEdges
   exact ⟨endpoint, hedge,
     (RS.mem_endpoints_iff_mem_incidentEdges).1 hneighborEndpoint⟩
 
-/-- A cubic edge has at most six adjacent edges.  The sharp bound is four;
-six avoids choosing its endpoints and is all the finite-state use needs. -/
-theorem edgeAdjacencyFinset_card_le_six
-    (RS : RotationSystem V E) (hcubic : RS.IsCubic) (edge : E) :
+/-- If every vertex has at most three incident edges, one edge has at most six
+adjacent edges.  The loose endpoint-union bound is stable under parallel edges. -/
+theorem edgeAdjacencyFinset_card_le_six_of_incidentEdges_card_le_three
+    (RS : RotationSystem V E)
+    (hdegree : ∀ vertex, (RS.incidentEdges vertex).card ≤ 3)
+    (edge : E) :
     (RS.edgeAdjacencyFinset edge).card ≤ 6 := by
   calc
     (RS.edgeAdjacencyFinset edge).card ≤
@@ -63,8 +65,17 @@ theorem edgeAdjacencyFinset_card_le_six
     _ ≤ (RS.endpoints edge).card * 3 := by
       apply Finset.card_biUnion_le_card_mul
       intro endpoint _hendpoint
-      exact le_of_eq (RS.incidentEdges_card_eq_three_of_isCubic hcubic endpoint)
+      exact hdegree endpoint
     _ = 6 := by rw [RS.endpoints_card_two]
+
+/-- A cubic edge has at most six adjacent edges.  The sharp bound is four;
+six avoids choosing its endpoints and is all the finite-state use needs. -/
+theorem edgeAdjacencyFinset_card_le_six
+    (RS : RotationSystem V E) (hcubic : RS.IsCubic) (edge : E) :
+    (RS.edgeAdjacencyFinset edge).card ≤ 6 := by
+  exact RS.edgeAdjacencyFinset_card_le_six_of_incidentEdges_card_le_three
+    (fun vertex => le_of_eq
+      (RS.incidentEdges_card_eq_three_of_isCubic hcubic vertex)) edge
 
 /-- A finite edge set together with every edge adjacent to it. -/
 def edgeAdjacencyClosedCarrier
@@ -87,10 +98,12 @@ theorem mem_edgeAdjacencyClosedCarrier_iff
     · exact Or.inl hedge
     · exact Or.inr ⟨boundaryEdge, hboundary, hadj.symm⟩
 
-/-- The closed edge-adjacency carrier of a cubic boundary has at most seven
-times the number of boundary edges. -/
-theorem edgeAdjacencyClosedCarrier_card_le_seven_mul
-    (RS : RotationSystem V E) (hcubic : RS.IsCubic) (boundary : Finset E) :
+/-- Under a uniform incident-edge bound of three, the closed edge-adjacency
+carrier has at most seven times the number of boundary edges. -/
+theorem edgeAdjacencyClosedCarrier_card_le_seven_mul_of_incidentEdges_card_le_three
+    (RS : RotationSystem V E)
+    (hdegree : ∀ vertex, (RS.incidentEdges vertex).card ≤ 3)
+    (boundary : Finset E) :
     (RS.edgeAdjacencyClosedCarrier boundary).card ≤ 7 * boundary.card := by
   calc
     (RS.edgeAdjacencyClosedCarrier boundary).card ≤
@@ -100,9 +113,20 @@ theorem edgeAdjacencyClosedCarrier_card_le_seven_mul
     _ ≤ boundary.card + boundary.card * 6 := by
       exact Nat.add_le_add_left
         (Finset.card_biUnion_le_card_mul _ _ _ fun edge _hedge =>
-          RS.edgeAdjacencyFinset_card_le_six hcubic edge)
+          RS.edgeAdjacencyFinset_card_le_six_of_incidentEdges_card_le_three
+            hdegree edge)
         boundary.card
     _ = 7 * boundary.card := by omega
+
+/-- The closed edge-adjacency carrier of a cubic boundary has at most seven
+times the number of boundary edges. -/
+theorem edgeAdjacencyClosedCarrier_card_le_seven_mul
+    (RS : RotationSystem V E) (hcubic : RS.IsCubic) (boundary : Finset E) :
+    (RS.edgeAdjacencyClosedCarrier boundary).card ≤ 7 * boundary.card := by
+  exact
+    RS.edgeAdjacencyClosedCarrier_card_le_seven_mul_of_incidentEdges_card_le_three
+      (fun vertex => le_of_eq
+        (RS.incidentEdges_card_eq_three_of_isCubic hcubic vertex)) boundary
 
 end RotationSystem
 
