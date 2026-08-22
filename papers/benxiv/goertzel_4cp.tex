@@ -6110,6 +6110,27 @@ successor fixed tracked and facial residual states.  The heterogeneous
 reachable closure, numerical $V_0$, and route-native bounded base therefore
 remain open.
 
+The overlap in that presentation is now handled exactly rather than silently
+treated as disjoint.  Modules
+\texttt{GoertzelV24TerminalProfileExclusiveRegionFactorization} and
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableExclusiveTransition}
+assign every transition edge already present in the accumulated prefix to the
+old factor, retain the set difference as the genuinely new local factor, and
+recompute both the tracked and occurrence-sensitive facial seams.  Lean proves
+that these three factors recover the complete successor graphs exactly.  It
+also proves that every old endpoint of either recomputed seam is a genuine
+vertex-side crossing of the current prefix, which is the source-geometric
+boundary needed for the finite successor-state recurrence.
+
+A natural shortcut fails: the recomputed exclusive seam is not in general a
+subgraph of the original seam for the overlapping factors.  An edge assigned
+to the old side may itself lie in the original right region, so the original
+seam omits a turn that the exact exclusive presentation must retain.  Thus the
+existing twenty-six-edge support bound cannot simply be inherited by
+monotonicity.  The next theorem must explicitly classify these overlap-created
+frontier turns into the fixed transition roles.  This is a sharper recurrence
+obligation, not a reachable-state count or a numerical $V_0$.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
@@ -7538,6 +7559,14 @@ themselves machine-checked theorems that a stated step \emph{fails}.
         neither a second disjoint slit nor alignment with the selected Cell--3
         corridor, so promoting it to the source splice would change the
         statement rather than prove it.
+  \item[Monotonic reuse of the overlapping transition seam.] After assigning
+        shared transition edges exclusively to the accumulated prefix, the
+        recomputed seam need not be a subgraph of the seam for the original
+        overlapping factors.  An old endpoint may also belong to the original
+        right region, causing the original seam to suppress a turn that the
+        exact exclusive factorization retains.  The successor recurrence must
+        encode those frontier turns explicitly rather than inherit the earlier
+        support carrier by monotonicity.
 \end{description}
 
 \end{document}
