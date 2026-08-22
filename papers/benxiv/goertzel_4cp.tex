@@ -5324,19 +5324,38 @@ exact kernel-checked round trip on every graph-semantic Cell profile, and
 every literal source Cell is proved to lie in that semantic image.  A flat
 finite code was used deliberately: storing Mathlib's general finite-partition
 type as the enumerated payload induces a powerset-of-powerset implementation,
-whereas representative labels give the same lossless interface without that
-elaboration cost.  The proved cardinal ceiling is
+whereas position-bounded representative labels give the same lossless
+interface without that elaboration cost.  Minimality of the representative
+puts its label at position $i$ in the structural type
+$\operatorname{Fin}(i+1)$, leaving only $1\cdot2\cdots6=720$ ambient label
+maps for each tracked pair.  The proved cardinal ceiling is
 \[
-  74037208411275264,
+  272097792000,
 \]
 compared with the raw Cell factor
 $3^6 2^{108}=236574025616993083824920739000090624$, a reduction by more
-than $10^{18}$ before reachability is used.  This is still far too large for
+than $10^{23}$ before reachability is used.  This is still far too large for
 a dense closure computation and it concerns only the local Cell's color and
 tracked-connectivity coordinates.  The terminal-aware face-update code, the
 distinct boundary-rebase letter, their joint five-coordinate support
 relation, the reachable closure, the numerical $V_0$, and the bounded base
 remain open.
+
+The compact Cell field is now wired into the established terminal-aware
+decoder rather than left as an isolated counting lemma.  Module
+\texttt{GoertzelV24FramedCorridorCompressedOneCellDecoder} replaces the raw
+Cell matrix in a one-Cell letter by the preceding code, expands it through the
+proved decoder, and reuses the existing terminal, face-role, port-incidence,
+and capped-progress computation unchanged.  Every compact transition is
+therefore already a transition of the declared finite receipt
+over-approximation; conversely, any raw decoder witness whose Cell profile
+obeys the graph laws has an identical compact witness.  This is the safe
+direction for an upper-bound closure: compact codes may remain spurious but
+no semantic raw transition is lost.  The next coverage theorem must carry the
+already-proved semantic certificate of each literal source Cell through the
+existential receipt constructor.  Until that is done, the compact decoder is
+an operational interface, not yet the measured heterogeneous source
+automaton.
 
 \subsection{What the programme may explain---and what is not yet a theorem}
 

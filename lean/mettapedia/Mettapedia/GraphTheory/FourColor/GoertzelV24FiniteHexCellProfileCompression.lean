@@ -33,11 +33,16 @@ open GoertzelV24HexSlabConnectivityProfile
 open GoertzelV24OrbitFaceTwoSided
 open GoertzelV24WindingClassification
 
+/-- Canonical component labels are bounded by their position because each
+label is the least member of its component. -/
+abbrev CanonicalComponentLabels :=
+  (position : Fin 6) → Fin (position.val + 1)
+
 /-- A proper six-edge color word together with the canonical component label
 of every position for each tracked color pair. -/
 abbrev FiniteHexCellProfileCode :=
   {word : Fin 6 → StrandColor // IsProperCyclicColorWord word} ×
-    (TrackedColorPair → Fin 6 → Fin 6)
+    (TrackedColorPair → CanonicalComponentLabels)
 
 noncomputable instance : Fintype FiniteHexCellProfileCode := inferInstance
 noncomputable instance : DecidableEq FiniteHexCellProfileCode :=
@@ -124,6 +129,22 @@ theorem partitionRepresentative_mem_part
     partitionRepresentative partition position ∈ partition.part position :=
   Finset.min'_mem _ _
 
+/-- The minimum representative fits in the position-indexed finite type. -/
+noncomputable def boundedPartitionRepresentative
+    (partition : Finpartition (Finset.univ : Finset (Fin 6)))
+    (position : Fin 6) : Fin (position.val + 1) :=
+  ⟨(partitionRepresentative partition position).val,
+    Nat.lt_succ_of_le (Finset.min'_le _ position
+      (partition.mem_part (Finset.mem_univ position)))⟩
+
+@[simp]
+theorem boundedPartitionRepresentative_val
+    (partition : Finpartition (Finset.univ : Finset (Fin 6)))
+    (position : Fin 6) :
+    (boundedPartitionRepresentative partition position).val =
+      (partitionRepresentative partition position).val :=
+  rfl
+
 theorem mem_part_iff_partitionRepresentative_eq
     (partition : Finpartition (Finset.univ : Finset (Fin 6)))
     (left right : Fin 6) :
@@ -151,7 +172,7 @@ profile has three arbitrary `6 × 6` Boolean matrices; the partition code is
 over eighteen orders of magnitude smaller even before source reachability is
 used. -/
 theorem card_finiteHexCellProfileCode_le :
-    Fintype.card FiniteHexCellProfileCode ≤ 74037208411275264 := by
+    Fintype.card FiniteHexCellProfileCode ≤ 272097792000 := by
   rw [Fintype.card_prod, Fintype.card_fun]
   have hword :
       Fintype.card
@@ -167,21 +188,24 @@ theorem card_finiteHexCellProfileCode_le :
         have hcolor : Fintype.card StrandColor = 3 := by decide
         rw [hcolor, Fintype.card_fin]
   have hpair : Fintype.card TrackedColorPair = 3 := by decide
-  rw [hpair, Fintype.card_fun, Fintype.card_fin]
+  have hlabels : Fintype.card CanonicalComponentLabels = 720 := by
+    rw [Fintype.card_pi]
+    decide
+  rw [hpair, hlabels]
   calc
     Fintype.card
           {word : Fin 6 → StrandColor // IsProperCyclicColorWord word} *
-        (6 ^ 6) ^ 3 ≤
-        3 ^ 6 * (6 ^ 6) ^ 3 := by
-      exact Nat.mul_le_mul_right ((6 ^ 6) ^ 3) hword
-    _ = 74037208411275264 := by norm_num
+        720 ^ 3 ≤
+        3 ^ 6 * 720 ^ 3 := by
+      exact Nat.mul_le_mul_right (720 ^ 3) hword
+    _ = 272097792000 := by norm_num
 
 /-- Replace the three semantic connectivity matrices by their component
 partitions. -/
 noncomputable def encode (profile : CorridorCutProfile 6 0 0)
     (semantic : IsGraphSemantic profile) : FiniteHexCellProfileCode :=
   ⟨⟨profile.edgeColor, semantic.proper⟩,
-    fun pair => partitionRepresentative
+    fun pair => boundedPartitionRepresentative
       (trackedPartition profile semantic pair)⟩
 
 /-- Boolean membership in one of the three tracked two-color pairs, stated on
@@ -211,7 +235,8 @@ def decode (code : FiniteHexCellProfileCode) :
     | .inl leftPosition, .inl rightPosition =>
         isTrackedStrandColor pair (code.1.1 leftPosition) &&
           isTrackedStrandColor pair (code.1.1 rightPosition) &&
-          decide (code.2 pair leftPosition = code.2 pair rightPosition)
+          decide ((code.2 pair leftPosition).val =
+            (code.2 pair rightPosition).val)
     | .inl _, .inr impossible => Fin.elim0 impossible
     | .inr impossible, _ => Fin.elim0 impossible
   faceContinues := fun impossible => Fin.elim0 impossible
@@ -239,12 +264,25 @@ theorem decode_encode (profile : CorridorCutProfile 6 0 0)
             isTrackedStrandColor_eq_true_iff, decide_eq_true_eq]
           constructor
           · rintro ⟨⟨hleftTracked, hrightTracked⟩, hrepresentative⟩
+            have hrepresentativeRaw :
+                partitionRepresentative
+                    (trackedPartition
+                      ⟨edgeColor, strandConnected, faceContinues,
+                        fragmentContainsPort, faceLengthCap⟩ semantic pair)
+                    rightPosition =
+                  partitionRepresentative
+                    (trackedPartition
+                      ⟨edgeColor, strandConnected, faceContinues,
+                        fragmentContainsPort, faceLengthCap⟩ semantic pair)
+                    leftPosition := by
+              apply Fin.ext
+              simpa using hrepresentative.symm
             have hmem :=
               (mem_part_iff_partitionRepresentative_eq
                 (trackedPartition
                   ⟨edgeColor, strandConnected, faceContinues,
                     fragmentContainsPort, faceLengthCap⟩ semantic pair)
-                leftPosition rightPosition).2 hrepresentative.symm
+                leftPosition rightPosition).2 hrepresentativeRaw
             rcases (mem_trackedPartition_part_iff _ _ _ _ _).1 hmem with
               hsame | hconnected
             · subst rightPosition
@@ -260,7 +298,9 @@ theorem decode_encode (profile : CorridorCutProfile 6 0 0)
                     fragmentContainsPort, faceLengthCap⟩ semantic pair).part
                   leftPosition :=
               (mem_trackedPartition_part_iff _ _ _ _ _).2 (Or.inr hconnected)
-            exact (mem_part_iff_partitionRepresentative_eq _ _ _).1 hmem |>.symm
+            have hrepresentativeRaw :=
+              (mem_part_iff_partitionRepresentative_eq _ _ _).1 hmem
+            simpa using congrArg Fin.val hrepresentativeRaw.symm
         · exact Fin.elim0 rightImpossible
       · exact Fin.elim0 leftImpossible
     · funext impossible
@@ -286,14 +326,25 @@ theorem encode_injective
       simp only at hedge ⊢
       subst rightEdge
       have hpart : ∀ pair,
-          partitionRepresentative (trackedPartition
+          boundedPartitionRepresentative (trackedPartition
               ⟨leftEdge, leftStrand, leftFace, leftContains, leftLength⟩
               leftSemantic pair) =
-            partitionRepresentative (trackedPartition
+            boundedPartitionRepresentative (trackedPartition
               ⟨leftEdge, rightStrand, rightFace, rightContains, rightLength⟩
               rightSemantic pair) := by
         intro pair
         exact congrFun (congrArg Prod.snd heq) pair
+      have hpartValue : ∀ pair position,
+          partitionRepresentative (trackedPartition
+              ⟨leftEdge, leftStrand, leftFace, leftContains, leftLength⟩
+              leftSemantic pair) position =
+            partitionRepresentative (trackedPartition
+              ⟨leftEdge, rightStrand, rightFace, rightContains, rightLength⟩
+              rightSemantic pair) position := by
+        intro pair position
+        apply Fin.ext
+        exact congrArg (fun label : Fin (position.val + 1) => label.val)
+          (congrFun (hpart pair) position)
       have hstrand : leftStrand = rightStrand := by
         funext pair leftPort rightPort
         rcases leftPort with leftPosition | leftImpossible
@@ -311,8 +362,8 @@ theorem encode_injective
                   (mem_trackedPartition_part_iff _ _ _ _ _).2 (Or.inr hleft)
                 have hrepresentative :=
                   (mem_part_iff_partitionRepresentative_eq _ _ _).1 hmem
-                rw [congrFun (hpart pair) rightPosition,
-                  congrFun (hpart pair) leftPosition] at hrepresentative
+                rw [hpartValue pair rightPosition,
+                  hpartValue pair leftPosition] at hrepresentative
                 have hmemRight :=
                   (mem_part_iff_partitionRepresentative_eq _ _ _).2
                     hrepresentative
@@ -326,8 +377,8 @@ theorem encode_injective
                   (mem_trackedPartition_part_iff _ _ _ _ _).2 (Or.inr hright)
                 have hrepresentative :=
                   (mem_part_iff_partitionRepresentative_eq _ _ _).1 hmem
-                rw [← congrFun (hpart pair) rightPosition,
-                  ← congrFun (hpart pair) leftPosition] at hrepresentative
+                rw [← hpartValue pair rightPosition,
+                  ← hpartValue pair leftPosition] at hrepresentative
                 have hmemLeft :=
                   (mem_part_iff_partitionRepresentative_eq _ _ _).2
                     hrepresentative
