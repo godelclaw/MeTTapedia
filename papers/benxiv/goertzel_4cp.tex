@@ -5385,6 +5385,25 @@ factored through the incoming five-field profile, or through an equivalent
 finite invariant preserved by the literal transfer word, before measuring a
 reachable-state closure.
 
+The algebraic part of the tracked excursion factorization is now proved.
+Module
+\texttt{GoertzelV24SimpleGraphPortFactorContraction} gives a generic exact
+criterion: reachability on a finite interface is reconstructed by attaching
+each active interface coordinate to a named port, consulting the finite
+port-to-port relation, and returning to the interface.  Its completeness
+premise is restricted to supported ports, which is essential because the
+profile deliberately records a false diagonal at an inactive port even though
+graph reachability is reflexive there.  Module
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseProfileFactor}
+specializes this theorem to the at-most-six exact rebase roles and reads the
+two-port relation directly from the actual incoming serial profile.  It adds
+no state depending on the arbitrarily long accumulated prefix.  The remaining
+tracked obligation is consequently a single source-geometric statement:
+every supported old attachment role reaches one of the two named incoming
+ports.  The analogous occurrence-sensitive facial factorization is still
+open, so this is not yet a complete five-coordinate rebase decoder or a
+reachable-state measurement.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
