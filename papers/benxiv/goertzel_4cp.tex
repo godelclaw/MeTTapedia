@@ -5338,6 +5338,22 @@ ports, and it has no occurrence-sensitive facial analogue yet.  Those are
 the two explicit locality obligations before the finite rebase receipt is an
 exact complete-profile decoder.
 
+The tracked historical range is now bounded by the source geodesic rather
+than merely named.  Module
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseTrackedLocality}
+first proves that every literal input crossing lies on its Cell's centre
+face and every literal output crossing lies on the successor centre face.
+Edge adjacency in the cubic two-sided rotation system then forces the two
+corresponding centre faces to agree or to be adjacent in the facial dual.
+The corridor's geodesic separation eliminates every remote possibility:
+an input crossing adjacent to the successor rebase belongs to the current
+Cell, while an output crossing belongs to the current Cell or its immediate
+predecessor.  Thus the formerly unbounded historical search has exactly
+three local cases.  The remaining theorem must still absorb those cases into
+the two displayed current ports, and the occurrence-sensitive facial
+analogue remains separate; bounded locality is not yet full profile
+factorization.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
