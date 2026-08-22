@@ -83,8 +83,162 @@ theorem sourceCrosscutComplementBoundaryDartAt_eq_alpha_source
       (fun vertex => vertex ∉ pair.componentSide boundary.component) => dart.1.1)
     heq
 
-/-- Read one literal complementary open-region coloring on the source Cell's
-serial open-tangle carrier. -/
+/-- The left source word of a boundary-rooted complementary coloring. -/
+noncomputable def sourceCrosscutComplementLeftBoundaryWordOfBoundary
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (coloring :
+      (pair.sourceCrosscutComplementOpenRegionOfBoundary data boundary).EdgeColoring Color) :
+    Fin pair.left.walk.length → Color :=
+  fun step => pair.sourceCrosscutOutsideBoundaryWordOfBoundary data boundary coloring (.inl step)
+
+/-- The right source word of a boundary-rooted complementary coloring. -/
+noncomputable def sourceCrosscutComplementRightBoundaryWordOfBoundary
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (coloring :
+      (pair.sourceCrosscutComplementOpenRegionOfBoundary data boundary).EdgeColoring Color) :
+    Fin pair.right.walk.length → Color :=
+  fun step => pair.sourceCrosscutOutsideBoundaryWordOfBoundary data boundary coloring (.inr step)
+
+/-- Read one boundary-rooted complementary open-region coloring on the source
+Cell's serial open-tangle carrier.  No global degree premise is needed: the
+literal source boundary already supplies the retained root and boundary split. -/
+noncomputable def sourceCrosscutComplementSerialColoringOfBoundary
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (coloring :
+      (pair.sourceCrosscutComplementOpenRegionOfBoundary data boundary).EdgeColoring Color) :
+    (pair.sourceCrosscutComplementTwoSidedOpenTangleOfBoundary data boundary).Coloring :=
+  splitVertexSideColoring data.toRotationSystem
+    (fun vertex => vertex ∉ pair.componentSide boundary.component)
+    (pair.sourceCrosscutComplementRetainedRootOfBoundary data boundary)
+    (pair.sourceCrosscutComplementBoundarySplit data boundary) coloring
+
+/-- A boundary-rooted complementary open-region Tait coloring remains Tait on
+the source Cell's serial presentation. -/
+theorem sourceCrosscutComplementSerialColoringOfBoundary_isTait
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (coloring :
+      (pair.sourceCrosscutComplementOpenRegionOfBoundary data boundary).EdgeColoring Color)
+    (hcoloring :
+      (pair.sourceCrosscutComplementOpenRegionOfBoundary data boundary).IsTaitEdgeColoring
+        coloring) :
+    (pair.sourceCrosscutComplementTwoSidedOpenTangleOfBoundary data boundary).IsTaitColoring
+        (pair.sourceCrosscutComplementSerialColoringOfBoundary data boundary coloring) := by
+  exact splitVertexSideColoring_isTait data.toRotationSystem
+    (fun vertex => vertex ∉ pair.componentSide boundary.component)
+    (pair.sourceCrosscutComplementRetainedRootOfBoundary data boundary)
+    (pair.sourceCrosscutComplementBoundarySplit data boundary) coloring hcoloring
+
+/-- The boundary-rooted serial presentation's input colors are exactly the
+literal left source boundary word, position for position. -/
+@[simp]
+theorem sourceCrosscutComplementSerialColoringOfBoundary_leftBoundaryColor
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (coloring :
+      (pair.sourceCrosscutComplementOpenRegionOfBoundary data boundary).EdgeColoring Color)
+    (step : Fin pair.left.walk.length) :
+    (pair.sourceCrosscutComplementTwoSidedOpenTangleOfBoundary data boundary).leftBoundaryColor
+          (pair.sourceCrosscutComplementSerialColoringOfBoundary data boundary coloring) step =
+      pair.sourceCrosscutComplementLeftBoundaryWordOfBoundary data boundary coloring step := by
+  change
+    openOldDartColor data.toRotationSystem
+        (fun vertex => vertex ∉ pair.componentSide boundary.component)
+        (pair.sourceCrosscutComplementRootOfBoundary data boundary) coloring
+        (pair.sourceCrosscutComplementBoundaryDartAt data boundary (.inl step)).1.1 _ =
+      openOldDartColor data.toRotationSystem
+        (fun vertex => vertex ∉ pair.componentSide boundary.component)
+        (pair.sourceCrosscutComplementRootOfBoundary data boundary) coloring
+        (data.toRotationSystem.alpha
+          (pair.sourceCrosscutBoundaryDartAt data boundary (.inl step)).1.1) _
+  apply openOldDartColor_eq_of_dart_eq
+  exact pair.sourceCrosscutComplementBoundaryDartAt_eq_alpha_source data boundary
+    (.inl step)
+
+/-- The boundary-rooted serial presentation's output colors are exactly the
+literal right source boundary word, position for position. -/
+@[simp]
+theorem sourceCrosscutComplementSerialColoringOfBoundary_rightBoundaryColor
+    (data : Data G)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSimpleDualCrosscuts
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))
+      start finish hunique)
+    (boundary : SourceCrosscutBoundaryData data pair)
+    (coloring :
+      (pair.sourceCrosscutComplementOpenRegionOfBoundary data boundary).EdgeColoring Color)
+    (step : Fin pair.right.walk.length) :
+    (pair.sourceCrosscutComplementTwoSidedOpenTangleOfBoundary data boundary).rightBoundaryColor
+          (pair.sourceCrosscutComplementSerialColoringOfBoundary data boundary coloring) step =
+      pair.sourceCrosscutComplementRightBoundaryWordOfBoundary data boundary coloring step := by
+  change
+    openOldDartColor data.toRotationSystem
+        (fun vertex => vertex ∉ pair.componentSide boundary.component)
+        (pair.sourceCrosscutComplementRootOfBoundary data boundary) coloring
+        (pair.sourceCrosscutComplementBoundaryDartAt data boundary (.inr step)).1.1 _ =
+      openOldDartColor data.toRotationSystem
+        (fun vertex => vertex ∉ pair.componentSide boundary.component)
+        (pair.sourceCrosscutComplementRootOfBoundary data boundary) coloring
+        (data.toRotationSystem.alpha
+          (pair.sourceCrosscutBoundaryDartAt data boundary (.inr step)).1.1) _
+  apply openOldDartColor_eq_of_dart_eq
+  exact pair.sourceCrosscutComplementBoundaryDartAt_eq_alpha_source data boundary
+    (.inr step)
+
+/-- Compatibility entry point for callers that still carry global cubicity. -/
 noncomputable def sourceCrosscutComplementSerialColoring
     (data : Data G)
     {start finish : AmbientFace
@@ -97,17 +251,13 @@ noncomputable def sourceCrosscutComplementSerialColoring
       (Finset.univ : Finset (OrbitFace data.toRotationSystem))
       start finish hunique)
     (boundary : SourceCrosscutBoundaryData data pair)
-    (hcubic : data.toRotationSystem.IsCubic)
+    (_hcubic : data.toRotationSystem.IsCubic)
     (coloring :
-      (pair.sourceCrosscutComplementOpenRegion data boundary hcubic).EdgeColoring Color) :
-    (pair.sourceCrosscutComplementTwoSidedOpenTangle data boundary hcubic).Coloring :=
-  splitVertexSideColoring data.toRotationSystem
-    (fun vertex => vertex ∉ pair.componentSide boundary.component)
-    (pair.sourceCrosscutComplementRetainedRoot data boundary hcubic)
-    (pair.sourceCrosscutComplementBoundarySplit data boundary) coloring
+      (pair.sourceCrosscutComplementOpenRegionOfBoundary data boundary).EdgeColoring Color) :
+    (pair.sourceCrosscutComplementTwoSidedOpenTangleOfBoundary data boundary).Coloring :=
+  pair.sourceCrosscutComplementSerialColoringOfBoundary data boundary coloring
 
-/-- A literal complementary open-region Tait coloring remains Tait on the
-source Cell's serial presentation. -/
+/-- Compatibility form of the boundary-rooted Tait theorem. -/
 theorem sourceCrosscutComplementSerialColoring_isTait
     (data : Data G)
     {start finish : AmbientFace
@@ -128,13 +278,10 @@ theorem sourceCrosscutComplementSerialColoring_isTait
         coloring) :
     (pair.sourceCrosscutComplementTwoSidedOpenTangle data boundary hcubic).IsTaitColoring
         (pair.sourceCrosscutComplementSerialColoring data boundary hcubic coloring) := by
-  exact splitVertexSideColoring_isTait data.toRotationSystem
-    (fun vertex => vertex ∉ pair.componentSide boundary.component)
-    (pair.sourceCrosscutComplementRetainedRoot data boundary hcubic)
-    (pair.sourceCrosscutComplementBoundarySplit data boundary) coloring hcoloring
+  exact pair.sourceCrosscutComplementSerialColoringOfBoundary_isTait data boundary
+    coloring hcoloring
 
-/-- The serial presentation's input colors are exactly the literal left
-source boundary word, position for position. -/
+/-- Compatibility form of the left-boundary color identification. -/
 @[simp]
 theorem sourceCrosscutComplementSerialColoring_leftBoundaryColor
     (data : Data G)
@@ -155,22 +302,10 @@ theorem sourceCrosscutComplementSerialColoring_leftBoundaryColor
     (pair.sourceCrosscutComplementTwoSidedOpenTangle data boundary hcubic).leftBoundaryColor
           (pair.sourceCrosscutComplementSerialColoring data boundary hcubic coloring) step =
       pair.sourceCrosscutComplementLeftBoundaryWord data boundary hcubic coloring step := by
-  change
-    openOldDartColor data.toRotationSystem
-        (fun vertex => vertex ∉ pair.componentSide boundary.component)
-        (pair.sourceCrosscutComplementRoot data boundary hcubic) coloring
-        (pair.sourceCrosscutComplementBoundaryDartAt data boundary (.inl step)).1.1 _ =
-      openOldDartColor data.toRotationSystem
-        (fun vertex => vertex ∉ pair.componentSide boundary.component)
-        (pair.sourceCrosscutComplementRoot data boundary hcubic) coloring
-        (data.toRotationSystem.alpha
-          (pair.sourceCrosscutBoundaryDartAt data boundary (.inl step)).1.1) _
-  apply openOldDartColor_eq_of_dart_eq
-  exact pair.sourceCrosscutComplementBoundaryDartAt_eq_alpha_source data boundary
-    (.inl step)
+  exact pair.sourceCrosscutComplementSerialColoringOfBoundary_leftBoundaryColor data boundary
+    coloring step
 
-/-- The serial presentation's output colors are exactly the literal right
-source boundary word, position for position. -/
+/-- Compatibility form of the right-boundary color identification. -/
 @[simp]
 theorem sourceCrosscutComplementSerialColoring_rightBoundaryColor
     (data : Data G)
@@ -191,19 +326,8 @@ theorem sourceCrosscutComplementSerialColoring_rightBoundaryColor
     (pair.sourceCrosscutComplementTwoSidedOpenTangle data boundary hcubic).rightBoundaryColor
           (pair.sourceCrosscutComplementSerialColoring data boundary hcubic coloring) step =
       pair.sourceCrosscutComplementRightBoundaryWord data boundary hcubic coloring step := by
-  change
-    openOldDartColor data.toRotationSystem
-        (fun vertex => vertex ∉ pair.componentSide boundary.component)
-        (pair.sourceCrosscutComplementRoot data boundary hcubic) coloring
-        (pair.sourceCrosscutComplementBoundaryDartAt data boundary (.inr step)).1.1 _ =
-      openOldDartColor data.toRotationSystem
-        (fun vertex => vertex ∉ pair.componentSide boundary.component)
-        (pair.sourceCrosscutComplementRoot data boundary hcubic) coloring
-        (data.toRotationSystem.alpha
-          (pair.sourceCrosscutBoundaryDartAt data boundary (.inr step)).1.1) _
-  apply openOldDartColor_eq_of_dart_eq
-  exact pair.sourceCrosscutComplementBoundaryDartAt_eq_alpha_source data boundary
-    (.inr step)
+  exact pair.sourceCrosscutComplementSerialColoringOfBoundary_rightBoundaryColor data boundary
+    coloring step
 
 end SeparatedAlignedSimpleDualCrosscuts
 
