@@ -6322,6 +6322,22 @@ the literal Cell geometry, combining that update with the tracked state, and
 proving joint-\texttt{Count} adequacy remain open, as do reachable closure,
 the numerical $V_0$, and the bounded base.
 
+The additional residual datum needed by edge deletion is now explicit as
+well.  Module
+\texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFaceResidualState}
+enumerates the pre-rebase two-edge cut's actual boundary fragments in at most
+four fixed slots.  Each switch occurrence records which old fragment it
+attaches to and whether it lies in a component meeting no old fragment.  Lean
+then proves the exact factorization: for any two present switch occurrences,
+predecessor facial reachability holds if and only if they are connected in a
+port-free residual component or both attach to one common occupied old-fragment
+slot.  This distinction is necessary because removing a switch edge can split
+a predecessor component; retaining only the full predecessor connectivity
+matrix would lose that information.  The result is still predecessor data,
+not a successor-row calculation.  That calculation, the combined tracked and
+facial recurrence, joint-\texttt{Count} adequacy, reachable closure, the
+numerical $V_0$, and the bounded base remain open.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
