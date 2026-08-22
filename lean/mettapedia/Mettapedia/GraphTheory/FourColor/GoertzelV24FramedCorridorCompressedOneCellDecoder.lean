@@ -23,7 +23,11 @@ namespace Mettapedia.GraphTheory.FourColor
 namespace GoertzelV24FramedTrail
 
 open GoertzelV24BoundaryProfileFiniteState
+open GoertzelV24CorridorProfile
 open GoertzelV24FiniteHexCellProfileCompression
+open GoertzelV24HexFaceRungType
+open GoertzelV24HexSlabConnectivityProfile
+open GoertzelV24WindingClassification
 
 /-- The terminal-aware one-Cell alphabet with its raw Cell matrix replaced by
 the flat, lossless semantic code. -/
@@ -126,6 +130,298 @@ theorem localLayerCompressedOneCellDecoderStep_of_semantic_raw
     LocalLayerCompressedOneCellDecoderStep input output := by
   refine ⟨code.compress semantic, ?_⟩
   simpa [LocalLayerCompressedOneCellLetterCode.decode] using hdecode
+
+/-- An explicit one-Cell receipt which retains the semantic certificate for
+the very Cell profile used by all five output equations.  It is a proposition
+with existentially bound data so that source existence theorems may construct
+it without choosing data into `Type`.  The older receipt existential
+intentionally omitted the semantic proof because it also admits abstract
+over-approximation letters. -/
+def LocalLayerSemanticOneCellReceipt
+    (input : BoundedCorridorCutProfile 2 1 4)
+    (output : BoundedCorridorCutProfile 2 0 4) : Prop :=
+  ∃ code : LocalLayerFiniteOneCellCode input output,
+    IsGraphSemantic code.cellProfile ∧
+    output.faceFragmentCount.val = 3 ∧
+    (∀ step : Fin 2,
+      output.profile.edgeColor step =
+        code.cellProfile.edgeColor (code.geometry.outgoing step)) ∧
+    LocalLayerFiniteConnectivityUpdateCode
+      input code.cellProfile code.geometry output ∧
+    (∀ left right : LocalLayerRightFaceRole,
+      output.profile.faceContinues
+          (code.roleIndex left) (code.roleIndex right) = true ↔
+        left = right) ∧
+    (∀ (role : LocalLayerRightFaceRole) (step : Fin 2),
+      output.profile.fragmentContainsPort
+          (code.roleIndex role) (.inl step) = true ↔
+        role.ContainsPort step) ∧
+    (∀ role : LocalLayerRightFaceRole,
+      (output.profile.faceLengthCap (code.roleIndex role)).val =
+        (code.faceUpdate role).updatedCap input.profile.faceLengthCap role)
+
+/-- The same semantic receipt on the lossless three-fragment carriers. -/
+def LocalLayerSemanticOneCellReceiptThree
+    (input : BoundedCorridorCutProfile 2 1 3)
+    (output : BoundedCorridorCutProfile 2 0 3) : Prop :=
+  LocalLayerSemanticOneCellReceipt
+    (widenFaceFragmentBoundThreeToFour input)
+    (widenFaceFragmentBoundThreeToFour output)
+
+/-- An explicit semantic receipt decodes through the compact alphabet without
+forgetting which Cell profile supplied its connectivity matrix. -/
+theorem exists_compressed_letter_decode_eq_some_of_semanticReceipt
+    {input : BoundedCorridorCutProfile 2 1 3}
+    {output : BoundedCorridorCutProfile 2 0 3}
+    (receipt : LocalLayerSemanticOneCellReceiptThree input output) :
+    ∃ code : LocalLayerCompressedOneCellLetterCode,
+      code.decode input = some output := by
+  classical
+  rcases output with ⟨⟨outputCount, houtputCountBound⟩, outputProfile⟩
+  rcases receipt with
+    ⟨receipt, cellSemantic, houtputCount, hedge, hconnectivity,
+      hface, hport, hcap⟩
+  change outputCount = 3 at houtputCount
+  subst outputCount
+  let raw : LocalLayerFiniteOneCellLetterCode :=
+    { inputCount := input.faceFragmentCount
+      cellProfile := receipt.cellProfile
+      geometry := receipt.geometry
+      roleIndex := receipt.roleIndex
+      faceUpdate := receipt.faceUpdate }
+  let code : LocalLayerCompressedOneCellLetterCode := raw.compress cellSemantic
+  refine ⟨code, ?_⟩
+  have hraw : raw.decode input =
+      some ⟨⟨3, houtputCountBound⟩, outputProfile⟩ := by
+    rw [LocalLayerFiniteOneCellLetterCode.decode,
+      dif_pos (by simp [raw])]
+    apply congrArg some
+    simp only [raw, LocalLayerFiniteOneCellLetterCode.outputProfile]
+    rw [BoundedCorridorCutProfile.mk.injEq]
+    refine ⟨rfl, ?_⟩
+    apply heq_of_eq
+    rw [CorridorCutProfile.mk.injEq]
+    refine ⟨?_, ?_, ?_, ?_, ?_⟩
+    · funext step
+      exact (hedge step).symm
+    · funext pair left right
+      rcases left with left | terminal
+      · rcases right with right | terminal
+        · change raw.outputStrandConnected input pair left right =
+            outputProfile.strandConnected pair (.inl left) (.inl right)
+          apply Bool.eq_iff_iff.mpr
+          simp only [LocalLayerFiniteOneCellLetterCode.outputStrandConnected,
+            decide_eq_true_eq, raw]
+          rw [← hedge left, ← hedge right]
+          exact (hconnectivity pair left right).symm
+        · exact Fin.elim0 terminal
+      · exact Fin.elim0 terminal
+    · funext left right
+      apply Bool.eq_iff_iff.mpr
+      simp only [decide_eq_true_eq, raw]
+      have hrole := hface
+        (receipt.roleIndex.symm left) (receipt.roleIndex.symm right)
+      rw [receipt.roleIndex.apply_symm_apply,
+        receipt.roleIndex.apply_symm_apply] at hrole
+      exact hrole.symm
+    · funext fragment port
+      rcases port with step | terminal
+      · apply Bool.eq_iff_iff.mpr
+        simp only [decide_eq_true_eq, raw]
+        have hcontains := hport (receipt.roleIndex.symm fragment) step
+        rw [receipt.roleIndex.apply_symm_apply] at hcontains
+        exact hcontains.symm
+      · exact Fin.elim0 terminal
+    · funext fragment
+      apply Fin.ext
+      change (receipt.faceUpdate (receipt.roleIndex.symm fragment)).updatedCap
+          input.profile.faceLengthCap (receipt.roleIndex.symm fragment) =
+        (outputProfile.faceLengthCap fragment).val
+      have hlength := hcap (receipt.roleIndex.symm fragment)
+      rw [receipt.roleIndex.apply_symm_apply] at hlength
+      exact hlength.symm
+  simpa [code, LocalLayerCompressedOneCellLetterCode.decode] using hraw
+
+variable {V : Type*} [Fintype V] [DecidableEq V]
+  {G : SimpleGraph V} [DecidableRel G.Adj]
+
+noncomputable section
+
+local instance compressedOneCellDecoderEdgeSetDecidableEq :
+    DecidableEq G.edgeSet :=
+  Subtype.instDecidableEq
+
+namespace SourceTrail
+
+namespace AnnularEmbedding
+
+namespace SourceCornerAlignedSlabInterface
+
+open GoertzelV24FaceDualConnectedness
+open GoertzelV24FaceOrbitIncidence
+open GoertzelV24OrbitFaceTwoSided
+open GoertzelV24RotationBoundaryFaceCutProfile
+open SimpleGraphDartRotation
+
+variable {source : SourceTrail G}
+  {embedded : source.AnnularEmbedding} {blockLength : Nat}
+  {realization : BoundaryCleanCorridorRealization embedded blockLength}
+  {htwoSided : OrbitFacesTwoSided
+    embedded.cellulation.rotation.toRotationSystem}
+  {hunique : PairwiseUniqueSharedInteriorEdges
+    (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+    (Finset.univ : Finset
+      (OrbitFace embedded.cellulation.rotation.toRotationSystem))}
+  {leftInterior : CorridorInterior blockLength}
+  {hnext : leftInterior.center.val + 2 < blockLength}
+
+/-- An actual literal source Cell supplies an explicit receipt which retains
+the graph-semantic proof for its own six-edge profile. -/
+theorem semanticOneCellReceiptThree
+    (aligned : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (color : embedded.cellulation.rotation.toRotationSystem.EdgeColoring Color)
+    (hcolor : embedded.cellulation.rotation.toRotationSystem
+      |>.IsTaitEdgeColoring color)
+    (hleft : ∀ step,
+      color (aligned.toInterface.localLayerPrefixCrossing step) ≠ 0)
+    (hright : ∀ step,
+      color (aligned.toInterface.nextLocalLayerPrefixCrossing step) ≠ 0) :
+    LocalLayerSemanticOneCellReceiptThree
+      (aligned.localLayerFiniteInputProfile color hleft)
+      (aligned.localLayerFiniteOutputProfile color hright) := by
+  have hreceipt : LocalLayerSemanticOneCellReceipt
+      (aligned.localLayerLeftPrefixSharedRungBoundedProfile color hleft)
+      (aligned.toInterface.localLayerRightPrefixBoundedProfile color
+        hright) := by
+    rcases aligned.exists_localLayerFiniteFaceUpdateCode hcubic hrotation color
+        hleft hright with ⟨faceUpdate, hfaceUpdate⟩
+    let code : LocalLayerFiniteOneCellCode
+        (aligned.localLayerLeftPrefixSharedRungBoundedProfile color hleft)
+        (aligned.toInterface.localLayerRightPrefixBoundedProfile color
+          hright) := {
+      cellProfile := aligned.localLayerCellBoundaryProfile color hcolor
+      geometry := aligned.localLayerFiniteConnectivityGeometryCode
+      roleIndex := aligned.toInterface.localLayerRightFaceRoleEquivBoundedIndex
+        color hright
+      faceUpdate := faceUpdate }
+    refine ⟨code,
+      aligned.localLayerCellBoundaryProfile_isGraphSemantic
+        hcubic hrotation color hcolor,
+      ?_, ?_,
+      aligned.localLayerFiniteConnectivityUpdateCode
+        hcubic hrotation color hcolor hleft hright,
+      ?_, ?_, ?_⟩
+    · exact aligned.toInterface
+        |>.card_localLayerRightPrefixBoundaryRegionalFragment_eq_three
+    · intro step
+      simp only [code]
+      apply StrandColor.toColor_injective
+      rw [aligned.localLayerCellBoundaryProfile_edgeColor_toColor,
+        aligned.localLayerRightPrefixBoundedProfile_edgeColor_toColor]
+      simpa [localLayerFiniteConnectivityGeometryCode] using
+        congrArg color
+          (aligned.localLayerCellBoundaryEdge_crossingPosition step).symm
+    · intro left right
+      simp only [code]
+      rw [aligned.toInterface.localLayerRightFaceRoleEquivBoundedIndex_apply,
+        aligned.toInterface.localLayerRightFaceRoleEquivBoundedIndex_apply]
+      exact
+        (aligned.toInterface
+          |>.localLayerRightPrefixBoundedProfile_faceContinues_eq_true_iff_eq
+            color hright
+            (aligned.toInterface.localLayerRightFaceRoleIndex left)
+            (aligned.toInterface.localLayerRightFaceRoleIndex right)).trans
+          (aligned.toInterface.localLayerRightFaceRoleEquivBoundedIndex
+            color hright).injective.eq_iff
+    · intro role step
+      simp only [code]
+      rw [aligned.toInterface.localLayerRightFaceRoleEquivBoundedIndex_apply,
+        aligned.toInterface
+          |>.localLayerRightPrefixBoundedProfile_fragmentContainsPort_eq_role,
+        aligned.toInterface
+          |>.boundaryRegionalFragmentAt_localLayerRightFaceRoleIndex,
+        aligned.toInterface.localLayerRightBoundaryFragmentRole_roleEquiv]
+    · intro role
+      simp only [code]
+      rw [aligned.toInterface.localLayerRightFaceRoleEquivBoundedIndex_apply]
+      exact (hfaceUpdate role).2
+  simpa [LocalLayerSemanticOneCellReceiptThree,
+    localLayerFiniteInputProfile, localLayerFiniteOutputProfile] using hreceipt
+
+/-- Tait nonzeroness supplies the two cut-color premises of the semantic
+receipt. -/
+theorem semanticOneCellReceiptThree_of_tait
+    (aligned : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (color : embedded.cellulation.rotation.toRotationSystem.EdgeColoring Color)
+    (hcolor : embedded.cellulation.rotation.toRotationSystem
+      |>.IsTaitEdgeColoring color) :
+    LocalLayerSemanticOneCellReceiptThree
+      (aligned.localLayerFiniteInputProfile color
+        (fun step => hcolor
+          (aligned.toInterface.localLayerPrefixCrossing step)))
+      (aligned.localLayerFiniteOutputProfile color
+        (fun step => hcolor
+          (aligned.toInterface.nextLocalLayerPrefixCrossing step))) := by
+  simpa [localLayerFiniteInputProfile, localLayerFiniteOutputProfile] using
+    aligned.semanticOneCellReceiptThree hcubic hrotation color hcolor
+      (fun step => hcolor
+        (aligned.toInterface.localLayerPrefixCrossing step))
+      (fun step => hcolor
+        (aligned.toInterface.nextLocalLayerPrefixCrossing step))
+
+/-- Direct source coverage of the compact decoder for an actual literal Cell. -/
+theorem exists_compressed_letter_decode_eq_some_of_tait
+    (aligned : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (color : embedded.cellulation.rotation.toRotationSystem.EdgeColoring Color)
+    (hcolor : embedded.cellulation.rotation.toRotationSystem
+      |>.IsTaitEdgeColoring color) :
+    ∃ code : LocalLayerCompressedOneCellLetterCode,
+      code.decode
+          (aligned.localLayerFiniteInputProfile color
+            (fun step => hcolor
+              (aligned.toInterface.localLayerPrefixCrossing step))) =
+        some (aligned.localLayerFiniteOutputProfile color
+          (fun step => hcolor
+            (aligned.toInterface.nextLocalLayerPrefixCrossing step))) :=
+  exists_compressed_letter_decode_eq_some_of_semanticReceipt
+    (aligned.semanticOneCellReceiptThree_of_tait
+      hcubic hrotation color hcolor)
+
+/-- Relation form: every exact literal source transition belongs to the
+compact finite decoder step. -/
+theorem compressedDecoderStep_of_literalSupport
+    (aligned : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (input : BoundedCorridorCutProfile 2 1 3)
+    (output : BoundedCorridorCutProfile 2 0 3)
+    (hsupport : aligned.LiteralLocalLayerOneCellSupport input output) :
+    LocalLayerCompressedOneCellDecoderStep input output := by
+  rcases hsupport with ⟨color, hcolor, rfl, rfl⟩
+  exact aligned.exists_compressed_letter_decode_eq_some_of_tait
+    hcubic hrotation color hcolor
+
+end SourceCornerAlignedSlabInterface
+
+end AnnularEmbedding
+
+end SourceTrail
+
+end
 
 end GoertzelV24FramedTrail
 

@@ -5351,11 +5351,17 @@ therefore already a transition of the declared finite receipt
 over-approximation; conversely, any raw decoder witness whose Cell profile
 obeys the graph laws has an identical compact witness.  This is the safe
 direction for an upper-bound closure: compact codes may remain spurious but
-no semantic raw transition is lost.  The next coverage theorem must carry the
-already-proved semantic certificate of each literal source Cell through the
-existential receipt constructor.  Until that is done, the compact decoder is
-an operational interface, not yet the measured heterogeneous source
-automaton.
+no semantic raw transition is lost.  The same module now carries that result
+all the way back to the source.  It defines a semantic one-Cell receipt whose
+existential data retain the graph-law certificate for the very Cell profile
+used by the edge-colour, tracked-connectivity, face-equivalence,
+port-incidence, and capped-length equations.  Every actual Tait-coloured
+literal source Cell constructs such a receipt, and Lean proves that it is
+decoded by a compact letter with exactly the same output profile.  This closes
+the finite source-image half of the compact one-Cell alphabet.  It does not
+yet compose the separate boundary-rebase decoder, measure the heterogeneous
+reachable closure, derive a numerical $V_0$, or verify the route-native
+bounded base.
 
 \subsection{What the programme may explain---and what is not yet a theorem}
 
