@@ -5423,6 +5423,23 @@ literal heterogeneous Cell/rebase receipts.  The occurrence-sensitive facial
 analogue is also still open, so no reachable-state count, numerical $V_0$, or
 base verification is claimed.
 
+The switching boundary of that recurrence is now finite and exact.  Module
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFiniteSwitch} writes the
+successor tracked graph as its already proved three-factor union: accumulated
+old prefix, the two newly displayed crossing edges, and the residual seam.
+The six possible old attachment edges together with those two new edges form
+a literal interface of cardinality at most eight.  Lean proves that every
+non-isolated seam vertex belongs to this interface and that reachability
+between the new cut edges is exactly the reflexive--transitive closure of the
+three factor-component relations restricted to it.  Thus the recurrence no
+longer ranges over an unbounded ambient graph when factors switch.  This is
+still a structural contraction rather than the completed finite letter: the
+old component relation must be read from the preceding residual-aware state,
+the new and seam relations must be decoded from the literal Cell receipt, and
+the occurrence-sensitive capped-face update must be treated alongside them.
+No reachable-closure count, numerical $V_0$, or base verification follows at
+this checkpoint.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}

@@ -165,6 +165,75 @@ theorem sourceCorridorSerialBoundaryRebaseTrackedSeamAt_adj_has_local_old_attach
     exact classify hraw.1.symm hbackward.2.2.1 hbackward.1 hbackward.2.1
       hyBoundary
 
+/-- An oriented ambient tracked adjacency from the old prefix to one of the
+two newly displayed rebase edges has its old endpoint in one of the three
+bounded historical interface classes.  This is the endpoint-oriented form of
+the classification used above; it is useful when retaining the literal
+vertices of a seam rather than merely an existential old/new pair. -/
+theorem sourceCorridorSerialBoundaryRebaseTrackedOldEndpoint_has_local_attachment
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (color : G.edgeSet → Color) (first second : Color) {old new : G.edgeSet}
+    (hadjAmbient :
+      (embedded.cellulation.rotation.toRotationSystem.trackedEdgeGraph
+        color first second).Adj old new)
+    (hnewRegion : new ∈
+      sourceCorridorSerialBoundaryRebaseEdgeSetAt realization hcubic hrotation
+        htwoSided hunique offset hnext)
+    (holdBoundary : old ∈
+      sourceCorridorSerialPrefixTrueCrossingEdges realization hcubic
+        hrotation htwoSided hunique (offset.val + 1)) :
+    ((∃ step : Fin 2,
+        old = (sourceSlabInterfaceAt realization hcubic hrotation htwoSided
+          hunique offset).localLayerPrefixCrossing step) ∨
+      (∃ step : Fin 2,
+        old = (sourceSlabInterfaceAt realization hcubic hrotation htwoSided
+          hunique offset).nextLocalLayerPrefixCrossing step) ∨
+      ∃ historical : Fin (blockLength - 3), ∃ step : Fin 2,
+        historical.val + 1 = offset.val ∧
+        old = (sourceSlabInterfaceAt realization hcubic hrotation htwoSided
+          hunique historical).nextLocalLayerPrefixCrossing step) := by
+  let RS := embedded.cellulation.rotation.toRotationSystem
+  let newRegion := sourceCorridorSerialBoundaryRebaseEdgeSetAt realization
+    hcubic hrotation htwoSided hunique offset hnext
+  rcases (mem_indexedCrossingEdgeSet_iff _ _).1 hnewRegion with
+    ⟨newStep, hnew⟩
+  rcases sourceCorridorSerialPrefixTrueCrossingEdge_eq_cell_input_or_output
+      realization hcubic hrotation htwoSided hunique (offset.val + 1)
+        holdBoundary with ⟨historical, hhistorical, hinput | houtput⟩
+  · rcases hinput with ⟨oldStep, holdEq⟩
+    have hindex :=
+      sourceSlabInputCrossing_index_eq_of_lt_cut_of_adj_rebaseCrossing
+        realization hcubic hrotation htwoSided hunique offset historical
+          hnext hhistorical oldStep newStep (by
+            simpa [RS, newRegion, holdEq, hnew] using hadjAmbient.1)
+    have heq : historical = offset := Fin.ext hindex
+    subst historical
+    exact Or.inl ⟨oldStep, holdEq⟩
+  · rcases houtput with ⟨oldStep, holdEq⟩
+    have hindex :=
+      sourceSlabOutputCrossing_index_eq_or_succ_eq_of_lt_cut_of_adj_rebaseCrossing
+        realization hcubic hrotation htwoSided hunique offset historical
+          hnext hhistorical oldStep newStep (by
+            simpa [RS, newRegion, holdEq, hnew] using hadjAmbient.1)
+    rcases hindex with hcurrent | hprevious
+    · have heq : historical = offset := Fin.ext hcurrent
+      subst historical
+      exact Or.inr (Or.inl ⟨oldStep, holdEq⟩)
+    · exact Or.inr (Or.inr ⟨historical, oldStep, hprevious, holdEq⟩)
+
 /-- The occurrence-sensitive facial seam has the same three local attachment
 classes after projecting its positions to ambient primal edges.  Keeping this
 separate from the tracked theorem ensures that the finite rebase alphabet

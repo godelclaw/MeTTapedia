@@ -27,7 +27,9 @@ open GoertzelV24FaceDualConnectedness
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24HexFaceRungType
 open GoertzelV24OrbitFaceTwoSided
+open GoertzelV24RegionalBoundaryProfileFiniteState
 open GoertzelV24RotationFaceFragments
+open GoertzelV24TerminalProfileSeamResidual
 open SimpleGraph
 open SimpleGraphDartRotation
 
@@ -155,6 +157,104 @@ theorem sourceCorridorSerialBoundaryRebaseTrackedSeamAt_adj_has_oldAttachmentRol
       hnewOld, ?_⟩
     simpa [sourceCorridorSerialBoundaryRebaseOldAttachmentEdgeAt, previous]
       using holdEq
+
+/-- Endpoint-oriented finite localization of a tracked rebase seam.  One
+literal endpoint is an old attachment role and the other is one of the two
+newly displayed rebase edges. -/
+theorem sourceCorridorSerialBoundaryRebaseTrackedSeamAt_adj_oriented_roles
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (color : G.edgeSet → Color) (first second : Color) {x y : G.edgeSet}
+    (hadj : (sourceCorridorSerialBoundaryRebaseTrackedSeamAt realization
+      hcubic hrotation htwoSided hunique offset hnext color first second).Adj
+        x y) :
+    (∃ role : SourceCorridorSerialBoundaryRebaseOldAttachmentRole offset,
+        x = sourceCorridorSerialBoundaryRebaseOldAttachmentEdgeAt realization
+          hcubic hrotation htwoSided hunique offset role ∧
+        y ∈ sourceCorridorSerialBoundaryRebaseEdgeSetAt realization hcubic
+          hrotation htwoSided hunique offset hnext) ∨
+      ∃ role : SourceCorridorSerialBoundaryRebaseOldAttachmentRole offset,
+        y = sourceCorridorSerialBoundaryRebaseOldAttachmentEdgeAt realization
+          hcubic hrotation htwoSided hunique offset role ∧
+        x ∈ sourceCorridorSerialBoundaryRebaseEdgeSetAt realization hcubic
+          hrotation htwoSided hunique offset hnext := by
+  let RS := embedded.cellulation.rotation.toRotationSystem
+  let oldRegion :=
+    (sourceCorridorSerialPrefixCutDataAt realization hcubic hrotation
+      htwoSided hunique offset).regionEdges
+  let newRegion := sourceCorridorSerialBoundaryRebaseEdgeSetAt realization
+    hcubic hrotation htwoSided hunique offset hnext
+  have hraw := (regionalTrackedSeamGraph_adj_iff RS oldRegion newRegion
+    color first second x y).1 hadj
+  have holdBoundary :=
+    sourceCorridorSerialBoundaryRebaseTrackedSeamAt_adj_oldEndpoint_mem_truePrefixCrossing
+      realization hcubic hrotation htwoSided hunique offset hnext color first
+        second hadj
+  have encode {old : G.edgeSet}
+      (hlocal :
+        ((∃ step : Fin 2,
+            old = (sourceSlabInterfaceAt realization hcubic hrotation
+              htwoSided hunique offset).localLayerPrefixCrossing step) ∨
+          (∃ step : Fin 2,
+            old = (sourceSlabInterfaceAt realization hcubic hrotation
+              htwoSided hunique offset).nextLocalLayerPrefixCrossing step) ∨
+          ∃ historical : Fin (blockLength - 3), ∃ step : Fin 2,
+            historical.val + 1 = offset.val ∧
+            old = (sourceSlabInterfaceAt realization hcubic hrotation
+              htwoSided hunique historical).nextLocalLayerPrefixCrossing step)) :
+      ∃ role : SourceCorridorSerialBoundaryRebaseOldAttachmentRole offset,
+        old = sourceCorridorSerialBoundaryRebaseOldAttachmentEdgeAt realization
+          hcubic hrotation htwoSided hunique offset role := by
+    rcases hlocal with hinput | houtput | hprevious
+    · rcases hinput with ⟨step, holdEq⟩
+      refine ⟨.inl (.inl step), ?_⟩
+      simpa [sourceCorridorSerialBoundaryRebaseOldAttachmentEdgeAt] using holdEq
+    · rcases houtput with ⟨step, holdEq⟩
+      refine ⟨.inl (.inr step), ?_⟩
+      simpa [sourceCorridorSerialBoundaryRebaseOldAttachmentEdgeAt] using holdEq
+    · rcases hprevious with ⟨historical, step, hhistorical, holdEq⟩
+      let previous : {historical : Fin (blockLength - 3) //
+          historical.val + 1 = offset.val} := ⟨historical, hhistorical⟩
+      refine ⟨.inr (previous, step), ?_⟩
+      simpa [sourceCorridorSerialBoundaryRebaseOldAttachmentEdgeAt, previous]
+        using holdEq
+  rcases hraw.2 with hforward | hbackward
+  · have hxBoundary : x ∈
+        sourceCorridorSerialPrefixTrueCrossingEdges realization hcubic
+          hrotation htwoSided hunique (offset.val + 1) := by
+      rcases holdBoundary with hx | hy
+      · exact hx.2
+      · exact False.elim (hforward.2.2.2 hy.1)
+    have hlocal :=
+      sourceCorridorSerialBoundaryRebaseTrackedOldEndpoint_has_local_attachment
+        realization hcubic hrotation htwoSided hunique offset hnext color first
+          second hraw.1 hforward.2.2.1 hxBoundary
+    rcases encode hlocal with ⟨role, hx⟩
+    exact Or.inl ⟨role, hx, hforward.2.2.1⟩
+  · have hyBoundary : y ∈
+        sourceCorridorSerialPrefixTrueCrossingEdges realization hcubic
+          hrotation htwoSided hunique (offset.val + 1) := by
+      rcases holdBoundary with hx | hy
+      · exact False.elim (hbackward.2.1 hx.1)
+      · exact hy.2
+    have hlocal :=
+      sourceCorridorSerialBoundaryRebaseTrackedOldEndpoint_has_local_attachment
+        realization hcubic hrotation htwoSided hunique offset hnext color first
+          second hraw.1.symm hbackward.1 hyBoundary
+    rcases encode hlocal with ⟨role, hy⟩
+    exact Or.inr ⟨role, hy, hbackward.1⟩
 
 /-- Every occurrence-sensitive facial rebase seam adjacency projects to an
 old primal edge named by the same at-most-six source coordinates. -/
