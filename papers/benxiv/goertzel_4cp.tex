@@ -5887,6 +5887,17 @@ commutes with this round trip.  This gives the tracked residual recurrence a
 fixed carrier while preserving the source distinction between an unavailable
 predecessor and an inactive but real contact.
 
+Module
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedState}
+then transports the complete support-sensitive tracked predecessor code for
+all three colour pairs onto those six slots.  Missing slots have false
+activity, attachment, and residual-component bits; persistent-port activity
+is unchanged; and every real role recovers exactly the earlier dependent
+state.  In particular, both predecessor slots are proved wholly inactive at
+the first source offset.  The tracked predecessor state is therefore one
+uniform finite type without padded geometry.  Computing its successor under
+the literal Cell-plus-rebase letter is the remaining tracked recurrence step.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
