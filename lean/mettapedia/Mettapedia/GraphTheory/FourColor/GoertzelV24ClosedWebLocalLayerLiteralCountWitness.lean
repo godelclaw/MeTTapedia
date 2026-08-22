@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerLiteralCount
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularCrosscutComplementInheritedProfile
 
 /-!
 # The ambient source coloring witnesses literal one-Cell `Count` support
@@ -133,6 +134,70 @@ noncomputable def sourceLocalLayerCellInheritedRightProfile
     hunique leftInterior hnext
   pair.sourceCrosscutComplementLiteralOpenRightProfileOfBoundary
     web.annular.cellulation.rotation boundary cellColoring.1 cellColoring.2
+
+/-- The inherited literal left profile is exactly the ambient graph-derived
+profile on the Cell's left cut data. -/
+theorem sourceLocalLayerCellInheritedLeftProfile_eq_ambientProfile
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (leftInterior : CorridorInterior blockLength)
+    (hnext : leftInterior.center.val + 2 < blockLength) :
+    let pair :=
+      (sourceLocalLayerPair corridor hunique leftInterior hnext)
+        |>.separatedLocalLayerPair hunique
+    let boundary := sourceLocalLayerPairCrosscutBoundaryData corridor hunique
+      leftInterior hnext
+    sourceLocalLayerCellInheritedLeftProfile corridor hunique leftInterior hnext =
+      (pair.sourceCrosscutComplementLeftCutData
+        web.annular.cellulation.rotation boundary).profile
+        (rotationColoringOfGraph web.annular coloring)
+        (rotationColoringOfGraph_isTait web.annular coloring web.tait) := by
+  dsimp only [sourceLocalLayerCellInheritedLeftProfile,
+    sourceLocalLayerCellInheritedOpenTaitColoring]
+  exact sourceCrosscutComplementLiteralOpenLeftProfileOfBoundary_inherited_eq_profile
+    web.annular.cellulation.rotation
+    ((sourceLocalLayerPair corridor hunique leftInterior hnext)
+      |>.separatedLocalLayerPair hunique)
+    (sourceLocalLayerPairCrosscutBoundaryData corridor hunique
+      leftInterior hnext)
+    (rotationColoringOfGraph web.annular coloring)
+    (rotationColoringOfGraph_isTait web.annular coloring web.tait)
+
+/-- The inherited literal right profile is exactly the ambient graph-derived
+profile on the Cell's right cut data. -/
+theorem sourceLocalLayerCellInheritedRightProfile_eq_ambientProfile
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (leftInterior : CorridorInterior blockLength)
+    (hnext : leftInterior.center.val + 2 < blockLength) :
+    let pair :=
+      (sourceLocalLayerPair corridor hunique leftInterior hnext)
+        |>.separatedLocalLayerPair hunique
+    let boundary := sourceLocalLayerPairCrosscutBoundaryData corridor hunique
+      leftInterior hnext
+    sourceLocalLayerCellInheritedRightProfile corridor hunique leftInterior hnext =
+      (pair.sourceCrosscutComplementRightCutData
+        web.annular.cellulation.rotation boundary).profile
+        (rotationColoringOfGraph web.annular coloring)
+        (rotationColoringOfGraph_isTait web.annular coloring web.tait) := by
+  dsimp only [sourceLocalLayerCellInheritedRightProfile,
+    sourceLocalLayerCellInheritedOpenTaitColoring]
+  exact sourceCrosscutComplementLiteralOpenRightProfileOfBoundary_inherited_eq_profile
+    web.annular.cellulation.rotation
+    ((sourceLocalLayerPair corridor hunique leftInterior hnext)
+      |>.separatedLocalLayerPair hunique)
+    (sourceLocalLayerPairCrosscutBoundaryData corridor hunique
+      leftInterior hnext)
+    (rotationColoringOfGraph web.annular coloring)
+    (rotationColoringOfGraph_isTait web.annular coloring web.tait)
 
 /-- The actual ambient source Cell contributes a positive entry to its
 literal five-coordinate `Count` matrix. -/
