@@ -125,6 +125,55 @@ theorem boundedCarrierGraphFamilyCode_adj_iff
   rw [SimpleGraph.map_adj_apply]
   rfl
 
+/-- Support membership of a carrier vertex is represented exactly in every
+coded family member.  Unlike reachability, support is not reflexive: this is
+the finite bit which distinguishes an active singleton component from an
+isolated retained coordinate. -/
+theorem boundedCarrierGraphFamilyCode_mem_support_iff
+    {Vertex : Type v} [Fintype Vertex]
+    {Family : Type u}
+    (carrier : Finset Vertex) (bound pointCount : Nat)
+    (hcard : carrier.card ≤ bound)
+    (points : Fin pointCount → {vertex // vertex ∈ carrier})
+    (graphs : Family → SimpleGraph Vertex)
+    (family : Family)
+    (hsupport : (graphs family).support ⊆ (carrier : Set Vertex))
+    (vertex : {vertex // vertex ∈ carrier}) :
+    carrierCoordinate carrier vertex ∈
+        ((boundedCarrierGraphFamilyCode carrier bound pointCount hcard points
+          graphs).graph family).support ↔
+      vertex.1 ∈ (graphs family).support := by
+  change
+    carrierCoordinate carrier vertex ∈
+        (((graphs family).induce (carrier : Set Vertex)).map
+          (carrierCoordinate carrier).toEmbedding).support ↔
+      vertex.1 ∈ (graphs family).support
+  rw [SimpleGraph.mem_support, SimpleGraph.mem_support]
+  constructor
+  · rintro ⟨neighbor, hadjacent⟩
+    let neighborVertex := (carrierCoordinate carrier).symm neighbor
+    refine ⟨neighborVertex.1, ?_⟩
+    have hneighborCoordinate :
+        carrierCoordinate carrier neighborVertex = neighbor := by
+      exact (carrierCoordinate carrier).apply_symm_apply neighbor
+    rw [← hneighborCoordinate] at hadjacent
+    have hinduced :=
+      (SimpleGraph.map_adj_apply
+        (G := (graphs family).induce (carrier : Set Vertex))
+        (f := (carrierCoordinate carrier).toEmbedding)
+        (a := vertex) (b := neighborVertex)).1 hadjacent
+    exact hinduced
+  · rintro ⟨neighbor, hadjacent⟩
+    have hneighbor : neighbor ∈ carrier :=
+      hsupport hadjacent.mem_support_right
+    let neighborVertex : {vertex // vertex ∈ carrier} := ⟨neighbor, hneighbor⟩
+    refine ⟨carrierCoordinate carrier neighborVertex, ?_⟩
+    apply (SimpleGraph.map_adj_apply
+      (G := (graphs family).induce (carrier : Set Vertex))
+      (f := (carrierCoordinate carrier).toEmbedding)
+      (a := vertex) (b := neighborVertex)).2
+    exact hadjacent
+
 /-- Reachability wholly inside the common carrier is represented exactly in
 every coded family member. -/
 theorem boundedCarrierGraphFamilyCode_reachable_iff
