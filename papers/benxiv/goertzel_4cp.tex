@@ -6034,6 +6034,37 @@ the successor sixteen-slot state must be computed from the present state and
 the literal heterogeneous Cell-plus-rebase letter.  No reachable-state count,
 numerical $V_0$, or bounded-base verification is claimed at this checkpoint.
 
+The first of those two obligations is now discharged in
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableFaceCappedStep}.
+For every displayed face coordinate, Lean identifies the cardinality of its
+predecessor face-component support with the root-free dart-component
+cardinality stored in the stable state.  Consequently the stable component cap
+at five is exactly the per-output-face cap used by the literal rebase receipt;
+it is not merely an upper bound and it is independent of the chosen displayed
+dart.
+
+Modules
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableFaceCappedStepDecoder},
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableFaceFixedState}, and
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableFaceFixedStepDecoder}
+then turn that identification into a graph-free finite interface.  The exact
+predecessor face receipt is decoded from a common carrier of sixteen occurrence
+slots and four boundary-fragment slots together with the literal local
+Cell--rebase face code.  Unused slots are padded with false data, while every
+real port and occurrence has a proved round trip through its fixed coordinate.
+The decoder reconstructs exactly the predecessor component relation, activity,
+literal presence, and cap used by the source transition.  The four port slots
+use the general bound proved for the serial rebase carrier; no sharper
+three-slot claim is assumed.
+
+This is a representation closure, not yet a dynamical one.  The predecessor
+facial state is now a genuinely fixed finite object and one literal local
+letter consumes it exactly, but Lean does not yet compute the successor fixed
+state from that pair.  The next load-bearing step is that successor recurrence,
+followed by the heterogeneous reachable-closure measurement.  Hence no
+reachable-state count, compressed pigeonhole threshold, numerical $V_0$, or
+route-native bounded-base verification follows yet.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
