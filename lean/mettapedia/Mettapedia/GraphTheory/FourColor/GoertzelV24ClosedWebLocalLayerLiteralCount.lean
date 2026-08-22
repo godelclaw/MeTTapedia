@@ -1,5 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerFiniteTrackedLetter
-import Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularCrosscutComplementProfileOfBoundary
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularCrosscutComplementCombinedCountOfBoundary
 import Mettapedia.GraphTheory.FourColor.GoertzelV24BoundaryProfileFiniteState
 
 /-!
@@ -28,6 +28,7 @@ open GoertzelV24ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebAnnularEmbedding.ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebBoundaryData
 open GoertzelV24CorridorProfile
+open GoertzelV24CorridorProfileRestriction
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24HexCorridorSkeleton
 open GoertzelV24HexFaceRungType
@@ -239,6 +240,49 @@ theorem sourceLocalLayerCellBoundedProfileTransfer_code_iff
     simpa only [hleftRaw, hrightRaw] using hpositive
   · intro hpositive
     exact ⟨left, right, rfl, rfl, hpositive⟩
+
+/-- The two encoded matrix indices arise by restricting one realizable
+four-port profile of the same literal source Cell.  This is the local joint
+state needed by the later prefix factorization; the two sides are not
+independent profile witnesses. -/
+theorem sourceLocalLayerCellBoundedProfileTransfer_code_iff_exists_combined
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (leftInterior : CorridorInterior blockLength)
+    (hnext : leftInterior.center.val + 2 < blockLength)
+    (left right : SourceLocalLayerCellProfile corridor hunique
+      leftInterior hnext) :
+    sourceLocalLayerCellBoundedProfileTransfer corridor hunique
+        leftInterior hnext
+        (sourceLocalLayerCellProfileCode corridor hunique leftInterior hnext left)
+        (sourceLocalLayerCellProfileCode corridor hunique leftInterior hnext right) ↔
+      let pair :=
+        (sourceLocalLayerPair corridor hunique leftInterior hnext).separatedLocalLayerPair
+          hunique
+      let boundary := sourceLocalLayerPairCrosscutBoundaryData corridor hunique
+        leftInterior hnext
+      ∃ combined : pair.SourceCrosscutComplementCombinedProfile
+          web.annular.cellulation.rotation boundary,
+        pair.SourceCrosscutComplementCombinedProfileRealizableOfBoundary
+            web.annular.cellulation.rotation boundary combined ∧
+          CorridorCutProfile.restrictCrossings combined
+              (pair.sourceCrosscutComplementLeftCombinedIndex
+                web.annular.cellulation.rotation boundary) = left ∧
+          CorridorCutProfile.restrictCrossings combined
+              (pair.sourceCrosscutComplementRightCombinedIndex
+                web.annular.cellulation.rotation boundary) = right := by
+  rw [sourceLocalLayerCellBoundedProfileTransfer_code_iff]
+  exact (sourceLocalLayerPair corridor hunique leftInterior hnext
+      |>.separatedLocalLayerPair hunique
+      |>.sourceCrosscutComplementLiteralOpenProfileCountOfBoundary_pos_iff_exists_combined
+        web.annular.cellulation.rotation
+        (sourceLocalLayerPairCrosscutBoundaryData corridor hunique
+          leftInterior hnext)
+        left right)
 
 /-- Concrete source semantics: an encoded transition holds exactly when one
 literal Tait coloring of the actual complementary Cell realizes its two full
