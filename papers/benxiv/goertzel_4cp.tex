@@ -6306,6 +6306,22 @@ does not yet compute the successor state or encode the occurrence-sensitive
 facial update.  The joint five-coordinate recurrence, reachable closure,
 numerical $V_0$, and bounded base remain open.
 
+The facial predecessor state on the same switch is now finite without a
+two-sided-face assumption.  Module
+\texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFaceState}
+retains both literal darts over each of the at most four switch edges, hence at
+most eight occurrence slots.  For every occupied slot it records predecessor
+region membership, exact reachability in the regional face-dart graph, and a
+face-progress cap in \texttt{Fin 6}.  The cap counts the image of the complete
+dart component under \texttt{edgeOf}, so a primal edge visited through both
+darts is counted once rather than twice.  Adequacy theorems recover occupancy,
+membership, occurrence connectivity, the capped distinct-edge count, and the
+same-fragment predicate on every actual switch occurrence.  This is still the
+predecessor facial interface: reconstructing the successor rows from it and
+the literal Cell geometry, combining that update with the tracked state, and
+proving joint-\texttt{Count} adequacy remain open, as do reachable closure,
+the numerical $V_0$, and the bounded base.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
