@@ -6292,6 +6292,20 @@ only across this explicit four-edge switch.  That five-coordinate update and
 its joint-\texttt{Count} adequacy are not yet proved; neither are the reachable
 closure, numerical $V_0$, or bounded base.
 
+The tracked predecessor state on that switch is now finite and exact.  Module
+\texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseTrackedState}
+stores the nonzero colour and actual predecessor-region membership of each
+of the four roles, together with a support-sensitive component code for each
+of the three tracked colour pairs.  Its adequacy theorem identifies the
+graph-free decoder exactly with the tracked-connectivity predicate used by
+the complete graph-derived profile.  In particular, reflexive reachability
+at an absent or untracked coordinate cannot create a false diagonal entry:
+the regional and colour guards are retained separately.  This removes the
+unbounded predecessor graph from the tracked half of the rebase state, but it
+does not yet compute the successor state or encode the occurrence-sensitive
+facial update.  The joint five-coordinate recurrence, reachable closure,
+numerical $V_0$, and bounded base remain open.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
