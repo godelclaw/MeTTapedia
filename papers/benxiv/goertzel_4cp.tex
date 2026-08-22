@@ -5531,6 +5531,24 @@ determine the old-component submatrix, and continuation, port incidence, and
 capped length must still be updated jointly.  No reachable-state count,
 numerical $V_0$, or bounded-base verification follows here.
 
+The predecessor facial component relation now factors through finite interface
+data without identifying the two occurrences of a bridge edge.  Generic module
+\texttt{GoertzelV24RotationFaceRegionalDartGraph} defines regional face
+connectivity directly on literal darts, proves it equivalent to the earlier
+root-relative cyclic-position graph, and shows that the canonical dart
+representatives of two predecessor boundary fragments are connected exactly
+when their fragment coordinates are equal.  Module
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceResidualProfileFactor}
+then extracts, on the at-most-sixteen switch occurrences, an exact finite
+alternative: a component either meets one named predecessor face port, or it
+is retained by a port-free residual bit.  Lean proves that this residual-or-port
+relation is equivalent to literal old-prefix facial reachability.  This is the
+occurrence-sensitive facial analogue of the earlier tracked factorization, but
+it is still extracted predecessor state.  The next obligation is a
+history-independent recurrence for these residual bits together with the
+literal continuation, port-incidence, and cap-at-five update.  No measured
+reachable closure, numerical $V_0$, or bounded-base verification is inferred.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
