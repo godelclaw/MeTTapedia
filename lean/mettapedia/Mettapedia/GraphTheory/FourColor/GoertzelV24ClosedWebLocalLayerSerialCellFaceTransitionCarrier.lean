@@ -260,7 +260,9 @@ theorem sourceLocalLayerSerialFaceTransitionCarrierAt_card_le_twentyFour
         hunique offset)
     _ ≤ 24 := by omega
 
-private theorem sourceLocalLayerCellFaceDartGraph_support_subset_transitionCarrier
+/-- The literal Cell facial factor is supported on the common transition
+carrier. -/
+theorem sourceLocalLayerCellFaceDartGraph_support_subset_transitionCarrier
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
     {web : Instance data coloring} {blockLength : Nat}
     (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
@@ -277,7 +279,9 @@ private theorem sourceLocalLayerCellFaceDartGraph_support_subset_transitionCarri
   exact Finset.mem_union_left _
     ((mem_dartsOnEdges_iff web.annular.RS _ dart).2 hadj.2.2.1)
 
-private theorem sourceLocalLayerFaceDartSeam_support_subset_transitionCarrier
+/-- The residual facial seam factor is supported on the common transition
+carrier. -/
+theorem sourceLocalLayerFaceDartSeam_support_subset_transitionCarrier
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
     {web : Instance data coloring} {blockLength : Nat}
     (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
