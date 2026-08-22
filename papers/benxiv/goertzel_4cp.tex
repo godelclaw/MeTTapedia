@@ -6869,6 +6869,22 @@ incoming prefix state must be reconstructed explicitly rather than hidden in
 the local letter.  The facial successor state and reachable closure remain
 open.
 
+The accumulated-prefix contribution has now been put on that same fixed
+carrier without truncating paths to the local neighbourhood.  Module
+\texttt{GoertzelV24ClosedWebLocalLayerSerialCellTrackedPrefixAttachmentState}
+records, for each tracked colour pair, which of the twenty-one slots are
+active, which attach to the terminal-aware input's three named ports (the two
+crossings and the retained rung), and which lie in the same component meeting
+no named port.  This is finite source-image state.  Lean proves that the state
+together with the complete incoming profile recovers reachability through the
+literal accumulated prefix on every represented carrier edge, even when the
+connecting path leaves the local carrier and later returns.  No successor
+relation is stored in the Cell letter.  The next tracked obligation is now
+sharply finite: take the reflexive--transitive closure of this predecessor
+relation with the already coded Cell and seam relations, then project the
+result to the outgoing profile.  The facial recurrence and the heterogeneous
+reachable closure remain separate open steps.
+
 \subsection{What the programme may explain---and what is not yet a theorem}
 
 The finite-state route suggests an information-theoretic explanation for why a
