@@ -6854,6 +6854,21 @@ entrance into a strict reduction threshold, derive the actual $V_0$, and only
 then decide how the source-prescribed irreducible finite base is to be
 verified.  No bulk base enumeration is claimed or begun here.
 
+The tracked half of one literal opened-source transition now also has a
+single finite coordinate system.  Module
+\texttt{GoertzelV24ClosedWebLocalLayerSerialCellTrackedTransitionCarrier}
+takes the at-most-six-edge Cell region, its at-most-fourteen-edge residual
+seam neighborhood, and the retained shared rung, and places their union in a
+carrier of at most twenty-one literal edges.  The two incoming crossings, two
+outgoing crossings, and rung terminal are named in the same carrier, and the
+Cell and seam factors preserve complete tracked reachability under the common
+coordinates.  This removes a coordinate mismatch in the successor-state
+recurrence.  It does not yet compute that recurrence: a prefix path may leave
+and re-enter the local carrier, so the finite attachment relation to the
+incoming prefix state must be reconstructed explicitly rather than hidden in
+the local letter.  The facial successor state and reachable closure remain
+open.
+
 \subsection{What the programme may explain---and what is not yet a theorem}
 
 The finite-state route suggests an information-theoretic explanation for why a
