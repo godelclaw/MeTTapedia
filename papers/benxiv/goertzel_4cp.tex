@@ -6018,6 +6018,22 @@ capped facial receipt.  Computing that stable facial state and the successor
 residual states remains open; this theorem does not supply a reachable-state
 count, a numerical $V_0$, or a bounded-base verification.
 
+That facial history has now been placed on a fixed carrier in
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableFaceCappedState}.
+The literal rebase switch contains at most sixteen face-dart occurrences.
+Lean embeds every real occurrence into a named \texttt{Fin 16} slot and uses a
+partial decoder, so an unused slot is distinguished from an inactive but
+present occurrence.  On every occupied slot the stable state recovers exactly
+the source activity bit, literal-presence bit, attachment to each displayed
+port, residual face-component relation, and component size capped at five.
+The cap is measured on the whole regional dart-orbit class and therefore does
+not depend on choosing a representative root.  This removes the dependent
+occurrence carrier, but it is not yet the facial transition: the root-free cap
+must still be identified with the per-output-face capped receipt, after which
+the successor sixteen-slot state must be computed from the present state and
+the literal heterogeneous Cell-plus-rebase letter.  No reachable-state count,
+numerical $V_0$, or bounded-base verification is claimed at this checkpoint.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
