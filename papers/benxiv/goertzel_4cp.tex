@@ -5254,7 +5254,7 @@ is not asserted, and no reachable count, $V_0$, or bounded base follows yet.
 The second letter now has a single finite receipt as well.  Module
 \texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseLetter} packages the two
 successor crossing colours, the three tracked-colour local and residual graphs
-on their common fourteen-edge carrier, and the occurrence-sensitive facial
+on their common sixteen-edge carrier, and the occurrence-sensitive facial
 seams indexed by exactly the successor profile's real fragments.  The source
 construction supplies this finite object, and Lean proves the component and
 fragment-count identifications.  This deliberately retains the boundary
@@ -5264,6 +5264,23 @@ profile and this receipt determine the successor complete profile.  In
 particular, the construction does not replace the explicit residual data by
 the false assertion that the two displayed portals are the whole accumulated
 frontier.
+
+The rebase receipt now retains both sides of that semantic question in one
+finite coordinate system.  The original fourteen-edge seam neighbourhood
+named the two successor crossings but did not necessarily contain the old
+profile's two displayed crossings.  Module
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebasePortCarrier} adjoins the
+old pair, proves that the enlarged carrier has at most sixteen edges, and
+assigns stable coordinates to the old and new pairs while keeping every
+tracked local and residual graph on the same carrier.  Each pair is proved
+internally distinct; no unwarranted claim is made that an old port can never
+coincide with a new one.  This removes a finite-addressing defect, not the
+mathematical locality obligation.  An exact decoder still requires the
+source-specific theorem that every relevant attachment of the accumulated
+old prefix to the local rebase geometry is represented through the retained
+old-profile interface, together with its facial analogue.  Until those
+statements are proved, the receipt is finite and source-supplied but not a
+complete transition semantics, and no reachable-state count is claimed.
 
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
