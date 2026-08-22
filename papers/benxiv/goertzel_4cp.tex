@@ -7014,6 +7014,22 @@ the finite predecessor caps and the local Cell/seam code, with exact overlap
 correction, remains open; so this is not yet a complete facial output packet,
 a reachable-state count, or a numerical $V_0$.
 
+The finite state now also carries the deduplication key needed to compute that
+cardinality.  Module
+\texttt{GoertzelV24ClosedWebLocalLayerSerialCellFaceFiniteEdgeState} records,
+on the fixed twenty-four dart slots, whether two represented occurrences are
+the same primal edge and whether a represented edge belongs to the newly
+adjoined Cell.  Both tables are proved exact on every live slot.  Combining
+the Cell-membership bit with the predecessor-presence bit already stored in
+the facial attachment state decides membership in the complete pre-rebase
+output region exactly.  Thus the cap decoder need not identify edges from
+face adjacency or count the two darts of one edge twice.  What remains is the
+finite representative sum: select each predecessor component once, select
+each genuinely new Cell edge once modulo this equality table, restrict both
+to the finite output component, and prove that their disjoint union is the
+canonical support identified above.  That sum, ambient face continuation,
+and the combined one-Cell support letter remain open.
+
 \subsection{What the programme may explain---and what is not yet a theorem}
 
 The finite-state route suggests an information-theoretic explanation for why a
