@@ -6357,6 +6357,22 @@ the successor face-state decoder.  The combined five-coordinate recurrence,
 joint-\texttt{Count} adequacy, reachable closure, the numerical $V_0$, and the
 bounded base remain open.
 
+The collar now carries an exact semantic recurrence rather than merely a
+locality bound.  Module
+\texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFaceCollarRecurrence}
+decomposes the successor regional face graph into the unchanged core and a
+canonical local residual whose support lies wholly inside the at-most-
+twenty-four-dart collar.  Between any two collar darts, successor reachability
+is exactly the reflexive--transitive closure of whole-core component moves and
+local-residual component moves on the collar.  Thus an arbitrarily large
+prefix is consulted only through its component relation at the finite
+interface; paths outside the collar are not enumerated.  This theorem is still
+stated on actual darts.  Transport to fixed \texttt{Fin 24} coordinates,
+recovery of the core-component matrix from the predecessor receipt, and the
+graph-free successor decoder remain open, as do the combined five-coordinate
+recurrence, joint-\texttt{Count} adequacy, reachable closure, the numerical
+$V_0$, and the bounded base.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
