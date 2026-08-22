@@ -6250,6 +6250,21 @@ recurrence.  Identifying the two restrictions with consecutive cumulative
 prefixes, composing the boundary rebase, handling cyclic Cells, measuring the
 reachable modes, deriving $V_0$, and verifying the bounded base remain open.
 
+The cumulative carrier needed for that comparison is now constructed on the
+actual opened source annulus.  Module
+\texttt{GoertzelV24ClosedWebLocalLayerSerialPrefixRegion} defines the prefix
+before a Cell to be the union of the preceding literal complementary Cell
+regions and proves that adjoining the current Cell gives exactly the successor
+prefix.  Both ordered incoming and outgoing crossings are proved to belong to
+the literal Cell, and the source colouring therefore yields complete
+five-coordinate graph-derived profiles on the two consecutive prefixes.  This
+construction does not import the false global-cubicity or global
+face-two-sidedness premises of the older serial tower.  It is a carrier
+identity, not yet transition adequacy: terminal augmentation, factorization of
+the joint local \texttt{Count} receipt through these cumulative profiles, the
+separate boundary rebase, the cyclic-Cell residue, reachable closure, the
+numerical $V_0$, and the route-native bounded base remain open.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
