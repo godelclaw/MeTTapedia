@@ -6088,6 +6088,28 @@ recurrence is proved can the heterogeneous reachable closure be measured and
 used to derive a compressed pigeonhole threshold.  No reachable-state count,
 numerical $V_0$, or bounded-base verification is claimed here.
 
+The next transition seam is now bounded without introducing a third local
+letter.  Module
+\texttt{GoertzelV24TerminalProfileSeamUnion} proves, for both tracked edge
+connectivity and occurrence-sensitive facial continuation, that the residual
+seam from a left region into a union of two right regions is contained in the
+supremum of the two seams obtained by adjoining those regions in order.
+Module
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedTransitionSeam}
+specializes this fact to one literal source step: first the boundary rebase,
+then the successor Cell.  Every tracked turn of the combined transition seam
+is supported on the union of the quotient-aware twelve-edge transition switch
+and the successor Cell's bounded fourteen-edge outgoing neighbourhood.  Thus
+the carrier contains at most twenty-six actual ambient edges; repeated source
+names are identified rather than counted twice.
+
+This is a finite-support theorem, not yet the recurrence itself.  It proves
+that the combined seam contains no independent history-sensitive ingredient,
+but it does not yet contract the accumulated prefix factor or compute the
+successor fixed tracked and facial residual states.  The heterogeneous
+reachable closure, numerical $V_0$, and route-native bounded base therefore
+remain open.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
