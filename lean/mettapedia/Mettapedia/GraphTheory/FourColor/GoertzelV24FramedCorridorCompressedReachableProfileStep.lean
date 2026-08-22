@@ -2,7 +2,7 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorCompressedOneCe
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorReachableProfileStep
 
 /-!
-# A semantic compact step for reachable source-prefix profiles
+# A semantic compact step for the geometric-prefix laboratory
 
 The earlier homogeneous reachable step admits every terminal-aware one-Cell
 receipt.  This file refines it by requiring an actual compact decoder letter,
@@ -10,10 +10,12 @@ whose six-edge Cell profile satisfies the proved graph-semantic laws.  Every
 literal Tait-colored source Cell is still admitted, and every compact step is
 an earlier receipt step.
 
-This is a sound local transition interface for later closure measurement.  It
-still existentially restores the shared-rung terminal and deliberately does
-not compose the distinct boundary-rebase operation.  No reachable closure,
-threshold, or bounded base is asserted here.
+This is a sound local transition interface for the complete-hex geometric
+prefix.  It still existentially restores the shared-rung terminal and does not
+identify that prefix with the route-correct serial union of literal
+complementary Cells.  In particular it does not compose the distinct serial
+boundary-rebase operation.  No route-correct reachable closure, threshold, or
+bounded base is asserted here.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -104,9 +106,9 @@ variable {source : SourceTrail G}
   {leftInterior : CorridorInterior blockLength}
   {hnext : leftInterior.center.val + 2 < blockLength}
 
-/-- Every actual Tait-colored literal Cell belongs to the semantic compact
-homogeneous relation.  The current state is the complete cumulative profile
-on the left cut, narrowed only by its proved face bound. -/
+/-- Every actual Tait-colored source Cell belongs to the semantic compact
+geometric-prefix relation.  The current state is computed on the complete-hex
+prefix at the left cut, not on the route-correct literal-Cell serial union. -/
 theorem localLayerCompressedReceiptStep_of_tait
     (aligned : SourceCornerAlignedSlabInterface realization htwoSided hunique
       leftInterior hnext)
