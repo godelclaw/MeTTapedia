@@ -5321,6 +5321,23 @@ displayed old ports: the historical interfaces internal to the Cell union
 must be absorbed by the literal connector geometry before the finite receipt
 is a complete transition semantics.
 
+The tracked half of that remaining absorption now has a parity normal form.
+Module
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseTrackedEscape}
+orients every tracked rebase-seam adjacency from its old-prefix endpoint to
+the newly displayed edge.  The old endpoint is itself classified as a
+crossing of a historical literal Cell.  Since a cubic Tait two-colour graph
+has degree two there, while the displayed new neighbour is absent from the
+old region, its old regional degree is strictly smaller: it is either zero or
+one.  In the degree-one case regional handshaking produces a distinct
+reachable crossing of a historical literal Cell.  Thus a nontrivial old
+excursion is reduced to a pair of concrete historical Cell interfaces; no
+arbitrary ambient endpoint remains.  The theorem does not yet prove that
+those historical interfaces cancel to the two surviving displayed old
+ports, and it has no occurrence-sensitive facial analogue yet.  Those are
+the two explicit locality obligations before the finite rebase receipt is an
+exact complete-profile decoder.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
