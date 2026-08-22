@@ -5737,6 +5737,29 @@ inclusion--exclusion law, the newly displayed Cell contribution, the complete
 heterogeneous recurrence, reachable-closure measurement, numerical $V_0$,
 and bounded-base verification remain open.
 
+The predecessor decoder has now been inserted into the successor equation.
+Module
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceFinitePredecessorCap}
+replaces the literal old-prefix slice in the inclusion--exclusion law by the
+finite canonical-component cap sum.  The equality is exact, including the
+isolated-singleton case; it does not query the unbounded prefix after the
+finite predecessor state has been supplied.  The only terms left at this
+stage are the newly displayed two-edge slice and its genuine overlap with the
+old region.
+
+Those last two terms now have a finite exact decoder as well.  Module
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceFiniteLocalCaps}
+stores the local and overlap contributions as two functions into
+\texttt{Fin 6}, indexed by the actual successor fragments.  Every literal
+rebase supplies such a finite table, and Lean proves that the successor
+profile's capped face length is precisely the decoded predecessor sum plus
+the stored local cap minus the stored overlap cap, capped at five.  Thus the
+face-length coordinate of the boundary rebase no longer contains an ambient
+geometric query.  Packaging this decoder jointly with the already finite
+face-continuation, port-incidence, and tracked-connectivity laws, then
+composing it with the distinct literal Cell letter, remains open; no reachable
+closure, numerical $V_0$, or bounded-base verification is claimed yet.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
