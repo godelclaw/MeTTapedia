@@ -5482,6 +5482,21 @@ ambient-graph observation.  The occurrence-sensitive facial recurrence is
 still separate, so this checkpoint does not yet supply a reachable-closure
 count, a numerical $V_0$, or the bounded-base verification.
 
+The facial switch now has the same exact local bound.  Module
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceFiniteSwitch}
+orients every occurrence-sensitive seam adjacency: one endpoint is one of the
+six possible old attachment roles and the other lies in the two-edge rebase
+region.  Since two-sidedness makes the face-position-to-primal-edge map
+injective, each participating facial seam has at most eight positions, rather
+than the earlier fourteen-position bound obtained from a larger ambient
+closure.  Lean transports each seam to an eight-position finite graph and
+packages the exact successor-fragment family as a finite $4$-by-$8$ interface,
+without padding the actual fragment count.  This removes another accidental
+carrier inflation, but it is not yet the capped-face recurrence: the incoming
+face state and literal Cell/rebase receipt still have to determine successor
+continuation, port incidence, and capped length.  No reachable-state count,
+numerical $V_0$, or base verification is claimed here.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}

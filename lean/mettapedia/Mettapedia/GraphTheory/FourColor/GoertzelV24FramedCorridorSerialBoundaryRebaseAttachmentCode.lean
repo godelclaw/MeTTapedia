@@ -29,6 +29,7 @@ open GoertzelV24HexFaceRungType
 open GoertzelV24OrbitFaceTwoSided
 open GoertzelV24RegionalBoundaryProfileFiniteState
 open GoertzelV24RotationFaceFragments
+open GoertzelV24TerminalProfileRegionalCoverage
 open GoertzelV24TerminalProfileSeamResidual
 open SimpleGraph
 open SimpleGraphDartRotation
@@ -314,6 +315,147 @@ theorem sourceCorridorSerialBoundaryRebaseFaceSeamAt_adj_has_oldAttachmentRole
       hnewOld, ?_⟩
     simpa [sourceCorridorSerialBoundaryRebaseOldAttachmentEdgeAt, previous]
       using holdEq
+
+/-- Endpoint-oriented finite localization of an occurrence-sensitive facial
+rebase seam.  After projection to primal edges, one literal endpoint is an old
+attachment role and the other is one of the two newly displayed rebase edges.
+Unlike the older existential statement above, this theorem retains which
+endpoint has which role. -/
+theorem sourceCorridorSerialBoundaryRebaseFaceSeamAt_adj_oriented_roles
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (root : embedded.cellulation.rotation.toRotationSystem.D)
+    {x y : Fin
+      (embedded.cellulation.rotation.toRotationSystem.faceOrbit root).card}
+    (hadj : (sourceCorridorSerialBoundaryRebaseFaceSeamAt realization hcubic
+      hrotation htwoSided hunique offset hnext root).Adj x y) :
+    (∃ role : SourceCorridorSerialBoundaryRebaseOldAttachmentRole offset,
+        faceCycleEdge embedded.cellulation.rotation.toRotationSystem root x =
+          sourceCorridorSerialBoundaryRebaseOldAttachmentEdgeAt realization
+            hcubic hrotation htwoSided hunique offset role ∧
+        faceCycleEdge embedded.cellulation.rotation.toRotationSystem root y ∈
+          sourceCorridorSerialBoundaryRebaseEdgeSetAt realization hcubic
+            hrotation htwoSided hunique offset hnext) ∨
+      ∃ role : SourceCorridorSerialBoundaryRebaseOldAttachmentRole offset,
+        faceCycleEdge embedded.cellulation.rotation.toRotationSystem root y =
+          sourceCorridorSerialBoundaryRebaseOldAttachmentEdgeAt realization
+            hcubic hrotation htwoSided hunique offset role ∧
+        faceCycleEdge embedded.cellulation.rotation.toRotationSystem root x ∈
+          sourceCorridorSerialBoundaryRebaseEdgeSetAt realization hcubic
+            hrotation htwoSided hunique offset hnext := by
+  let RS := embedded.cellulation.rotation.toRotationSystem
+  let oldRegion :=
+    (sourceCorridorSerialPrefixCutDataAt realization hcubic hrotation
+      htwoSided hunique offset).regionEdges
+  let newRegion := sourceCorridorSerialBoundaryRebaseEdgeSetAt realization
+    hcubic hrotation htwoSided hunique offset hnext
+  have hraw := (faceRegionalSeamGraph_adj_iff RS root oldRegion newRegion
+    x y).1 hadj
+  have hedgeAdj := edgeAdjacencyGraph_adj_of_faceCyclePositionGraph_adj
+    RS hcubic hrotation root hraw.1
+  have holdBoundary :=
+    sourceCorridorSerialBoundaryRebaseFaceSeamAt_adj_oldEndpoint_mem_truePrefixCrossing
+      realization hcubic hrotation htwoSided hunique offset hnext root hadj
+  have classify {old new : G.edgeSet}
+      (hadjAmbient : RS.edgeAdjacencyGraph.Adj old new)
+      (hnewRegion : new ∈ newRegion)
+      (holdBoundary : old ∈
+        sourceCorridorSerialPrefixTrueCrossingEdges realization hcubic
+          hrotation htwoSided hunique (offset.val + 1)) :
+      ((∃ step : Fin 2,
+          old = (sourceSlabInterfaceAt realization hcubic hrotation htwoSided
+            hunique offset).localLayerPrefixCrossing step) ∨
+        (∃ step : Fin 2,
+          old = (sourceSlabInterfaceAt realization hcubic hrotation htwoSided
+            hunique offset).nextLocalLayerPrefixCrossing step) ∨
+        ∃ historical : Fin (blockLength - 3), ∃ step : Fin 2,
+          historical.val + 1 = offset.val ∧
+          old = (sourceSlabInterfaceAt realization hcubic hrotation htwoSided
+            hunique historical).nextLocalLayerPrefixCrossing step) := by
+    rcases (mem_indexedCrossingEdgeSet_iff _ _).1 hnewRegion with
+      ⟨newStep, hnew⟩
+    rcases sourceCorridorSerialPrefixTrueCrossingEdge_eq_cell_input_or_output
+        realization hcubic hrotation htwoSided hunique (offset.val + 1)
+          holdBoundary with ⟨historical, hhistorical, hinput | houtput⟩
+    · rcases hinput with ⟨oldStep, holdEq⟩
+      have hindex :=
+        sourceSlabInputCrossing_index_eq_of_lt_cut_of_adj_rebaseCrossing
+          realization hcubic hrotation htwoSided hunique offset historical
+            hnext hhistorical oldStep newStep (by
+              simpa [RS, newRegion, holdEq, hnew] using hadjAmbient)
+      have heq : historical = offset := Fin.ext hindex
+      subst historical
+      exact Or.inl ⟨oldStep, holdEq⟩
+    · rcases houtput with ⟨oldStep, holdEq⟩
+      have hindex :=
+        sourceSlabOutputCrossing_index_eq_or_succ_eq_of_lt_cut_of_adj_rebaseCrossing
+          realization hcubic hrotation htwoSided hunique offset historical
+            hnext hhistorical oldStep newStep (by
+              simpa [RS, newRegion, holdEq, hnew] using hadjAmbient)
+      rcases hindex with hcurrent | hprevious
+      · have heq : historical = offset := Fin.ext hcurrent
+        subst historical
+        exact Or.inr (Or.inl ⟨oldStep, holdEq⟩)
+      · exact Or.inr (Or.inr ⟨historical, oldStep, hprevious, holdEq⟩)
+  have encode {old : G.edgeSet}
+      (hlocal :
+        ((∃ step : Fin 2,
+            old = (sourceSlabInterfaceAt realization hcubic hrotation
+              htwoSided hunique offset).localLayerPrefixCrossing step) ∨
+          (∃ step : Fin 2,
+            old = (sourceSlabInterfaceAt realization hcubic hrotation
+              htwoSided hunique offset).nextLocalLayerPrefixCrossing step) ∨
+          ∃ historical : Fin (blockLength - 3), ∃ step : Fin 2,
+            historical.val + 1 = offset.val ∧
+            old = (sourceSlabInterfaceAt realization hcubic hrotation
+              htwoSided hunique historical).nextLocalLayerPrefixCrossing step)) :
+      ∃ role : SourceCorridorSerialBoundaryRebaseOldAttachmentRole offset,
+        old = sourceCorridorSerialBoundaryRebaseOldAttachmentEdgeAt realization
+          hcubic hrotation htwoSided hunique offset role := by
+    rcases hlocal with hinput | houtput | hprevious
+    · rcases hinput with ⟨step, holdEq⟩
+      refine ⟨.inl (.inl step), ?_⟩
+      simpa [sourceCorridorSerialBoundaryRebaseOldAttachmentEdgeAt] using holdEq
+    · rcases houtput with ⟨step, holdEq⟩
+      refine ⟨.inl (.inr step), ?_⟩
+      simpa [sourceCorridorSerialBoundaryRebaseOldAttachmentEdgeAt] using holdEq
+    · rcases hprevious with ⟨historical, step, hhistorical, holdEq⟩
+      let previous : {historical : Fin (blockLength - 3) //
+          historical.val + 1 = offset.val} := ⟨historical, hhistorical⟩
+      refine ⟨.inr (previous, step), ?_⟩
+      simpa [sourceCorridorSerialBoundaryRebaseOldAttachmentEdgeAt, previous]
+        using holdEq
+  rcases hraw.2 with hforward | hbackward
+  · have hxBoundary : faceCycleEdge RS root x ∈
+        sourceCorridorSerialPrefixTrueCrossingEdges realization hcubic
+          hrotation htwoSided hunique (offset.val + 1) := by
+      rcases holdBoundary with hx | hy
+      · exact hx.2
+      · exact False.elim (hforward.2.2.2 hy.1)
+    rcases encode (classify hedgeAdj hforward.2.2.1 hxBoundary) with
+      ⟨role, hx⟩
+    exact Or.inl ⟨role, hx, hforward.2.2.1⟩
+  · have hyBoundary : faceCycleEdge RS root y ∈
+        sourceCorridorSerialPrefixTrueCrossingEdges realization hcubic
+          hrotation htwoSided hunique (offset.val + 1) := by
+      rcases holdBoundary with hx | hy
+      · exact False.elim (hbackward.2.1 hx.1)
+      · exact hy.2
+    rcases encode (classify hedgeAdj.symm hbackward.1 hyBoundary) with
+      ⟨role, hy⟩
+    exact Or.inr ⟨role, hy, hbackward.1⟩
 
 end AnnularEmbedding
 
