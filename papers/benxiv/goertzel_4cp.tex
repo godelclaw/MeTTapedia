@@ -5663,6 +5663,21 @@ successor residual carrier.  Thus the predecessor weights are now finite and
 exact, but the complete Cell/rebase recurrence, reachable-closure measurement,
 numerical $V_0$, and bounded-base verification remain open.
 
+The predecessor weights can now be consumed without counting the same old
+face once per switch occurrence.  Module
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceComponentRepresentatives}
+turns the finite old-component relation into a partition, chooses the least
+occurrence of each component as its canonical representative, and retains
+exactly the representatives of physically active components.  Lean proves
+existence and uniqueness of this representative for every active occurrence
+and proves that the stored cap is unchanged by the replacement.  The literal
+source rebase supplies all required semantic laws from exact regional
+reachability and support.  What remains is to select the representatives that
+contribute to one successor fragment and insert their weights once into the
+already-proved overlap-corrected cap equation.  The complete heterogeneous
+recurrence, reachable-closure measurement, numerical $V_0$, and bounded-base
+verification remain open.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
