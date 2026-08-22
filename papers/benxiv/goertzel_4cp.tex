@@ -6148,6 +6148,26 @@ impossible or has a fixed source-role code.  The result does not identify the
 raw ambient prefix with a physical serial gluing, compute the successor stable
 states, measure a reachable closure, derive $V_0$, or verify the bounded base.
 
+The four-edge Cell frontier now has a sharp closed-carrier consequence.
+Modules
+\texttt{GoertzelV24CubicFourEdgeConnectedSides} and
+\texttt{GoertzelV24FramedCorridorLiteralCellFiniteCarrier} prove that, when
+the ambient graph is cubic and cyclically five-edge-connected and both sides
+of the exact four-edge boundary are connected, one side consists of exactly
+two vertices.  If the literal Cell is that side, its complete regional edge
+carrier contains at most six edges.  The source-facing theorem does not choose
+an orientation: it returns either this six-edge bound or the precise residue
+that the retained complement has two vertices.
+
+This is intentionally not reported as closure of the overlap branch.  The
+well-formed opened source carrier has boundary defects and is already proved
+not globally cubic, whereas the new count is a theorem about a closed cubic
+ambient graph.  Applying it to the actual source therefore requires an
+explicit closed-to-open transport with the Cell side oriented, or a local
+interior-cubic replacement of the global premise.  The dichotomy records the
+small missing interface without assuming it; it does not compute the
+successor stable states, the reachable closure, $V_0$, or the bounded base.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
