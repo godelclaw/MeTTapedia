@@ -5989,6 +5989,21 @@ No tracked-connectivity recurrence, reachable-state count, or numerical
 $V_0$ is claimed by this carrier theorem; contracting the five factors and
 their two seams onto it remains the next semantic step.
 
+The tracked output half of one boundary rebase is now history-free in
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedStepDecoder}.
+The decoder takes only the incoming complete profile, the stable
+support-sensitive eight-slot state, the literal local two-factor code, and
+the quotient-aware coordinate-to-slot map.  It reconstructs the formerly
+ambient \texttt{oldComponent} matrix.  Lean proves agreement with every
+literal old-prefix component bit, then proves that replacing the extracted
+matrix preserves the entire local component relation and its
+reflexive--transitive closure.  Thus successor two-colour connectivity no
+longer requires rereading the unbounded prefix graph.  This does not yet
+compute the successor eight-slot residual state, and the capped facial state
+is still extracted from literal geometry.  Those two obligations remain
+before a source-faithful reachable-state count, numerical $V_0$, or finite
+base verification can be claimed.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
