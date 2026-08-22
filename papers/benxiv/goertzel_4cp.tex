@@ -5451,6 +5451,27 @@ final $V_0$: the shallow radial cuts must be realized as literal serial layer
 boundaries, and the selected laminar chords must be realized as genuine
 deletion transversals before either branch can feed the strict splice.
 
+The pumping bound can now also be stated against a verified presentation of
+the reachable sets themselves, rather than against the full powerset of the
+profile carrier.  Module
+\texttt{GoertzelV24ReachableSetModeCompression} packages a finite mode type
+with an encoder, decoder, and an explicit admissibility predicate.  The only
+required round trip is on admissible complete reachable sets.  If every prefix
+reachable set of the heterogeneous source word is admissible, equality of two
+mode codes reconstructs equality of the complete reachable sets.  Lean then
+produces a nonempty removable middle subword and proves that rejection is
+preserved by its deletion.  The resulting pigeonhole threshold is the number
+of verified modes, not the cardinality of the unrestricted powerset.
+
+This is the proof interface for a compressed reachable-state certificate, not
+such a certificate itself.  The literal Cell and boundary-rebase relations
+must first be connected to the incoming serial profile, and a concrete mode
+table must be accompanied by a checked decoder and a proof that every source
+prefix reachable set is admissible.  In particular, the older twenty-mode
+$\tau$/mirror-$\tau$ laboratory is not silently reused for the heterogeneous
+v24 word.  No numerical $V_0$ or bounded-base conclusion follows at this
+checkpoint.
+
 The end-to-end reductive interface is now checked at this same boundary.
 
 \[
