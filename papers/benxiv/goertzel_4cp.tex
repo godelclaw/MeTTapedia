@@ -5898,6 +5898,31 @@ the first source offset.  The tracked predecessor state is therefore one
 uniform finite type without padded geometry.  Computing its successor under
 the literal Cell-plus-rebase letter is the remaining tracked recurrence step.
 
+The first exact interpretation of that stable state is provided by
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedStep}.
+Against the complete incoming serial profile, its residual-or-port relation
+recovers literal old-prefix tracked reachability on every pair of the six
+actual predecessor roles.  This closes the old/old block without retaining
+the accumulated graph.  It also identifies a real state-design boundary: six
+slots do not name the two successor crossings whose old-prefix component
+relations are queried by the boundary-rebase decoder.
+
+Module
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedSwitchState}
+therefore adds exactly those two crossings, producing a fixed eight-slot
+tracked switch state.  The extension is lossless rather than speculative:
+dependent source roles round-trip through the stable names, and the incoming
+profile plus the support-sensitive residual tables recover old-prefix
+reachability for every old--old, old--new, and new--new role pair.  The named
+roles surject onto the exact finite switch, so Lean further proves that this
+state computes every entry of the formerly prefix-extracted
+\texttt{oldComponent} matrix.  The arbitrary accumulated-prefix matrix has
+therefore been removed from the tracked rebase letter.  What remains is a
+genuine recurrence: compute the next eight-slot state from the present state
+and the literal heterogeneous Cell-plus-rebase receipt, and perform the
+corresponding stable transport for capped facial state.  No reachable count,
+numerical $V_0$, or bounded-base verification is inferred yet.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
