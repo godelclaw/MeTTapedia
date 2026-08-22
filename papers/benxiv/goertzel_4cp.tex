@@ -5981,7 +5981,9 @@ distinct.  At the initial offset, each unavailable predecessor name is sent
 to an already present current crossing, introducing no fictitious edge.
 Lean proves that the resulting carrier has cardinality at most twelve and
 contains every edge in both the current and successor exact eight-edge
-switches.  Thus the local five-factor transition now has a uniform,
+switches.  The reverse containment is also proved: this carrier is exactly
+the union of those two switches, including at the initial offset where the
+fallback is already a current crossing.  Thus the local five-factor transition now has a uniform,
 quotient-aware edge boundary on which a finite contraction can be stated.
 No tracked-connectivity recurrence, reachable-state count, or numerical
 $V_0$ is claimed by this carrier theorem; contracting the five factors and

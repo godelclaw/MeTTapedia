@@ -360,6 +360,115 @@ theorem sourceCorridorSerialBoundaryRebaseSuccessorFiniteSwitchAt_subset_stableT
   change ((carrierCoordinate carrier).symm coordinate).1 ∈ _ at hslot
   simpa [coordinate] using hslot
 
+/-- The transition carrier introduces no ambient edge beyond the two exact
+consecutive switches.  In particular, the total fallback at the initial
+offset is a current crossing already present in their union. -/
+theorem sourceCorridorSerialBoundaryRebaseStableTransitionFiniteSwitchAt_subset_union
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hnextNext :
+      (sourceCorridorSerialNextOffset offset hnext).val + 1 < blockLength - 3) :
+    sourceCorridorSerialBoundaryRebaseStableTransitionFiniteSwitchAt
+        realization hcubic hrotation htwoSided hunique offset hnext hnextNext ⊆
+      sourceCorridorSerialBoundaryRebaseFiniteSwitchAt realization hcubic
+          hrotation htwoSided hunique offset hnext ∪
+        sourceCorridorSerialBoundaryRebaseFiniteSwitchAt realization hcubic
+          hrotation htwoSided hunique
+          (sourceCorridorSerialNextOffset offset hnext) hnextNext := by
+  intro edge hedge
+  rcases Finset.mem_image.1 hedge with ⟨slot, _hslot, rfl⟩
+  rcases slot with current | fresh
+  · rcases current with old | step
+    · unfold sourceCorridorSerialBoundaryRebaseTrackedTransitionEdgeAtSlot
+      unfold sourceCorridorSerialBoundaryRebaseTrackedTransitionEdgeAtSlot?
+      simp only [sourceCorridorSerialBoundaryRebaseTrackedSwitchRoleAtSlot?,
+        Option.map_map]
+      generalize hrole :
+        sourceCorridorSerialBoundaryRebaseOldAttachmentRoleAtSlot? offset old =
+          role
+      rcases role with _ | role
+      · simp only [Option.map_none, Option.getD_none]
+        apply Finset.mem_union_left
+        exact sourceCorridorSerialBoundaryRebaseCrossingAt_mem_finiteSwitch
+          realization hcubic hrotation htwoSided hunique offset hnext 0
+      · simp only [Option.map_some, Option.getD_some, Function.comp_apply,
+          sourceCorridorSerialBoundaryRebaseTrackedSwitchEdgeAt]
+        apply Finset.mem_union_left
+        exact
+          sourceCorridorSerialBoundaryRebaseOldAttachmentEdgeAt_mem_finiteSwitch
+            realization hcubic hrotation htwoSided hunique offset hnext role
+    · unfold sourceCorridorSerialBoundaryRebaseTrackedTransitionEdgeAtSlot
+      unfold sourceCorridorSerialBoundaryRebaseTrackedTransitionEdgeAtSlot?
+      apply Finset.mem_union_left
+      exact sourceCorridorSerialBoundaryRebaseCrossingAt_mem_finiteSwitch
+        realization hcubic hrotation htwoSided hunique offset hnext step
+  · unfold sourceCorridorSerialBoundaryRebaseTrackedTransitionEdgeAtSlot
+    unfold sourceCorridorSerialBoundaryRebaseTrackedTransitionEdgeAtSlot?
+    simp only [Option.getD_some]
+    apply Finset.mem_union_right
+    rcases fresh with output | nextCrossing
+    · exact
+        sourceCorridorSerialBoundaryRebaseOldAttachmentEdgeAt_mem_finiteSwitch
+          realization hcubic hrotation htwoSided hunique
+          (sourceCorridorSerialNextOffset offset hnext) hnextNext
+          (.inl (.inr output))
+    · exact sourceCorridorSerialBoundaryRebaseCrossingAt_mem_finiteSwitch
+        realization hcubic hrotation htwoSided hunique
+        (sourceCorridorSerialNextOffset offset hnext) hnextNext nextCrossing
+
+/-- The quotient-aware twelve-name image is exactly the union of the current
+and successor exact finite switches. -/
+theorem sourceCorridorSerialBoundaryRebaseStableTransitionFiniteSwitchAt_eq_union
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hnextNext :
+      (sourceCorridorSerialNextOffset offset hnext).val + 1 < blockLength - 3) :
+    sourceCorridorSerialBoundaryRebaseStableTransitionFiniteSwitchAt
+        realization hcubic hrotation htwoSided hunique offset hnext hnextNext =
+      sourceCorridorSerialBoundaryRebaseFiniteSwitchAt realization hcubic
+          hrotation htwoSided hunique offset hnext ∪
+        sourceCorridorSerialBoundaryRebaseFiniteSwitchAt realization hcubic
+          hrotation htwoSided hunique
+          (sourceCorridorSerialNextOffset offset hnext) hnextNext := by
+  apply Finset.Subset.antisymm
+  · exact
+      sourceCorridorSerialBoundaryRebaseStableTransitionFiniteSwitchAt_subset_union
+        realization hcubic hrotation htwoSided hunique offset hnext hnextNext
+  · intro edge hedge
+    rcases Finset.mem_union.1 hedge with hcurrent | hsuccessor
+    · exact
+        sourceCorridorSerialBoundaryRebaseFiniteSwitchAt_subset_stableTransitionFiniteSwitch
+          realization hcubic hrotation htwoSided hunique offset hnext hnextNext
+            hcurrent
+    · exact
+        sourceCorridorSerialBoundaryRebaseSuccessorFiniteSwitchAt_subset_stableTransitionFiniteSwitch
+          realization hcubic hrotation htwoSided hunique offset hnext hnextNext
+            hsuccessor
+
 end AnnularEmbedding
 
 end SourceTrail
