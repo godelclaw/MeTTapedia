@@ -5973,6 +5973,20 @@ compose the already verified rebase and one-Cell receipts, rather than
 postulating a new homogeneous transition.  Contracting both seams onto the
 twelve stable slots remains open.
 
+The source names are now realized as one actual finite edge carrier in
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedTransitionFiniteSwitch}.
+The carrier is the image of the twelve stable transition names, so names that
+denote the same literal edge are quotiented rather than falsely declared
+distinct.  At the initial offset, each unavailable predecessor name is sent
+to an already present current crossing, introducing no fictitious edge.
+Lean proves that the resulting carrier has cardinality at most twelve and
+contains every edge in both the current and successor exact eight-edge
+switches.  Thus the local five-factor transition now has a uniform,
+quotient-aware edge boundary on which a finite contraction can be stated.
+No tracked-connectivity recurrence, reachable-state count, or numerical
+$V_0$ is claimed by this carrier theorem; contracting the five factors and
+their two seams onto it remains the next semantic step.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
