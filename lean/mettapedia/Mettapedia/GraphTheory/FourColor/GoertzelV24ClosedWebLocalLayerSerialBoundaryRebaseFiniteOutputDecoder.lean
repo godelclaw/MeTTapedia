@@ -100,9 +100,9 @@ namespace Instance
 
 namespace LocalLayerFormation
 
-/-- Every actual source rebase supplies a finite graph-free letter whose
-decoded value is exactly the next terminal-aware source profile. -/
-theorem exists_sourceLocalLayerBoundaryRebaseFiniteOutputLetter_outputProfile_eq
+/-- The canonical finite output letter extracted at one actual source
+boundary rebase. -/
+noncomputable def sourceLocalLayerBoundaryRebaseFiniteOutputLetterCodeAt
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
     {web : Instance data coloring} {blockLength : Nat}
     (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
@@ -111,19 +111,51 @@ theorem exists_sourceLocalLayerBoundaryRebaseFiniteOutputLetter_outputProfile_eq
       (Finset.univ : Finset (OrbitFace web.annular.RS)))
     (offset : Fin (blockLength - 3))
     (hnext : offset.val + 1 < blockLength - 3) :
-    ∃ code : SourceLocalLayerBoundaryRebaseFiniteOutputLetterCode,
-      code.outputProfile =
+    SourceLocalLayerBoundaryRebaseFiniteOutputLetterCode :=
+  let output := sourceLocalLayerSerialTerminalInputBoundedProfileAt corridor
+    hunique (sourceLocalLayerNextOffset offset hnext)
+  {
+    outputCount := output.faceFragmentCount
+    receipt := sourceLocalLayerBoundaryRebaseFiniteProfileReceiptAt corridor
+      hunique offset hnext }
+
+@[simp]
+theorem sourceLocalLayerBoundaryRebaseFiniteOutputLetterCodeAt_outputCount
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3) :
+    (sourceLocalLayerBoundaryRebaseFiniteOutputLetterCodeAt corridor hunique
+      offset hnext).outputCount =
+        (sourceLocalLayerSerialTerminalInputBoundedProfileAt corridor hunique
+          (sourceLocalLayerNextOffset offset hnext)).faceFragmentCount := by
+  rfl
+
+/-- The canonical graph-free output letter decodes exactly to the next
+terminal-aware source profile. -/
+theorem sourceLocalLayerBoundaryRebaseFiniteOutputLetterCodeAt_outputProfile_eq
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3) :
+    (sourceLocalLayerBoundaryRebaseFiniteOutputLetterCodeAt corridor hunique
+      offset hnext).outputProfile =
         sourceLocalLayerSerialTerminalInputBoundedProfileAt corridor hunique
           (sourceLocalLayerNextOffset offset hnext) := by
   classical
   let output := sourceLocalLayerSerialTerminalInputBoundedProfileAt corridor
     hunique (sourceLocalLayerNextOffset offset hnext)
-  let code : SourceLocalLayerBoundaryRebaseFiniteOutputLetterCode := {
-    outputCount := output.faceFragmentCount
-    receipt := sourceLocalLayerBoundaryRebaseFiniteProfileReceiptAt corridor
-      hunique offset hnext }
-  refine ⟨code, ?_⟩
-  simp only [code,
+  let code := sourceLocalLayerBoundaryRebaseFiniteOutputLetterCodeAt corridor
+    hunique offset hnext
+  simp only [sourceLocalLayerBoundaryRebaseFiniteOutputLetterCodeAt,
     SourceLocalLayerBoundaryRebaseFiniteOutputLetterCode.outputProfile]
   rw [BoundedCorridorCutProfile.mk.injEq]
   refine ⟨rfl, ?_⟩
@@ -196,6 +228,25 @@ theorem exists_sourceLocalLayerBoundaryRebaseFiniteOutputLetter_outputProfile_eq
     rw [hslot]
     exact sourceLocalLayerBoundaryRebaseFiniteProfileReceiptAt_faceLengthCap
       corridor hunique offset hnext fragment
+
+/-- Existential form of the canonical exact output decoder. -/
+theorem exists_sourceLocalLayerBoundaryRebaseFiniteOutputLetter_outputProfile_eq
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3) :
+    ∃ code : SourceLocalLayerBoundaryRebaseFiniteOutputLetterCode,
+      code.outputProfile =
+        sourceLocalLayerSerialTerminalInputBoundedProfileAt corridor hunique
+          (sourceLocalLayerNextOffset offset hnext) :=
+  ⟨sourceLocalLayerBoundaryRebaseFiniteOutputLetterCodeAt corridor hunique
+      offset hnext,
+    sourceLocalLayerBoundaryRebaseFiniteOutputLetterCodeAt_outputProfile_eq
+      corridor hunique offset hnext⟩
 
 end LocalLayerFormation
 
