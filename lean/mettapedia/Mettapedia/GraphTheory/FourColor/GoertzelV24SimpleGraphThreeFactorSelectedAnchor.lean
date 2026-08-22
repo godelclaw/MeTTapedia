@@ -73,6 +73,51 @@ theorem exists_selected_firstFactor_anchor
           exact False.elim ((hnone middle hselected) htail))
   exact (hnone start hstart) hfirstReachable
 
+/-- Membership-sensitive form of `exists_selected_firstFactor_anchor`.  The
+first factor may contain an isolated terminal which is absent from graph
+support; an explicit `FirstPresent` predicate records that vertex membership.
+This is the form needed for singleton regional face fragments. -/
+theorem exists_selected_firstFactor_anchor_of_present
+    {N : Type*} (first second third : SimpleGraph N)
+    (FirstPresent Selected : N → Prop) (start finish : N)
+    (hstart : Selected start)
+    (hfinishPresent : FirstPresent finish)
+    (hfirstReachablePresent : ∀ {left right}, FirstPresent right →
+      first.Reachable left right → FirstPresent left)
+    (hswitchFirstSecond : ∀ {middle right}, FirstPresent middle →
+      middle ≠ right → second.Reachable middle right → Selected middle)
+    (hswitchFirstThird : ∀ {middle right}, FirstPresent middle →
+      middle ≠ right → third.Reachable middle right → Selected middle)
+    (hreachable : ((first ⊔ second) ⊔ third).Reachable start finish) :
+    ∃ anchor, Selected anchor ∧ first.Reachable anchor finish := by
+  by_contra hnone
+  push Not at hnone
+  have hpath :=
+    (SimpleGraph.reachable_iff_reflTransGen start finish).1 hreachable
+  have hfirstReachable : first.Reachable start finish :=
+    Relation.ReflTransGen.head_induction_on
+      (motive := fun left _ => first.Reachable left finish)
+      hpath (SimpleGraph.Reachable.refl finish) (by
+        intro left middle hstep _ htail
+        rcases (SimpleGraph.sup_adj (first ⊔ second) third left middle).1
+            hstep with hfirstSecond | hthird
+        · rcases (SimpleGraph.sup_adj first second left middle).1
+              hfirstSecond with hfirst | hsecond
+          · exact hfirst.reachable.trans htail
+          · have hmiddlePresent :=
+              hfirstReachablePresent hfinishPresent htail
+            have hselected : Selected middle :=
+              hswitchFirstSecond hmiddlePresent hsecond.ne.symm
+                hsecond.symm.reachable
+            exact False.elim ((hnone middle hselected) htail)
+        · have hmiddlePresent :=
+            hfirstReachablePresent hfinishPresent htail
+          have hselected : Selected middle :=
+            hswitchFirstThird hmiddlePresent hthird.ne.symm
+              hthird.symm.reachable
+          exact False.elim ((hnone middle hselected) htail))
+  exact (hnone start hstart) hfirstReachable
+
 end GoertzelV24SimpleGraphThreeFactorSelectedAnchor
 
 end Mettapedia.GraphTheory.FourColor

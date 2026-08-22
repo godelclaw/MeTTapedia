@@ -7,7 +7,8 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorSerialBoundaryR
 The capped facial rebase state stores one predecessor cap at every occurrence
 of the same old component.  A successor decoder must not add that cap once per
 occurrence.  This file gives the finite state a canonical representative for
-each old component and selects exactly the active representatives.
+each old component and selects exactly the present representatives, including
+singleton regional factors which have no adjacency support.
 
 The construction is generic in the finite Boolean component matrix.  A small
 semantic certificate records the equivalence, activity, and cap-coherence laws
@@ -45,9 +46,9 @@ structure BoundedCappedSerialBoundaryRebaseFaceStepCode.IsComponentSemantic
     code.oldComponent left middle = true →
     code.oldComponent middle right = true →
       code.oldComponent left right = true
-  oldActive_constant : ∀ {left right},
+  oldPresent_constant : ∀ {left right},
     code.oldComponent left right = true →
-      code.oldActive left = code.oldActive right
+      code.oldPresent left = code.oldPresent right
   oldComponentCap_constant : ∀ {left right},
     code.oldComponent left right = true →
       code.oldComponentCap left = code.oldComponentCap right
@@ -137,14 +138,14 @@ theorem oldComponentRepresentative_eq_iff
         (Finset.mem_univ right) (Finset.mem_univ left)).1 hmem
     simp only [oldComponentRepresentative, partition, hparts]
 
-/-- Active canonical representatives, one per physically present predecessor
+/-- Present canonical representatives, one per physically present predecessor
 component. -/
 noncomputable def oldComponentRepresentatives
     (code : BoundedCappedSerialBoundaryRebaseFaceStepCode)
     (semantic : code.IsComponentSemantic) :
     Finset (Fin code.localCode.vertexCount.val) :=
   Finset.univ.filter fun coordinate =>
-    code.oldActive coordinate = true ∧
+    code.oldPresent coordinate = true ∧
       code.oldComponentRepresentative semantic coordinate = coordinate
 
 @[simp]
@@ -153,18 +154,18 @@ theorem mem_oldComponentRepresentatives_iff
     (semantic : code.IsComponentSemantic)
     (coordinate : Fin code.localCode.vertexCount.val) :
     coordinate ∈ code.oldComponentRepresentatives semantic ↔
-      code.oldActive coordinate = true ∧
+      code.oldPresent coordinate = true ∧
         code.oldComponentRepresentative semantic coordinate = coordinate := by
   classical
   simp [oldComponentRepresentatives]
 
-/-- The representative of an active coordinate is itself active. -/
-theorem oldComponentRepresentative_active
+/-- The representative of a present coordinate is itself present. -/
+theorem oldComponentRepresentative_present
     (code : BoundedCappedSerialBoundaryRebaseFaceStepCode)
     (semantic : code.IsComponentSemantic)
     (coordinate : Fin code.localCode.vertexCount.val)
-    (hactive : code.oldActive coordinate = true) :
-    code.oldActive (code.oldComponentRepresentative semantic coordinate) =
+    (hpresent : code.oldPresent coordinate = true) :
+    code.oldPresent (code.oldComponentRepresentative semantic coordinate) =
       true := by
   have hsame : code.oldComponent
       (code.oldComponentRepresentative semantic coordinate) coordinate = true :=
@@ -172,8 +173,8 @@ theorem oldComponentRepresentative_active
       ((code.mem_oldComponentPartition_part_iff semantic coordinate
         (code.oldComponentRepresentative semantic coordinate)).1
           (code.oldComponentRepresentative_mem_part semantic coordinate))
-  rw [semantic.oldActive_constant hsame]
-  exact hactive
+  rw [semantic.oldPresent_constant hsame]
+  exact hpresent
 
 /-- Taking a canonical representative twice changes nothing. -/
 theorem oldComponentRepresentative_idempotent
@@ -188,16 +189,16 @@ theorem oldComponentRepresentative_idempotent
     (code.oldComponentRepresentative semantic coordinate)).1
       (code.oldComponentRepresentative_mem_part semantic coordinate)
 
-/-- Every active coordinate maps to an active canonical representative. -/
+/-- Every present coordinate maps to a present canonical representative. -/
 theorem oldComponentRepresentative_mem_representatives
     (code : BoundedCappedSerialBoundaryRebaseFaceStepCode)
     (semantic : code.IsComponentSemantic)
     (coordinate : Fin code.localCode.vertexCount.val)
-    (hactive : code.oldActive coordinate = true) :
+    (hpresent : code.oldPresent coordinate = true) :
     code.oldComponentRepresentative semantic coordinate ∈
       code.oldComponentRepresentatives semantic := by
   rw [code.mem_oldComponentRepresentatives_iff semantic]
-  exact ⟨code.oldComponentRepresentative_active semantic coordinate hactive,
+  exact ⟨code.oldComponentRepresentative_present semantic coordinate hpresent,
     code.oldComponentRepresentative_idempotent semantic coordinate⟩
 
 /-- A selected representative in the component of a coordinate is the
@@ -218,7 +219,7 @@ theorem eq_oldComponentRepresentative_of_mem_of_same
       ).2 hsame
   exact hfixed.symm.trans hsameRepresentative.symm
 
-/-- Replacing an active coordinate by its representative preserves its stored
+/-- Replacing a present coordinate by its representative preserves its stored
 predecessor cap. -/
 theorem oldComponentCap_representative
     (code : BoundedCappedSerialBoundaryRebaseFaceStepCode)
@@ -281,16 +282,19 @@ theorem sourceCorridorSerialBoundaryRebaseCappedFaceStepCodeAt_isComponentSemant
           ((carrierCoordinate carrier).symm right).1 := by
     exact sourceCorridorSerialBoundaryRebaseFaceStepCodeAt_oldComponent_eq_true_iff
       realization hcubic hrotation htwoSided hunique offset hnext root left right
-  have hactive (coordinate : Fin code.localCode.vertexCount.val) :
-      code.oldActive coordinate = true ↔
-        ((carrierCoordinate carrier).symm coordinate).1 ∈ graph.support := by
-    exact sourceCorridorSerialBoundaryRebaseSupportedFaceStepCodeAt_oldActive_iff
+  have hpresent (coordinate : Fin code.localCode.vertexCount.val) :
+      code.oldPresent coordinate = true ↔
+        faceCycleEdge embedded.cellulation.rotation.toRotationSystem root
+            ((carrierCoordinate carrier).symm coordinate).1 ∈
+          (sourceCorridorSerialPrefixCutDataAt realization hcubic hrotation
+            htwoSided hunique offset).regionEdges := by
+    exact sourceCorridorSerialBoundaryRebaseCappedFaceStepCodeAt_oldPresent_iff
       realization hcubic hrotation htwoSided hunique offset hnext root coordinate
   refine {
     oldComponent_refl := ?_
     oldComponent_symm := ?_
     oldComponent_trans := ?_
-    oldActive_constant := ?_
+    oldPresent_constant := ?_
     oldComponentCap_constant := ?_ }
   · intro coordinate
     exact (hcomponent coordinate coordinate).2
@@ -304,17 +308,23 @@ theorem sourceCorridorSerialBoundaryRebaseCappedFaceStepCodeAt_isComponentSemant
         ((hcomponent middle right).1 hright))
   · intro left right hsame
     apply Bool.eq_iff_iff.mpr
-    rw [hactive left, hactive right]
+    rw [hpresent left, hpresent right]
     have hreachable := (hcomponent left right).1 hsame
     by_cases heq : ((carrierCoordinate carrier).symm left).1 =
         ((carrierCoordinate carrier).symm right).1
     · rw [heq]
     · constructor
       · intro _
-        exact SimpleGraph.mem_support_of_reachable (Ne.symm heq)
+        have hsupport := SimpleGraph.mem_support_of_reachable (Ne.symm heq)
           hreachable.symm
+        rw [SimpleGraph.mem_support] at hsupport
+        rcases hsupport with ⟨neighbor, hadjacent⟩
+        exact hadjacent.2.1
       · intro _
-        exact SimpleGraph.mem_support_of_reachable heq hreachable
+        have hsupport := SimpleGraph.mem_support_of_reachable heq hreachable
+        rw [SimpleGraph.mem_support] at hsupport
+        rcases hsupport with ⟨neighbor, hadjacent⟩
+        exact hadjacent.2.1
   · intro left right hsame
     exact
       sourceCorridorSerialBoundaryRebaseCappedFaceStepCodeAt_oldComponentCap_eq

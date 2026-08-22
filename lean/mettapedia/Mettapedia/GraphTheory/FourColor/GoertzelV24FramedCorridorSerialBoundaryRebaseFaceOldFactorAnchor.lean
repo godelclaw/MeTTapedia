@@ -49,7 +49,8 @@ namespace AnnularEmbedding
 
 /-- Every old-prefix occurrence connected to a selected successor occurrence
 has an old-component anchor on the finite switch, and the finite rebase closure
-connects the output coordinate to that anchor. -/
+connects the output coordinate to that anchor.  Old-prefix membership is used
+rather than graph support, so a singleton factor is retained. -/
 theorem exists_sourceCorridorSerialBoundaryRebaseOldFactorAnchor
     {source : SourceTrail G}
     {embedded : source.AnnularEmbedding} {blockLength : Nat}
@@ -71,11 +72,10 @@ theorem exists_sourceCorridorSerialBoundaryRebaseOldFactorAnchor
         hcubic hrotation htwoSided hunique offset hnext root})
     (position : Fin
       (embedded.cellulation.rotation.toRotationSystem.faceOrbit root).card)
-    (hpositionOld : position ∈
-      (faceRegionalAmbientPositionGraph
-        embedded.cellulation.rotation.toRotationSystem root
+    (hpositionOld : faceCycleEdge
+      embedded.cellulation.rotation.toRotationSystem root position ∈
         (sourceCorridorSerialPrefixCutDataAt realization hcubic hrotation
-          htwoSided hunique offset).regionEdges).support)
+          htwoSided hunique offset).regionEdges)
     (hreachable :
       (faceRegionalAmbientPositionGraph
         embedded.cellulation.rotation.toRotationSystem root
@@ -114,30 +114,41 @@ theorem exists_sourceCorridorSerialBoundaryRebaseOldFactorAnchor
     rw [← sourceCorridorSerialInputFaceGraph_next_eq_rebase_three_factor
       realization hcubic hrotation htwoSided hunique offset hnext root]
     exact hreachable
-  rcases exists_selected_firstFactor_anchor oldGraph newGraph seamGraph
+  rcases exists_selected_firstFactor_anchor_of_present oldGraph newGraph
+      seamGraph
+      (fun position => faceCycleEdge
+        embedded.cellulation.rotation.toRotationSystem root position ∈
+          (sourceCorridorSerialPrefixCutDataAt realization hcubic hrotation
+            htwoSided hunique offset).regionEdges)
       (fun position => position ∈ carrier) output.1 position output.2
       hpositionOld (by
-        intro x middle y hx hy hold hnew
+        intro left right hright hreach
+        by_cases heq : left = right
+        · simpa [heq] using hright
+        · have hsupport : left ∈ oldGraph.support :=
+            SimpleGraph.mem_support_of_reachable heq hreach
+          rw [SimpleGraph.mem_support] at hsupport
+          rcases hsupport with ⟨neighbor, hadjacent⟩
+          exact hadjacent.2.1)
+      (by
+        intro middle right _hmiddleOld hne hnew
         apply (mem_sourceCorridorSerialBoundaryRebaseFaceSwitchPositionsAt_iff
           realization hcubic hrotation htwoSided hunique offset hnext root
             middle).2
-        have hinter := faceRegionalAmbientPositionGraph_switch_mem_inter
-          embedded.cellulation.rotation.toRotationSystem root
-          (sourceCorridorSerialPrefixCutDataAt realization hcubic hrotation
-            htwoSided hunique offset).regionEdges
-          (sourceCorridorSerialBoundaryRebaseEdgeSetAt realization hcubic
-            hrotation htwoSided hunique offset hnext)
-          hx hy hold hnew
-        exact Finset.mem_union_right _ (Finset.mem_inter.1 hinter).2)
+        have hsupport : middle ∈ newGraph.support :=
+          SimpleGraph.mem_support_of_reachable hne hnew
+        rw [SimpleGraph.mem_support] at hsupport
+        rcases hsupport with ⟨neighbor, hadjacent⟩
+        exact Finset.mem_union_right _ hadjacent.2.1)
       (by
-        intro x middle y _hx hy _hold hseam
+        intro middle right _hmiddleOld hne hseam
         apply (mem_sourceCorridorSerialBoundaryRebaseFaceSwitchPositionsAt_iff
           realization hcubic hrotation htwoSided hunique offset hnext root
             middle).2
         apply
           sourceCorridorSerialBoundaryRebaseFaceSeamAt_support_projects_finiteSwitch
             realization hcubic hrotation htwoSided hunique offset hnext root
-        exact SimpleGraph.mem_support_of_reachable hy hseam)
+        exact SimpleGraph.mem_support_of_reachable hne hseam)
       hreachableUnion with ⟨anchor, hanchor, holdAnchor⟩
   let selectedAnchor : {position // position ∈ carrier} := ⟨anchor, hanchor⟩
   have hanchorNext :

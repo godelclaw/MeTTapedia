@@ -4,17 +4,17 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorSerialBoundaryR
 /-!
 # Capped predecessor face components for a serial boundary rebase
 
-The support-sensitive rebase state records which finite switch occurrences
-are present and which belong to one old-prefix component.  Capped face
-progress also needs the weight of that component.  This file adds exactly that
-finite coordinate: for every switch occurrence, the cardinality at most five
-of the supported old-prefix component which contains it.
+The support-sensitive rebase state records adjacency support, but a literal
+old-prefix factor may consist of one isolated regional occurrence.  This file
+therefore adds an explicit old-region membership bit together with the capped
+weight of the full old component at every switch coordinate.
 
-The cap is zero at an inactive occurrence and is constant on every stored old
-component.  Forgetting it recovers the preceding support-sensitive state by
-definition.  This is the predecessor weight needed by the successor cap law;
-it does not yet deduplicate several old components joined by the local rebase,
-construct the full Cell/rebase recurrence, or measure reachable closure.
+The cap is zero at an absent occurrence, counts a singleton component as one,
+and is constant on every stored old component.  Forgetting the new fields
+recovers the preceding support-sensitive state by definition.  This is the
+predecessor weight needed by the successor cap law; it does not yet deduplicate
+several old components joined by the local rebase, construct the full
+Cell/rebase recurrence, or measure reachable closure.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -32,22 +32,25 @@ open GoertzelV24TerminalProfileFaceUpdate
 open SimpleGraph
 open SimpleGraphDartRotation
 
-/-- A support-sensitive finite facial rebase state together with the capped
-weight of the predecessor component at every switch coordinate. -/
+/-- A finite facial rebase state together with exact old-region presence and
+the capped weight of the predecessor component at every switch coordinate. -/
 structure BoundedCappedSerialBoundaryRebaseFaceStepCode
     extends BoundedSupportedSerialBoundaryRebaseFaceStepCode where
+  oldPresent : Fin localCode.vertexCount.val → Bool
   oldComponentCap : Fin localCode.vertexCount.val → Fin 6
 
 private def boundedCappedSerialBoundaryRebaseFaceStepCodeEquiv :
     BoundedCappedSerialBoundaryRebaseFaceStepCode ≃
       Σ code : BoundedSupportedSerialBoundaryRebaseFaceStepCode,
-        Fin code.localCode.vertexCount.val → Fin 6 where
+        (Fin code.localCode.vertexCount.val → Bool) ×
+          (Fin code.localCode.vertexCount.val → Fin 6) where
   toFun code :=
     ⟨code.toBoundedSupportedSerialBoundaryRebaseFaceStepCode,
-      code.oldComponentCap⟩
+      code.oldPresent, code.oldComponentCap⟩
   invFun data :=
     { toBoundedSupportedSerialBoundaryRebaseFaceStepCode := data.1
-      oldComponentCap := data.2 }
+      oldPresent := data.2.1
+      oldComponentCap := data.2.2 }
   left_inv _ := rfl
   right_inv _ := rfl
 
@@ -73,9 +76,9 @@ namespace SourceTrail
 
 namespace AnnularEmbedding
 
-/-- The supported part of the old-prefix facial component meeting one finite
-switch coordinate.  Filtering by support makes this empty at an inactive
-coordinate despite reflexivity of graph reachability. -/
+/-- The full old-prefix facial component meeting one finite switch coordinate.
+Filtering by literal region membership makes this empty at an absent
+coordinate despite reflexivity, while retaining a genuine singleton factor. -/
 noncomputable def sourceCorridorSerialBoundaryRebaseOldFaceComponentSupportAt
     {source : SourceTrail G}
     {embedded : source.AnnularEmbedding} {blockLength : Nat}
@@ -107,7 +110,10 @@ noncomputable def sourceCorridorSerialBoundaryRebaseOldFaceComponentSupportAt
       htwoSided hunique offset).regionEdges
   let start := ((carrierCoordinate carrier).symm coordinate).1
   exact Finset.univ.filter fun position =>
-    position ∈ graph.support ∧ graph.Reachable start position
+    faceCycleEdge embedded.cellulation.rotation.toRotationSystem root position ∈
+        (sourceCorridorSerialPrefixCutDataAt realization hcubic hrotation
+          htwoSided hunique offset).regionEdges ∧
+      graph.Reachable start position
 
 @[simp]
 theorem mem_sourceCorridorSerialBoundaryRebaseOldFaceComponentSupportAt_iff
@@ -135,11 +141,9 @@ theorem mem_sourceCorridorSerialBoundaryRebaseOldFaceComponentSupportAt_iff
     position ∈
         sourceCorridorSerialBoundaryRebaseOldFaceComponentSupportAt realization
           hcubic hrotation htwoSided hunique offset hnext root coordinate ↔
-      position ∈
-          (faceRegionalAmbientPositionGraph
-            embedded.cellulation.rotation.toRotationSystem root
-            (sourceCorridorSerialPrefixCutDataAt realization hcubic hrotation
-              htwoSided hunique offset).regionEdges).support ∧
+      faceCycleEdge embedded.cellulation.rotation.toRotationSystem root position ∈
+          (sourceCorridorSerialPrefixCutDataAt realization hcubic hrotation
+            htwoSided hunique offset).regionEdges ∧
         (faceRegionalAmbientPositionGraph
           embedded.cellulation.rotation.toRotationSystem root
           (sourceCorridorSerialPrefixCutDataAt realization hcubic hrotation
@@ -174,11 +178,57 @@ noncomputable def sourceCorridorSerialBoundaryRebaseCappedFaceStepCodeAt
   toBoundedSupportedSerialBoundaryRebaseFaceStepCode :=
     sourceCorridorSerialBoundaryRebaseSupportedFaceStepCodeAt realization
       hcubic hrotation htwoSided hunique offset hnext root
+  oldPresent coordinate := by
+    classical
+    exact decide
+      (faceCycleEdge embedded.cellulation.rotation.toRotationSystem root
+          (((carrierCoordinate
+            (sourceCorridorSerialBoundaryRebaseFaceSwitchPositionsAt realization
+              hcubic hrotation htwoSided hunique offset hnext root)).symm
+                coordinate).1) ∈
+        (sourceCorridorSerialPrefixCutDataAt realization hcubic hrotation
+          htwoSided hunique offset).regionEdges)
   oldComponentCap coordinate :=
     ⟨min
       (sourceCorridorSerialBoundaryRebaseOldFaceComponentSupportAt realization
         hcubic hrotation htwoSided hunique offset hnext root coordinate).card 5,
       Nat.lt_succ_of_le (Nat.min_le_right _ _)⟩
+
+/-- The added presence bit is exact literal membership in the old regional
+face carrier, including a position isolated in its adjacency graph. -/
+@[simp]
+theorem sourceCorridorSerialBoundaryRebaseCappedFaceStepCodeAt_oldPresent_iff
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (root : embedded.cellulation.rotation.toRotationSystem.D)
+    (coordinate : Fin
+      (sourceCorridorSerialBoundaryRebaseFaceStepCodeAt realization hcubic
+        hrotation htwoSided hunique offset hnext root
+          ).localCode.vertexCount.val) :
+    (sourceCorridorSerialBoundaryRebaseCappedFaceStepCodeAt realization hcubic
+      hrotation htwoSided hunique offset hnext root).oldPresent coordinate =
+        true ↔
+      faceCycleEdge embedded.cellulation.rotation.toRotationSystem root
+          (((carrierCoordinate
+            (sourceCorridorSerialBoundaryRebaseFaceSwitchPositionsAt realization
+              hcubic hrotation htwoSided hunique offset hnext root)).symm
+                coordinate).1) ∈
+        (sourceCorridorSerialPrefixCutDataAt realization hcubic hrotation
+          htwoSided hunique offset).regionEdges := by
+  classical
+  simp [sourceCorridorSerialBoundaryRebaseCappedFaceStepCodeAt]
 
 /-- Forgetting predecessor component weights recovers the existing
 support-sensitive rebase step definitionally. -/
@@ -205,8 +255,8 @@ theorem sourceCorridorSerialBoundaryRebaseCappedFaceStepCodeAt_toSupported
         hcubic hrotation htwoSided hunique offset hnext root :=
   rfl
 
-/-- The stored predecessor weight is exactly the cap at five of its literal
-supported old-prefix component. -/
+/-- The stored predecessor weight is exactly the cap at five of its full
+literal old-prefix component, including singleton factors. -/
 theorem sourceCorridorSerialBoundaryRebaseCappedFaceStepCodeAt_oldComponentCap
     {source : SourceTrail G}
     {embedded : source.AnnularEmbedding} {blockLength : Nat}
@@ -287,10 +337,10 @@ theorem sourceCorridorSerialBoundaryRebaseCappedFaceStepCodeAt_oldComponentCap_e
   ext position
   simp only [mem_sourceCorridorSerialBoundaryRebaseOldFaceComponentSupportAt_iff]
   constructor
-  · rintro ⟨hsupport, hleft⟩
-    exact ⟨hsupport, hreachable.symm.trans hleft⟩
-  · rintro ⟨hsupport, hright⟩
-    exact ⟨hsupport, hreachable.trans hright⟩
+  · rintro ⟨hpresent, hleft⟩
+    exact ⟨hpresent, hreachable.symm.trans hleft⟩
+  · rintro ⟨hpresent, hright⟩
+    exact ⟨hpresent, hreachable.trans hright⟩
 
 end AnnularEmbedding
 

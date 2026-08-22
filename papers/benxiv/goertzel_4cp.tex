@@ -5652,15 +5652,19 @@ remain open.
 The predecessor contribution to that law is now retained by a finite state
 rather than left as an ambient-history query.  Module
 \texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceCappedState}
-assigns to every stable switch occurrence the cap at five of its actual
-supported old-prefix component.  An inactive coordinate has cap zero, and
-coordinates belonging to the same stored component provably carry the same
-cap.  Forgetting these weights is definitionally the preceding
-support-sensitive state.  The remaining decoder must count each old component
-once when the local rebase joins several of them, then add the new local slice
-and subtract the genuine overlap before transporting the result to the
-successor residual carrier.  Thus the predecessor weights are now finite and
-exact, but the complete Cell/rebase recurrence, reachable-closure measurement,
+assigns to every stable switch occurrence both exact old-region presence and
+the cap at five of its full old-prefix component.  The distinction is
+load-bearing: a one-position regional factor is physically present but is
+isolated in the induced adjacency graph, so adjacency support alone would
+incorrectly assign it cap zero.  The explicit presence bit retains that factor
+with cap one; an absent coordinate has cap zero, and coordinates belonging to
+the same stored component provably carry the same presence and cap.  Forgetting
+these new fields is definitionally the preceding support-sensitive state.  The
+remaining decoder must count each old component once when the local rebase
+joins several of them, then add the new local slice and subtract the genuine
+overlap before transporting the result to the successor residual carrier.
+Thus the predecessor weights are finite and exact even for singleton factors,
+but the complete Cell/rebase recurrence, reachable-closure measurement,
 numerical $V_0$, and bounded-base verification remain open.
 
 The predecessor weights can now be consumed without counting the same old
@@ -5668,8 +5672,8 @@ face once per switch occurrence.  Module
 \texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceComponentRepresentatives}
 turns the finite old-component relation into a partition, chooses the least
 occurrence of each component as its canonical representative, and retains
-exactly the representatives of physically active components.  Lean proves
-existence and uniqueness of this representative for every active occurrence
+exactly the representatives of physically present components.  Lean proves
+existence and uniqueness of this representative for every present occurrence
 and proves that the stored cap is unchanged by the replacement.  The literal
 source rebase supplies all required semantic laws from exact regional
 reachability and support.  What remains is to select the representatives that
@@ -5691,7 +5695,8 @@ the existing overlap-corrected successor cap law.  The complete heterogeneous
 recurrence, reachable-closure measurement, numerical $V_0$, and bounded-base
 verification remain open.
 
-Coverage of that decoder by the literal source geometry is now proved.
+Coverage of that decoder by the literal source geometry is now proved,
+including isolated one-position old factors.
 The generic module
 \texttt{GoertzelV24SimpleGraphThreeFactorSelectedAnchor} shows that, in a
 union of three graph factors, every point of the first factor reachable from
@@ -5702,13 +5707,18 @@ uses the old prefix, the newly displayed two-edge region, and the facial seam
 as those three factors.  Consequently every old-prefix occurrence inside a
 successor face fragment reaches an old-component anchor on the finite rebase
 switch, and the exact finite closure connects the successor coordinate to
-that anchor.  Thus no contributing old face component can escape the finite
-decoder merely by meeting the switch away from a preferred occurrence.  The
-remaining adequacy step is injective accounting: identify canonical finite
-representatives with the literal old regional factor fragments and transport
-their capped weights across that correspondence.  The complete heterogeneous
-recurrence, reachable-closure measurement, numerical $V_0$, and bounded-base
-verification remain open.
+that anchor.  Module
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceOldFactorFragment}
+then decodes every present coordinate to its literal old regional connected
+component and proves equality between the stored component-position set and
+the fragment's actual cyclic positions.  Thus no contributing old face
+component can escape the finite decoder merely by being a singleton or by
+meeting the switch away from a preferred occurrence.  The remaining adequacy
+step is injective accounting: identify canonical finite representatives with
+the literal old regional factor fragments and transport their capped weights
+across that correspondence.  The complete heterogeneous recurrence,
+reachable-closure measurement, numerical $V_0$, and bounded-base verification
+remain open.
 
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module

@@ -5,12 +5,12 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorSerialBoundaryR
 
 Canonical representatives remove duplicate occurrence coordinates from the
 predecessor face state.  This file turns that selector into the finite capped
-sum seen from one successor switch occurrence: retain exactly the active old
+sum seen from one successor switch occurrence: retain exactly the present old
 components connected to the output through the old, local, or seam factors,
 add each stored component weight once, and cap the result at five.
 
 The decoder is graph-free after a semantic finite code is supplied.  Every
-active predecessor occurrence connected to the output contributes through its
+present predecessor occurrence connected to the output contributes through its
 unique representative with the same stored cap.  The remaining geometric
 adequacy theorem must identify this finite sum with the literal old-prefix
 slice of the successor fragment; no reachable closure or numerical threshold
@@ -23,7 +23,7 @@ namespace GoertzelV24FramedTrail
 
 namespace BoundedCappedSerialBoundaryRebaseFaceStepCode
 
-/-- Canonical active old components connected to one successor occurrence by
+/-- Canonical present old components connected to one successor occurrence by
 the finite rebase closure. -/
 noncomputable def contributingOldComponentRepresentatives
     (code : BoundedCappedSerialBoundaryRebaseFaceStepCode)
@@ -71,13 +71,13 @@ theorem oldComponentCapSumAt_le_five
     code.oldComponentCapSumAt semantic output ≤ 5 :=
   Nat.min_le_right _ _
 
-/-- An active predecessor occurrence connected to the output contributes via
+/-- A present predecessor occurrence connected to the output contributes via
 its canonical representative. -/
-theorem oldComponentRepresentative_mem_contributing_of_active_of_reachable
+theorem oldComponentRepresentative_mem_contributing_of_present_of_reachable
     (code : BoundedCappedSerialBoundaryRebaseFaceStepCode)
     (semantic : code.IsComponentSemantic)
     (output coordinate : Fin code.localCode.vertexCount.val)
-    (hactive : code.oldActive coordinate = true)
+    (hpresent : code.oldPresent coordinate = true)
     (hreachable : Relation.ReflTransGen
       (boundedSerialBoundaryRebaseFaceComponentStep
         code.toBoundedSerialBoundaryRebaseFaceStepCode) output coordinate) :
@@ -85,7 +85,7 @@ theorem oldComponentRepresentative_mem_contributing_of_active_of_reachable
       code.contributingOldComponentRepresentatives semantic output := by
   rw [code.mem_contributingOldComponentRepresentatives_iff semantic]
   refine ⟨code.oldComponentRepresentative_mem_representatives semantic
-    coordinate hactive, ?_⟩
+    coordinate hpresent, ?_⟩
   apply hreachable.tail
   exact Or.inl
     ((code.mem_oldComponentPartition_part_iff semantic coordinate
@@ -99,15 +99,15 @@ theorem oldComponentCap_of_contributingRepresentative
     (code : BoundedCappedSerialBoundaryRebaseFaceStepCode)
     (semantic : code.IsComponentSemantic)
     (output coordinate : Fin code.localCode.vertexCount.val)
-    (hactive : code.oldActive coordinate = true)
+    (hpresent : code.oldPresent coordinate = true)
     (hreachable : Relation.ReflTransGen
       (boundedSerialBoundaryRebaseFaceComponentStep
         code.toBoundedSerialBoundaryRebaseFaceStepCode) output coordinate) :
     code.oldComponentCap
         (code.oldComponentRepresentative semantic coordinate) =
       code.oldComponentCap coordinate := by
-  have _ := code.oldComponentRepresentative_mem_contributing_of_active_of_reachable
-    semantic output coordinate hactive hreachable
+  have _ := code.oldComponentRepresentative_mem_contributing_of_present_of_reachable
+    semantic output coordinate hpresent hreachable
   exact code.oldComponentCap_representative semantic coordinate
 
 /-- Any selected representative related to a contributing occurrence is the
