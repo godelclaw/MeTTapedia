@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialCellTrackedPrefixAttachmentState
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialCellFullProfileRelation
 import Mettapedia.GraphTheory.FourColor.GoertzelV24SimpleGraphThreeFactorContraction
 
 /-!
@@ -68,6 +69,28 @@ def sourceLocalLayerSerialTrackedFiniteStableSlot
     Fin code.vertexCount.val → Fin 21 :=
   fun coordinate => Fin.castLE (Nat.le_of_lt_succ code.vertexCount.isLt)
     coordinate
+
+/-- One of the two literal outgoing crossings, retained as a point of the
+common transition carrier. -/
+noncomputable def sourceLocalLayerSerialTrackedOutgoingCarrierPointAt
+    (graphData : Data G)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3)) (step : Fin 2) :
+    {edge // edge ∈ sourceLocalLayerSerialTrackedTransitionCarrierAt
+      graphData caps coloring web corridor hunique offset} :=
+  ⟨sourceLocalLayerRightCrossingAt corridor hunique offset step,
+    Finset.mem_union_left _ (Finset.mem_union_left _
+      (sourceLocalLayerCellRegionAt_rightCrossing corridor hunique offset
+        step))⟩
 
 /-- The graph-free one-Cell tracked step on the literal finite carrier.
 The predecessor factor is reconstructed from finite attachments and the
@@ -261,6 +284,70 @@ theorem sourceLocalLayerSerialPreRebaseTrackedReachable_iff_finiteClosure
         (hstep (coordinate.symm first) (coordinate.symm second)).2 (by
           simpa using h)) hclosure
     simpa [coordinate, carrier] using hlift
+
+/-- The actual outgoing profile's tracked-connectivity field is exactly the
+finite closure above, guarded by the two displayed output colours.  This is
+the projection needed by a later full five-coordinate letter decoder. -/
+theorem sourceLocalLayerSerialPreRebaseOutput_strandConnected_iff_finiteClosure
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3)) (pair : TrackedColorPair)
+    (left right : Fin 2) :
+    (sourceLocalLayerSerialPreRebaseOutputBoundedProfileAt corridor hunique
+        offset).profile.strandConnected pair (.inl left) (.inl right) = true ↔
+      IsTrackedColor (trackedColorPairColors pair).1
+          (trackedColorPairColors pair).2
+          ((sourceLocalLayerSerialPreRebaseOutputBoundedProfileAt corridor
+            hunique offset).profile.edgeColor left).toColor ∧
+        IsTrackedColor (trackedColorPairColors pair).1
+          (trackedColorPairColors pair).2
+          ((sourceLocalLayerSerialPreRebaseOutputBoundedProfileAt corridor
+            hunique offset).profile.edgeColor right).toColor ∧
+        Relation.ReflTransGen
+          (SourceLocalLayerSerialTrackedFiniteComponentStep
+            (sourceLocalLayerSerialTrackedPrefixAttachmentStateAt graphData caps
+              coloring web corridor hunique offset)
+            (sourceLocalLayerSerialTerminalInputBoundedProfileAt corridor
+              hunique offset)
+            (sourceLocalLayerSerialTrackedTransitionCodeAt graphData minimal caps
+              coloring web corridor hunique offset)
+            pair)
+          (carrierCoordinate
+            (sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps
+              coloring web corridor hunique offset)
+            (sourceLocalLayerSerialTrackedOutgoingCarrierPointAt graphData caps
+              coloring web corridor hunique offset left))
+          (carrierCoordinate
+            (sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps
+              coloring web corridor hunique offset)
+            (sourceLocalLayerSerialTrackedOutgoingCarrierPointAt graphData caps
+              coloring web corridor hunique offset right)) := by
+  let relation := sourceLocalLayerSerialCellFullProfileRelation_of_ambientColoring
+    corridor hunique offset
+  rw [relation.outputStrandConnected pair left right,
+    relation.outputEdgeColor left, relation.outputEdgeColor right]
+  let leftPoint := sourceLocalLayerSerialTrackedOutgoingCarrierPointAt graphData
+    caps coloring web corridor hunique offset left
+  let rightPoint := sourceLocalLayerSerialTrackedOutgoingCarrierPointAt graphData
+    caps coloring web corridor hunique offset right
+  have hold := sourceLocalLayerSerialPreRebaseTrackedReachable_iff corridor
+    hunique offset coloring (trackedColorPairColors pair).1
+      (trackedColorPairColors pair).2 leftPoint.1 rightPoint.1
+  have hfinite := sourceLocalLayerSerialPreRebaseTrackedReachable_iff_finiteClosure
+    graphData minimal caps coloring web corridor hunique offset pair leftPoint
+      rightPoint
+  exact and_congr_right fun _ =>
+    and_congr_right fun _ => hold.symm.trans hfinite
 
 end
 
