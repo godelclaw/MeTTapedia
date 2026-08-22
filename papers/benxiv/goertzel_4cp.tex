@@ -5964,6 +5964,15 @@ does not yet contract the local graph and seam onto the twelve finite slots;
 that contraction is the remaining tracked-recurrence obligation before any
 reachable-mode count is meaningful.
 
+That transition is also expanded in its literal source order in
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedTransitionFactorization}.
+The successor tracked prefix is exactly the five-factor union of the current
+prefix graph, the boundary-rebase graph, the rebase seam, the successor Cell
+graph, and the Cell-input seam.  The eventual finite replay may therefore
+compose the already verified rebase and one-Cell receipts, rather than
+postulating a new homogeneous transition.  Contracting both seams onto the
+twelve stable slots remains open.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
