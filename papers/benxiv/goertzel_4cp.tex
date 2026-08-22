@@ -5951,6 +5951,19 @@ ambient edge; only the two unavailable predecessor names at the first offset
 remain absent.  This is the stable carrier for the next finite tracked update,
 not yet that update itself.
 
+The semantic region traversed by that update is now exact as well.  Module
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedTransitionRegion}
+proves that the successor outgoing-prefix region is the union of the current
+prefix with precisely two local pieces: the current boundary rebase and the
+successor literal Cell.  Its tracked graph consequently factors as the
+current accumulated graph, the local rebase-plus-Cell graph, and the residual
+seam between them.  This fixes the temporal convention needed by a replay
+table---outgoing prefix to outgoing prefix---without replacing the
+heterogeneous source word by repetitions of one abstract letter.  The result
+does not yet contract the local graph and seam onto the twelve finite slots;
+that contraction is the remaining tracked-recurrence obligation before any
+reachable-mode count is meaningful.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
