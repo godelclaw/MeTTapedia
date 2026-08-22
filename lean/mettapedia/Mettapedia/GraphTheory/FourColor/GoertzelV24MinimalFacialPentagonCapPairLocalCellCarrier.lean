@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerFiniteTrackedLetter
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialPrefixRegion
 import Mettapedia.GraphTheory.FourColor.GoertzelV24MinimalFacialPentagonCapPairNoSmallCut
 
 /-!
@@ -16,7 +17,9 @@ Thus every literal Cell in this source laboratory has a graph-independent
 regional edge carrier of cardinality at most six.  This removes the cyclic
 escape branch needed by the finite Cell-letter construction.  It does not
 claim that an arbitrary abstract Addendum-V frontier is a two-cap opening;
-that source-formation comparison remains a separate obligation.
+that source-formation comparison remains a separate obligation.  The indexed
+corollary below applies the same bound at every offset of the actual
+heterogeneous source word; it does not quotient those letters by orientation.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -52,6 +55,7 @@ variable {V : Type*} [Fintype V] [DecidableEq V]
 noncomputable section
 
 attribute [-instance]
+  GoertzelV24OpenRegionRotation.retainedVertexDecidableEq
   GoertzelV24RetainedVertexRotationSplice.retainedVertexDecidableEq
 
 local instance openedGraphDecidableRel
@@ -138,6 +142,35 @@ theorem sourceLocalLayerCellRegion_card_le_six
           web.boundary_wellFormed step)
       simpa [pair, boundary] using hkept
   · simpa [side] using hfinite
+
+/-- Indexed form of the six-edge bound on the literal heterogeneous source
+word.  Its Cell carrier is the same complementary vertex-side region as in
+the local theorem above. -/
+theorem sourceLocalLayerCellRegionAt_card_le_six
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3)) :
+    (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 6 := by
+  have hcard :=
+    sourceLocalLayerCellRegion_card_le_six graphData minimal caps coloring web
+      corridor hunique (sourceLocalLayerInteriorAt offset)
+        (sourceLocalLayerInteriorAt_hasNext offset)
+  rw [sourceLocalLayerCellVertexSide_eq_retained_compl] at hcard
+  simpa [sourceLocalLayerCellRegionAt, sourceLocalLayerPairAt,
+    sourceLocalLayerBoundaryAt, sourceLocalLayerRetainedVertexSide,
+    SeparatedAlignedSimpleDualCrosscuts.sourceCrosscutComplementBoundaryProfileData,
+    GoertzelV24RotationBoundaryFaceCutProfile.vertexSetBoundaryGraphCutDataWithIndexing] using
+    hcard
 
 /-- The preceding unconditional bound instantiates the existing common
 six-slot code for all three tracked colour-pair graphs of the literal Cell. -/
