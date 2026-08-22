@@ -5923,6 +5923,20 @@ and the literal heterogeneous Cell-plus-rebase receipt, and perform the
 corresponding stable transport for capped facial state.  No reachable count,
 numerical $V_0$, or bounded-base verification is inferred yet.
 
+The coordinate slide needed by that recurrence is now exact in
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedSwitchSuccessorSlots}.
+Four current slots have literal successors: the two Cell outputs become the
+successor's predecessor outputs, while the two crossings exposed by the
+current rebase become its current inputs.  Lean proves that these four pairs
+name definitionally equal ambient edges.  The other four successor slots are
+exactly its two Cell outputs and its two following-rebase crossings; an
+explicit equivalence partitions all eight slots into these inherited and
+fresh halves.  This is only an edge-name transport theorem.  It deliberately
+does not preserve the tracked state values, since adjoining the next literal
+Cell may change reachability around an inherited edge.  Computing that change
+from the heterogeneous Cell-plus-rebase receipt remains the next semantic
+recurrence obligation.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
