@@ -6920,6 +6920,24 @@ obligation is to encode the predecessor attachments and local seam on a
 bounded dart carrier, retain the capped face-progress data, and prove the
 finite closure adequate for the five-coordinate output profile.
 
+That common carrier is now explicit.  The generic module
+\texttt{GoertzelV24RotationFaceRegionalDartCarrier} proves that the closed
+face-permutation neighbourhood of a finite edge set has at most six literal
+darts per edge, counting both occurrences even on a one-sided boundary face.
+Module
+\texttt{GoertzelV24ClosedWebLocalLayerSerialCellFaceTransitionCarrier}
+then proves that every residual-seam adjacency of an actual source Cell
+touches one of its two named outgoing crossings.  The darts over the at-most
+six Cell edges and the closed neighbourhood of those crossings therefore form
+a common carrier of at most twenty-four darts.  The Cell and seam face graphs
+are transported through one finite coordinate system, with complete
+reachability equivalent to their ambient literal-dart reachability.  The
+cardinality theorem takes the local six-edge Cell bound as an explicit
+premise; it neither assumes global cubicity nor identifies the two occurrences
+over a stub edge.  What remains is to summarize the accumulated predecessor's
+attachments to these slots, compose the three finite factors, and decode face
+continuation, port incidence, and capped progress in the outgoing profile.
+
 \subsection{What the programme may explain---and what is not yet a theorem}
 
 The finite-state route suggests an information-theoretic explanation for why a
