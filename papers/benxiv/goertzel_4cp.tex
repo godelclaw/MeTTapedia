@@ -6203,6 +6203,39 @@ branch above, remains to be proved before measuring the heterogeneous
 reachable closure.  Consequently no reachable-state count, numerical
 $V_0$, or bounded-base verification follows from this checkpoint.
 
+The complete local counting semantics can now be stated on the actual opened
+carrier.  The older complementary-side profile API threaded a global cubicity
+argument through its declarations even though the removed-side dart needed to
+root the open region was already present in the source boundary datum.  That
+premise is false for the source annulus, whose named boundary stubs have degree
+one.  Module
+\texttt{GoertzelV24AnnularCrosscutComplementProfileOfBoundary} therefore roots
+the complementary open region directly at the stored boundary dart and
+reconstructs the same five-coordinate left and right profiles.  Its
+\texttt{Count} entry is the cardinality of the finite fiber of literal Tait
+colourings, and positivity is proved equivalent to the existence of one such
+colouring realizing the two stated profiles.  No coordinate or support notion
+is weakened; the old declarations remain as compatibility wrappers.
+
+Module \texttt{GoertzelV24ClosedWebLocalLayerLiteralCount} specializes this
+boundary-rooted semantics to each actual indexed source Cell.  Its literal
+four-edge wall bounds the number of boundary-local face fragments by eight,
+so the two exact dependent profiles embed injectively into a common
+\texttt{BoundedCorridorCutProfile 2 0 8} carrier.  The resulting decidable
+heterogeneous letter holds exactly when the corresponding literal
+\texttt{Count} entry is positive, equivalently when an actual Tait colouring
+of that Cell realizes both full profiles.  Thus the opened source now has a
+non-vacuous local letter carrying crossed-edge colours, all tracked two-colour
+connectivity, face continuation, port incidence, and capped face progress.
+
+This is still a local Cell observation, not the live serial recurrence.  The
+next factorization theorem must identify its left and right observations with
+the predecessor and successor cumulative-prefix profiles and compose the
+separate boundary-rebase receipt.  The cyclic-Cell branch also remains to be
+excluded or finitely encoded.  Until those steps and a checked reachable-mode
+table are present, this result supplies neither a reachable-state count nor a
+numerical $V_0$ or bounded-base verification.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
