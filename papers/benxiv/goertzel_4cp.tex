@@ -5760,6 +5760,21 @@ face-continuation, port-incidence, and tracked-connectivity laws, then
 composing it with the distinct literal Cell letter, remains open; no reachable
 closure, numerical $V_0$, or bounded-base verification is claimed yet.
 
+The port-incidence law is now graph-free after extraction as well.  Module
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceFinitePortLabels}
+attaches two finite port-label bits to each occurrence coordinate of the
+at-most-eight-position facial switch.  Its decoder says that a successor
+fragment contains a displayed port exactly when the fragment's canonical
+coordinate reaches an occurrence carrying that label.  Lean proves this is
+equivalent to the literal profile's \texttt{fragmentContainsPort} field, so no
+ambient primal-edge comparison remains at the use site.  Moreover, the
+extracted labels obey a one-hot law on each two-sided orbit face: one named
+primal port cannot occupy two occurrence coordinates.  This is an exact
+restriction on the source image rather than an arbitrary Boolean table.  The
+joint finite rebase receipt, its composition with the distinct literal Cell
+letter, reachable-closure measurement, numerical $V_0$, and bounded-base
+verification remain open.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
