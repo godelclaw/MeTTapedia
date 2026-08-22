@@ -5350,9 +5350,24 @@ an input crossing adjacent to the successor rebase belongs to the current
 Cell, while an output crossing belongs to the current Cell or its immediate
 predecessor.  Thus the formerly unbounded historical search has exactly
 three local cases.  The remaining theorem must still absorb those cases into
-the two displayed current ports, and the occurrence-sensitive facial
-analogue remains separate; bounded locality is not yet full profile
-factorization.
+the incoming profile; bounded locality is not yet full profile factorization.
+
+That bounded historical range is now packaged at the literal seam, for both
+connectivity and face progress.  Module
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseTrackedAttachment}
+orients every tracked rebase adjacency and proves that its old endpoint has
+exactly one of three source roles: an input crossing of the current Cell, an
+output crossing of the current Cell, or an output crossing of the immediately
+preceding Cell.  Its facial theorem gives the same three-role classification
+for every occurrence-sensitive face-seam step after projecting the face
+position to its ambient primal edge.  The new endpoint remains explicitly in
+the two-edge successor presentation in both statements.  Hence the rebase no
+longer consults an unbounded historical alphabet at its point of attachment.
+This is not yet the full two-port decoder: after entering the accumulated
+prefix, a tracked component or a face fragment may still carry information to
+a different true-frontier edge.  The remaining quotient theorem must show
+that such excursions are represented by the incoming profile, or retain an
+equivalent finite residue, before any reachable-closure count is sound.
 
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
