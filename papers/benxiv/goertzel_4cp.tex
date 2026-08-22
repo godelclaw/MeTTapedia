@@ -5632,6 +5632,23 @@ same bounded occurrence carrier.  Capped face length, the intervening literal
 Cell update, the complete heterogeneous recurrence, reachable-closure
 measurement, numerical $V_0$, and bounded-base verification remain open.
 
+The successor cap-at-five coordinate now has an exact geometric update law.
+Module
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceSuccessorCap}
+splits each successor face fragment into its old-prefix occurrence slice and
+the slice contributed by the two newly displayed rebase edges.  Lean proves
+that the stored capped length is their two capped cardinalities, minus the
+genuine shared occurrences counted by both slices, capped again at five.
+Two-sidedness identifies occurrence cardinality with the edge cardinality
+stored in the boundary profile, and the two-edge rebase bounds the common seam
+strictly below the cap.  Thus the picture-level instruction ``join the two
+face pieces without counting their seam twice'' is now a theorem.  This is not
+yet a graph-free recurrence: the capped old-prefix slice still has to be
+decoded from the predecessor profile and its finite residual state.  The
+intervening literal Cell update, complete heterogeneous recurrence,
+reachable-closure measurement, numerical $V_0$, and bounded-base verification
+remain open.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
