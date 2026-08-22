@@ -6885,6 +6885,22 @@ relation with the already coded Cell and seam relations, then project the
 result to the outgoing profile.  The facial recurrence and the heterogeneous
 reachable closure remain separate open steps.
 
+The tracked three-factor closure is now finite as well.  Module
+\texttt{GoertzelV24ClosedWebLocalLayerSerialCellTrackedFiniteClosure}
+first proves that every nontrivial switch among the accumulated prefix, the
+literal Cell, and their residual seam occurs on the common twenty-one-edge
+carrier.  It then transports the complete component closure to finite
+coordinates.  Consequently, for every literal source Cell and tracked colour
+pair, Lean proves an iff between reachability in the actual enlarged prefix
+and reflexive--transitive closure of a graph-free relation determined by the
+terminal-aware incoming profile, its finite attachment state, and the coded
+Cell and seam graphs.  This closes the tracked-connectivity recurrence on the
+literal carrier; it does not identify heterogeneous Cells merely by their
+three geometric orientations.  Projection to the outgoing bounded profile,
+the finite facial attachment/cap recurrence, the combined positive-support
+letter, reachable closure, numerical $V_0$, and bounded-base verification
+remain open.
+
 \subsection{What the programme may explain---and what is not yet a theorem}
 
 The finite-state route suggests an information-theoretic explanation for why a
