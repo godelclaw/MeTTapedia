@@ -293,6 +293,150 @@ theorem sourceCorridorSerialBoundaryRebasePortTrackedCodeAt_newPoint
         (finSumFinEquiv.symm (finSumFinEquiv (Sum.inr step)))) = _
   rw [Equiv.symm_apply_apply]
 
+/-- Every adjacency of either tracked rebase factor is represented exactly
+on the enlarged carrier.  Adjoining the old ports changes only the coordinate
+space; it does not weaken the local graph code. -/
+theorem sourceCorridorSerialBoundaryRebasePortTrackedCodeAt_adj_iff
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (color : G.edgeSet → Color)
+    (factor : SourceCorridorSerialBoundaryRebaseTrackedFactor)
+    (first second : {edge // edge ∈
+      sourceCorridorSerialBoundaryRebasePortCarrierAt realization hcubic
+        hrotation htwoSided hunique offset hnext}) :
+    ((sourceCorridorSerialBoundaryRebasePortTrackedCodeAt realization hcubic
+        hrotation htwoSided hunique offset hnext color).graph factor).Adj
+        (carrierCoordinate
+          (sourceCorridorSerialBoundaryRebasePortCarrierAt realization hcubic
+            hrotation htwoSided hunique offset hnext) first)
+        (carrierCoordinate
+          (sourceCorridorSerialBoundaryRebasePortCarrierAt realization hcubic
+            hrotation htwoSided hunique offset hnext) second) ↔
+      (sourceCorridorSerialBoundaryRebaseTrackedGraphAt realization hcubic
+        hrotation htwoSided hunique offset hnext color factor).Adj
+          first.1 second.1 := by
+  exact boundedCarrierGraphFamilyCode_adj_iff _ _ _ _ _ _ _ _ _
+
+/-- Every tracked-factor path between enlarged-carrier vertices is preserved
+exactly.  In particular the four named ports and every local seam contact may
+be compared in the same finite graph without losing an ambient path. -/
+theorem sourceCorridorSerialBoundaryRebasePortTrackedCodeAt_reachable_iff
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (color : G.edgeSet → Color)
+    (factor : SourceCorridorSerialBoundaryRebaseTrackedFactor)
+    (first second : {edge // edge ∈
+      sourceCorridorSerialBoundaryRebasePortCarrierAt realization hcubic
+        hrotation htwoSided hunique offset hnext}) :
+    ((sourceCorridorSerialBoundaryRebasePortTrackedCodeAt realization hcubic
+        hrotation htwoSided hunique offset hnext color).graph factor).Reachable
+        (carrierCoordinate
+          (sourceCorridorSerialBoundaryRebasePortCarrierAt realization hcubic
+            hrotation htwoSided hunique offset hnext) first)
+        (carrierCoordinate
+          (sourceCorridorSerialBoundaryRebasePortCarrierAt realization hcubic
+            hrotation htwoSided hunique offset hnext) second) ↔
+      (sourceCorridorSerialBoundaryRebaseTrackedGraphAt realization hcubic
+        hrotation htwoSided hunique offset hnext color factor).Reachable
+          first.1 second.1 := by
+  exact boundedCarrierGraphFamilyCode_reachable_iff_of_support_subset
+    (sourceCorridorSerialBoundaryRebasePortCarrierAt realization hcubic
+      hrotation htwoSided hunique offset hnext)
+    16 4
+    (sourceCorridorSerialBoundaryRebasePortCarrierAt_card_le_sixteen
+      realization hcubic hrotation htwoSided hunique offset hnext)
+    (fun index => sourceCorridorSerialBoundaryRebasePortAt realization hcubic
+      hrotation htwoSided hunique offset hnext (finSumFinEquiv.symm index))
+    (sourceCorridorSerialBoundaryRebaseTrackedGraphAt realization hcubic
+      hrotation htwoSided hunique offset hnext color)
+    factor
+    (sourceCorridorSerialBoundaryRebaseTrackedGraphAt_support_subset_portCarrier
+      realization hcubic hrotation htwoSided hunique offset hnext color factor)
+    first second
+
+/-- Port-to-port reachability may be read directly from the four named finite
+coordinates.  This is the exact interface consumed by a later decoder: it
+avoids exposing the carrier enumeration while retaining both sides of the
+rebase. -/
+theorem sourceCorridorSerialBoundaryRebasePortTrackedCodeAt_port_reachable_iff
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (color : G.edgeSet → Color)
+    (factor : SourceCorridorSerialBoundaryRebaseTrackedFactor)
+    (first second : Fin 2 ⊕ Fin 2) :
+    ((sourceCorridorSerialBoundaryRebasePortTrackedCodeAt realization hcubic
+        hrotation htwoSided hunique offset hnext color).graph factor).Reachable
+        ((sourceCorridorSerialBoundaryRebasePortTrackedCodeAt realization
+          hcubic hrotation htwoSided hunique offset hnext color).point
+            (finSumFinEquiv first))
+        ((sourceCorridorSerialBoundaryRebasePortTrackedCodeAt realization
+          hcubic hrotation htwoSided hunique offset hnext color).point
+            (finSumFinEquiv second)) ↔
+      (sourceCorridorSerialBoundaryRebaseTrackedGraphAt realization hcubic
+        hrotation htwoSided hunique offset hnext color factor).Reachable
+          (sourceCorridorSerialBoundaryRebasePortAt realization hcubic
+            hrotation htwoSided hunique offset hnext first).1
+          (sourceCorridorSerialBoundaryRebasePortAt realization hcubic
+            hrotation htwoSided hunique offset hnext second).1 := by
+  change
+    ((sourceCorridorSerialBoundaryRebasePortTrackedCodeAt realization hcubic
+        hrotation htwoSided hunique offset hnext color).graph factor).Reachable
+      (carrierCoordinate
+        (sourceCorridorSerialBoundaryRebasePortCarrierAt realization hcubic
+          hrotation htwoSided hunique offset hnext)
+        (sourceCorridorSerialBoundaryRebasePortAt realization hcubic hrotation
+          htwoSided hunique offset hnext
+          (finSumFinEquiv.symm (finSumFinEquiv first))))
+      (carrierCoordinate
+        (sourceCorridorSerialBoundaryRebasePortCarrierAt realization hcubic
+          hrotation htwoSided hunique offset hnext)
+        (sourceCorridorSerialBoundaryRebasePortAt realization hcubic hrotation
+          htwoSided hunique offset hnext
+          (finSumFinEquiv.symm (finSumFinEquiv second)))) ↔ _
+  rw [Equiv.symm_apply_apply, Equiv.symm_apply_apply]
+  exact sourceCorridorSerialBoundaryRebasePortTrackedCodeAt_reachable_iff
+    realization hcubic hrotation htwoSided hunique offset hnext color factor
+    (sourceCorridorSerialBoundaryRebasePortAt realization hcubic hrotation
+      htwoSided hunique offset hnext first)
+    (sourceCorridorSerialBoundaryRebasePortAt realization hcubic hrotation
+      htwoSided hunique offset hnext second)
+
 end AnnularEmbedding
 
 end SourceTrail

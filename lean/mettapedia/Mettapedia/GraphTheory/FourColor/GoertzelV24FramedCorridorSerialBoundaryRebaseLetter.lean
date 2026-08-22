@@ -171,6 +171,62 @@ theorem sourceCorridorSerialBoundaryRebaseLetterCodeAt_tracked
         hrotation htwoSided hunique offset hnext color := by
   rfl
 
+/-- The tracked part of the finite rebase receipt preserves exactly the
+ambient local/remainder connectivity between any two named old-or-new ports.
+This is an observation theorem for the literal letter, not yet the statement
+that the incoming profile determines every attachment through the old
+prefix. -/
+theorem sourceCorridorSerialBoundaryRebaseLetterCodeAt_port_reachable_iff
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    (realization : BoundaryCleanCorridorRealization embedded blockLength)
+    (hcubic : embedded.cellulation.rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic
+      embedded.cellulation.rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (color : G.edgeSet → Color)
+    (hcolor : ∀ step,
+      color ((sourceSlabInterfaceAt realization hcubic hrotation htwoSided
+        hunique (sourceCorridorSerialNextOffset offset hnext))
+        |>.localLayerPrefixCrossing step) ≠ 0)
+    (factor : SourceCorridorSerialBoundaryRebaseTrackedFactor)
+    (first second : Fin 2 ⊕ Fin 2) :
+    ((sourceCorridorSerialBoundaryRebaseLetterCodeAt realization hcubic
+        hrotation htwoSided hunique offset hnext color hcolor).tracked.graph
+          factor).Reachable
+        ((sourceCorridorSerialBoundaryRebaseLetterCodeAt realization hcubic
+          hrotation htwoSided hunique offset hnext color hcolor).tracked.point
+            (finSumFinEquiv first))
+        ((sourceCorridorSerialBoundaryRebaseLetterCodeAt realization hcubic
+          hrotation htwoSided hunique offset hnext color hcolor).tracked.point
+            (finSumFinEquiv second)) ↔
+      (sourceCorridorSerialBoundaryRebaseTrackedGraphAt realization hcubic
+        hrotation htwoSided hunique offset hnext color factor).Reachable
+          (sourceCorridorSerialBoundaryRebasePortAt realization hcubic
+            hrotation htwoSided hunique offset hnext first).1
+          (sourceCorridorSerialBoundaryRebasePortAt realization hcubic
+            hrotation htwoSided hunique offset hnext second).1 := by
+  change
+    ((sourceCorridorSerialBoundaryRebasePortTrackedCodeAt realization hcubic
+        hrotation htwoSided hunique offset hnext color).graph factor).Reachable
+        ((sourceCorridorSerialBoundaryRebasePortTrackedCodeAt realization
+          hcubic hrotation htwoSided hunique offset hnext color).point
+            (finSumFinEquiv first))
+        ((sourceCorridorSerialBoundaryRebasePortTrackedCodeAt realization
+          hcubic hrotation htwoSided hunique offset hnext color).point
+            (finSumFinEquiv second)) ↔ _
+  exact
+    sourceCorridorSerialBoundaryRebasePortTrackedCodeAt_port_reachable_iff
+      realization hcubic hrotation htwoSided hunique offset hnext color factor
+      first second
+
 /-- The two named old-profile crossings remain distinct in the bundled
 tracked carrier. -/
 theorem sourceCorridorSerialBoundaryRebaseLetterCodeAt_oldPoint_injective
