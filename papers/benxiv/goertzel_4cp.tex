@@ -6274,10 +6274,23 @@ crossing and the terminal are proved to be genuine regional ports.  Adjoining
 the literal Cell is then proved to give exactly a zero-terminal pre-rebase
 successor region, on which the corresponding complete five-coordinate profile
 is constructed.  The rung is retained in this intermediate region rather than
-silently assumed redundant.  What remains is the separate boundary rebase to
-the next indexed input and the adequacy theorem tying this cumulative step to
-the joint literal \texttt{Count} receipt; no reachable count, numerical
-$V_0$, or bounded-base verification follows yet.
+silently assumed redundant.  The next paragraph localizes the separate
+boundary rebase; its five-coordinate semantic update and the adequacy theorem
+tying this cumulative step to the joint literal \texttt{Count} receipt remain
+open.  No reachable count, numerical $V_0$, or bounded-base verification
+follows yet.
+
+The boundary rebase is now localized to a uniformly finite literal support.
+Module \texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebase} assigns
+four stable roles to the old shared rung, the two newly exposed crossings,
+and the next shared rung.  Lean proves that their image has cardinality at
+most four, that the pre-rebase successor and the next terminal-aware input
+agree on every edge outside this image, and equivalently that their symmetric
+difference is contained in it.  Thus the next semantic theorem no longer has
+to compare two unbounded regions: it must update connectivity and facial state
+only across this explicit four-edge switch.  That five-coordinate update and
+its joint-\texttt{Count} adequacy are not yet proved; neither are the reachable
+closure, numerical $V_0$, or bounded base.
 
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
