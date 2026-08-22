@@ -5312,6 +5312,32 @@ carrier by a factor of about $14.6$.  The heterogeneous one-step support, its
 reachable closure, the numerical $V_0$, and the route-native bounded base
 remain separate open obligations.
 
+A second, orthogonal presentation redundancy has now been removed at the
+literal Cell letter.  Module
+\texttt{GoertzelV24FiniteHexCellProfileCompression} proves that the three
+raw $6\times6$ Boolean tracked-connectivity matrices of every actual
+six-edge Cell obey their graph laws: tracked support, diagonal support,
+symmetry, and transitivity.  It replaces those matrices by the proper
+six-color word and one canonical component label at each of the six positions
+for each tracked color pair.  The encoder and executable decoder satisfy an
+exact kernel-checked round trip on every graph-semantic Cell profile, and
+every literal source Cell is proved to lie in that semantic image.  A flat
+finite code was used deliberately: storing Mathlib's general finite-partition
+type as the enumerated payload induces a powerset-of-powerset implementation,
+whereas representative labels give the same lossless interface without that
+elaboration cost.  The proved cardinal ceiling is
+\[
+  74037208411275264,
+\]
+compared with the raw Cell factor
+$3^6 2^{108}=236574025616993083824920739000090624$, a reduction by more
+than $10^{18}$ before reachability is used.  This is still far too large for
+a dense closure computation and it concerns only the local Cell's color and
+tracked-connectivity coordinates.  The terminal-aware face-update code, the
+distinct boundary-rebase letter, their joint five-coordinate support
+relation, the reachable closure, the numerical $V_0$, and the bounded base
+remain open.
+
 \subsection{What the programme may explain---and what is not yet a theorem}
 
 The finite-state route suggests an information-theoretic explanation for why a
