@@ -5516,6 +5516,21 @@ continuation, port-incidence, and cap-at-five equations must be joined to the
 same step.  Hence no reachable-state count, numerical $V_0$, or bounded-base
 verification follows at this checkpoint.
 
+The face state now also has a coordinate system stable across ambient faces.
+Module
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceDartCarrier}
+replaces an edge-only global address by the actual dart occurrences over the
+literal eight-edge switch.  There are at most sixteen such occurrences, and
+the two sides of one primal edge remain distinct.  For every face root, Lean
+proves that the preceding per-face switch-position carrier is equivalent to
+exactly the fiber of this global carrier on the root's orbit face.  This is the
+occurrence ABI needed to state the predecessor-state equation without silently
+identifying two facial events over a bridge.  It is not yet that equation: the
+incoming five-field profile together with a finite residual must still
+determine the old-component submatrix, and continuation, port incidence, and
+capped length must still be updated jointly.  No reachable-state count,
+numerical $V_0$, or bounded-base verification follows here.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
