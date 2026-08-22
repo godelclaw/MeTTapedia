@@ -6903,6 +6903,23 @@ orientations.  The finite facial attachment/cap recurrence, the combined
 positive-support letter, reachable closure, numerical $V_0$, and bounded-base
 verification remain open.
 
+The facial recurrence has now acquired the corresponding exact algebraic
+split, before any finite encoding is imposed.  Module
+\texttt{GoertzelV24RotationFaceRegionalDartSeam} defines, on literal darts, the
+new facial adjacencies created when a prefix region and one Cell region are
+adjoined; their union is proved to be exactly the prefix face graph, the Cell
+face graph, and this residual seam.  Module
+\texttt{GoertzelV24ClosedWebLocalLayerSerialCellFaceDartFactorization}
+specializes that identity to every actual opened-source Cell and proves the
+corresponding iff for complete facial reachability.  Using literal darts is
+important: predecessor fragments and local Cell occurrences can be named from
+different roots of one face orbit, while the darts themselves inhabit one
+fixed carrier.  This theorem assumes neither global two-sidedness nor global
+cubicity, and it does not yet claim a finite facial alphabet.  The next
+obligation is to encode the predecessor attachments and local seam on a
+bounded dart carrier, retain the capped face-progress data, and prove the
+finite closure adequate for the five-coordinate output profile.
+
 \subsection{What the programme may explain---and what is not yet a theorem}
 
 The finite-state route suggests an information-theoretic explanation for why a
