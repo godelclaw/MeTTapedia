@@ -5786,6 +5786,21 @@ transports the literal successor port-incidence iff through this compact
 representation.  This reduces one field of the genuine source image; it does
 not yet provide the joint heterogeneous transition or its reachable closure.
 
+The successor face-continuation field has now received the same exact finite
+treatment.  Module
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceFiniteContinuation}
+uses the already-proved fact that a graph-derived continuation relation is
+equality of ambient orbit-face labels, hence an equivalence relation.  It
+stores the canonical upper-triangular equivalence code and proves that the
+graph-free decoder recovers every literal successor
+\texttt{faceContinues} bit exactly.  At the established four-fragment bound
+there are at most fifteen such codes, rather than an unrestricted Boolean
+matrix.  Together with the finite cap decoder and compact port positions this
+closes the finite representation of the three face-progress subcoordinates;
+their joint packaging with the tracked-strand recurrence and composition with
+the distinct literal Cell letter remain open.  No reachable count, numerical
+$V_0$, or bounded-base verification is claimed.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
