@@ -6480,6 +6480,23 @@ remaining junction is geometric factorization of the cumulative predecessor
 plus this Cell into the decoded successor packet.  No reachable-state count,
 numerical $V_0$, or bounded-base verification is inferred yet.
 
+That geometric factorization is now exact at the two graph semantics that
+carry the nontrivial recurrence.  Module
+\texttt{GoertzelV24ClosedWebLocalLayerSerialCellFactorization} uses the proved
+identity ``terminal-aware prefix region union literal Cell region equals the
+pre-rebase successor region.''  For each tracked colour pair, Lean identifies
+the successor connectivity graph with the supremum of the predecessor graph,
+the literal Cell graph, and their explicit residual seam; the identical
+three-factor theorem is proved for occurrence-sensitive face positions.
+Successor reachability in either graph is consequently equivalent to the
+reflexive--transitive closure of moves inside either factor or across the
+seam.  These are unconditional equalities on the actual opened source carrier:
+they use neither global cubicity nor global two-sidedness.  This closes the
+hidden regional-composition premise, but not yet its finite support-letter
+coding: the seam closure must still be transported through the predecessor,
+literal \texttt{Count}, and decoded successor receipts before the
+heterogeneous reachable set or $V_0$ can be measured.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
