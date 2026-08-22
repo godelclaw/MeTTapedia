@@ -5775,6 +5775,17 @@ joint finite rebase receipt, its composition with the distinct literal Cell
 letter, reachable-closure measurement, numerical $V_0$, and bounded-base
 verification remain open.
 
+The one-hot table itself is now compressed without loss in
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceFinitePortPositions}.
+For a facial switch with $n\leq 8$ occurrence coordinates, each displayed
+port is stored as either one coordinate or absence.  The exact code count is
+therefore $(n+1)^2\leq 81$, rather than the $2^{2n}$ possibilities of an
+unrestricted Boolean table.  A generic round-trip theorem proves that the
+optional position is present exactly at the original true label, and Lean
+transports the literal successor port-incidence iff through this compact
+representation.  This reduces one field of the genuine source image; it does
+not yet provide the joint heterogeneous transition or its reachable closure.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
