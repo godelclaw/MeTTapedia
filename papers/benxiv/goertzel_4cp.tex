@@ -6334,9 +6334,28 @@ port-free residual component or both attach to one common occupied old-fragment
 slot.  This distinction is necessary because removing a switch edge can split
 a predecessor component; retaining only the full predecessor connectivity
 matrix would lose that information.  The result is still predecessor data,
-not a successor-row calculation.  That calculation, the combined tracked and
-facial recurrence, joint-\texttt{Count} adequacy, reachable closure, the
-numerical $V_0$, and the bounded base remain open.
+but is not by itself a successor-row calculation: a facial path can enter or
+leave the changed support through an immediate neighbour in the face
+permutation.  That calculation, the combined tracked and facial recurrence,
+joint-\texttt{Count} adequacy, reachable closure, the numerical $V_0$, and the
+bounded base remain open.
+
+The complete finite facial collar of the boundary rebase is now bounded.
+Module
+\texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFaceCollar}
+starts from the at most four changed primal edges, retains their at most eight
+literal dart occurrences, and adjoins the immediate predecessor and successor
+of every occurrence under the face permutation.  The resulting computation
+support has at most twenty-four darts.  Lean proves that the predecessor and
+successor edge regions have a common core after removing the switch, that any
+facial adjacency incident to a changed occurrence lies wholly in this collar,
+and that regional facial adjacency is exactly unchanged outside it.  Thus the
+eight switch occurrences are the observed coordinates, while the
+twenty-four-dart collar is the finite support required to compute their update.
+This is a locality theorem, not yet the collar/core reachability recurrence or
+the successor face-state decoder.  The combined five-coordinate recurrence,
+joint-\texttt{Count} adequacy, reachable closure, the numerical $V_0$, and the
+bounded base remain open.
 
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
