@@ -5816,6 +5816,19 @@ The exact tracked-strand join, composition with the distinct literal Cell
 letter, reachable-closure measurement, numerical $V_0$, and bounded-base
 verification remain open.
 
+The finite face ABI is now joined to the already-proved tracked decoder in
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFiniteOutputReceipt}.
+The resulting code stores the two successor crossing colours, the finite
+tracked component step, and the complete finite face receipt.  Five adequacy
+theorems recover every field of the literal successor profile: edge colour,
+tracked two-colour connectivity, face continuation, port incidence, and
+capped face progress.  This closes the finite output description of the
+boundary rebase.  It does not yet close its state recurrence: the tracked
+step's old-component matrix is still extracted from the literal old prefix,
+rather than computed from the incoming finite state.  That recurrence, the
+distinct Cell/rebase composition, reachable-closure measurement, numerical
+$V_0$, and bounded-base verification remain open.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
