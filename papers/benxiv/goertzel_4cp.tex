@@ -5720,6 +5720,23 @@ across that correspondence.  The complete heterogeneous recurrence,
 reachable-closure measurement, numerical $V_0$, and bounded-base verification
 remain open.
 
+That predecessor adequacy statement is now proved.  Module
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceFactorRepresentativeEquiv}
+constructs an exact equivalence between the contributing canonical finite
+representatives and the literal old-prefix factor fragments inside each
+successor face.  Surjectivity uses the three-factor selected-anchor theorem;
+injectivity uses equality of literal connected components and the uniqueness
+of the finite canonical representative.  Module
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceOldCapAdequacy}
+then transports the individual capped weights and their finite sum across that
+equivalence.  Lean proves that the decoder's predecessor sum is exactly the
+cap at five of the successor fragment's literal old-prefix occurrence slice,
+including an isolated singleton factor.  This closes the predecessor half of
+the capped face recurrence.  Substitution into the already-proved successor
+inclusion--exclusion law, the newly displayed Cell contribution, the complete
+heterogeneous recurrence, reachable-closure measurement, numerical $V_0$,
+and bounded-base verification remain open.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
