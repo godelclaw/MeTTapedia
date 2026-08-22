@@ -5604,6 +5604,21 @@ face continuation, port incidence, cap-at-five, the complete heterogeneous
 recurrence, reachable-closure measurement, numerical $V_0$, and bounded-base
 verification remain open.
 
+Successor face identity is now aligned with the same stable occurrence
+coordinates.  Module
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceSuccessorState}
+maps every canonical boundary fragment of the successor cut injectively to a
+dart occurrence over the finite rebase switch.  Lean proves that the
+successor profile's face-continuation bit is true exactly when the two mapped
+darts have the same ambient orbit face.  This is deliberately not regional
+reachability: disconnected fragments of one ambient face must still be
+recognized as continuations.  The theorem supplies the exact successor
+coordinates needed by the recurrence; it does not yet compute them from the
+predecessor state and literal Cell letter, nor update port incidence or capped
+face length.  The complete heterogeneous recurrence, reachable-closure
+measurement, numerical $V_0$, and bounded-base verification therefore remain
+open.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
