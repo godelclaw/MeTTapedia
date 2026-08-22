@@ -447,11 +447,12 @@ theorem ambientRadialPath_avoids_primalCut_of_avoids_cutEdges
   · change other ∈ layers.cutEdges hunique at hother
     exact hother
 
-/-- The finite radial-escape count supplies the source-mandated comparison
-walk: an outer-to-inner radial path that avoids the literal deletion wall.
-Together with the already-proved boundary avoidance, it retains the complete
-inner hole through the source-local splice. -/
-theorem sourceLocalLayerPair_innerHoleFaceKept_of_radialEscape
+/-- The finite radial-escape count supplies an outer-to-inner comparison path
+which avoids the literal deletion wall.  Consequently every inner-hole dart
+lies on the retained deletion component.  Unlike the later splice wrapper,
+this component statement does not require the adjacent local rails to have
+disjoint matched crossing endpoints. -/
+theorem sourceLocalLayerPair_innerHole_vertex_mem_componentSide_of_radialEscape
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
     {web : Instance data coloring} {blockLength : Nat}
     (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
@@ -460,15 +461,13 @@ theorem sourceLocalLayerPair_innerHoleFaceKept_of_radialEscape
       (Finset.univ : Finset (OrbitFace web.annular.RS)))
     (leftInterior : CorridorInterior blockLength)
     (hnext : leftInterior.center.val + 2 < blockLength)
-    (hseparated :
+    (dart : G.Dart)
+    (hdart : dartOrbitFace web.annular.RS dart =
+      web.annular.cellulation.innerHole) :
+    web.annular.RS.vertOf dart ∈
       ((sourceLocalLayerPair corridor hunique leftInterior hnext).separatedLocalLayerPair
-        hunique).MatchedCrossingsVertexDisjoint web.annular.cellulation.rotation) :
-    HoleFaceKept
-      ((sourceLocalLayerPair corridor hunique leftInterior hnext).separatedLocalLayerPair
-        hunique |>.sourceCrosscutLayerSpliceData web.annular.cellulation.rotation
-          (sourceLocalLayerPairCrosscutBoundaryData corridor hunique leftInterior hnext)
-          hseparated)
-      web.annular.cellulation.innerHole := by
+        hunique).componentSide
+        (sourceLocalLayerPairCrosscutBoundaryData corridor hunique leftInterior hnext).component := by
   let layers := sourceLocalLayerPair corridor hunique leftInterior hnext
   obtain ⟨endpoint, havoids⟩ :=
     exists_radialPathOfInnerEnd_avoiding_cutEdges layers hunique
@@ -511,7 +510,6 @@ theorem sourceLocalLayerPair_innerHoleFaceKept_of_radialEscape
     apply ambientRadialPath_avoids_primalCut_of_avoids_cutEdges layers hunique radial
     intro edge hedge
     exact havoids edge hedge
-  intro dart hdart
   apply SourceCrosscutBoundaryData.face_vertex_mem_componentSide_of_bridge_and_boundary_avoids_primalCut
     web.annular.cellulation.rotation
     ((sourceLocalLayerPair corridor hunique leftInterior hnext).separatedLocalLayerPair hunique)
@@ -545,6 +543,31 @@ theorem sourceLocalLayerPair_innerHoleFaceKept_of_radialEscape
       (sourceLocalLayerPair_dualLoopCrossingEdges_disjoint_innerHoleBoundary
         corridor hunique leftInterior hnext) hedgeCut hedge)
   · exact hdart.trans hrootFace.symm
+
+/-- The component-level radial escape above transports to the splice
+`HoleFaceKept` interface whenever a later construction supplies genuinely
+endpoint-disjoint matched crossings. -/
+theorem sourceLocalLayerPair_innerHoleFaceKept_of_radialEscape
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (leftInterior : CorridorInterior blockLength)
+    (hnext : leftInterior.center.val + 2 < blockLength)
+    (hseparated :
+      ((sourceLocalLayerPair corridor hunique leftInterior hnext).separatedLocalLayerPair
+        hunique).MatchedCrossingsVertexDisjoint web.annular.cellulation.rotation) :
+    HoleFaceKept
+      ((sourceLocalLayerPair corridor hunique leftInterior hnext).separatedLocalLayerPair
+        hunique |>.sourceCrosscutLayerSpliceData web.annular.cellulation.rotation
+          (sourceLocalLayerPairCrosscutBoundaryData corridor hunique leftInterior hnext)
+          hseparated)
+      web.annular.cellulation.innerHole := by
+  intro dart hdart
+  exact sourceLocalLayerPair_innerHole_vertex_mem_componentSide_of_radialEscape
+    corridor hunique leftInterior hnext dart hdart
 
 end LocalLayerFormation
 

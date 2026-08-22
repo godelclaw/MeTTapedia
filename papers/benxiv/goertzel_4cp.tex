@@ -6168,6 +6168,22 @@ interior-cubic replacement of the global premise.  The dichotomy records the
 small missing interface without assuming it; it does not compute the
 successor stable states, the reachable closure, $V_0$, or the bounded base.
 
+The local replacement has now been proved on the actual opened carrier.
+Module
+\texttt{GoertzelV24ClosedWebLocalLayerFiniteCellCarrier} first shows that the
+side opposite the source-selected retained component is connected, using
+local two-sidedness on the four-edge Cell loop rather than the false global
+two-sidedness of the annulus.  A radial comparison path puts the complete
+inner interface on the retained side, while the local-loop avoidance theorem
+does the same for the outer interface.  Hence every vertex on the literal
+Cell side avoids all ten degree-one stubs and has degree three.  Exact degree
+counting now gives the non-vacuous source dichotomy: the Cell side either
+contains a primal cycle, or it has exactly two vertices and its full regional
+edge carrier has at most six edges.  The former is now the sole geometric
+residue of this carrier reduction.  No one-sided-cycle exclusion, successor
+state, reachable count, numerical $V_0$, or bounded-base verification is
+claimed at this checkpoint.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
