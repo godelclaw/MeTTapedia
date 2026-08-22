@@ -5563,6 +5563,29 @@ components to the residual state of the next literal rebase and to join that
 transition with continuation, port incidence, and capped length.  No reachable
 closure, numerical $V_0$, or bounded-base verification follows yet.
 
+A support-sensitivity audit exposed one additional finite state coordinate
+before that transport can be sound.  Graph reachability is reflexive even at
+an isolated coordinate, so the diagonal of a component matrix cannot
+distinguish an active singleton from a dart or edge absent from graph support.
+The residual attachment relation, however, is deliberately support-sensitive:
+both an interface coordinate and its persistent port must actually occur in
+the graph.  Generic module
+\texttt{GoertzelV24SimpleGraphSupportedPortResidualFactorContraction} therefore
+adds finite interface- and port-activity tables to the existing residual code
+and proves that its canonical extraction records literal support membership
+exactly.  Modules
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceSupportedState} and
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseTrackedSupportedState}
+specialize the refinement to the stable facial dart carrier and to all three
+tracked-colour predecessor states.  Forgetting activity recovers the previous
+residual codes definitionally, while every facial switch coordinate reads its
+old activity from the same stable state as its old component relation.  Thus
+no earlier theorem is weakened, and a later decoder can no longer invent an
+attachment by confusing reflexivity with support.  The actual successor
+transport across the heterogeneous Cell/rebase pair, the remaining three face
+coordinates, the reachable closure, the numerical $V_0$, and the bounded-base
+verification are still open.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
