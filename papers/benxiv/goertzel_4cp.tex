@@ -5465,10 +5465,22 @@ identifies the switch code's old component bit with the already proved
 residual-or-port relation: the incoming profile supplies the two displayed
 port components and the finite residual code supplies precisely the
 port-free alternative.  Hence this six-role submatrix is not a second
-unconstrained history field.  The two remaining switch coordinates still
-have to be classified in the alternating Cell/rebase recurrence, and the
-occurrence-sensitive facial recurrence remains separate; no closure count or
-$V_0$ follows from this joining theorem alone.
+unconstrained history field.
+
+The remaining switch coordinates are now identified with the successor state
+in
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseSuccessorRoles}.
+Definitionally, the two newly displayed rebase crossings are the next Cell's
+two input crossings, while the current Cell's two output crossings become the
+predecessor-output roles retained by that successor.  Lean proves that the
+resulting four-port role map is injective and that each named role denotes the
+corresponding literal edge.  It then reads every tracked-connectivity bit of
+the actual successor input profile exactly from reflexive--transitive closure
+of the finite rebase step code.  Thus the tracked half of the alternating
+Cell/rebase recurrence is now a finite decoder equation rather than an
+ambient-graph observation.  The occurrence-sensitive facial recurrence is
+still separate, so this checkpoint does not yet supply a reachable-closure
+count, a numerical $V_0$, or the bounded-base verification.
 
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
