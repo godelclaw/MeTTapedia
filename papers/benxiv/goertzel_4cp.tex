@@ -5440,6 +5440,22 @@ the occurrence-sensitive capped-face update must be treated alongside them.
 No reachable-closure count, numerical $V_0$, or base verification follows at
 this checkpoint.
 
+The tracked switch equation is now finite on both sides.  Module
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseTrackedStepCode}
+transports the at-most-eight-edge switch through its carrier equivalence and
+stores, for each of the three tracked colour pairs, the old-prefix component
+relation as a Boolean matrix on those finite coordinates.  The two local
+factors are the finite new-crossing and residual-seam graphs already supplied
+by the literal rebase receipt.  Lean proves that reflexive--transitive closure
+of these three finite component moves is equivalent to literal successor
+tracked reachability between either pair of successor crossings.  This is an
+exact graph-free state extraction, not yet a history-independent source
+letter: the old matrix is still extracted from the accumulated prefix.  Its
+recurrence from the preceding residual-aware state and the next literal
+receipt remains open, as does the occurrence-sensitive capped-face update.
+Accordingly this checkpoint supplies neither a reachable-closure count nor a
+numerical $V_0$ or base verification.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
