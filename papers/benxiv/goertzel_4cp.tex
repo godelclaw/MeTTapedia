@@ -5497,6 +5497,25 @@ face state and literal Cell/rebase receipt still have to determine successor
 continuation, port incidence, and capped length.  No reachable-state count,
 numerical $V_0$, or base verification is claimed here.
 
+The facial recurrence now has a common finite coordinate system rather than
+only a separately compressed seam at each face.  Module
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseFaceStepCode} retains all
+occurrences on a chosen ambient face whose underlying edge belongs to the
+literal eight-edge switch.  This includes a switch occurrence that is
+isolated in the seam but participates in the old-prefix or newly displayed
+regional factor.  Two-sidedness makes the occurrence-to-edge projection
+injective, so the carrier still has at most eight positions.  The two local
+face graphs are transported through one carrier equivalence, the accumulated
+old-prefix component relation is stored as a Boolean matrix on the same
+coordinates, and Lean proves that their three-factor closure computes the
+literal successor face connectivity exactly.  This is the
+occurrence-sensitive analogue of the finite tracked step.  It does not yet
+make the face transition history-independent: the incoming profile and its
+finite residue must determine the old component matrix, after which the
+continuation, port-incidence, and cap-at-five equations must be joined to the
+same step.  Hence no reachable-state count, numerical $V_0$, or bounded-base
+verification follows at this checkpoint.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
