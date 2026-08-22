@@ -5937,6 +5937,20 @@ Cell may change reachability around an inherited edge.  Computing that change
 from the heterogeneous Cell-plus-rebase receipt remains the next semantic
 recurrence obligation.
 
+The carrier on which that update must run is fixed in
+\texttt{GoertzelV24FramedCorridorSerialBoundaryRebaseStableTrackedTransitionSlots}.
+Two consecutive eight-slot switches are not treated as sixteen unrelated
+names.  Their four inherited edges are shared, so the transition carrier has
+exactly twelve slots: all eight current names plus the four genuinely fresh
+successor names.  Both switches embed injectively.  The successor embedding
+identifies its predecessor-output and current-input slots with the matching
+current names and reserves new coordinates only for its Cell outputs and
+following-rebase crossings.  The partial source interpretation decodes every
+actual current role and every inherited or fresh successor role to its exact
+ambient edge; only the two unavailable predecessor names at the first offset
+remain absent.  This is the stable carrier for the next finite tracked update,
+not yet that update itself.
+
 The permissible scope of the older abstract executable transition is now
 machine checked rather than inferred from its finite type.  Module
 \texttt{GoertzelV24FramedCorridorSerialFullTransitionOverapproximation}
