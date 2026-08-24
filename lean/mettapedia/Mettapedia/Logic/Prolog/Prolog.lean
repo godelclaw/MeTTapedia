@@ -43,6 +43,7 @@ import Mettapedia.Logic.Prolog.RuntimeControlSoundness
 import Mettapedia.Logic.Prolog.RuntimeControlSoundnessRegression
 import Mettapedia.Logic.Prolog.SourceRuntime
 import Mettapedia.Logic.Prolog.SourceRuntimeRegression
+import Mettapedia.Logic.Prolog.OwnedLists
 import Mettapedia.Logic.Prolog.SingleSidedRuleRegression
 import Mettapedia.Logic.Prolog.SourceTermOrderRegression
 import Mettapedia.Logic.Prolog.RuntimeClauseDecode
@@ -112,6 +113,7 @@ Mettapedia.Logic.Prolog.PrologGoal     pattern-level ISO characterization
 | `RuntimeControlSoundness` | shared-step conservation and direct typed-runtime grounding for the pure fragment |
 | `SourceRuntime` | concrete read-only `call/N` decoding invoked by the shared runtime |
 | `SourceRuntimeRegression` | heap-built callable, argument-extension, DFS, and cut-boundary gates |
+| `OwnedLists` | newly authored finite `lists` source, parsed and executed on the shared runtime |
 | `SingleSidedRuleRegression` | source-shaped SSU caller-protection, fresh-head binding, and guard-commit gates |
 | `SourceTermOrder` | finite SWI-compatible standard order over the canonical heap graph |
 | `SourceTermOrderRegression` | executable mixed-number, key-order, stability, and duplicate gates |
