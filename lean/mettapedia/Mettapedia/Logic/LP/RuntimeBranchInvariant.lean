@@ -49,6 +49,22 @@ structure LiveBranchCheckpoint
   saved : BranchCheckpoint anchor state alternative
   occurrence : state.choices = newer ++ .branch alternative :: older
 
+/-- Two nested ordinary branches with the heap history at their nesting
+boundary retained explicitly.  The `ancestry` field is load-bearing: once the
+inner branch performs writes, the later heap alone cannot reconstruct the
+parent's original prefix.  Keeping it here lets the actual inner backtrack
+restore a live outer branch without inventing a history. -/
+structure NestedLiveBranchCheckpoint
+    (outerAnchor parentMemory : Memory σ.scoped)
+    (state : StateCore σ Instruction SourceClause)
+    (outer inner : BranchChoiceCore σ Instruction)
+    (newer older : List (ChoicePointCore σ Instruction SourceClause)) : Prop where
+  outerLive : LiveBranchCheckpoint outerAnchor state outer
+    (.branch inner :: newer) older
+  innerLive : LiveBranchCheckpoint parentMemory state inner []
+    (newer ++ .branch outer :: older)
+  ancestry : Extends outerAnchor parentMemory
+
 /-- A checkpoint certificate follows any further certified heap evolution.
 This is the only way the local branch fact is carried between entry and
 backtracking; no second transition system is introduced. -/
@@ -190,6 +206,81 @@ theorem LiveBranchCheckpoint.branchStep
     rw [afterExact, occurrence]
     rfl
   · exact ⟨innerSaved, by simp [choices]⟩
+
+/-- Entering an inner branch records the exact parent heap as the child's
+checkpoint anchor and retains the outer-to-parent history.  This is the
+certificate needed to prove nested backtracking without treating a later heap
+as though it could reveal a discarded historical prefix. -/
+theorem NestedLiveBranchCheckpoint.branchStep
+    {outerAnchor : Memory σ.scoped}
+    {state : StateCore σ Instruction SourceClause}
+    {outer : BranchChoiceCore σ Instruction}
+    {newer older : List (ChoicePointCore σ Instruction SourceClause)}
+    (certificate : LiveBranchCheckpoint outerAnchor state outer newer older)
+    (left right rest : List Instruction)
+    (wellFormed : state.memory.heap.WellFormed)
+    (wellShaped : state.memory.heap.WellShaped)
+    (floorZero : state.persistentHeapFloor = 0) :
+    ∃ inner after,
+      branchStep state left right rest = .next after none ∧
+      NestedLiveBranchCheckpoint outerAnchor state.memory after outer inner
+        newer older := by
+  obtain ⟨inner, after, stepped, outerLive, innerLive⟩ :=
+    certificate.branchStep left right rest wellFormed wellShaped floorZero
+  rcases innerLive with ⟨innerSaved, innerOccurrence⟩
+  refine ⟨inner, after, stepped, outerLive, ?_, certificate.saved.history⟩
+  refine ⟨innerSaved, ?_⟩
+  simpa [certificate.occurrence] using innerOccurrence
+
+/-- Certified child heap evolution preserves the remembered nesting boundary:
+both live occurrences advance to the new heap, while the parent-to-child
+prefix remains the same historical fact. -/
+theorem NestedLiveBranchCheckpoint.advance
+    {outerAnchor parentMemory : Memory σ.scoped}
+    {state : StateCore σ Instruction SourceClause}
+    {outer inner : BranchChoiceCore σ Instruction}
+    {newer older : List (ChoicePointCore σ Instruction SourceClause)}
+    (certificate : NestedLiveBranchCheckpoint outerAnchor parentMemory state
+      outer inner newer older)
+    {memory : Memory σ.scoped}
+    (history : Extends state.memory memory) :
+    NestedLiveBranchCheckpoint outerAnchor parentMemory { state with memory }
+      outer inner newer older := by
+  exact ⟨certificate.outerLive.advance history,
+    certificate.innerLive.advance history, certificate.ancestry⟩
+
+/-- Popping the top inner branch restores its saved parent heap and leaves the
+outer branch live at its original stack occurrence.  This is the nested
+backtracking half of the choice-resource law: inner ownership is consumed
+once, while the caller's retained branch remains usable. -/
+theorem NestedLiveBranchCheckpoint.backtrackStep
+    [DecidableEq σ.scoped.vars]
+    {outerAnchor parentMemory : Memory σ.scoped}
+    {state : StateCore σ Instruction SourceClause}
+    {outer inner : BranchChoiceCore σ Instruction}
+    {newer older : List (ChoicePointCore σ Instruction SourceClause)}
+    (certificate : NestedLiveBranchCheckpoint outerAnchor parentMemory state
+      outer inner newer older) :
+    ∃ after,
+      backtrackStep state = .next after none ∧
+      LiveBranchCheckpoint outerAnchor after outer newer older := by
+  let after : StateCore σ Instruction SourceClause := {
+    state with
+    memory := parentMemory
+    control := inner.control
+    choices := newer ++ .branch outer :: older
+    phase := .dispatch
+  }
+  refine ⟨after, ?_, ?_⟩
+  · simpa [after] using RuntimeQuery.backtrackStep_branch_of_restore state inner
+      (newer ++ .branch outer :: older) parentMemory
+      (by simpa using certificate.innerLive.occurrence)
+      certificate.innerLive.saved.restore_exact
+  · refine ⟨?_, rfl⟩
+    exact ⟨certificate.outerLive.saved.checkpoint, certificate.ancestry,
+      certificate.outerLive.saved.wellFormed,
+      certificate.outerLive.saved.wellShaped, by
+        simp [after, certificate.outerLive.saved.floorZero]⟩
 
 /-- Keeping the oldest suffix of a newest-first stack removes a newer prefix
 exactly.  This is the list fact behind caller-survival for cut. -/

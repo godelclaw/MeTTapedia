@@ -316,6 +316,17 @@ retains SWI's left-to-right answer order. -/
 def dynamicDisjunction : SourceSignature.Goal :=
   metaGoal (disjunction (equality x (atom "a")) (equality x (atom "b")))
 
+/-- The inner branch exhausts two bound-and-failed candidates before the outer
+right branch runs.  It is a concrete nested-backtrack discriminator: losing
+the outer checkpoint, or restoring a child heap as though it were the parent,
+would not reach the sole answer `c`. -/
+def nestedFailedLeftRetainsOuter : SourceSignature.Goal :=
+  .disj
+    (.conj
+      (.disj (.unify x (atom "a")) (.unify x (atom "b")))
+      .fail)
+    (.unify x (atom "c"))
+
 /-- Cut inside meta-call prunes the meta-call's own right branch but not the
 older alternative of its caller.  The only answer is therefore `c`. -/
 def metaCutRetainsCaller : SourceSignature.Goal :=
@@ -2075,6 +2086,7 @@ def runQueryErrorWithServices? (services : RuntimeControl.Services Sigma)
       | _ => none
 
 #guard runAtoms [] dynamicDisjunction == some (["a", "b"], 0, 0)
+#guard runAtoms [] nestedFailedLeftRetainsOuter == some (["c"], 0, 0)
 #guard runCount maplistProgram maplistSucceeds == some (1, 0, 0)
 #guard runCount maplistProgram qualifiedMaplistSucceeds == some (1, 0, 0)
 #guard runCount maplistProgram maplistFailsAfterPrefix == some (0, 0, 0)

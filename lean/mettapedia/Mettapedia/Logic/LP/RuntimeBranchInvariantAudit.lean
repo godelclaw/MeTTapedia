@@ -4,6 +4,8 @@ import Mettapedia.Logic.LP.RuntimeBranchInvariant
 
 #print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.branchStep_creates_checkpoint
 #print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.LiveBranchCheckpoint.branchStep
+#print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.NestedLiveBranchCheckpoint.branchStep
+#print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.NestedLiveBranchCheckpoint.backtrackStep
 #print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.LiveBranchCheckpoint.cutStep_preserves
 #print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.BranchCheckpoint.restore_exact
 #print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.BranchCheckpoint.advance_unifier_success
