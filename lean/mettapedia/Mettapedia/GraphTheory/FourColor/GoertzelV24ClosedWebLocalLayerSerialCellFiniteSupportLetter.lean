@@ -104,9 +104,65 @@ noncomputable instance :
     DecidableEq SourceLocalLayerSerialCellFiniteSupportLetter :=
   Classical.decEq _
 
+private abbrev sourceLocalLayerSerialCellFiniteSupportLetterCode :=
+  BoundedCorridorCutProfile 2 1 4 ×
+    Σ output : BoundedCorridorCutProfile 2 0 4,
+      ((Fin 2 → StrandColor) ×
+        SourceLocalLayerSerialTrackedPrefixAttachmentState ×
+        BoundedCarrierGraphFamilyCode 21 5 (TrackedColorPair × Bool) ×
+        (Fin 2 → Fin 21)) ×
+      (SourceLocalLayerSerialFacePrefixAttachmentState ×
+        BoundedCarrierGraphFamilyCode 24 0 Bool ×
+        SourceLocalLayerSerialFaceFiniteEdgeState ×
+        (Fin 2 → Fin 2 → Fin 24)) ×
+      (Fin output.faceFragmentCount.val → Fin 24) ×
+      (Fin output.faceFragmentCount.val →
+        SourceLocalLayerSerialOutputFaceRole)
+
+private def sourceLocalLayerSerialCellFiniteSupportLetterEquiv :
+    SourceLocalLayerSerialCellFiniteSupportLetter ≃
+      sourceLocalLayerSerialCellFiniteSupportLetterCode where
+  toFun letter :=
+    ⟨letter.input, ⟨letter.output,
+      ⟨letter.outputColor, letter.trackedState, letter.trackedCode,
+        letter.trackedOutputSlot⟩,
+      ⟨letter.faceState, letter.faceCode, letter.faceEdgeState,
+        letter.facePortSlot⟩,
+      letter.faceOutputSlot, letter.faceRole⟩⟩
+  invFun data := by
+    rcases data with ⟨input, ⟨output,
+      ⟨outputColor, trackedState, trackedCode, trackedOutputSlot⟩,
+      ⟨faceState, faceCode, faceEdgeState, facePortSlot⟩,
+      faceOutputSlot, faceRole⟩⟩
+    exact {
+      input := input
+      output := output
+      outputColor := outputColor
+      trackedState := trackedState
+      trackedCode := trackedCode
+      trackedOutputSlot := trackedOutputSlot
+      faceState := faceState
+      faceCode := faceCode
+      faceEdgeState := faceEdgeState
+      faceOutputSlot := faceOutputSlot
+      facePortSlot := facePortSlot
+      faceRole := faceRole
+    }
+  left_inv letter := by cases letter; rfl
+  right_inv data := by
+    rcases data with ⟨input, ⟨output,
+      ⟨outputColor, trackedState, trackedCode, trackedOutputSlot⟩,
+      ⟨faceState, faceCode, faceEdgeState, facePortSlot⟩,
+      faceOutputSlot, faceRole⟩⟩
+    rfl
+
+deriving noncomputable instance Fintype for
+  sourceLocalLayerSerialCellFiniteSupportLetterCode
+
 noncomputable instance :
-    Fintype SourceLocalLayerSerialCellFiniteSupportLetter :=
-  Fintype.ofFinite _
+    Fintype SourceLocalLayerSerialCellFiniteSupportLetter := by
+  exact Fintype.ofEquiv _
+    sourceLocalLayerSerialCellFiniteSupportLetterEquiv.symm
 
 /-- The finite predecessor/new-edge cap computation, exposed as a relation so
 that its semantic laws remain explicit rather than hidden in a choice. -/
