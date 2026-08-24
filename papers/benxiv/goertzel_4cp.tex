@@ -7096,6 +7096,27 @@ now each have a separate exact finite decoder.  Their joint literal-Cell
 support relation, its heterogeneous reachable closure, the numerical $V_0$,
 and the route-native bounded-base verification remain open.
 
+Those five decoders are now assembled into one finite, source-indexed support
+letter.  Module
+\texttt{GoertzelV24ClosedWebLocalLayerSerialCellFiniteSupportLetter} retains
+the complete terminal-aware input and zero-terminal output profiles, the
+finite predecessor states, the coded Cell/seam factors, and only fixed
+interface coordinates: twenty-one tracked-edge slots, twenty-four facial-dart
+slots, two outgoing ports, at most four output fragments, and three ambient
+face roles.  Lean proves that every actual literal source Cell inhabits this
+finite support relation and that all five outgoing profile coordinates are
+decoded jointly: crossed-edge colours, the three tracked two-colour
+connectivities, ambient face continuation, fragment--port incidence, and
+distinct-edge face progress capped at five.  This is the sound inclusion
+needed for a conservative reachable-state computation.  It deliberately does
+not collapse heterogeneous Cells to the three geometric orientation labels,
+and it does not yet prove the converse equivalence with positive entries of
+the manuscript's \texttt{Count} matrix.  Although the letter carrier is a
+Lean \texttt{Fintype}, its present support decision uses the propositional
+closure interface; an executable Boolean reflection of those finite closures,
+followed by the heterogeneous reachable table, remains the next obligation.
+No numerical $V_0$ or bounded-base verification is claimed here.
+
 \subsection{What the programme may explain---and what is not yet a theorem}
 
 The finite-state route suggests an information-theoretic explanation for why a
