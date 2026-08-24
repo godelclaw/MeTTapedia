@@ -19,7 +19,10 @@ open ReaderModuleLink ReaderUnitClosure SourceSignature
 are deliberately ordinary source clauses, retaining Prolog's source order and
 backtracking behavior. -/
 def source : String :=
-  ":- module(lists, [append/3, member/2, memberchk/2, reverse/2, select/3, last/2, flatten/2, list_to_set/2]).\n\
+  ":- module(lists, [append/2, append/3, member/2, memberchk/2, reverse/2, select/3, last/2, flatten/2, list_to_set/2]).\n\
+   append(Lists, Joined) :- append_(Lists, Joined).\n\
+   append_([], []).\n\
+   append_([List|Lists], Joined) :- append(List, Tail, Joined), append_(Lists, Tail).\n\
    append([], Rest, Rest).\n\
    append([Head|Tail], Rest, [Head|Joined]) :- append(Tail, Rest, Joined).\n\
    member(Element, [Element|_]).\n\
@@ -60,6 +63,7 @@ private def resolver : ReaderUnitClosure.Resolver String Unit := fun request =>
 private def rootSource : String :=
   ":- use_module(library(lists)).\n\
    joined(Result) :- append([a], [b,c], Result).\n\
+   concatenated(Result) :- append([[a,b],[c],[]], Result).\n\
    member_result(Element) :- member(Element, [a,b,c]).\n\
    member_checked(Element) :- memberchk(Element, [a,b,a]).\n\
    reversed(Result) :- reverse([a,b,c], Result).\n\
@@ -96,6 +100,13 @@ the exact source-order finite list result. -/
 def appendExecutes : Bool :=
   linked?.bind (fun linked =>
     SourceRuntimeRegression.runAtomBagsFor linked.program (goal "joined") x) ==
+    some ([["a", "b", "c"]], 0, 0)
+
+/-- Finite `append/2` joins a proper list of proper lists.  This is the
+concrete list operation used by `dcg/basics:number//1`. -/
+def appendTwoExecutes : Bool :=
+  linked?.bind (fun linked =>
+    SourceRuntimeRegression.runAtomBagsFor linked.program (goal "concatenated") x) ==
     some ([["a", "b", "c"]], 0, 0)
 
 /-- `member/2` retains ordinary left-to-right DFS answer order. -/
@@ -147,6 +158,7 @@ def listToSetExecutes : Bool :=
 
 #guard selfContained
 #guard appendExecutes
+#guard appendTwoExecutes
 #guard memberOrder
 #guard memberchkExecutes
 #guard reverseExecutes
