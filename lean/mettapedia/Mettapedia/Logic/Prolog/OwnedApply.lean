@@ -70,27 +70,35 @@ private def x : SourceSignature.Variable := { spelling := "X", occurrence := 0 }
 private def goal (name : String) : SourceSignature.Goal :=
   SourceSignature.call name [.var x]
 
+/-- Ordered finite list answers from the owned `apply` source, for direct SWI
+differential rendering on the shared runtime. -/
+def atomBagsFor (name : String) : Option (List (List String) × Nat × Nat) :=
+  linked?.bind fun linked =>
+    SourceRuntimeRegression.runAtomBagsFor linked.program (goal name) x
+
+/-- Ordered finite integer answers from the owned `apply` source. -/
+def integersFor (name : String) : Option (List Int × Nat × Nat) :=
+  linked?.bind fun linked =>
+    SourceRuntimeRegression.runIntegersFor linked.program (goal name) x
+
 /-- The small owned module is a closed source dependency. -/
 def selfContained : Bool :=
   linked?.map (fun linked => linked.external.isEmpty) == some true
 
 /-- `include/3` applies its closure left-to-right and keeps matching values. -/
 def includeExecutes : Bool :=
-  linked?.bind (fun linked =>
-    SourceRuntimeRegression.runAtomBagsFor linked.program (goal "included") x) ==
+  atomBagsFor "included" ==
     some ([["a", "c"]], 0, 0)
 
 /-- `exclude/3` discards exactly the matching values. -/
 def excludeExecutes : Bool :=
-  linked?.bind (fun linked =>
-    SourceRuntimeRegression.runAtomBagsFor linked.program (goal "excluded") x) ==
+  atomBagsFor "excluded" ==
     some ([["a", "c"]], 0, 0)
 
 /-- `foldl/4` reaches the same engine-owned `call/N` and integer arithmetic
 transitions on every input element. -/
 def foldlExecutes : Bool :=
-  linked?.bind (fun linked =>
-    SourceRuntimeRegression.runIntegersFor linked.program (goal "summed") x) ==
+  integersFor "summed" ==
     some ([9], 0, 0)
 
 #guard selfContained

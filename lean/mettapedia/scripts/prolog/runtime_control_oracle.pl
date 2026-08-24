@@ -12,6 +12,10 @@ cut_closure(a) :- !.
 copy(a, a).
 copy(b, b).
 cut_copy(a, a) :- !.
+keep(a).
+keep(c).
+remove(b).
+add(Element, Before, After) :- After is Before + Element.
 
 dcg_pair(X) --> [X, X].
 dcg_guarded(X) --> { X = a }, [X].
@@ -99,6 +103,26 @@ main(_) :-
     emit(memberchk_dynamic, call(memberchk(MC1, [a,b])), MC1),
     emit(memberchk_restores,
         memberchk(pair(MC2,MC2), [pair(a,b),pair(c,c)]), MC2),
+    emit_bags(owned_append_three, lists:append([a], [b,c], R0), R0),
+    emit_bags(owned_append_two, lists:append([[a,b],[c],[]], R1), R1),
+    emit_bags(owned_append_splits, lists:append(R2, _, [a,b]), R2),
+    emit(owned_member, lists:member(R3, [a,b,c]), R3),
+    emit(owned_memberchk, lists:memberchk(R4, [a,b,a]), R4),
+    emit_bags(owned_reverse, lists:reverse([a,b,c], R5), R5),
+    emit(owned_select, lists:select(R6, [a,b], _), R6),
+    emit(owned_last, lists:last([a,b,c], R7), R7),
+    emit_bags(owned_flatten, lists:flatten([a,[b,[c]],[]], R8), R8),
+    emit_bags(owned_list_to_set, lists:list_to_set([b,a,b,c,a], R9), R9),
+    emit_bags(owned_intersection, lists:intersection([a,b,c], [b,d,c], R10), R10),
+    emit_bags(owned_intersection_duplicates,
+        lists:intersection([a,a,b], [a,b], R11), R11),
+    emit_bags(owned_intersection_order,
+        lists:intersection([b,a], [a,b], R12), R12),
+    emit(owned_max_list, lists:max_list([3,7,4], R13), R13),
+    emit(owned_min_list, lists:min_list([3,7,4], R14), R14),
+    emit_bags(owned_include, apply:include(user:keep, [a,b,c], R15), R15),
+    emit_bags(owned_exclude, apply:exclude(user:remove, [a,b,c], R16), R16),
+    emit(owned_foldl, apply:foldl(user:add, [2,3,4], 0, R17), R17),
     emit(meta_dynamic_disj, call((X = a ; X = b)), X),
     emit(meta_cut_retains_caller,
         (call((Y = a, !, fail ; Y = b)) ; Y = c), Y),

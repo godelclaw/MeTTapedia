@@ -1,6 +1,8 @@
 import Mettapedia.Logic.Prolog.RuntimeControlRegression
 import Mettapedia.Logic.Prolog.SourceRuntimeRegression
 import Mettapedia.Logic.Prolog.NonBacktrackableGlobalRegression
+import Mettapedia.Logic.Prolog.OwnedApply
+import Mettapedia.Logic.Prolog.OwnedLists
 import Mettapedia.Logic.Prolog.ReaderDCGRegression
 
 /-!
@@ -134,6 +136,42 @@ def main : IO Unit := do
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms
       Mettapedia.Logic.Prolog.ReaderDCGRegression.memberRegressionProgram
       Mettapedia.Logic.Prolog.ReaderDCGRegression.memberchkRestoredGoal)
+  renderAtomBags "owned_append_three"
+    (Mettapedia.Logic.Prolog.OwnedLists.atomBagsFor "joined")
+  renderAtomBags "owned_append_two"
+    (Mettapedia.Logic.Prolog.OwnedLists.atomBagsFor "concatenated")
+  renderAtomBags "owned_append_splits"
+    (Mettapedia.Logic.Prolog.OwnedLists.atomBagsFor "append_prefix")
+  renderStringAnswers "owned_member"
+    (Mettapedia.Logic.Prolog.OwnedLists.atomsFor "member_result")
+  renderStringAnswers "owned_memberchk"
+    (Mettapedia.Logic.Prolog.OwnedLists.atomsFor "member_checked")
+  renderAtomBags "owned_reverse"
+    (Mettapedia.Logic.Prolog.OwnedLists.atomBagsFor "reversed")
+  renderStringAnswers "owned_select"
+    (Mettapedia.Logic.Prolog.OwnedLists.atomsFor "selected")
+  renderStringAnswers "owned_last"
+    (Mettapedia.Logic.Prolog.OwnedLists.atomsFor "final")
+  renderAtomBags "owned_flatten"
+    (Mettapedia.Logic.Prolog.OwnedLists.atomBagsFor "flattened")
+  renderAtomBags "owned_list_to_set"
+    (Mettapedia.Logic.Prolog.OwnedLists.atomBagsFor "unique")
+  renderAtomBags "owned_intersection"
+    (Mettapedia.Logic.Prolog.OwnedLists.atomBagsFor "common")
+  renderAtomBags "owned_intersection_duplicates"
+    (Mettapedia.Logic.Prolog.OwnedLists.atomBagsFor "common_duplicates")
+  renderAtomBags "owned_intersection_order"
+    (Mettapedia.Logic.Prolog.OwnedLists.atomBagsFor "common_order")
+  renderIntegerAnswers "owned_max_list"
+    (Mettapedia.Logic.Prolog.OwnedLists.integersFor "maximum")
+  renderIntegerAnswers "owned_min_list"
+    (Mettapedia.Logic.Prolog.OwnedLists.integersFor "minimum")
+  renderAtomBags "owned_include"
+    (Mettapedia.Logic.Prolog.OwnedApply.atomBagsFor "included")
+  renderAtomBags "owned_exclude"
+    (Mettapedia.Logic.Prolog.OwnedApply.atomBagsFor "excluded")
+  renderIntegerAnswers "owned_foldl"
+    (Mettapedia.Logic.Prolog.OwnedApply.integersFor "summed")
   renderStringAnswers "meta_dynamic_disj"
     (Mettapedia.Logic.Prolog.SourceRuntimeRegression.runAtoms []
       Mettapedia.Logic.Prolog.SourceRuntimeRegression.dynamicDisjunction)

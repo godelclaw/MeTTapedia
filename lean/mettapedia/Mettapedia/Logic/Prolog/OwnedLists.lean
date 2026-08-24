@@ -78,6 +78,7 @@ private def rootSource : String :=
   ":- use_module(library(lists)).\n\
    joined(Result) :- append([a], [b,c], Result).\n\
    concatenated(Result) :- append([[a,b],[c],[]], Result).\n\
+   append_prefix(Result) :- append(Result, _, [a,b]).\n\
    member_result(Element) :- member(Element, [a,b,c]).\n\
    member_checked(Element) :- memberchk(Element, [a,b,a]).\n\
    reversed(Result) :- reverse([a,b,c], Result).\n\
@@ -86,6 +87,8 @@ private def rootSource : String :=
    flattened(Result) :- flatten([a,[b,[c]],[]], Result).\n\
    unique(Result) :- list_to_set([b,a,b,c,a], Result).\n\
    common(Result) :- intersection([a,b,c], [b,d,c], Result).\n\
+   common_duplicates(Result) :- intersection([a,a,b], [a,b], Result).\n\
+   common_order(Result) :- intersection([b,a], [a,b], Result).\n\
    maximum(Result) :- max_list([3,7,4], Result).\n\
    minimum(Result) :- min_list([3,7,4], Result)."
 
@@ -107,6 +110,24 @@ private def x : SourceSignature.Variable := { spelling := "X", occurrence := 0 }
 private def goal (name : String) : SourceSignature.Goal :=
   SourceSignature.call name [.var x]
 
+/-- Ordered finite list answers rendered from the owned source through the
+canonical runtime.  This public projection feeds the SWI differential; it is
+not an oracle or a second evaluator. -/
+def atomBagsFor (name : String) : Option (List (List String) × Nat × Nat) :=
+  linked?.bind fun linked =>
+    SourceRuntimeRegression.runAtomBagsFor linked.program (goal name) x
+
+/-- Ordered atom answers from the owned source through the canonical runtime. -/
+def atomsFor (name : String) : Option (List String × Nat × Nat) :=
+  linked?.bind fun linked =>
+    SourceRuntimeRegression.runAtomsFor linked.program (goal name) x
+
+/-- Ordered finite integer answers rendered from the owned source through the
+canonical runtime. -/
+def integersFor (name : String) : Option (List Int × Nat × Nat) :=
+  linked?.bind fun linked =>
+    SourceRuntimeRegression.runIntegersFor linked.program (goal name) x
+
 /-- The owned module is a closed source dependency: no source unit or export
 is borrowed from an external library. -/
 def selfContained : Bool :=
@@ -115,21 +136,19 @@ def selfContained : Bool :=
 /-- `append/3` is relational source code, not an engine service, and produces
 the exact source-order finite list result. -/
 def appendExecutes : Bool :=
-  linked?.bind (fun linked =>
-    SourceRuntimeRegression.runAtomBagsFor linked.program (goal "joined") x) ==
+  atomBagsFor "joined" ==
     some ([["a", "b", "c"]], 0, 0)
 
 /-- Finite `append/2` joins a proper list of proper lists.  This is the
 concrete list operation used by `dcg/basics:number//1`. -/
 def appendTwoExecutes : Bool :=
-  linked?.bind (fun linked =>
-    SourceRuntimeRegression.runAtomBagsFor linked.program (goal "concatenated") x) ==
+  atomBagsFor "concatenated" ==
     some ([["a", "b", "c"]], 0, 0)
 
 /-- `member/2` retains ordinary left-to-right DFS answer order. -/
 def memberOrder : Bool :=
-  linked?.bind (fun linked =>
-    SourceRuntimeRegression.runAtomsFor linked.program (goal "member_result") x) ==
+  linked?.bind (fun linked => SourceRuntimeRegression.runAtomsFor linked.program
+    (goal "member_result") x) ==
     some (["a", "b", "c"], 0, 0)
 
 /-- `memberchk/2` consumes the source `member/2` alternatives through the
@@ -176,18 +195,15 @@ def listToSetExecutes : Bool :=
 /-- Intersection follows the left input's order and uses ordinary unification
 through `memberchk/2`; the source cut only commits the selected member case. -/
 def intersectionExecutes : Bool :=
-  linked?.bind (fun linked =>
-    SourceRuntimeRegression.runAtomBagsFor linked.program (goal "common") x) ==
+  atomBagsFor "common" ==
     some ([["b", "c"]], 0, 0)
 
 /-- The owned extrema use the shared integer-comparison transition.  Their
 scope is finite, nonempty lists of integer source values. -/
 def extremaExecute : Bool :=
-  linked?.bind (fun linked => do
-    let (maxima, maxHeap, maxTrail) ←
-      SourceRuntimeRegression.runIntegersFor linked.program (goal "maximum") x
-    let (minima, minHeap, minTrail) ←
-      SourceRuntimeRegression.runIntegersFor linked.program (goal "minimum") x
+  (do
+    let (maxima, maxHeap, maxTrail) ← integersFor "maximum"
+    let (minima, minHeap, minTrail) ← integersFor "minimum"
     pure (maxima == [7] && minima == [3] &&
       maxHeap == 0 && maxTrail == 0 && minHeap == 0 && minTrail == 0)) ==
     some true
