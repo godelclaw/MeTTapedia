@@ -65,6 +65,18 @@ structure NestedLiveBranchCheckpoint
     (newer ++ .branch outer :: older)
   ancestry : Extends outerAnchor parentMemory
 
+/-- A live soft-conditional else delimiter.  It shares the same heap
+checkpoint discipline as a branch but has a distinct stack constructor and
+therefore a distinct success rule: soft success removes the delimiter while
+retaining condition alternatives. -/
+structure SoftElseCheckpoint
+    (anchor : Memory σ.scoped)
+    (state : StateCore σ Instruction SourceClause)
+    (alternative : BranchChoiceCore σ Instruction)
+    (newer older : List (ChoicePointCore σ Instruction SourceClause)) : Prop where
+  saved : BranchCheckpoint anchor state alternative
+  occurrence : state.choices = newer ++ .softElse alternative :: older
+
 /-- A checkpoint certificate follows any further certified heap evolution.
 This is the only way the local branch fact is carried between entry and
 backtracking; no second transition system is introduced. -/
@@ -89,6 +101,19 @@ theorem LiveBranchCheckpoint.advance
     {memory : Memory σ.scoped}
     (history : Extends state.memory memory) :
     LiveBranchCheckpoint anchor { state with memory } alternative newer older := by
+  exact ⟨certificate.saved.advance history, certificate.occurrence⟩
+
+/-- Heap evolution leaves a soft-else delimiter at its exact live stack
+position, changing only its carried checkpoint history. -/
+theorem SoftElseCheckpoint.advance
+    {anchor : Memory σ.scoped}
+    {state : StateCore σ Instruction SourceClause}
+    {alternative : BranchChoiceCore σ Instruction}
+    {newer older : List (ChoicePointCore σ Instruction SourceClause)}
+    (certificate : SoftElseCheckpoint anchor state alternative newer older)
+    {memory : Memory σ.scoped}
+    (history : Extends state.memory memory) :
+    SoftElseCheckpoint anchor { state with memory } alternative newer older := by
   exact ⟨certificate.saved.advance history, certificate.occurrence⟩
 
 /-- Exact restoration for a certified branch alternative.  At the pure
@@ -458,6 +483,104 @@ theorem LiveBranchCheckpoint.emptyCurrentStep_hardCommit
     exact retainBottom_after_branch newer older (.branch alternative)
   rw [retained] at committed
   simpa [after] using committed
+
+/-- Entering a soft conditional creates a distinct live `.softElse`
+delimiter.  It shares the canonical heap and choice stack with ordinary
+branches, but its return frame records a soft rather than hard commitment. -/
+theorem softIfThenElseStep_creates_checkpoint
+    (state : StateCore σ Instruction SourceClause)
+    (condition thenBranch elseBranch rest : List Instruction)
+    (wellFormed : state.memory.heap.WellFormed)
+    (wellShaped : state.memory.heap.WellShaped)
+    (floorZero : state.persistentHeapFloor = 0) :
+    ∃ alternative after,
+      softIfThenElseStep state condition thenBranch elseBranch rest =
+        .next after none ∧
+      after.control.current = condition ∧
+      after.control.cutDepth = state.choices.length + 1 ∧
+      after.control.frames = {
+        continuation := thenBranch ++ rest
+        callerCutDepth := state.control.cutDepth
+        commit := .soft state.choices.length
+      } :: state.control.frames ∧
+      alternative.control.current = elseBranch ++ rest ∧
+      SoftElseCheckpoint state.memory after alternative [] state.choices := by
+  let alternative : BranchChoiceCore σ Instruction := {
+    checkpoint := state.memory.checkpoint
+    control := {
+      current := elseBranch ++ rest
+      cutDepth := state.control.cutDepth
+      frames := state.control.frames
+    }
+  }
+  let frame : ReturnFrameCore σ Instruction := {
+    continuation := thenBranch ++ rest
+    callerCutDepth := state.control.cutDepth
+    commit := .soft state.choices.length
+  }
+  let after : StateCore σ Instruction SourceClause := {
+    state with
+    control := {
+      current := condition
+      cutDepth := state.choices.length + 1
+      frames := frame :: state.control.frames
+    }
+    choices := .softElse alternative :: state.choices
+  }
+  refine ⟨alternative, after, rfl, rfl, rfl, rfl, rfl, ?_⟩
+  exact ⟨⟨rfl, .refl state.memory, wellFormed, wellShaped, floorZero⟩, rfl⟩
+
+/-- A successful soft conditional removes only its own else delimiter.  In
+contrast to hard commitment, every newer condition alternative remains live
+for later answers, as do all older caller alternatives. -/
+theorem SoftElseCheckpoint.emptyCurrentStep_softCommit
+    {anchor : Memory σ.scoped}
+    {state : StateCore σ Instruction SourceClause}
+    {alternative : BranchChoiceCore σ Instruction}
+    {newer older : List (ChoicePointCore σ Instruction SourceClause)}
+    (certificate : SoftElseCheckpoint anchor state alternative newer older)
+    (frame : ReturnFrameCore σ Instruction)
+    (frames : List (ReturnFrameCore σ Instruction))
+    (frameStack : state.control.frames = frame :: frames)
+    (noCollection : frame.collection = none)
+    (noTransaction : frame.transaction = none)
+    (softCommit : frame.commit = .soft older.length) :
+    ∃ after,
+      emptyCurrentStep state = .next after none ∧
+      after.choices = newer ++ older := by
+  let after : StateCore σ Instruction SourceClause := {
+    state with
+    control := {
+      current := frame.continuation
+      cutDepth := frame.callerCutDepth
+      frames
+    }
+    choices := newer ++ older
+  }
+  refine ⟨after, ?_, rfl⟩
+  simpa [after] using emptyCurrentStep_soft_of_marker state frame frames newer
+    older alternative frameStack noCollection noTransaction softCommit
+    certificate.occurrence
+
+/-- If a soft condition has no answer, popping its newest delimiter restores
+the exact entry heap and resumes the stored else continuation. -/
+theorem SoftElseCheckpoint.backtrackStep
+    [DecidableEq σ.scoped.vars]
+    {anchor : Memory σ.scoped}
+    {state : StateCore σ Instruction SourceClause}
+    {alternative : BranchChoiceCore σ Instruction}
+    {older : List (ChoicePointCore σ Instruction SourceClause)}
+    (certificate : SoftElseCheckpoint anchor state alternative [] older) :
+    backtrackStep state =
+      .next {
+        state with
+        memory := anchor
+        control := alternative.control
+        choices := older
+        phase := .dispatch
+      } none :=
+  RuntimeQuery.backtrackStep_softElse_of_restore state alternative older anchor
+    (by simpa using certificate.occurrence) certificate.saved.restore_exact
 
 /-- Backtracking through a certified newest branch restores its exact saved
 memory and installs its saved right continuation.  Thus branch restoration is

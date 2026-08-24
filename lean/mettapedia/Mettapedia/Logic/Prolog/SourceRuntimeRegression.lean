@@ -335,6 +335,15 @@ def hardConditionalCommitsElseRetainsCaller : SourceSignature.Goal :=
     (.ifThenElse .succeed (.unify x (atom "a")) (.unify x (atom "b")))
     (.unify x (atom "c"))
 
+/-- A soft conditional removes its else delimiter after its first success but
+keeps condition alternatives; unlike hard `->/2`, both `a` and `b` remain
+observable and the else answer `c` does not run. -/
+def softConditionalKeepsConditionAnswers : SourceSignature.Goal :=
+  .softIfThenElse
+    (.disj (.unify x (atom "a")) (.unify x (atom "b")))
+    .succeed
+    (.unify x (atom "c"))
+
 /-- Cut inside meta-call prunes the meta-call's own right branch but not the
 older alternative of its caller.  The only answer is therefore `c`. -/
 def metaCutRetainsCaller : SourceSignature.Goal :=
@@ -2096,6 +2105,7 @@ def runQueryErrorWithServices? (services : RuntimeControl.Services Sigma)
 #guard runAtoms [] dynamicDisjunction == some (["a", "b"], 0, 0)
 #guard runAtoms [] nestedFailedLeftRetainsOuter == some (["c"], 0, 0)
 #guard runAtoms [] hardConditionalCommitsElseRetainsCaller == some (["a", "c"], 0, 0)
+#guard runAtoms [] softConditionalKeepsConditionAnswers == some (["a", "b"], 0, 0)
 #guard runCount maplistProgram maplistSucceeds == some (1, 0, 0)
 #guard runCount maplistProgram qualifiedMaplistSucceeds == some (1, 0, 0)
 #guard runCount maplistProgram maplistFailsAfterPrefix == some (0, 0, 0)
