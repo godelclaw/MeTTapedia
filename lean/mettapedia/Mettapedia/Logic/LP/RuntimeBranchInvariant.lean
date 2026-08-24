@@ -191,6 +191,48 @@ theorem LiveBranchCheckpoint.branchStep
     rfl
   · exact ⟨innerSaved, by simp [choices]⟩
 
+/-- Keeping the oldest suffix of a newest-first stack removes a newer prefix
+exactly.  This is the list fact behind caller-survival for cut. -/
+private theorem retainBottom_suffix
+    (newer suffix : List α) :
+    retainBottom suffix.length (newer ++ suffix) = suffix := by
+  simp [retainBottom, List.length_append]
+
+/-- A cut at the boundary immediately below a live branch discards every
+newer choice but retains that branch and its older caller suffix.  The exact
+stack equation makes caller survival an ownership fact, rather than a count
+claim. -/
+theorem LiveBranchCheckpoint.cutStep_preserves
+    {anchor : Memory σ.scoped}
+    {state : StateCore σ Instruction SourceClause}
+    {alternative : BranchChoiceCore σ Instruction}
+    {newer older : List (ChoicePointCore σ Instruction SourceClause)}
+    (certificate : LiveBranchCheckpoint anchor state alternative newer older)
+    (rest : List Instruction)
+    (cutDepth : state.control.cutDepth = (.branch alternative :: older).length) :
+    ∃ after,
+      cutStep state rest = .next after none ∧
+      after.choices = .branch alternative :: older ∧
+      LiveBranchCheckpoint anchor after alternative [] older := by
+  let after : StateCore σ Instruction SourceClause := {
+    state with
+    control := { state.control with current := rest }
+    choices := .branch alternative :: older
+  }
+  refine ⟨after, ?_, rfl, ?_⟩
+  · rw [cutStep]
+    have valid : state.control.cutDepth ≤ state.choices.length := by
+      rw [cutDepth, certificate.occurrence]
+      simp [List.length_append]
+    simp only [dif_pos valid]
+    congr 2
+    rw [certificate.occurrence, cutDepth]
+    exact retainBottom_suffix newer (.branch alternative :: older)
+  · rcases certificate with ⟨saved, occurrence⟩
+    refine ⟨?_, rfl⟩
+    exact ⟨saved.checkpoint, saved.history, saved.wellFormed,
+      saved.wellShaped, by simp [after, saved.floorZero]⟩
+
 /-- Backtracking through a certified newest branch restores its exact saved
 memory and installs its saved right continuation.  Thus branch restoration is
 not merely an operational test: it is tied to the same heap-history theorem
