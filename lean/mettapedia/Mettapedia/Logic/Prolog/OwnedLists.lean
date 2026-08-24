@@ -19,7 +19,7 @@ open ReaderModuleLink ReaderUnitClosure SourceSignature
 are deliberately ordinary source clauses, retaining Prolog's source order and
 backtracking behavior. -/
 def source : String :=
-  ":- module(lists, [append/3, member/2, reverse/2, select/3, last/2]).\n\
+  ":- module(lists, [append/3, member/2, reverse/2, select/3, last/2, list_to_set/2]).\n\
    append([], Rest, Rest).\n\
    append([Head|Tail], Rest, [Head|Joined]) :- append(Tail, Rest, Joined).\n\
    member(Element, [Element|_]).\n\
@@ -31,7 +31,15 @@ def source : String :=
    select(Element, [Element|Tail], Tail).\n\
    select(Element, [Head|Tail], [Head|Rest]) :- select(Element, Tail, Rest).\n\
    last([Element], Element).\n\
-   last([_|Tail], Element) :- last(Tail, Element)."
+   last([_|Tail], Element) :- last(Tail, Element).\n\
+   list_to_set(List, Set) :- list_to_set_(List, [], Set).\n\
+   list_to_set_([], _, []).\n\
+   list_to_set_([Head|Tail], Seen, Set) :- member_eq(Head, Seen), !, \
+     list_to_set_(Tail, Seen, Set).\n\
+   list_to_set_([Head|Tail], Seen, [Head|Set]) :- \
+     list_to_set_(Tail, [Head|Seen], Set).\n\
+   member_eq(Element, [Candidate|_]) :- Element == Candidate, !.\n\
+   member_eq(Element, [_|Tail]) :- member_eq(Element, Tail)."
 
 private def sourceKey? : SourceSignature.Term → Option String :=
   ReaderSWIProfile.sourceKey?
@@ -49,7 +57,8 @@ private def rootSource : String :=
    member_result(Element) :- member(Element, [a,b,c]).\n\
    reversed(Result) :- reverse([a,b,c], Result).\n\
    selected(Element) :- select(Element, [a,b], _).\n\
-   final(Element) :- last([a,b,c], Element)."
+   final(Element) :- last([a,b,c], Element).\n\
+   unique(Result) :- list_to_set([b,a,b,c,a], Result)."
 
 private def closure? : Option (ReaderUnitClosure.Closure String) :=
   match ReaderUnitClosure.loadWith 4
@@ -105,11 +114,20 @@ def lastExecutes : Bool :=
     SourceRuntimeRegression.runAtomsFor linked.program (goal "final") x) ==
     some (["c"], 0, 0)
 
+/-- The owned finite `list_to_set/2` uses strict identity and a source cut to
+keep first occurrences in input order.  It deliberately exercises the same
+shared hard-frame/cut machinery as the rest of the library. -/
+def listToSetExecutes : Bool :=
+  linked?.bind (fun linked =>
+    SourceRuntimeRegression.runAtomBagsFor linked.program (goal "unique") x) ==
+    some ([["b", "a", "c"]], 0, 0)
+
 #guard selfContained
 #guard appendExecutes
 #guard memberOrder
 #guard reverseExecutes
 #guard selectOrder
 #guard lastExecutes
+#guard listToSetExecutes
 
 end Mettapedia.Logic.Prolog.OwnedLists
