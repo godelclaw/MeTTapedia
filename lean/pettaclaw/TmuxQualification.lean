@@ -257,6 +257,33 @@ def requiredAction : TaskPhase → PhaseAction
   | .needServer => .selectServer
   | .goalSatisfied => .finish
 
+/-- The operational consequence of the collision above: no deterministic
+policy which sees only marker presence can choose correctly both after genuine
+completion and after a relaunch whose new trust prompt sits below old markers.
+The missing information is not model intelligence; it is absent from the
+policy's observation. -/
+theorem no_marker_only_policy_handles_completion_and_relaunch :
+    let completed : ScreenHistory :=
+      ⟨.goalSatisfied, [.trust, .server, .idle]⟩
+    let relaunched : ScreenHistory :=
+      ⟨.needTrust, [.trust, .server, .idle, .trust]⟩
+    ¬ ∃ choose : (Bool × Bool × Bool) → PhaseAction,
+      choose (markerPresence completed) = .finish ∧
+        choose (markerPresence relaunched) = .answerTrust := by
+  dsimp [markerPresence]
+  rintro ⟨choose, finished, relaunched⟩
+  have impossible : PhaseAction.finish = PhaseAction.answerTrust :=
+    finished.symm.trans relaunched
+  cases impossible
+
+/-- Adding the receipt-derived phase is sufficient for the two states which
+the raw marker view conflates. The projection informs policy without fixing a
+specific model or placing task semantics in the process kernel. -/
+theorem phase_projection_handles_completion_and_relaunch :
+    requiredAction .goalSatisfied = .finish ∧
+      requiredAction .needTrust = .answerTrust := by
+  exact ⟨rfl, rfl⟩
+
 theorem witnessed_satisfaction_requires_finish :
     requiredAction .goalSatisfied = .finish := by
   rfl
@@ -272,4 +299,6 @@ end PettaClaw.TmuxQualification
 #print axioms PettaClaw.TmuxQualification.satisfied_phase_is_absorbing
 #print axioms PettaClaw.TmuxQualification.verified_receipt_sequence_reaches_satisfaction
 #print axioms PettaClaw.TmuxQualification.marker_presence_cannot_determine_current_phase
+#print axioms PettaClaw.TmuxQualification.no_marker_only_policy_handles_completion_and_relaunch
+#print axioms PettaClaw.TmuxQualification.phase_projection_handles_completion_and_relaunch
 #print axioms PettaClaw.TmuxQualification.witnessed_satisfaction_requires_finish
