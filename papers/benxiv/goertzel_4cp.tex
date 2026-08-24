@@ -7207,6 +7207,24 @@ predecessor-to-successor rebase support relation, its composition with the
 distinct Cell letter, the heterogeneous reachable table, the numerical
 $V_0$, and bounded-base verification remain open.
 
+The tracked predecessor side of that rebase is now factored at the correct
+boundary.  Module
+\texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseTrackedInputAttachmentState}
+observes that the four changing switch roles are not the two crossings shown
+by the old zero-terminal profile.  It therefore retains those two crossings
+as persistent ports.  An exact finite residual code proves that the complete
+old profile reconstructs predecessor tracked reachability among every pair of
+switch roles.  The module then makes the deletion issue explicit: since a
+removed switch edge could have been internal to a predecessor path, full
+predecessor connectivity is not itself a safe update state.  A second finite
+state is extracted from the common old/new core after deleting the switch; it
+stores the core relation between the two old ports and proves exact core
+reachability among all four roles.  Thus the next tracked obligation is
+sharply local: combine this core state with the finite successor residue and
+take their directed closure.  The complete five-field rebase letter, the
+alternating reachable table, the numerical $V_0$, and the bounded-base audit
+remain open.
+
 \subsection{What the programme may explain---and what is not yet a theorem}
 
 The finite-state route suggests an information-theoretic explanation for why a
