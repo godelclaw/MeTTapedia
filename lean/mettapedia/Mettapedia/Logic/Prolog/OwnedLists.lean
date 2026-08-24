@@ -19,7 +19,7 @@ open ReaderModuleLink ReaderUnitClosure SourceSignature
 are deliberately ordinary source clauses, retaining Prolog's source order and
 backtracking behavior. -/
 def source : String :=
-  ":- module(lists, [append/3, member/2, reverse/2, select/3, last/2, list_to_set/2]).\n\
+  ":- module(lists, [append/3, member/2, reverse/2, select/3, last/2, flatten/2, list_to_set/2]).\n\
    append([], Rest, Rest).\n\
    append([Head|Tail], Rest, [Head|Joined]) :- append(Tail, Rest, Joined).\n\
    member(Element, [Element|_]).\n\
@@ -32,6 +32,11 @@ def source : String :=
    select(Element, [Head|Tail], [Head|Rest]) :- select(Element, Tail, Rest).\n\
    last([Element], Element).\n\
    last([_|Tail], Element) :- last(Tail, Element).\n\
+   flatten(List, Flat) :- flatten_(List, [], Flat), !.\n\
+   flatten_([], Tail, Tail).\n\
+   flatten_([Head|Tail], FlatTail, Flat) :- !, \
+     flatten_(Head, FlatHeadTail, Flat), flatten_(Tail, FlatTail, FlatHeadTail).\n\
+   flatten_(Element, Tail, [Element|Tail]).\n\
    list_to_set(List, Set) :- list_to_set_(List, [], Set).\n\
    list_to_set_([], _, []).\n\
    list_to_set_([Head|Tail], Seen, Set) :- member_eq(Head, Seen), !, \
@@ -58,6 +63,7 @@ private def rootSource : String :=
    reversed(Result) :- reverse([a,b,c], Result).\n\
    selected(Element) :- select(Element, [a,b], _).\n\
    final(Element) :- last([a,b,c], Element).\n\
+   flattened(Result) :- flatten([a,[b,[c]],[]], Result).\n\
    unique(Result) :- list_to_set([b,a,b,c,a], Result)."
 
 private def closure? : Option (ReaderUnitClosure.Closure String) :=
@@ -114,6 +120,14 @@ def lastExecutes : Bool :=
     SourceRuntimeRegression.runAtomsFor linked.program (goal "final") x) ==
     some (["c"], 0, 0)
 
+/-- `flatten/2` is owned source code for the finite proper-list nesting that
+the translator uses when it assembles its goal prefixes.  Its outer cut makes
+the finite result deterministic, matching the source-library contract. -/
+def flattenExecutes : Bool :=
+  linked?.bind (fun linked =>
+    SourceRuntimeRegression.runAtomBagsFor linked.program (goal "flattened") x) ==
+    some ([["a", "b", "c"]], 0, 0)
+
 /-- The owned finite `list_to_set/2` uses strict identity and a source cut to
 keep first occurrences in input order.  It deliberately exercises the same
 shared hard-frame/cut machinery as the rest of the library. -/
@@ -128,6 +142,7 @@ def listToSetExecutes : Bool :=
 #guard reverseExecutes
 #guard selectOrder
 #guard lastExecutes
+#guard flattenExecutes
 #guard listToSetExecutes
 
 end Mettapedia.Logic.Prolog.OwnedLists
