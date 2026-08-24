@@ -289,6 +289,23 @@ private theorem retainBottom_suffix
     retainBottom suffix.length (newer ++ suffix) = suffix := by
   simp [retainBottom, List.length_append]
 
+/-- The one-extra-element form used when a cut consumes the branch at its
+boundary. -/
+private theorem retainBottom_after_branch
+    (newer older : List α) (branch : α) :
+    retainBottom older.length (newer ++ branch :: older) = older := by
+  induction newer with
+  | nil => simp [retainBottom]
+  | cons head newer ih =>
+      simp [retainBottom, List.length_append] at ih ⊢
+      have hIndex :
+          newer.length + (older.length + 1) + 1 - older.length =
+            (newer.length + (older.length + 1) - older.length) + 1 := by
+        omega
+      rw [hIndex]
+      simp
+      exact ih
+
 /-- A cut at the boundary immediately below a live branch discards every
 newer choice but retains that branch and its older caller suffix.  The exact
 stack equation makes caller survival an ownership fact, rather than a count
@@ -323,6 +340,37 @@ theorem LiveBranchCheckpoint.cutStep_preserves
     refine ⟨?_, rfl⟩
     exact ⟨saved.checkpoint, saved.history, saved.wellFormed,
       saved.wellShaped, by simp [after, saved.floorZero]⟩
+
+/-- At the boundary below a live branch, cut consumes that branch and every
+newer choice while retaining exactly the older caller suffix.  This is the
+intentional counterpart to `cutStep_preserves`: a discarded occurrence is
+removed by the shared engine rather than being left as reusable evidence. -/
+theorem LiveBranchCheckpoint.cutStep_prunes
+    {anchor : Memory σ.scoped}
+    {state : StateCore σ Instruction SourceClause}
+    {alternative : BranchChoiceCore σ Instruction}
+    {newer older : List (ChoicePointCore σ Instruction SourceClause)}
+    (certificate : LiveBranchCheckpoint anchor state alternative newer older)
+    (rest : List Instruction)
+    (cutDepth : state.control.cutDepth = older.length) :
+    ∃ after,
+      cutStep state rest = .next after none ∧
+      after.choices = older := by
+  let after : StateCore σ Instruction SourceClause := {
+    state with
+    control := { state.control with current := rest }
+    choices := older
+  }
+  refine ⟨after, ?_, rfl⟩
+  rw [cutStep]
+  have valid : state.control.cutDepth ≤ state.choices.length := by
+    rw [cutDepth, certificate.occurrence]
+    simp [List.length_append]
+    omega
+  simp only [dif_pos valid]
+  congr 2
+  rw [certificate.occurrence, cutDepth]
+  exact retainBottom_after_branch newer older (.branch alternative)
 
 /-- Backtracking through a certified newest branch restores its exact saved
 memory and installs its saved right continuation.  Thus branch restoration is
