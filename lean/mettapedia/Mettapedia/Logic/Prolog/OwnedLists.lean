@@ -19,11 +19,12 @@ open ReaderModuleLink ReaderUnitClosure SourceSignature
 are deliberately ordinary source clauses, retaining Prolog's source order and
 backtracking behavior. -/
 def source : String :=
-  ":- module(lists, [append/3, member/2, reverse/2, select/3, last/2, flatten/2, list_to_set/2]).\n\
+  ":- module(lists, [append/3, member/2, memberchk/2, reverse/2, select/3, last/2, flatten/2, list_to_set/2]).\n\
    append([], Rest, Rest).\n\
    append([Head|Tail], Rest, [Head|Joined]) :- append(Tail, Rest, Joined).\n\
    member(Element, [Element|_]).\n\
    member(Element, [_|Tail]) :- member(Element, Tail).\n\
+   memberchk(Element, List) :- member(Element, List), !.\n\
    reverse(List, Reversed) :- reverse_(List, [], Reversed).\n\
    reverse_([], Accumulator, Accumulator).\n\
    reverse_([Head|Tail], Accumulator, Reversed) :- \
@@ -60,6 +61,7 @@ private def rootSource : String :=
   ":- use_module(library(lists)).\n\
    joined(Result) :- append([a], [b,c], Result).\n\
    member_result(Element) :- member(Element, [a,b,c]).\n\
+   member_checked(Element) :- memberchk(Element, [a,b,a]).\n\
    reversed(Result) :- reverse([a,b,c], Result).\n\
    selected(Element) :- select(Element, [a,b], _).\n\
    final(Element) :- last([a,b,c], Element).\n\
@@ -102,6 +104,13 @@ def memberOrder : Bool :=
     SourceRuntimeRegression.runAtomsFor linked.program (goal "member_result") x) ==
     some (["a", "b", "c"], 0, 0)
 
+/-- `memberchk/2` consumes the source `member/2` alternatives through the
+ordinary predicate cut: it exposes only the first matching occurrence. -/
+def memberchkExecutes : Bool :=
+  linked?.bind (fun linked =>
+    SourceRuntimeRegression.runAtomsFor linked.program (goal "member_checked") x) ==
+    some (["a"], 0, 0)
+
 /-- Tail-recursive `reverse/2` uses only ordinary clause entry and unification. -/
 def reverseExecutes : Bool :=
   linked?.bind (fun linked =>
@@ -139,6 +148,7 @@ def listToSetExecutes : Bool :=
 #guard selfContained
 #guard appendExecutes
 #guard memberOrder
+#guard memberchkExecutes
 #guard reverseExecutes
 #guard selectOrder
 #guard lastExecutes
