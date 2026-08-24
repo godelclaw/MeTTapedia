@@ -327,6 +327,14 @@ def nestedFailedLeftRetainsOuter : SourceSignature.Goal :=
       .fail)
     (.unify x (atom "c"))
 
+/-- A hard conditional commits its else branch after a successful condition
+but must leave the older caller alternative.  The two observable answers are
+therefore `a` and then `c`, never the else answer `b`. -/
+def hardConditionalCommitsElseRetainsCaller : SourceSignature.Goal :=
+  .disj
+    (.ifThenElse .succeed (.unify x (atom "a")) (.unify x (atom "b")))
+    (.unify x (atom "c"))
+
 /-- Cut inside meta-call prunes the meta-call's own right branch but not the
 older alternative of its caller.  The only answer is therefore `c`. -/
 def metaCutRetainsCaller : SourceSignature.Goal :=
@@ -2087,6 +2095,7 @@ def runQueryErrorWithServices? (services : RuntimeControl.Services Sigma)
 
 #guard runAtoms [] dynamicDisjunction == some (["a", "b"], 0, 0)
 #guard runAtoms [] nestedFailedLeftRetainsOuter == some (["c"], 0, 0)
+#guard runAtoms [] hardConditionalCommitsElseRetainsCaller == some (["a", "c"], 0, 0)
 #guard runCount maplistProgram maplistSucceeds == some (1, 0, 0)
 #guard runCount maplistProgram qualifiedMaplistSucceeds == some (1, 0, 0)
 #guard runCount maplistProgram maplistFailsAfterPrefix == some (0, 0, 0)

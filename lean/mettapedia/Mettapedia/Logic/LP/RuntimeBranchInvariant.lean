@@ -372,6 +372,93 @@ theorem LiveBranchCheckpoint.cutStep_prunes
   rw [certificate.occurrence, cutDepth]
   exact retainBottom_after_branch newer older (.branch alternative)
 
+/-- Entering a hard conditional is ordinary branch ownership on the shared
+stack: its else continuation is a live branch, while the sole extra frame
+carries the pre-conditional commit boundary.  No conditional-specific choice
+store is introduced. -/
+theorem ifThenElseStep_creates_live_branch
+    (state : StateCore σ Instruction SourceClause)
+    (condition thenBranch elseBranch rest : List Instruction)
+    (wellFormed : state.memory.heap.WellFormed)
+    (wellShaped : state.memory.heap.WellShaped)
+    (floorZero : state.persistentHeapFloor = 0) :
+    ∃ alternative after,
+      ifThenElseStep state condition thenBranch elseBranch rest = .next after none ∧
+      after.control.current = condition ∧
+      after.control.cutDepth = state.choices.length + 1 ∧
+      after.control.frames = {
+        continuation := thenBranch ++ rest
+        callerCutDepth := state.control.cutDepth
+        commit := .hard state.choices.length
+      } :: state.control.frames ∧
+      alternative.control.current = elseBranch ++ rest ∧
+      LiveBranchCheckpoint state.memory after alternative [] state.choices := by
+  let alternative : BranchChoiceCore σ Instruction := {
+    checkpoint := state.memory.checkpoint
+    control := {
+      current := elseBranch ++ rest
+      cutDepth := state.control.cutDepth
+      frames := state.control.frames
+    }
+  }
+  let frame : ReturnFrameCore σ Instruction := {
+    continuation := thenBranch ++ rest
+    callerCutDepth := state.control.cutDepth
+    commit := .hard state.choices.length
+  }
+  let after : StateCore σ Instruction SourceClause := {
+    state with
+    control := {
+      current := condition
+      cutDepth := state.choices.length + 1
+      frames := frame :: state.control.frames
+    }
+    choices := .branch alternative :: state.choices
+  }
+  refine ⟨alternative, after, rfl, rfl, rfl, rfl, rfl, ?_⟩
+  exact ⟨⟨rfl, .refl state.memory, wellFormed, wellShaped, floorZero⟩, rfl⟩
+
+/-- Completing a hard conditional consumes its live else branch and every
+condition-local choice while retaining exactly the older caller suffix.  This
+uses the shared frame commit transition, not a conditional-private pruning
+operation. -/
+theorem LiveBranchCheckpoint.emptyCurrentStep_hardCommit
+    {anchor : Memory σ.scoped}
+    {state : StateCore σ Instruction SourceClause}
+    {alternative : BranchChoiceCore σ Instruction}
+    {newer older : List (ChoicePointCore σ Instruction SourceClause)}
+    (certificate : LiveBranchCheckpoint anchor state alternative newer older)
+    (frame : ReturnFrameCore σ Instruction)
+    (frames : List (ReturnFrameCore σ Instruction))
+    (frameStack : state.control.frames = frame :: frames)
+    (noCollection : frame.collection = none)
+    (noTransaction : frame.transaction = none)
+    (hardCommit : frame.commit = .hard older.length) :
+    ∃ after,
+      emptyCurrentStep state = .next after none ∧
+      after.choices = older := by
+  let after : StateCore σ Instruction SourceClause := {
+    state with
+    control := {
+      current := frame.continuation
+      cutDepth := frame.callerCutDepth
+      frames
+    }
+    choices := older
+  }
+  refine ⟨after, ?_, rfl⟩
+  have valid : older.length ≤ state.choices.length := by
+    rw [certificate.occurrence]
+    simp [List.length_append]
+    omega
+  have committed := emptyCurrentStep_commit_of_depth state frame frames
+    older.length frameStack noCollection noTransaction hardCommit valid
+  have retained : retainBottom older.length state.choices = older := by
+    rw [certificate.occurrence]
+    exact retainBottom_after_branch newer older (.branch alternative)
+  rw [retained] at committed
+  simpa [after] using committed
+
 /-- Backtracking through a certified newest branch restores its exact saved
 memory and installs its saved right continuation.  Thus branch restoration is
 not merely an operational test: it is tied to the same heap-history theorem
