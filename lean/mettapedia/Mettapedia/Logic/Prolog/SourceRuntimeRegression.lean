@@ -344,6 +344,11 @@ def softConditionalKeepsConditionAnswers : SourceSignature.Goal :=
     .succeed
     (.unify x (atom "c"))
 
+/-- `once/1` is a hard return-frame commit over the same inner branch stack:
+only the first protected answer survives. -/
+def onceCommitsInnerBranch : SourceSignature.Goal :=
+  .once (.disj (.unify x (atom "a")) (.unify x (atom "b")))
+
 /-- Cut inside meta-call prunes the meta-call's own right branch but not the
 older alternative of its caller.  The only answer is therefore `c`. -/
 def metaCutRetainsCaller : SourceSignature.Goal :=
@@ -2106,6 +2111,7 @@ def runQueryErrorWithServices? (services : RuntimeControl.Services Sigma)
 #guard runAtoms [] nestedFailedLeftRetainsOuter == some (["c"], 0, 0)
 #guard runAtoms [] hardConditionalCommitsElseRetainsCaller == some (["a", "c"], 0, 0)
 #guard runAtoms [] softConditionalKeepsConditionAnswers == some (["a", "b"], 0, 0)
+#guard runAtoms [] onceCommitsInnerBranch == some (["a"], 0, 0)
 #guard runCount maplistProgram maplistSucceeds == some (1, 0, 0)
 #guard runCount maplistProgram qualifiedMaplistSucceeds == some (1, 0, 0)
 #guard runCount maplistProgram maplistFailsAfterPrefix == some (0, 0, 0)

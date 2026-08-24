@@ -484,6 +484,40 @@ theorem LiveBranchCheckpoint.emptyCurrentStep_hardCommit
   rw [retained] at committed
   simpa [after] using committed
 
+/-- A hard return-frame commit retains an arbitrary older choice suffix.  This
+is the shared frame law used by `once/1` as well as hard conditionals; it does
+not know or care which instruction placed the frame on the stack. -/
+theorem emptyCurrentStep_hardCommit_retains_suffix
+    (state : StateCore σ Instruction SourceClause)
+    (frame : ReturnFrameCore σ Instruction)
+    (frames : List (ReturnFrameCore σ Instruction))
+    (newer older : List (ChoicePointCore σ Instruction SourceClause))
+    (frameStack : state.control.frames = frame :: frames)
+    (noCollection : frame.collection = none)
+    (noTransaction : frame.transaction = none)
+    (hardCommit : frame.commit = .hard older.length)
+    (choices : state.choices = newer ++ older) :
+    emptyCurrentStep state =
+      .next {
+        state with
+        control := {
+          current := frame.continuation
+          cutDepth := frame.callerCutDepth
+          frames
+        }
+        choices := older
+      } none := by
+  have valid : older.length ≤ state.choices.length := by
+    rw [choices]
+    simp [List.length_append]
+  have committed := emptyCurrentStep_commit_of_depth state frame frames
+    older.length frameStack noCollection noTransaction hardCommit valid
+  have retained : retainBottom older.length state.choices = older := by
+    rw [choices]
+    exact retainBottom_suffix newer older
+  rw [retained] at committed
+  exact committed
+
 /-- Entering a soft conditional creates a distinct live `.softElse`
 delimiter.  It shares the canonical heap and choice stack with ordinary
 branches, but its return frame records a soft rather than hard commitment. -/

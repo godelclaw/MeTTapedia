@@ -10,6 +10,7 @@ import Mettapedia.Logic.LP.RuntimeBranchInvariant
 #print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.LiveBranchCheckpoint.cutStep_prunes
 #print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.ifThenElseStep_creates_live_branch
 #print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.LiveBranchCheckpoint.emptyCurrentStep_hardCommit
+#print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.emptyCurrentStep_hardCommit_retains_suffix
 #print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.softIfThenElseStep_creates_checkpoint
 #print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.SoftElseCheckpoint.emptyCurrentStep_softCommit
 #print axioms Mettapedia.Logic.LP.RuntimeBranchInvariant.SoftElseCheckpoint.backtrackStep
