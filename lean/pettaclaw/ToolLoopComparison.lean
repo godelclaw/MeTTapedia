@@ -20,7 +20,7 @@ namespace PettaClaw.ToolLoopComparison
 
 open PettaClaw.FeedbackSensitiveBatch
 
-/-! ## A replaceable execution-policy coordinate -/
+/-! ## A permissive, stimulus-guarded execution policy -/
 
 inductive Mode where
   | agent
@@ -29,40 +29,75 @@ inductive Mode where
   | iterCoding
 deriving Repr, DecidableEq
 
-/-- Interactive policies admit one command per observation. Coding policies
-retain the existing bounded five-command batch. This is policy data, not a new
-case in the weak process kernel. -/
+/-- Every mode retains the existing five-command envelope. The model chooses a
+short or long batch; mode selection does not force stepwise execution. -/
 def batchLimit : Mode → Nat
-  | .agent | .iter => 1
-  | .coding | .iterCoding => 5
+  | _ => 5
 
 def admitBatch {Command : Type*} (mode : Mode) (commands : List Command) :
     List Command :=
   commands.take (batchLimit mode)
 
-theorem agent_admits_at_most_one {Command : Type*} (commands : List Command) :
-    (admitBatch .agent commands).length ≤ 1 := by
-  simp [admitBatch, batchLimit]
-
-theorem iter_admits_at_most_one {Command : Type*} (commands : List Command) :
-    (admitBatch .iter commands).length ≤ 1 := by
-  simp [admitBatch, batchLimit]
-
-theorem interactive_admission_has_no_second_command
-    {Command : Type*} (mode : Mode)
-    (interactive : mode = .agent ∨ mode = .iter)
-    (commands : List Command) :
-    (admitBatch mode commands).length < 2 := by
-  rcases interactive with rfl | rfl
-  · simpa [Nat.lt_succ_iff] using agent_admits_at_most_one commands
-  · simpa [Nat.lt_succ_iff] using iter_admits_at_most_one commands
-
-theorem coding_retains_five_commands {Command : Type*}
+theorem every_mode_retains_five_commands {Command : Type*}
+    (mode : Mode)
     (first second third fourth fifth : Command) (rest : List Command) :
-    admitBatch .coding
+    admitBatch mode
       ([first, second, third, fourth, fifth] ++ rest) =
       [first, second, third, fourth, fifth] := by
-  simp [admitBatch, batchLimit]
+  cases mode <;> simp [admitBatch, batchLimit]
+
+/-- The revision witnessed immediately before each command. Execution stops at
+the first revision which differs from the context frontier captured for the
+model turn. -/
+def runUnlessStimulus {Command : Type*} (captured : Nat) :
+    List (Nat × Command) → List Command
+  | [] => []
+  | (live, command) :: rest =>
+      if live = captured then
+        command :: runUnlessStimulus captured rest
+      else
+        []
+
+/-- With no new stimulus the guard preserves the whole chosen batch. -/
+theorem stable_frontier_executes_full_batch {Command : Type*}
+    (captured : Nat) (commands : List Command) :
+    runUnlessStimulus captured
+      (commands.map (fun command => (captured, command))) = commands := by
+  induction commands with
+  | nil => rfl
+  | cons command rest ih => simp [runUnlessStimulus, ih]
+
+/-- A changed frontier withholds exactly the suffix which has not yet run. -/
+theorem changed_frontier_withholds_unexecuted_suffix {Command : Type*}
+    (captured changed : Nat) (different : changed ≠ captured)
+    (executed : List Command) (next : Command)
+    (suffix : List (Nat × Command)) :
+    runUnlessStimulus captured
+      (executed.map (fun command => (captured, command)) ++
+        (changed, next) :: suffix) = executed := by
+  induction executed with
+  | nil => simp [runUnlessStimulus, different]
+  | cons command rest ih => simp [runUnlessStimulus, ih]
+
+/-- The guarded policy is strictly less restrictive than a universal
+one-command cap on a stable two-command trace. -/
+theorem stable_guard_preserves_a_batch_rejected_by_hard_single_step
+    {Command : Type*} (first second : Command) :
+    runUnlessStimulus 7 [(7, first), (7, second)] = [first, second] ∧
+      [first, second].take 1 = [first] := by
+  simp [runUnlessStimulus]
+
+/-- Cooperative interruption occurs only between effects. A stimulus arriving
+inside a non-preemptible command cannot be acted on before that command ends. -/
+def earliestNextGuard (started duration : Nat) : Nat :=
+  started + duration
+
+theorem nonpreemptible_command_imposes_reaction_latency
+    (started duration stimulus : Nat)
+    (_arrivedAfterStart : started < stimulus)
+    (arrivedBeforeFinish : stimulus < started + duration) :
+    stimulus < earliestNextGuard started duration := by
+  simpa [earliestNextGuard] using arrivedBeforeFinish
 
 /-! ## Brokered evidence is a semantic boundary -/
 
@@ -174,9 +209,11 @@ theorem evidence_barrier_handles_query_then_use_while_precommitment_cannot :
 
 end PettaClaw.ToolLoopComparison
 
-#print axioms PettaClaw.ToolLoopComparison.agent_admits_at_most_one
-#print axioms PettaClaw.ToolLoopComparison.interactive_admission_has_no_second_command
-#print axioms PettaClaw.ToolLoopComparison.coding_retains_five_commands
+#print axioms PettaClaw.ToolLoopComparison.every_mode_retains_five_commands
+#print axioms PettaClaw.ToolLoopComparison.stable_frontier_executes_full_batch
+#print axioms PettaClaw.ToolLoopComparison.changed_frontier_withholds_unexecuted_suffix
+#print axioms PettaClaw.ToolLoopComparison.stable_guard_preserves_a_batch_rejected_by_hard_single_step
+#print axioms PettaClaw.ToolLoopComparison.nonpreemptible_command_imposes_reaction_latency
 #print axioms PettaClaw.ToolLoopComparison.brokered_success_crosses_an_evidence_boundary
 #print axioms PettaClaw.ToolLoopComparison.pending_call_blocks_resampling
 #print axioms PettaClaw.ToolLoopComparison.rejected_prefix_does_not_bar_mutating_suffix
