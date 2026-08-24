@@ -39,6 +39,8 @@ import Mettapedia.Logic.Prolog.ReaderLoadRuntimeAudit
 import Mettapedia.Logic.Prolog.ReaderUnitAudit
 import Mettapedia.Logic.Prolog.RuntimeControl
 import Mettapedia.Logic.Prolog.RuntimeControlRegression
+import Mettapedia.Logic.Prolog.RuntimeControlMaterializeSoundness
+import Mettapedia.Logic.Prolog.RuntimeControlBranchInvariant
 import Mettapedia.Logic.Prolog.RuntimeControlSoundness
 import Mettapedia.Logic.Prolog.RuntimeControlSoundnessRegression
 import Mettapedia.Logic.Prolog.SourceRuntime
@@ -110,6 +112,8 @@ Mettapedia.Logic.Prolog.PrologGoal     pattern-level ISO characterization
 | `ReaderUnitAudit` | trusted-base gate for exact canonical clause admission into source units |
 | `RuntimeControl` | typed control materialization into the canonical LP heap and variable map |
 | `RuntimeControlRegression` | sharing and typed-control executable materialization gates |
+| `RuntimeControlMaterializeSoundness` | allocation-only materialization of every typed goal and clause into the canonical heap |
+| `RuntimeControlBranchInvariant` | transport of the shared structured-branch checkpoint through typed clause materialization |
 | `RuntimeControlSoundness` | shared-step conservation and direct typed-runtime grounding for the pure fragment |
 | `SourceRuntime` | concrete read-only `call/N` decoding invoked by the shared runtime |
 | `SourceRuntimeRegression` | heap-built callable, argument-extension, DFS, and cut-boundary gates |
