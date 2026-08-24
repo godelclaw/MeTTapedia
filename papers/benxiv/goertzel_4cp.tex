@@ -7081,6 +7081,21 @@ the letter itself: ambient face continuation must still be integrated with
 the crossed-edge colours, tracked connectivity, and port incidence before a
 positive-support relation or reachable-state closure is claimed.
 
+Ambient face continuation is now finite and exact on the opened source.
+Module
+\texttt{GoertzelV24ClosedWebLocalLayerSerialCellFaceFiniteAmbientContinuation}
+follows each outgoing fragment through its canonical cut edge into the second
+literal two-step layer.  Its ambient orbit face is therefore one of exactly
+three named roles: first endpoint, central corridor face, or second endpoint.
+Those three faces are proved distinct, and equality of their three-valued
+role codes is proved equivalent to the actual output profile's
+\texttt{faceContinues} bit.  The theorem does not identify distinct regional
+components merely because they lie on one ambient face, and it assumes no
+global face-two-sidedness of the opened annulus.  The five profile coordinates
+now each have a separate exact finite decoder.  Their joint literal-Cell
+support relation, its heterogeneous reachable closure, the numerical $V_0$,
+and the route-native bounded-base verification remain open.
+
 \subsection{What the programme may explain---and what is not yet a theorem}
 
 The finite-state route suggests an information-theoretic explanation for why a
