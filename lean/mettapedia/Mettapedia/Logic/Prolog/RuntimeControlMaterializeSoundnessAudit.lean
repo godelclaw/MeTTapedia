@@ -9,3 +9,4 @@ import Mettapedia.Logic.Prolog.RuntimeControlBranchInvariant
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.materializeClause_extends
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.clauseMaterializer_extends
 #print axioms Mettapedia.Logic.Prolog.RuntimeControl.BranchCheckpoint.advance_clause_materialization
+#print axioms Mettapedia.Logic.Prolog.RuntimeControl.typedBranchClauseThenUnify

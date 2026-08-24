@@ -33,4 +33,29 @@ theorem BranchCheckpoint.advance_clause_materialization
     BranchCheckpoint anchor { state with memory := result.memory } alternative :=
   certificate.advance (clauseMaterializer_extends run)
 
+/-- The ordinary nested-call path composes without a private heap: typed
+clause materialization advances the branch certificate, then the canonical
+graph unifier advances the same certificate again on head success. -/
+theorem typedBranchClauseThenUnify
+    {sigma : LP.LPSignature}
+    [DecidableEq sigma.scoped.vars] [DecidableEq sigma.scoped.constants]
+    [DecidableEq sigma.scoped.functionSymbols]
+    {anchor : Memory sigma.scoped}
+    {state : LP.RuntimeQuery.StateCore sigma (RuntimeGoal sigma.scoped)
+      (Clause sigma)}
+    {alternative : LP.RuntimeQuery.BranchChoiceCore sigma (RuntimeGoal sigma.scoped)}
+    (certificate : BranchCheckpoint anchor state alternative)
+    {scope : Nat} {clause : Clause sigma}
+    {copied : LP.RuntimeQuery.MaterializedBody sigma (RuntimeGoal sigma.scoped)}
+    (materialized : (clauseMaterializer (sigma := sigma)).materialize
+      state.memory scope clause = .ok copied)
+    (fuel : Nat) (agenda : List (Addr × Addr)) (memory : Memory sigma.scoped)
+    (unified : LP.RuntimeUnification.runSteps fuel
+      (LP.RuntimeUnification.startMany copied.memory agenda) =
+        .terminal (.success memory)) :
+    BranchCheckpoint anchor { state with memory } alternative := by
+  exact LP.RuntimeBranchInvariant.BranchCheckpoint.advance_unifier_success
+    (certificate.advance (clauseMaterializer_extends materialized))
+    fuel agenda memory unified
+
 end Mettapedia.Logic.Prolog.RuntimeControl
