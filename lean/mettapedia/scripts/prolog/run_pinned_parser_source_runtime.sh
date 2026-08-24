@@ -29,18 +29,15 @@ trap 'rm -rf "$TMP"' EXIT
 git -C "$PETTA_TREE" archive "$PIN" \
   src/metta.pl src/parser.pl src/translator.pl src/specializer.pl \
   src/filereader.pl src/spaces.pl examples/identity.metta | tar -x -C "$TMP"
-git -C "$SWI_TREE" archive "$SWI_PIN" library/assoc.pl | tar -x -C "$TMP"
+git -C "$SWI_TREE" archive "$SWI_PIN" \
+  library/dcg/basics.pl library/lists.pl library/error.pl library/apply.pl \
+  library/pairs.pl library/assoc.pl | tar -x -C "$TMP"
 
-DCG_BASICS="$(swipl -q -g \
-  "absolute_file_name(library('dcg/basics'), P, [file_type(prolog), access(read)]), write(P), halt")"
-LISTS="$(swipl -q -g \
-  "absolute_file_name(library(lists), P, [file_type(prolog), access(read)]), write(P), halt")"
-ERROR="$(swipl -q -g \
-  "absolute_file_name(library(error), P, [file_type(prolog), access(read)]), write(P), halt")"
-APPLY="$(swipl -q -g \
-  "absolute_file_name(library(apply), P, [file_type(prolog), access(read)]), write(P), halt")"
-PAIRS="$(swipl -q -g \
-  "absolute_file_name(library(pairs), P, [file_type(prolog), access(read)]), write(P), halt")"
+DCG_BASICS="$TMP/library/dcg/basics.pl"
+LISTS="$TMP/library/lists.pl"
+ERROR="$TMP/library/error.pl"
+APPLY="$TMP/library/apply.pl"
+PAIRS="$TMP/library/pairs.pl"
 ASSOC="$TMP/library/assoc.pl"
 
 pushd "$ROOT_DIR" >/dev/null

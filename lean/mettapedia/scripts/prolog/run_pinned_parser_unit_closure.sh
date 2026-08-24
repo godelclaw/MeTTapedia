@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ $# -ne 1 ]]; then
-  echo "usage: $0 <PeTTa git tree>" >&2
+if [[ $# -ne 2 ]]; then
+  echo "usage: $0 <PeTTa git tree> <SWI-Prolog git tree>" >&2
   exit 2
 fi
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 PETTA_TREE="$(realpath "$1")"
+SWI_TREE="$(realpath "$2")"
 PIN="6b7f52f064bdbc82fabd0a0998404121fb01d52e"
+SWI_PIN="6be143dbd030cc9ea621cde719a37f8385575453"
 SWI_VERSION="SWI-Prolog version 10.1.9"
 
 if [[ "$(swipl --version)" != "$SWI_VERSION"* ]]; then
@@ -17,17 +19,20 @@ if [[ "$(swipl --version)" != "$SWI_VERSION"* ]]; then
 fi
 
 git -C "$PETTA_TREE" cat-file -e "$PIN^{commit}"
+if [[ "$(git -C "$SWI_TREE" rev-parse HEAD)" != "$SWI_PIN" ]]; then
+  echo "pinned source-unit gate requires SWI source commit $SWI_PIN" >&2
+  exit 1
+fi
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
 git -C "$PETTA_TREE" archive "$PIN" src/parser.pl | tar -x -C "$TMP"
-DCG_BASICS="$(swipl -q -g \
-  "absolute_file_name(library('dcg/basics'), P, [file_type(prolog), access(read)]), write(P), halt")"
-LISTS="$(swipl -q -g \
-  "absolute_file_name(library(lists), P, [file_type(prolog), access(read)]), write(P), halt")"
-ERROR="$(swipl -q -g \
-  "absolute_file_name(library(error), P, [file_type(prolog), access(read)]), write(P), halt")"
+git -C "$SWI_TREE" archive "$SWI_PIN" \
+  library/dcg/basics.pl library/lists.pl library/error.pl | tar -x -C "$TMP"
+DCG_BASICS="$TMP/library/dcg/basics.pl"
+LISTS="$TMP/library/lists.pl"
+ERROR="$TMP/library/error.pl"
 
 pushd "$ROOT_DIR" >/dev/null
 lake env lean --run scripts/prolog/pinned_parser_unit_closure.lean \
