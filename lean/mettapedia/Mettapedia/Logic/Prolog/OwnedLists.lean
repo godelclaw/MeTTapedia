@@ -19,7 +19,7 @@ open ReaderModuleLink ReaderUnitClosure SourceSignature
 are deliberately ordinary source clauses, retaining Prolog's source order and
 backtracking behavior. -/
 def source : String :=
-  ":- module(lists, [append/2, append/3, member/2, memberchk/2, reverse/2, select/3, last/2, flatten/2, list_to_set/2]).\n\
+  ":- module(lists, [append/2, append/3, member/2, memberchk/2, reverse/2, select/3, last/2, flatten/2, list_to_set/2, intersection/3, min_list/2, max_list/2]).\n\
    append(Lists, Joined) :- append_(Lists, Joined).\n\
    append_([], []).\n\
    append_([List|Lists], Joined) :- append(List, Tail, Joined), append_(Lists, Tail).\n\
@@ -44,11 +44,25 @@ def source : String :=
    list_to_set(List, Set) :- list_to_set_(List, [], Set).\n\
    list_to_set_([], _, []).\n\
    list_to_set_([Head|Tail], Seen, Set) :- member_eq(Head, Seen), !, \
-     list_to_set_(Tail, Seen, Set).\n\
+   list_to_set_(Tail, Seen, Set).\n\
    list_to_set_([Head|Tail], Seen, [Head|Set]) :- \
-     list_to_set_(Tail, [Head|Seen], Set).\n\
+   list_to_set_(Tail, [Head|Seen], Set).\n\
    member_eq(Element, [Candidate|_]) :- Element == Candidate, !.\n\
-   member_eq(Element, [_|Tail]) :- member_eq(Element, Tail)."
+   member_eq(Element, [_|Tail]) :- member_eq(Element, Tail).\n\
+   intersection([], _, []).\n\
+   intersection([Element|Tail], Right, [Element|Common]) :- memberchk(Element, Right), !, \
+   intersection(Tail, Right, Common).\n\
+   intersection([_|Tail], Right, Common) :- intersection(Tail, Right, Common).\n\
+   max_list([Head|Tail], Maximum) :- max_list_(Tail, Head, Maximum).\n\
+   max_list_([], Maximum, Maximum).\n\
+   max_list_([Head|Tail], Current, Maximum) :- Head > Current, !, \
+   max_list_(Tail, Head, Maximum).\n\
+   max_list_([_|Tail], Current, Maximum) :- max_list_(Tail, Current, Maximum).\n\
+   min_list([Head|Tail], Minimum) :- min_list_(Tail, Head, Minimum).\n\
+   min_list_([], Minimum, Minimum).\n\
+   min_list_([Head|Tail], Current, Minimum) :- Head < Current, !, \
+   min_list_(Tail, Head, Minimum).\n\
+   min_list_([_|Tail], Current, Minimum) :- min_list_(Tail, Current, Minimum)."
 
 private def sourceKey? : SourceSignature.Term → Option String :=
   ReaderSWIProfile.sourceKey?
@@ -70,7 +84,10 @@ private def rootSource : String :=
    selected(Element) :- select(Element, [a,b], _).\n\
    final(Element) :- last([a,b,c], Element).\n\
    flattened(Result) :- flatten([a,[b,[c]],[]], Result).\n\
-   unique(Result) :- list_to_set([b,a,b,c,a], Result)."
+   unique(Result) :- list_to_set([b,a,b,c,a], Result).\n\
+   common(Result) :- intersection([a,b,c], [b,d,c], Result).\n\
+   maximum(Result) :- max_list([3,7,4], Result).\n\
+   minimum(Result) :- min_list([3,7,4], Result)."
 
 private def closure? : Option (ReaderUnitClosure.Closure String) :=
   match ReaderUnitClosure.loadWith 4
@@ -156,6 +173,25 @@ def listToSetExecutes : Bool :=
     SourceRuntimeRegression.runAtomBagsFor linked.program (goal "unique") x) ==
     some ([["b", "a", "c"]], 0, 0)
 
+/-- Intersection follows the left input's order and uses ordinary unification
+through `memberchk/2`; the source cut only commits the selected member case. -/
+def intersectionExecutes : Bool :=
+  linked?.bind (fun linked =>
+    SourceRuntimeRegression.runAtomBagsFor linked.program (goal "common") x) ==
+    some ([["b", "c"]], 0, 0)
+
+/-- The owned extrema use the shared integer-comparison transition.  Their
+scope is finite, nonempty lists of integer source values. -/
+def extremaExecute : Bool :=
+  linked?.bind (fun linked => do
+    let (maxima, maxHeap, maxTrail) ←
+      SourceRuntimeRegression.runIntegersFor linked.program (goal "maximum") x
+    let (minima, minHeap, minTrail) ←
+      SourceRuntimeRegression.runIntegersFor linked.program (goal "minimum") x
+    pure (maxima == [7] && minima == [3] &&
+      maxHeap == 0 && maxTrail == 0 && minHeap == 0 && minTrail == 0)) ==
+    some true
+
 #guard selfContained
 #guard appendExecutes
 #guard appendTwoExecutes
@@ -166,5 +202,7 @@ def listToSetExecutes : Bool :=
 #guard lastExecutes
 #guard flattenExecutes
 #guard listToSetExecutes
+#guard intersectionExecutes
+#guard extremaExecute
 
 end Mettapedia.Logic.Prolog.OwnedLists
