@@ -67,6 +67,26 @@ theorem BranchCheckpoint.restore_exact
     (Heap.check_of_wellFormed certificate.wellFormed)
     (Heap.check_of_wellShaped certificate.wellShaped)
 
+/-- A successful canonical graph-unifier run advances, but cannot invalidate,
+a live branch checkpoint.  This is the first nontrivial child computation a
+structured branch can perform: the exact `Extends` history comes from the
+unifier's real run induction, not an assumed monotonicity property. -/
+theorem BranchCheckpoint.advance_unifier_success
+    [DecidableEq σ.constants] [DecidableEq σ.functionSymbols]
+    {anchor : Memory σ.scoped}
+    {state : StateCore σ Instruction SourceClause}
+    {alternative : BranchChoiceCore σ Instruction}
+    (certificate : BranchCheckpoint anchor state alternative)
+    (fuel : Nat) (agenda : List (Addr × Addr)) (memory : Memory σ.scoped)
+    (run : RuntimeUnification.runSteps fuel
+      (RuntimeUnification.startMany state.memory agenda) =
+        .terminal (.success memory)) :
+    BranchCheckpoint anchor { state with memory } alternative := by
+  obtain ⟨_, history, _⟩ :=
+    RuntimeUnificationSoundness.startMany_success_extension fuel
+      state.memory agenda memory run
+  exact certificate.advance history
+
 /-- Entering a branch on the shared engine creates a real newest choice point
 whose saved continuation is the right branch followed by the caller tail,
 and whose checkpoint certificate is immediately inhabited. -/
