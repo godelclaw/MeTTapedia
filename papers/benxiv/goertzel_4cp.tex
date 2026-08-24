@@ -87,7 +87,7 @@
 Reductive--Compositional Route to the Four-Color Theorem:\\
 \large Proven Structure, Refuted Shortcuts, and the Closure Frontier}
 \author{The MeTTapedia formalization effort}
-\date{Living revision: 21 August 2026}
+\date{Living revision: 24 August 2026}
 
 \begin{document}
 \maketitle
@@ -7063,6 +7063,23 @@ identify each stored cap with the corresponding literal old-component
 cardinality, sum those disjoint supports, and combine the result with the
 already exact new-Cell edge cardinality at cap five.  The full five-field
 letter and its reachable closure are not claimed yet.
+
+The old/new support split and capped-length computation are now exact.  Module
+\texttt{GoertzelV24ClosedWebLocalLayerSerialCellFaceFiniteOldEdgeAdequacy}
+proves first that every old-prefix edge in a selected output component has an
+anchor on the fixed transition carrier.  This includes singleton old
+components, whose presence cannot be recovered from graph support alone.
+Consequently the union selected by the finite predecessor receipt is exactly
+the old-region portion of the literal output component.  Lean partitions the
+whole component into this old union and the genuinely new Cell edges, proves
+the two parts disjoint, and combines their already-verified cardinalities at
+cap five.  The resulting graph-free decoder is proved equal to the actual
+\texttt{faceLengthCap} of the regional output fragment.  Thus capped facial
+progress is no longer estimated by path length or by a possibly overlapping
+sum.  This is one coordinate of the literal heterogeneous Cell letter, not
+the letter itself: ambient face continuation must still be integrated with
+the crossed-edge colours, tracked connectivity, and port incidence before a
+positive-support relation or reachable-state closure is claimed.
 
 \subsection{What the programme may explain---and what is not yet a theorem}
 

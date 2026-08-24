@@ -157,6 +157,85 @@ theorem sourceLocalLayerBoundaryRebaseFaceComponentEdges_disjoint_of_same_interi
   apply hnotReachable
   exact hleftReachable.trans (hdarts ▸ hrightReachable.symm)
 
+/-- The cap stored at any live finite predecessor coordinate is exactly the
+cap at five of that coordinate's literal predecessor-component edge support. -/
+theorem sourceLocalLayerSerialFaceFinitePredecessor_componentCap_eq
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hcell : (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 6) :
+    let carrier := sourceLocalLayerSerialFaceTransitionCarrierAt corridor
+      hunique offset
+    let coordinate := carrierCoordinate carrier
+    let code := sourceLocalLayerSerialFaceTransitionCodeAt corridor hunique
+      offset hcell
+    let state := sourceLocalLayerSerialFacePrefixAttachmentStateAt corridor
+      hunique offset hcell
+    ∀ coordinateIndex : Fin code.vertexCount.val,
+      state.componentCap
+          (sourceLocalLayerSerialFaceFiniteStableSlot code coordinateIndex) =
+        ⟨min (sourceLocalLayerBoundaryRebaseFaceComponentEdges web.annular.RS
+            (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique offset)
+            (coordinate.symm coordinateIndex).1).card 5,
+          Nat.lt_succ_of_le (Nat.min_le_right _ _)⟩ := by
+  dsimp only
+  intro coordinateIndex
+  let carrier := sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+    offset
+  let coordinate := carrierCoordinate carrier
+  let code := sourceLocalLayerSerialFaceTransitionCodeAt corridor hunique offset
+    hcell
+  let state := sourceLocalLayerSerialFacePrefixAttachmentStateAt corridor
+    hunique offset hcell
+  have hslotDart (dart : {dart // dart ∈ carrier}) :
+      sourceLocalLayerSerialFaceFiniteStableSlot code (coordinate dart) =
+        sourceLocalLayerSerialFaceTransitionSlotAt corridor hunique offset hcell
+          dart := by
+    rfl
+  have hslot :
+      sourceLocalLayerSerialFaceFiniteStableSlot code coordinateIndex =
+        sourceLocalLayerSerialFaceTransitionSlotAt corridor hunique offset hcell
+          (coordinate.symm coordinateIndex) := by
+    rw [← hslotDart (coordinate.symm coordinateIndex)]
+    simp
+  rw [hslot]
+  exact sourceLocalLayerSerialFacePrefixAttachmentStateAt_componentCap corridor
+    hunique offset hcell (coordinate.symm coordinateIndex)
+
+/-- Value form of the exact predecessor-cap theorem, ready for the finite
+representative sum. -/
+theorem sourceLocalLayerSerialFaceFinitePredecessor_componentCap_val
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hcell : (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 6) :
+    let carrier := sourceLocalLayerSerialFaceTransitionCarrierAt corridor
+      hunique offset
+    let coordinate := carrierCoordinate carrier
+    let code := sourceLocalLayerSerialFaceTransitionCodeAt corridor hunique
+      offset hcell
+    let state := sourceLocalLayerSerialFacePrefixAttachmentStateAt corridor
+      hunique offset hcell
+    ∀ coordinateIndex : Fin code.vertexCount.val,
+      (state.componentCap
+          (sourceLocalLayerSerialFaceFiniteStableSlot code coordinateIndex)).val =
+        min (sourceLocalLayerBoundaryRebaseFaceComponentEdges web.annular.RS
+          (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique offset)
+          (coordinate.symm coordinateIndex).1).card 5 := by
+  dsimp only
+  intro coordinateIndex
+  exact congrArg Fin.val
+    (sourceLocalLayerSerialFaceFinitePredecessor_componentCap_eq corridor
+      hunique offset hcell coordinateIndex)
+
 /-- Distinct canonical predecessor components that contribute to one actual
 outgoing fragment have disjoint old primal-edge supports.  This is the exact
 non-overlap fact needed before their capped sizes may be added. -/
@@ -302,6 +381,157 @@ theorem sourceLocalLayerSerialFaceFiniteContributingPredecessor_componentEdges_d
   · exact hleftFace.symm.trans hrightFace
   · exact hleftFace ▸ houtputInterior
   · exact hnotOldReachable
+
+/-- Literal old-prefix edge support contributed to one outgoing fragment,
+formed as the union of its canonical predecessor components. -/
+noncomputable def sourceLocalLayerSerialFaceOldComponentEdgesAt
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hcell : (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 6)
+    (fragment : SourceLocalLayerSerialFaceOutputFragmentAt corridor hunique
+      offset) : Finset G.edgeSet := by
+  classical
+  let carrier := sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+    offset
+  let coordinate := carrierCoordinate carrier
+  let code := sourceLocalLayerSerialFaceTransitionCodeAt corridor hunique offset
+    hcell
+  let state := sourceLocalLayerSerialFacePrefixAttachmentStateAt corridor
+    hunique offset hcell
+  let semantic := sourceLocalLayerSerialFaceFinitePredecessorSemanticAt corridor
+    hunique offset hcell
+  let output := coordinate
+    (sourceLocalLayerSerialFaceOutputFragmentTransitionDartAt corridor hunique
+      offset fragment)
+  let oldRegion := sourceLocalLayerSerialTerminalInputRegionAt corridor hunique
+    offset
+  exact (sourceLocalLayerSerialFaceFiniteContributingPredecessors state code
+    semantic output).biUnion fun representative =>
+      sourceLocalLayerBoundaryRebaseFaceComponentEdges web.annular.RS oldRegion
+        (coordinate.symm representative).1
+
+/-- The old-component union is cardinality-additive because its canonical
+predecessor components are pairwise edge-disjoint. -/
+theorem sourceLocalLayerSerialFaceOldComponentEdgesAt_card
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hcell : (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 6)
+    (fragment : SourceLocalLayerSerialFaceOutputFragmentAt corridor hunique
+      offset) :
+    let carrier := sourceLocalLayerSerialFaceTransitionCarrierAt corridor
+      hunique offset
+    let coordinate := carrierCoordinate carrier
+    let code := sourceLocalLayerSerialFaceTransitionCodeAt corridor hunique
+      offset hcell
+    let state := sourceLocalLayerSerialFacePrefixAttachmentStateAt corridor
+      hunique offset hcell
+    let semantic := sourceLocalLayerSerialFaceFinitePredecessorSemanticAt
+      corridor hunique offset hcell
+    let output := coordinate
+      (sourceLocalLayerSerialFaceOutputFragmentTransitionDartAt corridor hunique
+        offset fragment)
+    (sourceLocalLayerSerialFaceOldComponentEdgesAt corridor hunique offset hcell
+      fragment).card =
+      ∑ representative ∈
+        sourceLocalLayerSerialFaceFiniteContributingPredecessors state code
+          semantic output,
+        (sourceLocalLayerBoundaryRebaseFaceComponentEdges web.annular.RS
+          (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique offset)
+          (coordinate.symm representative).1).card := by
+  dsimp only
+  let carrier := sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+    offset
+  let coordinate := carrierCoordinate carrier
+  let code := sourceLocalLayerSerialFaceTransitionCodeAt corridor hunique offset
+    hcell
+  let state := sourceLocalLayerSerialFacePrefixAttachmentStateAt corridor
+    hunique offset hcell
+  let semantic := sourceLocalLayerSerialFaceFinitePredecessorSemanticAt corridor
+    hunique offset hcell
+  let output := coordinate
+    (sourceLocalLayerSerialFaceOutputFragmentTransitionDartAt corridor hunique
+      offset fragment)
+  unfold sourceLocalLayerSerialFaceOldComponentEdgesAt
+  apply Finset.card_biUnion
+  intro left hleft right hright hne
+  exact sourceLocalLayerSerialFaceFiniteContributingPredecessor_componentEdges_disjoint
+    corridor hunique offset hcell fragment hleft hright hne
+
+/-- The graph-free predecessor cap sum is exactly the cap at five of the
+literal disjoint old-component union. -/
+theorem sourceLocalLayerSerialFaceFinitePredecessorCapSum_eq_oldComponentEdges
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hcell : (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 6)
+    (fragment : SourceLocalLayerSerialFaceOutputFragmentAt corridor hunique
+      offset) :
+    let carrier := sourceLocalLayerSerialFaceTransitionCarrierAt corridor
+      hunique offset
+    let coordinate := carrierCoordinate carrier
+    let code := sourceLocalLayerSerialFaceTransitionCodeAt corridor hunique
+      offset hcell
+    let state := sourceLocalLayerSerialFacePrefixAttachmentStateAt corridor
+      hunique offset hcell
+    let semantic := sourceLocalLayerSerialFaceFinitePredecessorSemanticAt
+      corridor hunique offset hcell
+    let output := coordinate
+      (sourceLocalLayerSerialFaceOutputFragmentTransitionDartAt corridor hunique
+        offset fragment)
+    sourceLocalLayerSerialFaceFinitePredecessorCapSum state code semantic output =
+      min (sourceLocalLayerSerialFaceOldComponentEdgesAt corridor hunique offset
+        hcell fragment).card 5 := by
+  dsimp only
+  let carrier := sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+    offset
+  let coordinate := carrierCoordinate carrier
+  let code := sourceLocalLayerSerialFaceTransitionCodeAt corridor hunique offset
+    hcell
+  let state := sourceLocalLayerSerialFacePrefixAttachmentStateAt corridor
+    hunique offset hcell
+  let semantic := sourceLocalLayerSerialFaceFinitePredecessorSemanticAt corridor
+    hunique offset hcell
+  let output := coordinate
+    (sourceLocalLayerSerialFaceOutputFragmentTransitionDartAt corridor hunique
+      offset fragment)
+  let contributors :=
+    sourceLocalLayerSerialFaceFiniteContributingPredecessors state code semantic
+      output
+  unfold sourceLocalLayerSerialFaceFinitePredecessorCapSum
+  rw [sourceLocalLayerSerialFaceOldComponentEdgesAt_card corridor hunique offset
+    hcell fragment]
+  apply GoertzelV24CorridorSpliceObservables.min_sum_eq_of_pointwise_min_eq
+  intro representative hrepresentative
+  have hcap :=
+    sourceLocalLayerSerialFaceFinitePredecessor_componentCap_val corridor
+      hunique offset hcell representative
+  have hcapLe :
+      ((sourceLocalLayerSerialFacePrefixAttachmentStateAt corridor hunique
+        offset hcell).componentCap
+        (sourceLocalLayerSerialFaceFiniteStableSlot
+          (sourceLocalLayerSerialFaceTransitionCodeAt corridor hunique offset
+            hcell) representative)).val ≤ 5 :=
+    Nat.le_of_lt_succ ((sourceLocalLayerSerialFacePrefixAttachmentStateAt
+      corridor hunique offset hcell).componentCap
+        (sourceLocalLayerSerialFaceFiniteStableSlot
+          (sourceLocalLayerSerialFaceTransitionCodeAt corridor hunique offset
+            hcell) representative)).isLt
+  rw [Nat.min_eq_left hcapLe]
+  exact hcap
 
 end
 
