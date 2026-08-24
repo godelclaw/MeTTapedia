@@ -38,6 +38,17 @@ structure BranchCheckpoint
   wellShaped : anchor.heap.WellShaped
   floorZero : state.persistentHeapFloor = 0
 
+/-- A branch checkpoint together with its exact occurrence in the live shared
+choice stack.  The positional decomposition prevents a saved alternative from
+being reused as detached evidence after it has been pruned or popped. -/
+structure LiveBranchCheckpoint
+    (anchor : Memory σ.scoped)
+    (state : StateCore σ Instruction SourceClause)
+    (alternative : BranchChoiceCore σ Instruction)
+    (newer older : List (ChoicePointCore σ Instruction SourceClause)) : Prop where
+  saved : BranchCheckpoint anchor state alternative
+  occurrence : state.choices = newer ++ .branch alternative :: older
+
 /-- A checkpoint certificate follows any further certified heap evolution.
 This is the only way the local branch fact is carried between entry and
 backtracking; no second transition system is introduced. -/
@@ -50,6 +61,19 @@ theorem BranchCheckpoint.advance
     BranchCheckpoint anchor { state with memory } alternative := by
   refine ⟨certificate.checkpoint, certificate.history.trans history,
     certificate.wellFormed, certificate.wellShaped, certificate.floorZero⟩
+
+/-- Heap evolution preserves the positional ownership of a live branch: only
+the memory field changes, so the same occurrence remains in the same stack. -/
+theorem LiveBranchCheckpoint.advance
+    {anchor : Memory σ.scoped}
+    {state : StateCore σ Instruction SourceClause}
+    {alternative : BranchChoiceCore σ Instruction}
+    {newer older : List (ChoicePointCore σ Instruction SourceClause)}
+    (certificate : LiveBranchCheckpoint anchor state alternative newer older)
+    {memory : Memory σ.scoped}
+    (history : Extends state.memory memory) :
+    LiveBranchCheckpoint anchor { state with memory } alternative newer older := by
+  exact ⟨certificate.saved.advance history, certificate.occurrence⟩
 
 /-- Exact restoration for a certified branch alternative.  At the pure
 runtime's zero persistent floor, protected restoration is ordinary checkpoint
@@ -96,12 +120,22 @@ theorem branchStep_creates_checkpoint
     (wellFormed : state.memory.heap.WellFormed)
     (wellShaped : state.memory.heap.WellShaped)
     (floorZero : state.persistentHeapFloor = 0) :
-    ∃ anchor alternative after,
+    ∃ alternative after,
       branchStep state left right rest = .next after none ∧
+      after = {
+        state with
+        control := {
+          current := left ++ rest
+          cutDepth := state.control.cutDepth
+          frames := state.control.frames
+        }
+        choices := .branch alternative :: state.choices
+      } ∧
       after.choices = .branch alternative :: state.choices ∧
+      after.memory = state.memory ∧
       after.control.current = left ++ rest ∧
       alternative.control.current = right ++ rest ∧
-      BranchCheckpoint anchor after alternative := by
+      BranchCheckpoint state.memory after alternative := by
   let alternative : BranchChoiceCore σ Instruction := {
     checkpoint := state.memory.checkpoint
     control := {
@@ -119,9 +153,43 @@ theorem branchStep_creates_checkpoint
     }
     choices := .branch alternative :: state.choices
   }
-  refine ⟨state.memory, alternative, after, rfl, rfl, rfl, rfl, ?_⟩
+  refine ⟨alternative, after, rfl, rfl, rfl, rfl, rfl, rfl, ?_⟩
   exact ⟨rfl, .refl state.memory, wellFormed, wellShaped,
     floorZero⟩
+
+/-- Pushing an inner structured branch preserves an outer branch's live stack
+occurrence and creates a newly live top occurrence.  This is the non-vacuous
+nested-choice law: an outer checkpoint remains owned while its child is
+explored, rather than being reintroduced only when the child fails. -/
+theorem LiveBranchCheckpoint.branchStep
+    {anchor : Memory σ.scoped}
+    {state : StateCore σ Instruction SourceClause}
+    {alternative : BranchChoiceCore σ Instruction}
+    {newer older : List (ChoicePointCore σ Instruction SourceClause)}
+    (certificate : LiveBranchCheckpoint anchor state alternative newer older)
+    (left right rest : List Instruction)
+    (wellFormed : state.memory.heap.WellFormed)
+    (wellShaped : state.memory.heap.WellShaped)
+    (floorZero : state.persistentHeapFloor = 0) :
+    ∃ inner after,
+      branchStep state left right rest = .next after none ∧
+      LiveBranchCheckpoint anchor after alternative (.branch inner :: newer) older ∧
+      LiveBranchCheckpoint state.memory after inner [] state.choices := by
+  obtain ⟨inner, after, stepped, afterExact, choices, memory, _, _, innerSaved⟩ :=
+    branchStep_creates_checkpoint state left right rest wellFormed wellShaped
+      floorZero
+  refine ⟨inner, after, stepped, ?_, ?_⟩
+  · rcases certificate with ⟨saved, occurrence⟩
+    have savedAfter : BranchCheckpoint anchor after alternative := by
+      refine ⟨saved.checkpoint, ?_, saved.wellFormed, saved.wellShaped, ?_⟩
+      · rw [memory]
+        exact saved.history
+      · rw [afterExact]
+        exact saved.floorZero
+    refine ⟨savedAfter, ?_⟩
+    rw [afterExact, occurrence]
+    rfl
+  · exact ⟨innerSaved, by simp [choices]⟩
 
 /-- Backtracking through a certified newest branch restores its exact saved
 memory and installs its saved right continuation.  Thus branch restoration is
