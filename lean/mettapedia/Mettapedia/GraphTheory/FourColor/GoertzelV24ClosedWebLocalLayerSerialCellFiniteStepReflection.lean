@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24BoundedCarrierBoolGraphFamilyCode
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialCellFiniteSupportLetter
+import Mettapedia.GraphTheory.FourColor.GoertzelV24FiniteBoolRelationClosure
 
 /-!
 # Boolean reflection of the literal Cell component steps
@@ -26,9 +27,11 @@ open GoertzelV24ClosedWebAtGoodWord
 open GoertzelV24ClosedWebAtGoodWord.Instance
 open GoertzelV24ClosedWebAtGoodWord.Instance.LocalLayerFormation
 open GoertzelV24ClosedWebLocalLayerSerialCellFaceFiniteClosure
+open GoertzelV24ClosedWebLocalLayerSerialCellFiniteSupportLetter
 open GoertzelV24ClosedWebLocalLayerSerialCellTrackedFiniteClosure
 open GoertzelV24ClosedWebLocalLayerSerialCellTrackedPrefixAttachmentState
 open GoertzelV24CorridorProfile
+open GoertzelV24FiniteBoolRelationClosure
 open GoertzelV24SimpleGraphPortResidualFactorContraction
 open GoertzelV24SimpleGraphSupportedPortResidualFactorContraction
 
@@ -114,6 +117,57 @@ def SourceLocalLayerSerialFaceFiniteComponentStepBool
     code.reachable false left right ||
     code.reachable true left right
 
+/-- Exact directed closure of the executable tracked-component step. -/
+def SourceLocalLayerSerialTrackedFiniteComponentClosureBool
+    (state : SourceLocalLayerSerialTrackedPrefixAttachmentState)
+    (input : BoundedCorridorCutProfile 2 1 4)
+    (code : BoundedCarrierBoolGraphFamilyCode 21 5
+      (TrackedColorPair × Bool))
+    (pair : TrackedColorPair)
+    (left right : Fin code.vertexCount.val) : Bool :=
+  boolRelationReachable
+    (SourceLocalLayerSerialTrackedFiniteComponentStepBool state input code pair)
+    left right
+
+/-- Exact directed closure of the executable facial-component step. -/
+def SourceLocalLayerSerialFaceFiniteComponentClosureBool
+    (state : SourceLocalLayerSerialFacePrefixAttachmentState)
+    (code : BoundedCarrierBoolGraphFamilyCode 24 0 Bool)
+    (left right : Fin code.vertexCount.val) : Bool :=
+  boolRelationReachable
+    (SourceLocalLayerSerialFaceFiniteComponentStepBool state code) left right
+
+/-- Embed a live coordinate of a Boolean carrier in its fixed-slot ABI. -/
+def BoundedCarrierBoolLiveSlot
+    {bound pointCount : Nat} {Family : Type*}
+    (code : BoundedCarrierBoolGraphFamilyCode bound pointCount Family)
+    (coordinate : Fin code.vertexCount.val) : Fin bound :=
+  Fin.castLE (Nat.le_of_lt_succ code.vertexCount.isLt) coordinate
+
+/-- Executable fixed-slot tracked closure used by the finite support letter. -/
+def SourceLocalLayerSerialTrackedFiniteConnectedBool
+    (state : SourceLocalLayerSerialTrackedPrefixAttachmentState)
+    (input : BoundedCorridorCutProfile 2 1 4)
+    (code : BoundedCarrierBoolGraphFamilyCode 21 5
+      (TrackedColorPair × Bool))
+    (pair : TrackedColorPair) (left right : Fin 21) : Bool :=
+  decide (∃ leftCoordinate rightCoordinate : Fin code.vertexCount.val,
+    BoundedCarrierBoolLiveSlot code leftCoordinate = left ∧
+      BoundedCarrierBoolLiveSlot code rightCoordinate = right ∧
+        SourceLocalLayerSerialTrackedFiniteComponentClosureBool state input
+          code pair leftCoordinate rightCoordinate = true)
+
+/-- Executable fixed-slot facial closure used by the finite support letter. -/
+def SourceLocalLayerSerialFaceFiniteConnectedBool
+    (state : SourceLocalLayerSerialFacePrefixAttachmentState)
+    (code : BoundedCarrierBoolGraphFamilyCode 24 0 Bool)
+    (left right : Fin 24) : Bool :=
+  decide (∃ leftCoordinate rightCoordinate : Fin code.vertexCount.val,
+    BoundedCarrierBoolLiveSlot code leftCoordinate = left ∧
+      BoundedCarrierBoolLiveSlot code rightCoordinate = right ∧
+        SourceLocalLayerSerialFaceFiniteComponentClosureBool state code
+          leftCoordinate rightCoordinate = true)
+
 /-- Reflecting a proof-facing tracked graph code makes the Boolean one-step
 query exactly its original proposition-valued component step. -/
 theorem trackedFiniteComponentStepBool_ofGraphFamilyCode_eq_true_iff
@@ -154,6 +208,96 @@ theorem faceFiniteComponentStepBool_ofGraphFamilyCode_eq_true_iff
     SourceLocalLayerSerialFaceFiniteComponentStep,
     sourceLocalLayerSerialFaceFiniteStableSlot]
   tauto
+
+/-- Boolean saturation of a reflected tracked code is exactly the original
+proof-facing reflexive-transitive closure. -/
+@[simp]
+theorem trackedFiniteComponentClosureBool_ofGraphFamilyCode_eq_true_iff
+    (state : SourceLocalLayerSerialTrackedPrefixAttachmentState)
+    (input : BoundedCorridorCutProfile 2 1 4)
+    (code : BoundedCarrierGraphFamilyCode 21 5
+      (TrackedColorPair × Bool))
+    (pair : TrackedColorPair)
+    (left right : Fin code.vertexCount.val) :
+    SourceLocalLayerSerialTrackedFiniteComponentClosureBool state input
+        (ofGraphFamilyCode code) pair left right = true ↔
+      Relation.ReflTransGen
+        (SourceLocalLayerSerialTrackedFiniteComponentStep state input code pair)
+        left right := by
+  rw [SourceLocalLayerSerialTrackedFiniteComponentClosureBool,
+    boolRelationReachable_eq_true_iff]
+  constructor
+  · exact Relation.ReflTransGen.mono fun first second hstep =>
+      (trackedFiniteComponentStepBool_ofGraphFamilyCode_eq_true_iff
+        state input code pair first second).1 hstep
+  · exact Relation.ReflTransGen.mono fun first second hstep =>
+      (trackedFiniteComponentStepBool_ofGraphFamilyCode_eq_true_iff
+        state input code pair first second).2 hstep
+
+/-- Boolean saturation of a reflected facial code is exactly the original
+proof-facing reflexive-transitive closure. -/
+@[simp]
+theorem faceFiniteComponentClosureBool_ofGraphFamilyCode_eq_true_iff
+    (state : SourceLocalLayerSerialFacePrefixAttachmentState)
+    (code : BoundedCarrierGraphFamilyCode 24 0 Bool)
+    (left right : Fin code.vertexCount.val) :
+    SourceLocalLayerSerialFaceFiniteComponentClosureBool state
+        (ofGraphFamilyCode code) left right = true ↔
+      Relation.ReflTransGen
+        (SourceLocalLayerSerialFaceFiniteComponentStep state code)
+        left right := by
+  rw [SourceLocalLayerSerialFaceFiniteComponentClosureBool,
+    boolRelationReachable_eq_true_iff]
+  constructor
+  · exact Relation.ReflTransGen.mono fun first second hstep =>
+      (faceFiniteComponentStepBool_ofGraphFamilyCode_eq_true_iff
+        state code first second).1 hstep
+  · exact Relation.ReflTransGen.mono fun first second hstep =>
+      (faceFiniteComponentStepBool_ofGraphFamilyCode_eq_true_iff
+        state code first second).2 hstep
+
+/-- The fixed-slot tracked query is executable without changing the support
+letter's proposition-valued meaning. -/
+@[simp]
+theorem trackedFiniteConnectedBool_ofGraphFamilyCode_eq_true_iff
+    (state : SourceLocalLayerSerialTrackedPrefixAttachmentState)
+    (input : BoundedCorridorCutProfile 2 1 4)
+    (code : BoundedCarrierGraphFamilyCode 21 5
+      (TrackedColorPair × Bool))
+    (pair : TrackedColorPair) (left right : Fin 21) :
+    SourceLocalLayerSerialTrackedFiniteConnectedBool state input
+        (ofGraphFamilyCode code) pair left right = true ↔
+      SourceLocalLayerSerialTrackedFiniteConnected state input code pair
+        left right := by
+  simp only [SourceLocalLayerSerialTrackedFiniteConnectedBool,
+    decide_eq_true_eq,
+    trackedFiniteComponentClosureBool_ofGraphFamilyCode_eq_true_iff,
+    SourceLocalLayerSerialTrackedFiniteConnected,
+    BoundedCarrierBoolLiveSlot, BoundedCarrierLiveSlot]
+  constructor <;>
+    rintro ⟨leftCoordinate, rightCoordinate, hleft, hright, hclosure⟩ <;>
+    exact ⟨leftCoordinate, rightCoordinate, by simpa using hleft,
+      by simpa using hright, hclosure⟩
+
+/-- The fixed-slot facial query is executable without changing the support
+letter's proposition-valued meaning. -/
+@[simp]
+theorem faceFiniteConnectedBool_ofGraphFamilyCode_eq_true_iff
+    (state : SourceLocalLayerSerialFacePrefixAttachmentState)
+    (code : BoundedCarrierGraphFamilyCode 24 0 Bool)
+    (left right : Fin 24) :
+    SourceLocalLayerSerialFaceFiniteConnectedBool state
+        (ofGraphFamilyCode code) left right = true ↔
+      SourceLocalLayerSerialFaceFiniteConnected state code left right := by
+  simp only [SourceLocalLayerSerialFaceFiniteConnectedBool,
+    decide_eq_true_eq,
+    faceFiniteComponentClosureBool_ofGraphFamilyCode_eq_true_iff,
+    SourceLocalLayerSerialFaceFiniteConnected,
+    BoundedCarrierBoolLiveSlot, BoundedCarrierLiveSlot]
+  constructor <;>
+    rintro ⟨leftCoordinate, rightCoordinate, hleft, hright, hclosure⟩ <;>
+    exact ⟨leftCoordinate, rightCoordinate, by simpa using hleft,
+      by simpa using hright, hclosure⟩
 
 end GoertzelV24ClosedWebLocalLayerSerialCellFiniteStepReflection
 

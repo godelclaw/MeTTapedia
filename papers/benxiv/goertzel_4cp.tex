@@ -7129,10 +7129,27 @@ two-colour predecessor/Cell/seam step and the facial
 predecessor/Cell/seam step.  In each case Lean proves an iff with the original
 proposition-valued relation.  Thus this reflection neither enlarges nor
 shrinks the literal Cell semantics and retains all five profile coordinates.
-The remaining computational work is to close these Boolean steps on their
-finite carriers, reflect the capped face computation, and assemble the
-heterogeneous source word.  No reachable-state count, numerical $V_0$, or
-bounded-base verification is claimed yet.
+The remaining computational work is to reflect the capped face computation
+and assemble the heterogeneous source word.  No reachable-state count,
+numerical $V_0$, or bounded-base verification is claimed yet.
+
+The finite closure of both Boolean steps is now executable and exact.  Module
+\texttt{GoertzelV24FiniteBoolRelationClosure} repeatedly adds directed
+successors on a finite carrier.  A cardinality proof shows that one more round
+than the carrier size reaches a fixed point, and the main theorem identifies
+Boolean membership in that fixed point with
+\texttt{Relation.ReflTransGen} of the original directed step relation.  No
+symmetry assumption is used, so the calculation does not manufacture reverse
+transitions on unrealizable members of an over-encoded carrier.  The literal
+Cell reflection applies this closure to all three tracked-colour relations and
+to the facial relation, then packages executable fixed-slot queries on the
+same twenty-one- and twenty-four-slot interfaces used by the finite support
+letter.  Reflecting a proof-facing graph code is proved equivalent to the
+letter's original tracked and facial connectedness predicates.  The local
+closure interface is therefore no longer merely proposition-valued.  Capped
+face semantics, the complete executable five-field letter, the heterogeneous
+reachable table, its measured state count, the derived $V_0$, and the bounded
+base remain open.
 
 \subsection{What the programme may explain---and what is not yet a theorem}
 
