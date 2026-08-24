@@ -7289,6 +7289,26 @@ next obligations.  Converse adequacy with positive entries of the manuscript's
 \texttt{Count}, the measured state count, the derived $V_0$, and bounded-base
 verification remain open.
 
+The two alternating receipts now also meet at an exact typed seam.  Module
+\texttt{GoertzelV24ClosedWebLocalLayerSerialFiniteBoolStepLetter} pairs one
+complete Cell receipt with the following boundary-rebase receipt, checks exact
+equality of their zero-terminal middle profiles, and presents the resulting
+terminal-aware-to-terminal-aware witnessed transition as a Boolean relation.
+For every actual source offset with a successor, Lean constructs such a pair,
+proves its support predicate true, and identifies its endpoints with the two
+consecutive cumulative source profiles.
+
+This does not yet make that one receipt the source transfer letter.  A physical
+Cell's letter is the complete support relation of its \texttt{Count} matrix,
+ranging over every positive endpoint pair; one ambient colouring supplies only
+one member of that relation.  A provisional construction which listed those
+single receipts as though they were the heterogeneous word was therefore
+discarded before being committed.  The live finite-state obligation is to
+assemble the full positive-\texttt{Count} relation over the executable receipts
+and then certify its reachable closure.  This distinction prevents a witnessed
+path from being silently substituted for the matrix semantics prescribed by
+the source.
+
 \subsection{What the programme may explain---and what is not yet a theorem}
 
 The finite-state route suggests an information-theoretic explanation for why a
@@ -8534,6 +8554,14 @@ themselves machine-checked theorems that a stated step \emph{fails}.
         exact exclusive factorization retains.  The successor recurrence must
         encode those frontier turns explicitly rather than inherit the earlier
         support carrier by monotonicity.
+  \item[One ambient-colouring path as the transfer word.] A complete Boolean
+        Cell receipt and its following rebase do give one source-supported
+        transition between consecutive cumulative profiles.  Listing those
+        receipts over the corridor, however, records only the path selected by
+        one ambient colouring.  The source letter is the full support of the
+        literal Cell's \texttt{Count} matrix over all endpoint profiles.  The
+        singleton-list interpretation was rejected before commit; the finite
+        receipts remain validation witnesses for the later full relation.
 \end{description}
 
 \end{document}
