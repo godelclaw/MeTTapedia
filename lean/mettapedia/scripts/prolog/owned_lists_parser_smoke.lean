@@ -35,22 +35,22 @@ private def environment : SourceSignature.Variable := {
   occurrence := 0
 }
 
-private def parserNumberGoal : SourceSignature.Goal :=
+private def parserGoal (codes : List Int) (expected : SourceSignature.Term) :
+    SourceSignature.Goal :=
   .conj
     (SourceSignature.call "phrase" [
       SourceSignature.compound "sexpr" [.var result, SourceSignature.nil, .var environment],
-      SourceSignature.list [SourceSignature.integer 40, SourceSignature.integer 49,
-        SourceSignature.integer 41],
+      SourceSignature.list (codes.map SourceSignature.integer),
       SourceSignature.nil])
-    (.unify (.var result) (SourceSignature.list [SourceSignature.integer 1]))
+    (.unify (.var result) expected)
 
-private def requireCompletedAnswer (session : SourceRuntime.Session) : IO Unit := do
+private def requireCompletedAnswer (label : String) (session : SourceRuntime.Session) : IO Unit := do
   match SourceRuntime.pullSession 65536 session with
   | .answer _ resumed =>
       match SourceRuntime.pullSession 65536 resumed with
       | .terminal (.completed memory) _ =>
           if memory.heap.size = 0 && memory.trail.size = 0 then
-            IO.println "owned_lists_parser_number=exact"
+            IO.println s!"{label}=exact"
           else
             throw <| IO.userError s!"owned parser cleanup left \
               {memory.heap.size}/{memory.trail.size}"
@@ -86,7 +86,13 @@ def main (arguments : List String) : IO Unit := do
       !(linked.program.any fun clause =>
         clause.head.symbol = { name := "memberchk", arity := 2 }) then
     throw <| IO.userError "owned parser source did not link required list exports"
-  let session ← match SourceRuntime.openEmpty linked.program parserNumberGoal with
+  let numberSession ← match SourceRuntime.openEmpty linked.program
+      (parserGoal [40, 49, 41] (SourceSignature.list [SourceSignature.integer 1])) with
     | .ok session => pure session
     | .error error => throw <| IO.userError s!"owned parser failed to open: {repr error}"
-  requireCompletedAnswer session
+  requireCompletedAnswer "owned_lists_parser_number" numberSession
+  let atomSession ← match SourceRuntime.openEmpty linked.program
+      (parserGoal [40, 97, 41] (SourceSignature.list [SourceSignature.atom "a"])) with
+    | .ok session => pure session
+    | .error error => throw <| IO.userError s!"owned parser failed to open: {repr error}"
+  requireCompletedAnswer "owned_lists_parser_atom" atomSession
