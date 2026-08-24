@@ -1,4 +1,5 @@
 import OperatorRevocation
+import EffectProviderSafety
 
 /-!
 # A qualification boundary for terminal effects
@@ -270,11 +271,11 @@ theorem no_marker_only_policy_handles_completion_and_relaunch :
     ¬ ∃ choose : (Bool × Bool × Bool) → PhaseAction,
       choose (markerPresence completed) = .finish ∧
         choose (markerPresence relaunched) = .answerTrust := by
-  dsimp [markerPresence]
-  rintro ⟨choose, finished, relaunched⟩
-  have impossible : PhaseAction.finish = PhaseAction.answerTrust :=
-    finished.symm.trans relaunched
-  cases impossible
+  dsimp only
+  apply EffectProviderSafety.no_policy_on_a_conflating_projection
+    markerPresence (fun history => requiredAction history.phase)
+  · decide
+  · decide
 
 /-- Adding the receipt-derived phase is sufficient for the two states which
 the raw marker view conflates. The projection informs policy without fixing a
