@@ -8936,10 +8936,15 @@ minimal-counterexample laboratory,
 one-sided-cut contradiction separately and therefore excludes the cyclic
 branch at every indexed Cell.  Each Cell side thus has exactly two vertices;
 its four boundary crossings leave room for at most one non-boundary internal
-edge in the simple graph.  This is the finite region-to-portal shape needed by
-the remaining overlap argument.  It does not by itself identify that internal
-edge across distinct Cell indices, discharge the overlap atom, or compute a
-reachable-state count.
+edge in the simple graph.  The generic endpoint lemma
+\texttt{edge\_eq\_of\_mem\_region\_not\_mem\_crossing\_of\_card\_eq\_two}
+and its source specialization make this uniqueness literal, and the resulting
+\texttt{sourceLocalLayerCellRegionAt\_card\_le\_five} sharpens the previous
+six-edge envelope to four crossing edges plus at most one internal edge.  This
+is the finite region-to-portal shape needed by the remaining overlap argument;
+the existing six-slot code remains a conservative padded presentation.  The
+result does not by itself identify that internal edge across distinct Cell
+indices, discharge the overlap atom, or compute a reachable-state count.
 
 \section*{Provenance}
 \addcontentsline{toc}{section}{Provenance}

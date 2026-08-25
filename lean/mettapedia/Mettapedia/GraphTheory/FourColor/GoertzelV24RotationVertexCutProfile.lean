@@ -80,6 +80,30 @@ theorem endpoints_subset_of_mem_region_not_mem_crossing
     ⟨inner, hinnerEndpoint, hinnerInside,
       vertex, hvertexEndpoint, hvertexOutside⟩
 
+/-- A two-vertex region contains at most one non-crossing edge whenever edge
+labels are determined by their endpoint sets. -/
+theorem edge_eq_of_mem_region_not_mem_crossing_of_card_eq_two
+    (RS : RotationSystem V E) (hinjective : Function.Injective RS.endpoints)
+    (inside : Finset V) (hcard : inside.card = 2)
+    {first second : E}
+    (hfirstRegion : first ∈ vertexSetRegionEdges RS inside)
+    (hfirstNotCrossing : first ∉ vertexSetCrossingEdges RS inside)
+    (hsecondRegion : second ∈ vertexSetRegionEdges RS inside)
+    (hsecondNotCrossing : second ∉ vertexSetCrossingEdges RS inside) :
+    first = second := by
+  apply hinjective
+  have hfirstSubset := endpoints_subset_of_mem_region_not_mem_crossing
+    RS inside hfirstRegion hfirstNotCrossing
+  have hsecondSubset := endpoints_subset_of_mem_region_not_mem_crossing
+    RS inside hsecondRegion hsecondNotCrossing
+  have hfirstEq : RS.endpoints first = inside := by
+    exact Finset.eq_of_subset_of_card_le hfirstSubset (by
+      rw [RS.endpoints_card_two, hcard])
+  have hsecondEq : RS.endpoints second = inside := by
+    exact Finset.eq_of_subset_of_card_le hsecondSubset (by
+      rw [RS.endpoints_card_two, hcard])
+  exact hfirstEq.trans hsecondEq.symm
+
 /-- An edge outside the computed regional edge set has both endpoints outside
 the chosen vertex side. -/
 theorem endpoints_disjoint_of_not_mem_region

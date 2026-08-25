@@ -1,6 +1,7 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerFiniteTrackedLetter
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialPrefixRegion
 import Mettapedia.GraphTheory.FourColor.GoertzelV24MinimalFacialPentagonCapPairNoSmallCut
+import Mettapedia.GraphTheory.FourColor.GoertzelV24SimpleGraphRotationEndpointInjective
 
 /-!
 # Finite literal Cell carrier in the two-cap source laboratory
@@ -44,6 +45,7 @@ open GoertzelV24HexFaceRungType
 open GoertzelV24HexSlabConnectivityProfile
 open GoertzelV24MinimalFacialPentagonCapPairNoSmallCut
 open GoertzelV24RotationVertexCutProfile
+open GoertzelV24SimpleGraphRotationEndpointInjective
 open GoertzelV24TwoEdgeCutMinimality
 open GoertzelV24TwoPentagonCapOpening
 open SimpleGraph
@@ -185,6 +187,119 @@ theorem sourceLocalLayerCellVertexSideAt_card_eq_two
   sourceLocalLayerCellVertexSide_card_eq_two graphData minimal caps coloring web
     corridor hunique (sourceLocalLayerInteriorAt offset)
       (sourceLocalLayerInteriorAt_hasNext offset)
+
+/-- The non-crossing part of an indexed Cell region is subsingleton: two
+regional edges which do not cross the four-port boundary are the same literal
+edge. -/
+theorem sourceLocalLayerCellRegionAt_internalEdge_subsingleton
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    {first second :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet}
+    (hfirstRegion : first ∈ sourceLocalLayerCellRegionAt corridor hunique offset)
+    (hfirstNotCrossing : first ∉ vertexSetCrossingEdges web.annular.RS
+      (sourceLocalLayerCellVertexSide corridor hunique
+        (sourceLocalLayerInteriorAt offset)
+        (sourceLocalLayerInteriorAt_hasNext offset)))
+    (hsecondRegion : second ∈ sourceLocalLayerCellRegionAt corridor hunique offset)
+    (hsecondNotCrossing : second ∉ vertexSetCrossingEdges web.annular.RS
+      (sourceLocalLayerCellVertexSide corridor hunique
+        (sourceLocalLayerInteriorAt offset)
+        (sourceLocalLayerInteriorAt_hasNext offset))) :
+    first = second := by
+  let side := sourceLocalLayerCellVertexSide corridor hunique
+    (sourceLocalLayerInteriorAt offset)
+    (sourceLocalLayerInteriorAt_hasNext offset)
+  have hregion : sourceLocalLayerCellRegionAt corridor hunique offset =
+      vertexSetRegionEdges web.annular.RS side := by
+    have hside := sourceLocalLayerCellVertexSide_eq_retained_compl
+      corridor hunique (sourceLocalLayerInteriorAt offset)
+        (sourceLocalLayerInteriorAt_hasNext offset)
+    exact congrArg (vertexSetRegionEdges web.annular.RS) hside.symm
+  apply edge_eq_of_mem_region_not_mem_crossing_of_card_eq_two
+    web.annular.RS (endpoints_injective web.annular.cellulation.rotation)
+      side
+  · simpa [side] using sourceLocalLayerCellVertexSideAt_card_eq_two
+      graphData minimal caps coloring web corridor hunique offset
+  · simpa [hregion] using hfirstRegion
+  · simpa [side] using hfirstNotCrossing
+  · simpa [hregion] using hsecondRegion
+  · simpa [side] using hsecondNotCrossing
+
+/-- The exact two-vertex Cell has at most five regional edges: its four
+source-ordered crossing ports and at most one edge internal to the Cell side.
+This sharpens the earlier degree-count bound of six without choosing or
+assuming an internal edge. -/
+theorem sourceLocalLayerCellRegionAt_card_le_five
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3)) :
+    (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 5 := by
+  let side := sourceLocalLayerCellVertexSide corridor hunique
+    (sourceLocalLayerInteriorAt offset)
+    (sourceLocalLayerInteriorAt_hasNext offset)
+  let region := sourceLocalLayerCellRegionAt corridor hunique offset
+  let crossing := vertexSetCrossingEdges web.annular.RS side
+  let internal := region.filter fun edge => edge ∉ crossing
+  have hregion : region = vertexSetRegionEdges web.annular.RS side := by
+    have hside := sourceLocalLayerCellVertexSide_eq_retained_compl
+      corridor hunique (sourceLocalLayerInteriorAt offset)
+        (sourceLocalLayerInteriorAt_hasNext offset)
+    exact congrArg (vertexSetRegionEdges web.annular.RS) hside.symm
+  have hcrossingSubset : crossing ⊆ region := by
+    rw [hregion]
+    exact vertexSetCrossingEdges_subset_regionEdges web.annular.RS side
+  have hcover : region ⊆ crossing ∪ internal := by
+    intro edge hedge
+    by_cases hcrossing : edge ∈ crossing
+    · exact Finset.mem_union_left _ hcrossing
+    · exact Finset.mem_union_right _ (Finset.mem_filter.2 ⟨hedge, hcrossing⟩)
+  have hcrossingCard : crossing.card = 4 := by
+    rw [show crossing = vertexSetCrossingEdges web.annular.RS
+        (sourceLocalLayerRetainedVertexSide corridor hunique
+          (sourceLocalLayerInteriorAt offset)
+          (sourceLocalLayerInteriorAt_hasNext offset)) by
+      simp only [crossing, side,
+        sourceLocalLayerCellVertexSide_eq_retained_compl,
+        vertexSetCrossingEdges_compl]]
+    rw [← card_vertexSetCrossingEdge]
+    exact sourceLocalLayerRetainedCrossing_card_eq_four corridor hunique
+      (sourceLocalLayerInteriorAt offset)
+      (sourceLocalLayerInteriorAt_hasNext offset)
+  have hinternalCard : internal.card ≤ 1 := by
+    apply Finset.card_le_one.mpr
+    intro first hfirst second hsecond
+    rcases Finset.mem_filter.1 hfirst with ⟨hfirstRegion, hfirstNotCrossing⟩
+    rcases Finset.mem_filter.1 hsecond with
+      ⟨hsecondRegion, hsecondNotCrossing⟩
+    exact sourceLocalLayerCellRegionAt_internalEdge_subsingleton graphData
+      minimal caps coloring web corridor hunique offset hfirstRegion
+        hfirstNotCrossing hsecondRegion hsecondNotCrossing
+  calc
+    region.card ≤ (crossing ∪ internal).card := Finset.card_le_card hcover
+    _ ≤ crossing.card + internal.card := Finset.card_union_le _ _
+    _ ≤ 5 := by omega
 
 /-- In the literal two-cap opening of a closed minimal carrier, every
 source-local Cell has at most six regional edges.  The proof eliminates the
