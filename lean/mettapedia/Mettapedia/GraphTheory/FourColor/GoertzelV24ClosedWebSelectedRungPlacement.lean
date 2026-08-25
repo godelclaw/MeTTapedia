@@ -44,7 +44,6 @@ noncomputable section
 
 attribute [-instance]
   GoertzelV24RetainedVertexRotationSplice.retainedVertexFintype
-  GoertzelV24RetainedVertexRotationSplice.retainedVertexDecidableEq
   GoertzelV24SeamFaceArcPartition.hitPointFintype
 
 /-- A choice of one real primal shared edge for every consecutive facial-dual

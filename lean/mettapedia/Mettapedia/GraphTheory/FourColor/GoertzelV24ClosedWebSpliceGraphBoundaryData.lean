@@ -36,7 +36,6 @@ attribute [-instance] GoertzelV24SeamFaceArcPartition.hitPointFintype
 
 attribute [local instance]
   GoertzelV24RetainedVertexRotationSplice.retainedVertexFintype
-  GoertzelV24RetainedVertexRotationSplice.retainedVertexDecidableEq
 
 /-- Choose a literal internal dart over an edge whose complete dart fiber is
 retained. -/

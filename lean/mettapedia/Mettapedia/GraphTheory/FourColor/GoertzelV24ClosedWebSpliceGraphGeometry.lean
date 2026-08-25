@@ -54,9 +54,6 @@ variable {V E : Type*} [Fintype V] [DecidableEq V]
 noncomputable section
 
 attribute [-instance] GoertzelV24SeamFaceArcPartition.hitPointFintype
-attribute [-instance]
-  GoertzelV24OpenRegionRotation.retainedVertexDecidableEq
-  GoertzelV24RetainedVertexRotationSplice.retainedVertexDecidableEq
 
 local instance rotationPrimalGraphAdjDecidable (RS : RotationSystem V E) :
     DecidableRel (rotationPrimalGraph RS).Adj :=

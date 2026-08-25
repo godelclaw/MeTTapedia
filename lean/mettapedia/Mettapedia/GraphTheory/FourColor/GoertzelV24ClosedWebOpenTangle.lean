@@ -49,7 +49,6 @@ local instance closedWebOpenTangleEdgeSetDecidableEq : DecidableEq G.edgeSet :=
 
 attribute [-instance]
   GoertzelV24RetainedVertexRotationSplice.retainedVertexFintype
-  GoertzelV24RetainedVertexRotationSplice.retainedVertexDecidableEq
   GoertzelV24SeamFaceArcPartition.hitPointFintype
 
 namespace Instance
@@ -367,7 +366,6 @@ namespace ProtectedInnerInterface
 
 attribute [local instance]
   GoertzelV24RetainedVertexRotationSplice.retainedVertexFintype
-  GoertzelV24RetainedVertexRotationSplice.retainedVertexDecidableEq
 
 /-- The source-oriented dart at an inner stub determines its retained output
 vertex whenever the source layer stays outside the inner hole. -/

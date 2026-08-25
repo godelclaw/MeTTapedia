@@ -39,7 +39,6 @@ carriers but intentionally distinct instance names.  This cap-side calculation
 uses the ordinary subtype instances carried by the literal boundary data. -/
 attribute [-instance]
   GoertzelV24RetainedVertexRotationSplice.retainedVertexFintype
-  GoertzelV24RetainedVertexRotationSplice.retainedVertexDecidableEq
 
 /-- The collar calculation uses cubicity only at the five cap vertices.
 Keeping that locality explicit lets the same proof run on Addendum V's

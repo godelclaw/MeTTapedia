@@ -36,9 +36,7 @@ open GoertzelV24RotationCutDartDecomposition
 
 attribute [-instance]
   GoertzelV24OpenRegionRotation.retainedVertexFintype
-  GoertzelV24OpenRegionRotation.retainedVertexDecidableEq
   GoertzelV24RetainedVertexRotationSplice.retainedVertexFintype
-  GoertzelV24RetainedVertexRotationSplice.retainedVertexDecidableEq
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
   {G : SimpleGraph V} [DecidableRel G.Adj]

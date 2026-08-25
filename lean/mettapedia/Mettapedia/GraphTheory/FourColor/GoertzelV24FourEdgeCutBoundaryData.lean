@@ -42,7 +42,7 @@ theorem cyclicCutCrossingOfCardFour_mem
   ((Fintype.equivFinOfCardEq (by simpa using hcard) :
     cut.edgeCut ≃ Fin 4).symm step).2
 
-omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+omit [Fintype V] [DecidableRel G.Adj] in
 theorem orderedCut_cyclicCutCrossingOfCardFour
     (cut : SmallCyclicEdgeCut G) (hcard : cut.edgeCut.card = 4) :
     orderedCut (cyclicCutCrossingOfCardFour cut hcard) = cut.edgeCut := by
@@ -235,7 +235,7 @@ theorem map_neighborFinset_cyclicCutSideGraph
   · rintro ⟨hadj, hside⟩
     exact ⟨hside, hadj⟩
 
-omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+omit [Fintype V] [DecidableRel G.Adj] in
 /-- Every edge from a selected-side vertex to an outside neighbor is one
 of the four enumerated cut edges. -/
 theorem exists_cyclicCutCrossingOfCardFour_eq_of_adj_not_side

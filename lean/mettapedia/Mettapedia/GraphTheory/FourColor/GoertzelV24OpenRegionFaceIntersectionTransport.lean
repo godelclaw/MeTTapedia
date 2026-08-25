@@ -201,7 +201,6 @@ theorem openFaceOrbit_sharedInteriorEdges_card_le_one_of_pairwiseUnique
 
 attribute [-instance]
   GoertzelV24RetainedVertexRotationSplice.retainedVertexFintype
-  GoertzelV24RetainedVertexRotationSplice.retainedVertexDecidableEq
 
 variable {G : SimpleGraph V} [DecidableRel G.Adj]
 

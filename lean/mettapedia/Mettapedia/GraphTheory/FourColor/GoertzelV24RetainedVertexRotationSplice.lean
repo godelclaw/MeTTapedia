@@ -27,9 +27,9 @@ noncomputable instance retainedVertexFintype (keep : V → Prop) :
   Fintype.ofInjective (fun vertex : RetainedVertex keep => vertex.1)
     Subtype.val_injective
 
-instance retainedVertexDecidableEq (keep : V → Prop) :
+local instance retainedVertexDecidableEq (keep : V → Prop) :
     DecidableEq (RetainedVertex keep) :=
-  Classical.decEq _
+  Subtype.instDecidableEq
 
 /-- Removing at least one ambient vertex makes the retained carrier strictly
 smaller, as required by a vertex-minimal shortening argument. -/

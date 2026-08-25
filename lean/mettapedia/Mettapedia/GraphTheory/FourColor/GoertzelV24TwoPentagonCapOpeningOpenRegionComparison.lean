@@ -28,7 +28,6 @@ open GoertzelV24OpenRegionRotation
 open GoertzelV24AnnularBoundaryIsoTransport
 open GoertzelV24SimpleGraphRotationIsoTransport
 
-attribute [-instance] GoertzelV24OpenRegionRotation.retainedVertexDecidableEq
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
   {G : SimpleGraph V} [DecidableRel G.Adj]

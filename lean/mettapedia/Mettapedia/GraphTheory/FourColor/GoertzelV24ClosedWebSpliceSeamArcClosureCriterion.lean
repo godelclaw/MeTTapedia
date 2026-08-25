@@ -33,8 +33,6 @@ variable {V : Type*} [Fintype V] [DecidableEq V]
 
 noncomputable section
 
-attribute [-instance]
-  GoertzelV24OpenRegionRotation.retainedVertexDecidableEq
 
 attribute [local instance]
   retainedVertexFintype retainedVertexDecidableEq

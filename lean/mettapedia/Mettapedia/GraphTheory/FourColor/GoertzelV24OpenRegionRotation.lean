@@ -34,9 +34,9 @@ noncomputable instance retainedVertexFintype (keep : V → Prop) :
   Fintype.ofInjective (fun vertex : RetainedVertex keep => vertex.1)
     Subtype.val_injective
 
-instance retainedVertexDecidableEq (keep : V → Prop) :
+local instance retainedVertexDecidableEq (keep : V → Prop) :
     DecidableEq (RetainedVertex keep) :=
-  Classical.decEq _
+  Subtype.instDecidableEq
 
 /-- A literal open region has old retained vertices and one fresh vertex for
 each exposed half-edge. -/

@@ -31,7 +31,6 @@ open GoertzelV24OpenRegionGraphBacking
 open GoertzelV24OpenRegionRotation
 open GoertzelV24PentagonCapOpening
 
-attribute [-instance] GoertzelV24OpenRegionRotation.retainedVertexDecidableEq
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
   {G : SimpleGraph V} [DecidableRel G.Adj]

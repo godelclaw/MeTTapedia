@@ -54,7 +54,6 @@ noncomputable section
 
 attribute [-instance]
   GoertzelV24RetainedVertexRotationSplice.retainedVertexFintype
-  GoertzelV24RetainedVertexRotationSplice.retainedVertexDecidableEq
   GoertzelV24SeamFaceArcPartition.hitPointFintype
 
 variable {data : AnnularBoundaryData G outerCount}

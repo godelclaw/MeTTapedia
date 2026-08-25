@@ -30,7 +30,6 @@ noncomputable section
 
 attribute [local instance] graphEdgeSetDecidableEq
 attribute [-instance] GoertzelV24RetainedVertexRotationSplice.retainedVertexFintype
-attribute [-instance] GoertzelV24RetainedVertexRotationSplice.retainedVertexDecidableEq
 attribute [-instance] GoertzelV24SeamFaceArcPartition.hitPointFintype
 
 namespace SeparatedAlignedSimpleDualCrosscuts

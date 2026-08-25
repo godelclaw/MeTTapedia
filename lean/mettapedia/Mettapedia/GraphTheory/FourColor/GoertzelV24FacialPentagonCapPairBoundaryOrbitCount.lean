@@ -39,9 +39,7 @@ noncomputable section
 
 attribute [-instance]
   GoertzelV24OpenRegionRotation.retainedVertexFintype
-  GoertzelV24OpenRegionRotation.retainedVertexDecidableEq
   GoertzelV24RetainedVertexRotationSplice.retainedVertexFintype
-  GoertzelV24RetainedVertexRotationSplice.retainedVertexDecidableEq
 
 namespace FacialPentagonCapBoundaryWalkPair
 

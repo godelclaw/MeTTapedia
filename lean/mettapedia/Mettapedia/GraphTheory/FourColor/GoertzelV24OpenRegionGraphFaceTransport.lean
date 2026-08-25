@@ -33,9 +33,7 @@ subtype instances under distinct names.  Use Lean's ordinary subtype instances
 for this carrier-comparison calculation. -/
 attribute [-instance]
   GoertzelV24OpenRegionRotation.retainedVertexFintype
-  GoertzelV24OpenRegionRotation.retainedVertexDecidableEq
   GoertzelV24RetainedVertexRotationSplice.retainedVertexFintype
-  GoertzelV24RetainedVertexRotationSplice.retainedVertexDecidableEq
 
 local instance openPrimalGraphDecidableRel
     {G : SimpleGraph V} [DecidableRel G.Adj]

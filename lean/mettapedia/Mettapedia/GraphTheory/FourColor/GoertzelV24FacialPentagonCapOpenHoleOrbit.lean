@@ -46,9 +46,7 @@ noncomputable section
 /-! Keep the literal subtype instances used by the cap boundary carrier. -/
 attribute [-instance]
   GoertzelV24OpenRegionRotation.retainedVertexFintype
-  GoertzelV24OpenRegionRotation.retainedVertexDecidableEq
   GoertzelV24RetainedVertexRotationSplice.retainedVertexFintype
-  GoertzelV24RetainedVertexRotationSplice.retainedVertexDecidableEq
 
 namespace OrientedFacialPentagonCap
 

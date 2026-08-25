@@ -49,9 +49,6 @@ variable {V : Type*} [Fintype V] [DecidableEq V]
 
 noncomputable section
 
-attribute [-instance]
-  GoertzelV24OpenRegionRotation.retainedVertexDecidableEq
-  GoertzelV24RetainedVertexRotationSplice.retainedVertexDecidableEq
 
 local instance openedGraphDecidableRel
     (caps : OrientedFacialPentagonCapPair (G := G) graphData) :

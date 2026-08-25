@@ -38,9 +38,7 @@ noncomputable section
 
 attribute [-instance]
   GoertzelV24OpenRegionRotation.retainedVertexFintype
-  GoertzelV24OpenRegionRotation.retainedVertexDecidableEq
   GoertzelV24RetainedVertexRotationSplice.retainedVertexFintype
-  GoertzelV24RetainedVertexRotationSplice.retainedVertexDecidableEq
 
 /-- The exact remote facial-separation property needed to combine the two
 one-cap planar bonds: an ambient face cannot contain retained-to-cap boundary

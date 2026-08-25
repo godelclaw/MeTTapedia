@@ -318,7 +318,7 @@ theorem oppositePortClosure_isCycle
     change 1 < 3
     omega)
 
-omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+omit [Fintype V] [DecidableRel G.Adj] in
 /-- Loop erasure preserves the retained edge support while producing the
 simple path used by the ambient closure. -/
 theorem exists_oppositePortClosure_isCycle_with_edges_subset
@@ -339,7 +339,7 @@ theorem exists_oppositePortClosure_isCycle_with_edges_subset
   · dsimp only [path]
     exact walk.edges_toPath_subset_edges
 
-omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+omit [Fintype V] [DecidableRel G.Adj] in
 /-- Every retained walk between ports `0` and `2` contains a simple path,
 and hence determines an ambient cycle through the deleted adjacent pair. -/
 theorem exists_oppositePortClosure_isCycle

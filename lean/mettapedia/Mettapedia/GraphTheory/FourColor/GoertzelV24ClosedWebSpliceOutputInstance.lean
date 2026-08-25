@@ -56,7 +56,6 @@ variable {W : Type u} [Fintype W] [DecidableEq W]
 noncomputable section
 
 attribute [-instance]
-  GoertzelV24OpenRegionRotation.retainedVertexDecidableEq
   GoertzelV24SeamFaceArcPartition.hitPointFintype
 
 attribute [local instance]

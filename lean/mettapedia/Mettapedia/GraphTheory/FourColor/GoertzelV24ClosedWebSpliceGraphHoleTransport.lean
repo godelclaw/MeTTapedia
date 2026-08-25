@@ -50,7 +50,6 @@ attribute [-instance]
 
 attribute [local instance]
   GoertzelV24RetainedVertexRotationSplice.retainedVertexFintype
-  GoertzelV24RetainedVertexRotationSplice.retainedVertexDecidableEq
 
 namespace Instance
 

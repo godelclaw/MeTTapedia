@@ -214,8 +214,6 @@ variable {G : SimpleGraph V} [DecidableRel G.Adj]
   {n terminalCount faceFragmentCount : Nat}
   {web : GoertzelV24ClosedWebAtGoodWord.Instance data coloring}
 
-attribute [-instance]
-  GoertzelV24OpenRegionRotation.retainedVertexDecidableEq
 
 attribute [local instance]
   retainedVertexFintype retainedVertexDecidableEq

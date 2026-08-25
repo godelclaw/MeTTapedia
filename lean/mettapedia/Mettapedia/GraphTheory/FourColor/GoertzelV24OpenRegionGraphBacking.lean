@@ -28,8 +28,6 @@ open SimpleGraphDartRotation
 -- The open-region instance is proposition-generic and would otherwise also
 -- match the ambient edge subtype `G.edgeSet`.  The ordinary subtype instance
 -- is definitionally the one used by `Data.toRotationSystem`.
-attribute [-instance]
-  GoertzelV24OpenRegionRotation.retainedVertexDecidableEq
 
 variable {V E : Type*} [Fintype V] [DecidableEq V]
   [Fintype E] [DecidableEq E]

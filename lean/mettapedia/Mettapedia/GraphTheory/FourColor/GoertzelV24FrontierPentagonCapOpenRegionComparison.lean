@@ -37,7 +37,6 @@ open GoertzelV24PentagonCapOpening
 open GoertzelV24PentagonCapOpeningComparison
 open GoertzelV24SimpleGraphRotationIsoTransport
 
-attribute [-instance] GoertzelV24OpenRegionRotation.retainedVertexDecidableEq
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
   {G : SimpleGraph V} [DecidableRel G.Adj]

@@ -28,7 +28,6 @@ open GoertzelV24SimpleGraphFaceDualConnectedness
 
 -- Use the ordinary subtype equality on retained vertices, matching the
 -- graph-backed open-region carrier.
-attribute [-instance] GoertzelV24OpenRegionRotation.retainedVertexDecidableEq
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
   {G : SimpleGraph V} [DecidableRel G.Adj]

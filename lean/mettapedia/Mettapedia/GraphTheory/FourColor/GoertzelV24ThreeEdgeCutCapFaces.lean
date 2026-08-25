@@ -329,13 +329,15 @@ theorem card_planarOrdered_capTargetReturn_hitOrbit_eq_three
             (RS.vertOf (RS.alpha dart.1)))) = 3 := by
   rw [card_hitOrbit_eq_nextHit_partition_card,
     data.planarOrdered_capTargetReturn_nextBoundary_eq_one htwoSided]
-  change (1 : Equiv.Perm (BoundaryDart RS
-    (data.planarOrdered htwoSided).keep)).partition.parts.card = 3
   simp only [Equiv.Perm.parts_partition, Equiv.Perm.cycleType_one,
     zero_add, Equiv.Perm.support_one, Finset.card_empty, Nat.sub_zero,
     Multiset.card_replicate]
-  simpa using Fintype.card_congr
+  let boundaryEquiv :
+      { dart : RetainedDart RS (data.planarOrdered htwoSided).keep //
+        ¬ (data.planarOrdered htwoSided).keep
+          (RS.vertOf (RS.alpha dart.1)) } ≃ Fin 3 :=
     (data.planarOrdered htwoSided).crossingBoundaryDartEquiv.symm
+  exact Fintype.card_congr boundaryEquiv
 
 /-- The complete planar cap-face count is three boundary-closing cycles plus
 the cycles which never meet an exposed retained dart. -/

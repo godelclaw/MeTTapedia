@@ -36,7 +36,6 @@ noncomputable section
 
 attribute [-instance]
   GoertzelV24RetainedVertexRotationSplice.retainedVertexFintype
-  GoertzelV24RetainedVertexRotationSplice.retainedVertexDecidableEq
   GoertzelV24SeamFaceArcPartition.hitPointFintype
 
 local instance selectedLocalLayerPairEdgeSetDecidableEq : DecidableEq G.edgeSet :=

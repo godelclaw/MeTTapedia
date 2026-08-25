@@ -47,7 +47,6 @@ splice construction.  This local finite count is over ordinary subtypes of
 the six Tait-pair indices, so retain Lean's standard subtype instance here. -/
 attribute [-instance]
   GoertzelV24RetainedVertexRotationSplice.retainedVertexFintype
-  GoertzelV24RetainedVertexRotationSplice.retainedVertexDecidableEq
   GoertzelV24SeamFaceArcPartition.hitPointFintype
 
 local instance closedWebLocalLayerRadialEscapeEdgeSetDecidableEq : DecidableEq G.edgeSet :=

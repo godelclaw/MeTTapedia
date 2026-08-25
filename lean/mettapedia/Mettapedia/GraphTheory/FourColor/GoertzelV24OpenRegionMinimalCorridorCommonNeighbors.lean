@@ -44,7 +44,6 @@ noncomputable section
 -- match the ambient edge subtype `G.edgeSet`.
 attribute [-instance]
   GoertzelV24RetainedVertexRotationSplice.retainedVertexFintype
-  GoertzelV24RetainedVertexRotationSplice.retainedVertexDecidableEq
   GoertzelV24SeamFaceArcPartition.hitPointFintype
 
 local instance graphEdgeSetDecidableEq : DecidableEq G.edgeSet :=
