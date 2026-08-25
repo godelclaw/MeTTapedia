@@ -9003,14 +9003,22 @@ The next tracked junction is narrower but is \emph{not} a definitional
 identification.  The current carrier has twenty-one coordinates, whereas the
 boundary switch is presented independently by four roles (old rung, two
 successor incoming crossings, successor rung), and the existing carrier
-transport deliberately uses their sum.  One must prove that deleting the
-role presentation has the same effect on the pre-rebase graph as the induced
-current-carrier mask before transporting the surviving code to the successor
-carrier.  Treating the four roles as already equal to four fixed current
-coordinates would erase the very representation obligation the finite letter
-must discharge.  The facial recurrence,
-representation invariance of the combined five-field letter, realizable
-initial states, and the first certified closure count remain open.
+transport deliberately uses their sum.  The exact interface therefore uses
+that sum rather than forcing every role into an old coordinate.  Deleting the
+role summand is now proved to select exactly the literal switch, including
+fresh roles and aliases, and to leave exactly the tracked core.  The generic
+module \texttt{GoertzelV24InterfaceDeletionComponentFactorTotalGraph} turns
+the resulting finite total relation into a literal component graph without
+changing reachability.  Module
+\texttt{GoertzelV24ClosedWebLocalLayerSerialCellRebaseExpandedCoreState} then
+decodes this graph through the two old output crossings into the existing
+finite tracked-core state and proves exactness on all four semantic roles.
+Thus the expanded deletion-safe code now reaches the input type of the proved
+core recurrence without an active-role coverage premise.  What remains is a
+rolling construction of the expanded code from the cumulative state and the
+bounded local receipt, followed by successor-carrier reindexing.  The facial
+recurrence, representation invariance of the combined five-field letter,
+realizable initial states, and the first certified closure count remain open.
 
 \section*{Provenance}
 \addcontentsline{toc}{section}{Provenance}
@@ -9196,10 +9204,16 @@ themselves machine-checked theorems that a stated step \emph{fails}.
         uniformly.  Lean proves unconditionally that the selected ambient
         edges are exactly the literal switch and that the restricted graph is
         the existing tracked core; its total finite closure computes the core
-        relation on the two old output crossings.  What remains is to derive
-        this expanded code from the finite cumulative state and rebase receipt,
-        then reindex it onto the successor carrier.  A reachable-closure number
-        remains premature until that transport, the other profile fields, and
+        relation on the two old output crossings.  The generic component-graph
+        presentation and the source decoder in
+        \texttt{GoertzelV24ClosedWebLocalLayerSerialCellRebaseExpandedCoreState}
+        now package that same exact relation as the pre-existing finite tracked
+        core state, with exact adequacy on all four roles.  This closes the
+        representation seam but not the rolling recurrence: the expanded code
+        must still be derived from the cumulative state and bounded rebase
+        receipt, and its core relation must be transported across the finite
+        collar before successor reindexing.  A reachable-closure number remains
+        premature until that transport, the other profile fields, and
         realizable initial states are executable.
   \item[Global simple-graph backing of a rotation carrier.] The spherical
         theta rotation system is cubic, connected, and bridge-free but has
