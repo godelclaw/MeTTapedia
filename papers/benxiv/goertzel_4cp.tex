@@ -9187,6 +9187,20 @@ literal Cell, and successor letters remain open.  The first certified
 reachable-closure count must wait for those two obligations; no earlier
 diagnostic count is authoritative.
 
+One semantic correction is now explicit in
+\texttt{GoertzelV24ClosedWebLocalLayerSerialCellUniformSuccessorColorParametric}.
+The preceding successor letter was exact only at the ambient closed-web
+colouring, whereas a positive literal \texttt{Count} witness may supply a
+different Cell colouring.  The new theorem accepts an arbitrary colouring
+which is nonzero on the four named rebase roles, runs the same fixed
+forty-nine-edge and forty-eight-dart recurrences at that colouring, and proves
+that the decoded letter agrees in all five fields with the literal next
+terminal-aware profile at that colouring.  Hence the successor calculation can
+follow the colouring carried by the eventual composed witness rather than
+silently reverting to the ambient one.  This closes colour fidelity only: the
+compatible prefix--Cell composition, realizable initial states, and certified
+reachable closure remain open.
+
 \section*{Provenance}
 \addcontentsline{toc}{section}{Provenance}
 The August revision preserves the accumulated July audit and its negative
