@@ -9103,6 +9103,32 @@ themselves machine-checked theorems that a stated step \emph{fails}.
         has distinct consecutive endpoints while repeating its initial vertex.
         The long-rail construction consequently retains global support
         freshness, not merely a valid append certificate at each step.
+  \item[Reusing a component receipt after a boundary switch.] The cumulative
+        tracked attachment state records support and connected components, but
+        a rebase removes a bounded switch support before installing the new
+        collar.  Module
+        \texttt{GoertzelV24TrackedComponentDeletionCounterexample} proves that
+        this information is insufficient: the three-vertex path and triangle
+        have identical exact support-sensitive component receipts, while
+        removing their common middle interface coordinate disconnects the
+        path and leaves the triangle connected.  Thus the already-constructed
+        deletion-safe tracked core and facial residual receipts are
+        load-bearing fields of the finite Cell--rebase factor; they cannot be
+        reconstructed from the former cumulative component partition alone.
+        This refutes an underspecified executable state, not the source
+        \texttt{Count} factorization.  The repair is now explicit:
+        \texttt{GoertzelV24DeletionSensitivePortResidualFactorContraction}
+        gives the exact finite one-mask core receipt, and
+        \texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseDeletionSensitiveTrackedCore}
+        proves that selecting all four literal switch roles restricts the
+        pre-rebase tracked graph to exactly the core already consumed by the
+        successor recurrence.  At the ambient coloring its residual code is
+        definitionally the existing deletion-safe tracked core state.  No
+        exponential table of masks is materialized: one transition carries
+        its one bounded removal mask and its verified core.  The corrected
+        state is therefore finite and source-faithful, but a reachable-closure
+        number remains premature until the complete five-field transition and
+        its realizable initial states are executable.
   \item[Global simple-graph backing of a rotation carrier.] The spherical
         theta rotation system is cubic, connected, and bridge-free but has
         three parallel edges on two vertices.  Only the selected
