@@ -9186,11 +9186,19 @@ themselves machine-checked theorems that a stated step \emph{fails}.
         current coordinates'' is now retired: consecutive local layer pairs
         are separately constructed, and the verified carrier transport gives
         role names precedence precisely because equality with predecessor
-        coordinates is presentation-sensitive.  The total-interface theorem
-        nevertheless computes all current-port queries, including a deleted
-        or aliased reflexive port.  What remains is the explicit comparison
-        between the role removal and its induced current-carrier mask, followed
-        by reindexing onto the successor carrier; a reachable-closure number
+        coordinates is presentation-sensitive.  The attempted induced mask on
+        only the old carrier would therefore require an unjustified active-role
+        coverage premise.  Module
+        \texttt{GoertzelV24ClosedWebLocalLayerSerialCellRebaseExpandedInterface}
+        uses the exact replacement: the old coordinates and the four semantic
+        role occurrences form the two summands of one finite interface.  The
+        mask selects the role summand, so fresh roles and aliases are handled
+        uniformly.  Lean proves unconditionally that the selected ambient
+        edges are exactly the literal switch and that the restricted graph is
+        the existing tracked core; its total finite closure computes the core
+        relation on the two old output crossings.  What remains is to derive
+        this expanded code from the finite cumulative state and rebase receipt,
+        then reindex it onto the successor carrier.  A reachable-closure number
         remains premature until that transport, the other profile fields, and
         realizable initial states are executable.
   \item[Global simple-graph backing of a rotation carrier.] The spherical

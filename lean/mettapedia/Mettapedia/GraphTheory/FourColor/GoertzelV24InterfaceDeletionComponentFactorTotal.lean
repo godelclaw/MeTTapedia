@@ -24,6 +24,55 @@ open GoertzelV24DeletionSensitivePortResidualFactorContraction
 open GoertzelV24InterfaceDeletionComponentFactor
 open SimpleGraph
 
+/-- A graph vertex is selected by a finite deletion presentation. -/
+def RemovedByInterfaceMask {N Interface : Type*}
+    (interfaceVertex : Interface → N) (removed : Interface → Bool)
+    (vertex : N) : Prop :=
+  ∃ slot, removed slot = true ∧ vertex = interfaceVertex slot
+
+theorem survivesMask_iff_not_removedByInterfaceMask
+    {N Interface : Type*} (interfaceVertex : Interface → N)
+    (removed : Interface → Bool) (vertex : N) :
+    survivesMask interfaceVertex removed vertex ↔
+      ¬ RemovedByInterfaceMask interfaceVertex removed vertex := by
+  constructor
+  · intro hsurvives hremoved
+    rcases hremoved with ⟨slot, hslot, heq⟩
+    exact hsurvives slot hslot heq
+  · intro hnot slot hslot heq
+    apply hnot
+    exact ⟨slot, hslot, heq⟩
+
+/-- Two finite deletion presentations give the same restricted graph when
+they select the same vertices wherever the original graph is supported.
+Coordinates outside the graph support are intentionally irrelevant. -/
+theorem restrictedByMask_eq_of_removedByInterfaceMask_iff_on_support
+    {N LeftInterface RightInterface : Type*} (graph : SimpleGraph N)
+    (leftInterfaceVertex : LeftInterface → N)
+    (leftRemoved : LeftInterface → Bool)
+    (rightInterfaceVertex : RightInterface → N)
+    (rightRemoved : RightInterface → Bool)
+    (hremoved : ∀ vertex, vertex ∈ graph.support →
+      (RemovedByInterfaceMask leftInterfaceVertex leftRemoved vertex ↔
+        RemovedByInterfaceMask rightInterfaceVertex rightRemoved vertex)) :
+    restrictedByMask graph leftInterfaceVertex leftRemoved =
+      restrictedByMask graph rightInterfaceVertex rightRemoved := by
+  ext left right
+  simp only [restrictedByMask, supportRestriction_adj]
+  constructor
+  · rintro ⟨hadj, hleft, hright⟩
+    refine ⟨hadj, ?_, ?_⟩
+    · rw [survivesMask_iff_not_removedByInterfaceMask] at hleft ⊢
+      exact mt (hremoved left ⟨right, hadj⟩).2 hleft
+    · rw [survivesMask_iff_not_removedByInterfaceMask] at hright ⊢
+      exact mt (hremoved right ⟨left, hadj.symm⟩).2 hright
+  · rintro ⟨hadj, hleft, hright⟩
+    refine ⟨hadj, ?_, ?_⟩
+    · rw [survivesMask_iff_not_removedByInterfaceMask] at hleft ⊢
+      exact mt (hremoved left ⟨right, hadj⟩).1 hleft
+    · rw [survivesMask_iff_not_removedByInterfaceMask] at hright ⊢
+      exact mt (hremoved right ⟨left, hadj.symm⟩).1 hright
+
 /-- Total finite interpretation of an interface code after one deletion mask.
 The explicit equality branch retains reflexive reachability for aliases and
 for coordinates whose represented vertex was deleted. -/
