@@ -103,7 +103,7 @@ noncomputable def sourceLocalLayerSerialFaceDeletionStablePreRebaseStateAt
         (sourceLocalLayerSerialFaceLocalAdjacencyAt corridor hunique offset
           hcell) }
 
-private theorem sourceLocalLayerSerialFaceLocalGraph_support_subset_carrier
+theorem sourceLocalLayerSerialFaceLocalGraph_support_subset_carrier
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
     {web : GoertzelV24ClosedWebAtGoodWord.Instance data coloring}
     {blockLength : Nat}
@@ -129,7 +129,7 @@ private theorem sourceLocalLayerSerialFaceLocalGraph_support_subset_carrier
   · exact sourceLocalLayerFaceDartSeam_support_subset_transitionCarrier
       corridor hunique offset ⟨neighbor, hseam⟩
 
-private theorem sourceLocalLayerSerialFaceLocalGraph_support_subset_range
+theorem sourceLocalLayerSerialFaceLocalGraph_support_subset_range
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
     {web : GoertzelV24ClosedWebAtGoodWord.Instance data coloring}
     {blockLength : Nat}
@@ -154,7 +154,7 @@ private theorem sourceLocalLayerSerialFaceLocalGraph_support_subset_range
   refine ⟨carrierCoordinate carrier ⟨dart, hcarrier⟩, ?_⟩
   simp [carrier]
 
-private theorem sourceLocalLayerSerialFaceLocalAdjacency_exact
+theorem sourceLocalLayerSerialFaceLocalAdjacency_exact
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
     {web : GoertzelV24ClosedWebAtGoodWord.Instance data coloring}
     {blockLength : Nat}
