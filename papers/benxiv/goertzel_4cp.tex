@@ -8762,6 +8762,23 @@ boundary edge with no tracked neighbour inside the region.  Thus the next
 transition layer may consume an executable finite compatibility predicate,
 with no hidden boundary-only or non-isolation assumption.
 
+The tracked part of that transition has now been rebuilt from the same finite
+data rather than retained as a prefix-specialized receipt.  The module
+\texttt{GoertzelV24ClosedWebLocalLayerSerialCellFiniteTrackedColorCode}
+separates the local letter into an uncoloured twenty-one-slot adjacency code,
+the prefix partial colour table, and the Cell partial colour table.  Their
+finite splice gives the Cell colouring precedence on the literal overlap and
+reconstructs both the Cell tracked graph and the residual seam graph.  For
+every tracked colour pair and for both graph tags, Lean proves equality with
+the corresponding source graph, and hence equivalence of complete graph
+reachability.  This closes the specific factorization defect identified above:
+the seam consumed by a transition is computed from the current cumulative
+state and a prefix-independent local letter, rather than stored inside that
+letter after specializing it to one ambient prefix.  The next unit must lift
+this reconstruction into the cumulative transition structure and show that
+arbitrary positive literal \texttt{Count} witnesses realize it through the
+following boundary rebase; no reachable-closure count is yet claimed.
+
 \section*{Provenance}
 \addcontentsline{toc}{section}{Provenance}
 The August revision preserves the accumulated July audit and its negative
