@@ -26,8 +26,11 @@ open GoertzelV24ClosedWebAtGoodWord
 open GoertzelV24ClosedWebAtGoodWord.Instance
 open GoertzelV24ClosedWebAtGoodWord.Instance.LocalLayerFormation
 open GoertzelV24ClosedWebBoundaryData
+open GoertzelV24BoundaryProfileFiniteState
 open GoertzelV24FaceOrbitIncidence
+open GoertzelV24GraphDerivedCorridorCutProfile
 open GoertzelV24HexSlabConnectivityProfile
+open GoertzelV24RegionalBoundaryProfileFiniteState
 open SimpleGraphDartRotation
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
@@ -129,6 +132,136 @@ theorem sourceLocalLayerSerialCellSplicedColorAt_rightCrossing
   exact sourceLocalLayerSerialCellSplicedColorAt_eq_cell_of_mem corridor
     hunique offset prefixColor cellColor
       (sourceLocalLayerCellRegionAt_rightCrossing corridor hunique offset step)
+
+/-- The actual pre-rebase output profile, with its color function exposed as
+an argument.  The region, ports, occurrence-sensitive face fragments, and
+four-fragment bound are unchanged; only the colors observed on those edges
+vary. -/
+noncomputable def sourceLocalLayerSerialPreRebaseOutputBoundedProfileForColorAt
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (color : G.edgeSet → Color)
+    (hcolor : ∀ step,
+      color (sourceLocalLayerRightCrossingAt corridor hunique offset step) ≠ 0) :
+    BoundedCorridorCutProfile 2 0 4 :=
+  regionalBoundaryBoundedProfile web.annular.RS
+    (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset)
+    (sourceLocalLayerRightCrossingAt corridor hunique offset) color hcolor
+
+/-- The generalized output profile observes exactly the supplied color on
+each outgoing crossing. -/
+theorem sourceLocalLayerSerialPreRebaseOutputBoundedProfileForColorAt_edgeColor
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (color : G.edgeSet → Color)
+    (hcolor : ∀ step,
+      color (sourceLocalLayerRightCrossingAt corridor hunique offset step) ≠ 0)
+    (step : Fin 2) :
+    ((sourceLocalLayerSerialPreRebaseOutputBoundedProfileForColorAt corridor
+        hunique offset color hcolor).profile.edgeColor step).toColor =
+      color (sourceLocalLayerRightCrossingAt corridor hunique offset step) := by
+  exact GraphCorridorCutData.regionalProfile_edgeColor_toColor _ _ _ step
+
+/-- The original ambient output profile is exactly the color-parametric
+construction at the source coloring. -/
+theorem sourceLocalLayerSerialPreRebaseOutputBoundedProfileForColorAt_ambient
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3)) :
+    sourceLocalLayerSerialPreRebaseOutputBoundedProfileForColorAt corridor
+        hunique offset coloring (fun _ => web.tait _) =
+      sourceLocalLayerSerialPreRebaseOutputBoundedProfileAt corridor hunique
+        offset :=
+  rfl
+
+/-- The pre-rebase output profile formed from the exact prefix/Cell splice.
+Its outgoing colors are certified by the positive local Cell witness. -/
+noncomputable def sourceLocalLayerSerialSplicedPreRebaseOutputBoundedProfileAt
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (prefixColor cellColor : G.edgeSet → Color)
+    (hcellColor : ∀ step,
+      cellColor (sourceLocalLayerRightCrossingAt corridor hunique offset step) ≠ 0) :
+    BoundedCorridorCutProfile 2 0 4 :=
+  sourceLocalLayerSerialPreRebaseOutputBoundedProfileForColorAt corridor
+    hunique offset
+    (sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
+      prefixColor cellColor)
+    (fun step => by
+      rw [sourceLocalLayerSerialCellSplicedColorAt_rightCrossing corridor
+        hunique offset prefixColor cellColor step]
+      exact hcellColor step)
+
+/-- The displayed output word of the splice is literally the outgoing word
+of the local Cell witness. -/
+theorem sourceLocalLayerSerialSplicedPreRebaseOutputBoundedProfileAt_edgeColor
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (prefixColor cellColor : G.edgeSet → Color)
+    (hcellColor : ∀ step,
+      cellColor (sourceLocalLayerRightCrossingAt corridor hunique offset step) ≠ 0)
+    (step : Fin 2) :
+    ((sourceLocalLayerSerialSplicedPreRebaseOutputBoundedProfileAt corridor
+        hunique offset prefixColor cellColor hcellColor).profile.edgeColor
+          step).toColor =
+      cellColor (sourceLocalLayerRightCrossingAt corridor hunique offset step) := by
+  unfold sourceLocalLayerSerialSplicedPreRebaseOutputBoundedProfileAt
+  rw [sourceLocalLayerSerialPreRebaseOutputBoundedProfileForColorAt_edgeColor]
+  exact sourceLocalLayerSerialCellSplicedColorAt_rightCrossing corridor
+    hunique offset prefixColor cellColor step
+
+/-- Splicing the ambient coloring with itself recovers the previously defined
+ambient output profile exactly, including all five profile coordinates. -/
+theorem sourceLocalLayerSerialSplicedPreRebaseOutputBoundedProfileAt_ambient
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3)) :
+    sourceLocalLayerSerialSplicedPreRebaseOutputBoundedProfileAt corridor
+        hunique offset coloring coloring (fun _ => web.tait _) =
+      sourceLocalLayerSerialPreRebaseOutputBoundedProfileAt corridor hunique
+        offset := by
+  unfold sourceLocalLayerSerialSplicedPreRebaseOutputBoundedProfileAt
+  unfold sourceLocalLayerSerialPreRebaseOutputBoundedProfileForColorAt
+  unfold sourceLocalLayerSerialPreRebaseOutputBoundedProfileAt
+  unfold regionalBoundaryBoundedProfile
+  congr 1
+  apply GraphCorridorCutData.regionalProfile_eq_of_eq_on_region
+  · apply regionalBoundaryGraphCutData_portsInRegion
+    intro step
+    rw [← sourceLocalLayerSerialTerminalInputRegionAt_union_cell corridor
+      hunique offset]
+    exact Finset.mem_union_right _
+      (sourceLocalLayerCellRegionAt_rightCrossing corridor hunique offset step)
+  · intro edge hedge
+    simp [sourceLocalLayerSerialCellSplicedColorAt]
 
 /-- The graph semantics reconstructed from the prefix state is unchanged by
 the splice.  This is the exact tracked half of prefix compatibility. -/

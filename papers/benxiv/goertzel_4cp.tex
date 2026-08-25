@@ -8706,7 +8706,15 @@ regions.  Lean proves that the splice restricts to the Cell colouring on every
 Cell edge, restricts to the original prefix colouring on every prefix edge,
 and therefore leaves the complete regional tracked graph of the prefix
 unchanged.  The two outgoing crossing colours are definitionally supplied by
-the Cell witness.  The next geometric obligation is sharp: identify the actual
+the Cell witness.  The same module now exposes the complete pre-rebase output
+profile over an arbitrary colour function and specializes it to the spliced
+colouring.  Lean proves that its outgoing word is exactly the Cell witness's
+outgoing word and that splicing the ambient colouring with itself recovers the
+previous ambient five-field profile exactly.  Thus the first and fifth
+coordinates are not being rebuilt in a parallel carrier; the colour-parametric
+adapter feeds the existing occurrence-sensitive profile.
+
+The next geometric obligation is sharp: identify the actual
 overlap with the source interface data (or otherwise show that the stored
 boundary packet determines all colours on it).  Until that theorem is proved,
 agreement of the two displayed colour words is not silently promoted to
