@@ -278,6 +278,60 @@ theorem sourceLocalLayerCellVertexSide_crossingEdgeFinset_card_eq_four
         SeparatedAlignedSimpleDualCrosscuts.primalCutEdges] using
           layers.cutEdges_card_eq_four hunique
 
+/-- A literal Cell side is either cyclic or consists of exactly two vertices.
+
+This is the sharp counting statement behind the coarser six-edge carrier
+bound below.  Keeping it named is important for serial composition: on the
+noncyclic branch every non-boundary edge of the Cell has the same two
+endpoints, so simplicity leaves room for at most one internal edge. -/
+theorem sourceLocalLayerCellVertexSide_card_eq_two_or_hasCycleOnSide
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (leftInterior : CorridorInterior blockLength)
+    (hnext : leftInterior.center.val + 2 < blockLength) :
+    HasCycleOnSide G (fun vertex => vertex ∈
+      sourceLocalLayerCellVertexSide corridor hunique leftInterior hnext) ∨
+      (sourceLocalLayerCellVertexSide corridor hunique
+        leftInterior hnext).card = 2 := by
+  let side := sourceLocalLayerCellVertexSide corridor hunique leftInterior hnext
+  have hnonempty : ∃ vertex, vertex ∈ side := by
+    let boundary := sourceLocalLayerPairCrosscutBoundaryData corridor hunique
+      leftInterior hnext
+    refine ⟨boundary.removed, ?_⟩
+    simpa [side, sourceLocalLayerCellVertexSide] using boundary.removed_not_kept
+  have hconnected : (G.induce {vertex | vertex ∈ side}).Connected := by
+    let pair :=
+      (sourceLocalLayerPair corridor hunique leftInterior hnext).separatedLocalLayerPair
+        hunique
+    let boundary := sourceLocalLayerPairCrosscutBoundaryData corridor hunique
+      leftInterior hnext
+    have hsideEq : (fun vertex => vertex ∈ side) =
+        (fun vertex => vertex ∉ pair.componentSide boundary.component) := by
+      funext vertex
+      simp [side, sourceLocalLayerCellVertexSide, pair, boundary]
+    rw [hsideEq]
+    exact sourceLocalLayerPair_cellSide_connected
+      corridor hunique leftInterior hnext
+  have hdegree : ∀ vertex, vertex ∈ side → G.degree vertex = 3 := by
+    intro vertex hvertex
+    exact sourceLocalLayerCellVertexSide_degree_eq_three
+      corridor hunique leftInterior hnext vertex hvertex
+  have hboundary : (crossingEdgeFinset G
+      (fun vertex => vertex ∈ side)).card = 4 := by
+    simpa [side] using
+      sourceLocalLayerCellVertexSide_crossingEdgeFinset_card_eq_four
+        corridor hunique leftInterior hnext
+  rcases hasCycleOnSide_or_card_eq_two_of_local_cubic_of_connected_of_boundary_card_eq_four
+      (fun vertex => vertex ∈ side) hdegree hnonempty hconnected hboundary with
+      hcycle | hcard
+  · exact .inl hcycle
+  · right
+    simpa [side, Nat.card_eq_fintype_card] using hcard
+
 /-- On the actual opened source, one literal Cell is either cyclic or has the
 desired graph-independent six-edge regional carrier. -/
 theorem sourceLocalLayerCellRegion_card_le_six_or_hasCycleOnSide

@@ -61,6 +61,131 @@ local instance openedGraphDecidableRel
       caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.Adj :=
   Classical.decRel _
 
+/-- A literal Cell side in the two-cap minimal-counterexample laboratory
+cannot contain a cycle.  Its exact four-edge wall would otherwise be a
+one-sided cut with both named holes on the retained side, contradicting the
+closed carrier's cyclic five-edge-connectivity after cap closure. -/
+theorem not_sourceLocalLayerCell_hasCycleOnSide
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (leftInterior : CorridorInterior blockLength)
+    (hnext : leftInterior.center.val + 2 < blockLength) :
+    ¬ HasCycleOnSide
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph
+      (fun vertex => vertex ∈
+        sourceLocalLayerCellVertexSide corridor hunique leftInterior hnext) := by
+  intro hcycle
+  let capPair := caps.toFacialPentagonCapPair.toPentagonCapPair
+  let side := sourceLocalLayerCellVertexSide corridor hunique leftInterior hnext
+  apply false_of_openGraph_oneSidedCut graphData minimal caps
+    (crossingEdgeFinset capPair.openGraph (fun vertex => vertex ∈ side))
+    (fun vertex => vertex ∈ side)
+  · intro edge
+    exact mem_crossingEdgeFinset_iff
+      (G := capPair.openGraph) (fun vertex => vertex ∈ side) edge
+  · have hcard :=
+      sourceLocalLayerCellVertexSide_crossingEdgeFinset_card_eq_four
+        corridor hunique leftInterior hnext
+    simpa [side, capPair] using hcard.le
+  · simpa [side, capPair] using hcycle
+  · intro step
+    change ¬ (capPair.boundaryData.innerStub step ∈ side)
+    intro hinside
+    let pair :=
+      (sourceLocalLayerPair corridor hunique leftInterior hnext).separatedLocalLayerPair
+        hunique
+    let boundary := sourceLocalLayerPairCrosscutBoundaryData corridor hunique
+      leftInterior hnext
+    have hnotKept : capPair.boundaryData.innerStub step ∉
+        pair.componentSide boundary.component := by
+      simpa [side, sourceLocalLayerCellVertexSide, pair, boundary] using
+        hinside
+    apply hnotKept
+    have hkept :=
+      sourceLocalLayerPair_innerHole_vertex_mem_componentSide_of_radialEscape
+        corridor hunique leftInterior hnext
+        (innerBoundaryDart capPair.boundaryData web.boundary_wellFormed step)
+        (innerBoundaryDart_on_innerHole web.annular
+          web.boundary_wellFormed step)
+    simpa [pair, boundary] using hkept
+  · intro step
+    change ¬ (capPair.boundaryData.outerStub step ∈ side)
+    intro hinside
+    let pair :=
+      (sourceLocalLayerPair corridor hunique leftInterior hnext).separatedLocalLayerPair
+        hunique
+    let boundary := sourceLocalLayerPairCrosscutBoundaryData corridor hunique
+      leftInterior hnext
+    have hnotKept : capPair.boundaryData.outerStub step ∉
+        pair.componentSide boundary.component := by
+      simpa [side, sourceLocalLayerCellVertexSide, pair, boundary] using
+        hinside
+    apply hnotKept
+    have hkept := sourceLocalLayerPair_outerHole_vertex_mem_componentSide
+      corridor hunique leftInterior hnext
+      (outerBoundaryDart capPair.boundaryData web.boundary_wellFormed step)
+      (outerBoundaryDart_on_outerHole web.annular
+        web.boundary_wellFormed step)
+    simpa [pair, boundary] using hkept
+
+/-- The literal Cell side in the two-cap source laboratory has exactly two
+vertices.  This is the sharp form of the finite-carrier result: four crossing
+ports surround a two-vertex side. -/
+theorem sourceLocalLayerCellVertexSide_card_eq_two
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (leftInterior : CorridorInterior blockLength)
+    (hnext : leftInterior.center.val + 2 < blockLength) :
+    (sourceLocalLayerCellVertexSide corridor hunique
+      leftInterior hnext).card = 2 := by
+  rcases sourceLocalLayerCellVertexSide_card_eq_two_or_hasCycleOnSide
+      corridor hunique leftInterior hnext with hcycle | hcard
+  · exact (not_sourceLocalLayerCell_hasCycleOnSide graphData minimal caps coloring web
+      corridor hunique leftInterior hnext hcycle).elim
+  · exact hcard
+
+/-- Indexed form of the exact two-vertex Cell-side theorem. -/
+theorem sourceLocalLayerCellVertexSideAt_card_eq_two
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3)) :
+    (sourceLocalLayerCellVertexSide corridor hunique
+      (sourceLocalLayerInteriorAt offset)
+      (sourceLocalLayerInteriorAt_hasNext offset)).card = 2 :=
+  sourceLocalLayerCellVertexSide_card_eq_two graphData minimal caps coloring web
+    corridor hunique (sourceLocalLayerInteriorAt offset)
+      (sourceLocalLayerInteriorAt_hasNext offset)
+
 /-- In the literal two-cap opening of a closed minimal carrier, every
 source-local Cell has at most six regional edges.  The proof eliminates the
 cyclic side of the generic dichotomy by pulling its exact four-edge boundary
@@ -83,61 +208,11 @@ theorem sourceLocalLayerCellRegion_card_le_six
     (vertexSetRegionEdges web.annular.RS
       (sourceLocalLayerCellVertexSide corridor hunique
         leftInterior hnext)).card ≤ 6 := by
-  let capPair := caps.toFacialPentagonCapPair.toPentagonCapPair
   let side := sourceLocalLayerCellVertexSide corridor hunique leftInterior hnext
   rcases sourceLocalLayerCellRegion_card_le_six_or_hasCycleOnSide
       corridor hunique leftInterior hnext with hcycle | hfinite
-  · exfalso
-    apply false_of_openGraph_oneSidedCut graphData minimal caps
-      (crossingEdgeFinset capPair.openGraph (fun vertex => vertex ∈ side))
-      (fun vertex => vertex ∈ side)
-    · intro edge
-      exact mem_crossingEdgeFinset_iff
-        (G := capPair.openGraph) (fun vertex => vertex ∈ side) edge
-    · have hcard :=
-        sourceLocalLayerCellVertexSide_crossingEdgeFinset_card_eq_four
-          corridor hunique leftInterior hnext
-      simpa [side, capPair] using hcard.le
-    · simpa [side] using hcycle
-    · intro step
-      change ¬ (capPair.boundaryData.innerStub step ∈ side)
-      intro hinside
-      let pair :=
-        (sourceLocalLayerPair corridor hunique leftInterior hnext).separatedLocalLayerPair
-          hunique
-      let boundary := sourceLocalLayerPairCrosscutBoundaryData corridor hunique
-        leftInterior hnext
-      have hnotKept : capPair.boundaryData.innerStub step ∉
-          pair.componentSide boundary.component := by
-        simpa [side, sourceLocalLayerCellVertexSide, pair, boundary] using
-          hinside
-      apply hnotKept
-      have hkept :=
-        sourceLocalLayerPair_innerHole_vertex_mem_componentSide_of_radialEscape
-          corridor hunique leftInterior hnext
-          (innerBoundaryDart capPair.boundaryData web.boundary_wellFormed step)
-          (innerBoundaryDart_on_innerHole web.annular
-            web.boundary_wellFormed step)
-      simpa [pair, boundary] using hkept
-    · intro step
-      change ¬ (capPair.boundaryData.outerStub step ∈ side)
-      intro hinside
-      let pair :=
-        (sourceLocalLayerPair corridor hunique leftInterior hnext).separatedLocalLayerPair
-          hunique
-      let boundary := sourceLocalLayerPairCrosscutBoundaryData corridor hunique
-        leftInterior hnext
-      have hnotKept : capPair.boundaryData.outerStub step ∉
-          pair.componentSide boundary.component := by
-        simpa [side, sourceLocalLayerCellVertexSide, pair, boundary] using
-          hinside
-      apply hnotKept
-      have hkept := sourceLocalLayerPair_outerHole_vertex_mem_componentSide
-        corridor hunique leftInterior hnext
-        (outerBoundaryDart capPair.boundaryData web.boundary_wellFormed step)
-        (outerBoundaryDart_on_outerHole web.annular
-          web.boundary_wellFormed step)
-      simpa [pair, boundary] using hkept
+  · exact (not_sourceLocalLayerCell_hasCycleOnSide graphData minimal caps coloring web
+      corridor hunique leftInterior hnext hcycle).elim
   · simpa [side] using hfinite
 
 /-- Indexed form of the six-edge bound on the literal heterogeneous source
