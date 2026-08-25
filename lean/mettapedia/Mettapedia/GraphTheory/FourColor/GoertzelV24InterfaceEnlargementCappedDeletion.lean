@@ -27,7 +27,7 @@ open GoertzelV24DegreeTwoExteriorCappedDeletion
 open GoertzelV24InterfaceDeletionComponentFactor
 open SimpleGraph
 
-variable {N Old New Label : Type*}
+variable {N Old New Added Label : Type*}
   [Fintype N] [DecidableEq N] [Fintype Old] [Fintype New]
   [DecidableEq Label]
 
@@ -180,6 +180,135 @@ theorem min_componentLabelSupport_sdiff_promoted_five_eq
     (promotedExteriorComponentLabels graph oldVertex newVertex label component)
     (promotedExteriorComponentLabels_subset_boundaryLabels graph oldVertex
       newVertex label component hboundary)
+
+/-! ## Conservative bounded enlargement
+
+Boundary locality gives the sharp deletion budget two above.  Exactness does
+not depend on that optimization.  If a finite added carrier covers every
+promoted vertex, its cardinality is a conservative deletion budget.  This is
+the structural escape hatch for a fixed-width rolling interface: enlarge the
+stored cap once by the complete collar bound instead of repeatedly guessing
+which collar positions are endpoints.
+-/
+
+omit [Fintype Old] in
+/-- Every promoted label is already a label of its old exterior component. -/
+theorem promotedExteriorComponentLabels_subset_componentLabelSupport
+    (graph : SimpleGraph N) (oldVertex : Old → N) (newVertex : New → N)
+    (label : N → Label)
+    (component : (exteriorGraph graph oldVertex).ConnectedComponent) :
+    promotedExteriorComponentLabels graph oldVertex newVertex label component ⊆
+      exteriorComponentLabelSupport graph oldVertex label component := by
+  classical
+  intro value hvalue
+  rcases (mem_promotedExteriorComponentLabels_iff graph oldVertex newVertex
+    label component value).1 hvalue with ⟨vertex, _hpromoted, hlabel⟩
+  rw [mem_exteriorComponentLabelSupport_iff]
+  exact ⟨vertex, hlabel⟩
+
+omit [Fintype Old] in
+/-- A finite added carrier which covers every promoted vertex also covers all
+of their distinct labels.  No injectivity of the added presentation is
+required. -/
+theorem promotedExteriorComponentLabels_subset_addedLabelImage
+    [Fintype Added]
+    (graph : SimpleGraph N) (oldVertex : Old → N) (newVertex : New → N)
+    (addedVertex : Added → N) (label : N → Label)
+    (component : (exteriorGraph graph oldVertex).ConnectedComponent)
+    (hcover : ∀ vertex : component, (∃ slot, newVertex slot = vertex.1) →
+      ∃ added, addedVertex added = vertex.1) :
+    promotedExteriorComponentLabels graph oldVertex newVertex label component ⊆
+      (Finset.univ : Finset Added).image (fun added =>
+        label (addedVertex added)) := by
+  classical
+  intro value hvalue
+  rcases (mem_promotedExteriorComponentLabels_iff graph oldVertex newVertex
+    label component value).1 hvalue with
+    ⟨vertex, hpromoted, hlabel⟩
+  rcases hcover vertex hpromoted with ⟨added, hadd⟩
+  apply Finset.mem_image.mpr
+  exact ⟨added, Finset.mem_univ added, by simpa [hadd] using hlabel⟩
+
+omit [Fintype Old] in
+/-- The number of distinct promoted labels is bounded by any finite carrier
+covering the promoted vertices.  Aliases can only reduce the count. -/
+theorem card_promotedExteriorComponentLabels_le_card_added
+    [Fintype Added]
+    (graph : SimpleGraph N) (oldVertex : Old → N) (newVertex : New → N)
+    (addedVertex : Added → N) (label : N → Label)
+    (component : (exteriorGraph graph oldVertex).ConnectedComponent)
+    (hcover : ∀ vertex : component, (∃ slot, newVertex slot = vertex.1) →
+      ∃ added, addedVertex added = vertex.1) :
+    (promotedExteriorComponentLabels graph oldVertex newVertex label component
+      ).card ≤ Fintype.card Added := by
+  classical
+  calc
+    (promotedExteriorComponentLabels graph oldVertex newVertex label component
+      ).card ≤
+        ((Finset.univ : Finset Added).image (fun added =>
+          label (addedVertex added))).card :=
+      Finset.card_le_card
+        (promotedExteriorComponentLabels_subset_addedLabelImage graph oldVertex
+          newVertex addedVertex label component hcover)
+    _ ≤ (Finset.univ : Finset Added).card := Finset.card_image_le
+    _ = Fintype.card Added := Finset.card_univ
+
+omit [Fintype Old] in
+/-- A cap enlarged by the full added-carrier size recovers cap five after an
+arbitrary interface enlargement covered by that carrier.  Unlike the sharp
+cap-seven theorem, this requires no boundary-locality or degree bound. -/
+theorem min_componentLabelSupport_sdiff_promoted_five_eq_bounded
+    [Fintype Added]
+    (graph : SimpleGraph N) (oldVertex : Old → N) (newVertex : New → N)
+    (addedVertex : Added → N) (label : N → Label)
+    (component : (exteriorGraph graph oldVertex).ConnectedComponent)
+    (hcover : ∀ vertex : component, (∃ slot, newVertex slot = vertex.1) →
+      ∃ added, addedVertex added = vertex.1) :
+    min ((exteriorComponentLabelSupport graph oldVertex label component) \
+        promotedExteriorComponentLabels graph oldVertex newVertex label
+          component).card 5 =
+      min (min (exteriorComponentLabelSupport graph oldVertex label component
+        ).card (5 + Fintype.card Added) -
+          (promotedExteriorComponentLabels graph oldVertex newVertex label
+            component).card) 5 := by
+  exact GoertzelV24CappedCardSubtraction.min_card_sdiff_eq_min_min_card_add_sub
+    (exteriorComponentLabelSupport graph oldVertex label component)
+    (promotedExteriorComponentLabels graph oldVertex newVertex label component)
+    5 (Fintype.card Added)
+    (promotedExteriorComponentLabels_subset_componentLabelSupport graph
+      oldVertex newVertex label component)
+    (card_promotedExteriorComponentLabels_le_card_added graph oldVertex
+      newVertex addedVertex label component hcover)
+
+omit [Fintype Old] in
+/-- A numerically bounded version of
+`min_componentLabelSupport_sdiff_promoted_five_eq_bounded`.  The covering
+carrier need not itself have the chosen fixed size; an external cardinality
+bound is enough to select a source-independent cap. -/
+theorem min_componentLabelSupport_sdiff_promoted_five_eq_of_card_added_le
+    [Fintype Added]
+    (graph : SimpleGraph N) (oldVertex : Old → N) (newVertex : New → N)
+    (addedVertex : Added → N) (label : N → Label)
+    (component : (exteriorGraph graph oldVertex).ConnectedComponent)
+    (deletionBound : Nat)
+    (hcover : ∀ vertex : component, (∃ slot, newVertex slot = vertex.1) →
+      ∃ added, addedVertex added = vertex.1)
+    (hcard : Fintype.card Added ≤ deletionBound) :
+    min ((exteriorComponentLabelSupport graph oldVertex label component) \
+        promotedExteriorComponentLabels graph oldVertex newVertex label
+          component).card 5 =
+      min (min (exteriorComponentLabelSupport graph oldVertex label component
+        ).card (5 + deletionBound) -
+          (promotedExteriorComponentLabels graph oldVertex newVertex label
+            component).card) 5 := by
+  apply GoertzelV24CappedCardSubtraction.min_card_sdiff_eq_min_min_card_add_sub
+    (exteriorComponentLabelSupport graph oldVertex label component)
+    (promotedExteriorComponentLabels graph oldVertex newVertex label component)
+    5 deletionBound
+  · exact promotedExteriorComponentLabels_subset_componentLabelSupport graph
+      oldVertex newVertex label component
+  · exact (card_promotedExteriorComponentLabels_le_card_added graph oldVertex
+      newVertex addedVertex label component hcover).trans hcard
 
 end GoertzelV24InterfaceEnlargementCappedDeletion
 

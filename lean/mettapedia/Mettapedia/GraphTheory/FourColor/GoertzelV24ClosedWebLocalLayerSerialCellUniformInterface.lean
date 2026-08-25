@@ -134,7 +134,38 @@ noncomputable def sourceLocalLayerSerialCellRebaseFaceInteractionCarrierAt
   sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique offset ∪
     sourceLocalLayerBoundaryRebaseFaceCollarAt corridor hunique offset hnext
 
-/-- The facial carrier has a corridor-length-independent size bound. -/
+/-- The facial carrier has a corridor-length-independent size bound whenever
+the literal Cell has its source width bound. -/
+theorem
+    sourceLocalLayerSerialCellRebaseFaceInteractionCarrierAt_card_le_fortyEight_of_cell
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hcell :
+      (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 6) :
+    (sourceLocalLayerSerialCellRebaseFaceInteractionCarrierAt corridor hunique
+      offset hnext).card ≤ 48 := by
+  calc
+    (sourceLocalLayerSerialCellRebaseFaceInteractionCarrierAt corridor hunique
+      offset hnext).card ≤
+        (sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique offset
+          ).card +
+        (sourceLocalLayerBoundaryRebaseFaceCollarAt corridor hunique offset hnext
+          ).card := Finset.card_union_le _ _
+    _ ≤ 24 + 24 := Nat.add_le_add
+      (sourceLocalLayerSerialFaceTransitionCarrierAt_card_le_twentyFour corridor
+        hunique offset hcell)
+      (card_sourceLocalLayerBoundaryRebaseFaceCollarAt_le_twentyFour corridor
+        hunique offset hnext)
+    _ = 48 := by norm_num
+
+/-- Minimal-counterexample specialization of the structural facial-carrier
+bound. -/
 theorem sourceLocalLayerSerialCellRebaseFaceInteractionCarrierAt_card_le_fortyEight
     (graphData : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
@@ -156,19 +187,9 @@ theorem sourceLocalLayerSerialCellRebaseFaceInteractionCarrierAt_card_le_fortyEi
       (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 6 :=
     sourceLocalLayerCellRegionAt_card_le_six graphData minimal caps coloring web
       corridor hunique offset
-  calc
-    (sourceLocalLayerSerialCellRebaseFaceInteractionCarrierAt corridor hunique
-      offset hnext).card ≤
-        (sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique offset
-          ).card +
-        (sourceLocalLayerBoundaryRebaseFaceCollarAt corridor hunique offset hnext
-          ).card := Finset.card_union_le _ _
-    _ ≤ 24 + 24 := Nat.add_le_add
-      (sourceLocalLayerSerialFaceTransitionCarrierAt_card_le_twentyFour corridor
-        hunique offset hcell)
-      (card_sourceLocalLayerBoundaryRebaseFaceCollarAt_le_twentyFour corridor
-        hunique offset hnext)
-    _ = 48 := by norm_num
+  exact
+    sourceLocalLayerSerialCellRebaseFaceInteractionCarrierAt_card_le_fortyEight_of_cell
+      corridor hunique offset hnext hcell
 
 /-- Every tracked prefix--Cell seam adjacency meets one of the two named
 outgoing ports; this is the structural interface statement behind the
