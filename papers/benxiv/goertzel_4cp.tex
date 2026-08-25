@@ -8946,6 +8946,24 @@ the existing six-slot code remains a conservative padded presentation.  The
 result does not by itself identify that internal edge across distinct Cell
 indices, discharge the overlap atom, or compute a reachable-state count.
 
+Existence and index locality of that internal bond are now proved as well.
+The generic connected-two-vertex lemma in
+\texttt{GoertzelV24RotationVertexCutProfile} constructs a regional edge which
+does not cross the chosen side.  Its source specialization shows that every
+literal Cell has exactly one such bond and that the bond's endpoint set is
+exactly the Cell's two-vertex side.  The module
+\texttt{GoertzelV24ClosedWebLocalLayerSerialCellInternalOverlap} then proves
+that a strict historical Cell and the successor Cell cannot share an edge
+which is internal to both: a shared bond would identify their two vertex
+sides; a genuine outgoing portal of the successor would consequently occur on
+both separated corridor-face boundaries, contradicting the clean corridor's
+facial-dual distance condition.  This closes the internal--internal branch of
+the pairwise overlap atom without global cubicity or global two-sidedness.
+The mixed internal--crossing branches and the cases where the target edge is
+an outgoing-carrier edge or retained rung remain to be classified before the
+cumulative Cell--rebase recurrence, representation invariance, or a certified
+reachable-state count can be claimed.
+
 \section*{Provenance}
 \addcontentsline{toc}{section}{Provenance}
 The August revision preserves the accumulated July audit and its negative

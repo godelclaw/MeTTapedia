@@ -237,6 +237,196 @@ theorem sourceLocalLayerCellRegionAt_internalEdge_subsingleton
   · simpa [hregion] using hsecondRegion
   · simpa [side] using hsecondNotCrossing
 
+/-- Every indexed two-vertex Cell has a non-crossing regional edge.  Together
+with `sourceLocalLayerCellRegionAt_internalEdge_subsingleton`, this says that
+the Cell carries exactly one internal bond without yet identifying that bond
+with a particular source rung. -/
+theorem sourceLocalLayerCellRegionAt_internalEdge_existsUnique
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3)) :
+    ∃! edge :
+        caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet,
+      edge ∈ sourceLocalLayerCellRegionAt corridor hunique offset ∧
+        edge ∉ vertexSetCrossingEdges web.annular.RS
+          (sourceLocalLayerCellVertexSide corridor hunique
+            (sourceLocalLayerInteriorAt offset)
+            (sourceLocalLayerInteriorAt_hasNext offset)) := by
+  let side := sourceLocalLayerCellVertexSide corridor hunique
+    (sourceLocalLayerInteriorAt offset)
+    (sourceLocalLayerInteriorAt_hasNext offset)
+  have hconnected :
+      (caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.induce
+        fun vertex => vertex ∈ side).Connected := by
+    have hsideSet :
+        (fun vertex => vertex ∈ side : Set _) =
+          (fun vertex => vertex ∉
+            ((sourceLocalLayerPair corridor hunique
+              (sourceLocalLayerInteriorAt offset)
+              (sourceLocalLayerInteriorAt_hasNext offset)).separatedLocalLayerPair
+                hunique).componentSide
+            (sourceLocalLayerPairCrosscutBoundaryData corridor hunique
+              (sourceLocalLayerInteriorAt offset)
+              (sourceLocalLayerInteriorAt_hasNext offset)).component) := by
+      ext vertex
+      simp [side, sourceLocalLayerCellVertexSide]
+    rw [hsideSet]
+    exact sourceLocalLayerPair_cellSide_connected corridor hunique
+      (sourceLocalLayerInteriorAt offset)
+      (sourceLocalLayerInteriorAt_hasNext offset)
+  have hcard : side.card = 2 := by
+    simpa [side] using sourceLocalLayerCellVertexSideAt_card_eq_two
+      graphData minimal caps coloring web corridor hunique offset
+  rcases exists_mem_vertexSetRegionEdges_not_mem_crossing_of_connected_card_eq_two
+      web.annular.cellulation.rotation side hconnected hcard with
+    ⟨edge, hedgeRegion, hedgeNotCrossing⟩
+  have hregion : sourceLocalLayerCellRegionAt corridor hunique offset =
+      vertexSetRegionEdges web.annular.RS side := by
+    have hside := sourceLocalLayerCellVertexSide_eq_retained_compl
+      corridor hunique (sourceLocalLayerInteriorAt offset)
+        (sourceLocalLayerInteriorAt_hasNext offset)
+    exact congrArg (vertexSetRegionEdges web.annular.RS) hside.symm
+  refine ⟨edge, ⟨?_, ?_⟩, ?_⟩
+  · simpa [hregion] using hedgeRegion
+  · simpa [side] using hedgeNotCrossing
+  · intro other hother
+    exact sourceLocalLayerCellRegionAt_internalEdge_subsingleton graphData
+      minimal caps coloring web corridor hunique offset
+        hother.1 hother.2 (by simpa [hregion] using hedgeRegion)
+          (by simpa [side] using hedgeNotCrossing)
+
+/-- A non-crossing regional edge of an indexed Cell has exactly the two Cell
+vertices as its endpoint set. -/
+theorem sourceLocalLayerCellRegionAt_internalEdge_endpoints_eq_side
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    {edge : caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet}
+    (hregion : edge ∈ sourceLocalLayerCellRegionAt corridor hunique offset)
+    (hnotCrossing : edge ∉ vertexSetCrossingEdges web.annular.RS
+      (sourceLocalLayerCellVertexSide corridor hunique
+        (sourceLocalLayerInteriorAt offset)
+        (sourceLocalLayerInteriorAt_hasNext offset))) :
+    web.annular.RS.endpoints edge =
+      sourceLocalLayerCellVertexSide corridor hunique
+        (sourceLocalLayerInteriorAt offset)
+        (sourceLocalLayerInteriorAt_hasNext offset) := by
+  let side := sourceLocalLayerCellVertexSide corridor hunique
+    (sourceLocalLayerInteriorAt offset)
+    (sourceLocalLayerInteriorAt_hasNext offset)
+  have hregionEq : sourceLocalLayerCellRegionAt corridor hunique offset =
+      vertexSetRegionEdges web.annular.RS side := by
+    have hside := sourceLocalLayerCellVertexSide_eq_retained_compl
+      corridor hunique (sourceLocalLayerInteriorAt offset)
+        (sourceLocalLayerInteriorAt_hasNext offset)
+    exact congrArg (vertexSetRegionEdges web.annular.RS) hside.symm
+  have hsubset := endpoints_subset_of_mem_region_not_mem_crossing
+    web.annular.RS side (by simpa [hregionEq] using hregion)
+      (by simpa [side] using hnotCrossing)
+  apply Finset.eq_of_subset_of_card_le hsubset
+  rw [web.annular.RS.endpoints_card_two]
+  exact (by simpa [side] using
+    (sourceLocalLayerCellVertexSideAt_card_eq_two graphData minimal caps coloring
+      web corridor hunique offset).le)
+
+/-- If one literal edge is internal to two indexed Cells, then the two Cells
+have exactly the same two-vertex side.  This turns edge overlap into a rigid
+vertex-side equality suitable for corridor-distance arguments. -/
+theorem sourceLocalLayerCellVertexSideAt_eq_of_common_internalEdge
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (first second : Fin (blockLength - 3))
+    {edge : caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet}
+    (hfirstRegion : edge ∈ sourceLocalLayerCellRegionAt corridor hunique first)
+    (hfirstNotCrossing : edge ∉ vertexSetCrossingEdges web.annular.RS
+      (sourceLocalLayerCellVertexSide corridor hunique
+        (sourceLocalLayerInteriorAt first)
+        (sourceLocalLayerInteriorAt_hasNext first)))
+    (hsecondRegion : edge ∈ sourceLocalLayerCellRegionAt corridor hunique second)
+    (hsecondNotCrossing : edge ∉ vertexSetCrossingEdges web.annular.RS
+      (sourceLocalLayerCellVertexSide corridor hunique
+        (sourceLocalLayerInteriorAt second)
+        (sourceLocalLayerInteriorAt_hasNext second))) :
+    sourceLocalLayerCellVertexSide corridor hunique
+        (sourceLocalLayerInteriorAt first)
+        (sourceLocalLayerInteriorAt_hasNext first) =
+      sourceLocalLayerCellVertexSide corridor hunique
+        (sourceLocalLayerInteriorAt second)
+        (sourceLocalLayerInteriorAt_hasNext second) := by
+  rw [← sourceLocalLayerCellRegionAt_internalEdge_endpoints_eq_side
+      graphData minimal caps coloring web corridor hunique first hfirstRegion
+        hfirstNotCrossing,
+    ← sourceLocalLayerCellRegionAt_internalEdge_endpoints_eq_side
+      graphData minimal caps coloring web corridor hunique second hsecondRegion
+        hsecondNotCrossing]
+
+/-- At least one of the two source-ordered outgoing portals is a genuine
+crossing edge of the two-vertex Cell side.  If neither crossed, both distinct
+portals would be the Cell's unique internal bond. -/
+theorem exists_sourceLocalLayerRightCrossingAt_mem_cellCrossing
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3)) :
+    ∃ step : Fin 2,
+      sourceLocalLayerRightCrossingAt corridor hunique offset step ∈
+        vertexSetCrossingEdges web.annular.RS
+          (sourceLocalLayerCellVertexSide corridor hunique
+            (sourceLocalLayerInteriorAt offset)
+            (sourceLocalLayerInteriorAt_hasNext offset)) := by
+  let zero : Fin 2 := ⟨0, by omega⟩
+  let one : Fin 2 := ⟨1, by omega⟩
+  by_contra hnone
+  push Not at hnone
+  have heq := sourceLocalLayerCellRegionAt_internalEdge_subsingleton graphData
+    minimal caps coloring web corridor hunique offset
+      (sourceLocalLayerCellRegionAt_rightCrossing corridor hunique offset zero)
+      (hnone zero)
+      (sourceLocalLayerCellRegionAt_rightCrossing corridor hunique offset one)
+      (hnone one)
+  have hsteps := sourceLocalLayerRightCrossingAt_injective corridor hunique
+    offset heq
+  exact (by decide : zero ≠ one) hsteps
+
 /-- The exact two-vertex Cell has at most five regional edges: its four
 source-ordered crossing ports and at most one edge internal to the Cell side.
 This sharpens the earlier degree-count bound of six without choosing or

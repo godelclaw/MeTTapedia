@@ -104,6 +104,74 @@ theorem edge_eq_of_mem_region_not_mem_crossing_of_card_eq_two
       rw [RS.endpoints_card_two, hcard])
   exact hfirstEq.trans hsecondEq.symm
 
+/-- A connected induced side with exactly two vertices contains an ambient
+edge whose two endpoints stay on that side.  In the rotation-system cut
+vocabulary this is a regional edge which is not a crossing edge. -/
+theorem exists_mem_vertexSetRegionEdges_not_mem_crossing_of_connected_card_eq_two
+    {G : SimpleGraph V} [DecidableRel G.Adj]
+    (data : SimpleGraphDartRotation.Data G) (inside : Finset V)
+    (hconnected : (G.induce fun vertex => vertex ∈ inside).Connected)
+    (hcard : inside.card = 2) :
+    ∃ edge : G.edgeSet,
+      edge ∈ vertexSetRegionEdges data.toRotationSystem inside ∧
+        edge ∉ vertexSetCrossingEdges data.toRotationSystem inside := by
+  classical
+  rcases Finset.card_eq_two.mp hcard with
+    ⟨first, second, hfirstSecond, hins⟩
+  have hfirstMem : first ∈ inside := by
+    rw [hins]
+    simp
+  have hsecondMem : second ∈ inside := by
+    rw [hins]
+    simp
+  let support : Set V := fun vertex => vertex ∈ inside
+  have hconnectedSupport : (G.induce support).Connected := by
+    exact hconnected
+  have hsupportCard : support.ncard = 2 := by
+    have hsupportEq : support = (inside : Set V) := by
+      ext vertex
+      rfl
+    rw [hsupportEq, Set.ncard_coe_finset]
+    exact hcard
+  let firstVertex : support := ⟨first, hfirstMem⟩
+  let secondVertex : support := ⟨second, hsecondMem⟩
+  have hverticesNe : firstVertex ≠ secondVertex := by
+    intro heq
+    exact hfirstSecond (congrArg Subtype.val heq)
+  rcases hconnectedSupport.exists_isPath firstVertex secondVertex with
+    ⟨path, hpath⟩
+  have hsubtypeCard : Fintype.card support = 2 := by
+    rw [← Nat.card_eq_fintype_card, Nat.card_coe_set_eq]
+    exact hsupportCard
+  have hlengthLt : path.length < 2 := by
+    simpa [hsubtypeCard] using hpath.length_lt
+  have hlengthPositive : 0 < path.length := by
+    apply Nat.pos_of_ne_zero
+    intro hzero
+    exact hverticesNe (path.eq_of_length_eq_zero hzero)
+  have hlength : path.length = 1 := by omega
+  have hadjInduced :
+      (G.induce support).Adj firstVertex secondVertex :=
+    path.adj_of_length_eq_one hlength
+  have hadj : G.Adj first second := hadjInduced
+  let edge : G.edgeSet := ⟨s(first, second), by
+    rw [SimpleGraph.mem_edgeSet]
+    exact hadj⟩
+  refine ⟨edge, ?_, ?_⟩
+  · rw [mem_vertexSetRegionEdges_iff]
+    refine ⟨first, ?_, hfirstMem⟩
+    rw [mem_simpleGraphRotationSystem_endpoints_iff]
+    simp [edge]
+  · intro hcrossing
+    rw [mem_vertexSetCrossingEdges_iff] at hcrossing
+    rcases hcrossing with
+      ⟨_inner, _hinnerEndpoint, _hinnerInside,
+        outer, houterEndpoint, houterOutside⟩
+    apply houterOutside
+    rw [hins]
+    rw [mem_simpleGraphRotationSystem_endpoints_iff] at houterEndpoint
+    simpa [edge] using houterEndpoint
+
 /-- An edge outside the computed regional edge set has both endpoints outside
 the chosen vertex side. -/
 theorem endpoints_disjoint_of_not_mem_region
