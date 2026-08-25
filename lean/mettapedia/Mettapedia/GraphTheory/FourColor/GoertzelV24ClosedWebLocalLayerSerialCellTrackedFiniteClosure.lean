@@ -107,6 +107,73 @@ def SourceLocalLayerSerialTrackedFiniteComponentStep
 /-- Every nontrivial switch among prefix, Cell, and seam lies on the common
 transition carrier.  Hence literal pre-rebase reachability is exactly the
 three-factor closure on that selected carrier. -/
+theorem sourceLocalLayerSerialPreRebaseTrackedReachableForColor_iff_transitionCarrierClosure
+    (graphData : Data G)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (color : caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet →
+      Color)
+    (pair : TrackedColorPair)
+    (left right : {edge // edge ∈
+      sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps coloring
+        web corridor hunique offset}) :
+    (regionalTrackedEdgeGraph web.annular.RS
+      (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset)
+      color (trackedColorPairColors pair).1
+        (trackedColorPairColors pair).2).Reachable left.1 right.1 ↔
+      Relation.ReflTransGen
+        (SelectedThreeFactorComponentStep
+          (regionalTrackedEdgeGraph web.annular.RS
+            (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique offset)
+            color (trackedColorPairColors pair).1
+              (trackedColorPairColors pair).2)
+          (regionalTrackedEdgeGraph web.annular.RS
+            (sourceLocalLayerCellRegionAt corridor hunique offset)
+            color (trackedColorPairColors pair).1
+              (trackedColorPairColors pair).2)
+          (sourceLocalLayerSerialTerminalTrackedSeamAt corridor hunique offset
+            color (trackedColorPairColors pair).1
+              (trackedColorPairColors pair).2)
+          (fun edge => edge ∈
+            sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps
+              coloring web corridor hunique offset))
+        left right := by
+  rw [sourceLocalLayerSerialPreRebaseTrackedGraph_eq_three_factor corridor
+    hunique offset color (trackedColorPairColors pair).1
+      (trackedColorPairColors pair).2]
+  apply reachable_sup_sup_iff_subtype_threeFactorComponentClosure
+  · intro x middle y hx hy hprefix hcell
+    have hinter := regionalTrackedEdgeGraph_switch_mem_inter web.annular.RS
+      (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique offset)
+      (sourceLocalLayerCellRegionAt corridor hunique offset)
+      color (trackedColorPairColors pair).1
+        (trackedColorPairColors pair).2 hx hy hprefix hcell
+    exact Finset.mem_union_left _
+      (Finset.mem_union_left _ (Finset.mem_inter.1 hinter).2)
+  · intro x middle y _hx hy _hprefix hseam
+    exact Finset.mem_union_left _ (Finset.mem_union_right _
+      (sourceLocalLayerSerialTerminalTrackedSeamAt_support_subset_outgoingCarrier
+        corridor hunique offset color (trackedColorPairColors pair).1
+          (trackedColorPairColors pair).2
+          (SimpleGraph.mem_support_of_reachable hy hseam)))
+  · intro x middle y _hx hy _hcell hseam
+    exact Finset.mem_union_left _ (Finset.mem_union_right _
+      (sourceLocalLayerSerialTerminalTrackedSeamAt_support_subset_outgoingCarrier
+        corridor hunique offset color (trackedColorPairColors pair).1
+          (trackedColorPairColors pair).2
+          (SimpleGraph.mem_support_of_reachable hy hseam)))
+
+/-- Ambient-color compatibility wrapper for the selected three-factor
+closure. -/
 theorem sourceLocalLayerSerialPreRebaseTrackedReachable_iff_transitionCarrierClosure
     (graphData : Data G)
     (caps : OrientedFacialPentagonCapPair graphData)
@@ -143,31 +210,127 @@ theorem sourceLocalLayerSerialPreRebaseTrackedReachable_iff_transitionCarrierClo
           (fun edge => edge ∈
             sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps
               coloring web corridor hunique offset))
-        left right := by
-  rw [sourceLocalLayerSerialPreRebaseTrackedGraph_eq_three_factor corridor
-    hunique offset coloring (trackedColorPairColors pair).1
-      (trackedColorPairColors pair).2]
-  apply reachable_sup_sup_iff_subtype_threeFactorComponentClosure
-  · intro x middle y hx hy hprefix hcell
-    have hinter := regionalTrackedEdgeGraph_switch_mem_inter web.annular.RS
-      (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique offset)
-      (sourceLocalLayerCellRegionAt corridor hunique offset)
-      coloring (trackedColorPairColors pair).1
-        (trackedColorPairColors pair).2 hx hy hprefix hcell
-    exact Finset.mem_union_left _
-      (Finset.mem_union_left _ (Finset.mem_inter.1 hinter).2)
-  · intro x middle y _hx hy _hprefix hseam
-    exact Finset.mem_union_left _ (Finset.mem_union_right _
-      (sourceLocalLayerSerialTerminalTrackedSeamAt_support_subset_outgoingCarrier
-        corridor hunique offset coloring (trackedColorPairColors pair).1
-          (trackedColorPairColors pair).2
-          (SimpleGraph.mem_support_of_reachable hy hseam)))
-  · intro x middle y _hx hy _hcell hseam
-    exact Finset.mem_union_left _ (Finset.mem_union_right _
-      (sourceLocalLayerSerialTerminalTrackedSeamAt_support_subset_outgoingCarrier
-        corridor hunique offset coloring (trackedColorPairColors pair).1
-          (trackedColorPairColors pair).2
-          (SimpleGraph.mem_support_of_reachable hy hseam)))
+        left right :=
+  sourceLocalLayerSerialPreRebaseTrackedReachableForColor_iff_transitionCarrierClosure
+    graphData caps coloring web corridor hunique offset coloring pair left right
+
+/-- Parametric tracked factorization for one literal Cell.  Any realized
+cumulative prefix may be used: the sole contract is that its finite input
+profile and attachment state recover prefix reachability on the common
+twenty-one-slot carrier.  Under that contract, adjoining the Cell and seam is
+exactly the finite three-factor closure. -/
+theorem sourceLocalLayerSerialPreRebaseTrackedReachableForColor_iff_finiteClosure
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (state : SourceLocalLayerSerialTrackedPrefixAttachmentState)
+    (input : BoundedCorridorCutProfile 2 1 4)
+    (color : caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet →
+      Color)
+    (hprefix : ∀ (pair : TrackedColorPair)
+        (first second : {edge // edge ∈
+          sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps
+            coloring web corridor hunique offset}),
+      (regionalTrackedEdgeGraph web.annular.RS
+        (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique offset)
+        color (trackedColorPairColors pair).1
+          (trackedColorPairColors pair).2).Reachable first.1 second.1 ↔
+        sourceLocalLayerSerialTrackedPrefixFactoredReachability state input pair
+          (sourceLocalLayerSerialTrackedTransitionSlotAt graphData minimal caps
+            coloring web corridor hunique offset first)
+          (sourceLocalLayerSerialTrackedTransitionSlotAt graphData minimal caps
+            coloring web corridor hunique offset second))
+    (pair : TrackedColorPair)
+    (left right : {edge // edge ∈
+      sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps coloring
+        web corridor hunique offset}) :
+    (regionalTrackedEdgeGraph web.annular.RS
+      (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset)
+      color (trackedColorPairColors pair).1
+        (trackedColorPairColors pair).2).Reachable left.1 right.1 ↔
+      Relation.ReflTransGen
+        (SourceLocalLayerSerialTrackedFiniteComponentStep state input
+          (sourceLocalLayerSerialTrackedTransitionCodeForColorAt graphData
+            minimal caps coloring web corridor hunique offset color)
+          pair)
+        (carrierCoordinate
+          (sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps
+            coloring web corridor hunique offset) left)
+        (carrierCoordinate
+          (sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps
+            coloring web corridor hunique offset) right) := by
+  let carrier := sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps
+    coloring web corridor hunique offset
+  let coordinate := carrierCoordinate carrier
+  let code := sourceLocalLayerSerialTrackedTransitionCodeForColorAt graphData
+    minimal caps coloring web corridor hunique offset color
+  rw [sourceLocalLayerSerialPreRebaseTrackedReachableForColor_iff_transitionCarrierClosure
+    graphData caps coloring web corridor hunique offset color pair left right]
+  have hslot (edge : {edge // edge ∈ carrier}) :
+      sourceLocalLayerSerialTrackedFiniteStableSlot code (coordinate edge) =
+        sourceLocalLayerSerialTrackedTransitionSlotAt graphData minimal caps
+          coloring web corridor hunique offset edge := by
+    rfl
+  have hstep (first second : {edge // edge ∈ carrier}) :
+      SelectedThreeFactorComponentStep
+          (regionalTrackedEdgeGraph web.annular.RS
+            (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique offset)
+            color (trackedColorPairColors pair).1
+              (trackedColorPairColors pair).2)
+          (regionalTrackedEdgeGraph web.annular.RS
+            (sourceLocalLayerCellRegionAt corridor hunique offset)
+            color (trackedColorPairColors pair).1
+              (trackedColorPairColors pair).2)
+          (sourceLocalLayerSerialTerminalTrackedSeamAt corridor hunique offset
+            color (trackedColorPairColors pair).1
+              (trackedColorPairColors pair).2)
+          (fun edge => edge ∈ carrier) first second ↔
+        SourceLocalLayerSerialTrackedFiniteComponentStep state input code pair
+          (coordinate first) (coordinate second) := by
+    simp only [SelectedThreeFactorComponentStep,
+      SourceLocalLayerSerialTrackedFiniteComponentStep]
+    rw [hslot first, hslot second]
+    constructor
+    · rintro (hprefixStep | hcell | hseam)
+      · exact Or.inl ((hprefix pair first second).1 hprefixStep)
+      · exact Or.inr (Or.inl
+          ((sourceLocalLayerSerialTrackedTransitionCodeForColorAt_cell_reachable_iff
+            graphData minimal caps coloring web corridor hunique offset color
+              pair first second).2 hcell))
+      · exact Or.inr (Or.inr
+          ((sourceLocalLayerSerialTrackedTransitionCodeForColorAt_seam_reachable_iff
+            graphData minimal caps coloring web corridor hunique offset color
+              pair first second).2 hseam))
+    · rintro (hprefixStep | hcell | hseam)
+      · exact Or.inl ((hprefix pair first second).2 hprefixStep)
+      · exact Or.inr (Or.inl
+          ((sourceLocalLayerSerialTrackedTransitionCodeForColorAt_cell_reachable_iff
+            graphData minimal caps coloring web corridor hunique offset color
+              pair first second).1 hcell))
+      · exact Or.inr (Or.inr
+          ((sourceLocalLayerSerialTrackedTransitionCodeForColorAt_seam_reachable_iff
+            graphData minimal caps coloring web corridor hunique offset color
+              pair first second).1 hseam))
+  constructor
+  · intro hclosure
+    exact Relation.ReflTransGen.lift coordinate
+      (fun first second h => (hstep first second).1 h) hclosure
+  · intro hclosure
+    have hlift := Relation.ReflTransGen.lift coordinate.symm
+      (fun first second h =>
+        (hstep (coordinate.symm first) (coordinate.symm second)).2 (by
+          simpa using h)) hclosure
+    simpa [coordinate, carrier] using hlift
 
 /-- Complete tracked reachability after adjoining one literal source Cell is
 the closure of a graph-free relation on at most twenty-one coordinates.  Its
