@@ -1,0 +1,177 @@
+import Mettapedia.GraphTheory.FourColor.GoertzelV24InterfaceDeletionComponentFactor
+import Mathlib.Combinatorics.SimpleGraph.Acyclic
+import Mathlib.Combinatorics.SimpleGraph.DegreeSum
+
+/-!
+# A degree-two exterior component has at most two boundary vertices
+
+Let a finite graph be represented through a bounded interface, and delete the
+interface vertices.  In a graph of maximum degree two, every connected
+component of the strict exterior can meet the deleted interface through at
+most two exterior vertices.  These are the two endpoints of the exterior path;
+an exterior cycle has none.
+
+The proof is graph-theoretic rather than pictorial.  A connected graph of
+maximum degree two has at most two vertices of degree at most one, by the
+handshake identity and the connected lower bound on its number of edges.  A
+vertex of an exterior component adjacent to the interface loses at least that
+one neighbor when the component is induced, so its component degree is at
+most one.
+
+For the rolling facial transfer, this is the structural reason that advancing
+the interface removes at most two labels from each old exterior component.
+-/
+
+namespace Mettapedia.GraphTheory.FourColor
+
+namespace GoertzelV24DegreeTwoExteriorBoundary
+
+open Finset
+open GoertzelV24InterfaceDeletionComponentFactor
+open SimpleGraph
+
+variable {W : Type*} [Fintype W] [DecidableEq W]
+  {H : SimpleGraph W} [DecidableRel H.Adj]
+
+/-- In a finite connected graph of maximum degree two, any specified set of
+vertices whose degrees are at most one has cardinality at most two. -/
+theorem card_boundary_le_two
+    (boundary : Finset W) (hconnected : H.Connected)
+    (hdegree : ∀ vertex, H.degree vertex ≤ 2)
+    (hboundary : ∀ vertex ∈ boundary, H.degree vertex ≤ 1) :
+    boundary.card ≤ 2 := by
+  have hpointwise : ∀ vertex : W,
+      H.degree vertex + (if vertex ∈ boundary then 1 else 0) ≤ 2 := by
+    intro vertex
+    by_cases hmem : vertex ∈ boundary
+    · simp only [if_pos hmem]
+      exact Nat.add_le_of_le_sub (by omega) (hboundary vertex hmem)
+    · simpa [hmem] using hdegree vertex
+  have hsum := Finset.sum_le_sum fun vertex
+    (_hvertex : vertex ∈ (Finset.univ : Finset W)) => hpointwise vertex
+  have hupper :
+      (∑ vertex : W, H.degree vertex) + boundary.card ≤
+        2 * Fintype.card W := by
+    simpa [Finset.sum_add_distrib, Nat.mul_comm] using hsum
+  have hlower : Fintype.card W ≤ H.edgeFinset.card + 1 := by
+    simpa [Nat.card_eq_fintype_card, ← H.edgeFinset_card] using
+      hconnected.card_vert_le_card_edgeSet_add_one
+  have hhandshake :
+      (∑ vertex : W, H.degree vertex) = 2 * H.edgeFinset.card :=
+    H.sum_degrees_eq_twice_card_edges
+  omega
+
+variable {N Interface : Type*} [Fintype N] [DecidableEq N]
+  [Fintype Interface]
+
+/-- Vertices of one strict-exterior component that are adjacent in the
+original graph to at least one represented interface vertex. -/
+noncomputable def exteriorComponentBoundaryVertices
+    (graph : SimpleGraph N) (interfaceVertex : Interface → N)
+    (component : (exteriorGraph graph interfaceVertex).ConnectedComponent) :
+    Finset component := by
+  classical
+  letI : Fintype component := Fintype.ofFinite component
+  exact Finset.univ.filter fun vertex =>
+    ∃ slot, graph.Adj (interfaceVertex slot) vertex.1
+
+omit [DecidableEq N] in
+@[simp]
+theorem mem_exteriorComponentBoundaryVertices_iff
+    (graph : SimpleGraph N) (interfaceVertex : Interface → N)
+    (component : (exteriorGraph graph interfaceVertex).ConnectedComponent)
+    (vertex : component) :
+    vertex ∈ exteriorComponentBoundaryVertices graph interfaceVertex component ↔
+      ∃ slot, graph.Adj (interfaceVertex slot) vertex.1 := by
+  classical
+  simp [exteriorComponentBoundaryVertices]
+
+omit [Fintype N] [DecidableEq N] [Fintype Interface] in
+/-- Every vertex reachable from a strict-exterior root in the exterior graph
+is itself strictly exterior. -/
+theorem outsideInterface_of_exteriorGraph_reachable
+    (graph : SimpleGraph N) (interfaceVertex : Interface → N)
+    {root vertex : N} (hroot : OutsideInterface interfaceVertex root)
+    (hreachable : (exteriorGraph graph interfaceVertex).Reachable root vertex) :
+    OutsideInterface interfaceVertex vertex := by
+  rw [SimpleGraph.reachable_iff_reflTransGen] at hreachable
+  induction hreachable with
+  | refl => exact hroot
+  | tail _ hadj _ => exact hadj.2.2
+
+/-- A strict-exterior component of a finite maximum-degree-two graph touches
+the interface through at most two of its own vertices. -/
+theorem card_exteriorComponentBoundaryVertices_le_two
+    (graph : SimpleGraph N) [DecidableRel graph.Adj]
+    (interfaceVertex : Interface → N)
+    (component : (exteriorGraph graph interfaceVertex).ConnectedComponent)
+    {root : N} (hroot : root ∈ component.supp)
+    (hrootOutside : OutsideInterface interfaceVertex root)
+    (hdegree : ∀ vertex, (graph.neighborSet vertex).ncard ≤ 2) :
+    (exteriorComponentBoundaryVertices graph interfaceVertex component).card ≤
+      2 := by
+  classical
+  let componentGraph := component.toSimpleGraph
+  let includeNeighbor (vertex : component) :
+      componentGraph.neighborSet vertex → graph.neighborSet vertex.1 :=
+    fun neighbor =>
+      ⟨neighbor.1.1,
+        ((component.toSimpleGraph_adj vertex.2 neighbor.1.2).1
+          neighbor.2).1⟩
+  have hinjective (vertex : component) :
+      Function.Injective (includeNeighbor vertex) := by
+    intro first second heq
+    apply Subtype.ext
+    apply Subtype.ext
+    exact congrArg
+      (fun value : graph.neighborSet vertex.1 => value.1) heq
+  have hgraphDegree : ∀ vertex, graph.degree vertex ≤ 2 := by
+    intro vertex
+    calc
+      graph.degree vertex = Fintype.card (graph.neighborSet vertex) :=
+        (graph.card_neighborSet_eq_degree vertex).symm
+      _ = (graph.neighborSet vertex).ncard :=
+        Set.fintypeCard_eq_ncard _
+      _ ≤ 2 := hdegree vertex
+  have hcomponentDegree : ∀ vertex : component,
+      componentGraph.degree vertex ≤ 2 := by
+    intro vertex
+    have hcard :
+        Fintype.card (componentGraph.neighborSet vertex) ≤
+          Fintype.card (graph.neighborSet vertex.1) :=
+      Fintype.card_le_of_injective _ (hinjective vertex)
+    rw [componentGraph.card_neighborSet_eq_degree,
+      graph.card_neighborSet_eq_degree] at hcard
+    exact hcard.trans (hgraphDegree vertex.1)
+  have hcomponentOutside : ∀ vertex : component,
+      OutsideInterface interfaceVertex vertex.1 := by
+    intro vertex
+    exact outsideInterface_of_exteriorGraph_reachable graph interfaceVertex
+      hrootOutside (component.reachable_of_mem_supp hroot vertex.2)
+  apply card_boundary_le_two
+    (H := componentGraph)
+    (exteriorComponentBoundaryVertices graph interfaceVertex component)
+    component.connected_toSimpleGraph hcomponentDegree
+  intro vertex hboundary
+  rcases (mem_exteriorComponentBoundaryVertices_iff graph interfaceVertex
+    component vertex).1 hboundary with ⟨slot, hadj⟩
+  let missingNeighbor : graph.neighborSet vertex.1 :=
+    ⟨interfaceVertex slot, hadj.symm⟩
+  have hmissing : missingNeighbor ∉ Set.range (includeNeighbor vertex) := by
+    rintro ⟨neighbor, heq⟩
+    have heqVertex : interfaceVertex slot = neighbor.1.1 :=
+      (congrArg
+        (fun value : graph.neighborSet vertex.1 => value.1) heq).symm
+    exact hcomponentOutside neighbor slot heqVertex.symm
+  have hstrict : componentGraph.degree vertex < graph.degree vertex.1 := by
+    have hcard := Fintype.card_lt_of_injective_of_notMem
+      (includeNeighbor vertex) (hinjective vertex) hmissing
+    rw [componentGraph.card_neighborSet_eq_degree,
+      graph.card_neighborSet_eq_degree] at hcard
+    exact hcard
+  have hambient := hgraphDegree vertex.1
+  omega
+
+end GoertzelV24DegreeTwoExteriorBoundary
+
+end Mettapedia.GraphTheory.FourColor
