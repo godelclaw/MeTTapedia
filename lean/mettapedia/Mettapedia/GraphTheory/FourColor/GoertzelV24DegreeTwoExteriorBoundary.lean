@@ -99,6 +99,70 @@ theorem outsideInterface_of_exteriorGraph_reachable
   | refl => exact hroot
   | tail _ hadj _ => exact hadj.2.2
 
+omit [DecidableEq N] in
+/-- A boundary vertex of a strict-exterior component has component degree at
+most one when the ambient graph has maximum degree two.  One ambient neighbour
+is represented by the deleted interface, so it is missing from the induced
+component. -/
+theorem exteriorComponent_degree_le_one_of_mem_boundary
+    (graph : SimpleGraph N) [DecidableRel graph.Adj]
+    (interfaceVertex : Interface → N)
+    (component : (exteriorGraph graph interfaceVertex).ConnectedComponent)
+    [Fintype component]
+    [DecidableRel component.toSimpleGraph.Adj]
+    {root : N} (hroot : root ∈ component.supp)
+    (hrootOutside : OutsideInterface interfaceVertex root)
+    (hdegree : ∀ vertex, (graph.neighborSet vertex).ncard ≤ 2)
+    (vertex : component)
+    (hboundary : vertex ∈
+      exteriorComponentBoundaryVertices graph interfaceVertex component) :
+    component.toSimpleGraph.degree vertex ≤ 1 := by
+  classical
+  let componentGraph := component.toSimpleGraph
+  let includeNeighbor :
+      componentGraph.neighborSet vertex → graph.neighborSet vertex.1 :=
+    fun neighbor =>
+      ⟨neighbor.1.1,
+        ((component.toSimpleGraph_adj vertex.2 neighbor.1.2).1
+          neighbor.2).1⟩
+  have hinjective : Function.Injective includeNeighbor := by
+    intro first second heq
+    apply Subtype.ext
+    apply Subtype.ext
+    exact congrArg
+      (fun value : graph.neighborSet vertex.1 => value.1) heq
+  have hcomponentOutside : ∀ candidate : component,
+      OutsideInterface interfaceVertex candidate.1 := by
+    intro candidate
+    exact outsideInterface_of_exteriorGraph_reachable graph interfaceVertex
+      hrootOutside (component.reachable_of_mem_supp hroot candidate.2)
+  rcases (mem_exteriorComponentBoundaryVertices_iff graph interfaceVertex
+    component vertex).1 hboundary with ⟨slot, hadj⟩
+  let missingNeighbor : graph.neighborSet vertex.1 :=
+    ⟨interfaceVertex slot, hadj.symm⟩
+  have hmissing : missingNeighbor ∉ Set.range includeNeighbor := by
+    rintro ⟨neighbor, heq⟩
+    have heqVertex : interfaceVertex slot = neighbor.1.1 :=
+      (congrArg
+        (fun value : graph.neighborSet vertex.1 => value.1) heq).symm
+    exact hcomponentOutside neighbor slot heqVertex.symm
+  have hstrict :
+      componentGraph.degree vertex < graph.degree vertex.1 := by
+    have hcard := Fintype.card_lt_of_injective_of_notMem
+      includeNeighbor hinjective hmissing
+    rw [componentGraph.card_neighborSet_eq_degree,
+      graph.card_neighborSet_eq_degree] at hcard
+    exact hcard
+  have hambient : graph.degree vertex.1 ≤ 2 := by
+    calc
+      graph.degree vertex.1 = Fintype.card (graph.neighborSet vertex.1) :=
+        (graph.card_neighborSet_eq_degree vertex.1).symm
+      _ = (graph.neighborSet vertex.1).ncard :=
+        Set.fintypeCard_eq_ncard _
+      _ ≤ 2 := hdegree vertex.1
+  change componentGraph.degree vertex ≤ 1
+  omega
+
 /-- A strict-exterior component of a finite maximum-degree-two graph touches
 the interface through at most two of its own vertices. -/
 theorem card_exteriorComponentBoundaryVertices_le_two
