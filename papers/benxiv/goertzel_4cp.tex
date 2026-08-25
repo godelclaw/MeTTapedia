@@ -9016,9 +9016,30 @@ finite tracked-core state and proves exactness on all four semantic roles.
 Thus the expanded deletion-safe code now reaches the input type of the proved
 core recurrence without an active-role coverage premise.  What remains is a
 rolling construction of the expanded code from the cumulative state and the
-bounded local receipt, followed by successor-carrier reindexing.  The facial
-recurrence, representation invariance of the combined five-field letter,
-realizable initial states, and the first certified closure count remain open.
+bounded local receipt, followed by successor-carrier reindexing.
+
+The reindexing operation is now fixed at graph level.  A plain restriction of
+the expanded relation to successor coordinates would be wrong: an expanded
+coordinate which is not retained by the successor becomes part of the
+successor's exterior and may still join two retained coordinates.  Module
+\texttt{GoertzelV24InterfaceDeletionComponentFactorForget} instead masks the
+coordinates retained by the smaller interface and proves that the resulting
+graph is exactly the exterior graph of that interface.  Its partial-map form
+also handles padded target carriers, provided an unmapped target coordinate is
+inactive.  Module
+\texttt{GoertzelV24ClosedWebLocalLayerSerialCellRebaseExpandedSource}
+constructs the literal partial map from the successor carrier to the
+predecessor-plus-role interface.  Returned coordinates are proved to denote
+the same ambient edge, and the clean-corridor past-overlap theorem proves that
+every unmapped coordinate is isolated in each successor tracked graph.
+Consequently the generic forgetting mask is unconditionally the literal
+successor exterior graph on this source carrier.  The next finite atom is to
+materialize the successor \texttt{exteriorConnected} Boolean row from that
+proved closure, combine it with the transported equality and direct-adjacency
+rows, and identify the result with the successor deletion-stable state.  The
+facial recurrence, representation invariance of the combined five-field
+letter, realizable initial states, and the first certified closure count remain
+open.
 
 \section*{Provenance}
 \addcontentsline{toc}{section}{Provenance}
