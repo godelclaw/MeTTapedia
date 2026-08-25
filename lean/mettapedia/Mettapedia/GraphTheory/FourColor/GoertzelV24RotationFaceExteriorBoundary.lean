@@ -103,6 +103,27 @@ theorem card_faceRegionalExteriorComponentBoundaryVertices_le_two
       hrootOutside
       (faceRegionalDartGraph_neighborSet_ncard_le_two RS region)
 
+variable {Label : Type*} [DecidableEq Label]
+
+/-- Relabeling the exterior darts cannot increase the endpoint budget: one
+regional face component exposes at most two distinct labels at the represented
+interface. -/
+theorem card_faceRegionalExteriorComponentBoundaryLabels_le_two
+    (RS : RotationSystem V E) (region : Finset E)
+    (interfaceVertex : Interface → RS.D) (label : RS.D → Label)
+    (component :
+      (exteriorGraph (faceRegionalDartGraph RS region) interfaceVertex
+        ).ConnectedComponent)
+    {root : RS.D} (hroot : root ∈ component.supp)
+    (hrootOutside : OutsideInterface interfaceVertex root) :
+    (exteriorComponentBoundaryLabels (faceRegionalDartGraph RS region)
+      interfaceVertex label component).card ≤ 2 := by
+  classical
+  exact card_exteriorComponentBoundaryLabels_le_two
+    (faceRegionalDartGraph RS region) interfaceVertex label component hroot
+      hrootOutside
+      (faceRegionalDartGraph_neighborSet_ncard_le_two RS region)
+
 end
 
 end GoertzelV24RotationFaceExteriorBoundary

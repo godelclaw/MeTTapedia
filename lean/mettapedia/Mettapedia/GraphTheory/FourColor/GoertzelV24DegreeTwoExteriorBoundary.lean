@@ -172,6 +172,90 @@ theorem card_exteriorComponentBoundaryVertices_le_two
   have hambient := hgraphDegree vertex.1
   omega
 
+variable {Label : Type*} [DecidableEq Label]
+
+/-- Labels carried by all vertices of one strict-exterior component. -/
+noncomputable def exteriorComponentLabelSupport
+    (graph : SimpleGraph N) (interfaceVertex : Interface → N)
+    (label : N → Label)
+    (component : (exteriorGraph graph interfaceVertex).ConnectedComponent) :
+    Finset Label := by
+  classical
+  letI : Fintype component := Fintype.ofFinite component
+  exact Finset.univ.image fun vertex : component => label vertex.1
+
+omit [DecidableEq N] [Fintype Interface] in
+@[simp]
+theorem mem_exteriorComponentLabelSupport_iff
+    (graph : SimpleGraph N) (interfaceVertex : Interface → N)
+    (label : N → Label)
+    (component : (exteriorGraph graph interfaceVertex).ConnectedComponent)
+    (value : Label) :
+    value ∈ exteriorComponentLabelSupport graph interfaceVertex label
+        component ↔
+      ∃ vertex : component, label vertex.1 = value := by
+  classical
+  simp [exteriorComponentLabelSupport]
+
+/-- Labels on the exterior vertices through which one component meets the
+represented interface.  Repeated labels are counted only once. -/
+noncomputable def exteriorComponentBoundaryLabels
+    (graph : SimpleGraph N) (interfaceVertex : Interface → N)
+    (label : N → Label)
+    (component : (exteriorGraph graph interfaceVertex).ConnectedComponent) :
+    Finset Label :=
+  (exteriorComponentBoundaryVertices graph interfaceVertex component).image
+    fun vertex => label vertex.1
+
+omit [DecidableEq N] in
+@[simp]
+theorem mem_exteriorComponentBoundaryLabels_iff
+    (graph : SimpleGraph N) (interfaceVertex : Interface → N)
+    (label : N → Label)
+    (component : (exteriorGraph graph interfaceVertex).ConnectedComponent)
+    (value : Label) :
+    value ∈ exteriorComponentBoundaryLabels graph interfaceVertex label
+        component ↔
+      ∃ vertex ∈ exteriorComponentBoundaryVertices graph interfaceVertex
+          component,
+        label vertex.1 = value := by
+  classical
+  simp [exteriorComponentBoundaryLabels]
+
+omit [DecidableEq N] in
+/-- Every boundary label is carried by the component it bounds. -/
+theorem exteriorComponentBoundaryLabels_subset_labelSupport
+    (graph : SimpleGraph N) (interfaceVertex : Interface → N)
+    (label : N → Label)
+    (component : (exteriorGraph graph interfaceVertex).ConnectedComponent) :
+    exteriorComponentBoundaryLabels graph interfaceVertex label component ⊆
+      exteriorComponentLabelSupport graph interfaceVertex label component := by
+  intro value hvalue
+  rcases (mem_exteriorComponentBoundaryLabels_iff graph interfaceVertex label
+    component value).1 hvalue with ⟨vertex, _hboundary, rfl⟩
+  exact (mem_exteriorComponentLabelSupport_iff graph interfaceVertex label
+    component _).2
+    ⟨vertex, rfl⟩
+
+/-- The endpoint theorem descends through any vertex-label map: a regional
+component exposes at most two distinct labels at the interface. -/
+theorem card_exteriorComponentBoundaryLabels_le_two
+    (graph : SimpleGraph N) [DecidableRel graph.Adj]
+    (interfaceVertex : Interface → N) (label : N → Label)
+    (component : (exteriorGraph graph interfaceVertex).ConnectedComponent)
+    {root : N} (hroot : root ∈ component.supp)
+    (hrootOutside : OutsideInterface interfaceVertex root)
+    (hdegree : ∀ vertex, (graph.neighborSet vertex).ncard ≤ 2) :
+    (exteriorComponentBoundaryLabels graph interfaceVertex label component
+      ).card ≤ 2 := by
+  calc
+    (exteriorComponentBoundaryLabels graph interfaceVertex label component
+      ).card ≤
+        (exteriorComponentBoundaryVertices graph interfaceVertex component
+          ).card := Finset.card_image_le
+    _ ≤ 2 := card_exteriorComponentBoundaryVertices_le_two graph
+      interfaceVertex component hroot hrootOutside hdegree
+
 end GoertzelV24DegreeTwoExteriorBoundary
 
 end Mettapedia.GraphTheory.FourColor
