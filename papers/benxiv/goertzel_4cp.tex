@@ -8746,6 +8746,22 @@ derive that compatibility from the source boundary packet; after it, the
 following boundary rebase must be composed with this letter before the
 cumulative transition can be enumerated.
 
+That compatibility has now itself been factored through finite data, without
+assuming a smaller geometric overlap than the source construction proves.
+The module
+\texttt{GoertzelV24ClosedWebLocalLayerSerialCellFiniteColorCompatibility}
+assigns each edge of the common transition carrier to one of twenty-one stable
+slots and stores a partial colour table: \texttt{some c} exactly when the slot
+represents an edge retained by the selected region, and \texttt{none} for an
+inactive or padding slot.  Lean proves that agreement of the prefix and Cell
+tables wherever both are active is equivalent, in both directions, to
+pointwise colour agreement on the literal intersection of the two graph
+regions.  Raw reachability is deliberately not used for this test: it is
+reflexive at isolated coordinates, while graph support can omit a tracked
+boundary edge with no tracked neighbour inside the region.  Thus the next
+transition layer may consume an executable finite compatibility predicate,
+with no hidden boundary-only or non-isolation assumption.
+
 \section*{Provenance}
 \addcontentsline{toc}{section}{Provenance}
 The August revision preserves the accumulated July audit and its negative
