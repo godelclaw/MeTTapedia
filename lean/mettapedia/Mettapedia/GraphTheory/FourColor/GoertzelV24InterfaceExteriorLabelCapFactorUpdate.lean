@@ -24,11 +24,11 @@ open SimpleGraph
 
 /-- Add literal interface adjacency and presence while retaining the exact
 strict-exterior component data. -/
-def addInterfaceAdjacencyAndPresence {Interface Incidence : Type*}
-    (code : BoundedInterfaceExteriorLabelCapCode Interface Incidence)
+def addInterfaceAdjacencyAndPresence {Interface Incidence : Type*} {cap : Nat}
+    (code : BoundedInterfaceExteriorLabelCapCode Interface Incidence cap)
     (adjacency : Interface → Interface → Bool)
     (addedPresent : Interface → Bool) :
-    BoundedInterfaceExteriorLabelCapCode Interface Incidence where
+    BoundedInterfaceExteriorLabelCapCode Interface Incidence cap where
   connectivity := addInterfaceAdjacency code.connectivity adjacency
   interfacePresent slot := code.interfacePresent slot || addedPresent slot
   incidencePresent := code.incidencePresent
@@ -96,14 +96,15 @@ theorem addInterfaceAdjacencyAndPresence_exact_code_eq
     (adjacency : Interface → Interface → Bool)
     (hadjacency : ∀ left right,
       adjacency left right = true ↔
-        extra.Adj (interfaceVertex left) (interfaceVertex right)) :
+        extra.Adj (interfaceVertex left) (interfaceVertex right))
+    (cap : Nat := 5) :
     addInterfaceAdjacencyAndPresence
         (exactInterfaceExteriorLabelCapCode base interfaceVertex basePresent
-          incidenceSlot incidenceVertex label)
+          incidenceSlot incidenceVertex label cap)
         adjacency (fun slot => decide (extraPresent (interfaceVertex slot))) =
       exactInterfaceExteriorLabelCapCode (base ⊔ extra) interfaceVertex
         (fun vertex => basePresent vertex ∨ extraPresent vertex)
-        incidenceSlot incidenceVertex label := by
+        incidenceSlot incidenceVertex label cap := by
   apply BoundedInterfaceExteriorLabelCapCode.ext
   · exact addInterfaceAdjacency_exact_code_eq base extra interfaceVertex
       hsupport adjacency hadjacency

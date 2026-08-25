@@ -58,18 +58,18 @@ def faceInterfaceIncidenceVertex (RS : RotationSystem V E)
 face graph on one represented interface. -/
 noncomputable def exactFaceInterfaceExteriorLabelCapCode
     (RS : RotationSystem V E) (region : Finset E)
-    (interfaceVertex : Interface → RS.D) :
+    (interfaceVertex : Interface → RS.D) (cap : Nat := 5) :
     BoundedInterfaceExteriorLabelCapCode Interface
-      (FaceInterfaceIncidence Interface) :=
+      (FaceInterfaceIncidence Interface) cap :=
   exactInterfaceExteriorLabelCapCode
     (faceRegionalDartGraph RS region) interfaceVertex
     (fun dart => RS.edgeOf dart ∈ region) Prod.fst
-    (faceInterfaceIncidenceVertex RS interfaceVertex) RS.edgeOf
+    (faceInterfaceIncidenceVertex RS interfaceVertex) RS.edgeOf cap
 
 @[simp] theorem exactFaceInterfaceExteriorLabelCapCode_connectivity
     (RS : RotationSystem V E) (region : Finset E)
-    (interfaceVertex : Interface → RS.D) :
-    (exactFaceInterfaceExteriorLabelCapCode RS region interfaceVertex
+    (interfaceVertex : Interface → RS.D) (cap : Nat := 5) :
+    (exactFaceInterfaceExteriorLabelCapCode RS region interfaceVertex cap
       ).connectivity =
         exactInterfaceExteriorCode (faceRegionalDartGraph RS region)
           interfaceVertex :=
@@ -77,20 +77,21 @@ noncomputable def exactFaceInterfaceExteriorLabelCapCode
 
 @[simp] theorem exactFaceInterfaceExteriorLabelCapCode_interfacePresent_iff
     (RS : RotationSystem V E) (region : Finset E)
-    (interfaceVertex : Interface → RS.D) (slot : Interface) :
-    (exactFaceInterfaceExteriorLabelCapCode RS region interfaceVertex
+    (interfaceVertex : Interface → RS.D) (slot : Interface)
+    (cap : Nat := 5) :
+    (exactFaceInterfaceExteriorLabelCapCode RS region interfaceVertex cap
       ).interfacePresent slot = true ↔
         RS.edgeOf (interfaceVertex slot) ∈ region := by
   exact exactInterfaceExteriorLabelCapCode_interfacePresent_iff
     (faceRegionalDartGraph RS region) interfaceVertex
     (fun dart => RS.edgeOf dart ∈ region) Prod.fst
-    (faceInterfaceIncidenceVertex RS interfaceVertex) RS.edgeOf slot
+    (faceInterfaceIncidenceVertex RS interfaceVertex) RS.edgeOf slot cap
 
 @[simp] theorem exactFaceInterfaceExteriorLabelCapCode_incidencePresent_iff
     (RS : RotationSystem V E) (region : Finset E)
     (interfaceVertex : Interface → RS.D)
-    (incidence : FaceInterfaceIncidence Interface) :
-    (exactFaceInterfaceExteriorLabelCapCode RS region interfaceVertex
+    (incidence : FaceInterfaceIncidence Interface) (cap : Nat := 5) :
+    (exactFaceInterfaceExteriorLabelCapCode RS region interfaceVertex cap
       ).incidencePresent incidence = true ↔
       OutsideInterface interfaceVertex
           (faceInterfaceIncidenceVertex RS interfaceVertex incidence) ∧
@@ -100,7 +101,7 @@ noncomputable def exactFaceInterfaceExteriorLabelCapCode
   exact exactInterfaceExteriorLabelCapCode_incidencePresent_iff
     (faceRegionalDartGraph RS region) interfaceVertex
     (fun dart => RS.edgeOf dart ∈ region) Prod.fst
-    (faceInterfaceIncidenceVertex RS interfaceVertex) RS.edgeOf incidence
+    (faceInterfaceIncidenceVertex RS interfaceVertex) RS.edgeOf incidence cap
 
 /-- Every regional-face edge from an interface dart to a strict exterior dart
 is represented by one of the two fixed incidence directions. -/
@@ -143,13 +144,13 @@ edges in the entered strict-exterior face component. -/
 @[simp] theorem exactFaceInterfaceExteriorLabelCapCode_incidenceCap_val
     (RS : RotationSystem V E) (region : Finset E)
     (interfaceVertex : Interface → RS.D)
-    (incidence : FaceInterfaceIncidence Interface) :
-    ((exactFaceInterfaceExteriorLabelCapCode RS region interfaceVertex
+    (incidence : FaceInterfaceIncidence Interface) (cap : Nat := 5) :
+    ((exactFaceInterfaceExteriorLabelCapCode RS region interfaceVertex cap
       ).incidenceCap incidence).val =
       min (exteriorIncidenceLabelSupport (faceRegionalDartGraph RS region)
         interfaceVertex Prod.fst
         (faceInterfaceIncidenceVertex RS interfaceVertex) RS.edgeOf incidence
-        ).card 5 :=
+        ).card cap :=
   rfl
 
 end

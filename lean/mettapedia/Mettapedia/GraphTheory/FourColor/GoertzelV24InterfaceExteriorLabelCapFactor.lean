@@ -29,19 +29,19 @@ isolated represented vertex can be present in the underlying regional object.
 -/
 @[ext]
 structure BoundedInterfaceExteriorLabelCapCode
-    (Interface Incidence : Type*) where
+    (Interface Incidence : Type*) (cap : Nat := 5) where
   connectivity : BoundedInterfaceExteriorCode Interface
   interfacePresent : Interface → Bool
   incidencePresent : Incidence → Bool
   incidenceConnected : Incidence → Incidence → Bool
-  incidenceCap : Incidence → Fin 6
+  incidenceCap : Incidence → Fin (cap + 1)
 
 private def boundedInterfaceExteriorLabelCapCodeEquiv
-    (Interface Incidence : Type*) :
-    BoundedInterfaceExteriorLabelCapCode Interface Incidence ≃
+    (Interface Incidence : Type*) (cap : Nat) :
+    BoundedInterfaceExteriorLabelCapCode Interface Incidence cap ≃
       BoundedInterfaceExteriorCode Interface ×
         (Interface → Bool) × (Incidence → Bool) ×
-          (Incidence → Incidence → Bool) × (Incidence → Fin 6) where
+          (Incidence → Incidence → Bool) × (Incidence → Fin (cap + 1)) where
   toFun code :=
     ⟨code.connectivity, code.interfacePresent, code.incidencePresent,
       code.incidenceConnected, code.incidenceCap⟩
@@ -50,19 +50,20 @@ private def boundedInterfaceExteriorLabelCapCodeEquiv
   left_inv _ := rfl
   right_inv _ := rfl
 
-noncomputable instance {Interface Incidence : Type*} :
-    DecidableEq (BoundedInterfaceExteriorLabelCapCode Interface Incidence) :=
+noncomputable instance {Interface Incidence : Type*} {cap : Nat} :
+    DecidableEq
+      (BoundedInterfaceExteriorLabelCapCode Interface Incidence cap) :=
   Classical.decEq _
 
 noncomputable instance {Interface Incidence : Type*}
-    [Fintype Interface] [Fintype Incidence] :
-    Fintype (BoundedInterfaceExteriorLabelCapCode Interface Incidence) := by
+    [Fintype Interface] [Fintype Incidence] {cap : Nat} :
+    Fintype (BoundedInterfaceExteriorLabelCapCode Interface Incidence cap) := by
   letI : Fintype (Interface → Bool) := Fintype.ofFinite _
   letI : Fintype (Incidence → Bool) := Fintype.ofFinite _
   letI : Fintype (Incidence → Incidence → Bool) := Fintype.ofFinite _
-  letI : Fintype (Incidence → Fin 6) := Fintype.ofFinite _
+  letI : Fintype (Incidence → Fin (cap + 1)) := Fintype.ofFinite _
   exact Fintype.ofEquiv _
-    (boundedInterfaceExteriorLabelCapCodeEquiv Interface Incidence).symm
+    (boundedInterfaceExteriorLabelCapCodeEquiv Interface Incidence cap).symm
 
 /-- One possible entry from a bounded interface into the ambient graph. -/
 def ExteriorIncidencePresent {N Interface Incidence : Type*}
@@ -120,8 +121,9 @@ noncomputable def exactInterfaceExteriorLabelCapCode
     (graph : SimpleGraph N) (interfaceVertex : Interface → N)
     (present : N → Prop) [DecidablePred present]
     (incidenceSlot : Incidence → Interface)
-    (incidenceVertex : Incidence → N) (label : N → Label) :
-    BoundedInterfaceExteriorLabelCapCode Interface Incidence where
+    (incidenceVertex : Incidence → N) (label : N → Label)
+    (cap : Nat := 5) :
+    BoundedInterfaceExteriorLabelCapCode Interface Incidence cap where
   connectivity := exactInterfaceExteriorCode graph interfaceVertex
   interfacePresent slot := decide (present (interfaceVertex slot))
   incidencePresent incidence := by
@@ -140,7 +142,7 @@ noncomputable def exactInterfaceExteriorLabelCapCode
           (incidenceVertex first) (incidenceVertex second))
   incidenceCap incidence :=
     ⟨min (exteriorIncidenceLabelSupport graph interfaceVertex incidenceSlot
-        incidenceVertex label incidence).card 5,
+        incidenceVertex label incidence).card cap,
       Nat.lt_succ_of_le (Nat.min_le_right _ _)⟩
 
 @[simp] theorem exactInterfaceExteriorLabelCapCode_connectivity
@@ -149,9 +151,10 @@ noncomputable def exactInterfaceExteriorLabelCapCode
     (graph : SimpleGraph N) (interfaceVertex : Interface → N)
     (present : N → Prop) [DecidablePred present]
     (incidenceSlot : Incidence → Interface)
-    (incidenceVertex : Incidence → N) (label : N → Label) :
+    (incidenceVertex : Incidence → N) (label : N → Label)
+    (cap : Nat := 5) :
     (exactInterfaceExteriorLabelCapCode graph interfaceVertex present
-      incidenceSlot incidenceVertex label).connectivity =
+      incidenceSlot incidenceVertex label cap).connectivity =
         exactInterfaceExteriorCode graph interfaceVertex :=
   rfl
 
@@ -162,9 +165,9 @@ noncomputable def exactInterfaceExteriorLabelCapCode
     (present : N → Prop) [DecidablePred present]
     (incidenceSlot : Incidence → Interface)
     (incidenceVertex : Incidence → N) (label : N → Label)
-    (slot : Interface) :
+    (slot : Interface) (cap : Nat := 5) :
     (exactInterfaceExteriorLabelCapCode graph interfaceVertex present
-      incidenceSlot incidenceVertex label).interfacePresent slot = true ↔
+      incidenceSlot incidenceVertex label cap).interfacePresent slot = true ↔
         present (interfaceVertex slot) := by
   simp [exactInterfaceExteriorLabelCapCode]
 
@@ -175,9 +178,9 @@ noncomputable def exactInterfaceExteriorLabelCapCode
     (present : N → Prop) [DecidablePred present]
     (incidenceSlot : Incidence → Interface)
     (incidenceVertex : Incidence → N) (label : N → Label)
-    (incidence : Incidence) :
+    (incidence : Incidence) (cap : Nat := 5) :
     (exactInterfaceExteriorLabelCapCode graph interfaceVertex present
-      incidenceSlot incidenceVertex label).incidencePresent incidence = true ↔
+      incidenceSlot incidenceVertex label cap).incidencePresent incidence = true ↔
         ExteriorIncidencePresent graph interfaceVertex incidenceSlot
           incidenceVertex incidence := by
   simp [exactInterfaceExteriorLabelCapCode]
@@ -189,9 +192,9 @@ noncomputable def exactInterfaceExteriorLabelCapCode
     (present : N → Prop) [DecidablePred present]
     (incidenceSlot : Incidence → Interface)
     (incidenceVertex : Incidence → N) (label : N → Label)
-    (first second : Incidence) :
+    (first second : Incidence) (cap : Nat := 5) :
     (exactInterfaceExteriorLabelCapCode graph interfaceVertex present
-      incidenceSlot incidenceVertex label).incidenceConnected first second =
+      incidenceSlot incidenceVertex label cap).incidenceConnected first second =
         true ↔
       ExteriorIncidencePresent graph interfaceVertex incidenceSlot
           incidenceVertex first ∧
@@ -208,11 +211,11 @@ noncomputable def exactInterfaceExteriorLabelCapCode
     (present : N → Prop) [DecidablePred present]
     (incidenceSlot : Incidence → Interface)
     (incidenceVertex : Incidence → N) (label : N → Label)
-    (incidence : Incidence) :
+    (incidence : Incidence) (cap : Nat := 5) :
     ((exactInterfaceExteriorLabelCapCode graph interfaceVertex present
-      incidenceSlot incidenceVertex label).incidenceCap incidence).val =
+      incidenceSlot incidenceVertex label cap).incidenceCap incidence).val =
         min (exteriorIncidenceLabelSupport graph interfaceVertex incidenceSlot
-          incidenceVertex label incidence).card 5 :=
+          incidenceVertex label incidence).card cap :=
   rfl
 
 /-- Two incidence coordinates entering one exterior component carry the same
@@ -251,19 +254,20 @@ theorem exactInterfaceExteriorLabelCapCode_incidenceCap_eq_of_connected
     (present : N → Prop) [DecidablePred present]
     (incidenceSlot : Incidence → Interface)
     (incidenceVertex : Incidence → N) (label : N → Label)
+    (cap : Nat := 5)
     {first second : Incidence}
     (hconnected :
       (exactInterfaceExteriorLabelCapCode graph interfaceVertex present
-        incidenceSlot incidenceVertex label).incidenceConnected first second =
+        incidenceSlot incidenceVertex label cap).incidenceConnected first second =
           true) :
     (exactInterfaceExteriorLabelCapCode graph interfaceVertex present
-        incidenceSlot incidenceVertex label).incidenceCap first =
+        incidenceSlot incidenceVertex label cap).incidenceCap first =
       (exactInterfaceExteriorLabelCapCode graph interfaceVertex present
-        incidenceSlot incidenceVertex label).incidenceCap second := by
+        incidenceSlot incidenceVertex label cap).incidenceCap second := by
   have hdata :=
     (exactInterfaceExteriorLabelCapCode_incidenceConnected_iff graph
       interfaceVertex present incidenceSlot incidenceVertex label first
-      second).1 hconnected
+      second cap).1 hconnected
   apply Fin.ext
   simp only [exactInterfaceExteriorLabelCapCode_incidenceCap_val]
   rw [exteriorIncidenceLabelSupport_eq_of_reachable graph interfaceVertex
@@ -272,35 +276,37 @@ theorem exactInterfaceExteriorLabelCapCode_incidenceCap_eq_of_connected
 /-- A bounded family of weighted factors sharing one literal carrier.  The
 incidence family is allowed to depend on the actual carrier size. -/
 structure BoundedInterfaceExteriorLabelCapFamilyCode
-    (bound : Nat) (Family : Type*) where
+    (bound : Nat) (Family : Type*) (cap : Nat := 5) where
   vertexCount : Fin (bound + 1)
   code : Family →
     BoundedInterfaceExteriorLabelCapCode
-      (Fin vertexCount.val) (Fin vertexCount.val × Bool)
+      (Fin vertexCount.val) (Fin vertexCount.val × Bool) cap
 
 private def boundedInterfaceExteriorLabelCapFamilyCodeEquiv
-    (bound : Nat) (Family : Type*) :
-    BoundedInterfaceExteriorLabelCapFamilyCode bound Family ≃
+    (bound : Nat) (Family : Type*) (cap : Nat) :
+    BoundedInterfaceExteriorLabelCapFamilyCode bound Family cap ≃
       Σ vertexCount : Fin (bound + 1), Family →
         BoundedInterfaceExteriorLabelCapCode
-          (Fin vertexCount.val) (Fin vertexCount.val × Bool) where
+          (Fin vertexCount.val) (Fin vertexCount.val × Bool) cap where
   toFun code := ⟨code.vertexCount, code.code⟩
   invFun code := ⟨code.1, code.2⟩
   left_inv _ := rfl
   right_inv _ := rfl
 
-noncomputable instance {bound : Nat} {Family : Type*} :
-    DecidableEq (BoundedInterfaceExteriorLabelCapFamilyCode bound Family) :=
+noncomputable instance {bound : Nat} {Family : Type*} {cap : Nat} :
+    DecidableEq
+      (BoundedInterfaceExteriorLabelCapFamilyCode bound Family cap) :=
   Classical.decEq _
 
-noncomputable instance {bound : Nat} {Family : Type*} [Fintype Family] :
-    Fintype (BoundedInterfaceExteriorLabelCapFamilyCode bound Family) := by
+noncomputable instance {bound : Nat} {Family : Type*} [Fintype Family]
+    {cap : Nat} :
+    Fintype (BoundedInterfaceExteriorLabelCapFamilyCode bound Family cap) := by
   letI (vertexCount : Fin (bound + 1)) : Fintype
       (Family → BoundedInterfaceExteriorLabelCapCode
-        (Fin vertexCount.val) (Fin vertexCount.val × Bool)) :=
+        (Fin vertexCount.val) (Fin vertexCount.val × Bool) cap) :=
     Fintype.ofFinite _
   exact Fintype.ofEquiv _
-    (boundedInterfaceExteriorLabelCapFamilyCodeEquiv bound Family).symm
+    (boundedInterfaceExteriorLabelCapFamilyCodeEquiv bound Family cap).symm
 
 end GoertzelV24InterfaceExteriorLabelCapFactor
 

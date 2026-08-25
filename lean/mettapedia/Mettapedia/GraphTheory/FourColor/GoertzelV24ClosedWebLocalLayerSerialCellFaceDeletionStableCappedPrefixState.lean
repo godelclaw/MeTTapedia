@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialCellFaceDeletionStablePrefixState
+import Mettapedia.GraphTheory.FourColor.GoertzelV24CappedCardSubtraction
 import Mettapedia.GraphTheory.FourColor.GoertzelV24RotationFaceInterfaceExteriorLabelCap
 
 /-!
@@ -6,8 +7,11 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24RotationFaceInterfaceExterior
 
 The deletion-stable facial connectivity state is extended with the two
 face-neighbour incidences of each carrier dart.  Every live incidence records
-the strict-exterior face component that it enters and the cap at five of that
-component's distinct underlying primal edges.
+the strict-exterior face component that it enters and the cap at seven of that
+component's distinct underlying primal edges.  The two extra units are the
+exact lookahead budget needed when a rolling face path promotes at most its
+two exterior endpoints; the published profile cap at five is recovered after
+that bounded subtraction.
 
 This is still mask-independent: a later rebase mask merely chooses which
 interface darts survive.  No table indexed by all masks is introduced.
@@ -43,7 +47,7 @@ local instance faceDeletionStableCappedPrefixEdgeSetDecidableEq :
 /-- The finite weighted deletion-stable facial state of one cumulative
 prefix. -/
 abbrev SourceLocalLayerSerialFaceDeletionStableCappedPrefixState :=
-  BoundedInterfaceExteriorLabelCapFamilyCode 24 Unit
+  BoundedInterfaceExteriorLabelCapFamilyCode 24 Unit 7
 
 /-- Extract exact exterior-component edge caps on the rolling literal-dart
 carrier. -/
@@ -67,7 +71,7 @@ noncomputable def sourceLocalLayerSerialFaceDeletionStableCappedPrefixStateAt
         corridor hunique offset hcell)⟩
     code := fun _ => exactFaceInterfaceExteriorLabelCapCode web.annular.RS
       (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique offset)
-      dartAt }
+      dartAt 7 }
 
 @[simp]
 theorem sourceLocalLayerSerialFaceDeletionStableCappedPrefixStateAt_vertexCount
@@ -104,7 +108,7 @@ theorem sourceLocalLayerSerialFaceDeletionStableCappedPrefixStateAt_connectivity
         offset hcell).code () :=
   rfl
 
-/-- Each stored exterior incidence cap is the exact cap at five of the
+/-- Each stored exterior incidence cap is the exact cap at seven of the
 distinct primal edges in that strict-exterior component. -/
 theorem sourceLocalLayerSerialFaceDeletionStableCappedPrefixStateAt_incidenceCap
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
@@ -130,7 +134,7 @@ theorem sourceLocalLayerSerialFaceDeletionStableCappedPrefixStateAt_incidenceCap
           (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique offset))
         dartAt Prod.fst
         (faceInterfaceIncidenceVertex web.annular.RS dartAt)
-        web.annular.RS.edgeOf incidence).card 5 := by
+        web.annular.RS.edgeOf incidence).card 7 := by
   dsimp only
   rfl
 

@@ -3,7 +3,7 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialCell
 import Mettapedia.GraphTheory.FourColor.GoertzelV24InterfaceExteriorLabelCapFactorUpdate
 
 /-!
-# Exterior-component edge caps after adjoining one literal Cell
+# Deletion-budgeted exterior edge caps after adjoining one literal Cell
 
 The cumulative weighted facial state is updated by the Cell graph and its
 residual seam.  Both added graph factors are supported on the bounded rolling
@@ -12,7 +12,9 @@ interface presence.  Strictly exterior components and their capped edge
 supports remain unchanged.
 
 The main theorem identifies the executable update with the exact weighted
-factor of the literal pre-rebase regional face graph.  No boundary-deletion
+factor of the literal pre-rebase regional face graph.  The retained cap is
+seven, so a following interface advance may remove two exterior endpoints and
+still recover the source profile's cap at five exactly.  No boundary-deletion
 mask is enumerated.
 -/
 
@@ -75,7 +77,7 @@ noncomputable def sourceLocalLayerSerialFaceDeletionStableCappedPreRebaseStateAt
             sourceLocalLayerCellRegionAt corridor hunique offset)) }
 
 /-- The weighted finite update is exactly the pre-rebase regional face
-factor, including every strict-exterior component's cap at five distinct
+factor, including every strict-exterior component's cap at seven distinct
 primal edges. -/
 theorem sourceLocalLayerSerialFaceDeletionStableCappedPreRebaseStateAt_code_eq
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
@@ -95,7 +97,7 @@ theorem sourceLocalLayerSerialFaceDeletionStableCappedPreRebaseStateAt_code_eq
         hunique offset hcell).code () =
       exactFaceInterfaceExteriorLabelCapCode web.annular.RS
         (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset)
-        dartAt := by
+        dartAt 7 := by
   dsimp only
   let carrier := sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
     offset
@@ -117,12 +119,12 @@ theorem sourceLocalLayerSerialFaceDeletionStableCappedPreRebaseStateAt_code_eq
     web.annular.RS.edgeOf
     (sourceLocalLayerSerialFaceLocalAdjacencyAt corridor hunique offset hcell)
     (sourceLocalLayerSerialFaceLocalAdjacency_exact corridor hunique offset
-      hcell)
+      hcell) 7
   change addInterfaceAdjacencyAndPresence
       (exactInterfaceExteriorLabelCapCode prefixGraph dartAt
         (fun dart => web.annular.RS.edgeOf dart ∈ prefixRegion)
         Prod.fst (faceInterfaceIncidenceVertex web.annular.RS dartAt)
-        web.annular.RS.edgeOf)
+        web.annular.RS.edgeOf 7)
       (sourceLocalLayerSerialFaceLocalAdjacencyAt corridor hunique offset hcell)
       (fun slot => decide
         (web.annular.RS.edgeOf (dartAt slot) ∈ cellRegion)) = _
