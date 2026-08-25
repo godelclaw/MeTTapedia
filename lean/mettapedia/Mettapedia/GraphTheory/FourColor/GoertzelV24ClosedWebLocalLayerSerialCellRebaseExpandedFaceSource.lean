@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialCellRebaseExpandedFaceInterface
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialCellFaceDeletionStableCappedPreRebaseState
 
 /-!
 # The fixed facial rebase interface as an exact occurrence receipt
@@ -26,6 +27,10 @@ open GoertzelV24ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebAnnularEmbedding.ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebBoundaryData
 open GoertzelV24FaceOrbitIncidence
+open GoertzelV24ClosedWebLocalLayerSerialCellFaceDeletionStableCappedPreRebaseState
+open GoertzelV24InterfaceExteriorLabelCapFactor
+open GoertzelV24InterfaceDeletionComponentFactor
+open GoertzelV24RotationFaceInterfaceExteriorLabelCap
 open GoertzelV24RotationFaceRegionalDartGraph
 open SimpleGraphDartRotation
 
@@ -356,6 +361,87 @@ theorem sourceLocalLayerSerialCellRebaseExpandedFaceOldSourceAt_eq_none_iff
     split <;> rename_i hold
     · simp [hdecode, hold]
     · simp [hdecode, hold]
+
+/-- On active predecessor slots, the new occurrence equality row is exactly
+the equality row already carried by the cap-seven pre-rebase state. -/
+theorem sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt_old_vertexEq
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hcell : (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 6)
+    (left right : {dart // dart ∈
+      sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique offset}) :
+    (sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt corridor
+      hunique offset hnext hcell).vertexEq
+        (.inl (sourceLocalLayerSerialFaceTransitionSlotAt corridor hunique
+          offset hcell left))
+        (.inl (sourceLocalLayerSerialFaceTransitionSlotAt corridor hunique
+          offset hcell right)) =
+      ((sourceLocalLayerSerialFaceDeletionStableCappedPreRebaseStateAt corridor
+        hunique offset hcell).code ()).connectivity.vertexEq
+        (carrierCoordinate _ left) (carrierCoordinate _ right) := by
+  rw [sourceLocalLayerSerialFaceDeletionStableCappedPreRebaseStateAt_code_eq]
+  simp [sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt,
+    exactFaceInterfaceExteriorLabelCapCode, exactInterfaceExteriorLabelCapCode,
+    exactInterfaceExteriorCode]
+
+/-- Literal pre-rebase presence agrees on the old twenty-four-slot summand. -/
+theorem sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt_old_present
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hcell : (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 6)
+    (dart : {dart // dart ∈
+      sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique offset}) :
+    (sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt corridor
+      hunique offset hnext hcell).preRebasePresent
+        (.inl (sourceLocalLayerSerialFaceTransitionSlotAt corridor hunique
+          offset hcell dart)) =
+      ((sourceLocalLayerSerialFaceDeletionStableCappedPreRebaseStateAt corridor
+        hunique offset hcell).code ()).interfacePresent
+        (carrierCoordinate _ dart) := by
+  rw [sourceLocalLayerSerialFaceDeletionStableCappedPreRebaseStateAt_code_eq]
+  simp [sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt,
+    exactFaceInterfaceExteriorLabelCapCode, exactInterfaceExteriorLabelCapCode]
+
+/-- Direct pre-rebase facial adjacency also agrees on the old summand.  Thus
+the new receipt extends the cap-seven state rather than replacing it with an
+independent semantic extraction. -/
+theorem sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt_old_directAdj
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hcell : (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 6)
+    (left right : {dart // dart ∈
+      sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique offset}) :
+    (sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt corridor
+      hunique offset hnext hcell).directAdj
+        (.inl (sourceLocalLayerSerialFaceTransitionSlotAt corridor hunique
+          offset hcell left))
+        (.inl (sourceLocalLayerSerialFaceTransitionSlotAt corridor hunique
+          offset hcell right)) =
+      ((sourceLocalLayerSerialFaceDeletionStableCappedPreRebaseStateAt corridor
+        hunique offset hcell).code ()).connectivity.directAdj
+        (carrierCoordinate _ left) (carrierCoordinate _ right) := by
+  rw [sourceLocalLayerSerialFaceDeletionStableCappedPreRebaseStateAt_code_eq]
+  simp [sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt,
+    exactFaceInterfaceExteriorLabelCapCode, exactInterfaceExteriorLabelCapCode,
+    exactInterfaceExteriorCode]
 
 end LocalLayerFormation
 
