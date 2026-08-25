@@ -8957,12 +8957,24 @@ that a strict historical Cell and the successor Cell cannot share an edge
 which is internal to both: a shared bond would identify their two vertex
 sides; a genuine outgoing portal of the successor would consequently occur on
 both separated corridor-face boundaries, contradicting the clean corridor's
-facial-dual distance condition.  This closes the internal--internal branch of
-the pairwise overlap atom without global cubicity or global two-sidedness.
-The mixed internal--crossing branches and the cases where the target edge is
-an outgoing-carrier edge or retained rung remain to be classified before the
-cumulative Cell--rebase recurrence, representation invariance, or a certified
-reachable-state count can be claimed.
+facial-dual distance condition.  This first closes the internal--internal
+branch of the pairwise overlap atom without global cubicity or global
+two-sidedness.  The subsequent module
+\texttt{GoertzelV24ClosedWebLocalLayerSerialCellPastOverlap} closes the mixed
+branches as well.  The internal bond is adjacent to every genuine portal of
+its two-vertex Cell, while a strict historical portal can neither equal nor
+touch an outgoing portal of the successor Cell: either relation would make
+two corridor faces adjacent beyond the clean corridor's permitted distance.
+Successor incoming portals and the retained rung are precisely named members
+of the four-edge rebase switch; successor internal and outgoing-carrier edges
+cannot recur from a strict prior Cell.  Consequently every old edge which can
+affect the successor's moving twenty-one-slot carrier is represented by the
+bounded Cell--rebase window, and Lean proves the resulting cumulative colour
+coordinate recurrence unconditionally on this literal two-cap source
+carrier.  This is the colour-coordinate part of the source's Phase-5
+factorization, not the full factorization: exact tracked and facial successor
+fields, representation invariance, realizable initial states, and the first
+certified reachable-state count remain open.
 
 \section*{Provenance}
 \addcontentsline{toc}{section}{Provenance}
