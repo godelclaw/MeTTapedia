@@ -104,6 +104,24 @@ theorem delete_middle_sound_of_rightLanguageLE
   apply hlanguage suffix
   exact (accepts_append_iff transition final initial preword suffix).1 hshort
 
+/-- The older equality-based pumping premise is a special case of the
+one-sided future-language theorem.  Keeping it as a corollary prevents callers
+which already prove exact reachable-set equality from maintaining a second
+deletion proof. -/
+theorem delete_middle_sound_of_reachableAfter_eq
+    (transition : Letter → State → State → Prop) (final initial : State → Prop)
+    (preword middle suffix : List Letter)
+    (hequal : ReachableAfter transition initial preword =
+      ReachableAfter transition initial (preword ++ middle))
+    (hshort : Accepts transition final initial (preword ++ suffix)) :
+    Accepts transition final initial ((preword ++ middle) ++ suffix) := by
+  apply delete_middle_sound_of_rightLanguageLE transition final initial
+    preword middle suffix
+  · intro rightWord haccepts
+    rw [← hequal]
+    exact haccepts
+  · exact hshort
+
 /-- A pointwise forward simulation preserves accepting states and can match
 every literal transition. -/
 structure ForwardSimulation (transition : Letter → State → State → Prop)
@@ -241,20 +259,49 @@ def CSRRows.HasEntry (rows : CSRRows) (row target witness : Nat) : Prop :=
     rows.targetIndex[position]? = some target ∧
     rows.witnessIndex[position]? = some witness
 
+/-- A page-local CSR layout.  Each global row has a canonical page and local
+row address.  The page function permits each payload page to be compiled and
+replayed independently; an implementation need not materialize one enormous
+reducible array term. -/
+structure PagedCSRRows where
+  totalRowCount : Nat
+  targetCount : Nat
+  witnessCount : Nat
+  pageCount : Nat
+  page : Fin pageCount → CSRRows
+  pageStart : Fin pageCount → Nat
+  rowPage : Fin totalRowCount → Fin pageCount
+  rowLocal : (row : Fin totalRowCount) → Fin (page (rowPage row)).rowCount
+  row_address : ∀ row,
+    pageStart (rowPage row) + (rowLocal row).val = row.val
+  page_target_count : ∀ pageIndex,
+    (page pageIndex).targetCount = targetCount
+  page_witness_count : ∀ pageIndex,
+    (page pageIndex).witnessCount = witnessCount
+
+/-- One entry of the canonical page-local row for a global row index. -/
+def PagedCSRRows.HasEntry
+    (rows : PagedCSRRows) (row target witness : Nat) : Prop :=
+  ∃ hrow : row < rows.totalRowCount,
+    CSRRows.HasEntry
+      (rows.page (rows.rowPage ⟨row, hrow⟩))
+      (rows.rowLocal ⟨row, hrow⟩).val target witness
+
 /-- A replayable reachable-closure certificate.  `entry_sound` ties every
 sparse entry to one common local witness; `entry_complete` proves that no
 legal successor was omitted; `frontier_closed` proves that every legal target
-has a canonical listed code. -/
+has a canonical listed code.  Transition rows are paged CSR payloads, so each
+kernel replay unit remains independently bounded. -/
 structure ReachableClosureCertificate
     (StateCode : Type uCode) (LetterCode : Type uLetter)
     (Witness : Type uWitness) where
   states : Array StateCode
   letters : Array LetterCode
   witnesses : Array Witness
-  rows : CSRRows
+  rows : PagedCSRRows
   states_injective : ∀ ⦃left right : Nat⦄ ⦃state : StateCode⦄,
     states[left]? = some state → states[right]? = some state → left = right
-  row_count : rows.rowCount = states.size * letters.size
+  row_count : rows.totalRowCount = states.size * letters.size
   target_count : rows.targetCount = states.size
   witness_count : rows.witnessCount = witnesses.size
   transition : StateCode → LetterCode → StateCode → Prop
@@ -266,7 +313,7 @@ structure ReachableClosureCertificate
     letters[letterIndex]? = some letter →
     states[targetIndex]? = some target →
     witnesses[witnessIndex]? = some witness →
-    CSRRows.HasEntry rows (stateIndex * letters.size + letterIndex)
+    PagedCSRRows.HasEntry rows (stateIndex * letters.size + letterIndex)
       targetIndex witnessIndex →
     witnessValid witness state letter target ∧ transition state letter target
   entry_complete : ∀ ⦃stateIndex letterIndex : Nat⦄ ⦃state : StateCode⦄
@@ -277,7 +324,7 @@ structure ReachableClosureCertificate
     ∃ targetIndex witnessIndex witness,
       states[targetIndex]? = some target ∧
       witnesses[witnessIndex]? = some witness ∧
-      CSRRows.HasEntry rows (stateIndex * letters.size + letterIndex)
+      PagedCSRRows.HasEntry rows (stateIndex * letters.size + letterIndex)
         targetIndex witnessIndex ∧
       witnessValid witness state letter target
   initialIndex : Array Nat
@@ -314,7 +361,7 @@ theorem row_entry_iff_transition
     (htarget : certificate.states[targetIndex]? = some target) :
     (∃ witnessIndex witness,
       certificate.witnesses[witnessIndex]? = some witness ∧
-      CSRRows.HasEntry certificate.rows
+      PagedCSRRows.HasEntry certificate.rows
         (stateIndex * certificate.letters.size + letterIndex)
         targetIndex witnessIndex) ↔
       certificate.transition state letter target := by

@@ -38,6 +38,19 @@ theorem min_add_sub_eq_min_min_add_sub_of_le
     simp [Nat.min_eq_left hka,
       Nat.min_eq_left (by omega : k ≤ a + c)]
 
+/-- The first literal source update removes one edge from a five-edge new
+contribution, so the corrected capped law applies without an extra premise at
+its use site. -/
+theorem min_add_five_sub_one_eq_min_min_add_five_sub_one (k a : Nat) :
+    Nat.min k (a + 5 - 1) = Nat.min k (Nat.min k a + 5 - 1) :=
+  min_add_sub_eq_min_min_add_sub_of_le k a 5 1 (by omega)
+
+/-- The second literal source update has zero overlap with its one-edge new
+contribution, so it also satisfies the corrected capped law. -/
+theorem min_add_one_sub_zero_eq_min_min_add_one_sub_zero (k a : Nat) :
+    Nat.min k (a + 1 - 0) = Nat.min k (Nat.min k a + 1 - 0) :=
+  min_add_sub_eq_min_min_add_sub_of_le k a 1 0 (by omega)
+
 /-! ## Exponential subset orbit -/
 
 /-- One delete letter removes one chosen state from a finite subset. -/
