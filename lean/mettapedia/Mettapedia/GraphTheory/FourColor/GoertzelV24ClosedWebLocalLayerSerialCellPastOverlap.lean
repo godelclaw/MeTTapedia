@@ -302,7 +302,7 @@ theorem not_pastCellCrossing_eq_or_adj_nextRightCrossing
 /-- Every strict historical Cell edge that recurs in the successor transition
 carrier is one of the four named rebase edges.  In particular, no unbounded
 prefix history survives into the moving twenty-one-slot carrier. -/
-theorem sourceLocalLayerSerialCellRebase_pastCellOverlap
+theorem sourceLocalLayerSerialCellRebase_pastCellOverlap_mem_switch
     (graphData : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
     (caps : OrientedFacialPentagonCapPair graphData)
@@ -325,10 +325,7 @@ theorem sourceLocalLayerSerialCellRebase_pastCellOverlap
       prior.val < offset.val →
       targetEdge.1 ∈ sourceLocalLayerCellRegionAt corridor hunique prior →
         targetEdge.1 ∈ sourceLocalLayerBoundaryRebaseSwitchAt corridor
-            hunique offset hnext ∨
-          targetEdge.1 ∈
-            sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps
-              coloring web corridor hunique offset := by
+          hunique offset hnext := by
   intro targetEdge prior hprior hpriorRegion
   let target := sourceLocalLayerNextOffset offset hnext
   let priorSide := sourceLocalLayerCellVertexSide corridor hunique
@@ -351,8 +348,7 @@ theorem sourceLocalLayerSerialCellRebase_pastCellOverlap
       · rcases sourceLocalLayerCellCrossingAt_eq_left_or_right corridor hunique
           target (by simpa [targetSide] using htargetCrossing) with
           ⟨newStep, htargetLeft⟩ | ⟨newStep, htargetRight⟩
-        · apply Or.inl
-          rw [mem_sourceLocalLayerBoundaryRebaseSwitchAt_iff]
+        · rw [mem_sourceLocalLayerBoundaryRebaseSwitchAt_iff]
           refine ⟨.inr (.inl newStep), ?_⟩
           simpa [sourceLocalLayerBoundaryRebaseEdgeAt, target] using
             htargetLeft.symm
@@ -430,13 +426,112 @@ theorem sourceLocalLayerSerialCellRebase_pastCellOverlap
             minimal caps coloring web corridor hunique offset hnext prior
               hprior hrightPriorCrossing newStep
                 (Or.inl (by simpa [target] using hrightEq.symm))).elim
-  · apply Or.inl
-    have htargetRungEq : targetEdge.1 =
+  · have htargetRungEq : targetEdge.1 =
         sourceLocalLayerSharedRungAt corridor hunique target := by
       simpa using htargetRung
     rw [mem_sourceLocalLayerBoundaryRebaseSwitchAt_iff]
     refine ⟨.inr (.inr ⟨0, by omega⟩), ?_⟩
     simpa [sourceLocalLayerBoundaryRebaseEdgeAt, target] using htargetRungEq.symm
+
+/-- Compatibility form of the historical-overlap theorem used by the earlier
+carrier-transport API.  The first disjunct always holds; the weaker second
+disjunct is retained only to avoid perturbing downstream consumers. -/
+theorem sourceLocalLayerSerialCellRebase_pastCellOverlap
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3) :
+    ∀
+      (targetEdge : {edge // edge ∈
+        sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps coloring
+          web corridor hunique (sourceLocalLayerNextOffset offset hnext)})
+      (prior : Fin (blockLength - 3)),
+      prior.val < offset.val →
+      targetEdge.1 ∈ sourceLocalLayerCellRegionAt corridor hunique prior →
+        targetEdge.1 ∈ sourceLocalLayerBoundaryRebaseSwitchAt corridor
+            hunique offset hnext ∨
+          targetEdge.1 ∈
+            sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps
+              coloring web corridor hunique offset := by
+  intro targetEdge prior hprior hpriorRegion
+  exact Or.inl
+    (sourceLocalLayerSerialCellRebase_pastCellOverlap_mem_switch graphData
+      minimal caps coloring web corridor hunique offset hnext targetEdge prior
+        hprior hpriorRegion)
+
+/-- An active edge of the next rolling carrier is already local in the exact
+occurrence-sensitive sense needed by the facial recurrence: it is either one
+of the four rebase edges or belongs to the current literal Cell.  The coarser
+outgoing edge-adjacency neighborhood contributes no third case. -/
+theorem sourceLocalLayerSerialCellRebase_activeTarget_mem_switch_or_currentCell
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (targetEdge : {edge // edge ∈
+      sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps coloring
+        web corridor hunique (sourceLocalLayerNextOffset offset hnext)})
+    (hactive : targetEdge.1 ∈
+      sourceLocalLayerSerialTerminalInputRegionAt corridor hunique
+        (sourceLocalLayerNextOffset offset hnext)) :
+    targetEdge.1 ∈ sourceLocalLayerBoundaryRebaseSwitchAt corridor hunique
+        offset hnext ∨
+      targetEdge.1 ∈ sourceLocalLayerCellRegionAt corridor hunique offset := by
+  by_cases hswitch : targetEdge.1 ∈
+      sourceLocalLayerBoundaryRebaseSwitchAt corridor hunique offset hnext
+  · exact Or.inl hswitch
+  have hpre : targetEdge.1 ∈
+      sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset :=
+    (sourceLocalLayerSerialPreRebaseOutput_mem_iff_nextTerminalInput_of_not_mem_switch
+      corridor hunique offset hnext targetEdge.1 hswitch).2 hactive
+  rw [← sourceLocalLayerSerialTerminalInputRegionAt_union_cell corridor hunique
+    offset, Finset.mem_union] at hpre
+  rcases hpre with hold | hcell
+  · rw [sourceLocalLayerSerialTerminalInputRegionAt, Finset.mem_union] at hold
+    rcases hold with hinput | hrung
+    · rw [sourceLocalLayerSerialInputRegionAt, Finset.mem_union] at hinput
+      rcases hinput with hprefix | hcrossing
+      · rw [sourceLocalLayerSerialPrefixRegion, Finset.mem_biUnion] at hprefix
+        rcases hprefix with ⟨prior, hprior, hpriorCell⟩
+        exact Or.inl
+          (sourceLocalLayerSerialCellRebase_pastCellOverlap_mem_switch graphData
+            minimal caps coloring web corridor hunique offset hnext targetEdge
+              prior (Finset.mem_filter.mp hprior).2 hpriorCell)
+      · rcases (mem_indexedCrossingEdgeSet_iff
+            (sourceLocalLayerLeftCrossingAt corridor hunique offset)
+            targetEdge.1).1 hcrossing with ⟨step, hedge⟩
+        exact Or.inr (by
+          rw [← hedge]
+          exact sourceLocalLayerCellRegionAt_leftCrossing corridor hunique
+            offset step)
+    · apply Or.inl
+      have hedge : targetEdge.1 =
+          sourceLocalLayerSharedRungAt corridor hunique offset := by
+        simpa using hrung
+      rw [mem_sourceLocalLayerBoundaryRebaseSwitchAt_iff]
+      refine ⟨.inl ⟨0, by omega⟩, ?_⟩
+      simpa [sourceLocalLayerBoundaryRebaseEdgeAt] using hedge.symm
+  · exact Or.inr hcell
 
 /-- The exact cumulative colour recurrence is unconditional on the literal
 two-cap source carrier: the former `pastCellOverlap` premise is discharged by

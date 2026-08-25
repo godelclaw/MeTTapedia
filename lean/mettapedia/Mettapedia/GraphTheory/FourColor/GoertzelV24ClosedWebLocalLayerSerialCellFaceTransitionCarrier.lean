@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24BoundedCarrierGraphFamilyCode
+import Mettapedia.GraphTheory.FourColor.GoertzelV24CubicEdgeAdjacencyNeighborhood
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialCellFaceDartFactorization
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialCellPortalCompleteness
 import Mettapedia.GraphTheory.FourColor.GoertzelV24RotationFaceRegionalDartCarrier
@@ -71,6 +72,41 @@ private theorem edgeAdjacencyGraph_adj_of_faceDartStep_of_edge_ne
         (RS.vert_phi_eq_vert_alpha right).symm⟩
     · apply (RS.mem_incidentEdges_iff).2
       exact ⟨left, rfl, by simp [hbackward]⟩
+
+/-- Every dart in the closed facial neighborhood of a selected edge lies
+over that edge or over an edge adjacent to it.  This is the exact bridge from
+the occurrence-sensitive facial carrier to the coarser edge-adjacency
+carrier; it uses no cubicity or two-sidedness assumption. -/
+theorem edgeOf_mem_edgeAdjacencyClosedCarrier_of_mem_closedDartCarrier
+    (RS : RotationSystem V G.edgeSet) (edges : Finset G.edgeSet)
+    (dart : RS.D) (hdart : dart ∈ closedDartCarrier RS edges) :
+    RS.edgeOf dart ∈ RS.edgeAdjacencyClosedCarrier edges := by
+  rw [closedDartCarrier, Finset.mem_biUnion] at hdart
+  rcases hdart with ⟨base, hbase, hdart⟩
+  rw [Finset.mem_insert, mem_faceDartNeighbors_iff] at hdart
+  rcases hdart with heq | hforward | hbackward
+  · subst dart
+    exact (RS.mem_edgeAdjacencyClosedCarrier_iff edges _).2
+      (Or.inl ((mem_dartsOnEdges_iff RS edges base).1 hbase))
+  · by_cases hedge : RS.edgeOf base = RS.edgeOf dart
+    · exact (RS.mem_edgeAdjacencyClosedCarrier_iff edges _).2
+        (Or.inl (hedge ▸ (mem_dartsOnEdges_iff RS edges base).1 hbase))
+    · have hadj := edgeAdjacencyGraph_adj_of_faceDartStep_of_edge_ne
+        RS (Or.inl hforward) hedge
+      exact (RS.mem_edgeAdjacencyClosedCarrier_iff edges _).2
+        (Or.inr ⟨RS.edgeOf base,
+          (mem_dartsOnEdges_iff RS edges base).1 hbase, hadj.symm⟩)
+  · have hstep : base = RS.phi dart := by
+      rw [hbackward]
+      simp
+    by_cases hedge : RS.edgeOf dart = RS.edgeOf base
+    · exact (RS.mem_edgeAdjacencyClosedCarrier_iff edges _).2
+        (Or.inl (hedge ▸ (mem_dartsOnEdges_iff RS edges base).1 hbase))
+    · have hadj := edgeAdjacencyGraph_adj_of_faceDartStep_of_edge_ne
+        RS (Or.inl hstep) hedge
+      exact (RS.mem_edgeAdjacencyClosedCarrier_iff edges _).2
+        (Or.inr ⟨RS.edgeOf base,
+          (mem_dartsOnEdges_iff RS edges base).1 hbase, hadj⟩)
 
 /-- Every adjacency of the root-independent literal-dart seam touches one of
 the two named outgoing source crossings. -/
