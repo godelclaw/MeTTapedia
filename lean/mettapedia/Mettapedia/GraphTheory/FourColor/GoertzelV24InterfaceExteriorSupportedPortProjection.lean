@@ -44,6 +44,66 @@ theorem boundedSupportedPortResidualCode_ext
               | mk rightAttaches rightResidual =>
                   simp_all
 
+/-- Pad only the persistent-port carrier of a supported residual state.
+Interface coordinates and every interface-indexed field are retained
+literally; a missing port is inactive and receives no attachments. -/
+def padSupportedPortResidualCodePorts
+    {Interface Port StablePort : Type*}
+    (decodePort : StablePort → Option Port)
+    (code : BoundedSupportedPortResidualCode Interface Port) :
+    BoundedSupportedPortResidualCode Interface StablePort where
+  toBoundedPortResidualCode := {
+    attaches := fun interface stablePort =>
+      match decodePort stablePort with
+      | some port => code.attaches interface port
+      | none => false
+    residualConnected := code.residualConnected }
+  interfaceActive := code.interfaceActive
+  portActive := fun stablePort =>
+    match decodePort stablePort with
+    | some port => code.portActive port
+    | none => false
+
+@[simp] theorem padSupportedPortResidualCodePorts_attaches_of_decode
+    {Interface Port StablePort : Type*}
+    (decodePort : StablePort → Option Port)
+    (code : BoundedSupportedPortResidualCode Interface Port)
+    (interface : Interface) (stablePort : StablePort) (port : Port)
+    (hdecode : decodePort stablePort = some port) :
+    (padSupportedPortResidualCodePorts decodePort code).attaches
+        interface stablePort = code.attaches interface port := by
+  simp [padSupportedPortResidualCodePorts, hdecode]
+
+@[simp] theorem padSupportedPortResidualCodePorts_fields_of_decode_none
+    {Interface Port StablePort : Type*}
+    (decodePort : StablePort → Option Port)
+    (code : BoundedSupportedPortResidualCode Interface Port)
+    (stablePort : StablePort) (hdecode : decodePort stablePort = none) :
+    (padSupportedPortResidualCodePorts decodePort code).portActive stablePort =
+        false ∧
+      ∀ interface,
+        (padSupportedPortResidualCodePorts decodePort code).attaches
+          interface stablePort = false := by
+  simp [padSupportedPortResidualCodePorts, hdecode]
+
+@[simp] theorem padSupportedPortResidualCodePorts_residualConnected
+    {Interface Port StablePort : Type*}
+    (decodePort : StablePort → Option Port)
+    (code : BoundedSupportedPortResidualCode Interface Port)
+    (left right : Interface) :
+    (padSupportedPortResidualCodePorts decodePort code).residualConnected
+        left right = code.residualConnected left right :=
+  rfl
+
+@[simp] theorem padSupportedPortResidualCodePorts_interfaceActive
+    {Interface Port StablePort : Type*}
+    (decodePort : StablePort → Option Port)
+    (code : BoundedSupportedPortResidualCode Interface Port)
+    (interface : Interface) :
+    (padSupportedPortResidualCodePorts decodePort code).interfaceActive
+        interface = code.interfaceActive interface :=
+  rfl
+
 /-- A Boolean exterior code is determined fieldwise by the propositions its
 three rows recognize. -/
 theorem boundedInterfaceExteriorCode_ext_iff

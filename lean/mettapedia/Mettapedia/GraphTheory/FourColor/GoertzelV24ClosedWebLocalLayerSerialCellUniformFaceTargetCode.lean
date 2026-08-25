@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialCellUniformFaceRecurrence
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialCellUniformTrackedTargetCode
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialCellFacePrefixAttachmentState
 
 /-!
 # Contract the uniform facial successor to the next rolling dart carrier
@@ -36,14 +37,18 @@ open GoertzelV24ClosedWebLocalLayerSerialCellTrackedTransitionCarrier
 open GoertzelV24CorridorProfile
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24FacialPentagonCap
+open GoertzelV24FramedTrail
 open GoertzelV24InterfaceDeletionComponentFactor
 open GoertzelV24InterfaceDeletionComponentFactorForget
 open GoertzelV24InterfaceDeletionComponentFactorForgetExterior
 open GoertzelV24InterfaceExteriorSupportedPortProjection
+open GoertzelV24MinimalFacialPentagonCapPairLocalCellCarrier
 open GoertzelV24RegionalBoundaryProfileFiniteState
+open GoertzelV24RotationBoundaryFaceCutProfile
 open GoertzelV24RotationFaceRegionalDartCarrier
 open GoertzelV24RotationFaceRegionalDartGraph
 open GoertzelV24RotationVertexCutProfile
+open GoertzelV24SimpleGraphSupportedPortResidualFactorContraction
 open GoertzelV24TwoEdgeCutMinimality
 open GoertzelV24TwoPentagonCapOpening
 open SimpleGraph
@@ -266,6 +271,118 @@ theorem
       minimal caps coloring web corridor hunique offset hnext targetDart.1
         targetDart.2 hsupport)
 
+/-- The distinguished occurrence of every next input fragment belongs to the
+literal next rolling facial carrier. -/
+theorem sourceLocalLayerSerialFaceTargetPortDartAt_mem
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : GoertzelV24ClosedWebAtGoodWord.Instance data coloring}
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (port : SourceLocalLayerSerialFaceInputPortAt corridor hunique
+      (sourceLocalLayerNextOffset offset hnext)) :
+    (boundaryRegionalFragmentDartOccurrence web.annular.RS
+        (indexedCrossingEdgeSet
+          (sourceLocalLayerLeftCrossingAt corridor hunique
+            (sourceLocalLayerNextOffset offset hnext)))
+        (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique
+          (sourceLocalLayerNextOffset offset hnext)) port).1 ∈
+      sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+        (sourceLocalLayerNextOffset offset hnext) := by
+  let next := sourceLocalLayerNextOffset offset hnext
+  let dart := boundaryRegionalFragmentDartOccurrence web.annular.RS
+    (indexedCrossingEdgeSet
+      (sourceLocalLayerLeftCrossingAt corridor hunique next))
+    (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique next) port
+  apply Finset.mem_union_left _
+  apply (mem_dartsOnEdges_iff web.annular.RS _ dart.1).2
+  rcases (mem_indexedCrossingEdgeSet_iff
+      (sourceLocalLayerLeftCrossingAt corridor hunique next)
+      (web.annular.RS.edgeOf dart.1)).1 dart.2 with ⟨step, hstep⟩
+  rw [← hstep]
+  exact sourceLocalLayerCellRegionAt_leftCrossing corridor hunique next step
+
+/-- The actual next input-fragment port represented as a subtype of the next
+rolling facial carrier. -/
+noncomputable def sourceLocalLayerSerialFaceTargetPortDartAt
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : GoertzelV24ClosedWebAtGoodWord.Instance data coloring}
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (port : SourceLocalLayerSerialFaceInputPortAt corridor hunique
+      (sourceLocalLayerNextOffset offset hnext)) :
+    {dart // dart ∈ sourceLocalLayerSerialFaceTransitionCarrierAt corridor
+      hunique (sourceLocalLayerNextOffset offset hnext)} :=
+  ⟨(boundaryRegionalFragmentDartOccurrence web.annular.RS
+      (indexedCrossingEdgeSet
+        (sourceLocalLayerLeftCrossingAt corridor hunique
+          (sourceLocalLayerNextOffset offset hnext)))
+      (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique
+        (sourceLocalLayerNextOffset offset hnext)) port).1,
+    sourceLocalLayerSerialFaceTargetPortDartAt_mem corridor hunique offset hnext
+      port⟩
+
+/-- Coordinate of an actual next input-fragment port in the next rolling
+facial carrier. -/
+noncomputable def sourceLocalLayerSerialFaceTargetPortCoordinateAt
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : GoertzelV24ClosedWebAtGoodWord.Instance data coloring}
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3) :
+    SourceLocalLayerSerialFaceInputPortAt corridor hunique
+        (sourceLocalLayerNextOffset offset hnext) →
+      Fin (sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+        (sourceLocalLayerNextOffset offset hnext)).card :=
+  fun port =>
+    carrierCoordinate
+      (sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+        (sourceLocalLayerNextOffset offset hnext))
+      (sourceLocalLayerSerialFaceTargetPortDartAt corridor hunique offset hnext
+        port)
+
+/-- Stable twenty-four-slot decoder for the literal next rolling facial
+carrier. -/
+noncomputable def sourceLocalLayerSerialFaceTargetDartAtSlot?
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3) :
+    Fin 24 → Option (Fin
+      (sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+        (sourceLocalLayerNextOffset offset hnext)).card) :=
+  let next := sourceLocalLayerNextOffset offset hnext
+  let hcell := sourceLocalLayerCellRegionAt_card_le_six graphData minimal caps
+    coloring web corridor hunique next
+  fun slot =>
+    (sourceLocalLayerSerialFaceTransitionDartAtSlot? corridor hunique next
+      hcell slot).map
+        (carrierCoordinate
+          (sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique next))
+
 /-- Exact successor exterior code after contraction to the literal next
 rolling facial carrier. -/
 noncomputable def sourceLocalLayerSerialCellRebaseUniformFaceTargetRawCodeAt
@@ -369,6 +486,122 @@ theorem sourceLocalLayerSerialCellRebaseUniformFaceTargetRawCodeAt_exact
     rw [partialReindexedExteriorConnected_exact_eq_true_iff graph largerDart
       targetDart retain hsome hnone left right]
     simp [exactInterfaceExteriorCode]
+
+/-- The exact target exterior code, projected and padded to the canonical
+twenty-four facial slots and four persistent-port slots.  This is the stable
+supported-residual part of the successor state; literal presence and component
+caps are deliberately added only after their finite recurrences are proved. -/
+noncomputable def sourceLocalLayerSerialCellRebaseUniformFaceTargetSupportedStateAt
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3) :
+    BoundedSupportedPortResidualCode (Fin 24) (Fin 4) :=
+  let next := sourceLocalLayerNextOffset offset hnext
+  padSupportedPortResidualCodePorts
+    (sourceLocalLayerSerialFaceInputPortAtSlot? corridor hunique next)
+    (projectSupportedPortResidualCode
+      (sourceLocalLayerSerialCellRebaseUniformFaceTargetRawCodeAt corridor
+        hunique offset hnext)
+      (sourceLocalLayerSerialFaceTargetDartAtSlot? graphData minimal caps
+        coloring web corridor hunique offset hnext)
+      (sourceLocalLayerSerialFaceTargetPortCoordinateAt corridor hunique offset
+        hnext))
+
+/-- The projected successor supported state is exactly the supported portion
+of the canonical next source state.  Thus activity, attachments, port
+activity, and residual connectivity all factor through the finite
+Cell--rebase code without semantic re-extraction. -/
+theorem
+    sourceLocalLayerSerialCellRebaseUniformFaceTargetSupportedStateAt_exact
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3) :
+    sourceLocalLayerSerialCellRebaseUniformFaceTargetSupportedStateAt graphData
+        minimal caps coloring web corridor hunique offset hnext =
+      (sourceLocalLayerSerialFacePrefixAttachmentStateAt corridor hunique
+        (sourceLocalLayerNextOffset offset hnext)
+        (sourceLocalLayerCellRegionAt_card_le_six graphData minimal caps coloring
+          web corridor hunique (sourceLocalLayerNextOffset offset hnext))
+        ).toBoundedSupportedPortResidualCode := by
+  classical
+  let next := sourceLocalLayerNextOffset offset hnext
+  let hcell := sourceLocalLayerCellRegionAt_card_le_six graphData minimal caps
+    coloring web corridor hunique next
+  let target := sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+    next
+  let graph := sourceLocalLayerBoundaryRebaseSuccessorFaceGraphAt corridor
+    hunique offset hnext
+  let targetDart := fun slot : Fin target.card =>
+    ((carrierCoordinate target).symm slot).1
+  let decode := sourceLocalLayerSerialFaceTransitionDartAtSlot? corridor hunique
+    next hcell
+  let port := sourceLocalLayerSerialFaceTargetPortDartAt corridor hunique offset
+    hnext
+  let portDecode := sourceLocalLayerSerialFaceInputPortAtSlot? corridor hunique
+    next
+  change sourceLocalLayerSerialCellRebaseUniformFaceTargetSupportedStateAt
+      graphData minimal caps coloring web corridor hunique offset hnext =
+    (sourceLocalLayerSerialFacePrefixAttachmentStateAt corridor hunique next
+      hcell).toBoundedSupportedPortResidualCode
+  unfold sourceLocalLayerSerialCellRebaseUniformFaceTargetSupportedStateAt
+  dsimp only
+  rw [sourceLocalLayerSerialCellRebaseUniformFaceTargetRawCodeAt_exact graphData
+    minimal caps coloring web corridor hunique offset hnext]
+  have hinjective : Function.Injective targetDart := by
+    intro left right heq
+    apply (carrierCoordinate target).symm.injective
+    exact Subtype.ext heq
+  rw [projectSupportedPortResidualCode_exact_eq_pad graph targetDart hinjective]
+  have hequiv := pad_exactSupportedPortResidualCode_equiv graph
+    (fun dart : {dart // dart ∈ target} => dart.1)
+    (carrierCoordinate target) decode port
+  have hequiv' :
+      padSupportedPortResidualCode
+          (sourceLocalLayerSerialFaceTargetDartAtSlot? graphData minimal caps
+            coloring web corridor hunique offset hnext)
+          (exactSupportedPortResidualCode graph targetDart
+            (fun named => targetDart
+              (sourceLocalLayerSerialFaceTargetPortCoordinateAt corridor hunique
+                offset hnext named))) =
+        padSupportedPortResidualCode decode
+          (exactSupportedPortResidualCode graph
+            (fun dart : {dart // dart ∈ target} => dart.1)
+            (fun named => (port named).1)) := by
+    simpa [next, target, targetDart, decode, port,
+      sourceLocalLayerSerialFaceTargetDartAtSlot?,
+      sourceLocalLayerSerialFaceTargetPortCoordinateAt] using hequiv
+  rw [hequiv']
+  simp [next, target, graph, decode, port,
+    sourceLocalLayerSerialFaceTargetPortDartAt,
+    sourceLocalLayerBoundaryRebaseSuccessorFaceGraphAt,
+    sourceLocalLayerSerialFacePrefixAttachmentStateAt,
+    sourceLocalLayerSerialFacePrefixAttachmentCodeAt,
+    padCappedSupportedPortResidualCodePorts,
+    padCappedSupportedPortResidualCode,
+    padSupportedPortResidualCodePorts]
+  constructor <;> rfl
 
 end
 
