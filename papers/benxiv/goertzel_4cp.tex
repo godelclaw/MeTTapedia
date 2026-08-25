@@ -8886,6 +8886,27 @@ predecessor state and the local Cell--rebase factor before representative
 invariance, initial-state enumeration, or a certified reachable closure can be
 claimed.
 
+The moving carrier at the next Cell is now connected to its predecessor by an
+exact finite change of coordinates.  Module
+\texttt{GoertzelV24ClosedWebLocalLayerSerialCellRebaseCarrierTransport}
+decodes each of the next twenty-one slots either as one predecessor slot or as
+one of the four named boundary-rebase roles, with the rebase role taking
+precedence when an edge has both descriptions.  Lean proves that this finite
+transport computes the next cumulative colour field exactly once one literal
+overlap statement holds.  That statement has itself been reduced to a single
+pairwise geometric atom: if a target-local edge also occurs in a strictly
+earlier Cell, then it must already lie in the current carrier or in the
+four-edge rebase switch.  Incoming crossing edges and the retained rung require
+no additional premise; their coverage follows from the carrier definitions.
+Thus the remaining colour-coordinate debt is geometric locality, not another
+finite-state interface.  The older framed-trail development proves the same
+kind of locality under global cubicity and global two-sidedness, hypotheses
+which are false on the opened annulus because of its boundary stubs.  The next
+step is therefore to port that argument through the already-proved local
+interior-face cubicity and two-sidedness lemmas, together with the source
+geodesic separation.  No unconditional recurrence or reachable-state count is
+claimed until that atom is discharged.
+
 \section*{Provenance}
 \addcontentsline{toc}{section}{Provenance}
 The August revision preserves the accumulated July audit and its negative
