@@ -8698,6 +8698,20 @@ actual overlap and prove that the boundary profile supplies precisely the
 required compatibility.  No reachable-state count is claimed before that
 splice theorem.
 
+That splice is now explicit in
+\texttt{GoertzelV24ClosedWebLocalLayerSerialCellColorSplice}.  It uses the
+Cell witness on the literal Cell region and the prefix witness elsewhere,
+with compatibility stated on the actual finite intersection of those two
+regions.  Lean proves that the splice restricts to the Cell colouring on every
+Cell edge, restricts to the original prefix colouring on every prefix edge,
+and therefore leaves the complete regional tracked graph of the prefix
+unchanged.  The two outgoing crossing colours are definitionally supplied by
+the Cell witness.  The next geometric obligation is sharp: identify the actual
+overlap with the source interface data (or otherwise show that the stored
+boundary packet determines all colours on it).  Until that theorem is proved,
+agreement of the two displayed colour words is not silently promoted to
+agreement on the whole overlap.
+
 \section*{Provenance}
 \addcontentsline{toc}{section}{Provenance}
 The August revision preserves the accumulated July audit and its negative
