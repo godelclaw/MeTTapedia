@@ -8910,9 +8910,21 @@ Therefore adjacent primal edges on distinct named faces force adjacency of
 those faces in the full facial dual on the literal opened carrier, without
 either false global premise.  The remaining step is to apply this local
 theorem to the prior-Cell/target-carrier intersection and then invoke the
-source corridor's geodesic separation.  No unconditional recurrence or
-reachable-state count is claimed until that pairwise overlap atom is
-discharged.
+source corridor's geodesic separation.  The crossing part of that application
+is now proved in
+\texttt{GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseLocality}.
+Every incoming crossing lies on its Cell's centre face and every outgoing
+crossing on the successor centre face; consequently a strict historical
+incoming crossing adjacent to the successor presentation comes from the
+current Cell, while an adjacent historical outgoing crossing comes from the
+current or immediately preceding Cell.  These are the opened-carrier versions
+of the old framed-trail locality lemmas and use neither global cubicity nor
+global two-sidedness.  What remains is the region-to-portal reduction: show
+that an edge in the intersection of a strict prior Cell and the successor
+transition carrier either is a named portal or forces adjacency of named
+portals, after which the new index-locality lemmas apply.  No unconditional
+recurrence or reachable-state count is claimed until that final pairwise
+overlap atom is discharged.
 
 \section*{Provenance}
 \addcontentsline{toc}{section}{Provenance}
