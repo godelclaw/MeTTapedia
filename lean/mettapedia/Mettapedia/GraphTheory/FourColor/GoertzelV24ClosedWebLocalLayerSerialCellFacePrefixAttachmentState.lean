@@ -186,6 +186,27 @@ theorem sourceLocalLayerSerialFaceTransitionDartAtSlot?_slot
           hcell dart) = some dart := by
   apply boundedFiniteSlot?_slot
 
+/-- A live fixed facial slot is uniquely the canonical slot of the dart it
+decodes.  This is the right-inverse form needed when a later occurrence
+receipt searches the padded predecessor carrier. -/
+theorem sourceLocalLayerSerialFaceTransitionDartAtSlot?_eq_some_iff
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hcell : (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 6)
+    (slot : Fin 24)
+    (dart : {dart // dart ∈
+      sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique offset}) :
+    sourceLocalLayerSerialFaceTransitionDartAtSlot? corridor hunique offset
+        hcell slot = some dart ↔
+      slot = sourceLocalLayerSerialFaceTransitionSlotAt corridor hunique offset
+        hcell dart := by
+  apply boundedFiniteSlot?_eq_some_iff
+
 /-- Fixed slot and partial decoder for actual predecessor fragments. -/
 noncomputable def sourceLocalLayerSerialFaceInputPortSlotAt
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}

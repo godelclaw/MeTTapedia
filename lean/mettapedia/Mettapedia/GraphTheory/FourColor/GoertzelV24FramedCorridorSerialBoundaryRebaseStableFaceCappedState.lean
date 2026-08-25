@@ -92,6 +92,30 @@ noncomputable def boundedFiniteSlot?
       some interface := by
   simp [boundedFiniteSlot?, boundedFiniteSlot]
 
+/-- Decoding a fixed slot yields a given interface value exactly at that
+value's canonical slot.  Thus the padding decoder is injective on its live
+initial segment, not merely a left inverse there. -/
+theorem boundedFiniteSlot?_eq_some_iff
+    {Interface : Type*} [Fintype Interface] {bound : Nat}
+    (hcard : Fintype.card Interface ≤ bound) (slot : Fin bound)
+    (interface : Interface) :
+    boundedFiniteSlot? hcard slot = some interface ↔
+      slot = boundedFiniteSlot hcard interface := by
+  constructor
+  · intro hdecode
+    unfold boundedFiniteSlot? at hdecode
+    split at hdecode
+    · rename_i hslot
+      have heq :
+          (Fintype.equivFin Interface).symm ⟨slot.val, hslot⟩ = interface :=
+        Option.some.inj hdecode
+      apply Fin.ext
+      have := congrArg (fun value => (Fintype.equivFin Interface value).val) heq
+      simpa [boundedFiniteSlot] using this
+    · simp at hdecode
+  · rintro rfl
+    exact boundedFiniteSlot?_slot hcard interface
+
 /-- Pad capped residual data onto a fixed carrier.  Missing slots carry no
 support, no presence, no attachment, and cap zero. -/
 def padCappedSupportedPortResidualCode

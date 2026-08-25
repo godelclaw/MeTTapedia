@@ -17,6 +17,7 @@ namespace Mettapedia.GraphTheory.FourColor
 
 namespace GoertzelV24ClosedWebAtGoodWord
 
+open GoertzelV24BoundedCarrierGraphFamilyCode
 open GoertzelV24ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebAnnularEmbedding.ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebBoundaryData
@@ -177,6 +178,102 @@ theorem sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt_oldSlot?_i
     exact
       sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt_oldSlot?_isSome_of_old
         corridor hunique offset hnext hcell occurrence ⟨dart, hdart⟩ hdecode
+
+/-- On an actual source receipt, finite search is exactly the semantic partial
+map to the predecessor carrier, transported to its canonical padded slot.
+This removes the last choice of representative from the old-coordinate
+decoder: aliases in the expanded occurrence presentation all return the same
+unique predecessor slot. -/
+theorem sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt_oldSlot?_eq
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hcell : (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 6)
+    (occurrence : SourceLocalLayerSerialCellRebaseExpandedFaceInterface) :
+    (sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt corridor
+        hunique offset hnext hcell).oldSlot? occurrence =
+      (sourceLocalLayerSerialCellRebaseExpandedFaceOldSourceAt corridor hunique
+        offset hnext hcell occurrence).map fun slot =>
+          sourceLocalLayerSerialFaceTransitionSlotAt corridor hunique offset
+            hcell
+            ((carrierCoordinate
+              (sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+                offset)).symm slot) := by
+  classical
+  let state := sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt
+    corridor hunique offset hnext hcell
+  let oldCarrier := sourceLocalLayerSerialFaceTransitionCarrierAt corridor
+    hunique offset
+  let oldSource := sourceLocalLayerSerialCellRebaseExpandedFaceOldSourceAt
+    corridor hunique offset hnext hcell
+  change state.oldSlot? occurrence =
+    (oldSource occurrence).map fun slot =>
+      sourceLocalLayerSerialFaceTransitionSlotAt corridor hunique offset hcell
+        ((carrierCoordinate oldCarrier).symm slot)
+  cases hsource : oldSource occurrence with
+  | none =>
+      simp only [Option.map_none]
+      cases hsearch : state.oldSlot? occurrence with
+      | none => rfl
+      | some slot =>
+          exfalso
+          have hnone :=
+            (sourceLocalLayerSerialCellRebaseExpandedFaceOldSourceAt_eq_none_iff
+              corridor hunique offset hnext hcell occurrence).1 hsource
+          rcases hnone with hdecodeNone | ⟨dart, hdecode, hdartOutside⟩
+          · have hrows :=
+              SourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceState.oldSlot?_sound
+                state occurrence slot hsearch
+            have holdOccupied :=
+              (sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt_occupied_iff
+                corridor hunique offset hnext hcell (.inl slot)).1 hrows.1
+            rcases holdOccupied with ⟨oldDart, holdDecode⟩
+            have hfalse : False := by
+              simpa [state,
+                sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt,
+                hdecodeNone, holdDecode] using hrows.2
+            exact hfalse.elim
+          · rcases
+              sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt_oldSlot?_sound
+                corridor hunique offset hnext hcell occurrence dart hdecode
+                  slot hsearch with
+              ⟨oldDart, _holdDecode, heq⟩
+            exact hdartOutside (heq ▸ oldDart.2)
+  | some sourceSlot =>
+      let oldDart : {dart // dart ∈ oldCarrier} :=
+        (carrierCoordinate oldCarrier).symm sourceSlot
+      have hdecode :
+          sourceLocalLayerSerialCellRebaseExpandedFaceDartAtSlot? corridor
+              hunique offset hnext hcell occurrence = some oldDart.1 := by
+        simpa [oldSource, oldCarrier, oldDart] using
+          (sourceLocalLayerSerialCellRebaseExpandedFaceOldSourceAt_dart_eq
+            corridor hunique offset hnext hcell occurrence sourceSlot hsource)
+      have hisSome : (state.oldSlot? occurrence).isSome := by
+        exact
+          sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt_oldSlot?_isSome_of_old
+            corridor hunique offset hnext hcell occurrence oldDart hdecode
+      cases hsearch : state.oldSlot? occurrence with
+      | none => simp [hsearch] at hisSome
+      | some slot =>
+          rcases
+              sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt_oldSlot?_sound
+                corridor hunique offset hnext hcell occurrence oldDart.1
+                  hdecode slot hsearch with
+            ⟨foundDart, hfoundDecode, heq⟩
+          have hfoundEq : foundDart = oldDart := Subtype.ext heq
+          subst foundDart
+          have hslot : slot =
+              sourceLocalLayerSerialFaceTransitionSlotAt corridor hunique
+                offset hcell oldDart :=
+            (sourceLocalLayerSerialFaceTransitionDartAtSlot?_eq_some_iff
+              corridor hunique offset hcell slot oldDart).1 hfoundDecode
+          simp only [Option.map_some]
+          simpa [oldCarrier, oldDart] using hslot
 
 end LocalLayerFormation
 
