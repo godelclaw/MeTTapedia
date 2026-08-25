@@ -1,5 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.CAP5BoundaryWord
-import Mettapedia.GraphTheory.FourColor.GoertzelV24CorridorProfile
+import Mettapedia.GraphTheory.FourColor.GoertzelV24BoundaryProfileFiniteState
 
 /-!
 # The manuscript-exact two-pair corridor profile
@@ -21,6 +21,7 @@ namespace Mettapedia.GraphTheory.FourColor
 namespace GoertzelV24SourceCorridorProfile
 
 open GoertzelV24CorridorProfile
+open GoertzelV24BoundaryProfileFiniteState
 open GoertzelV24WindingClassification
 
 /-- The two connectivity roles named in the manuscript's length profile. -/
@@ -181,6 +182,95 @@ theorem toSourceProfile_surjective
     Function.Surjective
       (@toSourceProfile crossingEdgeCount terminalCount
         faceFragmentCount) := by
+  intro profile
+  exact ⟨profile.toConservativeProfile, by simp⟩
+
+/-- Source-exact profiles with a variable number of face fragments below one
+fixed bound. -/
+structure BoundedSourceCorridorCutProfile
+    (crossingEdgeCount terminalCount faceFragmentBound : Nat) where
+  faceFragmentCount : Fin (faceFragmentBound + 1)
+  profile : SourceCorridorCutProfile crossingEdgeCount terminalCount
+    faceFragmentCount.val
+  deriving DecidableEq
+
+private def boundedSourceCorridorCutProfileEquiv
+    (crossingEdgeCount terminalCount faceFragmentBound : Nat) :
+    BoundedSourceCorridorCutProfile crossingEdgeCount terminalCount
+        faceFragmentBound ≃
+      Σ faceFragmentCount : Fin (faceFragmentBound + 1),
+        SourceCorridorCutProfile crossingEdgeCount terminalCount
+          faceFragmentCount.val where
+  toFun state := ⟨state.faceFragmentCount, state.profile⟩
+  invFun state := ⟨state.1, state.2⟩
+  left_inv _ := rfl
+  right_inv _ := rfl
+
+instance boundedSourceCorridorCutProfileFintype
+    (crossingEdgeCount terminalCount faceFragmentBound : Nat) :
+    Fintype (BoundedSourceCorridorCutProfile crossingEdgeCount terminalCount
+      faceFragmentBound) :=
+  Fintype.ofEquiv _
+    (boundedSourceCorridorCutProfileEquiv crossingEdgeCount terminalCount
+      faceFragmentBound).symm
+
+def boundedSourceCorridorCutProfileCount
+    (crossingEdgeCount terminalCount faceFragmentBound : Nat) : Nat :=
+  ∑ faceFragmentCount : Fin (faceFragmentBound + 1),
+    sourceCorridorCutProfileCount crossingEdgeCount terminalCount
+      faceFragmentCount.val
+
+theorem card_boundedSourceCorridorCutProfile
+    (crossingEdgeCount terminalCount faceFragmentBound : Nat) :
+    Fintype.card (BoundedSourceCorridorCutProfile crossingEdgeCount
+      terminalCount faceFragmentBound) =
+      boundedSourceCorridorCutProfileCount crossingEdgeCount terminalCount
+        faceFragmentBound := by
+  rw [Fintype.card_congr
+    (boundedSourceCorridorCutProfileEquiv crossingEdgeCount terminalCount
+      faceFragmentBound), Fintype.card_sigma]
+  simp_rw [card_sourceCorridorCutProfile]
+  rfl
+
+/-- Project the variable-fragment conservative state to the manuscript state. -/
+def toBoundedSourceProfile
+    {crossingEdgeCount terminalCount faceFragmentBound : Nat}
+    (profile : BoundedCorridorCutProfile crossingEdgeCount terminalCount
+      faceFragmentBound) :
+    BoundedSourceCorridorCutProfile crossingEdgeCount terminalCount
+      faceFragmentBound where
+  faceFragmentCount := profile.faceFragmentCount
+  profile := toSourceProfile profile.profile
+
+/-- Canonical lift of a bounded source state to the conservative carrier. -/
+def BoundedSourceCorridorCutProfile.toConservativeProfile
+    {crossingEdgeCount terminalCount faceFragmentBound : Nat}
+    (profile : BoundedSourceCorridorCutProfile crossingEdgeCount terminalCount
+      faceFragmentBound) :
+    BoundedCorridorCutProfile crossingEdgeCount terminalCount
+      faceFragmentBound where
+  faceFragmentCount := profile.faceFragmentCount
+  profile := profile.profile.toConservativeProfile
+
+@[simp]
+theorem BoundedSourceCorridorCutProfile.toConservativeProfile_toBoundedSourceProfile
+    {crossingEdgeCount terminalCount faceFragmentBound : Nat}
+    (profile : BoundedSourceCorridorCutProfile crossingEdgeCount terminalCount
+      faceFragmentBound) :
+    toBoundedSourceProfile profile.toConservativeProfile = profile := by
+  rcases profile with ⟨faceFragmentCount, profile⟩
+  have hprofile :
+      toSourceProfile profile.toConservativeProfile = profile := by
+    simp
+  unfold toBoundedSourceProfile
+    BoundedSourceCorridorCutProfile.toConservativeProfile
+  rw [hprofile]
+
+theorem toBoundedSourceProfile_surjective
+    {crossingEdgeCount terminalCount faceFragmentBound : Nat} :
+    Function.Surjective
+      (@toBoundedSourceProfile crossingEdgeCount terminalCount
+        faceFragmentBound) := by
   intro profile
   exact ⟨profile.toConservativeProfile, by simp⟩
 
