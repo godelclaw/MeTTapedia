@@ -488,7 +488,7 @@ private def PartialExteriorTraversalState
     {N Larger Retained : Type*} [Fintype Larger] [DecidableEq Larger]
     [Fintype Retained]
     (graph : SimpleGraph N)
-    (largerVertex : Larger → N) (retainedVertex : Retained → N)
+    (largerVertex : Larger → N) (_retainedVertex : Retained → N)
     (retain : Retained → Option Larger)
     (largerLeft : Larger) (entry current : N) : Prop :=
   (OutsideInterface largerVertex entry ∧
@@ -892,6 +892,19 @@ def partialContractedInterfaceExteriorCode
   partialReindexedInterfaceExteriorCode code retain
     (partialReindexedExteriorConnected code retain)
 
+/-- Alias-safe executable contraction.  The equality row is an explicit
+receipt because a target occurrence interface need not inject into the
+ambient graph. -/
+def partialContractedInterfaceExteriorCodeWithVertexEq
+    {Larger Retained : Type*} [Fintype Larger] [DecidableEq Larger]
+    [Fintype Retained]
+    (code : BoundedInterfaceExteriorCode Larger)
+    (retain : Retained → Option Larger)
+    (vertexEq : Retained → Retained → Bool) :
+    BoundedInterfaceExteriorCode Retained :=
+  partialReindexedInterfaceExteriorCodeWithVertexEq code retain vertexEq
+    (partialReindexedExteriorConnected code retain)
+
 /-- Crown exactness theorem for interface forgetting: applying the executable
 three-row contraction to an exact larger code yields an exact primitive-step
 relation for the literal target interface. -/
@@ -919,6 +932,41 @@ theorem partialContractedInterfaceExteriorCode_exact_step_iff
     (partialReindexedExteriorConnected_exact_eq_true_iff graph largerVertex
       retainedVertex retain hsome hnone)
     left right
+
+/-- Crown alias-safe contraction theorem.  An exact larger code, an exact
+partial occurrence map, and an exact finite equality receipt produce the
+literal primitive-step code on an arbitrary (possibly aliased) target
+interface. -/
+theorem
+    partialContractedInterfaceExteriorCodeWithVertexEq_exact_step_iff
+    {N Larger Retained : Type*} [Fintype Larger] [DecidableEq Larger]
+    [Fintype Retained]
+    (graph : SimpleGraph N)
+    (largerVertex : Larger → N) (retainedVertex : Retained → N)
+    (retain : Retained → Option Larger)
+    (hsome : ∀ retained slot, retain retained = some slot →
+      largerVertex slot = retainedVertex retained)
+    (hnone : ∀ retained, retain retained = none →
+      retainedVertex retained ∉ graph.support)
+    (vertexEq : Retained → Retained → Bool)
+    (hvertexEq : ∀ left right,
+      vertexEq left right = true ↔
+        retainedVertex left = retainedVertex right)
+    (left right : Retained) :
+    InterfaceExteriorFactoredStep
+        (partialContractedInterfaceExteriorCodeWithVertexEq
+          (exactInterfaceExteriorCode graph largerVertex) retain vertexEq)
+        left right ↔
+      InterfaceExteriorStep graph retainedVertex left right := by
+  exact
+    partialReindexedInterfaceExteriorCodeWithVertexEq_step_iff_of_exact
+      graph largerVertex retainedVertex retain hsome hnone vertexEq
+      (partialReindexedExteriorConnected
+        (exactInterfaceExteriorCode graph largerVertex) retain)
+      hvertexEq
+      (partialReindexedExteriorConnected_exact_eq_true_iff graph largerVertex
+        retainedVertex retain hsome hnone)
+      left right
 
 end GoertzelV24InterfaceDeletionComponentFactorForgetExterior
 

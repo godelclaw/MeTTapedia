@@ -299,6 +299,69 @@ private theorem sourceLocalLayerSerialTrackedLocalAdjacency_exact
     sourceLocalLayerSerialTrackedLocalGraphForColorAt, SimpleGraph.sup_adj]
   exact or_congr hcellIff hseamIff
 
+/-- The cumulative update is the literal exact three-row code, field by
+field.  The stronger equality matters at the following boundary rebase,
+whose interface change must inspect the three rows separately rather than
+only their disjunction. -/
+theorem
+    sourceLocalLayerSerialTrackedDeletionStablePreRebaseStateForColorAt_code_eq
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (color :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
+    (pair : TrackedColorPair) :
+    let carrier := sourceLocalLayerSerialTrackedTransitionCarrierAt graphData
+      caps coloring web corridor hunique offset
+    let edgeAt := fun slot : Fin carrier.card =>
+      ((carrierCoordinate carrier).symm slot).1
+    (sourceLocalLayerSerialTrackedDeletionStablePreRebaseStateForColorAt
+        graphData minimal caps coloring web corridor hunique offset color
+        ).code pair =
+      exactInterfaceExteriorCode
+        (regionalTrackedEdgeGraph web.annular.RS
+          (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset)
+          color (trackedColorPairColors pair).1
+            (trackedColorPairColors pair).2)
+        edgeAt := by
+  dsimp only
+  let carrier := sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps
+    coloring web corridor hunique offset
+  let edgeAt := fun slot : Fin carrier.card =>
+    ((carrierCoordinate carrier).symm slot).1
+  let prefixGraph := regionalTrackedEdgeGraph web.annular.RS
+    (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique offset)
+    color (trackedColorPairColors pair).1 (trackedColorPairColors pair).2
+  let localGraph := sourceLocalLayerSerialTrackedLocalGraphForColorAt caps
+    coloring web corridor hunique offset color pair
+  have hupdate := addInterfaceAdjacency_exact_code_eq prefixGraph localGraph
+    edgeAt
+    (sourceLocalLayerSerialTrackedLocalGraph_support_subset_range graphData caps
+      coloring web corridor hunique offset color pair)
+    (sourceLocalLayerSerialTrackedLocalAdjacencyForColorAt graphData minimal caps
+      coloring web corridor hunique offset color pair)
+    (sourceLocalLayerSerialTrackedLocalAdjacency_exact graphData minimal caps
+      coloring web corridor hunique offset color pair)
+  change addInterfaceAdjacency
+      (exactInterfaceExteriorCode prefixGraph edgeAt)
+      (sourceLocalLayerSerialTrackedLocalAdjacencyForColorAt graphData minimal
+        caps coloring web corridor hunique offset color pair) =
+    _
+  rw [sourceLocalLayerSerialPreRebaseTrackedGraph_eq_three_factor corridor
+    hunique offset color (trackedColorPairColors pair).1
+      (trackedColorPairColors pair).2, sup_assoc]
+  exact hupdate
+
 /-- Crown recurrence: the updated finite state presents exactly the literal
 pre-rebase tracked graph on the common Cell carrier. -/
 theorem

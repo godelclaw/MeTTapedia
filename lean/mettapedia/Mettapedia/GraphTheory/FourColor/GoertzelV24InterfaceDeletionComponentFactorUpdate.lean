@@ -163,6 +163,34 @@ theorem addInterfaceAdjacency_exact_step_iff
     exists_exteriorConnection_sup_iff_left base extra interfaceVertex
       hsupport left right]
 
+/-- The update is exact row by row, not merely after taking the disjunction
+of its three primitive relations.  This stronger equality is what permits a
+later interface change to inspect equality, adjacency, and exterior
+attachment separately. -/
+theorem addInterfaceAdjacency_exact_code_eq
+    {N Interface : Type*} (base extra : SimpleGraph N)
+    (interfaceVertex : Interface → N)
+    (hsupport : extra.support ⊆ Set.range interfaceVertex)
+    (adjacency : Interface → Interface → Bool)
+    (hadjacency : ∀ left right,
+      adjacency left right = true ↔
+        extra.Adj (interfaceVertex left) (interfaceVertex right)) :
+    addInterfaceAdjacency
+        (exactInterfaceExteriorCode base interfaceVertex) adjacency =
+      exactInterfaceExteriorCode (base ⊔ extra) interfaceVertex := by
+  unfold addInterfaceAdjacency exactInterfaceExteriorCode
+  congr 1
+  · funext first second
+    apply Bool.eq_iff_iff.mpr
+    simp only [Bool.or_eq_true, decide_eq_true_eq, SimpleGraph.sup_adj]
+    rw [hadjacency first second]
+  · funext first second
+    apply Bool.eq_iff_iff.mpr
+    simp only [decide_eq_true_eq]
+    exact
+      (exists_exteriorConnection_sup_iff_left base extra interfaceVertex
+        hsupport first second).symm
+
 end GoertzelV24InterfaceDeletionComponentFactorUpdate
 
 end Mettapedia.GraphTheory.FourColor

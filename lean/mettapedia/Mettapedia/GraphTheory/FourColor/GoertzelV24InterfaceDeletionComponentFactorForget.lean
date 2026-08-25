@@ -310,6 +310,21 @@ def partialReindexedInterfaceExteriorCode
   directAdj := partialReindexedDirectAdj code retain
   exteriorConnected := exteriorConnected
 
+/-- Assemble a partial reindexing with an explicit equality row.  This is the
+alias-safe form needed when the target interface is a presentation by
+occurrences rather than an injective family of graph vertices.  Direct
+adjacency and the exterior row are unchanged; only the equality receipt is
+supplied separately. -/
+def partialReindexedInterfaceExteriorCodeWithVertexEq
+    {Larger Retained : Type*}
+    (code : BoundedInterfaceExteriorCode Larger)
+    (retain : Retained → Option Larger)
+    (vertexEq exteriorConnected : Retained → Retained → Bool) :
+    BoundedInterfaceExteriorCode Retained where
+  vertexEq := vertexEq
+  directAdj := partialReindexedDirectAdj code retain
+  exteriorConnected := exteriorConnected
+
 /-- Literal target coordinates make the reindexed equality row exact. -/
 theorem partialReindexedVertexEq_eq_true_iff
     {N Retained : Type*} [DecidableEq Retained]
@@ -397,6 +412,52 @@ theorem partialReindexedInterfaceExteriorCode_step_iff_of_exterior_exact
         true ∨
       exteriorConnected left right = true) ↔ _
   rw [partialReindexedVertexEq_eq_true_iff retainedVertex hinjective,
+    partialReindexedDirectAdj_exact_iff graph largerVertex retainedVertex retain
+      hsome hnone,
+    hexterior]
+
+/-- Alias-safe exactness for partial reindexing.  Unlike the injective-target
+specialization above, this theorem asks for the target's literal vertex
+equality as an explicit finite receipt.  This is necessary for occurrence
+interfaces in which two distinct names may denote the same ambient edge. -/
+theorem
+    partialReindexedInterfaceExteriorCodeWithVertexEq_step_iff_of_exact
+    {N Larger Retained : Type*}
+    (graph : SimpleGraph N)
+    (largerVertex : Larger → N) (retainedVertex : Retained → N)
+    (retain : Retained → Option Larger)
+    (hsome : ∀ retained slot, retain retained = some slot →
+      largerVertex slot = retainedVertex retained)
+    (hnone : ∀ retained, retain retained = none →
+      retainedVertex retained ∉ graph.support)
+    (vertexEq exteriorConnected : Retained → Retained → Bool)
+    (hvertexEq : ∀ left right,
+      vertexEq left right = true ↔
+        retainedVertex left = retainedVertex right)
+    (hexterior : ∀ left right,
+      exteriorConnected left right = true ↔
+        ∃ entry exit : N,
+          OutsideInterface retainedVertex entry ∧
+          OutsideInterface retainedVertex exit ∧
+          graph.Adj (retainedVertex left) entry ∧
+          (exteriorGraph graph retainedVertex).Reachable entry exit ∧
+          graph.Adj exit (retainedVertex right))
+    (left right : Retained) :
+    InterfaceExteriorFactoredStep
+        (partialReindexedInterfaceExteriorCodeWithVertexEq
+          (exactInterfaceExteriorCode graph largerVertex) retain vertexEq
+            exteriorConnected)
+        left right ↔
+      InterfaceExteriorStep graph retainedVertex left right := by
+  unfold InterfaceExteriorFactoredStep InterfaceExteriorStep
+    partialReindexedInterfaceExteriorCodeWithVertexEq
+  change
+    (vertexEq left right = true ∨
+      partialReindexedDirectAdj
+          (exactInterfaceExteriorCode graph largerVertex) retain left right =
+        true ∨
+      exteriorConnected left right = true) ↔ _
+  rw [hvertexEq,
     partialReindexedDirectAdj_exact_iff graph largerVertex retainedVertex retain
       hsome hnone,
     hexterior]

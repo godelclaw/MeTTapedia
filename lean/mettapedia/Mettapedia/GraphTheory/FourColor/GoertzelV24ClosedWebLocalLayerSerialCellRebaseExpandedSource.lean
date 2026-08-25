@@ -37,6 +37,7 @@ open GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseTrackedColorParametric
 open GoertzelV24ClosedWebLocalLayerSerialCellPastOverlap
 open GoertzelV24ClosedWebLocalLayerSerialCellRebaseCarrierTransport
 open GoertzelV24ClosedWebLocalLayerSerialCellRebaseExpandedInterface
+open GoertzelV24ClosedWebLocalLayerSerialCellTrackedDeletionStablePreRebaseState
 open GoertzelV24ClosedWebLocalLayerSerialCellTrackedTransitionCarrier
 open GoertzelV24CorridorProfile
 open GoertzelV24DeletionSensitivePortResidualFactorContraction
@@ -61,6 +62,317 @@ local instance cellRebaseExpandedSourceOpenedGraphDecidableRel
     DecidableRel
       caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.Adj :=
   Classical.decRel _
+
+/-- Exact equality receipt for the predecessor-carrier-plus-role occurrence
+interface.  Distinct occurrences may denote the same ambient edge, so
+coordinate equality is deliberately not used here. -/
+noncomputable def sourceLocalLayerSerialCellRebaseExpandedVertexEqAt
+    (graphData : Data G)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3) :
+    let current := sourceLocalLayerSerialTrackedTransitionCarrierAt graphData
+      caps coloring web corridor hunique offset
+    SourceLocalLayerSerialCellRebaseExpandedInterface current →
+      SourceLocalLayerSerialCellRebaseExpandedInterface current → Bool := by
+  classical
+  dsimp only
+  let current := sourceLocalLayerSerialTrackedTransitionCarrierAt graphData
+    caps coloring web corridor hunique offset
+  let roleAt := sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset
+    hnext
+  exact fun left right => decide
+    (expandedInterfaceEdgeAt current roleAt left =
+      expandedInterfaceEdgeAt current roleAt right)
+
+/-- The occurrence equality receipt is exact, including every alias between
+an old coordinate and a semantic role or between two semantic roles. -/
+theorem sourceLocalLayerSerialCellRebaseExpandedVertexEqAt_eq_true_iff
+    (graphData : Data G)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (left right : SourceLocalLayerSerialCellRebaseExpandedInterface
+      (sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps coloring
+        web corridor hunique offset)) :
+    sourceLocalLayerSerialCellRebaseExpandedVertexEqAt graphData caps coloring
+        web corridor hunique offset hnext left right = true ↔
+      expandedInterfaceEdgeAt
+          (sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps
+            coloring web corridor hunique offset)
+          (sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset hnext)
+          left =
+        expandedInterfaceEdgeAt
+          (sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps
+            coloring web corridor hunique offset)
+          (sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset hnext)
+          right := by
+  classical
+  simp [sourceLocalLayerSerialCellRebaseExpandedVertexEqAt]
+
+/-- Partial occurrence map from the expanded predecessor presentation back to
+the literal predecessor carrier.  Old coordinates map identically.  A role
+maps exactly when its ambient edge is already a predecessor-carrier edge;
+otherwise it remains a genuinely fresh occurrence. -/
+noncomputable def sourceLocalLayerSerialCellRebaseExpandedPredecessorSourceAt
+    (graphData : Data G)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3) :
+    let current := sourceLocalLayerSerialTrackedTransitionCarrierAt graphData
+      caps coloring web corridor hunique offset
+    SourceLocalLayerSerialCellRebaseExpandedInterface current →
+      Option (Fin current.card) := by
+  classical
+  dsimp only
+  let current := sourceLocalLayerSerialTrackedTransitionCarrierAt graphData
+    caps coloring web corridor hunique offset
+  let roleAt := sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset
+    hnext
+  intro occurrence
+  rcases occurrence with slot | role
+  · exact some slot
+  · if hedge : roleAt role ∈ current then
+      exact some (carrierCoordinate current ⟨roleAt role, hedge⟩)
+    else
+      exact none
+
+/-- Every occurrence returned by the predecessor partial map denotes exactly
+the same literal edge as its predecessor coordinate. -/
+theorem sourceLocalLayerSerialCellRebaseExpandedPredecessorSourceAt_edge_eq
+    (graphData : Data G)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (occurrence : SourceLocalLayerSerialCellRebaseExpandedInterface
+      (sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps coloring
+        web corridor hunique offset))
+    (slot : Fin
+      (sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps coloring
+        web corridor hunique offset).card)
+    (hsource :
+      sourceLocalLayerSerialCellRebaseExpandedPredecessorSourceAt graphData caps
+        coloring web corridor hunique offset hnext occurrence = some slot) :
+    (((carrierCoordinate
+      (sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps coloring
+        web corridor hunique offset)).symm slot).1) =
+      expandedInterfaceEdgeAt
+        (sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps coloring
+          web corridor hunique offset)
+        (sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset hnext)
+        occurrence := by
+  classical
+  rcases occurrence with occurrence | role
+  · change some occurrence = some slot at hsource
+    simp only [Option.some.injEq] at hsource
+    subst slot
+    simp [expandedInterfaceEdgeAt]
+  · change
+      (if hedge :
+          sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset hnext role ∈
+            sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps
+              coloring web corridor hunique offset then
+        some ((carrierCoordinate
+          (sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps
+            coloring web corridor hunique offset))
+          ⟨sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset hnext role,
+            hedge⟩)
+      else none) = some slot at hsource
+    split at hsource <;> rename_i hedge
+    · simp only [Option.some.injEq] at hsource
+      subst slot
+      rw [Equiv.symm_apply_apply]
+      rfl
+    · cases hsource
+
+/-- A fresh semantic role is the only kind of unmapped expanded occurrence,
+and freshness means precisely nonmembership in the predecessor carrier. -/
+theorem sourceLocalLayerSerialCellRebaseExpandedPredecessorSourceAt_eq_none_iff
+    (graphData : Data G)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (occurrence : SourceLocalLayerSerialCellRebaseExpandedInterface
+      (sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps coloring
+        web corridor hunique offset)) :
+    sourceLocalLayerSerialCellRebaseExpandedPredecessorSourceAt graphData caps
+        coloring web corridor hunique offset hnext occurrence = none ↔
+      ∃ role : SourceLocalLayerBoundaryRebaseRole,
+        occurrence = .inr role ∧
+        sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset hnext role ∉
+          sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps
+            coloring web corridor hunique offset := by
+  classical
+  rcases occurrence with slot | role
+  · simp [sourceLocalLayerSerialCellRebaseExpandedPredecessorSourceAt]
+  · change
+      (if hedge :
+          sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset hnext role ∈
+            sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps
+              coloring web corridor hunique offset then
+        some ((carrierCoordinate
+          (sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps
+            coloring web corridor hunique offset))
+          ⟨sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset hnext role,
+            hedge⟩)
+      else none) = none ↔
+        ∃ role_1 : SourceLocalLayerBoundaryRebaseRole,
+          Sum.inr role = Sum.inr role_1 ∧
+          sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset hnext role_1 ∉
+            sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps
+              coloring web corridor hunique offset
+    split <;> rename_i hedge
+    · simp [hedge]
+    · exact ⟨fun _ => ⟨role, rfl, hedge⟩,
+        fun _ => by simp⟩
+
+/-- Executable expansion of the exact cumulative predecessor code to the
+old-carrier-plus-four-role occurrence interface.  Aliased roles inherit their
+old coordinate; only a genuinely fresh role is left unmapped. -/
+noncomputable def
+    sourceLocalLayerSerialCellRebaseExpandedPredecessorCodeAt
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (color :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
+    (pair : TrackedColorPair) :
+    let current := sourceLocalLayerSerialTrackedTransitionCarrierAt graphData
+      caps coloring web corridor hunique offset
+    BoundedInterfaceExteriorCode
+      (SourceLocalLayerSerialCellRebaseExpandedInterface current) :=
+  partialContractedInterfaceExteriorCodeWithVertexEq
+    ((sourceLocalLayerSerialTrackedDeletionStablePreRebaseStateForColorAt
+      graphData minimal caps coloring web corridor hunique offset color).code
+        pair)
+    (sourceLocalLayerSerialCellRebaseExpandedPredecessorSourceAt graphData caps
+      coloring web corridor hunique offset hnext)
+    (sourceLocalLayerSerialCellRebaseExpandedVertexEqAt graphData caps coloring
+      web corridor hunique offset hnext)
+
+/-- Exactness of the executable expansion is reduced to one literal source
+fact: a genuinely fresh role must be isolated in the pre-rebase tracked
+graph.  No role-injectivity or old-carrier coverage premise appears. -/
+theorem
+    sourceLocalLayerSerialCellRebaseExpandedPredecessorCodeAt_step_iff
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (color :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
+    (pair : TrackedColorPair)
+    (hfresh : ∀ occurrence,
+      sourceLocalLayerSerialCellRebaseExpandedPredecessorSourceAt graphData caps
+          coloring web corridor hunique offset hnext occurrence = none →
+        expandedInterfaceEdgeAt
+            (sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps
+              coloring web corridor hunique offset)
+            (sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset hnext)
+            occurrence ∉
+          (regionalTrackedEdgeGraph web.annular.RS
+            (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique
+              offset)
+            color (trackedColorPairColors pair).1
+              (trackedColorPairColors pair).2).support)
+    (left right : SourceLocalLayerSerialCellRebaseExpandedInterface
+      (sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps coloring
+        web corridor hunique offset)) :
+    InterfaceExteriorFactoredStep
+        (sourceLocalLayerSerialCellRebaseExpandedPredecessorCodeAt graphData
+          minimal caps coloring web corridor hunique offset hnext color pair)
+        left right ↔
+      let current := sourceLocalLayerSerialTrackedTransitionCarrierAt graphData
+        caps coloring web corridor hunique offset
+      let graph := regionalTrackedEdgeGraph web.annular.RS
+        (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset)
+        color (trackedColorPairColors pair).1
+          (trackedColorPairColors pair).2
+      let expandedVertex := expandedInterfaceEdgeAt current
+        (sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset hnext)
+      InterfaceExteriorStep graph expandedVertex left right := by
+  unfold sourceLocalLayerSerialCellRebaseExpandedPredecessorCodeAt
+  dsimp only
+  rw [
+    sourceLocalLayerSerialTrackedDeletionStablePreRebaseStateForColorAt_code_eq
+      graphData minimal caps coloring web corridor hunique offset color pair]
+  apply partialContractedInterfaceExteriorCodeWithVertexEq_exact_step_iff
+  · intro occurrence slot hsource
+    exact
+      sourceLocalLayerSerialCellRebaseExpandedPredecessorSourceAt_edge_eq
+        graphData caps coloring web corridor hunique offset hnext occurrence
+          slot hsource
+  · exact hfresh
+  · intro first second
+    exact
+      sourceLocalLayerSerialCellRebaseExpandedVertexEqAt_eq_true_iff graphData
+        caps coloring web corridor hunique offset hnext first second
 
 /-- Map one literal successor-carrier coordinate into the actual-cardinality
 expanded predecessor interface. -/
