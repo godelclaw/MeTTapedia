@@ -8685,6 +8685,19 @@ prefix, computing the successor attachment state through the following
 boundary rebase, and only then measuring the reachable closure remain the live
 steps.
 
+The tracked local factor has now been made genuinely colouring-parametric as
+well.  The common twenty-one-edge Cell--seam carrier no longer has to read the
+single ambient closed-web colouring: it accepts an arbitrary edge-colour
+function, and Lean proves that its two tagged graph families preserve complete
+reachability in the literal Cell and in the residual seam.  The former
+ambient-colouring constructor is retained as an exact specialization, so no
+existing source witness changes meaning.  This is the local construction
+needed by an arbitrary positive \texttt{Count} witness; the remaining theorem
+must splice that witness's colour function with the cumulative prefix on their
+actual overlap and prove that the boundary profile supplies precisely the
+required compatibility.  No reachable-state count is claimed before that
+splice theorem.
+
 \section*{Provenance}
 \addcontentsline{toc}{section}{Provenance}
 The August revision preserves the accumulated July audit and its negative

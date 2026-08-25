@@ -151,8 +151,47 @@ noncomputable def sourceLocalLayerSerialTrackedTransitionPointAt
     · refine ⟨sourceLocalLayerSharedRungAt corridor hunique offset, ?_⟩
       exact Finset.mem_union_right _ (by simp)
 
-/-- The two finite factors transported through one common coordinate system.
-`false` is the literal Cell factor and `true` is its residual seam. -/
+/-- The two finite factors transported through one common coordinate system
+for an arbitrary edge-color function.  `false` is the literal Cell factor and
+`true` is its residual seam.  The color function is an explicit parameter so
+that a later positive-`Count` witness can supply its own local coloring rather
+than being forced to reuse the ambient closed-web coloring. -/
+noncomputable def sourceLocalLayerSerialTrackedTransitionCodeForColorAt
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (color : caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet →
+      Color) :
+    BoundedCarrierGraphFamilyCode 21 5 (TrackedColorPair × Bool) :=
+  let carrier := sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps
+    coloring web corridor hunique offset
+  boundedCarrierGraphFamilyCode carrier 21 5
+    (sourceLocalLayerSerialTrackedTransitionCarrierAt_card_le_twentyOne
+      graphData minimal caps coloring web corridor hunique offset)
+    (sourceLocalLayerSerialTrackedTransitionPointAt graphData caps coloring web
+      corridor hunique offset)
+    (fun factor =>
+      if factor.2 then
+        sourceLocalLayerSerialTerminalTrackedSeamAt corridor hunique offset
+          color (trackedColorPairColors factor.1).1
+            (trackedColorPairColors factor.1).2
+      else
+        regionalTrackedEdgeGraph web.annular.RS
+          (sourceLocalLayerCellRegionAt corridor hunique offset) color
+          (trackedColorPairColors factor.1).1
+            (trackedColorPairColors factor.1).2)
+
+/-- Ambient-color specialization retained for existing source witnesses. -/
 noncomputable def sourceLocalLayerSerialTrackedTransitionCodeAt
     (graphData : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
@@ -168,23 +207,8 @@ noncomputable def sourceLocalLayerSerialTrackedTransitionCodeAt
       (Finset.univ : Finset (OrbitFace web.annular.RS)))
     (offset : Fin (blockLength - 3)) :
     BoundedCarrierGraphFamilyCode 21 5 (TrackedColorPair × Bool) :=
-  let carrier := sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps
-    coloring web corridor hunique offset
-  boundedCarrierGraphFamilyCode carrier 21 5
-    (sourceLocalLayerSerialTrackedTransitionCarrierAt_card_le_twentyOne
-      graphData minimal caps coloring web corridor hunique offset)
-    (sourceLocalLayerSerialTrackedTransitionPointAt graphData caps coloring web
-      corridor hunique offset)
-    (fun factor =>
-      if factor.2 then
-        sourceLocalLayerSerialTerminalTrackedSeamAt corridor hunique offset
-          coloring (trackedColorPairColors factor.1).1
-            (trackedColorPairColors factor.1).2
-      else
-        regionalTrackedEdgeGraph web.annular.RS
-          (sourceLocalLayerCellRegionAt corridor hunique offset) coloring
-          (trackedColorPairColors factor.1).1
-            (trackedColorPairColors factor.1).2)
+  sourceLocalLayerSerialTrackedTransitionCodeForColorAt graphData minimal caps
+    coloring web corridor hunique offset coloring
 
 private theorem sourceLocalLayerCellTrackedGraph_support_subset_transitionCarrier
     (graphData : Data G)
@@ -198,9 +222,12 @@ private theorem sourceLocalLayerCellTrackedGraph_support_subset_transitionCarrie
     (hunique : PairwiseUniqueSharedInteriorEdges
       (orbitFaceBoundary web.annular.RS)
       (Finset.univ : Finset (OrbitFace web.annular.RS)))
-    (offset : Fin (blockLength - 3)) (pair : TrackedColorPair) :
+    (offset : Fin (blockLength - 3))
+    (color : caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet →
+      Color)
+    (pair : TrackedColorPair) :
     (regionalTrackedEdgeGraph web.annular.RS
-      (sourceLocalLayerCellRegionAt corridor hunique offset) coloring
+      (sourceLocalLayerCellRegionAt corridor hunique offset) color
       (trackedColorPairColors pair).1
       (trackedColorPairColors pair).2).support ⊆
         (sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps
@@ -221,19 +248,98 @@ private theorem sourceLocalLayerSerialTrackedSeam_support_subset_transitionCarri
     (hunique : PairwiseUniqueSharedInteriorEdges
       (orbitFaceBoundary web.annular.RS)
       (Finset.univ : Finset (OrbitFace web.annular.RS)))
-    (offset : Fin (blockLength - 3)) (pair : TrackedColorPair) :
+    (offset : Fin (blockLength - 3))
+    (color : caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet →
+      Color)
+    (pair : TrackedColorPair) :
     (sourceLocalLayerSerialTerminalTrackedSeamAt corridor hunique offset
-      coloring (trackedColorPairColors pair).1
+      color (trackedColorPairColors pair).1
         (trackedColorPairColors pair).2).support ⊆
       (sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps coloring
         web corridor hunique offset : Set _) := by
   intro edge hedge
   exact Finset.mem_union_left _ (Finset.mem_union_right _
     (sourceLocalLayerSerialTerminalTrackedSeamAt_support_subset_outgoingCarrier
-      corridor hunique offset coloring (trackedColorPairColors pair).1
+      corridor hunique offset color (trackedColorPairColors pair).1
         (trackedColorPairColors pair).2 hedge))
 
-/-- The common code preserves complete Cell reachability. -/
+/-- The color-parametric common code preserves complete Cell reachability. -/
+theorem sourceLocalLayerSerialTrackedTransitionCodeForColorAt_cell_reachable_iff
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (color : caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet →
+      Color)
+    (pair : TrackedColorPair)
+    (first second : {edge // edge ∈
+      sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps coloring
+        web corridor hunique offset}) :
+    ((sourceLocalLayerSerialTrackedTransitionCodeForColorAt graphData minimal
+      caps coloring web corridor hunique offset color).graph
+        (pair, false)).Reachable
+        (carrierCoordinate _ first) (carrierCoordinate _ second) ↔
+      (regionalTrackedEdgeGraph web.annular.RS
+        (sourceLocalLayerCellRegionAt corridor hunique offset) color
+        (trackedColorPairColors pair).1
+          (trackedColorPairColors pair).2).Reachable first.1 second.1 := by
+  exact boundedCarrierGraphFamilyCode_reachable_iff_of_support_subset
+    _ 21 5
+    (sourceLocalLayerSerialTrackedTransitionCarrierAt_card_le_twentyOne
+      graphData minimal caps coloring web corridor hunique offset)
+    (sourceLocalLayerSerialTrackedTransitionPointAt graphData caps coloring web
+      corridor hunique offset) _ (pair, false)
+    (sourceLocalLayerCellTrackedGraph_support_subset_transitionCarrier
+      graphData caps coloring web corridor hunique offset color pair) first second
+
+/-- The same color-parametric code preserves complete residual-seam
+reachability. -/
+theorem sourceLocalLayerSerialTrackedTransitionCodeForColorAt_seam_reachable_iff
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (color : caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet →
+      Color)
+    (pair : TrackedColorPair)
+    (first second : {edge // edge ∈
+      sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps coloring
+        web corridor hunique offset}) :
+    ((sourceLocalLayerSerialTrackedTransitionCodeForColorAt graphData minimal
+      caps coloring web corridor hunique offset color).graph
+        (pair, true)).Reachable
+        (carrierCoordinate _ first) (carrierCoordinate _ second) ↔
+      (sourceLocalLayerSerialTerminalTrackedSeamAt corridor hunique offset
+        color (trackedColorPairColors pair).1
+          (trackedColorPairColors pair).2).Reachable first.1 second.1 := by
+  exact boundedCarrierGraphFamilyCode_reachable_iff_of_support_subset
+    _ 21 5
+    (sourceLocalLayerSerialTrackedTransitionCarrierAt_card_le_twentyOne
+      graphData minimal caps coloring web corridor hunique offset)
+    (sourceLocalLayerSerialTrackedTransitionPointAt graphData caps coloring web
+      corridor hunique offset) _ (pair, true)
+    (sourceLocalLayerSerialTrackedSeam_support_subset_transitionCarrier
+      graphData caps coloring web corridor hunique offset color pair) first second
+
+/-- Ambient-color compatibility wrapper for Cell reachability. -/
 theorem sourceLocalLayerSerialTrackedTransitionCodeAt_cell_reachable_iff
     (graphData : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
@@ -258,16 +364,11 @@ theorem sourceLocalLayerSerialTrackedTransitionCodeAt_cell_reachable_iff
         (sourceLocalLayerCellRegionAt corridor hunique offset) coloring
         (trackedColorPairColors pair).1
           (trackedColorPairColors pair).2).Reachable first.1 second.1 := by
-  exact boundedCarrierGraphFamilyCode_reachable_iff_of_support_subset
-    _ 21 5
-    (sourceLocalLayerSerialTrackedTransitionCarrierAt_card_le_twentyOne
-      graphData minimal caps coloring web corridor hunique offset)
-    (sourceLocalLayerSerialTrackedTransitionPointAt graphData caps coloring web
-      corridor hunique offset) _ (pair, false)
-    (sourceLocalLayerCellTrackedGraph_support_subset_transitionCarrier
-      graphData caps coloring web corridor hunique offset pair) first second
+  exact sourceLocalLayerSerialTrackedTransitionCodeForColorAt_cell_reachable_iff
+    graphData minimal caps coloring web corridor hunique offset coloring pair
+      first second
 
-/-- The same common code preserves complete residual-seam reachability. -/
+/-- Ambient-color compatibility wrapper for seam reachability. -/
 theorem sourceLocalLayerSerialTrackedTransitionCodeAt_seam_reachable_iff
     (graphData : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
@@ -291,14 +392,9 @@ theorem sourceLocalLayerSerialTrackedTransitionCodeAt_seam_reachable_iff
       (sourceLocalLayerSerialTerminalTrackedSeamAt corridor hunique offset
         coloring (trackedColorPairColors pair).1
           (trackedColorPairColors pair).2).Reachable first.1 second.1 := by
-  exact boundedCarrierGraphFamilyCode_reachable_iff_of_support_subset
-    _ 21 5
-    (sourceLocalLayerSerialTrackedTransitionCarrierAt_card_le_twentyOne
-      graphData minimal caps coloring web corridor hunique offset)
-    (sourceLocalLayerSerialTrackedTransitionPointAt graphData caps coloring web
-      corridor hunique offset) _ (pair, true)
-    (sourceLocalLayerSerialTrackedSeam_support_subset_transitionCarrier
-      graphData caps coloring web corridor hunique offset pair) first second
+  exact sourceLocalLayerSerialTrackedTransitionCodeForColorAt_seam_reachable_iff
+    graphData minimal caps coloring web corridor hunique offset coloring pair
+      first second
 
 end
 
