@@ -161,7 +161,8 @@ toolchain and its numerical claims were reproduced independently: the $5412$
 and $31704$ annular censuses with their Kempe fibers, the fullerene bases,
 the pentagon seals, the desert and strand specimens --- including the
 $688$-edge strand refuting the package's own Short Strand Conjecture --- and
-the GWCO exact base through twelve. On the structural side the development
+the historical GWCO exact search through twelve (now superseded by the
+counterexamples recorded below). On the structural side the development
 now carries a rotation-system Tait-coloring layer with exact facial linear
 algebra; the all-face discrete Gauss--Bonnet identity
 (\texttt{totalFaceCurvature\_eq\_twelve}); a proved \emph{weighted} pentagon
@@ -8617,11 +8618,58 @@ in-route replacements, and no further effort should be spent extending the
 shortcuts themselves.  The reductive--compositional programme explicitly asks
 for a finite factorization of \texttt{Count}; the weighted curvature law,
 complete physical-splice interfaces, and exact local five-field semantics are
-viable repairs inside that same architecture.  The honest report is therefore
-``source repairs and one decisive closure gate remain,'' not ``the route is
-dead.''  A route-level negative verdict would require a machine-checked failure
-of the exact factorization or physical splice on the source carrier, or a
-faithfully measured exact closure/base that defeats the claimed finite descent.
+viable repairs inside that same architecture.  Before the exact census below,
+the honest report was therefore ``source repairs and one decisive closure gate
+remain,'' not ``the route is dead.''  The new census supplies a negative verdict
+for the GWCO endpoint itself; the following paragraph records why this is not a
+negative verdict on the Cell--1 compositional strategy.
+
+\paragraph{GWCO refutation and the surviving route repair (25 August 2026).}
+A subsequent exact census invalidated the terminal predicate to which the
+foregoing closure machinery had been aimed.  Deleting the cycles of two
+disjoint pentagonal faces numbered $4$ and $12$ in the manuscript toolchain's
+$C_{30}$ fullerene gives a proper five-by-five annulus with no shared boundary
+vertices or boundary edges.  Exact Tait-colouring enumeration gives $3696$
+colourings, of which $12$ are totally closed webs and $6$ have a good inner
+word.  An independent replay of the same enumerator reproduced these numbers.
+As a fidelity control, the same code on the polar $C_{30}$ pair reproduces the
+manuscript's $5412$ colourings and $360$ totally closed webs, all at bad words.
+A smaller dodecahedral opening gives $936$ colourings, $36$ totally closed
+webs, and $12$ at good words, although one boundary edge is shared between its
+two cap interfaces; the proper non-polar $C_{30}$ witness is therefore the
+clean counterexample.
+
+Thus the Good-Word Closed-web Obstruction of Addenda~XXII--XXVII is false as
+stated.  In particular, the reductive carrier
+\texttt{GoertzelV24ClosedWebReductiveAssembly.PackedInstance}, whose target is
+definitionally \texttt{False}, must not be supplied with a purported verified
+base or used as an endpoint for a numerical $V_0$.  Packaging the finite
+$C_{30}$ witness as a literal Lean inhabitant remains a useful regression
+fixture; until that packaging is complete, the exact executable census rather
+than a kernel theorem is the status of this refutation.
+
+The refutation does \emph{not} refute the compositional strategy.  It removes
+an unnecessarily strong intermediate claim.  Addendum~VII's Reformulation
+Theorem says that menu B for a majority pair is equivalent to at least two
+distinct components of that pair meeting the cap.  At five outer stubs, total
+closure forces every strand to be radial, so the four active inner spokes of
+either majority pair lie on four distinct components.  Direct inspection of
+all six good-word $C_{30}$ witnesses confirms the count $(4,4)$ for the two
+majority pairs.  Hence a totally closed web is already strongly menu B and
+cannot be a frozen adversarial state.  The source-faithful repair is therefore
+
+\[
+  \text{totally closed at five outer stubs}
+  \Longrightarrow \text{all strands radial}
+  \Longrightarrow \text{menu B},
+\]
+
+not nonexistence of the web.  The exact cumulative-prefix/Cell factorization
+remains valuable, but its first authoritative reachable closure must now be
+the parametric transfer used by the Cell--1 Seed Lemma of Addendum~XXV, not a
+base audit for GWCO.  This correction distinguishes a refuted proof cell from
+the still-viable proof strategy and prevents further work from polishing a
+false terminal target.
 
 \section*{Provenance}
 \addcontentsline{toc}{section}{Provenance}
@@ -8722,6 +8770,17 @@ themselves machine-checked theorems that a stated step \emph{fails}.
         bound, not the source automaton, a numerical $V_0$, or a base
         certificate.  Exact positive-\texttt{Count} adequacy and rooted
         cumulative-prefix factorization must precede an authoritative count.
+  \item[The Good-Word Closed-web Obstruction.] Addenda~XXII--XXVII assert that
+        no totally closed web exists at a good five-stub inner word.  Exact
+        enumeration refutes this: the non-polar $C_{30}$ cap pair $(4,12)$
+        has twelve totally closed webs, six at good words, while the same
+        implementation exactly reproduces the manuscript's polar census.
+        The closed-web reductive carrier with target \texttt{False} is
+        therefore retired.  Its intended use survives in stronger local
+        form: total closure makes all strands radial, so each majority pair
+        has four distinct cap-meeting components and hence menu B.  The
+        corridor factorization is retained parametrically for Cell~1 rather
+        than extended toward the false GWCO base.
   \item[Unrestricted capped subtraction.] The identity
         $\min(5,a+b)-d=\min(5,a+(b-d))$ fails without the premise $d\leq b$.
         The finite face-progress decoder carries this premise explicitly.
