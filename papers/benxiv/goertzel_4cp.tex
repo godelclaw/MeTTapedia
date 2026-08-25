@@ -8671,6 +8671,20 @@ base audit for GWCO.  This correction distinguishes a refuted proof cell from
 the still-viable proof strategy and prevents further work from polishing a
 false terminal target.
 
+The first post-correction factorization unit is now machine checked in
+\texttt{GoertzelV24ClosedWebLocalLayerSerialCellStateFactorization}.  It splits
+the former finite Cell record losslessly into (i) the complete cumulative
+prefix state, (ii) a candidate outgoing profile, and (iii) a bounded local
+Cell-plus-seam factor containing no prefix state.  Reassembly is inverse in
+both directions, and the native Boolean reflection preserves the resulting
+three-argument support relation exactly.  This repairs the structural error
+in which a prefix-dependent receipt could be mistaken for a pumpable physical
+letter.  It is deliberately not yet the positive-\texttt{Count} converse:
+gluing an arbitrary positive literal Cell witness to an arbitrary compatible
+prefix, computing the successor attachment state through the following
+boundary rebase, and only then measuring the reachable closure remain the live
+steps.
+
 \section*{Provenance}
 \addcontentsline{toc}{section}{Provenance}
 The August revision preserves the accumulated July audit and its negative
