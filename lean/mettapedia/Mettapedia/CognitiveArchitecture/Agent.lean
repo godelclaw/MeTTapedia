@@ -8,6 +8,9 @@ import Mettapedia.CognitiveArchitecture.Agent.EffectReceiptProjection
 import Mettapedia.CognitiveArchitecture.Agent.EffectBrokerNoninterference
 import Mettapedia.CognitiveArchitecture.Agent.OpenEndedContext
 import Mettapedia.CognitiveArchitecture.Agent.WorldOfViewsBridge
+import Mettapedia.CognitiveArchitecture.Agent.ContextCertificate
+import Mettapedia.CognitiveArchitecture.Agent.TaskPhase
+import Mettapedia.CognitiveArchitecture.Agent.PermissiveActionGraph
 
 /-!
 # General agent-architecture interfaces
