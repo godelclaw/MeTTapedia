@@ -203,6 +203,157 @@ theorem restrictedBy_partialRetainedCoordinateMask_eq_exteriorGraph
           exact ⟨retained, hretained⟩
         · exact hvertexRetained.trans (hsome retained slot hretained).symm
 
+/-- The exact larger code computes connectivity between forgotten coordinates
+in the literal target exterior, also for a partial target map. -/
+theorem exteriorGraph_reachable_iff_exactClosure_partialRetained
+    {N Larger Retained : Type*} [Fintype Retained] [DecidableEq Larger]
+    (graph : SimpleGraph N)
+    (largerVertex : Larger → N) (retainedVertex : Retained → N)
+    (retain : Retained → Option Larger)
+    (hsome : ∀ retained slot, retain retained = some slot →
+      largerVertex slot = retainedVertex retained)
+    (hnone : ∀ retained, retain retained = none →
+      retainedVertex retained ∉ graph.support)
+    (left right : SurvivingInterfaceSlot largerVertex
+      (partialRetainedCoordinateMask retain)) :
+    (exteriorGraph graph retainedVertex).Reachable
+        (largerVertex left.1) (largerVertex right.1) ↔
+      Relation.ReflTransGen
+        (fun first second : SurvivingInterfaceSlot largerVertex
+            (partialRetainedCoordinateMask retain) =>
+          InterfaceExteriorFactoredStep
+            (exactInterfaceExteriorCode graph largerVertex)
+            first.1 second.1)
+        left right := by
+  rw [← restrictedBy_partialRetainedCoordinateMask_eq_exteriorGraph graph
+    largerVertex retainedVertex retain hsome hnone]
+  exact
+    restrictedByMask_reachable_iff_exactInterfaceExteriorFactoredClosure
+      graph largerVertex (partialRetainedCoordinateMask retain) left right
+
+/-- Equality row of a partially reindexed interface.  The intended target
+presentation has literal, injective coordinates, so coordinate equality is
+the complete equality receipt even when both coordinates are inactive. -/
+def partialReindexedVertexEq
+    {Retained : Type*} [DecidableEq Retained]
+    (left right : Retained) : Bool :=
+  decide (left = right)
+
+/-- Pull the direct-adjacency row through a partial coordinate map.  Any
+unmapped target coordinate is declared inactive; source soundness must prove
+that such a coordinate is isolated in the graph being reindexed. -/
+def partialReindexedDirectAdj
+    {Larger Retained : Type*}
+    (code : BoundedInterfaceExteriorCode Larger)
+    (retain : Retained → Option Larger) (left right : Retained) : Bool :=
+  match retain left, retain right with
+  | some largerLeft, some largerRight => code.directAdj largerLeft largerRight
+  | _, _ => false
+
+/-- Assemble the two elementary rows with a separately computed exterior row.
+The latter is deliberately explicit: it must close through forgotten larger
+coordinates and cannot be obtained by a plain pullback. -/
+def partialReindexedInterfaceExteriorCode
+    {Larger Retained : Type*} [DecidableEq Retained]
+    (code : BoundedInterfaceExteriorCode Larger)
+    (retain : Retained → Option Larger)
+    (exteriorConnected : Retained → Retained → Bool) :
+    BoundedInterfaceExteriorCode Retained where
+  vertexEq := partialReindexedVertexEq
+  directAdj := partialReindexedDirectAdj code retain
+  exteriorConnected := exteriorConnected
+
+/-- Literal target coordinates make the reindexed equality row exact. -/
+theorem partialReindexedVertexEq_eq_true_iff
+    {N Retained : Type*} [DecidableEq Retained]
+    (retainedVertex : Retained → N) (hinjective : Function.Injective retainedVertex)
+    (left right : Retained) :
+    partialReindexedVertexEq left right = true ↔
+      retainedVertex left = retainedVertex right := by
+  rw [partialReindexedVertexEq, decide_eq_true_eq]
+  exact hinjective.eq_iff.symm
+
+/-- Under the same partial-map hypotheses as the graph identity, pulling back
+the exact larger direct-adjacency row is exact on the target. -/
+theorem partialReindexedDirectAdj_exact_iff
+    {N Larger Retained : Type*}
+    (graph : SimpleGraph N)
+    (largerVertex : Larger → N) (retainedVertex : Retained → N)
+    (retain : Retained → Option Larger)
+    (hsome : ∀ retained slot, retain retained = some slot →
+      largerVertex slot = retainedVertex retained)
+    (hnone : ∀ retained, retain retained = none →
+      retainedVertex retained ∉ graph.support)
+    (left right : Retained) :
+    partialReindexedDirectAdj
+        (exactInterfaceExteriorCode graph largerVertex) retain left right =
+          true ↔
+      graph.Adj (retainedVertex left) (retainedVertex right) := by
+  cases hleft : retain left with
+  | none =>
+      simp only [partialReindexedDirectAdj, hleft]
+      constructor
+      · intro hfalse
+        cases hfalse
+      · intro hadj
+        exact (hnone left hleft ⟨retainedVertex right, hadj⟩).elim
+  | some largerLeft =>
+      cases hright : retain right with
+      | none =>
+          simp only [partialReindexedDirectAdj, hleft, hright]
+          constructor
+          · intro hfalse
+            cases hfalse
+          · intro hadj
+            exact (hnone right hright ⟨retainedVertex left, hadj.symm⟩).elim
+      | some largerRight =>
+          simp only [partialReindexedDirectAdj, hleft, hright,
+            exactInterfaceExteriorCode, decide_eq_true_eq]
+          rw [hsome left largerLeft hleft, hsome right largerRight hright]
+
+/-- Once the exterior row has been computed by closure through forgotten
+coordinates, the assembled partial reindexing is an exact interface code.
+This theorem isolates that row as the sole remaining obligation: equality and
+direct adjacency are discharged generically above. -/
+theorem partialReindexedInterfaceExteriorCode_step_iff_of_exterior_exact
+    {N Larger Retained : Type*} [DecidableEq Retained]
+    (graph : SimpleGraph N)
+    (largerVertex : Larger → N) (retainedVertex : Retained → N)
+    (retain : Retained → Option Larger)
+    (hinjective : Function.Injective retainedVertex)
+    (hsome : ∀ retained slot, retain retained = some slot →
+      largerVertex slot = retainedVertex retained)
+    (hnone : ∀ retained, retain retained = none →
+      retainedVertex retained ∉ graph.support)
+    (exteriorConnected : Retained → Retained → Bool)
+    (hexterior : ∀ left right,
+      exteriorConnected left right = true ↔
+        ∃ entry exit : N,
+          OutsideInterface retainedVertex entry ∧
+          OutsideInterface retainedVertex exit ∧
+          graph.Adj (retainedVertex left) entry ∧
+          (exteriorGraph graph retainedVertex).Reachable entry exit ∧
+          graph.Adj exit (retainedVertex right))
+    (left right : Retained) :
+    InterfaceExteriorFactoredStep
+        (partialReindexedInterfaceExteriorCode
+          (exactInterfaceExteriorCode graph largerVertex) retain
+            exteriorConnected)
+        left right ↔
+      InterfaceExteriorStep graph retainedVertex left right := by
+  unfold InterfaceExteriorFactoredStep InterfaceExteriorStep
+    partialReindexedInterfaceExteriorCode
+  change
+    (partialReindexedVertexEq left right = true ∨
+      partialReindexedDirectAdj
+          (exactInterfaceExteriorCode graph largerVertex) retain left right =
+        true ∨
+      exteriorConnected left right = true) ↔ _
+  rw [partialReindexedVertexEq_eq_true_iff retainedVertex hinjective,
+    partialReindexedDirectAdj_exact_iff graph largerVertex retainedVertex retain
+      hsome hnone,
+    hexterior]
+
 end GoertzelV24InterfaceDeletionComponentFactorForget
 
 end Mettapedia.GraphTheory.FourColor

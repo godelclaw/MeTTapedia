@@ -323,6 +323,119 @@ theorem sourceLocalLayerSerialCellRebase_partialMask_eq_successorExterior
         graphData minimal caps coloring web corridor hunique offset hnext color
         pair targetSlot hnone
 
+/-- The actual-cardinality target carrier has no padded aliases. -/
+theorem sourceLocalLayerSerialCellRebase_targetVertex_injective
+    (graphData : Data G)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3) :
+    Function.Injective (fun slot : Fin
+      (sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps coloring
+        web corridor hunique (sourceLocalLayerNextOffset offset hnext)).card =>
+      (((carrierCoordinate
+        (sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps
+          coloring web corridor hunique
+            (sourceLocalLayerNextOffset offset hnext))).symm slot).1)) := by
+  intro left right heq
+  apply (carrierCoordinate
+    (sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps coloring
+      web corridor hunique
+        (sourceLocalLayerNextOffset offset hnext))).symm.injective
+  exact Subtype.ext heq
+
+/-- The elementary equality row of the partial reindexing is exact on the
+literal successor carrier. -/
+theorem sourceLocalLayerSerialCellRebase_partialReindexedVertexEq_iff
+    (graphData : Data G)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (left right : Fin
+      (sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps coloring
+        web corridor hunique (sourceLocalLayerNextOffset offset hnext)).card) :
+    partialReindexedVertexEq left right = true ↔
+      (((carrierCoordinate
+        (sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps
+          coloring web corridor hunique
+            (sourceLocalLayerNextOffset offset hnext))).symm left).1) =
+      (((carrierCoordinate
+        (sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps
+          coloring web corridor hunique
+            (sourceLocalLayerNextOffset offset hnext))).symm right).1) := by
+  exact partialReindexedVertexEq_eq_true_iff _
+    (sourceLocalLayerSerialCellRebase_targetVertex_injective graphData caps
+      coloring web corridor hunique offset hnext) left right
+
+/-- The direct-adjacency row pulled through the partial expanded source map is
+also exact for every successor tracked graph. -/
+theorem sourceLocalLayerSerialCellRebase_partialReindexedDirectAdj_iff
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (color :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
+    (pair : TrackedColorPair)
+    (left right : Fin
+      (sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps coloring
+        web corridor hunique (sourceLocalLayerNextOffset offset hnext)).card) :
+    let current := sourceLocalLayerSerialTrackedTransitionCarrierAt graphData
+      caps coloring web corridor hunique offset
+    let target := sourceLocalLayerSerialTrackedTransitionCarrierAt graphData
+      caps coloring web corridor hunique
+        (sourceLocalLayerNextOffset offset hnext)
+    let roleAt := sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset
+      hnext
+    let expandedVertex := expandedInterfaceEdgeAt current roleAt
+    let targetVertex := fun slot : Fin target.card =>
+      ((carrierCoordinate target).symm slot).1
+    let sourceAt := sourceLocalLayerSerialCellRebaseExpandedSourceAt graphData
+      caps coloring web corridor hunique offset hnext
+    let graph := successorTrackedGraphForColorAt corridor hunique offset hnext
+      color pair
+    partialReindexedDirectAdj
+        (exactInterfaceExteriorCode graph expandedVertex) sourceAt left right =
+          true ↔
+      graph.Adj (targetVertex left) (targetVertex right) := by
+  dsimp only
+  apply partialReindexedDirectAdj_exact_iff
+  · intro targetSlot source hsource
+    exact sourceLocalLayerSerialCellRebaseExpandedSourceAt_edge_eq graphData caps
+      coloring web corridor hunique offset hnext targetSlot source hsource
+  · intro targetSlot hnone
+    exact
+      sourceLocalLayerSerialCellRebaseExpandedSourceAt_none_not_mem_support
+        graphData minimal caps coloring web corridor hunique offset hnext color
+        pair targetSlot hnone
+
 end
 
 end GoertzelV24ClosedWebLocalLayerSerialCellRebaseExpandedSource
