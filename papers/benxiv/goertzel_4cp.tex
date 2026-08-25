@@ -87,7 +87,7 @@
 Reductive--Compositional Route to the Four-Color Theorem:\\
 \large Proven Structure, Refuted Shortcuts, and the Closure Frontier}
 \author{The MeTTapedia formalization effort}
-\date{Living revision: 24 August 2026}
+\date{Living revision: 25 August 2026}
 
 \begin{document}
 \maketitle
@@ -101,11 +101,11 @@ reductive--compositional programme described in
 \emph{reductive\_vs\_covering (2)}, \emph{compositional\_proof\_note},
 \emph{4cp\_new\_theory}, and \emph{4cp-lean\_playbook}.  Where that package
 supersedes v23, the newer text controls.  Section~\ref{sec:current} records the
-current kernel-checked boundary: a large conditional descent tower is present,
-but the source-local-to-global realization of the required separated annular
-crosscuts, the concrete reductive-system instance, and the verified finite base
-remain open.  Accordingly this companion does not claim a new proof of the
-Four-Color Theorem.
+current kernel-checked boundary: a large conditional descent tower and a
+conditional concrete reductive-system value are present, but the
+source-specific physical splice inhabitants, the exact finite transition
+factorization, and the verified route-native base remain open.  Accordingly
+this companion does not claim a new proof of the Four-Color Theorem.
 
 This is a living formalization companion to Ben Goertzel's manuscript \emph{A
 Human-Readable, Spencer--Brown/Kauffman-Style Proof of the Four-Color Theorem}
@@ -8569,6 +8569,60 @@ remains: construct the complete five-field literal Cell letter, prove its
 rooted factorization, replay its actual reachable closure, derive $V_0$, and
 verify the resulting route-native base.
 
+\paragraph{Closure-readiness audit and route verdict (25 August 2026).}
+The proposed next experiment---compute one reachable-closure cardinality---is
+the right way to measure the finite endgame, but the presently executable
+letters do not yet define the exact source automaton.  In particular,
+\texttt{GoertzelV24ClosedWebLocalLayerSerialFiniteBoolStepLetter} is a finite
+Boolean Cell--rebase receipt extracted from one actual colouring.  Its proved
+scope is one supported singleton transition, not the complete support of the
+physical Cell's \texttt{Count} matrix.  The older homogeneous
+\texttt{LocalLayerFiniteReceiptStep} and its compressed version are explicitly
+sound over-approximations; the latter also omits the distinct boundary rebase
+and is computed on a different geometric-prefix presentation.  Running BFS on
+either object is useful as a labelled diagnostic upper-bound experiment, but
+its state count is not an authoritative reachable count and cannot define
+$V_0$.
+
+The missing gate is now one mathematical factorization rather than another
+interface design: every positive literal \texttt{Count} entry, composed with
+an arbitrary compatible cumulative-prefix witness, must produce exactly one
+of the finite rooted Cell--rebase transitions, and every accepted finite
+transition must have such a source witness.  The local half is green: positive
+\texttt{Count} support already supplies one realizable combined profile with
+all five semantic coordinates.  The cumulative-prefix attachment, its finite
+rooted code, the source initial set, and the exact converse remain to be
+joined.  Once that theorem lands, the next checkpoint is deliberately
+numerical and narrow: independently enumerate and replay the first exact
+closure, compare two implementations, and report the raw carrier size,
+reachable subset count, and right-language (Nerode) quotient count.
+
+This measurement is urgent.  The proved conservative carrier formula has
+orders of magnitude about $10^{51},10^{77},10^{109},10^{189}$ at widths
+$4,5,6,8$, respectively, so using it directly would make the bounded base
+physically meaningless.  The earlier twenty-mode frontier table is encouraging
+evidence that actual dynamics can occupy a tiny subset, but it belongs to the
+narrow $\tau$/mirror-$\tau$ Lemma~8.18 laboratory and no typed theorem identifies
+it with the present cumulative corridor profiles.  It is precedent for the
+experiment, not its answer.
+
+The resulting verdict has two levels.  The current manuscript is not valid
+\emph{as literally written}: among other things, Addendum~XXVII invokes at most
+twelve internal pentagons because the ambient minimal counterexample allegedly
+has exactly twelve, while the proved curvature identity permits thirteen
+pentagons in the presence of a heptagon; several weaker seam and local-rail
+readings are also refuted below.  These are refuted shortcuts, not a refutation
+of the proof strategy.  They should be reported to the author with their
+in-route replacements, and no further effort should be spent extending the
+shortcuts themselves.  The reductive--compositional programme explicitly asks
+for a finite factorization of \texttt{Count}; the weighted curvature law,
+complete physical-splice interfaces, and exact local five-field semantics are
+viable repairs inside that same architecture.  The honest report is therefore
+``source repairs and one decisive closure gate remain,'' not ``the route is
+dead.''  A route-level negative verdict would require a machine-checked failure
+of the exact factorization or physical splice on the source carrier, or a
+faithfully measured exact closure/base that defeats the claimed finite descent.
+
 \section*{Provenance}
 \addcontentsline{toc}{section}{Provenance}
 The August revision preserves the accumulated July audit and its negative
@@ -8661,9 +8715,22 @@ themselves machine-checked theorems that a stated step \emph{fails}.
         literal Cell's \texttt{Count} matrix over all endpoint profiles.  The
         singleton-list interpretation was rejected before commit; the finite
         receipts remain validation witnesses for the later full relation.
+  \item[An executable over-approximation as the exact closure.] The finite
+        one-Cell decoder and its compressed relation admit every proved source
+        transition, but may admit spurious letters and omit the separate
+        boundary-rebase composition.  Their BFS closure is a diagnostic upper
+        bound, not the source automaton, a numerical $V_0$, or a base
+        certificate.  Exact positive-\texttt{Count} adequacy and rooted
+        cumulative-prefix factorization must precede an authoritative count.
   \item[Unrestricted capped subtraction.] The identity
         $\min(5,a+b)-d=\min(5,a+(b-d))$ fails without the premise $d\leq b$.
         The finite face-progress decoder carries this premise explicitly.
+  \item[The unweighted twelve-pentagon shortcut.] Addendum~XXVII's statement
+        that a minimal counterexample has exactly twelve pentagons does not
+        follow from spherical cubicity and face length at least five.  The
+        curvature identity is weighted: one heptagon permits thirteen
+        pentagons.  The route must use the proved weighted budget (or a stronger
+        source-specific hypothesis), never the unrestricted bound.
   \item[Small deletion orbit from a small alphabet.] If every letter may be
         deleted, the orbit of a word with distinct letters contains every
         subset of its positions.  Reachable-state compression must therefore
