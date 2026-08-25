@@ -231,6 +231,53 @@ theorem exteriorGraph_reachable_iff_exactClosure_partialRetained
     restrictedByMask_reachable_iff_exactInterfaceExteriorFactoredClosure
       graph largerVertex (partialRetainedCoordinateMask retain) left right
 
+/-- A live larger coordinate surviving the partial target mask is genuinely
+outside every target coordinate, including targets mapped to `none`. -/
+theorem outsideInterface_of_survives_partialRetained_of_mem_support
+    {N Larger Retained : Type*} [Fintype Retained] [DecidableEq Larger]
+    (graph : SimpleGraph N)
+    (largerVertex : Larger → N) (retainedVertex : Retained → N)
+    (retain : Retained → Option Larger)
+    (hsome : ∀ retained slot, retain retained = some slot →
+      largerVertex slot = retainedVertex retained)
+    (hnone : ∀ retained, retain retained = none →
+      retainedVertex retained ∉ graph.support)
+    (slot : Larger)
+    (hsurvives : survivesMask largerVertex
+      (partialRetainedCoordinateMask retain) (largerVertex slot))
+    (hsupport : largerVertex slot ∈ graph.support) :
+    OutsideInterface retainedVertex (largerVertex slot) := by
+  intro retained heq
+  cases hretained : retain retained with
+  | none =>
+      exact hnone retained hretained (heq ▸ hsupport)
+  | some retainedSlot =>
+      apply hsurvives retainedSlot
+      · rw [partialRetainedCoordinateMask_eq_true_iff]
+        exact ⟨retained, hretained⟩
+      · exact heq.trans (hsome retained retainedSlot hretained).symm
+
+/-- A live vertex outside the larger interface is also outside the partially
+mapped target interface. -/
+theorem outsideInterface_of_outsideLarger_partialRetained_of_mem_support
+    {N Larger Retained : Type*}
+    (graph : SimpleGraph N)
+    (largerVertex : Larger → N) (retainedVertex : Retained → N)
+    (retain : Retained → Option Larger)
+    (hsome : ∀ retained slot, retain retained = some slot →
+      largerVertex slot = retainedVertex retained)
+    (hnone : ∀ retained, retain retained = none →
+      retainedVertex retained ∉ graph.support)
+    (vertex : N) (houtside : OutsideInterface largerVertex vertex)
+    (hsupport : vertex ∈ graph.support) :
+    OutsideInterface retainedVertex vertex := by
+  intro retained heq
+  cases hretained : retain retained with
+  | none =>
+      exact hnone retained hretained (heq ▸ hsupport)
+  | some slot =>
+      exact houtside slot (heq.trans (hsome retained slot hretained).symm)
+
 /-- Equality row of a partially reindexed interface.  The intended target
 presentation has literal, injective coordinates, so coordinate equality is
 the complete equality receipt even when both coordinates are inactive. -/

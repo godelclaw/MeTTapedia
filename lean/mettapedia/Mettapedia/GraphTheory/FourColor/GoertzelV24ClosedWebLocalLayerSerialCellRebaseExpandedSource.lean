@@ -1,6 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialCellPastOverlap
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialCellRebaseExpandedCoreState
-import Mettapedia.GraphTheory.FourColor.GoertzelV24InterfaceDeletionComponentFactorForget
+import Mettapedia.GraphTheory.FourColor.GoertzelV24InterfaceDeletionComponentFactorForgetExterior
 
 /-!
 # The literal successor carrier as a partial expanded-interface map
@@ -45,6 +45,7 @@ open GoertzelV24FacialPentagonCap
 open GoertzelV24HexSlabConnectivityProfile
 open GoertzelV24InterfaceDeletionComponentFactor
 open GoertzelV24InterfaceDeletionComponentFactorForget
+open GoertzelV24InterfaceDeletionComponentFactorForgetExterior
 open GoertzelV24TwoEdgeCutMinimality
 open GoertzelV24TwoPentagonCapOpening
 open SimpleGraph
@@ -427,6 +428,63 @@ theorem sourceLocalLayerSerialCellRebase_partialReindexedDirectAdj_iff
       graph.Adj (targetVertex left) (targetVertex right) := by
   dsimp only
   apply partialReindexedDirectAdj_exact_iff
+  · intro targetSlot source hsource
+    exact sourceLocalLayerSerialCellRebaseExpandedSourceAt_edge_eq graphData caps
+      coloring web corridor hunique offset hnext targetSlot source hsource
+  · intro targetSlot hnone
+    exact
+      sourceLocalLayerSerialCellRebaseExpandedSourceAt_none_not_mem_support
+        graphData minimal caps coloring web corridor hunique offset hnext color
+        pair targetSlot hnone
+
+/-- The executable three-row contraction of the exact expanded predecessor
+code is an exact interface-step code for the literal successor carrier.  This
+is the source-specialized associativity law for boundary forgetting; the
+exterior row may traverse any number of forgotten expanded coordinates. -/
+theorem sourceLocalLayerSerialCellRebase_partialContractedCode_step_iff
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (color :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
+    (pair : TrackedColorPair)
+    (left right : Fin
+      (sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps coloring
+        web corridor hunique (sourceLocalLayerNextOffset offset hnext)).card) :
+    let current := sourceLocalLayerSerialTrackedTransitionCarrierAt graphData
+      caps coloring web corridor hunique offset
+    let target := sourceLocalLayerSerialTrackedTransitionCarrierAt graphData
+      caps coloring web corridor hunique
+        (sourceLocalLayerNextOffset offset hnext)
+    let roleAt := sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset
+      hnext
+    let expandedVertex := expandedInterfaceEdgeAt current roleAt
+    let targetVertex := fun slot : Fin target.card =>
+      ((carrierCoordinate target).symm slot).1
+    let sourceAt := sourceLocalLayerSerialCellRebaseExpandedSourceAt graphData
+      caps coloring web corridor hunique offset hnext
+    let graph := successorTrackedGraphForColorAt corridor hunique offset hnext
+      color pair
+    InterfaceExteriorFactoredStep
+        (partialContractedInterfaceExteriorCode
+          (exactInterfaceExteriorCode graph expandedVertex) sourceAt)
+        left right ↔
+      InterfaceExteriorStep graph targetVertex left right := by
+  dsimp only
+  apply partialContractedInterfaceExteriorCode_exact_step_iff
+  · exact sourceLocalLayerSerialCellRebase_targetVertex_injective graphData caps
+      coloring web corridor hunique offset hnext
   · intro targetSlot source hsource
     exact sourceLocalLayerSerialCellRebaseExpandedSourceAt_edge_eq graphData caps
       coloring web corridor hunique offset hnext targetSlot source hsource
