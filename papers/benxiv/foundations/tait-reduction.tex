@@ -1,0 +1,640 @@
+% Tait's reduction of vertex four-colouring to cubic edge three-colouring.
+%
+% Companion to foundations/map-euler-foundations.tex.  Every result carries
+% an inline status marker; tools/check_status.py verifies the machine-checked
+% ones against the Lean tree and generates the appendix ledger.
+
+\section{The classical bridge: Tait's reduction}
+\label{sec:tait-reduction}
+
+The compositional argument produces a statement about \emph{cubic maps}: no
+bridgeless spherical cubic map fails to be $3$-edge-colourable. The
+Four-Colour Theorem is a statement about \emph{planar simple graphs}. Tait's
+1880 reduction connects them, and this section gives it in full, with the
+status of each ingredient marked, because the ingredients are not uniformly
+available.
+
+The reduction is classical and no part of it is in doubt. What is worth
+setting down precisely is which pieces the present development already
+supplies --- the algebraic heart is one of them --- and which remain to be
+built, so that the remaining labour is visible rather than assumed.
+
+\subsection{Statement}
+
+\begin{definition}[Tait colouring]\label{def:tait}
+A \emph{Tait colouring} of a cubic map is a proper $3$-edge-colouring: an
+assignment of one of three colours to each edge such that the three edges at
+every vertex receive three distinct colours.
+\end{definition}
+
+Throughout we identify the three colours with the three nonzero elements of
+the Klein four-group
+\[
+  \mathbb{F}_2^2 \;=\; \{\,0,\ \mathsf a,\ \mathsf b,\ \mathsf a + \mathsf b\,\},
+\]
+which is legitimate because any bijection between colour sets will do, and
+which buys the identity we shall use twice: \emph{the three nonzero elements
+of $\mathbb{F}_2^2$ sum to zero}.
+
+\begin{theorem}[Tait's reduction]\label{thm:tait-reduction}
+\Sprose
+Suppose every bridgeless spherical cubic map admits a Tait colouring. Then
+every finite planar simple graph admits a proper vertex colouring with four
+colours.
+\end{theorem}
+
+The proof occupies the rest of the section. It is assembled from five
+ingredients, stated separately so that each carries its own status.
+
+\subsection{The ingredients}
+
+\begin{lemma}[reduction to the connected case]\label{lem:components}
+\Sprose
+It suffices to prove Theorem~\ref{thm:tait-reduction} for connected graphs
+with at least three vertices.
+\end{lemma}
+
+\begin{proof}
+A graph on at most two vertices is $4$-colourable outright. For a
+disconnected graph, colour each connected component independently with the
+same four-element palette and take the union: every edge has both endpoints
+in a single component, so properness is inherited componentwise. Planarity
+passes to components, being inherited by subgraphs.
+\end{proof}
+
+\begin{lemma}[triangulation]\label{lem:triangulate}
+\Sopen
+Every connected planar simple graph $G$ on at least three vertices is a
+spanning subgraph of a plane simple graph $T$ on the same vertex set in
+which every face is bounded by a triangle.
+\end{lemma}
+
+This is the standard maximality argument: fix a plane embedding and add
+non-crossing edges between non-adjacent vertices as long as any can be
+added; the process terminates because the graph is simple and finite, and a
+maximal plane simple graph on at least three vertices is a triangulation. It
+is classical, and it is \emph{not} formalized here. Of the ingredients it is
+the one carrying real formalization cost, since it needs a plane embedding
+to be manipulated rather than merely assumed. It is also avoidable:
+Theorem~\ref{thm:stellar-darts} builds a triangulation outright, on darts,
+and the reduction can be routed through that instead --- at the price of
+letting the vertex set grow, which the reduction does not mind. This lemma
+is retained in its classical form, and keeps its \textsc{open} marker,
+because that is the statement it makes; the reroute does not prove it.
+
+Because a proper colouring of $T$ restricts to a proper colouring of any
+spanning subgraph, it suffices to colour $T$.
+
+\subsection{Duality, at the level the reduction uses it}
+
+The dual is usually introduced by drawing a vertex inside each face and an
+edge across each primal edge, and that picture makes duality look like a
+statement about embeddings. At the level this reduction needs, it is not.
+It is a one-line change of generators.
+
+\begin{definition}[the dual map]\label{def:dual-map}
+\Sprose
+Let $M = (D, \sigma, \alpha)$ be a map, with $\varphi = \sigma\alpha$ its
+face permutation. Its \emph{dual} is
+\[
+  M^{*} \;=\; (D,\; \varphi,\; \alpha).
+\]
+The darts and the edge flip are unchanged; only the vertex rotation is
+replaced by the face permutation.
+\end{definition}
+
+\begin{lemma}[what the dual inherits, for free]\label{prop:dual-map}
+\Sprose
+Let $M = (D,\sigma,\alpha)$ be a map. Then:
+\begin{enumerate}
+\item $M^{*}$ is a map: $\alpha$ is unchanged, hence still a fixed-point-free
+  involution, and $\varphi$ is a permutation of $D$.
+\item The face permutation of $M^{*}$ is $\varphi\alpha = \sigma\alpha\alpha
+  = \sigma$. So the faces of the dual are the vertices of the primal:
+  $V^{*} = F$, $E^{*} = E$, $F^{*} = V$.
+\item $\langle \varphi, \alpha\rangle = \langle \sigma, \alpha\rangle$, since
+  $\varphi = \sigma\alpha$ and $\sigma = \varphi\alpha$. Hence $M$ and $M^{*}$
+  have the same orbits on darts and the same number of components; one is
+  connected exactly when the other is.
+\item $V^{*} - E^{*} + F^{*} = F - E + V$, so $M^{*}$ is spherical exactly
+  when $M$ is.
+\item $M^{**} = M$ on the nose: the dual of $(D,\varphi,\alpha)$ is
+  $(D, \varphi\alpha, \alpha) = (D,\sigma,\alpha)$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+Every item is the displayed computation. Item (v) is worth remarking on:
+duality here is an involution up to \emph{equality}, not up to isomorphism,
+which is what makes it usable without transport lemmas.
+\end{proof}
+
+\begin{corollary}[loops and bridges exchange]\label{cor:loop-bridge}
+\Sconditional{Lemma~\ref{prop:dual-map}, Theorem~\ref{thm:same-face-bridge}, Theorem~\ref{thm:converse-packaged}}
+An edge $e$ is a loop of $M$ if and only if it is a bridge of $M^{*}$.
+Consequently the dual of a loopless map is bridgeless.
+\end{corollary}
+
+\begin{proof}
+Write $d, \alpha d$ for the darts of $e$. That $e$ is a loop of $M$ means its
+two darts sit at one vertex, that is, in one $\sigma$-orbit. By
+Lemma~\ref{prop:dual-map}(ii) the $\sigma$-orbits are exactly the face
+orbits of $M^{*}$. So $e$ is a loop of $M$ iff its two darts lie on a common
+face of $M^{*}$, and by the two directions of the bridge characterisation
+--- Theorems~\ref{thm:same-face-bridge} and~\ref{thm:converse-packaged},
+both applied to the map $M^{*}$ --- that holds iff $e$ is a bridge of
+$M^{*}$.
+\end{proof}
+
+\begin{remark}[what this changes in the accounting]
+\Sprose
+Nothing in the last two results mentions a plane, a curve, or a face
+interior. Duality, the exchange of loops with bridges, and the preservation
+of sphericity and connectedness are all consequences of replacing $\sigma$ by
+$\sigma\alpha$. So of the embedding obligations this section owes, the
+\emph{duality} one is not an embedding obligation: it is elementary
+permutation algebra sitting on top of a bridge characterisation that is
+already machine-checked.  Stellar subdivision below supplies the only
+triangulation the reduction consumes, and the graph-backed argument of
+Section~\ref{sec:graph-backed} has a combinatorial digon proof.  Thus no
+separation principle remains in the controlling ordinary-mathematics route.
+\end{remark}
+
+\begin{lemma}[the dual of a triangulation is cubic and bridgeless]\label{lem:dual-cubic}
+\Sprose
+Let $T$ be a connected spherical loopless map whose face orbits have length
+three and meet three distinct vertices. Then its dual map $T^{*}$ is connected,
+spherical, cubic, and bridgeless.
+\end{lemma}
+
+\begin{proof}
+By Lemma~\ref{prop:dual-map}, connectedness and sphericity pass to the dual.
+Each face orbit of $T$ has three darts, so each vertex rotation of $T^{*}$ has
+three darts: $T^{*}$ is cubic.  The distinct-vertex hypothesis records that
+these are genuine triangular faces; it will be supplied by stellar
+subdivision.
+
+Bridgelessness is subtler than it first appears, and it is worth stating
+exactly which implication is needed. Since $T$ is loopless,
+what must be shown is
+\[
+  \text{no primal loop} \;\Longrightarrow\; \text{no dual bridge},
+  \qquad\text{equivalently}\qquad
+  \text{dual bridge} \;\Longrightarrow\; \text{primal loop}.
+\]
+Now observe that the dual of the map $(\sigma, \alpha)$ is the map
+$(\varphi, \alpha)$ with $\varphi = \sigma\alpha$: its faces are the orbits
+of $\varphi\alpha = \sigma$, that is, the primal vertices. Consequently a
+\emph{primal loop} is exactly an edge of the dual whose two sides lie on one
+dual face, and $V' + F' = F + V = E + 2$, so the dual of a spherical map is
+spherical with the same edge count.
+
+Corollary~\ref{cor:loop-bridge} now supplies exactly this: an edge is a loop
+of $T$ precisely when it is a bridge of $T^{*}$, so the loopless primal has a
+bridgeless dual, with no appeal to an embedding.
+\end{proof}
+
+\begin{remark}[a correction worth recording]\label{rem:not-one-interface}
+\Sprose
+It is tempting, having listed the residual obligations of this section and
+of Section~\ref{sec:graph-backed}, to conclude that they are all facets of a
+single plane-duality interface. That is very nearly right and is wrong in
+one place. Adding a non-crossing edge, maximality forcing triangles, and a
+digon's parallel pair bounding a face are indeed three statements about
+plane embeddings and their duals. The bridgelessness of $T^{*}$ is not: by
+the duality just described it is a statement about permutations, namely the
+converse of Theorem~\ref{thm:same-face-bridge}, and it requires no embedding
+machinery at all.
+
+The distinction is worth keeping because the two kinds of debt have very
+different costs. The converse is an isolated combinatorial lemma --- now proved, by a walk
+argument that never counts anything; the embedding interface is a
+development.
+Merging them in the ledger would have hidden a cheap item inside an
+expensive one.
+\end{remark}
+
+We record the fact that makes the algebra work.
+
+\begin{lemma}[the Klein identity]\label{lem:klein}
+\Sprose
+The three nonzero elements of $\mathbb{F}_2^2$ sum to zero, and any three
+pairwise distinct nonzero elements of $\mathbb{F}_2^2$ are all three of them.
+\end{lemma}
+
+\begin{proof}
+$\mathsf a + \mathsf b + (\mathsf a + \mathsf b) = 0$ since the group has
+exponent two. There are exactly three nonzero elements, so three pairwise
+distinct ones exhaust them.
+\end{proof}
+
+\begin{theorem}[facial boundaries span the cycle space]\label{thm:cycle-space}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrbitFaceCycleSpaceEquality.range_orbitFaceBoundaryLinearMap_eq_f2CycleSpace}
+For a connected spherical map with two-sided faces and connected dual, the
+image of the facial-boundary map is exactly the $\mathbb{F}_2$ cycle space of
+the underlying graph.
+\end{theorem}
+
+This is the algebraic heart of the reduction and it is already available.
+Note its hypothesis of two-sided faces: that is supplied by
+Corollary~\ref{cor:two-sided} of the previous section, so the two halves of
+this development meet here.
+
+\subsection{Proof of the reduction}
+
+\begin{proof}[Proof of Theorem~\ref{thm:tait-reduction}]
+By Lemma~\ref{lem:components} we may assume $G$ is connected with at least
+three vertices.  Choose a spherical rotation-system presentation $M$ of a
+plane embedding of $G$; it is connected and loopless because $G$ is connected
+and simple.  Apply Definition~\ref{def:stellar} to obtain $T=M'$.  By
+Theorem~\ref{thm:stellar-darts}, $T$ is connected, spherical and loopless, it
+contains every old vertex and edge of $G$, and every face is a $3$-cycle
+meeting three distinct vertices; the same theorem also gives two distinct
+face sides at every edge.  Hence a proper colouring of $T$ restricts to one
+of $G$, and the two-sided hypothesis used in Step~2 below is available.
+
+By Lemma~\ref{lem:dual-cubic} the dual $T^{*}$ is a bridgeless spherical
+cubic map, so the hypothesis of the theorem furnishes a Tait colouring of
+$T^{*}$. Primal and dual share an edge set, so this is a function
+\[
+  \omega \colon E(T) \longrightarrow \mathbb{F}_2^2 \setminus \{0\}
+\]
+with the property that the three edges bounding any face of $T$ --- equally,
+the three edges at the corresponding vertex of $T^{*}$ --- receive three
+pairwise distinct nonzero values.
+
+\emph{Step 1: $\omega$ vanishes on facial boundaries.} Fix a face of $T$. Its
+three edges receive three pairwise distinct nonzero values, which by
+Lemma~\ref{lem:klein} are all three nonzero elements, and these sum to zero.
+So $\omega$ sums to zero over the boundary of every face.
+
+\emph{Step 2: $\omega$ vanishes on the whole cycle space.} By
+Theorem~\ref{thm:cycle-space} the facial boundaries span the $\mathbb{F}_2$
+cycle space of $T$. Summation of $\omega$ over an edge set is
+$\mathbb{F}_2$-linear in that set, applied coordinatewise in
+$\mathbb{F}_2^2$; a linear functional vanishing on a spanning set vanishes
+identically. So $\omega$ sums to zero over every element of the cycle space.
+
+\emph{Step 3: potentials exist.} Fix a root $r \in V(T)$. For $v \in V(T)$
+choose a path $P_{r,v}$ from $r$ to $v$ --- one exists by connectedness ---
+and set
+\[
+  c(v) \;:=\; \sum_{e \in P_{r,v}} \omega(e) \;\in\; \mathbb{F}_2^2 .
+\]
+This is well defined: if $P$ and $P'$ are two $r$--$v$ paths, their symmetric
+difference is an element of the cycle space, so by Step~2 the two sums agree.
+More generally, the same value is obtained from any $r$--$v$ walk: retain the
+edges traversed an odd number of times (even repetitions cancel in
+$\mathbb F_2^2$); its symmetric difference with $P_{r,v}$ has even degree at
+every vertex and therefore lies in the cycle space.
+
+\emph{Step 4: the potential is a proper colouring.} Let $uv \in E(T)$.
+Appending the edge $uv$ to a path from $r$ to $u$ gives a walk from $r$ to
+$v$, so the preceding walk-independence gives
+$c(v) = c(u) + \omega(uv)$, that is
+\[
+  c(u) + c(v) \;=\; \omega(uv) \;\neq\; 0 ,
+\]
+so $c(u) \neq c(v)$. Thus $c \colon V(T) \to \mathbb{F}_2^2$ is a proper
+colouring with four colours, and its restriction to $G$ is one too.
+\end{proof}
+
+\subsection{What the reduction costs}
+
+It is worth being explicit about where the remaining labour sits, since the
+proof above is complete as mathematics and incomplete as formalization.
+
+Steps~1 through~4 are algebra over $\mathbb{F}_2^2$ resting on
+Theorem~\ref{thm:cycle-space}, which is already machine-checked; formalizing
+them is bounded work with no research content.  The other ingredients are now
+equally explicit: Definition~\ref{def:stellar} and
+Theorem~\ref{thm:stellar-darts} replace maximality by a finite permutation
+construction; Definition~\ref{def:dual-map} is a change of generator; and
+Corollary~\ref{cor:loop-bridge} supplies dual bridgelessness.  Thus the
+remaining cost is Lean construction and transport between the graph and map
+presentations, not an ordinary-mathematics lemma hidden behind the word
+``planar.''
+
+\subsection{Audit of the unused maximality route}
+
+The next discussion records why the textbook maximal-plane-graph route was
+not chosen.  It is retained as an audit of an attractive detour, not as a
+dependency of Theorem~\ref{thm:tait-reduction}; the controlling proof uses
+stellar subdivision instead.
+
+\paragraph{Adding a non-crossing edge is a construction, not a theorem.}
+Let $d, d'$ be darts on one face orbit. Adjoin two darts $x, y$; set
+$\alpha' = \alpha \cup (x\,y)$; and splice $x$ into the rotation at $d$'s
+vertex and $y$ into the rotation at $d'$'s vertex, so $\sigma' d = x$,
+$\sigma' x = \sigma d$, and symmetrically at $d'$. No embedding is consulted:
+the rotation system \emph{is} the embedding. The Euler bookkeeping is
+immediate, since $V' = V$, $E' = E + 1$, and the face through $d, d'$ splits,
+so $F' = F + 1$ and $V' - E' + F' = V - E + F$. Sphericity is preserved, and
+the face count is governed by the split law of
+Lemma~\ref{lem:split-merge} rather than by a separation argument.
+
+\paragraph{Maximality is where the content actually sits.}
+The step that resists is not the construction but the claim that a maximal
+simple plane graph on at least three vertices has only triangular faces.
+Given a face of length at least four, one wants two of its vertices that are
+\emph{not already adjacent elsewhere in the graph}, since joining adjacent
+ones would destroy simplicity. That non-adjacent pair must be shown to exist,
+and its existence is a genuine combinatorial fact about plane simple graphs,
+not a corollary of the construction above.
+
+\paragraph{Why counting does not finish it.}
+It is tempting to hope Euler settles maximality directly, as it settled
+two-sidedness. It does not, and the gap is instructive. If a simple plane
+graph with $V \ge 3$ has one face of length at least four and the rest at
+least three, then $2E \ge 3F + 1$, and substituting $F = 2 - V + E$ gives
+$E \le 3V - 7$. So the graph falls short of the triangulation bound
+$E = 3V - 6$. But that shows only that it is not edge-\emph{maximum}; being
+\emph{maximal}, in the sense that no further edge can be added, is a weaker
+condition. Counting establishes a deficit without exhibiting an edge to add,
+and producing that edge is what needs an argument about which vertices the
+face separates.
+
+\begin{remark}[where the last classical debt lands]
+\Sprose
+Within the unused maximality route, the residual reduces to a single named
+development: combinatorial
+separation for rotation systems --- the statement that an embedded cycle
+divides the remaining darts into two sides that no edge crosses. Given it,
+the maximality step is routine: on a face of length at least four, if the
+first and third vertices are already adjacent then the cycle through them
+separates the second vertex from the fourth, so those two are non-adjacent
+and their join lies inside the face.
+
+This is the one place in the classical boundary where a separation argument
+is genuinely required, as against the several places where it appeared to be
+and was not. It is generic planarity theory rather than anything peculiar to
+this route, and no current library provides it.  It is not needed by the
+stellar route used above.
+\end{remark}
+
+\paragraph{Separation may already be available.}
+Before treating combinatorial separation as a development to be built, it is
+worth noticing that the pieces for it are in hand. Let $C$ be a cycle. It
+lies in the $\mathbb{F}_2$ cycle space, so by Theorem~\ref{thm:cycle-space}
+it is a sum of facial boundaries, say $C = \sum_{f \in S} \partial f$ for
+some set $S$ of faces. By Corollary~\ref{cor:two-sided} each edge has two
+\emph{distinct} faces, so $e \in \partial f$ exactly when $f$ is one of them,
+and therefore
+\[
+  e \in C \quad\Longleftrightarrow\quad
+  \bigl|\{\text{the two faces of } e\} \cap S\bigr| \text{ is odd,
+  that is, exactly one.}
+\]
+Writing $\mathrm{side}(f) := (f \in S)$, an edge outside $C$ has its two
+faces on the same side and an edge of $C$ has them on opposite sides. That
+is separation: $C$ is precisely the edge cut between the two classes, and
+nothing outside $C$ crosses.
+
+\begin{theorem}[the boundary map is the two-sided sum]\label{thm:pair-sum}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FaceSeparation.orbitFaceBoundaryLinearMap_apply_eq_pair_sum}
+With two-sided faces, the boundary map at an edge returns the sum of the
+coefficients of that edge's two faces.
+\end{theorem}
+
+\begin{corollary}[separation, dual form]\label{cor:separation}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FaceSeparation.mem_image_iff_separates}
+An edge lies in the image of a face-set indicator exactly when its two sides
+fall on opposite sides of the set. Hence the image is the edge cut between
+that set and its complement, and no edge outside the cut crosses it.
+\end{corollary}
+
+With Theorem~\ref{thm:cycle-space}, every cycle is such a cut: the
+combinatorial separation that planar arguments normally import from topology
+is available here without importing anything.
+
+\begin{remark}[what remains of the maximality step, and two routes to it]
+\Sprose
+Corollary~\ref{cor:separation} separates \emph{faces}. The maximality
+argument consumes a statement about \emph{vertices}, so a transfer is still
+needed. Since that transfer is now the only unwritten step between this
+section and a complete classical bridge, it is worth setting down the two
+candidate routes precisely, neither of which is established here or consumed
+by the controlling proof.
+
+Suppose, for contradiction, that every two vertices on a face of length
+$k \ge 4$ are adjacent.
+
+\emph{Route A, through separation.} The cycle $C$ formed by two face edges
+$v_1v_2$, $v_2v_3$ and the chord $v_3v_1$ is a cycle, so by
+Corollary~\ref{cor:separation} it is a face cut. But $v_2$ lies \emph{on}
+$C$, while the conclusion wanted concerns $v_2$ and $v_4$ being
+non-adjacent rather than lying on opposite sides. The step from a face
+two-colouring to a vertex non-adjacency is not immediate, and no transfer
+supplying it has been identified.
+
+\emph{Route B, through forbidden subgraphs.} If $k \ge 5$ the face's
+vertices induce $K_5$, which is not planar. If $k = 4$ they induce $K_4$
+with all four vertices on one face; but every face of $G$ lies inside a face
+of the subgraph $K_4$, and each of those is bounded by only three vertices,
+so no face of $G$ can meet all four. This route needs the non-planarity of
+$K_5$ and the containment of faces under passage to a subgraph --- both
+classical, neither present in the current libraries.
+
+Route~B does not use Corollary~\ref{cor:separation} at all, which is worth
+noticing on its own: the separation result may be valuable elsewhere in this
+development without being the tool this particular step wants.
+
+It is tempting to call Route~B the shorter, and that judgement does not
+survive checking. No current library supplies planarity in any form, so the
+non-planarity of $K_5$ would have to be proved here, and it does not follow
+from the Euler bound of Theorem~\ref{thm:euler-bound}: the classical
+derivation $2 = V - E + F$ together with $F \le 2E/3$ yields $E \le 3V-6$,
+but what is available here is the \emph{inequality} $V - E + F \le 2C$, and
+two upper bounds in the same direction do not combine to bound $E$. Route~B
+therefore needs sphericity as a theorem about embeddings rather than as the
+hypothesis it presently is.
+
+Both routes accordingly require real work, and no preference between them is
+recorded here. The estimate that one was shorter is withdrawn.
+\end{remark}
+
+\begin{remark}[a third route, which avoids maximality entirely]\label{rem:stellar}
+\Sprose
+Both routes above exist only to serve Lemma~\ref{lem:triangulate}, and that
+lemma was stated in the classical way --- extend $G$ to a \emph{maximal}
+plane graph --- because that is how the textbooks do it. Maximality is not
+what the reduction needs. What it needs is \emph{some} plane triangulation
+containing $G$, and one can be built outright.
+
+Place a new vertex $u_F$ inside each face $F$ and join it to every vertex on
+$F$'s boundary. A face of length $k$ becomes $k$ triangles. Nothing is
+removed, so $G$ survives as a subgraph; a proper colouring of the result
+restricts to $G$, since restricting a proper colouring to a subset of
+vertices is again proper; every face is a triangle, so the dual is cubic;
+and planarity is immediate because $u_F$ sits inside $F$.
+
+Crucially, \emph{no edge is added between existing vertices}. The entire
+difficulty of maximality was finding two non-adjacent vertices on a long
+face, and this construction never needs one.
+
+It is tempting to attach a caveat here --- that the construction yields a
+\emph{simple} graph only when each face boundary has distinct vertices,
+hence only for $2$-connected $G$ --- and to trade maximality for a reduction
+to blocks. Tracing where simplicity is actually used shows the caveat is
+unnecessary.
+
+Simplicity enters the reduction exactly once, in Lemma~\ref{lem:dual-cubic},
+and only to conclude that the dual is bridgeless: a dual bridge corresponds
+to a primal \emph{loop}, and simple graphs have none. What is needed is
+therefore looplessness, not simplicity. Multiple edges are harmless, since a
+multiple edge is not a loop and creates no dual bridge.
+
+Re-reading the construction with that in hand: if a face walk repeats a
+vertex, joining $u_F$ to each \emph{occurrence} gives $u_F$ several edges to
+that vertex --- multiple edges, not a loop. Each new face is still a triangle
+$(u_F, v_i, v_{i+1})$, and $v_i \ne v_{i+1}$ because consecutive equality
+would be a loop in $G$, which a simple $G$ does not have. So stellar
+subdivision of a loopless plane graph yields a loopless plane triangulation,
+with no connectivity hypothesis at all.
+
+Two identities corroborate the construction before any of it is built. The
+subdivision adds one vertex per face and one edge per dart-corner, so
+$V' = V + F$, $E' = E + 2E = 3E$, and each old face of length $k$ becomes $k$
+triangles, giving $F' = 2E$. Then
+\[
+  V' - E' + F' = (V + F) - 3E + 2E = V - E + F = 2 ,
+\]
+so Euler is preserved exactly; and a map all of whose faces are triangles
+satisfies $3F' = 2E'$, which here reads $6E = 6E$. Both hold with no slack,
+which is what a correct triangulating construction must give and what an
+incorrect one generally does not.
+
+What this route costs, then, is the construction itself and the verification
+that its faces are triangles --- and the next subsection carries both out on
+darts, so that even the phrase ``$u_F$ sits inside $F$'' is discharged rather
+than appealed to. What it does not cost is any argument about
+non-adjacent pairs, hence neither separation nor forbidden subgraphs. That is
+a different kind of obligation from Routes~A and~B, not merely a smaller
+one --- though, given how often the size of this residual has been misjudged
+here, the comparison is offered for checking rather than as a conclusion.
+\end{remark}
+
+\subsection{Stellar subdivision on darts}
+
+The construction above was described by placing a vertex inside a face. That
+phrase is the only geometry in it, and it can be removed: the whole
+subdivision is a substitution on darts, and the triangles come out of a
+three-line computation.
+
+\begin{definition}[stellar subdivision]\label{def:stellar}
+\Sprose
+Let $M = (D,\sigma,\alpha)$ be a map with face permutation
+$\varphi = \sigma\alpha$. For each face orbit
+$F = (d_0, d_1, \dots, d_{k-1})$, so that $\varphi(d_i) = d_{i+1}$ with
+indices mod $k$, adjoin $2k$ fresh darts $a_0,\dots,a_{k-1}$ and
+$b_0,\dots,b_{k-1}$, and set
+\[
+  \alpha'(a_i) = b_i, \qquad
+  \sigma'(\alpha d_i) = a_i, \qquad
+  \sigma'(a_i) = d_{i+1}, \qquad
+  \sigma'(b_i) = b_{i-1},
+\]
+with $\alpha' = \alpha$ and $\sigma' = \sigma$ on all darts not named. Write
+$M' = (D', \sigma', \alpha')$.
+\end{definition}
+
+That $\sigma'$ is again a permutation is exactly the identity
+$\sigma(\alpha d_i) = \varphi(d_i) = d_{i+1}$: the new dart $a_i$ is spliced
+into the rotation between $\alpha d_i$ and $d_{i+1}$, where the old rotation
+went directly. Distinct faces name distinct darts $\alpha d_i$, since the
+face orbits partition $D$, so the clauses do not collide.
+
+\begin{theorem}[the subdivision triangulates]\label{thm:stellar-darts}
+\Sprose
+The faces of $M'$ are exactly the $3$-cycles
+\[
+  (\, d_i, \; a_i, \; b_{i-1} \,),
+\]
+one for each face $F$ of $M$ and each index $i$. Consequently
+$V' = V + F$, $E' = 3E$, $F' = 2E$, and $M'$ has the same Euler
+characteristic as $M$.  The underlying graph of $M$ is a subgraph of that of
+$M'$, and connectedness of $M$ implies connectedness of $M'$.  If $M$ is
+loopless then so is $M'$, and each face of
+$M'$ meets three distinct vertices; moreover the two darts of every edge of
+$M'$ belong to distinct face orbits.
+\end{theorem}
+
+\begin{proof}
+Compute $\varphi' = \sigma'\alpha'$ on the three darts in question:
+\[
+  \varphi'(d_i) = \sigma'(\alpha d_i) = a_i, \qquad
+  \varphi'(a_i) = \sigma'(b_i) = b_{i-1}, \qquad
+  \varphi'(b_{i-1}) = \sigma'(a_{i-1}) = d_i .
+\]
+So each such triple is a $\varphi'$-orbit of length three. Every dart of $D'$
+occurs in exactly one triple --- each $d_i$ in its own, each $a_i$ in the
+$i$-th, each $b_{i-1}$ in the $i$-th --- so these are all the faces.
+
+For the counts: the darts $b_0,\dots,b_{k-1}$ form a single $\sigma'$-cycle,
+one new vertex per face, and no old vertex is split, so $V' = V + F$; the new
+edges are the pairs $\{a_i,b_i\}$, one per dart of $M$, so
+$E' = E + 2E = 3E$; and the triples number $\sum_F k_F = 2E$, so $F' = 2E$.
+Then $V' - E' + F' = (V+F) - 3E + 2E = V - E + F$.
+
+No old edge is removed.  Each new vertex is the $b$-cycle belonging to an old
+face and is joined by its new edges to vertices incident with that nonempty
+face orbit.  Hence the old underlying graph is a subgraph of the new one, and
+every new vertex attaches to it; connectedness is therefore preserved.
+
+Each new edge joins the vertex carrying $\alpha d_i$ to the new vertex of
+$F$, which is not an old vertex, so no new loop appears; old edges are
+unchanged. Finally the face $(d_i, a_i, b_{i-1})$ meets the tail of $d_i$,
+the head of $d_i$ (since $a_i$ sits at the vertex of $\alpha d_i$), and the
+new vertex of $F$; these are three distinct vertices precisely because $d_i$
+is not a loop.
+
+For two-sidedness, an old edge has distinct old darts $d$ and $\alpha d$, and
+the displayed partition puts exactly one old dart in each new face, so its two
+darts lie in distinct faces.  A new edge $\{a_i,b_i\}$ meets the faces indexed
+by $d_i$ and $d_{i+1}$.  These are distinct because a face orbit of length one
+would give $\sigma(\alpha d_i)=d_i$, placing both darts of the old edge at one
+vertex and making it a loop.  Thus every edge of $M'$ has two distinct sides.
+\end{proof}
+
+\begin{remark}[what is left of the embedding]
+\Sprose
+Definition~\ref{def:stellar} names four values of two permutations; the proof
+evaluates $\sigma'\alpha'$ three times. No face interior, no curve, and no
+plane occurs in either. Since the Euler characteristic is preserved, a
+spherical $M$ yields a spherical $M'$, which is what
+Lemma~\ref{lem:triangulate} was wanted for --- with containment of $M$ in
+place of the spanning condition, which is all the reduction uses, a proper
+colouring restricting to a subgraph regardless of whether the vertex set
+grew.
+\end{remark}
+
+\begin{remark}[why the maximality lemma remains open]
+\Sprose
+Lemma~\ref{lem:triangulate} keeps its \textsc{open} marker because stellar
+subdivision does not prove that stronger, same-vertex-set statement.  But it
+is no longer a premise of Theorem~\ref{thm:tait-reduction}.  The reduction
+needs a loopless triangulating supermap containing $G$, not a maximal simple
+supergraph on exactly the old vertex set, and
+Theorem~\ref{thm:stellar-darts} supplies precisely the weaker object.  This is
+a change of lemma, not a proof of the old lemma, and the status labels preserve
+that distinction.
+\end{remark}
+
+\begin{remark}[the shape of the debt]
+\Sprose
+The reduction needs neither new algebra nor a Jordan curve theorem.  At the
+ordinary-mathematics level it consists of explicit finite permutation
+constructions plus the already-stated cycle-space theorem.  At the Lean level
+it still needs the stellar construction, dual transport, the Klein-group
+potential argument, and the adapter from the planar-graph input to a spherical
+rotation system.  Those are concrete formalization debts of fixed shape.
+\end{remark}
+
+\begin{remark}[how this closes the classical debts]
+With Corollary~\ref{cor:two-sided} established, the classical boundary of the
+route reduces to exactly two further obligations: the graph-backed
+presentation of a least counterexample, and Theorem~\ref{thm:tait-reduction}
+above. Their ordinary proofs are now complete here; both remain formalization
+debts of known shape, which is materially different from an open mathematical
+problem.
+\end{remark}

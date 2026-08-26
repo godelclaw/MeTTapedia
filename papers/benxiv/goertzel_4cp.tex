@@ -9,6 +9,7 @@
 \usepackage{booktabs}
 \usepackage{hyperref}
 \usepackage{listings}
+\usepackage{statusledger}
 \geometry{margin=1in}
 
 \lstdefinestyle{lean}{
@@ -74,6 +75,7 @@
 \newtheorem{remark}{Remark}
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}
+\newtheorem{example}{Example}
 
 \newcommand{\GG}{\mathbb{G}}
 \newcommand{\FF}{\mathbb{F}_2}
@@ -82,12 +84,13 @@
 \newcommand{\KC}{\mathrm{KC}}
 \newcommand{\LKR}{\mathrm{LKR}_{\mathrm{in}}}
 \newcommand{\colorset}{\{r,b,p\}}
+\newcommand{\Sym}{\operatorname{Sym}}
 
 \title{A Living Machine-Checked Companion to Goertzel and Fable's\\
 Reductive--Compositional Route to the Four-Color Theorem:\\
 \large Proven Structure, Refuted Shortcuts, and the Closure Frontier}
 \author{The MeTTapedia formalization effort}
-\date{Living revision: 25 August 2026}
+\date{Living revision: 26 August 2026}
 
 \begin{document}
 \maketitle
@@ -101,11 +104,15 @@ reductive--compositional programme described in
 \emph{reductive\_vs\_covering (2)}, \emph{compositional\_proof\_note},
 \emph{4cp\_new\_theory}, and \emph{4cp-lean\_playbook}.  Where that package
 supersedes v23, the newer text controls.  Section~\ref{sec:current} records the
-current kernel-checked boundary: a large conditional descent tower and a
-conditional concrete reductive-system value are present, but the
-source-specific physical splice inhabitants, the exact finite transition
-factorization, and the verified route-native base remain open.  Accordingly
-this companion does not claim a new proof of the Four-Color Theorem.
+current kernel-checked boundary.  Exact one-cell factorization and a lossless
+finite replay interface are present through the manuscript-exact two-pair
+profile (with the conservative three-pair carrier retained internally);
+the executable reachable closure,
+source-specific physical splice inhabitant, uniform bulk-corridor theorem,
+and route-native finite bases remain open.  The former good-word closed-web
+base (GWCO) is refuted and is not a premise of the controlling proof.
+Accordingly this companion does not claim a new proof of the Four-Color
+Theorem.
 
 This is a living formalization companion to Ben Goertzel's manuscript \emph{A
 Human-Readable, Spencer--Brown/Kauffman-Style Proof of the Four-Color Theorem}
@@ -178,6 +185,11 @@ pumping infrastructure is the active replacement search.
 \end{abstract}
 
 \tableofcontents
+
+\input{foundations/compositional-proof-spine}
+\input{foundations/map-euler-foundations}
+\input{foundations/graph-backed-presentation}
+\input{foundations/tait-reduction}
 
 \section{Current controlling status: the reductive--compositional programme}
 \label{sec:current}
@@ -9444,5 +9456,14 @@ themselves machine-checked theorems that a stated step \emph{fails}.
         explicit presentation theorem; no unrestricted carrier theorem is
         available.
 \end{description}
+
+\appendix
+\section{Generated status ledger for the controlling foundations}
+\label{sec:generated-status-ledger}
+The inline badges in the controlling spine and foundation sections are the
+source of truth.  This table is generated from them by
+\texttt{tools/check\_status.py}; every \textsc{verified} entry is rejected if
+its named Lean declaration is absent or its module contains an admitted hole.
+\input{foundations/status-ledger}
 
 \end{document}

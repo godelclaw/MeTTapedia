@@ -1,0 +1,417 @@
+% Graph-backed presentation of a least counterexample.
+%
+% Companion to foundations/map-euler-foundations.tex and
+% foundations/tait-reduction.tex.  Status markers as in those files.
+
+\section{Graph-backed presentation, and why minimality is not optional}
+\label{sec:graph-backed}
+
+The compositional machinery is stated over rotation systems; the classical
+bridge of Section~\ref{sec:tait-reduction} is stated over simple graphs. To
+join them one needs a bridgeless spherical cubic map to be presentable as
+the rotation system of a \emph{simple} graph.
+
+The tempting statement is that every such map is so presentable. That
+statement is false, and the counterexample is small enough to be worth
+stating first, because it tells us exactly which hypothesis is doing the
+work.
+
+\subsection{The obstruction}
+
+\begin{example}[the spherical theta multigraph]\label{ex:theta}
+\Sprose
+Let $D = \{u_0, u_1, u_2, v_0, v_1, v_2\}$, let the edge flip exchange $u_i$
+with $v_i$, and let the vertex rotations be
+\[
+  \sigma_u = (u_0\,u_1\,u_2), \qquad \sigma_v = (v_0\,v_2\,v_1).
+\]
+The face permutation is then $(u_0\,v_2)(u_1\,v_0)(u_2\,v_1)$, so
+\[
+  V = 2, \qquad E = 3, \qquad F = 3, \qquad V - E + F = 2 .
+\]
+This map is spherical, cubic, connected, and bridgeless. But no simple
+graph on two vertices is cubic --- a simple graph on two vertices has
+maximum degree one --- so there is no equal-vertex-count presentation of it
+by a simple graph.
+\end{example}
+
+Two vertices joined by three parallel edges: the multiplicity is exactly
+what a simple graph cannot express. The unrestricted presentation claim is
+therefore false, and any development asserting it is asserting something
+untrue.
+
+The repair is not to weaken the conclusion but to remember the hypothesis
+that was available all along. We do not need to present \emph{every} map. We
+need to present a \emph{least counterexample}, and the theta map is not one:
+
+\begin{remark}\label{rem:theta-colourable}
+\Sprose
+The theta map is Tait colourable. Its three edges are incident with both
+vertices, so assigning them three distinct colours properly colours both
+stars at once. Hence it is not a counterexample to anything, and no
+statement restricted to counterexamples is threatened by it.
+\end{remark}
+
+That is the shape of the whole section: multiplicity is exactly what
+minimality removes.
+
+\subsection{Setting}
+
+Fix a map $M$ that is connected, spherical, cubic, and bridgeless, and that
+is a \emph{least counterexample}: $M$ admits no Tait colouring, while every
+map in the same class with strictly fewer vertices does.
+
+\begin{lemma}[no loops]\label{lem:no-loops}
+\Sprose
+$M$ has no loop. This uses bridgelessness only; minimality is not needed.
+\end{lemma}
+
+\begin{proof}
+Suppose $v$ carries a loop $\ell$. The loop occupies two of the three darts
+at $v$, so exactly one further edge $e$ is incident with $v$, and its other
+end is some vertex $w$. If $w = v$ then $e$ is a second loop at $v$, giving
+$v$ four darts and contradicting cubicity; so $w \neq v$ and, in
+particular, $M$ has at least two vertices.
+
+Delete $e$. The only remaining edge at $v$ is the loop $\ell$, so $\{v\}$ is
+a connected component of $M - e$, while $w \neq v$ lies in another. Thus
+deleting $e$ increased the number of components: $e$ is a bridge,
+contradicting bridgelessness.
+\end{proof}
+
+\subsection{Removing parallel edges}
+
+This is where minimality is spent.
+
+\begin{lemma}[the digon splice]\label{lem:digon-splice}
+\Sconditional{Theorem~\ref{thm:digon-combinatorial}}
+Suppose distinct vertices $u, v$ of $M$ are joined by exactly two parallel
+edges, and $M$ is not the theta map.
+Let $a = uu'$ and $b = vv'$ be the remaining edges at $u$ and at $v$. Then
+$u' \neq v'$, and the map $M'$ obtained by deleting $u$, $v$, the two
+parallel edges, $a$ and $b$, and inserting a single new edge $c = u'v'$, is
+again connected, spherical, cubic, and bridgeless, with exactly two fewer
+vertices.
+\end{lemma}
+
+\begin{proof}
+Each of $u$ and $v$ has three darts, two consumed by the parallel pair, so
+$a$ and $b$ are well defined and unique. By Lemma~\ref{lem:no-loops},
+$u' \neq u$ and $v' \neq v$.
+Moreover $u'\neq v$ and $v'\neq u$: either equality would make the remaining
+edge a third $uv$ edge; cubicity and connectedness would then make $M$ the
+theta map, which has been excluded. Thus the splice really removes $u,v$ and
+joins two surviving vertices.
+
+\emph{First, $u' \neq v'$.} Suppose $u' = v' = w$. Then $w$ is incident with
+$a$ and with $b$, and being cubic it has exactly one further edge $f$. Now
+$\{u,v,w\}$ meets the rest of $M$ only along $f$: the parallel pair, $a$ and
+$b$ are internal to it, and $u$, $v$ have no other darts. Deleting $f$
+therefore separates $\{u,v,w\}$ from the remainder, so $f$ is a bridge
+unless there is no remainder --- and if there is none, $w$'s third dart has
+nowhere to go without violating cubicity. Either way we contradict a
+standing hypothesis, so $u' \neq v'$.
+
+\emph{Cubicity.} Every vertex other than $u',v'$ is untouched. Each of $u'$
+and $v'$ loses one incident edge ($a$, resp.\ $b$) and gains one ($c$), so
+retains degree three.
+
+\emph{Connectedness.} Any path of $M$ through the deleted region entered and
+left along $a$ and $b$, and now traverses $c$ instead.
+
+\emph{Bridgelessness.} Suppose $c$ were a bridge of $M'$, separating $M'-c$
+into a part $A \ni u'$ and a part $B \ni v'$. Then in $M$ the only
+connections between $A$ and $B$ run through $u$ and $v$, hence through $a$
+and the parallel pair and $b$. Deleting $a$ from $M$ would then separate
+$A$ from the rest, making $a$ a bridge of $M$ and contradicting
+bridgelessness. For an edge $e\neq c$ of $M'$, expand every traversal of $c$
+to the path $u' a u,e_1,v b v'$ in $M$, and contract every traversal of the
+deleted two-vertex network in $M$ back to $c$. These operations preserve
+walks after deleting $e$. Hence, if $M'-e$ were disconnected, then $M-e$
+would be disconnected as well, contrary to bridgelessness of $M$.
+
+\emph{Sphericity.} The count is consistent: $V' = V-2$, $E' = E-3$, and one
+face is destroyed --- the face bounded by the parallel pair --- so
+$F' = F-1$ and
+\[
+  V' - E' + F' = (V-2)-(E-3)+(F-1) = V - E + F = 2 .
+\]
+The step that must be discharged is the claim that the parallel pair bounds
+a face --- it does not follow from the counts --- and
+Theorem~\ref{thm:digon-combinatorial} supplies it from bridgelessness, Euler's
+inequality, and a finite dart computation. Thus the splice uses no separation
+theorem.
+\end{proof}
+
+\subsection{What the digon face really needs}
+
+The splice above rests on the parallel pair bounding a face. That claim
+decomposes further than it first appears, and the decomposition is worth
+recording because half of it is free.
+
+Write the digon's darts as $p_1, p_2$ at $u$ (on the two parallel edges
+$e_1, e_2$) and $q_1, q_2$ at $v$, with $\alpha p_i = q_i$, and let $p_a$,
+$q_b$ be the third darts at $u$ and at $v$.
+
+\begin{lemma}[a cubic digon always shares a face]\label{lem:digon-shares}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24BridgeTwoSided.sameCycle_digon}
+In a cubic map, some face orbit contains a dart of $e_1$ and a dart of
+$e_2$. No sphericity and no counting are needed.
+\end{lemma}
+
+\begin{proof}
+The rotation $\sigma_u$ is a three-cycle on $\{p_1, p_2, p_a\}$, so either
+$\sigma p_1 = p_2$ or $\sigma p_1 = p_a$. In the first case
+$\varphi(q_1) = \sigma(\alpha q_1) = \sigma p_1 = p_2$, so $q_1$ and $p_2$
+lie on one face. In the second case $\sigma_u = (p_1\,p_a\,p_2)$, whence
+$\sigma p_2 = p_1$ and $\varphi(q_2) = p_1$, so $q_2$ and $p_1$ lie on one
+face. With only three darts at a cubic vertex, two of them are cyclically
+adjacent one way or the other, and there is no third possibility. The
+formal statement takes that dichotomy as its hypothesis, which is precisely
+what a three-dart rotation supplies.
+\end{proof}
+
+\begin{remark}[where sphericity actually enters]\label{rem:digon-exact}
+What the splice needs is stronger: that the shared face is \emph{exactly}
+the digon, with boundary $\{e_1, e_2\}$ and nothing more, since only then
+does deleting the pair destroy precisely one face and keep the Euler count
+of Lemma~\ref{lem:digon-splice} honest. Continuing the computation above in
+the first case, $\varphi(p_2) = \sigma(q_2)$, and this returns to $q_1$ --
+closing the two-cycle -- exactly when $\sigma q_2 = q_1$, that is, when the
+rotation at $v$ is oriented compatibly with the one at $u$. Both
+orientations give legitimate rotation systems; they differ in genus. So
+sphericity is precisely the hypothesis that rules the incompatible one out,
+and this is the point at which the digon lemma stops being free.
+
+A small exhaustive check corroborates this before any proof is attempted.
+Take the cubic multigraph on $\{u,v,w,x\}$ with a parallel pair joining $u$
+to $v$, a parallel pair joining $w$ to $x$, and single edges $uw$ and $vx$;
+enumerate all $2^4 = 16$ rotation systems on it. Of these, four are spherical
+and twelve have genus one. In all four spherical systems the pair $\{e_1,
+e_2\}$ bounds a face of length exactly two; among the genus-one systems only
+four do, and eight do not. So sphericity is sufficient here and visibly not
+necessary --- which is the asymmetry the remark predicts, and the direction
+the splice actually consumes. This is corroboration on one family rather than
+a proof, and the lemma keeps its \textsc{open} marker accordingly.
+\end{remark}
+
+\subsection{The digon face, from bridgelessness}
+
+The exhaustive check suggests the claim; here is the argument. It is worth
+setting down because it consumes no new hypothesis: the third edge at $u$
+would be a bridge, and bridgelessness is already standing.
+
+\begin{lemma}[a parallel pair bounds a face]\label{lem:digon-face}
+\Sconditional{sphere separation (Section~\ref{sec:tait-reduction})}
+Let $M$ be connected, spherical, cubic and bridgeless, let distinct vertices
+$u,v$ be joined by parallel edges $e_1,e_2$, and suppose $M$ is not the theta
+map of Example~\ref{ex:theta}. Then $e_1 \cup e_2$ bounds a face of $M$.
+\end{lemma}
+
+\begin{proof}
+Since $u \neq v$ and $e_1,e_2$ meet only at $u$ and $v$, the union
+$\gamma = e_1 \cup e_2$ is a simple closed curve on the sphere. By
+separation, its complement has exactly two components $D_1, D_2$, each an
+open disc with boundary $\gamma$, and $\gamma$ carries no vertex other than
+$u$ and $v$.
+
+Cubicity leaves $u$ exactly one dart $p_a$ off $\gamma$, and $v$ exactly one
+dart $q_b$. Each points into $D_1$ or into $D_2$.
+
+\emph{They cannot point into different discs.} Say $p_a$ points into $D_1$
+and $q_b$ into $D_2$, and let $a$ be the edge carrying $p_a$, with other end
+$u'$. By Lemma~\ref{lem:no-loops}, $u' \neq u$. If $u' = v$ then $a$ is a
+third $uv$ edge, saturating both vertices, and connectedness makes $M$ the
+theta map --- excluded. So $u' \in D_1$.
+
+Now every walk from $u'$ to $v$ must leave $D_1$, and it can only leave
+through $\gamma$; but $\gamma$ carries no vertices besides $u$ and $v$, and
+the only dart at either of them pointing into $D_1$ is $p_a$. So every such
+walk traverses $a$, and $M - a$ separates $u'$ from $v$: the edge $a$ is a
+bridge, contradicting bridgelessness.
+
+\emph{Hence both point into the same disc}, say $D_1$. Then no dart at $u$
+or at $v$ points into $D_2$. A vertex in the interior of $D_2$ would reach
+the rest of $M$ only through $\gamma$, hence through such a dart, and there
+is none; connectedness then forces the interior of $D_2$ to be free of
+vertices, so also of edges. Thus $D_2$ is a face, bounded by $e_1$ and $e_2$
+and nothing else.
+\end{proof}
+
+\subsection{The digon face, without separation}
+
+The proof above spends a separation statement. It need not. The same
+conclusion follows from two facts already machine-checked here --- the
+bridge characterisation and Euler's \emph{inequality} --- and from the
+observation that a digon in a cubic map is attached to the rest of the map
+by exactly two edges.
+
+\begin{theorem}[the digon face, combinatorially]\label{thm:digon-combinatorial}
+\Sconditional{Theorem~\ref{thm:same-face-bridge}, Theorem~\ref{thm:euler-bound}}
+Let $M$ be a connected bridgeless cubic map carrying a parallel pair
+$e_1, e_2$ between distinct vertices $u, v$, and suppose $M$ is not the theta
+map. If $M$ is spherical then
+$\{e_1, e_2\}$ is a face of $M$.
+\end{theorem}
+
+\begin{proof}
+Write $p_1, p_2, p_a$ for the darts at $u$ and $q_1, q_2, q_b$ for those at
+$v$, with $\alpha p_i = q_i$; let $a$ be the edge carrying $p_a$, with second
+dart $a'$, and $b$ the edge carrying $q_b$, with second dart $b'$. Since $u$
+and $v$ have no further darts, every other dart lies in the exterior, and $M$
+meets the exterior only along $a$ and $b$.
+
+Relabelling $e_1 \leftrightarrow e_2$ if necessary, take
+$\sigma_u = (p_1\,p_2\,p_a)$. The rotation at $v$ is one of two $3$-cycles.
+If $\sigma_v = (q_1\,q_b\,q_2)$ then $\sigma q_2 = q_1$, and
+\[
+  \varphi(q_1) = \sigma p_1 = p_2, \qquad \varphi(p_2) = \sigma q_2 = q_1,
+\]
+so $\{q_1, p_2\}$ is a face of length two and we are done. Assume therefore
+$\sigma_v = (q_1\,q_2\,q_b)$, and write $M^{\circ}$ for the map obtained by
+replacing $\sigma_v$ with the other $3$-cycle. We show $M$ is not spherical.
+
+Since $\varphi(x) = \sigma(\alpha x)$ and the two maps differ only in
+$\sigma_v$, they differ only at darts $x$ with $\alpha x \in \{q_1,q_2,q_b\}$,
+that is, at $p_1$, $p_2$ and $b'$. In particular the $\varphi$-orbit of a
+dart of the exterior follows the same course in both maps until it reaches
+$a'$ or $b'$.
+
+Let $P_a$ be the segment from $\varphi(p_a) = \sigma a'$ up to its first
+arrival at $a'$ or $b'$, and $P_b$ the segment from
+$\varphi(q_b) = \sigma b'$. If $P_a$ arrived at $a'$ then $p_a$ and $a'$ ---
+the two darts of $a$ --- would lie on one face, making $a$ a bridge by
+Theorem~\ref{thm:same-face-bridge}; likewise an arrival of $P_b$ at $b'$
+would make $b$ a bridge. Bridgelessness therefore forces $P_a$ to end at
+$b'$ and $P_b$ at $a'$.
+
+Now trace both maps. In $M$,
+\[
+  p_a \to P_a \to b' \to q_1 \to p_2 \to q_b \to P_b \to a' \to p_1 \to q_2
+  \to p_a ,
+\]
+a single face. In $M^{\circ}$ the same darts fall into three:
+\[
+  (p_a,\, P_a,\, b',\, q_2), \qquad
+  (p_1,\, q_b,\, P_b,\, a'), \qquad
+  (q_1,\, p_2).
+\]
+Every face meeting neither $P_a$ nor $P_b$ is untouched, so
+$F(M^{\circ}) = F(M) + 2$. The two maps share their underlying graph, hence
+their vertex count, edge count and number of components. Euler's inequality
+(Theorem~\ref{thm:euler-bound}) applied to $M^{\circ}$ gives
+\[
+  V + F(M) + 2 \;=\; V + F(M^{\circ}) \;\le\; E + 2 ,
+\]
+so $V + F(M) \le E$, and $M$ is not spherical.
+\end{proof}
+
+\begin{remark}[the last embedding obligation, discharged]
+\Sprose
+Theorem~\ref{thm:digon-combinatorial} uses no curve and no separation. Its
+inputs are the bridge characterisation and Euler's inequality, both
+machine-checked, together with a dart computation. Two features of the
+situation carry it: a digon in a cubic map is attached by exactly two edges,
+which is what makes the exterior enter only as two opaque segments $P_a$ and
+$P_b$; and sphericity is the \emph{equality} case of an inequality that holds
+unconditionally, so exhibiting a rival rotation with two more faces refutes
+sphericity outright. The second is worth noting on its own --- an inequality
+one cannot prove tight is still a tool for proving a given map is
+\emph{not} tight.
+
+An exhaustive check accompanies the theorem: over three cubic multigraphs
+carrying a digon, all $16 + 64 + 256$ rotation systems were enumerated, and
+no spherical bridgeless one failed to have the pair as a face.
+
+Lemma~\ref{lem:digon-face} is retained for the picture it gives, but nothing
+depends on it, and with it goes the last obligation in this development that
+mentioned a plane.
+\end{remark}
+
+\begin{remark}[what this costs]
+\Sprose
+Nothing beyond what the route already owes.  The load-bearing proof is
+Theorem~\ref{thm:digon-combinatorial}: bridge characterisation, Euler's
+inequality, and a dart count.  Lemma~\ref{lem:digon-face} remains only as the
+geometric picture and is not consumed.  The exclusion of the theta map is
+harmless, since by Remark~\ref{rem:theta-colourable} it is Tait colourable and
+so is never a least counterexample.
+\end{remark}
+
+\begin{lemma}[no parallel edges]\label{lem:no-parallel}
+\Sprose
+$M$ has no two vertices joined by more than one edge.
+\end{lemma}
+
+\begin{proof}
+Suppose it does.  By cubicity there are either exactly two or exactly three
+edges between the repeated pair of vertices.  In the latter case those two
+vertices have no other incident darts, so connectedness makes $M$ the theta
+map, which is Tait colourable by Remark~\ref{rem:theta-colourable}; this
+contradicts that $M$ is a counterexample.  Hence there are exactly two, $M$ is
+not theta, and we may form $M'$ as in Lemma~\ref{lem:digon-splice}. Then $M'$
+lies in the same class and has two fewer vertices, so by minimality of $M$
+it admits a Tait colouring $\chi'$.
+
+Lift $\chi'$ to $M$. Give $a$ and $b$ the colour $\chi'(c)$, and give every
+other edge of $M$ its $\chi'$-colour. It remains to colour the parallel
+pair. At $u$ the edge $a$ already carries $\chi'(c)$, so assigning the two
+parallel edges the two remaining colours makes the star at $u$ proper; the
+same two colours make the star at $v$ proper, since $b$ also carries
+$\chi'(c)$. Every other star is unchanged from $\chi'$ --- at $u'$ the edge
+$c$ has been replaced by $a$ of the same colour, and likewise at $v'$.
+
+So $M$ admits a Tait colouring, contradicting the assumption that it is a
+counterexample.
+\end{proof}
+
+\subsection{The presentation}
+
+\begin{theorem}[graph-backed presentation of a least counterexample]
+\label{thm:graph-backed}
+\Sprose
+A least counterexample $M$ is the rotation system of a simple graph on its
+own vertex set, and Tait colourings transfer between the two descriptions.
+\end{theorem}
+
+\begin{proof}
+By Lemmas~\ref{lem:no-loops} and~\ref{lem:no-parallel} the incidence
+relation of $M$ has no loop and no repeated pair, so it \emph{is} the
+adjacency relation of a simple graph $G$ on the vertex set of $M$, and the
+vertex rotations of $M$ are rotations of the darts of $G$. The edge sets are
+in bijection under this identification, so a colouring of one is literally a
+colouring of the other, and properness at a vertex is the same condition on
+both sides.
+\end{proof}
+
+\begin{remark}[what the restriction bought]
+\Sprose
+The corresponding statement over the whole class is false by
+Example~\ref{ex:theta}. What minimality supplies is precisely
+Lemma~\ref{lem:no-parallel}, and it supplies it in the only way available:
+by producing a smaller member of the class and colouring it. This is worth
+emphasising because the formal statement must carry the minimality data as a
+hypothesis --- a version quantified over all bridgeless spherical cubic maps
+is not merely unproved but refuted, and a development asserting it would be
+unsound rather than incomplete.
+\end{remark}
+
+\begin{remark}[status summary for the classical boundary]
+\Sprose
+With this section the ordinary mathematics of the classical bridge is closed.
+Two-sidedness and both directions of the bridge characterisation are
+machine-checked.  Theorem~\ref{thm:digon-combinatorial} removes the only
+geometric premise from the digon splice, so minimality eliminates loops and
+parallel edges and yields Theorem~\ref{thm:graph-backed} without a separation
+axiom.
+
+The companion reduction in Section~\ref{sec:tait-reduction} likewise uses no
+maximal-plane-graph argument: stellar subdivision is an explicit dart
+substitution, duality is the replacement of $\sigma$ by $\sigma\alpha$, and
+looplessness of the subdivision makes its dual bridgeless.  The classical
+maximal triangulation lemma and the geometric digon lemma remain in the text
+as recognizable comparison routes; their \textsc{open}/\textsc{conditional}
+markers describe those statements themselves, not dependencies of the
+controlling proof.  What remains here is Lean transport and construction, not
+an ordinary-mathematics gap.
+\end{remark}

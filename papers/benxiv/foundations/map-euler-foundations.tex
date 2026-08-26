@@ -1,0 +1,411 @@
+% Transposition surgery, Euler's inequality, and two-sided faces.
+%
+% Self-contained map-theoretic foundations for the compositional route.
+% Every result carries an inline verification-status marker; the appendix
+% ledger is generated and checked by tools/check_status.py.
+%
+% This file is \input by the companion and is maintained separately from it.
+
+\section{Foundations: transposition surgery and two-sided faces}
+\label{sec:map-euler-foundations}
+
+The compositional route needs one classical fact at its classical boundary:
+in a bridgeless spherical cubic map, the two sides of every edge lie on
+\emph{different} faces. In the informal literature this is treated as a
+consequence of the Jordan curve theorem and therefore as visually obvious.
+It is obvious. It is also, in a permutation model of maps, a corollary of
+Euler's inequality, and that route is entirely finite and combinatorial.
+
+This section gives the finite argument in full. The mathematics is
+standard --- the surgery lemma is folklore and Euler's inequality for
+hypermaps goes back to Jacques --- but the path is unusually short when the
+genus inequality is proved \emph{first}, and it needs remarkably little: no
+disjointness of the transpositions, no orientability argument, and no
+Jordan curve theorem.
+
+\subsection{Setting}
+
+Throughout, $D$ is a finite set of \emph{darts} and $\Sym(D)$ its symmetric
+group. For $\pi \in \Sym(D)$ write $c(\pi)$ for the number of orbits of
+$\pi$ on $D$, \emph{counting fixed points as orbits}. For a family
+$G \subseteq \Sym(D)$ write $c\langle G\rangle$ for the number of orbits of
+the subgroup it generates.
+
+\begin{definition}[combinatorial map]\label{def:map}
+A \emph{map} is a triple $(D,\sigma,\alpha)$ with $\sigma \in \Sym(D)$ and
+$\alpha \in \Sym(D)$ a fixed-point-free involution. We call $\sigma$ the
+\emph{vertex rotation}, $\alpha$ the \emph{edge flip}, and
+$\varphi := \sigma\alpha$ the \emph{face permutation}, whose orbits are the
+\emph{faces}. Set
+\[
+  V := c(\sigma), \qquad E := c(\alpha) = |D|/2, \qquad
+  F := c(\varphi), \qquad C := c\langle \sigma,\alpha\rangle .
+\]
+The map is \emph{connected} if $C = 1$, and \emph{spherical} if it is
+connected and $V - E + F = 2$.
+\end{definition}
+
+Two conventions deserve comment. Faces are orbits of $\sigma\alpha$ rather
+than $\alpha\sigma$; the two are conjugate, so no count below is affected.
+And an \emph{edge} is a pair $\{d,\alpha d\}$ whose two elements are its
+two \emph{sides} --- whether they lie on one face or two is exactly the
+question at issue.
+
+\begin{definition}[bridge]\label{def:bridge}
+An edge $e = \{d, \alpha d\}$ is a \emph{bridge} if deleting it increases
+the number of connected components. Formally, put
+$\alpha_0 := \alpha \circ (d\;\alpha d)$, an involution fixing $d$ and
+$\alpha d$ and agreeing with $\alpha$ elsewhere, and let
+$C_0 := c\langle \sigma, \alpha_0\rangle$. Then $e$ is a bridge exactly
+when $C_0 > C$.
+\end{definition}
+
+Note that $\alpha_0$ is \emph{not} the edge flip of a map: it has fixed
+points. This is intentional and harmless, since none of the counting below
+assumes fixed-point-freeness. Retaining the darts $d, \alpha d$ rather than
+removing them is what leaves $\sigma$, and hence $V$, literally unchanged
+by the deletion, which is what keeps the bookkeeping honest.
+
+\subsection{Transposition surgery}
+
+Everything rests on one lemma about what a transposition does to an orbit
+count.
+
+\begin{lemma}[split/merge]\label{lem:split-merge}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PermutationOrbitSurgery.orbitCount_swap_mul_of_sameCycle}
+Let $\pi \in \Sym(D)$, let $a \neq b$ in $D$, and let $\tau = (a\;b)$. If
+$a$ and $b$ lie on the same $\pi$-orbit then $c(\tau\pi) = c(\pi) + 1$;
+otherwise $c(\tau\pi) = c(\pi) - 1$.
+\end{lemma}
+
+\begin{proof}
+Since $(\tau\pi)(x) = \tau(\pi x)$, the permutations $\tau\pi$ and $\pi$
+agree at every $x$ with $\pi x \notin \{a,b\}$. Only two points are
+affected: the $\pi$-preimages of $a$ and of $b$.
+
+Suppose first that $a,b$ share a $\pi$-orbit, written
+\[
+  (a,\ \pi a,\ \pi^2 a,\ \dots,\ \pi^{m-1}a), \qquad \pi^m a = a, \qquad
+  b = \pi^k a, \quad 0 < k < m .
+\]
+Then $\pi$ sends $\pi^{k-1}a \mapsto b$ and $\pi^{m-1}a \mapsto a$, so
+$\tau\pi$ sends $\pi^{k-1}a \mapsto a$ and $\pi^{m-1}a \mapsto b$. The
+single orbit therefore breaks into
+$(a, \pi a, \dots, \pi^{k-1}a)$ and $(b, \pi^{k+1}a, \dots, \pi^{m-1}a)$:
+two orbits where there was one, all others untouched.
+
+For the second case note $\tau(\tau\pi) = \pi$, and that $a$ and $b$ do
+share a $\tau\pi$-orbit --- indeed $\tau\pi$ carries the $\pi$-preimage of
+$b$ to $a$ and the $\pi$-preimage of $a$ to $b$, welding the two orbits
+into one. The first case applied to $\tau\pi$ then gives
+$c(\pi) = c(\tau\pi) + 1$.
+\end{proof}
+
+The second case repays attention, because it is the only place a reader
+might reach for a picture. The identity $\tau(\tau\pi) = \pi$ says the two
+cases are one computation read in opposite directions: a transposition is
+its own inverse, so splitting and merging are a single operation seen from
+two sides.
+
+\begin{corollary}[right-handed form]\label{cor:split-merge-right}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PermutationOrbitSurgery.orbitCount_swap_mul_of_not_sameCycle}
+With $\pi, a, b, \tau$ as above, $c(\pi\tau)$ obeys the same dichotomy.
+\end{corollary}
+
+\begin{proof}
+$\tau(\pi\tau)\tau^{-1} = \tau\pi$, so $\pi\tau$ and $\tau\pi$ are
+conjugate and have equal orbit counts; apply
+Lemma~\ref{lem:split-merge}.
+\end{proof}
+
+We use the right-handed form below, since deleting an edge multiplies the
+face permutation on the right.
+
+\begin{remark}
+Lemma~\ref{lem:split-merge} is the exact orbit-counting refinement of the
+familiar parity statement $\operatorname{sgn}(\tau\pi) =
+-\operatorname{sgn}(\pi)$. Parity records that the count changes by an odd
+number; the lemma records that it changes by exactly one, and says which
+way.
+\end{remark}
+
+\subsection{Euler's inequality}
+
+\begin{theorem}[Euler bound]\label{thm:euler-bound}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MapEulerBound.orbitCount_add_orbitCount_mul_swapProduct_le}
+Let $\sigma \in \Sym(D)$ and let $\tau_1,\dots,\tau_n$ be transpositions,
+\emph{not assumed disjoint}, with product $\beta = \tau_1\tau_2\cdots\tau_n$.
+Then
+\[
+  c(\sigma) + c(\sigma\beta) \;\le\; n + 2\,c\langle \sigma, \tau_1, \dots, \tau_n\rangle .
+\]
+\end{theorem}
+
+\begin{proof}
+Induction on $n$.
+
+For $n = 0$ we have $\beta = 1$, the generated group is $\langle\sigma\rangle$
+whose orbits are the $\sigma$-orbits, and both sides equal $2c(\sigma)$.
+This base case is an \emph{equality}; all the slack in the theorem is
+created by the inductive step.
+
+For the step write $\beta = \tau\beta'$ with $\tau = (a\;b)$ and
+$\beta' = \tau_2\cdots\tau_n$. Put
+$G' := \langle \sigma, \tau_2, \dots, \tau_n\rangle$ and
+$G := \langle \sigma, \tau, \tau_2, \dots, \tau_n\rangle$, with
+$C' = c\langle G'\rangle$ and $C = c\langle G\rangle$. The inductive
+hypothesis reads $c(\sigma) + c(\sigma\beta') \le (n-1) + 2C'$.
+
+The key algebraic step is that inserting $\tau$ on the right of $\sigma$ is
+the same as inserting a conjugate transposition on the left of
+$\sigma\beta'$:
+\[
+  \sigma\beta = \sigma\tau\beta'
+  = (\sigma\tau\sigma^{-1})(\sigma\beta')
+  = \tau'(\sigma\beta'), \qquad \tau' = (\sigma a\;\;\sigma b) .
+\]
+Since $a \neq b$ and $\sigma$ is injective, $\sigma a \neq \sigma b$, so
+Lemma~\ref{lem:split-merge} applies to $\tau'$ and $\sigma\beta'$.
+
+\emph{Case (i): $a$ and $b$ lie in the same $G'$-orbit.} Adjoining $\tau$
+joins nothing new, so $C = C'$. The lemma gives
+$c(\sigma\beta) \le c(\sigma\beta') + 1$ in either branch, whence
+\[
+  c(\sigma) + c(\sigma\beta) \le c(\sigma) + c(\sigma\beta') + 1
+  \le (n-1) + 2C' + 1 = n + 2C .
+\]
+
+\emph{Case (ii): $a$ and $b$ lie in different $G'$-orbits.} Adjoining
+$\tau$ fuses exactly those two, so $C = C' - 1$. We claim the lemma must
+take its merging branch. Indeed $\sigma \in G'$, so $\sigma a$ and
+$\sigma b$ again lie in different $G'$-orbits; and $\sigma\beta' \in G'$,
+so $\langle \sigma\beta'\rangle \le G'$ and every $\sigma\beta'$-cycle lies
+inside a single $G'$-orbit. Hence $\sigma a$ and $\sigma b$ lie on
+different $\sigma\beta'$-cycles and
+$c(\sigma\beta) = c(\sigma\beta') - 1$. Therefore
+\[
+  c(\sigma) + c(\sigma\beta) = c(\sigma) + c(\sigma\beta') - 1
+  \le (n-1) + 2C' - 1 = n + 2C . \qedhere
+\]
+\end{proof}
+
+The two cases repay contrast. In case (i) the component count is frozen
+while the face count may rise, so the inequality loses ground --- by
+exactly one unit per independent cycle, which is the genus. In case (ii)
+the component count falls, but the face count is \emph{forced} to fall with
+it and the ledger balances exactly. The bound is tight because a new edge
+across two components can never create a face.
+
+\begin{corollary}[Euler's inequality for maps]\label{cor:euler-map}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24InvolutionEdgeList.orbitCount_add_orbitCount_mul_le'}
+For a map $(D,\sigma,\alpha)$ we have $V - E + F \le 2C$, with the edges
+taken to be the two-cycles of $\alpha$.
+\end{corollary}
+
+\begin{proof}
+Present $\alpha$ as an explicit list of pairwise disjoint transpositions by
+repeatedly stripping a two-cycle: from a moved point $a$, replace $\alpha$
+by $\mathrm{swap}(a, \alpha a)\,\alpha$, which fixes both $a$ and $\alpha a$
+and agrees with $\alpha$ elsewhere, so the moved set strictly shrinks and
+the recursion terminates. The product of the emitted list is $\alpha$.
+Theorem~\ref{thm:euler-bound} applied to that list gives $V + F \le E + 2C$,
+since disjointness makes a single $\alpha$-step coincide with a step of one
+of the transpositions.
+\end{proof}
+
+\begin{remark}[the bookkeeping, discharged]
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24InvolutionEdgeList.edgeList_fst_ne_snd}
+That each emitted pair is a genuine two-cycle holds by construction, since a
+pair is produced only from a moved point; no involutivity is even needed for
+it. With this the map form of the bound is unconditional.
+\end{remark}
+
+\begin{remark}\label{rem:genus}
+For a connected map this reads $V - E + F \le 2$, and the \emph{genus}
+$g := (2 - V + E - F)/2$ is precisely the accumulated slack of case~(i).
+Corollary~\ref{cor:euler-map} is the statement $g \ge 0$; spherical maps
+are those achieving equality.
+\end{remark}
+
+\subsection{Bridges and two-sided faces}
+
+\begin{theorem}\label{thm:same-face-bridge}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24BridgeTwoSided.two_le_components_of_sameCycle}
+Let $(D,\sigma,\alpha)$ be a spherical map and let $e = \{d, \alpha d\}$ be
+an edge whose two sides lie on the \emph{same} face. Then $e$ is a bridge.
+\end{theorem}
+
+\begin{proof}
+Let $\tau := (d\;\;\alpha d)$ and $\alpha_0 := \alpha\tau$ as in
+Definition~\ref{def:bridge}, and let $C_0$ be the number of components
+after deleting $e$. Three observations.
+
+First, $\sigma$ is untouched, so the vertex count of the deleted structure
+is still $V$.
+
+Second, $\alpha_0$ is a product of the $E-1$ disjoint transpositions of
+$\alpha$ other than $\tau$, together with two fixed points, and
+$\sigma\alpha_0 = \sigma\alpha\tau = \varphi\tau$. Since $d$ and $\alpha d$
+lie on a common $\varphi$-orbit, Corollary~\ref{cor:split-merge-right}
+gives $c(\sigma\alpha_0) = F + 1$.
+
+Third, Theorem~\ref{thm:euler-bound} applied to $\sigma$ and those $E-1$
+transpositions gives $V + c(\sigma\alpha_0) \le (E-1) + 2C_0$, the
+generated group having exactly the components of the deleted structure as
+in Corollary~\ref{cor:euler-map}.
+
+Combining, $V + F + 1 \le E - 1 + 2C_0$. Sphericity gives $V + F = E + 2$,
+so $E + 3 \le E - 1 + 2C_0$, that is $C_0 \ge 2$. The original map was
+connected, so deleting $e$ increased the component count and $e$ is a
+bridge.
+\end{proof}
+
+\begin{corollary}[two-sidedness]\label{cor:two-sided}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24BridgeTwoSided.not_sameCycle_of_components_lt_two}
+In a bridgeless spherical map every edge has two distinct faces on its two
+sides.
+\end{corollary}
+
+\begin{proof}
+Contrapositive of Theorem~\ref{thm:same-face-bridge}.
+\end{proof}
+
+\begin{remark}[the converse, and what it actually costs]\label{rem:converse}
+\Sprose
+The converse --- a bridge has one face on both sides --- is also true, but
+it is \emph{not} obtainable from Theorem~\ref{thm:euler-bound}. Running the
+same computation with $C_0 = 2$ yields only $c(\varphi\tau) \le F + 1$,
+which admits both branches. It was tempting to conclude that the converse
+therefore needs the equality case of Euler; it does not. It has an
+elementary proof of a different kind, given next, which uses no counting at
+all.
+\end{remark}
+
+\begin{theorem}[the walk lemma]\label{thm:walk-lemma}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24BridgeTwoSided.sameCycle_of_bridge}
+Let $\varphi$ be a permutation of $D$, let $\mathrm{side} \colon D \to
+\{0,1\}$, and let $d, o \in D$. Suppose the first step off $d$ changes
+side, and that from any point on the far side other than $o$ the next step
+stays on the far side. Then $d$ and $o$ lie on one $\varphi$-orbit.
+\end{theorem}
+
+\begin{proof}
+The orbit of $d$ is finite and returns to $d$, so among $k \ge 1$ there is a
+least one with $\mathrm{side}(\varphi^k d) = \mathrm{side}(d)$. It is not
+$k = 1$, since the first step crosses. So $\varphi^{k-1}d$ lies on the far
+side by minimality, while $\varphi^{k}d$ does not. The only far-side point
+whose next step leaves the far side is $o$; hence $\varphi^{k-1} d = o$.
+\end{proof}
+
+Applied to a bridge, with $\mathrm{side}$ recording which component of the
+edge-deleted map a dart's vertex lies in, this is precisely the converse: a
+facial walk crossing a bridge has exactly one door back, namely the bridge's
+other dart. Note what the hypotheses do \emph{not} include --- that $o$
+itself lies on the far side is not needed, and the formal statement omits
+it.
+
+\begin{theorem}[the converse, packaged]\label{thm:converse-packaged}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24BridgeTwoSided.sameCycle_of_not_wordReachable}
+If deleting an edge separates its two endpoints --- that is, if the edge is
+a bridge --- then its two sides lie on one face orbit.
+\end{theorem}
+
+\begin{proof}
+Take $\mathrm{side}(x)$ to record whether $x$ is reachable from $a$ in the
+edge-deleted map. Then $\mathrm{side}(a)$ holds by reflexivity; the first
+step off $a$ lands on $\sigma b$, which is reachable from $b$ and hence not
+from $a$, so the step crosses; and from any far-side point $x \neq b$ the
+edge product cannot carry $x$ onto $a$ or $b$ --- both are fixed by it, and
+it is injective --- so the step is a rotation composed with a remaining
+flip, neither of which changes the component. Theorem~\ref{thm:walk-lemma}
+applies.
+\end{proof}
+
+\begin{corollary}[bridges are exactly one-sided edges]\label{cor:bridge-iff}
+\Sprose
+In a spherical map, an edge is a bridge if and only if its two sides lie on
+the same face.
+\end{corollary}
+
+\begin{proof}
+Theorem~\ref{thm:same-face-bridge} and Theorem~\ref{thm:converse-packaged}.
+\end{proof}
+
+Both halves are now finite and combinatorial. The forward direction counts;
+the converse walks. Neither looks at a picture.
+
+\subsection{Kempe components and boundary stubs}
+
+One further counting fact belongs here, because the compositional route's
+terminal analysis uses it and because it is easy to state in the wrong place.
+
+\begin{lemma}[a Kempe component holds at most two stubs]\label{lem:two-stubs}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KempeStubBound.card_stubs_le_two}
+Let $H$ be a finite graph in which every vertex has degree at most two, and
+let $K$ be a connected component of $H$. Then $K$ has at most two vertices of
+degree one.
+\end{lemma}
+
+\begin{proof}
+Let $K$ have $n$ vertices, $m$ edges, and $d$ vertices of degree one.
+Connectedness gives $m \ge n - 1$. Every vertex has degree at most two, and
+the $d$ special ones have degree exactly one, so
+\[
+  2m \;=\; \sum_{v \in K} \deg v \;\le\; 2n - d .
+\]
+Combining, $2(n-1) \le 2m \le 2n - d$, whence $d \le 2$.
+\end{proof}
+
+In a properly $3$-edge-coloured cubic graph every vertex meets exactly one
+edge of each colour, so a two-coloured subgraph has degree exactly two at
+every internal vertex and degree one at a boundary stub. Lemma~\ref{lem:two-stubs}
+therefore says a Kempe component of a colour pair contains at most two stubs
+--- it is a path between them, or a cycle carrying none.
+
+The degree hypothesis is already available in this development rather than
+needing to be re-established:
+\texttt{\scriptsize colorPairGraph\_degree\_eq\_two\_of\_cubic\_tait}
+gives degree exactly two at any cubic vertex of a Tait colouring, and
+\texttt{\scriptsize cubicInterior\_colorPairGraph\_degree\_eq\_two}
+specialises it to the framed model's interior. Wiring those to
+Lemma~\ref{lem:two-stubs} requires only a bound at the boundary vertices and
+a connectivity hypothesis at the use site; the adapter is deliberately not
+written here, since no consumer yet exists and a speculative one would be a
+guess at the interface its caller wants.
+
+\begin{remark}[where this must and must not be applied]
+The lemma is about the \emph{open} tangle, where stubs are genuinely of
+degree one. In the closed map the same two-coloured subgraph has degree two
+everywhere and its components are cycles, which may pass through arbitrarily
+many former stub positions. Counting components in the open tangle and
+counting them in the closed map are therefore different measurements, and a
+bound established for one says nothing about the other. The distinction is
+easy to lose and expensive to lose: an argument that silently moves between
+the two proves nothing.
+\end{remark}
+
+\begin{remark}[what was avoided]
+The usual proof of Corollary~\ref{cor:two-sided} runs: a non-bridge lies on
+a cycle; the cycle is a Jordan curve; the two sides of the edge are
+separated by it; hence they lie in different faces. That argument is
+correct and is what a reader should picture. It is also, in a formal
+development, expensive: it requires a combinatorial Jordan curve theorem
+for embedded graphs, which no current library provides and which is a
+substantial development in its own right. The route above replaces it with
+Lemma~\ref{lem:split-merge} and one induction. The picture is the
+motivation; the counting is the proof.
+\end{remark}
+
+\begin{remark}[on the order of work]
+It is worth recording why the order mattered. The target,
+Corollary~\ref{cor:two-sided}, is a statement about faces, and the natural
+first instinct is to attack it directly: take an edge with one face on both
+sides, walk around that face, and try to extract a separation. That is the
+Jordan route, and in a formal setting it does not terminate in reasonable
+time. Proving the \emph{more general} Theorem~\ref{thm:euler-bound} first
+--- a statement about arbitrary permutations and arbitrary transpositions,
+with no map, no sphere, and no edges in sight --- turns the target into
+three lines of arithmetic. The generalisation is easier than the special
+case precisely because it removes the structure that made the special case
+tempting to visualise.
+\end{remark}

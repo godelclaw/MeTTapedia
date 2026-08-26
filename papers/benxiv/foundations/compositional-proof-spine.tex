@@ -1,0 +1,455 @@
+% Source-faithful theorem spine for the current reductive--compositional route.
+% This section is deliberately concise and status-local.  The much longer
+% chronological audit remains below it, but does not control the proof status.
+
+\section{The current proof spine: what is a theorem and what remains}
+\label{sec:compositional-proof-spine}
+
+This section is the controlling mathematical account of the route.  It is
+grounded in the working manuscript's Addenda XXV--XXVIII, the accompanying
+formalization playbook, and the compositional proof note.  The chronological
+material later in this companion records how the present formulation was
+reached; it must not be read as overriding the statuses stated here.
+
+The intended proof is not a finite catalogue of unavoidable configurations.
+Its central object is an open planar cubic instance with a finite boundary
+interface.  A corridor is cut into open cells, the behavior visible at a cut
+is compressed to a finite profile, and equal profiles permit a middle segment
+to be removed.  Thus the desired contradiction has the following form:
+\[
+  \text{large minimal obstruction}
+  \Longrightarrow \text{long composable corridor}
+  \Longrightarrow \text{repeated interface profile}
+  \Longrightarrow \text{smaller obstruction}.
+\]
+The first and last arrows are geometry.  The middle arrow is finite-state
+pigeonhole.  Keeping those three arrows separate is essential: finiteness of
+the profile carrier does not itself construct a corridor, and equality of two
+codes does not itself construct the spliced planar map.
+
+\subsection{A status-local dependency chain}
+
+The following table uses ``proved'' only for an argument actually supplied in
+the cited layer.  A source assertion, a finite audit still to be run, and a
+conditional theorem are different statuses.
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.08\textwidth}p{0.45\textwidth}p{0.34\textwidth}@{}}
+\toprule
+Node & Mathematical content & Present status \\
+\midrule
+$T_0$ & Tait reduction and least-counterexample passage from vertex
+colouring to a bridgeless cubic plane map & ordinary mathematics written out;
+several presentation adapters remain to be connected in Lean \\
+$T_1$ & Kauffman parity and the prime/factored trail spine: Trail
+Completability implies Tait colourability & asserted and developed in the
+source; final source-to-formal assembly open \\
+$T_2$ & Meyniel ladder reductions (rotor, digon, two-cut, square) transport
+the relevant refined counts to the pentagon frontier & substantial parts
+proved; the square branch still consumes $A\ne\varnothing$ and special-edge
+transport \\
+$T_3$ & Seed Lemma: every nonempty good fibre contains a menu-B state & open;
+the source proof draft reduces it to the corridor engine and a finite base \\
+$T_4$ & $A\ne\varnothing$: some colouring makes two marked cofacial,
+nonadjacent edges equal-coloured & open; reduced to the same corridor engine,
+special-edge transport, and a finite base \\
+$T_5$ & Exact one-cell Count factorization through a finite rooted profile
+transition & machine-checked through the manuscript-exact two-pair projection,
+including realized edge and initial images; executable enumeration and closure
+remain open \\
+$T_6$ & Uniform production of a pumpable corridor in every large irreducible
+obstruction & open; the signed curvature identity alone does not imply a
+clean hexagonal corridor, but the bounded-face/long-face dichotomy below
+reduces the geometry to two explicit transfer constructions \\
+$T_7$ & Equal-profile physical splice preserves the planar tangle, face
+bounds, boundary order, and the relevant zero count & open as one assembled
+constructor, although many fieldwise preservation lemmas are checked \\
+$T_8$ & Route-native finite bases for the Seed and $A\ne\varnothing$ systems
+& open; the earlier GWCO base cannot be inherited \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Consequently the route is a conditional proof, not yet a proof of the
+Four-Color Theorem.  The point of the remainder of this section is that the
+conditions are now explicit enough to attack independently and cannot be
+blurred by prose.
+
+\subsection{Entering the normal form without the v23 degree-four slip}
+
+The original v23 proof of minimum dual degree contains a small but real error:
+from ``a deleted vertex has at most four neighbours'' it concludes that four
+colours leave an unused colour.  This is false when four neighbours use all
+four colours.  The current route does not consume that sentence.
+
+Start instead with a vertex-minimal uncolourable connected spherical cubic
+map, as supplied by the Tait bridge below.  A cyclic cut of size two, three, or
+four splits the map into two smaller open cubic pieces.  Cap both pieces,
+colour the smaller closed maps by minimality, and compare the colours on the
+cut.  For two and three ports the boundary pattern is forced up to a colour
+permutation.  At four ports the Klein-group boundary sum is zero, leaving the
+all-equal class and the two non-crossing adjacent-pair classes; if one side is
+all-equal, a planar Kempe escape moves it into an adjacent class.  Thus the
+two sides always admit compatible boundary classes and glue to a Tait
+colouring, a contradiction.  The least counterexample is therefore
+cyclically five-edge-connected.
+
+This complete cut-and-glue argument is machine-checked.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FourEdgeCutGluing.cyclicallyFiveEdgeConnected_of_vertexMinimalTaitCounterexample}
+A facial cycle of length below five would expose such a small cyclic cut (the
+finitely small exceptional carriers are directly colourable), so every face
+has length at least five; this consequence is checked separately.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MinimalFaceSize.orbitFaceMinimumFive_of_vertexMinimalTaitCounterexample}
+Hence the curvature calculation below is entered through a sound normal form,
+not through the erroneous four-neighbour extension.
+
+\subsection{The abstract reductive pumping theorem}
+
+We isolate the exact ordinary-mathematics theorem used by both the Seed Lemma
+and $A\ne\varnothing$.
+
+\begin{theorem}[Finite-profile reductive pumping]
+\label{thm:finite-profile-reductive-pumping}
+\Sprose
+Let $\mathcal T$ be a class of finite open instances with a size
+$|\!\cdot\!|\colon\mathcal T\to\mathbb N$ and a predicate $P$.  Assume:
+\begin{enumerate}
+\item every $\neg P$ instance having a ladder-reducible local feature has a
+strictly smaller $\neg P$ reduction in $\mathcal T$;
+\item there are constants $V_0,N$ such that every irreducible
+$X\in\mathcal T$ with $|X|>V_0$ has a corridor with more than $N$ admissible
+cut positions;
+\item every cut has a profile in a set $Q$ with $|Q|\le N$;
+\item whenever two suitably separated cuts have the same profile, deleting
+the material strictly between them constructs $X'\in\mathcal T$ with
+$|X'|<|X|$ and
+\[
+                  \neg P(X)\Longrightarrow\neg P(X').
+\]
+\end{enumerate}
+Then every $\neg P$ instance descends to one of size at most $V_0$.  If the
+finite base $\{X\in\mathcal T:|X|\le V_0\}$ contains no $\neg P$ instance,
+then $P$ holds throughout $\mathcal T$.
+\end{theorem}
+
+\begin{proof}
+Suppose $\neg P$ occurs and choose such an $X$ of least size.  Hypothesis~1
+makes $X$ irreducible.  If $|X|>V_0$, Hypothesis~2 supplies more than $N$ cut
+positions.  Their profiles lie in $Q$, so two are equal by the pigeonhole
+principle.  Hypothesis~4 then constructs a strictly smaller $\neg P$
+instance, contrary to minimality.  Hence $|X|\le V_0$.  The final assertion
+is immediate from emptiness of the base.  \qedhere
+\end{proof}
+
+This theorem is elementary; that is a virtue.  It shows exactly where the
+difficult mathematics lives.  The finite Count functor supplies
+Hypothesis~3 and helps formulate Hypothesis~4.  It does not supply
+Hypothesis~2, and a quotient-code equality supplies Hypothesis~4 only after a
+physical splice theorem proves that the decoded pieces really glue.
+
+\subsection{What self-loops do and do not buy}
+
+The source's L2 flag is a self-loop property on relevant profiles.  It gives
+a useful monotonicity theorem in a genuinely periodic corridor, but it does
+not erase the need to locate that periodic geometry.
+
+\begin{lemma}[One-rung padding]
+\label{lem:one-rung-padding}
+\Sprose
+Let $S$ be one fixed corridor rung with nonnegative transfer matrix $M$ on a
+finite profile set.  Let $A,B$ be fixed end pieces with boundary vectors
+$v,u$.  Suppose every profile occurring on an accepted path through one copy
+of $S$ has a positive diagonal entry in $M$.  Then
+\[
+                    v^{\mathsf T}Mu>0
+       \quad\Longrightarrow\quad
+                    v^{\mathsf T}M^2u>0.
+\]
+\end{lemma}
+
+\begin{proof}
+Choose $i,j$ with $v_iM_{ij}u_j>0$.  The profile $i$ is alive on this accepted
+path, so $M_{ii}>0$.  The term
+$v_iM_{ii}M_{ij}u_j$ is a positive summand of $v^{\mathsf T}M^2u$.
+\end{proof}
+
+Thus a minimal zero-count obstruction cannot contain two consecutive copies
+of the same physically removable rung, once the exact factorization and
+re-insertion theorem are available.  For a corridor word
+$M_L\cdots M_1$ with varying letters, however, a self-loop for one local
+matrix does not show that deleting an arbitrary letter reconstructs the
+original instance.  One must either find repeated physical rung data or use
+the equal-profile splice of Theorem~\ref{thm:finite-profile-reductive-pumping}.
+Accordingly profile cardinality has not been removed from the general source
+argument.
+
+\subsection{The curvature calculation and the missing global implication}
+
+For a connected cubic plane map whose face lengths are at least five, write
+$p_k$ for the number of $k$-faces and
+\[
+             W_-:=\sum_{k\ge7}(k-6)p_k.
+\]
+Euler's formula and double counting give
+\begin{equation}
+  \sum_f(6-|f|)=12,
+  \qquad	ext{hence}qquad
+  p_5=12+W_-.
+  \label{eq:signed-curvature-balance}
+\end{equation}
+This equality is machine-checked in the rotation-system development.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24CurvatureScope.faceCyclePentagonCount_eq_twelve_add_negativeCurvatureWeight}
+
+Equation~\eqref{eq:signed-curvature-balance} is a \emph{signed} balance.  It
+does not bound $p_5$, $W_-$, or the total number of nonhexagonal faces.  For
+every $m$ the formal face multiset
+\[
+                p_5=m+12,\qquad p_7=m,\qquad p_k=0\ (k\ne5,7)
+\]
+satisfies the same identity and has $2m+12$ nonhexagonal faces and no
+hexagons.  Lean records this precise arithmetic obstruction.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24CurvatureScope.exists_arbitrarily_large_curvatureBalance_without_hexagons}
+
+The annular and framed Excess Identities have the same sign issue, with
+boundary surplus terms added.  They bound a difference of positive and
+negative curvature resources, not their sum.  Therefore the sentence in
+Addendum~XXV saying that the Excess Identity makes the nonhexagonal defect
+budget independent of $V$ is not a consequence of that identity.
+
+\begin{proposition}[The missing bulk hypothesis]
+\label{prop:uniform-bulk-hypothesis}
+\Sopen
+For each fixed boundary type used by the Seed and $A\ne\varnothing$ systems,
+there is a constant $D$ such that every least counterexample after the ladder
+reductions has total negative curvature and boundary surplus at most $D$; or,
+more generally, it contains a clean corridor longer than the required
+profile threshold even without such a bound.
+\end{proposition}
+
+This is the actual input needed before the playbook's conditional L1 theorem
+can be applied globally.  The existing weighted corridor theorems correctly
+retain the negative-curvature weight or a caller-supplied pentagon bound; they
+do not manufacture a uniform constant.  An arithmetic balance witness is not
+yet a graph-realized counterexample to
+Proposition~\ref{prop:uniform-bulk-hypothesis}; conversely, no theorem presently
+derives the proposition from cubicity, planarity, girth five, and cyclic
+five-edge-connectivity.  This is the highest mathematical risk in the route.
+
+The uniform weight bound is sufficient, but it is stronger than the
+compositional architecture actually needs.  The following elementary
+dichotomy removes curvature from the global existence question.
+
+\begin{theorem}[bounded-face geodesic or a long face]
+\label{thm:dual-diameter-dichotomy}
+\Sprose
+Let $M$ be a connected cellular spherical map with two-sided simple face
+boundaries and connected facial dual.  Fix integers $B\ge2$ and $L\ge2$.  If
+the number of faces is greater than
+\[
+       1+B\sum_{i=0}^{L-2}(B-1)^i,
+\]
+then either $M$ has a face of length greater than $B$, or its facial dual has
+a geodesic of at least $L$ edges.  In the latter case the geodesic is an
+induced face path, and every central face on it has length at most $B$.
+\end{theorem}
+
+\begin{proof}
+Assume every face has length at most $B$.  A face has at most one dual
+incidence for each boundary edge, so the facial dual has maximum degree at
+most $B$.  If its diameter were at most $L-1$, breadth-first layers about any
+root would contain at most $1$ vertex at level zero, at most $B$ at level
+one, and at most $B(B-1)^{i-1}$ at level $i\ge1$: after the first step a
+shortest path cannot immediately return along the edge just used.  Summing
+through level $L-1$ gives the displayed upper bound, contrary to the face
+count.  Thus two dual vertices have distance at least $L$; a shortest path
+between them is the required geodesic.  Any adjacency between two
+nonconsecutive vertices of that path would shorten it, so the path is
+induced.
+\end{proof}
+
+In the cyclically five-edge-connected normal form, two distinct faces share
+at most one edge.  Consequently the bounded-face branch is a genuine chain
+of cells drawn from a finite alphabet depending only on $B$: each central
+face has at most $B$ sides, consecutive cells share one edge, and the
+geodesic has no nonconsecutive face adjacency.  The existing hexagonal Cell
+is the $B=6$, all-central-faces-hexagonal subalphabet, not the only possible
+finite alphabet.
+
+The bounded-memory assertion in that last sentence is not merely heuristic.
+
+\begin{lemma}[geodesic locality]
+\label{lem:geodesic-locality}
+\Sprose
+Let $F_0,F_1,\ldots,F_L$ be a geodesic in the facial dual.  If a face $H$ is
+adjacent to both $F_i$ and $F_j$, then $|i-j|\le2$.  If all faces have length
+at most $B$, the part of the radius-one slab that can interact across the cut
+between $F_i$ and $F_{i+1}$ uses only a bounded number of faces and darts,
+depending on $B$ and not on $L$.
+\end{lemma}
+
+\begin{proof}
+The two dual edges $F_iH$ and $HF_j$ form a walk of length two.  Geodesicity
+of the displayed path gives $|i-j|=d(F_i,F_j)\le2$.  Therefore a side face
+cannot remain incident with the axis across more than three consecutive
+positions.  A side face that crosses the cut is consequently adjacent to one
+of $F_{i-1},F_i,F_{i+1},F_{i+2}$ (omitting nonexistent end terms).  Those four
+axis faces have together at most $4B$ boundary incidences, hence at most
+$4B$ distinct side neighbours; and each such neighbour has at most $B$
+darts.  Thus, for example, $4B^2+4B$ darts is a uniform coarse carrier bound
+for the interacting radius-one data.  The bound is intentionally loose; its
+independence of $L$ is the point.
+\end{proof}
+
+Hence the receipt-enlargement process terminates structurally in the
+bounded-face branch: retaining a fixed radius-two axis window and the
+radius-one side faces already contains every face that can cross the next
+cut.  No prefix-length-dependent field is legitimate.  What remains for this
+branch is to instantiate the existing rooted Count factorization at the
+$B$-bounded cell alphabet and prove its physical splice, rather than inventing
+successively larger receipts.
+
+\begin{proposition}[the repaired global corridor obligation]
+\label{prop:global-corridor-alternative}
+\Sopen
+Choose constants $B,L$ above the relevant profile thresholds and prove both
+of the following source-preserving constructions.
+\begin{enumerate}
+\item A bounded-face geodesic of length $L$ factors through a finite
+  manuscript profile and equal profiles admit a physical deletion splice.
+\item A face of length greater than $B$ admits an analogous perimeter
+  factorization and a strictly size-decreasing, target-preserving splice.
+\end{enumerate}
+Then every sufficiently large irreducible obstruction is pumpable, with no
+bound on $W_-$ and no claim that most faces are hexagons.
+\end{proposition}
+
+Theorem~\ref{thm:dual-diameter-dichotomy} proves that these two constructions
+are exhaustive.  This is a sharper and more plausible research front than
+Proposition~\ref{prop:uniform-bulk-hypothesis}: the high-negative-curvature
+branch is not discarded, but converted into either bounded nonhexagonal
+letters or a long boundary on which the same finite-interface idea can act.
+
+\subsection{The exact finite interface}
+
+The manuscript's profile has three kinds of observable data:
+\begin{enumerate}
+\item the colours of edges crossing the cut;
+\item connectivity for the $\alpha\beta$ and $\alpha\gamma$ Kempe families;
+\item capped progress of faces crossing the cut.
+\end{enumerate}
+The Lean transition uses a conservative three-pair refinement internally and
+then projects to exactly the two families named by the manuscript.  It proves
+that every compatible positive literal Cell witness followed by the boundary
+rebase produces one exact source and target profile edge, and that terminal-
+aware compression is lossless relative to that two-pair source profile:
+compressed edges agree exactly when their projected two-pair edges agree.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialRootedInteractionPositionedSourceClosure.sourceLocalLayerSerialPositionedSourceCompressedProfileEdge_eq_iff}
+The realized edge image and realizable initial image both preserve cardinality
+under this compression.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialRootedInteractionPositionedSourceClosure.card_sourceLocalLayerSerialPositionedRealizedSourceCompressedProfileEdgeSet_eq}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialRootedInteractionPositionedSourceClosure.card_sourceLocalLayerSerialRealizedInitialSourceCompressedProfileSet_eq}
+
+The conservative third family has not been smuggled into the source count.  At
+the live $(2,1,4)$ shape its carrier is exactly sixteen times larger:
+\[
+  12{,}556{,}911{,}218{,}688
+  =16\cdot784{,}806{,}951{,}168.
+\]
+This equality is machine-checked.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SourceTerminalAwareProfileCompression.boundedTerminalAwareCompressedProfileCount_two_one_four_eq}
+
+These theorems settle manuscript-exact one-cell behavioral factorization.
+They do not yet justify a numerical closure count, because the exact realized
+letter and initial images are still specified as images of literal ambient
+witnesses.  An executable generator must be proved equal to those images
+before a BFS certificate can report an authoritative number.
+
+\begin{proposition}[Exact closure gate]
+\label{prop:exact-closure-gate}
+\Sopen
+Produce finite arrays of manuscript-exact two-pair initial profiles and letter
+edges, prove that their entries are exactly the graph-realized images, and
+kernel-replay the reachable closure.  Then, and only then, the array length is
+the source profile count used in pumping.
+\end{proposition}
+
+The measured $(5,0)$ certificates remain valuable regression tests, but they
+are not substitutes for this equality theorem: their own headers correctly
+say that identifying the decoded transition with every source-legal corridor
+is a separate fidelity obligation.
+
+\subsection{GWCO: the refuted shortcut and the surviving lemma}
+
+The Good-Word Closed-web Obstruction is false.
+\Srefuted{dodecahedral two-cap witness; growing width-two family}
+Good-word totally closed webs occur already at ten internal vertices and in a
+growing family.  Consequently the old False-valued GWCO base, its numerical
+threshold, and any reductive supplier targeting that base are retired.
+
+The purpose of GWCO was narrower than its statement: it was meant to exclude
+a fibre frozen in an adversarial menu-A state.  At the five-outer-stub
+boundary used by the closed-web system, the following replacement is valid.
+
+\begin{lemma}[Totally closed at five outer stubs implies menu B]
+\label{lem:closed-implies-menu-b}
+\Sprose
+Let an annular frontier tangle have five inner and five outer stubs and a good
+inner word.  If a colouring has a totally closed web, then it is menu B for
+each majority pair.
+\end{lemma}
+
+\begin{proof}
+The Cubic Closure Theorem makes the web the whole connected tangle and rules
+out every two-colour circuit.  With ten boundary stubs, endpoint counting then
+makes every two-colour strand radial: it has one inner and one outer end.  Fix
+a majority pair.  Its four active inner spokes lie on four distinct radial
+strands.  Attaching the pentagonal cap joins them in two disjoint cap paths,
+so at least two distinct components of that colour pair meet the cap.  The
+Reformulation Theorem identifies precisely this condition with menu B.
+\end{proof}
+
+For six or more outer stubs the source's Cubic Closure counting already makes
+total closure impossible.  Boundaries with fewer than five outer stubs are
+not covered by Lemma~\ref{lem:closed-implies-menu-b}; they must be discharged
+by their own finite boundary analysis if they occur in the final assembly.
+This qualification is load-bearing and prevents the five-stub argument from
+being silently promoted to an all-boundary theorem.
+
+\subsection{The exact conditional conclusion}
+
+\begin{theorem}[Source-faithful conditional route theorem]
+\label{thm:conditional-compositional-route}
+\Sconditional{Tait bridge; Trail Completability; ladder transport; Seed Lemma; $A\ne\varnothing$; global corridor alternative; physical splice; finite bases}
+Assume the following results in the forms consumed by the working manuscript:
+the Tait/minimal-counterexample bridge; the Kauffman trail spine and Trail
+Completability assembly; all four ladder transports including special-edge
+bookkeeping; either Proposition~\ref{prop:uniform-bulk-hypothesis} or both
+branches of Proposition~\ref{prop:global-corridor-alternative}; the exact
+Count factorization and physical equal-profile splice; L2 on every relevant
+corridor type; and empty route-native finite bases for the Seed and
+$A\ne\varnothing$ systems.  Then every planar graph is four-colourable.
+\end{theorem}
+
+\begin{proof}
+If not, the Tait bridge selects a least bridgeless cubic plane
+counterexample.  Trail Completability reduces its noncolourability to the
+frontier $\mathrm{WC}^{*}$ obstruction.  The ladder transports descend every
+triangle, digon, two-cut, and square while preserving the appropriate zero
+count, so a least obstruction reaches the irreducible pentagon frontier.
+The global corridor theorem, finite profile factorization, L2, and the
+physical splice instantiate Theorem~\ref{thm:finite-profile-reductive-pumping} for the
+Seed and $A\ne\varnothing$ counts.  Their empty finite bases therefore prove
+both counts positive.  The source's Lift, word-graph, and propagation
+arguments then supply the needed menu-B move, including the corrected
+closed-web boundary treatment above.  The Kauffman prime/factored induction
+completes the Tait colouring, contradicting the chosen counterexample.
+\end{proof}
+
+The theorem is a complete implication, not a claim that its premises are
+already theorems.  At present the decisive open premises are the uniform bulk
+step (or its repaired two-branch replacement), the physical profile splice,
+the two route-native bases, the Seed and
+$A\ne\varnothing$ instantiations, and the final Trail Completability assembly.
+The exact finite transition work materially reduces one of those premises; it
+does not make the others disappear.

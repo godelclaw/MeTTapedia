@@ -1,0 +1,45 @@
+\ProvidesPackage{statusledger}[2026/08/25 Per-result verification status markers]
+% Inline status markers for a document whose results have heterogeneous
+% verification status.  Each marker renders a short, unmissable tag next to
+% the result it qualifies; the full machine-readable payload (Lean
+% declaration name, counterexample witness) is harvested from the source by
+% tools/check_status.py, which verifies it against the Lean tree and emits
+% the appendix ledger.  The tags are legible in monochrome: colour is a
+% redundant cue, never the only one.
+\RequirePackage{xcolor}
+
+\definecolor{stVerified}{rgb}{0.05,0.42,0.18}
+\definecolor{stProse}{rgb}{0.62,0.36,0.00}
+\definecolor{stOpen}{rgb}{0.55,0.10,0.10}
+\definecolor{stRefuted}{rgb}{0.55,0.10,0.10}
+\definecolor{stSource}{rgb}{0.25,0.25,0.25}
+\definecolor{stCond}{rgb}{0.10,0.30,0.55}
+
+\newcommand{\st@tag}[2]{%
+  \,\textsuperscript{\textcolor{#1}{\textsc{\scriptsize #2}}}%
+}
+
+% \Sverified{FullyQualified.leanDeclaration}
+% The result is machine-checked: no proof holes, axioms within the accepted
+% base.  The argument is the declaration a reader may check for themselves.
+\newcommand{\Sverified}[1]{\st@tag{stVerified}{verified}}
+
+% \Sprose  -- proved in this document, not yet formalized.
+\newcommand{\Sprose}{\st@tag{stProse}{prose}}
+
+% \Sconditional{dependencies} -- proved here in full, but resting on one or
+% more results that are themselves not established.  Distinct from \Sopen,
+% which means the statement has no proof at all: a reader must be able to
+% tell "we proved this modulo X" from "nobody has proved this".
+\newcommand{\Sconditional}[1]{\st@tag{stCond}{conditional}}
+
+% \Sopen   -- stated, not proved here or elsewhere.
+\newcommand{\Sopen}{\st@tag{stOpen}{open}}
+
+% \Srefuted{witness} -- false; the argument names the counterexample.
+\newcommand{\Srefuted}[1]{\st@tag{stRefuted}{refuted}}
+
+% \Ssource -- asserted by the source manuscript; status inherited, not ours.
+\newcommand{\Ssource}{\st@tag{stSource}{source}}
+
+\endinput
