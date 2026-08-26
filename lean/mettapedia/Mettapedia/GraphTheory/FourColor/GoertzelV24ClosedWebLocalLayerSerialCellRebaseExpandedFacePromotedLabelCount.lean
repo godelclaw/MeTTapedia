@@ -108,6 +108,23 @@ def
       state.promotedBlockGraph.Reachable start endpoint ∧
         state.activeIncidenceConnectedTo code toPadded anchor endpoint.1 = true
 
+/-- Attachment itself certifies that the queried occurrence is promoted. -/
+theorem
+    SourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceState.promoted_of_promotedAttachedToIncidence
+    {count cap : Nat}
+    (state : SourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceState)
+    (code : BoundedInterfaceExteriorLabelCapCode
+      (Fin count) (Fin count × Bool) cap)
+    (toPadded : Fin count → Fin 24)
+    (anchor : Fin (count * 2))
+    (occurrence : SourceLocalLayerSerialCellRebaseExpandedFaceInterface)
+    (hattached :
+      state.PromotedAttachedToIncidence code toPadded anchor occurrence) :
+    state.promoted occurrence = true := by
+  rcases hattached with ⟨start, _endpoint, hstart, _hblock, _hactive⟩
+  rw [← hstart]
+  exact start.2
+
 /-- Boolean reflection of attachment to one anchored old component. -/
 noncomputable def
     SourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceState.promotedAttachedToIncidence
@@ -147,6 +164,23 @@ abbrev SourceLocalLayerSerialCellRebaseExpandedFacePromotedAttachedSlot
   {occurrence : SourceLocalLayerSerialCellRebaseExpandedFaceInterface //
     state.promotedAttachedToIncidence code toPadded anchor occurrence = true}
 
+/-- Forget attachment while retaining its promoted-occurrence certificate. -/
+noncomputable def
+    SourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceState.promotedSlotOfAttached
+    {count cap : Nat}
+    (state : SourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceState)
+    (code : BoundedInterfaceExteriorLabelCapCode
+      (Fin count) (Fin count × Bool) cap)
+    (toPadded : Fin count → Fin 24)
+    (anchor : Fin (count * 2))
+    (slot : SourceLocalLayerSerialCellRebaseExpandedFacePromotedAttachedSlot
+      state code toPadded anchor) :
+    SourceLocalLayerSerialCellRebaseExpandedFacePromotedSlot state :=
+  ⟨slot.1,
+    state.promoted_of_promotedAttachedToIncidence code toPadded anchor slot.1
+      ((state.promotedAttachedToIncidence_eq_true_iff code toPadded anchor
+        slot.1).1 slot.2)⟩
+
 /-- Equality of underlying primal edges, restricted to the promoted
 occurrences attached to one old component.  `fromRel` removes reflexive loops
 and symmetrizes malformed finite inputs; on source states it presents exactly
@@ -175,7 +209,392 @@ noncomputable def
       (Fin count) (Fin count × Bool) cap)
     (toPadded : Fin count → Fin 24)
     (anchor : Fin (count * 2)) : Nat :=
-  Fintype.card (state.promotedLabelGraph code toPadded anchor).ConnectedComponent
+  Nat.card (state.promotedLabelGraph code toPadded anchor).ConnectedComponent
+
+/-- Whenever graph reachability is exactly equality under a label map, graph
+components are canonically the realized label range. -/
+noncomputable def connectedComponentEquivRangeOf_reachable_iff
+    {Vertex Label : Type*} (graph : SimpleGraph Vertex) (label : Vertex → Label)
+    (hexact : ∀ left right, graph.Reachable left right ↔
+      label left = label right) :
+    graph.ConnectedComponent ≃ Set.range label :=
+  (@Quotient.congrRight Vertex graph.reachableSetoid (Setoid.ker label)
+    hexact).trans (Setoid.quotientKerEquivRange label)
+
+/-- Attached promoted occurrences for one literal source predecessor anchor. -/
+abbrev SourceLocalLayerSerialCellRebaseExpandedFacePromotedAttachedSlotAt
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength cap : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hcell : (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 6)
+    (anchor : Fin
+      ((sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique offset
+        ).card * 2)) :=
+  let oldCarrier :=
+    sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique offset
+  let oldDartAt := fun index : Fin oldCarrier.card ↦
+    ((carrierCoordinate oldCarrier).symm index).1
+  let state :=
+    sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt corridor
+      hunique offset hnext hcell
+  let code := exactFaceInterfaceExteriorLabelCapCode web.annular.RS
+    (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset)
+    oldDartAt cap
+  let toPadded :=
+    sourceLocalLayerSerialCellRebaseExpandedFaceActualToPaddedAt corridor
+      hunique offset hcell
+  SourceLocalLayerSerialCellRebaseExpandedFacePromotedAttachedSlot state code
+    toPadded anchor
+
+/-- Decode the primal-edge label carried by one attached promoted occurrence
+of a literal source receipt. -/
+noncomputable def
+    sourceLocalLayerSerialCellRebaseExpandedFacePromotedAttachedEdgeAt
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength cap : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hcell : (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 6)
+    (anchor : Fin
+      ((sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique offset
+        ).card * 2))
+    (slot : SourceLocalLayerSerialCellRebaseExpandedFacePromotedAttachedSlotAt
+      (cap := cap) corridor hunique offset hnext hcell anchor) : G.edgeSet := by
+  classical
+  let oldCarrier :=
+    sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique offset
+  let oldDartAt := fun index : Fin oldCarrier.card ↦
+    ((carrierCoordinate oldCarrier).symm index).1
+  let state :=
+    sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt corridor
+      hunique offset hnext hcell
+  let code := exactFaceInterfaceExteriorLabelCapCode web.annular.RS
+    (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset)
+    oldDartAt cap
+  let toPadded :=
+    sourceLocalLayerSerialCellRebaseExpandedFaceActualToPaddedAt corridor
+      hunique offset hcell
+  exact web.annular.RS.edgeOf
+    (sourceLocalLayerSerialCellRebaseExpandedFacePromotedDartAt corridor hunique
+      offset hnext hcell
+      (state.promotedSlotOfAttached code toPadded anchor slot))
+
+/-- The finite promoted-label graph specialized to one literal source
+predecessor anchor. -/
+noncomputable def sourceLocalLayerSerialCellRebaseExpandedFacePromotedLabelGraphAt
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength cap : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hcell : (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 6)
+    (anchor : Fin
+      ((sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique offset
+        ).card * 2)) :
+    SimpleGraph
+      (SourceLocalLayerSerialCellRebaseExpandedFacePromotedAttachedSlotAt
+        (cap := cap) corridor hunique offset hnext hcell anchor) := by
+  classical
+  let oldCarrier :=
+    sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique offset
+  let oldDartAt := fun index : Fin oldCarrier.card ↦
+    ((carrierCoordinate oldCarrier).symm index).1
+  let state :=
+    sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt corridor
+      hunique offset hnext hcell
+  let code := exactFaceInterfaceExteriorLabelCapCode web.annular.RS
+    (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset)
+    oldDartAt cap
+  let toPadded :=
+    sourceLocalLayerSerialCellRebaseExpandedFaceActualToPaddedAt corridor
+      hunique offset hcell
+  exact state.promotedLabelGraph code toPadded anchor
+
+/-- The stored same-edge row is exact on attached source occurrences. -/
+theorem
+    sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt_samePrimalEdge_iff_attachedEdge_eq
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength cap : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hcell : (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 6)
+    (anchor : Fin
+      ((sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique offset
+        ).card * 2))
+    (left right :
+      SourceLocalLayerSerialCellRebaseExpandedFacePromotedAttachedSlotAt
+        (cap := cap) corridor hunique offset hnext hcell anchor) :
+    let state :=
+      sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt corridor
+        hunique offset hnext hcell
+    state.samePrimalEdge left.1 right.1 = true ↔
+      sourceLocalLayerSerialCellRebaseExpandedFacePromotedAttachedEdgeAt
+          corridor hunique offset hnext hcell anchor left =
+        sourceLocalLayerSerialCellRebaseExpandedFacePromotedAttachedEdgeAt
+          corridor hunique offset hnext hcell anchor right := by
+  classical
+  dsimp only
+  let oldCarrier :=
+    sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique offset
+  let oldDartAt := fun index : Fin oldCarrier.card ↦
+    ((carrierCoordinate oldCarrier).symm index).1
+  let state :=
+    sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt corridor
+      hunique offset hnext hcell
+  let code := exactFaceInterfaceExteriorLabelCapCode web.annular.RS
+    (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset)
+    oldDartAt cap
+  let toPadded :=
+    sourceLocalLayerSerialCellRebaseExpandedFaceActualToPaddedAt corridor
+      hunique offset hcell
+  let leftPromoted :=
+    state.promotedSlotOfAttached code toPadded anchor left
+  let rightPromoted :=
+    state.promotedSlotOfAttached code toPadded anchor right
+  have hexact :=
+    sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt_samePrimalEdge_iff_of_decode
+      corridor hunique offset hnext hcell left.1 right.1
+        (sourceLocalLayerSerialCellRebaseExpandedFacePromotedDartAt corridor
+          hunique offset hnext hcell leftPromoted)
+        (sourceLocalLayerSerialCellRebaseExpandedFacePromotedDartAt corridor
+          hunique offset hnext hcell rightPromoted)
+        (sourceLocalLayerSerialCellRebaseExpandedFacePromotedDartAt_spec
+          corridor hunique offset hnext hcell leftPromoted)
+        (sourceLocalLayerSerialCellRebaseExpandedFacePromotedDartAt_spec
+          corridor hunique offset hnext hcell rightPromoted)
+  simpa [sourceLocalLayerSerialCellRebaseExpandedFacePromotedAttachedEdgeAt,
+    oldCarrier, oldDartAt, state, code, toPadded, leftPromoted,
+    rightPromoted] using hexact
+
+/-- The connected components of the finite source label graph are exactly
+the equality classes of decoded primal-edge labels. -/
+theorem
+    sourceLocalLayerSerialCellRebaseExpandedFace_promotedLabelGraphAt_reachable_iff_edge_eq
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength cap : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hcell : (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 6)
+    (anchor : Fin
+      ((sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique offset
+        ).card * 2))
+    (left right :
+      SourceLocalLayerSerialCellRebaseExpandedFacePromotedAttachedSlotAt
+        (cap := cap) corridor hunique offset hnext hcell anchor) :
+    (sourceLocalLayerSerialCellRebaseExpandedFacePromotedLabelGraphAt
+      corridor hunique offset hnext hcell anchor).Reachable left right ↔
+      sourceLocalLayerSerialCellRebaseExpandedFacePromotedAttachedEdgeAt
+          corridor hunique offset hnext hcell anchor left =
+        sourceLocalLayerSerialCellRebaseExpandedFacePromotedAttachedEdgeAt
+          corridor hunique offset hnext hcell anchor right := by
+  classical
+  let graph :=
+    sourceLocalLayerSerialCellRebaseExpandedFacePromotedLabelGraphAt
+      (cap := cap) corridor hunique offset hnext hcell anchor
+  let label := fun slot =>
+    sourceLocalLayerSerialCellRebaseExpandedFacePromotedAttachedEdgeAt
+      (cap := cap) corridor hunique offset hnext hcell anchor slot
+  have hadjLabel : ∀ first second, graph.Adj first second →
+      label first = label second := by
+    intro first second hadj
+    rcases (SimpleGraph.fromRel_adj _ first second).1 hadj with
+      ⟨_hne, hforward | hbackward⟩
+    · exact
+        (sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt_samePrimalEdge_iff_attachedEdge_eq
+          corridor hunique offset hnext hcell anchor first second).1 hforward
+    · exact
+        ((sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt_samePrimalEdge_iff_attachedEdge_eq
+          corridor hunique offset hnext hcell anchor second first).1
+            hbackward).symm
+  constructor
+  · intro hreachable
+    rw [SimpleGraph.reachable_iff_reflTransGen] at hreachable
+    induction hreachable with
+    | refl => rfl
+    | tail hprefix hadj ih => exact ih.trans (hadjLabel _ _ hadj)
+  · intro heq
+    by_cases hsame : left = right
+    · subst right
+      exact SimpleGraph.Reachable.rfl
+    · apply SimpleGraph.Adj.reachable
+      apply (SimpleGraph.fromRel_adj _ left right).2
+      refine ⟨hsame, Or.inl ?_⟩
+      exact
+        (sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt_samePrimalEdge_iff_attachedEdge_eq
+          corridor hunique offset hnext hcell anchor left right).2 heq
+
+/-- Source promoted-label components are canonically equivalent to the range
+of realized attached primal-edge labels. -/
+noncomputable def
+    sourceLocalLayerSerialCellRebaseExpandedFacePromotedLabelComponentEquivEdgeRangeAt
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength cap : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hcell : (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 6)
+    (anchor : Fin
+      ((sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique offset
+        ).card * 2)) :
+    (sourceLocalLayerSerialCellRebaseExpandedFacePromotedLabelGraphAt
+      (cap := cap) corridor hunique offset hnext hcell anchor
+      ).ConnectedComponent ≃
+      Set.range
+        (sourceLocalLayerSerialCellRebaseExpandedFacePromotedAttachedEdgeAt
+          (cap := cap) corridor hunique offset hnext hcell anchor) :=
+  connectedComponentEquivRangeOf_reachable_iff
+    (sourceLocalLayerSerialCellRebaseExpandedFacePromotedLabelGraphAt
+      (cap := cap) corridor hunique offset hnext hcell anchor)
+    (sourceLocalLayerSerialCellRebaseExpandedFacePromotedAttachedEdgeAt
+      (cap := cap) corridor hunique offset hnext hcell anchor)
+    (sourceLocalLayerSerialCellRebaseExpandedFace_promotedLabelGraphAt_reachable_iff_edge_eq
+      corridor hunique offset hnext hcell anchor)
+
+/-- The literal finite set of promoted primal-edge labels attached to one
+source predecessor component. -/
+noncomputable def
+    sourceLocalLayerSerialCellRebaseExpandedFacePromotedAttachedEdgeSupportAt
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength cap : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hcell : (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 6)
+    (anchor : Fin
+      ((sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique offset
+        ).card * 2)) : Finset G.edgeSet :=
+  Finset.univ.image
+    (sourceLocalLayerSerialCellRebaseExpandedFacePromotedAttachedEdgeAt
+      (cap := cap) corridor hunique offset hnext hcell anchor)
+
+/-- The executable source quotient count is exactly the number of realized
+attached primal-edge labels. -/
+theorem
+    sourceLocalLayerSerialCellRebaseExpandedFace_promotedLabelCount_eq_natCard_edgeRange
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength cap : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hcell : (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 6)
+    (anchor : Fin
+      ((sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique offset
+        ).card * 2)) :
+    let oldCarrier :=
+      sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique offset
+    let oldDartAt := fun index : Fin oldCarrier.card ↦
+      ((carrierCoordinate oldCarrier).symm index).1
+    let state :=
+      sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt corridor
+        hunique offset hnext hcell
+    let code := exactFaceInterfaceExteriorLabelCapCode web.annular.RS
+      (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset)
+      oldDartAt cap
+    let toPadded :=
+      sourceLocalLayerSerialCellRebaseExpandedFaceActualToPaddedAt corridor
+        hunique offset hcell
+    state.promotedLabelCount code toPadded anchor =
+      Nat.card
+        (Set.range
+          (sourceLocalLayerSerialCellRebaseExpandedFacePromotedAttachedEdgeAt
+            (cap := cap) corridor hunique offset hnext hcell anchor)) := by
+  classical
+  dsimp only
+  unfold
+    SourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceState.promotedLabelCount
+  let oldCarrier :=
+    sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique offset
+  let oldDartAt := fun index : Fin oldCarrier.card ↦
+    ((carrierCoordinate oldCarrier).symm index).1
+  let state :=
+    sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt corridor
+      hunique offset hnext hcell
+  let code := exactFaceInterfaceExteriorLabelCapCode web.annular.RS
+    (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset)
+    oldDartAt cap
+  let toPadded :=
+    sourceLocalLayerSerialCellRebaseExpandedFaceActualToPaddedAt corridor
+      hunique offset hcell
+  let graph := state.promotedLabelGraph code toPadded anchor
+  let label :=
+    sourceLocalLayerSerialCellRebaseExpandedFacePromotedAttachedEdgeAt
+      (cap := cap) corridor hunique offset hnext hcell anchor
+  have hexact : ∀ left right, graph.Reachable left right ↔
+      label left = label right := by
+    intro left right
+    simpa [graph, state, code, toPadded,
+      sourceLocalLayerSerialCellRebaseExpandedFacePromotedLabelGraphAt] using
+      (sourceLocalLayerSerialCellRebaseExpandedFace_promotedLabelGraphAt_reachable_iff_edge_eq
+        corridor hunique offset hnext hcell anchor left right)
+  let equivalence : graph.ConnectedComponent ≃ Set.range label :=
+    connectedComponentEquivRangeOf_reachable_iff graph label hexact
+  exact Nat.card_congr equivalence
+
+/-- Finite-support form of the exact promoted-label count. -/
+theorem
+    sourceLocalLayerSerialCellRebaseExpandedFace_promotedLabelCount_eq_card_edgeSupport
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength cap : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hcell : (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 6)
+    (anchor : Fin
+      ((sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique offset
+        ).card * 2)) :
+    let oldCarrier :=
+      sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique offset
+    let oldDartAt := fun index : Fin oldCarrier.card ↦
+      ((carrierCoordinate oldCarrier).symm index).1
+    let state :=
+      sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt corridor
+        hunique offset hnext hcell
+    let code := exactFaceInterfaceExteriorLabelCapCode web.annular.RS
+      (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset)
+      oldDartAt cap
+    let toPadded :=
+      sourceLocalLayerSerialCellRebaseExpandedFaceActualToPaddedAt corridor
+        hunique offset hcell
+    state.promotedLabelCount code toPadded anchor =
+      (sourceLocalLayerSerialCellRebaseExpandedFacePromotedAttachedEdgeSupportAt
+        (cap := cap) corridor hunique offset hnext hcell anchor).card := by
+  classical
+  dsimp only
+  rw [sourceLocalLayerSerialCellRebaseExpandedFace_promotedLabelCount_eq_natCard_edgeRange]
+  rw [Nat.card_eq_fintype_card, ← Set.toFinset_card, Set.toFinset_range]
+  rfl
 
 /-- A finite promoted-block path maps to a path in the predecessor strict
 exterior graph.  Every promoted source dart lies outside the rolling carrier,
