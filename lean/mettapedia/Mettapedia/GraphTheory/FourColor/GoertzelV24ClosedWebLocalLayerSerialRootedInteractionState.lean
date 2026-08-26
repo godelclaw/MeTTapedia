@@ -235,6 +235,56 @@ theorem sourceLocalLayerSerialRootedInteractionStateForColorAt_currentEdge
   dsimp only [sourceLocalLayerSerialRootedInteractionStateForColorAt]
   rw [Equiv.symm_apply_apply]
 
+/-- The source current-coordinate inclusion has no aliases. -/
+theorem
+    sourceLocalLayerSerialRootedInteractionStateForColorAt_currentCoordinate_injective
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (color :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
+    (hcrossing : ∀ step,
+      color ((sourceLocalLayerSerialTerminalInputCutDataAt corridor hunique
+        offset).crossingEdge step) ≠ 0) :
+    Function.Injective
+      (sourceLocalLayerSerialRootedInteractionStateForColorAt graphData minimal
+        caps coloring web corridor hunique offset hnext color hcrossing
+        ).currentCoordinate := by
+  intro left right heq
+  let state := sourceLocalLayerSerialRootedInteractionStateForColorAt graphData
+    minimal caps coloring web corridor hunique offset hnext color hcrossing
+  let current := sourceLocalLayerSerialTrackedTransitionCarrierAt graphData
+    caps coloring web corridor hunique offset
+  let interaction :=
+    sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt graphData caps
+      coloring web corridor hunique offset hnext
+  apply (carrierCoordinate current).symm.injective
+  apply Subtype.ext
+  calc
+    ((carrierCoordinate current).symm left).1 =
+        ((carrierCoordinate interaction).symm
+          (state.currentCoordinate left)).1 := by
+      exact (sourceLocalLayerSerialRootedInteractionStateForColorAt_currentEdge
+        graphData minimal caps coloring web corridor hunique offset hnext color
+          hcrossing left).symm
+    _ = ((carrierCoordinate interaction).symm
+          (state.currentCoordinate right)).1 := by rw [heq]
+    _ = ((carrierCoordinate current).symm right).1 := by
+      exact sourceLocalLayerSerialRootedInteractionStateForColorAt_currentEdge
+        graphData minimal caps coloring web corridor hunique offset hnext color
+          hcrossing right
+
 /-- On source data, every interaction row reconstructs exact prefix
 reachability after every deletion mask on the complete 49-edge carrier. -/
 theorem sourceLocalLayerSerialRootedInteractionStateForColorAt_reachable_iff

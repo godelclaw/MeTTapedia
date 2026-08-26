@@ -143,7 +143,7 @@ noncomputable def
         exact decide (((localCode.graph (pair, false)) ⊔
           (localCode.graph (pair, true))).Adj left right)) }
 
-private theorem sourceLocalLayerSerialTrackedLocalGraph_support_subset_carrier
+theorem sourceLocalLayerSerialTrackedLocalGraph_support_subset_carrier
     (graphData : Data G)
     (caps : OrientedFacialPentagonCapPair graphData)
     (coloring :
@@ -181,7 +181,7 @@ private theorem sourceLocalLayerSerialTrackedLocalGraph_support_subset_carrier
         corridor hunique offset color (trackedColorPairColors pair).1
           (trackedColorPairColors pair).2 ⟨neighbor, hseam⟩))
 
-private theorem sourceLocalLayerSerialTrackedLocalGraph_support_subset_range
+theorem sourceLocalLayerSerialTrackedLocalGraph_support_subset_range
     (graphData : Data G)
     (caps : OrientedFacialPentagonCapPair graphData)
     (coloring :
@@ -213,7 +213,7 @@ private theorem sourceLocalLayerSerialTrackedLocalGraph_support_subset_range
   refine ⟨carrierCoordinate carrier ⟨edge, hcarrier⟩, ?_⟩
   simp [carrier]
 
-private theorem sourceLocalLayerSerialTrackedLocalAdjacency_exact
+theorem sourceLocalLayerSerialTrackedLocalAdjacency_exact
     (graphData : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
     (caps : OrientedFacialPentagonCapPair graphData)
