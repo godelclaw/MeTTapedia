@@ -112,22 +112,41 @@ totals is zero exactly when both totals are zero.
 
 Consequently the square rung for the Seed target is additive rather than
 dynamical: if a square instance has no seed, neither reduction has a seed.
-Once the graph-level exterior-profile extraction is connected to
-Equation~\eqref{eq:square-profile-additivity}, a least zero-seed instance
-descends through either smaller valid reduction.  No all-equal colouring and
-no migration theorem is needed for this implication.
+Here the counted state is pointed by a choice of majority pair: it is a pair
+\((C,P)\) of a colouring and one of its two majority pairs.  Thus the two
+pair sectors form a disjoint state space even when one colouring is a seed
+for both pairs.  Positivity of its total count is exactly the existence of a
+colouring and a majority pair witnessing the Seed conclusion; no
+inclusion--exclusion assertion about overlapping sets of colourings is being
+used.
 
-\begin{proposition}[graph-level square count transport]
+\begin{theorem}[graph-level square count transport]
 \label{prop:graph-square-count-transport}
-\Sopen
-Extract the exterior profile multiset of an arbitrary facial square in the
-route's rotation-system tangle, identify its two abstract reduction sides
-with the two graph reductions, and instantiate
-Equation~\eqref{eq:square-profile-additivity} for the Seed target profiles.
-\end{proposition}
+\Sprose
+For a facial square whose two planar reductions are valid tangles, the
+profile-resolved count of pointed colourings satisfies
+Equation~\eqref{eq:square-profile-additivity}.  Consequently the pointed Seed
+count is additive and a least zero-Seed instance descends through both
+smaller reductions.
+\end{theorem}
 
-The local additive theorem is machine-checked; this proposition names the
-remaining graph-level adapter and does not relabel it as finished.
+\begin{proof}
+Delete the four internal square edges but retain its four ordered outer
+half-edges.  A global colouring is then uniquely a colouring of this common
+exterior together with one member of the local square fibre over its boundary
+word.  A colouring of either reduction is uniquely the same exterior
+colouring together with the corresponding compatible planar pairing.
+For a fixed exterior colouring, fixed majority pair, and fixed target
+profile, the equality of these two multisets is exactly the checked local
+profile identity after composition with that exterior profile.  Summing over
+the finite multiset of exterior colourings proves the graph-level identity.
+
+Now sum over the finite set of Seed profiles in the pointed state space and
+apply Lemma~\ref{lem:square-zero-descends}.  If the total upstairs is zero,
+both reduction totals are zero; since a facial-square reduction removes four
+vertices, either valid reduction is a strictly smaller zero-Seed instance.
+No migration statement occurs in the argument.
+\end{proof}
 
 \subsection{The universal \(A\ne\varnothing\) shortcut is false}
 
@@ -201,6 +220,63 @@ parallel-edge reduction has none.  Its square identity is therefore
 \(6=6+0\).  The specimen disproves the shortcut \(A\ne\varnothing\), but it
 does not disprove the square conclusion.
 
+The converse warning is equally important: the full universal SQ3
+connectivity statement is also false, although a slightly larger specimen is
+needed.
+
+\begin{proposition}[universal SQ3 migration is false]
+\label{prop:universal-sq3-refuted}
+\Srefuted{tools/fourcolor/v24_sq3_migration_counterexample.py}
+There is a connected planar cubic tangle with two stubs on one face and a
+facial square such that each of its two planar reductions has a connected
+Kempe reconfiguration graph, but the original tangle's reconfiguration graph
+has two components.
+\end{proposition}
+
+\begin{proof}
+Use the planar Frucht graph with edge set
+\[
+\begin{gathered}
+01,06,07,12,17,23,28,34,39,45,49,56,5,10,6,10,\\
+7,11,8,11,89,10,11.
+\end{gathered}
+\]
+The disjoint edges \(06,34\) lie on the face
+\((0,6,5,4,3,2,1)\).  Delete them, insert a square with vertices
+\(12,13,14,15\), and attach those vertices in cyclic order to
+\(0,6,4,3\).  Finally open the unrelated edge \(01\) into stub edges
+\(0,16,1,17\).  The resulting tangle has sixteen cubic vertices and two
+stubs.  The rotation cycles in the cited fixture give nine face orbits,
+including the square \((12,13,14,15)\) and one face containing both stubs;
+thus \(V-E+F=18-25+9=2\).  Deleting any non-boundary edge leaves the tangle
+connected.
+
+The finite audit assigns the three colours by backtracking, rejecting a
+partial assignment as soon as two assigned edges at one cubic vertex agree.
+It obtains exactly eighteen Tait colourings.  For every colouring and each
+of the three colour pairs, it computes every maximal two-colour component,
+switches that whole component, and identifies the resulting colouring in the
+same eighteen-state table.  The resulting Kempe graph has components of
+sizes six and twelve.  Every state in the six-state component has square word
+of type \((p,p,q,q)\), and every state in the twelve-state component has the
+other adjacent-pair type; no all-equal state exists.
+
+The first planar reduction restores \(06,34\) and has six colourings in one
+Kempe class.  The other joins \(64,30\) and has twelve colourings in one
+Kempe class.  Its two lifted sides are exactly the two components just
+described.  This proves the claimed failure.  All rotations, face walks,
+colourings, and component switches are emitted and asserted by the cited
+deterministic fixture.
+\end{proof}
+
+This second counterexample still does not refute the route's loaded
+\(\mathrm{WC}^{*}\) target.  Its two stub colours agree in every one of the
+eighteen states, so every state already has the extendable two-stub word.
+The target reachability statement is true even though the stronger
+single-class statement is false.  The repair must therefore retain the
+actual target predicate instead of trying to recover universal
+reconfiguration connectivity.
+
 \subsection{The correct reachability obligation}
 
 Let \(\mathcal K(G)\) be the graph whose vertices are the Tait colourings of
@@ -228,6 +304,28 @@ the target inside that side.  If one side is empty, the other is the whole
 colouring set.
 \end{proof}
 
+Full connectivity is stronger than the route needs.  For a target set
+\(W\) of stub words, put
+\(W_s=\{C\in L_s:\operatorname{word}(C)\in W\}\).
+
+\begin{lemma}[target-aware square criterion]
+\label{lem:target-aware-square}
+\Sprose
+Assume that, whenever \(W_s\ne\varnothing\), every state of \(L_s\) can
+reach a state of \(W_s\) while staying in \(L_s\).  If the global target set
+is nonempty, then \(\mathrm{WC}^{*}(G,W)\) holds if and only if every state
+in a target-free side \(L_s\) can reach some side \(L_t\) with
+\(W_t\ne\varnothing\).
+\end{lemma}
+
+\begin{proof}
+For necessity, a path from a target-free side to a global target has a final
+state in some target-bearing side.  Conversely, a state already in a
+target-bearing side reaches \(W\) by the assumed sidewise statement.  A
+state in a target-free side first takes the supplied path to a
+target-bearing side and then uses its sidewise path to \(W\).
+\end{proof}
+
 The local square transparency theorem supplies the expected sidewise
 lifting mechanism.  A colouring of \(G_s\) expands to \(L_s\); its local
 fibre is connected by the square-cycle switch; and a Kempe component through
@@ -236,42 +334,82 @@ the square.  Establishing this simultaneously for every ambient maximal
 component is an exact graph-level path-lifting theorem, distinct from the
 finite local fibre computation.
 
-\begin{proposition}[square-side path lifting]
+\begin{theorem}[square-side path lifting]
 \label{prop:square-side-path-lifting}
-\Sopen
+\Sprose
 For each reduction side \(s\), projection
 \(L_s\to\operatorname{Col}(G_s)\) is surjective, has connected fibres, and
 lifts every legal Kempe edge of \(G_s\) to a path in the induced
 reconfiguration graph on \(L_s\).  Hence connectedness of
 \(\mathcal K(G_s)\) implies connectedness of \(L_s\).
-\end{proposition}
+\end{theorem}
+
+\begin{proof}
+Fix a reduction colouring.  Give each of the two outer half-edges replacing
+a joined edge the colour of that joined edge.  The resulting square boundary
+word is compatible with side \(s\).  The fibre table therefore supplies a
+lift.  An adjacent-pair word has one lift; an all-equal word has two, and the
+two are joined by the square-cycle Kempe move.  Projection is consequently
+surjective with connected fibres.
+
+Consider one downstairs Kempe move, switching colours \(a,b\) on a maximal
+component \(K\).  For the present boundary word, the checked local profile
+identity says that the multiset of \((a,b)\)-portal connectivity relations of
+the square extensions is the multiset of the compatible reduction pairings.
+If necessary, perform the square-cycle fibre move first; one of the lifts now
+has exactly the portal relation of side \(s\) for \((a,b)\).
+
+Glue the common exterior to the local tracked-colour graph.  Components of
+the glued graph which meet the exterior are obtained by taking exterior
+components and identifying their incident portals according to the local
+portal relation.  Equal portal relations therefore give a bijection between
+the downstairs maximal components and the upstairs maximal components which
+meet the exterior, preserving every exterior edge.  In particular \(K\)
+lifts to one maximal component \(\widetilde K\).  Switch \(a,b\) on
+\(\widetilde K\).  At the four square vertices this is an ordinary Kempe
+switch on a maximal component, so properness is preserved; outside the square
+its support is exactly the support of the downstairs switch.  The resulting
+colouring therefore projects to the prescribed successor of the reduction
+colouring and remains compatible with side \(s\).
+
+Thus one edge of \(\mathcal K(G_s)\) lifts to at most two upstairs edges: an
+optional internal square-cycle move followed by the lifted component move.
+Lift a path downstairs one edge at a time, and use connectedness of the final
+fibre to reach any chosen lift of its endpoint.  This proves the last
+assertion.
+\end{proof}
 
 Even after Proposition~\ref{prop:square-side-path-lifting}, one cross-side
 fact remains when both reductions are colourable.
 
-\begin{proposition}[target-specific square migration]
+\begin{proposition}[target-specific square transport]
 \label{prop:target-square-migration}
 \Sopen
 For every facial square arising in the least \(\mathrm{WC}^{*}\) obstruction
-of the source ladder, if both lifted reduction sides are nonempty then a
-legal ambient Kempe path meets both sides.
+of the source ladder, and for the source's actual extendable-word target
+\(W\), every state in a nonempty target-free lifted reduction side can reach
+a target-bearing side by legal ambient Kempe moves.
 \end{proposition}
 
 The refuted statement \(A\ne\varnothing\) would imply this proposition,
-because an all-equal state lies in \(L_0\cap L_1\).  It is not necessary:
-the counterexample above has \(A=\varnothing\) but one side is empty, and
-its expanded colouring graph is connected.  A repaired proof may exploit
-the least-obstruction target, prove a direct cross-side path, or show that
-one side is empty.  What it may not do is restore universal
-\(A\ne\varnothing\).
+whenever the all-equal overlap itself contains a target state.  It is not
+necessary:
+the first counterexample above has \(A=\varnothing\) but one side is empty,
+and its expanded colouring graph is connected.  Nor may the qualifier
+``least \(\mathrm{WC}^{*}\) obstruction'' be dropped: the Frucht specimen
+has two nonempty connected sides and no path between them.  A repaired proof
+must exploit the target predicate or the least-obstruction hypothesis, or
+show that the irrelevant side contains no target obstruction.  It may not
+restore either universal \(A\ne\varnothing\) or universal SQ3 migration.
 
 Thus the square ledger is now exact:
 \[
 \begin{array}{rcl}
 \text{local fibre table and fibre connectivity}&:&\text{machine-checked},\\
 \text{profile-resolved additive identity}&:&\text{machine-checked},\\
-\text{Seed zero-count descent}&:&\text{ordinary proof; graph adapter open},\\
+\text{Seed zero-count descent}&:&\text{ordinary proof; Lean formalization pending},\\
 \text{universal }A\ne\varnothing&:&\text{refuted},\\
-\text{full }\mathrm{WC}^{*}\text{ square migration}&:&\text{open}.
+\text{universal SQ3 migration}&:&\text{refuted},\\
+\text{target-specific }\mathrm{WC}^{*}\text{ square transport}&:&\text{open}.
 \end{array}
 \]

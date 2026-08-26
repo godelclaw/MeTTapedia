@@ -48,14 +48,16 @@ theorems are proved in Section~\ref{sec:kauffman-trail-spine}; the additional
 factor product-semantics theorem,
 Proposition~\ref{prop:factor-product-semantics}, is open \\
 $T_2$ & Meyniel ladder reductions (rotor, digon, two-cut, square) transport
-the relevant refined counts to the pentagon frontier & the local square
-fibre and additive profile identity are checked; the graph-level Seed-count
-adapter and the separate $\mathrm{WC}^{*}$ migration theorem remain open \\
+the relevant refined counts to the pentagon frontier & local square data are
+checked and graph-level count transport and side lifting are proved in
+Section~\ref{sec:meyniel-ladder}; only cross-side $\mathrm{WC}^{*}$ migration
+remains open \\
 $T_3$ & Seed Lemma: every nonempty good fibre contains a menu-B state & open;
 the source proof draft reduces it to the corridor engine and a finite base \\
-$T_4$ & Square migration between the two reduction sides for full
-$\mathrm{WC}^{*}$ reachability & open; the proposed universal shortcut
-$A\ne\varnothing$ is refuted in Proposition~\ref{prop:a-nonempty-refuted} \\
+$T_4$ & Target-aware square transport for $\mathrm{WC}^{*}$ reachability &
+open; both the proposed $A\ne\varnothing$ shortcut and universal SQ3
+connectivity are refuted in Propositions~\ref{prop:a-nonempty-refuted}
+and~\ref{prop:universal-sq3-refuted} \\
 $T_5$ & Exact one-cell Count factorization through a finite rooted profile
 transition & machine-checked through the manuscript-exact two-pair projection,
 including realized edge and initial images; executable enumeration and closure
@@ -569,7 +571,7 @@ being silently promoted to an all-boundary theorem.
 
 \begin{theorem}[Source-faithful conditional route theorem]
 \label{thm:conditional-compositional-route}
-\Sconditional{Tait bridge; Trail Completability; ladder transport; Seed Lemma; square migration; global corridor alternative; physical splice; finite base}
+\Sconditional{Tait bridge; Trail Completability; ladder transport; Seed Lemma; target-aware square transport; global corridor alternative; physical splice; finite base}
 Assume the following results in the forms consumed by the working manuscript:
 the Tait/minimal-counterexample bridge; the Kauffman trail spine, including
 Proposition~\ref{prop:factor-product-semantics}, and Trail Completability
@@ -606,7 +608,7 @@ The theorem is a complete implication, not a claim that its premises are
 already theorems.  At present the decisive open premises are the uniform bulk
 step (or its repaired two-branch replacement), the physical profile splice,
 the route-native Seed base, the Seed instantiation, target-specific square
-migration, factor-completion lifting, and the final
+transport, factor-completion lifting, and the final
 Trail Completability assembly.
 The exact finite transition work materially reduces one of those premises; it
 does not make the others disappear.  In particular, neither the signed
