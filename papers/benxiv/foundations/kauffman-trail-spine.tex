@@ -1,0 +1,329 @@
+% The Kauffman parity/primality layer consumed by the compositional route.
+%
+% This section separates Kauffman's published theorem from the additional
+% factor-to-ambient lifting assertion made in the Goertzel/Fable assembly.
+% Every result carries a local status marker.
+
+\section{The Kauffman trail spine and its exact composition seam}
+\label{sec:kauffman-trail-spine}
+
+The final step of the source route is expressed in the language of
+Spencer--Brown formations and Kauffman trails.  Two logically different
+claims have too often been bundled under the name "the Kauffman spine".
+The first is Kauffman's published parity/primality theorem.  The second is a
+new composition claim: if a factored trail has smaller colourable factors,
+then completion sequences for those factors may be executed in the original
+trail and glued.  The first has a published proof.  The second depends on the
+precise support convention for the source's between-region moves and must be
+proved for the framed trail object used by this development.
+
+Our primary published reference for the first part is L.~H.~Kauffman,
+"Reformulating the map color theorem", \emph{Discrete Mathematics} 302
+(2005), 145--172, especially Sections~3--4.  This is the expanded and
+clarified version of "On the map theorem", \emph{Discrete Mathematics}
+229 (2001), 171--184.  The statements below are also the ones reproduced in
+Section~3 of Goertzel's v23 manuscript.  The present section makes explicit
+where the v24 assembly asks for more.
+
+\subsection{Coloured trails and completion}
+
+\begin{definition}[coloured trail]
+\label{def:coloured-trail}
+A \emph{coloured trail} consists of a plane subcubic graph $G(T)$, two
+distinguished degree-two vertices $u,v$, a proper $3$-edge-colouring
+$C$ of $G(T)$, and a designated missing edge $e=uv$.  The extended
+graph $G^{*}(T)$ is obtained by inserting $e$.  In formation language,
+the two distinguished boundary curves are the containers and the remaining
+formation lies in the annular between-region.
+\end{definition}
+
+At a degree-two vertex exactly two colours occur, so there is a unique
+missing colour.  Write $\mu_C(u)$ and $\mu_C(v)$ for those colours.
+
+\begin{lemma}[one-edge completion criterion]
+\label{lem:trail-one-edge-completion}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DeletedEdgeTrail.exists_taitColoring_of_framedTangleCompletable}
+The colouring $C$ extends across $e$ precisely when
+$\mu_C(u)=\mu_C(v)$.  More generally, if an allowed sequence of
+between-region Kempe moves takes $C$ to a colouring $C'$ with equal
+missing colours, then $G^{*}(T)$ has a Tait colouring.
+\end{lemma}
+
+\begin{proof}
+The new edge must receive a colour absent at both endpoints, which proves
+necessity.  Conversely, colour it by the common missing colour.  Properness
+is unchanged away from $u,v$, and at each endpoint the three incident
+colours are then distinct.  Kempe moves preserve properness, so the same
+argument applies after an allowed move sequence.
+\end{proof}
+
+\begin{definition}[source completability]
+\label{def:source-trail-completability}
+The coloured trail $(T,C)$ is \emph{completable} if a finite sequence of
+the source's allowed between-region moves takes $C$ to a colouring $C'$
+with $\mu_{C'}(u)=\mu_{C'}(v)$.
+\end{definition}
+
+The word "allowed" is load-bearing.  Kauffman's parity theorem concerns
+switches on closed two-colour circuits.  The corrected framed trail calculus
+also admits the defect paths forced by the two degree-two vertices.  Those
+path moves are precisely outside the scope of closed-formation parity.  The
+development has already proved that its framed move relation is the union of
+the Kauffman circuit moves and these defect-path moves, subject to the
+source/graph boundary alignment.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24BetweenRegionDefectPaths.framedTangleLegalKempeStep_iff_kauffman_or_defectPath}
+
+\subsection{The published parity theorem}
+
+For a proper Tait colouring $C$ of a cubic graph $G$, let
+$N_{ab}(C)$ be the number of components of the two-colour subgraph on
+colours $a,b$, and define
+\[
+  \Delta(C)=N_{rb}(C)+N_{rp}(C)+N_{bp}(C),
+  \qquad \pi(C)=\Delta(C)\pmod 2.
+\]
+Each two-colour subgraph is $2$-regular, so its components are circuits.
+
+\begin{theorem}[Spencer--Brown--Kauffman parity lemma]
+\label{thm:kauffman-parity}
+\Sprose
+If $G$ is a plane cubic graph and $C'$ is obtained from $C$ by
+switching two colours on one two-colour circuit, then
+$\pi(C')=\pi(C)$.
+\end{theorem}
+
+\begin{proof}
+Use the standard formation associated with $C$: red curves are the
+$(r,p)$-circuits, blue curves are the $(b,p)$-circuits, and the
+red--blue alternating curves are the $(r,b)$-circuits.  Thus the formation
+curve count is exactly $\Delta(C)$.
+
+Kauffman's idemposition lemma gives the local parity calculation.  If two
+same-colour Jordan curves $A,A'$ share finitely many segments, classify
+their interactions, while walking around $A$, as left crossings, right
+crossings, and bounces.  If the corresponding counts are $L,R,B$, the
+number of components after mod-two superposition has parity
+\[
+       \frac{L-R}{2}+B \pmod 2.
+\]
+The formula is proved by deleting a bounce or an innermost cross--recross
+pair.  Each deletion changes the component count and the displayed local
+quantity by the same parity; induction ends at two disjoint curves.  The
+evenness of $L-R$ is the usual even-intersection property of two Jordan
+curves in the sphere.
+
+Now operate on one red curve $A$.  Only the blue curves meeting $A$
+participate.  The change in the number of blue curves and the change in the
+number of alternating curves are both obtained by same-colour
+idempositions originating on $A$.  Hence their sum modulo two is determined
+solely by the left/right/bounce data along $A$.  A simple operation
+interchanges the two roles at those sites without changing that planar local
+data.  Therefore the change in $B+\mathrm{Alt}$, and hence in
+$R+B+\mathrm{Alt}=\Delta$, is even.  The blue and alternating cases are
+the same after permuting the colours.  This is Kauffman's published proof,
+with the idemposition induction made explicit.
+\end{proof}
+
+Planarity is essential.  Kauffman's one-edge-deleted Petersen formation
+changes the curve count from five to four under a simple operation.  A
+nonplanar counterexample is therefore a regression fixture for any eventual
+formal statement: a theorem that omits the spherical-map hypothesis is
+false.
+
+\subsection{Prime trails and Kauffman's equivalence}
+
+In Kauffman's terminology, a same-context trail is \emph{factored} if,
+after the two contextual curves are removed by idemposition, the remaining
+trail structure has more than one component.  In the different-context
+case it is factored if an extra formation curve misses both endpoints of the
+empty edge.  A trail is \emph{prime} if no recolouring in its orbit has a
+factored representative.
+
+\begin{lemma}[Kauffman's curve-count dichotomy]
+\label{lem:kauffman-curve-count}
+\Sprose
+Let $T$ be a nonempty prime uncolourable planar trail.
+\begin{enumerate}
+  \item In an unfactored representative whose contextual curves have the
+        same colour, the total two-colour circuit count is five.
+  \item In an unfactored representative whose contextual curves have
+        different colours, the total two-colour circuit count is four.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+In the same-colour case, primeness leaves one trail curve between the two
+contextual curves.  Each endpoint of the empty edge lies on an alternating
+circuit.  These two circuits are distinct, since a single alternating
+circuit through both endpoints is a two-colour completion path.  Any
+additional circuit would remain as an extra component after removal of the
+contexts and would factor the trail.  The count is therefore two context
+curves, one trail curve, and two alternating circuits: $2+1+2=5$.
+
+In the different-colour case, unfactoredness says that every curve meets an
+endpoint of the empty edge.  At the pure context endpoint there is one
+context curve and one alternator.  At the endpoint lying on the superposed
+context there is one trail-colour curve and the second context curve.  Any
+further curve misses both endpoints and is a factor.  Hence the count is
+two context curves, one trail-colour curve, and one alternator:
+$2+1+1=4$.  This is the incidence count in Kauffman's Section~4; its two
+endpoint cases are definitions of the two context types, not an exhaustive
+graph census.
+\end{proof}
+
+\begin{theorem}[Kauffman's primality equivalence]
+\label{thm:kauffman-primality-equivalence}
+\Sprose
+For plane cubic graphs, the Four-Colour Theorem is equivalent to the
+Primality Principle:
+\[
+  \text{every minimal nonempty uncolourable planar trail is prime}.
+\]
+\end{theorem}
+
+\begin{proof}
+Assume the Primality Principle and choose a minimal nonempty uncolourable
+trail.  It is prime.  Begin with same-colour contexts, so
+Lemma~\ref{lem:kauffman-curve-count} gives the odd count five.  A simple
+operation on one context changes to the different-colour situation while
+Theorem~\ref{thm:kauffman-parity} preserves parity.  An unfactored
+different-colour prime trail would have the even count four.  The operated
+formation is therefore factored, contradicting primeness.  Thus no such
+trail exists.  Deleting an edge of a least uncolourable bridgeless cubic
+plane graph produces a coloured nonempty trail whose extension is the
+original graph, a contradiction.
+
+Conversely, if the Four-Colour Theorem holds then no nonempty uncolourable
+planar trail exists, so the Primality Principle holds vacuously.  This is
+Kauffman's published equivalence argument.
+\end{proof}
+
+The finite "Closed Splitting" audits in the v24 working manuscript support
+the parity behaviour on their listed fullerene instances.  They are not a
+replacement for Theorem~\ref{thm:kauffman-parity}, nor do finite instances
+prove Theorem~\ref{thm:kauffman-primality-equivalence}.
+
+\subsection{The extra theorem required by the compositional route}
+
+The source now proposes to prove its Trail Completability theorem by strong
+induction.  In a factored minimal obstruction, each factor has a smaller
+extended graph and is therefore colourable.  Applying Trail Completability
+to each factor produces factor-local completion sequences.  One further
+theorem is needed before those sequences may be composed in the original
+formation.
+
+\begin{lemma}[finite product reachability]
+\label{lem:finite-product-reachability}
+\Sprose
+Let $I$ be finite.  For each $i\in I$, let $R_i$ be a relation on a state
+space $X_i$, let $x_i\in X_i$, and suppose
+$x_i\,R_i^{*}\,y_i$.  On $\prod_i X_i$, let $R_{\Pi}$ be the asynchronous
+product relation: one step changes exactly one coordinate by an $R_i$-step
+and fixes every other coordinate.  Then
+\[
+       (x_i)_{i\in I}\;R_{\Pi}^{*}\;(y_i)_{i\in I}.
+\]
+Consequently, if $y_i$ belongs to a local accepting set $A_i$ for every
+$i$, the initial product state reaches $\prod_i A_i$.
+\end{lemma}
+
+\begin{proof}
+Choose an order on the finite set $I$.  Lift the first coordinate's finite
+$R_i$-path to product states by holding all other coordinates fixed, then
+lift the second coordinate's path, and so on.  Concatenating these lifted
+paths gives the required $R_{\Pi}^{*}$ path.  Previously completed
+coordinates are never changed by a later lifted step.  The accepting-set
+claim is immediate from the endpoint tuple.
+\end{proof}
+
+\begin{proposition}[source factorization has product semantics]
+\label{prop:factor-product-semantics}
+\Sopen
+Every reachable Kauffman factorization of a source framed trail determines
+factor state spaces $X_i$, factor move relations $R_i$, and a boundary
+compatibility subset $K\subseteq\prod_i X_i$ such that:
+\begin{enumerate}
+  \item restriction maps every ambient reachable colouring to a point of
+        $K$;
+  \item every factor move lifts to the asynchronous product relation while
+        preserving $K$, and every such lifted step is a legal ambient move;
+  \item the product of the factor-completion accepting sets, intersected
+        with $K$, maps to an ambient-completable colouring; and
+  \item every factor is strict in the induction measure.
+\end{enumerate}
+\end{proposition}
+
+This is the precise missing bridge between the topological word
+"factored" and the algebraic word "independent".  Once it is proved,
+Lemma~\ref{lem:finite-product-reachability} performs all scheduling and
+commutation; no informal appeal to simultaneous moves remains.
+
+\begin{proposition}[factor completion lifts and glues]
+\label{prop:factor-completion-lifts}
+\Sconditional{Proposition~\ref{prop:factor-product-semantics}}
+Let a reachable representative of a coloured source trail $T$ be factored
+into strict factors $T_1,\ldots,T_k$.  Suppose that, for every $i$, the
+specific colouring induced on $T_i$ is completable by the source's framed
+between-region moves.  Then there is a sequence of legal moves of $T$ whose
+restriction realizes the required factor completions and after which $T$
+itself is completable.
+\end{proposition}
+
+\begin{proof}
+Apply Proposition~\ref{prop:factor-product-semantics}.  The factor
+completion paths are paths in the relations $R_i$.  Lemma
+\ref{lem:finite-product-reachability} combines them into an asynchronous
+product path that stays in $K$.  Item~2 lifts that path to legal ambient
+moves, and item~3 turns its accepting endpoint into an ambient completion.
+\end{proof}
+
+This is not a formal nicety.  A two-colour component that is closed in an
+isolated factor can continue through a contextual curve when the factor is
+placed back in the ambient formation.  Switching only its factor portion is
+then not an ambient Kempe move.  Moreover, distinct factors share contextual
+curves, so arbitrary completion sequences need not have disjoint supports.
+The proposition must therefore be proved by one of the following exact
+mechanisms, not by the sentence "the factors are disjoint":
+\begin{enumerate}
+  \item strengthen factor completability to sequences fixing the complete
+        factor interface, then use disjoint-support commutation;
+  \item prove that every factor move has an ambient component lift whose
+        action on the other factors cancels or preserves their completion
+        states; or
+  \item replace sequential completion by a simultaneous product-state
+        reachability theorem for all factors and their shared contexts.
+\end{enumerate}
+
+The current framed-trail API supplies frozen-interface vocabulary and exact
+source/graph move alignment, but no theorem presently establishes any of
+these three alternatives for a Kauffman factorization.  Proposition
+\ref{prop:factor-product-semantics} is consequently ordinary mathematics
+still to be done.  It must not be delegated to a finite census unless the
+source first proves a uniform bound on the factor interface.
+
+\begin{theorem}[source-faithful Kauffman assembly]
+\label{thm:kauffman-source-assembly}
+\Sconditional{Trail Completability and Proposition~\ref{prop:factor-completion-lifts}}
+Assume the source's Trail Completability theorem for every strictly smaller
+colourable factor, and assume Proposition~\ref{prop:factor-completion-lifts}.
+Then every minimal nonempty uncolourable planar trail is prime.  Consequently
+every bridgeless cubic plane graph is Tait colourable.
+\end{theorem}
+
+\begin{proof}
+Let $T$ be a minimal nonempty uncolourable planar trail.  If it is not
+prime, some reachable representative factors as
+$T_1,\ldots,T_k$.  Each extended factor is strictly smaller than the
+extended graph of $T$, so minimality makes it colourable.  Trail
+Completability supplies a completion of its induced colouring.  Proposition
+\ref{prop:factor-completion-lifts} glues those completions and makes $T$
+completable, contradicting uncolourability.  Thus the Primality Principle
+holds, and Theorem~\ref{thm:kauffman-primality-equivalence} gives the claimed
+Tait colouring statement.
+\end{proof}
+
+Thus the Kauffman layer is not one undifferentiated open box.  Its parity
+theorem, curve-count dichotomy, and equivalence are established ordinary
+mathematics.  The live source-specific seam is the ambient lifting and gluing
+of factor completion sequences.  That is the theorem the Lean layer should
+formalize only after its ordinary proof has been supplied.
