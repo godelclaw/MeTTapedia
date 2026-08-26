@@ -53,6 +53,8 @@ open GoertzelV24ClosedWebLocalLayerSerialCellCountNativeFactorization
 open GoertzelV24ClosedWebLocalLayerSerialCellNativeFactorization
 open GoertzelV24ClosedWebLocalLayerSerialCellRebaseNativeFactorization
 open GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseOutputColorParametric
+open GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseSupportColorParametric
+open GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseTrackedColorParametric
 open GoertzelV24ClosedWebLocalLayerSerialCellFiniteColorCompatibility
 open GoertzelV24ClosedWebLocalLayerSerialCellPrefixParametricNativeFactorization
 open GoertzelV24ClosedWebLocalLayerSerialCellTrackedPrefixAttachmentState
@@ -62,7 +64,9 @@ open GoertzelV24ClosedWebLocalLayerSerialRootedCumulativeState
 open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionRollingTransition
 open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionRollingTransitionColorParametric
 open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionRollingTransitionExact
+open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionRollingSuccessor
 open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionState
+open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionTrackedSuccessor
 open GoertzelV24ClosedWebLocalLayerSerialTrackedPrefixAttachmentColorParametric
 open GoertzelV24CorridorProfile
 open GoertzelV24FaceOrbitIncidence
@@ -70,6 +74,7 @@ open GoertzelV24FacialPentagonCap
 open GoertzelV24FiniteClosureInterfaces
 open GoertzelV24GraphDerivedCorridorCutProfile
 open GoertzelV24HexSlabConnectivityProfile
+open GoertzelV24HexCorridorFiniteColorTransition
 open GoertzelV24HexCorridorSkeleton
 open GoertzelV24TwoEdgeCutMinimality
 open GoertzelV24TwoPentagonCapOpening
@@ -911,6 +916,208 @@ private theorem sourceLocalLayerSerialRootedInteractionStateForColorAt_color_eq
   rw [hedge] at hcode
   simp only [hregion, if_true, Option.some.injEq] at hcode
   exact hcode
+
+/-- Equal rooted prefix receipts, one common literal Cell colouring, and equal
+four-role rebase colours determine the splice on every active edge of the
+finite rebase collar.  Values at inactive named collar edges are deliberately
+irrelevant. -/
+private theorem sourceLocalLayerSerialCellSplicedColorAt_eq_on_active_collar
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (leftPrefix rightPrefix :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
+    (hleftPrefix : ∀ edge, leftPrefix edge ≠ 0)
+    (hrightPrefix : ∀ edge, rightPrefix edge ≠ 0)
+    (cellColor :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
+    (hcell : ∀ {edge}, edge ∈
+      sourceLocalLayerCellRegionAt corridor hunique offset →
+        cellColor edge ≠ 0)
+    (hsource :
+      sourceLocalLayerSerialRootedInteractionStateForColorAt graphData minimal
+          caps coloring web corridor hunique offset hnext leftPrefix
+            (fun step => hleftPrefix
+              ((sourceLocalLayerSerialTerminalInputCutDataAt corridor hunique
+                offset).crossingEdge step)) =
+        sourceLocalLayerSerialRootedInteractionStateForColorAt graphData minimal
+          caps coloring web corridor hunique offset hnext rightPrefix
+            (fun step => hrightPrefix
+              ((sourceLocalLayerSerialTerminalInputCutDataAt corridor hunique
+                offset).crossingEdge step)))
+    (hrole :
+      (fun role => strandColorOfNonzero
+        (sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
+          leftPrefix cellColor
+          (sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset hnext
+            role))
+        (sourceLocalLayerSerialCellSplicedColorAt_boundaryRebaseEdge_ne_zero_of_prefix
+          corridor hunique offset hnext leftPrefix cellColor hleftPrefix hcell
+            role)) =
+      (fun role => strandColorOfNonzero
+        (sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
+          rightPrefix cellColor
+          (sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset hnext
+            role))
+        (sourceLocalLayerSerialCellSplicedColorAt_boundaryRebaseEdge_ne_zero_of_prefix
+          corridor hunique offset hnext rightPrefix cellColor hrightPrefix hcell
+            role)))
+    (edge : caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet)
+    (hcollar : edge ∈
+      sourceLocalLayerBoundaryRebaseTrackedCollarAt corridor hunique offset hnext)
+    (hactive : edge ∈ sourceLocalLayerSerialTerminalInputRegionAt corridor
+      hunique (sourceLocalLayerNextOffset offset hnext)) :
+    sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset leftPrefix
+        cellColor edge =
+      sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset rightPrefix
+        cellColor edge := by
+  classical
+  by_cases hswitch : edge ∈
+      sourceLocalLayerBoundaryRebaseSwitchAt corridor hunique offset hnext
+  · rcases (mem_sourceLocalLayerBoundaryRebaseSwitchAt_iff corridor hunique
+      offset hnext edge).1 hswitch with ⟨role, hroleEdge⟩
+    have hroleValue := congrFun hrole role
+    have hcolorValue := congrArg StrandColor.toColor hroleValue
+    simpa [hroleEdge, strandColorOfNonzero_toColor] using hcolorValue
+  · have hpre : edge ∈
+        sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset :=
+      (sourceLocalLayerSerialPreRebaseOutput_mem_iff_nextTerminalInput_of_not_mem_switch
+        corridor hunique offset hnext edge hswitch).2 hactive
+    rw [← sourceLocalLayerSerialTerminalInputRegionAt_union_cell corridor
+      hunique offset] at hpre
+    by_cases hcellRegion : edge ∈
+        sourceLocalLayerCellRegionAt corridor hunique offset
+    · simp [sourceLocalLayerSerialCellSplicedColorAt, hcellRegion]
+    · have hold : edge ∈
+          sourceLocalLayerSerialTerminalInputRegionAt corridor hunique offset := by
+        exact (Finset.mem_union.mp hpre).resolve_right hcellRegion
+      have hinteraction : edge ∈
+          sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt graphData
+            caps coloring web corridor hunique offset hnext := by
+        exact Finset.mem_union_right _ hcollar
+      have hpref :=
+        sourceLocalLayerSerialRootedInteractionStateForColorAt_color_eq graphData
+          minimal caps coloring web corridor hunique offset hnext leftPrefix
+            rightPrefix (fun step => hleftPrefix _) (fun step => hrightPrefix _)
+              hsource edge hinteraction hold
+      simpa [sourceLocalLayerSerialCellSplicedColorAt, hcellRegion] using hpref
+
+/-- The tracked rebase factor extracted from a witness depends on the prefix
+representative only through the rooted source and the four rebase-role colors.
+The literal Cell supplies the other active collar colors. -/
+theorem sourceLocalLayerSerialRootedInteractionRealizedStepAt_trackedRebase_eq
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hnextNext :
+      (sourceLocalLayerNextOffset offset hnext).val + 1 < blockLength - 3)
+    (left right : SourceLocalLayerSerialRootedInteractionRealizationAt graphData
+      caps coloring web corridor hunique offset hnext)
+    (hcell : left.1.2 = right.1.2)
+    (hsource :
+      (sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
+        coloring web corridor hunique offset hnext hnextNext left).source =
+      (sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
+        coloring web corridor hunique offset hnext hnextNext right).source)
+    (hrole :
+      ((sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
+        coloring web corridor hunique offset hnext hnextNext left).factor
+          ).rebaseLetter.outputCode.tracked.roleColor =
+      ((sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
+        coloring web corridor hunique offset hnext hnextNext right).factor
+          ).rebaseLetter.outputCode.tracked.roleColor) :
+    ((sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
+      coloring web corridor hunique offset hnext hnextNext left).factor
+        ).trackedRolling.rebase =
+      ((sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
+        coloring web corridor hunique offset hnext hnextNext right).factor
+          ).trackedRolling.rebase := by
+  classical
+  rcases left with ⟨⟨leftPrefix, leftCell⟩, hleftCompatible⟩
+  rcases right with ⟨⟨rightPrefix, rightCell⟩, hrightCompatible⟩
+  dsimp only at hcell
+  subst rightCell
+  let cellColor := sourceLocalLayerCellLiteralColorAt caps coloring web corridor
+    hunique offset leftCell
+  have hcellPositive : ∀ {edge}, edge ∈
+      sourceLocalLayerCellRegionAt corridor hunique offset →
+        cellColor edge ≠ 0 :=
+    sourceLocalLayerCellLiteralColorAt_ne_zero_of_mem caps coloring web corridor
+      hunique offset leftCell
+  have hactive : ∀ edge, edge ∈
+        sourceLocalLayerBoundaryRebaseTrackedCollarAt corridor hunique offset
+          hnext →
+      edge ∈ sourceLocalLayerSerialTerminalInputRegionAt corridor hunique
+          (sourceLocalLayerNextOffset offset hnext) →
+      sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
+          leftPrefix.1 cellColor edge =
+        sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
+          rightPrefix.1 cellColor edge := by
+    intro edge hcollar hregion
+    apply sourceLocalLayerSerialCellSplicedColorAt_eq_on_active_collar graphData
+      minimal caps coloring web corridor hunique offset hnext leftPrefix.1
+        rightPrefix.1 leftPrefix.2 rightPrefix.2 cellColor hcellPositive
+    · simpa [sourceLocalLayerSerialRootedInteractionRealizedStepAt] using hsource
+    · simpa [sourceLocalLayerSerialRootedInteractionRealizedStepAt,
+        sourceLocalLayerSerialRootedInteractionRollingCellFactorForColorAt,
+        finiteBoolSupportLetterForColorAt,
+        finiteBoolOutputLetterCodeForColorAt, successorTrackedStateForColorAt,
+        cellColor, hcellPositive] using hrole
+    · exact hcollar
+    · exact hregion
+  have hlocal : ∀ pair,
+      localTrackedGraphForColorAt corridor hunique offset hnext
+          (sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
+            leftPrefix.1 cellColor) pair =
+        localTrackedGraphForColorAt corridor hunique offset hnext
+          (sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
+            rightPrefix.1 cellColor) pair := by
+    intro pair
+    exact localTrackedGraphForColorAt_eq_of_eq_on_active_collar corridor hunique
+      offset hnext _ _ hactive pair
+  have hrebase :
+      sourceLocalLayerSerialTrackedRebaseFactorAt graphData minimal caps coloring
+          web corridor hunique offset hnext
+            (sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
+              leftPrefix.1 cellColor) =
+        sourceLocalLayerSerialTrackedRebaseFactorAt graphData minimal caps coloring
+          web corridor hunique offset hnext
+            (sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
+              rightPrefix.1 cellColor) := by
+    unfold sourceLocalLayerSerialTrackedRebaseFactorAt
+    simp_rw [hlocal]
+  change
+    sourceLocalLayerSerialTrackedRebaseFactorAt graphData minimal caps coloring
+        web corridor hunique offset hnext
+          (sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
+            leftPrefix.1 cellColor) =
+      sourceLocalLayerSerialTrackedRebaseFactorAt graphData minimal caps coloring
+        web corridor hunique offset hnext
+          (sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
+            rightPrefix.1 cellColor)
+  exact hrebase
 
 private theorem sourceLocalLayerSerialRootedInteractionRealizedStepAt_cellOutput_eq
     (graphData : Data G)

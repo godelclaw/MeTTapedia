@@ -195,11 +195,11 @@ theorem localTrackedGraphForColorAt_support_subset_collar
   · exact Or.inl hedgeChanged
   · exact Or.inr ⟨other, hotherChanged, hwhole.1.1⟩
 
-/-- The local tracked rebase residual observes a colour function only on its
-proved finite collar.  This is the representation-invariance bridge needed by
-the rooted transfer: ambient colour functions agreeing on the collar produce
-literally the same local adjacency factor. -/
-theorem localTrackedGraphForColorAt_eq_of_eq_on_collar
+/-- The local tracked rebase residual observes a colour function only on the
+active part of its proved finite collar.  Values at named collar edges outside
+the successor region are irrelevant because the regional tracked graph never
+uses them. -/
+theorem localTrackedGraphForColorAt_eq_of_eq_on_active_collar
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
     {web : GoertzelV24ClosedWebAtGoodWord.Instance data coloring}
     {blockLength : Nat}
@@ -212,7 +212,9 @@ theorem localTrackedGraphForColorAt_eq_of_eq_on_collar
     (leftColor rightColor : G.edgeSet → Color)
     (heq : ∀ edge, edge ∈
       sourceLocalLayerBoundaryRebaseTrackedCollarAt corridor hunique offset
-        hnext → leftColor edge = rightColor edge)
+        hnext → edge ∈ sourceLocalLayerSerialTerminalInputRegionAt corridor
+          hunique (sourceLocalLayerNextOffset offset hnext) →
+        leftColor edge = rightColor edge)
     (pair : TrackedColorPair) :
     localTrackedGraphForColorAt corridor hunique offset hnext leftColor pair =
       localTrackedGraphForColorAt corridor hunique offset hnext rightColor
@@ -245,16 +247,26 @@ theorem localTrackedGraphForColorAt_eq_of_eq_on_collar
     · rcases hresidual.1 with
         ⟨⟨hambient, hfirstTracked, hsecondTracked⟩, hfirstRegion,
           hsecondRegion⟩
-      exact ⟨⟨hambient, (heq first hfirst) ▸ hfirstTracked,
-        (heq second hsecond) ▸ hsecondTracked⟩, hfirstRegion,
+      exact ⟨⟨hambient, (heq first hfirst hfirstRegion) ▸ hfirstTracked,
+        (heq second hsecond hsecondRegion) ▸ hsecondTracked⟩, hfirstRegion,
         hsecondRegion⟩
     · intro hcore
       apply hresidual.2.1
       rcases hcore with
         ⟨⟨hambient, hfirstTracked, hsecondTracked⟩, hfirstRegion,
           hsecondRegion⟩
-      exact ⟨⟨hambient, (heq first hfirst).symm ▸ hfirstTracked,
-        (heq second hsecond).symm ▸ hsecondTracked⟩, hfirstRegion,
+      have hfirstActive : first ∈ sourceLocalLayerSerialTerminalInputRegionAt
+          corridor hunique (sourceLocalLayerNextOffset offset hnext) := by
+        rw [sourceLocalLayerBoundaryRebaseFaceCoreRegionAt_eq_next_sdiff
+          corridor hunique offset hnext] at hfirstRegion
+        exact (Finset.mem_sdiff.mp hfirstRegion).1
+      have hsecondActive : second ∈ sourceLocalLayerSerialTerminalInputRegionAt
+          corridor hunique (sourceLocalLayerNextOffset offset hnext) := by
+        rw [sourceLocalLayerBoundaryRebaseFaceCoreRegionAt_eq_next_sdiff
+          corridor hunique offset hnext] at hsecondRegion
+        exact (Finset.mem_sdiff.mp hsecondRegion).1
+      exact ⟨⟨hambient, (heq first hfirst hfirstActive).symm ▸ hfirstTracked,
+        (heq second hsecond hsecondActive).symm ▸ hsecondTracked⟩, hfirstRegion,
         hsecondRegion⟩
   · intro first second hadj
     have hfirstSupport : first ∈
@@ -283,17 +295,52 @@ theorem localTrackedGraphForColorAt_eq_of_eq_on_collar
     · rcases hresidual.1 with
         ⟨⟨hambient, hfirstTracked, hsecondTracked⟩, hfirstRegion,
           hsecondRegion⟩
-      exact ⟨⟨hambient, (heq first hfirst).symm ▸ hfirstTracked,
-        (heq second hsecond).symm ▸ hsecondTracked⟩, hfirstRegion,
+      exact ⟨⟨hambient, (heq first hfirst hfirstRegion).symm ▸ hfirstTracked,
+        (heq second hsecond hsecondRegion).symm ▸ hsecondTracked⟩, hfirstRegion,
         hsecondRegion⟩
     · intro hcore
       apply hresidual.2.1
       rcases hcore with
         ⟨⟨hambient, hfirstTracked, hsecondTracked⟩, hfirstRegion,
           hsecondRegion⟩
-      exact ⟨⟨hambient, (heq first hfirst) ▸ hfirstTracked,
-        (heq second hsecond) ▸ hsecondTracked⟩, hfirstRegion,
+      have hfirstActive : first ∈ sourceLocalLayerSerialTerminalInputRegionAt
+          corridor hunique (sourceLocalLayerNextOffset offset hnext) := by
+        rw [sourceLocalLayerBoundaryRebaseFaceCoreRegionAt_eq_next_sdiff
+          corridor hunique offset hnext] at hfirstRegion
+        exact (Finset.mem_sdiff.mp hfirstRegion).1
+      have hsecondActive : second ∈ sourceLocalLayerSerialTerminalInputRegionAt
+          corridor hunique (sourceLocalLayerNextOffset offset hnext) := by
+        rw [sourceLocalLayerBoundaryRebaseFaceCoreRegionAt_eq_next_sdiff
+          corridor hunique offset hnext] at hsecondRegion
+        exact (Finset.mem_sdiff.mp hsecondRegion).1
+      exact ⟨⟨hambient, (heq first hfirst hfirstActive) ▸ hfirstTracked,
+        (heq second hsecond hsecondActive) ▸ hsecondTracked⟩, hfirstRegion,
         hsecondRegion⟩
+
+/-- Agreement on the whole finite collar is a convenient stronger sufficient
+condition for local tracked-factor equality. -/
+theorem localTrackedGraphForColorAt_eq_of_eq_on_collar
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : GoertzelV24ClosedWebAtGoodWord.Instance data coloring}
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (leftColor rightColor : G.edgeSet → Color)
+    (heq : ∀ edge, edge ∈
+      sourceLocalLayerBoundaryRebaseTrackedCollarAt corridor hunique offset
+        hnext → leftColor edge = rightColor edge)
+    (pair : TrackedColorPair) :
+    localTrackedGraphForColorAt corridor hunique offset hnext leftColor pair =
+      localTrackedGraphForColorAt corridor hunique offset hnext rightColor
+        pair := by
+  apply localTrackedGraphForColorAt_eq_of_eq_on_active_collar corridor hunique
+    offset hnext leftColor rightColor
+  intro edge hcollar _hactive
+  exact heq edge hcollar
 
 /-- The inherited component relation restricted to the finite collar. -/
 noncomputable def trackedCoreComponentGraphForColorAt
