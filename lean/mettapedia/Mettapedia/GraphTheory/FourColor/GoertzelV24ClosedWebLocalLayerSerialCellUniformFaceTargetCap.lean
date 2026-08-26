@@ -1,7 +1,7 @@
 import Mathlib.Data.Bool.Basic
 import Mathlib.Data.Prod.Lex
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialCellUniformFaceTargetIncidence
-import Mettapedia.GraphTheory.FourColor.GoertzelV24InterfaceExteriorLabelCapFactorForget
+import Mettapedia.GraphTheory.FourColor.GoertzelV24InterfaceExteriorLabelCapFactorForgetExact
 
 /-!
 # Cap-six facial data on the rolling successor interface
@@ -36,6 +36,7 @@ open GoertzelV24FaceOrbitIncidence
 open GoertzelV24FacialPentagonCap
 open GoertzelV24InterfaceExteriorLabelCapFactor
 open GoertzelV24InterfaceExteriorLabelCapFactorForget
+open GoertzelV24InterfaceExteriorLabelCapFactorForgetExact
 open GoertzelV24InterfaceDeletionComponentFactor
 open GoertzelV24InterfaceDeletionComponentFactorForget
 open GoertzelV24InterfaceDeletionComponentFactorForgetExterior
@@ -89,6 +90,34 @@ noncomputable def sourceLocalLayerSerialCellRebaseUniformFaceSuccessorLabelCapSi
     (sourceLocalLayerSerialCellRebaseUniformFaceDartAt corridor hunique offset
       hnext)
     6
+
+/-- The facial wrapper exposes the canonical graph-level weighted code. -/
+theorem sourceLocalLayerSerialCellRebaseUniformFaceSuccessorLabelCapSixCodeAt_exact
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : GoertzelV24ClosedWebAtGoodWord.Instance data coloring}
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3) :
+    sourceLocalLayerSerialCellRebaseUniformFaceSuccessorLabelCapSixCodeAt
+        corridor hunique offset hnext =
+      exactInterfaceExteriorLabelCapCode
+        (sourceLocalLayerBoundaryRebaseSuccessorFaceGraphAt corridor hunique
+          offset hnext)
+        (sourceLocalLayerSerialCellRebaseUniformFaceDartAt corridor hunique
+          offset hnext)
+        (fun dart => web.annular.RS.edgeOf dart ∈
+          sourceLocalLayerSerialTerminalInputRegionAt corridor hunique
+            (sourceLocalLayerNextOffset offset hnext))
+        Prod.fst
+        (faceInterfaceIncidenceVertex web.annular.RS
+          (sourceLocalLayerSerialCellRebaseUniformFaceDartAt corridor hunique
+            offset hnext))
+        web.annular.RS.edgeOf 6 := by
+  rfl
 
 /-- Literal target-coordinate activity in the successor regional face graph. -/
 noncomputable def sourceLocalLayerSerialCellRebaseUniformFaceTargetPresentAt
@@ -239,6 +268,55 @@ theorem sourceLocalLayerSerialCellRebaseUniformFaceTargetEntryAt_atomPresent
           (sourceLocalLayerNextOffset offset hnext))
         uniformDartAt uniformIncidence 6).2 hright.2
 
+/-- A decoded atom denotes the literal exterior endpoint of its target
+incidence. -/
+theorem sourceLocalLayerSerialCellRebaseUniformFaceTargetEntryAt_atomVertex
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (incidence : Fin
+      (sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+        (sourceLocalLayerNextOffset offset hnext)).card × Bool)
+    (atom : SourceLocalLayerSerialCellRebaseUniformFaceTargetEntry
+      (sourceLocalLayerSerialCellRebaseFaceInteractionCarrierAt corridor
+        hunique offset hnext).card)
+    (hentry :
+      sourceLocalLayerSerialCellRebaseUniformFaceTargetEntryAt graphData minimal
+        caps coloring web corridor hunique offset hnext incidence = some atom) :
+    let target := sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+      (sourceLocalLayerNextOffset offset hnext)
+    let targetDartAt := fun slot : Fin target.card =>
+      ((carrierCoordinate target).symm slot).1
+    let uniformDartAt := sourceLocalLayerSerialCellRebaseUniformFaceDartAt
+      corridor hunique offset hnext
+    exteriorLabelCapContractionAtomVertex uniformDartAt
+        (faceInterfaceIncidenceVertex web.annular.RS uniformDartAt) atom =
+      faceInterfaceIncidenceVertex web.annular.RS targetDartAt incidence := by
+  classical
+  dsimp only
+  cases atom with
+  | inl uniformSlot =>
+      exact
+        (sourceLocalLayerSerialCellRebaseUniformFaceTargetEntryAt_left graphData
+          minimal caps coloring web corridor hunique offset hnext incidence
+            uniformSlot hentry).1
+  | inr uniformIncidence =>
+      exact
+        (sourceLocalLayerSerialCellRebaseUniformFaceTargetEntryAt_right graphData
+          minimal caps coloring web corridor hunique offset hnext incidence
+            uniformIncidence hentry).1
+
 /-- The finite decoder marks exactly the literal oriented incidences of the
 rolling target exterior. -/
 @[simp]
@@ -302,6 +380,170 @@ theorem sourceLocalLayerSerialCellRebaseUniformFaceTargetLabelCapSixCodeAt_incid
           sourceLocalLayerSerialCellRebaseUniformFaceTargetEntryAt_atomPresent
             graphData minimal caps coloring web corridor hunique offset hnext
               incidence atom (by simpa [entry] using hentry)⟩
+
+/-- The contracted incidence relation cannot invent an exterior-component
+identification: every reported pair is connected in the literal rolling
+successor exterior. -/
+theorem sourceLocalLayerSerialCellRebaseUniformFaceTargetLabelCapSixCodeAt_incidenceConnected_sound
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (first second : Fin
+      (sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+        (sourceLocalLayerNextOffset offset hnext)).card × Bool)
+    (hconnected :
+      (sourceLocalLayerSerialCellRebaseUniformFaceTargetLabelCapSixCodeAt
+        graphData minimal caps coloring web corridor hunique offset hnext
+        ).incidenceConnected first second = true) :
+    let graph := sourceLocalLayerBoundaryRebaseSuccessorFaceGraphAt corridor
+      hunique offset hnext
+    let target := sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+      (sourceLocalLayerNextOffset offset hnext)
+    let targetDartAt := fun slot : Fin target.card =>
+      ((carrierCoordinate target).symm slot).1
+    ExteriorIncidencePresent graph targetDartAt Prod.fst
+        (faceInterfaceIncidenceVertex web.annular.RS targetDartAt) first ∧
+      ExteriorIncidencePresent graph targetDartAt Prod.fst
+        (faceInterfaceIncidenceVertex web.annular.RS targetDartAt) second ∧
+      (exteriorGraph graph targetDartAt).Reachable
+        (faceInterfaceIncidenceVertex web.annular.RS targetDartAt first)
+        (faceInterfaceIncidenceVertex web.annular.RS targetDartAt second) := by
+  classical
+  dsimp only
+  let graph := sourceLocalLayerBoundaryRebaseSuccessorFaceGraphAt corridor
+    hunique offset hnext
+  let target := sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+    (sourceLocalLayerNextOffset offset hnext)
+  let uniform := sourceLocalLayerSerialCellRebaseFaceInteractionCarrierAt
+    corridor hunique offset hnext
+  let targetDartAt := fun slot : Fin target.card =>
+    ((carrierCoordinate target).symm slot).1
+  let uniformDartAt := sourceLocalLayerSerialCellRebaseUniformFaceDartAt
+    corridor hunique offset hnext
+  let retain := sourceLocalLayerSerialCellRebaseUniformFaceTargetSourceAt
+    corridor hunique offset hnext
+  let entry := sourceLocalLayerSerialCellRebaseUniformFaceTargetEntryAt
+    graphData minimal caps coloring web corridor hunique offset hnext
+  let code :=
+    sourceLocalLayerSerialCellRebaseUniformFaceSuccessorLabelCapSixCodeAt
+      corridor hunique offset hnext
+  change (partialContractedInterfaceExteriorLabelCapCode code retain Prod.fst
+    (sourceLocalLayerSerialCellRebaseUniformFaceTargetPresentAt corridor hunique
+      offset hnext) entry).incidenceConnected first second = true at hconnected
+  have hdata :=
+    (partialContractedInterfaceExteriorLabelCapCode_incidenceConnected_iff
+      code retain Prod.fst
+      (sourceLocalLayerSerialCellRebaseUniformFaceTargetPresentAt corridor
+        hunique offset hnext) entry first second).1 hconnected
+  rcases hdata with
+    ⟨firstAtom, secondAtom, hfirstEntry, hsecondEntry, _, _, hreach⟩
+  have hfirstPresent : ExteriorIncidencePresent graph targetDartAt Prod.fst
+      (faceInterfaceIncidenceVertex web.annular.RS targetDartAt) first :=
+    (sourceLocalLayerSerialCellRebaseUniformFaceTargetEntryAt_isSome_iff
+      graphData minimal caps coloring web corridor hunique offset hnext first).1
+        (by simp [entry, hfirstEntry])
+  have hsecondPresent : ExteriorIncidencePresent graph targetDartAt Prod.fst
+      (faceInterfaceIncidenceVertex web.annular.RS targetDartAt) second :=
+    (sourceLocalLayerSerialCellRebaseUniformFaceTargetEntryAt_isSome_iff
+      graphData minimal caps coloring web corridor hunique offset hnext second).1
+        (by simp [entry, hsecondEntry])
+  have hsome : ∀ retained slot, retain retained = some slot →
+      uniformDartAt slot = targetDartAt retained := by
+    intro retained slot hretain
+    exact sourceLocalLayerSerialCellRebaseUniformFaceTargetSourceAt_dart_eq
+      corridor hunique offset hnext retained slot hretain
+  have hnone : ∀ retained, retain retained = none →
+      targetDartAt retained ∉ graph.support := by
+    intro retained hretain
+    exact
+      sourceLocalLayerSerialCellRebaseUniformFaceTargetSourceAt_none_not_mem_support
+        graphData minimal caps coloring web corridor hunique offset hnext
+          retained hretain
+  have hreachLiteral : (exteriorGraph graph targetDartAt).Reachable
+      (exteriorLabelCapContractionAtomVertex uniformDartAt
+        (faceInterfaceIncidenceVertex web.annular.RS uniformDartAt) firstAtom)
+      (exteriorLabelCapContractionAtomVertex uniformDartAt
+      (faceInterfaceIncidenceVertex web.annular.RS uniformDartAt)
+          secondAtom) := by
+    have hcodeExact : code = exactInterfaceExteriorLabelCapCode graph
+        uniformDartAt
+        (fun dart => web.annular.RS.edgeOf dart ∈
+          sourceLocalLayerSerialTerminalInputRegionAt corridor hunique
+            (sourceLocalLayerNextOffset offset hnext))
+        Prod.fst (faceInterfaceIncidenceVertex web.annular.RS uniformDartAt)
+        web.annular.RS.edgeOf 6 := by
+      exact
+        sourceLocalLayerSerialCellRebaseUniformFaceSuccessorLabelCapSixCodeAt_exact
+          corridor hunique offset hnext
+    have hconnectivity : code.connectivity =
+        exactInterfaceExteriorCode graph uniformDartAt := by
+      rw [hcodeExact]
+      rfl
+    have hincidencePresent : ∀ incidence,
+        code.incidencePresent incidence = true ↔
+          ExteriorIncidencePresent graph uniformDartAt Prod.fst
+            (faceInterfaceIncidenceVertex web.annular.RS uniformDartAt)
+            incidence := by
+      intro incidence
+      rw [hcodeExact]
+      exact exactInterfaceExteriorLabelCapCode_incidencePresent_iff graph
+        uniformDartAt
+        (fun dart => web.annular.RS.edgeOf dart ∈
+          sourceLocalLayerSerialTerminalInputRegionAt corridor hunique
+            (sourceLocalLayerNextOffset offset hnext))
+        Prod.fst (faceInterfaceIncidenceVertex web.annular.RS uniformDartAt)
+          web.annular.RS.edgeOf incidence 6
+    have hincidenceConnected : ∀ first second,
+        code.incidenceConnected first second = true ↔
+          ExteriorIncidencePresent graph uniformDartAt Prod.fst
+              (faceInterfaceIncidenceVertex web.annular.RS uniformDartAt)
+              first ∧
+            ExteriorIncidencePresent graph uniformDartAt Prod.fst
+              (faceInterfaceIncidenceVertex web.annular.RS uniformDartAt)
+              second ∧
+            (exteriorGraph graph uniformDartAt).Reachable
+              (faceInterfaceIncidenceVertex web.annular.RS uniformDartAt first)
+              (faceInterfaceIncidenceVertex web.annular.RS uniformDartAt
+                second) := by
+      intro first second
+      rw [hcodeExact]
+      exact exactInterfaceExteriorLabelCapCode_incidenceConnected_iff graph
+        uniformDartAt
+        (fun dart => web.annular.RS.edgeOf dart ∈
+          sourceLocalLayerSerialTerminalInputRegionAt corridor hunique
+            (sourceLocalLayerNextOffset offset hnext))
+        Prod.fst (faceInterfaceIncidenceVertex web.annular.RS uniformDartAt)
+          web.annular.RS.edgeOf first second 6
+    exact exteriorLabelCapContractionAtomReachable_sound_of_exact
+      (N := web.annular.RS.D)
+      (Larger := Fin uniform.card) (Retained := Fin target.card)
+      (Incidence := Fin uniform.card × Bool) (cap := 6) graph
+      uniformDartAt targetDartAt retain hsome hnone Prod.fst
+      (faceInterfaceIncidenceVertex web.annular.RS uniformDartAt) code
+      hconnectivity hincidencePresent hincidenceConnected firstAtom secondAtom
+        hreach
+  have hfirstVertex :=
+    sourceLocalLayerSerialCellRebaseUniformFaceTargetEntryAt_atomVertex
+      graphData minimal caps coloring web corridor hunique offset hnext first
+        firstAtom (by simpa [entry] using hfirstEntry)
+  have hsecondVertex :=
+    sourceLocalLayerSerialCellRebaseUniformFaceTargetEntryAt_atomVertex
+      graphData minimal caps coloring web corridor hunique offset hnext second
+        secondAtom (by simpa [entry] using hsecondEntry)
+  exact ⟨hfirstPresent, hsecondPresent, by
+    simpa [uniformDartAt, targetDartAt] using
+      hfirstVertex ▸ hsecondVertex ▸ hreachLiteral⟩
 
 /-- Target-coordinate activity is the literal successor-region predicate. -/
 @[simp]
