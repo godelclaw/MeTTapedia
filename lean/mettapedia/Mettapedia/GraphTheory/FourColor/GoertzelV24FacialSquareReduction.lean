@@ -27,6 +27,9 @@ not a corner, and the two ends of each seam are distinct vertices.
 
 namespace Mettapedia.GraphTheory.FourColor
 
+open GoertzelV24OrderedCutRotationSplice
+open GoertzelV24RotationCutDartDecomposition
+open GoertzelV24RotationSpliceConstructor
 open GoertzelV24RotationVertexCutProfile
 
 namespace RotationSystem
@@ -166,6 +169,248 @@ theorem outerEdgeAt_crosses (Q : @FacialSquareData V E)
   exact ⟨Q.cornerAt i, Q.cornerAt_mem_endpoints_outerEdgeAt RS hQ i,
     Q.cornerAt_mem_deletedCorners i, other, hother,
     Q.endpoint_not_mem_deletedCorners RS hQ hdist i hother hne⟩
+
+/-! ## The corners are distinct, and square edges cross nothing -/
+
+private theorem card_pair_le (a b : V) : ({a, b} : Finset V).card ≤ 2 := by
+  classical
+  exact le_trans (Finset.card_insert_le _ _) (by simp)
+
+private theorem card_triple_le (a b c : V) : ({a, b, c} : Finset V).card ≤ 3 := by
+  classical
+  refine le_trans (Finset.card_insert_le _ _) ?_
+  have := card_pair_le b c
+  omega
+
+/-- The well-formed cardinality condition, unpacked. -/
+theorem corners_nodup (Q : @FacialSquareData V E) (hQ : Q.WellFormed RS) :
+    Q.w ∉ ({Q.x, Q.y, Q.z} : Finset V) ∧
+      Q.x ∉ ({Q.y, Q.z} : Finset V) ∧ Q.y ≠ Q.z := by
+  classical
+  have hcard : ({Q.w, Q.x, Q.y, Q.z} : Finset V).card = 4 := hQ.1
+  have hw : Q.w ∉ ({Q.x, Q.y, Q.z} : Finset V) := by
+    intro hmem
+    rw [Finset.insert_eq_self.2 hmem] at hcard
+    have := card_triple_le (V := V) Q.x Q.y Q.z
+    omega
+  rw [Finset.card_insert_of_notMem hw] at hcard
+  have hx : Q.x ∉ ({Q.y, Q.z} : Finset V) := by
+    intro hmem
+    rw [Finset.insert_eq_self.2 hmem] at hcard
+    have := card_pair_le (V := V) Q.y Q.z
+    omega
+  rw [Finset.card_insert_of_notMem hx] at hcard
+  refine ⟨hw, hx, ?_⟩
+  intro hyz
+  rw [hyz, Finset.insert_eq_self.2 (Finset.mem_singleton_self _)] at hcard
+  simp at hcard
+
+/-- The four corners are pairwise distinct. -/
+theorem cornerAt_injective (Q : @FacialSquareData V E) (hQ : Q.WellFormed RS) :
+    Function.Injective Q.cornerAt := by
+  obtain ⟨hw, hx, hyz⟩ := Q.corners_nodup RS hQ
+  simp only [Finset.mem_insert, Finset.mem_singleton, not_or] at hw hx
+  intro i j hij
+  fin_cases i <;> fin_cases j <;>
+    simp_all [cornerAt]
+
+/-- A corner is an endpoint of each of its three named edges. -/
+theorem cornerAt_mem_endpoints_lineEdge (Q : @FacialSquareData V E)
+    (hQ : Q.WellFormed RS) {node : SquareLocalNode} {i : Fin 4}
+    (hnode : node ∈ cornerNodes i) :
+    Q.cornerAt i ∈ RS.endpoints (Q.lineEdge node) := by
+  refine (RS.mem_endpoints_iff_mem_incidentEdges).2 ?_
+  rw [Q.incidentEdges_cornerAt RS hQ i]
+  exact Finset.mem_image_of_mem _ hnode
+
+/-- An edge named at two distinct corners has exactly those two corners as its
+endpoints. -/
+theorem endpoints_lineEdge_eq_pair (Q : @FacialSquareData V E)
+    (hQ : Q.WellFormed RS) {node : SquareLocalNode} {i j : Fin 4} (hij : i ≠ j)
+    (hi : node ∈ cornerNodes i) (hj : node ∈ cornerNodes j) :
+    RS.endpoints (Q.lineEdge node) = {Q.cornerAt i, Q.cornerAt j} := by
+  classical
+  have hne : Q.cornerAt i ≠ Q.cornerAt j := fun h =>
+    hij (Q.cornerAt_injective RS hQ h)
+  refine (Finset.eq_of_subset_of_card_le ?_ ?_).symm
+  · intro v hv
+    simp only [Finset.mem_insert, Finset.mem_singleton] at hv
+    rcases hv with rfl | rfl
+    · exact Q.cornerAt_mem_endpoints_lineEdge RS hQ hi
+    · exact Q.cornerAt_mem_endpoints_lineEdge RS hQ hj
+  · rw [RS.endpoints_card_two, Finset.card_pair hne]
+
+/-- **A square edge crosses nothing.**  Both of its endpoints are corners. -/
+theorem squareNode_not_crosses (Q : @FacialSquareData V E)
+    (hQ : Q.WellFormed RS) {node : SquareLocalNode} (hnode : 4 ≤ node.val) :
+    ¬ edgeCrossesVertexSet RS Q.deletedCorners (Q.lineEdge node) := by
+  classical
+  obtain ⟨i, j, hij, hi, hj⟩ :
+      ∃ i j : Fin 4, i ≠ j ∧ node ∈ cornerNodes i ∧ node ∈ cornerNodes j := by
+    fin_cases node <;> simp_all <;>
+      first
+        | exact ⟨0, 1, by decide, by decide, by decide⟩
+        | exact ⟨1, 2, by decide, by decide, by decide⟩
+        | exact ⟨2, 3, by decide, by decide, by decide⟩
+        | exact ⟨3, 0, by decide, by decide, by decide⟩
+  rintro ⟨inner, -, -, outer, houter, houterOut⟩
+  rw [Q.endpoints_lineEdge_eq_pair RS hQ hij hi hj] at houter
+  simp only [Finset.mem_insert, Finset.mem_singleton] at houter
+  rcases houter with rfl | rfl
+  · exact houterOut (Q.cornerAt_mem_deletedCorners i)
+  · exact houterOut (Q.cornerAt_mem_deletedCorners j)
+
+/-- A low-index named edge is the outer edge of its own corner. -/
+theorem lineEdge_eq_outerEdgeAt (Q : @FacialSquareData V E)
+    {node : SquareLocalNode} (hnode : node.val < 4) :
+    Q.lineEdge node = Q.outerEdgeAt ⟨node.val, hnode⟩ := by
+  rw [Q.outerEdgeAt_eq_lineEdge]
+  congr 1
+
+/-- **The boundary identity.**  The crossing edges of the four corners are
+exactly the four outer edges.  One direction is that every outer edge leaves
+the square; the other is that any crossing edge meets a corner, hence is one of
+that corner's three named edges, and the two square edges there cross
+nothing. -/
+theorem vertexSetCrossingEdges_deletedCorners (Q : @FacialSquareData V E)
+    (hQ : Q.WellFormed RS) (hdist : Q.LocalEdgesDistinct) :
+    vertexSetCrossingEdges RS Q.deletedCorners =
+      Finset.image Q.outerEdgeAt Finset.univ := by
+  classical
+  ext edge
+  rw [mem_vertexSetCrossingEdges_iff, Finset.mem_image]
+  constructor
+  · rintro ⟨inner, hinner, hinnerDeleted, outer, houter, houterOut⟩
+    have hcorner : ∃ j : Fin 4, inner = Q.cornerAt j := by
+      simp only [deletedCorners, Finset.mem_insert,
+        Finset.mem_singleton] at hinnerDeleted
+      rcases hinnerDeleted with h | h | h | h
+      · exact ⟨0, h⟩
+      · exact ⟨1, h⟩
+      · exact ⟨2, h⟩
+      · exact ⟨3, h⟩
+    obtain ⟨j, rfl⟩ := hcorner
+    have hinc := (RS.mem_endpoints_iff_mem_incidentEdges).1 hinner
+    rw [Q.incidentEdges_cornerAt RS hQ j, Finset.mem_image] at hinc
+    obtain ⟨node, -, rfl⟩ := hinc
+    by_cases hlow : node.val < 4
+    · exact ⟨⟨node.val, hlow⟩, Finset.mem_univ _,
+        (Q.lineEdge_eq_outerEdgeAt hlow).symm⟩
+    · exact absurd ⟨Q.cornerAt j, hinner, Q.cornerAt_mem_deletedCorners j,
+        outer, houter, houterOut⟩
+        (Q.squareNode_not_crosses RS hQ (by omega))
+  · rintro ⟨i, -, rfl⟩
+    exact Q.outerEdgeAt_crosses RS hQ hdist i
+
+/-! ## The two transversals of each planar reduction -/
+
+theorem outerEdgeAt_injective (Q : @FacialSquareData V E)
+    (hdist : Q.LocalEdgesDistinct) : Function.Injective Q.outerEdgeAt := by
+  intro i j hij
+  rw [Q.outerEdgeAt_eq_lineEdge, Q.outerEdgeAt_eq_lineEdge] at hij
+  have hnode := hdist hij
+  exact Fin.ext (by simpa [portalNode] using congrArg Fin.val hnode)
+
+/-- The corner portals joined on the left of each planar reduction. -/
+def leftPortal : SquareReductionSide → Fin 2 → Fin 4
+  | 0, 0 => 0
+  | 0, 1 => 2
+  | 1, 0 => 1
+  | 1, 1 => 3
+
+/-- The corner portals joined on the right of each planar reduction. -/
+def rightPortal : SquareReductionSide → Fin 2 → Fin 4
+  | 0, 0 => 1
+  | 0, 1 => 3
+  | 1, 0 => 2
+  | 1, 1 => 0
+
+def leftCrossingAt (Q : @FacialSquareData V E) (side : SquareReductionSide) :
+    Fin 2 → E := fun step => Q.outerEdgeAt (leftPortal side step)
+
+def rightCrossingAt (Q : @FacialSquareData V E) (side : SquareReductionSide) :
+    Fin 2 → E := fun step => Q.outerEdgeAt (rightPortal side step)
+
+theorem leftPortal_injective (side : SquareReductionSide) :
+    Function.Injective (leftPortal side) := by
+  revert side
+  decide
+
+theorem rightPortal_injective (side : SquareReductionSide) :
+    Function.Injective (rightPortal side) := by
+  revert side
+  decide
+
+/-- The two transversals together use every corner portal exactly once. -/
+theorem portalImages_union (side : SquareReductionSide) :
+    (Finset.image (leftPortal side) Finset.univ ∪
+        Finset.image (rightPortal side) Finset.univ) =
+      (Finset.univ : Finset (Fin 4)) := by
+  revert side
+  decide
+
+theorem leftPortal_ne_rightPortal (side : SquareReductionSide) (s t : Fin 2) :
+    leftPortal side s ≠ rightPortal side t := by
+  revert side s t
+  decide
+
+theorem portalImages_disjoint (side : SquareReductionSide) :
+    Disjoint (Finset.image (leftPortal side) Finset.univ)
+      (Finset.image (rightPortal side) Finset.univ) := by
+  revert side
+  decide
+
+theorem leftCrossingAt_injective (Q : @FacialSquareData V E)
+    (hdist : Q.LocalEdgesDistinct) (side : SquareReductionSide) :
+    Function.Injective (Q.leftCrossingAt side) :=
+  (Q.outerEdgeAt_injective hdist).comp (leftPortal_injective side)
+
+theorem rightCrossingAt_injective (Q : @FacialSquareData V E)
+    (hdist : Q.LocalEdgesDistinct) (side : SquareReductionSide) :
+    Function.Injective (Q.rightCrossingAt side) :=
+  (Q.outerEdgeAt_injective hdist).comp (rightPortal_injective side)
+
+/-- **The two transversals cover exactly the crossing edges.**  This is the
+substantive input the generic deleted-region splice asks for. -/
+theorem orderedCut_union_eq_crossingEdges (Q : @FacialSquareData V E)
+    (hQ : Q.WellFormed RS) (hdist : Q.LocalEdgesDistinct)
+    (side : SquareReductionSide) :
+    orderedCut (Q.leftCrossingAt side) ∪ orderedCut (Q.rightCrossingAt side) =
+      vertexSetCrossingEdges RS Q.deletedCorners := by
+  classical
+  rw [Q.vertexSetCrossingEdges_deletedCorners RS hQ hdist]
+  unfold orderedCut leftCrossingAt rightCrossingAt
+  ext edge
+  simp only [Finset.mem_union, Finset.mem_image, Finset.mem_univ, true_and]
+  constructor
+  · rintro (⟨step, rfl⟩ | ⟨step, rfl⟩)
+    · exact ⟨leftPortal side step, rfl⟩
+    · exact ⟨rightPortal side step, rfl⟩
+  · rintro ⟨i, rfl⟩
+    have hi : i ∈ Finset.image (leftPortal side) Finset.univ ∪
+        Finset.image (rightPortal side) Finset.univ := by
+      rw [portalImages_union side]
+      exact Finset.mem_univ i
+    simp only [Finset.mem_union, Finset.mem_image, Finset.mem_univ,
+      true_and] at hi
+    rcases hi with ⟨step, hstep⟩ | ⟨step, hstep⟩
+    · exact Or.inl ⟨step, by rw [hstep]⟩
+    · exact Or.inr ⟨step, by rw [hstep]⟩
+
+/-- The two transversals are disjoint. -/
+theorem orderedCut_disjoint (Q : @FacialSquareData V E)
+    (hdist : Q.LocalEdgesDistinct) (side : SquareReductionSide) :
+    Disjoint (orderedCut (Q.leftCrossingAt side))
+      (orderedCut (Q.rightCrossingAt side)) := by
+  classical
+  unfold orderedCut leftCrossingAt rightCrossingAt
+  rw [Finset.disjoint_left]
+  rintro edge hleft hright
+  simp only [Finset.mem_image, Finset.mem_univ, true_and] at hleft hright
+  obtain ⟨step, hstep⟩ := hleft
+  obtain ⟨other, hother⟩ := hright
+  exact leftPortal_ne_rightPortal side step other
+    (Q.outerEdgeAt_injective hdist (hstep.trans hother.symm))
 
 end FacialSquareData
 
