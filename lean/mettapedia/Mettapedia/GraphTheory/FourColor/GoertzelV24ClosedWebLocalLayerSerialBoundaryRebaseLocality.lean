@@ -291,7 +291,7 @@ theorem sourceLocalLayerRightCrossingAt_index_eq_or_succ_eq_of_lt_of_adj_nextLef
 /-- Two named faces containing related primal edges are adjacent in the
 interior dual.  Equality of the primal edges uses the two-face incidence
 bound; adjacency uses local cubicity at their common vertex. -/
-private theorem interiorDualGraph_adj_of_eq_or_edgeAdjacencyGraph_adj
+theorem interiorDualGraph_adj_of_eq_or_edgeAdjacencyGraph_adj
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
     (web : Instance data coloring)
     {oldFace newFace : OrbitFace web.annular.RS}
