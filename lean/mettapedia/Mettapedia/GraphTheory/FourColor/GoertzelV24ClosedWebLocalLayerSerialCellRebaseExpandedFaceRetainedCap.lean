@@ -29,6 +29,7 @@ open GoertzelV24ClosedWebLocalLayerSerialCellUniformFaceRecurrence
 open GoertzelV24DegreeTwoExteriorBoundary
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24HexCorridorSkeleton
+open GoertzelV24HexCorridorInterfaceMatching
 open GoertzelV24HexFaceRungType
 open GoertzelV24InterfaceDeletionComponentFactor
 open GoertzelV24InterfaceDeletionComponentFactorMaskUpdate
@@ -51,6 +52,37 @@ local instance cellRebaseExpandedFaceRetainedCapEdgeSetDecidableEq :
 namespace Instance
 
 namespace LocalLayerFormation
+
+/-- Every face visited by a literal Cell-3 layer loop is hexagonal.  The two
+centres are corridor hexagons; every other visited face is a radius-one
+neighbour covered by the clean-corridor certificate. -/
+theorem sourceLocalLayerPair_localLayerLoop_support_hexagonal
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (layers : LocalLayerPair web corridor leftInterior hnext)
+    (face : AmbientFace
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (hface : face ∈ layers.localLayerLoop.support) :
+    (orbitFaceBoundary web.annular.RS face.1).card = 6 := by
+  let clean := corridor.toCleanOrbitHexCorridorSkeleton
+  let skeleton := clean.toOrbitHexCorridorSkeleton
+  rcases layers.localLayerLoop_support_near_centers face hface with
+    hcenter | hnextCenter | hcenterAdj | hnextCenterAdj
+  · subst face
+    simpa [LocalLayerPair.centerFace, clean, skeleton] using
+      skeleton.hexagonal leftInterior.center
+  · subst face
+    simpa [LocalLayerPair.nextCenterFace, clean, skeleton] using
+      skeleton.hexagonal (nextCorridorInterior leftInterior hnext).center
+  · exact clean.neighbor_hexagonal leftInterior.center face (by
+      simpa [LocalLayerPair.centerFace, clean, skeleton] using hcenterAdj)
+  · exact clean.neighbor_hexagonal
+      (nextCorridorInterior leftInterior hnext).center face (by
+        simpa [LocalLayerPair.nextCenterFace, clean, skeleton] using
+          hnextCenterAdj)
 
 /-- Every face incident to an incoming crossing of a literal Cell is an
 annular-interior face.  The crossed edge places the face in the local dual
@@ -84,6 +116,45 @@ theorem sourceLocalLayerLeftCrossingAt_incidentFace_internal
     layers.firstLayer.face_mem_walk_support_of_mem_crossingEdge_of_mem_boundary
       hunique hedge hface
   apply layers.localLayerLoop_support_internal
+    ⟨face, Finset.mem_univ face⟩
+  change (⟨face, Finset.mem_univ face⟩ : AmbientFace
+    (Finset.univ : Finset (OrbitFace web.annular.RS))) ∈
+      layers.localLayerLoop.support
+  simp only [LocalLayerPair.localLayerLoop,
+    SimpleGraph.Walk.support_append, List.mem_append]
+  exact Or.inl hsupport
+
+/-- Every face incident to an incoming crossing of a literal Cell is one of
+the clean corridor slab's hexagons. -/
+theorem sourceLocalLayerLeftCrossingAt_incidentFace_hexagonal
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3)) (step : Fin 2)
+    (face : OrbitFace web.annular.RS)
+    (hface : sourceLocalLayerLeftCrossingAt corridor hunique offset step ∈
+      orbitFaceBoundary web.annular.RS face) :
+    (orbitFaceBoundary web.annular.RS face).card = 6 := by
+  let layers := sourceLocalLayerPairAt corridor hunique offset
+  let crossingStep : Fin layers.firstLayer.walk.length :=
+    ⟨step.val, by
+      simpa [LocalLayerPair.firstLayer, LocalLayerPair.firstWalk] using
+        step.isLt⟩
+  have hedge : sourceLocalLayerLeftCrossingAt corridor hunique offset step ∈
+      layers.firstLayer.crossingEdges hunique := by
+    apply (layers.firstLayer.mem_crossingEdges_iff hunique _).2
+    refine ⟨crossingStep, ?_⟩
+    simp [sourceLocalLayerLeftCrossingAt, layers, crossingStep]
+  have hsupport :
+      (⟨face, Finset.mem_univ face⟩ : AmbientFace
+        (Finset.univ : Finset (OrbitFace web.annular.RS))) ∈
+        layers.firstLayer.walk.support :=
+    layers.firstLayer.face_mem_walk_support_of_mem_crossingEdge_of_mem_boundary
+      hunique hedge hface
+  apply sourceLocalLayerPair_localLayerLoop_support_hexagonal layers
     ⟨face, Finset.mem_univ face⟩
   change (⟨face, Finset.mem_univ face⟩ : AmbientFace
     (Finset.univ : Finset (OrbitFace web.annular.RS))) ∈
@@ -134,6 +205,47 @@ theorem sourceLocalLayerSharedRungAt_incidentFace_internal
   · exact corridor.face_internal rung.left
   · exact corridor.face_internal rung.right
 
+/-- Every face incident to the shared outgoing corridor rung is one of the
+two consecutive corridor hexagons. -/
+theorem sourceLocalLayerSharedRungAt_incidentFace_hexagonal
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (face : OrbitFace web.annular.RS)
+    (hface : sourceLocalLayerSharedRungAt corridor hunique offset ∈
+      orbitFaceBoundary web.annular.RS face) :
+    (orbitFaceBoundary web.annular.RS face).card = 6 := by
+  let skeleton :=
+    corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+  let rung := (sourceLocalLayerInteriorAt offset).outgoing
+  let left := skeleton.faceAt rung.left
+  let right := skeleton.faceAt rung.right
+  have hleftRight : left.1 ≠ right.1 := by
+    intro heq
+    exact (skeleton.consecutive_adjacent rung.left rung.right rfl).ne
+      (Subtype.ext heq)
+  have hleft : sourceLocalLayerSharedRungAt corridor hunique offset ∈
+      orbitFaceBoundary web.annular.RS left.1 := by
+    simpa [sourceLocalLayerSharedRungAt, skeleton, rung, left] using
+      skeleton.rungEdge_mem_left hunique rung
+  have hright : sourceLocalLayerSharedRungAt corridor hunique offset ∈
+      orbitFaceBoundary web.annular.RS right.1 := by
+    simpa [sourceLocalLayerSharedRungAt, skeleton, rung, right] using
+      skeleton.rungEdge_mem_right hunique rung
+  have hcases :=
+    eq_or_eq_of_mem_faceBoundary_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_count_le_two
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))
+      (orbitFace_incidence_le_two web.annular.RS) left.2 right.2
+      (Finset.mem_univ face) hleftRight hleft hright hface
+  rcases hcases with rfl | rfl
+  · exact skeleton.hexagonal rung.left
+  · exact skeleton.hexagonal rung.right
+
 /-- Every face incident to one of the four literal rebase-switch edges is
 annular-interior.  This is the role-by-role geometric fact needed below; it
 uses neither global face two-sidedness nor a closed-carrier hypothesis. -/
@@ -165,6 +277,35 @@ theorem sourceLocalLayerBoundaryRebaseSwitchAt_incidentFace_internal
         (sourceLocalLayerNextOffset offset hnext) face (by
           simpa [sourceLocalLayerBoundaryRebaseEdgeAt] using hface)
 
+/-- Every face incident to a literal rebase-switch edge is hexagonal. -/
+theorem sourceLocalLayerBoundaryRebaseSwitchAt_incidentFace_hexagonal
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (edge : G.edgeSet) (face : OrbitFace web.annular.RS)
+    (hedge : edge ∈ sourceLocalLayerBoundaryRebaseSwitchAt corridor hunique
+      offset hnext)
+    (hface : edge ∈ orbitFaceBoundary web.annular.RS face) :
+    (orbitFaceBoundary web.annular.RS face).card = 6 := by
+  rcases (mem_sourceLocalLayerBoundaryRebaseSwitchAt_iff corridor hunique
+    offset hnext edge).1 hedge with ⟨role, rfl⟩
+  rcases role with role | role
+  · exact sourceLocalLayerSharedRungAt_incidentFace_hexagonal corridor hunique
+      offset face (by
+        simpa [sourceLocalLayerBoundaryRebaseEdgeAt] using hface)
+  · rcases role with step | role
+    · exact sourceLocalLayerLeftCrossingAt_incidentFace_hexagonal corridor
+        hunique (sourceLocalLayerNextOffset offset hnext) step face (by
+          simpa [sourceLocalLayerBoundaryRebaseEdgeAt] using hface)
+    · exact sourceLocalLayerSharedRungAt_incidentFace_hexagonal corridor hunique
+        (sourceLocalLayerNextOffset offset hnext) face (by
+          simpa [sourceLocalLayerBoundaryRebaseEdgeAt] using hface)
+
 /-- The orbit face of every changed dart occurrence is interior. -/
 theorem sourceLocalLayerBoundaryRebaseChangedFaceDartAt_face_internal
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
@@ -181,6 +322,32 @@ theorem sourceLocalLayerBoundaryRebaseChangedFaceDartAt_face_internal
     dartOrbitFace web.annular.RS dart ∈
       web.annular.cellulation.interiorFaces := by
   apply sourceLocalLayerBoundaryRebaseSwitchAt_incidentFace_internal corridor
+    hunique offset hnext (web.annular.RS.edgeOf dart)
+      (dartOrbitFace web.annular.RS dart)
+  · exact (mem_sourceLocalLayerBoundaryRebaseChangedFaceDartsAt_iff corridor
+      hunique offset hnext dart).1 hdart
+  · rw [mem_orbitFaceBoundary_iff]
+    exact ⟨dart,
+      (mem_orbitFaceDarts_iff web.annular.RS
+        (dartOrbitFace web.annular.RS dart) dart).2 rfl,
+      rfl⟩
+
+/-- The orbit face of every changed dart occurrence is hexagonal. -/
+theorem sourceLocalLayerBoundaryRebaseChangedFaceDartAt_face_hexagonal
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (dart : web.annular.RS.D)
+    (hdart : dart ∈ sourceLocalLayerBoundaryRebaseChangedFaceDartsAt
+      corridor hunique offset hnext) :
+    (orbitFaceBoundary web.annular.RS
+      (dartOrbitFace web.annular.RS dart)).card = 6 := by
+  apply sourceLocalLayerBoundaryRebaseSwitchAt_incidentFace_hexagonal corridor
     hunique offset hnext (web.annular.RS.edgeOf dart)
       (dartOrbitFace web.annular.RS dart)
   · exact (mem_sourceLocalLayerBoundaryRebaseChangedFaceDartsAt_iff corridor
@@ -221,6 +388,44 @@ theorem sourceLocalLayerBoundaryRebaseFaceCollarAt_face_internal
     have hface :=
       (sourceLocalLayerBoundaryRebaseChangedFaceDartAt_face_internal corridor
         hunique offset hnext changed hchanged)
+    have hsame := dartOrbitFace_phi_eq web.annular.RS
+      (web.annular.RS.phi.symm changed)
+    have hsame' : dartOrbitFace web.annular.RS changed =
+        dartOrbitFace web.annular.RS (web.annular.RS.phi.symm changed) := by
+      simpa using hsame
+    rw [← hsame']
+    exact hface
+
+/-- The whole literal one-step face collar lies on hexagonal faces. -/
+theorem sourceLocalLayerBoundaryRebaseFaceCollarAt_face_hexagonal
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (dart : web.annular.RS.D)
+    (hdart : dart ∈ sourceLocalLayerBoundaryRebaseFaceCollarAt corridor
+      hunique offset hnext) :
+    (orbitFaceBoundary web.annular.RS
+      (dartOrbitFace web.annular.RS dart)).card = 6 := by
+  rw [sourceLocalLayerBoundaryRebaseFaceCollarAt, Finset.mem_biUnion] at hdart
+  rcases hdart with ⟨changed, hchanged, hdart⟩
+  simp only [Finset.mem_insert, Finset.mem_singleton] at hdart
+  rcases hdart with hdart | hdart | hdart
+  · subst dart
+    exact sourceLocalLayerBoundaryRebaseChangedFaceDartAt_face_hexagonal
+      corridor hunique offset hnext changed hchanged
+  · subst dart
+    rw [dartOrbitFace_phi_eq]
+    exact sourceLocalLayerBoundaryRebaseChangedFaceDartAt_face_hexagonal
+      corridor hunique offset hnext changed hchanged
+  · subst dart
+    have hface :=
+      sourceLocalLayerBoundaryRebaseChangedFaceDartAt_face_hexagonal corridor
+        hunique offset hnext changed hchanged
     have hsame := dartOrbitFace_phi_eq web.annular.RS
       (web.annular.RS.phi.symm changed)
     have hsame' : dartOrbitFace web.annular.RS changed =
@@ -444,6 +649,133 @@ theorem
     ((mem_orbitFaceDarts_iff web.annular.RS
       (dartOrbitFace web.annular.RS promoted.1) right.1).2 hrightFace.symm)
     hedge
+
+/-- If the enlarged interface touches an old exterior component, all distinct
+primal-edge labels of that component lie on one clean corridor hexagon.
+Consequently the full old support has cardinality at most six, independently
+of the size of the cumulative prefix. -/
+theorem
+    sourceLocalLayerSerialCellRebase_oldFaceSupport_card_le_six_of_promoted_nonempty
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (component :
+      (exteriorGraph
+        (faceRegionalDartGraph web.annular.RS
+          (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique
+            offset))
+        (fun slot : Fin
+          (sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+            offset).card =>
+          ((carrierCoordinate
+            (sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+              offset)).symm slot).1)).ConnectedComponent)
+    (root : component)
+    (hrootOutside : OutsideInterface
+      (fun slot : Fin
+        (sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+          offset).card =>
+        ((carrierCoordinate
+          (sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+            offset)).symm slot).1)
+      root.1)
+    (hpromoted : (promotedExteriorComponentVertices
+      (faceRegionalDartGraph web.annular.RS
+        (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset))
+      (fun slot : Fin
+        (sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+          offset).card =>
+        ((carrierCoordinate
+          (sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+            offset)).symm slot).1)
+      (sourceLocalLayerSerialCellRebaseUniformFaceDartAt corridor hunique offset
+        hnext) component).Nonempty) :
+    let graph := faceRegionalDartGraph web.annular.RS
+      (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset)
+    let oldCarrier := sourceLocalLayerSerialFaceTransitionCarrierAt corridor
+      hunique offset
+    let oldDartAt := fun slot : Fin oldCarrier.card =>
+      ((carrierCoordinate oldCarrier).symm slot).1
+    (exteriorComponentLabelSupport graph oldDartAt web.annular.RS.edgeOf
+      component).card ≤ 6 := by
+  dsimp only
+  classical
+  let region :=
+    sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset
+  let graph := faceRegionalDartGraph web.annular.RS region
+  let oldCarrier := sourceLocalLayerSerialFaceTransitionCarrierAt corridor
+    hunique offset
+  let oldDartAt := fun slot : Fin oldCarrier.card =>
+    ((carrierCoordinate oldCarrier).symm slot).1
+  let uniform := sourceLocalLayerSerialCellRebaseFaceInteractionCarrierAt
+    corridor hunique offset hnext
+  let newDartAt := sourceLocalLayerSerialCellRebaseUniformFaceDartAt corridor
+    hunique offset hnext
+  rcases hpromoted with ⟨promoted, hpromoted⟩
+  rcases (mem_promotedExteriorComponentVertices_iff graph oldDartAt newDartAt
+    component promoted).1 hpromoted with ⟨newSlot, hnewSlot⟩
+  have hrootComponent :
+      (exteriorGraph graph oldDartAt).connectedComponentMk root.1 = component :=
+    (component.mem_supp_iff root.1).1 root.2
+  have hpromotedReach :
+      (exteriorGraph graph oldDartAt).Reachable root.1 promoted.1 := by
+    apply SimpleGraph.ConnectedComponent.exact
+    exact hrootComponent.trans
+      ((component.mem_supp_iff promoted.1).1 promoted.2).symm
+  have hpromotedOutside : OutsideInterface oldDartAt promoted.1 :=
+    outsideInterface_of_exteriorGraph_reachable graph oldDartAt hrootOutside
+      hpromotedReach
+  have hpromotedUniform : promoted.1 ∈ uniform := by
+    have hcoordinate : newDartAt newSlot ∈ uniform :=
+      ((carrierCoordinate uniform).symm newSlot).2
+    simpa [newDartAt, sourceLocalLayerSerialCellRebaseUniformFaceDartAt,
+      uniform, hnewSlot] using hcoordinate
+  have hpromotedCollar : promoted.1 ∈
+      sourceLocalLayerBoundaryRebaseFaceCollarAt corridor hunique offset
+        hnext := by
+    rcases Finset.mem_union.mp hpromotedUniform with hold | hcollar
+    · exact (hpromotedOutside
+        (carrierCoordinate oldCarrier ⟨promoted.1, hold⟩) (by
+          simp [oldDartAt, oldCarrier])).elim
+    · exact hcollar
+  have hhexagonal :
+      (orbitFaceBoundary web.annular.RS
+        (dartOrbitFace web.annular.RS promoted.1)).card = 6 :=
+    sourceLocalLayerBoundaryRebaseFaceCollarAt_face_hexagonal corridor hunique
+      offset hnext promoted.1 hpromotedCollar
+  have hexteriorLe : exteriorGraph graph oldDartAt ≤ graph := by
+    intro first second hadj
+    exact hadj.1
+  calc
+    (exteriorComponentLabelSupport graph oldDartAt web.annular.RS.edgeOf
+      component).card ≤
+        (orbitFaceBoundary web.annular.RS
+          (dartOrbitFace web.annular.RS promoted.1)).card := by
+      apply Finset.card_le_card
+      intro edge hedge
+      rcases (mem_exteriorComponentLabelSupport_iff graph oldDartAt
+        web.annular.RS.edgeOf component edge).1 hedge with ⟨vertex, hlabel⟩
+      have hvertexReach :
+          (exteriorGraph graph oldDartAt).Reachable promoted.1 vertex.1 := by
+        apply SimpleGraph.ConnectedComponent.exact
+        exact ((component.mem_supp_iff promoted.1).1 promoted.2).trans
+          ((component.mem_supp_iff vertex.1).1 vertex.2).symm
+      have hface : dartOrbitFace web.annular.RS promoted.1 =
+          dartOrbitFace web.annular.RS vertex.1 :=
+        faceRegionalDartGraph_reachable_dartOrbitFace_eq web.annular.RS region
+          (hvertexReach.mono hexteriorLe)
+      apply (mem_orbitFaceBoundary_iff web.annular.RS
+        (dartOrbitFace web.annular.RS promoted.1) edge).2
+      exact ⟨vertex.1,
+        (mem_orbitFaceDarts_iff web.annular.RS
+          (dartOrbitFace web.annular.RS promoted.1) vertex.1).2 hface.symm,
+        hlabel⟩
+    _ = 6 := hhexagonal
 
 /-- A finite promoted-block receipt identifies the successor exterior
 component rooted at any retained predecessor dart: its distinct primal-edge
@@ -777,6 +1109,124 @@ theorem
           (promotedExteriorComponentLabels graph oldDartAt newDartAt
             web.annular.RS.edgeOf component).card) 5 := by
         rw [hlostEmpty, hpromotedLabelsEmpty]
+
+/-- Fixed-width executable recurrence for the literal facial rebase.
+
+Cap six is sufficient forever.  A component touched by the new collar lies on
+one clean corridor hexagon, so its complete old support has size at most six
+and cap six is exact.  An untouched component may be arbitrarily large, but no
+label is removed and its cap carries through unchanged. -/
+theorem
+    sourceLocalLayerSerialCellRebase_min_newExteriorFaceSupport_five_eq_cap_six
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hcell : (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 6)
+    (component :
+      (exteriorGraph
+        (faceRegionalDartGraph web.annular.RS
+          (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique
+            offset))
+        (fun slot : Fin
+          (sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+            offset).card =>
+          ((carrierCoordinate
+            (sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+              offset)).symm slot).1)).ConnectedComponent)
+    (start : component)
+    (hstartRetained : start ∈ retainedExteriorComponentVertices
+      (faceRegionalDartGraph web.annular.RS
+        (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset))
+      (fun slot : Fin
+        (sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+          offset).card =>
+        ((carrierCoordinate
+          (sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+            offset)).symm slot).1)
+      (sourceLocalLayerSerialCellRebaseUniformFaceDartAt corridor hunique offset
+        hnext) component)
+    (hblocks :
+      (sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt corridor
+        hunique offset hnext hcell).PromotedBlocksMeetOld) :
+    let graph := faceRegionalDartGraph web.annular.RS
+      (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset)
+    let oldCarrier := sourceLocalLayerSerialFaceTransitionCarrierAt corridor
+      hunique offset
+    let oldDartAt := fun slot : Fin oldCarrier.card =>
+      ((carrierCoordinate oldCarrier).symm slot).1
+    let newDartAt := sourceLocalLayerSerialCellRebaseUniformFaceDartAt corridor
+      hunique offset hnext
+    min (exteriorComponentLabelSupport graph newDartAt web.annular.RS.edgeOf
+        ((exteriorGraph graph newDartAt).connectedComponentMk start.1)).card 5 =
+      min (min (exteriorComponentLabelSupport graph oldDartAt
+          web.annular.RS.edgeOf component).card 6 -
+        (promotedExteriorComponentLabels graph oldDartAt newDartAt
+          web.annular.RS.edgeOf component).card) 5 := by
+  dsimp only
+  classical
+  let graph := faceRegionalDartGraph web.annular.RS
+    (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset)
+  let oldCarrier := sourceLocalLayerSerialFaceTransitionCarrierAt corridor
+    hunique offset
+  let oldDartAt := fun slot : Fin oldCarrier.card =>
+    ((carrierCoordinate oldCarrier).symm slot).1
+  let newDartAt := sourceLocalLayerSerialCellRebaseUniformFaceDartAt corridor
+    hunique offset hnext
+  rw [sourceLocalLayerSerialCellRebase_exteriorComponentLabelSupport_eq_retained
+    corridor hunique offset hnext hcell component start hstartRetained hblocks]
+  have holdCovered : ∀ old, ∃ new, newDartAt new = oldDartAt old :=
+    sourceLocalLayerSerialCellRebase_oldFaceDartAt_covered_uniform corridor
+      hunique offset hnext
+  by_cases hpromoted : (promotedExteriorComponentVertices graph oldDartAt
+      newDartAt component).Nonempty
+  · have hnotNew : ¬ ∃ slot, newDartAt slot = start.1 :=
+      (mem_retainedExteriorComponentVertices_iff graph oldDartAt newDartAt
+        component start).1 hstartRetained
+    have hstartOutside : OutsideInterface oldDartAt start.1 := by
+      intro old heq
+      rcases holdCovered old with ⟨new, hnew⟩
+      exact hnotNew ⟨new, hnew.trans heq.symm⟩
+    have hinjective : Function.Injective (fun vertex : component =>
+        web.annular.RS.edgeOf vertex.1) :=
+      sourceLocalLayerSerialCellRebase_edgeOf_injective_of_promoted_nonempty
+        corridor hunique offset hnext component start hstartOutside hpromoted
+    have hsupport :
+        (exteriorComponentLabelSupport graph oldDartAt
+          web.annular.RS.edgeOf component).card ≤ 6 :=
+      sourceLocalLayerSerialCellRebase_oldFaceSupport_card_le_six_of_promoted_nonempty
+        corridor hunique offset hnext component start hstartOutside hpromoted
+    exact min_card_retainedExteriorComponentLabels_five_eq_cap_six graph
+      oldDartAt newDartAt web.annular.RS.edgeOf component hinjective hsupport
+  · have hpromotedVerticesEmpty :
+        promotedExteriorComponentVertices graph oldDartAt newDartAt component =
+          ∅ := Finset.not_nonempty_iff_eq_empty.mp hpromoted
+    have hpromotedLabelsEmpty :
+        promotedExteriorComponentLabels graph oldDartAt newDartAt
+          web.annular.RS.edgeOf component = ∅ := by
+      simp [promotedExteriorComponentLabels, hpromotedVerticesEmpty]
+    have hlostEmpty : lostExteriorComponentLabels graph oldDartAt newDartAt
+        web.annular.RS.edgeOf component = ∅ := by
+      apply Finset.not_nonempty_iff_eq_empty.mp
+      rintro ⟨value, hvalue⟩
+      have hsubset :=
+        lostExteriorComponentLabels_subset_promotedExteriorComponentLabels
+          graph oldDartAt newDartAt web.annular.RS.edgeOf component hvalue
+      rw [hpromotedLabelsEmpty] at hsubset
+      simp at hsubset
+    rw [retainedExteriorComponentLabels_eq_sdiff_lost graph oldDartAt
+      newDartAt web.annular.RS.edgeOf component, hlostEmpty,
+      hpromotedLabelsEmpty]
+    simp only [Finset.sdiff_empty, Finset.card_empty, Nat.sub_zero]
+    change min (exteriorComponentLabelSupport graph oldDartAt
+        web.annular.RS.edgeOf component).card 5 =
+      min (min (exteriorComponentLabelSupport graph oldDartAt
+        web.annular.RS.edgeOf component).card 6) 5
+    omega
 
 end LocalLayerFormation
 

@@ -391,6 +391,32 @@ difference are statements about the retained labels themselves.
 -/
 
 omit [Fintype Old] in
+/-- If a touched component's complete old label support has size at most six,
+then cap six contains exactly the information needed to recover cap five after
+promotion.  This bound is independent of the size of the enlarged interface. -/
+theorem min_card_retainedExteriorComponentLabels_five_eq_cap_six
+    (graph : SimpleGraph N) (oldVertex : Old → N) (newVertex : New → N)
+    (label : N → Label)
+    (component : (exteriorGraph graph oldVertex).ConnectedComponent)
+    (hinj : Function.Injective fun vertex : component => label vertex.1)
+    (hsupport :
+      (exteriorComponentLabelSupport graph oldVertex label component).card ≤
+        6) :
+    min (retainedExteriorComponentLabels graph oldVertex newVertex label
+        component).card 5 =
+      min (min (exteriorComponentLabelSupport graph oldVertex label component
+        ).card 6 -
+          (promotedExteriorComponentLabels graph oldVertex newVertex label
+            component).card) 5 := by
+  classical
+  rw [retainedExteriorComponentLabels_eq_sdiff graph oldVertex newVertex label
+    component hinj]
+  rw [Finset.card_sdiff_of_subset
+    (promotedExteriorComponentLabels_subset_componentLabelSupport graph
+      oldVertex newVertex label component)]
+  rw [Nat.min_eq_left hsupport]
+
+omit [Fintype Old] in
 /-- Cap five for the retained labels, from a cap enlarged by the added carrier.
 No boundary-locality or degree hypothesis. -/
 theorem min_card_retainedExteriorComponentLabels_five_eq_bounded
