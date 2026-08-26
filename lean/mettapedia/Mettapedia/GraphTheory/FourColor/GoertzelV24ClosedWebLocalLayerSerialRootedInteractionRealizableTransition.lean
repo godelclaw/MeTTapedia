@@ -1990,6 +1990,149 @@ theorem sourceLocalLayerSerialRootedInteraction_transition_invariant_of_targetCo
           hnextNext left source target).2
     exact ⟨hendpoints.1.trans hsource.symm, hendpoints.2.trans htarget.symm⟩
 
+/-- The exact realized quotient alphabet at one fixed executable Cell
+position.  Its elements are precisely the observable keys of compatible
+literal source witnesses. -/
+abbrev SourceLocalLayerSerialRootedInteractionQuotientCodeAt
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hnextNext :
+      (sourceLocalLayerNextOffset offset hnext).val + 1 < blockLength - 3) :=
+  RealizedCode
+    (sourceLocalLayerSerialRootedInteractionQuotientKeyAt graphData minimal caps
+      coloring web corridor hunique offset hnext hnextNext)
+
+/-- Exact source presentation through the smaller observable quotient.  The
+ambient positive prefix, the over-encoded rolling factor, and the target
+receipt are absent from its letter type; target congruence proves that the raw
+transition nevertheless factors through this image. -/
+noncomputable def sourceLocalLayerSerialRootedInteractionQuotientPresentationAt
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hnextNext :
+      (sourceLocalLayerNextOffset offset hnext).val + 1 < blockLength - 3) :=
+  RootedLetterPresentation.ofFiniteImage
+    (fun witness =>
+      (sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
+        coloring web corridor hunique offset hnext hnextNext witness).transition)
+    (sourceLocalLayerSerialRootedInteractionQuotientKeyAt graphData minimal caps
+      coloring web corridor hunique offset hnext hnextNext)
+    (by
+      intro left right hkey
+      exact
+        sourceLocalLayerSerialRootedInteraction_transition_invariant_of_targetCongruent
+          graphData minimal caps coloring web corridor hunique offset hnext
+            hnextNext
+            (sourceLocalLayerSerialRootedInteraction_targetCongruentAt graphData
+              minimal caps coloring web corridor hunique offset hnext hnextNext)
+            hkey)
+
+/-- Every compatible literal source witness executes through its canonical
+observable quotient code to the exact represented target. -/
+theorem sourceLocalLayerSerialRootedInteraction_quotientCodedTransition
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hnextNext :
+      (sourceLocalLayerNextOffset offset hnext).val + 1 < blockLength - 3)
+    (witness : SourceLocalLayerSerialRootedInteractionRealizationAt graphData
+      caps coloring web corridor hunique offset hnext) :
+    let step := sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData
+      minimal caps coloring web corridor hunique offset hnext hnextNext witness
+    (sourceLocalLayerSerialRootedInteractionQuotientPresentationAt graphData
+      minimal caps coloring web corridor hunique offset hnext hnextNext
+    ).codedTransition
+      ((sourceLocalLayerSerialRootedInteractionQuotientPresentationAt graphData
+        minimal caps coloring web corridor hunique offset hnext hnextNext).code
+          witness) step.source step.target := by
+  classical
+  dsimp only
+  rw [
+    ← RootedLetterPresentation.rawTransition_eq_codedTransition
+      (sourceLocalLayerSerialRootedInteractionQuotientPresentationAt graphData
+        minimal caps coloring web corridor hunique offset hnext hnextNext)
+      witness]
+  exact
+    sourceLocalLayerSerialRootedInteractionRealizedStepAt_transition graphData
+      minimal caps coloring web corridor hunique offset hnext hnextNext witness
+
+/-- Every canonical observable quotient code has a compatible literal source
+representative and denotes exactly that representative's raw transition. -/
+theorem sourceLocalLayerSerialRootedInteraction_quotientCode_hasRepresentative
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hnextNext :
+      (sourceLocalLayerNextOffset offset hnext).val + 1 < blockLength - 3)
+    (letter : SourceLocalLayerSerialRootedInteractionQuotientCodeAt graphData
+      minimal caps coloring web corridor hunique offset hnext hnextNext) :
+    ∃ witness : SourceLocalLayerSerialRootedInteractionRealizationAt graphData
+        caps coloring web corridor hunique offset hnext,
+      (sourceLocalLayerSerialRootedInteractionQuotientPresentationAt graphData
+        minimal caps coloring web corridor hunique offset hnext hnextNext).code
+          witness = letter ∧
+      (sourceLocalLayerSerialRootedInteractionQuotientPresentationAt graphData
+        minimal caps coloring web corridor hunique offset hnext hnextNext
+      ).rawTransition witness =
+        (sourceLocalLayerSerialRootedInteractionQuotientPresentationAt graphData
+          minimal caps coloring web corridor hunique offset hnext hnextNext
+        ).codedTransition letter := by
+  classical
+  let presentation :=
+    sourceLocalLayerSerialRootedInteractionQuotientPresentationAt graphData
+      minimal caps coloring web corridor hunique offset hnext hnextNext
+  let witness := presentation.representative letter
+  refine ⟨witness, presentation.representative_code letter, ?_⟩
+  have hinvariant := presentation.rawTransition_eq_codedTransition witness
+  rw [presentation.representative_code letter] at hinvariant
+  exact hinvariant
+
 end
 
 end GoertzelV24ClosedWebLocalLayerSerialRootedInteractionRealizableTransition
