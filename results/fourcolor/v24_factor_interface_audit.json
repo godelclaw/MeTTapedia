@@ -1,0 +1,101 @@
+{
+  "accepting_coloring_count": 5412,
+  "audits": {
+    "both": {
+      "accepting_class_count": 3543,
+      "frozen_edge_count": 10,
+      "kempe_class_count": 11067,
+      "largest_class_size": 8,
+      "largest_noncompletable_class_size": 7,
+      "noncompletable_class_count": 7524,
+      "transition_edge_count": 4338,
+      "witness": {
+        "class_size": 2,
+        "coloring": [
+          0,
+          1,
+          1,
+          1,
+          1,
+          0,
+          1,
+          1,
+          2,
+          1,
+          1,
+          2,
+          0,
+          0,
+          0,
+          2,
+          2,
+          0,
+          2,
+          1,
+          0,
+          2,
+          1,
+          1,
+          1,
+          2,
+          2,
+          0,
+          0,
+          1,
+          0,
+          2,
+          0,
+          2
+        ],
+        "coloring_index": 0
+      }
+    },
+    "inner_only": {
+      "accepting_class_count": 333,
+      "frozen_edge_count": 5,
+      "kempe_class_count": 333,
+      "largest_class_size": 160,
+      "largest_noncompletable_class_size": 0,
+      "noncompletable_class_count": 0,
+      "transition_edge_count": 37008,
+      "witness": null
+    },
+    "none": {
+      "accepting_class_count": 1,
+      "frozen_edge_count": 0,
+      "kempe_class_count": 1,
+      "largest_class_size": 15192,
+      "largest_noncompletable_class_size": 0,
+      "noncompletable_class_count": 0,
+      "transition_edge_count": 94968,
+      "witness": null
+    },
+    "outer_only": {
+      "accepting_class_count": 243,
+      "frozen_edge_count": 5,
+      "kempe_class_count": 243,
+      "largest_class_size": 160,
+      "largest_noncompletable_class_size": 0,
+      "noncompletable_class_count": 0,
+      "transition_edge_count": 32652,
+      "witness": null
+    }
+  },
+  "coloring_count": 15192,
+  "coloring_fingerprint": "a48481de4d1c5848e75d8c372919cba0eb853030b91ed8848eb18e32f0f2da87",
+  "defect_vertices": [
+    10,
+    12
+  ],
+  "deleted_edge": [
+    10,
+    12
+  ],
+  "deleted_edge_index": 10,
+  "purpose": "regression against naive all-seams-frozen factor independence",
+  "retained_edge_count": 34,
+  "schema": "fourcolor-v24-factor-interface-audit-v1",
+  "scope_warning": "This refutes only the generic twice-frozen strengthening; it is not asserted to be a Kauffman factor or a Trail-Completability counterexample.",
+  "source_graph_hash": "76eb70510304dcd2ca5693daf30ed1141a2f9a55763bbd3f1f43ce1d90fc6afe",
+  "source_instance": "C30 polar annulus"
+}

@@ -330,27 +330,71 @@ coordinates are never changed by a later lifted step.  The accepting-set
 claim is immediate from the endpoint tuple.
 \end{proof}
 
+The preceding lemma is deliberately only a scheduling theorem.  It does not
+say that an isolated factor move remains a Kempe move after the contextual
+curves are identified.  That missing assertion cannot be repaired by freezing
+all factor seams: doing so can change the reachability problem itself.  The
+correct finite replacement is the following elementary closure criterion.
+
+\begin{lemma}[finite synchronization criterion]
+\label{lem:finite-factor-synchronization}
+\Sprose
+Let $(P,1,\star)$ be a finite monoid of exact factor-interface behaviours,
+let $G\subseteq P$ be the behaviours realized by strict locally completable
+factors, and let $A\subseteq P$ be the behaviours whose contextual composite
+is completable.  Write $\langle G\rangle_{+}$ for the set of nonempty finite
+products of elements of $G$.  Then every finite composite of locally
+completable factors is completable if and only if
+\[
+                         \langle G\rangle_{+}\subseteq A.       \tag{4}
+\]
+Since $P$ is finite, (4) is decided by breadth-first closure from $G$ under
+right multiplication by $G$.  If the inclusion fails, the predecessor tree
+returns a shortest word of locally completable factor behaviours whose
+composite is not completable.
+\end{lemma}
+
+\begin{proof}
+Every nonempty factor list $(g_1,\ldots,g_k)$ evaluates to the monoid product
+$g_1\star\cdots\star g_k$, and these are precisely the elements of
+$\langle G\rangle_{+}$.  Thus (4) is exactly the asserted universal gluing
+property, in different notation.  For the decision procedure, initialize a
+queue with $G$.  Whenever $p$ has been reached, insert every
+$p\star g$, $g\in G$, not seen before.  Finiteness of $P$ makes the process
+terminate, induction on word length proves that it reaches all and only
+$\langle G\rangle_{+}$, and stored predecessors reconstruct a word for any
+reached element outside $A$.
+\end{proof}
+
 \begin{proposition}[source factorization has product semantics]
 \label{prop:factor-product-semantics}
 \Sopen
-Every reachable Kauffman factorization of a source framed trail determines
-factor state spaces $X_i$, factor move relations $R_i$, and a boundary
-compatibility subset $K\subseteq\prod_i X_i$ such that:
+Construct a finite monoid $P$ of exact Kauffman factor-interface behaviours,
+a set $G\subseteq P$ of behaviours realized by strict factors to which Trail
+Completability applies, and an ambient-completion set $A\subseteq P$, such
+that:
 \begin{enumerate}
-  \item restriction maps every ambient reachable colouring to a point of
-        $K$;
-  \item every factor move lifts to the asynchronous product relation while
-        preserving $K$, and every such lifted step is a legal ambient move;
-  \item the product of the factor-completion accepting sets, intersected
-        with $K$, maps to an ambient-completable colouring; and
-  \item every factor is strict in the induction measure.
+  \item every reachable source factorization has a nonempty factor word
+        $g_1\cdots g_k$ with every $g_i\in G$;
+  \item the profile of the contextual composite is exactly
+        $g_1\star\cdots\star g_k$, not an over-approximation;
+  \item a contextual composite is completable exactly when its profile lies
+        in $A$;
+  \item every represented factor is strict in the induction measure; and
+  \item the kernel-replayed closure satisfies
+        $\langle G\rangle_{+}\subseteq A$.
 \end{enumerate}
 \end{proposition}
 
 This is the precise missing bridge between the topological word
-"factored" and the algebraic word "independent".  Once it is proved,
-Lemma~\ref{lem:finite-product-reachability} performs all scheduling and
-commutation; no informal appeal to simultaneous moves remains.
+"factored" and the algebraic word "independent".  It is a synchronization
+seal, not a claim that the factors move asynchronously.  The strong monoidal
+Count semantics in the source supplies the intended construction: retain the
+boundary colours, the two relevant Kempe connectivities, and the capped face
+progress, Booleanize positive counts, and quotient only after proving that
+composition and acceptance factor through the quotient.  Lemma
+\ref{lem:finite-factor-synchronization} then reduces the universal number of
+factors to one finite closure.
 
 \begin{proposition}[factor completion lifts and glues]
 \label{prop:factor-completion-lifts}
@@ -364,11 +408,11 @@ itself is completable.
 \end{proposition}
 
 \begin{proof}
-Apply Proposition~\ref{prop:factor-product-semantics}.  The factor
-completion paths are paths in the relations $R_i$.  Lemma
-\ref{lem:finite-product-reachability} combines them into an asynchronous
-product path that stays in $K$.  Item~2 lifts that path to legal ambient
-moves, and item~3 turns its accepting endpoint into an ambient completion.
+Apply Proposition~\ref{prop:factor-product-semantics}.  The factors determine
+a nonempty word in $G$.  Its product lies in
+$\langle G\rangle_{+}$, hence in $A$ by item~5 and Lemma
+\ref{lem:finite-factor-synchronization}.  Exactness in items~2--3 turns this
+finite accepting profile into an ambient completion.
 \end{proof}
 
 This is not a formal nicety.  A two-colour component that is closed in an
@@ -379,14 +423,26 @@ curves, so arbitrary completion sequences need not have disjoint supports.
 The proposition must therefore be proved by one of the following exact
 mechanisms, not by the sentence "the factors are disjoint":
 \begin{enumerate}
-  \item strengthen factor completability to sequences fixing the complete
-        factor interface, then use disjoint-support commutation;
-  \item prove that every factor move has an ambient component lift whose
-        action on the other factors cancels or preserves their completion
-        states; or
-  \item replace sequential completion by a simultaneous product-state
-        reachability theorem for all factors and their shared contexts.
+  \item the finite synchronization closure of Proposition
+        \ref{prop:factor-product-semantics};
+  \item a stronger ambient-component lifting theorem which proves that the
+        closure is automatically accepting; or
+  \item an interface-relative completion theorem for the particular seams
+        produced by a Kauffman factorization, together with a proof that those
+        seams are one of its valid boundary classes.
 \end{enumerate}
+
+The third item cannot be replaced by an unrestricted "freeze every seam"
+principle.  A deterministic regression audit on the source C30 polar annulus
+deletes one interior edge, enumerates all $15{,}192$ proper colourings, and
+reproduces the $5{,}412$ restored-edge colourings exactly.  With either one
+five-edge boundary frozen, every Kempe class reaches a restored-edge
+colouring.  With both boundaries frozen there are $11{,}067$ classes, of
+which $7{,}524$ contain no such colouring.  This refutes only the generic
+twice-frozen strengthening---the specimen is not asserted to be a Kauffman
+factor---but it is enough to forbid that strengthening as a proof rule.  The
+replayable audit is generated by
+\texttt{tools/fourcolor/v24\_factor\_interface\_audit.py}.
 
 The current framed-trail API supplies frozen-interface vocabulary and exact
 source/graph move alignment, but no theorem presently establishes any of

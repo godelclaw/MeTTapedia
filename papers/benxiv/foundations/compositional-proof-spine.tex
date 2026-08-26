@@ -44,9 +44,10 @@ colouring to a bridgeless cubic plane map & ordinary mathematics written out;
 several presentation adapters remain to be connected in Lean \\
 $T_1$ & Kauffman parity and the prime/factored trail spine: Trail
 Completability implies Tait colourability & the published parity/primality
-theorems are proved in Section~\ref{sec:kauffman-trail-spine}; the additional
-factor product-semantics theorem,
-Proposition~\ref{prop:factor-product-semantics}, is open \\
+theorems are proved in Section~\ref{sec:kauffman-trail-spine}; factor gluing
+is now priced as one exact finite synchronization closure, Proposition
+\ref{prop:factor-product-semantics}, rather than as an unjustified
+disjoint-support assertion \\
 $T_2$ & Meyniel ladder reductions (rotor, digon, two-cut, square) transport
 the relevant refined counts to the pentagon frontier & local square data are
 checked and graph-level count transport, side lifting, and route-specific
@@ -624,29 +625,151 @@ specification, not yet a practical enumerator.
 \begin{proposition}[Exact closure gate]
 \label{prop:exact-closure-gate}
 \Sopen
-For each relevant corridor type, produce finite arrays $I$ of
-manuscript-exact two-pair initial profiles and $E$ of directed profile edges
-such that
+For each relevant corridor type, produce a finite raw-profile array $Q$, a
+finite array $A$ of \emph{physical} Cell types, an initial array $I\subseteq
+Q$, and a letter-labelled edge array
+$E\subseteq Q\times A\times Q$ such that
 \[
  q\in I\quad\Longleftrightarrow\quad
  q\text{ is produced by a compatible literal first-position witness},
 \]
 and
 \[
- (q,q')\in E\quad\Longleftrightarrow\quad
- (q,q')\text{ is produced by a compatible positive prefix/Cell witness}.
+ (q,a,q')\in E\quad\Longleftrightarrow\quad
+ (q,q')\text{ is produced by a compatible positive prefix/Cell witness
+ of physical type }a.
 \]
-Prove both biconditionals in the kernel, replay breadth-first reachability from
-$I$ through $E$, and compare the resulting state-set fingerprint and count
-with an independently implemented generator.  Then, and only then, the
-replayed array length is the exact reachable source-profile count for that
-corridor type.
+The letter index must forget the colouring witness while retaining every
+geometric choice on which the literal Cell count depends; an unlabelled union
+of edges is insufficient for cumulative Count.
+
+For $a\in A$ let
+$R_a(S)=\{q'\mid\exists q\in S,\ (q,a,q')\in E\}$.
+Prove the displayed biconditionals in the kernel, replay raw reachability,
+then replay the determinized closure from $I$ under the maps $R_a$, and
+finally minimize the reachable deterministic system by equality of accepted
+right languages.  Compare all three fingerprints and counts with an
+independently implemented generator:
+\[
+ |Q_{\rm raw}^{\rm reach}|,\qquad
+ |\operatorname{Reach}(\mathcal P(Q))|,\qquad
+ |\operatorname{Reach}(\mathcal P(Q))/\mathord{\sim}_{\rm Nerode}|.
+\]
+Then, and only then, these array lengths are the exact raw, cumulative-support,
+and observational state counts for that corridor type.
 \end{proposition}
 
 The measured $(5,0)$ certificates remain valuable regression tests, but they
 are not substitutes for this equality theorem: their own headers correctly
 say that identifying the decoded transition with every source-legal corridor
 is a separate fidelity obligation.
+
+\subsection{Direct cumulative-Count descent}
+
+The finite-state object needed to pump a zero count is not one raw profile.
+An uncolourable closed instance has no accepting colouring from which one
+could select a profile path.  Its prefix invariant is instead the \emph{set}
+of all raw profiles realized by positive prefix colourings.  This
+determinization costs a powerset in the crude bound and is why the three
+counts in Proposition~\ref{prop:exact-closure-gate} must not be conflated.
+
+\begin{definition}[support action of a positive Count letter]
+\label{def:count-support-action}
+\Sprose
+Let $Q$ be finite and let $M_a\in\operatorname{Mat}_Q(\mathbb N)$ be the
+Count matrix of a physical Cell $a$.  Its Boolean support relation is
+\[
+       q\,R_a\,q' \quad\Longleftrightarrow\quad M_a(q,q')>0.
+\]
+For $S\subseteq Q$ put
+\[
+       R_a[S]=\{q'\in Q:\exists q\in S,\ q\,R_a\,q'\}.
+\]
+If $x\in\mathbb N^Q$ is a cumulative Count row vector and
+$S=\{q:x_q>0\}$, then the support of $xM_a$ is exactly $R_a[S]$.
+\end{definition}
+
+\begin{proof}
+The $q'$ entry of $xM_a$ is
+$\sum_q x_qM_a(q,q')$.  Every summand is a natural number, so the sum is
+positive exactly when at least one summand is positive.  A product of natural
+numbers is positive exactly when both factors are positive.  These two
+equivalences give precisely $q'\in R_a[S]$.
+\end{proof}
+
+\begin{theorem}[determinized support-state deletion]
+\label{thm:determinized-support-deletion}
+\Sprose
+Let $a_1,\ldots,a_n$ be physical Cell letters, let $I\subseteq Q$ be the
+initial support, and define
+\[
+  S_0=I,\qquad S_{k+1}=R_{a_{k+1}}[S_k].
+\]
+If $S_i=S_j$ for some $0\le i<j\le n$, delete the block
+$a_{i+1},\ldots,a_j$.  The shortened word has exactly the same final support
+$S_n$.  In particular, for any accepting set $F\subseteq Q$, it has an
+accepting colouring if and only if the original word does:
+\[
+                         S_n\cap F\ne\varnothing .
+\]
+Consequently, if more prefix positions occur than there are reachable
+determinized support states, some nonempty block is deletable without
+changing zero versus positive total Count.
+\end{theorem}
+
+\begin{proof}
+After the deletion, the support at the new position $i$ is $S_i=S_j$.
+Apply the same remaining functions
+$R_{a_{j+1}},\ldots,R_{a_n}$ to equal sets.  Induction over this common
+suffix gives equality of every later support, hence equality of the final
+support and of its intersection with $F$.  The last assertion is the
+pigeonhole principle applied to the finite reachable subset of
+$\mathcal P(Q)$.
+\end{proof}
+
+This theorem uses no self-loop and no accepting witness.  It is the direct
+zero-count pumping law advertised by the source's monoidal Count semantics.
+It is also exact about its price: raw-profile reachability alone does not
+justify it, and the worst-case state count is $2^{|Q|}$ before reachable-state
+minimization.
+
+\begin{theorem}[direct Count-reductive assembly]
+\label{thm:direct-count-reductive-assembly}
+\Sconditional{Tait bridge; ladder transport; global cut chain; exact labelled Count closure; physical splice; route-native finite base}
+Assume that every sufficiently large least Tait counterexample can be put,
+by the source's target-preserving local reductions, into a composable corridor
+whose cut roots have one fixed finite type.  Assume the literal Count of each
+physical Cell factors exactly through the labelled finite system of
+Proposition~\ref{prop:exact-closure-gate}.  Assume further that whenever two
+cut positions have the same rooted cumulative support state, deleting the
+intervening nonempty slab constructs a smaller plane cubic instance and
+preserves its final zero Count.  Finally, verify by the same route-native
+semantics that no counterexample exists at or below the resulting effective
+threshold.  Then every bridgeless cubic plane graph is Tait colourable, and
+hence every planar graph is four-colourable.
+\end{theorem}
+
+\begin{proof}
+Suppose otherwise and choose a least counterexample.  The finite base puts it
+above the threshold.  Apply the target-preserving ladder reductions and the
+global cut-chain theorem.  Exact Count factorization and
+Definition~\ref{def:count-support-action} identify the successive cumulative
+supports with a path in the finite determinized system.  The corridor is
+longer than its reachable state count, so two rooted cumulative support
+states repeat.  Theorem~\ref{thm:determinized-support-deletion} preserves the
+empty accepting support, and the physical-splice hypothesis realizes that
+deletion as a strictly smaller plane cubic counterexample.  This contradicts
+minimality.  The Tait bridge gives the Four-Colour Theorem.
+\end{proof}
+
+Theorem~\ref{thm:direct-count-reductive-assembly} is the shortest literal
+implementation of the companion note's instruction to open the instances,
+count through the finite interface, compose, and pump.  It does not use Trail
+Completability or Kauffman factor gluing.  Those remain a source-faithful
+alternative assembly and a valuable explanation of the formation calculus,
+but their synchronization seam is not on the direct reductive critical path.
+No classical unavoidable set, discharging rule, or configuration catalogue
+enters the replacement.
 
 \subsection{GWCO: the refuted shortcut and the surviving lemma}
 
