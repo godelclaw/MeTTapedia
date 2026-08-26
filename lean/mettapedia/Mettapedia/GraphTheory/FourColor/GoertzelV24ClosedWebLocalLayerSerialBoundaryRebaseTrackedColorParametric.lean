@@ -195,6 +195,106 @@ theorem localTrackedGraphForColorAt_support_subset_collar
   · exact Or.inl hedgeChanged
   · exact Or.inr ⟨other, hotherChanged, hwhole.1.1⟩
 
+/-- The local tracked rebase residual observes a colour function only on its
+proved finite collar.  This is the representation-invariance bridge needed by
+the rooted transfer: ambient colour functions agreeing on the collar produce
+literally the same local adjacency factor. -/
+theorem localTrackedGraphForColorAt_eq_of_eq_on_collar
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : GoertzelV24ClosedWebAtGoodWord.Instance data coloring}
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (leftColor rightColor : G.edgeSet → Color)
+    (heq : ∀ edge, edge ∈
+      sourceLocalLayerBoundaryRebaseTrackedCollarAt corridor hunique offset
+        hnext → leftColor edge = rightColor edge)
+    (pair : TrackedColorPair) :
+    localTrackedGraphForColorAt corridor hunique offset hnext leftColor pair =
+      localTrackedGraphForColorAt corridor hunique offset hnext rightColor
+        pair := by
+  apply le_antisymm
+  · intro first second hadj
+    have hfirstSupport : first ∈
+        (localTrackedGraphForColorAt corridor hunique offset hnext leftColor
+          pair).support :=
+      (SimpleGraph.mem_support _).2 ⟨second, hadj⟩
+    have hsecondSupport : second ∈
+        (localTrackedGraphForColorAt corridor hunique offset hnext leftColor
+          pair).support :=
+      (SimpleGraph.mem_support _).2 ⟨first, hadj.symm⟩
+    have hfirst := localTrackedGraphForColorAt_support_subset_collar corridor
+      hunique offset hnext leftColor pair hfirstSupport
+    have hsecond := localTrackedGraphForColorAt_support_subset_collar corridor
+      hunique offset hnext leftColor pair hsecondSupport
+    have hresidual := (supResidual_adj
+      (successorTrackedGraphForColorAt corridor hunique offset hnext leftColor
+        pair)
+      (coreTrackedGraphForColorAt corridor hunique offset hnext leftColor pair)
+      (⊥ : SimpleGraph G.edgeSet) first second).1 hadj
+    apply (supResidual_adj
+      (successorTrackedGraphForColorAt corridor hunique offset hnext rightColor
+        pair)
+      (coreTrackedGraphForColorAt corridor hunique offset hnext rightColor pair)
+      (⊥ : SimpleGraph G.edgeSet) first second).2
+    refine ⟨?_, ?_, by simp⟩
+    · rcases hresidual.1 with
+        ⟨⟨hambient, hfirstTracked, hsecondTracked⟩, hfirstRegion,
+          hsecondRegion⟩
+      exact ⟨⟨hambient, (heq first hfirst) ▸ hfirstTracked,
+        (heq second hsecond) ▸ hsecondTracked⟩, hfirstRegion,
+        hsecondRegion⟩
+    · intro hcore
+      apply hresidual.2.1
+      rcases hcore with
+        ⟨⟨hambient, hfirstTracked, hsecondTracked⟩, hfirstRegion,
+          hsecondRegion⟩
+      exact ⟨⟨hambient, (heq first hfirst).symm ▸ hfirstTracked,
+        (heq second hsecond).symm ▸ hsecondTracked⟩, hfirstRegion,
+        hsecondRegion⟩
+  · intro first second hadj
+    have hfirstSupport : first ∈
+        (localTrackedGraphForColorAt corridor hunique offset hnext rightColor
+          pair).support :=
+      (SimpleGraph.mem_support _).2 ⟨second, hadj⟩
+    have hsecondSupport : second ∈
+        (localTrackedGraphForColorAt corridor hunique offset hnext rightColor
+          pair).support :=
+      (SimpleGraph.mem_support _).2 ⟨first, hadj.symm⟩
+    have hfirst := localTrackedGraphForColorAt_support_subset_collar corridor
+      hunique offset hnext rightColor pair hfirstSupport
+    have hsecond := localTrackedGraphForColorAt_support_subset_collar corridor
+      hunique offset hnext rightColor pair hsecondSupport
+    have hresidual := (supResidual_adj
+      (successorTrackedGraphForColorAt corridor hunique offset hnext rightColor
+        pair)
+      (coreTrackedGraphForColorAt corridor hunique offset hnext rightColor pair)
+      (⊥ : SimpleGraph G.edgeSet) first second).1 hadj
+    apply (supResidual_adj
+      (successorTrackedGraphForColorAt corridor hunique offset hnext leftColor
+        pair)
+      (coreTrackedGraphForColorAt corridor hunique offset hnext leftColor pair)
+      (⊥ : SimpleGraph G.edgeSet) first second).2
+    refine ⟨?_, ?_, by simp⟩
+    · rcases hresidual.1 with
+        ⟨⟨hambient, hfirstTracked, hsecondTracked⟩, hfirstRegion,
+          hsecondRegion⟩
+      exact ⟨⟨hambient, (heq first hfirst).symm ▸ hfirstTracked,
+        (heq second hsecond).symm ▸ hsecondTracked⟩, hfirstRegion,
+        hsecondRegion⟩
+    · intro hcore
+      apply hresidual.2.1
+      rcases hcore with
+        ⟨⟨hambient, hfirstTracked, hsecondTracked⟩, hfirstRegion,
+          hsecondRegion⟩
+      exact ⟨⟨hambient, (heq first hfirst) ▸ hfirstTracked,
+        (heq second hsecond) ▸ hsecondTracked⟩, hfirstRegion,
+        hsecondRegion⟩
+
 /-- The inherited component relation restricted to the finite collar. -/
 noncomputable def trackedCoreComponentGraphForColorAt
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}

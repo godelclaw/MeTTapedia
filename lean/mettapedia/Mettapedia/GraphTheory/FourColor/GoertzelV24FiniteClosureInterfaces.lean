@@ -177,6 +177,54 @@ theorem rightLanguageLE_of_forwardSimulation
 
 end OneSidedPumping
 
+section FiniteImage
+
+variable {Witness : Type uWitness} {Code : Type uCode}
+  [Fintype Witness] [DecidableEq Code]
+
+/-- The finite set of codes actually produced by a finite witness type.  This
+is the executable boundary used when the ambient code type is finite but far
+too large to enumerate: enumerate source witnesses, then quotient by their
+codes. -/
+def realizedCodeImage (encode : Witness → Code) : Finset Code :=
+  Finset.univ.image encode
+
+/-- A code together with evidence that some finite source witness produces
+it.  Its inhabitants are exactly the realized image of `encode`, rather than
+all inhabitants of the ambient code type. -/
+abbrev RealizedCode (encode : Witness → Code) :=
+  {code : Code // code ∈ realizedCodeImage encode}
+
+/-- Insert a source witness into its realized finite image. -/
+def realizedCodeOf (encode : Witness → Code) (witness : Witness) :
+    RealizedCode encode :=
+  ⟨encode witness, Finset.mem_image.mpr
+    ⟨witness, Finset.mem_univ witness, rfl⟩⟩
+
+/-- Every realized code has a source representative.  The choice is used only
+to state the quotient presentation; executable closure works with the finite
+image itself. -/
+noncomputable def realizedCodeRepresentative (encode : Witness → Code)
+    (code : RealizedCode encode) : Witness := by
+  classical
+  exact (Finset.mem_image.mp code.property).choose
+
+@[simp]
+theorem realizedCodeOf_representative (encode : Witness → Code)
+    (code : RealizedCode encode) :
+    realizedCodeOf encode (realizedCodeRepresentative encode code) = code := by
+  classical
+  apply Subtype.ext
+  exact (Finset.mem_image.mp code.property).choose_spec.2
+
+@[simp]
+theorem card_realizedCode (encode : Witness → Code) :
+    Fintype.card (RealizedCode encode) = (realizedCodeImage encode).card := by
+  classical
+  exact Fintype.card_coe _
+
+end FiniteImage
+
 section RootedFactorization
 
 variable {RootedCarrier : Type uCarrier}
@@ -222,6 +270,41 @@ theorem rawTransition_eq_codedTransition (literal : Literal) :
 
 theorem codedAlphabet_card_le : Fintype.card Code ≤ presentation.alphabetBound :=
   presentation.code_card_le
+
+/-- Canonical quotient presentation obtained by retaining exactly the finite
+image of a source witness code.  Transition invariance is the only semantic
+obligation: once it is proved, no enumeration of the ambient code carrier is
+needed. -/
+noncomputable def ofFiniteImage
+    {RawCode : Type uCode} [Fintype Literal] [DecidableEq RawCode]
+    (rawTransition : Literal → State → State → Prop)
+    (encode : Literal → RawCode)
+    (hinvariant : ∀ ⦃left right⦄, encode left = encode right →
+      rawTransition left = rawTransition right) :
+    RootedLetterPresentation
+      (Literal := Literal) (Code := RealizedCode encode) (State := State) where
+  rawTransition := rawTransition
+  code := realizedCodeOf encode
+  representative := realizedCodeRepresentative encode
+  representative_code := realizedCodeOf_representative encode
+  transition_invariant := by
+    intro left right heq
+    apply hinvariant
+    exact congrArg Subtype.val heq
+  alphabetBound := (realizedCodeImage encode).card
+  code_card_le := by
+    rw [card_realizedCode]
+
+@[simp]
+theorem ofFiniteImage_alphabetBound
+    {RawCode : Type uCode} [Fintype Literal] [DecidableEq RawCode]
+    (rawTransition : Literal → State → State → Prop)
+    (encode : Literal → RawCode)
+    (hinvariant : ∀ ⦃left right⦄, encode left = encode right →
+      rawTransition left = rawTransition right) :
+    (ofFiniteImage rawTransition encode hinvariant).alphabetBound =
+      (realizedCodeImage encode).card :=
+  rfl
 
 end RootedLetterPresentation
 

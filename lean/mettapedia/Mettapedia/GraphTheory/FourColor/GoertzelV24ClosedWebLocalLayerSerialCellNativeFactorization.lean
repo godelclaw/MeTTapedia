@@ -41,8 +41,10 @@ open GoertzelV24ClosedWebLocalLayerSerialCellColorSplice
 open GoertzelV24ClosedWebLocalLayerSerialCellFaceFiniteAmbientContinuation
 open GoertzelV24ClosedWebLocalLayerSerialCellFaceDeletionStableParametricCapState
 open GoertzelV24ClosedWebLocalLayerSerialCellFaceFiniteEdgeState
+open GoertzelV24ClosedWebLocalLayerSerialCellFiniteCapReflection
 open GoertzelV24ClosedWebLocalLayerSerialCellFiniteBoolSupportLetter
 open GoertzelV24ClosedWebLocalLayerSerialCellFiniteColorCompatibility
+open GoertzelV24ClosedWebLocalLayerSerialCellFiniteStepReflection
 open GoertzelV24ClosedWebLocalLayerSerialCellFiniteSupportLetter
 open GoertzelV24ClosedWebLocalLayerSerialCellFiniteTrackedBoolColorCode
 open GoertzelV24ClosedWebLocalLayerSerialCellFiniteTrackedColorCode
@@ -279,6 +281,70 @@ def SourceLocalLayerSerialCellPhysicalSupportsBool
       localFactor.trackedCellColor &&
     SourceLocalLayerSerialCellFiniteSupportsBool
       (reassemblePhysicalBoolSupportLetter state output localFactor)
+
+/-- For a fixed cumulative state and prefix-independent physical Cell factor,
+the executable five-field support relation determines at most one output
+profile.  This packages the functional content of all five reflected clauses,
+including uniqueness of the capped face decoder. -/
+theorem sourceLocalLayerSerialCellPhysicalSupportsBool_output_unique
+    (state : SourceLocalLayerSerialColoredCumulativeState)
+    (outputCount : Fin 5)
+    (left right : CorridorCutProfile 2 0 outputCount.val)
+    (localFactor : SourceLocalLayerSerialCellPhysicalBoolLocalFactor outputCount)
+    (hleft : SourceLocalLayerSerialCellPhysicalSupportsBool state
+      ⟨outputCount, left⟩ localFactor = true)
+    (hright : SourceLocalLayerSerialCellPhysicalSupportsBool state
+      ⟨outputCount, right⟩ localFactor = true) :
+    left = right := by
+  rw [SourceLocalLayerSerialCellPhysicalSupportsBool, Bool.and_eq_true] at hleft
+  rw [SourceLocalLayerSerialCellPhysicalSupportsBool, Bool.and_eq_true] at hright
+  have hleftSupport := hleft.2
+  have hrightSupport := hright.2
+  rw [SourceLocalLayerSerialCellFiniteSupportsBool, decide_eq_true_eq] at hleftSupport
+  rw [SourceLocalLayerSerialCellFiniteSupportsBool, decide_eq_true_eq] at hrightSupport
+  dsimp only [reassemblePhysicalBoolSupportLetter] at hleftSupport
+  dsimp only [reassemblePhysicalBoolSupportLetter] at hrightSupport
+  have hedge (step : Fin 2) :
+      left.edgeColor step = right.edgeColor step :=
+    (hleftSupport.1 step).trans (hrightSupport.1 step).symm
+  cases left
+  cases right
+  congr 1
+  · funext step
+    exact (hleftSupport.1 step).trans (hrightSupport.1 step).symm
+  · funext pair first second
+    rcases first with first | first
+    · rcases second with second | second
+      · apply Bool.eq_iff_iff.mpr
+        rw [hleftSupport.2.1 pair first second,
+          hrightSupport.2.1 pair first second, hedge first, hedge second]
+      · exact Fin.elim0 second
+    · exact Fin.elim0 first
+  · funext first second
+    apply Bool.eq_iff_iff.mpr
+    rw [hleftSupport.2.2.1 first second,
+      hrightSupport.2.2.1 first second]
+  · funext fragment port
+    rcases port with port | port
+    · apply Bool.eq_iff_iff.mpr
+      rw [hleftSupport.2.2.2.1 fragment port,
+        hrightSupport.2.2.2.1 fragment port]
+    · exact Fin.elim0 port
+  · funext fragment
+    have hleftCap := hleftSupport.2.2.2.2 fragment
+    have hrightCap := hrightSupport.2.2.2.2 fragment
+    simp only [SourceLocalLayerSerialFaceFiniteCapAtBool, Bool.and_eq_true,
+      decide_eq_true_eq] at hleftCap hrightCap
+    rcases hleftCap with
+      ⟨_leftSemantic, leftOutput, hleftSlot, _leftNew, hleftValue⟩
+    rcases hrightCap with
+      ⟨_rightSemantic, rightOutput, hrightSlot, _rightNew, hrightValue⟩
+    have houtput : leftOutput = rightOutput := by
+      apply Fin.ext
+      have hslot := congrArg Fin.val (hleftSlot.trans hrightSlot.symm)
+      simpa [BoundedCarrierBoolLiveSlot] using hslot
+    subst rightOutput
+    exact hleftValue.symm.trans hrightValue
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
   {G : SimpleGraph V} [DecidableRel G.Adj]

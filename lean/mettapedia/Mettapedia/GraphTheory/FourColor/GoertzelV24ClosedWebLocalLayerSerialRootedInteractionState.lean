@@ -70,12 +70,21 @@ carrier. -/
 abbrev SourceLocalLayerSerialFaceInteractionPrefixState :=
   BoundedInterfaceExteriorLabelCapFamilyCode 48 Unit 6
 
+/-- Prefix colours on the complete forty-nine-slot tracked interaction ABI.
+`none` means either padding or an interaction edge outside the accumulated
+prefix region.  The smaller cumulative colour table is not sufficient here:
+the following rebase can observe a collar edge which is not in the current
+twenty-one-slot carrier. -/
+abbrev SourceLocalLayerSerialTrackedInteractionColorCode :=
+  Fin 49 → Option Color
+
 /-- A rooted cumulative state with enough bounded lookahead to perform the
 following tracked and facial boundary rebase without promoting an unknown
 exterior vertex. -/
 structure SourceLocalLayerSerialRootedInteractionState extends
     SourceLocalLayerSerialRootedCumulativeState where
   interactionExterior : SourceLocalLayerSerialTrackedInteractionPrefixState
+  interactionColorCode : SourceLocalLayerSerialTrackedInteractionColorCode
   currentCoordinate :
     Fin trackedExterior.vertexCount.val →
       Fin interactionExterior.vertexCount.val
@@ -93,31 +102,59 @@ private def sourceLocalLayerSerialRootedInteractionStateEquiv :
       Σ rooted : SourceLocalLayerSerialRootedCumulativeState,
         Σ interactionExterior :
             SourceLocalLayerSerialTrackedInteractionPrefixState,
-          (Fin rooted.trackedExterior.vertexCount.val →
+          SourceLocalLayerSerialTrackedInteractionColorCode ×
+            (Fin rooted.trackedExterior.vertexCount.val →
               Fin interactionExterior.vertexCount.val) ×
-            (Σ faceInteractionExterior :
-                SourceLocalLayerSerialFaceInteractionPrefixState,
-              Fin rooted.faceCapSix.vertexCount.val →
-                Fin faceInteractionExterior.vertexCount.val) where
+              (Σ faceInteractionExterior :
+                  SourceLocalLayerSerialFaceInteractionPrefixState,
+                Fin rooted.faceCapSix.vertexCount.val →
+                  Fin faceInteractionExterior.vertexCount.val) where
   toFun state :=
     ⟨state.toSourceLocalLayerSerialRootedCumulativeState,
-      state.interactionExterior, state.currentCoordinate,
+      state.interactionExterior, state.interactionColorCode,
+      state.currentCoordinate,
       state.faceInteractionExterior, state.faceCurrentCoordinate⟩
   invFun data := {
     toSourceLocalLayerSerialRootedCumulativeState := data.1
     interactionExterior := data.2.1
-    currentCoordinate := data.2.2.1
-    faceInteractionExterior := data.2.2.2.1
-    faceCurrentCoordinate := data.2.2.2.2 }
+    interactionColorCode := data.2.2.1
+    currentCoordinate := data.2.2.2.1
+    faceInteractionExterior := data.2.2.2.2.1
+    faceCurrentCoordinate := data.2.2.2.2.2 }
   left_inv state := by cases state; rfl
   right_inv data := by
-    rcases data with ⟨rooted, interaction, coordinate, faceInteraction,
-      faceCoordinate⟩
+    rcases data with ⟨rooted, interaction, interactionColor, coordinate,
+      faceInteraction, faceCoordinate⟩
     rfl
 
 noncomputable instance :
     Fintype SourceLocalLayerSerialRootedInteractionState :=
   Fintype.ofEquiv _ sourceLocalLayerSerialRootedInteractionStateEquiv.symm
+
+/-- Encode a regional colour function on the live prefix of a bounded
+forty-nine-slot interaction carrier. -/
+noncomputable def sourceLocalLayerSerialTrackedInteractionColorCodeAt
+    (carrier : Finset G.edgeSet) (_hcard : carrier.card ≤ 49)
+    (region : Finset G.edgeSet) (color : G.edgeSet → Color) :
+    SourceLocalLayerSerialTrackedInteractionColorCode := fun slot =>
+  if hslot : slot.val < carrier.card then
+    let live : Fin carrier.card := ⟨slot.val, hslot⟩
+    let edge := ((carrierCoordinate carrier).symm live).1
+    if edge ∈ region then some (color edge) else none
+  else none
+
+/-- Every live interaction coordinate reads back its exact regional colour. -/
+@[simp]
+theorem sourceLocalLayerSerialTrackedInteractionColorCodeAt_live
+    (carrier : Finset G.edgeSet) (hcard : carrier.card ≤ 49)
+    (region : Finset G.edgeSet) (color : G.edgeSet → Color)
+    (slot : Fin carrier.card) :
+    sourceLocalLayerSerialTrackedInteractionColorCodeAt carrier hcard region
+        color (Fin.castLE hcard slot) =
+      if ((carrierCoordinate carrier).symm slot).1 ∈ region then
+        some (color ((carrierCoordinate carrier).symm slot).1)
+      else none := by
+  simp [sourceLocalLayerSerialTrackedInteractionColorCodeAt]
 
 /-- Extract the complete finite lookahead root of an arbitrary compatible
 prefix colour function at an interior Cell position. -/
@@ -160,6 +197,11 @@ noncomputable def sourceLocalLayerSerialRootedInteractionStateForColorAt
     (fun pair => regionalTrackedEdgeGraph web.annular.RS
       (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique offset)
       color (trackedColorPairColors pair).1 (trackedColorPairColors pair).2)
+  let interactionColorCode :=
+    sourceLocalLayerSerialTrackedInteractionColorCodeAt interaction
+      (sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt_card_le_fortyNine
+        graphData minimal caps coloring web corridor hunique offset hnext)
+      (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique offset) color
   let faceInteractionExterior :
       SourceLocalLayerSerialFaceInteractionPrefixState := {
     vertexCount := ⟨faceInteraction.card, Nat.lt_succ_of_le
@@ -172,6 +214,7 @@ noncomputable def sourceLocalLayerSerialRootedInteractionStateForColorAt
   exact {
     toSourceLocalLayerSerialRootedCumulativeState := rooted
     interactionExterior := interactionExterior
+    interactionColorCode := interactionColorCode
     currentCoordinate := fun slot =>
       carrierCoordinate interaction
         ⟨((carrierCoordinate current).symm slot).1,

@@ -270,6 +270,14 @@ noncomputable def
     factored.2.1 splice hrole
   let trackedRolling := sourceLocalLayerSerialTrackedRollingFactorAt graphData
     minimal caps coloring web corridor hunique offset hnext hnextNext splice
+  let interaction :=
+    sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt graphData caps
+      coloring web corridor hunique offset hnext
+  let interactionCellColor :=
+    sourceLocalLayerSerialTrackedInteractionColorCodeAt interaction
+      (sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt_card_le_fortyNine
+        graphData minimal caps coloring web corridor hunique offset hnext)
+      (sourceLocalLayerCellRegionAt corridor hunique offset) cellColor
   let faceRolling := sourceLocalLayerSerialFaceRollingFactorAt graphData minimal
     caps coloring web corridor hunique offset hnext hnextNext
   let next := sourceLocalLayerNextOffset offset hnext
@@ -313,6 +321,7 @@ noncomputable def
   exact {
     cellOutput := factored.2.1
     localFactor := factored.2.2
+    interactionCellColor := interactionCellColor
     rebaseLetter := rebase
     trackedRolling := trackedRolling
     faceRolling := faceRolling
@@ -814,6 +823,47 @@ theorem
           (sourceLocalLayerSerialTrackedRollingNextInteractionStateAt_eq
             graphData minimal caps coloring web corridor hunique offset hnext
               hnextNext splice hnextCrossing)
+      · let interaction :=
+          sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt graphData
+            caps coloring web corridor hunique offset hnext
+        let next := sourceLocalLayerNextOffset offset hnext
+        let nextInteraction :=
+          sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt graphData
+            caps coloring web corridor hunique next hnextNext
+        change
+          (sourceLocalLayerSerialTrackedRollingFactorAt graphData minimal caps
+              coloring web corridor hunique offset hnext hnextNext splice
+            ).nextInteractionColorCode
+              (sourceLocalLayerSerialTrackedInteractionColorCodeSplice
+                (sourceLocalLayerSerialTrackedInteractionColorCodeAt interaction
+                  (sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt_card_le_fortyNine
+                    graphData minimal caps coloring web corridor hunique offset
+                      hnext)
+                  (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique
+                    offset) prefixColor)
+                (sourceLocalLayerSerialTrackedInteractionColorCodeAt interaction
+                  (sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt_card_le_fortyNine
+                    graphData minimal caps coloring web corridor hunique offset
+                      hnext)
+                  (sourceLocalLayerCellRegionAt corridor hunique offset)
+                  cellColor))
+              (successorTrackedStateForColorAt corridor hunique offset hnext
+                splice hrole).roleColor =
+            sourceLocalLayerSerialTrackedInteractionColorCodeAt nextInteraction
+              (sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt_card_le_fortyNine
+                graphData minimal caps coloring web corridor hunique next
+                  hnextNext)
+              (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique next)
+              splice
+        rw [sourceLocalLayerSerialTrackedInteractionColorCodeSpliceAt_eq
+          corridor hunique offset interaction
+            (sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt_card_le_fortyNine
+              graphData minimal caps coloring web corridor hunique offset hnext)
+          prefixColor cellColor]
+        exact
+          sourceLocalLayerSerialTrackedRollingNextInteractionColorCodeAt_eq
+            graphData minimal caps coloring web corridor hunique offset hnext
+              hnextNext splice hrole
       · apply heq_of_eq
         simpa [splice, hrole, hnextCrossing,
           SourceLocalLayerSerialTrackedRebaseFactor.targetState,

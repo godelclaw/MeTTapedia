@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialRootedInteractionRollingLocality
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialCellColorSplice
 
 /-!
 # Exact rolling successor for the rooted interaction code
@@ -28,6 +29,8 @@ open GoertzelV24ClosedWebAtGoodWord.Instance
 open GoertzelV24ClosedWebAtGoodWord.Instance.LocalLayerFormation
 open GoertzelV24ClosedWebBoundaryData
 open GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseTrackedColorParametric
+open GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseOutputColorParametric
+open GoertzelV24ClosedWebLocalLayerSerialCellColorSplice
 open GoertzelV24ClosedWebLocalLayerSerialCellTrackedTransitionCarrier
 open GoertzelV24ClosedWebLocalLayerSerialCellUniformTrackedRecurrence
 open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionPreRebaseState
@@ -43,6 +46,7 @@ open GoertzelV24InterfaceDeletionComponentFactorForgetExterior
 open GoertzelV24InterfaceExteriorSupportedPortProjection
 open GoertzelV24TwoEdgeCutMinimality
 open GoertzelV24TwoPentagonCapOpening
+open GoertzelV24WindingClassification
 open SimpleGraph
 open SimpleGraphDartRotation
 
@@ -57,6 +61,66 @@ local instance rootedInteractionRollingSuccessorOpenedGraphDecidableRel
       caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.Adj :=
   Classical.decRel _
 
+/-- Locate an ambient edge in the four-role boundary-rebase ABI.  The source
+extraction may choose any role when literal edge names coincide; every such
+role carries the same ambient colour. -/
+noncomputable def boundaryRebaseRoleForEdge?
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3) (edge : G.edgeSet) :
+    Option SourceLocalLayerBoundaryRebaseRole :=
+  if hrole : ∃ role,
+      sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset hnext role =
+        edge then
+    some (Classical.choose hrole)
+  else none
+
+theorem boundaryRebaseRoleForEdge?_eq_some_edge_eq
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3) (edge : G.edgeSet)
+    (role : SourceLocalLayerBoundaryRebaseRole)
+    (hrole : boundaryRebaseRoleForEdge? corridor hunique offset hnext edge =
+      some role) :
+    sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset hnext role =
+      edge := by
+  simp only [boundaryRebaseRoleForEdge?] at hrole
+  split at hrole <;> rename_i hexists
+  · injection hrole with hchosen
+    rw [← hchosen]
+    exact Classical.choose_spec hexists
+  · cases hrole
+
+theorem boundaryRebaseRoleForEdge?_eq_none_not_mem_switch
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3) (edge : G.edgeSet)
+    (hrole : boundaryRebaseRoleForEdge? corridor hunique offset hnext edge =
+      none) :
+    edge ∉ sourceLocalLayerBoundaryRebaseSwitchAt corridor hunique offset
+      hnext := by
+  rw [mem_sourceLocalLayerBoundaryRebaseSwitchAt_iff]
+  intro hexists
+  simp only [boundaryRebaseRoleForEdge?] at hrole
+  split at hrole <;> rename_i hfound
+  · cases hrole
+  · exact hfound hexists
+
 /-- The finite rebase factor together with the partial coordinate map onto the
 following interaction carrier and the inclusion of its rolling carrier. -/
 structure SourceLocalLayerSerialTrackedRollingFactor where
@@ -64,6 +128,10 @@ structure SourceLocalLayerSerialTrackedRollingFactor where
   nextInteractionCount : Fin 50
   nextInteractionSource :
     Fin nextInteractionCount.val → Option (Fin rebase.interactionCount.val)
+  nextInteractionActive : Fin nextInteractionCount.val → Bool
+  nextColorActive : Fin 49 → Bool
+  nextColorRole : Fin 49 → Option SourceLocalLayerBoundaryRebaseRole
+  nextColorSource : Fin 49 → Option (Fin 49)
   nextCurrentCoordinate :
     Fin rebase.targetCount.val → Fin nextInteractionCount.val
 
@@ -76,21 +144,33 @@ private abbrev sourceLocalLayerSerialTrackedRollingFactorCode :=
     Σ nextInteractionCount : Fin 50,
       (Fin nextInteractionCount.val →
         Option (Fin rebase.interactionCount.val)) ×
-      (Fin rebase.targetCount.val → Fin nextInteractionCount.val)
+      (Fin nextInteractionCount.val → Bool) ×
+      (Fin 49 → Bool) ×
+      (Fin 49 → Option SourceLocalLayerBoundaryRebaseRole) ×
+      (Fin 49 → Option (Fin 49)) ×
+        (Fin rebase.targetCount.val → Fin nextInteractionCount.val)
 
 private def sourceLocalLayerSerialTrackedRollingFactorEquiv :
     SourceLocalLayerSerialTrackedRollingFactor ≃
       sourceLocalLayerSerialTrackedRollingFactorCode where
   toFun factor := ⟨factor.rebase, factor.nextInteractionCount,
-    factor.nextInteractionSource, factor.nextCurrentCoordinate⟩
+    factor.nextInteractionSource, factor.nextInteractionActive,
+    factor.nextColorActive, factor.nextColorRole, factor.nextColorSource,
+    factor.nextCurrentCoordinate⟩
   invFun factor := {
     rebase := factor.1
     nextInteractionCount := factor.2.1
     nextInteractionSource := factor.2.2.1
-    nextCurrentCoordinate := factor.2.2.2 }
+    nextInteractionActive := factor.2.2.2.1
+    nextColorActive := factor.2.2.2.2.1
+    nextColorRole := factor.2.2.2.2.2.1
+    nextColorSource := factor.2.2.2.2.2.2.1
+    nextCurrentCoordinate := factor.2.2.2.2.2.2.2 }
   left_inv factor := by cases factor; rfl
   right_inv factor := by
-    rcases factor with ⟨rebase, nextCount, source, coordinate⟩
+    rcases factor with
+      ⟨rebase, nextCount, source, active, colorActive, colorRole,
+        colorSource, coordinate⟩
     rfl
 
 set_option synthInstance.maxSize 256 in
@@ -166,6 +246,90 @@ def SourceLocalLayerSerialTrackedRollingFactor.nextInteractionState?
     some (factor.nextInteractionState preRebase hcount)
   else none
 
+/-- Right-biased union of two colour receipts on the same interaction ABI.
+The Cell receipt overrides the accumulated-prefix receipt exactly where the
+Cell is present. -/
+def sourceLocalLayerSerialTrackedInteractionColorCodeSplice
+    (prefixCode cellCode : SourceLocalLayerSerialTrackedInteractionColorCode) :
+    SourceLocalLayerSerialTrackedInteractionColorCode := fun slot =>
+  match cellCode slot with
+  | some color => some color
+  | none => prefixCode slot
+
+/-- Encoding the accumulated prefix and the literal Cell separately, then
+taking their right-biased union, is exactly the regional colour code of the
+literal pre-rebase splice. -/
+theorem sourceLocalLayerSerialTrackedInteractionColorCodeSpliceAt_eq
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (carrier : Finset G.edgeSet) (hcard : carrier.card ≤ 49)
+    (prefixColor cellColor : G.edgeSet → Color) :
+    sourceLocalLayerSerialTrackedInteractionColorCodeSplice
+        (sourceLocalLayerSerialTrackedInteractionColorCodeAt carrier hcard
+          (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique offset)
+          prefixColor)
+        (sourceLocalLayerSerialTrackedInteractionColorCodeAt carrier hcard
+          (sourceLocalLayerCellRegionAt corridor hunique offset) cellColor) =
+      sourceLocalLayerSerialTrackedInteractionColorCodeAt carrier hcard
+        (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset)
+        (sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
+          prefixColor cellColor) := by
+  classical
+  funext stable
+  by_cases hslot : stable.val < carrier.card
+  · let live : Fin carrier.card := ⟨stable.val, hslot⟩
+    let edge := ((carrierCoordinate carrier).symm live).1
+    have hstable : Fin.castLE hcard live = stable := by
+      apply Fin.ext
+      rfl
+    rw [← hstable]
+    simp only [sourceLocalLayerSerialTrackedInteractionColorCodeAt_live]
+    by_cases hcell : edge ∈
+        sourceLocalLayerCellRegionAt corridor hunique offset
+    · have hpre : edge ∈
+          sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique
+            offset := by
+        rw [← sourceLocalLayerSerialTerminalInputRegionAt_union_cell corridor
+          hunique offset]
+        exact Finset.mem_union_right _ hcell
+      simp [sourceLocalLayerSerialTrackedInteractionColorCodeSplice, edge,
+        hcell, hpre, sourceLocalLayerSerialCellSplicedColorAt]
+    · have hregion : edge ∈
+          sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset ↔
+        edge ∈ sourceLocalLayerSerialTerminalInputRegionAt corridor hunique
+          offset := by
+        rw [← sourceLocalLayerSerialTerminalInputRegionAt_union_cell corridor
+          hunique offset]
+        simp [hcell]
+      simp [sourceLocalLayerSerialTrackedInteractionColorCodeSplice, edge,
+        hcell, hregion, sourceLocalLayerSerialCellSplicedColorAt]
+  · simp [sourceLocalLayerSerialTrackedInteractionColorCodeSplice,
+      sourceLocalLayerSerialTrackedInteractionColorCodeAt, hslot]
+
+/-- Roll the exact regional colour table onto the following interaction ABI.
+Inactive following coordinates are erased even when the ambient edge is still
+named by the current interaction carrier. -/
+def SourceLocalLayerSerialTrackedRollingFactor.nextInteractionColorCode
+    (factor : SourceLocalLayerSerialTrackedRollingFactor)
+    (preRebaseColor : SourceLocalLayerSerialTrackedInteractionColorCode)
+    (roleColor : SourceLocalLayerBoundaryRebaseRole → StrandColor) :
+    SourceLocalLayerSerialTrackedInteractionColorCode :=
+  fun (stableTarget : Fin 49) =>
+  if factor.nextColorActive stableTarget then
+      match factor.nextColorRole stableTarget with
+      | some role => some (StrandColor.toColor (roleColor role))
+      | none =>
+          match factor.nextColorSource stableTarget with
+          | some source =>
+              preRebaseColor source
+          | none => none
+  else none
+
 /-- The literal finite rolling factor for two consecutive interior
 Cell--rebase positions. -/
 noncomputable def sourceLocalLayerSerialTrackedRollingFactorAt
@@ -203,12 +367,35 @@ noncomputable def sourceLocalLayerSerialTrackedRollingFactorAt
   have hnextInteraction : nextInteraction.card ≤ 49 :=
     sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt_card_le_fortyNine
       graphData minimal caps coloring web corridor hunique next hnextNext
+  have hcurrentInteraction : currentInteraction.card ≤ 49 :=
+    sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt_card_le_fortyNine
+      graphData minimal caps coloring web corridor hunique offset hnext
   exact {
     rebase := rebase
     nextInteractionCount :=
       ⟨nextInteraction.card, Nat.lt_succ_of_le hnextInteraction⟩
     nextInteractionSource :=
       finiteCarrierPartialSource currentInteraction nextInteraction
+    nextInteractionActive := fun nextSlot => decide
+      (((carrierCoordinate nextInteraction).symm nextSlot).1 ∈
+        sourceLocalLayerSerialTerminalInputRegionAt corridor hunique next)
+    nextColorActive := fun stableTarget =>
+      if htarget : stableTarget.val < nextInteraction.card then
+        decide (((carrierCoordinate nextInteraction).symm
+          ⟨stableTarget.val, htarget⟩).1 ∈
+            sourceLocalLayerSerialTerminalInputRegionAt corridor hunique next)
+      else false
+    nextColorRole := fun stableTarget =>
+      if htarget : stableTarget.val < nextInteraction.card then
+        boundaryRebaseRoleForEdge? corridor hunique offset hnext
+          ((carrierCoordinate nextInteraction).symm
+            ⟨stableTarget.val, htarget⟩).1
+      else none
+    nextColorSource := fun stableTarget =>
+      if htarget : stableTarget.val < nextInteraction.card then
+        (finiteCarrierPartialSource currentInteraction nextInteraction
+          ⟨stableTarget.val, htarget⟩).map (Fin.castLE hcurrentInteraction)
+      else none
     nextCurrentCoordinate := fun targetSlot =>
       carrierCoordinate nextInteraction
         ⟨((carrierCoordinate target).symm targetSlot).1,
@@ -242,6 +429,298 @@ theorem sourceLocalLayerSerialTrackedRollingFactorAt_nextInteractionCount
         coloring web corridor hunique (sourceLocalLayerNextOffset offset hnext)
           hnextNext).card := by
   rfl
+
+@[simp]
+theorem sourceLocalLayerSerialTrackedRollingFactorAt_nextInteractionActive
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hnextNext :
+      (sourceLocalLayerNextOffset offset hnext).val + 1 < blockLength - 3)
+    (color :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
+    (slot : Fin
+      (sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt graphData caps
+        coloring web corridor hunique (sourceLocalLayerNextOffset offset hnext)
+          hnextNext).card) :
+    (sourceLocalLayerSerialTrackedRollingFactorAt graphData minimal caps coloring
+      web corridor hunique offset hnext hnextNext color
+      ).nextInteractionActive slot = decide
+        (((carrierCoordinate
+          (sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt graphData
+            caps coloring web corridor hunique
+              (sourceLocalLayerNextOffset offset hnext) hnextNext)).symm slot).1 ∈
+          sourceLocalLayerSerialTerminalInputRegionAt corridor hunique
+            (sourceLocalLayerNextOffset offset hnext)) := by
+  rfl
+
+@[simp]
+theorem sourceLocalLayerSerialTrackedRollingFactorAt_nextInteractionSource
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hnextNext :
+      (sourceLocalLayerNextOffset offset hnext).val + 1 < blockLength - 3)
+    (color :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
+    (slot : Fin
+      (sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt graphData caps
+        coloring web corridor hunique (sourceLocalLayerNextOffset offset hnext)
+          hnextNext).card) :
+    (sourceLocalLayerSerialTrackedRollingFactorAt graphData minimal caps coloring
+      web corridor hunique offset hnext hnextNext color
+      ).nextInteractionSource slot =
+        finiteCarrierPartialSource
+          (sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt graphData
+            caps coloring web corridor hunique offset hnext)
+          (sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt graphData
+            caps coloring web corridor hunique
+              (sourceLocalLayerNextOffset offset hnext) hnextNext) slot := by
+  rfl
+
+/-- Pointwise decoder equation for the fixed forty-nine-slot colour ABI. -/
+theorem sourceLocalLayerSerialTrackedRollingFactorAt_nextInteractionColorCode_apply
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hnextNext :
+      (sourceLocalLayerNextOffset offset hnext).val + 1 < blockLength - 3)
+    (color :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
+    (preRebaseColor : SourceLocalLayerSerialTrackedInteractionColorCode)
+    (roleColor : SourceLocalLayerBoundaryRebaseRole → StrandColor)
+    (stable : Fin 49) :
+    let currentInteraction :=
+      sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt graphData caps
+        coloring web corridor hunique offset hnext
+    let next := sourceLocalLayerNextOffset offset hnext
+    let nextInteraction :=
+      sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt graphData caps
+        coloring web corridor hunique next hnextNext
+    let currentBound : currentInteraction.card ≤ 49 :=
+      sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt_card_le_fortyNine
+        graphData minimal caps coloring web corridor hunique offset hnext
+    (sourceLocalLayerSerialTrackedRollingFactorAt graphData minimal caps coloring
+      web corridor hunique offset hnext hnextNext color
+      ).nextInteractionColorCode preRebaseColor roleColor stable =
+      if htarget : stable.val < nextInteraction.card then
+        let target : Fin nextInteraction.card := ⟨stable.val, htarget⟩
+        let edge := ((carrierCoordinate nextInteraction).symm target).1
+        if edge ∈ sourceLocalLayerSerialTerminalInputRegionAt corridor hunique
+            next then
+          match boundaryRebaseRoleForEdge? corridor hunique offset hnext edge with
+          | some role => some (StrandColor.toColor (roleColor role))
+          | none =>
+              match finiteCarrierPartialSource currentInteraction nextInteraction
+                  target with
+              | some source => preRebaseColor (Fin.castLE currentBound source)
+              | none => none
+        else none
+      else none := by
+  classical
+  dsimp only
+  unfold SourceLocalLayerSerialTrackedRollingFactor.nextInteractionColorCode
+  simp only [sourceLocalLayerSerialTrackedRollingFactorAt]
+  by_cases htarget : stable.val <
+      (sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt graphData caps
+        coloring web corridor hunique (sourceLocalLayerNextOffset offset hnext)
+          hnextNext).card
+  · simp only [htarget, dif_pos]
+    let target : Fin
+        (sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt graphData
+          caps coloring web corridor hunique
+            (sourceLocalLayerNextOffset offset hnext) hnextNext).card :=
+      ⟨stable.val, htarget⟩
+    let edge := ((carrierCoordinate
+      (sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt graphData caps
+        coloring web corridor hunique (sourceLocalLayerNextOffset offset hnext)
+          hnextNext)).symm target).1
+    by_cases hactive : edge ∈
+        sourceLocalLayerSerialTerminalInputRegionAt corridor hunique
+          (sourceLocalLayerNextOffset offset hnext)
+    · simp [target, edge, hactive]
+      cases hroleValue : boundaryRebaseRoleForEdge? corridor hunique offset hnext
+          edge with
+      | some role => rfl
+      | none =>
+          cases hsource : finiteCarrierPartialSource
+              (sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
+                graphData caps coloring web corridor hunique offset hnext)
+              (sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
+                graphData caps coloring web corridor hunique
+                  (sourceLocalLayerNextOffset offset hnext) hnextNext)
+              target <;> rfl
+    · simp [hactive, target, edge]
+  · simp [htarget]
+
+/-- The finite colour recurrence on the forty-nine-slot rolling ABI is exact.
+Newly exposed switch coordinates read their colour from the four-role literal
+rebase receipt; every other active coordinate is transported from the old
+interaction receipt. -/
+theorem sourceLocalLayerSerialTrackedRollingNextInteractionColorCodeAt_eq
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hnextNext :
+      (sourceLocalLayerNextOffset offset hnext).val + 1 < blockLength - 3)
+    (color :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
+    (hrole : ∀ role, color
+      (sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset hnext role) ≠
+        0) :
+    let currentInteraction :=
+      sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt graphData caps
+        coloring web corridor hunique offset hnext
+    let next := sourceLocalLayerNextOffset offset hnext
+    let nextInteraction :=
+      sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt graphData caps
+        coloring web corridor hunique next hnextNext
+    let factor := sourceLocalLayerSerialTrackedRollingFactorAt graphData minimal
+      caps coloring web corridor hunique offset hnext hnextNext color
+    factor.nextInteractionColorCode
+        (sourceLocalLayerSerialTrackedInteractionColorCodeAt currentInteraction
+          (sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt_card_le_fortyNine
+            graphData minimal caps coloring web corridor hunique offset hnext)
+          (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset)
+          color)
+        (successorTrackedStateForColorAt corridor hunique offset hnext color
+          hrole).roleColor =
+      sourceLocalLayerSerialTrackedInteractionColorCodeAt nextInteraction
+        (sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt_card_le_fortyNine
+          graphData minimal caps coloring web corridor hunique next hnextNext)
+        (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique next) color := by
+  classical
+  dsimp only
+  let currentInteraction :=
+    sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt graphData caps
+      coloring web corridor hunique offset hnext
+  let next := sourceLocalLayerNextOffset offset hnext
+  let nextInteraction :=
+    sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt graphData caps
+      coloring web corridor hunique next hnextNext
+  let currentBound : currentInteraction.card ≤ 49 :=
+    sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt_card_le_fortyNine
+      graphData minimal caps coloring web corridor hunique offset hnext
+  let nextBound : nextInteraction.card ≤ 49 :=
+    sourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt_card_le_fortyNine
+      graphData minimal caps coloring web corridor hunique next hnextNext
+  funext stable
+  rw [sourceLocalLayerSerialTrackedRollingFactorAt_nextInteractionColorCode_apply]
+  by_cases hslot : stable.val < nextInteraction.card
+  · let target : Fin nextInteraction.card := ⟨stable.val, hslot⟩
+    let edge := ((carrierCoordinate nextInteraction).symm target).1
+    rw [dif_pos hslot]
+    dsimp only
+    have hstable : Fin.castLE nextBound target = stable := by
+      apply Fin.ext
+      rfl
+    have htargetCode :
+        sourceLocalLayerSerialTrackedInteractionColorCodeAt nextInteraction
+            nextBound
+            (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique next)
+            color stable =
+          if edge ∈
+              sourceLocalLayerSerialTerminalInputRegionAt corridor hunique next
+          then some (color edge) else none := by
+      rw [← hstable,
+        sourceLocalLayerSerialTrackedInteractionColorCodeAt_live]
+    rw [htargetCode]
+    by_cases hactive : edge ∈
+        sourceLocalLayerSerialTerminalInputRegionAt corridor hunique next
+    · rw [if_pos hactive]
+      cases hroleSlot : boundaryRebaseRoleForEdge? corridor hunique offset hnext
+          edge with
+      | some role =>
+          have hedge := boundaryRebaseRoleForEdge?_eq_some_edge_eq corridor
+            hunique offset hnext edge role hroleSlot
+          simp only [hactive, if_true]
+          simp [successorTrackedStateForColorAt, hedge]
+      | none =>
+          have hnotSwitch :=
+            boundaryRebaseRoleForEdge?_eq_none_not_mem_switch corridor hunique
+              offset hnext edge hroleSlot
+          have hpre : edge ∈
+              sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique
+                offset :=
+            (sourceLocalLayerSerialPreRebaseOutput_mem_iff_nextTerminalInput_of_not_mem_switch
+              corridor hunique offset hnext edge hnotSwitch).2 hactive
+          let targetEdge : {edge // edge ∈ nextInteraction} :=
+            (carrierCoordinate nextInteraction).symm target
+          have hcurrent : edge ∈ currentInteraction := by
+            exact
+              sourceLocalLayerSerialCellRebase_activeNextInteraction_mem_currentInteraction
+                graphData minimal caps coloring web corridor hunique offset
+                  hnext hnextNext targetEdge hactive
+          let currentSlot : Fin currentInteraction.card :=
+            carrierCoordinate currentInteraction ⟨edge, hcurrent⟩
+          have hsource : finiteCarrierPartialSource currentInteraction
+              nextInteraction target = some currentSlot := by
+            simp only [finiteCarrierPartialSource]
+            rw [dif_pos hcurrent]
+          have hpreCode :
+              sourceLocalLayerSerialTrackedInteractionColorCodeAt
+                  currentInteraction currentBound
+                  (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor
+                    hunique offset) color
+                  (Fin.castLE currentBound currentSlot) = some (color edge) := by
+            rw [sourceLocalLayerSerialTrackedInteractionColorCodeAt_live]
+            have hcurrentSlotEdge :
+                ((carrierCoordinate currentInteraction).symm currentSlot).1 =
+                  edge := by
+              simp [currentSlot]
+            rw [hcurrentSlotEdge, if_pos hpre]
+          simp only [hactive, if_true]
+          rw [hsource]
+          exact hpreCode
+    · rw [if_neg hactive]
+      rw [if_neg hactive]
+  · rw [dif_neg hslot]
+    change none = if _h : stable.val < nextInteraction.card then _ else none
+    rw [dif_neg hslot]
 
 /-- A mapped following-interaction coordinate denotes the same ambient edge. -/
 theorem sourceLocalLayerSerialTrackedRollingFactorAt_nextInteractionSource_edge_eq

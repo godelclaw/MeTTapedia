@@ -46,6 +46,7 @@ structure SourceLocalLayerSerialRootedInteractionRollingCellFactor where
   cellOutput : BoundedCorridorCutProfile 2 0 4
   localFactor : SourceLocalLayerSerialCellPhysicalBoolLocalFactor
     cellOutput.faceFragmentCount
+  interactionCellColor : SourceLocalLayerSerialTrackedInteractionColorCode
   rebaseLetter : SourceLocalLayerBoundaryRebaseFiniteBoolSupportLetter
   trackedRolling : SourceLocalLayerSerialTrackedRollingFactor
   faceRolling : SourceLocalLayerSerialFaceRollingFactor
@@ -61,32 +62,35 @@ private abbrev sourceLocalLayerSerialRootedInteractionRollingCellFactorCode :=
   Σ cellOutput : BoundedCorridorCutProfile 2 0 4,
     Σ _localFactor : SourceLocalLayerSerialCellPhysicalBoolLocalFactor
         cellOutput.faceFragmentCount,
-      Σ rebaseLetter : SourceLocalLayerBoundaryRebaseFiniteBoolSupportLetter,
-        Σ trackedRolling : SourceLocalLayerSerialTrackedRollingFactor,
-          Σ faceRolling : SourceLocalLayerSerialFaceRollingFactor,
-            SourceLocalLayerSerialRollingProjectionFactor
-              trackedRolling.rebase.targetCount faceRolling.rebase.targetCount
-                rebaseLetter.output.faceFragmentCount
+      SourceLocalLayerSerialTrackedInteractionColorCode ×
+        (Σ rebaseLetter : SourceLocalLayerBoundaryRebaseFiniteBoolSupportLetter,
+          Σ trackedRolling : SourceLocalLayerSerialTrackedRollingFactor,
+            Σ faceRolling : SourceLocalLayerSerialFaceRollingFactor,
+              SourceLocalLayerSerialRollingProjectionFactor
+                trackedRolling.rebase.targetCount faceRolling.rebase.targetCount
+                  rebaseLetter.output.faceFragmentCount)
 
 private def sourceLocalLayerSerialRootedInteractionRollingCellFactorEquiv :
     SourceLocalLayerSerialRootedInteractionRollingCellFactor ≃
       sourceLocalLayerSerialRootedInteractionRollingCellFactorCode where
   toFun factor :=
-    ⟨factor.cellOutput, factor.localFactor, factor.rebaseLetter,
-      factor.trackedRolling, factor.faceRolling, factor.projection⟩
+    ⟨factor.cellOutput, factor.localFactor, factor.interactionCellColor,
+      factor.rebaseLetter, factor.trackedRolling, factor.faceRolling,
+      factor.projection⟩
   invFun data := by
-    rcases data with ⟨cellOutput, localFactor, rebaseLetter, trackedRolling,
-      faceRolling, projection⟩
+    rcases data with ⟨cellOutput, localFactor, interactionCellColor,
+      rebaseLetter, trackedRolling, faceRolling, projection⟩
     exact {
       cellOutput := cellOutput
       localFactor := localFactor
+      interactionCellColor := interactionCellColor
       rebaseLetter := rebaseLetter
       trackedRolling := trackedRolling
       faceRolling := faceRolling
       projection := projection }
   left_inv factor := by cases factor; rfl
   right_inv data := by
-    rcases data with ⟨_, _, _, _, _, _⟩
+    rcases data with ⟨_, _, _, _, _, _, _⟩
     rfl
 
 set_option synthInstance.maxSize 512 in
@@ -145,6 +149,11 @@ noncomputable def
           faceCapSix := faceTarget
           trackedExterior := trackedTarget
           interactionExterior := nextTrackedInteraction
+          interactionColorCode :=
+            factor.trackedRolling.nextInteractionColorCode
+              (sourceLocalLayerSerialTrackedInteractionColorCodeSplice
+                state.interactionColorCode factor.interactionCellColor)
+              factor.rebaseLetter.outputCode.tracked.roleColor
           currentCoordinate := factor.trackedRolling.nextCurrentCoordinate
           faceInteractionExterior := nextFaceInteraction
           faceCurrentCoordinate := factor.faceRolling.nextCurrentCoordinate }
