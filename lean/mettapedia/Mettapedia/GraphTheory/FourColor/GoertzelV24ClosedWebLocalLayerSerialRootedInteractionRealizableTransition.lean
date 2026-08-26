@@ -25,10 +25,11 @@ below therefore quotients witnesses by their finite Cell--rebase factor alone.
 Equal factors induce definitionally equal transition functions, and the target
 is computed by `successor?`, never stored in the quotient key.
 
-A smaller optional quotient by `(source, literal Cell)` is isolated afterward
-as `SourceLocalLayerSerialRootedInteractionTargetCongruentAt`.  That theorem is
-a minimization result, not a prerequisite for sound finite closure over the
-executable factor alphabet.
+A smaller exact quotient retains only the rooted source, literal Cell,
+observable successor profile, and four newly exposed rebase-role colors.
+`sourceLocalLayerSerialRootedInteraction_targetCongruentAt` proves that these
+observables determine the rooted target, so no ambient prefix representative
+or target receipt belongs in the quotient alphabet.
 
 No enumeration of the ambient state or factor carrier occurs here.  The next
 layer may enumerate the realized image, or replay an externally generated
@@ -42,6 +43,7 @@ namespace GoertzelV24ClosedWebLocalLayerSerialRootedInteractionRealizableTransit
 open GoertzelV24AnnularCrosscut
 open GoertzelV24AnnularCrosscut.SeparatedAlignedSimpleDualCrosscuts
 open GoertzelV24BoundedCarrierGraphFamilyCode
+open GoertzelV24BoundaryProfileFiniteState
 open GoertzelV24ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebAnnularEmbedding.ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebAtGoodWord
@@ -57,10 +59,17 @@ open GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseSupportColorParametric
 open GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseTrackedColorParametric
 open GoertzelV24ClosedWebLocalLayerSerialCellFiniteColorCompatibility
 open GoertzelV24ClosedWebLocalLayerSerialCellPrefixParametricNativeFactorization
+open GoertzelV24ClosedWebLocalLayerSerialCellFaceDeletionStableParametricCapState
+open GoertzelV24ClosedWebLocalLayerSerialCellRebaseCarrierTransport
 open GoertzelV24ClosedWebLocalLayerSerialCellTrackedPrefixAttachmentState
 open GoertzelV24ClosedWebLocalLayerSerialCellTrackedDeletionStablePrefixState
 open GoertzelV24ClosedWebLocalLayerSerialColoredCumulativeStateForColor
 open GoertzelV24ClosedWebLocalLayerSerialRootedCumulativeState
+open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionFacePreRebaseState
+open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionFaceRollingSuccessor
+open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionFaceSuccessor
+open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionPreRebaseState
+open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionRollingProjectionFactor
 open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionRollingTransition
 open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionRollingTransitionColorParametric
 open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionRollingTransitionExact
@@ -76,6 +85,8 @@ open GoertzelV24GraphDerivedCorridorCutProfile
 open GoertzelV24HexSlabConnectivityProfile
 open GoertzelV24HexCorridorFiniteColorTransition
 open GoertzelV24HexCorridorSkeleton
+open GoertzelV24InterfaceDeletionComponentFactor
+open GoertzelV24InterfaceExteriorLabelCapFactor
 open GoertzelV24TwoEdgeCutMinimality
 open GoertzelV24TwoPentagonCapOpening
 open GoertzelV24WindingClassification
@@ -1119,6 +1130,329 @@ theorem sourceLocalLayerSerialRootedInteractionRealizedStepAt_trackedRebase_eq
             rightPrefix.1 cellColor)
   exact hrebase
 
+/-- Once the color-sensitive rebase agrees, the complete tracked rolling
+factor agrees: every remaining field is fixed by the two consecutive corridor
+positions. -/
+theorem sourceLocalLayerSerialRootedInteractionRealizedStepAt_trackedRolling_eq
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hnextNext :
+      (sourceLocalLayerNextOffset offset hnext).val + 1 < blockLength - 3)
+    (left right : SourceLocalLayerSerialRootedInteractionRealizationAt graphData
+      caps coloring web corridor hunique offset hnext)
+    (hcell : left.1.2 = right.1.2)
+    (hsource :
+      (sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
+        coloring web corridor hunique offset hnext hnextNext left).source =
+      (sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
+        coloring web corridor hunique offset hnext hnextNext right).source)
+    (hrole :
+      ((sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
+        coloring web corridor hunique offset hnext hnextNext left).factor
+          ).rebaseLetter.outputCode.tracked.roleColor =
+      ((sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
+        coloring web corridor hunique offset hnext hnextNext right).factor
+          ).rebaseLetter.outputCode.tracked.roleColor) :
+    ((sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
+      coloring web corridor hunique offset hnext hnextNext left).factor
+        ).trackedRolling =
+      ((sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
+        coloring web corridor hunique offset hnext hnextNext right).factor
+          ).trackedRolling := by
+  classical
+  have hrebase :=
+    sourceLocalLayerSerialRootedInteractionRealizedStepAt_trackedRebase_eq
+      graphData minimal caps coloring web corridor hunique offset hnext hnextNext
+        left right hcell hsource hrole
+  rcases left with ⟨⟨leftPrefix, leftCell⟩, hleftCompatible⟩
+  rcases right with ⟨⟨rightPrefix, rightCell⟩, hrightCompatible⟩
+  dsimp only at hcell
+  subst rightCell
+  change
+    sourceLocalLayerSerialTrackedRollingFactorAt graphData minimal caps coloring
+        web corridor hunique offset hnext hnextNext
+          (sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
+            leftPrefix.1
+            (sourceLocalLayerCellLiteralColorAt caps coloring web corridor
+              hunique offset leftCell)) =
+      sourceLocalLayerSerialTrackedRollingFactorAt graphData minimal caps coloring
+        web corridor hunique offset hnext hnextNext
+          (sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
+            rightPrefix.1
+            (sourceLocalLayerCellLiteralColorAt caps coloring web corridor
+              hunique offset leftCell))
+  unfold sourceLocalLayerSerialTrackedRollingFactorAt
+  rw [SourceLocalLayerSerialTrackedRollingFactor.mk.injEq]
+  refine ⟨hrebase, rfl, ?_, ?_, rfl, rfl, rfl, ?_⟩
+  · have hcount := congrArg
+        SourceLocalLayerSerialTrackedRebaseFactor.interactionCount hrebase
+    cases hcount
+    rfl
+  · have hcount := congrArg
+        SourceLocalLayerSerialTrackedRebaseFactor.interactionCount hrebase
+    cases hcount
+    rfl
+  · have hcount := congrArg
+        SourceLocalLayerSerialTrackedRebaseFactor.targetCount hrebase
+    cases hcount
+    rfl
+
+/-- The rolling interaction color receipt of a realized factor depends only
+on the literal Cell, not on the ambient prefix representative. -/
+private theorem
+    sourceLocalLayerSerialRootedInteractionRealizedStepAt_interactionCellColor_eq
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hnextNext :
+      (sourceLocalLayerNextOffset offset hnext).val + 1 < blockLength - 3)
+    (left right : SourceLocalLayerSerialRootedInteractionRealizationAt graphData
+      caps coloring web corridor hunique offset hnext)
+    (hcell : left.1.2 = right.1.2) :
+    ((sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
+      coloring web corridor hunique offset hnext hnextNext left).factor
+        ).interactionCellColor =
+      ((sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
+        coloring web corridor hunique offset hnext hnextNext right).factor
+          ).interactionCellColor := by
+  classical
+  rcases left with ⟨⟨leftPrefix, leftCell⟩, hleftCompatible⟩
+  rcases right with ⟨⟨rightPrefix, rightCell⟩, hrightCompatible⟩
+  dsimp only at hcell
+  subst rightCell
+  rfl
+
+/-- The fixed-slot projection receipt is geometric: at one positioned Cell it
+is independent of both the prefix representative and the literal coloring. -/
+private theorem
+    sourceLocalLayerSerialRootedInteractionRealizedStepAt_projection_eq
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hnextNext :
+      (sourceLocalLayerNextOffset offset hnext).val + 1 < blockLength - 3)
+    (left right : SourceLocalLayerSerialRootedInteractionRealizationAt graphData
+      caps coloring web corridor hunique offset hnext) :
+    HEq
+      ((sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
+        coloring web corridor hunique offset hnext hnextNext left).factor
+          ).projection
+      ((sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
+        coloring web corridor hunique offset hnext hnextNext right).factor
+          ).projection := by
+  classical
+  rcases left with ⟨⟨leftPrefix, leftCell⟩, hleftCompatible⟩
+  rcases right with ⟨⟨rightPrefix, rightCell⟩, hrightCompatible⟩
+  rfl
+
+/-- Regional activity of the four rebase roles is geometric and therefore
+independent of the representative coloring. -/
+private theorem
+    sourceLocalLayerSerialRootedInteractionRealizedStepAt_roleInRegion_eq
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hnextNext :
+      (sourceLocalLayerNextOffset offset hnext).val + 1 < blockLength - 3)
+    (left right : SourceLocalLayerSerialRootedInteractionRealizationAt graphData
+      caps coloring web corridor hunique offset hnext) :
+    ((sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
+      coloring web corridor hunique offset hnext hnextNext left).factor
+        ).rebaseLetter.outputCode.tracked.roleInRegion =
+      ((sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
+        coloring web corridor hunique offset hnext hnextNext right).factor
+          ).rebaseLetter.outputCode.tracked.roleInRegion := by
+  classical
+  rcases left with ⟨⟨leftPrefix, leftCell⟩, hleftCompatible⟩
+  rcases right with ⟨⟨rightPrefix, rightCell⟩, hrightCompatible⟩
+  rfl
+
+private theorem trackedRebase_targetState_eq_of_factor_eq
+    (left right : SourceLocalLayerSerialTrackedRebaseFactor)
+    (hfactor : left = right)
+    (state : SourceLocalLayerSerialTrackedInteractionPrefixState)
+    (hleft : state.vertexCount = left.interactionCount)
+    (hright : state.vertexCount = right.interactionCount) :
+    left.targetState state hleft = right.targetState state hright := by
+  subst right
+  rfl
+
+private theorem trackedRolling_nextInteractionState_eq_of_factor_eq
+    (left right : SourceLocalLayerSerialTrackedRollingFactor)
+    (hfactor : left = right)
+    (state : SourceLocalLayerSerialTrackedInteractionPrefixState)
+    (hleft : state.vertexCount = left.rebase.interactionCount)
+    (hright : state.vertexCount = right.rebase.interactionCount) :
+    left.nextInteractionState state hleft =
+      right.nextInteractionState state hright := by
+  subst right
+  rfl
+
+private theorem faceRebase_targetState_eq_of_factor_eq
+    (left right : SourceLocalLayerSerialFaceRebaseFactor)
+    (hfactor : left = right)
+    (state : SourceLocalLayerSerialFaceInteractionPrefixState)
+    (hleft : state.vertexCount = left.interactionCount)
+    (hright : state.vertexCount = right.interactionCount) :
+    left.targetState state hleft = right.targetState state hright := by
+  subst right
+  rfl
+
+private theorem faceRolling_nextInteractionState_eq_of_factor_eq
+    (left right : SourceLocalLayerSerialFaceRollingFactor)
+    (hfactor : left = right)
+    (state : SourceLocalLayerSerialFaceInteractionPrefixState)
+    (hleft : state.vertexCount = left.rebase.interactionCount)
+    (hright : state.vertexCount = right.rebase.interactionCount) :
+    left.nextInteractionState state hleft =
+      right.nextInteractionState state hright := by
+  subst right
+  rfl
+
+private theorem trackedPrefixState_code_heq_of_eq
+    (left right : SourceLocalLayerSerialTrackedDeletionStablePrefixState)
+    (hstate : left = right) : HEq left.code right.code := by
+  subst right
+  rfl
+
+private theorem facePrefixState_code_heq_of_eq
+    (left right : SourceLocalLayerSerialFaceDeletionStableCapSixState)
+    (hstate : left = right) : HEq (left.code ()) (right.code ()) := by
+  subst right
+  rfl
+
+private theorem rollingProjection_trackedState_eq_of_heq
+    {leftTracked rightTracked : Fin 22}
+    {leftFace rightFace : Fin 25}
+    {leftOutput rightOutput : Fin 5}
+    (left : SourceLocalLayerSerialRollingProjectionFactor leftTracked leftFace
+      leftOutput)
+    (right : SourceLocalLayerSerialRollingProjectionFactor rightTracked rightFace
+      rightOutput)
+    (htracked : leftTracked = rightTracked)
+    (hface : leftFace = rightFace)
+    (houtput : leftOutput = rightOutput)
+    (hfactor : HEq left right)
+    (leftCode : TrackedColorPair → BoundedInterfaceExteriorCode
+      (Fin leftTracked.val))
+    (rightCode : TrackedColorPair → BoundedInterfaceExteriorCode
+      (Fin rightTracked.val))
+    (hcode : HEq leftCode rightCode) :
+    left.trackedState leftCode = right.trackedState rightCode := by
+  subst rightTracked
+  subst rightFace
+  subst rightOutput
+  have hfactorEq : left = right := eq_of_heq hfactor
+  subst right
+  have hcodeEq : leftCode = rightCode := eq_of_heq hcode
+  subst rightCode
+  rfl
+
+private theorem rollingProjection_faceState_eq_of_heq
+    {leftTracked rightTracked : Fin 22}
+    {leftFace rightFace : Fin 25}
+    {leftOutput rightOutput : Fin 5}
+    (left : SourceLocalLayerSerialRollingProjectionFactor leftTracked leftFace
+      leftOutput)
+    (right : SourceLocalLayerSerialRollingProjectionFactor rightTracked rightFace
+      rightOutput)
+    (htracked : leftTracked = rightTracked)
+    (hface : leftFace = rightFace)
+    (houtput : leftOutput = rightOutput)
+    (hfactor : HEq left right)
+    (leftCode : BoundedInterfaceExteriorLabelCapCode
+      (Fin leftFace.val) (Fin leftFace.val × Bool) 6)
+    (rightCode : BoundedInterfaceExteriorLabelCapCode
+      (Fin rightFace.val) (Fin rightFace.val × Bool) 6)
+    (hcode : HEq leftCode rightCode) :
+    left.faceState leftCode = right.faceState rightCode := by
+  subst rightTracked
+  subst rightFace
+  subst rightOutput
+  have hfactorEq : left = right := eq_of_heq hfactor
+  subst right
+  have hcodeEq : leftCode = rightCode := eq_of_heq hcode
+  subst rightCode
+  rfl
+
+private theorem rollingProjection_colorCode_eq_of_heq
+    {leftTracked rightTracked : Fin 22}
+    {leftFace rightFace : Fin 25}
+    {leftOutput rightOutput : Fin 5}
+    (left : SourceLocalLayerSerialRollingProjectionFactor leftTracked leftFace
+      leftOutput)
+    (right : SourceLocalLayerSerialRollingProjectionFactor rightTracked rightFace
+      rightOutput)
+    (htracked : leftTracked = rightTracked)
+    (hface : leftFace = rightFace)
+    (houtput : leftOutput = rightOutput)
+    (hfactor : HEq left right)
+    (leftOld rightOld leftCell rightCell :
+      SourceLocalLayerSerialCarrierColorCode)
+    (leftRebase rightRebase : SourceLocalLayerBoundaryRebaseTrackedState)
+    (hold : leftOld = rightOld)
+    (hcell : leftCell = rightCell)
+    (hrole : leftRebase.roleColor = rightRebase.roleColor)
+    (hregion : leftRebase.roleInRegion = rightRebase.roleInRegion) :
+    left.colorCode leftOld leftCell leftRebase =
+      right.colorCode rightOld rightCell rightRebase := by
+  subst rightTracked
+  subst rightFace
+  subst rightOutput
+  have hfactorEq : left = right := eq_of_heq hfactor
+  subst right
+  subst rightOld
+  subst rightCell
+  funext slot
+  unfold SourceLocalLayerSerialRollingProjectionFactor.colorCode
+    SourceLocalLayerSerialCellRebaseTransportedColorCode
+  simp only [hregion, hrole]
+
 private theorem sourceLocalLayerSerialRootedInteractionRealizedStepAt_cellOutput_eq
     (graphData : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
@@ -1197,9 +1531,10 @@ private theorem sourceLocalLayerSerialRootedInteractionRealizedStepAt_cellOutput
       hrightSupport.1.1
 
 /-- The exact non-tautological smaller-quotient obligation.  Besides the
-rooted source and literal Cell, it retains the four colors exposed by the
-boundary rebase.  Those colors cannot in general be read from the current root:
-a newly exposed role may lie outside its active prefix region. -/
+rooted source and literal Cell, it retains the observable successor profile
+and the four colors exposed by the boundary rebase.  Those colors cannot in
+general be read from the current root: a newly exposed role may lie outside
+its active prefix region. -/
 def SourceLocalLayerSerialRootedInteractionTargetCongruentAt
     (graphData : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
@@ -1225,6 +1560,10 @@ def SourceLocalLayerSerialRootedInteractionTargetCongruentAt
       (sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
         coloring web corridor hunique offset hnext hnextNext right).source →
     (sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
+      coloring web corridor hunique offset hnext hnextNext left).factor.rebaseLetter.output =
+      (sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
+        coloring web corridor hunique offset hnext hnextNext right).factor.rebaseLetter.output →
+    (sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
       coloring web corridor hunique offset hnext hnextNext left).factor.rebaseLetter.outputCode.tracked.roleColor =
       (sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
         coloring web corridor hunique offset hnext hnextNext right).factor.rebaseLetter.outputCode.tracked.roleColor →
@@ -1233,9 +1572,279 @@ def SourceLocalLayerSerialRootedInteractionTargetCongruentAt
       (sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
         coloring web corridor hunique offset hnext hnextNext right).target
 
-/-- The smaller quotient key: current rooted state, literal Cell, and exactly
-the four rebase-role colors which may be newly exposed.  Neither the ambient
-prefix representative nor the resulting target is retained. -/
+set_option maxHeartbeats 800000 in
+/-- The observable successor profile and the four newly exposed role colors,
+together with the rooted source and literal Cell, determine the following
+rooted state.  This is the representation-invariance theorem for the reduced
+source alphabet. -/
+theorem sourceLocalLayerSerialRootedInteraction_targetCongruentAt
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hnextNext :
+      (sourceLocalLayerNextOffset offset hnext).val + 1 < blockLength - 3) :
+    SourceLocalLayerSerialRootedInteractionTargetCongruentAt graphData minimal
+      caps coloring web corridor hunique offset hnext hnextNext := by
+  classical
+  intro left right hcell hsource houtput hrole
+  let leftStep :=
+    sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
+      coloring web corridor hunique offset hnext hnextNext left
+  let rightStep :=
+    sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
+      coloring web corridor hunique offset hnext hnextNext right
+  have hleftExec : leftStep.factor.successor? leftStep.source =
+      some leftStep.target :=
+    (sourceLocalLayerSerialRootedInteractionRealizedStepAt_transition graphData
+      minimal caps coloring web corridor hunique offset hnext hnextNext left).2.1
+  have hrightExec : rightStep.factor.successor? rightStep.source =
+      some rightStep.target :=
+    (sourceLocalLayerSerialRootedInteractionRealizedStepAt_transition graphData
+      minimal caps coloring web corridor hunique offset hnext hnextNext right).2.1
+  have hleftSupport : leftStep.factor.supportsBool leftStep.source = true := by
+    by_contra hnot
+    have hfalse : leftStep.factor.supportsBool leftStep.source = false :=
+      Bool.eq_false_of_not_eq_true hnot
+    rw [SourceLocalLayerSerialRootedInteractionRollingCellFactor.successor?,
+      hfalse] at hleftExec
+    simp only [Bool.false_eq_true, ↓reduceIte] at hleftExec
+    simp at hleftExec
+  have hrightSupport : rightStep.factor.supportsBool rightStep.source = true := by
+    by_contra hnot
+    have hfalse : rightStep.factor.supportsBool rightStep.source = false :=
+      Bool.eq_false_of_not_eq_true hnot
+    rw [SourceLocalLayerSerialRootedInteractionRollingCellFactor.successor?,
+      hfalse] at hrightExec
+    simp only [Bool.false_eq_true, ↓reduceIte] at hrightExec
+    simp at hrightExec
+  have hsourceStep : leftStep.source = rightStep.source := hsource
+  have houtputStep : leftStep.factor.rebaseLetter.output =
+      rightStep.factor.rebaseLetter.output := houtput
+  have hroleStep : leftStep.factor.rebaseLetter.outputCode.tracked.roleColor =
+      rightStep.factor.rebaseLetter.outputCode.tracked.roleColor := hrole
+  have htrackedRolling :=
+    sourceLocalLayerSerialRootedInteractionRealizedStepAt_trackedRolling_eq
+      graphData minimal caps coloring web corridor hunique offset hnext hnextNext
+        left right hcell hsource hrole
+  have htrackedRollingStep : leftStep.factor.trackedRolling =
+      rightStep.factor.trackedRolling := htrackedRolling
+  have hfaceRollingStep : leftStep.factor.faceRolling =
+      rightStep.factor.faceRolling := by
+    rfl
+  have hinteractionCellColor :=
+    sourceLocalLayerSerialRootedInteractionRealizedStepAt_interactionCellColor_eq
+      graphData minimal caps coloring web corridor hunique offset hnext hnextNext
+        left right hcell
+  have hinteractionCellColorStep : leftStep.factor.interactionCellColor =
+      rightStep.factor.interactionCellColor := hinteractionCellColor
+  have hprojection :=
+    sourceLocalLayerSerialRootedInteractionRealizedStepAt_projection_eq
+      graphData minimal caps coloring web corridor hunique offset hnext hnextNext
+        left right
+  have hroleInRegion :=
+    sourceLocalLayerSerialRootedInteractionRealizedStepAt_roleInRegion_eq
+      graphData minimal caps coloring web corridor hunique offset hnext hnextNext
+        left right
+  have hroleInRegionStep :
+      leftStep.factor.rebaseLetter.outputCode.tracked.roleInRegion =
+        rightStep.factor.rebaseLetter.outputCode.tracked.roleInRegion :=
+    hroleInRegion
+  have hcellOutput :=
+    sourceLocalLayerSerialRootedInteractionRealizedStepAt_cellOutput_eq graphData
+      minimal caps coloring web corridor hunique offset hnext hnextNext left right
+        hcell hsource
+  have hlocalHeq :=
+    sourceLocalLayerSerialRootedInteractionRealizedStepAt_localFactor_heq graphData
+      minimal caps coloring web corridor hunique offset hnext hnextNext left right
+        hcell
+  have hlocalEq : leftStep.factor.localFactor =
+      rightStep.factor.localFactor := by
+    change
+      (sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
+        coloring web corridor hunique offset hnext hnextNext left).factor.localFactor =
+      (sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
+        coloring web corridor hunique offset hnext hnextNext right).factor.localFactor
+    exact eq_of_heq hlocalHeq
+  have htrackedPre :
+      sourceLocalLayerSerialRootedInteractionPreRebaseState? leftStep.source
+          leftStep.factor.localFactor =
+        sourceLocalLayerSerialRootedInteractionPreRebaseState? rightStep.source
+          rightStep.factor.localFactor := by
+    rw [hsourceStep, hlocalEq]
+    rfl
+  have hfacePre :
+      sourceLocalLayerSerialRootedInteractionFacePreRebaseState? leftStep.source
+          leftStep.factor.localFactor =
+        sourceLocalLayerSerialRootedInteractionFacePreRebaseState? rightStep.source
+          rightStep.factor.localFactor := by
+    rw [hsourceStep, hlocalEq]
+    rfl
+  have hrebase :=
+    sourceLocalLayerSerialRootedInteractionRealizedStepAt_trackedRebase_eq
+      graphData minimal caps coloring web corridor hunique offset hnext hnextNext
+        left right hcell hsource hrole
+  have hrebaseStep : leftStep.factor.trackedRolling.rebase =
+      rightStep.factor.trackedRolling.rebase := hrebase
+  have hrebaseCount : leftStep.factor.trackedRolling.rebase.interactionCount =
+      rightStep.factor.trackedRolling.rebase.interactionCount :=
+    congrArg SourceLocalLayerSerialTrackedRebaseFactor.interactionCount hrebaseStep
+  have hfaceRebaseCount :
+      leftStep.factor.faceRolling.rebase.interactionCount =
+        rightStep.factor.faceRolling.rebase.interactionCount := by
+    rfl
+  have hprojectionTrackedCount :
+      leftStep.factor.trackedRolling.rebase.targetCount =
+        rightStep.factor.trackedRolling.rebase.targetCount :=
+    congrArg (fun rolling => rolling.rebase.targetCount) htrackedRollingStep
+  have hprojectionFaceCount :
+      leftStep.factor.faceRolling.rebase.targetCount =
+        rightStep.factor.faceRolling.rebase.targetCount :=
+    congrArg (fun rolling => rolling.rebase.targetCount) hfaceRollingStep
+  have hprojectionOutputCount :
+      leftStep.factor.rebaseLetter.output.faceFragmentCount =
+        rightStep.factor.rebaseLetter.output.faceFragmentCount :=
+    congrArg BoundedCorridorCutProfile.faceFragmentCount houtputStep
+  have hsucc : leftStep.factor.successor? leftStep.source =
+      rightStep.factor.successor? rightStep.source := by
+    rw [SourceLocalLayerSerialRootedInteractionRollingCellFactor.successor?,
+      SourceLocalLayerSerialRootedInteractionRollingCellFactor.successor?,
+      hleftSupport, hrightSupport]
+    simp only [if_true]
+    rw [htrackedPre, hfacePre]
+    cases sourceLocalLayerSerialRootedInteractionPreRebaseState?
+        rightStep.source rightStep.factor.localFactor with
+    | none => simp
+    | some trackedPre =>
+        cases sourceLocalLayerSerialRootedInteractionFacePreRebaseState?
+            rightStep.source rightStep.factor.localFactor with
+        | none => simp
+        | some facePre =>
+            simp only [Option.bind_some]
+            by_cases htrackedCount : trackedPre.vertexCount =
+                leftStep.factor.trackedRolling.rebase.interactionCount
+            · have htrackedCountRight : trackedPre.vertexCount =
+                  rightStep.factor.trackedRolling.rebase.interactionCount := by
+                exact htrackedCount.trans hrebaseCount
+              simp only [htrackedCount, hrebaseCount, dif_pos]
+              by_cases hfaceCount : facePre.vertexCount =
+                  leftStep.factor.faceRolling.rebase.interactionCount
+              · have hfaceCountRight : facePre.vertexCount =
+                    rightStep.factor.faceRolling.rebase.interactionCount := by
+                  exact hfaceCount.trans hfaceRebaseCount
+                simp only [hfaceCount, hfaceRebaseCount, dif_pos]
+                apply congrArg some
+                simp only [hsourceStep, htrackedRollingStep,
+                  hinteractionCellColorStep, hroleStep]
+                apply rootedInteractionState_ext
+                · apply rootedCumulativeState_ext
+                  · apply coloredCumulativeState_ext
+                    · exact houtputStep
+                    · have htargetState :
+                          leftStep.factor.trackedRolling.rebase.targetState
+                              trackedPre htrackedCount =
+                            rightStep.factor.trackedRolling.rebase.targetState
+                              trackedPre htrackedCountRight := by
+                        exact trackedRebase_targetState_eq_of_factor_eq
+                          leftStep.factor.trackedRolling.rebase
+                          rightStep.factor.trackedRolling.rebase hrebaseStep
+                            trackedPre htrackedCount htrackedCountRight
+                      have hcode : HEq
+                          (leftStep.factor.trackedRolling.rebase.targetState
+                            trackedPre htrackedCount).code
+                          (rightStep.factor.trackedRolling.rebase.targetState
+                            trackedPre htrackedCountRight).code := by
+                        exact trackedPrefixState_code_heq_of_eq _ _ htargetState
+                      exact rollingProjection_trackedState_eq_of_heq
+                        leftStep.factor.projection rightStep.factor.projection
+                          hprojectionTrackedCount hprojectionFaceCount
+                          hprojectionOutputCount hprojection _ _ hcode
+                    · have htargetState :
+                          leftStep.factor.faceRolling.rebase.targetState facePre
+                              hfaceCount =
+                            rightStep.factor.faceRolling.rebase.targetState facePre
+                              hfaceCountRight := by
+                        exact faceRebase_targetState_eq_of_factor_eq
+                          leftStep.factor.faceRolling.rebase
+                          rightStep.factor.faceRolling.rebase
+                            (congrArg SourceLocalLayerSerialFaceRollingFactor.rebase
+                              hfaceRollingStep)
+                            facePre hfaceCount hfaceCountRight
+                      have hcode : HEq
+                          ((leftStep.factor.faceRolling.rebase.targetState facePre
+                            hfaceCount).code ())
+                          ((rightStep.factor.faceRolling.rebase.targetState facePre
+                            hfaceCountRight).code ()) := by
+                        exact facePrefixState_code_heq_of_eq _ _ htargetState
+                      exact rollingProjection_faceState_eq_of_heq
+                        leftStep.factor.projection rightStep.factor.projection
+                          hprojectionTrackedCount hprojectionFaceCount
+                          hprojectionOutputCount hprojection _ _ hcode
+                    · exact rollingProjection_colorCode_eq_of_heq
+                        leftStep.factor.projection rightStep.factor.projection
+                          hprojectionTrackedCount hprojectionFaceCount
+                          hprojectionOutputCount hprojection
+                          leftStep.source.colorCode
+                          rightStep.source.colorCode
+                          leftStep.factor.localFactor.trackedCellColor
+                          rightStep.factor.localFactor.trackedCellColor
+                          leftStep.factor.rebaseLetter.outputCode.tracked
+                          rightStep.factor.rebaseLetter.outputCode.tracked
+                          (congrArg
+                            (fun state : SourceLocalLayerSerialRootedInteractionState =>
+                              state.colorCode) hsourceStep)
+                          (congrArg
+                            (fun factor => factor.trackedCellColor) hlocalEq)
+                          hroleStep hroleInRegionStep
+                    · exact faceRebase_targetState_eq_of_factor_eq
+                        leftStep.factor.faceRolling.rebase
+                        rightStep.factor.faceRolling.rebase
+                          (congrArg SourceLocalLayerSerialFaceRollingFactor.rebase
+                            hfaceRollingStep)
+                          facePre hfaceCount hfaceCountRight
+                  · exact trackedRebase_targetState_eq_of_factor_eq
+                      leftStep.factor.trackedRolling.rebase
+                      rightStep.factor.trackedRolling.rebase hrebaseStep
+                        trackedPre htrackedCount htrackedCountRight
+                · exact trackedRolling_nextInteractionState_eq_of_factor_eq
+                    leftStep.factor.trackedRolling
+                    rightStep.factor.trackedRolling htrackedRollingStep
+                      trackedPre htrackedCount htrackedCountRight
+                · rfl
+                · apply heq_of_eq
+                  rfl
+                · exact faceRolling_nextInteractionState_eq_of_factor_eq
+                    leftStep.factor.faceRolling rightStep.factor.faceRolling
+                      hfaceRollingStep facePre hfaceCount hfaceCountRight
+                · apply heq_of_eq
+                  rfl
+              · have hfaceCountRight : facePre.vertexCount ≠
+                    rightStep.factor.faceRolling.rebase.interactionCount := by
+                  intro hrightCount
+                  exact hfaceCount (hrightCount.trans hfaceRebaseCount.symm)
+                simp [hfaceCountRight, hfaceRebaseCount]
+            · have htrackedCountRight : trackedPre.vertexCount ≠
+                  rightStep.factor.trackedRolling.rebase.interactionCount := by
+                intro hrightCount
+                exact htrackedCount (hrightCount.trans hrebaseCount.symm)
+              simp [htrackedCountRight, hrebaseCount]
+  rw [hleftExec, hrightExec] at hsucc
+  exact Option.some.inj hsucc
+
+/-- The smaller quotient key: current rooted state, literal Cell, the successor
+boundary profile, and exactly the four rebase-role colors which may be newly
+exposed.  Neither the ambient prefix representative nor the resulting rooted
+target is retained. -/
 structure SourceLocalLayerSerialRootedInteractionQuotientKeyAt
     (graphData : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
@@ -1255,6 +1864,7 @@ structure SourceLocalLayerSerialRootedInteractionQuotientKeyAt
   cell : SourceLocalLayerCellLiteralOpenTaitColoring corridor hunique
     (sourceLocalLayerInteriorAt offset)
       (sourceLocalLayerInteriorAt_hasNext offset)
+  output : BoundedCorridorCutProfile 2 1 4
   rebaseRoleColor :
     SourceLocalLayerBoundaryRebaseRole → StrandColor
 
@@ -1304,14 +1914,18 @@ noncomputable def sourceLocalLayerSerialRootedInteractionQuotientKeyAt
     (sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
       coloring web corridor hunique offset hnext hnextNext witness).source
   cell := witness.1.2
+  output :=
+    (sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
+      coloring web corridor hunique offset hnext hnextNext witness).factor
+        |>.rebaseLetter.output
   rebaseRoleColor :=
     (sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
       coloring web corridor hunique offset hnext hnextNext witness).factor
         |>.rebaseLetter.outputCode.tracked.roleColor
 
 /-- Target congruence is exactly sufficient to make the raw witness transition
-invariant under the smaller `(rooted source, literal Cell, role colors)`
-quotient. -/
+invariant under the smaller `(rooted source, literal Cell, output profile,
+role colors)` quotient. -/
 theorem sourceLocalLayerSerialRootedInteraction_transition_invariant_of_targetCongruent
     (graphData : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
@@ -1347,9 +1961,11 @@ theorem sourceLocalLayerSerialRootedInteraction_transition_invariant_of_targetCo
     SourceLocalLayerSerialRootedInteractionQuotientKeyAt.source hkey
   have hcell := congrArg
     SourceLocalLayerSerialRootedInteractionQuotientKeyAt.cell hkey
+  have houtput := congrArg
+    SourceLocalLayerSerialRootedInteractionQuotientKeyAt.output hkey
   have hrole := congrArg
     SourceLocalLayerSerialRootedInteractionQuotientKeyAt.rebaseRoleColor hkey
-  have htarget := hcongruent left right hcell hsource hrole
+  have htarget := hcongruent left right hcell hsource houtput hrole
   funext source target
   apply propext
   constructor
