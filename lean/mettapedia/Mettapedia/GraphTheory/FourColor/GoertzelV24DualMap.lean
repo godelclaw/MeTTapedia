@@ -207,6 +207,53 @@ theorem wordReachable_dual_of_not_loop
 
 end LoopBridge
 
+/-! ## The dual of a triangulation
+
+A connected spherical loopless map whose faces are triangles has a connected,
+spherical, cubic, bridgeless dual.  Every part is already available.
+Cubicity is the hypothesis restated, because the dual's vertex rotation *is*
+the face permutation; connectedness and sphericity transfer by the change of
+generators; and bridgelessness is the loop/bridge exchange, since the primal is
+loopless. -/
+
+section DualCubic
+
+variable [Fintype D] [DecidableEq D]
+
+/-- The scrutinised edge's flip sends one of its darts to the other. -/
+theorem flip_apply_eq_of_head {α : Perm D} {a b : D} {rest : List (D × D)}
+    (hflip : α = Equiv.swap a b * swapProduct rest)
+    (hfixa : swapProduct rest a = a) : α a = b := by
+  rw [hflip, Equiv.Perm.mul_apply, hfixa, Equiv.swap_apply_left]
+
+/-- **The dual of a triangulation is cubic and bridgeless.**  The five
+conclusions are, in order: the dual's vertex rotation cubes to the identity and
+moves every dart, so its vertices have exactly three darts; the component count
+is unchanged, so the dual is connected exactly when the map is; the Euler sum is
+unchanged, so the dual is spherical exactly when the map is; and the scrutinised
+edge is not a bridge of the dual. -/
+theorem dual_cubic_bridgeless (σ α : Perm D) {a b : D} (rest : List (D × D))
+    (hflip : α = Equiv.swap a b * swapProduct rest)
+    (hinv : α * α = 1)
+    (hfixa : swapProduct rest a = a) (hfixb : swapProduct rest b = b)
+    (hthree : ∀ x : D, (σ * α) ((σ * α) ((σ * α) x)) = x)
+    (hmove : ∀ x : D, (σ * α) x ≠ x)
+    (hloopless : ∀ d : D, ¬ σ.SameCycle d (α d)) :
+    (∀ x : D, dualRotation σ α (dualRotation σ α (dualRotation σ α x)) = x) ∧
+      (∀ x : D, dualRotation σ α x ≠ x) ∧
+      wordOrbitCount [dualRotation σ α, α] = wordOrbitCount [σ, α] ∧
+      orbitCount (dualRotation σ α) + orbitCount (dualRotation σ α * α) =
+        orbitCount σ + orbitCount (σ * α) ∧
+      WordReachable (dualRotation σ α :: swapGenerators rest) a b := by
+  refine ⟨hthree, hmove, wordOrbitCount_dualRotation hinv,
+    orbitCount_dualRotation_add hinv, ?_⟩
+  refine wordReachable_dual_of_not_loop σ α rest hflip hinv hfixa hfixb ?_
+  have hab : α a = b := flip_apply_eq_of_head hflip hfixa
+  intro hsame
+  exact hloopless a (by rwa [hab])
+
+end DualCubic
+
 end GoertzelV24DualMap
 
 end Mettapedia.GraphTheory.FourColor
