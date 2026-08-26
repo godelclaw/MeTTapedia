@@ -455,12 +455,12 @@ theorem boundaryCover (Q : @FacialSquareData V E) (hQ : Q.WellFormed RS)
 
 /-- **The root qualifier.**  The ambient root vertex is not a corner of the
 square. -/
-def RootRetained (Q : @FacialSquareData V E) : Prop :=
+abbrev RootRetained (Q : @FacialSquareData V E) : Prop :=
   deletedRegionKeep Q.deletedCorners (RS.vertOf RS.outer)
 
 /-- **The seam qualifier.**  The two ends of each seam are distinct vertices,
 so joining them creates no loop. -/
-def SeamEndpointsDistinct (Q : @FacialSquareData V E) (hQ : Q.WellFormed RS)
+abbrev SeamEndpointsDistinct (Q : @FacialSquareData V E) (hQ : Q.WellFormed RS)
     (hdist : Q.LocalEdgesDistinct) (side : SquareReductionSide) : Prop :=
   ∀ step : Fin 2,
     RS.vertOf (orderedBoundaryDart RS (deletedRegionKeep Q.deletedCorners)
@@ -494,7 +494,7 @@ itself is the generic retained-vertex Tait splice. -/
 
 /-- The ambient colouring is compatible with a side when each seam's two outer
 edges agree. -/
-def CompatibleWithSide (Q : @FacialSquareData V E) (side : SquareReductionSide)
+abbrev CompatibleWithSide (Q : @FacialSquareData V E) (side : SquareReductionSide)
     (C : RS.EdgeColoring Color) : Prop :=
   ∀ step : Fin 2,
     C (Q.leftCrossingAt side step) = C (Q.rightCrossingAt side step)
@@ -599,6 +599,94 @@ theorem keep_both_ends_of_not_crossing (Q : @FacialSquareData V E)
   · refine Q.endpoints_not_corner_of_not_crossing RS hQ hdist hcross hsquare _ ?_
     rw [hpair]
     simp
+
+/-! ## The splice inverse, on darts
+
+The splice sends each retained ambient dart to a dart of the rewired system,
+and that assignment is a bijection which does not move the underlying dart.
+Running it forwards gives, for every retained ambient dart, the reduction edge
+its ambient edge becomes: an ordinary edge for an internal dart, and the seam
+for a crossing one.  This is the correspondence the colouring lift pulls back
+along. -/
+
+/-- The rewired dart of a retained ambient dart. -/
+noncomputable def rewiredDartOf (Q : @FacialSquareData V E)
+    (hQ : Q.WellFormed RS) (hdist : Q.LocalEdgesDistinct)
+    (side : SquareReductionSide) (dart : RS.D)
+    (hdart : deletedRegionKeep Q.deletedCorners (RS.vertOf dart)) :
+    MatchedSeam.Dart (InternalDart RS (deletedRegionKeep Q.deletedCorners))
+      (BoundaryDartOn RS (deletedRegionKeep Q.deletedCorners)
+        (orderedCut (Q.leftCrossingAt side)))
+      (BoundaryDartOn RS (deletedRegionKeep Q.deletedCorners)
+        (orderedCut (Q.rightCrossingAt side))) :=
+  retainedDartEquivMatchedParts RS (deletedRegionKeep Q.deletedCorners)
+    (orderedCut (Q.leftCrossingAt side)) (orderedCut (Q.rightCrossingAt side))
+    (Q.boundaryCover RS hQ hdist side) (Q.orderedCut_disjoint hdist side)
+    ⟨dart, hdart⟩
+
+/-- **The correspondence does not move the dart.** -/
+theorem matchedPartUnderlyingDart_rewiredDartOf (Q : @FacialSquareData V E)
+    (hQ : Q.WellFormed RS) (hdist : Q.LocalEdgesDistinct)
+    (side : SquareReductionSide) (dart : RS.D)
+    (hdart : deletedRegionKeep Q.deletedCorners (RS.vertOf dart)) :
+    matchedPartUnderlyingDart RS (deletedRegionKeep Q.deletedCorners)
+        (orderedCut (Q.leftCrossingAt side))
+        (orderedCut (Q.rightCrossingAt side))
+        (Q.rewiredDartOf RS hQ hdist side dart hdart) = dart := by
+  rw [matchedPartUnderlyingDart_eq_equiv_symm_val RS
+    (deletedRegionKeep Q.deletedCorners)
+    (orderedCut (Q.leftCrossingAt side)) (orderedCut (Q.rightCrossingAt side))
+    (Q.boundaryCover RS hQ hdist side) (Q.orderedCut_disjoint hdist side)]
+  simp [rewiredDartOf]
+
+/-- The reduction edge that a retained ambient dart's edge becomes. -/
+noncomputable def reductionEdgeOfDart (Q : @FacialSquareData V E)
+    (hQ : Q.WellFormed RS) (hdist : Q.LocalEdgesDistinct)
+    (side : SquareReductionSide) (hroot : Q.RootRetained RS)
+    (hseam : Q.SeamEndpointsDistinct RS hQ hdist side) (dart : RS.D)
+    (hdart : deletedRegionKeep Q.deletedCorners (RS.vertOf dart)) :
+    (orderedCutRetainedVertexRewiredDartSystem RS
+      (deletedRegionKeep Q.deletedCorners)
+      (Q.leftCrossingAt side) (Q.rightCrossingAt side)
+      (Q.leftCrosses RS hQ hdist side) (Q.rightCrosses RS hQ hdist side)
+      (Q.leftCrossingAt_injective hdist side)
+      (Q.rightCrossingAt_injective hdist side)
+      (Q.boundaryCover RS hQ hdist side)
+      (Q.orderedCut_disjoint hdist side) hroot hseam).Edge :=
+  (orderedCutRetainedVertexRewiredDartSystem RS
+    (deletedRegionKeep Q.deletedCorners)
+    (Q.leftCrossingAt side) (Q.rightCrossingAt side)
+    (Q.leftCrosses RS hQ hdist side) (Q.rightCrosses RS hQ hdist side)
+    (Q.leftCrossingAt_injective hdist side)
+    (Q.rightCrossingAt_injective hdist side)
+    (Q.boundaryCover RS hQ hdist side)
+    (Q.orderedCut_disjoint hdist side) hroot hseam).edgeOf
+      (Q.rewiredDartOf RS hQ hdist side dart hdart)
+
+/-- **The forward splice reads the lift back.**  Composing the projection with
+this correspondence returns the ambient colour, for every retained dart. -/
+theorem splicedColoring_reductionEdgeOfDart (Q : @FacialSquareData V E)
+    (hQ : Q.WellFormed RS) (hdist : Q.LocalEdgesDistinct)
+    (side : SquareReductionSide) (hroot : Q.RootRetained RS)
+    (hseam : Q.SeamEndpointsDistinct RS hQ hdist side)
+    (C : RS.EdgeColoring Color) (hcut : Q.CompatibleWithSide RS side C)
+    (dart : RS.D)
+    (hdart : deletedRegionKeep Q.deletedCorners (RS.vertOf dart)) :
+    Q.reductionColoring RS hQ hdist side hroot hseam C hcut
+        (Q.reductionEdgeOfDart RS hQ hdist side hroot hseam dart hdart) =
+      C (RS.edgeOf dart) := by
+  have hval := orderedCutRetainedVertexSplicedColoring_edgeOf RS
+    (deletedRegionKeep Q.deletedCorners)
+    (Q.leftCrossingAt side) (Q.rightCrossingAt side)
+    (Q.leftCrosses RS hQ hdist side) (Q.rightCrosses RS hQ hdist side)
+    (Q.leftCrossingAt_injective hdist side)
+    (Q.rightCrossingAt_injective hdist side)
+    (Q.boundaryCover RS hQ hdist side)
+    (Q.orderedCut_disjoint hdist side) hroot hseam C hcut
+    (Q.rewiredDartOf RS hQ hdist side dart hdart)
+  rw [Q.matchedPartUnderlyingDart_rewiredDartOf RS hQ hdist side dart hdart]
+    at hval
+  exact hval
 
 end FacialSquareData
 
