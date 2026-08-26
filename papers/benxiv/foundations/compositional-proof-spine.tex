@@ -49,15 +49,16 @@ factor product-semantics theorem,
 Proposition~\ref{prop:factor-product-semantics}, is open \\
 $T_2$ & Meyniel ladder reductions (rotor, digon, two-cut, square) transport
 the relevant refined counts to the pentagon frontier & local square data are
-checked and graph-level count transport and side lifting are proved in
-Section~\ref{sec:meyniel-ladder}; only cross-side $\mathrm{WC}^{*}$ migration
-remains open \\
+checked and graph-level count transport, side lifting, and route-specific
+square transport are proved in Section~\ref{sec:meyniel-ladder}; Lean
+integration remains \\
 $T_3$ & Seed Lemma: every nonempty good fibre contains a menu-B state & open;
 the source proof draft reduces it to the corridor engine and a finite base \\
-$T_4$ & Target-aware square transport for $\mathrm{WC}^{*}$ reachability &
-open; both the proposed $A\ne\varnothing$ shortcut and universal SQ3
-connectivity are refuted in Propositions~\ref{prop:a-nonempty-refuted}
-and~\ref{prop:universal-sq3-refuted} \\
+$T_4$ & Route-specific square transport for $\mathrm{WC}^{*}$ reachability &
+ordinary proof complete from capped-reduction colourability, the induction
+hypothesis, and square-side path lifting; arbitrary-target transport, the
+proposed $A\ne\varnothing$ shortcut, and universal SQ3 connectivity are all
+refuted \\
 $T_5$ & Exact one-cell Count factorization through a finite rooted profile
 transition & machine-checked through the manuscript-exact two-pair projection,
 including realized edge and initial images; executable enumeration and closure
@@ -571,7 +572,7 @@ being silently promoted to an all-boundary theorem.
 
 \begin{theorem}[Source-faithful conditional route theorem]
 \label{thm:conditional-compositional-route}
-\Sconditional{Tait bridge; Trail Completability; ladder transport; Seed Lemma; target-aware square transport; global corridor alternative; physical splice; finite base}
+\Sconditional{Tait bridge; Trail Completability; ladder transport; Seed Lemma; global corridor alternative; physical splice; finite base}
 Assume the following results in the forms consumed by the working manuscript:
 the Tait/minimal-counterexample bridge; the Kauffman trail spine, including
 Proposition~\ref{prop:factor-product-semantics}, and Trail Completability
@@ -594,6 +595,11 @@ counterexample.  Trail Completability reduces its noncolourability to the
 frontier $\mathrm{WC}^{*}$ obstruction.  The ladder transports descend every
 triangle, digon, two-cut, and square while preserving the appropriate zero
 count, so a least obstruction reaches the irreducible pentagon frontier.
+At the square rung, restoring the fixed completion cap after either reduction
+gives a valid closed instance with four fewer square vertices.  Closed-map
+minimality colours both capped reductions, so each side contains an
+extendable target word; Theorem~\ref{prop:target-square-migration} then
+transports \(\mathrm{WC}^{*}\) without a cross-side migration hypothesis.
 The global corridor theorem, finite profile factorization, L2, and the
 physical splice instantiate
 Theorem~\ref{thm:finite-profile-reductive-pumping} for the Seed count.  Its
@@ -607,10 +613,11 @@ completes the Tait colouring, contradicting the chosen counterexample.
 The theorem is a complete implication, not a claim that its premises are
 already theorems.  At present the decisive open premises are the uniform bulk
 step (or its repaired two-branch replacement), the physical profile splice,
-the route-native Seed base, the Seed instantiation, target-specific square
-transport, factor-completion lifting, and the final
-Trail Completability assembly.
+the route-native Seed base, the Seed instantiation, factor-completion lifting,
+and the final Trail Completability assembly.
 The exact finite transition work materially reduces one of those premises; it
-does not make the others disappear.  In particular, neither the signed
+does not make the others disappear.  The target-specific square seam is no
+longer one of them: capped colourability rules out a target-free reduction
+side before any migration is needed.  In particular, neither the signed
 curvature identity nor the bounded-face geodesic theorem currently proves
 Proposition~\ref{prop:target-forced-cut-chain}.

@@ -326,6 +326,83 @@ state in a target-free side first takes the supplied path to a
 target-bearing side and then uses its sidewise path to \(W\).
 \end{proof}
 
+The target cannot be left abstract in the remaining square theorem.
+Even colour-permutation invariance, planarity, bridgelessness, and one-face
+placement of the stubs do not make generic \(\mathrm{WC}^{*}\) transport true.
+
+\begin{proposition}[generic \(\mathrm{WC}^{*}\) square transport is false]
+\label{prop:generic-wcstar-square-refuted}
+\Srefuted{tools/fourcolor/v24_square_wcstar_counterexample.py}
+There are a bridgeless planar cubic tangle \(G\) with four stubs on one face,
+a facial square with two bridgeless planar reductions \(G_0,G_1\), and a
+colour-permutation-invariant set \(W\) of stub words such that
+\[
+  \mathrm{WC}^{*}(G_0,W)\quad\hbox{and}\quad
+  \mathrm{WC}^{*}(G_1,W)
+  \qquad\hbox{but}\qquad
+  \neg\mathrm{WC}^{*}(G,W).
+\]
+\end{proposition}
+
+\begin{proof}
+Start with the same planar Frucht rotation used in
+Proposition~\ref{prop:universal-sq3-refuted}.  Replace its cofacial edges
+\(06,34\) by the square \(12\,13\,14\,15\), attached in cyclic order to
+\(0,6,4,3\).  Instead of opening \(01\), open the two exterior edges
+\(5\,10\) and \(8\,11\).  Denote the resulting stub edges, in that order, by
+\[
+  5\,16,\quad 10\,17,\quad 8\,18,\quad 11\,19.
+\]
+Let \(W\) consist of the words
+\[
+             (a,a,b,b),\qquad a,b\in\{0,1,2\},\quad a\ne b.
+\]
+This set is invariant under every permutation of the three colours.
+
+The rotation is obtained from the closed Frucht rotation by replacing the
+neighbour \(10\) at \(5\) by \(16\), the neighbour \(5\) at \(10\) by
+\(17\), the neighbour \(11\) at \(8\) by \(18\), and the neighbour \(8\)
+at \(11\) by \(19\).  Its face permutation has eight orbits, including
+\((12,13,14,15)\) and a single orbit containing \(16,17,18,19\).
+Thus \(V-E+F=20-26+8=2\), the square is facial, and the four stubs lie on
+one face.  The two reductions respectively restore \(06,34\) and insert
+\(64,30\).  Each has \(16\) vertices, \(20\) edges, six face orbits, and one
+face containing all four stubs.  Deleting each internal edge in turn leaves
+all vertices connected in all three maps, so all three tangles are
+bridgeless.  The complete rotations and face walks are asserted in the
+cited fixture.
+
+It remains only a finite colouring calculation.  Assign colours to indexed
+edges by backtracking, rejecting an assignment as soon as two assigned edges
+at a cubic vertex agree.  For each complete colouring and each of the three
+colour pairs, find every maximal two-colour component and switch the whole
+component.  Looking the result up in the complete colouring table gives the
+exact Kempe graph.  This calculation yields
+\[
+\begin{array}{c|c|c|c}
+ &|\operatorname{Col}|&\text{Kempe-class sizes}&\text{\(W\)-states per class}\\
+ \hline
+ G   &48&18,\ 30&6,\ 0\\
+ G_0 &30&30&0\\
+ G_1 &18&18&6.
+\end{array}
+\]
+Every search is exhaustive; there is no random or heuristic step.
+
+By the source definition, \(\mathrm{WC}^{*}(G_0,W)\) is true because no
+colouring of \(G_0\) has a word in \(W\), so its proviso is false.
+The graph \(\mathcal K(G_1)\) is connected and contains six target states,
+so \(\mathrm{WC}^{*}(G_1,W)\) is true.  Upstairs the target is nonempty but
+the thirty-state Kempe class contains none of it.  Hence
+\(\mathrm{WC}^{*}(G,W)\) is false.
+\end{proof}
+
+This proposition does not refute the route's surviving square claim.  Its
+target \(W\) is not the pentagonal cap's extendable-word set, and the
+specimen is not asserted to be a least obstruction.  It proves that both of
+those qualifiers carry mathematical content: no theorem quantified over an
+arbitrary colour-invariant target can replace them.
+
 The local square transparency theorem supplies the expected sidewise
 lifting mechanism.  A colouring of \(G_s\) expands to \(L_s\); its local
 fibre is connected by the square-cycle switch; and a Kempe component through
@@ -379,28 +456,68 @@ fibre to reach any chosen lift of its endpoint.  This proves the last
 assertion.
 \end{proof}
 
-Even after Proposition~\ref{prop:square-side-path-lifting}, one cross-side
-fact remains when both reductions are colourable.
+The source target supplies one further fact which an arbitrary set of words
+does not: a target word is exactly the restriction of a colouring after the
+fixed completion cap is restored.  Minimality can therefore prove that each
+reduction side contains a target state.
 
-\begin{proposition}[target-specific square transport]
+\begin{theorem}[route-specific square transport from cap nonemptiness]
 \label{prop:target-square-migration}
-\Sopen
-For every facial square arising in the least \(\mathrm{WC}^{*}\) obstruction
-of the source ladder, and for the source's actual extendable-word target
-\(W\), every state in a nonempty target-free lifted reduction side can reach
-a target-bearing side by legal ambient Kempe moves.
-\end{proposition}
+\Sprose
+Let \(G\) be a tangle with a facial square disjoint from its ordered boundary,
+let \(G_0,G_1\) be its two valid planar reductions, and let \(C\) be the
+fixed completion cap at that boundary.  Let \(W_C\) be the set of boundary
+words which extend across \(C\).  Assume
+\begin{enumerate}
+\item each capped reduction \(G_s\cup C\) is Tait-colourable;
+\item \(\mathrm{WC}^{*}(G_s,W_C)\) holds for \(s=0,1\); and
+\item square-side path lifting
+  (Theorem~\ref{prop:square-side-path-lifting}) holds.
+\end{enumerate}
+Then \(\mathrm{WC}^{*}(G,W_C)\) holds.
 
-The refuted statement \(A\ne\varnothing\) would imply this proposition,
-whenever the all-equal overlap itself contains a target state.  It is not
-necessary:
-the first counterexample above has \(A=\varnothing\) but one side is empty,
-and its expanded colouring graph is connected.  Nor may the qualifier
-``least \(\mathrm{WC}^{*}\) obstruction'' be dropped: the Frucht specimen
-has two nonempty connected sides and no path between them.  A repaired proof
-must exploit the target predicate or the least-obstruction hypothesis, or
-show that the irrelevant side contains no target obstruction.  It may not
-restore either universal \(A\ne\varnothing\) or universal SQ3 migration.
+In particular, a facial square cannot occur in a least obstruction of the
+source's strong induction whenever attaching the same cap to either
+reduction gives a strictly smaller closed instance: closed-instance
+minimality supplies the first assumption and the tangle induction supplies
+the second.
+\end{theorem}
+
+\begin{proof}
+Restrict a Tait colouring of \(G_s\cup C\) to \(G_s\).  Its boundary word
+extends across \(C\) by the colouring just removed, so
+\[
+ W_s=\{D\in\operatorname{Col}(G_s):
+                  \operatorname{word}(D)\in W_C\}
+\]
+is nonempty for both \(s=0,1\).
+
+Now take any colouring \(D\) of \(G\).  The square fibre table puts \(D\) in
+at least one lifted side \(L_s\).  Project it to a colouring
+\(\overline D\) of \(G_s\).  Since \(W_s\ne\varnothing\), the assumption
+\(\mathrm{WC}^{*}(G_s,W_C)\) supplies a Kempe path from
+\(\overline D\) to some \(\overline E\in W_s\).  Lift that path one edge at
+a time by Theorem~\ref{prop:square-side-path-lifting}; its proof permits an
+optional square-cycle move inside a fibre and then the corresponding maximal
+component move.  The lifted endpoint is a lift \(E\) of \(\overline E\).
+Projection changes only the square and preserves every ordered boundary
+edge, hence
+\(\operatorname{word}(E)=\operatorname{word}(\overline E)\in W_C\).
+Thus every colouring of \(G\) reaches the target.
+
+The target of \(G\) is nonempty as well: choose either
+\(\overline E\in W_s\) and use the surjectivity part of square-side lifting
+to lift it.  Therefore the proviso in the definition of
+\(\mathrm{WC}^{*}\) is respected, and the claimed statement follows.
+\end{proof}
+
+This proof identifies precisely why the generic counterexample is harmless.
+There \(G_0\) has no target colouring, so its capped-colourability premise
+fails; the vacuous truth of \(\mathrm{WC}^{*}(G_0,W)\) cannot create a
+target.  In the source induction, target nonemptiness comes from the smaller
+capped instance, not from an all-equal square state.  Hence neither
+universal \(A\ne\varnothing\), universal SQ3 migration, nor arbitrary-target
+transport may be restored.
 
 Thus the square ledger is now exact:
 \[
@@ -410,6 +527,8 @@ Thus the square ledger is now exact:
 \text{Seed zero-count descent}&:&\text{ordinary proof; Lean formalization pending},\\
 \text{universal }A\ne\varnothing&:&\text{refuted},\\
 \text{universal SQ3 migration}&:&\text{refuted},\\
-\text{target-specific }\mathrm{WC}^{*}\text{ square transport}&:&\text{open}.
+\text{generic target-aware }\mathrm{WC}^{*}\text{ transport}&:&\text{refuted},\\
+\text{route-specific }\mathrm{WC}^{*}\text{ square transport}&:&
+   \text{ordinary proof; Lean formalization pending}.
 \end{array}
 \]
