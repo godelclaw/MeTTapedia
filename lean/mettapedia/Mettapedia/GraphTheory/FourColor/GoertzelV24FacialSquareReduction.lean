@@ -2,6 +2,7 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24Square
 import Mettapedia.GraphTheory.FourColor.GoertzelV24SquareGraphSplit
 import Mettapedia.GraphTheory.FourColor.GoertzelV24DeletedRegionRotationSplice
 import Mettapedia.GraphTheory.FourColor.GoertzelV24RetainedVertexRotationSplice
+import Mettapedia.GraphTheory.FourColor.GoertzelV24RetainedVertexTaitSplice
 
 /-!
 # The two planar reductions of a facial square, as rotation systems
@@ -27,7 +28,10 @@ not a corner, and the two ends of each seam are distinct vertices.
 
 namespace Mettapedia.GraphTheory.FourColor
 
+open GoertzelV24DeletedRegionRotationSplice
 open GoertzelV24OrderedCutRotationSplice
+open GoertzelV24RetainedVertexRotationSplice
+open GoertzelV24RetainedVertexTaitSplice
 open GoertzelV24RotationCutDartDecomposition
 open GoertzelV24RotationSpliceConstructor
 open GoertzelV24RotationVertexCutProfile
@@ -411,6 +415,126 @@ theorem orderedCut_disjoint (Q : @FacialSquareData V E)
   obtain ⟨other, hother⟩ := hright
   exact leftPortal_ne_rightPortal side step other
     (Q.outerEdgeAt_injective hdist (hstep.trans hother.symm))
+
+/-! ## The reduction rotation system
+
+With the boundary identity in hand the generic splice applies.  Its two
+remaining hypotheses are the source's reduction-validity qualifiers and are
+carried as arguments: the root vertex is not a corner, and the two ends of each
+seam are distinct vertices. -/
+
+/-- Outward orientations of the left transversal. -/
+theorem leftCrosses (Q : @FacialSquareData V E) (hQ : Q.WellFormed RS)
+    (hdist : Q.LocalEdgesDistinct) (side : SquareReductionSide) :
+    ∀ step, ∃ dart : RS.D,
+      RS.edgeOf dart = Q.leftCrossingAt side step ∧
+      deletedRegionKeep Q.deletedCorners (RS.vertOf dart) ∧
+      ¬ deletedRegionKeep Q.deletedCorners (RS.vertOf (RS.alpha dart)) :=
+  fun step => leftCrossing_outward RS Q.deletedCorners _ _
+    (Q.orderedCut_union_eq_crossingEdges RS hQ hdist side) step
+
+/-- Outward orientations of the right transversal. -/
+theorem rightCrosses (Q : @FacialSquareData V E) (hQ : Q.WellFormed RS)
+    (hdist : Q.LocalEdgesDistinct) (side : SquareReductionSide) :
+    ∀ step, ∃ dart : RS.D,
+      RS.edgeOf dart = Q.rightCrossingAt side step ∧
+      deletedRegionKeep Q.deletedCorners (RS.vertOf dart) ∧
+      ¬ deletedRegionKeep Q.deletedCorners (RS.vertOf (RS.alpha dart)) :=
+  fun step => rightCrossing_outward RS Q.deletedCorners _ _
+    (Q.orderedCut_union_eq_crossingEdges RS hQ hdist side) step
+
+/-- Every boundary dart of the deleted region lies on one of the two
+transversals. -/
+theorem boundaryCover (Q : @FacialSquareData V E) (hQ : Q.WellFormed RS)
+    (hdist : Q.LocalEdgesDistinct) (side : SquareReductionSide) :
+    ∀ dart : BoundaryDart RS (deletedRegionKeep Q.deletedCorners),
+      RS.edgeOf dart.1.1 ∈ orderedCut (Q.leftCrossingAt side) ∨
+        RS.edgeOf dart.1.1 ∈ orderedCut (Q.rightCrossingAt side) :=
+  fun dart => deletedRegionBoundaryCover RS Q.deletedCorners _ _
+    (Q.orderedCut_union_eq_crossingEdges RS hQ hdist side) dart
+
+/-- **The root qualifier.**  The ambient root vertex is not a corner of the
+square. -/
+def RootRetained (Q : @FacialSquareData V E) : Prop :=
+  deletedRegionKeep Q.deletedCorners (RS.vertOf RS.outer)
+
+/-- **The seam qualifier.**  The two ends of each seam are distinct vertices,
+so joining them creates no loop. -/
+def SeamEndpointsDistinct (Q : @FacialSquareData V E) (hQ : Q.WellFormed RS)
+    (hdist : Q.LocalEdgesDistinct) (side : SquareReductionSide) : Prop :=
+  ∀ step : Fin 2,
+    RS.vertOf (orderedBoundaryDart RS (deletedRegionKeep Q.deletedCorners)
+        (Q.leftCrossingAt side) (Q.leftCrosses RS hQ hdist side) step).1.1.1 ≠
+      RS.vertOf (orderedBoundaryDart RS (deletedRegionKeep Q.deletedCorners)
+        (Q.rightCrossingAt side) (Q.rightCrosses RS hQ hdist side) step).1.1.1
+
+/-- **The planar reduction of a facial square, as a rotation system.**  The
+four corners are deleted and the four outer edges are rejoined in the chosen
+planar pairing. -/
+noncomputable def reductionRotationSystem (Q : @FacialSquareData V E)
+    (hQ : Q.WellFormed RS) (hdist : Q.LocalEdgesDistinct)
+    (side : SquareReductionSide) (hroot : Q.RootRetained RS)
+    (hseam : Q.SeamEndpointsDistinct RS hQ hdist side) :=
+  orderedCutRetainedVertexRotationSystem RS
+    (deletedRegionKeep Q.deletedCorners)
+    (Q.leftCrossingAt side) (Q.rightCrossingAt side)
+    (Q.leftCrosses RS hQ hdist side) (Q.rightCrosses RS hQ hdist side)
+    (Q.leftCrossingAt_injective hdist side)
+    (Q.rightCrossingAt_injective hdist side)
+    (Q.boundaryCover RS hQ hdist side)
+    (Q.orderedCut_disjoint hdist side)
+    hroot hseam
+
+/-! ## The induced colouring projection
+
+A colouring of the ambient map descends to the reduction exactly when the two
+outer edges joined by each seam already carry the same colour — that is, when
+the square's boundary word is compatible with the chosen side.  The descent
+itself is the generic retained-vertex Tait splice. -/
+
+/-- The ambient colouring is compatible with a side when each seam's two outer
+edges agree. -/
+def CompatibleWithSide (Q : @FacialSquareData V E) (side : SquareReductionSide)
+    (C : RS.EdgeColoring Color) : Prop :=
+  ∀ step : Fin 2,
+    C (Q.leftCrossingAt side step) = C (Q.rightCrossingAt side step)
+
+/-- **The induced colouring of a planar reduction.** -/
+noncomputable def reductionColoring (Q : @FacialSquareData V E)
+    (hQ : Q.WellFormed RS) (hdist : Q.LocalEdgesDistinct)
+    (side : SquareReductionSide) (hroot : Q.RootRetained RS)
+    (hseam : Q.SeamEndpointsDistinct RS hQ hdist side)
+    (C : RS.EdgeColoring Color) (hcut : Q.CompatibleWithSide RS side C) :
+    (Q.reductionRotationSystem RS hQ hdist side hroot hseam).EdgeColoring
+      Color :=
+  orderedCutRetainedVertexSplicedColoring RS
+    (deletedRegionKeep Q.deletedCorners)
+    (Q.leftCrossingAt side) (Q.rightCrossingAt side)
+    (Q.leftCrosses RS hQ hdist side) (Q.rightCrosses RS hQ hdist side)
+    (Q.leftCrossingAt_injective hdist side)
+    (Q.rightCrossingAt_injective hdist side)
+    (Q.boundaryCover RS hQ hdist side)
+    (Q.orderedCut_disjoint hdist side)
+    hroot hseam C hcut
+
+/-- **The induced colouring is a Tait colouring.** -/
+theorem reductionColoring_isTait (Q : @FacialSquareData V E)
+    (hQ : Q.WellFormed RS) (hdist : Q.LocalEdgesDistinct)
+    (side : SquareReductionSide) (hroot : Q.RootRetained RS)
+    (hseam : Q.SeamEndpointsDistinct RS hQ hdist side)
+    (C : RS.EdgeColoring Color) (hcut : Q.CompatibleWithSide RS side C)
+    (hC : RS.IsTaitEdgeColoring C) :
+    (Q.reductionRotationSystem RS hQ hdist side hroot hseam).IsTaitEdgeColoring
+      (Q.reductionColoring RS hQ hdist side hroot hseam C hcut) :=
+  orderedCutRetainedVertexSplicedColoring_isTait RS
+    (deletedRegionKeep Q.deletedCorners)
+    (Q.leftCrossingAt side) (Q.rightCrossingAt side)
+    (Q.leftCrosses RS hQ hdist side) (Q.rightCrosses RS hQ hdist side)
+    (Q.leftCrossingAt_injective hdist side)
+    (Q.rightCrossingAt_injective hdist side)
+    (Q.boundaryCover RS hQ hdist side)
+    (Q.orderedCut_disjoint hdist side)
+    hroot hseam C hC hcut
 
 end FacialSquareData
 
