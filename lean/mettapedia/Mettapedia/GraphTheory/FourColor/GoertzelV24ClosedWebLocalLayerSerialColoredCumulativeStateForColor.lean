@@ -35,6 +35,7 @@ open GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseOutputColorParametric
 open GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseSupportColorParametric
 open GoertzelV24ClosedWebLocalLayerSerialCellFiniteColorCompatibility
 open GoertzelV24ClosedWebLocalLayerSerialCellColorSplice
+open GoertzelV24ClosedWebLocalLayerSerialCellFaceDeletionStableParametricCapState
 open GoertzelV24ClosedWebLocalLayerSerialCellNativeFactorization
 open GoertzelV24ClosedWebLocalLayerSerialCellRebaseNativeFactorization
 open GoertzelV24ClosedWebLocalLayerSerialTrackedPrefixAttachmentColorParametric
@@ -92,7 +93,38 @@ noncomputable def sourceLocalLayerSerialColoredCumulativeStateForColorAt
     colorCode := sourceLocalLayerSerialCarrierColorCodeAt graphData caps coloring
       web corridor hunique offset
       (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique offset) color
+    faceCapSix :=
+      sourceLocalLayerSerialFaceDeletionStableParametricCapPrefixAt corridor
+        hunique offset hcell 6
   }
+
+@[simp]
+theorem sourceLocalLayerSerialColoredCumulativeStateForColorAt_faceCapSix
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (color :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
+    (hcrossing : ∀ step,
+      color ((sourceLocalLayerSerialTerminalInputCutDataAt corridor hunique
+        offset).crossingEdge step) ≠ 0) :
+    (sourceLocalLayerSerialColoredCumulativeStateForColorAt graphData minimal
+      caps coloring web corridor hunique offset color hcrossing).faceCapSix =
+      sourceLocalLayerSerialFaceDeletionStableParametricCapPrefixAt corridor
+        hunique offset
+          (sourceLocalLayerCellRegionAt_card_le_six graphData minimal caps
+            coloring web corridor hunique offset) 6 := by
+  rfl
 
 /-- At the ambient colouring this is exactly the cumulative state extracted by
 the physical Cell factor, independently of the chosen local Cell colouring. -/

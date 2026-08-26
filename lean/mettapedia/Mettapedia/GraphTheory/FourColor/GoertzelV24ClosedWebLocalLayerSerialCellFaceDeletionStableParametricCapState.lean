@@ -12,11 +12,11 @@ advance.  This file keeps that lookahead parameter explicit.  It extracts the
 exact cumulative prefix code at an arbitrary cap and proves that adjoining one
 literal Cell preserves exactness at the same cap.
 
-The source's cap-seven state is one specialization.  The fixed forty-eight
-dart Cell--rebase carrier also permits the conservative specialization at cap
-fifty-three: every promoted dart is named by that carrier, so the generic
-bounded-subtraction theorem can recover cap five without a boundary-locality
-assumption.
+The source's cap-seven state is one specialization.  For a literal Cell rebase,
+the clean hexagonal corridor geometry proves that cap six already determines
+the successor's published cap-five weight.  The fixed forty-eight-dart
+Cell--rebase carrier also permits the older conservative specialization at cap
+fifty-three when that source-local geometry is unavailable.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -187,8 +187,46 @@ theorem
   simpa only [prefixGraph, localGraph, prefixRegion, cellRegion,
     sourceLocalLayerSerialFaceLocalGraphAt, Finset.mem_union] using hupdate
 
-/-- The conservative internal lookahead state used by the fixed 48-dart
-rebase. -/
+/-- Each pre-rebase incidence weight is exactly the caller-selected cap of the
+strict-exterior face component entered at that incidence. -/
+theorem
+    sourceLocalLayerSerialFaceDeletionStableParametricCapPreRebaseAt_incidenceCap
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : GoertzelV24ClosedWebAtGoodWord.Instance data coloring}
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hcell : (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 6)
+    (cap : Nat)
+    (incidence : Fin
+      (sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique offset
+        ).card × Bool) :
+    let carrier := sourceLocalLayerSerialFaceTransitionCarrierAt corridor
+      hunique offset
+    let dartAt := fun slot : Fin carrier.card =>
+      ((carrierCoordinate carrier).symm slot).1
+    (((sourceLocalLayerSerialFaceDeletionStableParametricCapPreRebaseAt
+      corridor hunique offset hcell cap).code ()).incidenceCap incidence).val =
+      min (exteriorIncidenceLabelSupport
+        (faceRegionalDartGraph web.annular.RS
+          (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique
+            offset))
+        dartAt Prod.fst
+        (faceInterfaceIncidenceVertex web.annular.RS dartAt)
+        web.annular.RS.edgeOf incidence).card cap := by
+  rw [sourceLocalLayerSerialFaceDeletionStableParametricCapPreRebaseAt_code_eq]
+  rfl
+
+/-- The source-local lookahead state sufficient for an exact literal Cell
+rebase.  Its incidence weights have type `Fin 7`. -/
+abbrev SourceLocalLayerSerialFaceDeletionStableCapSixState :=
+  SourceLocalLayerSerialFaceDeletionStableParametricCapState 6
+
+/-- The conservative generic lookahead state supplied by the fixed 48-dart
+rebase carrier. -/
 abbrev SourceLocalLayerSerialFaceDeletionStableWideCapState :=
   SourceLocalLayerSerialFaceDeletionStableParametricCapState 53
 

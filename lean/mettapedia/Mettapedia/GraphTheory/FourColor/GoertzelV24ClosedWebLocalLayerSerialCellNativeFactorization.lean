@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialCellFiniteTrackedBoolColorCode
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialCellFaceDeletionStableParametricCapState
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialCellSplicedFiniteSupportLetter
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialCellStateFactorization
 
@@ -38,6 +39,7 @@ open GoertzelV24ClosedWebAtGoodWord.Instance.LocalLayerFormation
 open GoertzelV24ClosedWebBoundaryData
 open GoertzelV24ClosedWebLocalLayerSerialCellColorSplice
 open GoertzelV24ClosedWebLocalLayerSerialCellFaceFiniteAmbientContinuation
+open GoertzelV24ClosedWebLocalLayerSerialCellFaceDeletionStableParametricCapState
 open GoertzelV24ClosedWebLocalLayerSerialCellFaceFiniteEdgeState
 open GoertzelV24ClosedWebLocalLayerSerialCellFiniteBoolSupportLetter
 open GoertzelV24ClosedWebLocalLayerSerialCellFiniteColorCompatibility
@@ -52,6 +54,9 @@ open GoertzelV24CorridorProfile
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24FacialPentagonCap
 open GoertzelV24HexSlabConnectivityProfile
+open GoertzelV24InterfaceExteriorLabelCapFactor
+open GoertzelV24InterfaceExteriorLabelCapFactorUpdate
+open GoertzelV24MinimalFacialPentagonCapPairLocalCellCarrier
 open GoertzelV24TwoEdgeCutMinimality
 open GoertzelV24TwoPentagonCapOpening
 open GoertzelV24WindingClassification
@@ -85,10 +90,12 @@ theorem sourceLocalLayerSerialTrackedBoolCodeOfNativeGeometry_eq_reflection
           cellCode factor first second
 
 /-- The cumulative prefix state together with the exact partial colour table
-on the stable twenty-one-slot transition carrier. -/
+on the stable twenty-one-slot transition carrier and the cap-six facial
+exterior weights needed by the literal boundary rebase. -/
 structure SourceLocalLayerSerialColoredCumulativeState extends
     SourceLocalLayerSerialCumulativeState where
   colorCode : SourceLocalLayerSerialCarrierColorCode
+  faceCapSix : SourceLocalLayerSerialFaceDeletionStableCapSixState
 
 noncomputable instance :
     DecidableEq SourceLocalLayerSerialColoredCumulativeState :=
@@ -97,12 +104,14 @@ noncomputable instance :
 private def sourceLocalLayerSerialColoredCumulativeStateEquiv :
     SourceLocalLayerSerialColoredCumulativeState ≃
       SourceLocalLayerSerialCumulativeState ×
-        SourceLocalLayerSerialCarrierColorCode where
+        SourceLocalLayerSerialCarrierColorCode ×
+          SourceLocalLayerSerialFaceDeletionStableCapSixState where
   toFun state := ⟨state.toSourceLocalLayerSerialCumulativeState,
-    state.colorCode⟩
+    state.colorCode, state.faceCapSix⟩
   invFun data := {
     toSourceLocalLayerSerialCumulativeState := data.1
-    colorCode := data.2 }
+    colorCode := data.2.1
+    faceCapSix := data.2.2 }
   left_inv state := by cases state; rfl
   right_inv data := by cases data; rfl
 
@@ -175,6 +184,58 @@ noncomputable instance (outputCount : Fin 5) : Fintype
     (SourceLocalLayerSerialCellPhysicalBoolLocalFactor outputCount) :=
   Fintype.ofEquiv _
     (sourceLocalLayerSerialCellPhysicalBoolLocalFactorEquiv outputCount).symm
+
+/-- Read the Cell/seam facial graph on the cumulative cap state's dependent
+carrier.  The equality witness is the finite ABI check connecting the two
+independently packaged records. -/
+def sourceLocalLayerSerialCellPhysicalFaceLocalAdjacency
+    {outputCount : Fin 5}
+    (state : SourceLocalLayerSerialColoredCumulativeState)
+    (localFactor : SourceLocalLayerSerialCellPhysicalBoolLocalFactor
+      outputCount)
+    (hcount : state.faceCapSix.vertexCount =
+      localFactor.faceCode.vertexCount) :
+    Fin state.faceCapSix.vertexCount.val →
+      Fin state.faceCapSix.vertexCount.val → Bool :=
+  fun left right =>
+    let cast : Fin state.faceCapSix.vertexCount.val →
+        Fin localFactor.faceCode.vertexCount.val :=
+      Fin.cast (congrArg Fin.val hcount)
+    decide (((localFactor.faceCode.toGraph false) ⊔
+      (localFactor.faceCode.toGraph true)).Adj (cast left) (cast right))
+
+/-- Adjoin one physical Cell and its residual seam to the cumulative cap-six
+facial factor.  This is a graph-free operation on finite tables. -/
+def sourceLocalLayerSerialCellPhysicalFaceCapSixPreRebase
+    {outputCount : Fin 5}
+    (state : SourceLocalLayerSerialColoredCumulativeState)
+    (localFactor : SourceLocalLayerSerialCellPhysicalBoolLocalFactor
+      outputCount)
+    (hcount : state.faceCapSix.vertexCount =
+      localFactor.faceCode.vertexCount) :
+    SourceLocalLayerSerialFaceDeletionStableCapSixState :=
+  { vertexCount := state.faceCapSix.vertexCount
+    code := fun _ => addInterfaceAdjacencyAndPresence
+      (state.faceCapSix.code ())
+      (sourceLocalLayerSerialCellPhysicalFaceLocalAdjacency state localFactor
+        hcount)
+      (fun slot => localFactor.faceEdgeState.cellPresent
+        (Fin.castLE
+          (Nat.le_of_lt_succ state.faceCapSix.vertexCount.isLt) slot)) }
+
+/-- Executable guarded form of the cap-six pre-rebase update.  A malformed
+state/factor pair with different dependent carrier sizes is rejected. -/
+def sourceLocalLayerSerialCellPhysicalFaceCapSixPreRebase?
+    {outputCount : Fin 5}
+    (state : SourceLocalLayerSerialColoredCumulativeState)
+    (localFactor : SourceLocalLayerSerialCellPhysicalBoolLocalFactor
+      outputCount) :
+    Option SourceLocalLayerSerialFaceDeletionStableCapSixState :=
+  if hcount : state.faceCapSix.vertexCount =
+      localFactor.faceCode.vertexCount then
+    some (sourceLocalLayerSerialCellPhysicalFaceCapSixPreRebase state
+      localFactor hcount)
+  else none
 
 /-- A state, candidate output, and one physical Cell factor. -/
 abbrev SourceLocalLayerSerialCellPhysicalBoolFactoredLetter :=
@@ -294,6 +355,8 @@ noncomputable def sourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt
     SourceLocalLayerSerialCellPhysicalBoolFactoredLetter := by
   let letter := sourceLocalLayerSerialSplicedCellFiniteSupportLetterAt graphData
     minimal caps coloring web corridor hunique offset cellColor hcellColor
+  let hcell := sourceLocalLayerCellRegionAt_card_le_six graphData minimal caps
+    coloring web corridor hunique offset
   exact ⟨{
       input := letter.input
       tracked := letter.trackedState
@@ -302,6 +365,9 @@ noncomputable def sourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt
         coloring web corridor hunique offset
         (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique offset)
         coloring
+      faceCapSix :=
+        sourceLocalLayerSerialFaceDeletionStableParametricCapPrefixAt corridor
+          hunique offset hcell 6
     }, letter.output, {
       outputColor := letter.outputColor
       trackedGeometry := ofGraphFamilyCode
@@ -317,6 +383,115 @@ noncomputable def sourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt
       facePortSlot := letter.facePortSlot
       faceRole := letter.faceRole
     }⟩
+
+/-- The guarded finite cap-six update succeeds on every literal source Cell
+and reconstructs the exact semantic weighted factor before its boundary
+rebase. -/
+theorem sourceLocalLayerSerialCellPhysicalFaceCapSixPreRebase?_at
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (cellColor :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
+    (hcellColor : ∀ step,
+      cellColor (sourceLocalLayerRightCrossingAt corridor hunique offset step) ≠
+        0) :
+    let factored := sourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt
+      graphData minimal caps coloring web corridor hunique offset cellColor
+        hcellColor
+    sourceLocalLayerSerialCellPhysicalFaceCapSixPreRebase? factored.1
+        factored.2.2 =
+      some
+        (sourceLocalLayerSerialFaceDeletionStableParametricCapPreRebaseAt
+          corridor hunique offset
+            (sourceLocalLayerCellRegionAt_card_le_six graphData minimal caps
+              coloring web corridor hunique offset) 6) := by
+  classical
+  dsimp only [sourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt,
+    sourceLocalLayerSerialCellPhysicalFaceCapSixPreRebase?]
+  split
+  · rename_i hcount
+    have hcount_eq_rfl : hcount = (by rfl) := Subsingleton.elim _ _
+    rw [hcount_eq_rfl]
+    congr 1
+    unfold sourceLocalLayerSerialCellPhysicalFaceCapSixPreRebase
+      sourceLocalLayerSerialFaceDeletionStableParametricCapPreRebaseAt
+    dsimp only [sourceLocalLayerSerialSplicedCellFiniteSupportLetterAt]
+    congr 1
+    funext family
+    refine BoundedInterfaceExteriorLabelCapCode.ext ?_ ?_ rfl rfl rfl
+    · unfold addInterfaceAdjacencyAndPresence
+      apply congrArg (fun adjacency =>
+        GoertzelV24InterfaceDeletionComponentFactorUpdate.addInterfaceAdjacency
+          _ adjacency)
+      funext left right
+      change Fin (sourceLocalLayerSerialFaceTransitionCarrierAt corridor
+        hunique offset).card at left right
+      change decide
+          ((((ofGraphFamilyCode
+              (sourceLocalLayerSerialFaceTransitionCodeAt corridor hunique
+                offset
+                  (sourceLocalLayerCellRegionAt_card_le_six graphData minimal
+                    caps coloring web corridor hunique offset))).toGraph false) ⊔
+            (ofGraphFamilyCode
+              (sourceLocalLayerSerialFaceTransitionCodeAt corridor hunique
+                offset
+                  (sourceLocalLayerCellRegionAt_card_le_six graphData minimal
+                    caps coloring web corridor hunique offset))).toGraph true
+              ).Adj left right) =
+        decide
+          ((((sourceLocalLayerSerialFaceTransitionCodeAt corridor hunique offset
+                (sourceLocalLayerCellRegionAt_card_le_six graphData minimal caps
+                  coloring web corridor hunique offset)).graph false) ⊔
+            (sourceLocalLayerSerialFaceTransitionCodeAt corridor hunique offset
+                (sourceLocalLayerCellRegionAt_card_le_six graphData minimal caps
+                  coloring web corridor hunique offset)).graph true).Adj
+            left right)
+      simp only [ofGraphFamilyCode_toGraph]
+      apply Bool.eq_iff_iff.mpr
+      simp only [decide_eq_true_eq]
+      constructor <;> intro hadj <;> exact hadj
+    · funext slot
+      unfold addInterfaceAdjacencyAndPresence
+      apply Bool.eq_iff_iff.mpr
+      simp only [Bool.or_eq_true]
+      change Fin (sourceLocalLayerSerialFaceTransitionCarrierAt corridor
+        hunique offset).card at slot
+      have hslot :
+          Fin.castLE
+              (Nat.le_of_lt_succ
+                (sourceLocalLayerSerialFaceDeletionStableParametricCapPrefixAt
+                  corridor hunique offset
+                    (sourceLocalLayerCellRegionAt_card_le_six graphData minimal
+                      caps coloring web corridor hunique offset) 6
+                    ).vertexCount.isLt)
+              slot =
+            sourceLocalLayerSerialFaceTransitionSlotAt corridor hunique offset
+              (sourceLocalLayerCellRegionAt_card_le_six graphData minimal caps
+                coloring web corridor hunique offset)
+              ((carrierCoordinate
+                (sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+                  offset)).symm slot) := by
+        apply Fin.ext
+        simp [sourceLocalLayerSerialFaceTransitionSlotAt,
+          GoertzelV24FramedTrail.boundedFiniteSlot, carrierCoordinate]
+      rw [hslot,
+        sourceLocalLayerSerialFaceFiniteEdgeStateAt_cellPresent_iff]
+      simp only [decide_eq_true_eq]
+  · rename_i hcount
+    exfalso
+    apply hcount
+    rfl
 
 /-- Applying the extracted physical factor to its cumulative state reconstructs
 the exact native reflection of the source's five-field spliced letter. -/
