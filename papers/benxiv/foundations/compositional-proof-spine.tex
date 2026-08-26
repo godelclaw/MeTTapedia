@@ -259,6 +259,26 @@ allowing \(W\ge |F|\) makes the inequality compatible with arbitrarily large
 \(|F|\).  Thus this theorem is a correct conditional corridor extractor, not
 a proof of a graph-independent threshold \(V_0\).
 
+Nor may the fixed five-edge frontier of the $(5,0)$ tube laboratory be used
+as a surrogate for the missing global theorem.  In the icosahedral Goldberg
+family $\mathrm{GP}(k,0)$, which has exactly twelve pentagons and otherwise
+only hexagons, distance balls about a pentagonal cap have growing edge
+frontiers.  Exact generation at frequencies $1\le k\le12$ gives
+\[
+\begin{array}{c|rrrrrrrrrrrr}
+k&1&2&3&4&5&6&7&8&9&10&11&12\\ \hline
+|V|&20&80&180&320&500&720&980&1280&1620&2000&2420&2880\\
+\max |\partial B_r|&10&20&30&40&50&60&70&80&90&100&110&120 .
+\end{array}
+\]
+Thus the natural cap-radial transfer has no constant width even in the
+cleanest fullerene family.  This is not a counterexample to every possible
+non-radial corridor, but it makes the quantifier in L1 load-bearing: the
+proof must construct its bounded transversals rather than inherit them from
+the tube picture.  The deterministic generator and full per-radius arrays
+are in
+\texttt{tools/fourcolor/v24\_goldberg\_frontier\_width\_audit.py}.
+
 The uniform weight bound is sufficient, but it is stronger than the
 compositional architecture actually needs.  The following elementary
 dichotomy removes curvature from the global existence question.
