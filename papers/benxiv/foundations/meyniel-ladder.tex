@@ -1,0 +1,277 @@
+% The local reduction ladder used by the compositional route.
+%
+% This section separates the additive target-count theorem, which does not
+% need migration, from the full Kempe-reachability theorem, which does.
+
+\section{The Meyniel ladder and the repaired square seam}
+\label{sec:meyniel-ladder}
+
+The reduction ladder removes a facial triangle, a digon, a two-edge cut, or
+a facial square before the compositional argument reaches its pentagonal
+frontier.  Two different invariants occur in the working manuscript:
+nonnegative target counts, used by the Seed Lemma, and connectivity of the
+Kempe reconfiguration graph, used by the stronger \(\mathrm{WC}^{*}\)
+statement.  They agree on the first three rungs but diverge at a square.
+The distinction is decisive: an additive identity transports a zero count
+without any path between its two summands, whereas connectivity requires an
+actual migration path.
+
+\subsection{The three unbranched rungs}
+
+For a facial triangle, properness forces its three internal edges to have
+the three different colours.  At each corner the outer edge therefore has
+the colour of the opposite triangle edge.  Contraction to one cubic vertex
+is consequently canonical, and the three possible two-colour paths through
+the contracted vertex expand to the three corresponding paths through the
+triangle.  Both the colour law and the three path expansions are checked in
+the rotation-system development.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24Rotor.RotationSystem.rotor_outerColors_eq_oppositeTriangleEdges}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24Rotor.RotationSystem.rotor_three_bicoloredThroughPaths}
+The resulting finite portal profile is equal to the contracted-vertex
+profile, including composition with an arbitrary exterior profile.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24RotorProfile.RotationSystem.facialTriangle_composedRotorProfile_eq_contractedVertexProfile}
+
+For a digon, its two parallel edges form one maximal two-colour component.
+Switching that component exchanges the two local extensions, so the local
+fibre is connected.  Suppression preserves the boundary connectivity
+profile, with multiplicity two.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24Digon.RotationSystem.digon_internalColorings_connected}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DigonProfile.digonProfileMultiplicityTwo}
+
+Across a two-edge cut, the two crossing edges have equal colours.  This is
+the Klein-group boundary-sum law on either side of the cut.  Capping the two
+sides is exact in both directions: an ambient colouring restricts to cap
+colourings, and cap colourings may be aligned by a global colour permutation
+and glued.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TwoEdgeCut.RotationSystem.twoEdgeCut_colors_eq}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TwoEdgeCutCap.RotationSystem.TwoEdgeCutPairData.taitColorable_iff_caps}
+The remaining work on these rungs is integration: package these local
+equivalences as the exact target-count and reconfiguration transports
+consumed by the common ladder interface.  No unproved geometric principle is
+hidden in that packaging.
+
+\subsection{The exact square fibre}
+
+Let \(Q=wxyz\) be a facial square, and let
+\((c_w,c_x,c_y,c_z)\) be the colours on its four outer edges in cyclic
+order.  There are two planar reductions.  The first joins the outer edges at
+\(w,x\) and at \(y,z\); the second joins those at \(x,y\) and at \(z,w\).
+Write them as \(G_0,G_1\).
+
+\begin{theorem}[square fibre table]
+\label{thm:square-fibre-table}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24Square.squareFiberTable}
+For a nonzero boundary word, the square has two internal colourings when all
+four boundary colours are equal, one internal colouring for either adjacent
+pair pattern
+\[
+ (p,p,q,q)\quad\hbox{or}\quad(q,p,p,q),\qquad p\ne q,
+\]
+and no internal colouring otherwise.  In particular, the opposite-pair
+pattern \((p,q,p,q)\) is impossible.
+\end{theorem}
+
+The two states in an all-equal fibre differ by switching the square's own
+two-colour cycle.  Thus every nonempty local fibre is internally connected.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24Square.squareFibers_internallyConnected}
+
+For one exterior colouring profile \(\eta\), the two internal states over an
+all-equal word have different through-square pairings: one belongs to the
+\(G_0\) reduction and the other to \(G_1\).  An adjacent-pair word belongs to
+exactly one reduction.  Keeping multiplicity therefore gives, for every
+target interface profile \(\pi\),
+\begin{equation}
+  \operatorname{Count}_{G}(\eta,\pi)
+  =\operatorname{Count}_{G_0}(\eta,\pi)
+   +\operatorname{Count}_{G_1}(\eta,\pi).
+  \label{eq:square-profile-additivity}
+\end{equation}
+This is proved for arbitrary multisets of exterior profiles, not merely for
+one census graph.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SquareComposition.squareGluedAdditiveProfileCountIdentity}
+
+\begin{lemma}[zero targets descend additively]
+\label{lem:square-zero-descends}
+\Sprose
+Let \(S\) be any finite set of target profiles and put
+\(N_H(S)=\sum_{\pi\in S}\operatorname{Count}_H(\pi)\).  If
+Equation~\eqref{eq:square-profile-additivity} holds for every \(\pi\), then
+\[
+     N_G(S)=N_{G_0}(S)+N_{G_1}(S),
+     \qquad
+     N_G(S)=0\Longleftrightarrow
+     N_{G_0}(S)=N_{G_1}(S)=0.
+\]
+\end{lemma}
+
+\begin{proof}
+Sum Equation~\eqref{eq:square-profile-additivity} over \(S\) and distribute
+the finite sum.  All summands are natural numbers, so a sum of the two
+totals is zero exactly when both totals are zero.
+\end{proof}
+
+Consequently the square rung for the Seed target is additive rather than
+dynamical: if a square instance has no seed, neither reduction has a seed.
+Once the graph-level exterior-profile extraction is connected to
+Equation~\eqref{eq:square-profile-additivity}, a least zero-seed instance
+descends through either smaller valid reduction.  No all-equal colouring and
+no migration theorem is needed for this implication.
+
+\begin{proposition}[graph-level square count transport]
+\label{prop:graph-square-count-transport}
+\Sopen
+Extract the exterior profile multiset of an arbitrary facial square in the
+route's rotation-system tangle, identify its two abstract reduction sides
+with the two graph reductions, and instantiate
+Equation~\eqref{eq:square-profile-additivity} for the Seed target profiles.
+\end{proposition}
+
+The local additive theorem is machine-checked; this proposition names the
+remaining graph-level adapter and does not relabel it as finished.
+
+\subsection{The universal \(A\ne\varnothing\) shortcut is false}
+
+Addendum~XXVI asserts that, for any tangle in the ladder's scope and any two
+disjoint cofacial edges \(E_1,E_2\) arising as the joined edges of a square
+reduction, some Tait colouring has
+\(\chi(E_1)=\chi(E_2)\).  Equivalently, the inverse square has a colouring in
+its all-equal boundary fibre \(A\).  The following specimen refutes that
+universal statement.
+
+\begin{proposition}[forced-unequal square reduction]
+\label{prop:a-nonempty-refuted}
+\Srefuted{tools/fourcolor/v24_a_nonempty_counterexample.py}
+There is a connected planar cubic tangle with two stubs on one face and two
+vertex-disjoint cofacial edges \(E_1,E_2\) which are the joined edges of a
+planar square reduction, such that the tangle has six Tait colourings and
+\(\chi(E_1)\ne\chi(E_2)\) in all six.
+\end{proposition}
+
+\begin{proof}
+Take internal vertices \(0,\ldots,5\), stub vertices \(6,7\), and edges
+\[
+\begin{split}
+01,02,03,14,15,23,25,34,46,57.
+\end{split}
+\]
+At the internal vertices use cyclic rotations
+\[
+\begin{array}{c|rrrrrr}
+v&0&1&2&3&4&5\\ \hline
+\rho_v&(1,2,3)&(0,4,5)&(3,0,5)&(4,0,2)&(1,3,6)&(2,1,7).
+\end{array}
+\]
+The stub rotations are \((4)\) at \(6\) and \((5)\) at \(7\).  Directly
+following the face permutation gives
+\[
+ (0,1,5,2),\quad (0,2,3),\quad (0,3,4,1),\quad
+ (1,4,6,4,3,2,5,7,5).
+\]
+Hence \(V-E+F=8-10+4=2\), both stubs lie on the last face, and
+\(E_1=01,E_2=34\) are disjoint edges of the face \((0,3,4,1)\).
+Every non-boundary edge lies on one of the displayed ordinary cycles, so
+there is no internal bridge.
+
+In any Tait colouring, write
+\(x=\chi(02),y=\chi(03),z=\chi(23)\).  The triangle \(023\) forces
+\(x,y,z\) to be the three distinct colours.  Properness at vertex \(0\)
+then forces \(\chi(01)=z\), while properness at vertex \(3\) forces
+\(\chi(34)=x\).  Thus the marked colours are always different.
+Conversely, once the ordered triple \((x,y,z)\) is chosen, properness forces
+\[
+ \chi(14)=y,\quad \chi(15)=x,\quad \chi(25)=y,
+ \quad\chi(46)=\chi(57)=z,
+\]
+so each of the six permutations of the three colours gives one colouring.
+
+Finally delete \(01,34\), insert the facial square
+\(8,9,10,11\), and attach its vertices in cyclic order to
+\(0,1,4,3\).  One planar reduction restores \(01,34\).  The other adds a
+second copy of each of \(14,03\), which is a legitimate multigraph
+reduction.  The displayed rotation extends to a spherical rotation with the
+new square as a face; the complete rotations and face audit are recorded by
+the cited executable fixture.  Thus the marked pair is exactly a square
+reduction pair, as required.
+\end{proof}
+
+The failure is not caused by disconnected Kempe dynamics.  Exhaustion of
+the inverse square gives six colourings in one Kempe class and no all-equal
+boundary state.  The first reduction has six colourings in one class; the
+parallel-edge reduction has none.  Its square identity is therefore
+\(6=6+0\).  The specimen disproves the shortcut \(A\ne\varnothing\), but it
+does not disprove the square conclusion.
+
+\subsection{The correct reachability obligation}
+
+Let \(\mathcal K(G)\) be the graph whose vertices are the Tait colourings of
+\(G\) and whose edges are legal maximal-component Kempe switches.  Let
+\(L_0\) consist of the colourings whose square boundary is all-equal or of
+the adjacent-pair type represented by \(G_0\), and define \(L_1\)
+symmetrically.  The fibre table gives
+\(\operatorname{Col}(G)=L_0\cup L_1\); their intersection is exactly the
+all-equal set \(A\).
+
+\begin{lemma}[connected-union criterion]
+\label{lem:square-connected-union}
+\Sprose
+Suppose each nonempty induced reconfiguration subgraph on \(L_0,L_1\) is
+connected.  Then \(\mathcal K(G)\) is connected precisely when one of the
+sets is empty or some Kempe path has one endpoint in \(L_0\) and the other
+in \(L_1\).
+\end{lemma}
+
+\begin{proof}
+Necessity is immediate.  For sufficiency, join any colouring first inside
+its own connected side to the appropriate endpoint of the cross-side path,
+traverse that path if the target lies on the other side, and then join to
+the target inside that side.  If one side is empty, the other is the whole
+colouring set.
+\end{proof}
+
+The local square transparency theorem supplies the expected sidewise
+lifting mechanism.  A colouring of \(G_s\) expands to \(L_s\); its local
+fibre is connected by the square-cycle switch; and a Kempe component through
+a joined edge expands to the corresponding boundary-to-boundary path through
+the square.  Establishing this simultaneously for every ambient maximal
+component is an exact graph-level path-lifting theorem, distinct from the
+finite local fibre computation.
+
+\begin{proposition}[square-side path lifting]
+\label{prop:square-side-path-lifting}
+\Sopen
+For each reduction side \(s\), projection
+\(L_s\to\operatorname{Col}(G_s)\) is surjective, has connected fibres, and
+lifts every legal Kempe edge of \(G_s\) to a path in the induced
+reconfiguration graph on \(L_s\).  Hence connectedness of
+\(\mathcal K(G_s)\) implies connectedness of \(L_s\).
+\end{proposition}
+
+Even after Proposition~\ref{prop:square-side-path-lifting}, one cross-side
+fact remains when both reductions are colourable.
+
+\begin{proposition}[target-specific square migration]
+\label{prop:target-square-migration}
+\Sopen
+For every facial square arising in the least \(\mathrm{WC}^{*}\) obstruction
+of the source ladder, if both lifted reduction sides are nonempty then a
+legal ambient Kempe path meets both sides.
+\end{proposition}
+
+The refuted statement \(A\ne\varnothing\) would imply this proposition,
+because an all-equal state lies in \(L_0\cap L_1\).  It is not necessary:
+the counterexample above has \(A=\varnothing\) but one side is empty, and
+its expanded colouring graph is connected.  A repaired proof may exploit
+the least-obstruction target, prove a direct cross-side path, or show that
+one side is empty.  What it may not do is restore universal
+\(A\ne\varnothing\).
+
+Thus the square ledger is now exact:
+\[
+\begin{array}{rcl}
+\text{local fibre table and fibre connectivity}&:&\text{machine-checked},\\
+\text{profile-resolved additive identity}&:&\text{machine-checked},\\
+\text{Seed zero-count descent}&:&\text{ordinary proof; graph adapter open},\\
+\text{universal }A\ne\varnothing&:&\text{refuted},\\
+\text{full }\mathrm{WC}^{*}\text{ square migration}&:&\text{open}.
+\end{array}
+\]

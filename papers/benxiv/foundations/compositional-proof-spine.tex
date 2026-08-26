@@ -48,14 +48,14 @@ theorems are proved in Section~\ref{sec:kauffman-trail-spine}; the additional
 factor product-semantics theorem,
 Proposition~\ref{prop:factor-product-semantics}, is open \\
 $T_2$ & Meyniel ladder reductions (rotor, digon, two-cut, square) transport
-the relevant refined counts to the pentagon frontier & substantial parts
-proved; the square branch still consumes $A\ne\varnothing$ and special-edge
-transport \\
+the relevant refined counts to the pentagon frontier & the local square
+fibre and additive profile identity are checked; the graph-level Seed-count
+adapter and the separate $\mathrm{WC}^{*}$ migration theorem remain open \\
 $T_3$ & Seed Lemma: every nonempty good fibre contains a menu-B state & open;
 the source proof draft reduces it to the corridor engine and a finite base \\
-$T_4$ & $A\ne\varnothing$: some colouring makes two marked cofacial,
-nonadjacent edges equal-coloured & open; reduced to the same corridor engine,
-special-edge transport, and a finite base \\
+$T_4$ & Square migration between the two reduction sides for full
+$\mathrm{WC}^{*}$ reachability & open; the proposed universal shortcut
+$A\ne\varnothing$ is refuted in Proposition~\ref{prop:a-nonempty-refuted} \\
 $T_5$ & Exact one-cell Count factorization through a finite rooted profile
 transition & machine-checked through the manuscript-exact two-pair projection,
 including realized edge and initial images; executable enumeration and closure
@@ -68,8 +68,8 @@ is Proposition~\ref{prop:target-forced-cut-chain} below \\
 $T_7$ & Equal-profile physical splice preserves the planar tangle, face
 bounds, boundary order, and the relevant zero count & open as one assembled
 constructor, although many fieldwise preservation lemmas are checked \\
-$T_8$ & Route-native finite bases for the Seed and $A\ne\varnothing$ systems
-& open; the earlier GWCO base cannot be inherited \\
+$T_8$ & Route-native finite base for the Seed system & open; neither the
+earlier GWCO base nor the refuted $A\ne\varnothing$ system can be inherited \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -109,8 +109,7 @@ not through the erroneous four-neighbour extension.
 
 \subsection{The abstract reductive pumping theorem}
 
-We isolate the exact ordinary-mathematics theorem used by both the Seed Lemma
-and $A\ne\varnothing$.
+We isolate the exact ordinary-mathematics theorem used by the Seed Lemma.
 
 \begin{theorem}[Finite-profile reductive pumping]
 \label{thm:finite-profile-reductive-pumping}
@@ -224,7 +223,7 @@ budget independent of $V$ is not a consequence of that identity.
 \begin{proposition}[The missing bulk hypothesis]
 \label{prop:uniform-bulk-hypothesis}
 \Sopen
-For each fixed boundary type used by the Seed and $A\ne\varnothing$ systems,
+For each fixed boundary type used by the Seed system,
 there is a constant $D$ such that every least counterexample after the ladder
 reductions has total negative curvature and boundary surplus at most $D$; or,
 more generally, it contains a clean corridor longer than the required
@@ -318,12 +317,10 @@ geodesic of length at least $L$ inside that component, hence disjoint from
 $S$.
 \end{proof}
 
-Thus, within the bounded-face branch, the marked face containing the special
-edges of the $A\ne\varnothing$ system, the cap faces, and any fixed collar can
-be put into $S$ at an explicit multiplicative cost.  The source sentence that
-the defect budget ``localizes'' the marked edges is unnecessary in this
-branch; bounded-degree dual connectivity gives the required avoidance
-directly.
+Thus, within the bounded-face branch, the cap faces and any fixed collection
+of target or collar faces can be put into $S$ at an explicit multiplicative
+cost.  Bounded-degree dual connectivity gives this finite avoidance directly;
+it does not require an unsigned defect bound.
 
 Consequently the bounded-face branch is a genuine chain of cells drawn from
 a finite alphabet depending only on $B$.  A dual step records its chosen
@@ -365,7 +362,7 @@ axis near one cut.  It does \emph{not} yet bound the complete interface to the
 unprocessed graph.  Components outside the radius-one slab may join side
 faces met at many different axis positions; a transfer state that remembers
 those pending connections can therefore grow with the prefix.  Proving that
-this cannot happen in a least Seed or $A\ne\varnothing$ obstruction, or
+this cannot happen in a least Seed obstruction, or
 turning a deep family of such connections into a second pumpable direction,
 is a separate theorem.  Consequently the lemma does not by itself terminate
 the receipt-enlargement process.
@@ -396,16 +393,15 @@ manuscript's present derivation does not.
 \begin{proposition}[target-forced compositional cut chain]
 \label{prop:target-forced-cut-chain}
 \Sopen
-For each fixed boundary type and for each of the two target systems (Seed and
-$A\ne\varnothing$), there are computable constants \(b,m,V_0\) with the
+For each fixed boundary type of the Seed system, there are computable
+constants \(b,m,V_0\) with the
 following property.  Every ladder-irreducible target counterexample of size
 greater than \(V_0\) either has a strictly smaller target counterexample, or
 contains more than \(m\) pairwise nested simple ordered transversals, each
 meeting at most \(b\) graph edges, such that:
 \begin{enumerate}
 \item consecutive transversals bound nonempty composable slabs;
-\item the designated holes, special edges, and frozen boundary lie outside
-the slabs;
+\item the designated holes and frozen boundary lie outside the slabs;
 \item every transversal has an exact saturated deletion side and a cycle on
 each complementary side; and
 \item equality of the finite cumulative target profile at two transversals
@@ -573,18 +569,21 @@ being silently promoted to an all-boundary theorem.
 
 \begin{theorem}[Source-faithful conditional route theorem]
 \label{thm:conditional-compositional-route}
-\Sconditional{Tait bridge; Trail Completability; ladder transport; Seed Lemma; $A\ne\varnothing$; global corridor alternative; physical splice; finite bases}
+\Sconditional{Tait bridge; Trail Completability; ladder transport; Seed Lemma; square migration; global corridor alternative; physical splice; finite base}
 Assume the following results in the forms consumed by the working manuscript:
 the Tait/minimal-counterexample bridge; the Kauffman trail spine, including
 Proposition~\ref{prop:factor-product-semantics}, and Trail Completability
-assembly; all four ladder transports including special-edge
-bookkeeping; Proposition~\ref{prop:target-forced-cut-chain} (for example via
+assembly; the three unbranched ladder transports, graph-level additive square
+transport for the Seed target, and
+Propositions~\ref{prop:square-side-path-lifting} and
+\ref{prop:target-square-migration} for full $\mathrm{WC}^{*}$ reachability;
+Proposition~\ref{prop:target-forced-cut-chain} (for example via
 either Proposition~\ref{prop:uniform-bulk-hypothesis} plus the source's clean
 corridor construction, or both branches of
 Proposition~\ref{prop:global-corridor-alternative}); the exact
 Count factorization and physical equal-profile splice; L2 on every relevant
-corridor type; and empty route-native finite bases for the Seed and
-$A\ne\varnothing$ systems.  Then every planar graph is four-colourable.
+corridor type; and an empty route-native finite base for the Seed system.
+Then every planar graph is four-colourable.
 \end{theorem}
 
 \begin{proof}
@@ -594,9 +593,10 @@ frontier $\mathrm{WC}^{*}$ obstruction.  The ladder transports descend every
 triangle, digon, two-cut, and square while preserving the appropriate zero
 count, so a least obstruction reaches the irreducible pentagon frontier.
 The global corridor theorem, finite profile factorization, L2, and the
-physical splice instantiate Theorem~\ref{thm:finite-profile-reductive-pumping} for the
-Seed and $A\ne\varnothing$ counts.  Their empty finite bases therefore prove
-both counts positive.  The source's Lift, word-graph, and propagation
+physical splice instantiate
+Theorem~\ref{thm:finite-profile-reductive-pumping} for the Seed count.  Its
+empty finite base therefore proves the Seed Lemma.  The source's Lift,
+word-graph, and propagation
 arguments then supply the needed menu-B move, including the corrected
 closed-web boundary treatment above.  The Kauffman prime/factored induction
 completes the Tait colouring, contradicting the chosen counterexample.
@@ -605,8 +605,8 @@ completes the Tait colouring, contradicting the chosen counterexample.
 The theorem is a complete implication, not a claim that its premises are
 already theorems.  At present the decisive open premises are the uniform bulk
 step (or its repaired two-branch replacement), the physical profile splice,
-the two route-native bases, the Seed and
-$A\ne\varnothing$ instantiations, factor-completion lifting, and the final
+the route-native Seed base, the Seed instantiation, target-specific square
+migration, factor-completion lifting, and the final
 Trail Completability assembly.
 The exact finite transition work materially reduces one of those premises; it
 does not make the others disappear.  In particular, neither the signed
