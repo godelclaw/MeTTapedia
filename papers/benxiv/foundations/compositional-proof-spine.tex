@@ -173,6 +173,7 @@ Choose $i,j$ with $v_iM_{ij}u_j>0$.  The profile $i$ is alive on this accepted
 path, so $M_{ii}>0$.  The term
 $v_iM_{ii}M_{ij}u_j$ is a positive summand of $v^{\mathsf T}M^2u$.
 \end{proof}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PumpingEngine.CountData.count_succ_pos_of_count_pos}
 
 Thus a minimal zero-count obstruction cannot contain two consecutive copies
 of the same physically removable rung, once the exact factorization and
@@ -268,13 +269,50 @@ nonconsecutive vertices of that path would shorten it, so the path is
 induced.
 \end{proof}
 
-In the cyclically five-edge-connected normal form, two distinct faces share
-at most one edge.  Consequently the bounded-face branch is a genuine chain
-of cells drawn from a finite alphabet depending only on $B$: each central
-face has at most $B$ sides, consecutive cells share one edge, and the
-geodesic has no nonconsecutive face adjacency.  The existing hexagonal Cell
-is the $B=6$, all-central-faces-hexagonal subalphabet, not the only possible
-finite alphabet.
+For a connected cubic spherical map, $3V=2E$ and Euler's equality give
+$F=V/2+2$.  Thus the face-count hypotheses in the theorem and corollary are
+effective vertex-count thresholds.  In particular, the dichotomy applies
+to every sufficiently large member of the cubic normal form; it is not a
+statement about maps separately assumed to have many faces.
+
+\begin{corollary}[avoiding finitely many marked faces]
+\label{cor:dual-geodesic-avoids}
+\Sprose
+Under the bounded-face branch of
+Theorem~\ref{thm:dual-diameter-dichotomy}, let $S$ be a set of $h$ forbidden
+faces and put
+\[
+ C=1+h(B-1),\qquad
+ M=1+B\sum_{i=0}^{L-2}(B-1)^i.
+\]
+If the facial dual has more than $h+CM$ vertices, it contains a geodesic of
+at least $L$ edges which avoids every face in $S$.
+\end{corollary}
+
+\begin{proof}
+Deleting one vertex of degree at most $B$ from a connected graph increases
+the number of components by at most $B-1$.  Deleting all $h$ forbidden
+vertices therefore leaves at most $C$ components.  More than $CM$ vertices
+remain, so one component has more than $M$ vertices.  Its maximum degree is
+still at most $B$; the breadth-first estimate in the preceding proof gives a
+geodesic of length at least $L$ inside that component, hence disjoint from
+$S$.
+\end{proof}
+
+Thus the marked face containing the special edges of the $A\ne\varnothing$
+system, the cap faces, and any fixed collar can be put into $S$ at an explicit
+multiplicative cost.  The source sentence that the defect budget ``localizes''
+the marked edges is unnecessary in this branch; bounded-degree dual
+connectivity gives the required avoidance directly.
+
+Consequently the bounded-face branch is a genuine chain of cells drawn from
+a finite alphabet depending only on $B$.  A dual step records its chosen
+primal edge incidence; each central face has at most $B$ such choices, and
+the geodesic has no nonconsecutive face adjacency.  This conclusion does
+\emph{not} require the stronger, presently unused assertion that two faces
+share at most one edge.  The existing hexagonal Cell is the $B=6$,
+all-central-faces-hexagonal subalphabet, not the only possible finite
+alphabet.
 
 The bounded-memory assertion in that last sentence is not merely heuristic.
 
@@ -329,6 +367,44 @@ are exhaustive.  This is a sharper and more plausible research front than
 Proposition~\ref{prop:uniform-bulk-hypothesis}: the high-negative-curvature
 branch is not discarded, but converted into either bounded nonhexagonal
 letters or a long boundary on which the same finite-interface idea can act.
+
+The finite-state part of the long-boundary branch is also elementary once the
+planar connectivity is written as noncrossing pairings.
+
+\begin{lemma}[noncrossing length--depth alternative]
+\label{lem:noncrossing-length-depth}
+\Sprose
+Let $n$ ordered boundary positions carry a letter from a finite alphabet $A$
+and, for each of $r$ families, a labelled noncrossing partial matching whose
+arc labels lie in a finite set $K$.  Fix $D\ge0$ and put
+\[
+ S=|A|\left(\sum_{d=0}^{D}|K|^d\right)^r.
+\]
+If $n>S$, then either some matching has nesting depth greater than $D$, or two
+cut positions have identical sweep states (the local letter together with the
+ordered stacks of currently open labelled arcs in every family).
+\end{lemma}
+
+\begin{proof}
+Sweep the boundary in its given order.  Noncrossing means that the open arcs
+of one family close in last-in--first-out order, so its complete unresolved
+connectivity at a cut is an ordered stack.  If every nesting depth is at most
+$D$, one stack has at most
+$\sum_{d=0}^{D}|K|^d$ possible values.  Together with the local letter and the
+$r$ independent stacks, there are at most $S$ sweep states.  More than $S$
+cut positions therefore repeat a state.  If the depth bound fails, the first
+alternative holds.
+\end{proof}
+
+For the route, the two Kempe families give the matching stacks and capped
+face progress supplies additional finite labels.  In the shallow case an
+equal sweep state is the length splice interface.  In the deep case the
+nested arcs provide layer boundaries; applying the same pigeonhole argument
+to finite layer profiles gives the depth splice.  What is still load-bearing
+is geometric realization: the chosen cuts/layers must be simple ordered
+transversals, and deleting between equal states must preserve the target
+count and the map class.  Lemma~\ref{lem:noncrossing-length-depth} proves the
+classification, not that physical splice.
 
 \subsection{The exact finite interface}
 
