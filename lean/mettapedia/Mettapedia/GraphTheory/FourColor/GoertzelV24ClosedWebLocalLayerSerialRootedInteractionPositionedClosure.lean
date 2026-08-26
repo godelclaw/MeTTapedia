@@ -1553,6 +1553,36 @@ theorem mem_sourceLocalLayerSerialPositionedRealizedCompressedProfileEdgeSet_iff
   simp [sourceLocalLayerSerialPositionedRealizedCompressedProfileEdgeSet,
     realizedCodeImage]
 
+/-- Lossless compression changes the representation of the realized edge
+alphabet but not its exact cardinality. -/
+theorem card_sourceLocalLayerSerialPositionedRealizedCompressedProfileEdgeSet_eq
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))) :
+    (sourceLocalLayerSerialPositionedRealizedCompressedProfileEdgeSet graphData
+        minimal caps coloring web corridor hunique).card =
+      (sourceLocalLayerSerialPositionedRealizedProfileEdgeSet graphData minimal
+        caps coloring web corridor hunique).card := by
+  classical
+  symm
+  exact card_realizedCodeImage_eq_of_fiber_iff
+    (sourceLocalLayerSerialPositionedProfileEdge graphData minimal caps coloring
+      web corridor hunique)
+    (sourceLocalLayerSerialPositionedCompressedProfileEdge graphData minimal caps
+      coloring web corridor hunique)
+    (fun first second =>
+      (sourceLocalLayerSerialPositionedCompressedProfileEdge_eq_iff graphData
+        minimal caps coloring web corridor hunique first second).symm)
+
 /-- The singleton transition relation carried by one compressed profile edge. -/
 def sourceLocalLayerSerialPositionedCompressedProfileEdgeTransition
     (edge : SourceLocalLayerSerialPositionedCompressedProfileEdge)
@@ -1582,6 +1612,56 @@ noncomputable def sourceLocalLayerSerialFirstCompressedProfile
   (sourceLocalLayerSerialPositionedCompressedProfileEdge graphData minimal caps
     coloring web corridor hunique
       ⟨sourceLocalLayerSerialFirstRollingPosition hlength, witness⟩).1
+
+/-- First-position compression has exactly the same equality fibers as the
+uncompressed source-facing initial profile. -/
+theorem sourceLocalLayerSerialFirstCompressedProfile_eq_iff
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (hlength : 2 < blockLength - 3)
+    (left right : SourceLocalLayerSerialFirstRootedInteractionRealization
+      graphData caps coloring web corridor hunique hlength) :
+    sourceLocalLayerSerialFirstCompressedProfile graphData minimal caps coloring
+        web corridor hunique hlength left =
+      sourceLocalLayerSerialFirstCompressedProfile graphData minimal caps coloring
+        web corridor hunique hlength right ↔
+      (sourceLocalLayerSerialFirstRootedInteractionState graphData minimal caps
+        coloring web corridor hunique hlength left).input =
+      (sourceLocalLayerSerialFirstRootedInteractionState graphData minimal caps
+        coloring web corridor hunique hlength right).input := by
+  let leftPositioned :
+      SourceLocalLayerSerialPositionedRootedInteractionRealization graphData caps
+        coloring web corridor hunique :=
+    ⟨sourceLocalLayerSerialFirstRollingPosition hlength, left⟩
+  let rightPositioned :
+      SourceLocalLayerSerialPositionedRootedInteractionRealization graphData caps
+        coloring web corridor hunique :=
+    ⟨sourceLocalLayerSerialFirstRollingPosition hlength, right⟩
+  let leftStep := sourceLocalLayerSerialPositionedRootedInteractionStep graphData
+    minimal caps coloring web corridor hunique leftPositioned
+  let rightStep := sourceLocalLayerSerialPositionedRootedInteractionStep graphData
+    minimal caps coloring web corridor hunique rightPositioned
+  have leftSemantic :=
+    sourceLocalLayerSerialPositionedStep_endpoints_areTerminalGraphSemantic
+      graphData minimal caps coloring web corridor hunique leftPositioned
+  have rightSemantic :=
+    sourceLocalLayerSerialPositionedStep_endpoints_areTerminalGraphSemantic
+      graphData minimal caps coloring web corridor hunique rightPositioned
+  change compressBounded leftStep.source.input leftSemantic.1 =
+      compressBounded rightStep.source.input rightSemantic.1 ↔
+    leftStep.source.input = rightStep.source.input
+  exact ⟨compressBounded_injective leftSemantic.1 rightSemantic.1,
+    compressBounded_eq_of_eq leftSemantic.1 rightSemantic.1⟩
 
 /-- The exact compressed image of realizable first-cut profiles. -/
 noncomputable def sourceLocalLayerSerialRealizedInitialCompressedProfileSet
@@ -1628,6 +1708,39 @@ theorem mem_sourceLocalLayerSerialRealizedInitialCompressedProfileSet_iff
   classical
   simp [sourceLocalLayerSerialRealizedInitialCompressedProfileSet,
     realizedCodeImage]
+
+/-- Lossless compression also preserves the exact cardinality of the
+realizable initial profile image. -/
+theorem card_sourceLocalLayerSerialRealizedInitialCompressedProfileSet_eq
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (hlength : 2 < blockLength - 3) :
+    (sourceLocalLayerSerialRealizedInitialCompressedProfileSet graphData minimal
+        caps coloring web corridor hunique hlength).card =
+      (sourceLocalLayerSerialRealizedInitialProfileSet graphData minimal caps
+        coloring web corridor hunique hlength).card := by
+  classical
+  symm
+  exact card_realizedCodeImage_eq_of_fiber_iff
+    (fun witness : SourceLocalLayerSerialFirstRootedInteractionRealization
+        graphData caps coloring web corridor hunique hlength =>
+      (sourceLocalLayerSerialFirstRootedInteractionState graphData minimal caps
+        coloring web corridor hunique hlength witness).input)
+    (sourceLocalLayerSerialFirstCompressedProfile graphData minimal caps coloring
+      web corridor hunique hlength)
+    (fun first second =>
+      (sourceLocalLayerSerialFirstCompressedProfile_eq_iff graphData minimal caps
+        coloring web corridor hunique hlength first second).symm)
 
 /-- Sparse exact-closure replay over the losslessly compressed source-profile
 graph.  Its state count is definitionally a count of compressed semantic

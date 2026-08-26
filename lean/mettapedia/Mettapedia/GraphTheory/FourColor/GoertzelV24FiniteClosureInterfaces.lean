@@ -223,6 +223,64 @@ theorem card_realizedCode (encode : Witness → Code) :
   classical
   exact Fintype.card_coe _
 
+/-- Two encodings of the same finite witnesses have equivalent realized images
+when they identify exactly the same witness pairs.  This is the precise tool
+for replacing a faithful but bulky code by a lossless compressed code without
+changing the measured alphabet cardinality. -/
+noncomputable def realizedCodeEquivOfFiberIff
+    {LeftCode : Type uCode} {RightCode : Type uCarrier}
+    [DecidableEq LeftCode] [DecidableEq RightCode]
+    (left : Witness → LeftCode) (right : Witness → RightCode)
+    (hfiber : ∀ first second, left first = left second ↔
+      right first = right second) :
+    RealizedCode left ≃ RealizedCode right where
+  toFun code := realizedCodeOf right (realizedCodeRepresentative left code)
+  invFun code := realizedCodeOf left (realizedCodeRepresentative right code)
+  left_inv code := by
+    apply Subtype.ext
+    have hright :
+        right (realizedCodeRepresentative right
+            (realizedCodeOf right (realizedCodeRepresentative left code))) =
+          right (realizedCodeRepresentative left code) := by
+      exact congrArg Subtype.val
+        (realizedCodeOf_representative right
+          (realizedCodeOf right (realizedCodeRepresentative left code)))
+    have hleft := (hfiber _ _).2 hright
+    calc
+      left (realizedCodeRepresentative right
+          (realizedCodeOf right (realizedCodeRepresentative left code))) =
+          left (realizedCodeRepresentative left code) := hleft
+      _ = code.1 := congrArg Subtype.val
+        (realizedCodeOf_representative left code)
+  right_inv code := by
+    apply Subtype.ext
+    have hleft :
+        left (realizedCodeRepresentative left
+            (realizedCodeOf left (realizedCodeRepresentative right code))) =
+          left (realizedCodeRepresentative right code) := by
+      exact congrArg Subtype.val
+        (realizedCodeOf_representative left
+          (realizedCodeOf left (realizedCodeRepresentative right code)))
+    have hright := (hfiber _ _).1 hleft
+    calc
+      right (realizedCodeRepresentative left
+          (realizedCodeOf left (realizedCodeRepresentative right code))) =
+          right (realizedCodeRepresentative right code) := hright
+      _ = code.1 := congrArg Subtype.val
+        (realizedCodeOf_representative right code)
+
+/-- Fiber-equivalent finite encodings have realized images of exactly the same
+cardinality. -/
+theorem card_realizedCodeImage_eq_of_fiber_iff
+    {LeftCode : Type uCode} {RightCode : Type uCarrier}
+    [DecidableEq LeftCode] [DecidableEq RightCode]
+    (left : Witness → LeftCode) (right : Witness → RightCode)
+    (hfiber : ∀ first second, left first = left second ↔
+      right first = right second) :
+    (realizedCodeImage left).card = (realizedCodeImage right).card := by
+  rw [← card_realizedCode left, ← card_realizedCode right]
+  exact Fintype.card_congr (realizedCodeEquivOfFiberIff left right hfiber)
+
 end FiniteImage
 
 section RootedFactorization
