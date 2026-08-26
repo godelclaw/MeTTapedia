@@ -428,6 +428,43 @@ structure ReachableClosureCertificate
     transition state letter target →
     ∃ targetIndex : Nat, states[targetIndex]? = some target
 
+/-- Semantic reachability from an initial state through realized letters.  This
+inductive predicate is deliberately independent of any array representation;
+an exact certificate identifies it with the injective state array below. -/
+inductive ClosureReachable
+    {StateCode : Type uCode} {LetterCode : Type uLetter}
+    (transition : StateCode → LetterCode → StateCode → Prop)
+    (initial : StateCode → Prop) (allowedLetter : LetterCode → Prop) :
+    StateCode → Prop where
+  | initial {state} : initial state →
+      ClosureReachable transition initial allowedLetter state
+  | tail {source letter target} :
+      ClosureReachable transition initial allowedLetter source →
+      allowedLetter letter → transition source letter target →
+      ClosureReachable transition initial allowedLetter target
+
+/-- A reachable-closure certificate with the two exactness clauses that a
+reported closure cardinality needs.  The base CSR certificate proves every
+listed row sound and exhaustive.  This extension additionally proves that the
+letter array is the entire allowed alphabet and that every listed state is
+actually reachable; initial completeness and frontier closure then give the
+reverse inclusion. -/
+structure ExactReachableClosureCertificate
+    (StateCode : Type uCode) (LetterCode : Type uLetter)
+    (Witness : Type uWitness)
+    extends ReachableClosureCertificate StateCode LetterCode Witness where
+  allowedLetter : LetterCode → Prop
+  letters_exact : ∀ letter,
+    allowedLetter letter ↔
+      ∃ letterIndex : Nat, letters[letterIndex]? = some letter
+  initial_complete : ∀ ⦃state : StateCode⦄, realizable state →
+    ∃ position stateIndex : Nat,
+      initialIndex[position]? = some stateIndex ∧
+      states[stateIndex]? = some state
+  states_reachable : ∀ ⦃stateIndex : Nat⦄ ⦃state : StateCode⦄,
+    states[stateIndex]? = some state →
+      ClosureReachable transition realizable allowedLetter state
+
 namespace ReachableClosureCertificate
 
 variable {StateCode : Type uCode} {LetterCode : Type uLetter}
@@ -461,6 +498,54 @@ theorem row_entry_iff_transition
     exact ⟨witnessIndex, witness, hwitness, hentry⟩
 
 end ReachableClosureCertificate
+
+namespace ExactReachableClosureCertificate
+
+variable {StateCode : Type uCode} {LetterCode : Type uLetter}
+  {Witness : Type uWitness}
+
+/-- The initial index array names exactly the semantic initial states. -/
+theorem initial_entry_iff_realizable
+    (certificate : ExactReachableClosureCertificate StateCode LetterCode Witness)
+    (state : StateCode) :
+    (∃ position stateIndex : Nat,
+      certificate.initialIndex[position]? = some stateIndex ∧
+      certificate.states[stateIndex]? = some state) ↔
+      certificate.realizable state := by
+  constructor
+  · rintro ⟨position, stateIndex, hinitial, hstate⟩
+    exact certificate.initial_realizable hinitial hstate
+  · intro hstate
+    exact certificate.initial_complete (state := state) hstate
+
+/-- Exactness of the reported state array.  Its entries are precisely the
+states semantically reachable from a realizable initial state through the full
+allowed letter alphabet.  Together with `states_injective`, this makes
+`states.size` an exact closure count rather than an upper bound. -/
+theorem state_entry_iff_reachable
+    (certificate : ExactReachableClosureCertificate StateCode LetterCode Witness)
+    (state : StateCode) :
+    (∃ stateIndex : Nat, certificate.states[stateIndex]? = some state) ↔
+      ClosureReachable certificate.transition certificate.realizable
+        certificate.allowedLetter state := by
+  constructor
+  · rintro ⟨stateIndex, hstate⟩
+    exact certificate.states_reachable hstate
+  · intro hreachable
+    induction hreachable with
+    | initial hinitial =>
+        rcases certificate.initial_complete hinitial with
+          ⟨_position, stateIndex, _hinitialIndex, hstate⟩
+        exact ⟨stateIndex, hstate⟩
+    | tail hsource hletter htransition ih =>
+        rcases ih with ⟨sourceIndex, hsourceIndex⟩
+        rcases (certificate.letters_exact _).mp hletter with
+          ⟨letterIndex, hletterIndex⟩
+        rcases certificate.frontier_closed hsourceIndex hletterIndex htransition with
+          ⟨targetIndex, htargetIndex⟩
+        exact ⟨targetIndex, htargetIndex⟩
+
+end ExactReachableClosureCertificate
 
 end SparseReplay
 
