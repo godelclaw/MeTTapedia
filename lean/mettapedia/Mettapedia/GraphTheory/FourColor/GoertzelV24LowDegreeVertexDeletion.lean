@@ -295,6 +295,53 @@ theorem preconnected_induce_compl_of_components_meet_degree_le_one
         (hdegreeAtLeastThree.trans (hdegree firstHit))
   exact ⟨path.induce (↑removed : Set Vertex)ᶜ hsupport⟩
 
+omit [Fintype Vertex] [DecidableRel graph.Adj] in
+/-- A path in an induced subgraph whose endpoints lie in one ambient
+connected component lifts to the corresponding induced graph on that
+component.  This is the subtype bookkeeping needed when a finite receipt
+first proves a path globally and a componentwise deletion theorem consumes it
+locally. -/
+theorem induce_reachable_lift_connectedComponent
+    (component : graph.ConnectedComponent) (kept : Set Vertex)
+    (start finish : {vertex // vertex ∈ kept})
+    (hstart : start.1 ∈ component.supp)
+    (hfinish : finish.1 ∈ component.supp)
+    (hreachable : (graph.induce kept).Reachable start finish) :
+    (component.toSimpleGraph.induce
+      {vertex : component | vertex.1 ∈ kept}).Reachable
+        ⟨⟨start.1, hstart⟩, start.2⟩ ⟨⟨finish.1, hfinish⟩, finish.2⟩ := by
+  classical
+  rcases hreachable with ⟨walk⟩
+  have hsupport : ∀ vertex ∈ walk.support,
+      vertex.1 ∈ component.supp := by
+    intro vertex hvertex
+    let routeToVertex := walk.takeUntil vertex hvertex
+    have hreachAmbient : graph.Reachable start.1 vertex.1 :=
+      ⟨routeToVertex.map (SimpleGraph.Embedding.induce kept).toHom⟩
+    have hcomponentStart :
+        graph.connectedComponentMk start.1 = component :=
+      (component.mem_supp_iff start.1).1 hstart
+    have hcomponentVertex :
+        graph.connectedComponentMk vertex.1 = component :=
+      (SimpleGraph.ConnectedComponent.sound hreachAmbient).symm.trans
+        hcomponentStart
+    exact (component.mem_supp_iff vertex.1).2 hcomponentVertex
+  let componentWalk := walk.induce
+    {vertex : {vertex // vertex ∈ kept} |
+      vertex.1 ∈ component.supp} hsupport
+  let reorder :
+      ((graph.induce kept).induce
+          {vertex : {vertex // vertex ∈ kept} |
+            vertex.1 ∈ component.supp}) →g
+        (component.toSimpleGraph.induce
+          {vertex : component | vertex.1 ∈ kept}) :=
+    { toFun := fun vertex =>
+        ⟨⟨vertex.1.1, vertex.2⟩, vertex.1.2⟩
+      map_rel' := by
+        intro left right hadj
+        exact hadj }
+  exact ⟨componentWalk.map reorder⟩
+
 end GoertzelV24LowDegreeVertexDeletion
 
 end Mettapedia.GraphTheory.FourColor
