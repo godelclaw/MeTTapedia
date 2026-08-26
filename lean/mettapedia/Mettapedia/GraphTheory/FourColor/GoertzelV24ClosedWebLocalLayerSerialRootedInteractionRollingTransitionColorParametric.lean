@@ -1,45 +1,44 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialRootedInteractionRollingTransition
-import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseSupportColorParametric
-import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialCellUniformFullSuccessorState
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialRootedInteractionRollingTransitionExact
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialRootedInteractionPreRebaseColorParametric
 
 /-!
-# Source exactness of the rooted rolling Cell transition
+# Prefix-parametric rooted rolling Cell factor
 
-This file constructs the single finite rolling factor associated to a literal
-positive Cell and its following boundary rebase.  The construction uses two
-consecutive interior rebase positions because the output state already carries
-the bounded lookahead root for the following transition.
-
-All changes of representation are explicit finite coordinate maps.  The main
-exactness theorem identifies application of this graph-free factor with the
-canonical rooted interaction state of the spliced colouring at the next cut.
+The rolling factor is constructed from an arbitrary everywhere-positive
+cumulative prefix colouring and an arbitrary positive compatible literal Cell
+colouring.  The ambient Tait colouring names the corridor geometry only; it is
+not used as the accumulated prefix.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
 
-namespace GoertzelV24ClosedWebLocalLayerSerialRootedInteractionRollingTransitionExact
+namespace GoertzelV24ClosedWebLocalLayerSerialRootedInteractionRollingTransitionColorParametric
 
 open GoertzelV24BoundedCarrierGraphFamilyCode
+open GoertzelV24BoundedCarrierBoolGraphFamilyCode
 open GoertzelV24ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebAnnularEmbedding.ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebAtGoodWord
 open GoertzelV24ClosedWebAtGoodWord.Instance
 open GoertzelV24ClosedWebAtGoodWord.Instance.LocalLayerFormation
-open GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseSupportColorParametric
+open GoertzelV24ClosedWebBoundaryData
 open GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseOutputColorParametric
+open GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseSupportColorParametric
 open GoertzelV24ClosedWebLocalLayerSerialCellColorSplice
 open GoertzelV24ClosedWebLocalLayerSerialCellFaceDeletionStableParametricCapState
+open GoertzelV24ClosedWebLocalLayerSerialCellFaceFiniteEdgeState
 open GoertzelV24ClosedWebLocalLayerSerialCellFiniteColorCompatibility
 open GoertzelV24ClosedWebLocalLayerSerialCellNativeFactorization
 open GoertzelV24ClosedWebLocalLayerSerialCellPastOverlap
+open GoertzelV24ClosedWebLocalLayerSerialCellPrefixParametricNativeFactorization
 open GoertzelV24ClosedWebLocalLayerSerialCellRebaseCarrierTransport
 open GoertzelV24ClosedWebLocalLayerSerialCellRebaseNativeFactorization
 open GoertzelV24ClosedWebLocalLayerSerialCellStateFactorization
 open GoertzelV24ClosedWebLocalLayerSerialCellTrackedTransitionCarrier
 open GoertzelV24ClosedWebLocalLayerSerialCellUniformFullSuccessorState
-open GoertzelV24ClosedWebLocalLayerSerialCellUniformFaceTargetFullState
 open GoertzelV24ClosedWebLocalLayerSerialCellUniformFaceTargetComponentCap
 open GoertzelV24ClosedWebLocalLayerSerialCellUniformFaceTargetCode
+open GoertzelV24ClosedWebLocalLayerSerialCellUniformFaceTargetFullState
 open GoertzelV24ClosedWebLocalLayerSerialCellUniformFaceTargetCap
 open GoertzelV24ClosedWebLocalLayerSerialCellUniformTrackedTargetCode
 open GoertzelV24ClosedWebLocalLayerSerialColoredCumulativeStateForColor
@@ -49,18 +48,22 @@ open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionFacePreRebaseState
 open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionFaceRollingExact
 open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionFaceRollingSuccessor
 open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionFaceSuccessor
+open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionPreRebaseColorParametric
 open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionPreRebaseState
 open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionRollingProjection
 open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionRollingProjectionFactor
 open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionRollingSuccessor
 open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionRollingTransition
+open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionRollingTransitionExact
 open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionState
 open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionTrackedSuccessor
 open GoertzelV24CorridorProfile
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24FacialPentagonCap
 open GoertzelV24FramedTrail
+open GoertzelV24HexSlabConnectivityProfile
 open GoertzelV24InterfaceExteriorSupportedPortProjection
+open GoertzelV24InterfaceExteriorLabelCapFactorUpdate
 open GoertzelV24MinimalFacialPentagonCapPairLocalCellCarrier
 open GoertzelV24TwoEdgeCutMinimality
 open GoertzelV24TwoPentagonCapOpening
@@ -71,129 +74,151 @@ variable {V : Type*} [Fintype V] [DecidableEq V]
 
 noncomputable section
 
-local instance rollingTransitionExactEdgeSetDecidableEq : DecidableEq G.edgeSet :=
-  Subtype.instDecidableEq
+local instance rollingTransitionColorParametricEdgeSetDecidableEq :
+    DecidableEq G.edgeSet := Subtype.instDecidableEq
 
-local instance rollingTransitionExactOpenedGraphDecidableRel
+local instance rollingTransitionColorParametricOpenedGraphDecidableRel
     {graphData : Data G}
     (caps : OrientedFacialPentagonCapPair (G := G) graphData) :
     DecidableRel
       caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.Adj :=
   Classical.decRel _
 
-theorem cumulativeState_ext
-    (left right : SourceLocalLayerSerialCumulativeState)
-    (hinput : left.input = right.input)
-    (htracked : left.tracked = right.tracked)
-    (hface : left.face = right.face) :
-    left = right := by
-  cases left
-  cases right
-  simp_all
+/-- Positivity of both factors makes their right-biased splice nonzero at all
+four finite rebase roles. -/
+theorem
+    sourceLocalLayerSerialCellSplicedColorAt_boundaryRebaseEdge_ne_zero_of_prefix
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : GoertzelV24ClosedWebAtGoodWord.Instance data coloring}
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (prefixColor cellColor : G.edgeSet → Color)
+    (hprefix : ∀ edge, prefixColor edge ≠ 0)
+    (hcell : ∀ {edge}, edge ∈
+      sourceLocalLayerCellRegionAt corridor hunique offset →
+        cellColor edge ≠ 0)
+    (role : SourceLocalLayerBoundaryRebaseRole) :
+    sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset prefixColor
+        cellColor
+        (sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset hnext
+          role) ≠ 0 := by
+  by_cases hedge :
+      sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset hnext role ∈
+        sourceLocalLayerCellRegionAt corridor hunique offset
+  · rw [sourceLocalLayerSerialCellSplicedColorAt_eq_cell_of_mem corridor
+      hunique offset prefixColor cellColor hedge]
+    exact hcell hedge
+  · rw [sourceLocalLayerSerialCellSplicedColorAt]
+    simp only [if_neg hedge]
+    exact hprefix _
 
-theorem coloredCumulativeState_ext
-    (left right : SourceLocalLayerSerialColoredCumulativeState)
-    (hinput : left.input = right.input)
-    (htracked : left.tracked = right.tracked)
-    (hface : left.face = right.face)
-    (hcolor : left.colorCode = right.colorCode)
-    (hcap : left.faceCapSix = right.faceCapSix) :
-    left = right := by
-  cases left with
-  | mk leftCumulative leftColor leftCap =>
-    cases right with
-    | mk rightCumulative rightColor rightCap =>
-      have hcumulative : leftCumulative = rightCumulative :=
-        cumulativeState_ext leftCumulative rightCumulative hinput htracked hface
-      subst rightCumulative
-      simp_all
+/-- On the literal two-cap carrier, the prefix-parametric finite colour
+transport computes the next cumulative colour table without an extra overlap
+hypothesis. -/
+theorem
+    sourceLocalLayerSerialCellRebaseTransportedColorCodeForColorAt_eq_target_unconditional
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (prefixColor cellColor :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
+    (hrole : ∀ role,
+      sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
+          prefixColor cellColor
+          (sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset hnext
+            role) ≠ 0) :
+    sourceLocalLayerSerialCellRebaseTransportedColorCodeForColorAt graphData
+        minimal caps coloring web corridor hunique offset hnext prefixColor
+          cellColor hrole =
+      sourceLocalLayerSerialCarrierColorCodeAt graphData caps coloring web
+        corridor hunique (sourceLocalLayerNextOffset offset hnext)
+        (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique
+          (sourceLocalLayerNextOffset offset hnext))
+        (sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
+          prefixColor cellColor) := by
+  apply
+    sourceLocalLayerSerialCellRebaseTransportedColorCodeForColorAt_eq_target
+  exact
+    sourceLocalLayerSerialCellRebaseCarrier_covered_of_oldPrefixLookahead
+      graphData caps coloring web corridor hunique offset hnext
+        (sourceLocalLayerSerialCellRebaseCarrier_oldPrefixLookahead_of_pastCellOverlap
+          graphData caps coloring web corridor hunique offset hnext
+            (sourceLocalLayerSerialCellRebase_pastCellOverlap graphData minimal
+              caps coloring web corridor hunique offset hnext))
 
-theorem rootedCumulativeState_ext
-    (left right : SourceLocalLayerSerialRootedCumulativeState)
-    (hcolored :
-      left.toSourceLocalLayerSerialColoredCumulativeState =
-        right.toSourceLocalLayerSerialColoredCumulativeState)
-    (htracked : left.trackedExterior = right.trackedExterior) :
-    left = right := by
-  cases left
-  cases right
-  simp_all
+/-- The rebase output profile is the input profile of the canonical successor
+state for an arbitrary accumulated prefix. -/
+theorem
+    finiteBoolSupportLetterForColorAt_output_eq_nextColoredCumulativeState_input_of_prefix
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (prefixColor :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
+    (hprefixCrossing : ∀ step,
+      prefixColor ((sourceLocalLayerSerialTerminalInputCutDataAt corridor hunique
+        offset).crossingEdge step) ≠ 0)
+    (cellColor :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
+    (hcell : ∀ {edge}, edge ∈
+      sourceLocalLayerCellRegionAt corridor hunique offset →
+        cellColor edge ≠ 0)
+    (hrole : ∀ role,
+      sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
+          prefixColor cellColor
+          (sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset hnext
+            role) ≠ 0) :
+    let hcross : ∀ step,
+        cellColor (sourceLocalLayerRightCrossingAt corridor hunique offset step) ≠
+          0 := fun step => hcell
+            (sourceLocalLayerCellRegionAt_rightCrossing corridor hunique offset
+              step)
+    let factored :=
+      sourceLocalLayerSerialCellPhysicalBoolFactoredLetterForColorAt graphData
+        minimal caps coloring web corridor hunique offset prefixColor
+          hprefixCrossing cellColor hcross
+    let splice := sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
+      prefixColor cellColor
+    (finiteBoolSupportLetterForColorAt corridor hunique offset hnext factored.2.1
+      splice hrole).output =
+      (sourceLocalLayerSerialColoredCumulativeStateForColorAt graphData minimal
+        caps coloring web corridor hunique
+          (sourceLocalLayerNextOffset offset hnext) splice
+            (successorCrossingNonzeroForColorAt corridor hunique offset hnext
+              splice hrole)).input := by
+  rfl
 
-theorem facePrefixAttachmentState_ext
-    (left right : SourceLocalLayerSerialFacePrefixAttachmentState)
-    (hsupported : left.toBoundedSupportedPortResidualCode =
-      right.toBoundedSupportedPortResidualCode)
-    (hpresent : left.interfacePresent = right.interfacePresent)
-    (hcap : left.componentCap = right.componentCap) :
-    left = right := by
-  cases left
-  cases right
-  simp_all
-
-theorem rootedInteractionState_ext
-    (left right : SourceLocalLayerSerialRootedInteractionState)
-    (hrooted : left.toSourceLocalLayerSerialRootedCumulativeState =
-      right.toSourceLocalLayerSerialRootedCumulativeState)
-    (hinteraction : left.interactionExterior = right.interactionExterior)
-    (hcurrent : HEq left.currentCoordinate right.currentCoordinate)
-    (hfaceInteraction :
-      left.faceInteractionExterior = right.faceInteractionExterior)
-    (hfaceCurrent : HEq left.faceCurrentCoordinate right.faceCurrentCoordinate) :
-    left = right := by
-  cases left
-  cases right
-  simp_all
-
-/-- Projecting and then padding persistent ports is invariant under a finite
-change of port coordinates, provided the two partial stable decoders agree. -/
-theorem pad_projectSupportedPortResidualCode_equiv
-    {Full Port EncodedPort Stable StablePort : Type*}
-    [Fintype Full] [Fintype Port] [Fintype EncodedPort]
-    (code :
-      GoertzelV24InterfaceDeletionComponentFactor.BoundedInterfaceExteriorCode
-        Full)
-    (decode : Stable → Option Full)
-    (portEquiv : EncodedPort ≃ Port)
-    (decodeEncoded : StablePort → Option EncodedPort)
-    (decodePort : StablePort → Option Port)
-    (hdecode : ∀ slot, (decodeEncoded slot).map portEquiv = decodePort slot)
-    (portCoordinate : Port → Full) :
-    padSupportedPortResidualCodePorts decodeEncoded
-        (projectSupportedPortResidualCode code decode
-          (fun port => portCoordinate (portEquiv port))) =
-      padSupportedPortResidualCodePorts decodePort
-        (projectSupportedPortResidualCode code decode portCoordinate) := by
-  classical
-  apply boundedSupportedPortResidualCode_ext
-  · funext stable port
-    dsimp only [padSupportedPortResidualCodePorts]
-    rw [← hdecode port]
-    cases decodeEncoded port <;> rfl
-  · funext left right
-    dsimp only [padSupportedPortResidualCodePorts,
-      projectSupportedPortResidualCode]
-    cases hleft : decode left <;> cases hright : decode right
-    · rfl
-    · rfl
-    · rfl
-    · apply Bool.eq_iff_iff.mpr
-      simp only [decide_eq_true_eq]
-      constructor
-      · rintro ⟨hreach, hports⟩
-        refine ⟨hreach, fun port => ?_⟩
-        simpa using hports (portEquiv.symm port)
-      · rintro ⟨hreach, hports⟩
-        refine ⟨hreach, fun port => ?_⟩
-        exact hports (portEquiv port)
-  · rfl
-  · funext port
-    dsimp only [padSupportedPortResidualCodePorts]
-    rw [← hdecode port]
-    cases decodeEncoded port <;> rfl
-
-/-- The literal finite factor for a compatible positive Cell, its boundary
-rebase, and the one-step rolling lookahead needed by the output root. -/
-noncomputable def sourceLocalLayerSerialRootedInteractionRollingCellFactorAt
+/-- Literal finite rolling factor over an arbitrary positive cumulative
+prefix. -/
+noncomputable def
+    sourceLocalLayerSerialRootedInteractionRollingCellFactorForColorAt
     (graphData : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
     (caps : OrientedFacialPentagonCapPair graphData)
@@ -210,6 +235,9 @@ noncomputable def sourceLocalLayerSerialRootedInteractionRollingCellFactorAt
     (hnext : offset.val + 1 < blockLength - 3)
     (hnextNext :
       (sourceLocalLayerNextOffset offset hnext).val + 1 < blockLength - 3)
+    (prefixColor :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
+    (hprefix : ∀ edge, prefixColor edge ≠ 0)
     (cellColor :
       caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
     (hcell : ∀ {edge}, edge ∈
@@ -217,20 +245,27 @@ noncomputable def sourceLocalLayerSerialRootedInteractionRollingCellFactorAt
         cellColor edge ≠ 0) :
     SourceLocalLayerSerialRootedInteractionRollingCellFactor := by
   classical
+  let hprefixCrossing : ∀ step,
+      prefixColor ((sourceLocalLayerSerialTerminalInputCutDataAt corridor hunique
+        offset).crossingEdge step) ≠ 0 := fun step =>
+      hprefix ((sourceLocalLayerSerialTerminalInputCutDataAt corridor hunique
+        offset).crossingEdge step)
   let hcross : ∀ step,
       cellColor (sourceLocalLayerRightCrossingAt corridor hunique offset step) ≠
         0 := fun step => hcell
           (sourceLocalLayerCellRegionAt_rightCrossing corridor hunique offset
             step)
-  let factored := sourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt
-    graphData minimal caps coloring web corridor hunique offset cellColor hcross
+  let factored :=
+    sourceLocalLayerSerialCellPhysicalBoolFactoredLetterForColorAt graphData
+      minimal caps coloring web corridor hunique offset prefixColor
+        hprefixCrossing cellColor hcross
   let splice := sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
-    coloring cellColor
+    prefixColor cellColor
   let hrole : ∀ role, splice
       (sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset hnext role) ≠
         0 :=
-    sourceLocalLayerSerialCellSplicedColorAt_boundaryRebaseEdge_ne_zero
-      corridor hunique offset hnext cellColor hcell
+    sourceLocalLayerSerialCellSplicedColorAt_boundaryRebaseEdge_ne_zero_of_prefix
+      corridor hunique offset hnext prefixColor cellColor hprefix hcell
   let rebase := finiteBoolSupportLetterForColorAt corridor hunique offset hnext
     factored.2.1 splice hrole
   let trackedRolling := sourceLocalLayerSerialTrackedRollingFactorAt graphData
@@ -283,9 +318,10 @@ noncomputable def sourceLocalLayerSerialRootedInteractionRollingCellFactorAt
     faceRolling := faceRolling
     projection := projection }
 
-/-- A compatible literal source Cell makes the endpoint-support guard of its
-finite rolling factor true. -/
-theorem sourceLocalLayerSerialRootedInteractionRollingCellFactorAt_supportsBool
+/-- The arbitrary-prefix literal factor passes the complete executable support
+guard whenever the two positive colourings agree on their overlap. -/
+theorem
+    sourceLocalLayerSerialRootedInteractionRollingCellFactorForColorAt_supportsBool
     (graphData : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
     (caps : OrientedFacialPentagonCapPair graphData)
@@ -302,75 +338,200 @@ theorem sourceLocalLayerSerialRootedInteractionRollingCellFactorAt_supportsBool
     (hnext : offset.val + 1 < blockLength - 3)
     (hnextNext :
       (sourceLocalLayerNextOffset offset hnext).val + 1 < blockLength - 3)
+    (prefixColor :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
+    (hprefix : ∀ edge, prefixColor edge ≠ 0)
     (cellColor :
       caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
     (hcompatible : SourceLocalLayerSerialCellColorsCompatibleAt corridor
-      hunique offset coloring cellColor)
+      hunique offset prefixColor cellColor)
     (hcell : ∀ {edge}, edge ∈
       sourceLocalLayerCellRegionAt corridor hunique offset →
         cellColor edge ≠ 0) :
+    let hprefixCrossing : ∀ step,
+        prefixColor ((sourceLocalLayerSerialTerminalInputCutDataAt corridor
+          hunique offset).crossingEdge step) ≠ 0 := fun step =>
+      hprefix ((sourceLocalLayerSerialTerminalInputCutDataAt corridor hunique
+        offset).crossingEdge step)
     let state := sourceLocalLayerSerialRootedInteractionStateForColorAt
-      graphData minimal caps coloring web corridor hunique offset hnext coloring
-        (fun _ => web.tait _)
-    let factor := sourceLocalLayerSerialRootedInteractionRollingCellFactorAt
       graphData minimal caps coloring web corridor hunique offset hnext
-        hnextNext cellColor hcell
+        prefixColor hprefixCrossing
+    let factor :=
+      sourceLocalLayerSerialRootedInteractionRollingCellFactorForColorAt
+        graphData minimal caps coloring web corridor hunique offset hnext
+          hnextNext prefixColor hprefix cellColor hcell
     factor.supportsBool state = true := by
   classical
   dsimp only
+  let hprefixCrossing : ∀ step,
+      prefixColor ((sourceLocalLayerSerialTerminalInputCutDataAt corridor hunique
+        offset).crossingEdge step) ≠ 0 := fun step =>
+      hprefix ((sourceLocalLayerSerialTerminalInputCutDataAt corridor hunique
+        offset).crossingEdge step)
   let hcross : ∀ step,
       cellColor (sourceLocalLayerRightCrossingAt corridor hunique offset step) ≠
         0 := fun step => hcell
           (sourceLocalLayerCellRegionAt_rightCrossing corridor hunique offset
             step)
-  let factored := sourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt
-    graphData minimal caps coloring web corridor hunique offset cellColor hcross
+  let factored :=
+    sourceLocalLayerSerialCellPhysicalBoolFactoredLetterForColorAt graphData
+      minimal caps coloring web corridor hunique offset prefixColor
+        hprefixCrossing cellColor hcross
   let splice := sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
-    coloring cellColor
+    prefixColor cellColor
   let hrole : ∀ role, splice
       (sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset hnext role) ≠
         0 :=
-    sourceLocalLayerSerialCellSplicedColorAt_boundaryRebaseEdge_ne_zero
-      corridor hunique offset hnext cellColor hcell
+    sourceLocalLayerSerialCellSplicedColorAt_boundaryRebaseEdge_ne_zero_of_prefix
+      corridor hunique offset hnext prefixColor cellColor hprefix hcell
   rw [SourceLocalLayerSerialRootedInteractionRollingCellFactor.supportsBool,
     Bool.and_eq_true, Bool.and_eq_true]
   refine ⟨⟨?_, ?_⟩, ?_⟩
   · let state := sourceLocalLayerSerialRootedInteractionStateForColorAt
-      graphData minimal caps coloring web corridor hunique offset hnext coloring
-        (fun _ => web.tait _)
+      graphData minimal caps coloring web corridor hunique offset hnext
+        prefixColor hprefixCrossing
     have hstate : state.toSourceLocalLayerSerialColoredCumulativeState =
-        factored.1 := by
-      calc
-        _ = (sourceLocalLayerSerialRootedCumulativeStateForColorAt graphData
-              minimal caps coloring web corridor hunique offset coloring
-                (fun _ => web.tait _)
-            ).toSourceLocalLayerSerialColoredCumulativeState := by
-              rw [sourceLocalLayerSerialRootedInteractionStateForColorAt_toRooted]
-        _ = factored.1 :=
-          sourceLocalLayerSerialRootedCumulativeStateForColorAt_ambient_eq_factored_input
-            graphData minimal caps coloring web corridor hunique offset
-              cellColor hcross
+        factored.1 := by rfl
     change SourceLocalLayerSerialCellPhysicalSupportsBool
       state.toSourceLocalLayerSerialColoredCumulativeState factored.2.1
         factored.2.2 = true
     rw [hstate]
     exact
-      (sourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt_supports graphData
-        minimal caps coloring web corridor hunique offset cellColor hcompatible
-          hcross)
+      sourceLocalLayerSerialCellPhysicalBoolFactoredLetterForColorAt_supports
+        graphData minimal caps coloring web corridor hunique offset prefixColor
+          hprefixCrossing cellColor hcompatible hcross
   · change decide
       ((finiteBoolSupportLetterForColorAt corridor hunique offset hnext
         factored.2.1 splice hrole).input = factored.2.1) = true
     simp [finiteBoolSupportLetterForColorAt]
-  · simpa [sourceLocalLayerSerialRootedInteractionRollingCellFactorAt, hcross,
-      factored, splice, hrole] using
+  · simpa
+      [sourceLocalLayerSerialRootedInteractionRollingCellFactorForColorAt,
+        hprefixCrossing, hcross, factored, splice, hrole] using
       (finiteBoolSupportLetterForColorAt_supports corridor hunique offset hnext
         factored.2.1 splice hrole)
 
+/-- Facial pre-rebase update factored through precisely the two local fields it
+reads. -/
+def sourceLocalLayerSerialRootedInteractionFacePreRebaseStateOf?
+    (state : SourceLocalLayerSerialRootedInteractionState)
+    (faceCode : BoundedCarrierBoolGraphFamilyCode 24 0 Bool)
+    (faceEdgeState : SourceLocalLayerSerialFaceFiniteEdgeState) :
+    Option SourceLocalLayerSerialFaceInteractionPrefixState :=
+  if hcount : state.faceCapSix.vertexCount = faceCode.vertexCount then
+    some {
+      vertexCount := state.faceInteractionExterior.vertexCount
+      code := fun _ => addInterfaceAdjacencyAndPresence
+        (state.faceInteractionExterior.code ())
+        (liftInterfaceAdjacency state.faceCurrentCoordinate
+          (fun left right =>
+            let cast : Fin state.faceCapSix.vertexCount.val →
+                Fin faceCode.vertexCount.val :=
+              Fin.cast (congrArg Fin.val hcount)
+            decide (((faceCode.toGraph false) ⊔
+              (faceCode.toGraph true)).Adj (cast left) (cast right))))
+        (liftInterfacePresence state.faceCurrentCoordinate (fun slot =>
+          faceEdgeState.cellPresent
+            (Fin.castLE
+              (Nat.le_of_lt_succ state.faceCapSix.vertexCount.isLt) slot))) }
+  else none
+
+/-- The original local-factor API factors definitionally through its face
+graph and presence table. -/
+theorem sourceLocalLayerSerialRootedInteractionFacePreRebaseState?_eq_of_fields
+    {outputCount : Fin 5}
+    (state : SourceLocalLayerSerialRootedInteractionState)
+    (factor : SourceLocalLayerSerialCellPhysicalBoolLocalFactor outputCount) :
+    sourceLocalLayerSerialRootedInteractionFacePreRebaseState? state factor =
+      sourceLocalLayerSerialRootedInteractionFacePreRebaseStateOf? state
+        factor.faceCode factor.faceEdgeState := by
+  unfold sourceLocalLayerSerialRootedInteractionFacePreRebaseState?
+    sourceLocalLayerSerialRootedInteractionFacePreRebaseStateOf?
+    sourceLocalLayerSerialRootedInteractionFacePreRebaseState
+    sourceLocalLayerSerialRootedInteractionFaceLocalAdjacency
+    sourceLocalLayerSerialRootedInteractionFaceLocalPresence
+    sourceLocalLayerSerialCellPhysicalFaceLocalAdjacency
+  rfl
+
+/-- The guarded facial pre-rebase update is insensitive to every local-factor
+field except the face graph and literal Cell-presence table. -/
+theorem sourceLocalLayerSerialRootedInteractionFacePreRebaseState?_congr
+    {leftOutputCount rightOutputCount : Fin 5}
+    (state : SourceLocalLayerSerialRootedInteractionState)
+    (left : SourceLocalLayerSerialCellPhysicalBoolLocalFactor leftOutputCount)
+    (right : SourceLocalLayerSerialCellPhysicalBoolLocalFactor rightOutputCount)
+    (hcode : left.faceCode = right.faceCode)
+    (hedge : left.faceEdgeState = right.faceEdgeState) :
+    sourceLocalLayerSerialRootedInteractionFacePreRebaseState? state left =
+      sourceLocalLayerSerialRootedInteractionFacePreRebaseState? state right := by
+  rw [sourceLocalLayerSerialRootedInteractionFacePreRebaseState?_eq_of_fields,
+    sourceLocalLayerSerialRootedInteractionFacePreRebaseState?_eq_of_fields,
+    hcode, hedge]
+
+/-- The facial pre-rebase update depends only on the local face code and
+presence table, so the prefix-parametric physical package has the same exact
+source reflection as the ambient specialization. -/
+theorem
+    sourceLocalLayerSerialRootedInteractionFacePreRebaseStateForColor?_at
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (prefixColor :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
+    (hprefixCrossing : ∀ step,
+      prefixColor ((sourceLocalLayerSerialTerminalInputCutDataAt corridor hunique
+        offset).crossingEdge step) ≠ 0)
+    (cellColor :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
+    (hcellCrossing : ∀ step,
+      cellColor (sourceLocalLayerRightCrossingAt corridor hunique offset step) ≠
+        0) :
+    let state := sourceLocalLayerSerialRootedInteractionStateForColorAt
+      graphData minimal caps coloring web corridor hunique offset hnext
+        prefixColor hprefixCrossing
+    let factor :=
+      (sourceLocalLayerSerialCellPhysicalBoolFactoredLetterForColorAt graphData
+        minimal caps coloring web corridor hunique offset prefixColor
+          hprefixCrossing cellColor hcellCrossing).2.2
+    sourceLocalLayerSerialRootedInteractionFacePreRebaseState? state factor =
+      some (sourceLocalLayerSerialFaceInteractionPreRebaseStateAt graphData
+        minimal caps coloring web corridor hunique offset hnext) := by
+  classical
+  let state := sourceLocalLayerSerialRootedInteractionStateForColorAt graphData
+    minimal caps coloring web corridor hunique offset hnext prefixColor
+      hprefixCrossing
+  let factor :=
+    (sourceLocalLayerSerialCellPhysicalBoolFactoredLetterForColorAt graphData
+      minimal caps coloring web corridor hunique offset prefixColor
+        hprefixCrossing cellColor hcellCrossing).2.2
+  let ambientFactor :=
+    (sourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt graphData minimal
+      caps coloring web corridor hunique offset cellColor hcellCrossing).2.2
+  let expected := sourceLocalLayerSerialFaceInteractionPreRebaseStateAt
+    graphData minimal caps coloring web corridor hunique offset hnext
+  change sourceLocalLayerSerialRootedInteractionFacePreRebaseState? state factor =
+    some expected
+  rw [sourceLocalLayerSerialRootedInteractionFacePreRebaseState?_congr state
+    factor ambientFactor (by rfl) (by rfl)]
+  exact sourceLocalLayerSerialRootedInteractionFacePreRebaseState?_at graphData
+    minimal caps coloring web corridor hunique offset hnext prefixColor
+      hprefixCrossing cellColor hcellCrossing
+
 set_option maxHeartbeats 800000 in
-/-- Applying the literal finite rolling factor returns the canonical rooted
-interaction state of the spliced colouring at the following cut. -/
-theorem sourceLocalLayerSerialRootedInteractionRollingCellFactorAt_successor_exact
+/-- Applying the prefix-parametric finite rolling factor returns the canonical
+rooted interaction state of the spliced colouring at the following cut. -/
+theorem
+    sourceLocalLayerSerialRootedInteractionRollingCellFactorForColorAt_successor_exact
     (graphData : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
     (caps : OrientedFacialPentagonCapPair graphData)
@@ -387,26 +548,35 @@ theorem sourceLocalLayerSerialRootedInteractionRollingCellFactorAt_successor_exa
     (hnext : offset.val + 1 < blockLength - 3)
     (hnextNext :
       (sourceLocalLayerNextOffset offset hnext).val + 1 < blockLength - 3)
+    (prefixColor :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
+    (hprefix : ∀ edge, prefixColor edge ≠ 0)
     (cellColor :
       caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
     (hcompatible : SourceLocalLayerSerialCellColorsCompatibleAt corridor
-      hunique offset coloring cellColor)
+      hunique offset prefixColor cellColor)
     (hcell : ∀ {edge}, edge ∈
       sourceLocalLayerCellRegionAt corridor hunique offset →
         cellColor edge ≠ 0) :
+    let hprefixCrossing : ∀ step,
+        prefixColor ((sourceLocalLayerSerialTerminalInputCutDataAt corridor
+          hunique offset).crossingEdge step) ≠ 0 := fun step =>
+      hprefix ((sourceLocalLayerSerialTerminalInputCutDataAt corridor hunique
+        offset).crossingEdge step)
     let state := sourceLocalLayerSerialRootedInteractionStateForColorAt
-      graphData minimal caps coloring web corridor hunique offset hnext coloring
-        (fun _ => web.tait _)
-    let factor := sourceLocalLayerSerialRootedInteractionRollingCellFactorAt
       graphData minimal caps coloring web corridor hunique offset hnext
-        hnextNext cellColor hcell
+        prefixColor hprefixCrossing
+    let factor :=
+      sourceLocalLayerSerialRootedInteractionRollingCellFactorForColorAt
+        graphData minimal caps coloring web corridor hunique offset hnext
+          hnextNext prefixColor hprefix cellColor hcell
     let splice := sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
-      coloring cellColor
+      prefixColor cellColor
     let hrole : ∀ role, splice
         (sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset hnext
           role) ≠ 0 :=
-      sourceLocalLayerSerialCellSplicedColorAt_boundaryRebaseEdge_ne_zero
-        corridor hunique offset hnext cellColor hcell
+      sourceLocalLayerSerialCellSplicedColorAt_boundaryRebaseEdge_ne_zero_of_prefix
+        corridor hunique offset hnext prefixColor cellColor hprefix hcell
     let hnextCrossing := successorCrossingNonzeroForColorAt corridor hunique
       offset hnext splice hrole
     factor.successor? state = some
@@ -416,33 +586,39 @@ theorem sourceLocalLayerSerialRootedInteractionRollingCellFactorAt_successor_exa
             hnextCrossing) := by
   classical
   dsimp only
+  let hprefixCrossing : ∀ step,
+      prefixColor ((sourceLocalLayerSerialTerminalInputCutDataAt corridor hunique
+        offset).crossingEdge step) ≠ 0 := fun step =>
+    hprefix ((sourceLocalLayerSerialTerminalInputCutDataAt corridor hunique
+      offset).crossingEdge step)
   let hcross : ∀ step,
       cellColor (sourceLocalLayerRightCrossingAt corridor hunique offset step) ≠
         0 := fun step => hcell
           (sourceLocalLayerCellRegionAt_rightCrossing corridor hunique offset
             step)
   let splice := sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
-    coloring cellColor
+    prefixColor cellColor
   let hrole : ∀ role, splice
       (sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset hnext role) ≠
         0 :=
-    sourceLocalLayerSerialCellSplicedColorAt_boundaryRebaseEdge_ne_zero
-      corridor hunique offset hnext cellColor hcell
+    sourceLocalLayerSerialCellSplicedColorAt_boundaryRebaseEdge_ne_zero_of_prefix
+      corridor hunique offset hnext prefixColor cellColor hprefix hcell
   let hnextCrossing := successorCrossingNonzeroForColorAt corridor hunique
     offset hnext splice hrole
   rw [SourceLocalLayerSerialRootedInteractionRollingCellFactor.successor?]
-  rw [sourceLocalLayerSerialRootedInteractionRollingCellFactorAt_supportsBool
+  rw [sourceLocalLayerSerialRootedInteractionRollingCellFactorForColorAt_supportsBool
     graphData minimal caps coloring web corridor hunique offset hnext hnextNext
-      cellColor hcompatible hcell]
+      prefixColor hprefix cellColor hcompatible hcell]
   simp only [if_true]
-  simp only [sourceLocalLayerSerialRootedInteractionRollingCellFactorAt]
-  rw [sourceLocalLayerSerialRootedInteractionPreRebaseState?_at graphData
-    minimal caps coloring web corridor hunique offset hnext cellColor
-      hcompatible hcross]
+  simp only [sourceLocalLayerSerialRootedInteractionRollingCellFactorForColorAt]
+  rw [sourceLocalLayerSerialRootedInteractionPreRebaseStateForColor?_at graphData
+    minimal caps coloring web corridor hunique offset hnext prefixColor
+      hprefixCrossing cellColor hcompatible hcross]
   simp only [Option.bind_some]
-  rw [sourceLocalLayerSerialRootedInteractionFacePreRebaseState?_at graphData
-    minimal caps coloring web corridor hunique offset hnext coloring
-      (fun _ => web.tait _) cellColor hcross]
+  rw [sourceLocalLayerSerialRootedInteractionFacePreRebaseStateForColor?_at
+    graphData
+    minimal caps coloring web corridor hunique offset hnext prefixColor
+      hprefixCrossing cellColor hcross]
   simp only [Option.bind_some]
   split
   · split
@@ -450,12 +626,10 @@ theorem sourceLocalLayerSerialRootedInteractionRollingCellFactorAt_successor_exa
       apply rootedInteractionState_ext
       · apply rootedCumulativeState_ext
         · apply coloredCumulativeState_ext
-          · simpa [splice, hrole, hnextCrossing,
-              sourceLocalLayerSerialCellRebaseNextColoredCumulativeStateAt]
-              using
-                (finiteBoolSupportLetterForColorAt_output_eq_nextColoredCumulativeState_input
-                  graphData minimal caps coloring web corridor hunique offset
-                    hnext cellColor hcell)
+          · simpa [splice, hrole, hnextCrossing] using
+              (finiteBoolSupportLetterForColorAt_output_eq_nextColoredCumulativeState_input_of_prefix
+                graphData minimal caps coloring web corridor hunique offset
+                  hnext prefixColor hprefixCrossing cellColor hcell hrole)
           · have htargetCount :=
               sourceLocalLayerSerialTrackedRebaseFactorAt_targetCount graphData
                 minimal caps coloring web corridor hunique offset hnext splice
@@ -486,7 +660,6 @@ theorem sourceLocalLayerSerialRootedInteractionRollingCellFactorAt_successor_exa
                     congr 1
               _ = _ := by
                 simpa [splice, hrole, hnextCrossing,
-                  sourceLocalLayerSerialCellRebaseNextColoredCumulativeStateAt,
                   sourceLocalLayerSerialColoredCumulativeStateForColorAt] using
                     (sourceLocalLayerSerialCellRebaseUniformTrackedTargetStateAt_exact
                       graphData minimal caps coloring web corridor hunique offset
@@ -495,9 +668,10 @@ theorem sourceLocalLayerSerialRootedInteractionRollingCellFactorAt_successor_exa
               sourceLocalLayerSerialFaceRebaseFactorAt_targetCount graphData
                 minimal caps coloring web corridor hunique offset hnext
             cases htargetCount
-            let factored := sourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt
-              graphData minimal caps coloring web corridor hunique offset
-                cellColor hcross
+            let factored :=
+              sourceLocalLayerSerialCellPhysicalBoolFactoredLetterForColorAt
+                graphData minimal caps coloring web corridor hunique offset
+                  prefixColor hprefixCrossing cellColor hcross
             let rebase := finiteBoolSupportLetterForColorAt corridor hunique
               offset hnext factored.2.1 splice hrole
             let next := sourceLocalLayerNextOffset offset hnext
@@ -614,24 +788,21 @@ theorem sourceLocalLayerSerialRootedInteractionRollingCellFactorAt_successor_exa
                       congr 1
               _ = _ := by
                 simpa [splice, hrole, hnextCrossing,
-                  sourceLocalLayerSerialCellRebaseNextColoredCumulativeStateAt,
                   sourceLocalLayerSerialColoredCumulativeStateForColorAt] using
                     (sourceLocalLayerSerialCellRebaseUniformFaceTargetFullStateAt_exact
                       graphData minimal caps coloring web corridor hunique offset
                         hnext)
           · change
-              sourceLocalLayerSerialCellRebaseTransportedColorCodeAt graphData
-                  minimal caps coloring web corridor hunique offset hnext
-                    cellColor hcell = _
-            simpa [splice, hrole, hnextCrossing,
-              sourceLocalLayerSerialCellRebaseNextColoredCumulativeStateAt,
-              sourceLocalLayerSerialColoredCumulativeStateForColorAt] using
-                (sourceLocalLayerSerialCellRebaseTransportedColorCodeAt_eq_target_unconditional
+              sourceLocalLayerSerialCellRebaseTransportedColorCodeForColorAt
                   graphData minimal caps coloring web corridor hunique offset
-                    hnext cellColor hcell)
+                    hnext prefixColor cellColor hrole = _
+            simpa [splice, hrole, hnextCrossing,
+              sourceLocalLayerSerialColoredCumulativeStateForColorAt] using
+                (sourceLocalLayerSerialCellRebaseTransportedColorCodeForColorAt_eq_target_unconditional
+                  graphData minimal caps coloring web corridor hunique offset
+                    hnext prefixColor cellColor hrole)
           · simpa [splice, hrole, hnextCrossing,
               sourceLocalLayerSerialFaceRollingFactorAt,
-              sourceLocalLayerSerialCellRebaseNextColoredCumulativeStateAt,
               sourceLocalLayerSerialColoredCumulativeStateForColorAt] using
                 (sourceLocalLayerSerialFaceRebaseTargetStateAt_eq graphData
                   minimal caps coloring web corridor hunique offset hnext)
@@ -672,6 +843,6 @@ theorem sourceLocalLayerSerialRootedInteractionRollingCellFactorAt_successor_exa
 
 end
 
-end GoertzelV24ClosedWebLocalLayerSerialRootedInteractionRollingTransitionExact
+end GoertzelV24ClosedWebLocalLayerSerialRootedInteractionRollingTransitionColorParametric
 
 end Mettapedia.GraphTheory.FourColor

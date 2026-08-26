@@ -316,6 +316,51 @@ theorem sourceLocalLayerSerialFiniteSplicedColor_codeAt_slot
   · simp [hcell]
   · simp [hcell]
 
+/-- Prefix-parametric form of the finite-splice coordinate equation.  The
+ambient colouring continues to determine the literal carrier only. -/
+theorem sourceLocalLayerSerialFiniteSplicedColorForColorAt_codeAt_slot
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (prefixColor cellColor :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet -> Color)
+    (edge : {edge // edge ∈
+      sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps coloring
+        web corridor hunique offset}) :
+    SourceLocalLayerSerialFiniteSplicedColor
+        (sourceLocalLayerSerialCarrierColorCodeAt graphData caps coloring web
+          corridor hunique offset
+          (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique offset)
+          prefixColor)
+        (sourceLocalLayerSerialCarrierColorCodeAt graphData caps coloring web
+          corridor hunique offset
+          (sourceLocalLayerCellRegionAt corridor hunique offset) cellColor)
+        (sourceLocalLayerSerialTrackedTransitionSlotAt graphData minimal caps
+          coloring web corridor hunique offset edge) =
+      if edge.1 ∈ sourceLocalLayerCellRegionAt corridor hunique offset then
+        some (cellColor edge.1)
+      else if edge.1 ∈
+          sourceLocalLayerSerialTerminalInputRegionAt corridor hunique offset then
+        some (prefixColor edge.1)
+      else none := by
+  unfold SourceLocalLayerSerialFiniteSplicedColor
+  rw [sourceLocalLayerSerialCarrierColorCodeAt_slot,
+    sourceLocalLayerSerialCarrierColorCodeAt_slot]
+  by_cases hcell : edge.1 ∈
+      sourceLocalLayerCellRegionAt corridor hunique offset
+  · simp [hcell]
+  · simp [hcell]
+
 /-- The finite splice carries a tracked colour exactly when the literal edge
 lies in the union and its spliced colour is tracked. -/
 theorem sourceLocalLayerSerialCarrierHasTrackedColor_spliced_codeAt_slot_iff

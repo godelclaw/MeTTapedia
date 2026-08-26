@@ -422,8 +422,48 @@ theorem sourceLocalLayerSerialCellRebaseCarrier_oldPrefixLookahead_of_pastCellOv
     rw [hedge]
     exact Finset.mem_union_right _ (Finset.mem_singleton_self _)
 
-/-- The finite target colour table computed from one literal predecessor
-state, Cell colour, and rebase role state. -/
+/-- The finite target colour table computed from an arbitrary predecessor
+colouring, a literal Cell colouring, and the successor rebase-role state.  The
+ambient Tait colouring determines only the carrier geometry. -/
+noncomputable def sourceLocalLayerSerialCellRebaseTransportedColorCodeForColorAt
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (prefixColor cellColor :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
+    (hroleNonzero : ∀ role,
+      sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
+          prefixColor cellColor
+          (sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset hnext
+            role) ≠ 0) : SourceLocalLayerSerialCarrierColorCode :=
+  let splice := sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
+    prefixColor cellColor
+  SourceLocalLayerSerialCellRebaseTransportedColorCode
+    (sourceLocalLayerSerialCellRebaseCarrierSourceAt graphData minimal caps
+      coloring web corridor hunique offset hnext)
+    (SourceLocalLayerSerialFiniteSplicedColor
+      (sourceLocalLayerSerialCarrierColorCodeAt graphData caps coloring web
+        corridor hunique offset
+        (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique offset)
+        prefixColor)
+      (sourceLocalLayerSerialCarrierColorCodeAt graphData caps coloring web
+        corridor hunique offset
+        (sourceLocalLayerCellRegionAt corridor hunique offset) cellColor))
+    (successorTrackedStateForColorAt corridor hunique offset hnext splice
+      hroleNonzero)
+
+/-- The ambient-colouring specialization retained for existing consumers. -/
 noncomputable def sourceLocalLayerSerialCellRebaseTransportedColorCodeAt
     (graphData : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
@@ -467,7 +507,8 @@ noncomputable def sourceLocalLayerSerialCellRebaseTransportedColorCodeAt
 /-- Provided the bounded carrier map covers every active target edge, its
 finite relabelling computes the literal target cumulative colour table
 exactly.  The hypothesis is purely geometric and colour-independent. -/
-theorem sourceLocalLayerSerialCellRebaseTransportedColorCodeAt_eq_target
+theorem
+    sourceLocalLayerSerialCellRebaseTransportedColorCodeForColorAt_eq_target
     (graphData : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
     (caps : OrientedFacialPentagonCapPair graphData)
@@ -482,11 +523,13 @@ theorem sourceLocalLayerSerialCellRebaseTransportedColorCodeAt_eq_target
       (Finset.univ : Finset (OrbitFace web.annular.RS)))
     (offset : Fin (blockLength - 3))
     (hnext : offset.val + 1 < blockLength - 3)
-    (cellColor :
+    (prefixColor cellColor :
       caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
-    (hcell : ∀ {edge}, edge ∈
-      sourceLocalLayerCellRegionAt corridor hunique offset →
-        cellColor edge ≠ 0)
+    (hroleNonzero : ∀ role,
+      sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
+          prefixColor cellColor
+          (sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset hnext
+            role) ≠ 0)
     (hcoverage : ∀ targetEdge : {edge // edge ∈
         sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps coloring
           web corridor hunique (sourceLocalLayerNextOffset offset hnext)},
@@ -497,36 +540,32 @@ theorem sourceLocalLayerSerialCellRebaseTransportedColorCodeAt_eq_target
           targetEdge.1 ∈
             sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps
               coloring web corridor hunique offset) :
-    sourceLocalLayerSerialCellRebaseTransportedColorCodeAt graphData minimal
-        caps coloring web corridor hunique offset hnext cellColor hcell =
+    sourceLocalLayerSerialCellRebaseTransportedColorCodeForColorAt graphData
+        minimal caps coloring web corridor hunique offset hnext prefixColor
+          cellColor hroleNonzero =
       sourceLocalLayerSerialCarrierColorCodeAt graphData caps coloring web
         corridor hunique (sourceLocalLayerNextOffset offset hnext)
         (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique
           (sourceLocalLayerNextOffset offset hnext))
         (sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
-          coloring cellColor) := by
+          prefixColor cellColor) := by
   classical
   funext targetSlot
   let splice := sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
-    coloring cellColor
-  let hroleNonzero : ∀ role, splice
-      (sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset hnext role) ≠
-        0 :=
-    sourceLocalLayerSerialCellSplicedColorAt_boundaryRebaseEdge_ne_zero
-      corridor hunique offset hnext cellColor hcell
+    prefixColor cellColor
   cases hdecode :
       sourceLocalLayerSerialTrackedTransitionEdgeAtSlot? graphData caps coloring
         web corridor hunique (sourceLocalLayerNextOffset offset hnext)
         targetSlot with
   | none =>
-      unfold sourceLocalLayerSerialCellRebaseTransportedColorCodeAt
+      unfold sourceLocalLayerSerialCellRebaseTransportedColorCodeForColorAt
         SourceLocalLayerSerialCellRebaseTransportedColorCode
         sourceLocalLayerSerialCellRebaseCarrierSourceAt
         sourceLocalLayerSerialCarrierColorCodeAt
       rw [hdecode]
       rfl
   | some targetEdge =>
-      unfold sourceLocalLayerSerialCellRebaseTransportedColorCodeAt
+      unfold sourceLocalLayerSerialCellRebaseTransportedColorCodeForColorAt
         SourceLocalLayerSerialCellRebaseTransportedColorCode
         sourceLocalLayerSerialCellRebaseCarrierSourceAt
         sourceLocalLayerSerialCarrierColorCodeAt
@@ -591,7 +630,7 @@ theorem sourceLocalLayerSerialCellRebaseTransportedColorCodeAt_eq_target
               (sourceLocalLayerSerialCarrierColorCodeAt graphData caps coloring
                 web corridor hunique offset
                 (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique
-                  offset) coloring)
+                  offset) prefixColor)
               (sourceLocalLayerSerialCarrierColorCodeAt graphData caps coloring
                 web corridor hunique offset
                 (sourceLocalLayerCellRegionAt corridor hunique offset) cellColor)
@@ -602,9 +641,9 @@ theorem sourceLocalLayerSerialCellRebaseTransportedColorCodeAt_eq_target
                 sourceLocalLayerSerialTerminalInputRegionAt corridor hunique
                   (sourceLocalLayerNextOffset offset hnext) then
               some (sourceLocalLayerSerialCellSplicedColorAt corridor hunique
-                offset coloring cellColor targetEdge.1)
+                offset prefixColor cellColor targetEdge.1)
             else none
-          rw [sourceLocalLayerSerialFiniteSplicedColor_codeAt_slot]
+          rw [sourceLocalLayerSerialFiniteSplicedColorForColorAt_codeAt_slot]
           have hnotSwitch : targetEdge.1 ∉
               sourceLocalLayerBoundaryRebaseSwitchAt corridor hunique offset
                 hnext := by
@@ -658,6 +697,62 @@ theorem sourceLocalLayerSerialCellRebaseTransportedColorCodeAt_eq_target
                   hunique offset hnext targetEdge.1).1 hswitch)
             · exact hcurrent hcurrent'
           simp [hnotActive]
+
+/-- Ambient-colouring specialization of the prefix-parametric carrier
+transport theorem. -/
+theorem sourceLocalLayerSerialCellRebaseTransportedColorCodeAt_eq_target
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (cellColor :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
+    (hcell : ∀ {edge}, edge ∈
+      sourceLocalLayerCellRegionAt corridor hunique offset →
+        cellColor edge ≠ 0)
+    (hcoverage : ∀ targetEdge : {edge // edge ∈
+        sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps coloring
+          web corridor hunique (sourceLocalLayerNextOffset offset hnext)},
+      targetEdge.1 ∈ sourceLocalLayerSerialTerminalInputRegionAt corridor
+          hunique (sourceLocalLayerNextOffset offset hnext) →
+        targetEdge.1 ∈ sourceLocalLayerBoundaryRebaseSwitchAt corridor hunique
+            offset hnext ∨
+          targetEdge.1 ∈
+            sourceLocalLayerSerialTrackedTransitionCarrierAt graphData caps
+              coloring web corridor hunique offset) :
+    sourceLocalLayerSerialCellRebaseTransportedColorCodeAt graphData minimal
+        caps coloring web corridor hunique offset hnext cellColor hcell =
+      sourceLocalLayerSerialCarrierColorCodeAt graphData caps coloring web
+        corridor hunique (sourceLocalLayerNextOffset offset hnext)
+        (sourceLocalLayerSerialTerminalInputRegionAt corridor hunique
+          (sourceLocalLayerNextOffset offset hnext))
+        (sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
+          coloring cellColor) := by
+  let splice := sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
+    coloring cellColor
+  let hrole : ∀ role, splice
+      (sourceLocalLayerBoundaryRebaseEdgeAt corridor hunique offset hnext role) ≠
+        0 :=
+    sourceLocalLayerSerialCellSplicedColorAt_boundaryRebaseEdge_ne_zero
+      corridor hunique offset hnext cellColor hcell
+  change
+    sourceLocalLayerSerialCellRebaseTransportedColorCodeForColorAt graphData
+        minimal caps coloring web corridor hunique offset hnext coloring
+          cellColor hrole = _
+  exact
+    sourceLocalLayerSerialCellRebaseTransportedColorCodeForColorAt_eq_target
+      graphData minimal caps coloring web corridor hunique offset hnext coloring
+        cellColor hrole hcoverage
 
 /-- The complete colour-coordinate recurrence follows from the sole
 old-prefix lookahead atom.  Thus the moving twenty-one-slot ABI introduces
