@@ -224,24 +224,16 @@ negative curvature resources, not their sum.  Therefore the sentence in
 Addendum~XXV saying that the Excess Identity makes the nonhexagonal defect
 budget independent of $V$ is not a consequence of that identity.
 
-\begin{proposition}[The missing bulk hypothesis]
-\label{prop:uniform-bulk-hypothesis}
-\Sopen
-For each fixed boundary type used by the Seed system,
-there is a constant $D$ such that every least counterexample after the ladder
-reductions has total negative curvature and boundary surplus at most $D$; or,
-more generally, it contains a clean corridor longer than the required
-profile threshold even without such a bound.
-\end{proposition}
-
-This is the actual input needed before the playbook's conditional L1 theorem
-can be applied globally.  The existing weighted corridor theorems correctly
-retain the negative-curvature weight or a caller-supplied pentagon bound; they
-do not manufacture a uniform constant.  An arithmetic balance witness is not
-yet a graph-realized counterexample to
-Proposition~\ref{prop:uniform-bulk-hypothesis}; conversely, no theorem presently
-derives the proposition from cubicity, planarity, girth five, and cyclic
-five-edge-connectivity.  This is the highest mathematical risk in the route.
+The tempting repair ``add a uniform negative-curvature bound'' is not a
+second proof obligation.  It is only one sufficient route to the actual
+target-forced cut-chain theorem stated below.  No such bound follows from the
+signed identity, and the proof should not spend effort manufacturing a
+stronger hypothesis than it consumes.  The existing weighted corridor
+theorems correctly retain the negative-curvature weight or a caller-supplied
+pentagon bound; they do not manufacture a uniform constant.  The live global
+question is therefore stated once, as
+Proposition~\ref{prop:target-forced-cut-chain}.  This is the highest
+mathematical risk in the route.
 
 The strongest existing all-face extraction theorem is exact but
 graph-relative.  If \(W=W_-(M)\) and a positive corridor length \(L\) is
@@ -258,26 +250,6 @@ unbounded parameter \(W(M)\) of the very graph being bounded.  For example,
 allowing \(W\ge |F|\) makes the inequality compatible with arbitrarily large
 \(|F|\).  Thus this theorem is a correct conditional corridor extractor, not
 a proof of a graph-independent threshold \(V_0\).
-
-Nor may the fixed five-edge frontier of the $(5,0)$ tube laboratory be used
-as a surrogate for the missing global theorem.  In the icosahedral Goldberg
-family $\mathrm{GP}(k,0)$, which has exactly twelve pentagons and otherwise
-only hexagons, distance balls about a pentagonal cap have growing edge
-frontiers.  Exact generation at frequencies $1\le k\le12$ gives
-\[
-\begin{array}{c|rrrrrrrrrrrr}
-k&1&2&3&4&5&6&7&8&9&10&11&12\\ \hline
-|V|&20&80&180&320&500&720&980&1280&1620&2000&2420&2880\\
-\max |\partial B_r|&10&20&30&40&50&60&70&80&90&100&110&120 .
-\end{array}
-\]
-Thus the natural cap-radial transfer has no constant width even in the
-cleanest fullerene family.  This is not a counterexample to every possible
-non-radial corridor, but it makes the quantifier in L1 load-bearing: the
-proof must construct its bounded transversals rather than inherit them from
-the tube picture.  The deterministic generator and full per-radius arrays
-are in
-\texttt{tools/fourcolor/v24\_goldberg\_frontier\_width\_audit.py}.
 
 The uniform weight bound is sufficient, but it is stronger than the
 compositional architecture actually needs.  The following elementary
@@ -400,17 +372,18 @@ of the generated maps gives the following cap-distance cut sizes.  Here
 the five vertices of one pentagonal cap, and \(\delta B_d\) is its edge
 boundary:
 \[
-\begin{array}{c|rrrrrrrrrr}
-k&1&2&3&4&5&6&7&8&9&10\\ \hline
-\max |\delta B_d|&10&20&30&40&50&60&70&80&90&100.
-\\
-\#\{d:|\delta B_d|\le20\}&3&9&12&15&12&12&12&12&12&12.
+\begin{array}{c|rrrrrrrrrrrr}
+k&1&2&3&4&5&6&7&8&9&10&11&12\\ \hline
+|V|&20&80&180&320&500&720&980&1280&1620&2000&2420&2880\\
+\max |\delta B_d|&10&20&30&40&50&60&70&80&90&100&110&120.
 \end{array}
 \]
 This is numerical evidence, not a theorem about every possible cut.  Its
 logical force is narrower and important: an arbitrarily large clean
 hexagonal region is not automatically a one-dimensional bounded-interface
-ladder.
+ladder.  The deterministic generator and all per-radius arrays are in
+\texttt{tools/fourcolor/v24\_goldberg\_frontier\_width\_audit.py} and its
+JSON certificate.
 
 \begin{remark}[cap-correct Seed audit]
 \label{rem:seed-census-all-pentagon-pairs}
@@ -449,6 +422,27 @@ that a valid global corridor theorem may profitably use the seedless
 hypothesis; the manuscript's present derivation still does not construct the
 required bounded-interface chain from it.
 
+\paragraph{Wide Goldberg audit.}
+The same cap-restored predicate has also been encoded directly in SAT on the
+icosahedral Goldberg family, with a second literal component traversal used
+to replay every satisfying witness.  On $\mathrm{GP}(1,0)$ ($20$ vertices),
+all $72$ ordered vertex-disjoint cap annuli and all ten good-word
+representatives modulo global colour permutation are nonempty and seeded:
+$720/720$.  On $\mathrm{GP}(2,0)$ ($80$ vertices), the corresponding result is
+$1320/1320$ over $132$ ordered annuli.  A maximally separated cap pair of
+$\mathrm{GP}(3,0)$ ($180$ vertices, cap-vertex distance $15$) is seeded for
+all ten representatives.  The exact constraints, graph hashes, and results
+are generated by
+\texttt{tools/fourcolor/v24\_goldberg\_seed\_sat.py}.
+
+These data are deliberately not promoted to a theorem.  They do, however,
+separate the two phenomena which L1 had conflated: the same Goldberg family
+has growing radial frontier width, while its tested good fibres have seeds.
+Thus a successful global argument should use the assumption that the target
+count is zero; a geometry-only claim that every large hexagonal patch is a
+fixed-width tube is both stronger than needed and contradicted by the radial
+audit.
+
 \begin{proposition}[target-forced compositional cut chain]
 \label{prop:target-forced-cut-chain}
 \Sopen
@@ -476,12 +470,12 @@ transversal, its crossed-edge set, an exact deletion component boundary, two
 cyclic sides, and the correspondence used for surgery.  A chord wall, an
 induced dual path, or a bounded local collar supplies only part of this data.
 
-\begin{proposition}[the repaired global corridor obligation]
+\begin{proposition}[two exhaustive geometric branches for the global corridor]
 \label{prop:global-corridor-alternative}
-\Sopen
-Choose constants $B,L$ above the relevant profile thresholds and prove both
-of the following source-preserving constructions, including all the
-transversal data in Proposition~\ref{prop:target-forced-cut-chain}.
+\Sconditional{bounded-face geodesic transfer; long-face perimeter transfer}
+Fix constants $B,L$ above the relevant profile thresholds.  Assume both of
+the following source-preserving constructions, including all the transversal
+data in Proposition~\ref{prop:target-forced-cut-chain}.
 \begin{enumerate}
 \item A bounded-face geodesic of length $L$ factors through a finite
   manuscript profile and equal profiles admit a physical deletion splice.
@@ -492,12 +486,21 @@ Then every sufficiently large irreducible obstruction is pumpable, with no
 bound on $W_-$ and no claim that most faces are hexagons.
 \end{proposition}
 
+\begin{proof}
+Apply Theorem~\ref{thm:dual-diameter-dichotomy}.  In its bounded-face branch,
+the first assumed construction supplies the required composable cut chain and
+splice.  In its long-face branch, the second does.  The vertex/face identity
+$F=V/2+2$ makes the dichotomy's face threshold an effective vertex threshold.
+Thus every obstruction above the maximum of the two construction thresholds
+is pumpable.
+\end{proof}
+
 Theorem~\ref{thm:dual-diameter-dichotomy} proves that the two \emph{geometric
 inputs}---a bounded-face geodesic or a long face---are exhaustive.  It does
 not prove either transfer construction.  This is nevertheless a sharper
-research front than Proposition~\ref{prop:uniform-bulk-hypothesis}: the
-high-negative-curvature branch is retained explicitly instead of being
-discarded by an invalid unsigned-defect inference.
+research front than a uniform-curvature hypothesis: the high-negative-
+curvature branch is retained explicitly instead of being discarded by an
+invalid unsigned-defect inference.
 
 One elementary combinatorial ingredient of the long-boundary branch is the
 following sweep lemma.
@@ -840,10 +843,9 @@ assembly; the three unbranched ladder transports, graph-level additive square
 transport for the Seed target, and
 Propositions~\ref{prop:square-side-path-lifting} and
 \ref{prop:target-square-migration} for full $\mathrm{WC}^{*}$ reachability;
-Proposition~\ref{prop:target-forced-cut-chain} (for example via
-either Proposition~\ref{prop:uniform-bulk-hypothesis} plus the source's clean
-corridor construction, or both branches of
-Proposition~\ref{prop:global-corridor-alternative}); the exact
+Proposition~\ref{prop:target-forced-cut-chain} (for example via both branches
+of Proposition~\ref{prop:global-corridor-alternative}, or by a direct
+target-sensitive construction); the exact
 Count factorization and physical equal-profile splice; L2 on every relevant
 corridor type; and an empty route-native finite base for the Seed system.
 Then every planar graph is four-colourable.
