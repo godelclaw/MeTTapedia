@@ -27,20 +27,12 @@ not a corner, and the two ends of each seam are distinct vertices.
 
 namespace Mettapedia.GraphTheory.FourColor
 
+open GoertzelV24RotationVertexCutProfile
+
 namespace RotationSystem
 
 variable {V E : Type*} [Fintype V] [DecidableEq V] [Fintype E] [DecidableEq E]
 variable (RS : RotationSystem V E)
-
-/-- An edge meeting a vertex is one of that vertex's incident edges. -/
-theorem mem_incidentEdges_of_mem_endpoints {edge : E} {vertex : V}
-    (hmem : vertex ∈ RS.endpoints edge) : edge ∈ RS.incidentEdges vertex := by
-  classical
-  rw [RS.mem_endpoints_iff] at hmem
-  obtain ⟨dart, hdart, hvert⟩ := hmem
-  have hedge : RS.edgeOf dart = edge := by simpa [dartsOn] using hdart
-  simp only [incidentEdges, Finset.mem_filter]
-  exact ⟨Finset.mem_univ _, dart, hedge, hvert⟩
 
 namespace FacialSquareData
 
@@ -117,13 +109,63 @@ theorem endpoint_not_mem_deletedCorners (Q : @FacialSquareData V E)
     · exact ⟨2, h⟩
     · exact ⟨3, h⟩
   obtain ⟨j, rfl⟩ := hcorner
-  have hinc := RS.mem_incidentEdges_of_mem_endpoints hmem
+  have hinc := (RS.mem_endpoints_iff_mem_incidentEdges).1 hmem
   rw [Q.incidentEdges_cornerAt RS hQ j, Q.outerEdgeAt_eq_lineEdge i,
     Finset.mem_image] at hinc
   obtain ⟨node, hnode, heq⟩ := hinc
   have hportal : portalNode i = node := hdist heq.symm
   have hij : i = j := (portalNode_mem_cornerNodes_iff i j).1 (hportal ▸ hnode)
   exact hne (by rw [hij])
+
+end FacialSquareData
+
+/-! ## The boundary identity
+
+Self-loops are excluded globally by the ambient rotation system, so every edge
+has two distinct endpoints.  A corner's outer edge therefore has a second
+endpoint, and that endpoint is not a corner; so each outer edge really crosses
+out of the deleted region. -/
+
+/-- Every edge has an endpoint other than any given one, since it has exactly
+two and the ambient system has no self-loops. -/
+theorem exists_endpoint_ne (edge : E) {vertex : V}
+    (hmem : vertex ∈ RS.endpoints edge) :
+    ∃ other ∈ RS.endpoints edge, other ≠ vertex := by
+  classical
+  by_contra hcon
+  push_neg at hcon
+  have hsub : RS.endpoints edge ⊆ {vertex} := by
+    intro u hu
+    simpa using hcon u hu
+  have hcard := Finset.card_le_card hsub
+  rw [RS.endpoints_card_two edge, Finset.card_singleton] at hcard
+  omega
+
+namespace FacialSquareData
+
+/-- A corner is an endpoint of its own outer edge. -/
+theorem cornerAt_mem_endpoints_outerEdgeAt (Q : @FacialSquareData V E)
+    (hQ : Q.WellFormed RS) (i : Fin 4) :
+    Q.cornerAt i ∈ RS.endpoints (Q.outerEdgeAt i) :=
+  (RS.mem_endpoints_iff_mem_incidentEdges).2
+    (Q.outerEdgeAt_mem_incidentEdges RS hQ i)
+
+theorem cornerAt_mem_deletedCorners (Q : @FacialSquareData V E) (i : Fin 4) :
+    Q.cornerAt i ∈ Q.deletedCorners := by
+  fin_cases i <;> simp [deletedCorners, cornerAt]
+
+/-- **Each outer edge crosses out of the square.**  Its corner is an endpoint,
+its other endpoint exists because there are exactly two, and that other
+endpoint is not a corner. -/
+theorem outerEdgeAt_crosses (Q : @FacialSquareData V E)
+    (hQ : Q.WellFormed RS) (hdist : Q.LocalEdgesDistinct) (i : Fin 4) :
+    edgeCrossesVertexSet RS Q.deletedCorners (Q.outerEdgeAt i) := by
+  obtain ⟨other, hother, hne⟩ :=
+    RS.exists_endpoint_ne (Q.outerEdgeAt i)
+      (Q.cornerAt_mem_endpoints_outerEdgeAt RS hQ i)
+  exact ⟨Q.cornerAt i, Q.cornerAt_mem_endpoints_outerEdgeAt RS hQ i,
+    Q.cornerAt_mem_deletedCorners i, other, hother,
+    Q.endpoint_not_mem_deletedCorners RS hQ hdist i hother hne⟩
 
 end FacialSquareData
 
