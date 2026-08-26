@@ -519,6 +519,131 @@ theorem sourceLocalLayerSerialRealizedInitialState_hasRepresentative
   exact ⟨realizedCodeRepresentative encode state,
     congrArg Subtype.val (realizedCodeOf_representative encode state)⟩
 
+/-- A sparse exact-closure replay bound to this source instance rather than to
+three arbitrary arrays.  The equalities make the certificate's transition,
+alphabet and initial predicate definitionally auditable against the executable
+Cell--rebase factorization above.  `Unit` is sufficient as the row witness:
+the transition itself is executable, while source realizability is already
+carried by the finite letter image. -/
+structure SourceLocalLayerSerialPositionedExactClosureReplay
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (hlength : 2 < blockLength - 3) where
+  certificate : ExactReachableClosureCertificate
+    SourceLocalLayerSerialRootedInteractionState
+    SourceLocalLayerSerialRootedInteractionRollingCellFactor Unit
+  transition_eq : certificate.transition =
+    fun source factor target =>
+      sourceLocalLayerSerialRootedInteractionFactorTransition factor source target
+  allowedLetter_eq : certificate.allowedLetter =
+    fun factor => factor ∈
+      sourceLocalLayerSerialPositionedRealizedFactorSet graphData minimal caps
+        coloring web corridor hunique
+  realizable_eq : certificate.realizable =
+    fun state => state ∈
+      sourceLocalLayerSerialRealizedInitialStateSet graphData minimal caps coloring
+        web corridor hunique hlength
+
+/-- The replay's letter array contains exactly the source-realized executable
+factor set for this corridor. -/
+theorem SourceLocalLayerSerialPositionedExactClosureReplay.letter_entry_iff
+    {graphData : Data G}
+    {minimal : GraphBackedVertexMinimalTaitCounterexample graphData}
+    {caps : OrientedFacialPentagonCapPair graphData}
+    {coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color}
+    {web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring}
+    {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {hlength : 2 < blockLength - 3}
+    (replay : SourceLocalLayerSerialPositionedExactClosureReplay graphData minimal
+      caps coloring web corridor hunique hlength)
+    (factor : SourceLocalLayerSerialRootedInteractionRollingCellFactor) :
+    (∃ letterIndex : Nat,
+      replay.certificate.letters[letterIndex]? = some factor) ↔
+      factor ∈ sourceLocalLayerSerialPositionedRealizedFactorSet graphData
+        minimal caps coloring web corridor hunique := by
+  rw [← replay.certificate.letters_exact, replay.allowedLetter_eq]
+
+/-- The replay's initial index array contains exactly the compatible rooted
+states at the first executable cut. -/
+theorem SourceLocalLayerSerialPositionedExactClosureReplay.initial_entry_iff
+    {graphData : Data G}
+    {minimal : GraphBackedVertexMinimalTaitCounterexample graphData}
+    {caps : OrientedFacialPentagonCapPair graphData}
+    {coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color}
+    {web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring}
+    {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {hlength : 2 < blockLength - 3}
+    (replay : SourceLocalLayerSerialPositionedExactClosureReplay graphData minimal
+      caps coloring web corridor hunique hlength)
+    (state : SourceLocalLayerSerialRootedInteractionState) :
+    (∃ position stateIndex : Nat,
+      replay.certificate.initialIndex[position]? = some stateIndex ∧
+      replay.certificate.states[stateIndex]? = some state) ↔
+      state ∈ sourceLocalLayerSerialRealizedInitialStateSet graphData minimal caps
+        coloring web corridor hunique hlength := by
+  rw [ExactReachableClosureCertificate.initial_entry_iff_realizable,
+    replay.realizable_eq]
+
+/-- Exact semantic meaning of the replayed integer.  An ambient rooted state is
+listed in `certificate.states` iff it is reachable from the exact first-cut
+image by a finite sequence of executable factors from the exact positioned
+factor image.  Since the certificate also proves `states_injective`, the array
+size is the cardinality of this abstract reachable closure. -/
+theorem SourceLocalLayerSerialPositionedExactClosureReplay.state_entry_iff
+    {graphData : Data G}
+    {minimal : GraphBackedVertexMinimalTaitCounterexample graphData}
+    {caps : OrientedFacialPentagonCapPair graphData}
+    {coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color}
+    {web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring}
+    {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {hlength : 2 < blockLength - 3}
+    (replay : SourceLocalLayerSerialPositionedExactClosureReplay graphData minimal
+      caps coloring web corridor hunique hlength)
+    (state : SourceLocalLayerSerialRootedInteractionState) :
+    (∃ stateIndex : Nat,
+      replay.certificate.states[stateIndex]? = some state) ↔
+      ClosureReachable
+        (fun source factor target =>
+          sourceLocalLayerSerialRootedInteractionFactorTransition factor source
+            target)
+        (fun candidate => candidate ∈
+          sourceLocalLayerSerialRealizedInitialStateSet graphData minimal caps
+            coloring web corridor hunique hlength)
+        (fun factor => factor ∈
+          sourceLocalLayerSerialPositionedRealizedFactorSet graphData minimal caps
+            coloring web corridor hunique)
+        state := by
+  rw [ExactReachableClosureCertificate.state_entry_iff_reachable,
+    replay.transition_eq, replay.realizable_eq, replay.allowedLetter_eq]
+
 end
 
 end GoertzelV24ClosedWebLocalLayerSerialRootedInteractionPositionedClosure
