@@ -288,6 +288,228 @@ theorem sourceLocalLayerRightCrossingAt_index_eq_or_succ_eq_of_lt_of_adj_nextLef
       exact False.elim
         ((skeleton.separated_not_adjacent _ _ hseparated) hfaceAdj)
 
+/-- Two named faces containing related primal edges are adjacent in the
+interior dual.  Equality of the primal edges uses the two-face incidence
+bound; adjacency uses local cubicity at their common vertex. -/
+private theorem interiorDualGraph_adj_of_eq_or_edgeAdjacencyGraph_adj
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    (web : Instance data coloring)
+    {oldFace newFace : OrbitFace web.annular.RS}
+    {oldEdge newEdge : G.edgeSet}
+    (hfaces : oldFace ≠ newFace)
+    (hold : oldEdge ∈ orbitFaceBoundary web.annular.RS oldFace)
+    (hnew : newEdge ∈ orbitFaceBoundary web.annular.RS newFace)
+    (hrel : oldEdge = newEdge ∨
+      web.annular.RS.edgeAdjacencyGraph.Adj oldEdge newEdge) :
+    (interiorDualGraph (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+        ⟨oldFace, Finset.mem_univ _⟩ ⟨newFace, Finset.mem_univ _⟩ := by
+  rcases hrel with heq | hadj
+  · subst newEdge
+    exact
+      interiorDualGraph_adj_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_count_le_two
+        (orbitFaceBoundary web.annular.RS)
+        (Finset.univ : Finset (OrbitFace web.annular.RS))
+        (orbitFace_incidence_le_two web.annular.RS) hfaces hold hnew
+  · exact interiorDualGraph_adj_of_edgeAdjacencyGraph_adj web hfaces
+      hold hnew hadj
+
+/-- A historical incoming crossing that is equal or adjacent to the successor
+incoming presentation belongs to the current Cell.  This is the exact
+same-edge-or-adjacent-edge relation emitted by the expanded collar decoder. -/
+theorem sourceLocalLayerLeftCrossingAt_index_eq_of_lt_of_eq_or_adj_nextLeftCrossing
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    (web : Instance data coloring) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset historical : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hhistorical : historical.val < offset.val + 1)
+    (oldStep newStep : Fin 2)
+    (hrel :
+      sourceLocalLayerLeftCrossingAt corridor hunique historical oldStep =
+          sourceLocalLayerLeftCrossingAt corridor hunique
+            (sourceLocalLayerNextOffset offset hnext) newStep ∨
+        web.annular.RS.edgeAdjacencyGraph.Adj
+          (sourceLocalLayerLeftCrossingAt corridor hunique historical oldStep)
+          (sourceLocalLayerLeftCrossingAt corridor hunique
+            (sourceLocalLayerNextOffset offset hnext) newStep)) :
+    historical.val = offset.val := by
+  let skeleton :=
+    corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+  let oldFace := skeleton.faceAt (sourceLocalLayerInteriorAt historical).center
+  let newOffset := sourceLocalLayerNextOffset offset hnext
+  let newFace := skeleton.faceAt (sourceLocalLayerInteriorAt newOffset).center
+  have hold : sourceLocalLayerLeftCrossingAt corridor hunique historical oldStep
+      ∈ orbitFaceBoundary web.annular.RS oldFace.1 := by
+    simpa [oldFace, skeleton] using
+      sourceLocalLayerLeftCrossingAt_mem_centerFaceBoundary corridor hunique
+        historical oldStep
+  have hnew : sourceLocalLayerLeftCrossingAt corridor hunique newOffset newStep
+      ∈ orbitFaceBoundary web.annular.RS newFace.1 := by
+    simpa [newFace, skeleton] using
+      sourceLocalLayerLeftCrossingAt_mem_centerFaceBoundary corridor hunique
+        newOffset newStep
+  have hfacesNe : oldFace.1 ≠ newFace.1 := by
+    intro hfaces
+    have hindices : (sourceLocalLayerInteriorAt historical).center =
+        (sourceLocalLayerInteriorAt newOffset).center :=
+      skeleton.faceAt_injective (Subtype.ext hfaces)
+    have hvalues := congrArg Fin.val hindices
+    change historical.val + 1 = newOffset.val + 1 at hvalues
+    have hnewOffsetVal : newOffset.val = offset.val + 1 := rfl
+    rw [hnewOffsetVal] at hvalues
+    omega
+  have hfaceAdj := interiorDualGraph_adj_of_eq_or_edgeAdjacencyGraph_adj web
+    hfacesNe hold hnew hrel
+  by_contra hne
+  have hseparated :
+      (sourceLocalLayerInteriorAt historical).center.val + 1 <
+        (sourceLocalLayerInteriorAt newOffset).center.val := by
+    change historical.val + 1 + 1 < newOffset.val + 1
+    have hnewOffsetVal : newOffset.val = offset.val + 1 := rfl
+    rw [hnewOffsetVal]
+    omega
+  exact (skeleton.separated_not_adjacent _ _ hseparated) hfaceAdj
+
+/-- A historical outgoing crossing that is equal or adjacent to the successor
+incoming presentation belongs to the current Cell or its immediate
+predecessor. -/
+theorem sourceLocalLayerRightCrossingAt_index_eq_or_succ_eq_of_lt_of_eq_or_adj_nextLeftCrossing
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    (web : Instance data coloring) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset historical : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hhistorical : historical.val < offset.val + 1)
+    (oldStep newStep : Fin 2)
+    (hrel :
+      sourceLocalLayerRightCrossingAt corridor hunique historical oldStep =
+          sourceLocalLayerLeftCrossingAt corridor hunique
+            (sourceLocalLayerNextOffset offset hnext) newStep ∨
+        web.annular.RS.edgeAdjacencyGraph.Adj
+          (sourceLocalLayerRightCrossingAt corridor hunique historical oldStep)
+          (sourceLocalLayerLeftCrossingAt corridor hunique
+            (sourceLocalLayerNextOffset offset hnext) newStep)) :
+    historical.val = offset.val ∨ historical.val + 1 = offset.val := by
+  let skeleton :=
+    corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+  let oldFace := skeleton.faceAt
+    (nextCorridorInterior (sourceLocalLayerInteriorAt historical)
+      (sourceLocalLayerInteriorAt_hasNext historical)).center
+  let newOffset := sourceLocalLayerNextOffset offset hnext
+  let newFace := skeleton.faceAt (sourceLocalLayerInteriorAt newOffset).center
+  have hold : sourceLocalLayerRightCrossingAt corridor hunique historical oldStep
+      ∈ orbitFaceBoundary web.annular.RS oldFace.1 := by
+    simpa [oldFace, skeleton] using
+      sourceLocalLayerRightCrossingAt_mem_nextCenterFaceBoundary corridor
+        hunique historical oldStep
+  have hnew : sourceLocalLayerLeftCrossingAt corridor hunique newOffset newStep
+      ∈ orbitFaceBoundary web.annular.RS newFace.1 := by
+    simpa [newFace, skeleton] using
+      sourceLocalLayerLeftCrossingAt_mem_centerFaceBoundary corridor hunique
+        newOffset newStep
+  by_cases hfaces : oldFace.1 = newFace.1
+  · left
+    have hindices :
+        (nextCorridorInterior (sourceLocalLayerInteriorAt historical)
+          (sourceLocalLayerInteriorAt_hasNext historical)).center =
+        (sourceLocalLayerInteriorAt newOffset).center :=
+      skeleton.faceAt_injective (Subtype.ext hfaces)
+    have hvalues := congrArg Fin.val hindices
+    change historical.val + 2 = newOffset.val + 1 at hvalues
+    have hnewOffsetVal : newOffset.val = offset.val + 1 := rfl
+    rw [hnewOffsetVal] at hvalues
+    omega
+  · have hfaceAdj :=
+      interiorDualGraph_adj_of_eq_or_edgeAdjacencyGraph_adj web hfaces
+        hold hnew hrel
+    by_cases hnear : historical.val + 1 = offset.val
+    · exact Or.inr hnear
+    · have hcurrentNe : historical.val ≠ offset.val := by
+        intro hcurrent
+        apply hfaces
+        have hindices :
+            (nextCorridorInterior (sourceLocalLayerInteriorAt historical)
+              (sourceLocalLayerInteriorAt_hasNext historical)).center =
+            (sourceLocalLayerInteriorAt newOffset).center := by
+          apply Fin.ext
+          change historical.val + 2 = newOffset.val + 1
+          have hnewOffsetVal : newOffset.val = offset.val + 1 := rfl
+          rw [hnewOffsetVal, hcurrent]
+        exact congrArg Subtype.val (congrArg skeleton.faceAt hindices)
+      have hseparated :
+          (nextCorridorInterior (sourceLocalLayerInteriorAt historical)
+              (sourceLocalLayerInteriorAt_hasNext historical)).center.val + 1 <
+            (sourceLocalLayerInteriorAt newOffset).center.val := by
+        change historical.val + 2 + 1 < newOffset.val + 1
+        have hnewOffsetVal : newOffset.val = offset.val + 1 := rfl
+        rw [hnewOffsetVal]
+        omega
+      exact False.elim
+        ((skeleton.separated_not_adjacent _ _ hseparated) hfaceAdj)
+
+/-- No strict historical incoming crossing is equal or adjacent to the
+successor incoming presentation. -/
+theorem not_sourceLocalLayerLeftCrossingAt_eq_or_adj_nextLeftCrossing_of_lt
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    (web : Instance data coloring) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset historical : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hhistorical : historical.val < offset.val)
+    (oldStep newStep : Fin 2)
+    (hrel :
+      sourceLocalLayerLeftCrossingAt corridor hunique historical oldStep =
+          sourceLocalLayerLeftCrossingAt corridor hunique
+            (sourceLocalLayerNextOffset offset hnext) newStep ∨
+        web.annular.RS.edgeAdjacencyGraph.Adj
+          (sourceLocalLayerLeftCrossingAt corridor hunique historical oldStep)
+          (sourceLocalLayerLeftCrossingAt corridor hunique
+            (sourceLocalLayerNextOffset offset hnext) newStep)) : False := by
+  have hindex :=
+    sourceLocalLayerLeftCrossingAt_index_eq_of_lt_of_eq_or_adj_nextLeftCrossing
+      web corridor hunique offset historical hnext (by omega) oldStep newStep
+        hrel
+  omega
+
+/-- A strict historical outgoing crossing equal or adjacent to the successor
+incoming presentation is the immediate predecessor's outgoing crossing. -/
+theorem sourceLocalLayerRightCrossingAt_succ_eq_of_lt_of_eq_or_adj_nextLeftCrossing
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    (web : Instance data coloring) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset historical : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hhistorical : historical.val < offset.val)
+    (oldStep newStep : Fin 2)
+    (hrel :
+      sourceLocalLayerRightCrossingAt corridor hunique historical oldStep =
+          sourceLocalLayerLeftCrossingAt corridor hunique
+            (sourceLocalLayerNextOffset offset hnext) newStep ∨
+        web.annular.RS.edgeAdjacencyGraph.Adj
+          (sourceLocalLayerRightCrossingAt corridor hunique historical oldStep)
+          (sourceLocalLayerLeftCrossingAt corridor hunique
+            (sourceLocalLayerNextOffset offset hnext) newStep)) :
+    historical.val + 1 = offset.val := by
+  rcases
+      sourceLocalLayerRightCrossingAt_index_eq_or_succ_eq_of_lt_of_eq_or_adj_nextLeftCrossing
+        web corridor hunique offset historical hnext (by omega) oldStep newStep
+          hrel with hcurrent | himmediate
+  · omega
+  · exact himmediate
+
 end
 
 end GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseLocality
