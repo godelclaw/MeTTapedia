@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialTerminalProfile
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseOutputColorParametric
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TerminalAwareProfileCompression
 
 /-!
@@ -24,6 +25,7 @@ namespace GoertzelV24ClosedWebAtGoodWord
 open GoertzelV24ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebAnnularEmbedding.ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebBoundaryData
+open GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseOutputColorParametric
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24TerminalAwareProfileCompression
 open SimpleGraphDartRotation
@@ -41,6 +43,31 @@ local instance sourceEdgeSetDecidableEq : DecidableEq G.edgeSet :=
 namespace Instance
 
 namespace LocalLayerFormation
+
+/-- Every colour-parametric terminal-aware predecessor profile lies in the
+lossless semantic subcarrier.  This is the form consumed by literal transition
+witnesses: their prefix colourings and successor splices need not be the
+ambient web colouring, but their two displayed crossing colours are nonzero. -/
+theorem terminalInputBoundedProfileForColorAt_isTerminalGraphSemantic
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (color : G.edgeSet → Color)
+    (hcrossing : ∀ step,
+      color ((sourceLocalLayerSerialTerminalInputCutDataAt corridor hunique
+        offset).crossingEdge step) ≠ 0) :
+    BoundedIsTerminalGraphSemantic
+      (terminalInputBoundedProfileForColorAt corridor hunique offset color
+        hcrossing) := by
+  exact regionalProfile_isTerminalGraphSemantic
+    (sourceLocalLayerSerialTerminalInputCutDataAt corridor hunique offset)
+    (sourceLocalLayerSerialTerminalInputCutDataAt_portsInRegion corridor
+      hunique offset)
+    color hcrossing
 
 /-- Every literal terminal-aware predecessor profile lies in the lossless
 semantic subcarrier. -/

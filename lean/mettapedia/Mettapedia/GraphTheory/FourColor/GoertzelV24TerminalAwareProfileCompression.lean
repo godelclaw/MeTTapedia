@@ -372,6 +372,19 @@ theorem compressBounded_injective
       subst rightProfile
       rfl
 
+/-- Compression respects equality of raw bounded profiles independently of
+the proof terms witnessing their semantic laws. -/
+theorem compressBounded_eq_of_eq
+    {crossingEdgeCount terminalCount faceFragmentBound : Nat}
+    {left right : BoundedCorridorCutProfile crossingEdgeCount terminalCount
+      faceFragmentBound}
+    (leftSemantic : BoundedIsTerminalGraphSemantic left)
+    (rightSemantic : BoundedIsTerminalGraphSemantic right)
+    (heq : left = right) :
+    compressBounded left leftSemantic = compressBounded right rightSemantic := by
+  subst right
+  congr
+
 /-- Pigeonhole on the lossless terminal-aware semantic carrier. -/
 theorem exists_ne_profile_eq_of_terminalSemantic
     {crossingEdgeCount terminalCount faceFragmentBound stateCount : Nat}
