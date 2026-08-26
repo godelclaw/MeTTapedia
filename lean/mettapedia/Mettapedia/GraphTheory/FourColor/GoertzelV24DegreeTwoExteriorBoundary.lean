@@ -99,6 +99,46 @@ theorem outsideInterface_of_exteriorGraph_reachable
   | refl => exact hroot
   | tail _ hadj _ => exact hadj.2.2
 
+omit [DecidableEq N] [Fintype Interface] in
+/-- A strict-exterior component inherits the ambient maximum-degree bound.
+The statement is kept separate from the sharper boundary-vertex estimate
+below because component-block deletion needs the uniform bound at retained
+and promoted vertices alike. -/
+theorem exteriorComponent_degree_le_two
+    (graph : SimpleGraph N) [DecidableRel graph.Adj]
+    (interfaceVertex : Interface → N)
+    (component : (exteriorGraph graph interfaceVertex).ConnectedComponent)
+    [Fintype component]
+    [DecidableRel component.toSimpleGraph.Adj]
+    (hdegree : ∀ vertex, (graph.neighborSet vertex).ncard ≤ 2)
+    (vertex : component) :
+    component.toSimpleGraph.degree vertex ≤ 2 := by
+  let includeNeighbor :
+      component.toSimpleGraph.neighborSet vertex →
+        graph.neighborSet vertex.1 :=
+    fun neighbor =>
+      ⟨neighbor.1.1,
+        ((component.toSimpleGraph_adj vertex.2 neighbor.1.2).1
+          neighbor.2).1⟩
+  have hinjective : Function.Injective includeNeighbor := by
+    intro first second heq
+    apply Subtype.ext
+    apply Subtype.ext
+    exact congrArg (fun value : graph.neighborSet vertex.1 => value.1) heq
+  have hcard :
+      Fintype.card (component.toSimpleGraph.neighborSet vertex) ≤
+        Fintype.card (graph.neighborSet vertex.1) :=
+    Fintype.card_le_of_injective _ hinjective
+  rw [component.toSimpleGraph.card_neighborSet_eq_degree,
+    graph.card_neighborSet_eq_degree] at hcard
+  exact hcard.trans <| by
+    calc
+      graph.degree vertex.1 = Fintype.card (graph.neighborSet vertex.1) :=
+        (graph.card_neighborSet_eq_degree vertex.1).symm
+      _ = (graph.neighborSet vertex.1).ncard :=
+        Set.fintypeCard_eq_ncard _
+      _ ≤ 2 := hdegree vertex.1
+
 omit [DecidableEq N] in
 /-- A boundary vertex of a strict-exterior component has component degree at
 most one when the ambient graph has maximum degree two.  One ambient neighbour

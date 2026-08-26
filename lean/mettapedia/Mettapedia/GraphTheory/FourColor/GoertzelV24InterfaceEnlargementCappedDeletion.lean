@@ -294,6 +294,64 @@ theorem promotedExteriorComponentInducePreconnected_of_boundary_or_ambientIsolat
       exteriorComponent_isIsolated_of_ambient graph oldVertex component vertex
         hisolated⟩
 
+/-- A promoted block may run several vertices inward from the old interface.
+Deletion is still non-splitting provided every connected promoted block meets
+an old exterior endpoint.  The only alternative admitted here is complete
+erasure of the old component.
+
+This is the component-level form used by a finite occurrence receipt: direct
+adjacency computes the promoted blocks, while one old-neighbour witness marks
+an endpoint of each block. -/
+theorem promotedExteriorComponentInducePreconnected_of_boundaryBlocks_or_erased
+    (graph : SimpleGraph N) [DecidableRel graph.Adj]
+    (oldVertex : Old → N) (newVertex : New → N)
+    (component : (exteriorGraph graph oldVertex).ConnectedComponent)
+    {root : N} (hroot : root ∈ component.supp)
+    (hrootOutside : OutsideInterface oldVertex root)
+    (hdegree : ∀ vertex, (graph.neighborSet vertex).ncard ≤ 2)
+    (hcase :
+      (∀ block :
+          (component.toSimpleGraph.induce
+            (↑(promotedExteriorComponentVertices graph oldVertex newVertex
+              component) : Set component)).ConnectedComponent,
+        ∃ vertex : {vertex // vertex ∈
+            promotedExteriorComponentVertices graph oldVertex newVertex
+              component},
+          vertex ∈ block.supp ∧
+            ∃ slot, graph.Adj (oldVertex slot) vertex.1.1) ∨
+      (∀ vertex : component,
+        vertex ∈ promotedExteriorComponentVertices graph oldVertex newVertex
+          component)) :
+    (component.toSimpleGraph.induce
+      (↑(promotedExteriorComponentVertices graph oldVertex newVertex
+        component) : Set component)ᶜ).Preconnected := by
+  classical
+  letI : Fintype component := Fintype.ofFinite component
+  rcases hcase with hblocks | herased
+  · apply
+      GoertzelV24LowDegreeVertexDeletion.preconnected_induce_compl_of_components_meet_degree_le_one
+        component.connected_toSimpleGraph
+        (promotedExteriorComponentVertices graph oldVertex newVertex component)
+    · intro vertex
+      exact exteriorComponent_degree_le_two graph oldVertex component hdegree
+        vertex
+    · intro block
+      rcases hblocks block with ⟨vertex, hvertexBlock, slot, hadj⟩
+      refine ⟨vertex, hvertexBlock, ?_⟩
+      apply exteriorComponent_degree_le_one_of_mem_boundary graph oldVertex
+        component hroot hrootOutside hdegree vertex.1
+      rw [mem_exteriorComponentBoundaryVertices_iff]
+      exact ⟨slot, hadj⟩
+  · intro left _right
+    have hnotSet : left.1 ∉
+        (↑(promotedExteriorComponentVertices graph oldVertex newVertex
+          component) : Set component) :=
+      ((Set.mem_compl_iff _ _).mp left.2)
+    have hnot : left.1 ∉
+        promotedExteriorComponentVertices graph oldVertex newVertex
+          component := hnotSet
+    exact (hnot (herased left.1)).elim
+
 /-- The cap at seven of an old component determines exactly its cap at five
 after a boundary-local interface enlargement removes the promoted labels. -/
 theorem min_componentLabelSupport_sdiff_promoted_five_eq
