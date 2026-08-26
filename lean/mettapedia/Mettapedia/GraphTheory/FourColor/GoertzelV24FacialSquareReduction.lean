@@ -745,6 +745,147 @@ theorem reductionEdgeOfDart_alpha (Q : @FacialSquareData V E)
       (Sum.inl ⟨⟨dart, hdart⟩, hopposite⟩)
   exact RewiredDartSystem.edgeOf_alpha _ _
 
+/-! ## The colouring lift
+
+Every edge other than the four square edges has a retained dart, so it names a
+reduction edge, and by the previous checkpoint that name does not depend on
+which of its two darts is used.  Pulling a reduction colouring back along that
+naming is therefore a definition.  The two outer edges of a seam name the same
+reduction edge, so they receive the same colour and side compatibility is
+automatic rather than assumed. -/
+
+/-- Every non-square edge has a retained dart.  If one end is a corner the edge
+is that corner's outer edge, and its far end is not a corner. -/
+theorem exists_retained_dart (Q : @FacialSquareData V E)
+    (hQ : Q.WellFormed RS) (hdist : Q.LocalEdgesDistinct) {edge : E}
+    (hsquare : edge ∉ Q.squareEdges) :
+    ∃ dart : RS.D, RS.edgeOf dart = edge ∧
+      deletedRegionKeep Q.deletedCorners (RS.vertOf dart) := by
+  classical
+  obtain ⟨dart, hdart⟩ := RS.dartsOn_nonempty edge
+  have hedge : RS.edgeOf dart = edge := (RS.mem_dartsOn).1 hdart
+  by_cases hkeep : deletedRegionKeep Q.deletedCorners (RS.vertOf dart)
+  · exact ⟨dart, hedge, hkeep⟩
+  · refine ⟨RS.alpha dart, ?_, ?_⟩
+    · exact (RS.mem_dartsOn).1 (RS.alpha_mem_dartsOn hdart)
+    · have hpair := RS.endpoints_eq_pair_of_mem hdart
+      have hmem : RS.vertOf dart ∈ RS.endpoints edge := by
+        rw [hpair]; simp
+      have hcorner : RS.vertOf dart ∈ Q.deletedCorners := by
+        simpa [deletedRegionKeep] using hkeep
+      -- the edge is the outer edge of that corner
+      have hinc := (RS.mem_endpoints_iff_mem_incidentEdges).1 hmem
+      obtain ⟨j, hj⟩ : ∃ j : Fin 4, RS.vertOf dart = Q.cornerAt j := by
+        simp only [deletedCorners, Finset.mem_insert,
+          Finset.mem_singleton] at hcorner
+        rcases hcorner with h | h | h | h
+        · exact ⟨0, h⟩
+        · exact ⟨1, h⟩
+        · exact ⟨2, h⟩
+        · exact ⟨3, h⟩
+      rw [hj, Q.incidentEdges_cornerAt RS hQ j, Finset.mem_image] at hinc
+      obtain ⟨node, hnode, hlineEdge⟩ := hinc
+      by_cases hlow : node.val < 4
+      · have hidx : (⟨node.val, hlow⟩ : Fin 4) = j := by
+          refine (portalNode_mem_cornerNodes_iff _ j).1 ?_
+          have hnodeEq : portalNode ⟨node.val, hlow⟩ = node := Fin.ext rfl
+          rwa [hnodeEq]
+        have houter : edge = Q.outerEdgeAt j := by
+          rw [← hlineEdge, Q.lineEdge_eq_outerEdgeAt hlow, hidx]
+        have hother :
+            RS.vertOf (RS.alpha dart) ∈ RS.endpoints (Q.outerEdgeAt j) := by
+          rw [← houter, hpair]
+          simp
+        have hne : RS.vertOf (RS.alpha dart) ≠ Q.cornerAt j := by
+          intro hcontra
+          exact RS.no_self_loops dart (hj.trans hcontra.symm)
+        exact Q.endpoint_not_mem_deletedCorners RS hQ hdist j hother hne
+      · refine absurd ?_ hsquare
+        rw [← hlineEdge, Q.squareEdges_eq_image]
+        refine Finset.mem_image.2 ⟨node, ?_, rfl⟩
+        have hcases : node.val = 4 ∨ node.val = 5 ∨ node.val = 6 ∨
+            node.val = 7 := by omega
+        rcases hcases with h | h | h | h <;>
+          simp [Finset.mem_insert, Finset.mem_singleton, Fin.ext_iff, h]
+
+/-- **The colouring lift.**  Pull a reduction colouring back along the edge
+naming, and take the square's four edges from a supplied local colouring. -/
+noncomputable def liftColorFunction (Q : @FacialSquareData V E)
+    (hQ : Q.WellFormed RS) (hdist : Q.LocalEdgesDistinct)
+    (side : SquareReductionSide) (hroot : Q.RootRetained RS)
+    (hseam : Q.SeamEndpointsDistinct RS hQ hdist side)
+    (D : (Q.reductionRotationSystem RS hQ hdist side hroot hseam).EdgeColoring
+      Color)
+    (fibre : E → Color) : E → Color := fun edge =>
+  if hsquare : edge ∈ Q.squareEdges then fibre edge
+  else D (Q.reductionEdgeOfDart RS hQ hdist side hroot hseam
+    (Q.exists_retained_dart RS hQ hdist hsquare).choose
+    (Q.exists_retained_dart RS hQ hdist hsquare).choose_spec.2)
+
+/-- Any two retained darts of one ambient edge name the same reduction edge. -/
+theorem reductionEdgeOfDart_congr (Q : @FacialSquareData V E)
+    (hQ : Q.WellFormed RS) (hdist : Q.LocalEdgesDistinct)
+    (side : SquareReductionSide) (hroot : Q.RootRetained RS)
+    (hseam : Q.SeamEndpointsDistinct RS hQ hdist side) {first second : RS.D}
+    (hfirst : deletedRegionKeep Q.deletedCorners (RS.vertOf first))
+    (hsecond : deletedRegionKeep Q.deletedCorners (RS.vertOf second))
+    (hedge : RS.edgeOf first = RS.edgeOf second) :
+    Q.reductionEdgeOfDart RS hQ hdist side hroot hseam first hfirst =
+      Q.reductionEdgeOfDart RS hQ hdist side hroot hseam second hsecond := by
+  rcases RS.edge_fiber_two_cases hedge
+    (rfl : RS.edgeOf second = RS.edgeOf second) with hcase | hcase
+  · subst hcase
+    rfl
+  · subst hcase
+    exact (Q.reductionEdgeOfDart_alpha RS hQ hdist side hroot hseam first
+      hfirst hsecond).symm
+
+/-- **The lift's evaluation law.**  At any retained dart of a non-square edge,
+the lift is the reduction colour of the edge that dart names. -/
+theorem liftColorFunction_apply (Q : @FacialSquareData V E)
+    (hQ : Q.WellFormed RS) (hdist : Q.LocalEdgesDistinct)
+    (side : SquareReductionSide) (hroot : Q.RootRetained RS)
+    (hseam : Q.SeamEndpointsDistinct RS hQ hdist side)
+    (D : (Q.reductionRotationSystem RS hQ hdist side hroot hseam).EdgeColoring
+      Color)
+    (fibre : E → Color) {dart : RS.D}
+    (hdart : deletedRegionKeep Q.deletedCorners (RS.vertOf dart))
+    (hsquare : RS.edgeOf dart ∉ Q.squareEdges) :
+    Q.liftColorFunction RS hQ hdist side hroot hseam D fibre
+        (RS.edgeOf dart) =
+      D (Q.reductionEdgeOfDart RS hQ hdist side hroot hseam dart hdart) := by
+  classical
+  rw [liftColorFunction, dif_neg hsquare]
+  exact congrArg D (Q.reductionEdgeOfDart_congr RS hQ hdist side hroot hseam
+    (Q.exists_retained_dart RS hQ hdist hsquare).choose_spec.2 hdart
+    (Q.exists_retained_dart RS hQ hdist hsquare).choose_spec.1)
+
+/-- Every reduction edge is named by a retained ambient dart, since the
+correspondence is a bijection and every rewired edge is a flip orbit. -/
+theorem exists_dart_reductionEdgeOfDart (Q : @FacialSquareData V E)
+    (hQ : Q.WellFormed RS) (hdist : Q.LocalEdgesDistinct)
+    (side : SquareReductionSide) (hroot : Q.RootRetained RS)
+    (hseam : Q.SeamEndpointsDistinct RS hQ hdist side)
+    (edge : (Q.reductionDartSystem RS hQ hdist side hroot hseam).Edge) :
+    ∃ (dart : RS.D)
+      (hdart : deletedRegionKeep Q.deletedCorners (RS.vertOf dart)),
+      Q.reductionEdgeOfDart RS hQ hdist side hroot hseam dart hdart = edge := by
+  classical
+  obtain ⟨rewired, hrewired⟩ := edge.2
+  set parts := retainedDartEquivMatchedParts RS
+    (deletedRegionKeep Q.deletedCorners)
+    (orderedCut (Q.leftCrossingAt side)) (orderedCut (Q.rightCrossingAt side))
+    (Q.boundaryCover RS hQ hdist side) (Q.orderedCut_disjoint hdist side)
+    with hparts
+  refine ⟨(parts.symm rewired).1, (parts.symm rewired).2, ?_⟩
+  have hdart : Q.rewiredDartOf RS hQ hdist side (parts.symm rewired).1
+      (parts.symm rewired).2 = rewired := by
+    rw [rewiredDartOf, ← hparts]
+    exact parts.apply_symm_apply rewired
+  apply Subtype.ext
+  rw [reductionEdgeOfDart, hdart]
+  exact hrewired.symm
+
 end FacialSquareData
 
 end RotationSystem
