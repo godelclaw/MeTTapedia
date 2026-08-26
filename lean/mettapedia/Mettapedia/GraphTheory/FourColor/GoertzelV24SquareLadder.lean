@@ -119,6 +119,112 @@ theorem cross_of_reach (hreach : ∀ x y : State, Reach step x y)
 
 end ConnectedUnion
 
+/-! ## The target-aware criterion
+
+Full connectivity is stronger than the route needs.  With a target set of
+states, what matters is that every state can reach a target, and that splits
+by side: a state already in a target-bearing side is finished by the sidewise
+statement, and a state in a target-free side needs only to reach some
+target-bearing side first. -/
+
+section TargetAware
+
+variable {State Side : Type*} (step : State → State → Prop)
+  (sides : Side → Set State) (target : Set State)
+
+/-- Reachability that stays inside a set. -/
+abbrev ReachIn (region : Set State) : State → State → Prop :=
+  Relation.ReflTransGen (fun x y => step x y ∧ x ∈ region ∧ y ∈ region)
+
+/-- Staying inside is a special case of reaching. -/
+theorem reach_of_reachIn {region : Set State} {x y : State}
+    (hreach : ReachIn step region x y) : Reach step x y := by
+  induction hreach with
+  | refl => exact Relation.ReflTransGen.refl
+  | tail _ hstep ih => exact ih.trans (Relation.ReflTransGen.single hstep.1)
+
+/-- A side bears a target when some target state lies in it. -/
+def TargetBearing (s : Side) : Prop := ∃ w ∈ target, w ∈ sides s
+
+/-- **The target-aware criterion.**  Given the sidewise statement, reaching a
+target from everywhere is exactly the ability of each target-free side to
+reach some target-bearing side. -/
+theorem reach_target_iff_targetFree_reaches_bearing
+    (hcover : ∀ x : State, ∃ s, x ∈ sides s)
+    (hsidewise : ∀ s : Side, TargetBearing sides target s →
+      ∀ x ∈ sides s, ∃ w, w ∈ target ∧ w ∈ sides s ∧
+        ReachIn step (sides s) x w) :
+    (∀ x : State, ∃ w ∈ target, Reach step x w) ↔
+      (∀ s : Side, ¬ TargetBearing sides target s → ∀ x ∈ sides s,
+        ∃ t : Side, TargetBearing sides target t ∧
+          ∃ y ∈ sides t, Reach step x y) := by
+  constructor
+  · intro hglobal s _hfree x _hx
+    obtain ⟨w, hw, hreach⟩ := hglobal x
+    obtain ⟨t, ht⟩ := hcover w
+    exact ⟨t, ⟨w, hw, ht⟩, w, ht, hreach⟩
+  · intro hcross x
+    obtain ⟨s, hs⟩ := hcover x
+    by_cases hbearing : TargetBearing sides target s
+    · obtain ⟨w, hw, _, hreach⟩ := hsidewise s hbearing x hs
+      exact ⟨w, hw, reach_of_reachIn step hreach⟩
+    · obtain ⟨t, hbear, y, hy, hxy⟩ := hcross s hbearing x hs
+      obtain ⟨w, hw, _, hreach⟩ := hsidewise t hbear y hy
+      exact ⟨w, hw, hxy.trans (reach_of_reachIn step hreach)⟩
+
+end TargetAware
+
+/-! ## Square-side path lifting
+
+The lifting mechanism is a projection from one side onto the reduction's
+colourings.  Surjectivity, connected fibres, and the lifting of every legal
+edge to a path together carry connectedness downstairs to connectedness
+upstairs.  Establishing the three properties for the square is the graph-level
+work; the consequence is general and is proved here. -/
+
+section PathLifting
+
+variable {Upper Lower : Type*} (upperStep : Upper → Upper → Prop)
+  (lowerStep : Lower → Lower → Prop) (project : Upper → Lower)
+
+/-- The three properties the square layer must supply for one reduction
+side. -/
+structure SidePathLifting : Prop where
+  /-- Every colouring of the reduction expands to the side. -/
+  surjective : Function.Surjective project
+  /-- The local fibre over a colouring is connected by side moves. -/
+  connectedFibres : ∀ x y : Upper, project x = project y →
+    Relation.ReflTransGen upperStep x y
+  /-- Every legal edge downstairs lifts to a path upstairs. -/
+  liftsEdges : ∀ x : Upper, ∀ b : Lower, lowerStep (project x) b →
+    ∃ y : Upper, project y = b ∧ Relation.ReflTransGen upperStep x y
+
+variable {upperStep lowerStep project}
+
+/-- A path downstairs lifts to a path upstairs from any chosen start. -/
+theorem lift_path (hlift : SidePathLifting upperStep lowerStep project)
+    {a b : Lower} (hpath : Relation.ReflTransGen lowerStep a b) :
+    ∀ x : Upper, project x = a →
+      ∃ y : Upper, project y = b ∧ Relation.ReflTransGen upperStep x y := by
+  induction hpath with
+  | refl => exact fun x hx => ⟨x, hx, Relation.ReflTransGen.refl⟩
+  | tail _hpath hstep ih =>
+      intro x hx
+      obtain ⟨y, hy, hxy⟩ := ih x hx
+      obtain ⟨z, hz, hyz⟩ := hlift.liftsEdges y _ (by rw [hy]; exact hstep)
+      exact ⟨z, hz, hxy.trans hyz⟩
+
+/-- **Square-side path lifting.**  Connectedness of the reduction's
+reconfiguration graph implies connectedness of the side. -/
+theorem reflTransGen_of_sidePathLifting
+    (hlift : SidePathLifting upperStep lowerStep project)
+    (hlower : ∀ a b : Lower, Relation.ReflTransGen lowerStep a b)
+    (x y : Upper) : Relation.ReflTransGen upperStep x y := by
+  obtain ⟨z, hz, hxz⟩ := lift_path hlift (hlower (project x) (project y)) x rfl
+  exact hxz.trans (hlift.connectedFibres z y hz)
+
+end PathLifting
+
 end GoertzelV24SquareLadder
 
 end Mettapedia.GraphTheory.FourColor
