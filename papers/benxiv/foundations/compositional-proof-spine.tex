@@ -389,9 +389,44 @@ k&1&2&3&4&5&6&7&8&9&10\\ \hline
 This is numerical evidence, not a theorem about every possible cut.  Its
 logical force is narrower and important: an arbitrarily large clean
 hexagonal region is not automatically a one-dimensional bounded-interface
-ladder.  The Seed conclusion holds on all source specimens checked so far,
-so any valid global corridor theorem may use the seedless hypothesis; the
-manuscript's present derivation does not.
+ladder.
+
+\begin{remark}[cap-correct Seed audit]
+\label{rem:seed-census-all-pentagon-pairs}
+\Sprose
+The Seed conclusion has now been tested with the inner cap restored before
+Kempe components are counted, as required by the Reformulation Theorem.
+For every pair of vertex-disjoint pentagonal faces in the three source
+laboratories, exhaustive enumeration of the literal five-by-five boundary
+data gives
+\[
+\begin{array}{c|r|r|r|r|r|r}
+ &\text{pairs}&\text{disconnected}&\text{good fibres}&\text{good states}&
+   \text{menu-B states}&\text{seedless fibres}\\ \hline
+C_{24}&42&24&1260&10080&9036&0\\
+C_{30}&46&15&1380&23400&17340&0\\
+C_{40}&46&10&1380&118320&89580&0\\ \hline
+\text{total}&134&49&4020&151800&115956&0.
+\end{array}
+\]
+Here ``disconnected'' means that opening the two cap cycles isolates one
+edge joining an inner stub to an outer stub.  Such instances are not removed:
+connectivity is not a field of the source's boundary data or of
+\texttt{AnnularBoundaryData.WellFormed}, and the published $C_{24}$ audit
+itself includes this regime.  If one separately restricts to the $85$
+connected instances, the audit still has $2550$ good fibres, $114840$ good
+states, $84066$ menu-B states, and no seedless fibre.
+The polar cases reproduce the manuscript's published menu-B counts
+\(228/240\), \(390/600\), and \(1680/3120\), which is a fidelity check on
+the operational definition.  The deterministic audit is
+\texttt{tools/fourcolor/v24\_seed\_lemma\_census.py}.
+\end{remark}
+
+This is genuine evidence for the Seed Lemma, but it is not its proof: these
+are three finite fullerene families and all have five outer stubs.  It shows
+that a valid global corridor theorem may profitably use the seedless
+hypothesis; the manuscript's present derivation still does not construct the
+required bounded-interface chain from it.
 
 \begin{proposition}[target-forced compositional cut chain]
 \label{prop:target-forced-cut-chain}
