@@ -59,9 +59,10 @@ transition & machine-checked through the manuscript-exact two-pair projection,
 including realized edge and initial images; executable enumeration and closure
 remain open \\
 $T_6$ & Uniform production of a pumpable corridor in every large irreducible
-obstruction & open; the signed curvature identity alone does not imply a
-clean hexagonal corridor, but the bounded-face/long-face dichotomy below
-reduces the geometry to two explicit transfer constructions \\
+obstruction & open and presently the highest structural risk; signed
+curvature does not bound the defects, and a long clean patch need not already
+be a bounded-interface corridor.  The exact missing target-forced statement
+is Proposition~\ref{prop:target-forced-cut-chain} below \\
 $T_7$ & Equal-profile physical splice preserves the planar tangle, face
 bounds, boundary order, and the relevant zero count & open as one assembled
 constructor, although many fieldwise preservation lemmas are checked \\
@@ -195,7 +196,7 @@ $p_k$ for the number of $k$-faces and
 Euler's formula and double counting give
 \begin{equation}
   \sum_f(6-|f|)=12,
-  \qquad	ext{hence}qquad
+  \qquad\text{hence}\qquad
   p_5=12+W_-.
   \label{eq:signed-curvature-balance}
 \end{equation}
@@ -236,6 +237,22 @@ yet a graph-realized counterexample to
 Proposition~\ref{prop:uniform-bulk-hypothesis}; conversely, no theorem presently
 derives the proposition from cubicity, planarity, girth five, and cyclic
 five-edge-connectivity.  This is the highest mathematical risk in the route.
+
+The strongest existing all-face extraction theorem is exact but
+graph-relative.  If \(W=W_-(M)\) and a positive corridor length \(L\) is
+fixed, it proves
+\[
+ |F(M)|\le
+ (W+7)^{(((12+2W)(W+7)+1)L)-1}
+ \quad\text{or}\quad
+ M\text{ contains a radius-one clean hexagonal geodesic block of length }L.
+\]
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24WeightedOrbitFaceCorridor.orbitFace_card_le_weightedThreshold_or_exists_cleanHexCorridor}
+The first alternative is not a finite base: its right-hand side contains the
+unbounded parameter \(W(M)\) of the very graph being bounded.  For example,
+allowing \(W\ge |F|\) makes the inequality compatible with arbitrarily large
+\(|F|\).  Thus this theorem is a correct conditional corridor extractor, not
+a proof of a graph-independent threshold \(V_0\).
 
 The uniform weight bound is sufficient, but it is stronger than the
 compositional architecture actually needs.  The following elementary
@@ -299,11 +316,12 @@ geodesic of length at least $L$ inside that component, hence disjoint from
 $S$.
 \end{proof}
 
-Thus the marked face containing the special edges of the $A\ne\varnothing$
-system, the cap faces, and any fixed collar can be put into $S$ at an explicit
-multiplicative cost.  The source sentence that the defect budget ``localizes''
-the marked edges is unnecessary in this branch; bounded-degree dual
-connectivity gives the required avoidance directly.
+Thus, within the bounded-face branch, the marked face containing the special
+edges of the $A\ne\varnothing$ system, the cap faces, and any fixed collar can
+be put into $S$ at an explicit multiplicative cost.  The source sentence that
+the defect budget ``localizes'' the marked edges is unnecessary in this
+branch; bounded-degree dual connectivity gives the required avoidance
+directly.
 
 Consequently the bounded-face branch is a genuine chain of cells drawn from
 a finite alphabet depending only on $B$.  A dual step records its chosen
@@ -314,7 +332,8 @@ share at most one edge.  The existing hexagonal Cell is the $B=6$,
 all-central-faces-hexagonal subalphabet, not the only possible finite
 alphabet.
 
-The bounded-memory assertion in that last sentence is not merely heuristic.
+There is a useful local bound here, but it must not be confused with a bound
+on the complete transfer interface.
 
 \begin{lemma}[geodesic locality]
 \label{lem:geodesic-locality}
@@ -339,19 +358,73 @@ for the interacting radius-one data.  The bound is intentionally loose; its
 independence of $L$ is the point.
 \end{proof}
 
-Hence the receipt-enlargement process terminates structurally in the
-bounded-face branch: retaining a fixed radius-two axis window and the
-radius-one side faces already contains every face that can cross the next
-cut.  No prefix-length-dependent field is legitimate.  What remains for this
-branch is to instantiate the existing rooted Count factorization at the
-$B$-bounded cell alphabet and prove its physical splice, rather than inventing
-successively larger receipts.
+Lemma~\ref{lem:geodesic-locality} bounds the faces directly incident with the
+axis near one cut.  It does \emph{not} yet bound the complete interface to the
+unprocessed graph.  Components outside the radius-one slab may join side
+faces met at many different axis positions; a transfer state that remembers
+those pending connections can therefore grow with the prefix.  Proving that
+this cannot happen in a least Seed or $A\ne\varnothing$ obstruction, or
+turning a deep family of such connections into a second pumpable direction,
+is a separate theorem.  Consequently the lemma does not by itself terminate
+the receipt-enlargement process.
+
+This distinction is visible even in defect-free geometry.  For the Goldberg
+family obtained by subdividing every icosahedral triangle with frequency
+\(k\) and dualizing, one has twelve pentagons and only hexagons, so \(W_-=0\)
+while the number of vertices tends to infinity.  A direct combinatorial audit
+of the generated maps gives the following cap-distance cut sizes.  Here
+\(B_d\) is the set of primal vertices at graph distance at most \(d\) from
+the five vertices of one pentagonal cap, and \(\delta B_d\) is its edge
+boundary:
+\[
+\begin{array}{c|rrrrrrrrrr}
+k&1&2&3&4&5&6&7&8&9&10\\ \hline
+\max |\delta B_d|&10&20&30&40&50&60&70&80&90&100.
+\\
+\#\{d:|\delta B_d|\le20\}&3&9&12&15&12&12&12&12&12&12.
+\end{array}
+\]
+This is numerical evidence, not a theorem about every possible cut.  Its
+logical force is narrower and important: an arbitrarily large clean
+hexagonal region is not automatically a one-dimensional bounded-interface
+ladder.  The Seed conclusion holds on all source specimens checked so far,
+so any valid global corridor theorem may use the seedless hypothesis; the
+manuscript's present derivation does not.
+
+\begin{proposition}[target-forced compositional cut chain]
+\label{prop:target-forced-cut-chain}
+\Sopen
+For each fixed boundary type and for each of the two target systems (Seed and
+$A\ne\varnothing$), there are computable constants \(b,m,V_0\) with the
+following property.  Every ladder-irreducible target counterexample of size
+greater than \(V_0\) either has a strictly smaller target counterexample, or
+contains more than \(m\) pairwise nested simple ordered transversals, each
+meeting at most \(b\) graph edges, such that:
+\begin{enumerate}
+\item consecutive transversals bound nonempty composable slabs;
+\item the designated holes, special edges, and frozen boundary lie outside
+the slabs;
+\item every transversal has an exact saturated deletion side and a cycle on
+each complementary side; and
+\item equality of the finite cumulative target profile at two transversals
+constructs a smaller instance with the same zero target count.
+\end{enumerate}
+Here \(m\) is at least the cardinality of the finite cumulative profile
+carrier at width \(b\).
+\end{proposition}
+
+This proposition is the precise L1--splice junction.  It deliberately states
+the geometric outputs which the existing Lean interfaces consume: a simple
+transversal, its crossed-edge set, an exact deletion component boundary, two
+cyclic sides, and the correspondence used for surgery.  A chord wall, an
+induced dual path, or a bounded local collar supplies only part of this data.
 
 \begin{proposition}[the repaired global corridor obligation]
 \label{prop:global-corridor-alternative}
 \Sopen
 Choose constants $B,L$ above the relevant profile thresholds and prove both
-of the following source-preserving constructions.
+of the following source-preserving constructions, including all the
+transversal data in Proposition~\ref{prop:target-forced-cut-chain}.
 \begin{enumerate}
 \item A bounded-face geodesic of length $L$ factors through a finite
   manuscript profile and equal profiles admit a physical deletion splice.
@@ -362,14 +435,15 @@ Then every sufficiently large irreducible obstruction is pumpable, with no
 bound on $W_-$ and no claim that most faces are hexagons.
 \end{proposition}
 
-Theorem~\ref{thm:dual-diameter-dichotomy} proves that these two constructions
-are exhaustive.  This is a sharper and more plausible research front than
-Proposition~\ref{prop:uniform-bulk-hypothesis}: the high-negative-curvature
-branch is not discarded, but converted into either bounded nonhexagonal
-letters or a long boundary on which the same finite-interface idea can act.
+Theorem~\ref{thm:dual-diameter-dichotomy} proves that the two \emph{geometric
+inputs}---a bounded-face geodesic or a long face---are exhaustive.  It does
+not prove either transfer construction.  This is nevertheless a sharper
+research front than Proposition~\ref{prop:uniform-bulk-hypothesis}: the
+high-negative-curvature branch is retained explicitly instead of being
+discarded by an invalid unsigned-defect inference.
 
-The finite-state part of the long-boundary branch is also elementary once the
-planar connectivity is written as noncrossing pairings.
+One elementary combinatorial ingredient of the long-boundary branch is the
+following sweep lemma.
 
 \begin{lemma}[noncrossing length--depth alternative]
 \label{lem:noncrossing-length-depth}
@@ -396,15 +470,16 @@ cut positions therefore repeat a state.  If the depth bound fails, the first
 alternative holds.
 \end{proof}
 
-For the route, the two Kempe families give the matching stacks and capped
-face progress supplies additional finite labels.  In the shallow case an
-equal sweep state is the length splice interface.  In the deep case the
-nested arcs provide layer boundaries; applying the same pigeonhole argument
-to finite layer profiles gives the depth splice.  What is still load-bearing
-is geometric realization: the chosen cuts/layers must be simple ordered
-transversals, and deleting between equal states must preserve the target
-count and the map class.  Lemma~\ref{lem:noncrossing-length-depth} proves the
-classification, not that physical splice.
+For the route, the two Kempe families suggest the matching stacks and capped
+face progress supplies additional finite labels.  However those matchings
+belong to a colouring state, whereas the physical graph surgery must be
+defined before a global colouring exists.  In the shallow case an equal
+sweep state is therefore only a candidate length interface.  In the deep
+case nested arcs are only candidate layer boundaries.  One still has to
+construct simple ordered transversals from the graph embedding and prove that
+the cumulative zero-count profile factors through them.  The lemma proves a
+finite classification of abstract noncrossing matchings; it proves neither
+the graph-level dichotomy nor the splice.
 
 \subsection{The exact finite interface}
 
@@ -500,8 +575,10 @@ being silently promoted to an all-boundary theorem.
 Assume the following results in the forms consumed by the working manuscript:
 the Tait/minimal-counterexample bridge; the Kauffman trail spine and Trail
 Completability assembly; all four ladder transports including special-edge
-bookkeeping; either Proposition~\ref{prop:uniform-bulk-hypothesis} or both
-branches of Proposition~\ref{prop:global-corridor-alternative}; the exact
+bookkeeping; Proposition~\ref{prop:target-forced-cut-chain} (for example via
+either Proposition~\ref{prop:uniform-bulk-hypothesis} plus the source's clean
+corridor construction, or both branches of
+Proposition~\ref{prop:global-corridor-alternative}); the exact
 Count factorization and physical equal-profile splice; L2 on every relevant
 corridor type; and empty route-native finite bases for the Seed and
 $A\ne\varnothing$ systems.  Then every planar graph is four-colourable.
@@ -528,4 +605,6 @@ step (or its repaired two-branch replacement), the physical profile splice,
 the two route-native bases, the Seed and
 $A\ne\varnothing$ instantiations, and the final Trail Completability assembly.
 The exact finite transition work materially reduces one of those premises; it
-does not make the others disappear.
+does not make the others disappear.  In particular, neither the signed
+curvature identity nor the bounded-face geodesic theorem currently proves
+Proposition~\ref{prop:target-forced-cut-chain}.

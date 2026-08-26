@@ -218,7 +218,8 @@ expensive one.
 We record the fact that makes the algebra work.
 
 \begin{lemma}[the Klein identity]\label{lem:klein}
-\Sprose
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TaitReductionPotential.klein_sum_eq_zero}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TaitReductionPotential.klein_exhausts}
 The three nonzero elements of $\mathbb{F}_2^2$ sum to zero, and any three
 pairwise distinct nonzero elements of $\mathbb{F}_2^2$ are all three of them.
 \end{lemma}
@@ -300,14 +301,18 @@ so $c(u) \neq c(v)$. Thus $c \colon V(T) \to \mathbb{F}_2^2$ is a proper
 colouring with four colours, and its restriction to $G$ is one too.
 \end{proof}
 
+The algebraic implication used in Steps~1--4---from a facial Tait colouring,
+two-sidedness, connected primal and dual, and spherical cubic map data to a
+proper four-colouring---is now machine-checked as one theorem.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TaitReductionPotential.colorable_four_of_facialTaitColouring}
+
 \subsection{What the reduction costs}
 
 It is worth being explicit about where the remaining labour sits, since the
 proof above is complete as mathematics and incomplete as formalization.
 
-Steps~1 through~4 are algebra over $\mathbb{F}_2^2$ resting on
-Theorem~\ref{thm:cycle-space}, which is already machine-checked; formalizing
-them is bounded work with no research content.  The other ingredients are now
+Steps~1 through~4 are machine-checked algebra over $\mathbb{F}_2^2$ resting
+on Theorem~\ref{thm:cycle-space}.  The other ingredients are now
 equally explicit: Definition~\ref{def:stellar} and
 Theorem~\ref{thm:stellar-darts} replace maximality by a finite permutation
 construction; Definition~\ref{def:dual-map} is a change of generator; and
