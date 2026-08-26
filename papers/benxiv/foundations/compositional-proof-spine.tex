@@ -525,6 +525,75 @@ The manuscript's profile has three kinds of observable data:
 \item connectivity for the $\alpha\beta$ and $\alpha\gamma$ Kempe families;
 \item capped progress of faces crossing the cut.
 \end{enumerate}
+
+\begin{theorem}[exact rooted factorization of one positive Cell]
+\label{thm:exact-rooted-cell-factorization}
+Fix an executable corridor position together with the next two positions needed
+by the rolling root.  Let $p$ be an everywhere-positive cumulative-prefix
+colouring, and let $c$ be a positive literal Cell colouring which agrees with
+$p$ on their actual overlap.  Write $s(p)$ for the canonical rooted state at
+the incoming cut, $a(p,c)$ for the finite Cell--rebase letter extracted from
+the two colourings, and $p\diamond c$ for their right-biased splice.  Then:
+\begin{enumerate}
+\item $a(p,c)$ accepts $s(p)$ and its successor is exactly the canonical
+  rooted state $s(p\diamond c)$ at the following cut;
+\item every positive entry of the literal five-field Cell count supplies such
+  a Cell colouring $c$, so every source-positive Cell behaviour occurs in the
+  finite transition;
+\item the induced transition is independent of the ambient representative:
+  two witnesses with the same rooted source, literal Cell code, successor
+  source-profile, and four rebase-role colours induce the same source and
+  target rooted states, hence the same transition relation; and
+\item the realized initial set and the realized directed-edge set have exact
+  witness semantics.  Membership is equivalent, respectively, to the
+  existence of a compatible first-position witness and to the existence of a
+  compatible positioned prefix/Cell witness.
+\end{enumerate}
+After projection to the manuscript's two Kempe families, terminal-aware
+compression preserves precisely the equality fibres of both endpoints.
+Consequently it changes neither the realized edge count nor the realizable
+initial count.
+\end{theorem}
+
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialRootedInteractionRollingTransitionColorParametric.sourceLocalLayerSerialRootedInteractionRollingCellFactorForColorAt_successor_exact}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialCellCountRootedRollingFactorization.exists_rootedRollingFactorizationForColor_of_count_pos}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialRootedInteractionRealizableTransition.sourceLocalLayerSerialRootedInteraction_targetCongruentAt}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialRootedInteractionRealizableTransition.sourceLocalLayerSerialRootedInteraction_transition_invariant_of_targetCongruent}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialRootedInteractionPositionedSourceClosure.mem_sourceLocalLayerSerialRealizedInitialSourceCompressedProfileSet_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialRootedInteractionPositionedSourceClosure.mem_sourceLocalLayerSerialPositionedRealizedSourceCompressedProfileEdgeSet_iff}
+
+\begin{proof}
+For the first assertion, form the literal Cell colour on the ambient edge
+carrier, splice it with $p$ on the Cell region, and then perform the boundary
+rebase.  Positivity makes every one of the four rebase-role colours nonzero.
+The finite letter first checks the physical Cell profile and the equality of
+the shared intermediate profile.  Its tracked and facial rebase maps then
+compute the two successor exterior relations, while the rolling maps compute
+the next interaction roots.  Projection along the fixed carrier coordinates
+recovers the successor cut colours, the two connectivity relations, and the
+capped face-progress field.  Equality in each field therefore identifies the
+computed state with $s(p\diamond c)$.
+
+For the second assertion, a positive count is a nonempty finite set of literal
+open Tait colourings with the prescribed left and right five-field profiles.
+Choose one member.  The overlap hypothesis is exactly the condition required
+to splice it with $p$, so the first assertion applies.  Conversely, letters in
+the realized alphabet are defined as images of these compatible literal
+witnesses; hence no accepted behaviour is introduced by the extraction.
+
+For representation invariance, retain only the rooted source, literal Cell
+code, output profile, and rebase-role colours.  Equality of these data gives
+equality on the active part of the fixed rebase collar.  The tracked local
+graphs therefore agree.  The facial output is already determined by the
+common output profile, and the four role colours determine the transported
+cut colouring.  Extensionality of the rooted state gives equal targets, so
+the two singleton transition relations coincide.  Finally, both realized
+sets are finite images.  Membership in an image is equivalent to existence
+of a preimage, giving the two witness characterizations.  On terminal graph
+profiles the compression map is injective, endpoint by endpoint, which proves
+the final cardinality statement.
+\end{proof}
+
 The Lean transition uses a conservative three-pair refinement internally and
 then projects to exactly the two families named by the manuscript.  It proves
 that every compatible positive literal Cell witness followed by the boundary
@@ -546,19 +615,32 @@ the live $(2,1,4)$ shape its carrier is exactly sixteen times larger:
 This equality is machine-checked.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SourceTerminalAwareProfileCompression.boundedTerminalAwareCompressedProfileCount_two_one_four_eq}
 
-These theorems settle manuscript-exact one-cell behavioral factorization.
-They do not yet justify a numerical closure count, because the exact realized
-letter and initial images are still specified as images of literal ambient
-witnesses.  An executable generator must be proved equal to those images
-before a BFS certificate can report an authoritative number.
+Theorem~\ref{thm:exact-rooted-cell-factorization} settles manuscript-exact
+one-cell behavioural factorization.  It does not yet justify a numerical
+closure count, because the exact realized letter and initial images are still
+specified as finite images of literal ambient witnesses.  That is a semantic
+specification, not yet a practical enumerator.
 
 \begin{proposition}[Exact closure gate]
 \label{prop:exact-closure-gate}
 \Sopen
-Produce finite arrays of manuscript-exact two-pair initial profiles and letter
-edges, prove that their entries are exactly the graph-realized images, and
-kernel-replay the reachable closure.  Then, and only then, the array length is
-the source profile count used in pumping.
+For each relevant corridor type, produce finite arrays $I$ of
+manuscript-exact two-pair initial profiles and $E$ of directed profile edges
+such that
+\[
+ q\in I\quad\Longleftrightarrow\quad
+ q\text{ is produced by a compatible literal first-position witness},
+\]
+and
+\[
+ (q,q')\in E\quad\Longleftrightarrow\quad
+ (q,q')\text{ is produced by a compatible positive prefix/Cell witness}.
+\]
+Prove both biconditionals in the kernel, replay breadth-first reachability from
+$I$ through $E$, and compare the resulting state-set fingerprint and count
+with an independently implemented generator.  Then, and only then, the
+replayed array length is the exact reachable source-profile count for that
+corridor type.
 \end{proposition}
 
 The measured $(5,0)$ certificates remain valuable regression tests, but they
