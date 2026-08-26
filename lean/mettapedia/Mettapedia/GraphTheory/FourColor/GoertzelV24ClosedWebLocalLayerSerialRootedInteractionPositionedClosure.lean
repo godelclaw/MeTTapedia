@@ -9,14 +9,17 @@ Cell and the following rebase are defined.  This file takes that finite union
 without enumerating the ambient factor type.
 
 A positioned witness packages its offset together with the two successor
-bounds required by the rolling transition.  Its encoded letter is the finite
-Cell--rebase factor, so equal codes remain representation-invariant even when
-they arose at different positions.  Separately, the first-position witness
-image gives the exact realizable initial states for the corridor run.
+bounds required by the rolling transition.  Two finite images are exposed.
+The factor image supports graph-free application of a realized Cell--rebase
+factor to candidate states.  The smaller endpoint image contains exactly the
+literal source/target edges and therefore carries direct witness provenance
+without a separate concatenation-realizability assumption.  Separately, the
+first-position witness image gives the exact realizable initial states for the
+corridor run.
 
-No reachable closure is asserted here.  The next layer starts from the finite
-initial image and repeatedly applies the finite positioned factor image, or
-replays an external sparse certificate for that same transition system.
+No numerical reachable closure is asserted here.  Sparse replay interfaces are
+provided for both the exact endpoint graph and the more permissive pooled
+factor system; their different semantic scopes are explicit in their types.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -146,6 +149,144 @@ noncomputable def sourceLocalLayerSerialPositionedRootedInteractionStep
   sourceLocalLayerSerialRootedInteractionRealizedStepAt graphData minimal caps
     coloring web corridor hunique witness.1.offset witness.1.hasNext
       witness.1.hasNextNext witness.2
+
+/-- The representation-free observable edge of one positioned literal
+witness.  Different positions and ambient witnesses which realize the same
+rooted source and target collapse to one value. -/
+abbrev SourceLocalLayerSerialPositionedRootedInteractionEdge :=
+  SourceLocalLayerSerialRootedInteractionState ×
+    SourceLocalLayerSerialRootedInteractionState
+
+/-- Forget a positioned witness while retaining exactly its rooted transition
+endpoints. -/
+noncomputable def sourceLocalLayerSerialPositionedRootedInteractionEdge
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (witness : SourceLocalLayerSerialPositionedRootedInteractionRealization
+      graphData caps coloring web corridor hunique) :
+    SourceLocalLayerSerialPositionedRootedInteractionEdge :=
+  let step := sourceLocalLayerSerialPositionedRootedInteractionStep graphData
+    minimal caps coloring web corridor hunique witness
+  (step.source, step.target)
+
+/-- The executable relation denoted by one observable rooted edge. -/
+def sourceLocalLayerSerialPositionedEdgeTransition
+    (edge : SourceLocalLayerSerialPositionedRootedInteractionEdge)
+    (source target : SourceLocalLayerSerialRootedInteractionState) : Prop :=
+  source = edge.1 ∧ target = edge.2
+
+/-- A realized step relation is exactly the singleton relation carried by its
+observable endpoint pair. -/
+theorem sourceLocalLayerSerialPositionedStep_transition_eq_edgeTransition
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (witness : SourceLocalLayerSerialPositionedRootedInteractionRealization
+      graphData caps coloring web corridor hunique) :
+    (sourceLocalLayerSerialPositionedRootedInteractionStep graphData minimal caps
+      coloring web corridor hunique witness).transition =
+      sourceLocalLayerSerialPositionedEdgeTransition
+        (sourceLocalLayerSerialPositionedRootedInteractionEdge graphData minimal
+          caps coloring web corridor hunique witness) := by
+  funext source target
+  apply propext
+  exact
+    sourceLocalLayerSerialRootedInteractionRealizedStepAt_transition_iff graphData
+      minimal caps coloring web corridor hunique witness.1.offset
+        witness.1.hasNext witness.1.hasNextNext witness.2 source target
+
+/-- Exact finite rooted-letter presentation obtained by quotienting all
+positioned literal witnesses by their observable transition endpoints. -/
+noncomputable def sourceLocalLayerSerialPositionedEdgePresentation
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))) :=
+  RootedLetterPresentation.ofFiniteImage
+    (fun witness :
+        SourceLocalLayerSerialPositionedRootedInteractionRealization graphData
+          caps coloring web corridor hunique =>
+      (sourceLocalLayerSerialPositionedRootedInteractionStep graphData minimal
+        caps coloring web corridor hunique witness).transition)
+    (sourceLocalLayerSerialPositionedRootedInteractionEdge graphData minimal caps
+      coloring web corridor hunique)
+    (by
+      intro left right hedge
+      rw [sourceLocalLayerSerialPositionedStep_transition_eq_edgeTransition,
+        sourceLocalLayerSerialPositionedStep_transition_eq_edgeTransition,
+        hedge])
+
+/-- The finite set of distinct rooted transition edges realized at some
+executable position of the fixed corridor. -/
+noncomputable def sourceLocalLayerSerialPositionedRealizedEdgeSet
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))) :
+    Finset SourceLocalLayerSerialPositionedRootedInteractionEdge :=
+  realizedCodeImage
+    (sourceLocalLayerSerialPositionedRootedInteractionEdge graphData minimal caps
+      coloring web corridor hunique)
+
+/-- Membership in the observable edge image is equivalent to realization by
+an actual compatible literal witness at an executable corridor position. -/
+theorem mem_sourceLocalLayerSerialPositionedRealizedEdgeSet_iff
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (edge : SourceLocalLayerSerialPositionedRootedInteractionEdge) :
+    edge ∈ sourceLocalLayerSerialPositionedRealizedEdgeSet graphData minimal caps
+        coloring web corridor hunique ↔
+      ∃ witness : SourceLocalLayerSerialPositionedRootedInteractionRealization
+          graphData caps coloring web corridor hunique,
+        sourceLocalLayerSerialPositionedRootedInteractionEdge graphData minimal
+          caps coloring web corridor hunique witness = edge := by
+  classical
+  simp [sourceLocalLayerSerialPositionedRealizedEdgeSet, realizedCodeImage]
 
 /-- The source-realized factor alphabet across every executable position of
 the fixed corridor. -/
@@ -359,6 +500,110 @@ theorem sourceLocalLayerSerialPositionedStep_oneStep
           minimal caps coloring web corridor hunique witness.1.offset
             witness.1.hasNext witness.1.hasNextNext witness.2).2.1⟩
 
+/-- The exact literal one-step relation: an edge is admitted only when some
+compatible positive source witness realizes precisely those two endpoints.
+Unlike the pooled factor relation above, this definition does not apply a
+realized factor to a source state for which no literal representative has yet
+been constructed. -/
+noncomputable def sourceLocalLayerSerialPositionedExactOneStep
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (source target : SourceLocalLayerSerialRootedInteractionState) : Prop :=
+  (source, target) ∈
+    sourceLocalLayerSerialPositionedRealizedEdgeSet graphData minimal caps coloring
+      web corridor hunique
+
+noncomputable instance sourceLocalLayerSerialPositionedExactOneStepDecidable
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))) :
+    DecidableRel (sourceLocalLayerSerialPositionedExactOneStep graphData minimal
+      caps coloring web corridor hunique) :=
+  Classical.decRel _
+
+/-- Exact source meaning of one observable edge. -/
+theorem sourceLocalLayerSerialPositionedExactOneStep_iff_exists_witness
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (source target : SourceLocalLayerSerialRootedInteractionState) :
+    sourceLocalLayerSerialPositionedExactOneStep graphData minimal caps coloring
+        web corridor hunique source target ↔
+      ∃ witness : SourceLocalLayerSerialPositionedRootedInteractionRealization
+          graphData caps coloring web corridor hunique,
+        (sourceLocalLayerSerialPositionedRootedInteractionStep graphData minimal
+          caps coloring web corridor hunique witness).source = source ∧
+        (sourceLocalLayerSerialPositionedRootedInteractionStep graphData minimal
+          caps coloring web corridor hunique witness).target = target := by
+  classical
+  rw [sourceLocalLayerSerialPositionedExactOneStep,
+    mem_sourceLocalLayerSerialPositionedRealizedEdgeSet_iff]
+  constructor
+  · rintro ⟨witness, hedge⟩
+    exact ⟨witness, congrArg Prod.fst hedge, congrArg Prod.snd hedge⟩
+  · rintro ⟨witness, hsource, htarget⟩
+    refine ⟨witness, ?_⟩
+    exact Prod.ext hsource htarget
+
+/-- Every exact literal edge is accepted by the pooled executable-factor
+relation.  The converse is intentionally not claimed: it is precisely the
+missing concatenation-realizability obligation for applying a factor to a new
+rooted source. -/
+theorem sourceLocalLayerSerialPositionedExactOneStep_imp_oneStep
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    {source target : SourceLocalLayerSerialRootedInteractionState}
+    (hstep : sourceLocalLayerSerialPositionedExactOneStep graphData minimal caps
+      coloring web corridor hunique source target) :
+    sourceLocalLayerSerialPositionedOneStep graphData minimal caps coloring web
+      corridor hunique source target := by
+  rcases
+      (sourceLocalLayerSerialPositionedExactOneStep_iff_exists_witness graphData
+        minimal caps coloring web corridor hunique source target).1 hstep with
+    ⟨witness, hsource, htarget⟩
+  subst source
+  subst target
+  exact sourceLocalLayerSerialPositionedStep_oneStep graphData minimal caps
+    coloring web corridor hunique witness
+
 /-- The first executable rolling position, under the exact length premise
 needed for two following cuts. -/
 def sourceLocalLayerSerialFirstRollingPosition
@@ -518,6 +763,127 @@ theorem sourceLocalLayerSerialRealizedInitialState_hasRepresentative
     minimal caps coloring web corridor hunique hlength
   exact ⟨realizedCodeRepresentative encode state,
     congrArg Subtype.val (realizedCodeOf_representative encode state)⟩
+
+/-- A sparse closure replay over exact literal endpoint pairs.  In contrast to
+the factor replay below, its transition alphabet contains no application of a
+realized factor to an unrelated source state: every allowed edge has a literal
+compatible witness by `mem_sourceLocalLayerSerialPositionedRealizedEdgeSet_iff`.
+-/
+structure SourceLocalLayerSerialPositionedExactEdgeClosureReplay
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (hlength : 2 < blockLength - 3) where
+  certificate : ExactReachableClosureCertificate
+    SourceLocalLayerSerialRootedInteractionState
+    SourceLocalLayerSerialPositionedRootedInteractionEdge Unit
+  transition_eq : certificate.transition =
+    fun source edge target =>
+      sourceLocalLayerSerialPositionedEdgeTransition edge source target
+  allowedLetter_eq : certificate.allowedLetter =
+    fun edge => edge ∈
+      sourceLocalLayerSerialPositionedRealizedEdgeSet graphData minimal caps
+        coloring web corridor hunique
+  realizable_eq : certificate.realizable =
+    fun state => state ∈
+      sourceLocalLayerSerialRealizedInitialStateSet graphData minimal caps coloring
+        web corridor hunique hlength
+
+/-- The edge replay's letter array is exactly the image of literal compatible
+positioned witnesses. -/
+theorem SourceLocalLayerSerialPositionedExactEdgeClosureReplay.letter_entry_iff
+    {graphData : Data G}
+    {minimal : GraphBackedVertexMinimalTaitCounterexample graphData}
+    {caps : OrientedFacialPentagonCapPair graphData}
+    {coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color}
+    {web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring}
+    {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {hlength : 2 < blockLength - 3}
+    (replay : SourceLocalLayerSerialPositionedExactEdgeClosureReplay graphData
+      minimal caps coloring web corridor hunique hlength)
+    (edge : SourceLocalLayerSerialPositionedRootedInteractionEdge) :
+    (∃ letterIndex : Nat,
+      replay.certificate.letters[letterIndex]? = some edge) ↔
+      edge ∈ sourceLocalLayerSerialPositionedRealizedEdgeSet graphData minimal
+        caps coloring web corridor hunique := by
+  rw [← replay.certificate.letters_exact, replay.allowedLetter_eq]
+
+/-- Every replayed edge has direct literal source provenance. -/
+theorem SourceLocalLayerSerialPositionedExactEdgeClosureReplay.letter_entry_iff_witness
+    {graphData : Data G}
+    {minimal : GraphBackedVertexMinimalTaitCounterexample graphData}
+    {caps : OrientedFacialPentagonCapPair graphData}
+    {coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color}
+    {web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring}
+    {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {hlength : 2 < blockLength - 3}
+    (replay : SourceLocalLayerSerialPositionedExactEdgeClosureReplay graphData
+      minimal caps coloring web corridor hunique hlength)
+    (edge : SourceLocalLayerSerialPositionedRootedInteractionEdge) :
+    (∃ letterIndex : Nat,
+      replay.certificate.letters[letterIndex]? = some edge) ↔
+      ∃ witness : SourceLocalLayerSerialPositionedRootedInteractionRealization
+          graphData caps coloring web corridor hunique,
+        sourceLocalLayerSerialPositionedRootedInteractionEdge graphData minimal
+          caps coloring web corridor hunique witness = edge := by
+  rw [replay.letter_entry_iff,
+    mem_sourceLocalLayerSerialPositionedRealizedEdgeSet_iff]
+
+/-- Exact semantic meaning of the edge replay's reported state count.  The
+array entries are precisely the states reachable from exact first-cut states
+through endpoint pairs which themselves have literal compatible witnesses. -/
+theorem SourceLocalLayerSerialPositionedExactEdgeClosureReplay.state_entry_iff
+    {graphData : Data G}
+    {minimal : GraphBackedVertexMinimalTaitCounterexample graphData}
+    {caps : OrientedFacialPentagonCapPair graphData}
+    {coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color}
+    {web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring}
+    {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {hlength : 2 < blockLength - 3}
+    (replay : SourceLocalLayerSerialPositionedExactEdgeClosureReplay graphData
+      minimal caps coloring web corridor hunique hlength)
+    (state : SourceLocalLayerSerialRootedInteractionState) :
+    (∃ stateIndex : Nat,
+      replay.certificate.states[stateIndex]? = some state) ↔
+      ClosureReachable
+        (fun source edge target =>
+          sourceLocalLayerSerialPositionedEdgeTransition edge source target)
+        (fun candidate => candidate ∈
+          sourceLocalLayerSerialRealizedInitialStateSet graphData minimal caps
+            coloring web corridor hunique hlength)
+        (fun edge => edge ∈
+          sourceLocalLayerSerialPositionedRealizedEdgeSet graphData minimal caps
+            coloring web corridor hunique)
+        state := by
+  rw [ExactReachableClosureCertificate.state_entry_iff_reachable,
+    replay.transition_eq, replay.realizable_eq, replay.allowedLetter_eq]
 
 /-- A sparse exact-closure replay bound to this source instance rather than to
 three arbitrary arrays.  The equalities make the certificate's transition,
