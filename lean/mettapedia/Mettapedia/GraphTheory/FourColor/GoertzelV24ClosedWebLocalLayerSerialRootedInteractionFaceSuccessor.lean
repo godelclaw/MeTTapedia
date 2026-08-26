@@ -1,5 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialRootedInteractionFacePreRebaseExact
-import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialCellUniformFaceTargetCap
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialCellUniformFaceTargetCapState
 import Mettapedia.GraphTheory.FourColor.GoertzelV24InterfaceExteriorLabelCapFactorMaskUpdate
 
 /-!
@@ -29,6 +29,13 @@ open GoertzelV24ClosedWebAtGoodWord.Instance.LocalLayerFormation
 open GoertzelV24ClosedWebBoundaryData
 open GoertzelV24ClosedWebLocalLayerSerialCellUniformFaceRecurrence
 open GoertzelV24ClosedWebLocalLayerSerialCellUniformFaceTargetCap
+open GoertzelV24ClosedWebLocalLayerSerialCellUniformFaceTargetCapExact
+open GoertzelV24ClosedWebLocalLayerSerialCellUniformFaceTargetCapState
+open GoertzelV24ClosedWebLocalLayerSerialCellUniformFaceTargetCode
+open GoertzelV24ClosedWebLocalLayerSerialCellUniformFaceTargetIncidence
+open GoertzelV24ClosedWebLocalLayerSerialCellFaceDeletionStableParametricCapState
+open GoertzelV24ClosedWebLocalLayerSerialCellNativeFactorization
+open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionFacePreRebaseState
 open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionFacePreRebaseExact
 open GoertzelV24ClosedWebLocalLayerSerialRootedInteractionState
 open GoertzelV24CorridorProfile
@@ -36,10 +43,12 @@ open GoertzelV24DeletionSensitivePortResidualFactorContraction
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24FacialPentagonCap
 open GoertzelV24InterfaceExteriorLabelCapFactor
+open GoertzelV24InterfaceExteriorLabelCapFactorForget
 open GoertzelV24InterfaceExteriorLabelCapFactorMaskUpdate
 open GoertzelV24InterfaceExteriorLabelCapFactorUpdate
 open GoertzelV24InterfaceDeletionComponentFactor
 open GoertzelV24InterfaceDeletionComponentFactorTotal
+open GoertzelV24MinimalFacialPentagonCapPairLocalCellCarrier
 open GoertzelV24RotationFaceInterfaceExteriorLabelCap
 open GoertzelV24RotationFaceRegionalDartGraph
 open GoertzelV24TwoEdgeCutMinimality
@@ -52,6 +61,12 @@ variable {V : Type*} [Fintype V] [DecidableEq V]
 
 noncomputable section
 
+/-- Canonical executable order on oriented finite incidences. -/
+local instance rootedInteractionFaceSuccessorIncidenceLinearOrder {n : Nat} :
+    LinearOrder (Fin n × Bool) :=
+  LinearOrder.lift' (fun incidence : Fin n × Bool => toLex incidence)
+    toLex.injective
+
 local instance rootedInteractionFaceSuccessorOpenedGraphDecidableRel
     (caps : OrientedFacialPentagonCapPair (G := G) graphData) :
     DecidableRel
@@ -63,10 +78,18 @@ transition.  The dependent carrier retains its actual cardinality below the
 uniform bound; arbitrary inhabitants need not be source-realizable. -/
 structure SourceLocalLayerSerialFaceRebaseFactor where
   interactionCount : Fin 49
+  targetCount : Fin 25
   switchMask : Fin interactionCount.val → Bool
   localAdjacency :
     Fin interactionCount.val → Fin interactionCount.val → Bool
   localPresent : Fin interactionCount.val → Bool
+  targetSource :
+    Fin targetCount.val → Option (Fin interactionCount.val)
+  targetPresent : Fin targetCount.val → Bool
+  targetEntry :
+    Fin targetCount.val × Bool →
+      Option (ExteriorLabelCapContractionAtom
+        (Fin interactionCount.val) (Fin interactionCount.val × Bool))
 
 noncomputable instance :
     DecidableEq SourceLocalLayerSerialFaceRebaseFactor :=
@@ -74,23 +97,35 @@ noncomputable instance :
 
 private abbrev sourceLocalLayerSerialFaceRebaseFactorCode :=
   Σ interactionCount : Fin 49,
-    (Fin interactionCount.val → Bool) ×
-      (Fin interactionCount.val → Fin interactionCount.val → Bool) ×
-      (Fin interactionCount.val → Bool)
+    Σ targetCount : Fin 25,
+      (Fin interactionCount.val → Bool) ×
+        (Fin interactionCount.val → Fin interactionCount.val → Bool) ×
+        (Fin interactionCount.val → Bool) ×
+        (Fin targetCount.val → Option (Fin interactionCount.val)) ×
+        (Fin targetCount.val → Bool) ×
+        (Fin targetCount.val × Bool →
+          Option (ExteriorLabelCapContractionAtom
+            (Fin interactionCount.val) (Fin interactionCount.val × Bool)))
 
 private def sourceLocalLayerSerialFaceRebaseFactorEquiv :
-    SourceLocalLayerSerialFaceRebaseFactor ≃
+  SourceLocalLayerSerialFaceRebaseFactor ≃
       sourceLocalLayerSerialFaceRebaseFactorCode where
-  toFun factor := ⟨factor.interactionCount, factor.switchMask,
-    factor.localAdjacency, factor.localPresent⟩
+  toFun factor := ⟨factor.interactionCount, factor.targetCount,
+    factor.switchMask, factor.localAdjacency, factor.localPresent,
+    factor.targetSource, factor.targetPresent, factor.targetEntry⟩
   invFun factor := {
     interactionCount := factor.1
-    switchMask := factor.2.1
-    localAdjacency := factor.2.2.1
-    localPresent := factor.2.2.2 }
+    targetCount := factor.2.1
+    switchMask := factor.2.2.1
+    localAdjacency := factor.2.2.2.1
+    localPresent := factor.2.2.2.2.1
+    targetSource := factor.2.2.2.2.2.1
+    targetPresent := factor.2.2.2.2.2.2.1
+    targetEntry := factor.2.2.2.2.2.2.2 }
   left_inv factor := by cases factor; rfl
   right_inv factor := by
-    rcases factor with ⟨count, mask, adjacency, present⟩
+    rcases factor with ⟨interactionCount, targetCount, switchMask,
+      localAdjacency, localPresent, targetSource, targetPresent, targetEntry⟩
     rfl
 
 set_option synthInstance.maxSize 256 in
@@ -113,6 +148,37 @@ def SourceLocalLayerSerialFaceRebaseFactor.uniformSuccessorCode
     (maskInterfaceExteriorLabelCapCode
       (hcount ▸ preRebase.code ()) Prod.fst factor.switchMask)
     factor.localAdjacency factor.localPresent
+
+/-- Contract the exact uniform successor code onto the next rolling facial
+carrier.  Forgotten interaction coordinates become finite exterior atoms. -/
+def SourceLocalLayerSerialFaceRebaseFactor.targetState
+    (factor : SourceLocalLayerSerialFaceRebaseFactor)
+    (preRebase : SourceLocalLayerSerialFaceInteractionPrefixState)
+    (hcount : preRebase.vertexCount = factor.interactionCount) :
+    SourceLocalLayerSerialFaceDeletionStableCapSixState where
+  vertexCount := factor.targetCount
+  code := fun _ ↦ partialContractedInterfaceExteriorLabelCapCode
+    (factor.uniformSuccessorCode preRebase hcount)
+    factor.targetSource Prod.fst factor.targetPresent factor.targetEntry
+
+/-- Guarded executable target contraction. -/
+def SourceLocalLayerSerialFaceRebaseFactor.targetState?
+    (factor : SourceLocalLayerSerialFaceRebaseFactor)
+    (preRebase : SourceLocalLayerSerialFaceInteractionPrefixState) :
+    Option SourceLocalLayerSerialFaceDeletionStableCapSixState :=
+  if hcount : preRebase.vertexCount = factor.interactionCount then
+    some (factor.targetState preRebase hcount)
+  else none
+
+/-- Complete graph-free facial half of a rooted Cell--rebase transition. -/
+def sourceLocalLayerSerialRootedInteractionFaceSuccessorState?
+    {outputCount : Fin 5}
+    (state : SourceLocalLayerSerialRootedInteractionState)
+    (localFactor : SourceLocalLayerSerialCellPhysicalBoolLocalFactor outputCount)
+    (rebaseFactor : SourceLocalLayerSerialFaceRebaseFactor) :
+    Option SourceLocalLayerSerialFaceDeletionStableCapSixState :=
+  (sourceLocalLayerSerialRootedInteractionFacePreRebaseState? state localFactor
+    ).bind rebaseFactor.targetState?
 
 /-- Literal finite facial rebase factor on the complete interaction carrier. -/
 noncomputable def sourceLocalLayerSerialFaceRebaseFactorAt
@@ -139,11 +205,19 @@ noncomputable def sourceLocalLayerSerialFaceRebaseFactorAt
     hunique offset hnext
   let nextRegion := sourceLocalLayerSerialTerminalInputRegionAt corridor hunique
     (sourceLocalLayerNextOffset offset hnext)
+  let target := sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+    (sourceLocalLayerNextOffset offset hnext)
   have hinteraction : interaction.card ≤ 48 :=
     sourceLocalLayerSerialCellRebaseFaceInteractionCarrierAt_card_le_fortyEight
       graphData minimal caps coloring web corridor hunique offset hnext
+  have htarget : target.card ≤ 24 :=
+    sourceLocalLayerSerialFaceTransitionCarrierAt_card_le_twentyFour corridor
+      hunique (sourceLocalLayerNextOffset offset hnext)
+        (sourceLocalLayerCellRegionAt_card_le_six graphData minimal caps coloring
+          web corridor hunique (sourceLocalLayerNextOffset offset hnext))
   exact {
     interactionCount := ⟨interaction.card, Nat.lt_succ_of_le hinteraction⟩
+    targetCount := ⟨target.card, Nat.lt_succ_of_le htarget⟩
     switchMask := sourceLocalLayerSerialCellRebaseUniformFaceSwitchMaskAt
       corridor hunique offset hnext
     localAdjacency := fun left right ↦ by
@@ -151,7 +225,16 @@ noncomputable def sourceLocalLayerSerialFaceRebaseFactorAt
       exact decide (localGraph.Adj (dartAt left) (dartAt right))
     localPresent := fun slot ↦ by
       classical
-      exact decide (web.annular.RS.edgeOf (dartAt slot) ∈ nextRegion) }
+      exact decide (web.annular.RS.edgeOf (dartAt slot) ∈ nextRegion)
+    targetSource :=
+      sourceLocalLayerSerialCellRebaseUniformFaceTargetSourceAt corridor hunique
+        offset hnext
+    targetPresent :=
+      sourceLocalLayerSerialCellRebaseUniformFaceTargetPresentAt corridor hunique
+        offset hnext
+    targetEntry :=
+      sourceLocalLayerSerialCellRebaseUniformFaceTargetEntryAt graphData minimal
+        caps coloring web corridor hunique offset hnext }
 
 @[simp]
 theorem sourceLocalLayerSerialFaceRebaseFactorAt_interactionCount
@@ -173,6 +256,29 @@ theorem sourceLocalLayerSerialFaceRebaseFactorAt_interactionCount
       corridor hunique offset hnext).interactionCount.val =
       (sourceLocalLayerSerialCellRebaseFaceInteractionCarrierAt corridor hunique
         offset hnext).card := by
+  rfl
+
+/-- The source factor records the literal next rolling carrier count. -/
+@[simp]
+theorem sourceLocalLayerSerialFaceRebaseFactorAt_targetCount
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3) :
+    (sourceLocalLayerSerialFaceRebaseFactorAt graphData minimal caps coloring web
+      corridor hunique offset hnext).targetCount.val =
+      (sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+        (sourceLocalLayerNextOffset offset hnext)).card := by
   rfl
 
 /-- Applying the literal finite factor to the canonical pre-rebase code gives
@@ -320,6 +426,135 @@ theorem sourceLocalLayerSerialFaceRebaseUniformSuccessorAt_eq
       web.annular.RS.edgeOf 6)
     (sourceLocalLayerBoundaryRebaseCore_sup_local_eq_successor corridor hunique
       offset hnext)
+
+/-- The literal finite target contraction agrees definitionally on every
+target row once the exact uniform-successor equality is installed. -/
+theorem sourceLocalLayerSerialFaceRebaseTargetStateAt_code_eq
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3) :
+    let preRebase := sourceLocalLayerSerialFaceInteractionPreRebaseStateAt
+      graphData minimal caps coloring web corridor hunique offset hnext
+    let factor := sourceLocalLayerSerialFaceRebaseFactorAt graphData minimal caps
+      coloring web corridor hunique offset hnext
+    (factor.targetState preRebase (by rfl)).code () =
+      sourceLocalLayerSerialCellRebaseUniformFaceTargetLabelCapSixCodeAt
+        graphData minimal caps coloring web corridor hunique offset hnext := by
+  dsimp only
+  unfold SourceLocalLayerSerialFaceRebaseFactor.targetState
+  dsimp only
+  rw [sourceLocalLayerSerialFaceRebaseUniformSuccessorAt_eq graphData minimal
+    caps coloring web corridor hunique offset hnext]
+  rfl
+
+/-- The finite facial rebase factor returns exactly the source-extracted
+cap-six state at the next rolling cut. -/
+theorem sourceLocalLayerSerialFaceRebaseTargetStateAt_eq
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3) :
+    let preRebase := sourceLocalLayerSerialFaceInteractionPreRebaseStateAt
+      graphData minimal caps coloring web corridor hunique offset hnext
+    let factor := sourceLocalLayerSerialFaceRebaseFactorAt graphData minimal caps
+      coloring web corridor hunique offset hnext
+    let next := sourceLocalLayerNextOffset offset hnext
+    let hcell := sourceLocalLayerCellRegionAt_card_le_six graphData minimal caps
+      coloring web corridor hunique next
+    factor.targetState preRebase (by rfl) =
+      sourceLocalLayerSerialFaceDeletionStableParametricCapPrefixAt corridor
+        hunique next hcell 6 := by
+  dsimp only
+  calc
+    _ = sourceLocalLayerSerialCellRebaseUniformFaceTargetCapSixStateAt graphData
+        minimal caps coloring web corridor hunique offset hnext := by
+      unfold SourceLocalLayerSerialFaceRebaseFactor.targetState
+        sourceLocalLayerSerialCellRebaseUniformFaceTargetCapSixStateAt
+      dsimp only
+      congr 1
+      funext family
+      exact sourceLocalLayerSerialFaceRebaseTargetStateAt_code_eq graphData
+        minimal caps coloring web corridor hunique offset hnext
+    _ = _ := sourceLocalLayerSerialCellRebaseUniformFaceTargetCapSixStateAt_exact
+      graphData minimal caps coloring web corridor hunique offset hnext
+
+/-- On every literal prefix and Cell, the complete graph-free facial
+transition succeeds and returns exactly the next cumulative cap-six state. -/
+theorem sourceLocalLayerSerialRootedInteractionFaceSuccessorState?_at
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (caps : OrientedFacialPentagonCapPair graphData)
+    (coloring :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.EdgeColoring Color)
+    (web : GoertzelV24ClosedWebAtGoodWord.Instance
+      caps.toFacialPentagonCapPair.toPentagonCapPair.boundaryData coloring)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (prefixColor :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
+    (hprefixCrossing : ∀ step,
+      prefixColor ((sourceLocalLayerSerialTerminalInputCutDataAt corridor hunique
+        offset).crossingEdge step) ≠ 0)
+    (cellColor :
+      caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.edgeSet → Color)
+    (hcellCrossing : ∀ step,
+      cellColor (sourceLocalLayerRightCrossingAt corridor hunique offset step) ≠
+        0) :
+    let state := sourceLocalLayerSerialRootedInteractionStateForColorAt
+      graphData minimal caps coloring web corridor hunique offset hnext
+        prefixColor hprefixCrossing
+    let localFactor := (sourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt
+      graphData minimal caps coloring web corridor hunique offset cellColor
+        hcellCrossing).2.2
+    let rebaseFactor := sourceLocalLayerSerialFaceRebaseFactorAt graphData
+      minimal caps coloring web corridor hunique offset hnext
+    let next := sourceLocalLayerNextOffset offset hnext
+    let hcell := sourceLocalLayerCellRegionAt_card_le_six graphData minimal caps
+      coloring web corridor hunique next
+    sourceLocalLayerSerialRootedInteractionFaceSuccessorState? state localFactor
+        rebaseFactor =
+      some (sourceLocalLayerSerialFaceDeletionStableParametricCapPrefixAt
+        corridor hunique next hcell 6) := by
+  dsimp only
+  rw [sourceLocalLayerSerialRootedInteractionFaceSuccessorState?]
+  rw [sourceLocalLayerSerialRootedInteractionFacePreRebaseState?_at graphData
+    minimal caps coloring web corridor hunique offset hnext prefixColor
+      hprefixCrossing cellColor hcellCrossing]
+  simp only [Option.bind_some]
+  unfold SourceLocalLayerSerialFaceRebaseFactor.targetState?
+  split <;> rename_i hcount
+  · congr 1
+    exact sourceLocalLayerSerialFaceRebaseTargetStateAt_eq graphData minimal caps
+      coloring web corridor hunique offset hnext
+  · exfalso
+    apply hcount
+    rfl
 
 end
 
