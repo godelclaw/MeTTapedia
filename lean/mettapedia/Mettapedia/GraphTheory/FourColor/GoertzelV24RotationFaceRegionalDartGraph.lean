@@ -61,6 +61,24 @@ theorem faceRegionalDartGraph_adj
         RS.edgeOf left ∈ region ∧ RS.edgeOf right ∈ region :=
   Iff.rfl
 
+/-- If neither possible face neighbour lies over a regional edge, the dart is
+isolated in the regional face graph.  The dart's own edge need not be tested:
+regional adjacency already requires both endpoint edges to be present. -/
+theorem faceRegionalDartGraph_isIsolated_of_neighbors_not_mem
+    (RS : RotationSystem V E) (region : Finset E) (dart : RS.D)
+    (hbackward : RS.edgeOf (RS.phi.symm dart) ∉ region)
+    (hforward : RS.edgeOf (RS.phi dart) ∉ region) :
+    (faceRegionalDartGraph RS region).IsIsolated dart := by
+  intro neighbor hadj
+  rcases (faceRegionalDartGraph_adj RS region dart neighbor).1 hadj with
+    ⟨_hne, hstep, _hdart, hneighbor⟩
+  rcases hstep with hforwardStep | hbackwardStep
+  · exact hforward (hforwardStep ▸ hneighbor)
+  · have hneighborEq : neighbor = RS.phi.symm dart := by
+      apply RS.phi.injective
+      simpa using hbackwardStep.symm
+    exact hbackward (hneighborEq ▸ hneighbor)
+
 /-- Bounded powers of the face permutation enumerate exactly the literal dart
 fiber of one face orbit. -/
 noncomputable def faceCycleDartOrbitEquiv

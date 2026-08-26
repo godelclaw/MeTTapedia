@@ -6,8 +6,9 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialCell
 The two incoming flank edges of a literal successor Cell generate the old
 rolling facial carrier.  On each of the three possible source rail shapes,
 one of the two darts flanking the outgoing rung already belongs to that
-carrier.  Hence the centre-face occurrence of the outgoing rung has an
-immediate old facial neighbour.
+carrier.  If such a flank is regionally present, it is an immediate old
+facial neighbour.  In the sole remaining case both flanks are absent, so the
+centre occurrence is isolated rather than a splitting point.
 
 This is the centre-face half of the successor-rung locality argument.  It
 does not claim locality for the opposite dart of the rung or for arbitrary
@@ -29,6 +30,7 @@ open GoertzelV24HexSlabSideAdjacency
 open GoertzelV24OrientedHexSlab
 open GoertzelV24RegionalBoundaryProfileFiniteState
 open GoertzelV24RotationFaceRegionalDartCarrier
+open GoertzelV24RotationFaceRegionalDartGraph
 open SimpleGraphDartRotation
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
@@ -136,6 +138,203 @@ theorem SourceLocalRailSuccessor.outgoingRung_predecessor_or_successor_mem_incom
       rw [← hafter]
       apply mem_closedDartCarrier_of_edge_mem
       simp [outgoingAfterDart, second_eq]
+
+/-- The centre occurrence of a successor rung has the exact safe alternative
+needed by deletion: either a regionally present old neighbour, or neither of
+its two possible regional neighbours is present.  The latter case is an
+isolated vertex of the regional face graph, not a hidden boundary-locality
+assumption. -/
+theorem SourceLocalRailSuccessor.outgoingRung_oldNeighbor_or_faceIsolated
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    {corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS))}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    {leftPlacement : InternalHexRungPlacement
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      hunique leftInterior}
+    {leftBefore leftAfter :
+      {position // position ∈ placementSidePositions leftPlacement}}
+    {hleftBefore : leftPlacement.outgoingPosition.val ≡
+      leftBefore.1.val + 1 [MOD 6]}
+    {hleftAfter : leftAfter.1.val ≡
+      leftPlacement.outgoingPosition.val + 1 [MOD 6]}
+    {rightPlacement : InternalHexRungPlacement
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      hunique (nextCorridorInterior leftInterior hnext)}
+    (successor : SourceLocalRailSuccessor hnext leftPlacement leftBefore
+      leftAfter hleftBefore hleftAfter rightPlacement)
+    (region : Finset G.edgeSet)
+    (hincoming : ∀ edge,
+      edge ∈
+          ({web.annular.RS.edgeOf
+              (faceCycleDart web.annular.RS rightPlacement.root
+                successor.rightBefore.1),
+            web.annular.RS.edgeOf
+              (faceCycleDart web.annular.RS rightPlacement.root
+                successor.rightAfter.1)} : Finset G.edgeSet) →
+        edge ∈ region)
+    (hrungPresent : web.annular.RS.edgeOf
+        (faceCycleDart web.annular.RS rightPlacement.root
+          rightPlacement.outgoingPosition) ∈ region)
+    (hrungNew : faceCycleDart web.annular.RS rightPlacement.root
+        rightPlacement.outgoingPosition ∉
+      closedDartCarrier web.annular.RS
+        {web.annular.RS.edgeOf
+            (faceCycleDart web.annular.RS rightPlacement.root
+              successor.rightBefore.1),
+          web.annular.RS.edgeOf
+            (faceCycleDart web.annular.RS rightPlacement.root
+              successor.rightAfter.1)}) :
+    let incomingEdges : Finset G.edgeSet :=
+      {web.annular.RS.edgeOf
+          (faceCycleDart web.annular.RS rightPlacement.root
+            successor.rightBefore.1),
+        web.annular.RS.edgeOf
+          (faceCycleDart web.annular.RS rightPlacement.root
+            successor.rightAfter.1)}
+    let outgoingRungDart := faceCycleDart web.annular.RS
+      rightPlacement.root rightPlacement.outgoingPosition
+    (∃ oldDart : {dart // dart ∈
+        closedDartCarrier web.annular.RS incomingEdges},
+      (faceRegionalDartGraph web.annular.RS region).Adj oldDart.1
+        outgoingRungDart) ∨
+      (web.annular.RS.edgeOf (web.annular.RS.phi.symm outgoingRungDart) ∉
+          region ∧
+        web.annular.RS.edgeOf (web.annular.RS.phi outgoingRungDart) ∉
+          region) := by
+  dsimp only
+  let incomingBeforeDart := faceCycleDart web.annular.RS
+    rightPlacement.root successor.rightBefore.1
+  let incomingAfterDart := faceCycleDart web.annular.RS
+    rightPlacement.root successor.rightAfter.1
+  let outgoingBeforeDart := faceCycleDart web.annular.RS
+    rightPlacement.root successor.rightOutgoingBefore.1
+  let outgoingAfterDart := faceCycleDart web.annular.RS
+    rightPlacement.root successor.rightOutgoingAfter.1
+  let outgoingRungDart := faceCycleDart web.annular.RS
+    rightPlacement.root rightPlacement.outgoingPosition
+  let incomingEdges : Finset G.edgeSet :=
+    {web.annular.RS.edgeOf incomingBeforeDart,
+      web.annular.RS.edgeOf incomingAfterDart}
+  change web.annular.RS.edgeOf outgoingRungDart ∈ region at hrungPresent
+  change outgoingRungDart ∉
+    closedDartCarrier web.annular.RS incomingEdges at hrungNew
+  have hbefore : outgoingRungDart = web.annular.RS.phi outgoingBeforeDart :=
+    faceCycleDart_successor_of_modEq web.annular.RS rightPlacement.root
+      rightPlacement.orbit_card successor.rightOutgoingBefore.1
+        rightPlacement.outgoingPosition successor.outgoingBefore_mod
+  have hafter : outgoingAfterDart = web.annular.RS.phi outgoingRungDart :=
+    faceCycleDart_successor_of_modEq web.annular.RS rightPlacement.root
+      rightPlacement.orbit_card rightPlacement.outgoingPosition
+        successor.rightOutgoingAfter.1 successor.outgoingAfter_mod
+  have hpredecessor : web.annular.RS.phi.symm outgoingRungDart =
+      outgoingBeforeDart := by
+    apply web.annular.RS.phi.injective
+    simp [hbefore]
+  have holdAdjOfBefore
+      (hold : outgoingBeforeDart ∈
+        closedDartCarrier web.annular.RS incomingEdges)
+      (hpresent : web.annular.RS.edgeOf outgoingBeforeDart ∈ region) :
+      ∃ oldDart : {dart // dart ∈
+          closedDartCarrier web.annular.RS incomingEdges},
+        (faceRegionalDartGraph web.annular.RS region).Adj oldDart.1
+          outgoingRungDart := by
+    let oldDart : {dart // dart ∈
+        closedDartCarrier web.annular.RS incomingEdges} :=
+      ⟨outgoingBeforeDart, hold⟩
+    refine ⟨oldDart, ?_⟩
+    rw [faceRegionalDartGraph_adj]
+    refine ⟨?_, Or.inl hbefore, hpresent, hrungPresent⟩
+    intro heq
+    apply hrungNew
+    rw [← heq]
+    exact oldDart.2
+  have holdAdjOfAfter
+      (hold : outgoingAfterDart ∈
+        closedDartCarrier web.annular.RS incomingEdges)
+      (hpresent : web.annular.RS.edgeOf outgoingAfterDart ∈ region) :
+      ∃ oldDart : {dart // dart ∈
+          closedDartCarrier web.annular.RS incomingEdges},
+        (faceRegionalDartGraph web.annular.RS region).Adj oldDart.1
+          outgoingRungDart := by
+    let oldDart : {dart // dart ∈
+        closedDartCarrier web.annular.RS incomingEdges} :=
+      ⟨outgoingAfterDart, hold⟩
+    refine ⟨oldDart, ?_⟩
+    rw [faceRegionalDartGraph_adj]
+    refine ⟨?_, Or.inr hafter, hpresent, hrungPresent⟩
+    intro heq
+    apply hrungNew
+    rw [← heq]
+    exact oldDart.2
+  cases successor.shape with
+  | forwardTwo first_eq _middle _outgoing_to_middle _middle_to_incoming =>
+      have hedgeMem : web.annular.RS.edgeOf outgoingBeforeDart ∈
+          incomingEdges := by
+        dsimp [incomingEdges, outgoingBeforeDart, incomingBeforeDart]
+        rw [← first_eq]
+        simp
+      left
+      apply holdAdjOfBefore
+      · apply mem_closedDartCarrier_of_edge_mem
+        exact hedgeMem
+      · apply hincoming
+        simpa [incomingEdges, incomingBeforeDart, incomingAfterDart] using
+          hedgeMem
+  | forwardThree first_step second_step =>
+      have houtgoingBefore : outgoingBeforeDart =
+          web.annular.RS.phi incomingBeforeDart :=
+        faceCycleDart_successor_of_modEq web.annular.RS rightPlacement.root
+          rightPlacement.orbit_card successor.rightBefore.1
+            successor.rightOutgoingBefore.1 first_step
+      have hincomingAfter : incomingAfterDart =
+          web.annular.RS.phi outgoingAfterDart :=
+        faceCycleDart_successor_of_modEq web.annular.RS rightPlacement.root
+          rightPlacement.orbit_card successor.rightOutgoingAfter.1
+            successor.rightAfter.1 second_step
+      have hbeforeOld : outgoingBeforeDart ∈
+          closedDartCarrier web.annular.RS incomingEdges := by
+        apply mem_closedDartCarrier_of_face_neighbor_of_edge_mem
+          web.annular.RS incomingEdges incomingBeforeDart outgoingBeforeDart
+        · simp [incomingEdges]
+        · exact Or.inl houtgoingBefore
+      have hafterOld : outgoingAfterDart ∈
+          closedDartCarrier web.annular.RS incomingEdges := by
+        apply mem_closedDartCarrier_of_face_neighbor_of_edge_mem
+          web.annular.RS incomingEdges incomingAfterDart outgoingAfterDart
+        · simp [incomingEdges]
+        · apply Or.inr
+          apply web.annular.RS.phi.injective
+          simp [hincomingAfter]
+      by_cases hbeforePresent :
+          web.annular.RS.edgeOf outgoingBeforeDart ∈ region
+      · exact Or.inl (holdAdjOfBefore hbeforeOld hbeforePresent)
+      · by_cases hafterPresent :
+            web.annular.RS.edgeOf outgoingAfterDart ∈ region
+        · exact Or.inl (holdAdjOfAfter hafterOld hafterPresent)
+        · apply Or.inr
+          constructor
+          · rw [hpredecessor]
+            exact hbeforePresent
+          · rw [← hafter]
+            exact hafterPresent
+  | forwardFour _middle _incoming_to_middle _middle_to_outgoing second_eq =>
+      have hedgeMem : web.annular.RS.edgeOf outgoingAfterDart ∈
+          incomingEdges := by
+        dsimp [incomingEdges, outgoingAfterDart, incomingAfterDart]
+        rw [← second_eq]
+        simp
+      left
+      apply holdAdjOfAfter
+      · apply mem_closedDartCarrier_of_edge_mem
+        exact hedgeMem
+      · apply hincoming
+        simpa [incomingEdges, incomingBeforeDart, incomingAfterDart] using
+          hedgeMem
 
 /-- The two outgoing crossings and the outgoing rung exhaust the centre-face
 part of the successor switch, and every one is old or immediately adjacent
@@ -278,6 +477,224 @@ theorem exists_sourceLocalLayerSerialCellRebase_successorRung_center_neighbor_me
     dsimp only at hlocal
     rw [hincomingEdges] at hlocal
     simpa [sourceLocalLayerSerialFaceOutgoingDartCarrierAt] using hlocal
+
+/-- In the literal serial region, a genuinely promoted centre occurrence of
+the successor rung is either adjacent to an old rolling coordinate or is
+isolated in the regional face graph.  Thus the straight `forwardThree` shape
+does not require the false assertion that a non-present collar edge is
+regionally available. -/
+theorem exists_sourceLocalLayerSerialCellRebase_successorRung_center_oldNeighbor_or_faceIsolated
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hpresent :
+      let target := sourceLocalLayerNextOffset offset hnext
+      let rightWitness := localLayerPairWitnessOfCorridor corridor hunique
+        (sourceLocalLayerInteriorAt target)
+        (sourceLocalLayerInteriorAt_hasNext target)
+      web.annular.RS.edgeOf
+          (faceCycleDart web.annular.RS rightWitness.placement.root
+            rightWitness.placement.outgoingPosition) ∈
+        sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset)
+    (hnew :
+      let target := sourceLocalLayerNextOffset offset hnext
+      let rightWitness := localLayerPairWitnessOfCorridor corridor hunique
+        (sourceLocalLayerInteriorAt target)
+        (sourceLocalLayerInteriorAt_hasNext target)
+      faceCycleDart web.annular.RS rightWitness.placement.root
+          rightWitness.placement.outgoingPosition ∉
+        sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+          offset) :
+    let target := sourceLocalLayerNextOffset offset hnext
+    let rightWitness := localLayerPairWitnessOfCorridor corridor hunique
+      (sourceLocalLayerInteriorAt target)
+      (sourceLocalLayerInteriorAt_hasNext target)
+    let outgoingRungDart := faceCycleDart web.annular.RS
+      rightWitness.placement.root rightWitness.placement.outgoingPosition
+    ∃ _successor : SourceLocalRailSuccessor
+        (sourceLocalLayerInteriorAt_hasNext offset)
+        (localLayerPairWitnessOfCorridor corridor hunique
+          (sourceLocalLayerInteriorAt offset)
+          (sourceLocalLayerInteriorAt_hasNext offset)).placement
+        (localLayerPairWitnessOfCorridor corridor hunique
+          (sourceLocalLayerInteriorAt offset)
+          (sourceLocalLayerInteriorAt_hasNext offset)).before
+        (localLayerPairWitnessOfCorridor corridor hunique
+          (sourceLocalLayerInteriorAt offset)
+          (sourceLocalLayerInteriorAt_hasNext offset)).after
+        (localLayerPairWitnessOfCorridor corridor hunique
+          (sourceLocalLayerInteriorAt offset)
+          (sourceLocalLayerInteriorAt_hasNext offset)).outgoing_after_before
+        (localLayerPairWitnessOfCorridor corridor hunique
+          (sourceLocalLayerInteriorAt offset)
+          (sourceLocalLayerInteriorAt_hasNext offset)).after_after_outgoing
+        rightWitness.placement,
+      web.annular.RS.edgeOf outgoingRungDart =
+          sourceLocalLayerSharedRungAt corridor hunique target ∧
+        ((∃ oldDart : {dart // dart ∈
+            sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+              offset},
+          (faceRegionalDartGraph web.annular.RS
+            (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique
+              offset)).Adj oldDart.1 outgoingRungDart) ∨
+          (web.annular.RS.edgeOf (web.annular.RS.phi.symm outgoingRungDart) ∉
+              sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique
+                offset ∧
+            web.annular.RS.edgeOf (web.annular.RS.phi outgoingRungDart) ∉
+              sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique
+                offset)) := by
+  dsimp only
+  let leftWitness := localLayerPairWitnessOfCorridor corridor hunique
+    (sourceLocalLayerInteriorAt offset)
+    (sourceLocalLayerInteriorAt_hasNext offset)
+  let target := sourceLocalLayerNextOffset offset hnext
+  let rightWitness := localLayerPairWitnessOfCorridor corridor hunique
+    (sourceLocalLayerInteriorAt target)
+    (sourceLocalLayerInteriorAt_hasNext target)
+  let outgoingRungDart := faceCycleDart web.annular.RS
+    rightWitness.placement.root rightWitness.placement.outgoingPosition
+  dsimp only at hpresent hnew
+  rcases exists_sourceLocalLayerSerialCellRebase_successor_coordinates
+      corridor hunique offset hnext with
+    ⟨successor, _houtgoingBefore, _houtgoingAfter, hincomingBefore,
+      hincomingAfter, _houtgoingBeforeEdge, _houtgoingAfterEdge⟩
+  refine ⟨successor, ?_, ?_⟩
+  · change faceCycleEdge web.annular.RS rightWitness.placement.root
+        rightWitness.placement.outgoingPosition =
+      sourceLocalLayerSharedRungAt corridor hunique target
+    simpa [sourceLocalLayerSharedRungAt, target] using
+      rightWitness.placement.outgoing_edge
+  · have hincomingEdges :
+        {web.annular.RS.edgeOf
+            (faceCycleDart web.annular.RS rightWitness.placement.root
+              successor.rightBefore.1),
+          web.annular.RS.edgeOf
+            (faceCycleDart web.annular.RS rightWitness.placement.root
+              successor.rightAfter.1)} =
+        indexedCrossingEdgeSet
+          (sourceLocalLayerRightCrossingAt corridor hunique offset) := by
+      rw [hincomingBefore, hincomingAfter]
+      ext edge
+      simp only [Finset.mem_insert, Finset.mem_singleton,
+        mem_indexedCrossingEdgeSet_iff]
+      constructor
+      · rintro (hedge | hedge)
+        · exact ⟨0, hedge.symm⟩
+        · exact ⟨1, hedge.symm⟩
+      · rintro ⟨index, hedge⟩
+        fin_cases index
+        · exact Or.inl hedge.symm
+        · exact Or.inr hedge.symm
+    let incomingEdges : Finset G.edgeSet :=
+      {web.annular.RS.edgeOf
+          (faceCycleDart web.annular.RS rightWitness.placement.root
+            successor.rightBefore.1),
+        web.annular.RS.edgeOf
+          (faceCycleDart web.annular.RS rightWitness.placement.root
+            successor.rightAfter.1)}
+    have hincomingEdges' : incomingEdges = indexedCrossingEdgeSet
+        (sourceLocalLayerRightCrossingAt corridor hunique offset) :=
+      hincomingEdges
+    have hincomingPresent : ∀ edge, edge ∈ incomingEdges →
+        edge ∈ sourceLocalLayerSerialPreRebaseOutputRegionAt corridor
+          hunique offset := by
+      intro edge hedge
+      rw [hincomingEdges'] at hedge
+      rcases (mem_indexedCrossingEdgeSet_iff _ _).1 hedge with ⟨step, rfl⟩
+      rw [sourceLocalLayerSerialPreRebaseOutputRegionAt]
+      exact Finset.mem_union_left _
+        (sourceLocalLayerSerialOutputRegionAt_rightCrossing corridor hunique
+          offset step)
+    have hnewIncoming : outgoingRungDart ∉
+        closedDartCarrier web.annular.RS incomingEdges := by
+      intro hold
+      apply hnew
+      apply Finset.mem_union_right
+      unfold sourceLocalLayerSerialFaceOutgoingDartCarrierAt
+      rw [← hincomingEdges']
+      exact hold
+    have hsafe := successor.outgoingRung_oldNeighbor_or_faceIsolated
+      (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset)
+      (by
+        intro edge hedge
+        apply hincomingPresent edge
+        change edge ∈ incomingEdges at hedge
+        exact hedge)
+      hpresent
+      (by
+        change outgoingRungDart ∉
+          closedDartCarrier web.annular.RS incomingEdges
+        exact hnewIncoming)
+    rcases hsafe with ⟨oldDart, hadj⟩ | hisolated
+    · apply Or.inl
+      let serialOldDart : {dart // dart ∈
+          sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+            offset} := ⟨oldDart.1, by
+        apply Finset.mem_union_right
+        unfold sourceLocalLayerSerialFaceOutgoingDartCarrierAt
+        rw [← hincomingEdges']
+        exact oldDart.2⟩
+      exact ⟨serialOldDart, hadj⟩
+    · exact Or.inr hisolated
+
+/-- Graph-level form of the preceding finite shape calculation. -/
+theorem sourceLocalLayerSerialCellRebase_successorRung_center_oldNeighbor_or_isolated
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hpresent :
+      let target := sourceLocalLayerNextOffset offset hnext
+      let rightWitness := localLayerPairWitnessOfCorridor corridor hunique
+        (sourceLocalLayerInteriorAt target)
+        (sourceLocalLayerInteriorAt_hasNext target)
+      web.annular.RS.edgeOf
+          (faceCycleDart web.annular.RS rightWitness.placement.root
+            rightWitness.placement.outgoingPosition) ∈
+        sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset)
+    (hnew :
+      let target := sourceLocalLayerNextOffset offset hnext
+      let rightWitness := localLayerPairWitnessOfCorridor corridor hunique
+        (sourceLocalLayerInteriorAt target)
+        (sourceLocalLayerInteriorAt_hasNext target)
+      faceCycleDart web.annular.RS rightWitness.placement.root
+          rightWitness.placement.outgoingPosition ∉
+        sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+          offset) :
+    let target := sourceLocalLayerNextOffset offset hnext
+    let rightWitness := localLayerPairWitnessOfCorridor corridor hunique
+      (sourceLocalLayerInteriorAt target)
+      (sourceLocalLayerInteriorAt_hasNext target)
+    let outgoingRungDart := faceCycleDart web.annular.RS
+      rightWitness.placement.root rightWitness.placement.outgoingPosition
+    (∃ oldDart : {dart // dart ∈
+        sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique offset},
+      (faceRegionalDartGraph web.annular.RS
+        (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset)
+        ).Adj oldDart.1 outgoingRungDart) ∨
+      (faceRegionalDartGraph web.annular.RS
+        (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset)
+        ).IsIsolated outgoingRungDart := by
+  dsimp only
+  rcases
+      exists_sourceLocalLayerSerialCellRebase_successorRung_center_oldNeighbor_or_faceIsolated
+        corridor hunique offset hnext hpresent hnew with
+    ⟨_successor, _hrung, hsafe⟩
+  rcases hsafe with hold | ⟨hbackward, hforward⟩
+  · exact Or.inl hold
+  · exact Or.inr
+      (faceRegionalDartGraph_isIsolated_of_neighbors_not_mem web.annular.RS
+        (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset)
+        _ hbackward hforward)
 
 end LocalLayerFormation
 

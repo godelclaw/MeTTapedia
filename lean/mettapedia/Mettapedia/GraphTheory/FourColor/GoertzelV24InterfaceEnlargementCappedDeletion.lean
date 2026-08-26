@@ -13,8 +13,9 @@ so a cap at seven determines the exact cap at five after their labels are
 removed.
 
 This isolates the reusable graph-theoretic part of a rolling facial update.
-A concrete corridor construction still has to prove that every live newly
-named dart is boundary-local; no locality premise is hidden in the code.
+A concrete corridor construction may prove boundary locality componentwise;
+it may instead erase a whole old component by exhibiting one newly named
+isolated vertex.  Neither alternative is hidden in the code.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -154,6 +155,144 @@ theorem promotedExteriorComponentInducePreconnected
     component hroot hrootOutside hdegree vertex
   rw [mem_exteriorComponentBoundaryVertices_iff]
   exact hboundary vertex hpromoted
+
+omit [Fintype N] [DecidableEq N] [Fintype Old] in
+/-- Isolation in the ambient graph descends to every old exterior component
+containing the vertex.  This is the adapter needed when a concrete rolling
+interface proves that a newly named vertex is harmlessly isolated before the
+interface enlargement is interpreted componentwise. -/
+theorem exteriorComponent_isIsolated_of_ambient
+    (graph : SimpleGraph N) (oldVertex : Old → N)
+    (component : (exteriorGraph graph oldVertex).ConnectedComponent)
+    (vertex : component) (hisolated : graph.IsIsolated vertex.1) :
+    component.toSimpleGraph.IsIsolated vertex := by
+  intro other hadj
+  apply hisolated other.1
+  have hexterior : (exteriorGraph graph oldVertex).Adj vertex.1 other.1 :=
+    (component.toSimpleGraph_adj vertex.2 other.2).1 hadj
+  exact hexterior.1
+
+/-- Removing promoted vertices also preserves preconnectedness when an old
+exterior component is erased completely.  This is the exact harmless
+alternative to boundary locality: a component with no retained vertex cannot
+split into two successor components.
+
+The disjunction is deliberately stated per old component.  Concrete rolling
+interfaces may therefore use boundary locality on ordinary path components
+and the second branch on an isolated component named in its entirety. -/
+theorem promotedExteriorComponentInducePreconnected_of_boundary_or_erased
+    (graph : SimpleGraph N) [DecidableRel graph.Adj]
+    (oldVertex : Old → N) (newVertex : New → N)
+    (component : (exteriorGraph graph oldVertex).ConnectedComponent)
+    {root : N} (hroot : root ∈ component.supp)
+    (hrootOutside : OutsideInterface oldVertex root)
+    (hdegree : ∀ vertex, (graph.neighborSet vertex).ncard ≤ 2)
+    (hcase :
+      (∀ vertex : component,
+        vertex ∈ promotedExteriorComponentVertices graph oldVertex newVertex
+            component →
+          ∃ slot, graph.Adj (oldVertex slot) vertex.1) ∨
+      (∀ vertex : component,
+        vertex ∈ promotedExteriorComponentVertices graph oldVertex newVertex
+          component)) :
+    (component.toSimpleGraph.induce
+      (↑(promotedExteriorComponentVertices graph oldVertex newVertex
+        component) : Set component)ᶜ).Preconnected := by
+  rcases hcase with hboundary | herased
+  · exact promotedExteriorComponentInducePreconnected graph oldVertex
+      newVertex component hroot hrootOutside hdegree hboundary
+  · intro left _right
+    have hnotSet : left.1 ∉
+        (↑(promotedExteriorComponentVertices graph oldVertex newVertex
+          component) : Set component) :=
+      ((Set.mem_compl_iff _ _).mp left.2)
+    have hnot : left.1 ∉
+        promotedExteriorComponentVertices graph oldVertex newVertex
+          component := hnotSet
+    exact (hnot (herased left.1)).elim
+
+omit [Fintype Old] in
+/-- An isolated promoted vertex forces its whole old connected component to
+be that promoted vertex.  Hence the "erased" branch above can be supplied by
+a local isolation proof rather than by enumerating the component support. -/
+theorem all_mem_promotedExteriorComponentVertices_of_isolated
+    (graph : SimpleGraph N) (oldVertex : Old → N) (newVertex : New → N)
+    (component : (exteriorGraph graph oldVertex).ConnectedComponent)
+    (vertex : component)
+    (hpromoted : vertex ∈
+      promotedExteriorComponentVertices graph oldVertex newVertex component)
+    (hisolated : component.toSimpleGraph.IsIsolated vertex) :
+    ∀ other : component,
+      other ∈ promotedExteriorComponentVertices graph oldVertex newVertex
+        component := by
+  intro other
+  have heq : other = vertex := by
+    by_contra hne
+    have hreachable := component.connected_toSimpleGraph.preconnected
+      vertex other
+    rcases hreachable.nonempty_neighborSet_left (Ne.symm hne) with
+      ⟨neighbor, hadj⟩
+    exact hisolated neighbor hadj
+  simpa [heq] using hpromoted
+
+/-- Boundary attachment and complete isolated-component deletion are the two
+locally checkable non-splitting cases for one old exterior component. -/
+theorem promotedExteriorComponentInducePreconnected_of_boundary_or_isolated
+    (graph : SimpleGraph N) [DecidableRel graph.Adj]
+    (oldVertex : Old → N) (newVertex : New → N)
+    (component : (exteriorGraph graph oldVertex).ConnectedComponent)
+    {root : N} (hroot : root ∈ component.supp)
+    (hrootOutside : OutsideInterface oldVertex root)
+    (hdegree : ∀ vertex, (graph.neighborSet vertex).ncard ≤ 2)
+    (hcase :
+      (∀ vertex : component,
+        vertex ∈ promotedExteriorComponentVertices graph oldVertex newVertex
+            component →
+          ∃ slot, graph.Adj (oldVertex slot) vertex.1) ∨
+      (∃ vertex : component,
+        vertex ∈ promotedExteriorComponentVertices graph oldVertex newVertex
+            component ∧
+          component.toSimpleGraph.IsIsolated vertex)) :
+    (component.toSimpleGraph.induce
+      (↑(promotedExteriorComponentVertices graph oldVertex newVertex
+        component) : Set component)ᶜ).Preconnected := by
+  apply promotedExteriorComponentInducePreconnected_of_boundary_or_erased
+    graph oldVertex newVertex component hroot hrootOutside hdegree
+  rcases hcase with hboundary | ⟨vertex, hpromoted, hisolated⟩
+  · exact Or.inl hboundary
+  · exact Or.inr
+      (all_mem_promotedExteriorComponentVertices_of_isolated graph oldVertex
+        newVertex component vertex hpromoted hisolated)
+
+/-- Ambient boundary attachment and ambient isolation are enough to apply the
+componentwise non-splitting theorem.  The isolated branch needs no separate
+connectivity calculation inside the old exterior presentation. -/
+theorem promotedExteriorComponentInducePreconnected_of_boundary_or_ambientIsolated
+    (graph : SimpleGraph N) [DecidableRel graph.Adj]
+    (oldVertex : Old → N) (newVertex : New → N)
+    (component : (exteriorGraph graph oldVertex).ConnectedComponent)
+    {root : N} (hroot : root ∈ component.supp)
+    (hrootOutside : OutsideInterface oldVertex root)
+    (hdegree : ∀ vertex, (graph.neighborSet vertex).ncard ≤ 2)
+    (hcase :
+      (∀ vertex : component,
+        vertex ∈ promotedExteriorComponentVertices graph oldVertex newVertex
+            component →
+          ∃ slot, graph.Adj (oldVertex slot) vertex.1) ∨
+      (∃ vertex : component,
+        vertex ∈ promotedExteriorComponentVertices graph oldVertex newVertex
+            component ∧
+          graph.IsIsolated vertex.1)) :
+    (component.toSimpleGraph.induce
+      (↑(promotedExteriorComponentVertices graph oldVertex newVertex
+        component) : Set component)ᶜ).Preconnected := by
+  apply promotedExteriorComponentInducePreconnected_of_boundary_or_isolated
+    graph oldVertex newVertex component hroot hrootOutside hdegree
+  rcases hcase with hboundary | ⟨vertex, hpromoted, hisolated⟩
+  · exact Or.inl hboundary
+  · exact Or.inr ⟨vertex, hpromoted,
+      exteriorComponent_isIsolated_of_ambient graph oldVertex component vertex
+        hisolated⟩
 
 /-- The cap at seven of an old component determines exactly its cap at five
 after a boundary-local interface enlargement removes the promoted labels. -/
