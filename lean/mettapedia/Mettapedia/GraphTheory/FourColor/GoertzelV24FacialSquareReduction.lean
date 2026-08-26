@@ -639,6 +639,20 @@ theorem matchedPartUnderlyingDart_rewiredDartOf (Q : @FacialSquareData V E)
     (Q.boundaryCover RS hQ hdist side) (Q.orderedCut_disjoint hdist side)]
   simp [rewiredDartOf]
 
+/-- The rewired dart system underlying a planar reduction. -/
+noncomputable def reductionDartSystem (Q : @FacialSquareData V E)
+    (hQ : Q.WellFormed RS) (hdist : Q.LocalEdgesDistinct)
+    (side : SquareReductionSide) (hroot : Q.RootRetained RS)
+    (hseam : Q.SeamEndpointsDistinct RS hQ hdist side) :=
+  orderedCutRetainedVertexRewiredDartSystem RS
+    (deletedRegionKeep Q.deletedCorners)
+    (Q.leftCrossingAt side) (Q.rightCrossingAt side)
+    (Q.leftCrosses RS hQ hdist side) (Q.rightCrosses RS hQ hdist side)
+    (Q.leftCrossingAt_injective hdist side)
+    (Q.rightCrossingAt_injective hdist side)
+    (Q.boundaryCover RS hQ hdist side)
+    (Q.orderedCut_disjoint hdist side) hroot hseam
+
 /-- The reduction edge that a retained ambient dart's edge becomes. -/
 noncomputable def reductionEdgeOfDart (Q : @FacialSquareData V E)
     (hQ : Q.WellFormed RS) (hdist : Q.LocalEdgesDistinct)
@@ -687,6 +701,49 @@ theorem splicedColoring_reductionEdgeOfDart (Q : @FacialSquareData V E)
   rw [Q.matchedPartUnderlyingDart_rewiredDartOf RS hQ hdist side dart hdart]
     at hval
   exact hval
+
+/-- **Normal form of an internal dart under the correspondence.**  When both
+ends of a dart's edge are retained, the correspondence classifies it as an
+intact dart and leaves it untouched. -/
+theorem rewiredDartOf_internal (Q : @FacialSquareData V E)
+    (hQ : Q.WellFormed RS) (hdist : Q.LocalEdgesDistinct)
+    (side : SquareReductionSide) (dart : RS.D)
+    (hdart : deletedRegionKeep Q.deletedCorners (RS.vertOf dart))
+    (hopposite :
+      deletedRegionKeep Q.deletedCorners (RS.vertOf (RS.alpha dart))) :
+    Q.rewiredDartOf RS hQ hdist side dart hdart =
+      Sum.inl ⟨⟨dart, hdart⟩, hopposite⟩ := by
+  classical
+  simp [rewiredDartOf, retainedDartEquivMatchedParts,
+    retainedDartEquivInternalSumBoundary, hopposite]
+
+/-- **The correspondence is well defined on edges.**  The two darts of an
+internal ambient edge name the same reduction edge, since the correspondence
+carries the ambient flip to the rewired one on intact darts. -/
+theorem reductionEdgeOfDart_alpha (Q : @FacialSquareData V E)
+    (hQ : Q.WellFormed RS) (hdist : Q.LocalEdgesDistinct)
+    (side : SquareReductionSide) (hroot : Q.RootRetained RS)
+    (hseam : Q.SeamEndpointsDistinct RS hQ hdist side) (dart : RS.D)
+    (hdart : deletedRegionKeep Q.deletedCorners (RS.vertOf dart))
+    (hopposite :
+      deletedRegionKeep Q.deletedCorners (RS.vertOf (RS.alpha dart))) :
+    Q.reductionEdgeOfDart RS hQ hdist side hroot hseam (RS.alpha dart)
+        hopposite =
+      Q.reductionEdgeOfDart RS hQ hdist side hroot hseam dart hdart := by
+  have hback :
+      deletedRegionKeep Q.deletedCorners
+        (RS.vertOf (RS.alpha (RS.alpha dart))) := by
+    rw [RS.alpha_involutive]
+    exact hdart
+  rw [reductionEdgeOfDart, reductionEdgeOfDart,
+    Q.rewiredDartOf_internal RS hQ hdist side dart hdart hopposite,
+    Q.rewiredDartOf_internal RS hQ hdist side (RS.alpha dart) hopposite hback]
+  show (Q.reductionDartSystem RS hQ hdist side hroot hseam).edgeOf
+      ((Q.reductionDartSystem RS hQ hdist side hroot hseam).alpha
+        (Sum.inl ⟨⟨dart, hdart⟩, hopposite⟩)) =
+    (Q.reductionDartSystem RS hQ hdist side hroot hseam).edgeOf
+      (Sum.inl ⟨⟨dart, hdart⟩, hopposite⟩)
+  exact RewiredDartSystem.edgeOf_alpha _ _
 
 end FacialSquareData
 
