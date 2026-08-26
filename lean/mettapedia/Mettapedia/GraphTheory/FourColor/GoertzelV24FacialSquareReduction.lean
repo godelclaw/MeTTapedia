@@ -536,6 +536,70 @@ theorem reductionColoring_isTait (Q : @FacialSquareData V E)
     (Q.orderedCut_disjoint hdist side)
     hroot hseam C hC hcut
 
+/-! ## Classifying ambient edges against the deleted region
+
+Every edge meeting a corner is one of the eight named local edges.  The four
+portal indices give the outer edges, which cross; the four higher indices give
+the square edges, which do not.  So an edge that neither crosses nor is a
+square edge meets no corner at all, and both of its darts are internal to the
+retained region. -/
+
+/-- The four square edges, by local-edge index. -/
+theorem squareEdges_eq_image (Q : @FacialSquareData V E) :
+    Q.squareEdges = Finset.image Q.lineEdge ({4, 5, 6, 7} : Finset SquareLocalNode) := by
+  classical
+  simp [squareEdges, lineEdge, Finset.image_insert]
+
+/-- **The classification.**  An edge which neither crosses the deleted region
+nor is one of the square edges has no corner among its endpoints. -/
+theorem endpoints_not_corner_of_not_crossing (Q : @FacialSquareData V E)
+    (hQ : Q.WellFormed RS) (hdist : Q.LocalEdgesDistinct) {edge : E}
+    (hcross : edge ∉ vertexSetCrossingEdges RS Q.deletedCorners)
+    (hsquare : edge ∉ Q.squareEdges) :
+    ∀ vertex ∈ RS.endpoints edge, vertex ∉ Q.deletedCorners := by
+  classical
+  intro vertex hvertex hdeleted
+  have hcorner : ∃ j : Fin 4, vertex = Q.cornerAt j := by
+    simp only [deletedCorners, Finset.mem_insert, Finset.mem_singleton] at hdeleted
+    rcases hdeleted with h | h | h | h
+    · exact ⟨0, h⟩
+    · exact ⟨1, h⟩
+    · exact ⟨2, h⟩
+    · exact ⟨3, h⟩
+  obtain ⟨j, rfl⟩ := hcorner
+  have hinc := (RS.mem_endpoints_iff_mem_incidentEdges).1 hvertex
+  rw [Q.incidentEdges_cornerAt RS hQ j, Finset.mem_image] at hinc
+  obtain ⟨node, hnode, rfl⟩ := hinc
+  by_cases hlow : node.val < 4
+  · refine hcross ?_
+    rw [Q.vertexSetCrossingEdges_deletedCorners RS hQ hdist]
+    exact Finset.mem_image.2 ⟨⟨node.val, hlow⟩, Finset.mem_univ _,
+      (Q.lineEdge_eq_outerEdgeAt hlow).symm⟩
+  · refine hsquare ?_
+    rw [Q.squareEdges_eq_image]
+    refine Finset.mem_image.2 ⟨node, ?_, rfl⟩
+    have : node.val = 4 ∨ node.val = 5 ∨ node.val = 6 ∨ node.val = 7 := by
+      omega
+    rcases this with h | h | h | h <;>
+      simp [Finset.mem_insert, Finset.mem_singleton, Fin.ext_iff, h]
+
+/-- Both darts of such an edge are internal to the retained region. -/
+theorem keep_both_ends_of_not_crossing (Q : @FacialSquareData V E)
+    (hQ : Q.WellFormed RS) (hdist : Q.LocalEdgesDistinct) {edge : E}
+    (hcross : edge ∉ vertexSetCrossingEdges RS Q.deletedCorners)
+    (hsquare : edge ∉ Q.squareEdges) {dart : RS.D} (hdart : RS.edgeOf dart = edge) :
+    deletedRegionKeep Q.deletedCorners (RS.vertOf dart) ∧
+      deletedRegionKeep Q.deletedCorners (RS.vertOf (RS.alpha dart)) := by
+  have hpair := RS.endpoints_eq_pair_of_mem
+    ((RS.mem_dartsOn).2 hdart)
+  constructor
+  · refine Q.endpoints_not_corner_of_not_crossing RS hQ hdist hcross hsquare _ ?_
+    rw [hpair]
+    simp
+  · refine Q.endpoints_not_corner_of_not_crossing RS hQ hdist hcross hsquare _ ?_
+    rw [hpair]
+    simp
+
 end FacialSquareData
 
 end RotationSystem
