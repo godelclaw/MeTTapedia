@@ -12,10 +12,12 @@ predecessor carrier.
 
 The resulting finite state contains only literal local data: occurrence
 activity, ambient-dart equality, equality of underlying primal edges,
-pre-rebase presence, and direct pre-rebase facial adjacency.  It does not
-store cumulative exterior connectivity.  An active occurrence which is not
-mapped to the predecessor carrier is therefore exposed as a genuinely new
-collar occurrence, rather than being confused with inactive padding.
+pre-rebase presence, direct pre-rebase facial adjacency, and equality with
+each oriented predecessor face-incidence vertex.  It does not store cumulative
+exterior connectivity.  An active occurrence which is not mapped to the
+predecessor carrier is therefore exposed as a genuinely new collar occurrence,
+rather than being confused with inactive padding; its oriented predecessor
+entry address remains recoverable without conflating the two face sides.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -59,6 +61,20 @@ structure SourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceState where
     SourceLocalLayerSerialCellRebaseExpandedFaceInterface → Bool
   directAdj : SourceLocalLayerSerialCellRebaseExpandedFaceInterface →
     SourceLocalLayerSerialCellRebaseExpandedFaceInterface → Bool
+  oldIncidenceVertexEq : Fin 48 →
+    SourceLocalLayerSerialCellRebaseExpandedFaceInterface → Bool
+
+/-- The forty-eight canonical predecessor face-incidence coordinates are the
+two oriented face neighbours of each of the twenty-four padded predecessor
+slots. -/
+def sourceLocalLayerSerialCellRebaseExpandedFaceOldIncidenceEquiv :
+    (Fin 24 × Bool) ≃ Fin 48 :=
+  (Equiv.prodCongr (Equiv.refl _) finTwoEquiv.symm).trans finProdFinEquiv
+
+/-- Decode one canonical predecessor face-incidence coordinate. -/
+def sourceLocalLayerSerialCellRebaseExpandedFaceOldIncidenceAt
+    (index : Fin 48) : Fin 24 × Bool :=
+  sourceLocalLayerSerialCellRebaseExpandedFaceOldIncidenceEquiv.symm index
 
 private def sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateEquiv :
     SourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceState ≃
@@ -69,12 +85,13 @@ private def sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateEquiv :
         SourceLocalLayerSerialCellRebaseExpandedFaceInterface → Bool) ×
       (SourceLocalLayerSerialCellRebaseExpandedFaceInterface → Bool) ×
       (SourceLocalLayerSerialCellRebaseExpandedFaceInterface →
-        SourceLocalLayerSerialCellRebaseExpandedFaceInterface → Bool) where
+        SourceLocalLayerSerialCellRebaseExpandedFaceInterface → Bool) ×
+      (Fin 48 → SourceLocalLayerSerialCellRebaseExpandedFaceInterface → Bool) where
   toFun state :=
     ⟨state.occupied, state.vertexEq, state.samePrimalEdge,
-      state.preRebasePresent, state.directAdj⟩
+      state.preRebasePresent, state.directAdj, state.oldIncidenceVertexEq⟩
   invFun state := ⟨state.1, state.2.1, state.2.2.1,
-    state.2.2.2.1, state.2.2.2.2⟩
+    state.2.2.2.1, state.2.2.2.2.1, state.2.2.2.2.2⟩
   left_inv _ := rfl
   right_inv _ := rfl
 
@@ -90,6 +107,9 @@ noncomputable instance :
   letI : Fintype
       (SourceLocalLayerSerialCellRebaseExpandedFaceInterface →
         SourceLocalLayerSerialCellRebaseExpandedFaceInterface → Bool) :=
+    Fintype.ofFinite _
+  letI : Fintype
+      (Fin 48 → SourceLocalLayerSerialCellRebaseExpandedFaceInterface → Bool) :=
     Fintype.ofFinite _
   exact Fintype.ofEquiv _
     sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateEquiv.symm
@@ -115,6 +135,10 @@ noncomputable def sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt
   let region := sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique
     offset
   let graph := faceRegionalDartGraph web.annular.RS region
+  let oldCarrier := sourceLocalLayerSerialFaceTransitionCarrierAt corridor
+    hunique offset
+  let oldDartAt := fun slot : Fin oldCarrier.card =>
+    ((carrierCoordinate oldCarrier).symm slot).1
   exact {
     occupied := fun slot => (decode slot).isSome
     vertexEq := fun left right =>
@@ -135,6 +159,16 @@ noncomputable def sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt
     directAdj := fun left right =>
       match decode left, decode right with
       | some leftDart, some rightDart => decide (graph.Adj leftDart rightDart)
+      | _, _ => false
+    oldIncidenceVertexEq := fun index occurrence =>
+      let incidence :=
+        sourceLocalLayerSerialCellRebaseExpandedFaceOldIncidenceAt index
+      match sourceLocalLayerSerialFaceTransitionDartAtSlot? corridor hunique
+          offset hcell incidence.1, decode occurrence with
+      | some oldDart, some dart =>
+          decide
+            (faceInterfaceIncidenceVertex web.annular.RS oldDartAt
+                (carrierCoordinate oldCarrier oldDart, incidence.2) = dart)
       | _, _ => false }
 
 @[simp]
@@ -256,6 +290,48 @@ theorem sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt_directAdj_
   classical
   simp [sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt,
     hleft, hright]
+
+/-- The oriented predecessor-incidence row has its literal ambient meaning.
+Unlike undirected direct adjacency, this row distinguishes the two face sides
+of an old dart; those sides may enter different exterior components. -/
+@[simp]
+theorem
+    sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt_oldIncidenceVertexEq_iff_of_decode
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hcell : (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 6)
+    (index : Fin 48)
+    (oldDart : {dart // dart ∈
+      sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique offset})
+    (holdDecode :
+      sourceLocalLayerSerialFaceTransitionDartAtSlot? corridor hunique offset
+          hcell
+          (sourceLocalLayerSerialCellRebaseExpandedFaceOldIncidenceAt index).1 =
+        some oldDart)
+    (occurrence : SourceLocalLayerSerialCellRebaseExpandedFaceInterface)
+    (dart : web.annular.RS.D)
+    (hdecode : sourceLocalLayerSerialCellRebaseExpandedFaceDartAtSlot? corridor
+      hunique offset hnext hcell occurrence = some dart) :
+    (sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt corridor
+        hunique offset hnext hcell).oldIncidenceVertexEq index occurrence =
+          true ↔
+      let oldCarrier := sourceLocalLayerSerialFaceTransitionCarrierAt corridor
+        hunique offset
+      let oldDartAt := fun slot : Fin oldCarrier.card =>
+        ((carrierCoordinate oldCarrier).symm slot).1
+      faceInterfaceIncidenceVertex web.annular.RS oldDartAt
+          (carrierCoordinate oldCarrier oldDart,
+            (sourceLocalLayerSerialCellRebaseExpandedFaceOldIncidenceAt
+              index).2) = dart := by
+  classical
+  simp [sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt,
+    holdDecode, hdecode]
 
 /-- Partial map from the fixed occurrence interface to the actual predecessor
 carrier.  An active occurrence maps precisely when its ambient dart is already

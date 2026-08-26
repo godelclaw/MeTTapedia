@@ -19,10 +19,13 @@ namespace Mettapedia.GraphTheory.FourColor
 
 namespace GoertzelV24ClosedWebAtGoodWord
 
+open GoertzelV24BoundedCarrierGraphFamilyCode
 open GoertzelV24ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebAnnularEmbedding.ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebBoundaryData
 open GoertzelV24FaceOrbitIncidence
+open GoertzelV24InterfaceDeletionComponentFactor
+open GoertzelV24RotationFaceInterfaceExteriorLabelCap
 open GoertzelV24RotationFaceRegionalDartGraph
 open SimpleGraphDartRotation
 
@@ -54,6 +57,16 @@ def SourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceState.oldNeighbor?
     Option (Fin 24) :=
   Fin.find? fun oldSlot => state.directAdj (.inl oldSlot) occurrence
 
+/-- Search the forty-eight oriented predecessor face incidences for one whose
+exterior vertex is the requested expanded occurrence.  The returned index
+retains the face side, which `oldNeighbor?` deliberately forgets. -/
+def
+    SourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceState.oldIncidenceIndex?
+    (state : SourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceState)
+    (occurrence : SourceLocalLayerSerialCellRebaseExpandedFaceInterface) :
+    Option (Fin 48) :=
+  Fin.find? fun index => state.oldIncidenceVertexEq index occurrence
+
 /-- A returned old neighbour satisfies the receipt's direct-adjacency row. -/
 theorem SourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceState.oldNeighbor?_sound
     (state : SourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceState)
@@ -63,6 +76,17 @@ theorem SourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceState.oldNeighbor?
     state.directAdj (.inl oldSlot) occurrence = true := by
   exact Fin.eq_true_of_find?_eq_some hslot
 
+/-- A returned oriented incidence satisfies the receipt's literal incidence
+vertex-equality row. -/
+theorem
+    SourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceState.oldIncidenceIndex?_sound
+    (state : SourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceState)
+    (occurrence : SourceLocalLayerSerialCellRebaseExpandedFaceInterface)
+    (index : Fin 48)
+    (hindex : state.oldIncidenceIndex? occurrence = some index) :
+    state.oldIncidenceVertexEq index occurrence = true := by
+  exact Fin.eq_true_of_find?_eq_some hindex
+
 /-- Finite old-neighbour search succeeds exactly when an old coordinate has
 the requested direct-adjacency bit. -/
 theorem SourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceState.oldNeighbor?_isSome_iff
@@ -71,6 +95,17 @@ theorem SourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceState.oldNeighbor?
     (state.oldNeighbor? occurrence).isSome ↔
       ∃ oldSlot : Fin 24,
         state.directAdj (.inl oldSlot) occurrence = true := by
+  exact Fin.isSome_find?_iff
+
+/-- Oriented predecessor-incidence search succeeds exactly when one row bit is
+set. -/
+theorem
+    SourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceState.oldIncidenceIndex?_isSome_iff
+    (state : SourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceState)
+    (occurrence : SourceLocalLayerSerialCellRebaseExpandedFaceInterface) :
+    (state.oldIncidenceIndex? occurrence).isSome ↔
+      ∃ index : Fin 48,
+        state.oldIncidenceVertexEq index occurrence = true := by
   exact Fin.isSome_find?_iff
 
 /-- On a literal source receipt, the promoted bit says exactly that the
@@ -178,6 +213,135 @@ theorem sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt_oldNeighbo
         corridor hunique offset hnext hcell (.inl oldSlot) occurrence
           oldDart.1 dart ?_ hdecode).2 hadj
     simp [oldSlot]
+
+/-- On a literal source receipt, oriented-incidence search succeeds exactly
+when one predecessor face incidence has the decoded occurrence as its exterior
+vertex.  This is the finite side-sensitive ABI needed by the capped deletion
+recurrence. -/
+theorem
+    sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt_oldIncidenceIndex?_isSome_iff_of_decode
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hcell : (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 6)
+    (occurrence : SourceLocalLayerSerialCellRebaseExpandedFaceInterface)
+    (dart : web.annular.RS.D)
+    (hdecode : sourceLocalLayerSerialCellRebaseExpandedFaceDartAtSlot? corridor
+      hunique offset hnext hcell occurrence = some dart) :
+    ((sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt corridor
+        hunique offset hnext hcell).oldIncidenceIndex? occurrence).isSome ↔
+      ∃ (index : Fin 48)
+        (oldDart : {dart // dart ∈
+          sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+            offset}),
+        sourceLocalLayerSerialFaceTransitionDartAtSlot? corridor hunique offset
+            hcell
+            (sourceLocalLayerSerialCellRebaseExpandedFaceOldIncidenceAt index).1 =
+          some oldDart ∧
+        let oldCarrier := sourceLocalLayerSerialFaceTransitionCarrierAt corridor
+          hunique offset
+        let oldDartAt := fun slot : Fin oldCarrier.card =>
+          ((carrierCoordinate oldCarrier).symm slot).1
+        faceInterfaceIncidenceVertex web.annular.RS oldDartAt
+            (carrierCoordinate oldCarrier oldDart,
+              (sourceLocalLayerSerialCellRebaseExpandedFaceOldIncidenceAt
+                index).2) = dart := by
+  classical
+  rw [SourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceState.oldIncidenceIndex?_isSome_iff]
+  constructor
+  · rintro ⟨index, hrow⟩
+    cases holdDecode : sourceLocalLayerSerialFaceTransitionDartAtSlot? corridor
+        hunique offset hcell
+        (sourceLocalLayerSerialCellRebaseExpandedFaceOldIncidenceAt index).1 with
+    | none =>
+        simp [sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt,
+          holdDecode, hdecode] at hrow
+    | some oldDart =>
+        refine ⟨index, oldDart, holdDecode, ?_⟩
+        exact
+          (sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt_oldIncidenceVertexEq_iff_of_decode
+            corridor hunique offset hnext hcell index oldDart holdDecode
+              occurrence dart hdecode).1 hrow
+  · rintro ⟨index, oldDart, holdDecode, hvertex⟩
+    refine ⟨index, ?_⟩
+    exact
+      (sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt_oldIncidenceVertexEq_iff_of_decode
+        corridor hunique offset hnext hcell index oldDart holdDecode occurrence
+          dart hdecode).2 hvertex
+
+/-- A genuinely promoted occurrence adjacent to the predecessor carrier has
+one of the forty-eight oriented predecessor incidences as its literal entry
+address.  The converse additionally needs the predecessor incidence-present
+bit: padded seam lookahead may have the same ambient incidence vertex without
+being active in the pre-rebase region. -/
+theorem
+    sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt_oldIncidenceIndex?_isSome_of_oldNeighbor?_isSome_of_promoted
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hcell : (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 6)
+    (occurrence : SourceLocalLayerSerialCellRebaseExpandedFaceInterface)
+    (hpromoted :
+      (sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt corridor
+        hunique offset hnext hcell).promoted occurrence = true)
+    (hneighbor :
+      ((sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt corridor
+        hunique offset hnext hcell).oldNeighbor? occurrence).isSome) :
+    ((sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt corridor
+      hunique offset hnext hcell).oldIncidenceIndex? occurrence).isSome := by
+  classical
+  have hoccupied :=
+    sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt_occupied_of_present
+      corridor hunique offset hnext hcell occurrence
+        (Bool.and_eq_true_iff.mp hpromoted).1
+  rcases
+      (sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt_occupied_iff
+        corridor hunique offset hnext hcell occurrence).1 hoccupied with
+    ⟨dart, hdecode⟩
+  have hsemantic :=
+    (sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt_promoted_iff_of_decode
+      corridor hunique offset hnext hcell occurrence dart hdecode).1 hpromoted
+  rcases
+      (sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt_oldNeighbor?_isSome_iff_of_decode
+        corridor hunique offset hnext hcell occurrence dart hdecode).1
+        hneighbor with
+    ⟨oldDart, hadj⟩
+  let oldCarrier := sourceLocalLayerSerialFaceTransitionCarrierAt corridor
+    hunique offset
+  let oldDartAt := fun slot : Fin oldCarrier.card =>
+    ((carrierCoordinate oldCarrier).symm slot).1
+  have houtside : OutsideInterface oldDartAt dart := by
+    intro slot heq
+    apply hsemantic.2
+    have hslot : ((carrierCoordinate oldCarrier).symm slot).1 ∈ oldCarrier :=
+      ((carrierCoordinate oldCarrier).symm slot).2
+    rw [heq]
+    exact hslot
+  rcases exists_faceInterfaceIncidence_of_adj_outside web.annular.RS
+      (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset)
+      oldDartAt (carrierCoordinate oldCarrier oldDart) dart
+        (by simpa [oldDartAt, oldCarrier] using hadj) houtside with
+    ⟨direction, hvertex, _hpresent⟩
+  let index := sourceLocalLayerSerialCellRebaseExpandedFaceOldIncidenceEquiv
+    (sourceLocalLayerSerialFaceTransitionSlotAt corridor hunique offset hcell
+      oldDart, direction)
+  apply
+    (sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt_oldIncidenceIndex?_isSome_iff_of_decode
+      corridor hunique offset hnext hcell occurrence dart hdecode).2
+  refine ⟨index, oldDart, ?_, ?_⟩
+  · simp [index, sourceLocalLayerSerialCellRebaseExpandedFaceOldIncidenceAt]
+  · simpa [index, sourceLocalLayerSerialCellRebaseExpandedFaceOldIncidenceAt,
+      oldDartAt, oldCarrier] using hvertex
 
 /-- The exact source boundary-locality obligation is a finite implication on
 the fixed receipt: every genuinely promoted occurrence has an old neighbour.
