@@ -1110,6 +1110,120 @@ theorem
             web.annular.RS.edgeOf component).card) 5 := by
         rw [hlostEmpty, hpromotedLabelsEmpty]
 
+/-- Fixed-width lookahead recurrence for the literal facial rebase.
+
+Cap six is closed under the rolling update itself.  A touched component is
+small enough that its old cap-six weight is exact; an untouched component
+loses no labels.  Thus the same finite state can be carried into the next Cell
+without ever consulting an unbounded exterior component. -/
+theorem
+    sourceLocalLayerSerialCellRebase_min_newExteriorFaceSupport_six_eq_cap_six
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    {web : Instance data coloring} {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hcell : (sourceLocalLayerCellRegionAt corridor hunique offset).card ≤ 6)
+    (component :
+      (exteriorGraph
+        (faceRegionalDartGraph web.annular.RS
+          (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique
+            offset))
+        (fun slot : Fin
+          (sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+            offset).card =>
+          ((carrierCoordinate
+            (sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+              offset)).symm slot).1)).ConnectedComponent)
+    (start : component)
+    (hstartRetained : start ∈ retainedExteriorComponentVertices
+      (faceRegionalDartGraph web.annular.RS
+        (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset))
+      (fun slot : Fin
+        (sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+          offset).card =>
+        ((carrierCoordinate
+          (sourceLocalLayerSerialFaceTransitionCarrierAt corridor hunique
+            offset)).symm slot).1)
+      (sourceLocalLayerSerialCellRebaseUniformFaceDartAt corridor hunique offset
+        hnext) component)
+    (hblocks :
+      (sourceLocalLayerSerialCellRebaseExpandedFaceOccurrenceStateAt corridor
+        hunique offset hnext hcell).PromotedBlocksMeetOld) :
+    let graph := faceRegionalDartGraph web.annular.RS
+      (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset)
+    let oldCarrier := sourceLocalLayerSerialFaceTransitionCarrierAt corridor
+      hunique offset
+    let oldDartAt := fun slot : Fin oldCarrier.card =>
+      ((carrierCoordinate oldCarrier).symm slot).1
+    let newDartAt := sourceLocalLayerSerialCellRebaseUniformFaceDartAt corridor
+      hunique offset hnext
+    min (exteriorComponentLabelSupport graph newDartAt web.annular.RS.edgeOf
+        ((exteriorGraph graph newDartAt).connectedComponentMk start.1)).card 6 =
+      min (exteriorComponentLabelSupport graph oldDartAt
+          web.annular.RS.edgeOf component).card 6 -
+        (promotedExteriorComponentLabels graph oldDartAt newDartAt
+          web.annular.RS.edgeOf component).card := by
+  dsimp only
+  classical
+  let graph := faceRegionalDartGraph web.annular.RS
+    (sourceLocalLayerSerialPreRebaseOutputRegionAt corridor hunique offset)
+  let oldCarrier := sourceLocalLayerSerialFaceTransitionCarrierAt corridor
+    hunique offset
+  let oldDartAt := fun slot : Fin oldCarrier.card =>
+    ((carrierCoordinate oldCarrier).symm slot).1
+  let newDartAt := sourceLocalLayerSerialCellRebaseUniformFaceDartAt corridor
+    hunique offset hnext
+  rw [sourceLocalLayerSerialCellRebase_exteriorComponentLabelSupport_eq_retained
+    corridor hunique offset hnext hcell component start hstartRetained hblocks]
+  have holdCovered : ∀ old, ∃ new, newDartAt new = oldDartAt old :=
+    sourceLocalLayerSerialCellRebase_oldFaceDartAt_covered_uniform corridor
+      hunique offset hnext
+  by_cases hpromoted : (promotedExteriorComponentVertices graph oldDartAt
+      newDartAt component).Nonempty
+  · have hnotNew : ¬ ∃ slot, newDartAt slot = start.1 :=
+      (mem_retainedExteriorComponentVertices_iff graph oldDartAt newDartAt
+        component start).1 hstartRetained
+    have hstartOutside : OutsideInterface oldDartAt start.1 := by
+      intro old heq
+      rcases holdCovered old with ⟨new, hnew⟩
+      exact hnotNew ⟨new, hnew.trans heq.symm⟩
+    have hinjective : Function.Injective (fun vertex : component =>
+        web.annular.RS.edgeOf vertex.1) :=
+      sourceLocalLayerSerialCellRebase_edgeOf_injective_of_promoted_nonempty
+        corridor hunique offset hnext component start hstartOutside hpromoted
+    have hsupport :
+        (exteriorComponentLabelSupport graph oldDartAt
+          web.annular.RS.edgeOf component).card ≤ 6 :=
+      sourceLocalLayerSerialCellRebase_oldFaceSupport_card_le_six_of_promoted_nonempty
+        corridor hunique offset hnext component start hstartOutside hpromoted
+    exact min_card_retainedExteriorComponentLabels_six_eq_cap_six graph
+      oldDartAt newDartAt web.annular.RS.edgeOf component hinjective hsupport
+  · have hpromotedVerticesEmpty :
+        promotedExteriorComponentVertices graph oldDartAt newDartAt component =
+          ∅ := Finset.not_nonempty_iff_eq_empty.mp hpromoted
+    have hpromotedLabelsEmpty :
+        promotedExteriorComponentLabels graph oldDartAt newDartAt
+          web.annular.RS.edgeOf component = ∅ := by
+      simp [promotedExteriorComponentLabels, hpromotedVerticesEmpty]
+    have hlostEmpty : lostExteriorComponentLabels graph oldDartAt newDartAt
+        web.annular.RS.edgeOf component = ∅ := by
+      apply Finset.not_nonempty_iff_eq_empty.mp
+      rintro ⟨value, hvalue⟩
+      have hsubset :=
+        lostExteriorComponentLabels_subset_promotedExteriorComponentLabels
+          graph oldDartAt newDartAt web.annular.RS.edgeOf component hvalue
+      rw [hpromotedLabelsEmpty] at hsubset
+      simp at hsubset
+    rw [retainedExteriorComponentLabels_eq_sdiff_lost graph oldDartAt
+      newDartAt web.annular.RS.edgeOf component, hlostEmpty,
+      hpromotedLabelsEmpty]
+    simp only [Finset.sdiff_empty, Finset.card_empty, Nat.sub_zero]
+    rfl
+
 /-- Fixed-width executable recurrence for the literal facial rebase.
 
 Cap six is sufficient forever.  A component touched by the new collar lies on

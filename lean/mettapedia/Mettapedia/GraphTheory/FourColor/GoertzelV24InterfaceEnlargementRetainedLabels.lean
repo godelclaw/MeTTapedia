@@ -392,6 +392,36 @@ difference are statements about the retained labels themselves.
 
 omit [Fintype Old] in
 /-- If a touched component's complete old label support has size at most six,
+then its retained cap-six weight is obtained by exact subtraction from the old
+cap-six weight.  This is the recurrence needed to carry the lookahead state to
+the next rolling interface, rather than merely recover the published cap-five
+output. -/
+theorem min_card_retainedExteriorComponentLabels_six_eq_cap_six
+    (graph : SimpleGraph N) (oldVertex : Old → N) (newVertex : New → N)
+    (label : N → Label)
+    (component : (exteriorGraph graph oldVertex).ConnectedComponent)
+    (hinj : Function.Injective fun vertex : component => label vertex.1)
+    (hsupport :
+      (exteriorComponentLabelSupport graph oldVertex label component).card ≤
+        6) :
+    min (retainedExteriorComponentLabels graph oldVertex newVertex label
+        component).card 6 =
+      min (exteriorComponentLabelSupport graph oldVertex label component
+        ).card 6 -
+          (promotedExteriorComponentLabels graph oldVertex newVertex label
+            component).card := by
+  classical
+  rw [retainedExteriorComponentLabels_eq_sdiff graph oldVertex newVertex label
+    component hinj]
+  rw [Finset.card_sdiff_of_subset
+    (promotedExteriorComponentLabels_subset_componentLabelSupport graph
+      oldVertex newVertex label component)]
+  rw [Nat.min_eq_left hsupport]
+  apply Nat.min_eq_left
+  omega
+
+omit [Fintype Old] in
+/-- If a touched component's complete old label support has size at most six,
 then cap six contains exactly the information needed to recover cap five after
 promotion.  This bound is independent of the size of the enlarged interface. -/
 theorem min_card_retainedExteriorComponentLabels_five_eq_cap_six
