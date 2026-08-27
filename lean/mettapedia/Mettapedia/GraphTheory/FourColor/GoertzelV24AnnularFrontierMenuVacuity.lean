@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularFrontierMenu
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebInnerTouching
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularFrontierMenuProfileSemantics
 
 /-!
 # The open-tangle menu predicate is vacuous
@@ -78,6 +79,89 @@ theorem menuBForPair_of_three_inner_support_vertices
     · exact hne hvk hvj hjk.symm hk
   · exact ⟨graph.connectedComponentMk vi, graph.connectedComponentMk vj, hcase,
       ⟨i, vi, hmem vi, hvi⟩, ⟨j, vj, hmem vj, hvj⟩⟩
+
+/-- **The open predicate is automatic at four active ports.**  A majority pair
+of a good word always has four, so this fires on every realizable state. -/
+theorem menuBForPair_of_activeSupport_card_eq_four
+    (data : AnnularBoundaryData G outerCount) (hdata : data.WellFormed)
+    (C : G.EdgeColoring Color) (hC : IsTaitEdgeColoring G C)
+    {first second : Color} (hpair : ValidColorPair first second)
+    (hcard : (cap5ActiveSupport first second (data.innerBoundaryWord C)).card = 4) :
+    AnnularFrontierMenuBForPair data C first second := by
+  classical
+  have hlt : 2 < (cap5ActiveSupport first second (data.innerBoundaryWord C)).card := by
+    omega
+  rcases Finset.two_lt_card_iff.mp hlt with ⟨i, j, k, hi, hj, hk, hij, hik, hjk⟩
+  refine menuBForPair_of_three_inner_support_vertices data hdata C hC hpair
+    hij hik hjk
+    ⟨data.innerStub i, innerStub_mem_colorPairGraph_support_of_mem_activeSupport
+      data hdata C first second i hi⟩
+    ⟨data.innerStub j, innerStub_mem_colorPairGraph_support_of_mem_activeSupport
+      data hdata C first second j hj⟩
+    ⟨data.innerStub k, innerStub_mem_colorPairGraph_support_of_mem_activeSupport
+      data hdata C first second k hk⟩ rfl rfl rfl
+
+/-- Both majority pairs of a good inner word satisfy the open predicate. -/
+theorem menuBForPair_of_majorityTriple
+    (data : AnnularBoundaryData G outerCount) (hdata : data.WellFormed)
+    (C : G.EdgeColoring Color) (hC : IsTaitEdgeColoring G C)
+    {majority singletonFirst singletonSecond : Color}
+    (htriple : AnnularFrontierMajorityTriple (data.innerBoundaryWord C)
+      majority singletonFirst singletonSecond) :
+    AnnularFrontierMenuBForPair data C majority singletonFirst ∧
+      AnnularFrontierMenuBForPair data C majority singletonSecond := by
+  have hcolors := htriple.1
+  refine ⟨menuBForPair_of_activeSupport_card_eq_four data hdata C hC
+      ⟨hcolors.1, hcolors.2.1, hcolors.2.2.2.1⟩
+      htriple.activeSupport_majority_singletonFirst_card,
+    menuBForPair_of_activeSupport_card_eq_four data hdata C hC
+      ⟨hcolors.1, hcolors.2.2.1, hcolors.2.2.2.2.1⟩
+      htriple.activeSupport_majority_singletonSecond_card⟩
+
+/-- **The whole open Menu-B state is automatic on a good word.**  Nothing about
+the colouring is used beyond properness, so this predicate cannot separate a
+seed from the rest of its fibre. -/
+theorem menuBState_of_goodWord
+    (data : AnnularBoundaryData G outerCount) (hdata : data.WellFormed)
+    (C : G.EdgeColoring Color) (hC : IsTaitEdgeColoring G C)
+    (hgood : CAP5BoundaryWordHasColoredBlock311 (data.innerBoundaryWord C)) :
+    AnnularFrontierMenuBState data C := by
+  rcases exists_annularFrontierMajorityTriple_of_goodWord hgood with
+    ⟨majority, singletonFirst, singletonSecond, htriple⟩
+  exact ⟨majority, singletonFirst, singletonSecond, htriple,
+    Or.inl (menuBForPair_of_majorityTriple data hdata C hC htriple).1⟩
+
+/-- **The profile predicate is automatic too.**  The uniform carrier's
+`connectionTable` encodes the same open relation, so transporting the graph
+predicate onto the profile does not restore any content. -/
+theorem menuBForPairOfProfile_of_majorityTriple
+    (data : AnnularBoundaryData G outerCount) (hdata : data.WellFormed)
+    (C : G.EdgeColoring Color) (hC : IsTaitEdgeColoring G C)
+    {majority singletonFirst singletonSecond : Color}
+    (htriple : AnnularFrontierMajorityTriple (data.innerBoundaryWord C)
+      majority singletonFirst singletonSecond) :
+    AnnularFrontierMenuBForPairOfProfile
+        (annularFrontierMenuUniformProfile data hdata C) majority singletonFirst ∧
+      AnnularFrontierMenuBForPairOfProfile
+        (annularFrontierMenuUniformProfile data hdata C) majority singletonSecond := by
+  obtain ⟨hfirst, hsecond⟩ := menuBForPair_of_majorityTriple data hdata C hC htriple
+  exact ⟨(annularFrontierMenuBForPair_iff_of_uniformProfile
+      data hdata C majority singletonFirst).mp hfirst,
+    (annularFrontierMenuBForPair_iff_of_uniformProfile
+      data hdata C majority singletonSecond).mp hsecond⟩
+
+/-- The complete profile-level Menu-B state is likewise automatic on every
+realizable good-word profile. -/
+theorem menuBStateOfProfile_of_goodWord
+    (data : AnnularBoundaryData G outerCount) (hdata : data.WellFormed)
+    (C : G.EdgeColoring Color) (hC : IsTaitEdgeColoring G C)
+    (hgood : CAP5BoundaryWordHasColoredBlock311 (data.innerBoundaryWord C)) :
+    AnnularFrontierMenuBStateOfProfile
+      (annularFrontierMenuUniformProfile data hdata C) := by
+  rcases exists_annularFrontierMajorityTriple_of_goodWord hgood with
+    ⟨majority, singletonFirst, singletonSecond, htriple⟩
+  exact ⟨majority, singletonFirst, singletonSecond, htriple,
+    Or.inl (menuBForPairOfProfile_of_majorityTriple data hdata C hC htriple).1⟩
 
 end GoertzelV24AnnularFrontierMenuVacuity
 
