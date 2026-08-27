@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebPointwiseSelectedSerialPrefixRegion
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebPointwiseSelectedSerialTerminalProfile
 import Mettapedia.GraphTheory.FourColor.GoertzelV24RegionalProfileColorCongruence
 
 /-!
@@ -155,6 +155,40 @@ def PointwiseSelectedSourceLocalLayerSerialCellColorsCompatibleAt
         hinterior offset →
       prefixColor edge = cellColor edge
 
+/-- Compatibility on the actual terminal-aware input.  This is the receipt
+consumed by the rooted Cell machine: it additionally covers the retained
+shared rung when that rung belongs to the literal Cell. -/
+def PointwiseSelectedSourceLocalLayerSerialTerminalCellColorsCompatibleAt
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
+    (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
+      formation.annular.cellulation)
+    (offset : Fin (blockLength - 3))
+    (prefixColor cellColor : G.edgeSet → Color) : Prop :=
+  ∀ edge,
+    edge ∈ pointwiseSelectedSourceLocalLayerSerialTerminalInputRegionAt
+        formation corridor hinterior offset →
+    edge ∈ pointwiseSelectedSourceLocalLayerCellRegionAt formation corridor
+        hinterior offset →
+      prefixColor edge = cellColor edge
+
+theorem pointwiseSelectedSourceLocalLayerSerialTerminalCellColorsCompatibleAt_to_input
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
+    (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
+      formation.annular.cellulation)
+    (offset : Fin (blockLength - 3))
+    (prefixColor cellColor : G.edgeSet → Color)
+    (hcompatible :
+      PointwiseSelectedSourceLocalLayerSerialTerminalCellColorsCompatibleAt
+        formation corridor hinterior offset prefixColor cellColor) :
+    PointwiseSelectedSourceLocalLayerSerialCellColorsCompatibleAt formation
+      corridor hinterior offset prefixColor cellColor := by
+  intro edge hinput hcell
+  exact hcompatible edge (Finset.mem_union_left _ hinput) hcell
+
 /-- Use the literal Count witness on the new Cell and the arbitrary prefix
 colouring everywhere else. -/
 def pointwiseSelectedSourceLocalLayerSerialCellSplicedColorAt
@@ -210,6 +244,33 @@ theorem pointwiseSelectedSourceLocalLayerSerialCellSplicedColorAt_eq_prefix_of_m
     exact (hcompatible edge hedge hcell).symm
   · simp [pointwiseSelectedSourceLocalLayerSerialCellSplicedColorAt, hcell]
 
+/-- Under terminal-aware compatibility, splicing preserves every edge colour
+read by the rooted input state, including its retained rung. -/
+theorem pointwiseSelectedSourceLocalLayerSerialCellSplicedColorAt_eq_prefix_of_mem_terminalInput
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
+    (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
+      formation.annular.cellulation)
+    (offset : Fin (blockLength - 3))
+    (prefixColor cellColor : G.edgeSet → Color)
+    (hcompatible :
+      PointwiseSelectedSourceLocalLayerSerialTerminalCellColorsCompatibleAt
+        formation corridor hinterior offset prefixColor cellColor)
+    {edge : G.edgeSet}
+    (hedge : edge ∈
+      pointwiseSelectedSourceLocalLayerSerialTerminalInputRegionAt formation
+        corridor hinterior offset) :
+    pointwiseSelectedSourceLocalLayerSerialCellSplicedColorAt formation corridor
+        hinterior offset prefixColor cellColor edge = prefixColor edge := by
+  by_cases hcell : edge ∈
+      pointwiseSelectedSourceLocalLayerCellRegionAt formation corridor
+        hinterior offset
+  · rw [pointwiseSelectedSourceLocalLayerSerialCellSplicedColorAt_eq_cell_of_mem
+      formation corridor hinterior offset prefixColor cellColor hcell]
+    exact (hcompatible edge hedge hcell).symm
+  · simp [pointwiseSelectedSourceLocalLayerSerialCellSplicedColorAt, hcell]
+
 /-- Compatibility preserves the entire five-coordinate cumulative input
 profile, not merely its displayed colour word. -/
 theorem pointwiseSelectedSourceLocalLayerSerialInputBoundedProfileAt_spliced
@@ -251,6 +312,48 @@ theorem pointwiseSelectedSourceLocalLayerSerialInputBoundedProfileAt_spliced
       formation corridor hinterior offset prefixColor cellColor hcompatible
         hedge
 
+/-- Compatibility preserves the complete terminal-aware rooted input profile.
+The proof is local to the exact input edge region, so all five stored profile
+coordinates are preserved at once. -/
+theorem pointwiseSelectedSourceLocalLayerSerialTerminalInputBoundedProfileAt_spliced
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
+    (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
+      formation.annular.cellulation)
+    (offset : Fin (blockLength - 3))
+    (prefixColor cellColor : G.edgeSet → Color)
+    (hprefix : ∀ step,
+      prefixColor (pointwiseSelectedSourceLocalLayerLeftCrossingAt formation
+        corridor hinterior offset step) ≠ 0)
+    (hcompatible :
+      PointwiseSelectedSourceLocalLayerSerialTerminalCellColorsCompatibleAt
+        formation corridor hinterior offset prefixColor cellColor) :
+    pointwiseSelectedSourceLocalLayerSerialTerminalInputBoundedProfileAt
+        formation corridor hinterior offset
+        (pointwiseSelectedSourceLocalLayerSerialCellSplicedColorAt formation
+          corridor hinterior offset prefixColor cellColor)
+        (fun step => by
+          rw [pointwiseSelectedSourceLocalLayerSerialCellSplicedColorAt_eq_prefix_of_mem_terminalInput
+            formation corridor hinterior offset prefixColor cellColor
+              hcompatible
+              (Finset.mem_union_left _
+                (pointwiseSelectedSourceLocalLayerSerialInputRegionAt_leftCrossing
+                  formation corridor hinterior offset step))]
+          exact hprefix step) =
+      pointwiseSelectedSourceLocalLayerSerialTerminalInputBoundedProfileAt
+        formation corridor hinterior offset prefixColor hprefix := by
+  unfold pointwiseSelectedSourceLocalLayerSerialTerminalInputBoundedProfileAt
+  congr 1
+  apply GraphCorridorCutData.regionalProfile_eq_of_eq_on_region
+  · exact
+      pointwiseSelectedSourceLocalLayerSerialTerminalInputCutDataAt_portsInRegion
+        formation corridor hinterior offset
+  · intro edge hedge
+    exact pointwiseSelectedSourceLocalLayerSerialCellSplicedColorAt_eq_prefix_of_mem_terminalInput
+      formation corridor hinterior offset prefixColor cellColor hcompatible
+        hedge
+
 /-- Exact cumulative output profile formed after adjoining the positive-Count
 Cell witness to a compatible arbitrary prefix. -/
 noncomputable def pointwiseSelectedSourceLocalLayerSerialSplicedOutputBoundedProfileAt
@@ -267,6 +370,36 @@ noncomputable def pointwiseSelectedSourceLocalLayerSerialSplicedOutputBoundedPro
     BoundedCorridorCutProfile 2 0 4 :=
   pointwiseSelectedSourceLocalLayerSerialOutputBoundedProfileAt formation
     corridor hinterior offset
+    (pointwiseSelectedSourceLocalLayerSerialCellSplicedColorAt formation
+      corridor hinterior offset prefixColor
+      (pointwiseSelectedSourceLocalLayerCellLiteralColorAt formation corridor
+        hinterior offset cellColoring))
+    (fun step => by
+      rw [pointwiseSelectedSourceLocalLayerSerialCellSplicedColorAt_eq_cell_of_mem
+        formation corridor hinterior offset]
+      · exact
+          pointwiseSelectedSourceLocalLayerCellLiteralColorAt_rightCrossing_ne_zero
+            formation corridor hinterior offset cellColoring step
+      · exact pointwiseSelectedSourceLocalLayerCellRegionAt_rightCrossing
+          formation corridor hinterior offset step)
+
+/-- The exact immediate pre-rebase output after adjoining a positive selected
+Cell witness to a cumulative prefix.  The consumed terminal is now an ordinary
+regional edge. -/
+noncomputable def pointwiseSelectedSourceLocalLayerSerialSplicedPreRebaseOutputBoundedProfileAt
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
+    (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
+      formation.annular.cellulation)
+    (offset : Fin (blockLength - 3))
+    (prefixColor : G.edgeSet → Color)
+    (cellColoring :
+      PointwiseSelectedSourceLocalLayerCellLiteralOpenTaitColoringAt formation
+        corridor hinterior offset) :
+    BoundedCorridorCutProfile 2 0 4 :=
+  pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputBoundedProfileAt
+    formation corridor hinterior offset
     (pointwiseSelectedSourceLocalLayerSerialCellSplicedColorAt formation
       corridor hinterior offset prefixColor
       (pointwiseSelectedSourceLocalLayerCellLiteralColorAt formation corridor
