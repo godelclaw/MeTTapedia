@@ -365,9 +365,144 @@ theorem boundaryEssential_of_saturated {P : Type*} (portVertex : P → Vtx)
             exact hnoport p (hp ▸ h2 ▸ ih)
   exact hside (hstay _ (Classical.byContradiction fun hcon => hbridgeless e₀ hcon))
 
+/-- The symmetric half of `boundaryEssential_of_saturated`: the component
+containing the displayed second endpoint also contains a port. -/
+theorem boundaryEssential_snd_of_saturated {P : Type*} (portVertex : P → Vtx)
+    (hbridgeless : G.Bridgeless)
+    (hsat : ∀ e : Edg, ¬ Internal G side e →
+      (side (G.fst e) → ∃ p : P, portVertex p = G.fst e) ∧
+        (side (G.snd e) → ∃ p : P, portVertex p = G.snd e))
+    (e₀ : Edg) (hint : Internal G side e₀)
+    (hside : ¬ SideReachAvoiding G side e₀ (G.snd e₀) (G.fst e₀)) :
+    ∃ p : P, SideReachAvoiding G side e₀ (G.snd e₀) (portVertex p) := by
+  refine Classical.byContradiction fun hexists => ?_
+  have hnoport : ∀ p : P,
+      ¬ SideReachAvoiding G side e₀ (G.snd e₀) (portVertex p) :=
+    fun p hp => hexists ⟨p, hp⟩
+  have hstay : ∀ x : Vtx, G.ReachAvoiding e₀ (G.snd e₀) x →
+      SideReachAvoiding G side e₀ (G.snd e₀) x := by
+    intro x hx
+    induction hx with
+    | refl => exact Relation.ReflTransGen.refl
+    | tail _ hstep ih =>
+        obtain ⟨f, hnf, hends⟩ := hstep
+        by_cases hfint : Internal G side f
+        · exact ih.tail ⟨f, by
+            intro hcon
+            rcases hcon with hcon | hcon
+            · exact hnf hcon
+            · exact hcon hfint, hends⟩
+        · exfalso
+          have hy : side _ := side_of_sideReachAvoiding hint.2 ih
+          rcases hends with ⟨h1, h2⟩ | ⟨h1, h2⟩
+          · obtain ⟨p, hp⟩ := (hsat f hfint).1 (h1 ▸ hy)
+            exact hnoport p (hp ▸ h1 ▸ ih)
+          · obtain ⟨p, hp⟩ := (hsat f hfint).2 (h2 ▸ hy)
+            exact hnoport p (hp ▸ h2 ▸ ih)
+  have hambient : G.ReachAvoiding e₀ (G.snd e₀) (G.fst e₀) :=
+    Multigraph.reachAvoiding_symm
+      (Classical.byContradiction fun hcon => hbridgeless e₀ hcon)
+  exact hside (hstay _ hambient)
+
+/-- Saturation really supplies both halves of boundary-essentiality: if an
+internal edge separates its endpoint components inside the side, each of
+those two components contains a port. -/
+theorem both_boundary_components_have_ports_of_saturated
+    {P : Type*} (portVertex : P → Vtx)
+    (hbridgeless : G.Bridgeless)
+    (hsat : ∀ e : Edg, ¬ Internal G side e →
+      (side (G.fst e) → ∃ p : P, portVertex p = G.fst e) ∧
+        (side (G.snd e) → ∃ p : P, portVertex p = G.snd e))
+    (e₀ : Edg) (hint : Internal G side e₀)
+    (hside : ¬ SideReachAvoiding G side e₀ (G.fst e₀) (G.snd e₀)) :
+    (∃ p : P, SideReachAvoiding G side e₀ (G.fst e₀) (portVertex p)) ∧
+      (∃ p : P, SideReachAvoiding G side e₀ (G.snd e₀) (portVertex p)) := by
+  refine ⟨boundaryEssential_of_saturated portVertex hbridgeless hsat e₀ hint hside,
+    boundaryEssential_snd_of_saturated portVertex hbridgeless hsat e₀ hint ?_⟩
+  intro hreverse
+  exact hside (Multigraph.reflTransGen_symm hreverse)
+
+/-- The literal multigraph induced by a vertex side.  Its vertices and edges
+carry the proofs that they lie wholly in the side. -/
+def inducedSideMultigraph (G : Multigraph Vtx Edg) (side : Vtx → Prop) :
+    Multigraph {v : Vtx // side v} {e : Edg // Internal G side e} where
+  fst e := ⟨G.fst e.1, e.2.1⟩
+  snd e := ⟨G.snd e.1, e.2.2⟩
+
+/-- A path using only internal side edges lifts to the actual induced-side
+multigraph. -/
+theorem sideReachAvoiding_to_induced
+    {e₀ : Edg} {u : {v : Vtx // side v}} {v : Vtx}
+    (hint : Internal G side e₀)
+    (h : SideReachAvoiding G side e₀ u.1 v) :
+    ∃ hv : side v,
+      (inducedSideMultigraph G side).ReachAvoiding
+        ⟨e₀, hint⟩
+        u ⟨v, hv⟩ := by
+  induction h with
+  | refl =>
+      exact ⟨u.2, Relation.ReflTransGen.refl⟩
+  | @tail b c hpath hstep ih =>
+      obtain ⟨hx, ih⟩ := ih
+      obtain ⟨f, hnf, hends⟩ := hstep
+      have hfint : Internal G side f := by
+        apply Classical.byContradiction
+        exact fun hcon => hnf (Or.inr hcon)
+      have hfne : f ≠ e₀ := by
+        intro heq
+        exact hnf (Or.inl heq)
+      have hy : side c := by
+        rcases hends with ⟨h1, h2⟩ | ⟨h1, h2⟩
+        · exact h2 ▸ hfint.2
+        · exact h1 ▸ hfint.1
+      refine ⟨hy, ih.tail ?_⟩
+      refine ⟨⟨f, hfint⟩, ?_, ?_⟩
+      · intro heq
+        exact hfne (congrArg Subtype.val heq)
+      · rcases hends with ⟨h1, h2⟩ | ⟨h1, h2⟩
+        · exact Or.inl ⟨Subtype.ext h1, Subtype.ext h2⟩
+        · exact Or.inr ⟨Subtype.ext h1, Subtype.ext h2⟩
+
+/-- The exact packaged form: a saturated vertex side of a bridgeless
+multigraph is boundary-essential as an induced-side multigraph. -/
+theorem inducedSide_boundaryEssential_of_saturated
+    {P : Type*} (portVertex : P → Vtx)
+    (hport : ∀ p : P, side (portVertex p))
+    (hbridgeless : G.Bridgeless)
+    (hsat : ∀ e : Edg, ¬ Internal G side e →
+      (side (G.fst e) → ∃ p : P, portVertex p = G.fst e) ∧
+        (side (G.snd e) → ∃ p : P, portVertex p = G.snd e)) :
+    BoundaryEssential (inducedSideMultigraph G side)
+      (fun p => ⟨portVertex p, hport p⟩) := by
+  intro edge hbridge
+  have hside :
+      ¬ SideReachAvoiding G side edge.1 (G.fst edge.1) (G.snd edge.1) := by
+    intro hreach
+    obtain ⟨hsnd, hinduced⟩ :=
+      sideReachAvoiding_to_induced
+        (u := ⟨G.fst edge.1, edge.2.1⟩)
+        (v := G.snd edge.1) edge.2 hreach
+    apply hbridge
+    simpa [inducedSideMultigraph] using hinduced
+  obtain ⟨⟨p, hp⟩, ⟨q, hq⟩⟩ :=
+    both_boundary_components_have_ports_of_saturated
+      portVertex hbridgeless hsat edge.1 edge.2 hside
+  constructor
+  · refine ⟨p, ?_⟩
+    obtain ⟨hpSide, hp'⟩ :=
+      sideReachAvoiding_to_induced
+        (u := ⟨G.fst edge.1, edge.2.1⟩)
+        (v := portVertex p) edge.2 hp
+    simpa [inducedSideMultigraph] using hp'
+  · refine ⟨q, ?_⟩
+    obtain ⟨hqSide, hq'⟩ :=
+      sideReachAvoiding_to_induced
+        (u := ⟨G.snd edge.1, edge.2.2⟩)
+        (v := portVertex q) edge.2 hq
+    simpa [inducedSideMultigraph] using hq'
+
 end Saturated
 
 end GoertzelV24BoundaryEssentialGluing
 
 end Mettapedia.GraphTheory.FourColor
-

@@ -95,6 +95,61 @@ theorem bridgeless_of (φ : Iso g g') (h : g.Bridgeless) : g'.Bridgeless := by
   · rw [h1, h2]; exact hmap
   · rw [h1, h2]; exact Multigraph.reachAvoiding_symm hmap
 
+/-- Boundary-essentiality transports across a multigraph isomorphism when the
+port vertices commute with the vertex and port equivalences. -/
+theorem boundaryEssential_of
+    {P P' : Type*} (φ : Iso g g') (ports : P ≃ P')
+    (portVertex : P → V) (portVertex' : P' → V')
+    (hports : ∀ p : P, portVertex' (ports p) = φ.vert (portVertex p))
+    (hessential : BoundaryEssential g portVertex) :
+    BoundaryEssential g' portVertex' := by
+  intro e' hbridge
+  let e := φ.edge.symm e'
+  have hpred :
+      (fun x : E' => φ.edge.symm x = e) = (· = e') := by
+    funext x
+    apply propext
+    simp [e]
+  have mapReach : ∀ {u v : V}, g.ReachAvoiding e u v →
+      g'.ReachAvoiding e' (φ.vert u) (φ.vert v) := by
+    intro u v hreach
+    have hmap := φ.reflTransGen_map (avoid := (· = e)) hreach
+    rw [hpred] at hmap
+    exact hmap
+  have heBridge : g.IsBridge e := by
+    intro hreach
+    apply hbridge
+    have hmap := mapReach hreach
+    have hends := φ.ends e
+    have hedge : φ.edge e = e' := by simp [e]
+    rw [hedge] at hends
+    rcases hends with ⟨h1, h2⟩ | ⟨h1, h2⟩
+    · simpa [h1, h2] using hmap
+    · simpa [h1, h2] using Multigraph.reachAvoiding_symm hmap
+  obtain ⟨⟨p, hp⟩, ⟨q, hq⟩⟩ := hessential e heBridge
+  have hends := φ.ends e
+  have hedge : φ.edge e = e' := by simp [e]
+  rw [hedge] at hends
+  rcases hends with ⟨h1, h2⟩ | ⟨h1, h2⟩
+  · constructor
+    · refine ⟨ports p, ?_⟩
+      have := mapReach hp
+      rw [hports]
+      simpa [h1] using this
+    · refine ⟨ports q, ?_⟩
+      have := mapReach hq
+      rw [hports]
+      simpa [h2] using this
+  · constructor
+    · refine ⟨ports q, ?_⟩
+      have := mapReach hq
+      rw [hports]
+      simpa [h1] using this
+    · refine ⟨ports p, ?_⟩
+      have := mapReach hp
+      rw [hports]
+      simpa [h2] using this
+
 end Iso
 
 end GoertzelV24MultigraphTransport

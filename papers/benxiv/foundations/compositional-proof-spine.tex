@@ -1772,7 +1772,7 @@ bridge.
 
 \begin{lemma}[a saturated side of a bridgeless graph is boundary-essential]
 \label{lem:saturated-side-boundary-essential}
-\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24BoundaryEssentialGluing.boundaryEssential_of_saturated}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24BoundaryEssentialGluing.inducedSide_boundaryEssential_of_saturated}
 Let \(G\) be bridgeless and let \(H\) be a connected vertex side of an edge
 cut, with every edge from \(H\) to \(G-H\) represented by a boundary
 half-edge.  Then \(H\) is boundary-essential.
@@ -2063,6 +2063,78 @@ If the darts at each side vertex form one rotation cycle, the same is true in
 the composite.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24CompositeSeamCubic.vertexRotationCyclic_composeRotationSystem}
 \end{theorem}
+
+\begin{lemma}[literal vertex shores inherit the local map structure]
+\label{lem:vertex-shore-local-structure}
+Let \(M=(D,\alpha,\rho)\) be a finite cubic rotation system whose darts at
+each vertex form one \(\rho\)-cycle, and let \(S\) be any set of vertices.
+Cut every edge with exactly one endpoint in \(S\), retaining its dart based
+in \(S\) as an unpaired boundary dart.  The resulting literal open tangle is
+cubic when its boundary half-edges are counted.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24VertexSideOpenTangle.openIsCubic_ofVertexSide}
+Its darts at each retained vertex still form one rotation cycle.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24VertexSideOpenTangle.openRotationCyclic_ofVertexSide}
+If the graph induced by \(S\) is connected, then the interior-edge
+multigraph of the open tangle is connected.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24VertexSideOpenTangle.sideMultigraph_connected_of_induce_connected}
+Moreover its full boundary-dart carrier is saturated: every ambient edge
+leaving \(S\) contributes its unique retained orientation as a boundary
+port.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24VertexSideOpenTangle.boundaryDarts_saturate_toMultigraph}
+If the ambient edge multigraph is bridgeless, then this literal interior-edge
+multigraph is boundary-essential with respect to those boundary darts.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24VertexSideOpenTangle.boundaryEssential_ofVertexSide}
+\end{lemma}
+
+\begin{proof}
+The retained-dart partition
+\[
+ \{d\in D: \operatorname{vert}(d)\in S\}
+   \;\cong\; D_{\rm int}(S)\sqcup D_{\partial}(S)
+\]
+only records whether the opposite endpoint is also in \(S\); it neither
+adds nor removes a dart based at a retained vertex.  Hence the open darts
+based at \(v\in S\) are in bijection with the ambient darts based at \(v\),
+and there are exactly three of them.
+
+The ambient rotation preserves the base vertex, so it restricts to the
+retained darts.  The open rotation is exactly this restriction conjugated
+by the displayed partition equivalence.  Two open darts based at the same
+retained vertex therefore correspond to two ambient darts based at the same
+vertex; ambient rotation-cyclicity puts them in one \(\rho\)-orbit, and
+restriction followed by conjugation puts the original open darts in one
+open-rotation orbit.  Finally, every adjacency of the graph induced by \(S\)
+is represented by an ambient dart whose two endpoints lie in \(S\), hence by
+one internal dart and one interior edge of the open tangle.  An induced path
+therefore maps edge by edge to a path in its interior-edge multigraph.  If an
+ambient edge has exactly one endpoint in \(S\), its dart based at that endpoint
+is, by definition, a boundary dart; conversely every boundary dart arises in
+this way.  This is precisely saturation.  Finally, identify an internal
+ambient edge with the involution-orbit of either of its two internal darts.
+This is a bijection preserving the unordered endpoint pair.  The preceding
+saturated-side lemma makes the induced ambient side boundary-essential, and
+transport across this multigraph isomorphism gives boundary-essentiality on
+the literal open-tangle carrier used by the splice.
+\end{proof}
+
+\begin{corollary}[two literal shores feed the structural splice]
+\label{cor:literal-shores-structural-splice}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24VertexSideOpenTangle.bridgelessSphericalCubicMapData_ofVertexSides}
+Let \(S_L,S_R\) be connected induced vertex shores of one bridgeless cubic
+rotation system with cyclic vertex rotations.  Give their complete cut-dart
+interfaces a matching with at least two ports.  If their hub closures are
+spherical and face-simple and the matching reverses the two hub orders, then
+the literal seam composite is a connected, bridge-free, cubic spherical map
+with cyclic vertex rotations.
+\end{corollary}
+
+\begin{proof}
+Lemma~\ref{lem:vertex-shore-local-structure} supplies connectedness,
+boundary-essentiality, open cubicity, and open rotation-cyclicity on the
+exact two side carriers.  The hub hypotheses supply the face-count input.
+Applying the implemented structural seam theorem therefore gives all four
+fields on the literal composite rotation system.
+\end{proof}
 
 \begin{corollary}[the implemented seam composite packages the full structural class]
 \label{cor:implemented-seam-composite-structure}
