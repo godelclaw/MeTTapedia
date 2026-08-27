@@ -942,6 +942,84 @@ lies in \(B\).  Together these statements put every incident edge in
 \(B\setminus A\), as required.
 \end{proof}
 
+\begin{theorem}[majority shores from a connected edge decomposition]
+\label{thm:connected-edge-shore-majority}
+\Sprose
+Let \(G\) be a finite cubic graph and let \(A\subseteq E(G)\).  Write
+\[
+ d_A(v)=|\{e\in A:v\in e\}|,\qquad
+ K_A=\{v:d_A(v)\ge2\},\qquad
+ M_A=\{v:0<d_A(v)<3\}.
+\]
+Suppose that the edge-induced graphs on \(A\) and on
+\(\bar A=E(G)\setminus A\), with isolated vertices discarded, are connected.
+Then:
+\begin{enumerate}
+\item \(K_{\bar A}=V(G)\setminus K_A\);
+\item if \(K_A\ne\varnothing\), then \(G[K_A]\) is connected, and likewise
+      for \(K_{\bar A}\);
+\item the edge boundary of \(K_A\) has at most \(|M_A|\) edges; and
+\item if \(A\subseteq B\), then \(K_A\subseteq K_B\).  Moreover, if every
+      edge incident with \(v\) lies in \(B\setminus A\), then
+      \(v\in K_B\setminus K_A\).
+\end{enumerate}
+Consequently, a connected branch decomposition of width \(w\), restricted
+to non-leaf cuts for which both shores contain at least two edges,
+canonically supplies nested connected complementary vertex shores with at
+most \(w\) crossing edges.  The shore is a function of the edge set alone;
+no independently chosen noose or perturbation is involved.
+\end{theorem}
+
+\begin{proof}
+At every vertex cubicity partitions its three incident edges between \(A\)
+and \(\bar A\), so
+\[
+                         d_A(v)+d_{\bar A}(v)=3.
+\]
+Thus \(d_{\bar A}(v)\ge2\) exactly when \(d_A(v)\le1\), proving the first
+claim.  For the second, take \(x,y\in K_A\).  Connectedness of the
+edge-induced \(A\)-graph gives an \(A\)-edge walk from \(x\) to \(y\).
+Erase repeated vertices to obtain a path.  Its endpoints already lie in
+\(K_A\), and every internal vertex is incident with the two distinct path
+edges adjacent to it.  Both edges lie in \(A\), so the whole path lies in
+\(K_A\).  This proves that \(G[K_A]\) is connected.  Apply the same argument
+to \(\bar A\).
+
+For the boundary bound, orient every edge of
+\(\delta(K_A)\) from \(K_A\) to its complement.  If the edge lies in \(A\),
+send it to its outer endpoint.  That endpoint has one incident \(A\)-edge
+but not two, hence belongs to \(M_A\); and two different such edges cannot
+have the same endpoint, since that would give two incident \(A\)-edges
+there.  If the edge lies in \(\bar A\), send it to its inner endpoint.
+The inner endpoint has at least two incident \(A\)-edges and therefore, by
+cubicity, exactly one incident \(\bar A\)-edge; so this assignment is again
+injective.  The images of the two cases are disjoint because the first
+case lands outside \(K_A\) and the second inside it.  We have constructed an
+injection \(\delta(K_A)\hookrightarrow M_A\).
+
+Finally, \(A\subseteq B\) implies \(d_A(v)\le d_B(v)\), proving monotonicity.
+If all three edges at \(v\) lie in \(B\setminus A\), then
+\(d_B(v)=3\) and \(d_A(v)=0\), which proves the strict statement.
+
+For a connected branch decomposition, \(M_A\) is its usual middle set and
+therefore has size at most \(w\).  An internal shore containing at least two
+edges has a vertex incident with two of them: otherwise its edge-induced
+graph would be disconnected.  Hence both majority shores are nonempty on
+the stated cuts, and the preceding claims apply.  Descendant edge shores
+are nested, so their majority shores are nested as well.
+\end{proof}
+
+The graph-local content of this theorem is machine-checked:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedEdgeShoreMajority.majorityVertexSide_complement_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedEdgeShoreMajority.majorityVertexSide_mono}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedEdgeShoreMajority.strict_majority_material_of_incident_sdiff}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedEdgeShoreMajority.card_crossingSideDart_majority_le_middle}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedEdgeShoreMajority.connected_induce_majorityVertexSide}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedEdgeShoreMajority.connected_majority_shores_and_width}
+The remaining conditional in the final sentence is exactly the existence of
+the connected branch decomposition itself and its finite-tree packaging; it
+is not part of any of the six declarations just cited.
+
 \begin{lemma}[equal phases are separated]
 \label{lem:equal-depth-phases-separated}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SphereCutMaterial.period_le_sub_of_mod_eq}
@@ -996,18 +1074,23 @@ doi:10.1016/0095-8956(84)90013-3) says that excluding one fixed planar
 wall as a minor bounds treewidth.  The Seymour--Thomas sphere-cut theory
 supplies noose-respecting branch decompositions of plane graphs
 (Call routing and the ratcatcher, 1994,
-doi:10.1007/BF01215352).  Neither
-theorem is formalized in this development.  Moreover, a sphere cut meets
-the graph in its middle \emph{vertices}, whereas the present Count functor
-cuts ordered \emph{edges}.  Lemma~\ref{lem:cubic-noose-edge-perturbation}
-proves the local conversion and the factor \(2\): a tight noose through
-\(w\) cubic middle vertices becomes a tight transverse noose with at most
-\(2w\) crossings.  What the cited sphere-cut theorem does not by itself
-package in the present types is a compatible choice of retained vertex
-shores under those local perturbations and the resulting ordered
-\texttt{OpenTangleData}.  Lemma~\ref{lem:cubic-sphere-cut-material} and the
-depth phase above settle strict-material accounting.  The carrier and
-boundary-order construction remains mathematics to prove, not a citation.
+doi:10.1007/BF01215352).  A more direct supplier is available here.  A
+theorem of Fomin, Fraigniaud and Thilikos (The price of connectedness in
+expansions) says that every \(2\)-edge-connected graph has a connected
+branch decomposition of optimal width: both edge shores at every tree cut
+induce connected subgraphs after isolated vertices are discarded.  This
+external theorem is not formalized here and remains a named conditional.
+Theorem~\ref{thm:connected-edge-shore-majority} converts its edge shores
+canonically into nested connected complementary \emph{vertex} shores.  In
+a cubic graph their literal edge boundary has size at most the original
+middle-set width, not twice that width.  The planar-bond cap and orientation
+theorems then construct the ordered open tangles directly from the ambient
+rotation system.  Thus a sphere-cut noose and its local perturbation are an
+optional geometric realization, not part of the load-bearing D3 supply.
+Lemma~\ref{lem:cubic-sphere-cut-material} and the depth phase above settle
+strict-material accounting.  What remains is to package the connected
+branch decomposition, its majority shores, and their exact ordered Count
+states in the descent carrier.
 
 \begin{proposition}[wall-exclusion reduction, relative form]
 \label{prop:target-forced-wall}
