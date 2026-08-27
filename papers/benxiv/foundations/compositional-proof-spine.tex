@@ -877,17 +877,17 @@ intersection.  The Lean theorem proves the displayed implication; the same
 argument gives the converse as well.
 \end{proof}
 
-The following is the precise statement currently proved about bounded
-branchwidth.  It is a theorem about a supplied sphere-cut decomposition, not
-yet a theorem constructing that supply from a plane map.
+The following is the precise finite-tree statement currently proved.  It is
+a theorem about a supplied bounded-width decomposition, not yet a theorem
+constructing that supply from a plane map.
 
-\begin{theorem}[typed sphere-cut descent]
+\begin{theorem}[typed bounded-width descent]
 \label{thm:typed-sphere-cut-descent}
-\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SphereCutDescent.vertexCount_le_of_supply'}
-Fix \(w\).  Suppose an instance \(X\) is supplied with a rooted binary
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SphereCutDescent.vertexCount_le_of_widthSupply'}
+Fix a literal seam bound \(k\).  Suppose an instance \(X\) is supplied with a rooted binary
 decomposition whose nodes have states
 \[
-  (j,s,S),\qquad 0\le j\le 2w,\quad
+  (j,s,S),\qquad 0\le j\le k,\quad
   s\in\mathrm{SeamType}_j,\quad
   S\subseteq\{r,b,p\}^{j},
 \]
@@ -900,7 +900,7 @@ smaller target instance.
 If \(X\) is size-minimal among target instances, then
 \[
  |V(X)|\le 2(2^q-1),\qquad
- q=\sum_{j=0}^{2w}|\mathrm{SeamType}_j|\,2^{3^j}.
+ q=\sum_{j=0}^{k}|\mathrm{SeamType}_j|\,2^{3^j}.
 \]
 \end{theorem}
 

@@ -38,21 +38,35 @@ open GoertzelV24RawNooseCountPumping
 
 open scoped Classical
 
-/-- The typed state at a node of a sphere-cut decomposition of width at most
-`2w`: a cut width `j ≤ 2w`, a seam type of that width, and the support of the
-piece below, as a set of cut words on `j` crossed edges. -/
-abbrev TypedState (w : ℕ) (SeamType : ℕ → Type) :=
-  Σ j : Fin (2 * w + 1), SeamType j × Set (CutWord (Fin j))
+/-- A typed interface state with a literal seam bound `k`: the actual seam
+width `j ≤ k`, its finite seam type, and the support of the piece below the
+cut. -/
+abbrev TypedStateAtBound (k : ℕ) (SeamType : ℕ → Type) :=
+  Σ j : Fin (k + 1), SeamType j × Set (CutWord (Fin j))
 
-/-- **The state count.**  `∑_{j ≤ 2w} |SeamType j| · 2^(3^j)`. -/
-theorem card_typedState (w : ℕ) (SeamType : ℕ → Type) [∀ j, Fintype (SeamType j)] :
-    Fintype.card (TypedState w SeamType) =
-      ∑ j : Fin (2 * w + 1), Fintype.card (SeamType j) * 2 ^ (3 ^ (j : ℕ)) := by
+/-- The exact state count at a literal seam bound `k`. -/
+theorem card_typedStateAtBound (k : ℕ) (SeamType : ℕ → Type)
+    [∀ j, Fintype (SeamType j)] :
+    Fintype.card (TypedStateAtBound k SeamType) =
+      ∑ j : Fin (k + 1),
+        Fintype.card (SeamType j) * 2 ^ (3 ^ (j : ℕ)) := by
   rw [Fintype.card_sigma]
   refine Finset.sum_congr rfl fun j _ => ?_
   rw [Fintype.card_prod]
   congr 1
   rw [Fintype.card_set, card_cutWord, Fintype.card_fin]
+
+/-- The typed state at a node of a sphere-cut decomposition of width at most
+`2w`: a cut width `j ≤ 2w`, a seam type of that width, and the support of the
+piece below, as a set of cut words on `j` crossed edges. -/
+abbrev TypedState (w : ℕ) (SeamType : ℕ → Type) :=
+  TypedStateAtBound (2 * w) SeamType
+
+/-- **The state count.**  `∑_{j ≤ 2w} |SeamType j| · 2^(3^j)`. -/
+theorem card_typedState (w : ℕ) (SeamType : ℕ → Type) [∀ j, Fintype (SeamType j)] :
+    Fintype.card (TypedState w SeamType) =
+      ∑ j : Fin (2 * w + 1), Fintype.card (SeamType j) * 2 ^ (3 ^ (j : ℕ)) := by
+  simpa only [TypedState] using card_typedStateAtBound (2 * w) SeamType
 
 /-- Add a depth phase modulo `6w+1` to force two repeated states far enough
 apart for the cubic slab-material bound. -/
@@ -87,6 +101,51 @@ structure Supply {Inst : Type} (size vertexCount : Inst → ℕ) (Target : Inst 
   replace : ∀ p : List (TypedState w SeamType), OnPath tree p →
     ∀ i j : Fin p.length, i < j → p.get i = p.get j →
       ∃ Y, Target Y ∧ size Y < size X
+
+/-- A target-independent decomposition supply stated at its literal seam
+bound.  This is the form consumed by the connected edge-shore majority
+adapter, whose seam bound is `w` rather than the older `2w` noose bound. -/
+structure WidthSupply {Inst : Type}
+    (size vertexCount : Inst → ℕ) (Target : Inst → Prop)
+    (X : Inst) (k : ℕ) (SeamType : ℕ → Type) where
+  /-- The decomposition tree, labelled by exact-width typed states. -/
+  tree : DecompTree (TypedStateAtBound k SeamType)
+  /-- The application-specific accounting from decomposition nodes to
+  vertices. -/
+  vertices_le : vertexCount X ≤ 2 * nodeCount tree
+  /-- Equal states on a proper descent yield a smaller target instance. -/
+  replace : ∀ p : List (TypedStateAtBound k SeamType), OnPath tree p →
+    ∀ i j : Fin p.length, i < j → p.get i = p.get j →
+      ∃ Y, Target Y ∧ size Y < size X
+
+/-- Minimality plus a literal-width supply gives the raw finite vertex
+bound. -/
+theorem vertexCount_le_of_widthSupply
+    {Inst : Type} {size vertexCount : Inst → ℕ}
+    {Target : Inst → Prop} {X : Inst} {k : ℕ}
+    {SeamType : ℕ → Type} [∀ j, Fintype (SeamType j)]
+    (supply : WidthSupply size vertexCount Target X k SeamType)
+    (hmin : ∀ Y, Target Y → size X ≤ size Y) :
+    vertexCount X ≤
+      2 * (2 ^ Fintype.card (TypedStateAtBound k SeamType) - 1) :=
+  vertexCount_le_of_minimal (state := id) (tree := fun _ => supply.tree)
+    supply.vertices_le
+    (fun p hp i j hij heq =>
+      supply.replace p hp i j hij (by simpa using heq))
+    hmin
+
+/-- The literal-width bound with the state count written out. -/
+theorem vertexCount_le_of_widthSupply'
+    {Inst : Type} {size vertexCount : Inst → ℕ}
+    {Target : Inst → Prop} {X : Inst} {k : ℕ}
+    {SeamType : ℕ → Type} [∀ j, Fintype (SeamType j)]
+    (supply : WidthSupply size vertexCount Target X k SeamType)
+    (hmin : ∀ Y, Target Y → size X ≤ size Y) :
+    vertexCount X ≤
+      2 * (2 ^ (∑ j : Fin (k + 1),
+        Fintype.card (SeamType j) * 2 ^ (3 ^ (j : ℕ))) - 1) := by
+  rw [← card_typedStateAtBound]
+  exact vertexCount_le_of_widthSupply supply hmin
 
 /-- **The bounded-branchwidth descent.**  A minimal target instance with a
 sphere-cut supply of width `w` has at most `2 (2^q − 1)` vertices, where `q` is
