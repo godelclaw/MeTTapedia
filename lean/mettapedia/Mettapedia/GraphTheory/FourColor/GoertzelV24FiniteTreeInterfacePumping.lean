@@ -145,6 +145,67 @@ theorem vertexCount_le {state : α → Q} {t : DecompTree α}
     vertexCount ≤ c * (2 ^ Fintype.card Q - 1) :=
   hvertices.trans (Nat.mul_le_mul_left c (nodeCount_le_of_noRepeat hno))
 
+/-! ## The minimality wrapper
+
+The numerical core above takes `NoRepeatedStateOnDescents` as given.  The prose
+instead supplies a *replacement* step and minimality, and derives the no-repeat
+condition from them.  That derivation is what this section adds.
+
+The geometry stays explicit: `hreplace` is Hypothesis 3 -- a repeated typed
+state on comparable nodes splices to a strictly smaller target counterexample --
+and `hvertices` is Hypothesis 1, that a node introduces at most `c` vertices and
+each vertex is introduced once.  Neither is proved here. -/
+
+section Minimality
+
+variable {Inst : Type*}
+
+/-- Pairwise distinctness along a descent, read at list indices, gives the
+`Nodup` form the counting core consumes.  The two nodes at indices `i < j` are
+comparable precisely because a descent is recorded in order. -/
+theorem noRepeatedStateOnDescents_of_get {state : α → Q} {t : DecompTree α}
+    (h : ∀ p : List α, OnPath t p → ∀ i j : Fin p.length, i < j →
+      state (p.get i) ≠ state (p.get j)) :
+    NoRepeatedStateOnDescents state t := by
+  intro p hpath
+  have hpair : p.Pairwise (fun a b => state a ≠ state b) :=
+    List.pairwise_iff_get.mpr (h p hpath)
+  exact List.pairwise_map.mpr hpair
+
+/-- **Minimality forbids a repeat.**  If a repeated typed state on a descent
+splices to a strictly smaller target counterexample, a minimal one has no such
+repeat. -/
+theorem noRepeatedStateOnDescents_of_minimal
+    {state : α → Q} {size : Inst → ℕ} {Target : Inst → Prop}
+    {tree : Inst → DecompTree α} {X : Inst}
+    (hreplace : ∀ p : List α, OnPath (tree X) p → ∀ i j : Fin p.length, i < j →
+      state (p.get i) = state (p.get j) → ∃ Y, Target Y ∧ size Y < size X)
+    (hmin : ∀ Y, Target Y → size X ≤ size Y) :
+    NoRepeatedStateOnDescents state (tree X) := by
+  refine noRepeatedStateOnDescents_of_get ?_
+  intro p hpath i j hij hstate
+  obtain ⟨Y, hY, hlt⟩ := hreplace p hpath i j hij hstate
+  exact absurd (hmin Y hY) (by omega)
+
+/-- **Finite-interface pumping, in the manuscript's form.**  A minimal target
+counterexample carrying a reduced rooted binary interface decomposition has at
+most `c(2^q - 1)` vertices.
+
+Hypothesis 1 enters as `hvertices`, Hypothesis 2 as the finiteness of `Q`, and
+Hypothesis 3 as `hreplace`.  Minimality is `hmin`. -/
+theorem vertexCount_le_of_minimal
+    {state : α → Q} {size vertexCount : Inst → ℕ} {Target : Inst → Prop}
+    {tree : Inst → DecompTree α} {c : ℕ} {X : Inst}
+    (hvertices : vertexCount X ≤ c * nodeCount (tree X))
+    (hreplace : ∀ p : List α, OnPath (tree X) p → ∀ i j : Fin p.length, i < j →
+      state (p.get i) = state (p.get j) → ∃ Y, Target Y ∧ size Y < size X)
+    (hmin : ∀ Y, Target Y → size X ≤ size Y) :
+    vertexCount X ≤ c * (2 ^ Fintype.card Q - 1) :=
+  vertexCount_le (noRepeatedStateOnDescents_of_minimal hreplace hmin) c
+    (vertexCount X) hvertices
+
+end Minimality
+
 end GoertzelV24FiniteTreeInterfacePumping
 
 end Mettapedia.GraphTheory.FourColor

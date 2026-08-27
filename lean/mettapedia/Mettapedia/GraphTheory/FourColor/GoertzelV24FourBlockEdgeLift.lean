@@ -170,6 +170,64 @@ theorem oneClass_of_fourBlockEdges {S : Type*}
   reflTransGen_of_fibre_connected hfibre hedge
     (blockConn_of_four_edges hcard (proj s) (proj t))
 
+/-! ## The word layer
+
+The criterion above collapses the word layer into the block projection, which
+silently assumes that two states over the same *block* are connected.  The
+manuscript does not assume that; it derives it, from within-block word
+connectivity together with fixed-word fibre connectivity.
+
+That derivation is the same generic lift applied one level down, with words as
+the base and fixed-word fibres above them.  So the criterion is two nested
+applications of one theorem: words over blocks, and states over words. -/
+
+section WordLayer
+
+variable {S W : Type*}
+
+/-- **Same-block states are connected -- derived, not assumed.**  Within a block
+the realized words are connected by witnessed moves, and every fixed-word fibre
+is connected, so the generic lift applies at the word layer. -/
+theorem sameBlock_reflTransGen
+    {word : S → W} {blk : W → Fin 5} {Step : S → S → Prop}
+    {WithinBlockStep : W → W → Prop}
+    (hfibre : ∀ s t : S, word s = word t → Relation.ReflTransGen Step s t)
+    (hwitness : ∀ w w' : W, WithinBlockStep w w' →
+      ∃ s t : S, word s = w ∧ word t = w' ∧ Step s t)
+    (hblockConn : ∀ w w' : W, blk w = blk w' →
+      Relation.ReflTransGen WithinBlockStep w w')
+    {s t : S} (hsame : blk (word s) = blk (word t)) :
+    Relation.ReflTransGen Step s t :=
+  reflTransGen_of_fibre_connected hfibre hwitness (hblockConn _ _ hsame)
+
+/-- **The four-block-edge Lift criterion, with the word layer intact.**
+
+The three hypotheses are the manuscript's, in order: every fixed-word fibre is
+connected (`hfibre`); within each block the realized words are connected by
+moves that are actually witnessed (`hwitness`, `hblockConn`); and at least four
+of the five adjacent block edges are realized (`hedge`, `hcard`).
+
+Same-block connectivity is not among them -- it is derived. -/
+theorem oneClass_of_fourBlockEdges_word
+    {word : S → W} {blk : W → Fin 5} {Step : S → S → Prop}
+    {WithinBlockStep : W → W → Prop} {E : Finset (Fin 5)}
+    (hfibre : ∀ s t : S, word s = word t → Relation.ReflTransGen Step s t)
+    (hwitness : ∀ w w' : W, WithinBlockStep w w' →
+      ∃ s t : S, word s = w ∧ word t = w' ∧ Step s t)
+    (hblockConn : ∀ w w' : W, blk w = blk w' →
+      Relation.ReflTransGen WithinBlockStep w w')
+    (hedge : ∀ b b' : Fin 5, BlockStep E b b' →
+      ∃ s t : S, blk (word s) = b ∧ blk (word t) = b' ∧ Step s t)
+    (hcard : 4 ≤ E.card) (s t : S) :
+    Relation.ReflTransGen Step s t :=
+  reflTransGen_of_fibre_connected
+    (proj := fun x => blk (word x))
+    (fun _ _ h => sameBlock_reflTransGen hfibre hwitness hblockConn h)
+    hedge
+    (blockConn_of_four_edges hcard _ _)
+
+end WordLayer
+
 end GoertzelV24FourBlockEdgeLift
 
 end Mettapedia.GraphTheory.FourColor
