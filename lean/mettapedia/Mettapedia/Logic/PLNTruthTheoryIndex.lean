@@ -5391,24 +5391,24 @@ ITV/IDM arithmetic, typed bridge/provenance mirrors, PeTTa truth-function
 confidence audit, and strength-prior canaries. -/
 def plnITVIDMRuntimeParitySurface : RuntimeParitySurface where
   projectionTowerPeTTaPath :=
-    "/home/zar/claude/hyperon/PeTTa/examples/pln_projection_tower_bool_canary.metta"
+    "~/claude/hyperon/PeTTa/examples/pln_projection_tower_bool_canary.metta"
   projectionTowerCeTTaPath :=
-    "/home/zar/claude/hyperon/CeTTa/tests/test_wmpln_projection_tower_bool_canary.metta"
+    "~/claude/hyperon/CeTTa/tests/test_wmpln_projection_tower_bool_canary.metta"
   projectionTowerExpectedChecks := 15
   itvIDMPeTTaPath :=
-    "/home/zar/claude/hyperon/PeTTa/examples/pln_itv_idm_parity_golden.metta"
+    "~/claude/hyperon/PeTTa/examples/pln_itv_idm_parity_golden.metta"
   itvIDMCeTTaPath :=
-    "/home/zar/claude/hyperon/CeTTa/tests/test_wmpln_itv_idm_parity_golden.metta"
+    "~/claude/hyperon/CeTTa/tests/test_wmpln_itv_idm_parity_golden.metta"
   itvIDMExpectedChecks := 26
   truthFunctionPeTTaPath :=
-    "/home/zar/claude/hyperon/PeTTa/examples/pln_truth_parity_golden.metta"
+    "~/claude/hyperon/PeTTa/examples/pln_truth_parity_golden.metta"
   truthFunctionCeTTaPath :=
-    "/home/zar/claude/hyperon/CeTTa/tests/test_wmpln_truth_parity_golden.metta"
+    "~/claude/hyperon/CeTTa/tests/test_wmpln_truth_parity_golden.metta"
   truthFunctionExpectedChecks := 11
   strengthPriorPeTTaPath :=
-    "/home/zar/claude/hyperon/PeTTa/examples/pln_strength_prior_canary.metta"
+    "~/claude/hyperon/PeTTa/examples/pln_strength_prior_canary.metta"
   strengthPriorCeTTaPath :=
-    "/home/zar/claude/hyperon/CeTTa/tests/test_wmpln_strength_prior_canary.metta"
+    "~/claude/hyperon/CeTTa/tests/test_wmpln_strength_prior_canary.metta"
   strengthPriorExpectedChecks := 13
 
 /-! ## Whole truth-theory package -/

@@ -43,7 +43,7 @@ fiber directly the evidence value from `qsemE2`/`gsemE2Full`.
 
 Positive example:
 - downstream GF world-model modules still depend on this handcrafted evidence
-  pipeline, so it remains a real compatibility surface.
+  pipeline, so it remains a real compatibility interface.
 
 Negative example:
 - this is not the canonical NTT story for the real GFCore bridge.
@@ -62,7 +62,7 @@ open Mettapedia.Languages.GF.StoreToLogicalForm
 open Mettapedia.Languages.GF.WorldModelVisibleBridge
 open Mettapedia.CategoryTheory.PLNInstance
 open Mettapedia.CategoryTheory.NativeTypeTheory
-open Mettapedia.Logic.EvidenceQuantale
+open Mettapedia.PLN.Evidence.EvidenceQuantale
 
 /-! ## 1. BinaryEvidence → NT Object -/
 
@@ -133,7 +133,7 @@ def evidenceToNT_bot_hom (X : PLNObj) (e : BinaryEvidence) :
     Hom (evidenceToNT X ⊥) (evidenceToNT X e) :=
   PLift.up bot_le
 
-/-- Scope ordering lifts to NT: inverse scope (∃∀) ≤ surface scope (∀∃). -/
+/-- Scope ordering lifts to NT: inverse scope (∃∀) ≤ source-order scope (∀∃). -/
 noncomputable def scope_ordering_NT
     (R : Pattern → Pattern → Prop) (I : QEvidenceAtomSem)
     (Dom : Domain2) (env : VarEnv2)

@@ -9,6 +9,8 @@ Proof and closure layer over `PyashGFModel`.
 
 namespace Mettapedia.OSLF.Framework.PyashGF
 
+open Mettapedia.OSLF.MeTTaIL.ContextualStep
+
 open Mettapedia.Languages.GF.HandCrafted.Core
 open Mettapedia.Languages.GF.HandCrafted.Abstract
 open Mettapedia.OSLF.MeTTaIL.Syntax
@@ -117,7 +119,7 @@ theorem pyashGF_read_then_negative_bridge :
       (pyashGFInputOf pyashGFReadThenClause)
       pyashStateDoneDispatchErr := by
   unfold pyashGFInputOf
-  simpa [pyashGF_read_then_clause_maps] using pyashCore_dispatch_then_surfaces_dispatch_error
+  simpa [pyashGF_read_then_clause_maps] using pyashCore_dispatch_then_reports_dispatch_error
 
 /-- Bridge claim (OSLF, negative): unsupported GF `then/configure` hits dispatch error path. -/
 theorem pyashGF_configure_then_negative_bridge :
@@ -125,13 +127,11 @@ theorem pyashGF_configure_then_negative_bridge :
       (pyashGFInputOf pyashGFConfigureThenClause)
       pyashStateConfigureThenDoneDispatchErr := by
   unfold langReduces
-  apply (langReducesUsing_iff_execUsing (relEnv := RelationEnv.empty) (lang := pyashCore)
-    (p := pyashGFInputOf pyashGFConfigureThenClause)
-    (q := pyashStateConfigureThenDoneDispatchErr)).2
-  unfold langReducesExecUsing pyashGFInputOf
-  simpa [pyashGF_configure_then_clause_maps] using
+  apply exec_to_langReducesUsing (relEnv := RelationEnv.empty) (lang := pyashCore)
+  refine ⟨1, ?_⟩
+  simpa [reductsUsing, pyashGFInputOf, pyashGF_configure_then_clause_maps] using
     (show pyashStateConfigureThenDoneDispatchErr ∈
-      rewriteWithContextWithPremisesUsing RelationEnv.empty pyashCore pyashStateConfigureThenError by
+      reductsUsing RelationEnv.empty pyashCore 1 pyashStateConfigureThenError by
         decide +kernel)
 
 /-- Bridge claim (OSLF, negative): unsupported GF `then/world` hits dispatch error path. -/
@@ -140,13 +140,11 @@ theorem pyashGF_world_then_negative_bridge :
       (pyashGFInputOf pyashGFWorldThenClause)
       pyashStateWorldThenDoneDispatchErr := by
   unfold langReduces
-  apply (langReducesUsing_iff_execUsing (relEnv := RelationEnv.empty) (lang := pyashCore)
-    (p := pyashGFInputOf pyashGFWorldThenClause)
-    (q := pyashStateWorldThenDoneDispatchErr)).2
-  unfold langReducesExecUsing pyashGFInputOf
-  simpa [pyashGF_world_then_clause_maps] using
+  apply exec_to_langReducesUsing (relEnv := RelationEnv.empty) (lang := pyashCore)
+  refine ⟨1, ?_⟩
+  simpa [reductsUsing, pyashGFInputOf, pyashGF_world_then_clause_maps] using
     (show pyashStateWorldThenDoneDispatchErr ∈
-      rewriteWithContextWithPremisesUsing RelationEnv.empty pyashCore pyashStateWorldThenError by
+      reductsUsing RelationEnv.empty pyashCore 1 pyashStateWorldThenError by
         decide +kernel)
 
 /-- Bridge claim (OSLF, negative): unsupported GF `then/pipeline` hits dispatch error path. -/
@@ -155,13 +153,11 @@ theorem pyashGF_pipeline_then_negative_bridge :
       (pyashGFInputOf pyashGFPipelineThenClause)
       pyashStatePipelineThenDoneDispatchErr := by
   unfold langReduces
-  apply (langReducesUsing_iff_execUsing (relEnv := RelationEnv.empty) (lang := pyashCore)
-    (p := pyashGFInputOf pyashGFPipelineThenClause)
-    (q := pyashStatePipelineThenDoneDispatchErr)).2
-  unfold langReducesExecUsing pyashGFInputOf
-  simpa [pyashGF_pipeline_then_clause_maps] using
+  apply exec_to_langReducesUsing (relEnv := RelationEnv.empty) (lang := pyashCore)
+  refine ⟨1, ?_⟩
+  simpa [reductsUsing, pyashGFInputOf, pyashGF_pipeline_then_clause_maps] using
     (show pyashStatePipelineThenDoneDispatchErr ∈
-      rewriteWithContextWithPremisesUsing RelationEnv.empty pyashCore pyashStatePipelineThenError by
+      reductsUsing RelationEnv.empty pyashCore 1 pyashStatePipelineThenError by
         decide +kernel)
 
 /-- Multi-step closure (negative): GF `then/configure` reaches dispatch-error terminal state. -/
@@ -213,105 +209,105 @@ theorem pyashGF_dispatch_error_negative_bridge :
       pyashStateDoneDispatchErr := by
   unfold pyashGFInputOf
   simpa [pyashGF_dispatch_error_clause_maps] using
-    pyashCore_dispatch_error_instr_surfaces_dispatch_error
+    pyashCore_dispatch_error_instr_reports_dispatch_error
 
 /-- Shape-specific negative bridge: configure command-map mismatch hits signature error. -/
 theorem pyashGF_configure_command_map_def_invalid_signature_negative_bridge :
     langReduces pyashCore
       pyashStateConfigureCommandMapDefMismatch
       pyashStateConfigureCommandMapDefDoneSignatureErr := by
-  simpa using pyashCore_configure_command_map_def_signature_mismatch_surfaces_error
+  simpa using pyashCore_configure_command_map_def_signature_mismatch_reports_error
 
 /-- Shape-specific negative bridge: configure sandbox-map mismatch hits signature error. -/
 theorem pyashGF_configure_sandbox_map_def_invalid_signature_negative_bridge :
     langReduces pyashCore
       pyashStateConfigureSandboxMapDefMismatch
       pyashStateConfigureSandboxMapDefDoneSignatureErr := by
-  simpa using pyashCore_configure_sandbox_map_def_signature_mismatch_surfaces_error
+  simpa using pyashCore_configure_sandbox_map_def_signature_mismatch_reports_error
 
 /-- Shape-specific negative bridge: configure verify-loop mismatch hits signature error. -/
 theorem pyashGF_configure_verify_loop_map_def_invalid_signature_negative_bridge :
     langReduces pyashCore
       pyashStateConfigureVerifyLoopMapDefMismatch
       pyashStateConfigureVerifyLoopMapDefDoneSignatureErr := by
-  simpa using pyashCore_configure_verify_loop_map_def_signature_mismatch_surfaces_error
+  simpa using pyashCore_configure_verify_loop_map_def_signature_mismatch_reports_error
 
 /-- Shape-specific negative bridge: world path-io mismatch hits signature error. -/
 theorem pyashGF_world_path_io_invalid_signature_negative_bridge :
     langReduces pyashCore
       pyashStateWorldPathIOMismatch
       pyashStateWorldPathIODoneSignatureErr := by
-  simpa using pyashCore_world_path_io_signature_mismatch_surfaces_error
+  simpa using pyashCore_world_path_io_signature_mismatch_reports_error
 
 /-- Shape-specific negative bridge: pipeline refinery mismatch hits signature error. -/
 theorem pyashGF_pipeline_refinery_invalid_signature_negative_bridge :
     langReduces pyashCore
       pyashStatePipelineRefineryMismatch
       pyashStatePipelineRefineryDoneSignatureErr := by
-  simpa using pyashCore_pipeline_refinery_signature_mismatch_surfaces_error
+  simpa using pyashCore_pipeline_refinery_signature_mismatch_reports_error
 
 /-- Shape-specific negative bridge: pipeline chirp mismatch hits signature error. -/
 theorem pyashGF_pipeline_chirp_invalid_signature_negative_bridge :
     langReduces pyashCore
       pyashStatePipelineChirpMismatch
       pyashStatePipelineChirpDoneSignatureErr := by
-  simpa using pyashCore_pipeline_chirp_signature_mismatch_surfaces_error
+  simpa using pyashCore_pipeline_chirp_signature_mismatch_reports_error
 
 /-- Shape-specific negative bridge: pipeline re-entry mismatch hits signature error. -/
 theorem pyashGF_pipeline_reentry_invalid_signature_negative_bridge :
     langReduces pyashCore
       pyashStatePipelineReentryMismatch
       pyashStatePipelineReentryDoneSignatureErr := by
-  simpa using pyashCore_pipeline_reentry_signature_mismatch_surfaces_error
+  simpa using pyashCore_pipeline_reentry_signature_mismatch_reports_error
 
 /-- Shape-specific negative bridge: list mismatch hits signature error. -/
 theorem pyashGF_list_invalid_signature_negative_bridge :
     langReduces pyashCore
       pyashStateListMismatch
       pyashStateListDoneSignatureErr := by
-  simpa using pyashCore_list_signature_mismatch_surfaces_error
+  simpa using pyashCore_list_signature_mismatch_reports_error
 
 /-- Shape-specific negative bridge: input mismatch hits signature error. -/
 theorem pyashGF_input_invalid_signature_negative_bridge :
     langReduces pyashCore
       pyashStateInputMismatch
       pyashStateInputDoneSignatureErr := by
-  simpa using pyashCore_input_signature_mismatch_surfaces_error
+  simpa using pyashCore_input_signature_mismatch_reports_error
 
 /-- Shape-specific negative bridge: stream mismatch hits signature error. -/
 theorem pyashGF_stream_invalid_signature_negative_bridge :
     langReduces pyashCore
       pyashStateStreamMismatch
       pyashStateStreamDoneSignatureErr := by
-  simpa using pyashCore_stream_signature_mismatch_surfaces_error
+  simpa using pyashCore_stream_signature_mismatch_reports_error
 
 /-- Shape-specific negative bridge: compile mismatch hits signature error. -/
 theorem pyashGF_compile_invalid_signature_negative_bridge :
     langReduces pyashCore
       pyashStateCompileMismatch
       pyashStateCompileDoneSignatureErr := by
-  simpa using pyashCore_compile_signature_mismatch_surfaces_error
+  simpa using pyashCore_compile_signature_mismatch_reports_error
 
 /-- Shape-specific negative bridge: import mismatch hits signature error. -/
 theorem pyashGF_import_invalid_signature_negative_bridge :
     langReduces pyashCore
       pyashStateImportMismatch
       pyashStateImportDoneSignatureErr := by
-  simpa using pyashCore_import_signature_mismatch_surfaces_error
+  simpa using pyashCore_import_signature_mismatch_reports_error
 
 /-- Shape-specific negative bridge: download mismatch hits signature error. -/
 theorem pyashGF_download_invalid_signature_negative_bridge :
     langReduces pyashCore
       pyashStateDownloadMismatch
       pyashStateDownloadDoneSignatureErr := by
-  simpa using pyashCore_download_signature_mismatch_surfaces_error
+  simpa using pyashCore_download_signature_mismatch_reports_error
 
 /-- Shape-specific negative bridge: translation mismatch hits signature error. -/
 theorem pyashGF_translation_invalid_signature_negative_bridge :
     langReduces pyashCore
       pyashStateTranslationMismatch
       pyashStateTranslationDoneSignatureErr := by
-  simpa using pyashCore_translation_signature_mismatch_surfaces_error
+  simpa using pyashCore_translation_signature_mismatch_reports_error
 
 /-- `read` derive step (decomposed bridge lemma). -/
 theorem pyashGF_read_derive_step :

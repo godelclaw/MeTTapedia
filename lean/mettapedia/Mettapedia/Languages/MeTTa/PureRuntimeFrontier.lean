@@ -4,7 +4,7 @@ import Mettapedia.Languages.ProcessCalculi.MORK.ExecutionBoundary
 import Mettapedia.Languages.MeTTa.PureKernel.CoreEmbedding
 import Mettapedia.Languages.MeTTa.PureKernel.PatternBridge
 import Mettapedia.Languages.MeTTa.PureKernel.ProfileTheory
-import Mettapedia.Logic.PLNWorldModelPureKernelBridge
+import Mettapedia.PLN.Bridges.Languages.WorldModel.PLNWorldModelPureKernelBridge
 
 /-!
 # Pure ↔ Runtime Frontier
@@ -28,9 +28,9 @@ open Mettapedia.Languages.MeTTa.PureKernel.Syntax
 open Mettapedia.Languages.MeTTa.PureKernel.CoreEmbedding
 open Mettapedia.Languages.MeTTa.PureKernel.PatternBridge
 open Mettapedia.Languages.MeTTa.PureKernel.ProfileTheory
-open Mettapedia.Logic.PLNWorldModelPureKernelBridge
-open Mettapedia.Logic.PLNWorldModel
-open Mettapedia.Logic.EvidenceClass
+open Mettapedia.PLN.Bridges.Languages.WorldModel.PLNWorldModelPureKernelBridge
+open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence.EvidenceClass
 
 private def betaPiRule : RewriteRule :=
   { name := "BetaPi",
@@ -95,7 +95,7 @@ theorem no_mettaPure_rewrite_fits_direct_runtimeExec0_source_bridge
   exact (mettaPure_rewrite_lhs_not_fvar r hr x) hlhs
 
 /-- The real current overlap is the closed Pure/PureKernel bridge: one-step
-closed Pure computations already land in the quoted C1 surface. -/
+closed Pure computations already land in the quoted C1 interface. -/
 theorem closedPure_overlap_via_abc
     {t u : PureTm 0} (h : PureOpStep t u) :
     PureProfileTheoryStep (quoteClosedTm t) (quoteClosedTm u) :=
@@ -113,5 +113,30 @@ theorem closedPure_overlap_via_abc_to_wm
       (I.encode (quoteClosedTm t))
       (I.encode (quoteClosedTm u)) := by
   exact pureTheoryStep_to_wmStrengthObligation_default I hW (pureOpStep_to_pureTheoryStep h)
+
+/-- The same closed overlap extends to the strongest assumption-free
+declaration-aware slice: when declaration values are absent, declaration
+multi-step reduction collapses to core PureKernel reduction, so the quoted
+closed terms inherit the existing WM-strength obligation bridge. -/
+theorem closedNoValuesDecl_overlap_via_abc_to_wm
+    {State Query : Type*}
+    [EvidenceType State] [BinaryWorldModel State Query]
+    (I : PureJudgmentWMInterface State Query)
+    {specs : List Mettapedia.Languages.MeTTa.PureKernel.DeclarationSpec.DeclSpec}
+    (hSig :
+      Mettapedia.Languages.MeTTa.PureKernel.DeclarationSpec.SignatureWellFormed
+        specs)
+    (hNone : ∀ s ∈ specs, s.value? = none)
+    {W : State} (hW : I.side W)
+    {t u : PureTm 0}
+    (h :
+      Mettapedia.Languages.MeTTa.PureKernel.DeclarationSemantics.RedStarDecl
+        (Mettapedia.Languages.MeTTa.PureKernel.DeclarationSpec.envOfSpecs specs) t u) :
+    WMStrengthObligation State Query W
+      (I.encode (quoteClosedTm t))
+      (I.encode (quoteClosedTm u)) := by
+  exact
+    checkedNoValuesDeclKernelStar_to_wmStrengthObligation_default
+      I hSig hNone hW h
 
 end Mettapedia.Languages.MeTTa.PureRuntimeFrontier

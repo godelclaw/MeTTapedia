@@ -66,7 +66,7 @@
       "hard_audit_theorem": "atps_hard_audit",
       "module_file": "Mettapedia/DocText/AtpsReadmeCompositional.lean",
       "pass_count": 30,
-      "readme_path": "/home/zar/claude/atps/README.md"
+      "readme_path": "~/claude/atps/README.md"
     },
     {
       "claim_count": 8,
@@ -150,7 +150,7 @@
       "hard_audit_theorem": "mmLean4_hard_audit",
       "module_file": "Mettapedia/DocText/MmLean4ReadmeCompositional.lean",
       "pass_count": 25,
-      "readme_path": "/home/zar/claude/hyperon/metamath/mm-lean4/README.md"
+      "readme_path": "~/claude/hyperon/metamath/mm-lean4/README.md"
     },
     {
       "claim_count": 43,

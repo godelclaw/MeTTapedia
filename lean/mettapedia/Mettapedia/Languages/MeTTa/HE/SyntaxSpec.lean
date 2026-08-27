@@ -6,7 +6,7 @@ import MeTTailCore.MeTTaSyntax.Spec
 Authoritative Lean packaging for Hyperon Experimental MeTTa syntax and grammar.
 
 This module does not invent a second parser.  Instead, it makes the syntax
-authority explicit in Lean and ties it back to the human-written HE spec:
+authority explicit in Lean and ties it back to the spec-written HE spec:
 
 - upstream prose: `https://trueagi-io.github.io/hyperon-experimental/metta/`
 
@@ -16,7 +16,7 @@ The current plan is deliberately dual-layered:
    - matches HE-as-implemented today
    - preserves parser-evolution quirks such as `!name` parsing as a symbol atom
 2. **Canonical syntax**
-   - the intended cleaned surface
+   - the intended cleaned interface
    - removes the `!name` symbol quirk so `!` is purely an evaluation prefix
 
 The old artifact filenames stay stable for the compatibility profile:
@@ -199,7 +199,7 @@ structure HESyntaxAuthorityProfile where
   canonicalGrammar : GrammarSpec
   tokenizerAuthority : HETokenizerAuthority
   authorityLayers : List HESyntaxAuthorityLayer
-  humanSpecSources : List String
+  specSpecSources : List String
   notes : List String
 deriving Repr, DecidableEq, BEq
 
@@ -214,15 +214,15 @@ def heSyntaxAuthorityProfile : HESyntaxAuthorityProfile :=
       , .canonicalSyntax
       , .hostParameterizedTokenizer
       ]
-    humanSpecSources :=
+    specSpecSources :=
       [ "https://trueagi-io.github.io/hyperon-experimental/metta/"
       ]
     notes :=
       [ "Compatibility syntax preserves the HE parser-evolution quirk where !name can be a symbol atom."
       , "Canonical syntax removes that quirk and treats ! as a pure evaluation prefix."
-      , "Tokenizer behavior remains host-parameterized; syntax authority here covers lexical classes and the S-expression surface."
+      , "Tokenizer behavior remains host-parameterized; syntax authority here covers lexical classes and the S-expression syntax."
       , "WORD and STRING token classes are authoritative here; grounded-vs-symbol construction is delegated to the host tokenizer."
-      , "Compatibility quirks, canonical surface, and host-parameterized tokenizer semantics are separate authority layers."
+      , "Compatibility quirks, canonical interface, and host-parameterized tokenizer semantics are separate authority layers."
       , "Parser implementations should conform to this Lean syntax authority, not define it."
       ] }
 
@@ -288,7 +288,7 @@ def HESyntaxAuthorityProfile.renderJson (p : HESyntaxAuthorityProfile) : String 
     ++ "\"tokenizer_authority\":" ++ renderTokenizerAuthority p.tokenizerAuthority ++ ","
     ++ "\"authority_layers\":[" ++
       String.intercalate "," (p.authorityLayers.map (fun l => jsonStr (renderAuthorityLayer l))) ++ "],"
-    ++ "\"human_spec_sources\":" ++ jsonArr p.humanSpecSources ++ ","
+    ++ "\"spec_spec_sources\":" ++ jsonArr p.specSpecSources ++ ","
     ++ "\"notes\":" ++ jsonArr p.notes
   ++ "}"
 

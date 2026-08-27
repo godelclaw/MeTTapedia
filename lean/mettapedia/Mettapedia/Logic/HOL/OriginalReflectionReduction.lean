@@ -815,7 +815,7 @@ From provability in the one-step language using lifted source axioms plus
 exact Henkin axioms, produce provability using lifted source axioms plus
 lifted Hε/DP scheme instances. Stays entirely in `OneStepHenkinConst`.
 
-Council: Brown, Carneiro, McBride, Pfenning, Weirich, Coquand, Knuth, Tao, Tang.
+Review: Brown, Carneiro, McBride, Pfenning, Weirich, Coquand, Knuth, Tao, Tang.
 Dedup-aware accumulator: duplicate axioms removed via `mono` before elimination.
 -/
 theorem liftedSchemeElimination
@@ -1474,7 +1474,7 @@ Stage `n + 1` consists of:
 - the theory from stage `n`, lifted one stage up, and
 - the genuinely fresh exact-step Henkin axioms added at stage `n`.
 
-This is the council-backed replacement for using only bounded cumulative-Henkin
+This is the agreed replacement for using only bounded cumulative-Henkin
 predicates as the main proof arena.
 -/
 def RecursiveStageTheory :
@@ -1494,7 +1494,7 @@ def RecursiveStageTheory :
 /--
 Provability over the recursive finite-stage theory.
 
-This is the new concrete stage predicate the council prefers for future finite
+This is the new concrete stage predicate review prefers for future finite
 reduction and one-step reflection theorems.
 -/
 def RecursiveStageProvable
@@ -1979,7 +1979,7 @@ theorem recursiveStageUniversalSchemeProvable_zero
 The recursive-stage one-step reflection theorem is an immediate specialization
 of the generic witnessed one-step conservativity goal at each stage.
 
-This is the council-backed cleaner route: instead of forcing the proof through
+This is the agreed cleaner route: instead of forcing the proof through
 the stage-language exact/prior split wrappers, instantiate the generic
 one-step theorem directly on `RecursiveStageTheory n Δ`.
 -/
@@ -2175,7 +2175,7 @@ theorem stageLanguageProvable_iff_internalStageProvable
 /--
 Direct supported finite-stage proof object for `OriginalLiftProvable`.
 
-This is the council-backed concrete proof object for the >69% route: instead of
+This is the agreed concrete proof object for the >69% route: instead of
 first proving a fully general cumulative support theorem, we directly package
 the finite stage, a stage-local context, a classification of each staged
 assumption, and a derivation of the lifted original conclusion.
@@ -3399,7 +3399,7 @@ theorem sourceUniversalSchemeProvable_of_recursiveStageUniversalSchemeReflection
     hStep).reflect
 
 /--
-Council-backed final composition theorem for Route 2 proof-theoretic reflection.
+Review-backed final composition theorem for Route 2 proof-theoretic reflection.
 
 Once the recursive stage package is available, the only remaining hypothesis is
 the Route 2 one-step stage reflection theorem. The conclusion lands in source
@@ -3469,7 +3469,7 @@ theorem sourceSchemeProvable_of_exactStepReflection
       hExact)
 
 /--
-Council-backed final composition theorem for original-signature reflection.
+Review-backed final composition theorem for original-signature reflection.
 
 Once the generic witnessed one-step conservativity theorem is available at each
 recursive stage, all remaining bridge work is pure composition.

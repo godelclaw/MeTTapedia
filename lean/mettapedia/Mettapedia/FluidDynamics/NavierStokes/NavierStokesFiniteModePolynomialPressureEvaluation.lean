@@ -65,7 +65,7 @@ theorem finiteModePolynomialEvalFDeriv_add
         finiteModePolynomialEvalFDeriv q x v := by
         simp [finiteModePolynomialEvalFDeriv, Finset.sum_add_distrib]
 
-set_option maxHeartbeats 800000 in
+set_option maxHeartbeats 2000000 in
 theorem finiteModePolynomialEvalFDeriv_mul_X
     (p : MvPolynomial (Fin 3) ℝ) (n : Fin 3) (x : NSSpace) :
     finiteModePolynomialEvalFDeriv (p * MvPolynomial.X n) x =
@@ -87,14 +87,28 @@ theorem finiteModePolynomialEval_hasFDerivAt
         (hasFDerivAt_const (x := x) (c := a))
   | add p q hp hq =>
       have hderiv := hp.add hq
-      simpa [MvPolynomial.eval_add, finiteModePolynomialEvalFDeriv_add] using hderiv
+      have hfun :
+          (fun y : NSSpace => MvPolynomial.eval y (p + q)) =
+            ((fun y : NSSpace => MvPolynomial.eval y p) +
+              fun y : NSSpace => MvPolynomial.eval y q) := by
+        funext y
+        simp [MvPolynomial.eval_add]
+      rw [hfun]
+      simpa [finiteModePolynomialEvalFDeriv_add] using hderiv
   | mul_X p n hp =>
       have hcoord : HasFDerivAt (fun y : NSSpace => y n)
           (EuclideanSpace.proj n : NSSpace →L[ℝ] ℝ) x := by
         exact (EuclideanSpace.proj n : NSSpace →L[ℝ] ℝ).hasFDerivAt
       have hderiv := hp.mul hcoord
       have hmul := finiteModePolynomialEvalFDeriv_mul_X p n x
-      simpa [MvPolynomial.eval_mul, MvPolynomial.eval_X, hmul] using hderiv
+      have hfun :
+          (fun y : NSSpace => MvPolynomial.eval y (p * MvPolynomial.X n)) =
+            ((fun y : NSSpace => MvPolynomial.eval y p) *
+              fun y : NSSpace => y n) := by
+        funext y
+        simp [MvPolynomial.eval_mul, MvPolynomial.eval_X]
+      rw [hfun]
+      simpa [hmul] using hderiv
 
 /-- The derivative, in the spatial base point, of the polynomial-evaluation
 derivative. -/
@@ -126,12 +140,24 @@ theorem finiteModePolynomialEvalFDeriv_hasFDerivAt
     ext v
     simp [g, finiteModePolynomialEvalFDeriv, ContinuousLinearMap.smulRight_apply, mul_comm]
   rw [hfg]
-  simpa [g, finiteModePolynomialEvalFDerivFDeriv]
-    using
+  let G : Fin 3 → NSSpace → (NSSpace →L[ℝ] ℝ) := fun j y =>
+    MvPolynomial.eval y (MvPolynomial.pderiv j p) •
+      (EuclideanSpace.proj j : NSSpace →L[ℝ] ℝ)
+  have hg : g = ∑ j : Fin 3, G j := by
+    funext y
+    simp [g, G]
+  rw [hg]
+  have hsum :
+      HasFDerivAt (∑ j : Fin 3, G j)
+        (∑ j : Fin 3,
+          (finiteModePolynomialEvalFDeriv (MvPolynomial.pderiv j p) x).smulRight
+            (EuclideanSpace.proj j : NSSpace →L[ℝ] ℝ)) x := by
+    exact
       (HasFDerivAt.sum (u := (Finset.univ : Finset (Fin 3)))
         (fun j _hj =>
           (finiteModePolynomialEval_hasFDerivAt (MvPolynomial.pderiv j p) x).smul_const
             (EuclideanSpace.proj j : NSSpace →L[ℝ] ℝ)))
+  simpa [G, finiteModePolynomialEvalFDerivFDeriv] using hsum
 
 theorem finiteModePolynomialEval_iteratedFDeriv_two_basis
     (p : MvPolynomial (Fin 3) ℝ) (x : NSSpace) (i : Fin 3) :
@@ -269,31 +295,52 @@ theorem finiteModePolynomialVectorFieldEval_hasFDerivAt
     (U : Fin 3 → MvPolynomial (Fin 3) ℝ) (x : NSSpace) :
     HasFDerivAt (finiteModePolynomialVectorFieldEval U)
       (finiteModePolynomialVectorFieldFDeriv U x) x := by
-  simpa [finiteModePolynomialVectorFieldEval, finiteModePolynomialVectorFieldFDeriv]
-    using
+  let G : Fin 3 → NSSpace → NSSpace := fun j y =>
+    MvPolynomial.eval y (U j) • EuclideanSpace.single j (1 : ℝ)
+  have hfun : finiteModePolynomialVectorFieldEval U = ∑ j : Fin 3, G j := by
+    funext y
+    simp [finiteModePolynomialVectorFieldEval, G]
+  rw [hfun]
+  have hsum :
+      HasFDerivAt (∑ j : Fin 3, G j)
+        (∑ j : Fin 3,
+          (finiteModePolynomialEvalFDeriv (U j) x).smulRight
+            (EuclideanSpace.single j (1 : ℝ))) x := by
+    exact
       (HasFDerivAt.sum (u := (Finset.univ : Finset (Fin 3)))
         (fun j _hj =>
           (finiteModePolynomialEval_hasFDerivAt (U j) x).smul_const
             (EuclideanSpace.single j (1 : ℝ))))
+  simpa [G, finiteModePolynomialVectorFieldFDeriv] using hsum
 
 theorem finiteModePolynomialVectorFieldEval_contDiff
     (U : Fin 3 → MvPolynomial (Fin 3) ℝ) :
     ContDiff ℝ 2 (finiteModePolynomialVectorFieldEval U) := by
-  simpa [finiteModePolynomialVectorFieldEval]
-    using
-      (ContDiff.sum (s := (Finset.univ : Finset (Fin 3)))
-        (fun j _hj => (finiteModePolynomialEval_contDiff (U j)).smul_const
-          (EuclideanSpace.single j (1 : ℝ))))
+  let G : Fin 3 → NSSpace → NSSpace := fun j y =>
+    MvPolynomial.eval y (U j) • EuclideanSpace.single j (1 : ℝ)
+  have hfun : finiteModePolynomialVectorFieldEval U = ∑ j : Fin 3, G j := by
+    funext y
+    simp [finiteModePolynomialVectorFieldEval, G]
+  rw [hfun]
+  exact
+    (ContDiff.sum (s := (Finset.univ : Finset (Fin 3)))
+      (fun j _hj => (finiteModePolynomialEval_contDiff (U j)).smul_const
+        (EuclideanSpace.single j (1 : ℝ))))
 
 /-- Polynomial vector fields on `NSSpace` are smooth. -/
 theorem finiteModePolynomialVectorFieldEval_contDiff_top
     (U : Fin 3 → MvPolynomial (Fin 3) ℝ) :
     ContDiff ℝ ∞ (finiteModePolynomialVectorFieldEval U) := by
-  simpa [finiteModePolynomialVectorFieldEval]
-    using
-      (ContDiff.sum (s := (Finset.univ : Finset (Fin 3)))
-        (fun j _hj => (finiteModePolynomialEval_contDiff_top (U j)).smul_const
-          (EuclideanSpace.single j (1 : ℝ))))
+  let G : Fin 3 → NSSpace → NSSpace := fun j y =>
+    MvPolynomial.eval y (U j) • EuclideanSpace.single j (1 : ℝ)
+  have hfun : finiteModePolynomialVectorFieldEval U = ∑ j : Fin 3, G j := by
+    funext y
+    simp [finiteModePolynomialVectorFieldEval, G]
+  rw [hfun]
+  exact
+    (ContDiff.sum (s := (Finset.univ : Finset (Fin 3)))
+      (fun j _hj => (finiteModePolynomialEval_contDiff_top (U j)).smul_const
+        (EuclideanSpace.single j (1 : ℝ))))
 
 end NavierStokes
 end FluidDynamics

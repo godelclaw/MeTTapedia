@@ -270,5 +270,5 @@
       "preview": "theorem for L be finite LATTICE holds L is distributive iff ex X be non empty Ring_of_sets st L, InclPoset X are_isomorp"
     }
   ],
-  "source_path": "/home/zar/claude/mizar/share/mml/lattice7.miz"
+  "source_path": "~/claude/mizar/share/mml/lattice7.miz"
 }

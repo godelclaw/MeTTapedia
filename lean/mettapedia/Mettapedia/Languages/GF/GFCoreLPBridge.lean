@@ -2,7 +2,7 @@ import Mettapedia.Logic.LP.Core
 import Mettapedia.Logic.LP.Semantics
 import Mettapedia.Logic.LP.FunctionFree
 import GFCore
-import Mettapedia.Logic.EvidenceKind
+import Mettapedia.PLN.Evidence.EvidenceKind
 
 /-!
 # GFCoreLPBridge — Bridge from GFCore.Atom to LP Herbrand Model
@@ -32,7 +32,7 @@ GF ParseEng → GFCore.Atom → atomToLP → LP.GroundAtom gfSig
 
 - van Emden & Kowalski, 1976 (T_P operator)
 - Lloyd, Foundations of Logic Programming, Ch. 2 (least Herbrand model)
-- Council session 2026-03-22 (GFCore→LP bridge design)
+- design session (GFCore→LP bridge design)
 -/
 
 namespace Mettapedia.Languages.GF

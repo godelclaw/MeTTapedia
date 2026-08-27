@@ -68,7 +68,7 @@ structure ResidualMorkPhase
   fires : applySinks workspace σ sourceRule.tmpl ∈ fireSourceRule workspace sourceRule
 
 /-- The staged compat-head lowering contract: external witness production first,
-then residual MORK source firing. This is the theorem surface Rust should
+then residual MORK source firing. This is the theorem interface Rust should
 follow, rather than inventing a separate unification semantics. -/
 structure CompatHeadTwoPhaseLowering
     (oracle : GroundedOracle) (space : PeTTaSpace) (workspace : Space)
@@ -195,7 +195,7 @@ theorem tupleMembership_externalWitnessPhase_of_member
 
 /-- First concrete staged compat-head theorem:
 tuple-membership witness production on the PeTTa side followed by any validated
-actual-MORK residual source firing. This is the theorem surface the runtime
+actual-MORK residual source firing. This is the theorem interface the runtime
 should follow for the current `in`/`is-member` fragment. -/
 theorem tupleMembership_twoPhaseLowering_of_member
     {oracle : GroundedOracle} {space : PeTTaSpace} {workspace : Space}

@@ -28,10 +28,10 @@ extended-real weight to each store, respecting:
 namespace Mettapedia.OSLF.PathMap.Measure
 
 open Mettapedia.PathMap
-open Mettapedia.Logic.EvidenceQuantale
+open Mettapedia.PLN.Evidence.EvidenceQuantale
 open Mettapedia.OSLF.PathMap.PLNBridge
 open Mettapedia.OSLF.PathMap.SolomonoffBridge
-open Mettapedia.Logic.SolomonoffPrior
+open Mettapedia.UniversalAI.SolomonoffPrior
 open scoped ENNReal
 open Finset BigOperators
 
@@ -73,7 +73,7 @@ noncomputable instance countingPathMapValuation {α : Type*} [DecidableEq α] :
 /-- Construct a `PathMapValuation` from any weight function `w : α → ℝ≥0∞`.
 
     `weight W = ∑_{p ∈ W} w p` satisfies all three valuation axioms. -/
-noncomputable def mkWeightedValuation {α : Type*} [DecidableEq α]
+@[reducible] noncomputable def mkWeightedValuation {α : Type*} [DecidableEq α]
     (w : α → ℝ≥0∞) : PathMapValuation α where
   weight W := ∑ p ∈ W, w p
   weight_empty := by simp
@@ -110,7 +110,7 @@ theorem pathMapValuation_evidence_split {α : Type*} [DecidableEq α]
 /-- The Solomonoff semimeasure gives a `PathMapValuation` on `BinString` stores.
 
     `weight W = ∑_{p ∈ W} M(p)` — total Solomonoff weight of programs in the store. -/
-noncomputable def solomonoffValuation (sm : Semimeasure) : PathMapValuation BinString :=
+@[reducible] noncomputable def solomonoffValuation (sm : Semimeasure) : PathMapValuation BinString :=
   mkWeightedValuation (fun p => ENNReal.ofReal (sm.μ p))
 
 /-- The Solomonoff valuation weight equals the Solomonoff evidence total. -/

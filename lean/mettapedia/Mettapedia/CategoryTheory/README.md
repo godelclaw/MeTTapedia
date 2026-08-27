@@ -89,7 +89,7 @@ Three strands, 29 files in total:
   - DeFinettiHausdorffBridge.lean proves Hausdorff moment uniqueness links
 
 - `DeFinettiPerNDiagram.lean`
-  - DeFinettiPerNDiagram.lean defines per-n permutation diagram surfaces
+  - DeFinettiPerNDiagram.lean defines per-n permutation diagram interfaces
 
 - `DeFinettiGlobalFinitaryDiagram.lean`
   - DeFinettiGlobalFinitaryDiagram.lean defines global finitary-permutation indexing
@@ -125,7 +125,7 @@ Three strands, 29 files in total:
   - DeFinettiStableExports.lean provides stable alias exports
 
 - `DeFinettiExports.lean`
-  - DeFinettiExports.lean provides the recommended import surface
+  - DeFinettiExports.lean provides the recommended import interface
 
 ### Other
 
@@ -151,9 +151,9 @@ Three strands, 29 files in total:
   - Core theorem: `weakRestrictedBisim_iff_pathBisim`
 - `../Languages/ProcessCalculi/PiCalculus/BranchingBisim.lean`
   - Core theorem: `branching_implies_weak`
-- `../Logic/WeightedOpenMaps.lean`
+- `GeneralizedOpenMaps/Weighted.lean`
   - Core theorem: `weightedBisim_iff_gopen_span`
-- `../Logic/OSLFOpenMapBridge.lean`
+- `../OSLF/Bridges/CategoryTheory/OpenMap.lean`
   - Core theorem: `fullOpenWitness_implies_obsEq`
 
 ## Formalization status

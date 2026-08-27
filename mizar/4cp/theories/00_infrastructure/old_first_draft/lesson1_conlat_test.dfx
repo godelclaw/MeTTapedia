@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<?xml-stylesheet type="text/xml" href="file:///home/zar/claude/mizar/share/miz.xml"?>
-<Definientia aid="LESSON1_CONLAT_TEST" mizfiles="/home/zar/claude/mizar/share/">
+<?xml-stylesheet type="text/xml" href="file://~/claude/mizar/share/miz.xml"?>
+<Definientia aid="LESSON1_CONLAT_TEST" mizfiles="~/claude/mizar/share/">
 <Definiens constrkind="K" constrnr="85" aid="TARSKI" defnr="1" relnr="1">
 <Typ kind="M" nr="1">
 <Cluster/>

@@ -39,14 +39,6 @@ inductive ReducesDerived : Pattern → Pattern → Type where
       ReducesDerived p q →
       ReducesDerived (.collection .hashBag (before ++ [p] ++ after) none)
                      (.collection .hashBag (before ++ [q] ++ after) none)
-  | par_set {p q : Pattern} {rest : List Pattern} :
-      ReducesDerived p q →
-      ReducesDerived (.collection .hashSet (p :: rest) none)
-                     (.collection .hashSet (q :: rest) none)
-  | par_set_any {p q : Pattern} {before after : List Pattern} :
-      ReducesDerived p q →
-      ReducesDerived (.collection .hashSet (before ++ [p] ++ after) none)
-                     (.collection .hashSet (before ++ [q] ++ after) none)
 
 infix:50 " ⇝ᵈ " => ReducesDerived
 
@@ -90,28 +82,6 @@ noncomputable def par_any {p q : Pattern} {before after : List Pattern}
       exact .refl (.collection .hashBag (before ++ [p] ++ after) none)
   | step h₁ hs ih =>
       exact .step (.par_any h₁) ih
-
-/-- Lift a derived-star trace through head-position set context. -/
-noncomputable def par_set {p q : Pattern} {rest : List Pattern}
-    (h : p ⇝ᵈ* q) :
-    (.collection .hashSet (p :: rest) none) ⇝ᵈ*
-      (.collection .hashSet (q :: rest) none) := by
-  induction h with
-  | refl p =>
-      exact .refl (.collection .hashSet (p :: rest) none)
-  | step h₁ hs ih =>
-      exact .step (.par_set h₁) ih
-
-/-- Lift a derived-star trace through arbitrary-position set context. -/
-noncomputable def par_set_any {p q : Pattern} {before after : List Pattern}
-    (h : p ⇝ᵈ* q) :
-    (.collection .hashSet (before ++ [p] ++ after) none) ⇝ᵈ*
-      (.collection .hashSet (before ++ [q] ++ after) none) := by
-  induction h with
-  | refl p =>
-      exact .refl (.collection .hashSet (before ++ [p] ++ after) none)
-  | step h₁ hs ih =>
-      exact .step (.par_set_any h₁) ih
 
 end ReducesDerivedStar
 
@@ -859,19 +829,6 @@ noncomputable def ReducesDerived.toCore_of_coreCanonical {p q : Pattern}
       exact
         Mettapedia.Languages.ProcessCalculi.RhoCalculus.Reduction.Reduces.par_any
           (before := before) (after := after) (ih hp)
-  | @par_set p q rest hstep ih =>
-      intro hc
-      have hp : CoreCanonical p :=
-        coreCanonical_elem_of_collection (ct := .hashSet) (elems := p :: rest) hc (by simp)
-      exact Mettapedia.Languages.ProcessCalculi.RhoCalculus.Reduction.Reduces.par_set (ih hp)
-  | @par_set_any p q before after hstep ih =>
-      intro hc
-      have hp : CoreCanonical p :=
-        coreCanonical_elem_of_collection
-          (ct := .hashSet) (elems := before ++ [p] ++ after) hc (by simp)
-      exact
-        Mettapedia.Languages.ProcessCalculi.RhoCalculus.Reduction.Reduces.par_set_any
-          (before := before) (after := after) (ih hp)
 
 /-- Core one-step reduction preserves core-canonical shape. -/
 theorem coreCanonical_of_core_step {p q : Pattern}
@@ -1035,10 +992,6 @@ inductive IsDirectCore : {p q : Pattern} → (p ⇝ q) → Prop where
       IsDirectCore (@Reduces.par p q rest h)
   | par_any {p q : Pattern} {before after : List Pattern} (h : p ⇝ q) :
       IsDirectCore (@Reduces.par_any p q before after h)
-  | par_set {p q : Pattern} {rest : List Pattern} (h : p ⇝ q) :
-      IsDirectCore (@Reduces.par_set p q rest h)
-  | par_set_any {p q : Pattern} {before after : List Pattern} (h : p ⇝ q) :
-      IsDirectCore (@Reduces.par_set_any p q before after h)
 
 /-- Design boundary: `PReplicate` cannot reduce via any direct core constructor.
     If it reduces at all in core semantics, that proof necessarily uses `equiv`.
@@ -1053,8 +1006,6 @@ theorem no_direct_core_step_from_PReplicate {p q : Pattern}
     | comm => simp at hs
     | par _ => simp at hs
     | par_any _ => simp at hs
-    | par_set _ => simp at hs
-    | par_set_any _ => simp at hs
   exact aux p _ _ rfl h hdir
 
 /-- Design boundary: `PNu` also cannot reduce via any direct core constructor.
@@ -1070,8 +1021,6 @@ theorem no_direct_core_step_from_PNu {p q : Pattern}
     | comm => simp at hs
     | par _ => simp at hs
     | par_any _ => simp at hs
-    | par_set _ => simp at hs
-    | par_set_any _ => simp at hs
   exact aux p _ _ rfl h hdir
 
 /-- Any core step from `PReplicate` has an explicit `equiv` shell.
@@ -1089,8 +1038,6 @@ theorem core_step_from_PReplicate_has_equiv_shell {p q : Pattern}
     | comm => simp at hs
     | par h ih => simp at hs
     | par_any h ih => simp at hs
-    | par_set h ih => simp at hs
-    | par_set_any h ih => simp at hs
     | equiv hsc hmid hsc2 ih =>
       exact ⟨_, _, hmid, ⟨hs ▸ hsc, hsc2⟩⟩
   exact aux p _ _ rfl h

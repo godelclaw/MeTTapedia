@@ -1,6 +1,6 @@
 {
   "failure_kind": null,
-  "input_file": "/home/zar/claude/atps/datasets/extended_mptp5k/chainy/train/lattice2__lattice2__t12_lattice2",
+  "input_file": "~/claude/atps/datasets/extended_mptp5k/chainy/train/lattice2__lattice2__t12_lattice2",
   "interpolant": "(~v2_struct_0(sK24) & l3_lattices(sK24) & (~1 | ~2 | ~3)) => $false",
   "interpolant_features": {
     "avatar_component_count": 3,

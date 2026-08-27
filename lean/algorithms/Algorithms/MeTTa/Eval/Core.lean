@@ -4,7 +4,7 @@ import MeTTailCore
 
 Verified MeTTa evaluator — core type definitions.
 
-Architecture invariants (council-approved):
+Architecture invariants (agreed):
 1. Session does NOT branch — bindings branch, session threads deterministically
 2. ResultBind.binds is full post-context — not delta
 3. cut = true means "may be incomplete" — for iterative deepening

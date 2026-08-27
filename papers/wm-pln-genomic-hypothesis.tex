@@ -76,7 +76,7 @@ On 823 labeled gene--SNP pairs with 5-fold cross-validation (872 test instances)
 PLN evidence-counting achieves AUC-ROC $0.858 \pm 0.041$ versus the
 reconstructed ProbLog baseline's $0.713$---using only publicly reconstructed
 features.  Implementation-level parity between the ProbLog and WM-PLN runtimes
-is verified to machine precision on the same benchmark surface.
+is verified to machine precision on the same benchmark harness.
 \end{abstract}
 
 %% ====================================================================
@@ -199,7 +199,7 @@ folds.
 We formalize the correspondence in Lean~4, building on Mathlib~v4.28.0.
 The generic bridge lives in \code{ProbLogDistributionSemantics.lean} (237~lines,
 0~\code{sorry}); the concrete biological instantiation and noisy-OR probability
-theorem live in \code{PLNBioHypothesisGeneration.lean} (${\sim}550$~lines,
+theorem live in \code{BioHypothesisGeneration.lean} (${\sim}550$~lines,
 0~\code{sorry}).  Together they prove the following.
 
 \subsection{Compilation: ProbLog $\to$ JointEvidence}
@@ -314,7 +314,7 @@ ProbLog's native semantics does not directly support.
 
 \subsection{Noisy-OR Probability Theorem}
 
-The module \code{PLNBioHypothesisGeneration.lean} proves the \emph{noisy-OR
+The module \code{BioHypothesisGeneration.lean} proves the \emph{noisy-OR
 probability theorem} for the distribution semantics: when $n$ independent
 probabilistic facts have $p_i \le 1$, the query probability of their disjunction
 equals the noisy-OR formula.
@@ -742,7 +742,7 @@ The $0.68$ vs.\ $0.82$ gap against the poster baseline is expected given the
 data-source differences.
 
 \paragraph{Implementation-level parity.}
-To verify that the WM-PLN runtime reproduces the ProbLog scoring surface
+To verify that the WM-PLN runtime reproduces the ProbLog scoring baseline
 at the implementation level,
 we exported per-example probabilities from two independent runtimes:
 liftcover's \code{prob\_lift} inference engine on SWI-Prolog~10.0.1
@@ -1019,7 +1019,7 @@ distance proxy.  These results do not diminish the formal subsumption
 result or the strong performance of the distance-proxy configuration
 (\S\ref{sec:ablation}); they clarify that naively substituting
 evidence counts into the existing rule structure is not sufficient to
-recover LIFT's learned advantage on this particular benchmark surface.
+recover LIFT's learned advantage on this particular benchmark harness.
 
 %% ====================================================================
 \section{Discussion}
@@ -1163,7 +1163,7 @@ mechanism evidence that ProbLog's binary activation discards.
 
 The four-layer architecture---generic subsumption bridge
 (\code{ProbLogDistributionSemantics}), concrete biological instantiation
-(\code{PLNBioHypothesisGeneration}), syntactic compilation
+(\code{BioHypothesisGeneration}), syntactic compilation
 (\code{ProbLogCompilation}), empirical benchmark---demonstrates a workflow
 where verified mathematical foundations directly inform and improve practical
 probabilistic reasoning systems.

@@ -29,7 +29,7 @@ Self-contained Isabelle2025 formalization of the Four Color Theorem (4CT) using 
 
 ### Prerequisites
 - Isabelle2025
-- AFP-2025-09-12 (already installed at `/home/zar/claude/Isabelle2025/afp-2025-09-12/`)
+- AFP-2025-09-12 (already installed at `~/claude/Isabelle2025/afp-2025-09-12/`)
 
 ### Build Commands
 ```bash

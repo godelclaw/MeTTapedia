@@ -2,7 +2,7 @@
 PROBABILITY THEORY FORMALIZATION - HANDOFF TO GEMINI
 ================================================================================
 
-LOCATION: /home/zar/claude/megalodon/probability_theory/
+LOCATION: ~/claude/megalodon/probability_theory/
 
 This directory contains everything Gemini needs to formalize probability theory
 in Megalodon's Egal mode, following Billingsley's "Probability and Measure".
@@ -54,7 +54,7 @@ Copy this to Gemini:
 
 I need you to formalize probability theory in the Megalodon proof assistant.
 
-**Location**: /home/zar/claude/megalodon/probability_theory/
+**Location**: ~/claude/megalodon/probability_theory/
 
 **Your instructions**: Read these files in order:
 1. START_HERE.md - Quick start
@@ -69,16 +69,16 @@ I need you to formalize probability theory in the Megalodon proof assistant.
 
 **Verification command**:
 ```bash
-cd /home/zar/claude/megalodon/probability_theory
-/home/zar/claude/megalodon/bin/megalodon -egal \
-  -I /home/zar/claude/megalodon/Megalodon/examples/egal/PfgEAug2022Preamble.mgs \
+cd ~/claude/megalodon/probability_theory
+~/claude/megalodon/bin/megalodon -egal \
+  -I ~/claude/megalodon/Megalodon/examples/egal/PfgEAug2022Preamble.mgs \
   01_sigma_algebras.mg
 ```
 
 Exit code 0 = success!
 
 **Reference**: Billingsley "Probability and Measure" at:
-/home/zar/claude/literature/Probability_Theory/Probability_and_Measure_Third_Edition_Patrick_Billingsley.pdf
+~/claude/literature/Probability_Theory/Probability_and_Measure_Third_Edition_Patrick_Billingsley.pdf
 
 **Philosophy**: Prove what you can, admit what you must, document everything.
 Build incrementally. Verify after each change. Update PROGRESS.md regularly.
@@ -126,7 +126,7 @@ EXPECTED OUTPUT FROM GEMINI
 
 After completion, you should have:
 
-/home/zar/claude/megalodon/probability_theory/
+~/claude/megalodon/probability_theory/
 ├── 01_sigma_algebras.mg          ✅ Verified
 ├── 02_probability_measures.mg    ✅ Verified  
 ├── 03_conditional_probability.mg ✅ Verified
@@ -154,11 +154,11 @@ VERIFICATION
 
 To verify all files:
 ```bash
-cd /home/zar/claude/megalodon/probability_theory
+cd ~/claude/megalodon/probability_theory
 for f in 01_*.mg 02_*.mg 03_*.mg 04_*.mg; do
   echo "=== Verifying $f ==="
-  /home/zar/claude/megalodon/bin/megalodon -egal \
-    -I /home/zar/claude/megalodon/Megalodon/examples/egal/PfgEAug2022Preamble.mgs \
+  ~/claude/megalodon/bin/megalodon -egal \
+    -I ~/claude/megalodon/Megalodon/examples/egal/PfgEAug2022Preamble.mgs \
     "$f" && echo "✅ PASS" || echo "❌ FAIL"
 done
 ```

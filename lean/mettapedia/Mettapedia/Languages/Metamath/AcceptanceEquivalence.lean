@@ -22,7 +22,8 @@ open Mettapedia.OSLF.MeTTaIL.Syntax
 def ImplAccepts (bytes : ByteArray) (label : String) (f : Metamath.Verify.Formula) : Prop :=
   ∃ (proof : Array String) (prFinal : Metamath.Verify.ProofState) (f' : Metamath.Verify.Formula),
     proof.foldlM (fun pr step => Metamath.Verify.DB.stepNormal (checkBytesDB bytes) pr step)
-      ⟨⟨0, 0⟩, label, f, (checkBytesDB bytes).frame, #[], #[], Metamath.Verify.ProofTokenParser.normal⟩ =
+      ⟨⟨0, 0⟩, label, f, (checkBytesDB bytes).frame, #[], #[],
+        Metamath.Verify.ProofTokenParser.normal, false⟩ =
         Except.ok prFinal ∧
       prFinal.stack.size = 1 ∧
       prFinal.stack[0]? = some f' ∧
@@ -40,13 +41,15 @@ theorem implAccepts_iff_specAccepts
     (hSuccess : (checkBytesDB bytes).error? = none) :
     ImplAccepts bytes label f ↔ SpecAccepts bytes f := by
   simpa [ImplAccepts, SpecAccepts, checkBytesDB] using
-    parserAcceptance_iff_specProvable bytes label f hSuccess
+    proofCheckerNormalAcceptance_iff_specProvable_inParsedDB
+      bytes label f hSuccess
 
 /-- Initial runtime proof state used by checker acceptance witnesses. -/
 def initialProofState
     (bytes : ByteArray) (label : String) (f : Metamath.Verify.Formula) :
     Metamath.Verify.ProofState :=
-  ⟨⟨0, 0⟩, label, f, (checkBytesDB bytes).frame, #[], #[], Metamath.Verify.ProofTokenParser.normal⟩
+  ⟨⟨0, 0⟩, label, f, (checkBytesDB bytes).frame, #[], #[],
+    Metamath.Verify.ProofTokenParser.normal, false⟩
 
 /-- Runtime provenance for proof tokens:
 the token resolves to a hypothesis/assertion object in the checker DB. -/
@@ -188,10 +191,10 @@ theorem languageDefTraceWitness_iff_specAccepts
   · intro hSpec
     exact specAccepts_to_languageDefTraceWitness bytes label f hSuccess hSpec
 
-/-- Engine-facing trace compatibility: each token has an engine-labeled
-top-level rewrite witness (Simulation layer, line 202 boundary). -/
+/-- Trace compatibility: each token has a labeled authored root-step witness
+in the LanguageDef simulation layer. -/
 def EngineTokenLift (step : String) : Prop :=
-  ∃ p q, EngineLabeledTopStep p q step
+  ∃ p q, LabeledRootStep p q step
 
 def EngineTraceCompatible (proof : Array String) : Prop :=
   ∀ step ∈ proof.toList, EngineTokenLift step
@@ -220,9 +223,8 @@ theorem engineBackedTraceWitness_to_specAccepts
   exact languageDefTraceWitness_to_specAccepts
     bytes label f ⟨proof, prFinal, f', hNoErr, hAuthored, hFold, hSize, hTop, hExpr⟩
 
-/-- Stronger trace witness that pins proof tokens to a concrete
-engine-labeled `DeclReducesWithPremises` path (Simulation layer), not only
-wrapper stepping. -/
+/-- Stronger trace witness that pins proof tokens to a concrete path in the
+least authored LanguageDef reduction relation, not only wrapper stepping. -/
 def RuntimeTokenMatchesEngineLabel (tok engineLabel : String) : Prop :=
   tok = engineLabel
 
@@ -256,7 +258,7 @@ def EngineAlignedTraceWitness
       prFinal.stack[0]? = some f' ∧
       Metamath.Kernel.toExpr f' = Metamath.Kernel.toExpr f
 
-/-- Intermediate crown-jewel witness:
+/-- Intermediate refined-trace witness:
 it keeps the successful runtime trace together with a concrete labeled engine
 trace and a token-to-engine-segment refinement witness.
 
@@ -1041,7 +1043,7 @@ theorem metamath_languageDef_bridge_of_alignmentComplete
     bytes label f hSuccess
     (engineAlignmentComplete_to_engineRefinedAlignmentComplete bytes label f hComplete)
 
-/-- Longest-lasting practical crown-jewel bridge:
+/-- Longest-lasting practical refined-trace bridge:
 if checker-runtime labels are disjoint from authored rewrite names, the
 Metamath implementation, refined engine witness layer, and declarative
 specification all agree. -/
@@ -1060,7 +1062,7 @@ theorem metamath_languageDef_bridge_of_runtimeProvenanceDisjoint
 This is the longest-lasting conformance shape presently available: it exposes
 runtime acceptance, concrete engine acceptance, and token-to-engine-segment
 refinement in one witness family. -/
-theorem metamath_languageDef_crown_jewel_of_refinedComplete
+theorem metamath_languageDef_refinedTraceAgreement_of_refinedComplete
     (bytes : ByteArray) (label : String) (f : Metamath.Verify.Formula)
     (hSuccess : (checkBytesDB bytes).error? = none)
     (hComplete : EngineRefinedAlignmentComplete bytes label f) :
@@ -1078,14 +1080,14 @@ theorem metamath_languageDef_crown_jewel_of_refinedComplete
         bytes label f hSuccess hComplete hSpec
 
 /-- Runtime-provenance-disjoint version of the refined public bridge API. -/
-theorem metamath_languageDef_crown_jewel_of_runtimeProvenanceDisjoint
+theorem metamath_languageDef_refinedTraceAgreement_of_runtimeProvenanceDisjoint
     (bytes : ByteArray) (label : String) (f : Metamath.Verify.Formula)
     (hSuccess : (checkBytesDB bytes).error? = none)
     (hDisjoint : RuntimeProvenanceDisjointFromAuthored bytes) :
     (EngineRefinedTraceWitness bytes label f ↔ ImplAccepts bytes label f) ∧
       (EngineRefinedTraceWitness bytes label f ↔ SpecAccepts bytes f) ∧
       (SpecAccepts bytes f → ∃ start finish, LanguageDefAccepts start finish) := by
-  exact metamath_languageDef_crown_jewel_of_refinedComplete
+  exact metamath_languageDef_refinedTraceAgreement_of_refinedComplete
     bytes label f hSuccess
     (runtimeProvenanceDisjoint_to_engineRefinedAlignmentComplete bytes label f hDisjoint)
 
@@ -1290,9 +1292,9 @@ theorem minimalAxiom_ax1_engineRefinedTraceWitness_to_engineAndSpec :
     minimalAxiomBytes "ax1" minimalAxiom_wfph
     minimalAxiom_ax1_engineRefinedTraceWitness
 
-/-- Concrete refined crown-jewel package for the accepted minimal axiom
+/-- Concrete refined-trace agreement for the accepted minimal axiom
 fixture. -/
-theorem minimalAxiom_ax1_refined_crown_jewel :
+theorem minimalAxiom_ax1_refinedTraceAgreement :
     EngineRefinedTraceWitness minimalAxiomBytes "ax1" minimalAxiom_wfph ∧
       ImplAccepts minimalAxiomBytes "ax1" minimalAxiom_wfph ∧
       SpecAccepts minimalAxiomBytes minimalAxiom_wfph ∧

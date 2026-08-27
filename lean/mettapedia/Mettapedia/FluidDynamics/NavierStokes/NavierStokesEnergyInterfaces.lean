@@ -93,6 +93,68 @@ theorem kineticEnergyAt_scalar_smul_schwartz
   simpa [mul_comm, mul_left_comm, mul_assoc] using
     integral_const_mul ((a t) ^ (2 : ℕ)) (fun x : NSSpace => ‖f x‖ ^ (2 : ℕ))
 
+/-- Coordinate enstrophy of a scalar-modulated Schwartz profile
+`u(t,x)=a(t)•f(x)`.  This is the spatial Rayleigh companion to
+`kineticEnergyAt_scalar_smul_schwartz`: the same scalar square multiplies the
+fixed spatial coordinate enstrophy of the profile. -/
+theorem coordinateEnstrophyAt_scalar_smul_schwartz
+    (a : ℝ → ℝ) (f : 𝓢(NSSpace, NSSpace)) :
+    coordinateEnstrophyAt (fun t x => a t • f x) =
+      fun t =>
+        (a t) ^ (2 : ℕ) *
+          coordinateEnstrophyAt (timeIndependentVelocity (f : NSInitialVelocity)) 0 := by
+  funext t
+  rw [coordinateEnstrophyAt]
+  have hDensity :
+      coordinateEnstrophyDensity (fun s y => a s • f y) t =
+        fun x : NSSpace =>
+          (a t) ^ (2 : ℕ) *
+            coordinateEnstrophyDensity
+              (timeIndependentVelocity (f : NSInitialVelocity)) 0 x := by
+    funext x
+    simp only [coordinateEnstrophyDensity]
+    calc
+      (∑ i : NSStdBasisIndex,
+          ‖spatialFDeriv (fun s y => a s • f y) t x (nsStdBasis i)‖ ^ (2 : ℕ)) =
+          ∑ i : NSStdBasisIndex,
+            ‖(a t) • spatialFDeriv
+                (timeIndependentVelocity (f : NSInitialVelocity)) 0 x
+                (nsStdBasis i)‖ ^ (2 : ℕ) := by
+        apply Finset.sum_congr rfl
+        intro i _hi
+        congr 2
+        unfold spatialFDeriv timeIndependentVelocity
+        have hfun :
+            (fun y : NSSpace => a t • f y) =
+              (a t) • (fun y : NSSpace => f y) := rfl
+        rw [hfun]
+        change
+          (fderiv ℝ ((a t) • fun y : NSSpace => f y) x) (nsStdBasis i) =
+            (a t) • (fderiv ℝ (fun y : NSSpace => f y) x) (nsStdBasis i)
+        rw [fderiv_const_smul_field]
+        rfl
+      _ =
+          ∑ i : NSStdBasisIndex,
+            (a t) ^ (2 : ℕ) *
+              ‖spatialFDeriv
+                (timeIndependentVelocity (f : NSInitialVelocity)) 0 x
+                (nsStdBasis i)‖ ^ (2 : ℕ) := by
+        apply Finset.sum_congr rfl
+        intro i _hi
+        simp [norm_smul, sq_abs, mul_pow]
+      _ =
+          (a t) ^ (2 : ℕ) *
+            ∑ i : NSStdBasisIndex,
+              ‖spatialFDeriv
+                (timeIndependentVelocity (f : NSInitialVelocity)) 0 x
+                (nsStdBasis i)‖ ^ (2 : ℕ) := by
+        rw [Finset.mul_sum]
+  rw [hDensity]
+  rw [coordinateEnstrophyAt]
+  simpa [mul_comm, mul_left_comm, mul_assoc] using
+    integral_const_mul ((a t) ^ (2 : ℕ))
+      (coordinateEnstrophyDensity (timeIndependentVelocity (f : NSInitialVelocity)) 0)
+
 /-- Integral of the time-energy pairing for a scalar-modulated Schwartz profile
 `u(t,x)=a(t)•f(x)`. -/
 theorem integral_timeEnergyPairing_scalar_smul_schwartz

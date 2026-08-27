@@ -4,7 +4,7 @@ import Mettapedia.Logic.BDD.Compilation
 # ProbMeTTa Runtime Core
 
 This file formalizes the query/runtime core of
-`/home/zar/claude/ProbMeTTa/lib_prob.metta` as an explicit Lean relation over
+`~/claude/ProbMeTTa/lib_prob.metta` as an explicit Lean relation over
 the source-level function names:
 
 - `prob-assume`
@@ -30,7 +30,7 @@ Negative example:
 namespace Mettapedia.Logic.BDDCore
 
 open Mettapedia.Logic.LP
-open Mettapedia.Logic.ProbLogCompilation
+open Mettapedia.PLN.Bridges.Languages.ProbLog.Compilation
 
 /-- Source-level ProbMeTTa runtime expressions for the BDD-producing query core
 of `lib_prob.metta`. -/

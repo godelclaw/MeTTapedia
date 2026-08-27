@@ -28,12 +28,14 @@ namespace Mettapedia.OSLF.Framework.PLNSelectorLanguageDef
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.Match
 open Mettapedia.OSLF.MeTTaIL.Engine
-open Mettapedia.OSLF.MeTTaIL.DeclReducesPremises
+open Mettapedia.OSLF.MeTTaIL.ContextualStep
+open Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical
+open Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution
 open Mettapedia.OSLF.Framework.TypeSynthesis
 open Mettapedia.OSLF.Framework.PLNSelectorGSLT
 open Mettapedia.OSLF.Framework.PLNSelectorGSLT.PLNSelectorExpr
 open Mettapedia.OSLF.Formula
-open Mettapedia.Logic.PremiseSelection
+open Mettapedia.PLN.InferenceControl.PremiseSelection
 
 universe u v
 
@@ -109,7 +111,7 @@ mutual
   /-- Relational decoding from selector patterns to DSL expressions.
   `pAtom` can represent any underlying scorer atom. -/
   inductive ExprEncodes : Pattern → PLNSelectorExpr Goal Fact → Prop where
-    | atom (s : Mettapedia.Logic.PremiseSelection.Scorer Goal Fact) :
+    | atom (s : Mettapedia.PLN.InferenceControl.PremiseSelection.Scorer Goal Fact) :
         ExprEncodes pAtom (.atom s)
     | fuse {pa pb ea eb} :
         ExprEncodes pa ea →
@@ -170,14 +172,13 @@ theorem plnSelector_lang_extBayes2 (pp qq ll : Pattern) :
       (pFuse (pUpdate pp ll) (pUpdate qq ll)) := by
   unfold plnSelectorLangReduces langReducesUsing
   let bs0 : Bindings := [("l", ll), ("q", qq), ("p", pp)]
-  refine DeclReducesWithPremises.topRule
-    (relEnv := RelationEnv.empty) (lang := plnSelectorLanguageDef)
-    (r := ruleExtBayes2)
-    ?hr bs0 ?hmatch bs0 ?hprem ?happly
+  refine ⟨1, StepAt.rule (rule := ruleExtBayes2)
+    (initialBindings := bs0) (finalBindings := bs0) ?hr ?hmatch (.nil bs0) ?happly⟩
   · simp [plnSelectorLanguageDef]
-  · simp [bs0, ruleExtBayes2, pUpdate, pFuse, matchPattern, matchArgs, mergeBindings]
-  · simp [bs0, ruleExtBayes2, applyPremisesWithEnv]
-  · simp [bs0, ruleExtBayes2, pUpdate, pFuse, applyBindings]
+  · simp [matchPatternForRule, bs0, ruleExtBayes2, pUpdate, pFuse,
+      matchPattern, matchArgs, mergeBindings]
+  · simp [applyBindingsForRule, bs0, ruleExtBayes2, pUpdate, pFuse,
+      applyBindings]
 
 theorem plnSelector_lang_extBayesFamily (xsp ll : Pattern) :
     plnSelectorLangReduces
@@ -185,27 +186,25 @@ theorem plnSelector_lang_extBayesFamily (xsp ll : Pattern) :
       (pFuseFamily (pFMapUpdate xsp ll)) := by
   unfold plnSelectorLangReduces langReducesUsing
   let bs0 : Bindings := [("l", ll), ("xs", xsp)]
-  refine DeclReducesWithPremises.topRule
-    (relEnv := RelationEnv.empty) (lang := plnSelectorLanguageDef)
-    (r := ruleExtBayesFamily)
-    ?hr bs0 ?hmatch bs0 ?hprem ?happly
+  refine ⟨1, StepAt.rule (rule := ruleExtBayesFamily)
+    (initialBindings := bs0) (finalBindings := bs0) ?hr ?hmatch (.nil bs0) ?happly⟩
   · simp [plnSelectorLanguageDef]
-  · simp [bs0, ruleExtBayesFamily, pUpdate, pFuseFamily, matchPattern, matchArgs, mergeBindings]
-  · simp [bs0, ruleExtBayesFamily, applyPremisesWithEnv]
-  · simp [bs0, ruleExtBayesFamily, pFuseFamily, pFMapUpdate, applyBindings]
+  · simp [matchPatternForRule, bs0, ruleExtBayesFamily, pUpdate,
+      pFuseFamily, matchPattern, matchArgs, mergeBindings]
+  · simp [applyBindingsForRule, bs0, ruleExtBayesFamily, pFuseFamily,
+      pFMapUpdate, applyBindings]
 
 theorem plnSelector_lang_normalize (ep : Pattern) :
     plnSelectorLangReduces (pNormalizeNZ ep) ep := by
   unfold plnSelectorLangReduces langReducesUsing
   let bs0 : Bindings := [("e", ep)]
-  refine DeclReducesWithPremises.topRule
-    (relEnv := RelationEnv.empty) (lang := plnSelectorLanguageDef)
-    (r := ruleNormalizeStrength)
-    ?hr bs0 ?hmatch bs0 ?hprem ?happly
+  refine ⟨1, StepAt.rule (rule := ruleNormalizeStrength)
+    (initialBindings := bs0) (finalBindings := bs0) ?hr ?hmatch (.nil bs0) ?happly⟩
   · simp [plnSelectorLanguageDef]
-  · simp [bs0, ruleNormalizeStrength, pNormalizeNZ, matchPattern, matchArgs, mergeBindings]
-  · simp [bs0, ruleNormalizeStrength, applyPremisesWithEnv]
-  · simp [bs0, ruleNormalizeStrength, pNormalizeNZ, applyBindings]
+  · simp [matchPatternForRule, bs0, ruleNormalizeStrength, pNormalizeNZ,
+      matchPattern, matchArgs, mergeBindings]
+  · simp [applyBindingsForRule, bs0, ruleNormalizeStrength,
+      pNormalizeNZ, applyBindings]
 
 /-! ## One-Way Soundness: DSL Rewrite ⇒ LanguageDef Rewrite -/
 
@@ -431,32 +430,18 @@ theorem langReduces_to_reduces_exists_of_normalizeFinite
     (hNorm : NormalizeFiniteNonzero e)
     (h : plnSelectorLangReduces (encodeExpr e) q) :
     ∃ e', PLNSelectorExpr.Reduces e e' ∧ ExprEncodes q e' := by
-  have hExec :
-      langReducesExecUsing RelationEnv.empty plnSelectorLanguageDef (encodeExpr e) q := by
-    exact langReducesUsing_to_exec
-      (relEnv := RelationEnv.empty) (lang := plnSelectorLanguageDef) h
-  unfold langReducesExecUsing at hExec
-  unfold rewriteWithContextWithPremisesUsing at hExec
-  have hTop : q ∈ rewriteStepWithPremisesUsing RelationEnv.empty plnSelectorLanguageDef (encodeExpr e) := by
-    rcases List.mem_append.mp hExec with hTop | hSub
-    · exact hTop
-    · cases e <;> simp [encodeExpr, pAtom, pFuse, pUpdate, pNormalizeNZ, pFuseFamily] at hSub
-  unfold rewriteStepWithPremisesUsing at hTop
-  rw [List.mem_flatMap] at hTop
-  rcases hTop with ⟨r, hr, hRule⟩
+  unfold plnSelectorLangReduces langReducesUsing at h
+  obtain ⟨_, hStep⟩ := h
+  cases hStep with
+  | @rule fuel source target r bs0 bs hr hbs0 hprem hq =>
+  simp only [matchPatternForRule_eq_syntactic] at hbs0
+  simp only [applyBindingsForRule_eq_syntactic] at hq
   have hrCases :
       r = ruleExtBayes2 ∨ r = ruleExtBayesFamily ∨ r = ruleNormalizeStrength := by
     simpa [plnSelectorLanguageDef] using hr
-  unfold applyRuleWithPremisesUsing at hRule
-  rw [List.mem_flatMap] at hRule
-  rcases hRule with ⟨bs0, hbs0, hqMap⟩
-  rw [List.mem_map] at hqMap
-  rcases hqMap with ⟨bs, hprem, hq⟩
   rcases hrCases with rfl | rfl | rfl
   · -- extBayes2
-    have hbs : bs = bs0 := by
-      simpa [ruleExtBayes2, applyPremisesWithEnv] using hprem
-    subst bs
+    cases hprem
     cases e with
     | update p l =>
         cases p with
@@ -502,9 +487,7 @@ theorem langReduces_to_reduces_exists_of_normalizeFinite
         exfalso
         simp [ruleExtBayes2, encodeExpr, pUpdate, pFuse, pFuseFamily, matchPattern] at hbs0
   · -- extBayesFamily
-    have hbs : bs = bs0 := by
-      simpa [ruleExtBayesFamily, applyPremisesWithEnv] using hprem
-    subst bs
+    cases hprem
     cases e with
     | update p l =>
         cases p with
@@ -547,9 +530,7 @@ theorem langReduces_to_reduces_exists_of_normalizeFinite
         exfalso
         simp [ruleExtBayesFamily, encodeExpr, pUpdate, pFuseFamily, matchPattern] at hbs0
   · -- normalize
-    have hbs : bs = bs0 := by
-      simpa [ruleNormalizeStrength, applyPremisesWithEnv] using hprem
-    subst bs
+    cases hprem
     cases e with
     | normalize t e0 =>
         rcases hNorm with ⟨ht, htop⟩
@@ -623,7 +604,7 @@ theorem langReduces_encode_to_encode_reduces_of_atomFree
 
 /-- Atom nodes are excluded from the encode-injective fragment. -/
 theorem not_encodeInjective_atom
-    (s : Mettapedia.Logic.PremiseSelection.Scorer Goal Fact) :
+    (s : Mettapedia.PLN.InferenceControl.PremiseSelection.Scorer Goal Fact) :
     ¬ EncodeInjective (.atom s) := by
   intro h
   cases h
@@ -637,7 +618,7 @@ theorem not_encodeInjective_normalize
 
 /-- Atom payload is abstracted by encoding: all atoms map to the same pattern. -/
 @[simp] theorem encodeExpr_atom_const
-    (s₁ s₂ : Mettapedia.Logic.PremiseSelection.Scorer Goal Fact) :
+    (s₁ s₂ : Mettapedia.PLN.InferenceControl.PremiseSelection.Scorer Goal Fact) :
     encodeExpr (.atom s₁) = encodeExpr (.atom s₂) := by
   rfl
 

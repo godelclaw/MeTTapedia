@@ -2,12 +2,9 @@ import Mettapedia.Logic.HOL.LogicalInduction.Code
 import Mettapedia.Logic.HOL.LogicalInduction.DeductiveProcess
 import Mettapedia.Logic.HOL.LogicalInduction.Market
 import Mettapedia.Logic.HOL.LogicalInduction.Criterion
+import Mettapedia.Logic.HOL.LogicalInduction.BoundedTraders
 import Mettapedia.Logic.HOL.LogicalInduction.Conditioning
 import Mettapedia.Logic.HOL.LogicalInduction.Calibration
-import Mettapedia.Logic.HOL.LogicalInduction.PureBridge
-import Mettapedia.Logic.HOL.LogicalInduction.WorldModelBridge
-import Mettapedia.Logic.HOL.LogicalInduction.EmpiricalSpecialCase
-import Mettapedia.Logic.HOL.LogicalInduction.Regression
 
 /-!
 # Logical-Induction-Ready HOL Belief Infrastructure
@@ -20,13 +17,18 @@ Following Garrabrant, Benson-Tilsen, Critch, Soares, and Taylor,
 - canonical coding of closed HOL formulas,
 - deductive processes,
 - time-indexed rational belief days,
-- trader/exploitability vocabulary,
+- trader/exploitability vocabulary and the budgeter soundness kernel
+  (bounded-volume traders cannot exploit),
 - theory-extension conditioning interfaces,
-- calibration/timely-learning specifications,
-- the current artifact-only Pure bridge contract shape,
-- and a thin WM-facing belief-day interface plus the empirical special case.
-- a bundled positive/negative regression target for the current toy layer.
+- and calibration/timely-learning specifications.
 
 This layer is deliberately an overlay on top of canonical HOL semantics, not a
 replacement for them.
+
+The PLN-facing WM empirical special case and its regression wrapper live under
+`Mettapedia.PLN.Bridges.HOL.LogicalInduction`.
+
+The Pure-kernel artifact boundary for encoded HOL formulas lives on the language
+side under
+`Mettapedia.Languages.MeTTa.PureKernel.HOLLogicalInductionBridge`.
 -/

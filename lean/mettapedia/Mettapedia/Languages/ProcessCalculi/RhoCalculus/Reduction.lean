@@ -44,13 +44,6 @@ open Mettapedia.CategoryTheory.LambdaTheories
 
     **Design Decision (2026-02-04)**: Reduces is Type-valued, not Prop-valued.
 
-    **Canonical vs Extension Policy (2026-02-13)**:
-    This low-level relation intentionally keeps both bag and set congruence
-    descent constructors. Canonical-vs-extension behavior is enforced at the
-    `LanguageDef`/`langReduces` layer (`rhoCalc` vs `rhoCalcSetExt`) via
-    `congruenceCollections`, with theorem-level comparison in
-    `Framework/TypeSynthesis.lean`.
-
     **Paper-faithful core (2026-05-28)**:
     In Meredith-Radestock 2005, free drop is inert except under substitution.
     The core one-step relation therefore uses COMM as its only primitive
@@ -92,18 +85,6 @@ inductive Reduces : Pattern → Pattern → Type where
       Reduces p q →
       Reduces (.collection .hashBag (before ++ [p] ++ after) none)
               (.collection .hashBag (before ++ [q] ++ after) none)
-
-  /-- PAR_SET: reduction inside set collections -/
-  | par_set {p q : Pattern} {rest : List Pattern} :
-      Reduces p q →
-      Reduces (.collection .hashSet (p :: rest) none)
-              (.collection .hashSet (q :: rest) none)
-
-  /-- PAR_SET_ANY: reduction at any position in a set -/
-  | par_set_any {p q : Pattern} {before after : List Pattern} :
-      Reduces p q →
-      Reduces (.collection .hashSet (before ++ [p] ++ after) none)
-              (.collection .hashSet (before ++ [q] ++ after) none)
 
 infix:50 " ⇝ " => Reduces
 
@@ -387,12 +368,6 @@ theorem redWeight_pos_of_reduces {P Q : Pattern} (hred : Reduces P Q) :
   | par_any _ ih =>
     simp [redWeight, List.map_append, List.sum_append, List.map_cons, List.sum_cons]
     omega
-  | par_set _ ih =>
-    simp [redWeight, List.map_cons, List.sum_cons]
-    omega
-  | par_set_any _ ih =>
-    simp [redWeight, List.map_append, List.sum_append, List.map_cons, List.sum_cons]
-    omega
 
 /-- Empty bag is irreducible modulo structural congruence (SC-quotiented). -/
 theorem emptyBag_SC_irreducible {P Q : Pattern}
@@ -405,7 +380,7 @@ theorem emptyBag_SC_irreducible {P Q : Pattern}
   have hpos : 0 < redWeight P := redWeight_pos_of_reduces hred
   omega
 
-/-! ### Empty-bag SC invariants (MVP surface)
+/-! ### Empty-bag SC invariants (MVP fragment)
 
 These are the minimal SC-facing lemmas retained for current use: they expose
 the canonical invariant (`ioCount = 0`) on the SC class of the empty bag.

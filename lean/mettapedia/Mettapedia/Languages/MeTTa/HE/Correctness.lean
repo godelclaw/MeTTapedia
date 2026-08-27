@@ -29,7 +29,7 @@ once in the proof and carried everywhere by the certificate.
 
 The public theorem we want is deliberately user-facing and portable. In HE,
 the coarse declarative judgment is broader than stable executable behavior, so
-the exported theorem surface lives in `ExecutableBoundary.lean` rather than forcing
+the exported theorem interface lives in `ExecutableBoundary.lean` rather than forcing
 the evaluator to coincide with the coarse spec directly. The private sync model
 in this file is not the final public story; it is the internal exact bridge
 that makes the refined public story provable.
@@ -67,7 +67,7 @@ certification biconditional composes them at the right boundary.
 **Layer 4 — Executable refinement boundary** (proved):
 - `ExecutableBoundary.EvalAtomStablyReaches`
 - `ExecutableBoundary.EvalAtomCertified`
-- theorem surface: refined HE certification iff stable eventual evaluator reach
+- theorem interface: refined HE certification iff stable eventual evaluator reach
 
 **Layer 5 — Counterexample-guided boundary control** (proved):
 - coarse `EvalSpec.EvalAtom` does not imply certification
@@ -100,7 +100,7 @@ private theorem eqMatch_sound
                else (queryEquations space atom n).flatMap fun x =>
                  (mergeBindings x.2 b n).flatMap fun mb =>
                    if mb.hasLoop = true then []
-                   else evalAtom space dispatch (mb.apply x.1 n) type_ mb n)) :
+                   else evalAtom space dispatch (mb.applyFull x.1 n) type_ mb n)) :
     MettaCall space dispatch atom type_ b r := by
   split at hr
   · rename_i h_eqs
@@ -456,7 +456,7 @@ private theorem allSound : ∀ fuel, AllSound fuel := by
                             (by
                               intro h
                               rcases h with ⟨scrut', branches, htail⟩
-                              simp [h_cases] at htail)
+                              simp at htail)
                             h_ef
                       | var v =>
                           have h_expr_not_error :
@@ -474,7 +474,7 @@ private theorem allSound : ∀ fuel, AllSound fuel := by
                             (by
                               intro h
                               rcases h with ⟨scrut', branches, htail⟩
-                              simp [h_cases] at htail)
+                              simp at htail)
                             h_ef
                       | grounded g =>
                           have h_expr_not_error :
@@ -492,10 +492,10 @@ private theorem allSound : ∀ fuel, AllSound fuel := by
                             (by
                               intro h
                               rcases h with ⟨scrut', branches, htail⟩
-                              simp [h_cases] at htail)
+                              simp at htail)
                             h_ef
                       | expression branches =>
-                          simp [mettaCall, h_ef, h_cases] at hr
+                          simp [mettaCall, h_cases] at hr
                           exact MettaCall.switch_minimal_result _ type_ b
                             scrut branches r n rfl h_ef hr
                   | cons extra rest =>
@@ -588,7 +588,7 @@ private theorem allSound : ∀ fuel, AllSound fuel := by
                                 (by
                                   intro h
                                   rcases h with ⟨scrut', branches, htail⟩
-                                  simp [h_cases] at htail)
+                                  simp at htail)
                                 h_ef
                           | var v =>
                               have h_expr_not_error :
@@ -606,7 +606,7 @@ private theorem allSound : ∀ fuel, AllSound fuel := by
                                 (by
                                   intro h
                                   rcases h with ⟨scrut', branches, htail⟩
-                                  simp [h_cases] at htail)
+                                  simp at htail)
                                 h_ef
                           | grounded g =>
                               have h_expr_not_error :
@@ -624,10 +624,10 @@ private theorem allSound : ∀ fuel, AllSound fuel := by
                                 (by
                                   intro h
                                   rcases h with ⟨scrut', branches, htail⟩
-                                  simp [h_cases] at htail)
+                                  simp at htail)
                                 h_ef
                           | expression branches =>
-                              simp [mettaCall, h_ef, h_cases] at hr
+                              simp [mettaCall, h_cases] at hr
                               exact MettaCall.switch_minimal_result _ type_ b
                                 scrut branches r n rfl h_ef hr
                       | cons extra rest =>
@@ -997,7 +997,7 @@ theorem evalAtom_filtered_sound (space : Space) (dispatch : GroundedDispatch)
               -- r' ∈ interpretExpression ... n. Show isErrorAtom r'.1 = true.
               -- The success filter is empty, so no element has !isErrorAtom = true.
               by_contra h_not_err_r'
-              push_neg at h_succ_empty
+              push Not at h_succ_empty
               -- h_succ_empty says the success filter is empty
               -- Convert: ¬(!(filter ...).isEmpty) = true means (filter ...).isEmpty = true
               have h_filt_empty : (List.filter (fun x => !isErrorAtom x.1)
@@ -1020,7 +1020,7 @@ theorem evalAtom_filtered_sound (space : Space) (dispatch : GroundedDispatch)
             rename_i h_not_expr
             simp [getMetaType, Atom.expressionType] at h_not_expr
   · -- Case 1: not a proper expression → interpretExpression returns []
-    push_neg at h_proper
+    push Not at h_proper
     rw [interpretExpression_nil_of_not_expr _ _ _ _ _ _ h_proper] at h_r'_mem
     simp at h_r'_mem
 
@@ -1246,7 +1246,7 @@ private inductive MettaCallSync (space : Space) (dispatch : GroundedDispatch) :
       (h_arity : tail.length ≠ 4)
       (h_not_error : isErrorAtom atom = false) :
       MettaCallSync space dispatch (n + 1) atom type_ b
-        (mkError atom .incorrectNumberOfArguments, b)
+        (mkUnifyBadArityError atom, b)
   | switch_minimal_result (n : Nat) (atom type_ : Atom) (b : Bindings)
       (scrut : Atom) (branches : List Atom)
       (finalResult : ResultPair)
@@ -1326,7 +1326,7 @@ private inductive MettaCallSync (space : Space) (dispatch : GroundedDispatch) :
       (h_query : (rhs, queryBindings) ∈ queryEquations space atom n)
       (h_merge : merged ∈ mergeBindings queryBindings b n)
       (h_no_loop : merged.hasLoop = false)
-      (h_recurse : EvalAtomSync space dispatch n (merged.apply rhs n) type_ merged finalResult) :
+      (h_recurse : EvalAtomSync space dispatch n (merged.applyFull rhs n) type_ merged finalResult) :
       MettaCallSync space dispatch (n + 1) atom type_ b finalResult
   | no_match (n : Nat) (atom type_ : Atom) (b : Bindings)
       (h_not_error : isErrorAtom atom = false)
@@ -1667,7 +1667,7 @@ private theorem interpretFunction_eval_to_sync
 
 /-! ### Step 3 exactness bundle targets
 
-These structures define the bounded theorem surface we now care about:
+These structures define the bounded theorem interface we now care about:
 - sync derivation implies evaluator membership at the same fuel,
 - evaluator membership implies sync derivation at the same fuel.
 
@@ -1747,7 +1747,7 @@ private theorem allEvalToSync_zero (space : Space) (dispatch : GroundedDispatch)
 
 The first half of exactness is proved by induction on the shared evaluator fuel.
 This mirrors the successful `AllSound` organization above and keeps the proof
-surface bounded to one private bundle instead of a growing forest of ad hoc
+interface bounded to one private bundle instead of a growing forest of ad hoc
 helper lemmas. -/
 
 private theorem isEmpty_false_of_mem {α : Type*} {xs : List α} {x : α}
@@ -1971,17 +1971,17 @@ private theorem mettaCall_sync_to_eval_step
                       have h_expr_not_error :
                           isErrorAtom (.expression [.symbol "switch-minimal", scrut, .symbol s]) = false := by
                         simpa [h_cases] using h_not_error
-                      simpa [mettaCall, h_cases, h_expr_not_error]
+                      simp [mettaCall, h_expr_not_error]
                   | var v =>
                       have h_expr_not_error :
                           isErrorAtom (.expression [.symbol "switch-minimal", scrut, .var v]) = false := by
                         simpa [h_cases] using h_not_error
-                      simpa [mettaCall, h_cases, h_expr_not_error]
+                      simp [mettaCall, h_expr_not_error]
                   | grounded g =>
                       have h_expr_not_error :
                           isErrorAtom (.expression [.symbol "switch-minimal", scrut, .grounded g]) = false := by
                         simpa [h_cases] using h_not_error
-                      simpa [mettaCall, h_cases, h_expr_not_error]
+                      simp [mettaCall, h_expr_not_error]
                   | expression branches =>
                       exfalso
                       exact h_noncanonical ⟨scrut, branches, by simp [h_cases]⟩
@@ -2903,7 +2903,7 @@ private theorem eqMatch_eval_to_sync
                else (queryEquations space atom n).flatMap fun x =>
                  (mergeBindings x.2 b n).flatMap fun mb =>
                    if mb.hasLoop = true then []
-                   else evalAtom space dispatch (mb.apply x.1 n) type_ mb n)) :
+                   else evalAtom space dispatch (mb.applyFull x.1 n) type_ mb n)) :
     MettaCallSync space dispatch (n + 1) atom type_ b r := by
   split at hr
   · rename_i h_eqs
@@ -3101,7 +3101,7 @@ private theorem mettaCall_eval_to_sync_step
                                 (by
                                   intro h
                                   rcases h with ⟨scrut', branches, htail⟩
-                                  simp [h_cases] at htail)
+                                  simp at htail)
                                 h_ef
                           | var v =>
                               have h_expr_not_error :
@@ -3120,7 +3120,7 @@ private theorem mettaCall_eval_to_sync_step
                                 (by
                                   intro h
                                   rcases h with ⟨scrut', branches, htail⟩
-                                  simp [h_cases] at htail)
+                                  simp at htail)
                                 h_ef
                           | grounded g =>
                               have h_expr_not_error :
@@ -3139,10 +3139,10 @@ private theorem mettaCall_eval_to_sync_step
                                 (by
                                   intro h
                                   rcases h with ⟨scrut', branches, htail⟩
-                                  simp [h_cases] at htail)
+                                  simp at htail)
                                 h_ef
                           | expression branches =>
-                              simp [mettaCall, h_ef, h_cases] at hr
+                              simp [mettaCall, h_cases] at hr
                               exact MettaCallSync.switch_minimal_result n
                                 (.expression [.symbol "switch-minimal", scrut, .expression branches])
                                 type_ b scrut branches r rfl h_ef hr
@@ -3640,7 +3640,7 @@ private def MergeBindingsEventually (left right merged : Bindings) : Prop :=
   ∃ fuel0, ∀ fuel, fuel ≥ fuel0 → merged ∈ mergeBindings left right fuel
 
 private def ApplyStableEventually (b : Bindings) (rhs applied : Atom) : Prop :=
-  ∃ fuel0, ∀ fuel, fuel ≥ fuel0 → b.apply rhs fuel = applied
+  ∃ fuel0, ∀ fuel, fuel ≥ fuel0 → b.applyFull rhs fuel = applied
 
 private def CheckApplicableMemberEventually
     (space : Space) (expr funcType expectedType : Atom) (b b' : Bindings) : Prop :=
@@ -3862,7 +3862,7 @@ private inductive MettaCallAligned (space : Space) (dispatch : GroundedDispatch)
       (h_arity : tail.length ≠ 4)
       (h_not_error : isErrorAtom atom = false) :
       MettaCallAligned space dispatch atom type_ b
-        (mkError atom .incorrectNumberOfArguments, b)
+        (mkUnifyBadArityError atom, b)
   | switch_minimal_result (atom type_ : Atom) (b : Bindings)
       (scrut : Atom) (branches : List Atom)
       (finalResult : ResultPair)
@@ -4021,7 +4021,7 @@ private theorem evalAtomAligned_to_sync_of_interpretExpression_complete
 /-! ### Prototype public completeness: `EvalAtomFiltered`
 
 This is the first public-facing completeness theorem on the honest HE-compatible
-surface. It does not claim full 6-way completeness yet; instead it isolates the
+interface. It does not claim full 6-way completeness yet; instead it isolates the
 top-level `evalAtom` leg and shows that once `InterpretExpression` has the same
 public reachability completeness, the filtered public `EvalAtom` judgment does
 too. -/
@@ -4091,7 +4091,7 @@ private theorem evalAtomFiltered_reaches_complete_of_interpretExpression_complet
 
 /-! ### Eventual aligned reachability for the simple trio
 
-These lemmas are the council-approved replacement for the earlier failed
+These lemmas are the agreed replacement for the earlier failed
 monotonicity detour. Instead of proving that evaluator results persist by a
 global monotonicity theorem, we prove a stronger completeness shape directly:
 once an aligned derivation becomes reachable, it remains reachable at every
@@ -4432,7 +4432,7 @@ private theorem mettaCallAligned_eventually_to_sync_of_evalAtom_eventually
           have hn_eval : n ≥ fuelEval := by
             exact le_trans (Nat.le_max_right fuelApply fuelEval) <|
               le_trans (Nat.le_max_right (max fuelQuery fuelMerge) (max fuelApply fuelEval)) hn_fuel0
-          have h_apply_eq : merged.apply rhs n = applied := h_apply_stable n hn_apply
+          have h_apply_eq : merged.applyFull rhs n = applied := h_apply_stable n hn_apply
           exact MettaCallSync.equation_match n atom type_ b rhs queryBindings merged finalResult
             h_not_error h_not_grounded
             (h_query_eventual n hn_query)
@@ -5173,7 +5173,7 @@ private theorem mettaCallAligned_eventually_to_sync
           have hn_eval : n ≥ fuelEval := by
             exact le_trans (Nat.le_max_right fuelApply fuelEval) <|
               le_trans (Nat.le_max_right (max fuelQuery fuelMerge) (max fuelApply fuelEval)) hn_fuel0
-          have h_apply_eq : merged.apply rhs n = applied := h_apply_stable n hn_apply
+          have h_apply_eq : merged.applyFull rhs n = applied := h_apply_stable n hn_apply
           exact MettaCallSync.equation_match n atom type_ b rhs queryBindings merged finalResult
             h_not_error h_not_grounded
             (h_query_eventual n hn_query)
@@ -5483,7 +5483,7 @@ private theorem mettaCallAligned_to_MettaCall
       have h_merge : merged ∈ mergeBindings queryBindings b fuel0 := by
         exact h_merge_eventual fuel0 <|
           le_trans (Nat.le_max_right fuelQuery fuelMerge) (Nat.le_max_left (max fuelQuery fuelMerge) fuelApply)
-      have h_apply_eq : merged.apply rhs fuel0 = applied := by
+      have h_apply_eq : merged.applyFull rhs fuel0 = applied := by
         exact h_apply_stable fuel0 (Nat.le_max_right (max fuelQuery fuelMerge) fuelApply)
       exact .equation_match atom type_ b rhs queryBindings merged finalResult fuel0
         h_not_error h_not_grounded h_query h_merge h_no_loop
@@ -5562,7 +5562,7 @@ The lasting public artifact is a single top-level certification predicate for
 the canonical coarse HE semantics.
 
 The private sync/aligned machinery in this file proves that refined boundary,
-but is not itself part of the exported theorem surface. -/
+but is not itself part of the exported theorem interface. -/
 
 /-- Stable executable reachability already implies the public declarative
     `EvalAtom` meaning by soundness. -/

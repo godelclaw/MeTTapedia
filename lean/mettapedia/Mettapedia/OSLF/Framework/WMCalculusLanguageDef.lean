@@ -40,7 +40,7 @@ namespace Mettapedia.OSLF.Framework.WMCalculusLanguageDef
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.Match
 open Mettapedia.OSLF.MeTTaIL.Engine
-open Mettapedia.OSLF.MeTTaIL.DeclReducesPremises
+open Mettapedia.OSLF.MeTTaIL.ContextualStep
 open Mettapedia.OSLF.Framework.TypeSynthesis
 open Mettapedia.OSLF.Framework.LangMorphism
 open Mettapedia.OSLF.Framework.PLNWMHypercubeBasis
@@ -1355,6 +1355,25 @@ theorem forgettingRulesGuarded_left_right_match (mode : WMForgettingMode) :
 
 /-! ## LanguageDef Step Lemmas -/
 
+/-- A premise-free authored WM rule generates a root step of the least
+contextual relation. -/
+private theorem contextualStep_of_premiseFree_rule
+    {relEnv : RelationEnv} {lang : LanguageDef} {source target : Pattern}
+    (rule : RewriteRule) (ruleMember : rule ∈ lang.rewrites)
+    (initialBindings : Bindings)
+    (matched : initialBindings ∈
+      Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.matchPatternForRule
+        lang rule source)
+    (finalBindings : Bindings)
+    (premises : finalBindings ∈
+      applyPremisesWithEnv relEnv lang rule.premises initialBindings)
+    (targetEq :
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.applyBindingsForRule
+        lang rule finalBindings = target)
+    (premisesNil : rule.premises = []) :
+    Step (engineBasePremises relEnv) lang source target :=
+  step_of_rule ruleMember matched (premisesNil ▸ .nil) premises targetEq
+
 /-- Abbreviation for WM calculus reduction at a given extended vertex. -/
 abbrev wmLangReduces (v : WMExtVertex) (p q : Pattern) : Prop :=
   langReduces (wmExtVertexLanguageDef v) p q
@@ -1370,10 +1389,10 @@ theorem wmLangReduces_evidenceAdd (v : WMExtVertex) (pw₁ pw₂ pq : Pattern) :
       (pCombine (pExtract pw₁ pq) (pExtract pw₂ pq)) := by
   unfold wmLangReduces langReduces langReducesUsing
   let bs : Bindings := [("q", pq), ("W2", pw₂), ("W1", pw₁)]
-  refine DeclReducesWithPremises.topRule
+  refine contextualStep_of_premiseFree_rule
     (relEnv := RelationEnv.empty) (lang := wmExtVertexLanguageDef v)
-    (r := ruleEvidenceAdd)
-    ?hr bs ?hmatch bs ?hprem ?happly
+    (rule := ruleEvidenceAdd)
+    ?hr bs ?hmatch bs ?hprem ?happly rfl
   · simp [wmExtVertexLanguageDef, coreRules]
   · simp [bs, ruleEvidenceAdd, pExtract, pRevise, matchPattern, matchArgs, mergeBindings]
   · simp [bs, ruleEvidenceAdd, applyPremisesWithEnv]
@@ -1386,10 +1405,10 @@ theorem wmLangReduces_revisionComm (v : WMExtVertex) (pw₁ pw₂ : Pattern) :
       (pRevise pw₂ pw₁) := by
   unfold wmLangReduces langReduces langReducesUsing
   let bs : Bindings := [("W2", pw₂), ("W1", pw₁)]
-  refine DeclReducesWithPremises.topRule
+  refine contextualStep_of_premiseFree_rule
     (relEnv := RelationEnv.empty) (lang := wmExtVertexLanguageDef v)
-    (r := ruleRevisionComm)
-    ?hr bs ?hmatch bs ?hprem ?happly
+    (rule := ruleRevisionComm)
+    ?hr bs ?hmatch bs ?hprem ?happly rfl
   · simp [wmExtVertexLanguageDef, coreRules]
   · simp [bs, ruleRevisionComm, pRevise, matchPattern, matchArgs, mergeBindings]
   · simp [bs, ruleRevisionComm, applyPremisesWithEnv]
@@ -1402,10 +1421,10 @@ theorem wmLangReduces_revisionAssoc (v : WMExtVertex) (pw₁ pw₂ pw₃ : Patte
       (pRevise pw₁ (pRevise pw₂ pw₃)) := by
   unfold wmLangReduces langReduces langReducesUsing
   let bs : Bindings := [("W3", pw₃), ("W2", pw₂), ("W1", pw₁)]
-  refine DeclReducesWithPremises.topRule
+  refine contextualStep_of_premiseFree_rule
     (relEnv := RelationEnv.empty) (lang := wmExtVertexLanguageDef v)
-    (r := ruleRevisionAssoc)
-    ?hr bs ?hmatch bs ?hprem ?happly
+    (rule := ruleRevisionAssoc)
+    ?hr bs ?hmatch bs ?hprem ?happly rfl
   · simp [wmExtVertexLanguageDef, coreRules]
   · simp [bs, ruleRevisionAssoc, pRevise, matchPattern, matchArgs, mergeBindings]
   · simp [bs, ruleRevisionAssoc, applyPremisesWithEnv]
@@ -1423,10 +1442,10 @@ theorem wmFullLangReduces_evidenceAdd (v : WMFullVertex) (pw₁ pw₂ pq : Patte
       (pCombine (pExtract pw₁ pq) (pExtract pw₂ pq)) := by
   unfold wmFullLangReduces langReduces langReducesUsing
   let bs : Bindings := [("q", pq), ("W2", pw₂), ("W1", pw₁)]
-  refine DeclReducesWithPremises.topRule
+  refine contextualStep_of_premiseFree_rule
     (relEnv := RelationEnv.empty) (lang := wmFullVertexLanguageDef v)
-    (r := ruleEvidenceAdd)
-    ?hr bs ?hmatch bs ?hprem ?happly
+    (rule := ruleEvidenceAdd)
+    ?hr bs ?hmatch bs ?hprem ?happly rfl
   · exact coreRules_subset_wmFullVertex v _ (by simp [coreRules])
   · simp [bs, ruleEvidenceAdd, pExtract, pRevise, matchPattern, matchArgs, mergeBindings]
   · simp [bs, ruleEvidenceAdd, applyPremisesWithEnv]
@@ -1439,10 +1458,10 @@ theorem wmFullLangReduces_revisionComm (v : WMFullVertex) (pw₁ pw₂ : Pattern
       (pRevise pw₂ pw₁) := by
   unfold wmFullLangReduces langReduces langReducesUsing
   let bs : Bindings := [("W2", pw₂), ("W1", pw₁)]
-  refine DeclReducesWithPremises.topRule
+  refine contextualStep_of_premiseFree_rule
     (relEnv := RelationEnv.empty) (lang := wmFullVertexLanguageDef v)
-    (r := ruleRevisionComm)
-    ?hr bs ?hmatch bs ?hprem ?happly
+    (rule := ruleRevisionComm)
+    ?hr bs ?hmatch bs ?hprem ?happly rfl
   · exact coreRules_subset_wmFullVertex v _ (by simp [coreRules])
   · simp [bs, ruleRevisionComm, pRevise, matchPattern, matchArgs, mergeBindings]
   · simp [bs, ruleRevisionComm, applyPremisesWithEnv]
@@ -1455,10 +1474,10 @@ theorem wmFullLangReduces_revisionAssoc (v : WMFullVertex) (pw₁ pw₂ pw₃ : 
       (pRevise pw₁ (pRevise pw₂ pw₃)) := by
   unfold wmFullLangReduces langReduces langReducesUsing
   let bs : Bindings := [("W3", pw₃), ("W2", pw₂), ("W1", pw₁)]
-  refine DeclReducesWithPremises.topRule
+  refine contextualStep_of_premiseFree_rule
     (relEnv := RelationEnv.empty) (lang := wmFullVertexLanguageDef v)
-    (r := ruleRevisionAssoc)
-    ?hr bs ?hmatch bs ?hprem ?happly
+    (rule := ruleRevisionAssoc)
+    ?hr bs ?hmatch bs ?hprem ?happly rfl
   · exact coreRules_subset_wmFullVertex v _ (by simp [coreRules])
   · simp [bs, ruleRevisionAssoc, pRevise, matchPattern, matchArgs, mergeBindings]
   · simp [bs, ruleRevisionAssoc, applyPremisesWithEnv]
@@ -1484,10 +1503,10 @@ theorem wmFullLangReduces_overlapExtract (v : WMFullVertex)
                        (pOverlapFactor pw₁ pw₂ pq)) := by
   unfold wmFullLangReduces langReduces langReducesUsing
   let bs : Bindings := [("q", pq), ("W2", pw₂), ("W1", pw₁)]
-  refine DeclReducesWithPremises.topRule
+  refine contextualStep_of_premiseFree_rule
     (relEnv := RelationEnv.empty) (lang := wmFullVertexLanguageDef v)
-    (r := ruleOverlapExtract)
-    ?hr bs ?hmatch bs ?hprem ?happly
+    (rule := ruleOverlapExtract)
+    ?hr bs ?hmatch bs ?hprem ?happly rfl
   · simp only [wmFullVertexLanguageDef, hov, overlapRules, List.mem_append,
                List.mem_cons, List.mem_nil_iff]
     tauto
@@ -1504,10 +1523,10 @@ theorem wmFullLangReduces_forgetOutside (v : WMFullVertex)
       (pExtract pw pq) := by
   unfold wmFullLangReduces langReduces langReducesUsing
   let bs : Bindings := [("q", pq), ("W", pw), ("S", pS)]
-  refine DeclReducesWithPremises.topRule
+  refine contextualStep_of_premiseFree_rule
     (relEnv := RelationEnv.empty) (lang := wmFullVertexLanguageDef v)
-    (r := ruleForgetOutside)
-    ?hr bs ?hmatch bs ?hprem ?happly
+    (rule := ruleForgetOutside)
+    ?hr bs ?hmatch bs ?hprem ?happly rfl
   · simp only [wmFullVertexLanguageDef, List.mem_append]
     rcases hfg with hfg | hfg <;> simp [hfg, forgettingRules]
   · simp [bs, ruleForgetOutside, pExtract, pForget, matchPattern, matchArgs, mergeBindings]
@@ -1523,10 +1542,10 @@ theorem wmFullLangReduces_exactInverse (v : WMFullVertex)
       pw := by
   unfold wmFullLangReduces langReduces langReducesUsing
   let bs : Bindings := [("W", pw), ("D", pD), ("S", pS)]
-  refine DeclReducesWithPremises.topRule
+  refine contextualStep_of_premiseFree_rule
     (relEnv := RelationEnv.empty) (lang := wmFullVertexLanguageDef v)
-    (r := ruleExactInverse)
-    ?hr bs ?hmatch bs ?hprem ?happly
+    (rule := ruleExactInverse)
+    ?hr bs ?hmatch bs ?hprem ?happly rfl
   · simp only [wmFullVertexLanguageDef, hfg, supportTrackedRules, List.mem_append,
                List.mem_cons, List.mem_nil_iff]
     tauto
@@ -1542,10 +1561,10 @@ theorem wmFullLangReduces_compatibleSymm (v : WMFullVertex)
       (pSourceCompatible pw₂ pw₁) := by
   unfold wmFullLangReduces langReduces langReducesUsing
   let bs : Bindings := [("W2", pw₂), ("W1", pw₁)]
-  refine DeclReducesWithPremises.topRule
+  refine contextualStep_of_premiseFree_rule
     (relEnv := RelationEnv.empty) (lang := wmFullVertexLanguageDef v)
-    (r := ruleCompatibleSymm)
-    ?hr bs ?hmatch bs ?hprem ?happly
+    (rule := ruleCompatibleSymm)
+    ?hr bs ?hmatch bs ?hprem ?happly rfl
   · simp only [wmFullVertexLanguageDef, hprov, provenanceRules, List.mem_append,
                List.mem_cons, List.mem_nil_iff]
     tauto
@@ -1562,10 +1581,10 @@ theorem wmFullLangReduces_closureFixpoint (v : WMFullVertex)
       (pLeastClosure pR pw pseed) := by
   unfold wmFullLangReduces langReduces langReducesUsing
   let bs : Bindings := [("W", pw), ("seed", pseed), ("R", pR)]
-  refine DeclReducesWithPremises.topRule
+  refine contextualStep_of_premiseFree_rule
     (relEnv := RelationEnv.empty) (lang := wmFullVertexLanguageDef v)
-    (r := ruleClosureFixpoint)
-    ?hr bs ?hmatch bs ?hprem ?happly
+    (rule := ruleClosureFixpoint)
+    ?hr bs ?hmatch bs ?hprem ?happly rfl
   · simp only [wmFullVertexLanguageDef, List.mem_append]
     rcases hfp with hfp | hfp | hfp <;> simp [hfp, fixpointRules]
   · simp [bs, ruleClosureFixpoint, pImmediateStep, pLeastClosure,
@@ -1581,10 +1600,10 @@ theorem wmFullLangReduces_swapAnomalySymm (v : WMFullVertex)
       (pSwapAnomaly pw₂ pw₁ pq) := by
   unfold wmFullLangReduces langReduces langReducesUsing
   let bs : Bindings := [("W2", pw₂), ("q", pq), ("W1", pw₁)]
-  refine DeclReducesWithPremises.topRule
+  refine contextualStep_of_premiseFree_rule
     (relEnv := RelationEnv.empty) (lang := wmFullVertexLanguageDef v)
-    (r := ruleSwapAnomalySymm)
-    ?hr bs ?hmatch bs ?hprem ?happly
+    (rule := ruleSwapAnomalySymm)
+    ?hr bs ?hmatch bs ?hprem ?happly rfl
   · simp only [wmFullVertexLanguageDef, hcost, costRules, List.mem_append,
                List.mem_cons, List.mem_nil_iff]
     tauto
@@ -1600,10 +1619,10 @@ theorem wmFullLangReduces_antiHallucination (v : WMFullVertex)
       pEvidenceZero := by
   unfold wmFullLangReduces langReduces langReducesUsing
   let bs : Bindings := [("q", pq), ("D", pD)]
-  refine DeclReducesWithPremises.topRule
+  refine contextualStep_of_premiseFree_rule
     (relEnv := RelationEnv.empty) (lang := wmFullVertexLanguageDef v)
-    (r := ruleAntiHallucination)
-    ?hr bs ?hmatch bs ?hprem ?happly
+    (rule := ruleAntiHallucination)
+    ?hr bs ?hmatch bs ?hprem ?happly rfl
   · simp only [wmFullVertexLanguageDef, hcons, conservationRules, List.mem_append,
                List.mem_cons, List.mem_nil_iff]
     tauto
@@ -1620,10 +1639,10 @@ theorem wmFullLangReduces_experimentEvidenceAdd (v : WMFullVertex)
       (pCombine (pExperimentEvidence pw₁ pq) (pExperimentEvidence pw₂ pq)) := by
   unfold wmFullLangReduces langReduces langReducesUsing
   let bs : Bindings := [("q", pq), ("W2", pw₂), ("W1", pw₁)]
-  refine DeclReducesWithPremises.topRule
+  refine contextualStep_of_premiseFree_rule
     (relEnv := RelationEnv.empty) (lang := wmFullVertexLanguageDef v)
-    (r := ruleExperimentEvidenceAdd)
-    ?hr bs ?hmatch bs ?hprem ?happly
+    (rule := ruleExperimentEvidenceAdd)
+    ?hr bs ?hmatch bs ?hprem ?happly rfl
   · simp only [wmFullVertexLanguageDef, List.mem_append]
     rcases hexp with hexp | hexp <;> simp [hexp, experimentRules]
   · simp [bs, ruleExperimentEvidenceAdd, pExperimentEvidence, pRevise,
@@ -1639,10 +1658,10 @@ theorem wmFullLangReduces_kripkeEvidenceAdd (v : WMFullVertex)
       (pCombine (pKripkeEvidence pw₁ pphi) (pKripkeEvidence pw₂ pphi)) := by
   unfold wmFullLangReduces langReduces langReducesUsing
   let bs : Bindings := [("phi", pphi), ("W2", pw₂), ("W1", pw₁)]
-  refine DeclReducesWithPremises.topRule
+  refine contextualStep_of_premiseFree_rule
     (relEnv := RelationEnv.empty) (lang := wmFullVertexLanguageDef v)
-    (r := ruleKripkeEvidenceAdd)
-    ?hr bs ?hmatch bs ?hprem ?happly
+    (rule := ruleKripkeEvidenceAdd)
+    ?hr bs ?hmatch bs ?hprem ?happly rfl
   · simp only [wmFullVertexLanguageDef, hkr, kripkeRules, List.mem_append,
                List.mem_cons, List.mem_nil_iff]
     tauto
@@ -1659,10 +1678,10 @@ theorem wmFullLangReduces_genericEvidenceAdd (v : WMFullVertex)
       (pCombine (pGenericEvidence pw₁ pq) (pGenericEvidence pw₂ pq)) := by
   unfold wmFullLangReduces langReduces langReducesUsing
   let bs : Bindings := [("q", pq), ("W2", pw₂), ("W1", pw₁)]
-  refine DeclReducesWithPremises.topRule
+  refine contextualStep_of_premiseFree_rule
     (relEnv := RelationEnv.empty) (lang := wmFullVertexLanguageDef v)
-    (r := ruleGenericEvidenceAdd)
-    ?hr bs ?hmatch bs ?hprem ?happly
+    (rule := ruleGenericEvidenceAdd)
+    ?hr bs ?hmatch bs ?hprem ?happly rfl
   · simp only [wmFullVertexLanguageDef, hca, carrierRules, List.mem_append,
                List.mem_cons, List.mem_nil_iff]
     tauto

@@ -1,5 +1,4 @@
 import Mettapedia.OSLF.MeTTaIL.Match
-import Mettapedia.OSLF.MeTTaIL.DeclReduces
 import Mathlib.Data.List.Enum
 
 /-!
@@ -8,7 +7,7 @@ import Mathlib.Data.List.Enum
 Defines `MatchRel`, `MatchArgsRel`, `MatchBagRel` as mutual inductive relations
 that specify pattern matching independently of the executable algorithm
 (`matchPattern`, `matchArgs`, `matchBag`). Proves soundness and completeness
-bridges between the two, breaking the circularity in `DeclReduces`.
+bridges between the two without defining any language-level reduction policy.
 
 ## Architecture
 
@@ -18,9 +17,9 @@ bridges between the two, breaking the circularity in `DeclReduces`.
   matchBag      ──sound──►  MatchBagRel
 ```
 
-`DeclReducesRel` uses `MatchRel` instead of `matchPattern`, making it
-truly independent of the executable algorithm. The equivalence
-`DeclReducesRel ↔ DeclReduces` follows from soundness + completeness.
+Language semantics may consume `MatchRel` or the executable matcher through
+the proved equivalence below; contextual closure is defined separately from
+matching.
 
 ## LLM Notes
 
@@ -38,8 +37,6 @@ namespace Mettapedia.OSLF.MeTTaIL.MatchSpec
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.Substitution
 open Mettapedia.OSLF.MeTTaIL.Match
-open Mettapedia.OSLF.MeTTaIL.Engine
-open Mettapedia.OSLF.MeTTaIL.DeclReductions
 
 /-! ## Relational Matching Specification -/
 
@@ -155,7 +152,7 @@ private theorem sizeOf_tail_lt_cons (p : Pattern) (ps : List Pattern) :
     sizeOf ps < sizeOf (p :: ps) := by simp_wf
 
 private theorem sizeOf_pattern_pos (pat : Pattern) : 0 < sizeOf pat := by
-  cases pat <;> simp [sizeOf, Pattern._sizeOf_1]
+  cases pat <;> simp_wf
 
 private theorem sizeOf_list_pattern_pos (p : Pattern) (ps : List Pattern) :
     0 < sizeOf (p :: ps) := by
@@ -183,7 +180,9 @@ private theorem sound_all (n : Nat) :
         simp only [matchArgs, List.mem_singleton] at hmem; subst hmem; exact .nil
       | [], _ :: _ => simp [matchArgs] at hmem
       | _ :: _, [] => simp [matchArgs] at hmem
-      | p :: _, _ :: _ => exact absurd hle (by simp [sizeOf, List._sizeOf_1]; try omega)
+      | p :: ps, _ :: _ => exact absurd hle (by
+          have positive := sizeOf_list_pattern_pos p ps
+          omega)
     · intro ppats rest ct telems bs hle hmem
       match ppats with
       | [] =>
@@ -199,7 +198,9 @@ private theorem sound_all (n : Nat) :
         | some rv =>
           simp only [List.mem_singleton] at hmem; subst hmem
           exact .nilRest
-      | p :: _ => exact absurd hle (by simp [sizeOf, List._sizeOf_1]; try omega)
+      | p :: ps => exact absurd hle (by
+          have positive := sizeOf_list_pattern_pos p ps
+          omega)
   | succ m ih =>
     obtain ⟨ih_pat, ih_args, ih_bag⟩ := ih
     refine ⟨?_, ?_, ?_⟩
@@ -365,14 +366,22 @@ private theorem complete_all (n : Nat) :
     · intro pat _ _ hle _
       exact absurd hle (by have := sizeOf_pattern_pos pat; omega)
     · intro pargs targs bs hle h
-      cases h with
-      | nil => simp [matchArgs]
-      | cons => exact absurd hle (by simp [sizeOf, List._sizeOf_1]; try omega)
+      match pargs with
+      | [] =>
+        cases h with
+        | nil => simp [matchArgs]
+      | p :: ps => exact absurd hle (by
+          have positive := sizeOf_list_pattern_pos p ps
+          omega)
     · intro ppats rest ct telems bs hle h
-      cases h with
-      | nilNoRest => simp [matchBag, List.isEmpty]
-      | nilRest => simp [matchBag]
-      | cons => exact absurd hle (by simp [sizeOf, List._sizeOf_1]; try omega)
+      match ppats with
+      | [] =>
+        cases h with
+        | nilNoRest => simp [matchBag, List.isEmpty]
+        | nilRest => simp [matchBag]
+      | p :: ps => exact absurd hle (by
+          have positive := sizeOf_list_pattern_pos p ps
+          omega)
   | succ m ih =>
     obtain ⟨ih_pat, ih_args, ih_bag⟩ := ih
     refine ⟨?_, ?_, ?_⟩
@@ -464,68 +473,6 @@ theorem matchBag_iff_matchBagRel {ppats : List Pattern} {rest : Option String}
     {ct : CollType} {telems : List Pattern} {bs : Bindings} :
     bs ∈ matchBag ppats rest ct telems ↔ MatchBagRel ppats rest ct telems bs :=
   ⟨matchBag_sound, matchBagRel_complete⟩
-
-/-! ## DeclReducesRel: Reduction using MatchRel -/
-
-/-- Declarative one-step reduction using `MatchRel` instead of `matchPattern`.
-    This is independent of the executable matching algorithm. -/
-inductive DeclReducesRel (lang : LanguageDef) : Pattern → Pattern → Prop where
-  | topRule :
-      (r : RewriteRule) →
-      r ∈ lang.rewrites →
-      r.premises = [] →
-      (bs : Bindings) →
-      MatchRel r.left p bs →
-      applyBindings bs r.right = q →
-      DeclReducesRel lang p q
-  | congElem :
-      {elems : List Pattern} →
-      {ct : CollType} →
-      {rest : Option String} →
-      (hct : LanguageDef.allowsCongruenceIn lang ct) →
-      (i : Nat) →
-      (hi : i < elems.length) →
-      (r : RewriteRule) →
-      r ∈ lang.rewrites →
-      r.premises = [] →
-      (bs : Bindings) →
-      MatchRel r.left elems[i] bs →
-      {q' : Pattern} →
-      applyBindings bs r.right = q' →
-      DeclReducesRel lang (.collection ct elems rest)
-                          (.collection ct (elems.set i q') rest)
-
-/-! ## Equivalence: DeclReducesRel ↔ DeclReduces -/
-
-theorem declReducesRel_of_declReduces {lang : LanguageDef} {p q : Pattern}
-    (h : DeclReduces lang p q) : DeclReducesRel lang p q := by
-  cases h with
-  | topRule r hr hprem bs hbs hq =>
-    exact .topRule r hr hprem bs (matchPattern_sound hbs) hq
-  | @congElem elems ct rest hct i hi r hr hprem bs hbs q' hq =>
-    exact .congElem hct i hi r hr hprem bs (matchPattern_sound hbs) hq
-
-theorem declReduces_of_declReducesRel {lang : LanguageDef} {p q : Pattern}
-    (h : DeclReducesRel lang p q) : DeclReduces lang p q := by
-  cases h with
-  | topRule r hr hprem bs hbs hq =>
-    exact .topRule r hr hprem bs (matchRel_complete hbs) hq
-  | @congElem elems ct rest hct i hi r hr hprem bs hbs q' hq =>
-    exact .congElem hct i hi r hr hprem bs (matchRel_complete hbs) hq
-
-theorem declReducesRel_iff_declReduces {lang : LanguageDef} {p q : Pattern} :
-    DeclReducesRel lang p q ↔ DeclReduces lang p q :=
-  ⟨declReduces_of_declReducesRel, declReducesRel_of_declReduces⟩
-
-/-! ## Independence Triangle -/
-
-theorem engine_sound_rel {lang : LanguageDef} {p q : Pattern}
-    (h : q ∈ rewriteWithContext lang p) : DeclReducesRel lang p q :=
-  declReducesRel_of_declReduces (engine_sound h)
-
-theorem engine_complete_rel {lang : LanguageDef} {p q : Pattern}
-    (h : DeclReducesRel lang p q) : q ∈ rewriteWithContext lang p :=
-  engine_complete (declReduces_of_declReducesRel h)
 
 /-! ## mergeBindings Subsumption
 
@@ -689,9 +636,13 @@ private theorem correct_all_strong (n : Nat) :
     refine ⟨?_, ?_⟩
     · intro pat _ _ hle; exact absurd hle (by have := sizeOf_pattern_pos pat; omega)
     · intro pargs _ _ hle _ h
-      cases h with
-      | nil => intro _ _; rfl
-      | cons => exact absurd hle (by simp [sizeOf, List._sizeOf_1]; try omega)
+      match pargs with
+      | [] =>
+        cases h with
+        | nil => intro _ _; rfl
+      | p :: ps => exact absurd hle (by
+          have positive := sizeOf_list_pattern_pos p ps
+          omega)
   | succ m ih =>
     obtain ⟨ih_pat, ih_args⟩ := ih
     refine ⟨?_, ?_⟩
@@ -803,10 +754,9 @@ theorem matchPattern_correct_false :
 ### Falsity (outside isMatchCorrect)
 - `matchPattern_correct_false`: explicit bag-collection counterexample
 
-### Independent Reduction
-- `DeclReducesRel`, `declReducesRel_iff_declReduces`
-- `engine_sound_rel`, `engine_complete_rel`
+This module intentionally contains no reduction relation: it specifies only
+matching, so language-level contextual authority cannot leak in through the
+matcher abstraction.
 -/
 
 end Mettapedia.OSLF.MeTTaIL.MatchSpec
-

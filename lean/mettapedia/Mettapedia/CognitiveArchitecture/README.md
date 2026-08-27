@@ -42,7 +42,7 @@ MetaMo is a six-file motivational Q-module framework.
   - MetaMo/Dynamics.lean proves stability via Banach fixed-point arguments
 
 - `MetaMo/Main.lean`
-  - MetaMo/Main.lean aggregates the MetaMo module surface
+  - MetaMo/Main.lean aggregates the MetaMo module interface
 
 ### OpenPsi
 
@@ -86,6 +86,33 @@ Bridges is five files of cross-architecture comparison and limits.
 - `Bridges/MissingValueSystems.lean`
   - Bridges/MissingValueSystems.lean proves value-system gaps outside consequentialism
 
+### Agent world state and plural context
+
+`Agent/` contains the general, architecture-neutral state and context layer used
+by cognitive agents:
+
+- `WorldState.lean`, `GoalCommitment.lean`, and `ContextEpoch.lean` distinguish
+  recoverable world evidence, active commitments, and epoch-scoped views. The
+  core world-state and compaction theory has no PLN import.
+- `EffectReceiptProjection.lean` and `EffectBrokerNoninterference.lean` retain
+  exact effect receipts while proving when bounded projections and independent
+  brokers are safe.
+- `MultiAgentFusionNoGo.lean` and `WorldModelRegimeSeparation.lean` show why
+  locally coherent agent views need not form one global classical model.
+- `WorldOfViewsBridge.lean` gives proof-relevant relational coordination and an
+  explicit locally coherent but non-gluable chart family.
+- `OpenEndedContext.lean` proves that a fixed context sufficient for an
+  accumulated state-separating query schedule must be injective. For each finite
+  active query family it constructs the canonical weakest sufficient view,
+  refreshed from recoverable evidence.
+
+These modules preserve the semantic content of the GödelClaw agent-world-state
+development while placing the reusable mathematics under the general
+`CognitiveArchitecture.Agent` hierarchy. The minimal world-model hierarchy is
+in `Mettapedia.Logic.WorldModel`; additive PLN evidence is attached explicitly
+by `Agent/Bridges/PLN/WorldStateEvidence.lean`. PLN-specific calculi and truth
+readouts remain under `Mettapedia.PLN.WorldModel`.
+
 ### Values
 
 Values is nine files extending beyond consequentialism.
@@ -113,7 +140,7 @@ Values is nine files extending beyond consequentialism.
 
 ### GödelClaw (work in progress)
 
-`GodelClaw/` (32 files, including `GodelClaw/Ethics/`) is a work-in-progress
+`GodelClaw/` (including `GodelClaw/Ethics/`) is a work-in-progress
 ethical-agent kernel — a policy kernel, tool broker, gate chain, and "mindlock"
 with a MetaMo bridge, over a meaning/agency ethics layer. It introduces one
 named primitive as a postulate (currently a `Prop` `axiom` — more a placeholder

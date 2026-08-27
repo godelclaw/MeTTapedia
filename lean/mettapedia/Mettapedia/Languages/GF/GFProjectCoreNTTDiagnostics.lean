@@ -11,12 +11,12 @@ Theorem-bearing diagnostics for the larger grounded `project_core` slice.
 
 Unlike the regression-style JSON checks in `GFProjectCoreConformance`, this file
 works over the generated kernel-reducible `ProjectCoreSig.funsList`, so the
-constructor/NTT surface is available for ordinary Lean proofs.
+constructor/NTT interface is available for ordinary Lean proofs.
 
 This remains intentionally syntax-only:
 
 - real GF constructors and sorts are present;
-- the larger English/Czech bilingual abstract surface is available as a
+- the larger English/Czech bilingual abstract syntax is available as a
   theorem-level `LanguageDef`;
 - the reduction relation is still empty, so modal structure is honest and
   vacuous until a separate grounded semantic layer exists above the grammar.
@@ -146,13 +146,9 @@ theorem questionExist_satisfies_interrogativeSentenceType :
 
 theorem projectCoreSyntax_no_reduces {p q : Pattern} :
     ¬ langReduces projectCoreSyntaxLangKR p q := by
-  intro h
+  rintro ⟨_, h⟩
   cases h with
-  | topRule r hr bs0 hbs0 bs hprem hq =>
-      have hnil : r ∈ ([] : List RewriteRule) := by
-        simp [projectCoreSyntaxLangKR, gfSyntaxLanguageDefFromList, gfFunsListToLanguageDef] at hr
-      cases hnil
-  | congElem hct i hi r hr bs0 hbs0 bs hprem hq =>
+  | @rule _ _ _ r _ _ hr _ _ _ =>
       have hnil : r ∈ ([] : List RewriteRule) := by
         simp [projectCoreSyntaxLangKR, gfSyntaxLanguageDefFromList, gfFunsListToLanguageDef] at hr
       cases hnil

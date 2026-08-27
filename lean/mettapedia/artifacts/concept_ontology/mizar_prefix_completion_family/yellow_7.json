@@ -133,5 +133,5 @@
       "preview": "theorem Th50: for L being complete antisymmetric non empty RelStr for F be Function-yielding Function holds \\//(F, L) = "
     }
   ],
-  "source_path": "/home/zar/claude/mizar/share/mml/yellow_7.miz"
+  "source_path": "~/claude/mizar/share/mml/yellow_7.miz"
 }

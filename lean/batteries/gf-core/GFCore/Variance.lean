@@ -12,7 +12,7 @@ Example:
 Default: covariant (safe for generic science facts in EntailmentBank).
 Override for specific predicates as the domain demands.
 
-Council: de Paiva (variance = functorial action on IsA ordering),
+Design rationale: 
          Goertzel (PLN: extensional vs intensional inheritance)
 -/
 

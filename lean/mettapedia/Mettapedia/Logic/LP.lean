@@ -20,8 +20,6 @@ import Mettapedia.Logic.LP.FunctionFreeEvaluation
 import Mettapedia.Logic.LP.CertifyingDatalogBridge
 import Mettapedia.Logic.LP.Provenance
 import Mettapedia.Logic.LP.PathMapBridge
-import Mettapedia.Logic.LP.OSLFBridge
-import Mettapedia.Logic.LP.WorldModelBridge
 import Mettapedia.Logic.LP.RangeRestriction
 
 /-!
@@ -52,7 +50,5 @@ Barrel import for the LP module stack:
 | `CertifyingDatalogBridge` | CDLGroundAtom ≃ GroundAtom (List↔Fin bridge) |
 | `Provenance` | K-relations, T_P_K_LP, semiring homomorphism theorem |
 | `PathMapBridge` | Conjunctive queries, evidence counting, monotonicity |
-| `OSLFBridge` | Ground atom → Pattern encoding, FinInterpretation → RelationEnv |
-| `WorldModelBridge` | LP least model → BinaryWorldModel evidence, monotonicity |
 | `RangeRestriction` | `isUnit`, `isRangeRestricted`, unit-KB LHM characterization |
 -/

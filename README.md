@@ -34,6 +34,17 @@ A cross-system thread: the four-color theorem is attacked in Lean
 (`lean/fourcolor`), Mizar (`mizar/4cp`), Isabelle (`isabelle/4CP`), and
 Megalodon (`megalodon/4CT`); Ramsey R(3,6) likewise spans Lean and Megalodon.
 
+### PLN / WM-PLN curriculum
+
+The flagship Lean package has a focused PLN/WM-PLN curriculum and bridge map:
+
+- `lean/mettapedia/Mettapedia/Examples/PLN/README.md` lists the worked
+  curriculum order and entry modules.
+- `lean/mettapedia/Mettapedia/PLN/Bridges/Logic/README.md` summarizes the
+  BinaryEvidence and LC bridge status.
+- `lean/mettapedia/Mettapedia/PLN/Bridges/HOL/README.md` summarizes the HOL
+  derivation-tree readouts and ledger-to-multipath adapter.
+
 ## Building the flagship Lean library
 
 ```bash
@@ -56,7 +67,7 @@ HOL4/CakeML) are not vendored here; install them separately:
 
 ## Provenance, attribution, licensing
 
--  This MIT license applies to Mettapedia's own code. Third-party components under lean/externals/ retain their own licenses (see each subdirectory).
+-  This MIT license applies to MeTTapedia's own code. Third-party components under lean/externals/ retain their own licenses (see each subdirectory).
 - `megalodon/theory/mizar/mml/` contains original Megalodon developments whose
   statements parallel MML articles — see the README there for MML attribution.
 - `megalodon/theory/logic/GoedelGod.mg` is Chad E. Brown's Megalodon port of

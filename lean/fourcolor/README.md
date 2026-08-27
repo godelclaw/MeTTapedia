@@ -7,7 +7,7 @@
 > The claimed equality `X^f_{αβ}(C) ⊕ X^f_{αβ}(C^R) = γ · 1_R` (boundary) is **false**.
 > The correct result is `X^f_{αβ}(C) ⊕ X^f_{αβ}(C^R) = γ · 1_{A∪A'}` (interior).
 >
-> **Verification**: Kernel-verified refutation in `/home/zar/claude/megalodon/4CT/`
+> **Verification**: Kernel-verified refutation in `~/claude/megalodon/4CT/`
 >
 > **Impact**: The purification mechanism cannot work. Lemmas 4.4, 4.8-4.10 are blocked.
 >
@@ -42,7 +42,7 @@ A Lean 4 formalization of the Four Color Theorem using the **Kauffman/Spencer-Br
 
 ```bash
 # Clone and build
-cd /home/zar/claude/Mettapedia/lean/fourcolor
+cd ~/claude/Mettapedia/lean/fourcolor
 lake build
 
 # Run specific module

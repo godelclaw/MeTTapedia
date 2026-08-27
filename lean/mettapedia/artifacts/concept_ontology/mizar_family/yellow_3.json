@@ -635,5 +635,5 @@
       "preview": "scheme Kappa2DS { X,Y,Z() -> non empty RelStr, F(set,set) -> set }: ex f being Function of [:X(),Y():], Z() st for x bei"
     }
   ],
-  "source_path": "/home/zar/claude/mizar/share/mml/yellow_3.miz"
+  "source_path": "~/claude/mizar/share/mml/yellow_3.miz"
 }

@@ -50,11 +50,11 @@ noncomputable def projectedZABDecisionListERMFamily
 
 structure ProjectedZABERMRecoveryData
     [Fintype (BitVec n)]
-    (μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k))
+    (μ : PMF (ExactVisiblePostSwitchData (BitVec n) k))
     (coords : Fin r → Fin n)
     (G : ExactVisibleSwitchedFamily (BitVec n) k Index)
     (q : ℝ≥0∞) where
-  samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool
+  samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool
   exact_family :
     G = exactZABDecisionListERMFamily
           (Z := BitVec n) (r := r) (k := k)
@@ -74,7 +74,7 @@ section
 variable [Fintype (BitVec n)]
 
 def ProjectedZABERMRecoveryData.canonicalData
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {coords : Fin r → Fin n}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
@@ -86,7 +86,7 @@ def ProjectedZABERMRecoveryData.canonicalData
   refine ⟨h.samples, h.exact_family, h.agreement_le⟩
 
 theorem ProjectedZABERMRecoveryData.compressionTarget
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {coords : Fin r → Fin n}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
@@ -245,7 +245,7 @@ theorem ProjectedZABERMRecoveryData.not_surjective_predict_of_lt_surfaceCard
   exact (h.canonicalData).not_surjective_predict_of_lt_surfaceCard hs
 
 theorem ProjectedZABERMRecoveryData.recoveryLowerBound
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {coords : Fin r → Fin n}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}

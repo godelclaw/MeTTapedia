@@ -58,7 +58,7 @@ theorem FTrie.clearValueAtRoot_lookup (t : FTrie V) :
 /-! ## §3: FTrie satisfies ZipperWritingSpec at root -/
 
 /-- **FTrie satisfies ZipperWritingSpec**: a concrete type satisfies the
-    abstract specification record. This closes the council's demand for
+    abstract specification record. This closes review's demand for
     a non-vacuous spec satisfaction proof. -/
 theorem ftrieWritingSpec_root :
     ZipperWritingSpec (FTrie V) V

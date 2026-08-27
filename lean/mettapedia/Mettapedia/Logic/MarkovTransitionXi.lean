@@ -1,12 +1,12 @@
 import Mettapedia.Logic.WMMarkovCanonical
-import Mettapedia.Logic.PLNWMOSLFBridge
-import Mettapedia.Logic.OSLFEvidenceSemantics
+import Mettapedia.PLN.Bridges.Languages.PLNWMOSLFBridge
+import Mettapedia.OSLF.Framework.EvidenceSemantics
 
 /-!
-# Direct Xi Surface for Markov Transition Atoms
+# Direct Xi Interface for Markov Transition Atoms
 
 This module packages the honest single-step Markov WM/PLN bridge into a small
-OSLF/Xi-facing surface.
+OSLF/Xi-facing interface.
 
 Design choice:
 
@@ -19,18 +19,18 @@ Positive example:
 * `link(i,j)` reads exactly the `i`-row evidence and projects to `j` vs not-`j`.
 
 Negative example:
-* this surface does not claim that `link(i,j)` and `link(j,m)` compose via the
+* this interface does not claim that `link(i,j)` and `link(j,m)` compose via the
   generic PLN additive screening rules.
 -/
 
 namespace Mettapedia.Logic.MarkovTransitionXi
 
 open Mettapedia.Logic
-open Mettapedia.Logic.EvidenceQuantale
+open Mettapedia.PLN.Evidence.EvidenceQuantale
 open Mettapedia.Logic.WMMarkovCanonical
-open Mettapedia.Logic.PLNWorldModel
-open Mettapedia.Logic.PLNWMOSLFBridge
-open Mettapedia.Logic.OSLFEvidenceSemantics
+open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Bridges.Languages.PLNWMOSLFBridge
+open Mettapedia.OSLF.Framework.EvidenceSemantics
 open Mettapedia.OSLF.Formula
 open Mettapedia.OSLF.MeTTaIL.Syntax
 
@@ -38,7 +38,7 @@ open scoped ENNReal
 
 variable {k : ℕ} [NeZero k]
 
-/-- Fixed atom label for the direct Markov transition Xi surface. -/
+/-- Fixed atom label for the direct Markov transition Xi interface. -/
 def markovTransitionAtomName : String := "markov-transition"
 
 /-- Pattern payload for a single-step Markov transition query. -/
@@ -63,7 +63,7 @@ have special semantics. -/
 def markovTransitionFallbackQuery : MarkovTransitionQuery k :=
   .prop 0
 
-/-- Concrete OSLF atom encoder for the direct Markov Xi surface. -/
+/-- Concrete OSLF atom encoder for the direct Markov Xi interface. -/
 def markovTransitionQueryOfAtom :
     String → Pattern → MarkovTransitionQuery k
   | a, p =>
@@ -89,7 +89,7 @@ omit [NeZero k] in
       .link src dst := by
   simp [markovTransitionQueryOfAtom]
 
-/-- Public XiPLN query surface for direct Markov transition atoms. The rule
+/-- Public XiPLN query interface for direct Markov transition atoms. The rule
 sets are intentionally empty here: the value is the concrete encoder and the
 direct WM/OSLF semantics, not generic additive screening rules. -/
 def markovTransitionXiPLN :
@@ -187,10 +187,10 @@ theorem markovTransitionAtom_wmEvidence_eq_rowProjection
 with the row evidence selected by the summary counts. -/
 theorem markovTransitionAtom_semE_transitionMultiset_eq_of_summary
     {xs : List (Fin k)}
-    {c : Mettapedia.Logic.UniversalPrediction.TransCounts k}
+    {c : Mettapedia.UniversalAI.UniversalPrediction.TransCounts k}
     {last : Fin k}
     (hsum :
-      Mettapedia.Logic.UniversalPrediction.TransCounts.summary (k := k) xs =
+      Mettapedia.UniversalAI.UniversalPrediction.TransCounts.summary (k := k) xs =
         some (c, last))
     (R : Pattern → Pattern → Prop)
     (src dst : Fin k) :
@@ -208,10 +208,10 @@ theorem markovTransitionAtom_semE_transitionMultiset_eq_of_summary
 corresponding row-projected binary evidence. -/
 theorem markovTransitionAtom_threshold_of_summary
     {xs : List (Fin k)}
-    {c : Mettapedia.Logic.UniversalPrediction.TransCounts k}
+    {c : Mettapedia.UniversalAI.UniversalPrediction.TransCounts k}
     {last : Fin k}
     (hsum :
-      Mettapedia.Logic.UniversalPrediction.TransCounts.summary (k := k) xs =
+      Mettapedia.UniversalAI.UniversalPrediction.TransCounts.summary (k := k) xs =
         some (c, last))
     (R : Pattern → Pattern → Prop)
     (tau : ℝ≥0∞)

@@ -14,6 +14,10 @@ import Mettapedia.OSLF.PathMap.Trie.TrieRefinement
 import Mettapedia.OSLF.PathMap.Trie.TriePathMapInstance
 import Mettapedia.OSLF.PathMap.Trie.TrieZipper
 import Mettapedia.OSLF.PathMap.Trie.ZamContracts
+import Mettapedia.OSLF.PathMap.PathAlgebra.FreeMonoidBoundary
+import Mettapedia.OSLF.PathMap.PathAlgebra.FinLanguage
+import Mettapedia.OSLF.PathMap.PathAlgebra.ZippyLaws
+import Mettapedia.OSLF.PathMap.PathAlgebra.PathSpaceOps
 
 /-!
 # PathMap Formalization
@@ -58,9 +62,9 @@ The trie stack provides the first concrete `PathMapQuantale` instance backed by
 an actual trie data structure (as opposed to flat `Finset` or `Bool` instances).
 
 ## References
-- PathMap `ring.rs`: `/home/zar/claude/hyperon/PathMap/src/ring.rs`
+- PathMap `ring.rs`: `~/claude/hyperon/PathMap/src/ring.rs`
 - PathMap book:      `1.01.00_algebraic_ops.md`, `1.01.01_algebraic_traits.md`
-- MORK kernel:       `/home/zar/claude/hyperon/MORK/`
+- MORK kernel:       `~/claude/hyperon/MORK/`
 - Abel, "Formal Languages, Coinductively Formalized in Agda" (Ljubljana 2017)
 - Traytel et al., "Formal Languages, Formally and Coinductively" (FSCD 2016)
 -/

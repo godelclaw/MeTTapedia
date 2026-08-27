@@ -1,6 +1,6 @@
 {
   "failure_kind": "timeout",
-  "input_file": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_redefinition_k3_lattices/lattice2__lattice2__t14_lattice2",
+  "input_file": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_redefinition_k3_lattices/lattice2__lattice2__t14_lattice2",
   "interpolant": null,
   "interpolant_features": null,
   "interpolant_found": false,

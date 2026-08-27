@@ -1,19 +1,21 @@
 import Mettapedia.OSLF.Framework.TypeSynthesis
 import Mettapedia.OSLF.Framework.SubstitutabilityTheorem1
-import Mettapedia.Logic.OSLFImageFinite
+import Mettapedia.OSLF.Framework.ImageFinite
 import Mettapedia.OSLF.MeTTaIL.MatchSpec
 
 /-!
 # Positive Sufficient Condition for Predecessor-Finiteness
 
-Complements the negative result `not_global_hPredFinite_langReduces_rhoCalc`
-(canonical ρ-calculus COMM erases the channel name, so predecessor-finiteness
-fails globally) with a positive characterization:
+Complements the separate negative result `not_global_hPredFinite_rhoStep`
+(explicitly interpreted rho COMM erases the channel name, so
+predecessor-finiteness fails globally) with a positive characterization for
+the reflection-free generated relation:
 
 A `LanguageDef` is **predecessor-finite-safe** when every rewrite rule has
 `isMatchCorrect` LHS and RHS (no `.subst` or `.collection` nodes), is
-variable-preserving (every LHS free variable appears in the RHS), has
-no premises, and congruence descent is disabled.
+variable-preserving (every LHS free variable appears in the RHS), and has no
+premises.  The last condition rules out contextual recursion semantically,
+without inspecting any particular `Pattern` representation constructor.
 
 Under this condition the predecessor set of any term is finite:
 `matchPattern r.right q` gives a finite list of candidate binding sets,
@@ -32,7 +34,6 @@ namespace Mettapedia.OSLF.Framework.PredFiniteSufficient
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.Match
 open Mettapedia.OSLF.MeTTaIL.Engine
-open Mettapedia.OSLF.MeTTaIL.DeclReducesPremises
 open Mettapedia.OSLF.MeTTaIL.Substitution (freeVars)
 open Mettapedia.OSLF.MeTTaIL.MatchSpec
 open Mettapedia.OSLF.Framework.TypeSynthesis
@@ -118,33 +119,34 @@ structure RulePredFiniteSafe (r : RewriteRule) : Prop where
   variablePreserving : ∀ x : String, x ∈ freeVars r.left → x ∈ freeVars r.right
   noPremises : r.premises = []
 
-/-- A language definition is predecessor-finite-safe:
-all rules are predFiniteSafe and congruence descent is disabled. -/
+/-- A language definition is predecessor-finite-safe when all of its core
+rewrite rules satisfy the finite-predecessor condition.  Reflective matching
+is a separate interpretation and therefore is not a field or premise here. -/
 structure LangPredFiniteSafe (lang : LanguageDef) : Prop where
   rulesSafe : ∀ r ∈ lang.rewrites, RulePredFiniteSafe r
-  noCongruence : lang.congruenceCollections = []
 
 /-! ## Structural Decomposition Lemmas -/
 
-theorem not_allowsCongruenceIn_of_empty
-    (lang : LanguageDef) (hEmpty : lang.congruenceCollections = [])
-    (ct : CollType) : ¬ LanguageDef.allowsCongruenceIn lang ct := by
-  unfold LanguageDef.allowsCongruenceIn
-  rw [hEmpty]
-  simp
-
-theorem topRule_only_of_noCongruence
-    (lang : LanguageDef) (hEmpty : lang.congruenceCollections = [])
-    (relEnv : RelationEnv) (p q : Pattern)
-    (h : DeclReducesWithPremises relEnv lang p q) :
+theorem step_decomposes_of_langPredFiniteSafe
+    (lang : LanguageDef)
+    (hSafe : LangPredFiniteSafe lang)
+    (p q : Pattern)
+    (h : Mettapedia.OSLF.MeTTaIL.ContextualStep.Step
+      (Mettapedia.OSLF.MeTTaIL.ContextualStep.engineBasePremises RelationEnv.empty)
+      lang p q) :
     ∃ (r : RewriteRule) (_ : r ∈ lang.rewrites)
-      (bs0 : Bindings) (_ : bs0 ∈ matchPattern r.left p)
-      (bs : Bindings) (_ : bs ∈ applyPremisesWithEnv relEnv lang r.premises bs0),
+      (bs : Bindings) (_ : bs ∈ matchPattern r.left p),
       applyBindings bs r.right = q := by
-  cases h with
-  | topRule r hr bs0 hbs0 bs hbs hq =>
-    exact ⟨r, hr, bs0, hbs0, bs, hbs, hq⟩
-  | congElem hct => exact absurd hct (not_allowsCongruenceIn_of_empty lang hEmpty _)
+  obtain ⟨_, step⟩ := h
+  cases step with
+  | @rule fuel source target r initialBindings finalBindings hr hbs hprem hq =>
+    simp only [Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.matchPatternForRule_eq_syntactic]
+      at hbs
+    rw [(hSafe.rulesSafe r hr).noPremises] at hprem
+    cases hprem
+    simp only [Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.applyBindingsForRule_eq_syntactic]
+      at hq
+    exact ⟨r, hr, initialBindings, hbs, hq⟩
 
 theorem applyPremisesWithEnv_nil
     (relEnv : RelationEnv) (lang : LanguageDef) (seed : Bindings) :
@@ -493,24 +495,21 @@ theorem predFinite_langReduces_of_langPredFiniteSafe
   · exact Set.Finite.biUnion (List.finite_toSet _) fun r hr =>
       predSet_via_rule_finite r q (hSafe.rulesSafe r hr)
   intro p hp
-  obtain ⟨r, hr, bs0, hbs0, bs, hbs, hq⟩ :=
-    topRule_only_of_noCongruence lang hSafe.noCongruence RelationEnv.empty p q hp
+  obtain ⟨r, hr, bs, hbs, hq⟩ :=
+    step_decomposes_of_langPredFiniteSafe lang hSafe p q hp
   simp only [Set.mem_iUnion]
-  have hprem := (hSafe.rulesSafe r hr).noPremises
-  rw [hprem] at hbs
-  rw [mem_applyPremisesWithEnv_nil] at hbs
-  rw [hbs] at hq
-  exact ⟨r, ⟨hr, bs0, hbs0, hq⟩⟩
+  exact ⟨r, ⟨hr, bs, hbs, hq⟩⟩
 
 /-! ## Theorem 1 Corollary -/
 
-theorem theorem1_substitutability_predFiniteSafe
+theorem theorem1_substitutability_of_imageFinite_of_langPredFiniteSafe
     (lang : LanguageDef) (hSafe : LangPredFiniteSafe lang)
+    (hImageFinite : ∀ p : Pattern, Set.Finite {q : Pattern | langReduces lang p q})
     (I : Mettapedia.OSLF.Formula.AtomSem) :
     Mettapedia.OSLF.Framework.Theorem1SubstitutabilityEquiv
       (langReduces lang) I :=
   Mettapedia.OSLF.Framework.theorem1_substitutability_imageFinite
-    (Mettapedia.Logic.OSLFImageFinite.imageFinite_langReduces lang)
+    hImageFinite
     (predFinite_langReduces_of_langPredFiniteSafe lang hSafe)
 
 /-! ## Exclusion: rhoCalc fails the condition -/

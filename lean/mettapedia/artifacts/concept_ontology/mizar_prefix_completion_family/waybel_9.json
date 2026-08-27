@@ -842,5 +842,5 @@
       "preview": "theorem for S being compact Hausdorff TopLattice st for x being Element of S holds x\"/\\\" is continuous holds S is meet-c"
     }
   ],
-  "source_path": "/home/zar/claude/mizar/share/mml/waybel_9.miz"
+  "source_path": "~/claude/mizar/share/mml/waybel_9.miz"
 }

@@ -3,18 +3,18 @@ import Mettapedia.Computability.PNP.ExactSwitchedFamily
 /-!
 # P vs NP crux: exact post-switch compression still needs a real small-class theorem
 
-Once the manuscript-visible post-switch surface has been isolated as the exact
+Once the manuscript-visible post-switch data domain has been isolated as the exact
 input `u = (z, a, b)`, there is a sharper counting question:
 
-* if the induced switched witness-bit family on that exact surface is still
+* if the induced switched witness-bit family on that exact data domain is still
   unconstrained enough to realize all Boolean rules on `u`,
 * then no `s`-bit encoded family can cover it unless `s` is at least the full
-  cardinality of the visible exact surface.
+  cardinality of the visible exact data domain.
 
 So the burden is now precise.  It is not enough to say "we compressed the exact
-surface somehow."  One must prove that the actual switched family lands in a
+data domain somehow."  One must prove that the actual switched family lands in a
 strictly smaller subclass than the full Boolean function space on
-`ExactVisiblePostSwitchSurface Z k`.
+`ExactVisiblePostSwitchData Z k`.
 -/
 
 namespace Mettapedia.Computability.PNP
@@ -23,31 +23,31 @@ section
 
 variable {Z : Type*} {k s : ℕ}
 
-/-- A Boolean rule on the exact manuscript-visible post-switch surface. -/
-abbrev ExactVisibleRule (Z : Type*) (k : ℕ) := ExactVisiblePostSwitchSurface Z k → Bool
+/-- A Boolean rule on the exact manuscript-visible post-switch data domain. -/
+abbrev ExactVisibleRule (Z : Type*) (k : ℕ) := ExactVisiblePostSwitchData Z k → Bool
 
-/-- The exact visible post-switch surface has cardinality
+/-- The exact visible post-switch data domain has cardinality
 `|Z| * 2^k * 2^k = |Z| * 4^k`. -/
-theorem card_exactVisiblePostSwitchSurface [Fintype Z] :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) =
+theorem card_exactVisiblePostSwitchDataDomain [Fintype Z] :
+    Fintype.card (ExactVisiblePostSwitchData Z k) =
       Fintype.card Z * 2 ^ k * 2 ^ k := by
-  simpa [ForkPostSwitchSurface, InvariantPostSwitchSurface, BitVec] using
+  simpa [ForkPostSwitchData, InvariantPostSwitchData, BitVec] using
     Fintype.card_congr (forkVisibleEquiv (Z := Z) (k := k))
 
-/-- Enumerate the exact visible post-switch surface by `Fin |surface|`. -/
+/-- Enumerate the exact visible post-switch data domain by `Fin |data domain|`. -/
 noncomputable def exactVisibleInputEquivFin [Fintype Z] :
-    ExactVisiblePostSwitchSurface Z k ≃
-      Fin (Fintype.card (ExactVisiblePostSwitchSurface Z k)) :=
-  Fintype.equivFin (ExactVisiblePostSwitchSurface Z k)
+    ExactVisiblePostSwitchData Z k ≃
+      Fin (Fintype.card (ExactVisiblePostSwitchData Z k)) :=
+  Fintype.equivFin (ExactVisiblePostSwitchData Z k)
 
-/-- Decode a full truth table on the exact visible surface. -/
+/-- Decode a full truth table on the exact visible data domain. -/
 noncomputable def exactVisibleRuleDecode [Fintype Z] :
-    BitCode (Fintype.card (ExactVisiblePostSwitchSurface Z k)) → ExactVisibleRule Z k :=
+    BitCode (Fintype.card (ExactVisiblePostSwitchData Z k)) → ExactVisibleRule Z k :=
   fun code u => code (exactVisibleInputEquivFin (Z := Z) (k := k) u)
 
 /-- Encode an exact visible rule by its full truth table. -/
 noncomputable def exactVisibleRuleEncode [Fintype Z] :
-    ExactVisibleRule Z k → BitCode (Fintype.card (ExactVisiblePostSwitchSurface Z k)) :=
+    ExactVisibleRule Z k → BitCode (Fintype.card (ExactVisiblePostSwitchData Z k)) :=
   fun rule i => rule ((exactVisibleInputEquivFin (Z := Z) (k := k)).symm i)
 
 lemma exactVisibleRuleDecode_encode [Fintype Z] (rule : ExactVisibleRule Z k) :
@@ -57,25 +57,25 @@ lemma exactVisibleRuleDecode_encode [Fintype Z] (rule : ExactVisibleRule Z k) :
   simp [exactVisibleRuleDecode, exactVisibleRuleEncode]
 
 lemma exactVisibleRuleEncode_decode [Fintype Z]
-    (code : BitCode (Fintype.card (ExactVisiblePostSwitchSurface Z k))) :
+    (code : BitCode (Fintype.card (ExactVisiblePostSwitchData Z k))) :
     exactVisibleRuleEncode (Z := Z) (k := k)
       (exactVisibleRuleDecode (Z := Z) (k := k) code) = code := by
   funext i
   simp [exactVisibleRuleDecode, exactVisibleRuleEncode]
 
 /-- Exact visible rules are in bijection with full truth tables on the exact
-visible surface. -/
+visible data domain. -/
 noncomputable def exactVisibleRuleEquivBitCode [Fintype Z] :
-    ExactVisibleRule Z k ≃ BitCode (Fintype.card (ExactVisiblePostSwitchSurface Z k)) where
+    ExactVisibleRule Z k ≃ BitCode (Fintype.card (ExactVisiblePostSwitchData Z k)) where
   toFun := exactVisibleRuleEncode (Z := Z) (k := k)
   invFun := exactVisibleRuleDecode (Z := Z) (k := k)
   left_inv := exactVisibleRuleDecode_encode (Z := Z) (k := k)
   right_inv := exactVisibleRuleEncode_decode (Z := Z) (k := k)
 
-/-- If `s` is below the full exact-surface cardinality, then `s`-bit codes
+/-- If `s` is below the full exact-data domain cardinality, then `s`-bit codes
 cannot injectively represent all exact visible rules. -/
 theorem no_injective_bitCode_to_fullExactVisibleRule_of_lt
-    [Fintype Z] (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    [Fintype Z] (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ∃ f : ExactVisibleRule Z k → BitCode s, Function.Injective f := by
   classical
   simpa [ExactVisibleRule] using
@@ -83,10 +83,10 @@ theorem no_injective_bitCode_to_fullExactVisibleRule_of_lt
       (Input := ExactVisiblePostSwitchSurface Z k) (s := s) hs)
 
 /-- Equivalently, no `s`-bit decoder can surject onto the full exact visible
-rule class below the exact-surface cardinality threshold. -/
+rule class below the exact-data domain cardinality threshold. -/
 theorem not_surjective_decode_to_fullExactVisibleRule_of_lt
     [Fintype Z] (decode : BitCode s → ExactVisibleRule Z k)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective decode := by
   classical
   simpa [ExactVisibleRule] using
@@ -140,12 +140,12 @@ theorem exactVisibleCompressionTarget_card_isSharp_of_surjective_predict
       (Z := Z) (k := k) (s := t) (Index := Index) hsurj hsmall
 
 /-- If an exact switched family already realizes every Boolean rule on the full
-visible post-switch surface, then any `s`-bit compression theorem below the
-surface-cardinality threshold is impossible. -/
+visible post-switch data domain, then any `s`-bit compression theorem below the
+data domain-cardinality threshold is impossible. -/
 theorem not_exactVisibleCompressionTarget_of_surjective_predict
     [Fintype Z]
     {G : ExactVisibleSwitchedFamily Z k Index}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k))
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k))
     (hsurj : Function.Surjective G.predict) :
     ¬ ExactVisibleCompressionTarget (Z := Z) (k := k) (Index := Index) G s := by
   intro hsmall
@@ -158,7 +158,7 @@ that repair still has to realize the full exact family after pullback. -/
 theorem not_invariantCompressionTarget_of_surjective_predict
     [Fintype Z]
     {G : ExactVisibleSwitchedFamily Z k Index}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k))
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k))
     (hsurj : Function.Surjective G.predict) :
     ¬ InvariantCompressionTarget (Z := Z) (k := k) (Index := Index) G s := by
   intro h
@@ -184,7 +184,7 @@ theorem invariantCompressionTarget_surfaceCard_le_of_surjective_predict
 theorem not_forkCompressionTarget_of_surjective_predict
     [Fintype Z]
     {G : ExactVisibleSwitchedFamily Z k Index}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k))
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k))
     (hsurj : Function.Surjective G.predict) :
     ¬ ForkCompressionTarget (Z := Z) (k := k) (Index := Index) G s := by
   intro h

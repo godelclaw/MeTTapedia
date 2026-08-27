@@ -808,5 +808,5 @@
       "preview": "theorem for D being non empty set, f being Function of bool D, D st (for a being Element of D holds f.{a} = a) & for X b"
     }
   ],
-  "source_path": "/home/zar/claude/mizar/share/mml/lattice3.miz"
+  "source_path": "~/claude/mizar/share/mml/lattice3.miz"
 }

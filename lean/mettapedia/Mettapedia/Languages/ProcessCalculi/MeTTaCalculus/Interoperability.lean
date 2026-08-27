@@ -12,7 +12,7 @@ fragment of MeTTa-calculus into the existing ρ-calculus/open-map stack.
 
 Bridge motivation comes from:
 
-- `/home/zar/claude/hyperon/rho4u/metta-calculus/metta-calculus.core.tex`
+- `~/claude/hyperon/rho4u/metta-calculus/metta-calculus.core.tex`
 
 where quote/drop and parallel bag structure align with ρ-style syntax.
 -/

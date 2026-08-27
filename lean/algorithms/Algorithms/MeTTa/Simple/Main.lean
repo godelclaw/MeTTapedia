@@ -16,7 +16,6 @@ private def emptyLanguage : LanguageDef := {
   terms := []
   equations := []
   rewrites := []
-  congruenceCollections := []
 }
 
 private def emptyBundle : SpecBundle := {
@@ -25,6 +24,7 @@ private def emptyBundle : SpecBundle := {
   builtins := coreIntrinsicBuiltins
   policy := {
     maxFuel := 128
+    maxContextDepth := 128
     normalizeToFixedPoint := false
   }
 }
@@ -695,14 +695,14 @@ private def collectDefaultPeTTaLibrarySources : IO (List (String × String)) := 
   let libDir :=
     match (← IO.getEnv "PETTA_LIB_DIR") with
     | some p => System.FilePath.mk p
-    | none => System.FilePath.mk "/home/zar/claude/hyperon/PeTTa/lib"
+    | none => System.FilePath.mk "~/claude/hyperon/PeTTa/lib"
   collectModuleSourcesFromDir libDir false
 
 private def loadDefaultHELibrary (s : Session) : IO Session := do
   let libPath :=
     match (← IO.getEnv "HE_LIB_FILE") with
     | some p => System.FilePath.mk p
-    | none => System.FilePath.mk "/home/zar/claude/hyperon/PeTTa/lib/lib_he.metta"
+    | none => System.FilePath.mk "~/claude/hyperon/PeTTa/lib/lib_he.metta"
   if !(← libPath.pathExists) then
     pure s
   else

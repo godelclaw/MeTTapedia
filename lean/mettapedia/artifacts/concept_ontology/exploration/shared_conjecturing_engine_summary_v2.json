@@ -1,9 +1,9 @@
 {
   "inputs": {
-    "gate_summary_heavy": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t18_t25_right_partition_gates/summary.json",
-    "gate_summary_light": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_right_partition_gates/summary.json",
-    "track_a": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/finite_structure_property_benchmark_v2.json",
-    "track_b": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_selector_family_candidates_v2.json"
+    "gate_summary_heavy": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t18_t25_right_partition_gates/summary.json",
+    "gate_summary_light": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_right_partition_gates/summary.json",
+    "track_a": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/finite_structure_property_benchmark_v2.json",
+    "track_b": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_selector_family_candidates_v2.json"
   },
   "shared_assessment": {
     "baseline_contrast": {
@@ -625,12 +625,12 @@
       "oracle": {
         "broader_search_equivalence_hits": [],
         "broader_search_roots": [
-          "/home/zar/claude/atps/datasets/extended_mptp5k/chainy/train",
-          "/home/zar/claude/atps/datasets/mml_8.1.15_fof/problems_small/lattice2",
-          "/home/zar/claude/atps/datasets/mml_8.1.15_fof/problems_small/lattice4",
-          "/home/zar/claude/atps/datasets/mml_8.1.15_fof/problems_small/filter_1",
-          "/home/zar/claude/atps/datasets/mml_8.1.15_fof/problems_small/fvsum_1",
-          "/home/zar/claude/atps/datasets/mml_8.1.15_fof/problems_small/prvect_1"
+          "~/claude/atps/datasets/extended_mptp5k/chainy/train",
+          "~/claude/atps/datasets/mml_8.1.15_fof/problems_small/lattice2",
+          "~/claude/atps/datasets/mml_8.1.15_fof/problems_small/lattice4",
+          "~/claude/atps/datasets/mml_8.1.15_fof/problems_small/filter_1",
+          "~/claude/atps/datasets/mml_8.1.15_fof/problems_small/fvsum_1",
+          "~/claude/atps/datasets/mml_8.1.15_fof/problems_small/prvect_1"
         ],
         "kind": "paired_existing_theorems",
         "library_packaging_candidate": true,

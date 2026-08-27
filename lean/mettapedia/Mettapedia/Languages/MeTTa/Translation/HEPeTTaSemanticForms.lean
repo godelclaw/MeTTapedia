@@ -31,6 +31,6 @@ Positive example:
   explicit rather than informal.
 
 Negative example:
-- runtime-only host surfaces or backend quirks are not automatically promoted
+- runtime-only host interfaces or backend quirks are not automatically promoted
   into a shared semantic core just because a translator exists.
 -/

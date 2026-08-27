@@ -24,7 +24,7 @@ variable {Z : Type*} {r k : ℕ} {Index : Type*}
 
 structure CanonicalZABDecisionListRecoveryData
     [Fintype Z]
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (zfeat : Z → BitVec r)
     (G : ExactVisibleSwitchedFamily Z k Index)
     (q : ℝ≥0∞) where
@@ -43,7 +43,7 @@ section
 variable [Fintype Z]
 
 theorem CanonicalZABDecisionListRecoveryData.candidateData
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -56,7 +56,7 @@ theorem CanonicalZABDecisionListRecoveryData.candidateData
     (Z := Z) (r := r) (k := k) (Index := Index) h.codes h.exact_family
 
 theorem CanonicalZABDecisionListRecoveryData.compressionTarget
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -131,7 +131,7 @@ theorem CanonicalZABDecisionListRecoveryData.not_surjective_predict_of_lt_surfac
   exact (h.candidateData).not_surjective_predict_of_lt_surfaceCard hs
 
 theorem CanonicalZABDecisionListRecoveryData.recoveryLowerBound
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}

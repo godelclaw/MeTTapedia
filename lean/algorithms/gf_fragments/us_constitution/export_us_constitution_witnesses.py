@@ -22,10 +22,10 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-GF_LD = "/home/zar/.local/gf-extract/usr/lib"
-PGF_PY_EGG = Path("/home/zar/.local/gf-extract/usr/local/lib/python3.12/dist-packages/pgf-1.1-py3.12-linux-x86_64.egg")
+GF_LD = "~/.local/gf-extract/usr/lib"
+PGF_PY_EGG = Path("~/.local/gf-extract/usr/local/lib/python3.12/dist-packages/pgf-1.1-py3.12-linux-x86_64.egg")
 
-ROOT = Path("/home/zar/claude")
+ROOT = Path("~/claude")
 PGF_PATH = ROOT / "gf-wordnet/build/ParseEng.pgf"
 OUT_JSON = ROOT / "lean-projects/algorithms/gf_fragments/us_constitution/generated/us_constitution_parse_witnesses.json"
 CORRECTIONS_PATH = ROOT / "lean-projects/algorithms/gf_fragments/us_constitution/grammar_corrections.json"

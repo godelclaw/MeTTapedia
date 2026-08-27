@@ -1,6 +1,4 @@
 import Mettapedia.Logic.HOL.Probabilistic.HierarchicalState
-import Mettapedia.Logic.EvidenceQuantale
-import Mettapedia.Logic.PLNWorldModel
 import Mettapedia.ProbabilityTheory.HigherOrderProbability.KyburgFlattening
 
 /-!
@@ -24,11 +22,8 @@ formalized elsewhere in the repository and documented by:
 namespace Mettapedia.Logic.HOL.Probabilistic
 
 open Mettapedia.Logic.HOL
-open Mettapedia.Logic.HOL.WorldModel
 open Mettapedia.Logic.HOL.Probabilistic.HierarchicalState
 open Mettapedia.Logic.HOL.Probabilistic.ModelSpace
-open Mettapedia.Logic.EvidenceQuantale
-open Mettapedia.Logic.PLNWorldModel
 open MeasureTheory
 open scoped ENNReal
 

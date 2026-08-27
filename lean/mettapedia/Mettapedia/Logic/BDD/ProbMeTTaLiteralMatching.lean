@@ -1,4 +1,4 @@
-import Mettapedia.Logic.BDD.ProbMeTTaSourceSurface
+import Mettapedia.Logic.BDD.ProbMeTTaSourceSyntax
 import Mettapedia.Logic.LP.Matching
 
 /-!
@@ -8,7 +8,7 @@ This file formalizes the literal source-level nonground fallback
 
 `(match &self (rule $goal $_) $goal)`
 
-from `/home/zar/claude/ProbMeTTa/lib_prob.metta`.
+from `~/claude/ProbMeTTa/lib_prob.metta`.
 
 The key design choice is to model the fallback as a **list of matching ground
 heads**, not as a single arbitrary witness. That matches the source `match`
@@ -96,7 +96,7 @@ abbrev ProbMeTTaSourceProgram.LiteralHeadWitness {σ : LPSignature} {n : ℕ}
     (goal : Atom σ) := { head : GroundAtom σ // head ∈ prog.literalMatchingHeads goal }
 
 /-- Any literal match witness induces a rule-head witness in the older
-normalized source surface. -/
+normalized source syntax. -/
 def ProbMeTTaSourceProgram.literalWitnessToHeadWitness
     {σ : LPSignature} {n : ℕ}
     [DecidableEq σ.vars] [DecidableEq σ.constants]

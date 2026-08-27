@@ -2,6 +2,7 @@ import MeTTailCore.MeTTaIL.Syntax
 import MeTTailCore.MeTTaIL.Substitution
 import MeTTailCore.MeTTaIL.Match
 import MeTTailCore.MeTTaIL.Engine
+import MeTTailCore.MeTTaIL.ContextualStep
 import MeTTailCore.MeTTaIL.RecursiveSpecialize
 import MeTTailCore.MeTTaIL.RecursiveConstructors
 import MeTTailCore.MeTTaIL.RecursiveAnswerSets
@@ -15,7 +16,7 @@ import MeTTailCore.MeTTaIL.RewriteIRV2
 import MeTTailCore.MeTTaSyntax.CommandIR
 import MeTTailCore.MeTTaSyntax.Spec
 import MeTTailCore.MeTTaSyntax.Pretty
-import MeTTailCore.MeTTaSyntax.RuleSurface
+import MeTTailCore.MeTTaSyntax.RuleSyntax
 import MeTTailCore.Crypto.SHA256
 import MeTTailCore.EvalIR
 import MeTTailCore.EvalIRMachine

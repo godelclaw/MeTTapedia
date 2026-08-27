@@ -1,4 +1,5 @@
 import Mettapedia.FluidDynamics.NavierStokes.IdentityEnergy
+import Mathlib.Analysis.ODE.ExistUnique
 import Mathlib.Analysis.ODE.PicardLindelof
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 
@@ -89,21 +90,23 @@ theorem finiteModeEnergy_hasDerivAt_of_component_hasDerivAt
       (2 * ∑ i, a t i * v i) t := by
   unfold finiteModeEnergy gamma
   have hsumFun :
-      HasDerivAt (∑ i, fun s : ℝ => (a s i) ^ 2)
+      HasDerivAt (∑ i, ((fun s : ℝ => a s i) * fun s : ℝ => a s i))
         (∑ i, 2 * (a t i * v i)) t := by
     exact
       (HasDerivAt.sum (u := (Finset.univ : Finset ι))
-        (A := fun i s => (a s i) ^ 2)
+        (A := fun i => ((fun s : ℝ => a s i) * fun s : ℝ => a s i))
         (A' := fun i => 2 * (a t i * v i))
         (fun i _ => by
-          have hi := (h i).pow 2
-          simpa [pow_one, mul_assoc] using hi))
+          have hi := (h i).mul (h i)
+          have hder : v i * a t i + a t i * v i = 2 * (a t i * v i) := by
+            ring
+          simpa [hder] using hi))
   have hsum :
       HasDerivAt (fun s : ℝ => ∑ i, (a s i) ^ 2)
         (∑ i, 2 * (a t i * v i)) t := by
     convert hsumFun using 1
     ext s
-    simp
+    simp [pow_two]
   have hscale : (∑ i, 2 * (a t i * v i)) = 2 * ∑ i, a t i * v i := by
     rw [Finset.mul_sum]
   simpa [hscale] using hsum
@@ -168,8 +171,8 @@ theorem finiteModeZeroCurve_hasDerivAt_iff_forcing_zero
   constructor
   · intro h i
     have hconst : HasDerivAt (finiteModeZeroCurve : ℝ → FiniteModeState ι) 0 t := by
-      simpa [finiteModeZeroCurve] using
-        (hasDerivAt_const (𝕜 := ℝ) t (0 : FiniteModeState ι))
+      change HasDerivAt (fun _ : ℝ => (0 : FiniteModeState ι)) 0 t
+      exact hasDerivAt_const t (0 : FiniteModeState ι)
     have hzero :
         finiteModeProjectedNSRHS C (finiteModeZeroCurve t) = 0 := h.unique hconst
     exact
@@ -224,8 +227,8 @@ theorem finiteModeConstantCurve_hasDerivAt_iff_rhs_eq_zero
   constructor
   · intro h
     have hconst : HasDerivAt (finiteModeConstantCurve a₀) 0 t := by
-      simpa [finiteModeConstantCurve] using
-        (hasDerivAt_const (𝕜 := ℝ) t a₀)
+      change HasDerivAt (fun _ : ℝ => a₀) 0 t
+      exact hasDerivAt_const t a₀
     simpa [finiteModeConstantCurve] using h.unique hconst
   · intro hres
     change HasDerivAt (fun _ : ℝ => a₀) (finiteModeProjectedNSRHS C a₀) t
@@ -410,8 +413,7 @@ theorem finiteModeDiagonalLinearExpCurve_hasDerivAt
       HasDerivAt
         (fun s : ℝ => a₀ i * Real.exp (lam i * s))
         (lam i * (a₀ i * Real.exp (lam i * t))) t := by
-    convert hlin.exp.const_mul (a₀ i) using 1
-    ring
+    simpa [mul_assoc, mul_left_comm, mul_comm] using hlin.exp.const_mul (a₀ i)
   simpa [finiteModeDiagonalLinearExpCurve, mul_assoc, mul_left_comm, mul_comm] using hexp
 
 /-- The diagonal-linear exponential curve is a global solution of the
@@ -534,8 +536,8 @@ theorem finiteModeDiagonalAffineEquilibriumCurve_hasDerivAt
         HasDerivAt
           (fun s : ℝ => (a₀ i - aEq i) * Real.exp (lam i * s))
           (lam i * ((a₀ i - aEq i) * Real.exp (lam i * t))) t := by
-      convert hlin.exp.const_mul (a₀ i - aEq i) using 1
-      ring
+      simpa [mul_assoc, mul_left_comm, mul_comm] using
+        hlin.exp.const_mul (a₀ i - aEq i)
     exact hbase.const_add (aEq i)
   have hrhs :
       finiteModeProjectedNSRHS

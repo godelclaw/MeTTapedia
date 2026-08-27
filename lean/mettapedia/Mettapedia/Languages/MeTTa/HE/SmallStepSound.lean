@@ -51,11 +51,7 @@ without fuel, so no equation can fire.  (Hence fuel-zero coarse equation
 steps are impossible, and the absorption theorem needs no fuel premise.) -/
 theorem queryEquations_zero (space : Space) (a : Atom) :
     queryEquations space a 0 = [] := by
-  simp only [queryEquations, List.filterMap_eq_nil_iff]
-  intro p _hp
-  split
-  · simp [simpleMatch]
-  · rfl
+  simp [queryEquations]
 
 /-- **Absorption, grounded dispatch.**  A coarse `HES_GroundedDispatch` step
 from `(op args…)` to result atom `r` (with result bindings `bs`) composes
@@ -90,7 +86,7 @@ theorem mettaCall_absorbs_grounded_dispatch
     h_eval
 
 /-- **Absorption, equation match.**  A coarse `HES_EquationMatch` step from
-`(es…)` to `qb.apply rhs fuel` composes with any official evaluation of that
+`(es…)` to `qb.applyFull rhs fuel` composes with any official evaluation of that
 successor under `qb` into an official `MettaCall` of the original expression
 under empty bindings.  This is the Lean soundness theorem behind
 `HES_EquationMatch`'s `rule-sound` claim.
@@ -108,7 +104,7 @@ theorem mettaCall_absorbs_equation_match
     (h_query : (rhs, qb) ∈ queryEquations space (.expression es) fuel)
     (h_no_loop : qb.hasLoop = false)
     (h_not_err : isErrorAtom (.expression es) = false)
-    (h_eval : EvalAtom space d (qb.apply rhs fuel) type_ qb finalResult) :
+    (h_eval : EvalAtom space d (qb.applyFull rhs fuel) type_ qb finalResult) :
     MettaCall space d (.expression es) type_ Bindings.empty finalResult := by
   cases fuel with
   | zero =>

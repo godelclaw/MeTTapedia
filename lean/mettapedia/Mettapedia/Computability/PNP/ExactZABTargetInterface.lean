@@ -111,7 +111,7 @@ end
 
 structure ExactZABDecisionListRecoveryData
     [Fintype Z]
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (zfeat : Z → BitVec r)
     (G : ExactVisibleSwitchedFamily Z k Index)
     (q : ℝ≥0∞) where
@@ -129,7 +129,7 @@ section
 variable [Fintype Z]
 
 theorem ExactZABDecisionListRecoveryData.targetData
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -140,7 +140,7 @@ theorem ExactZABDecisionListRecoveryData.targetData
   exact ⟨h.realized⟩
 
 theorem ExactZABDecisionListRecoveryData.compressionTarget
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -151,7 +151,7 @@ theorem ExactZABDecisionListRecoveryData.compressionTarget
   exact (h.targetData).compressionTarget
 
 theorem ExactZABDecisionListRecoveryData.compressionTarget_twoMul
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -219,7 +219,7 @@ theorem ExactZABDecisionListRecoveryData.not_surjective_predict_of_lt_surfaceCar
   exact (h.targetData).not_surjective_predict_of_lt_surfaceCard hs
 
 theorem ExactZABDecisionListRecoveryData.recoveryLowerBound
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -238,7 +238,7 @@ theorem ExactZABDecisionListRecoveryData.recoveryLowerBound
     (h.agreement_le i)
 
 theorem ExactZABDecisionListRecoveryData.recoveryLowerBound_twoMul
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}

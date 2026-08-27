@@ -1,0 +1,39 @@
+import Mettapedia.MachineLearning.NeuralNetworks.PredictiveCoding.Frontier.Regime
+import Mettapedia.MachineLearning.NeuralNetworks.PredictiveCoding.Frontier.CoordinateRescue
+import Mettapedia.MachineLearning.NeuralNetworks.PredictiveCoding.Frontier.TrustRegion
+import Mettapedia.MachineLearning.NeuralNetworks.PredictiveCoding.Frontier.DeepLineRestriction
+import Mettapedia.MachineLearning.NeuralNetworks.PredictiveCoding.Frontier.DeepLinearModeDynamics
+import Mettapedia.MachineLearning.NeuralNetworks.PredictiveCoding.Frontier.PreconditionedFlowTransport
+import Mettapedia.MachineLearning.NeuralNetworks.PredictiveCoding.Frontier.ResidualBoundary
+import Mettapedia.MachineLearning.NeuralNetworks.PredictiveCoding.Frontier.ResidualMomentBound
+import Mettapedia.MachineLearning.NeuralNetworks.PredictiveCoding.Frontier.ProspectiveInterference
+import Mettapedia.MachineLearning.NeuralNetworks.PredictiveCoding.Frontier.ProspectiveMinimumInterference
+import Mettapedia.MachineLearning.NeuralNetworks.PredictiveCoding.Frontier.HybridRefinement
+import Mettapedia.MachineLearning.NeuralNetworks.PredictiveCoding.Frontier.ProspectiveErrorCoordinate
+import Mettapedia.MachineLearning.NeuralNetworks.PredictiveCoding.Frontier.DepthScalingRepair
+import Mettapedia.MachineLearning.NeuralNetworks.PredictiveCoding.Frontier.DepthScalingImplementation
+import Mettapedia.MachineLearning.NeuralNetworks.PredictiveCoding.Frontier.DepthScalingVector
+import Mettapedia.MachineLearning.NeuralNetworks.PredictiveCoding.Frontier.PCBPCompute
+import Mettapedia.MachineLearning.NeuralNetworks.PredictiveCoding.Frontier.FiniteSettlingGradientGap
+import Mettapedia.MachineLearning.NeuralNetworks.PredictiveCoding.Frontier.FisherGeometry
+import Mettapedia.MachineLearning.NeuralNetworks.PredictiveCoding.Frontier.NaturalGradientErrorBudget
+import Mettapedia.MachineLearning.NeuralNetworks.PredictiveCoding.Frontier.FisherDiagnostic
+import Mettapedia.MachineLearning.NeuralNetworks.PredictiveCoding.Frontier.FrozenAdapterFisher
+import Mettapedia.MachineLearning.NeuralNetworks.PredictiveCoding.Frontier.FisherOnlineAdaptationLicense
+import Mettapedia.MachineLearning.NeuralNetworks.PredictiveCoding.Frontier.Provenance
+
+/-!
+# Predictive-coding optimistic frontier
+
+Umbrella for the regime index, error-coordinate boundary, trust-region and
+saddle results, exact deep-linear singular-mode gradient-flow dynamics,
+residual Depth-μP boundary, prospective-interference toy and its exact
+minimum-interference characterization,
+hybrid monotone refinement, joint prospective error-coordinate energy,
+finite-settling gradient-gap bounds,
+certified Fisher/natural-gradient geometry for frozen online adapters,
+depth-scaling repairs, and the machine-readable
+provenance manifest.  The depth-scaling rung includes its pinned executable
+bridge, full-covariance vector and nonlinear-Jacobian lift, and an explicit
+equal-compute PC-versus-BP cost model.
+-/

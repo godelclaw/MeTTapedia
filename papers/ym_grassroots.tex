@@ -967,6 +967,88 @@ surface.  It now also pins the threshold-level nonexistence of every
 even-cutoff lower-extraction certificate with recombination constant at least
 \(2048\), together with the corresponding lifted route blocker.
 
+\section{Concrete Wilson Extraction and Recombination Audit}
+
+The numerical statements above deliberately treat the recursion constant as an
+input.  A later source audit asked the distinct question that controls whether
+those statements apply to the manuscript's Wilson map: can the extraction and
+recombination factors actually be derived from the objects specified in v14?
+
+The module
+\[
+  \lean{Mettapedia/QuantumTheory/YangMills/WilsonBlockMajorant.lean}
+\]
+constructs finite group-valued link fields, local gauge transformations,
+plaquette holonomies, conjugation-invariant class potentials, and the normalized
+\(SU(N)\) Wilson plaquette potential.  A finite Wilson block assigns positive
+canonical dimensions to finitely many plaquette coordinates.  Finitely
+supported polynomials in those coordinates evaluate to genuine gauge-invariant
+observables.  In the explicit weighted coefficient-majorant norm, Lean proves
+\[
+  \lean{FiniteWilsonBlock.polynomialMajorantNorm\_truncate\_le},
+\]
+so canonical-dimension truncation has operator constant at most one on this
+realization.
+
+This is an explicit realization of the extraction idea, not a proof that v14's
+unspecified action-sector projection is the same operator.  The transfer issue
+is decided in
+\[
+  \lean{Mettapedia/QuantumTheory/YangMills/ExtendedExtractionTransfer.lean}.
+\]
+Lean constructs an idempotent skew projection onto the requested low-coordinate
+range whose coefficient \(\ell^1\) norm exceeds two:
+\[
+  \lean{projectionRangeSpecification\_does\_not\_imply\_bound\_two}.
+\]
+Thus specifying only the range of \(P_{\mathrm{ext}}\) cannot imply the advertised
+operator bound.  The same module proves the positive finite-matrix theorem
+\[
+  \lean{coefficientL1\_basisJetProjection\_le}:
+\]
+once explicit invariant-basis and dual-jet matrices are supplied, their
+column-sum bounds multiply.  V14 does not provide those matrices or their
+uniform conditioning for the dimension-16 action sector.
+
+The module
+\[
+  \lean{Mettapedia/QuantumTheory/YangMills/WilsonPolymerRecombination.lean}
+\]
+formalizes the regrouping of connected-family contributions by their union
+support.  For every nonnegative target weight,
+\[
+  \lean{polymerActivityMajorant\_recombineByUnion\_le}
+\]
+gives operator constant one.  The factor \(14\) therefore cannot be a further
+loss from this regrouping.  A concrete pair of connected rails in a finite
+\(2\times16\) lattice strip has sixteen contacts, refuting a universal
+total-contact interpretation.  The exact rooted interpretation is separately
+proved: in four dimensions there are two choices of marked endpoint and seven
+nonbacktracking directions, hence \(2(2\cdot4-1)=14\).  What remains is the
+weighted tree/KP theorem for the preceding map from Wilson activities to
+connected-family contributions.
+
+Finally,
+\[
+  \lean{Mettapedia/QuantumTheory/YangMills/WilsonExtractionRecombinationConstant.lean}
+\]
+checks the manuscript ledgers and the other proposed inferences.  The displayed
+Appendix-F.5 product is \(33152\) at \(b=2\); Appendix O's different product is
+\(11088/5\) with extraction factor two.  The bound
+\(\exp(O(\beta^{-1}))\leq\exp(1/2)\) does not follow without an explicit uniform
+big-O constant, and \(3b^4\) is not a raw connected-tree count.  Substituting
+the proved extraction factor one into Appendix O's \emph{other unproved
+factors} gives the conditional ledger \(5544/5\).  Under that conditional
+ledger the least unrestricted two-source depth is \(15\), while the least even
+depth is \(16\).  This is arithmetic under proposed factors, not a derived
+Wilson recursion constant.
+
+The resulting status is exact: there is no currently derived
+\(C_{\mathrm{true}}\) for the v14 Wilson RG recursion.  A completion must supply
+the actual dimension-16 invariant basis and dual jets, prove their uniform
+conditioning, and establish the fluctuation and weighted cumulant/tree/KP
+estimates in the same norm on the same Wilson family.
+
 \section{What Remains}
 
 This layer does not solve the Clay problem.  The hard work still includes:
@@ -982,8 +1064,15 @@ This layer does not solve the Clay problem.  The hard work still includes:
     local-operator vacuum correlations and proving the polymer/tree-decay
     estimates needed by the manuscript's OS reconstruction route.
   \item instantiating \lean{AffineRGStepBound} with the actual polymer norm
-    recurrence, including the one-step RG estimates and all constants feeding
-    the advertised \(2224\cdot2^{-13}<1\) contraction.
+    recurrence, including the one-step RG estimates and a newly derived
+    \(C_{\mathrm{true}}\); the manuscript's advertised \(2224\) is not presently
+    established.
+  \item supplying the dimension-16 gauge-invariant action basis, dual jets, and
+    uniform matrix-conditioning estimates needed to transfer the norm-one
+    Wilson-polynomial realization to the manuscript's extraction operator.
+  \item proving the fluctuation, connected-cumulant/tree, stopping-scale KP,
+    source-summability, and decaying-remainder estimates on the same actual
+    Wilson RG map and in the same norm.
   \item for any lower-even-extraction repair with \(d_{\max}<16\), either
     sharpening the \(d_{\max}=14\) recombination constant below \(2048\),
     justifying a nonstandard odd cutoff such as \(d_{\max}=15\), or abandoning

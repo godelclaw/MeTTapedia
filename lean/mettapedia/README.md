@@ -34,7 +34,7 @@ Mettapedia/
 ## Toolchain
 
 - The toolchain uses Lean 4.28.0 (see lean-toolchain).
-- The toolchain uses Mathlib v4.28.0 (see lakefile.toml).
+- The toolchain uses Mathlib v4.31.0 (see lakefile.lean).
 - Local dependencies live in local subdirectories when needed.
 
 ## Build
@@ -55,6 +55,11 @@ nice -n 19 lake build
 - the build runs nice -n 19 lake build.
 
 ## Notable subprojects
+
+- `Examples/PLN/`
+  - Examples/PLN hosts worked PLN and WM-PLN curriculum examples, including
+    raven induction, disease abduction, multi-source evidence, estimator
+    envelopes, WM-4 introspection, and the LC/BinaryEvidence logic tower.
 
 - `ProbabilityTheory/KnuthSkilling/`
   - ProbabilityTheory/KnuthSkilling hosts Knuth-Skilling Foundations of Inference proofs
@@ -134,7 +139,7 @@ cd ~/claude/hyperon/mettail-rust
 - Mettapedia/ProbabilityTheory/KnuthSkilling/README.md contains the Knuth-Skilling structure and build targets.
 
 ```bash
-rg -n "sorry" Mettapedia/
+rg -n "s[o]rry" Mettapedia/
 ```
 
 ## Contribution
@@ -149,4 +154,4 @@ rg -n "sorry" Mettapedia/
 - the policy keeps external checkouts untracked in ai-agents.
 - the policy references EXTERNAL_REPOS.md for exact clone and sync commands.
 
-Accountability trace: the CertifyingDatalog bridge at `/home/zar/claude/lean-projects/mettapedia/Mettapedia/Logic/LP/CertifyingDatalogBridge.lean` was reviewed by Codex 5.4 and Claude Code Opus 4.6.
+Accountability trace: the CertifyingDatalog bridge at `~/claude/lean-projects/mettapedia/Mettapedia/Logic/LP/CertifyingDatalogBridge.lean` was reviewed by Codex 5.4 and Claude Code Opus 4.6.

@@ -20,31 +20,31 @@ It is intentionally *not* a prose paper section (no `.md`), just a compiler-chec
 ## Core: Deduction + Consistency
 
 - Deduction strength formula (PLN book; MeTTa `DeductionFormula.metta`)
-  - Lean spec (numeric): `Mettapedia.Logic.PLNDeduction.simpleDeductionStrengthFormula`
-  - Lean derivation (probability + independence): `Mettapedia.Logic.PLN.pln_deduction_from_total_probability_ctx`
+  - Lean spec (numeric): `Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction.simpleDeductionStrengthFormula`
+  - Lean derivation (probability + independence): `Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation.pln_deduction_from_total_probability_ctx`
   - MeTTa parity proof: `Mettapedia.Implementation.MettaVerification.metta_deduction_correct`
 
 - Fréchet / consistency bounds (MeTTa "smallest/largest intersection" helpers)
-  - Lean bounds and equivalence: `Mettapedia.Logic.PLNFrechetBounds.frechet_bounds_iff_consistency`
+  - Lean bounds and equivalence: `Mettapedia.PLN.RuleFamilies.FirstOrder.PLNFrechetBounds.frechet_bounds_iff_consistency`
   - MeTTa inner-expression check: `Mettapedia.Implementation.MettaVerification.smallest_intersection_correct`
 
 ## BinaryEvidence Semantics (Quantale/Heyting layer)
 
-- BinaryEvidence carrier and operations: `Mettapedia.Logic.EvidenceQuantale`
+- BinaryEvidence carrier and operations: `Mettapedia.PLN.Evidence.EvidenceQuantale`
   - `BinaryEvidence` (counts `(nPlus, nMinus)`), `toStrength`, `toConfidence`
-  - revision-style aggregation lemma: `Mettapedia.Logic.EvidenceQuantale.BinaryEvidence.toStrength_hplus`
-  - polarity-swap negation rule: `Mettapedia.Logic.EvidenceQuantale.BinaryEvidence.toStrength_flip`
-    (defined in `Mettapedia.Logic.PLNDerivedFromEvidence`)
+  - revision-style aggregation lemma: `Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength_hplus`
+  - polarity-swap negation rule: `Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength_flip`
+    (defined in `Mettapedia.PLN.Evidence.PLNDerivedFromEvidence`)
 
-- KS vs BinaryEvidence (totality gate, “no faithful point semantics”)
-  - `Mettapedia.Logic.PLN_KS_Bridge.evidence_no_point_representation`
+- BinaryEvidence scalar order-reflection gate
+  - `Mettapedia.PLN.Evidence.PLN_KS_Bridge.evidence_no_orderEmbedding_into_real`
 
 ## Additional PLN book-style rules (partial coverage)
 
-- Similarity / inheritance conversions: `Mettapedia.Logic.PLNInferenceRules`
+- Similarity / inheritance conversions: `Mettapedia.PLN.RuleFamilies.FirstOrder.PLNInferenceRules`
   - `twoInh2Sim`, `inh2sim`, `sim2inh`, `transitiveSimilarity`
 
-- Modus ponens family: `Mettapedia.Logic.PLNInferenceRules`
+- Modus ponens family: `Mettapedia.PLN.RuleFamilies.FirstOrder.PLNInferenceRules`
   - `modusPonens`, `modusTollens`, `symmetricModusPonens`
 
 ## MeTTa Libraries: Truth-Function Coverage
@@ -71,7 +71,7 @@ Lean mirror: `Mettapedia.Logic.PLNMettaTruthFunctions`
 
 ### PeTTa NARS (`hyperon/PeTTa/lib/lib_nars.metta`)
 
-Lean mirror: `Mettapedia.Logic.NARSMettaTruthFunctions`
+Lean mirror: `Mettapedia.NARS.TruthFunctions`
 
 - Confidence↔weight helpers:
   - `c2w`, `w2c`
@@ -93,8 +93,8 @@ Lean mirror: `Mettapedia.Logic.NARSMettaTruthFunctions`
   - keep `[0,1]` strength/confidence as a lossy *view*, not the foundational carrier.
 
 - NARS parity:
-  - `Mettapedia.Logic.NARSMettaTruthFunctions` mirrors `lib_nars.metta` formulas.
-  - `Mettapedia.Logic.PLN` also contains a *paper-focused* PLN↔NARS power comparison
+  - `Mettapedia.NARS.TruthFunctions` mirrors `lib_nars.metta` formulas.
+  - `Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation` also contains a *paper-focused* PLN↔NARS power comparison
     (arXiv:2412.19524) in `PLNDerivation.lean`; it is intentionally separate from the PeTTa mirror.
 -/
 

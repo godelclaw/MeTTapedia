@@ -1,10 +1,10 @@
-import Mettapedia.Logic.BDD.ProbMeTTaSourceSurface
+import Mettapedia.Logic.BDD.ProbMeTTaSourceSyntax
 
 /-!
 # ProbMeTTa AD Runtime Core
 
 This file formalizes the source-level annotated-disjunction builders from
-`/home/zar/claude/ProbMeTTa/lib_prob.metta`:
+`~/claude/ProbMeTTa/lib_prob.metta`:
 
 - `new-id`
 - `build-ad-helper`
@@ -27,7 +27,7 @@ Positive example:
 Negative example:
 - this file does not claim that the literal last-head optimization is
   definitionally equal to `expandAD`; instead it provides a clean bridge back to
-  the normalized AD surface already formalized in Lean.
+  the normalized AD source language already formalized in Lean.
 -/
 
 namespace Mettapedia.Logic.BDDCore
@@ -378,7 +378,7 @@ theorem buildADRules_heads_eq_alts {σ : LPSignature}
       | cons r rs =>
           simp [buildADRules, ih, buildADHelper]
 
-/-- The normalized theorem-facing `probADRRules` surface has the same head
+/-- The normalized theorem-facing `probADRRules` interface has the same head
 profile as the source alternatives. -/
 theorem probADRRules_heads_eq_alts {σ : LPSignature}
     (alts : List (ENNReal × GroundAtom σ))

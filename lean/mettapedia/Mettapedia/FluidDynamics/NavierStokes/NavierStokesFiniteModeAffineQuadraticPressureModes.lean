@@ -61,7 +61,7 @@ theorem finiteModeMixedQuadraticPressureMode_gradient
         (x j) • (EuclideanSpace.proj i : NSSpace →L[ℝ] ℝ) +
           (x i) • (EuclideanSpace.proj j : NSSpace →L[ℝ] ℝ) := by
     ext y
-    rw [ContinuousLinearMap.add_apply]
+    rw [add_apply]
     rw [InnerProductSpace.toDual_apply_apply]
     simp [inner_add_left, inner_smul_left, EuclideanSpace.inner_single_left,
       add_comm]
@@ -72,6 +72,12 @@ theorem finiteModeMixedQuadraticPressureMode_gradient
   have hj : HasFDerivAt (fun y : NSSpace => y j)
       (EuclideanSpace.proj j : NSSpace →L[ℝ] ℝ) x := by
     exact (EuclideanSpace.proj j : NSSpace →L[ℝ] ℝ).hasFDerivAt
+  have hfun :
+      (fun y : NSSpace => y i * y j) =
+        ((fun y : NSSpace => y i) * fun y : NSSpace => y j) := by
+    funext y
+    rfl
+  rw [hfun]
   simpa [mul_comm, add_comm, add_left_comm, add_assoc] using hi.mul hj
 
 /-- Finite pressure basis for affine gradient fields: coordinate-linear

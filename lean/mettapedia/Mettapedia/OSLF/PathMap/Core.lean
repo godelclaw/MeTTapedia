@@ -21,7 +21,7 @@ Operations return `AlgebraicResult V` instead of `V` to avoid allocating when
 the result is identical to one of the inputs (structural-sharing optimization).
 
 ## References
-- `ring.rs`: `/home/zar/claude/hyperon/PathMap/src/ring.rs`
+- `ring.rs`: `~/claude/hyperon/PathMap/src/ring.rs`
 - PathMap book: `1.01.00_algebraic_ops.md`, `1.01.01_algebraic_traits.md`
 -/
 

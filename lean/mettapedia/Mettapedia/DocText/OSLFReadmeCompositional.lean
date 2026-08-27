@@ -66,7 +66,7 @@ private def promise_N := regN "promise"
 private def computability_N := regN "computability"
 private def equality_N := regN "equality"
 private def contract_N := regN "contract"
-private def surface_N := regN "surface"
+private def scope_N := regN "scope"
 private def tracker_N := regN "tracker"
 private def scope_N := regN "scope"
 private def parity_N := regN "parity"
@@ -116,8 +116,8 @@ inductive OSLFClaim where
   | langDiamondAndLangBoxDeriveModalOperators
   | langGaloisUsingProvesAdjunction
   | langOSLFPackagesDerivedTypeSystem
-  | declReducesIsSoundnessCompletenessBridge
-  | declReducesIsExecutableDeclarativeBridge
+  | contextualStepHasExactBoundedCompiler
+  | contextualStepGeneratesLeastAuthoredRelation
   | checkLangUsingProvidesExecutableChecker
   | checkerSoundnessConnectsToSemantics
   | formulaLayerHasCheckerSoundnessBridges
@@ -146,7 +146,7 @@ inductive OSLFClaim where
   | exportsSubsetForIngestion
   | currentBoundaryIsNotFullPremiseRichMeTTaFullIngestion
   -- NTT status
-  | nttClaimSurfaceIsFormalizedInNativeType
+  | nttClaimScopeIsFormalizedInNativeType
   | nttClaimTrackerIsAuthoritative
   | nttScopeIsTrackedClaimParity
   | nttScopeIsNotBlanketFutureWorkParity
@@ -362,18 +362,18 @@ def renderOSLFClaim : OSLFClaim → String
           (linAdjCN (linPositA (compoundA "type")) (linUseN system_N)))
       mkPresPos subj (complV2 (mkV2 (regV "package")) objNP)
 
-  -- "`...DeclReducesWithPremises.lean` is a soundness-completeness bridge"
-  | .declReducesIsSoundnessCompletenessBridge =>
-      let subj := properNameNP "`Mettapedia/OSLF/MeTTaIL/DeclReducesWithPremises.lean`"
+  -- "`...ContextualStep.lean` has an exact bounded compiler"
+  | .contextualStepHasExactBoundedCompiler =>
+      let subj := properNameNP "`Mettapedia/OSLF/MeTTaIL/ContextualStep.lean`"
       let complement := linDetCN aIndefArt
-        (linAdjCN (linPositA (compoundA "soundness-completeness")) (linUseN bridge_N))
+        (linAdjCN (linPositA (compoundA "exact-bounded")) (linUseN (regN "compiler")))
       mkPresPos subj (copulaNP complement)
 
-  -- "`...DeclReducesWithPremises.lean` is an executable-declarative bridge"
-  | .declReducesIsExecutableDeclarativeBridge =>
-      let subj := properNameNP "`Mettapedia/OSLF/MeTTaIL/DeclReducesWithPremises.lean`"
+  -- "`...ContextualStep.lean` generates the least authored relation"
+  | .contextualStepGeneratesLeastAuthoredRelation =>
+      let subj := properNameNP "`Mettapedia/OSLF/MeTTaIL/ContextualStep.lean`"
       let complement := linDetCN aIndefArt
-        (linAdjCN (linPositA (compoundA "executable-declarative")) (linUseN bridge_N))
+        (linAdjCN (linPositA (compoundA "least-authored")) (linUseN (regN "relation")))
       mkPresPos subj (copulaNP complement)
 
   -- "`checkLangUsing` provides an executable checker"
@@ -538,12 +538,12 @@ def renderOSLFClaim : OSLFClaim → String
               (linUseN boundary_N))))
       mkPresPos subj (complV2 (mkV2 (regV "align")) objNP)
 
-  -- "It is not a parser or a surface syntax standard"
+  -- "It is not a parser or a concrete syntax standard"
   | .isNotParserOrStandard =>
       let subj := properNameNP "It"
       let parserNP := linDetCN aIndefArt (linUseN parser_N)
       let standardNP := linDetCN aIndefArt
-        (linAdjCN (linPositA (compoundA "surface"))
+        (linAdjCN (linPositA (compoundA "syntax"))
           (linAdjCN (linPositA (compoundA "syntax"))
             (linUseN standard_N)))
       let coordCompl := linConjNP or_Conj [parserNP, standardNP]
@@ -607,13 +607,13 @@ def renderOSLFClaim : OSLFClaim → String
               (linUseN (regN "ingestion")))))
       capitalizeFirst <| mkPresNegCopulaNP subj complement
 
-  -- "`Mettapedia/OSLF/NativeType/` formalizes the strict NTT claim surface"
-  | .nttClaimSurfaceIsFormalizedInNativeType =>
+  -- "`Mettapedia/OSLF/NativeType/` formalizes the strict NTT claim scope"
+  | .nttClaimScopeIsFormalizedInNativeType =>
       let subj := properNameNP "`Mettapedia/OSLF/NativeType/`"
       let objNP := linDetCN theDefArt
         (linAdjCN (linPositA (compoundA "strict"))
           (linAdjCN (linPositA (compoundA "NTT"))
-            (linAdjCN (linPositA (compoundA "claim")) (linUseN surface_N))))
+            (linAdjCN (linPositA (compoundA "claim")) (linUseN scope_N))))
       mkPresPos subj (complV2 (mkV2 (regV "formalize")) objNP)
 
   -- "`.../NTTClaimTracker.lean` is the authoritative tracker"
@@ -678,8 +678,10 @@ private def canonicalApiItems : List ApiItem :=
                  ] }
   , { path := "Mettapedia/OSLF/Formula.lean"
       members := [ "OSLFFormula", "sem", "checkLangUsing" ] }
-  , { path := "Mettapedia/OSLF/MeTTaIL/DeclReducesWithPremises.lean"
-      members := [] }
+  , { path := "Mettapedia/OSLF/MeTTaIL/ContextualStep.lean"
+      members := [ "Step", "StepAt", "rewriteAt"
+                 , "mem_rewriteAt_iff_stepAt"
+                 , "exists_mem_rewriteAt_iff_step" ] }
   ]
 
 private def synthPathApiItems : List ApiItem :=
@@ -696,12 +698,10 @@ private def premiseAwareApiItems : List ApiItem :=
   [ { path := "Mettapedia/OSLF/MeTTaIL/Syntax.lean"
       members := [ "Premise", "RewriteRule", "LanguageDef" ] }
   , { path := "Mettapedia/OSLF/MeTTaIL/Engine.lean"
-      members := [ "RelationEnv"
-                 , "applyRuleWithPremisesUsing"
-                 , "rewriteWithContextWithPremisesUsing"
-                 ] }
-  , { path := "Mettapedia/OSLF/MeTTaIL/DeclReducesWithPremises.lean"
-      members := [] }
+      members := [ "RelationEnv", "applyRuleWithPremisesUsing" ] }
+  , { path := "Mettapedia/OSLF/MeTTaIL/ContextualStep.lean"
+      members := [ "engineBasePremises", "Step", "rewriteAt"
+                 , "exists_mem_rewriteAt_iff_step" ] }
   ]
 
 private def formulaApiItems : List ApiItem :=
@@ -1007,7 +1007,7 @@ def oslfReadmeBlocks : List ReadmeBlock :=
   , .heading 3 (renderOSLFHeading .canonicalAPIs)
   , .apiItems canonicalApiItems
   , .claimBullets
-      [ claimBullet .declReducesIsSoundnessCompletenessBridge ]
+      [ claimBullet .contextualStepHasExactBoundedCompiler ]
 
   , .heading 3 (renderOSLFHeading .startingPoints)
   , .pathItems startingPathItems
@@ -1077,7 +1077,7 @@ def oslfReadmeBlocks : List ReadmeBlock :=
 
   , .apiItems premiseAwareApiItems
   , .claimBullets
-      [ claimBullet .declReducesIsExecutableDeclarativeBridge ]
+      [ claimBullet .contextualStepGeneratesLeastAuthoredRelation ]
 
     -- ### 3) Formula Layer + Checker Soundness
   , .heading 3 (renderOSLFHeading .formulaLayerCheckerSoundness)
@@ -1092,7 +1092,7 @@ def oslfReadmeBlocks : List ReadmeBlock :=
   , .heading 3 (renderOSLFHeading .nativeTypeEndpoints)
 
   , .paragraph
-      [ renderOSLFClaim .nttClaimSurfaceIsFormalizedInNativeType
+      [ renderOSLFClaim .nttClaimScopeIsFormalizedInNativeType
       , renderOSLFClaim .nttClaimTrackerIsAuthoritative
       , renderOSLFClaim .nttScopeIsTrackedClaimParity
       , renderOSLFClaim .nttScopeIsNotBlanketFutureWorkParity
@@ -1184,7 +1184,7 @@ theorem anchor_takes_rewrite :
 
 theorem anchor_not_parser :
     renderOSLFClaim .isNotParserOrStandard =
-      "It isn't a parser or a surface syntax standard" := by
+      "It isn't a parser or a concrete syntax standard" := by
   native_decide
 
 theorem anchor_coremain_recommended :
@@ -1229,8 +1229,8 @@ def allOSLFClaims : List OSLFClaim :=
   , .langDiamondAndLangBoxDeriveModalOperators
   , .langGaloisUsingProvesAdjunction
   , .langOSLFPackagesDerivedTypeSystem
-  , .declReducesIsSoundnessCompletenessBridge
-  , .declReducesIsExecutableDeclarativeBridge
+  , .contextualStepHasExactBoundedCompiler
+  , .contextualStepGeneratesLeastAuthoredRelation
   , .checkLangUsingProvidesExecutableChecker
   , .checkerSoundnessConnectsToSemantics
   , .formulaLayerHasCheckerSoundnessBridges
@@ -1252,7 +1252,7 @@ def allOSLFClaims : List OSLFClaim :=
   , .validatedRoundtripScripts
   , .exportsSubsetForIngestion
   , .currentBoundaryIsNotFullPremiseRichMeTTaFullIngestion
-  , .nttClaimSurfaceIsFormalizedInNativeType
+  , .nttClaimScopeIsFormalizedInNativeType
   , .nttClaimTrackerIsAuthoritative
   , .nttScopeIsTrackedClaimParity
   , .nttScopeIsNotBlanketFutureWorkParity
@@ -1306,22 +1306,22 @@ theorem oslf_heading_image_witness
     parseOSLFHeadingLine? renderOSLFHeading oslfReadmeBlocks
     oslf_heading_images hMem
 
-private def insertSurfaceBucket (acc : List (String × List OSLFClaim)) (surface : String) (c : OSLFClaim) :
+private def insertRenderedBucket (acc : List (String × List OSLFClaim)) (rendered : String) (c : OSLFClaim) :
     List (String × List OSLFClaim) :=
   match acc with
-  | [] => [(surface, [c])]
+  | [] => [(rendered, [c])]
   | (k, cs) :: rest =>
-      if k = surface then
+      if k = rendered then
         (k, c :: cs) :: rest
       else
-        (k, cs) :: insertSurfaceBucket rest surface c
+        (k, cs) :: insertRenderedBucket rest rendered c
 
-def claimSurfaceBuckets : List (String × List OSLFClaim) :=
+def claimRenderedBuckets : List (String × List OSLFClaim) :=
   allOSLFClaims.foldl
-    (fun acc c => insertSurfaceBucket acc (renderOSLFClaim c) c) []
+    (fun acc c => insertRenderedBucket acc (renderOSLFClaim c) c) []
 
-def ambiguousClaimSurfaces : List (String × List OSLFClaim) :=
-  claimSurfaceBuckets.filter (fun p => p.snd.length > 1)
+def ambiguousClaimRenderings : List (String × List OSLFClaim) :=
+  claimRenderedBuckets.filter (fun p => p.snd.length > 1)
 
 -- Runtime diagnostics
 #eval
@@ -1350,10 +1350,10 @@ def ambiguousClaimSurfaces : List (String × List OSLFClaim) :=
     s!"OSLF structured parse failures: {repr fails}"
 
 #eval
-  if ambiguousClaimSurfaces.isEmpty then
-    "OSLF ambiguity diagnostic: no duplicate surfaces across distinct claims"
+  if ambiguousClaimRenderings.isEmpty then
+    "OSLF ambiguity diagnostic: no duplicate renderings across distinct claims"
   else
-    s!"OSLF ambiguity diagnostic: duplicate surfaces found: {repr ambiguousClaimSurfaces}"
+    s!"OSLF ambiguity diagnostic: duplicate renderings found: {repr ambiguousClaimRenderings}"
 
 /-! ## Coverage Guardrails
 
@@ -1365,7 +1365,7 @@ Literal policy for OSLF README:
   "`Main`", "`hyperon/mettail-rust`", "This", "It", "display",
   "\"all desired properties\"" — all legitimate proper names, pronouns,
   or technical identifiers
-- No raw-string claim surfaces remain in `renderOSLFClaim`
+- No raw-string claim renderings remain in `renderOSLFClaim`
 -/
 
 end Mettapedia.DocText.OSLFReadmeCompositional

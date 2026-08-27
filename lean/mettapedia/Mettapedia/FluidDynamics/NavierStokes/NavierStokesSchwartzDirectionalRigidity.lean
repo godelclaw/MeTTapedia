@@ -43,7 +43,9 @@ theorem translationInvariantAlong_of_fderiv_eq_zero_along
   let line : ℝ → NSSpace := AffineMap.lineMap x (x + v)
   let g : ℝ → F := fun r => f (line r)
   have hgdiff : Differentiable ℝ g := by
-    simpa [g, line] using hf.comp (AffineMap.lineMap x (x + v)).differentiable
+    have hcomp : Differentiable ℝ (f ∘ (AffineMap.lineMap x (x + v) : ℝ → NSSpace)) :=
+      hf.comp (AffineMap.lineMap x (x + v)).differentiable
+    simpa [g, line, Function.comp_def] using hcomp
   have hgzero : ∀ r : ℝ, deriv g r = 0 := by
     intro r
     have hline : HasDerivAt line v r := by
@@ -116,12 +118,32 @@ theorem schwartzMap_eq_zero_of_fderiv_eq_zero_along
     (f : 𝓢(NSSpace, F)) {v : NSSpace} (hv : v ≠ 0)
     (hzero : ∀ x : NSSpace, fderiv ℝ (fun z : NSSpace => f z) x v = 0) :
     f = 0 := by
-  have hdiff : Differentiable ℝ (fun z : NSSpace => f z) := by
-    simpa using f.smooth'.differentiable (by simp)
+  have hdiff : Differentiable ℝ (f : NSSpace → F) :=
+    f.smooth'.differentiable (by simp)
+  have hzero' : ∀ x : NSSpace, fderiv ℝ (f : NSSpace → F) x v = 0 := by
+    simpa using hzero
   exact
     schwartzMap_eq_zero_of_translationInvariantAlong f hv
-      (translationInvariantAlong_of_fderiv_eq_zero_along (f := fun z : NSSpace => f z)
-        hdiff hzero)
+      (translationInvariantAlong_of_fderiv_eq_zero_along (f := (f : NSSpace → F))
+        hdiff hzero')
+
+/-- A constant-valued Schwartz profile has zero constant value.  This is a
+small reusable form of the directional rigidity obstruction for derivatives:
+if a directional derivative is a nonzero constant, it cannot come from a
+Schwartz profile. -/
+theorem schwartzMap_constant_value_eq_zero
+    {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
+    (f : 𝓢(NSSpace, F)) {v : NSSpace} (hv : v ≠ 0) {c : F}
+    (hconst : ∀ x : NSSpace, f x = c) :
+    c = 0 := by
+  have hinv : TranslationInvariantAlong v (f : NSSpace → F) := by
+    intro x s
+    rw [hconst (x + s • v), hconst x]
+  have hfzero : f = 0 :=
+    schwartzMap_eq_zero_of_translationInvariantAlong f hv hinv
+  have hzeroAt0 :=
+    congrArg (fun g : 𝓢(NSSpace, F) => g (0 : NSSpace)) hfzero
+  simpa [hconst (0 : NSSpace)] using hzeroAt0
 
 /-- Concrete initial-velocity specialization of
 `schwartzMap_eq_zero_of_translationInvariantAlong`. -/

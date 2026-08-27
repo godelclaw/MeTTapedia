@@ -13,7 +13,7 @@ import Mettapedia.OSLF.Framework.PredFiniteSufficient
 Phase 1 of the HE ↔ PeTTa translation: prove that HE's evaluation
 is sound with respect to PeTTa's `MeTTaEval` on the **pure, no-grounded fragment**.
 
-## Reshaped Theorems (per council review)
+## Reshaped Theorems (per review review)
 
 The original `mettaCall_sound` overclaimed. This file provides three narrower,
 honest theorems:
@@ -65,7 +65,7 @@ theorem translatable_witness (a : Atom) (h : Translatable a) :
 
 /-! ## Hypothesis D: ExecGroundedOnly
 
-Council (Ritchie, Conway, Tang, Harper): Since `GroundedDispatch` is arbitrary,
+Review (Ritchie, Conway, Tang, Harper): Since `GroundedDispatch` is arbitrary,
 grounded elimination needs this constraint. Without it, the 5 grounded branches
 are NOT absurd — `dispatch.isExecutable` could return true on non-grounded atoms. -/
 
@@ -162,7 +162,7 @@ theorem atomToPattern_var (v : String) :
 
 /-! ## Theorem C: MettaCall Error Soundness
 
-Council (Knuth, Ritchie): Knock out the trivial case first. -/
+Review (Knuth, Ritchie): Knock out the trivial case first. -/
 
 /-- **MettaCall error soundness**: When HE's `MettaCall.error_passthrough` fires
     (atom is `(Error src msg)`), the PeTTa `errorPassThrough` constructor applies. -/
@@ -184,7 +184,7 @@ theorem mettaCall_error_sound
 
 /-! ## Theorem B: EvalAtom Leaf Soundness
 
-Council (Weirich, Wadler, SPJ, Brown): Narrow to what `MeTTaEval` can actually
+Review (Weirich, Wadler, SPJ, Brown): Narrow to what `MeTTaEval` can actually
 represent. Proved for: variables, errors. -/
 
 /-- **Variable leaf soundness**: HE's `EvalAtom` on a variable returns the variable
@@ -230,7 +230,7 @@ theorem evalAtom_error_sound
 
 /-! ## Theorem A: MettaCall Equation Step Soundness
 
-Council (McBride, Pfenning, Coquand, SPJ): Split by semantic layer. The one-step
+Review (McBride, Pfenning, Coquand, SPJ): Split by semantic layer. The one-step
 equation match IS the core claim. Recursion is a separate induction.
 
 The proof relies on a match correspondence lemma connecting HE's `simpleMatch`
@@ -238,25 +238,55 @@ The proof relies on a match correspondence lemma connecting HE's `simpleMatch`
 This lemma is stated below and is the key Phase 2 infrastructure. -/
 
 /-- Extract the original equation from `queryEquations` membership.
-    If `queryEquations` returns `(rhs', b)`, then there exists an original equation
-    `(= lhs_orig rhs_orig)` in `space.atoms` from which it was derived via freshening. -/
+    If `queryEquations` returns `(rhs', b)`, then there exists an indexed raw
+    equation `(= lhs_orig rhs_orig)` in `space.atoms` from which it was derived. -/
 theorem queryEquations_source (space : Space) (atom : Atom) (fuel : Nat)
     (rhs' : Atom) (qb : Bindings)
     (h : (rhs', qb) ∈ Mettapedia.Languages.MeTTa.HE.queryEquations space atom fuel) :
     ∃ lhs_orig rhs_orig idx,
-      (Atom.expression [.symbol "=", lhs_orig, rhs_orig], idx) ∈ space.atoms.zipIdx ∧
-      let (lhs_f, rhs_f) := Mettapedia.Languages.MeTTa.HE.freshenEquation idx lhs_orig rhs_orig fuel
-      rhs' = rhs_f ∧
-      Mettapedia.Languages.MeTTa.HE.simpleMatch lhs_f atom Bindings.empty fuel = some qb := by
-  simp only [Mettapedia.Languages.MeTTa.HE.queryEquations] at h
-  rw [List.mem_filterMap] at h
-  obtain ⟨⟨eq, idx⟩, hmem, hsome⟩ := h
-  simp only at hsome
-  split at hsome <;> simp_all
-  rename_i lhs_orig rhs_orig
-  split at hsome <;> simp_all
-  rename_i b' hmatch_eq
-  exact ⟨lhs_orig, rhs_orig, idx, hmem, hsome.1.symm, hmatch_eq⟩
+      (Atom.expression [.symbol "=", lhs_orig, rhs_orig], idx) ∈ space.atoms.zipIdx := by
+  cases fuel with
+  | zero =>
+      simp [Mettapedia.Languages.MeTTa.HE.queryEquations] at h
+  | succ n =>
+      rcases List.mem_flatMap.mp h with ⟨eqidx, heqidx, hout⟩
+      rcases eqidx with ⟨eq, idx⟩
+      cases eq with
+      | symbol s =>
+          simp at hout
+      | var v =>
+          simp at hout
+      | grounded g =>
+          simp at hout
+      | expression es =>
+          cases es with
+          | nil =>
+              simp at hout
+          | cons hd tl =>
+              cases hd with
+              | symbol s =>
+                  by_cases hs : s = "="
+                  · subst hs
+                    cases tl with
+                    | nil =>
+                        simp at hout
+                    | cons lhs_orig tl1 =>
+                        cases tl1 with
+                        | nil =>
+                            simp at hout
+                        | cons rhs_orig tl2 =>
+                            cases tl2 with
+                            | nil =>
+                                exact ⟨lhs_orig, rhs_orig, idx, by simpa using heqidx⟩
+                            | cons extra tl3 =>
+                                simp at hout
+                  · simp [hs] at hout
+              | var v =>
+                  simp at hout
+              | grounded g =>
+                  simp at hout
+              | expression es' =>
+                  simp at hout
 
 /-- **MettaCall equation step soundness**: If HE's `equation_match` fires
     (finding an equation in space whose LHS matches the atom), then there exists
@@ -282,7 +312,7 @@ theorem mettaCall_equation_step_sound
           ∃ pl pr, atomToPattern lhs_orig = some pl ∧
             atomToPattern rhs_orig = some pr ∧
             r.left = pl ∧ r.right = pr) := by
-  obtain ⟨lhs_orig, rhs_orig, idx, hmem, _, _⟩ := queryEquations_source space atom fuel rhs' queryBindings h_query
+  obtain ⟨lhs_orig, rhs_orig, idx, hmem⟩ := queryEquations_source space atom fuel rhs' queryBindings h_query
   have hmem_atoms : .expression [.symbol "=", lhs_orig, rhs_orig] ∈ space.atoms := by
     have ⟨_, hlt, heq⟩ := List.mem_zipIdx hmem
     simp at hlt
@@ -380,7 +410,7 @@ theorem evalAtom_symbol_sound
 
 /-! ## Phase 2, Step 2: Match Correspondence (HE simpleMatch → PeTTa matchPattern)
 
-Council (Carneiro, Pfenning, McBride): prove existence of a PeTTa match, not exact
+Review (Carneiro, Pfenning, McBride): prove existence of a PeTTa match, not exact
 binding equality. `simpleMatch` success implies `matchPattern` nonemptiness. -/
 
 /-- `matchPattern` on an fvar (wildcard) always succeeds with a singleton binding. -/
@@ -484,7 +514,7 @@ private theorem atomToPattern_never_bvar (a : Atom) (n : Nat) :
           | grounded g => simp [atomToPattern]
           | expression xs => simp [atomToPattern]
 
-/-! ## Phase 2: Commutation Infrastructure (GPT-5.4 Pro architecture, council 87%)
+/-! ## Phase 2: Commutation Infrastructure (GPT-5.4 Pro architecture, review 87%)
 
 The key insight: prove `applyBindings (heBindingsToOSLF qb) pl = pa` (the commutation),
 then derive matchPattern nonemptiness via `matchPattern_applyBindings_complete`. -/
@@ -625,11 +655,11 @@ All imported: `isBound_false_of_lookup_none`, `lookup_assign_of_lookup_none`,
 
 /-! ### Step J+K: The commutation theorem (GPT-5.4 Pro architecture)
 
-Council (Martin-Löf, Tao, Carneiro, 87%): The right invariant is
+Review (Martin-Löf, Tao, Carneiro, 87%): The right invariant is
 `applyBindings (heBindingsToOSLF qb) pl = pa`, not "matchPattern nonempty".
 Then `matchPattern_applyBindings_complete` finishes the job. -/
 
-/-- **Part 2: The commutation theorem** (GPT-Pro architecture, council 87%). -/
+/-- **Part 2: The commutation theorem** (GPT-Pro architecture, review 87%). -/
 private theorem simpleMatch_applyBindings_all (fuel : Nat) :
     (∀ lhs target b qb,
       Mettapedia.Languages.MeTTa.HE.simpleMatch lhs target b fuel = some qb →

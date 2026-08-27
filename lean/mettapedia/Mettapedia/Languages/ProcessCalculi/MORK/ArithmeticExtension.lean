@@ -2,14 +2,14 @@ import Mettapedia.Languages.ProcessCalculi.MORK.Conformance
 import Mettapedia.Languages.ProcessCalculi.MORK.ThreePhaseRefinement
 
 /-!
-# MORK Arithmetic / Comparison Extension Surface
+# MORK Arithmetic / Comparison Extension Interface
 
 Packages the currently live arithmetic sink and comparison-source extension lane
 around the existing core MORK formalization.
 
 ## What this file IS
 
-- A theorem-backed surface for the current Rust extension heads:
+- A theorem-backed interface for the current Rust extension heads:
   - integer sinks: `i+`, `i-`, `i*`, `ieq`
   - float sinks: `f+`, `f-`, `f*`, `f/`, `fgt`, `flt`, `feq`
   - comparison sources: `==`, `!=`
@@ -98,7 +98,7 @@ inductive IntArithOp where
 
 namespace IntArithOp
 
-/-- Surface head string used by the runtime dispatcher. -/
+/-- Source head string used by the runtime dispatcher. -/
 def head : IntArithOp → String
   | .add => "i+"
   | .sub => "i-"
@@ -163,12 +163,12 @@ example : IntArithOp.ofHead? "i/" = none := rfl
 example :
     intArithResultAtom .mul (.expression [.symbol "product"]) 6 7 =
       .expression [.symbol "product", .symbol "42"] := by
-  native_decide
+  decide
 
 example :
     intArithResultAtom .eq (.expression [.symbol "equal"]) 5 4 =
       .expression [.symbol "equal", .symbol "0"] := by
-  native_decide
+  decide
 
 /-! ## Float arithmetic sinks -/
 
@@ -185,7 +185,7 @@ inductive FloatArithOp where
 
 namespace FloatArithOp
 
-/-- Surface head string used by the runtime dispatcher. -/
+/-- Source head string used by the runtime dispatcher. -/
 def head : FloatArithOp → String
   | .add => "f+"
   | .sub => "f-"
@@ -256,17 +256,20 @@ theorem eval_eq_false_of_separated (a b : Float)
     eval .eq a b = 0.0 := by
   simp [eval, h]
 
-theorem eval_div_zero_branch (a : Float) :
+/-- The division provider takes its zero branch whenever the host float
+comparison classifies the divisor as zero.  Lean's built-in `Float.beq` is an
+opaque runtime primitive, so its concrete classification is kept as the
+provider premise instead of being discharged by native evaluation. -/
+theorem eval_div_zero_branch (a : Float)
+    (hzero : ((0.0 : Float) != 0.0) = false) :
     eval .div a 0.0 = 0.0 / 0.0 := by
-  have hzero : ((0.0 : Float) != 0.0) = false := by
-    native_decide
   simp [eval, hzero]
 
 end FloatArithOp
 
 /-- Runtime float rendering is intentionally a parameter here.
 
-This keeps the theorem surface honest: Rust uses `format!("{}", f64)`, which is
+This keeps the theorem family honest: Rust uses `format!("{}", f64)`, which is
 not Lean's default `Float.toString`. The arithmetic semantics are settled here;
 the exact printer remains a runtime rendering choice. -/
 abbrev FloatRenderer := Float → String
@@ -305,7 +308,7 @@ inductive CmpMode where
 
 namespace CmpMode
 
-/-- Surface head string used by the runtime source dispatcher. -/
+/-- Source head string used by the runtime source dispatcher. -/
 def head : CmpMode → String
   | .eq => "=="
   | .neq => "!="

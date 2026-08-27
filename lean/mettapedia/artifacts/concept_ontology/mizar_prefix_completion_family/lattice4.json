@@ -586,5 +586,5 @@
       "preview": "theorem for AF being non empty ClosedSubset of BL st Bottom BL in AF & Top BL in AF holds { FinMeet B : B c= SetImp AF }"
     }
   ],
-  "source_path": "/home/zar/claude/mizar/share/mml/lattice4.miz"
+  "source_path": "~/claude/mizar/share/mml/lattice4.miz"
 }

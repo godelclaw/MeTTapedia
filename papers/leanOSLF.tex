@@ -128,9 +128,9 @@ formalization, connecting:
   corollaries.
 \item Executable reduction engines handling COMM, DROP, and context descent, with
   machine-checked soundness theorems.
-\item Premise-aware declarative reduction relations
-  (\code{DeclReducesWithPremises}) independent of the engine, with proven
-  soundness and completeness of the generic premise-aware engine.
+\item A least authored contextual reduction relation
+  (\code{ContextualStep.Step}) independent of its fuel-indexed compiler, with
+  exact soundness and completeness and no representation-wide descent policy.
 \item \emph{Six} \OSLF{} instantiations validating generality:
   \rhocalc{}-calculus, lambda calculus, Petri nets, and TinyML (a multi-sort CBV
   $\lambda$-calculus with booleans, pairs, and thunks), plus MeTTaMinimal and
@@ -171,7 +171,7 @@ This draft reports what is machine-checked in the current Lean corpus; it is
 not a claim that every construction discussed across the broader literature
 folders has been fully formalized end-to-end.  In particular, the cited OSLF and
 Native Type Theory papers explicitly list larger future directions that remain
-outside the current core claim surface, including:
+outside the current core claim set, including:
 \begin{itemize}
 \item full internal natural-transformation presentation of modalities
   (\(\Omega \to \Omega\) endomorphisms) over the presheaf route,
@@ -245,7 +245,7 @@ for detailed status see
 
 \subsection{Canonical Endpoint Map}
 
-For review and downstream reuse, the canonical API surface is concentrated in
+For review and downstream reuse, the canonical public API is concentrated in
 \codepath{Mettapedia/OSLF/CoreMain.lean} and
 \codepath{Mettapedia/OSLF/Framework/PiRhoCanonicalBridge.lean}.
 The exact endpoint names are:
@@ -710,12 +710,13 @@ $n$ elements and an optional rest variable, it enumerates all ways to match the 
 pattern elements against term elements (backtracking search over permutations),
 binding unmatched elements to the rest variable.
 
-\paragraph{Declarative reduction.}
-The files \codepath{MeTTaIL/DeclReduces.lean} and
-\codepath{MeTTaIL/DeclReducesWithPremises.lean} provide declarative inductive
-reduction relations independent of the executable engine.  The generic
-premise-aware engine is proven both \emph{sound} and \emph{complete} with respect
-to the premise-aware specification (0~sorries).
+\paragraph{Authored contextual reduction.}
+The file \codepath{MeTTaIL/ContextualStep.lean} defines the independently
+inductive relation \code{ContextualStep.StepAt} and its unbounded least
+relation \code{ContextualStep.Step}.  Contextual authority is carried only by
+authored \code{Premise.congruence} premises.  The fuel-indexed compiler
+\code{rewriteAt} is proven both \emph{sound} and \emph{complete} at every
+depth, and existentially exact for the unbounded relation (0~sorries).
 
 \section{MeTTaIL and MeTTa Core}
 
@@ -841,10 +842,10 @@ A \code{LanguageDef} is \emph{predecessor-finite-safe} when:
 \begin{enumerate}
 \item every rewrite rule is \emph{variable-preserving}
       (every free variable in the LHS appears in the RHS),
-\item congruence descent is disabled (\code{congruenceCollections = []}),
-\item no rule carries premises, and
+\item no rule carries premises,
 \item both LHS and RHS are \code{isMatchCorrect}
       (no \code{.subst} or \code{.collection} nodes).
+\item no reflective presentation changes syntactic matching or substitution.
 \end{enumerate}
 \end{definition}
 
@@ -1541,7 +1542,7 @@ negative canary demonstrating that the \code{hClosed} assumption does real work.
 
 \item[\checkmark] \textbf{Milestone 4}: Correctness infrastructure.
   Totalized \code{Match.lean} (no \code{partial def} in core matching).
-  Declarative \code{DeclReduces} with engine soundness and completeness.
+  Least authored \code{ContextualStep.Step} with exact executable compilation.
   Enhanced formula checker with predecessor-based $\Bx$ checking.
 
 \item[\checkmark] \textbf{Milestone 5}: Language instances.
@@ -1668,7 +1669,7 @@ with \code{weight\_add} = \code{extract\_add}.
 
 \subsection{Calculus Soundness}
 
-\codepath{Logic/WMCalculusSoundness.lean} (0~sorries) defines the
+\codepath{PLN/WorldModel/WMCalculusSoundness.lean} (0~sorries) defines the
 soundness criterion for the WM calculus:
 
 \begin{enumerate}
@@ -1685,9 +1686,9 @@ the \code{extract\_add} law from the WM algebra.
 
 \subsection{Universality and Empirical Validation}
 
-\codepath{Logic/UniversalEnsembleWM.lean} (0~sorries) proves that every typed
+\codepath{PLN/WorldModel/UniversalEnsembleWM.lean} (0~sorries) proves that every typed
 observation space generates a unique additive world model (existence + uniqueness).
-\codepath{Logic/SourceReliability.lean} (0~sorries) adds a Dawid-Skene reliability
+\codepath{PLN/Evidence/SourceReliability.lean} (0~sorries) adds a Dawid-Skene reliability
 layer with per-source accuracy profiles.
 \codepath{Logic/PLNClassicExamples.lean} (0~sorries) validates deduction-revision,
 raven induction, and frame/relevance examples with kernel-checked stamp disjointness.

@@ -1,6 +1,6 @@
 {
-  "matrix_csv": "/home/zar/claude/Mettapedia/lean/mettapedia/Mettapedia/Languages/MeTTa/SpecProfiles/he-0.2.10-feature-coverage-matrix.csv",
-  "stdlib_path": "/home/zar/claude/hyperon/hyperon-experimental/lib/src/metta/runner/stdlib/stdlib.metta",
+  "matrix_csv": "~/claude/Mettapedia/lean/mettapedia/Mettapedia/Languages/MeTTa/SpecProfiles/he-0.2.10-feature-coverage-matrix.csv",
+  "stdlib_path": "~/claude/hyperon/hyperon-experimental/lib/src/metta/runner/stdlib/stdlib.metta",
   "total_extension_features": 176,
   "runtime_only_extensions": 131,
   "mapped_extensions": 45,

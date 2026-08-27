@@ -29,6 +29,8 @@ import Mettapedia.GraphTheory.Basic
 
 -- Probability Theory
 import Mettapedia.ProbabilityTheory.Basic
+import Mettapedia.ProbabilityTheory.Moments
+import Mettapedia.ProbabilityTheory.Exchangeability
 import Mettapedia.ProbabilityTheory.Cox
 import Mettapedia.ProbabilityTheory.ImpreciseProbability
 import KnuthSkilling.Overview
@@ -92,6 +94,7 @@ import Mettapedia.QuantumTheory.YangMills
 
 -- Algebra
 import Mettapedia.Algebra.QuantaleWeakness
+import Mettapedia.Algebra.TemporalQuantale
 
 -- Category Theory (Hypercube/OSLF framework for quantales)
 import Mettapedia.CategoryTheory.FuzzyFrame
@@ -172,8 +175,10 @@ import Mettapedia.Logic.PLNTruthTheoryIndex
 -- Universal AI (Hutter Chapters 2-7)
 import Mettapedia.UniversalAI.SimplicityUncertainty
 import Mettapedia.UniversalAI.BayesianAgents
+import Mettapedia.UniversalAI.OptimalityBoundary
 import Mettapedia.UniversalAI.ProblemClasses
 import Mettapedia.UniversalAI.TimeBoundedAIXI
+import Mettapedia.UniversalAI.Omega
 
 -- Value Under Ignorance (Wyeth & Hutter 2025)
 import Mettapedia.UniversalAI.ValueUnderIgnorance
@@ -201,6 +206,8 @@ import Mettapedia.Bridge.BitVectorEvidence
 
 -- Languages
 import Mettapedia.Languages.MeTTa
+import Mettapedia.Languages.MeTTa.PeTTa.MainlineTypeQueryGSLT
+import Mettapedia.Languages.MeTTa.PeTTa.CallGuardNativeKernel
 import Mettapedia.Languages.GF.GFWMConnections
 import Mettapedia.Languages.GF.GFWMConnectionsRegression
 import Mettapedia.Languages.GF.GFWMObligationAdapter
@@ -213,6 +220,8 @@ import Mettapedia.Conformance.SimplePeTTa
 
 -- Examples
 import Mettapedia.Examples.SymmetricMeasures
+import Mettapedia.Examples.PLN
+import Mettapedia.PLN.Bridges.GSLT.PeTTaTypedPLNNativeBridge
 
 -- 100 Creative Proofs
 import Mettapedia.HundredProofs

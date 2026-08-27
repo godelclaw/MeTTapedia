@@ -20,7 +20,7 @@
       "conjecture": "(! [A] : ( ( ~ (v2_struct_0(A)) & (v10_lattices(A) & l3_lattices(A)) ) => (! [B] : (m1_subset_1(B, u1_struct_0(A)) => ( (! [C] : (m1_subset_1(C, u1_struct_0(A)) => k3_lattices(A, B, C)=C) ) => B=k5_lattices(A)) ) ) ) )",
       "operation_family": "direct-k3-left-identity",
       "operation_term": "k3_lattices(A, B, C)",
-      "path": "/home/zar/claude/atps/datasets/extended_mptp5k/chainy/train/lattice2__lattice2__t14_lattice2",
+      "path": "~/claude/atps/datasets/extended_mptp5k/chainy/train/lattice2__lattice2__t14_lattice2",
       "problem": "lattice2__lattice2__t14_lattice2",
       "record_name": "t14_lattice2",
       "symbols": [
@@ -39,7 +39,7 @@
       "conjecture": "(! [A] : ( ( ~ (v2_struct_0(A)) & (v10_lattices(A) & l3_lattices(A)) ) => (! [B] : (m1_subset_1(B, u1_struct_0(A)) => ( (! [C] : (m1_subset_1(C, u1_struct_0(A)) => k4_binop_1(u1_struct_0(A), u2_lattices(A), B, C)=C) ) => B=k5_lattices(A)) ) ) ) )",
       "operation_family": "encoded-u2-left-identity",
       "operation_term": "k4_binop_1(u1_struct_0(A), u2_lattices(A), B, C)",
-      "path": "/home/zar/claude/atps/datasets/extended_mptp5k/chainy/train/lattice2__lattice2__t15_lattice2",
+      "path": "~/claude/atps/datasets/extended_mptp5k/chainy/train/lattice2__lattice2__t15_lattice2",
       "problem": "lattice2__lattice2__t15_lattice2",
       "record_name": "t15_lattice2",
       "symbols": [
@@ -59,7 +59,7 @@
       "conjecture": "(! [A] : ( ( ~ (v2_struct_0(A)) & (v10_lattices(A) & l3_lattices(A)) ) => (! [B] : (m1_subset_1(B, u1_struct_0(A)) => ( (! [C] : (m1_subset_1(C, u1_struct_0(A)) => k4_lattices(A, B, C)=C) ) => B=k6_lattices(A)) ) ) ) )",
       "operation_family": "direct-k4-left-identity",
       "operation_term": "k4_lattices(A, B, C)",
-      "path": "/home/zar/claude/atps/datasets/extended_mptp5k/chainy/train/lattice2__lattice2__t16_lattice2",
+      "path": "~/claude/atps/datasets/extended_mptp5k/chainy/train/lattice2__lattice2__t16_lattice2",
       "problem": "lattice2__lattice2__t16_lattice2",
       "record_name": "t16_lattice2",
       "symbols": [
@@ -78,7 +78,7 @@
       "conjecture": "(! [A] : ( ( ~ (v2_struct_0(A)) & (v10_lattices(A) & l3_lattices(A)) ) => (! [B] : (m1_subset_1(B, u1_struct_0(A)) => ( (! [C] : (m1_subset_1(C, u1_struct_0(A)) => k4_binop_1(u1_struct_0(A), u1_lattices(A), B, C)=C) ) => B=k6_lattices(A)) ) ) ) )",
       "operation_family": "encoded-u1-left-identity",
       "operation_term": "k4_binop_1(u1_struct_0(A), u1_lattices(A), B, C)",
-      "path": "/home/zar/claude/atps/datasets/extended_mptp5k/chainy/train/lattice2__lattice2__t17_lattice2",
+      "path": "~/claude/atps/datasets/extended_mptp5k/chainy/train/lattice2__lattice2__t17_lattice2",
       "problem": "lattice2__lattice2__t17_lattice2",
       "record_name": "t17_lattice2",
       "symbols": [

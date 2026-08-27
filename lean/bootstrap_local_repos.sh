@@ -31,6 +31,10 @@ clone_or_sync_repo() {
   fi
 
   if [ -n "$pinned_rev" ] && [ "$cloned_now" -eq 1 ]; then
+    if ! git -C "$dest" cat-file -e "${pinned_rev}^{commit}" 2>/dev/null &&
+        [ -n "$upstream_url" ]; then
+      git -C "$dest" fetch upstream "$pinned_rev"
+    fi
     git -C "$dest" checkout -B "$work_branch" "$pinned_rev"
     echo "pinned $rel_path -> $work_branch @ ${pinned_rev:0:12}"
   fi

@@ -56,10 +56,10 @@
   ],
   "metadata": {
     "artifact_files": [
-      "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_selector_extremum_bridge_schema.json",
-      "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t20_t25_synthesized_schema.json",
-      "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t21_t23_synthesized_schema.json",
-      "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t22_t24_synthesized_schema.json"
+      "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_selector_extremum_bridge_schema.json",
+      "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t20_t25_synthesized_schema.json",
+      "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t21_t23_synthesized_schema.json",
+      "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t22_t24_synthesized_schema.json"
     ],
     "attribute_presence": {
       "family:encoded-u1-left-identity": 1,
@@ -150,7 +150,7 @@
         "role": "left_identity",
         "schema_kind": "selector_extremum_bridge_schema",
         "selector_key": "u2",
-        "source_file": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_selector_extremum_bridge_schema.json",
+        "source_file": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_selector_extremum_bridge_schema.json",
         "target_family": "k5-extremum"
       },
       "object": "lattice2__lattice2__t15_lattice2"
@@ -186,7 +186,7 @@
         "role": "left_identity",
         "schema_kind": "selector_extremum_bridge_schema",
         "selector_key": "u1",
-        "source_file": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_selector_extremum_bridge_schema.json",
+        "source_file": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_selector_extremum_bridge_schema.json",
         "target_family": "k6-extremum"
       },
       "object": "lattice2__lattice2__t17_lattice2"
@@ -222,7 +222,7 @@
         "role": "unity",
         "schema_kind": "selector_extremum_bridge_schema",
         "selector_key": "u2",
-        "source_file": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_selector_extremum_bridge_schema.json",
+        "source_file": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_selector_extremum_bridge_schema.json",
         "target_family": "k5-extremum"
       },
       "object": "lattice2__lattice2__t18_lattice2"
@@ -258,7 +258,7 @@
         "role": "unity",
         "schema_kind": "selector_extremum_bridge_schema",
         "selector_key": "u1",
-        "source_file": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_selector_extremum_bridge_schema.json",
+        "source_file": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_selector_extremum_bridge_schema.json",
         "target_family": "k6-extremum"
       },
       "object": "lattice2__lattice2__t19_lattice2"
@@ -283,7 +283,7 @@
       "metadata": {
         "family": "encoded-u2-unity",
         "schema_kind": "selector_self_relation_assertion",
-        "source_file": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t20_t25_synthesized_schema.json"
+        "source_file": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t20_t25_synthesized_schema.json"
       },
       "object": "lattice2__lattice2__t20_lattice2"
     },
@@ -311,7 +311,7 @@
         "right_selector": "u1",
         "role": "from_v11",
         "schema_kind": "selector_mixed_relation_from_v11",
-        "source_file": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t21_t23_synthesized_schema.json"
+        "source_file": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t21_t23_synthesized_schema.json"
       },
       "object": "lattice2__lattice2__t21_lattice2"
     },
@@ -339,7 +339,7 @@
         "right_selector": "u1",
         "role": "implies_v11",
         "schema_kind": "selector_mixed_relation_implies_v11",
-        "source_file": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t22_t24_synthesized_schema.json"
+        "source_file": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t22_t24_synthesized_schema.json"
       },
       "object": "lattice2__lattice2__t22_lattice2"
     },
@@ -367,7 +367,7 @@
         "right_selector": "u2",
         "role": "from_v11",
         "schema_kind": "selector_mixed_relation_from_v11",
-        "source_file": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t21_t23_synthesized_schema.json"
+        "source_file": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t21_t23_synthesized_schema.json"
       },
       "object": "lattice2__lattice2__t23_lattice2"
     },
@@ -395,7 +395,7 @@
         "right_selector": "u2",
         "role": "implies_v11",
         "schema_kind": "selector_mixed_relation_implies_v11",
-        "source_file": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t22_t24_synthesized_schema.json"
+        "source_file": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t22_t24_synthesized_schema.json"
       },
       "object": "lattice2__lattice2__t24_lattice2"
     },
@@ -419,7 +419,7 @@
       "metadata": {
         "family": "encoded-u1-unity",
         "schema_kind": "selector_self_relation_assertion",
-        "source_file": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t20_t25_synthesized_schema.json"
+        "source_file": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t20_t25_synthesized_schema.json"
       },
       "object": "lattice2__lattice2__t25_lattice2"
     }

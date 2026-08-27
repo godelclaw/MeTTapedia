@@ -354,7 +354,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t14_lattice2",
-        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_d1_lattices/lattice2__lattice2__t14_lattice2"
+        "restricted_input": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_d1_lattices/lattice2__lattice2__t14_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -484,7 +484,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t15_lattice2",
-        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_d1_lattices/lattice2__lattice2__t15_lattice2"
+        "restricted_input": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_d1_lattices/lattice2__lattice2__t15_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -634,7 +634,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t16_lattice2",
-        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_d1_lattices/lattice2__lattice2__t16_lattice2"
+        "restricted_input": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_d1_lattices/lattice2__lattice2__t16_lattice2"
       },
       {
         "dropped_record_count": 0,
@@ -774,7 +774,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t17_lattice2",
-        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_d1_lattices/lattice2__lattice2__t17_lattice2"
+        "restricted_input": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_d1_lattices/lattice2__lattice2__t17_lattice2"
       }
     ],
     "drop_d2_lattices": [
@@ -924,7 +924,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t14_lattice2",
-        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_d2_lattices/lattice2__lattice2__t14_lattice2"
+        "restricted_input": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_d2_lattices/lattice2__lattice2__t14_lattice2"
       },
       {
         "dropped_record_count": 0,
@@ -1062,7 +1062,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t15_lattice2",
-        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_d2_lattices/lattice2__lattice2__t15_lattice2"
+        "restricted_input": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_d2_lattices/lattice2__lattice2__t15_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -1212,7 +1212,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t16_lattice2",
-        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_d2_lattices/lattice2__lattice2__t16_lattice2"
+        "restricted_input": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_d2_lattices/lattice2__lattice2__t16_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -1344,7 +1344,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t17_lattice2",
-        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_d2_lattices/lattice2__lattice2__t17_lattice2"
+        "restricted_input": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_d2_lattices/lattice2__lattice2__t17_lattice2"
       }
     ],
     "drop_redefinition_k3_lattices": [
@@ -1486,7 +1486,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t14_lattice2",
-        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_redefinition_k3_lattices/lattice2__lattice2__t14_lattice2"
+        "restricted_input": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_redefinition_k3_lattices/lattice2__lattice2__t14_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -1616,7 +1616,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t15_lattice2",
-        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_redefinition_k3_lattices/lattice2__lattice2__t15_lattice2"
+        "restricted_input": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_redefinition_k3_lattices/lattice2__lattice2__t15_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -1758,7 +1758,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t16_lattice2",
-        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_redefinition_k3_lattices/lattice2__lattice2__t16_lattice2"
+        "restricted_input": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_redefinition_k3_lattices/lattice2__lattice2__t16_lattice2"
       },
       {
         "dropped_record_count": 0,
@@ -1898,7 +1898,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t17_lattice2",
-        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_redefinition_k3_lattices/lattice2__lattice2__t17_lattice2"
+        "restricted_input": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_redefinition_k3_lattices/lattice2__lattice2__t17_lattice2"
       }
     ],
     "drop_redefinition_k4_binop_1": [
@@ -2048,7 +2048,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t14_lattice2",
-        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_redefinition_k4_binop_1/lattice2__lattice2__t14_lattice2"
+        "restricted_input": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_redefinition_k4_binop_1/lattice2__lattice2__t14_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -2187,7 +2187,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t15_lattice2",
-        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_redefinition_k4_binop_1/lattice2__lattice2__t15_lattice2"
+        "restricted_input": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_redefinition_k4_binop_1/lattice2__lattice2__t15_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -2337,7 +2337,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t16_lattice2",
-        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_redefinition_k4_binop_1/lattice2__lattice2__t16_lattice2"
+        "restricted_input": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_redefinition_k4_binop_1/lattice2__lattice2__t16_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -2478,7 +2478,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t17_lattice2",
-        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_redefinition_k4_binop_1/lattice2__lattice2__t17_lattice2"
+        "restricted_input": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_redefinition_k4_binop_1/lattice2__lattice2__t17_lattice2"
       }
     ],
     "drop_redefinition_k4_lattices": [
@@ -2620,7 +2620,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t14_lattice2",
-        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_redefinition_k4_lattices/lattice2__lattice2__t14_lattice2"
+        "restricted_input": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_redefinition_k4_lattices/lattice2__lattice2__t14_lattice2"
       },
       {
         "dropped_record_count": 0,
@@ -2758,7 +2758,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t15_lattice2",
-        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_redefinition_k4_lattices/lattice2__lattice2__t15_lattice2"
+        "restricted_input": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_redefinition_k4_lattices/lattice2__lattice2__t15_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -2900,7 +2900,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t16_lattice2",
-        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_redefinition_k4_lattices/lattice2__lattice2__t16_lattice2"
+        "restricted_input": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_redefinition_k4_lattices/lattice2__lattice2__t16_lattice2"
       },
       {
         "dropped_record_count": 1,
@@ -3032,7 +3032,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t17_lattice2",
-        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_redefinition_k4_lattices/lattice2__lattice2__t17_lattice2"
+        "restricted_input": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/drop_redefinition_k4_lattices/lattice2__lattice2__t17_lattice2"
       }
     ],
     "full": [
@@ -3179,7 +3179,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t14_lattice2",
-        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/full/lattice2__lattice2__t14_lattice2"
+        "restricted_input": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/full/lattice2__lattice2__t14_lattice2"
       },
       {
         "dropped_record_count": 0,
@@ -3315,7 +3315,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t15_lattice2",
-        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/full/lattice2__lattice2__t15_lattice2"
+        "restricted_input": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/full/lattice2__lattice2__t15_lattice2"
       },
       {
         "dropped_record_count": 0,
@@ -3462,7 +3462,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t16_lattice2",
-        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/full/lattice2__lattice2__t16_lattice2"
+        "restricted_input": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/full/lattice2__lattice2__t16_lattice2"
       },
       {
         "dropped_record_count": 0,
@@ -3600,7 +3600,7 @@
           "t8_boole"
         ],
         "problem": "lattice2__lattice2__t17_lattice2",
-        "restricted_input": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/full/lattice2__lattice2__t17_lattice2"
+        "restricted_input": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_definition_ablation/inputs/full/lattice2__lattice2__t17_lattice2"
       }
     ]
   },

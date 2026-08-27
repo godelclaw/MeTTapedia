@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<?xml-stylesheet type="text/xml" href="file:///home/zar/claude/mizar/share/miz.xml"?>
-<Definientia aid="TEST_MML_ATTR" mizfiles="/home/zar/claude/mizar/share/">
+<?xml-stylesheet type="text/xml" href="file://~/claude/mizar/share/miz.xml"?>
+<Definientia aid="TEST_MML_ATTR" mizfiles="~/claude/mizar/share/">
 <Definiens constrkind="K" constrnr="35" aid="TARSKI" defnr="1" relnr="1">
 <Typ kind="M" nr="1">
 <Cluster/>

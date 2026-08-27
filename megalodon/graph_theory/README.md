@@ -1,6 +1,6 @@
 # Graph Theory Formalization
 
-**Location**: `/home/zar/claude/megalodon/graph_theory/`
+**Location**: `~/claude/megalodon/graph_theory/`
 
 **Purpose**: General graph theory formalization in Megalodon, independent of specific applications.
 
@@ -22,7 +22,7 @@
 ## Verification
 
 ```bash
-cd /home/zar/claude/megalodon
+cd ~/claude/megalodon
 ./bin/megalodon -I Megalodon/examples/egal/PfgEAug2022Preamble.mgs graph_theory/graph_basics.mg
 ```
 

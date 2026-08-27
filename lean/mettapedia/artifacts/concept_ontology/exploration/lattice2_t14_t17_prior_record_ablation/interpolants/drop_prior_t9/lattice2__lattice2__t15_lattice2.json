@@ -1,6 +1,6 @@
 {
   "failure_kind": null,
-  "input_file": "/home/zar/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_prior_record_ablation/inputs/drop_prior_t9/lattice2__lattice2__t15_lattice2",
+  "input_file": "~/claude/Mettapedia/lean/mettapedia/artifacts/concept_ontology/exploration/lattice2_t14_t17_prior_record_ablation/inputs/drop_prior_t9/lattice2__lattice2__t15_lattice2",
   "interpolant": "(((~l3_lattices(sK25) | (?[X2] : ((m1_subset_1(X2,u1_struct_0(sK25)) & (k4_binop_1(u1_struct_0(sK25),u2_lattices(sK25),sK26,X2) != X2))))) & ~l3_lattices(sK25)) | (sK26 = k5_lattices(sK25)) | ~m1_subset_1(sK26,u1_struct_0(sK25)) | v2_struct_0(sK25) | ~v10_lattices(sK25) | ~l3_lattices(sK25))",
   "interpolant_features": {
     "avatar_component_count": 0,

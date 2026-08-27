@@ -3,7 +3,7 @@ import Mettapedia.OSLF.MeTTaIL.LanguageDefDSL
 /-!
 # GF Semantic Kernel in `languageDef!` Form
 
-This module captures the **council-clear** GF semantic kernel as a directly
+This module captures the **review-clear** GF semantic kernel as a directly
 authored `languageDef!` fragment:
 
 - 1 equation: `UseN(x) = x`
@@ -14,7 +14,7 @@ authored `languageDef!` fragment:
 It is intentionally a **semantic fragment**, not the full runtime-loaded GF
 grammar. The full constructor inventory still comes from `GFCore.GrammarSig`;
 this module exists to make the semantic kernel readable, reviewable, and
-reusable from the shared Lean `languageDef!` surface.
+reusable from the shared Lean `languageDef!` notation.
 -/
 
 namespace Mettapedia.Languages.GF.SemanticKernelDSL
@@ -117,9 +117,6 @@ def gfSemanticKernelLanguageDef : LanguageDef :=
       DetTheElim . cn:CN |- DetCN("the_Det", cn) ~> "⊛definite"(cn);
       DetNoElim . cn:CN |- DetCN("no_Det", cn) ~> "⊛negUniversal"(cn);
     }
-    logic { }
-    oracles { }
-    congruenceCollections { }
   }
 
 private def equationAt (i : Nat) (h : i < gfSemanticKernelLanguageDef.equations.length) : Equation :=

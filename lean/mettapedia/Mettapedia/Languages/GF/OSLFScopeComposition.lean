@@ -19,7 +19,7 @@ quantifier scope ordering via monotonicity of the Galois connection.
 
 If predicate φ ⊆ ψ pointwise (scope ordering), then ◇φ ⊆ ◇ψ (modal preserves ordering).
 
-## Council
+## Design rationale
 
 - Meredith, Stay: hypercube ◇ composes with quantifier semantics via monotonicity
 - de Paiva: ◇ is a left adjoint, preserves ⊔, transports lattice inequalities
@@ -58,23 +58,23 @@ theorem box_preserves_entailment (lang : LanguageDef)
 
 /-- **The composition theorem**: scope ordering lifts through ◇.
 
-    If `scopeInverse p → scopeSurface p` for all p (the scope ordering),
-    then `◇(scopeInverse) p → ◇(scopeSurface) p`.
+    If `scopeInverse p → sourceOrderScope p` for all p (the scope ordering),
+    then `◇(scopeInverse) p → ◇(sourceOrderScope) p`.
 
     This means: when a scope-ambiguous sentence is embedded via EmbedS (◇),
     the evidence ordering of the two readings is preserved. The modal
     operator doesn't collapse or invert the scope preference. -/
 theorem diamond_scope_composition (lang : LanguageDef)
-    (scopeInverse scopeSurface : Pattern → Prop)
-    (h_ordering : ∀ p, scopeInverse p → scopeSurface p) :
-    ∀ p, langDiamond lang scopeInverse p → langDiamond lang scopeSurface p :=
+    (scopeInverse sourceOrderScope : Pattern → Prop)
+    (h_ordering : ∀ p, scopeInverse p → sourceOrderScope p) :
+    ∀ p, langDiamond lang scopeInverse p → langDiamond lang sourceOrderScope p :=
   diamond_preserves_entailment lang h_ordering
 
 /-- □ also composes with scope ordering. -/
 theorem box_scope_composition (lang : LanguageDef)
-    (scopeInverse scopeSurface : Pattern → Prop)
-    (h_ordering : ∀ p, scopeInverse p → scopeSurface p) :
-    ∀ p, langBox lang scopeInverse p → langBox lang scopeSurface p :=
+    (scopeInverse sourceOrderScope : Pattern → Prop)
+    (h_ordering : ∀ p, scopeInverse p → sourceOrderScope p) :
+    ∀ p, langBox lang scopeInverse p → langBox lang sourceOrderScope p :=
   box_preserves_entailment lang h_ordering
 
 -- ═══════════════════════════════════════════════════════════════════
@@ -85,14 +85,14 @@ theorem box_scope_composition (lang : LanguageDef)
 
     `scope_ordering_qsemE2` gives: `qsemE2(∃y.∀x.φ)(p) ≤ qsemE2(∀x.∃y.φ)(p)`.
     Combined with `diamond_scope_composition`, any scope-dependent property
-    that holds at the inverse scope also holds at the surface scope,
+    that holds at the inverse scope also holds at the source-order scope,
     even after modal embedding via ◇. -/
 theorem diamond_scope_evidence_monotone
     (lang : LanguageDef)
     (R : Pattern → Pattern → Prop) (I : QEvidenceAtomSem)
     (Dom : Domain2) (env : VarEnv2)
     {x y : String} (hne : x ≠ y) (φ : QFormula2)
-    (P : _root_.Mettapedia.Logic.EvidenceQuantale.BinaryEvidence → Prop)
+    (P : _root_.Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence → Prop)
     (hP : Monotone P) :
     let invPred := fun p => P (qsemE2 R I Dom env (.qexists y (.qforall x φ)) p)
     let surfPred := fun p => P (qsemE2 R I Dom env (.qforall x (.qexists y φ)) p)

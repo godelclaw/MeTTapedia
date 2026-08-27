@@ -40,7 +40,7 @@
       ],
       "density": 0.2085843373493976,
       "row_count": 83,
-      "source_path": "/home/zar/claude/mizar/share/mml/conlat_1.miz"
+      "source_path": "~/claude/mizar/share/mml/conlat_1.miz"
     },
     {
       "article": "conlat_2",
@@ -58,7 +58,7 @@
       ],
       "density": 0.3168724279835391,
       "row_count": 27,
-      "source_path": "/home/zar/claude/mizar/share/mml/conlat_2.miz"
+      "source_path": "~/claude/mizar/share/mml/conlat_2.miz"
     },
     {
       "article": "yellow_0",
@@ -79,7 +79,7 @@
       ],
       "density": 0.18112244897959184,
       "row_count": 98,
-      "source_path": "/home/zar/claude/mizar/share/mml/yellow_0.miz"
+      "source_path": "~/claude/mizar/share/mml/yellow_0.miz"
     },
     {
       "article": "yellow_1",
@@ -94,7 +94,7 @@
       ],
       "density": 0.2222222222222222,
       "row_count": 51,
-      "source_path": "/home/zar/claude/mizar/share/mml/yellow_1.miz"
+      "source_path": "~/claude/mizar/share/mml/yellow_1.miz"
     },
     {
       "article": "yellow_2",
@@ -110,7 +110,7 @@
       ],
       "density": 0.24571428571428572,
       "row_count": 50,
-      "source_path": "/home/zar/claude/mizar/share/mml/yellow_2.miz"
+      "source_path": "~/claude/mizar/share/mml/yellow_2.miz"
     },
     {
       "article": "yellow_3",
@@ -120,7 +120,7 @@
       ],
       "density": 1.0,
       "row_count": 70,
-      "source_path": "/home/zar/claude/mizar/share/mml/yellow_3.miz"
+      "source_path": "~/claude/mizar/share/mml/yellow_3.miz"
     },
     {
       "article": "yellow_4",
@@ -134,7 +134,7 @@
       ],
       "density": 0.37777777777777777,
       "row_count": 72,
-      "source_path": "/home/zar/claude/mizar/share/mml/yellow_4.miz"
+      "source_path": "~/claude/mizar/share/mml/yellow_4.miz"
     },
     {
       "article": "yellow_5",
@@ -142,7 +142,7 @@
       "attributes": [],
       "density": 0.0,
       "row_count": 0,
-      "source_path": "/home/zar/claude/mizar/share/mml/yellow_5.miz"
+      "source_path": "~/claude/mizar/share/mml/yellow_5.miz"
     },
     {
       "article": "yellow_6",
@@ -172,7 +172,7 @@
       ],
       "density": 0.1259600614439324,
       "row_count": 93,
-      "source_path": "/home/zar/claude/mizar/share/mml/yellow_6.miz"
+      "source_path": "~/claude/mizar/share/mml/yellow_6.miz"
     },
     {
       "article": "yellow_7",
@@ -183,7 +183,7 @@
       ],
       "density": 0.5357142857142857,
       "row_count": 14,
-      "source_path": "/home/zar/claude/mizar/share/mml/yellow_7.miz"
+      "source_path": "~/claude/mizar/share/mml/yellow_7.miz"
     },
     {
       "article": "yellow_8",
@@ -199,7 +199,7 @@
       ],
       "density": 0.23660714285714285,
       "row_count": 32,
-      "source_path": "/home/zar/claude/mizar/share/mml/yellow_8.miz"
+      "source_path": "~/claude/mizar/share/mml/yellow_8.miz"
     },
     {
       "article": "yellow_9",
@@ -217,7 +217,7 @@
       ],
       "density": 0.20811287477954143,
       "row_count": 63,
-      "source_path": "/home/zar/claude/mizar/share/mml/yellow_9.miz"
+      "source_path": "~/claude/mizar/share/mml/yellow_9.miz"
     },
     {
       "article": "waybel_0",
@@ -258,7 +258,7 @@
       ],
       "density": 0.08085664335664336,
       "row_count": 143,
-      "source_path": "/home/zar/claude/mizar/share/mml/waybel_0.miz"
+      "source_path": "~/claude/mizar/share/mml/waybel_0.miz"
     },
     {
       "article": "waybel_1",
@@ -283,7 +283,7 @@
       ],
       "density": 0.12710084033613445,
       "row_count": 119,
-      "source_path": "/home/zar/claude/mizar/share/mml/waybel_1.miz"
+      "source_path": "~/claude/mizar/share/mml/waybel_1.miz"
     },
     {
       "article": "waybel_2",
@@ -299,7 +299,7 @@
       ],
       "density": 0.23809523809523808,
       "row_count": 54,
-      "source_path": "/home/zar/claude/mizar/share/mml/waybel_2.miz"
+      "source_path": "~/claude/mizar/share/mml/waybel_2.miz"
     },
     {
       "article": "waybel_3",
@@ -314,7 +314,7 @@
       ],
       "density": 0.23202614379084968,
       "row_count": 51,
-      "source_path": "/home/zar/claude/mizar/share/mml/waybel_3.miz"
+      "source_path": "~/claude/mizar/share/mml/waybel_3.miz"
     },
     {
       "article": "waybel_4",
@@ -347,7 +347,7 @@
       ],
       "density": 0.12301587301587301,
       "row_count": 105,
-      "source_path": "/home/zar/claude/mizar/share/mml/waybel_4.miz"
+      "source_path": "~/claude/mizar/share/mml/waybel_4.miz"
     },
     {
       "article": "waybel_5",
@@ -363,7 +363,7 @@
       ],
       "density": 0.23351648351648352,
       "row_count": 52,
-      "source_path": "/home/zar/claude/mizar/share/mml/waybel_5.miz"
+      "source_path": "~/claude/mizar/share/mml/waybel_5.miz"
     },
     {
       "article": "waybel_6",
@@ -380,7 +380,7 @@
       ],
       "density": 0.21739130434782608,
       "row_count": 46,
-      "source_path": "/home/zar/claude/mizar/share/mml/waybel_6.miz"
+      "source_path": "~/claude/mizar/share/mml/waybel_6.miz"
     },
     {
       "article": "waybel_7",
@@ -391,7 +391,7 @@
       ],
       "density": 0.75,
       "row_count": 6,
-      "source_path": "/home/zar/claude/mizar/share/mml/waybel_7.miz"
+      "source_path": "~/claude/mizar/share/mml/waybel_7.miz"
     },
     {
       "article": "waybel_8",
@@ -404,7 +404,7 @@
       ],
       "density": 0.35,
       "row_count": 30,
-      "source_path": "/home/zar/claude/mizar/share/mml/waybel_8.miz"
+      "source_path": "~/claude/mizar/share/mml/waybel_8.miz"
     },
     {
       "article": "waybel_9",
@@ -424,7 +424,7 @@
       ],
       "density": 0.17853231106243153,
       "row_count": 83,
-      "source_path": "/home/zar/claude/mizar/share/mml/waybel_9.miz"
+      "source_path": "~/claude/mizar/share/mml/waybel_9.miz"
     },
     {
       "article": "lattices",
@@ -458,7 +458,7 @@
       ],
       "density": 0.11555555555555555,
       "row_count": 72,
-      "source_path": "/home/zar/claude/mizar/share/mml/lattices.miz"
+      "source_path": "~/claude/mizar/share/mml/lattices.miz"
     },
     {
       "article": "lattice2",
@@ -476,7 +476,7 @@
       ],
       "density": 0.1925925925925926,
       "row_count": 45,
-      "source_path": "/home/zar/claude/mizar/share/mml/lattice2.miz"
+      "source_path": "~/claude/mizar/share/mml/lattice2.miz"
     },
     {
       "article": "lattice3",
@@ -496,7 +496,7 @@
       ],
       "density": 0.1852704257767549,
       "row_count": 79,
-      "source_path": "/home/zar/claude/mizar/share/mml/lattice3.miz"
+      "source_path": "~/claude/mizar/share/mml/lattice3.miz"
     },
     {
       "article": "lattice4",
@@ -525,7 +525,7 @@
       ],
       "density": 0.13018867924528302,
       "row_count": 53,
-      "source_path": "/home/zar/claude/mizar/share/mml/lattice4.miz"
+      "source_path": "~/claude/mizar/share/mml/lattice4.miz"
     },
     {
       "article": "lattice5",
@@ -567,7 +567,7 @@
       ],
       "density": 0.13696969696969696,
       "row_count": 75,
-      "source_path": "/home/zar/claude/mizar/share/mml/lattice5.miz"
+      "source_path": "~/claude/mizar/share/mml/lattice5.miz"
     },
     {
       "article": "lattice6",
@@ -587,7 +587,7 @@
       ],
       "density": 0.19264069264069264,
       "row_count": 42,
-      "source_path": "/home/zar/claude/mizar/share/mml/lattice6.miz"
+      "source_path": "~/claude/mizar/share/mml/lattice6.miz"
     },
     {
       "article": "lattice7",
@@ -602,7 +602,7 @@
       ],
       "density": 0.2716049382716049,
       "row_count": 27,
-      "source_path": "/home/zar/claude/mizar/share/mml/lattice7.miz"
+      "source_path": "~/claude/mizar/share/mml/lattice7.miz"
     },
     {
       "article": "lattice8",
@@ -625,7 +625,7 @@
       ],
       "density": 0.2434402332361516,
       "row_count": 49,
-      "source_path": "/home/zar/claude/mizar/share/mml/lattice8.miz"
+      "source_path": "~/claude/mizar/share/mml/lattice8.miz"
     },
     {
       "article": "latticea",
@@ -648,7 +648,7 @@
       ],
       "density": 0.13616071428571427,
       "row_count": 32,
-      "source_path": "/home/zar/claude/mizar/share/mml/latticea.miz"
+      "source_path": "~/claude/mizar/share/mml/latticea.miz"
     }
   ],
   "attribute_presence": {
