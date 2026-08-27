@@ -1020,6 +1020,29 @@ The remaining conditional in the final sentence is exactly the existence of
 the connected branch decomposition itself and its finite-tree packaging; it
 is not part of any of the six declarations just cited.
 
+The conversion also feeds the physical splice without another geometric
+choice.  Put $D_A=V(G)\setminus K_A$, open the ambient rotation system on
+$K_A$ and $D_A$, and match the two boundary copies by the ambient edge
+flip.  Suppose the ambient map is connected, bridgeless, spherical, cubic,
+has cyclic vertex rotations and two-sided faces; suppose both edge shores are
+connected and both majority shores are nonempty; and suppose the cut has two
+distinct boundary darts.  Then the canonical first-return hub rotations on
+the two shores have opposite orientation, both capped shores satisfy the
+spherical Euler equality, and their literal composite is a connected,
+bridgeless, spherical cubic map with cyclic vertex rotations.
+
+Indeed, Theorem~\ref{thm:connected-edge-shore-majority} supplies the two
+connected vertex shores.  The planar-bond rank theorem closes each shore by
+the inverse first-return hub rotation, the complementary-shore theorem proves
+that the two hub rotations are oppositely oriented under the ambient edge
+flip, and the seam face-count theorem proves sphericity of the composite.
+All other fields are transported directly through the literal splice.  This
+entire implication is machine-checked as
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedEdgeShoreStructuralData.bridgelessSphericalCubicMapData_of_majorityEdgeShore}
+Thus the remaining supplier problem is no longer ``turn a branch cut into a
+spherical splice''; it is to package the connected branch-decomposition cuts
+and the exact target-specific Count state consumed by replacement.
+
 \begin{lemma}[equal phases are separated]
 \label{lem:equal-depth-phases-separated}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SphereCutMaterial.period_le_sub_of_mod_eq}
@@ -1094,7 +1117,7 @@ states in the descent carrier.
 
 \begin{proposition}[wall-exclusion reduction, relative form]
 \label{prop:target-forced-wall}
-\Sconditional{planar wall theorem; sphere-cut supply; exact D3 replacement; route-native finite base}
+\Sconditional{planar wall theorem; connected branch-decomposition supply; exact Count replacement; route-native finite base}
 Fix the normal-form class and one direct-Count or Lift target.  Suppose there
 are computable \(r,w\) such that:
 \begin{enumerate}
@@ -1102,10 +1125,13 @@ are computable \(r,w\) such that:
 \(r\)-wall;
 \item every plane instance in the class with no such wall has branchwidth at
 most \(w\);
-\item every width-\(w\) instance in the class has a sphere-cut supply of the
-precise kind consumed by Theorem~\ref{thm:typed-sphere-cut-descent}; and
-\item the supply's equal-state replacement is the D3 physical splice and
-stays inside the normal-form class.
+\item every width-\(w\) instance in the class has a connected branch
+decomposition whose non-leaf shores, converted by
+Theorem~\ref{thm:connected-edge-shore-majority}, carry the precise finite
+states consumed by Theorem~\ref{thm:typed-sphere-cut-descent}; and
+\item equality of two supplied states gives exact Count replacement, and
+the resulting majority-shore splice stays inside the normal-form class after
+the permitted normalization.
 \end{enumerate}
 Then every vertex-minimal zero-target instance has an effective vertex
 bound.  If the route-native finite base below that bound is empty, there is
@@ -1119,9 +1145,12 @@ each branch set to a subdivision: the at most three incident model edges are
 joined by a minimal tree, whose three terminal paths have one common branch
 point and are otherwise internally disjoint.  Thus the minor and topological
 forms agree for this wall in a cubic host.  Hypothesis~2 supplies the width
-bound, Hypothesis~3 constructs the decomposition, and Hypothesis~4 supplies
-its strict replacement.  Theorem~\ref{thm:typed-sphere-cut-descent} gives the
-effective vertex bound.  An empty finite base rules out \(X\).
+bound, Hypothesis~3 constructs the decomposition and its canonical majority
+shores, and Hypothesis~4 supplies exact strict replacement.  The structural
+part of that splice is the checked implication following
+Theorem~\ref{thm:connected-edge-shore-majority}.
+Theorem~\ref{thm:typed-sphere-cut-descent} gives the effective vertex bound.
+An empty finite base rules out \(X\).
 \end{proof}
 
 One sufficient way to establish Hypothesis~1 is the stronger statement that
@@ -2605,12 +2634,14 @@ already made it strictly smaller than \(M\).
 Therefore a duplicate seam edge need not enlarge the finite receipt.  One
 may glue in the loopless multigraph category and normalize only after the
 closed zero-Count composite has been produced.  The remaining D3-to-supply
-link is narrower than a transverse-noose construction: the chosen sphere-cut
-decomposition must yield nested connected literal shores and an ordered
-seam-state identification preserving the retained first-return order.  The
-natural edge-flip then supplies reversal on the complementary shore.  The cap
-face count, cap sphericity, one-hub property, and orientation reversal are no
-longer open.
+link is now purely state-theoretic: a connected branch decomposition gives
+nested connected literal shores by the majority construction, and the
+natural edge-flip supplies the complementary boundary matching and its
+reversal.  What remains is an ordered finite-state identification strong
+enough for exact Count replacement, followed by the stated normalization if
+the seam creates a parallel pair.  The cap face count, cap sphericity,
+one-hub property, orientation reversal, connectedness, bridge-freeness,
+cubicity, and cyclic vertex rotations are no longer open.
 
 \begin{theorem}[direct Count-reductive assembly]
 \label{thm:direct-count-reductive-assembly}
@@ -2649,12 +2680,13 @@ contradicts minimality.  The Tait bridge gives the Four-Colour Theorem.
 
 \begin{corollary}[wall-exclusion assembly]
 \label{cor:wall-exclusion-assembly}
-\Sconditional{Tait bridge; fixed-wall exclusion for least counterexamples; sphere-cut supply; D3 replacement; route-native finite base}
+\Sconditional{Tait bridge; fixed-wall exclusion for least counterexamples; connected branch-decomposition supply; exact Count replacement; route-native finite base}
 Assume the Tait/minimal-counterexample bridge.  Assume there is a fixed
 wall excluded from every least Tait counterexample, that wall-free members
-of the normal-form class carry the exact sphere-cut supply of
+of the normal-form class carry a connected branch decomposition whose
+majority shores carry the exact states of
 Theorem~\ref{thm:typed-sphere-cut-descent}, and that equal supplied states
-admit the D3 physical replacement inside that class.  If the resulting
+admit exact Count replacement inside that class.  If the resulting
 route-native finite base contains no counterexample, then every planar graph
 is four-colourable.
 \end{corollary}
@@ -2762,14 +2794,16 @@ source-preserving local ladder transport;
 Proposition~\ref{prop:target-forced-cut-chain}; the raw noose Count theorem
 and physical support-state splice; and a route-native finite base.  The
 tree-form chain replaces the global corridor proposition by fixed-wall
-exclusion plus an exact sphere-cut supply.  Both chains use D3 and the same
-finite base.
+exclusion plus a connected branch-decomposition supply and its exact Count
+state.  Both chains use the same checked majority-shore D3 splice and the
+same finite base.
 
 At present the decisive open premises are therefore: either the
 target-forced global cut chain or fixed-wall exclusion together with the
-sphere-cut adapters; the compatible tight vertex-noose to edge-noose
-perturbation; and the route-native finite base.  D3's face count, Euler
-arithmetic, and loopless-multigraph normalization are no longer open.  The mesh
+connected branch-decomposition state adapter; exact Count replacement; and
+the route-native finite base.  A compatible tight vertex-noose to edge-noose
+perturbation is optional rather than load-bearing.  D3's face count, Euler
+arithmetic, and majority-shore structural packaging are no longer open.  The mesh
 isoperimetry theorem proves that a large wall does not automatically supply
 the linear chain, but it does not exclude the wall.  An executable minimized
 Cell closure remains important for making the base small enough to replay,
