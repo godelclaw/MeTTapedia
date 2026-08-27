@@ -1,9 +1,22 @@
 import Mettapedia.Languages.MeTTa.PeTTa.Answers
 import Mettapedia.Languages.MeTTa.PeTTa.SpaceSemantics
 import Mettapedia.Languages.MeTTa.PeTTa.Eval
+import Mettapedia.Languages.MeTTa.PeTTa.DispatchCoverage
+import Mettapedia.Languages.MeTTa.PeTTa.BodyClosureFusion
 import Mettapedia.Languages.MeTTa.PeTTa.LPSoundness
+import Mettapedia.Languages.MeTTa.PeTTa.FunctionFreeLPBridge
 import Mettapedia.Languages.MeTTa.PeTTa.Effects
 import Mettapedia.Languages.MeTTa.PeTTa.TypeSystem
+import Mettapedia.Languages.MeTTa.PeTTa.TypecheckV3Core
+import Mettapedia.Languages.MeTTa.PeTTa.TypecheckV3Seam
+import Mettapedia.Languages.MeTTa.PeTTa.TypeSystemGSLT
+import Mettapedia.Languages.MeTTa.PeTTa.TypeSystemGSLTLayers
+import Mettapedia.Languages.MeTTa.PeTTa.TypeSystemGSLTDeterminism
+import Mettapedia.Languages.MeTTa.PeTTa.TypeSystemGSLTGuard
+import Mettapedia.Languages.MeTTa.PeTTa.TypeSystemGSLTDecision
+import Mettapedia.Languages.MeTTa.PeTTa.TypeSystemGSLTComposition
+import Mettapedia.Languages.MeTTa.PeTTa.TypeSystemGSLTPlan
+import Mettapedia.Languages.MeTTa.PeTTa.TypedOperationalGSLT
 import Mettapedia.Languages.MeTTa.PeTTa.TypedEval
 import Mettapedia.Languages.MeTTa.PeTTa.MinimalInstructions
 import Mettapedia.Languages.MeTTa.PeTTa.MeTTaEval
@@ -26,6 +39,7 @@ import Mettapedia.Languages.MeTTa.PeTTa.RewriteIRV2
 import Mettapedia.Languages.MeTTa.PeTTa.Artifacts
 import Mettapedia.Languages.MeTTa.PeTTa.CoreFragment
 import Mettapedia.Languages.MeTTa.PeTTa.SpaceCoreFragment
+import Mettapedia.Languages.MeTTa.PeTTa.MeTTaZeroExtension
 import Mettapedia.Languages.MeTTa.PeTTa.Unit
 import Mettapedia.Languages.MeTTa.PeTTa.StageIndex
 import Mettapedia.Languages.MeTTa.PeTTa.OSLFPackage
@@ -36,7 +50,7 @@ import Mettapedia.Languages.MeTTa.PeTTa.SemanticBundle
 /-!
 # PeTTa MeTTa Semantics
 
-Public import surface for the PeTTa semantic stack.
+Public import interface for the PeTTa semantic stack.
 
 ## Semantic Layers
 

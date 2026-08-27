@@ -3,8 +3,7 @@ import Mettapedia.OSLF.MeTTaIL.Semantics
 import Mettapedia.OSLF.MeTTaIL.Substitution
 import Mettapedia.OSLF.MeTTaIL.Match
 import Mettapedia.OSLF.MeTTaIL.Engine
-import Mettapedia.OSLF.MeTTaIL.DeclReduces
-import Mettapedia.OSLF.MeTTaIL.DeclReducesWithPremises
+import Mettapedia.OSLF.MeTTaIL.ContextualStep
 import Mettapedia.OSLF.MeTTaIL.MatchSpec
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.Types
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.Soundness
@@ -13,6 +12,7 @@ import Mettapedia.Languages.ProcessCalculi.RhoCalculus.Engine
 import Mettapedia.OSLF.Framework.RewriteSystem
 import Mettapedia.OSLF.Framework.RhoInstance
 import Mettapedia.OSLF.Framework.DerivedModalities
+import Mettapedia.OSLF.Framework.InterpretedTypeSynthesis
 import Mettapedia.OSLF.Framework.CategoryBridge
 import Mettapedia.OSLF.Framework.FULLStatus
 import Mettapedia.OSLF.Framework.TypeSynthesis
@@ -51,12 +51,12 @@ import Mettapedia.OSLF.Formula
 import Mettapedia.OSLF.Decidability
 import Mettapedia.OSLF.QuantifiedFormula
 import Mettapedia.OSLF.QuantifiedFormula2
-import Mettapedia.Logic.OSLFDistinctionGraph
-import Mettapedia.Logic.OSLFDistinctionGraphWeighted
-import Mettapedia.Logic.OSLFDistinctionGraphWM
-import Mettapedia.Logic.OSLFDistinctionGraphEntropy
-import Mettapedia.Logic.OSLFKripkeBridge
-import Mettapedia.Logic.OSLFImageFinite
+import Mettapedia.OSLF.Framework.DistinctionGraph
+import Mettapedia.OSLF.Framework.DistinctionGraph.Weighted
+import Mettapedia.OSLF.Framework.DistinctionGraph.WorldModel
+import Mettapedia.OSLF.Framework.DistinctionGraph.Entropy
+import Mettapedia.OSLF.Bridges.Foundation.Kripke
+import Mettapedia.OSLF.Framework.ImageFinite
 import Mettapedia.OSLF.Framework.PiRhoCanonicalBridge
 import Mettapedia.OSLF.Framework.SubstitutabilityTheorem1
 import Mettapedia.OSLF.PathMap
@@ -313,14 +313,17 @@ theorem coreMain_piRho_contract_projection_api
           Mettapedia.OSLF.Framework.PiRhoCanonicalBridge.rhoCoreStarRel)
       (I : Mettapedia.OSLF.Formula.AtomSem)
       {p q : Mettapedia.OSLF.MeTTaIL.Syntax.Pattern},
-      Mettapedia.Logic.OSLFKSUnificationSketch.OSLFObsEq S.rel I p q →
-      Mettapedia.Logic.OSLFKSUnificationSketch.Bisimilar S.rel p q)
+      Mettapedia.OSLF.Framework.KSUnificationSketch.OSLFObsEq S.rel I p q →
+      Mettapedia.OSLF.Framework.KSUnificationSketch.Bisimilar S.rel p q)
     ∧
-    (∀ (I : Mettapedia.OSLF.Formula.AtomSem)
+    (∀ (_hImageFinite : ∀ p : Mettapedia.OSLF.MeTTaIL.Syntax.Pattern,
+        Set.Finite {q : Mettapedia.OSLF.MeTTaIL.Syntax.Pattern |
+          Mettapedia.OSLF.Framework.PiRhoCanonicalBridge.rhoCoreCanonicalRel p q})
+      (I : Mettapedia.OSLF.Formula.AtomSem)
       {p q : Mettapedia.OSLF.MeTTaIL.Syntax.Pattern},
-      Mettapedia.Logic.OSLFKSUnificationSketch.OSLFObsEq
+      Mettapedia.OSLF.Framework.KSUnificationSketch.OSLFObsEq
         Mettapedia.OSLF.Framework.PiRhoCanonicalBridge.rhoCoreCanonicalRel I p q →
-      Mettapedia.Logic.OSLFKSUnificationSketch.Bisimilar
+      Mettapedia.OSLF.Framework.KSUnificationSketch.Bisimilar
         Mettapedia.OSLF.Framework.PiRhoCanonicalBridge.rhoCoreCanonicalRel p q) := by
   let C :=
     coreMain_piRho_canonical_contract
@@ -349,13 +352,14 @@ theorem coreMain_nativeType_piOmega_translation_endpoint
     {L₁ L₂ : Mettapedia.CategoryTheory.LambdaTheories.LambdaTheory}
     (F : Mettapedia.OSLF.NativeType.TheoryMorphism L₁ L₂)
     (S : L₁.Obj)
-    (types : Set (L₁.fibration.Sub S)) :
-    F.mapPred (Mettapedia.OSLF.NativeType.piType L₁ S types) =
-      Mettapedia.OSLF.NativeType.piType L₂ (F.mapSort S) (F.mapPred '' types)
+    (predicateFamily : Set (L₁.fibration.Sub S)) :
+    F.mapPred (Mettapedia.OSLF.NativeType.piType L₁ S predicateFamily) =
+      Mettapedia.OSLF.NativeType.piType L₂ (F.mapSort S)
+        (F.mapPred '' predicateFamily)
     ∧
     (F.mapNatType (Mettapedia.OSLF.NativeType.NatType.full (L := L₁) S)).pred =
       (Mettapedia.OSLF.NativeType.NatType.full (L := L₂) (F.mapSort S)).pred := by
-  exact F.piOmega_translation_endpoint S types
+  exact F.piOmega_translation_endpoint S predicateFamily
 
 /-- CoreMain-facing Native Type translation endpoint for Π/Ω/Prop implication
 preservation across theory morphisms. -/
@@ -363,17 +367,18 @@ theorem coreMain_nativeType_piOmegaProp_translation_endpoint
     {L₁ L₂ : Mettapedia.CategoryTheory.LambdaTheories.LambdaTheory}
     (F : Mettapedia.OSLF.NativeType.TheoryMorphism L₁ L₂)
     (S : L₁.Obj)
-    (types : Set (L₁.fibration.Sub S))
+    (predicateFamily : Set (L₁.fibration.Sub S))
     (φ ψ : L₁.fibration.Sub S) :
-    F.mapPred (Mettapedia.OSLF.NativeType.piType L₁ S types) =
-      Mettapedia.OSLF.NativeType.piType L₂ (F.mapSort S) (F.mapPred '' types)
+    F.mapPred (Mettapedia.OSLF.NativeType.piType L₁ S predicateFamily) =
+      Mettapedia.OSLF.NativeType.piType L₂ (F.mapSort S)
+        (F.mapPred '' predicateFamily)
     ∧
     (F.mapNatType (Mettapedia.OSLF.NativeType.NatType.full (L := L₁) S)).pred =
       (Mettapedia.OSLF.NativeType.NatType.full (L := L₂) (F.mapSort S)).pred
     ∧
     F.mapPred (Mettapedia.OSLF.NativeType.implType L₁ S φ ψ) =
       Mettapedia.OSLF.NativeType.implType L₂ (F.mapSort S) (F.mapPred φ) (F.mapPred ψ) := by
-  exact F.piOmegaProp_translation_endpoint S types φ ψ
+  exact F.piOmegaProp_translation_endpoint S predicateFamily φ ψ
 
 /-- CoreMain-facing Native Type translation endpoint for Π/Σ/Ω/Prop implication
 preservation across theory morphisms. -/
@@ -381,20 +386,22 @@ theorem coreMain_nativeType_piSigmaOmegaProp_translation_endpoint
     {L₁ L₂ : Mettapedia.CategoryTheory.LambdaTheories.LambdaTheory}
     (F : Mettapedia.OSLF.NativeType.TheoryMorphism L₁ L₂)
     (S : L₁.Obj)
-    (types : Set (L₁.fibration.Sub S))
+    (predicateFamily : Set (L₁.fibration.Sub S))
     (φ ψ : L₁.fibration.Sub S) :
-    F.mapPred (Mettapedia.OSLF.NativeType.piType L₁ S types) =
-      Mettapedia.OSLF.NativeType.piType L₂ (F.mapSort S) (F.mapPred '' types)
+    F.mapPred (Mettapedia.OSLF.NativeType.piType L₁ S predicateFamily) =
+      Mettapedia.OSLF.NativeType.piType L₂ (F.mapSort S)
+        (F.mapPred '' predicateFamily)
     ∧
-    F.mapPred (Mettapedia.OSLF.NativeType.sigmaType L₁ S types) =
-      Mettapedia.OSLF.NativeType.sigmaType L₂ (F.mapSort S) (F.mapPred '' types)
+    F.mapPred (Mettapedia.OSLF.NativeType.sigmaType L₁ S predicateFamily) =
+      Mettapedia.OSLF.NativeType.sigmaType L₂ (F.mapSort S)
+        (F.mapPred '' predicateFamily)
     ∧
     (F.mapNatType (Mettapedia.OSLF.NativeType.NatType.full (L := L₁) S)).pred =
       (Mettapedia.OSLF.NativeType.NatType.full (L := L₂) (F.mapSort S)).pred
     ∧
     F.mapPred (Mettapedia.OSLF.NativeType.implType L₁ S φ ψ) =
       Mettapedia.OSLF.NativeType.implType L₂ (F.mapSort S) (F.mapPred φ) (F.mapPred ψ) := by
-  exact F.piSigmaOmegaProp_translation_endpoint S types φ ψ
+  exact F.piSigmaOmegaProp_translation_endpoint S predicateFamily φ ψ
 
 /-- CoreMain-facing bundled endpoint: Π/Ω/Prop translation together with
 nontrivial constructor-category cross-sort transport composition. -/
@@ -402,14 +409,15 @@ theorem coreMain_nativeType_piOmegaProp_constructor_transport_bundle
     {L₁ L₂ : Mettapedia.CategoryTheory.LambdaTheories.LambdaTheory}
     (F : Mettapedia.OSLF.NativeType.TheoryMorphism L₁ L₂)
     (S : L₁.Obj)
-    (types : Set (L₁.fibration.Sub S))
+    (predicateFamily : Set (L₁.fibration.Sub S))
     (φ ψ : L₁.fibration.Sub S)
     (lang : Mettapedia.OSLF.MeTTaIL.Syntax.LanguageDef)
     {A B C : Mettapedia.OSLF.NativeType.ConstructorNatType lang}
     (f : Mettapedia.OSLF.NativeType.ConstructorNatTypeHom lang A B)
     (g : Mettapedia.OSLF.NativeType.ConstructorNatTypeHom lang B C) :
-    (F.mapPred (Mettapedia.OSLF.NativeType.piType L₁ S types) =
-      Mettapedia.OSLF.NativeType.piType L₂ (F.mapSort S) (F.mapPred '' types))
+    (F.mapPred (Mettapedia.OSLF.NativeType.piType L₁ S predicateFamily) =
+      Mettapedia.OSLF.NativeType.piType L₂ (F.mapSort S)
+        (F.mapPred '' predicateFamily))
     ∧
     ((F.mapNatType (Mettapedia.OSLF.NativeType.NatType.full (L := L₁) S)).pred =
       (Mettapedia.OSLF.NativeType.NatType.full (L := L₂) (F.mapSort S)).pred)
@@ -418,7 +426,7 @@ theorem coreMain_nativeType_piOmegaProp_constructor_transport_bundle
       Mettapedia.OSLF.NativeType.implType L₂ (F.mapSort S) (F.mapPred φ) (F.mapPred ψ))
     ∧
     Nonempty (Mettapedia.OSLF.NativeType.ConstructorNatTypeHom lang A C) := by
-  exact F.piOmegaProp_with_constructor_transport_bundle S types φ ψ lang f g
+  exact F.piOmegaProp_with_constructor_transport_bundle S predicateFamily φ ψ lang f g
 
 /-- CoreMain-facing composition-stability endpoint for the bundled
 Π/Ω/Prop + constructor transport contract. -/
@@ -427,17 +435,18 @@ theorem coreMain_nativeType_comp_piOmegaProp_constructor_transport_bundle
     (F : Mettapedia.OSLF.NativeType.TheoryMorphism L₁ L₂)
     (G : Mettapedia.OSLF.NativeType.TheoryMorphism L₂ L₃)
     (S : L₁.Obj)
-    (types : Set (L₁.fibration.Sub S))
+    (predicateFamily : Set (L₁.fibration.Sub S))
     (φ ψ : L₁.fibration.Sub S)
     (lang : Mettapedia.OSLF.MeTTaIL.Syntax.LanguageDef)
     {A B C : Mettapedia.OSLF.NativeType.ConstructorNatType lang}
     (f : Mettapedia.OSLF.NativeType.ConstructorNatTypeHom lang A B)
     (g : Mettapedia.OSLF.NativeType.ConstructorNatTypeHom lang B C) :
     (((Mettapedia.OSLF.NativeType.TheoryMorphism.comp G F).mapPred
-      (Mettapedia.OSLF.NativeType.piType L₁ S types)) =
+      (Mettapedia.OSLF.NativeType.piType L₁ S predicateFamily)) =
       Mettapedia.OSLF.NativeType.piType L₃
         ((Mettapedia.OSLF.NativeType.TheoryMorphism.comp G F).mapSort S)
-        (((Mettapedia.OSLF.NativeType.TheoryMorphism.comp G F).mapPred '' types)))
+        (((Mettapedia.OSLF.NativeType.TheoryMorphism.comp G F).mapPred ''
+          predicateFamily)))
     ∧
     ((((Mettapedia.OSLF.NativeType.TheoryMorphism.comp G F).mapNatType
       (Mettapedia.OSLF.NativeType.NatType.full (L := L₁) S)).pred =
@@ -452,7 +461,7 @@ theorem coreMain_nativeType_comp_piOmegaProp_constructor_transport_bundle
         ((Mettapedia.OSLF.NativeType.TheoryMorphism.comp G F).mapPred ψ))
     ∧
     Nonempty (Mettapedia.OSLF.NativeType.ConstructorNatTypeHom lang A C) := by
-  exact F.comp_piOmegaProp_with_constructor_transport_bundle G S types φ ψ lang f g
+  exact F.comp_piOmegaProp_with_constructor_transport_bundle G S predicateFamily φ ψ lang f g
 
 /-- CoreMain-facing canonical colax/lax Π/Prop rule-set endpoint for theory
 translations. -/
@@ -476,36 +485,41 @@ theorem coreMain_nativeType_piSigmaProp_colax_rules_endpoint
 theorem coreMain_nativeType_id_piOmega_canary
     (L : Mettapedia.CategoryTheory.LambdaTheories.LambdaTheory)
     (S : L.Obj)
-    (types : Set (L.fibration.Sub S)) :
+    (predicateFamily : Set (L.fibration.Sub S)) :
     ((Mettapedia.OSLF.NativeType.TheoryMorphism.id L).mapPred
-      (Mettapedia.OSLF.NativeType.piType L S types) =
+      (Mettapedia.OSLF.NativeType.piType L S predicateFamily) =
         Mettapedia.OSLF.NativeType.piType L
           ((Mettapedia.OSLF.NativeType.TheoryMorphism.id L).mapSort S)
-          ((Mettapedia.OSLF.NativeType.TheoryMorphism.id L).mapPred '' types))
+          ((Mettapedia.OSLF.NativeType.TheoryMorphism.id L).mapPred ''
+            predicateFamily))
     ∧
     (((Mettapedia.OSLF.NativeType.TheoryMorphism.id L).mapNatType
       (Mettapedia.OSLF.NativeType.NatType.full (L := L) S)).pred =
       (Mettapedia.OSLF.NativeType.NatType.full (L := L)
         ((Mettapedia.OSLF.NativeType.TheoryMorphism.id L).mapSort S)).pred) := by
-  simpa using Mettapedia.OSLF.NativeType.TheoryMorphism.id_piOmega_translation_endpoint L S types
+  simpa using
+    Mettapedia.OSLF.NativeType.TheoryMorphism.id_piOmega_translation_endpoint
+      L S predicateFamily
 
 /-- CoreMain-facing identity-canary for the Native Type Π/Σ/Ω/Prop endpoint. -/
 theorem coreMain_nativeType_id_piSigmaOmegaProp_canary
     (L : Mettapedia.CategoryTheory.LambdaTheories.LambdaTheory)
     (S : L.Obj)
-    (types : Set (L.fibration.Sub S))
+    (predicateFamily : Set (L.fibration.Sub S))
     (φ ψ : L.fibration.Sub S) :
     ((Mettapedia.OSLF.NativeType.TheoryMorphism.id L).mapPred
-      (Mettapedia.OSLF.NativeType.piType L S types) =
+      (Mettapedia.OSLF.NativeType.piType L S predicateFamily) =
         Mettapedia.OSLF.NativeType.piType L
           ((Mettapedia.OSLF.NativeType.TheoryMorphism.id L).mapSort S)
-          ((Mettapedia.OSLF.NativeType.TheoryMorphism.id L).mapPred '' types))
+          ((Mettapedia.OSLF.NativeType.TheoryMorphism.id L).mapPred ''
+            predicateFamily))
     ∧
     ((Mettapedia.OSLF.NativeType.TheoryMorphism.id L).mapPred
-      (Mettapedia.OSLF.NativeType.sigmaType L S types) =
+      (Mettapedia.OSLF.NativeType.sigmaType L S predicateFamily) =
         Mettapedia.OSLF.NativeType.sigmaType L
           ((Mettapedia.OSLF.NativeType.TheoryMorphism.id L).mapSort S)
-          ((Mettapedia.OSLF.NativeType.TheoryMorphism.id L).mapPred '' types))
+          ((Mettapedia.OSLF.NativeType.TheoryMorphism.id L).mapPred ''
+            predicateFamily))
     ∧
     (((Mettapedia.OSLF.NativeType.TheoryMorphism.id L).mapNatType
       (Mettapedia.OSLF.NativeType.NatType.full (L := L) S)).pred =
@@ -520,7 +534,7 @@ theorem coreMain_nativeType_id_piSigmaOmegaProp_canary
         ((Mettapedia.OSLF.NativeType.TheoryMorphism.id L).mapPred ψ) := by
   simpa using
     Mettapedia.OSLF.NativeType.TheoryMorphism.id_piSigmaOmegaProp_translation_endpoint
-      L S types φ ψ
+      L S predicateFamily φ ψ
 
 /-- CoreMain-facing canonical representable Π/Σ transport endpoint routed
 through the Prop-12 ΠΣ predicate-rule pack. -/
@@ -717,13 +731,14 @@ theorem coreMain_nativeType_piOmegaProp_grothendieck_package
     {L₁ L₂ : Mettapedia.CategoryTheory.LambdaTheories.LambdaTheory}
     (F : Mettapedia.OSLF.NativeType.TheoryMorphism L₁ L₂)
     (S : L₁.Obj)
-    (types : Set (L₁.fibration.Sub S))
+    (predicateFamily : Set (L₁.fibration.Sub S))
     (φ ψ : L₁.fibration.Sub S)
     (lang : Mettapedia.OSLF.MeTTaIL.Syntax.LanguageDef)
     {A B : Mettapedia.OSLF.NativeType.ConstructorNatType lang}
     (h : Mettapedia.OSLF.NativeType.ConstructorNatTypeHom lang A B) :
-    (F.mapPred (Mettapedia.OSLF.NativeType.piType L₁ S types) =
-      Mettapedia.OSLF.NativeType.piType L₂ (F.mapSort S) (F.mapPred '' types))
+    (F.mapPred (Mettapedia.OSLF.NativeType.piType L₁ S predicateFamily) =
+      Mettapedia.OSLF.NativeType.piType L₂ (F.mapSort S)
+        (F.mapPred '' predicateFamily))
     ∧
     (F.mapNatType (Mettapedia.OSLF.NativeType.NatType.full (L := L₁) S)).pred =
       (Mettapedia.OSLF.NativeType.NatType.full (L := L₂) (F.mapSort S)).pred
@@ -734,7 +749,7 @@ theorem coreMain_nativeType_piOmegaProp_grothendieck_package
     (Mettapedia.OSLF.NativeType.grothHom_to_constructorNatTypeHom
       (Mettapedia.OSLF.NativeType.constructorNatTypeHom_to_grothHom h) = h) := by
   refine ⟨?_, ?_, ?_, ?_⟩
-  · exact F.preserves_piType S types
+  · exact F.preserves_piType S predicateFamily
   · exact F.preserves_fullNatType_pred S
   · exact F.preserves_propImp S φ ψ
   · exact Mettapedia.OSLF.NativeType.constructorNatTypeHom_groth_roundtrip h
@@ -869,12 +884,14 @@ theorem coreMain_theorem1_substitutability_imageFinite
     hImageFinite hPredFinite
 
 /-- CoreMain-facing canonical Theorem-1 equivalence endpoint on the default
-`langReduces` relation:
-the forward image-finite side is discharged concretely; only predecessor
-finiteness remains as an explicit assumption. -/
-theorem coreMain_theorem1_langReduces_imageFinite
+`langReduces` relation, under explicit finiteness of both the forward and
+predecessor images. -/
+theorem coreMain_theorem1_langReduces_of_finite
     (lang : Mettapedia.OSLF.MeTTaIL.Syntax.LanguageDef)
     (I : Mettapedia.OSLF.Formula.AtomSem)
+    (hImageFinite : ∀ p : Mettapedia.OSLF.Framework.Pat,
+      Set.Finite {q : Mettapedia.OSLF.Framework.Pat |
+        Mettapedia.OSLF.Framework.TypeSynthesis.langReduces lang p q})
     (hPredFinite : ∀ p : Mettapedia.OSLF.Framework.Pat,
       Set.Finite {q : Mettapedia.OSLF.Framework.Pat |
         Mettapedia.OSLF.Framework.TypeSynthesis.langReduces lang q p}) :
@@ -883,7 +900,7 @@ theorem coreMain_theorem1_langReduces_imageFinite
   exact coreMain_theorem1_substitutability_imageFinite
     (R := Mettapedia.OSLF.Framework.TypeSynthesis.langReduces lang)
     (I := I)
-    (hImageFinite := Mettapedia.Logic.OSLFImageFinite.imageFinite_langReduces lang)
+    hImageFinite
     hPredFinite
 
 /-- CoreMain-facing global-vs-scoped HM endpoint map for canonical π→ρ
@@ -897,46 +914,52 @@ relations.
 structure CoreMainHMEndpointMap : Prop where
   global_core :
     ∀ (I : Mettapedia.OSLF.Formula.AtomSem)
+      (_hImageFinite : ∀ p : Mettapedia.OSLF.Framework.Pat,
+        Set.Finite {q : Mettapedia.OSLF.Framework.Pat |
+          Mettapedia.OSLF.Framework.PiRhoCanonicalBridge.rhoCoreCanonicalRel p q})
       (_hPredFinite : ∀ p : Mettapedia.OSLF.Framework.Pat,
         Set.Finite {q : Mettapedia.OSLF.Framework.Pat |
           Mettapedia.OSLF.Framework.PiRhoCanonicalBridge.rhoCoreCanonicalRel q p})
       (p q : Mettapedia.OSLF.Framework.Pat),
-      Mettapedia.Logic.OSLFDistinctionGraph.indistObs
+      Mettapedia.OSLF.Framework.DistinctionGraph.indistObs
         Mettapedia.OSLF.Framework.PiRhoCanonicalBridge.rhoCoreCanonicalRel I p q
       ↔
-      Mettapedia.Logic.OSLFDistinctionGraph.FullBisimilar
+      Mettapedia.OSLF.Framework.DistinctionGraph.FullBisimilar
         Mettapedia.OSLF.Framework.PiRhoCanonicalBridge.rhoCoreCanonicalRel I p q
   global_derived :
     ∀ (I : Mettapedia.OSLF.Formula.AtomSem)
+      (_hImageFinite : ∀ p : Mettapedia.OSLF.Framework.Pat,
+        Set.Finite {q : Mettapedia.OSLF.Framework.Pat |
+          Mettapedia.OSLF.Framework.PiRhoCanonicalBridge.rhoDerivedCanonicalRel p q})
       (_hPredFinite : ∀ p : Mettapedia.OSLF.Framework.Pat,
         Set.Finite {q : Mettapedia.OSLF.Framework.Pat |
           Mettapedia.OSLF.Framework.PiRhoCanonicalBridge.rhoDerivedCanonicalRel q p})
       (p q : Mettapedia.OSLF.Framework.Pat),
-      Mettapedia.Logic.OSLFDistinctionGraph.indistObs
+      Mettapedia.OSLF.Framework.DistinctionGraph.indistObs
         Mettapedia.OSLF.Framework.PiRhoCanonicalBridge.rhoDerivedCanonicalRel I p q
       ↔
-      Mettapedia.Logic.OSLFDistinctionGraph.FullBisimilar
+      Mettapedia.OSLF.Framework.DistinctionGraph.FullBisimilar
         Mettapedia.OSLF.Framework.PiRhoCanonicalBridge.rhoDerivedCanonicalRel I p q
   scoped_scquot_core :
     ∀ (I : Mettapedia.OSLF.Formula.AtomSem)
       (carrier : Finset Mettapedia.OSLF.Framework.Pat)
       (p q : Mettapedia.OSLF.Framework.Pat),
-      Mettapedia.Logic.OSLFDistinctionGraph.indistObs
+      Mettapedia.OSLF.Framework.DistinctionGraph.indistObs
         (Mettapedia.OSLF.Framework.PiRhoCanonicalBridge.rhoCoreCanonicalSCQuotRelOn carrier)
         I p q
       ↔
-      Mettapedia.Logic.OSLFDistinctionGraph.FullBisimilar
+      Mettapedia.OSLF.Framework.DistinctionGraph.FullBisimilar
         (Mettapedia.OSLF.Framework.PiRhoCanonicalBridge.rhoCoreCanonicalSCQuotRelOn carrier)
         I p q
   scoped_scquot_derived :
     ∀ (I : Mettapedia.OSLF.Formula.AtomSem)
       (carrier : Finset Mettapedia.OSLF.Framework.Pat)
       (p q : Mettapedia.OSLF.Framework.Pat),
-      Mettapedia.Logic.OSLFDistinctionGraph.indistObs
+      Mettapedia.OSLF.Framework.DistinctionGraph.indistObs
         (Mettapedia.OSLF.Framework.PiRhoCanonicalBridge.rhoDerivedCanonicalSCQuotRelOn carrier)
         I p q
       ↔
-      Mettapedia.Logic.OSLFDistinctionGraph.FullBisimilar
+      Mettapedia.OSLF.Framework.DistinctionGraph.FullBisimilar
         (Mettapedia.OSLF.Framework.PiRhoCanonicalBridge.rhoDerivedCanonicalSCQuotRelOn carrier)
         I p q
 
@@ -946,12 +969,12 @@ the scoped SC-quotiented endpoint family for assumption-free iff theorems. -/
 theorem coreMain_hm_endpoint_recommendation_map :
     CoreMainHMEndpointMap := by
   refine ⟨?_, ?_, ?_, ?_⟩
-  · intro I hPredFinite p q
-    exact Mettapedia.OSLF.Framework.PiRhoCanonicalBridge.hm_iff_fullBisim_rhoCoreCanonicalRel
-      I hPredFinite p q
-  · intro I hPredFinite p q
-    exact Mettapedia.OSLF.Framework.PiRhoCanonicalBridge.hm_iff_fullBisim_rhoDerivedCanonicalRel
-      I hPredFinite p q
+  · intro I hImageFinite hPredFinite p q
+    exact Mettapedia.OSLF.Framework.PiRhoCanonicalBridge.hm_iff_fullBisim_rhoCoreCanonicalRel_of_finite
+      I hImageFinite hPredFinite p q
+  · intro I hImageFinite hPredFinite p q
+    exact Mettapedia.OSLF.Framework.PiRhoCanonicalBridge.hm_iff_fullBisim_rhoDerivedCanonicalRel_of_finite
+      I hImageFinite hPredFinite p q
   · intro I carrier p q
     exact Mettapedia.OSLF.Framework.PiRhoCanonicalBridge.hm_iff_fullBisim_rhoCoreCanonicalSCQuotRelOn
       I carrier p q
@@ -1016,13 +1039,16 @@ theorem coreMain_paper_parity_theorem_package
 relation `langReduces`:
 returns Theorem-1 equivalence on the canonical relation plus the existing
 fragment and TOGL composition endpoint fields. -/
-theorem coreMain_paper_parity_theorem_package_langReduces
+theorem coreMain_paper_parity_theorem_package_langReduces_of_finite
     (lang : Mettapedia.OSLF.MeTTaIL.Syntax.LanguageDef)
     (I : Mettapedia.OSLF.Formula.AtomSem)
     (A : Mettapedia.OSLF.NativeType.ScopedConstructorPred lang)
     (Frag : Mettapedia.OSLF.NativeType.ScopedConstructorPred lang → Prop)
     (hClosed : ∀ {X Y : Mettapedia.OSLF.NativeType.ScopedConstructorPred lang},
       Frag X → Mettapedia.OSLF.NativeType.ScopedReachable X Y → Frag Y)
+    (hImageFinite : ∀ p : Mettapedia.OSLF.Framework.Pat,
+      Set.Finite {q : Mettapedia.OSLF.Framework.Pat |
+        Mettapedia.OSLF.Framework.TypeSynthesis.langReduces lang p q})
     (hPredFinite : ∀ p : Mettapedia.OSLF.Framework.Pat,
       Set.Finite {q : Mettapedia.OSLF.Framework.Pat |
         Mettapedia.OSLF.Framework.TypeSynthesis.langReduces lang q p}) :
@@ -1067,7 +1093,7 @@ theorem coreMain_paper_parity_theorem_package_langReduces
     ⟨hContract, hFrag, hTogl⟩
   refine ⟨?_, hFrag, hTogl⟩
   exact hContract.imageFinite_iff
-    (Mettapedia.Logic.OSLFImageFinite.imageFinite_langReduces lang) hPredFinite
+    hImageFinite hPredFinite
 
 /-- Canonical CoreMain paper-parity contract record:
 packages the `langReduces` Theorem-1 endpoint, fragment-parametric full-route
@@ -1077,7 +1103,10 @@ structure CoreMainPaperParityCanonicalPackage
     (I : Mettapedia.OSLF.Formula.AtomSem)
     (A : Mettapedia.OSLF.NativeType.ScopedConstructorPred lang)
     (Frag : Mettapedia.OSLF.NativeType.ScopedConstructorPred lang → Prop) : Prop where
-  theorem1_langReduces_imageFinite :
+  theorem1_langReduces_of_finite :
+    (∀ p : Mettapedia.OSLF.Framework.Pat,
+      Set.Finite {q : Mettapedia.OSLF.Framework.Pat |
+        Mettapedia.OSLF.Framework.TypeSynthesis.langReduces lang p q}) →
     (∀ p : Mettapedia.OSLF.Framework.Pat,
       Set.Finite {q : Mettapedia.OSLF.Framework.Pat |
         Mettapedia.OSLF.Framework.TypeSynthesis.langReduces lang q p}) →
@@ -1127,9 +1156,9 @@ theorem coreMain_paper_parity_canonical_package
       Frag X → Mettapedia.OSLF.NativeType.ScopedReachable X Y → Frag Y) :
     CoreMainPaperParityCanonicalPackage lang I A Frag := by
   refine ⟨?_, ?_, ?_⟩
-  · intro hPredFinite
-    exact coreMain_theorem1_langReduces_imageFinite
-      (lang := lang) (I := I) hPredFinite
+  · intro hImageFinite hPredFinite
+    exact coreMain_theorem1_langReduces_of_finite
+      (lang := lang) (I := I) hImageFinite hPredFinite
   · intro B C hA hAB hBC
     exact Mettapedia.OSLF.NativeType.full_presheaf_comparison_bundle_reachable_fragment
       (Frag := Frag) (hClosed := hClosed) (A := A) (B := B) (C := C) hA hAB hBC
@@ -1204,8 +1233,8 @@ theorem coreMain_paper_parity_full_package
 #check Mettapedia.OSLF.Framework.FULLStatus.strictRemainingCount_eq_zero
 #check Mettapedia.Languages.MeTTa.OSLFCore.FullLanguageDef.mettaFull
 #check Mettapedia.Languages.MeTTa.OSLFCore.FullLanguageDef.mettaFullOSLF
-#check Mettapedia.Logic.OSLFImageFinite.imageFinite_langReduces
-#check Mettapedia.Logic.OSLFImageFinite.hm_converse_langReduces
+#check Mettapedia.OSLF.Framework.ImageFinite.imageFinite_langReducesAtUsing
+#check Mettapedia.OSLF.Framework.ImageFinite.hm_converse_langReducesAtUsing
 #check @Mettapedia.OSLF.Framework.PiRhoCanonicalBridge.piRho_coreMain_canonical_contract_end_to_end
 #check @coreMain_piRho_canonical_contract
 #check @coreMain_piRho_contract_projection_api
@@ -1268,7 +1297,7 @@ theorem coreMain_paper_parity_full_package
 #check @coreMain_theorem1_canonical_contract
 #check @coreMain_theorem1_substitutability_forward
 #check @coreMain_theorem1_substitutability_imageFinite
-#check @coreMain_theorem1_langReduces_imageFinite
+#check @coreMain_theorem1_langReduces_of_finite
 #check @coreMain_paper_parity_theorem_package
 #check @coreMain_paper_parity_theorem_package_langReduces
 #check @Mettapedia.OSLF.CoreMainPaperParityCanonicalPackage

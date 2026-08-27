@@ -1,5 +1,6 @@
 import Mettapedia.OSLF.Framework.TypeSynthesis
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.PresentMoment
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.LanguageDefDSL
 
 /-!
 # OSLF Paper Section 12 Worked Examples
@@ -20,13 +21,14 @@ open Mettapedia.Languages.ProcessCalculi.RhoCalculus
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.Reduction
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.Context
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.PresentMoment
+open Mettapedia.Languages.ProcessCalculi.RhoCalculus.Extended
 
 /-- OSLF paper §12.1 (compile-time firewall): the canonical policy blocks
 set-context descent while the extension policy admits it. -/
 theorem compile_time_firewall_worked_example :
-    (∀ q, ¬ langReduces rhoCalc rhoSetDropWitness q) ∧
-      (∃ q, langReduces rhoCalcSetExt rhoSetDropWitness q) := by
-  exact rhoSetDropWitness_canonical_vs_setExt
+    (∀ q, ¬ langReduces rhoCalc rhoSetCommWitness q) ∧
+      (∃ q, langReduces rhoCalcSetExt rhoSetCommWitness q) := by
+  exact rhoSetCommWitness_canonical_vs_setExt
 
 /-- Concrete race channel used in §12.2 worked example. -/
 def raceChan : Pattern := .fvar "x"
@@ -120,11 +122,11 @@ theorem secrecy_secret_not_in_env_freeNames :
     simp [hdisj]
   exact hnone this
 
-/-- The private channel does not appear as a surface/external channel. -/
-theorem secrecy_secret_not_surface :
-    secretChan ∉ surfaceChannels secrecyAgent secrecyEnv := by
+/-- The private channel does not appear as an external channel. -/
+theorem secrecy_secret_not_external :
+    secretChan ∉ externalChannels secrecyAgent secrecyEnv := by
   intro hsurf
-  unfold surfaceChannels at hsurf
+  unfold externalChannels at hsurf
   simp only [Set.mem_setOf, Set.mem_inter_iff] at hsurf
   exact secrecy_secret_not_in_env_freeNames hsurf.1.2
 
@@ -133,22 +135,22 @@ from environment-level observability. -/
 theorem secrecy_worked_example :
     secretChan ∈ internalChannels secrecyAgent secrecyEnv ∧
     secretChan ∉ Context.freeNames secrecyEnv ∧
-    secretChan ∉ surfaceChannels secrecyAgent secrecyEnv := by
+    secretChan ∉ externalChannels secrecyAgent secrecyEnv := by
   exact ⟨secrecy_secret_in_internalChannels,
     secrecy_secret_not_in_env_freeNames,
-    secrecy_secret_not_surface⟩
+    secrecy_secret_not_external⟩
 
 /-- Canonical bundle for OSLF paper §12 worked examples. -/
 theorem section12_worked_examples_bundle :
-    ((∀ q, ¬ langReduces rhoCalc rhoSetDropWitness q) ∧
-      (∃ q, langReduces rhoCalcSetExt rhoSetDropWitness q)) ∧
+    ((∀ q, ¬ langReduces rhoCalc rhoSetCommWitness q) ∧
+      (∃ q, langReduces rhoCalcSetExt rhoSetCommWitness q)) ∧
     (∃ r₁ r₂,
       Nonempty (Reduces raceBag r₁) ∧
       Nonempty (Reduces raceBag r₂) ∧
       r₁ ≠ r₂) ∧
     (secretChan ∈ internalChannels secrecyAgent secrecyEnv ∧
       secretChan ∉ Context.freeNames secrecyEnv ∧
-      secretChan ∉ surfaceChannels secrecyAgent secrecyEnv) := by
+      secretChan ∉ externalChannels secrecyAgent secrecyEnv) := by
   exact ⟨compile_time_firewall_worked_example,
     race_detection_worked_example,
     secrecy_worked_example⟩

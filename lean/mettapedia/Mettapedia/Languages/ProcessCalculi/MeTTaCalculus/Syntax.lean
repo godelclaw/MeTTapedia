@@ -55,7 +55,7 @@ infixl:60 " ∥ " => par
 
 /-! ## Rewrite rules -/
 
-private def commSymRule : RewriteRule := {
+def commSymRule : RewriteRule := {
   name := "CommSym"
   typeContext := [("t", .base "Term"), ("u", .base "Term"), ("x", .base "Name"),
                   ("p", .base "Proc"), ("q", .base "Proc"),
@@ -79,16 +79,29 @@ private def reflRule : RewriteRule := {
   right := .apply "MFor" [.apply "MTermProc" [.fvar "pNext"], .fvar "x", .apply "MZero" []]
 }
 
+/-- Parallel contextual closure is an authored semantic rule.  The bag
+    representation by itself does not grant reduction beneath it. -/
+private def parCongRule : RewriteRule := {
+  name := "ParCong"
+  typeContext := [("p", .base "Proc"), ("pNext", .base "Proc")]
+  premises := [.congruence (.fvar "p") (.fvar "pNext")]
+  left := .collection .hashBag [.fvar "p"] (some "rest")
+  right := .collection .hashBag [.fvar "pNext"] (some "rest")
+}
+
 /-! ## Language definitions -/
 
 /-- Full MeTTa-calculus language (COMM + REFL). -/
 def mettaCalc : LanguageDef := {
   name := "MeTTaCalc"
   types := ["Proc", "Name", "Term"]
-  congruenceCollections := [.hashBag]
   terms := [
     { label := "MZero", category := "Proc", params := [],
       syntaxPattern := [.terminal "0"] },
+    { label := "MPar", category := "Proc",
+      params := [.simple "ps" (.collection .hashBag (.base "Proc"))],
+      syntaxPattern := [.terminal "{", .nonTerminal "ps", .separator "|",
+                        .terminal "}"] },
     { label := "MFor", category := "Proc",
       params := [.simple "t" (.base "Term"), .simple "x" (.base "Name"),
                  .simple "k" (.base "Proc")],
@@ -122,14 +135,31 @@ def mettaCalc : LanguageDef := {
       left := .apply "MQuote" [.apply "MDrop" [.fvar "n"]],
       right := .fvar "n" }
   ]
-  rewrites := [commSymRule, reflRule]
+  rewrites := [commSymRule, reflRule, parCongRule]
 }
+
+/-- The authored MeTTa-calculus definition passes the five-field structural
+validation gate. -/
+theorem mettaCalc_validate_eq_nil : mettaCalc.validate = [] := by
+  simp [LanguageDef.validate, mettaCalc, commSymRule, reflRule, parCongRule,
+    LanguageDef.duplicateErrors, LanguageDef.duplicateErrorsAux,
+    LanguageDef.validateEquation, LanguageDef.validateRewrite,
+    LanguageDef.validatePatternConstructors,
+    LanguageDef.validateRulePatterns,
+    LanguageDef.typeNames, TypeDecl.plain, TypeExpr.baseNames,
+    TermParam.bodyName, TermParam.binderNames, TermParam.typeExpr,
+    LanguageDef.patternFvarNames, LanguageDef.patternBinderNames,
+    LanguageDef.premiseProducedFvarNames, LanguageDef.premisePatterns,
+    LanguageDef.premiseFvarNames, LanguageDef.premiseForAllParams,
+    Pattern.constructorRefs, Pattern.constructorRefsList,
+    Pattern.freeFvarNames, Pattern.isWellScoped, Pattern.isWellScopedAt,
+    Pattern.isWellScopedListAt]
 
 /-- COMM-only fragment (used to define one-step reflection premises without
 self-reference through REFL). -/
 def mettaCalcCommOnly : LanguageDef :=
   { mettaCalc with
       name := "MeTTaCalcCommOnly"
-      rewrites := [commSymRule] }
+      rewrites := [commSymRule, parCongRule] }
 
 end Mettapedia.Languages.ProcessCalculi.MeTTaCalculus

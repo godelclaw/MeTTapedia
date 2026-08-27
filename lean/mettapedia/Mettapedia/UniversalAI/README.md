@@ -80,7 +80,7 @@ in reflective environments. Includes measure-theoretic infrastructure:
 | `TimeBoundedAIXI/CoreProvability.lean` | 124 | Provability results |
 | `TimeBoundedAIXI/ProofEnumerationOracle.lean` | 61 | Oracle interface |
 
-## Extensions
+## Extensions and neighboring programmes
 
 ### Multi-Agent (`MultiAgent/`, ~2,560 lines, 0 sorries)
 

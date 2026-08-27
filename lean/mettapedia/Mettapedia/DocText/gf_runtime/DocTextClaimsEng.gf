@@ -64,7 +64,7 @@ concrete DocTextClaimsEng of DocTextClaims = {
     Clm_00059 = {s = "It includes two concrete grammars for Czech and English"} ;
     Clm_00060 = {s = "It isn't a claim of global decidability"} ;
     Clm_00061 = {s = "It isn't a full MeTTa interpreter or a parser"} ;
-    Clm_00062 = {s = "It isn't a parser or a surface syntax standard"} ;
+    Clm_00062 = {s = "It isn't a parser or a concrete syntax standard"} ;
     Clm_00063 = {s = "It isn't a proof of \"all desired properties\""} ;
     Clm_00064 = {s = "It isn't a substitute for a concrete semantics implementation"} ;
     Clm_00065 = {s = "It proves `◇ ⊣ □`"} ;
@@ -131,7 +131,7 @@ concrete DocTextClaimsEng of DocTextClaims = {
     Clm_00126 = {s = "Positive and negative evidence counts correspond to known bits in partial bit vectors"} ;
     Clm_00127 = {s = "PredicateFibration.lean is presheaf change-of-base, frame fibers, and Beck-Chevalley components used by NTT"} ;
     Clm_00128 = {s = "Premise is freshness, congruence, and relationQuery constraints"} ;
-    Clm_00129 = {s = "Premise-selection ranking transfer is a theorem family in `PremiseSelectionOptimality.lean`"} ;
+    Clm_00129 = {s = "Premise-selection ranking transfer is a theorem family in `Optimality.lean`"} ;
     Clm_00130 = {s = "Process-calculus modules are available"} ;
     Clm_00131 = {s = "ProcessCalculi formalizes pi-calculus and rho-calculus with operational semantics, structural congruence, and OSLF instances"} ;
     Clm_00132 = {s = "ProcessCalculi/README.md contains detailed architecture and proof status"} ;
@@ -239,7 +239,7 @@ concrete DocTextClaimsEng of DocTextClaims = {
     Clm_00234 = {s = "The project includes operational specification and semantic specification"} ;
     Clm_00235 = {s = "The project structure section is a layer-by-layer map from generic rewriting to System F"} ;
     Clm_00236 = {s = "The proof techniques section is the method-level bridge from diamond proofs to logical relations"} ;
-    Clm_00237 = {s = "The public surface is docstring-rich with source references"} ;
+    Clm_00237 = {s = "The public interface is docstring-rich with source references"} ;
     Clm_00238 = {s = "The references section covers papers, books, and related formalization links"} ;
     Clm_00239 = {s = "The references section lists references"} ;
     Clm_00240 = {s = "The related formalizations subsection is Software Foundations, CoLoR, Nominal Isabelle, and PLFA links"} ;
@@ -251,7 +251,7 @@ concrete DocTextClaimsEng of DocTextClaims = {
     Clm_00246 = {s = "The scope isn't blanket future-work parity"} ;
     Clm_00247 = {s = "The semantic bridge is GF -> Pattern -> Store -> QFormula -> Evidence -> NTT"} ;
     Clm_00248 = {s = "The semantic bridge targets OSLF evidence semantics"} ;
-    Clm_00249 = {s = "The semantics decision tree is `Mettapedia/Logic/SemanticsDecisionTree.lean`"} ;
+    Clm_00249 = {s = "The semantics decision tree is `Mettapedia/PLN/Comparisons/SemanticsDecisionTree.lean`"} ;
     Clm_00250 = {s = "The small-only test suite is 141 of 141"} ;
     Clm_00251 = {s = "The spec-facing MeTTa slice uses `Mettapedia/OSLF/MeTTaCore/FullLanguageDef.lean`"} ;
     Clm_00252 = {s = "The structure map lists core module paths and theorem hosts"} ;
@@ -288,7 +288,7 @@ concrete DocTextClaimsEng of DocTextClaims = {
     Clm_00283 = {s = "Verifier modes are distinct specifications"} ;
     Clm_00284 = {s = "Worked examples prove the end-to-end pipeline"} ;
     Clm_00285 = {s = "`Mettapedia/OSLF/Framework/NTTClaimTracker.lean` is the authoritative tracker"} ;
-    Clm_00286 = {s = "`Mettapedia/OSLF/NativeType/` formalizes the strict NTT claim surface"} ;
+    Clm_00286 = {s = "`Mettapedia/OSLF/NativeType/` formalizes the strict NTT claim scope"} ;
     Clm_00287 = {s = "`RelationEnv` is needed for premise evaluation"} ;
     Clm_00288 = {s = "`checkLangUsing` provides an executable checker"} ;
     Clm_00289 = {s = "`langDiamondUsing` and `langBoxUsing` derive modal operators"} ;

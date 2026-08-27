@@ -1,16 +1,24 @@
 import Mettapedia.Languages.MeTTa.HE.BindingComposition
 import Mettapedia.Languages.MeTTa.HE.CoReferencePreservation
 import Mettapedia.Languages.MeTTa.HE.BagSupportBridge
+import Mettapedia.Languages.MeTTa.HE.Space
 
 /-!
-# Variant-Key Query Correctness
+# Legacy Variant-Key Query Correctness
 
 Defines variant equivalence and proves structural properties of variant-based
 tabling. The core theorem (`simpleMatch_rename_bisim`) is a bisimulation
 argument: two parallel executions of `simpleMatch` — one with target `t`,
 one with target `applyAtomTotal r t` — step in lockstep.
 
-## Key Results (proved, 0 sorry)
+After G3, the public equation-query interface in `Space.lean` is the faithful
+`matchAtoms` / `mergeBindings` interface, not the historical one-way
+`simpleMatch` interface.  This module therefore proves the variant-cache result
+only for the legacy model used by older table-cache sketches.  A theorem for
+the repaired public `queryEquations` interface is a separate faithful-matcher
+invariance problem, not something to smuggle through this simpleMatch proof.
+
+## Key Results (proved, no proof holes)
 
 - `VariantEquiv` — definition using fuel-free `applyAtomTotal`
 - `BindingsRenamedBy` — the bisimulation relation (fuel-free)
@@ -19,13 +27,15 @@ one with target `applyAtomTotal r t` — step in lockstep.
 - `simpleMatch_rename_bisim` — THE bisimulation mutual induction
 - `simpleMatch_isSome_rename_empty` — isSome preserved (corollary)
 
-## Key Result (proved)
+## Key Result (proved, legacy interface only)
 
-- `variant_queries_same_rhs` — via matchStep extraction + List.map_filterMap
+- `variant_legacy_queries_same_rhs` — via matchStep extraction + List.map_filterMap
 
-## Connection to CeTTa
+## Boundary
 
-Maps to `table_store.c` variant-key lookup soundness.
+This is not an SR runtime certificate and not a theorem about the public G3
+query interface.  It is retained as the honest legacy cache proof while the MIK /
+LeaTTa runtime line uses the faithful query interface directly.
 -/
 
 namespace Mettapedia.Languages.MeTTa.HE
@@ -235,6 +245,260 @@ theorem simpleMatch_rename_bisim (r : VarRenaming) (hr : r.Injective) (fuel : Na
               | some hrel'' => exact ihps ts' b₁'' b₂'' hrel''
     exact ⟨hpat, hlist⟩
 
+/-! ## §3b: Pattern-renaming bisimulation
+
+The previous bisimulation renames the *target* atom and therefore renames
+binding **values**. For the LeaTTa bridge we also need the dual fact:
+renaming only the *pattern* variables preserves matching, but now the binding
+**keys** are renamed while the matched target values stay literally the same.
+-/
+
+/-- Two binding states are related by a key renaming: looking up `v` in `b₁`
+and looking up `r.rename v` in `b₂` yields the same matched value. -/
+structure BindingsKeysRenamedBy (r : VarRenaming) (b₁ b₂ : Bindings) : Prop where
+  forward : ∀ v a, b₁.lookup v = some a → b₂.lookup (r.rename v) = some a
+  bound_iff : ∀ v, (b₁.lookup v).isSome = (b₂.lookup (r.rename v)).isSome
+
+/-- Empty bindings are trivially key-renamed-related. -/
+theorem bindingsKeysRenamedBy_empty (r : VarRenaming) :
+    BindingsKeysRenamedBy r Bindings.empty Bindings.empty :=
+  ⟨fun v a h => by simp [Bindings.empty, Bindings.lookup] at h,
+   fun _ => rfl⟩
+
+/-- Assigning the same matched target value at renamed keys preserves the
+key-renaming bisimulation. -/
+theorem assign_preserves_bindingsKeysRenamedBy (r : VarRenaming) (hr : r.Injective)
+    (b₁ b₂ : Bindings) (hrel : BindingsKeysRenamedBy r b₁ b₂)
+    (v : String) (target : Atom)
+    (hnone₁ : b₁.lookup v = none) :
+    BindingsKeysRenamedBy r (b₁.assign v target) (b₂.assign (r.rename v) target) := by
+  have hnone₂ : b₂.lookup (r.rename v) = none := by
+    have := hrel.bound_iff v
+    simp [hnone₁] at this
+    exact Option.not_isSome_iff_eq_none.mp (by simp [this])
+  constructor
+  · intro w a hw
+    by_cases hwv : w = v
+    · subst hwv
+      rw [lookup_assign_of_lookup_none _ _ _ hnone₁] at hw
+      injection hw with hw
+      subst hw
+      exact lookup_assign_of_lookup_none _ _ _ hnone₂
+    · rw [assign_lookup_ne b₁ v target w hwv hnone₁] at hw
+      have hrenNe : r.rename w ≠ r.rename v := by
+        intro hEq
+        exact hwv (hr hEq)
+      rw [assign_lookup_ne b₂ (r.rename v) target (r.rename w) hrenNe hnone₂]
+      exact hrel.forward w a hw
+  · intro w
+    by_cases hwv : w = v
+    · subst hwv
+      simp [lookup_assign_of_lookup_none _ _ _ hnone₁,
+        lookup_assign_of_lookup_none _ _ _ hnone₂]
+    · have hrenNe : r.rename w ≠ r.rename v := by
+        intro hEq
+        exact hwv (hr hEq)
+      rw [assign_lookup_ne b₁ v target w hwv hnone₁,
+        assign_lookup_ne b₂ (r.rename v) target (r.rename w) hrenNe hnone₂]
+      exact hrel.bound_iff w
+
+/-- Dual bisimulation: renaming the *pattern* preserves successful matching,
+with binding keys renamed by `r` and binding values left unchanged. -/
+theorem simpleMatch_patternRename_bisim (r : VarRenaming) (hr : r.Injective) (fuel : Nat) :
+    (∀ lhs target b₁ b₂,
+      BindingsKeysRenamedBy r b₁ b₂ →
+      Option.Rel (BindingsKeysRenamedBy r)
+        (simpleMatch lhs target b₁ fuel)
+        (simpleMatch (applyAtomTotal r lhs) target b₂ fuel)) ∧
+    (∀ ps ts b₁ b₂,
+      BindingsKeysRenamedBy r b₁ b₂ →
+      Option.Rel (BindingsKeysRenamedBy r)
+        (simpleMatch.simpleMatchList ps ts b₁ fuel)
+        (simpleMatch.simpleMatchList (ps.map (applyAtomTotal r)) ts b₂ fuel)) := by
+  induction fuel with
+  | zero =>
+    constructor
+    · intro lhs target b₁ b₂ _
+      simp [simpleMatch]
+    · intro ps ts b₁ b₂ hrel
+      cases ps with
+      | nil =>
+        cases ts with
+        | nil =>
+          simp [simpleMatch.simpleMatchList]
+          exact hrel
+        | cons _ _ =>
+          simp [simpleMatch.simpleMatchList]
+      | cons _ _ =>
+        cases ts with
+        | nil =>
+          simp [simpleMatch.simpleMatchList]
+        | cons _ _ =>
+          simp [simpleMatch.simpleMatchList, simpleMatch]
+  | succ n ih =>
+    obtain ⟨ih_match, ih_list⟩ := ih
+    have hpat : ∀ lhs target b₁ b₂,
+        BindingsKeysRenamedBy r b₁ b₂ →
+        Option.Rel (BindingsKeysRenamedBy r)
+          (simpleMatch lhs target b₁ (n + 1))
+          (simpleMatch (applyAtomTotal r lhs) target b₂ (n + 1)) := by
+      intro lhs target b₁ b₂ hrel
+      cases lhs with
+      | var v =>
+        cases hlook₁ : b₁.lookup v with
+        | none =>
+          have hnone₂ : b₂.lookup (r.rename v) = none := by
+            have := hrel.bound_iff v
+            simp [hlook₁] at this
+            exact Option.not_isSome_iff_eq_none.mp (by simp [this])
+          have hs₁ : simpleMatch (.var v) target b₁ (n + 1) = some (b₁.assign v target) := by
+            simp [simpleMatch, hlook₁]
+          have hs₂ :
+              simpleMatch (applyAtomTotal r (.var v)) target b₂ (n + 1) =
+                some (b₂.assign (r.rename v) target) := by
+            simp [simpleMatch, applyAtomTotal, hnone₂]
+          rw [hs₁, hs₂]
+          exact .some (assign_preserves_bindingsKeysRenamedBy r hr b₁ b₂ hrel v target hlook₁)
+        | some existing =>
+          have hlook₂ : b₂.lookup (r.rename v) = some existing :=
+            hrel.forward v existing hlook₁
+          by_cases heq : existing = target
+          · subst heq
+            have hs₁ : simpleMatch (.var v) existing b₁ (n + 1) = some b₁ := by
+              simp [simpleMatch, hlook₁]
+            have hs₂ :
+                simpleMatch (applyAtomTotal r (.var v)) existing b₂ (n + 1) = some b₂ := by
+              simp [simpleMatch, applyAtomTotal, hlook₂]
+            rw [hs₁, hs₂]
+            exact .some hrel
+          · have hs₁ : simpleMatch (.var v) target b₁ (n + 1) = none := by
+                simp [simpleMatch, hlook₁, heq]
+            have hs₂ :
+                simpleMatch (applyAtomTotal r (.var v)) target b₂ (n + 1) = none := by
+              simp [simpleMatch, applyAtomTotal, hlook₂, heq]
+            rw [hs₁, hs₂]
+            exact .none
+      | symbol s =>
+        cases target with
+        | symbol t =>
+          by_cases heq : s = t
+          · subst heq
+            simpa [simpleMatch, applyAtomTotal] using hrel
+          · simp [simpleMatch, applyAtomTotal, heq]
+        | var _ =>
+          simp [simpleMatch, applyAtomTotal]
+        | grounded _ =>
+          simp [simpleMatch, applyAtomTotal]
+        | expression _ =>
+          simp [simpleMatch, applyAtomTotal]
+      | grounded g =>
+        cases target with
+        | grounded h =>
+          by_cases heq : g = h
+          · subst heq
+            simpa [simpleMatch, applyAtomTotal] using hrel
+          · simp [simpleMatch, applyAtomTotal, heq]
+        | var _ =>
+          simp [simpleMatch, applyAtomTotal]
+        | symbol _ =>
+          simp [simpleMatch, applyAtomTotal]
+        | expression _ =>
+          simp [simpleMatch, applyAtomTotal]
+      | expression ps =>
+        cases target with
+        | expression ts =>
+          cases hdec : (ps.length != ts.length) with
+          | true =>
+            simp [simpleMatch, applyAtomTotal, hdec]
+          | false =>
+            simpa [simpleMatch, applyAtomTotal, hdec] using
+              (ih_list ps ts b₁ b₂ hrel)
+        | var _ =>
+          simp [simpleMatch, applyAtomTotal]
+        | symbol _ =>
+          simp [simpleMatch, applyAtomTotal]
+        | grounded _ =>
+          simp [simpleMatch, applyAtomTotal]
+    have hlist : ∀ ps ts b₁ b₂,
+        BindingsKeysRenamedBy r b₁ b₂ →
+        Option.Rel (BindingsKeysRenamedBy r)
+          (simpleMatch.simpleMatchList ps ts b₁ (n + 1))
+          (simpleMatch.simpleMatchList (ps.map (applyAtomTotal r)) ts b₂ (n + 1)) := by
+      intro ps'
+      induction ps' with
+      | nil =>
+        intro ts' b₁' b₂' hrel'
+        cases ts' with
+        | nil =>
+          simp [simpleMatch.simpleMatchList]
+          exact hrel'
+        | cons _ _ =>
+          simp [simpleMatch.simpleMatchList]
+      | cons p' ps' ihps =>
+        intro ts' b₁' b₂' hrel'
+        cases ts' with
+        | nil =>
+          simp [simpleMatch.simpleMatchList]
+        | cons t' ts' =>
+          unfold simpleMatch.simpleMatchList
+          simp only [List.map]
+          have hhead := hpat p' t' b₁' b₂' hrel'
+          cases h₁ : simpleMatch p' t' b₁' (n + 1) with
+          | none =>
+            rw [h₁] at hhead
+            cases h₂ : simpleMatch (applyAtomTotal r p') t' b₂' (n + 1) with
+            | none =>
+              simp
+            | some _ =>
+              rw [h₂] at hhead
+              cases hhead
+          | some b₁'' =>
+            rw [h₁] at hhead
+            cases h₂ : simpleMatch (applyAtomTotal r p') t' b₂' (n + 1) with
+            | none =>
+              rw [h₂] at hhead
+              cases hhead
+            | some b₂'' =>
+              rw [h₂] at hhead
+              simp only
+              cases hhead with
+              | some hrel'' =>
+                exact ihps ts' b₁'' b₂'' hrel''
+    exact ⟨hpat, hlist⟩
+
+/-- Corollary: from the empty seed, renaming only the pattern variables
+preserves successful matching and returns a binding state whose keys are
+renamed by `r`. -/
+theorem simpleMatch_patternRename_empty (r : VarRenaming) (hr : r.Injective)
+    (lhs target : Atom) (fuel : Nat) :
+    Option.Rel (BindingsKeysRenamedBy r)
+      (simpleMatch lhs target Bindings.empty fuel)
+      (simpleMatch (applyAtomTotal r lhs) target Bindings.empty fuel) := by
+  exact (simpleMatch_patternRename_bisim r hr fuel).1 lhs target
+    Bindings.empty Bindings.empty (bindingsKeysRenamedBy_empty r)
+
+/-- Successful empty-seed matching transports across a pattern renaming: the
+renamed pattern still matches, and its bindings are exactly the key-renamed
+counterpart of the original witness. -/
+theorem simpleMatch_patternRename_some_empty
+    (r : VarRenaming) (hr : r.Injective) (fuel : Nat)
+    {lhs target : Atom} {qb : Bindings}
+    (hmatch : simpleMatch lhs target Bindings.empty fuel = some qb) :
+    ∃ qb',
+      simpleMatch (applyAtomTotal r lhs) target Bindings.empty fuel = some qb' ∧
+      BindingsKeysRenamedBy r qb qb' := by
+  have hrel := simpleMatch_patternRename_empty r hr lhs target fuel
+  cases h₂ : simpleMatch (applyAtomTotal r lhs) target Bindings.empty fuel with
+  | none =>
+      rw [hmatch, h₂] at hrel
+      cases hrel
+  | some qb₂ =>
+      rw [hmatch, h₂] at hrel
+      refine ⟨qb₂, rfl, ?_⟩
+      cases hrel with
+      | some hkeys =>
+          exact hkeys
+
 /-! ## §4: Corollaries -/
 
 /-- **Corollary**: isSome preserved from empty seed. -/
@@ -283,57 +547,76 @@ private theorem filterMap_map_fst_eq {α β γ : Type*}
       · exact ih (fun x hx => hsome x (List.mem_cons_of_mem a hx))
                 (fun x hx => hfst x (List.mem_cons_of_mem a hx))
 
-/-- The inner matching step: match freshened lhs against query, return (rhs, bindings). -/
-private def matchStep (atom : Atom) (fuel : Nat) (lhs' rhs' : Atom) :
+/-- The legacy inner matching step: match freshened lhs against query, return
+(rhs, bindings) through the historical one-way `simpleMatch` interface. -/
+private def legacyMatchStep (atom : Atom) (fuel : Nat) (lhs' rhs' : Atom) :
     Option (Atom × Bindings) :=
   match simpleMatch lhs' atom Bindings.empty fuel with
   | some b => some (rhs', b)
   | none => none
 
-/-- matchStep agrees on isSome for variant-equivalent queries. -/
-private theorem matchStep_isSome_agree
+/-- `legacyMatchStep` agrees on isSome for variant-equivalent queries. -/
+private theorem legacyMatchStep_isSome_agree
     (q₁ q₂ : Atom) (r : VarRenaming) (hr : r.Injective) (heq : applyAtomTotal r q₁ = q₂)
     (fuel : Nat) (lhs' rhs' : Atom) :
-    (matchStep q₁ fuel lhs' rhs').isSome = (matchStep q₂ fuel lhs' rhs').isSome := by
-  unfold matchStep
+    (legacyMatchStep q₁ fuel lhs' rhs').isSome =
+      (legacyMatchStep q₂ fuel lhs' rhs').isSome := by
+  unfold legacyMatchStep
   have hbisim := simpleMatch_isSome_rename_empty r hr lhs' q₁ fuel
   rw [heq] at hbisim
   cases h₁ : simpleMatch lhs' q₁ Bindings.empty fuel <;>
     cases h₂ : simpleMatch lhs' q₂ Bindings.empty fuel <;>
     simp_all
 
-/-- matchStep returns the same fst (rhs') for both queries. -/
-private theorem matchStep_fst_agree
+/-- `legacyMatchStep` returns the same fst (rhs') for both queries. -/
+private theorem legacyMatchStep_fst_agree
     (q₁ q₂ : Atom) (fuel : Nat) (lhs' rhs' : Atom)
     (b₁ : Atom) (c₁ : Bindings) (b₂ : Atom) (c₂ : Bindings)
-    (h₁ : matchStep q₁ fuel lhs' rhs' = some (b₁, c₁))
-    (h₂ : matchStep q₂ fuel lhs' rhs' = some (b₂, c₂)) :
+    (h₁ : legacyMatchStep q₁ fuel lhs' rhs' = some (b₁, c₁))
+    (h₂ : legacyMatchStep q₂ fuel lhs' rhs' = some (b₂, c₂)) :
     b₁ = b₂ := by
-  unfold matchStep at h₁ h₂
+  unfold legacyMatchStep at h₁ h₂
   revert h₁ h₂
   cases simpleMatch lhs' q₁ Bindings.empty fuel <;>
     cases simpleMatch lhs' q₂ Bindings.empty fuel <;>
     intro h₁ h₂ <;> simp_all
 
-/-- queryEquations uses matchStep after equation decomposition + freshening. -/
-private theorem queryEquations_matchStep (space : Space) (atom : Atom) (fuel : Nat) :
-    queryEquations space atom fuel =
+/-- The historical equation-query helper, kept only to state the old
+simpleMatch-based cache theorem honestly after the public interface moved to
+`matchAtoms`/`mergeBindings`. -/
+def variantLegacyQueryEquations (space : Space) (atom : Atom) (fuel : Nat) :
+    List (Atom × Bindings) :=
     space.atoms.zipIdx.filterMap fun ⟨eq, idx⟩ =>
       match eq with
       | .expression [.symbol "=", lhs, rhs] =>
-        matchStep atom fuel (freshenEquation idx lhs rhs fuel).1
-                            (freshenEquation idx lhs rhs fuel).2
-      | _ => none := by
+        legacyMatchStep atom fuel (freshenEquation idx lhs rhs fuel).1
+                                (freshenEquation idx lhs rhs fuel).2
+      | _ => none
+
+/-- `variantLegacyQueryEquations` unfolds to the legacy matching step after
+equation decomposition + freshening. -/
+private theorem variantLegacyQueryEquations_matchStep
+    (space : Space) (atom : Atom) (fuel : Nat) :
+    variantLegacyQueryEquations space atom fuel =
+      space.atoms.zipIdx.filterMap fun ⟨eq, idx⟩ =>
+        match eq with
+        | .expression [.symbol "=", lhs, rhs] =>
+          legacyMatchStep atom fuel (freshenEquation idx lhs rhs fuel).1
+                                  (freshenEquation idx lhs rhs fuel).2
+        | _ => none := by
   rfl
 
-/-- Variant-equivalent queries produce the same RHS atoms.
-    Uses `List.map_filterMap` to push `Prod.fst` inside `filterMap`, then
-    `split` on the Atom equation pattern + `simpleMatch_isSome_rename_empty`. -/
-theorem variant_queries_same_rhs
+/-- Variant-equivalent queries produce the same RHS atoms on the legacy
+`simpleMatch` query model.
+
+This is the old table-cache theorem at its true abstraction layer.  It should
+not be read as a theorem about public `queryEquations`, whose repaired faithful
+matcher interface is intentionally stronger and can expose equality-threading. -/
+theorem variant_legacy_queries_same_rhs
     (space : Space) (q₁ q₂ : Atom) (hvar : VariantEquiv q₁ q₂) (fuel : Nat) :
-    (queryEquations space q₁ fuel).map Prod.fst =
-    (queryEquations space q₂ fuel).map Prod.fst := by
-  simp only [queryEquations, List.map_filterMap]
+    (variantLegacyQueryEquations space q₁ fuel).map Prod.fst =
+    (variantLegacyQueryEquations space q₂ fuel).map Prod.fst := by
+  simp only [variantLegacyQueryEquations, List.map_filterMap]
   congr 1; funext ⟨eq, idx⟩
   split
   · rename_i lhs rhs _
@@ -342,16 +625,38 @@ theorem variant_queries_same_rhs
     rw [hvar.eq] at hm
     cases h₁ : simpleMatch (freshenEquation idx lhs rhs fuel).1 q₁ Bindings.empty fuel <;>
       cases h₂ : simpleMatch (freshenEquation idx lhs rhs fuel).1 q₂ Bindings.empty fuel <;>
-      simp_all
+      simp [legacyMatchStep, h₁, h₂] at hm ⊢
   · rfl
 
-/-- Cache reuse is sound at the RHS level. -/
-theorem canonical_cache_reusable
+/-- Deprecated compatibility spelling for the legacy theorem.  The statement is
+now deliberately over `variantLegacyQueryEquations`, not public `queryEquations`. -/
+theorem variant_queries_same_rhs
+    (space : Space) (q₁ q₂ : Atom) (hvar : VariantEquiv q₁ q₂) (fuel : Nat) :
+    (variantLegacyQueryEquations space q₁ fuel).map Prod.fst =
+    (variantLegacyQueryEquations space q₂ fuel).map Prod.fst :=
+  variant_legacy_queries_same_rhs space q₁ q₂ hvar fuel
+
+/-- Cache reuse is sound at the RHS level for the legacy query model. -/
+theorem canonical_legacy_cache_reusable
     (space : Space) (q₁ q₂ : Atom) (fuel : Nat)
     (hvar : VariantEquiv q₁ q₂) :
+    (variantLegacyQueryEquations space q₁ fuel).map Prod.fst =
+    (variantLegacyQueryEquations space q₂ fuel).map Prod.fst :=
+  variant_legacy_queries_same_rhs space q₁ q₂ hvar fuel
+
+/-! The pre-G3 public-interface theorem had the following shape:
+
+```
+theorem variant_queries_same_rhs
+    (space : Space) (q₁ q₂ : Atom) (hvar : VariantEquiv q₁ q₂) (fuel : Nat) :
     (queryEquations space q₁ fuel).map Prod.fst =
-    (queryEquations space q₂ fuel).map Prod.fst :=
-  variant_queries_same_rhs space q₁ q₂ hvar fuel
+    (queryEquations space q₂ fuel).map Prod.fst
+```
+
+That statement cannot be recovered from this legacy simpleMatch proof after
+`queryEquations` moved to the faithful `matchAtoms`/`mergeBindings` interface.
+It belongs to the later faithful-matcher invariance/equality-threading tranche.
+-/
 
 /-! ## §6: Status
 
@@ -364,9 +669,10 @@ CoReferencePreservation.lean §4a) ensures BEq preservation.
 
 ### 0 sorries total
 
-`variant_queries_same_rhs` proved via `List.map_filterMap` + `funext` +
-`split` on the Atom equation pattern + `simpleMatch_isSome_rename_empty`.
-Helper `matchStep` avoids nested Atom pattern match reduction issues.
+`variant_legacy_queries_same_rhs` is proved via `List.map_filterMap` +
+`funext` + `split` on the Atom equation pattern +
+`simpleMatch_isSome_rename_empty`. Helper `legacyMatchStep` avoids nested Atom
+pattern match reduction issues.
 -/
 
 end Mettapedia.Languages.MeTTa.HE

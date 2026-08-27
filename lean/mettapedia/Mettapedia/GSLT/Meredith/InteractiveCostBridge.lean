@@ -1,4 +1,5 @@
 import Mettapedia.GSLT.Meredith.InteractiveReducesNBridge
+import Mettapedia.GSLT.LanguageDef.Cost.FlatteningObstruction
 import Mettapedia.GSLT.Synthesis.MainConservation
 
 /-!
@@ -978,7 +979,7 @@ theorem continuedTwoStepDirectSpentTrace_eq_traceSteps :
 This gathers the full path-level spent-trace semantic facts at the concrete path
 so nearby projection lemmas do not depend directly on the generic source theorem. -/
 theorem continuedTwoStepDirectSpentTraceFullSemanticBridge :
-    (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).SurfaceLike ∧
+    (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).CanonicalShape ∧
       (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toLedger =
         totalAction rhoIntrinsicLedgerAction continuedTwoStepPath ∧
       (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toPublicPattern =
@@ -1013,7 +1014,7 @@ theorem continuedTwoStepDirectSpentTraceFullSemanticBridge :
       rhoSpentSyntaxTicks
         (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toPattern =
           continuedTwoStepPath.length := by
-  exact ⟨rhoIntrinsicDirectSpentTrace_surfaceLike continuedTwoStepPath,
+  exact ⟨rhoIntrinsicDirectSpentTrace_canonicalShape continuedTwoStepPath,
     rhoIntrinsicDirectSpentTrace_toLedger continuedTwoStepPath,
     rhoIntrinsicDirectSpentTrace_toPublicPattern_eq_publicSpentSyntax continuedTwoStepPath,
     rhoIntrinsicDirectSpentTrace_traceCoherent continuedTwoStepPath,
@@ -1147,7 +1148,7 @@ theorem continuedTwoStepPublicSpentSyntax_semantics :
   exact continuedTwoStepPublicSpentSyntaxFullSemanticBridge
 
 theorem continuedTwoStepDirectSpentTrace_semantics :
-    (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).SurfaceLike ∧
+    (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).CanonicalShape ∧
       (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toLedger =
         totalAction rhoIntrinsicLedgerAction continuedTwoStepPath ∧
       (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toPublicPattern =
@@ -1268,7 +1269,7 @@ theorem continuedTwoStepNativeSemanticBundle :
         totalCost rhoIntrinsicCostMap continuedTwoStepPath 1 ∧
     rhoLedgerShadow (totalAction rhoIntrinsicLedgerAction continuedTwoStepPath) =
       traceAccount (S := rhoGSLT) (A := Nat) (k := 2) continuedTwoStepTrace ∧
-    (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).SurfaceLike ∧
+    (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).CanonicalShape ∧
     (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toLedger =
       totalAction rhoIntrinsicLedgerAction continuedTwoStepPath ∧
     (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toPublicPattern =
@@ -1344,7 +1345,7 @@ theorem continuedTwoStepNativeSemanticBundle :
       (rhoLedgerToSpentSyntax (totalAction rhoIntrinsicLedgerAction continuedTwoStepPath)) =
         2 ∧
     RhoLedger.TraceCoherent (totalAction rhoIntrinsicLedgerAction continuedTwoStepPath) ∧
-    (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).SurfaceLike ∧
+    (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).CanonicalShape ∧
     (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toLedger =
       totalAction rhoIntrinsicLedgerAction continuedTwoStepPath ∧
     (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toPublicPattern =
@@ -1389,7 +1390,7 @@ theorem continuedTwoStepNativeSemanticBundle :
   rcases continuedTwoStepStepAppendPublicSemanticBridge with
     ⟨hPublicAccAppend, hPublicWidthAppend, hPublicTicksAppend⟩
   rcases continuedTwoStepDirectSpentTraceFullSemanticBridge with
-    ⟨hDirectSurface, hDirectLedger, hDirectPublic, hDirectCoherent,
+    ⟨hDirectSubject, hDirectLedger, hDirectPublic, hDirectCoherent,
       hDirectAccPublic, hDirectAccCost, hDirectWidthPublic, hDirectWidthCost,
       hDirectTicksPublic, hDirectTicksCost, hDirectTicksLen⟩
   rcases continuedTwoStepStepAppendDirectTraceSemanticBridge with
@@ -1417,12 +1418,12 @@ theorem continuedTwoStepNativeSemanticBundle :
         simp [continuedTwoStepPath, rewritePathAppend, GSLT.RewritePath.length, oneStepPath]
   exact
     ⟨⟨hTrace, hShadowCost, hPublicAccCost, hPublicWidthSpatial, hPublicTicksLen,
-        hPublicWidthCost, hPublicTicksCost, hShadowTrace, hDirectSurface,
+        hPublicWidthCost, hPublicTicksCost, hShadowTrace, hDirectSubject,
         hDirectLedger, hDirectPublic, hDirectCoherent, hDirectAccPublic,
         hDirectAccCost, hDirectWidthPublic, hDirectWidthCost, hDirectTicksPublic,
         hDirectTicksCost, hDirectTicksLen⟩,
       ⟨hTrace, hShadowCost, hShadowTrace, hPublicAccAppend, hPublicWidthAppend,
-        hPublicTicksAppend, hPublicTicksTwo, hPublicCoherent, hDirectSurface,
+        hPublicTicksAppend, hPublicTicksTwo, hPublicCoherent, hDirectSubject,
         hDirectLedger, hDirectPublic, hDirectCoherent, hDirectAccAppend,
         hDirectWidthAppend, hDirectTicksAppend, hDirectTicksTwo⟩⟩
 
@@ -1468,7 +1469,7 @@ theorem continuedTwoStepNativeConcatSemanticBridge :
       (rhoLedgerToSpentSyntax (totalAction rhoIntrinsicLedgerAction continuedTwoStepPath)) =
         2 ∧
     RhoLedger.TraceCoherent (totalAction rhoIntrinsicLedgerAction continuedTwoStepPath) ∧
-    (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).SurfaceLike ∧
+    (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).CanonicalShape ∧
     (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toLedger =
       totalAction rhoIntrinsicLedgerAction continuedTwoStepPath ∧
     (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toPublicPattern =
@@ -1570,7 +1571,7 @@ theorem continuedTwoStepPublicSpentSyntaxConcatSemanticBridge :
 two-step bridge. This gives the `reducesN_concat` direct wrappers a local owner
 theorem built from the earlier path-level direct owners. -/
 theorem continuedTwoStepDirectSpentTraceConcatSemanticBridge :
-    (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).SurfaceLike ∧
+    (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).CanonicalShape ∧
       (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toLedger =
         totalAction rhoIntrinsicLedgerAction continuedTwoStepPath ∧
       (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toPublicPattern =
@@ -1808,7 +1809,7 @@ theorem continuedTwoStepPublicSpentSyntax_semantics_reducesN_concat :
   exact continuedTwoStepPublicSpentSyntaxConcatSemanticBridge
 
 theorem continuedTwoStepDirectSpentTrace_semantics_reducesN_concat :
-    (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).SurfaceLike ∧
+    (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).CanonicalShape ∧
       (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toLedger =
         totalAction rhoIntrinsicLedgerAction continuedTwoStepPath ∧
       (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toPublicPattern =
@@ -1970,7 +1971,7 @@ local owner theorem instead of repeated direct calls into the generic source
 layer. -/
 theorem continuedTwoStepDirectSpentTraceFullSemanticBridge_reducesN :
     (rhoIntrinsicDirectSpentTrace
-      (rhoRewritePathOfReducesN continuedTwoStepReducesN)).SurfaceLike ∧
+      (rhoRewritePathOfReducesN continuedTwoStepReducesN)).CanonicalShape ∧
       (rhoIntrinsicDirectSpentTrace
         (rhoRewritePathOfReducesN continuedTwoStepReducesN)).toLedger =
           totalAction rhoIntrinsicLedgerAction
@@ -2098,7 +2099,7 @@ theorem continuedTwoStepPublicSpentSyntax_semantics_reducesN :
 
 theorem continuedTwoStepDirectSpentTrace_semantics_reducesN :
     (rhoIntrinsicDirectSpentTrace
-      (rhoRewritePathOfReducesN continuedTwoStepReducesN)).SurfaceLike ∧
+      (rhoRewritePathOfReducesN continuedTwoStepReducesN)).CanonicalShape ∧
       (rhoIntrinsicDirectSpentTrace
         (rhoRewritePathOfReducesN continuedTwoStepReducesN)).toLedger =
           totalAction rhoIntrinsicLedgerAction
@@ -2176,7 +2177,7 @@ theorem continuedTwoStepNativeSemanticBridge :
         totalCost rhoIntrinsicCostMap continuedTwoStepPath 1 ∧
     rhoLedgerShadow (totalAction rhoIntrinsicLedgerAction continuedTwoStepPath) =
       traceAccount (S := rhoGSLT) (A := Nat) (k := 2) continuedTwoStepTrace ∧
-    (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).SurfaceLike ∧
+    (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).CanonicalShape ∧
     (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toLedger =
       totalAction rhoIntrinsicLedgerAction continuedTwoStepPath ∧
     (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toPublicPattern =
@@ -2236,7 +2237,7 @@ theorem continuedTwoStepNativeFullSemanticBridge :
         totalCost rhoIntrinsicCostMap continuedTwoStepPath 1 ∧
     rhoLedgerShadow (totalAction rhoIntrinsicLedgerAction continuedTwoStepPath) =
       traceAccount (S := rhoGSLT) (A := Nat) (k := 2) continuedTwoStepTrace ∧
-    (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).SurfaceLike ∧
+    (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).CanonicalShape ∧
     (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toLedger =
       totalAction rhoIntrinsicLedgerAction continuedTwoStepPath ∧
     (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toPublicPattern =
@@ -2312,7 +2313,7 @@ theorem continuedTwoStepNativeFullSemanticBridge :
       (rhoLedgerToSpentSyntax (totalAction rhoIntrinsicLedgerAction continuedTwoStepPath)) =
         2 ∧
     RhoLedger.TraceCoherent (totalAction rhoIntrinsicLedgerAction continuedTwoStepPath) ∧
-    (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).SurfaceLike ∧
+    (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).CanonicalShape ∧
     (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toLedger =
       totalAction rhoIntrinsicLedgerAction continuedTwoStepPath ∧
     (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toPublicPattern =
@@ -2372,7 +2373,7 @@ theorem continuedTwoStepCombinedFullSemanticBridge :
         totalCost rhoIntrinsicCostMap continuedTwoStepPath 1 ∧
     rhoLedgerShadow (totalAction rhoIntrinsicLedgerAction continuedTwoStepPath) =
       traceAccount (S := rhoGSLT) (A := Nat) (k := 2) continuedTwoStepTrace ∧
-    (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).SurfaceLike ∧
+    (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).CanonicalShape ∧
     (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toLedger =
       totalAction rhoIntrinsicLedgerAction continuedTwoStepPath ∧
     (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toPublicPattern =
@@ -2448,7 +2449,7 @@ theorem continuedTwoStepCombinedFullSemanticBridge :
       (rhoLedgerToSpentSyntax (totalAction rhoIntrinsicLedgerAction continuedTwoStepPath)) =
         2 ∧
     RhoLedger.TraceCoherent (totalAction rhoIntrinsicLedgerAction continuedTwoStepPath) ∧
-    (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).SurfaceLike ∧
+    (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).CanonicalShape ∧
     (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toLedger =
       totalAction rhoIntrinsicLedgerAction continuedTwoStepPath ∧
     (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toPublicPattern =
@@ -2668,7 +2669,7 @@ theorem continuedTwoStepPublicFullSemanticBridge :
 
 /-- Concrete direct-spent semantic package for the continued two-step bridge.
 This gathers the direct-stack step-append facts together with the direct spent-trace
-surface, modulus, and additive two-step no-leak facts. -/
+interface, modulus, and additive two-step no-leak facts. -/
 theorem continuedTwoStepDirectFullSemanticBridge :
     continuedTwoStepDirectSpent.toLedger =
       totalAction rhoIntrinsicLedgerAction continuedTwoStepPath ∧
@@ -2704,7 +2705,7 @@ theorem continuedTwoStepDirectFullSemanticBridge :
       rhoSpentSyntaxTicks
         (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toPattern =
           totalCost rhoIntrinsicCostMap continuedTwoStepPath 1 ∧
-      (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).SurfaceLike ∧
+      (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).CanonicalShape ∧
       (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toLedger =
         totalAction rhoIntrinsicLedgerAction continuedTwoStepPath ∧
       (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toPublicPattern =
@@ -2744,7 +2745,7 @@ theorem continuedTwoStepDirectFullSemanticBridge :
       hStepDirectTicksLen, hStepDirectAppendStack, hStepDirectAppendSteps,
       hStepTraceAppend⟩
   rcases continuedTwoStepDirectSpentTraceFullSemanticBridge with
-    ⟨hDirectSurface, hDirectLedger, hDirectPublicPattern, hDirectCoherent,
+    ⟨hDirectSubject, hDirectLedger, hDirectPublicPattern, hDirectCoherent,
       hDirectAccPublic, _, _, hDirectWidthCost, _, hDirectTicksCost, hDirectTicksLen⟩
   rcases continuedTwoStepStepAppendDirectTraceSemanticBridge with
     ⟨hConcatDirectAcc, hConcatDirectWidth, hConcatDirectTicks, _⟩
@@ -2761,7 +2762,7 @@ theorem continuedTwoStepDirectFullSemanticBridge :
   exact ⟨hStepDirectLedger, hStepDirectShadow, hStepDirectDepth, hStepDirectAccCost,
     hStepDirectTicksLen, hStepDirectAppendStack, hStepDirectAppendSteps,
     hStepTraceAppend, hDirectAccPublic, hDirectWidthCost, hDirectTicksCost,
-    hDirectSurface, hDirectLedger, hDirectPublicPattern, hDirectCoherent,
+    hDirectSubject, hDirectLedger, hDirectPublicPattern, hDirectCoherent,
     hConcatDirectAcc, hConcatDirectWidth, hConcatDirectTicks,
     hConcatDirectTicksTwo⟩
 
@@ -2951,7 +2952,7 @@ theorem continuedTwoStepSemanticBridge :
             2 ∧
       RhoLedger.TraceCoherent
         (totalAction rhoIntrinsicLedgerAction continuedTwoStepPath) ∧
-      (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).SurfaceLike ∧
+      (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).CanonicalShape ∧
       (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toLedger =
         totalAction rhoIntrinsicLedgerAction continuedTwoStepPath ∧
       (rhoIntrinsicDirectSpentTrace continuedTwoStepPath).toPublicPattern =
@@ -3005,7 +3006,7 @@ theorem continuedTwoStepSemanticBridge :
       _, _, hDirectWidthCost, _, hDirectTicksCost, _⟩
   rcases hnativeConcat with
     ⟨_, _, _, hStepPublicAcc, hStepPublicWidth, hStepPublicTicks,
-      hConcatPublicTicksTwo, hConcatPublicCoherent, hDirectSurface, hDirectLedger,
+      hConcatPublicTicksTwo, hConcatPublicCoherent, hDirectSubject, hDirectLedger,
       hDirectPublicPattern, hDirectCoherent, hStepDirectAccAppend,
       hStepDirectWidthAppend, hStepDirectTicksAppend, hConcatDirectTicksTwo⟩
   rcases hstepAppendSemantic with
@@ -3081,7 +3082,7 @@ theorem continuedTwoStepSemanticBridge :
                                                             · constructor
                                                               · exact hConcatPublicCoherent
                                                               · constructor
-                                                                · exact hDirectSurface
+                                                                · exact hDirectSubject
                                                                 · constructor
                                                                   · exact hDirectLedger
                                                                   · constructor

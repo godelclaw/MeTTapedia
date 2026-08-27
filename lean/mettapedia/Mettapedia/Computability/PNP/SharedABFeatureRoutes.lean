@@ -11,7 +11,7 @@ The declarations live in semantic modules:
 * `SharedABFeatureRoutesFamilies`
 * `SharedABFeatureRoutesExactPullback`
 
-If a switched family factors through the reduced surface and the reduced family
+If a switched family factors through the reduced data domain and the reduced family
 is realized using one shared affine basis on the raw `(a, b)` bits, then the
-exact-surface family inherits the corresponding combiner-only budget.
+exact-data domain family inherits the corresponding combiner-only budget.
 -/

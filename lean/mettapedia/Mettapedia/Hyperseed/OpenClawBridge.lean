@@ -3,7 +3,7 @@ import Mettapedia.Hyperseed.Closure
 /-!
 # Hyperseed: OpenClaw Bridge
 
-Minimal OpenClaw-facing surface for observation ingestion.
+Minimal OpenClaw-facing API for observation ingestion.
 
 Defines `OpenClawObservation` as a tagged observation envelope and provides
 `appendObservation` / `appendObservationTrace` helpers that extend the trace
@@ -14,8 +14,8 @@ This is generic — it does not assume a concrete OpenClaw payload format yet.
 
 namespace Mettapedia.Hyperseed
 
-open Mettapedia.Logic.PLNWorldModel
-open Mettapedia.Logic.EvidenceClass
+open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence.EvidenceClass
 
 variable {Obs Source Time State Query : Type*}
 variable [EvidenceType State] [BinaryWorldModel State Query]

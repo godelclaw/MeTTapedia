@@ -87,37 +87,53 @@ def iff' (φ ψ : Formula Act n) : Formula Act n :=
 These operations are needed for fixed-point semantics.
 -/
 
-/-- Weaken a formula by adding a variable to the context -/
-def weaken : Formula Act n → Formula Act (n + 1)
-  | tt => tt
-  | ff => ff
-  | neg φ => neg (weaken φ)
-  | conj φ ψ => conj (weaken φ) (weaken ψ)
-  | disj φ ψ => disj (weaken φ) (weaken ψ)
-  | diamond a φ => diamond a (weaken φ)
-  | box a φ => box a (weaken φ)
-  | mu φ => mu (weaken φ)  -- Note: this shifts indices correctly
-  | nu φ => nu (weaken φ)
-  | var i => var i.castSucc
+/-- Extend a variable renaming through one fixed-point binder.  The newly
+bound variable remains index zero; every ambient variable is renamed and
+shifted once. -/
+def liftRenaming (rename : Fin n → Fin m) : Fin (n + 1) → Fin (m + 1) :=
+  Fin.cases 0 (fun index => (rename index).succ)
 
-/-- Substitute a formula for the outermost bound variable (index 0)
-    `subst body replacement` replaces all occurrences of variable 0 in `body`
-    with `replacement`, and decrements all other variable indices. -/
-def subst (body : Formula Act (n + 1)) (replacement : Formula Act n) : Formula Act n :=
-  match body with
+/-- Capture-avoiding renaming of fixed-point variables. -/
+def renameVars (ρ : Fin n → Fin m) : Formula Act n → Formula Act m
   | tt => tt
   | ff => ff
-  | neg φ => neg (subst φ replacement)
-  | conj φ ψ => conj (subst φ replacement) (subst ψ replacement)
-  | disj φ ψ => disj (subst φ replacement) (subst ψ replacement)
-  | diamond a φ => diamond a (subst φ replacement)
-  | box a φ => box a (subst φ replacement)
-  | mu φ => mu (subst φ (weaken replacement))
-  | nu φ => nu (subst φ (weaken replacement))
-  | var i =>
-      match i with
-      | ⟨0, _⟩ => replacement
-      | ⟨i' + 1, hi⟩ => var ⟨i', Nat.lt_of_succ_lt_succ hi⟩
+  | neg φ => neg (renameVars ρ φ)
+  | conj φ ψ => conj (renameVars ρ φ) (renameVars ρ ψ)
+  | disj φ ψ => disj (renameVars ρ φ) (renameVars ρ ψ)
+  | diamond action φ => diamond action (renameVars ρ φ)
+  | box action φ => box action (renameVars ρ φ)
+  | mu φ => mu (renameVars (liftRenaming ρ) φ)
+  | nu φ => nu (renameVars (liftRenaming ρ) φ)
+  | var index => var (ρ index)
+
+/-- Weaken a formula by inserting a fresh variable at index zero. -/
+def weaken (formula : Formula Act n) : Formula Act (n + 1) :=
+  renameVars Fin.succ formula
+
+/-- Extend a simultaneous substitution through one fixed-point binder. -/
+def liftSubstitution (substitution : Fin n → Formula Act m) :
+    Fin (n + 1) → Formula Act (m + 1) :=
+  Fin.cases (var 0) (fun index => weaken (substitution index))
+
+/-- Capture-avoiding simultaneous substitution. -/
+def bind (substitution : Fin n → Formula Act m) : Formula Act n → Formula Act m
+  | tt => tt
+  | ff => ff
+  | neg φ => neg (bind substitution φ)
+  | conj φ ψ => conj (bind substitution φ) (bind substitution ψ)
+  | disj φ ψ => disj (bind substitution φ) (bind substitution ψ)
+  | diamond action φ => diamond action (bind substitution φ)
+  | box action φ => box action (bind substitution φ)
+  | mu φ => mu (bind (liftSubstitution substitution) φ)
+  | nu φ => nu (bind (liftSubstitution substitution) φ)
+  | var index => substitution index
+
+/-- Substitute a formula for the outermost bound variable (index zero),
+decrementing the remaining ambient indices without capturing variables under
+nested fixed-point binders. -/
+def subst (body : Formula Act (n + 1)) (replacement : Formula Act n) :
+    Formula Act n :=
+  bind (Fin.cases replacement var) body
 
 /-! ### Substitution Properties
 
@@ -128,13 +144,44 @@ when needed for specific applications.
 /-- Substituting into variable 0 gives the replacement -/
 theorem subst_var_zero (replacement : Formula Act n) :
     subst (var (0 : Fin (n + 1))) replacement = replacement := by
-  unfold subst
+  unfold subst bind
   rfl
 
 /-- Substituting into a successor variable decrements the index -/
 theorem subst_var_succ (i : ℕ) (hi : i + 1 < n + 1) (replacement : Formula Act n) :
     subst (var ⟨i + 1, hi⟩) replacement = var ⟨i, Nat.lt_of_succ_lt_succ hi⟩ := by
-  unfold subst
+  unfold subst bind
+  rfl
+
+/-- Weakening shifts a free variable past the fresh index zero. -/
+@[simp] theorem weaken_var (index : Fin n) :
+    weaken (var index : Formula Act n) = var index.succ := by
+  rfl
+
+/-- Weakening preserves a variable bound by an inner fixed-point binder. -/
+theorem weaken_preserves_inner_bound_variable :
+    weaken (mu (var 0) : Formula Act 0) =
+      (mu (var 0) : Formula Act 1) := by
+  rfl
+
+/-- Weakening shifts an ambient variable even when it occurs underneath a
+fixed-point binder. -/
+theorem weaken_shifts_ambient_variable_under_binder :
+    weaken (mu (var 1) : Formula Act 1) =
+      (mu (var 2) : Formula Act 2) := by
+  rfl
+
+/-- Substitution under a binder leaves that binder's own variable intact. -/
+theorem subst_preserves_inner_bound_variable :
+    subst (mu (var 0) : Formula Act 1) (tt : Formula Act 0) =
+      (mu (var 0) : Formula Act 0) := by
+  rfl
+
+/-- Substitution reaches the ambient variable underneath a binder without
+capturing the binder's own index zero. -/
+theorem subst_reaches_ambient_variable_under_binder :
+    subst (mu (var 1) : Formula Act 1) (tt : Formula Act 0) =
+      (mu tt : Formula Act 0) := by
   rfl
 
 /-! ### Positivity
@@ -329,6 +376,90 @@ def satisfies (lts : LTS S Act) : Env S n → Formula Act n → S → Prop
 def sat (lts : LTS S Act) (ρ : Env S n) (φ : Formula Act n) : Set S :=
   { s | satisfies lts ρ φ s }
 
+/-- Extending pointwise-equivalent environments with the same fixed-point
+candidate preserves pointwise membership. -/
+theorem Env.extend_congr {ρ ρ' : Env S n}
+    (equivalent : ∀ index state, state ∈ ρ index ↔ state ∈ ρ' index)
+    (candidate : Set S) :
+    ∀ index state,
+      state ∈ ρ.extend candidate index ↔
+        state ∈ ρ'.extend candidate index := by
+  intro index state
+  unfold Env.extend
+  split
+  · rfl
+  · exact equivalent _ _
+
+/-- Satisfaction depends only on the pointwise transition relation and
+environment, not on their record or function representation. -/
+theorem satisfies_congr
+    {lts lts' : LTS S Act} {ρ ρ' : Env S n}
+    (transitions : ∀ source action target,
+      lts.trans source action target ↔ lts'.trans source action target)
+    (environment : ∀ index state,
+      state ∈ ρ index ↔ state ∈ ρ' index)
+    (formula : Formula Act n) (state : S) :
+    satisfies lts ρ formula state ↔ satisfies lts' ρ' formula state := by
+  induction formula generalizing state with
+  | tt => rfl
+  | ff => rfl
+  | neg formula inductionHypothesis =>
+      exact not_congr (inductionHypothesis environment state)
+  | conj left right leftHypothesis rightHypothesis =>
+      exact and_congr (leftHypothesis environment state)
+        (rightHypothesis environment state)
+  | disj left right leftHypothesis rightHypothesis =>
+      exact or_congr (leftHypothesis environment state)
+        (rightHypothesis environment state)
+  | diamond action formula inductionHypothesis =>
+      simp only [satisfies, LTS.successors, Set.mem_setOf_eq]
+      constructor
+      · rintro ⟨target, transition, satisfied⟩
+        exact ⟨target, (transitions _ _ _).mp transition,
+          (inductionHypothesis environment target).mp satisfied⟩
+      · rintro ⟨target, transition, satisfied⟩
+        exact ⟨target, (transitions _ _ _).mpr transition,
+          (inductionHypothesis environment target).mpr satisfied⟩
+  | box action formula inductionHypothesis =>
+      simp only [satisfies, LTS.successors, Set.mem_setOf_eq]
+      constructor
+      · intro allTargets target transition
+        exact (inductionHypothesis environment target).mp
+          (allTargets target ((transitions _ _ _).mpr transition))
+      · intro allTargets target transition
+        exact (inductionHypothesis environment target).mpr
+          (allTargets target ((transitions _ _ _).mp transition))
+  | mu body inductionHypothesis =>
+      simp only [satisfies]
+      constructor
+      · intro least candidate preFixed
+        apply least candidate
+        intro target satisfied
+        exact preFixed target
+          ((inductionHypothesis
+            (Env.extend_congr environment candidate) target).mp satisfied)
+      · intro least candidate preFixed
+        apply least candidate
+        intro target satisfied
+        exact preFixed target
+          ((inductionHypothesis
+            (Env.extend_congr environment candidate) target).mpr satisfied)
+  | nu body inductionHypothesis =>
+      simp only [satisfies]
+      constructor
+      · rintro ⟨candidate, member, postFixed⟩
+        exact ⟨candidate, member, fun target targetMember =>
+          (inductionHypothesis
+            (Env.extend_congr environment candidate) target).mp
+              (postFixed target targetMember)⟩
+      · rintro ⟨candidate, member, postFixed⟩
+        exact ⟨candidate, member, fun target targetMember =>
+          (inductionHypothesis
+            (Env.extend_congr environment candidate) target).mpr
+              (postFixed target targetMember)⟩
+  | var index =>
+      exact environment index state
+
 /-! ## Properties of Satisfaction -/
 
 /-- Diamond and box are duals -/
@@ -340,7 +471,7 @@ theorem diamond_box_dual (lts : LTS S Act) (ρ : Env S n) (a : Act) (φ : Formul
   · intro ⟨s', htrans, hsat⟩ hall
     exact absurd hsat (hall s' htrans)
   · intro h
-    push_neg at h
+    push Not at h
     exact h
 
 /-- Box can be expressed via diamond -/

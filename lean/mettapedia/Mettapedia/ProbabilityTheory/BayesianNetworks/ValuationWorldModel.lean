@@ -1,7 +1,7 @@
 import Mathlib.Data.Multiset.Basic
 import Mettapedia.ProbabilityTheory.BayesianNetworks.VariableElimination
 import Mettapedia.ProbabilityTheory.BayesianNetworks.ValuationBridge
-import Mettapedia.Logic.PLNWorldModel
+import Mettapedia.PLN.WorldModel.PLNWorldModel
 
 /-!
 # Canonical Semantic WM: Factorization + Marginalization
@@ -22,9 +22,9 @@ open scoped Classical BigOperators
 
 namespace ValuationWorldModel
 
-open Mettapedia.Logic.EvidenceClass
-open Mettapedia.Logic.EvidenceQuantale
-open Mettapedia.Logic.PLNWorldModel
+open Mettapedia.PLN.Evidence.EvidenceClass
+open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.WorldModel.PLNWorldModel
 
 open scoped ENNReal
 
@@ -100,7 +100,7 @@ private theorem toValuation_val_arbitraryConfig_eq_evalConst
         valuationFullAssign_empty_eq_emptyAssign]
 
 /-- The bundled scoped-valuation query lane computes the same exact weight as
-the operational VE query surface. -/
+the operational VE query interface. -/
 theorem scopedWeight_eq_weight
     (W : WMSource fg)
     (constraints : List (Σ v : V, fg.stateSpace v))

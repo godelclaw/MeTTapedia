@@ -56,6 +56,11 @@ nice -n 19 lake build
 
 ## Notable subprojects
 
+- `Examples/PLN/`
+  - Examples/PLN hosts worked PLN and WM-PLN curriculum examples, including
+    raven induction, disease abduction, multi-source evidence, estimator
+    envelopes, WM-4 introspection, and the LC/BinaryEvidence logic tower.
+
 - `ProbabilityTheory/KnuthSkilling/`
   - ProbabilityTheory/KnuthSkilling hosts Knuth-Skilling Foundations of Inference proofs
 
@@ -134,7 +139,7 @@ cd ~/claude/hyperon/mettail-rust
 - Mettapedia/ProbabilityTheory/KnuthSkilling/README.md contains the Knuth-Skilling structure and build targets.
 
 ```bash
-rg -n "sorry" Mettapedia/
+rg -n "s[o]rry" Mettapedia/
 ```
 
 ## Contribution

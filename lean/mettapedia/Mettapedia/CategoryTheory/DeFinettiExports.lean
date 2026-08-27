@@ -1,11 +1,11 @@
 import Mettapedia.CategoryTheory.DeFinettiStableExports
 import Mettapedia.CategoryTheory.DeFinettiExternalBridge
 import Mettapedia.CategoryTheory.DeFinettiMarkovCategoryBridge
-import Mettapedia.Logic.SolomonoffExchangeable
-import Mettapedia.Logic.CategoricalNuPLNBridge
+import Mettapedia.UniversalAI.SolomonoffExchangeable
+import Mettapedia.PLN.Bridges.ProbabilityTheory.CategoricalNuPLNBridge
 
 /-!
-# De Finetti Category Exports (Recommended Import Surface)
+# De Finetti Category Exports (Recommended Import Interface)
 
 This is the single recommended import path for the categorical de Finetti route.
 It re-exports the stable theorem chain needed by downstream users.
@@ -48,7 +48,7 @@ theorem deFinettiExport_existsUnique_latentThetaMeasure_of_exchangeable
     (X : ℕ → Ω → Bool) (μ : Measure Ω)
     [IsProbabilityMeasure μ]
     (hX : ∀ i : ℕ, Measurable (X i))
-    (hexch : Mettapedia.Logic.Exchangeability.InfiniteExchangeable X μ) :
+    (hexch : Mettapedia.ProbabilityTheory.Exchangeability.InfiniteExchangeable X μ) :
     ∃! ν : Measure DeFinettiConnection.Theta, RepresentsLatentTheta X μ ν :=
   deFinettiStable_existsUnique_latentThetaMeasure_of_exchangeable X μ hX hexch
 
@@ -1025,8 +1025,8 @@ if a probability law on infinite binary sequences realizes the finite-prefix
 weights of a restricted exchangeable Solomonoff prior, then the coordinate
 process admits a unique latent-`Theta` de Finetti mediator. -/
 theorem deFinettiExport_restrictedSolomonoff_prefixLaw_implies_unique_latentThetaMediator
-    (M : Mettapedia.Logic.SolomonoffExchangeable.RestrictedSolomonoffPrior)
-    (μ : Measure Mettapedia.Logic.SolomonoffPrior.InfBinString)
+    (M : Mettapedia.UniversalAI.SolomonoffExchangeable.RestrictedSolomonoffPrior)
+    (μ : Measure Mettapedia.UniversalAI.SolomonoffPrior.InfBinString)
     [IsProbabilityMeasure μ]
     (hprefix :
       ∀ (n : ℕ) (xs : Fin n → Bool),
@@ -1036,12 +1036,12 @@ theorem deFinettiExport_restrictedSolomonoff_prefixLaw_implies_unique_latentThet
       RepresentsLatentTheta (X := fun i ω => ω i) (μ := μ) ν := by
   have hX :
       ∀ i : ℕ, Measurable
-        (fun ω : Mettapedia.Logic.SolomonoffPrior.InfBinString => ω i) := by
+        (fun ω : Mettapedia.UniversalAI.SolomonoffPrior.InfBinString => ω i) := by
     intro i
     simpa using (measurable_pi_apply (a := i))
   have hexch :
-      Mettapedia.Logic.Exchangeability.InfiniteExchangeable (fun i ω => ω i) μ :=
-    Mettapedia.Logic.SolomonoffExchangeable.restrictedSolomonoff_infiniteExchangeable_of_prefixLaw
+      Mettapedia.ProbabilityTheory.Exchangeability.InfiniteExchangeable (fun i ω => ω i) μ :=
+    Mettapedia.UniversalAI.SolomonoffExchangeable.restrictedSolomonoff_infiniteExchangeable_of_prefixLaw
       (M := M) (μ := μ) (hμprob := inferInstance) hprefix
   exact deFinettiStable_existsUnique_latentThetaMeasure_of_exchangeable
     (X := fun i ω => ω i) (μ := μ) hX hexch
@@ -1057,29 +1057,29 @@ the restricted Solomonoff cylinder law yields both
 1. the full `nupln_master_chain` conclusion, and
 2. the unique latent-`Theta` mediator conclusion. -/
 theorem deFinettiExport_restrictedSolomonoff_cylinderLaw_implies_nupln_master_chain_and_unique_latentThetaMediator
-    (M : Mettapedia.Logic.SolomonoffExchangeable.RestrictedSolomonoffPrior)
-    (μ : Measure Mettapedia.Logic.SolomonoffPrior.InfBinString)
+    (M : Mettapedia.UniversalAI.SolomonoffExchangeable.RestrictedSolomonoffPrior)
+    (μ : Measure Mettapedia.UniversalAI.SolomonoffPrior.InfBinString)
     [IsProbabilityMeasure μ]
     (hNoLeak :
-      Mettapedia.Logic.NoLeakageAtCylindersLaw (U := M.U) (programs := M.programs) μ) :
-    (∃ (B : Mettapedia.Logic.DeFinetti.BernoulliMixture),
-      Mettapedia.Logic.DeFinetti.Represents B (fun i ω => ω i) μ ∧
+      Mettapedia.UniversalAI.SolomonoffMeasure.NoLeakageAtCylindersLaw (U := M.U) (programs := M.programs) μ) :
+    (∃ (B : Mettapedia.ProbabilityTheory.Exchangeability.DeFinetti.BernoulliMixture),
+      Mettapedia.ProbabilityTheory.Exchangeability.DeFinetti.Represents B (fun i ω => ω i) μ ∧
       (∀ (n : ℕ) (xs₁ xs₂ : Fin n → Bool),
-        Mettapedia.Logic.Exchangeability.countTrue xs₁ =
-          Mettapedia.Logic.Exchangeability.countTrue xs₂ →
+        Mettapedia.ProbabilityTheory.Exchangeability.countTrue xs₁ =
+          Mettapedia.ProbabilityTheory.Exchangeability.countTrue xs₂ →
           B.prob xs₁ = B.prob xs₂)) ∧
     (∃! ν : Measure Mettapedia.ProbabilityTheory.HigherOrderProbability.DeFinettiConnection.Theta,
       RepresentsLatentTheta (X := fun i ω => ω i) (μ := μ) ν) := by
   have hX :
       ∀ i : ℕ, Measurable
-        (fun ω : Mettapedia.Logic.SolomonoffPrior.InfBinString => ω i) := by
+        (fun ω : Mettapedia.UniversalAI.SolomonoffPrior.InfBinString => ω i) := by
     intro i
     simpa using (measurable_pi_apply (a := i))
   have hexch :
-      Mettapedia.Logic.Exchangeability.InfiniteExchangeable (fun i ω => ω i) μ :=
-    Mettapedia.Logic.SolomonoffExchangeable.restrictedSolomonoff_infiniteExchangeable_of_noLeakageAtCylindersLaw
+      Mettapedia.ProbabilityTheory.Exchangeability.InfiniteExchangeable (fun i ω => ω i) μ :=
+    Mettapedia.UniversalAI.SolomonoffExchangeable.restrictedSolomonoff_infiniteExchangeable_of_noLeakageAtCylindersLaw
       (M := M) (μ := μ) (hμprob := inferInstance) hNoLeak
-  have hmaster := Mettapedia.Logic.DeFinetti.nupln_master_chain
+  have hmaster := Mettapedia.ProbabilityTheory.Exchangeability.DeFinetti.nupln_master_chain
       (X := fun i ω => ω i) (μ := μ) hX hexch
   rcases hmaster with ⟨B, hrep, hsuff, _hevidence, _hconv⟩
   refine ⟨?_, ?_⟩
@@ -1092,30 +1092,30 @@ if selected programs are total-output and root mass is normalized, the canonical
 machine-induced measure yields both `nupln_master_chain` and unique latent-`Theta`
 mediation, with no external cylinder-law witness required. -/
 theorem deFinettiExport_restrictedSolomonoff_totalOutput_implies_nupln_master_chain_and_unique_latentThetaMediator
-    (M : Mettapedia.Logic.SolomonoffExchangeable.RestrictedSolomonoffPrior)
-    (htot : Mettapedia.Logic.TotalOutputOnPrograms (U := M.U) M.programs)
+    (M : Mettapedia.UniversalAI.SolomonoffExchangeable.RestrictedSolomonoffPrior)
+    (htot : Mettapedia.UniversalAI.SolomonoffMeasure.TotalOutputOnPrograms (U := M.U) M.programs)
     (hroot : M.μ [] = 1) :
-    let μ := Mettapedia.Logic.totalOutputProgramMeasure
+    let μ := Mettapedia.UniversalAI.SolomonoffMeasure.totalOutputProgramMeasure
       (U := M.U) (programs := M.programs) htot
-    (∃ (B : Mettapedia.Logic.DeFinetti.BernoulliMixture),
-      Mettapedia.Logic.DeFinetti.Represents B (fun i ω => ω i) μ ∧
+    (∃ (B : Mettapedia.ProbabilityTheory.Exchangeability.DeFinetti.BernoulliMixture),
+      Mettapedia.ProbabilityTheory.Exchangeability.DeFinetti.Represents B (fun i ω => ω i) μ ∧
       (∀ (n : ℕ) (xs₁ xs₂ : Fin n → Bool),
-        Mettapedia.Logic.Exchangeability.countTrue xs₁ =
-          Mettapedia.Logic.Exchangeability.countTrue xs₂ →
+        Mettapedia.ProbabilityTheory.Exchangeability.countTrue xs₁ =
+          Mettapedia.ProbabilityTheory.Exchangeability.countTrue xs₂ →
           B.prob xs₁ = B.prob xs₂)) ∧
     (∃! ν : Measure Mettapedia.ProbabilityTheory.HigherOrderProbability.DeFinettiConnection.Theta,
       RepresentsLatentTheta (X := fun i ω => ω i) (μ := μ) ν) := by
-  let μ : Measure Mettapedia.Logic.SolomonoffPrior.InfBinString :=
-    Mettapedia.Logic.totalOutputProgramMeasure (U := M.U) (programs := M.programs) htot
+  let μ : Measure Mettapedia.UniversalAI.SolomonoffPrior.InfBinString :=
+    Mettapedia.UniversalAI.SolomonoffMeasure.totalOutputProgramMeasure (U := M.U) (programs := M.programs) htot
   have hμprob : IsProbabilityMeasure μ := by
-    simpa [μ, Mettapedia.Logic.SolomonoffExchangeable.RestrictedSolomonoffPrior.μ] using
-      (Mettapedia.Logic.isProbabilityMeasure_totalOutputProgramMeasure_of_root_one
+    simpa [μ, Mettapedia.UniversalAI.SolomonoffExchangeable.RestrictedSolomonoffPrior.μ] using
+      (Mettapedia.UniversalAI.SolomonoffMeasure.isProbabilityMeasure_totalOutputProgramMeasure_of_root_one
         (U := M.U) (programs := M.programs) (htot := htot) hroot)
   letI : IsProbabilityMeasure μ := hμprob
   have hNoLeak :
-      Mettapedia.Logic.NoLeakageAtCylindersLaw (U := M.U) (programs := M.programs) μ := by
+      Mettapedia.UniversalAI.SolomonoffMeasure.NoLeakageAtCylindersLaw (U := M.U) (programs := M.programs) μ := by
     simpa [μ] using
-      (Mettapedia.Logic.noLeakageAtCylindersLaw_totalOutputProgramMeasure
+      (Mettapedia.UniversalAI.SolomonoffMeasure.noLeakageAtCylindersLaw_totalOutputProgramMeasure
         (U := M.U) (programs := M.programs) htot)
   simpa [μ] using
     (deFinettiExport_restrictedSolomonoff_cylinderLaw_implies_nupln_master_chain_and_unique_latentThetaMediator
@@ -1127,23 +1127,23 @@ completeness (`kraftSum = 1`), then derive the same
 `nupln_master_chain + unique latent-Theta mediator` conclusion with no explicit
 `hroot` argument. -/
 theorem deFinettiExport_restrictedSolomonoff_totalOutput_and_programMassComplete_implies_nupln_master_chain_and_unique_latentThetaMediator
-    (M : Mettapedia.Logic.SolomonoffExchangeable.RestrictedSolomonoffPrior)
-    (htot : Mettapedia.Logic.TotalOutputOnPrograms (U := M.U) M.programs)
-    (hcomplete : Mettapedia.Logic.SolomonoffExchangeable.RestrictedSolomonoffPrior.ProgramMassComplete M) :
-    let μ := Mettapedia.Logic.totalOutputProgramMeasure
+    (M : Mettapedia.UniversalAI.SolomonoffExchangeable.RestrictedSolomonoffPrior)
+    (htot : Mettapedia.UniversalAI.SolomonoffMeasure.TotalOutputOnPrograms (U := M.U) M.programs)
+    (hcomplete : Mettapedia.UniversalAI.SolomonoffExchangeable.RestrictedSolomonoffPrior.ProgramMassComplete M) :
+    let μ := Mettapedia.UniversalAI.SolomonoffMeasure.totalOutputProgramMeasure
       (U := M.U) (programs := M.programs) htot
-    (∃ (B : Mettapedia.Logic.DeFinetti.BernoulliMixture),
-      Mettapedia.Logic.DeFinetti.Represents B (fun i ω => ω i) μ ∧
+    (∃ (B : Mettapedia.ProbabilityTheory.Exchangeability.DeFinetti.BernoulliMixture),
+      Mettapedia.ProbabilityTheory.Exchangeability.DeFinetti.Represents B (fun i ω => ω i) μ ∧
       (∀ (n : ℕ) (xs₁ xs₂ : Fin n → Bool),
-        Mettapedia.Logic.Exchangeability.countTrue xs₁ =
-          Mettapedia.Logic.Exchangeability.countTrue xs₂ →
+        Mettapedia.ProbabilityTheory.Exchangeability.countTrue xs₁ =
+          Mettapedia.ProbabilityTheory.Exchangeability.countTrue xs₂ →
           B.prob xs₁ = B.prob xs₂)) ∧
     (∃! ν : Measure Mettapedia.ProbabilityTheory.HigherOrderProbability.DeFinettiConnection.Theta,
       RepresentsLatentTheta (X := fun i ω => ω i) (μ := μ) ν) := by
   exact deFinettiExport_restrictedSolomonoff_totalOutput_implies_nupln_master_chain_and_unique_latentThetaMediator
     (M := M) (htot := htot)
     (hroot :=
-      Mettapedia.Logic.SolomonoffExchangeable.RestrictedSolomonoffPrior.mu_nil_eq_one_of_programMassComplete
+      Mettapedia.UniversalAI.SolomonoffExchangeable.RestrictedSolomonoffPrior.mu_nil_eq_one_of_programMassComplete
         (M := M) hcomplete)
 
 /-- Public API: finite-mass universality is equivalent to Markov-only
@@ -1238,12 +1238,12 @@ abbrev deFinetti_measure :=
     (= same `MultiEvidence k`) have the same probability. This connects
     the categorical de Finetti infrastructure to the PLN evidence chain. -/
 abbrev deFinettiExport_categorical_pln_sufficiency :=
-  @Mettapedia.Logic.CategoricalNuPLNBridge.categorical_pln_sufficiency
+  @Mettapedia.PLN.Bridges.ProbabilityTheory.CategoricalNuPLNBridge.categorical_pln_sufficiency
 
 /-- Export: For k=2, categorical product PMF equals Bernoulli product PMF.
     This is the compatibility theorem showing the categorical generalization
     subsumes the binary theory. -/
 abbrev deFinettiExport_categoricalProductPMF_fin2_eq_bernoulliProductPMF :=
-  @Mettapedia.Logic.CategoricalNuPLNBridge.categoricalProductPMF_fin2_eq_bernoulliProductPMF
+  @Mettapedia.PLN.Bridges.ProbabilityTheory.CategoricalNuPLNBridge.categoricalProductPMF_fin2_eq_bernoulliProductPMF
 
 end Mettapedia.CategoryTheory

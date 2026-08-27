@@ -111,7 +111,7 @@ def renderCategoryTheoryClaim : CategoryTheoryClaim → String
         (complV2 (mkV2 (regV "prove")) (properNameNP "Hausdorff moment uniqueness links"))
   | .deFinettiPerNDiagramFileRole =>
       mkPresPos (properNameNP "DeFinettiPerNDiagram.lean")
-        (complV2 (mkV2 (regV "define")) (properNameNP "per-n permutation diagram surfaces"))
+        (complV2 (mkV2 (regV "define")) (properNameNP "per-n permutation diagram interfaces"))
   | .deFinettiGlobalFinitaryDiagramFileRole =>
       mkPresPos (properNameNP "DeFinettiGlobalFinitaryDiagram.lean")
         (complV2 (mkV2 (regV "define")) (properNameNP "global finitary-permutation indexing"))
@@ -132,7 +132,7 @@ def renderCategoryTheoryClaim : CategoryTheoryClaim → String
         (complV2 (mkV2 (regV "provide")) (properNameNP "stable alias exports"))
   | .deFinettiExportsFileRole =>
       mkPresPos (properNameNP "DeFinettiExports.lean")
-        (complV2 (mkV2 (regV "provide")) (properNameNP "the recommended import surface"))
+        (complV2 (mkV2 (regV "provide")) (properNameNP "the recommended import interface"))
   | .fuzzyFrameFileRole =>
       mkPresPos (properNameNP "FuzzyFrame.lean")
         (complV2 (mkV2 (regV "formalize")) (properNameNP "the unit interval frame for PLN truth values"))
@@ -326,22 +326,22 @@ theorem categoryTheory_heading_image_witness
     parseCategoryTheoryHeadingLine? renderCategoryTheoryHeading categoryTheoryReadmeBlocks
     categoryTheory_heading_images hMem
 
-private def insertSurfaceBucket (acc : List (String × List CategoryTheoryClaim)) (surface : String)
+private def insertRenderedBucket (acc : List (String × List CategoryTheoryClaim)) (rendered : String)
     (c : CategoryTheoryClaim) : List (String × List CategoryTheoryClaim) :=
   match acc with
-  | [] => [(surface, [c])]
+  | [] => [(rendered, [c])]
   | (k, cs) :: rest =>
-      if k = surface then
+      if k = rendered then
         (k, c :: cs) :: rest
       else
-        (k, cs) :: insertSurfaceBucket rest surface c
+        (k, cs) :: insertRenderedBucket rest rendered c
 
-def claimSurfaceBuckets : List (String × List CategoryTheoryClaim) :=
+def claimRenderedBuckets : List (String × List CategoryTheoryClaim) :=
   allCategoryTheoryClaims.foldl
-    (fun acc c => insertSurfaceBucket acc (renderCategoryTheoryClaim c) c) []
+    (fun acc c => insertRenderedBucket acc (renderCategoryTheoryClaim c) c) []
 
-def ambiguousClaimSurfaces : List (String × List CategoryTheoryClaim) :=
-  claimSurfaceBuckets.filter (fun p => p.snd.length > 1)
+def ambiguousClaimRenderings : List (String × List CategoryTheoryClaim) :=
+  claimRenderedBuckets.filter (fun p => p.snd.length > 1)
 
 #eval
   let fails := allCategoryTheoryClaims.filter (fun c =>
@@ -369,9 +369,9 @@ def ambiguousClaimSurfaces : List (String × List CategoryTheoryClaim) :=
     s!"CategoryTheory structured parse failures: {repr fails}"
 
 #eval
-  if ambiguousClaimSurfaces.isEmpty then
-    "CategoryTheory ambiguity diagnostic: no duplicate surfaces across distinct claims"
+  if ambiguousClaimRenderings.isEmpty then
+    "CategoryTheory ambiguity diagnostic: no duplicate renderings across distinct claims"
   else
-    s!"CategoryTheory ambiguity diagnostic: duplicate surfaces found: {repr ambiguousClaimSurfaces}"
+    s!"CategoryTheory ambiguity diagnostic: duplicate renderings found: {repr ambiguousClaimRenderings}"
 
 end Mettapedia.DocText.CategoryTheoryReadmeCompositional

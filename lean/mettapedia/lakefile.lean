@@ -23,6 +23,8 @@ require catLogic from "Mettapedia/CategoricalLogic"
 
 require Metatheory from "../externals/Metatheory"
 
+require MettaHyperonFull from "../externals/LeaTTa"
+
 require algorithms from "../algorithms"
 
 require mettail_core from "../batteries/mettail-core"
@@ -31,7 +33,7 @@ require gf_core from "../batteries/gf-core"
 
 require certifyingDatalog from "../externals/certifyingDatalog"
 
-require «mm-lean4» from "../externals/mm-lean4"
+require «mm-lean4» from "../standalone/mm-lean4"
 
 -- Standalone Knuth–Skilling external (canonical home; namespace `KnuthSkilling.*`).
 -- Replaces the previously embedded copy at `Mettapedia/ProbabilityTheory/KnuthSkilling/`.
@@ -40,3 +42,9 @@ require «ks-foundations-of-inference-lean» from "../standalone/ks-foundations-
 @[default_target] lean_lib Mettapedia
 
 lean_exe mettapedia where root := `Main
+
+lean_exe metamathNIKAudit where
+  root := `Mettapedia.Languages.Metamath.DatabaseNIKAudit
+
+lean_exe checkRFC8259NativeForestExact where
+  root := `Mettapedia.GSLT.Tools.CheckRFC8259NativeForestExact

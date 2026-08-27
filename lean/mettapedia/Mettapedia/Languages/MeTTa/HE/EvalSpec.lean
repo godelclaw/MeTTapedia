@@ -349,6 +349,13 @@ inductive InterpretTuple (space : Space) (dispatch : GroundedDispatch) :
 /-- Call a MeTTa expression (grounded dispatch or equation matching).
     Ref: spec lines 348-389 "Call MeTTa expression (metta_call)".
 
+    Compatibility note: the `equation_match` branch below embeds the HE
+    executable `queryEquations` and `mergeBindings` functions as premises.
+    Consequently this relation is not the executable-independent target for
+    equation-query conformance.  `Spec.Eval.EquationQueryStep` is the separate
+    spec-specification relation at the one-step query boundary; recursive
+    evaluator/call conformance is a later, separately named layer.
+
     Input: atom, expected type, bindings.
     Output: one result pair. -/
 inductive MettaCall (space : Space) (dispatch : GroundedDispatch) :
@@ -390,14 +397,14 @@ inductive MettaCall (space : Space) (dispatch : GroundedDispatch) :
       (h_not_error : isErrorAtom atom = false)
       (h_empty : unifySuccessResults target pattern thenBranch b fuel = []) :
       MettaCall space dispatch atom type_ b (elseBranch, b)
-  /-- Primitive `unify`: wrong arity is surfaced as
-      `IncorrectNumberOfArguments`. -/
+  /-- Primitive `unify`: wrong arity is reported as the
+      hyperon-experimental minimal-instruction parser message. -/
   | unify_bad_arity (atom type_ : Atom) (b : Bindings)
       (tail : List Atom)
       (h_shape : atom = .expression (.symbol "unify" :: tail))
       (h_arity : tail.length ≠ 4)
       (h_not_error : isErrorAtom atom = false) :
-      MettaCall space dispatch atom type_ b (mkError atom .incorrectNumberOfArguments, b)
+      MettaCall space dispatch atom type_ b (mkUnifyBadArityError atom, b)
   /-- `switch-minimal`: exact-shape direct result lane.
       This packages the observable behavior of the stdlib helper:
       first viable branch wins, the selected raw template is returned with its
@@ -412,8 +419,8 @@ inductive MettaCall (space : Space) (dispatch : GroundedDispatch) :
       (h_not_error : isErrorAtom atom = false)
       (h_result : finalResult ∈ switchMinimalResults scrut branches b fuel) :
       MettaCall space dispatch atom type_ b finalResult
-  /-- `switch-minimal`: any non-canonical surface form (wrong arity or
-      non-expression cases argument) is surfaced as
+  /-- `switch-minimal`: any non-canonical source form (wrong arity or
+      non-expression cases argument) is reported as
       `IncorrectNumberOfArguments`, matching the executable evaluator's
       direct pattern split. -/
   | switch_minimal_bad_shape (atom type_ : Atom) (b : Bindings)
@@ -526,7 +533,7 @@ inductive MettaCall (space : Space) (dispatch : GroundedDispatch) :
       (h_query : (rhs, queryBindings) ∈ queryEquations space atom fuel)
       (h_merge : merged ∈ mergeBindings queryBindings b fuel)
       (h_no_loop : merged.hasLoop = false)
-      (h_recurse : EvalAtom space dispatch (merged.apply rhs fuel) type_ merged finalResult) :
+      (h_recurse : EvalAtom space dispatch (merged.applyFull rhs fuel) type_ merged finalResult) :
       MettaCall space dispatch atom type_ b finalResult
   /-- Spec lines 383-384: Non-grounded, no equation matches → return unchanged.
       ```

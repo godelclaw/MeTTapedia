@@ -5,7 +5,7 @@ import Mathlib.Data.Fintype.Pi
 # Grounding for First-Order Normal ProbLog Programs
 
 This file lifts the existing ground normal-program semantics to a small
-first-order surface layer. The intended reading is standard ProbLog practice:
+first-order interface layer. The intended reading is standard ProbLog practice:
 first-order normal rules are grounded explicitly, and the grounded program is
 then evaluated with the stratified semantics from `Stratification.lean`.
 
@@ -23,7 +23,7 @@ Negative example:
 namespace Mettapedia.Logic.LP
 
 open Mettapedia.Logic.BDDCore
-open Mettapedia.Logic.ProbLogCompilation
+open Mettapedia.PLN.Bridges.Languages.ProbLog.Compilation
 
 /-- A first-order goal literal for normal-rule bodies. -/
 inductive FirstOrderGoalLit (σ : LPSignature) where

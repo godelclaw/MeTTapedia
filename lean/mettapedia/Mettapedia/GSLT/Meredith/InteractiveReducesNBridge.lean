@@ -146,42 +146,18 @@ theorem rhoRewritePathOfReducesN_cast_succ
   rw [rhoRewritePathOfReducesN_cast (hEq := hEq)]
   rfl
 
-theorem rhoRewritePathOfReducesN_cast_concat_zero
-    {m : Nat} {p q : Pattern} (h : ReducesN m p q) :
-    rhoRewritePathOfReducesN
-      (cast (Eq.symm (Mettapedia.Languages.ProcessCalculi.RhoCalculus.reducesN_concat._proof_1 p)) h) =
-        rhoRewritePathOfReducesN h := by
-  let e2 : ReducesN m p q = ReducesN (0 + m) p q :=
-    congrArg (fun k => ReducesN k p q) (Nat.zero_add m).symm
-  trans rhoRewritePathOfReducesN (cast e2 h)
-  · exact rhoRewritePathOfReducesN_cast_type_proof_irrel
-      (e1 := Eq.symm (Mettapedia.Languages.ProcessCalculi.RhoCalculus.reducesN_concat._proof_1 p))
-      (e2 := e2)
-      h
-  · exact rhoRewritePathOfReducesN_cast_congrArg (hEq := (Nat.zero_add m).symm) (h := h)
-
-theorem rhoRewritePathOfReducesN_cast_concat_succ
-    {n m : Nat} {p q r s : Pattern}
-    (step : Reduces p q) (rest : ReducesN n q r) (h2 : ReducesN m r s) :
-    rhoRewritePathOfReducesN
-      (cast (Eq.symm
-        (Mettapedia.Languages.ProcessCalculi.RhoCalculus.reducesN_concat._proof_2 (m := m) (k := n)))
-        (ReducesN.succ step (reducesN_concat rest h2))) =
-          GSLT.RewritePath.cons (S := rhoGSLT) ⟨step⟩
-            (rhoRewritePathOfReducesN (reducesN_concat rest h2)) := by
-  let hEq : (n + m) + 1 = (n + 1) + m := (Nat.add_right_comm n 1 m).symm
-  let e2 : ReducesN ((n + m) + 1) p s = ReducesN ((n + 1) + m) p s :=
-    congrArg (fun k => ReducesN k p s) hEq
-  trans rhoRewritePathOfReducesN
-      (cast e2 (ReducesN.succ step (reducesN_concat rest h2)))
-  · exact rhoRewritePathOfReducesN_cast_type_proof_irrel
-      (e1 := Eq.symm
-        (Mettapedia.Languages.ProcessCalculi.RhoCalculus.reducesN_concat._proof_2 (m := m) (k := n)))
-      (e2 := e2)
-      (ReducesN.succ step (reducesN_concat rest h2))
-  · trans rhoRewritePathOfReducesN (ReducesN.succ step (reducesN_concat rest h2))
-    · exact rhoRewritePathOfReducesN_cast_congrArg (hEq := hEq) (h := ReducesN.succ step (reducesN_concat rest h2))
-    · rfl
+/-- Transporting an indexed reduction along any proof of the same index
+equality does not change its rewrite path. -/
+theorem rhoRewritePathOfReducesN_cast_type_eq
+    {n m : Nat} {p q : Pattern} (hEq : n = m)
+    (typeEq : ReducesN n p q = ReducesN m p q) (h : ReducesN n p q) :
+    rhoRewritePathOfReducesN (cast typeEq h) =
+      rhoRewritePathOfReducesN h := by
+  let canonicalEq : ReducesN n p q = ReducesN m p q :=
+    congrArg (fun k => ReducesN k p q) hEq
+  trans rhoRewritePathOfReducesN (cast canonicalEq h)
+  · exact rhoRewritePathOfReducesN_cast_type_proof_irrel typeEq canonicalEq h
+  · exact rhoRewritePathOfReducesN_cast_congrArg hEq h
 
 theorem rhoRewritePathOfReducesN_concat
     {n m : Nat} {p q r : Pattern} (h1 : ReducesN n p q) (h2 : ReducesN m q r) :
@@ -190,11 +166,12 @@ theorem rhoRewritePathOfReducesN_concat
   induction h1 generalizing r with
   | zero p =>
       rw [reducesN_concat_zero]
-      rw [rhoRewritePathOfReducesN_cast_concat_zero]
+      rw [rhoRewritePathOfReducesN_cast_type_eq (hEq := (Nat.zero_add m).symm)]
       simp [rewritePathAppend, rhoRewritePathOfReducesN]
   | succ step rest ih =>
       rw [reducesN_concat_succ]
-      rw [rhoRewritePathOfReducesN_cast_concat_succ]
+      rw [rhoRewritePathOfReducesN_cast_type_eq
+        (hEq := (Nat.add_right_comm _ 1 m).symm)]
       simpa [rewritePathAppend, rhoRewritePathOfReducesN] using
         congrArg (fun path => GSLT.RewritePath.cons (S := rhoGSLT) ⟨step⟩ path) (ih h2)
 
@@ -339,7 +316,7 @@ theorem rhoIntrinsicDirectSpentTrace_semantics_reducesN_concat
     {n m : Nat} {p q r : Pattern}
     (h1 : ReducesN n p q) (h2 : ReducesN m q r) :
     (rhoIntrinsicDirectSpentTrace
-      (rhoRewritePathOfReducesN (reducesN_concat h1 h2))).SurfaceLike ∧
+      (rhoRewritePathOfReducesN (reducesN_concat h1 h2))).CanonicalShape ∧
       (rhoIntrinsicDirectSpentTrace
         (rhoRewritePathOfReducesN (reducesN_concat h1 h2))).toLedger =
           totalAction rhoIntrinsicLedgerAction
@@ -476,7 +453,7 @@ theorem rhoIntrinsicSemanticBridge_reducesN
       (totalAction rhoIntrinsicLedgerAction (rhoRewritePathOfReducesN h)) =
         traceAccount (S := rhoGSLT) (A := Nat) (k := 2)
           (rhoIntrinsicReducesNTrace h) ∧
-    (rhoIntrinsicDirectSpentTrace (rhoRewritePathOfReducesN h)).SurfaceLike ∧
+    (rhoIntrinsicDirectSpentTrace (rhoRewritePathOfReducesN h)).CanonicalShape ∧
     (rhoIntrinsicDirectSpentTrace (rhoRewritePathOfReducesN h)).toLedger =
       totalAction rhoIntrinsicLedgerAction (rhoRewritePathOfReducesN h) ∧
     (rhoIntrinsicDirectSpentTrace (rhoRewritePathOfReducesN h)).toPublicPattern =
@@ -643,7 +620,7 @@ theorem rhoIntrinsicSemanticBridge_reducesN_concat
       (totalAction rhoIntrinsicLedgerAction
         (rhoRewritePathOfReducesN (reducesN_concat h1 h2))) ∧
     (rhoIntrinsicDirectSpentTrace
-      (rhoRewritePathOfReducesN (reducesN_concat h1 h2))).SurfaceLike ∧
+      (rhoRewritePathOfReducesN (reducesN_concat h1 h2))).CanonicalShape ∧
     (rhoIntrinsicDirectSpentTrace
       (rhoRewritePathOfReducesN (reducesN_concat h1 h2))).toLedger =
         totalAction rhoIntrinsicLedgerAction
@@ -773,7 +750,7 @@ theorem rhoIntrinsicSemanticBridge_reducesN_full_concat
           traceAccount (S := rhoGSLT) (A := Nat) (k := 2)
             (rhoIntrinsicReducesNTrace (reducesN_concat h1 h2)) ∧
     (rhoIntrinsicDirectSpentTrace
-      (rhoRewritePathOfReducesN (reducesN_concat h1 h2))).SurfaceLike ∧
+      (rhoRewritePathOfReducesN (reducesN_concat h1 h2))).CanonicalShape ∧
     (rhoIntrinsicDirectSpentTrace
       (rhoRewritePathOfReducesN (reducesN_concat h1 h2))).toLedger =
         totalAction rhoIntrinsicLedgerAction
@@ -885,7 +862,7 @@ theorem rhoIntrinsicSemanticBridge_reducesN_full_concat
       (totalAction rhoIntrinsicLedgerAction
         (rhoRewritePathOfReducesN (reducesN_concat h1 h2))) ∧
     (rhoIntrinsicDirectSpentTrace
-      (rhoRewritePathOfReducesN (reducesN_concat h1 h2))).SurfaceLike ∧
+      (rhoRewritePathOfReducesN (reducesN_concat h1 h2))).CanonicalShape ∧
     (rhoIntrinsicDirectSpentTrace
       (rhoRewritePathOfReducesN (reducesN_concat h1 h2))).toLedger =
         totalAction rhoIntrinsicLedgerAction

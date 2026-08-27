@@ -1,12 +1,15 @@
 import Mettapedia.OSLF.Framework.GeneratedTyping
+import Mettapedia.OSLF.Framework.InterpretedTypeSynthesis
 import Mettapedia.OSLF.Framework.RhoInstance
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.Soundness
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.Engine
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.LanguageDefAdequacy
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.DerivedContextualStep
 
 /-!
 # Synthesis Bridge: Generated ↔ Hand-Written Type Systems
 
-This file bridges three layers of the OSLF formalization:
+This file bridges four layers of the OSLF formalization:
 
 1. **Hand-written** (Reduction.lean, Soundness.lean):
    - `Reduces : Pattern → Pattern → Type` (propositional)
@@ -18,26 +21,32 @@ This file bridges three layers of the OSLF formalization:
    - Proven equal to `possiblyProp` / `relyProp`
    - `rhoOSLF` : OSLFTypeSystem
 
-3. **Generated** (TypeSynthesis.lean, GeneratedTyping.lean):
-   - `langReduces rhoCalc` (via executable engine)
-   - `langDiamond` / `langBox` (derived from executable reduction)
+3. **Generated syntactic** (TypeSynthesis.lean, GeneratedTyping.lean):
+   - `langReduces rhoCalc` (the reflection-free `LanguageDef` interpreter)
+   - `langDiamond` / `langBox` (derived from that generic relation)
    - `GenHasType rhoCalc` (generated typing judgment)
+
+4. **Explicitly interpreted** (DerivedContextualStep.lean):
+   - `RhoStep` interprets the same authored rules with `rhoReflectionProfile`
+   - `rhoInterpretedDiamond` / `rhoInterpretedBox` are derived from that relation
 
 ## Key Relationships
 
 ```
-Propositional Reduces (Reduction.lean)
-    ↑ reduceStep_sound                  ↑ completeness (partial)
-Executable reduceStep (Engine.lean)
-    ↓ rewriteStep agreement
-Generic rewriteWithContext (MeTTaIL/Engine.lean)
-    ↓ langReduces wraps rewriteWithContextWithPremises (default env)
-langDiamond / langBox (TypeSynthesis.lean)
+LanguageDef rhoCalc + rhoReflectionProfile
+    ↓ explicit rule interpretation
+RhoStep / rhoInterpretedDiamond / rhoInterpretedBox
+
+Established Reduces (semantic COMM substitution and parallel closure)
+    ↑ rhoStep_sound
+Derived contextual LanguageDef step
 ```
 
 The hand-written `possiblyProp`/`relyProp` use `Reduces` (propositional).
-The generated `langDiamond`/`langBox` use `langReduces` (executable).
-`reduceStep_sound` proves: executable ⊆ propositional.
+The generated `langDiamond`/`langBox` use reflection-free `langReduces`.
+Rho's COMM semantics instead uses the separately authored reflection profile.
+On syntax derived from the rho presentation, `rhoStep_sound` proves that the
+explicitly interpreted contextual relation is sound for `Reduces`.
 
 ## References
 
@@ -51,11 +60,15 @@ open Mettapedia.OSLF.MeTTaIL.Engine
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.Reduction
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.Soundness
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.Engine (reduceStep reduceStep_sound)
+open Mettapedia.Languages.ProcessCalculi.RhoCalculus.DerivedContextualStep
+open Mettapedia.OSLF.MeTTaIL.DerivedPresentationSyntax
 open Mettapedia.OSLF.Framework
 open Mettapedia.OSLF.Framework.DerivedModalities
+open Mettapedia.OSLF.Framework.InterpretedTypeSynthesis
 open Mettapedia.OSLF.Framework.RhoInstance
 open Mettapedia.OSLF.Framework.TypeSynthesis
 open Mettapedia.OSLF.Framework.GeneratedTyping
+open Mettapedia.GSLT.LanguageDef.ReflectionExtension
 
 /-! ## Layer 1 ↔ Layer 2: Propositional ↔ Derived (Already Proven)
 
@@ -71,33 +84,247 @@ recovers the same modalities as the hand-written definitions. -/
 #check derived_box_eq_relyProp
 #check rho_galois_from_span
 
-/-! ## Layer 2 ↔ Layer 3: Derived ↔ Generated
+/-! ## Layer 2 ↔ Layer 4: Derived ↔ Explicitly Interpreted
 
-The key gap: `rhoSpan` uses `Nonempty (Reduces p q)` while `langSpan rhoCalc`
-uses `langReduces rhoCalc p q = q ∈ rewriteWithContextWithPremises rhoCalc p`
-(i.e. premise-aware execution with `RelationEnv.empty`).
+`RhoStep` is the least finite relation induced by the authored rho rules under
+the separately authored reflection profile.  Its span therefore induces OSLF
+modalities and a Galois connection exactly as any other reduction relation
+does.  On a source admitted by the presentation-derived process judgment, its
+soundness for the established COMM/PAR/EQUIV relation is unconditional.
+Completeness is deliberately separate. -/
 
-These are connected via soundness of the executable engine. -/
+/-- The reduction span of the authored rho rules under their explicit
+reflection interpretation. -/
+abbrev rhoInterpretedSpan : ReductionSpan Pattern :=
+  interpretedSpan rhoRuleInterpretation rhoBasePremises rhoCalc
 
--- Every executable reduction witnesses a propositional reduction.
--- This is the key soundness bridge: if the generic engine produces
--- a reduct, the propositional Reduces relation holds.
---
--- Note: `reduceStep_sound` from Engine.lean proves this for `reduceStep`.
--- The generic `rewriteWithContextWithPremises` wraps premise-aware rule application
--- which operates on the same `rhoCalc` rules.
---
--- The inclusion: langReduces rhoCalc p q → Nonempty (Reduces p q)
--- requires proving that `rewriteWithContextWithPremises rhoCalc` agrees with
--- `reduceStep` (proven executably in the agreement test suite) and then
--- using `reduceStep_sound`.
+/-- Step-future modality induced by explicitly interpreted rho reduction. -/
+abbrev rhoInterpretedDiamond : (Pattern → Prop) → Pattern → Prop :=
+  interpretedDiamond rhoRuleInterpretation rhoBasePremises rhoCalc
 
-/-- For rhoCalc: if the executable engine produces a reduct that is also
-    a valid propositional reduction, the generated diamond implies the
-    hand-written possibly.
+/-- Step-past modality induced by explicitly interpreted rho reduction. -/
+abbrev rhoInterpretedBox : (Pattern → Prop) → Pattern → Prop :=
+  interpretedBox rhoRuleInterpretation rhoBasePremises rhoCalc
 
-    The executable and specialized engines agree (proven executably via
-    the 8-test agreement suite in MeTTaIL/Engine.lean). -/
+/-- The interpreted rho modalities form the canonical OSLF Galois
+connection. -/
+theorem rhoInterpretedGalois :
+    GaloisConnection rhoInterpretedDiamond rhoInterpretedBox :=
+  interpretedGalois rhoRuleInterpretation rhoBasePremises rhoCalc
+
+/-- The interpreted diamond exposes exactly one `RhoStep`. -/
+theorem rhoInterpretedDiamond_spec (φ : Pattern → Prop) (p : Pattern) :
+    rhoInterpretedDiamond φ p ↔ ∃ q, RhoStep p q ∧ φ q := by
+  exact interpretedDiamond_spec rhoRuleInterpretation rhoBasePremises rhoCalc φ p
+
+/-- The interpreted rho box exposes exactly the incoming `RhoStep`s. -/
+theorem rhoInterpretedBox_spec (φ : Pattern → Prop) (p : Pattern) :
+    rhoInterpretedBox φ p ↔ ∀ q, RhoStep q p → φ q := by
+  exact interpretedBox_spec rhoRuleInterpretation rhoBasePremises rhoCalc φ p
+
+/-! ## The reflection-free synthesis is the syntactic specialization -/
+
+/-- The generic explicitly interpreted diamond specializes exactly to the
+existing `LanguageDef` diamond when the rule interpretation is syntactic. -/
+theorem syntacticInterpretedDiamond_eq_langDiamondUsing
+    (relationEnvironment : RelationEnv) (language : LanguageDef) :
+    interpretedDiamond .syntactic
+        (Mettapedia.OSLF.MeTTaIL.ContextualStep.engineBasePremises
+          relationEnvironment) language =
+      langDiamondUsing relationEnvironment language := by
+  funext predicate source
+  apply propext
+  simp only [interpretedDiamond_spec, langDiamondUsing_spec,
+    interpretedReduces_syntactic_iff, langReducesUsing]
+
+/-- The generic explicitly interpreted box has the same conservative
+syntactic specialization. -/
+theorem syntacticInterpretedBox_eq_langBoxUsing
+    (relationEnvironment : RelationEnv) (language : LanguageDef) :
+    interpretedBox .syntactic
+        (Mettapedia.OSLF.MeTTaIL.ContextualStep.engineBasePremises
+          relationEnvironment) language =
+      langBoxUsing relationEnvironment language := by
+  funext predicate target
+  apply propext
+  simp only [interpretedBox_spec, langBoxUsing_spec,
+    interpretedReduces_syntactic_iff, langReducesUsing]
+
+/-! ## Interpretation dependence is operationally observable
+
+The positive/negative pair below uses the actual admitted rho reflection
+profile.  Its two channel expressions are different syntax but denote the
+same canonical rho name.  The reflective interpretation can therefore fire
+COMM; the syntactic interpretation of the same five-field core cannot. -/
+
+namespace InterpretationDependenceCanary
+
+/-- The COMM-only sublanguage isolates rule interpretation from contextual
+closure. -/
+def language : LanguageDef :=
+  { rhoCalc with rewrites := [rhoCommRewrite] }
+
+/-- The same five-field core equipped with rho's separately authored
+reflection profile. -/
+def reflectiveLanguage :
+    Mettapedia.OSLF.MeTTaIL.Reflection.ReflectiveLanguageDef :=
+  { language with reflection := rhoReflectionProfile }
+
+/-- The rho reflection fibre remains admitted after restricting the core to
+its COMM rule. -/
+theorem reflectiveLanguage_validate_eq_nil :
+    reflectiveLanguage.validate = [] := by
+  change language.validate ++
+      Mettapedia.OSLF.MeTTaIL.Reflection.validate
+        language rhoReflectionProfile = []
+  apply List.append_eq_nil_iff.mpr
+  refine ⟨rhoCalc_without_ParCong_validate_eq_nil, ?_⟩
+  have fullProfile :
+      Mettapedia.OSLF.MeTTaIL.Reflection.validate
+        rhoCalc rhoReflectionProfile = [] := by
+    have full := rhoCalcReflective_validate_eq_nil
+    change rhoCalc.validate ++
+        Mettapedia.OSLF.MeTTaIL.Reflection.validate
+          rhoCalc rhoReflectionProfile = [] at full
+    exact (List.append_eq_nil_iff.mp full).2
+  have presentationFull :
+      rhoCalc.validateReflectivePresentation
+        rhoReflectivePresentation.toReflectivePresentationDecl = [] :=
+    Mettapedia.OSLF.MeTTaIL.Reflection.presentation_validate_eq_nil_of_validate_eq_nil
+      fullProfile (by simp [rhoReflectionProfile])
+  have ruleFull :
+      rhoCalc.validateReflectiveRule
+        [rhoReflectivePresentation.toReflectivePresentationDecl]
+        rhoReflectiveRule = [] :=
+    Mettapedia.OSLF.MeTTaIL.Reflection.rule_validate_eq_nil_of_validate_eq_nil
+      fullProfile (by simp [rhoReflectionProfile])
+  have presentationSame :
+      language.validateReflectivePresentation
+          rhoReflectivePresentation.toReflectivePresentationDecl =
+        rhoCalc.validateReflectivePresentation
+          rhoReflectivePresentation.toReflectivePresentationDecl := by
+    rfl
+  have selectedRewriteSame :
+      language.rewrites.filter
+          (fun rewrite => rewrite.name == rhoReflectiveRule.rewriteRule) =
+        rhoCalc.rewrites.filter
+          (fun rewrite => rewrite.name == rhoReflectiveRule.rewriteRule) := by
+    simp [language, rhoCalc, rhoReflectiveRule, rhoCommRewrite,
+      rhoParCongRewrite]
+  have ruleSame :
+      language.validateReflectiveRule
+          [rhoReflectivePresentation.toReflectivePresentationDecl]
+          rhoReflectiveRule =
+        rhoCalc.validateReflectiveRule
+          [rhoReflectivePresentation.toReflectivePresentationDecl]
+          rhoReflectiveRule := by
+    unfold LanguageDef.validateReflectiveRule
+    rw [selectedRewriteSame]
+  have presentationClean :
+      language.validateReflectivePresentation
+        rhoReflectivePresentation.toReflectivePresentationDecl = [] := by
+    rw [presentationSame]
+    exact presentationFull
+  have ruleClean :
+      language.validateReflectiveRule
+        [rhoReflectivePresentation.toReflectivePresentationDecl]
+        rhoReflectiveRule = [] := by
+    rw [ruleSame]
+    exact ruleFull
+  simp [Mettapedia.OSLF.MeTTaIL.Reflection.validate,
+    rhoReflectionProfile, presentationClean, ruleClean]
+
+def canonicalChannel : Pattern :=
+  .apply "NQuote" [.apply "PZero" []]
+
+def unitExpandedChannel : Pattern :=
+  .apply "NQuote"
+    [.collection .hashBag [.apply "PZero" [], .apply "PZero" []] none]
+
+def source : Pattern :=
+  .collection .hashBag
+    [.apply "PInput"
+      [unitExpandedChannel, .lambda none (.apply "PZero" [])],
+     .apply "POutput" [canonicalChannel, .apply "PZero" []]] none
+
+def bindings : Mettapedia.OSLF.MeTTaIL.Match.Bindings :=
+  [("q", .apply "PZero" []),
+   ("rest", .collection .hashBag [] none),
+   ("p", .apply "PZero" []),
+   ("n", unitExpandedChannel)]
+
+def target : Pattern :=
+  (Mettapedia.OSLF.MeTTaIL.InterpretedContextualStep.RuleInterpretation.reflection
+    rhoReflectionProfile).instantiateRule language rhoCommRewrite bindings
+
+/-- Canonical repeated-variable matching accepts the two rho-equivalent
+channel representations. -/
+theorem reflective_match :
+    bindings ∈
+      Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.matchPatternForRuleUsing
+        rhoReflectionProfile rhoCommRewrite source := by
+  decide +kernel
+
+/-- Ordinary repeated-variable matching rejects those distinct syntax trees. -/
+theorem syntactic_match_rejects :
+    Mettapedia.OSLF.MeTTaIL.Match.matchPattern rhoCommRewrite.left source = [] := by
+  decide +kernel
+
+/-- The admitted reflective interpretation produces the COMM step. -/
+theorem reflective_step :
+    interpretedReduces (.reflection rhoReflectionProfile)
+      rhoBasePremises language source target := by
+  refine ⟨1,
+    Mettapedia.OSLF.MeTTaIL.InterpretedContextualStep.StepAt.rule
+      (rule := rhoCommRewrite) ?_ reflective_match (.nil _) rfl⟩
+  simp [language]
+
+/-- The syntactic interpretation of the identical five-field core cannot
+produce that step. -/
+theorem syntactic_step_rejects :
+    ¬ interpretedReduces .syntactic rhoBasePremises language source target := by
+  rw [interpretedReduces_syntactic_iff]
+  apply Mettapedia.OSLF.MeTTaIL.ContextualStep.not_step_of_matchPatternForRule_eq_nil
+  intro rule ruleMember
+  have ruleEq : rule = rhoCommRewrite := by
+    simpa [language] using ruleMember
+  subst rule
+  simpa [Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.matchPatternForRule]
+    using syntactic_match_rejects
+
+/-- **Reflection can change modal answers.**  The reflective and syntactic
+diamonds over the same five-field core disagree on a concrete target
+predicate. -/
+theorem reflection_changes_possibility :
+    interpretedDiamond (.reflection rhoReflectionProfile)
+        rhoBasePremises language (fun result => result = target) source ∧
+      ¬ interpretedDiamond .syntactic
+        rhoBasePremises language (fun result => result = target) source := by
+  constructor
+  · rw [interpretedDiamond_spec]
+    exact ⟨target, reflective_step, rfl⟩
+  · intro possible
+    rw [interpretedDiamond_spec] at possible
+    obtain ⟨result, step, resultEq⟩ := possible
+    subst result
+    exact syntactic_step_rejects step
+
+end InterpretationDependenceCanary
+
+/-- The explicitly interpreted rho possibility modality soundly maps into the
+established possibility modality on presentation-derived process syntax. -/
+theorem rhoInterpretedDiamond_implies_possibly
+    {free : FreeSortContext} {bound : List String}
+    (φ : Pattern → Prop) (p : Pattern)
+    (typed : ProcWellSorted rhoReflectivePresentation free bound p)
+    (holds : rhoInterpretedDiamond φ p) :
+    possiblyProp φ p := by
+  obtain ⟨q, step, satisfies⟩ :=
+    (rhoInterpretedDiamond_spec (φ := φ) (p := p)).1 holds
+  exact ⟨q, rhoStep_sound typed step, satisfies⟩
+
+/-- Generic conditional sound-direction bridge for languages without a
+    language-specific agreement theorem. -/
 theorem langDiamond_implies_possibly_at (φ : Pattern → Prop) (p : Pattern)
     (h : langDiamond rhoCalc φ p)
     (sound : ∀ q, langReduces rhoCalc p q → Nonempty (Reduces p q)) :
@@ -131,7 +358,7 @@ capture-safe by construction — bound variables are de Bruijn indices, so no
 alpha-renaming occurs. However, the unconditional bridge via the specialized
 engine is still the **simplest** path for ρ-calculus, since `reduceStep_sound`
 directly connects to the propositional `Reduces` without going through the
-generic `rewriteWithContextWithPremises` → `DeclReducesWithPremises` chain. -/
+generic `ContextualStep.rewriteAt` → `TypeSynthesis.langReducesUsing` chain. -/
 
 /-- Unconditional bridge: if the specialized engine finds a reduct satisfying φ,
     then the hand-written ◇φ holds.
@@ -176,18 +403,24 @@ theorem specialized_soundBridge_at (p : Pattern) :
 We can now state the full picture:
 
 ```
-possiblyProp φ p            -- Layer 1: hand-written (Reduction.lean)
-  = derivedDiamond rhoSpan φ p  -- Layer 2: derived from propositional Reduces
-  ↔ langDiamond rhoCalc φ p     -- Layer 3: derived from executable engine
-    (when soundness + completeness hold)
+possiblyProp φ p                         -- established rho reduction
+  = derivedDiamond rhoSpan φ p           -- derived from its reduction span
+  ← rhoInterpretedDiamond φ p            -- explicit interpreted LanguageDef step
+    (sound unconditionally on derived rho syntax)
+
+langDiamond rhoCalc φ p                  -- reflection-free generated step
+    (related only under an explicit agreement hypothesis)
 ```
 
 Layer 1 = Layer 2 is proven (`derived_diamond_eq_possiblyProp`).
-Layer 2 ↔ Layer 3 depends on the agreement between propositional and
-executable reduction, which is:
-- Sound direction: `reduceStep_sound` (proven in Engine.lean)
-- Complete direction: requires showing all propositional reducts are found
-  (partially verified by the executable agreement test suite)
+The interpreted-to-established direction is proved by `rhoStep_sound`.
+Agreement between the established relation and the reflection-free generic
+`LanguageDef` interpretation remains conditional.  Currently:
+- Sound direction on presentation-derived rho processes: `rhoStep_sound`
+- Complete direction for the specialized engine is available up to structural
+  congruence in `Engine.lean`
+- The explicitly interpreted relation compiles the authored reflective
+  substitution; unrestricted completeness remains separate
 
 Additionally, the **specialized engine bridges** (above) give unconditional
 connections from `reduceStep` to `possiblyProp`/`relyProp`, bypassing the
@@ -200,8 +433,8 @@ structurally identical rules. The only difference is:
 - `HasType` uses `possiblyProp`/`relyProp` (from propositional Reduces)
 - `GenHasType` uses `langDiamond`/`langBox` (from executable engine)
 
-When the two modal operators agree (which they do for rhoCalc),
-the two typing judgments coincide. -/
+If an adequacy theorem makes the two modal operators agree, the corresponding
+typing judgments can then be related.  That adequacy theorem is open. -/
 
 /-- Convert a hand-written NativeType to a generated GenNativeType.
 
@@ -268,31 +501,35 @@ example : GenHasType rhoCalc GenTypingContext.empty
 
 **0 sorries. 0 axioms.**
 
-The three-layer bridge demonstrates:
+The four-layer bridge demonstrates:
 
 1. **Layer 1 = Layer 2** (proven in DerivedModalities.lean):
    `possiblyProp = derivedDiamond rhoSpan`, `relyProp = derivedBox rhoSpan`
 
-2. **Layer 2 ↔ Layer 3** (conditional on engine agreement):
-   `langDiamond rhoCalc ↔ possiblyProp` when executable matches propositional
+2. **Explicit interpretation → Layer 2** (proven on derived rho syntax):
+   `rhoInterpretedDiamond_implies_possibly`
 
 3. **Specialized engine bridge** (unconditional):
    - `specialized_possibly`: `(∃ q ∈ reduceStep p, φ q) → possiblyProp φ p`
    - `specialized_rely_check`: `relyProp φ p → p ∈ reduceStep q → φ q`
    - `specialized_can_reduce`: `q ∈ reduceStep p → possiblyProp ⊤ p`
 
-4. **HasType ↔ GenHasType** (structurally):
-   Same rules, different modal operators, agree when layers 2-3 agree
+4. **HasType and GenHasType** (structurally aligned):
+   Same rule shapes, with generated-to-established modal soundness proved on
+   derived rho syntax; the converse remains separate
 
-5. **Executable validation**: 8-test agreement suite confirms the engines
-   produce identical results on all test cases
+5. **Executable diagnostics**: the eight-case corpus agrees after reflective
+   COMM compilation; it remains testing evidence, not universal adequacy
 
-The OSLF type synthesis pipeline is **complete**:
+The generic OSLF construction itself is available:
 - `LanguageDef` → `langOSLF` (automatic OSLFTypeSystem with Galois connection)
 - `GenHasType` provides a concrete typing judgment
 - The Galois connection `◇ ⊣ □` is proven automatically
-- The connection to hand-written systems is established
 - Specialized engine → propositional modalities is unconditional
+
+The sound connection from the explicitly interpreted authored rho rules to
+`Reduces` is `rhoStep_sound`.  A converse theorem would require a distinct
+completeness proof and is not asserted here.
 -/
 
 end Mettapedia.OSLF.Framework.SynthesisBridge

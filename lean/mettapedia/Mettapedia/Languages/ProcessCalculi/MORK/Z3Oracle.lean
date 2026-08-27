@@ -6,7 +6,7 @@ import Mettapedia.Languages.MeTTa.RuntimeExec
 
 The first concrete witness of the existing oracle runtime kernel class.
 This file connects the abstract oracle syntax (`OracleQuery`, `OracleResponse`,
-`ResourceRequest`, `MeTTaRuntimeOracleSurface`) to concrete Z3 behavior:
+`ResourceRequest`, `MeTTaRuntimeOracleInterface`) to concrete Z3 behavior:
 query environments, payload-to-space conversion, pattern matching over oracle
 payloads, and conformance theorems against a mock Z3 oracle.
 
@@ -168,34 +168,34 @@ theorem oracleMatchPattern_unsat_empty (σ : Subst) (pat : Atom) :
 
 end MatchingSoundness
 
-/-! ## 7. Bridge to `MeTTaRuntimeOracleSurface` -/
+/-! ## 7. Bridge to `MeTTaRuntimeOracleInterface` -/
 
-section OracleSurfaceBridge
+section OracleBridge
 
 open Mettapedia.Languages.MeTTa.RuntimeExec
 
-/-- The canonical oracle surface's `responsePayload` agrees with
+/-- The canonical oracle interface's `responsePayload` agrees with
     `oraclePayloadSpace` up to `List.toFinset`. -/
 theorem morkOraclePayload_eq (resp : OracleResponse) :
     (morkRuntimeOracleExec0.responsePayload resp).toFinset =
     oraclePayloadSpace resp := by
   simp [oraclePayloadSpace, morkRuntimeOracleExec0, OracleResponse.payloadAtoms]
 
-/-- The canonical oracle surface routes Z3 check-sat to `.z3`. -/
+/-- The canonical oracle interface routes Z3 check-sat to `.z3`. -/
 theorem morkOracle_z3CheckSat_routes (name : String) (assertions : List Atom) :
     morkRuntimeOracleExec0.requestEncoding (.z3CheckSat name assertions) = .z3 name :=
   rfl
 
-/-- The canonical oracle surface routes Z3 get-model to `.z3`. -/
+/-- The canonical oracle interface routes Z3 get-model to `.z3`. -/
 theorem morkOracle_z3GetModel_routes (name : String) (assertions : List Atom) :
     morkRuntimeOracleExec0.requestEncoding (.z3GetModel name assertions) = .z3 name :=
   rfl
 
-/-- The canonical oracle surface extracts model payload faithfully. -/
+/-- The canonical oracle interface extracts model payload faithfully. -/
 theorem morkOracle_model_payload (atoms : List Atom) :
     morkRuntimeOracleExec0.responsePayload (.model atoms) = atoms := rfl
 
-end OracleSurfaceBridge
+end OracleBridge
 
 /-! ## 8. Mock Z3 oracle + conformance -/
 
@@ -243,7 +243,7 @@ theorem mock_z3_model_unknown_no_payload :
 theorem mock_z3_model_payload_atoms :
     (mockZ3Env (.z3GetModel "ins" [])).payloadAtoms = [defineFunA, defineFunB] := rfl
 
-/-- Mock Z3 routes through the canonical oracle surface correctly. -/
+/-- Mock Z3 routes through the canonical oracle interface correctly. -/
 theorem mock_z3_routes_correctly :
     (OracleQuery.z3GetModel "ins" []).resourceRequest = .z3 "ins" := rfl
 

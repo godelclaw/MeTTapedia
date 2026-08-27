@@ -5,7 +5,7 @@ import Mathlib.Analysis.SpecialFunctions.Pow.NNReal
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Piecewise
 import Mettapedia.UniversalAI.BayesianAgents.Core
-import Mettapedia.Logic.UniversalPrediction
+import Mettapedia.UniversalAI.UniversalPrediction
 /-!
 # Universal Bayesian Agents (Hutter 2005, Chapter 4)
 
@@ -1102,7 +1102,7 @@ def encodeHistElem : HistElem → List Bool
   | HistElem.per x => encodePercept x
 
 /-- Encode a full history as a binary string. -/
-def encodeHistory (h : History) : Mettapedia.Logic.SolomonoffPrior.BinString :=
+def encodeHistory (h : History) : Mettapedia.UniversalAI.SolomonoffPrior.BinString :=
   h.foldl (fun acc elem => acc ++ encodeHistElem elem) []
 
 /-- Nested application of semimeasure superadditivity for 2-bit extensions.
@@ -1113,8 +1113,8 @@ def encodeHistory (h : History) : Mettapedia.Logic.SolomonoffPrior.BinString :=
     semimeasures preserve the probability bound.
 -/
 theorem semimeasure_four_extensions
-    (ν : Mettapedia.Logic.SolomonoffInduction.Semimeasure)
-    (s : Mettapedia.Logic.SolomonoffPrior.BinString) :
+    (ν : Mettapedia.UniversalAI.SolomonoffInduction.Semimeasure)
+    (s : Mettapedia.UniversalAI.SolomonoffPrior.BinString) :
     ν (s ++ [false, false]) + ν (s ++ [false, true]) +
     ν (s ++ [true, false]) + ν (s ++ [true, true]) ≤ ν s := by
   -- Apply superadditivity to (s ++ [false]) and (s ++ [true])
@@ -1143,8 +1143,8 @@ theorem semimeasure_four_extensions
     following from semimeasure superadditivity.
 -/
 theorem percept_prob_sum_le_one
-    (ν : Mettapedia.Logic.SolomonoffInduction.Semimeasure)
-    (h_enc : Mettapedia.Logic.SolomonoffPrior.BinString) :
+    (ν : Mettapedia.UniversalAI.SolomonoffInduction.Semimeasure)
+    (h_enc : Mettapedia.UniversalAI.SolomonoffPrior.BinString) :
     (∑' x : Percept,
       if ν h_enc = 0 then 0
       else ν (h_enc ++ encodePercept x) / ν h_enc) ≤ 1 := by
@@ -1198,7 +1198,7 @@ theorem percept_prob_sum_le_one
     where · denotes concatenation of encoded strings.
 -/
 noncomputable def semimeasureToEnvironment
-    (ν : Mettapedia.Logic.SolomonoffInduction.Semimeasure) : Environment where
+    (ν : Mettapedia.UniversalAI.SolomonoffInduction.Semimeasure) : Environment where
   prob h x :=
     if h.wellFormed then
       let h_enc := encodeHistory h
@@ -1226,7 +1226,7 @@ noncomputable def semimeasureToEnvironment
 
 /-- The universal agent uses the universal mixture from Chapter 3. -/
 noncomputable def universalAgent
-    (ν : ℕ → Mettapedia.Logic.SolomonoffInduction.Semimeasure)
+    (ν : ℕ → Mettapedia.UniversalAI.SolomonoffInduction.Semimeasure)
     (w : ℕ → ENNReal) (hw : (∑' i, w i) ≤ 1)
     (γ : DiscountFactor) (horizon : ℕ) : Agent :=
   -- Convert semimeasures to environments and create Bayesian mixture
@@ -1881,13 +1881,13 @@ theorem bayes_optimal_maximizes_value (ξ : BayesianMixture) (γ : DiscountFacto
     AIXI uses the universal mixture from Chapter 3 as its environment model
     and acts optimally (via expectimax) with respect to this mixture.
 -/
-noncomputable def AIXI (ν : ℕ → Mettapedia.Logic.SolomonoffInduction.Semimeasure)
+noncomputable def AIXI (ν : ℕ → Mettapedia.UniversalAI.SolomonoffInduction.Semimeasure)
     (γ : DiscountFactor) (horizon : ℕ) : Agent :=
   -- Use the geometric weight universal mixture from Chapter 3
   let mixture : BayesianMixture := {
     envs := fun i => semimeasureToEnvironment (ν i)
-    weights := Mettapedia.Logic.UniversalPrediction.geometricWeight
-    weights_le_one := Mettapedia.Logic.UniversalPrediction.tsum_geometricWeight_le_one
+    weights := Mettapedia.UniversalAI.UniversalPrediction.geometricWeight
+    weights_le_one := Mettapedia.UniversalAI.UniversalPrediction.tsum_geometricWeight_le_one
   }
   bayesOptimalAgent mixture γ horizon
 
@@ -1896,7 +1896,7 @@ noncomputable def AIXI (ν : ℕ → Mettapedia.Logic.SolomonoffInduction.Semime
     This variant works with any countable index type, not just ℕ.
 -/
 noncomputable def AIXIEncode {ι : Type*} [Encodable ι]
-    (ν : ι → Mettapedia.Logic.SolomonoffInduction.Semimeasure)
+    (ν : ι → Mettapedia.UniversalAI.SolomonoffInduction.Semimeasure)
     (γ : DiscountFactor) (horizon : ℕ) : Agent :=
   -- Convert from ι-indexed to ℕ-indexed for BayesianMixture
   -- Use decode₂ which is the proper partial inverse of encode
@@ -1906,7 +1906,7 @@ noncomputable def AIXIEncode {ι : Type*} [Encodable ι]
     | none => semimeasureToEnvironment ⟨fun _ => 0, fun _ => by simp, by simp⟩  -- dummy environment
   let weights : ℕ → ENNReal := fun n =>
     match Encodable.decode₂ ι n with
-    | some i => Mettapedia.Logic.UniversalPrediction.encodeWeight i
+    | some i => Mettapedia.UniversalAI.UniversalPrediction.encodeWeight i
     | none => 0
   let mixture : BayesianMixture := {
     envs := envs
@@ -1914,9 +1914,9 @@ noncomputable def AIXIEncode {ι : Type*} [Encodable ι]
     weights_le_one := by
       -- The weights function maps decoded indices to encodeWeight
       -- Sum over ℕ equals sum over ι via the encoding bijection
-      have key : (∑' n : ℕ, weights n) = ∑' i : ι, Mettapedia.Logic.UniversalPrediction.encodeWeight i := by
+      have key : (∑' n : ℕ, weights n) = ∑' i : ι, Mettapedia.UniversalAI.UniversalPrediction.encodeWeight i := by
         -- Key insight: weights (encode i) = encodeWeight i since decode₂ (encode i) = some i
-        have henc : ∀ i : ι, weights (Encodable.encode i) = Mettapedia.Logic.UniversalPrediction.encodeWeight i := by
+        have henc : ∀ i : ι, weights (Encodable.encode i) = Mettapedia.UniversalAI.UniversalPrediction.encodeWeight i := by
           intro i
           simp only [weights, Encodable.encodek₂]
         -- Rewrite sum: ∑' i, encodeWeight i = ∑' i, weights (encode i)
@@ -1933,7 +1933,7 @@ noncomputable def AIXIEncode {ι : Type*} [Encodable ι]
             exact ⟨i, Encodable.decode₂_eq_some.mp hd⟩
         exact (Function.Injective.tsum_eq hinj hsupp).symm
       rw [key]
-      exact Mettapedia.Logic.UniversalPrediction.tsum_encodeWeight_le_one
+      exact Mettapedia.UniversalAI.UniversalPrediction.tsum_encodeWeight_le_one
   }
   bayesOptimalAgent mixture γ horizon
 
@@ -2023,23 +2023,25 @@ theorem bayes_optimal_achieves_optimal (ξ : BayesianMixture) (γ : DiscountFact
   greedyAgent_ge_optimalValue ξ γ h horizon
 
 /-!
-### Universal Value Function and Intelligence Measure
+### Mixture value and intelligence measures
 
-The universal value function Υ(π) measures expected value under the mixture prior:
+The mixture value function Υ(π) measures expected value under a supplied prior:
   Υ(π) = ∑_μ w(μ) · V^π_μ
 
-AIXI maximizes this by construction.
+The corresponding Bayes-optimal policy maximizes this objective by
+construction.  This is an optimality statement relative to that mixture, not
+an invariance statement across reference machines or priors.
 -/
 
-/-- Universal value function: expected value under the mixture prior.
-    This is the objective that AIXI implicitly maximizes. -/
+/-- Encoding-relative value function: expected value under the supplied
+mixture prior.  This is the objective maximized by its Bayes-optimal policy. -/
 noncomputable def universalValue (envs : ℕ → Environment) (weights : ℕ → ENNReal)
     (π : Agent) (γ : DiscountFactor) (h : History) (horizon : ℕ) : ENNReal :=
   ∑' i, weights i * ENNReal.ofReal (max 0 (value (envs i) π γ h horizon))
 
-/-- AIXI maximizes the universal value function among all policies.
+/-- The Bayes-optimal policy maximizes value for the supplied mixture.
 
-    This is Theorem 5.21 reformulated in terms of the universal value function:
+    This is Theorem 5.21 reformulated for the chosen mixture:
     Υ(AIXI) ≥ Υ(π) for any policy π.
 -/
 theorem aixi_maximizes_universal_value (ξ : BayesianMixture) (γ : DiscountFactor)
@@ -2049,7 +2051,7 @@ theorem aixi_maximizes_universal_value (ξ : BayesianMixture) (γ : DiscountFact
   bayes_optimal_maximizes_value ξ γ horizon h hw π
 
 /-!
-### Pareto Optimality of AIXI (Theorem 5.32)
+### Pareto optimality and its limitation (Theorem 5.32)
 
 AIXI is Pareto optimal in the class of all computable environments. The proof uses
 a "buddy environment" construction: for any policy π that tries to dominate AIXI,

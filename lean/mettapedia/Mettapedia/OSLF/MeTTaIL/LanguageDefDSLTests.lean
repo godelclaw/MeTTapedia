@@ -2,16 +2,20 @@ import Mettapedia.OSLF.MeTTaIL.LanguageDefDSL
 import Mettapedia.OSLF.MeTTaIL.Export
 import Mettapedia.OSLF.MeTTaIL.Canonical
 import Mettapedia.OSLF.MeTTaIL.CoreSyntaxBridge
+import Mettapedia.GSLT.LanguageDef.LogicExtension
+import Mettapedia.GSLT.LanguageDef.OracleExtension
 
 namespace Mettapedia.OSLF.MeTTaIL.LanguageDefDSLTests
 
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.Canonical
 open Mettapedia.OSLF.MeTTaIL.LanguageDefDSL
+open Mettapedia.GSLT.LanguageDef.LogicExtension
+open Mettapedia.GSLT.LanguageDef.OracleExtension
 open scoped Mettapedia.OSLF.MeTTaIL.LanguageDefDSL
 
-/-- Positive smoke example: all authored blocks parse directly into one
-    `LanguageDef`, and binder names survive on the relevant `TermParam`s. -/
+/-- Positive smoke example: the five core blocks parse into one `LanguageDef`,
+and binder names survive on the relevant `TermParam`s. -/
 def smokeLang : LanguageDef :=
   languageDef! {
     name : "SmokeLang"
@@ -32,15 +36,17 @@ def smokeLang : LanguageDef :=
     rewrites {
       Beta . env:Env | knownSymbol(SymLeaf(tok)) |- Lam(SymLeaf(tok)) ~> SymLeaf(tok);
     }
-    logic {
-      relation knownSymbol(Expr);
-      rule "knownSymbol(x) <-- true";
-    }
-    oracles {
-      external evalExpr(Expr, Env) -> Result;
-    }
-    congruenceCollections { HashBag }
   }
+
+private def smokeRelation : LogicRelationDecl :=
+  LogicRelationDecl.mk "knownSymbol" [.base "Expr"]
+
+def smokeLogic : AdmittedProgram smokeLang :=
+  ⟨[LogicDeclaration.relation smokeRelation], by decide⟩
+
+def smokeOracles : AdmittedLibrary smokeLang :=
+  ⟨[OracleDecl.mk "evalExpr"
+      [.base "Expr", .base "Env"] (.base "Result")], by decide⟩
 
 private def nth? {α : Type} : List α → Nat → Option α
   | [], _ => none
@@ -62,9 +68,8 @@ private def rewriteShape (lang : LanguageDef) : Nat × Nat :=
 
 example : smokeLang.equations.length = 1 := rfl
 example : smokeLang.rewrites.length = 1 := rfl
-example : smokeLang.logic.length = 2 := rfl
-example : smokeLang.oracles.length = 1 := rfl
-example : smokeLang.congruenceCollections = [.hashBag] := rfl
+example : smokeLogic.1.length = 1 := rfl
+example : smokeOracles.1.length = 1 := rfl
 example : binderNamesAt smokeLang 1 0 = ["x"] := rfl
 example : binderNamesAt smokeLang 2 0 = ["x", "y"] := rfl
 example : rewriteShape smokeLang = (1, 1) := rfl
@@ -86,9 +91,6 @@ def compactBinderLang : LanguageDef :=
       Scope . |- PNew(^x.P) = PNew(^x.P);
     }
     rewrites { }
-    logic { }
-    oracles { }
-    congruenceCollections { }
   }
 
 example : binderNamesAt compactBinderLang 0 0 = ["x"] := rfl
@@ -129,11 +131,8 @@ def authoredPatternLang : LanguageDef :=
     }
     equations { }
     rewrites {
-      PreserveSurface . | X # ... rest |- Scope(^ x . Keep(X), {X, ... rest}) ~> Scope(^ y . Keep(X), {X});
+      PreserveSyntax . | X # ... rest |- Scope(^ x . Keep(X), {X, ... rest}) ~> Scope(^ y . Keep(X), {X});
     }
-    logic { }
-    oracles { }
-    congruenceCollections { HashBag }
   }
 
 private def firstRewrite : RewriteRule :=
@@ -161,7 +160,7 @@ example :
   native_decide
 example : firstRewriteFreshnessOk = true := by
   native_decide
--- Surface string fields removed: Pattern.lambda now carries binder names
+-- Linearized string fields removed: Pattern.lambda now carries binder names
 -- structurally, so export uses renderPattern directly.
 private def firstRewriteHasBinderX : Bool :=
   match firstRewrite.left with
@@ -190,9 +189,6 @@ def forAllLang : LanguageDef :=
     rewrites {
       Quantified . | forAll(xs, x, seen(x)) |- Keep(x) ~> Keep(x);
     }
-    logic { }
-    oracles { }
-    congruenceCollections { }
   }
 
 example : isError (CoreSyntaxBridge.specToCoreLanguage forAllLang) = true := by
@@ -217,9 +213,6 @@ def syntaxOpsLang : LanguageDef :=
     }
     equations { }
     rewrites { }
-    logic { }
-    oracles { }
-    congruenceCollections { }
   }
 
 private def firstSyntaxRule : GrammarRule :=
@@ -266,7 +259,7 @@ example : isError (CoreSyntaxBridge.specToCoreLanguage syntaxOpsLang) = true := 
 
 /-- Positive smoke example: rule-side Rust-style pattern operators and mapped
     freshness sugar parse into structured `Pattern` / `Premise` forms, export
-    faithfully through stored surface text, and are rejected explicitly by the
+    faithfully through stored source text, and are rejected explicitly by the
     flat core bridge. -/
 def rulePatternOpsLang : LanguageDef :=
   languageDef! {
@@ -289,9 +282,6 @@ def rulePatternOpsLang : LanguageDef :=
       Comm . |- PPar({PInputs(ns, cont), *zip(ns, qs).*map(|n, q| POutput(n, q)), ...rest})
         ~> PPar({eval(cont, qs.*map(|q| NQuote(q))), ...rest});
     }
-    logic { }
-    oracles { }
-    congruenceCollections { HashBag }
   }
 
 private def extrudeEq : Equation :=
@@ -354,12 +344,12 @@ example :
 example : isError (CoreSyntaxBridge.specToCoreLanguage rulePatternOpsLang) = true := by
   native_decide
 
-/-- Surface-sugar smoke example: keep mapped-freshness sugar and prefix-style
+/-- Syntax-sugar smoke example: keep mapped-freshness sugar and prefix-style
     pattern forms alive as authored syntax, even when canonical RhoCalc uses the
     more stable structural spelling today. -/
-def ruleSurfaceSugarLang : LanguageDef :=
+def ruleSyntaxSugarLang : LanguageDef :=
   languageDef! {
-    name : "RuleSurfaceSugarLang"
+    name : "RuleSyntaxSugarLang"
     types {
       Proc
     }
@@ -372,16 +362,13 @@ def ruleSurfaceSugarLang : LanguageDef :=
     rewrites {
       EvalSugar . |- eval(A, B) ~> eval(A, B);
     }
-    logic { }
-    oracles { }
-    congruenceCollections { HashBag }
   }
 
 private def sugarEq : Equation :=
-  ruleSurfaceSugarLang.equations.get ⟨0, by native_decide⟩
+  ruleSyntaxSugarLang.equations.get ⟨0, by native_decide⟩
 
 private def sugarRw : RewriteRule :=
-  ruleSurfaceSugarLang.rewrites.get ⟨0, by native_decide⟩
+  ruleSyntaxSugarLang.rewrites.get ⟨0, by native_decide⟩
 
 private def sugarPremiseIsForAll : Bool :=
   match sugarEq.premises with
@@ -412,15 +399,15 @@ example : sugarRwUsesPrefixEval = true := by
 
 example :
     hasSubstring "FreshMap . | forAll(xs, x, x # ...rest) |- (Pair A B) = (Pair A B);"
-      (Export.renderLanguageWithUserSyntax ruleSurfaceSugarLang) = true := by
+      (Export.renderLanguageWithUserSyntax ruleSyntaxSugarLang) = true := by
   native_decide
 
 example :
     hasSubstring "EvalSugar . |- (eval A B) ~> (eval A B);"
-      (Export.renderLanguageWithUserSyntax ruleSurfaceSugarLang) = true := by
+      (Export.renderLanguageWithUserSyntax ruleSyntaxSugarLang) = true := by
   native_decide
 
-example : isError (CoreSyntaxBridge.specToCoreLanguage ruleSurfaceSugarLang) = true := by
+example : isError (CoreSyntaxBridge.specToCoreLanguage ruleSyntaxSugarLang) = true := by
   native_decide
 
 /-- Semantic validation examples on authored `languageDef!` values. -/
@@ -438,18 +425,15 @@ def badValidationLang : LanguageDef :=
     rewrites {
       Bad . | unknownRel(X) |- Unknown(X) ~> Wrap(X);
     }
-    logic { }
-    oracles { }
-    congruenceCollections { }
   }
 
 example : hasValidationMessage "duplicate type `Expr`" (LanguageDef.validate badValidationLang) = true := by
   native_decide
 example : hasValidationMessage "unknown syntax parameter `y`" (LanguageDef.validate badValidationLang) = true := by
   native_decide
-example : hasValidationMessage "unknown relation `unknownRel`" (LanguageDef.validate badValidationLang) = true := by
-  native_decide
-example : hasValidationMessage "unknown constructor `Unknown`" (LanguageDef.validate badValidationLang) = true := by
+example : LogicProgram.AdmissibleFor [] badValidationLang = false := by
+  decide
+example : hasValidationMessage "unknown constructor `Unknown/1`" (LanguageDef.validate badValidationLang) = true := by
   native_decide
 
 /-- Validation should recurse through authored syntax operators rather than
@@ -467,9 +451,6 @@ def badNestedSyntaxValidationLang : LanguageDef :=
     }
     equations { }
     rewrites { }
-    logic { }
-    oracles { }
-    congruenceCollections { }
   }
 
 example :
@@ -505,9 +486,6 @@ def termEvalPolicyLang : LanguageDef :=
     }
     equations { }
     rewrites { }
-    logic { }
-    oracles { }
-    congruenceCollections { }
   }
 
 private def castIntRule : GrammarRule :=
@@ -620,9 +598,6 @@ def badCarrierLang : LanguageDef :=
     terms { }
     equations { }
     rewrites { }
-    logic { }
-    oracles { }
-    congruenceCollections { }
   }
 
 /-- error: unsupported congruence collection `Maybe` -/
@@ -638,25 +613,6 @@ def badTypeCollectionLang : LanguageDef :=
     }
     equations { }
     rewrites { }
-    logic { }
-    oracles { }
-    congruenceCollections { }
-  }
-
-/-- error: unsupported congruence collection `Bag` -/
-#guard_msgs in
-def badCongruenceCollectionLang : LanguageDef :=
-  languageDef! {
-    name : "BadCongruenceCollection"
-    types {
-      Expr
-    }
-    terms { }
-    equations { }
-    rewrites { }
-    logic { }
-    oracles { }
-    congruenceCollections { Bag }
   }
 
 end Mettapedia.OSLF.MeTTaIL.LanguageDefDSLTests

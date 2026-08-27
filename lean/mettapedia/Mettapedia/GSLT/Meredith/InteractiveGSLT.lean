@@ -5,19 +5,20 @@ import Mettapedia.GSLT.Dynamics.WeightCost
 import Mettapedia.GSLT.Meredith.RhoExample
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.MultiStep
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.SemanticSubstitution
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.PureCanonicalSection
 import Mathlib.Data.Multiset.Basic
 import Mathlib.Tactic
 
 /-!
-# Symmetric Cut Presentations
+# Interaction-Cut Presentations
 
 This file isolates the smallest honest interaction layer beneath continued
 interactive GSLTs:
 
-- a `SymmetricCutPresentation S` over an existing `GSLT` `S`
+- a `InteractionCutPresentation S` over an existing `GSLT` `S`
 - an abstract contact constructor together with left/right introductions
 - a one-step contraction kernel
-- a generic section out of the quotient by structural equations
+- a computable section on an explicitly embedded interaction carrier
 
 The wrapping / cost endofunctor layer belongs on top of this presentation once
 cost-accounted terms themselves are formalized in Lean.
@@ -31,7 +32,7 @@ open Mettapedia.Languages.ProcessCalculi.RhoCalculus
 
 variable {S : GSLT}
 
-/-- A symmetric cut presentation for a fixed GSLT.
+/-- An ordered interaction-cut presentation for a fixed GSLT.
 
 The intended reading is:
 - `contact` is where two co-introductions meet
@@ -41,7 +42,7 @@ The intended reading is:
 This is the interaction core we can state cleanly before adding wrapped terms
 and graded cost accounting.
 -/
-structure SymmetricCutPresentation (S : GSLT) where
+structure InteractionCutPresentation (S : GSLT) where
   contact : S.Term → S.Term → S.Term
   leftIntro : S.Term → S.Term → S.Term
   rightIntro : S.Term → S.Term → S.Term
@@ -58,16 +59,29 @@ structure AccountedCutStep (α γ σ : Type) where
   right : WrappedTerm α γ
   spent : σ
 
-/-- A first honest continued layer over a symmetric cut presentation.
+/-- A first honest continued layer over an interaction-cut presentation.
 
 This stays abstract about the accounting grade while requiring wrapped
 contraction to erase back to the underlying cut contraction.
 -/
 structure ContinuedCutPresentation (S : GSLT) where
-  symmetricCut : SymmetricCutPresentation S
+  interactionCut : InteractionCutPresentation S
   Grade : Type
   Spent : Type
-  reprSection : Quotient S.equations → S.Term
+  /-- Terms on which this continued presentation claims a computable
+  representative.  This may be a strict subtype of the ambient GSLT carrier. -/
+  SectionCarrier : Type
+  /-- Inclusion of the section carrier into the ambient GSLT syntax. -/
+  sectionEmbedding : SectionCarrier ↪ S.Term
+  /-- Equations presented on the section carrier. -/
+  sectionEquations : Setoid SectionCarrier
+  /-- The section equations are exactly the ambient equations after embedding. -/
+  sectionEquations_iff :
+    ∀ left right,
+      sectionEquations.r left right ↔
+        S.equations.r (sectionEmbedding left) (sectionEmbedding right)
+  /-- A computable representative for each section-carrier equivalence class. -/
+  reprSection : Quotient sectionEquations → SectionCarrier
   reprSection_spec : ∀ q, Quotient.mk _ (reprSection q) = q
   contractWrapped :
     S.Term → S.Term →
@@ -76,22 +90,31 @@ structure ContinuedCutPresentation (S : GSLT) where
   contractWrapped_fst_term :
     ∀ chan nm body payload,
       (contractWrapped chan nm body payload).left.term =
-        (symmetricCut.contract chan nm body.term payload.term).1
+        (interactionCut.contract chan nm body.term payload.term).1
   contractWrapped_snd_term :
     ∀ chan nm body payload,
       (contractWrapped chan nm body payload).right.term =
-        (symmetricCut.contract chan nm body.term payload.term).2
+        (interactionCut.contract chan nm body.term payload.term).2
 
-/-- A generic computable section of the quotient by structural equations. -/
-noncomputable def equationsSection (S : GSLT) : Quotient S.equations → S.Term :=
-  Quotient.out
+namespace ContinuedCutPresentation
 
-/-- The generic section lands back in the same quotient class. -/
-theorem equationsSection_spec (S : GSLT)
-    (q : Quotient S.equations) :
-    Quotient.mk _ (equationsSection S q) = q := by
-  unfold equationsSection
-  exact Quotient.out_eq q
+/-- Embed a section-carrier quotient into the ambient equational quotient. -/
+def sectionQuotientEmbedding (C : ContinuedCutPresentation S) :
+    Quotient C.sectionEquations → Quotient S.equations :=
+  Quotient.lift
+    (fun term => Quotient.mk S.equations (C.sectionEmbedding term))
+    (fun _ _ equivalent =>
+      Quotient.sound ((C.sectionEquations_iff _ _).mp equivalent))
+
+/-- Computing a representative does not change its ambient equivalence class. -/
+theorem sectionQuotientEmbedding_reprSection
+    (C : ContinuedCutPresentation S) (equivalenceClass : Quotient C.sectionEquations) :
+    C.sectionQuotientEmbedding
+        (Quotient.mk C.sectionEquations (C.reprSection equivalenceClass)) =
+      C.sectionQuotientEmbedding equivalenceClass := by
+  rw [C.reprSection_spec]
+
+end ContinuedCutPresentation
 
 /-- Wrapped contraction erases to the underlying cut contraction. -/
 theorem contractWrapped_erases (C : ContinuedCutPresentation S)
@@ -99,7 +122,7 @@ theorem contractWrapped_erases (C : ContinuedCutPresentation S)
     (body payload : WrappedTerm S.Term C.Grade) :
     ((C.contractWrapped chan nm body payload).left.term,
       (C.contractWrapped chan nm body payload).right.term) =
-      C.symmetricCut.contract chan nm body.term payload.term := by
+      C.interactionCut.contract chan nm body.term payload.term := by
   cases body
   cases payload
   simp [C.contractWrapped_fst_term, C.contractWrapped_snd_term]
@@ -332,7 +355,7 @@ def rhoSpentSyntaxAccount (spent : Pattern) : RhoCostAccount :=
         rhoTemporalUnits (1 + rhoSpentSyntaxTicks tail) := by
   rfl
 
-/-- Direct Lean signature syntax matching the CeTTa cost surface:
+/-- Direct Lean signature syntax matching the CeTTa cost encoding:
 ground atoms, binary signature products, and the internal unit. -/
 inductive RhoDirectSignature where
   | unit
@@ -350,7 +373,7 @@ structure RhoDirectSigned where
   body : Pattern
   sig : RhoDirectSignature
 
-/-- Direct Lean costed rho terms matching the CeTTa surface:
+/-- Direct Lean costed rho terms matching the CeTTa cost encoding:
 signed fragments, costed parallel composition, and token stacks. -/
 inductive RhoDirectTerm where
   | signed (body : Pattern) (sig : RhoDirectSignature)
@@ -384,10 +407,10 @@ private def RhoDirectSignature.ofPatternList : List Pattern → RhoDirectSignatu
 noncomputable def RhoDirectSignature.ofSignature (sig : RhoSignature) : RhoDirectSignature :=
   RhoDirectSignature.ofPatternList sig.toList
 
-def RhoDirectSignature.SurfaceLike : RhoDirectSignature → Prop
+def RhoDirectSignature.CanonicalShape : RhoDirectSignature → Prop
   | .unit => True
   | .atom p => rhoSignatureSyntaxWidth p = 1
-  | .mul left right => left.SurfaceLike ∧ right.SurfaceLike
+  | .mul left right => left.CanonicalShape ∧ right.CanonicalShape
 
 def RhoDirectStack.toLedger : RhoDirectStack → RhoLedger
   | .empty => 0
@@ -419,9 +442,9 @@ def RhoDirectStack.spatialSignature : RhoDirectStack → RhoSignature
   | .empty => 0
   | .cons sig rest => sig.toSignature + rest.spatialSignature
 
-def RhoDirectStack.SurfaceLike : RhoDirectStack → Prop
+def RhoDirectStack.CanonicalShape : RhoDirectStack → Prop
   | .empty => True
-  | .cons sig rest => sig.SurfaceLike ∧ rest.SurfaceLike
+  | .cons sig rest => sig.CanonicalShape ∧ rest.CanonicalShape
 
 def RhoDirectStack.toTerm : RhoDirectStack → RhoDirectTerm :=
   .stack
@@ -515,22 +538,22 @@ private theorem rhoSignatureOfList_eq_coe (ps : List Pattern) :
   | cons p rest ih =>
       simp [rhoSignatureOfList, ih]
 
-private theorem RhoDirectSignature_ofPatternList_surfaceLike
+private theorem RhoDirectSignature_ofPatternList_canonicalShape
     (ps : List Pattern)
     (hall : ∀ q ∈ ps, rhoSignatureSyntaxWidth q = 1) :
-    (RhoDirectSignature.ofPatternList ps).SurfaceLike := by
+    (RhoDirectSignature.ofPatternList ps).CanonicalShape := by
   induction ps with
   | nil =>
-      simp [RhoDirectSignature.ofPatternList, RhoDirectSignature.SurfaceLike]
+      simp [RhoDirectSignature.ofPatternList, RhoDirectSignature.CanonicalShape]
   | cons p rest ih =>
       cases rest with
       | nil =>
-          simp [RhoDirectSignature.ofPatternList, RhoDirectSignature.SurfaceLike, hall p (by simp)]
+          simp [RhoDirectSignature.ofPatternList, RhoDirectSignature.CanonicalShape, hall p (by simp)]
       | cons q rest' =>
           have hrest : ∀ r ∈ q :: rest', rhoSignatureSyntaxWidth r = 1 := by
             intro r hr
             exact hall r (by simp [hr])
-          simp [RhoDirectSignature.ofPatternList, RhoDirectSignature.SurfaceLike,
+          simp [RhoDirectSignature.ofPatternList, RhoDirectSignature.CanonicalShape,
             hall p (by simp), ih hrest]
 
 @[simp] theorem RhoDirectSignature_toSignature_ofSignature
@@ -540,12 +563,12 @@ private theorem RhoDirectSignature_ofPatternList_surfaceLike
     (RhoDirectSignature_toSignature_ofPatternList sig.toList).trans
       (rhoSignatureOfList_eq_coe sig.toList)
 
-theorem RhoDirectSignature_ofSignature_surfaceLike
+theorem RhoDirectSignature_ofSignature_canonicalShape
     (sig : RhoSignature)
     (hall : ∀ q ∈ sig, rhoSignatureSyntaxWidth q = 1) :
-    (RhoDirectSignature.ofSignature sig).SurfaceLike := by
+    (RhoDirectSignature.ofSignature sig).CanonicalShape := by
   unfold RhoDirectSignature.ofSignature
-  apply RhoDirectSignature_ofPatternList_surfaceLike
+  apply RhoDirectSignature_ofPatternList_canonicalShape
   intro q hq
   exact hall q (by simpa using hq)
 
@@ -720,16 +743,16 @@ theorem RhoDirectSignature_ofSignature_surfaceLike
   | cons sig rest ih =>
       simp [RhoDirectStack.append, RhoDirectStack.toLedger, ih, add_assoc]
 
-@[simp] theorem RhoDirectStack_surfaceLike_append
+@[simp] theorem RhoDirectStack_canonicalShape_append
     {left right : RhoDirectStack}
-    (hleft : left.SurfaceLike) (hright : right.SurfaceLike) :
-    (RhoDirectStack.append left right).SurfaceLike := by
+    (hleft : left.CanonicalShape) (hright : right.CanonicalShape) :
+    (RhoDirectStack.append left right).CanonicalShape := by
   induction left with
   | empty =>
-      simpa [RhoDirectStack.append, RhoDirectStack.SurfaceLike] using hright
+      simpa [RhoDirectStack.append, RhoDirectStack.CanonicalShape] using hright
   | cons sig rest ih =>
       rcases hleft with ⟨hsig, hrest⟩
-      simp [RhoDirectStack.append, RhoDirectStack.SurfaceLike, hsig, ih hrest]
+      simp [RhoDirectStack.append, RhoDirectStack.CanonicalShape, hsig, ih hrest]
 
 @[simp] theorem RhoDirectStack_ofTrace_append
     (left right : RhoTemporalTrace) :
@@ -741,19 +764,19 @@ theorem RhoDirectSignature_ofSignature_surfaceLike
   | cons sig rest ih =>
       simp [RhoDirectStack.ofTrace, ih]
 
-theorem RhoDirectStack_ofTrace_surfaceLike
+theorem RhoDirectStack_ofTrace_canonicalShape
     (trace : RhoTemporalTrace)
     (hall : ∀ sig ∈ trace, ∀ q ∈ sig, rhoSignatureSyntaxWidth q = 1) :
-    (RhoDirectStack.ofTrace trace).SurfaceLike := by
+    (RhoDirectStack.ofTrace trace).CanonicalShape := by
   induction trace with
   | nil =>
-      simp [RhoDirectStack.ofTrace, RhoDirectStack.SurfaceLike]
+      simp [RhoDirectStack.ofTrace, RhoDirectStack.CanonicalShape]
   | cons sig rest ih =>
       have hrest : ∀ sig' ∈ rest, ∀ q ∈ sig', rhoSignatureSyntaxWidth q = 1 := by
         intro sig' hsig' q hq
         exact hall sig' (by simp [hsig']) q hq
-      simp [RhoDirectStack.ofTrace, RhoDirectStack.SurfaceLike,
-        RhoDirectSignature_ofSignature_surfaceLike sig (hall sig (by simp)),
+      simp [RhoDirectStack.ofTrace, RhoDirectStack.CanonicalShape,
+        RhoDirectSignature_ofSignature_canonicalShape sig (hall sig (by simp)),
         ih hrest]
 
 @[simp] theorem RhoDirectSigned_ofWrapped_body
@@ -811,7 +834,7 @@ theorem RhoDirectCutWitness_ofAccountedStep_spent_ledger
 
 @[simp] theorem RhoDirectSignature_toPattern_width_eq_card
     (sig : RhoDirectSignature)
-    (h : sig.SurfaceLike) :
+    (h : sig.CanonicalShape) :
     rhoSignatureSyntaxWidth sig.toPattern = sig.toSignature.card := by
   induction sig with
   | unit =>
@@ -834,7 +857,7 @@ theorem RhoDirectCutWitness_ofAccountedStep_spent_ledger
 
 @[simp] theorem RhoDirectStack_toPattern_width_eq_spatial_card
     (stack : RhoDirectStack)
-    (h : stack.SurfaceLike) :
+    (h : stack.CanonicalShape) :
     rhoSpentSyntaxWidth stack.toPattern = stack.spatialSignature.card := by
   induction stack with
   | empty =>
@@ -846,7 +869,7 @@ theorem RhoDirectCutWitness_ofAccountedStep_spent_ledger
 
 @[simp] theorem RhoDirectStack_toPattern_account_eq_shadow
     (stack : RhoDirectStack) :
-    stack.SurfaceLike →
+    stack.CanonicalShape →
     rhoSpentSyntaxAccount stack.toPattern = rhoLedgerShadow stack.toLedger := by
   intro h
   funext i
@@ -998,7 +1021,7 @@ theorem rhoLedgerToSpentSyntax_shadow_of_traceCoherent
 
 theorem RhoDirectStack_toPattern_account_eq_publicSpentSyntax
     (stack : RhoDirectStack)
-    (h : stack.SurfaceLike) :
+    (h : stack.CanonicalShape) :
     rhoSpentSyntaxAccount stack.toPattern =
       rhoSpentSyntaxAccount (rhoLedgerToSpentSyntax stack.toLedger) := by
   calc
@@ -1012,7 +1035,7 @@ theorem RhoDirectStack_toPattern_account_eq_publicSpentSyntax
 
 theorem RhoDirectStack_toPattern_width_eq_publicSpentSyntax_width
     (stack : RhoDirectStack)
-    (h : stack.SurfaceLike) :
+    (h : stack.CanonicalShape) :
     rhoSpentSyntaxWidth stack.toPattern =
       rhoSpentSyntaxWidth (rhoLedgerToSpentSyntax stack.toLedger) := by
   have hacc := RhoDirectStack_toPattern_account_eq_publicSpentSyntax stack h
@@ -1023,7 +1046,7 @@ theorem RhoDirectStack_toPattern_width_eq_publicSpentSyntax_width
 
 theorem RhoDirectStack_toPattern_ticks_eq_publicSpentSyntax_ticks
     (stack : RhoDirectStack)
-    (h : stack.SurfaceLike) :
+    (h : stack.CanonicalShape) :
     rhoSpentSyntaxTicks stack.toPattern =
       rhoSpentSyntaxTicks (rhoLedgerToSpentSyntax stack.toLedger) := by
   have hacc := RhoDirectStack_toPattern_account_eq_publicSpentSyntax stack h
@@ -1286,14 +1309,14 @@ private def rhoIntroE (chan payload : Pattern) : Pattern :=
 private def rhoNil : Pattern :=
   .apply "PZero" []
 
-/-- The ρ-calculus symmetric cut presentation:
+/-- The ρ-calculus interaction-cut presentation:
 
 - contact site: parallel composition
 - left introduction: input
 - right introduction: output
 - contraction kernel: semantic COMM substitution, with inert sender residual
 -/
-def rhoSymmetricCutPresentation : SymmetricCutPresentation rhoGSLT where
+def rhoInteractionCutPresentation : InteractionCutPresentation rhoGSLT where
   contact := rhoContact
   leftIntro := rhoIntroP
   rightIntro := rhoIntroE
@@ -1301,19 +1324,19 @@ def rhoSymmetricCutPresentation : SymmetricCutPresentation rhoGSLT where
     (semanticCommSubst body payload, rhoNil)
 
 /-- In the rho instance, contraction exposes semantic COMM substitution directly. -/
-theorem rhoSymmetricCutPresentation_contract_fst (chan nm body payload : Pattern) :
-    (rhoSymmetricCutPresentation.contract chan nm body payload).1 =
+theorem rhoInteractionCutPresentation_contract_fst (chan nm body payload : Pattern) :
+    (rhoInteractionCutPresentation.contract chan nm body payload).1 =
       semanticCommSubst body payload := by
   rfl
 
 /-- In the rho instance, the sender residual is inert. -/
-theorem rhoSymmetricCutPresentation_contract_snd (chan nm body payload : Pattern) :
-    (rhoSymmetricCutPresentation.contract chan nm body payload).2 = rhoNil := by
+theorem rhoInteractionCutPresentation_contract_snd (chan nm body payload : Pattern) :
+    (rhoInteractionCutPresentation.contract chan nm body payload).2 = rhoNil := by
   rfl
 
 /-- The rho contact constructor is parallel composition. -/
-theorem rhoSymmetricCutPresentation_contact (p q : Pattern) :
-    rhoSymmetricCutPresentation.contact p q = .collection .hashBag [p, q] none := by
+theorem rhoInteractionCutPresentation_contact (p q : Pattern) :
+    rhoInteractionCutPresentation.contact p q = .collection .hashBag [p, q] none := by
   rfl
 
 /-- Intrinsic step-account carried by a rho reduction derivation.
@@ -1326,16 +1349,12 @@ def rhoIntrinsicReducesCost : {p q : Pattern} → Reduces p q → RhoCostAccount
   | _, _, .equiv _ step _ => rhoIntrinsicReducesCost step
   | _, _, .par step => rhoIntrinsicReducesCost step
   | _, _, .par_any step => rhoIntrinsicReducesCost step
-  | _, _, .par_set step => rhoIntrinsicReducesCost step
-  | _, _, .par_set_any step => rhoIntrinsicReducesCost step
 
 def rhoIntrinsicReducesLedger : {p q : Pattern} → Reduces p q → RhoLedger
   | _, _, .comm (n := n) (q := payload) => rhoIntrinsicCommLedger n payload
   | _, _, .equiv _ step _ => rhoIntrinsicReducesLedger step
   | _, _, .par step => rhoIntrinsicReducesLedger step
   | _, _, .par_any step => rhoIntrinsicReducesLedger step
-  | _, _, .par_set step => rhoIntrinsicReducesLedger step
-  | _, _, .par_set_any step => rhoIntrinsicReducesLedger step
 
 @[simp] theorem rhoIntrinsicReducesLedger_shadow {p q : Pattern}
     (step : Reduces p q) :
@@ -1350,10 +1369,6 @@ def rhoIntrinsicReducesLedger : {p q : Pattern} → Reduces p q → RhoLedger
       exact ih
   | par_any inner ih =>
       exact ih
-  | par_set inner ih =>
-      exact ih
-  | par_set_any inner ih =>
-      exact ih
 
 @[simp] theorem rhoIntrinsicReducesLedger_wellFormed {p q : Pattern}
     (step : Reduces p q) :
@@ -1366,10 +1381,6 @@ def rhoIntrinsicReducesLedger : {p q : Pattern} → Reduces p q → RhoLedger
   | par inner ih =>
       exact ih
   | par_any inner ih =>
-      exact ih
-  | par_set inner ih =>
-      exact ih
-  | par_set_any inner ih =>
       exact ih
 
 @[simp] theorem rhoIntrinsicReducesLedger_traceCoherent {p q : Pattern}
@@ -1428,8 +1439,6 @@ noncomputable def rhoIntrinsicStepCost {p q : Pattern} (h : rhoGSLT.Step p q) :
   | equiv _ inner _ ih => exact ih
   | par inner ih => exact ih
   | par_any inner ih => exact ih
-  | par_set inner ih => exact ih
-  | par_set_any inner ih => exact ih
 
 set_option linter.unnecessarySimpa false in
 @[simp] theorem rhoIntrinsicStepCost_apply_one {p q : Pattern}
@@ -1463,12 +1472,6 @@ theorem rhoIntrinsicReducesLedger_temporal_mem_width_one {p q : Pattern}
       intro sig atom hsig hatom
       exact ih hsig hatom
   | par_any inner ih =>
-      intro sig atom hsig hatom
-      exact ih hsig hatom
-  | par_set inner ih =>
-      intro sig atom hsig hatom
-      exact ih hsig hatom
-  | par_set_any inner ih =>
       intro sig atom hsig hatom
       exact ih hsig hatom
 
@@ -1681,11 +1684,11 @@ theorem rhoIntrinsicLedgerTotalAction_temporal_mem_width_one
     · exact rhoIntrinsicStepLedger_temporal_mem_width_one h hsig hatom
     · exact ih hsig hatom
 
-theorem rhoIntrinsicDirectSpentStack_surfaceLike
+theorem rhoIntrinsicDirectSpentStack_canonicalShape
     {t u : Pattern} (path : rhoGSLT.RewritePath t u) :
-    (rhoIntrinsicDirectSpentStack path).SurfaceLike := by
+    (rhoIntrinsicDirectSpentStack path).CanonicalShape := by
   unfold rhoIntrinsicDirectSpentStack
-  apply RhoDirectStack_ofTrace_surfaceLike
+  apply RhoDirectStack_ofTrace_canonicalShape
   intro sig hsig atom hatom
   exact rhoIntrinsicLedgerTotalAction_temporal_mem_width_one path hsig hatom
 
@@ -1695,7 +1698,7 @@ theorem rhoIntrinsicDirectSpentStack_spentSyntax_eq_totalCost
       totalCost rhoIntrinsicCostMap path := by
   rw [RhoDirectStack_toPattern_account_eq_shadow
       (rhoIntrinsicDirectSpentStack path)
-      (rhoIntrinsicDirectSpentStack_surfaceLike path)]
+      (rhoIntrinsicDirectSpentStack_canonicalShape path)]
   exact rhoIntrinsicDirectSpentStack_shadow_eq_totalCost path
 
 theorem rhoIntrinsicDirectSpentStack_ticks_eq_length
@@ -1707,7 +1710,7 @@ theorem rhoIntrinsicDirectSpentStack_ticks_eq_length
 
 theorem rhoIntrinsicDirectSpentStack_semantics
     {t u : Pattern} (path : rhoGSLT.RewritePath t u) :
-    (rhoIntrinsicDirectSpentStack path).SurfaceLike ∧
+    (rhoIntrinsicDirectSpentStack path).CanonicalShape ∧
       (rhoIntrinsicDirectSpentStack path).toLedger =
         totalAction rhoIntrinsicLedgerAction path ∧
       rhoLedgerShadow ((rhoIntrinsicDirectSpentStack path).toLedger) =
@@ -1718,7 +1721,7 @@ theorem rhoIntrinsicDirectSpentStack_semantics
       rhoSpentSyntaxTicks (rhoIntrinsicDirectSpentStack path).toPattern =
         path.length := by
   constructor
-  · exact rhoIntrinsicDirectSpentStack_surfaceLike path
+  · exact rhoIntrinsicDirectSpentStack_canonicalShape path
   · constructor
     · exact rhoIntrinsicDirectSpentStack_toLedger path
     · constructor
@@ -1758,11 +1761,11 @@ noncomputable def rhoIntrinsicDirectStepSpent
   symm
   exact rhoIntrinsicDirectSpentStack_oneStepPath step
 
-@[simp] theorem rhoIntrinsicDirectStepSpent_surfaceLike
+@[simp] theorem rhoIntrinsicDirectStepSpent_canonicalShape
     {t u : Pattern} (step : rhoGSLT.Step t u) :
-    (rhoIntrinsicDirectStepSpent step).SurfaceLike := by
+    (rhoIntrinsicDirectStepSpent step).CanonicalShape := by
   rw [rhoIntrinsicDirectStepSpent_eq_oneStepPath]
-  exact rhoIntrinsicDirectSpentStack_surfaceLike (oneStepPath (S := rhoGSLT) step)
+  exact rhoIntrinsicDirectSpentStack_canonicalShape (oneStepPath (S := rhoGSLT) step)
 
 @[simp] theorem rhoIntrinsicDirectStepSpent_spentSyntax_eq_stepCost
     {t u : Pattern} (step : rhoGSLT.Step t u) :
@@ -1928,11 +1931,11 @@ theorem rhoIntrinsicDirectSpentTrace_traceCoherent
   rw [rhoIntrinsicDirectSpentTrace_toLedger]
   exact rhoIntrinsicLedgerTotalAction_traceCoherent path
 
-theorem rhoIntrinsicDirectSpentTrace_surfaceLike
+theorem rhoIntrinsicDirectSpentTrace_canonicalShape
     {t u : Pattern} (path : rhoGSLT.RewritePath t u) :
-    (rhoIntrinsicDirectSpentTrace path).SurfaceLike := by
+    (rhoIntrinsicDirectSpentTrace path).CanonicalShape := by
   rw [rhoIntrinsicDirectSpentTrace_eq_stack]
-  exact rhoIntrinsicDirectSpentStack_surfaceLike path
+  exact rhoIntrinsicDirectSpentStack_canonicalShape path
 
 theorem rhoIntrinsicDirectSpentTrace_shadow_eq_totalCost
     {t u : Pattern} (path : rhoGSLT.RewritePath t u) :
@@ -1963,12 +1966,12 @@ theorem rhoIntrinsicDirectSpentTrace_ticks_eq_length
 
 theorem rhoIntrinsicDirectSpentTrace_preserves_spent_coherence
     {t u : Pattern} (path : rhoGSLT.RewritePath t u) :
-    (rhoIntrinsicDirectSpentTrace path).SurfaceLike ∧
+    (rhoIntrinsicDirectSpentTrace path).CanonicalShape ∧
       (rhoIntrinsicDirectSpentTrace path).toLedger =
         totalAction rhoIntrinsicLedgerAction path ∧
       RhoLedger.TraceCoherent ((rhoIntrinsicDirectSpentTrace path).toLedger) := by
   constructor
-  · exact rhoIntrinsicDirectSpentTrace_surfaceLike path
+  · exact rhoIntrinsicDirectSpentTrace_canonicalShape path
   · constructor
     · exact rhoIntrinsicDirectSpentTrace_toLedger path
     · exact rhoIntrinsicDirectSpentTrace_traceCoherent path
@@ -1981,7 +1984,7 @@ theorem rhoIntrinsicDirectSpentTrace_account_eq_publicSpentSyntax
   rw [← rhoIntrinsicDirectSpentTrace_toLedger]
   exact RhoDirectStack_toPattern_account_eq_publicSpentSyntax
     (rhoIntrinsicDirectSpentTrace path)
-    (rhoIntrinsicDirectSpentTrace_surfaceLike path)
+    (rhoIntrinsicDirectSpentTrace_canonicalShape path)
 
 theorem rhoIntrinsicDirectSpentTrace_width_eq_publicSpentSyntax_width
     {t u : Pattern} (path : rhoGSLT.RewritePath t u) :
@@ -1991,7 +1994,7 @@ theorem rhoIntrinsicDirectSpentTrace_width_eq_publicSpentSyntax_width
   rw [← rhoIntrinsicDirectSpentTrace_toLedger]
   exact RhoDirectStack_toPattern_width_eq_publicSpentSyntax_width
     (rhoIntrinsicDirectSpentTrace path)
-    (rhoIntrinsicDirectSpentTrace_surfaceLike path)
+    (rhoIntrinsicDirectSpentTrace_canonicalShape path)
 
 theorem rhoIntrinsicDirectSpentTrace_ticks_eq_publicSpentSyntax_ticks
     {t u : Pattern} (path : rhoGSLT.RewritePath t u) :
@@ -2001,7 +2004,7 @@ theorem rhoIntrinsicDirectSpentTrace_ticks_eq_publicSpentSyntax_ticks
   rw [← rhoIntrinsicDirectSpentTrace_toLedger]
   exact RhoDirectStack_toPattern_ticks_eq_publicSpentSyntax_ticks
     (rhoIntrinsicDirectSpentTrace path)
-    (rhoIntrinsicDirectSpentTrace_surfaceLike path)
+    (rhoIntrinsicDirectSpentTrace_canonicalShape path)
 
 theorem rhoIntrinsicDirectSpentStack_toPublicPattern_eq_publicSpentSyntax
     {t u : Pattern} (path : rhoGSLT.RewritePath t u) :
@@ -2082,7 +2085,7 @@ theorem rhoIntrinsicLedgerPublicSpentSyntax_semantics
 
 theorem rhoIntrinsicDirectSpentTrace_semantics
     {t u : Pattern} (path : rhoGSLT.RewritePath t u) :
-    (rhoIntrinsicDirectSpentTrace path).SurfaceLike ∧
+    (rhoIntrinsicDirectSpentTrace path).CanonicalShape ∧
       (rhoIntrinsicDirectSpentTrace path).toLedger =
         totalAction rhoIntrinsicLedgerAction path ∧
       (rhoIntrinsicDirectSpentTrace path).toPublicPattern =
@@ -2106,7 +2109,7 @@ theorem rhoIntrinsicDirectSpentTrace_semantics
       rhoSpentSyntaxTicks (rhoIntrinsicDirectSpentTrace path).toPattern =
         path.length := by
   constructor
-  · exact rhoIntrinsicDirectSpentTrace_surfaceLike path
+  · exact rhoIntrinsicDirectSpentTrace_canonicalShape path
   · constructor
     · exact rhoIntrinsicDirectSpentTrace_toLedger path
     · constructor
@@ -2401,7 +2404,7 @@ theorem rhoIntrinsicDirectSpentTrace_semantics_rewritePathAppend
     {t u v : Pattern}
     (left : rhoGSLT.RewritePath t u)
     (right : rhoGSLT.RewritePath u v) :
-    (rhoIntrinsicDirectSpentTrace (rewritePathAppend left right)).SurfaceLike ∧
+    (rhoIntrinsicDirectSpentTrace (rewritePathAppend left right)).CanonicalShape ∧
       (rhoIntrinsicDirectSpentTrace (rewritePathAppend left right)).toLedger =
         totalAction rhoIntrinsicLedgerAction (rewritePathAppend left right) ∧
       (rhoIntrinsicDirectSpentTrace (rewritePathAppend left right)).toPublicPattern =
@@ -2666,7 +2669,7 @@ theorem rhoIntrinsicDirectSpentTrace_modulus_reducesN
 
 theorem rhoIntrinsicDirectSpentTrace_semantics_reducesN
     {n : Nat} {p q : Pattern} (h : ReducesN n p q) :
-    (rhoIntrinsicDirectSpentTrace (rhoRewritePathOfReducesN h)).SurfaceLike ∧
+    (rhoIntrinsicDirectSpentTrace (rhoRewritePathOfReducesN h)).CanonicalShape ∧
       (rhoIntrinsicDirectSpentTrace (rhoRewritePathOfReducesN h)).toLedger =
         totalAction rhoIntrinsicLedgerAction (rhoRewritePathOfReducesN h) ∧
       (rhoIntrinsicDirectSpentTrace (rhoRewritePathOfReducesN h)).toPublicPattern =
@@ -2734,12 +2737,20 @@ from the actual COMM redex.
 This keeps the continued layer honest while the explicit cost-accounted term
 grammar is still being formalized separately.
 -/
-noncomputable def rhoContinuedCutPresentation : ContinuedCutPresentation rhoGSLT where
-  symmetricCut := rhoSymmetricCutPresentation
+def rhoContinuedCutPresentation : ContinuedCutPresentation rhoGSLT where
+  interactionCut := rhoInteractionCutPresentation
   Grade := RhoLedger
   Spent := RhoLedger
-  reprSection := equationsSection rhoGSLT
-  reprSection_spec := equationsSection_spec rhoGSLT
+  SectionCarrier := PureCanonicalSection.PurePattern
+  sectionEmbedding :=
+    { toFun := Subtype.val
+      inj' := Subtype.val_injective }
+  sectionEquations := PureCanonicalSection.pureEquations
+  sectionEquations_iff := by
+    intro left right
+    rfl
+  reprSection := PureCanonicalSection.representative
+  reprSection_spec := PureCanonicalSection.representative_spec
   contractWrapped := fun chan _name body payload =>
     { left := { term := semanticCommSubst body.term payload.term, grade := body.grade }
       right := { term := rhoNil, grade := payload.grade }
@@ -2750,6 +2761,32 @@ noncomputable def rhoContinuedCutPresentation : ContinuedCutPresentation rhoGSLT
   contractWrapped_snd_term := by
     intro chan nm body payload
     rfl
+
+/-- The continued rho section embeds the proved pure carrier by subtype
+inclusion; extended finite-set syntax is not in its domain. -/
+@[simp]
+theorem rhoContinuedCutPresentation_sectionEmbedding
+    (pattern : PureCanonicalSection.PurePattern) :
+    rhoContinuedCutPresentation.sectionEmbedding pattern = pattern.1 :=
+  rfl
+
+/-- Pure-carrier equations are exactly the ambient rho equations after
+subtype inclusion. -/
+theorem rhoContinuedCutPresentation_sectionEquations_iff
+    (left right : PureCanonicalSection.PurePattern) :
+    PureCanonicalSection.pureEquations.r left right ↔
+      rhoGSLT.equations.r left.1 right.1 :=
+  Iff.rfl
+
+/-- Section evaluation on an explicit pure class computes rho's canonical
+representative. -/
+@[simp]
+theorem rhoContinuedCutPresentation_reprSection_mk
+    (pattern : PureCanonicalSection.PurePattern) :
+    rhoContinuedCutPresentation.reprSection
+        (Quotient.mk PureCanonicalSection.pureEquations pattern) =
+      pattern.canonicalize :=
+  rfl
 
 /-- The continued rho step records the intrinsic account extracted from the
 COMM redex itself. -/
@@ -2878,24 +2915,24 @@ theorem rhoContinuedCutPresentation_preserves_wrapped_structure
 private def rhoContinuedCutPresentation_contactStepWitness
     (chan nm : Pattern) (body payload : WrappedTerm Pattern RhoLedger) :
     rhoGSLT.Step
-      (rhoSymmetricCutPresentation.contact
-        (rhoSymmetricCutPresentation.rightIntro chan payload.term)
-        (rhoSymmetricCutPresentation.leftIntro chan body.term))
-      (rhoSymmetricCutPresentation.contact
+      (rhoInteractionCutPresentation.contact
+        (rhoInteractionCutPresentation.rightIntro chan payload.term)
+        (rhoInteractionCutPresentation.leftIntro chan body.term))
+      (rhoInteractionCutPresentation.contact
         (rhoContinuedCutPresentation.contractWrapped chan nm body payload).left.term
         (rhoContinuedCutPresentation.contractWrapped chan nm body payload).right.term) := by
   let source :=
-    rhoSymmetricCutPresentation.contact
-      (rhoSymmetricCutPresentation.rightIntro chan payload.term)
-      (rhoSymmetricCutPresentation.leftIntro chan body.term)
+    rhoInteractionCutPresentation.contact
+      (rhoInteractionCutPresentation.rightIntro chan payload.term)
+      (rhoInteractionCutPresentation.leftIntro chan body.term)
   let mid :=
     (.collection .hashBag [semanticCommSubst body.term payload.term] none : Pattern)
   let target :=
-    rhoSymmetricCutPresentation.contact
+    rhoInteractionCutPresentation.contact
       (rhoContinuedCutPresentation.contractWrapped chan nm body payload).left.term
       (rhoContinuedCutPresentation.contractWrapped chan nm body payload).right.term
   refine ⟨@Reduces.equiv source source target mid (StructuralCongruence.refl _) ?_ ?_⟩
-  · simpa [source, mid, rhoSymmetricCutPresentation, rhoContact, rhoIntroP, rhoIntroE] using
+  · simpa [source, mid, rhoInteractionCutPresentation, rhoContact, rhoIntroP, rhoIntroE] using
       (@Reduces.comm chan payload.term body.term [])
   ·
     have hsingleton : StructuralCongruence mid (semanticCommSubst body.term payload.term) := by
@@ -2906,7 +2943,7 @@ private def rhoContinuedCutPresentation_contactStepWitness
           (.collection .hashBag
             [semanticCommSubst body.term payload.term, rhoNil] none) := by
       exact StructuralCongruence.symm _ _ (StructuralCongruence.par_nil_right _)
-    simpa [mid, target, rhoSymmetricCutPresentation, rhoContact, rhoContinuedCutPresentation, rhoNil] using
+    simpa [mid, target, rhoInteractionCutPresentation, rhoContact, rhoContinuedCutPresentation, rhoNil] using
       StructuralCongruence.trans _ _ _ hsingleton hnil
 
 /-- A wrapped rho communication step erases to a real `rhoGSLT.Step` at the
@@ -2917,10 +2954,10 @@ the underlying rho reduction graph. -/
 theorem rhoContinuedCutPresentation_contact_step
     (chan nm : Pattern) (body payload : WrappedTerm Pattern RhoLedger) :
     rhoGSLT.Step
-      (rhoSymmetricCutPresentation.contact
-        (rhoSymmetricCutPresentation.rightIntro chan payload.term)
-        (rhoSymmetricCutPresentation.leftIntro chan body.term))
-      (rhoSymmetricCutPresentation.contact
+      (rhoInteractionCutPresentation.contact
+        (rhoInteractionCutPresentation.rightIntro chan payload.term)
+        (rhoInteractionCutPresentation.leftIntro chan body.term))
+      (rhoInteractionCutPresentation.contact
       (rhoContinuedCutPresentation.contractWrapped chan nm body payload).left.term
       (rhoContinuedCutPresentation.contractWrapped chan nm body payload).right.term) := by
   exact rhoContinuedCutPresentation_contactStepWitness chan nm body payload
@@ -2930,7 +2967,7 @@ theorem rhoContinuedCutPresentation_contract_erases
     (chan nm : Pattern) (body payload : WrappedTerm Pattern RhoLedger) :
     ((rhoContinuedCutPresentation.contractWrapped chan nm body payload).left.term,
       (rhoContinuedCutPresentation.contractWrapped chan nm body payload).right.term) =
-      rhoSymmetricCutPresentation.contract chan nm body.term payload.term := by
+      rhoInteractionCutPresentation.contract chan nm body.term payload.term := by
   exact contractWrapped_erases rhoContinuedCutPresentation chan nm body payload
 
 /-- The first wrapped rho residual transports to the representative residual. -/

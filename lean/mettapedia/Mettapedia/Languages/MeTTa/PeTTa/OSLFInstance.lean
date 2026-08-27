@@ -43,7 +43,7 @@ open Mettapedia.OSLF.MeTTaIL.Export
 open Mettapedia.OSLF.Framework.TypeSynthesis
 open Mettapedia.Languages.MeTTa.PeTTa.LPSoundness
 open Mettapedia.Logic.LP (leastHerbrandModel GroundAtom)
-open Mettapedia.Logic.LP.MeTTaILBridge (encodeReduces mettailLPSig)
+open Mettapedia.OSLF.MeTTaIL.LPBridge (encodeReduces mettailLPSig)
 
 /-! ## §1 OSLF Type System -/
 
@@ -122,11 +122,6 @@ theorem pettaOSLF_eq (s : PeTTaSpace) :
 @[simp]
 theorem pettaLangDef_name (s : PeTTaSpace) :
     (pettaSpaceToLangDef s).name = "PeTTaSpace" := rfl
-
-/-- The PeTTa language has no congruence collections (flat rules only). -/
-@[simp]
-theorem pettaLangDef_congruenceCollections (s : PeTTaSpace) :
-    (pettaSpaceToLangDef s).congruenceCollections = [] := rfl
 
 /-! ## §6 Summary
 

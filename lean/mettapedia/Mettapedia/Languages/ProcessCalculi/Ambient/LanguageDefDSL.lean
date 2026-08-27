@@ -1,5 +1,6 @@
 import Mettapedia.OSLF.MeTTaIL.LanguageDefDSL
 import Mettapedia.OSLF.MeTTaIL.Export
+import Mettapedia.OSLF.MeTTaIL.DerivedContexts
 
 /-!
 # Ambient Calculus in `languageDef!` Form
@@ -22,6 +23,7 @@ namespace Mettapedia.Languages.ProcessCalculi.Ambient.LanguageDefDSL
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.LanguageDefDSL
 open Mettapedia.OSLF.MeTTaIL.Export
+open Mettapedia.OSLF.MeTTaIL.DerivedContexts
 open scoped Mettapedia.OSLF.MeTTaIL.LanguageDefDSL
 
 private def hasSubstring (needle haystack : String) : Bool :=
@@ -63,12 +65,9 @@ def ambientCore : LanguageDef :=
       NewCong . | S ~> T |- (PNew ^x.S) ~> (PNew ^x.T);
       AmbCong . | S ~> T |- (PAmb N S) ~> (PAmb N T);
     }
-    logic { }
-    oracles { }
-    congruenceCollections { HashBag }
   }
 
-def exportedRustSurface : String :=
+def exportedRustSyntax : String :=
   renderLanguageWithUserSyntax ambientCore
 
 private def newCommEq : Equation :=
@@ -106,7 +105,8 @@ example : LanguageDef.validate ambientCore = [] := by
 example : ambientCore.terms.length = 7 := rfl
 example : ambientCore.equations.length = 6 := rfl
 example : ambientCore.rewrites.length = 6 := rfl
-example : ambientCore.congruenceCollections = [.hashBag] := rfl
+example : (ambientCore.rewrites.flatMap compileRuleContexts).length = 3 := by
+  decide +kernel
 example : newCommPreservesBinderOrder = true := by
   native_decide
 example : scopeExtrusionHasFreshnessAndRest = true := by
@@ -115,32 +115,32 @@ example : inNewHasStructuredPrefixApps = true := by
   native_decide
 
 example :
-    hasSubstring "name: Ambient" exportedRustSurface = true := by
+    hasSubstring "name: Ambient" exportedRustSyntax = true := by
   native_decide
 
 example :
     hasSubstring "PNew . ^x.p:[Name -> Proc] |- \"new\" \"(\" x \",\" p \")\" : Proc;"
-      exportedRustSurface = true := by
+      exportedRustSyntax = true := by
   native_decide
 
 example :
     hasSubstring "ScopeExtrusion . | x # ...rest |- (PPar {(PNew ^x.P), ...rest}) = (PNew ^x.(PPar {P, ...rest}));"
-      exportedRustSurface = true := by
+      exportedRustSyntax = true := by
   native_decide
 
 example :
     hasSubstring "InNew . | x # P |- (PIn N (PNew ^x.P)) = (PNew ^x.(PIn N P));"
-      exportedRustSurface = true := by
+      exportedRustSyntax = true := by
   native_decide
 
 example :
     hasSubstring "OpenRule . |- (PPar {(POpen N P), (PAmb N Q), ...rest}) ~> (PPar {P, Q, ...rest});"
-      exportedRustSurface = true := by
+      exportedRustSyntax = true := by
   native_decide
 
 example :
     hasSubstring "AmbCong . | S ~> T |- (PAmb N S) ~> (PAmb N T);"
-      exportedRustSurface = true := by
+      exportedRustSyntax = true := by
   native_decide
 
 end Mettapedia.Languages.ProcessCalculi.Ambient.LanguageDefDSL

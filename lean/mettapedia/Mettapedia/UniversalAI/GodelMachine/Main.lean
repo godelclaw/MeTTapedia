@@ -69,7 +69,7 @@ historyToPLNState h₁ = historyToPLNState h₂ →
 ```
 GodelMachine/
 ├── Basic.lean              # Core definitions: GodelMachineState, FormalSystem
-├── ProofSystem.lean        # Formal proof system: ArithFormula, Gödel numbering
+├── ProofSystem.lean        # Encodable syntax and proof-relevant derivations
 ├── SelfImprovement.lean    # Proof-based modification: global switch, safety
 ├── SolomonoffBridge.lean   # Universal prior: dominance, K-optimality
 ├── PLNSpecialCase.lean     # Exchangeable domains: PLN, O(1) updates

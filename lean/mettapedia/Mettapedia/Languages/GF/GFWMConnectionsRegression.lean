@@ -14,9 +14,9 @@ open Mettapedia.Languages.GF.OSLFBridge
 open Mettapedia.Languages.GF.OSLFToNTT
 open Mettapedia.Languages.GF.Typing
 open Mettapedia.Languages.GF.GFWMConnections
-open Mettapedia.Logic.PLNWorldModel
-open Mettapedia.Logic.EvidenceClass
-open Mettapedia.Logic.EvidenceQuantale
+open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence.EvidenceClass
+open Mettapedia.PLN.Evidence.EvidenceQuantale
 open Mettapedia.CategoryTheory.NativeTypeTheory
 open Mettapedia.CategoryTheory.PLNInstance
 open Mettapedia.OSLF.MeTTaIL.Syntax
@@ -100,7 +100,7 @@ theorem canary_fregeStrong_rule_fixture (W : TestState) :
   intro rule
   exact rule.sound (W := W) trivial
 
-/-- Negative canary endpoint remains available in the regression surface. -/
+/-- Negative canary endpoint remains available in the regression API. -/
 theorem canary_gardenPath_not_collapsed :
     ∃ p q : Pattern, p ≠ q :=
   canary_gardenPath_patterns_distinct

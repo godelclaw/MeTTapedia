@@ -5,9 +5,11 @@ import Mettapedia.Languages.MeTTa.PureKernel.NatDecl
 namespace Mettapedia.Languages.MeTTa.PureKernel.RecursorDecl
 
 open Mettapedia.Languages.MeTTa.PureKernel.Syntax
+open Mettapedia.Languages.MeTTa.PureKernel.Renaming
 open Mettapedia.Languages.MeTTa.PureKernel.Context
 open Mettapedia.Languages.MeTTa.PureKernel.DeclarationEnv
 open Mettapedia.Languages.MeTTa.PureKernel.DeclarationSemantics
+open Mettapedia.Languages.MeTTa.PureKernel.Substitution
 open Mettapedia.Languages.MeTTa.PureKernel.Reduction
 open Mettapedia.Languages.MeTTa.PureKernel.DeclarationSpec
 open Mettapedia.Languages.MeTTa.PureKernel.UnitDecl
@@ -19,6 +21,16 @@ structure FamilyRecursorDeclContract where
   familyName : DeclName
   recursorName : DeclName
   recursorType : PureTm 0
+deriving Repr
+
+/-- Smallest generic extension beyond closed rules: a one-binder iota rule
+that can be instantiated into a family of closed steps. The current live
+frontier (`Nat.rec` successor) is exactly of this shape. -/
+structure GeneratedUnaryOpenIotaRule where
+  obligation : RecursorIotaObligation
+  ctx : Ctx 1
+  source : PureTm 1
+  target : PureTm 1
 deriving Repr
 
 def unitRecName : DeclName := `Unit.rec
@@ -114,6 +126,65 @@ theorem hasType_boolRec :
 theorem hasType_natRec :
     HasTypeDecl natRecDeclEnv .nil ((.const natRecName : PureTm 0)) natRecType :=
   hasType_const_from_lookup (E := natRecDeclEnv) (Γ := .nil) (c := natRecName) (A0 := natRecType) (by
+    simp)
+
+@[simp] theorem typeOf_natTy_inRecEnv :
+    typeOf? natRecDeclEnv natTyName = some .u0 := by
+  decide
+
+@[simp] theorem typeOf_natZero_inRecEnv :
+    typeOf? natRecDeclEnv natZeroName = some (.const natTyName) := by
+  decide
+
+@[simp] theorem typeOf_natSucc_inRecEnv :
+    typeOf? natRecDeclEnv natSuccName = some (.pi (.const natTyName) (.const natTyName)) := by
+  decide
+
+@[simp] theorem typeOf_natAlias_inRecEnv :
+    typeOf? natRecDeclEnv natAliasName = some (.const natTyName) := by
+  decide
+
+@[simp] theorem valueOf_natTy_inRecEnv :
+    valueOf? natRecDeclEnv natTyName = none := by
+  decide
+
+@[simp] theorem valueOf_natZero_inRecEnv :
+    valueOf? natRecDeclEnv natZeroName = none := by
+  decide
+
+@[simp] theorem valueOf_natSucc_inRecEnv :
+    valueOf? natRecDeclEnv natSuccName = none := by
+  decide
+
+@[simp] theorem valueOf_natRec_inRecEnv :
+    valueOf? natRecDeclEnv natRecName = none := by
+  decide
+
+@[simp] theorem valueOf_natAlias_inRecEnv :
+    valueOf? natRecDeclEnv natAliasName = some (.const natZeroName) := by
+  decide
+
+@[simp] theorem hasType_natTy_inRecEnv :
+    HasTypeDecl natRecDeclEnv .nil ((.const natTyName : PureTm 0)) .u0 :=
+  hasType_const_from_lookup (E := natRecDeclEnv) (Γ := .nil) (c := natTyName) (A0 := .u0) (by
+    simp)
+
+@[simp] theorem hasType_natZero_inRecEnv :
+    HasTypeDecl natRecDeclEnv .nil ((.const natZeroName : PureTm 0)) (.const natTyName) :=
+  hasType_const_from_lookup (E := natRecDeclEnv) (Γ := .nil) (c := natZeroName) (A0 := .const natTyName) (by
+    simp)
+
+@[simp] theorem hasType_natSucc_inRecEnv :
+    HasTypeDecl natRecDeclEnv .nil
+      ((.const natSuccName : PureTm 0))
+      (.pi (.const natTyName) (.const natTyName)) :=
+  hasType_const_from_lookup
+    (E := natRecDeclEnv) (Γ := .nil) (c := natSuccName) (A0 := .pi (.const natTyName) (.const natTyName)) (by
+      simp)
+
+@[simp] theorem hasType_natAlias_inRecEnv :
+    HasTypeDecl natRecDeclEnv .nil ((.const natAliasName : PureTm 0)) (.const natTyName) :=
+  hasType_const_from_lookup (E := natRecDeclEnv) (Γ := .nil) (c := natAliasName) (A0 := .const natTyName) (by
     simp)
 
 private theorem boolRecSpecs_hTyped :
@@ -269,6 +340,35 @@ theorem natRecSpecs_prefixWellFormed :
 private theorem natRecSpecs_signatureWellFormed_fromPrefix :
     SignatureWellFormed natRecSpecs :=
   SignatureWellFormed.ofPrefix natRecSpecs_prefixWellFormed natRecSpecs_obligations
+
+theorem natRecSpecs_signatureWellFormed_current_gate :
+    SignatureWellFormed natRecSpecs :=
+  natRecSpecs_signatureWellFormed_fromPrefix
+
+/-- The current Nat recursor declaration pilot lies in the checked signature
+fragment. Once declaration-aware `Pi`/`Sigma` injectivity is supplied for this
+environment, the generic star-preservation service proves typing preservation
+for every declaration-aware reduction sequence. This keeps the current theorem
+honest while the stronger global injectivity/confluence story remains open. -/
+theorem natRecDeclEnv_redStarDecl_preserves_type_of_injective
+    (piInjective :
+      ∀ {k : Nat} {A A' : PureTm k} {B B' : PureTm (k + 1)},
+        ConvDecl natRecDeclEnv (.pi A B) (.pi A' B') →
+          ConvDecl natRecDeclEnv A A' ∧ ConvDecl natRecDeclEnv B B')
+    (sigmaInjective :
+      ∀ {k : Nat} {A A' : PureTm k} {B B' : PureTm (k + 1)},
+        ConvDecl natRecDeclEnv (.sigma A B) (.sigma A' B') →
+          ConvDecl natRecDeclEnv A A' ∧ ConvDecl natRecDeclEnv B B')
+    {Γ : Ctx n} {t u A : PureTm n}
+    (ht : HasTypeDecl natRecDeclEnv Γ t A)
+    (hs : RedStarDecl natRecDeclEnv t u) :
+    HasTypeDecl natRecDeclEnv Γ u A := by
+  unfold natRecDeclEnv
+  exact natRecSpecs_signatureWellFormed.redStarDecl_preserves_type_of_injective
+    (piInjective := piInjective)
+    (sigmaInjective := sigmaInjective)
+    (ht := ht)
+    (hs := hs)
 
 @[simp] theorem valueOf_unitRec :
     valueOf? unitRecDeclEnv unitRecName = some unitRecValue := by
@@ -433,9 +533,31 @@ private theorem unitRecSpecs_signatureWellFormed_fromPrefix :
     SignatureWellFormed unitRecSpecs :=
   SignatureWellFormed.ofPrefix unitRecSpecs_prefixWellFormed unitRecSpecs_obligations
 
+theorem unitRecSpecs_signatureWellFormed_current_gate :
+    SignatureWellFormed unitRecSpecs :=
+  unitRecSpecs_signatureWellFormed_fromPrefix
+
 def unitRecTerm : PureTm 0 := .const unitRecName
 def unitTyTerm : PureTm 0 := .const unitTyName
 def unitCtorTerm : PureTm 0 := .const unitCtorName
+
+@[simp] theorem inst0_unitTy_unitRecTypeCod :
+    inst0 unitTyTerm (.pi (.var 0) (.pi (.const unitTyName) (.var 2))) =
+      (.pi (.const unitTyName) (.pi (.const unitTyName) (.const unitTyName))) := by
+  rfl
+
+@[simp] theorem liftSub_liftSub_subst0_unitTy_two :
+    liftSub (liftSub (subst0 unitTyTerm)) 2 = (.const unitTyName) := by
+  rfl
+
+@[simp] theorem inst0_unitCtor_unitRecBaseCod :
+    inst0 unitCtorTerm (.pi (.const unitTyName) (.const unitTyName)) =
+      (.pi (.const unitTyName) (.const unitTyName)) := by
+  rfl
+
+@[simp] theorem inst0_unitCtor_unitTy :
+    inst0 unitCtorTerm (.const unitTyName) = (.const unitTyName) := by
+  rfl
 
 /-- Closed Unit recursor application used for the first iota-style pilot witness:
 `((Unit.rec Unit) Unit.unit) Unit.unit`. -/
@@ -448,6 +570,18 @@ def unitRecAfterTyCtor : PureTm 0 := .lam (.const unitCtorName)
 private theorem redDecl_to_star {E : DeclEnv} {t u : PureTm n} (h : RedDecl E t u) :
     RedStarDecl E t u :=
   Relation.ReflTransGen.tail Relation.ReflTransGen.refl h
+
+private theorem reflTransGen_map
+    {α : Sort _} {R S : α → α → Prop}
+    (hRS : ∀ {x y : α}, R x y → S x y)
+    {x y : α} :
+    Relation.ReflTransGen R x y → Relation.ReflTransGen S x y := by
+  intro h
+  induction h with
+  | refl =>
+      exact Relation.ReflTransGen.refl
+  | tail hxy hyz ih =>
+      exact Relation.ReflTransGen.tail ih (hRS hyz)
 
 /-- First iota-style computation witness in the declaration-aware layer:
 `((Unit.rec Unit) Unit.unit) Unit.unit ↠ Unit.unit`
@@ -489,6 +623,117 @@ theorem hasType_unitRecOnCtor :
       hasType_unitCtor_inRecEnv)
     hasType_unitCtor_inRecEnv
 
+theorem unitTyTerm_type_unique
+    {C : PureTm 0}
+    (ht : HasTypeDecl unitRecDeclEnv .nil unitTyTerm C) :
+    ConvDecl unitRecDeclEnv .u0 C := by
+  rcases const_generation ht with ⟨A0, hType, hConv⟩
+  have hEq : (.u0 : PureTm 0) = A0 := by
+    simpa [unitTyTerm] using hType
+  simpa [hEq] using hConv
+
+theorem unitCtorTerm_type_unique
+    {C : PureTm 0}
+    (ht : HasTypeDecl unitRecDeclEnv .nil unitCtorTerm C) :
+    ConvDecl unitRecDeclEnv (.const unitTyName) C := by
+  rcases const_generation ht with ⟨A0, hType, hConv⟩
+  have hEq : (.const unitTyName : PureTm 0) = A0 := by
+    simpa [unitCtorTerm] using hType
+  simpa [hEq] using hConv
+
+theorem unitRecTerm_type_unique
+    {C : PureTm 0}
+    (ht : HasTypeDecl unitRecDeclEnv .nil unitRecTerm C) :
+    ConvDecl unitRecDeclEnv unitRecType C := by
+  rcases const_generation ht with ⟨A0, hType, hConv⟩
+  have hEq : unitRecType = A0 := by
+    simpa [unitRecTerm] using hType
+  simpa [hEq] using hConv
+
+theorem unitRecOnCtor_type_unique_of_piInjective
+    (piInjective :
+      ∀ {k : Nat} {A A' : PureTm k} {B B' : PureTm (k + 1)},
+        ConvDecl unitRecDeclEnv (.pi A B) (.pi A' B') →
+          ConvDecl unitRecDeclEnv A A' ∧ ConvDecl unitRecDeclEnv B B')
+    {C : PureTm 0}
+    (ht : HasTypeDecl unitRecDeclEnv .nil unitRecOnCtor C) :
+    ConvDecl unitRecDeclEnv (.const unitTyName) C := by
+  rcases app_generation_decl ht with ⟨A4, B4, hFun4, _hArg4, hConv4⟩
+  rcases app_generation_decl hFun4 with ⟨A3, B3, hFun3, _hArg3, hConv3⟩
+  rcases app_generation_decl hFun3 with ⟨A2, B2, hFun2, _hArg2, hConv2⟩
+  have hRecConv :
+      ConvDecl unitRecDeclEnv unitRecType (.pi A2 B2) :=
+    unitRecTerm_type_unique hFun2
+  have hB2 :
+      ConvDecl unitRecDeclEnv
+        (.pi (.var 0) (.pi (.const unitTyName) (.var 2)))
+        B2 :=
+    (piInjective hRecConv).2
+  have hB2inst :
+      ConvDecl unitRecDeclEnv
+        (inst0 unitTyTerm (.pi (.var 0) (.pi (.const unitTyName) (.var 2))))
+        (inst0 unitTyTerm B2) := by
+    exact convDecl_subst (E := unitRecDeclEnv) (σ := subst0 unitTyTerm) hB2
+  have hPi3' :
+      ConvDecl unitRecDeclEnv
+        (inst0 unitTyTerm (.pi (.var 0) (.pi (.const unitTyName) (.var 2))))
+        (.pi A3 B3) := by
+    exact Relation.EqvGen.trans _ _ _ hB2inst hConv2
+  have hPi3 :
+      ConvDecl unitRecDeclEnv
+        (.pi (.const unitTyName) (.pi (.const unitTyName) (.const unitTyName)))
+        (.pi A3 B3) :=
+    by
+      simpa using hPi3'
+  have hB3 :
+      ConvDecl unitRecDeclEnv
+        (.pi (.const unitTyName) (.const unitTyName))
+        B3 :=
+    (piInjective hPi3).2
+  have hB3inst :
+      ConvDecl unitRecDeclEnv
+        (inst0 unitCtorTerm (.pi (.const unitTyName) (.const unitTyName)))
+        (inst0 unitCtorTerm B3) := by
+    exact convDecl_subst (E := unitRecDeclEnv) (σ := subst0 unitCtorTerm) hB3
+  have hPi4' :
+      ConvDecl unitRecDeclEnv
+        (inst0 unitCtorTerm (.pi (.const unitTyName) (.const unitTyName)))
+        (.pi A4 B4) := by
+    exact Relation.EqvGen.trans _ _ _ hB3inst hConv3
+  have hPi4 :
+      ConvDecl unitRecDeclEnv
+        (.pi (.const unitTyName) (.const unitTyName))
+        (.pi A4 B4) :=
+    by
+      simpa using hPi4'
+  have hB4 :
+      ConvDecl unitRecDeclEnv
+        (.const unitTyName)
+        B4 :=
+    (piInjective hPi4).2
+  have hB4inst :
+      ConvDecl unitRecDeclEnv
+        (inst0 unitCtorTerm (.const unitTyName))
+        (inst0 unitCtorTerm B4) := by
+    exact convDecl_subst (E := unitRecDeclEnv) (σ := subst0 unitCtorTerm) hB4
+  have hRes' :
+      ConvDecl unitRecDeclEnv
+        (inst0 unitCtorTerm (.const unitTyName))
+        C := by
+    exact Relation.EqvGen.trans _ _ _ hB4inst hConv4
+  simpa using hRes'
+
+theorem hasType_unitRecOnCtor_result_of_pi_only
+    (piInjective :
+      ∀ {k : Nat} {A A' : PureTm k} {B B' : PureTm (k + 1)},
+        ConvDecl unitRecDeclEnv (.pi A B) (.pi A' B') →
+          ConvDecl unitRecDeclEnv A A' ∧ ConvDecl unitRecDeclEnv B B')
+    {A : PureTm 0}
+    (ht : HasTypeDecl unitRecDeclEnv .nil unitRecOnCtor A) :
+    HasTypeDecl unitRecDeclEnv .nil unitCtorTerm A := by
+  exact .conv hasType_unitCtor_inRecEnv
+    (unitRecOnCtor_type_unique_of_piInjective piInjective ht)
+
 /-- The Unit pilot run is now wired through the generic declaration-aware
 star-preservation service boundary from `DeclarationSemantics`. -/
 theorem hasType_unitRecOnCtor_result_of_preservation
@@ -501,11 +746,9 @@ theorem hasType_unitRecOnCtor_result_of_preservation
         ConvDecl unitRecDeclEnv (.sigma A B) (.sigma A' B') →
           ConvDecl unitRecDeclEnv A A' ∧ ConvDecl unitRecDeclEnv B B') :
     HasTypeDecl unitRecDeclEnv .nil unitCtorTerm (.const unitTyName) := by
-  exact redStarDecl_preserves_type_of_injective
-    (E := unitRecDeclEnv)
+  exact unitRecSpecs_signatureWellFormed.redStarDecl_preserves_type_of_injective
     (piInjective := piInjective)
     (sigmaInjective := sigmaInjective)
-    (hWf := unitRecDeclEnv_wellFormed)
     (ht := hasType_unitRecOnCtor)
     (hs := unitRecOnCtor_iota)
 

@@ -4,10 +4,10 @@ import Mettapedia.OSLF.Framework.DerivedModalities
 /-!
 # HE Small-Step: The Coarse User-Visible One-Step Relation
 
-The **HE small-step** granularity stratum (user-visible surface steps): one
-observable surface rewrite over ordinary MeTTa atoms, e.g.
+The **HE small-step** granularity stratum (user-visible interface steps): one
+observable interface rewrite over ordinary MeTTa atoms, e.g.
 `(+ 1 (+ 2 3)) → (+ 1 5)`.  This is the relation that CeTTa's
-`lts:he:transitions` surface exposes and that the runtime HE small-step rule
+`lts:he:transitions` interface exposes and that the runtime HE small-step rule
 table drives.
 
 This Lean model now mirrors **all ten** of the table's live rules:
@@ -110,13 +110,26 @@ def SpecialFormHead (a : Atom) : Prop :=
 
 /-- `a` is an equation redex: a non-grounded-headed expression with at least
 one matching `(= lhs rhs)` equation in the space.  `queryEquations` is the
-official query from `Space.lean` (alpha-freshened, `simpleMatch`-based). -/
+official query from `Space.lean` (alpha-freshened, using the faithful
+`matchAtoms`/`mergeBindings` interface). -/
 def EquationRedex (space : Space) (d : GroundedDispatch) (fuel : Nat)
     (a : Atom) : Prop :=
   (∃ es, a = .expression es) ∧
   ¬ SpecialFormHead a ∧
   HeadNotExecutable d a ∧
   ∃ p ∈ queryEquations space a fuel, p.2.hasLoop = false
+
+/-- Avoid-aware equation redex interface. This is the repaired companion to
+`EquationRedex` for runtimes that standardize equation-local variables apart
+from variables already visible in the queried atom before matching. It uses the
+same faithful `matchAtoms`/`mergeBindings` matcher as `queryEquations`, but
+with the stronger freshness discipline of `queryEquationsAgainstVisible`. -/
+def EquationRedexAgainstVisible (space : Space) (d : GroundedDispatch)
+    (fuel : Nat) (a : Atom) : Prop :=
+  (∃ es, a = .expression es) ∧
+  ¬ SpecialFormHead a ∧
+  HeadNotExecutable d a ∧
+  ∃ p ∈ queryEquationsAgainstVisible space a fuel, p.2.hasLoop = false
 
 /-! ## Steppability (positive polarity)
 
@@ -245,7 +258,7 @@ inductive HESmallStep (space : Space) (d : GroundedDispatch) (fuel : Nat) :
       HESmallStep space d fuel (.expression es)
         (.expression [.symbol "function", body'])
   /-- `function` return case: a quiescent `(return x)` body unwraps to `x`
-  literally, with no further evaluation of the payload at this surface step. -/
+  literally, with no further evaluation of the payload at this interface step. -/
   | function_return {es : List Atom} {body ret : Atom}
       (h_shape : es = [.symbol "function", body])
       (h_quiescent : ¬ HECanSmallStep space d fuel body)
@@ -269,7 +282,7 @@ inductive HESmallStep (space : Space) (d : GroundedDispatch) (fuel : Nat) :
       (h_not_grounded : HeadNotExecutable d (.expression es))
       (h_query : (rhs, qb) ∈ queryEquations space (.expression es) fuel)
       (h_no_loop : qb.hasLoop = false) :
-      HESmallStep space d fuel (.expression es) (qb.apply rhs fuel)
+      HESmallStep space d fuel (.expression es) (qb.applyFull rhs fuel)
   /-- `HES_LetStar`, empty-bindings case: `(let* () body)` steps to the body. -/
   | letStar_empty {es : List Atom} {body : Atom}
       (h_shape : es = [.symbol "let*", .expression [], body]) :
@@ -361,6 +374,48 @@ inductive HESmallStep (space : Space) (d : GroundedDispatch) (fuel : Nat) :
       (h_step : HESmallStep space d fuel a a') :
       HESmallStep space d fuel (.expression (pre ++ a :: post))
                                (.expression (pre ++ a' :: post))
+
+/-- Repaired equation-root step interface using `queryEquationsAgainstVisible`.
+
+This is intentionally a companion relation rather than an immediate replacement
+for `HESmallStep`: the existing coarse small-step development has many
+consumers that are still stated against `queryEquations`. New LeaTTa/HE bridge
+theorems can target this relation while the wider small-step migration proceeds
+deliberately. -/
+inductive HEEquationStepAgainstVisible
+    (space : Space) (d : GroundedDispatch) (fuel : Nat) :
+    Atom → Atom → Prop where
+  | equation_match {es : List Atom} {rhs : Atom} {qb : Bindings}
+      (h_not_special : ¬ SpecialFormHead (.expression es))
+      (h_not_grounded : HeadNotExecutable d (.expression es))
+      (h_query : (rhs, qb) ∈
+        queryEquationsAgainstVisible space (.expression es) fuel)
+      (h_no_loop : qb.hasLoop = false) :
+      HEEquationStepAgainstVisible space d fuel
+        (.expression es) (qb.applyFull rhs fuel)
+
+/-- Every repaired visible-avoid equation step exposes an avoid-aware equation
+redex. -/
+theorem heEquationStepAgainstVisible_to_redex
+    {space : Space} {d : GroundedDispatch} {fuel : Nat} {a b : Atom}
+    (h : HEEquationStepAgainstVisible space d fuel a b) :
+    EquationRedexAgainstVisible space d fuel a := by
+  cases h with
+  | equation_match h_not_special h_not_grounded h_query h_no_loop =>
+      exact ⟨⟨_, rfl⟩, h_not_special, h_not_grounded,
+        ⟨_, h_query, h_no_loop⟩⟩
+
+/-- Every avoid-aware equation redex has a repaired visible-avoid equation
+step. -/
+theorem equationRedexAgainstVisible_exists_step
+    {space : Space} {d : GroundedDispatch} {fuel : Nat} {a : Atom}
+    (h : EquationRedexAgainstVisible space d fuel a) :
+    ∃ b, HEEquationStepAgainstVisible space d fuel a b := by
+  rcases h with ⟨⟨es, rfl⟩, h_not_special, h_not_grounded,
+    ⟨⟨rhs, qb⟩, h_query, h_no_loop⟩⟩
+  exact ⟨qb.applyFull rhs fuel,
+    HEEquationStepAgainstVisible.equation_match
+      h_not_special h_not_grounded h_query h_no_loop⟩
 
 /-! ## Soundness of the steppability predicate -/
 
@@ -505,7 +560,7 @@ theorem exists_step_of_canStep {space : Space} {d : GroundedDispatch}
           exact ⟨r, ha ▸ HESmallStep.grounded_dispatch (ha ▸ hsf) h_exec h_run h_mem⟩
         · by_cases he : EquationRedex space d fuel a
           · obtain ⟨⟨es, rfl⟩, h_ns, h_not_grounded, ⟨rhs, qb⟩, h_mem, h_loop⟩ := he
-            exact ⟨qb.apply rhs fuel,
+            exact ⟨qb.applyFull rhs fuel,
                    HESmallStep.equation_match h_ns h_not_grounded h_mem h_loop⟩
           · cases h with
             | grounded _ hg' => exact absurd hg' hg
@@ -713,7 +768,7 @@ example : ∃ b, HESmallStep eqSpace plusDispatch 100
 example (d : GroundedDispatch) (fuel : Nat) (a : Atom) :
     ¬ EquationRedex Space.empty d fuel a := by
   rintro ⟨⟨es, rfl⟩, -, -, p, h_mem, -⟩
-  simp [queryEquations, Space.empty] at h_mem
+  cases fuel <;> simp [queryEquations, Space.empty] at h_mem
 
 /-- Bare symbols cannot step (no constructor applies). -/
 theorem symbol_normalForm (space : Space) (d : GroundedDispatch) (fuel : Nat)

@@ -25,14 +25,14 @@ variable {Z : Type*} {p r k : ℕ} {Index : Type*}
 noncomputable def sharedExactZABAffineDecisionListERMFamily
     (zfeat : Z → BitVec r)
     (features : Fin p → AffineColumnCode (r + (k + k)))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ExactVisibleSwitchedFamily Z k Index :=
   (sharedExactZABAffineDecisionListBitFamily Z zfeat features).indexedEmpiricalRiskFamily samples
 
 theorem sharedExactZABAffineDecisionListERMTargetData
     (zfeat : Z → BitVec r)
     (features : Fin p → AffineColumnCode (r + (k + k)))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     SharedExactZABDecisionListTargetData
       (Z := Z) (p := p) (r := r) (k := k) (Index := Index)
       zfeat features
@@ -56,7 +56,7 @@ theorem sharedExactZABAffineDecisionListERMTargetData
 theorem sharedExactZABAffineDecisionListERMCompressionTarget
     (zfeat : Z → BitVec r)
     (features : Fin p → AffineColumnCode (r + (k + k)))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ExactVisibleCompressionTarget
       (Z := Z) (k := k) (Index := Index)
       (sharedExactZABAffineDecisionListERMFamily
@@ -101,10 +101,10 @@ section
 variable [Fintype Z]
 
 theorem sharedExactZABAffineDecisionListERMRecoveryData
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (zfeat : Z → BitVec r)
     (features : Fin p → AffineColumnCode (r + (k + k)))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (q : ℝ≥0∞)
     (hq :
       ∀ i,
@@ -128,10 +128,10 @@ theorem sharedExactZABAffineDecisionListERMRecoveryData
       zfeat features samples).realized
 
 theorem sharedExactZABAffineDecisionListERMRecoveryLowerBound
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (zfeat : Z → BitVec r)
     (features : Fin p → AffineColumnCode (r + (k + k)))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (q : ℝ≥0∞)
     (hq :
       ∀ i,
