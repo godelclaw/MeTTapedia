@@ -1971,10 +1971,10 @@ are equal.
 
 This lemma is deliberately narrower than saying that the cap is one new
 vertex.  Equation~(27) proves the facial statement
-\texttt{HubFacesDistinct} for every finite boundary set.  To regard the hub
-as a single combinatorial-map vertex, its rotation \(\rho_T\) must also be a
-single cycle.  That extra assertion comes from the boundary being one simple
-noose; it is not a consequence of inverse first return alone.
+\texttt{HubFacesDistinct} for every finite boundary set.  Inverse first
+return alone does not make \(\rho_T\) one cycle.  For the connected shores
+used by the splice, however, the exact side rank forces that conclusion by
+Euler's inequality; this is Theorem~\ref{thm:exact-rank-forces-one-hub} below.
 
 \begin{theorem}[exact canonical-hub face count]
 \label{thm:canonical-hub-face-count}
@@ -2028,6 +2028,71 @@ The final assertion is exactly the connected-side equality already obtained
 by splitting spherical Euler across a planar bond.
 \end{proof}
 
+\begin{theorem}[connected exact rank forces one hub]
+\label{thm:exact-rank-forces-one-hub}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24CanonicalHubCyclicity.hubRotation_isCycle_of_closedSideSpherical}
+Let \(T\) be a connected cubic open rotation tangle whose old darts at each
+vertex form one rotation cycle.  Let \(\rho\) be any permutation of its
+boundary darts, and suppose the boundary contains two distinct darts.  If
+the cap is assigned the exact one-hub Euler rank
+\[
+       |V_T|+1+F(\widehat T_\rho)=E(\widehat T_\rho)+2,
+\]
+then \(\rho\) is one nontrivial cycle on the entire boundary carrier.
+\end{theorem}
+
+The inequality used here is itself available directly at map level.  If
+\(R\) is a connected finite rotation system and the rotation darts at every
+stored vertex form one cycle, then
+\[
+       \operatorname{orb}(R.\rho)+\operatorname{orb}(R.\phi)
+          \le |E(R)|+2.                                  \tag{29a}
+\]
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedMapEulerBound.orbitCount_rho_add_orbitCount_phi_le_edge_add_two}
+Indeed, the edge involution has an explicit transposition-list presentation;
+connectedness makes the associated word action transitive, so the general
+permutation Euler inequality has exactly one component.  Thus~(29a) carries
+no cellular-embedding or genus hypothesis.
+
+\begin{proof}
+Present the fixed-point-free hub edge involution as one transposition per
+edge.  The old rotation, these transpositions, and the hub spokes act
+transitively on the capped dart carrier: cyclic old rotations move within
+one old vertex, connectedness moves across the intact side edges, and each
+hub dart crosses its spoke to its old boundary dart.  Hence the generic
+permutation Euler inequality has one component and gives
+\[
+ \operatorname{orb}(\rho_T)+\operatorname{orb}(\rho)
+       +F(\widehat T_\rho)
+       \le E(\widehat T_\rho)+2.
+\]
+The old rotation has exactly one orbit per old vertex, so
+\(\operatorname{orb}(\rho_T)=|V_T|\).  Comparing with the displayed exact
+rank yields
+\(\operatorname{orb}(\rho)\le1\).  The nonempty boundary gives the reverse
+inequality, so \(\operatorname{orb}(\rho)=1\).  With two distinct boundary
+darts this unique orbit is nontrivial; therefore \(\rho\) is a single cycle
+with full support.
+\end{proof}
+
+\begin{corollary}[a connected planar bond supplies the canonical cap]
+\label{cor:planar-bond-canonical-cap}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24CanonicalHubCyclicity.canonicalHubDiscData_of_planarBond}
+Let a connected spherical graph-backed cubic map have cyclic vertex
+rotations and two-sided faces.  If a vertex bipartition has connected induced
+graphs on both sides and at least two boundary darts, then closing either
+side by the inverse of its facial boundary first-return permutation gives a
+face-simple spherical cap with one cyclic hub vertex.
+\end{corollary}
+
+\begin{proof}
+The planar-bond rank theorem supplies equation~(29), so
+Corollary~\ref{cor:canonical-hub-spherical} supplies the exact one-hub rank.
+Lemma~\ref{lem:canonical-hub-face-simple} supplies face-simplicity without
+any topological hypothesis.  Theorem~\ref{thm:exact-rank-forces-one-hub}
+then proves that the canonical hub rotation is a single cycle.
+\end{proof}
+
 \begin{corollary}[canonical literal-shore splice]
 \label{cor:canonical-literal-shore-splice}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24CanonicalHubClosure.bridgelessSphericalCubicMapData_ofVertexSides_canonical}
@@ -2047,6 +2112,65 @@ orientation reversal, and Corollary~\ref{cor:canonical-hub-spherical}
 supplies their spherical Euler equalities.  The structural seam theorem then
 gives connectedness, bridge-freeness, cubicity, cyclic old-vertex rotations,
 and sphericity simultaneously.
+\end{proof}
+
+\begin{definition}[cyclic bond-boundary datum]
+\label{def:cyclic-bond-boundary}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24CyclicBondBoundary.CyclicBondBoundaryData}
+Let \(T\) be a literal vertex shore, let \(B_T\) be its boundary darts, and
+let \(s_T\) be first return of the retained facial walk to \(B_T\).  A
+\emph{cyclic bond-boundary datum} for \(T\) consists of an integer \(k\ge2\)
+and a bijection
+\[
+             \eta:\mathbb Z/k\mathbb Z\longrightarrow B_T
+\]
+such that
+\[
+             s_T(\eta(i))=\eta(i+1)                 \tag{30}
+\]
+for every \(i\in\mathbb Z/k\mathbb Z\).  Thus the datum records both that
+the displayed ports exhaust the boundary and that their facial first-return
+order is one cyclic order, rather than a disjoint union of several orders.
+\end{definition}
+
+\begin{lemma}[a cyclic bond boundary is one canonical hub]
+\label{lem:cyclic-bond-one-hub}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24CyclicBondBoundary.CyclicBondBoundaryData.canonicalHubRotations_singleCycle_of_opposite}
+If \(T\) has a cyclic bond-boundary datum, then both \(s_T\) and its inverse
+\(\rho_T=s_T^{-1}\) are single cycles on \(B_T\).  Consequently the
+canonical closure used above really adds one vertex whose rotation is
+\(\rho_T\), not one formal ``hub'' split into several vertices.  This gives
+an explicit coordinate certificate for the same conclusion as
+Theorem~\ref{thm:exact-rank-forces-one-hub}; it is no longer a hypothesis of
+the physical splice.
+
+Suppose moreover that \(m:B_L\to B_R\) obeys the opposite-return equation
+\[
+       s_R\bigl(m(s_L(b))\bigr)=m(b).                \tag{31}
+\]
+If the left shore has a cyclic bond-boundary datum, then the right
+first-return order is the transported inverse of the left order.  In
+particular both canonical hub rotations are single cycles on their entire
+boundary carriers and the matching is orientation-reversing.
+\end{lemma}
+
+\begin{proof}
+Equation~(30) says exactly that
+\[
+       s_T=\eta\circ(i\mapsto i+1)\circ\eta^{-1}.
+\]
+The shift on \(\mathbb Z/k\mathbb Z\) is one cycle when \(k\ge2\); conjugacy
+preserves being a cycle, and the inverse of a cycle is a cycle.  This proves
+the first assertion.
+
+For the second assertion, equation~(31) is equivalent to
+\[
+       s_R=m\circ s_L^{-1}\circ m^{-1}.
+\]
+Hence \(s_R\) is conjugate to the inverse of \(s_L\).  Transporting the
+enumeration by \(m\) and reversing its indices gives equation~(30) on the
+right.  The final orientation statement is
+Lemma~\ref{lem:canonical-hub-orientation}.
 \end{proof}
 
 \begin{lemma}[a tight transverse noose supplies the cap data]
@@ -2069,6 +2193,13 @@ closed disc to a point.  The quotient is a sphere; the cut endpoints become
 the darts at the new hub, in their cyclic boundary order.  This is precisely
 the hub closure, so its cellular Euler equality is the spherical one.
 
+Enumerate the crossings once around \(\gamma\).  Tightness makes the facial
+arc inside the retained disc carry each boundary dart to the next crossing,
+so this enumeration is a cyclic bond-boundary datum in the sense of
+Definition~\ref{def:cyclic-bond-boundary}.  In particular
+Lemma~\ref{lem:cyclic-bond-one-hub} proves at permutation level that the cap
+adds one cyclic hub vertex.
+
 The sector at the hub between two consecutive cut darts is the image of the
 unique boundary arc of \(\gamma\) between the corresponding crossings.  It
 lies in one old face.  Tightness says that no old face contains two such
@@ -2083,14 +2214,16 @@ Lemma~\ref{lem:canonical-hub-orientation} converts this equation into
 equation~(25).
 \end{proof}
 
-The adjective ``tight'' is load-bearing.  A simple closed curve can enter the
-same face several times, in which case one capped face can pass through the
-hub more than once and \texttt{HubFacesDistinct} need not hold.  Standard
-sphere-cut decompositions of connected bridgeless plane graphs use tight
-nooses (each face is visited at most once).  The remaining sphere-cut adapter
-is therefore not Jordan separation itself; it is the explicit, nested local
-perturbation from those vertex-meeting tight nooses to the edge-crossing
-tight nooses consumed here.
+This tight-noose lemma is now an optional geometric presentation, not the
+load-bearing D3 adapter.  For a supplied vertex bipartition with both induced
+sides connected, Corollary~\ref{cor:planar-bond-canonical-cap} obtains the
+spherical face-simple one-hub cap directly from the planar-bond rank and
+Euler's inequality; no Jordan theorem and no per-face tightness are needed.
+What the sphere-cut supplier must still provide is the combinatorial data
+actually used by the splice: nested connected shores, at least two boundary
+darts, and a matching of equal seam states which reverses their computed
+first-return orders.  A tight noose is one sufficient way to manufacture
+that data, but it is not part of the algebraic seam theorem.
 
 \begin{lemma}[one cubic sphere cut can be moved to edges]
 \label{lem:cubic-noose-edge-perturbation}
@@ -2147,9 +2280,10 @@ sphere-cut supply consumed by Theorem~\ref{thm:typed-sphere-cut-descent}.
 \Sprose
 Let \(G\) be a connected bridgeless cubic spherical map.  Let
 \(\gamma_i,\gamma_j\), with \(i<j\), be disjoint nested simple nooses which
-avoid vertices, are tight, and each cross exactly \(k\ge2\) edges.  Suppose their ordered
-crossing sets carry a specified orientation-reversing bijection, their
-retained sides are connected and saturated, and the annular slab between
+avoid vertices and each cross exactly \(k\ge2\) edges.  Suppose the two
+vertex shores of each cut induce connected graphs, the two shores retained
+for the splice are saturated, their boundary first-return orders carry a
+specified orientation-reversing bijection, and the annular slab between
 them contains a graph vertex.  Delete that slab and glue the paired boundary
 half-edges.  Then the result \(G'\) is a strictly smaller connected
 bridgeless cubic spherical map.
@@ -2161,9 +2295,14 @@ preserved.
 \end{theorem}
 
 \begin{proof}
-Retain the disc side of the inner noose and the complementary disc side of
-the outer noose.  Lemma~\ref{lem:tight-noose-cap-data} supplies spherical,
-face-simple hub closures and opposite boundary rotations.  Hence
+Retain the vertex shore inside the inner cut and the complementary vertex
+shore outside the outer cut.  For each cut, the retained shore and its
+complement are connected; Corollary~\ref{cor:planar-bond-canonical-cap}
+therefore supplies a spherical, face-simple canonical closure with one hub.
+The stipulated equality of ordered seam states identifies the two computed
+first-return orders in opposite directions, so
+Lemma~\ref{lem:canonical-hub-orientation} supplies the required orientation
+reversal.  Hence
 Corollary~\ref{cor:hub-seam-sphericity} proves, by face-orbit counting rather
 than by an implicit drawing, that the glued rotation system is spherical.
 Every retained cubic
@@ -2304,8 +2443,10 @@ bridgelessness, cubicity, rotation-cyclicity, and strict vertex accounting
 are no longer D3 gaps.  Theorem~\ref{thm:hub-seam-face-formula} and
 Corollary~\ref{cor:hub-seam-sphericity} also close the face-orbit calculation
 once face-simple spherical caps and the orientation equation are supplied.
-The bare matching type cannot manufacture those witnesses; they come from
-the tight noose by Lemma~\ref{lem:tight-noose-cap-data}.
+The bare matching type cannot manufacture those witnesses.  On literal
+graph-backed shores they now come from connected planar-bond data by
+Corollary~\ref{cor:planar-bond-canonical-cap}, together with the explicit
+opposite first-return equation carried by the ordered seam state.
 
 \begin{corollary}[parallel seams can be normalized after gluing]
 \label{cor:parallel-seam-normalization}
@@ -2336,8 +2477,10 @@ already made it strictly smaller than \(M\).
 Therefore a duplicate seam edge need not enlarge the finite receipt.  One
 may glue in the loopless multigraph category and normalize only after the
 closed zero-Count composite has been produced.  The remaining D3-to-supply
-link is the construction of the tight transverse cut data from the chosen
-sphere-cut decomposition, not a missing face-count theorem.
+link is narrower than a transverse-noose construction: the chosen sphere-cut
+decomposition must yield nested connected literal shores and a seam-state
+matching which reverses their computed first-return orders.  The cap face
+count, cap sphericity, and one-hub property are no longer open.
 
 \begin{theorem}[direct Count-reductive assembly]
 \label{thm:direct-count-reductive-assembly}
@@ -2407,12 +2550,13 @@ orientation-aware face calculation and spherical Euler equality are now
 verified in Theorem~\ref{thm:hub-seam-face-formula} and
 Corollaries~\ref{cor:hub-seam-sphericity} and
 \ref{cor:implemented-seam-composite-structure} package these facts on the
-literal composite.  Lemma~\ref{lem:tight-noose-cap-data}
-derives their cap hypotheses from a tight transverse noose.  The literal
+literal composite.  Corollary~\ref{cor:planar-bond-canonical-cap} derives
+the cap hypotheses from connected graph-backed shores and the exact
+planar-bond rank, without a Jordan/noose premise.  The literal
 composite is loopless, and Corollary~\ref{cor:parallel-seam-normalization}
 removes any parallel seam after gluing.  Thus the exact remaining adapter is
-the production of compatible tight transverse nooses from the supplied
-vertex-based sphere cuts.
+the production of compatible nested connected shores, with opposite ordered
+first-return data, from the supplied vertex-based sphere cuts.
 
 Theorem~\ref{thm:direct-count-reductive-assembly} is the shortest literal
 implementation of the companion note's instruction to open the instances,
