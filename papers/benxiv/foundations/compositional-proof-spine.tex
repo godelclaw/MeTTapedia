@@ -540,7 +540,7 @@ where edge $e$ joins blocks $e$ and $e+1$.
 
 \begin{theorem}[four-block-edge Lift criterion]
 \label{thm:four-block-edge-lift}
-\Sprose
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FourBlockEdgeLift.oneClass_of_fourBlockEdges_word}
 Let $\mathcal C$ be the good-word colouring states of one fixed annular
 tangle.  Suppose:
 \begin{enumerate}
@@ -804,7 +804,7 @@ half has one unmistakable statement.
 
 \begin{theorem}[finite-interface pumping on a decomposition tree]
 \label{thm:finite-tree-interface-pumping}
-\Sprose
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FiniteTreeInterfacePumping.vertexCount_le_of_minimal}
 Let \(X\) be an instance with a reduced rooted binary interface decomposition
 \(T\).  Suppose:
 \begin{enumerate}
@@ -1050,6 +1050,24 @@ permutation \(\sigma\), restriction reads the relabelled word as
 \(x\circ\sigma^{-1}\); applying this bijection at both ends conjugates the
 relation and preserves composition and terminal nonemptiness.
 \end{proof}
+
+\begin{remark}[machine-checked algebra after the physical gluing bijection]
+\label{rem:bounded-interface-count-lean}
+The graph-level restriction/gluing bijection (C1) is still the prose seam.
+Conditional on that one equivalence, its cardinal convolution is
+machine-checked.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24BoundedInterfaceCountLaw.countMatrix_eq_matMul}
+Boolean support of the convolution is relational composition.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24BoundedInterfaceCountLaw.support_matMul_iff}
+Equal cumulative supports remain equal after deleting the intervening block
+and appending a common suffix.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24BoundedInterfaceCountLaw.runSupport_delete_block}
+Port relabelling commutes with matrix composition.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24BoundedInterfaceCountLaw.relabel_matMul}
+Finally, the Boolean support carrier has cardinality
+\(2^{|X||Z|}\).
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24BoundedInterfaceCountLaw.card_boolSupports}
+\end{remark}
 
 Thus the direct zero-Count automaton never needs a global colouring of the
 unprocessed graph.  Its state is the \emph{set of boundary words currently
