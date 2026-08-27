@@ -11,6 +11,7 @@ import Mettapedia.CognitiveArchitecture.Agent.WorldOfViewsBridge
 import Mettapedia.CognitiveArchitecture.Agent.ContextCertificate
 import Mettapedia.CognitiveArchitecture.Agent.TaskPhase
 import Mettapedia.CognitiveArchitecture.Agent.PermissiveActionGraph
+import Mettapedia.CognitiveArchitecture.Agent.AddressedEffects
 
 /-!
 # General agent-architecture interfaces
