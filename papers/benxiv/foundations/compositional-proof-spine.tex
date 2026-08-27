@@ -48,8 +48,12 @@ $D_0$ & Tait reduction and least-counterexample normal form & ordinary
 mathematics written out; cyclic five-edge-connectivity and minimum face
 length five are machine-checked, while presentation adapters remain \\
 $D_1$ & Every sufficiently large least obstruction supplies a target-forced
-composable cut chain & open and the highest structural risk;
-Proposition~\ref{prop:target-forced-cut-chain} is the exact statement \\
+composable decomposition & open and the highest structural risk.  The
+manuscript's linear-corridor assertion remains unsupported; in the exact
+tree reformulation the missing global statement is a uniform branchwidth
+bound, equivalently exclusion of one fixed wall from least obstructions.
+The generic finite-tree descent and the mesh obstruction are machine-checked,
+but the sphere-cut instantiation, physical splice, and wall exclusion are not \\
 $D_2$ & Count across every actual ordered noose cut factors through a finite
 boundary-word relation, and cumulative support is deletable on repetition &
 the physical port-tangle gluing bijection, matrix law, support
@@ -60,9 +64,10 @@ finite-base instrument, not a correctness premise of the direct descent \\
 $D_3$ & Equal cumulative rooted states admit a strictly smaller physical
 deletion splice in the same bridgeless cubic spherical counterexample class,
 preserving boundary order and zero accepting Count & the ordinary noose
-construction and bridgelessness proof are complete in
-Theorem~\ref{thm:physical-noose-deletion}; the exact rotation-system
-constructor and simple-graph seam checks remain open in Lean \\
+construction, port-tangle gluing, bridgelessness proof, rotation-system to
+multigraph adapter, and strict vertex accounting are machine-checked.  The
+exact rotation-system composition, orientation-reversed seam match,
+sphericity, and simple-map closure remain open \\
 $D_4$ & The route-native finite floor contains no zero-Count obstruction &
 open; the refuted GWCO and $A\ne\varnothing$ systems cannot be inherited \\
 $D_5$ & Well-founded assembly from $D_0$--$D_4$ & proved as the explicit
@@ -846,6 +851,66 @@ once and a node introduces at most \(c\) vertices, the displayed bound
 follows.
 \end{proof}
 
+The tree theorem deliberately leaves its target-specific input visible.  For
+the direct Tait target, the exact semantic part of that input is already a
+theorem.
+
+\begin{theorem}[closed Count depends only on the inner seam support]
+\label{thm:closed-count-support-replacement}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedCountReplacement.not_closedColorable_of_innerSupport_eq}
+Let \(O\) be an outside port tangle and let \(I,I'\) be inside port tangles
+with the same ordered seam.  If \(I\) and \(I'\) realize exactly the same
+seam-colour words, then
+\[
+  O\circ I\text{ is not Tait-colourable}
+  \quad\Longrightarrow\quad
+  O\circ I'\text{ is not Tait-colourable}.
+\]
+\end{theorem}
+
+\begin{proof}
+A colouring of \(O\circ I\) is uniquely a seam word together with a
+colouring of \(O\) and a colouring of \(I\) realizing that word.  Thus the
+closed composite is colourable exactly when the outer and inner supports
+intersect.  Replacing the inner support by an equal set does not change this
+intersection.  The Lean theorem proves the displayed implication; the same
+argument gives the converse as well.
+\end{proof}
+
+The following is the precise statement currently proved about bounded
+branchwidth.  It is a theorem about a supplied sphere-cut decomposition, not
+yet a theorem constructing that supply from a plane map.
+
+\begin{theorem}[typed sphere-cut descent]
+\label{thm:typed-sphere-cut-descent}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SphereCutDescent.vertexCount_le_of_supply'}
+Fix \(w\).  Suppose an instance \(X\) is supplied with a rooted binary
+decomposition whose nodes have states
+\[
+  (j,s,S),\qquad 0\le j\le 2w,\quad
+  s\in\mathrm{SeamType}_j,\quad
+  S\subseteq\{r,b,p\}^{j},
+\]
+and suppose:
+\begin{enumerate}
+\item \(|V(X)|\) is at most twice the number of labelled tree nodes; and
+\item equal states at a proper ancestor and descendant produce a strictly
+smaller target instance.
+\end{enumerate}
+If \(X\) is size-minimal among target instances, then
+\[
+ |V(X)|\le 2(2^q-1),\qquad
+ q=\sum_{j=0}^{2w}|\mathrm{SeamType}_j|\,2^{3^j}.
+\]
+\end{theorem}
+
+This theorem closes the finite counting once the supply exists.  Its second
+hypothesis still contains the geometric content of D3.  In particular, the
+Lean declaration does \emph{not} prove that a branch decomposition gives
+ordered port tangles, that the local perturbations of its nooses are mutually
+compatible, or that the replacement remains a spherical bridgeless cubic
+map.  Those are exactly the adapters which must be constructed next.
+
 For an ordered boundary of size at most \(k\), the manuscript's data---edge
 colours, the two noncrossing connectivity relations, capped face progress,
 and the target-specific accepting bit---form a finite typed context state.
@@ -855,61 +920,97 @@ convenient decomposition, not the logical essence of the descent.
 
 The planar grid theorem of Robertson and Seymour
 (``Graph minors III: planar tree-width'', 1984,
-doi:10.1016/0095-8956(84)90013-3) says that, for every fixed planar graph
-\(H\), graphs excluding \(H\) as a minor have bounded treewidth.  Taking
-\(H\) to be a sufficiently large wall yields the following exact alternative
-research seam.
+doi:10.1016/0095-8956(84)90013-3) says that excluding one fixed planar
+wall as a minor bounds treewidth.  The Seymour--Thomas sphere-cut theory
+supplies noose-respecting branch decompositions of plane graphs
+(Call routing and the ratcatcher, 1994,
+doi:10.1007/BF01215352).  Neither
+theorem is formalized in this development.  Moreover, a sphere cut meets
+the graph in its middle \emph{vertices}, whereas the present Count functor
+cuts ordered \emph{edges}.  At a cubic middle vertex one can locally move
+the noose off the vertex by crossing at most two incident edges, but
+preservation of nesting, seam order, and the rotation system under all such
+moves is still a construction, not a citation.
 
-\begin{proposition}[wall form of the target-forced gap]
+\begin{proposition}[wall-exclusion reduction, relative form]
 \label{prop:target-forced-wall}
-\Sconditional{large embedded wall gives positivity or strict target-free reduction; exact bounded-width context replacement}
+\Sconditional{planar wall theorem; sphere-cut supply; exact D3 replacement; route-native finite base}
 Fix the normal-form class and one direct-Count or Lift target.  Suppose there
-is an \(r\) such that every normal-form instance containing an embedded
-\(r\)-wall either has positive target, or admits a strictly smaller
-normal-form instance with the same zero target.  Suppose also that the finite
-context state at the resulting bounded treewidth is exact and equal states
-admit the physical replacement of
-Theorem~\ref{thm:finite-tree-interface-pumping}.  Then zero-target
-counterexamples have an effective size bound, and a route-native finite base
-proves the target universally.
+are computable \(r,w\) such that:
+\begin{enumerate}
+\item no vertex-minimal zero-target instance contains a subdivision of the
+\(r\)-wall;
+\item every plane instance in the class with no such wall has branchwidth at
+most \(w\);
+\item every width-\(w\) instance in the class has a sphere-cut supply of the
+precise kind consumed by Theorem~\ref{thm:typed-sphere-cut-descent}; and
+\item the supply's equal-state replacement is the D3 physical splice and
+stays inside the normal-form class.
+\end{enumerate}
+Then every vertex-minimal zero-target instance has an effective vertex
+bound.  If the route-native finite base below that bound is empty, there is
+no zero-target instance.
 \end{proposition}
 
 \begin{proof}
-Choose a minimal zero-target counterexample.  If it contained an embedded
-\(r\)-wall, positivity would contradict its zero target and the other branch
-would contradict minimality.  Thus the wall is excluded.  For completeness,
-the minor form of the planar grid theorem is sufficient here: a wall is
-subcubic, so in a minor model one
-may prune each connected branch set to the minimal tree spanning its at most
-three incident model edges.  The three terminal paths meet at one branch
-vertex and otherwise may be chosen internally disjoint; doing this in every
-disjoint branch set produces a subdivision of the wall as a subgraph, with
-the inherited planar embedding.  Hence exclusion of the embedded wall bounds
-treewidth by a constant depending only on \(r\).  Convert a width-bounded
-decomposition to a
-reduced nice binary decomposition; its ordered bags have a fixed finite set
-of types, and exact finite context semantics gives a finite number \(q\) of
-typed states.  Theorem~\ref{thm:finite-tree-interface-pumping} supplies an
-effective vertex bound.  The claimed finite-base conclusion follows by
-checking all route-native instances up to that bound.
+Choose a vertex-minimal zero-target instance \(X\).  Hypothesis~1 excludes
+the fixed wall.  Since a wall is subcubic, a minor model can be pruned inside
+each branch set to a subdivision: the at most three incident model edges are
+joined by a minimal tree, whose three terminal paths have one common branch
+point and are otherwise internally disjoint.  Thus the minor and topological
+forms agree for this wall in a cubic host.  Hypothesis~2 supplies the width
+bound, Hypothesis~3 constructs the decomposition, and Hypothesis~4 supplies
+its strict replacement.  Theorem~\ref{thm:typed-sphere-cut-descent} gives the
+effective vertex bound.  An empty finite base rules out \(X\).
 \end{proof}
 
-This proposition does not make the hard step disappear.  It identifies it:
+One sufficient way to establish Hypothesis~1 is the stronger statement that
+every zero-target instance containing the wall has either positive target or
+a strict zero-target reduction.  The route has not proved that statement.
+The hard step is therefore isolated as
 
 \[
  \boxed{\text{a fixed embedded wall in a zero-target normal-form instance
  forces a strict zero-target reduction}.}
 \]
 
-The Goldberg audits are consistent with this formulation: their interface
-width grows, so they inhabit the wall branch, and every tested good fibre is
-seeded.  They are evidence, not a proof of the boxed assertion.  The tree
-form also carries an engineering price: the present literal factorization is
-linear-Cell code, whereas this alternative needs exact introduce, forget, and
-join semantics.  It should therefore be adopted only if it proves the wall
-lemma more naturally than the two-directional corridor construction; it is
-not permission to count generic planar configurations or revive a classical
-unavoidable catalogue.
+The Goldberg audits show why curvature alone cannot establish the boxed
+assertion: they have only pentagons and hexagons while their widths grow.
+Their tested good fibres are seeded, which is evidence that the target
+predicate may exclude the wall even though the geometry does not.  It is not
+a proof.  Nor is the tree reformulation permission to count generic planar
+configurations or revive a classical unavoidable catalogue.
+
+\begin{theorem}[mesh isoperimetry and the bounded-cut obstruction]
+\label{thm:mesh-isoperimetry}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MeshIsoperimetry.Mesh.branchIn_card_le_or_branchOut_card_le}
+Let \(G\) contain \(a\) edge-disjoint row paths and \(b\) edge-disjoint
+column paths, with a designated branch vertex on every row--column pair;
+arbitrary additional edges and vertices of \(G\) are allowed.  If a vertex
+set \(S\) has at most \(k<\min(a,b)\) boundary edges, then at most \(k^2\)
+designated branch positions lie on one side of the cut.
+
+If
+\[
+ S_0\subset S_1\subset\cdots\subset S_m
+\]
+is a nested chain of such cuts and the set of designated branch positions
+inside \(S_i\) strictly grows at every step, then
+\[
+                         m\le 2k^2+1.
+\]
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MeshIsoperimetry.Mesh.chain_length_le}
+\end{theorem}
+
+The hypothesis that the branch-position set strictly grows at every step is
+load-bearing.  The theorem does not say that a graph containing a wall has no
+long bounded-cut chain.  It says that at most \(2k^2+1\) slabs of such a
+chain can acquire a new wall branch position.  A longer chain must contain
+slabs which acquire none; they may run through subdivided wall edges or
+through material attached to the wall.  Consequently a large wall does not
+itself furnish the manuscript's long sequence of saturated cuts.  Conversely,
+the mesh theorem does not prove wall exclusion.  It explains why the missing
+implication must use zero Count and minimality rather than wall size alone.
 
 \begin{theorem}[the exact width criterion]
 \label{thm:exact-width-criterion}
@@ -947,25 +1048,23 @@ for every \(G\in\mathcal M\).  This proves \(2\Rightarrow1\), and the
 displayed formula is effective when the stated inputs are.
 \end{proof}
 
-Thus D1 is not intrinsically a theorem about hexagons.  Once the finite
-context engine is exact, it is precisely a width theorem for minimal
-zero-target instances.  The wall proposition is one source-faithful way to
-prove that theorem: a strict reduction in the large-wall branch excludes a
-fixed wall from a minimal instance, and the planar grid theorem then bounds
-treewidth.  Conversely, merely displaying a wall, a dual geodesic, or a long
-face does not establish D1 until it yields that strict target-preserving
-replacement.
+Thus, \emph{relative to exact finite tree semantics and D3 replacement}, the
+tree-form repair of D1 is precisely a width theorem for minimal zero-target
+instances.  This is not a literal proof of the manuscript's linear
+hexagonal-corridor L1.  It is a compositional reformulation of that failed
+global step.  The claimed equivalence below always has these semantic and
+physical hypotheses in scope.
 
-A planar branchwidth--cylinder dichotomy does not supply that replacement by
-itself.  A cylindrical wall emph{minor} of fixed circumference has a finite
-abstract rail set, but its model paths may contain arbitrarily many
-subdivision vertices, each carrying an ambient attachment.  Cutting only the
-abstract rails therefore need not give a saturated cut of the original map;
-saturating it can make the interface grow with the model paths.  This is the
-same receipt-growth obstruction in different language.  The wall branch is
-useful only after its ambient attachments have either been absorbed into a
-bounded exact interface or converted, using zero target, into a strict
-replacement.  Neither conclusion follows from the grid theorem alone.
+Neither the planar wall theorem nor a branchwidth dichotomy supplies the
+replacement by itself.  Model paths of a wall subdivision may contain
+arbitrarily many degree-two vertices before they are viewed inside the cubic
+host, and ambient material may attach along them.  Cutting only abstract
+rails therefore need not give a saturated cut of the original map; saturating
+it can make the interface grow with the model paths.  The mesh theorem above
+sharpens this warning: only the number of slabs that acquire new designated
+branch positions is bounded.  A wall becomes useful to the proof only after
+zero Count and minimality turn it into a strict exact-state replacement or
+exclude it altogether.
 
 \begin{proposition}[two exhaustive geometric branches for the global corridor]
 \label{prop:global-corridor-alternative}
@@ -1650,11 +1749,34 @@ terminal closure therefore have the same accepting support in \(G'\) and
 \(G\).  This proves the last assertion.
 \end{proof}
 
-Thus bridgelessness is not an additional global miracle required after the
-splice.  It follows from saturated connected sides and \(k\ge2\).  The real
-remaining physical work is to construct the two nooses with the exact ordered
-seam type and to implement the rotation-system quotient; those are outputs
-already demanded by Proposition~\ref{prop:target-forced-cut-chain}.
+\begin{theorem}[the implemented seam composite has the non-topological map fields]
+\label{thm:implemented-seam-composite-fields}
+Let two finite open rotation tangles be glued along a nonempty matched seam.
+If both side multigraphs are connected, the composed rotation system is
+primal-connected.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24CompositeSeamMultigraph.primalConnected_composeRotationSystem}
+If, in addition, both sides are boundary-essential and the seam has at least
+two ports, it is edge-bridge-free.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24CompositeSeamMultigraph.edgeBridgeFree_composeRotationSystem}
+If each open side has exactly three incident darts at every retained vertex,
+counting its boundary half-edges, then the composite is cubic.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24CompositeSeamCubic.isCubic_composeRotationSystem}
+If the darts at each side vertex form one rotation cycle, the same is true in
+the composite.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24CompositeSeamCubic.vertexRotationCyclic_composeRotationSystem}
+\end{theorem}
+
+The implementation obtains the first two conclusions by an explicit edge
+equivalence between the multigraph glue and
+\texttt{composeRotationSystem}; the latter two follow by transporting the
+side rotations through the composite carrier.  Thus connectedness,
+bridgelessness, cubicity, rotation-cyclicity, and strict vertex accounting
+are no longer D3 gaps.  What remains is topological: the matching must reverse
+the boundary orientation, the composite face orbits must satisfy the
+spherical Euler equality, and the result must land in whichever
+loopless/simple representation the minimality theorem consumes.  The current
+matching type is only a bare equivalence, so it cannot yet express the first
+of these requirements.
 
 \begin{theorem}[direct Count-reductive assembly]
 \label{thm:direct-count-reductive-assembly}
@@ -1692,15 +1814,38 @@ normalization returns the representation consumed by minimality.  This
 contradicts minimality.  The Tait bridge gives the Four-Colour Theorem.
 \end{proof}
 
+\begin{corollary}[wall-exclusion assembly]
+\label{cor:wall-exclusion-assembly}
+\Sconditional{Tait bridge; fixed-wall exclusion for least counterexamples; sphere-cut supply; D3 replacement; route-native finite base}
+Assume the Tait/minimal-counterexample bridge.  Assume there is a fixed
+wall excluded from every least Tait counterexample, that wall-free members
+of the normal-form class carry the exact sphere-cut supply of
+Theorem~\ref{thm:typed-sphere-cut-descent}, and that equal supplied states
+admit the D3 physical replacement inside that class.  If the resulting
+route-native finite base contains no counterexample, then every planar graph
+is four-colourable.
+\end{corollary}
+
+\begin{proof}
+Proposition~\ref{prop:target-forced-wall} bounds the size of a least Tait
+counterexample.  The finite-base hypothesis rules out every instance up to
+that bound, so no least counterexample exists.  The Tait bridge gives the
+Four-Colour Theorem.
+\end{proof}
+
 The word ``bridgeless'' in the splice conclusion is load-bearing.  A cubic
 plane graph with a bridge has zero Tait count for a trivial parity reason, so
 a splice producing a bridge would not contradict minimality inside the class
 to which Tait's equivalence applies.  Planarity, cubicity, connectedness,
 strict size decrease, and zero Count are proved together with bridgelessness
-in Theorem~\ref{thm:physical-noose-deletion}.  What remains representation-
-specific is the rotation-system construction and, for a simple-graph carrier,
-the finite loop/parallel-edge check; neither may be left as an implicit
-property of the drawing.
+in the ordinary argument of
+Theorem~\ref{thm:physical-noose-deletion}.  Lean now checks the literal
+rotation-system composite's connectedness, bridge-freeness, cubicity, and
+rotation-cyclicity in
+Theorem~\ref{thm:implemented-seam-composite-fields}.  What remains is its
+orientation-aware spherical face calculation and, for a simple-graph
+carrier, the finite loop/parallel-edge check; neither may be left as an
+implicit property of the drawing.
 
 Theorem~\ref{thm:direct-count-reductive-assembly} is the shortest literal
 implementation of the companion note's instruction to open the instances,
@@ -1769,21 +1914,24 @@ rather than repair the missing mathematics, so that assembly is withdrawn.
 \end{remark}
 
 The surviving conditional conclusion is
-Theorem~\ref{thm:direct-count-reductive-assembly}.  Its dependency chain is:
-the Tait/minimal-counterexample bridge; source-preserving local ladder
-transport; Proposition~\ref{prop:target-forced-cut-chain}; the raw noose
-Count theorem and physical support-state splice; and a route-native
-finite base.  It needs neither Trail Completability nor Kauffman factor
-gluing.  At present the decisive open premises are the target-forced global
-cut chain (or both branches of
-Proposition~\ref{prop:global-corridor-alternative}), the
-rotation-system seam constructor and simple-map adapter needed to implement
-the proved ordinary physical splice, and the route-native base.  An
-executable minimized Cell closure remains important for making that base
-small enough to replay, but the raw finite semantics no longer depends on
-the refuted closed-web carrier or its global face-uniqueness premise.  The
-target-specific square seam is no longer one of these premises: capped
-colourability rules out a target-free reduction side before any migration is
-needed.  In particular, neither the signed curvature identity nor the
-bounded-face geodesic theorem currently proves
-Proposition~\ref{prop:target-forced-cut-chain}.
+Theorem~\ref{thm:direct-count-reductive-assembly}, with the tree-form
+alternative isolated in Corollary~\ref{cor:wall-exclusion-assembly}.  The
+linear dependency chain is: the Tait/minimal-counterexample bridge;
+source-preserving local ladder transport;
+Proposition~\ref{prop:target-forced-cut-chain}; the raw noose Count theorem
+and physical support-state splice; and a route-native finite base.  The
+tree-form chain replaces the global corridor proposition by fixed-wall
+exclusion plus an exact sphere-cut supply.  Both chains use D3 and the same
+finite base.
+
+At present the decisive open premises are therefore: either the
+target-forced global cut chain or fixed-wall exclusion together with the
+sphere-cut adapters; the orientation-reversed seam witness, spherical
+face-orbit calculation, and representation closure still needed for D3; and
+the route-native finite base.  The mesh
+isoperimetry theorem proves that a large wall does not automatically supply
+the linear chain, but it does not exclude the wall.  An executable minimized
+Cell closure remains important for making the base small enough to replay,
+while the raw finite semantics no longer depends on the refuted closed-web
+carrier.  Neither Trail Completability nor Kauffman factor gluing lies on
+this direct reductive critical path.
