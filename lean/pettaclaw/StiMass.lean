@@ -1,7 +1,7 @@
 /-!
 # StiMass — the STI economy as a bounded Lyapunov mass
 
-Spec: shared/zahrada/drafts/sti-claimstate-spec-v0.3.md (2026-08-19).
+This formalizes the STI claim-state specification developed on 2026-08-19.
 Attention lives on bundles; named stimuli are the ONLY source of STI mass,
 each injection bounded by the pinned constant DMAX; decay never increases
 a salience. Finite form of spec Invariant A. Self-contained (no Mathlib).
@@ -66,6 +66,18 @@ theorem sti_step_bounded (d : Decay) (ss deltas : List Salience) (DMAX : Nat)
   Nat.le_trans (V_zipWith_add_le _ _)
     (Nat.add_le_add (V_map_decay_le d ss) (V_le_length_mul DMAX deltas h))
 
+/-- Repeated pure decay, with no injections. -/
+def iterateDecay (d : Decay) : Nat → List Salience → List Salience
+  | 0, ss => ss
+  | n + 1, ss => iterateDecay d n (ss.map d.apply)
+
+/-- Applying decay repeatedly never increases total mass. -/
+theorem V_iterateDecay_le (d : Decay) :
+    ∀ (n : Nat) (ss : List Salience), V (iterateDecay d n ss) ≤ V ss
+  | 0, ss => Nat.le_refl _
+  | n + 1, ss =>
+      Nat.le_trans (V_iterateDecay_le d n (ss.map d.apply)) (V_map_decay_le d ss)
+
 /-! ## Named-state transition (probe3-verified 2026-08-20): identity-targeted injections, replaces misaligned zipWith named bridge. -/
 
 abbrev NamedState := List (String × Nat)
@@ -120,6 +132,6 @@ def foldNamed (st : NamedState) (nd : List (String × Nat)) : NamedState :=
 #eval namedLookup (foldNamed [("g1", 10), ("g2", 20)] [("g2", 5)]) "g2"
 #eval foldNamed [("g1", 10), ("g2", 20)] [("g3", 7)]
 
+#print axioms V_iterateDecay_le
 
 end StiMass
-

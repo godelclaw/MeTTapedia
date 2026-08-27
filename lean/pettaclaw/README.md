@@ -88,6 +88,20 @@ are derived from the models, deployed, and re-observed live.
   two-equation runner, locally transactional composition, exact preservation
   of all three source projections and Iter pipelines, arbitrary policy and
   context replacement, and erasure counterexamples for both kernel equations.
+- `ContextWindow.lean` — a bounded context window that preserves the newest
+  substantive turn, respects its size limit, and never invents admitted turns.
+- `FuelPolicy.lean` — explicit renewal disciplines separating overwrite,
+  saturation, carry, decay, and accumulation, with their exact boundedness
+  and autonomy consequences.
+- `RestEnergy.lean` — the pause/rest state omitted by the earlier breath model,
+  including the deployed stranding counterexample and a self-directed renewal
+  policy that preserves energy without creating it.
+- `StiMass.lean` — bounded salience injection and repeated-decay Lyapunov laws
+  for the short-term-importance economy.
+- `StiFloor.lean` — a facts-of-record ordering for salience-floor ties, with
+  irreflexivity, transitivity, totality, and injected-over-never precedence.
+- `StiFloorDecay.lean` — the concrete fixed-point floor-division decay model
+  and its contraction and loss bounds.
 
 The models use no Mathlib and end with a `#print axioms` audit:
 zero `sorry`, axioms at most `propext` and `Quot.sound`, several theorems
@@ -112,6 +126,12 @@ LEAN_PATH=. lean ThreePolicyFusion.lean
 LEAN_PATH=. lean OpenEndedProcessCore.lean
 LEAN_PATH=. lean ContextProjection.lean
 LEAN_PATH=. lean WeakAgentEcology.lean
+LEAN_PATH=. lean ContextWindow.lean
+LEAN_PATH=. lean FuelPolicy.lean
+LEAN_PATH=. lean RestEnergy.lean
+LEAN_PATH=. lean StiMass.lean
+LEAN_PATH=. lean StiFloor.lean
+LEAN_PATH=. lean StiFloorDecay.lean
 ```
 
 The paper (repository [`papers/pettaclaw.tex`](../../papers/pettaclaw.tex),
