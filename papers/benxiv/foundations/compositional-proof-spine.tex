@@ -2093,6 +2093,45 @@ any topological hypothesis.  Theorem~\ref{thm:exact-rank-forces-one-hub}
 then proves that the canonical hub rotation is a single cycle.
 \end{proof}
 
+\begin{theorem}[complementary planar-bond orders are opposite]
+\label{thm:planar-bond-orders-opposite}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ComplementaryShoreBoundaryOrder.boundarySuccessors_opposite_of_planarBond}
+In the setting of Corollary~\ref{cor:planar-bond-canonical-cap}, let
+\(s_S\) and \(s_{\bar S}\) be the actual facial first-return permutations
+on the two literal shores.  Match their boundary darts by the ambient edge
+flip
+\[
+                         m(d)=\alpha d.
+\]
+Then
+\[
+              s_{\bar S}\bigl(m(s_S(d))\bigr)=m(d).       \tag{29b}
+\]
+Consequently the two canonical inverse-return hub rotations satisfy the
+orientation-reversing seam equation.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ComplementaryShoreBoundaryOrder.orientationReversing_canonicalHubRotation_of_planarBond}
+Together with the two canonical cap equalities, the natural seam composite
+therefore has the complete connected, bridge-free, cubic, rotation-cyclic
+spherical-map package.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ComplementaryShoreBoundaryOrder.bridgelessSphericalCubicMapData_of_planarBond_canonical}
+\end{theorem}
+
+\begin{proof}
+Transport the deleted shore's capped facial first return to the retained
+shore's boundary carrier by reversing every cut edge.  On that common
+carrier the planar-bond boundary theorem says that the retained return
+\(s_S\) is the inverse of the transported deleted return.  Transporting
+this identity back through \(m\) gives exactly~(29b).
+
+The canonical hub rotations are \(s_S^{-1}\) and
+\(s_{\bar S}^{-1}\), so~(29b) is precisely the orientation equation used by
+the seam face-count theorem.  Corollary~\ref{cor:planar-bond-canonical-cap}
+supplies the two face-simple spherical caps, while the literal-shore
+structure lemmas supply connectedness, boundary-essentiality, cubicity, and
+cyclic old-vertex rotations.  The structural seam theorem packages these
+facts on the literal composite.
+\end{proof}
+
 \begin{corollary}[canonical literal-shore splice]
 \label{cor:canonical-literal-shore-splice}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24CanonicalHubClosure.bridgelessSphericalCubicMapData_ofVertexSides_canonical}
@@ -2221,9 +2260,11 @@ spherical face-simple one-hub cap directly from the planar-bond rank and
 Euler's inequality; no Jordan theorem and no per-face tightness are needed.
 What the sphere-cut supplier must still provide is the combinatorial data
 actually used by the splice: nested connected shores, at least two boundary
-darts, and a matching of equal seam states which reverses their computed
-first-return orders.  A tight noose is one sufficient way to manufacture
-that data, but it is not part of the algebraic seam theorem.
+darts, and an equality of ordered seam states which transports the retained
+first-return order.  Theorem~\ref{thm:planar-bond-orders-opposite} then makes
+the natural edge-flip to the complementary shore orientation-reversing
+automatically.  A tight noose is one sufficient way to manufacture the
+ordered shore data, but it is not part of the algebraic seam theorem.
 
 \begin{lemma}[one cubic sphere cut can be moved to edges]
 \label{lem:cubic-noose-edge-perturbation}
@@ -2282,10 +2323,11 @@ Let \(G\) be a connected bridgeless cubic spherical map.  Let
 \(\gamma_i,\gamma_j\), with \(i<j\), be disjoint nested simple nooses which
 avoid vertices and each cross exactly \(k\ge2\) edges.  Suppose the two
 vertex shores of each cut induce connected graphs, the two shores retained
-for the splice are saturated, their boundary first-return orders carry a
-specified orientation-reversing bijection, and the annular slab between
+for the splice are saturated, their ordered geometric seam types identify
+the retained-side boundary first-return orders, and the annular slab between
 them contains a graph vertex.  Delete that slab and glue the paired boundary
-half-edges.  Then the result \(G'\) is a strictly smaller connected
+half-edges, using the ambient edge flip on the outer cut to pass to its
+complementary shore.  Then the result \(G'\) is a strictly smaller connected
 bridgeless cubic spherical map.
 
 If, in addition, the two cuts have the same exact cumulative Count-support
@@ -2299,10 +2341,12 @@ Retain the vertex shore inside the inner cut and the complementary vertex
 shore outside the outer cut.  For each cut, the retained shore and its
 complement are connected; Corollary~\ref{cor:planar-bond-canonical-cap}
 therefore supplies a spherical, face-simple canonical closure with one hub.
-The stipulated equality of ordered seam states identifies the two computed
-first-return orders in opposite directions, so
-Lemma~\ref{lem:canonical-hub-orientation} supplies the required orientation
-reversal.  Hence
+The equality of ordered seam states transports the retained-shore return at
+the inner cut to the retained-shore return at the outer cut.
+Theorem~\ref{thm:planar-bond-orders-opposite} says that ambient edge flip at
+the outer cut transports that order to the inverse order on the complementary
+shore.  Their composite is therefore the orientation-reversing seam matching.
+Hence
 Corollary~\ref{cor:hub-seam-sphericity} proves, by face-orbit counting rather
 than by an implicit drawing, that the glued rotation system is spherical.
 Every retained cubic
@@ -2445,8 +2489,9 @@ Corollary~\ref{cor:hub-seam-sphericity} also close the face-orbit calculation
 once face-simple spherical caps and the orientation equation are supplied.
 The bare matching type cannot manufacture those witnesses.  On literal
 graph-backed shores they now come from connected planar-bond data by
-Corollary~\ref{cor:planar-bond-canonical-cap}, together with the explicit
-opposite first-return equation carried by the ordered seam state.
+Corollary~\ref{cor:planar-bond-canonical-cap};
+Theorem~\ref{thm:planar-bond-orders-opposite} derives the opposite
+first-return equation from the natural ambient edge-flip matching.
 
 \begin{corollary}[parallel seams can be normalized after gluing]
 \label{cor:parallel-seam-normalization}
@@ -2478,9 +2523,11 @@ Therefore a duplicate seam edge need not enlarge the finite receipt.  One
 may glue in the loopless multigraph category and normalize only after the
 closed zero-Count composite has been produced.  The remaining D3-to-supply
 link is narrower than a transverse-noose construction: the chosen sphere-cut
-decomposition must yield nested connected literal shores and a seam-state
-matching which reverses their computed first-return orders.  The cap face
-count, cap sphericity, and one-hub property are no longer open.
+decomposition must yield nested connected literal shores and an ordered
+seam-state identification preserving the retained first-return order.  The
+natural edge-flip then supplies reversal on the complementary shore.  The cap
+face count, cap sphericity, one-hub property, and orientation reversal are no
+longer open.
 
 \begin{theorem}[direct Count-reductive assembly]
 \label{thm:direct-count-reductive-assembly}
@@ -2555,8 +2602,8 @@ the cap hypotheses from connected graph-backed shores and the exact
 planar-bond rank, without a Jordan/noose premise.  The literal
 composite is loopless, and Corollary~\ref{cor:parallel-seam-normalization}
 removes any parallel seam after gluing.  Thus the exact remaining adapter is
-the production of compatible nested connected shores, with opposite ordered
-first-return data, from the supplied vertex-based sphere cuts.
+the production of compatible nested connected shores, with equal retained
+ordered first-return data, from the supplied vertex-based sphere cuts.
 
 Theorem~\ref{thm:direct-count-reductive-assembly} is the shortest literal
 implementation of the companion note's instruction to open the instances,
