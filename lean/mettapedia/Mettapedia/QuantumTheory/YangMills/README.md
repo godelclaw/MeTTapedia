@@ -1,109 +1,106 @@
-# Yang-Mills
+# Yang-Mills Lean Lane
 
-This directory contains the Lean side of the godelclaw Yang-Mills mass-gap and
-renormalization-route audit. It is not a proof of the Clay Yang-Mills and mass
-gap problem.
+This directory records the current formal proof surface for Ben's Yang-Mills
+route. It is not a claimed Millennium solution.
 
-Ben's v14 proof idea begins with finite Wilson lattice gauge theory, runs an
-extended-extraction RG bootstrap intended to contract irrelevant activities,
-uses a stopping-scale Kotecký–Preiss polymer expansion for exponential
-clustering, transports clustering back to fine scales, and invokes
-Osterwalder–Schrader reconstruction to construct the continuum Hilbert space,
-Hamiltonian, and mass gap. The Lean lane keeps those layers distinct.
+Manuscript route (v14): start from finite Wilson lattice gauge theory; run an
+extended-extraction RG bootstrap intended to contract irrelevant activities;
+obtain stopping-scale clustering from a Kotecký–Preiss polymer expansion;
+transport clustering back to fine scales; and use Osterwalder–Schrader
+reconstruction to construct the continuum Hilbert space, Hamiltonian, and mass
+gap. The formalization keeps those layers separate so that finite arithmetic or
+a toy spectral gap cannot silently stand for the continuum construction.
 
-Useful entry points:
+OUR finite-coordinate repairs continue this same proof programme. They retain
+the Wilson-lattice, extended-extraction, KP, glue, and OS architecture while
+replacing false finite-coordinate bridges by quotient-compatible hypercubic and
+boundary-cochain constructions. They are not claims about content already
+present in v14.
 
-- `Mettapedia.QuantumTheory.YangMills` - imports the active Yang-Mills live
-  surfaces.
-- `Mettapedia.QuantumTheory.YangMills.Regression` - imports the focused
-  regression companions.
-- `ProofState.lean` - checked proof-state ledger for route nodes, constructive
-  gate status, and the open endpoint.
-- `Roadmap.lean` - checked roadmap entries for the finite-lattice landmarks,
-  scaling diagnostics, extraction audit, conditional OS scaffold, and open
-  continuum endpoint.
-- `CompletionSteelman.lean` - source-audited completion-input ledger carrying
-  the actual Wilson recursion constant and bridge as explicit fields.
-- `ConstructiveGateObstruction.lean` - compact packet showing that the current
-  RG/extraction route cannot be promoted to a continuum mass-gap theorem until
-  the constructive-QFT interfaces clear.
-- `ContinuumOSReconstruction.lean` - conditional endpoint: lattice gap and
-  clustering plus reflection positivity and OS reconstruction imply a continuum
-  spectral mass gap.
-- `MassGap.lean` - spectral-gap vocabulary and finite-mass/gap-set surfaces.
-- `RGBootstrap.lean`, `RGBootstrapSlack.lean`, and `RGCrux.lean` - RG
-  contraction, slack, and route-obstruction arithmetic.
-- `ExtractionMajorant.lean`, `ExtractionProjection.lean`, and the
-  `Extraction*` modules - extraction/projection algebra and route diagnostics.
-- `WilsonBlockMajorant.lean` - concrete finite Wilson observables and norm-one
-  gauge-invariant coefficient-majorant extraction.
-- `ExtendedExtractionTransfer.lean` - range-only projection counterexample and
-  explicit basis/dual-jet matrix transfer theorem.
-- `WilsonPolymerRecombination.lean` and
-  `WilsonExtractionRecombinationConstant.lean` - norm-one regrouping, the
-  rooted meaning of `14`, ledger arithmetic, and analytic-factor obstructions.
+Current status:
 
-Related papers:
+- `CompletionSteelman.lean` steelmans the five completion inputs from the
+  Ben-facing report.
+- The v14 extraction/recombination constant is not derived as written.
+  `WilsonBlockMajorant.lean` proves norm-one canonical truncation on concrete
+  gauge-invariant finite Wilson observables; `ExtendedExtractionTransfer.lean`
+  gives both the basis/dual-jet transfer theorem and a range-only projection
+  counterexample; `WilsonPolymerRecombination.lean` proves norm-one regrouping
+  by union and refutes the literal total-contact reading of the factor `14`.
+- `Dimension16WilsonExtractionCertificate.lean` records the decisive outcome
+  of attempting the manuscript-facing coordinate construction. F.4 uses an
+  on-shell relation policy while O.9 explicitly selects an off-shell census;
+  v14 gives no dimension-16 lattice representatives, quotient basis, dual
+  jets, biorthogonality matrix, or conditioning certificate. Appendix I's
+  explicit jets belong to the distinct dimension-4 observable sector. Thus
+  the source as written cannot instantiate the positive transfer theorem.
+- Under Appendix O's other proposed factors, substituting the proved
+  extraction factor `1` gives the conditional ledger `C = 5544/5`; depth `15`
+  is the least unrestricted two-source depth and `16` the least even depth.
+  This is not an actual Wilson RG constant until the remaining analytic factor
+  bounds are proved in the same norm.
+- OUR repaired finite relation target is now the coordinate-free
+  `jointInvariantRelationSubmodule` inside the signed hypercubic invariant
+  orbit space. Its off-shell relation submodule embeds in the on-shell one.
+  The exact field-eight trace family, a seven-to-eight commutator relation,
+  and a field-five commutator separator certify rank at least `11558` for
+  either policy. This is a lower bound only: it neither supplies the complete
+  relation census nor the joint quotient dimension or conditioning.
+- `HypercubicDimension16FDIBPCochainJointBridge.lean` now proves that OUR
+  finite derivative-alpha-reduced `F,D`/IBP relation cochains, after the
+  physical operator and signed-hypercubic Reynolds average, surject onto that
+  same joint relation submodule for either policy, with range equal to the
+  whole submodule. Shared off-shell cochains retain their ambient invariant
+  semantics on shell. This identifies the finite relation object; it does not
+  yet provide the full
+  noncommutative Wilson-functional-to-cochain dual jets.
+- `HypercubicDimension16WilsonCartanJointMismatch.lean` now gives the exact
+  boundary of the existing Cartan Wilson chart. Its raw Cartan restriction
+  forgets trace order, so OUR raw restriction of the actual eighth-jet
+  coefficient kills the signed incoming commutator pair even though the
+  corresponding ordinary trace class is certified nonzero. Independently, no
+  map from that `98`-dimensional trace quotient into a `17`-coordinate Cartan
+  chart can be injective. This does not rule out the Wilson route; a full
+  construction must retain noncommutative trace order and the coupled
+  lower-field commutator data.
+- `HypercubicDimension16WilsonTraceOrderRepair.lean` proves the first local
+  repair requirement. On the concrete seven/eight-field commutator quotient,
+  the canonical eight-field trace coordinate cannot descend by itself; every
+  descended trace-order correction has a forced, nonzero seven-field value.
+  The explicit compensator realizes that value, kills the complete physical
+  commutator for either policy, and still detects its isolated eight-field
+  trace component. OUR repair data retain this rational coordinate alongside
+  the exact Cartan Wilson coefficient packet without identifying the pair
+  with a completed noncommutative Wilson functional.
+- The support recurrence is reduced to a manuscript branch choice:
+  coarsen-then-thicken is uniformly bounded, while thicken-only is unbounded.
+- The two-marked centered correlation identity is a named API; a canary proves
+  one-marked pushforward does not imply it.
+- KP convergence and Wilson reflection positivity are represented as
+  classical-import APIs that plug into the OS scaffold. Their route-specific
+  instantiation—actual stopping-scale activities, uniform smallness and source
+  summability, decaying remainders, and compatibility for the same Wilson
+  family and RG kernels—remains open mathematics.
+- The first load-bearing remaining theorem is
+  `FirstLoadBearingYangMillsCompletionInput`, the actual Wilson Yang-Mills RG
+  map recursion producing the lattice gap/clustering bridge consumed by OS
+  reconstruction.
 
-- `papers/benxiv/goertzel_ym.tex`
-- `papers/benxiv/goertzel_ym.pdf`
-- `papers/ym_grassroots.tex`
-- `papers/ym_grassroots.pdf`
+Main status files:
 
-Cross-problem proof-state scan:
+- `ProofState.lean` records route nodes and current endpoint blockers.
+- `Roadmap.lean` records the checked roadmap entries.
+- `CompletionSteelmanRegression.lean` protects the five-input classification.
+- `ContinuumOSReconstruction.lean` contains the conditional OS/Kirk endpoint.
 
-- `lean/mettapedia/Mettapedia/Problems/PROOF_STATE.md`
+The continuum mass-gap endpoint remains open until the actual Wilson RG
+recursion, support branch, two-marked identity, KP convergence, Wilson
+reflection positivity, and OS/subsequential-limit machinery are all instantiated
+for the same route.
 
-## Current Status
-
-The latest steelman branch has no code-level `sorry`. File counts are omitted
-because the branch is still moving; isolated modules, regression aggregates,
-and the full Yang-Mills aggregate have been built with headline axioms confined
-to Lean's standard quotient/classical base.
-
-Checked positive pieces:
-
-- finite strong-coupling mass-gap canaries for `Z2`, `Z3`, and nonabelian `Q8`;
-- transfer-gap-to-clustering algebra in toy/finite settings;
-- a concrete finite Wilson-polynomial extraction with gauge-invariant
-  coefficient-majorant constant one;
-- the exact scalar contraction and two-source bootstrap arithmetic for any
-  supplied recursion constant;
-- a conditional continuum OS scaffold:
-  `BenYMContinuumOSConditional.continuumMassGap`;
-- guardrail canaries for continuum measure, Euclidean covariance, reflection
-  positivity, OS reconstruction, and Hamiltonian transfer interfaces.
-
-Checked negative or blocking pieces:
-
-- v14's advertised Wilson recursion constant is not derived as written: F.5
-  and Appendix O use inconsistent ledgers, and the fluctuation/cumulant factors
-  lack quantitative actual-map proofs;
-- projection range alone does not transfer the norm-one realization to v14's
-  `P_ext`; explicit dimension-16 invariant-basis and dual-jet matrices with
-  conditioning estimates are required;
-- union-support recombination is norm one, while `14` is local rooted branching
-  rather than a universal total-contact bound;
-- lower-even same-constant extraction repairs are arithmetically refuted;
-- the finite RG/extraction ledger alone does not clear the constructive-QFT
-  promotion gate;
-- the continuum mass-gap endpoint remains an open goal:
-  `currentYangMillsMassGapEndpoint_blockedByConstructiveGate`.
-
-## Reading Order
-
-1. `ProofState.lean` for the current verdict.
-2. `Roadmap.lean` for the checked route map.
-3. `Z2StrongCouplingGap.lean`, `Z3StrongCouplingGap.lean`, and
-   `Q8StrongCouplingGap.lean` for finite canaries.
-4. `WilsonBlockMajorant.lean`, `ExtendedExtractionTransfer.lean`,
-   `WilsonPolymerRecombination.lean`, and
-   `WilsonExtractionRecombinationConstant.lean` for the current extraction and
-   recombination verdict.
-5. `RGBootstrapSlack.lean` for the conditional scalar arithmetic.
-6. `ContinuumOSReconstruction.lean` and `ConstructiveGateObstruction.lean` for
-   the conditional continuum endpoint and the live constructive gate.
-
-This directory should be described as a mass-gap/RG route audit with checked
-finite landmarks and a checked conditional continuum scaffold, not as a
-completed construction of Yang-Mills theory and mass gap.
+The incomplete extraction-side mathematics is to extend this local
+trace-order-aware cross-sector coordinate to the full repaired joint quotient,
+then establish its policy-indexed relation census, sparse rank/conditioning
+certificates, and analytic dual jets in the same norm. The recombination-side
+mathematics remains the weighted connected-cumulant/tree/KP estimate for the
+actual Wilson activities in that same norm.

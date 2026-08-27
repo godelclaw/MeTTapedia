@@ -90,11 +90,17 @@ machine-checked \emph{uninhabited}. D.8 message rigidity, D.31 neutrality of the
 complete public-template syntax, D.48's opposite-phase coupling, Definition~7.4
 / Hypothesis~7.5 support-wide pair-neutrality, and full public observability are
 jointly inconsistent. This obstruction uses none of the four analytic frontier
-packages and cannot be repaired merely by changing the lock family. We make no
-claim about $\mathrm{P}$ versus $\mathrm{NP}$, which remains open. Appendices
-record the superseded v12 route --- whose calibration step this companion's
-predecessor was devoted to obstructing --- and a graveyard of disproven
-sub-routes, with their history.
+packages and cannot be repaired merely by changing the lock family.
+\textbf{OURS:} the most direct remaining repair --- classify the target-bearing
+public syntax as charged while retaining D.48, support-wide neutrality of the
+uncharged catalog, full observability, and D.8 rigidity --- is now closed as
+well.  Every exact phase coupling carries charged-public disagreement mass one
+at each target coordinate, hence exactly $|S|$ over a target set $S$; no
+$o(|S|)$ localization is possible under those premises. We make no claim about
+$\mathrm{P}$ versus $\mathrm{NP}$, which remains open. Appendices record the
+superseded v12 route --- whose calibration step this companion's predecessor was
+devoted to obstructing --- and a graveyard of disproven sub-routes, with their
+history.
 \end{abstract}
 
 \tableofcontents
@@ -438,6 +444,68 @@ pass rather than assume. What they do \emph{not} supply are the quantitative
 estimates --- max-qSSM, gauge-rank entropy, boundary-law mixing --- which remain
 interface hypotheses (\S\ref{sec:scope}).
 
+\subsection{OURS: the charged-public repair has a linear budget}
+\label{sec:charged-public}
+
+The preceding inconsistency uses D.31's classification of the complete public
+catalog as neutral.  The direct repair is to split that same catalog into
+pair-neutral primitives and primitives with charged expansions.  This does
+remove the literal contradiction, but it exposes a quantitative obstruction.
+For the exact D.48 coupling $\Gamma_j$ at target coordinate $j$, let
+\[
+  D_j=\{(\omega_0,\omega_1):
+    \text{some charged public primitive has different values at }
+    \omega_0,\omega_1\}.
+\]
+This is the ordinary union of charged-primitive disagreement events; its
+definition contains no target predicate.  Exact phase marginals give
+$B_j(\omega_0)\ne B_j(\omega_1)$ with $\Gamma_j$-probability one.  On any
+positive-mass pair outside $D_j$, every charged primitive agrees by definition
+and every neutral primitive agrees by the retained Definition~7.4 condition.
+Full-catalog observability then makes the public instances equal, and D.8
+public-fiber rigidity makes the target bits equal, a contradiction.  Therefore
+\[
+  \Gamma_j(D_j)=1,
+  \qquad
+  \sum_{j\in S}\Gamma_j(D_j)=|S|.
+\]
+Lean proves the pointwise identity, its finite-set sum, and the strict corollary
+that no coefficient $c<1$ upper-bounds the total on a nonempty $S$:
+\begin{lstlisting}
+theorem v13D48_chargedPublicDisagreementMass_eq_one :
+    chargedPublicDisagreementMass D48 theta m t j = 1
+theorem v13D48_chargedPublicDisagreementTotal_eq_card :
+    chargedPublicDisagreementTotal D48 theta m t S = S.card
+theorem v13D48_chargedPublicDisagreementTotal_not_subunit :
+    c < 1 -> S.Nonempty ->
+    not (chargedPublicDisagreementTotal D48 theta m t S <= c * S.card)
+\end{lstlisting}
+
+This is an internal consistency and budget theorem for the displayed coupling
+architecture.  It supplies no circuit lower bound, oracle separation, or
+arithmetized lower bound, and therefore makes no claim to cross the
+relativization, natural-proofs, or algebrization barriers.  Its force is the
+narrower one proved above: every construction retaining the listed premises
+pays the same linear charged-public term.
+
+A resumable exact transport census supplied the finite verdict before the
+general proof.  It exhausts all nonconstant Boolean targets and charged masks
+through three public bits: 2,092 candidate target/mask pairs, of which 530 admit
+the exact conditional phase marginals together with neutral-fiber agreement.
+None has optimum below one; the minimum is sharp, while the largest optimum in
+the census is $12/7$.  Integral primal flows and the coefficient-one dual
+certificate are checked independently in Lean in dimensions one, two, and
+three.  The strongest localization canary reuses one charged atom for every
+target: the number of distinct charged atoms stays one, but the
+coordinate-summed mass is still exactly $|S|$.  Paying that atom only once would
+discard the coordinate multiplicity already isolated by the atomic-budget
+no-double-counting theorem.
+
+Thus changing D.31 alone cannot repair the advertised $o(|S|)$ Atomic Evidence
+Budget.  A surviving route must alter another structural premise, absorb a
+linear public term and replace the lower-bound architecture, or obtain its
+sublinear estimate from a genuinely different quantity.
+
 \section{The concrete instantiation: Phase E, the observer ladder, and a
 refuted family}
 \label{sec:instantiation}
@@ -608,15 +676,18 @@ D.8 then makes the designated message coordinate equal. The opposite-phase
 marginals make that same coordinate unequal, a contradiction.
 
 This no-go is independent of lock arity, linearity, geometry, buffer behavior,
-gauge action, and all four analytic packages. A viable revision must charge some
-public syntax contrary to D.31, weaken D.8, change the D.48 phase coupling,
-replace the Section-7 support-wide neutrality rule and re-prove the Atomic
-Evidence Budget with a public-syntax term, or abandon full public observability.
-The last option conflicts with the stated observer model. The four analytic
-packages --- max-qSSM; bounded incidence plus the Atomic Evidence Budget;
-conditional boundary mixing; and fixed-clock global message incompressibility ---
-remain open mathematics, but they cannot inhabit the jointly inconsistent
-mechanical interface without such a route revision.
+gauge action, and all four analytic packages.  Charging public syntax contrary
+to D.31 is the direct consistency repair, but the OURS result in
+\S\ref{sec:charged-public} proves that its D.48 charged-disagreement term is
+exactly linear, not $o(|S|)$.  A viable revision must therefore weaken D.8,
+change the D.48 phase coupling, replace the Section-7 support-wide neutrality
+rule, abandon full public observability, or replace the lower-bound architecture
+so that it does not require a sublinear charged-public term. The observability
+option conflicts with the stated observer model. The four analytic packages ---
+max-qSSM; bounded incidence plus the Atomic Evidence Budget; conditional
+boundary mixing; and fixed-clock global message incompressibility --- remain
+open mathematics, but they cannot inhabit the jointly inconsistent mechanical
+interface without such a route revision.
 
 \section{Obstructions and reroutings}
 \label{sec:obstructions}
@@ -713,12 +784,15 @@ nonempty form is refuted by
 \texttt{v13M4OpenConstructionObligations\_uninhabited}.
 
 \paragraph{Route revision required.} Before the analytic frontiers can be a
-same-object completion program, at least one of D.8, D.31, D.48, Definition~7.4
-/ Hypothesis~7.5, or full public observability must be revised and the affected
-lower-bound argument reproved. Independently open work includes the sharp
-$2^q/2^m$ causal counting bounds for $q\ge2$, the random-switching lift
-\texttt{PhaseEScaledSwitchingStatementNeeded}, the $\StarSW$ average-case hardness
-input, and the boundary/buffer contraction hypotheses.
+same-object completion program, at least one of D.8, D.48, Definition~7.4 /
+Hypothesis~7.5, or full public observability must be revised and the affected
+lower-bound argument reproved.  Revising D.31 alone to charge the remaining
+public syntax restores consistency but, by \S\ref{sec:charged-public}, forces a
+coefficient-one linear disagreement budget and does not restore Theorem~7.23's
+$o(|S|)$ conclusion. Independently open work includes the sharp $2^q/2^m$
+causal counting bounds for $q\ge2$, the random-switching lift
+\texttt{PhaseEScaledSwitchingStatementNeeded}, the $\StarSW$ average-case
+hardness input, and the boundary/buffer contraction hypotheses.
 
 \paragraph{$\mathrm{P}$ versus $\mathrm{NP}$ remains open.} We make no claim in
 either direction. The value of the formalization is the verified plumbing and the
@@ -752,7 +826,10 @@ are \texttt{V13FaithfulQuantitativeFrontiers} and
 \texttt{PNPv13FaithfulM4Spec}; the adaptive counting and final faithful-interface
 verdict are in \texttt{V13FaithfulM4AdaptiveGaugeProduct},
 \texttt{V13FaithfulM4CouplingObstruction}, and the non-vacuous
-\texttt{V13M4OpenConstructionObligations} target. Lean listings
+\texttt{V13M4OpenConstructionObligations} target.  The OURS charged-public
+verdict and its finite primal/dual checker are
+\texttt{PNPv13ChargedPublicBudgetObstruction} and
+\texttt{PNPv13ChargedPublicBudgetFiniteCertificates}. Lean listings
 are ASCII transliterations of the source declarations
 (the sources are normative); every headline was checked with \texttt{\#print
 axioms}. Per-declaration source links are omitted pending publication of the

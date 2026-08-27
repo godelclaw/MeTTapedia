@@ -87,8 +87,11 @@ def LockedMessageSpec
     (Y : PublicLock) (msg : Message) : Prop :=
   ∀ L : C.LockedCompletion Y, L.message = msg
 
-/-- Public-message invariant candidate: all accepted completions over one
-supported public lock read the message determined by that public lock. -/
+/-- Explicit Appendix-D construction hypothesis: all accepted completions
+over one supported public lock read the message selected by that public lock.
+This is D.8 locked-message rigidity in chosen-function form, not a modest
+derived invariant.  It must remain a named hypothesis until proved from the
+actual bounded-arity lock/readout construction. -/
 def PublicMessageInvariant
     (C : AppendixDLockedCore PublicLock Quotient LockAux Message)
     (publicMessage : PublicLock → Message) : Prop :=
@@ -142,6 +145,49 @@ theorem lockedMessageSpec_unique_of_lockSatisfiable
     msg = msg' := by
   rcases hsat hY with ⟨L⟩
   exact (hmsg L).symm.trans (hmsg' L)
+
+/-- Public message selected from D.7 satisfiability and D.8 rigidity.
+Unsupported locks receive the supplied default value; the invariant below only
+uses supported locks. -/
+noncomputable def publicMessageOfLockedRigidity
+    (C : AppendixDLockedCore PublicLock Quotient LockAux Message)
+    (defaultMessage : Message)
+    (hsat : C.LockSatisfiable)
+    (hrigid : C.LockedMessageRigidity) :
+    PublicLock → Message := by
+  classical
+  exact fun Y =>
+    if hY : C.support Y then
+      Classical.choose
+        (C.exists_lockedMessageSpec_of_lockSatisfiable_of_lockedMessageRigidity
+          hsat hrigid hY)
+    else
+      defaultMessage
+
+/-- D.7 plus D.8 constructs the public-message invariant used by the real
+single-message and SAT-search adapters.  The theorem does not prove D.8; for
+M4, locked-message rigidity remains the construction obligation.
+
+In particular, D.7 and D.8 are incompatible with a reading of D.30 that
+forbids the existence of *every* set-theoretic recovery map from the complete
+public lock syntax.  D.30 must instead prohibit raw/local or computationally
+uncharged recovery: D.8 itself makes the common message a function of the
+public syntax. -/
+theorem publicMessageInvariant_of_lockSatisfiable_of_lockedMessageRigidity
+    (C : AppendixDLockedCore PublicLock Quotient LockAux Message)
+    (defaultMessage : Message)
+    (hsat : C.LockSatisfiable)
+    (hrigid : C.LockedMessageRigidity) :
+    C.PublicMessageInvariant
+      (C.publicMessageOfLockedRigidity defaultMessage hsat hrigid) := by
+  intro Y hY L
+  classical
+  unfold publicMessageOfLockedRigidity
+  rw [dif_pos hY]
+  exact
+    Classical.choose_spec
+      (C.exists_lockedMessageSpec_of_lockSatisfiable_of_lockedMessageRigidity
+        hsat hrigid hY) L
 
 /-- Exact D.8 obstruction: two locked completions with different messages refute
 locked-message rigidity. -/
@@ -227,6 +273,28 @@ def WitnessExistsOnSupport
     (D : AppendixDWitnessData PublicLock Quotient LockAux Message Public Witness) :
     Prop :=
   ∀ {Y : Public}, D.support Y → ∃ W : Witness Y, D.validWitness Y W
+
+/-- Every supported public lock syntax is represented by some supported public
+instance.  This is the exact coverage condition needed to turn witness-level
+existence into Appendix D.7 lock satisfiability. -/
+def PublicLockCoveredBySupportedInstances
+    (D : AppendixDWitnessData PublicLock Quotient LockAux Message Public Witness) :
+    Prop :=
+  ∀ {Ylock : PublicLock}, D.core.support Ylock →
+    ∃ Y : Public, D.support Y ∧ D.publicLock Y = Ylock
+
+/-- Supported witness existence plus public-lock coverage gives Appendix D.7
+lock satisfiability for the underlying locked core. -/
+theorem core_lockSatisfiable_of_witnessExistsOnSupport_of_publicLockCovered
+    (D : AppendixDWitnessData PublicLock Quotient LockAux Message Public Witness)
+    (hwit : D.WitnessExistsOnSupport)
+    (hcover : D.PublicLockCoveredBySupportedInstances) :
+    D.core.LockSatisfiable := by
+  intro Ylock hYlock
+  rcases hcover hYlock with ⟨Y, hY, hPublicLock⟩
+  rcases hwit hY with ⟨W, hW⟩
+  exact ⟨by
+    simpa [hPublicLock] using D.witnessCompletion W hW⟩
 
 /-- Appendix D.42 proposition-level public message specification. -/
 def PublicMessageSpec
@@ -331,6 +399,28 @@ theorem exists_projectedMessageSpec_of_lockedMessageRigidity
   refine ⟨D.projection Y α₀, ?_⟩
   intro α hα
   exact D.singleMessageReadout_of_lockedMessageRigidity hrigid hY α α₀ hα hα₀
+
+/-- Appendix I satisfiability on support supplies witness existence for the
+underlying Appendix D witness layer. -/
+theorem witnessExistsOnSupport
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness) :
+    D.toAppendixDWitnessData.WitnessExistsOnSupport := by
+  intro Y hY
+  rcases D.satOnSupport hY with ⟨α, hα⟩
+  exact ⟨D.extract Y α, D.cnfSound hα⟩
+
+/-- Appendix I support plus public-lock coverage gives Appendix D.7 lock
+satisfiability for the underlying locked core. -/
+theorem core_lockSatisfiable_of_publicLockCovered
+    (D : AppendixICNFReadoutData
+      PublicLock Quotient LockAux Message Public Var Witness)
+    (hcover :
+      D.toAppendixDWitnessData.PublicLockCoveredBySupportedInstances) :
+    D.core.LockSatisfiable :=
+  D.toAppendixDWitnessData
+    |>.core_lockSatisfiable_of_witnessExistsOnSupport_of_publicLockCovered
+      D.witnessExistsOnSupport hcover
 
 /-- Appendix I.26(i)--(iii): satisfiability, sound extraction, and fixed
 projection readout, omitting only the separate polynomial-uniformity item. -/

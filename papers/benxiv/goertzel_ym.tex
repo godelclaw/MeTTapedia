@@ -69,7 +69,7 @@
 RG Contraction in the Wilson-Lattice / OS Route\\
 to a 4D Yang--Mills Mass Gap}
 \author{The MeTTapedia formalization effort}
-\date{July 2026}
+\date{August 2026}
 
 \begin{document}
 \maketitle
@@ -204,6 +204,331 @@ three still-conditional analytic factors gives budget $5544/5$, whose
 two-source arithmetic closes first at depth $15$. This is a quantitative
 tree-level constant-Cartan restoration theorem, not an interacting
 Symanzik theorem or a constructive continuum limit.
+
+A sixth machine-checked round makes the repaired finite relation target
+coordinate-free. For either relation policy, the invariant physical relation
+submodule $\mathcal J_p$ is defined as the preimage of the full physical
+relation range inside the signed $H(4)$-invariant orbit space. The exact
+off-shell-to-on-shell inclusion is proved. A family of $11{,}556$ transferred
+field-eight trace relations, an independent seven-to-eight commutator row, and
+an explicit four-to-five-field commutator row with Reynolds coordinate
+$-1/24$ give the certified bound
+\[
+  11558 \leq \dim_{\mathbb Q}\mathcal J_p.
+\]
+This is a lower bound, not a complete joint rank, quotient dimension, or
+conditioning certificate.
+Our finite derivative-alpha-reduced $F,D$/IBP relation cochains now map by
+the physical relation operator followed by signed $H(4)$ Reynolds averaging
+onto this same $J_p$. The map is $H(4)$-equivariant, surjective for both
+policies, and has range equal to the whole $J_p$; shared off-shell cochains
+retain their ambient invariant semantics on shell. This identifies the
+repaired finite relation object. It does not supply the still-missing full
+noncommutative Wilson-functional
+coordinates or analytic dual jets. A further exact comparison fixes why the
+existing Cartan chart cannot be silently reused for that task: the two
+literal eight-field endpoints of a certified incoming covariant-commutator
+column have the same unordered Cartan plane decoration but different trace
+orders. Our raw Cartan restriction of the actual Wilson eighth-jet coefficient
+kills their signed difference, while its ordinary derivative-free
+trace-quotient class is certified nonzero. Independently, that trace quotient
+has dimension $98$, so no map from it into a $17$-coordinate Cartan chart can
+be injective. More sharply, no ordinary-trace-quotient coordinate which
+agrees with the actual Cartan eighth-jet scalar on every raw labelled input
+can even detect that certified incoming trace-order class; an injective
+realization of this scalar coordinate is therefore formally uninhabited.
+This is not a no-go for the Wilson route. It specifies the repair: a full
+Wilson coordinate system must retain noncommutative trace order and the
+coupled lower-field commutator component in additional coordinates
+(\texttt{HypercubicDimension16WilsonCartanJointMismatch},
+\texttt{HypercubicDimension16\allowbreak{}WilsonCartan\allowbreak{}TraceOrderFaithfulnessNoGo}).
+
+\textsc{Ours.} The first finite repair requirement is now exact.  On the
+concrete seven/eight-field commutator quotient, the canonical eight-field
+trace coordinate cannot descend by itself.  More sharply, every descended
+trace-order correction has a forced nonzero value on the seven-field component
+of the coupled row.  The explicit compensator realizes that value; it kills
+the complete projected physical commutator for either relation policy while
+still detecting its isolated eight-field trace component.  We package this
+rational quotient coordinate beside the exact Cartan Wilson coefficient packet,
+not as an identification of the two and not as a completed analytic
+noncommutative Wilson functional
+(\texttt{HypercubicDimension16WilsonTraceOrderRepair}).
+
+\textsc{Ours.} The trace-order layer is now fully coordinatized on this
+bounded quotient.  The existing $98$ exact ordinary trace duals assemble into
+an injective packet with a checked synthesis map recovering every ordinary
+trace class.  Composed with the forced seven-field compensator, this packet
+kills the full projected physical commutator for either relation policy while
+retaining its isolated eight-field component as the exact nonzero two-pivot
+trace vector.  This makes a finite noncommutative trace-order coordinate layer
+available beside the Cartan packet; it does not identify that rational layer
+with an analytic Wilson functional, establish descent through the full
+relation range, or supply a conditioning estimate for the added seven-field
+compensator
+(\texttt{HypercubicDimension16\allowbreak{}WilsonTraceOrder\allowbreak{}CoordinateCompletion}).
+
+\textsc{Ours.} The first signed-hypercubic extension is then tested rather
+than assumed.  A one-coordinate extension kills the commutator and
+derivative-free trace rows but has an explicit nonzero value on a physical
+IBP row.  A second field-relabel-invariant split-derivative/plane coordinate
+supplies exactly the missing independent value.  The resulting two-coordinate
+signed-$H(4)$-invariant correction kills the concrete commutator, the displayed
+IBP row, and every lifted derivative-free eight-field trace generator.  A
+further exact test constructs a genuine three-distinct-axis innermost Bianchi
+row; both coordinates have zero signed weights on its three normalized
+summands, so the correction kills the row under either policy and its
+Reynolds-averaged invariant relation member.  An explicit on-shell EOM row
+has four contracted-axis terms; both coordinates have zero signed weights on
+each term, while exact normalization removes the diagonal term and leaves
+orientations $1,1,-1$.  Thus the correction also kills that physical row and
+its Reynolds-averaged on-shell relation member.
+
+\textsc{Ours.} The next genuine IBP row is not silently absorbed.  It has a
+different split derivative pattern, and the two-coordinate correction has the
+exact nonzero value $(1/2)$ times the incoming trace class on it.  A third
+field-relabel-invariant plane/derivative coordinate has calibrated value $1$
+on this row and signed weight $0$ on the already checked commutator, first
+IBP, Bianchi, and EOM rows.  Subtracting one half of its trace contribution
+therefore kills the new physical row and its Reynolds-averaged invariant
+relation member while retaining those earlier physical and invariant checks.
+This is a finite repair family: it neither establishes annihilation of the
+full Bianchi/EOM/IBP/trace relation range nor constructs noncommutative
+Wilson-functional analytic coordinates
+(\texttt{HypercubicDimension16WilsonTraceOrderInvariantRepair},
+\texttt{HypercubicDimension16WilsonTraceOrderInvariantBianchi},
+\texttt{HypercubicDimension16WilsonTraceOrderInvariantEOM},
+\texttt{HypercubicDimension16\allowbreak{}WilsonTraceOrder\allowbreak{}InvariantThreeCoordinateRepair}).
+
+\textsc{Ours.} The next canonical trace family supplies an exact boundary
+test rather than an implicit closure claim.  On the same decorated seven-field
+carrier, the polarized $\mathrm{SU}(2)$ trace-anticommutator row has source,
+adjacent-swap, and split-trace terms.  The three existing coordinates see the
+same field and derivative decorations in all three terms: the first has total
+value $1/2$, while the two plane/derivative coordinates vanish.  The
+three-coordinate correction therefore has the exact nonzero value
+$(1/2)$ times the incoming trace class, both on the physical row and on its
+Reynolds-averaged member of $J_p$, for either policy.  Thus it cannot descend
+through the complete relation range
+(\texttt{HypercubicDimension16\allowbreak{}WilsonTraceOrder\allowbreak{}TraceAnticommutator\allowbreak{}Obstruction}).
+
+\textsc{Ours.} That failure has a finite, trace-topological repair.  We gate
+the derivative-axis character by the relabel-invariant condition that the
+trace permutation has exactly one two-cycle.  The source and swap have cycle
+type $\{7\}$, while the split term has type $\{2,5\}$; their exact signed
+weights are respectively $0$, $0$, and $32$.  The resulting fourth scalar is
+$-1$ on the full trace-anticommutator row, so adding one half of its incoming
+trace-class contribution cancels the preceding $(1/2)$ residual.  Kernel
+replay also gives zero on the displayed commutator, both explicit IBP rows,
+Bianchi, on-shell EOM, and every lifted derivative-free eight-field trace row,
+before and after Reynolds averaging.  This repairs the displayed finite family
+only: it does not establish descent through all of $J_p$, a complete relation
+census, or a noncommutative Wilson-functional coordinate system
+(\texttt{HypercubicDimension16\allowbreak{}WilsonTraceOrder\allowbreak{}TraceTopology\allowbreak{}Repair}).
+
+\textsc{Ours.} The canonical fundamental three-cut identity tests that repair
+on a distinct six-term trace wiring.  Its six summands have cycle types
+$\{7\},\{6\},\{2,5\},\{6\},\{7\},\{5\}$.  The four-coordinate functional
+therefore has exact value $-\tfrac12$ times the incoming trace class, on both
+the physical row and its Reynolds member.  A fifth scalar gates the same
+derivative-axis character by the presence of one six-cycle.  Its exact signed
+weights on those six summands are $0,32,0,32,0,0$, giving normalized value
+$-2$; adding $-\tfrac14$ of its incoming trace contribution cancels the
+residual.  The new scalar has zero value on the displayed
+trace-anticommutator row, so the two named canonical families remain killed
+before and after averaging.  This is again a finite named-family repair, not
+a proof of descent through all of $J_p$ or a complete Wilson-functional
+coordinate construction
+(\texttt{HypercubicDimension16\allowbreak{}WilsonTraceOrder\allowbreak{}FundamentalThreeCut\allowbreak{}Repair}).
+
+\textsc{Ours.} The two individual gate repairs admit a more constrained
+finite continuation.  We enumerate all $210$ ordered choices of three
+distinct cut labels on the same seven-cycle, form the alternating six-term
+trace-cycle profile, and find four topology equations.  Together with the
+polarized trace-anticommutator equation, they uniquely force the coefficients
+\[
+  (c_2,c_3,c_4,c_5,c_6)
+    =\left(\tfrac65,\tfrac{13}{10},-1,-\tfrac7{10},-\tfrac35\right)
+\]
+for the gates recording one cycle of lengths two through six.  Kernel replay
+checks that this full rational profile vanishes for every one of the $210$
+ordered placements.  We lift it to a signed-hypercubic coordinate and verify
+that it kills the two displayed canonical physical rows and their
+Reynolds-averaged members.  Each certified placement is now mapped to a
+distinct actual fundamental-trace site and policy-indexed physical relation
+generator; its finitely supported source cochains embed injectively in our
+$F,D$/IBP cochain space and map by signed Reynolds semantics to the
+coordinate-free joint relation submodule.  The canonical label recovers the
+previously displayed fundamental row.  A separate symbolic field-sector
+transport proves that the whole finitely supported physical three-cut family
+has zero exact field-eight invariant projection for either relation policy:
+all six trace-rewire terms remain seven-field.  OUR physical trace-cycle
+bridge next factors every rewire's signed Reynolds weight through the same
+profile gate, replays the six-gate cancellation on all $210$ actual labels,
+and proves that the invariant trace-cycle-profile coordinate annihilates every
+finitely supported cochain in this physical family under either policy.  The
+three earlier coordinate weights are trace-order blind: rewiring changes the
+trace but not the decorated local word, so the six signed weights agree and
+their alternating coefficients cancel identically.  We transport that
+identity through the actual physical relation operator and prove that the
+separate three-coordinate correction also annihilates every cochain in this
+family.  Thus the full current cycle-profile correction is zero on this
+realized physical family under either policy.  This closes the field-eight
+sector and all current correction coordinates for this family only; it does
+not identify every physical source generator, establish descent through all of
+$J_p$, give a complete relation census or conditioning certificate, or
+construct noncommutative Wilson-functional coordinates
+(\texttt{HypercubicDimension16\allowbreak{}FundamentalTraceCycleProfile},
+\texttt{HypercubicDimension16\allowbreak{}WilsonTraceOrder\allowbreak{}CycleProfile\allowbreak{}Repair},
+\texttt{HypercubicDimension16\allowbreak{}FundamentalTracePhysicalFamily},
+\texttt{HypercubicDimension16\allowbreak{}FundamentalTracePhysicalFieldEight},
+\texttt{HypercubicDimension16\allowbreak{}FundamentalTracePhysicalCycleProfile},
+\texttt{HypercubicDimension16\allowbreak{}FundamentalTracePhysicalThreeCoordinate}).
+
+\textsc{Ours.} The polarized trace-anticommutator test is now extended from
+its displayed placement to all seven adjacent placements on the same actual
+physical seven-cycle.  Each physical row has the unrewired, adjacent-swap,
+and split-trace terms with one common field/derivative decoration.  The three
+trace-order-blind coordinates consequently retain the common
+$\tfrac12$ incoming trace-class residual.  A kernel-reduced finite replay of
+the seven trace topologies gives the common profile value
+$-\tfrac12$, so the profile contribution cancels that residual at every
+placement.  The seven basis rows embed injectively into the policy-indexed
+$F,D$/IBP source and their finitely supported cochains map by signed Reynolds
+semantics into the coordinate-free joint relation submodule; the full current
+cycle-profile correction vanishes on this whole finite family under both
+policies.  This is a second realized trace-family block, not a census of
+trace-anticommutator sites on arbitrary carriers or a descent theorem for all
+of $J_p$
+(\texttt{HypercubicDimension16\allowbreak{}TraceAnticommutator\allowbreak{}PhysicalFamily}).
+
+\textsc{Ours.} The full profile correction is also tested against the five
+displayed non-trace calibration rows of the physical relation operator: the
+covariant commutator, the original and second integration-by-parts rows,
+Bianchi, and the on-shell equation-of-motion row.  For every normalized
+seven-field summand, the signed $H(4)$ orbit sum of the new profile
+multiplicity is replayed exactly in the kernel; each relevant sum is zero.
+Linearity and the already-identified physical rows then show that the full
+correction kills both the physical rows and their Reynolds-averaged invariant
+representatives.  Those representatives are genuine members of the
+coordinate-free joint relation submodule.  An arbitrary-carrier bridge then
+identifies every physical source-eight traceless, polarized-anticommutator,
+and fundamental three-cut row with the derivative-free field-eight schema.
+The derivative-bearing site types are empty at that source count.  Thus the
+full correction annihilates every source-eight physical relation column, not
+only a chosen lifted family.  OUR source-six curvature-pair bridge next
+handles the sole cross-sector covariant-commutator branch: its two seven-field
+insertions have the same three decoration coordinates and conjugate trace
+permutations, hence the same signed-Reynolds profile coordinate, so their
+opposite row signs cancel.  Combined with the field-support theorem below six,
+the full correction now annihilates every arbitrary physical relation column
+outside the source-seven band.  This is not a source-seven census, a complete
+physical relation census, a proof that these rows span $J_p$, or descent
+through all of $J_p$
+(\texttt{HypercubicDimension16\allowbreak{}WilsonTraceOrder\allowbreak{}CycleProfile\allowbreak{}SourceSix},
+\texttt{HypercubicDimension16\allowbreak{}FieldEightTracePhysicalCompleteness}).
+
+\textsc{Ours.} The remaining source-seven boundary is now narrowed by an
+exact counterexample to the present \emph{one-class} repair, rather than left
+as an undifferentiated census task.  We construct a second physical
+covariant-commutator carrier whose two curvature insertions have plane profile
+$(0,0,1,0,0,0,0,1)$ and different trace orders.  Its signed eight-field pair
+has a kernel-checked value $-4/3$ under an ordinary derivative-free trace
+quotient functional.  At the same evaluation assignment, the original incoming
+class used by each of the existing seven-field compensator coordinates has
+value zero.  Consequently the functional evaluates the full current
+cycle-profile correction on this actual row to $4/3$, so that correction is
+nonzero under both physical relation policies.  This refutes only the current
+correction family, whose compensators all take values in the single original
+incoming trace class.  We then construct a bounded two-class repair of these
+two actual rows.  Two field-relabel-invariant signed-$H(4)$ selectors count a
+whole two-derivative word together with the plane on a distinct field.  Their
+exact values on (incoming, secondary) are $(1,0)$ and $(0,1)$, respectively.
+Rather than substitute that standalone map for the prior correction, we replay
+the new secondary selector on the already checked first-IBP, Bianchi,
+on-shell EOM, fundamental three-cut, polarized trace, and lifted field-eight
+rows; every listed value is zero.  The genuine second-IBP row instead has
+normalized selector value $1$.  Let $R$ be the exact (and certified nonzero)
+residual of the prior correction on the secondary row.  OUR two-class
+augmentation is the prior correction minus the secondary selector times $R$;
+on the second-IBP row it has exact value $-R$, so this is a machine-checked
+incompatibility rather than an omitted check.  We then use the independent
+third split-derivative/plane coordinate already calibrated by the earlier
+three-coordinate construction.  Its signed sums vanish on both displayed
+source-seven commutators and its normalized second-IBP value is $1$.
+Adding this third coordinate times $R$ produces OUR three-class correction.
+It cancels both commutators and the named first-IBP, second-IBP, Bianchi,
+on-shell EOM, fundamental, polarized-trace, and lifted field-eight rows under
+either relation policy.  A further actual source-seven singleton-trace row
+then refutes this three-class architecture under both policies.  It shares the
+incoming two-derivative word but has one genuine singleton trace.  Its exact
+signed weights for the original derivative, IBP, third, and cycle-profile
+coordinates are $32$, $0$, $0$, and $-96/5$, respectively; both plane-profile
+selectors vanish.  Hence the full three-class correction has exact value
+$(-1/10)$ times the certified nonzero incoming trace class.  More generally,
+every correction obtained from the cycle-profile term by assigning arbitrary
+quotient values to these same three selectors has that value on this row, so
+no adjustment of those three added selector values, with the cycle-profile
+base held fixed, can descend through the physical relation submodule.  The
+next finite task is to solve the exact compatibility system after also allowing
+the existing base scalar coordinates to vary.  This is a machine-checked
+mismatch, not a complete source-seven census, joint rank or conditioning
+calculation, or Wilson-functional coordinate system
+(\texttt{HypercubicDimension16\allowbreak{}WilsonTraceOrder\allowbreak{}CycleProfile\allowbreak{}SourceSevenMismatch},
+\texttt{HypercubicDimension16\allowbreak{}WilsonTraceOrder\allowbreak{}CycleProfile\allowbreak{}SourceSevenCorrectionRefutation},
+\texttt{HypercubicDimension16\allowbreak{}WilsonTraceOrder\allowbreak{}CycleProfile\allowbreak{}SourceSevenTwoClassRepair},
+\texttt{HypercubicDimension16\allowbreak{}WilsonTraceOrder\allowbreak{}CycleProfile\allowbreak{}SourceSevenTwoClassCompatibility},
+\texttt{HypercubicDimension16\allowbreak{}WilsonTraceOrder\allowbreak{}CycleProfile\allowbreak{}SourceSevenThreeClassRepair},
+\texttt{HypercubicDimension16\allowbreak{}WilsonTraceOrder\allowbreak{}CycleProfile\allowbreak{}SourceSevenThreeClassTracelessRefutation}).
+The first exact reparameterization test is now positive.  Without adding a
+coordinate, we form the signed-$H(4)$-invariant scalar direction
+$-A+\frac12B-\frac12C-P+I+S$, where $A,B,C,P$ are the established derivative,
+two IBP, and cycle-profile coordinates and $I,S$ are the two plane-profile
+selectors.  Multiplying that direction by the already certified incoming trace
+class and adding it to OUR three-class correction contributes exactly
+$+\frac1{10}$ of that class on the singleton row.  It therefore cancels the
+previous $-\frac1{10}$ value, while its exact values on both explicit
+source-seven commutators are zero.  Further kernel-reduced signed-orbit
+replays give zero on the displayed first-IBP row under the off-shell policy,
+on the second-IBP and Bianchi rows under either policy, on the displayed
+on-shell EOM row, on the canonical fundamental three-cut row, and on the
+polarized trace-anticommutator row.  This is a checked repair on nine actual
+named rows, but it does not descend.  A second actual singleton-trace
+relation retains the independent derivative geometry of the second-IBP
+carrier while making field $0$ a genuine one-letter trace.  Its six signed
+weights are
+\[
+  [32,0,0,-96/5,0,16].
+\]
+Thus its third-coordinate value is $0$ and its secondary plane-profile value
+is $1$.  The already certified quotient functional annihilates the literal
+incoming class but evaluates the stored secondary residual as $4/3$; it
+therefore evaluates the complete six-scalar repair as $-4/3$ under either
+physical policy.  This is a machine-checked refutation of descent for that
+specific scalar family, not a refutation of an enlarged coordinate family or
+of a semantics-preserving canonical $(F,D)$ bridge
+(\texttt{HypercubicDimension16\allowbreak{}WilsonTraceOrder\allowbreak{}ExistingScalarParameterRepairTracelessRefutation}).
+The functional statement is stronger than the displayed six-coefficient
+calculation: every map obtained from the fixed three-class correction by
+adding an arbitrary scalar-valued functional times the literal incoming class
+has the same value $-4/3$ on this witness, because the separating functional
+annihilates that entire literal direction.  Thus no scalar-literal extension
+can descend; a repair must change a non-literal quotient direction or the
+three-class base itself
+(\texttt{HypercubicDimension16\allowbreak{}WilsonTraceOrder\allowbreak{}ThreeClassScalarExtensionRefutation}).
+The most direct prospective extra coordinate has also been screened exactly:
+gating the derivative-axis character by one genuine fixed trace point detects
+the singleton row with numerator $32$, but has complete fundamental-three-cut
+numerator $-64$, hence singleton-normalized value $-2$ on a row the current
+correction annihilates.  This gate alone therefore cannot be appended with a
+nonzero target; any such topology extension needs a companion cancellation
+direction (	exttt{HypercubicDimension16\allowbreak{}WilsonTraceOrder\allowbreak{}FixedPointTopologyScreen}).
+
+\textsc{Ours:} the boundary-cochain, hypercubic, and joint-quotient
+constructions repair precise broken steps within the same Wilson lattice
+$\to$ extended-extraction RG $\to$ KP $\to$ glue $\to$ OS proof programme.
+They are not an alternative endpoint theorem, and they are not attributed to
+v14 where v14 does not contain them.
 
 Thus there is presently no derived constant $C_{\mathrm{true}}$ for the Wilson
 recursion. The support recurrence, two-marked glue identity, stopping-scale
@@ -878,6 +1203,25 @@ relation operator is not block diagonal in field count: the derivative-free
 eight-field trace quotient cannot replace the joint dimension-sixteen
 physical quotient without the incoming commutator block
 (\texttt{HypercubicDimension16CovariantCompressionWall}).
+
+\paragraph{Our joint invariant quotient is fixed before rank computation.}
+\textsc{Ours.} Let $V$ be the genuine simultaneous-field-relabel orbit
+module, $I=V^{H(4)}$ its signed hypercubic fixed submodule, and $R_p\subset V$
+the range of the joint physical-relation operator under policy $p$.  We define
+the invariant relation submodule canonically as
+\[
+ J_p=\iota^{-1}(R_p)\subset I,
+\]
+where $\iota:I\hookrightarrow V$ is the inclusion, and define the scalar
+physical quotient to be $I/J_p$.  Membership in $J_p$ is therefore exactly
+membership of the underlying invariant vector in the full relation range;
+the structural definition materializes neither a Reynolds matrix nor a dense
+relation matrix.  The off-shell generator space embeds in the on-shell one
+without adding an off-shell EOM row, so $J_{\mathrm{off}}\subseteq
+J_{\mathrm{on}}$ and the on-shell quotient dimension is no larger.  This
+fixes the honest coordinate-free target for sparse certificates; it does not
+infer either quotient dimension or conditioning
+(\texttt{HypercubicDimension16JointPhysicalQuotient}).
 
 \paragraph{Our $\mathrm{SU}(2)$ trace rows include genuine multitrace
 rewiring.}
@@ -1637,9 +1981,25 @@ claim that the manuscript already contains the needed census.
     dual conditioning.  This does not close the joint physical quotient: a
     certified seven-field commutator column has a nonzero eight-field
     successor component and nonzero Reynolds image, so the field sectors
-    cannot be quotiented independently.  The remaining finite problem is the
-    joint rank and conditioning after Bianchi, EOM, IBP, commutator, and trace
-    rows are assembled across all sectors.  The
+    cannot be quotiented independently.  Our independent Cartan--Maxwell
+    Hilbert-series socket is now formalized as a bounded fourteen-class
+    character evaluator: its periodic $H(4)$ power traces agree with the
+    literal signed-group data through degree $16$, its single-particle
+    resolutions distinguish Bianchi-only and on-shell Maxwell policies, and
+    its cached integer recurrence carries an exact-divisibility ledger for
+    Newton, plethystic, Weyl, and hypercubic averaging.  No coefficient row or
+    physical-quotient dimension is claimed from this evaluator here; a
+    bounded certificate replay and a proof that Cartan specialization
+    descends through the full joint relation quotient are still absent.  The
+    coordinate-free joint physical relation submodule is now defined before
+    any row ordering, and its off-shell-to-on-shell inclusion is exact. The
+    $11{,}556$ transferred trace rows, one seven-to-eight commutator row, and
+    one four-to-five-field commutator row give a certified joint
+    relation-rank lower bound of $11{,}558$ for either policy; the last is
+    separated by an exact field-five Reynolds coordinate $-1/24$. The
+    remaining finite problem is the complete joint rank and conditioning after
+    Bianchi, EOM, IBP, commutator, and trace rows are assembled across all
+    sectors. The
     quantitative restoration theorem is restricted to bounded constant
     Cartan curvature and is not a uniform interacting Symanzik theorem.
     Constructive Yang--Mills additionally requires a continuum measure, OS
@@ -1648,8 +2008,8 @@ claim that the manuscript already contains the needed census.
 
 \subsection*{The remaining inputs}
 
-With the arithmetic and structural skeleton closed, the route now rests on the
-following inputs --- listed with their exact status in v14, since these are
+With the checked finite structural components in hand, the route now rests on
+the following inputs --- listed with their exact status in v14, since these are
 three different situations.
 
 \begin{enumerate}
@@ -1813,7 +2173,22 @@ physical-relation operator with invariant range), and
 source/successor field-sector support and its descent through both quotient
 maps), and \texttt{HypercubicDimension16CovariantCompressionWall} (the
 explicit nonzero seven-to-eight commutator block and the resulting
-field-count block-diagonal obstruction),
+field-count block-diagonal obstruction), together with
+\texttt{HypercubicDimension16JointPhysicalQuotient} (the canonical joint
+invariant relation preimage, coordinate-free scalar quotient, and exact
+off-shell/on-shell inclusion),
+\texttt{HypercubicDimension16FDIBPCochainJointBridge} (OUR equivariant
+semantic bridge from finite derivative-alpha-reduced $F,D$/IBP cochains onto
+the joint relation submodule, its policy compatibility, and its exact
+range theorem),
+\texttt{HypercubicDimension16FieldEightTracePhysicalLift} and
+\texttt{HypercubicDimension16JointTraceRankTransfer} (the actual
+field-eight lift and its $11{,}556$ independent invariant relation rows),
+\texttt{HypercubicDimension16JointTraceCommutatorRank} (the independent
+seven-to-eight commutator extension), and
+\texttt{HypercubicDimension16FieldFiveCommutatorSeparator} (the explicit
+four-to-five-field separator and the joint relation-rank lower bound
+$11{,}558$), together with
 \texttt{HypercubicDimension16TraceEvaluation} (ordinary matrix-index
 contraction, field-relabel descent, and exact kernel theorems for the three
 implemented trace-relation families),
@@ -1857,7 +2232,7 @@ to $\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$ with
 no \texttt{sorry}. The manuscript analyzed here is Ben Goertzel's
 \emph{Yang--Mills Mass Gap in 4D: RG Bootstrap, Polymer Expansion, OS
 Reconstruction} (v14); constructions explicitly labeled ours are independent
-formal repairs or tests, not claims about content already present in that
-manuscript.
+formal repairs within the same proof programme, not claims about content
+already present in that manuscript.
 
 \end{document}
