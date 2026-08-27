@@ -12,6 +12,8 @@ import Mettapedia.CognitiveArchitecture.Agent.ContextCertificate
 import Mettapedia.CognitiveArchitecture.Agent.TaskPhase
 import Mettapedia.CognitiveArchitecture.Agent.PermissiveActionGraph
 import Mettapedia.CognitiveArchitecture.Agent.AddressedEffects
+import Mettapedia.CognitiveArchitecture.Agent.ReproducibleBuildView
+import Mettapedia.CognitiveArchitecture.Agent.ReproducibleBuildReplay
 
 /-!
 # General agent-architecture interfaces
@@ -19,5 +21,7 @@ import Mettapedia.CognitiveArchitecture.Agent.AddressedEffects
 Typed operational state, commitments, context epochs, plural world models,
 effect receipts, and authority-preserving execution boundaries.  These
 interfaces are architecture-neutral; particular agents are downstream
-instances.
+instances.  Reproducible event histories use the same weakest-sufficient-view
+boundary without treating a bounded context as the authoritative ledger;
+declared build views connect to that order through a separate bridge.
 -/
