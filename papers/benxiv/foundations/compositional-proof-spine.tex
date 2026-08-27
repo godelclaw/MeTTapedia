@@ -52,22 +52,30 @@ composable decomposition & open and the highest structural risk.  The
 manuscript's linear-corridor assertion remains unsupported; in the exact
 tree reformulation the missing global statement is a uniform branchwidth
 bound, equivalently exclusion of one fixed wall from least obstructions.
-The generic finite-tree descent and the mesh obstruction are machine-checked,
-but the sphere-cut instantiation, physical splice, and wall exclusion are not \\
+The generic finite-tree descent, conversion of connected edge shores to
+connected vertex shores without width loss, the structural physical splice,
+and the mesh obstruction are machine-checked.  The connected
+branch-decomposition theorem is a named external conditional; wall exclusion
+and the exact finite-state supply are not proved \\
 $D_2$ & Count across every actual ordered noose cut factors through a finite
 boundary-word relation, and cumulative support is deletable on repetition &
 the physical port-tangle gluing bijection, matrix law, support
 determinization, exact $2^{3^k}$ support bound, repeated-block deletion, and
-relabelling invariance are machine-checked.  The
+relabelling invariance are machine-checked.  The semantic closed composite is
+also proved equivalent to Tait-colourability of the literal sewn rotation
+system.  The
 specialized Cell--3 closure is now an optional state-minimization and
 finite-base instrument, not a correctness premise of the direct descent \\
 $D_3$ & Equal cumulative rooted states admit a strictly smaller physical
 deletion splice in the same bridgeless cubic spherical counterexample class,
 preserving boundary order and zero accepting Count & the ordinary noose
 construction, port-tangle gluing, bridgelessness proof, rotation-system to
-multigraph adapter, and strict vertex accounting are machine-checked.  The
-exact rotation-system composition, orientation-reversed seam match,
-sphericity, and simple-map closure remain open \\
+multigraph adapter, strict vertex accounting, exact rotation-system
+composition, complementary boundary order, orientation-reversed seam match,
+and sphericity are machine-checked on the literal shore carriers.  Support
+replacement now preserves zero Count on that same physical composite.  What
+remains is to derive equal seam supports from equal decomposition states and
+to formalize the already-written parallel-seam normalization \\
 $D_4$ & The route-native finite floor contains no zero-Count obstruction &
 open; the refuted GWCO and $A\ne\varnothing$ systems cannot be inherited \\
 $D_5$ & Well-founded assembly from $D_0$--$D_4$ & proved as the explicit
@@ -875,6 +883,72 @@ closed composite is colourable exactly when the outer and inner supports
 intersect.  Replacing the inner support by an equal set does not change this
 intersection.  The Lean theorem proves the displayed implication; the same
 argument gives the converse as well.
+\end{proof}
+
+\begin{theorem}[the semantic closed composite is the literal sewn map]
+\label{thm:physical-closed-count-bridge}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PhysicalClosedCountBridge.closedColorable_iff_composeRotationSystem_taitColorable}
+Let \(L\) and \(R\) be finite literal open rotation tangles and let
+\(m:B_L\simeq B_R\) match their complete boundary-dart interfaces.  Regard
+\(L\) as a port tangle with empty input and output interface \(B_L\), and
+regard \(R\) as a port tangle with input interface \(B_L\), relabelled through
+\(m\), and empty output.  Then the closed serial composite used by
+\texttt{ClosedColorable} is colourable if and only if the literal rotation
+system \texttt{composeRotationSystem} is Tait-colourable.
+\end{theorem}
+
+\begin{proof}
+Write \(D_L,D_R\) for the intact dart carriers.  After deleting the two empty
+external interfaces, the serial Count construction has interior dart carrier
+\[
+              (D_L\sqcup D_R)\sqcup(B_L\sqcup B_L),
+\]
+whereas the literal splice has carrier
+\[
+              (D_L\sqcup D_R)\sqcup(B_L\sqcup B_R).
+\]
+The required equivalence is the identity on intact darts and on the left seam
+half, and sends the right seam half \(b\) to \(m(b)\).  It preserves the base
+vertex of every dart.  It also conjugates the serial edge flip to the literal
+matched-seam flip: old edges retain their old flips, while the serial pair
+\((b_L,b_R)\) is sent to the literal pair \((b,m(b))\).
+
+Consequently a proper nonzero serial dart-colouring pulls across this
+equivalence to a proper nonzero colouring invariant under the literal flip.
+Such a colouring descends to the two-dart edge orbits of the literal splice,
+giving a Tait edge-colouring.  Conversely, a Tait edge-colouring of the
+literal splice colours each serial dart by the colour of the literal edge
+orbit containing its image.  Flip-invariance is automatic.  If two distinct
+serial darts based at one vertex received the same colour, their image edges
+would be distinct adjacent edges of the literal splice with the same colour,
+contradicting properness.  This proves the biconditional.  Notice that the
+vertex rotation is not used: this is exactly the representation-invariance
+needed to join Count semantics to the verified structural splice.
+\end{proof}
+
+\begin{corollary}[support replacement preserves the physical zero Count]
+\label{cor:physical-closed-count-replacement}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PhysicalClosedCountBridge.not_composeRotationSystem_taitColorable_of_taitInnerSupport_eq}
+Fix a literal outside tangle \(L\).  Let \(R,R'\) be two literal inside
+tangles whose boundaries are both matched to the same ordered seam of \(L\).
+If \(R\) and \(R'\) realize exactly the same genuine nonzero Tait cut words,
+then
+\[
+ L\mathbin{\#}R\text{ not Tait-colourable}
+ \quad\Longrightarrow\quad
+ L\mathbin{\#}R'\text{ not Tait-colourable},
+\]
+where both occurrences of \(\#\) are the literal matched-seam rotation-system
+splice.
+\end{corollary}
+
+\begin{proof}
+Use Theorem~\ref{thm:physical-closed-count-bridge} to move the first literal
+splice to \texttt{ClosedColorable}.  Every boundary word realized by a proper
+port colouring is pointwise nonzero, so equality of the finite sets of genuine
+Tait cut words is already equality of the raw seam supports.  Apply
+Theorem~\ref{thm:closed-count-support-replacement}, and use the same
+biconditional in the reverse direction for the second literal splice.
 \end{proof}
 
 The following is the precise finite-tree statement currently proved.  It is
@@ -2476,10 +2550,12 @@ composite is loopless.  A simple-graph implementation may reject a duplicate
 edge in its seam type, or the loopless-multigraph output may instead be
 normalized by repeated digon suppression as explained below.  Equality of
 cumulative support states is exactly the hypothesis of
-Theorem~\ref{thm:determinized-support-deletion}.  After the physical
-identification realizes that block deletion, the unchanged suffix and
-terminal closure therefore have the same accepting support in \(G'\) and
-\(G\).  This proves the last assertion.
+Theorem~\ref{thm:determinized-support-deletion}.
+Corollary~\ref{cor:physical-closed-count-replacement} identifies that support
+replacement with the literal matched-seam rotation system used in the
+preceding structural argument.  Thus the unchanged exterior and the
+replacement interior have the same accepting support in \(G'\) and \(G\),
+proving the last assertion without a second, merely semantic composite.
 \end{proof}
 
 \begin{theorem}[the implemented seam composite has the non-topological map fields]
@@ -2637,9 +2713,15 @@ closed zero-Count composite has been produced.  The remaining D3-to-supply
 link is now purely state-theoretic: a connected branch decomposition gives
 nested connected literal shores by the majority construction, and the
 natural edge-flip supplies the complementary boundary matching and its
-reversal.  What remains is an ordered finite-state identification strong
-enough for exact Count replacement, followed by the stated normalization if
-the seam creates a parallel pair.  The cap face count, cap sphericity,
+reversal.  The abstract support replacement and the literal sewn map are now
+identified by Theorem~\ref{thm:physical-closed-count-bridge}.  Moreover the
+support component of the typed state is already the set of genuine Tait cut
+words consumed by Corollary~\ref{cor:physical-closed-count-replacement};
+no stronger hidden support is required.  What remains is to label the
+decomposition nodes by these exact supports, verify that an
+ancestor--descendant state equality selects the two literal shores used by
+the structural constructor, and perform the stated normalization if the seam
+creates a parallel pair.  The cap face count, cap sphericity,
 one-hub property, orientation reversal, connectedness, bridge-freeness,
 cubicity, and cyclic vertex rotations are no longer open.
 
