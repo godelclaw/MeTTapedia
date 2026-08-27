@@ -53,7 +53,8 @@ Proposition~\ref{prop:target-forced-cut-chain} is the exact statement \\
 $D_2$ & Count across every actual ordered noose cut factors through a finite
 boundary-word relation, and cumulative support is deletable on repetition &
 the physical port-tangle gluing bijection, matrix law, support
-determinization, and relabelling invariance are machine-checked.  The
+determinization, exact $2^{3^k}$ support bound, repeated-block deletion, and
+relabelling invariance are machine-checked.  The
 specialized Cell--3 closure is now an optional state-minimization and
 finite-base instrument, not a correctness premise of the direct descent \\
 $D_3$ & Equal cumulative rooted states admit a strictly smaller physical
@@ -1488,6 +1489,14 @@ pigeonhole principle applied to the finite reachable subset of
 $\mathcal P(Q)$.
 \end{proof}
 
+The repeated-block equality and terminal nonemptiness equivalence are
+machine-checked for arbitrary finite cut-word relations.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24RawNooseCountPumping.terminal_nonempty_congr}
+The exact support cardinality and its pigeonhole consequence are checked
+separately.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24RawNooseCountPumping.card_supports_set}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24RawNooseCountPumping.exists_eq_prefixSupport}
+
 This theorem uses no self-loop and no accepting witness.  It is the direct
 zero-count pumping law advertised by the source's monoidal Count semantics.
 It is also exact about its price: raw-profile reachability alone does not
@@ -1538,6 +1547,16 @@ right-end suffix to those equal supports and proves equality of terminal
 acceptance.  Finally Theorem~\ref{thm:physical-noose-deletion} supplies all
 the asserted graph-class and strict-size conclusions.
 \end{proof}
+
+All algebraic assertions in this theorem are now machine-checked: physical
+serial gluing becomes relational composition, its matrix support is the same
+relation, and the cut alphabet has exactly three letters per crossed edge.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24RawNooseCountPumping.supportRel_series}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24RawNooseCountPumping.support_countMatrix_eq_supportRel}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24RawNooseCountPumping.card_cutWord}
+The final spherical-map sentence remains an application of the physical
+noose theorem, whose representation-specific Lean constructor is D3 rather
+than part of this algebra module.
 
 This theorem is deliberately insensitive to the number or internal size of
 the slabs.  It needs no finite alphabet of physical Cell graphs and no
