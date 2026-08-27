@@ -40,6 +40,224 @@ attribute [-instance]
   GoertzelV24RetainedVertexRotationSplice.retainedVertexFintype
   GoertzelV24SeamFaceArcPartition.hitPointFintype
 
+namespace Formation
+
+namespace InteriorFace
+
+/-- A dart on an annular-interior face is based at an interior vertex.  The
+proof is entirely geometric and therefore belongs to `Formation`. -/
+theorem vertOf_mem_interiorVertices
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) {dart : formation.annular.RS.D}
+    (hface : dartOrbitFace formation.annular.RS dart ∈
+      formation.annular.cellulation.interiorFaces) :
+    formation.annular.RS.vertOf dart ∈ data.interiorVertices := by
+  rw [interiorVertices]
+  refine Finset.mem_sdiff.mpr ⟨Finset.mem_univ _, ?_⟩
+  rw [FramedAnnularCellulation.interiorFaces] at hface
+  have hnotHole := (Finset.mem_sdiff.mp hface).2
+  intro hboundary
+  rw [boundaryStubVertices, Finset.mem_union] at hboundary
+  have hincident : formation.annular.RS.edgeOf dart ∈
+      incidentEdgeFinset G (formation.annular.RS.vertOf dart) := by
+    change (⟨dart.edge, dart.edge_mem⟩ : G.edgeSet) ∈
+      incidentEdgeFinset G dart.fst
+    simp [incidentEdgeFinset, SimpleGraph.Dart.edge]
+  rcases hboundary with hinner | houter
+  · rcases (mem_innerStubVertices_iff data _).1 hinner with ⟨inner, hstub⟩
+    have hincidentInner : formation.annular.RS.edgeOf dart ∈
+        incidentEdgeFinset G (data.innerStub inner) := by
+      simpa [hstub] using hincident
+    rw [data.innerStub_incidentEdgeFinset_eq_singleton
+      formation.boundary_wellFormed inner] at hincidentInner
+    have hedge : formation.annular.RS.edgeOf dart =
+        data.innerBoundaryEdge inner := Finset.mem_singleton.mp hincidentInner
+    have hdart : dart ∈ formation.annular.RS.dartsOn
+        (data.innerBoundaryEdge inner) := formation.annular.RS.mem_dartsOn.2 hedge
+    have hhole := formation.annular.innerBoundaryEdgeDarts_on_innerHole
+      inner dart hdart
+    apply hnotHole
+    rw [hhole]
+    simp [FramedAnnularCellulation.holeFaces]
+  · rcases (mem_outerStubVertices_iff data _).1 houter with ⟨outer, hstub⟩
+    have hincidentOuter : formation.annular.RS.edgeOf dart ∈
+        incidentEdgeFinset G (data.outerStub outer) := by
+      simpa [hstub] using hincident
+    rw [data.outerStub_incidentEdgeFinset_eq_singleton
+      formation.boundary_wellFormed outer] at hincidentOuter
+    have hedge : formation.annular.RS.edgeOf dart =
+        data.outerBoundaryEdge outer := Finset.mem_singleton.mp hincidentOuter
+    have hdart : dart ∈ formation.annular.RS.dartsOn
+        (data.outerBoundaryEdge outer) := formation.annular.RS.mem_dartsOn.2 hedge
+    have hhole := formation.annular.outerBoundaryEdgeDarts_on_outerHole
+      outer dart hdart
+    apply hnotHole
+    rw [hhole]
+    simp [FramedAnnularCellulation.holeFaces]
+
+/-- The formation is locally cubic at every dart of an interior face. -/
+theorem dartsAt_card_eq_three
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) {dart : formation.annular.RS.D}
+    (hface : dartOrbitFace formation.annular.RS dart ∈
+      formation.annular.cellulation.interiorFaces) :
+    (formation.annular.RS.dartsAt
+      (formation.annular.RS.vertOf dart)).card = 3 := by
+  change ({candidate : G.Dart | candidate.fst = dart.fst} : Finset G.Dart).card = 3
+  rw [G.dart_fst_fiber_card_eq_degree dart.fst]
+  rw [← GoertzelV24FramedBoundaryCounts.incidentEdgeFinset_card_eq_degree
+    (G := G)]
+  exact interior_incidentEdgeFinset_card_eq_three data
+    formation.boundary_wellFormed
+      (vertOf_mem_interiorVertices formation hface)
+
+/-- The cellulation supplies cyclic vertex rotations independently of any
+edge colouring. -/
+theorem vertexRotationCyclic
+    {data : AnnularBoundaryData G 5} (formation : Formation data) :
+    VertexRotationCyclic formation.annular.RS := by
+  exact hasCyclicVertexRotations_implies_vertexRotationCyclic G
+    formation.annular.cellulation.rotation
+    formation.annular.cellulation.vertexRotation_cyclic
+
+/-- An annular-interior face has the simple edge boundary certified by the
+colouring-free formation geometry.  This is the exact fragment needed to
+place literal corridor rungs; no Tait colouring or closed-web witness enters
+the statement. -/
+theorem boundary_card_eq_darts_card
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) (dart : formation.annular.RS.D)
+    (hface : dartOrbitFace formation.annular.RS dart ∈
+      formation.annular.cellulation.interiorFaces) :
+    (orbitFaceBoundary formation.annular.RS
+      (dartOrbitFace formation.annular.RS dart)).card =
+        (orbitFaceDarts formation.annular.RS
+          (dartOrbitFace formation.annular.RS dart)).card := by
+  simpa [FramedAnnularCellulation.faceLength] using
+    formation.geometry.internalBoundarySimple
+      (dartOrbitFace formation.annular.RS dart) hface
+
+/-- The opposite dart of a dart on a simple interior face belongs to a
+different quotient face. -/
+theorem dartOrbitFace_ne_alpha
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) (dart : formation.annular.RS.D)
+    (hface : dartOrbitFace formation.annular.RS dart ∈
+      formation.annular.cellulation.interiorFaces) :
+    dartOrbitFace formation.annular.RS dart ≠
+      dartOrbitFace formation.annular.RS (formation.annular.RS.alpha dart) := by
+  intro hsame
+  have hinjective : Set.InjOn formation.annular.RS.edgeOf
+      (orbitFaceDarts formation.annular.RS
+        (dartOrbitFace formation.annular.RS dart)) := by
+    apply Finset.card_image_iff.mp
+    exact boundary_card_eq_darts_card formation dart hface
+  have hdart : dart ∈ orbitFaceDarts formation.annular.RS
+      (dartOrbitFace formation.annular.RS dart) :=
+    (mem_orbitFaceDarts_iff formation.annular.RS
+      (dartOrbitFace formation.annular.RS dart) dart).2 rfl
+  have halpha : formation.annular.RS.alpha dart ∈
+      orbitFaceDarts formation.annular.RS
+        (dartOrbitFace formation.annular.RS dart) :=
+    (mem_orbitFaceDarts_iff formation.annular.RS
+      (dartOrbitFace formation.annular.RS dart)
+      (formation.annular.RS.alpha dart)).2 hsame.symm
+  have heq := hinjective hdart halpha
+    (formation.annular.RS.edge_alpha dart).symm
+  exact formation.annular.RS.alpha_fixfree dart heq.symm
+
+/-- An edge met by an interior formation face has exactly the two incident
+face orbits exhibited by its two darts. -/
+theorem edge_mem_interiorEdgeSupport
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) (dart : formation.annular.RS.D)
+    (hface : dartOrbitFace formation.annular.RS dart ∈
+      formation.annular.cellulation.interiorFaces) :
+    formation.annular.RS.edgeOf dart ∈ interiorEdgeSupport
+      (orbitFaceBoundary formation.annular.RS)
+      (Finset.univ : Finset (OrbitFace formation.annular.RS)) := by
+  apply (mem_interiorEdgeSupport_iff (orbitFaceBoundary formation.annular.RS)
+    (Finset.univ : Finset (OrbitFace formation.annular.RS))).2
+  refine ⟨Finset.mem_biUnion.2 ⟨dartOrbitFace formation.annular.RS dart,
+    Finset.mem_univ _,
+    edgeOf_mem_orbitFaceBoundary_dartOrbitFace formation.annular.RS dart⟩, ?_⟩
+  apply totalIncidenceCount_eq_two_of_mem_faceBoundary_of_mem_faceBoundary_of_ne
+    (orbitFaceBoundary formation.annular.RS)
+    (Finset.univ : Finset (OrbitFace formation.annular.RS))
+    (orbitFace_incidence_le_two formation.annular.RS)
+    (Finset.mem_univ _) (Finset.mem_univ _)
+    (dartOrbitFace_ne_alpha formation dart hface)
+  · exact edgeOf_mem_orbitFaceBoundary_dartOrbitFace formation.annular.RS dart
+  · rw [← formation.annular.RS.edge_alpha dart]
+    exact edgeOf_mem_orbitFaceBoundary_dartOrbitFace formation.annular.RS
+      (formation.annular.RS.alpha dart)
+
+/-- A different face containing an edge of a simple interior face is the
+face of the opposite dart. -/
+theorem alpha_face_eq_of_mem_other
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) (dart : formation.annular.RS.D)
+    (hface : dartOrbitFace formation.annular.RS dart ∈
+      formation.annular.cellulation.interiorFaces)
+    (other : OrbitFace formation.annular.RS)
+    (hedge : formation.annular.RS.edgeOf dart ∈
+      orbitFaceBoundary formation.annular.RS other)
+    (hne : dartOrbitFace formation.annular.RS dart ≠ other) :
+    dartOrbitFace formation.annular.RS
+      (formation.annular.RS.alpha dart) = other := by
+  have hcurrent : formation.annular.RS.edgeOf dart ∈
+      orbitFaceBoundary formation.annular.RS
+        (dartOrbitFace formation.annular.RS dart) :=
+    edgeOf_mem_orbitFaceBoundary_dartOrbitFace formation.annular.RS dart
+  have hopposite : formation.annular.RS.edgeOf dart ∈
+      orbitFaceBoundary formation.annular.RS
+        (dartOrbitFace formation.annular.RS
+          (formation.annular.RS.alpha dart)) := by
+    rw [← formation.annular.RS.edge_alpha dart]
+    exact edgeOf_mem_orbitFaceBoundary_dartOrbitFace formation.annular.RS
+      (formation.annular.RS.alpha dart)
+  have hcases :=
+    eq_or_eq_of_mem_faceBoundary_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_count_le_two
+      (orbitFaceBoundary formation.annular.RS)
+      (Finset.univ : Finset (OrbitFace formation.annular.RS))
+      (orbitFace_incidence_le_two formation.annular.RS)
+      (Finset.mem_univ _) (Finset.mem_univ _) (Finset.mem_univ _)
+      (dartOrbitFace_ne_alpha formation dart hface)
+      hcurrent hopposite hedge
+  rcases hcases with hotherCurrent | hotherOpposite
+  · exact (hne hotherCurrent.symm).elim
+  · exact hotherOpposite.symm
+
+/-- Cyclic positions on an interior formation face have distinct edges. -/
+theorem faceCycleEdge_injective
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) (root : formation.annular.RS.D)
+    (hface : dartOrbitFace formation.annular.RS root ∈
+      formation.annular.cellulation.interiorFaces) :
+    Function.Injective (faceCycleEdge formation.annular.RS root) :=
+  faceCycleEdge_injective_of_boundarySimple formation.annular.RS root
+    (boundary_card_eq_darts_card formation root hface)
+
+/-- Every boundary edge of an interior formation face has one and only one
+cyclic position.  This is the colouring-free version consumed by the rooted
+Cell transition. -/
+theorem existsUnique_faceCycleEdge_eq
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) (root : formation.annular.RS.D)
+    (hface : dartOrbitFace formation.annular.RS root ∈
+      formation.annular.cellulation.interiorFaces)
+    (edge : G.edgeSet)
+    (hedge : edge ∈ orbitFaceBoundary formation.annular.RS
+      (dartOrbitFace formation.annular.RS root)) :
+    ∃! position : Fin (formation.annular.RS.faceOrbit root).card,
+      faceCycleEdge formation.annular.RS root position = edge :=
+  existsUnique_faceCycleEdge_eq_of_boundarySimple formation.annular.RS root
+    (boundary_card_eq_darts_card formation root hface) edge hedge
+
+end InteriorFace
+
+end Formation
+
 namespace Instance
 
 namespace InteriorFace

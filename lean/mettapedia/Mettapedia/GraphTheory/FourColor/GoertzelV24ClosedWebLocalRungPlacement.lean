@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebInteriorFaceGeometry
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebBoundaryCleanCorridor
+import Mettapedia.GraphTheory.FourColor.GoertzelV24HexCorridorPointwiseRungs
 
 /-!
 # Source-local rung placements in a Cell-3 corridor
@@ -22,6 +23,7 @@ open GoertzelV24ClosedWebBoundaryData
 open GoertzelV24ClosedWebBoundaryData.AnnularBoundaryData
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24HexCorridorSkeleton
+open GoertzelV24HexCorridorPointwiseRungs
 open GoertzelV24HexFaceRungType
 open GoertzelV24HexCorridorInterfaceMatching
 open GoertzelV24InducedHexCorridorTypes
@@ -35,6 +37,240 @@ noncomputable section
 attribute [-instance]
   GoertzelV24RetainedVertexRotationSplice.retainedVertexFintype
   GoertzelV24SeamFaceArcPartition.hitPointFintype
+
+namespace Formation
+
+/-- Every internal hexagon of a boundary-clean corridor has its two literal
+rungs at distinct positions of the real six-dart face cycle, from only the
+pointwise consecutive-rung receipt.  In particular, this construction uses
+neither a global colouring nor global pairwise face-intersection uniqueness. -/
+theorem exists_localPointwiseInternalHexRungPlacement
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
+    (hlocal : ConsecutiveRungUnique
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton)
+    (interior : CorridorInterior blockLength) :
+    Nonempty (PointwiseInternalHexRungPlacement
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      hlocal interior) := by
+  let skeleton :=
+    corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+  rcases exists_dartOrbitFace_eq formation.annular.RS
+      (skeleton.faceAt interior.center).1 with ⟨root, hroot⟩
+  have hrootInternal : dartOrbitFace formation.annular.RS root ∈
+      formation.annular.cellulation.interiorFaces := by
+    rw [hroot]
+    exact corridor.face_internal interior.center
+  have horbitCard : (formation.annular.RS.faceOrbit root).card = 6 := by
+    calc
+      (formation.annular.RS.faceOrbit root).card =
+          (orbitFaceDarts formation.annular.RS
+            (dartOrbitFace formation.annular.RS root)).card := by
+        rw [orbitFaceDarts_dartOrbitFace_eq_faceOrbit]
+      _ = (orbitFaceBoundary formation.annular.RS
+          (dartOrbitFace formation.annular.RS root)).card := by
+        exact (InteriorFace.boundary_card_eq_darts_card
+          formation root hrootInternal).symm
+      _ = (orbitFaceBoundary formation.annular.RS
+          (skeleton.faceAt interior.center).1).card := by rw [hroot]
+      _ = 6 := skeleton.hexagonal interior.center
+  have hincomingMem : pointwiseRungEdge skeleton hlocal interior.incoming ∈
+      orbitFaceBoundary formation.annular.RS
+        (dartOrbitFace formation.annular.RS root) := by
+    rw [hroot]
+    simpa using pointwiseRungEdge_mem_right skeleton hlocal interior.incoming
+  have houtgoingMem : pointwiseRungEdge skeleton hlocal interior.outgoing ∈
+      orbitFaceBoundary formation.annular.RS
+        (dartOrbitFace formation.annular.RS root) := by
+    rw [hroot]
+    exact pointwiseRungEdge_mem_left skeleton hlocal interior.outgoing
+  rcases InteriorFace.existsUnique_faceCycleEdge_eq formation root hrootInternal
+      (pointwiseRungEdge skeleton hlocal interior.incoming) hincomingMem with
+    ⟨incomingPosition, hincomingEdge, _hincomingUnique⟩
+  rcases InteriorFace.existsUnique_faceCycleEdge_eq formation root hrootInternal
+      (pointwiseRungEdge skeleton hlocal interior.outgoing) houtgoingMem with
+    ⟨outgoingPosition, houtgoingEdge, _houtgoingUnique⟩
+  have hpositionsNe : incomingPosition ≠ outgoingPosition := by
+    intro hpositions
+    apply pointwiseRungEdge_incoming_ne_outgoing skeleton hlocal interior
+    rw [← hincomingEdge, ← houtgoingEdge, hpositions]
+  exact ⟨⟨root, hroot, horbitCard, incomingPosition, outgoingPosition,
+    hincomingEdge, houtgoingEdge, hpositionsNe⟩⟩
+
+/-- Canonical colouring-free placement selected from the local interface
+receipt. -/
+noncomputable def localPointwiseInternalHexRungPlacement
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
+    (hlocal : ConsecutiveRungUnique
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton)
+    (interior : CorridorInterior blockLength) :
+    PointwiseInternalHexRungPlacement
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      hlocal interior :=
+  Classical.choice
+    (exists_localPointwiseInternalHexRungPlacement formation corridor hlocal interior)
+
+/-- The adjacent-rung case is impossible for a pointwise placement in an
+internal Cell-3 hexagon.  All hypotheses are geometric fields of the
+formation plus the consecutive-rung receipt. -/
+theorem PointwiseInternalHexRungPlacement.rungType_ne_adjacent_of_cell3
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
+    (hlocal : ConsecutiveRungUnique
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton)
+    (interior : CorridorInterior blockLength)
+    (placement : PointwiseInternalHexRungPlacement
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+      hlocal interior) :
+    placement.rungType ≠ HexRungType.adjacent := by
+  let skeleton :=
+    corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+  intro htype
+  have hdistance : hexCyclicDistance placement.incomingPosition6
+      placement.outgoingPosition6 = 1 := by
+    rw [← placement.rungType_distance_eq, htype]
+    rfl
+  let incomingDart := faceCycleDart formation.annular.RS placement.root
+    placement.incomingPosition
+  let outgoingDart := faceCycleDart formation.annular.RS placement.root
+    placement.outgoingPosition
+  have hdartCases : outgoingDart = formation.annular.RS.phi incomingDart ∨
+      incomingDart = formation.annular.RS.phi outgoingDart := by
+    exact faceCycleDart_successor_or_reverse_of_hexCyclicDistance_eq_one
+      formation.annular.RS placement.root placement.orbit_card
+        placement.incomingPosition placement.outgoingPosition hdistance
+  have hincomingFace : dartOrbitFace formation.annular.RS incomingDart =
+      (skeleton.faceAt interior.center).1 := by
+    calc
+      dartOrbitFace formation.annular.RS incomingDart =
+          dartOrbitFace formation.annular.RS placement.root := by
+        exact dartOrbitFace_faceCycleDart formation.annular.RS placement.root
+          placement.incomingPosition
+      _ = (skeleton.faceAt interior.center).1 := placement.root_face
+  have houtgoingFace : dartOrbitFace formation.annular.RS outgoingDart =
+      (skeleton.faceAt interior.center).1 := by
+    calc
+      dartOrbitFace formation.annular.RS outgoingDart =
+          dartOrbitFace formation.annular.RS placement.root := by
+        exact dartOrbitFace_faceCycleDart formation.annular.RS placement.root
+          placement.outgoingPosition
+      _ = (skeleton.faceAt interior.center).1 := placement.root_face
+  have hincomingInternal : dartOrbitFace formation.annular.RS incomingDart ∈
+      formation.annular.cellulation.interiorFaces := by
+    rw [hincomingFace]
+    exact corridor.face_internal interior.center
+  have houtgoingInternal : dartOrbitFace formation.annular.RS outgoingDart ∈
+      formation.annular.cellulation.interiorFaces := by
+    rw [houtgoingFace]
+    exact corridor.face_internal interior.center
+  have hincomingEdge : formation.annular.RS.edgeOf incomingDart =
+      pointwiseRungEdge skeleton hlocal interior.incoming :=
+    placement.incoming_edge
+  have houtgoingEdge : formation.annular.RS.edgeOf outgoingDart =
+      pointwiseRungEdge skeleton hlocal interior.outgoing :=
+    placement.outgoing_edge
+  have hpreviousCenter :
+      (skeleton.faceAt interior.incoming.left).1 ≠
+        (skeleton.faceAt interior.center).1 := by
+    intro hfaces
+    have hindices := skeleton.faceAt_injective (Subtype.ext hfaces)
+    have hvalues := congrArg Fin.val hindices
+    change interior.center.val - 1 = interior.center.val at hvalues
+    have hpositive := interior.center_pos
+    omega
+  have hcenterNext :
+      (skeleton.faceAt interior.center).1 ≠
+        (skeleton.faceAt interior.outgoing.right).1 := by
+    intro hfaces
+    have hindices := skeleton.faceAt_injective (Subtype.ext hfaces)
+    have hvalues := congrArg Fin.val hindices
+    change interior.center.val = interior.center.val + 1 at hvalues
+    omega
+  have hpreviousNext :
+      (skeleton.faceAt interior.incoming.left).1 ≠
+        (skeleton.faceAt interior.outgoing.right).1 := by
+    intro hfaces
+    have hindices := skeleton.faceAt_injective (Subtype.ext hfaces)
+    have hvalues := congrArg Fin.val hindices
+    change interior.center.val - 1 = interior.center.val + 1 at hvalues
+    have hpositive := interior.center_pos
+    omega
+  have hincomingPrevious : formation.annular.RS.edgeOf incomingDart ∈
+      orbitFaceBoundary formation.annular.RS
+        (skeleton.faceAt interior.incoming.left).1 := by
+    rw [hincomingEdge]
+    exact pointwiseRungEdge_mem_left skeleton hlocal interior.incoming
+  have houtgoingNext : formation.annular.RS.edgeOf outgoingDart ∈
+      orbitFaceBoundary formation.annular.RS
+        (skeleton.faceAt interior.outgoing.right).1 := by
+    rw [houtgoingEdge]
+    exact pointwiseRungEdge_mem_right skeleton hlocal interior.outgoing
+  have hincomingOpposite : dartOrbitFace formation.annular.RS
+      (formation.annular.RS.alpha incomingDart) =
+        (skeleton.faceAt interior.incoming.left).1 := by
+    apply InteriorFace.alpha_face_eq_of_mem_other formation incomingDart
+      hincomingInternal (skeleton.faceAt interior.incoming.left).1
+      hincomingPrevious
+    rw [hincomingFace]
+    exact hpreviousCenter.symm
+  have houtgoingOpposite : dartOrbitFace formation.annular.RS
+      (formation.annular.RS.alpha outgoingDart) =
+        (skeleton.faceAt interior.outgoing.right).1 := by
+    apply InteriorFace.alpha_face_eq_of_mem_other formation outgoingDart
+      houtgoingInternal (skeleton.faceAt interior.outgoing.right).1
+      houtgoingNext
+    rw [houtgoingFace]
+    exact hcenterNext
+  have hnotAdjacent := skeleton.separated_not_adjacent
+    interior.incoming.left interior.outgoing.right (by
+      change interior.center.val - 1 + 1 < interior.center.val + 1
+      have hpositive := interior.center_pos
+      omega)
+  rcases hdartCases with hforward | hreverse
+  · have hcornerNe : dartOrbitFace formation.annular.RS
+        (formation.annular.RS.alpha incomingDart) ≠
+          dartOrbitFace formation.annular.RS
+            (formation.annular.RS.alpha
+              (formation.annular.RS.phi incomingDart)) := by
+      rw [← hforward, hincomingOpposite, houtgoingOpposite]
+      exact hpreviousNext
+    have hcornerCard : (formation.annular.RS.dartsAt
+        (formation.annular.RS.vertOf
+          (formation.annular.RS.alpha incomingDart))).card = 3 := by
+      apply InteriorFace.dartsAt_card_eq_three formation
+      rw [hincomingOpposite]
+      exact corridor.face_internal interior.incoming.left
+    have hadj := oppositeFaces_adjacent_at_locally_cubic_corner
+      formation.annular.RS (InteriorFace.vertexRotationCyclic formation)
+        incomingDart hcornerCard hcornerNe
+    apply hnotAdjacent
+    convert hadj using 1 <;> apply Subtype.ext <;>
+      simp only [hincomingOpposite, ← hforward, houtgoingOpposite]
+  · have hcornerNe : dartOrbitFace formation.annular.RS
+        (formation.annular.RS.alpha outgoingDart) ≠
+          dartOrbitFace formation.annular.RS
+            (formation.annular.RS.alpha
+              (formation.annular.RS.phi outgoingDart)) := by
+      rw [← hreverse, houtgoingOpposite, hincomingOpposite]
+      exact hpreviousNext.symm
+    have hcornerCard : (formation.annular.RS.dartsAt
+        (formation.annular.RS.vertOf
+          (formation.annular.RS.alpha outgoingDart))).card = 3 := by
+      apply InteriorFace.dartsAt_card_eq_three formation
+      rw [houtgoingOpposite]
+      exact corridor.face_internal interior.outgoing.right
+    have hadj := oppositeFaces_adjacent_at_locally_cubic_corner
+      formation.annular.RS (InteriorFace.vertexRotationCyclic formation)
+        outgoingDart hcornerCard hcornerNe
+    apply hnotAdjacent
+    convert hadj.symm using 1 <;> apply Subtype.ext <;>
+      simp only [houtgoingOpposite, ← hreverse, hincomingOpposite]
+
+end Formation
 
 namespace Instance
 

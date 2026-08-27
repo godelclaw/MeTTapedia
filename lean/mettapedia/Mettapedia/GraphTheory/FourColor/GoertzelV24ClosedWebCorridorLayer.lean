@@ -47,22 +47,22 @@ noncomputable section
 local instance closedWebCorridorLayerEdgeSetDecidableEq : DecidableEq G.edgeSet :=
   Subtype.instDecidableEq
 
-namespace Instance
+namespace Formation
 
 /-- The two locally parallel, source-derived paths through consecutive clean
 corridor hexagons.  They have the same external endpoint faces, but use
 different central corridor faces.  The two interior assertions are what keep
 the eventual layer away from both named holes. -/
 structure LocalLayerPair
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (leftInterior : CorridorInterior blockLength)
     (hnext : leftInterior.center.val + 2 < blockLength) where
   firstFace : AmbientFace (Finset.univ : Finset
-    (OrbitFace web.annular.RS))
+    (OrbitFace formation.annular.RS))
   secondFace : AmbientFace (Finset.univ : Finset
-    (OrbitFace web.annular.RS))
+    (OrbitFace formation.annular.RS))
   first_ne_second : firstFace ≠ secondFace
   center_ne_nextCenter :
     corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
@@ -70,31 +70,47 @@ structure LocalLayerPair
       corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
         (nextCorridorInterior leftInterior hnext).center
   first_adjacent_center :
-    (interiorDualGraph (orbitFaceBoundary web.annular.RS)
-      (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+    (interiorDualGraph (orbitFaceBoundary formation.annular.RS)
+      (Finset.univ : Finset (OrbitFace formation.annular.RS))).Adj
         firstFace
         (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
           leftInterior.center)
   center_adjacent_second :
-    (interiorDualGraph (orbitFaceBoundary web.annular.RS)
-      (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+    (interiorDualGraph (orbitFaceBoundary formation.annular.RS)
+      (Finset.univ : Finset (OrbitFace formation.annular.RS))).Adj
         (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
           leftInterior.center)
         secondFace
   first_adjacent_nextCenter :
-    (interiorDualGraph (orbitFaceBoundary web.annular.RS)
-      (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+    (interiorDualGraph (orbitFaceBoundary formation.annular.RS)
+      (Finset.univ : Finset (OrbitFace formation.annular.RS))).Adj
         firstFace
         (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
           (nextCorridorInterior leftInterior hnext).center)
   nextCenter_adjacent_second :
-    (interiorDualGraph (orbitFaceBoundary web.annular.RS)
-      (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj
+    (interiorDualGraph (orbitFaceBoundary formation.annular.RS)
+      (Finset.univ : Finset (OrbitFace formation.annular.RS))).Adj
         (corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton.faceAt
           (nextCorridorInterior leftInterior hnext).center)
         secondFace
-  first_internal : firstFace.1 ∈ web.annular.cellulation.interiorFaces
-  second_internal : secondFace.1 ∈ web.annular.cellulation.interiorFaces
+  first_internal : firstFace.1 ∈ formation.annular.cellulation.interiorFaces
+  second_internal : secondFace.1 ∈ formation.annular.cellulation.interiorFaces
+
+end Formation
+
+namespace Instance
+
+/-- Backward-compatible coloured spelling of the geometric local-layer
+record.  Its target is definitionally the layer carried by the inherited
+`Formation`, so the old source tower keeps its public API while the direct
+Count lane can work without a global colouring. -/
+abbrev LocalLayerPair
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    (web : Instance data coloring) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (leftInterior : CorridorInterior blockLength)
+    (hnext : leftInterior.center.val + 2 < blockLength) :=
+  Formation.LocalLayerPair web.toFormation corridor leftInterior hnext
 
 namespace LocalLayerPair
 

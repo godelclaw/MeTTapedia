@@ -46,20 +46,35 @@ local instance graphEdgeSetDecidableEq : DecidableEq G.edgeSet :=
   Subtype.instDecidableEq
 attribute [-instance] GoertzelV24SeamFaceArcPartition.hitPointFintype
 
-/-- The Cell-3 source instance consumed by the shrinking argument.  The
-five-stub outer boundary is the sharp closed-web regime in Addenda XXI--XXVII:
-it is where total closure and a good inner word force the two radial paths
-used to form the finite profile corridor. -/
-structure Instance
-    (data : AnnularBoundaryData G 5) (coloring : G.EdgeColoring Color) where
+/-- The colouring-independent geometric carrier of a source annulus.
+
+This is the part of a closed-web instance that may legitimately be consumed by
+the cumulative `Count` automaton.  In particular, it contains neither a global
+colouring of the opened annulus nor the closed-web, good-word hypotheses.  A
+zero terminal `Count` therefore does not make this carrier uninhabitable. -/
+structure Formation (data : AnnularBoundaryData G 5) where
   boundary_wellFormed : data.WellFormed
   connected : G.Connected
   annular : ClosedWebAnnularEmbedding data
   geometry : AnnularFrontierGeometry annular
+
+/-- The Cell-3 source instance consumed by the shrinking argument.  The
+five-stub outer boundary is the sharp closed-web regime in Addenda XXI--XXVII:
+it is where total closure and a good inner word force the two radial paths
+used to form the finite profile corridor.
+
+The geometric fields are inherited from `Formation`.  Keeping that parent
+explicit prevents the direct cumulative-`Count` lane from accidentally using
+the global colouring, total closure, or good word merely to construct its
+finite transition. -/
+structure Instance
+    (data : AnnularBoundaryData G 5) (coloring : G.EdgeColoring Color)
+    extends Formation data where
   tait : IsTaitEdgeColoring G coloring
   totallyClosed : TotallyClosedWeb data coloring
   goodWord : CAP5BoundaryWordHasColoredBlock311
     (data.innerBoundaryWord coloring)
+
 
 namespace Instance
 

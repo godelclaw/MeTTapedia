@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebCorridorLayer
-import Mettapedia.GraphTheory.FourColor.GoertzelV24InteriorDualPointwiseLookup
+import Mettapedia.GraphTheory.FourColor.GoertzelV24DualPathPointwiseTransversal
+import Mettapedia.GraphTheory.FourColor.GoertzelV24HexCorridorPointwiseRungs
 
 /-!
 # Face-intersection uniqueness on the annular carrier, restricted to interior faces
@@ -41,9 +42,16 @@ namespace GoertzelV24AnnularInteriorFaceUniqueness
 
 open GoertzelV24FramedAnnularExcess
 open GoertzelV24ClosedWebAtGoodWord
+open GoertzelV24ClosedWebAnnularEmbedding
+open GoertzelV24ClosedWebAnnularEmbedding.ClosedWebAnnularEmbedding
+open GoertzelV24ClosedWebBoundaryData
+open GoertzelV24ClosedWebBoundaryData.AnnularBoundaryData
 open GoertzelV24FaceOrbitIncidence
+open GoertzelV24HexCorridorPointwiseRungs
+open GoertzelV24HexCorridorSkeleton
 open SimpleGraphDartRotation
 open GoertzelV24InteriorDualPointwiseLookup
+open GoertzelV24DualPathPointwiseTransversal
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
   {G : SimpleGraph V} [DecidableRel G.Adj]
@@ -87,6 +95,29 @@ theorem card_le_one_of_interior
       (Finset.univ : Finset (OrbitFace cell.rotation.toRotationSystem)) f.1 g.1).card ≤ 1 :=
   hinterior f.1 hf g.1 hg
     ((interiorDualGraph_adj_iff _ _).1 hfg).1
+
+/-- A facial-dual walk whose every visited face is annular-interior carries
+the exact pointwise uniqueness receipt needed to recover its primal crossing
+edges.  No assertion is made about either hole face or any unused face pair. -/
+theorem dualWalkStepUnique_of_getVert_interior
+    (cell : FramedAnnularCellulation G)
+    (hinterior : InteriorPairwiseUniqueSharedInteriorEdges cell)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace cell.rotation.toRotationSystem))}
+    (walk : (interiorDualGraph
+      (orbitFaceBoundary cell.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace cell.rotation.toRotationSystem))).Walk start finish)
+    (hwalk : ∀ index : Fin (walk.length + 1),
+      (walk.getVert index.val).1 ∈ cell.interiorFaces) :
+    DualWalkStepUnique
+      (orbitFaceBoundary cell.rotation.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace cell.rotation.toRotationSystem)) walk := by
+  intro step
+  exact card_le_one_of_interior cell hinterior
+    (hwalk ⟨step.val, by omega⟩)
+    (hwalk ⟨step.val + 1, by omega⟩)
+    (walk.adj_getVert_succ step.isLt)
 
 /-- **The interior-dual edge on an interior face pair.**  No global uniqueness
 hypothesis is used anywhere: the premise is the restricted one, and the two
@@ -136,6 +167,25 @@ theorem interiorFaceEdge_eq_sharedInteriorEdgeOfAdjOfPairwiseUnique
       sharedInteriorEdgeOfAdjOfPairwiseUnique _ _ hunique hfg :=
   interiorFaceEdge_eq_of_mem cell _ hf hg hfg
     (sharedInteriorEdgeOfAdjOfPairwiseUnique_mem_sharedInteriorEdges _ _ hunique hfg)
+
+/-- A boundary-clean corridor needs no global face-intersection hypothesis.
+Restricted uniqueness of the annular interior faces supplies the pointwise
+cardinality receipt at every consecutive corridor step. -/
+theorem boundaryCleanCorridor_consecutiveRungUnique
+    {outerCount blockLength : Nat}
+    {data : AnnularBoundaryData G outerCount}
+    (embedded : ClosedWebAnnularEmbedding data)
+    (hinterior : InteriorPairwiseUniqueSharedInteriorEdges embedded.cellulation)
+    (corridor : BoundaryCleanOrbitHexCorridor embedded blockLength) :
+    ConsecutiveRungUnique
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton := by
+  intro step
+  let skeleton :=
+    corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+  exact card_le_one_of_interior embedded.cellulation hinterior
+    (corridor.face_internal step.left)
+    (corridor.face_internal step.right)
+    (skeleton.consecutive_adjacent step.left step.right rfl)
 
 end GoertzelV24AnnularInteriorFaceUniqueness
 

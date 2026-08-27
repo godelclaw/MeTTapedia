@@ -1,3 +1,4 @@
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularInteriorFaceUniqueness
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalRungPlacement
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebCorridorLayer
 
@@ -19,10 +20,12 @@ open GoertzelV24ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebAnnularEmbedding.ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebBoundaryData
 open GoertzelV24ClosedWebBoundaryData.AnnularBoundaryData
+open GoertzelV24AnnularInteriorFaceUniqueness
 open GoertzelV24DualPathTransversal
 open GoertzelV24FaceDualConnectedness
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24HexCorridorInterfaceMatching
+open GoertzelV24HexCorridorPointwiseRungs
 open GoertzelV24HexCorridorSkeleton
 open GoertzelV24HexFaceRungType
 open GoertzelV24HexSlabSideAdjacency
@@ -39,7 +42,7 @@ attribute [-instance]
   GoertzelV24RetainedVertexRotationSplice.retainedVertexFintype
   GoertzelV24SeamFaceArcPartition.hitPointFintype
 
-namespace Instance
+namespace Formation
 
 namespace LocalLayerFormation
 
@@ -49,12 +52,12 @@ faces is what lets later separator arguments read the four primal cut edges
 from the source face, instead of treating a bare dual adjacency as if it
 remembered its witnessing edge. -/
 structure SourceLocalLayerPairWitness
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hunique : PairwiseUniqueSharedInteriorEdges
-      (orbitFaceBoundary web.annular.RS)
-      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+      (orbitFaceBoundary formation.annular.RS)
+      (Finset.univ : Finset (OrbitFace formation.annular.RS)))
     (leftInterior : CorridorInterior blockLength)
     (hnext : leftInterior.center.val + 2 < blockLength) where
   placement : InternalHexRungPlacement
@@ -67,6 +70,133 @@ structure SourceLocalLayerPairWitness
     before.1.val + 1 [MOD 6]
   after_after_outgoing : after.1.val ≡
     placement.outgoingPosition.val + 1 [MOD 6]
+
+/-- The source-local Cell witness with the dependency corrected to the
+pointwise corridor receipt.  Its finite data are identical to the historical
+record, but neither its formation nor its placement carries a colouring or a
+global face-intersection hypothesis. -/
+structure PointwiseSourceLocalLayerPairWitness
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
+    (hlocal : ConsecutiveRungUnique
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton)
+    (leftInterior : CorridorInterior blockLength)
+    (hnext : leftInterior.center.val + 2 < blockLength) where
+  placement : PointwiseInternalHexRungPlacement
+    corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton
+    hlocal leftInterior
+  before : {position // position ∈ placement.sidePositions}
+  after : {position // position ∈ placement.sidePositions}
+  before_ne_after : before ≠ after
+  outgoing_after_before : placement.outgoingPosition.val ≡
+    before.1.val + 1 [MOD 6]
+  after_after_outgoing : after.1.val ≡
+    placement.outgoingPosition.val + 1 [MOD 6]
+
+/-- The corrected source witness exists directly from formation geometry and
+the consecutive-rung receipt. -/
+theorem exists_pointwiseSourceLocalLayerPairWitness
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
+    (hlocal : ConsecutiveRungUnique
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton)
+    (leftInterior : CorridorInterior blockLength)
+    (hnext : leftInterior.center.val + 2 < blockLength) :
+    Nonempty (PointwiseSourceLocalLayerPairWitness formation corridor hlocal
+      leftInterior hnext) := by
+  let placement := Formation.localPointwiseInternalHexRungPlacement formation
+    corridor hlocal leftInterior
+  have hnonadjacent : placement.rungType ≠ HexRungType.adjacent :=
+    GoertzelV24ClosedWebAtGoodWord.Formation.PointwiseInternalHexRungPlacement.rungType_ne_adjacent_of_cell3
+      formation corridor hlocal leftInterior placement
+  rcases exists_two_hexSidePositions_flanking_outgoing
+      placement.incomingPosition6 placement.outgoingPosition6
+      placement.positions6_ne hnonadjacent with
+    ⟨before6, after6, hbeforeAfter, hbeforeMod, hafterMod⟩
+  let before := placement.sidePositionOfSix before6
+  let after := placement.sidePositionOfSix after6
+  have hbeforeNeAfter : before ≠ after := by
+    intro heq
+    apply hbeforeAfter
+    apply Subtype.ext
+    have hvalues := congrArg (fun position => position.1.val) heq
+    exact Fin.ext hvalues
+  have hbeforeActual : placement.outgoingPosition.val ≡
+      before.1.val + 1 [MOD 6] := by
+    simpa [before, PointwiseInternalHexRungPlacement.sidePositionOfSix,
+      PointwiseInternalHexRungPlacement.positionOfSix,
+      PointwiseInternalHexRungPlacement.outgoingPosition6] using hbeforeMod
+  have hafterActual : after.1.val ≡
+      placement.outgoingPosition.val + 1 [MOD 6] := by
+    simpa [after, PointwiseInternalHexRungPlacement.sidePositionOfSix,
+      PointwiseInternalHexRungPlacement.positionOfSix,
+      PointwiseInternalHexRungPlacement.outgoingPosition6] using hafterMod
+  exact ⟨{
+    placement := placement
+    before := before
+    after := after
+    before_ne_after := hbeforeNeAfter
+    outgoing_after_before := hbeforeActual
+    after_after_outgoing := hafterActual }⟩
+
+/-- Canonical corrected local witness. -/
+noncomputable def pointwiseSourceLocalLayerPairWitness
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
+    (hlocal : ConsecutiveRungUnique
+      corridor.toCleanOrbitHexCorridorSkeleton.toOrbitHexCorridorSkeleton)
+    (leftInterior : CorridorInterior blockLength)
+    (hnext : leftInterior.center.val + 2 < blockLength) :
+    PointwiseSourceLocalLayerPairWitness formation corridor hlocal leftInterior
+      hnext :=
+  Classical.choice (exists_pointwiseSourceLocalLayerPairWitness formation
+    corridor hlocal leftInterior hnext)
+
+/-- The restricted annular interior-face property supplies the complete local
+witness; the refuted hole-face pairs are never quantified over. -/
+theorem exists_pointwiseSourceLocalLayerPairWitness_of_interiorUnique
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
+    (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
+      formation.annular.cellulation)
+    (leftInterior : CorridorInterior blockLength)
+    (hnext : leftInterior.center.val + 2 < blockLength) :
+    Nonempty (PointwiseSourceLocalLayerPairWitness formation corridor
+      (boundaryCleanCorridor_consecutiveRungUnique formation.annular hinterior
+        corridor)
+      leftInterior hnext) :=
+  exists_pointwiseSourceLocalLayerPairWitness formation corridor
+    (boundaryCleanCorridor_consecutiveRungUnique formation.annular hinterior
+      corridor)
+    leftInterior hnext
+
+end LocalLayerFormation
+
+end Formation
+
+namespace Instance
+
+namespace LocalLayerFormation
+
+/-- Backward-compatible coloured spelling of the geometric source-layer
+witness.  The record itself is carried by the inherited annular formation;
+the colouring remains available to later Cell-3 consequences but is absent
+from the local geometry ABI. -/
+abbrev SourceLocalLayerPairWitness
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    (web : Instance data coloring) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary web.annular.RS)
+      (Finset.univ : Finset (OrbitFace web.annular.RS)))
+    (leftInterior : CorridorInterior blockLength)
+    (hnext : leftInterior.center.val + 2 < blockLength) :=
+  Formation.LocalLayerFormation.SourceLocalLayerPairWitness web.toFormation
+    corridor hunique leftInterior hnext
 
 /-- The face across one non-rung position of a locally placed Cell-3
 hexagon.  Its definition is the literal face of the opposite dart; the
