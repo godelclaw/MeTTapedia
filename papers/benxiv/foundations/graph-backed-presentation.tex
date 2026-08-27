@@ -256,8 +256,89 @@ bridge characterisation and Euler's \emph{inequality} --- and from the
 observation that a digon in a cubic map is attached to the rest of the map
 by exactly two edges.
 
+The only global-looking part of the dart trace is the assertion that an
+exterior face which leaves the digon must return through one of its two
+attachments.  The following finite-orbit lemma isolates that assertion.
+
+\begin{lemma}[two-door return]\label{lem:two-door-return}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TwoDoorOrbit.sameCycle_firstDoor_or_secondDoor}
+Let $\varphi$ be a permutation of a finite set, let
+$s\colon D\to\{0,1\}$, and let $d,a',b'\in D$.  Suppose the first step from
+$d$ changes side, and every point on the far side stays there under
+$\varphi$ except possibly $a'$ and $b'$.  Then the $\varphi$-orbit of $d$
+contains $a'$ or $b'$.
+\end{lemma}
+
+\begin{proof}
+The orbit is finite and returns to $d$.  Choose the least positive $k$ for
+which $s(\varphi^k d)=s(d)$.  The first step crosses, so $k\geq2$, and by
+minimality $\varphi^{k-1}d$ is on the far side.  Its next step changes side;
+the side-invariance hypothesis therefore says that
+$\varphi^{k-1}d$ is one of the two doors.  Hence that door lies in the orbit
+of $d$.
+\end{proof}
+
+\begin{lemma}[the local digon orbit closes]\label{lem:digon-local-closes}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DigonFaceLocal.exact_twoCycle_of_twoDoorSide}
+Use local darts $p_1,p_2,q_1,q_b$ and exterior darts $a',b'$.  Assume that
+$\varphi(q_1)=p_2$, while the next step from $p_2$ is either $q_1$ or $q_b$.
+Assume also that the exterior has only the two doors $a',b'$, that
+$\varphi(a')=p_1$, and that the edges with dart pairs
+$\{q_b,b'\}$ and $\{q_1,p_1\}$ are two-sided.  Then
+\[
+  \varphi(q_1)=p_2,\qquad \varphi(p_2)=q_1,
+\]
+and the face orbit of $q_1$ is exactly $\{q_1,p_2\}$.
+\end{lemma}
+
+\begin{proof}
+If the second step is $q_b$, Lemma~\ref{lem:two-door-return} says that its
+exterior orbit contains $a'$ or $b'$.  Two-sidedness of the $b$-attachment
+excludes $b'$, so the orbit contains $a'$, hence also
+$\varphi(a')=p_1$.  But $q_1\to p_2\to q_b$, so this puts $q_1$ and $p_1$
+on one face, contradicting two-sidedness of $e_1$.  Thus the second step is
+$q_1$.  Iterating the resulting two-cycle shows that its orbit has precisely
+the two displayed darts.
+\end{proof}
+
+\begin{lemma}[the map-level digon orbit closes]
+\label{lem:digon-map-closes}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DigonFaceExact.exactDigonFace_and_boundary_of_twoSided}
+Let $(D,\sigma,\alpha)$ be a cubic rotation map whose rotations are cyclic on
+each vertex, and suppose every edge is two-sided. Let $e_1,e_2$ be parallel
+edges between distinct vertices $u,v$. Write $b'$ for the far dart of the
+third edge at $v$. If the vertex of $b'$ is not $u$ (and hence, by
+looplessness, is not $v$ either), then one of
+\[
+  (q_1,p_2),\qquad (q_2,p_1)
+\]
+is an exact two-cycle of the face permutation. In particular the
+corresponding quotient face has precisely the two edges $e_1,e_2$.
+\end{lemma}
+
+\begin{proof}
+Cubicity identifies the stars at $u$ and $v$ with
+$\{p_1,p_2,p_a\}$ and $\{q_1,q_2,q_b\}$, and cyclicity leaves exactly two
+orientations at each star. Fix the orientation at $u$. The first face step
+across one of the parallel edges then has the form $q_1\mapsto p_2$ or
+$q_2\mapsto p_1$. At $v$ the next step either closes that two-cycle or
+exits through $q_b$.
+
+Distinguish the two digon vertices from the exterior by a Boolean side.
+Away from $a'$ and $b'$, applying $\alpha$ cannot carry an exterior dart to
+$u$ or $v$: the complete cubic stars show that the only exterior darts
+paired to local darts are exactly $a'$ and $b'$. Rotation preserves the
+vertex, so the face permutation preserves this side away from those two
+doors. Since $b'$ is exterior, the step from $q_b$ crosses the side.
+Lemma~\ref{lem:two-door-return} therefore says that an exiting facial walk
+returns through $a'$ or $b'$. Two-sidedness excludes return through $b'$;
+return through $a'$ would put both darts of the chosen parallel edge on one
+face, again contradicting two-sidedness. Thus the walk cannot exit, and
+Lemma~\ref{lem:digon-local-closes} gives the asserted exact two-cycle.
+\end{proof}
+
 \begin{theorem}[the digon face, combinatorially]\label{thm:digon-combinatorial}
-\Sconditional{Theorem~\ref{thm:same-face-bridge}, Theorem~\ref{thm:euler-bound}}
+\Sprose
 Let $M$ be a connected bridgeless cubic map carrying a parallel pair
 $e_1, e_2$ between distinct vertices $u, v$, and suppose $M$ is not the theta
 map. If $M$ is spherical then
@@ -271,63 +352,27 @@ dart $a'$, and $b$ the edge carrying $q_b$, with second dart $b'$. Since $u$
 and $v$ have no further darts, every other dart lies in the exterior, and $M$
 meets the exterior only along $a$ and $b$.
 
-Relabelling $e_1 \leftrightarrow e_2$ if necessary, take
-$\sigma_u = (p_1\,p_2\,p_a)$. The rotation at $v$ is one of two $3$-cycles.
-If $\sigma_v = (q_1\,q_b\,q_2)$ then $\sigma q_2 = q_1$, and
-\[
-  \varphi(q_1) = \sigma p_1 = p_2, \qquad \varphi(p_2) = \sigma q_2 = q_1,
-\]
-so $\{q_1, p_2\}$ is a face of length two and we are done. Assume therefore
-$\sigma_v = (q_1\,q_2\,q_b)$, and write $M^{\circ}$ for the map obtained by
-replacing $\sigma_v$ with the other $3$-cycle. We show $M$ is not spherical.
+Corollary~\ref{cor:two-sided} makes every edge of $M$ two-sided. The dart
+$b'$ cannot be based at $v$: then $b$ would be a loop, contributing two
+darts at $v$ in addition to the darts of $e_1,e_2$, contrary to cubicity.
+If $b'$ were based at $u$, then $b$ would be a third $uv$ edge. Both cubic
+stars would be saturated by the three parallel edges, and connectedness
+would make $M$ the theta map, contrary to hypothesis. Thus $b'$ is based at
+neither $u$ nor $v$.
 
-Since $\varphi(x) = \sigma(\alpha x)$ and the two maps differ only in
-$\sigma_v$, they differ only at darts $x$ with $\alpha x \in \{q_1,q_2,q_b\}$,
-that is, at $p_1$, $p_2$ and $b'$. In particular the $\varphi$-orbit of a
-dart of the exterior follows the same course in both maps until it reaches
-$a'$ or $b'$.
-
-Let $P_a$ be the segment from $\varphi(p_a) = \sigma a'$ up to its first
-arrival at $a'$ or $b'$, and $P_b$ the segment from
-$\varphi(q_b) = \sigma b'$. If $P_a$ arrived at $a'$ then $p_a$ and $a'$ ---
-the two darts of $a$ --- would lie on one face, making $a$ a bridge by
-Theorem~\ref{thm:same-face-bridge}; likewise an arrival of $P_b$ at $b'$
-would make $b$ a bridge. Bridgelessness therefore forces $P_a$ to end at
-$b'$ and $P_b$ at $a'$.
-
-Now trace both maps. In $M$,
-\[
-  p_a \to P_a \to b' \to q_1 \to p_2 \to q_b \to P_b \to a' \to p_1 \to q_2
-  \to p_a ,
-\]
-a single face. In $M^{\circ}$ the same darts fall into three:
-\[
-  (p_a,\, P_a,\, b',\, q_2), \qquad
-  (p_1,\, q_b,\, P_b,\, a'), \qquad
-  (q_1,\, p_2).
-\]
-Every face meeting neither $P_a$ nor $P_b$ is untouched, so
-$F(M^{\circ}) = F(M) + 2$. The two maps share their underlying graph, hence
-their vertex count, edge count and number of components. Euler's inequality
-(Theorem~\ref{thm:euler-bound}) applied to $M^{\circ}$ gives
-\[
-  V + F(M) + 2 \;=\; V + F(M^{\circ}) \;\le\; E + 2 ,
-\]
-so $V + F(M) \le E$, and $M$ is not spherical.
+All hypotheses of Lemma~\ref{lem:digon-map-closes} now hold. One of the two
+parallel-edge side pairs is an exact face-permutation two-cycle, so its
+quotient face has boundary $\{e_1,e_2\}$ and no other edge.
 \end{proof}
 
 \begin{remark}[the last embedding obligation, discharged]
 \Sprose
 Theorem~\ref{thm:digon-combinatorial} uses no curve and no separation. Its
-inputs are the bridge characterisation and Euler's inequality, both
-machine-checked, together with a dart computation. Two features of the
-situation carry it: a digon in a cubic map is attached by exactly two edges,
-which is what makes the exterior enter only as two opaque segments $P_a$ and
-$P_b$; and sphericity is the \emph{equality} case of an inequality that holds
-unconditionally, so exhibiting a rival rotation with two more faces refutes
-sphericity outright. The second is worth noting on its own --- an inequality
-one cannot prove tight is still a tool for proving a given map is
-\emph{not} tight.
+inputs are the bridge characterisation (through two-sidedness), cubicity,
+and a finite permutation-orbit argument. The exterior is not opened: it is
+summarized by a Boolean side and the fact that the patch has exactly two
+doors. This is the same compositional principle used later by the corridor
+profiles, in its smallest nontrivial form.
 
 An exhaustive check accompanies the theorem: over three cubic multigraphs
 carrying a digon, all $16 + 64 + 256$ rotation systems were enumerated, and
@@ -341,8 +386,9 @@ mentioned a plane.
 \begin{remark}[what this costs]
 \Sprose
 Nothing beyond what the route already owes.  The load-bearing proof is
-Theorem~\ref{thm:digon-combinatorial}: bridge characterisation, Euler's
-inequality, and a dart count.  Lemma~\ref{lem:digon-face} remains only as the
+Theorem~\ref{thm:digon-combinatorial}: the bridge characterisation's
+two-sidedness corollary, cubicity, and a finite dart-orbit calculation.
+Lemma~\ref{lem:digon-face} remains only as the
 geometric picture and is not consumed.  The exclusion of the theta map is
 harmless, since by Remark~\ref{rem:theta-colourable} it is Tait colourable and
 so is never a least counterexample.
