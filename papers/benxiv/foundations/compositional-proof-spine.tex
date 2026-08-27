@@ -1198,8 +1198,123 @@ bound.
 This formulation has the same finite cost as depth phasing, but the phase is
 a function of the edge shore itself.  Consequently the connected branch
 decomposition supplier need not carry or synchronize a separate node-depth
-annotation.  Taking $Q$ to be the exact typed seam-and-support state leaves
-only the construction of that state and the physical local splice.
+annotation.
+
+The colouring part of the exact state can now be stated without identifying
+the literal boundary-dart types of two different shores.  Let \(T\) be an
+inner open tangle with boundary carrier \(B\), let \(|B|=k\), and choose a
+coordinate equivalence \(c:B\simeq [k]\).  Define
+
+\[
+ \operatorname{Supp}_{k}(T,c)
+   =\bigl\{x\in\{1,2,3\}^{[k]}:
+       x\text{ is realized by a proper Tait colouring of }T\bigr\},
+\]
+
+where the port at coordinate \(i\) is \(c^{-1}(i)\).  This is an actual finite
+set, not a predicate retained in an ambient carrier.
+
+\begin{theorem}[normalized exact Count replacement]
+\label{thm:normalized-exact-count-replacement}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24NormalizedTaitSupport.not_composeRotationSystem_taitColorable_of_normalized_eq}
+Let \(L\) be an outside open tangle whose seam is indexed by \([k]\), and let
+\((T,c)\), \((T',c')\) be inner open tangles with \(k\)-port coordinates.  If
+
+\[
+             \operatorname{Supp}_{k}(T,c)
+             =\operatorname{Supp}_{k}(T',c'),
+\]
+
+then replacing \(T\) by \(T'\) preserves zero Count, equivalently preserves
+non-Tait-colourability of the literal sewn rotation system.
+\end{theorem}
+
+\begin{proof}
+After transport through \(c\) and \(c'\), both inner pieces have the same
+literal seam carrier \([k]\).  Equality of the displayed finite sets is
+therefore equality of the genuine-word supports consumed by the closed Count
+replacement theorem.  That equality is also equality of the raw colour-word
+supports, because every boundary letter of a proper colouring is nonzero.
+The gluing equivalence says that a closed composite is colourable exactly when
+the outside and inside supports intersect.  Hence the two composites are
+colourable simultaneously.  Finally, the physical/semantic bridge identifies
+this closed Count statement with Tait colourability of the literal sewn
+rotation systems.
+\end{proof}
+
+There are exactly
+
+\[
+              2^{3^k}
+\]
+
+possible normalized supports
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24NormalizedTaitSupport.card_normalizedSupportType}.
+This is the raw logical state count; reachable-state minimization is only an
+optimization.  The cyclic order is intentionally not forgotten.  If
+\(\rho_T\) is the canonical hub rotation of \(T\), put
+
+\[
+ \Sigma_k(T,c)=
+ \bigl(c\rho_Tc^{-1},\operatorname{Supp}_k(T,c)\bigr).
+\]
+
+This state is finite, of raw size
+
+\[
+                  k!\,2^{3^k},
+\]
+
+as machine-checked by
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24NormalizedSeamState.card_state}.
+
+\begin{theorem}[the normalized state is a complete replacement receipt]
+\label{thm:normalized-seam-state-replacement}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24NormalizedSeamState.replacement_receipt}
+Suppose an outside boundary with hub rotation \(\rho_L\) is matched
+orientation-reversingly to \((T,c)\), and
+\(\Sigma_k(T,c)=\Sigma_k(T',c')\).  Compose the old matching with
+\(c'^{-1}\circ c\), from the old inner boundary to the new one.  Then
+the resulting matching to \(T'\) is still orientation-reversing, and the two
+normalized Tait supports are equal.
+\end{theorem}
+
+\begin{proof}
+Equality of the first fields says exactly that the coordinate change conjugates
+\(\rho_T\) to \(\rho_{T'}\).  Substituting this identity into the old
+orientation-reversal equation gives the new equation pointwise.  Equality of
+the second fields is the support equality of
+Theorem~\ref{thm:normalized-exact-count-replacement}.
+\end{proof}
+
+Thus equality of the full finite receipt supplies both semantic facts required
+by replacement: zero Count and seam orientation.  The supplier must still
+construct a coordinate equivalence for each majority shore and supply the two
+disc-side hypotheses for the replacement piece.  Those are geometric
+existence/packaging obligations; no further Count semantics or hidden
+orientation choice remains.
+
+Substituting this literal state into
+Theorem~\ref{thm:cardinality-phased-shore-descent} removes the last abstract
+seam-type parameter.  For cuts of width at most \(k\), the unphased state
+count is
+
+\[
+             q_k=\sum_{0\le j\le k} j!\,2^{3^j},
+\]
+
+and the cardinality phase gives the explicit bound
+
+\[
+             |V(G)|\le
+             2\left(2^{(6w+1)q_k}-1\right).
+\]
+
+This exact specialization is machine-checked as
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24NormalizedShoreDescent.vertexCount_le_of_cardPhasedNormalizedShore}.
+Its sole application-specific premise is now transparent: equal normalized
+states at two nested majority shores, together with the strict slab vertex,
+must produce a smaller instance in the same target class.
 
 This theorem closes the finite counting once the supply exists.  Its second
 hypothesis still contains the geometric content of D3.  In particular, the
@@ -2790,7 +2905,7 @@ already made it strictly smaller than \(M\).
 \end{proof}
 
 The checked minimal form of the same argument is already available:
-\Sverified{Mettapedia.GraphTheory.FourColor.RotationSystem.no_wellFormed_digonPatchData_of_minimal}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DigonSpliceNormalization.no_wellFormed_digonPatchData_of_minimal}
 a vertex-minimal zero-Tait-count member of the bridgeless spherical cubic
 class, with two-sided face orbits, admits no well-formed digon patch.  The
 remaining difference between this declaration and the normalization

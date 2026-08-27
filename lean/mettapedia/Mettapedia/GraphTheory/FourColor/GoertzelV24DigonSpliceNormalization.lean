@@ -104,4 +104,18 @@ end
 
 end RotationSystem
 
+/-! ## Publication-facing declaration aliases
+
+The implementation theorems above live in the generic `RotationSystem`
+namespace.  These aliases put the two consumer-facing results under the module
+namespace as well, so a manuscript citation determines its defining module
+without a global source search.
+-/
+
+alias GoertzelV24DigonSpliceNormalization.suppressed_class_and_card :=
+  RotationSystem.DigonPatchData.suppressed_class_and_card
+
+alias GoertzelV24DigonSpliceNormalization.no_wellFormed_digonPatchData_of_minimal :=
+  RotationSystem.no_wellFormed_digonPatchData_of_minimal
+
 end Mettapedia.GraphTheory.FourColor
