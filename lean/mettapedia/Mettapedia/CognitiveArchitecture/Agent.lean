@@ -14,6 +14,7 @@ import Mettapedia.CognitiveArchitecture.Agent.PermissiveActionGraph
 import Mettapedia.CognitiveArchitecture.Agent.AddressedEffects
 import Mettapedia.CognitiveArchitecture.Agent.ReproducibleBuildView
 import Mettapedia.CognitiveArchitecture.Agent.ReproducibleBuildReplay
+import Mettapedia.CognitiveArchitecture.Agent.RelationalAtlas
 
 /-!
 # General agent-architecture interfaces
@@ -23,5 +24,7 @@ effect receipts, and authority-preserving execution boundaries.  These
 interfaces are architecture-neutral; particular agents are downstream
 instances.  Reproducible event histories use the same weakest-sufficient-view
 boundary without treating a bounded context as the authoritative ledger;
-declared build views connect to that order through a separate bridge.
+declared build views connect to that order through a separate bridge.  The
+relational Atlas instance retains revision identity, explicit audit state,
+projection loss, and visible as well as hidden conflict witnesses.
 -/

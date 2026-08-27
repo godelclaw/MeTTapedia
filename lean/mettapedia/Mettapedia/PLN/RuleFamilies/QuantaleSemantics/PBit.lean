@@ -7,9 +7,14 @@ This file establishes the connection between PLN's `BinaryEvidence` type and Goe
 **p-bits** (paraconsistent bits) from the paper "Paraconsistent Foundations for
 Probabilistic Reasoning, Programming and Concept Learning" (arXiv:2012.14474).
 
-## Key Insight
+## Relationship to bounded p-bits
 
-The existing `BinaryEvidence` type `(pos, neg : ℝ≥0∞)` IS already a p-bit structure.
+The existing `BinaryEvidence` type `(pos, neg : ℝ≥0∞)` is an unbounded
+evidence-count realization with the same four named corners.  It is not
+definitionally the bounded Hyperseed carrier `[0,1]²`; relating the complete
+carriers requires an explicit normalization map and laws.  The bounded
+carrier and its canonical quantale are formalized separately in
+`Mettapedia.Hyperseed.PBitQuantale`.
 
 ## References
 
