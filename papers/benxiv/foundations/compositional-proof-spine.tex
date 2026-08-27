@@ -124,8 +124,8 @@ $|\!\cdot\!|\colon\mathcal T\to\mathbb N$ and a predicate $P$.  Assume:
 \item every $\neg P$ instance having a ladder-reducible local feature has a
 strictly smaller $\neg P$ reduction in $\mathcal T$;
 \item there are constants $V_0,N$ such that every irreducible
-$X\in\mathcal T$ with $|X|>V_0$ has a corridor with more than $N$ admissible
-cut positions;
+$X\in\mathcal T$ with $|X|>V_0$ has a corridor with more than $N$
+\emph{pairwise suitably separated} admissible cut positions;
 \item every cut has a profile in a set $Q$ with $|Q|\le N$;
 \item whenever two suitably separated cuts have the same profile, deleting
 the material strictly between them constructs $X'\in\mathcal T$ with
@@ -141,9 +141,11 @@ then $P$ holds throughout $\mathcal T$.
 
 \begin{proof}
 Suppose $\neg P$ occurs and choose such an $X$ of least size.  Hypothesis~1
-makes $X$ irreducible.  If $|X|>V_0$, Hypothesis~2 supplies more than $N$ cut
-positions.  Their profiles lie in $Q$, so two are equal by the pigeonhole
-principle.  Hypothesis~4 then constructs a strictly smaller $\neg P$
+makes $X$ irreducible.  If $|X|>V_0$, Hypothesis~2 supplies more than $N$
+pairwise suitably separated cut positions.  Their profiles lie in $Q$, so
+two are equal by the pigeonhole principle.  This pair satisfies the
+separation premise of Hypothesis~4, which then constructs a strictly smaller
+$\neg P$
 instance, contrary to minimality.  Hence $|X|\le V_0$.  The final assertion
 is immediate from emptiness of the base.  \qedhere
 \end{proof}
@@ -299,8 +301,10 @@ faces and put
  C=1+h(B-1),\qquad
  M=1+B\sum_{i=0}^{L-2}(B-1)^i.
 \]
-If the facial dual has more than $h+CM$ vertices, it contains a geodesic of
-at least $L$ edges which avoids every face in $S$.
+If the facial dual has more than $h+CM$ vertices, the induced facial dual on
+the complement of $S$ contains a geodesic of at least $L$ edges.  We call
+this an $S$-avoiding geodesic; no claim is made that it is geodesic in the
+undeleted facial dual.
 \end{corollary}
 
 \begin{proof}
@@ -309,8 +313,8 @@ the number of components by at most $B-1$.  Deleting all $h$ forbidden
 vertices therefore leaves at most $C$ components.  More than $CM$ vertices
 remain, so one component has more than $M$ vertices.  Its maximum degree is
 still at most $B$; the breadth-first estimate in the preceding proof gives a
-geodesic of length at least $L$ inside that component, hence disjoint from
-$S$.
+geodesic of length at least $L$ in that component, hence an $S$-avoiding
+geodesic in the stated sense.
 \end{proof}
 
 Thus, within the bounded-face branch, the cap faces and any fixed collection
@@ -330,27 +334,32 @@ alphabet.
 There is a useful local bound here, but it must not be confused with a bound
 on the complete transfer interface.
 
-\begin{lemma}[geodesic locality]
+\begin{lemma}[$S$-avoiding geodesic locality]
 \label{lem:geodesic-locality}
 \Sprose
-Let $F_0,F_1,\ldots,F_L$ be a geodesic in the facial dual.  If a face $H$ is
-adjacent to both $F_i$ and $F_j$, then $|i-j|\le2$.  If all faces have length
-at most $B$, the part of the radius-one slab that can interact across the cut
-between $F_i$ and $F_{i+1}$ uses only a bounded number of faces and darts,
-depending on $B$ and not on $L$.
+Let $S$ contain at most $h$ faces and let
+$F_0,F_1,\ldots,F_L$ be a geodesic in the facial dual with $S$ deleted.
+If a face $H\notin S$ is adjacent in the original dual to both $F_i$ and
+$F_j$, then $|i-j|\le2$.  If all faces have length at most $B$, the part of
+the radius-one slab that can interact across the cut between $F_i$ and
+$F_{i+1}$ uses a carrier of at most
+\[
+                         4B^2+4B+hB
+\]
+darts.  In particular the bound is independent of $L$.
 \end{lemma}
 
 \begin{proof}
-The two dual edges $F_iH$ and $HF_j$ form a walk of length two.  Geodesicity
-of the displayed path gives $|i-j|=d(F_i,F_j)\le2$.  Therefore a side face
-cannot remain incident with the axis across more than three consecutive
-positions.  A side face that crosses the cut is consequently adjacent to one
-of $F_{i-1},F_i,F_{i+1},F_{i+2}$ (omitting nonexistent end terms).  Those four
+Because $H\notin S$, the two dual edges $F_iH$ and $HF_j$ survive the
+deletion and form a walk of length two there.  Geodesicity in the deleted
+dual gives $|i-j|=d_{D-S}(F_i,F_j)\le2$.  Therefore any unmarked side face
+crossing the cut is adjacent to one of
+$F_{i-1},F_i,F_{i+1},F_{i+2}$ (omitting nonexistent end terms).  Those four
 axis faces have together at most $4B$ boundary incidences, hence at most
-$4B$ distinct side neighbours; and each such neighbour has at most $B$
-darts.  Thus, for example, $4B^2+4B$ darts is a uniform coarse carrier bound
-for the interacting radius-one data.  The bound is intentionally loose; its
-independence of $L$ is the point.
+$4B$ such side neighbours; storing their darts and the axis incidences costs
+at most $4B^2+4B$.  A marked face need not obey the locality conclusion, but
+there are at most $h$ of them and retaining each whole boundary costs at most
+$B$ further darts.  Adding these contributions gives $4B^2+4B+hB$.
 \end{proof}
 
 Lemma~\ref{lem:geodesic-locality} bounds the faces directly incident with the
@@ -385,6 +394,152 @@ ladder.  The deterministic generator and all per-radius arrays are in
 \texttt{tools/fourcolor/v24\_goldberg\_frontier\_width\_audit.py} and its
 JSON certificate.
 
+\subsection{The cap-composed Menu predicate}
+
+The terminal predicate must be fixed before any finite closure is measured.
+The source does not count bichromatic components in the open tangle alone.
+It restores the pentagonal cap and then counts the components obtained by
+composing the open strand pairing with the cap pairing.  These are different
+objects.
+
+\begin{definition}[cap-composed pair relation]
+\label{def:cap-composed-pair-relation}
+\Sprose
+Let $w$ be a good inner word, let $x$ be a proper colouring of the five cap
+cycle edges extending $w$, and fix a majority pair $(p,q)$.  Let
+$P_{p,q}\subseteq\mathbb Z/5\mathbb Z$ be the four inner positions whose
+spokes have colour $p$ or $q$.  On $P_{p,q}$ put two relations:
+\begin{align*}
+ i\mathrel{\pi_{\rm str}}j
+   &\quad\Longleftrightarrow\quad
+   \text{the two spokes lie in the same $(p,q)$-component of the open tangle},\\
+ i\mathrel{\pi_{\rm cap}}j
+   &\quad\Longleftrightarrow\quad
+   \text{$i$ and $j$ are joined in the cap $5$-cycle by edges of colours
+   $p,q$}.
+\end{align*}
+The \emph{cap-composed pair relation} is the equivalence relation generated
+by $\pi_{\rm str}\cup\pi_{\rm cap}$.  The state has menu B for $(p,q)$
+exactly when this relation has at least two classes on $P_{p,q}$.
+\end{definition}
+
+\begin{lemma}[finite pentagonal cap table]
+\label{lem:finite-cap-pairing-table}
+\Sprose
+Normalize the majority colour to $0$, the singleton colours to $1,2$,
+and let $x_i$ colour the cap edge from $i$ to $i+1$, with indices
+modulo five.  For the ten good words, the unique cap extension and the two
+cap matchings are:
+\[
+\begin{array}{c|c|c|c}
+w&x&\pi_{\rm cap}(0,1)&\pi_{\rm cap}(0,2)\\ \hline
+00012&21201&03\mid12&01\mid24\\
+00021&12102&01\mid24&03\mid12\\
+00120&12012&01\mid24&04\mid13\\
+00210&21021&04\mid13&01\mid24\\
+01200&20121&04\mid13&02\mid34\\
+02100&10212&02\mid34&04\mid13\\
+10002&21210&03\mid12&14\mid23\\
+12000&01212&02\mid34&14\mid23\\
+20001&12120&14\mid23&03\mid12\\
+21000&02121&14\mid23&02\mid34
+\end{array}
+\]
+Here $ab\mid cd$ denotes the perfect matching with blocks
+$\{a,b\}$ and $\{c,d\}$.  Global colour permutation gives every
+unnormalized case.
+\end{lemma}
+
+\begin{proof}
+Properness at cap vertex $i$ says
+$\{w_i,x_{i-1},x_i\}=\{0,1,2\}$.  Thus any one cap-edge colour forces the
+next, and cyclic consistency leaves the single extension displayed in each
+row.  For a majority pair, each of its four active cap vertices has exactly
+one cap edge in the pair.  Tracing those selected edges gives the two
+displayed blocks.  The ten rows exhaust the cyclic placements of a
+consecutive triple together with the order of the two singleton colours.
+\end{proof}
+
+\begin{lemma}[literal cap restoration computes the composed relation]
+\label{lem:cap-restoration-composition}
+\Sprose
+The classes in Definition~\ref{def:cap-composed-pair-relation} are exactly
+the $(p,q)$-components of the graph obtained by restoring the five cap edges,
+restricted to the four active cap vertices.
+\end{lemma}
+
+\begin{proof}
+Every $(p,q)$-walk in the restored graph alternates between maximal portions
+inside the open tangle and maximal portions inside the restored cap.  Its
+successive active cap vertices are therefore related alternately by
+$\pi_{\rm str}$ and $\pi_{\rm cap}$.  Hence its endpoints lie in the
+equivalence closure of their union.  Conversely, every generator of
+$\pi_{\rm str}$ is witnessed by a walk in the open tangle and every generator
+of $\pi_{\rm cap}$ by a walk in the cap.  Concatenating the witnesses for a
+chain in the generated equivalence relation gives a $(p,q)$-walk in the
+restored graph.
+\end{proof}
+
+\begin{lemma}[transverse-chord criterion]
+\label{lem:menu-b-transverse-chord}
+\Sprose
+For either majority pair, let the two blocks of
+$\pi_{\rm cap}$ be $A\mid B$.  Then the cap-restored state has menu B
+for that pair if and only if no pair joined by $\pi_{\rm str}$ has one
+endpoint in $A$ and the other in $B$.
+\end{lemma}
+
+\begin{proof}
+The cap relation is a perfect matching on the four active positions, while
+the open-strand relation is a partial matching: a bichromatic component of
+the open tangle has at most two inner degree-one ends.  If every strand pair
+stays within $A$ or within $B$, each generator of
+$\langle\pi_{\rm cap}\cup\pi_{\rm str}\rangle$ preserves the partition
+$A\mid B$, so the generated relation has at least two classes.  Conversely,
+one transverse strand joins a vertex of $A$ to a vertex of $B$; the two
+cap pairs then connect all four active positions into one class.  By
+Lemma~\ref{lem:cap-restoration-composition}, these are exactly the two
+menu cases.
+\end{proof}
+
+\begin{proposition}[the open-tangle implementation predicate is vacuous]
+\label{prop:open-menu-predicate-vacuous}
+\Sprose
+For well-formed annular boundary data, a proper Tait colouring whose inner
+word has shape $(3,1,1)$ has at least two \emph{open-tangle} bichromatic
+components meeting the inner boundary, for each of its two majority pairs.
+Consequently the present Lean predicates
+\texttt{AnnularFrontierMenuBForPair} and
+\texttt{AnnularFrontierMenuBForPairOfProfile}, which use only the open
+component relation (respectively its \texttt{connectionTable} encoding), are
+true on every realizable colouring/profile in every nonempty good fibre and
+are not the source's menu-B predicate.
+\end{proposition}
+
+\begin{proof}
+Fix one majority pair.  Exactly four inner spokes carry one of its two
+colours.  Their four boundary vertices are distinct and have degree one in
+the corresponding bichromatic support graph.  Every vertex of that support
+graph has degree at most two: an interior cubic Tait vertex has exactly the
+two selected colours, while a boundary vertex has ambient degree one.
+A finite connected graph of maximum degree two has at most two degree-one
+vertices.  Thus one component cannot contain all four active inner stubs;
+at least two components meet the inner boundary.  The same argument applies
+to the other majority pair.
+\end{proof}
+
+This is a semantic correction, not a refutation of the Seed Lemma.  It does
+mean that the current Lean seed count and its profile-factorization theorems
+count the whole good fibre rather than the source's cap-composed seeds, so
+they cannot discharge the Seed Lemma as presently named.  The rolling engine
+still computes useful data: it already retains the open strand relation
+$\pi_{\rm str}$, while $\pi_{\rm cap}$ is a five-port finite function of the
+fixed boundary word and its cap extension.  The repair is therefore to add
+the finite equivalence closure of
+Definition~\ref{def:cap-composed-pair-relation} to terminal acceptance and
+then prove Lemma~\ref{lem:cap-restoration-composition}; it is not a reason to
+discard the one-cell factorization.
+
 \begin{remark}[cap-correct Seed audit]
 \label{rem:seed-census-all-pentagon-pairs}
 \Sprose
@@ -404,12 +559,13 @@ C_{40}&46&10&1380&118320&89580&0\\ \hline
 \end{array}
 \]
 Here ``disconnected'' means that opening the two cap cycles isolates one
-edge joining an inner stub to an outer stub.  Such instances are not removed:
-connectivity is not a field of the source's boundary data or of
-\texttt{AnnularBoundaryData.WellFormed}, and the published $C_{24}$ audit
-itself includes this regime.  If one separately restricts to the $85$
-connected instances, the audit still has $2550$ good fibres, $114840$ good
-states, $84066$ menu-B states, and no seedless fibre.
+edge joining an inner stub to an outer stub.  These rows are retained as a
+boundary-data regression test because connectivity is absent from
+\texttt{AnnularBoundaryData.WellFormed}; they are not controlling source
+instances, since the full \texttt{ClosedWebAnnularEmbedding} contains the
+hypothesis that the graph is connected.  On the $85$ connected source
+instances the audit has $2550$ good fibres, $114840$ good states, $84066$
+menu-B states, and no seedless fibre.
 The polar cases reproduce the manuscript's published menu-B counts
 \(228/240\), \(390/600\), and \(1680/3120\), which is a fidelity check on
 the operational definition.  The deterministic audit is
@@ -434,6 +590,38 @@ $\mathrm{GP}(3,0)$ ($180$ vertices, cap-vertex distance $15$) is seeded for
 all ten representatives.  The exact constraints, graph hashes, and results
 are generated by
 \texttt{tools/fourcolor/v24\_goldberg\_seed\_sat.py}.
+
+\paragraph{Exhaustive small normal-form audit.}
+An independent generator audit uses
+\texttt{plantri -a -d -m5 -c5} to enumerate every generated simple cubic
+spherical map of face length at least five and cyclic edge-connectivity at
+least five through $32$ primal vertices.  Across $22$ maps it opens every
+ordered pair consisting of a pentagonal inner face and an arbitrary
+vertex-disjoint outer face of length $5$ through $8$.  The totals are
+\[
+\begin{array}{c|r|r|r|r}
+V&\text{maps}&\text{boundary openings}&\text{connected annuli}
+ &\text{seeded/nonempty good fibres}\\ \hline
+20&1&72&12&720/720\\
+22&0&0&0&0/0\\
+24&1&96&36&960/960\\
+26&1&108&48&1080/1080\\
+28&3&380&190&3800/3800\\
+30&4&539&294&5390/5390\\
+32&12&1872&1092&18720/18720\\ \hline
+\text{total}&22&3067&1672&30670/30670.
+\end{array}
+\]
+On the connected source-annulus subset the corresponding total is
+$16720/16720$.  Every SAT seed witness is replayed by an independent
+literal cap-restored component traversal.  The generator hash, solver
+version, aggregate counts, and explicit warning that this finite absence is
+not a universal proof are recorded in
+\texttt{results/fourcolor/v24\_plantri\_seed\_audit\_v2\_20\_32.json};
+the reproducible driver is
+\texttt{tools/fourcolor/v24\_plantri\_seed\_audit.py}.  This substantially
+strengthens falsification coverage while remaining a test, not a replacement
+for Proposition~\ref{prop:target-forced-cut-chain}.
 
 These data are deliberately not promoted to a theorem.  They do, however,
 separate the two phenomena which L1 had conflated: the same Goldberg family
@@ -552,6 +740,13 @@ The manuscript's profile has three kinds of observable data:
 
 \begin{theorem}[exact rooted factorization of one positive Cell]
 \label{thm:exact-rooted-cell-factorization}
+\Sconditional{pairwise uniqueness of shared interior face edges}
+Assume the positioned Cell geometry satisfies
+\[
+  \tag{U}
+  F\ne F'\quad\Longrightarrow\quad
+  |\operatorname{sharedInteriorEdges}(F,F')|\le1.
+\]
 Fix an executable corridor position together with the next two positions needed
 by the rolling root.  Let $p$ be an everywhere-positive cumulative-prefix
 colouring, and let $c$ be a positive literal Cell colouring which agrees with
@@ -618,6 +813,17 @@ profiles the compression map is injective, endpoint by endpoint, which proves
 the final cardinality statement.
 \end{proof}
 
+The six cited Lean declarations are machine-checked with (U) as an explicit
+hypothesis; they do not prove (U).  This premise had previously been omitted
+from the prose statement.  For an ambient bridgeless cyclically
+five-edge-connected cubic map, two faces sharing two edges would expose a
+primal two-edge cut (or a digon), so the corresponding ambient assertion is
+expected from the established normal form.  The remaining obligation is to
+prove that opening the cap and forming the literal Cell does not create a new
+pair of \emph{interior} faces with two shared edges.  Until that cap-deletion
+adapter is proved, the exact factorization theorem is conditional in exactly
+this one geometric field.
+
 The Lean transition uses a conservative three-pair refinement internally and
 then projects to exactly the two families named by the manuscript.  It proves
 that every compatible positive literal Cell witness followed by the boundary
@@ -681,6 +887,12 @@ independently implemented generator:
 Then, and only then, these array lengths are the exact raw, cumulative-support,
 and observational state counts for that corridor type.
 \end{proposition}
+
+The accepting set in this proposition is the cap-composed predicate of
+Definition~\ref{def:cap-composed-pair-relation}.  Replaying closure against
+the open-tangle predicate of
+Proposition~\ref{prop:open-menu-predicate-vacuous} would certify only that a
+nonempty good fibre is nonempty; it would not test the Seed conclusion.
 
 The measured $(5,0)$ certificates remain valuable regression tests, but they
 are not substitutes for this equality theorem: their own headers correctly
@@ -833,53 +1045,30 @@ being silently promoted to an all-boundary theorem.
 
 \subsection{The exact conditional conclusion}
 
-\begin{theorem}[Source-faithful conditional route theorem]
+\begin{remark}[retired Trail-Completability assembly]
 \label{thm:conditional-compositional-route}
-\Sconditional{Tait bridge; Trail Completability; ladder transport; Seed Lemma; global corridor alternative; physical splice; finite base}
-Assume the following results in the forms consumed by the working manuscript:
-the Tait/minimal-counterexample bridge; the Kauffman trail spine, including
-Proposition~\ref{prop:factor-product-semantics}, and Trail Completability
-assembly; the three unbranched ladder transports, graph-level additive square
-transport for the Seed target, and
-Propositions~\ref{prop:square-side-path-lifting} and
-\ref{prop:target-square-migration} for full $\mathrm{WC}^{*}$ reachability;
-Proposition~\ref{prop:target-forced-cut-chain} (for example via both branches
-of Proposition~\ref{prop:global-corridor-alternative}, or by a direct
-target-sensitive construction); the exact
-Count factorization and physical equal-profile splice; L2 on every relevant
-corridor type; and an empty route-native finite base for the Seed system.
-Then every planar graph is four-colourable.
-\end{theorem}
+\Srefuted{two-defect boundary-flux identity and cubic/trail parity mismatch}
+The earlier conditional route theorem passed from a deleted edge to a
+coloured uncompletable trail and later applied the closed-cubic Kauffman
+parity theorem to defect-path moves.  Both steps fail, independently, as
+shown in Section~\ref{sec:kauffman-trail-spine}.  Merely listing Trail
+Completability and a relative parity theorem as assumptions would conceal
+rather than repair the missing mathematics, so that assembly is withdrawn.
+\end{remark}
 
-\begin{proof}
-If not, the Tait bridge selects a least bridgeless cubic plane
-counterexample.  Trail Completability reduces its noncolourability to the
-frontier $\mathrm{WC}^{*}$ obstruction.  The ladder transports descend every
-triangle, digon, two-cut, and square while preserving the appropriate zero
-count, so a least obstruction reaches the irreducible pentagon frontier.
-At the square rung, restoring the fixed completion cap after either reduction
-gives a valid closed instance with four fewer square vertices.  Closed-map
-minimality colours both capped reductions, so each side contains an
-extendable target word; Theorem~\ref{prop:target-square-migration} then
-transports \(\mathrm{WC}^{*}\) without a cross-side migration hypothesis.
-The global corridor theorem, finite profile factorization, L2, and the
-physical splice instantiate
-Theorem~\ref{thm:finite-profile-reductive-pumping} for the Seed count.  Its
-empty finite base therefore proves the Seed Lemma.  The source's Lift,
-word-graph, and propagation
-arguments then supply the needed menu-B move, including the corrected
-closed-web boundary treatment above.  The Kauffman prime/factored induction
-completes the Tait colouring, contradicting the chosen counterexample.
-\end{proof}
-
-The theorem is a complete implication, not a claim that its premises are
-already theorems.  At present the decisive open premises are the uniform bulk
-step (or its repaired two-branch replacement), the physical profile splice,
-the route-native Seed base, the Seed instantiation, factor-completion lifting,
-and the final Trail Completability assembly.
-The exact finite transition work materially reduces one of those premises; it
-does not make the others disappear.  The target-specific square seam is no
-longer one of them: capped colourability rules out a target-free reduction
-side before any migration is needed.  In particular, neither the signed
-curvature identity nor the bounded-face geodesic theorem currently proves
+The surviving conditional conclusion is
+Theorem~\ref{thm:direct-count-reductive-assembly}.  Its dependency chain is:
+the Tait/minimal-counterexample bridge; source-preserving local ladder
+transport; Proposition~\ref{prop:target-forced-cut-chain}; the exact labelled
+Count factorization and physical support-state splice; and a route-native
+finite base.  It needs neither Trail Completability nor Kauffman factor
+gluing.  At present the decisive open premises are the target-forced global
+cut chain (or both branches of
+Proposition~\ref{prop:global-corridor-alternative}), the cap-correct exact
+closure, the physical profile splice, and the route-native base.  The exact
+finite transition materially reduces the closure premise; it does not make
+the others disappear.  The target-specific square seam is no longer one of
+them: capped colourability rules out a target-free reduction side before any
+migration is needed.  In particular, neither the signed curvature identity
+nor the bounded-face geodesic theorem currently proves
 Proposition~\ref{prop:target-forced-cut-chain}.

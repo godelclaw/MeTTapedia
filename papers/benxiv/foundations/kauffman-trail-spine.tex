@@ -7,15 +7,15 @@
 \section{The Kauffman trail spine and its exact composition seam}
 \label{sec:kauffman-trail-spine}
 
-The final step of the source route is expressed in the language of
-Spencer--Brown formations and Kauffman trails.  Two logically different
-claims have too often been bundled under the name "the Kauffman spine".
-The first is Kauffman's published parity/primality theorem.  The second is a
-new composition claim: if a factored trail has smaller colourable factors,
-then completion sequences for those factors may be executed in the original
-trail and glued.  The first has a published proof.  The second depends on the
-precise support convention for the source's between-region moves and must be
-proved for the framed trail object used by this development.
+The final step of one source branch is expressed in the language of
+Spencer--Brown formations and Kauffman trails.  An audit of the graph-side
+translation separates three different claims: Kauffman's parity theorem for
+closed cubic formations; a deleted-edge completion predicate; and a new
+factor-to-ambient composition claim.  The first survives.  The second
+collapses under the global Klein-group conservation law, and the third is
+therefore not presently connected to the Four-Colour conclusion.  This
+section records the exact boundary so that the independent direct-Count
+descent is not made to inherit a false trail bridge.
 
 Our primary published reference for the first part is L.~H.~Kauffman,
 "Reformulating the map color theorem", \emph{Discrete Mathematics} 302
@@ -42,7 +42,7 @@ missing colour.  Write $\mu_C(u)$ and $\mu_C(v)$ for those colours.
 
 \begin{lemma}[one-edge completion criterion]
 \label{lem:trail-one-edge-completion}
-\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DeletedEdgeTrail.exists_taitColoring_of_framedTangleCompletable}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedTrail.FramedTrailData.hasMatchingDefectColors_iff_exists_properTrailExtensionColor}
 The colouring $C$ extends across $e$ precisely when
 $\mu_C(u)=\mu_C(v)$.  More generally, if an allowed sequence of
 between-region Kempe moves takes $C$ to a colouring $C'$ with equal
@@ -57,6 +57,27 @@ colours are then distinct.  Kempe moves preserve properness, so the same
 argument applies after an allowed move sequence.
 \end{proof}
 
+\begin{theorem}[two-defect boundary-flux identity]
+\label{thm:two-defect-boundary-flux}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TwoDefectParity.defectSum_add_frozenInterfaceColorSum_eq_zero}
+Let every vertex of a finite properly Tait-coloured graph be cubic except for
+two degree-two defects \(u,v\) and a finite set \(B\) of degree-one frozen
+boundary stubs.  If \(e_b\) is the unique edge at \(b\in B\), then
+\[
+       \mu_C(u)+\mu_C(v)+\sum_{b\in B} C(e_b)=0
+       \qquad\text{in }\mathbb F_2^2.                 \tag{T}
+\]
+\end{theorem}
+
+\begin{proof}
+Sum the incident edge colours over all vertices.  Every edge is counted at
+both endpoints, so the total is zero.  A cubic vertex contributes the sum of
+the three distinct nonzero Klein-group elements, hence zero.  A degree-two
+defect contributes its missing colour, and a degree-one boundary stub
+contributes the colour of its unique edge.  These are all the remaining
+terms, which proves (T).
+\end{proof}
+
 \begin{definition}[source completability]
 \label{def:source-trail-completability}
 The coloured trail $(T,C)$ is \emph{completable} if a finite sequence of
@@ -64,32 +85,66 @@ the source's allowed between-region moves takes $C$ to a colouring $C'$
 with $\mu_{C'}(u)=\mu_{C'}(v)$.
 \end{definition}
 
-We must distinguish two uses of the word ``coloured''.  The edge-deleted
-graph $G(T)$ already carries the displayed colouring $C$ by definition.  The
-trail is \emph{extension-colourable} only when $G^{*}(T)$ admits a Tait
-colouring.  The working manuscript's phrase ``every colorable trail is
-completable'' means
-\[
-  G^{*}(T)\text{ is Tait-colourable}
-  \quad\Longrightarrow\quad
-  (T,C)\text{ is completable for the specified starting colouring }C.
-\]
-The converse follows from Lemma~\ref{lem:trail-one-edge-completion}.  This
-terminology is load-bearing: deleting an edge from an uncolourable cubic
-graph produces a \emph{coloured} $G(T)$ but not an extension-colourable
-trail.  Consequently the Trail Completability Theorem cannot be applied
-directly to the deleted-edge trail of a least counterexample; minimality is
-first spent on its strict factors, whose extended graphs are smaller and
-therefore extension-colourable.
+\begin{corollary}[the bare deleted-edge predicate collapses]
+\label{cor:deleted-edge-trail-collapses}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TwoDefectParity.deletedEdge_not_taitColorable_of_not_taitColorable}
+If \(B=\varnothing\), every proper Tait colouring of the edge-deleted
+graph already extends across the missing edge; no move is required.
+Consequently, if a cubic graph is not Tait-colourable, none of its one-edge
+deletions is Tait-colourable.
+\end{corollary}
 
-The word "allowed" is load-bearing.  Kauffman's parity theorem concerns
-switches on closed two-colour circuits.  The corrected framed trail calculus
-also admits the defect paths forced by the two degree-two vertices.  Those
-path moves are precisely outside the scope of closed-formation parity.  The
-development has already proved that its framed move relation is the union of
-the Kauffman circuit moves and these defect-path moves, subject to the
-source/graph boundary alignment.
+\begin{proof}
+With \(B=\varnothing\), (T) says
+\(\mu_C(u)+\mu_C(v)=0\), which over \(\mathbb F_2^2\) is precisely
+\(\mu_C(u)=\mu_C(v)\).  Lemma~\ref{lem:trail-one-edge-completion}
+extends the colouring.  The contrapositive gives the last assertion.
+\end{proof}
+
+Thus deleting an edge from an uncolourable cubic graph does \emph{not}
+produce the coloured trail required by
+Definition~\ref{def:coloured-trail}.  The class described in the earlier
+draft as ``coloured but not extension-colourable'' is empty.
+
+The framed boundary does not turn this static constraint into a reachability
+problem.  Put
+\[
+                  \Phi(C):=\sum_{b\in B}C(e_b).
+\]
+Every legal framed move is disjoint from the frozen interface, and therefore
+leaves \(\Phi\) unchanged.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedTrail.framedTangleLegalKempeStep_eq_on_frozenInterface}
+
+\begin{theorem}[framed completability is the zero-flux sector]
+\label{thm:framed-completion-static}
+\Sprose
+For a well-formed properly Tait-coloured framed trail whose legal moves fix
+the boundary edges,
+\[
+   C\text{ is completable by framed moves}
+   \quad\Longleftrightarrow\quad \Phi(C)=0.
+\]
+\end{theorem}
+
+\begin{proof}
+If \(\Phi(C)=0\), identity (T) gives equal missing colours in the initial
+state, so the empty move sequence completes it.  Conversely, suppose a legal
+sequence reaches \(C'\) with equal missing colours.  Legal moves preserve
+properness and every frozen-edge colour, so
+\(\Phi(C')=\Phi(C)\).  Applying (T) to \(C'\) and using
+\(\mu_{C'}(u)=\mu_{C'}(v)\) gives \(\Phi(C')=0\), hence
+\(\Phi(C)=0\).
+\end{proof}
+
+Defect-ending paths are indeed outside the \emph{closed-circuit parity
+theorem} below, and their exact graph/source alignment is machine-checked.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24BetweenRegionDefectPaths.framedTangleLegalKempeStep_iff_kauffman_or_defectPath}
+But they cannot change the boundary flux.  Therefore the v24 assertion that
+every colourable framed trail becomes completable is either immediate on a
+proved zero-flux boundary sector or false on a nonzero-flux sector; internal
+Kempe dynamics cannot repair the latter.  A genuinely relative Kauffman
+theory would need a different accepting object, not merely the present frozen
+frame.
 
 \subsection{The published parity theorem}
 
@@ -235,7 +290,7 @@ factored representative.
 
 \begin{lemma}[Kauffman's curve-count dichotomy]
 \label{lem:kauffman-curve-count}
-\Sprose
+\Ssource
 Let $T$ be a nonempty prime uncolourable planar trail.
 \begin{enumerate}
   \item In an unfactored representative whose contextual curves have the
@@ -245,57 +300,39 @@ Let $T$ be a nonempty prime uncolourable planar trail.
 \end{enumerate}
 \end{lemma}
 
-\begin{proof}
-In the same-colour case, primeness leaves one trail curve between the two
-contextual curves.  Each endpoint of the empty edge lies on an alternating
-circuit.  These two circuits are distinct, since a single alternating
-circuit through both endpoints is a two-colour completion path.  Any
-additional circuit would remain as an extra component after removal of the
-contexts and would factor the trail.  The count is therefore two context
-curves, one trail curve, and two alternating circuits: $2+1+2=5$.
+The source's informal count uses \emph{context curve}, \emph{trail curve},
+\emph{alternator}, and \emph{idemposition} as formation-level objects.
+Those objects and the exhaustive endpoint case split have not been defined
+in this companion.  The former prose proof therefore did not prove the
+displayed claim; this row deliberately inherits source status instead.
 
-In the different-colour case, unfactoredness says that every curve meets an
-endpoint of the empty edge.  At the pure context endpoint there is one
-context curve and one alternator.  At the endpoint lying on the superposed
-context there is one trail-colour curve and the second context curve.  Any
-further curve misses both endpoints and is a factor.  Hence the count is
-two context curves, one trail-colour curve, and one alternator:
-$2+1+1=4$.  This is the incidence count in Kauffman's Section~4; its two
-endpoint cases are definitions of the two context types, not an exhaustive
-graph census.
-\end{proof}
-
-\begin{theorem}[Kauffman's primality equivalence]
+\begin{proposition}[the deleted-edge primality bridge cannot start]
 \label{thm:kauffman-primality-equivalence}
-\Sprose
-For plane cubic graphs, the Four-Colour Theorem is equivalent to the
-Primality Principle:
-\[
-  \text{every minimal nonempty uncolourable planar trail is prime}.
-\]
-\end{theorem}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TwoDefectParity.deletedEdge_not_taitColorable_of_not_taitColorable}
+Under Definition~\ref{def:coloured-trail}, deleting an edge from a
+non-Tait-colourable cubic graph does not produce a coloured trail.  Hence the
+displayed graph-side trail model cannot establish the claimed
+Four-Colour/Primality equivalence.
+\end{proposition}
 
 \begin{proof}
-Assume the Primality Principle and choose a minimal nonempty uncolourable
-trail.  It is prime.  Begin with same-colour contexts, so
-Lemma~\ref{lem:kauffman-curve-count} gives the odd count five.  A simple
-operation on one context changes to the different-colour situation while
-Theorem~\ref{thm:kauffman-parity} preserves parity.  An unfactored
-different-colour prime trail would have the even count four.  The operated
-formation is therefore factored, contradicting primeness.  Thus no such
-trail exists.  Deleting an edge of a least uncolourable bridgeless cubic
-plane graph produces a coloured nonempty trail whose extension is the
-original graph, a contradiction.
-
-Conversely, if the Four-Colour Theorem holds then no nonempty uncolourable
-planar trail exists, so the Primality Principle holds vacuously.  This is
-Kauffman's published equivalence argument.
+Corollary~\ref{cor:deleted-edge-trail-collapses} gives the stronger
+statement that any proper Tait colouring of the deletion extends immediately.
+Taking the contrapositive, an uncolourable cubic graph has no properly
+Tait-coloured one-edge deletion.  But such a colouring is part of
+Definition~\ref{def:coloured-trail}; the proposed minimal trail is therefore
+not constructed.
 \end{proof}
 
-The finite "Closed Splitting" audits in the v24 working manuscript support
-the parity behaviour on their listed fullerene instances.  They are not a
-replacement for Theorem~\ref{thm:kauffman-parity}, nor do finite instances
-prove Theorem~\ref{thm:kauffman-primality-equivalence}.
+There is a second, independent mismatch.  Theorem~\ref{thm:kauffman-parity}
+is a theorem about closed cubic graphs and switches on two-colour circuits.
+At a degree-two trail vertex the putative dual face potential accumulates
+the two incident colours, whose sum is the nonzero missing colour.  Thus
+walk-independence fails exactly at the defects, and the theorem cannot be
+applied to defect-path moves.  Recovering Kauffman's original formation
+argument would require a boundary-relative potential or torsor together with
+formation definitions supporting Lemma~\ref{lem:kauffman-curve-count};
+neither is presently supplied by the source or this companion.
 
 \subsection{The extra theorem required by the compositional route}
 
@@ -451,29 +488,31 @@ these three alternatives for a Kauffman factorization.  Proposition
 still to be done.  It must not be delegated to a finite census unless the
 source first proves a uniform bound on the factor interface.
 
-\begin{theorem}[source-faithful Kauffman assembly]
+\begin{proposition}[requirements for a repaired Kauffman assembly]
 \label{thm:kauffman-source-assembly}
-\Sconditional{Trail Completability and Proposition~\ref{prop:factor-completion-lifts}}
-Assume the source's Trail Completability theorem for every strictly smaller
-colourable factor, and assume Proposition~\ref{prop:factor-completion-lifts}.
-Then every minimal nonempty uncolourable planar trail is prime.  Consequently
-every bridgeless cubic plane graph is Tait colourable.
-\end{theorem}
+\Sopen
+To recover a Kauffman-style final assembly from the present development, one
+must supply all of the following in one compatible formation model:
+\begin{enumerate}
+  \item a boundary-relative replacement for
+        Theorem~\ref{thm:kauffman-parity} which applies to the allowed
+        defect-path operations;
+  \item formation-level definitions and a proof of the curve-count
+        dichotomy in Lemma~\ref{lem:kauffman-curve-count};
+  \item an accepting condition not reduced by
+        Theorem~\ref{thm:framed-completion-static} to frozen boundary flux;
+        and
+  \item exact factor product semantics and ambient lifting as in
+        Proposition~\ref{prop:factor-completion-lifts}.
+\end{enumerate}
+Only after these are proved may a primality implication be assembled.
+\end{proposition}
 
-\begin{proof}
-Let $T$ be a minimal nonempty uncolourable planar trail.  If it is not
-prime, some reachable representative factors as
-$T_1,\ldots,T_k$.  Each extended factor is strictly smaller than the
-extended graph of $T$, so minimality makes it colourable.  Trail
-Completability supplies a completion of its induced colouring.  Proposition
-\ref{prop:factor-completion-lifts} glues those completions and makes $T$
-completable, contradicting uncolourability.  Thus the Primality Principle
-holds, and Theorem~\ref{thm:kauffman-primality-equivalence} gives the claimed
-Tait colouring statement.
-\end{proof}
-
-Thus the Kauffman layer is not one undifferentiated open box.  Its parity
-theorem, curve-count dichotomy, and equivalence are established ordinary
-mathematics.  The live source-specific seam is the ambient lifting and gluing
-of factor completion sequences.  That is the theorem the Lean layer should
-formalize only after its ordinary proof has been supplied.
+The Kauffman layer is therefore not a presently valid terminal bridge.
+Its closed-cubic parity theorem and the generic finite synchronization lemma
+remain useful mathematics, while the deleted-edge bridge is retired and the
+relative formation theorem is open.  No Lean development should package the
+four requirements above as hypotheses merely to recreate the old conclusion.
+The direct cumulative-Count descent in
+Theorem~\ref{thm:direct-count-reductive-assembly} is independent of this
+retired branch.

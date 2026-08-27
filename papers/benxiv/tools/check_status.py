@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
-"""Verify every `verified` claim in the companion against the Lean tree.
+"""Audit every ``verified`` citation in the companion against the Lean tree.
 
 A document that mixes machine-checked and hand-written results is only
 honest if the machine-checked claims are actually checkable.  This tool
-makes them so: it harvests every `\\Sverified{Decl}` marker from the LaTeX
-sources, confirms that `Decl` exists in the Lean tree, that its module
-carries no proof holes, and -- when a sealed-axiom manifest is supplied --
-that its axiom set lies within the accepted base.  It then emits the
-appendix ledger table.
+makes the citations mechanically inspectable: it harvests every
+``\\Sverified{Decl}`` marker from the LaTeX sources, confirms that ``Decl``
+exists in the Lean source tree, rejects executable proof-hole tokens, and
+emits the appendix ledger table.
+
+This is deliberately a *citation audit*, not a proof checker.  It neither
+compiles Lean modules nor decides whether the English theorem has the same
+meaning as the cited declaration.  Those are separate build and review gates;
+claiming otherwise would make this tool part of the status drift it is meant to
+prevent.
 
 Exit status is nonzero if any claim fails, so the document cannot silently
 drift away from the development it cites.
@@ -25,10 +30,39 @@ MARKER = re.compile(
     r"\\S(verified|prose|conditional|open|refuted|source)"
     r"(?:\{((?:[^{}]|\{[^{}]*\})*)\})?"
 )
-THEOREM = re.compile(r"\\begin\{(theorem|lemma|corollary|proposition|remark)\}")
+RESULT_ENVIRONMENTS = {
+    "theorem", "lemma", "corollary", "proposition", "remark", "definition"
+}
+ENV_TOKEN = re.compile(
+    r"\\(begin|end)\{(theorem|lemma|corollary|proposition|remark|definition)\}"
+)
 HOLE = re.compile(r"(?<![A-Za-z_])(sorry|admit|native_decide)(?![A-Za-z_])")
 
 ACCEPTED_AXIOMS = {"propext", "Classical.choice", "Quot.sound"}
+
+
+def _result_spans(text: str) -> list[tuple[int, int, str]]:
+    """Return the spans of theorem-like environments, including definitions."""
+    stack: list[tuple[str, int]] = []
+    spans: list[tuple[int, int, str]] = []
+    for token in ENV_TOKEN.finditer(text):
+        action, kind = token.groups()
+        if action == "begin":
+            stack.append((kind, token.start()))
+            continue
+        for i in range(len(stack) - 1, -1, -1):
+            if stack[i][0] == kind:
+                _, start = stack.pop(i)
+                spans.append((start, token.end(), kind))
+                break
+    return spans
+
+
+def _kind_at(position: int, spans: list[tuple[int, int, str]]) -> str:
+    containing = [span for span in spans if span[0] <= position <= span[1]]
+    if not containing:
+        return "statement"
+    return min(containing, key=lambda span: span[1] - span[0])[2]
 
 
 def harvest(tex_paths: list[pathlib.Path]) -> list[dict]:
@@ -36,19 +70,71 @@ def harvest(tex_paths: list[pathlib.Path]) -> list[dict]:
     entries = []
     for path in tex_paths:
         text = path.read_text(encoding="utf-8")
+        spans = _result_spans(text)
         for match in MARKER.finditer(text):
             before = text[: match.start()]
-            heads = THEOREM.findall(before)
             entries.append(
                 {
                     "file": path.name,
                     "line": before.count("\n") + 1,
                     "status": match.group(1),
                     "payload": (match.group(2) or "").strip(),
-                    "kind": heads[-1] if heads else "statement",
+                    "kind": _kind_at(match.start(), spans),
                 }
             )
     return entries
+
+
+def lean_code_only(source: str) -> str:
+    """Mask Lean comments and strings while preserving positions and newlines."""
+    out: list[str] = []
+    i = 0
+    block_depth = 0
+    in_string = False
+    escaped = False
+    while i < len(source):
+        if block_depth:
+            if source.startswith("/-", i):
+                out.extend("  ")
+                block_depth += 1
+                i += 2
+            elif source.startswith("-/", i):
+                out.extend("  ")
+                block_depth -= 1
+                i += 2
+            else:
+                out.append("\n" if source[i] == "\n" else " ")
+                i += 1
+            continue
+        if in_string:
+            char = source[i]
+            out.append("\n" if char == "\n" else " ")
+            i += 1
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                in_string = False
+            continue
+        if source.startswith("--", i):
+            while i < len(source) and source[i] != "\n":
+                out.append(" ")
+                i += 1
+            continue
+        if source.startswith("/-", i):
+            out.extend("  ")
+            block_depth = 1
+            i += 2
+            continue
+        if source[i] == '"':
+            out.append(" ")
+            in_string = True
+            i += 1
+            continue
+        out.append(source[i])
+        i += 1
+    return "".join(out)
 
 
 def declaration_module(decl: str, lean_root: pathlib.Path) -> pathlib.Path | None:
@@ -68,7 +154,7 @@ def check_verified(entry: dict, lean_root: pathlib.Path) -> tuple[bool, str]:
     module = declaration_module(decl, lean_root)
     if module is None:
         return False, f"no module found for {decl}"
-    source = module.read_text(encoding="utf-8")
+    source = lean_code_only(module.read_text(encoding="utf-8"))
     short = decl.split(".")[-1]
     if not re.search(rf"(?<![A-Za-z_.]){re.escape(short)}(?![A-Za-z_])", source):
         return False, f"{short} not found in {module.name}"

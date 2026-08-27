@@ -1,0 +1,141 @@
+{
+  "colour_symmetry": "majority fixed to 0; all global colour permutations represented",
+  "first_seedless_witness": null,
+  "generator": {
+    "arguments": "-a -d -m5 -c5 (V/2+2)",
+    "binary_sha256": "6288e9f2372a981b8ce93c45c7a33e38700009cffd19579db8ed32012d3151ad",
+    "name": "plantri",
+    "source": "https://users.cecs.anu.edu.au/~bdm/plantri/",
+    "version": "5.8 (2026-03-04)"
+  },
+  "good_word_representatives": [
+    "00012",
+    "00021",
+    "00120",
+    "00210",
+    "01200",
+    "02100",
+    "10002",
+    "12000",
+    "20001",
+    "21000"
+  ],
+  "normal_form": "duals of 5-connected spherical triangulations of minimum degree 5: simple cubic plane maps, face length >=5, cyclic connectivity >=5",
+  "schema": "fourcolor-v24-plantri-seed-audit-v2",
+  "scope_warning": "Exhaustive only through the requested finite order; SAT witnesses are replayed literally, but absence of a witness is not a universal proof.",
+  "sizes": [
+    {
+      "connected_annuli_audited": 12,
+      "connected_nonempty_good_fibres": 120,
+      "connected_seeded_good_fibres": 120,
+      "disconnected_boundary_instances_audited": 60,
+      "graphs": 1,
+      "nonempty_good_fibres": 720,
+      "ordered_boundary_instances_audited": 72,
+      "outer_length_counts": {
+        "5": 72
+      },
+      "primal_vertices": 20,
+      "seeded_good_fibres": 720,
+      "seedless_good_fibres": 0
+    },
+    {
+      "connected_annuli_audited": 0,
+      "connected_nonempty_good_fibres": 0,
+      "connected_seeded_good_fibres": 0,
+      "disconnected_boundary_instances_audited": 0,
+      "graphs": 0,
+      "nonempty_good_fibres": 0,
+      "ordered_boundary_instances_audited": 0,
+      "outer_length_counts": {},
+      "primal_vertices": 22,
+      "seeded_good_fibres": 0,
+      "seedless_good_fibres": 0
+    },
+    {
+      "connected_annuli_audited": 36,
+      "connected_nonempty_good_fibres": 360,
+      "connected_seeded_good_fibres": 360,
+      "disconnected_boundary_instances_audited": 60,
+      "graphs": 1,
+      "nonempty_good_fibres": 960,
+      "ordered_boundary_instances_audited": 96,
+      "outer_length_counts": {
+        "5": 84,
+        "6": 12
+      },
+      "primal_vertices": 24,
+      "seeded_good_fibres": 960,
+      "seedless_good_fibres": 0
+    },
+    {
+      "connected_annuli_audited": 48,
+      "connected_nonempty_good_fibres": 480,
+      "connected_seeded_good_fibres": 480,
+      "disconnected_boundary_instances_audited": 60,
+      "graphs": 1,
+      "nonempty_good_fibres": 1080,
+      "ordered_boundary_instances_audited": 108,
+      "outer_length_counts": {
+        "5": 90,
+        "6": 18
+      },
+      "primal_vertices": 26,
+      "seeded_good_fibres": 1080,
+      "seedless_good_fibres": 0
+    },
+    {
+      "connected_annuli_audited": 190,
+      "connected_nonempty_good_fibres": 1900,
+      "connected_seeded_good_fibres": 1900,
+      "disconnected_boundary_instances_audited": 190,
+      "graphs": 3,
+      "nonempty_good_fibres": 3800,
+      "ordered_boundary_instances_audited": 380,
+      "outer_length_counts": {
+        "5": 314,
+        "6": 52,
+        "7": 14
+      },
+      "primal_vertices": 28,
+      "seeded_good_fibres": 3800,
+      "seedless_good_fibres": 0
+    },
+    {
+      "connected_annuli_audited": 294,
+      "connected_nonempty_good_fibres": 2940,
+      "connected_seeded_good_fibres": 2940,
+      "disconnected_boundary_instances_audited": 245,
+      "graphs": 4,
+      "nonempty_good_fibres": 5390,
+      "ordered_boundary_instances_audited": 539,
+      "outer_length_counts": {
+        "5": 398,
+        "6": 135,
+        "7": 6
+      },
+      "primal_vertices": 30,
+      "seeded_good_fibres": 5390,
+      "seedless_good_fibres": 0
+    },
+    {
+      "connected_annuli_audited": 1092,
+      "connected_nonempty_good_fibres": 10920,
+      "connected_seeded_good_fibres": 10920,
+      "disconnected_boundary_instances_audited": 780,
+      "graphs": 12,
+      "nonempty_good_fibres": 18720,
+      "ordered_boundary_instances_audited": 1872,
+      "outer_length_counts": {
+        "5": 1398,
+        "6": 399,
+        "7": 59,
+        "8": 16
+      },
+      "primal_vertices": 32,
+      "seeded_good_fibres": 18720,
+      "seedless_good_fibres": 0
+    }
+  ],
+  "solver": "z3-4.16.0"
+}
