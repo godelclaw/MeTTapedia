@@ -54,6 +54,21 @@ theorem suppressed_bridgelessSphericalCubicMapData
       D.suppressed_edgeBridgeFree hD hclass.spherical.cubic
         hclass.edgeBridgeFree houter hclass.primalConnected }
 
+/-- Consumer-facing form of the digon splice: away from the theta branch,
+suppression stays in the structural class and removes exactly two vertices. -/
+theorem suppressed_class_and_card
+    (hD : D.WellFormed RS) (hclass : BridgelessSphericalCubicMapData RS)
+    (htwoSided : OrbitFacesTwoSided RS) (houter : D.vFar hD ≠ D.u) :
+    BridgelessSphericalCubicMapData
+        (D.suppressed hD hclass.spherical.cubic hclass.edgeBridgeFree houter) ∧
+      Fintype.card
+          (D.twoEdgeCut hD hclass.spherical.cubic
+            hclass.edgeBridgeFree houter).complementData.CapVertex + 2 =
+        Fintype.card V :=
+  ⟨D.suppressed_bridgelessSphericalCubicMapData hD hclass htwoSided houter,
+    D.card_suppressed_vertex hD hclass.spherical.cubic
+      hclass.edgeBridgeFree houter⟩
+
 end DigonPatchData
 
 /-- **Parallel-seam normalization.**  A vertex-minimal Tait counterexample in

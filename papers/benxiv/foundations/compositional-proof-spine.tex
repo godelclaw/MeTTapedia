@@ -1149,6 +1149,58 @@ shore interfaces have been constructed; it does not itself construct their
 ordered open-tangle carriers or prove that the splice retains exactly those
 vertex shores.
 
+There is an equivalent phase choice which is better adapted to the literal
+edge-shore carrier.  If $A\subsetneq B$ are the descendant and ancestor
+edge shores, attach to the interface state of a shore $S$ the residue
+
+\[
+                         |S|\pmod{6w+1}.
+\]
+
+\begin{theorem}[cardinality-phased shore descent]
+\label{thm:cardinality-phased-shore-descent}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ShoreStateDescent.vertexCount_le_of_cardPhasedShore}
+Let a reduced binary decomposition tree be labelled by finite edge shores,
+strictly decreasing along every descent, and suppose every middle set has
+size at most $w$.  Let $Q$ be any finite exact interface-state type and
+let $q(S)\in Q$ be the state of shore $S$.  If equal $Q$-states admit a
+target-preserving local splice whenever the slab contains a vertex all of
+whose incident edges lie in the slab, then a minimal target instance has
+
+\[
+  |V|\le 2\left(2^{(6w+1)|Q|}-1\right).
+\]
+\end{theorem}
+
+\begin{proof}
+Use the augmented state
+
+\[
+       \widetilde q(S)=\bigl(|S|\bmod(6w+1),q(S)\bigr).
+\]
+
+Suppose comparable shores $A\subsetneq B$ have equal augmented states.
+Strict inclusion gives $|A|<|B|$, while equality of residues says that
+$6w+1$ divides $|B|-|A|$.  Hence
+
+\[
+                 6w+1\le |B|-|A|=|B\setminus A|.
+\]
+
+Lemma~\ref{lem:cubic-sphere-cut-material} supplies a vertex lying strictly
+inside the slab.  Equality of the second components gives $q(A)=q(B)$, so
+the assumed local splice produces a smaller target instance, contradicting
+minimality.  Thus no descent repeats an augmented state.  There are exactly
+$(6w+1)|Q|$ augmented states, and finite-tree pumping gives the displayed
+bound.
+\end{proof}
+
+This formulation has the same finite cost as depth phasing, but the phase is
+a function of the edge shore itself.  Consequently the connected branch
+decomposition supplier need not carry or synchronize a separate node-depth
+annotation.  Taking $Q$ to be the exact typed seam-and-support state leaves
+only the construction of that state and the physical local splice.
+
 This theorem closes the finite counting once the supply exists.  Its second
 hypothesis still contains the geometric content of D3.  In particular, the
 Lean declaration does \emph{not} prove that a branch decomposition gives
@@ -2711,7 +2763,7 @@ the two exterior edges, and use the other two colours on the digon.''
 
 \begin{corollary}[parallel seams can be normalized after gluing]
 \label{cor:parallel-seam-normalization}
-\Sconditional{Lemma~\ref{lem:digon-splice}}
+\Sprose
 Let \(M\) be a finite connected bridgeless cubic spherical loopless
 multigraph which is not Tait-colourable, and suppose that \(M\) contains a
 parallel pair.  Repeatedly suppress a parallel pair by the digon splice of
@@ -2736,6 +2788,14 @@ well-founded induction on the vertex count terminates.  The terminal graph
 has no loop and no parallel pair, hence is simple, and the first suppression
 already made it strictly smaller than \(M\).
 \end{proof}
+
+The checked minimal form of the same argument is already available:
+\Sverified{Mettapedia.GraphTheory.FourColor.RotationSystem.no_wellFormed_digonPatchData_of_minimal}
+a vertex-minimal zero-Tait-count member of the bridgeless spherical cubic
+class, with two-sided face orbits, admits no well-formed digon patch.  The
+remaining difference between this declaration and the normalization
+corollary is representational: extracting such a patch from an arbitrary
+parallel seam and iterating the suppression outside the minimal object.
 
 Therefore a duplicate seam edge need not enlarge the finite receipt.  One
 may glue in the loopless multigraph category and normalize only after the

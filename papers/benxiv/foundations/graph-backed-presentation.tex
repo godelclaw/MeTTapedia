@@ -84,9 +84,11 @@ contradicting bridgelessness.
 This is where minimality is spent.
 
 \begin{lemma}[the digon splice]\label{lem:digon-splice}
-\Sconditional{Theorem~\ref{thm:digon-combinatorial}}
+\Sverified{Mettapedia.GraphTheory.FourColor.RotationSystem.DigonPatchData.suppressed_class_and_card}
 Suppose distinct vertices $u, v$ of $M$ are joined by exactly two parallel
 edges, and $M$ is not the theta map.
+Assume the two dart-sides of every edge lie on distinct face orbits, as in
+the class predicate \texttt{OrbitFacesTwoSided}.
 Let $a = uu'$ and $b = vv'$ be the remaining edges at $u$ and at $v$. Then
 $u' \neq v'$, and the map $M'$ obtained by deleting $u$, $v$, the two
 parallel edges, $a$ and $b$, and inserting a single new edge $c = u'v'$, is
@@ -146,10 +148,12 @@ Thus the surviving face orbits are in bijection with all old face orbits but
 the digon, proving $F'=F-1$.
 
 The step that must be discharged is the claim that the parallel pair bounds
-a face --- it does not follow from the counts --- and
-Theorem~\ref{thm:digon-combinatorial} supplies it from bridgelessness, Euler's
-inequality, and a finite dart computation. Thus the splice uses no separation
-theorem.
+a face --- it does not follow from the counts.  Under the explicitly stated
+two-sidedness predicate, Theorem~\ref{thm:digon-combinatorial} supplies it by
+a finite dart-orbit computation.  The checked splice then identifies the cap
+face permutation with first return on the retained darts, proves that precisely
+one old face orbit disappears, and performs the Euler arithmetic above.  Thus
+the splice uses no separation theorem.
 \end{proof}
 
 \subsection{What the digon face really needs}
