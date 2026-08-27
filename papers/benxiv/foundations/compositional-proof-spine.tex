@@ -2681,6 +2681,34 @@ Corollary~\ref{cor:planar-bond-canonical-cap};
 Theorem~\ref{thm:planar-bond-orders-opposite} derives the opposite
 first-return equation from the natural ambient edge-flip matching.
 
+\begin{lemma}[the colouring half of digon suppression]
+\label{lem:digon-suppression-colour}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DigonSuppressionColor.RotationSystem.TwoEdgeCutPairData.not_complementCap_taitColorable_of_not_ambient}
+Let a cubic rotation system be separated by an exact non-colliding two-edge
+cut, and suppose that the chosen side contains exactly two vertices.  If the
+ambient rotation system is not Tait-colourable, then the complementary cap
+is not Tait-colourable.
+\end{lemma}
+
+\begin{proof}
+The cap of the two-vertex side is cubic and still has two vertices.  Counting
+darts in two ways gives
+\[
+  2|E|=|D|=3|V|=6,
+\]
+so it has exactly three edges.  Choose a bijection from these edges to the
+three nonzero elements of $\mathbb F_2^2$.  Distinct adjacent edges then have
+distinct colours, and every edge has nonzero colour, so this cap is
+Tait-colourable.
+
+If the complementary cap also had a Tait colouring, globally permute its
+three nonzero colours so that the two cap edges receive the same colour.
+The exact two-edge-cut gluing theorem then joins the two cap colourings to a
+Tait colouring of the ambient rotation system, a contradiction.  Thus this
+is the formal version of ``colour the replacement edge, copy its colour to
+the two exterior edges, and use the other two colours on the digon.''
+\end{proof}
+
 \begin{corollary}[parallel seams can be normalized after gluing]
 \label{cor:parallel-seam-normalization}
 \Sprose
@@ -2698,10 +2726,11 @@ non-simple, non-theta stage some repeated endpoint pair has multiplicity
 exactly two.
 Lemma~\ref{lem:digon-splice} deletes its two cubic endpoints, preserves
 connectedness, bridgelessness, cubicity and sphericity, and introduces no
-loop.  A Tait colouring of the suppressed graph lifts: colour the two
-external replacement paths by the colour of the new edge and colour the
-parallel pair by the other two colours.  Consequently uncolourability is
-preserved contrapositively.  Each suppression removes two vertices, so
+loop.  The two exterior edges are an exact two-edge cut whose digon side has
+two vertices, and its complementary cap is precisely the suppressed map.
+Lemma~\ref{lem:digon-suppression-colour} therefore proves, without an
+additional colour calculation, that uncolourability is preserved.  Each
+suppression removes two vertices, so
 well-founded induction on the vertex count terminates.  The terminal graph
 has no loop and no parallel pair, hence is simple, and the first suppression
 already made it strictly smaller than \(M\).
