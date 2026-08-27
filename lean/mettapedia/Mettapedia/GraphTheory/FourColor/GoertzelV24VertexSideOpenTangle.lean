@@ -31,6 +31,7 @@ open GoertzelV24CompositeStructuralData
 open GoertzelV24CompositeSphericity
 open GoertzelV24SeamExchange
 open GoertzelV24TwoEdgeCutMinimality
+open GoertzelV24RetainedRegionBoundaryOrder
 
 noncomputable section
 
@@ -400,6 +401,33 @@ theorem boundaryEssential_ofVertexSide
       (fun p : BoundaryDart RS keep => ⟨RS.vertOf p.1.1, p.1.2⟩)
       (ofVertexSide RS keep outer).boundaryVert
       (fun _ => rfl) hinduced
+
+/-! ## The canonical cap order -/
+
+/-- The hub order which closes each boundary-return arc back to the port at
+which it began. -/
+def canonicalHubRotation (RS : RotationSystem V E) (keep : V → Prop) :
+    Equiv.Perm (BoundaryDart RS keep) :=
+  (retainedRegionBoundarySuccessor RS keep)⁻¹
+
+/-- Opposite first-return orders on two shores are exactly the
+orientation-reversing equation required by the seam face-count theorem. -/
+theorem orientationReversing_canonicalHubRotation_of_opposite
+    (RS : RotationSystem V E) (keepL keepR : V → Prop)
+    (matching : BoundaryDart RS keepL ≃ BoundaryDart RS keepR)
+    (hopposite : ∀ b : BoundaryDart RS keepL,
+      retainedRegionBoundarySuccessor RS keepR
+          (matching (retainedRegionBoundarySuccessor RS keepL b)) =
+        matching b) :
+    OrientationReversing matching
+      (canonicalHubRotation RS keepL)
+      (canonicalHubRotation RS keepR) := by
+  intro b
+  change
+    (retainedRegionBoundarySuccessor RS keepR)⁻¹ (matching b) =
+      matching (retainedRegionBoundarySuccessor RS keepL b)
+  exact (Equiv.symm_apply_eq
+    (retainedRegionBoundarySuccessor RS keepR)).2 (hopposite b).symm
 
 /-! ## Two literal shores feed the structural seam theorem -/
 

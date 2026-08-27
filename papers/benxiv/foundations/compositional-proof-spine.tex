@@ -1913,6 +1913,142 @@ counts yields
 as required.
 \end{proof}
 
+\begin{lemma}[opposite first-return orders give the seam orientation]
+\label{lem:canonical-hub-orientation}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24VertexSideOpenTangle.orientationReversing_canonicalHubRotation_of_opposite}
+For an open shore \(T\), let \(s_T\) be the first-return permutation on its
+boundary darts and choose the canonical hub rotation
+\(\rho_T=s_T^{-1}\).  Let \(m:B_L\to B_R\) match two boundary interfaces.
+If
+\[
+        s_R\bigl(m(s_L(b))\bigr)=m(b)
+        \qquad(b\in B_L),
+\]
+then \(m\) is orientation-reversing for the two canonical hub rotations:
+\[
+        \rho_R(m(b))=m(\rho_L^{-1}(b)).
+\]
+\end{lemma}
+
+\begin{proof}
+Apply \(s_R^{-1}\) to the displayed opposite-return equation.  Its
+left-hand side becomes \(m(s_L(b))\), while
+\(\rho_L^{-1}=s_L\) and \(\rho_R=s_R^{-1}\).  This is exactly the required
+identity.
+\end{proof}
+
+\begin{lemma}[inverse first return makes the cap face-simple]
+\label{lem:canonical-hub-face-simple}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24CanonicalHubClosure.hubFacesDistinct_canonical}
+Let \(T\) be a literal vertex shore, let \(s_T\) be first return of its
+retained facial walk to the exposed boundary darts, and put
+\(\rho_T=s_T^{-1}\).  In the hub closure
+\(\widehat T_{\rho_T}\), distinct hub darts lie on distinct faces.
+\end{lemma}
+
+\begin{proof}
+Transport the hub closure to the carrier consisting of the old retained
+darts and one copy of the boundary.  Eliminate the inserted hub darts by
+taking first return to the old retained carrier.  An internal dart makes the
+same one-step facial move as before.  At a boundary dart \(b\), the walk
+visits the hub dart \(\rho_T(b)\) and returns to the old carrier after two
+steps.  Consequently the transported return permutation is
+\[
+  \phi_T^{\mathrm{cap}}\,\widetilde{\rho_T},
+\]
+where \(\widetilde{\rho_T}\) is \(\rho_T\) on the boundary darts and the
+identity elsewhere.  Taking first return once more, now to the boundary,
+gives
+\[
+       s_T\rho_T=s_Ts_T^{-1}=1.                 \tag{27}
+\]
+Every hub dart is facially adjacent to an old boundary dart.  Thus two hub
+darts on the same capped face would give two boundary darts in the same
+cycle of the return permutation in~(27).  The identity permutation has only
+singleton cycles, so those boundary darts, and hence the original hub darts,
+are equal.
+\end{proof}
+
+This lemma is deliberately narrower than saying that the cap is one new
+vertex.  Equation~(27) proves the facial statement
+\texttt{HubFacesDistinct} for every finite boundary set.  To regard the hub
+as a single combinatorial-map vertex, its rotation \(\rho_T\) must also be a
+single cycle.  That extra assertion comes from the boundary being one simple
+noose; it is not a consequence of inverse first return alone.
+
+\begin{theorem}[exact canonical-hub face count]
+\label{thm:canonical-hub-face-count}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24CanonicalHubClosure.card_canonicalHub_face_eq_boundary_add_ambient}
+Let \(T\) be a literal vertex shore with boundary darts \(B\), and let
+\(F_{\rm pure}(T)\) be the number of ambient faces all of whose darts lie in
+that shore.  Closing \(T\) with the canonical hub rotation
+\(\rho_T=s_T^{-1}\) gives
+\[
+       F(\widehat T_{\rho_T})=|B|+F_{\rm pure}(T).       \tag{28}
+\]
+\end{theorem}
+
+\begin{proof}
+First return of a capped face to the old retained darts partitions the faces
+without changing their number: every inserted hub dart returns to the old
+carrier after one step.  Split those return cycles according to whether they
+meet a boundary dart.  By equation~(27), the boundary-meeting part has one
+cycle for each \(b\in B\).  On a cycle avoiding the boundary, the inserted
+hub order is never consulted; every step is literally the old ambient facial
+step.  Forgetting the retainedness tag therefore gives a bijection from
+boundary-avoiding capped faces to ambient faces wholly contained in the
+shore.  Adding the two disjoint classes proves~(28).
+\end{proof}
+
+\begin{corollary}[canonical hub closure from the exact side rank]
+\label{cor:canonical-hub-spherical}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24CanonicalHubClosure.closedSideSpherical_canonical_of_faceRank}
+Let \(V_T\) and \(E_T\) be the retained vertices and intact edges of the
+shore.  If
+\[
+       F_{\rm pure}(T)+|V_T|=|E_T|+1,                 \tag{29}
+\]
+then its canonical hub closure satisfies the spherical Euler equality.
+For a connected vertex shore and connected complement in a connected
+graph-backed spherical map, equation~(29), and hence the conclusion, follows
+from the planar-bond rank theorem.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24CanonicalHubClosure.closedSideSpherical_canonical_of_planarBond}
+\end{corollary}
+
+\begin{proof}
+The hub closure has \(|V_T|+1\) displayed vertices.  Its pairing orbits are
+the \(E_T\) intact edges and one hub spoke for every boundary dart, so it has
+\(|E_T|+|B|\) edges.  By Theorem~\ref{thm:canonical-hub-face-count} it has
+\(|B|+F_{\rm pure}(T)\) faces.  Substitution of~(29) gives
+\[
+ (|V_T|+1)+(|B|+F_{\rm pure}(T))
+      =(|E_T|+|B|)+2.
+\]
+The final assertion is exactly the connected-side equality already obtained
+by splitting spherical Euler across a planar bond.
+\end{proof}
+
+\begin{corollary}[canonical literal-shore splice]
+\label{cor:canonical-literal-shore-splice}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24CanonicalHubClosure.bridgelessSphericalCubicMapData_ofVertexSides_canonical}
+Let two connected vertex shores of one bridgeless cubic rotation system have
+at least two matched boundary darts.  Suppose their matching reverses the
+two boundary first-return orders, both shores satisfy the exact side-rank
+equation~(29), and the ambient vertex rotations are cyclic.  Then gluing the
+literal shores along the matching produces a connected, bridgeless, cubic,
+rotation-cyclic spherical map.
+\end{corollary}
+
+\begin{proof}
+Lemma~\ref{lem:saturated-side-boundary-essential} supplies boundary
+essentiality.  Lemma~\ref{lem:canonical-hub-face-simple} supplies the two
+face-simple caps, Lemma~\ref{lem:canonical-hub-orientation} supplies their
+orientation reversal, and Corollary~\ref{cor:canonical-hub-spherical}
+supplies their spherical Euler equalities.  The structural seam theorem then
+gives connectedness, bridge-freeness, cubicity, cyclic old-vertex rotations,
+and sphericity simultaneously.
+\end{proof}
+
 \begin{lemma}[a tight transverse noose supplies the cap data]
 \label{lem:tight-noose-cap-data}
 \Sprose
@@ -1937,10 +2073,14 @@ The sector at the hub between two consecutive cut darts is the image of the
 unique boundary arc of \(\gamma\) between the corresponding crossings.  It
 lies in one old face.  Tightness says that no old face contains two such
 arcs.  Hence no face of the capped rotation system contains two hub darts,
-which is face-simplicity.  Finally, the two boundary orientations induced on
-the common boundary of the two discs are opposite.  Reading the same crossed
-edge from the other side therefore conjugates one cyclic order to the
-inverse of the other, which is equation~(25).
+which is face-simplicity.  Equivalently, the boundary first-return order is
+the cyclic order of crossings around the one boundary circle, so its inverse
+is a single cycle and Lemma~\ref{lem:canonical-hub-face-simple} supplies the
+same face-simplicity directly at permutation level.  Finally, the two boundary orientations induced on
+the common boundary of the two discs are opposite.  Thus their computed
+first-return maps obey \(s_R\circ m\circ s_L=m\).
+Lemma~\ref{lem:canonical-hub-orientation} converts this equation into
+equation~(25).
 \end{proof}
 
 The adjective ``tight'' is load-bearing.  A simple closed curve can enter the
