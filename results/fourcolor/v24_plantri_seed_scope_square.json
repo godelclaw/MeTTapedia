@@ -1,0 +1,156 @@
+{
+  "colour_symmetry": "majority fixed to 0; all global colour permutations represented",
+  "counterexample_scope": "connected opened annuli only",
+  "first_seedless_witness": {
+    "annulus": {
+      "connected": true,
+      "inner_face": 1,
+      "nonempty_good_words": [
+        "00120",
+        "00210",
+        "01200",
+        "02100",
+        "10002",
+        "20001"
+      ],
+      "outer_face": 8,
+      "outer_length": 4,
+      "seeded_good_words": [
+        "00120",
+        "00210",
+        "01200",
+        "02100"
+      ],
+      "seedless_good_words": [
+        "10002",
+        "20001"
+      ]
+    },
+    "ascii_embedding": "18 bcd,aef,agh,aie,bdj,bjg,cfk,cli,dhm,emf,gno,hop,iqj,kqr,krl,lrq,mpn,npo",
+    "face_cycles": [
+      [
+        0,
+        1,
+        5,
+        6,
+        2
+      ],
+      [
+        0,
+        2,
+        7,
+        8,
+        3
+      ],
+      [
+        0,
+        3,
+        4,
+        1
+      ],
+      [
+        1,
+        4,
+        9,
+        5
+      ],
+      [
+        2,
+        6,
+        10,
+        14,
+        11,
+        7
+      ],
+      [
+        3,
+        8,
+        12,
+        9,
+        4
+      ],
+      [
+        5,
+        9,
+        12,
+        16,
+        13,
+        10,
+        6
+      ],
+      [
+        7,
+        11,
+        15,
+        16,
+        12,
+        8
+      ],
+      [
+        10,
+        13,
+        17,
+        14
+      ],
+      [
+        11,
+        14,
+        17,
+        15
+      ],
+      [
+        13,
+        16,
+        15,
+        17
+      ]
+    ],
+    "graph_hash": "6fb5266b12bbf4e9c395e6ab6ea1a8ebf6dde039b48de5e0f97a67443865e039",
+    "graph_index": 21,
+    "primal_vertices": 18
+  },
+  "generated_class": "duals of spherical triangulations with minimum degree 4 and requested connectivity 3: simple cubic plane maps with face length >=4",
+  "generator": {
+    "arguments": "-a -d -m4 -c3 (V/2+2)",
+    "binary_sha256": "6288e9f2372a981b8ce93c45c7a33e38700009cffd19579db8ed32012d3151ad",
+    "name": "plantri",
+    "source": "https://users.cecs.anu.edu.au/~bdm/plantri/",
+    "version": "5.8 (2026-03-04)"
+  },
+  "good_word_representatives": [
+    "00012",
+    "00021",
+    "00120",
+    "00210",
+    "01200",
+    "02100",
+    "10002",
+    "12000",
+    "20001",
+    "21000"
+  ],
+  "schema": "fourcolor-v24-plantri-seed-audit-v2",
+  "scope_warning": "Exhaustive only through the requested finite order; SAT witnesses are replayed literally, but absence of a witness is not a universal proof.",
+  "sizes": [
+    {
+      "connected_annuli_audited": 77,
+      "connected_nonempty_good_fibres": 708,
+      "connected_seeded_good_fibres": 706,
+      "disconnected_boundary_instances_audited": 296,
+      "graphs": 34,
+      "nonempty_good_fibres": 3502,
+      "ordered_boundary_instances_audited": 373,
+      "outer_length_counts": {
+        "4": 189,
+        "5": 126,
+        "6": 46,
+        "7": 11,
+        "8": 1
+      },
+      "primal_vertices": 18,
+      "seeded_good_fibres": 3486,
+      "seedless_good_fibres": 2
+    }
+  ],
+  "solver": "z3-4.16.0"
+}

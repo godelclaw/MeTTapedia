@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Search the entire small normal-form class for a Seed-Lemma counterexample.
+"""Search a generated small plane-map class for a Seed-Lemma counterexample.
 
-``plantri -m5 -c5`` enumerates 5-connected spherical triangulations of
-minimum degree five.  Their planar duals are precisely the generated simple
-cubic plane maps with face length at least five and cyclic edge-connectivity
-at least five.  For each generated map, this audit opens every ordered pair
+By default, plantri -m5 -c5 enumerates 5-connected spherical
+triangulations of minimum degree five.  Their planar duals are the generated
+simple cubic plane maps with face length at least five and cyclic
+edge-connectivity at least five.  The face-length and connectivity flags may
+be weakened deliberately to audit which normal-form hypotheses are
+load-bearing.  For each generated map, this audit opens every ordered pair
 consisting of a pentagonal inner face and an arbitrary vertex-disjoint outer
 face, then asks the cap-correct Seed question for all ten good inner words
 modulo a global colour permutation.
@@ -52,6 +54,25 @@ def parse_args() -> argparse.Namespace:
         type=int,
         default=36,
         help="largest even order of a generated cubic plane map",
+    )
+    parser.add_argument(
+        "--minimum-face-length",
+        type=int,
+        choices=(3, 4, 5),
+        default=5,
+        help="minimum primal face length (minimum degree in the generated dual)",
+    )
+    parser.add_argument(
+        "--triangulation-connectivity",
+        type=int,
+        choices=(3, 4, 5),
+        default=5,
+        help="connectivity requested from plantri before dualizing",
+    )
+    parser.add_argument(
+        "--connected-only",
+        action="store_true",
+        help="report a seedless witness only when the opened annulus is connected",
     )
     parser.add_argument(
         "--stop-on-first",
@@ -250,12 +271,22 @@ def audit_face_annulus(
     }
 
 
-def generated_embeddings(plantri: Path, primal_vertices: int) -> Iterable[str]:
-    if primal_vertices % 2 or primal_vertices < 20:
-        raise ValueError("the cubic order must be even and at least twenty")
+def generated_embeddings(
+    plantri: Path,
+    primal_vertices: int,
+    minimum_face_length: int = 5,
+    triangulation_connectivity: int = 5,
+) -> Iterable[str]:
+    if primal_vertices % 2 or primal_vertices < 4:
+        raise ValueError("the cubic order must be even and at least four")
     triangulation_vertices = primal_vertices // 2 + 2
     command = [
-        str(plantri), "-a", "-d", "-m5", "-c5", str(triangulation_vertices)
+        str(plantri),
+        "-a",
+        "-d",
+        f"-m{minimum_face_length}",
+        f"-c{triangulation_connectivity}",
+        str(triangulation_vertices),
     ]
     # plantri's small ASCII format uses consecutive one-byte vertex names;
     # already at order 32 the last name is byte 0x80, which is not UTF-8.
@@ -267,7 +298,9 @@ def generated_embeddings(plantri: Path, primal_vertices: int) -> Iterable[str]:
             yield line
 
 
-def audit_graph(graph: dict[str, Any], stop_on_first: bool) -> dict[str, Any]:
+def audit_graph(
+    graph: dict[str, Any], stop_on_first: bool, connected_only: bool = False
+) -> dict[str, Any]:
     pentagons = graph["pentagon_face_ids"]
     ordered_boundary_instances = 0
     connected_annuli = 0
@@ -296,7 +329,7 @@ def audit_graph(graph: dict[str, Any], stop_on_first: bool) -> dict[str, Any]:
             outer_length_counts[outer_length] = outer_length_counts.get(outer_length, 0) + 1
             nonempty += len(row["nonempty_good_words"])
             seeded += len(row["seeded_good_words"])
-            if row["seedless_good_words"]:
+            if row["seedless_good_words"] and (row["connected"] or not connected_only):
                 seedless.append(row)
                 if stop_on_first:
                     return {
@@ -329,15 +362,25 @@ def run(
     min_primal_vertices: int,
     max_primal_vertices: int,
     stop_on_first: bool,
+    minimum_face_length: int = 5,
+    triangulation_connectivity: int = 5,
+    connected_only: bool = False,
 ) -> dict[str, Any]:
     if not plantri.is_file():
         raise FileNotFoundError(plantri)
     sizes: list[dict[str, Any]] = []
     first_witness: dict[str, Any] | None = None
-    if min_primal_vertices < 20 or min_primal_vertices % 2:
-        raise ValueError("the minimum cubic order must be even and at least twenty")
+    if min_primal_vertices < 4 or min_primal_vertices % 2:
+        raise ValueError("the minimum cubic order must be even and at least four")
     for primal_vertices in range(min_primal_vertices, max_primal_vertices + 1, 2):
-        graphs = list(generated_embeddings(plantri, primal_vertices))
+        graphs = list(
+            generated_embeddings(
+                plantri,
+                primal_vertices,
+                minimum_face_length,
+                triangulation_connectivity,
+            )
+        )
         size_row: dict[str, Any] = {
             "primal_vertices": primal_vertices,
             "graphs": len(graphs),
@@ -353,7 +396,7 @@ def run(
         }
         for graph_index, embedding in enumerate(graphs):
             graph = graph_record(parse_ascii_graph(embedding), graph_index)
-            row = audit_graph(graph, stop_on_first)
+            row = audit_graph(graph, stop_on_first, connected_only)
             size_row["ordered_boundary_instances_audited"] += row[
                 "ordered_boundary_instances_audited"
             ]
@@ -406,7 +449,10 @@ def run(
             "name": "plantri",
             "version": "5.8 (2026-03-04)",
             "source": "https://users.cecs.anu.edu.au/~bdm/plantri/",
-            "arguments": "-a -d -m5 -c5 (V/2+2)",
+            "arguments": (
+                f"-a -d -m{minimum_face_length} "
+                f"-c{triangulation_connectivity} (V/2+2)"
+            ),
             "binary_sha256": hashlib.sha256(plantri.read_bytes()).hexdigest(),
         },
         "solver": f"z3-{z3.get_version_string()}",
@@ -416,9 +462,15 @@ def run(
         "colour_symmetry": (
             "majority fixed to 0; all global colour permutations represented"
         ),
-        "normal_form": (
-            "duals of 5-connected spherical triangulations of minimum degree 5: "
-            "simple cubic plane maps, face length >=5, cyclic connectivity >=5"
+        "generated_class": (
+            "duals of spherical triangulations with minimum degree "
+            f"{minimum_face_length} and requested connectivity "
+            f"{triangulation_connectivity}: simple cubic plane maps with "
+            f"face length >={minimum_face_length}"
+        ),
+        "counterexample_scope": (
+            "connected opened annuli only" if connected_only
+            else "all well-formed opened boundary data, including disconnected"
         ),
         "sizes": sizes,
         "first_seedless_witness": first_witness,
@@ -436,6 +488,9 @@ def main() -> int:
         args.min_primal_vertices,
         args.max_primal_vertices,
         args.stop_on_first,
+        args.minimum_face_length,
+        args.triangulation_connectivity,
+        args.connected_only,
     )
     atomic_write_json(args.output, result)
     print(f"certificate={args.output}")

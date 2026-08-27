@@ -1,0 +1,177 @@
+{
+  "colour_symmetry": "majority fixed to 0; all global colour permutations represented",
+  "counterexample_scope": "connected opened annuli only",
+  "first_seedless_witness": {
+    "annulus": {
+      "connected": true,
+      "inner_face": 5,
+      "nonempty_good_words": [
+        "00012",
+        "00021"
+      ],
+      "outer_face": 1,
+      "outer_length": 3,
+      "seeded_good_words": [],
+      "seedless_good_words": [
+        "00012",
+        "00021"
+      ]
+    },
+    "ascii_embedding": "14 bcd,aef,agd,ach,bij,bjg,cfh,dgk,ekl,emf,hni,inm,jln,kml",
+    "face_cycles": [
+      [
+        0,
+        1,
+        5,
+        6,
+        2
+      ],
+      [
+        0,
+        2,
+        3
+      ],
+      [
+        0,
+        3,
+        7,
+        10,
+        8,
+        4,
+        1
+      ],
+      [
+        1,
+        4,
+        9,
+        5
+      ],
+      [
+        2,
+        6,
+        7,
+        3
+      ],
+      [
+        4,
+        8,
+        11,
+        12,
+        9
+      ],
+      [
+        5,
+        9,
+        12,
+        13,
+        10,
+        7,
+        6
+      ],
+      [
+        8,
+        10,
+        13,
+        11
+      ],
+      [
+        11,
+        13,
+        12
+      ]
+    ],
+    "graph_hash": "96668268249e8043817aa0c8c1fff8adf23f9445fa9849a85c37de6654caa449",
+    "graph_index": 4,
+    "primal_vertices": 14
+  },
+  "generated_class": "duals of spherical triangulations with minimum degree 3 and requested connectivity 3: simple cubic plane maps with face length >=3",
+  "generator": {
+    "arguments": "-a -d -m3 -c3 (V/2+2)",
+    "binary_sha256": "6288e9f2372a981b8ce93c45c7a33e38700009cffd19579db8ed32012d3151ad",
+    "name": "plantri",
+    "source": "https://users.cecs.anu.edu.au/~bdm/plantri/",
+    "version": "5.8 (2026-03-04)"
+  },
+  "good_word_representatives": [
+    "00012",
+    "00021",
+    "00120",
+    "00210",
+    "01200",
+    "02100",
+    "10002",
+    "12000",
+    "20001",
+    "21000"
+  ],
+  "schema": "fourcolor-v24-plantri-seed-audit-v2",
+  "scope_warning": "Exhaustive only through the requested finite order; SAT witnesses are replayed literally, but absence of a witness is not a universal proof.",
+  "sizes": [
+    {
+      "connected_annuli_audited": 0,
+      "connected_nonempty_good_fibres": 0,
+      "connected_seeded_good_fibres": 0,
+      "disconnected_boundary_instances_audited": 0,
+      "graphs": 2,
+      "nonempty_good_fibres": 0,
+      "ordered_boundary_instances_audited": 0,
+      "outer_length_counts": {},
+      "primal_vertices": 8,
+      "seeded_good_fibres": 0,
+      "seedless_good_fibres": 0
+    },
+    {
+      "connected_annuli_audited": 0,
+      "connected_nonempty_good_fibres": 0,
+      "connected_seeded_good_fibres": 0,
+      "disconnected_boundary_instances_audited": 10,
+      "graphs": 5,
+      "nonempty_good_fibres": 48,
+      "ordered_boundary_instances_audited": 10,
+      "outer_length_counts": {
+        "3": 5,
+        "4": 3,
+        "5": 2
+      },
+      "primal_vertices": 10,
+      "seeded_good_fibres": 38,
+      "seedless_good_fibres": 0
+    },
+    {
+      "connected_annuli_audited": 0,
+      "connected_nonempty_good_fibres": 0,
+      "connected_seeded_good_fibres": 0,
+      "disconnected_boundary_instances_audited": 58,
+      "graphs": 14,
+      "nonempty_good_fibres": 316,
+      "ordered_boundary_instances_audited": 58,
+      "outer_length_counts": {
+        "3": 25,
+        "4": 16,
+        "5": 16,
+        "6": 1
+      },
+      "primal_vertices": 12,
+      "seeded_good_fibres": 280,
+      "seedless_good_fibres": 0
+    },
+    {
+      "connected_annuli_audited": 1,
+      "connected_nonempty_good_fibres": 2,
+      "connected_seeded_good_fibres": 0,
+      "disconnected_boundary_instances_audited": 13,
+      "graphs": 50,
+      "nonempty_good_fibres": 28,
+      "ordered_boundary_instances_audited": 14,
+      "outer_length_counts": {
+        "3": 7,
+        "4": 6,
+        "5": 1
+      },
+      "primal_vertices": 14,
+      "seeded_good_fibres": 0,
+      "seedless_good_fibres": 2
+    }
+  ],
+  "solver": "z3-4.16.0"
+}
