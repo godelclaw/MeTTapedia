@@ -927,10 +927,14 @@ supplies noose-respecting branch decompositions of plane graphs
 doi:10.1007/BF01215352).  Neither
 theorem is formalized in this development.  Moreover, a sphere cut meets
 the graph in its middle \emph{vertices}, whereas the present Count functor
-cuts ordered \emph{edges}.  At a cubic middle vertex one can locally move
-the noose off the vertex by crossing at most two incident edges, but
-preservation of nesting, seam order, and the rotation system under all such
-moves is still a construction, not a citation.
+cuts ordered \emph{edges}.  Lemma~\ref{lem:cubic-noose-edge-perturbation}
+proves the local conversion and the factor \(2\): a tight noose through
+\(w\) cubic middle vertices becomes a tight transverse noose with at most
+\(2w\) crossings.  What the cited sphere-cut theorem does not by itself
+package in the present types is a simultaneous laminar choice along each
+root path, the strict-material accounting between comparable cuts, and the
+resulting ordered \texttt{OpenTangleData}.  Those remain a construction,
+not a citation.
 
 \begin{proposition}[wall-exclusion reduction, relative form]
 \label{prop:target-forced-wall}
@@ -1707,12 +1711,230 @@ half-edge, saturation says that no edge of \(G\) leaves \(C\) except \(e\).
 Then \(e\) would be a bridge of \(G\), a contradiction.
 \end{proof}
 
+\paragraph{Hub closures and the exact face count.}
+Let \(T\) be an open rotation tangle with boundary set \(B\).  Its
+\emph{hub closure} \(\widehat T_\rho\) has one new hub dart
+\(\bar b\) for every \(b\in B\), pairs \(b\) with \(\bar b\), and
+rotates the hub darts by a permutation \(\rho\) giving their boundary
+order.  The old vertex rotations and old internal pairings are unchanged.
+Write
+\[
+ \widehat\alpha_T(b)=\bar b,
+ \qquad
+ \widehat\alpha_T(\bar b)=b,
+ \qquad
+ \widehat\phi_{T,\rho}=\widehat\rho_T\widehat\alpha_T.
+\]
+We call the cap \emph{face-simple} when distinct hub darts lie in distinct
+\(\widehat\phi_{T,\rho}\)-orbits.  This is the exact combinatorial
+condition called \texttt{HubFacesDistinct} in the implementation; it must
+not be inferred merely from the hub being one vertex.
+
+\begin{lemma}[orbit exchange]
+\label{lem:orbit-exchange}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrbitExchange.orbitCount_exchange_univ}
+Let a finite family of permutations be obtained by processing ports one at
+a time.  At each port first transpose two points in different current
+orbits, and then transpose two distinct points in the resulting common
+orbit.  Suppose the unprocessed merge orbits remain pairwise distinct.
+Then processing all ports does not change the number of orbits.
+\end{lemma}
+
+\begin{proof}
+A transposition of points in different cycles merges precisely those two
+cycles, decreasing the orbit count by one.  A transposition of distinct
+points in the same cycle cuts that cycle into two, increasing the count by
+one.  Thus one exchange has net change zero.  The stated invariant ensures
+that the same hypotheses hold after each processed port, so induction on the
+finite port set proves the result.
+\end{proof}
+
+\begin{theorem}[the hub-capped seam face formula]
+\label{thm:hub-seam-face-formula}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24CompositeSphericity.card_orbitFace_composite_add}
+Let \(L,R\) be open rotation tangles with equally large boundary sets,
+let \(m:B_L\simeq B_R\) match their ports, and give their hubs rotations
+\(\rho_L,\rho_R\).  Assume both hub closures are face-simple and
+\[
+             \rho_R(mb)=m(\rho_L^{-1}b)
+             \qquad(b\in B_L).                 \tag{25}
+\]
+If \(k=|B_L|\), and \(L\#_mR\) is the closed rotation system obtained by
+pairing matched real boundary darts, then
+\[
+ F(L\#_mR)+k=F(\widehat L_{\rho_L})+
+                    F(\widehat R_{\rho_R}).    \tag{26}
+\]
+Here every \(F\) is the number of orbits of the face permutation
+\(\phi=\rho\alpha\).
+\end{theorem}
+
+\begin{proof}
+Begin with the disjoint union of the two hub closures.  For each left port
+\(b\), replace the two cap pairings
+\[
+  (b,\bar b),\qquad (m b,\overline{m b})
+\]
+by the real seam pairing \((b,m b)\) and the hub pairing
+\((\bar b,\overline{m b})\).  On the face permutation this replacement is
+one merging transposition followed by one splitting transposition.  The
+merge joins the left hub face at \(b\) to the right hub face at \(m b\).
+Face-simplicity says that merge faces belonging to distinct unprocessed
+ports are distinct.  The split belonging to \(b\) lies on the face created
+by the merge belonging to \(\rho_L^{-1}b\); equation~(25) is exactly the
+identity needed on the right hub to identify those two points.  Therefore
+Lemma~\ref{lem:orbit-exchange} applies and the fully exchanged face
+permutation has
+\[
+ F(\widehat L_{\rho_L})+F(\widehat R_{\rho_R})
+\]
+orbits.  This intermediate equality is also checked directly by
+\texttt{GoertzelV24SeamExchange.orbitCount\_phiS\_univ}.
+
+After all ports have been exchanged, real darts never map to hub darts and
+hub darts never map to real darts.  On the real summand the permutation is,
+up to the carrier reassociation, the face permutation of \(L\#_mR\).  On
+the \(2k\) hub darts it is the face permutation of the two-hub \(k\)-edge
+dipole:
+\[
+ \bar b_L\longmapsto \rho_R(\overline{m b})_R,
+ \qquad
+ \bar c_R\longmapsto
+       \rho_L(\overline{m^{-1}c})_L.
+\]
+Equation~(25) makes this permutation an involution.  It is fixed-point-free
+because it exchanges the left and right summands, so its \(2k\) elements
+form exactly \(k\) two-cycles.  Orbit counts add over disjoint sums and are
+invariant under the carrier reassociation.  Subtracting these \(k\) dipole
+orbits gives~(26).  The dipole count and the reassociation are machine-checked
+in \texttt{GoertzelV24CompositeSphericity.orbitCount\_dipolePhi} and in the
+theorem named by the verification badge.
+\end{proof}
+
+\begin{corollary}[hub-capped seam sphericity]
+\label{cor:hub-seam-sphericity}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24CompositeSphericity.composite_euler}
+Under the hypotheses of Theorem~\ref{thm:hub-seam-face-formula}, suppose
+both hub closures are spherical.  Then the composite satisfies
+\[
+       V(L\#_mR)+F(L\#_mR)=E(L\#_mR)+2.
+\]
+\end{corollary}
+
+\begin{proof}
+Let \(e_L,e_R\) be the numbers of intact edges of the two open sides and
+write \(F_L,F_R\) for the face counts of their hub closures.  The two cap
+equalities are
+\[
+ (V_L+1)+F_L=(e_L+k)+2,
+ \qquad
+ (V_R+1)+F_R=(e_R+k)+2.
+\]
+The composite has \(V_L+V_R\) vertices and \(e_L+e_R+k\) edges, while
+Theorem~\ref{thm:hub-seam-face-formula} gives
+\(F=F_L+F_R-k\).  Adding the two cap equalities and substituting these three
+counts yields
+\[
+ (V_L+V_R)+F=(e_L+e_R+k)+2,
+\]
+as required.
+\end{proof}
+
+\begin{lemma}[a tight transverse noose supplies the cap data]
+\label{lem:tight-noose-cap-data}
+\Sprose
+Let \(M\) be a cellular spherical map and let \(\gamma\) be a simple closed
+curve which avoids vertices, crosses \(k\) edges transversely, and is
+\emph{tight}: its intersection with the interior of every face is empty or
+one connected arc.  Cut the crossed edges at \(\gamma\), retain either
+closed-disc side, and close its \(k\) boundary darts by a hub in their cyclic
+order.  Each hub closure is spherical and face-simple.  Under the natural
+matching of the two halves of every crossed edge, the two hub rotations
+satisfy~(25).
+\end{lemma}
+
+\begin{proof}
+By the Jordan curve theorem, \(\gamma\) cuts the sphere into two open discs
+with common boundary \(\gamma\).  Collapse the boundary circle of either
+closed disc to a point.  The quotient is a sphere; the cut endpoints become
+the darts at the new hub, in their cyclic boundary order.  This is precisely
+the hub closure, so its cellular Euler equality is the spherical one.
+
+The sector at the hub between two consecutive cut darts is the image of the
+unique boundary arc of \(\gamma\) between the corresponding crossings.  It
+lies in one old face.  Tightness says that no old face contains two such
+arcs.  Hence no face of the capped rotation system contains two hub darts,
+which is face-simplicity.  Finally, the two boundary orientations induced on
+the common boundary of the two discs are opposite.  Reading the same crossed
+edge from the other side therefore conjugates one cyclic order to the
+inverse of the other, which is equation~(25).
+\end{proof}
+
+The adjective ``tight'' is load-bearing.  A simple closed curve can enter the
+same face several times, in which case one capped face can pass through the
+hub more than once and \texttt{HubFacesDistinct} need not hold.  Standard
+sphere-cut decompositions of connected bridgeless plane graphs use tight
+nooses (each face is visited at most once).  The remaining sphere-cut adapter
+is therefore not Jordan separation itself; it is the explicit, nested local
+perturbation from those vertex-meeting tight nooses to the edge-crossing
+tight nooses consumed here.
+
+\begin{lemma}[one cubic sphere cut can be moved to edges]
+\label{lem:cubic-noose-edge-perturbation}
+\Sprose
+Let \(N\) be a tight sphere-cut noose of a cubic plane graph.  Thus \(N\)
+meets the graph only in a middle set \(Z\) of vertices, and at every
+\(z\in Z\) each of the two edge sides has at least one incident edge.
+After choosing one of the two disc sides, \(N\) can be moved off the
+vertices to a tight transverse noose \(\gamma\) crossing at most
+\(2|Z|\) edges.  The vertices strictly in the chosen side remain there.
+If a laminar family of such nooses has pairwise ordered collars, these moves
+can be made inside the collars and preserve laminarity.
+\end{lemma}
+
+\begin{proof}
+Choose disjoint small vertex discs around the points of \(Z\).  At a cubic
+middle vertex, the chosen side contains either one or two consecutive
+incident edge germs.  Replace the portion of \(N\) through that vertex by
+an arc in its vertex disc pushed toward the chosen side.  It crosses exactly
+those one or two germs and no others.  The replacements are disjoint, so the
+result is still a simple closed curve, avoids every vertex, preserves every
+strictly separated vertex, and has at most \(2|Z|\) transverse crossings.
+
+Two harmless simplifications may now be needed.  If the curve crosses the
+same edge twice with no vertex on the intervening edge segment, a
+closed regular neighbourhood of that edge segment is a rectangle disjoint
+from every vertex and from every other edge.  Replace the curve arc on one
+side of the rectangle by the parallel arc on the other side.  This is a
+local isotopy followed by cancellation of the two transverse crossings; it
+does not move the curve across a graph vertex.  If the curve visits
+one face in more than one arc, choose two consecutive arcs in that open
+disc.  The subdisc between them contains no graph; replacing the appropriate
+curve subarc along that subdisc removes a repeated visit without changing
+which graph vertices lie on either side and without introducing an edge
+crossing.  Each operation strictly lowers the finite number of crossings or
+face visits, so they terminate.  The resulting curve is transverse and
+tight, with the same bound.
+
+For an already laminar finite family, choose the vertex discs and the
+subsequent face surgeries inside mutually ordered collar neighbourhoods,
+starting with the innermost curve.  An isotopy supported in one such collar
+cannot cross a curve outside that collar, so the nesting order is preserved.
+\end{proof}
+
+This lemma settles the local factor \(2\) in the state count.  It does
+\emph{not} assert that the nooses attached independently to all edges of an
+arbitrary sphere-cut decomposition have already been chosen as one laminar
+family, nor that every proper tree segment contains a retained vertex.
+Those two global compatibility clauses remain explicit fields of the
+sphere-cut supply consumed by Theorem~\ref{thm:typed-sphere-cut-descent}.
+
 \begin{theorem}[physical deletion between equal nested noose states]
 \label{thm:physical-noose-deletion}
 \Sprose
 Let \(G\) be a connected bridgeless cubic spherical map.  Let
 \(\gamma_i,\gamma_j\), with \(i<j\), be disjoint nested simple nooses which
-avoid vertices and each cross exactly \(k\ge2\) edges.  Suppose their ordered
+avoid vertices, are tight, and each cross exactly \(k\ge2\) edges.  Suppose their ordered
 crossing sets carry a specified orientation-reversing bijection, their
 retained sides are connected and saturated, and the annular slab between
 them contains a graph vertex.  Delete that slab and glue the paired boundary
@@ -1726,10 +1948,12 @@ preserved.
 \end{theorem}
 
 \begin{proof}
-Each noose bounds a disc on the sphere.  Retain the disc side of the inner
-noose and the complementary disc side of the outer noose.  Identifying their
-boundary circles in reverse cyclic order produces a sphere; pairing the
-crossed half-edges draws the seam without crossings.  Every retained cubic
+Retain the disc side of the inner noose and the complementary disc side of
+the outer noose.  Lemma~\ref{lem:tight-noose-cap-data} supplies spherical,
+face-simple hub closures and opposite boundary rotations.  Hence
+Corollary~\ref{cor:hub-seam-sphericity} proves, by face-orbit counting rather
+than by an implicit drawing, that the glued rotation system is spherical.
+Every retained cubic
 vertex loses exactly the cut incidences recorded at its boundary and gains
 the corresponding seam incidences, so its degree remains three.  The two
 retained sides are connected.  By
@@ -1739,10 +1963,11 @@ composite bridgeless.  The deleted slab contains a vertex and none is added,
 so \(G'\) is strictly smaller.
 
 The geometric seam type records the ordered endpoint identifications and any
-local equality data needed by the chosen graph representation; in a
-simple-graph implementation it must in particular reject a loop or duplicate
-edge, while a loopless plane-multigraph implementation may retain parallel
-edges.  Equality of cumulative support states is exactly the hypothesis of
+local equality data needed by the chosen graph representation.  The literal
+composite is loopless.  A simple-graph implementation may reject a duplicate
+edge in its seam type, or the loopless-multigraph output may instead be
+normalized by repeated digon suppression as explained below.  Equality of
+cumulative support states is exactly the hypothesis of
 Theorem~\ref{thm:determinized-support-deletion}.  After the physical
 identification realizes that block deletion, the unchanged suffix and
 terminal closure therefore have the same accepting support in \(G'\) and
@@ -1766,32 +1991,82 @@ the composite.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24CompositeSeamCubic.vertexRotationCyclic_composeRotationSystem}
 \end{theorem}
 
+\begin{corollary}[the implemented seam composite packages the full structural class]
+\label{cor:implemented-seam-composite-structure}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24CompositeStructuralData.bridgelessSphericalCubicMapData_composeRotationSystem}
+Let the two finite open rotation tangles satisfy the connectedness,
+boundary-essentiality, open-cubicity, and vertex-rotation hypotheses of the
+preceding theorem.  Suppose the seam contains two distinct ports.  If the
+two hub closures are spherical and face-simple and their hub orders obey
+the orientation-reversing equation~(25), then the literal composed rotation
+system is a connected, bridge-free, cubic spherical map with one cyclic
+rotation at every vertex.
+\end{corollary}
+
+\begin{proof}
+Theorem~\ref{thm:implemented-seam-composite-fields} supplies connectedness,
+bridge-freeness, cubicity, and cyclic vertex rotations.  Corollary~\ref{cor:hub-seam-sphericity}
+supplies the spherical Euler equality on the same composite carrier.  These
+are exactly the four fields of the structural record, so no transport to a
+second representation is required.
+\end{proof}
+
 The implementation obtains the first two conclusions by an explicit edge
 equivalence between the multigraph glue and
 \texttt{composeRotationSystem}; the latter two follow by transporting the
 side rotations through the composite carrier.  Thus connectedness,
 bridgelessness, cubicity, rotation-cyclicity, and strict vertex accounting
-are no longer D3 gaps.  What remains is topological: the matching must reverse
-the boundary orientation, the composite face orbits must satisfy the
-spherical Euler equality, and the result must land in whichever
-loopless/simple representation the minimality theorem consumes.  The current
-matching type is only a bare equivalence, so it cannot yet express the first
-of these requirements.
+are no longer D3 gaps.  Theorem~\ref{thm:hub-seam-face-formula} and
+Corollary~\ref{cor:hub-seam-sphericity} also close the face-orbit calculation
+once face-simple spherical caps and the orientation equation are supplied.
+The bare matching type cannot manufacture those witnesses; they come from
+the tight noose by Lemma~\ref{lem:tight-noose-cap-data}.
+
+\begin{corollary}[parallel seams can be normalized after gluing]
+\label{cor:parallel-seam-normalization}
+\Sprose
+Let \(M\) be a finite connected bridgeless cubic spherical loopless
+multigraph which is not Tait-colourable.  Repeatedly suppress a parallel pair
+by the digon splice of Lemma~\ref{lem:digon-splice}.  The process terminates
+in a strictly smaller connected bridgeless cubic spherical simple graph
+which is still not Tait-colourable.
+\end{corollary}
+
+\begin{proof}
+If three parallel edges join the same two vertices, connectedness and
+cubicity make \(M\) the theta graph, which is Tait-colourable.  Hence at every
+non-simple, non-theta stage some repeated endpoint pair has multiplicity
+exactly two.
+Lemma~\ref{lem:digon-splice} deletes its two cubic endpoints, preserves
+connectedness, bridgelessness, cubicity and sphericity, and introduces no
+loop.  A Tait colouring of the suppressed graph lifts: colour the two
+external replacement paths by the colour of the new edge and colour the
+parallel pair by the other two colours.  Consequently uncolourability is
+preserved contrapositively.  Each suppression removes two vertices, so
+well-founded induction on the vertex count terminates.  The terminal graph
+has no loop and no parallel pair, hence is simple, and the first suppression
+already made it strictly smaller than \(M\).
+\end{proof}
+
+Therefore a duplicate seam edge need not enlarge the finite receipt.  One
+may glue in the loopless multigraph category and normalize only after the
+closed zero-Count composite has been produced.  The remaining D3-to-supply
+link is the construction of the tight transverse cut data from the chosen
+sphere-cut decomposition, not a missing face-count theorem.
 
 \begin{theorem}[direct Count-reductive assembly]
 \label{thm:direct-count-reductive-assembly}
-\Sconditional{Tait bridge; ladder transport; target-forced cut chain; simple-map seam adapter; route-native finite base}
+\Sconditional{Tait bridge; ladder transport; target-forced tight cut chain; physical D3 supply; route-native finite base}
 Assume that every sufficiently large least Tait counterexample can be put,
 by the source's target-preserving local reductions, into a composable corridor
 whose cut roots satisfy Proposition~\ref{prop:target-forced-cut-chain}.
 Use the raw finite boundary-word semantics of
 Theorem~\ref{thm:raw-noose-count-pumping}; an optimized closure from
 Proposition~\ref{prop:exact-closure-gate} may replace its conservative bound
-but is not a logical premise.  If the implementation represents maps by
-simple graphs, also prove that the common
-finite seam type rules out a loop or duplicate seam edge; alternatively work
-in the loopless plane-multigraph category through the splice and normalize
-back by a proved size-decreasing, zero-Count-preserving reduction.  Finally,
+but is not a logical premise.  Work in the loopless plane-multigraph category
+through the splice and apply
+Corollary~\ref{cor:parallel-seam-normalization} if a parallel seam appears.
+Finally,
 verify by the same route-native semantics that no
 counterexample exists at or below the resulting effective threshold.  Then
 every bridgeless cubic plane graph is Tait colourable, and hence every planar
@@ -1842,10 +2117,17 @@ in the ordinary argument of
 Theorem~\ref{thm:physical-noose-deletion}.  Lean now checks the literal
 rotation-system composite's connectedness, bridge-freeness, cubicity, and
 rotation-cyclicity in
-Theorem~\ref{thm:implemented-seam-composite-fields}.  What remains is its
-orientation-aware spherical face calculation and, for a simple-graph
-carrier, the finite loop/parallel-edge check; neither may be left as an
-implicit property of the drawing.
+Theorem~\ref{thm:implemented-seam-composite-fields}.  The
+orientation-aware face calculation and spherical Euler equality are now
+verified in Theorem~\ref{thm:hub-seam-face-formula} and
+Corollaries~\ref{cor:hub-seam-sphericity} and
+\ref{cor:implemented-seam-composite-structure} package these facts on the
+literal composite.  Lemma~\ref{lem:tight-noose-cap-data}
+derives their cap hypotheses from a tight transverse noose.  The literal
+composite is loopless, and Corollary~\ref{cor:parallel-seam-normalization}
+removes any parallel seam after gluing.  Thus the exact remaining adapter is
+the production of compatible tight transverse nooses from the supplied
+vertex-based sphere cuts.
 
 Theorem~\ref{thm:direct-count-reductive-assembly} is the shortest literal
 implementation of the companion note's instruction to open the instances,
@@ -1926,9 +2208,9 @@ finite base.
 
 At present the decisive open premises are therefore: either the
 target-forced global cut chain or fixed-wall exclusion together with the
-sphere-cut adapters; the orientation-reversed seam witness, spherical
-face-orbit calculation, and representation closure still needed for D3; and
-the route-native finite base.  The mesh
+sphere-cut adapters; the compatible tight vertex-noose to edge-noose
+perturbation; and the route-native finite base.  D3's face count, Euler
+arithmetic, and loopless-multigraph normalization are no longer open.  The mesh
 isoperimetry theorem proves that a large wall does not automatically supply
 the linear chain, but it does not exclude the wall.  An executable minimized
 Cell closure remains important for making the base small enough to replay,
