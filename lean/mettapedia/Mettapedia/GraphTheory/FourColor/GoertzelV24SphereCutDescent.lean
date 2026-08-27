@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FiniteTreeInterfacePumping
 import Mettapedia.GraphTheory.FourColor.GoertzelV24RawNooseCountPumping
+import Mettapedia.GraphTheory.FourColor.GoertzelV24SphereCutMaterial
 import Mathlib.Data.Fintype.Sigma
 import Mathlib.Data.Fintype.Powerset
 
@@ -52,6 +53,20 @@ theorem card_typedState (w : ℕ) (SeamType : ℕ → Type) [∀ j, Fintype (Sea
   rw [Fintype.card_prod]
   congr 1
   rw [Fintype.card_set, card_cutWord, Fintype.card_fin]
+
+/-- Add a depth phase modulo `6w+1` to force two repeated states far enough
+apart for the cubic slab-material bound. -/
+abbrev SpacedTypedState (w : ℕ) (SeamType : ℕ → Type) :=
+  Fin (6 * w + 1) × TypedState w SeamType
+
+/-- The spacing repair costs exactly the finite factor `6w+1`. -/
+theorem card_spacedTypedState (w : ℕ) (SeamType : ℕ → Type)
+    [∀ j, Fintype (SeamType j)] :
+    Fintype.card (SpacedTypedState w SeamType) =
+      (6 * w + 1) *
+        (∑ j : Fin (2 * w + 1),
+          Fintype.card (SeamType j) * 2 ^ (3 ^ (j : ℕ))) := by
+  rw [Fintype.card_prod, Fintype.card_fin, card_typedState]
 
 /-- **A sphere-cut descent supply.**  Everything the tree pumping needs, as
 explicit data on one instance `X`: a decomposition tree whose nodes carry typed

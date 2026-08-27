@@ -904,12 +904,84 @@ If \(X\) is size-minimal among target instances, then
 \]
 \end{theorem}
 
+\begin{lemma}[cubic spacing forces material between two shores]
+\label{lem:cubic-sphere-cut-material}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SphereCutMaterial.exists_strict_slab_vertex_of_cubic}
+Let \(A\subseteq B\subseteq E(G)\) be two edge shores of a finite cubic
+graph.  For an edge set \(C\), let
+
+\[
+ \partial C=\{v:\text{\(v\) is incident with an edge of \(C\) and an edge
+ outside \(C\)}\}.
+\]
+
+If \(|\partial A|,|\partial B|\le w\) and
+
+\[
+                         |B\setminus A|>6w,
+\]
+
+then there is a vertex \(v\) incident with an edge of \(B\setminus A\)
+such that every edge incident with \(v\) lies in \(B\setminus A\).
+Thus \(v\) lies strictly in the material between the two shores, rather
+than on either middle set.
+\end{lemma}
+
+\begin{proof}
+For every edge of \(B\setminus A\), choose one endpoint.  Suppose every
+chosen endpoint belonged to \(\partial A\cup\partial B\).  That union has
+at most \(2w\) vertices, and cubicity allows at most three chosen edges at
+each vertex.  Hence \(|B\setminus A|\le6w\), a contradiction.  We may
+therefore choose an edge \(e\in B\setminus A\) whose chosen endpoint \(v\)
+belongs to neither middle set.
+
+Because \(e\notin A\), if any edge of \(A\) met \(v\), then \(v\in\partial
+A\).  Thus no edge at \(v\) lies in \(A\).  Because \(e\in B\), if any edge
+outside \(B\) met \(v\), then \(v\in\partial B\).  Thus every edge at \(v\)
+lies in \(B\).  Together these statements put every incident edge in
+\(B\setminus A\), as required.
+\end{proof}
+
+\begin{lemma}[equal phases are separated]
+\label{lem:equal-depth-phases-separated}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SphereCutMaterial.period_le_sub_of_mod_eq}
+If \(i<j\) and \(i\equiv j\pmod s\), then \(s\le j-i\).
+\end{lemma}
+
+\begin{proof}
+The congruence says \(s\mid(j-i)\).  Since \(j-i>0\), a positive multiple
+of \(s\) is at least \(s\).  (When \(s=0\), the conclusion is immediate.)
+\end{proof}
+
+The strict-material clause in a sphere-cut supply can consequently be made
+finite-state rather than pictorial.  Root the branch-decomposition tree and
+augment every typed state by the node depth modulo \(6w+1\).  Equal augmented
+states at distinct comparable nodes are separated by at least \(6w+1\) tree
+edges by Lemma~\ref{lem:equal-depth-phases-separated}.  At each step the
+discarded sibling subtree contains a leaf, and the
+sibling leaf sets at different steps are disjoint; hence the two nested edge
+shores differ by at least \(6w+1\) graph edges.  Lemma~\ref{lem:cubic-sphere-cut-material}
+then supplies a strict slab vertex.  The price is only the explicit finite
+factor
+
+\[
+                         q_{\rm spaced}=(6w+1)q
+\]
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SphereCutDescent.card_spacedTypedState}
+
+in the typed-state count.  This settles material accounting once the two
+shore interfaces have been constructed; it does not itself construct their
+ordered open-tangle carriers or prove that the splice retains exactly those
+vertex shores.
+
 This theorem closes the finite counting once the supply exists.  Its second
 hypothesis still contains the geometric content of D3.  In particular, the
 Lean declaration does \emph{not} prove that a branch decomposition gives
 ordered port tangles, that the local perturbations of its nooses are mutually
-compatible, or that the replacement remains a spherical bridgeless cubic
-map.  Those are exactly the adapters which must be constructed next.
+compatible with the retained vertex shores, or that the resulting ordered
+ports realize the same exact Count state.  The spherical bridgeless cubic
+packaging of any two sides satisfying those interface conditions is now
+verified by Corollary~\ref{cor:implemented-seam-composite-structure}.
 
 For an ordered boundary of size at most \(k\), the manuscript's data---edge
 colours, the two noncrossing connectivity relations, capped face progress,
@@ -931,10 +1003,11 @@ cuts ordered \emph{edges}.  Lemma~\ref{lem:cubic-noose-edge-perturbation}
 proves the local conversion and the factor \(2\): a tight noose through
 \(w\) cubic middle vertices becomes a tight transverse noose with at most
 \(2w\) crossings.  What the cited sphere-cut theorem does not by itself
-package in the present types is a simultaneous laminar choice along each
-root path, the strict-material accounting between comparable cuts, and the
-resulting ordered \texttt{OpenTangleData}.  Those remain a construction,
-not a citation.
+package in the present types is a compatible choice of retained vertex
+shores under those local perturbations and the resulting ordered
+\texttt{OpenTangleData}.  Lemma~\ref{lem:cubic-sphere-cut-material} and the
+depth phase above settle strict-material accounting.  The carrier and
+boundary-order construction remains mathematics to prove, not a citation.
 
 \begin{proposition}[wall-exclusion reduction, relative form]
 \label{prop:target-forced-wall}
