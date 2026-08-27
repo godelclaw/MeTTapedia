@@ -27,6 +27,10 @@ are derived from the models, deployed, and re-observed live.
   invariant constitution, freely transformable development, lawfully evolving
   life, and conservative projection of every mixed trace back to both source
   architectures.
+- `IterAuthoring.lean` — the exact hosted authoring gap and its permissive
+  repair: proposal-only writes are not active at the next capture, direct
+  transformation writes are, receipts bind the new directory revision, and
+  the repair is confined to the freely transformable development coordinate.
 
 The models use no Mathlib and end with a `#print axioms` audit:
 zero `sorry`, axioms at most `propext` and `Quot.sound`, several theorems
@@ -38,7 +42,8 @@ lean HeartModel.lean
 lean -o ClawArchitectures.olean ClawArchitectures.lean
 lean -o PresentMoment.olean PresentMoment.lean
 LEAN_PATH=. lean -o IterArchitecture.olean IterArchitecture.lean
-LEAN_PATH=. lean ProtectedPlasticity.lean
+LEAN_PATH=. lean -o ProtectedPlasticity.olean ProtectedPlasticity.lean
+LEAN_PATH=. lean IterAuthoring.lean
 ```
 
 The paper (repository [`papers/pettaclaw.tex`](../../papers/pettaclaw.tex),
