@@ -16,6 +16,22 @@ The distinction is decisive: an additive identity transports a zero count
 without any path between its two summands, whereas connectivity requires an
 actual migration path.
 
+For later reference, fix the source's quantifiers explicitly.  If
+\(\operatorname{Col}(X)\) is the set of proper edge colourings of a tangle
+\(X\), \(K_X\) its Kempe reconfiguration graph, and \(W\) a set of boundary
+words, write
+\[
+ \mathrm{WC}^{*}(X,W)\quad:\Longleftrightarrow\quad
+ \bigl(\exists D\in\operatorname{Col}(X),\ \operatorname{word}(D)\in W\bigr)
+ \Longrightarrow
+ \bigl(\forall C\in\operatorname{Col}(X),\ \exists D,
+   C\mathrel{K_X^{*}}D\ \wedge\ \operatorname{word}(D)\in W\bigr).
+\]
+Thus \(\mathrm{WC}^{*}\) is deliberately true when the target fibre is empty.
+Every use below either retains that proviso or separately assumes the global
+target set is nonempty.  This is the loaded definition in Addendum~II of the
+working manuscript, not an abbreviation for connectivity of \(K_X\).
+
 \subsection{The three unbranched rungs}
 
 For a facial triangle, properness forces its three internal edges to have

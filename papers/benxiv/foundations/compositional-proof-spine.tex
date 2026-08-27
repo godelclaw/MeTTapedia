@@ -33,47 +33,61 @@ The following table uses ``proved'' only for an argument actually supplied in
 the cited layer.  A source assertion, a finite audit still to be run, and a
 conditional theorem are different statuses.
 
+There are now two logically distinct spines.  The direct Count spine is the
+short route advertised by the compositional proof note and controls the
+headline.  The older Kauffman--$\mathrm{WC}^{*}$ development is an alternative
+source branch; progress there does not discharge a direct-Count premise.
+
 \begin{center}
 \small
 \begin{tabular}{@{}p{0.08\textwidth}p{0.45\textwidth}p{0.34\textwidth}@{}}
 \toprule
-Node & Mathematical content & Present status \\
+Node & Direct Count spine & Present status \\
 \midrule
-$T_0$ & Tait reduction and least-counterexample passage from vertex
-colouring to a bridgeless cubic plane map & ordinary mathematics written out;
-several presentation adapters remain to be connected in Lean \\
-$T_1$ & Kauffman parity and the prime/factored trail spine: Trail
-Completability implies Tait colourability & the published parity/primality
-theorems are proved in Section~\ref{sec:kauffman-trail-spine}; factor gluing
-is now priced as one exact finite synchronization closure, Proposition
-\ref{prop:factor-product-semantics}, rather than as an unjustified
-disjoint-support assertion \\
-$T_2$ & Meyniel ladder reductions (rotor, digon, two-cut, square) transport
-the relevant refined counts to the pentagon frontier & local square data are
-checked and graph-level count transport, side lifting, and route-specific
-square transport are proved in Section~\ref{sec:meyniel-ladder}; Lean
-integration remains \\
-$T_3$ & Seed Lemma: every nonempty good fibre contains a menu-B state & open;
-the source proof draft reduces it to the corridor engine and a finite base \\
-$T_4$ & Route-specific square transport for $\mathrm{WC}^{*}$ reachability &
-ordinary proof complete from capped-reduction colourability, the induction
-hypothesis, and square-side path lifting; arbitrary-target transport, the
-proposed $A\ne\varnothing$ shortcut, and universal SQ3 connectivity are all
-refuted \\
-$T_5$ & Exact one-cell Count factorization through a finite rooted profile
-transition & machine-checked through the manuscript-exact two-pair projection,
-including realized edge and initial images; executable enumeration and closure
-remain open \\
-$T_6$ & Uniform production of a pumpable corridor in every large irreducible
-obstruction & open and presently the highest structural risk; signed
-curvature does not bound the defects, and a long clean patch need not already
-be a bounded-interface corridor.  The exact missing target-forced statement
-is Proposition~\ref{prop:target-forced-cut-chain} below \\
-$T_7$ & Equal-profile physical splice preserves the planar tangle, face
-bounds, boundary order, and the relevant zero count & open as one assembled
-constructor, although many fieldwise preservation lemmas are checked \\
-$T_8$ & Route-native finite base for the Seed system & open; neither the
-earlier GWCO base nor the refuted $A\ne\varnothing$ system can be inherited \\
+$D_0$ & Tait reduction and least-counterexample normal form & ordinary
+mathematics written out; cyclic five-edge-connectivity and minimum face
+length five are machine-checked, while presentation adapters remain \\
+$D_1$ & Every sufficiently large least obstruction supplies a target-forced
+composable cut chain & open and the highest structural risk;
+Proposition~\ref{prop:target-forced-cut-chain} is the exact statement \\
+$D_2$ & Literal one-cell Count factors through an exact finite labelled
+transition and executable reachable closure & the raw bounded-interface Count
+law and support determinization are proved; the current Cell--3 Lean theorem
+still requires a special closed-web witness and global (U), so
+colouring-independent geometric fields, target-specific acceptance,
+executable initials, closure, and minimization remain open \\
+$D_3$ & Equal cumulative rooted states admit a strictly smaller physical
+deletion splice in the same bridgeless cubic spherical counterexample class,
+preserving boundary order and zero accepting Count & the ordinary noose
+construction and bridgelessness proof are complete in
+Theorem~\ref{thm:physical-noose-deletion}; the exact rotation-system
+constructor and simple-graph seam checks remain open in Lean \\
+$D_4$ & The route-native finite floor contains no zero-Count obstruction &
+open; the refuted GWCO and $A\ne\varnothing$ systems cannot be inherited \\
+$D_5$ & Well-founded assembly from $D_0$--$D_4$ & proved as the explicit
+conditional Theorem~\ref{thm:direct-count-reductive-assembly} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.08\textwidth}p{0.45\textwidth}p{0.34\textwidth}@{}}
+\toprule
+Node & Alternative $\mathrm{WC}^{*}$/Lift spine & Present status \\
+\midrule
+$W_1$ & Kauffman closed-cubic parity and the proposed deleted-edge
+prime/factored trail start & parity is proved, but the trail start is refuted
+by the two-defect boundary-flux identity; this branch cannot presently start \\
+$W_2$ & Meyniel rotor, digon, two-cut, and square transport & substantial
+ordinary and Lean components are proved; integration is incomplete \\
+$W_3$ & Pentagon Lift for the realized good-state move graph & the
+four-block-edge criterion is proved below; one seed in every fibre is a
+strictly stronger condition, false for arbitrary annuli and open in normal
+form \\
+$W_4$ & Route-specific square transport for $\mathrm{WC}^{*}$ & the
+route-specific proof is written; arbitrary-target transport,
+$A\ne\varnothing$, and universal SQ3 connectivity have refutation fixtures \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -113,11 +127,12 @@ not through the erroneous four-neighbour extension.
 
 \subsection{The abstract reductive pumping theorem}
 
-We isolate the exact ordinary-mathematics theorem used by the Seed Lemma.
+We isolate the exact ordinary-mathematics theorem used by either a direct
+zero-Count target or a Lift/Seed target once its physical cut chain is given.
 
 \begin{theorem}[Finite-profile reductive pumping]
 \label{thm:finite-profile-reductive-pumping}
-\Sprose
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FiniteProfilePumping.forall_P_of_base}
 Let $\mathcal T$ be a class of finite open instances with a size
 $|\!\cdot\!|\colon\mathcal T\to\mathbb N$ and a predicate $P$.  Assume:
 \begin{enumerate}
@@ -361,6 +376,8 @@ at most $4B^2+4B$.  A marked face need not obey the locality conclusion, but
 there are at most $h$ of them and retaining each whole boundary costs at most
 $B$ further darts.  Adding these contributions gives $4B^2+4B+hB$.
 \end{proof}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SeparatedGeodesicLocality.index_dist_le_two}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SeparatedGeodesicLocality.carrier_le_of_counts}
 
 Lemma~\ref{lem:geodesic-locality} bounds the faces directly incident with the
 axis near one cut.  It does \emph{not} yet bound the complete interface to the
@@ -502,6 +519,72 @@ Lemma~\ref{lem:cap-restoration-composition}, these are exactly the two
 menu cases.
 \end{proof}
 
+\subsubsection{The actual Lift target is weaker than one seed per fibre}
+
+Write a normalized good word uniquely as
+\[
+ w(s;m,x,y)_{s,s+1,s+2,s+3,s+4}=(m,m,m,x,y),
+ \qquad s\in\mathbb Z/5\mathbb Z,
+\]
+where $(m,x,y)$ is an ordering of the three colours.  The coordinate $s$
+is its \emph{block}.  Thus the thirty good words form five blocks of six.
+The singleton-pair switch and a majority-pair menu-A switch change only the
+ordering $(m,x,y)$ and not $s$.  A menu-B switch for $(m,x)$ joins block
+$s$ to $s+1$, while a menu-B switch for $(m,y)$ joins block $s$ to $s-1$.
+Equivalently, if $v$ is the unique inactive singleton position for the
+chosen majority pair, the installed edge of the five-cycle of blocks is
+\[
+                         e=v+1\pmod 5,
+\]
+where edge $e$ joins blocks $e$ and $e+1$.
+
+\begin{theorem}[four-block-edge Lift criterion]
+\label{thm:four-block-edge-lift}
+\Sprose
+Let $\mathcal C$ be the good-word colouring states of one fixed annular
+tangle.  Suppose:
+\begin{enumerate}
+\item every nonempty fixed-word fibre is connected by inner-avoiding Kempe
+moves;
+\item in each of the five blocks, the nonempty realized word vertices form a
+connected subgraph under within-block moves; and
+\item cap-composed menu-B moves realize at least four of the five adjacent
+edges of the block cycle.
+\end{enumerate}
+Then all states in $\mathcal C$ lie in one Kempe class.  In particular the
+pentagon Lift step holds for this tangle.
+\end{theorem}
+
+\begin{proof}
+Four edges of a five-cycle form a spanning path, so Hypotheses~2 and~3 make
+the realized word graph connected.  Let two colouring states be given and
+choose a path between their words.  At each word edge, Hypothesis~1 first
+moves within the current fibre to the state witnessing that edge; perform
+the corresponding cap-composed move, and continue in the next fibre.
+Hypothesis~1 finally reaches the prescribed target state.  Thus the full
+state graph is connected.  Restoring the uniquely coloured pentagonal cap
+identifies these states and moves with the colourings and Kempe moves in the
+frontier before the cap was opened, which is precisely the Lift conclusion.
+\end{proof}
+
+The later ``one seed in every nonempty good fibre'' formulation is therefore
+a sufficient strengthening, not the target consumed by the word-graph
+argument.  A source-faithful finite audit should retain the majority-pair
+label of every seed and ask which of the five block edges it installs.  The
+reproducible pair-resolved audit is
+\texttt{tools/fourcolor/v24\_plantri\_lift\_bridge\_audit.py}.  This weaker
+criterion does not erase the normal-form issue below: the triangular witness
+realizes no block edge and the square witness realizes only edge~$3$.
+
+On the normal-form generator class, the pair-resolved audit has so far checked
+all $568$ connected annuli at $V=24,26,28,30$.  Every one realizes at
+least four block-cycle edges; no failure occurs.  The exact per-size counts,
+solver version, and scope warning are recorded in
+\texttt{results/fourcolor/v24\_plantri\_lift\_bridge\_audit\_v24\_30.json}.
+This is evidence for Hypothesis~3 of
+Theorem~\ref{thm:four-block-edge-lift}, not a proof of it or of the two
+within-fibre connectivity hypotheses.
+
 \begin{proposition}[the open-tangle implementation predicate is vacuous]
 \label{prop:open-menu-predicate-vacuous}
 \Sprose
@@ -637,7 +720,7 @@ that proof.
 An independent generator audit uses
 \texttt{plantri -a -d -m5 -c5} to enumerate every generated simple cubic
 spherical map of face length at least five and cyclic edge-connectivity at
-least five through $32$ primal vertices.  Across $22$ maps it opens every
+least five through $34$ primal vertices.  Across $45$ maps it opens every
 ordered pair consisting of a pentagonal inner face and an arbitrary
 vertex-disjoint outer face of length $5$ through $8$.  The totals are
 \[
@@ -650,20 +733,31 @@ V&\text{maps}&\text{boundary openings}&\text{connected annuli}
 26&1&108&48&1080/1080\\
 28&3&380&190&3800/3800\\
 30&4&539&294&5390/5390\\
-32&12&1872&1092&18720/18720\\ \hline
-\text{total}&22&3067&1672&30670/30670.
+32&12&1872&1092&18720/18720\\
+34&23&3978&2448&39780/39780\\ \hline
+\text{total}&45&7045&4120&70450/70450.
 \end{array}
 \]
 On the connected source-annulus subset the corresponding total is
-$16720/16720$.  Every SAT seed witness is replayed by an independent
+$41200/41200$.  Every SAT seed witness is replayed by an independent
 literal cap-restored component traversal.  The generator hash, solver
 version, aggregate counts, and explicit warning that this finite absence is
 not a universal proof are recorded in
-\texttt{results/fourcolor/v24\_plantri\_seed\_audit\_v2\_20\_32.json};
+\texttt{results/fourcolor/v24\_plantri\_seed\_audit\_v2\_20\_32.json}
+and \texttt{results/fourcolor/v24\_plantri\_seed\_audit\_v2\_34.json};
 the reproducible driver is
 \texttt{tools/fourcolor/v24\_plantri\_seed\_audit.py}.  This substantially
 strengthens falsification coverage while remaining a test, not a replacement
 for Proposition~\ref{prop:target-forced-cut-chain}.
+
+At $V=36$, a connected-only run over all $71$ generated maps adds
+$8721$ connected annuli and $87210/87210$ seeded/nonempty normalized
+good fibres, with no seedless witness.  Thus the cumulative connected audit
+through $36$ vertices is $128410/128410$ fibres over $12841$ annuli.
+This longer run is recorded separately in
+\texttt{results/fourcolor/v24\_plantri\_seed\_audit\_v36\_connected.json}
+because disconnected openings were connectivity-filtered before SAT rather
+than included in the displayed all-opening table.
 
 These data are deliberately not promoted to a theorem.  They do, however,
 separate the two phenomena which L1 had conflated: the same Goldberg family
@@ -676,19 +770,21 @@ audit.
 \begin{proposition}[target-forced compositional cut chain]
 \label{prop:target-forced-cut-chain}
 \Sopen
-For each fixed boundary type of the Seed system, there are computable
-constants \(b,m,V_0\) with the
+For each fixed boundary and acceptance type of the chosen direct-Count or
+Lift system, there are computable constants \(b,m,V_0\) with the
 following property.  Every ladder-irreducible target counterexample of size
 greater than \(V_0\) either has a strictly smaller target counterexample, or
 contains more than \(m\) pairwise nested simple ordered transversals, each
 meeting at most \(b\) graph edges, such that:
 \begin{enumerate}
-\item consecutive transversals bound nonempty composable slabs;
+\item consecutive transversals bound composable slabs containing at least one
+graph vertex;
 \item the designated holes and frozen boundary lie outside the slabs;
 \item every transversal has an exact saturated deletion side and a cycle on
 each complementary side; and
-\item equality of the finite cumulative target profile at two transversals
-constructs a smaller instance with the same zero target count.
+\item all transversals carry one common finite ordered geometric seam type,
+and cumulative target Count factors exactly through the associated boundary
+state.
 \end{enumerate}
 Here \(m\) is at least the cardinality of the finite cumulative profile
 carrier at width \(b\).
@@ -699,6 +795,112 @@ the geometric outputs which the existing Lean interfaces consume: a simple
 transversal, its crossed-edge set, an exact deletion component boundary, two
 cyclic sides, and the correspondence used for surgery.  A chord wall, an
 induced dual path, or a bounded local collar supplies only part of this data.
+
+There is a second, equally compositional way to state the same structural
+risk.  It replaces a linear corridor by a bounded-width decomposition tree.
+This is not asserted by the working manuscript, but it is a useful repair
+normal form because its generic half is elementary and its target-specific
+half has one unmistakable statement.
+
+\begin{theorem}[finite-interface pumping on a decomposition tree]
+\label{thm:finite-tree-interface-pumping}
+\Sprose
+Let \(X\) be an instance with a reduced rooted binary interface decomposition
+\(T\).  Suppose:
+\begin{enumerate}
+\item each node introduces at most \(c\) vertices, every vertex is introduced
+at exactly one node, and every proper ancestor--descendant segment contains
+some introduced material;
+\item every node carries one of finitely many ordered interface types and an
+exact context state, with \(q\) typed states in total; and
+\item whenever a proper ancestor \(u\) and descendant \(v\) have the same
+typed state, replacing the piece below \(u\) by the piece below \(v\) is a
+valid composition, strictly decreases size, and preserves the target truth
+value in the exterior context.
+\end{enumerate}
+If \(X\) is minimal among target counterexamples, then
+\[
+                         |V(X)|\le c(2^q-1).
+\]
+\end{theorem}
+
+\begin{proof}
+No root-to-leaf path in \(T\) contains more than \(q\) nodes.  Otherwise two
+nodes on that path have the same typed state.  They are comparable, and
+Hypotheses~1 and~3 replace the higher piece by the lower one to produce a
+strictly smaller target counterexample, contrary to minimality.
+
+A rooted binary tree whose longest root-to-leaf path contains at most \(q\)
+nodes has at most
+\(1+2+\cdots+2^{q-1}=2^q-1\) nodes.  Since every graph vertex is introduced
+once and a node introduces at most \(c\) vertices, the displayed bound
+follows.
+\end{proof}
+
+For an ordered boundary of size at most \(k\), the manuscript's data---edge
+colours, the two noncrossing connectivity relations, capped face progress,
+and the target-specific accepting bit---form a finite typed context state.
+Theorem~\ref{thm:finite-tree-interface-pumping} therefore shows that
+\emph{bounded interface width is already enough}; a long literal tube is one
+convenient decomposition, not the logical essence of the descent.
+
+The planar grid theorem of Robertson and Seymour
+(``Graph minors III: planar tree-width'', 1984,
+doi:10.1016/0095-8956(84)90013-3) says that, for every fixed planar graph
+\(H\), graphs excluding \(H\) as a minor have bounded treewidth.  Taking
+\(H\) to be a sufficiently large wall yields the following exact alternative
+research seam.
+
+\begin{proposition}[wall form of the target-forced gap]
+\label{prop:target-forced-wall}
+\Sconditional{large embedded wall gives positivity or strict target-free reduction; exact bounded-width context replacement}
+Fix the normal-form class and one direct-Count or Lift target.  Suppose there
+is an \(r\) such that every normal-form instance containing an embedded
+\(r\)-wall either has positive target, or admits a strictly smaller
+normal-form instance with the same zero target.  Suppose also that the finite
+context state at the resulting bounded treewidth is exact and equal states
+admit the physical replacement of
+Theorem~\ref{thm:finite-tree-interface-pumping}.  Then zero-target
+counterexamples have an effective size bound, and a route-native finite base
+proves the target universally.
+\end{proposition}
+
+\begin{proof}
+Choose a minimal zero-target counterexample.  If it contained an embedded
+\(r\)-wall, positivity would contradict its zero target and the other branch
+would contradict minimality.  Thus the wall is excluded.  For completeness,
+the minor form of the planar grid theorem is sufficient here: a wall is
+subcubic, so in a minor model one
+may prune each connected branch set to the minimal tree spanning its at most
+three incident model edges.  The three terminal paths meet at one branch
+vertex and otherwise may be chosen internally disjoint; doing this in every
+disjoint branch set produces a subdivision of the wall as a subgraph, with
+the inherited planar embedding.  Hence exclusion of the embedded wall bounds
+treewidth by a constant depending only on \(r\).  Convert a width-bounded
+decomposition to a
+reduced nice binary decomposition; its ordered bags have a fixed finite set
+of types, and exact finite context semantics gives a finite number \(q\) of
+typed states.  Theorem~\ref{thm:finite-tree-interface-pumping} supplies an
+effective vertex bound.  The claimed finite-base conclusion follows by
+checking all route-native instances up to that bound.
+\end{proof}
+
+This proposition does not make the hard step disappear.  It identifies it:
+
+\[
+ \boxed{\text{a fixed embedded wall in a zero-target normal-form instance
+ forces a strict zero-target reduction}.}
+\]
+
+The Goldberg audits are consistent with this formulation: their interface
+width grows, so they inhabit the wall branch, and every tested good fibre is
+seeded.  They are evidence, not a proof of the boxed assertion.  The tree
+form also carries an engineering price: the present literal factorization is
+linear-Cell code, whereas this alternative needs exact introduce, forget, and
+join semantics.  It should therefore be adopted only if it proves the wall
+lemma more naturally than the two-directional corridor construction; it is
+not permission to count generic planar configurations or revive a classical
+unavoidable catalogue.
 
 \begin{proposition}[two exhaustive geometric branches for the global corridor]
 \label{prop:global-corridor-alternative}
@@ -773,6 +975,93 @@ the graph-level dichotomy nor the splice.
 
 \subsection{The exact finite interface}
 
+The colouring part of the finite-state claim does not depend on the current
+Cell--3 carrier.  It is the following elementary fibre-product theorem.
+
+\begin{theorem}[bounded-interface Count is a strict composition law]
+\label{thm:bounded-interface-count-composition}
+\Sprose
+Let \(\mathcal C=\{r,b,p\}\).  A finite tangle \(T\) has disjoint ordered
+input and output port sets \(I,O\), and
+\(\operatorname{Col}_T(x,y)\) denotes its proper nonzero Tait colourings with
+input word \(x\in\mathcal C^I\) and output word
+\(y\in\mathcal C^O\).  Put
+\[
+        M_T(x,y)=|\operatorname{Col}_T(x,y)|.
+\]
+Suppose \(T_2\circ T_1\) is obtained by identifying the output ports \(J\)
+of \(T_1\) with the equally ordered input ports of \(T_2\), deleting the
+temporary stub vertices, and making no other identification.  Then
+\[
+ \operatorname{Col}_{T_2\circ T_1}(x,z)
+ \;\cong\;
+ \coprod_{y\in\mathcal C^J}
+       \operatorname{Col}_{T_1}(x,y)\times
+       \operatorname{Col}_{T_2}(y,z),                 \tag{C1}
+\]
+naturally in \(x,z\).  Consequently
+\[
+                   M_{T_2\circ T_1}=M_{T_1}M_{T_2}.   \tag{C2}
+\]
+After Booleanizing positive entries, the support relation
+\[
+ R_T=\{(x,y):M_T(x,y)>0\}
+\]
+satisfies \(R_{T_2\circ T_1}=R_{T_1};R_{T_2}\).  For port width at most
+\(b\), there are at most \(2^{3^{2b}}\) such relations.
+\end{theorem}
+
+\begin{proof}
+Restrict a colouring of the composite to the two tangles.  The restrictions
+have one common colour on every identified port, hence determine a unique
+middle word \(y\) and an element of the corresponding summand on the
+right-hand side of (C1).
+
+Conversely, take two proper colourings in one summand.  Their common middle
+word says exactly that the two colours on every pair of identified stubs
+agree.  Delete the temporary stubs and give the resulting seam edge that
+common colour.  Every old internal vertex retains its three distinct
+nonzero incident colours, and no new vertex is created, so the glued
+colouring is proper.  Restriction and gluing are inverse operations.  Taking
+cardinalities of the disjoint union gives (C2), and replacing positive
+natural numbers by truth values gives relational composition.  There are
+\(3^b\) possible words on each side, hence \(3^{2b}\) possible ordered word
+pairs and at most \(2^{3^{2b}}\) relations.
+\end{proof}
+
+\begin{corollary}[exact cumulative support update]
+\label{cor:bounded-interface-support-update}
+\Sprose
+For a serial word \(T_1,\ldots,T_n\), let \(S_i\subseteq\mathcal C^J\)
+be the boundary words extendable across the first \(i\) pieces.  Then
+\[
+ S_{i+1}=\{y:\exists x\in S_i,\ (x,y)\in R_{T_{i+1}}\}.              \tag{C3}
+\]
+If \(S_i=S_j\) for \(i<j\), deleting the block
+\(T_{i+1},\ldots,T_j\) leaves the final accepting support unchanged.
+Port reordering merely conjugates every relation by the induced permutation,
+so canonical relabelling is representation-invariant.
+\end{corollary}
+
+\begin{proof}
+Equation (C3) is the Boolean form of (C2).  Equal supports followed by the
+same suffix remain equal by induction over that suffix.  For a port
+permutation \(\sigma\), restriction reads the relabelled word as
+\(x\circ\sigma^{-1}\); applying this bijection at both ends conjugates the
+relation and preserves composition and terminal nonemptiness.
+\end{proof}
+
+Thus the direct zero-Count automaton never needs a global colouring of the
+unprocessed graph.  Its state is the \emph{set of boundary words currently
+extendable through the processed prefix}; its letters are literal tangle
+relations.  Connectivity, bridgelessness, cyclic side data, and capped face
+progress are additional finite \emph{geometric} interface fields needed by
+the physical replacement theorem.  They are not licences to ask for a
+whole-annulus Tait colouring.  At fixed width each field has finitely many
+values (partitions of a finite port set, bounded incidence bits, and capped
+lengths), and its update must be proved from the literal composition just as
+(C1) was.
+
 The manuscript's profile has three kinds of observable data:
 \begin{enumerate}
 \item the colours of edges crossing the cut;
@@ -780,19 +1069,61 @@ The manuscript's profile has three kinds of observable data:
 \item capped progress of faces crossing the cut.
 \end{enumerate}
 
-\begin{theorem}[exact rooted factorization of one positive Cell]
+\begin{proposition}[global opened-annulus face uniqueness is false]
+\label{prop:opened-global-face-uniqueness-refuted}
+\Srefuted{dodecahedral two-cap opening; ten shared interior edges}
+Pairwise uniqueness of shared interior face edges does not hold on the
+literal annular carrier obtained by opening two faces of a normal-form map.
+In particular it cannot be supplied globally to the current rooted
+factorization interface.
+\end{proposition}
+
+\begin{proof}
+Open two opposite pentagonal faces of the dodecahedral map, deleting the ten
+cap-cycle edges but retaining their vertices as degree-one stubs.  The opened
+map is connected, with $V=20$, $E=20$, and hence $F=2$.  Its ten stub
+edges are bridges, while each of the other ten edges is incident to both face
+orbits.  Thus the two distinct opened faces share ten interior edges, not at
+most one.
+
+For exact replay, the two deleted facial cycles are
+
+\[
+ (0,1,5,6,2),\qquad (14,18,19,16,15),
+\]
+and the ten shared edges are
+\[
+\begin{split}
+ &(3,8),(3,9),(4,9),(4,10),(7,8),\\
+ &(7,13),(10,11),(11,17),(12,13),(12,17).
+\end{split}
+\]
+The opened rotation has SHA-256 fingerprint
+\texttt{f109f292c33df0ae4eff0403a23efb424979ddba8ecc8ef2d14d16c54360c862}.
+The independent rotation traversal also checked every connected normal-form
+opening generated by \texttt{plantri -a -d -m5 -c5} through $34$ vertices:
+all $4120$ violate the global premise.  The reproducible falsification
+audit and its compact certificate are
+\texttt{tools/fourcolor/v24\_open\_annulus\_face\_uniqueness\_audit.py} and
+\texttt{results/fourcolor/v24\_open\_annulus\_face\_uniqueness\_20\_34.json}.
+The single dodecahedral witness proves the proposition; the larger sweep only
+shows that the problem is structural rather than exceptional.
+\end{proof}
+
+\begin{theorem}[conditional Cell--3 rooted factorization of one positive Cell]
 \label{thm:exact-rooted-cell-factorization}
-\Sconditional{pairwise uniqueness of shared interior face edges}
+\Sconditional{ClosedWebAtGoodWord carrier; global premise (U), refuted on its opened annulus}
 Assume the positioned Cell geometry satisfies
 \[
   \tag{U}
   F\ne F'\quad\Longrightarrow\quad
   |\operatorname{sharedInteriorEdges}(F,F')|\le1.
 \]
-Fix an executable corridor position together with the next two positions needed
-by the rolling root.  Let $p$ be an everywhere-positive cumulative-prefix
-colouring, and let $c$ be a positive literal Cell colouring which agrees with
-$p$ on their actual overlap.  Write $s(p)$ for the canonical rooted state at
+Fix a Cell--3 closed-web-at-good-word instance with global proper Tait
+colouring $p$, and an executable corridor position together with the next two
+positions needed by the rolling root.  Let $c$ be a positive literal Cell
+colouring which agrees with the restriction of $p$ on their actual overlap.
+Write $s(p)$ for the canonical rooted state at
 the incoming cut, $a(p,c)$ for the finite Cell--rebase letter extracted from
 the two colourings, and $p\diamond c$ for their right-biased splice.  Then:
 \begin{enumerate}
@@ -855,16 +1186,61 @@ profiles the compression map is injective, endpoint by endpoint, which proves
 the final cardinality statement.
 \end{proof}
 
+\begin{proposition}[the Cell--3 carrier is not supplied by a direct Count obstruction]
+\label{prop:closed-web-carrier-not-direct-count}
+\Sprose
+An arbitrary zero-accepting-Count instance does not supply an object of type
+\texttt{ClosedWebAtGoodWord.Instance} on its opened annulus.  If the annulus
+itself has zero Tait count then such an object is impossible; even when the
+annulus is colourable, the direct hypothesis supplies neither a totally
+closed colouring nor a good inner word.
+\end{proposition}
+
+\begin{proof}
+The type contains a proper edge colouring of the whole opened graph;
+properness is bundled into \texttt{EdgeColoring}, while its \texttt{tait}
+field supplies nonzeroness.  Hence an inhabitant already proves that the open
+graph has positive Tait count.  In the colourable case the additional
+\texttt{totallyClosed} and \texttt{goodWord} fields are still extra
+existential witnesses, absent from the direct obstruction premise.  Neither
+follows from zero terminal acceptance of the corresponding closed map.
+\end{proof}
+
 The six cited Lean declarations are machine-checked with (U) as an explicit
-hypothesis; they do not prove (U).  This premise had previously been omitted
-from the prose statement.  For an ambient bridgeless cyclically
-five-edge-connected cubic map, two faces sharing two edges would expose a
-primal two-edge cut (or a digon), so the corresponding ambient assertion is
-expected from the established normal form.  The remaining obligation is to
-prove that opening the cap and forming the literal Cell does not create a new
-pair of \emph{interior} faces with two shared edges.  Until that cap-deletion
-adapter is proved, the exact factorization theorem is conditional in exactly
-this one geometric field.
+hypothesis; they do not prove (U).  Proposition~\ref{prop:opened-global-face-uniqueness-refuted}
+shows that no cap-deletion adapter can establish it: opening the caps splices
+ambient faces and destroys global uniqueness on the intended carrier.
+Therefore this conditional theorem is not presently an on-route
+factorization result, and no closure number derived from it is authoritative.
+
+There are therefore two independent repairs.  First, factorization must be
+generalized from the special globally coloured
+\texttt{ClosedWebAtGoodWord.Instance} to a colouring-independent annular Cell
+context together with the partial positive prefix and literal Cell witnesses
+used by cumulative Count.  A total colouring of the opened annulus may be
+used to prove that one particular run is sound, but it cannot define the
+autonomous letter relation: doing so would make the available transitions
+depend on extendability through the unprocessed suffix.  In particular no
+theorem on the direct path may obtain prefix properness from the type of the
+ambient \texttt{EdgeColoring} or prefix nonzeroness from \texttt{web.tait}.
+Second, face lookup must be local, not a stronger global hypothesis.  The
+closed minimal map does satisfy ambient pairwise uniqueness.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MinimalFaceIntersections.pairwiseUniqueSharedInteriorEdges}
+If two corridor faces are fully retained by the opening, their open images
+still share at most one edge; the tree proves this both for arbitrary retained
+ambient faces and for every pair of retained corridor faces.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OpenRegionFaceIntersectionTransport.openMinimalFaceOrbits_sharedInteriorEdges_card_le_one}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OpenRegionFaceIntersectionTransport.openMinimalCorridorFaces_sharedInteriorEdges_card_le_one}
+The selected common-neighbour incidence calculation likewise identifies the
+two local flanks without reinstating global uniqueness.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalCommonNeighborIncidence.face_eq_before_or_after_of_commonNeighborVertexIncidenceAt}
+The remaining Lean task is consequently to inventory both dependencies:
+replace every use of the global colouring by its rooted prefix/Cell witness,
+replace every globally chosen shared edge by the appropriate retained-face or
+pointwise-incidence theorem, and keep boundary-spliced faces out of the simple
+interior-dual lookup.  This is a carrier-generalizing,
+hypothesis-minimizing refactor of the factorization, not a new geometric
+assumption.
 
 The Lean transition uses a conservative three-pair refinement internally and
 then projects to exactly the two families named by the manuscript.  It proves
@@ -887,18 +1263,21 @@ the live $(2,1,4)$ shape its carrier is exactly sixteen times larger:
 This equality is machine-checked.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SourceTerminalAwareProfileCompression.boundedTerminalAwareCompressedProfileCount_two_one_four_eq}
 
-Theorem~\ref{thm:exact-rooted-cell-factorization} settles manuscript-exact
-one-cell behavioural factorization.  It does not yet justify a numerical
-closure count, because the exact realized letter and initial images are still
-specified as finite images of literal ambient witnesses.  That is a semantic
-specification, not yet a practical enumerator.
+Theorem~\ref{thm:exact-rooted-cell-factorization} checks the Cell--3 algebra
+under (U), but Propositions~\ref{prop:opened-global-face-uniqueness-refuted}
+and~\ref{prop:closed-web-carrier-not-direct-count} prevent applying it to the
+direct source target.  Even after both refactors it will not by itself justify
+a numerical closure count: the exact realized letter and initial images are
+still specified as finite images of literal ambient witnesses.  That is a
+semantic specification, not yet a practical enumerator.
 
 \begin{proposition}[Exact closure gate]
 \label{prop:exact-closure-gate}
 \Sopen
-For each relevant corridor type, produce a finite raw-profile array $Q$, a
-finite array $A$ of \emph{physical} Cell types, an initial array $I\subseteq
-Q$, and a letter-labelled edge array
+For each relevant corridor type and target semantics, produce a finite
+raw-profile array $Q$, a finite array $A$ of \emph{physical} Cell types, an
+initial array $I\subseteq Q$, an accepting array $F\subseteq Q$, and a
+letter-labelled edge array
 $E\subseteq Q\times A\times Q$ such that
 \[
  q\in I\quad\Longleftrightarrow\quad
@@ -909,6 +1288,11 @@ and
  (q,a,q')\in E\quad\Longleftrightarrow\quad
  (q,q')\text{ is produced by a compatible positive prefix/Cell witness
  of physical type }a.
+\]
+Also prove
+\[
+ q\in F\quad\Longleftrightarrow\quad
+ q\text{ has a literal terminal realization satisfying the chosen target.}
 \]
 The letter index must forget the colouring witness while retaining every
 geometric choice on which the literal Cell count depends; an unlabelled union
@@ -930,11 +1314,22 @@ Then, and only then, these array lengths are the exact raw, cumulative-support,
 and observational state counts for that corridor type.
 \end{proposition}
 
-The accepting set in this proposition is the cap-composed predicate of
-Definition~\ref{def:cap-composed-pair-relation}.  Replaying closure against
-the open-tangle predicate of
+There are two different accepting arrays.  For the Lift/Seed system, $F$ is
+the cap-composed predicate of
+Definition~\ref{def:cap-composed-pair-relation}.  Replaying that closure
+against the open-tangle predicate of
 Proposition~\ref{prop:open-menu-predicate-vacuous} would certify only that a
-nonempty good fibre is nonempty; it would not test the Seed conclusion.
+nonempty good fibre is nonempty; it would not test the Seed conclusion.  For
+the direct Count system, $F$ instead consists of terminal profiles whose
+literal boundary closure is a proper Tait colouring of the closed instance.
+The direct descent consumes
+\[
+  S_n\cap F=\varnothing
+  \quad\Longleftrightarrow\quad
+  \text{the restored closed map has zero Tait count},
+\]
+not menu B.  The transition carrier may be shared, but these accepting
+predicates and their Nerode quotients must not be conflated.
 
 The measured $(5,0)$ certificates remain valuable regression tests, but they
 are not substitutes for this equality theorem: their own headers correctly
@@ -1010,20 +1405,111 @@ It is also exact about its price: raw-profile reachability alone does not
 justify it, and the worst-case state count is $2^{|Q|}$ before reachable-state
 minimization.
 
+\begin{lemma}[two boundary-essential sides glue bridgelessly]
+\label{lem:boundary-essential-gluing}
+\Sprose
+Let \(H\) and \(K\) be finite connected graphs, each with \(k\ge2\) ordered
+boundary half-edges.  Call a side \emph{boundary-essential} if, for every
+bridge of the side, both components left after deleting that bridge contain
+a boundary half-edge.  Glue the \(i\)-th half-edge of \(H\) to the \(i\)-th
+half-edge of \(K\) for every \(i\).  Then the glued graph is connected and
+bridgeless.
+\end{lemma}
+
+\begin{proof}
+Connectivity follows because each side is connected and at least one seam
+edge joins them.  Consider an old edge \(e\) of \(H\).  If \(e\) is not a
+bridge of \(H\), an \(H\)-path already bypasses it.  If it is a bridge, its
+two components contain boundary ports \(i\) and \(j\).  Travel from one end
+of \(e\) inside its component to port \(i\), cross to \(K\), use
+connectedness of \(K\) to reach port \(j\), and cross back to the other
+component.  This is a path between the ends of \(e\) avoiding \(e\).
+The same argument handles old edges of \(K\).
+
+Finally take a seam edge \(i\).  Choose \(j\ne i\).  Connectedness of \(H\)
+and \(K\), together with seam edge \(j\), gives a path between the ends of
+seam edge \(i\) which avoids it.  Thus no edge of the glued graph is a
+bridge.
+\end{proof}
+
+\begin{lemma}[a saturated side of a bridgeless graph is boundary-essential]
+\label{lem:saturated-side-boundary-essential}
+\Sprose
+Let \(G\) be bridgeless and let \(H\) be a connected vertex side of an edge
+cut, with every edge from \(H\) to \(G-H\) represented by a boundary
+half-edge.  Then \(H\) is boundary-essential.
+\end{lemma}
+
+\begin{proof}
+If a bridge \(e\) of \(H\) left a component \(C\) containing no boundary
+half-edge, saturation says that no edge of \(G\) leaves \(C\) except \(e\).
+Then \(e\) would be a bridge of \(G\), a contradiction.
+\end{proof}
+
+\begin{theorem}[physical deletion between equal nested noose states]
+\label{thm:physical-noose-deletion}
+\Sprose
+Let \(G\) be a connected bridgeless cubic spherical map.  Let
+\(\gamma_i,\gamma_j\), with \(i<j\), be disjoint nested simple nooses which
+avoid vertices and each cross exactly \(k\ge2\) edges.  Suppose their ordered
+crossing sets carry a specified orientation-reversing bijection, their
+retained sides are connected and saturated, and the annular slab between
+them contains a graph vertex.  Delete that slab and glue the paired boundary
+half-edges.  Then the result \(G'\) is a strictly smaller connected
+bridgeless cubic spherical map.
+
+If, in addition, the two cuts have the same exact cumulative Count-support
+state and the same finite geometric seam type, then \(G'\) has an accepting
+Tait colouring exactly when \(G\) does.  Hence zero accepting Count is
+preserved.
+\end{theorem}
+
+\begin{proof}
+Each noose bounds a disc on the sphere.  Retain the disc side of the inner
+noose and the complementary disc side of the outer noose.  Identifying their
+boundary circles in reverse cyclic order produces a sphere; pairing the
+crossed half-edges draws the seam without crossings.  Every retained cubic
+vertex loses exactly the cut incidences recorded at its boundary and gains
+the corresponding seam incidences, so its degree remains three.  The two
+retained sides are connected.  By
+Lemma~\ref{lem:saturated-side-boundary-essential} they are
+boundary-essential, and Lemma~\ref{lem:boundary-essential-gluing} makes the
+composite bridgeless.  The deleted slab contains a vertex and none is added,
+so \(G'\) is strictly smaller.
+
+The geometric seam type records the ordered endpoint identifications and any
+local equality data needed by the chosen graph representation; in a
+simple-graph implementation it must in particular reject a loop or duplicate
+edge, while a loopless plane-multigraph implementation may retain parallel
+edges.  Equality of cumulative support states is exactly the hypothesis of
+Theorem~\ref{thm:determinized-support-deletion}.  After the physical
+identification realizes that block deletion, the unchanged suffix and
+terminal closure therefore have the same accepting support in \(G'\) and
+\(G\).  This proves the last assertion.
+\end{proof}
+
+Thus bridgelessness is not an additional global miracle required after the
+splice.  It follows from saturated connected sides and \(k\ge2\).  The real
+remaining physical work is to construct the two nooses with the exact ordered
+seam type and to implement the rotation-system quotient; those are outputs
+already demanded by Proposition~\ref{prop:target-forced-cut-chain}.
+
 \begin{theorem}[direct Count-reductive assembly]
 \label{thm:direct-count-reductive-assembly}
-\Sconditional{Tait bridge; ladder transport; global cut chain; exact labelled Count closure; physical splice; route-native finite base}
+\Sconditional{Tait bridge; ladder transport; target-forced cut chain; exact labelled Count closure; simple-map seam adapter; route-native finite base}
 Assume that every sufficiently large least Tait counterexample can be put,
 by the source's target-preserving local reductions, into a composable corridor
-whose cut roots have one fixed finite type.  Assume the literal Count of each
-physical Cell factors exactly through the labelled finite system of
-Proposition~\ref{prop:exact-closure-gate}.  Assume further that whenever two
-cut positions have the same rooted cumulative support state, deleting the
-intervening nonempty slab constructs a smaller plane cubic instance and
-preserves its final zero Count.  Finally, verify by the same route-native
-semantics that no counterexample exists at or below the resulting effective
-threshold.  Then every bridgeless cubic plane graph is Tait colourable, and
-hence every planar graph is four-colourable.
+whose cut roots satisfy Proposition~\ref{prop:target-forced-cut-chain}.
+Assume the literal Count of each physical Cell factors exactly through the
+labelled finite system of Proposition~\ref{prop:exact-closure-gate}.  If the
+implementation represents maps by simple graphs, also prove that the common
+finite seam type rules out a loop or duplicate seam edge; alternatively work
+in the loopless plane-multigraph category through the splice and normalize
+back by a proved size-decreasing, zero-Count-preserving reduction.  Finally,
+verify by the same route-native semantics that no
+counterexample exists at or below the resulting effective threshold.  Then
+every bridgeless cubic plane graph is Tait colourable, and hence every planar
+graph is four-colourable.
 \end{theorem}
 
 \begin{proof}
@@ -1034,10 +1520,22 @@ Definition~\ref{def:count-support-action} identify the successive cumulative
 supports with a path in the finite determinized system.  The corridor is
 longer than its reachable state count, so two rooted cumulative support
 states repeat.  Theorem~\ref{thm:determinized-support-deletion} preserves the
-empty accepting support, and the physical-splice hypothesis realizes that
-deletion as a strictly smaller plane cubic counterexample.  This contradicts
-minimality.  The Tait bridge gives the Four-Colour Theorem.
+empty accepting support, and Theorem~\ref{thm:physical-noose-deletion}
+realizes that deletion as a strictly smaller counterexample in the same
+bridgeless cubic spherical class.  The simple-map seam adapter or the stated
+normalization returns the representation consumed by minimality.  This
+contradicts minimality.  The Tait bridge gives the Four-Colour Theorem.
 \end{proof}
+
+The word ``bridgeless'' in the splice conclusion is load-bearing.  A cubic
+plane graph with a bridge has zero Tait count for a trivial parity reason, so
+a splice producing a bridge would not contradict minimality inside the class
+to which Tait's equivalence applies.  Planarity, cubicity, connectedness,
+strict size decrease, and zero Count are proved together with bridgelessness
+in Theorem~\ref{thm:physical-noose-deletion}.  What remains representation-
+specific is the rotation-system construction and, for a simple-graph carrier,
+the finite loop/parallel-edge check; neither may be left as an implicit
+property of the drawing.
 
 Theorem~\ref{thm:direct-count-reductive-assembly} is the shortest literal
 implementation of the companion note's instruction to open the instances,
@@ -1055,6 +1553,13 @@ The Good-Word Closed-web Obstruction is false.
 Good-word totally closed webs occur already at ten internal vertices and in a
 growing family.  Consequently the old False-valued GWCO base, its numerical
 threshold, and any reductive supplier targeting that base are retired.
+The dodecahedral opening is the smallest witness but its two cap interfaces
+share one boundary edge.  A non-polar \(C_{30}\) opening at cap faces (4)
+and (12) is the clean annular witness: the cap cycles are vertex- and
+edge-disjoint, and exact enumeration finds six good-word totally closed webs.
+This does not contradict the manuscript's polar \(C_{30}\) and \(C_{40}\)
+censuses, which are reproduced exactly and contain only bad-word closed webs;
+it refutes the universal extrapolation from those laboratories.
 
 The purpose of GWCO was narrower than its statement: it was meant to exclude
 a fibre frozen in an adversarial menu-A state.  At the five-outer-stub
@@ -1107,10 +1612,12 @@ finite base.  It needs neither Trail Completability nor Kauffman factor
 gluing.  At present the decisive open premises are the target-forced global
 cut chain (or both branches of
 Proposition~\ref{prop:global-corridor-alternative}), the cap-correct exact
-closure, the physical profile splice, and the route-native base.  The exact
-finite transition materially reduces the closure premise; it does not make
-the others disappear.  The target-specific square seam is no longer one of
-them: capped colourability rules out a target-free reduction side before any
-migration is needed.  In particular, neither the signed curvature identity
-nor the bounded-face geodesic theorem currently proves
+closure after removing its false global face-uniqueness hypothesis, the
+rotation-system seam constructor and simple-map adapter needed to implement
+the proved ordinary physical splice, and the route-native base.  The conditional finite
+transition organizes the closure premise; it cannot yet be instantiated on
+the source annulus.  The target-specific square seam is no longer one of
+these premises: capped colourability rules out a target-free reduction side
+before any migration is needed.  In particular, neither the signed curvature
+identity nor the bounded-face geodesic theorem currently proves
 Proposition~\ref{prop:target-forced-cut-chain}.

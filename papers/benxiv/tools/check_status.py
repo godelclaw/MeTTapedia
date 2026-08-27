@@ -5,8 +5,10 @@ A document that mixes machine-checked and hand-written results is only
 honest if the machine-checked claims are actually checkable.  This tool
 makes the citations mechanically inspectable: it harvests every
 ``\\Sverified{Decl}`` marker from the LaTeX sources, confirms that ``Decl``
-exists in the Lean source tree, rejects executable proof-hole tokens, and
-emits the appendix ledger table.
+exists in a Git-tracked Lean module, rejects executable proof-hole tokens,
+and emits the appendix ledger table.  Requiring a tracked module is
+load-bearing: an untracked advisor draft is absent from a clean clone and
+cannot support a published ``verified`` marker.
 
 This is deliberately a *citation audit*, not a proof checker.  It neither
 compiles Lean modules nor decides whether the English theorem has the same
@@ -147,13 +149,34 @@ def declaration_module(decl: str, lean_root: pathlib.Path) -> pathlib.Path | Non
     return None
 
 
-def check_verified(entry: dict, lean_root: pathlib.Path) -> tuple[bool, str]:
+def check_verified(
+    entry: dict, lean_root: pathlib.Path, repo_root: pathlib.Path
+) -> tuple[bool, str]:
     decl = entry["payload"]
     if not decl:
         return False, "no declaration named"
     module = declaration_module(decl, lean_root)
     if module is None:
         return False, f"no module found for {decl}"
+    try:
+        relative_module = module.resolve().relative_to(repo_root.resolve())
+    except ValueError:
+        return False, f"{module.name} lies outside the Git worktree"
+    tracked = subprocess.run(
+        [
+            "git",
+            "-C",
+            str(repo_root),
+            "ls-files",
+            "--error-unmatch",
+            str(relative_module),
+        ],
+        check=False,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    if tracked.returncode != 0:
+        return False, f"{module.name} is not Git-tracked"
     source = lean_code_only(module.read_text(encoding="utf-8"))
     short = decl.split(".")[-1]
     if not re.search(rf"(?<![A-Za-z_.]){re.escape(short)}(?![A-Za-z_])", source):
@@ -209,13 +232,23 @@ def main() -> int:
 
     tex_paths = [pathlib.Path(p) for p in args.tex]
     lean_root = pathlib.Path(args.lean_root)
+    repo = subprocess.run(
+        ["git", "-C", str(lean_root), "rev-parse", "--show-toplevel"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if repo.returncode != 0:
+        print(f"Lean root is not inside a Git worktree: {lean_root}", file=sys.stderr)
+        return 2
+    repo_root = pathlib.Path(repo.stdout.strip())
     entries = harvest(tex_paths)
 
     failures = []
     for entry in entries:
         if entry["status"] != "verified":
             continue
-        ok, detail = check_verified(entry, lean_root)
+        ok, detail = check_verified(entry, lean_root, repo_root)
         status = "OK  " if ok else "FAIL"
         print(f"{status} {entry['file']}:{entry['line']}  {detail}")
         if not ok:

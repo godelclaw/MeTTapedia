@@ -218,11 +218,24 @@ def open_face_annulus(
 
 
 def audit_face_annulus(
-    graph: dict[str, Any], outer_face: int, inner_face: int
+    graph: dict[str, Any],
+    outer_face: int,
+    inner_face: int,
+    require_connected: bool = False,
 ) -> dict[str, Any]:
     edges, incidence, inner_spokes, inner_cap, connected = open_face_annulus(
         graph, outer_face, inner_face
     )
+    if require_connected and not connected:
+        return {
+            "outer_face": outer_face,
+            "outer_length": len(graph["face_cycles"][outer_face]),
+            "inner_face": inner_face,
+            "connected": False,
+            "nonempty_good_words": [],
+            "seeded_good_words": [],
+            "seedless_good_words": [],
+        }
     tag = f"g{graph['frequency']}_o{outer_face}_i{inner_face}"
     solver, colours = proper_colouring_solver(edges, incidence, tag)
     nonempty: list[str] = []
@@ -317,7 +330,9 @@ def audit_graph(
                 continue
             if set(graph["face_cycles"][outer_face]) & set(graph["face_cycles"][inner_face]):
                 continue
-            row = audit_face_annulus(graph, outer_face, inner_face)
+            row = audit_face_annulus(
+                graph, outer_face, inner_face, require_connected=connected_only
+            )
             ordered_boundary_instances += 1
             if row["connected"]:
                 connected_annuli += 1

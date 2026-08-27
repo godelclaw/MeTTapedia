@@ -1,0 +1,40 @@
+{
+  "connected_only": true,
+  "first_failure": {
+    "ascii_embedding": "20 bcd,aef,agh,aij,bjk,blg,cfm,cni,dho,dpe,eql,fkr,grn,hms,isp,joq,kpt,ltm,nto,qsr",
+    "graph_hash": "fc840f5a3eec87e33fa0f35072ce051a5278465499572a8d0e5008f28e58578f",
+    "graph_index": 0,
+    "inner_face": 11,
+    "inner_face_cycle": [14, 18, 19, 16, 15],
+    "left_face": 0,
+    "opened_edge_count": 20,
+    "opened_face_count": 2,
+    "opened_rotation_hash": "f109f292c33df0ae4eff0403a23efb424979ddba8ecc8ef2d14d16c54360c862",
+    "outer_face": 0,
+    "outer_face_cycle": [0, 1, 5, 6, 2],
+    "primal_vertices": 20,
+    "right_face": 1,
+    "shared_interior_edges": [
+      [3, 8], [3, 9], [4, 9], [4, 10], [7, 8],
+      [7, 13], [10, 11], [11, 17], [12, 13], [12, 17]
+    ]
+  },
+  "generated_class": "simple cubic spherical maps dual to the requested triangulations",
+  "generator": {
+    "arguments": "-a -d -m5 -c5 (V/2+2)",
+    "binary_sha256": "6288e9f2372a981b8ce93c45c7a33e38700009cffd19579db8ed32012d3151ad",
+    "name": "plantri"
+  },
+  "schema": "fourcolor-v24-open-annulus-face-uniqueness-audit-v1",
+  "scope_warning": "This refutes global pairwise uniqueness on the recorded literal opened annulus.  It does not refute local uniqueness for two fully retained ambient face images.",
+  "sizes": [
+    {"connected_openings": 12, "graphs": 1, "openings_audited": 12, "pairwise_unique_failures": 12, "pairwise_unique_successes": 0, "primal_vertices": 20},
+    {"connected_openings": 0, "graphs": 0, "openings_audited": 0, "pairwise_unique_failures": 0, "pairwise_unique_successes": 0, "primal_vertices": 22},
+    {"connected_openings": 36, "graphs": 1, "openings_audited": 36, "pairwise_unique_failures": 36, "pairwise_unique_successes": 0, "primal_vertices": 24},
+    {"connected_openings": 48, "graphs": 1, "openings_audited": 48, "pairwise_unique_failures": 48, "pairwise_unique_successes": 0, "primal_vertices": 26},
+    {"connected_openings": 190, "graphs": 3, "openings_audited": 190, "pairwise_unique_failures": 190, "pairwise_unique_successes": 0, "primal_vertices": 28},
+    {"connected_openings": 294, "graphs": 4, "openings_audited": 294, "pairwise_unique_failures": 294, "pairwise_unique_successes": 0, "primal_vertices": 30},
+    {"connected_openings": 1092, "graphs": 12, "openings_audited": 1092, "pairwise_unique_failures": 1092, "pairwise_unique_successes": 0, "primal_vertices": 32},
+    {"connected_openings": 2448, "graphs": 23, "openings_audited": 2448, "pairwise_unique_failures": 2448, "pairwise_unique_successes": 0, "primal_vertices": 34}
+  ]
+}

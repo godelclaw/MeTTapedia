@@ -1,0 +1,35 @@
+{
+  "colour_symmetry": "majority fixed to 0; all global colour permutations represented",
+  "counterexample_scope": "connected opened annuli only",
+  "first_seedless_witness": null,
+  "generated_class": "duals of spherical triangulations with minimum degree 5 and requested connectivity 5: simple cubic plane maps with face length >=5",
+  "generator": {
+    "arguments": "-a -d -m5 -c5 (V/2+2)",
+    "binary_sha256": "6288e9f2372a981b8ce93c45c7a33e38700009cffd19579db8ed32012d3151ad",
+    "name": "plantri",
+    "source": "https://users.cecs.anu.edu.au/~bdm/plantri/",
+    "version": "5.8 (2026-03-04)"
+  },
+  "good_word_representatives": [
+    "00012", "00021", "00120", "00210", "01200",
+    "02100", "10002", "12000", "20001", "21000"
+  ],
+  "schema": "fourcolor-v24-plantri-seed-audit-v2",
+  "scope_warning": "Exhaustive only through the requested finite order; SAT witnesses are replayed literally, but absence of a witness is not a universal proof.",
+  "sizes": [
+    {
+      "connected_annuli_audited": 8721,
+      "connected_nonempty_good_fibres": 87210,
+      "connected_seeded_good_fibres": 87210,
+      "disconnected_boundary_instances_audited": 4845,
+      "graphs": 71,
+      "nonempty_good_fibres": 87210,
+      "ordered_boundary_instances_audited": 13566,
+      "outer_length_counts": {"5": 9534, "6": 3174, "7": 747, "8": 93, "9": 18},
+      "primal_vertices": 36,
+      "seeded_good_fibres": 87210,
+      "seedless_good_fibres": 0
+    }
+  ],
+  "solver": "z3-4.16.0"
+}

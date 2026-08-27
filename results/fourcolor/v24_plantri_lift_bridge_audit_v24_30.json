@@ -1,0 +1,57 @@
+{
+  "block_edge_index": "edge e joins majority-run block e to e+1 modulo five; for a pair, e is one plus its inactive singleton position modulo five",
+  "connected_only": true,
+  "first_failure": null,
+  "generator": {
+    "arguments": "-a -d -m5 -c5 (V/2+2)",
+    "binary_sha256": "6288e9f2372a981b8ce93c45c7a33e38700009cffd19579db8ed32012d3151ad",
+    "name": "plantri"
+  },
+  "partial_graph_limit": null,
+  "schema": "fourcolor-v24-plantri-lift-bridge-audit-v1",
+  "scope_warning": "Finite success is evidence only.  A failure refutes this sufficient four-block-edge condition for the recorded annulus, not necessarily the exact realized-word connectivity predicate.",
+  "sizes": [
+    {
+      "annuli_audited": 96,
+      "annuli_with_nonempty_good_fibre": 36,
+      "connected_annuli_audited": 36,
+      "four_block_edge_failures": 0,
+      "four_block_edge_successes": 36,
+      "graphs_audited": 1,
+      "graphs_generated": 1,
+      "primal_vertices": 24
+    },
+    {
+      "annuli_audited": 108,
+      "annuli_with_nonempty_good_fibre": 48,
+      "connected_annuli_audited": 48,
+      "four_block_edge_failures": 0,
+      "four_block_edge_successes": 48,
+      "graphs_audited": 1,
+      "graphs_generated": 1,
+      "primal_vertices": 26
+    },
+    {
+      "annuli_audited": 380,
+      "annuli_with_nonempty_good_fibre": 190,
+      "connected_annuli_audited": 190,
+      "four_block_edge_failures": 0,
+      "four_block_edge_successes": 190,
+      "graphs_audited": 3,
+      "graphs_generated": 3,
+      "primal_vertices": 28
+    },
+    {
+      "annuli_audited": 539,
+      "annuli_with_nonempty_good_fibre": 294,
+      "connected_annuli_audited": 294,
+      "four_block_edge_failures": 0,
+      "four_block_edge_successes": 294,
+      "graphs_audited": 4,
+      "graphs_generated": 4,
+      "primal_vertices": 30
+    }
+  ],
+  "solver": "z3-4.16.0",
+  "target": "at least four of the five good-word block-cycle edges have a cap-correct menu-B witness for some majority pair"
+}

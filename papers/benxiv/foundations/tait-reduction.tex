@@ -368,20 +368,17 @@ face separates.
 
 \begin{remark}[where the last classical debt lands]
 \Sprose
-Within the unused maximality route, the residual reduces to a single named
-development: combinatorial
-separation for rotation systems --- the statement that an embedded cycle
-divides the remaining darts into two sides that no edge crosses. Given it,
-the maximality step is routine: on a face of length at least four, if the
-first and third vertices are already adjacent then the cycle through them
-separates the second vertex from the fourth, so those two are non-adjacent
-and their join lies inside the face.
+Within the unused maximality route, combinatorial separation for rotation
+systems is available in dual form below.  An earlier draft then claimed that,
+on a face of length at least four, a chord through the first and third
+vertices separates the second vertex from the fourth.  That inference is
+wrong: the second vertex lies on the resulting three-cycle.  Recovering the
+maximality route would require the additional rotation-at-the-second-vertex
+argument discussed below; the controlling stellar route needs none of it.
 
-This is the one place in the classical boundary where a separation argument
-is genuinely required, as against the several places where it appeared to be
-and was not. It is generic planarity theory rather than anything peculiar to
-this route, and no current library provides it.  It is not needed by the
-stellar route used above.
+This is retained only as an audit of a discarded proof route.  The generic
+dual separation result is useful elsewhere, but it does not by itself prove
+the vertex non-adjacency asserted by the former maximality argument.
 \end{remark}
 
 \paragraph{Separation may already be available.}
