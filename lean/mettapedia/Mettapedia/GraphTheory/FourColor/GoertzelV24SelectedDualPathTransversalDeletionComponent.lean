@@ -186,6 +186,85 @@ theorem exists_primalCutComponent_exactBoundary_of_euler
     _ = pair.primalCutEdges data :=
       pair.selectedDualCycle_crossingEdges_eq_primalCutEdges data
 
+/-- Select the exact-boundary component containing the distinguished outer
+dart, together with a vertex genuinely removed from that component. -/
+theorem exists_outer_primalCutComponent_exactBoundary_and_removed_of_euler
+    (data : Data G)
+    (hdual : (interiorDualGraph
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace data.toRotationSystem))).Connected)
+    (hconnected : G.Connected)
+    (heuler : (Fintype.card V : Int) - Fintype.card G.edgeSet +
+      Fintype.card (OrbitFace data.toRotationSystem) = 2)
+    {start finish : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (pair : SeparatedAlignedSelectedDualTransversals
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem)) start finish)
+    (hsupportTwoSided : ∀ face,
+      face ∈ pair.selectedDualCycle.walk.support → ∀ dart,
+        dartOrbitFace data.toRotationSystem dart = face.1 →
+          dartOrbitFace data.toRotationSystem dart ≠
+            dartOrbitFace data.toRotationSystem
+              (data.toRotationSystem.alpha dart)) :
+    ∃ component : (G.deleteEdges
+        (edgeFinsetValueSet (pair.primalCutEdges data))).ConnectedComponent,
+      ∃ removed : V,
+        data.toRotationSystem.vertOf data.toRotationSystem.outer ∈
+            component.supp ∧
+        removed ∉ component.supp ∧
+        componentCrossingEdges (pair.primalCutEdges data) component =
+          pair.primalCutEdges data := by
+  let root := data.toRotationSystem.vertOf data.toRotationSystem.outer
+  let removedEdges := pair.primalCutEdges data
+  let deleted := G.deleteEdges (edgeFinsetValueSet removedEdges)
+  let outerComponent : deleted.ConnectedComponent :=
+    deleted.connectedComponentMk root
+  have houterMem : root ∈ outerComponent.supp := by
+    exact SimpleGraph.ConnectedComponent.connectedComponentMk_mem
+  have hdelete := pair.not_connected_deleteEdges_primalCutEdges
+    data hdual hconnected heuler
+  rcases exists_component_not_mem_root_of_not_connected
+      removedEdges root hdelete with ⟨other, hrootOther⟩
+  have hdistinct : outerComponent ≠ other := by
+    intro heq
+    exact hrootOther (heq ▸ houterMem)
+  rcases other.nonempty_supp with ⟨removed, hremovedOther⟩
+  have hremovedNotOuter : removed ∉ outerComponent.supp := by
+    intro hremovedOuter
+    exact hdistinct (SimpleGraph.ConnectedComponent.eq_of_common_vertex
+      hremovedOuter hremovedOther)
+  have hcomponentNonempty :
+      (componentCrossingEdges removedEdges outerComponent).Nonempty :=
+    componentCrossingEdges_nonempty_of_distinct
+      hconnected removedEdges outerComponent other hdistinct
+  let side : V → Prop := fun vertex => vertex ∈ outerComponent.supp
+  have hcomponentLocal : componentCrossingEdges removedEdges outerComponent =
+      localCrossingEdgeFinset G side := by
+    exact pair.componentCrossingEdges_eq_localCrossingEdgeFinset
+      data outerComponent
+  have hsubset : localCrossingEdgeFinset G side ⊆
+      pair.selectedDualCycle.crossingEdges := by
+    rw [← hcomponentLocal,
+      pair.selectedDualCycle_crossingEdges_eq_primalCutEdges data]
+    exact componentCrossingEdges_subset_removed removedEdges outerComponent
+  have hnonempty : (localCrossingEdgeFinset G side).Nonempty := by
+    rw [← hcomponentLocal]
+    exact hcomponentNonempty
+  have hsaturated :=
+    crossingEdgeFinset_eq_crossingEdges_of_isCycle_of_subset_of_supportTwoSided
+      data pair.selectedDualCycle side hsubset hnonempty hsupportTwoSided
+  have hboundary : componentCrossingEdges removedEdges outerComponent =
+      removedEdges := by
+    calc
+      componentCrossingEdges removedEdges outerComponent =
+          localCrossingEdgeFinset G side := hcomponentLocal
+      _ = pair.selectedDualCycle.crossingEdges := hsaturated
+      _ = removedEdges :=
+        pair.selectedDualCycle_crossingEdges_eq_primalCutEdges data
+  exact ⟨outerComponent, removed, houterMem, hremovedNotOuter, hboundary⟩
+
 end SeparatedAlignedSelectedDualTransversals
 
 end
