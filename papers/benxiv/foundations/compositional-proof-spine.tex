@@ -2608,6 +2608,54 @@ cap-extension table is equivariant under the same zero-fixing permutation:
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularFrontierMenuCapTable.normalizedCapTable_transport}.
 \end{proof}
 
+The corrected all-colour Seed count and the compressed cumulative receipt now
+meet at exactly this normalized terminal view.  It is useful to state the two
+directions separately, because the remaining realization problem lies between
+them rather than inside either statement.
+
+\begin{proposition}[corrected Seed acceptance and the compressed accepting set]
+\label{prop:source-seed-compressed-acceptance}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SourceTerminalCapCount.capComposedSeedCount_pos_iff_exists_normalized_sourceView}
+For a fixed cap word, the corrected cap-composed Seed count is positive if and
+only if there is a realized all-colour uniform profile of positive count and an
+ordered majority/singleton triple whose normalized two-role terminal view is
+accepted.
+
+For every graph-semantic bounded cumulative source profile, define its
+compressed code to be accepting precisely when the standard-gauge terminal
+view decoded from the code satisfies cap-composed Menu~B.  Lossless compression
+preserves this predicate exactly:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SourceTerminalCapCount.compressBounded_mem_acceptedSourceCompressedProfileSet_iff}.
+In particular this holds on the existing Cell--3 cumulative carrier of shape
+$(2,5,8)$:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SourceTerminalCapCount.sourceCompressedCodeOfCell3_mem_accepted_iff}.
+\end{proposition}
+
+\begin{proof}
+Project an all-colour profile to the two source roles
+$\alpha\beta$ and $\alpha\gamma$.  For either role, the resulting cap relation
+is definitionally the corresponding component of the all-colour connection
+table.  The corrected Seed predicate therefore says exactly that one of these
+two projected roles is cap-accepted.  Proposition~\ref{prop:source-cap-colour-gauge}
+then transports this disjunction to the standard colour gauge.  Rewriting the
+already verified positive-count factorization by this equivalence proves the
+first assertion.
+
+For the second assertion, the accepting set is the finite subset obtained by
+filtering the compressed carrier by the decoded standard-gauge cap predicate.
+Proposition~\ref{prop:five-terminal-source-cap-view} says that decoding after
+compression gives the same terminal word and the same two strand relations as
+decoding before compression, so membership rewrites to the uncompressed
+predicate.  Specializing the bounds to $(2,5,8)$ gives the last statement.
+\end{proof}
+
+This proposition closes the logical terminal-acceptance projection, but not
+the remaining realization adapter.  One must still prove that the uniform
+profiles counted by the corrected Seed count and the cumulative states reached
+by the literal serial transition describe the same physical terminal
+realizations.  Nor has the filtered finite set above yet been emitted as an
+optimized executable certificate.
+
 Theorem~\ref{thm:exact-rooted-cell-factorization} checks the Cell--3 algebra
 under (U), but Propositions~\ref{prop:opened-global-face-uniqueness-refuted}
 and~\ref{prop:closed-web-carrier-not-direct-count} prevent applying it to the
