@@ -2152,6 +2152,32 @@ invalid unsigned-defect inference.
 One elementary combinatorial ingredient of the long-boundary branch is the
 following sweep lemma.
 
+First isolate its finite part from the geometric assertion that a particular
+embedded graph supplies such stacks.
+
+\begin{lemma}[bounded-stack sweep pigeonhole]
+\label{lem:bounded-stack-sweep-pigeonhole}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24NoncrossingSweepPigeonhole.exists_distinct_eq_sweepState}
+Let $A$ and $K$ be finite sets.  At each of $n$ positions record one element
+of $A$ and, for each of $r$ families, a $K$-labelled stack of depth at most
+$D$.  If
+\[
+ n>|A|\left(\sum_{d=0}^{D}|K|^d\right)^r,
+\]
+then two distinct positions carry exactly the same record.
+\end{lemma}
+
+\begin{proof}
+A stack is encoded by its exact depth $d\in\{0,\ldots,D\}$ and a word in
+$K^d$.  Thus the stack carrier has exactly
+$\sum_{d=0}^{D}|K|^d$ elements, and the full record carrier has exactly
+$|A|(\sum_{d=0}^{D}|K|^d)^r$ elements.  The conclusion is the ordinary
+pigeonhole principle.  The Lean statement uses the literal dependent sum
+$\Sigma_{d:\operatorname{Fin}(D+1)}\operatorname{Vector}(K,d)$, proves this
+cardinality exactly, and returns the two unequal indices together with their
+equal states.
+\end{proof}
+
 \begin{lemma}[noncrossing length--depth alternative]
 \label{lem:noncrossing-length-depth}
 \Sprose
@@ -2172,9 +2198,9 @@ of one family close in last-in--first-out order, so its complete unresolved
 connectivity at a cut is an ordered stack.  If every nesting depth is at most
 $D$, one stack has at most
 $\sum_{d=0}^{D}|K|^d$ possible values.  Together with the local letter and the
-$r$ independent stacks, there are at most $S$ sweep states.  More than $S$
-cut positions therefore repeat a state.  If the depth bound fails, the first
-alternative holds.
+$r$ independent stacks, Lemma~\ref{lem:bounded-stack-sweep-pigeonhole} gives
+two equal sweep states as soon as there are more than $S$ positions.  If the
+depth bound fails, the first alternative holds.
 \end{proof}
 
 For the route, the two Kempe families suggest the matching stacks and capped
