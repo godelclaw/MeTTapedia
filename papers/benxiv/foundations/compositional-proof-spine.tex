@@ -2567,6 +2567,47 @@ The cap-composed predicate is a function only of this five-word and these two
 relations, so rewriting by that equality proves the proposition.
 \end{proof}
 
+The preceding statement used literal colour names only to choose coordinates.
+The manuscript instead names the two connectivity roles relative to the
+ordered majority/singleton triple of the current good word and then says
+``by global colour relabeling'' to use the standard names.  That normalization
+is also exact.
+
+\begin{proposition}[global colour normalization preserves cap acceptance]
+\label{prop:source-cap-colour-gauge}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SourceTerminalCapGauge.standardGaugeCapComposedMenuBState_normalized_iff}
+Let $(\alpha,\beta,\gamma)$ be the ordered majority, first-singleton and
+second-singleton colours of a five-terminal cap view.  There is a canonical
+zero-fixing permutation of the four Klein-group colours sending
+$(\alpha,\beta,\gamma)$ to
+$(\mathrm{red},\mathrm{blue},\mathrm{purple})$.  Relabel the boundary word by
+this permutation while retaining the two abstract strand roles
+$\alpha\beta$ and $\alpha\gamma$.  The arbitrary-gauge cap-composed Menu-B
+predicate holds before relabeling if and only if the standard-gauge predicate
+holds afterward.
+
+Thus the two-pair source receipt is sufficient in every colour gauge.  This
+uses the fact that its pair labels are roles relative to the ordered triple;
+it does \emph{not} assert that two fixed literal colour pairs suffice without
+normalization.
+\end{proposition}
+
+\begin{proof}
+The inverse of the canonical Tait-triple equivalence sends
+$\alpha,\beta,\gamma$ to the three standard nonzero colours and fixes zero.
+Relabeling preserves the three boundary multiplicities, so the normalized
+word has the standard majority/singleton triple:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SourceTerminalCapGauge.normalizedCapView_standardTriple}.
+For either abstract source role, relabeling carries its unique inactive
+position to the same cap index and leaves its Boolean strand relation
+unchanged.  Therefore its cap-composed predicate is equivalent before and
+after normalization:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SourceTerminalCapGauge.capComposedMenuBForPair_normalized_iff}.
+Taking the disjunction over the two roles proves the claim.  The independent
+cap-extension table is equivariant under the same zero-fixing permutation:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularFrontierMenuCapTable.normalizedCapTable_transport}.
+\end{proof}
+
 Theorem~\ref{thm:exact-rooted-cell-factorization} checks the Cell--3 algebra
 under (U), but Propositions~\ref{prop:opened-global-face-uniqueness-refuted}
 and~\ref{prop:closed-web-carrier-not-direct-count} prevent applying it to the
