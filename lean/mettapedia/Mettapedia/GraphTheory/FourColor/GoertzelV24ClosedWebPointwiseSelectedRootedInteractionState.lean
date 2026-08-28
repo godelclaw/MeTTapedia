@@ -93,9 +93,6 @@ noncomputable def pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateF
   let hinteraction : interaction.card ≤ 49 :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt_card_le_fortyNine
       web corridor hinterior offset hnext hcell
-  let hfaceCurrent : faceCurrent.card ≤ 24 :=
-    pointwiseSelectedSourceLocalLayerSerialFaceTransitionCarrierAt_card_le_twentyFour
-      web.toFormation corridor hinterior offset hcell
   let hfaceInteraction : faceInteraction.card ≤ 48 :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseFaceInteractionCarrierAt_card_le_fortyEight
       web.toFormation corridor hinterior offset hnext hcell
@@ -111,11 +108,9 @@ noncomputable def pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateF
   let colorCode :=
     pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt web.toFormation
       corridor hinterior offset region color
-  let faceCapSix : SourceLocalLayerSerialFaceDeletionStableCapSixState := {
-    vertexCount := ⟨faceCurrent.card, Nat.lt_succ_of_le hfaceCurrent⟩
-    code := fun _ => exactFaceInterfaceExteriorLabelCapCode web.annular.RS
-      region (fun slot : Fin faceCurrent.card =>
-        ((carrierCoordinate faceCurrent).symm slot).1) 6 }
+  let faceCapSix : SourceLocalLayerSerialFaceDeletionStableCapSixState :=
+    pointwiseSelectedSourceLocalLayerSerialFaceDeletionStableParametricCapPrefixAt
+      web.toFormation corridor hinterior offset hcell 6
   let trackedExterior : SourceLocalLayerSerialTrackedDeletionStablePrefixState :=
     boundedInterfaceExteriorFamilyCode current 21 hcurrent fun pair =>
       regionalTrackedEdgeGraph web.annular.RS region color
@@ -301,6 +296,30 @@ theorem pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt_
       ).faceCapSix.vertexCount.val =
       (pointwiseSelectedSourceLocalLayerSerialFaceTransitionCarrierAt
         web.toFormation corridor hinterior offset).card := by
+  rfl
+
+/-- The selected root's cap-six field is definitionally the canonical
+cumulative semantic facial state at the current cut. -/
+@[simp]
+theorem pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt_faceCapSix
+    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
+    (web : Instance data coloring) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
+      web.annular.cellulation)
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+      corridor hinterior offset).card ≤ 6)
+    (color : G.edgeSet → Color)
+    (hcrossing : ∀ step,
+      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt web.toFormation
+        corridor hinterior offset step) ≠ 0) :
+    (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
+      web corridor hinterior offset hnext hcell color hcrossing
+      ).faceCapSix =
+      pointwiseSelectedSourceLocalLayerSerialFaceDeletionStableParametricCapPrefixAt
+        web.toFormation corridor hinterior offset hcell 6 := by
   rfl
 
 /-- The selected root stores the literal cardinality of its tracked

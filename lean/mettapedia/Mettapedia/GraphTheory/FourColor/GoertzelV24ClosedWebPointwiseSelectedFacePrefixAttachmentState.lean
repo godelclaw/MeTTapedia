@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialBoundaryRebaseFaceState
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialCellFaceDeletionStableParametricCapState
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebPointwiseSelectedFaceTransitionCarrier
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorSerialBoundaryRebaseStableFaceFixedState
 
@@ -22,16 +23,19 @@ namespace Mettapedia.GraphTheory.FourColor
 namespace GoertzelV24ClosedWebAtGoodWord
 
 open GoertzelV24AnnularInteriorFaceUniqueness
+open GoertzelV24BoundedCarrierGraphFamilyCode
 open GoertzelV24BoundaryProfileFiniteState
 open GoertzelV24ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebAnnularEmbedding.ClosedWebAnnularEmbedding
 open GoertzelV24ClosedWebBoundaryData
+open GoertzelV24ClosedWebLocalLayerSerialCellFaceDeletionStableParametricCapState
 open GoertzelV24CorridorProfile
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24FramedTrail
 open GoertzelV24HexCorridorSkeleton
 open GoertzelV24RegionalBoundaryProfileFiniteState
 open GoertzelV24RotationBoundaryFaceCutProfile
+open GoertzelV24RotationFaceInterfaceExteriorLabelCap
 open GoertzelV24RotationFaceRegionalDartGraph
 open GoertzelV24SimpleGraphPortResidualFactorContraction
 open GoertzelV24SimpleGraphSupportedPortResidualFactorContraction
@@ -245,6 +249,81 @@ noncomputable def pointwiseSelectedSourceLocalLayerSerialFaceInputPortAtSlot?
   boundedFiniteSlot?
     (pointwiseSelectedSourceLocalLayerSerialFaceInputPortAt_card_le_four
       formation corridor hinterior offset)
+
+/-! ## Exact cap-parametric prefix state -/
+
+/-- The canonical cumulative facial exterior state on a pointwise-selected
+rolling carrier.  It is extracted from the complete terminal-aware prefix
+region and retains the caller-selected number of distinct primal-edge labels
+per exterior incidence component. -/
+noncomputable def
+    pointwiseSelectedSourceLocalLayerSerialFaceDeletionStableParametricCapPrefixAt
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
+    (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
+      formation.annular.cellulation)
+    (offset : Fin (blockLength - 3))
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation corridor
+      hinterior offset).card ≤ 6)
+    (cap : Nat) :
+    SourceLocalLayerSerialFaceDeletionStableParametricCapState cap :=
+  let carrier :=
+    pointwiseSelectedSourceLocalLayerSerialFaceTransitionCarrierAt formation
+      corridor hinterior offset
+  let dartAt := fun slot : Fin carrier.card =>
+    ((carrierCoordinate carrier).symm slot).1
+  { vertexCount := ⟨carrier.card, Nat.lt_succ_of_le
+      (pointwiseSelectedSourceLocalLayerSerialFaceTransitionCarrierAt_card_le_twentyFour
+        formation corridor hinterior offset hcell)⟩
+    code := fun _ => exactFaceInterfaceExteriorLabelCapCode
+      formation.annular.RS
+      (pointwiseSelectedSourceLocalLayerSerialTerminalInputRegionAt formation
+        corridor hinterior offset)
+      dartAt cap }
+
+@[simp]
+theorem
+    pointwiseSelectedSourceLocalLayerSerialFaceDeletionStableParametricCapPrefixAt_vertexCount
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
+    (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
+      formation.annular.cellulation)
+    (offset : Fin (blockLength - 3))
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation corridor
+      hinterior offset).card ≤ 6)
+    (cap : Nat) :
+    (pointwiseSelectedSourceLocalLayerSerialFaceDeletionStableParametricCapPrefixAt
+      formation corridor hinterior offset hcell cap).vertexCount.val =
+      (pointwiseSelectedSourceLocalLayerSerialFaceTransitionCarrierAt formation
+        corridor hinterior offset).card := by
+  rfl
+
+@[simp]
+theorem
+    pointwiseSelectedSourceLocalLayerSerialFaceDeletionStableParametricCapPrefixAt_code
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
+    (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
+      formation.annular.cellulation)
+    (offset : Fin (blockLength - 3))
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation corridor
+      hinterior offset).card ≤ 6)
+    (cap : Nat) :
+    let carrier :=
+      pointwiseSelectedSourceLocalLayerSerialFaceTransitionCarrierAt formation
+        corridor hinterior offset
+    let dartAt := fun slot : Fin carrier.card =>
+      ((carrierCoordinate carrier).symm slot).1
+    (pointwiseSelectedSourceLocalLayerSerialFaceDeletionStableParametricCapPrefixAt
+      formation corridor hinterior offset hcell cap).code () =
+      exactFaceInterfaceExteriorLabelCapCode formation.annular.RS
+        (pointwiseSelectedSourceLocalLayerSerialTerminalInputRegionAt formation
+          corridor hinterior offset)
+        dartAt cap := by
+  rfl
 
 @[simp]
 theorem pointwiseSelectedSourceLocalLayerSerialFaceInputPortAtSlot?_slot
