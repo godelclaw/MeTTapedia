@@ -1664,6 +1664,51 @@ supply literal connected shores and a strict material witness; the two
 disc-side hypotheses are then consequences of the planar-bond theorems, not
 extra receipt fields.
 
+\begin{theorem}[constructive physical replacement at equal normalized states]
+\label{thm:constructive-majority-shore-physical-replacement}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MajorityShorePhysicalReplacement.strictPhysicalReplacement_of_normalizedState_eq}
+Let \(M\) be a graph-backed non-Tait-colourable connected, bridgeless,
+spherical cubic rotation map with cyclic vertex rotations and two-sided face
+orbits.  Let \(S_{\rm new}\subseteq S_{\rm old}\) be finite edge shores such
+that each shore and its edge complement are connected and each corresponding
+majority vertex shore and complement are nonempty.  Choose the retained-dart
+roots and two distinct darts on the old exterior boundary.  If the two
+interior boundaries have common cardinality \(k\), their normalized states
+are equal, and some vertex has its complete cubic star in
+\(S_{\rm old}\setminus S_{\rm new}\), then these data construct a literal
+rotation system \(M'\) such that
+\begin{enumerate}
+\item \(M'\) is connected, bridgeless, spherical and cubic, with cyclic
+      vertex rotations;
+\item \(M'\) is not Tait-colourable; and
+\item \(\lvert V(M')\rvert<\lvert V(M)\rvert\).
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+Take \(M'\) to be the literal matched-seam composite of the exterior of the
+old majority shore and the interior of the new majority shore.  The matching
+first crosses the old ambient cut by inverse edge flip and then transports
+through the two common finite coordinates.  Equality of normalized states
+contains both facts needed by the splice: equality of the exact Tait-word
+supports and conjugacy of the canonical hub rotations.  The first, together
+with exact boundary reindexing and complementary-shore reassembly, proves
+that \(M'\) is not Tait-colourable.  The second transports the ambient
+orientation-reversal equation to the new interior.
+
+Connected complementary edge shores give connected majority vertex shores.
+The planar-bond rank theorem therefore gives spherical face-simple canonical
+closures on the retained sides; the transported opposite hub orders and the
+seam face-count theorem make the composite spherical.  The literal gluing
+theorems give connectedness, bridge-freeness, cubicity and cyclic vertex
+rotations.  Finally majority is monotone under
+\(S_{\rm new}\subseteq S_{\rm old}\), while the displayed cubic star belongs
+to the old majority shore but not the new one.  Thus the retained new
+interior is strictly smaller than the removed old interior, proving the
+vertex inequality.  These three conclusions are the fields of the returned
+replacement certificate; minimality is not used.
+\end{proof}
+
 \begin{theorem}[equal normalized majority-shore states contradict minimality]
 \label{thm:majority-shore-physical-replacement}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MajorityShorePhysicalReplacement.no_nested_equal_normalizedState_of_strict_material}
@@ -1682,36 +1727,10 @@ vertex \(x\) has every incident edge in
 \end{theorem}
 
 \begin{proof}
-Glue the literal exterior of \(S_{\rm old}\) to the literal majority
-interior of \(S_{\rm new}\).  The matching first crosses the old ambient cut
-by the inverse edge flip and then passes through the common standard
-coordinates supplied by the two normalized states.  Equality of the support
-fields, exact invariance under boundary reindexing, and complementary-shore
-reassembly show that this physical composite is non-Tait-colourable:
-\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MajorityShorePhysicalReplacement.not_taitColorable_replacement_of_normalizedState_eq}.
-
-Connected edge shores give connected majority vertex shores.  The old
-exterior and new interior each have a canonical spherical face-simple hub
-closure by the planar-bond rank theorem.  Ambient edge flip reverses the old
-interior/exterior hub orders; equality of normalized states transports that
-equation to the new interior.  The generic literal-shore seam theorem now
-packages the glued map as connected, bridge-free, cubic and spherical, with
-cyclic vertex rotations:
-\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MajorityShorePhysicalReplacement.replacementStructuralData_of_normalizedState_eq}.
-
-Majority is monotone under \(S_{\rm new}\subseteq S_{\rm old}\).  At \(x\),
-all three incident edges lie in the set difference, so \(x\) belongs to the
-old majority shore but not the new one.  Hence the retained new interior is
-a strict subset of the removed old interior, and
-
-\[
- |V(M\setminus S_{\rm old})|+|V(S_{\rm new})|<|V(M)|.
-\]
-
-This cardinal inequality is checked in
-\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MajorityShorePhysicalReplacement.replacementVertexCount_lt_of_incident_sdiff}.
-Vertex minimality makes every smaller member of the same structural class
-Tait-colourable, contradicting the preceding noncolourability.
+Apply Theorem~\ref{thm:constructive-majority-shore-physical-replacement}.
+It returns a strictly smaller map in the complete cap-stable structural
+class and proves that map non-Tait-colourable.  Vertex minimality says the
+same returned map is Tait-colourable, a contradiction.
 \end{proof}
 
 \begin{theorem}[direct literal corridor bound]

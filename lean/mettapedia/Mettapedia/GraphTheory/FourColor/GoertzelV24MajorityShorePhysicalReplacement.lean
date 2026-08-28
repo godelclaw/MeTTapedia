@@ -406,6 +406,128 @@ theorem replacementVertexCount_lt_of_incident_sdiff
     strictVertex hstrict.1 hstrict.2
   simpa only [majorityDeletedKeep_iff, majorityRetainedKeep_iff] using hcard
 
+/-- The literal rotation system obtained by retaining the exterior of the
+old shore and the interior of the new shore.  Naming this object keeps the
+consumer-facing replacement theorem below from hiding the physical map in a
+local proof term. -/
+noncomputable abbrev replacementCandidate
+    (rotation : SimpleGraphDartRotation.Data G)
+    (oldShore newShore : Finset G.edgeSet)
+    (outsideOuter : RetainedDart rotation.toRotationSystem
+      (majorityDeletedKeep G oldShore))
+    (newInnerOuter : RetainedDart rotation.toRotationSystem
+      (majorityRetainedKeep G newShore))
+    (k : Nat)
+    (oldWidth : boundaryWidth rotation oldShore = k)
+    (newWidth : boundaryWidth rotation newShore = k) :=
+  (outsideTangle rotation oldShore outsideOuter).composeRotationSystem
+    (innerTangle rotation newShore newInnerOuter)
+    (replacementMatching rotation oldShore newShore k oldWidth newWidth)
+
+/-- The complete output of physical equal-state replacement before
+minimality is invoked.  It records one literal smaller rotation system, its
+full cap-stable structural class, and preservation of zero Count (equivalently
+non-Tait-colorability). -/
+structure StrictPhysicalReplacementData
+    (rotation : SimpleGraphDartRotation.Data G)
+    (oldShore newShore : Finset G.edgeSet)
+    (outsideOuter : RetainedDart rotation.toRotationSystem
+      (majorityDeletedKeep G oldShore))
+    (newInnerOuter : RetainedDart rotation.toRotationSystem
+      (majorityRetainedKeep G newShore))
+    (k : Nat)
+    (oldWidth : boundaryWidth rotation oldShore = k)
+    (newWidth : boundaryWidth rotation newShore = k) : Type u where
+  structural : BridgelessSphericalCubicMapData
+    (replacementCandidate rotation oldShore newShore outsideOuter
+      newInnerOuter k oldWidth newWidth)
+  vertexCount_lt :
+    Fintype.card
+        ({vertex : V // majorityDeletedKeep G oldShore vertex} ⊕
+          {vertex : V // majorityRetainedKeep G newShore vertex}) <
+      Fintype.card V
+  notColorable : ¬ RotationSystemTaitColorable
+    (replacementCandidate rotation oldShore newShore outsideOuter
+      newInnerOuter k oldWidth newWidth)
+
+/-- **Constructive form of M2.**  Equal normalized states on two nested
+connected literal edge shores construct a specific strictly smaller
+zero-Count map in the same connected, bridgeless, spherical, cubic
+rotation-system class.  The theorem returns the map certificate itself;
+minimality is not used.
+
+The connected edge-shore hypotheses are the combinatorial planar-bond data
+supplied by an actual noose (or directly by a connected branch
+decomposition).  All cap orders, orientation reversal, face counting and
+physical gluing are derived inside the theorem. -/
+noncomputable def strictPhysicalReplacement_of_normalizedState_eq
+    (rotation : SimpleGraphDartRotation.Data G)
+    (ambient : BridgelessSphericalCubicMapData rotation.toRotationSystem)
+    (hfacesTwoSided : OrbitFacesTwoSided rotation.toRotationSystem)
+    (hzero : ¬ RotationSystemTaitColorable rotation.toRotationSystem)
+    (oldShore newShore : Finset G.edgeSet)
+    (hsubset : newShore ⊆ oldShore)
+    (hOldConnected : EdgeShoreConnected G oldShore)
+    (hOldComplementConnected :
+      EdgeShoreConnected G (Finset.univ \ oldShore))
+    (hOldMajorityNonempty :
+      ∃ vertex, majorityVertexSide G oldShore vertex)
+    (hOldComplementNonempty :
+      ∃ vertex, ¬ majorityVertexSide G oldShore vertex)
+    (hNewConnected : EdgeShoreConnected G newShore)
+    (hNewComplementConnected :
+      EdgeShoreConnected G (Finset.univ \ newShore))
+    (hNewMajorityNonempty :
+      ∃ vertex, majorityVertexSide G newShore vertex)
+    (hNewComplementNonempty :
+      ∃ vertex, ¬ majorityVertexSide G newShore vertex)
+    (outsideOuter : RetainedDart rotation.toRotationSystem
+      (majorityDeletedKeep G oldShore))
+    (oldInnerOuter : RetainedDart rotation.toRotationSystem
+      (majorityRetainedKeep G oldShore))
+    (newInnerOuter : RetainedDart rotation.toRotationSystem
+      (majorityRetainedKeep G newShore))
+    (k : Nat)
+    (oldWidth : boundaryWidth rotation oldShore = k)
+    (newWidth : boundaryWidth rotation newShore = k)
+    (hstate : normalizedState rotation oldShore oldInnerOuter k oldWidth =
+      normalizedState rotation newShore newInnerOuter k newWidth)
+    (first second : BoundaryDart rotation.toRotationSystem
+      (majorityDeletedKeep G oldShore))
+    (hne : first ≠ second)
+    (strictVertex : V)
+    (hall : ∀ edge ∈ incidentEdgeFinset G strictVertex,
+      edge ∈ oldShore \ newShore) :
+    StrictPhysicalReplacementData rotation oldShore newShore outsideOuter
+      newInnerOuter k oldWidth newWidth := by
+  have hgraphConnected : G.Connected := by
+    rw [← rotationPrimalGraph_toRotationSystem_eq G rotation]
+    exact ambient.primalConnected
+  have hbridgeless :
+      (toMultigraph rotation.toRotationSystem).Bridgeless :=
+    (bridgeless_iff_edgeBridgeFree
+      (RS := rotation.toRotationSystem)).2 ambient.edgeBridgeFree
+  refine
+    { structural := ?_
+      vertexCount_lt := ?_
+      notColorable := ?_ }
+  · exact replacementStructuralData_of_normalizedState_eq
+      rotation oldShore newShore
+      hOldConnected hOldComplementConnected
+      hOldMajorityNonempty hOldComplementNonempty
+      hNewConnected hNewComplementConnected
+      hNewMajorityNonempty hNewComplementNonempty
+      outsideOuter oldInnerOuter newInnerOuter
+      k oldWidth newWidth hstate
+      ambient.spherical hfacesTwoSided hgraphConnected
+      ambient.vertexRotationCyclic hbridgeless first second hne
+  · exact replacementVertexCount_lt_of_incident_sdiff
+      rotation oldShore newShore hsubset strictVertex hall
+      ambient.spherical.cubic
+  · exact not_taitColorable_replacement_of_normalizedState_eq
+      rotation oldShore newShore outsideOuter oldInnerOuter newInnerOuter
+      k oldWidth newWidth hstate hzero
+
 /-- **Physical equal-state descent.**  Two connected nested edge shores with
 equal canonical normalized states and one untouched cubic star in their slab
 cannot occur in a graph-backed vertex-minimal Tait counterexample.  The proof
@@ -448,41 +570,21 @@ theorem no_nested_equal_normalizedState_of_strict_material
     (strictVertex : V)
     (hall : ∀ edge ∈ incidentEdgeFinset G strictVertex,
       edge ∈ oldShore \ newShore) : False := by
-  let candidate :=
-    (outsideTangle rotation oldShore outsideOuter).composeRotationSystem
-      (innerTangle rotation newShore newInnerOuter)
-      (replacementMatching rotation oldShore newShore k oldWidth newWidth)
-  have hgraphConnected : G.Connected := by
-    rw [← rotationPrimalGraph_toRotationSystem_eq G rotation]
-    exact minimal.primalConnected
-  have hbridgeless :
-      (toMultigraph rotation.toRotationSystem).Bridgeless :=
-    (bridgeless_iff_edgeBridgeFree
-      (RS := rotation.toRotationSystem)).2 minimal.edgeBridgeFree
-  have hcandidate : BridgelessSphericalCubicMapData candidate :=
-    replacementStructuralData_of_normalizedState_eq
-      rotation oldShore newShore
-      hOldConnected hOldComplementConnected
-      hOldMajorityNonempty hOldComplementNonempty
-      hNewConnected hNewComplementConnected
-      hNewMajorityNonempty hNewComplementNonempty
-      outsideOuter oldInnerOuter newInnerOuter
-      k oldWidth newWidth hstate
-      minimal.spherical minimal.facesTwoSided hgraphConnected
-      minimal.vertexRotationCyclic hbridgeless first second hne
-  have hsmall :
-      Fintype.card
-          ({vertex : V // majorityDeletedKeep G oldShore vertex} ⊕
-            {vertex : V // majorityRetainedKeep G newShore vertex}) <
-        Fintype.card V :=
-    replacementVertexCount_lt_of_incident_sdiff
-      rotation oldShore newShore hsubset strictVertex hall
-      minimal.spherical.cubic
-  have hzero : ¬ RotationSystemTaitColorable candidate :=
-    not_taitColorable_replacement_of_normalizedState_eq
-      rotation oldShore newShore outsideOuter oldInnerOuter newInnerOuter
-      k oldWidth newWidth hstate minimal.notColorable
-  exact hzero (minimal.smallerColorable candidate hsmall hcandidate)
+  let candidate := replacementCandidate rotation oldShore newShore
+    outsideOuter newInnerOuter k oldWidth newWidth
+  have replacement := strictPhysicalReplacement_of_normalizedState_eq
+    rotation minimal.toBridgelessSphericalCubicMapData
+    minimal.facesTwoSided minimal.notColorable
+    oldShore newShore hsubset
+    hOldConnected hOldComplementConnected
+    hOldMajorityNonempty hOldComplementNonempty
+    hNewConnected hNewComplementConnected
+    hNewMajorityNonempty hNewComplementNonempty
+    outsideOuter oldInnerOuter newInnerOuter
+    k oldWidth newWidth hstate first second hne strictVertex hall
+  exact replacement.notColorable
+    (minimal.smallerColorable candidate replacement.vertexCount_lt
+      replacement.structural)
 
 end
 
