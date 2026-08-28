@@ -2649,12 +2649,60 @@ decoding before compression, so membership rewrites to the uncompressed
 predicate.  Specializing the bounds to $(2,5,8)$ gives the last statement.
 \end{proof}
 
-This proposition closes the logical terminal-acceptance projection, but not
-the remaining realization adapter.  One must still prove that the uniform
-profiles counted by the corrected Seed count and the cumulative states reached
-by the literal serial transition describe the same physical terminal
-realizations.  Nor has the filtered finite set above yet been emitted as an
-optimized executable certificate.
+The two profile presentations in the preceding proposition are not merely
+abstract finite carriers.  On a literal annulus their terminal coordinates
+coincide.
+
+\begin{proposition}[the counted terminal profile is cumulative]
+\label{prop:annular-terminal-profile-realization}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularTerminalProfileRealization.capComposedSeedCount_pos_iff_exists_realizedSourceProfile}
+Let an annular boundary datum be backed by a rotation system on its underlying
+simple graph.  Give the whole annulus the regional edge set $E(G)$, no crossing
+ports, its five cap-foot edges as terminals, and no face-fragment coordinates.
+Then every Tait colouring counted by the uniform Menu--B profile determines a
+graph-derived cumulative source profile whose five-terminal cap view is
+exactly the counted view.  After the manuscript's global colour normalization,
+the equality remains literal.  Consequently the corrected Seed count is
+positive if and only if an accepted normalized cap view is realized by such a
+cumulative source profile.
+\end{proposition}
+
+\begin{proof}
+Fix two selected colours.  The counted profile puts two cap stubs in the same
+component precisely when they are connected in the subgraph consisting of
+edges of those colours.  Each cap stub is incident with its named cap-foot
+edge.  In any graph, two edges with chosen incident endpoints are connected
+in the line graph if and only if those endpoints are connected in the
+original graph:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularTerminalProfileRealization.boundaryLineGraph_reachable_iff_vertexReachable}.
+Applying this to the selected-colour subgraph identifies the source component
+label with tracked-edge reachability:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularTerminalProfileRealization.activePairComponents_eq_iff_bicoloredReachable}
+and
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularTerminalProfileRealization.sourcePair_connectionTable_eq_regionalTrackedConnectivity}.
+
+Because the regional edge set is all of $E(G)$, the regional guards add no
+restriction.  The diagonal entries reconstruct the five nonzero terminal
+colours, while the off-diagonal entries are the two source connectivity
+relations.  Thus the entire terminal views agree.  Relabel the actual edge
+colouring by the canonical zero-fixing colour equivalence, rather than merely
+renaming the view.  The selected two-colour subgraphs before and after
+relabeling are isomorphic, so the complete connection table is preserved.
+This proves the normalized equality
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularTerminalProfileRealization.normalizedUniformCapView_eq_wholeAnnulusSourceProfile}.
+Finally, positivity of a uniform-profile count supplies an actual Tait
+colouring, and conversely that colouring lies in its own profile fibre;
+substitution gives the displayed equivalence.
+\end{proof}
+
+This closes the former representation-level realization adapter.  The
+remaining statement is geometric coverage by the serial construction: the
+terminal prefix produced by the literal one-Cell transition must cover the
+whole annulus (or be proved to have the same cumulative terminal projection),
+with the correct realizable initial state.  No further equivalence between
+vertex-component and edge-component semantics is owed.  The filtered finite
+accepting set has also not yet been emitted as an optimized executable
+certificate.
 
 Theorem~\ref{thm:exact-rooted-cell-factorization} checks the Cell--3 algebra
 under (U), but Propositions~\ref{prop:opened-global-face-uniqueness-refuted}
