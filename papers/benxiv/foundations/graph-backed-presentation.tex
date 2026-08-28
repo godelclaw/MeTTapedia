@@ -399,7 +399,7 @@ so is never a least counterexample.
 \end{remark}
 
 \begin{lemma}[no parallel edges]\label{lem:no-parallel}
-\Sprose
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MinimalParallelExclusion.endpoints_injective_of_minimal}
 $M$ has no two vertices joined by more than one edge.
 \end{lemma}
 
@@ -429,19 +429,39 @@ counterexample.
 
 \begin{theorem}[graph-backed presentation of a least counterexample]
 \label{thm:graph-backed}
-\Sprose
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MinimalGraphBackedPresentation.graphBackedVertexMinimalTaitCounterexample}
 A least counterexample $M$ is the rotation system of a simple graph on its
 own vertex set, and Tait colourings transfer between the two descriptions.
 \end{theorem}
 
 \begin{proof}
-By Lemmas~\ref{lem:no-loops} and~\ref{lem:no-parallel} the incidence
-relation of $M$ has no loop and no repeated pair, so it \emph{is} the
-adjacency relation of a simple graph $G$ on the vertex set of $M$, and the
-vertex rotations of $M$ are rotations of the darts of $G$. The edge sets are
-in bijection under this identification, so a colouring of one is literally a
-colouring of the other, and properness at a vertex is the same condition on
-both sides.
+The rotation-system record is loopless by construction, and
+Lemma~\ref{lem:no-parallel} says that its endpoint map is injective.  Let
+$G$ be the computed primal simple graph on the same vertex set.  Every edge
+of $M$ determines its unordered endpoint pair in $G$; surjectivity is
+immediate from the definition of the primal graph, and injectivity is exactly
+Lemma~\ref{lem:no-parallel}.  Hence the literal edge carrier is canonically
+equivalent to $E(G)$.
+
+The same construction on oriented edges gives a dart equivalence.  It
+commutes with dart reversal, and transporting the vertex rotation through it
+commutes with $\sigma$ and therefore with the facial permutation
+$\varphi=\sigma\alpha$.  Consequently the vertex stars, facial orbits, and
+their cyclic orders are carried bijectively to the graph-backed rotation.
+In particular, cubicity and two-sidedness are preserved.  The recomputed
+primal graph of the graph-backed rotation is literally $G$, so connectedness
+is preserved.  Deleting an edge identifier before the transport is the same
+as deleting its corresponding edge of $G$, so bridgelessness is preserved.
+Finally the vertex carrier is unchanged while the edge and face carriers are
+bijective, and hence the Euler equation is preserved.
+
+The edge equivalence is an isomorphism from the rotation-system edge
+adjacency graph to the line graph of $G$.  Pullback and pushforward along this
+isomorphism preserve proper edge colourings and the condition that every edge
+has nonzero colour.  Thus Tait colourability transfers in both directions.
+The vertex count is unchanged, so the same leastness hypothesis supplies the
+\texttt{smallerColorable} field of the resulting graph-backed minimal
+counterexample.
 \end{proof}
 
 \begin{remark}[what the restriction bought]
@@ -465,13 +485,15 @@ geometric premise from the digon splice, so minimality eliminates loops and
 parallel edges and yields Theorem~\ref{thm:graph-backed} without a separation
 axiom.
 
-The companion reduction in Section~\ref{sec:tait-reduction} likewise uses no
+The graph-backing transport and its least-counterexample constructor are now
+machine-checked; there is no remaining representation hypothesis at this
+junction.  The companion reduction in Section~\ref{sec:tait-reduction} likewise uses no
 maximal-plane-graph argument: stellar subdivision is an explicit dart
 substitution, duality is the replacement of $\sigma$ by $\sigma\alpha$, and
 looplessness of the subdivision makes its dual bridgeless.  The classical
 maximal triangulation lemma and the geometric digon lemma remain in the text
 as recognizable comparison routes; their \textsc{open}/\textsc{conditional}
 markers describe those statements themselves, not dependencies of the
-controlling proof.  What remains here is Lean transport and construction, not
-an ordinary-mathematics gap.
+controlling proof.  The remaining classical front-end debt lies in the Tait
+reduction itself, not in graph-backed presentation.
 \end{remark}
