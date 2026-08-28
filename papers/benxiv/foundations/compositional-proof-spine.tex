@@ -996,12 +996,52 @@ closed ambient cubic map.  The internal-support premise is load-bearing:
 rail disjointness alone would not prevent the completed boundary from running
 through a cap.
 
-The remaining source adapter must compose rails over arbitrary length, prove
-the separation hypotheses uniformly, and show that the canonically oriented
-shores obtained from successive right endpoints are strictly nested.  It must
-also fix the roots and uniform width bounds, identify the recomputed ambient
-shore boundaries with ordered seams, and identify their ordered Count states
-with those consumed by
+It would be incorrect to obtain the required chain by fixing the left
+interface and composing these exterior rails to successively later right
+interfaces.  The resulting closed dual walk crosses the two endpoint
+transversals and both longitudinal rails, so its number of crossed primal
+edges grows linearly with the distance between the endpoints.  Such walks do
+not have the uniform width (b) required in
+Proposition~\ref{prop:target-forced-cut-chain}.
+
+The already constructed sliding local windows do not repair this defect by
+themselves.  Their exact failure mode is checked rather than inferred from a
+picture.
+
+\begin{lemma}[the local-window seriality dichotomy]
+\label{lem:source-local-window-seriality}
+For two consecutive aligned two-tile source windows, the output transverse
+edge at each of the two positions is the input transverse edge of the next
+window.  At each such edge, either the two enclosed-side boundary darts are
+$\alpha$-opposite, as required for a literal serial seam, or the enclosed
+vertex carriers of the two windows share the base vertex of that dart.
+Moreover, the two closed facial-dual window walks have intersecting support.
+\end{lemma}
+
+\begin{proof}
+Equality of the two transverse edge coordinates and the fact that every
+edge fibre consists of a dart and its $\alpha$-mate give the dichotomy.  If
+the displayed darts are equal, their common base vertex belongs to both
+enclosed carriers.  These statements are checked as
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorAlignedTwoTileSuccessorBoundaryDart.sourceTwoTileAlignedEnclosed_alphaSeam_or_vertexOverlap}.
+The closed windows also share the centre of their common transverse
+interface, so their supports are not disjoint; this is checked as
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorAlignedTwoTileBoundaryOverlap.sourceTwoTileAlignedBoundaryWalks_consecutive_not_disjoint}.
+\end{proof}
+
+Thus coordinate agreement of the rolling local profiles is not yet physical
+serial composition, and choosing one saturated component independently at
+each window does not supply a nested shore chain.  The remaining theorem is
+target-forced, not a geometry-only source adapter: it must construct, at each
+selected corridor position, one individually bounded saturated ambient cut.
+It must prove that these cuts are simple and pairwise ordered, that their
+outer-root shores are strictly nested with nonempty intervening slabs, and
+that both holes and the frozen interface remain outside those slabs.  It must
+also decide the $\alpha$-seam branch of
+Lemma~\ref{lem:source-local-window-seriality}, transport the cuts to the
+ambient graph, fix the roots and a uniform width bound, identify the
+recomputed ambient shore boundaries with ordered seams, and identify their
+ordered Count states with those consumed by
 Theorem~\ref{thm:literal-majority-shore-chain-descent}.
 
 There is a second, equally compositional way to state the same structural
