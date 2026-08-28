@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MEGALODON="~/claude/megalodon/bin/megalodon"
-PREAMBLE="~/claude/megalodon/Megalodon/examples/egal/PfgEAug2022Preamble.mgs"
-ROOT="~/claude/megalodon/probability_theory"
+MEGALODON="megalodon/bin/megalodon"
+PREAMBLE="megalodon/Megalodon/examples/egal/PfgEAug2022Preamble.mgs"
+ROOT="megalodon/probability_theory"
 
 "$MEGALODON" -I "$PREAMBLE" -s "$ROOT/full_probability_theory.mgs" "$ROOT/full_probability_theory.mg"
 

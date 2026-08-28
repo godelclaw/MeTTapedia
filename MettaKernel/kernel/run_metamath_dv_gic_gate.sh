@@ -31,7 +31,7 @@ fi
 
 if ! (
   cd "$LEAN_ROOT"
-  LEAN_NUM_THREADS=1 LAKE_JOBS=1 lake env lean --run "$EXPORTER" \
+  lake env lean --run "$EXPORTER" \
     target "$SOURCE" th "$FRESH"
 ) >"$EXPORT_LOG" 2>&1; then
   echo "MM DV GIC GATE: FAIL (canonical source admission/export failed; log: $EXPORT_LOG)"

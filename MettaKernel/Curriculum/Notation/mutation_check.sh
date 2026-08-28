@@ -7,7 +7,8 @@
 set -u
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
-CETTA="${CETTA:-/home/aimama/aihub/hyperon/CeTTa/cetta}"
+REPO_ROOT="$(cd "$DIR/../../.." && pwd)"
+CETTA="${CETTA:-$REPO_ROOT/lean/externals/CeTTa/cetta}"
 CETTA_EXTRA_ARGS="${CETTA_EXTRA_ARGS---eval-hashcons}"
 CETTA_TIMEOUT_SECONDS="${CETTA_TIMEOUT_SECONDS:-240}"
 MUTATION_TIMEOUT_SECONDS="${MUTATION_TIMEOUT_SECONDS:-10}"

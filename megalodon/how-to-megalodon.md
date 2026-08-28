@@ -6,12 +6,12 @@ A practical guide for writing kernel-verified proofs in Megalodon (for Proofgold
 
 ```bash
 # Build Megalodon (requires OCaml)
-cd ~/megalodon
+cd "$MEGALODON_ROOT"
 ./makeopt
 
 # Verify a proof file
-~/megalodon/bin/megalodon -mizar \
-  -I ~/megalodon/examples/mizar/PfgMizarNov2020Preamble.mgs \
+"$MEGALODON_ROOT/bin/megalodon" -mizar \
+  -I "$MEGALODON_ROOT/examples/mizar/PfgMizarNov2020Preamble.mgs" \
   your_file.mg
 
 # Exit code 0 = kernel verified!
@@ -146,7 +146,7 @@ exact neq_0_1 Heq2.
 
 **Megalodon** is an interactive theorem prover and proof checker developed by CIIRC/CTU. Its primary purpose is creating **Proofgold documents** - blockchain-verified mathematical proofs with cryptocurrency bounties.
 
-**Location:** `~/claude/megalodon/`
+**Location:** `megalodon/`
 **Executable:** `./bin/megalodon`
 **Sources:** `./src`
 **Examples:** `./examples`
@@ -483,9 +483,9 @@ apply eq_i_tra A B C.
 
 ## Resources
 
-- Preamble: `~/megalodon/examples/mizar/PfgMizarNov2020Preamble.mgs`
-- Examples: `~/megalodon/examples/`
-- Ramsey proofs: `~/ai-agents/megalodon/ramsey36/`
+- Preamble: `$MEGALODON_ROOT/examples/mizar/PfgMizarNov2020Preamble.mgs`
+- Examples: `$MEGALODON_ROOT/examples/`
+- Ramsey proofs: this repository's `megalodon/ramsey36/` directory
 ### Church Encodings (Egal Theory)
 
 ```megalodon

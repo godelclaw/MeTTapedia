@@ -4,5 +4,7 @@
 #                     make test          (HOL proofs + SML/CakeML tests)   [heavier]
 #   executed        : make test-oracle   (CakeML/oracle comparison runs)   [heaviest]
 set -u
-MR=/home/aimama/aihub/Mettapedia/cakeml/metta-ref
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
+MR="$REPO_ROOT/cakeml/metta-ref"
 exec make -C "$MR" "${1:-check-coverage}"

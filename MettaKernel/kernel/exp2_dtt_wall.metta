@@ -13,7 +13,7 @@
 ;       plus_O_r cannot be obtained by computation or induction.
 ;
 ; Run:
-;   /home/aimama/aihub/hyperon/CeTTa/cetta exp2_dtt_wall.metta
+;   lean/externals/CeTTa/cetta exp2_dtt_wall.metta
 ; =============================================================================
 
 !(import! &self kernel_binding_waist_v1)

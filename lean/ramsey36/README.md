@@ -130,8 +130,7 @@ The bridge specs (`adj17Bool_spec`, `adj17NotBool_spec`) verify 289 pairs by `de
 ```bash
 cd lean-projects/ramsey36
 lake exe cache get        # fetch Mathlib cache
-export LAKE_JOBS=3
-nice -n 19 lake build
+export lake build
 
 # Verify axiom footprint
 lake env lean Ramsey36/MainTheorem.lean

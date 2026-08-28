@@ -7,6 +7,7 @@ import unittest
 import subprocess
 import os
 import sys
+from pathlib import Path
 
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -94,7 +95,7 @@ class TestIntegration(unittest.TestCase):
     @unittest.skipUnless(os.path.exists(EPROVER), "E prover not found")
     def test_degree_bound_simple(self):
         """Test on degree_bound_simple.p"""
-        problem_file = "~/ai-agents/megalodon/ramsey36/tptp/degree_bound_simple.p"
+        problem_file = Path(__file__).resolve().parent.parent / "ramsey36/tptp/degree_bound_simple.p"
         if not os.path.exists(problem_file):
             self.skipTest("Problem file not found")
 

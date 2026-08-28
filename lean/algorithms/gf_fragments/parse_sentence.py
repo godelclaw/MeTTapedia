@@ -7,6 +7,13 @@ Usage: python3 gf_fragments/parse_sentence.py "the moon is less bright than the 
 Output: JSON {"trees": [...], "errors": [...]}
 """
 import json, sys, os
+from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parents[2]
+GF_WORDNET_ROOT = Path(
+    os.environ.get("GF_WORDNET_ROOT", REPO_ROOT / "lean/externals/gf-wordnet")
+).expanduser()
 
 def main():
     if len(sys.argv) < 2:
@@ -14,7 +21,7 @@ def main():
         sys.exit(1)
 
     sentence = sys.argv[1]
-    pgf_path = "~/claude/gf-wordnet/build/ParseEng.pgf"
+    pgf_path = GF_WORDNET_ROOT / "build/ParseEng.pgf"
 
     try:
         import pgf
@@ -23,7 +30,7 @@ def main():
 
     if pgf is not None:
         try:
-            g = pgf.readPGF(pgf_path)
+            g = pgf.readPGF(str(pgf_path))
             eng = g.languages["ParseEng"]
             trees = []
             for i, (prob, tree) in enumerate(eng.parse(sentence, cat=g.startCat)):
@@ -38,7 +45,7 @@ def main():
         except Exception as e:
             pass  # fall through to Haskell CLI
 
-    if True:  # Haskell CLI fallback
+    try:  # Haskell CLI fallback
         # Fall back to GF Haskell CLI
         import subprocess
         gf_bin = os.environ.get("GF_BIN", "gf")
@@ -48,7 +55,7 @@ def main():
             env["LD_LIBRARY_PATH"] = gf_lib + ":" + env.get("LD_LIBRARY_PATH", "")
         cmd = f'p -lang=ParseEng "{sentence}"'
         result = subprocess.run(
-            [gf_bin, "--run", pgf_path],
+            [gf_bin, "--run", str(pgf_path)],
             input=cmd, capture_output=True, text=True, env=env, timeout=60
         )
         lines = [l.strip() for l in result.stdout.strip().split("\n") if l.strip()]

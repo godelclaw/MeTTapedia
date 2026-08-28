@@ -23,7 +23,7 @@ probability_theory/
 ## Reference Materials
 
 - **Textbook**: Billingsley "Probability and Measure" 3rd Edition
-  - Location: `~/claude/literature/Probability_Theory/Probability_and_Measure_Third_Edition_Patrick_Billingsley.pdf`
+  - Location: `literature/Probability_Theory/Probability_and_Measure_Third_Edition_Patrick_Billingsley.pdf`
   - Key sections: Chapter 1 §2-6
 
 - **Target papers**: Knuth & Skilling
@@ -34,9 +34,9 @@ probability_theory/
 
 To verify a file:
 ```bash
-cd ~/claude/megalodon/probability_theory
-~/claude/megalodon/bin/megalodon -egal \
-  -I ~/claude/megalodon/Megalodon/examples/egal/PfgEAug2022Preamble.mgs \
+cd megalodon/probability_theory
+megalodon/bin/megalodon -egal \
+  -I megalodon/Megalodon/examples/egal/PfgEAug2022Preamble.mgs \
   01_sigma_algebras.mg
 ```
 

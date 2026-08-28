@@ -4,10 +4,10 @@ open Mettapedia.Languages.GF
 open Mettapedia.Languages.GF.HandCrafted.Abstract
 
 private def gfRglCzechRoot : System.FilePath :=
-  "~/claude/gf-rgl/src/czech"
+  "../externals/gf-rgl/src/czech"
 
 private def leanCzechRoot : System.FilePath :=
-  "~/claude/lean-projects/mettapedia/Mettapedia/Languages/GF/Czech"
+  "Mettapedia/Languages/GF/Czech"
 
 private def actualGFCzechModules : List (String × String) :=
   [ ("core.adjective", "AdjectiveCze.gf")

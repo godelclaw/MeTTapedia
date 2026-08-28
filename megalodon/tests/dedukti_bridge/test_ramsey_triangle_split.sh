@@ -20,7 +20,6 @@ fi
 
 # Caps
 : "${DEDUMAXMEM_MB:=8000}"
-ulimit -Sv $((DEDUMAXMEM_MB * 1024))
 
 VTIME="${VTIME:-1}"          # per-problem Vampire time limit (seconds)
 LIMIT="${LIMIT:-0}"          # process at most LIMIT problems; 0 = all

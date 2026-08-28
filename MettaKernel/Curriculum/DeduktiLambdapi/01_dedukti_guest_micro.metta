@@ -2,9 +2,9 @@
 ; Dedukti-as-guest micro-coverage v1.
 ;
 ; Sources:
-;   /home/aimama/aihub/repos/dedukti/examples/plus.dk
-;   /home/aimama/aihub/repos/dedukti/examples/FO.dk
-;   /home/aimama/aihub/repos/dedukti/examples/FO_theorems.dk  (context only)
+;   lean/externals/dedukti/examples/plus.dk
+;   lean/externals/dedukti/examples/FO.dk
+;   lean/externals/dedukti/examples/FO_theorems.dk  (context only)
 ;
 ; This file hosts a tiny .dk-shaped guest fragment in MIK.  It is not a port of
 ; Dedukti and not a replacement checker.  The guest syntax is data; covered

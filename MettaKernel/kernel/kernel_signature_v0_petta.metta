@@ -10,10 +10,10 @@
 ; rejected, forward references rejected, and axioms tracked as provenance.
 ;
 ; Run:
-;   cd /home/aimama/aihub/hyperon/PeTTa && ./run.sh /home/aimama/aihub/Mettapedia/MettaKernel/kernel/kernel_signature_v0_petta.metta --silent
+;   cd lean/externals/PeTTa && ./run.sh MettaKernel/kernel/kernel_signature_v0_petta.metta --silent
 ; =============================================================================
 
-!(import! &self /home/aimama/aihub/hyperon/PeTTa/lib/lib_he)
+!(import! &self ../../lean/externals/PeTTa/lib/lib_he)
 
 ; ---------- booleans and error discipline -----------------------------------
 (= (and_b True  $y) $y)

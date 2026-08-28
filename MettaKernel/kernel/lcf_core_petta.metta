@@ -13,8 +13,8 @@
 ; Soundness rests on (a) only these rule equations producing Thm, and (b) each
 ; rule being sound -- which is why the trusted core is tiny + audited.
 ;
-; Run:  cd /home/aimama/aihub/hyperon/PeTTa && ./run.sh \
-;         /home/aimama/aihub/Mettapedia/MettaKernel/kernel/lcf_core_petta.metta --silent
+; Run:  cd lean/externals/PeTTa && ./run.sh \
+;         MettaKernel/kernel/lcf_core_petta.metta --silent
 ; ============================================================================
 
 ; ---- hypothesis lists (HCons/HNil of Prop) ---------------------------------

@@ -10,7 +10,8 @@
 # repo-local copy only; literal (non-regex) replacement keeps the edits exact.
 set -u
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CETTA="/home/aimama/aihub/hyperon/CeTTa/cetta"
+REPO_ROOT="$(cd "$ROOT/../.." && pwd)"
+CETTA="${CETTA:-$REPO_ROOT/lean/externals/CeTTa/cetta}"
 ORACLE="$ROOT/ocoherence_hm_adequacy_v1.metta"
 EXPECTED_BASE=40
 TMP="$(mktemp -d "$ROOT/.ocoherence_mutation.XXXXXX")"

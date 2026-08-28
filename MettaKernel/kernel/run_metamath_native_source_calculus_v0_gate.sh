@@ -35,8 +35,7 @@ FRESH_REFERENCE="$LOGDIR/metamath_native_source_calculus_reference_v0.fresh.mett
 LEAN_EXPORT_LOG="$LOGDIR/native-source-calculus-export.log"
 if ! (
   cd "$LEAN_ROOT"
-  LEAN_NUM_THREADS=1 LAKE_JOBS=1 \
-    lake env lean --run "$LEAN_EXPORTER" "$SOURCE" "$FRESH_REFERENCE"
+  lake env lean --run "$LEAN_EXPORTER" "$SOURCE" "$FRESH_REFERENCE"
 ) >"$LEAN_EXPORT_LOG" 2>&1; then
   fail "Lean native-source export; log: $LEAN_EXPORT_LOG"
 fi

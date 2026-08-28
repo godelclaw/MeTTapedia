@@ -305,10 +305,9 @@ extended MPTP~5k dataset (originally derived from MML 5.94.1493 via the
 chainy filter; we use the same 800-problem slice as the PLN-kNN-NB
 sibling paper for direct comparability). Per-problem CPU limit is $30$~s,
 imposed both at the runner level (\lid{timeout 70s} hard wall) and inside
-E (\lid{--cpu-limit=30}). All runs use four parallel workers
-(\lid{parallel --jobs 4}). Each worker has a $10$~GiB virtual-memory cap
-(\lid{ulimit -v 10485760}). E's binary is built from
-\lpath{~/claude/eprover/} with the ABGC source files linked into
+E (\lid{--cpu-limit=30}). The runner's parallelism and resource policy are
+supplied by the caller. E's binary is built from an E prover source checkout
+with the ABGC source files linked into
 the heuristics library; the relevant flags and build steps are recorded in
 Sec.~\ref{sec:reproducibility}.
 
@@ -791,8 +790,7 @@ ABGC_LOG_PATH=atps/logs/abgc_telemetry/PHASE.log
   atps/logs/PHASE_chainy_val_30s.csv \
   4
 \end{lstlisting}
-with \lpath{ulimit -v 10485760} (10~GiB virtual-memory cap) imposed at the
-runner-wrapper level.
+with the runner-wrapper resource policy supplied by the caller.
 
 \subsection{CSV artifacts}
 

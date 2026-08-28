@@ -10,7 +10,7 @@
 ; rejected, forward references rejected, and axioms tracked as provenance.
 ;
 ; Run:
-;   /home/aimama/aihub/hyperon/CeTTa/cetta kernel_signature_v0.metta
+;   lean/externals/CeTTa/cetta kernel_signature_v0.metta
 ; =============================================================================
 
 ; ---------- booleans and error discipline -----------------------------------

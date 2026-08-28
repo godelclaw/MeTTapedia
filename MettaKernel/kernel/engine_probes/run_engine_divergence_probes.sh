@@ -2,8 +2,9 @@
 set -u
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CETTA="/home/aimama/aihub/hyperon/CeTTa/cetta"
-HYPERON="/home/aimama/aihub/hyperon/hyperon-experimental/target/debug/metta-repl"
+REPO_ROOT="$(cd "$ROOT/../../.." && pwd)"
+CETTA="${CETTA:-$REPO_ROOT/lean/externals/CeTTa/cetta}"
+HYPERON="${HYPERON:-metta-repl}"
 LOGDIR="$ROOT/logs"
 mkdir -p "$LOGDIR"
 

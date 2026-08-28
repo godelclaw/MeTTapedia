@@ -7,6 +7,12 @@ __pycache__/
 *.pyc
 *.env
 
+# Grammatical Framework compilation intermediates (selected portable `.pgf` outputs remain trackable).
+*.gfo
+
+# Generated DocText runtime grammar; regenerate it from the tracked `.gf` sources.
+lean/mettapedia/Mettapedia/DocText/gf_runtime/DocTextClaims.pgf
+
 *.backup
 
 *.tar
@@ -87,6 +93,7 @@ lean/mettapedia/scripts/*
 !lean/mettapedia/scripts/oeis_program_discovery_fixture.py
 !lean/mettapedia/scripts/test_oeis_program_discovery_fixture.py
 !lean/mettapedia/scripts/test_metamath_mm2_raw_unit.sh
+!lean/mettapedia/scripts/check_import_closure.py
 !lean/mettapedia/scripts/conformance/
 lean/mettapedia/scripts/conformance/*
 !lean/mettapedia/scripts/conformance/check_pc_authenticated_affine_replay.py

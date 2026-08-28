@@ -22,16 +22,20 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-GF_LD = "~/.local/gf-extract/usr/lib"
-PGF_PY_EGG = Path("~/.local/gf-extract/usr/local/lib/python3.12/dist-packages/pgf-1.1-py3.12-linux-x86_64.egg")
+GF_LD = os.environ.get("GF_LIBRARY_PATH", "")
+PGF_PY_EGG = os.environ.get("PGF_PY_EGG")
 
-ROOT = Path("~/claude")
-PGF_PATH = ROOT / "gf-wordnet/build/ParseEng.pgf"
-OUT_JSON = ROOT / "lean-projects/algorithms/gf_fragments/us_constitution/generated/us_constitution_parse_witnesses.json"
-CORRECTIONS_PATH = ROOT / "lean-projects/algorithms/gf_fragments/us_constitution/grammar_corrections.json"
-OUT_SIG = ROOT / "lean-projects/algorithms/Algorithms/GF/Generated/USConstitutionMainSig.lean"
-OUT_WITNESSES = ROOT / "lean-projects/mettapedia/Mettapedia/Languages/GF/USConstitution/Generated/Witnesses.lean"
-OUT_CONTEXT_COMPLETIONS = ROOT / "lean-projects/mettapedia/Mettapedia/Languages/GF/USConstitution/Generated/ContextCompletions.lean"
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parents[3]
+GF_WORDNET_ROOT = Path(
+    os.environ.get("GF_WORDNET_ROOT", REPO_ROOT / "lean/externals/gf-wordnet")
+).expanduser()
+PGF_PATH = GF_WORDNET_ROOT / "build/ParseEng.pgf"
+OUT_JSON = SCRIPT_DIR / "generated/us_constitution_parse_witnesses.json"
+CORRECTIONS_PATH = SCRIPT_DIR / "grammar_corrections.json"
+OUT_SIG = REPO_ROOT / "lean/algorithms/Algorithms/GF/Generated/USConstitutionMainSig.lean"
+OUT_WITNESSES = REPO_ROOT / "lean/mettapedia/Mettapedia/Languages/GF/USConstitution/Generated/Witnesses.lean"
+OUT_CONTEXT_COMPLETIONS = REPO_ROOT / "lean/mettapedia/Mettapedia/Languages/GF/USConstitution/Generated/ContextCompletions.lean"
 
 ARCHIVES_URL = "https://www.archives.gov/founding-docs/constitution-transcript"
 CONGRESS_URL = "https://constitution.congress.gov/constitution/"
@@ -195,6 +199,8 @@ CLAUSES = [
 
 
 def ensure_runtime_libs() -> None:
+    if not GF_LD:
+        return
     cur = os.environ.get("LD_LIBRARY_PATH", "")
     parts = [x for x in cur.split(":") if x]
     if GF_LD in parts:
@@ -564,7 +570,8 @@ def main() -> None:
     ensure_runtime_libs()
     if not PGF_PATH.exists():
         raise SystemExit(f"missing {PGF_PATH}; build ParseEng.pgf before exporting")
-    sys.path.insert(0, str(PGF_PY_EGG))
+    if PGF_PY_EGG:
+        sys.path.insert(0, PGF_PY_EGG)
     import pgf  # type: ignore
 
     pgf_obj = pgf.readPGF(str(PGF_PATH))

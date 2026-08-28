@@ -10,6 +10,7 @@ Clauses:
     (forces at most 5 false, i.e., at least 6 true)
 """
 from itertools import combinations
+from pathlib import Path
 
 # Graver-Yackel graph edges
 neighbors = {
@@ -49,7 +50,7 @@ print(f"Cardinality clauses: {len(card_clauses)}")
 print(f"Total clauses: {total_clauses}")
 
 # Write CNF
-cnf_path = "~/claude/lean-projects/ramsey36/Ramsey36/indep17_simple.cnf"
+cnf_path = Path(__file__).resolve().parent.parent / "Ramsey36/indep17_simple.cnf"
 with open(cnf_path, "w") as f:
     f.write(f"p cnf 17 {total_clauses}\n")
     for clause in edge_clauses:

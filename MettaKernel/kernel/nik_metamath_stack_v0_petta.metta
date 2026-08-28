@@ -1,4 +1,4 @@
-!(import! &self /home/aimama/aihub/hyperon/PeTTa/lib/lib_he)
+!(import! &self ../../lean/externals/PeTTa/lib/lib_he)
 
 ; =============================================================================
 ; nik_metamath_stack_v0.metta

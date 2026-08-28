@@ -2,7 +2,7 @@
 ; Dedukti cic.dk Stage-3 universes/cumulativity micro.
 ;
 ; Source:
-;   /home/aimama/aihub/repos/dedukti/libraries/theories/cic.dk
+;   lean/externals/dedukti/libraries/theories/cic.dk
 ;
 ; This extends the hosted Stage-1 cic.dk fragment with a minimal `max` / `lift`
 ; foothold so external guest proof terms can witness cumulativity and still be

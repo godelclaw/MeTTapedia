@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "title": "Shared Parser Artifact Schema for MeTTaIL-C",
-  "description": "Common artifact structure for language parser/syntax authority across all mettail-c language targets. Each language exports these artifacts; mettail-c consumes them generically.",
+  "description": "Common artifact vocabulary for language parser metadata and, where separately proved, executable syntax authorities. An artifact name or checksum alone establishes neither parser correctness nor language authority.",
   "requiredArtifacts": {
     "syntax_spec": {
       "description": "Primary syntax specification: lexical tokens, statement kinds, comment syntax.",

@@ -34,7 +34,7 @@ def main (args : List String) : IO Unit := do
   | _ => throw (IO.userError "usage: EmitGeneratedSigs <addOut> <revOut>")
 EOF
 
-if ! ( cd "$LEAN_PKG" && LEAN_NUM_THREADS=1 LAKE_JOBS=1 nice -n 19 \
+if ! ( cd "$LEAN_PKG" && \
        "$LAKE" build Mettapedia.GSLT.LanguageDef.MIEvalHostingGeneratedFiles ) \
      > "$tmpdir/build.log" 2>&1; then
   echo "  [generated-sig] FAIL: Lean prerequisite build failed"
@@ -42,7 +42,7 @@ if ! ( cd "$LEAN_PKG" && LEAN_NUM_THREADS=1 LAKE_JOBS=1 nice -n 19 \
   exit 1
 fi
 
-if ! ( cd "$LEAN_PKG" && LEAN_NUM_THREADS=1 LAKE_JOBS=1 nice -n 19 \
+if ! ( cd "$LEAN_PKG" && \
        "$LAKE" env lean --run "$tmpdir/EmitGeneratedSigs.lean" \
        "$tmpdir/add_generated.metta" "$tmpdir/rev_generated.metta" ) \
      > "$tmpdir/emit.log" 2>&1; then

@@ -2,8 +2,9 @@
 set -u
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CETTA="/home/aimama/aihub/hyperon/CeTTa/cetta"
-PETTA="/home/aimama/aihub/hyperon/PeTTa/run.sh"
+REPO_ROOT="$(cd "$ROOT/../.." && pwd)"
+CETTA="${CETTA:-$REPO_ROOT/lean/externals/CeTTa/cetta}"
+PETTA="${PETTA:-$REPO_ROOT/lean/externals/PeTTa/run.sh}"
 LOGDIR="$ROOT/parity_logs"
 mkdir -p "$LOGDIR"
 

@@ -10,7 +10,7 @@
 ;
 ;  Each paradigm shows POSITIVES (a real typed/sealed proof term checks) and a
 ;  NEGATIVE (a wrong proof is rejected).  Run:
-;    /home/aimama/aihub/hyperon/CeTTa/cetta curriculum_lf_demo.metta
+;    lean/externals/CeTTa/cetta curriculum_lf_demo.metta
 ; =============================================================================
 
 !(import! &self kernel_binding_waist_v1)

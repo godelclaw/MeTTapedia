@@ -9,7 +9,8 @@
 # never modified.  Literal (non-regex) string replacement keeps the edits exact.
 set -u
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CETTA="/home/aimama/aihub/hyperon/CeTTa/cetta"
+REPO_ROOT="$(cd "$ROOT/../.." && pwd)"
+CETTA="${CETTA:-$REPO_ROOT/lean/externals/CeTTa/cetta}"
 ORACLE="$ROOT/conv_soundness_shadow_v1.metta"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT

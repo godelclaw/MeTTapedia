@@ -6,10 +6,12 @@ import subprocess
 import sys
 from pathlib import Path
 
-GF_LD = '~/.local/gf-extract/usr/lib'
+GF_LD = os.environ.get('GF_LIBRARY_PATH', '')
 
 
 def ensure_runtime_libs():
+    if not GF_LD:
+        return
     cur = os.environ.get('LD_LIBRARY_PATH', '')
     parts = [x for x in cur.split(':') if x]
     if GF_LD in parts:
@@ -21,16 +23,20 @@ def ensure_runtime_libs():
 
 ensure_runtime_libs()
 
-ROOT = Path('~/claude/lean-projects/algorithms/gf_fragments')
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parents[2]
+ROOT = SCRIPT_DIR
 GENERATED = ROOT / 'generated'
 TEMP = ROOT / 'project_core_json_export'
-GF_LIB = Path('~/claude/gf-rgl')
-GF_BIN = Path('~/claude/lean-projects/mettapedia/Mettapedia/Languages/GF/SUMO/eng/gf')
+GF_LIB = Path(
+    os.environ.get('GF_RGL_ROOT', REPO_ROOT / 'lean/externals/gf-rgl')
+).expanduser()
+GF_BIN = os.environ.get('GF_BIN', 'gf')
 MANIFEST_PATH = GENERATED / 'project_core_manifest.json'
 
 TARGETS = [
-    ('english', GF_LIB / 'src' / 'english' / 'GrammarEng.gf', 'GrammarEng.project_core'),
-    ('czech', GF_LIB / 'src' / 'czech' / 'GrammarCze.gf', 'GrammarCze.project_core'),
+    ('english', Path('src/english/GrammarEng.gf'), 'GrammarEng.project_core'),
+    ('czech', Path('src/czech/GrammarCze.gf'), 'GrammarCze.project_core'),
 ]
 
 
@@ -58,7 +64,7 @@ def compile_target(source_gf: Path, stem: str) -> tuple[Path, Path]:
         shutil.rmtree(TEMP)
     TEMP.mkdir(parents=True, exist_ok=True)
     cmd = [
-        str(GF_BIN),
+        GF_BIN,
         '--output-format=json',
         f'--output-dir={TEMP}',
         f'--path={gf_path_arg()}',
@@ -112,13 +118,13 @@ def main() -> None:
         'projectCorePlusSymbolCount': manifest['scope']['projectCorePlusSymbolCount'],
         'targets': {},
     }
-    for label, source_gf, stem in TARGETS:
-        json_out, pgf_out = compile_target(source_gf, stem)
+    for label, source_rel, stem in TARGETS:
+        json_out, pgf_out = compile_target(GF_LIB / source_rel, stem)
         exported = load_json(json_out)
         report['targets'][label] = {
-            'source': str(source_gf),
-            'json': str(json_out),
-            'pgf': str(pgf_out),
+            'source': f'$GF_RGL_ROOT/{source_rel.as_posix()}',
+            'json': str(json_out.relative_to(REPO_ROOT)),
+            'pgf': str(pgf_out.relative_to(REPO_ROOT)),
             'summary': overlap_report(manifest, exported),
         }
     out = GENERATED / 'project_core_export_report.json'

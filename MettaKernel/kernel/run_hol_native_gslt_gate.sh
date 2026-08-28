@@ -48,7 +48,7 @@ check_source_digest "HOL4 theorem kernel" "$HOL4_KERNEL" "$HOL4_KERNEL_DIGEST"
 
 if ! (
   cd "$LEAN_ROOT"
-  LEAN_NUM_THREADS=1 LAKE_JOBS=1 lake build "$ADEQUACY_MODULE"
+  lake build "$ADEQUACY_MODULE"
 ) >"$LOGDIR/hol_native_source_adequacy_build.log" 2>&1; then
   echo "HOL NATIVE GSLT GATE: FAIL (Lean source-adequacy build failed; log: $LOGDIR/hol_native_source_adequacy_build.log)"
   exit 1
@@ -56,7 +56,7 @@ fi
 
 if ! (
   cd "$LEAN_ROOT"
-  LEAN_NUM_THREADS=1 LAKE_JOBS=1 lake env lean --run "$EXPORTER" "$FRESH"
+  lake env lean --run "$EXPORTER" "$FRESH"
 ) >"$EXPORT_LOG" 2>&1; then
   echo "HOL NATIVE GSLT GATE: FAIL (export failed; log: $EXPORT_LOG)"
   exit 1

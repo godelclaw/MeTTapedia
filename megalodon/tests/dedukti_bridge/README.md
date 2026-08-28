@@ -15,7 +15,6 @@ This directory contains tests and tools for the Vampire -> Dedukti -> Megalodon 
 DEDUSKIP_SH=1 python3 run_dedukti_tests.py
 
 # Run everything, with memory cap (recommended):
-ulimit -Sv 8000000 -St 900
 python3 run_dedukti_tests.py --include-sh --max-mem-mb 8000
 ```
 
