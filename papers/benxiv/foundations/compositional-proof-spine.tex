@@ -2149,6 +2149,46 @@ research front than a uniform-curvature hypothesis: the high-negative-
 curvature branch is retained explicitly instead of being discarded by an
 invalid unsigned-defect inference.
 
+The original v23 manuscript proposes a different genuinely two-dimensional
+move: its Theorem~4.9 claims that annular Kempe-closure face generators span
+the whole boundary-zero cycle space.  That would be highly relevant here, so
+we rechecked the actual proof rather than relying on its later summaries.  One
+of its two concluding inferences is not valid as stated.
+
+\begin{proposition}[the v23 annihilator inference needs a containment lemma]
+\label{prop:v23-annihilator-gap}
+\Srefuted{Mettapedia.GraphTheory.FourColor.GoertzelV24V23AnnihilatorGap.trivial_relative_annihilator_but_not_contained}
+For subspaces $U,W$ of a finite-dimensional space with a nondegenerate
+bilinear form, the condition
+\[
+                         U^\perp\cap W=\{0\}
+\]
+does not by itself imply $W\subseteq U$.
+\end{proposition}
+
+\begin{proof}
+Over $\mathbb F_2$, take the ambient space $\mathbb F_2^2$ with its standard
+dot product, let $W=\langle(1,0)\rangle$, and let
+$U=\langle(1,1)\rangle$.  A vector $(x,0)\in W$ orthogonal to $(1,1)$ has
+$x=0$, so $U^\perp\cap W=\{0\}$.  But $(1,0)\notin U$, hence
+$W\nsubseteq U$.  The Lean theorem proves both assertions on literal
+two-coordinate functions over $\mathbb Z/2\mathbb Z$.
+\end{proof}
+
+In v23, $W$ is $W_0(H)$ and $U$ is the span of the purified face generators.
+The proof establishes the displayed annihilator condition and immediately
+concludes $W_0(H)\subseteq U$.  It does not first establish $U\subseteq
+W_0(H)$; indeed the definition of a purified generator explicitly permits
+support on boundary edges, while $W_0(H)$ vanishes there.  The dual-forest
+peeling also treats the unique \emph{tree} edge incident with a leaf face as
+though it were the unique remaining dual-graph edge, which need not hold in a
+spanning forest.  Consequently the desired v23 spanning inclusion is not
+refuted by Proposition~\ref{prop:v23-annihilator-gap}, but its printed proof
+does not establish it.  It cannot presently serve as the missing high-width
+M1 theorem; a corrected need-based generator theorem would have to prove the
+actual route discrepancies lie in the generated subspace and then connect
+those algebraic moves to a strict physical replacement.
+
 One elementary combinatorial ingredient of the long-boundary branch is the
 following sweep lemma.
 
