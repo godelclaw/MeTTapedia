@@ -92,6 +92,30 @@ audited framed degree/stub condition on its graph-side realization. -/
 def WellFormed (source : SourceTrail G) : Prop :=
   source.toFramedTrailData.WellFormed
 
+/-- A well-formed source trail is subcubic.  The two missing-edge defects
+have degree two, the frozen interface stubs have degree one, and every other
+vertex has degree three. -/
+theorem incidentEdgeFinset_card_le_three
+    (source : SourceTrail G) (hsource : source.WellFormed) (vertex : V) :
+    (incidentEdgeFinset G vertex).card ≤ 3 := by
+  by_cases hdefect : ∃ i : Fin 2, vertex = source.defectVertex i
+  · rcases hdefect with ⟨i, rfl⟩
+    have hdegree :
+        (incidentEdgeFinset G (source.defectVertex i)).card = 2 := by
+      simpa [WellFormed, toFramedTrailData] using
+        hsource.defect_degree_two i
+    omega
+  · by_cases hstub : vertex ∈ source.frozenInterfaceStubVertices
+    · have hdegree : (incidentEdgeFinset G vertex).card = 1 := by
+        simpa [WellFormed, toFramedTrailData] using
+          hsource.frozen_stub_degree_one vertex hstub
+      omega
+    · have hdegree : (incidentEdgeFinset G vertex).card = 3 := by
+        simpa [WellFormed, toFramedTrailData] using
+          hsource.cubic_elsewhere vertex
+            (fun i heq => hdefect ⟨i, heq⟩) hstub
+      omega
+
 /-- The source constructor proves, rather than assumes, that its two container
 supports and remaining between-region core exhaust precisely the non-frozen
 edges of the framed graph. -/

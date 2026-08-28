@@ -35,6 +35,47 @@ namespace SourceTrail
 
 namespace AnnularEmbedding
 
+/-- Every face visited by a source transverse layer is an internal annular
+face.  The centre is one of the selected internal corridor faces, and each
+endpoint is a full-dual neighbour covered by boundary cleanliness. -/
+theorem SourceConsecutiveSlabInterface.localLayerWalk_support_internal
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    {realization : BoundaryCleanCorridorRealization embedded blockLength}
+    {htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    (interface : SourceConsecutiveSlabInterface realization htwoSided hunique
+      leftInterior hnext)
+    (face : AmbientFace (Finset.univ : Finset
+      (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (hface : face ∈ interface.localLayerWalk.support) :
+    face.1 ∈ embedded.cellulation.interiorFaces := by
+  have hpositive : 0 < blockLength := by omega
+  simp only [SourceConsecutiveSlabInterface.localLayerWalk,
+    SimpleGraph.Walk.support_cons, SimpleGraph.Walk.support_nil,
+    List.mem_cons] at hface
+  rcases hface with rfl | rfl | hface
+  · apply realization.coreWalk_neighbor_internal hpositive leftInterior.center
+    rw [realization.coreWalk_getVert hpositive leftInterior.center,
+      ← realization.toCleanOrbitHexCorridorSkeleton_faceAt]
+    exact interface.firstLayerFace_adjacent_centerLayerFace.symm
+  · rw [SourceConsecutiveSlabInterface.centerLayerFace,
+      realization.toCleanOrbitHexCorridorSkeleton_faceAt,
+      ← realization.coreWalk_getVert hpositive leftInterior.center]
+    exact (realization.coreWalk.getVert leftInterior.center.val).2
+  · rcases hface with rfl | hfalse
+    · apply realization.coreWalk_neighbor_internal hpositive leftInterior.center
+      rw [realization.coreWalk_getVert hpositive leftInterior.center,
+        ← realization.toCleanOrbitHexCorridorSkeleton_faceAt]
+      exact interface.centerLayerFace_adjacent_secondLayerFace
+    · simp at hfalse
+
 /-- The exact finite noncollision data needed to close a rail chain with its
 two endpoint transverse layers.  This is a geometric condition on the
 literal source realization, not a consequence of finite profile equality. -/
@@ -60,6 +101,12 @@ structure SourceCornerAlignedRailChain.BoundarySeparation
       (nextCorridorInterior
         (nextCorridorInterior leftInterior hnext) hnextNext) hnextThird}
     (chain : SourceCornerAlignedRailChain first last) : Prop where
+  firstRail_support_internal :
+    ∀ face ∈ chain.firstRail.support,
+      face.1 ∈ embedded.cellulation.interiorFaces
+  secondRail_support_internal :
+    ∀ face ∈ chain.secondRail.support,
+      face.1 ∈ embedded.cellulation.interiorFaces
   firstRail_support_disjoint_secondRail :
     chain.firstRail.support.Disjoint chain.secondRail.support
   firstRail_avoids_firstCenter :
@@ -138,6 +185,54 @@ noncomputable def SourceCornerAlignedRailChain.alignedBoundaryWalk
       first.toInterface.firstLayerFace first.toInterface.firstLayerFace :=
   (((first.toInterface.localLayer.walk.append chain.secondRail).append
     last.toInterface.localLayer.walk.reverse).append chain.firstRail.reverse)
+
+/-- The completed rail-chain boundary stays wholly in the annular interior.
+This is the exact topological safety fact later used to keep the cut disjoint
+from both source-container cycles. -/
+theorem SourceCornerAlignedRailChain.alignedBoundaryWalk_support_internal
+    {source : SourceTrail G}
+    {embedded : source.AnnularEmbedding} {blockLength : Nat}
+    {realization : BoundaryCleanCorridorRealization embedded blockLength}
+    {htwoSided : OrbitFacesTwoSided
+      embedded.cellulation.rotation.toRotationSystem}
+    {hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary embedded.cellulation.rotation.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace embedded.cellulation.rotation.toRotationSystem))}
+    {leftInterior : CorridorInterior blockLength}
+    {hnext : leftInterior.center.val + 2 < blockLength}
+    {hnextNext : (nextCorridorInterior leftInterior hnext).center.val + 2 < blockLength}
+    {hnextThird :
+      (nextCorridorInterior
+        (nextCorridorInterior leftInterior hnext) hnextNext).center.val + 2 < blockLength}
+    {first : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      leftInterior hnext}
+    {last : SourceCornerAlignedSlabInterface realization htwoSided hunique
+      (nextCorridorInterior
+        (nextCorridorInterior leftInterior hnext) hnextNext) hnextThird}
+    (chain : SourceCornerAlignedRailChain first last)
+    (hseparation : chain.BoundarySeparation)
+    (face : AmbientFace (Finset.univ : Finset
+      (OrbitFace embedded.cellulation.rotation.toRotationSystem)))
+    (hface : face ∈ chain.alignedBoundaryWalk.support) :
+    face.1 ∈ embedded.cellulation.interiorFaces := by
+  rw [SourceCornerAlignedRailChain.alignedBoundaryWalk,
+    SimpleGraph.Walk.support_append] at hface
+  rcases List.mem_append.mp hface with hfirstSecondLast | hfirstRail
+  · rw [SimpleGraph.Walk.support_append] at hfirstSecondLast
+    rcases List.mem_append.mp hfirstSecondLast with hfirstSecond | hlast
+    · rw [SimpleGraph.Walk.support_append] at hfirstSecond
+      rcases List.mem_append.mp hfirstSecond with hfirst | hsecond
+      · exact first.toInterface.localLayerWalk_support_internal face hfirst
+      · exact hseparation.secondRail_support_internal face
+          (List.mem_of_mem_tail hsecond)
+    · apply last.toInterface.localLayerWalk_support_internal face
+      have hlast' := List.mem_of_mem_tail hlast
+      simpa [SourceConsecutiveSlabInterface.localLayer,
+        SimpleGraph.Walk.support_reverse] using hlast'
+  · apply hseparation.firstRail_support_internal face
+    have hfirstRail' := List.mem_of_mem_tail hfirstRail
+    simpa [SimpleGraph.Walk.support_reverse] using hfirstRail'
 
 /-- Explicit endpoint and rail separation turns a finite source rail chain
 into a simple facial-dual cycle. -/

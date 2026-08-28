@@ -54,9 +54,12 @@ tree reformulation the missing global statement is a uniform branchwidth
 bound, equivalently exclusion of one fixed wall from least obstructions.
 The generic finite-tree descent, conversion of connected edge shores to
 connected vertex shores without width loss, the structural physical splice,
-and the mesh obstruction are machine-checked.  The connected
+and the mesh obstruction are machine-checked.  A boundary-separated
+three-interface source rail segment now supplies a canonically oriented
+saturated cut, connected edge shores, and a nonempty proper majority core.
+The connected
 branch-decomposition theorem is a named external conditional; wall exclusion
-and the exact finite-state supply are not proved \\
+and the arbitrary-length nested exact finite-state supply are not proved \\
 $D_2$ & Count across every actual ordered noose cut factors through a finite
 boundary-word relation, and cumulative support is deletable on repetition &
 the physical port-tangle gluing bijection, matrix law, support
@@ -830,8 +833,9 @@ hypotheses expose, rather than suppress, the remaining global geometry.
 Let three consecutive transverse source interfaces be joined on their two
 sides by the literal facial-dual rails of the intervening corridor cells.
 Assume that each composed rail is a simple path, that the two rail supports
-are disjoint, and that neither rail visits the centre face of either endpoint
-interface.  Close the two rails by the transverse two-edge paths at the
+are disjoint, that every face on either rail is an internal annular face,
+and that neither rail visits the centre face of either endpoint interface.
+Close the two rails by the transverse two-edge paths at the
 endpoint interfaces, and let $W$ be the resulting closed facial-dual walk.
 If $X(W)$ is the set of primal edges crossed by $W$, then $W$ is a
 simple dual cycle and some connected component of $G-X(W)$ has graph
@@ -881,14 +885,78 @@ is checked as
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedVertexSideEdgeShore.connected_edgeShores_of_connected_vertexSides}.
 \end{proof}
 
-This lemma is not yet Proposition~\ref{prop:target-forced-cut-chain}.  It
-constructs a saturated vertex-side boundary and complementary connected edge
-shores for one three-interface segment.
+\begin{corollary}[the source rail segment has an oriented majority-shore certificate]
+\label{cor:source-rail-segment-majority-shore}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorRailChainComponent.alignedBoundary_innerIncidentShore_certificate}
+Assume in addition that the source trail is well formed.  Let
+\(C_{\mathrm{out}}\) be the component of \(G-X(W)\) containing the
+named outer-container root, let \(U_{\mathrm{in}}\) be its vertex
+complement, and put in \(S_{\mathrm{in}}\) every edge incident with
+\(U_{\mathrm{in}}\).  Then
+\[
+ \partial C_{\mathrm{out}}=X(W),\qquad
+ S_{\mathrm{in}}\text{ and }E(G)\setminus S_{\mathrm{in}}
+ \text{ are connected edge shores},
+\]
+and the majority vertex side of \(S_{\mathrm{in}}\) is nonempty and
+proper.
+\end{corollary}
+
+\begin{proof}
+The completed boundary visits only internal faces: this is an explicit
+hypothesis on the two rails, while each endpoint transversal is internal by
+the boundary-clean source realization.  Consequently \(X(W)\) is disjoint
+from the outer-hole boundary.  The named outer-container cycle therefore
+survives the deletion and lies in the component rooted at its own basepoint.
+This fixes the annular orientation without choosing a component after the
+fact.  These two steps are checked as
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorRailChainComponent.alignedBoundaryCutEdges_disjoint_outerHoleBoundary}
+and
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorRailChainComponent.outerContainer_hasCycleOn_alignedBoundaryOuterComponent}.
+
+The prescribed-component form of the dual-cycle separator now gives the
+exact boundary and connectedness of both oriented vertex sides:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedDualCycleExactBoundary.component_exactBoundary_connectedSides_of_dualCycle}
+and
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorRailChainComponent.alignedBoundaryOuterComponent_exactBoundary_connectedSides}.
+The incident-edge construction from the preceding lemma then gives the two
+connected edge shores.
+
+It remains to check that ``majority'' is not vacuous.  A simple dual cycle has
+length at least three and, by unique shared-edge incidence, crosses that many
+distinct primal edges.  Choose two.  If their endpoints on
+\(U_{\mathrm{in}}\) coincide, that vertex already has two incident edges;
+otherwise a path in the connected inner side starts with an internal edge
+which, together with one crossing edge, gives the same conclusion.  Hence
+some inner vertex has at least two incident edges, all in
+\(S_{\mathrm{in}}\), and is a majority vertex.
+
+For the other direction, every well-formed source-trail vertex has degree at
+most three: ordinary internal vertices have degree three, the two defects
+degree two, and frozen stubs degree one.  At a vertex of the surviving outer
+cycle, two distinct incident cycle edges lie outside
+\(S_{\mathrm{in}}\); at most one incident edge can lie inside it, so that
+vertex is not a majority vertex.  The local degree and subcubic steps are
+checked as
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedVertexSideEdgeShore.exists_two_le_degree_of_connected_side_of_two_crossing_edges},
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SourceTrailAlignment.SourceTrail.incidentEdgeFinset_card_le_three},
+and
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedVertexSideEdgeShore.exists_not_majorityVertexSide_incidentEdgeShore_of_complement_cycle_of_subcubic}.
+\end{proof}
+
+These results are not yet Proposition~\ref{prop:target-forced-cut-chain}.
+They now construct, for one three-interface segment, a saturated boundary with a
+canonical outer-root orientation, complementary connected edge shores, and a
+nonempty proper majority core.  The internal-support premise is load-bearing:
+rail disjointness alone would not prevent the completed boundary from running
+through a cap.
+
 The remaining source adapter must compose rails over arbitrary length, prove
-the required noncollision uniformly, choose the successive component sides
-consistently so that the resulting edge shores are strictly nested, establish
-nonempty majority cores on both sides from the protected inner and outer
-cycle material, and then provide the roots and uniform width bounds consumed by
+the separation hypotheses uniformly, and show that the canonically oriented
+shores obtained from successive right endpoints are strictly nested.  It must
+also transport these open source-trail shores to the closed ambient cubic map,
+fix the roots and uniform width bounds, and identify their ordered Count states
+with those consumed by
 Theorem~\ref{thm:literal-majority-shore-chain-descent}.
 
 There is a second, equally compositional way to state the same structural

@@ -56,6 +56,126 @@ theorem incidentEdgeShore_mono {first second : V → Prop}
   exact (mem_incidentEdgeShore_iff second edge).2
     ⟨vertex, hvertexEdge, hsubset vertex hvertex⟩
 
+/-- Every vertex on the chosen side is a majority vertex of its incident-edge
+shore in a cubic graph: all three of its incident edges were assigned to that
+shore. -/
+theorem majorityVertexSide_incidentEdgeShore_of_side
+    (hcubic : ∀ vertex : V, (incidentEdgeFinset G vertex).card = 3)
+    (side : V → Prop) {vertex : V} (hvertex : side vertex) :
+    majorityVertexSide G (incidentEdgeShore G side) vertex := by
+  have hincident :
+      shoreIncidentEdges G (incidentEdgeShore G side) vertex =
+        incidentEdgeFinset G vertex := by
+    ext edge
+    rw [mem_shoreIncidentEdges_iff]
+    simp only [incidentEdgeFinset, Finset.mem_filter, Finset.mem_univ,
+      true_and]
+    constructor
+    · exact fun hedge => hedge.1
+    · intro hedge
+      exact ⟨hedge,
+        (mem_incidentEdgeShore_iff side edge).2
+          ⟨vertex, hedge, hvertex⟩⟩
+  unfold majorityVertexSide
+  rw [hincident, hcubic vertex]
+  omega
+
+/-- Global cubicity is unnecessary for the chosen-side direction: a vertex
+on the chosen side is a majority vertex as soon as it has at least two
+ambient incident edges, because all of those edges enter the incident-edge
+shore. -/
+theorem majorityVertexSide_incidentEdgeShore_of_side_of_two_le_degree
+    (side : V → Prop) {vertex : V} (hvertex : side vertex)
+    (hdegree : 2 ≤ (incidentEdgeFinset G vertex).card) :
+    majorityVertexSide G (incidentEdgeShore G side) vertex := by
+  have hincident :
+      shoreIncidentEdges G (incidentEdgeShore G side) vertex =
+        incidentEdgeFinset G vertex := by
+    ext edge
+    rw [mem_shoreIncidentEdges_iff]
+    simp only [incidentEdgeFinset, Finset.mem_filter, Finset.mem_univ,
+      true_and]
+    constructor
+    · exact fun hedge => hedge.1
+    · intro hedge
+      exact ⟨hedge,
+        (mem_incidentEdgeShore_iff side edge).2
+          ⟨vertex, hedge, hvertex⟩⟩
+  unfold majorityVertexSide
+  rw [hincident]
+  exact hdegree
+
+/-- Two distinct crossing edges of a connected vertex side force some
+vertex on that side to have ambient degree at least two.  If the two edges
+share their side endpoint they already witness the claim; otherwise the
+first edge of a path inside the connected side supplements one crossing
+edge. -/
+theorem exists_two_le_degree_of_connected_side_of_two_crossing_edges
+    (side : V → Prop) (hconnected : (G.induce side).Connected)
+    {first second : G.edgeSet} (hne : first ≠ second)
+    (hfirst : EdgeCrossesVertexSide G side first)
+    (hsecond : EdgeCrossesVertexSide G side second) :
+    ∃ vertex, side vertex ∧ 2 ≤ (incidentEdgeFinset G vertex).card := by
+  rcases hfirst with ⟨firstIn, firstOut, hfirstInEdge, _hfirstOutEdge,
+    hfirstIn, hfirstOut⟩
+  rcases hsecond with ⟨secondIn, secondOut, hsecondInEdge, _hsecondOutEdge,
+    hsecondIn, hsecondOut⟩
+  by_cases hsame : firstIn = secondIn
+  · subst secondIn
+    refine ⟨firstIn, hfirstIn, ?_⟩
+    have hpairCard : ({first, second} : Finset G.edgeSet).card = 2 := by
+      simp [hne]
+    rw [← hpairCard]
+    apply Finset.card_le_card
+    intro edge hedge
+    simp only [Finset.mem_insert, Finset.mem_singleton] at hedge
+    rcases hedge with rfl | rfl
+    · simpa [incidentEdgeFinset] using hfirstInEdge
+    · simpa [incidentEdgeFinset] using hsecondInEdge
+  · rcases hconnected ⟨firstIn, hfirstIn⟩ ⟨secondIn, hsecondIn⟩ with
+      ⟨walk⟩
+    have hends : (⟨firstIn, hfirstIn⟩ : {vertex // side vertex}) ≠
+        ⟨secondIn, hsecondIn⟩ := by
+      intro heq
+      exact hsame (congrArg Subtype.val heq)
+    have hnotNil : ¬ walk.Nil := walk.not_nil_of_ne hends
+    let internalEdge : G.edgeSet :=
+      ⟨s(firstIn, walk.snd.1), walk.adj_snd hnotNil⟩
+    have hinternalIncident :
+        internalEdge ∈ incidentEdgeFinset G firstIn := by
+      simp [incidentEdgeFinset, internalEdge]
+    have hinternalNe : internalEdge ≠ first := by
+      intro heq
+      have hfirstOutInternal :
+          firstOut ∈ (internalEdge : Sym2 V) := by
+        rw [heq]
+        exact _hfirstOutEdge
+      have hcases : firstOut = firstIn ∨ firstOut = walk.snd.1 := by
+        simpa [internalEdge, Sym2.mem_iff] using hfirstOutInternal
+      rcases hcases with hroot | hnext
+      · exact hfirstOut (hroot ▸ hfirstIn)
+      · exact hfirstOut (hnext ▸ walk.snd.2)
+    refine ⟨firstIn, hfirstIn, ?_⟩
+    have hpairCard : ({first, internalEdge} : Finset G.edgeSet).card = 2 := by
+      simp [Ne.symm hinternalNe]
+    rw [← hpairCard]
+    apply Finset.card_le_card
+    intro edge hedge
+    simp only [Finset.mem_insert, Finset.mem_singleton] at hedge
+    rcases hedge with rfl | rfl
+    · simpa [incidentEdgeFinset] using hfirstInEdge
+    · exact hinternalIncident
+
+/-- In a cubic graph, any nonempty chosen vertex side supplies a nonempty
+majority core for its incident-edge shore. -/
+theorem exists_majorityVertexSide_incidentEdgeShore
+    (hcubic : ∀ vertex : V, (incidentEdgeFinset G vertex).card = 3)
+    (side : V → Prop) (hnonempty : ∃ vertex, side vertex) :
+    ∃ vertex, majorityVertexSide G (incidentEdgeShore G side) vertex := by
+  rcases hnonempty with ⟨vertex, hvertex⟩
+  exact ⟨vertex,
+    majorityVertexSide_incidentEdgeShore_of_side hcubic side hvertex⟩
+
 /-- If two vertices lie on one graph edge, then they coincide or are
 adjacent. -/
 private theorem eq_or_adj_of_mem_edge
@@ -195,6 +315,124 @@ theorem mem_complement_incidentEdgeShore_iff
   push Not
   rfl
 
+/-- A cycle wholly in the opposite vertex side supplies a majority vertex
+for the complementary edge shore.  At the root of the cycle, its first and
+last edges are distinct internal opposite-side edges. -/
+theorem exists_majorityVertexSide_complement_incidentEdgeShore_of_cycle
+    (side : V → Prop)
+    (hcycle : HasCycleOnSide G (fun vertex => ¬ side vertex)) :
+    ∃ vertex,
+      majorityVertexSide G
+        (Finset.univ \ incidentEdgeShore G side) vertex := by
+  rcases hcycle with ⟨root, hroot, walk, hwalkCycle, hwalkSide⟩
+  cases walk with
+  | nil => exact (hwalkCycle.not_nil SimpleGraph.Walk.nil_nil).elim
+  | cons hadj tail =>
+      have htailNotNil : ¬ tail.Nil :=
+        SimpleGraph.Walk.not_nil_of_isCycle_cons hwalkCycle
+      have hfirstNotTail : s(root, tail.getVert 0) ∉ tail.edges := by
+        simpa using
+          ((SimpleGraph.Walk.cons_isCycle_iff tail hadj).1 hwalkCycle).2
+      have hlastMem : s(tail.penultimate, root) ∈ tail.edges :=
+        tail.mk_penultimate_end_mem_edges htailNotNil
+      let firstEdge : G.edgeSet :=
+        ⟨s(root, tail.getVert 0), (G.mem_edgeSet).2 (by simpa using hadj)⟩
+      let lastEdge : G.edgeSet :=
+        ⟨s(tail.penultimate, root),
+          (G.mem_edgeSet).2 (tail.adj_penultimate htailNotNil)⟩
+      have hnext : ¬ side (tail.getVert 0) := by
+        apply hwalkSide (tail.getVert 0)
+        simp
+      have hpenultimate : ¬ side tail.penultimate := by
+        apply hwalkSide tail.penultimate
+        simp only [SimpleGraph.Walk.support_cons, List.mem_cons]
+        exact Or.inr
+          (List.mem_of_mem_dropLast
+            (tail.penultimate_mem_dropLast_support htailNotNil))
+      have hfirstComplement :
+          firstEdge ∈ Finset.univ \ incidentEdgeShore G side := by
+        apply (mem_complement_incidentEdgeShore_iff side firstEdge).2
+        intro vertex hvertex
+        simp only [firstEdge, Sym2.mem_iff] at hvertex
+        rcases hvertex with rfl | rfl
+        · exact hroot
+        · exact hnext
+      have hlastComplement :
+          lastEdge ∈ Finset.univ \ incidentEdgeShore G side := by
+        apply (mem_complement_incidentEdgeShore_iff side lastEdge).2
+        intro vertex hvertex
+        simp only [lastEdge, Sym2.mem_iff] at hvertex
+        rcases hvertex with rfl | rfl
+        · exact hpenultimate
+        · exact hroot
+      have hedgesNe : firstEdge ≠ lastEdge := by
+        intro heq
+        have hvalue : s(root, tail.getVert 0) =
+            s(tail.penultimate, root) :=
+          congrArg Subtype.val heq
+        rw [← hvalue] at hlastMem
+        exact hfirstNotTail hlastMem
+      have hfirstIncident :
+          firstEdge ∈ shoreIncidentEdges G
+            (Finset.univ \ incidentEdgeShore G side) root := by
+        rw [mem_shoreIncidentEdges_iff]
+        exact ⟨by simp [firstEdge], hfirstComplement⟩
+      have hlastIncident :
+          lastEdge ∈ shoreIncidentEdges G
+            (Finset.univ \ incidentEdgeShore G side) root := by
+        rw [mem_shoreIncidentEdges_iff]
+        exact ⟨by simp [lastEdge], hlastComplement⟩
+      have hpairSubset : ({firstEdge, lastEdge} : Finset G.edgeSet) ⊆
+          shoreIncidentEdges G
+            (Finset.univ \ incidentEdgeShore G side) root := by
+        intro edge hedge
+        simp only [Finset.mem_insert, Finset.mem_singleton] at hedge
+        rcases hedge with rfl | rfl
+        · exact hfirstIncident
+        · exact hlastIncident
+      refine ⟨root, ?_⟩
+      unfold majorityVertexSide
+      have hpairCard : ({firstEdge, lastEdge} : Finset G.edgeSet).card = 2 := by
+        simp [hedgesNe]
+      rw [← hpairCard]
+      exact Finset.card_le_card hpairSubset
+
+/-- In a cubic graph, an opposite-side cycle therefore supplies a vertex
+outside the majority core of the incident-edge shore. -/
+theorem exists_not_majorityVertexSide_incidentEdgeShore_of_complement_cycle
+    (hcubic : ∀ vertex : V, (incidentEdgeFinset G vertex).card = 3)
+    (side : V → Prop)
+    (hcycle : HasCycleOnSide G (fun vertex => ¬ side vertex)) :
+    ∃ vertex, ¬ majorityVertexSide G (incidentEdgeShore G side) vertex := by
+  rcases
+      exists_majorityVertexSide_complement_incidentEdgeShore_of_cycle
+        (G := G) side hcycle with
+    ⟨vertex, hvertex⟩
+  exact ⟨vertex,
+    (majorityVertexSide_complement_iff hcubic
+      (incidentEdgeShore G side) vertex).1 hvertex⟩
+
+/-- The opposite-cycle conclusion needs only subcubicity.  The cycle gives
+two distinct incident edges in the complementary shore; if the ambient
+degree is at most three, at most one incident edge remains in the chosen
+shore.  This is the form appropriate to a source trail, whose two defects
+have degree two and whose frozen stubs have degree one. -/
+theorem exists_not_majorityVertexSide_incidentEdgeShore_of_complement_cycle_of_subcubic
+    (hsubcubic : ∀ vertex : V, (incidentEdgeFinset G vertex).card ≤ 3)
+    (side : V → Prop)
+    (hcycle : HasCycleOnSide G (fun vertex => ¬ side vertex)) :
+    ∃ vertex, ¬ majorityVertexSide G (incidentEdgeShore G side) vertex := by
+  rcases
+      exists_majorityVertexSide_complement_incidentEdgeShore_of_cycle
+        (G := G) side hcycle with
+    ⟨vertex, hcomplementMajority⟩
+  refine ⟨vertex, ?_⟩
+  have hsum := card_shoreIncidentEdges_add_complement
+    (G := G) (incidentEdgeShore G side) vertex
+  have hdegree := hsubcubic vertex
+  simp only [majorityVertexSide] at hcomplementMajority ⊢
+  omega
+
 /-- If the complementary induced vertex side is connected, then the
 complement of the incident-edge shore is connected.  Every edge in this
 complement has both endpoints on the complementary side. -/
@@ -240,6 +478,32 @@ theorem connected_edgeShores_of_connected_vertexSides
       EdgeShoreConnected G (Finset.univ \ incidentEdgeShore G side) :=
   ⟨edgeShoreConnected_incidentEdgeShore side hside,
     edgeShoreConnected_complement_incidentEdgeShore side hcomplement⟩
+
+/-- A connected vertex bipartition with a cycle on each side supplies every
+non-root field of the literal majority-shore node: complementary connected
+edge shores and nonempty majority vertex shores.  The chosen-side cycle is
+used only for nonemptiness; the opposite-side cycle contributes two distinct
+opposite-shore edges at its root. -/
+theorem connected_edgeShores_and_nonempty_majoritySides_of_cycles
+    (hcubic : ∀ vertex : V, (incidentEdgeFinset G vertex).card = 3)
+    (side : V → Prop)
+    (hside : (G.induce side).Connected)
+    (hcomplement : (G.induce (fun vertex => ¬ side vertex)).Connected)
+    (hsideCycle : HasCycleOnSide G side)
+    (hcomplementCycle : HasCycleOnSide G (fun vertex => ¬ side vertex)) :
+    EdgeShoreConnected G (incidentEdgeShore G side) ∧
+      EdgeShoreConnected G (Finset.univ \ incidentEdgeShore G side) ∧
+      (∃ vertex, majorityVertexSide G
+        (incidentEdgeShore G side) vertex) ∧
+      (∃ vertex, ¬ majorityVertexSide G
+        (incidentEdgeShore G side) vertex) := by
+  rcases hsideCycle with ⟨root, hroot, _walk, _hcycle, _hsupport⟩
+  exact ⟨edgeShoreConnected_incidentEdgeShore side hside,
+    edgeShoreConnected_complement_incidentEdgeShore side hcomplement,
+    exists_majorityVertexSide_incidentEdgeShore
+      hcubic side ⟨root, hroot⟩,
+    exists_not_majorityVertexSide_incidentEdgeShore_of_complement_cycle
+      hcubic side hcomplementCycle⟩
 
 end
 
