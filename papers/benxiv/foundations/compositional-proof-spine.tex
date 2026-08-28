@@ -297,7 +297,7 @@ dichotomy removes curvature from the global existence question.
 
 \begin{theorem}[bounded-face geodesic or a long face]
 \label{thm:dual-diameter-dichotomy}
-\Sprose
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrbitFaceDualDiameterDichotomy.exists_long_face_or_geodesic}
 Let $M$ be a connected cellular spherical map with two-sided simple face
 boundaries and connected facial dual.  Fix integers $B\ge2$ and $L\ge2$.  If
 the number of faces is greater than
@@ -310,9 +310,10 @@ induced face path, and every central face on it has length at most $B$.
 \end{theorem}
 
 \begin{proof}
-Assume every face has length at most $B$.  A face has at most one dual
-incidence for each boundary edge, so the facial dual has maximum degree at
-most $B$.  If its diameter were at most $L-1$, breadth-first layers about any
+Assume every face has length at most $B$.  Assign to each neighbouring face
+a shared boundary edge.  Since a primal edge is incident with at most two
+quotient faces, this assignment is injective, so the facial dual has maximum
+degree at most $B$.  If its diameter were at most $L-1$, breadth-first layers about any
 root would contain at most $1$ vertex at level zero, at most $B$ at level
 one, and at most $B(B-1)^{i-1}$ at level $i\ge1$: after the first step a
 shortest path cannot immediately return along the edge just used.  Summing
@@ -331,7 +332,7 @@ statement about maps separately assumed to have many faces.
 
 \begin{corollary}[avoiding finitely many marked faces]
 \label{cor:dual-geodesic-avoids}
-\Sprose
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrbitFaceDualDiameterDichotomy.exists_marked_face_avoiding_geodesic}
 Under the bounded-face branch of
 Theorem~\ref{thm:dual-diameter-dichotomy}, let $S$ be a set of $h$ forbidden
 faces and put
@@ -355,13 +356,12 @@ geodesic of length at least $L$ in that component, hence an $S$-avoiding
 geodesic in the stated sense.
 \end{proof}
 
-The underlying bounded-degree graph statement---including the sharp
-component count $1+h(B-1)$, the Moore threshold, and geodesicity in the
-deleted graph---is machine-checked.
+Both the underlying bounded-degree graph statement and its quotient-face map
+adapter---including the sharp component count $1+h(B-1)$, the Moore threshold,
+and geodesicity in the deleted graph---are machine-checked.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DeletionComponents.exists_avoiding_geodesic}
-Passing from a cellular map to its facial dual remains the explicit map
-adapter used in the displayed corollary; the verified theorem does not
-silently assert that the resulting path is geodesic before deletion.
+The verified theorem does not silently assert that the resulting path is
+geodesic before deletion.
 
 Thus, within the bounded-face branch, the cap faces and any fixed collection
 of target or collar faces can be put into $S$ at an explicit multiplicative
