@@ -222,6 +222,84 @@ theorem pointwiseSelectedSourceLocalLayerSerialTerminalInputCutDataAt_fragmentsO
     (pointwiseSelectedSourceLocalLayerLeftCrossingAt formation corridor
       hinterior offset)
 
+/-- Complete graph-derived cut data immediately after adjoining the selected
+Cell and before changing to the successor seam. -/
+noncomputable def pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputCutDataAt
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
+    (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
+      formation.annular.cellulation)
+    (offset : Fin (blockLength - 3)) :=
+  regionalBoundaryGraphCutData formation.annular.RS
+    (pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputRegionAt formation
+      corridor hinterior offset)
+    (pointwiseSelectedSourceLocalLayerRightCrossingAt formation corridor
+      hinterior offset)
+
+@[simp]
+theorem pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputCutDataAt_regionEdges
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
+    (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
+      formation.annular.cellulation)
+    (offset : Fin (blockLength - 3)) :
+    (pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputCutDataAt formation
+      corridor hinterior offset).regionEdges =
+      pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputRegionAt formation
+        corridor hinterior offset :=
+  rfl
+
+@[simp]
+theorem pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputCutDataAt_crossingEdge
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
+    (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
+      formation.annular.cellulation)
+    (offset : Fin (blockLength - 3)) (step : Fin 2) :
+    (pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputCutDataAt formation
+      corridor hinterior offset).crossingEdge step =
+      pointwiseSelectedSourceLocalLayerRightCrossingAt formation corridor
+        hinterior offset step :=
+  rfl
+
+/-- Every displayed selected output crossing belongs to the enlarged region. -/
+theorem pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputCutDataAt_portsInRegion
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
+    (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
+      formation.annular.cellulation)
+    (offset : Fin (blockLength - 3)) :
+    (pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputCutDataAt formation
+      corridor hinterior offset).PortsInRegion := by
+  apply regionalBoundaryGraphCutData_portsInRegion
+  intro step
+  rw [← pointwiseSelectedSourceLocalLayerSerialTerminalInputRegionAt_union_cell
+    formation corridor hinterior offset]
+  exact Finset.mem_union_right _
+    (pointwiseSelectedSourceLocalLayerCellRegionAt_rightCrossing formation
+      corridor hinterior offset step)
+
+/-- Selected output fragments are computed inside the stored pre-rebase
+region. -/
+theorem pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputCutDataAt_fragmentsOnFaceInRegion
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
+    (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
+      formation.annular.cellulation)
+    (offset : Fin (blockLength - 3)) :
+    (pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputCutDataAt formation
+      corridor hinterior offset).FragmentsOnFaceInRegion :=
+  regionalBoundaryGraphCutData_fragmentsOnFaceInRegion formation.annular.RS
+    (pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputRegionAt formation
+      corridor hinterior offset)
+    (pointwiseSelectedSourceLocalLayerRightCrossingAt formation corridor
+      hinterior offset)
+
 /-- Complete selected terminal-aware cumulative input profile for an arbitrary
 open-region colour assignment. -/
 noncomputable def pointwiseSelectedSourceLocalLayerSerialTerminalInputBoundedProfileAt
