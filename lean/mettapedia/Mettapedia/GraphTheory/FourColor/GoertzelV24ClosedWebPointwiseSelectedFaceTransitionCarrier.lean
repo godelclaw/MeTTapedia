@@ -304,7 +304,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialFaceTransitionCarrierAt_card_le_t
         formation corridor hinterior offset)
     _ ≤ 24 := by omega
 
-private theorem pointwiseSelectedSourceLocalLayerCellFaceDartGraph_support_subset_transitionCarrier
+theorem pointwiseSelectedSourceLocalLayerCellFaceDartGraph_support_subset_transitionCarrier
     {data : AnnularBoundaryData G 5} (formation : Formation data)
     {blockLength : Nat}
     (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
@@ -321,7 +321,7 @@ private theorem pointwiseSelectedSourceLocalLayerCellFaceDartGraph_support_subse
   exact Finset.mem_union_left _
     ((mem_dartsOnEdges_iff formation.annular.RS _ dart).2 hadj.2.2.1)
 
-private theorem pointwiseSelectedSourceLocalLayerFaceDartSeam_support_subset_transitionCarrier
+theorem pointwiseSelectedSourceLocalLayerFaceDartSeam_support_subset_transitionCarrier
     {data : AnnularBoundaryData G 5} (formation : Formation data)
     {blockLength : Nat}
     (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
