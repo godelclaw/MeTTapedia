@@ -2516,6 +2516,57 @@ the live $(2,1,4)$ shape its carrier is exactly sixteen times larger:
 This equality is machine-checked.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SourceTerminalAwareProfileCompression.boundedTerminalAwareCompressedProfileCount_two_one_four_eq}
 
+The local letter and the cumulative terminal receipt have different shapes,
+and this distinction is load-bearing.  The rolling Cell letter has shape
+$(2,1,4)$ because it remembers one local seam terminal.  Terminal acceptance
+is read only after passing to the already-constructed cumulative source
+crosscut carrier of shape $(2,5,8)$, whose five terminals are the five fixed
+cap-foot edges.  The following proposition verifies that no additional
+terminal datum is needed there.
+
+\begin{proposition}[cap acceptance is a projection of the five-terminal source receipt]
+\label{prop:five-terminal-source-cap-view}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SourceTerminalCapView.standardGaugeCapComposedMenuBState_sourceCompressedCodeOfCell3_iff}
+In the standard colour-name gauge, project a graph-semantic state of the
+existing \texttt{BoundedCorridorCutProfile 2 5 8} to the two Kempe families named in
+the manuscript and apply the lossless terminal-aware compression.  The
+compressed state determines:
+\begin{enumerate}
+\item the colours of all five cap feet; and
+\item the complete terminal connectivity relations for the
+      $\alpha\beta$ and $\alpha\gamma$ families.
+\end{enumerate}
+Consequently it determines exactly whether either source pair satisfies the
+cap-composed Menu-B predicate.  No graph lookup and no enlargement of the
+one-Cell letter is required.
+\end{proposition}
+
+\begin{proof}
+For one terminal, the two diagonal bits record membership in
+$\{\mathrm{red},\mathrm{blue}\}$ and
+$\{\mathrm{red},\mathrm{purple}\}$.  On a nonzero Tait colour the possible
+bit pairs are therefore
+\[
+ (1,1)\mapsto\mathrm{red},\qquad
+ (1,0)\mapsto\mathrm{blue},\qquad
+ (0,1)\mapsto\mathrm{purple};
+\]
+the remaining pair $(0,0)$ is impossible.  This finite decoding is checked
+as
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SourceTerminalCapView.terminalColorOfSourceBits_eq},
+and on a literal graph-derived regional profile it gives exactly the colours
+of the five named terminal edges:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SourceTerminalCapView.terminalCapView_word_toSourceProfile_regionalProfile}.
+
+Terminal diagonal entries are stored explicitly by the compressor.  Every
+off-diagonal entry is stored once on the corresponding unordered pair, and
+symmetry reconstructs its opposite orientation.  Hence compression preserves
+the whole cap-facing view:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SourceTerminalCapView.terminalCapView_compressBounded}.
+The cap-composed predicate is a function only of this five-word and these two
+relations, so rewriting by that equality proves the proposition.
+\end{proof}
+
 Theorem~\ref{thm:exact-rooted-cell-factorization} checks the Cell--3 algebra
 under (U), but Propositions~\ref{prop:opened-global-face-uniqueness-refuted}
 and~\ref{prop:closed-web-carrier-not-direct-count} prevent applying it to the
