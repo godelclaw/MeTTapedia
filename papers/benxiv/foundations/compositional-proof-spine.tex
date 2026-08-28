@@ -2514,19 +2514,53 @@ and target.  The compatibility theorem applies this construction to
 \texttt{web} occurs in the resulting statement or proof.
 \end{proof}
 
+\begin{proposition}[selected Cell--rebase realizations are one-step local]
+\label{prop:selected-cell-rebase-witness-local}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebPointwiseSelectedCellRebaseLocalWitness.pointwiseSelectedLocalRealizedTransitionAt_iff_ambient}
+Fix a selected Cell and its following boundary rebase.  Let the observed
+prefix support be the union of the current terminal-aware cumulative region
+and the rebase switch.  The latter is the image of the four fixed rebase
+roles, and therefore has cardinality at most four.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebPointwiseSelectedCellRebaseLocalWitness.card_observedPrefixRegion_sdiff_terminal_le_four}
+Replace the former positive prefix function on the whole ambient edge set by
+a positive function on this observed support, retaining the same compatible
+literal Cell colouring.  Then the realized source--target transition image is
+unchanged.  Moreover every transition in this local realized image is a
+transition of the canonical finite Cell--rebase machine.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebPointwiseSelectedCellRebaseLocalWitness.pointwiseSelectedLocalRealizedTransitionAt_finiteTransition}
+\end{proposition}
+
+\begin{proof}
+Restriction is immediate.  In the other direction extend a local function by
+one fixed nonzero colour outside the observed support; this extension is only
+an adapter to the former API.  The source profile reads only the current
+terminal region.  For the target, adjoin the common literal Cell.  On the
+next terminal region, an edge in the rebase switch is already observed.  An
+edge outside the switch belongs to the old pre-rebase region if and only if it
+belongs to the next terminal region.  Since the pre-rebase region is exactly
+the union of the current terminal region and the Cell, its colour is therefore
+either an observed prefix colour or the common Cell colour.  Hence the two
+spliced colourings agree throughout the next terminal region.  Regional
+profile congruence gives equality of both exact endpoints, so restriction and
+extension prove the two inclusions between realized transition images.  The
+finite-letter soundness theorem applied to the extended local witness gives
+the final assertion.  No converse from an arbitrary abstract supported letter
+to a physical local witness is asserted here.
+\end{proof}
+
 Thus the finite one-Cell transition has now been proved exact on both of the
 strong rolling roots from which the manuscript's cumulative profile is
-projected, and its finite letter semantics has been separated from the global
-closed-web colouring.  This does not yet prove the full theorem above.  The
-prefix-colour function in the transition API still has the ambient edge set
-as its domain, even though the proof reads only selected coordinates; the
-realizable initial image is separately prefix-local but still sits under the
-surrounding closed-web parameter.  The source collar or three-Cell word must
-therefore be made into a formation directly, the ambient-domain prefix API
-must be restricted or proved representation-invariant, and the resulting
-realized transitions and initials must be connected soundly and completely to
-the cumulative Count semantics.  Global opened-annulus face uniqueness is no
-longer an obligation of either rolling transition.
+projected, its finite letter semantics has been separated from the global
+closed-web colouring, and its physical realization witness carries no colour
+coordinate on the unprocessed suffix.  This does not yet prove the full
+theorem above.  The realizable initial image still sits under the surrounding
+closed-web parameter.  The source collar or three-Cell word must therefore be
+made into a formation directly, and the resulting local realized transitions
+and initials must be connected soundly and completely to the cumulative Count
+and Seed semantics.  In particular, completeness of the abstract supported
+finite-letter relation with respect to physical local witnesses remains a
+separate obligation.  Global opened-annulus face uniqueness is no longer an
+obligation of either rolling transition.
 
 The Lean transition uses a conservative three-pair refinement internally and
 then projects to exactly the two families named by the manuscript.  It proves
@@ -2767,14 +2801,16 @@ in the surrounding \texttt{ClosedWebAtGoodWord.Instance}.  Proposition~
 \ref{prop:selected-cell-rebase-formation-local} completes the corresponding
 refactor for the finite carrier, state, supported letter, and one-step
 transition: those objects now require only the colouring-independent
-formation.  What remains is narrower than whole-annulus coverage but still
-substantive: construct that formation directly from the radius-$1$ collar or
-three-Cell word actually selected by the source, perform the same domain
-restriction for the transition's ambient prefix-colour coordinate, and
-identify the cumulative terminal projection with the Seed semantics consumed
-at the local target.  No further equivalence between vertex-component and
-edge-component semantics is owed.  The filtered finite accepting set has also
-not yet been emitted as an optimized executable certificate.
+formation.  Proposition~\ref{prop:selected-cell-rebase-witness-local} also
+removes the transition witness's ambient suffix-colour coordinate.  What
+remains is narrower than whole-annulus coverage but still substantive:
+construct that formation directly from the radius-$1$ collar or three-Cell
+word actually selected by the source, identify both local realized images with
+the cumulative Count and Seed semantics consumed at the local target, and
+prove physical completeness for the abstract finite letters retained by the
+closure.  No further equivalence between vertex-component and edge-component
+semantics is owed.  The filtered finite accepting set has also not yet been
+emitted as an optimized executable certificate.
 
 Theorem~\ref{thm:exact-rooted-cell-factorization} checks the Cell--3 algebra
 under (U), but Propositions~\ref{prop:opened-global-face-uniqueness-refuted}
