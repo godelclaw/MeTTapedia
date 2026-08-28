@@ -57,6 +57,10 @@ connected vertex shores without width loss, the structural physical splice,
 and the mesh obstruction are machine-checked.  A boundary-separated
 three-interface source rail segment now supplies a canonically oriented
 saturated cut, connected edge shores, and a nonempty proper majority core.
+When that source trail is obtained by deleting its distinguished edge from a
+closed cubic map, the same vertex partition now supplies connected
+complementary edge shores and a nonempty proper majority core in the closed
+ambient map as well.
 The connected
 branch-decomposition theorem is a named external conditional; wall exclusion
 and the arbitrary-length nested exact finite-state supply are not proved \\
@@ -944,18 +948,59 @@ and
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedVertexSideEdgeShore.exists_not_majorityVertexSide_incidentEdgeShore_of_complement_cycle_of_subcubic}.
 \end{proof}
 
+\begin{corollary}[the oriented source shore survives closure of the missing edge]
+\label{cor:source-rail-segment-ambient-majority-shore}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorRailChainAmbient.alignedBoundary_ambientInnerIncidentShore_certificate}
+Let the source graph in Corollary~\ref{cor:source-rail-segment-majority-shore}
+be $H=G-e$, where $e=uv$ is an edge of a finite cubic ambient graph
+$G$.  Use the same outer-root component $C_{\mathrm{out}}$, the same
+vertex partition
+\[
+ U_{\mathrm{in}}=V(G)\setminus C_{\mathrm{out}},
+ \qquad U_{\mathrm{out}}=C_{\mathrm{out}},
+\]
+but recompute the edge shore in the ambient graph by
+\[
+ S^G_{\mathrm{in}}
+   =\{f\in E(G): f\text{ has an endpoint in }U_{\mathrm{in}}\}.
+\]
+Then $G[U_{\mathrm{in}}]$ and $G[U_{\mathrm{out}}]$ are connected,
+$S^G_{\mathrm{in}}$ and its edge complement are connected, and the
+majority vertex side of $S^G_{\mathrm{in}}$ is nonempty and proper.
+The exact source equality
+$\partial_H C_{\mathrm{out}}=X(W)$ remains available as the provenance of
+the partition.
+\end{corollary}
+
+\begin{proof}
+Restoring $e$ only adds an adjacency, so connectedness of both induced
+vertex sides in $H$ implies their connectedness in $G$.  The generic
+incident-edge-shore construction therefore gives connectedness of
+$S^G_{\mathrm{in}}$ and its complement.  The inner witness from the source
+certificate remains an inner vertex, and cubicity of $G$ makes it a
+majority vertex for $S^G_{\mathrm{in}}$.  Likewise the surviving
+outer-container cycle in $H$ is still a cycle in $G$; two cycle edges at
+one of its vertices witness failure of majority on the outer side.
+
+It is important that the edge shore is recomputed in $G$.  The restored
+edge $e$ is allowed to cross the vertex partition, so the ambient cut-edge
+set need not equal the source set $X(W)$.  No noncrossing premise is being
+silently added.
+\end{proof}
+
 These results are not yet Proposition~\ref{prop:target-forced-cut-chain}.
 They now construct, for one three-interface segment, a saturated boundary with a
 canonical outer-root orientation, complementary connected edge shores, and a
-nonempty proper majority core.  The internal-support premise is load-bearing:
+nonempty proper majority core, and transport that oriented partition to the
+closed ambient cubic map.  The internal-support premise is load-bearing:
 rail disjointness alone would not prevent the completed boundary from running
 through a cap.
 
 The remaining source adapter must compose rails over arbitrary length, prove
 the separation hypotheses uniformly, and show that the canonically oriented
 shores obtained from successive right endpoints are strictly nested.  It must
-also transport these open source-trail shores to the closed ambient cubic map,
-fix the roots and uniform width bounds, and identify their ordered Count states
+also fix the roots and uniform width bounds, identify the recomputed ambient
+shore boundaries with ordered seams, and identify their ordered Count states
 with those consumed by
 Theorem~\ref{thm:literal-majority-shore-chain-descent}.
 
