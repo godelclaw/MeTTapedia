@@ -1398,7 +1398,7 @@ theorem canary_hol_twoModelSpace_topBotIff_event :
     · intro h
       simp [ModelSpace.sentenceEvent, fixtureTwoModelSpace] at h
       have hMutual :=
-        (Mettapedia.Logic.PLNHigherOrderHOLInheritanceBridge.predicateMutualInheritsAt_iff_models_predicateIffFormula
+        (Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLInheritanceBridge.predicateMutualInheritsAt_iff_models_predicateIffFormula
           (Base := FixtureBase) (Const := FixtureConst)
           fixtureModel FixtureObjTy fixturePredTop fixturePredBot).2 h
       exact False.elim (canary_hol_not_predicateTop_mutualInherits_predicateBot hMutual)
@@ -1410,7 +1410,7 @@ theorem canary_hol_twoModelSpace_topBotIff_event :
     · intro _h
       simp [ModelSpace.sentenceEvent, fixtureTwoModelSpace]
       exact
-        (Mettapedia.Logic.PLNHigherOrderHOLInheritanceBridge.predicateMutualInheritsAt_iff_models_predicateIffFormula
+        (Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLInheritanceBridge.predicateMutualInheritsAt_iff_models_predicateIffFormula
             (Base := FixtureBase) (Const := FixtureConst)
             fixtureEmptyModel FixtureObjTy fixturePredTop fixturePredBot).1
           canary_hol_empty_predicateTop_mutualInherits_predicateBot
@@ -2003,15 +2003,15 @@ theorem canary_hol_predicateVocabularyTop_intent_nonzero :
   rw [Set.ncard_pos]
   refine ⟨(), ?_⟩
   change () ∈
-    (Mettapedia.Logic.AbstractInheritance.ofCrispBaseConcept
-      Mettapedia.Logic.ConceptOntology.EvidenceGate.positiveSupport
-      (Mettapedia.Logic.PLNHigherOrderHOLInheritanceBridge.predicateVocabularyEvidence
+    (Mettapedia.KR.ConceptGeometry.AbstractInheritance.ofCrispBaseConcept
+      Mettapedia.KR.ConceptOntology.EvidenceGate.positiveSupport
+      (Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLInheritanceBridge.predicateVocabularyEvidence
         (Base := FixtureBase) (Const := FixtureConst)
         fixtureModel FixtureObjTy fixtureOnePredDecode) ()).intent
   exact
-    Mettapedia.Logic.AbstractInheritance.self_mem_intent_ofCrispBaseConcept
-      Mettapedia.Logic.ConceptOntology.EvidenceGate.positiveSupport
-      (Mettapedia.Logic.PLNHigherOrderHOLInheritanceBridge.predicateVocabularyEvidence
+    Mettapedia.KR.ConceptGeometry.AbstractInheritance.self_mem_intent_ofCrispBaseConcept
+      Mettapedia.KR.ConceptOntology.EvidenceGate.positiveSupport
+      (Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLInheritanceBridge.predicateVocabularyEvidence
         (Base := FixtureBase) (Const := FixtureConst)
         fixtureModel FixtureObjTy fixtureOnePredDecode) ()
 
@@ -2216,12 +2216,12 @@ theorem canary_hol_credalPredicateVocabularySimilarityTopTop_ITV :
     canary_hol_credalPredicateVocabularySimilarityTopTop_interval_one
   dsimp
   constructor
-  · rw [Mettapedia.Logic.PLNHigherOrderHOLCredalBridge.credalPredicateVocabularySimilarityITV_lower]
+  · rw [Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.credalPredicateVocabularySimilarityITV_lower]
     simpa [Mettapedia.ProbabilityTheory.ImpreciseProbability.CredalSets.constInterval] using congrArg
       Mettapedia.ProbabilityTheory.ImpreciseProbability.CredalSets.Interval.lower
       hInterval
   constructor
-  · rw [Mettapedia.Logic.PLNHigherOrderHOLCredalBridge.credalPredicateVocabularySimilarityITV_upper]
+  · rw [Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.credalPredicateVocabularySimilarityITV_upper]
     simpa [Mettapedia.ProbabilityTheory.ImpreciseProbability.CredalSets.constInterval] using congrArg
       Mettapedia.ProbabilityTheory.ImpreciseProbability.CredalSets.Interval.upper
       hInterval
@@ -2324,12 +2324,12 @@ theorem canary_hol_credalPredicateVocabularyPureExtensionalSimilarityTopTop_ITV 
     canary_hol_credalPredicateVocabularyPureExtensionalSimilarityTopTop_interval_one
   dsimp
   constructor
-  · rw [Mettapedia.Logic.PLNHigherOrderHOLCredalBridge.credalPredicateVocabularyPureExtensionalSimilarityITV_lower]
+  · rw [Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.credalPredicateVocabularyPureExtensionalSimilarityITV_lower]
     simpa [Mettapedia.ProbabilityTheory.ImpreciseProbability.CredalSets.constInterval] using congrArg
       Mettapedia.ProbabilityTheory.ImpreciseProbability.CredalSets.Interval.lower
       hInterval
   constructor
-  · rw [Mettapedia.Logic.PLNHigherOrderHOLCredalBridge.credalPredicateVocabularyPureExtensionalSimilarityITV_upper]
+  · rw [Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.credalPredicateVocabularyPureExtensionalSimilarityITV_upper]
     simpa [Mettapedia.ProbabilityTheory.ImpreciseProbability.CredalSets.constInterval] using congrArg
       Mettapedia.ProbabilityTheory.ImpreciseProbability.CredalSets.Interval.upper
       hInterval
@@ -2348,12 +2348,12 @@ theorem canary_hol_credalPredicateVocabularyPureIntensionalSimilarityTopTop_ITV 
     canary_hol_credalPredicateVocabularyPureIntensionalSimilarityTopTop_interval_one
   dsimp
   constructor
-  · rw [Mettapedia.Logic.PLNHigherOrderHOLCredalBridge.credalPredicateVocabularyPureIntensionalSimilarityITV_lower]
+  · rw [Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.credalPredicateVocabularyPureIntensionalSimilarityITV_lower]
     simpa [Mettapedia.ProbabilityTheory.ImpreciseProbability.CredalSets.constInterval] using congrArg
       Mettapedia.ProbabilityTheory.ImpreciseProbability.CredalSets.Interval.lower
       hInterval
   constructor
-  · rw [Mettapedia.Logic.PLNHigherOrderHOLCredalBridge.credalPredicateVocabularyPureIntensionalSimilarityITV_upper]
+  · rw [Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.credalPredicateVocabularyPureIntensionalSimilarityITV_upper]
     simpa [Mettapedia.ProbabilityTheory.ImpreciseProbability.CredalSets.constInterval] using congrArg
       Mettapedia.ProbabilityTheory.ImpreciseProbability.CredalSets.Interval.upper
       hInterval
@@ -2589,68 +2589,68 @@ theorem canary_hol_credalHOLFormulaValue_not_topBotIff_eq_one :
   norm_num
 
 theorem canary_hol_noisyOrMultiJoin_formula_not_dual_value :
-    Mettapedia.Logic.PLNHigherOrderHOLCredalBridge.credalHOLFormulaFiniteRuleValue.{0,0,0,0}
+    Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.credalHOLFormulaFiniteRuleValue.{0,0,0,0}
       fixtureHierarchicalState
       (fun _ : Fin 2 => fixturePredTopBotIff)
       Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.noisyOrMultiJoin =
         1 -
-          Mettapedia.Logic.PLNHigherOrderHOLCredalBridge.credalHOLFormulaFiniteRuleValue.{0,0,0,0}
+          Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.credalHOLFormulaFiniteRuleValue.{0,0,0,0}
             fixtureHierarchicalState
             (fun k : Fin 2 =>
               (.not ((fun _ : Fin 2 => fixturePredTopBotIff) k) : ClosedFormula FixtureConst))
-            Mettapedia.Logic.PLNHigherOrderHOLCredalBridge.productMultiJoin := by
+            Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.productMultiJoin := by
   exact
-    Mettapedia.Logic.PLNHigherOrderHOLCredalBridge.credalHOLFormulaFiniteRuleValue_noisyOr_eq_one_sub_productMultiJoin_not.{0,0,0,0}
+    Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.credalHOLFormulaFiniteRuleValue_noisyOr_eq_one_sub_productMultiJoin_not.{0,0,0,0}
       (Base := FixtureBase) (Const := FixtureConst)
       fixtureHierarchicalState (fun _ : Fin 2 => fixturePredTopBotIff)
 
 theorem canary_hol_credalHOLFormulaInterval_not_endpoint_dual_lower :
-    (Mettapedia.Logic.PLNHigherOrderHOLCredalBridge.credalHOLFormulaInterval.{0,0,0,0,0}
+    (Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.credalHOLFormulaInterval.{0,0,0,0,0}
       fixtureTwoCompletionCredalFamily (.not fixturePredTopBotIff)).lower =
         1 -
-          (Mettapedia.Logic.PLNHigherOrderHOLCredalBridge.credalHOLFormulaInterval.{0,0,0,0,0}
+          (Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.credalHOLFormulaInterval.{0,0,0,0,0}
             fixtureTwoCompletionCredalFamily fixturePredTopBotIff).upper := by
   exact
-    Mettapedia.Logic.PLNHigherOrderHOLCredalBridge.credalHOLFormulaInterval_not_lower_eq_one_sub_upper.{0,0,0,0,0}
+    Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.credalHOLFormulaInterval_not_lower_eq_one_sub_upper.{0,0,0,0,0}
       (Base := FixtureBase) (Const := FixtureConst)
       fixtureTwoCompletionCredalFamily fixturePredTopBotIff
 
 theorem canary_hol_credalHOLFormulaInterval_not_endpoint_dual_upper :
-    (Mettapedia.Logic.PLNHigherOrderHOLCredalBridge.credalHOLFormulaInterval.{0,0,0,0,0}
+    (Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.credalHOLFormulaInterval.{0,0,0,0,0}
       fixtureTwoCompletionCredalFamily (.not fixturePredTopBotIff)).upper =
         1 -
-          (Mettapedia.Logic.PLNHigherOrderHOLCredalBridge.credalHOLFormulaInterval.{0,0,0,0,0}
+          (Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.credalHOLFormulaInterval.{0,0,0,0,0}
             fixtureTwoCompletionCredalFamily fixturePredTopBotIff).lower := by
   exact
-    Mettapedia.Logic.PLNHigherOrderHOLCredalBridge.credalHOLFormulaInterval_not_upper_eq_one_sub_lower.{0,0,0,0,0}
+    Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.credalHOLFormulaInterval_not_upper_eq_one_sub_lower.{0,0,0,0,0}
       (Base := FixtureBase) (Const := FixtureConst)
       fixtureTwoCompletionCredalFamily fixturePredTopBotIff
 
 theorem canary_hol_noisyOrMultiJoin_hull_formula_not_dual_lower :
-    (Mettapedia.Logic.PLNHigherOrderHOLCredalBridge.credalHOLFormulaNoisyOrMultiJoinHull.{0,0,0,0,0}
+    (Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.credalHOLFormulaNoisyOrMultiJoinHull.{0,0,0,0,0}
       fixtureTwoCompletionCredalFamily
       (fun _ : Fin 2 => fixturePredTopBotIff)).lower =
         1 -
-          (Mettapedia.Logic.PLNHigherOrderHOLCredalBridge.credalHOLFormulaProductMultiJoinHull.{0,0,0,0,0}
+          (Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.credalHOLFormulaProductMultiJoinHull.{0,0,0,0,0}
             fixtureTwoCompletionCredalFamily
             (fun k : Fin 2 =>
               (.not ((fun _ : Fin 2 => fixturePredTopBotIff) k) : ClosedFormula FixtureConst))).upper := by
   exact
-    Mettapedia.Logic.PLNHigherOrderHOLCredalBridge.credalHOLFormulaNoisyOrMultiJoinHull_lower_eq_one_sub_product_not_upper.{0,0,0,0,0}
+    Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.credalHOLFormulaNoisyOrMultiJoinHull_lower_eq_one_sub_product_not_upper.{0,0,0,0,0}
       (Base := FixtureBase) (Const := FixtureConst)
       fixtureTwoCompletionCredalFamily (fun _ : Fin 2 => fixturePredTopBotIff)
 
 theorem canary_hol_noisyOrMultiJoin_hull_formula_not_dual_upper :
-    (Mettapedia.Logic.PLNHigherOrderHOLCredalBridge.credalHOLFormulaNoisyOrMultiJoinHull.{0,0,0,0,0}
+    (Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.credalHOLFormulaNoisyOrMultiJoinHull.{0,0,0,0,0}
       fixtureTwoCompletionCredalFamily
       (fun _ : Fin 2 => fixturePredTopBotIff)).upper =
         1 -
-          (Mettapedia.Logic.PLNHigherOrderHOLCredalBridge.credalHOLFormulaProductMultiJoinHull.{0,0,0,0,0}
+          (Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.credalHOLFormulaProductMultiJoinHull.{0,0,0,0,0}
             fixtureTwoCompletionCredalFamily
             (fun k : Fin 2 =>
               (.not ((fun _ : Fin 2 => fixturePredTopBotIff) k) : ClosedFormula FixtureConst))).lower := by
   exact
-    Mettapedia.Logic.PLNHigherOrderHOLCredalBridge.credalHOLFormulaNoisyOrMultiJoinHull_upper_eq_one_sub_product_not_lower.{0,0,0,0,0}
+    Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.credalHOLFormulaNoisyOrMultiJoinHull_upper_eq_one_sub_product_not_lower.{0,0,0,0,0}
       (Base := FixtureBase) (Const := FixtureConst)
       fixtureTwoCompletionCredalFamily (fun _ : Fin 2 => fixturePredTopBotIff)
 

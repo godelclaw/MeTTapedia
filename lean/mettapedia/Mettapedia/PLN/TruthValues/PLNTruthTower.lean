@@ -6,7 +6,7 @@ import Mettapedia.ProbabilityTheory.ImpreciseProbability.WalleyMultinomialIDM
 import Mettapedia.ProbabilityTheory.ImpreciseProbability.Basic
 import Mettapedia.ProbabilityTheory.ImpreciseProbability.ProjectiveCredal
 import Mettapedia.ProbabilityTheory.Hypercube.ThetaSemantics
-import KnuthSkilling.Core.TotalityImprecision
+import Mettapedia.PLN.Evidence.KnuthSkillingCompatibility
 
 /-!
 # PLN Truth Tower
@@ -261,7 +261,7 @@ theorem ofNatCounts_prior_matters_example :
             Mettapedia.PLN.Evidence.EvidenceClass.BinaryContext.uniform
             (ofNatCounts 0 1) =
           (1 / 3 : ℝ) := by
-  have h := Mettapedia.Logic.EvidenceBeta.prior_matters_example
+  have h := Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta.prior_matters_example
   rw [ofNatCounts_mleStrength_eq_predHaldane,
     ofNatCounts_jeffreysPosterior_eq_predJeffreys,
     ofNatCounts_uniformPosterior_eq_predLaplace]
@@ -3890,7 +3890,7 @@ theorem incomparable_forces_no_order_reflecting_point_representation
       KnuthSkilling.TotalityImprecision.PartialKnuthSkillingAlgebra.Incomparable
         x y) :
     ¬ ∃ (Θ : α → ℝ), ∀ a b : α, a ≤ b ↔ Θ a ≤ Θ b :=
-  KnuthSkilling.TotalityImprecision.no_pointRepresentation_with_incomparables
+  KnuthSkilling.TotalityImprecision.no_orderReflectingPointRepresentation_with_incomparables
     x y hxy
 
 end Mettapedia.PLN.TruthValues.PLNTruthTower

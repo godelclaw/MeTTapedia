@@ -70,6 +70,13 @@ theorem predCodeEvidence_add {U : Type*}
 noncomputable instance {U : Type*} : BinaryWorldModel (PredCodeState U) (PredCodeQuery U) where
   evidence := predCodeEvidence
   evidence_add := predCodeEvidence_add
+  evidence_zero := by
+    classical
+    intro q
+    change predCodeEvidence (0 : PredCodeState U) q = 0
+    unfold predCodeEvidence
+    simp
+    rfl
 
 theorem predCodeEvidence_singleton_of_satisfies {U : Type*}
     (pw : PointedPredCode U) (q : PredCodeQuery U) (h : pw.satisfies q) :
@@ -134,7 +141,7 @@ theorem singleton_adequacy_strength_one_is_crispSpecialization {U : Type*}
   change pw.satisfies q ↔
     BinaryEvidence.toStrength (predCodeEvidence ({pw} : PredCodeState U) q) = 1
   simpa [predCodeEvidence_eq_crispEvidence,
-    Mettapedia.Logic.PLNWorldModelCrispSpecialization.crispQueryStrength]
+    Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization.crispQueryStrength]
     using
       (Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization.singleton_adequacy_strength_one
         (satisfies := PointedPredCode.satisfies) pw q)

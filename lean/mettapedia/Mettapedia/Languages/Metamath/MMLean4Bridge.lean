@@ -1,6 +1,7 @@
 import Metamath.DeclarativeSpec
 import Metamath.Verify
 import Metamath.KernelClean
+import Metamath.RunEmission
 import Metamath.Spec.Operational
 
 /-!

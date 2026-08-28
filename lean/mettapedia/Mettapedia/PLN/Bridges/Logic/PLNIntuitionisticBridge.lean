@@ -16,17 +16,10 @@ of all Heyting models.
 
 ## Mathematical Content
 
-BinaryEvidence has an `Order.Frame` instance (complete Heyting algebra), which makes it
-a sound model for IPL. By instantiating Foundation's `HeytingSemantics` structure,
-we inherit proven soundness and can derive completeness via Lindenbaum algebras.
-
-## Design rationale Standards
-
-- **Mario Carneiro**: No axioms; leverage Foundation's proven infrastructure
-- **Kevin Buzzard**: Proper typeclass instance (`HeytingSemantics`)
-- **Mike Stay**: Categorical - BinaryEvidence is an algebra in the variety of Heyting algebras
-- **Ben Goertzel**: PLN BinaryEvidence provides semantics for IPL formulas
-- **Greg Meredith**: Process types (from RhoCalculus) correspond to IPL formulas
+BinaryEvidence has an `Order.Frame` instance (complete Heyting algebra), which
+makes it a sound model for IPL. Completeness is used in its standard
+all-Heyting-model form; a formula valid in BinaryEvidence alone need not be
+claimed IPL-provable here.
 
 ## References
 
@@ -34,11 +27,11 @@ we inherit proven soundness and can derive completeness via Lindenbaum algebras.
 - Troelstra & van Dalen, "Constructivism in Mathematics" Vol. 1
 -/
 
-import Mettapedia.Logic.EvidenceQuantale
-import Mettapedia.Logic.Foundation.Foundation.Propositional.Heyting.Semantics
-import Mettapedia.Logic.Foundation.Foundation.Propositional.Kripke.Logic.Int
-import Mettapedia.Logic.Foundation.Foundation.Propositional.Kripke.AxiomDummett
-import Mettapedia.Logic.Foundation.Foundation.Propositional.Hilbert.Standard.Glivenko
+import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Foundation.Propositional.Heyting.Semantics
+import Foundation.Propositional.Kripke.Logic.Int
+import Foundation.Propositional.Kripke.AxiomDummett
+import Foundation.Propositional.Hilbert.Standard.Glivenko
 
 namespace Mettapedia.PLN.Bridges.Logic.PLNIntuitionisticBridge
 

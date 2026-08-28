@@ -905,40 +905,6 @@ theorem coreCanonical_of_core_step {p q : Pattern}
         exact hdstAllAssoc e (by simpa [List.append_assoc] using he)
       unfold CoreCanonical
       simpa [hasDerivedHead] using hasDerivedHead_any_false_of_forall_false hdstAll
-  | @par_set p q rest hstep ih =>
-      have hp : CoreCanonical p :=
-        coreCanonical_elem_of_collection (ct := .hashSet) (elems := p :: rest) hc (by simp)
-      have hq : CoreCanonical q := ih hp
-      have hrestAll : ∀ e ∈ rest, hasDerivedHead e = false := by
-        intro e he
-        exact coreCanonical_elem_of_collection
-          (ct := .hashSet) (elems := p :: rest) hc (by simp [he])
-      have hrestAny : (rest.map hasDerivedHead).any (fun b => b) = false :=
-        hasDerivedHead_any_false_of_forall_false hrestAll
-      unfold CoreCanonical at hq ⊢
-      simp [hasDerivedHead, hq, hrestAny]
-  | @par_set_any p q before after hstep ih =>
-      have hp : CoreCanonical p :=
-        coreCanonical_elem_of_collection
-          (ct := .hashSet) (elems := before ++ [p] ++ after) hc (by simp)
-      have hq : CoreCanonical q := ih hp
-      have hsrcAll : ∀ e ∈ before ++ ([p] ++ after), hasDerivedHead e = false := by
-        intro e he
-        exact coreCanonical_elem_of_collection
-          (ct := .hashSet) (elems := before ++ [p] ++ after) hc (by simpa [List.append_assoc] using he)
-      have hdstAllAssoc : ∀ e ∈ before ++ ([q] ++ after), hasDerivedHead e = false := by
-        intro e he
-        rcases List.mem_append.mp he with hBefore | hTail
-        · exact hsrcAll e (List.mem_append.mpr (Or.inl hBefore))
-        · rcases List.mem_append.mp hTail with hMid | hAfter
-          · have heq : e = q := by simpa using hMid
-            subst heq; exact hq
-          · exact hsrcAll e (List.mem_append.mpr (Or.inr (List.mem_append.mpr (Or.inr hAfter))))
-      have hdstAll : ∀ e ∈ before ++ [q] ++ after, hasDerivedHead e = false := by
-        intro e he
-        exact hdstAllAssoc e (by simpa [List.append_assoc] using he)
-      unfold CoreCanonical
-      simpa [hasDerivedHead] using hasDerivedHead_any_false_of_forall_false hdstAll
 
 /-- Derived one-step reduction preserves core-canonical shape. -/
 theorem coreCanonical_of_derived_step {p q : Pattern}

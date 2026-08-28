@@ -29,8 +29,8 @@ import Mathlib.Data.ENNReal.Operations
 import Mathlib.Data.Real.Basic
 import Mathlib.Order.Lattice
 import Mathlib.Tactic
-import Mettapedia.Logic.EvidenceQuantale
-import Mettapedia.Logic.EvidenceIntervalBounds
+import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.EvidenceIntervalBounds
 import KnuthSkilling.Core.HeytingBounds
 
 namespace Mettapedia.PLN.Evidence.HeytingValuationOnEvidence

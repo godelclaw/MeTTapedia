@@ -126,4 +126,4 @@ theorem relEntropy_le_log_inv_of_LSC_semimeasure_concrete (μ : PrefixMeasure)
     (HutterEnumeration.LSCSemimeasureEnumeration.relEntropy_le_log_inv_of_LSC
       (E := HutterEnumerationTheoremSemimeasure.lscSemimeasureEnumeration) (μ := μ) hμ n)
 
-end Mettapedia.Logic.UniversalPrediction
+end Mettapedia.UniversalAI.UniversalPrediction

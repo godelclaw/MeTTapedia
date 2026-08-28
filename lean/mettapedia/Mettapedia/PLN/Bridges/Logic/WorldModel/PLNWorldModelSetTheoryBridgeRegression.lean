@@ -28,7 +28,7 @@ theorem zf_bottom_to_top_rule_singleton_fixture
   let ψ : SetQuery := (⊤ : SetQuery)
   have hpoint : pointwiseImpliesOnTheory 𝗭𝗙 φ ψ := by
     intro S' _hT hφ
-    exact False.elim (by simpa [φ, Mettapedia.Logic.PLNWorldModelFOL.folSatisfies] using hφ)
+    exact False.elim (by simpa [φ, Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL.folSatisfies] using hφ)
   have hsing : singletonStrengthLEOnTheory 𝗭𝗙 φ ψ :=
     (Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.pointwiseImpliesOnTheory_iff_singletonStrengthLEOnTheory
       (T := 𝗭𝗙) (φ := φ) (ψ := ψ)).1 hpoint
@@ -57,7 +57,7 @@ theorem zf_bottom_to_top_categorical_singleton_fixture
   let ψ : SetQuery := (⊤ : SetQuery)
   have hpoint : pointwiseImpliesOnTheory 𝗭𝗙 φ ψ := by
     intro S' _hT hφ
-    exact False.elim (by simpa [φ, Mettapedia.Logic.PLNWorldModelFOL.folSatisfies] using hφ)
+    exact False.elim (by simpa [φ, Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL.folSatisfies] using hφ)
   have hsing : singletonStrengthLEOnTheory 𝗭𝗙 φ ψ :=
     (Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.pointwiseImpliesOnTheory_iff_singletonStrengthLEOnTheory
       (T := 𝗭𝗙) (φ := φ) (ψ := ψ)).1 hpoint

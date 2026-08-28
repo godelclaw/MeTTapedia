@@ -1082,13 +1082,13 @@ theorem semEState_evidence_mono_not_strength_mono :
     simp [hi, lo, Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.le_def]
   · intro h
     have hle' :
-        Mettapedia.Logic.EvidenceQuantale.BinaryEvidence.toStrength hi ≤
-          Mettapedia.Logic.EvidenceQuantale.BinaryEvidence.toStrength lo := by
+        Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength hi ≤
+          Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength lo := by
       have h' := h
       change
-        Mettapedia.Logic.EvidenceQuantale.BinaryEvidence.toStrength
+        Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength
             ((semEState relEnv I (.atom "a")) p) ≤
-          Mettapedia.Logic.EvidenceQuantale.BinaryEvidence.toStrength
+          Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength
             ((semEState relEnv I (.atom "a")) q) at h'
       simpa [semEState, semE_atom, I, p, q, hi, lo] using h'
     have hnum : ((1 : ENNReal) + 1) ≤ (1 : ENNReal) := by
@@ -1162,11 +1162,11 @@ theorem pointwiseStepSide_not_automatic
   have hWq : W q = lo := by
     simp [W, hneq']
   have hle' :
-      Mettapedia.Logic.EvidenceQuantale.BinaryEvidence.toStrength hi ≤
-        Mettapedia.Logic.EvidenceQuantale.BinaryEvidence.toStrength lo := by
+      Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength hi ≤
+        Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength lo := by
     have hle₀ := hle
-    change Mettapedia.Logic.EvidenceQuantale.BinaryEvidence.toStrength (W p) ≤
-      Mettapedia.Logic.EvidenceQuantale.BinaryEvidence.toStrength (W q) at hle₀
+    change Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength (W p) ≤
+      Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength (W q) at hle₀
     simpa [hWp, hWq] using hle₀
   have hnum : ((1 : ENNReal) + 1) ≤ (1 : ENNReal) := by
     simpa [hi, lo,

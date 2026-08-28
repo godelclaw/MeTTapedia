@@ -296,8 +296,7 @@ theorem flyingFamilyConcept_not_mem_lower :
     hLower' true
   have hNot :
       flyingFamilyConcept ∉
-        Mettapedia.KR.ConceptGeometry.AbstractInheritance.finiteConceptFamily
-          (gateFamily true) context.evidence := by
+        Mettapedia.KR.ConceptGeometry.AbstractInheritance.finiteConceptFamily (gateFamily true) context.evidence := by
     exact (not_mem_finiteConceptFamily_iff
         (G := EvidenceGate.positiveThreshold 2)
         (M := context.evidence)
@@ -316,15 +315,13 @@ theorem batOnlyFlyingConcept_not_mem_upper :
   | false =>
       have hNot :
           batOnlyFlyingConcept ∉
-            Mettapedia.KR.ConceptGeometry.AbstractInheritance.finiteConceptFamily
-              (gateFamily false) context.evidence := by
+            Mettapedia.KR.ConceptGeometry.AbstractInheritance.finiteConceptFamily (gateFamily false) context.evidence := by
         exact batOnlyFlyingConcept_not_mem_exact
       exact hNot hb
   | true =>
       have hNot :
           batOnlyFlyingConcept ∉
-            Mettapedia.KR.ConceptGeometry.AbstractInheritance.finiteConceptFamily
-              (gateFamily true) context.evidence := by
+            Mettapedia.KR.ConceptGeometry.AbstractInheritance.finiteConceptFamily (gateFamily true) context.evidence := by
         exact (not_mem_finiteConceptFamily_iff
             (G := EvidenceGate.positiveThreshold 2)
             (M := context.evidence)

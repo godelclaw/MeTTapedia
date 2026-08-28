@@ -185,7 +185,7 @@ def renderAtpsClaim : AtpsClaim → String
       mkPresPos subj vp
   | .coreLimit =>
       let subj := linDetCN theDefArt (linUseN limit_N)
-      let obj := properNameNP "8 cores with `nice -n 19`"
+      let obj := properNameNP "caller-supplied parallelism"
       let vp := advVP (copulaNP obj) (ppAdv for_Prep (linDetCN theDefArt (linUseN machine_N)))
       mkPresPos subj vp
   | .timeoutLimit =>
@@ -193,7 +193,7 @@ def renderAtpsClaim : AtpsClaim → String
       mkPresPos subj (copulaNP (properNameNP "5 seconds for E prover"))
   | .memoryLimit =>
       let subj := linDetCN theDefArt (linUseN limit_N)
-      mkPresPos subj (copulaNP (properNameNP "`ulimit -v 6291456` for PeTTa subprocesses"))
+      mkPresPos subj (copulaNP (properNameNP "caller-supplied subprocess policy"))
   | .dependencyPeTTa =>
       let subj := properNameNP "PeTTa"
       mkPresPos subj (copulaNP (properNameNP "`../hyperon/PeTTa/`"))

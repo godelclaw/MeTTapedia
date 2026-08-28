@@ -1040,6 +1040,59 @@ theorem birdBirdStampedEvidence_guardedInternalRevision_eq_some :
     (baseInterpretation.meaning Concept.bird)
     (baseInterpretation.meaning Concept.bird)
 
+theorem penguinBirdStampedEvidence_correctedInternalRevision_eq_self :
+    DualConcept.correctedMerge
+      (DualConcept.positiveStampedEvidence
+        (baseInterpretation.meaning Concept.penguin)
+        (baseInterpretation.meaning Concept.bird))
+      (DualConcept.negativeStampedEvidence
+        (baseInterpretation.meaning Concept.penguin)
+        (baseInterpretation.meaning Concept.bird))
+      = penguinBirdStampedEvidence := by
+  exact DualConcept.correctedMerge_eq_of_guardedRevise_eq_some
+    _ _ penguinBirdStampedEvidence_guardedInternalRevision_eq_some
+
+theorem birdBirdStampedEvidence_correctedInternalRevision_eq_self :
+    DualConcept.correctedMerge
+      (DualConcept.positiveStampedEvidence
+        (baseInterpretation.meaning Concept.bird)
+        (baseInterpretation.meaning Concept.bird))
+      (DualConcept.negativeStampedEvidence
+        (baseInterpretation.meaning Concept.bird)
+        (baseInterpretation.meaning Concept.bird))
+      = birdBirdStampedEvidence := by
+  exact DualConcept.correctedMerge_eq_of_guardedRevise_eq_some
+    _ _ birdBirdStampedEvidence_guardedInternalRevision_eq_some
+
+/- The overlap-aware Revision interface is now visible at the concept-geometry
+consumer boundary: internal positive/negative witness packets agree with the
+guarded finite-inheritance construction, while the cross-premise merge remains
+blocked by shared provenance. -/
+theorem assoc_pat_correctedInternalRevision_canary :
+    DualConcept.correctedMerge
+        (DualConcept.positiveStampedEvidence
+          (baseInterpretation.meaning Concept.penguin)
+          (baseInterpretation.meaning Concept.bird))
+        (DualConcept.negativeStampedEvidence
+          (baseInterpretation.meaning Concept.penguin)
+          (baseInterpretation.meaning Concept.bird))
+        = penguinBirdStampedEvidence
+    ∧
+      DualConcept.correctedMerge
+        (DualConcept.positiveStampedEvidence
+          (baseInterpretation.meaning Concept.bird)
+          (baseInterpretation.meaning Concept.bird))
+        (DualConcept.negativeStampedEvidence
+          (baseInterpretation.meaning Concept.bird)
+          (baseInterpretation.meaning Concept.bird))
+        = birdBirdStampedEvidence
+    ∧
+      StampedBinaryEvidence.guardedRevise
+        penguinBirdStampedEvidence birdBirdStampedEvidence = none := by
+  exact ⟨penguinBirdStampedEvidence_correctedInternalRevision_eq_self,
+    birdBirdStampedEvidence_correctedInternalRevision_eq_self,
+    premiseStampedEvidence_guardedRevise_eq_none⟩
+
 theorem assoc_pat_provenance_canary :
     InheritanceQueryBuilder.intensionalAssocEvidence
         (State := DemoState) (Atom := Concept) (Query := DemoPairQuery)

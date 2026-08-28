@@ -1,4 +1,4 @@
-import Mettapedia.Computability.PNP.BitVecZABVisibleSurface
+import Mettapedia.Computability.PNP.BitVecZABVisibleState
 import Mettapedia.Computability.PNP.CanonicalABTargetRoute
 import Mettapedia.Computability.PNP.SharedExactZABAffineFeatureCharacterization
 

@@ -323,7 +323,7 @@ theorem semE_fragment_interface_step_fixture
 project the institution/Beck-Chevalley endpoint together with one-step evidence
 closure. -/
 theorem semE_fragment_categorical_endpoint_step_fixture
-    (H : Mettapedia.Logic.PLNWorldModelHyperdoctrine.WMHyperdoctrine.{u, v, 0, 0} SemEState)
+    (H : Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine.WMHyperdoctrine.{u, v, 0, 0} SemEState)
     {P Aobj Bobj D : H.Obj}
     (pi1 : P ⟶ Aobj) (pi2 : P ⟶ Bobj) (fcat : Aobj ⟶ D) (gcat : Bobj ⟶ D)
     (hpb : CategoryTheory.IsPullback pi1 pi2 fcat gcat)
@@ -362,7 +362,7 @@ theorem semE_fragment_categorical_endpoint_step_fixture
 /-- SemE fragment fixture (star): consume the star-closure categorical endpoint
 and project endpoint statement + evidence obligation. -/
 theorem semE_fragment_categorical_endpoint_stepStar_fixture
-    (H : Mettapedia.Logic.PLNWorldModelHyperdoctrine.WMHyperdoctrine.{u, v, 0, 0} SemEState)
+    (H : Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine.WMHyperdoctrine.{u, v, 0, 0} SemEState)
     {P Aobj Bobj D : H.Obj}
     (pi1 : P ⟶ Aobj) (pi2 : P ⟶ Bobj) (fcat : Aobj ⟶ D) (gcat : Bobj ⟶ D)
     (hpb : CategoryTheory.IsPullback pi1 pi2 fcat gcat)
@@ -401,7 +401,7 @@ theorem semE_fragment_categorical_endpoint_stepStar_fixture
 /-- SemE fragment fixture (policy star): consume the policy-indexed star
 categorical endpoint wrapper directly (no ad-hoc atom/modal assumptions). -/
 theorem semE_fragment_categorical_endpoint_policy_stepStar_fixture
-    (H : Mettapedia.Logic.PLNWorldModelHyperdoctrine.WMHyperdoctrine.{u, v, 0, 0} SemEState)
+    (H : Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine.WMHyperdoctrine.{u, v, 0, 0} SemEState)
     {P Aobj Bobj D : H.Obj}
     (pi1 : P ⟶ Aobj) (pi2 : P ⟶ Bobj) (fcat : Aobj ⟶ D) (gcat : Bobj ⟶ D)
     (hpb : CategoryTheory.IsPullback pi1 pi2 fcat gcat)
@@ -437,7 +437,7 @@ theorem semE_fragment_categorical_endpoint_policy_stepStar_fixture
 /-- SemE fragment fixture (star-rule): consume the dedicated evidence-rule
 constructor generated from the star categorical endpoint package. -/
 theorem semE_fragment_evidence_rule_stepStar_fixture
-    (H : Mettapedia.Logic.PLNWorldModelHyperdoctrine.WMHyperdoctrine.{u, v, 0, 0} SemEState)
+    (H : Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine.WMHyperdoctrine.{u, v, 0, 0} SemEState)
     {P Aobj Bobj D : H.Obj}
     (pi1 : P ⟶ Aobj) (pi2 : P ⟶ Bobj) (fcat : Aobj ⟶ D) (gcat : Bobj ⟶ D)
     (hpb : CategoryTheory.IsPullback pi1 pi2 fcat gcat)
@@ -475,7 +475,7 @@ theorem semE_fragment_evidence_rule_stepStar_fixture
 /-- SemE fragment fixture (policy star-rule): consume the dedicated
 policy-indexed evidence-rule constructor. -/
 theorem semE_fragment_evidence_rule_policy_stepStar_fixture
-    (H : Mettapedia.Logic.PLNWorldModelHyperdoctrine.WMHyperdoctrine.{u, v, 0, 0} SemEState)
+    (H : Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine.WMHyperdoctrine.{u, v, 0, 0} SemEState)
     {P Aobj Bobj D : H.Obj}
     (pi1 : P ⟶ Aobj) (pi2 : P ⟶ Bobj) (fcat : Aobj ⟶ D) (gcat : Bobj ⟶ D)
     (hpb : CategoryTheory.IsPullback pi1 pi2 fcat gcat)
@@ -528,7 +528,7 @@ theorem formula_pathOrder_star_endpoint_projection_fixture
     (hfm : CategoryTheory.Mono fm) (hpi2m : CategoryTheory.Mono pi2m)
     {Xmodal : Opposite (ConstructorObj lang)}
     (pmodal : Pattern)
-    (H : Mettapedia.Logic.PLNWorldModelHyperdoctrine.WMHyperdoctrine.{u, v, 0, 0} SemEState)
+    (H : Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine.WMHyperdoctrine.{u, v, 0, 0} SemEState)
     {P Aobj Bobj D : H.Obj}
     (pi1 : P ⟶ Aobj) (pi2 : P ⟶ Bobj) (fcat : Aobj ⟶ D) (gcat : Bobj ⟶ D)
     (hpb : CategoryTheory.IsPullback pi1 pi2 fcat gcat)
@@ -580,7 +580,7 @@ theorem canonical_context_fixpoint_endpoint_fixture
     (hfm : CategoryTheory.Mono fm) (hpi2m : CategoryTheory.Mono pi2m)
     {Xmodal : Opposite (ConstructorObj ctx.lang)}
     (pmodal : Pattern)
-    (H : Mettapedia.Logic.PLNWorldModelHyperdoctrine.WMHyperdoctrine.{u, v, 0, 0} SemEState)
+    (H : Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine.WMHyperdoctrine.{u, v, 0, 0} SemEState)
     {P Aobj Bobj D : H.Obj}
     (pi1 : P ⟶ Aobj) (pi2 : P ⟶ Bobj) (fcat : Aobj ⟶ D) (gcat : Bobj ⟶ D)
     (hpb : CategoryTheory.IsPullback pi1 pi2 fcat gcat)
@@ -660,7 +660,7 @@ theorem canonical_context_rulePack_fixpoint_endpoint_fixture
     (hfm : CategoryTheory.Mono fm) (hpi2m : CategoryTheory.Mono pi2m)
     {Xmodal : Opposite (ConstructorObj ctx.lang)}
     (pmodal : Pattern)
-    (H : Mettapedia.Logic.PLNWorldModelHyperdoctrine.WMHyperdoctrine.{u, v, 0, 0} SemEState)
+    (H : Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine.WMHyperdoctrine.{u, v, 0, 0} SemEState)
     {P Aobj Bobj D : H.Obj}
     (pi1 : P ⟶ Aobj) (pi2 : P ⟶ Bobj) (fcat : Aobj ⟶ D) (gcat : Bobj ⟶ D)
     (hpb : CategoryTheory.IsPullback pi1 pi2 fcat gcat)

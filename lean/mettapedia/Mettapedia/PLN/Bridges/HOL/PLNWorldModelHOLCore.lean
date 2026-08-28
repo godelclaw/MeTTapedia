@@ -1,8 +1,6 @@
-import Mathlib.Data.Multiset.AddSub
-import Mathlib.Data.Multiset.Count
-import Mettapedia.Logic.HOL.Semantics.Extensionality
-import Mettapedia.Logic.PLNWorldModel
-import Mettapedia.Logic.PLNWorldModelCalculus
+import Mettapedia.Logic.HOL.Semantics.Satisfaction
+import Mettapedia.PLN.WorldModel.PLNWorldModel
+import Mettapedia.PLN.WorldModel.PLNWorldModelCalculus
 
 /-!
 # HOL World-Model Bridge

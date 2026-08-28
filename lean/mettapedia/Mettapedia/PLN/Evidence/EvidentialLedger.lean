@@ -10,7 +10,7 @@ import Mettapedia.PLN.Evidence.BinaryEvidence
 A domain-independent framework for multi-source evidence aggregation with
 compositionality, source forgetting, and AdditiveWorldModel integration.
 
-## Architecture (GPT-5.4 Pro consensus)
+## Architecture
 
 **Additive WM is the base evidence-composition layer.**
 It is not supposed to encode every aspect of trust, dependence, or governance
@@ -193,7 +193,7 @@ theorem aggregate_forget_cons_source_ne [BEq Candidate]
 
 Reliability-weighted evidence synthesis: each source's contribution is
 scaled by an integer weight before aggregation. Higher weight = more
-trusted source. Uses Nat (not Float) per Codex consensus. -/
+trusted source. Uses Nat weights for kernel-checkable scaling. -/
 
 /-- A weighted evidence source: the base SourceItem plus a reliability weight. -/
 structure WeightedSourceItem (Source Candidate : Type*) extends SourceItem Source Candidate where

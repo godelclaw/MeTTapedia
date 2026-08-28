@@ -90,7 +90,6 @@ import Mettapedia.MeasureTheory.Integration
 
 -- Quantum Theory
 import Mettapedia.QuantumTheory.FromSymmetry
-import Mettapedia.QuantumTheory.YangMills
 
 -- Algebra
 import Mettapedia.Algebra.QuantaleWeakness
@@ -107,6 +106,12 @@ import Mettapedia.CategoryTheory.Hypercube
 import Mettapedia.CategoryTheory.PLNSemiringQuantale
 import Mettapedia.CategoryTheory.GeneralizedOpenMaps
 
+-- Information theory (combinatorial bounds)
+import Mettapedia.InformationTheory.BinomialEntropy
+
+-- Machine learning
+import Mettapedia.MachineLearning
+
 -- Computability
 import Mettapedia.Computability.KolmogorovComplexity.Basic
 -- import Mettapedia.Computability.KolmogorovComplexity.Prefix  -- WIP (Phase 2)
@@ -116,7 +121,6 @@ import Mettapedia.Computability.ArithmeticalHierarchy.Basic
 import Mettapedia.Computability.ArithmeticalHierarchy.Closure
 import Mettapedia.Computability.ArithmeticalHierarchy.PolicyEncoding
 import Mettapedia.Computability.ArithmeticalHierarchy.PolicyClasses
-import Mettapedia.Computability.PNP
 
 -- OSLF (Operational Semantics of Lambda-based Formalisms)
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.Context
@@ -128,49 +132,74 @@ import Mettapedia.Languages.ProcessCalculi.RhoCalculus.PresentMoment
 -- by `subst; exact` instead of relying on `simp` to unfold the plain `def`).
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.DerivedRepNu
 
+-- Taxonomy migration ledger
+import Mettapedia.TaxonomyMigrationLedger
+
+-- Knowledge representation
+import Mettapedia.KR
+
 -- Logic
-import Mettapedia.Logic.SolomonoffPrior
-import Mettapedia.Logic.SolomonoffInduction
--- import Mettapedia.Logic.SolomonoffMeasure  -- WIP (outer measure construction is incomplete)
-import Mettapedia.Logic.UniversalPrediction
-import Mettapedia.Logic.PLNDistributional
-import Mettapedia.Logic.PLNTemporal
-import Mettapedia.Logic.PLNDeduction
-import Mettapedia.Logic.PLNFrechetBounds
-import Mettapedia.Logic.PLNQuantaleConnection
-import Mettapedia.Logic.PLNQuantaleDivergence
-import Mettapedia.Logic.PLNEnrichedCategory
-import Mettapedia.Logic.PLNEvidence
-import Mettapedia.Logic.PLN_KS_Bridge
-import Mettapedia.Logic.PLNDeductionComposition
-import Mettapedia.Logic.TemporalQuantale
-import Mettapedia.Logic.WeightedOpenMaps
-import Mettapedia.Logic.OSLFOpenMapBridge
-import Mettapedia.Logic.OpenMapBridgeRegression
-import Mettapedia.Logic.PLNWorldModelHOL
-import Mettapedia.Logic.PLNWorldModelFOL
-import Mettapedia.Logic.PLNWorldModelHOLCompleteness
-import Mettapedia.Logic.PLNWorldModelHOLConsequence
-import Mettapedia.Logic.PLNWorldModelFOLCompleteness
-import Mettapedia.Logic.PLNWorldModelSetTheoryBridge
-import Mettapedia.Logic.PLNWorldModelSetTheoryBridgeRegression
-import Mettapedia.Logic.PLNWorldModelPureKernelBridge
-import Mettapedia.Logic.PLNWorldModelInstitution
-import Mettapedia.Logic.PLNWorldModelHyperdoctrine
-import Mettapedia.Logic.PLNWorldModelCategoricalBridge
-import Mettapedia.Logic.PLNWorldModelNeighborhoodConsequence
-import Mettapedia.Logic.PLNWorldModelKripkeCompleteness
-import Mettapedia.Logic.PLNWorldModelKripkeNeighborhoodEmbedding
-import Mettapedia.Logic.PLNWorldModelKripkeNeighborhoodCanonical
-import Mettapedia.Logic.PLNWorldModelKripkeWeighted
-import Mettapedia.Logic.PLNWorldModelExperiment
-import Mettapedia.Logic.PLNWorldModelExperimentRegression
-import Mettapedia.Logic.PLNWorldModelExperimentStochastic
-import Mettapedia.Logic.PLNWorldModelExperimentStochasticRegression
+import Mettapedia.Logic.WorldModel
+import Mettapedia.Logic.MarkovLogicIndividuationBridge
+import Mettapedia.Logic.GunkyMereology
+import Mettapedia.Logic.StoneGunkDuality
+import Mettapedia.Logic.Metaphysics
+import Mettapedia.UniversalAI.SolomonoffPrior
+import Mettapedia.UniversalAI.UniversalMachineBoundary
+import Mettapedia.UniversalAI.IncrementalCompressionBridge
+import Mettapedia.UniversalAI.OpenEndedCompressionBridge
+import Mettapedia.Computability.KolmogorovComplexity.KraftChaitinStream
+import Mettapedia.Computability.KolmogorovComplexity.KraftChaitinEffective
+import Mettapedia.Computability.KolmogorovComplexity.SaturatedKraftChaitin
+import Mettapedia.Computability.KolmogorovComplexity.DyadicThresholdCoding
+import Mettapedia.Computability.KolmogorovComplexity.DiscreteSemimeasureCoding
+import Mettapedia.Computability.KolmogorovComplexity.ConditionalOutputSemimeasure
+import Mettapedia.Computability.KolmogorovComplexity.ConditionalLowerChainRule
+import Mettapedia.Computability.KolmogorovComplexity.EffectiveConditionalChainRule
+import Mettapedia.Computability.KolmogorovComplexity.EffectiveContainmentRepair
+import Mettapedia.UniversalAI.SolomonoffInduction
+import Mettapedia.UniversalAI.SolomonoffMeasure
+import Mettapedia.UniversalAI.UniversalPrediction
+import Mettapedia.PLN.TruthValues.PLNDistributional
+import Mettapedia.PLN.RuleFamilies.Temporal
+import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction
+import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNFrechetBounds
+import Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PLNQuantaleConnection
+import Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PLNQuantaleDivergence
+import Mettapedia.PLN.Bridges.CategoryTheory.PLNEnrichedCategory
+import Mettapedia.PLN.Bridges.KR
+import Mettapedia.PLN.Evidence.PLNEvidence
+import Mettapedia.PLN.Evidence.PLN_KS_Bridge
+import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeductionComposition
+import Mettapedia.CategoryTheory.GeneralizedOpenMaps.Weighted
+import Mettapedia.OSLF.Bridges.CategoryTheory.OpenMap
+import Mettapedia.OSLF.Bridges.CategoryTheory.OpenMapRegression
+import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOL
+import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL
+import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness
+import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLConsequence
+import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness
+import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelSetTheoryBridge
+import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelSetTheoryBridgeRegression
+import Mettapedia.PLN.Bridges.Languages.WorldModel.PLNWorldModelPureKernelBridge
+import Mettapedia.PLN.WorldModel.PLNWorldModelInstitution
+import Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine
+import Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCategoricalBridge
+import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhoodConsequence
+import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeCompleteness
+import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeNeighborhoodEmbedding
+import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeNeighborhoodCanonical
+import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeighted
+import Mettapedia.KR.ConceptGeometry.AbstractInheritance
+import Mettapedia.KR.ConceptGeometry.Bridges
+import Mettapedia.NARS
+import Mettapedia.Evidence
+import Mettapedia.Enactive
+import Mettapedia.PLN.WorldModel.Experiment
 -- PLN confidence/strength/ITV characterization tower (finite + infinite:
 -- Ising/Gibbs/DLR and i.i.d. de Finetti).  `PLNTruthTheoryIndex` is the
 -- proof-carrying crown index (headline package `plnTruthTheoryPackage`).
-import Mettapedia.Logic.PLNTruthTheoryIndex
+import Mettapedia.PLN.TruthValues.PLNTruthTheoryIndex
 
 -- Universal AI (Hutter Chapters 2-7)
 import Mettapedia.UniversalAI.SimplicityUncertainty
@@ -182,9 +211,6 @@ import Mettapedia.UniversalAI.Omega
 
 -- Value Under Ignorance (Wyeth & Hutter 2025)
 import Mettapedia.UniversalAI.ValueUnderIgnorance
-
--- Fluid dynamics
-import Mettapedia.FluidDynamics.NavierStokes
 
 -- Multi-Agent RL Framework (Grain of Truth - Phase 2)
 import Mettapedia.UniversalAI.MultiAgent.JointActions
@@ -239,21 +265,17 @@ import Mettapedia.CognitiveArchitecture.Main
 -- AutoBooks / Henkin (1950): "Completeness in the Theory of Types"
 import Mettapedia.AutoBooks.Codex.Henkin1950
 
--- Fluid Dynamics: Navier-Stokes finite-mode / Cole-Hopf approximation layer
-import Mettapedia.FluidDynamics
+-- The Navier--Stokes research lane remains available under
+-- `Mettapedia.FluidDynamics`, but is intentionally outside the default build.
 
 -- Ethics: FOET / Gewirth PGC / value-attribution + DDLPlus governance bridges
 import Mettapedia.Ethics
 
 -- ============================================================================
 -- Computability/  (arithmetical hierarchy · Kolmogorov complexity · Hutter
--- computability · Cantor space · oracle/probabilistic machines · the
--- non-cascading PNP obstruction modules)
+-- computability · Cantor space · oracle/probabilistic machines)
 -- ============================================================================
 -- These build at Lean 4.31.  Some carry pre-existing in-place `sorry`s.
--- `PNP.SymmetrizationObstruction` formerly collided with
--- `PNP.PostSwitchInputObstruction` (both declared `abbrev …PNP.BitVec`); its local
--- abbrev is now renamed `MajBitVec`, so both co-import cleanly.
 -- `LocalityObstruction`/`AsymmetryBudgetObstruction` are repaired for the Lean
 -- 4.31 `.reducible`-transparency change (mass/benchmark wrapper `def`s marked
 -- `@[reducible]`; one projection-defeq `simpa … using` → `using!`), and the
@@ -265,8 +287,17 @@ import Mettapedia.Computability.HutterComputability
 import Mettapedia.Computability.HutterComputabilityClosure
 import Mettapedia.Computability.HutterComputabilityENNReal
 import Mettapedia.Computability.HutterComputabilityRational
+import Mettapedia.Computability.KolmogorovComplexity.Conditional
+import Mettapedia.Computability.KolmogorovComplexity.ConditionalInterpreter
+import Mettapedia.Computability.KolmogorovComplexity.ConditionalPlainComplexity
+import Mettapedia.Computability.KolmogorovComplexity.CompressiveFeature
+import Mettapedia.Computability.KolmogorovComplexity.ConditionalChainRule
+import Mettapedia.Computability.KolmogorovComplexity.ConditionalPrefixBridge
+import Mettapedia.Computability.KolmogorovComplexity.ContainmentRepair
+import Mettapedia.Computability.KolmogorovComplexity.DirectionalInformation
 import Mettapedia.Computability.KolmogorovComplexity.Prefix
 import Mettapedia.Computability.KolmogorovComplexity.PrefixComplexity
+import Mettapedia.Computability.KolmogorovComplexity.SelfDelimitingCode
 import Mettapedia.Computability.KolmogorovComplexity.Uncomputability
 -- `OracleTM` is NOT imported: it is an older parallel variant of the oracle-machine
 -- development whose declarations (`oracleOutputOneSet`, …) collide in a single
@@ -278,28 +309,8 @@ import Mettapedia.Computability.OracleTMReal
 import Mettapedia.Computability.OracleTMRefined
 import Mettapedia.Computability.ProbabilisticTM
 import Mettapedia.Computability.ProbabilisticTMRefined
-import Mettapedia.Computability.PNP.ABVisibleSurface
-import Mettapedia.Computability.PNP.AsymmetryBudgetObstruction
-import Mettapedia.Computability.PNP.ConditioningObstruction
-import Mettapedia.Computability.PNP.FiberNeutralityObstruction
-import Mettapedia.Computability.PNP.FixedWidthIsolationObstruction
-import Mettapedia.Computability.PNP.GlobalWeaknessObstruction
-import Mettapedia.Computability.PNP.InfinitaryHMLObstruction
-import Mettapedia.Computability.PNP.InvariantScoreObstruction
-import Mettapedia.Computability.PNP.LocalityObstruction
-import Mettapedia.Computability.PNP.OrbitNeutralityObstruction
-import Mettapedia.Computability.PNP.PairwiseCandidateBridge
-import Mettapedia.Computability.PNP.PairwiseColumnsObstruction
-import Mettapedia.Computability.PNP.PairwiseSurvivorMoments
-import Mettapedia.Computability.PNP.PostSwitchInputObstruction
-import Mettapedia.Computability.PNP.PresentMomentShattering
-import Mettapedia.Computability.PNP.ResidualSymmetryObstruction
-import Mettapedia.Computability.PNP.RhsBiasIrrelevance
-import Mettapedia.Computability.PNP.SymmetrizationObstruction
-import Mettapedia.Computability.PNP.TwoUniversalRhsIrrelevance
-import Mettapedia.Computability.PNP.VisiblePostSwitchSurface
-import Mettapedia.Computability.PNP.WeightAsymmetryObstruction
-import Mettapedia.Computability.PNP.WeightedFiberNeutralityObstruction
+-- The P versus NP research lane remains available under
+-- `Mettapedia.Computability.PNP`, but is intentionally outside the default build.
 
 -- ============================================================================
 -- GSLT/  (Graph-of-Synchronization-Trees: core · graph theory · logic · topos ·
@@ -320,6 +331,7 @@ import Mettapedia.Computability.PNP.WeightedFiberNeutralityObstruction
 -- code needed no fix; `InteractiveGSLT` / `InteractiveCostBridge` each needed the
 -- `simpa using! h` transparency churn-fix at the defeq-closing sites.
 import Mettapedia.GSLT.Core.GSLT
+import Mettapedia.GSLT.Core.BranchingTemporal
 import Mettapedia.GSLT.Core.LambdaTheoryCategory
 import Mettapedia.GSLT.Core.Web
 import Mettapedia.GSLT.Core.ChangeOfBase
@@ -340,6 +352,24 @@ import Mettapedia.GSLT.Causality.SyncTree
 import Mettapedia.GSLT.Dynamics.WeightCost
 import Mettapedia.GSLT.Dynamics.ExtendedHML
 import Mettapedia.GSLT.Dynamics.PathIntegral
+import Mettapedia.GSLT.Dynamics.KnotDecomposition
+import Mettapedia.GSLT.Dynamics.UnfoldingTraversal
+import Mettapedia.GSLT.Dynamics.SemiringTraversal
+import Mettapedia.GSLT.Dynamics.CollapseAlgebra
+import Mettapedia.GSLT.Dynamics.ProvenanceInterpretation
+import Mettapedia.GSLT.Dynamics.SpaceQueryAlgebra
+import Mettapedia.GSLT.Dynamics.StoreReachability
+import Mettapedia.GSLT.Dynamics.StoreCollectionAdvanced
+import Mettapedia.GSLT.Dynamics.DialectTranslation
+import Mettapedia.GSLT.Dynamics.DialectObstructions
+import Mettapedia.GSLT.Dynamics.SpaceGuardedReflection
+import Mettapedia.GSLT.LanguageDef.RuleMachineCompilation
+import Mettapedia.GSLT.LanguageDef.MatchDecisionContract
+import Mettapedia.GSLT.LanguageDef.SequentialBindingDiscipline
+import Mettapedia.GSLT.LanguageDef.ForeignCapabilityLightcone
+import Mettapedia.GSLT.LanguageDef.ErrorObservationCoherence
+import Mettapedia.GSLT.LanguageDef.EmptyDemandCoherence
+import Mettapedia.GSLT.Dynamics.ProofDeterminedGeneralization
 import Mettapedia.GSLT.Synthesis.MainConservation
 import Mettapedia.GSLT.Meredith.GSLT
 import Mettapedia.GSLT.Meredith.LambdaTheory
@@ -357,3 +387,8 @@ import Mettapedia.GSLT.Meredith.InteractiveCostBridge
 import Mettapedia.GSLT.Life.AssemblyTheory
 -- Replication fixed-point (depends on `RhoCalculus/DerivedRepNu`, repaired above).
 import Mettapedia.GSLT.Life.ReplicationFixedPoint
+import Mettapedia.GSLT.LanguageDef.HOLKernelProfiles
+import Mettapedia.Algebra.FootprintQuantale
+import Mettapedia.OSLF.Framework.GrammarDerives
+import Mettapedia.Languages.Metamath.ExprDerive
+import Mettapedia.Languages.Metamath.Flatten

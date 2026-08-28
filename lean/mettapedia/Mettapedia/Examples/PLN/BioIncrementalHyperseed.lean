@@ -20,17 +20,17 @@ more observations arrive.
 
 namespace Mettapedia.Examples.PLN.BioIncrementalHyperseed
 
-open Mettapedia.Logic
-open Mettapedia.Logic.EvidenceClass
-open Mettapedia.Logic.EvidenceQuantale
-open Mettapedia.Logic.ProbLogDistributionSemantics
-open Mettapedia.Logic.PLNWorldModel
-open Mettapedia.Logic.PLNWorldModelAdditive
-open Mettapedia.Logic.PLNWorldModelGeneric
-open Mettapedia.Logic.PLNWorldModelFixpointClosure
-open Mettapedia.Logic.PLNNoisyOr
-open Mettapedia.Logic.SufficientStatisticSurface
-open Mettapedia.Logic.PLNBioHypothesisGeneration
+open Mettapedia.PLN.Evidence.EvidenceClass
+open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Bridges.Languages.ProbLog.DistributionSemantics
+open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel.PLNWorldModelAdditive
+open Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
+open Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointClosure
+open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNNoisyOr
+open Mettapedia.PLN.WorldModel
+open Mettapedia.PLN.WorldModel.SufficientStatisticEncoder
+open Mettapedia.Examples.PLN.BioHypothesisGeneration
 open Mettapedia.Hyperseed
 open scoped ENNReal
 
@@ -76,11 +76,11 @@ theorem bioEncoder_unitObservation :
     UnitObservation bioEncoder := by
   intro o q
   by_cases h : o.pair = queryPair q
-  · dsimp [bioSurface]
+  · dsimp [bioEncoder]
     rw [if_pos h]
     change unitPositiveEvidence.pos + unitPositiveEvidence.neg = 1
     simp [unitPositiveEvidence]
-  · dsimp [bioSurface]
+  · dsimp [bioEncoder]
     rw [if_neg h]
     change unitNegativeEvidence.pos + unitNegativeEvidence.neg = 1
     simp [unitNegativeEvidence]
@@ -92,7 +92,7 @@ noncomputable instance : BinaryWorldModel (Multiset BioObservation) BioQuery :=
   worldModelOfAtomicEvidence bioEncoder.observe
 
 noncomputable instance : AdditiveWorldModel (Multiset BioObservation) BioQuery BinaryEvidence :=
-  bioSurface.inducedWorldModel
+  bioEncoder.inducedWorldModel
 
 private noncomputable abbrev bioWMEvidence : Multiset BioObservation → BioQuery → BinaryEvidence :=
   (inferInstance : AdditiveWorldModel (Multiset BioObservation) BioQuery BinaryEvidence).extract
@@ -576,10 +576,10 @@ theorem pairARepeatEqtlTrace_count :
 theorem bio_rawWM_evidence_add
     (σ₁ σ₂ : Multiset BioObservation) (q : BioQuery) :
     bioWMEvidence (σ₁ + σ₂) q = bioWMEvidence σ₁ q + bioWMEvidence σ₂ q := by
-  change genAdditiveExtension bioSurface.observe (σ₁ + σ₂) q =
-    genAdditiveExtension bioSurface.observe σ₁ q +
-      genAdditiveExtension bioSurface.observe σ₂ q
-  exact genAdditiveExtension_add bioSurface.observe σ₁ σ₂ q
+  change genAdditiveExtension bioEncoder.observe (σ₁ + σ₂) q =
+    genAdditiveExtension bioEncoder.observe σ₁ q +
+      genAdditiveExtension bioEncoder.observe σ₂ q
+  exact genAdditiveExtension_add bioEncoder.observe σ₁ σ₂ q
 
 /-- Concrete batchwise = bulk raw-WM theorem for the accumulated pair-A trace. -/
 theorem pairATrace_rawWM_evidence_eq_batches (q : BioQuery) :

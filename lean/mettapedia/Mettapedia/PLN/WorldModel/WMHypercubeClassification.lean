@@ -1,6 +1,6 @@
 import KnuthSkilling.Core.Hypercube
-import Mettapedia.Logic.PLNWorldModelGeneric
-import Mettapedia.Logic.WorldModelOverlap
+import Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
+import Mettapedia.PLN.WorldModel.WorldModelOverlap
 
 /-!
 # WM Regime Classification via the KS Probability Hypercube
@@ -24,8 +24,8 @@ by two independent structural decisions:
 1. Does your event algebra satisfy excluded middle? (Boolean vs Heyting)
 2. Do you track evidence per-channel or summarize to a point? (Bounds vs Point)
 
-The KS representation theorem then gives the UNIQUE algebra satisfying
-those choices. The WM calculus instantiates each vertex.
+The KS formalism then constrains what kinds of additive and representation
+interfaces fit those choices. The WM calculus instantiates each vertex.
 
 ## References
 
@@ -37,8 +37,8 @@ those choices. The WM calculus instantiates each vertex.
 namespace Mettapedia.PLN.WorldModel.WMHypercubeClassification
 
 open KnuthSkilling.Hypercube
-open Mettapedia.Logic.EvidenceClass
-open Mettapedia.Logic.PLNWorldModelGeneric
+open Mettapedia.PLN.Evidence.EvidenceClass
+open Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
 
 /-! ## 1. WM Regimes as named structures
 

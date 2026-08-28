@@ -117,7 +117,8 @@ noncomputable def evidenceProfileHom :
   map_add' W₁ W₂ := funext (BinaryWorldModel.evidence_add W₁ W₂)
 
 /-- Construct a `BinaryWorldModel` from a profile homomorphism (inverse direction). -/
-noncomputable def ofProfileHom (F : AddMonoidHom State (Query → BinaryEvidence)) :
+@[reducible] noncomputable def ofProfileHom
+    (F : AddMonoidHom State (Query → BinaryEvidence)) :
     BinaryWorldModel State Query where
   evidence W q := F W q
   evidence_add W₁ W₂ q := congrFun (F.map_add W₁ W₂) q

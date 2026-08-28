@@ -320,9 +320,9 @@ def logicReadmeBlocks : List ReadmeBlock :=
       , claimBullet .chapter11RegressionHasCanarySuite
       ]
   , .codeBlock "bash"
-      "cd ~/claude/lean-projects/mettapedia\nulimit -Sv 6291456 && export LAKE_JOBS=3 && nice -n 19 \\\n  lake build Mettapedia.Logic.PLNFirstOrder.QuantifierRegression"
+      "cd lean/mettapedia\nlake build Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierRegression"
   , .codeBlock "bash"
-      "cd ~/claude/lean-projects/mettapedia\n./scripts/check_ch11_quantifiers.sh\n./scripts/check_ch11_fuzzy_syllogism.sh"
+      "cd lean/mettapedia\n./scripts/check_ch11_quantifiers.sh\n./scripts/check_ch11_fuzzy_syllogism.sh"
   , .pathItems
       [ {path := "Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/QuantifierSemantics.lean"}
       , {path := "Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/FuzzyQuantifierSemantics.lean"}
@@ -336,9 +336,9 @@ def logicReadmeBlocks : List ReadmeBlock :=
       , claimBullet .chapter12RegressionHasWrappersAndCanaries
       ]
   , .codeBlock "bash"
-      "cd ~/claude/lean-projects/mettapedia\nulimit -Sv 6291456 && export LAKE_JOBS=3 && nice -n 19 \\\n  lake build Mettapedia.Logic.PLNIntensionalRegression"
+      "cd lean/mettapedia\nlake build Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalRegression"
   , .codeBlock "bash"
-      "cd ~/claude/lean-projects/mettapedia\n./scripts/check_ch12_intensional.sh"
+      "cd lean/mettapedia\n./scripts/check_ch12_intensional.sh"
   , .pathItems
       [ {path := "Mettapedia/Logic/PLNIntensionalWorldModel.lean"}
       , {path := "Mettapedia/Logic/IntensionalInheritanceSolomonoffBridge.lean"}
@@ -352,9 +352,9 @@ def logicReadmeBlocks : List ReadmeBlock :=
       , claimBullet .chapter13RegressionHasSelectorCoverageCanaries
       ]
   , .codeBlock "bash"
-      "cd ~/claude/lean-projects/mettapedia\nulimit -Sv 6291456 && export LAKE_JOBS=3 && nice -n 19 \\\n  lake build Mettapedia.Logic.PLNInferenceControlRegression"
+      "cd lean/mettapedia\nlake build Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlRegression"
   , .codeBlock "bash"
-      "cd ~/claude/lean-projects/mettapedia\n./scripts/check_ch13_inference_control.sh"
+      "cd lean/mettapedia\n./scripts/check_ch13_inference_control.sh"
   , .pathItems
       [ {path := "Mettapedia/PLN/InferenceControl/PremiseSelection/SelectorSpec.lean"}
       , {path := "Mettapedia/PLN/InferenceControl/PremiseSelection/Optimality.lean"}
@@ -419,7 +419,7 @@ def logicReadmeBlocks : List ReadmeBlock :=
   , .heading 2 (renderLogicHeading .build)
   , .claimBullets [claimBullet .buildSectionListsCommands]
   , .codeBlock "bash"
-      "cd ~/claude/lean-projects/mettapedia\n# Quantifier regression\nlake build Mettapedia.Logic.PLNFirstOrder.QuantifierRegression\n# Intensional inheritance regression\nlake build Mettapedia.Logic.PLNIntensionalRegression\n# Inference-control regression\nlake build Mettapedia.Logic.PLNInferenceControlRegression\n# Core files\nlake build Mettapedia.Logic.PLNBayesNetInference Mettapedia.Logic.PremiseSelectionKNN_PLNBridge\n# Build all (slow)\nlake build"
+      "cd lean/mettapedia\n# Quantifier regression\nlake build Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierRegression\n# Intensional inheritance regression\nlake build Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalRegression\n# Inference-control regression\nlake build Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlRegression\n# Core files\nlake build Mettapedia.PLN.WorldModel.BayesNet.PLNBayesNetInference Mettapedia.PLN.InferenceControl.PremiseSelection.KNN_PLNBridge\n# Build all (slow)\nlake build"
   , .heading 2 (renderLogicHeading .references)
   , .claimBullets [claimBullet .referencesSectionListsSources]
   , .codeBlock ""

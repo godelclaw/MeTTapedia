@@ -22,9 +22,8 @@ Single-entry build target for Chapter-13 inference-control coverage:
 Build command:
 
 ```bash
-cd /home/zar/claude/Mettapedia/lean/mettapedia
-ulimit -Sv 6291456 && export LAKE_JOBS=3 && nice -n 19 \
-  lake build Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlRegression
+cd lean/mettapedia
+lake build Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlRegression
 ```
 -/
 

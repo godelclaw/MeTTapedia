@@ -39,7 +39,7 @@ section PLNStrengthProps
 
 /-- PLN strength is non-negative. -/
 theorem plnStrength_nonneg (n_pos n_neg : ℕ) : 0 ≤ plnStrength n_pos n_neg := by
-  dsimp [plnStrength, Mettapedia.Logic.EvidenceCounts.plnStrength]
+  dsimp [plnStrength, Mettapedia.PLN.Evidence.EvidenceCounts.plnStrength]
   split_ifs with h
   · exact le_refl 0
   · apply div_nonneg
@@ -50,7 +50,7 @@ theorem plnStrength_nonneg (n_pos n_neg : ℕ) : 0 ≤ plnStrength n_pos n_neg :
 
 /-- PLN strength is at most 1. -/
 theorem plnStrength_le_one (n_pos n_neg : ℕ) : plnStrength n_pos n_neg ≤ 1 := by
-  dsimp [plnStrength, Mettapedia.Logic.EvidenceCounts.plnStrength]
+  dsimp [plnStrength, Mettapedia.PLN.Evidence.EvidenceCounts.plnStrength]
   split_ifs with h
   · exact zero_le_one
   · have hne : (n_pos + n_neg : ℝ) ≠ 0 := by

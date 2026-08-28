@@ -1,5 +1,8 @@
-import Mettapedia.Logic.HOL
-import Mettapedia.Logic.PLNWorldModelHOL
+import Mettapedia.Logic.HOL.Syntax.Type
+import Mettapedia.Logic.HOL.Syntax.Term
+import Mettapedia.Logic.HOL.Syntax.Closed
+import Mettapedia.Logic.HOL.Derivation
+import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOL
 
 namespace Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore
 

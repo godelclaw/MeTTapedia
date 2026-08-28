@@ -27,9 +27,9 @@ named builtins so exporters and artifact checks can reason about premise wiring.
 
 Semantics aligns with:
 
-- `~/claude/hyperon/rho4u/metta-calculus/metta-calculus.core.tex`
+- `hyperon/rho4u/metta-calculus/metta-calculus.core.tex`
 - relation-name discipline inspired by
-  `~/claude/lean-projects/mettapedia/Mettapedia/Languages/MeTTa/HE/HEPremises.lean`
+  `lean/mettapedia/Mettapedia/Languages/MeTTa/HE/HEPremises.lean`
 -/
 
 namespace Mettapedia.Languages.ProcessCalculi.MeTTaCalculus.Premises

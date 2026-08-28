@@ -1,10 +1,10 @@
-import Mettapedia.Logic.EvidenceQuantale
-import Mettapedia.Logic.EvidenceBeta
-import Mettapedia.Logic.EvidenceClass
-import Mettapedia.Logic.PLNConfidenceWeight
-import Mettapedia.Logic.PLNWeightTV
+import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta
+import Mettapedia.PLN.Evidence.EvidenceClass
+import Mettapedia.PLN.TruthValues.PLNConfidenceWeight
+import Mettapedia.PLN.TruthValues.PLNWeightTV
 import KnuthSkilling.Additive.Main
--- import Mettapedia.Logic.HigherOrder.PLNKyburgReduction  -- TODO: Re-add in Phase 4 for Kyburg theorems
+-- import Mettapedia.PLN.Bridges.ProbabilityTheory.PLNKyburgReduction  -- TODO: Re-add in Phase 4 for Kyburg theorems
 
 /-!
 # Indefinite Truth Values: Core PLN Record and Constructor Semantics
@@ -47,7 +47,7 @@ Without the constructor semantics, the record is only a bounded triple.
 ## Theoretical Foundation
 
 ### Knuth-Skilling Connection
-From external `KnuthSkilling/Additive/*.lean`:
+From `ProbabilityTheory/KnuthSkilling/Additive/*.lean`:
 - K-S axioms lead to additive valuation/measure representations when the
   ordering and algebraic hypotheses are strong enough.
 - When the representation is not unique, the natural imprecise reading is a

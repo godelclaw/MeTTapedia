@@ -19,7 +19,7 @@ import Mettapedia.Languages.MeTTa.HE.LeaTTaQueryObservationalAnchor
 import Mettapedia.Languages.MeTTa.HE.LeaTTaSpecSeal
 import Mettapedia.Languages.MeTTa.HE.LeaTTaConcreteConformance
 import Mettapedia.Languages.MeTTa.HE.MatcherMergeCompleteness
-import Mettapedia.Languages.MeTTa.LeaTTa.Corpus.SelfInterp
+import Mettapedia.Languages.MeTTa.LeaTTa.Corpus.SelfInterp.Query
 import Mettapedia.OSLF.MeTTaIL.Match
 import MettaHyperonFull.Proofs.BindingLaws
 

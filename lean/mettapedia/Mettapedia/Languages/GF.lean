@@ -30,7 +30,7 @@ open Mettapedia.Languages.GF.HandCrafted.English.Verbs
 ## References
 
 - GF Tutorial: http://www.grammaticalframework.org/
-- GF-RGL: ~/claude/gf-rgl/
+- GF-RGL: gf-rgl/
 -/
 
 import Mettapedia.Languages.GF.HandCrafted.Core

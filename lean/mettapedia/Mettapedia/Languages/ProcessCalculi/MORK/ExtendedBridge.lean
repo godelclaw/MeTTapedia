@@ -65,10 +65,8 @@ theorem authoredRule_mork_sourceRuleFire
       sourceGround targetGround
 
 section Canaries
-#check @declReduces_extended_mork_fire
-#check @declReduces_extended_mork_sourceRuleFire
-#check @fireRule_collectionReplace
-#check @fireSourceRule_collectionReplaceSource
+#check @authoredRule_mork_fire
+#check @authoredRule_mork_sourceRuleFire
 end Canaries
 
 section AxiomAudit

@@ -7,7 +7,7 @@ import Mettapedia.OSLF.MeTTaIL.DerivedContexts
 
 This module is the Lean `languageDef!` acceptance test corresponding to the
 Rust `language!` definition in
-`~/claude/hyperon/mettail-rust/languages/src/ambient.rs`.
+`hyperon/mettail-rust/languages/src/ambient.rs`.
 
 Positive example:
 - single-binder `PNew`, collection-rest freshness, and nested process rewrite

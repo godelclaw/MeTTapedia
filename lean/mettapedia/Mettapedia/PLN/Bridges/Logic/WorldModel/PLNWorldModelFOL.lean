@@ -1,7 +1,5 @@
-import Mathlib.Data.Multiset.AddSub
-import Mathlib.Data.Multiset.Count
-import Mettapedia.Logic.PLNWorldModelCrispSpecialization
-import Mettapedia.Logic.PLNWorldModel
+import Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization
+import Mettapedia.PLN.WorldModel.PLNWorldModel
 import Foundation.FirstOrder.Basic
 
 /-!
@@ -131,7 +129,7 @@ theorem singleton_adequacy_strength_one_is_crispSpecialization {L : Language.{u}
       BinaryWorldModel.queryStrength (State := Multiset (PointedFOL L)) (Query := FOLQuery L)
         ({S} : Multiset (PointedFOL L)) φ = 1 := by
   exact
-    (Mettapedia.Logic.PLNWorldModelCrispSpecialization.singleton_adequacy_strength_one
+    (Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization.singleton_adequacy_strength_one
       (satisfies := folSatisfies) S φ)
 
 /-! ## Consequence adequacy on singleton and multiset FOL states -/

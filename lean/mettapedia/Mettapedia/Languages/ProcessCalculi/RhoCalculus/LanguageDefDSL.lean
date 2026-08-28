@@ -6,8 +6,12 @@ import Mettapedia.OSLF.MeTTaIL.ContextualStep
 /-!
 # Explicit extensions of the canonical rho `LanguageDef`
 
-This module is the honest Lean `languageDef!` pressure test against the Rust
-`language!` definition in `~/claude/hyperon/mettail-rust/languages/src/rhocalc.rs`.
+`Mettapedia.OSLF.MeTTaIL.Syntax.rhoCalc` is the sole authored semantic root.
+It presents the paper calculus: `Comm` is the only primitive computational
+rule, `ParCong` supplies contextual closure, and `QuoteDrop` remains an
+equation.  This module contains named deltas for conveniences that are not in
+that core.  Every language below is obtained by extending `rhoCalc`; none is a
+second definition of rho.
 
 The execution delta is intentionally available only in Lean.  CeTTa's
 `--lang rhocalc --profile cost` instantiates the pure calculus and does not use

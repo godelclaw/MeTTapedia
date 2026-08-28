@@ -81,6 +81,9 @@ theorem setHolEvidence_add
 noncomputable instance : BinaryWorldModel SetState SetHOLQuery where
   evidence := setHolEvidence
   evidence_add := setHolEvidence_add
+  evidence_zero q := by
+    classical
+    simp only [setHolEvidence, Multiset.countP_zero, Nat.cast_zero]; rfl
 
 theorem setHolEvidence_singleton_of_satisfies
     (S : SetPointed) (φ : SetHOLQuery) (h : setHolSatisfies S φ) :
@@ -145,7 +148,7 @@ theorem singleton_adequacy_strength_one_is_crispSpecialization
   change setHolSatisfies S φ ↔
     BinaryEvidence.toStrength (setHolEvidence ({S} : SetState) φ) = 1
   simpa [setHolEvidence_eq_crispEvidence,
-    Mettapedia.Logic.PLNWorldModelCrispSpecialization.crispQueryStrength]
+    Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization.crispQueryStrength]
     using
       (Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization.singleton_adequacy_strength_one
         (satisfies := setHolSatisfies) S φ)
@@ -374,14 +377,14 @@ private theorem setHolSatisfies_embedSentence_iff_of_mutual_consequence
     (Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.singletonStrengthLE_singleton_iff_imp
       (S := S) (φ := ψ) (ψ := φ)).1 hleψφ
   rw [show setHolSatisfies S (Mettapedia.Logic.HOL.Embedding.FirstOrder.embedSentence φ) ↔
-      Mettapedia.Logic.PLNWorldModelFOL.folSatisfies S φ by
-        unfold setHolSatisfies Mettapedia.Logic.PLNWorldModelFOL.folSatisfies
+      Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL.folSatisfies S φ by
+        unfold setHolSatisfies Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL.folSatisfies
         exact
           (Mettapedia.Logic.HOL.Semantics.SetBased.pointed_denote_embedSentence_iff
             (S := S) (φ := φ))]
   rw [show setHolSatisfies S (Mettapedia.Logic.HOL.Embedding.FirstOrder.embedSentence ψ) ↔
-      Mettapedia.Logic.PLNWorldModelFOL.folSatisfies S ψ by
-        unfold setHolSatisfies Mettapedia.Logic.PLNWorldModelFOL.folSatisfies
+      Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL.folSatisfies S ψ by
+        unfold setHolSatisfies Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL.folSatisfies
         exact
           (Mettapedia.Logic.HOL.Semantics.SetBased.pointed_denote_embedSentence_iff
             (S := S) (φ := ψ))]
@@ -392,8 +395,8 @@ pointwise with the existing set-theory/FOL satisfaction relation. -/
 theorem setHolSatisfies_embedSentence_iff
     (S : SetPointed) (φ : LO.FirstOrder.Sentence SetLang) :
     setHolSatisfies S (Mettapedia.Logic.HOL.Embedding.FirstOrder.embedSentence φ) ↔
-      Mettapedia.Logic.PLNWorldModelFOL.folSatisfies S φ := by
-  unfold setHolSatisfies Mettapedia.Logic.PLNWorldModelFOL.folSatisfies
+      Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL.folSatisfies S φ := by
+  unfold setHolSatisfies Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL.folSatisfies
   exact
     (Mettapedia.Logic.HOL.Semantics.SetBased.pointed_denote_embedSentence_iff
       (S := S) (φ := φ))

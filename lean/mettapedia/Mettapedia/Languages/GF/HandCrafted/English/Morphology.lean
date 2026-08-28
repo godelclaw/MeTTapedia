@@ -11,9 +11,9 @@ English is morphologically simpler than Czech:
 - Articles (a/an, the) — Czech has none
 
 ## References
-- GF English Resource: ~/claude/gf-rgl/src/english/ResEng.gf
-- GF English Categories: ~/claude/gf-rgl/src/english/CatEng.gf
-- GF English Paradigms: ~/claude/gf-rgl/src/english/ParadigmsEng.gf
+- GF English Resource: gf-rgl/src/english/ResEng.gf
+- GF English Categories: gf-rgl/src/english/CatEng.gf
+- GF English Paradigms: gf-rgl/src/english/ParadigmsEng.gf
 -/
 
 import Mettapedia.Languages.GF.HandCrafted.Core

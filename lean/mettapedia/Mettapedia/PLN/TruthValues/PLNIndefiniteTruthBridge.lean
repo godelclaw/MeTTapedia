@@ -1,5 +1,5 @@
 import Mathlib.Data.Real.Basic
-import Mettapedia.Logic.PLNIndefiniteTruth
+import Mettapedia.PLN.TruthValues.PLNIndefiniteTruth
 import KnuthSkilling.Probability.BooleanRepresentation
 
 /-!

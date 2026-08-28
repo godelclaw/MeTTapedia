@@ -10,8 +10,10 @@ open Mettapedia.OSLF.MeTTaIL
 
 namespace Mettapedia.Tools.WriteLanguageFixtures
 
-private def fixtureBase :=
-  "~/claude/hyperon/mettail-rust/macros/tests/fixtures/lean_export"
+private def fixtureBase : IO System.FilePath := do
+  match (← IO.getEnv "METTAIL_RUST_LEAN_EXPORT_DIR") with
+  | some path => pure path
+  | none => pure "../externals/mettail-rust/macros/tests/fixtures/lean_export"
 
 private def gfPaperSyntaxLang :=
   Mettapedia.Languages.GF.GFCoreOSLFBridge.gfSyntaxLanguageDef
@@ -21,11 +23,12 @@ private def gfProjectCoreEngPath : System.FilePath :=
   "../algorithms/gf_fragments/generated/GrammarEng.project_core.json"
 
 def writeLanguageFixtures : IO Unit := do
+  let fixtureBase ← fixtureBase
   IO.FS.createDirAll fixtureBase
-  let metamathPath := s!"{fixtureBase}/metamath_core.language"
-  let rhocalcPath := s!"{fixtureBase}/rhocalc_core.language"
-  let gfPaperPath := s!"{fixtureBase}/gf_paper_ambiguity.language"
-  let gfProjectCorePath := s!"{fixtureBase}/gf_project_core.language"
+  let metamathPath := fixtureBase / "metamath_core.language"
+  let rhocalcPath := fixtureBase / "rhocalc_core.language"
+  let gfPaperPath := fixtureBase / "gf_paper_ambiguity.language"
+  let gfProjectCorePath := fixtureBase / "gf_project_core.language"
   let gfProjectCoreSig ← GFCore.sigFromPGFJsonFile gfProjectCoreEngPath
   let gfProjectCoreLang :=
     Mettapedia.Languages.GF.GFCoreOSLFBridge.gfSyntaxLanguageDef gfProjectCoreSig

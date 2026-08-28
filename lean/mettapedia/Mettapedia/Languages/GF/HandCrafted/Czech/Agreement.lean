@@ -5,7 +5,7 @@ Functions governing how numerals interact with nouns.
 Czech numerals change the case and agreement of the governed noun.
 
 ## Source
-Ported from: ~/claude/gf-rgl/src/czech/ResCze.gf (lines 922-943)
+Ported from: gf-rgl/src/czech/ResCze.gf (lines 922-943)
 
 ## Key Rule (CEG 6.1)
 - Num1: singular agreement (jeden dum)

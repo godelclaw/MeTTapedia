@@ -16,7 +16,7 @@ Core interpretation:
 - intensional inheritance:
   `log₂ ( Pξ(W|F,x) / Pξ(W|x) )`
 
-encoded via `mutualInfoFromEvidence`.
+encoded via `logRatioInformationGainFromEvidence`.
 -/
 
 namespace Mettapedia.KR.ConceptGeometry.IntensionalInheritance
@@ -38,10 +38,11 @@ noncomputable def extensionalFromConditional
   (conditionalENN ξ W (x ++ F)).toReal
 
 /-- Universal-mixture intensional inheritance as log-ratio information gain:
-`log₂(Pξ(W|F,x) / Pξ(W|x))` encoded via `mutualInfoFromEvidence`. -/
+`log₂(Pξ(W|F,x) / Pξ(W|x))` encoded via
+`logRatioInformationGainFromEvidence`. -/
 noncomputable def intensionalFromConditional
     (ξ : Semimeasure) (x F W : BinString) : ℝ :=
-  mutualInfoFromEvidence
+  logRatioInformationGainFromEvidence
     (extensionalFromConditional ξ x F W)
     (priorFromConditional ξ x W)
 
@@ -55,10 +56,8 @@ theorem intensionalFromConditional_eq_log2_ratio
       Real.log
         (extensionalFromConditional ξ x F W / priorFromConditional ξ x W) /
       Real.log 2 := by
-  have hPos : priorFromConditional ξ x W > 0 ∧ extensionalFromConditional ξ x F W > 0 :=
-    ⟨hPrior, hExt⟩
-  unfold intensionalFromConditional mutualInfoFromEvidence
-  rw [if_pos hPos]
+  unfold intensionalFromConditional
+  exact logRatioInformationGainFromEvidence_eq_log2_ratio hExt hPrior
 
 /-- Specialized bridge for the generic Bayes mixture `ξ = xiSemimeasure ν w`. -/
 theorem intensionalFromXiSemimeasure_eq_log2_ratio

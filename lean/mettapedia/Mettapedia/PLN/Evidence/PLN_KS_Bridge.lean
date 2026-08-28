@@ -1,5 +1,5 @@
-import Mettapedia.Logic.EvidenceQuantale
-import KnuthSkilling.Core.TotalityImprecision
+import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.KnuthSkillingCompatibility
 
 /-!
 # PLN BinaryEvidence vs Scalar Order Reflection
@@ -23,7 +23,7 @@ namespace Mettapedia.PLN.Evidence.PLN_KS_Bridge
 
 open scoped ENNReal
 
-open Mettapedia.Logic.EvidenceQuantale
+open Mettapedia.PLN.Evidence.EvidenceQuantale
 open KnuthSkilling.TotalityImprecision
 
 /-! ## BinaryEvidence has incomparable elements -/

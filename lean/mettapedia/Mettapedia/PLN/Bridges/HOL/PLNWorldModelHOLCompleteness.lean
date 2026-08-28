@@ -108,16 +108,16 @@ abbrev wmConsequenceRule_of_singletonStrengthLE :=
   @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.wmConsequenceRule_of_singletonStrengthLE
 
 noncomputable abbrev wmConsequenceRuleOn_of_pointwise :=
-  @Mettapedia.Logic.HOL.WorldModelCompleteness.wmConsequenceRuleOn_of_pointwise
+  @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.wmConsequenceRuleOn_of_pointwise
 
 noncomputable abbrev wmConsequenceRuleOn_of_pointwise_categorical :=
-  @Mettapedia.Logic.HOL.WorldModelCompleteness.wmConsequenceRuleOn_of_pointwise_categorical
+  @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.wmConsequenceRuleOn_of_pointwise_categorical
 
 noncomputable abbrev wmConsequenceRuleOn_of_singletonStrengthLE :=
-  @Mettapedia.Logic.HOL.WorldModelCompleteness.wmConsequenceRuleOn_of_singletonStrengthLE
+  @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.wmConsequenceRuleOn_of_singletonStrengthLE
 
 noncomputable abbrev wmConsequenceRuleOn_of_singletonStrengthLE_categorical :=
-  @Mettapedia.Logic.HOL.WorldModelCompleteness.wmConsequenceRuleOn_of_singletonStrengthLE_categorical
+  @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.wmConsequenceRuleOn_of_singletonStrengthLE_categorical
 
 /-!
 ## Classical theory-model states for HO WM-PLN

@@ -170,7 +170,7 @@ def heStep_wmConsequenceRule
 /-- A single HE step yields a WM consequence rule in the concrete pointwise
 interpretation. -/
 noncomputable def hePointwiseStep_wmConsequenceRule
-    {p q : Pattern} (hstep : DeclReducesRel mettaHE p q) :
+    {p q : Pattern} (hstep : HELanguageStep p q) :
     WMConsequenceRuleOn HERuntimeEvidenceState Pattern :=
   hePointwiseWMInterface.toRuntimeJudgmentWMInterface.wmConsequenceRuleOn_of_step hstep
 

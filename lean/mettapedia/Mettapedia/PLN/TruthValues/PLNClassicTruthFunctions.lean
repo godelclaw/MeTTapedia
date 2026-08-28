@@ -1,7 +1,7 @@
-import Mettapedia.Logic.PLNMettaTruthFunctions
-import Mettapedia.Logic.PLNRevision
-import Mettapedia.Logic.PLNProvenanceInference
-import Mettapedia.Logic.EvidenceQuantale
+import Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions
+import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNRevision
+import Mettapedia.PLN.WorldModel.Provenance.PLNProvenanceInference
+import Mettapedia.PLN.Evidence.EvidenceQuantale
 
 /-!
 # Classic PLN Truth Functions Linked to BinaryEvidence Algebra
@@ -36,13 +36,13 @@ The truth functions are CORRECT (under their implicit side conditions)
 but LOSSY (they discard evidence shape).
 -/
 
-namespace Mettapedia.Logic.PLNClassicTruthFunctions
+namespace Mettapedia.PLN.TruthValues.PLNClassicTruthFunctions
 
 open scoped ENNReal
-open Mettapedia.Logic.EvidenceQuantale
-open Mettapedia.Logic.PLNMettaTruthFunctions
-open Mettapedia.Logic.PLN
-open Mettapedia.Logic.PLNRevision
+open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions
+open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation
+open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNRevision
 open BinaryEvidence
 
 /-! ## BinaryEvidence ↔ TV Conversion
@@ -143,7 +143,7 @@ PLN v0.9's induction and abduction are more complex compositions.
 At the evidence level, they involve the tensor, inversion (swapping
 premise/conclusion roles), and revision.
 
-The strength formulas are already formalized in `PLNMettaTruthFunctions.lean`
+The strength formulas are already formalized in `PeTTaLibPLNTruthFunctions.lean`
 (`truthInduction`, `truthAbduction`).  The theorems below link them to
 the evidence-level operations. -/
 
@@ -177,4 +177,4 @@ This is why:
 - Distributional inference (propagating full posteriors) avoids the loss
 -/
 
-end Mettapedia.Logic.PLNClassicTruthFunctions
+end Mettapedia.PLN.TruthValues.PLNClassicTruthFunctions

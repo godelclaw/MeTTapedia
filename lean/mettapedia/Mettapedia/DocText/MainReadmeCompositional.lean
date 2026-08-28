@@ -6,7 +6,7 @@ Goal:
 - English prose is generated via GF English morphology/syntax.
 - Technical literals (paths, commands) remain literal leaves.
 
-This module targets `~/claude/README.md`.
+This module targets `README.md`.
 -/
 
 import Mettapedia.Languages.GF.HandCrafted.English.Examples

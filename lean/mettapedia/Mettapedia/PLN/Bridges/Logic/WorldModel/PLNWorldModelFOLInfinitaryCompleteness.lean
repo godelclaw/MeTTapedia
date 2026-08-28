@@ -88,4 +88,4 @@ noncomputable def wmConsequenceRuleOn_of_singletonStrengthLE {L : Language.{u}} 
   WMConsequenceRuleOn.ofGlobal
     (wmConsequenceRule_of_singletonStrengthLE (q₁ := q₁) (q₂ := q₂))
 
-end Mettapedia.Logic.PLNWorldModelFOLInfinitaryCompleteness
+end Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLInfinitaryCompleteness

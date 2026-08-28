@@ -44,7 +44,7 @@ the C representation and `Pattern`.
 ## References
 
 - Abadi et al., "Explicit Substitutions", JFP 1991
-- CeTTa: `~/claude/c-projects/CeTTa-TermUniverse/src/variant_shape.h`
+- CeTTa: `c-projects/CeTTa-TermUniverse/src/variant_shape.h`
 - Roadmap: `../../../../papers/cetta_roadmap.tex` §8 (Dual-Target Architecture)
 -/
 

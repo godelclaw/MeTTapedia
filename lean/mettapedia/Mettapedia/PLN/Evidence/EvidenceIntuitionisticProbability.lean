@@ -1,5 +1,5 @@
-import Mettapedia.Logic.EvidenceQuantale
-import Mettapedia.Logic.EvidenceKSBridge
+import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.EvidenceKSBridge
 import KnuthSkilling.Core.Basic
 import Mathlib.Data.ENNReal.Inv
 
@@ -26,7 +26,7 @@ PLN's 2D BinaryEvidence keeps BOTH (n⁺, n⁻), avoiding the precision loss.
 
 namespace Mettapedia.PLN.Evidence.EvidenceIntuitionisticProbability
 
-open Mettapedia.Logic.EvidenceQuantale
+open Mettapedia.PLN.Evidence.EvidenceQuantale
 open KnuthSkilling
 
 /-! ## K&S Valuations on BinaryEvidence

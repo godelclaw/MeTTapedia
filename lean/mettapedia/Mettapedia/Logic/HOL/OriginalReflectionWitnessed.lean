@@ -10,7 +10,7 @@ variable {Base : Type u} {Const : Ty Base → Type v}
 # Witnessed Source Signatures
 
 The obstruction in
-`~/claude/lean-projects/mettapedia/Mettapedia/Logic/HOL/OriginalReflectionObstruction.lean`
+`lean/mettapedia/Mettapedia/Logic/HOL/OriginalReflectionObstruction.lean`
 shows that naive constant-based reflection fails when the source signature can
 leave quantified base types syntactically empty.
 

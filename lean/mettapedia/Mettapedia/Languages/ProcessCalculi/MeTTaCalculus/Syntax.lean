@@ -10,7 +10,7 @@ Core syntax/rewrites for the symmetric reflective MeTTa-calculus.
 
 This formalization follows the calculus specification in:
 
-- `~/claude/hyperon/rho4u/metta-calculus/metta-calculus.core.tex`
+- the F1R3FLY MeTTa-calculus manuscript, `metta-calculus.core.tex`
 
 especially the `COMM` and `REFL` rules in the "A symmetric reflective
 higher order concurrent calculus with backchaining" section.
