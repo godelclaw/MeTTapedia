@@ -316,15 +316,21 @@ distinct ones exhaust them.
 
 \begin{theorem}[facial boundaries span the cycle space]\label{thm:cycle-space}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrbitFaceCycleSpaceEquality.range_orbitFaceBoundaryLinearMap_eq_f2CycleSpace}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24RotationCycleSpace.range_faceBoundaryLinearMap_eq_cycleSpace}
 For a connected spherical map with two-sided faces and connected dual, the
 image of the facial-boundary map is exactly the $\mathbb{F}_2$ cycle space of
-the underlying graph.
+the literal edge carrier of the map.
 \end{theorem}
 
 This is the algebraic heart of the reduction and it is already available.
 Note its hypothesis of two-sided faces: that is supplied by
 Corollary~\ref{cor:two-sided} of the previous section, so the two halves of
-this development meet here.
+this development meet here.  The second checked declaration is the form
+consumed below.  It uses the map's edge type as the columns of the incidence
+matrix, so two parallel edges remain two different coordinates.  This is
+load-bearing for stellar subdivision: if an old face revisits an old vertex,
+two different spokes may have the same pair of endpoints, and projecting to
+a simple-graph edge set would identify them.
 
 \subsection{Proof of the reduction}
 
@@ -387,23 +393,37 @@ colouring with four colours, and its restriction to $G$ is one too.
 
 The algebraic implication used in Steps~1--4---from a facial Tait colouring,
 two-sidedness, connected primal and dual, and spherical cubic map data to a
-proper four-colouring---is now machine-checked as one theorem.
+proper four-colouring---is now machine-checked both on the earlier
+graph-backed carrier and on the literal multigraph carrier used by stellar
+subdivision.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TaitReductionPotential.colorable_four_of_facialTaitColouring}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24RotationWalkCycleParity.incidenceMatrix_mulVec_walkEdgeParity}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24RotationTaitPotential.colorable_four_of_dualTaitColoring}
+
+The final consumer is checked as well.  A Tait colouring of the explicit
+stellar facial dual is integrated on literal stellar edges; the resulting
+four-colouring of the stellar primal map is then restricted along the old
+vertex inclusion.  Thus the entire reverse Tait implication is verified for
+the genuine connected spherical presentation used in this section.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24StellarTaitReduction.stellar_adj_of_adj}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24StellarTaitReduction.colorable_four_of_stellarDual_taitColorable}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24StellarTaitReduction.connectedSphericalFourColorStatement_of_tait}
 
 \subsection{What the reduction costs}
 
-It is worth being explicit about where the remaining labour sits, since the
-proof above is complete as mathematics and incomplete as formalization.
+It is worth being explicit about where the remaining labour sits.  The
+reverse Tait implication is now complete both as ordinary mathematics and as
+a formal theorem over connected spherical graph presentations.
 
 Steps~1 through~4 are machine-checked algebra over $\mathbb{F}_2^2$ resting
 on Theorem~\ref{thm:cycle-space}.  The other ingredients are now
 equally explicit: Definition~\ref{def:stellar} and
 Theorem~\ref{thm:stellar-darts} replace maximality by a finite permutation
 construction; Definition~\ref{def:dual-map} is a change of generator; and
-Corollary~\ref{cor:loop-bridge} supplies dual bridgelessness.  Thus the
-remaining cost is Lean construction and transport between the graph and map
-presentations, not an ordinary-mathematics lemma hidden behind the word
-``planar.''
+Corollary~\ref{cor:loop-bridge} supplies dual bridgelessness.  The remaining
+classical boundary is therefore exactly the named representation bridge of
+Lemma~\ref{lem:planar-spherical-presentation}, together with its routine
+componentwise wrapper.  No legacy \texttt{IsPlanar} premise is used.
 
 \subsection{Audit of the unused maximality route}
 
@@ -721,17 +741,20 @@ that distinction.
 \Sprose
 The reduction needs neither new algebra nor a Jordan curve theorem.  At the
 ordinary-mathematics level it consists of explicit finite permutation
-constructions plus the already-stated cycle-space theorem.  At the Lean level
-it still needs the stellar construction, dual transport, the Klein-group
-potential argument, and the adapter from the planar-graph input to a spherical
-rotation system.  Those are concrete formalization debts of fixed shape.
+constructions plus the already-stated cycle-space theorem.  The stellar
+construction, dual transport, literal-edge Klein-group potential, and
+restriction to old vertices are now checked.  What remains outside the
+connected spherical statement is solely the adapter from an abstract planar
+graph to a spherical rotation-system presentation, recorded explicitly in
+Lemma~\ref{lem:planar-spherical-presentation}.
 \end{remark}
 
 \begin{remark}[how this closes the classical debts]
-With Corollary~\ref{cor:two-sided} established, the classical boundary of the
-route reduces to exactly two further obligations: the graph-backed
-presentation of a least counterexample, and Theorem~\ref{thm:tait-reduction}
-above. Their ordinary proofs are now complete here; both remain formalization
-debts of known shape, which is materially different from an open mathematical
-problem.
+With Corollary~\ref{cor:two-sided} established, the route's internal
+graph-backed presentation and the connected-spherical form of
+Theorem~\ref{thm:tait-reduction} are checked.  The only classical boundary
+still named in the theorem statement is the standard finite
+plane-embedding representation theorem of
+Lemma~\ref{lem:planar-spherical-presentation}; keeping it named prevents the
+refuted legacy planarity predicate from re-entering the headline.
 \end{remark}
