@@ -762,7 +762,7 @@ private theorem regionalTrackedEdgeGraph_eq_of_eq_on_region
 set_option maxHeartbeats 800000 in
 /-- Every field of the rooted interaction state observes its colour function
 only on the terminal input region named by that state. -/
-private theorem sourceLocalLayerSerialRootedInteractionStateForColorAt_eq_of_eq_on_terminal
+theorem sourceLocalLayerSerialRootedInteractionStateForColorAt_eq_of_eq_on_terminal
     (graphData : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
     (caps : OrientedFacialPentagonCapPair graphData)

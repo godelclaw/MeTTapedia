@@ -2695,22 +2695,58 @@ colouring, and conversely that colouring lies in its own profile fibre;
 substitution gives the displayed equivalence.
 \end{proof}
 
-This closes the former representation-level realization adapter.  The
-remaining statement is geometric coverage by the serial construction: the
-terminal prefix produced by the literal one-Cell transition must cover the
-whole annulus (or be proved to have the same cumulative terminal projection),
-with the correct realizable initial state.  No further equivalence between
-vertex-component and edge-component semantics is owed.  The filtered finite
-accepting set has also not yet been emitted as an optimized executable
-certificate.
+The initial object of the literal serial calculation can likewise be made
+genuinely local.  This matters because the source does not claim that a wide
+annulus is one bounded-width serial corridor: its finite calculation is made
+on a selected depth-one collar (and, at the local audit, on three consecutive
+cells).  A witness for the first serial position must therefore not carry a
+second arbitrary positive-colour function on the unprocessed part of the
+annulus.
+
+\begin{proposition}[realizable initials are prefix-local]
+\label{prop:serial-initial-prefix-local}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialLocalInitial.sourceLocalLayerSerialLocalInitialSourceProfileSet_eq}
+Fix a literal source corridor and its first terminal-aware serial position.
+Replace the positive colour function on all edges of the opened graph by a
+positive colour function whose domain is exactly the active prefix region,
+retaining the same compatible literal Cell colouring.  The resulting finite
+image of initial cumulative source profiles is exactly the former realizable
+initial image.
+\end{proposition}
+
+\begin{proof}
+Restrict an old witness to the active prefix.  Conversely, extend a local
+witness by one fixed nonzero colour outside that prefix; this is only an API
+adapter and consults no suffix datum.  Restriction after extension is literal.
+For extension after restriction, every field of the rooted source receipt
+observes the colour function only on its stated terminal input region:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLocalLayerSerialRootedInteractionRealizableTransition.sourceLocalLayerSerialRootedInteractionStateForColorAt_eq_of_eq_on_terminal}.
+Thus the complete rooted source state, and hence its bounded cumulative
+projection, is unchanged.  The two inclusions between the finite images follow
+by extension and restriction.
+\end{proof}
+
+Together with Proposition~\ref{prop:annular-terminal-profile-realization}, this
+closes the narrower representation-level excess in the initial witness: its
+additional positive-colour coordinate is now prefix-local.  It does \emph{not}
+remove the global Tait colouring, total closure, or good word already contained
+in the surrounding \texttt{ClosedWebAtGoodWord.Instance}.  The remaining
+geometric statement is therefore narrower than whole-annulus coverage but
+still substantive: refactor that closed-web parameter to the collar or
+three-Cell word actually selected by the source, and identify its cumulative
+terminal projection with the Seed semantics consumed at the local target.  No
+further equivalence between vertex-component and edge-component semantics is
+owed.  The filtered finite accepting set has also not yet been emitted as an
+optimized executable certificate.
 
 Theorem~\ref{thm:exact-rooted-cell-factorization} checks the Cell--3 algebra
 under (U), but Propositions~\ref{prop:opened-global-face-uniqueness-refuted}
 and~\ref{prop:closed-web-carrier-not-direct-count} prevent applying it to the
 direct source target.  Even after both refactors it will not by itself justify
-a numerical closure count: the exact realized letter and initial images are
-still specified as finite images of literal ambient witnesses.  That is a
-semantic specification, not yet a practical enumerator.
+a numerical closure count: the exact realized letter image is still specified
+as a finite image of literal witnesses, and the initial image, although local
+in its additional positive-colour coordinate, is still parameterized by the
+closed-web instance.  Neither is yet a practical enumerator.
 
 \begin{proposition}[Executable optimized closure certificate]
 \label{prop:exact-closure-gate}
