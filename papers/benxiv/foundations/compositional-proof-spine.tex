@@ -1766,14 +1766,76 @@ pumping and \(|V(M)|\le2|V(\mathcal T)|\) give the displayed bound.
 This theorem removes both the abstract seam-type parameter and the former
 application-specific replacement premise from the bounded-width consumer.
 The finite state is computed from literal shores, and repeated states are fed
-directly to the physical splice.  What remains on the supply side is now
-precise: construct this certified tree from the source corridor or a
-source-faithful connected decomposition, prove its proper nesting and vertex
-accounting, and provide the nodewise connected edge shores, nonempty majority
-sides, and middle-set bounds.  Lemma~\ref{lem:connected-shore-literal-node}
-then supplies the roots, literal width, and two-port fields.  The theorem does
-\emph{not} assert that an arbitrary branch decomposition already supplies the
-connected edge-shore tree.
+directly to the physical splice.  Its vertex-accounting premise is discharged
+for a genuine edge-leaf branch decomposition by the following theorem.
+
+\begin{theorem}[bounded-width rooted connected branch decomposition]
+\label{thm:rooted-connected-branch-decomposition}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedBranchDecompositionForest.vertexCount_le_of_rootedConnectedBranchDecomposition}
+Let \(M\) be as in Theorem~\ref{thm:literal-majority-shore-tree-descent}.
+Root a full binary edge-leaf decomposition at one distinguished edge \(e_0\).
+After removing that root leaf, write its first fork as two edge-leaf trees
+\(T_L,T_R\).  Suppose
+\begin{enumerate}
+\item \(e_0\), followed by the leaves of \(T_L\) and \(T_R\), is a
+duplicate-free enumeration of \(E(M)\);
+\item at every internal fork of \(T_L\) or \(T_R\), the set \(S\) of leaves
+below that fork and \(E(M)\setminus S\) are connected edge shores, their
+majority vertex sides are nonempty, and their middle set has size at most
+both \(k\) and \(w\).
+\end{enumerate}
+Set
+\[
+             q_k=\sum_{0\le j\le k}j!\,2^{3^j},
+             \qquad B=2^{(6w+1)q_k}-1.
+\]
+Then
+\[
+                         |V(M)|\le 4B+6.
+\]
+\end{theorem}
+
+\begin{proof}
+An internal fork is labelled by the finite set of edge leaves below it.  Distinct
+leaves make the shores of its two nontrivial children proper subsets of the
+parent shore.  Transitivity therefore gives proper nesting between every two
+comparable internal forks.  Erasing the edge leaves produces two trees of the
+kind consumed by Theorem~\ref{thm:literal-majority-shore-tree-descent}.
+The node-count half of that theorem, checked separately in
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedShoreLiteralNode.nodeCount_le_of_connectedShoreTree},
+bounds each tree by \(B\) internal nodes.
+
+A full binary tree has one more leaf than internal forks.  Consequently the
+complete leaf enumeration gives
+\[
+       |E(M)|=i(T_L)+i(T_R)+3,
+\]
+where \(i(T)\) denotes the number of internal forks of \(T\).
+Cubicity gives \(3|V(M)|=2|E(M)|\).  Hence
+\[
+ |V(M)|\le2\bigl(i(T_L)+i(T_R)+3\bigr)\le4B+6.
+\]
+The one-edge cut above the first fork is deliberately absent: its
+complementary majority shore is empty, so inserting it as a root node would
+make the prettier one-tree constant depend on a false interface.
+\end{proof}
+
+Thus proper nesting and vertex accounting are no longer supply fields.  What
+remains on the supply side is precise: construct the complete edge-leaf tree
+from the source corridor or a source-faithful connected decomposition and
+provide its nodewise connected edge shores and middle-set bounds.  For every
+retained internal fork, both edge sides contain at least two edges: the fork
+side contains two leaf branches, while its complement contains the
+distinguished root edge and at least one leaf outside the fork.  In a
+connected edge shore containing two edges, some vertex is incident with two
+shore edges (otherwise distinct edges would lie in different components), so
+the two majority sides are nonempty.  The graph-theoretic implication and its
+complementary cubic form are checked in
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedBranchDecompositionForest.ConnectedCutCondition.ofConnectedTwo}.
+The theorem above still receives the resulting nonemptiness facts as node
+fields; only the elementary propagation of the two-edge cardinalities through
+the rooted leaf tree remains prose.  Lemma~\ref{lem:connected-shore-literal-node}
+then supplies the roots, literal width, and two-port fields.
 
 For an ordered boundary of size at most \(k\), the manuscript's data---edge
 colours, the two noncrossing connectivity relations, capped face progress,
@@ -1802,17 +1864,18 @@ theorems then construct the ordered open tangles directly from the ambient
 rotation system.  Thus a sphere-cut noose and its local perturbation are an
 optional geometric realization, not part of the load-bearing D3 supply.
 Lemma~\ref{lem:cubic-sphere-cut-material} and the depth phase above settle
-strict-material accounting.  What remains is to package the connected branch
-decomposition as a rooted strictly nested edge-shore tree and prove the
-vertex accounting.  The majority shores, literal nodes, and exact ordered
-Count states are then computed by
+strict-material accounting.  Theorem~\ref{thm:rooted-connected-branch-decomposition}
+now roots the complete edge-leaf decomposition, discards its invalid
+one-edge top cut, derives proper nesting in the two surviving subtrees, and
+performs the full edge/vertex accounting.  The majority shores, literal
+nodes, and exact ordered Count states are then computed by
 Theorem~\ref{thm:connected-edge-shore-majority},
 Lemma~\ref{lem:connected-shore-literal-node}, and
-Theorem~\ref{thm:literal-majority-shore-tree-descent}.
+Theorem~\ref{thm:rooted-connected-branch-decomposition}.
 
 \begin{proposition}[wall-exclusion reduction, relative form]
 \label{prop:target-forced-wall}
-\Sconditional{planar wall theorem; connected branch-decomposition tree supply; route-native finite base}
+\Sconditional{planar wall theorem; connected branch-decomposition supply; route-native finite base}
 Fix the normal-form class and one direct-Count or Lift target.  Suppose there
 are computable \(r,w\) such that:
 \begin{enumerate}
@@ -1820,10 +1883,10 @@ are computable \(r,w\) such that:
 \(r\)-wall;
 \item every plane instance in the class with no such wall has branchwidth at
 most \(w\);
-\item every width-\(w\) instance in the class has a rooted binary connected
-edge-shore tree satisfying the nodewise middle bound, proper nesting, and
-\(|V|\le2|V(\mathcal T)|\) required by
-Theorem~\ref{thm:literal-majority-shore-tree-descent}.
+\item every width-\(w\) instance in the class has a complete rooted
+edge-leaf decomposition whose two nondegenerate subtrees satisfy the
+nodewise connected-shore, majority-nonemptiness, and middle-set hypotheses
+of Theorem~\ref{thm:rooted-connected-branch-decomposition}, with \(k=w\).
 \end{enumerate}
 Then every vertex-minimal zero-target instance has an effective vertex
 bound.  If the route-native finite base below that bound is empty, there is
@@ -1837,10 +1900,11 @@ each branch set to a subdivision: the at most three incident model edges are
 joined by a minimal tree, whose three terminal paths have one common branch
 point and are otherwise internally disjoint.  Thus the minor and topological
 forms agree for this wall in a cubic host.  Hypothesis~2 supplies the width
-bound, Hypothesis~3 constructs the decomposition and its canonical majority
-shores.  Repeated normalized states then give exact strict replacement by
-Theorem~\ref{thm:majority-shore-physical-replacement}.
-Theorem~\ref{thm:typed-sphere-cut-descent} gives the effective vertex bound.
+bound and Hypothesis~3 supplies the complete connected edge-leaf
+decomposition.  Theorem~\ref{thm:rooted-connected-branch-decomposition}
+derives its two strictly nested shore trees and gives the effective vertex
+bound; internally, a repeated normalized state is ruled out by the exact
+strict replacement of Theorem~\ref{thm:majority-shore-physical-replacement}.
 An empty finite base rules out \(X\).
 \end{proof}
 
@@ -3471,11 +3535,12 @@ Thus M2 is closed in the literal-shore representation.  The full finite state
 is the canonical hub order together with the set of genuine Tait boundary
 words, and Theorem~\ref{thm:majority-shore-physical-replacement} consumes its
 equality directly.  What remains belongs to M1: a connected corridor or
-branch-decomposition supplier must construct the nested connected edge-shore
-tree, its middle bounds, proper nesting, and vertex accounting.  The roots,
-literal widths, two boundary ports, exact states, and strict cubic star
-between repeated states are now derived.  No ambient graph data are reread
-after the state has been formed.
+branch-decomposition supplier must construct the complete rooted edge-leaf
+decomposition and its nodewise connected cuts and middle bounds.  The two
+nested shore trees, edge/vertex accounting, roots, literal widths, two
+boundary ports, exact states, and strict cubic star between repeated states
+are now derived.  No ambient graph data are reread after the state has been
+formed.
 The cap face count, cap sphericity,
 one-hub property, orientation reversal, connectedness, bridge-freeness,
 cubicity, and cyclic vertex rotations are no longer open.
@@ -3517,11 +3582,11 @@ contradicts minimality.  The Tait bridge gives the Four-Colour Theorem.
 
 \begin{corollary}[wall-exclusion assembly]
 \label{cor:wall-exclusion-assembly}
-\Sconditional{Tait bridge; fixed-wall exclusion for least counterexamples; connected branch-decomposition tree supply; route-native finite base}
+\Sconditional{Tait bridge; fixed-wall exclusion for least counterexamples; connected branch-decomposition supply; route-native finite base}
 Assume the Tait/minimal-counterexample bridge.  Assume there is a fixed
 wall excluded from every least Tait counterexample, that wall-free members
-of the normal-form class carry the connected edge-shore tree required by
-Theorem~\ref{thm:literal-majority-shore-tree-descent}.  If the resulting
+of the normal-form class carry the complete connected edge-leaf decomposition
+required by Theorem~\ref{thm:rooted-connected-branch-decomposition}.  If the resulting
 route-native finite base contains no counterexample, then every planar graph
 is four-colourable.
 \end{corollary}
@@ -3552,12 +3617,13 @@ the cap hypotheses from connected graph-backed shores and the exact
 planar-bond rank, without a Jordan/noose premise.  The literal
 composite is loopless, and Corollary~\ref{cor:parallel-seam-normalization}
 removes any parallel seam if a later simple-graph presentation requires it.
-Thus the remaining cut-side work is M1 rather than M2: produce the rooted
-strictly nested connected edge-shore tree, middle bounds, and vertex
-accounting from the chosen corridor or branch decomposition.  Roots, ports,
-strict material, ordered first-return data, and exact supports are computed
-by the checked consumer; the supplier does not assume in advance that two
-such fields are equal.
+Thus the remaining cut-side work is M1 rather than M2: produce the complete
+rooted edge-leaf decomposition and its nodewise connected cuts and middle
+bounds from the chosen corridor or connected branch decomposition.  The two
+strictly nested trees, vertex accounting, roots, ports, strict material,
+ordered first-return data, and exact supports are computed by the checked
+consumer; the supplier does not assume in advance that two such fields are
+equal.
 
 Theorem~\ref{thm:direct-count-reductive-assembly} is the shortest literal
 implementation of the companion note's instruction to open the instances,
@@ -3633,13 +3699,13 @@ source-preserving local ladder transport;
 Proposition~\ref{prop:target-forced-cut-chain}; the raw noose Count theorem
 and physical support-state splice; and a route-native finite base.  The
 tree-form chain replaces the global corridor proposition by fixed-wall
-exclusion plus a connected branch-decomposition tree supply.  Both chains
+exclusion plus a connected branch-decomposition supply.  Both chains
 use the same checked majority-shore D3 splice and the
 same finite base.
 
 At present the decisive open premises are therefore: either the
 target-forced global cut chain or fixed-wall exclusion together with the
-connected branch-decomposition tree supplier; and the route-native finite
+connected branch-decomposition supplier; and the route-native finite
 base.  Exact Count replacement on supplied normalized majority shores is now
 checked.  A compatible tight vertex-noose to edge-noose
 perturbation is optional rather than load-bearing.  D3's face count, Euler

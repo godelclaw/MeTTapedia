@@ -368,6 +368,35 @@ def StrictConnectedShoreTree {k w : Nat}
   ∀ p : List (ConnectedShoreNode (G := G) k w), OnPath tree p →
     ∀ i j : Fin p.length, i < j → (p.get j).shore ⊂ (p.get i).shore
 
+/-- The node-count half of bounded-width descent.  This is separated from
+vertex accounting so that a genuine branch-decomposition forest can bound
+each nondegenerate rooted component and combine the bounds afterwards. -/
+theorem nodeCount_le_of_connectedShoreTree
+    (rotation : SimpleGraphDartRotation.Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (k w : Nat)
+    (tree : DecompTree (ConnectedShoreNode (G := G) k w))
+    (hstrict : StrictConnectedShoreTree tree) :
+    nodeCount tree ≤
+      2 ^ ((6 * w + 1) *
+        (∑ j : Fin (k + 1),
+          Nat.factorial (j : Nat) * 2 ^ (3 ^ (j : Nat)))) - 1 := by
+  have hnorepeat : NoRepeatedStateOnDescents
+      (fun node : ConnectedShoreNode (G := G) k w =>
+        node.cardPhasedState rotation minimal) tree := by
+    apply noRepeatedStateOnDescents_of_get
+    intro p hpath i j hij heq
+    have hproper : (p.get j).shore ⊂ (p.get i).shore :=
+      hstrict p hpath i j hij
+    exact cardPhasedState_ne_of_ssubset rotation minimal
+      ((p.get i).toLiteral rotation minimal)
+      ((p.get j).toLiteral rotation minimal)
+      (by simpa using hproper) heq
+  have hbound := nodeCount_le_of_noRepeat hnorepeat
+  rw [Fintype.card_prod, Fintype.card_fin,
+    card_stateAtBound.{u} k] at hbound
+  exact hbound
+
 /-- **Bounded-width descent from connected shores.**  Once a reduced binary
 tree supplies connected complementary edge shores, nonempty majority sides,
 and middle-set bounds, all literal roots, ports, widths and exact states are
@@ -383,21 +412,8 @@ theorem vertexCount_le_of_connectedShoreTree
       2 * (2 ^ ((6 * w + 1) *
         (∑ j : Fin (k + 1),
           Nat.factorial (j : Nat) * 2 ^ (3 ^ (j : Nat)))) - 1) := by
-  have hnorepeat : NoRepeatedStateOnDescents
-      (fun node : ConnectedShoreNode (G := G) k w =>
-        node.cardPhasedState rotation minimal) tree := by
-    apply noRepeatedStateOnDescents_of_get
-    intro p hpath i j hij heq
-    have hproper : (p.get j).shore ⊂ (p.get i).shore :=
-      hstrict p hpath i j hij
-    exact cardPhasedState_ne_of_ssubset rotation minimal
-      ((p.get i).toLiteral rotation minimal)
-      ((p.get j).toLiteral rotation minimal)
-      (by simpa using hproper) heq
-  have hbound := vertexCount_le hnorepeat 2 (Fintype.card V) hvertices
-  rw [Fintype.card_prod, Fintype.card_fin,
-    card_stateAtBound.{u} k] at hbound
-  exact hbound
+  exact hvertices.trans (Nat.mul_le_mul_left 2
+    (nodeCount_le_of_connectedShoreTree rotation minimal k w tree hstrict))
 
 end
 
