@@ -382,13 +382,20 @@ on the complete transfer interface.
 
 \begin{lemma}[$S$-avoiding geodesic locality]
 \label{lem:geodesic-locality}
-\Sprose
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SeparatedGeodesicLocalCarrier.orbitFace_locality_and_carrier_le}
 Let $S$ contain at most $h$ faces and let
 $F_0,F_1,\ldots,F_L$ be a geodesic in the facial dual with $S$ deleted.
 If a face $H\notin S$ is adjacent in the original dual to both $F_i$ and
-$F_j$, then $|i-j|\le2$.  If all faces have length at most $B$, the part of
-the radius-one slab that can interact across the cut between $F_i$ and
-$F_{i+1}$ uses a carrier of at most
+$F_j$, then $|i-j|\le2$.
+
+More precisely, call an unmarked face a crossing side face at the cut after
+$i$ if it is adjacent to some $F_a$ with $a\le i$ and to some $F_b$ with
+$i+1\le b\le L$.  Retain the complete boundaries of (i) every unmarked
+neighbour of the four-face window
+$F_{i-1},F_i,F_{i+1},F_{i+2}$ (omitting nonexistent end terms), (ii) the
+window faces themselves, and (iii) all marked faces.  Every crossing side
+face is retained.  If all faces have length at most $B$, this radius-one
+carrier has cost at most
 \[
                          4B^2+4B+hB
 \]
@@ -402,7 +409,8 @@ dual gives $|i-j|=d_{D-S}(F_i,F_j)\le2$.  Therefore any unmarked side face
 crossing the cut is adjacent to one of
 $F_{i-1},F_i,F_{i+1},F_{i+2}$ (omitting nonexistent end terms).  Those four
 axis faces have together at most $4B$ boundary incidences, hence at most
-$4B$ such side neighbours; storing their darts and the axis incidences costs
+$4B$ distinct unmarked neighbours.  Storing their complete boundaries and
+the axis boundaries costs
 at most $4B^2+4B$.  A marked face need not obey the locality conclusion, but
 there are at most $h$ of them and retaining each whole boundary costs at most
 $B$ further darts.  Adding these contributions gives $4B^2+4B+hB$.
