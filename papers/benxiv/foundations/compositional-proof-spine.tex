@@ -460,7 +460,7 @@ objects.
 
 \begin{definition}[cap-composed pair relation]
 \label{def:cap-composed-pair-relation}
-\Sprose
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularFrontierMenuCapComposed.CapComposedMenuB}
 Let $w$ be a good inner word, let $x$ be a proper colouring of the five cap
 cycle edges extending $w$, and fix a majority pair $(p,q)$.  Let
 $P_{p,q}\subseteq\mathbb Z/5\mathbb Z$ be the four inner positions whose
@@ -518,7 +518,7 @@ consecutive triple together with the order of the two singleton colours.
 
 \begin{lemma}[literal cap restoration computes the composed relation]
 \label{lem:cap-restoration-composition}
-\Sprose
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularFrontierMenuCapRestoration.restoredReachable_iff_composedRel}
 The classes in Definition~\ref{def:cap-composed-pair-relation} are exactly
 the $(p,q)$-components of the graph obtained by restoring the five cap edges,
 restricted to the four active cap vertices.
@@ -538,7 +538,7 @@ restored graph.
 
 \begin{lemma}[transverse-chord criterion]
 \label{lem:menu-b-transverse-chord}
-\Sprose
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularFrontierMenuCapComposed.capComposedMenuB_iff_no_transverseChord}
 For either majority pair, let the two blocks of
 $\pi_{\rm cap}$ be $A\mid B$.  Then the cap-restored state has menu B
 for that pair if and only if no pair joined by $\pi_{\rm str}$ has one
@@ -658,9 +658,11 @@ still computes useful data: it already retains the open strand relation
 $\pi_{\rm str}$, while $\pi_{\rm cap}$ is a five-port finite function of the
 fixed boundary word and its cap extension.  The repair is therefore to add
 the finite equivalence closure of
-Definition~\ref{def:cap-composed-pair-relation} to terminal acceptance and
-then prove Lemma~\ref{lem:cap-restoration-composition}; it is not a reason to
-discard the one-cell factorization.
+Definition~\ref{def:cap-composed-pair-relation} to terminal acceptance.
+Lemma~\ref{lem:cap-restoration-composition} now verifies that this finite
+closure agrees pointwise, on active ports, with reachability in the literally
+restored graph; the repair is not a reason to discard the one-cell
+factorization.
 
 \begin{remark}[cap-correct Seed audit]
 \label{rem:seed-census-all-pentagon-pairs}
