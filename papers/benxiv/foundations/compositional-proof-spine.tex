@@ -820,6 +820,53 @@ transversal, its crossed-edge set, an exact deletion component boundary, two
 cyclic sides, and the correspondence used for surgery.  A chord wall, an
 induced dual path, or a bounded local collar supplies only part of this data.
 
+The following checked lemma supplies one of those outputs for a literal
+finite segment of the source corridor.  It is useful precisely because its
+hypotheses expose, rather than suppress, the remaining global geometry.
+
+\begin{lemma}[a boundary-separated source rail segment is an exact shore]
+\label{lem:source-rail-segment-exact-shore}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorRailChainComponent.exists_alignedBoundary_component_exactBoundary}
+Let three consecutive transverse source interfaces be joined on their two
+sides by the literal facial-dual rails of the intervening corridor cells.
+Assume that each composed rail is a simple path, that the two rail supports
+are disjoint, and that neither rail visits the centre face of either endpoint
+interface.  Close the two rails by the transverse two-edge paths at the
+endpoint interfaces, and let $W$ be the resulting closed facial-dual walk.
+If $X(W)$ is the set of primal edges crossed by $W$, then $W$ is a
+simple dual cycle and some connected component of $G-X(W)$ has graph
+boundary exactly $X(W)$.
+\end{lemma}
+
+\begin{proof}
+Split $W$ into the path formed by the first endpoint transversal followed
+by one rail, and the path formed by the reverse last transversal followed by
+the reverse other rail.  Simplicity of the rails, avoidance of the two centre
+faces, and mutual rail disjointness imply that the two path tails are
+disjoint.  Appending them therefore gives a simple cycle.  This first step is
+checked as
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorRailChainComponent.alignedBoundaryWalk_isCycle}.
+
+For completeness, the saturation argument is not a Jordan-curve picture.
+The framed dual-cycle separator first proves that deleting $X(W)$
+disconnects the primal graph and supplies a component with nonempty computed
+boundary.  Every computed boundary edge lies in $X(W)$.  Conversely,
+two-sided face parity around the simple dual cycle says that a nonempty cut
+contained in $X(W)$ must contain every crossed edge.  Hence the inclusion is
+an equality.  The generic form, independent of the corridor realization, is
+checked as
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedDualCycleExactBoundary.exists_component_exactBoundary_of_dualCycle}.
+\end{proof}
+
+This lemma is not yet Proposition~\ref{prop:target-forced-cut-chain}.  It
+constructs a saturated vertex-side boundary for one three-interface segment.
+The remaining source adapter must compose rails over arbitrary length, prove
+the required noncollision uniformly, convert the successive bounded cycles
+to connected complementary \emph{edge} shores, choose those shores
+consistently so that they are strictly nested, and then provide the roots and
+uniform width bounds consumed by
+Theorem~\ref{thm:literal-majority-shore-chain-descent}.
+
 There is a second, equally compositional way to state the same structural
 risk.  It replaces a linear corridor by a bounded-width decomposition tree.
 This is not asserted by the working manuscript, but it is a useful repair
