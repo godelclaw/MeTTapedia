@@ -689,6 +689,26 @@ pairing.  This description uses only the two stored profile fields, and hence
 is invariant under profile equality.
 \end{proof}
 
+\begin{corollary}[cap-correct Seed count factors through finite profiles]
+\label{cor:cap-correct-seed-profile-count}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularFrontierCapComposedProfileCount.capComposedSeedCount_pos_iff_exists_profile}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularFrontierCapComposedProfileCount.capComposedSeedCount_eq_zero_iff_forall_profile_count_eq_zero}
+Define the cap-correct Seed count at a fixed word to be the number of proper
+Tait colourings in that fibre which pass the restored-cap predicate of
+Proposition~\ref{prop:cap-correct-terminal-profile}.  This count is positive
+if and only if some realized finite profile at the word has positive profile
+count and satisfies the cap-composed terminal predicate.  Equivalently, it is
+zero if and only if every cap-composed accepting profile at that word has
+literal profile count zero.
+\end{corollary}
+
+\begin{proof}
+Partition the finite Tait-colouring fibre by its uniform profile.  Terminal
+acceptance is constant on each part by
+Proposition~\ref{prop:cap-correct-terminal-profile}; taking cardinalities gives
+the positive form, and negating it gives the zero form.
+\end{proof}
+
 \begin{remark}[cap-correct Seed audit]
 \label{rem:seed-census-all-pentagon-pairs}
 \Sprose
