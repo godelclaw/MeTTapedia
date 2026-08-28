@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedShoreLiteralNode
+import Mettapedia.GraphTheory.FourColor.GoertzelV24SimpleGraphRotationBridge
 
 /-!
 # A rooted connected branch decomposition gives two pumpable shore trees
@@ -12,9 +13,10 @@ edge leaves below it.
 
 This file carries out that tree bookkeeping.  It derives strict nesting and
 the edge/vertex accounting from a duplicate-free complete leaf labelling.
-The only nodewise input left visible is the connected-cut condition supplied
-by a connected branch decomposition: both edge shores are connected, both
-majority vertex sides are nonempty, and the middle set has bounded size.
+The only nodewise input left visible is the connected-cut geometry supplied
+by a connected branch decomposition: both edge shores are connected and the
+middle set has bounded size.  Cubicity and the complete distinct edge-leaf
+labelling derive nonemptiness of both majority vertex sides internally.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -25,6 +27,7 @@ open GoertzelV24ConnectedEdgeShoreMajority
 open GoertzelV24ConnectedShoreLiteralNode
 open GoertzelV24FiniteTreeInterfacePumping
 open GoertzelV24FiniteTreeInterfacePumping.DecompTree
+open GoertzelV24SimpleGraphTaitBridge
 open GoertzelV24TwoEdgeCutMinimality
 open SimpleGraphDartRotation
 
@@ -146,6 +149,20 @@ theorem shore_right_ssubset (left right : EdgeLeafTree E)
     exact Finset.mem_union_left _ hedgeLeft
   exact hedgeNotRight this
 
+/-- The shore of an internal fork contains at least one edge from each
+child, hence at least two edges when the leaf labels are distinct. -/
+theorem two_le_card_shore_fork (left right : EdgeLeafTree E)
+    (hnodup : (left.leafList ++ right.leafList).Nodup) :
+    2 ≤ (fork left right).shore.card := by
+  have hcard := List.toFinset_card_of_nodup hnodup
+  have hleft : 0 < left.leafList.length :=
+    List.length_pos_of_ne_nil left.leafList_ne_nil
+  have hright : 0 < right.leafList.length :=
+    List.length_pos_of_ne_nil right.leafList_ne_nil
+  change 2 ≤ (left.leafList ++ right.leafList).toFinset.card
+  rw [hcard, List.length_append]
+  omega
+
 end EdgeLeafTree
 
 /-! ## Nodewise connected-cut data and the conversion -/
@@ -245,6 +262,25 @@ theorem exists_majorityVertexSide_of_connected_of_two_le_card
   exact exists_majorityVertexSide_of_walk_between_distinct_edges shore walk
     first last hfirstShore hlastShore hstartIncident hfinishIncident hne hwalk
 
+/-- Two distinct ambient edges outside a shore witness that its complement
+contains at least two edges. -/
+theorem two_le_card_complement_of_two_outside
+    (shore : Finset G.edgeSet) {first second : G.edgeSet}
+    (hne : first ≠ second) (hfirst : first ∉ shore)
+    (hsecond : second ∉ shore) :
+    2 ≤ (Finset.univ \ shore).card := by
+  have hsubset : ({first, second} : Finset G.edgeSet) ⊆
+      Finset.univ \ shore := by
+    intro edge hedge
+    simp only [Finset.mem_insert, Finset.mem_singleton] at hedge
+    rcases hedge with rfl | rfl
+    · exact Finset.mem_sdiff.2 ⟨Finset.mem_univ _, hfirst⟩
+    · exact Finset.mem_sdiff.2 ⟨Finset.mem_univ _, hsecond⟩
+  have hcard : ({first, second} : Finset G.edgeSet).card = 2 := by
+    simp [hne]
+  rw [← hcard]
+  exact Finset.card_le_card hsubset
+
 /-- The exact graph-theoretic condition needed at an internal branch cut.
 It deliberately contains no roots, ports, coordinates, or profile state. -/
 structure ConnectedCutCondition (k w : Nat) (shore : Finset G.edgeSet) : Prop where
@@ -310,6 +346,59 @@ def EveryForkConnected (k w : Nat) :
       ConnectedCutCondition (G := G) k w
         (EdgeLeafTree.fork left right).shore ∧
       EveryForkConnected k w left ∧ EveryForkConnected k w right
+
+/-- The data supplied directly by a connected branch decomposition at one
+internal fork.  Nonemptiness of the majority sides is intentionally absent:
+it will be derived from the complete distinct leaf labelling. -/
+structure ConnectedCutGeometry (k w : Nat)
+    (shore : Finset G.edgeSet) : Prop where
+  shoreConnected : EdgeShoreConnected G shore
+  complementConnected : EdgeShoreConnected G (Finset.univ \ shore)
+  widthMiddle : (edgeShoreMiddleVertices G shore).card ≤ k
+  middleBound : (edgeShoreMiddleVertices G shore).card ≤ w
+
+/-- Every internal fork carries only the connected-cut geometry supplied by
+the decomposition. -/
+def EveryForkGeometry (k w : Nat) : EdgeLeafTree G.edgeSet → Prop
+  | .leaf _ => True
+  | .fork left right =>
+      ConnectedCutGeometry (G := G) k w
+        (EdgeLeafTree.fork left right).shore ∧
+      EveryForkGeometry k w left ∧ EveryForkGeometry k w right
+
+/-- Complete nodewise connected-cut geometry to the exact condition consumed
+by the literal shore tree.  Two fixed outside edges work recursively for
+every descendant shore. -/
+noncomputable def everyForkConnected_of_geometry
+    (hcubic : ∀ vertex : V, (incidentEdgeFinset G vertex).card = 3)
+    (k w : Nat) :
+    (tree : EdgeLeafTree G.edgeSet) →
+      EveryForkGeometry (G := G) k w tree →
+      tree.leafList.Nodup →
+      (first second : G.edgeSet) → first ≠ second →
+      first ∉ tree.shore → second ∉ tree.shore →
+      EveryForkConnected (G := G) k w tree
+  | .leaf edge, _, _, first, second, hne, hfirst, hsecond => by
+      trivial
+  | .fork left right, geometry, hnodup, first, second, hne,
+      hfirst, hsecond => by
+      have hparts := List.nodup_append'.mp hnodup
+      refine ⟨ConnectedCutCondition.ofConnectedTwo
+          (EdgeLeafTree.fork left right).shore hcubic
+          geometry.1.shoreConnected geometry.1.complementConnected
+          (EdgeLeafTree.two_le_card_shore_fork left right hnodup)
+          (two_le_card_complement_of_two_outside
+            (EdgeLeafTree.fork left right).shore hne hfirst hsecond)
+          geometry.1.widthMiddle geometry.1.middleBound,
+        ?_, ?_⟩
+      · exact everyForkConnected_of_geometry hcubic k w left geometry.2.1
+          hparts.1 first second hne
+          (fun hedge => hfirst (EdgeLeafTree.shore_left_subset left right hedge))
+          (fun hedge => hsecond (EdgeLeafTree.shore_left_subset left right hedge))
+      · exact everyForkConnected_of_geometry hcubic k w right geometry.2.2
+          hparts.2.1 first second hne
+          (fun hedge => hfirst (EdgeLeafTree.shore_right_subset left right hedge))
+          (fun hedge => hsecond (EdgeLeafTree.shore_right_subset left right hedge))
 
 /-- Forget the edge leaves and retain one connected-shore label at every
 internal fork. -/
@@ -478,22 +567,10 @@ structure RootedConnectedBranchDecomposition (k w : Nat) where
     (rootEdge :: (left.leafList ++ right.leafList)).Nodup
   leavesCover :
     (rootEdge :: (left.leafList ++ right.leafList)).toFinset = Finset.univ
-  leftConnected : EveryForkConnected (G := G) k w left
-  rightConnected : EveryForkConnected (G := G) k w right
+  leftGeometry : EveryForkGeometry (G := G) k w left
+  rightGeometry : EveryForkGeometry (G := G) k w right
 
 namespace RootedConnectedBranchDecomposition
-
-/-- The first nondegenerate rooted shore tree. -/
-noncomputable def leftTree {k w : Nat}
-    (decomposition : RootedConnectedBranchDecomposition (G := G) k w) :
-    DecompTree (ConnectedShoreNode (G := G) k w) :=
-  toConnectedShoreTree k w decomposition.left decomposition.leftConnected
-
-/-- The second nondegenerate rooted shore tree. -/
-noncomputable def rightTree {k w : Nat}
-    (decomposition : RootedConnectedBranchDecomposition (G := G) k w) :
-    DecompTree (ConnectedShoreNode (G := G) k w) :=
-  toConnectedShoreTree k w decomposition.right decomposition.rightConnected
 
 theorem left_leafList_nodup {k w : Nat}
     (decomposition : RootedConnectedBranchDecomposition (G := G) k w) :
@@ -505,38 +582,160 @@ theorem right_leafList_nodup {k w : Nat}
     decomposition.right.leafList.Nodup :=
   (decomposition.leavesNodup.tail.of_append_right)
 
-theorem strict_leftTree {k w : Nat}
+/-- The root edge lies outside the first nondegenerate rooted shore. -/
+theorem rootEdge_not_mem_left_shore {k w : Nat}
     (decomposition : RootedConnectedBranchDecomposition (G := G) k w) :
-    StrictConnectedShoreTree decomposition.leftTree :=
+    decomposition.rootEdge ∉ decomposition.left.shore := by
+  intro hedge
+  exact (List.nodup_cons.mp decomposition.leavesNodup).1
+    (List.mem_append_left decomposition.right.leafList
+      (by simpa [EdgeLeafTree.shore] using hedge))
+
+/-- The root edge lies outside the second nondegenerate rooted shore. -/
+theorem rootEdge_not_mem_right_shore {k w : Nat}
+    (decomposition : RootedConnectedBranchDecomposition (G := G) k w) :
+    decomposition.rootEdge ∉ decomposition.right.shore := by
+  intro hedge
+  exact (List.nodup_cons.mp decomposition.leavesNodup).1
+    (List.mem_append_right decomposition.left.leafList
+      (by simpa [EdgeLeafTree.shore] using hedge))
+
+/-- Choose one edge from the opposite rooted subtree. -/
+noncomputable def leftOutsideEdge {k w : Nat}
+    (decomposition : RootedConnectedBranchDecomposition (G := G) k w) :
+    G.edgeSet :=
+  Classical.choose decomposition.right.shore_nonempty
+
+theorem leftOutsideEdge_mem_right_shore {k w : Nat}
+    (decomposition : RootedConnectedBranchDecomposition (G := G) k w) :
+    decomposition.leftOutsideEdge ∈ decomposition.right.shore :=
+  Classical.choose_spec decomposition.right.shore_nonempty
+
+/-- Choose one edge from the other opposite rooted subtree. -/
+noncomputable def rightOutsideEdge {k w : Nat}
+    (decomposition : RootedConnectedBranchDecomposition (G := G) k w) :
+    G.edgeSet :=
+  Classical.choose decomposition.left.shore_nonempty
+
+theorem rightOutsideEdge_mem_left_shore {k w : Nat}
+    (decomposition : RootedConnectedBranchDecomposition (G := G) k w) :
+    decomposition.rightOutsideEdge ∈ decomposition.left.shore :=
+  Classical.choose_spec decomposition.left.shore_nonempty
+
+theorem leftOutsideEdge_not_mem_left_shore {k w : Nat}
+    (decomposition : RootedConnectedBranchDecomposition (G := G) k w) :
+    decomposition.leftOutsideEdge ∉ decomposition.left.shore := by
+  have hdisjoint : List.Disjoint decomposition.left.leafList
+      decomposition.right.leafList :=
+    List.disjoint_of_nodup_append decomposition.leavesNodup.tail
+  intro hedge
+  exact hdisjoint (by simpa [EdgeLeafTree.shore] using hedge)
+    (by simpa [EdgeLeafTree.shore] using
+      decomposition.leftOutsideEdge_mem_right_shore)
+
+theorem rightOutsideEdge_not_mem_right_shore {k w : Nat}
+    (decomposition : RootedConnectedBranchDecomposition (G := G) k w) :
+    decomposition.rightOutsideEdge ∉ decomposition.right.shore := by
+  have hdisjoint : List.Disjoint decomposition.left.leafList
+      decomposition.right.leafList :=
+    List.disjoint_of_nodup_append decomposition.leavesNodup.tail
+  intro hedge
+  exact hdisjoint
+    (by simpa [EdgeLeafTree.shore] using
+      decomposition.rightOutsideEdge_mem_left_shore)
+    (by simpa [EdgeLeafTree.shore] using hedge)
+
+theorem rootEdge_ne_leftOutsideEdge {k w : Nat}
+    (decomposition : RootedConnectedBranchDecomposition (G := G) k w) :
+    decomposition.rootEdge ≠ decomposition.leftOutsideEdge := by
+  intro heq
+  exact decomposition.rootEdge_not_mem_right_shore
+    (heq ▸ decomposition.leftOutsideEdge_mem_right_shore)
+
+theorem rootEdge_ne_rightOutsideEdge {k w : Nat}
+    (decomposition : RootedConnectedBranchDecomposition (G := G) k w) :
+    decomposition.rootEdge ≠ decomposition.rightOutsideEdge := by
+  intro heq
+  exact decomposition.rootEdge_not_mem_left_shore
+    (heq ▸ decomposition.rightOutsideEdge_mem_left_shore)
+
+/-- The full connected-cut condition on the first tree is generated from
+the supplied geometry, rather than assumed. -/
+noncomputable def leftConnected {k w : Nat}
+    (decomposition : RootedConnectedBranchDecomposition (G := G) k w)
+    (hcubic : ∀ vertex : V, (incidentEdgeFinset G vertex).card = 3) :
+    EveryForkConnected (G := G) k w decomposition.left :=
+  everyForkConnected_of_geometry hcubic k w decomposition.left
+    decomposition.leftGeometry decomposition.left_leafList_nodup
+    decomposition.rootEdge decomposition.leftOutsideEdge
+    decomposition.rootEdge_ne_leftOutsideEdge
+    decomposition.rootEdge_not_mem_left_shore
+    decomposition.leftOutsideEdge_not_mem_left_shore
+
+/-- The full connected-cut condition on the second tree is generated from
+the supplied geometry, rather than assumed. -/
+noncomputable def rightConnected {k w : Nat}
+    (decomposition : RootedConnectedBranchDecomposition (G := G) k w)
+    (hcubic : ∀ vertex : V, (incidentEdgeFinset G vertex).card = 3) :
+    EveryForkConnected (G := G) k w decomposition.right :=
+  everyForkConnected_of_geometry hcubic k w decomposition.right
+    decomposition.rightGeometry decomposition.right_leafList_nodup
+    decomposition.rootEdge decomposition.rightOutsideEdge
+    decomposition.rootEdge_ne_rightOutsideEdge
+    decomposition.rootEdge_not_mem_right_shore
+    decomposition.rightOutsideEdge_not_mem_right_shore
+
+/-- The first nondegenerate rooted shore tree. -/
+noncomputable def leftTree {k w : Nat}
+    (decomposition : RootedConnectedBranchDecomposition (G := G) k w)
+    (hcubic : ∀ vertex : V, (incidentEdgeFinset G vertex).card = 3) :
+    DecompTree (ConnectedShoreNode (G := G) k w) :=
+  toConnectedShoreTree k w decomposition.left
+    (decomposition.leftConnected hcubic)
+
+/-- The second nondegenerate rooted shore tree. -/
+noncomputable def rightTree {k w : Nat}
+    (decomposition : RootedConnectedBranchDecomposition (G := G) k w)
+    (hcubic : ∀ vertex : V, (incidentEdgeFinset G vertex).card = 3) :
+    DecompTree (ConnectedShoreNode (G := G) k w) :=
+  toConnectedShoreTree k w decomposition.right
+    (decomposition.rightConnected hcubic)
+
+theorem strict_leftTree {k w : Nat}
+    (decomposition : RootedConnectedBranchDecomposition (G := G) k w)
+    (hcubic : ∀ vertex : V, (incidentEdgeFinset G vertex).card = 3) :
+    StrictConnectedShoreTree (decomposition.leftTree hcubic) :=
   strict_toConnectedShoreTree k w decomposition.left
-    decomposition.leftConnected decomposition.left_leafList_nodup
+    (decomposition.leftConnected hcubic) decomposition.left_leafList_nodup
 
 theorem strict_rightTree {k w : Nat}
-    (decomposition : RootedConnectedBranchDecomposition (G := G) k w) :
-    StrictConnectedShoreTree decomposition.rightTree :=
+    (decomposition : RootedConnectedBranchDecomposition (G := G) k w)
+    (hcubic : ∀ vertex : V, (incidentEdgeFinset G vertex).card = 3) :
+    StrictConnectedShoreTree (decomposition.rightTree hcubic) :=
   strict_toConnectedShoreTree k w decomposition.right
-    decomposition.rightConnected decomposition.right_leafList_nodup
+    (decomposition.rightConnected hcubic) decomposition.right_leafList_nodup
 
 @[simp] theorem nodeCount_leftTree {k w : Nat}
-    (decomposition : RootedConnectedBranchDecomposition (G := G) k w) :
-    nodeCount decomposition.leftTree = decomposition.left.forkCount :=
+    (decomposition : RootedConnectedBranchDecomposition (G := G) k w)
+    (hcubic : ∀ vertex : V, (incidentEdgeFinset G vertex).card = 3) :
+    nodeCount (decomposition.leftTree hcubic) = decomposition.left.forkCount :=
   nodeCount_toConnectedShoreTree k w decomposition.left
-    decomposition.leftConnected
+    (decomposition.leftConnected hcubic)
 
 @[simp] theorem nodeCount_rightTree {k w : Nat}
-    (decomposition : RootedConnectedBranchDecomposition (G := G) k w) :
-    nodeCount decomposition.rightTree = decomposition.right.forkCount :=
+    (decomposition : RootedConnectedBranchDecomposition (G := G) k w)
+    (hcubic : ∀ vertex : V, (incidentEdgeFinset G vertex).card = 3) :
+    nodeCount (decomposition.rightTree hcubic) = decomposition.right.forkCount :=
   nodeCount_toConnectedShoreTree k w decomposition.right
-    decomposition.rightConnected
+    (decomposition.rightConnected hcubic)
 
 /-- A full duplicate-free edge-leaf labelling has exactly three more leaves
 than the total number of retained internal nodes: one distinguished root
 leaf and one terminal leaf in each of the two rooted trees. -/
-theorem card_edges_eq_nodeCounts_add_three {k w : Nat}
+theorem card_edges_eq_forkCounts_add_three {k w : Nat}
     (decomposition : RootedConnectedBranchDecomposition (G := G) k w) :
     Fintype.card G.edgeSet =
-      nodeCount decomposition.leftTree +
-        nodeCount decomposition.rightTree + 3 := by
+      decomposition.left.forkCount + decomposition.right.forkCount + 3 := by
   have hcard := List.toFinset_card_of_nodup decomposition.leavesNodup
   rw [decomposition.leavesCover, Finset.card_univ] at hcard
   have hlength :
@@ -546,9 +745,7 @@ theorem card_edges_eq_nodeCounts_add_three {k w : Nat}
             decomposition.right.leafList)).length := hcard
   rw [List.length_cons, List.length_append,
     decomposition.left.leafList_length_eq_forkCount_add_one,
-    decomposition.right.leafList_length_eq_forkCount_add_one,
-    ← decomposition.nodeCount_leftTree,
-    ← decomposition.nodeCount_rightTree] at hlength
+    decomposition.right.leafList_length_eq_forkCount_add_one] at hlength
   omega
 
 end RootedConnectedBranchDecomposition
@@ -571,19 +768,26 @@ theorem vertexCount_le_of_rootedConnectedBranchDecomposition
     2 ^ ((6 * w + 1) *
       (∑ j : Fin (k + 1),
         Nat.factorial (j : Nat) * 2 ^ (3 ^ (j : Nat)))) - 1
-  have hleft : nodeCount decomposition.leftTree ≤ bound := by
+  let hcubic : ∀ vertex : V, (incidentEdgeFinset G vertex).card = 3 :=
+    incidentEdgeFinset_card_eq_three_of_toRotationSystem_isCubic
+      rotation minimal.spherical.cubic
+  have hleft : decomposition.left.forkCount ≤ bound := by
+    rw [← decomposition.nodeCount_leftTree hcubic]
     simpa [bound] using nodeCount_le_of_connectedShoreTree
-      rotation minimal k w decomposition.leftTree decomposition.strict_leftTree
-  have hright : nodeCount decomposition.rightTree ≤ bound := by
+      rotation minimal k w (decomposition.leftTree hcubic)
+      (decomposition.strict_leftTree hcubic)
+  have hright : decomposition.right.forkCount ≤ bound := by
+    rw [← decomposition.nodeCount_rightTree hcubic]
     simpa [bound] using nodeCount_le_of_connectedShoreTree
-      rotation minimal k w decomposition.rightTree decomposition.strict_rightTree
+      rotation minimal k w (decomposition.rightTree hcubic)
+      (decomposition.strict_rightTree hcubic)
   have hthree :=
     rotation.toRotationSystem.card_darts_eq_three_times_card_vertices
       minimal.spherical.cubic
   have htwo := rotation.toRotationSystem.card_darts_eq_twice_card_edges
   have hcubic : 3 * Fintype.card V = 2 * Fintype.card G.edgeSet :=
     hthree.symm.trans htwo
-  have hedges := decomposition.card_edges_eq_nodeCounts_add_three
+  have hedges := decomposition.card_edges_eq_forkCounts_add_three
   change Fintype.card V ≤ 4 * bound + 6
   omega
 

@@ -1781,8 +1781,7 @@ After removing that root leaf, write its first fork as two edge-leaf trees
 duplicate-free enumeration of \(E(M)\);
 \item at every internal fork of \(T_L\) or \(T_R\), the set \(S\) of leaves
 below that fork and \(E(M)\setminus S\) are connected edge shores, their
-majority vertex sides are nonempty, and their middle set has size at most
-both \(k\) and \(w\).
+middle set has size at most both \(k\) and \(w\).
 \end{enumerate}
 Set
 \[
@@ -1801,6 +1800,24 @@ leaves make the shores of its two nontrivial children proper subsets of the
 parent shore.  Transitivity therefore gives proper nesting between every two
 comparable internal forks.  Erasing the edge leaves produces two trees of the
 kind consumed by Theorem~\ref{thm:literal-majority-shore-tree-descent}.
+
+It remains to check that each displayed edge cut has vertices on both
+majority sides; this is a consequence, not an additional hypothesis.  The
+fork shore contains at least two edges, one below each child.  Its complement
+also contains at least two distinct edges: the distinguished root edge
+\(e_0\), and one edge in the opposite top-level tree.  These same two outside
+edges remain outside every descendant shore.  If a connected edge shore
+contains two distinct edges, take a shore-edge walk between them.  Either the
+first step is a different edge from the first chosen edge, or delete that
+step and continue; induction produces a vertex incident with two distinct
+shore edges.  Thus the shore has a majority vertex.  Applying the same
+argument to the complementary edge shore gives a vertex incident with two
+complement edges.  Since every vertex of \(M\) has exactly three incident
+edges, that vertex is not a majority vertex for the original shore.  Hence
+both majority sides are nonempty at every internal fork.  The recursive
+construction of these witnesses is checked by
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedBranchDecompositionForest.everyForkConnected_of_geometry}.
+
 The node-count half of that theorem, checked separately in
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedShoreLiteralNode.nodeCount_le_of_connectedShoreTree},
 bounds each tree by \(B\) internal nodes.
@@ -1831,11 +1848,14 @@ connected edge shore containing two edges, some vertex is incident with two
 shore edges (otherwise distinct edges would lie in different components), so
 the two majority sides are nonempty.  The graph-theoretic implication and its
 complementary cubic form are checked in
-\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedBranchDecompositionForest.ConnectedCutCondition.ofConnectedTwo}.
-The theorem above still receives the resulting nonemptiness facts as node
-fields; only the elementary propagation of the two-edge cardinalities through
-the rooted leaf tree remains prose.  Lemma~\ref{lem:connected-shore-literal-node}
-then supplies the roots, literal width, and two-port fields.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedBranchDecompositionForest.ConnectedCutCondition.ofConnectedTwo};
+the two-edge propagation itself is checked in
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedBranchDecompositionForest.EdgeLeafTree.two_le_card_shore_fork}
+and
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedBranchDecompositionForest.two_le_card_complement_of_two_outside}.
+Accordingly, the theorem above receives no majority-nonemptiness fields.
+Lemma~\ref{lem:connected-shore-literal-node} then supplies the roots, literal
+width, and two-port fields.
 
 For an ordered boundary of size at most \(k\), the manuscript's data---edge
 colours, the two noncrossing connectivity relations, capped face progress,
