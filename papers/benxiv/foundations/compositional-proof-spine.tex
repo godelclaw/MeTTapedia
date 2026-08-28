@@ -1077,9 +1077,11 @@ outer-root shores are strictly nested with nonempty intervening slabs, and
 that both holes and the frozen interface remain outside those slabs.  It must
 also decide the $\alpha$-seam branch of
 Lemma~\ref{lem:source-local-window-seriality}, transport the cuts to the
-ambient graph, fix the roots and a uniform width bound, identify the
-recomputed ambient shore boundaries with ordered seams, and identify their
-ordered Count states with those consumed by
+ambient graph, prove connected complementary edge shores, nonempty majority
+sides, and a uniform middle-set bound, and identify the recomputed ambient
+shore boundaries with ordered seams.  Lemma~\ref{lem:connected-shore-literal-node}
+then supplies the roots and ports, while the chain consumer computes the
+ordered Count states used by
 Theorem~\ref{thm:literal-majority-shore-chain-descent}.
 
 There is a second, equally compositional way to state the same structural
@@ -1704,9 +1706,9 @@ bounds, two distinct exterior boundary darts, and strict nesting.  The
 theorem above proves only that any chain carrying those literal certificates
 cannot be longer than the finite state carrier.
 
-\begin{theorem}[bounded-width literal-shore descent]
+\begin{theorem}[bounded-width connected-shore descent]
 \label{thm:literal-majority-shore-tree-descent}
-\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MajorityShoreStateDescent.vertexCount_le_of_literalShoreTree}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedShoreLiteralNode.vertexCount_le_of_connectedShoreTree}
 Let \(M\) be a graph-backed vertex-minimal non-Tait-colourable member of the
 connected bridgeless spherical cubic rotation-map class.  Fix \(k,w\ge0\),
 and let \(\mathcal T\) be a finite rooted binary tree.  At every node \(t\),
@@ -1714,11 +1716,8 @@ suppose we are given an actual finite edge shore \(S_t\) such that:
 \begin{enumerate}
 \item \(S_t\) and its edge complement are connected, and the corresponding
 majority vertex shore and its complement are nonempty;
-\item the literal exterior and interior vertex-side tangles have chosen
-retained-dart roots;
-\item the literal boundary width is at most \(k\), while the edge-shore middle
-set has cardinality at most \(w\);
-\item the exterior boundary has two distinct darts;
+\item the edge-shore middle set has cardinality at most \(w\);
+\item the same middle set has cardinality at most \(k\);
 \item along every root-to-leaf path, a later shore is a proper subset of every
 earlier shore.
 \end{enumerate}
@@ -1734,6 +1733,10 @@ one has
 \end{theorem}
 
 \begin{proof}
+Complete every supplied node by
+Lemma~\ref{lem:connected-shore-literal-node}.  Thus its roots and two distinct
+boundary darts are derived from the minimal map, and its literal boundary
+width is at most \(k\).
 For a node of literal boundary width \(j\le k\), compute its normalized seam
 state directly from its displayed shore, interior root, canonical boundary
 coordinate and first-return hub rotation.  Embed it in the single dependent
@@ -1799,13 +1802,17 @@ theorems then construct the ordered open tangles directly from the ambient
 rotation system.  Thus a sphere-cut noose and its local perturbation are an
 optional geometric realization, not part of the load-bearing D3 supply.
 Lemma~\ref{lem:cubic-sphere-cut-material} and the depth phase above settle
-strict-material accounting.  What remains is to package the connected
-branch decomposition, its majority shores, and their exact ordered Count
-states in the descent carrier.
+strict-material accounting.  What remains is to package the connected branch
+decomposition as a rooted strictly nested edge-shore tree and prove the
+vertex accounting.  The majority shores, literal nodes, and exact ordered
+Count states are then computed by
+Theorem~\ref{thm:connected-edge-shore-majority},
+Lemma~\ref{lem:connected-shore-literal-node}, and
+Theorem~\ref{thm:literal-majority-shore-tree-descent}.
 
 \begin{proposition}[wall-exclusion reduction, relative form]
 \label{prop:target-forced-wall}
-\Sconditional{planar wall theorem; exact connected branch-decomposition state supply; route-native finite base}
+\Sconditional{planar wall theorem; connected branch-decomposition tree supply; route-native finite base}
 Fix the normal-form class and one direct-Count or Lift target.  Suppose there
 are computable \(r,w\) such that:
 \begin{enumerate}
@@ -1813,12 +1820,10 @@ are computable \(r,w\) such that:
 \(r\)-wall;
 \item every plane instance in the class with no such wall has branchwidth at
 most \(w\);
-\item every width-\(w\) instance in the class has a connected branch
-decomposition whose non-leaf shores, converted by
-Theorem~\ref{thm:connected-edge-shore-majority}, carry the precise finite
-states consumed by Theorem~\ref{thm:typed-sphere-cut-descent}, two distinct
-boundary ports, and the strict cubic-star material required by
-Theorem~\ref{thm:majority-shore-physical-replacement}.
+\item every width-\(w\) instance in the class has a rooted binary connected
+edge-shore tree satisfying the nodewise middle bound, proper nesting, and
+\(|V|\le2|V(\mathcal T)|\) required by
+Theorem~\ref{thm:literal-majority-shore-tree-descent}.
 \end{enumerate}
 Then every vertex-minimal zero-target instance has an effective vertex
 bound.  If the route-native finite base below that bound is empty, there is
@@ -3466,9 +3471,11 @@ Thus M2 is closed in the literal-shore representation.  The full finite state
 is the canonical hub order together with the set of genuine Tait boundary
 words, and Theorem~\ref{thm:majority-shore-physical-replacement} consumes its
 equality directly.  What remains belongs to M1: a connected corridor or
-branch-decomposition supplier must construct the nested literal shores,
-their roots and width bounds, and the strict cubic star between repeated
-states.  No ambient graph data are reread after the state has been formed.
+branch-decomposition supplier must construct the nested connected edge-shore
+tree, its middle bounds, proper nesting, and vertex accounting.  The roots,
+literal widths, two boundary ports, exact states, and strict cubic star
+between repeated states are now derived.  No ambient graph data are reread
+after the state has been formed.
 The cap face count, cap sphericity,
 one-hub property, orientation reversal, connectedness, bridge-freeness,
 cubicity, and cyclic vertex rotations are no longer open.
@@ -3510,14 +3517,11 @@ contradicts minimality.  The Tait bridge gives the Four-Colour Theorem.
 
 \begin{corollary}[wall-exclusion assembly]
 \label{cor:wall-exclusion-assembly}
-\Sconditional{Tait bridge; fixed-wall exclusion for least counterexamples; exact connected branch-decomposition state supply; route-native finite base}
+\Sconditional{Tait bridge; fixed-wall exclusion for least counterexamples; connected branch-decomposition tree supply; route-native finite base}
 Assume the Tait/minimal-counterexample bridge.  Assume there is a fixed
 wall excluded from every least Tait counterexample, that wall-free members
-of the normal-form class carry a connected branch decomposition whose
-majority shores carry the exact states of
-Theorem~\ref{thm:typed-sphere-cut-descent} together with the literal
-connectedness, two-port and strict-material hypotheses of
-Theorem~\ref{thm:majority-shore-physical-replacement}.  If the resulting
+of the normal-form class carry the connected edge-shore tree required by
+Theorem~\ref{thm:literal-majority-shore-tree-descent}.  If the resulting
 route-native finite base contains no counterexample, then every planar graph
 is four-colourable.
 \end{corollary}
@@ -3548,11 +3552,12 @@ the cap hypotheses from connected graph-backed shores and the exact
 planar-bond rank, without a Jordan/noose premise.  The literal
 composite is loopless, and Corollary~\ref{cor:parallel-seam-normalization}
 removes any parallel seam if a later simple-graph presentation requires it.
-Thus the remaining cut-side work is M1 rather than M2: produce compatible
-nested connected shores, with roots and a strict-material witness, from the
-chosen corridor or sphere-cut decomposition.  Their ordered first-return data
-and exact supports are computed fields of the already checked finite state;
-the supplier does not assume in advance that two such fields are equal.
+Thus the remaining cut-side work is M1 rather than M2: produce the rooted
+strictly nested connected edge-shore tree, middle bounds, and vertex
+accounting from the chosen corridor or branch decomposition.  Roots, ports,
+strict material, ordered first-return data, and exact supports are computed
+by the checked consumer; the supplier does not assume in advance that two
+such fields are equal.
 
 Theorem~\ref{thm:direct-count-reductive-assembly} is the shortest literal
 implementation of the companion note's instruction to open the instances,
@@ -3628,13 +3633,13 @@ source-preserving local ladder transport;
 Proposition~\ref{prop:target-forced-cut-chain}; the raw noose Count theorem
 and physical support-state splice; and a route-native finite base.  The
 tree-form chain replaces the global corridor proposition by fixed-wall
-exclusion plus a connected branch-decomposition supply and its exact Count
-state.  Both chains use the same checked majority-shore D3 splice and the
+exclusion plus a connected branch-decomposition tree supply.  Both chains
+use the same checked majority-shore D3 splice and the
 same finite base.
 
 At present the decisive open premises are therefore: either the
 target-forced global cut chain or fixed-wall exclusion together with the
-connected branch-decomposition state adapter; and the route-native finite
+connected branch-decomposition tree supplier; and the route-native finite
 base.  Exact Count replacement on supplied normalized majority shores is now
 checked.  A compatible tight vertex-noose to edge-noose
 perturbation is optional rather than load-bearing.  D3's face count, Euler

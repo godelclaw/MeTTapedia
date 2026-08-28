@@ -25,8 +25,11 @@ open GoertzelV24ConnectedEdgeShoreMajority
 open GoertzelV24ConnectedEdgeShoreStructuralData
 open GoertzelV24CubicSmallBoundaryCycle
 open GoertzelV24FaceDualConnectedness
+open GoertzelV24FiniteTreeInterfacePumping
+open GoertzelV24FiniteTreeInterfacePumping.DecompTree
 open GoertzelV24MajorityShoreNormalizedState
 open GoertzelV24MajorityShoreStateDescent
+open GoertzelV24NormalizedShoreDescent
 open GoertzelV24RotationCutDartDecomposition
 open GoertzelV24RotationEdgeBridge
 open GoertzelV24RotationBoundaryBridge
@@ -312,6 +315,89 @@ noncomputable def ofConnectedShore
       first_ne_second := hne }
 
 end LiteralShoreNode
+
+/-! ## A connected-shore tree consumed directly -/
+
+/-- The nodewise data supplied by a bounded-width connected edge
+decomposition.  It contains no roots, boundary coordinates, or chosen ports;
+the completion below derives those from the minimal map. -/
+structure ConnectedShoreNode (k w : Nat) where
+  shore : Finset G.edgeSet
+  shoreConnected : EdgeShoreConnected G shore
+  complementConnected : EdgeShoreConnected G (Finset.univ \ shore)
+  majorityNonempty : ∃ vertex, majorityVertexSide G shore vertex
+  complementNonempty : ∃ vertex, ¬ majorityVertexSide G shore vertex
+  widthMiddle : (edgeShoreMiddleVertices G shore).card ≤ k
+  middleBound : (edgeShoreMiddleVertices G shore).card ≤ w
+
+namespace ConnectedShoreNode
+
+/-- Complete a connected-shore node to the literal node used by the physical
+replacement theorem. -/
+noncomputable def toLiteral
+    (rotation : SimpleGraphDartRotation.Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    {k w : Nat} (node : ConnectedShoreNode (G := G) k w) :
+    LiteralShoreNode rotation k w :=
+  LiteralShoreNode.ofConnectedShore rotation minimal node.shore
+    node.shoreConnected node.complementConnected node.majorityNonempty
+    node.complementNonempty k w node.widthMiddle node.middleBound
+
+@[simp]
+theorem toLiteral_shore
+    (rotation : SimpleGraphDartRotation.Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    {k w : Nat} (node : ConnectedShoreNode (G := G) k w) :
+    (node.toLiteral rotation minimal).shore = node.shore :=
+  rfl
+
+/-- The exact finite state computed after completing the node. -/
+noncomputable def cardPhasedState
+    (rotation : SimpleGraphDartRotation.Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    {k w : Nat} (node : ConnectedShoreNode (G := G) k w) :
+    Fin (6 * w + 1) × StateAtBound.{u} k :=
+  (node.toLiteral rotation minimal).cardPhasedState
+
+end ConnectedShoreNode
+
+/-- Proper nesting stated solely on the connected edge shores supplied by the
+decomposition. -/
+def StrictConnectedShoreTree {k w : Nat}
+    (tree : DecompTree (ConnectedShoreNode (G := G) k w)) : Prop :=
+  ∀ p : List (ConnectedShoreNode (G := G) k w), OnPath tree p →
+    ∀ i j : Fin p.length, i < j → (p.get j).shore ⊂ (p.get i).shore
+
+/-- **Bounded-width descent from connected shores.**  Once a reduced binary
+tree supplies connected complementary edge shores, nonempty majority sides,
+and middle-set bounds, all literal roots, ports, widths and exact states are
+derived internally. -/
+theorem vertexCount_le_of_connectedShoreTree
+    (rotation : SimpleGraphDartRotation.Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (k w : Nat)
+    (tree : DecompTree (ConnectedShoreNode (G := G) k w))
+    (hstrict : StrictConnectedShoreTree tree)
+    (hvertices : Fintype.card V ≤ 2 * nodeCount tree) :
+    Fintype.card V ≤
+      2 * (2 ^ ((6 * w + 1) *
+        (∑ j : Fin (k + 1),
+          Nat.factorial (j : Nat) * 2 ^ (3 ^ (j : Nat)))) - 1) := by
+  have hnorepeat : NoRepeatedStateOnDescents
+      (fun node : ConnectedShoreNode (G := G) k w =>
+        node.cardPhasedState rotation minimal) tree := by
+    apply noRepeatedStateOnDescents_of_get
+    intro p hpath i j hij heq
+    have hproper : (p.get j).shore ⊂ (p.get i).shore :=
+      hstrict p hpath i j hij
+    exact cardPhasedState_ne_of_ssubset rotation minimal
+      ((p.get i).toLiteral rotation minimal)
+      ((p.get j).toLiteral rotation minimal)
+      (by simpa using hproper) heq
+  have hbound := vertexCount_le hnorepeat 2 (Fintype.card V) hvertices
+  rw [Fintype.card_prod, Fintype.card_fin,
+    card_stateAtBound.{u} k] at hbound
+  exact hbound
 
 end
 
