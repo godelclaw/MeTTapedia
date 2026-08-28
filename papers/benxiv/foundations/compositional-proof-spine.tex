@@ -73,9 +73,11 @@ construction, port-tangle gluing, bridgelessness proof, rotation-system to
 multigraph adapter, strict vertex accounting, exact rotation-system
 composition, complementary boundary order, orientation-reversed seam match,
 and sphericity are machine-checked on the literal shore carriers.  Support
-replacement now preserves zero Count on that same physical composite.  What
-remains is to derive equal seam supports from equal decomposition states and
-to formalize the already-written parallel-seam normalization \\
+replacement, the structural class, strict decrease and the minimality
+contradiction are now machine-checked together for equal normalized nested
+majority-shore states.  What remains is the decomposition-to-literal-shore
+state adapter and, for consumers insisting on a simple graph presentation,
+the already-written parallel-seam normalization \\
 $D_4$ & The route-native finite floor contains no zero-Count obstruction &
 open; the refuted GWCO and $A\ne\varnothing$ systems cannot be inherited \\
 $D_5$ & Well-founded assembly from $D_0$--$D_4$ & proved as the explicit
@@ -1297,8 +1299,59 @@ such states produces, without any extra receipt field, both the transported
 orientation-reversing matching and equality of the exact Tait supports:
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MajorityShoreNormalizedState.replacement_receipt_of_normalizedState_eq}.
 Thus the coordinate-equivalence packaging is closed.  The supplier must still
-supply the two disc-side hypotheses for the replacement piece; no further
-Count semantics or hidden orientation choice remains.
+supply literal connected shores and a strict material witness; the two
+disc-side hypotheses are then consequences of the planar-bond theorems, not
+extra receipt fields.
+
+\begin{theorem}[equal normalized majority-shore states contradict minimality]
+\label{thm:majority-shore-physical-replacement}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MajorityShorePhysicalReplacement.no_nested_equal_normalizedState_of_strict_material}
+Let \(M\) be a graph-backed vertex-minimal non-Tait-colourable member of the
+connected bridgeless spherical cubic rotation-map class, with cyclic vertex
+rotations and two-sided face orbits.  Let
+\(S_{\rm new}\subseteq S_{\rm old}\)
+be finite edge shores such that each shore and its edge complement are
+connected and each corresponding majority vertex shore and complement are
+nonempty.  Root the old exterior, old interior and new interior literal
+vertex-side tangles by retained darts.  Suppose the two interior boundaries
+have the same cardinality \(k\), their normalized states are equal, and the
+old exterior boundary contains two distinct darts.  Finally suppose some
+vertex \(x\) has every incident edge in
+\(S_{\rm old}\setminus S_{\rm new}\).  These data are impossible.
+\end{theorem}
+
+\begin{proof}
+Glue the literal exterior of \(S_{\rm old}\) to the literal majority
+interior of \(S_{\rm new}\).  The matching first crosses the old ambient cut
+by the inverse edge flip and then passes through the common standard
+coordinates supplied by the two normalized states.  Equality of the support
+fields, exact invariance under boundary reindexing, and complementary-shore
+reassembly show that this physical composite is non-Tait-colourable:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MajorityShorePhysicalReplacement.not_taitColorable_replacement_of_normalizedState_eq}.
+
+Connected edge shores give connected majority vertex shores.  The old
+exterior and new interior each have a canonical spherical face-simple hub
+closure by the planar-bond rank theorem.  Ambient edge flip reverses the old
+interior/exterior hub orders; equality of normalized states transports that
+equation to the new interior.  The generic literal-shore seam theorem now
+packages the glued map as connected, bridge-free, cubic and spherical, with
+cyclic vertex rotations:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MajorityShorePhysicalReplacement.replacementStructuralData_of_normalizedState_eq}.
+
+Majority is monotone under \(S_{\rm new}\subseteq S_{\rm old}\).  At \(x\),
+all three incident edges lie in the set difference, so \(x\) belongs to the
+old majority shore but not the new one.  Hence the retained new interior is
+a strict subset of the removed old interior, and
+
+\[
+ |V(M\setminus S_{\rm old})|+|V(S_{\rm new})|<|V(M)|.
+\]
+
+This cardinal inequality is checked in
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MajorityShorePhysicalReplacement.replacementVertexCount_lt_of_incident_sdiff}.
+Vertex minimality makes every smaller member of the same structural class
+Tait-colourable, contradicting the preceding noncolourability.
+\end{proof}
 
 Substituting this literal state into
 Theorem~\ref{thm:cardinality-phased-shore-descent} removes the last abstract
@@ -1318,18 +1371,20 @@ and the cardinality phase gives the explicit bound
 
 This exact specialization is machine-checked as
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24NormalizedShoreDescent.vertexCount_le_of_cardPhasedNormalizedShore}.
-Its sole application-specific premise is now transparent: equal normalized
-states at two nested majority shores, together with the strict slab vertex,
-must produce a smaller instance in the same target class.
+Its former application-specific replacement premise is discharged by
+Theorem~\ref{thm:majority-shore-physical-replacement}.  The supplier must now
+produce exactly that theorem's literal hypotheses: nested connected shores,
+two genuine boundary ports, equal normalized states, and a cubic star wholly
+inside the intervening edge slab.
 
-This theorem closes the finite counting once the supply exists.  Its second
-hypothesis still contains the geometric content of D3.  In particular, the
-Lean declaration does \emph{not} prove that a branch decomposition gives
+This theorem closes the finite counting once the supply exists.  In
+particular, the Lean declaration does \emph{not} prove that a branch decomposition gives
 ordered port tangles, that the local perturbations of its nooses are mutually
 compatible with the retained vertex shores, or that the resulting ordered
-ports realize the same exact Count state.  The spherical bridgeless cubic
-packaging of any two sides satisfying those interface conditions is now
-verified by Corollary~\ref{cor:implemented-seam-composite-structure}.
+ports realize the same exact Count state.  Once those literal data are
+present, however, both semantic preservation and the spherical bridgeless
+cubic replacement are verified by
+Theorem~\ref{thm:majority-shore-physical-replacement}.
 
 For an ordered boundary of size at most \(k\), the manuscript's data---edge
 colours, the two noncrossing connectivity relations, capped face progress,
@@ -1364,7 +1419,7 @@ states in the descent carrier.
 
 \begin{proposition}[wall-exclusion reduction, relative form]
 \label{prop:target-forced-wall}
-\Sconditional{planar wall theorem; connected branch-decomposition supply; exact Count replacement; route-native finite base}
+\Sconditional{planar wall theorem; exact connected branch-decomposition state supply; route-native finite base}
 Fix the normal-form class and one direct-Count or Lift target.  Suppose there
 are computable \(r,w\) such that:
 \begin{enumerate}
@@ -1375,10 +1430,9 @@ most \(w\);
 \item every width-\(w\) instance in the class has a connected branch
 decomposition whose non-leaf shores, converted by
 Theorem~\ref{thm:connected-edge-shore-majority}, carry the precise finite
-states consumed by Theorem~\ref{thm:typed-sphere-cut-descent}; and
-\item equality of two supplied states gives exact Count replacement, and
-the resulting majority-shore splice stays inside the normal-form class after
-the permitted normalization.
+states consumed by Theorem~\ref{thm:typed-sphere-cut-descent}, two distinct
+boundary ports, and the strict cubic-star material required by
+Theorem~\ref{thm:majority-shore-physical-replacement}.
 \end{enumerate}
 Then every vertex-minimal zero-target instance has an effective vertex
 bound.  If the route-native finite base below that bound is empty, there is
@@ -1393,9 +1447,8 @@ joined by a minimal tree, whose three terminal paths have one common branch
 point and are otherwise internally disjoint.  Thus the minor and topological
 forms agree for this wall in a cubic host.  Hypothesis~2 supplies the width
 bound, Hypothesis~3 constructs the decomposition and its canonical majority
-shores, and Hypothesis~4 supplies exact strict replacement.  The structural
-part of that splice is the checked implication following
-Theorem~\ref{thm:connected-edge-shore-majority}.
+shores.  Repeated normalized states then give exact strict replacement by
+Theorem~\ref{thm:majority-shore-physical-replacement}.
 Theorem~\ref{thm:typed-sphere-cut-descent} gives the effective vertex bound.
 An empty finite base rules out \(X\).
 \end{proof}
@@ -2782,6 +2835,14 @@ replacement interior have the same accepting support in \(G'\) and \(G\),
 proving the last assertion without a second, merely semantic composite.
 \end{proof}
 
+The complete replacement kernel of this argument is now checked on the
+literal majority-shore data in
+Theorem~\ref{thm:majority-shore-physical-replacement}.  The present theorem
+remains marked \textsc{prose} because its stronger geometric input begins
+with independently supplied nooses.  Its formal residue is exactly the
+noose/decomposition-to-edge-shore adapter; no colouring, cap, Euler or
+minimality step remains hidden behind that adapter.
+
 \begin{theorem}[the implemented seam composite has the non-topological map fields]
 \label{thm:implemented-seam-composite-fields}
 Let two finite open rotation tangles be glued along a nonempty matched seam.
@@ -2869,7 +2930,7 @@ composite dart carrier is
   (D_{\rm int}(S)\sqcup D_{\rm int}(S^c))
     \sqcup(D_{\partial}(S)\sqcup D_{\partial}(S^c)).
 \]
-Undoing these two partitions and then the predicate partition (S\sqcup S^c)
+Undoing these two partitions and then the predicate partition \(S\sqcup S^c\)
 gives a canonical bijection from this carrier to \(D\).  On an internal dart
 the composite edge flip is the restricted old flip.  On a boundary dart it
 is the seam matching, which was defined to be the old flip.  Hence the
@@ -3018,14 +3079,17 @@ words consumed by Corollary~\ref{cor:physical-closed-count-replacement};
 no stronger hidden support is required.  What remains is to label the
 decomposition nodes by these exact supports, verify that an
 ancestor--descendant state equality selects the two literal shores used by
-the structural constructor, and perform the stated normalization if the seam
-creates a parallel pair.  The cap face count, cap sphericity,
+the structural constructor, and supply the strict cubic star between them.
+If a later graph-backed presentation insists on a simple output, parallel
+seams must additionally be normalized; the vertex-minimal rotation-system
+contradiction itself already consumes the loopless multigraph composite.
+The cap face count, cap sphericity,
 one-hub property, orientation reversal, connectedness, bridge-freeness,
 cubicity, and cyclic vertex rotations are no longer open.
 
 \begin{theorem}[direct Count-reductive assembly]
 \label{thm:direct-count-reductive-assembly}
-\Sconditional{Tait bridge; ladder transport; target-forced tight cut chain; physical D3 supply; route-native finite base}
+\Sconditional{Tait bridge; ladder transport; target-forced literal connected-shore state supply; route-native finite base}
 Assume that every sufficiently large least Tait counterexample can be put,
 by the source's target-preserving local reductions, into a composable corridor
 whose cut roots satisfy Proposition~\ref{prop:target-forced-cut-chain}.
@@ -3051,22 +3115,23 @@ supports with a path in the finite powerset system.  The cut chain is longer
 than \(2^{3^k}\) (or than the separately verified optimized reachable-state
 count), so two cumulative support states repeat.
 Theorem~\ref{thm:determinized-support-deletion} preserves the
-empty accepting support, and Theorem~\ref{thm:physical-noose-deletion}
-realizes that deletion as a strictly smaller counterexample in the same
-bridgeless cubic spherical class.  The simple-map seam adapter or the stated
-normalization returns the representation consumed by minimality.  This
+empty accepting support.  The supplied literal cut data meet the hypotheses
+of Theorem~\ref{thm:majority-shore-physical-replacement}, which realizes the
+deletion as a strictly smaller noncolourable member of the same bridgeless
+cubic spherical rotation-system class.  This
 contradicts minimality.  The Tait bridge gives the Four-Colour Theorem.
 \end{proof}
 
 \begin{corollary}[wall-exclusion assembly]
 \label{cor:wall-exclusion-assembly}
-\Sconditional{Tait bridge; fixed-wall exclusion for least counterexamples; connected branch-decomposition supply; exact Count replacement; route-native finite base}
+\Sconditional{Tait bridge; fixed-wall exclusion for least counterexamples; exact connected branch-decomposition state supply; route-native finite base}
 Assume the Tait/minimal-counterexample bridge.  Assume there is a fixed
 wall excluded from every least Tait counterexample, that wall-free members
 of the normal-form class carry a connected branch decomposition whose
 majority shores carry the exact states of
-Theorem~\ref{thm:typed-sphere-cut-descent}, and that equal supplied states
-admit exact Count replacement inside that class.  If the resulting
+Theorem~\ref{thm:typed-sphere-cut-descent} together with the literal
+connectedness, two-port and strict-material hypotheses of
+Theorem~\ref{thm:majority-shore-physical-replacement}.  If the resulting
 route-native finite base contains no counterexample, then every planar graph
 is four-colourable.
 \end{corollary}
@@ -3180,8 +3245,9 @@ same finite base.
 
 At present the decisive open premises are therefore: either the
 target-forced global cut chain or fixed-wall exclusion together with the
-connected branch-decomposition state adapter; exact Count replacement; and
-the route-native finite base.  A compatible tight vertex-noose to edge-noose
+connected branch-decomposition state adapter; and the route-native finite
+base.  Exact Count replacement on supplied normalized majority shores is now
+checked.  A compatible tight vertex-noose to edge-noose
 perturbation is optional rather than load-bearing.  D3's face count, Euler
 arithmetic, and majority-shore structural packaging are no longer open.  The mesh
 isoperimetry theorem proves that a large wall does not automatically supply

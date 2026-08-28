@@ -280,6 +280,91 @@ theorem rotationSystemTaitColorable_complementaryComposite_iff
     (complementaryDartEquiv_alpha RS deleted outerRetained outerDeleted)
     (complementaryDartEquiv_vertOf RS deleted outerRetained outerDeleted)
 
+/-! ## The same reassembly with the two sides displayed in the opposite order -/
+
+/-- The outside shore may be displayed first, as required by the normalized
+replacement theorem.  Its matching is the inverse ambient boundary flip. -/
+abbrev swappedComplementaryCompositeRS
+    (RS : RotationSystem V E) (deleted : Finset V)
+    (outerDeleted : RetainedDart RS (deletedSideKeep deleted))
+    (outerRetained : RetainedDart RS (deletedRegionKeep deleted)) :=
+  OpenTangleData.composeRotationSystem
+    (ofVertexSide RS (deletedSideKeep deleted) outerDeleted)
+    (ofVertexSide RS (deletedRegionKeep deleted) outerRetained)
+    (complementBoundaryAlphaEquiv RS deleted).symm
+
+/-- Swap the two interior summands and the two seam summands. -/
+def swappedCompositeDartEquiv
+    (RS : RotationSystem V E) (deleted : Finset V)
+    (outerDeleted : RetainedDart RS (deletedSideKeep deleted))
+    (outerRetained : RetainedDart RS (deletedRegionKeep deleted)) :
+    (swappedComplementaryCompositeRS RS deleted
+      outerDeleted outerRetained).D ≃
+      (complementaryCompositeRS RS deleted
+        outerRetained outerDeleted).D :=
+  Equiv.sumCongr
+    (Equiv.sumComm
+      (InternalDart RS (deletedSideKeep deleted))
+      (InternalDart RS (deletedRegionKeep deleted)))
+    (Equiv.sumComm
+      (BoundaryDart RS (deletedSideKeep deleted))
+      (BoundaryDart RS (deletedRegionKeep deleted)))
+
+theorem swappedCompositeDartEquiv_alpha
+    (RS : RotationSystem V E) (deleted : Finset V)
+    (outerDeleted : RetainedDart RS (deletedSideKeep deleted))
+    (outerRetained : RetainedDart RS (deletedRegionKeep deleted))
+    (dart : (swappedComplementaryCompositeRS RS deleted
+      outerDeleted outerRetained).D) :
+    swappedCompositeDartEquiv RS deleted outerDeleted outerRetained
+        ((swappedComplementaryCompositeRS RS deleted
+          outerDeleted outerRetained).alpha dart) =
+      (complementaryCompositeRS RS deleted
+        outerRetained outerDeleted).alpha
+        (swappedCompositeDartEquiv RS deleted
+          outerDeleted outerRetained dart) := by
+  rcases dart with (left | right) | (left | right) <;> rfl
+
+theorem swappedCompositeDartEquiv_vertOf
+    (RS : RotationSystem V E) (deleted : Finset V)
+    (outerDeleted : RetainedDart RS (deletedSideKeep deleted))
+    (outerRetained : RetainedDart RS (deletedRegionKeep deleted))
+    (dart : (swappedComplementaryCompositeRS RS deleted
+      outerDeleted outerRetained).D) :
+    (Equiv.sumComm
+      {vertex : V // deletedSideKeep deleted vertex}
+      {vertex : V // deletedRegionKeep deleted vertex})
+        ((swappedComplementaryCompositeRS RS deleted
+          outerDeleted outerRetained).vertOf dart) =
+      (complementaryCompositeRS RS deleted
+        outerRetained outerDeleted).vertOf
+        (swappedCompositeDartEquiv RS deleted
+          outerDeleted outerRetained dart) := by
+  rcases dart with (left | right) | (left | right) <;> rfl
+
+/-- Reassembly is independent of which complementary shore is displayed as
+the left input of the seam composite. -/
+theorem rotationSystemTaitColorable_swappedComplementaryComposite_iff
+    (RS : RotationSystem V E) (deleted : Finset V)
+    (outerDeleted : RetainedDart RS (deletedSideKeep deleted))
+    (outerRetained : RetainedDart RS (deletedRegionKeep deleted)) :
+    RotationSystemTaitColorable
+        (swappedComplementaryCompositeRS RS deleted
+          outerDeleted outerRetained) ↔
+      RotationSystemTaitColorable RS :=
+  (rotationSystemTaitColorable_iff_of_dartEquiv
+    (swappedComplementaryCompositeRS RS deleted
+      outerDeleted outerRetained)
+    (complementaryCompositeRS RS deleted outerRetained outerDeleted)
+    (swappedCompositeDartEquiv RS deleted outerDeleted outerRetained)
+    (Equiv.sumComm
+      {vertex : V // deletedSideKeep deleted vertex}
+      {vertex : V // deletedRegionKeep deleted vertex})
+    (swappedCompositeDartEquiv_alpha RS deleted outerDeleted outerRetained)
+    (swappedCompositeDartEquiv_vertOf RS deleted outerDeleted outerRetained)).trans
+      (rotationSystemTaitColorable_complementaryComposite_iff
+        RS deleted outerRetained outerDeleted)
+
 end
 
 end GoertzelV24VertexSideReassembly
