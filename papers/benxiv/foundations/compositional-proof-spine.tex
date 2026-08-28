@@ -2485,15 +2485,48 @@ uniqueness.
 
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebPointwiseSelectedRollingProjectionExact.pointwiseSelectedSourceLocalLayerSerialRollingProjectionFactorAt_face_exact}
 
+\begin{proposition}[the selected finite Cell--rebase machine is formation-local]
+\label{prop:selected-cell-rebase-formation-local}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebPointwiseSelectedCellRebaseFiniteTransition.pointwiseSelectedSourceLocalLayerSerialCellRebaseFiniteLetterAt_transition}
+Fix only the colouring-independent annular formation, a pointwise-selected
+literal Cell, and the following boundary rebase.  Every positive prefix
+colour function and compatible positive literal Cell colouring extracts a
+supported finite letter whose source and target are its exact terminal-aware
+input and rebased output profiles.  In particular the finite carrier, colour
+tables, rooted interaction receipt, supported-letter predicate, and complete
+Cell--rebase transition consume no global Tait colouring, total-closure
+witness, or good inner word.  Specializing a former
+\texttt{ClosedWebAtGoodWord.Instance} factors through its
+colouring-independent \texttt{toFormation} field and gives the same
+transition.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebPointwiseSelectedCellRebaseFiniteTransition.pointwiseSelectedSourceLocalLayerSerialCellRebaseFiniteLetterAt_transition_of_instance}
+\end{proposition}
+
+\begin{proof}
+The finite Cell letter is computed from the selected formation, the positive
+prefix values, and the literal open Tait colouring of the Cell.  Compatibility
+on the terminal overlap proves physical Cell support.  The right-biased splice
+is positive on each of the four rebase roles, so the normalized rebase letter
+is supported; its input is definitionally the Cell letter's output.  Their
+pair therefore witnesses the finite transition between the displayed source
+and target.  The compatibility theorem applies this construction to
+\texttt{web.toFormation}; none of the three additional fields of
+\texttt{web} occurs in the resulting statement or proof.
+\end{proof}
+
 Thus the finite one-Cell transition has now been proved exact on both of the
 strong rolling roots from which the manuscript's cumulative profile is
-projected.  This does not yet prove the full theorem above: the realized
-letter relation and the realizable initial set must still be constructed
-without consulting a total colouring of the unprocessed suffix, and their
-soundness and completeness must be connected to the cumulative Count
-semantics.  Those are the remaining factorization obligations; global
-opened-annulus face uniqueness is no longer an obligation of either rolling
-transition.
+projected, and its finite letter semantics has been separated from the global
+closed-web colouring.  This does not yet prove the full theorem above.  The
+prefix-colour function in the transition API still has the ambient edge set
+as its domain, even though the proof reads only selected coordinates; the
+realizable initial image is separately prefix-local but still sits under the
+surrounding closed-web parameter.  The source collar or three-Cell word must
+therefore be made into a formation directly, the ambient-domain prefix API
+must be restricted or proved representation-invariant, and the resulting
+realized transitions and initials must be connected soundly and completely to
+the cumulative Count semantics.  Global opened-annulus face uniqueness is no
+longer an obligation of either rolling transition.
 
 The Lean transition uses a conservative three-pair refinement internally and
 then projects to exactly the two families named by the manuscript.  It proves
@@ -2730,14 +2763,18 @@ Together with Proposition~\ref{prop:annular-terminal-profile-realization}, this
 closes the narrower representation-level excess in the initial witness: its
 additional positive-colour coordinate is now prefix-local.  It does \emph{not}
 remove the global Tait colouring, total closure, or good word already contained
-in the surrounding \texttt{ClosedWebAtGoodWord.Instance}.  The remaining
-geometric statement is therefore narrower than whole-annulus coverage but
-still substantive: refactor that closed-web parameter to the collar or
-three-Cell word actually selected by the source, and identify its cumulative
-terminal projection with the Seed semantics consumed at the local target.  No
-further equivalence between vertex-component and edge-component semantics is
-owed.  The filtered finite accepting set has also not yet been emitted as an
-optimized executable certificate.
+in the surrounding \texttt{ClosedWebAtGoodWord.Instance}.  Proposition~
+\ref{prop:selected-cell-rebase-formation-local} completes the corresponding
+refactor for the finite carrier, state, supported letter, and one-step
+transition: those objects now require only the colouring-independent
+formation.  What remains is narrower than whole-annulus coverage but still
+substantive: construct that formation directly from the radius-$1$ collar or
+three-Cell word actually selected by the source, perform the same domain
+restriction for the transition's ambient prefix-colour coordinate, and
+identify the cumulative terminal projection with the Seed semantics consumed
+at the local target.  No further equivalence between vertex-component and
+edge-component semantics is owed.  The filtered finite accepting set has also
+not yet been emitted as an optimized executable certificate.
 
 Theorem~\ref{thm:exact-rooted-cell-factorization} checks the Cell--3 algebra
 under (U), but Propositions~\ref{prop:opened-global-face-uniqueness-refuted}

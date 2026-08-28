@@ -42,23 +42,23 @@ namespace Formation
 /-- Embed a represented selected transition edge into the stable
 twenty-one-slot coordinate system. -/
 noncomputable def pointwiseSelectedSourceLocalLayerSerialTrackedTransitionSlotAt
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
       corridor hinterior offset).card ≤ 6) :
     {edge // edge ∈
       pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-        web.toFormation corridor hinterior offset} → Fin 21 :=
+        formation corridor hinterior offset} → Fin 21 :=
   fun edge => Fin.castLE
     (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt_card_le_twentyOne
-      web corridor hinterior offset hcell)
+      formation corridor hinterior offset hcell)
     (carrierCoordinate
       (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-        web.toFormation corridor hinterior offset) edge)
+        formation corridor hinterior offset) edge)
 
 /-- Partial inverse of the stable-slot embedding.  Padding slots decode to
 `none`. -/
@@ -84,20 +84,20 @@ noncomputable def pointwiseSelectedSourceLocalLayerSerialTrackedTransitionEdgeAt
 /-- Decoding a represented edge at its own stable slot is exact. -/
 @[simp]
 theorem pointwiseSelectedSourceLocalLayerSerialTrackedTransitionEdgeAtSlot?_slot
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
       corridor hinterior offset).card ≤ 6)
     (edge : {edge // edge ∈
       pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-        web.toFormation corridor hinterior offset}) :
+        formation corridor hinterior offset}) :
     pointwiseSelectedSourceLocalLayerSerialTrackedTransitionEdgeAtSlot?
-        web.toFormation corridor hinterior offset
-        (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionSlotAt web
+        formation corridor hinterior offset
+        (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionSlotAt formation
           corridor hinterior offset hcell edge) = some edge := by
   simp [pointwiseSelectedSourceLocalLayerSerialTrackedTransitionEdgeAtSlot?,
     pointwiseSelectedSourceLocalLayerSerialTrackedTransitionSlotAt]
@@ -126,21 +126,21 @@ noncomputable def pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt
 regional activity or colour. -/
 @[simp]
 theorem pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt_slot
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
       corridor hinterior offset).card ≤ 6)
     (region : Finset G.edgeSet) (color : G.edgeSet → Color)
     (edge : {edge // edge ∈
       pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-        web.toFormation corridor hinterior offset}) :
-    pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt web.toFormation
+        formation corridor hinterior offset}) :
+    pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt formation
         corridor hinterior offset region color
-        (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionSlotAt web
+        (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionSlotAt formation
           corridor hinterior offset hcell edge) =
       if edge.1 ∈ region then some (color edge.1) else none := by
   simp [pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt]
@@ -165,51 +165,51 @@ noncomputable instance
 /-- The finite table test is sound and complete for compatibility on the
 actual terminal-aware prefix/Cell overlap. -/
 theorem pointwiseSelectedSourceLocalLayerSerialCarrierColorsCompatible_iff
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
       corridor hinterior offset).card ≤ 6)
     (prefixColor cellColor : G.edgeSet → Color) :
     PointwiseSelectedSourceLocalLayerSerialCarrierColorsCompatible
         (pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt
-          web.toFormation corridor hinterior offset
+          formation corridor hinterior offset
           (pointwiseSelectedSourceLocalLayerSerialTerminalInputRegionAt
-            web.toFormation corridor hinterior offset) prefixColor)
+            formation corridor hinterior offset) prefixColor)
         (pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt
-          web.toFormation corridor hinterior offset
-          (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+          formation corridor hinterior offset
+          (pointwiseSelectedSourceLocalLayerCellRegionAt formation
             corridor hinterior offset) cellColor) ↔
       PointwiseSelectedSourceLocalLayerSerialTerminalCellColorsCompatibleAt
-        web.toFormation corridor hinterior offset prefixColor cellColor := by
+        formation corridor hinterior offset prefixColor cellColor := by
   constructor
   · intro hfinite edge hprefix hcellMem
     let carrierEdge : {edge // edge ∈
         pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-          web.toFormation corridor hinterior offset} :=
+          formation corridor hinterior offset} :=
       ⟨edge, Finset.mem_union_left _ (Finset.mem_union_left _ hcellMem)⟩
     apply hfinite
-      (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionSlotAt web
+      (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionSlotAt formation
         corridor hinterior offset hcell carrierEdge)
       (prefixColor edge) (cellColor edge)
     · simpa [carrierEdge, hprefix] using
-        pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt_slot web
+        pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt_slot formation
           corridor hinterior offset hcell
           (pointwiseSelectedSourceLocalLayerSerialTerminalInputRegionAt
-            web.toFormation corridor hinterior offset) prefixColor carrierEdge
+            formation corridor hinterior offset) prefixColor carrierEdge
     · simpa [carrierEdge, hcellMem] using
-        pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt_slot web
+        pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt_slot formation
           corridor hinterior offset hcell
-          (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+          (pointwiseSelectedSourceLocalLayerCellRegionAt formation
             corridor hinterior offset) cellColor carrierEdge
   · intro hactual slot prefixColorValue cellColorValue hprefix hcellCode
     unfold pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt at hprefix hcellCode
     cases hdecode :
         pointwiseSelectedSourceLocalLayerSerialTrackedTransitionEdgeAtSlot?
-          web.toFormation corridor hinterior offset slot with
+          formation corridor hinterior offset slot with
     | none => simp [hdecode] at hprefix
     | some edge =>
         simp only [hdecode, Option.bind_some] at hprefix hcellCode

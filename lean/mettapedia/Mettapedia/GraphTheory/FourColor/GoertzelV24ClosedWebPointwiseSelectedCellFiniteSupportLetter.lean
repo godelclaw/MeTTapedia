@@ -126,139 +126,139 @@ theorem sourceLocalLayerSerialFaceFiniteConnected_liveSlot_iff_pointwiseSelected
 /-- Extract the complete finite receipt of an arbitrary compatible prefix and
 one positive pointwise-selected literal Cell. -/
 noncomputable def pointwiseSelectedSourceLocalLayerSerialCellFiniteSupportLetterAt
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
       corridor hinterior offset).card ≤ 6)
     (prefixColor : G.edgeSet → Color)
     (hprefix : ∀ step,
       prefixColor (pointwiseSelectedSourceLocalLayerLeftCrossingAt
-        web.toFormation corridor hinterior offset step) ≠ 0)
+        formation corridor hinterior offset step) ≠ 0)
     (cellColoring :
       PointwiseSelectedSourceLocalLayerCellLiteralOpenTaitColoringAt
-        web.toFormation corridor hinterior offset) :
+        formation corridor hinterior offset) :
     SourceLocalLayerSerialCellFiniteSupportLetter := by
   let cellColor := pointwiseSelectedSourceLocalLayerCellLiteralColorAt
-    web.toFormation corridor hinterior offset cellColoring
+    formation corridor hinterior offset cellColoring
   let output :=
     pointwiseSelectedSourceLocalLayerSerialSplicedPreRebaseOutputBoundedProfileAt
-      web.toFormation corridor hinterior offset prefixColor cellColoring
+      formation corridor hinterior offset prefixColor cellColoring
   exact {
     input :=
       pointwiseSelectedSourceLocalLayerSerialTerminalInputBoundedProfileAt
-        web.toFormation corridor hinterior offset prefixColor hprefix
+        formation corridor hinterior offset prefixColor hprefix
     output := output
     outputColor := output.profile.edgeColor
     trackedState :=
       pointwiseSelectedSourceLocalLayerSerialTrackedPrefixAttachmentStateForColorAt
-        web corridor hinterior offset prefixColor
+        formation corridor hinterior offset prefixColor
     trackedCode := pointwiseSelectedSourceLocalLayerSerialTrackedCodeOfFiniteColors
-      (pointwiseSelectedSourceLocalLayerSerialTrackedGeometryCodeAt web corridor
+      (pointwiseSelectedSourceLocalLayerSerialTrackedGeometryCodeAt formation corridor
         hinterior offset hcell)
-      (pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt web.toFormation
+      (pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt formation
         corridor hinterior offset
         (pointwiseSelectedSourceLocalLayerSerialTerminalInputRegionAt
-          web.toFormation corridor hinterior offset) prefixColor)
-      (pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt web.toFormation
+          formation corridor hinterior offset) prefixColor)
+      (pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt formation
         corridor hinterior offset
-        (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation corridor
+        (pointwiseSelectedSourceLocalLayerCellRegionAt formation corridor
           hinterior offset) cellColor)
     trackedOutputSlot := fun step =>
-      pointwiseSelectedSourceLocalLayerSerialTrackedTransitionSlotAt web
+      pointwiseSelectedSourceLocalLayerSerialTrackedTransitionSlotAt formation
         corridor hinterior offset hcell
         (pointwiseSelectedSourceLocalLayerSerialTrackedOutgoingPointAt
-          web.toFormation corridor hinterior offset step)
+          formation corridor hinterior offset step)
     faceState :=
       pointwiseSelectedSourceLocalLayerSerialFacePrefixAttachmentStateAt
-        web.toFormation corridor hinterior offset hcell
+        formation corridor hinterior offset hcell
     faceCode := pointwiseSelectedSourceLocalLayerSerialFaceTransitionCodeAt
-      web.toFormation corridor hinterior offset hcell
+      formation corridor hinterior offset hcell
     faceEdgeState :=
       pointwiseSelectedSourceLocalLayerSerialFaceFiniteEdgeStateAt
-        web.toFormation corridor hinterior offset hcell
+        formation corridor hinterior offset hcell
     faceOutputSlot := fun fragment =>
-      pointwiseSelectedSourceLocalLayerSerialFaceTransitionSlotAt web.toFormation
+      pointwiseSelectedSourceLocalLayerSerialFaceTransitionSlotAt formation
         corridor hinterior offset hcell
         (pointwiseSelectedSourceLocalLayerSerialFaceOutputFragmentTransitionDartAt
-          web.toFormation corridor hinterior offset
-          (boundaryRegionalFragmentAt web.annular.RS
+          formation corridor hinterior offset
+          (boundaryRegionalFragmentAt formation.annular.RS
             (indexedCrossingEdgeSet
-              (pointwiseSelectedSourceLocalLayerRightCrossingAt web.toFormation
+              (pointwiseSelectedSourceLocalLayerRightCrossingAt formation
                 corridor hinterior offset))
             (pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputRegionAt
-              web.toFormation corridor hinterior offset) fragment))
+              formation corridor hinterior offset) fragment))
     facePortSlot := fun port side =>
-      pointwiseSelectedSourceLocalLayerSerialFaceTransitionSlotAt web.toFormation
+      pointwiseSelectedSourceLocalLayerSerialFaceTransitionSlotAt formation
         corridor hinterior offset hcell
         (pointwiseSelectedSourceLocalLayerSerialFaceOutputPortTransitionDartAt
-          web.toFormation corridor hinterior offset port side)
+          formation corridor hinterior offset port side)
     faceRole :=
-      pointwiseSelectedSourceLocalLayerSerialOutputFaceRoleCodeAt web.toFormation
+      pointwiseSelectedSourceLocalLayerSerialOutputFaceRoleCodeAt formation
         corridor hinterior offset
   }
 
 /-- Every compatible arbitrary prefix and positive literal selected Cell
 satisfies the complete five-coordinate finite support relation. -/
 theorem pointwiseSelectedSourceLocalLayerSerialCellFiniteSupportLetterAt_supports
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
       corridor hinterior offset).card ≤ 6)
     (prefixColor : G.edgeSet → Color)
     (hprefix : ∀ step,
       prefixColor (pointwiseSelectedSourceLocalLayerLeftCrossingAt
-        web.toFormation corridor hinterior offset step) ≠ 0)
+        formation corridor hinterior offset step) ≠ 0)
     (cellColoring :
       PointwiseSelectedSourceLocalLayerCellLiteralOpenTaitColoringAt
-        web.toFormation corridor hinterior offset)
+        formation corridor hinterior offset)
     (hcompatible :
       PointwiseSelectedSourceLocalLayerSerialTerminalCellColorsCompatibleAt
-        web.toFormation corridor hinterior offset prefixColor
-        (pointwiseSelectedSourceLocalLayerCellLiteralColorAt web.toFormation
+        formation corridor hinterior offset prefixColor
+        (pointwiseSelectedSourceLocalLayerCellLiteralColorAt formation
           corridor hinterior offset cellColoring)) :
     SourceLocalLayerSerialCellFiniteSupports
-      (pointwiseSelectedSourceLocalLayerSerialCellFiniteSupportLetterAt web
+      (pointwiseSelectedSourceLocalLayerSerialCellFiniteSupportLetterAt formation
         corridor hinterior offset hcell prefixColor hprefix cellColoring) := by
   let cellColor := pointwiseSelectedSourceLocalLayerCellLiteralColorAt
-    web.toFormation corridor hinterior offset cellColoring
+    formation corridor hinterior offset cellColoring
   let spliced := pointwiseSelectedSourceLocalLayerSerialCellSplicedColorAt
-    web.toFormation corridor hinterior offset prefixColor cellColor
+    formation corridor hinterior offset prefixColor cellColor
   let input :=
     pointwiseSelectedSourceLocalLayerSerialTerminalInputBoundedProfileAt
-      web.toFormation corridor hinterior offset prefixColor hprefix
+      formation corridor hinterior offset prefixColor hprefix
   let output :=
     pointwiseSelectedSourceLocalLayerSerialSplicedPreRebaseOutputBoundedProfileAt
-      web.toFormation corridor hinterior offset prefixColor cellColoring
+      formation corridor hinterior offset prefixColor cellColoring
   let trackedState :=
     pointwiseSelectedSourceLocalLayerSerialTrackedPrefixAttachmentStateForColorAt
-      web corridor hinterior offset prefixColor
+      formation corridor hinterior offset prefixColor
   let trackedCode :=
     pointwiseSelectedSourceLocalLayerSerialTrackedCodeOfFiniteColors
-      (pointwiseSelectedSourceLocalLayerSerialTrackedGeometryCodeAt web corridor
+      (pointwiseSelectedSourceLocalLayerSerialTrackedGeometryCodeAt formation corridor
         hinterior offset hcell)
-      (pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt web.toFormation
+      (pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt formation
         corridor hinterior offset
         (pointwiseSelectedSourceLocalLayerSerialTerminalInputRegionAt
-          web.toFormation corridor hinterior offset) prefixColor)
-      (pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt web.toFormation
+          formation corridor hinterior offset) prefixColor)
+      (pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt formation
         corridor hinterior offset
-        (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation corridor
+        (pointwiseSelectedSourceLocalLayerCellRegionAt formation corridor
           hinterior offset) cellColor)
   let faceState :=
     pointwiseSelectedSourceLocalLayerSerialFacePrefixAttachmentStateAt
-      web.toFormation corridor hinterior offset hcell
+      formation corridor hinterior offset hcell
   let faceCode := pointwiseSelectedSourceLocalLayerSerialFaceTransitionCodeAt
-    web.toFormation corridor hinterior offset hcell
+    formation corridor hinterior offset hcell
   let edgeState :=
-    pointwiseSelectedSourceLocalLayerSerialFaceFiniteEdgeStateAt web.toFormation
+    pointwiseSelectedSourceLocalLayerSerialFaceFiniteEdgeStateAt formation
       corridor hinterior offset hcell
   unfold SourceLocalLayerSerialCellFiniteSupports
   dsimp only [pointwiseSelectedSourceLocalLayerSerialCellFiniteSupportLetterAt]
@@ -268,29 +268,29 @@ theorem pointwiseSelectedSourceLocalLayerSerialCellFiniteSupportLetterAt_support
   · intro pair left right
     let data :=
       pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputCutDataAt
-        web.toFormation corridor hinterior offset
+        formation corridor hinterior offset
     have hspliced : ∀ step, spliced (data.crossingEdge step) ≠ 0 := by
       intro step
       change spliced
-          (pointwiseSelectedSourceLocalLayerRightCrossingAt web.toFormation
+          (pointwiseSelectedSourceLocalLayerRightCrossingAt formation
             corridor hinterior offset step) ≠ 0
       dsimp only [spliced]
       rw [pointwiseSelectedSourceLocalLayerSerialCellSplicedColorAt_eq_cell_of_mem
-        web.toFormation corridor hinterior offset]
+        formation corridor hinterior offset]
       · exact
           pointwiseSelectedSourceLocalLayerCellLiteralColorAt_rightCrossing_ne_zero
-            web.toFormation corridor hinterior offset cellColoring step
+            formation corridor hinterior offset cellColoring step
       · exact pointwiseSelectedSourceLocalLayerCellRegionAt_rightCrossing
-          web.toFormation corridor hinterior offset step
+          formation corridor hinterior offset step
     let leftPoint :=
       pointwiseSelectedSourceLocalLayerSerialTrackedOutgoingPointAt
-        web.toFormation corridor hinterior offset left
+        formation corridor hinterior offset left
     let rightPoint :=
       pointwiseSelectedSourceLocalLayerSerialTrackedOutgoingPointAt
-        web.toFormation corridor hinterior offset right
+        formation corridor hinterior offset right
     have hfinite :=
       pointwiseSelectedSourceLocalLayerSerialPreRebaseTrackedReachableForCompatibleColors_iff_finiteClosure
-        web corridor hinterior offset hcell prefixColor cellColor hprefix
+        formation corridor hinterior offset hcell prefixColor cellColor hprefix
           hcompatible pair leftPoint rightPoint
     have hleftProfileColor :
         (output.profile.edgeColor left).toColor =
@@ -319,19 +319,19 @@ theorem pointwiseSelectedSourceLocalLayerSerialCellFiniteSupportLetterAt_support
           (BoundedCarrierLiveSlot trackedCode
             (carrierCoordinate
               (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-                web.toFormation corridor hinterior offset) leftPoint))
+                formation corridor hinterior offset) leftPoint))
           (BoundedCarrierLiveSlot trackedCode
             (carrierCoordinate
               (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-                web.toFormation corridor hinterior offset) rightPoint))
+                formation corridor hinterior offset) rightPoint))
         rw [sourceLocalLayerSerialTrackedFiniteConnected_liveSlot_iff]
         exact hfinite.1 hreachable
     · rintro ⟨hleftColor, hrightColor, hconnected⟩
       refine ⟨
         pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputCutDataAt_portsInRegion
-          web.toFormation corridor hinterior offset (.inl left),
+          formation corridor hinterior offset (.inl left),
         pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputCutDataAt_portsInRegion
-          web.toFormation corridor hinterior offset (.inl right), ?_, ?_, ?_⟩
+          formation corridor hinterior offset (.inl right), ?_, ?_, ?_⟩
       · rw [← hleftProfileColor]
         exact hleftColor
       · rw [← hrightProfileColor]
@@ -343,11 +343,11 @@ theorem pointwiseSelectedSourceLocalLayerSerialCellFiniteSupportLetterAt_support
           (BoundedCarrierLiveSlot trackedCode
             (carrierCoordinate
               (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-                web.toFormation corridor hinterior offset) leftPoint))
+                formation corridor hinterior offset) leftPoint))
           (BoundedCarrierLiveSlot trackedCode
             (carrierCoordinate
               (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-                web.toFormation corridor hinterior offset) rightPoint)) :=
+                formation corridor hinterior offset) rightPoint)) :=
           hconnected
         exact
           (sourceLocalLayerSerialTrackedFiniteConnected_liveSlot_iff _ _ _ _ _
@@ -355,36 +355,36 @@ theorem pointwiseSelectedSourceLocalLayerSerialCellFiniteSupportLetterAt_support
   · intro left right
     exact
       pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputBoundedProfileAt_faceContinues_iff_roleCode
-        web.toFormation corridor hinterior offset spliced
+        formation corridor hinterior offset spliced
           (fun step => by
             dsimp only [spliced]
             rw [pointwiseSelectedSourceLocalLayerSerialCellSplicedColorAt_eq_cell_of_mem
-              web.toFormation corridor hinterior offset]
+              formation corridor hinterior offset]
             · exact
                 pointwiseSelectedSourceLocalLayerCellLiteralColorAt_rightCrossing_ne_zero
-                  web.toFormation corridor hinterior offset cellColoring step
+                  formation corridor hinterior offset cellColoring step
             · exact pointwiseSelectedSourceLocalLayerCellRegionAt_rightCrossing
-                web.toFormation corridor hinterior offset step)
+                formation corridor hinterior offset step)
           left right
   · intro fragment port
-    let actualFragment := boundaryRegionalFragmentAt web.annular.RS
+    let actualFragment := boundaryRegionalFragmentAt formation.annular.RS
       (indexedCrossingEdgeSet
-        (pointwiseSelectedSourceLocalLayerRightCrossingAt web.toFormation
+        (pointwiseSelectedSourceLocalLayerRightCrossingAt formation
           corridor hinterior offset))
       (pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputRegionAt
-        web.toFormation corridor hinterior offset) fragment
+        formation corridor hinterior offset) fragment
     have hprofile :=
       pointwiseSelectedSourceLocalLayerSerialFaceOutputFragmentContainsPortFinite_iff_profile
-        web.toFormation corridor hinterior offset hcell spliced
+        formation corridor hinterior offset hcell spliced
         (fun step => by
           dsimp only [spliced]
           rw [pointwiseSelectedSourceLocalLayerSerialCellSplicedColorAt_eq_cell_of_mem
-            web.toFormation corridor hinterior offset]
+            formation corridor hinterior offset]
           · exact
               pointwiseSelectedSourceLocalLayerCellLiteralColorAt_rightCrossing_ne_zero
-                web.toFormation corridor hinterior offset cellColoring step
+                formation corridor hinterior offset cellColoring step
           · exact pointwiseSelectedSourceLocalLayerCellRegionAt_rightCrossing
-              web.toFormation corridor hinterior offset step)
+              formation corridor hinterior offset step)
         fragment port
     constructor
     · intro hcontains
@@ -394,15 +394,15 @@ theorem pointwiseSelectedSourceLocalLayerSerialCellFiniteSupportLetterAt_support
         (BoundedCarrierLiveSlot faceCode
           (carrierCoordinate
             (pointwiseSelectedSourceLocalLayerSerialFaceTransitionCarrierAt
-              web.toFormation corridor hinterior offset)
+              formation corridor hinterior offset)
             (pointwiseSelectedSourceLocalLayerSerialFaceOutputPortTransitionDartAt
-              web.toFormation corridor hinterior offset port side)))
+              formation corridor hinterior offset port side)))
         (BoundedCarrierLiveSlot faceCode
           (carrierCoordinate
             (pointwiseSelectedSourceLocalLayerSerialFaceTransitionCarrierAt
-              web.toFormation corridor hinterior offset)
+              formation corridor hinterior offset)
             (pointwiseSelectedSourceLocalLayerSerialFaceOutputFragmentTransitionDartAt
-              web.toFormation corridor hinterior offset actualFragment)))
+              formation corridor hinterior offset actualFragment)))
       rw [sourceLocalLayerSerialFaceFiniteConnected_liveSlot_iff_pointwiseSelected]
       simpa [faceState, faceCode, actualFragment] using hclosure
     · rintro ⟨side, hconnected⟩
@@ -413,38 +413,38 @@ theorem pointwiseSelectedSourceLocalLayerSerialCellFiniteSupportLetterAt_support
             (BoundedCarrierLiveSlot faceCode
               (carrierCoordinate
                 (pointwiseSelectedSourceLocalLayerSerialFaceTransitionCarrierAt
-                  web.toFormation corridor hinterior offset)
+                  formation corridor hinterior offset)
                 (pointwiseSelectedSourceLocalLayerSerialFaceOutputPortTransitionDartAt
-                  web.toFormation corridor hinterior offset port side)))
+                  formation corridor hinterior offset port side)))
             (BoundedCarrierLiveSlot faceCode
               (carrierCoordinate
                 (pointwiseSelectedSourceLocalLayerSerialFaceTransitionCarrierAt
-                  web.toFormation corridor hinterior offset)
+                  formation corridor hinterior offset)
                 (pointwiseSelectedSourceLocalLayerSerialFaceOutputFragmentTransitionDartAt
-                  web.toFormation corridor hinterior offset actualFragment))) :=
+                  formation corridor hinterior offset actualFragment))) :=
         hconnected
       have hclosure :=
         (sourceLocalLayerSerialFaceFiniteConnected_liveSlot_iff_pointwiseSelected
           _ _ _ _).1 hconnected'
       simpa [faceState, faceCode, actualFragment] using hclosure
   · intro fragment
-    let actualFragment := boundaryRegionalFragmentAt web.annular.RS
+    let actualFragment := boundaryRegionalFragmentAt formation.annular.RS
       (indexedCrossingEdgeSet
-        (pointwiseSelectedSourceLocalLayerRightCrossingAt web.toFormation
+        (pointwiseSelectedSourceLocalLayerRightCrossingAt formation
           corridor hinterior offset))
       (pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputRegionAt
-        web.toFormation corridor hinterior offset) fragment
+        formation corridor hinterior offset) fragment
     let actualOutput := carrierCoordinate
       (pointwiseSelectedSourceLocalLayerSerialFaceTransitionCarrierAt
-        web.toFormation corridor hinterior offset)
+        formation corridor hinterior offset)
       (pointwiseSelectedSourceLocalLayerSerialFaceOutputFragmentTransitionDartAt
-        web.toFormation corridor hinterior offset actualFragment)
+        formation corridor hinterior offset actualFragment)
     let predecessorSemantic :=
       pointwiseSelectedSourceLocalLayerSerialFaceFinitePredecessorSemanticAt
-        web.toFormation corridor hinterior offset hcell
+        formation corridor hinterior offset hcell
     let newEdgeSemantic :=
       pointwiseSelectedSourceLocalLayerSerialFaceFiniteNewEdgeSemanticAt
-        web.toFormation corridor hinterior offset hcell actualOutput
+        formation corridor hinterior offset hcell actualOutput
     refine ⟨actualOutput, rfl, predecessorSemantic, newEdgeSemantic, ?_⟩
     change SourceLocalLayerSerialFaceFiniteOutputCap faceState faceCode
         predecessorSemantic edgeState actualOutput newEdgeSemantic =
@@ -453,52 +453,52 @@ theorem pointwiseSelectedSourceLocalLayerSerialCellFiniteSupportLetterAt_support
         SourceLocalLayerSerialFaceFiniteOutputCap faceState faceCode
             predecessorSemantic edgeState actualOutput newEdgeSemantic =
           pointwiseSelectedSourceLocalLayerSerialFaceFiniteOutputCapAt
-            web.toFormation corridor hinterior offset hcell actualFragment := by
+            formation corridor hinterior offset hcell actualFragment := by
       rfl
     rw [hnamed]
     have hcap :=
       pointwiseSelectedSourceLocalLayerSerialFaceFiniteOutputCapAt_eq_fragmentCap
-        web.toFormation corridor hinterior offset hcell actualFragment
+        formation corridor hinterior offset hcell actualFragment
     rw [hcap]
     apply Fin.ext
     change min
-        (boundaryRegionalFragmentEdges web.annular.RS
+        (boundaryRegionalFragmentEdges formation.annular.RS
           (indexedCrossingEdgeSet
-            (pointwiseSelectedSourceLocalLayerRightCrossingAt web.toFormation
+            (pointwiseSelectedSourceLocalLayerRightCrossingAt formation
               corridor hinterior offset))
           (pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputRegionAt
-            web.toFormation corridor hinterior offset)
+            formation corridor hinterior offset)
           actualFragment).card 5 =
       (output.profile.faceLengthCap fragment).val
-    rw [show boundaryRegionalFragmentEdges web.annular.RS
+    rw [show boundaryRegionalFragmentEdges formation.annular.RS
         (indexedCrossingEdgeSet
-          (pointwiseSelectedSourceLocalLayerRightCrossingAt web.toFormation
+          (pointwiseSelectedSourceLocalLayerRightCrossingAt formation
             corridor hinterior offset))
         (pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputRegionAt
-          web.toFormation corridor hinterior offset)
+          formation corridor hinterior offset)
         actualFragment =
       (pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputCutDataAt
-        web.toFormation corridor hinterior offset).regionalFragmentEdges
+        formation corridor hinterior offset).regionalFragmentEdges
           fragment by
       rw [(pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputCutDataAt
-        web.toFormation corridor hinterior offset
+        formation corridor hinterior offset
         ).regionalFragmentEdges_eq_of_fragmentsOnFaceInRegion
           (pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputCutDataAt_fragmentsOnFaceInRegion
-            web.toFormation corridor hinterior offset)]
+            formation corridor hinterior offset)]
       rfl]
     exact (GraphCorridorCutData.regionalProfile_faceLengthCap_val
       (pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputCutDataAt
-        web.toFormation corridor hinterior offset)
+        formation corridor hinterior offset)
       spliced
       (fun step => by
         dsimp only [spliced]
         rw [pointwiseSelectedSourceLocalLayerSerialCellSplicedColorAt_eq_cell_of_mem
-          web.toFormation corridor hinterior offset]
+          formation corridor hinterior offset]
         · exact
             pointwiseSelectedSourceLocalLayerCellLiteralColorAt_rightCrossing_ne_zero
-              web.toFormation corridor hinterior offset cellColoring step
+              formation corridor hinterior offset cellColoring step
         · exact pointwiseSelectedSourceLocalLayerCellRegionAt_rightCrossing
-            web.toFormation corridor hinterior offset step)
+            formation corridor hinterior offset step)
       fragment).symm
 
 end

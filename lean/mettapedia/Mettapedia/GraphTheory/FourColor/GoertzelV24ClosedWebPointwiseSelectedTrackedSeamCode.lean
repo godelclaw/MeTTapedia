@@ -251,32 +251,32 @@ theorem pointwiseSelectedSourceLocalLayerSerialTerminalTrackedSeamAt_support_sub
 /-- The selected Cell graph and residual seam transported to one stable
 twenty-one-slot coordinate system. -/
 noncomputable def pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCodeForColorAt
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
+    {data : AnnularBoundaryData G 5} (web : Formation data)
+    {blockLength : Nat}
     (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
       web.annular.cellulation)
     (offset : Fin (blockLength - 3))
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web
       corridor hinterior offset).card ≤ 6)
     (color : G.edgeSet → Color) :
     BoundedCarrierGraphFamilyCode 21 5 (TrackedColorPair × Bool) :=
   boundedCarrierGraphFamilyCode
     (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-      web.toFormation corridor hinterior offset) 21 5
+      web corridor hinterior offset) 21 5
     (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt_card_le_twentyOne
       web corridor hinterior offset hcell)
     (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionPointAt
-      web.toFormation corridor hinterior offset)
+      web corridor hinterior offset)
     (fun factor =>
       if factor.2 then
         pointwiseSelectedSourceLocalLayerSerialTerminalTrackedSeamAt
-          web.toFormation corridor hinterior offset color
+          web corridor hinterior offset color
             (trackedColorPairColors factor.1).1
             (trackedColorPairColors factor.1).2
       else
         regionalTrackedEdgeGraph web.annular.RS
-          (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+          (pointwiseSelectedSourceLocalLayerCellRegionAt web
             corridor hinterior offset) color
           (trackedColorPairColors factor.1).1
           (trackedColorPairColors factor.1).2)
@@ -321,23 +321,23 @@ private theorem pointwiseSelectedSourceLocalLayerSerialTrackedSeam_support_subse
 
 /-- The common code preserves complete selected-Cell reachability. -/
 theorem pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCodeForColorAt_cell_reachable_iff
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
+    {data : AnnularBoundaryData G 5} (web : Formation data)
+    {blockLength : Nat}
     (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
       web.annular.cellulation)
     (offset : Fin (blockLength - 3))
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web
       corridor hinterior offset).card ≤ 6)
     (color : G.edgeSet → Color) (pair : TrackedColorPair)
     (first second : {edge // edge ∈
       pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-        web.toFormation corridor hinterior offset}) :
+        web corridor hinterior offset}) :
     ((pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCodeForColorAt
       web corridor hinterior offset hcell color).graph (pair, false)).Reachable
         (carrierCoordinate _ first) (carrierCoordinate _ second) ↔
       (regionalTrackedEdgeGraph web.annular.RS
-        (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation corridor
+        (pointwiseSelectedSourceLocalLayerCellRegionAt web corridor
           hinterior offset) color
         (trackedColorPairColors pair).1
         (trackedColorPairColors pair).2).Reachable first.1 second.1 := by
@@ -346,29 +346,29 @@ theorem pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCodeForColorAt_c
     (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt_card_le_twentyOne
       web corridor hinterior offset hcell)
     (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionPointAt
-      web.toFormation corridor hinterior offset) _ (pair, false)
+      web corridor hinterior offset) _ (pair, false)
     (pointwiseSelectedSourceLocalLayerCellTrackedGraph_support_subset_transitionCarrier
-      web.toFormation corridor hinterior offset color pair) first second
+      web corridor hinterior offset color pair) first second
 
 /-- The same common code preserves complete residual-seam reachability. -/
 theorem pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCodeForColorAt_seam_reachable_iff
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
+    {data : AnnularBoundaryData G 5} (web : Formation data)
+    {blockLength : Nat}
     (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
       web.annular.cellulation)
     (offset : Fin (blockLength - 3))
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web
       corridor hinterior offset).card ≤ 6)
     (color : G.edgeSet → Color) (pair : TrackedColorPair)
     (first second : {edge // edge ∈
       pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-        web.toFormation corridor hinterior offset}) :
+        web corridor hinterior offset}) :
     ((pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCodeForColorAt
       web corridor hinterior offset hcell color).graph (pair, true)).Reachable
         (carrierCoordinate _ first) (carrierCoordinate _ second) ↔
       (pointwiseSelectedSourceLocalLayerSerialTerminalTrackedSeamAt
-        web.toFormation corridor hinterior offset color
+        web corridor hinterior offset color
         (trackedColorPairColors pair).1
         (trackedColorPairColors pair).2).Reachable first.1 second.1 := by
   exact boundedCarrierGraphFamilyCode_reachable_iff_of_support_subset
@@ -376,9 +376,9 @@ theorem pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCodeForColorAt_s
     (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt_card_le_twentyOne
       web corridor hinterior offset hcell)
     (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionPointAt
-      web.toFormation corridor hinterior offset) _ (pair, true)
+      web corridor hinterior offset) _ (pair, true)
     (pointwiseSelectedSourceLocalLayerSerialTrackedSeam_support_subset_transitionCarrier
-      web.toFormation corridor hinterior offset color pair) first second
+      web corridor hinterior offset color pair) first second
 
 end Formation
 

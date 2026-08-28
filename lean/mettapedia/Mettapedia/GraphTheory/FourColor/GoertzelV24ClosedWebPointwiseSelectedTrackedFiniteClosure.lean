@@ -146,97 +146,97 @@ theorem pointwiseSelectedSourceLocalLayerSerialPreRebaseTrackedReachableForColor
 Cell colour function.  The local transition graph is reconstructed solely
 from the uncoloured carrier and the two finite colour tables. -/
 theorem pointwiseSelectedSourceLocalLayerSerialPreRebaseTrackedReachableForCompatibleColors_iff_finiteClosure
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
+    {data : AnnularBoundaryData G 5} (web : Formation data)
+    {blockLength : Nat}
     (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
       web.annular.cellulation)
     (offset : Fin (blockLength - 3))
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web
       corridor hinterior offset).card ≤ 6)
     (prefixColor cellColor : G.edgeSet → Color)
     (hprefix : ∀ step,
       prefixColor (pointwiseSelectedSourceLocalLayerLeftCrossingAt
-        web.toFormation corridor hinterior offset step) ≠ 0)
+        web corridor hinterior offset step) ≠ 0)
     (hcompatible :
       PointwiseSelectedSourceLocalLayerSerialTerminalCellColorsCompatibleAt
-        web.toFormation corridor hinterior offset prefixColor cellColor)
+        web corridor hinterior offset prefixColor cellColor)
     (pair : TrackedColorPair)
     (left right : {edge // edge ∈
       pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-        web.toFormation corridor hinterior offset}) :
+        web corridor hinterior offset}) :
     let spliced := pointwiseSelectedSourceLocalLayerSerialCellSplicedColorAt
-      web.toFormation corridor hinterior offset prefixColor cellColor
+      web corridor hinterior offset prefixColor cellColor
     let input :=
       pointwiseSelectedSourceLocalLayerSerialTerminalInputBoundedProfileAt
-        web.toFormation corridor hinterior offset prefixColor hprefix
+        web corridor hinterior offset prefixColor hprefix
     let state :=
       pointwiseSelectedSourceLocalLayerSerialTrackedPrefixAttachmentStateForColorAt
         web corridor hinterior offset prefixColor
     let code := pointwiseSelectedSourceLocalLayerSerialTrackedCodeOfFiniteColors
       (pointwiseSelectedSourceLocalLayerSerialTrackedGeometryCodeAt web corridor
         hinterior offset hcell)
-      (pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt web.toFormation
+      (pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt web
         corridor hinterior offset
         (pointwiseSelectedSourceLocalLayerSerialTerminalInputRegionAt
-          web.toFormation corridor hinterior offset) prefixColor)
-      (pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt web.toFormation
+          web corridor hinterior offset) prefixColor)
+      (pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt web
         corridor hinterior offset
-        (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation corridor
+        (pointwiseSelectedSourceLocalLayerCellRegionAt web corridor
           hinterior offset) cellColor)
     (regionalTrackedEdgeGraph web.annular.RS
       (pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputRegionAt
-        web.toFormation corridor hinterior offset) spliced
+        web corridor hinterior offset) spliced
         (trackedColorPairColors pair).1
           (trackedColorPairColors pair).2).Reachable left.1 right.1 ↔
       Relation.ReflTransGen
         (SourceLocalLayerSerialTrackedFiniteComponentStep state input code pair)
         (carrierCoordinate
           (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-            web.toFormation corridor hinterior offset) left)
+            web corridor hinterior offset) left)
         (carrierCoordinate
           (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-            web.toFormation corridor hinterior offset) right) := by
+            web corridor hinterior offset) right) := by
   dsimp only
   let carrier :=
     pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-      web.toFormation corridor hinterior offset
+      web corridor hinterior offset
   let coordinate := carrierCoordinate carrier
   let spliced := pointwiseSelectedSourceLocalLayerSerialCellSplicedColorAt
-    web.toFormation corridor hinterior offset prefixColor cellColor
+    web corridor hinterior offset prefixColor cellColor
   let input :=
     pointwiseSelectedSourceLocalLayerSerialTerminalInputBoundedProfileAt
-      web.toFormation corridor hinterior offset prefixColor hprefix
+      web corridor hinterior offset prefixColor hprefix
   let state :=
     pointwiseSelectedSourceLocalLayerSerialTrackedPrefixAttachmentStateForColorAt
       web corridor hinterior offset prefixColor
   let code := pointwiseSelectedSourceLocalLayerSerialTrackedCodeOfFiniteColors
     (pointwiseSelectedSourceLocalLayerSerialTrackedGeometryCodeAt web corridor
       hinterior offset hcell)
-    (pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt web.toFormation
+    (pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt web
       corridor hinterior offset
       (pointwiseSelectedSourceLocalLayerSerialTerminalInputRegionAt
-        web.toFormation corridor hinterior offset) prefixColor)
-    (pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt web.toFormation
+        web corridor hinterior offset) prefixColor)
+    (pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt web
       corridor hinterior offset
-      (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation corridor
+      (pointwiseSelectedSourceLocalLayerCellRegionAt web corridor
         hinterior offset) cellColor)
   rw [pointwiseSelectedSourceLocalLayerSerialPreRebaseTrackedReachableForColor_iff_transitionCarrierClosure
-    web.toFormation corridor hinterior offset spliced pair left right]
+    web corridor hinterior offset spliced pair left right]
   have hprefixGraph :
       regionalTrackedEdgeGraph web.annular.RS
           (pointwiseSelectedSourceLocalLayerSerialTerminalInputRegionAt
-            web.toFormation corridor hinterior offset) spliced
+            web corridor hinterior offset) spliced
           (trackedColorPairColors pair).1 (trackedColorPairColors pair).2 =
         regionalTrackedEdgeGraph web.annular.RS
           (pointwiseSelectedSourceLocalLayerSerialTerminalInputRegionAt
-            web.toFormation corridor hinterior offset) prefixColor
+            web corridor hinterior offset) prefixColor
           (trackedColorPairColors pair).1 (trackedColorPairColors pair).2 := by
     apply regionalTrackedEdgeGraph_eq_of_eq_on_region
     intro edge hedge
     exact
       pointwiseSelectedSourceLocalLayerSerialCellSplicedColorAt_eq_prefix_of_mem_terminalInput
-        web.toFormation corridor hinterior offset prefixColor cellColor
+        web corridor hinterior offset prefixColor cellColor
           hcompatible hedge
   have hslot (edge : {edge // edge ∈ carrier}) :
       sourceLocalLayerSerialTrackedFiniteStableSlot code (coordinate edge) =
@@ -247,14 +247,14 @@ theorem pointwiseSelectedSourceLocalLayerSerialPreRebaseTrackedReachableForCompa
       SelectedThreeFactorComponentStep
           (regionalTrackedEdgeGraph web.annular.RS
             (pointwiseSelectedSourceLocalLayerSerialTerminalInputRegionAt
-              web.toFormation corridor hinterior offset) spliced
+              web corridor hinterior offset) spliced
             (trackedColorPairColors pair).1 (trackedColorPairColors pair).2)
           (regionalTrackedEdgeGraph web.annular.RS
-            (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+            (pointwiseSelectedSourceLocalLayerCellRegionAt web
               corridor hinterior offset) spliced
             (trackedColorPairColors pair).1 (trackedColorPairColors pair).2)
           (pointwiseSelectedSourceLocalLayerSerialTerminalTrackedSeamAt
-            web.toFormation corridor hinterior offset spliced
+            web corridor hinterior offset spliced
             (trackedColorPairColors pair).1 (trackedColorPairColors pair).2)
           (fun edge => edge ∈ carrier) first second ↔
         SourceLocalLayerSerialTrackedFiniteComponentStep state input code pair

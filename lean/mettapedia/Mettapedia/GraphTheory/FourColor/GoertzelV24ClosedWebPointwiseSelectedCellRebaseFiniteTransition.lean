@@ -151,62 +151,62 @@ def PointwiseSelectedSourceLocalLayerSerialCellRebaseFiniteTransition
 /-- Canonical combined finite letter extracted from an arbitrary positive
 cumulative prefix and one positive literal selected Cell. -/
 noncomputable def pointwiseSelectedSourceLocalLayerSerialCellRebaseFiniteLetterAt
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
     (hnext : offset.val + 1 < blockLength - 3)
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
       corridor hinterior offset).card ≤ 6)
     (prefixColor : PointwiseSelectedPositiveColorFunction G.edgeSet)
     (cellColoring :
       PointwiseSelectedSourceLocalLayerCellLiteralOpenTaitColoringAt
-        web.toFormation corridor hinterior offset) :
+        formation corridor hinterior offset) :
     PointwiseSelectedSourceLocalLayerSerialCellRebaseFiniteLetter := by
   let cell :=
-    pointwiseSelectedSourceLocalLayerSerialCellFiniteSupportLetterAt web
+    pointwiseSelectedSourceLocalLayerSerialCellFiniteSupportLetterAt formation
       corridor hinterior offset hcell prefixColor.1 (fun step =>
         prefixColor.2
-          (pointwiseSelectedSourceLocalLayerLeftCrossingAt web.toFormation
+          (pointwiseSelectedSourceLocalLayerLeftCrossingAt formation
             corridor hinterior offset step)) cellColoring
   let cellColor := pointwiseSelectedSourceLocalLayerCellLiteralColorAt
-    web.toFormation corridor hinterior offset cellColoring
+    formation corridor hinterior offset cellColoring
   let spliced := pointwiseSelectedSourceLocalLayerSerialCellSplicedColorAt
-    web.toFormation corridor hinterior offset prefixColor.1 cellColor
+    formation corridor hinterior offset prefixColor.1 cellColor
   let hrole : ∀ role,
       spliced (pointwiseSelectedSourceLocalLayerBoundaryRebaseEdgeAt
-        web.toFormation corridor hinterior offset hnext role) ≠ 0 :=
+        formation corridor hinterior offset hnext role) ≠ 0 :=
     pointwiseSelectedSourceLocalLayerSerialCellSplicedColorAt_boundaryRebaseEdge_ne_zero
-      web.toFormation corridor hinterior offset hnext prefixColor.1
+      formation corridor hinterior offset hnext prefixColor.1
         prefixColor.2 cellColoring
   exact {
     cell := cell
     rebase :=
       pointwiseSelectedSourceLocalLayerBoundaryRebaseNormalizedSupportLetterForColorAt
-        web.toFormation corridor hinterior offset hnext cell.output spliced
+        formation corridor hinterior offset hnext cell.output spliced
           hrole }
 
 /-- The two extracted finite factors meet at literal record equality. -/
 @[simp]
 theorem pointwiseSelectedSourceLocalLayerSerialCellRebaseFiniteLetterAt_sharedEndpoint
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
     (hnext : offset.val + 1 < blockLength - 3)
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
       corridor hinterior offset).card ≤ 6)
     (prefixColor : PointwiseSelectedPositiveColorFunction G.edgeSet)
     (cellColoring :
       PointwiseSelectedSourceLocalLayerCellLiteralOpenTaitColoringAt
-        web.toFormation corridor hinterior offset) :
-    (pointwiseSelectedSourceLocalLayerSerialCellRebaseFiniteLetterAt web
+        formation corridor hinterior offset) :
+    (pointwiseSelectedSourceLocalLayerSerialCellRebaseFiniteLetterAt formation
       corridor hinterior offset hnext hcell prefixColor cellColoring).rebase.input =
-      (pointwiseSelectedSourceLocalLayerSerialCellRebaseFiniteLetterAt web
+      (pointwiseSelectedSourceLocalLayerSerialCellRebaseFiniteLetterAt formation
         corridor hinterior offset hnext hcell prefixColor cellColoring).cell.output := by
   simp only [pointwiseSelectedSourceLocalLayerSerialCellRebaseFiniteLetterAt,
     pointwiseSelectedSourceLocalLayerBoundaryRebaseNormalizedSupportLetterForColorAt]
@@ -214,44 +214,76 @@ theorem pointwiseSelectedSourceLocalLayerSerialCellRebaseFiniteLetterAt_sharedEn
 /-- Soundness of extraction: every compatible positive source witness produces
 a supported finite Cell--rebase letter. -/
 theorem pointwiseSelectedSourceLocalLayerSerialCellRebaseFiniteLetterAt_supports
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
     (hnext : offset.val + 1 < blockLength - 3)
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
       corridor hinterior offset).card ≤ 6)
     (prefixColor : PointwiseSelectedPositiveColorFunction G.edgeSet)
     (cellColoring :
       PointwiseSelectedSourceLocalLayerCellLiteralOpenTaitColoringAt
-        web.toFormation corridor hinterior offset)
+        formation corridor hinterior offset)
     (hcompatible :
       PointwiseSelectedSourceLocalLayerSerialTerminalCellColorsCompatibleAt
-        web.toFormation corridor hinterior offset prefixColor.1
-        (pointwiseSelectedSourceLocalLayerCellLiteralColorAt web.toFormation
+        formation corridor hinterior offset prefixColor.1
+        (pointwiseSelectedSourceLocalLayerCellLiteralColorAt formation
           corridor hinterior offset cellColoring)) :
     PointwiseSelectedSourceLocalLayerSerialCellRebaseFiniteSupports
-      (pointwiseSelectedSourceLocalLayerSerialCellRebaseFiniteLetterAt web
+      (pointwiseSelectedSourceLocalLayerSerialCellRebaseFiniteLetterAt formation
         corridor hinterior offset hnext hcell prefixColor cellColoring) := by
   refine ⟨?_, ?_, ?_⟩
   · exact
       pointwiseSelectedSourceLocalLayerSerialCellFiniteSupportLetterAt_supports
-        web corridor hinterior offset hcell prefixColor.1 (fun step =>
+        formation corridor hinterior offset hcell prefixColor.1 (fun step =>
           prefixColor.2
-            (pointwiseSelectedSourceLocalLayerLeftCrossingAt web.toFormation
+            (pointwiseSelectedSourceLocalLayerLeftCrossingAt formation
               corridor hinterior offset step)) cellColoring hcompatible
   · exact
       pointwiseSelectedSourceLocalLayerSerialCellRebaseFiniteLetterAt_sharedEndpoint
-        web corridor hinterior offset hnext hcell prefixColor cellColoring
+        formation corridor hinterior offset hnext hcell prefixColor cellColoring
   · exact
       pointwiseSelectedSourceLocalLayerBoundaryRebaseNormalizedSupportLetterForColorAt_supports
-        web.toFormation corridor hinterior offset hnext _ _ _
+        formation corridor hinterior offset hnext _ _ _
 
 /-- Every compatible positive source witness executes from its exact
 terminal-aware input profile to its exact selected successor profile. -/
 theorem pointwiseSelectedSourceLocalLayerSerialCellRebaseFiniteLetterAt_transition
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
+    (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
+      formation.annular.cellulation)
+    (offset : Fin (blockLength - 3))
+    (hnext : offset.val + 1 < blockLength - 3)
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
+      corridor hinterior offset).card ≤ 6)
+    (prefixColor : PointwiseSelectedPositiveColorFunction G.edgeSet)
+    (cellColoring :
+      PointwiseSelectedSourceLocalLayerCellLiteralOpenTaitColoringAt
+        formation corridor hinterior offset)
+    (hcompatible :
+      PointwiseSelectedSourceLocalLayerSerialTerminalCellColorsCompatibleAt
+        formation corridor hinterior offset prefixColor.1
+        (pointwiseSelectedSourceLocalLayerCellLiteralColorAt formation
+          corridor hinterior offset cellColoring)) :
+    let letter := pointwiseSelectedSourceLocalLayerSerialCellRebaseFiniteLetterAt
+      formation corridor hinterior offset hnext hcell prefixColor cellColoring
+    letter.Transition letter.cell.input letter.rebase.output := by
+  dsimp only
+  exact ⟨
+    pointwiseSelectedSourceLocalLayerSerialCellRebaseFiniteLetterAt_supports formation
+      corridor hinterior offset hnext hcell prefixColor cellColoring hcompatible,
+    rfl, rfl⟩
+
+/-- Compatibility with the former closed-web entry point.  A coloured closed
+web contributes only its colouring-independent formation to the finite
+Cell--rebase machine; its global Tait colouring, total closure, and good-word
+witness are not consumed. -/
+theorem pointwiseSelectedSourceLocalLayerSerialCellRebaseFiniteLetterAt_transition_of_instance
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
     (web : Instance data coloring) {blockLength : Nat}
     (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
@@ -271,13 +303,13 @@ theorem pointwiseSelectedSourceLocalLayerSerialCellRebaseFiniteLetterAt_transiti
         (pointwiseSelectedSourceLocalLayerCellLiteralColorAt web.toFormation
           corridor hinterior offset cellColoring)) :
     let letter := pointwiseSelectedSourceLocalLayerSerialCellRebaseFiniteLetterAt
-      web corridor hinterior offset hnext hcell prefixColor cellColoring
+      web.toFormation corridor hinterior offset hnext hcell prefixColor
+        cellColoring
     letter.Transition letter.cell.input letter.rebase.output := by
-  dsimp only
-  exact ⟨
-    pointwiseSelectedSourceLocalLayerSerialCellRebaseFiniteLetterAt_supports web
-      corridor hinterior offset hnext hcell prefixColor cellColoring hcompatible,
-    rfl, rfl⟩
+  exact
+    pointwiseSelectedSourceLocalLayerSerialCellRebaseFiniteLetterAt_transition
+      web.toFormation corridor hinterior offset hnext hcell prefixColor
+        cellColoring hcompatible
 
 end
 

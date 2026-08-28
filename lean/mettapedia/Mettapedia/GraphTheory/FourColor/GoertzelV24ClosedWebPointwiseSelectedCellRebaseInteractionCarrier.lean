@@ -43,40 +43,40 @@ open Instance.LocalLayerFormation
 /-- The four changed rebase edges together with every ambient edge adjacent
 to one of them. -/
 noncomputable def pointwiseSelectedSourceLocalLayerBoundaryRebaseTrackedCollarAt
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
     (hnext : offset.val + 1 < blockLength - 3) : Finset G.edgeSet :=
-  web.annular.RS.edgeAdjacencyClosedCarrier
-    (pointwiseSelectedSourceLocalLayerBoundaryRebaseSwitchAt web.toFormation
+  formation.annular.RS.edgeAdjacencyClosedCarrier
+    (pointwiseSelectedSourceLocalLayerBoundaryRebaseSwitchAt formation
       corridor hinterior offset hnext)
 
 /-- Four switch edges in a subcubic carrier have a closed edge neighborhood
 of size at most twenty-eight. -/
 theorem pointwiseSelectedSourceLocalLayerBoundaryRebaseTrackedCollarAt_card_le_twentyEight
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
     (hnext : offset.val + 1 < blockLength - 3) :
-    (pointwiseSelectedSourceLocalLayerBoundaryRebaseTrackedCollarAt web
+    (pointwiseSelectedSourceLocalLayerBoundaryRebaseTrackedCollarAt formation
       corridor hinterior offset hnext).card ≤ 28 := by
   calc
-    (pointwiseSelectedSourceLocalLayerBoundaryRebaseTrackedCollarAt web
+    (pointwiseSelectedSourceLocalLayerBoundaryRebaseTrackedCollarAt formation
       corridor hinterior offset hnext).card ≤
         7 * (pointwiseSelectedSourceLocalLayerBoundaryRebaseSwitchAt
-          web.toFormation corridor hinterior offset hnext).card := by
-      exact web.annular.RS
+          formation corridor hinterior offset hnext).card := by
+      exact formation.annular.RS
         |>.edgeAdjacencyClosedCarrier_card_le_seven_mul_of_incidentEdges_card_le_three
-          (pointwiseSelected_annularRS_incidentEdges_card_le_three web) _
+          (pointwiseSelected_annularRS_incidentEdges_card_le_three formation) _
     _ ≤ 7 * 4 := Nat.mul_le_mul_left 7
       (card_pointwiseSelectedSourceLocalLayerBoundaryRebaseSwitchAt_le_four
-        web.toFormation corridor hinterior offset hnext)
+        formation corridor hinterior offset hnext)
     _ = 28 := by norm_num
 
 /-- Every dart whose primal edge is one of the four changed rebase edges. -/
@@ -161,60 +161,60 @@ theorem pointwiseSelectedSourceLocalLayerBoundaryRebaseFaceCollarAt_card_le_twen
 /-- The complete tracked interaction carrier for one selected literal Cell
 and its following boundary rebase. -/
 noncomputable def pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
     (hnext : offset.val + 1 < blockLength - 3) : Finset G.edgeSet :=
   pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-      web.toFormation corridor hinterior offset ∪
-    pointwiseSelectedSourceLocalLayerBoundaryRebaseTrackedCollarAt web corridor
+      formation corridor hinterior offset ∪
+    pointwiseSelectedSourceLocalLayerBoundaryRebaseTrackedCollarAt formation corridor
       hinterior offset hnext
 
 /-- Every current tracked Cell coordinate is retained by the complete
 interaction carrier. -/
 theorem pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt_subset_interaction
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
     (hnext : offset.val + 1 < blockLength - 3) :
     pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-        web.toFormation corridor hinterior offset ⊆
+        formation corridor hinterior offset ⊆
       pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-        web corridor hinterior offset hnext := by
+        formation corridor hinterior offset hnext := by
   exact Finset.subset_union_left
 
 /-- The selected tracked interaction carrier fits the established
 forty-nine-slot ABI. -/
 theorem pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt_card_le_fortyNine
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
     (hnext : offset.val + 1 < blockLength - 3)
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
       corridor hinterior offset).card ≤ 6) :
     (pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-      web corridor hinterior offset hnext).card ≤ 49 := by
+      formation corridor hinterior offset hnext).card ≤ 49 := by
   calc
     (pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-      web corridor hinterior offset hnext).card ≤
+      formation corridor hinterior offset hnext).card ≤
         (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-          web.toFormation corridor hinterior offset).card +
-        (pointwiseSelectedSourceLocalLayerBoundaryRebaseTrackedCollarAt web
+          formation corridor hinterior offset).card +
+        (pointwiseSelectedSourceLocalLayerBoundaryRebaseTrackedCollarAt formation
           corridor hinterior offset hnext).card := Finset.card_union_le _ _
     _ ≤ 21 + 28 := Nat.add_le_add
       (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt_card_le_twentyOne
-        web corridor hinterior offset hcell)
+        formation corridor hinterior offset hcell)
       (pointwiseSelectedSourceLocalLayerBoundaryRebaseTrackedCollarAt_card_le_twentyEight
-        web corridor hinterior offset hnext)
+        formation corridor hinterior offset hnext)
     _ = 49 := by norm_num
 
 /-- The complete facial-dart interaction carrier for the same selected Cell

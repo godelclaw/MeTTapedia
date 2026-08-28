@@ -248,7 +248,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialPhysicalFaceLocalAdjacencyAt_eq
         web.toFormation corridor hinterior offset).card) :
     let state :=
       pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-        web corridor hinterior offset hnext hcell prefixColor hprefix
+        web.toFormation corridor hinterior offset hnext hcell prefixColor hprefix
     let localFactor :=
       (pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt
         web corridor hinterior offset hnext hcell prefixColor hprefix
@@ -288,7 +288,7 @@ theorem
         web.toFormation corridor hinterior offset)
     (hcount :
       (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-        web corridor hinterior offset hnext hcell prefixColor hprefix
+        web.toFormation corridor hinterior offset hnext hcell prefixColor hprefix
         ).faceCapSix.vertexCount =
       (pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt
         web corridor hinterior offset hnext hcell prefixColor hprefix
@@ -298,7 +298,7 @@ theorem
         web.toFormation corridor hinterior offset hnext).card) :
     sourceLocalLayerSerialRootedInteractionFaceLocalAdjacency
         (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-          web corridor hinterior offset hnext hcell prefixColor hprefix)
+          web.toFormation corridor hinterior offset hnext hcell prefixColor hprefix)
         (pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt
           web corridor hinterior offset hnext hcell prefixColor hprefix
             cellColoring).2.2
@@ -311,7 +311,7 @@ theorem
           web.toFormation corridor hinterior offset hnext right) := by
   classical
   let state :=
-    pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt web
+    pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt web.toFormation
       corridor hinterior offset hnext hcell prefixColor hprefix
   let factor :=
     (pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt web
@@ -331,7 +331,7 @@ theorem
     intro old
     exact
       pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt_faceCurrentDart
-        web corridor hinterior offset hnext hcell prefixColor hprefix old
+        web.toFormation corridor hinterior offset hnext hcell prefixColor hprefix old
   have hnewInjective : Function.Injective newVertex :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseUniformFaceDartAt_injective
       web.toFormation corridor hinterior offset hnext
@@ -384,7 +384,7 @@ theorem
         web.toFormation corridor hinterior offset hnext).card) :
     sourceLocalLayerSerialRootedInteractionFaceLocalPresence
         (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-          web corridor hinterior offset hnext hcell prefixColor hprefix)
+          web.toFormation corridor hinterior offset hnext hcell prefixColor hprefix)
         (pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt
           web corridor hinterior offset hnext hcell prefixColor hprefix
             cellColoring).2.2 slot = true ↔
@@ -395,7 +395,7 @@ theorem
           hinterior offset := by
   classical
   let state :=
-    pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt web
+    pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt web.toFormation
       corridor hinterior offset hnext hcell prefixColor hprefix
   let factor :=
     (pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt web
@@ -413,7 +413,7 @@ theorem
     intro old
     exact
       pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt_faceCurrentDart
-        web corridor hinterior offset hnext hcell prefixColor hprefix old
+        web.toFormation corridor hinterior offset hnext hcell prefixColor hprefix old
   have hnewInjective : Function.Injective newVertex :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseUniformFaceDartAt_injective
       web.toFormation corridor hinterior offset hnext
@@ -526,14 +526,14 @@ theorem
         web.toFormation corridor hinterior offset)
     (hcount :
       (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-        web corridor hinterior offset hnext hcell prefixColor hprefix
+        web.toFormation corridor hinterior offset hnext hcell prefixColor hprefix
         ).faceCapSix.vertexCount =
       (pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt
         web corridor hinterior offset hnext hcell prefixColor hprefix
           cellColoring).2.2.faceCode.vertexCount) :
     (sourceLocalLayerSerialRootedInteractionFacePreRebaseState
       (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-        web corridor hinterior offset hnext hcell prefixColor hprefix)
+        web.toFormation corridor hinterior offset hnext hcell prefixColor hprefix)
       (pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt
         web corridor hinterior offset hnext hcell prefixColor hprefix
           cellColoring).2.2
@@ -542,7 +542,7 @@ theorem
       web.toFormation corridor hinterior offset hnext hcell).code () := by
   classical
   let state :=
-    pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt web
+    pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt web.toFormation
       corridor hinterior offset hnext hcell prefixColor hprefix
   let factor :=
     (pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt web
@@ -632,7 +632,7 @@ theorem
         web.toFormation corridor hinterior offset) :
     let state :=
       pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-        web corridor hinterior offset hnext hcell prefixColor hprefix
+        web.toFormation corridor hinterior offset hnext hcell prefixColor hprefix
     let factor :=
       (pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt
         web corridor hinterior offset hnext hcell prefixColor hprefix
@@ -643,7 +643,7 @@ theorem
           web.toFormation corridor hinterior offset hnext hcell) := by
   classical
   let state :=
-    pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt web
+    pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt web.toFormation
       corridor hinterior offset hnext hcell prefixColor hprefix
   let factor :=
     (pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt web

@@ -79,7 +79,7 @@ noncomputable def
           pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
             web.toFormation corridor hinterior offset then
         some (Sum.inl
-          (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionSlotAt web
+          (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionSlotAt web.toFormation
             corridor hinterior offset hcell ⟨targetEdge.1, hcurrent⟩))
       else none
 
@@ -105,7 +105,7 @@ theorem
           (sourceLocalLayerNextOffset offset hnext)}) :
     pointwiseSelectedSourceLocalLayerSerialCellRebaseCarrierSourceAt web
         corridor hinterior offset hnext hcell
-        (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionSlotAt web
+        (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionSlotAt web.toFormation
           corridor hinterior (sourceLocalLayerNextOffset offset hnext)
             hcellNext targetEdge) =
       if hrole : exists role : SourceLocalLayerBoundaryRebaseRole,
@@ -116,7 +116,7 @@ theorem
           pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
             web.toFormation corridor hinterior offset then
         some (Sum.inl
-          (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionSlotAt web
+          (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionSlotAt web.toFormation
             corridor hinterior offset hcell ⟨targetEdge.1, hcurrent⟩))
       else none := by
   unfold pointwiseSelectedSourceLocalLayerSerialCellRebaseCarrierSourceAt
@@ -296,7 +296,7 @@ theorem
                 (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
                   corridor hinterior offset) cellColor)
               (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionSlotAt
-                web corridor hinterior offset hcell
+                web.toFormation corridor hinterior offset hcell
                   ⟨targetEdge.1, hcurrent⟩) =
             if targetEdge.1 ∈
                 pointwiseSelectedSourceLocalLayerSerialTerminalInputRegionAt

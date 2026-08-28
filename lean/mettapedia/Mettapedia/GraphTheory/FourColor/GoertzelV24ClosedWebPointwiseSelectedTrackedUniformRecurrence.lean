@@ -98,11 +98,11 @@ noncomputable def pointwiseSelectedSourceLocalLayerSerialCellRebaseUniformTracke
     (offset : Fin (blockLength - 3))
     (hnext : offset.val + 1 < blockLength - 3) :
     Fin (pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-      web corridor hinterior offset hnext).card → G.edgeSet :=
+      web.toFormation corridor hinterior offset hnext).card → G.edgeSet :=
   fun slot ↦
     ((carrierCoordinate
       (pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-        web corridor hinterior offset hnext)).symm slot).1
+        web.toFormation corridor hinterior offset hnext)).symm slot).1
 
 theorem pointwiseSelectedSourceLocalLayerSerialCellRebaseUniformTrackedEdgeAt_injective
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
@@ -118,7 +118,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialCellRebaseUniformTrackedEdgeAt_in
   intro left right heq
   apply (carrierCoordinate
     (pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-      web corridor hinterior offset hnext)).symm.injective
+      web.toFormation corridor hinterior offset hnext)).symm.injective
   exact Subtype.ext heq
 
 theorem pointwiseSelectedSourceLocalLayerBoundaryRebaseSwitch_subset_uniformTrackedCarrier
@@ -132,7 +132,7 @@ theorem pointwiseSelectedSourceLocalLayerBoundaryRebaseSwitch_subset_uniformTrac
     pointwiseSelectedSourceLocalLayerBoundaryRebaseSwitchAt web.toFormation
         corridor hinterior offset hnext ⊆
       pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-        web corridor hinterior offset hnext := by
+        web.toFormation corridor hinterior offset hnext := by
   intro edge hedge
   apply Finset.mem_union_right
   apply (web.annular.RS.mem_edgeAdjacencyClosedCarrier_iff _ edge).2
@@ -149,7 +149,7 @@ noncomputable def pointwiseSelectedSourceLocalLayerSerialCellRebaseUniformSwitch
     (offset : Fin (blockLength - 3))
     (hnext : offset.val + 1 < blockLength - 3) :
     Fin (pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-      web corridor hinterior offset hnext).card → Bool :=
+      web.toFormation corridor hinterior offset hnext).card → Bool :=
   fun slot ↦ decide
     (pointwiseSelectedSourceLocalLayerSerialCellRebaseUniformTrackedEdgeAt web
       corridor hinterior offset hnext slot ∈
@@ -174,7 +174,7 @@ theorem pointwiseSelectedRemovedBy_uniformSwitchMask_iff
         web.toFormation corridor hinterior offset hnext := by
   let carrier :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-      web corridor hinterior offset hnext
+      web.toFormation corridor hinterior offset hnext
   let edgeAt :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseUniformTrackedEdgeAt web
       corridor hinterior offset hnext
@@ -322,7 +322,7 @@ theorem pointwiseSelectedLocalTrackedGraphForColorAt_support_subset_collar
     (color : G.edgeSet → Color) (pair : TrackedColorPair) :
     (pointwiseSelectedLocalTrackedGraphForColorAt web corridor hinterior offset
       hnext color pair).support ⊆
-      pointwiseSelectedSourceLocalLayerBoundaryRebaseTrackedCollarAt web corridor
+      pointwiseSelectedSourceLocalLayerBoundaryRebaseTrackedCollarAt web.toFormation corridor
         hinterior offset hnext := by
   intro edge hedge
   rcases (SimpleGraph.mem_support _).1 hedge with ⟨other, hadj⟩
@@ -383,13 +383,13 @@ theorem pointwiseSelectedLocalTrackedGraphForColorAt_support_subset_interaction
   intro edge hedge
   have hcarrier : edge ∈
       pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-        web corridor hinterior offset hnext :=
+        web.toFormation corridor hinterior offset hnext :=
     Finset.mem_union_right _
       (pointwiseSelectedLocalTrackedGraphForColorAt_support_subset_collar web
         corridor hinterior offset hnext color pair hedge)
   refine ⟨carrierCoordinate
     (pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-      web corridor hinterior offset hnext) ⟨edge, hcarrier⟩, ?_⟩
+      web.toFormation corridor hinterior offset hnext) ⟨edge, hcarrier⟩, ?_⟩
   simp [pointwiseSelectedSourceLocalLayerSerialCellRebaseUniformTrackedEdgeAt]
 
 /-! ## Executable recurrence -/
@@ -408,7 +408,7 @@ noncomputable def pointwiseSelectedSourceLocalLayerSerialCellRebaseUniformTracke
     BoundedInterfaceExteriorCode
       (Fin
         (pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-          web corridor hinterior offset hnext).card) :=
+          web.toFormation corridor hinterior offset hnext).card) :=
   let edgeAt :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseUniformTrackedEdgeAt web
       corridor hinterior offset hnext
@@ -460,10 +460,10 @@ theorem pointwiseSelectedSourceLocalLayerSerialCellRebaseUniformTrackedSuccessor
   let localAdjacency :
       Fin
           (pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-            web corridor hinterior offset hnext).card →
+            web.toFormation corridor hinterior offset hnext).card →
         Fin
           (pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-            web corridor hinterior offset hnext).card → Bool :=
+            web.toFormation corridor hinterior offset hnext).card → Bool :=
     fun left right ↦ by
       classical
       exact decide (localGraph.Adj (edgeAt left) (edgeAt right))

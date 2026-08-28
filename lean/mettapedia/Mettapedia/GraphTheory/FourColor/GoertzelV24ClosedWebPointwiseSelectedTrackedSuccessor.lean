@@ -85,7 +85,7 @@ noncomputable def
       web.toFormation corridor hinterior offset
   boundedInterfaceExteriorFamilyCode target 21
     (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt_card_le_twentyOne
-      web corridor hinterior offset hcell)
+      web.toFormation corridor hinterior offset hcell)
     (fun pair => regionalTrackedEdgeGraph web.annular.RS
       (pointwiseSelectedSourceLocalLayerSerialTerminalInputRegionAt
         web.toFormation corridor hinterior offset)
@@ -110,7 +110,7 @@ theorem
       color (pointwiseSelectedSourceLocalLayerLeftCrossingAt web.toFormation
         corridor hinterior offset step) ≠ 0) :
     (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-      web corridor hinterior offset hnext hcell color hcrossing
+      web.toFormation corridor hinterior offset hnext hcell color hcrossing
       ).trackedExterior =
       pointwiseSelectedSourceLocalLayerSerialTrackedDeletionStablePrefixStateForColorAt
         web corridor hinterior offset hcell color := by
@@ -201,7 +201,7 @@ theorem
             corridor hinterior offset cellColoring)) :
     let state :=
       pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-        web corridor hinterior offset hnext hcell prefixColor hprefix
+        web.toFormation corridor hinterior offset hnext hcell prefixColor hprefix
     let localFactor :=
       (pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt
         web corridor hinterior offset hnext hcell prefixColor hprefix

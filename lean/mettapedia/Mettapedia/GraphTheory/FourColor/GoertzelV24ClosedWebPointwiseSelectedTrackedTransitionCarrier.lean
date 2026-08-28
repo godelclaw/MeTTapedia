@@ -50,10 +50,9 @@ namespace Formation
 /-- The graph-backed annular carrier is uniformly subcubic: boundary stubs
 have degree one and every other vertex has degree three. -/
 theorem pointwiseSelected_annularRS_incidentEdges_card_le_three
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) (vertex : V) :
-    (web.annular.RS.incidentEdges vertex).card ≤ 3 := by
-  have hincident : web.annular.RS.incidentEdges vertex =
+    {data : AnnularBoundaryData G 5} (formation : Formation data) (vertex : V) :
+    (formation.annular.RS.incidentEdges vertex).card ≤ 3 := by
+  have hincident : formation.annular.RS.incidentEdges vertex =
       incidentEdgeFinset G vertex := by
     ext edge
     rw [mem_toRotationSystem_incidentEdges_iff]
@@ -61,13 +60,13 @@ theorem pointwiseSelected_annularRS_incidentEdges_card_le_three
   rw [hincident]
   by_cases hinner : ∃ inner : Fin 5, vertex = data.innerStub inner
   · rcases hinner with ⟨inner, rfl⟩
-    rw [web.boundary_wellFormed.inner_stub_degree_one]
+    rw [formation.boundary_wellFormed.inner_stub_degree_one]
     omega
   · by_cases houter : ∃ outer : Fin 5, vertex = data.outerStub outer
     · rcases houter with ⟨outer, rfl⟩
-      rw [web.boundary_wellFormed.outer_stub_degree_one]
+      rw [formation.boundary_wellFormed.outer_stub_degree_one]
       omega
-    · rw [web.boundary_wellFormed.cubic_elsewhere vertex
+    · rw [formation.boundary_wellFormed.cubic_elsewhere vertex
           (fun inner heq => hinner ⟨inner, heq⟩)
           (fun outer heq => houter ⟨outer, heq⟩)]
 
@@ -88,26 +87,26 @@ noncomputable def pointwiseSelectedSourceLocalLayerSerialOutgoingEdgeCarrierAt
 /-- Two selected outgoing crossings have a closed subcubic neighborhood of
 cardinality at most fourteen. -/
 theorem pointwiseSelectedSourceLocalLayerSerialOutgoingEdgeCarrierAt_card_le_fourteen
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3)) :
-    (pointwiseSelectedSourceLocalLayerSerialOutgoingEdgeCarrierAt web.toFormation
+    (pointwiseSelectedSourceLocalLayerSerialOutgoingEdgeCarrierAt formation
       corridor hinterior offset).card ≤ 14 := by
   calc
     (pointwiseSelectedSourceLocalLayerSerialOutgoingEdgeCarrierAt
-        web.toFormation corridor hinterior offset).card ≤
+        formation corridor hinterior offset).card ≤
         7 * (indexedCrossingEdgeSet
-          (pointwiseSelectedSourceLocalLayerRightCrossingAt web.toFormation
+          (pointwiseSelectedSourceLocalLayerRightCrossingAt formation
             corridor hinterior offset)).card := by
-      exact web.annular.RS
+      exact formation.annular.RS
         |>.edgeAdjacencyClosedCarrier_card_le_seven_mul_of_incidentEdges_card_le_three
-          (pointwiseSelected_annularRS_incidentEdges_card_le_three web) _
+          (pointwiseSelected_annularRS_incidentEdges_card_le_three formation) _
     _ ≤ 7 * 2 := Nat.mul_le_mul_left 7
       (card_indexedCrossingEdgeSet_le
-        (pointwiseSelectedSourceLocalLayerRightCrossingAt web.toFormation
+        (pointwiseSelectedSourceLocalLayerRightCrossingAt formation
           corridor hinterior offset))
     _ = 14 := by norm_num
 
@@ -145,43 +144,43 @@ noncomputable def pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrie
 
 /-- The common selected transition carrier fits the stable twenty-one slots. -/
 theorem pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt_card_le_twentyOne
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
       corridor hinterior offset).card ≤ 6) :
     (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-      web.toFormation corridor hinterior offset).card ≤ 21 := by
+      formation corridor hinterior offset).card ≤ 21 := by
   have hseam :=
     pointwiseSelectedSourceLocalLayerSerialOutgoingEdgeCarrierAt_card_le_fourteen
-      web corridor hinterior offset
+      formation corridor hinterior offset
   have hunion := Finset.card_union_le
-    (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation corridor
+    (pointwiseSelectedSourceLocalLayerCellRegionAt formation corridor
       hinterior offset)
     (pointwiseSelectedSourceLocalLayerSerialOutgoingEdgeCarrierAt
-      web.toFormation corridor hinterior offset)
+      formation corridor hinterior offset)
   calc
     (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-        web.toFormation corridor hinterior offset).card ≤
-        (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation corridor
+        formation corridor hinterior offset).card ≤
+        (pointwiseSelectedSourceLocalLayerCellRegionAt formation corridor
             hinterior offset ∪
           pointwiseSelectedSourceLocalLayerSerialOutgoingEdgeCarrierAt
-            web.toFormation corridor hinterior offset).card + 1 := by
+            formation corridor hinterior offset).card + 1 := by
       unfold pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
       simpa using Finset.card_union_le
-        (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation corridor
+        (pointwiseSelectedSourceLocalLayerCellRegionAt formation corridor
             hinterior offset ∪
           pointwiseSelectedSourceLocalLayerSerialOutgoingEdgeCarrierAt
-            web.toFormation corridor hinterior offset)
-        {pointwiseSelectedSourceLocalLayerSharedRungAt web.toFormation corridor
+            formation corridor hinterior offset)
+        {pointwiseSelectedSourceLocalLayerSharedRungAt formation corridor
           hinterior offset}
-    _ ≤ (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation corridor
+    _ ≤ (pointwiseSelectedSourceLocalLayerCellRegionAt formation corridor
           hinterior offset).card +
         (pointwiseSelectedSourceLocalLayerSerialOutgoingEdgeCarrierAt
-          web.toFormation corridor hinterior offset).card + 1 :=
+          formation corridor hinterior offset).card + 1 :=
       Nat.add_le_add_right hunion 1
     _ ≤ 21 := by omega
 
@@ -207,63 +206,63 @@ noncomputable def pointwiseSelectedSourceLocalLayerSerialTrackedTransitionPointA
 
 /-- Prefix-independent uncoloured geometry on the common selected carrier. -/
 noncomputable def pointwiseSelectedSourceLocalLayerSerialTrackedGeometryCodeAt
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
       corridor hinterior offset).card ≤ 6) :
     BoundedCarrierGraphFamilyCode 21 5 Unit :=
   boundedCarrierGraphFamilyCode
     (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-      web.toFormation corridor hinterior offset) 21 5
+      formation corridor hinterior offset) 21 5
     (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt_card_le_twentyOne
-      web corridor hinterior offset hcell)
+      formation corridor hinterior offset hcell)
     (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionPointAt
-      web.toFormation corridor hinterior offset)
-    (fun _ => web.annular.RS.edgeAdjacencyGraph)
+      formation corridor hinterior offset)
+    (fun _ => formation.annular.RS.edgeAdjacencyGraph)
 
 /-- The selected geometry code remembers the exact live carrier cardinality. -/
 theorem pointwiseSelectedSourceLocalLayerSerialTrackedGeometryCodeAt_vertexCount_eq
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
       corridor hinterior offset).card ≤ 6) :
-    (pointwiseSelectedSourceLocalLayerSerialTrackedGeometryCodeAt web corridor
+    (pointwiseSelectedSourceLocalLayerSerialTrackedGeometryCodeAt formation corridor
       hinterior offset hcell).vertexCount.val =
       (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-        web.toFormation corridor hinterior offset).card := by
+        formation corridor hinterior offset).card := by
   rfl
 
 /-- The uncoloured code preserves literal ambient edge adjacency exactly. -/
 theorem pointwiseSelectedSourceLocalLayerSerialTrackedGeometryCodeAt_adj_iff
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
       corridor hinterior offset).card ≤ 6)
     (first second : {edge // edge ∈
       pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-        web.toFormation corridor hinterior offset}) :
-    ((pointwiseSelectedSourceLocalLayerSerialTrackedGeometryCodeAt web corridor
+        formation corridor hinterior offset}) :
+    ((pointwiseSelectedSourceLocalLayerSerialTrackedGeometryCodeAt formation corridor
       hinterior offset hcell).graph ()).Adj
         (carrierCoordinate _ first) (carrierCoordinate _ second) ↔
-      web.annular.RS.edgeAdjacencyGraph.Adj first.1 second.1 := by
+      formation.annular.RS.edgeAdjacencyGraph.Adj first.1 second.1 := by
   exact boundedCarrierGraphFamilyCode_adj_iff _ 21 5
     (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt_card_le_twentyOne
-      web corridor hinterior offset hcell)
+      formation corridor hinterior offset hcell)
     (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionPointAt
-      web.toFormation corridor hinterior offset)
-    (fun _ => web.annular.RS.edgeAdjacencyGraph) () first second
+      formation corridor hinterior offset)
+    (fun _ => formation.annular.RS.edgeAdjacencyGraph) () first second
 
 end Formation
 

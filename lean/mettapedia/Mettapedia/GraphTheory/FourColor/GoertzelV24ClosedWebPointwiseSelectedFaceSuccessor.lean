@@ -321,7 +321,7 @@ theorem
         web.toFormation corridor hinterior offset) :
     let state :=
       pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-        web corridor hinterior offset hnext hcell prefixColor hprefix
+        web.toFormation corridor hinterior offset hnext hcell prefixColor hprefix
     let localFactor :=
       (pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt
         web corridor hinterior offset hnext hcell prefixColor hprefix

@@ -701,7 +701,7 @@ theorem
     projection.trackedState
         (trackedRolling.rebase.targetState preRebase hpreCount).code =
       pointwiseSelectedSourceLocalLayerSerialTrackedPrefixAttachmentStateForColorAt
-        web corridor hinterior (sourceLocalLayerNextOffset offset hnext)
+        web.toFormation corridor hinterior (sourceLocalLayerNextOffset offset hnext)
           splice := by
   classical
   dsimp only

@@ -99,7 +99,7 @@ theorem
     (carrierCoordinate target).symm targetSlot
   let interaction :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-      web corridor hinterior offset hnext
+      web.toFormation corridor hinterior offset hnext
   have hnotInteraction : targetEdge.1 ∉ interaction := by
     simp only
       [pointwiseSelectedSourceLocalLayerSerialCellRebaseUniformTrackedTargetSourceAt,
@@ -125,7 +125,7 @@ theorem
         web corridor hinterior offset hnext hswitch
   · apply
       pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt_subset_interaction
-        web corridor hinterior offset hnext
+        web.toFormation corridor hinterior offset hnext
     exact Finset.mem_union_left _ (Finset.mem_union_left _ hcurrent)
 
 /-- The graph-free partial contraction is the canonical exterior code on the

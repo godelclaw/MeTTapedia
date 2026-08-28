@@ -85,10 +85,10 @@ noncomputable def pointwiseSelectedSourceLocalLayerSerialTrackedLocalAdjacencyAt
       corridor hinterior offset).card <= 6)
     (color : G.edgeSet -> Color) (pair : TrackedColorPair) :
     let code := pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCodeForColorAt
-      web corridor hinterior offset hcell color
+      web.toFormation corridor hinterior offset hcell color
     Fin code.vertexCount.val -> Fin code.vertexCount.val -> Bool :=
   let code := pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCodeForColorAt
-    web corridor hinterior offset hcell color
+    web.toFormation corridor hinterior offset hcell color
   fun left right => by
     classical
     exact decide (((code.graph (pair, false)) ⊔
@@ -181,7 +181,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialTrackedLocalAdjacencyAt_exact
     pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
       web.toFormation corridor hinterior offset
   let localCode :=
-    pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCodeForColorAt web
+    pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCodeForColorAt web.toFormation
       corridor hinterior offset hcell color
   let first : {edge // edge ∈ carrier} :=
     (carrierCoordinate carrier).symm left
@@ -196,7 +196,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialTrackedLocalAdjacencyAt_exact
             (trackedColorPairColors pair).2).Adj first.1 second.1 := by
     have h := boundedCarrierGraphFamilyCode_adj_iff carrier 21 5
       (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt_card_le_twentyOne
-        web corridor hinterior offset hcell)
+        web.toFormation corridor hinterior offset hcell)
       (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionPointAt
         web.toFormation corridor hinterior offset)
       (fun factor : TrackedColorPair × Bool => if factor.2 then
@@ -220,7 +220,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialTrackedLocalAdjacencyAt_exact
             (trackedColorPairColors pair).2).Adj first.1 second.1 := by
     have h := boundedCarrierGraphFamilyCode_adj_iff carrier 21 5
       (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt_card_le_twentyOne
-        web corridor hinterior offset hcell)
+        web.toFormation corridor hinterior offset hcell)
       (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionPointAt
         web.toFormation corridor hinterior offset)
       (fun factor : TrackedColorPair × Bool => if factor.2 then
@@ -308,7 +308,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialPhysicalTrackedLocalAdjacencyAt_e
         web.toFormation corridor hinterior offset)
     (hcount :
       (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-        web corridor hinterior offset hnext hcell prefixColor hprefix
+        web.toFormation corridor hinterior offset hnext hcell prefixColor hprefix
         ).trackedExterior.vertexCount =
       (pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt
         web corridor hinterior offset hnext hcell prefixColor hprefix
@@ -316,7 +316,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialPhysicalTrackedLocalAdjacencyAt_e
     (pair : TrackedColorPair) :
     sourceLocalLayerSerialRootedTrackedLocalAdjacency
         (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-          web corridor hinterior offset hnext hcell prefixColor hprefix
+          web.toFormation corridor hinterior offset hnext hcell prefixColor hprefix
           ).toSourceLocalLayerSerialRootedCumulativeState
         (pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt
           web corridor hinterior offset hnext hcell prefixColor hprefix
@@ -330,7 +330,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialPhysicalTrackedLocalAdjacencyAt_e
             corridor hinterior offset cellColoring)) pair := by
   classical
   let state :=
-    pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt web
+    pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt web.toFormation
       corridor hinterior offset hnext hcell prefixColor hprefix
   let factor :=
     (pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt web
@@ -340,7 +340,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialPhysicalTrackedLocalAdjacencyAt_e
   let spliced := pointwiseSelectedSourceLocalLayerSerialCellSplicedColorAt
     web.toFormation corridor hinterior offset prefixColor cellColor
   let geometry :=
-    pointwiseSelectedSourceLocalLayerSerialTrackedGeometryCodeAt web corridor
+    pointwiseSelectedSourceLocalLayerSerialTrackedGeometryCodeAt web.toFormation corridor
       hinterior offset hcell
   let oldCode :=
     pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt web.toFormation
@@ -358,7 +358,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialPhysicalTrackedLocalAdjacencyAt_e
   let native := sourceLocalLayerSerialTrackedBoolCodeOfNativeGeometry
     factor.trackedGeometry state.colorCode factor.trackedCellColor
   let source := pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCodeForColorAt
-    web corridor hinterior offset hcell spliced
+    web.toFormation corridor hinterior offset hcell spliced
   have hgeometry : factor.trackedGeometry = ofGraphFamilyCode geometry := by
     rfl
   have holdCode : state.colorCode = oldCode := by
@@ -382,7 +382,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialPhysicalTrackedLocalAdjacencyAt_e
       cellColor]
     exact
       pointwiseSelectedSourceLocalLayerSerialTrackedCodeOfFiniteColorsAt_graph_eq
-        web corridor hinterior offset hcell prefixColor
+        web.toFormation corridor hinterior offset hcell prefixColor
           (pointwiseSelectedSourceLocalLayerCellLiteralColorAt web.toFormation
             corridor hinterior offset cellColoring) (pair, seam)
   have hgraph (seam : Bool) :
@@ -420,7 +420,7 @@ theorem
         web.toFormation corridor hinterior offset)
     (hcount :
       (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-        web corridor hinterior offset hnext hcell prefixColor hprefix
+        web.toFormation corridor hinterior offset hnext hcell prefixColor hprefix
         ).trackedExterior.vertexCount =
       (pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt
         web corridor hinterior offset hnext hcell prefixColor hprefix
@@ -428,10 +428,10 @@ theorem
     (pair : TrackedColorPair)
     (left right : Fin
       (pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-        web corridor hinterior offset hnext).card) :
+        web.toFormation corridor hinterior offset hnext).card) :
     sourceLocalLayerSerialRootedInteractionLocalAdjacency
         (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-          web corridor hinterior offset hnext hcell prefixColor hprefix)
+          web.toFormation corridor hinterior offset hnext hcell prefixColor hprefix)
         (pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt
           web corridor hinterior offset hnext hcell prefixColor hprefix
             cellColoring).2.2
@@ -448,7 +448,7 @@ theorem
           web corridor hinterior offset hnext right) := by
   classical
   let state :=
-    pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt web
+    pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt web.toFormation
       corridor hinterior offset hnext hcell prefixColor hprefix
   let factor :=
     (pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt web
@@ -472,7 +472,7 @@ theorem
     intro old
     exact
       pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt_currentEdge
-        web corridor hinterior offset hnext hcell prefixColor hprefix old
+        web.toFormation corridor hinterior offset hnext hcell prefixColor hprefix old
   have hnewInjective : Function.Injective newVertex :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseUniformTrackedEdgeAt_injective
       web corridor hinterior offset hnext
@@ -525,13 +525,13 @@ theorem
       web.toFormation corridor hinterior offset
   let interaction :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-      web corridor hinterior offset hnext
+      web.toFormation corridor hinterior offset hnext
   have hcurrent : edge ∈ current :=
     pointwiseSelectedSourceLocalLayerSerialTrackedLocalGraphAt_support_subset_carrier
       web.toFormation corridor hinterior offset color pair hedge
   have hinteraction : edge ∈ interaction :=
     pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt_subset_interaction
-      web corridor hinterior offset hnext hcurrent
+      web.toFormation corridor hinterior offset hnext hcurrent
   refine ⟨carrierCoordinate interaction ⟨edge, hinteraction⟩, ?_⟩
   simp [interaction,
     pointwiseSelectedSourceLocalLayerSerialCellRebaseUniformTrackedEdgeAt]
@@ -562,7 +562,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialRootedInteractionPreRebaseStateAt
             corridor hinterior offset cellColoring))
     (hcount :
       (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-        web corridor hinterior offset hnext hcell prefixColor hprefix
+        web.toFormation corridor hinterior offset hnext hcell prefixColor hprefix
         ).trackedExterior.vertexCount =
       (pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt
         web corridor hinterior offset hnext hcell prefixColor hprefix
@@ -570,7 +570,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialRootedInteractionPreRebaseStateAt
     (pair : TrackedColorPair) :
     (sourceLocalLayerSerialRootedInteractionPreRebaseState
       (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-        web corridor hinterior offset hnext hcell prefixColor hprefix)
+        web.toFormation corridor hinterior offset hnext hcell prefixColor hprefix)
       (pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt
         web corridor hinterior offset hnext hcell prefixColor hprefix
           cellColoring).2.2 hcount).code pair =
@@ -583,7 +583,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialRootedInteractionPreRebaseStateAt
   classical
   let interaction :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-      web corridor hinterior offset hnext
+      web.toFormation corridor hinterior offset hnext
   let edgeAt :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseUniformTrackedEdgeAt web
       corridor hinterior offset hnext
@@ -599,7 +599,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialRootedInteractionPreRebaseStateAt
     web.toFormation corridor hinterior offset spliced pair
   let adjacency : Fin interaction.card -> Fin interaction.card -> Bool :=
     sourceLocalLayerSerialRootedInteractionLocalAdjacency
-      (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt web
+      (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt web.toFormation
         corridor hinterior offset hnext hcell prefixColor hprefix)
       (pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt web
         corridor hinterior offset hnext hcell prefixColor hprefix
@@ -664,7 +664,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialRootedInteractionPreRebaseState?_
           (pointwiseSelectedSourceLocalLayerCellLiteralColorAt web.toFormation
             corridor hinterior offset cellColoring)) :
     let state :=
-      pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt web
+      pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt web.toFormation
         corridor hinterior offset hnext hcell prefixColor hprefix
     let factor :=
       (pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt web
@@ -680,7 +680,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialRootedInteractionPreRebaseState?_
                 corridor hinterior offset cellColoring))) := by
   classical
   let state :=
-    pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt web
+    pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt web.toFormation
       corridor hinterior offset hnext hcell prefixColor hprefix
   let factor :=
     (pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt web

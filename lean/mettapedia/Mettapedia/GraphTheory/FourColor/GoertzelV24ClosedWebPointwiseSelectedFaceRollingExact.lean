@@ -710,7 +710,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialFaceRollingNextInteractionStateAt
       caps coloring web corridor hinterior offset hnext hnextNext
     factor.nextInteractionState preRebase (by rfl) =
       (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-        web corridor hinterior (sourceLocalLayerNextOffset offset hnext)
+        web.toFormation corridor hinterior (sourceLocalLayerNextOffset offset hnext)
           hnextNext hcellNext color hcrossing
         ).faceInteractionExterior := by
   dsimp only

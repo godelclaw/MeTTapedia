@@ -67,19 +67,19 @@ noncomputable def pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolLocalFa
       PointwiseSelectedSourceLocalLayerCellLiteralOpenTaitColoringAt
         web.toFormation corridor hinterior offset) :
     let letter :=
-      pointwiseSelectedSourceLocalLayerSerialCellFiniteSupportLetterAt web
+      pointwiseSelectedSourceLocalLayerSerialCellFiniteSupportLetterAt web.toFormation
         corridor hinterior offset hcell prefixColor hprefix cellColoring
     SourceLocalLayerSerialCellPhysicalBoolLocalFactor
       letter.output.faceFragmentCount := by
   let letter :=
-    pointwiseSelectedSourceLocalLayerSerialCellFiniteSupportLetterAt web
+    pointwiseSelectedSourceLocalLayerSerialCellFiniteSupportLetterAt web.toFormation
       corridor hinterior offset hcell prefixColor hprefix cellColoring
   let cellColor := pointwiseSelectedSourceLocalLayerCellLiteralColorAt
     web.toFormation corridor hinterior offset cellColoring
   exact {
     outputColor := letter.outputColor
     trackedGeometry := ofGraphFamilyCode
-      (pointwiseSelectedSourceLocalLayerSerialTrackedGeometryCodeAt web corridor
+      (pointwiseSelectedSourceLocalLayerSerialTrackedGeometryCodeAt web.toFormation corridor
         hinterior offset hcell)
     trackedCellColor :=
       pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt web.toFormation
@@ -114,10 +114,10 @@ noncomputable def pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactore
         web.toFormation corridor hinterior offset) :
     SourceLocalLayerSerialCellPhysicalBoolFactoredLetter := by
   let root :=
-    pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt web
+    pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt web.toFormation
       corridor hinterior offset hnext hcell prefixColor hprefix
   let letter :=
-    pointwiseSelectedSourceLocalLayerSerialCellFiniteSupportLetterAt web
+    pointwiseSelectedSourceLocalLayerSerialCellFiniteSupportLetterAt web.toFormation
       corridor hinterior offset hcell prefixColor hprefix cellColoring
   exact ⟨root.toSourceLocalLayerSerialColoredCumulativeState, letter.output,
     pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolLocalFactorAt web
@@ -148,7 +148,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt_
           cellColoring
     reassemblePhysicalBoolSupportLetter factored.1 factored.2.1 factored.2.2 =
       ofFiniteSupportLetter
-        (pointwiseSelectedSourceLocalLayerSerialCellFiniteSupportLetterAt web
+        (pointwiseSelectedSourceLocalLayerSerialCellFiniteSupportLetterAt web.toFormation
           corridor hinterior offset hcell prefixColor hprefix cellColoring) := by
   dsimp only
     [pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt,
@@ -192,7 +192,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt_
   constructor
   · rw [sourceLocalLayerSerialCarrierColorsCompatibleBool_eq_true_iff]
     exact
-      (pointwiseSelectedSourceLocalLayerSerialCarrierColorsCompatible_iff web
+      (pointwiseSelectedSourceLocalLayerSerialCarrierColorsCompatible_iff web.toFormation
         corridor hinterior offset hcell prefixColor
           (pointwiseSelectedSourceLocalLayerCellLiteralColorAt web.toFormation
             corridor hinterior offset cellColoring)).2 hcompatible
@@ -200,7 +200,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialCellPhysicalBoolFactoredLetterAt_
       finiteSupportsBool_ofFiniteSupportLetter_eq_true_iff]
     exact
       pointwiseSelectedSourceLocalLayerSerialCellFiniteSupportLetterAt_supports
-        web corridor hinterior offset hcell prefixColor hprefix cellColoring
+        web.toFormation corridor hinterior offset hcell prefixColor hprefix cellColoring
           hcompatible
 
 end

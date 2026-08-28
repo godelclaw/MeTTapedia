@@ -58,62 +58,62 @@ local instance pointwiseSelectedRootedInteractionStateEdgeSetDecidableEq :
 /-- Extract the exact finite rooted state of an arbitrary cumulative-prefix
 colour function on the corrected pointwise-selected Cell geometry. -/
 noncomputable def pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
     (hnext : offset.val + 1 < blockLength - 3)
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
       corridor hinterior offset).card ≤ 6)
     (color : G.edgeSet → Color)
     (hcrossing : ∀ step,
-      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt web.toFormation
+      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt formation
         corridor hinterior offset step) ≠ 0) :
     SourceLocalLayerSerialRootedInteractionState := by
   let region :=
-    pointwiseSelectedSourceLocalLayerSerialTerminalInputRegionAt web.toFormation
+    pointwiseSelectedSourceLocalLayerSerialTerminalInputRegionAt formation
       corridor hinterior offset
   let current :=
     pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-      web.toFormation corridor hinterior offset
+      formation corridor hinterior offset
   let interaction :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-      web corridor hinterior offset hnext
+      formation corridor hinterior offset hnext
   let faceCurrent :=
     pointwiseSelectedSourceLocalLayerSerialFaceTransitionCarrierAt
-      web.toFormation corridor hinterior offset
+      formation corridor hinterior offset
   let faceInteraction :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseFaceInteractionCarrierAt
-      web.toFormation corridor hinterior offset hnext
+      formation corridor hinterior offset hnext
   let hcurrent : current.card ≤ 21 :=
     pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt_card_le_twentyOne
-      web corridor hinterior offset hcell
+      formation corridor hinterior offset hcell
   let hinteraction : interaction.card ≤ 49 :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt_card_le_fortyNine
-      web corridor hinterior offset hnext hcell
+      formation corridor hinterior offset hnext hcell
   let hfaceInteraction : faceInteraction.card ≤ 48 :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseFaceInteractionCarrierAt_card_le_fortyEight
-      web.toFormation corridor hinterior offset hnext hcell
+      formation corridor hinterior offset hnext hcell
   let input :=
     pointwiseSelectedSourceLocalLayerSerialTerminalInputBoundedProfileAt
-      web.toFormation corridor hinterior offset color hcrossing
+      formation corridor hinterior offset color hcrossing
   let tracked :=
     pointwiseSelectedSourceLocalLayerSerialTrackedPrefixAttachmentStateForColorAt
-      web corridor hinterior offset color
+      formation corridor hinterior offset color
   let face :=
     pointwiseSelectedSourceLocalLayerSerialFacePrefixAttachmentStateAt
-      web.toFormation corridor hinterior offset hcell
+      formation corridor hinterior offset hcell
   let colorCode :=
-    pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt web.toFormation
+    pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt formation
       corridor hinterior offset region color
   let faceCapSix : SourceLocalLayerSerialFaceDeletionStableCapSixState :=
     pointwiseSelectedSourceLocalLayerSerialFaceDeletionStableParametricCapPrefixAt
-      web.toFormation corridor hinterior offset hcell 6
+      formation corridor hinterior offset hcell 6
   let trackedExterior : SourceLocalLayerSerialTrackedDeletionStablePrefixState :=
     boundedInterfaceExteriorFamilyCode current 21 hcurrent fun pair =>
-      regionalTrackedEdgeGraph web.annular.RS region color
+      regionalTrackedEdgeGraph formation.annular.RS region color
         (trackedColorPairColors pair).1 (trackedColorPairColors pair).2
   let rooted : SourceLocalLayerSerialRootedCumulativeState := {
     toSourceLocalLayerSerialColoredCumulativeState := {
@@ -126,7 +126,7 @@ noncomputable def pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateF
     trackedExterior := trackedExterior }
   let interactionExterior : SourceLocalLayerSerialTrackedInteractionPrefixState :=
     boundedInterfaceExteriorFamilyCode interaction 49 hinteraction fun pair =>
-      regionalTrackedEdgeGraph web.annular.RS region color
+      regionalTrackedEdgeGraph formation.annular.RS region color
         (trackedColorPairColors pair).1 (trackedColorPairColors pair).2
   let interactionColorCode :=
     sourceLocalLayerSerialTrackedInteractionColorCodeAt interaction hinteraction
@@ -135,7 +135,7 @@ noncomputable def pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateF
       SourceLocalLayerSerialFaceInteractionPrefixState := {
     vertexCount := ⟨faceInteraction.card,
       Nat.lt_succ_of_le hfaceInteraction⟩
-    code := fun _ => exactFaceInterfaceExteriorLabelCapCode web.annular.RS
+    code := fun _ => exactFaceInterfaceExteriorLabelCapCode formation.annular.RS
       region (fun slot : Fin faceInteraction.card =>
         ((carrierCoordinate faceInteraction).symm slot).1) 6 }
   exact {
@@ -146,258 +146,258 @@ noncomputable def pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateF
       carrierCoordinate interaction
         ⟨((carrierCoordinate current).symm slot).1,
           pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt_subset_interaction
-            web corridor hinterior offset hnext
+            formation corridor hinterior offset hnext
               ((carrierCoordinate current).symm slot).2⟩
     faceInteractionExterior := faceInteractionExterior
     faceCurrentCoordinate := fun slot =>
       carrierCoordinate faceInteraction
         ⟨((carrierCoordinate faceCurrent).symm slot).1,
           pointwiseSelectedSourceLocalLayerSerialFaceTransitionCarrierAt_subset_interaction
-            web.toFormation corridor hinterior offset hnext
+            formation corridor hinterior offset hnext
               ((carrierCoordinate faceCurrent).symm slot).2⟩ }
 
 /-- The rooted state exposes the exact terminal-aware source profile supplied
 by the arbitrary prefix colour function. -/
 @[simp]
 theorem pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt_input
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
     (hnext : offset.val + 1 < blockLength - 3)
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
       corridor hinterior offset).card ≤ 6)
     (color : G.edgeSet → Color)
     (hcrossing : ∀ step,
-      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt web.toFormation
+      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt formation
         corridor hinterior offset step) ≠ 0) :
     (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-      web corridor hinterior offset hnext hcell color hcrossing).input =
+      formation corridor hinterior offset hnext hcell color hcrossing).input =
       pointwiseSelectedSourceLocalLayerSerialTerminalInputBoundedProfileAt
-        web.toFormation corridor hinterior offset color hcrossing := by
+        formation corridor hinterior offset color hcrossing := by
   rfl
 
 /-- The rooted tracked predecessor field is the exact selected prefix
 attachment factor. -/
 @[simp]
 theorem pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt_tracked
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
     (hnext : offset.val + 1 < blockLength - 3)
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
       corridor hinterior offset).card ≤ 6)
     (color : G.edgeSet → Color)
     (hcrossing : ∀ step,
-      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt web.toFormation
+      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt formation
         corridor hinterior offset step) ≠ 0) :
     (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-      web corridor hinterior offset hnext hcell color hcrossing).tracked =
+      formation corridor hinterior offset hnext hcell color hcrossing).tracked =
       pointwiseSelectedSourceLocalLayerSerialTrackedPrefixAttachmentStateForColorAt
-        web corridor hinterior offset color := by
+        formation corridor hinterior offset color := by
   rfl
 
 /-- The rooted facial predecessor field is the exact selected prefix
 attachment and cap factor. -/
 @[simp]
 theorem pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt_face
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
     (hnext : offset.val + 1 < blockLength - 3)
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
       corridor hinterior offset).card ≤ 6)
     (color : G.edgeSet → Color)
     (hcrossing : ∀ step,
-      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt web.toFormation
+      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt formation
         corridor hinterior offset step) ≠ 0) :
     (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-      web corridor hinterior offset hnext hcell color hcrossing).face =
+      formation corridor hinterior offset hnext hcell color hcrossing).face =
       pointwiseSelectedSourceLocalLayerSerialFacePrefixAttachmentStateAt
-        web.toFormation corridor hinterior offset hcell := by
+        formation corridor hinterior offset hcell := by
   rfl
 
 /-- The rooted current colour table is the literal selected carrier table of
 the arbitrary prefix. -/
 @[simp]
 theorem pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt_colorCode
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
     (hnext : offset.val + 1 < blockLength - 3)
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
       corridor hinterior offset).card ≤ 6)
     (color : G.edgeSet → Color)
     (hcrossing : ∀ step,
-      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt web.toFormation
+      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt formation
         corridor hinterior offset step) ≠ 0) :
     (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-      web corridor hinterior offset hnext hcell color hcrossing).colorCode =
-      pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt web.toFormation
+      formation corridor hinterior offset hnext hcell color hcrossing).colorCode =
+      pointwiseSelectedSourceLocalLayerSerialCarrierColorCodeAt formation
         corridor hinterior offset
           (pointwiseSelectedSourceLocalLayerSerialTerminalInputRegionAt
-            web.toFormation corridor hinterior offset) color := by
+            formation corridor hinterior offset) color := by
   rfl
 
 /-- The selected current tracked exterior factor stores the literal carrier
 cardinality. -/
 @[simp]
 theorem pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt_trackedExteriorCount
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
     (hnext : offset.val + 1 < blockLength - 3)
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
       corridor hinterior offset).card ≤ 6)
     (color : G.edgeSet → Color)
     (hcrossing : ∀ step,
-      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt web.toFormation
+      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt formation
         corridor hinterior offset step) ≠ 0) :
     (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-      web corridor hinterior offset hnext hcell color hcrossing
+      formation corridor hinterior offset hnext hcell color hcrossing
       ).trackedExterior.vertexCount.val =
       (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-        web.toFormation corridor hinterior offset).card := by
+        formation corridor hinterior offset).card := by
   rfl
 
 /-- The selected current facial exterior factor stores the literal carrier
 cardinality. -/
 @[simp]
 theorem pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt_faceCapSixCount
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
     (hnext : offset.val + 1 < blockLength - 3)
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
       corridor hinterior offset).card ≤ 6)
     (color : G.edgeSet → Color)
     (hcrossing : ∀ step,
-      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt web.toFormation
+      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt formation
         corridor hinterior offset step) ≠ 0) :
     (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-      web corridor hinterior offset hnext hcell color hcrossing
+      formation corridor hinterior offset hnext hcell color hcrossing
       ).faceCapSix.vertexCount.val =
       (pointwiseSelectedSourceLocalLayerSerialFaceTransitionCarrierAt
-        web.toFormation corridor hinterior offset).card := by
+        formation corridor hinterior offset).card := by
   rfl
 
 /-- The selected root's cap-six field is definitionally the canonical
 cumulative semantic facial state at the current cut. -/
 @[simp]
 theorem pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt_faceCapSix
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
     (hnext : offset.val + 1 < blockLength - 3)
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
       corridor hinterior offset).card ≤ 6)
     (color : G.edgeSet → Color)
     (hcrossing : ∀ step,
-      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt web.toFormation
+      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt formation
         corridor hinterior offset step) ≠ 0) :
     (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-      web corridor hinterior offset hnext hcell color hcrossing
+      formation corridor hinterior offset hnext hcell color hcrossing
       ).faceCapSix =
       pointwiseSelectedSourceLocalLayerSerialFaceDeletionStableParametricCapPrefixAt
-        web.toFormation corridor hinterior offset hcell 6 := by
+        formation corridor hinterior offset hcell 6 := by
   rfl
 
 /-- The selected root stores the literal cardinality of its tracked
 interaction carrier. -/
 @[simp]
 theorem pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt_interactionCount
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
     (hnext : offset.val + 1 < blockLength - 3)
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
       corridor hinterior offset).card ≤ 6)
     (color : G.edgeSet → Color)
     (hcrossing : ∀ step,
-      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt web.toFormation
+      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt formation
         corridor hinterior offset step) ≠ 0) :
     (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-      web corridor hinterior offset hnext hcell color hcrossing
+      formation corridor hinterior offset hnext hcell color hcrossing
       ).interactionExterior.vertexCount.val =
       (pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-        web corridor hinterior offset hnext).card := by
+        formation corridor hinterior offset hnext).card := by
   rfl
 
 /-- The selected root stores the literal cardinality of its facial
 interaction carrier. -/
 @[simp]
 theorem pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt_faceInteractionCount
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
     (hnext : offset.val + 1 < blockLength - 3)
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
       corridor hinterior offset).card ≤ 6)
     (color : G.edgeSet → Color)
     (hcrossing : ∀ step,
-      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt web.toFormation
+      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt formation
         corridor hinterior offset step) ≠ 0) :
     (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-      web corridor hinterior offset hnext hcell color hcrossing
+      formation corridor hinterior offset hnext hcell color hcrossing
       ).faceInteractionExterior.vertexCount.val =
       (pointwiseSelectedSourceLocalLayerSerialCellRebaseFaceInteractionCarrierAt
-        web.toFormation corridor hinterior offset hnext).card := by
+        formation corridor hinterior offset hnext).card := by
   rfl
 
 /-- The stored tracked-coordinate inclusion names the same ambient edge in
 the current and interaction carriers. -/
 theorem pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt_currentEdge
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
     (hnext : offset.val + 1 < blockLength - 3)
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
       corridor hinterior offset).card ≤ 6)
     (color : G.edgeSet → Color)
     (hcrossing : ∀ step,
-      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt web.toFormation
+      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt formation
         corridor hinterior offset step) ≠ 0)
     (slot : Fin
       (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-        web.toFormation corridor hinterior offset).card) :
+        formation corridor hinterior offset).card) :
     let state :=
       pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-        web corridor hinterior offset hnext hcell color hcrossing
+        formation corridor hinterior offset hnext hcell color hcrossing
     let current :=
       pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-        web.toFormation corridor hinterior offset
+        formation corridor hinterior offset
     let interaction :=
       pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-        web corridor hinterior offset hnext
+        formation corridor hinterior offset hnext
     ((carrierCoordinate interaction).symm (state.currentCoordinate slot)).1 =
       ((carrierCoordinate current).symm slot).1 := by
   dsimp only
@@ -407,31 +407,31 @@ theorem pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt_
 /-- The stored facial-coordinate inclusion names the same ambient dart in
 the current and interaction carriers. -/
 theorem pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt_faceCurrentDart
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
     (hnext : offset.val + 1 < blockLength - 3)
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
       corridor hinterior offset).card ≤ 6)
     (color : G.edgeSet → Color)
     (hcrossing : ∀ step,
-      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt web.toFormation
+      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt formation
         corridor hinterior offset step) ≠ 0)
     (slot : Fin
       (pointwiseSelectedSourceLocalLayerSerialFaceTransitionCarrierAt
-        web.toFormation corridor hinterior offset).card) :
+        formation corridor hinterior offset).card) :
     let state :=
       pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-        web corridor hinterior offset hnext hcell color hcrossing
+        formation corridor hinterior offset hnext hcell color hcrossing
     let current :=
       pointwiseSelectedSourceLocalLayerSerialFaceTransitionCarrierAt
-        web.toFormation corridor hinterior offset
+        formation corridor hinterior offset
     let interaction :=
       pointwiseSelectedSourceLocalLayerSerialCellRebaseFaceInteractionCarrierAt
-        web.toFormation corridor hinterior offset hnext
+        formation corridor hinterior offset hnext
     ((carrierCoordinate interaction).symm
         (state.faceCurrentCoordinate slot)).1 =
       ((carrierCoordinate current).symm slot).1 := by
@@ -443,34 +443,34 @@ theorem pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt_
 prefix colour. -/
 @[simp]
 theorem pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt_interactionColor_live
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5}
+    (formation : Formation data) {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
     (hnext : offset.val + 1 < blockLength - 3)
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
       corridor hinterior offset).card ≤ 6)
     (color : G.edgeSet → Color)
     (hcrossing : ∀ step,
-      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt web.toFormation
+      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt formation
         corridor hinterior offset step) ≠ 0)
     (slot : Fin
       (pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-        web corridor hinterior offset hnext).card) :
+        formation corridor hinterior offset hnext).card) :
     let interaction :=
       pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-        web corridor hinterior offset hnext
+        formation corridor hinterior offset hnext
     let region :=
-      pointwiseSelectedSourceLocalLayerSerialTerminalInputRegionAt web.toFormation
+      pointwiseSelectedSourceLocalLayerSerialTerminalInputRegionAt formation
         corridor hinterior offset
     (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-      web corridor hinterior offset hnext hcell color hcrossing
+      formation corridor hinterior offset hnext hcell color hcrossing
       ).interactionColorCode
         (Fin.castLE
           (pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt_card_le_fortyNine
-            web corridor hinterior offset hnext hcell) slot) =
+            formation corridor hinterior offset hnext hcell) slot) =
       if ((carrierCoordinate interaction).symm slot).1 ∈ region then
         some (color ((carrierCoordinate interaction).symm slot).1)
       else none := by

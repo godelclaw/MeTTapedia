@@ -149,19 +149,19 @@ noncomputable def pointwiseSelectedSourceLocalLayerSerialTrackedRollingFactorAt
   let next := sourceLocalLayerNextOffset offset hnext
   let currentInteraction :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-      web corridor hinterior offset hnext
+      web.toFormation corridor hinterior offset hnext
   let target :=
     pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
       web.toFormation corridor hinterior next
   let nextInteraction :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-      web corridor hinterior next hnextNext
+      web.toFormation corridor hinterior next hnextNext
   have hnextInteraction : nextInteraction.card ≤ 49 :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt_card_le_fortyNine
-      web corridor hinterior next hnextNext hcellNext
+      web.toFormation corridor hinterior next hnextNext hcellNext
   have hcurrentInteraction : currentInteraction.card ≤ 49 :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt_card_le_fortyNine
-      web corridor hinterior offset hnext hcell
+      web.toFormation corridor hinterior offset hnext hcell
   exact {
     rebase := rebase
     nextInteractionCount :=
@@ -220,14 +220,14 @@ theorem pointwiseSelectedSourceLocalLayerSerialTrackedRollingFactorAt_nextIntera
     (stable : Fin 49) :
     let currentInteraction :=
       pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-        web corridor hinterior offset hnext
+        web.toFormation corridor hinterior offset hnext
     let next := sourceLocalLayerNextOffset offset hnext
     let nextInteraction :=
       pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-        web corridor hinterior next hnextNext
+        web.toFormation corridor hinterior next hnextNext
     let currentBound : currentInteraction.card ≤ 49 :=
       pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt_card_le_fortyNine
-        web corridor hinterior offset hnext hcell
+        web.toFormation corridor hinterior offset hnext hcell
     (pointwiseSelectedSourceLocalLayerSerialTrackedRollingFactorAt web corridor
       hinterior offset hnext hnextNext hcell hcellNext color
       ).nextInteractionColorCode preRebaseColor roleColor stable =
@@ -253,17 +253,17 @@ theorem pointwiseSelectedSourceLocalLayerSerialTrackedRollingFactorAt_nextIntera
   simp only [pointwiseSelectedSourceLocalLayerSerialTrackedRollingFactorAt]
   by_cases htarget : stable.val <
       (pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-        web corridor hinterior (sourceLocalLayerNextOffset offset hnext)
+        web.toFormation corridor hinterior (sourceLocalLayerNextOffset offset hnext)
           hnextNext).card
   · simp only [htarget, dif_pos]
     let target : Fin
         (pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-          web corridor hinterior (sourceLocalLayerNextOffset offset hnext)
+          web.toFormation corridor hinterior (sourceLocalLayerNextOffset offset hnext)
             hnextNext).card :=
       ⟨stable.val, htarget⟩
     let edge := ((carrierCoordinate
       (pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-        web corridor hinterior (sourceLocalLayerNextOffset offset hnext)
+        web.toFormation corridor hinterior (sourceLocalLayerNextOffset offset hnext)
           hnextNext)).symm target).1
     by_cases hactive : edge ∈
         pointwiseSelectedSourceLocalLayerSerialTerminalInputRegionAt
@@ -276,9 +276,9 @@ theorem pointwiseSelectedSourceLocalLayerSerialTrackedRollingFactorAt_nextIntera
       | none =>
           cases hsource : finiteCarrierPartialSource
               (pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-                web corridor hinterior offset hnext)
+                web.toFormation corridor hinterior offset hnext)
               (pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-                web corridor hinterior (sourceLocalLayerNextOffset offset hnext)
+                web.toFormation corridor hinterior (sourceLocalLayerNextOffset offset hnext)
                   hnextNext) target <;> rfl
     · simp [hactive, target, edge]
   · simp [htarget]
@@ -314,41 +314,41 @@ theorem pointwiseSelectedSourceLocalLayerSerialTrackedRollingNextInteractionColo
         corridor hinterior offset hnext role) ≠ 0) :
     let currentInteraction :=
       pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-        web corridor hinterior offset hnext
+        web.toFormation corridor hinterior offset hnext
     let next := sourceLocalLayerNextOffset offset hnext
     let nextInteraction :=
       pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-        web corridor hinterior next hnextNext
+        web.toFormation corridor hinterior next hnextNext
     let factor := pointwiseSelectedSourceLocalLayerSerialTrackedRollingFactorAt
       web corridor hinterior offset hnext hnextNext hcell hcellNext color
     factor.nextInteractionColorCode
         (sourceLocalLayerSerialTrackedInteractionColorCodeAt currentInteraction
           (pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt_card_le_fortyNine
-            web corridor hinterior offset hnext hcell)
+            web.toFormation corridor hinterior offset hnext hcell)
           (pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputRegionAt
             web.toFormation corridor hinterior offset) color)
         (pointwiseSelectedSourceLocalLayerBoundaryRebaseSuccessorTrackedStateForColorAt
           web.toFormation corridor hinterior offset hnext color hrole).roleColor =
       sourceLocalLayerSerialTrackedInteractionColorCodeAt nextInteraction
         (pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt_card_le_fortyNine
-          web corridor hinterior next hnextNext hcellNext)
+          web.toFormation corridor hinterior next hnextNext hcellNext)
         (pointwiseSelectedSourceLocalLayerSerialTerminalInputRegionAt
           web.toFormation corridor hinterior next) color := by
   classical
   dsimp only
   let currentInteraction :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-      web corridor hinterior offset hnext
+      web.toFormation corridor hinterior offset hnext
   let next := sourceLocalLayerNextOffset offset hnext
   let nextInteraction :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-      web corridor hinterior next hnextNext
+      web.toFormation corridor hinterior next hnextNext
   let currentBound : currentInteraction.card ≤ 49 :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt_card_le_fortyNine
-      web corridor hinterior offset hnext hcell
+      web.toFormation corridor hinterior offset hnext hcell
   let nextBound : nextInteraction.card ≤ 49 :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt_card_le_fortyNine
-      web corridor hinterior next hnextNext hcellNext
+      web.toFormation corridor hinterior next hnextNext hcellNext
   funext stable
   rw [pointwiseSelectedSourceLocalLayerSerialTrackedRollingFactorAt_nextInteractionColorCode_apply]
   by_cases hslot : stable.val < nextInteraction.card
@@ -458,13 +458,13 @@ theorem pointwiseSelectedSourceLocalLayerSerialTrackedRollingNextInteractionColo
         corridor hinterior offset hnext role) ≠ 0) :
     let currentInteraction :=
       pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-        web corridor hinterior offset hnext
+        web.toFormation corridor hinterior offset hnext
     let factor := pointwiseSelectedSourceLocalLayerSerialTrackedRollingFactorAt
       web corridor hinterior offset hnext hnextNext hcell hcellNext color
     let preRebaseColor :=
       sourceLocalLayerSerialTrackedInteractionColorCodeAt currentInteraction
         (pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt_card_le_fortyNine
-          web corridor hinterior offset hnext hcell)
+          web.toFormation corridor hinterior offset hnext hcell)
         (pointwiseSelectedSourceLocalLayerSerialPreRebaseOutputRegionAt
           web.toFormation corridor hinterior offset) color
     let rebase :=
@@ -472,7 +472,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialTrackedRollingNextInteractionColo
         web.toFormation corridor hinterior offset hnext color hrole
     factor.nextInteractionColorCode preRebaseColor rebase.roleColor =
       (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-        web corridor hinterior (sourceLocalLayerNextOffset offset hnext)
+        web.toFormation corridor hinterior (sourceLocalLayerNextOffset offset hnext)
           hnextNext hcellNext color
           (pointwiseSelectedSourceLocalLayerBoundaryRebaseSuccessorCrossingNonzeroForColorAt
             web.toFormation corridor hinterior offset hnext color hrole)
@@ -517,7 +517,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialTrackedRollingNextInteractionStat
       web corridor hinterior offset hnext hnextNext hcell hcellNext color
     let nextInteraction :=
       pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-        web corridor hinterior (sourceLocalLayerNextOffset offset hnext)
+        web.toFormation corridor hinterior (sourceLocalLayerNextOffset offset hnext)
           hnextNext
     (factor.nextInteractionState preRebase (by rfl)).code pair =
       exactInterfaceExteriorCode
@@ -530,13 +530,13 @@ theorem pointwiseSelectedSourceLocalLayerSerialTrackedRollingNextInteractionStat
     corridor hinterior offset hnext color pair
   let currentInteraction :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-      web corridor hinterior offset hnext
+      web.toFormation corridor hinterior offset hnext
   let currentVertex :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseUniformTrackedEdgeAt web
       corridor hinterior offset hnext
   let nextInteraction :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-      web corridor hinterior (sourceLocalLayerNextOffset offset hnext)
+      web.toFormation corridor hinterior (sourceLocalLayerNextOffset offset hnext)
         hnextNext
   let nextVertex := fun slot : Fin nextInteraction.card =>
     ((carrierCoordinate nextInteraction).symm slot).1
@@ -625,7 +625,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialTrackedRollingNextInteractionStat
       web corridor hinterior offset hnext hnextNext hcell hcellNext color
     factor.nextInteractionState preRebase (by rfl) =
       (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-        web corridor hinterior (sourceLocalLayerNextOffset offset hnext)
+        web.toFormation corridor hinterior (sourceLocalLayerNextOffset offset hnext)
           hnextNext hcellNext color hcrossing).interactionExterior := by
   dsimp only
   rw [BoundedInterfaceExteriorFamilyCode.mk.injEq]
@@ -662,7 +662,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialTrackedRollingFactorAt_nextCurren
       hinterior offset hnext hnextNext hcell hcellNext color
       ).nextCurrentCoordinate =
       (pointwiseSelectedSourceLocalLayerSerialRootedInteractionStateForColorAt
-        web corridor hinterior (sourceLocalLayerNextOffset offset hnext)
+        web.toFormation corridor hinterior (sourceLocalLayerNextOffset offset hnext)
           hnextNext hcellNext color hcrossing).currentCoordinate := by
   rfl
 

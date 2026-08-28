@@ -45,28 +45,28 @@ namespace Formation
 /-- Exact finite predecessor attachment state of an arbitrary colour function
 on the selected terminal-aware cumulative prefix. -/
 noncomputable def pointwiseSelectedSourceLocalLayerSerialTrackedPrefixAttachmentStateForColorAt
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
     (color : G.edgeSet → Color) :
     SourceLocalLayerSerialTrackedPrefixAttachmentState :=
   let inputData :=
     pointwiseSelectedSourceLocalLayerSerialTerminalInputCutDataAt
-      web.toFormation corridor hinterior offset
+      formation corridor hinterior offset
   let edgeAt := fun edge : {edge // edge ∈
       pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-        web.toFormation corridor hinterior offset} => edge.1
+        formation corridor hinterior offset} => edge.1
   fun pair =>
     padSupportedPortResidualCode
       (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionEdgeAtSlot?
-        web.toFormation corridor hinterior offset)
+        formation corridor hinterior offset)
       (exactSupportedPortResidualCode
-        (regionalTrackedEdgeGraph web.annular.RS
+        (regionalTrackedEdgeGraph formation.annular.RS
           (pointwiseSelectedSourceLocalLayerSerialTerminalInputRegionAt
-            web.toFormation corridor hinterior offset)
+            formation corridor hinterior offset)
           color (trackedColorPairColors pair).1
             (trackedColorPairColors pair).2)
         edgeAt inputData.portEdge)
@@ -74,25 +74,25 @@ noncomputable def pointwiseSelectedSourceLocalLayerSerialTrackedPrefixAttachment
 /-- The complete selected terminal profile is exact for connectivity between
 its two incoming ports and retained terminal rung. -/
 private theorem pointwiseSelectedTerminalInputProfileForColorAt_portConnected_exact
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
     (color : G.edgeSet → Color)
     (hcrossing : ∀ step,
-      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt web.toFormation
+      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt formation
         corridor hinterior offset step) ≠ 0)
     (pair : TrackedColorPair) :
     let inputData :=
       pointwiseSelectedSourceLocalLayerSerialTerminalInputCutDataAt
-        web.toFormation corridor hinterior offset
-    let graph := regionalTrackedEdgeGraph web.annular.RS inputData.regionEdges
+        formation corridor hinterior offset
+    let graph := regionalTrackedEdgeGraph formation.annular.RS inputData.regionEdges
       color (trackedColorPairColors pair).1 (trackedColorPairColors pair).2
     let input :=
       pointwiseSelectedSourceLocalLayerSerialTerminalInputBoundedProfileAt
-        web.toFormation corridor hinterior offset color hcrossing
+        formation corridor hinterior offset color hcrossing
     (∀ left right,
       input.profile.strandConnected pair left right = true →
         graph.Reachable (inputData.portEdge left) (inputData.portEdge right)) ∧
@@ -104,12 +104,12 @@ private theorem pointwiseSelectedTerminalInputProfileForColorAt_portConnected_ex
   dsimp only
   let inputData :=
     pointwiseSelectedSourceLocalLayerSerialTerminalInputCutDataAt
-      web.toFormation corridor hinterior offset
-  let graph := regionalTrackedEdgeGraph web.annular.RS inputData.regionEdges
+      formation corridor hinterior offset
+  let graph := regionalTrackedEdgeGraph formation.annular.RS inputData.regionEdges
     color (trackedColorPairColors pair).1 (trackedColorPairColors pair).2
   let input :=
     pointwiseSelectedSourceLocalLayerSerialTerminalInputBoundedProfileAt
-      web.toFormation corridor hinterior offset color hcrossing
+      formation corridor hinterior offset color hcrossing
   constructor
   · intro left right hconnected
     exact
@@ -124,61 +124,61 @@ private theorem pointwiseSelectedTerminalInputProfileForColorAt_portConnected_ex
       (inputData.regionalProfile_strandConnected_eq_true_iff color hcrossing
         pair left right).2
         ⟨pointwiseSelectedSourceLocalLayerSerialTerminalInputCutDataAt_portsInRegion
-            web.toFormation corridor hinterior offset left,
+            formation corridor hinterior offset left,
           pointwiseSelectedSourceLocalLayerSerialTerminalInputCutDataAt_portsInRegion
-            web.toFormation corridor hinterior offset right,
+            formation corridor hinterior offset right,
           hleftAdj.1.2.1, hrightAdj.1.2.1, hreachable⟩
 
 /-- The selected finite attachment state and complete terminal profile recover
 literal cumulative-prefix reachability on every represented transition edge.
 This is both soundness and completeness of the tracked predecessor summary. -/
 theorem pointwiseSelectedSourceLocalLayerSerialTrackedPrefixAttachmentStateForColorAt_factoredReachability_iff
-    {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
-    (web : Instance data coloring) {blockLength : Nat}
-    (corridor : BoundaryCleanOrbitHexCorridor web.annular blockLength)
+    {data : AnnularBoundaryData G 5} (formation : Formation data)
+    {blockLength : Nat}
+    (corridor : BoundaryCleanOrbitHexCorridor formation.annular blockLength)
     (hinterior : InteriorPairwiseUniqueSharedInteriorEdges
-      web.annular.cellulation)
+      formation.annular.cellulation)
     (offset : Fin (blockLength - 3))
-    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation
+    (hcell : (pointwiseSelectedSourceLocalLayerCellRegionAt formation
       corridor hinterior offset).card ≤ 6)
     (color : G.edgeSet → Color)
     (hcrossing : ∀ step,
-      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt web.toFormation
+      color (pointwiseSelectedSourceLocalLayerLeftCrossingAt formation
         corridor hinterior offset step) ≠ 0)
     (pair : TrackedColorPair)
     (left right : {edge // edge ∈
       pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-        web.toFormation corridor hinterior offset}) :
+        formation corridor hinterior offset}) :
     sourceLocalLayerSerialTrackedPrefixFactoredReachability
         (pointwiseSelectedSourceLocalLayerSerialTrackedPrefixAttachmentStateForColorAt
-          web corridor hinterior offset color)
+          formation corridor hinterior offset color)
         (pointwiseSelectedSourceLocalLayerSerialTerminalInputBoundedProfileAt
-          web.toFormation corridor hinterior offset color hcrossing)
+          formation corridor hinterior offset color hcrossing)
         pair
-        (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionSlotAt web
+        (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionSlotAt formation
           corridor hinterior offset hcell left)
-        (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionSlotAt web
+        (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionSlotAt formation
           corridor hinterior offset hcell right) ↔
-      (regionalTrackedEdgeGraph web.annular.RS
+      (regionalTrackedEdgeGraph formation.annular.RS
         (pointwiseSelectedSourceLocalLayerSerialTerminalInputRegionAt
-          web.toFormation corridor hinterior offset)
+          formation corridor hinterior offset)
         color (trackedColorPairColors pair).1
           (trackedColorPairColors pair).2).Reachable left.1 right.1 := by
   let inputData :=
     pointwiseSelectedSourceLocalLayerSerialTerminalInputCutDataAt
-      web.toFormation corridor hinterior offset
-  let graph := regionalTrackedEdgeGraph web.annular.RS inputData.regionEdges
+      formation corridor hinterior offset
+  let graph := regionalTrackedEdgeGraph formation.annular.RS inputData.regionEdges
     color (trackedColorPairColors pair).1 (trackedColorPairColors pair).2
   let edgeAt := fun edge : {edge // edge ∈
       pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
-        web.toFormation corridor hinterior offset} => edge.1
+        formation corridor hinterior offset} => edge.1
   let input :=
     pointwiseSelectedSourceLocalLayerSerialTerminalInputBoundedProfileAt
-      web.toFormation corridor hinterior offset color hcrossing
+      formation corridor hinterior offset color hcrossing
   let portConnected := fun leftPort rightPort : CorridorPort 2 1 =>
     input.profile.strandConnected pair leftPort rightPort = true
   have hports :=
-    pointwiseSelectedTerminalInputProfileForColorAt_portConnected_exact web
+    pointwiseSelectedTerminalInputProfileForColorAt_portConnected_exact formation
       corridor hinterior offset color hcrossing pair
   have hexact :
       graph.Reachable (edgeAt left) (edgeAt right) ↔
@@ -190,12 +190,12 @@ theorem pointwiseSelectedSourceLocalLayerSerialTrackedPrefixAttachmentStateForCo
   change SupportedPortResidualFactoredReachability
       (padSupportedPortResidualCode
         (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionEdgeAtSlot?
-          web.toFormation corridor hinterior offset)
+          formation corridor hinterior offset)
         (exactSupportedPortResidualCode graph edgeAt inputData.portEdge))
       portConnected
-      (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionSlotAt web
+      (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionSlotAt formation
         corridor hinterior offset hcell left)
-      (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionSlotAt web
+      (pointwiseSelectedSourceLocalLayerSerialTrackedTransitionSlotAt formation
         corridor hinterior offset hcell right) ↔ _
   simp only [SupportedPortResidualFactoredReachability,
     PortResidualFactoredReachability, padSupportedPortResidualCode,

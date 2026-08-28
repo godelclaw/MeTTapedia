@@ -74,12 +74,12 @@ theorem pointwiseSelectedSourceLocalLayerSerialCellRebase_strictHistory_nextColl
       pointwiseSelectedSourceLocalLayerCellRegionAt web.toFormation corridor
         hinterior prior)
     (hcollar : edge ∈
-      pointwiseSelectedSourceLocalLayerBoundaryRebaseTrackedCollarAt web
+      pointwiseSelectedSourceLocalLayerBoundaryRebaseTrackedCollarAt web.toFormation
         corridor hinterior (sourceLocalLayerNextOffset offset hnext)
           hnextNext) :
     edge ∈
       pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-        web corridor hinterior offset hnext := by
+        web.toFormation corridor hinterior offset hnext := by
   let next := sourceLocalLayerNextOffset offset hnext
   let nextNext := sourceLocalLayerNextOffset next hnextNext
   have hpriorNext : prior.val < next.val := by
@@ -263,7 +263,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialCellRebase_activeNextInteraction_
       (sourceLocalLayerNextOffset offset hnext).val + 1 < blockLength - 3)
     (targetEdge : {edge // edge ∈
       pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-        web corridor hinterior (sourceLocalLayerNextOffset offset hnext)
+        web.toFormation corridor hinterior (sourceLocalLayerNextOffset offset hnext)
           hnextNext})
     (hactive : targetEdge.1 ∈
       pointwiseSelectedSourceLocalLayerSerialTerminalInputRegionAt
@@ -271,13 +271,13 @@ theorem pointwiseSelectedSourceLocalLayerSerialCellRebase_activeNextInteraction_
           (sourceLocalLayerNextOffset offset hnext)) :
     targetEdge.1 ∈
       pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-        web corridor hinterior offset hnext := by
+        web.toFormation corridor hinterior offset hnext := by
   let next := sourceLocalLayerNextOffset offset hnext
   have htarget := targetEdge.property
   change targetEdge.1 ∈
       pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
           web.toFormation corridor hinterior next ∪
-        pointwiseSelectedSourceLocalLayerBoundaryRebaseTrackedCollarAt web
+        pointwiseSelectedSourceLocalLayerBoundaryRebaseTrackedCollarAt web.toFormation
           corridor hinterior next hnextNext at htarget
   rw [Finset.mem_union] at htarget
   rcases htarget with hrolling | hcollar
@@ -363,11 +363,11 @@ theorem pointwiseSelectedSourceLocalLayerSerialCellRebase_nextInteraction_none_n
     (pair : TrackedColorPair)
     (targetEdge : {edge // edge ∈
       pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-        web corridor hinterior (sourceLocalLayerNextOffset offset hnext)
+        web.toFormation corridor hinterior (sourceLocalLayerNextOffset offset hnext)
           hnextNext})
     (hnot : targetEdge.1 ∉
       pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-        web corridor hinterior offset hnext) :
+        web.toFormation corridor hinterior offset hnext) :
     targetEdge.1 ∉
       (pointwiseSelectedSuccessorTrackedGraphForColorAt web.toFormation corridor
         hinterior offset hnext color pair).support := by

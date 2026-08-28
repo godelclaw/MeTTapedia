@@ -67,7 +67,7 @@ noncomputable def pointwiseSelectedSourceLocalLayerSerialCellRebaseUniformTracke
           (sourceLocalLayerNextOffset offset hnext)
     let interaction :=
       pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-        web corridor hinterior offset hnext
+        web.toFormation corridor hinterior offset hnext
     Fin target.card → Option (Fin interaction.card) := by
   classical
   dsimp only
@@ -77,7 +77,7 @@ noncomputable def pointwiseSelectedSourceLocalLayerSerialCellRebaseUniformTracke
         (sourceLocalLayerNextOffset offset hnext)
   let interaction :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-      web corridor hinterior offset hnext
+      web.toFormation corridor hinterior offset hnext
   intro targetSlot
   let edge := ((carrierCoordinate target).symm targetSlot).1
   if hedge : edge ∈ interaction then
@@ -101,7 +101,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialCellRebaseUniformTrackedTargetSou
           (sourceLocalLayerNextOffset offset hnext)).card)
     (interactionSlot : Fin
       (pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-        web corridor hinterior offset hnext).card)
+        web.toFormation corridor hinterior offset hnext).card)
     (hsource :
       pointwiseSelectedSourceLocalLayerSerialCellRebaseUniformTrackedTargetSourceAt
         web corridor hinterior offset hnext targetSlot =
@@ -141,10 +141,10 @@ noncomputable def pointwiseSelectedSourceLocalLayerSerialTrackedInteractionPreRe
     SourceLocalLayerSerialTrackedInteractionPrefixState :=
   let interaction :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-      web corridor hinterior offset hnext
+      web.toFormation corridor hinterior offset hnext
   boundedInterfaceExteriorFamilyCode interaction 49
     (pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt_card_le_fortyNine
-      web corridor hinterior offset hnext hcell)
+      web.toFormation corridor hinterior offset hnext hcell)
     (fun pair => pointwiseSelectedPreRebaseTrackedGraphForColorAt web.toFormation
       corridor hinterior offset color pair)
 
@@ -166,17 +166,17 @@ noncomputable def pointwiseSelectedSourceLocalLayerSerialTrackedRebaseFactorAt
     SourceLocalLayerSerialTrackedRebaseFactor := by
   let interaction :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-      web corridor hinterior offset hnext
+      web.toFormation corridor hinterior offset hnext
   let target :=
     pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt
       web.toFormation corridor hinterior
         (sourceLocalLayerNextOffset offset hnext)
   let hinteraction : interaction.card ≤ 49 :=
     pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt_card_le_fortyNine
-      web corridor hinterior offset hnext hcell
+      web.toFormation corridor hinterior offset hnext hcell
   let htarget : target.card ≤ 21 :=
     pointwiseSelectedSourceLocalLayerSerialTrackedTransitionCarrierAt_card_le_twentyOne
-      web corridor hinterior (sourceLocalLayerNextOffset offset hnext) hcellNext
+      web.toFormation corridor hinterior (sourceLocalLayerNextOffset offset hnext) hcellNext
   exact {
     interactionCount := ⟨interaction.card, Nat.lt_succ_of_le hinteraction⟩
     targetCount := ⟨target.card, Nat.lt_succ_of_le htarget⟩
@@ -214,7 +214,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialTrackedRebaseFactorAt_interaction
     (pointwiseSelectedSourceLocalLayerSerialTrackedRebaseFactorAt web corridor
       hinterior offset hnext hcell hcellNext color).interactionCount.val =
       (pointwiseSelectedSourceLocalLayerSerialCellRebaseTrackedInteractionCarrierAt
-        web corridor hinterior offset hnext).card := by
+        web.toFormation corridor hinterior offset hnext).card := by
   rfl
 
 @[simp]
