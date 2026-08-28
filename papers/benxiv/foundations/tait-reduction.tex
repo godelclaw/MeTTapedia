@@ -37,11 +37,68 @@ which buys the identity we shall use twice: \emph{the three nonzero elements
 of $\mathbb{F}_2^2$ sum to zero}.
 
 \begin{theorem}[Tait's reduction]\label{thm:tait-reduction}
-\Sprose
+\Sconditional{Lemma~\ref{lem:planar-spherical-presentation}}
 Suppose every bridgeless spherical cubic map admits a Tait colouring. Then
 every finite planar simple graph admits a proper vertex colouring with four
 colours.
 \end{theorem}
+
+\begin{proposition}[audit of the legacy Lean planarity predicate]
+\label{prop:weak-planarity-refuted}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24WeakPlanarityRefutation.current_planarity_does_not_imply_four_colorable}
+The predicate currently named \texttt{Mettapedia.GraphTheory.IsPlanar} is not
+a formalization of planarity.  Every finite simple graph satisfies it, while
+$K_5$ satisfies it and is not $4$-colourable.
+\end{proposition}
+
+\begin{proof}
+The current structure records only a finite family of edge sets in which
+every edge occurs twice.  For an arbitrary graph take two formal faces and
+declare the boundary of each to be the entire edge set.  This satisfies every
+field.  On the other hand, a colouring of the complete graph on five vertices
+is injective, so no map from its vertices to a four-element palette can be a
+proper colouring.  Both statements, and their conjunction, are checked by
+the declaration named above.
+\end{proof}
+
+This proposition concerns only the repository's legacy vocabulary, not
+Theorem~\ref{thm:tait-reduction}.  The controlling formal statement must use
+the genuine combinatorial notion already used throughout the route: a
+graph-backed rotation system with cyclic vertex rotations, connected primal
+graph, and spherical Euler equation.  The stellar construction below then
+acts on that presentation.  No theorem may use the legacy
+\texttt{IsPlanar} premise as a substitute, since that would make the formal
+headline false before the compositional argument begins.
+
+\begin{lemma}[the abstract-planar presentation bridge]
+\label{lem:planar-spherical-presentation}
+\Sconditional{the classical finite plane-embedding representation theorem}
+Every finite connected planar simple graph with at least three vertices
+admits a connected spherical graph presentation: a dart rotation system
+whose primal graph is the given graph, whose rotation is cyclic at every
+vertex, and whose face orbits satisfy
+\[
+  |V|-|E|+|F|=2.
+\]
+\end{lemma}
+
+\begin{proof}
+Choose a crossing-free embedding of the abstract planar graph in the sphere.
+Take the two oriented incidences of every edge as darts, reverse a dart to
+obtain the fixed-point-free edge involution, and read the cyclic order of
+the incident darts around each vertex from the orientation of the sphere.
+The resulting primal graph is the original graph.  Its face permutation
+traces the complementary regions of the embedding, and Euler's formula gives
+the displayed identity.  This is the standard equivalence between a cellular
+sphere embedding and a spherical rotation system.
+
+The marker is \textsc{conditional}, rather than \textsc{prose}, because the
+repository currently has no correct abstract-planarity predicate or
+machine-checked constructor implementing this representation theorem.  The
+ordinary argument above fixes the intended bridge exactly; it must not be
+replaced by the refuted legacy predicate of
+Proposition~\ref{prop:weak-planarity-refuted}.
+\end{proof}
 
 The proof occupies the rest of the section. It is assembled from five
 ingredients, stated separately so that each carries its own status.
@@ -199,6 +256,27 @@ spherical with the same edge count.
 Corollary~\ref{cor:loop-bridge} now supplies exactly this: an edge is a loop
 of $T$ precisely when it is a bridge of $T^{*}$, so the loopless primal has a
 bridgeless dual, with no appeal to an embedding.
+\end{proof}
+
+\begin{corollary}[the explicit stellar dual has the complete Tait class]
+\label{cor:stellar-dual-package}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24StellarDualStructure.stellarDual_bridgelessSphericalCubicMapData}
+Let $M$ be a connected spherical graph presentation with at least three old
+vertices, let $T$ be its stellar subdivision, and let $T^{*}$ be the facial
+dual.  Then $T^{*}$ is a connected, bridgeless, spherical cubic rotation map
+with one cyclic rotation at every vertex.
+\end{corollary}
+
+\begin{proof}
+The stellar map is connected and spherical, every stellar face orbit has
+three darts, and every stellar edge has two distinct face sides.  Replacing
+the stellar vertex rotation by its face permutation therefore makes the dual
+cubic and preserves connectedness and Euler characteristic.  If a dual edge
+were a bridge, the two darts of the corresponding stellar edge would lie in
+one dual face orbit; dual faces are stellar vertex orbits, so that stellar
+edge would be a loop, contrary to the looplessness of the stellar
+construction.  The declaration above packages these facts as exactly the
+map class consumed by the Tait-colouring hypothesis.
 \end{proof}
 
 \begin{remark}[a correction worth recording]\label{rem:not-one-interface}
@@ -554,7 +632,17 @@ went directly. Distinct faces name distinct darts $\alpha d_i$, since the
 face orbits partition $D$, so the clauses do not collide.
 
 \begin{theorem}[the subdivision triangulates]\label{thm:stellar-darts}
-\Sprose
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24StellarEuler.orbitCount_stellarRotation}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24StellarEuler.orbitCount_stellarFace_eq_two_mul}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24StellarEuler.orbitCount_stellarFlip}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24StellarEuler.stellar_euler}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24StellarStructure.stellar_old_embedding}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24StellarStructure.stellar_loopless}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24StellarStructure.stellar_face_three_vertices}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24StellarRotationSystem.orbitFacesTwoSided}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24StellarRotationSystem.orbitFaceDarts_card_three}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24StellarDualStructure.stellar_primalConnected}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24StellarDualStructure.stellar_euler_semantic}
 The faces of $M'$ are exactly the $3$-cycles
 \[
   (\, d_i, \; a_i, \; b_{i-1} \,),
