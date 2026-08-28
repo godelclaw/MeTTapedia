@@ -105,6 +105,97 @@ theorem exists_component_exactBoundary_of_dualCycle
   rw [hcomponentBoundary]
   exact hsaturated
 
+/-- A simple facial-dual cycle has two connected literal vertex sides, and
+the boundary of either deletion component is the whole crossed-edge set.
+
+The extra conclusion is not a Jordan-curve assumption.  Parity saturation
+applies to every deletion component.  Since one crossed edge has only two
+endpoints, all components other than a chosen one must therefore coincide;
+`induce_complement_connected_of_component_boundary_saturation` packages this
+finite graph argument. -/
+theorem exists_component_exactBoundary_connectedSides_of_dualCycle
+    (data : Data G)
+    (htwoSided : OrbitFacesTwoSided data.toRotationSystem)
+    (hdual : (interiorDualGraph
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))).Connected)
+    (hconnected : G.Connected)
+    (heuler : (Fintype.card V : Int) - Fintype.card G.edgeSet +
+      Fintype.card (OrbitFace data.toRotationSystem) = 2)
+    (hunique : PairwiseUniqueSharedInteriorEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem)))
+    {start : AmbientFace
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem))}
+    (walk : (interiorDualGraph
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset
+        (OrbitFace data.toRotationSystem))).Walk start start)
+    (hcycle : walk.IsCycle) :
+    let removed := dualWalkCrossingEdges
+      (orbitFaceBoundary data.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace data.toRotationSystem)) hunique walk
+    ∃ component :
+        (G.deleteEdges
+          (GoertzelV24FiniteDeletionCyclicCut.edgeFinsetValueSet removed)).ConnectedComponent,
+      GoertzelV24FiniteDeletionCyclicCut.componentCrossingEdges
+          removed component = removed ∧
+        (G.induce (fun vertex => vertex ∈ component.supp)).Connected ∧
+        (G.induce (fun vertex => vertex ∉ component.supp)).Connected := by
+  dsimp only
+  let removed := dualWalkCrossingEdges
+    (orbitFaceBoundary data.toRotationSystem)
+    (Finset.univ : Finset (OrbitFace data.toRotationSystem)) hunique walk
+  rcases exists_componentCrossingEdges_nonempty_of_dualCycle
+      data hdual hconnected heuler hunique walk hcycle with
+    ⟨component, hcomponentNonempty⟩
+  have hsaturation
+      (other :
+        (G.deleteEdges
+          (GoertzelV24FiniteDeletionCyclicCut.edgeFinsetValueSet removed)).ConnectedComponent) :
+      GoertzelV24FiniteDeletionCyclicCut.componentCrossingEdges
+          removed other = removed := by
+    have hotherBoundary :
+        GoertzelV24FiniteDeletionCyclicCut.componentCrossingEdges
+            removed other =
+          crossingEdgeFinset G (fun vertex => vertex ∈ other.supp) := by
+      ext edge
+      rw [GoertzelV24FiniteDeletionCyclicCut.mem_componentCrossingEdges_iff,
+        GoertzelV24CubicSmallBoundaryCycle.mem_crossingEdgeFinset_iff]
+    have hsubset :
+        crossingEdgeFinset G (fun vertex => vertex ∈ other.supp) ⊆
+          removed := by
+      rw [← hotherBoundary]
+      exact
+        GoertzelV24FiniteDeletionCyclicCut.componentCrossingEdges_subset_removed
+          removed other
+    have hnonempty :
+        (crossingEdgeFinset G
+          (fun vertex => vertex ∈ other.supp)).Nonempty := by
+      rw [← hotherBoundary]
+      by_cases heq : other = component
+      · simpa [heq] using hcomponentNonempty
+      · exact
+          GoertzelV24FiniteDeletionCyclicCut.componentCrossingEdges_nonempty_of_distinct
+            hconnected removed other component heq
+    have hsaturated :=
+      crossingEdgeFinset_eq_dualWalkCrossingEdges_of_isCycle_of_subset
+        data htwoSided hunique walk hcycle
+          (fun vertex => vertex ∈ other.supp) hsubset hnonempty
+    rw [hotherBoundary]
+    exact hsaturated
+  have hboundary := hsaturation component
+  have hremovedNonempty : removed.Nonempty := by
+    rw [← hboundary]
+    exact hcomponentNonempty
+  refine ⟨component, hboundary, ?_, ?_⟩
+  · exact
+      GoertzelV24FiniteDeletionCyclicCut.connected_induce_component
+        removed component
+  · exact
+      GoertzelV24FiniteDeletionCyclicCut.induce_complement_connected_of_component_boundary_saturation
+        removed component hremovedNonempty hsaturation
+
 end
 
 end GoertzelV24FramedDualCycleExactBoundary

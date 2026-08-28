@@ -824,9 +824,9 @@ The following checked lemma supplies one of those outputs for a literal
 finite segment of the source corridor.  It is useful precisely because its
 hypotheses expose, rather than suppress, the remaining global geometry.
 
-\begin{lemma}[a boundary-separated source rail segment is an exact shore]
+\begin{lemma}[a boundary-separated source rail segment supplies connected shores]
 \label{lem:source-rail-segment-exact-shore}
-\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorRailChainComponent.exists_alignedBoundary_component_exactBoundary}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorRailChainComponent.exists_alignedBoundary_component_exactBoundary_connectedEdgeShores}
 Let three consecutive transverse source interfaces be joined on their two
 sides by the literal facial-dual rails of the intervening corridor cells.
 Assume that each composed rail is a simple path, that the two rail supports
@@ -835,7 +835,11 @@ interface.  Close the two rails by the transverse two-edge paths at the
 endpoint interfaces, and let $W$ be the resulting closed facial-dual walk.
 If $X(W)$ is the set of primal edges crossed by $W$, then $W$ is a
 simple dual cycle and some connected component of $G-X(W)$ has graph
-boundary exactly $X(W)$.
+boundary exactly $X(W)$.  Both this component side and its complementary
+vertex side induce connected subgraphs.  Moreover, if every edge incident
+with the component side is assigned to one edge shore, then that edge shore
+and its complementary edge shore are connected in the edge-walk sense used
+by the majority-shore descent.
 \end{lemma}
 
 \begin{proof}
@@ -856,15 +860,35 @@ contained in $X(W)$ must contain every crossed edge.  Hence the inclusion is
 an equality.  The generic form, independent of the corridor realization, is
 checked as
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedDualCycleExactBoundary.exists_component_exactBoundary_of_dualCycle}.
+
+The same saturation argument applies to every component of $G-X(W)$.
+Because $X(W)$ is nonempty, a component distinct from the chosen one also
+has nonempty boundary; parity therefore forces its boundary to be all of
+$X(W)$.  Two distinct such components cannot coexist, since one crossed
+edge has only two endpoints.  Thus the complement of the chosen component
+is connected.  This generic strengthening is checked as
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedDualCycleExactBoundary.exists_component_exactBoundary_connectedSides_of_dualCycle}.
+
+Finally put in the chosen edge shore every ambient edge with at least one
+endpoint in the chosen component.  A path in the component connects the
+component endpoints of any two such edges, and the two edges themselves
+attach their possible outside endpoints.  Hence this edge shore is
+connected.  Its complement consists exactly of the edges having both
+endpoints in the complementary vertex side, so connectivity of that induced
+side proves connectivity of the complementary edge shore.  This construction
+is canonical and monotone under inclusion of vertex sides.  Its generic form
+is checked as
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedVertexSideEdgeShore.connected_edgeShores_of_connected_vertexSides}.
 \end{proof}
 
 This lemma is not yet Proposition~\ref{prop:target-forced-cut-chain}.  It
-constructs a saturated vertex-side boundary for one three-interface segment.
+constructs a saturated vertex-side boundary and complementary connected edge
+shores for one three-interface segment.
 The remaining source adapter must compose rails over arbitrary length, prove
-the required noncollision uniformly, convert the successive bounded cycles
-to connected complementary \emph{edge} shores, choose those shores
-consistently so that they are strictly nested, and then provide the roots and
-uniform width bounds consumed by
+the required noncollision uniformly, choose the successive component sides
+consistently so that the resulting edge shores are strictly nested, establish
+nonempty majority cores on both sides from the protected inner and outer
+cycle material, and then provide the roots and uniform width bounds consumed by
 Theorem~\ref{thm:literal-majority-shore-chain-descent}.
 
 There is a second, equally compositional way to state the same structural
