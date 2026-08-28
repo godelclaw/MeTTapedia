@@ -1353,38 +1353,71 @@ Vertex minimality makes every smaller member of the same structural class
 Tait-colourable, contradicting the preceding noncolourability.
 \end{proof}
 
-Substituting this literal state into
-Theorem~\ref{thm:cardinality-phased-shore-descent} removes the last abstract
-seam-type parameter.  For cuts of width at most \(k\), the unphased state
-count is
-
+\begin{theorem}[bounded-width literal-shore descent]
+\label{thm:literal-majority-shore-tree-descent}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MajorityShoreStateDescent.vertexCount_le_of_literalShoreTree}
+Let \(M\) be a graph-backed vertex-minimal non-Tait-colourable member of the
+connected bridgeless spherical cubic rotation-map class.  Fix \(k,w\ge0\),
+and let \(\mathcal T\) be a finite rooted binary tree.  At every node \(t\),
+suppose we are given an actual finite edge shore \(S_t\) such that:
+\begin{enumerate}
+\item \(S_t\) and its edge complement are connected, and the corresponding
+majority vertex shore and its complement are nonempty;
+\item the literal exterior and interior vertex-side tangles have chosen
+retained-dart roots;
+\item the literal boundary width is at most \(k\), while the edge-shore middle
+set has cardinality at most \(w\);
+\item the exterior boundary has two distinct darts;
+\item along every root-to-leaf path, a later shore is a proper subset of every
+earlier shore.
+\end{enumerate}
+If \(|V(M)|\le2|V(\mathcal T)|\), then, with
 \[
              q_k=\sum_{0\le j\le k} j!\,2^{3^j},
 \]
-
-and the cardinality phase gives the explicit bound
-
+one has
 \[
-             |V(G)|\le
+             |V(M)|\le
              2\left(2^{(6w+1)q_k}-1\right).
 \]
+\end{theorem}
 
-This exact specialization is machine-checked as
-\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24NormalizedShoreDescent.vertexCount_le_of_cardPhasedNormalizedShore}.
-Its former application-specific replacement premise is discharged by
-Theorem~\ref{thm:majority-shore-physical-replacement}.  The supplier must now
-produce exactly that theorem's literal hypotheses: nested connected shores,
-two genuine boundary ports, equal normalized states, and a cubic star wholly
-inside the intervening edge slab.
+\begin{proof}
+For a node of literal boundary width \(j\le k\), compute its normalized seam
+state directly from its displayed shore, interior root, canonical boundary
+coordinate and first-return hub rotation.  Embed it in the single dependent
+sum
+\[
+       Q_k=\coprod_{0\le j\le k}\Sigma_j,
+       \qquad |Q_k|=q_k,
+\]
+and augment it by \(|S_t|\bmod(6w+1)\).  Thus the tree is labelled by exactly
+\((6w+1)q_k\) possible states.
 
-This theorem closes the finite counting once the supply exists.  In
-particular, the Lean declaration does \emph{not} prove that a branch decomposition gives
-ordered port tangles, that the local perturbations of its nooses are mutually
-compatible with the retained vertex shores, or that the resulting ordered
-ports realize the same exact Count state.  Once those literal data are
-present, however, both semantic preservation and the spherical bridgeless
-cubic replacement are verified by
-Theorem~\ref{thm:majority-shore-physical-replacement}.
+Suppose two comparable nodes repeated an augmented state.  Proper nesting and
+equality of the cardinality phases give, by
+Lemma~\ref{lem:cubic-sphere-cut-material}, a vertex whose three incident edges
+all lie in the strict edge slab between the old and new shores.  Equality in
+the dependent sum first identifies the two literal widths and then transports
+the two normalized states to an ordinary equality at that common width.  This
+dependent transport is checked explicitly in
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MajorityShoreStateDescent.boundedNormalizedState_eq_elim};
+it is not a caller-supplied cast.  All remaining hypotheses of
+Theorem~\ref{thm:majority-shore-physical-replacement} are fields of the two
+literal tree nodes.  That theorem therefore makes the repeated state
+impossible.  No root-to-leaf descent repeats a state, so finite binary-tree
+pumping and \(|V(M)|\le2|V(\mathcal T)|\) give the displayed bound.
+\end{proof}
+
+This theorem removes both the abstract seam-type parameter and the former
+application-specific replacement premise from the bounded-width consumer.
+The finite state is computed from literal shores, and repeated states are fed
+directly to the physical splice.  What remains on the supply side is now
+precise: construct this certified tree from the source corridor or a
+source-faithful connected decomposition, prove its proper nesting and vertex
+accounting, and provide the nodewise connectedness, rooting, width, middle-set
+and two-port fields.  The theorem does \emph{not} assert that an arbitrary
+branch decomposition already supplies those literal data.
 
 For an ordered boundary of size at most \(k\), the manuscript's data---edge
 colours, the two noncrossing connectivity relations, capped face progress,
