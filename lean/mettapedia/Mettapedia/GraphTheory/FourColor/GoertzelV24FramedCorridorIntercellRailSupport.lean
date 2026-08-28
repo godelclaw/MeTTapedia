@@ -37,7 +37,7 @@ namespace AnnularEmbedding
 /-- Facial-dual walks with disjoint vertex supports cross disjoint primal
 edge sets.  If one primal edge were crossed by both walks, its two incident
 faces would force a shared dual vertex by the two-sided face-incidence bound. -/
-private theorem dualWalkCrossingEdges_disjoint_of_support_disjoint
+theorem dualWalkCrossingEdges_disjoint_of_support_disjoint
     {source : SourceTrail G}
     {embedded : source.AnnularEmbedding}
     (hunique : PairwiseUniqueSharedInteriorEdges

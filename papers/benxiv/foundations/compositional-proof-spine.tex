@@ -1037,11 +1037,41 @@ interface, so their supports are not disjoint; this is checked as
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorAlignedTwoTileBoundaryOverlap.sourceTwoTileAlignedBoundaryWalks_consecutive_not_disjoint}.
 \end{proof}
 
+\begin{lemma}[separated local rail supports grow linearly]
+\label{lem:source-local-rail-support-growth}
+Let \(S\) be a finite set of aligned two-tile window starts such that any two
+distinct starts differ by at least four positions.  For each \(i\in S\), let
+\(R_i\) be the two primal edges displayed by the two rail coordinates of the
+local six-port profile.  Then the sets \(R_i\) are pairwise disjoint and
+\[
+                         \left|\bigcup_{i\in S}R_i\right|=2|S|.
+\]
+This is a statement about the displayed local rail carriers, not yet a claim
+that every such edge survives in the true crossing frontier after the
+enclosed vertex sides are united.
+\end{lemma}
+
+\begin{proof}
+At starts separated by at least four positions, all four possible pairs of
+the two short facial-dual rail tracks have disjoint vertex support.  In a
+two-sided rotation system, dual walks with disjoint support cross disjoint
+primal edge sets.  Each local rail carrier has exactly two edges, so finite
+additivity gives the formula.  The pairwise-disjointness and cardinality
+statement are checked as
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorSeparatedRailFrontierGrowth.card_biUnion_sourceTwoTileRailCrossingEdgesAt_eq_two_mul_card}.
+\end{proof}
+
 Thus coordinate agreement of the rolling local profiles is not yet physical
 serial composition, and choosing one saturated component independently at
-each window does not supply a nested shore chain.  The remaining theorem is
-target-forced, not a geometry-only source adapter: it must construct, at each
-selected corridor position, one individually bounded saturated ambient cut.
+each window does not supply a nested shore chain.  The transverse portal is
+absorbed in the oriented branch, but
+Lemma~\ref{lem:source-local-rail-support-growth} shows that the displayed
+lateral carriers themselves do not telescope: a separate theorem would have
+to absorb all but uniformly many of them from the true frontier of the united
+side.  The remaining theorem is therefore target-forced, not a geometry-only
+source adapter: it must either prove precisely that additional absorption or
+construct, at each selected corridor position, a different individually
+bounded saturated ambient cut.
 It must prove that these cuts are simple and pairwise ordered, that their
 outer-root shores are strictly nested with nonempty intervening slabs, and
 that both holes and the frozen interface remain outside those slabs.  It must
