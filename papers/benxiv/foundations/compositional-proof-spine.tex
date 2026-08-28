@@ -1288,11 +1288,17 @@ Theorem~\ref{thm:normalized-exact-count-replacement}.
 \end{proof}
 
 Thus equality of the full finite receipt supplies both semantic facts required
-by replacement: zero Count and seam orientation.  The supplier must still
-construct a coordinate equivalence for each majority shore and supply the two
-disc-side hypotheses for the replacement piece.  Those are geometric
-existence/packaging obligations; no further Count semantics or hidden
-orientation choice remains.
+by replacement: zero Count and seam orientation.  For a majority shore whose
+literal boundary has cardinality \(k\), choose the canonical finite-cardinality
+equivalence with \(\operatorname{ULift}(\operatorname{Fin} k)\).  Applying this
+coordinate to the literal vertex-side open tangle and its canonical
+first-return hub rotation gives an actual state \(\Sigma_k\).  Equality of two
+such states produces, without any extra receipt field, both the transported
+orientation-reversing matching and equality of the exact Tait supports:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MajorityShoreNormalizedState.replacement_receipt_of_normalizedState_eq}.
+Thus the coordinate-equivalence packaging is closed.  The supplier must still
+supply the two disc-side hypotheses for the replacement piece; no further
+Count semantics or hidden orientation choice remains.
 
 Substituting this literal state into
 Theorem~\ref{thm:cardinality-phased-shore-descent} removes the last abstract
@@ -1854,6 +1860,57 @@ pointwise-incidence theorem, and keep boundary-spliced faces out of the simple
 interior-dual lookup.  This is a carrier-generalizing,
 hypothesis-minimizing refactor of the factorization, not a new geometric
 assumption.
+
+The tracked half of this refactor is now complete on the corrected
+pointwise-selected source geometry.  At each corridor position the selected
+literal Cell has two vertices and a unique internal bond.  A crossing of a
+strictly earlier Cell can neither equal nor meet an outgoing crossing of the
+successor Cell: the corresponding corridor faces are separated along the
+clean dual geodesic.  If an edge were internal to both Cells, equality of the
+two endpoint sets would reduce to the same contradiction.  Consequently any
+historical Cell edge which reappears in the successor rolling carrier is one
+of the four rebase-role edges, and every active successor edge is either a
+rebase-role edge or belongs to the current literal Cell.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebPointwiseSelectedCellPastOverlap.pointwiseSelectedSourceLocalLayerSerialCellRebase_pastCellOverlap_mem_switch}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebPointwiseSelectedCellPastOverlap.pointwiseSelectedSourceLocalLayerSerialCellRebase_activeTarget_mem_switch_or_currentCell}
+
+The resulting finite tracked factor uses the actual interaction carrier
+(at most forty-nine edges), a four-role deletion mask, the literal local
+adjacency table, and a partial coordinate map into the next rolling carrier
+(at most twenty-one edges).  Its update is rowwise equal to the literal
+successor graph on the interaction carrier.  An unmapped target coordinate is
+isolated by the historical-overlap theorem above, so generic partial
+contraction is exact for vertex equality, direct adjacency, and exterior
+connectivity.  Thus the factor's executable target state is exactly the
+canonical tracked exterior code on the next literal rolling carrier.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebPointwiseSelectedTrackedRebaseFactor.pointwiseSelectedSourceLocalLayerSerialTrackedRebaseFactorAt_uniformSuccessorCode_exact}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebPointwiseSelectedTrackedTargetCode.pointwiseSelectedSourceLocalLayerSerialTrackedRebaseFactorAt_targetState_code_exact}
+
+The combined finite projection now closes both rolling roots on this
+pointwise-selected carrier.  For every compatible positive prefix witness and
+literal Cell colouring, the tracked target root computed by the finite rebase
+factor is exactly the canonical tracked prefix state at the next cut.
+
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebPointwiseSelectedRollingProjectionExact.pointwiseSelectedSourceLocalLayerSerialRollingProjectionFactorAt_tracked_exact}
+
+The facial target root is exact as well.  Its fixed twenty-four interface
+slots and four persistent-port slots recover the next-cut facial connectivity,
+presence bits, and cap-at-five component sizes from the cap-at-six target
+code.  The proof uses only the pointwise-selected face carrier and the local
+prefix/Cell witnesses; it does not reinstate global opened-annulus face
+uniqueness.
+
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebPointwiseSelectedRollingProjectionExact.pointwiseSelectedSourceLocalLayerSerialRollingProjectionFactorAt_face_exact}
+
+Thus the finite one-Cell transition has now been proved exact on both of the
+strong rolling roots from which the manuscript's cumulative profile is
+projected.  This does not yet prove the full theorem above: the realized
+letter relation and the realizable initial set must still be constructed
+without consulting a total colouring of the unprocessed suffix, and their
+soundness and completeness must be connected to the cumulative Count
+semantics.  Those are the remaining factorization obligations; global
+opened-annulus face uniqueness is no longer an obligation of either rolling
+transition.
 
 The Lean transition uses a conservative three-pair refinement internally and
 then projects to exactly the two families named by the manuscript.  It proves
@@ -2793,6 +2850,42 @@ This is a bijection preserving the unordered endpoint pair.  The preceding
 saturated-side lemma makes the induced ambient side boundary-essential, and
 transport across this multigraph isomorphism gives boundary-essentiality on
 the literal open-tangle carrier used by the splice.
+\end{proof}
+
+\begin{lemma}[complementary vertex shores reassemble the ambient Tait problem]
+\label{lem:complementary-shore-tait-reassembly}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24VertexSideReassembly.rotationSystemTaitColorable_complementaryComposite_iff}
+Let \(M=(D,\alpha,\rho)\) be a finite loopless rotation system and let
+\(S\subseteq V(M)\).  Form the two literal vertex-side open tangles on \(S\)
+and \(V(M)\setminus S\), and match their boundary darts by the ambient edge
+flip \(d\mapsto\alpha d\).  Their closed seam composite is Tait-colourable if
+and only if \(M\) is Tait-colourable.
+\end{lemma}
+
+\begin{proof}
+Partition each shore's retained darts into internal and boundary darts.  The
+composite dart carrier is
+\[
+  (D_{\rm int}(S)\sqcup D_{\rm int}(S^c))
+    \sqcup(D_{\partial}(S)\sqcup D_{\partial}(S^c)).
+\]
+Undoing these two partitions and then the predicate partition (S\sqcup S^c)
+gives a canonical bijection from this carrier to \(D\).  On an internal dart
+the composite edge flip is the restricted old flip.  On a boundary dart it
+is the seam matching, which was defined to be the old flip.  Hence the
+bijection conjugates the two edge involutions.  The analogous predicate
+partition of the vertex carrier identifies the composite base vertex of a
+dart with its old base vertex.
+
+Read any Tait edge-colouring on either rotation system at its darts and
+transport that dart-colouring across the displayed bijection.  Conjugacy of
+the flips makes it constant on the opposite pair of every edge.  Preservation
+of base vertices makes it locally proper, and nonzeroness is unchanged.
+The generic descent from an invariant locally proper dart-colouring to edge
+orbits therefore gives a Tait edge-colouring on the other rotation system.
+Applying the construction in both directions proves the equivalence.  Notice
+that this argument uses no face or embedding claim: those are supplied
+separately by the planar-bond structural theorem.
 \end{proof}
 
 \begin{corollary}[two literal shores feed the structural splice]
