@@ -98,6 +98,14 @@ theorem connectedSphericalFourColorStatement_of_tait
   exact hTait (StellarDualRS presentation)
     (stellarDual_bridgelessSphericalCubicMapData presentation hcard)
 
+/-- Tait colourability of every bridgeless spherical cubic rotation map
+implies the componentwise spherical Four-Colour statement. -/
+theorem sphericalFourColorStatement_of_tait
+    (hTait : EveryBridgelessSphericalCubicTaitColorable.{u}) :
+    SphericalFourColorStatement.{u} :=
+  sphericalFourColorStatement_of_connected
+    (connectedSphericalFourColorStatement_of_tait hTait)
+
 end
 
 end GoertzelV24StellarTaitReduction

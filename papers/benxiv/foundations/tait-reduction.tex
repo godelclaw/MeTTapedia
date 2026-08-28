@@ -105,18 +105,22 @@ ingredients, stated separately so that each carries its own status.
 
 \subsection{The ingredients}
 
-\begin{lemma}[reduction to the connected case]\label{lem:components}
-\Sprose
-It suffices to prove Theorem~\ref{thm:tait-reduction} for connected graphs
-with at least three vertices.
+\begin{lemma}[componentwise spherical reduction]\label{lem:components}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SphericalGraphPresentation.sphericalFourColorStatement_of_connected}
+Suppose every connected graph on at least three vertices which carries a
+connected spherical graph presentation is four-colourable.  Then every
+finite graph whose nontrivial connected components carry such presentations
+is four-colourable.
 \end{lemma}
 
 \begin{proof}
-A graph on at most two vertices is $4$-colourable outright. For a
-disconnected graph, colour each connected component independently with the
-same four-element palette and take the union: every edge has both endpoints
-in a single component, so properness is inherited componentwise. Planarity
-passes to components, being inherited by subgraphs.
+A component on at most two vertices is coloured injectively into the
+four-element palette.  Apply the connected hypothesis to every other
+component.  The connected components partition the vertex set, and every
+edge has both endpoints in one component, so the component colourings combine
+to one proper colouring of the whole graph.  The abstract-planar input is
+kept separate: Lemma~\ref{lem:planar-spherical-presentation} supplies the
+required presentation to each connected planar component.
 \end{proof}
 
 \begin{lemma}[triangulation]\label{lem:triangulate}
@@ -408,6 +412,7 @@ the genuine connected spherical presentation used in this section.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24StellarTaitReduction.stellar_adj_of_adj}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24StellarTaitReduction.colorable_four_of_stellarDual_taitColorable}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24StellarTaitReduction.connectedSphericalFourColorStatement_of_tait}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24StellarTaitReduction.sphericalFourColorStatement_of_tait}
 
 \subsection{What the reduction costs}
 
@@ -422,8 +427,9 @@ Theorem~\ref{thm:stellar-darts} replace maximality by a finite permutation
 construction; Definition~\ref{def:dual-map} is a change of generator; and
 Corollary~\ref{cor:loop-bridge} supplies dual bridgelessness.  The remaining
 classical boundary is therefore exactly the named representation bridge of
-Lemma~\ref{lem:planar-spherical-presentation}, together with its routine
-componentwise wrapper.  No legacy \texttt{IsPlanar} premise is used.
+Lemma~\ref{lem:planar-spherical-presentation}.  The componentwise wrapper is
+now checked by Lemma~\ref{lem:components}.  No legacy \texttt{IsPlanar}
+premise is used.
 
 \subsection{Audit of the unused maximality route}
 

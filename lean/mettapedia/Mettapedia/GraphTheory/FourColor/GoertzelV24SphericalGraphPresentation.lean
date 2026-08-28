@@ -1,4 +1,5 @@
 import Mathlib.Combinatorics.SimpleGraph.Coloring.Vertex
+import Mathlib.Combinatorics.SimpleGraph.Connectivity.Finite
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FaceDualConnectedness
 import Mettapedia.GraphTheory.FourColor.GoertzelV24OrbitFaceCurvatureBulk
 import Mettapedia.GraphTheory.FourColor.GoertzelV24SimpleGraphFaceDualConnectedness
@@ -31,6 +32,15 @@ universe u
 
 variable {V : Type u} [Fintype V] [DecidableEq V]
   {G : SimpleGraph V} [DecidableRel G.Adj]
+
+noncomputable local instance connectedComponentVertexFintype
+    (component : G.ConnectedComponent) : Fintype component :=
+  Fintype.ofFinite component
+
+noncomputable local instance connectedComponentAdjDecidable
+    (component : G.ConnectedComponent) :
+    DecidableRel component.toSimpleGraph.Adj :=
+  Classical.decRel _
 
 /-- A connected simple graph presented as a cellular map on the sphere.
 The cyclicity field rules out a rotation permutation with several local
@@ -66,6 +76,35 @@ def ConnectedSphericalFourColorStatement : Prop :=
     3 ≤ Fintype.card V →
       Nonempty (ConnectedSphericalGraphPresentation G) →
         G.Colorable 4
+
+/-- A finite graph is presented componentwise on the sphere when every
+connected component with at least three vertices carries the genuine
+connected spherical presentation above.  Components with at most two
+vertices need no rotation-system witness for four-colourability. -/
+def ComponentwiseSphericalGraphPresentable (G : SimpleGraph V) : Prop :=
+  ∀ component : G.ConnectedComponent,
+    3 ≤ Fintype.card component →
+      Nonempty (ConnectedSphericalGraphPresentation component.toSimpleGraph)
+
+/-- The componentwise spherical form of the Four-Colour statement. -/
+def SphericalFourColorStatement : Prop :=
+  ∀ {V : Type u} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
+    [DecidableRel G.Adj],
+    ComponentwiseSphericalGraphPresentable G → G.Colorable 4
+
+/-- Colouring every genuinely presented connected component colours the
+whole graph.  Small components are coloured injectively; all other
+components are passed to the connected spherical statement. -/
+theorem sphericalFourColorStatement_of_connected
+    (hconnected : ConnectedSphericalFourColorStatement.{u}) :
+    SphericalFourColorStatement.{u} := by
+  intro V _ _ G _ hpresentation
+  rw [G.colorable_iff_forall_connectedComponents]
+  intro component
+  by_cases hcard : 3 ≤ Fintype.card component
+  · exact hconnected component.toSimpleGraph hcard
+      (hpresentation component hcard)
+  · exact (component.toSimpleGraph.colorable_of_fintype).mono (by omega)
 
 end GoertzelV24SphericalGraphPresentation
 
