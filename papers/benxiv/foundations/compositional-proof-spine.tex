@@ -664,6 +664,31 @@ closure agrees pointwise, on active ports, with reachability in the literally
 restored graph; the repair is not a reason to discard the one-cell
 factorization.
 
+\begin{proposition}[cap-correct terminal acceptance is profile-local]
+\label{prop:cap-correct-terminal-profile}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularFrontierCapComposedProfileSemantics.restoredMenuBState_iff_capComposedOfUniformProfile}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularFrontierCapComposedProfileSemantics.restoredMenuBState_iff_of_uniformProfile_eq}
+For an actual Tait colouring of the open annular tangle, let the finite
+uniform profile record its inner boundary word and, for each selected colour
+pair, the Boolean relation saying which active ports lie in the same open
+component.  The source's Menu-B test after literally restoring the pentagonal
+cap is a predicate of this profile alone.  More precisely, it is the
+cap-composed predicate of
+Definition~\ref{def:cap-composed-pair-relation}; consequently two colourings
+with equal uniform profiles either both pass the restored-cap terminal test or
+both fail it.
+\end{proposition}
+
+\begin{proof}
+For a majority pair the active support has four of the five cap positions, so
+its complement is the unique inactive position.  A true entry of the profile's
+component table joins two active positions.  Apply
+Lemma~\ref{lem:cap-restoration-composition} to identify restored reachability
+with the equivalence closure of the open component relation and the cap
+pairing.  This description uses only the two stored profile fields, and hence
+is invariant under profile equality.
+\end{proof}
+
 \begin{remark}[cap-correct Seed audit]
 \label{rem:seed-census-all-pentagon-pairs}
 \Sprose
