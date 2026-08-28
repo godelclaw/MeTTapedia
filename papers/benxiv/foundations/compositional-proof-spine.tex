@@ -1014,8 +1014,11 @@ For two consecutive aligned two-tile source windows, the output transverse
 edge at each of the two positions is the input transverse edge of the next
 window.  At each such edge, either the two enclosed-side boundary darts are
 $\alpha$-opposite, as required for a literal serial seam, or the enclosed
-vertex carriers of the two windows share the base vertex of that dart.
-Moreover, the two closed facial-dual window walks have intersecting support.
+vertex carriers of the two windows share the base vertex of that dart.  In
+the $\alpha$-opposite branch, the common edge is internal after the two
+enclosed vertex sides are united, hence it is absent from the true crossing
+frontier of their union.  Moreover, the two closed facial-dual window walks
+have intersecting support.
 \end{lemma}
 
 \begin{proof}
@@ -1024,6 +1027,11 @@ edge fibre consists of a dart and its $\alpha$-mate give the dichotomy.  If
 the displayed darts are equal, their common base vertex belongs to both
 enclosed carriers.  These statements are checked as
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorAlignedTwoTileSuccessorBoundaryDart.sourceTwoTileAlignedEnclosed_alphaSeam_or_vertexOverlap}.
+For opposite darts the two dart bases are the two endpoints of the common
+edge, one in each enclosed side, so adjoining the sides absorbs that edge.
+The resulting exact alternative---absorption or a concrete shared
+vertex---is checked as
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorAlignedTwoTileSuccessorAbsorption.sourceTwoTileAlignedEnclosed_sharedEdge_absorbed_or_vertexOverlap}.
 The closed windows also share the centre of their common transverse
 interface, so their supports are not disjoint; this is checked as
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorAlignedTwoTileBoundaryOverlap.sourceTwoTileAlignedBoundaryWalks_consecutive_not_disjoint}.
