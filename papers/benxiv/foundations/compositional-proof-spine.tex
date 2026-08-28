@@ -3984,6 +3984,42 @@ cubic spherical rotation-system class.  This
 contradicts minimality.  The Tait bridge gives the Four-Colour Theorem.
 \end{proof}
 
+\begin{theorem}[checked spherical reductive assembly]
+\label{thm:spherical-reductive-assembly}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SphericalReductiveAssembly.sphericalFourColorStatement_of_supply_and_base}
+Fix interface bounds $k,w$, and put
+\[
+ B(k,w)=4\left(2^{(6w+1)
+   \sum_{0\le j\le k}j!\,2^{3^j}}-1\right)+6.
+\]
+Suppose that every graph-backed vertex-minimal Tait counterexample carries
+the complete rooted connected edge-leaf decomposition of bounds $k,w$
+required by Theorem~\ref{thm:rooted-connected-branch-decomposition}.
+Suppose also that every graph-backed bridgeless spherical cubic map with at
+most $B(k,w)$ vertices is Tait colourable.  Then every finite spherical
+map is vertex-four-colourable, component by component.
+\end{theorem}
+
+\begin{proof}
+If a Tait counterexample exists, choose one with the least number of
+vertices.  Bridge-freeness and the spherical Euler equation make every edge
+two-sided; minimality excludes parallel edges, so this least rotation map has
+a canonical simple-graph backing.  The supplied connected decomposition and
+Theorem~\ref{thm:rooted-connected-branch-decomposition} give
+
+\[
+                         |V|\le B(k,w).
+\]
+
+The bounded-base hypothesis therefore Tait-colours the same map, a
+contradiction.  Thus no graph-backed vertex-minimal Tait counterexample
+exists.  The checked minimal-counterexample selection and stellar Tait
+reduction then give the connected spherical Four-Colour statement, and the
+componentwise wrapper gives the displayed conclusion.  Lean checks this
+entire implication; its only open inputs are the decomposition-producing
+function and the bounded-base proposition stated above.
+\end{proof}
+
 \begin{corollary}[wall-exclusion assembly]
 \label{cor:wall-exclusion-assembly}
 \Sconditional{Tait bridge; fixed-wall exclusion for least counterexamples; connected branch-decomposition supply; route-native finite base}
@@ -3997,9 +4033,12 @@ is four-colourable.
 
 \begin{proof}
 Proposition~\ref{prop:target-forced-wall} bounds the size of a least Tait
-counterexample.  The finite-base hypothesis rules out every instance up to
-that bound, so no least counterexample exists.  The Tait bridge gives the
-Four-Colour Theorem.
+counterexample and constructs the decomposition supply consumed by
+Theorem~\ref{thm:spherical-reductive-assembly}.  The finite-base hypothesis
+is its second premise.  That theorem gives the spherical Four-Colour
+statement; the separate classical representation theorem from an abstract
+planar graph to a spherical rotation presentation gives the customary
+abstract-planar formulation.
 \end{proof}
 
 The word ``bridgeless'' in the splice conclusion is load-bearing.  A cubic
