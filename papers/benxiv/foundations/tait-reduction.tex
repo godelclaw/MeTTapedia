@@ -414,6 +414,33 @@ the genuine connected spherical presentation used in this section.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24StellarTaitReduction.connectedSphericalFourColorStatement_of_tait}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24StellarTaitReduction.sphericalFourColorStatement_of_tait}
 
+\begin{theorem}[the sound M0 least-counterexample wrapper]
+\label{thm:spherical-headline-from-no-minimal}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SphericalMinimalCounterexampleSelection.everyBridgelessSphericalCubicTaitColorable_of_no_minimal}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SphericalMinimalCounterexampleSelection.sphericalFourColorStatement_of_no_minimal}
+Suppose there is no graph-backed vertex-minimal non-Tait-colourable member of
+the connected, bridgeless, spherical cubic rotation-map class.  Then every
+bridgeless spherical cubic rotation map is Tait-colourable, and every finite
+graph carrying spherical presentations on its nontrivial connected
+components is four-colourable.
+\end{theorem}
+
+\begin{proof}
+If a non-Tait-colourable map existed, choose one with the least number of
+vertices.  Corollary~\ref{cor:two-sided} constructs its two-sided face
+property from bridge-freeness; the digon normalization of
+Section~\ref{sec:graph-backed} excludes parallel edges by minimality.  The
+canonical primal simple graph therefore supplies the graph-backed
+vertex-minimal counterexample forbidden by the hypothesis.  Hence every map
+in the class is Tait-colourable.  The checked stellar construction and
+Klein-group integration above give the connected spherical Four-Colour
+statement, and Lemma~\ref{lem:components} combines the component colourings.
+
+This well-ordering wrapper is important logically: two-sidedness and graph
+backing are conclusions inside the least-counterexample argument, not extra
+premises exported to the compositional core.
+\end{proof}
+
 \subsection{What the reduction costs}
 
 It is worth being explicit about where the remaining labour sits.  The
@@ -758,7 +785,8 @@ Lemma~\ref{lem:planar-spherical-presentation}.
 \begin{remark}[how this closes the classical debts]
 With Corollary~\ref{cor:two-sided} established, the route's internal
 graph-backed presentation and the connected-spherical form of
-Theorem~\ref{thm:tait-reduction} are checked.  The only classical boundary
+Theorem~\ref{thm:tait-reduction} are checked, including the least-counterexample
+wrapper of Theorem~\ref{thm:spherical-headline-from-no-minimal}.  The only classical boundary
 still named in the theorem statement is the standard finite
 plane-embedding representation theorem of
 Lemma~\ref{lem:planar-spherical-presentation}; keeping it named prevents the

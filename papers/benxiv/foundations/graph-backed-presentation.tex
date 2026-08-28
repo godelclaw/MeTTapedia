@@ -479,8 +479,10 @@ unsound rather than incomplete.
 \begin{remark}[status summary for the classical boundary]
 \Sprose
 With this section the ordinary mathematics of the classical bridge is closed.
-Two-sidedness and both directions of the bridge characterisation are
-machine-checked.  Theorem~\ref{thm:digon-combinatorial} removes the only
+Two-sidedness is now machine-checked directly from the route's
+\texttt{EdgeBridgeFree} class field, and both directions of the bridge
+characterisation are machine-checked at the underlying permutation level.
+Theorem~\ref{thm:digon-combinatorial} removes the only
 geometric premise from the digon splice, so minimality eliminates loops and
 parallel edges and yields Theorem~\ref{thm:graph-backed} without a separation
 axiom.
@@ -494,6 +496,8 @@ looplessness of the subdivision makes its dual bridgeless.  The classical
 maximal triangulation lemma and the geometric digon lemma remain in the text
 as recognizable comparison routes; their \textsc{open}/\textsc{conditional}
 markers describe those statements themselves, not dependencies of the
-controlling proof.  The remaining classical front-end debt lies in the Tait
-reduction itself, not in graph-backed presentation.
+controlling proof.  The only remaining classical front-end boundary is the
+named theorem converting an abstract planar graph into a spherical rotation
+presentation; it lies outside graph-backed presentation and outside the
+connected-spherical headline.
 \end{remark}

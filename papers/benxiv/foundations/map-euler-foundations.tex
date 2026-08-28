@@ -261,13 +261,25 @@ bridge.
 \end{proof}
 
 \begin{corollary}[two-sidedness]\label{cor:two-sided}
-\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24BridgeTwoSided.not_sameCycle_of_components_lt_two}
-In a bridgeless spherical map every edge has two distinct faces on its two
-sides.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24BridgelessFaceTwoSided.orbitFacesTwoSided_of_edgeBridgeFree}
+In a connected spherical cubic rotation map with cyclic vertex rotations,
+if deleting any edge leaves the primal graph connected, then every edge has
+two distinct faces on its two sides.
 \end{corollary}
 
 \begin{proof}
-Contrapositive of Theorem~\ref{thm:same-face-bridge}.
+Fix a dart $d$ of the edge to be deleted and remove its transposition from
+the edge involution.  Bridge-freeness makes the edge-deleted primal graph
+connected.  A primal walk then lifts, edge by edge, to a word in the vertex
+rotation and the remaining edge transpositions, so those generators have one
+dart component.  If $d$ and $\alpha d$ lay on one facial orbit,
+Theorem~\ref{thm:same-face-bridge} in its permutation form would force at
+least two such components.  This contradiction proves two-sidedness.
+
+Equivalently, this is the contrapositive of the same-face bridge theorem, but
+the checked consumer above also proves that the route's concrete
+\texttt{EdgeBridgeFree} field has exactly the connectivity content needed by
+that contrapositive.
 \end{proof}
 
 \begin{remark}[the converse, and what it actually costs]\label{rem:converse}
