@@ -1353,6 +1353,53 @@ Vertex minimality makes every smaller member of the same structural class
 Tait-colourable, contradicting the preceding noncolourability.
 \end{proof}
 
+\begin{theorem}[direct literal corridor bound]
+\label{thm:literal-majority-shore-chain-descent}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MajorityShoreStateDescent.length_le_of_literalShoreChain}
+Let \(M\) be a graph-backed vertex-minimal non-Tait-colourable member of the
+connected bridgeless spherical cubic rotation-map class.  Fix \(k,w\ge0\).
+Suppose
+\[
+                 S_0\supsetneq S_1\supsetneq\cdots\supsetneq S_{m-1}
+\]
+is a chain of actual edge shores.  At every \(S_i\), suppose the shore and
+its edge complement are connected, both majority vertex sides are nonempty,
+the literal interior and exterior have retained-dart roots, the literal
+boundary width is at most \(k\), the edge-shore middle set has at most \(w\)
+vertices, and the exterior boundary contains two distinct darts.  Then
+\[
+       m\le (6w+1)\sum_{0\le j\le k}j!\,2^{3^j}.
+\]
+\end{theorem}
+
+\begin{proof}
+Label \(S_i\) by its exact normalized seam state in the dependent sum
+\(\coprod_{0\le j\le k}\Sigma_j\), together with
+\(|S_i|\bmod(6w+1)\).  There are exactly
+\[
+        (6w+1)\sum_{0\le j\le k}j!\,2^{3^j}
+\]
+such labels.  If two positions \(i<j\) had the same label, the strict
+inclusion \(S_j\subsetneq S_i\) and equality of phases would put a cubic
+vertex wholly inside \(S_i\setminus S_j\), by
+Lemma~\ref{lem:cubic-sphere-cut-material}.  Equality of the dependent seam
+states gives equality of the two normalized literal states at their common
+width.  Theorem~\ref{thm:majority-shore-physical-replacement} would then
+splice out the nonempty slab and produce a smaller non-Tait-colourable map
+in the same structural class, contradicting vertex minimality.  Hence the
+label map is injective, and the displayed cardinality is the claimed bound.
+\end{proof}
+
+This is the direct consumer for an L1 corridor.  It uses cumulative states of
+the actual prefixes, so it needs neither the older L2 self-loop premise nor a
+caller-supplied replacement operation.  The still-open geometric adapter is
+not hidden by the statement: from the source corridor positions one must
+construct the full ambient edge shores and verify connectedness of both edge
+shores, nonemptiness of both majority sides, roots, the width and middle-set
+bounds, two distinct exterior boundary darts, and strict nesting.  The
+theorem above proves only that any chain carrying those literal certificates
+cannot be longer than the finite state carrier.
+
 \begin{theorem}[bounded-width literal-shore descent]
 \label{thm:literal-majority-shore-tree-descent}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MajorityShoreStateDescent.vertexCount_le_of_literalShoreTree}

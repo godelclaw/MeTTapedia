@@ -228,6 +228,83 @@ theorem exists_incident_vertex (edge : G.edgeSet) :
   induction edge.1 using Sym2.inductionOn with
   | _ left right => exact ⟨left, Sym2.mem_mk_left left right⟩
 
+/-- Two strictly nested certified shores cannot carry the same phased exact
+state in a graph-backed vertex-minimal Tait counterexample.  This is the
+pairwise pumping atom shared by the linear-corridor and decomposition-tree
+consumers below. -/
+theorem cardPhasedState_ne_of_ssubset
+    (rotation : SimpleGraphDartRotation.Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    {k w : Nat}
+    (oldNode newNode : LiteralShoreNode rotation k w)
+    (hproper : newNode.shore ⊂ oldNode.shore) :
+    oldNode.cardPhasedState ≠ newNode.cardPhasedState := by
+  intro heq
+  let incident : V → G.edgeSet → Prop :=
+    fun vertex edge => vertex ∈ (edge : Sym2 V)
+  have hcubicEdges :
+      ∀ vertex : V, (incidentEdgeFinset G vertex).card = 3 :=
+    incidentEdgeFinset_card_eq_three_of_toRotationSystem_isCubic
+      rotation minimal.spherical.cubic
+  have hphase : shoreCardPhase w oldNode.shore =
+      shoreCardPhase w newNode.shore :=
+    congrArg Prod.fst heq
+  have hstate : oldNode.state = newNode.state :=
+    congrArg Prod.snd heq
+  obtain ⟨strictVertex, -, hall⟩ :=
+    exists_strict_slab_vertex_of_cardPhaseRepeat incident w hproper
+      (exists_incident_vertex (G := G)) (fun vertex => by
+        simpa only [incident, incidentEdgeFinset] using
+          (Nat.le_of_eq (hcubicEdges vertex))) newNode.middleBound
+      oldNode.middleBound hphase.symm
+  exact no_nested_equal_boundedNormalizedState_of_strict_material
+    rotation minimal oldNode.shore newNode.shore hproper.1
+    oldNode.shoreConnected oldNode.complementConnected
+    oldNode.majorityNonempty oldNode.complementNonempty
+    newNode.shoreConnected newNode.complementConnected
+    newNode.majorityNonempty newNode.complementNonempty
+    oldNode.outsideOuter oldNode.innerOuter newNode.innerOuter
+    k oldNode.widthBound newNode.widthBound hstate
+    oldNode.first oldNode.second oldNode.first_ne_second
+    strictVertex (by
+      intro edge hedge
+      exact hall edge (by
+        simpa only [incident, incidentEdgeFinset,
+          Finset.mem_filter, Finset.mem_univ, true_and] using hedge))
+
+/-- **Linear source-corridor pumping.**  A strictly nested sequence of
+literal certified shores in a graph-backed least Tait counterexample has at
+most the exact number of phased normalized states.  Unlike the older transfer
+formulation, this conclusion needs neither a self-loop premise nor a
+caller-supplied replacement operation: a repeated cumulative state is fed
+directly to the physical splice. -/
+theorem length_le_of_literalShoreChain
+    (rotation : SimpleGraphDartRotation.Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (k w length : Nat)
+    (nodes : Fin length → LiteralShoreNode rotation k w)
+    (hstrict : ∀ i j : Fin length, i < j →
+      (nodes j).shore ⊂ (nodes i).shore) :
+    length ≤
+      (6 * w + 1) *
+        (∑ j : Fin (k + 1),
+          Nat.factorial (j : Nat) * 2 ^ (3 ^ (j : Nat))) := by
+  let state : Fin length → Fin (6 * w + 1) × StateAtBound.{u} k :=
+    fun i => (nodes i).cardPhasedState
+  have hinjective : Function.Injective state := by
+    intro i j heq
+    by_contra hne
+    rcases lt_or_gt_of_ne hne with hij | hji
+    · exact cardPhasedState_ne_of_ssubset rotation minimal
+        (nodes i) (nodes j) (hstrict i j hij) (by
+          simpa only [state] using heq)
+    · exact cardPhasedState_ne_of_ssubset rotation minimal
+        (nodes j) (nodes i) (hstrict j i hji) (by
+          simpa only [state] using heq.symm)
+  have hcard := Fintype.card_le_of_injective state hinjective
+  simpa only [Fintype.card_fin, Fintype.card_prod,
+    card_stateAtBound.{u}] using hcard
+
 /-- **The bounded-width literal-shore descent.**  A graph-backed least Tait
 counterexample carrying a reduced binary tree of the certified literal shores
 above is bounded by the exact normalized state count.  The abstract
@@ -244,43 +321,14 @@ theorem vertexCount_le_of_literalShoreTree
       2 * (2 ^ ((6 * w + 1) *
         (∑ j : Fin (k + 1),
           Nat.factorial (j : Nat) * 2 ^ (3 ^ (j : Nat)))) - 1) := by
-  let incident : V → G.edgeSet → Prop :=
-    fun vertex edge => vertex ∈ (edge : Sym2 V)
-  have hcubicEdges :
-      ∀ vertex : V, (incidentEdgeFinset G vertex).card = 3 :=
-    incidentEdgeFinset_card_eq_three_of_toRotationSystem_isCubic
-      rotation minimal.spherical.cubic
   have hnorepeat : NoRepeatedStateOnDescents
       (fun node : LiteralShoreNode rotation k w => node.cardPhasedState) tree := by
     apply noRepeatedStateOnDescents_of_get
     intro p hpath i j hij heq
     have hproper : (p.get j).shore ⊂ (p.get i).shore :=
       hstrict p hpath i j hij
-    have hphase : shoreCardPhase w (p.get i).shore =
-        shoreCardPhase w (p.get j).shore :=
-      congrArg Prod.fst heq
-    have hstate : (p.get i).state = (p.get j).state :=
-      congrArg Prod.snd heq
-    obtain ⟨strictVertex, -, hall⟩ :=
-      exists_strict_slab_vertex_of_cardPhaseRepeat incident w hproper
-        (exists_incident_vertex (G := G)) (fun vertex => by
-          simpa only [incident, incidentEdgeFinset] using
-            (Nat.le_of_eq (hcubicEdges vertex))) (p.get j).middleBound
-        (p.get i).middleBound hphase.symm
-    exact no_nested_equal_boundedNormalizedState_of_strict_material
-      rotation minimal (p.get i).shore (p.get j).shore hproper.1
-      (p.get i).shoreConnected (p.get i).complementConnected
-      (p.get i).majorityNonempty (p.get i).complementNonempty
-      (p.get j).shoreConnected (p.get j).complementConnected
-      (p.get j).majorityNonempty (p.get j).complementNonempty
-      (p.get i).outsideOuter (p.get i).innerOuter (p.get j).innerOuter
-      k (p.get i).widthBound (p.get j).widthBound hstate
-      (p.get i).first (p.get i).second (p.get i).first_ne_second
-      strictVertex (by
-        intro edge hedge
-        exact hall edge (by
-          simpa only [incident, incidentEdgeFinset,
-            Finset.mem_filter, Finset.mem_univ, true_and] using hedge))
+    exact cardPhasedState_ne_of_ssubset rotation minimal
+      (p.get i) (p.get j) hproper heq
   have hbound := vertexCount_le hnorepeat 2 (Fintype.card V) hvertices
   rw [Fintype.card_prod, Fintype.card_fin,
     card_stateAtBound.{u} k] at hbound
