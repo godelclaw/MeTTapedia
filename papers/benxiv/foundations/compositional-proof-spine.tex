@@ -2180,7 +2180,7 @@ equal states.
 
 \begin{lemma}[noncrossing length--depth alternative]
 \label{lem:noncrossing-length-depth}
-\Sprose
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24NoncrossingSweepLifo.SweepData.exists_deep_family_or_distinct_eq_rawState}
 Let $n$ ordered boundary positions carry a letter from a finite alphabet $A$
 and, for each of $r$ families, a labelled noncrossing partial matching whose
 arc labels lie in a finite set $K$.  Fix $D\ge0$ and put
@@ -2201,6 +2201,16 @@ $\sum_{d=0}^{D}|K|^d$ possible values.  Together with the local letter and the
 $r$ independent stacks, Lemma~\ref{lem:bounded-stack-sweep-pigeonhole} gives
 two equal sweep states as soon as there are more than $S$ positions.  If the
 depth bound fails, the first alternative holds.
+
+In the formal statement, each arc has two ordered endpoints and a label;
+distinct arcs are endpoint-disjoint and arcs are listed by increasing left
+endpoint.  For two arcs open at the same cut, a later left endpoint followed
+by a later right endpoint would be a crossing.  Equality of the right
+endpoints is excluded by endpoint-disjointness.  Hence their right endpoints
+strictly decrease, which is the claimed LIFO order.  The resulting raw lists
+are encoded by the exact stack carrier of
+Lemma~\ref{lem:bounded-stack-sweep-pigeonhole}; equality of codes is then
+transported back to literal equality of the local letter and every stack.
 \end{proof}
 
 For the route, the two Kempe families suggest the matching stacks and capped
