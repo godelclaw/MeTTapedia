@@ -1377,9 +1377,51 @@ flip, and the seam face-count theorem proves sphericity of the composite.
 All other fields are transported directly through the literal splice.  This
 entire implication is machine-checked as
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedEdgeShoreStructuralData.bridgelessSphericalCubicMapData_of_majorityEdgeShore}
+
+The roots and the two distinct boundary darts in this construction are not
+additional decomposition data.  They follow from connectedness,
+bridge-freeness, and cubicity.
+
+\begin{lemma}[connected shores supply a literal descent node]
+\label{lem:connected-shore-literal-node}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedShoreLiteralNode.LiteralShoreNode.ofConnectedShore}
+Let \(M\) be a graph-backed vertex-minimal non-Tait-colourable connected,
+bridgeless, spherical cubic rotation map.  Let \(A\subseteq E(M)\) have
+connected edge shore and connected edge complement, with both majority
+vertex sides nonempty.  If the middle set of \(A\) has cardinality at most
+\(k\) and at most \(w\), then \(A\) supplies a literal shore
+node of width at most \(k\) and middle bound \(w\), including retained-dart
+roots on both sides and two distinct exterior boundary darts.
+\end{lemma}
+
+\begin{proof}
+Write \(K\) for either nonempty majority vertex side.  Since its complement
+is also nonempty and the primal graph is connected, some edge crosses
+\(K\).  There cannot be exactly one such edge \(e\): after deleting \(e\),
+any path starting in \(K\) remains in \(K\), because the first edge by which
+it left would be another boundary edge.  This contradicts bridge-freeness,
+which says that the endpoints of \(e\) remain connected after \(e\) is
+deleted.  Hence \(K\) has at least two boundary edges, equivalently at least
+two literal boundary darts; choose two distinct ones.  This generic bridge
+argument is checked as
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24RotationBoundaryBridge.not_boundary_singleton_of_edgeBridgeFree}
+and its boundary-dart consequence as
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedShoreLiteralNode.two_le_card_boundaryDart_of_connected_edgeBridgeFree}.
+
+Cubicity gives three darts at every vertex, so a chosen vertex on each
+nonempty side supplies its retained-dart root.  For graph-backed rotation
+data, literal boundary darts are exactly the graph darts crossing the same
+vertex predicate.  The injective charge from crossing darts to the edge-shore
+middle set in Theorem~\ref{thm:connected-edge-shore-majority} therefore
+transfers the middle-set bound to the literal width.  Packaging these choices
+gives the asserted node.
+\end{proof}
+
 Thus the remaining supplier problem is no longer ``turn a branch cut into a
-spherical splice''; it is to package the connected branch-decomposition cuts
-and the exact target-specific Count state consumed by replacement.
+spherical splice'', choose roots, or prove that a proper shore has two ports.
+It is to construct and package the connected branch-decomposition cuts with
+strict laminar nesting and vertex accounting; the exact target-specific
+Count state is then computed by the literal node consumer.
 
 \begin{lemma}[equal phases are separated]
 \label{lem:equal-depth-phases-separated}
@@ -1724,9 +1766,11 @@ The finite state is computed from literal shores, and repeated states are fed
 directly to the physical splice.  What remains on the supply side is now
 precise: construct this certified tree from the source corridor or a
 source-faithful connected decomposition, prove its proper nesting and vertex
-accounting, and provide the nodewise connectedness, rooting, width, middle-set
-and two-port fields.  The theorem does \emph{not} assert that an arbitrary
-branch decomposition already supplies those literal data.
+accounting, and provide the nodewise connected edge shores, nonempty majority
+sides, and middle-set bounds.  Lemma~\ref{lem:connected-shore-literal-node}
+then supplies the roots, literal width, and two-port fields.  The theorem does
+\emph{not} assert that an arbitrary branch decomposition already supplies the
+connected edge-shore tree.
 
 For an ordered boundary of size at most \(k\), the manuscript's data---edge
 colours, the two noncrossing connectivity relations, capped face progress,
@@ -3064,9 +3108,10 @@ sides connected, Corollary~\ref{cor:planar-bond-canonical-cap} obtains the
 spherical face-simple one-hub cap directly from the planar-bond rank and
 Euler's inequality; no Jordan theorem and no per-face tightness are needed.
 What the sphere-cut supplier must still provide is the combinatorial data
-actually used by the splice: nested connected shores, at least two boundary
-darts, and an equality of ordered seam states which transports the retained
-first-return order.  Theorem~\ref{thm:planar-bond-orders-opposite} then makes
+actually used by the splice: nested connected edge shores and an equality of
+ordered seam states which transports the retained first-return order.
+Lemma~\ref{lem:connected-shore-literal-node} derives the roots and at least two
+boundary darts.  Theorem~\ref{thm:planar-bond-orders-opposite} then makes
 the natural edge-flip to the complementary shore orientation-reversing
 automatically.  A tight noose is one sufficient way to manufacture the
 ordered shore data, but it is not part of the algebraic seam theorem.
