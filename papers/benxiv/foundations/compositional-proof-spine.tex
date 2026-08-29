@@ -2310,6 +2310,10 @@ hexagon.  The five finite witnesses are checked simultaneously by
 Consequently \(R_i\nsubseteq P\) for every \(i\).  Every pairing word has
 zero total Klein colour because each of its three colours occurs in an equal
 pair, so \(R_i\subseteq A\).
+The cut-parity assertion itself is not a planar-picture assumption: summing
+the three incident colours at every vertex of any finite open cubic tangle
+cancels every interior edge twice and leaves exactly the boundary sum.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PortTangleCutParity.taitSupport_subset_zeroSum}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPairingTargetAwareBoundary.no_planarPairingSupport_subset}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPairingTargetAwareBoundary.planarPairingSupport_subset_parityAdmissible}
 
@@ -2332,6 +2336,55 @@ Therefore the remaining loophole is now exact: a route-native target-aware
 reduction must prove and exploit a structural restriction on the support
 languages of actual planar exteriors.  Moving the existential quantifier or
 retaining an unrestricted profile does not provide that restriction.
+
+The first natural strengthening is to remember the boundary trace of Kempe
+components.  Fix a pair of colours \(\{a,b\}\).  For a boundary word \(w\),
+call a port active when it has colour \(a\) or \(b\).  A \emph{boundary Kempe
+witness} is a fixed-point-free matching of the active ports, noncrossing in
+their cyclic order, such that interchanging \(a\) and \(b\) on any union of
+matched pairs produces another word in the same support.  A support is
+\emph{boundary-Kempe closed} when every one of its words has such a witness
+for each of the three colour pairs.
+
+\begin{proposition}[parity plus boundary Kempe closure is insufficient]
+\label{prop:hexagon-boundary-kempe-obstruction}
+Let \(E=A\setminus P\) be the parity adversary from
+Proposition~\ref{prop:hexagon-target-aware-pairing-obstruction}.  Then \(E\)
+is boundary-Kempe closed.  Nevertheless \(E\cap P=\varnothing\) and
+\(E\cap R_i\ne\varnothing\) for every one of the five noncrossing pairing
+caps.  Hence parity together with this abstract noncrossing Kempe-closure
+condition still does not force a target-aware pairing-cap replacement.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPairingBoundaryKempeClosure.parityAdversary_boundaryKempeClosed}
+\end{proposition}
+
+\begin{proof}
+For each genuine six-port word in \(E\) and each colour pair, the certificate
+records one of the five Catalan noncrossing matchings of the active ports.  A
+verified Boolean decoder checks fixed-point-free matching on the active set,
+noncrossing, and closure under all \(2^6\) selected port sets; the last test
+is conditional on the selected set being a union of complete matched pairs.
+The flat certificate is checked independently for the red--blue,
+red--purple, and blue--purple pairs.
+The decoder and these three checks give one witness uniformly for every word
+and colour pair.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPairingBoundaryKempeClosure.parityAdversary_certifiedPattern}
+The remaining assertions about intersections are exactly the preceding
+parity-adversary calculation.
+\end{proof}
+
+This proposition is deliberately one-sided.  A planar cubic exterior really
+does decompose each bichromatic subgraph into paths and cycles, and its
+boundary paths suggest noncrossing matchings; however, the generic theorem
+transporting those physical components to the abstract boundary witness has
+not yet been proved here.  More importantly, proving that bridge alone would
+not rescue the reduction, because the adversary already passes the resulting
+abstract test.  We also have not realized the whole adversary simultaneously
+as the exact support of one planar cubic exterior.  The surviving loophole is
+therefore stronger and genuinely joint: the three colour-pair matchings of an
+actual exterior arise from one and the same embedded tangle.  A successful
+replacement theorem must exploit that simultaneous physical compatibility
+(or some still stronger feature of the exact exterior language), rather than
+parity or three separately existential boundary matchings.
 
 \begin{theorem}[the exact width criterion]
 \label{thm:exact-width-criterion}
