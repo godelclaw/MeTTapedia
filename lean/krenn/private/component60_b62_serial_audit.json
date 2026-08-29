@@ -1,0 +1,351 @@
+{
+  "format": "krenn-selected-subtree-serial-build-v1",
+  "mode": "source-audit-only",
+  "root_system_file_sha256": "57918e46ae7d267c00f2029eb382d55f26844abf08b61c4da6ba7bf61701bac2",
+  "scope": {
+    "claim": "only the named selected subtree",
+    "component": 60,
+    "prefix": "b6.2",
+    "terminal_leaf_count": 36
+  },
+  "selected_subtree_manifest": "private/component60_b62_selected_subtree_manifest.json",
+  "selected_subtree_manifest_sha256": "81bd8c54499332d14011269fd5f0651b80b2c3b14d9de34af298afe99b64b44d",
+  "source_records": [
+    {
+      "source": "KrennComponent60/Root.lean",
+      "source_sha256": "78e990fb168cb993542d22a52fd74c192a21b7c9035d17e4614aeae89b7ad0c2"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_0.lean",
+      "source_sha256": "ee328c32009a60efde29b4c5e21d0fb44a3e5f710f1b2d17e83dbd0e745340a9"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_1.lean",
+      "source_sha256": "21ddd3aa26a3a72265a72484e4d5b03af43c5cf6d428e6aa0579d02e446d4a9c"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_2.lean",
+      "source_sha256": "c47511c3670dfc5a03f1d16a8067cc3b82b5b3a096af1cb64d7db51552017e73"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_3_0.lean",
+      "source_sha256": "89a80711254b2796d8deb3287d0d6e65e0559435afa23e226c05e90d77bd478a"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_3_1.lean",
+      "source_sha256": "37056ad0a452c94555633c9a016d902bd83a5f6336990eb379f62ebd6047432b"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_3_2.lean",
+      "source_sha256": "895d4903d2bba4f6ddca30a8814e21b75f6eb4874178302b0fdbdb85c07fcd6f"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_3_3.lean",
+      "source_sha256": "a0b5e789924cb70c528c713196b5384d46ac0bea8d97f308be84584e4689819e"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_3_4.lean",
+      "source_sha256": "fd0cfb342e0acaff42a80152022e37f4ddeb252a07f749d85276a85852fd9e89"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_3_5.lean",
+      "source_sha256": "b4c187d0009af58e678b5b63e82c8b8167f5ee4e16b58a84f977820d17984a3d"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_3_6.lean",
+      "source_sha256": "9010987920ea3cdc28bfb8ee8c21adac9d062a5cec8e349b334ec23b787c86e4"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_3_7.lean",
+      "source_sha256": "7ece38b4652054e036bfc488af2cd40cedd170d37a8a1f2644334ad01a556a11"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_4.lean",
+      "source_sha256": "2c197f334a1b404c1ffe9c0aa28971bd422ee31a5b1781d97ec67ab924904682"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_5.lean",
+      "source_sha256": "fa04c5bd4a9082274905c890f53c4a15f4df2a2f0a9ed96d134aa3e02db76ca8"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_6_0.lean",
+      "source_sha256": "0632d03c382e33c1907a3cac437cb97cfeb6a11fe8e6e93a1ba5d00887fec0ff"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_6_1.lean",
+      "source_sha256": "ad994e9f8f42ca61df95dc005b2dc15e831258879d7477ceddcbb528eed76230"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_6_2.lean",
+      "source_sha256": "23828fbad7ad0e54693712d94b3d2462a11b75d02043987cce0f9f018931201a"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_6_3.lean",
+      "source_sha256": "349797c97a82b956151111ca9474afdc6c0d1035676c68d8b86099ad3ba7ac90"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_6_4_0.lean",
+      "source_sha256": "5c092d269b050a6a89d1ec8e3a1cb6b16237ba404ec07f0ddf3dafc8a3961808"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_6_4_1.lean",
+      "source_sha256": "3f8c804a599f68ee4c60ad3214470186fe5d8fe3a934463d7fcb47e341843d26"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_6_4_2.lean",
+      "source_sha256": "0e2acd6c130621268f5e9b6ca27bcec3647f9f5e9fb371c9ca20f71f14070733"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_6_4_3.lean",
+      "source_sha256": "e24408343e7181110ae91c08028b373346cca4e8cd9a93d24e16b78400e5b355"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_6_4_4.lean",
+      "source_sha256": "f728093ea933d8dd54a300c56fc10dbaa361796627fc8d57784b7657711c5208"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_6_4_5.lean",
+      "source_sha256": "69ccb5e68cc12397546a9d50cb5278320e0fc1b18a97ca81ef4bb65947085c7f"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_6_4_6.lean",
+      "source_sha256": "f61c0edeab895522edcb05bb4b86fa013d39af3375f8477702ef810176adf161"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_6_4_7.lean",
+      "source_sha256": "89fe4525bf548454bce8badd2fcc70cc2424bf01fd037c366c6e066105b4d265"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_6_5.lean",
+      "source_sha256": "ba86b5ed3eaae4d9827730f2a8fc34c534d6b0079c41b9219b059536a363b04a"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_6_6_0.lean",
+      "source_sha256": "2867352484a19e99864aa07d450279dc72eb9ea7fae9d088ad5126e8d5afb0a3"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_6_6_1.lean",
+      "source_sha256": "0cd5b2800c170e29309fc2a0e7dd1130851529890777d5162ab3a8cc9ec42a46"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_6_6_2.lean",
+      "source_sha256": "b869ca9759624a2bc769117f2a73883468b4198ba10fcabb16da61d4812448c9"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_6_6_3.lean",
+      "source_sha256": "67d6eea944bfecea425eff947fb31470f7554b5e614607a92e0c34d763da2e7c"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_6_6_4.lean",
+      "source_sha256": "b656e21fb9c4bd321bc0281ede35bb9bcc3f108472cb5e0041dca6f66e09af84"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_6_6_5.lean",
+      "source_sha256": "80585fbb5a9f43d30a24c98c1306ac23c0bdb3a28eb2ac4ff9fadb33c88f69aa"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_6_6_6.lean",
+      "source_sha256": "52eb649e6dc9f26a9427eed381426a2b5a1ef47e43a2ac077dd7052fc330865a"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_6_6_7.lean",
+      "source_sha256": "4dfb4e0d8b3bc574f24c8c9130c96273aa62574059879597d2cc46a658c9ad24"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_6_7.lean",
+      "source_sha256": "e18530644b428287037e1388f5fa51dcaed7d6ee2d752a17b963eb0279c319a6"
+    },
+    {
+      "source": "KrennComponent60/SelectedLeafB6_2_7.lean",
+      "source_sha256": "3124b53227c9e1fca7cdfcf7027025d209466dfcc9728f278963a8032c2072bf"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_0.lean",
+      "source_sha256": "a450f1e080237eb205a2aad79fad48e27b97042bf729a08b51c519daece115d9"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_1.lean",
+      "source_sha256": "2264bc493050bf13e3a8aeb5c6b835e39bc86494488c6f4286e48204640185e2"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_2.lean",
+      "source_sha256": "e984c48e0eeaa633c49b6090cac167ad758c2f9bfde66555b173afa2479ad8cf"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_3_0.lean",
+      "source_sha256": "e68c33933527f860e18f9a9ab9320c9a559d0d53d671f97bb3189e78bee87419"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_3_1.lean",
+      "source_sha256": "a3d24f05a1c9da09c84c7646e2acc64734faadb1da706fb86aaf80f4d04f366d"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_3_2.lean",
+      "source_sha256": "a56ba0dc1486f3cc39b0c4a449ff5f32f003f3b0128cd5df692a6b63643ff1e1"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_3_3.lean",
+      "source_sha256": "8b61e3719c6bd6c24410afda2a9c1b3fe509d4e3824318d3d49edaa1a3c18a6e"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_3_4.lean",
+      "source_sha256": "53e81fbe665b91378f57ce238df9146b5fdc4af505f2994977db4a66a4c44e8f"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_3_5.lean",
+      "source_sha256": "7060f39634e568dc84a7aed443e736f5939e0256de28b8cdd75ab48f24f4e2b7"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_3_6.lean",
+      "source_sha256": "4a7d8cc78ebf985b40b6244a139a11a7f0b6b065b7f5df496cfc2742e6d6b83a"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_3_7.lean",
+      "source_sha256": "23fee7445b383c5db1d37d34d0d9da7c81165c6119cd628cd621b6ffe381fd97"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_4.lean",
+      "source_sha256": "cdc405d0a5dce747f88a38fb52dad457e42645fe9ccfbbef8e99fae2d21b679a"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_5.lean",
+      "source_sha256": "5ed1173c2ad3072bd715f5038226f29c8838f99d2a45a19e3e2b1a6fb0fa6cf8"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_6_0.lean",
+      "source_sha256": "650d55e7d8f4b9fda318a31c7b15051af2db5606cdbd1be21ca59facac36e14b"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_6_1.lean",
+      "source_sha256": "5ee8134b64ea8385c71dde53e39b35089c0a1f397bd50842a9f40052b64a3f34"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_6_2.lean",
+      "source_sha256": "2c6bddc0727569bcdf9779a42345b90fc284ad169c289df89996f5ba0ee0dcd3"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_6_3.lean",
+      "source_sha256": "7c8d7e448281d3f402528992b6aa657f0526d3481bd1186b57b74004c669f5d8"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_6_4_0.lean",
+      "source_sha256": "e117fee3a4d4a2f63258e7095db1daebbde602f293bd37e01d02d9097fb09ec9"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_6_4_1.lean",
+      "source_sha256": "d5e4b5160c3f2f23377d43f49280e2b8af933b3821aa85b1ddded7b48554e103"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_6_4_2.lean",
+      "source_sha256": "4610f754262cc58c5f33acdf6b2a3c0ea45c8ab3a3a3f66cab5a8585c70a1241"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_6_4_3.lean",
+      "source_sha256": "bde1d00d3617288e50e250ea62d5571554c796f0f78cd8bbb8bbc58a08337681"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_6_4_4.lean",
+      "source_sha256": "60dc40b63ce156ea449066123e76712203d50510c309f4d79cbf66793344a626"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_6_4_5.lean",
+      "source_sha256": "2765e580f9145db97360929d847ad61a12b3ff358766b0f6cfe2492813062430"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_6_4_6.lean",
+      "source_sha256": "fb5328ff63424c8ce2aa21a927dd63b646cf8700ca954e988a413c229053d9b3"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_6_4_7.lean",
+      "source_sha256": "214f0d2391f83a028ba819fb38c12059ac64844de12df8cce3423a759b546ed9"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_6_5.lean",
+      "source_sha256": "168f3b266e43ca1421645f4ada2b09b4fb29b34701d066e1484880569ebfc110"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_6_6_0.lean",
+      "source_sha256": "3e45947703dc1a7f0885836564eca8c38c8f4660c3289e5b176e573b671613c0"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_6_6_1.lean",
+      "source_sha256": "fdb266ef77d028a4f94c1c3e8f72d14e37ec3e29a9d402c3dc07c60abf906bd0"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_6_6_2.lean",
+      "source_sha256": "9d325e45aa015ac8b1effa7d386ecb13ed09aa3fbf41419b6eed380397bf725f"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_6_6_3.lean",
+      "source_sha256": "c17167b0c1fed45d190550a56097b9a4f7a7310ae0d559d553e799e98c909c47"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_6_6_4.lean",
+      "source_sha256": "fd1a8593981bf9fe84b0ec6bd295a3ea6c251e245a5335b3cba92e8b7b8c6f8c"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_6_6_5.lean",
+      "source_sha256": "5d11b5830d99912077901cd2ef4c0993d4f92a50b554fb919452ff2b915ba04c"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_6_6_6.lean",
+      "source_sha256": "78272e75bc6d823f45ee8334a778b00a5a40a7486183931b97d094c8e9f0b972"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_6_6_7.lean",
+      "source_sha256": "c66997b61d8d373072f8dc8e2dc696650e4f9195b078b4198d9e22cf833306ac"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_6_7.lean",
+      "source_sha256": "2598b8a20fad9371a7f1342e591b26a378e673076f7360f9a0a7f298b23eedaf"
+    },
+    {
+      "source": "KrennComponent60/SelectedBridgeB6_2_7.lean",
+      "source_sha256": "64cf028ce2d9418fefe651911cd76e2c1ba093575269a2083e0786d02a3de7fa"
+    },
+    {
+      "source": "KrennComponent60/SelectedSubtreeB6_2.lean",
+      "source_sha256": "dae0f5b0fa772c788fd2e9389610dba04fc4e700c31cf32ee501e270172b9772"
+    }
+  ],
+  "terminal_leaves": [
+    "b6.2.0",
+    "b6.2.1",
+    "b6.2.2",
+    "b6.2.3.0",
+    "b6.2.3.1",
+    "b6.2.3.2",
+    "b6.2.3.3",
+    "b6.2.3.4",
+    "b6.2.3.5",
+    "b6.2.3.6",
+    "b6.2.3.7",
+    "b6.2.4",
+    "b6.2.5",
+    "b6.2.6.0",
+    "b6.2.6.1",
+    "b6.2.6.2",
+    "b6.2.6.3",
+    "b6.2.6.4.0",
+    "b6.2.6.4.1",
+    "b6.2.6.4.2",
+    "b6.2.6.4.3",
+    "b6.2.6.4.4",
+    "b6.2.6.4.5",
+    "b6.2.6.4.6",
+    "b6.2.6.4.7",
+    "b6.2.6.5",
+    "b6.2.6.6.0",
+    "b6.2.6.6.1",
+    "b6.2.6.6.2",
+    "b6.2.6.6.3",
+    "b6.2.6.6.4",
+    "b6.2.6.6.5",
+    "b6.2.6.6.6",
+    "b6.2.6.6.7",
+    "b6.2.6.7",
+    "b6.2.7"
+  ],
+  "tree_manifest_sha256": "546fcedbcd5f6a79fc62a4a0b068966583f24da6133cdb3e9401e060aca1c86e",
+  "tree_spec_sha256": "879f198e9d13b06a8273abdc540d5c8facf921c79bf7b5b59605019ce257cccd"
+}

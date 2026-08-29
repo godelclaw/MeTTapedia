@@ -1,0 +1,10 @@
+{
+  "exact_representatives": 336,
+  "exporter_sha256": "d6b85e742175375d6f2ab80a1cf36933ece1f2cf5f53792534a25c89f7fd1e79",
+  "format": "krenn-x5-orbit-partition-lean-export-v1",
+  "historical_closed": 317,
+  "historical_log_sha256": "60d36e85cb31e3a6ed493837dd36554f182498d0794d84d6108dc1874c80be0c",
+  "output_sha256": "76305086381146ae46457b0d58fc3a9036481151be304ed612d6f0f7a4836387",
+  "residual_manifest_sha256": "a3660e27b91639fb5b6b4756097aaa886d5d9b4989da6b0f41974c6508a51163",
+  "strict_residual": 19
+}

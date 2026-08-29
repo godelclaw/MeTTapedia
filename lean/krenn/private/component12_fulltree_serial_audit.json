@@ -1,0 +1,716 @@
+{
+  "checkpoint": "private/component12_fulltree_checkpoint.json",
+  "checkpoint_complete": true,
+  "complete_check_elapsed_seconds": 605.08,
+  "format": "krenn-selected-subtree-serial-build-v1",
+  "fresh_elapsed_seconds": 605.08,
+  "fresh_module_count": 60,
+  "mode": "fresh-sequential-kernel-check",
+  "module_checks": [
+    {
+      "elapsed_seconds": 10.183,
+      "olean": ".lake/build/lib/lean/KrennComponent12/Root.olean",
+      "olean_sha256": "a0cc2df87da227972af97a22764a1c7c34aede4031e006551b8f8c20c9cf7728",
+      "source": "KrennComponent12/Root.lean",
+      "source_sha256": "0dff600a5bb138226f7cc9049dc119d4a549acaaa80a200864ff4e508c68542b"
+    },
+    {
+      "elapsed_seconds": 7.415,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB0.olean",
+      "olean_sha256": "21e19752b504a39b48c93c8b6995cba82cf1e5ef432212123f11aa96af2d8d55",
+      "source": "KrennComponent12/SelectedLeafB0.lean",
+      "source_sha256": "d6f3285f989ed0e9cb2a87c04caecc9806a2c930e257fc671641c8b53b2774d1"
+    },
+    {
+      "elapsed_seconds": 6.523,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB1.olean",
+      "olean_sha256": "5a09489ed373fd46381ad0bc27b083fe2380de0fadd3f2f748cb9c74131cabfe",
+      "source": "KrennComponent12/SelectedLeafB1.lean",
+      "source_sha256": "9aeb1670f48be053ec51e5ce91b3c623ade5e9953be231ce80809d1825a5bc44"
+    },
+    {
+      "elapsed_seconds": 4.794,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB2.olean",
+      "olean_sha256": "5d7fe84b7960685a265cf229168b845c440a62848fffbcc3333d94394e49277c",
+      "source": "KrennComponent12/SelectedLeafB2.lean",
+      "source_sha256": "00ff994439fd9d305a22ff5952e12a4b4f36234fb8a8a2bc407db8bc59098d53"
+    },
+    {
+      "elapsed_seconds": 4.92,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB3.olean",
+      "olean_sha256": "c0e05e544cd911f78baad69cbbed792e5fb4fdedcfee795ed0fc7821a2143675",
+      "source": "KrennComponent12/SelectedLeafB3.lean",
+      "source_sha256": "216bb1fd3233fbfb7dcc1b821d4f9879e3a5f501770e1a71ae03fdc485b50b5c"
+    },
+    {
+      "elapsed_seconds": 4.642,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB4_0.olean",
+      "olean_sha256": "615466d46988e0679aa3de69fe538359faceb2f717d7897c9aef9024f682afe1",
+      "source": "KrennComponent12/SelectedLeafB4_0.lean",
+      "source_sha256": "f39c0d26d6c42d33eff718fe5a648de75347f680c4b6ff72c0cb54b16455ba2a"
+    },
+    {
+      "elapsed_seconds": 5.392,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB4_1.olean",
+      "olean_sha256": "a60072533e03dfe98c0d4dfa063b5c71c256e81fde0836579ffafc14243511f6",
+      "source": "KrennComponent12/SelectedLeafB4_1.lean",
+      "source_sha256": "d64ce011d8fa704f13f002fcf4647913ad25943e91a892224874781441289347"
+    },
+    {
+      "elapsed_seconds": 5.56,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB4_2.olean",
+      "olean_sha256": "e6f804bb299ae14cfb719348b2963da011f1dd64100b24bbac8d274dfffce7c5",
+      "source": "KrennComponent12/SelectedLeafB4_2.lean",
+      "source_sha256": "d5e6728cf50a204d2a6dae86075088908d56632df984f29e5db9e3fc8046cb91"
+    },
+    {
+      "elapsed_seconds": 23.357,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB4_3.olean",
+      "olean_sha256": "81aedd3b8f7276672fed9fc8a3350b19594b6dab8626e98f6adcac0e416542a7",
+      "source": "KrennComponent12/SelectedLeafB4_3.lean",
+      "source_sha256": "9a07edc6ac72ba01bd4a7c25e3d305404f3cd93f176f9587ddaa86a46d6e69ae"
+    },
+    {
+      "elapsed_seconds": 4.766,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB4_4.olean",
+      "olean_sha256": "26ec8fce7f2eb801040a1a989a8fd29b43ba5dd95613c4f61a93d6c55cb7de63",
+      "source": "KrennComponent12/SelectedLeafB4_4.lean",
+      "source_sha256": "3054c9a79f983c2b5ae94970efb4aea7cef7d71f7bff9e784f01a72fd91aff97"
+    },
+    {
+      "elapsed_seconds": 5.025,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB4_5.olean",
+      "olean_sha256": "7a74923877916706de1d4607d7b1c1aeec08218f072ec96c503e4ab6ac743d33",
+      "source": "KrennComponent12/SelectedLeafB4_5.lean",
+      "source_sha256": "e768ed2e87aa6087595edf4027c5a1fc52578150fb008726d2249e5edf0e9db0"
+    },
+    {
+      "elapsed_seconds": 4.213,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB4_6_0.olean",
+      "olean_sha256": "197b9f34d708f499612a378fd4e31231160b2ebc443415d7721c0da896292066",
+      "source": "KrennComponent12/SelectedLeafB4_6_0.lean",
+      "source_sha256": "8f10d990828b04e57f5107e9551403c677eef568e82c1abb8b624a2653a24b05"
+    },
+    {
+      "elapsed_seconds": 4.834,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB4_6_1.olean",
+      "olean_sha256": "a125ab9864ece1b1cbc5e537e996e511a6a53d6217ffc809bce316e26d0f59bb",
+      "source": "KrennComponent12/SelectedLeafB4_6_1.lean",
+      "source_sha256": "525820a08507c720066a8199d2cd23b166e54baef259225e1bc54c09293ad5a5"
+    },
+    {
+      "elapsed_seconds": 4.418,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB4_6_2.olean",
+      "olean_sha256": "b6f8c9821f6c9dbd7bb073ae85d1ce71894df7a95f265b8b15296d7110bb639d",
+      "source": "KrennComponent12/SelectedLeafB4_6_2.lean",
+      "source_sha256": "ad40a1e6c36cefcb4f86d3ab6af7d0bbd6f05794d1c570b9319c887d6e89ba34"
+    },
+    {
+      "elapsed_seconds": 4.783,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB4_6_3.olean",
+      "olean_sha256": "c5801bc0f7b96e705680b5fd043b510032d568564a77cc94640c44d22bb01571",
+      "source": "KrennComponent12/SelectedLeafB4_6_3.lean",
+      "source_sha256": "a29342d3b84006e150d68157dddcf4b959dec0fa3987c26010a3b4e351c2a3d6"
+    },
+    {
+      "elapsed_seconds": 4.358,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB4_6_4.olean",
+      "olean_sha256": "4f00b6bffff0af334f208d5296438689af77fee3d426d571aa839cf70b06e3a9",
+      "source": "KrennComponent12/SelectedLeafB4_6_4.lean",
+      "source_sha256": "d317d946b7b1806bf8958034a275781a5ee1037a4b5ad7cf8a1d5277da4e98ba"
+    },
+    {
+      "elapsed_seconds": 5.557,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB4_6_5.olean",
+      "olean_sha256": "91ab5e19e5c0f86d9c790ba761d8f8cdfc743bdbf2e0b1e850d9a0fe60758aa3",
+      "source": "KrennComponent12/SelectedLeafB4_6_5.lean",
+      "source_sha256": "9803581177340ba760bacfb78a382e6936c747798d59b4f4e86138a2834a86c0"
+    },
+    {
+      "elapsed_seconds": 4.884,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB4_6_6.olean",
+      "olean_sha256": "d9b9d729e26802ac79542803d030f52a3de6b8856b9d1f3536a68c3c92a85031",
+      "source": "KrennComponent12/SelectedLeafB4_6_6.lean",
+      "source_sha256": "5a504689aeb3ac46113f4b3f59aa5f5935d660c359cdc934727e2a1f457a95ee"
+    },
+    {
+      "elapsed_seconds": 4.592,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB4_6_7_0.olean",
+      "olean_sha256": "3fc20402b4a15740f9989c98745487c7475993a9034b136a801b51873f31f8ad",
+      "source": "KrennComponent12/SelectedLeafB4_6_7_0.lean",
+      "source_sha256": "ddfd0798f1a213d41f5fc238ea9aefd51dec9d11ba7eda93dd46bd1396ef0a95"
+    },
+    {
+      "elapsed_seconds": 5.67,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB4_6_7_1.olean",
+      "olean_sha256": "3e182181ca08932b9f6b7afc65549d68854e1ad04158e635fed608c803219c35",
+      "source": "KrennComponent12/SelectedLeafB4_6_7_1.lean",
+      "source_sha256": "71908b8060feb1ce10cf46e9387441a3a44fe0ba82c8c418b0aafd3b0fb52c13"
+    },
+    {
+      "elapsed_seconds": 6.039,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB4_6_7_2.olean",
+      "olean_sha256": "f3c0422993a557e0a76eab665fd0959c6d87dc0e105cd30958ac1499af7fd854",
+      "source": "KrennComponent12/SelectedLeafB4_6_7_2.lean",
+      "source_sha256": "e3c150208b572381d4ce21a0d2a66dd43abc70fafdf1fa670ea4a9f9f8e71636"
+    },
+    {
+      "elapsed_seconds": 5.561,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB4_6_7_3.olean",
+      "olean_sha256": "68ef0db15743edc39571be2048b05e37acaaa0151675ecf2dbe5bae3b2c85cff",
+      "source": "KrennComponent12/SelectedLeafB4_6_7_3.lean",
+      "source_sha256": "64e4b9adacf9581653ef084a0b70d9eb884ec79893fa30e34d88afa50dbc431c"
+    },
+    {
+      "elapsed_seconds": 5.43,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB4_6_7_4.olean",
+      "olean_sha256": "9fcec0ed0151217a6ce95a7742e0a3f25c2f6ebbe4007799e045f382a8d0d309",
+      "source": "KrennComponent12/SelectedLeafB4_6_7_4.lean",
+      "source_sha256": "26e941710bf7f1986e85d644c329b3c570afc6e1a81a8427f569d535cb9c4529"
+    },
+    {
+      "elapsed_seconds": 5.848,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB4_6_7_5.olean",
+      "olean_sha256": "1a0a7a8f4175056215cdf0d47fbaf22c3a037eb49a36b5706bc90e7c32c2027c",
+      "source": "KrennComponent12/SelectedLeafB4_6_7_5.lean",
+      "source_sha256": "33f0ef288da1487154a61e2f411d96cd7e57deb06c3f82b91765ed774b4b6b57"
+    },
+    {
+      "elapsed_seconds": 4.774,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB4_6_7_6.olean",
+      "olean_sha256": "f108a885fe33296a7b9566d681f0042a4a32a1e2056202fe4dfd0c35c68d7532",
+      "source": "KrennComponent12/SelectedLeafB4_6_7_6.lean",
+      "source_sha256": "cf89b20138a1bd5132196176b63d29a674a177e7b9d91fa42cf77a51ae181ff6"
+    },
+    {
+      "elapsed_seconds": 5.991,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB4_6_7_7.olean",
+      "olean_sha256": "de0ddf82e82f00b71e0f075af11b214c9d5c652dd7e18b88c2f3f8c772534b3f",
+      "source": "KrennComponent12/SelectedLeafB4_6_7_7.lean",
+      "source_sha256": "7206a38f50565bf550f8f9bb66b26b986699b39d9002700e97de1adcf9619c48"
+    },
+    {
+      "elapsed_seconds": 8.685,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB4_7.olean",
+      "olean_sha256": "532a1ce5e49baf9caa1d9db302ebb59e970d6bd6ef25fcdac19c5f934531428a",
+      "source": "KrennComponent12/SelectedLeafB4_7.lean",
+      "source_sha256": "b50e309924cb76efe51b8fe68258b60628e0f3780f71101c9893df5aa99608f9"
+    },
+    {
+      "elapsed_seconds": 5.312,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB5.olean",
+      "olean_sha256": "021279b0b01eaeef964bf94fb69549e814b04be4bbe3d71216dc77bfb3f99216",
+      "source": "KrennComponent12/SelectedLeafB5.lean",
+      "source_sha256": "fbfc71d9a0f5e8e929e185be1a3ccfe8962e6e6e38276846a0740aeb3961e684"
+    },
+    {
+      "elapsed_seconds": 5.185,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB6.olean",
+      "olean_sha256": "c8b9aee8c7a07dc18b98d26263efae57643f7c6fd471414453b22dd189b57f4a",
+      "source": "KrennComponent12/SelectedLeafB6.lean",
+      "source_sha256": "a1c5948196ae381f7104ec100ad89defd48d4c5c93e1e0e359a4ff6284931f07"
+    },
+    {
+      "elapsed_seconds": 6.413,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedLeafB7.olean",
+      "olean_sha256": "ee67a643d1fda906559c9d152ea354ee88abf4c478bee49ce3243866d01002e9",
+      "source": "KrennComponent12/SelectedLeafB7.lean",
+      "source_sha256": "ebde67099b3821696510454b31c2ae36774bf1b1c344329859c3236beed3baf2"
+    },
+    {
+      "elapsed_seconds": 17.232,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB0.olean",
+      "olean_sha256": "b2d27de2e5499ad541d3e54782ebdb07fd7cad70745ee7a61c9d47b8fa4da693",
+      "source": "KrennComponent12/SelectedBridgeB0.lean",
+      "source_sha256": "40fce20d17b4606071fd2cf1d5d0f6f531fe3c9e06c11fcb93f71f722e5a5962"
+    },
+    {
+      "elapsed_seconds": 13.961,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB1.olean",
+      "olean_sha256": "1df7b0d40d6b5ce94074fa764f8c2ed88c9632141927c80c39448441e563ad5d",
+      "source": "KrennComponent12/SelectedBridgeB1.lean",
+      "source_sha256": "261ef3f70425bacb1bc574def9e15e4484f55a3d5f6f9665183bdc3a12c1fd47"
+    },
+    {
+      "elapsed_seconds": 11.913,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB2.olean",
+      "olean_sha256": "d8824c87020fc8735af59750fe24ca08693cc8e127652bac3ae65f3e70be9c0f",
+      "source": "KrennComponent12/SelectedBridgeB2.lean",
+      "source_sha256": "914283f5e238df3d447ea002e4c67594568871c70447c7b46bccf6c106ff5240"
+    },
+    {
+      "elapsed_seconds": 14.545,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB3.olean",
+      "olean_sha256": "2c2c0798513e7936df71f4ca2d37ac33f2d95ef5542fc224218adec151be1d8c",
+      "source": "KrennComponent12/SelectedBridgeB3.lean",
+      "source_sha256": "e3dc7cbdb92d43757525676af0c6e394ff27a65399ec81d845a7b24117dada82"
+    },
+    {
+      "elapsed_seconds": 13.299,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB4_0.olean",
+      "olean_sha256": "51328ce79b8631d53398e63d0fedff923f1f1276dbcbf82ad49b66cf570eb3ae",
+      "source": "KrennComponent12/SelectedBridgeB4_0.lean",
+      "source_sha256": "a68060f4871fc7ae5271ea4f7169329f3566297db4ca8f603612315b0b56be22"
+    },
+    {
+      "elapsed_seconds": 14.161,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB4_1.olean",
+      "olean_sha256": "a0e86804fa79bf49abecfe14b83d285579fc9b8dc2450043b72c251404cb7c4d",
+      "source": "KrennComponent12/SelectedBridgeB4_1.lean",
+      "source_sha256": "e4ff6c5fba9d7f3a379dee886faf14a737e2a04c3069065d626f3bdd0cf7caf5"
+    },
+    {
+      "elapsed_seconds": 14.113,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB4_2.olean",
+      "olean_sha256": "61e2a9a389c85df7ac9a38aa77439505d797f11241ada7c01767991634e7ebf1",
+      "source": "KrennComponent12/SelectedBridgeB4_2.lean",
+      "source_sha256": "7d4b7d802316e8eec7211b315197e82162edc99b263722491b71bc785350cff2"
+    },
+    {
+      "elapsed_seconds": 26.046,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB4_3.olean",
+      "olean_sha256": "1817615af9959d5b51e6f4e28a0926ce1e673cb17d1fe8243cdafe37642289cf",
+      "source": "KrennComponent12/SelectedBridgeB4_3.lean",
+      "source_sha256": "1c578b152a0ab05ea7dee35fc2196d9b53f53d7d3f0ce1041133a8be250f235b"
+    },
+    {
+      "elapsed_seconds": 12.842,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB4_4.olean",
+      "olean_sha256": "d87aed05f0d702dbaa4e2c3ca45d77310b80141801f217da51f70a31febb1027",
+      "source": "KrennComponent12/SelectedBridgeB4_4.lean",
+      "source_sha256": "af2d110c5bdf628602064c1ea6efff420e675c13018565129ea7ea3861fb8731"
+    },
+    {
+      "elapsed_seconds": 16.095,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB4_5.olean",
+      "olean_sha256": "9af8d229988e674bb72010fc9d15a769db4359380e74a4e6d8e2c913471c95b6",
+      "source": "KrennComponent12/SelectedBridgeB4_5.lean",
+      "source_sha256": "897f4ca7f923d135bcf9153305c23a1af0385544d3ce7c8c6060a3f1310ef27b"
+    },
+    {
+      "elapsed_seconds": 10.814,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB4_6_0.olean",
+      "olean_sha256": "f87e6f5d84217b0084ef5a19e38d07c306842d099347bf1a8b1c4cc22f9ba76d",
+      "source": "KrennComponent12/SelectedBridgeB4_6_0.lean",
+      "source_sha256": "1196bbd1e55827fed9216f68ab65a0a62b42b6f482571c4dcfa896f6717cdfff"
+    },
+    {
+      "elapsed_seconds": 13.784,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB4_6_1.olean",
+      "olean_sha256": "2a0e048d32ebcb791317d1efef31fdb365953fd4581913d361aa1caaec9a3a39",
+      "source": "KrennComponent12/SelectedBridgeB4_6_1.lean",
+      "source_sha256": "e9deda3cf0b2dab293cd5aa84db067f41894629de5155e213640691faf7bf240"
+    },
+    {
+      "elapsed_seconds": 11.607,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB4_6_2.olean",
+      "olean_sha256": "cafdc25bbec58231a1db0ba0e4306052e9d9328780577d1d17babb8a43271ad7",
+      "source": "KrennComponent12/SelectedBridgeB4_6_2.lean",
+      "source_sha256": "8ac3aa21b8ce38d48dc0dbd84c4df5f11e7a5be53cfe37ac0666e7da21c4d223"
+    },
+    {
+      "elapsed_seconds": 16.728,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB4_6_3.olean",
+      "olean_sha256": "2865c5484d79580df8594b393d0125c2351449584653ae3953308423e3a88793",
+      "source": "KrennComponent12/SelectedBridgeB4_6_3.lean",
+      "source_sha256": "9b66beada960325efab4913ae0cfccfa3f77518d104256fb3979eef8e407e1a5"
+    },
+    {
+      "elapsed_seconds": 11.116,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB4_6_4.olean",
+      "olean_sha256": "4bdbbd8b429e19e570570d3e4320c3a623c5df4159bf2290323470afeb6442d7",
+      "source": "KrennComponent12/SelectedBridgeB4_6_4.lean",
+      "source_sha256": "cee54547b05728d5cb5bd4f750f73a86cc0221307381ed9a47ec5b2de36da44d"
+    },
+    {
+      "elapsed_seconds": 13.654,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB4_6_5.olean",
+      "olean_sha256": "509239082f8f9f2752844feeca571ac28200e04bab93705d3f49c5d7405f55a8",
+      "source": "KrennComponent12/SelectedBridgeB4_6_5.lean",
+      "source_sha256": "f665c9cbc2600df1c72cf87ee4cd3709617b05433394ea5d88abce46cd69a45a"
+    },
+    {
+      "elapsed_seconds": 10.953,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB4_6_6.olean",
+      "olean_sha256": "a2d8bc06234330ea1d6a9d5d13501ff5c1aa8c455535e082d02454723c3f8a8f",
+      "source": "KrennComponent12/SelectedBridgeB4_6_6.lean",
+      "source_sha256": "c9233cbd494e6d6387df78567012847b0ac8932e0fdbca36502bd2c51f1045b1"
+    },
+    {
+      "elapsed_seconds": 9.286,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB4_6_7_0.olean",
+      "olean_sha256": "4aa0ad2bdee3df85a071cc5557caac91ceb704c72746dbc14e81d14f727d4104",
+      "source": "KrennComponent12/SelectedBridgeB4_6_7_0.lean",
+      "source_sha256": "f76b8edabc87467fb1dc385b2736dea72d597d85e5d7b410de49ec1fccb90a42"
+    },
+    {
+      "elapsed_seconds": 15.555,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB4_6_7_1.olean",
+      "olean_sha256": "681b3a0fb0111cdc263c2d49889f55493b589a3c308a375b470f8942839a32a4",
+      "source": "KrennComponent12/SelectedBridgeB4_6_7_1.lean",
+      "source_sha256": "b746550643d10977b9a8f756a7fa9e755fe6a0a63a368a9a2945ff0602d55685"
+    },
+    {
+      "elapsed_seconds": 13.988,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB4_6_7_2.olean",
+      "olean_sha256": "5874aa7b9fcb88371e47581aad76b7cd3947c3555a57312859d1c5285286a0fc",
+      "source": "KrennComponent12/SelectedBridgeB4_6_7_2.lean",
+      "source_sha256": "d7a1b8b8bda926803e58034582db28e1eb71a310978fdceea1afdd629c7c03c7"
+    },
+    {
+      "elapsed_seconds": 14.318,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB4_6_7_3.olean",
+      "olean_sha256": "1d2d431aa6822fe7f365ea279367572245ca158092ac5d8ee7209ea13d337d1d",
+      "source": "KrennComponent12/SelectedBridgeB4_6_7_3.lean",
+      "source_sha256": "132b2044c7154cf3685d283209774ec7b801c9cabe75de7f84c731548b0df5fb"
+    },
+    {
+      "elapsed_seconds": 17.018,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB4_6_7_4.olean",
+      "olean_sha256": "9ec705c8affd93350e7904b6f9fd0108b059c0fcc25b13ca94ccd61200041723",
+      "source": "KrennComponent12/SelectedBridgeB4_6_7_4.lean",
+      "source_sha256": "b3148b71d3b373110fe998c6ce2a1f542e2aee10cbc77354c75a5f8b5860a604"
+    },
+    {
+      "elapsed_seconds": 16.926,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB4_6_7_5.olean",
+      "olean_sha256": "f1a6087c964a84d8676e9c57415baed1d4083f65652036fd23b01fc3402bd128",
+      "source": "KrennComponent12/SelectedBridgeB4_6_7_5.lean",
+      "source_sha256": "4eb80a11a4a15eae1e4b7968848f82777b86afc4d40dbc0896cb5da9d9b542f0"
+    },
+    {
+      "elapsed_seconds": 10.944,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB4_6_7_6.olean",
+      "olean_sha256": "a67eed688eaa99db34c0bc71133dcc3520964b5a57582593e80f31aab6a108fd",
+      "source": "KrennComponent12/SelectedBridgeB4_6_7_6.lean",
+      "source_sha256": "ea2e3772189f98e6d30f95f8de4757ec1aa15314294168c3321de436a74eff0f"
+    },
+    {
+      "elapsed_seconds": 13.952,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB4_6_7_7.olean",
+      "olean_sha256": "fd717c521c3a00cf4de8670bb81036ef2acdd85d047103ed122cb5acf4bc72e8",
+      "source": "KrennComponent12/SelectedBridgeB4_6_7_7.lean",
+      "source_sha256": "ecc4ffdd9b43e6c434384b48433858d5ab5dd56af298940d1d4839002d797781"
+    },
+    {
+      "elapsed_seconds": 19.223,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB4_7.olean",
+      "olean_sha256": "1789f4947947c39fe556a1619631e6d09ac339f9a43221a9fe157cb486ee3b97",
+      "source": "KrennComponent12/SelectedBridgeB4_7.lean",
+      "source_sha256": "87437a00fc5f9d369db0a864f23db1b5d258b8bb5de2f3f596a4937cdb2b10ee"
+    },
+    {
+      "elapsed_seconds": 13.393,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB5.olean",
+      "olean_sha256": "8c7d2372a9ecb8baf7d6d7c0c86be687c3373e7d6107564521a234ebb59d46ba",
+      "source": "KrennComponent12/SelectedBridgeB5.lean",
+      "source_sha256": "8e37b28b9388a212fb1450c8b9d4046f0bf6bf8974a3035668762f42dfb9b0cd"
+    },
+    {
+      "elapsed_seconds": 14.748,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB6.olean",
+      "olean_sha256": "610583e94f47412c2784b7875b23b37e8b924895d3f59a4ea186b9b3a7abe36d",
+      "source": "KrennComponent12/SelectedBridgeB6.lean",
+      "source_sha256": "72627d291b78b36b9d40480b0797565a384022d2e0606a629b3382f46ae358ee"
+    },
+    {
+      "elapsed_seconds": 13.965,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedBridgeB7.olean",
+      "olean_sha256": "be81f4f13817a0bf1204b49076706382b74979b0a053bca536fdcb8decc7e816",
+      "source": "KrennComponent12/SelectedBridgeB7.lean",
+      "source_sha256": "a614ba17bade6fecce53a855180663bafd4ae3add04278704c5be3fe2bd9852d"
+    },
+    {
+      "elapsed_seconds": 3.777,
+      "olean": ".lake/build/lib/lean/KrennComponent12/SelectedSubtreeROOT.olean",
+      "olean_sha256": "3e5d5f1c68324a3c5de95c97d06e34ebc226f72598875fcf26b5b8c988ab0b2e",
+      "source": "KrennComponent12/SelectedSubtreeROOT.lean",
+      "source_sha256": "2e9121c3faae0f4a0dcd99e4c7919ee2c1074d2d0a6441b33e2e25bf2fbcd57d"
+    }
+  ],
+  "reused_module_count": 0,
+  "root_system_file_sha256": "620d27ab2a938a6562436e2c6b79fce87d4835ed2975c286ae6985e51696bfce",
+  "scope": {
+    "claim": "only the named selected subtree",
+    "component": 12,
+    "prefix": "root",
+    "terminal_leaf_count": 29
+  },
+  "selected_subtree_manifest": "private/component12_fulltree_manifest.json",
+  "selected_subtree_manifest_sha256": "4ff5bb9b89d23498bb312344485321a669ce9f5ef7212a04f866ed0a22828be2",
+  "source_records": [
+    {
+      "source": "KrennComponent12/Root.lean",
+      "source_sha256": "0dff600a5bb138226f7cc9049dc119d4a549acaaa80a200864ff4e508c68542b"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB0.lean",
+      "source_sha256": "d6f3285f989ed0e9cb2a87c04caecc9806a2c930e257fc671641c8b53b2774d1"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB1.lean",
+      "source_sha256": "9aeb1670f48be053ec51e5ce91b3c623ade5e9953be231ce80809d1825a5bc44"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB2.lean",
+      "source_sha256": "00ff994439fd9d305a22ff5952e12a4b4f36234fb8a8a2bc407db8bc59098d53"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB3.lean",
+      "source_sha256": "216bb1fd3233fbfb7dcc1b821d4f9879e3a5f501770e1a71ae03fdc485b50b5c"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB4_0.lean",
+      "source_sha256": "f39c0d26d6c42d33eff718fe5a648de75347f680c4b6ff72c0cb54b16455ba2a"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB4_1.lean",
+      "source_sha256": "d64ce011d8fa704f13f002fcf4647913ad25943e91a892224874781441289347"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB4_2.lean",
+      "source_sha256": "d5e6728cf50a204d2a6dae86075088908d56632df984f29e5db9e3fc8046cb91"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB4_3.lean",
+      "source_sha256": "9a07edc6ac72ba01bd4a7c25e3d305404f3cd93f176f9587ddaa86a46d6e69ae"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB4_4.lean",
+      "source_sha256": "3054c9a79f983c2b5ae94970efb4aea7cef7d71f7bff9e784f01a72fd91aff97"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB4_5.lean",
+      "source_sha256": "e768ed2e87aa6087595edf4027c5a1fc52578150fb008726d2249e5edf0e9db0"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB4_6_0.lean",
+      "source_sha256": "8f10d990828b04e57f5107e9551403c677eef568e82c1abb8b624a2653a24b05"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB4_6_1.lean",
+      "source_sha256": "525820a08507c720066a8199d2cd23b166e54baef259225e1bc54c09293ad5a5"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB4_6_2.lean",
+      "source_sha256": "ad40a1e6c36cefcb4f86d3ab6af7d0bbd6f05794d1c570b9319c887d6e89ba34"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB4_6_3.lean",
+      "source_sha256": "a29342d3b84006e150d68157dddcf4b959dec0fa3987c26010a3b4e351c2a3d6"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB4_6_4.lean",
+      "source_sha256": "d317d946b7b1806bf8958034a275781a5ee1037a4b5ad7cf8a1d5277da4e98ba"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB4_6_5.lean",
+      "source_sha256": "9803581177340ba760bacfb78a382e6936c747798d59b4f4e86138a2834a86c0"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB4_6_6.lean",
+      "source_sha256": "5a504689aeb3ac46113f4b3f59aa5f5935d660c359cdc934727e2a1f457a95ee"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB4_6_7_0.lean",
+      "source_sha256": "ddfd0798f1a213d41f5fc238ea9aefd51dec9d11ba7eda93dd46bd1396ef0a95"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB4_6_7_1.lean",
+      "source_sha256": "71908b8060feb1ce10cf46e9387441a3a44fe0ba82c8c418b0aafd3b0fb52c13"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB4_6_7_2.lean",
+      "source_sha256": "e3c150208b572381d4ce21a0d2a66dd43abc70fafdf1fa670ea4a9f9f8e71636"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB4_6_7_3.lean",
+      "source_sha256": "64e4b9adacf9581653ef084a0b70d9eb884ec79893fa30e34d88afa50dbc431c"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB4_6_7_4.lean",
+      "source_sha256": "26e941710bf7f1986e85d644c329b3c570afc6e1a81a8427f569d535cb9c4529"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB4_6_7_5.lean",
+      "source_sha256": "33f0ef288da1487154a61e2f411d96cd7e57deb06c3f82b91765ed774b4b6b57"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB4_6_7_6.lean",
+      "source_sha256": "cf89b20138a1bd5132196176b63d29a674a177e7b9d91fa42cf77a51ae181ff6"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB4_6_7_7.lean",
+      "source_sha256": "7206a38f50565bf550f8f9bb66b26b986699b39d9002700e97de1adcf9619c48"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB4_7.lean",
+      "source_sha256": "b50e309924cb76efe51b8fe68258b60628e0f3780f71101c9893df5aa99608f9"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB5.lean",
+      "source_sha256": "fbfc71d9a0f5e8e929e185be1a3ccfe8962e6e6e38276846a0740aeb3961e684"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB6.lean",
+      "source_sha256": "a1c5948196ae381f7104ec100ad89defd48d4c5c93e1e0e359a4ff6284931f07"
+    },
+    {
+      "source": "KrennComponent12/SelectedLeafB7.lean",
+      "source_sha256": "ebde67099b3821696510454b31c2ae36774bf1b1c344329859c3236beed3baf2"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB0.lean",
+      "source_sha256": "40fce20d17b4606071fd2cf1d5d0f6f531fe3c9e06c11fcb93f71f722e5a5962"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB1.lean",
+      "source_sha256": "261ef3f70425bacb1bc574def9e15e4484f55a3d5f6f9665183bdc3a12c1fd47"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB2.lean",
+      "source_sha256": "914283f5e238df3d447ea002e4c67594568871c70447c7b46bccf6c106ff5240"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB3.lean",
+      "source_sha256": "e3dc7cbdb92d43757525676af0c6e394ff27a65399ec81d845a7b24117dada82"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB4_0.lean",
+      "source_sha256": "a68060f4871fc7ae5271ea4f7169329f3566297db4ca8f603612315b0b56be22"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB4_1.lean",
+      "source_sha256": "e4ff6c5fba9d7f3a379dee886faf14a737e2a04c3069065d626f3bdd0cf7caf5"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB4_2.lean",
+      "source_sha256": "7d4b7d802316e8eec7211b315197e82162edc99b263722491b71bc785350cff2"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB4_3.lean",
+      "source_sha256": "1c578b152a0ab05ea7dee35fc2196d9b53f53d7d3f0ce1041133a8be250f235b"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB4_4.lean",
+      "source_sha256": "af2d110c5bdf628602064c1ea6efff420e675c13018565129ea7ea3861fb8731"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB4_5.lean",
+      "source_sha256": "897f4ca7f923d135bcf9153305c23a1af0385544d3ce7c8c6060a3f1310ef27b"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB4_6_0.lean",
+      "source_sha256": "1196bbd1e55827fed9216f68ab65a0a62b42b6f482571c4dcfa896f6717cdfff"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB4_6_1.lean",
+      "source_sha256": "e9deda3cf0b2dab293cd5aa84db067f41894629de5155e213640691faf7bf240"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB4_6_2.lean",
+      "source_sha256": "8ac3aa21b8ce38d48dc0dbd84c4df5f11e7a5be53cfe37ac0666e7da21c4d223"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB4_6_3.lean",
+      "source_sha256": "9b66beada960325efab4913ae0cfccfa3f77518d104256fb3979eef8e407e1a5"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB4_6_4.lean",
+      "source_sha256": "cee54547b05728d5cb5bd4f750f73a86cc0221307381ed9a47ec5b2de36da44d"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB4_6_5.lean",
+      "source_sha256": "f665c9cbc2600df1c72cf87ee4cd3709617b05433394ea5d88abce46cd69a45a"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB4_6_6.lean",
+      "source_sha256": "c9233cbd494e6d6387df78567012847b0ac8932e0fdbca36502bd2c51f1045b1"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB4_6_7_0.lean",
+      "source_sha256": "f76b8edabc87467fb1dc385b2736dea72d597d85e5d7b410de49ec1fccb90a42"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB4_6_7_1.lean",
+      "source_sha256": "b746550643d10977b9a8f756a7fa9e755fe6a0a63a368a9a2945ff0602d55685"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB4_6_7_2.lean",
+      "source_sha256": "d7a1b8b8bda926803e58034582db28e1eb71a310978fdceea1afdd629c7c03c7"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB4_6_7_3.lean",
+      "source_sha256": "132b2044c7154cf3685d283209774ec7b801c9cabe75de7f84c731548b0df5fb"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB4_6_7_4.lean",
+      "source_sha256": "b3148b71d3b373110fe998c6ce2a1f542e2aee10cbc77354c75a5f8b5860a604"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB4_6_7_5.lean",
+      "source_sha256": "4eb80a11a4a15eae1e4b7968848f82777b86afc4d40dbc0896cb5da9d9b542f0"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB4_6_7_6.lean",
+      "source_sha256": "ea2e3772189f98e6d30f95f8de4757ec1aa15314294168c3321de436a74eff0f"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB4_6_7_7.lean",
+      "source_sha256": "ecc4ffdd9b43e6c434384b48433858d5ab5dd56af298940d1d4839002d797781"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB4_7.lean",
+      "source_sha256": "87437a00fc5f9d369db0a864f23db1b5d258b8bb5de2f3f596a4937cdb2b10ee"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB5.lean",
+      "source_sha256": "8e37b28b9388a212fb1450c8b9d4046f0bf6bf8974a3035668762f42dfb9b0cd"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB6.lean",
+      "source_sha256": "72627d291b78b36b9d40480b0797565a384022d2e0606a629b3382f46ae358ee"
+    },
+    {
+      "source": "KrennComponent12/SelectedBridgeB7.lean",
+      "source_sha256": "a614ba17bade6fecce53a855180663bafd4ae3add04278704c5be3fe2bd9852d"
+    },
+    {
+      "source": "KrennComponent12/SelectedSubtreeROOT.lean",
+      "source_sha256": "2e9121c3faae0f4a0dcd99e4c7919ee2c1074d2d0a6441b33e2e25bf2fbcd57d"
+    }
+  ],
+  "terminal_leaves": [
+    "b0",
+    "b1",
+    "b2",
+    "b3",
+    "b4.0",
+    "b4.1",
+    "b4.2",
+    "b4.3",
+    "b4.4",
+    "b4.5",
+    "b4.6.0",
+    "b4.6.1",
+    "b4.6.2",
+    "b4.6.3",
+    "b4.6.4",
+    "b4.6.5",
+    "b4.6.6",
+    "b4.6.7.0",
+    "b4.6.7.1",
+    "b4.6.7.2",
+    "b4.6.7.3",
+    "b4.6.7.4",
+    "b4.6.7.5",
+    "b4.6.7.6",
+    "b4.6.7.7",
+    "b4.7",
+    "b5",
+    "b6",
+    "b7"
+  ],
+  "tree_manifest_sha256": "17069f7c754dfcd3f11d7424d4a25c05abb08b8c0d8a71ddc7140c3b43254381",
+  "tree_spec_sha256": "a54abdf9c32ffcc4c41445c8e40fb5730e89b32726f8f76c2821d2457f6b64b9"
+}

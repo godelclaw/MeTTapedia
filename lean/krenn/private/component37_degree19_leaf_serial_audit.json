@@ -1,0 +1,62 @@
+{
+  "axiom_audit": "KrennComponent37/SelectedBridgeB5_2_6_5_2.lean:24:5: warning: Variable name `d1Equation1` is not explicitly referenced.\n\nThe binding can be removed (if unused) or named `_` (if used implicitly).\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`\nKrennComponent37/SelectedBridgeB5_2_6_5_2.lean:25:5: warning: Variable name `d1Equation2` is not explicitly referenced.\n\nThe binding can be removed (if unused) or named `_` (if used implicitly).\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`\nKrennComponent37/SelectedBridgeB5_2_6_5_2.lean:27:5: warning: Variable name `d2Equation0` is not explicitly referenced.\n\nThe binding can be removed (if unused) or named `_` (if used implicitly).\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`\nKrennComponent37/SelectedBridgeB5_2_6_5_2.lean:30:5: warning: Variable name `d2Equation2` is not explicitly referenced.\n\nThe binding can be removed (if unused) or named `_` (if used implicitly).\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`\nKrennComponent37/SelectedBridgeB5_2_6_5_2.lean:38:5: warning: Variable name `d4Equation1` is not explicitly referenced.\n\nThe binding can be removed (if unused) or named `_` (if used implicitly).\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`\nKrennComponent37/SelectedBridgeB5_2_6_5_2.lean:39:5: warning: Variable name `d4Equation2` is not explicitly referenced.\n\nThe binding can be removed (if unused) or named `_` (if used implicitly).\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`\n'Krenn.Component37.SelectedBridgeB5_2_6_5_2.selectedLeafB5_2_6_5_2Impossible' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]",
+  "certificate_sha256": "e89d0834ef29fab1856797662ff34a896eea16c41e32197817f0d4b4f7bcbaac",
+  "format": "krenn-selected-leaf-serial-build-v1",
+  "generated_sources": [
+    {
+      "path": "KrennComponent37/Root.lean",
+      "sha256": "484b8e483f4a0daadbbd873806bf92f5bed2433c19186b7ea2d765d469216fba"
+    },
+    {
+      "path": "KrennComponent37/SelectedLeafB5_2_6_5_2.lean",
+      "sha256": "7eec3e313591007376bcde27595aed3fef0d17f69aae8c2bc0416447f9ef8183"
+    },
+    {
+      "path": "KrennComponent37/SelectedBridgeB5_2_6_5_2.lean",
+      "sha256": "d8e2a8841669099ecd889e5aa0d1e22cdb7845829c0ad423d4784d22bad8eafe"
+    }
+  ],
+  "leaf_system_file_sha256": "40edc31d6448a20a01ca1108e0805e0633236292918e8cbca7ca204166871bfd",
+  "mode": "fresh-serial-kernel-check",
+  "module_checks": [
+    {
+      "elapsed_seconds": 8.008,
+      "lean_output": "",
+      "olean": ".lake/build/lib/lean/KrennComponent37/Root.olean",
+      "olean_sha256": "5f30f6bbcec08cc9e4ca440758daf8b61a9237066348542dfa40f2c3f444e3fe",
+      "source": "KrennComponent37/Root.lean",
+      "source_sha256": "484b8e483f4a0daadbbd873806bf92f5bed2433c19186b7ea2d765d469216fba"
+    },
+    {
+      "elapsed_seconds": 41.922,
+      "lean_output": "'Krenn.Component37.SelectedLeafB5_2_6_5_2.selectedHasNoCommonZero' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]",
+      "olean": ".lake/build/lib/lean/KrennComponent37/SelectedLeafB5_2_6_5_2.olean",
+      "olean_sha256": "ac9c238c1753283557ccd6e6555e591121c56e8077feded9eb2b42208520ea30",
+      "source": "KrennComponent37/SelectedLeafB5_2_6_5_2.lean",
+      "source_sha256": "7eec3e313591007376bcde27595aed3fef0d17f69aae8c2bc0416447f9ef8183"
+    },
+    {
+      "elapsed_seconds": 35.201,
+      "lean_output": "KrennComponent37/SelectedBridgeB5_2_6_5_2.lean:24:5: warning: Variable name `d1Equation1` is not explicitly referenced.\n\nThe binding can be removed (if unused) or named `_` (if used implicitly).\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`\nKrennComponent37/SelectedBridgeB5_2_6_5_2.lean:25:5: warning: Variable name `d1Equation2` is not explicitly referenced.\n\nThe binding can be removed (if unused) or named `_` (if used implicitly).\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`\nKrennComponent37/SelectedBridgeB5_2_6_5_2.lean:27:5: warning: Variable name `d2Equation0` is not explicitly referenced.\n\nThe binding can be removed (if unused) or named `_` (if used implicitly).\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`\nKrennComponent37/SelectedBridgeB5_2_6_5_2.lean:30:5: warning: Variable name `d2Equation2` is not explicitly referenced.\n\nThe binding can be removed (if unused) or named `_` (if used implicitly).\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`\nKrennComponent37/SelectedBridgeB5_2_6_5_2.lean:38:5: warning: Variable name `d4Equation1` is not explicitly referenced.\n\nThe binding can be removed (if unused) or named `_` (if used implicitly).\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`\nKrennComponent37/SelectedBridgeB5_2_6_5_2.lean:39:5: warning: Variable name `d4Equation2` is not explicitly referenced.\n\nThe binding can be removed (if unused) or named `_` (if used implicitly).\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`\n'Krenn.Component37.SelectedBridgeB5_2_6_5_2.selectedLeafB5_2_6_5_2Impossible' depends on axioms: [propext,\n Classical.choice,\n Quot.sound]",
+      "olean": ".lake/build/lib/lean/KrennComponent37/SelectedBridgeB5_2_6_5_2.olean",
+      "olean_sha256": "2d218630401eb4ab642e7b6499163c7581c34b46a0ee1a8bd1ddb0b1fe61fbc9",
+      "source": "KrennComponent37/SelectedBridgeB5_2_6_5_2.lean",
+      "source_sha256": "d8e2a8841669099ecd889e5aa0d1e22cdb7845829c0ad423d4784d22bad8eafe"
+    }
+  ],
+  "root_system_file_sha256": "2ba2bac4cce6a6bfc2e284693c84d191ef356d6f2f2aab4ffcaf5cc9c89facd5",
+  "scope": {
+    "claim": "only one selected leaf plus its shared-root bridge",
+    "component": 37,
+    "terminal_tag": "b5.2.6.5.2"
+  },
+  "strict_replay": {
+    "basis": "1",
+    "equations": 673,
+    "max_multiplier_degree": 19,
+    "selected_equations": 65
+  },
+  "total_elapsed_seconds": 85.131,
+  "tree_manifest_sha256": "84145347854ca13faea4c31fc15eba786d6abfb9d74c7d3176d9131b0ae25e15",
+  "tree_spec_sha256": "d55e22ea5204d30e79b929bbee94eecb25cc6fad4f05e97102eff738264c396d"
+}

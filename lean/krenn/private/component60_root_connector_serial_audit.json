@@ -1,0 +1,263 @@
+{
+  "checkpoint": "private/component60_root_connector_serial_checkpoint.json",
+  "checkpoint_complete": true,
+  "complete_check_elapsed_seconds": 1024.509,
+  "context": {
+    "adapter_manifest_sha256": "620283944a6fb6e6556ba614ef3670c1f8ff3c69ba18ac86f419b51989b247cb",
+    "component": 60,
+    "normalization_manifest_sha256": "a32563582daad6537e011c37f0ae4f6ba08f1ea74534e042deb750413bc71f36",
+    "root_bridge_manifest_sha256": "34fe2ded1d430419de6b2ade48c277196b50fa3048044a4a7cecdf0491e5c39c",
+    "root_chunks_manifest_sha256": "4a7d691d9563115a0271016be7c576e9aaa3a4a04bd01d3594bee52354ff9ab4",
+    "selected_tree_audit_sha256": "e2de0e1b752ff0a77e4eabba733aa5b20d85f19b1d11718ff686766508a2e773"
+  },
+  "format": "krenn-component-root-connector-serial-build-v1",
+  "fresh_elapsed_seconds": 1024.509,
+  "fresh_module_count": 21,
+  "mode": "fresh-sequential-kernel-check",
+  "module_checks": [
+    {
+      "elapsed_seconds": 12.781,
+      "olean": ".lake/build/lib/lean/KrennComponent60Normalization.olean",
+      "olean_sha256": "fe24bfdf1554134d47add52c0898265b999e00bb461320b5a5f63616680d4933",
+      "source": "KrennComponent60Normalization.lean",
+      "source_sha256": "45051d515a89c7e3273610b1a9d6f339568b647d8ed23d0c62c856da2e284eec"
+    },
+    {
+      "elapsed_seconds": 3.769,
+      "olean": ".lake/build/lib/lean/KrennComponent60Tree.olean",
+      "olean_sha256": "c18faadf17382192d5d4ab6df0f5aabfbd2da475290aac0b61ac5e2156e528d3",
+      "source": "KrennComponent60Tree.lean",
+      "source_sha256": "947e97dcdb1ac3e9dbdf49f6aa559baf34b6929939324a27d815cbc0f1e0d5c4"
+    },
+    {
+      "elapsed_seconds": 6.891,
+      "olean": ".lake/build/lib/lean/KrennComponent60RootBridge.olean",
+      "olean_sha256": "42f15d3a7744f95df93e6a23466416fb358190aad869c12dae976a4f9703e63d",
+      "source": "KrennComponent60RootBridge.lean",
+      "source_sha256": "cf9e18c817b926ad58318079dd5727448692375ba4c219755dc8ea3239de7569"
+    },
+    {
+      "elapsed_seconds": 33.801,
+      "olean": ".lake/build/lib/lean/KrennComponent60RootCommonZeroChunk0.olean",
+      "olean_sha256": "8e0611e2f3db501f7265b9557a3526118b2321f8309adbab6df271d75598781d",
+      "source": "KrennComponent60RootCommonZeroChunk0.lean",
+      "source_sha256": "f689e864d460c99df047c044d4bfcd2c629ec419a55e481b3460c61d45342ca4"
+    },
+    {
+      "elapsed_seconds": 38.072,
+      "olean": ".lake/build/lib/lean/KrennComponent60RootCommonZeroChunk1.olean",
+      "olean_sha256": "1063cff5179ac17092ebd39e3e759f1bb53142ea080519ddd9b19f38e602dfd5",
+      "source": "KrennComponent60RootCommonZeroChunk1.lean",
+      "source_sha256": "bc76fc986a90379c0f845cb9a2270133726e685afb0dfc73877206c6186136e6"
+    },
+    {
+      "elapsed_seconds": 42.753,
+      "olean": ".lake/build/lib/lean/KrennComponent60RootCommonZeroChunk2.olean",
+      "olean_sha256": "4f4817f4b3822d206482d04b10e94c7f4b3a9a34d6b176ba70f9458b179c7957",
+      "source": "KrennComponent60RootCommonZeroChunk2.lean",
+      "source_sha256": "aecb7bd1650e11931395417691c1b4b8743476b062b8ccc368f1fc875d0106bc"
+    },
+    {
+      "elapsed_seconds": 47.516,
+      "olean": ".lake/build/lib/lean/KrennComponent60RootCommonZeroChunk3.olean",
+      "olean_sha256": "5b2e23eb0b3dd41fb8791b16db1df2a201a60564c7cf74f17a74fbe52e8c9fe5",
+      "source": "KrennComponent60RootCommonZeroChunk3.lean",
+      "source_sha256": "3841def8b2a6f614933e1b7a41e6a5e0b31194c75457a6c47dbae4972e49929e"
+    },
+    {
+      "elapsed_seconds": 49.237,
+      "olean": ".lake/build/lib/lean/KrennComponent60RootCommonZeroChunk4.olean",
+      "olean_sha256": "0f8df0b05f24c6293fd4d07319c689b7a4c978a2c839eb6c474c787f61a5a800",
+      "source": "KrennComponent60RootCommonZeroChunk4.lean",
+      "source_sha256": "c60741e72ecaa52aa1c7c25e26edb332be52251758041274c432588420fb8f31"
+    },
+    {
+      "elapsed_seconds": 53.069,
+      "olean": ".lake/build/lib/lean/KrennComponent60RootCommonZeroChunk5.olean",
+      "olean_sha256": "571f23a64c8b0f0e9234d43705843b48b30d30408986caf9280d7f335d621ec5",
+      "source": "KrennComponent60RootCommonZeroChunk5.lean",
+      "source_sha256": "31e54a17b50cc3a5b85d88a9742d734c0f930e46874f7eb7403cb02652d93dd4"
+    },
+    {
+      "elapsed_seconds": 56.641,
+      "olean": ".lake/build/lib/lean/KrennComponent60RootCommonZeroChunk6.olean",
+      "olean_sha256": "403ca9a9f6030a2a7f9567270e5f1b62fa35be36026a2ca185211e8c75eaed4b",
+      "source": "KrennComponent60RootCommonZeroChunk6.lean",
+      "source_sha256": "1e4c2c340e69bfdae54cc43fbec025f1d55db562cf1ae9bd1a955bbbda5e2b38"
+    },
+    {
+      "elapsed_seconds": 58.777,
+      "olean": ".lake/build/lib/lean/KrennComponent60RootCommonZeroChunk7.olean",
+      "olean_sha256": "9987e63e973ef672ed3edeaa9500a70556fb96309bdaddfafa896d7131e743c4",
+      "source": "KrennComponent60RootCommonZeroChunk7.lean",
+      "source_sha256": "d1c7de53cab2a7f8bbb4cbd97eb463d2a9e425c7ec64c1a333d3b6889e6d1a1b"
+    },
+    {
+      "elapsed_seconds": 62.917,
+      "olean": ".lake/build/lib/lean/KrennComponent60RootCommonZeroChunk8.olean",
+      "olean_sha256": "92b6195ed43ff4f555ca440fafa330ebdd28b483d8a2bda78f96e195bc663de3",
+      "source": "KrennComponent60RootCommonZeroChunk8.lean",
+      "source_sha256": "186ff013949195c739a7cd442fcef77c3cdb05ea986fb0d1c3265f40a0bc780d"
+    },
+    {
+      "elapsed_seconds": 67.672,
+      "olean": ".lake/build/lib/lean/KrennComponent60RootCommonZeroChunk9.olean",
+      "olean_sha256": "7c1aa9d1db630a11453e54675a6eb2bcf26b849930455aea6317c10fe1428d59",
+      "source": "KrennComponent60RootCommonZeroChunk9.lean",
+      "source_sha256": "e16e94cdea09077cb20daed40f7439b802b274ba8b704b5c138f54548923c252"
+    },
+    {
+      "elapsed_seconds": 68.848,
+      "olean": ".lake/build/lib/lean/KrennComponent60RootCommonZeroChunk10.olean",
+      "olean_sha256": "c1ffef32e137d1a426845804107fada712c2f7cfa994ffb30571e440df2ba31e",
+      "source": "KrennComponent60RootCommonZeroChunk10.lean",
+      "source_sha256": "34d8068b21086216a1e069804de44c2f044a2278434b7461200abe5bfc7b99b3"
+    },
+    {
+      "elapsed_seconds": 69.85,
+      "olean": ".lake/build/lib/lean/KrennComponent60RootCommonZeroChunk11.olean",
+      "olean_sha256": "13f34352977fbf0032ad38905030e06cf8596004328e008444c89501658b87f9",
+      "source": "KrennComponent60RootCommonZeroChunk11.lean",
+      "source_sha256": "dfe97b3d068ec2efaf0e0e3d50fd64f011c1edf19dc488c687fb2183e6f3e05c"
+    },
+    {
+      "elapsed_seconds": 73.014,
+      "olean": ".lake/build/lib/lean/KrennComponent60RootCommonZeroChunk12.olean",
+      "olean_sha256": "11d210a85cfdf83e3c4dc48e2a986cc41258d8b581fdfaa7c6c5088b19823eab",
+      "source": "KrennComponent60RootCommonZeroChunk12.lean",
+      "source_sha256": "eb11216fad0e4282316d98568887cf394931b3a6b81622aa3c2ee837ed0e4572"
+    },
+    {
+      "elapsed_seconds": 73.403,
+      "olean": ".lake/build/lib/lean/KrennComponent60RootCommonZeroChunk13.olean",
+      "olean_sha256": "477d45ea0346d55cde02a114895255e16d136f78ffc2ed5e43ba28b3e7ad9a93",
+      "source": "KrennComponent60RootCommonZeroChunk13.lean",
+      "source_sha256": "9f66a5b5d70de5610eaf1edc3c2bed4f4f7fb6f4ebaa8db9bd18d515e1a1baa9"
+    },
+    {
+      "elapsed_seconds": 76.299,
+      "olean": ".lake/build/lib/lean/KrennComponent60RootCommonZeroChunk14.olean",
+      "olean_sha256": "3358838cefc7ac67f04fc92673fa7b539bdc0b1049ef6ec1e883f1e850a66172",
+      "source": "KrennComponent60RootCommonZeroChunk14.lean",
+      "source_sha256": "17dac15fcee471de905e5f236739b7e52a8c03c91c84a3858d8d69678b96db60"
+    },
+    {
+      "elapsed_seconds": 76.8,
+      "olean": ".lake/build/lib/lean/KrennComponent60RootCommonZeroChunk15.olean",
+      "olean_sha256": "f731db2cb34e73b1ccfe88c49b28894eeb77e40ea33e2d4fa696f302cea6f921",
+      "source": "KrennComponent60RootCommonZeroChunk15.lean",
+      "source_sha256": "ccb920834e03e62521e711102aa62da2787038b9de3b1410c0f6df7a12b51085"
+    },
+    {
+      "elapsed_seconds": 33.58,
+      "olean": ".lake/build/lib/lean/KrennComponent60RootCommonZeroChunk16.olean",
+      "olean_sha256": "5490e11b401da53c00ceba90f8c083f4d8433985c73fa627d5d2c3b4ae880bbc",
+      "source": "KrennComponent60RootCommonZeroChunk16.lean",
+      "source_sha256": "75e8b498633efb102d5c5a8575af58cbec97c3f3f66a7a496dbbf4d440d3ee13"
+    },
+    {
+      "elapsed_seconds": 18.819,
+      "olean": ".lake/build/lib/lean/KrennComponent60RootCommonZero.olean",
+      "olean_sha256": "5ab9918101f6a4cf445ff537bc293c303dcb6d88d0c45b01c8796909708aa504",
+      "source": "KrennComponent60RootCommonZero.lean",
+      "source_sha256": "282314afc856b09190804fa8833f6e47aa431a890434df626abda00e04319ab3"
+    }
+  ],
+  "reused_module_count": 0,
+  "scope": {
+    "claim": "only this hash-bound root connector",
+    "component": 60
+  },
+  "selected_tree_scope": {
+    "claim": "only the named selected subtree",
+    "component": 60,
+    "prefix": "root",
+    "terminal_leaf_count": 386
+  },
+  "source_records": [
+    {
+      "source": "KrennComponent60Normalization.lean",
+      "source_sha256": "45051d515a89c7e3273610b1a9d6f339568b647d8ed23d0c62c856da2e284eec"
+    },
+    {
+      "source": "KrennComponent60Tree.lean",
+      "source_sha256": "947e97dcdb1ac3e9dbdf49f6aa559baf34b6929939324a27d815cbc0f1e0d5c4"
+    },
+    {
+      "source": "KrennComponent60RootBridge.lean",
+      "source_sha256": "cf9e18c817b926ad58318079dd5727448692375ba4c219755dc8ea3239de7569"
+    },
+    {
+      "source": "KrennComponent60RootCommonZeroChunk0.lean",
+      "source_sha256": "f689e864d460c99df047c044d4bfcd2c629ec419a55e481b3460c61d45342ca4"
+    },
+    {
+      "source": "KrennComponent60RootCommonZeroChunk1.lean",
+      "source_sha256": "bc76fc986a90379c0f845cb9a2270133726e685afb0dfc73877206c6186136e6"
+    },
+    {
+      "source": "KrennComponent60RootCommonZeroChunk2.lean",
+      "source_sha256": "aecb7bd1650e11931395417691c1b4b8743476b062b8ccc368f1fc875d0106bc"
+    },
+    {
+      "source": "KrennComponent60RootCommonZeroChunk3.lean",
+      "source_sha256": "3841def8b2a6f614933e1b7a41e6a5e0b31194c75457a6c47dbae4972e49929e"
+    },
+    {
+      "source": "KrennComponent60RootCommonZeroChunk4.lean",
+      "source_sha256": "c60741e72ecaa52aa1c7c25e26edb332be52251758041274c432588420fb8f31"
+    },
+    {
+      "source": "KrennComponent60RootCommonZeroChunk5.lean",
+      "source_sha256": "31e54a17b50cc3a5b85d88a9742d734c0f930e46874f7eb7403cb02652d93dd4"
+    },
+    {
+      "source": "KrennComponent60RootCommonZeroChunk6.lean",
+      "source_sha256": "1e4c2c340e69bfdae54cc43fbec025f1d55db562cf1ae9bd1a955bbbda5e2b38"
+    },
+    {
+      "source": "KrennComponent60RootCommonZeroChunk7.lean",
+      "source_sha256": "d1c7de53cab2a7f8bbb4cbd97eb463d2a9e425c7ec64c1a333d3b6889e6d1a1b"
+    },
+    {
+      "source": "KrennComponent60RootCommonZeroChunk8.lean",
+      "source_sha256": "186ff013949195c739a7cd442fcef77c3cdb05ea986fb0d1c3265f40a0bc780d"
+    },
+    {
+      "source": "KrennComponent60RootCommonZeroChunk9.lean",
+      "source_sha256": "e16e94cdea09077cb20daed40f7439b802b274ba8b704b5c138f54548923c252"
+    },
+    {
+      "source": "KrennComponent60RootCommonZeroChunk10.lean",
+      "source_sha256": "34d8068b21086216a1e069804de44c2f044a2278434b7461200abe5bfc7b99b3"
+    },
+    {
+      "source": "KrennComponent60RootCommonZeroChunk11.lean",
+      "source_sha256": "dfe97b3d068ec2efaf0e0e3d50fd64f011c1edf19dc488c687fb2183e6f3e05c"
+    },
+    {
+      "source": "KrennComponent60RootCommonZeroChunk12.lean",
+      "source_sha256": "eb11216fad0e4282316d98568887cf394931b3a6b81622aa3c2ee837ed0e4572"
+    },
+    {
+      "source": "KrennComponent60RootCommonZeroChunk13.lean",
+      "source_sha256": "9f66a5b5d70de5610eaf1edc3c2bed4f4f7fb6f4ebaa8db9bd18d515e1a1baa9"
+    },
+    {
+      "source": "KrennComponent60RootCommonZeroChunk14.lean",
+      "source_sha256": "17dac15fcee471de905e5f236739b7e52a8c03c91c84a3858d8d69678b96db60"
+    },
+    {
+      "source": "KrennComponent60RootCommonZeroChunk15.lean",
+      "source_sha256": "ccb920834e03e62521e711102aa62da2787038b9de3b1410c0f6df7a12b51085"
+    },
+    {
+      "source": "KrennComponent60RootCommonZeroChunk16.lean",
+      "source_sha256": "75e8b498633efb102d5c5a8575af58cbec97c3f3f66a7a496dbbf4d440d3ee13"
+    },
+    {
+      "source": "KrennComponent60RootCommonZero.lean",
+      "source_sha256": "282314afc856b09190804fa8833f6e47aa431a890434df626abda00e04319ab3"
+    }
+  ]
+}

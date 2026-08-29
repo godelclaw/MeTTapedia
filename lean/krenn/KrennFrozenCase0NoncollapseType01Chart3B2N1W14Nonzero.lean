@@ -1,0 +1,212 @@
+import KrennFrozenCase0NoncollapseType01Chart3BothLive
+import KrennFrozenCase0NoncollapseType01Chart3B2Propagation
+import KrennFrozenCase0NoncollapseType01Chart3B2N1Propagation
+import KrennFrozenCase0NoncollapseType01Chart3B2W01NonzeroPropagation
+import KrennFrozenCase0NoncollapseType01Chart3B2N1W14NonzeroCertificate
+
+/-!
+Semantic reflection of the strict `b2n1 / w14 ≠ 0` leaf in the chart-3,
+both-pivots-live, zero-sum branch.  Twelve certificate rows are direct
+canonical amplitude rows after source-level zero propagation; the remaining
+three are the recorded inverse witnesses for the live factors.
+-/
+
+namespace Krenn.FrozenCase0NoncollapseType01Chart3B2N1W14Nonzero
+
+open Krenn.FrozenCase0AdjugateLayer
+open Krenn.FrozenCase0NoncollapseType01Pivot
+open Krenn.FrozenCase0NoncollapseType01Chart3
+open Krenn.SparseCertificate
+open MvPolynomial
+
+def selectedSourceIndex : Fin 12 → Fin 747 := ![
+  394, 362, 602, 553, 605, 660, 663, 591, 349, 706, 343, 746
+]
+
+theorem selected_source_not_determinant
+    (index : Fin 12) (slot : Fin 18) :
+    determinantSourceIndex slot ≠ selectedSourceIndex index := by
+  fin_cases index <;> fin_cases slot <;>
+    simp [determinantSourceIndex, selectedSourceIndex]
+
+/-- The certificate's unused auxiliary coordinates are assigned `0`; every
+coordinate occurring in a selected equation is tied either to a named frozen
+variable or to the inverse of its stated live factor. -/
+noncomputable def leafValues {R : Type*} [Field R]
+    (values : Fin 75 → R) : Fin 68 → R := ![
+  0,
+  values 23 - values 15,
+  0,
+  0,
+  0,
+  values 0, values 1, values 2, values 3, values 4,
+  values 5, values 6, values 7, values 9, values 10,
+  values 11, values 12, values 13, values 14, values 15,
+  values 16, values 17, values 18, values 19, values 20,
+  values 21, values 22, values 25, values 26, values 29,
+  values 30, values 31, values 32, values 33, values 34,
+  values 38, values 39, values 40, values 41, values 42,
+  values 43, values 44, values 45, values 46, values 47,
+  values 49, values 50, values 51, values 52, values 53,
+  values 54, values 55, values 58, values 59, values 60,
+  values 62, values 63, values 64, values 69, values 70,
+  values 71, values 72, values 73, values 74,
+  (values 29)⁻¹,
+  (values 1)⁻¹,
+  0,
+  (values 42)⁻¹
+]
+
+set_option maxRecDepth 100000
+set_option maxHeartbeats 5000000
+
+/-- A provenance-bound reflection of the `b2n1/w14≠0` strict leaf. -/
+theorem refutes_chart3_b2n1_w14_nonzero
+    {R : Type*} [Field R] [CharZero R]
+    (values : Fin 75 → R) (base : BaseCommonZero values)
+    (hdet : slotDeterminant values 1 ≠ 0)
+    (chart : PivotChart3 values)
+    (h24 : values 51 ≠ 0) (h25 : values 56 ≠ 0)
+    (hsum : values 51 + values 56 = 0)
+    (h13_12 : values 37 = 0) (h12_12 : values 29 ≠ 0)
+    (h12_10 : values 27 = 0) (h01 : values 1 ≠ 0)
+    (h15 : values 45 ≠ 0) (h14 : values 42 ≠ 0) : False := by
+  rcases chart with ⟨h23, h12, h13⟩
+  have chart' : PivotChart3 values := ⟨h23, h12, h13⟩
+  have h13_10 : values 35 = 0 :=
+    w13_10_zero_of_both_opposite_pivots_live values base hdet chart' h24 h25
+  have h25eq : values 56 = -values 51 := by
+    calc
+      values 56 = (values 51 + values 56) - values 51 := by ring
+      _ = -values 51 := by rw [hsum]; ring
+  obtain ⟨h34_00, h05_22⟩ :=
+    Krenn.FrozenCase0NoncollapseType01Chart3B2Propagation.b2_root_closure_zeros
+      values base hdet chart' h24 h25 h12_12
+  obtain ⟨h34_12, h34_20, h34_21, h34_22, h25_12⟩ :=
+    Krenn.FrozenCase0NoncollapseType01Chart3B2W01NonzeroPropagation.b2_w01_nonzero_closure_zeros
+      values base hdet chart' h24 h25 h13_12 h12_10 h01
+  have h03_22 : values 8 = 0 :=
+    Krenn.FrozenCase0NoncollapseType01Chart3B2N1Propagation.w03_22_zero_of_b2n1_w14_live
+      values base h13_12 h12_10 h14
+  have source0 : sourceValue values (selectedSourceIndex 0) = 0 :=
+    base (selectedSourceIndex 0) (selected_source_not_determinant 0)
+  have source1 : sourceValue values (selectedSourceIndex 1) = 0 :=
+    base (selectedSourceIndex 1) (selected_source_not_determinant 1)
+  have source2 : sourceValue values (selectedSourceIndex 2) = 0 :=
+    base (selectedSourceIndex 2) (selected_source_not_determinant 2)
+  have source3 : sourceValue values (selectedSourceIndex 3) = 0 :=
+    base (selectedSourceIndex 3) (selected_source_not_determinant 3)
+  have source4 : sourceValue values (selectedSourceIndex 4) = 0 :=
+    base (selectedSourceIndex 4) (selected_source_not_determinant 4)
+  have source5 : sourceValue values (selectedSourceIndex 5) = 0 :=
+    base (selectedSourceIndex 5) (selected_source_not_determinant 5)
+  have source6 : sourceValue values (selectedSourceIndex 6) = 0 :=
+    base (selectedSourceIndex 6) (selected_source_not_determinant 6)
+  have source7 : sourceValue values (selectedSourceIndex 7) = 0 :=
+    base (selectedSourceIndex 7) (selected_source_not_determinant 7)
+  have source8 : sourceValue values (selectedSourceIndex 8) = 0 :=
+    base (selectedSourceIndex 8) (selected_source_not_determinant 8)
+  have source9 : sourceValue values (selectedSourceIndex 9) = 0 :=
+    base (selectedSourceIndex 9) (selected_source_not_determinant 9)
+  have source10 : sourceValue values (selectedSourceIndex 10) = 0 :=
+    base (selectedSourceIndex 10) (selected_source_not_determinant 10)
+  have source11 : sourceValue values (selectedSourceIndex 11) = 0 :=
+    base (selectedSourceIndex 11) (selected_source_not_determinant 11)
+  apply Krenn.FrozenCase0NoncollapseType01Chart3B2N1W14NonzeroCertificate.selectedHasNoCommonZero
+    (leafValues values)
+  intro index
+  fin_cases index
+  · simp [Krenn.FrozenCase0NoncollapseType01Chart3B2N1W14NonzeroCertificate.selectedEquations,
+      leafValues, sourceValue, selectedSourceIndex, Krenn.FrozenCase0System.equations,
+      SparsePoly.toPoly, SparseTerm.toPoly,
+      h23, h12, h13, h13_10, h13_12, h12_10, h25eq,
+      h34_00, h05_22, h34_12, h34_20, h34_21, h34_22, h25_12, h03_22] at source0 ⊢
+    ring_nf at source0 ⊢
+    exact source0
+  · simp [Krenn.FrozenCase0NoncollapseType01Chart3B2N1W14NonzeroCertificate.selectedEquations,
+      leafValues, sourceValue, selectedSourceIndex, Krenn.FrozenCase0System.equations,
+      SparsePoly.toPoly, SparseTerm.toPoly,
+      h23, h12, h13, h13_10, h13_12, h12_10, h25eq,
+      h34_00, h05_22, h34_12, h34_20, h34_21, h34_22, h25_12, h03_22] at source1 ⊢
+    ring_nf at source1 ⊢
+    exact source1
+  · simp [Krenn.FrozenCase0NoncollapseType01Chart3B2N1W14NonzeroCertificate.selectedEquations,
+      leafValues, sourceValue, selectedSourceIndex, Krenn.FrozenCase0System.equations,
+      SparsePoly.toPoly, SparseTerm.toPoly,
+      h23, h12, h13, h13_10, h13_12, h12_10, h25eq,
+      h34_00, h05_22, h34_12, h34_20, h34_21, h34_22, h25_12, h03_22] at source2 ⊢
+    ring_nf at source2 ⊢
+    exact source2
+  · simp [Krenn.FrozenCase0NoncollapseType01Chart3B2N1W14NonzeroCertificate.selectedEquations,
+      leafValues, sourceValue, selectedSourceIndex, Krenn.FrozenCase0System.equations,
+      SparsePoly.toPoly, SparseTerm.toPoly,
+      h23, h12, h13, h13_10, h13_12, h12_10, h25eq,
+      h34_00, h05_22, h34_12, h34_20, h34_21, h34_22, h25_12, h03_22] at source3 ⊢
+    ring_nf at source3 ⊢
+    exact source3
+  · simp [Krenn.FrozenCase0NoncollapseType01Chart3B2N1W14NonzeroCertificate.selectedEquations,
+      leafValues, sourceValue, selectedSourceIndex, Krenn.FrozenCase0System.equations,
+      SparsePoly.toPoly, SparseTerm.toPoly,
+      h23, h12, h13, h13_10, h13_12, h12_10, h25eq,
+      h34_00, h05_22, h34_12, h34_20, h34_21, h34_22, h25_12, h03_22] at source4 ⊢
+    ring_nf at source4 ⊢
+    exact source4
+  · simp [Krenn.FrozenCase0NoncollapseType01Chart3B2N1W14NonzeroCertificate.selectedEquations,
+      leafValues, sourceValue, selectedSourceIndex, Krenn.FrozenCase0System.equations,
+      SparsePoly.toPoly, SparseTerm.toPoly,
+      h23, h12, h13, h13_10, h13_12, h12_10, h25eq,
+      h34_00, h05_22, h34_12, h34_20, h34_21, h34_22, h25_12, h03_22] at source5 ⊢
+    ring_nf at source5 ⊢
+    exact source5
+  · simp [Krenn.FrozenCase0NoncollapseType01Chart3B2N1W14NonzeroCertificate.selectedEquations,
+      leafValues, sourceValue, selectedSourceIndex, Krenn.FrozenCase0System.equations,
+      SparsePoly.toPoly, SparseTerm.toPoly,
+      h23, h12, h13, h13_10, h13_12, h12_10, h25eq,
+      h34_00, h05_22, h34_12, h34_20, h34_21, h34_22, h25_12, h03_22] at source6 ⊢
+    ring_nf at source6 ⊢
+    exact source6
+  · simp [Krenn.FrozenCase0NoncollapseType01Chart3B2N1W14NonzeroCertificate.selectedEquations,
+      leafValues, sourceValue, selectedSourceIndex, Krenn.FrozenCase0System.equations,
+      SparsePoly.toPoly, SparseTerm.toPoly,
+      h23, h12, h13, h13_10, h13_12, h12_10, h25eq,
+      h34_00, h05_22, h34_12, h34_20, h34_21, h34_22, h25_12, h03_22] at source7 ⊢
+    ring_nf at source7 ⊢
+    exact source7
+  · simp [Krenn.FrozenCase0NoncollapseType01Chart3B2N1W14NonzeroCertificate.selectedEquations,
+      leafValues, sourceValue, selectedSourceIndex, Krenn.FrozenCase0System.equations,
+      SparsePoly.toPoly, SparseTerm.toPoly,
+      h23, h12, h13, h13_10, h13_12, h12_10, h25eq,
+      h34_00, h05_22, h34_12, h34_20, h34_21, h34_22, h25_12, h03_22] at source8 ⊢
+    ring_nf at source8 ⊢
+    exact source8
+  · simp [Krenn.FrozenCase0NoncollapseType01Chart3B2N1W14NonzeroCertificate.selectedEquations,
+      leafValues, sourceValue, selectedSourceIndex, Krenn.FrozenCase0System.equations,
+      SparsePoly.toPoly, SparseTerm.toPoly,
+      h23, h12, h13, h13_10, h13_12, h12_10, h25eq,
+      h34_00, h05_22, h34_12, h34_20, h34_21, h34_22, h25_12, h03_22] at source9 ⊢
+    ring_nf at source9 ⊢
+    exact source9
+  · simp [Krenn.FrozenCase0NoncollapseType01Chart3B2N1W14NonzeroCertificate.selectedEquations,
+      leafValues, sourceValue, selectedSourceIndex, Krenn.FrozenCase0System.equations,
+      SparsePoly.toPoly, SparseTerm.toPoly,
+      h23, h12, h13, h13_10, h13_12, h12_10, h25eq,
+      h34_00, h05_22, h34_12, h34_20, h34_21, h34_22, h25_12, h03_22] at source10 ⊢
+    ring_nf at source10 ⊢
+    exact source10
+  · simp [Krenn.FrozenCase0NoncollapseType01Chart3B2N1W14NonzeroCertificate.selectedEquations,
+      leafValues, sourceValue, selectedSourceIndex, Krenn.FrozenCase0System.equations,
+      SparsePoly.toPoly, SparseTerm.toPoly,
+      h23, h12, h13, h13_10, h13_12, h12_10, h25eq,
+      h34_00, h05_22, h34_12, h34_20, h34_21, h34_22, h25_12, h03_22] at source11 ⊢
+    ring_nf at source11 ⊢
+    exact source11
+  · simp [Krenn.FrozenCase0NoncollapseType01Chart3B2N1W14NonzeroCertificate.selectedEquations,
+      leafValues, SparsePoly.toPoly, SparseTerm.toPoly, mul_inv_cancel₀ h12_12]
+  · simp [Krenn.FrozenCase0NoncollapseType01Chart3B2N1W14NonzeroCertificate.selectedEquations,
+      leafValues, SparsePoly.toPoly, SparseTerm.toPoly, mul_inv_cancel₀ h01]
+  · simp [Krenn.FrozenCase0NoncollapseType01Chart3B2N1W14NonzeroCertificate.selectedEquations,
+      leafValues, SparsePoly.toPoly, SparseTerm.toPoly, mul_inv_cancel₀ h14]
+
+#print axioms Krenn.FrozenCase0NoncollapseType01Chart3B2N1W14Nonzero.refutes_chart3_b2n1_w14_nonzero
+
+end Krenn.FrozenCase0NoncollapseType01Chart3B2N1W14Nonzero

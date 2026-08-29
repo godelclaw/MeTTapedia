@@ -1,0 +1,180 @@
+import KrennSparseCertificate
+
+/-!
+A selected-row reflection of a strict frozen certificate.
+The surrounding carrier tree supplies the semantic route from these
+rows to the shared root system and the chart assumptions.
+-/
+
+namespace Krenn.Component39.SelectedLeafB5_6_3_4_2
+
+open Krenn.SparseCertificate
+open MvPolynomial
+
+def systemSHA256 : String := "44ab8afe6c977f63e649af0b935a9b6338ed8a934f94bc26056025b593e35253"
+def certificateSHA256 : String := "bfde4c214318eeb4560c1084f6586aad9073ad79606644c4d5dc355302418b97"
+
+set_option maxRecDepth 100000 in
+set_option maxHeartbeats 5000000 in
+def selectedSourceIndices : Fin 41 → Fin 676 := ![
+  14,
+  20,
+  26,
+  180,
+  187,
+  191,
+  193,
+  195,
+  232,
+  280,
+  302,
+  304,
+  305,
+  317,
+  318,
+  396,
+  418,
+  425,
+  439,
+  440,
+  476,
+  478,
+  511,
+  566,
+  567,
+  570,
+  602,
+  603,
+  651,
+  659,
+  660,
+  661,
+  662,
+  664,
+  666,
+  668,
+  669,
+  670,
+  671,
+  672,
+  675
+]
+
+set_option maxRecDepth 100000 in
+set_option maxHeartbeats 5000000 in
+def selectedEquations : Fin 41 → SparsePoly (Fin 69) := ![
+  [{ coefficient := 1, powers := [(10, 1), (45, 1)] }],
+  [{ coefficient := 1, powers := [(14, 1), (54, 1)] }],
+  [{ coefficient := 1, powers := [(20, 1), (53, 1)] }],
+  [{ coefficient := 1, powers := [(12, 1), (23, 1)] }, { coefficient := 1, powers := [(16, 1), (18, 1), (49, 1)] }],
+  [{ coefficient := 1, powers := [(16, 1), (18, 1)] }, { coefficient := 1, powers := [(16, 1), (23, 1)] }],
+  [{ coefficient := 1, powers := [(21, 1), (54, 1)] }, { coefficient := 1, powers := [(28, 1), (49, 1)] }],
+  [{ coefficient := 1, powers := [(22, 1), (53, 1)] }, { coefficient := 1, powers := [(28, 1), (46, 1)] }],
+  [{ coefficient := 1, powers := [(26, 1), (52, 1)] }, { coefficient := -1, powers := [(27, 1), (49, 1)] }],
+  [{ coefficient := 1, powers := [(10, 1), (24, 1), (45, 1)] }, { coefficient := 1, powers := [(10, 1), (57, 1)] }],
+  [{ coefficient := 1, powers := [(20, 1), (42, 1), (53, 1)] }, { coefficient := 1, powers := [(20, 1), (57, 1)] }],
+  [{ coefficient := 1, powers := [(0, 1), (49, 1)] }, { coefficient := 1, powers := [(18, 1), (49, 1)] }, { coefficient := 1, powers := [(23, 1), (49, 1)] }],
+  [{ coefficient := 1, powers := [(1, 1), (44, 1)] }, { coefficient := 1, powers := [(4, 1), (33, 1)] }, { coefficient := 1, powers := [(14, 1), (20, 1)] }],
+  [{ coefficient := 1, powers := [(1, 1), (51, 1)] }, { coefficient := 1, powers := [(7, 1), (30, 1)] }, { coefficient := 1, powers := [(10, 1), (25, 1)] }],
+  [{ coefficient := 1, powers := [(22, 1), (51, 1)] }, { coefficient := 1, powers := [(22, 1), (56, 1)] }, { coefficient := 1, powers := [(27, 1), (46, 1)] }],
+  [{ coefficient := 1, powers := [(27, 1), (53, 1)] }, { coefficient := 1, powers := [(28, 1), (39, 1)] }, { coefficient := 1, powers := [(28, 1), (44, 1)] }],
+  [{ coefficient := 1, powers := [(16, 1), (23, 1), (39, 1)] }, { coefficient := 1, powers := [(16, 1), (23, 1), (44, 1)] }, { coefficient := 1, powers := [(16, 1)] }],
+  [{ coefficient := 1, powers := [(2, 1), (46, 1)] }, { coefficient := 1, powers := [(5, 1), (26, 1), (59, 1)] }, { coefficient := 1, powers := [(16, 1), (22, 1)] }, { coefficient := 1, powers := [(16, 1), (26, 1), (46, 1)] }],
+  [{ coefficient := 1, powers := [(2, 1), (54, 1)] }, { coefficient := 1, powers := [(8, 1), (31, 1)] }, { coefficient := 1, powers := [(12, 1), (28, 1)] }, { coefficient := 1, powers := [(16, 1), (21, 1), (54, 1)] }],
+  [{ coefficient := 1, powers := [(16, 1), (39, 1)] }, { coefficient := 1, powers := [(16, 1), (44, 1)] }, { coefficient := 1, powers := [(16, 1), (51, 1)] }, { coefficient := 1, powers := [(16, 1), (56, 1)] }],
+  [{ coefficient := 1, powers := [(22, 1), (54, 1)] }, { coefficient := 1, powers := [(28, 1), (40, 1)] }, { coefficient := 1, powers := [(28, 1), (46, 1), (49, 1)] }, { coefficient := 1, powers := [(31, 1), (37, 1)] }],
+  [{ coefficient := 1, powers := [(1, 1), (38, 1), (56, 1)] }, { coefficient := 1, powers := [(1, 1), (50, 1)] }, { coefficient := 1, powers := [(7, 1), (33, 1), (38, 1)] }, { coefficient := 1, powers := [(14, 1), (25, 1), (38, 1)] }],
+  [{ coefficient := 1, powers := [(1, 1), (39, 1), (57, 1)] }, { coefficient := 1, powers := [(1, 1), (45, 1), (53, 1)] }, { coefficient := 1, powers := [(4, 1), (30, 1), (57, 1)] }, { coefficient := 1, powers := [(10, 1), (20, 1), (57, 1)] }],
+  [{ coefficient := 1, powers := [(4, 1), (23, 1), (59, 1)] }, { coefficient := 1, powers := [(10, 1), (23, 1), (44, 1)] }, { coefficient := 1, powers := [(14, 1), (23, 1), (39, 1)] }, { coefficient := 1, powers := [(14, 1)] }],
+  [{ coefficient := 1, powers := [(22, 1), (42, 1), (53, 1)] }, { coefficient := 1, powers := [(22, 1), (57, 1)] }, { coefficient := 1, powers := [(28, 1), (47, 1)] }, { coefficient := 1, powers := [(34, 1), (37, 1)] }],
+  [{ coefficient := 1, powers := [(22, 1), (49, 1), (56, 1)] }, { coefficient := 1, powers := [(22, 1), (52, 1)] }, { coefficient := 1, powers := [(27, 1), (40, 1)] }, { coefficient := 1, powers := [(27, 1), (46, 1), (49, 1)] }],
+  [{ coefficient := 1, powers := [(27, 1), (42, 1), (53, 1)] }, { coefficient := 1, powers := [(27, 1), (57, 1)] }, { coefficient := 1, powers := [(28, 1), (39, 1), (42, 1)] }, { coefficient := 1, powers := [(28, 1), (45, 1)] }],
+  [{ coefficient := 1, powers := [(4, 1), (59, 1)] }, { coefficient := 1, powers := [(7, 1), (59, 1)] }, { coefficient := 1, powers := [(10, 1), (44, 1)] }, { coefficient := 1, powers := [(10, 1), (56, 1)] }, { coefficient := 1, powers := [(14, 1), (39, 1)] }, { coefficient := 1, powers := [(14, 1), (51, 1)] }],
+  [{ coefficient := 1, powers := [(20, 1), (51, 1)] }, { coefficient := 1, powers := [(20, 1), (56, 1)] }, { coefficient := 1, powers := [(25, 1), (39, 1)] }, { coefficient := 1, powers := [(25, 1), (44, 1)] }, { coefficient := 1, powers := [(30, 1), (36, 1)] }, { coefficient := 1, powers := [(33, 1), (36, 1)] }],
+  [{ coefficient := 1, powers := [(2, 1), (40, 1), (56, 1)] }, { coefficient := 1, powers := [(2, 1), (46, 1), (52, 1)] }, { coefficient := 1, powers := [(5, 1), (31, 1), (56, 1)] }, { coefficient := 1, powers := [(12, 1), (22, 1), (56, 1)] }, { coefficient := 1, powers := [(12, 1), (27, 1), (46, 1)] }, { coefficient := 1, powers := [(16, 1), (22, 1), (52, 1)] }, { coefficient := 1, powers := [(16, 1), (27, 1), (40, 1)] }],
+  [{ coefficient := 1, powers := [(1, 1), (36, 1), (59, 1)] }, { coefficient := 1, powers := [(1, 1), (39, 1), (56, 1)] }, { coefficient := 1, powers := [(1, 1), (44, 1), (51, 1)] }, { coefficient := 1, powers := [(4, 1), (25, 1), (59, 1)] }, { coefficient := 1, powers := [(4, 1), (30, 1), (56, 1)] }, { coefficient := 1, powers := [(4, 1), (33, 1), (51, 1)] }, { coefficient := 1, powers := [(7, 1), (20, 1), (59, 1)] }, { coefficient := 1, powers := [(7, 1), (30, 1), (44, 1)] }, { coefficient := 1, powers := [(7, 1), (33, 1), (39, 1)] }, { coefficient := 1, powers := [(10, 1), (20, 1), (56, 1)] }, { coefficient := 1, powers := [(10, 1), (25, 1), (44, 1)] }, { coefficient := 1, powers := [(10, 1), (33, 1), (36, 1)] }, { coefficient := 1, powers := [(14, 1), (20, 1), (51, 1)] }, { coefficient := 1, powers := [(14, 1), (25, 1), (39, 1)] }, { coefficient := 1, powers := [(14, 1), (30, 1), (36, 1)] }, { coefficient := -1, powers := [] }],
+  [{ coefficient := 1, powers := [(2, 1), (37, 1), (60, 1)] }, { coefficient := 1, powers := [(2, 1), (40, 1), (57, 1)] }, { coefficient := 1, powers := [(2, 1), (47, 1), (54, 1)] }, { coefficient := 1, powers := [(5, 1), (28, 1), (60, 1)] }, { coefficient := 1, powers := [(5, 1), (31, 1), (57, 1)] }, { coefficient := 1, powers := [(5, 1), (34, 1), (54, 1)] }, { coefficient := 1, powers := [(8, 1), (22, 1), (60, 1)] }, { coefficient := 1, powers := [(8, 1), (31, 1), (47, 1)] }, { coefficient := 1, powers := [(8, 1), (34, 1), (40, 1)] }, { coefficient := 1, powers := [(12, 1), (22, 1), (57, 1)] }, { coefficient := 1, powers := [(12, 1), (28, 1), (47, 1)] }, { coefficient := 1, powers := [(12, 1), (34, 1), (37, 1)] }, { coefficient := 1, powers := [(17, 1), (22, 1), (54, 1)] }, { coefficient := 1, powers := [(17, 1), (28, 1), (40, 1)] }, { coefficient := 1, powers := [(17, 1), (31, 1), (37, 1)] }, { coefficient := -1, powers := [] }],
+  [{ coefficient := 1, powers := [(0, 1), (61, 1)] }, { coefficient := -1, powers := [] }],
+  [{ coefficient := 1, powers := [(1, 1)] }],
+  [{ coefficient := 1, powers := [(38, 1), (63, 1)] }, { coefficient := -1, powers := [] }],
+  [{ coefficient := 1, powers := [(40, 1)] }],
+  [{ coefficient := 1, powers := [(56, 1), (65, 1)] }, { coefficient := -1, powers := [] }],
+  [{ coefficient := 1, powers := [(57, 1), (66, 1)] }, { coefficient := -1, powers := [] }],
+  [{ coefficient := 1, powers := [(23, 1), (67, 1)] }, { coefficient := -1, powers := [] }],
+  [{ coefficient := 1, powers := [(25, 1)] }],
+  [{ coefficient := 1, powers := [(28, 1)] }],
+  [{ coefficient := 1, powers := [(60, 1)] }]
+]
+
+set_option maxRecDepth 100000 in
+set_option maxHeartbeats 5000000 in
+def multipliers : Fin 41 → SparsePoly (Fin 69) := ![
+  [{ coefficient := 1, powers := [(20, 1), (24, 1), (56, 1), (66, 1)] }, { coefficient := -1, powers := [(24, 1), (33, 1), (36, 1), (66, 1)] }],
+  [{ coefficient := -1, powers := [(5, 1), (33, 1), (34, 1), (36, 1), (57, 1), (66, 1)] }],
+  [{ coefficient := 2, powers := [(14, 1), (42, 1), (51, 1), (66, 1)] }, { coefficient := 1, powers := [(14, 1), (42, 1), (56, 1), (66, 1)] }, { coefficient := -1, powers := [(14, 1), (42, 1), (66, 1), (67, 1)] }],
+  [{ coefficient := 1, powers := [(14, 1), (22, 1), (33, 1), (36, 1), (57, 1), (67, 1)] }],
+  [{ coefficient := -1, powers := [(14, 1), (22, 1), (33, 1), (36, 1), (49, 1), (57, 1), (67, 1)] }, { coefficient := 1, powers := [(14, 1), (27, 1), (33, 1), (36, 1), (46, 1), (49, 1), (57, 1), (61, 1), (65, 1)] }],
+  [{ coefficient := 1, powers := [(14, 1), (16, 1), (33, 1), (36, 1), (47, 1), (57, 1), (66, 1)] }],
+  [{ coefficient := 1, powers := [(12, 1), (14, 1), (33, 1), (36, 1), (42, 1), (57, 1), (66, 1)] }],
+  [{ coefficient := -1, powers := [(5, 1), (14, 1), (33, 1), (36, 1), (57, 1), (59, 1), (65, 1)] }, { coefficient := -1, powers := [(14, 1), (16, 1), (33, 1), (36, 1), (46, 1), (57, 1), (65, 1)] }],
+  [{ coefficient := -1, powers := [(20, 1), (56, 1), (66, 1)] }, { coefficient := 1, powers := [(33, 1), (36, 1), (66, 1)] }],
+  [{ coefficient := -2, powers := [(14, 1), (51, 1), (66, 1)] }, { coefficient := -1, powers := [(14, 1), (56, 1), (66, 1)] }, { coefficient := 1, powers := [(14, 1), (66, 1), (67, 1)] }],
+  [{ coefficient := -1, powers := [(14, 1), (16, 1), (27, 1), (33, 1), (36, 1), (46, 1), (57, 1), (61, 1), (65, 1)] }],
+  [{ coefficient := 1, powers := [(51, 1)] }],
+  [{ coefficient := 1, powers := [(44, 1)] }],
+  [{ coefficient := -1, powers := [(14, 1), (16, 1), (23, 1), (33, 1), (36, 1), (52, 1), (57, 1), (65, 1)] }],
+  [{ coefficient := 1, powers := [(5, 1), (14, 1), (33, 1), (36, 1), (42, 1), (49, 1), (57, 1), (59, 1), (65, 1), (66, 1)] }, { coefficient := -1, powers := [(12, 1), (14, 1), (33, 1), (36, 1), (42, 1), (46, 1), (57, 1), (65, 1), (66, 1)] }, { coefficient := -1, powers := [(14, 1), (16, 1), (23, 1), (33, 1), (36, 1), (42, 1), (46, 1), (52, 1), (57, 1), (65, 1), (66, 1)] }, { coefficient := 1, powers := [(14, 1), (16, 1), (33, 1), (36, 1), (42, 1), (46, 1), (49, 1), (57, 1), (65, 1), (66, 1)] }],
+  [{ coefficient := -1, powers := [(14, 1), (22, 1), (33, 1), (36, 1), (52, 1), (57, 1), (65, 1)] }],
+  [{ coefficient := 1, powers := [(14, 1), (33, 1), (36, 1), (52, 1), (57, 1), (65, 1)] }],
+  [{ coefficient := -1, powers := [(14, 1), (33, 1), (36, 1), (47, 1), (57, 1), (66, 1)] }],
+  [{ coefficient := 1, powers := [(14, 1), (22, 1), (23, 1), (33, 1), (36, 1), (52, 1), (57, 1), (65, 1)] }],
+  [{ coefficient := -1, powers := [(14, 1), (17, 1), (33, 1), (36, 1), (57, 1), (66, 1)] }],
+  [{ coefficient := 1, powers := [(39, 1), (63, 1)] }],
+  [{ coefficient := 1, powers := [(56, 1), (66, 1)] }],
+  [{ coefficient := -1, powers := [(20, 1), (67, 1)] }],
+  [{ coefficient := -1, powers := [(12, 1), (14, 1), (33, 1), (36, 1), (57, 1), (66, 1)] }],
+  [{ coefficient := 1, powers := [(14, 1), (16, 1), (33, 1), (36, 1), (57, 1), (65, 1)] }],
+  [{ coefficient := -1, powers := [(5, 1), (14, 1), (33, 1), (36, 1), (49, 1), (57, 1), (59, 1), (65, 1), (66, 1)] }, { coefficient := 1, powers := [(12, 1), (14, 1), (33, 1), (36, 1), (46, 1), (57, 1), (65, 1), (66, 1)] }, { coefficient := 1, powers := [(14, 1), (16, 1), (23, 1), (33, 1), (36, 1), (46, 1), (52, 1), (57, 1), (65, 1), (66, 1)] }, { coefficient := -1, powers := [(14, 1), (16, 1), (33, 1), (36, 1), (46, 1), (49, 1), (57, 1), (65, 1), (66, 1)] }],
+  [{ coefficient := 1, powers := [(20, 1), (23, 1), (67, 1)] }],
+  [{ coefficient := 1, powers := [(14, 1)] }],
+  [{ coefficient := -1, powers := [(14, 1), (33, 1), (36, 1), (57, 1), (65, 1)] }],
+  [{ coefficient := -1, powers := [] }],
+  [{ coefficient := 1, powers := [(14, 1), (33, 1), (36, 1), (57, 1), (66, 1)] }],
+  [{ coefficient := 1, powers := [(14, 1), (16, 1), (27, 1), (33, 1), (36, 1), (46, 1), (49, 1), (57, 1), (65, 1)] }],
+  [{ coefficient := 1, powers := [(36, 1), (59, 1)] }, { coefficient := -1, powers := [(38, 1), (39, 1), (56, 1), (63, 1)] }, { coefficient := -1, powers := [(39, 1), (50, 1), (63, 1)] }, { coefficient := -1, powers := [(39, 1), (56, 1), (57, 1), (66, 1)] }, { coefficient := 1, powers := [(39, 1), (56, 1)] }, { coefficient := -1, powers := [(44, 1), (51, 1)] }, { coefficient := -1, powers := [(45, 1), (53, 1), (56, 1), (66, 1)] }],
+  [{ coefficient := -1, powers := [(7, 1), (33, 1), (39, 1)] }],
+  [{ coefficient := 1, powers := [(2, 1), (14, 1), (33, 1), (36, 1), (56, 1), (57, 1), (65, 1)] }, { coefficient := -1, powers := [(2, 1), (14, 1), (33, 1), (36, 1), (57, 2), (66, 1)] }, { coefficient := -1, powers := [(8, 1), (14, 1), (33, 1), (34, 1), (36, 1), (57, 1), (66, 1)] }],
+  [{ coefficient := 1, powers := [(5, 1), (14, 1), (31, 1), (33, 1), (36, 1), (57, 1)] }, { coefficient := 1, powers := [(12, 1), (14, 1), (22, 1), (33, 1), (36, 1), (57, 1)] }, { coefficient := -1, powers := [(14, 1), (16, 1), (22, 1), (33, 1), (36, 1), (49, 1), (57, 1)] }],
+  [{ coefficient := -1, powers := [(4, 1), (30, 1), (56, 1)] }, { coefficient := 1, powers := [(5, 1), (14, 1), (27, 1), (33, 1), (36, 1), (49, 1), (57, 1), (59, 1), (65, 1)] }, { coefficient := -1, powers := [(5, 1), (14, 1), (31, 1), (33, 1), (36, 1), (57, 1)] }, { coefficient := -1, powers := [(10, 1), (33, 1), (36, 1)] }, { coefficient := -1, powers := [(12, 1), (14, 1), (27, 1), (33, 1), (36, 1), (46, 1), (57, 1), (65, 1)] }, { coefficient := -1, powers := [(14, 1), (16, 1), (23, 1), (27, 1), (33, 1), (36, 1), (46, 1), (52, 1), (57, 1), (65, 1)] }, { coefficient := 1, powers := [(14, 1), (16, 1), (27, 1), (33, 1), (36, 1), (46, 1), (49, 1), (57, 1), (65, 1)] }, { coefficient := 2, powers := [(14, 1), (20, 1), (51, 1)] }, { coefficient := 1, powers := [(14, 1), (20, 1), (56, 1)] }, { coefficient := -1, powers := [(14, 1), (20, 1), (67, 1)] }, { coefficient := 1, powers := [(14, 1), (33, 1), (36, 1)] }],
+  [{ coefficient := -1, powers := [(7, 1), (20, 1), (59, 1)] }, { coefficient := -1, powers := [(10, 1), (20, 1), (56, 1)] }, { coefficient := -1, powers := [(12, 1), (14, 1), (22, 1), (33, 1), (36, 1), (57, 1)] }, { coefficient := 1, powers := [(14, 1), (16, 1), (22, 1), (33, 1), (36, 1), (49, 1), (57, 1)] }, { coefficient := -1, powers := [(14, 1), (20, 1), (51, 1)] }],
+  [{ coefficient := 1, powers := [(4, 1), (59, 1)] }, { coefficient := -1, powers := [(14, 1), (38, 1), (39, 1), (63, 1)] }, { coefficient := -1, powers := [(14, 1), (44, 1)] }],
+  [{ coefficient := -1, powers := [(5, 1), (14, 1), (33, 1), (36, 1), (42, 1), (44, 1), (49, 1), (57, 1), (59, 1), (65, 1), (66, 1)] }, { coefficient := 1, powers := [(5, 1), (14, 1), (33, 1), (36, 1), (45, 1), (49, 1), (57, 1), (59, 1), (65, 1), (66, 1)] }, { coefficient := -1, powers := [(5, 1), (14, 1), (33, 1), (36, 1), (57, 1), (60, 1), (66, 1)] }, { coefficient := 1, powers := [(12, 1), (14, 1), (33, 1), (36, 1), (42, 1), (44, 1), (46, 1), (57, 1), (65, 1), (66, 1)] }, { coefficient := -1, powers := [(12, 1), (14, 1), (33, 1), (36, 1), (42, 1), (46, 1), (57, 1), (66, 1)] }, { coefficient := -1, powers := [(12, 1), (14, 1), (33, 1), (36, 1), (45, 1), (46, 1), (57, 1), (65, 1), (66, 1)] }, { coefficient := 1, powers := [(12, 1), (14, 1), (33, 1), (36, 1), (47, 1), (57, 1), (66, 1)] }, { coefficient := 1, powers := [(14, 1), (16, 1), (23, 1), (33, 1), (36, 1), (42, 1), (44, 1), (46, 1), (52, 1), (57, 1), (65, 1), (66, 1)] }, { coefficient := -1, powers := [(14, 1), (16, 1), (23, 1), (33, 1), (36, 1), (45, 1), (46, 1), (52, 1), (57, 1), (65, 1), (66, 1)] }, { coefficient := -1, powers := [(14, 1), (16, 1), (33, 1), (36, 1), (42, 1), (44, 1), (46, 1), (49, 1), (57, 1), (65, 1), (66, 1)] }, { coefficient := 1, powers := [(14, 1), (16, 1), (33, 1), (36, 1), (45, 1), (46, 1), (49, 1), (57, 1), (65, 1), (66, 1)] }, { coefficient := -1, powers := [(14, 1), (16, 1), (33, 1), (36, 1), (47, 1), (49, 1), (57, 1), (66, 1)] }, { coefficient := 1, powers := [(14, 1), (17, 1), (33, 1), (36, 1), (46, 1), (49, 1), (57, 1), (66, 1)] }],
+  [{ coefficient := -1, powers := [(2, 1), (14, 1), (33, 1), (36, 1), (37, 1), (57, 1), (66, 1)] }, { coefficient := -1, powers := [(8, 1), (14, 1), (22, 1), (33, 1), (36, 1), (57, 1), (66, 1)] }]
+]
+
+set_option maxRecDepth 100000 in
+set_option maxHeartbeats 5000000 in
+/-- Lean replays the exact selected-row integer certificate. -/
+theorem constantIdentity :
+    ∑ index, (multipliers index).toPoly *
+      (selectedEquations index).toPoly = C (1 : ℤ) := by
+  simp (config := { maxSteps := 1000000 })
+    [Fin.sum_univ_succ, multipliers, selectedEquations,
+    SparsePoly.toPoly, SparseTerm.toPoly]
+  ring
+
+/-- The selected rows have no common zero in a characteristic-zero ring. -/
+theorem selectedHasNoCommonZero {R : Type*} [CommRing R] [Nontrivial R] [CharZero R]
+    (values : Fin 69 → R) :
+    ¬ ∀ index : Fin 41,
+      eval₂Hom (Int.castRingHom R) values
+        (selectedEquations index).toPoly = 0 := by
+  have constantNonzero : ((1 : ℤ) : R) ≠ 0 := by
+    exact_mod_cast (show (1 : ℤ) ≠ 0 by decide)
+  exact noCommonZero_of_sparseConstantCertificate
+    selectedEquations multipliers (1 : ℤ)
+    constantIdentity constantNonzero values
+
+#print axioms Krenn.Component39.SelectedLeafB5_6_3_4_2.selectedHasNoCommonZero
+
+end Krenn.Component39.SelectedLeafB5_6_3_4_2
