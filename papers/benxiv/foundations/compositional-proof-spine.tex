@@ -2294,6 +2294,77 @@ cannot occur.  Treating the colour action as the whole support transport
 would make the overlap step false exactly in the dense-defect geometry now
 under investigation.
 
+The preceding local facts can be assembled without adding a geometric
+supply hypothesis.  The result is useful chiefly because it states the
+remaining global obligation without hiding either of its two branches.
+
+\begin{theorem}[exact residue of the all-face formation machine]
+\label{thm:all-face-cycle-residue}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AllFaceEscapeStateCycleResidue.exists_reachable_structural_or_largeRemotePrimalCut_or_closedResidue}
+Start the exact all-face escape-state machine at any directed edge of a
+graph-backed vertex-minimal Tait counterexample.  The machine reaches one of
+the following:
+\begin{enumerate}
+\item a certified structural target;
+\item a certified large remote primal cut;
+\item a nonempty closed orbit containing a literal closure-recovery face
+transfer; or
+\item a nonempty closed orbit all of whose reentries are intrinsic singleton
+collars with odd rooted signed-support monodromy.
+\end{enumerate}
+In the fourth case the sum of the exact ambient colour discrepancies is zero.
+Moreover, for every assignment of additive colour translations to the
+reentry steps, the resulting closed affine colour word has identity linear
+holonomy and even sign.
+\end{theorem}
+
+\begin{proof}
+The finite exact-state theorem supplies an initial state at the chosen dart
+and either one of the first two stopping outcomes or a reachable nonempty
+closed reentry orbit.  In the latter case, classify each reentry by the exact
+intrinsic-singleton/recovery alternative.  If a recovery step occurs, split
+the closed orbit immediately before and after that step; this retains its
+source, target, localized loss, restoring gain, and the two ordinary reentry
+paths around it, giving item~3.  Otherwise the same orbit is a chain entirely
+of intrinsic odd signed steps, giving item~4.
+
+For the two assertions in item~4, extend each escape colouring by zero over
+the six omitted adjacent-pair edges.  A step discrepancy is the sum of its
+source and target extensions.  In characteristic two every intermediate
+extension appears twice, so a closed chain telescopes to zero.  Independently,
+the linear colour transport of a step is the change between its endpoint
+canonical colour frames.  These changes also telescope on a closed chain.
+The net linear map is therefore the identity; arbitrary additive translations
+of the four-element colour group are even, so the entire affine word is even.
+\end{proof}
+
+Theorem~\ref{thm:all-face-cycle-residue} is not wall exclusion.  The recovery
+alternative already restarts the complete adjacent-pair fusion machine at a
+different ambient edge, but no well-founded global quantity is yet known to
+decrease under every such restart.  In the all-intrinsic alternative, local
+oddness is also insufficient: an even number of odd local transports may
+cancel while both telescoping laws remain true.  The source-faithful missing
+statement is consequently one of the following equivalent kinds of global
+control: a fixed ambient signed-support observable whose intrinsic charges do
+not cancel, or a well-founded measure that strictly decreases on recovery
+restarts and converts the residual intrinsic cycle into a structural target.
+
+\begin{remark}[a local Stone--Wales neutralization fails]
+\Srefuted{exhaustive radius-one 12-port support and boundary-Kempe-closure computation}
+The most direct attempt to remove a pentagon--heptagon defect pair is not a
+valid shortcut.  At the common twelve-port interface, the pure hexagonal
+flower and the radius-one Stone--Wales flower have exact supports of sizes
+\(16533\) and \(16854\), with intersection \(9222\); neither support contains
+the other.  After exhaustive boundary-Kempe closure, \(4047\) hexagonal words
+remain outside the Stone--Wales closure and \(3924\) Stone--Wales words remain
+outside the hexagonal closure.  In particular the all-constant word is
+realized by the hexagonal flower but is not in the Stone--Wales closure.
+Thus neither patch is a monotone replacement for the other at this interface,
+even after all noncrossing boundary Kempe switches.  This refutes the local
+reverse-Stone--Wales move, not every possible larger-scale formation
+transport.
+\end{remark}
+
 \begin{theorem}[mesh isoperimetry and the bounded-cut obstruction]
 \label{thm:mesh-isoperimetry}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MeshIsoperimetry.Mesh.branchIn_card_le_or_branchOut_card_le}
