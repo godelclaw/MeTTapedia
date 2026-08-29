@@ -2487,6 +2487,68 @@ which all three two-colour pairings arise.  This is exactly the extra content
 suggested by the source's Penrose--Kauffman evaluation and idemposition
 calculus.
 
+\begin{proposition}[pairing-linear positivity cannot separate the adversary]
+\label{prop:hexagon-no-linear-pairing-separator}
+Let
+\[
+                   L(w)=\sum_{M}c_M\delta_M(w),\qquad c_M\in\mathbb Z,
+\]
+be any integer linear combination of the fifteen pairing contractions.  If
+\(L\) vanishes on the literal hexagon support \(P\), then \(L\) is neither
+strictly positive nor strictly negative on all of \(A\setminus P\).
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPairingNoLinearSeparator.no_strictlyPositive_pairingLinearSeparator}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPairingNoLinearSeparator.no_strictlyNegative_pairingLinearSeparator}
+\end{proposition}
+
+\begin{proof}
+Take the following five adversary words:
+\[
+\begin{aligned}
+q_0&=(r,r,b,r,r,b),&q_1&=(r,r,b,r,b,r),&
+q_2&=(r,r,b,p,b,p),\\
+q_3&=(r,b,r,r,b,r),&q_4&=(r,b,r,p,p,b).
+\end{aligned}
+\]
+Lean checks \(q_i\in A\setminus P\) for all five.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPairingNoLinearSeparator.adversaryWitness_mem}
+Now list eleven words accepted by the hexagon:
+\[
+\begin{array}{c@{\;}l c@{\;}l c@{\;}l}
+0&(r,r,r,r,r,r)&1&(r,r,r,r,b,b)&2&(r,r,r,b,b,r)\\
+3&(r,r,b,b,r,r)&4&(r,r,b,b,b,b)&5&(r,r,b,p,p,b)\\
+6&(r,b,b,r,r,r)&7&(r,b,b,r,p,p)&8&(r,b,b,b,b,r)\\
+9&(r,b,p,r,b,p)&10&(r,b,p,p,b,r).&&
+\end{array}
+\]
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPairingNoLinearSeparator.hexagonRelationWitness_mem}
+For each one of the fifteen perfect matchings \(M\), direct evaluation gives
+\[
+\begin{split}
+\sum_{i=0}^{4}\delta_M(q_i)
+={}&\delta_M(p_0)-\delta_M(p_1)-\delta_M(p_3)+\delta_M(p_4)
+     -\delta_M(p_5)\\
+ &-\delta_M(p_6)+\delta_M(p_7)+\delta_M(p_9)+\delta_M(p_{10}).
+\end{split}
+\]
+This finite row identity is checked for every \(M\).
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPairingNoLinearSeparator.pairContraction_farkasRelation}
+Multiply its \(M\)-th instance by \(c_M\) and sum over \(M\).  Linearity
+turns the left side into \(\sum_iL(q_i)\), while every term on the right is
+zero because each \(p_j\) lies in \(P\).  Thus
+\(\sum_iL(q_i)=0\).  The five summands cannot all be strictly positive, and
+they cannot all be strictly negative.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPairingNoLinearSeparator.sum_adversaryWitness_eq_zero_of_vanishesOnHexagon}
+\end{proof}
+
+Thus the most direct Penrose repair is now ruled out precisely.  Positivity
+of the \emph{same fifteen pairing coordinates} cannot supply the missing
+physical-exterior restriction: their entire linear span has no strict
+separator.  A successful argument must enlarge the observable to a common
+trivalent web (retaining shared-edge incidence and the three coupled
+idemposition equations), or exploit a nonlinear positivity statement about
+actual extension counts.  This is a narrowing of the high-width problem,
+not evidence against the source's broader operator programme.
+
 \begin{theorem}[the exact width criterion]
 \label{thm:exact-width-criterion}
 \Sprose
