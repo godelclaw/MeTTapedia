@@ -3341,6 +3341,57 @@ using a target-aware quotient weaker than full support equality, or performing
 a two-dimensional move whose size decrease occurs elsewhere.  Those are the
 remaining source-faithful possibilities.
 
+\begin{theorem}[monotone and target-aware support replacement]
+\label{thm:target-aware-support-replacement}
+Let \(E\) be a fixed exterior tangle, \(P\) the piece removed from it, and
+\(R\) a replacement with the same ordered interface.  If
+\[
+                  \operatorname{Supp}(R)\subseteq
+                  \operatorname{Supp}(P),
+\]
+then
+\[
+       E\mathbin{\#}P\text{ not Tait-colourable}
+       \quad\Longrightarrow\quad
+       E\mathbin{\#}R\text{ not Tait-colourable}.
+\]
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TargetAwareSupportReplacement.not_closedColorable_of_innerSupport_subset}
+For this one fixed exterior, the sharp condition is
+\[
+ E\mathbin{\#}R\text{ not Tait-colourable}
+ \quad\Longleftrightarrow\quad
+ \operatorname{Supp}(E)\cap\operatorname{Supp}(R)=\varnothing.
+\]
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TargetAwareSupportReplacement.not_closedColorable_iff_disjoint}
+Both statements hold for the literal sewn rotation systems after restricting
+to genuine nonzero Tait words.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TargetAwareSupportReplacement.not_composeRotationSystem_taitColorable_of_taitInnerSupport_subset}
+\end{theorem}
+
+\begin{proof}
+By the physical gluing bijection, a colouring of a sewn tangle is exactly a
+boundary word realized on both sides.  If a colouring of
+\(E\mathbin{\#}R\) existed under the displayed inclusion, its seam word
+would also lie in \(\operatorname{Supp}(P)\), and hence would colour
+\(E\mathbin{\#}P\), a contradiction.  Without requiring inclusion, the
+same gluing statement says directly that a colouring exists exactly when the
+two fixed support sets meet.
+\end{proof}
+
+This changes the correct formulation of the two-dimensional crux.  Exact
+support equality is useful for pumping because it works against every suffix,
+but a minimal-counterexample descent only needs a replacement whose support
+misses the \emph{actual} exterior.  Conversely, if the original splice is
+uncolourable while a proposed smaller admissible splice is colourable, then
+the replacement support cannot be contained in the original support:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TargetAwareSupportReplacement.not_innerSupport_subset_of_original_zero_of_replacement_colorable}
+it must introduce some boundary word that the removed piece did not realize.
+Thus Proposition~\ref{prop:hex-cell-no-smaller-exact-replacement} does not
+kill target-aware one-cell reduction; it shows precisely why such a reduction
+cannot be justified by exact support preservation.  The remaining constructive
+problem is to exploit the fixed exterior support while preserving the
+topological class and decreasing size.
+
 \begin{theorem}[raw noose Count pumping]
 \label{thm:raw-noose-count-pumping}
 \Sprose
