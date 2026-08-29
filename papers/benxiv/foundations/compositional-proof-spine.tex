@@ -2508,7 +2508,16 @@ $a$ or $c$.  If $b$ and $d$ are distinct boundary ports, the two components
 cannot be distinct.  Thus physical components cannot join alternating pairs
 of boundary ports, even when the second component consists only of the local
 vertex wire between two ports based at one retained cubic vertex.
+
+In particular, when the bond has exactly six boundary darts, the physical
+mate involution in cyclic coordinates is a noncrossing matching.  Hence the
+exact ordered Tait support of the literal shore tangle is boundary-Kempe
+closed: its matching and all switch witnesses are supplied by the physical
+bichromatic components of the realizing colouring, not by an independently
+chosen boundary certificate.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PhysicalKempeNoncrossing.no_distinct_kempe_components_between_boundary_arcs}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PhysicalKempeNoncrossingClosure.orderedPhysicalMate_isNoncrossing}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PhysicalKempeNoncrossingClosure.boundaryKempeClosed_orderedVertexSideTaitSupport}
 \end{theorem}
 
 \begin{proof}
@@ -2550,6 +2559,19 @@ bichromatic components are vertex-disjoint and therefore edge-disjoint, while
 Theorem~\ref{thm:port-tangle-kempe-two-ended} gives exactly two boundary
 endpoints for every component meeting the boundary.  This proves the stated
 unrestricted noncrossing conclusion for each physical colour pair.
+
+For six boundary positions, assume two chords of the physical mate cross in
+the standard cyclic order.  Orient each chord from its smaller to its larger
+coordinate.  The four endpoints then interleave.  Since there are only six
+coordinates, the two complementary open arcs are finite successor lists
+avoiding the endpoints of the first chord.  The theorem just proved applies
+to those two physical components and says that they cannot be distinct.  But
+if they were the same component, uniqueness of the other endpoint would make
+the two chords equal, contrary to interleaving.  Thus the physical mate is
+noncrossing.  The common-web switching construction of
+Theorem~\ref{thm:port-tangle-physical-kempe-matching}, transported through the
+cyclic enumeration, now supplies every field of boundary Kempe closure for
+the exact ordered support.
 \end{proof}
 
 The original v23 CAP5 move-realizability proof tries to pass from this
