@@ -3264,7 +3264,7 @@ and define the physical right language
 \]
 The physical/semantic bridge gives, exactly,
 \[
- a\in\mathcal L(R_b)quad\Longleftrightarrow\quad
+ a\in\mathcal L(R_b)\quad\Longleftrightarrow\quad
  \operatorname{Supp}_{\rm out}(L_a)\cap
  \operatorname{Supp}_{\rm in}(R_b)\ne\varnothing.
 \]
@@ -3283,6 +3283,63 @@ colourability target itself, not an independent compression lemma.  Any
 reachable quotient used in the descent must therefore be certified from its
 literal transition table and terminal predicate; it cannot be justified just
 by saying that all testers are physical.
+
+The smallest genuinely two-dimensional repair one might try is to replace
+one hexagonal cell at a time.  Its exact boundary behaviour is already large
+enough to rule out that local move.
+
+Let \(H_6\) be the open tangle consisting of a six-cycle with one dangling
+port at each cycle vertex, the ports ordered cyclically.  If \(b_i\) is the
+colour on port \(i\), and \(x_i\) is the colour on the cycle edge leaving
+vertex \(i\), properness at that vertex is equivalent, in
+\(\mathbb F_2^2\), to
+\[
+                         x_{i-1}+b_i+x_i=0.
+\]
+Thus, after choosing the nonzero colour \(x_5\), the other cycle-edge
+colours are forced successively; the word extends precisely when none of
+them is zero and the last equation closes the cycle.  The literal port-tangle
+semantics and this recurrence are machine-checked to be equivalent.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexCellPortTangle.nonempty_col_hexPortTangle_iff}
+Exactly \(63\) of the \(3^6=729\) ordered boundary words extend across
+\(H_6\).
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexCellPortTangle.card_hexPortSupport}
+
+\begin{proposition}[one hexagonal cell has no smaller exact connected replacement]
+\label{prop:hex-cell-no-smaller-exact-replacement}
+\Sprose
+No connected cubic six-port tangle with fewer than six internal vertices has
+the same ordered boundary support as \(H_6\).
+\end{proposition}
+
+\begin{proof}
+Let such a tangle have \(n\) internal vertices and \(m\) internal edges.
+Counting incidences, including the six ports, gives
+\[
+                            3n=2m+6.
+\]
+The internal graph is connected, so \(m\geq n-1\).  Hence \(n\geq4\), while
+the incidence equation makes \(n\) even.  Under \(n<6\) this forces
+\(n=4\) and \(m=3\); the internal graph is therefore a tree.
+
+Root that tree.  A proper colouring has \(3!=6\) choices for the three
+labelled incidences at the root.  At each of the other three vertices, the
+parent-edge colour is already fixed, and the remaining two labelled
+incidences can receive the other two colours in at most two orders.  Thus the
+tangle has at most
+\[
+                            6\cdot2^3=48
+\]
+proper colourings, and consequently realizes at most \(48\) boundary words.
+Since \(48<63\), its support cannot equal that of \(H_6\).
+\end{proof}
+
+This is a committed local obstruction, not wall exclusion.  It rules out an
+exact support-preserving reduction which removes one isolated hexagonal cell
+and keeps the same six ports.  It does not rule out replacing a larger patch,
+using a target-aware quotient weaker than full support equality, or performing
+a two-dimensional move whose size decrease occurs elsewhere.  Those are the
+remaining source-faithful possibilities.
 
 \begin{theorem}[raw noose Count pumping]
 \label{thm:raw-noose-count-pumping}
