@@ -2278,4 +2278,268 @@ theorem detour_port_reuse_forces_size_one_circuits (W : Sym2 (V × Fin 3) → �
     bidiagonal_size_one_circuit W hmin hmono hcard hqv
       (Ne.symm (thirdColour_ne_right hak)) hkvq hlvq⟩
 
+/-! ## Two receiving-colour detours at one site
+
+Both receiving colours can fail the live-entry test at once, and then the site carries two
+certified detours: one through colour `k` with ports `p, q`, one through the third colour with
+ports `r, s`.  Full reuse of both ports is already known to force size-one circuits.  What is
+settled here is the single-port case, `card ({p,q} ∩ {r,s}) = 1`.
+
+Reuse on the same side of the pair puts one route arm in two colours at once, which is a size-one
+circuit.  Crossed reuse does not: it is answered by a rigid cap in which every remaining
+cross-colour entry at the shared port vanishes. -/
+
+theorem thirdColour_thirdColour (a k : Fin 3) : thirdColour a (thirdColour a k) = k := by
+  revert a k; decide
+
+/-- The ports of a certified detour, exposed as data. -/
+structure DetourPorts (W : Sym2 (V × Fin 3) → ℂ) (u v : V) (a k : Fin 3) where
+  /-- the port carrying `u` -/
+  fst : V
+  /-- the port carrying `v` -/
+  snd : V
+  fst_ne_u : fst ≠ u
+  fst_ne_v : fst ≠ v
+  snd_ne_u : snd ≠ u
+  snd_ne_v : snd ≠ v
+  fst_ne_snd : fst ≠ snd
+  live_fst : W s((u, k), (fst, k)) ≠ 0
+  live_snd : W s((v, k), (snd, k)) ≠ 0
+  cert : pmSum W (Amplitude.const (V := V) k)
+    ((Finset.univ : Finset V) \ ({u, fst, v, snd} : Finset V)) ≠ 0
+  chord : W s((fst, thirdColour a k), (snd, thirdColour a k)) = 0
+
+theorem exists_detourPorts {W : Sym2 (V × Fin 3) → ℂ} {u v : V} {a k : Fin 3}
+    (h : CertifiedDetour W u v a k) : Nonempty (DetourPorts W u v a k) := by
+  obtain ⟨-, p, q, hpu, hpv, hqu, hqv, hpq, hup, hvq, hcert, hchord⟩ := h
+  exact ⟨⟨p, q, hpu, hpv, hqu, hqv, hpq, hup, hvq, hcert, hchord⟩⟩
+
+/-- **Same-side reuse is a size-one circuit.**  If the two detours share the port carrying `u`,
+that arm is live in both receiving colours; likewise for the port carrying `v`. -/
+theorem same_side_reuse_size_one_circuit (W : Sym2 (V × Fin 3) → ℂ)
+    (hmin : IsSupportMinimal W)
+    (hmono : ∀ (x y : V), y ≠ x → ∀ i j : Fin 3, i ≠ j → W s((x, i), (y, j)) = 0)
+    (hcard : 4 < Fintype.card V)
+    {a k : Fin 3} (hak : a ≠ k) {u v : V}
+    (D : DetourPorts W u v a k) (E : DetourPorts W u v a (thirdColour a k)) :
+    (D.fst = E.fst → ∃ ω : StarCircuitWitness W u, ω.supp = ({D.fst} : Finset V)) ∧
+      (D.snd = E.snd → ∃ ω : StarCircuitWitness W v, ω.supp = ({D.snd} : Finset V)) := by
+  have hkl : k ≠ thirdColour a k := Ne.symm (thirdColour_ne_right hak)
+  constructor
+  · intro hfst
+    refine bidiagonal_size_one_circuit W hmin hmono hcard D.fst_ne_u hkl D.live_fst ?_
+    rw [hfst]; exact E.live_fst
+  · intro hsnd
+    refine bidiagonal_size_one_circuit W hmin hmono hcard D.snd_ne_v hkl D.live_snd ?_
+    rw [hsnd]; exact E.live_snd
+
+/-- A size-one circuit at one of the two sites of the pair. -/
+def SomeSizeOneCircuit (W : Sym2 (V × Fin 3) → ℂ) (u v : V) : Prop :=
+  (∃ w : V, ∃ ω : StarCircuitWitness W u, ω.supp = ({w} : Finset V)) ∨
+    ∃ w : V, ∃ ω : StarCircuitWitness W v, ω.supp = ({w} : Finset V)
+
+/-- **The crossed one-port cap.**  `p` is shared: it is the `u`-port of the `k`-detour and the
+`v`-port of the third-colour detour.  `q` is the other `k`-port, `r` the other third-colour port.
+Every field is derived, never assumed. -/
+structure CrossedOnePortCap (W : Sym2 (V × Fin 3) → ℂ) (u v : V) (a k : Fin 3) (p q r : V) :
+    Prop where
+  /-- the shared port and the two free ports avoid the pair -/
+  p_ne_u : p ≠ u
+  p_ne_v : p ≠ v
+  q_ne_u : q ≠ u
+  q_ne_v : q ≠ v
+  r_ne_u : r ≠ u
+  r_ne_v : r ≠ v
+  p_ne_q : p ≠ q
+  r_ne_p : r ≠ p
+  /-- the four route arms that are live -/
+  live_k_up : W s((u, k), (p, k)) ≠ 0
+  live_k_vq : W s((v, k), (q, k)) ≠ 0
+  live_l_ur : W s((u, thirdColour a k), (r, thirdColour a k)) ≠ 0
+  live_l_vp : W s((v, thirdColour a k), (p, thirdColour a k)) ≠ 0
+  /-- both forbidden chords -/
+  chord_l_pq : W s((p, thirdColour a k), (q, thirdColour a k)) = 0
+  chord_k_rp : W s((r, k), (p, k)) = 0
+  /-- both certified complements -/
+  cert_k : pmSum W (Amplitude.const (V := V) k)
+    ((Finset.univ : Finset V) \ ({u, p, v, q} : Finset V)) ≠ 0
+  cert_l : pmSum W (Amplitude.const (V := V) (thirdColour a k))
+    ((Finset.univ : Finset V) \ ({u, r, v, p} : Finset V)) ≠ 0
+  /-- the cap: every remaining cross-colour entry at the ports vanishes -/
+  dead_l_up : W s((u, thirdColour a k), (p, thirdColour a k)) = 0
+  dead_l_vq : W s((v, thirdColour a k), (q, thirdColour a k)) = 0
+  dead_l_uq : W s((u, thirdColour a k), (q, thirdColour a k)) = 0
+  dead_k_ur : W s((u, k), (r, k)) = 0
+  dead_k_vp : W s((v, k), (p, k)) = 0
+  dead_k_vr : W s((v, k), (r, k)) = 0
+
+/-- **Crossed one-port reuse: a circuit, or the cap.**  The shared port is the `u`-port of the
+`k`-detour and the `v`-port of the third-colour detour.  Either some route arm is live in two
+colours -- a size-one circuit -- or every remaining cross entry at the ports is dead. -/
+theorem crossed_one_port_dichotomy (W : Sym2 (V × Fin 3) → ℂ)
+    (hmin : IsSupportMinimal W)
+    (hmono : ∀ (x y : V), y ≠ x → ∀ i j : Fin 3, i ≠ j → W s((x, i), (y, j)) = 0)
+    (hcard : 4 < Fintype.card V)
+    {a k : Fin 3} (hak : a ≠ k) {u v : V} (huv : u ≠ v)
+    (D : DetourPorts W u v a k) (E : DetourPorts W u v a (thirdColour a k))
+    (hshare : D.fst = E.snd) :
+    SomeSizeOneCircuit W u v ∨ CrossedOnePortCap W u v a k D.fst D.snd E.fst := by
+  classical
+  have hal : a ≠ thirdColour a k := Ne.symm (thirdColour_ne_left hak)
+  have hkl : k ≠ thirdColour a k := Ne.symm (thirdColour_ne_right hak)
+  have hlvp : W s((v, thirdColour a k), (D.fst, thirdColour a k)) ≠ 0 := by
+    rw [hshare]; exact E.live_snd
+  have hchord2 : W s((E.fst, k), (E.snd, k)) = 0 := by
+    have h := E.chord; rw [thirdColour_thirdColour] at h; exact h
+  have hrel1 := certified_detour_cross_relation W hmin hmono hcard hak huv
+    D.fst_ne_u D.fst_ne_v D.snd_ne_u D.snd_ne_v D.fst_ne_snd D.cert D.chord
+  have hrel2 := certified_detour_cross_relation W hmin hmono hcard hal huv
+    E.fst_ne_u E.fst_ne_v E.snd_ne_u E.snd_ne_v E.fst_ne_snd E.cert E.chord
+  rw [thirdColour_thirdColour] at hrel2
+  by_cases h1 : W s((u, thirdColour a k), (D.fst, thirdColour a k)) ≠ 0
+  · exact Or.inl (Or.inl ⟨D.fst,
+      bidiagonal_size_one_circuit W hmin hmono hcard D.fst_ne_u hkl D.live_fst h1⟩)
+  by_cases h2 : W s((v, k), (D.fst, k)) ≠ 0
+  · exact Or.inl (Or.inr ⟨D.fst, bidiagonal_size_one_circuit W hmin hmono hcard
+      D.fst_ne_v (Ne.symm hkl) hlvp h2⟩)
+  by_cases h3 : W s((v, thirdColour a k), (D.snd, thirdColour a k)) ≠ 0
+  · exact Or.inl (Or.inr ⟨D.snd,
+      bidiagonal_size_one_circuit W hmin hmono hcard D.snd_ne_v hkl D.live_snd h3⟩)
+  by_cases h4 : W s((u, k), (E.fst, k)) ≠ 0
+  · exact Or.inl (Or.inl ⟨E.fst, bidiagonal_size_one_circuit W hmin hmono hcard
+      E.fst_ne_u (Ne.symm hkl) E.live_fst h4⟩)
+  push_neg at h1 h2 h3 h4
+  have hdead_l_uq : W s((u, thirdColour a k), (D.snd, thirdColour a k)) = 0 := by
+    have hz : W s((D.fst, thirdColour a k), (u, thirdColour a k)) = 0 := by
+      rw [Sym2.eq_swap]; exact h1
+    rw [hz, zero_mul, zero_add] at hrel1
+    have hne : W s((D.fst, thirdColour a k), (v, thirdColour a k)) ≠ 0 := by
+      rw [Sym2.eq_swap]; exact hlvp
+    have hq := (mul_eq_zero.mp hrel1).resolve_left hne
+    rw [Sym2.eq_swap]; exact hq
+  have hdead_k_vr : W s((v, k), (E.fst, k)) = 0 := by
+    have hz : W s((E.fst, k), (u, k)) = 0 := by rw [Sym2.eq_swap]; exact h4
+    rw [hz, zero_mul, zero_add] at hrel2
+    have hne : W s((E.snd, k), (u, k)) ≠ 0 := by
+      rw [Sym2.eq_swap, ← hshare]; exact D.live_fst
+    have hr := (mul_eq_zero.mp hrel2).resolve_right hne
+    rw [Sym2.eq_swap]; exact hr
+  refine Or.inr ⟨D.fst_ne_u, D.fst_ne_v, D.snd_ne_u, D.snd_ne_v, E.fst_ne_u, E.fst_ne_v,
+    D.fst_ne_snd, ?_, D.live_fst, D.live_snd, E.live_fst, hlvp, D.chord, ?_,
+    D.cert, ?_, h1, h3, hdead_l_uq, h4, h2, hdead_k_vr⟩
+  · rw [hshare]; exact E.fst_ne_snd
+  · rw [hshare]; exact hchord2
+  · rw [hshare]; exact E.cert
+
+/-- Reading the same detour from the other end of the pair. -/
+def DetourPorts.swap {W : Sym2 (V × Fin 3) → ℂ} {u v : V} {a k : Fin 3}
+    (D : DetourPorts W u v a k) : DetourPorts W v u a k where
+  fst := D.snd
+  snd := D.fst
+  fst_ne_u := D.snd_ne_v
+  fst_ne_v := D.snd_ne_u
+  snd_ne_u := D.fst_ne_v
+  snd_ne_v := D.fst_ne_u
+  fst_ne_snd := Ne.symm D.fst_ne_snd
+  live_fst := D.live_snd
+  live_snd := D.live_fst
+  cert := by
+    have hset : ({v, D.snd, u, D.fst} : Finset V) = ({u, D.fst, v, D.snd} : Finset V) := by
+      ext z; simp only [Finset.mem_insert, Finset.mem_singleton]; tauto
+    rw [hset]; exact D.cert
+  chord := by rw [Sym2.eq_swap]; exact D.chord
+
+/-- **The overlap normal form for two receiving-colour detours.**  Either some route arm is live in
+two colours, or the two detours use disjoint ports, or they share exactly the crossed port and the
+rigid cap holds in one of its two orientations. -/
+theorem double_certified_detour_overlap_normal_form (W : Sym2 (V × Fin 3) → ℂ)
+    (hmin : IsSupportMinimal W)
+    (hmono : ∀ (x y : V), y ≠ x → ∀ i j : Fin 3, i ≠ j → W s((x, i), (y, j)) = 0)
+    (hcard : 4 < Fintype.card V)
+    {a k : Fin 3} (hak : a ≠ k) {u v : V} (huv : u ≠ v)
+    (D : DetourPorts W u v a k) (E : DetourPorts W u v a (thirdColour a k)) :
+    SomeSizeOneCircuit W u v
+      ∨ Disjoint ({D.fst, D.snd} : Finset V) ({E.fst, E.snd} : Finset V)
+      ∨ CrossedOnePortCap W u v a k D.fst D.snd E.fst
+      ∨ CrossedOnePortCap W v u a k D.snd D.fst E.snd := by
+  classical
+  by_cases hff : D.fst = E.fst
+  · exact Or.inl (Or.inl ⟨D.fst, (same_side_reuse_size_one_circuit W hmin hmono hcard hak D E).1 hff⟩)
+  by_cases hss : D.snd = E.snd
+  · exact Or.inl (Or.inr ⟨D.snd, (same_side_reuse_size_one_circuit W hmin hmono hcard hak D E).2 hss⟩)
+  by_cases hfs : D.fst = E.snd
+  · rcases crossed_one_port_dichotomy W hmin hmono hcard hak huv D E hfs with hc | hcap
+    · exact Or.inl hc
+    · exact Or.inr (Or.inr (Or.inl hcap))
+  by_cases hsf : D.snd = E.fst
+  · have hshare : D.swap.fst = E.swap.snd := hsf
+    rcases crossed_one_port_dichotomy W hmin hmono hcard hak (Ne.symm huv) D.swap E.swap hshare
+      with hc | hcap
+    · exact Or.inl (Or.symm hc)
+    · exact Or.inr (Or.inr (Or.inr hcap))
+  · refine Or.inr (Or.inl ?_)
+    simp only [Finset.disjoint_insert_left, Finset.disjoint_singleton_left,
+      Finset.mem_insert, Finset.mem_singleton, not_or]
+    exact ⟨⟨hff, hfs⟩, ⟨hsf, hss⟩⟩
+
+/-- **The receiving pair, classified.**  At a site with a certified sharp partition, in each of the
+two receiving colours the pair is either live -- giving a transported crossing -- or dead, giving a
+certified detour.  When both are dead the two detours meet the overlap normal form. -/
+theorem receiving_pair_normal_form (W : Sym2 (V × Fin 3) → ℂ)
+    (hmin : IsSupportMinimal W)
+    (hmono : ∀ (p q : V), q ≠ p → ∀ i j : Fin 3, i ≠ j → W s((p, i), (q, j)) = 0)
+    (hcard : 4 < Fintype.card V)
+    {c : V → Fin 3} {u v : V} (hvu : v ≠ u) (hcv : c v = c u)
+    (hlive : W s((u, c u), (v, c u)) ≠ 0)
+    (hfib : ∀ m : Fin 3, pmSum W (Amplitude.const (V := V) m)
+      (((Finset.univ.erase u).erase v) ∩ NoCancellation.fiber c m) ≠ 0)
+    (hAne : (((Finset.univ.erase u).erase v) ∩ NoCancellation.fiber c (c u)).Nonempty)
+    {k : Fin 3} (hk : k ≠ c u) :
+    TransportedCrossing W c u v k
+      ∨ TransportedCrossing W c u v (thirdColour (c u) k)
+      ∨ SomeSizeOneCircuit W u v
+      ∨ ∃ D : DetourPorts W u v (c u) k,
+          ∃ E : DetourPorts W u v (c u) (thirdColour (c u) k),
+            Disjoint ({D.fst, D.snd} : Finset V) ({E.fst, E.snd} : Finset V)
+              ∨ CrossedOnePortCap W u v (c u) k D.fst D.snd E.fst
+              ∨ CrossedOnePortCap W v u (c u) k D.snd D.fst E.snd := by
+  classical
+  have hcuk : c u ≠ k := Ne.symm hk
+  have hlne : thirdColour (c u) k ≠ c u := thirdColour_ne_left hcuk
+  rcases receiving_colour_dichotomy W hmin hmono hcard hvu hcv hlive hfib hAne hk with hx | hdk
+  · exact Or.inl hx
+  rcases receiving_colour_dichotomy W hmin hmono hcard hvu hcv hlive hfib hAne hlne with hy | hdl
+  · exact Or.inr (Or.inl hy)
+  obtain ⟨D⟩ := exists_detourPorts hdk
+  obtain ⟨E⟩ := exists_detourPorts hdl
+  rcases double_certified_detour_overlap_normal_form W hmin hmono hcard hcuk (Ne.symm hvu) D E with
+    hc | hrest
+  · exact Or.inr (Or.inr (Or.inl hc))
+  · exact Or.inr (Or.inr (Or.inr ⟨D, E, hrest⟩))
+
+/-- **Initialization at an excess site.**  A site whose live degree is not three supplies the sharp
+partition, hence the receiving-pair classification in both receiving colours. -/
+theorem excess_site_receiving_pair_normal_form (W : Sym2 (V × Fin 3) → ℂ)
+    (hmin : IsSupportMinimal W)
+    (hmono : ∀ (p q : V), q ≠ p → ∀ i j : Fin 3, i ≠ j → W s((p, i), (q, j)) = 0)
+    (hcard : 4 < Fintype.card V)
+    {u : V} (hdeg : (liveNbrs W u).card ≠ 3) :
+    ∃ v ∈ liveNbrs W u, ∃ c : V → Fin 3, c v = c u ∧
+      W s((u, c u), (v, c u)) ≠ 0 ∧
+      ∀ k : Fin 3, k ≠ c u →
+        TransportedCrossing W c u v k
+          ∨ TransportedCrossing W c u v (thirdColour (c u) k)
+          ∨ SomeSizeOneCircuit W u v
+          ∨ ∃ D : DetourPorts W u v (c u) k,
+              ∃ E : DetourPorts W u v (c u) (thirdColour (c u) k),
+                Disjoint ({D.fst, D.snd} : Finset V) ({E.fst, E.snd} : Finset V)
+                  ∨ CrossedOnePortCap W u v (c u) k D.fst D.snd E.fst
+                  ∨ CrossedOnePortCap W v u (c u) k D.snd D.fst E.snd := by
+  obtain ⟨v, hv, c, hcv, hentry, hfib, hown, -, -, -⟩ :=
+    excess_site_receiving_dichotomy W hmin hmono hcard hdeg
+  obtain ⟨z, hz, hcz⟩ := hown
+  exact ⟨v, hv, c, hcv, hentry, fun k hk =>
+    receiving_pair_normal_form W hmin hmono hcard (mem_liveNbrs.mp hv).1 hcv hentry hfib
+      ⟨z, Finset.mem_inter.mpr ⟨hz, NoCancellation.mem_fiber.mpr hcz⟩⟩ hk⟩
+
 end StarNormalForm
