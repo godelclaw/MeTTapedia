@@ -2413,20 +2413,48 @@ the switched colouring itself witnesses membership of the new word in the
 same exact support.
 \end{proof}
 
-What remains geometric is the endpoint theorem: in a cubic tangle embedded
-in a disk, each component meeting the boundary has exactly two boundary
-ports, and distinct such paths induce a noncrossing matching in the cyclic
-port order.  `PortTangle` deliberately forgets the rotation and disk, so that
-claim cannot follow at this carrier level.  More importantly, even the full
-endpoint bridge would not rescue the reduction, because the adversary already
-passes the resulting abstract test.  We also have not realized the whole
-adversary simultaneously as the exact support of one planar cubic exterior.
-The surviving loophole is therefore stronger and genuinely joint: the three
-colour-pair matchings of an actual exterior arise from one and the same
-embedded tangle.  A successful replacement theorem must exploit that
-simultaneous physical compatibility (or some still stronger feature of the
-exact exterior language), rather than parity or three separately existential
-boundary matchings.
+\begin{theorem}[two-ended physical Kempe components]
+\label{thm:port-tangle-kempe-two-ended}
+Let $T$ be a finite cubic port tangle with a proper nonzero Tait colouring,
+and fix a colour pair.  Every bichromatic component which contains a boundary
+port contains exactly two boundary ports.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FinitePathEndpointCount.card_degreeOneVertices_eq_two}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PortTangleKempeEndpoints.activeWeb_degree_eq_one_iff_isPort}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PortTangleKempeEndpoints.card_componentPortDarts_eq_two}
+\end{theorem}
+
+\begin{proof}
+Replace every active dart by a vertex of an auxiliary finite graph.  Join the
+two active darts based at each cubic vertex, and join the two active darts
+which are the halves of each interior edge.  Properness and cubicity give
+exactly two active darts at every tangle vertex.  Hence an active boundary
+dart has degree one in the auxiliary graph, while an active interior dart has
+degree two: it has one neighbour across its tangle vertex and one across its
+interior edge.  These two neighbours are distinct because an interior edge is
+not a loop.
+
+Now restrict to the connected component containing the chosen boundary dart.
+Restriction does not change degrees, since every neighbour of a vertex in a
+connected component lies in the same component.  The component is finite and
+connected, all its degrees are one or two, and it has at least one degree-one
+vertex.  The handshaking lemma makes the number of degree-one vertices even;
+connectedness gives at most two of them.  Thus there are exactly two, and the
+degree characterization identifies them exactly with the boundary ports.
+\end{proof}
+
+What remains geometric is only noncrossing: in a disk embedding, distinct
+two-ended bichromatic components must induce a noncrossing matching in the
+cyclic port order.  `PortTangle` deliberately forgets the rotation and disk,
+so that conclusion cannot follow at this carrier level.  More importantly,
+even the full noncrossing bridge would not rescue the reduction, because the
+adversary already passes the resulting abstract test.  We also have not
+realized the whole adversary simultaneously as the exact support of one
+planar cubic exterior.  The surviving loophole is therefore stronger and
+genuinely joint: the three colour-pair matchings of an actual exterior arise
+from one and the same embedded tangle.  A successful replacement theorem
+must exploit that simultaneous physical compatibility (or some still
+stronger feature of the exact exterior language), rather than parity or
+three separately existential boundary matchings.
 
 The first joint law is now checked at its proper, edge-set level.
 
