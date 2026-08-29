@@ -1,6 +1,7 @@
 import MainTheorem
 import MinimalSupport
 import NoCancellation
+import StarNormalForm
 import GraphMatchingBridge
 import Mettapedia.Combinatorics.Matching
 
@@ -39,3 +40,8 @@ Every top-level conditional theorem, with its dependency cone printed. -/
 #print axioms MixedColouring.mixColouring_of_disconnected
 #print axioms MixedColouring.exists_mixed_model
 #print axioms CycleCoordinates.exists_mixed
+
+/-! Receiving-colour detour compatibility. -/
+#print axioms NoCancellation.certified_quad_cross_relation
+#print axioms StarNormalForm.certified_detour_cross_relation
+#print axioms StarNormalForm.detour_port_reuse_forces_size_one_circuits

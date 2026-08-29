@@ -2187,4 +2187,95 @@ theorem excess_site_receiving_dichotomy (W : Sym2 (V × Fin 3) → ℂ)
       receiving_colour_dichotomy W hmin hmono hcard (mem_liveNbrs.mp hv).1 hcv hentry hfib
         ⟨z, Finset.mem_inter.mpr ⟨hz, NoCancellation.mem_fiber.mpr hcz⟩⟩ hk⟩
 
+/-! ## Compatibility of two receiving-colour detours
+
+A dead detour contains more than its two route edges.  Its certified complement forces the
+four-site matching sum to vanish in the third colour, while its forbidden chord deletes one of the
+three pairings.  The two possible routings in the third colour therefore satisfy an exact
+two-product relation.
+
+This relation settles the first overlap case for the two receiving colours.  If the second detour
+reuses both ports of the first, in either orientation, one routing product is non-zero.  The relation
+forces the other product non-zero as well.  In particular the first detour's two route arms are live
+in both receiving colours, and each is a size-one star circuit.  Thus the unresolved double-detour
+network may be reduced to the port-separated case or to the already isolated size-one circuit case.
+It is not eliminated here. -/
+
+/-- **The cross relation carried by a certified detour.** -/
+theorem certified_detour_cross_relation (W : Sym2 (V × Fin 3) → ℂ)
+    (hmin : IsSupportMinimal W)
+    (hmono : ∀ (x y : V), y ≠ x → ∀ i j : Fin 3, i ≠ j → W s((x, i), (y, j)) = 0)
+    (hcard : 4 < Fintype.card V)
+    {a k : Fin 3} (hak : a ≠ k)
+    {u v p q : V} (huv : u ≠ v) (hpu : p ≠ u) (hpv : p ≠ v)
+    (hqu : q ≠ u) (hqv : q ≠ v) (hpq : p ≠ q)
+    (hcert : pmSum W (Amplitude.const (V := V) k)
+      ((Finset.univ : Finset V) \ ({u, p, v, q} : Finset V)) ≠ 0)
+    (hchord : W s((p, thirdColour a k), (q, thirdColour a k)) = 0) :
+    W s((p, thirdColour a k), (u, thirdColour a k))
+        * W s((q, thirdColour a k), (v, thirdColour a k))
+      + W s((p, thirdColour a k), (v, thirdColour a k))
+        * W s((q, thirdColour a k), (u, thirdColour a k)) = 0 := by
+  classical
+  have hset : ({p, q, u, v} : Finset V) = ({u, p, v, q} : Finset V) := by
+    ext z
+    simp only [Finset.mem_insert, Finset.mem_singleton]
+    tauto
+  apply NoCancellation.certified_quad_cross_relation W hmin.1.2 hmono hcard
+    (thirdColour_ne_right hak) hpq hpu hpv hqu hqv huv
+  · rw [hset]
+    exact hcert
+  · exact hchord
+
+/-- **Reusing both detour ports forces size-one circuits at both ends.**
+
+The second receiving colour may traverse the first detour's two ports in parallel or crossed
+orientation.  Either routing product is enough: the detour cross relation forces the other product,
+so the original two route arms are bi-diagonal. -/
+theorem detour_port_reuse_forces_size_one_circuits (W : Sym2 (V × Fin 3) → ℂ)
+    (hmin : IsSupportMinimal W)
+    (hmono : ∀ (x y : V), y ≠ x → ∀ i j : Fin 3, i ≠ j → W s((x, i), (y, j)) = 0)
+    (hcard : 4 < Fintype.card V)
+    {a k : Fin 3} (hak : a ≠ k)
+    {u v p q : V} (huv : u ≠ v) (hpu : p ≠ u) (hpv : p ≠ v)
+    (hqu : q ≠ u) (hqv : q ≠ v) (hpq : p ≠ q)
+    (hkup : W s((u, k), (p, k)) ≠ 0) (hkvq : W s((v, k), (q, k)) ≠ 0)
+    (hcert : pmSum W (Amplitude.const (V := V) k)
+      ((Finset.univ : Finset V) \ ({u, p, v, q} : Finset V)) ≠ 0)
+    (hchord : W s((p, thirdColour a k), (q, thirdColour a k)) = 0)
+    (hreuse :
+      (W s((p, thirdColour a k), (u, thirdColour a k)) ≠ 0 ∧
+        W s((q, thirdColour a k), (v, thirdColour a k)) ≠ 0) ∨
+      (W s((p, thirdColour a k), (v, thirdColour a k)) ≠ 0 ∧
+        W s((q, thirdColour a k), (u, thirdColour a k)) ≠ 0)) :
+    (∃ ω : StarCircuitWitness W u, ω.supp = ({p} : Finset V)) ∧
+      ∃ ω : StarCircuitWitness W v, ω.supp = ({q} : Finset V) := by
+  have hrel := certified_detour_cross_relation W hmin hmono hcard hak huv hpu hpv hqu hqv hpq
+    hcert hchord
+  have hparallel :
+      W s((p, thirdColour a k), (u, thirdColour a k)) ≠ 0 ∧
+        W s((q, thirdColour a k), (v, thirdColour a k)) ≠ 0 := by
+    rcases hreuse with h | h
+    · exact h
+    · have hcross : W s((p, thirdColour a k), (v, thirdColour a k))
+          * W s((q, thirdColour a k), (u, thirdColour a k)) ≠ 0 :=
+        mul_ne_zero h.1 h.2
+      have hprod : W s((p, thirdColour a k), (u, thirdColour a k))
+          * W s((q, thirdColour a k), (v, thirdColour a k)) ≠ 0 := by
+        intro hz
+        rw [hz, zero_add] at hrel
+        exact hcross hrel
+      exact ⟨fun hp => hprod (by rw [hp, zero_mul]),
+        fun hq => hprod (by rw [hq, mul_zero])⟩
+  have hlup : W s((u, thirdColour a k), (p, thirdColour a k)) ≠ 0 := by
+    rw [Sym2.eq_swap]
+    exact hparallel.1
+  have hlvq : W s((v, thirdColour a k), (q, thirdColour a k)) ≠ 0 := by
+    rw [Sym2.eq_swap]
+    exact hparallel.2
+  exact ⟨bidiagonal_size_one_circuit W hmin hmono hcard hpu
+      (Ne.symm (thirdColour_ne_right hak)) hkup hlup,
+    bidiagonal_size_one_circuit W hmin hmono hcard hqv
+      (Ne.symm (thirdColour_ne_right hak)) hkvq hlvq⟩
+
 end StarNormalForm
