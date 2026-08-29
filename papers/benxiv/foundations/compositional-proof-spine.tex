@@ -2442,11 +2442,69 @@ connectedness gives at most two of them.  Thus there are exactly two, and the
 degree characterization identifies them exactly with the boundary ports.
 \end{proof}
 
-What remains geometric is only noncrossing: in a disk embedding, distinct
-two-ended bichromatic components must induce a noncrossing matching in the
-cyclic port order.  `PortTangle` deliberately forgets the rotation and disk,
-so that conclusion cannot follow at this carrier level.  More importantly,
-even the full noncrossing bridge would not rescue the reduction, because the
+The missing geometric bridge has the following precise form.  We state it at
+the level of the spherical combinatorial map, rather than adding an
+uninterpreted ``planar matching'' field to the port-tangle carrier.
+
+\begin{theorem}[noncrossing of physical Kempe components]
+\label{thm:physical-kempe-components-noncrossing}
+Let $M$ be a finite connected spherical cubic combinatorial map with
+two-sided faces and connected face dual.  Let $S$ and its complement be the
+two connected shores of an edge bond, and suppose the boundary darts based
+in $S$ are enumerated in the cyclic order given by retained facial first
+return.  Give the literal open tangle on $S$ a proper nonzero Tait
+colouring, and fix a pair of colours.  Let one bichromatic component join
+boundary ports $a$ and $c$, and let a second join $b$ and $d$.  Suppose
+$b$ lies on the forward cyclic arc from the successor of $a$ to $c$, while
+the forward cyclic arc from $d$ returns to $a$, neither open arc meeting
+$a$ or $c$.  If the retained endpoints of $b$ and $d$ are distinct, the two
+components cannot be distinct.  Thus two nondegenerate physical component
+trails cannot join alternating pairs of boundary ports.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PhysicalKempeNoncrossing.no_distinct_kempe_components_between_boundary_arcs}
+\end{theorem}
+
+\begin{proof}
+It is enough to rule out two component trails with endpoints occurring in
+cyclic order $a,b,c,d$, the first joining $a$ to $c$ and the second joining
+$b$ to $d$.  Because the complementary shore is connected, join the outside
+end of the cut edge at $c$ to the outside end of the cut edge at $a$ by a
+trail in the complementary shore.  Appending the two cut edges and the
+$a$--$c$ trail in $S$ gives a closed trail $Q$.  The four pieces have
+pairwise disjoint edge sets: the two shore trails use no cut edge, the shores
+are disjoint, and the two named cut edges are distinct.  Thus $Q$ is a
+closed trail.  Among boundary edges it uses exactly those at $a$ and $c$.
+
+Label every face by the parity of the number of edges of $Q$ crossed by a
+dual walk from a fixed face.  Sphericity, two-sidedness, and connectedness of
+the face dual make this label well defined; an edge has differently labelled
+incident faces exactly when it belongs to $Q$.  At the boundary edge $a$
+the label therefore changes.  Consecutive boundary darts in retained facial
+first-return order expose the two sides of one ambient face.  Since all
+boundary edges strictly between $a$ and $b$ avoid $Q$, the label propagates
+unchanged from the face immediately after $a$ to the face at $b$.  Likewise,
+along the other boundary arc from $d$ back to $a$, it propagates unchanged
+from the face at $d$ to the face immediately before $a$.  The faces incident
+with the boundary endpoints $b$ and $d$ consequently have opposite labels.
+
+The $b$--$d$ component trail is nonempty because its retained endpoints are
+distinct, and it is edge-disjoint from $Q$.  At either endpoint,
+cubic cyclic rotation identifies the boundary-side face label with the label
+beside the first or last trail dart; along the trail the label cannot change,
+because none of its edges lies in $Q$.  Hence its endpoint faces have equal
+labels, contradicting the preceding paragraph.  Distinct bichromatic
+components are vertex-disjoint and therefore edge-disjoint, while
+Theorem~\ref{thm:port-tangle-kempe-two-ended} gives exactly two boundary
+endpoints for every component meeting the boundary.  This proves the stated
+nondegenerate noncrossing conclusion.  A component whose two boundary ports
+are based at one retained vertex is not covered by this separator argument;
+showing directly that such a pair is boundary-local is the remaining small
+degenerate case before promoting the conclusion to an unrestricted matching
+statement.
+\end{proof}
+
+The reduct `PortTangle` deliberately forgets the rotation and disk, so this
+conclusion cannot follow at that carrier level alone.  More importantly, even
+the full noncrossing bridge does not rescue the reduction, because the
 adversary already passes the resulting abstract test.  We also have not
 realized the whole adversary simultaneously as the exact support of one
 planar cubic exterior.  The surviving loophole is therefore stronger and

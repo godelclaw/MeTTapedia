@@ -30,9 +30,9 @@ omit [DecidableEq V] in
     vertex ∈ degreeOneVertices G ↔ G.degree vertex = 1 := by
   simp [degreeOneVertices]
 
+omit [DecidableEq V] in
 /-- **Finite path endpoint count.**  Connectivity and the degree set
 `{1,2}` force exactly two endpoints as soon as one endpoint exists. -/
-omit [DecidableEq V] in
 theorem card_degreeOneVertices_eq_two
     (hconnected : G.Connected)
     (hdegree : ∀ vertex : V,
