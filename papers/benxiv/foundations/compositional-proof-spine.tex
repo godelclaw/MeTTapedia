@@ -2536,6 +2536,54 @@ itself furnish the manuscript's long sequence of saturated cuts.  Conversely,
 the mesh theorem does not prove wall exclusion.  It explains why the missing
 implication must use zero Count and minimality rather than wall size alone.
 
+For the converse direction used in the reduction, one must distinguish mesh
+positions from actual vertices.  The abstract mesh above permits two
+row--column positions to designate the same vertex, because injectivity is
+irrelevant to the isoperimetric inequality.  A genuine subdivided wall has an
+injective branch map.  On that exact strengthening the bounded-width descent
+does exclude every sufficiently large wall.
+
+\begin{proposition}[a raw width bound excludes a sufficiently large injective mesh]
+\label{prop:raw-width-excludes-injective-mesh}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24InjectiveMeshWidthExclusion.not_isVertexInjective_of_rawBranchDecompositionSupply}
+Fix $w$, and suppose every graph-backed vertex-minimal zero-Tait-count map
+has a complete rooted branch decomposition of width at most $w$.  Put
+\[
+ B(w)=4\left(2^{(6w+1)
+       \sum_{j=0}^{w}j!\,2^{3^j}}-1\right)+6.
+\]
+Then no such map contains an $a$-by-$b$ mesh whose $ab$ designated
+branch positions are pairwise distinct vertices whenever $B(w)<ab$.
+\end{proposition}
+
+\begin{proof}
+The checked width-preserving connectedization turns the supplied raw tree
+into the connected edge-leaf decomposition consumed by the literal-shore
+descent.  Its two rooted subtrees and the exact Count state give
+
+\[
+                         |V(M)|\le B(w).
+\]
+
+On the other hand, injectivity of the branch map sending $(i,j)$ to
+$v_{ij}$ embeds the $ab$-element set of mesh positions into $V(M)$, and
+hence $ab\le |V(M)|$.  These inequalities contradict $B(w)<ab$.
+\end{proof}
+
+Thus the checked implication is
+
+\[
+ \text{uniform raw width bound}\quad\Longrightarrow\quad
+ \text{exclusion of one sufficiently large injective wall mesh}.
+\]
+
+The reverse implication still uses the planar wall/grid theorem: exclusion
+of one fixed wall bounds width and thereby supplies the raw branch
+decomposition.  The proposition does not claim that theorem and does not
+exclude a wall directly from zero Count.  It makes precise that the sole
+route-specific high-width task is fixed-wall exclusion for least
+counterexamples; all mathematics after a raw width bound is already checked.
+
 The numerical mismatch with the direct Count state is also exact.  A literal
 width-\(k\) cut has \(3^k\) Tait boundary words, hence its unminimized
 cumulative support carrier has \(2^{3^k}\) states.  For every \(k\geq1\),
