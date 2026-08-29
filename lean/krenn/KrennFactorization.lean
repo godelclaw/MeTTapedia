@@ -35,8 +35,8 @@ lemma mem_iff_eq_inf_or_sup {v : V} {z : Sym2 V} :
         sup_eq_right.mpr h, inf_eq_right.mpr h, sup_eq_left.mpr h, or_comm]
 
 /-- Edge-set form of a perfect matching: a finite set of edges of `G`
-covering every vertex exactly once.  `pmSum` sums over these; bridging to
-`Subgraph.IsPerfectMatching` happens inside the lemmas that need it. -/
+covering every vertex exactly once. `pmSum` sums over these; the conversions
+below identify this representation with `Subgraph.IsPerfectMatching`. -/
 def IsPMFinset (G : SimpleGraph V) (M : Finset G.edgeSet) : Prop :=
   ∀ v : V, ∃! e : G.edgeSet, e ∈ M ∧ v ∈ (e : Sym2 V)
 
@@ -94,6 +94,7 @@ def subgraphOfFinset {G : SimpleGraph V} (M : Finset G.edgeSet) : G.Subgraph whe
     rintro v w ⟨e, heM, he⟩
     exact ⟨e, heM, he.trans Sym2.eq_swap⟩
 
+omit [Fintype V] [LinearOrder V] in
 /-- The edge-set and subgraph formulations of a perfect matching agree for
 `subgraphOfFinset`. -/
 theorem isPerfectMatching_subgraphOfFinset {G : SimpleGraph V}
@@ -114,6 +115,69 @@ theorem isPerfectMatching_subgraphOfFinset {G : SimpleGraph V}
     exact he'.symm.trans (congrArg Subtype.val heq |>.trans he)
   · intro v
     simp [subgraphOfFinset]
+
+/-- The finite edge-set carried by a graph subgraph. -/
+noncomputable def edgeFinsetOfSubgraph {G : SimpleGraph V}
+    (M : G.Subgraph) : Finset G.edgeSet := by
+  classical
+  exact Finset.univ.filter fun e : G.edgeSet => (e : Sym2 V) ∈ M.edgeSet
+
+omit [LinearOrder V] in
+@[simp] theorem mem_edgeFinsetOfSubgraph {G : SimpleGraph V} {M : G.Subgraph}
+    {e : G.edgeSet} :
+    e ∈ edgeFinsetOfSubgraph M ↔ (e : Sym2 V) ∈ M.edgeSet := by
+  classical
+  simp [edgeFinsetOfSubgraph]
+
+omit [LinearOrder V] in
+/-- A Mathlib perfect matching gives the finite-edge-set representation used by
+the graph-indexed Krenn matching sum. -/
+theorem isPMFinset_edgeFinsetOfSubgraph {G : SimpleGraph V} {M : G.Subgraph}
+    (hM : M.IsPerfectMatching) : IsPMFinset G (edgeFinsetOfSubgraph M) := by
+  intro v
+  obtain ⟨w, hvw, huniq⟩ := hM.1 (hM.2 v)
+  let e : G.edgeSet := ⟨s(v, w), M.edgeSet_subset (Subgraph.mem_edgeSet.2 hvw)⟩
+  refine ⟨e, ⟨?_, Sym2.mem_mk_left v w⟩, ?_⟩
+  · exact mem_edgeFinsetOfSubgraph.mpr (Subgraph.mem_edgeSet.2 hvw)
+  · intro e' he'
+    obtain ⟨he'M, hve'⟩ := he'
+    obtain ⟨w', heq⟩ := Sym2.mem_iff_exists.mp hve'
+    have hvw' : M.Adj v w' := Subgraph.mem_edgeSet.1 <| by
+      rw [← heq]
+      exact mem_edgeFinsetOfSubgraph.mp he'M
+    have hww' : w' = w := huniq w' hvw'
+    subst w'
+    exact Subtype.ext heq
+
+omit [LinearOrder V] in
+/-- Converting a finite edge set to a subgraph and back preserves the edge set. -/
+@[simp] theorem edgeFinsetOfSubgraph_subgraphOfFinset {G : SimpleGraph V}
+    (M : Finset G.edgeSet) :
+    edgeFinsetOfSubgraph (subgraphOfFinset M) = M := by
+  classical
+  apply Finset.ext
+  rintro ⟨z, hz⟩
+  induction z with
+  | _ v w =>
+      rw [mem_edgeFinsetOfSubgraph, Subgraph.mem_edgeSet]
+      constructor
+      · rintro ⟨e, heM, heq⟩
+        have he : e = ⟨s(v, w), hz⟩ := Subtype.ext heq
+        rw [he] at heM
+        exact heM
+      · intro heM
+        exact ⟨⟨s(v, w), hz⟩, heM, rfl⟩
+
+omit [LinearOrder V] in
+/-- The finite-edge-set and Mathlib subgraph formulations of a perfect matching
+are equivalent. -/
+theorem isPerfectMatching_subgraphOfFinset_iff {G : SimpleGraph V}
+    {M : Finset G.edgeSet} :
+    (subgraphOfFinset M).IsPerfectMatching ↔ IsPMFinset G M := by
+  constructor
+  · intro hM
+    simpa using isPMFinset_edgeFinsetOfSubgraph hM
+  · exact isPerfectMatching_subgraphOfFinset
 
 /-- Disjoint finite edge sets induce edge-disjoint spanning subgraphs. -/
 theorem disjoint_edgeSet_subgraphOfFinset {G : SimpleGraph V}

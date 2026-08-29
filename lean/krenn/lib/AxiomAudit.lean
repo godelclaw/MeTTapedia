@@ -1,6 +1,7 @@
 import MainTheorem
 import MinimalSupport
 import NoCancellation
+import GraphMatchingBridge
 
 /-! # Axiom audit
 Every top-level conditional theorem, with its dependency cone printed. -/
@@ -13,3 +14,6 @@ Every top-level conditional theorem, with its dependency cone printed. -/
 #print axioms NoCancellation.krenn_gu_of_certifiedPartition
 #print axioms NoCancellation.krenn_gu_of_colourDegreeOne
 #print axioms CycleCoordinates.no_three_regular_uniform
+#print axioms MatchingParity.Pairing.toSubgraph_isPerfectMatching
+#print axioms MatchingParity.Pairing.toSubgraph_ofPerfectMatching_adj
+#print axioms MatchingParity.Pairing.exchange_toSubgraph_isPerfectMatching
