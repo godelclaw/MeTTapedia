@@ -306,6 +306,217 @@ theorem psi_rePair_lt'
 
 end Potential
 
+theorem psi_swap₁₃ (S₁ S₂ S₃ : Finset G.edgeSet) :
+    psi (G := G) S₁ S₂ S₃ = psi (G := G) S₃ S₂ S₁ := by
+  rw [psi_swap₁₂, psi_swap₂₃, psi_swap₁₂]
+
+/-! ## Quartets at a site -/
+
+/-- The four shores `P, Q | R, T` around a tree edge form a quartet with
+`P, Q` as the vertex-disjoint pair: `P` and `Q` share no vertex, and the two
+shores across the edge can be matched to them with non-empty boundaries. -/
+def QuartetPairs (P Q R T : Finset G.edgeSet) : Prop :=
+  bd (G := G) P Q = ∅ ∧
+    ((bd (G := G) P R ≠ ∅ ∧ bd (G := G) Q T ≠ ∅) ∨
+      (bd (G := G) P T ≠ ∅ ∧ bd (G := G) Q R ≠ ∅))
+
+section Site
+
+variable {P Q R T : Finset G.edgeSet} {w : ℕ}
+
+/-- Claim 1 of the connectedization lemma at one site: when re-pairing `P`
+with `R` is a quartet replacement, either that replacement keeps the width,
+or the other re-pairing is also a quartet replacement and keeps the width. -/
+theorem rePair_width_choice
+    (hPQ : bd (G := G) P Q = ∅) (hPR : bd (G := G) P R ≠ ∅)
+    (hQT : bd (G := G) Q T ≠ ∅)
+    (hR : (bd (G := G) R (P ∪ Q ∪ T)).card ≤ w)
+    (hT : (bd (G := G) T (P ∪ Q ∪ R)).card ≤ w) :
+    (bd (G := G) (P ∪ R) (Q ∪ T)).card ≤ w ∨
+      (bd (G := G) P T ≠ ∅ ∧ bd (G := G) Q R ≠ ∅ ∧
+        (bd (G := G) (P ∪ T) (Q ∪ R)).card ≤ w) := by
+  by_cases hPT : bd (G := G) P T = ∅
+  · exact Or.inl (le_trans (Finset.card_le_card
+      (bd_rePair_subset_of_bd_eq_empty P Q R T hPQ hPT)) hR)
+  by_cases hRQ : bd (G := G) R Q = ∅
+  · exact Or.inl (le_trans (Finset.card_le_card
+      (bd_rePair_subset_of_bd_eq_empty' P Q R T hPQ hRQ)) hT)
+  have hsum := card_bd_rePair_add_le (G := G) P Q R T hPQ
+  by_cases hone : (bd (G := G) (P ∪ R) (Q ∪ T)).card ≤ w
+  · exact Or.inl hone
+  · refine Or.inr ⟨hPT, ?_, by omega⟩
+    rwa [bd_comm]
+
+/-- Every quartet admits a width-preserving quartet replacement. -/
+theorem rePair_choice_of_quartetPairs (hq : QuartetPairs (G := G) P Q R T)
+    (hR : (bd (G := G) R (P ∪ Q ∪ T)).card ≤ w)
+    (hT : (bd (G := G) T (P ∪ Q ∪ R)).card ≤ w) :
+    (bd (G := G) P R ≠ ∅ ∧ bd (G := G) Q T ≠ ∅ ∧
+        (bd (G := G) (P ∪ R) (Q ∪ T)).card ≤ w) ∨
+      (bd (G := G) P T ≠ ∅ ∧ bd (G := G) Q R ≠ ∅ ∧
+        (bd (G := G) (P ∪ T) (Q ∪ R)).card ≤ w) := by
+  obtain ⟨hPQ, hcross⟩ := hq
+  rcases hcross with ⟨hPR, hQT⟩ | ⟨hPT, hQR⟩
+  · rcases rePair_width_choice hPQ hPR hQT hR hT with hleft | hright
+    · exact Or.inl ⟨hPR, hQT, hleft⟩
+    · exact Or.inr hright
+  · rcases rePair_width_choice hPQ hPT hQR hT hR with hleft | hright
+    · exact Or.inr ⟨hPT, hQR, hleft⟩
+    · exact Or.inl hright
+
+/-- Claim 2's local step: at a quartet-free site whose `A, U` pair is
+vertex-disjoint, the merged shore `A ∪ U` is vertex-disjoint from one of the
+two shores across the edge. -/
+theorem rePair_empty_of_not_quartetPairs {A U B₁ B₂ : Finset G.edgeSet}
+    (hAU : bd (G := G) A U = ∅)
+    (hA : bd (G := G) A B₁ ≠ ∅ ∨ bd (G := G) A B₂ ≠ ∅)
+    (hU : bd (G := G) U B₁ ≠ ∅ ∨ bd (G := G) U B₂ ≠ ∅)
+    (hnq : ¬ QuartetPairs (G := G) A U B₁ B₂) :
+    bd (G := G) (A ∪ U) B₁ = ∅ ∨ bd (G := G) (A ∪ U) B₂ = ∅ := by
+  simp only [QuartetPairs, bd_union_left, Finset.union_eq_empty] at *
+  tauto
+
+end Site
+
+/-! ## Boundaries and walks -/
+
+theorem touch_of_mem {X : Finset G.edgeSet} {edge : G.edgeSet} (hedge : edge ∈ X)
+    {vertex : V} (hvertex : vertex ∈ (edge : Sym2 V)) : Touch (G := G) X vertex :=
+  ⟨edge, hedge, hvertex⟩
+
+/-- A walk whose edges all lie in `S₁ ∪ S₂`, started at a vertex of `S₁`,
+stays on `S₁` when the two shores share no vertex. -/
+theorem touch_end_of_walk {S₁ S₂ : Finset G.edgeSet} (hbd : bd (G := G) S₁ S₂ = ∅) :
+    ∀ {u v : V} (walk : G.Walk u v),
+      (∀ f : G.edgeSet, (f : Sym2 V) ∈ walk.edges → f ∈ S₁ ∪ S₂) →
+      Touch (G := G) S₁ u → Touch (G := G) S₁ v
+  | _, _, .nil, _, hu => hu
+  | u, v, .cons (v := x) hadj rest, hedges, hu => by
+      have hf : (⟨s(u, x), hadj⟩ : G.edgeSet) ∈ S₁ ∪ S₂ :=
+        hedges _ (by simp [SimpleGraph.Walk.edges_cons])
+      refine touch_end_of_walk hbd rest (fun f hf' => hedges f ?_) ?_
+      · simp [SimpleGraph.Walk.edges_cons, hf']
+      · rcases Finset.mem_union.1 hf with h₁ | h₂
+        · exact ⟨_, h₁, by simp⟩
+        · exfalso
+          have hmem : u ∈ bd (G := G) S₁ S₂ :=
+            (mem_bd_iff_touch S₁ S₂ u).2 ⟨hu, ⟨_, h₂, by simp⟩⟩
+          rw [hbd] at hmem
+          exact Finset.notMem_empty u hmem
+
+theorem bd_ne_empty_of_walk {S₁ S₂ : Finset G.edgeSet} {u v : V}
+    (walk : G.Walk u v)
+    (hedges : ∀ f : G.edgeSet, (f : Sym2 V) ∈ walk.edges → f ∈ S₁ ∪ S₂)
+    (hu : Touch (G := G) S₁ u) (hv : Touch (G := G) S₂ v) :
+    bd (G := G) S₁ S₂ ≠ ∅ := by
+  intro hbd
+  have hv' := touch_end_of_walk hbd walk hedges hu
+  have hmem : v ∈ bd (G := G) S₁ S₂ := (mem_bd_iff_touch S₁ S₂ v).2 ⟨hv', hv⟩
+  rw [hbd] at hmem
+  exact Finset.notMem_empty v hmem
+
+theorem exists_touch_of_nonempty {X : Finset G.edgeSet} (hX : X.Nonempty) :
+    ∃ vertex : V, Touch (G := G) X vertex := by
+  obtain ⟨edge, hedge⟩ := hX
+  exact ⟨(edge : Sym2 V).out.1, edge, hedge, Sym2.out_fst_mem _⟩
+
+/-- In a preconnected graph, two non-empty shores covering every edge share
+a vertex. -/
+theorem bd_ne_empty_of_preconnected (hpre : G.Preconnected)
+    {X Y : Finset G.edgeSet} (hX : X.Nonempty) (hY : Y.Nonempty)
+    (hcover : X ∪ Y = Finset.univ) : bd (G := G) X Y ≠ ∅ := by
+  obtain ⟨u, hu⟩ := exists_touch_of_nonempty (G := G) hX
+  obtain ⟨v, hv⟩ := exists_touch_of_nonempty (G := G) hY
+  obtain ⟨walk⟩ := hpre u v
+  exact bd_ne_empty_of_walk walk (fun f _ => by rw [hcover]; exact Finset.mem_univ f) hu hv
+
+/-- In a 2-edge-connected graph, two non-empty shores covering every edge but
+one share a vertex. -/
+theorem bd_ne_empty_of_isEdgeConnected_two (h₂ : G.IsEdgeConnected 2)
+    {X Y : Finset G.edgeSet} (hX : X.Nonempty) (hY : Y.Nonempty)
+    (edge : G.edgeSet) (hcover : X ∪ Y = Finset.univ \ {edge}) :
+    bd (G := G) X Y ≠ ∅ := by
+  obtain ⟨u, hu⟩ := exists_touch_of_nonempty (G := G) hX
+  obtain ⟨v, hv⟩ := exists_touch_of_nonempty (G := G) hY
+  obtain ⟨walk⟩ := (SimpleGraph.isEdgeConnected_two.1 h₂ (edge : Sym2 V)) u v
+  refine bd_ne_empty_of_walk (walk.mapLe (SimpleGraph.deleteEdges_le _)) ?_ hu hv
+  intro f hf
+  rw [SimpleGraph.Walk.edges_mapLe_eq_edges] at hf
+  have hf' := walk.edges_subset_edgeSet hf
+  rw [SimpleGraph.edgeSet_deleteEdges, Set.mem_sdiff, Set.mem_singleton_iff] at hf'
+  rw [hcover, Finset.mem_sdiff, Finset.mem_singleton]
+  exact ⟨Finset.mem_univ f, fun heq => hf'.2 (by rw [heq])⟩
+
+theorem preconnected_of_isEdgeConnected_two (h₂ : G.IsEdgeConnected 2) :
+    G.Preconnected :=
+  h₂.preconnected (by decide)
+
+/-! ## Connected shores -/
+
+theorem edgeShoreConnected_singleton (edge : G.edgeSet) :
+    EdgeShoreConnected G {edge} := by
+  intro u v hu hv
+  obtain ⟨e, he, hue⟩ := hu
+  obtain ⟨e', he', hve⟩ := hv
+  rw [Finset.mem_singleton] at he he'
+  rw [he] at hue
+  rw [he'] at hve
+  by_cases huv : u = v
+  · subst huv
+    exact ⟨SimpleGraph.Walk.nil, by simp⟩
+  · have hedge : (edge : Sym2 V) = s(u, v) := (Sym2.mem_and_mem_iff huv).1 ⟨hue, hve⟩
+    have hadj : G.Adj u v := by
+      have := edge.2
+      rw [hedge] at this
+      exact this
+    refine ⟨SimpleGraph.Walk.cons hadj SimpleGraph.Walk.nil, ?_⟩
+    intro f hf
+    simp only [SimpleGraph.Walk.edges_cons, SimpleGraph.Walk.edges_nil,
+      List.mem_singleton] at hf
+    rw [Finset.mem_singleton]
+    exact Subtype.ext (by rw [hf, hedge])
+
+/-- Two connected shores sharing a vertex have a connected union. -/
+theorem edgeShoreConnected_union {X Y : Finset G.edgeSet}
+    (hX : EdgeShoreConnected G X) (hY : EdgeShoreConnected G Y)
+    (hbd : bd (G := G) X Y ≠ ∅) : EdgeShoreConnected G (X ∪ Y) := by
+  obtain ⟨z, hz⟩ := Finset.nonempty_iff_ne_empty.2 hbd
+  rw [mem_bd_iff] at hz
+  intro u v hu hv
+  -- a walk from `u` to `z`, then from `z` to `v`, each inside one shore
+  have step : ∀ {a : V}, (∃ edge ∈ X ∪ Y, a ∈ (edge : Sym2 V)) →
+      ∃ walk : G.Walk a z, ∀ edge : G.edgeSet, (edge : Sym2 V) ∈ walk.edges →
+        edge ∈ X ∪ Y := by
+    intro a ha
+    obtain ⟨edge, hedge, hae⟩ := ha
+    rcases Finset.mem_union.1 hedge with hedge | hedge
+    · obtain ⟨walk, hwalk⟩ := hX ⟨edge, hedge, hae⟩ hz.1
+      exact ⟨walk, fun f hf => Finset.mem_union_left _ (hwalk f hf)⟩
+    · obtain ⟨walk, hwalk⟩ := hY ⟨edge, hedge, hae⟩ hz.2
+      exact ⟨walk, fun f hf => Finset.mem_union_right _ (hwalk f hf)⟩
+  obtain ⟨walk₁, hwalk₁⟩ := step hu
+  obtain ⟨walk₂, hwalk₂⟩ := step hv
+  refine ⟨walk₁.append walk₂.reverse, ?_⟩
+  intro f hf
+  rw [SimpleGraph.Walk.edges_append, List.mem_append,
+    SimpleGraph.Walk.edges_reverse, List.mem_reverse] at hf
+  rcases hf with hf | hf
+  · exact hwalk₁ f hf
+  · exact hwalk₂ f hf
+
+/-- Deleting one edge from a 2-edge-connected graph leaves a connected shore. -/
+theorem edgeShoreConnected_compl_singleton (h₂ : G.IsEdgeConnected 2)
+    (edge : G.edgeSet) : EdgeShoreConnected G (Finset.univ \ {edge}) := by
+  intro u v _ _
+  obtain ⟨walk⟩ := (SimpleGraph.isEdgeConnected_two.1 h₂ (edge : Sym2 V)) u v
+  refine ⟨walk.mapLe (SimpleGraph.deleteEdges_le _), ?_⟩
+  intro f hf
+  rw [SimpleGraph.Walk.edges_mapLe_eq_edges] at hf
+  have hf' := walk.edges_subset_edgeSet hf
+  rw [SimpleGraph.edgeSet_deleteEdges, Set.mem_sdiff, Set.mem_singleton_iff] at hf'
+  rw [Finset.mem_sdiff, Finset.mem_singleton]
+  exact ⟨Finset.mem_univ f, fun heq => hf'.2 (by rw [heq])⟩
+
 
 end
 
