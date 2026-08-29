@@ -92,7 +92,11 @@ and the terminating digon/parallel-seam normalization are machine-checked;
 the remaining obligation is global production of the supplied nested states,
 which belongs to $D_1$, not to the local splice \\
 $D_4$ & The route-native finite floor contains no zero-Count obstruction &
-open; the refuted GWCO and $A\ne\varnothing$ systems cannot be inherited \\
+open; the refuted GWCO and $A\ne\varnothing$ systems cannot be inherited.
+The exact finite-state reflection joint is now machine-checked: a trace,
+reachable-set coverage, counterexample adequacy, and an empty filtered
+reachable set imply the literal spherical finite-base premise.  Constructing
+those three witnesses and replaying the audit remain open \\
 $D_5$ & Well-founded assembly from $D_0$--$D_4$ & proved as the explicit
 conditional Theorem~\ref{thm:direct-count-reductive-assembly} \\
 \bottomrule
@@ -218,7 +222,7 @@ not erase the need to locate that periodic geometry.
 
 \begin{lemma}[One-rung padding]
 \label{lem:one-rung-padding}
-\Sprose
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PumpingEngine.CountData.count_succ_pos_of_count_pos}
 Let $S$ be one fixed corridor rung with nonnegative transfer matrix $M$ on a
 finite profile set.  Let $A,B$ be fixed end pieces with boundary vectors
 $v,u$.  Suppose every profile occurring on an accepted path through one copy
@@ -235,7 +239,6 @@ Choose $i,j$ with $v_iM_{ij}u_j>0$.  The profile $i$ is alive on this accepted
 path, so $M_{ii}>0$.  The term
 $v_iM_{ii}M_{ij}u_j$ is a positive summand of $v^{\mathsf T}M^2u$.
 \end{proof}
-\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PumpingEngine.CountData.count_succ_pos_of_count_pos}
 
 Thus a minimal zero-count obstruction cannot contain two consecutive copies
 of the same physically removable rung, once the exact factorization and
@@ -5917,6 +5920,44 @@ cubic spherical rotation-system class.  This
 contradicts minimality.  The Tait bridge gives the Four-Colour Theorem.
 \end{proof}
 
+\begin{theorem}[route-native finite-base reflection]
+\label{thm:route-native-finite-base-reflection}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SphericalRouteNativeBaseReflection.TaitBaseReflection.taitBaseVerifiedAt_of_filter_eq_empty}
+Fix a vertex bound \(B\), a finite state set \(Q\), a predicate
+\(\operatorname{Necessary}\subseteq Q\), and a computed reachable set
+\(R\subseteq Q\).  Suppose every graph-backed bridgeless spherical cubic map
+\(M\) with \(|V(M)|\leq B\) has a trace \(\tau(M)\in Q\) such that:
+\begin{enumerate}
+\item \(\tau(M)\in R\); and
+\item if \(M\) is not Tait-colourable, then
+      \(\operatorname{Necessary}(\tau(M))\).
+\end{enumerate}
+If
+\[
+             \{q\in R:\operatorname{Necessary}(q)\}=\varnothing,
+\]
+then every such \(M\) is Tait-colourable.  Consequently the exact
+finite-base premise at bound \(B\) used by the spherical reductive assembly
+holds.
+\end{theorem}
+
+\begin{proof}
+If a bounded map \(M\) were not Tait-colourable, adequacy would make
+\(\operatorname{Necessary}(\tau(M))\) true, while coverage would put
+\(\tau(M)\) in \(R\).  Thus \(\tau(M)\) would belong to the displayed
+filtered set, contradicting its emptiness.  This is exactly the proposition
+\(\operatorname{TaitBaseVerifiedAt}(B)\) consumed by the checked spherical
+assembly.
+\end{proof}
+
+This theorem fixes the certificate boundary without pretending to have run
+the certificate.  The trace must come from the compositional profile system,
+its adequacy theorem must be proved from the actual bounded map, and the
+reachable set must cover all such traces.  It may safely overapproximate the
+realizable states.  The final obligation is then one explicit finite
+emptiness check, suitable for the flat-payload verified-reflection discipline;
+it is not a classical catalogue of unavoidable configurations.
+
 \begin{theorem}[checked spherical reductive assembly]
 \label{thm:spherical-reductive-assembly}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SphericalReductiveAssembly.combinatorialFourColorStatement_of_supply_and_base}
@@ -5972,6 +6013,27 @@ supply of Theorem~\ref{thm:spherical-reductive-assembly} with $k=w$.  That
 theorem and the bounded base give the conclusion.  Lean checks this
 composition; the only remaining mathematical inputs at this boundary are
 the raw width bound and the route-native finite base.
+\end{proof}
+
+\begin{corollary}[factored assembly from a route-native base audit]
+\label{cor:factored-bounded-width-reflection-assembly}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SphericalRouteNativeBaseReflection.TaitBaseReflection.combinatorialFourColorStatement_of_raw_and_filter_audit}
+Fix \(w\), put \(B=B(w,w)\), and suppose every graph-backed
+vertex-minimal Tait counterexample has a complete rooted branch decomposition
+of width at most \(w\).  Suppose also that a finite-state reflection at
+bound \(B\) satisfies the coverage and adequacy hypotheses of
+Theorem~\ref{thm:route-native-finite-base-reflection}, and that its filtered
+reachable set is empty.  Then every finite combinatorially planar simple
+graph is vertex-four-colourable.
+\end{corollary}
+
+\begin{proof}
+Theorem~\ref{thm:route-native-finite-base-reflection} converts the finite
+audit into the exact bounded-base proposition.  The checked
+width-preserving connectedization converts the raw decomposition into the
+connected decomposition consumed by
+Theorem~\ref{thm:spherical-reductive-assembly}.  The Lean declaration cited
+above checks this composition without any additional premise.
 \end{proof}
 
 \begin{corollary}[wall-exclusion assembly]
