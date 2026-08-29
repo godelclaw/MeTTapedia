@@ -120,6 +120,76 @@ theorem no_physical_targetAware_planarPairing_reduction_of_complement_mem
   obtain ⟨side, hside⟩ := hsubset
   exact no_planarPairingSupport_subset side hside
 
+/-! ## The parity-admissible adversary
+
+The full set complement contains words which no Tait-coloured tangle can
+realize, because every physical cut word has zero total Klein sum.  The
+following refinement removes that easy objection. -/
+
+/-- Total Klein colour on the six ports, written explicitly so the finite
+checker has no enumeration-order dependency. -/
+def boundarySum (word : HexagonTaitWord) : Color :=
+  (word 0).1 + (word 1).1 + (word 2).1 +
+    (word 3).1 + (word 4).1 + (word 5).1
+
+/-- The universal parity language for a six-edge cut. -/
+def parityAdmissible : Set HexagonTaitWord :=
+  {word | boundarySum word = 0}
+
+/-- Every word accepted by a pairing cap obeys the cut-parity equation. -/
+private theorem boundarySum_eq_zero_of_compatible :
+    ∀ side : HexagonPlanarPairing, ∀ word : HexagonTaitWord,
+      side.Compatible (rawWord word) → boundarySum word = 0 := by
+  decide
+
+theorem planarPairingSupport_subset_parityAdmissible :
+    ∀ side : HexagonPlanarPairing,
+      planarPairingSupport side ⊆ parityAdmissible := by
+  intro side word hword
+  exact boundarySum_eq_zero_of_compatible side word hword
+
+/-- The parity-admissible part of the hexagon complement. -/
+def parityAdversary : Set HexagonTaitWord :=
+  parityAdmissible \ hexagonSupport
+
+theorem parityAdversary_subset_parityAdmissible :
+    parityAdversary ⊆ parityAdmissible := by
+  intro word hword
+  exact hword.1
+
+theorem parityAdversary_disjoint_hexagonSupport :
+    Disjoint parityAdversary hexagonSupport := by
+  rw [Set.disjoint_left]
+  intro word hword hhexagon
+  exact hword.2 hhexagon
+
+/-- The parity-admissible adversary still meets every planar pairing cap. -/
+theorem parityAdversary_meets_every_planarPairing :
+    ∀ side : HexagonPlanarPairing,
+      ¬ Disjoint parityAdversary (planarPairingSupport side) := by
+  intro side hdisjoint
+  obtain ⟨word, hpairing, hhexagon⟩ :=
+    every_planarPairing_accepts_nonextension side
+  have hparity : word ∈ parityAdmissible :=
+    planarPairingSupport_subset_parityAdmissible side hpairing
+  rw [Set.disjoint_left] at hdisjoint
+  exact hdisjoint ⟨hparity, hhexagon⟩ hpairing
+
+/-- **Parity does not rescue target-aware pairing reduction.**  Even after
+restricting the exterior language to genuine words with zero total colour,
+there is one zero exterior support against which every pairing cap fails. -/
+theorem no_parityRestricted_targetAware_planarPairing_reduction :
+    ¬ (∀ exterior : Set HexagonTaitWord,
+        exterior ⊆ parityAdmissible →
+        Disjoint exterior hexagonSupport →
+          ∃ side : HexagonPlanarPairing,
+            Disjoint exterior (planarPairingSupport side)) := by
+  intro h
+  obtain ⟨side, hside⟩ :=
+    h parityAdversary parityAdversary_subset_parityAdmissible
+      parityAdversary_disjoint_hexagonSupport
+  exact parityAdversary_meets_every_planarPairing side hside
+
 end GoertzelV24HexagonPairingTargetAwareBoundary
 
 end Mettapedia.GraphTheory.FourColor

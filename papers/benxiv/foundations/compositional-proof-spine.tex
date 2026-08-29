@@ -2280,20 +2280,26 @@ resolutions.
 Nor can the pairing-cap proposal be rescued merely by allowing the chosen
 pairing to depend on an unrestricted exterior.
 
-\begin{proposition}[unrestricted target-aware pairing reduction fails]
+\begin{proposition}[parity-restricted target-aware pairing reduction fails]
 \label{prop:hexagon-target-aware-pairing-obstruction}
-\Srefuted{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPairingTargetAwareBoundary.no_unrestricted_targetAware_planarPairing_reduction}
+\Srefuted{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPairingTargetAwareBoundary.no_parityRestricted_targetAware_planarPairing_reduction}
 Let \(U\) be the set of genuine nonzero Tait words on the six cyclic ports,
 let \(P\subseteq U\) be the support of the hexagonal cell, and let
 \(R_0,\ldots,R_4\subseteq U\) be the supports of its five noncrossing pairing
-caps.  It is false that
+caps.  Let
 \[
-  \forall E\subseteq U,\quad E\cap P=\varnothing
+                  A=\{w\in U:\textstyle\sum_{j=0}^{5}w_j=0\}
+\]
+be the parity-admissible language obeyed by every physical six-edge cut.  It
+is false that
+\[
+  \forall E\subseteq A,\quad E\cap P=\varnothing
   \Longrightarrow
   \exists i\in\{0,\ldots,4\},\quad E\cap R_i=\varnothing.
 \]
 Thus no rule which chooses one of the five caps after seeing an arbitrary
-zero exterior support can replace the hexagon while preserving zero Count.
+parity-admissible zero exterior support can replace the hexagon while
+preserving zero Count.
 \end{proposition}
 
 \begin{proof}
@@ -2301,21 +2307,26 @@ For each of the five pairings, there is a genuine nonzero boundary word which
 is constant on every paired pair but has no proper extension across the
 hexagon.  The five finite witnesses are checked simultaneously by
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPairingTargetAwareBoundary.every_planarPairing_accepts_nonextension}.
-Consequently \(R_i\nsubseteq P\) for every \(i\).
+Consequently \(R_i\nsubseteq P\) for every \(i\).  Every pairing word has
+zero total Klein colour because each of its three colours occurs in an equal
+pair, so \(R_i\subseteq A\).
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPairingTargetAwareBoundary.no_planarPairingSupport_subset}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPairingTargetAwareBoundary.planarPairingSupport_subset_parityAdmissible}
 
-Now take the maximal abstract zero exterior \(E=U\setminus P\).  It is
-disjoint from \(P\), while \(R_i\nsubseteq P\) says exactly that \(E\) meets
-every \(R_i\).  Hence no cap works against this one exterior.  Lean records
-both the explicit complement adversary and the displayed quantified
-negation.
-\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPairingTargetAwareBoundary.complement_hexagonSupport_meets_every_planarPairing}
+Now take the parity-admissible zero exterior \(E=A\setminus P\).  It is
+contained in \(A\) and disjoint from \(P\), while
+\(R_i\subseteq A\) and \(R_i\nsubseteq P\) say exactly that \(E\) meets every
+\(R_i\).  Hence no cap works against this one exterior.  Lean records both
+the explicit parity adversary and the displayed quantified negation.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPairingTargetAwareBoundary.parityAdversary_meets_every_planarPairing}
 \end{proof}
 
-The word ``unrestricted'' is load-bearing.  We have not shown that
-\(U\setminus P\), or any equally strong hitting support, is realized by a
-planar cubic exterior.  The same obstruction applies to a proposed physical
-exterior class if it contains \(U\setminus P\):
+The obstruction now survives the first universal physical constraint, but
+``parity-admissible'' is still weaker than ``realized by a planar cubic
+exterior''.  We have not shown that \(A\setminus P\), or any equally strong
+hitting support, is physically realized.  For comparison, the unrestricted
+complement form and its physical-class specialization are also checked:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPairingTargetAwareBoundary.no_unrestricted_targetAware_planarPairing_reduction}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPairingTargetAwareBoundary.no_physical_targetAware_planarPairing_reduction_of_complement_mem}.
 Therefore the remaining loophole is now exact: a route-native target-aware
 reduction must prove and exploit a structural restriction on the support
