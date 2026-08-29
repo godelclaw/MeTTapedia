@@ -4101,6 +4101,73 @@ two-dimensional patch, using a target-aware quotient weaker than full
 support equality, or performing a move whose size decrease occurs elsewhere.
 Those are the remaining source-faithful possibilities.
 
+For a hexagonal cell, the stronger monotone replacement question can also be
+settled completely.
+
+\begin{theorem}[no smaller connected cubic monotone replacement for a hexagon]
+\label{thm:hexagon-no-smaller-tree-support}
+\Sprose
+Let \(R\) be a connected plane cubic tangle with six boundary ports in a
+specified cyclic order, all on the outer face.  If \(R\) has fewer than six
+internal vertices, then
+\[
+       \operatorname{Supp}(R)\not\subseteq\operatorname{Supp}(H_6).
+\]
+Thus no smaller connected cubic six-port tangle can replace one hexagonal
+cell by the monotone support-inclusion criterion.
+\end{theorem}
+
+\begin{proof}
+Let \(r\) and \(m\) be the numbers of internal vertices and internal edges of
+\(R\).  Counting incidences at the cubic internal vertices gives
+\[
+                             3r=2m+6.
+\]
+Connectivity gives \(m\ge r-1\), hence \(r\ge4\), while the incidence
+equation gives \(r\equiv6\pmod2\).  Since \(r<6\), necessarily \(r=4\) and
+\(m=3\).  The internal graph is therefore a tree.
+
+There are only two abstract trees on four vertices: the path and the tripod.
+At an endpoint of the path two ports occur consecutively on the outer face;
+at either internal path vertex one port occurs.  Up to a dihedral change of
+the six cyclic port positions, the two singleton ports are either separated
+by the two endpoint blocks or adjacent to one another.  These are the two
+path types.  For the tripod, the central vertex has no port and each leaf has
+two consecutive ports, giving one further type.  Thus every \(R\), after
+renaming internal vertices and applying a dihedral boundary relabelling, has
+one of the following port-block orders:
+\[
+    S,P,S,P,\qquad P,S,S,P,\qquad P,P,P,
+\]
+where \(S\) is a singleton and \(P\) is the pair at a tree leaf.
+
+For these three types respectively, the following boundary words are
+properly realised by the tree but do not extend across the hexagon:
+\[
+ (r,r,b,r,r,b),\qquad
+ (r,b,r,r,r,b),\qquad
+ (r,b,r,p,b,p).
+\]
+For the two path types, order the internal edges as \((01,02,13)\) and colour
+them \((b,p,p)\).  For the tripod, colour the three centre--leaf edges
+\((p,b,r)\).  Inspection at the four internal vertices gives the three
+distinct colours in every incident triple.  The six-step hexagon recurrence
+rejects each displayed boundary word.  These three finite checks, stated as
+exact support relations rather than drawings, are machine-checked by
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonTreeReplacementObstruction.every_planeTreeShape_has_nonextension}
+and
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonTreeReplacementObstruction.no_treeSupport_subset_hexagonRawSupport}.
+Finally, hexagon extension is invariant under cyclic rotation and reflection
+of the boundary, so the three canonical failures cover every plane embedding
+of the tree.
+\end{proof}
+
+This closes the one-cell monotone loophole left by
+Proposition~\ref{prop:facial-cycle-no-smaller-exact-replacement}: equality was
+not the issue.  The source-faithful high-width repair must replace a larger
+two-dimensional patch, exploit the restricted support language of the
+\emph{actual} exterior, or make its strict size decrease elsewhere.
+
 \begin{theorem}[monotone and target-aware support replacement]
 \label{thm:target-aware-support-replacement}
 Let \(E\) be a fixed exterior tangle, \(P\) the piece removed from it, and
