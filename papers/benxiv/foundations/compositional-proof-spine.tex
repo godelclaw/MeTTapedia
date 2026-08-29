@@ -2220,6 +2220,63 @@ an obstruction to the literal L1-to-pumping bridge, not a wall-exclusion
 theorem: a target-aware two-dimensional replacement principle could still
 use zero Count and minimality in a way that the raw linear receipt does not.
 
+The most immediate two-dimensional candidate is to iterate the positive
+planar resolution which makes the square rung work.  That candidate already
+fails on one hexagonal face, at the boundary-colour level.
+
+\begin{proposition}[hexagonal planar-pairing obstruction]
+\label{prop:hexagon-planar-pairing-obstruction}
+\Srefuted{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPlanarPairingObstruction.no_weighted_planarPairing_hexagon_count_identity}
+Delete the six vertices of a facial hexagon, leaving six exterior ports in
+cyclic order.  There is no fixed choice of nonnegative integer weights on the
+five noncrossing perfect matchings of those ports for which, for every
+nonzero boundary word, the number of proper colourings of the hexagon equals
+the weighted number of colour-compatible matching caps.
+\end{proposition}
+
+\begin{proof}
+Write the three Tait colours as (r,b,p), and take the cyclic boundary word
+
+\[
+                         (r,b,p,r,b,p).
+\]
+
+It has the proper internal hexagon colouring
+
+\[
+                         (p,r,b,p,r,b),
+\]
+
+where entry (i) colours the edge from vertex (i) to vertex (i+1).
+Indeed the three colours at every vertex are (r,b,p) in some order.  This
+extension is unique.  The five noncrossing matchings, written as pairs of
+port indices, are
+
+\[
+\begin{split}
+ &(01)(23)(45),\qquad (01)(25)(34),\qquad (03)(12)(45),\\
+ &(05)(12)(34),\qquad (05)(14)(23).
+\end{split}
+\]
+
+Every one contains a pair whose two entries in the displayed boundary word
+have different colours.  Hence no planar matching cap is compatible: every
+weighted cap count is zero, while the hexagon extension count is one.  Lean
+checks the extension, its uniqueness, all five incompatibilities, and the
+result for an arbitrary natural-valued weight function.  It also checks the
+opposite sharpness witness ((r,r,b,r,r,b)): one planar cap accepts that word
+although the hexagon itself does not.
+\end{proof}
+
+Thus the exact positive square identity does not extend by replacing each
+hexagon with a sum of planar pairing caps.  This is the local shadow of the
+same high-width issue: after digon and square normalization, a hexagonal web
+retains boundary information which pairings alone do not express.  The
+proposition does not rule out a richer planar web basis, a target-aware
+Kempe operation, or a replacement involving a genuinely two-dimensional
+region.  It rules out treating a wall as a collection of independent square
+resolutions.
+
 \begin{theorem}[the exact width criterion]
 \label{thm:exact-width-criterion}
 \Sprose
