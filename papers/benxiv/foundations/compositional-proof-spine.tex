@@ -2427,6 +2427,66 @@ three equations simultaneously.  Treating the three matchings as independent
 would discard exactly the source's idemposition coupling and cannot discharge
 the surviving physical-exterior loophole.
 
+There is also a sharp warning against treating an arbitrary \emph{signed}
+pairing identity as if it were already a planar counting argument.  Write a
+perfect matching of the six ports as, for example, \(01|23|45\), and let
+\(\delta_M(w)\in\{0,1\}\) be one precisely when the boundary word \(w\) is
+constant on every pair of \(M\).  Enumerate the fifteen matchings by
+\[
+\begin{array}{c|ccccc}
+0&01|23|45&01|24|35&01|25|34&02|13|45&02|14|35\\
+5&02|15|34&03|12|45&03|14|25&03|15|24&04|12|35\\
+10&04|13|25&04|15|23&05|12|34&05|13|24&05|14|23.
+\end{array}
+\]
+
+\begin{proposition}[a signed pairing tensor has exactly the adversary support]
+\label{prop:hexagon-signed-pairing-adversary}
+Define
+\[
+\begin{aligned}
+ k_0&=\delta_8-\delta_4,\\
+ k_1&=\delta_{10}-\delta_4,\\
+ k_2&=-\delta_0+\delta_1+\delta_3-2\delta_4+\delta_{11},\\
+ k_3&=-2\delta_4+\delta_5+\delta_9-\delta_{12}+\delta_{13},
+ \qquad K=k_0+2k_1+4k_2+8k_3.
+\end{aligned}
+\]
+For every genuine nonzero six-port Tait word \(w\),
+\[
+                    K(w)\ne0\quad\Longleftrightarrow\quad w\in A\setminus P.
+\]
+In particular every \(k_i\), and hence \(K\), vanishes on the literal
+hexagon support \(P\), while the support of \(K\) is exactly the whole
+parity adversary.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPairingInvariantKernel.kernelCoordinates_eq_zero_of_mem_hexagonSupport}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPairingInvariantKernel.invariantAdversaryTensor_ne_zero_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPairingInvariantKernel.invariantAdversaryTensor_eq_zero_of_mem_hexagonSupport}
+\end{proposition}
+
+\begin{proof}
+There are three choices at each of the six ports.  For each of the \(3^6\)
+words, evaluate the fifteen Kronecker-delta products and then the four
+displayed integer combinations.  Independently test the two defining
+conditions for \(A\setminus P\): zero total Klein colour and failure of the
+six-step hexagon extension recurrence.  The resulting two Boolean columns
+agree in all \(729\) rows.  The same exhaustive evaluation checks that each
+\(k_i\) is zero on every row accepted by the recurrence.  Lean evaluates
+both closed tables from the displayed mate involutions and proves the
+biconditional and the four coordinate equalities.
+\end{proof}
+
+The coefficients above are signed.  Consequently \(K\) is a formal integer
+linear combination of pairing contractions, not the nonnegative extension
+count of one planar exterior, and several of its matchings are crossing in
+the cyclic boundary order.  The proposition therefore does not realize the
+adversary physically.  It says something more diagnostic: ordinary linear
+pairing identities alone can carry the entire abstract obstruction.  To
+rule it out one must use the positive cone and the common embedded web from
+which all three two-colour pairings arise.  This is exactly the extra content
+suggested by the source's Penrose--Kauffman evaluation and idemposition
+calculus.
+
 \begin{theorem}[the exact width criterion]
 \label{thm:exact-width-criterion}
 \Sprose
