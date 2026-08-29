@@ -2354,6 +2354,45 @@ old edges are labelled by their original open component, that label is
 invariant across every selected cap adjacency, and the matching seam closes
 the intended component without fusing it to another one.
 
+\begin{corollary}[spherical parity consumer for the same-side lift]
+\label{cor:same-side-cap-formation-parity}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairReductionSphericalKauffman.exists_cappedKempeSwitch_with_restriction_and_sphericalFormationParity}
+Let the ambient map be a graph-backed least Tait counterexample.  Suppose the
+retained deletion is connected, its four ports occur in their physical cyclic
+order, and the canonical \(01\mid23\) paired reduction is bridge-free.  Then
+the capped circuit in
+Lemma~\ref{lem:same-side-kempe-switch-cap-lift} may be chosen so that its
+closed switch both restricts to the required open switch and preserves
+Kauffman's formation parity.  Equivalently, for the third colour
+\(c=a+b\), the parity of the sum of the three bicoloured-circuit counts is
+unchanged.
+\end{corollary}
+
+\begin{proof}
+The two new seams join ports \(0\) to \(1\) and ports \(2\) to \(3\).
+Neither joined pair can already be the endpoints of a retained edge: together
+with the corresponding deleted vertex, such an edge would form a triangle,
+whereas a least counterexample is triangle-free.  The two seam endpoint pairs
+are distinct from one another, and the old endpoint pairs remain distinct
+because the ambient graph is simple.  Thus the capped rotation system has an
+endpoint-injective, canonical simple-graph presentation.
+
+The retained connectivity and physical boundary order make the reduction
+spherical, connected, and cyclic at every vertex; bridge-freeness then implies
+that its two dart-sides lie on distinct face orbits.  Transport the cap
+colouring, its selected bicoloured component, and the component switch through
+the canonical graph presentation.  Kauffman's checked closed-spherical parity
+theorem gives equality of formation parity before and after that switch.
+Finally, the checked same-side component lift identifies the switched colour
+of every retained edge with the prescribed open Kempe switch.
+\end{proof}
+
+No abstract cross-curve receipt is used here.  The parity theorem is applied
+only after the open switch has been closed inside an actual bridge-free
+spherical cubic map.  This is the precise, source-faithful role of Kauffman's
+closed-curve argument; no parity assertion is being extended to an open
+tangle.
+
 There is a second, checked constraint on any such overlap transport.  It
 shows why the transfer state may not remember only an affine action on the
 four colours.
