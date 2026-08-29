@@ -2208,6 +2208,92 @@ predicate may exclude the wall even though the geometry does not.  It is not
 a proof.  Nor is the tree reformulation permission to count generic planar
 configurations or revive a classical unavoidable catalogue.
 
+The source's formation dynamics has a strong local entrance to this boxed
+problem which is worth recording with its quantifiers in the correct order.
+
+\begin{lemma}[one adjacent-pair Kempe orbit contains all constant words]
+\label{lem:adjacent-pair-common-constant-orbit}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairCommonConstantOrbit.exists_rotationOrdered_commonKempeOrbit_with_all_constantWords_of_minimal}
+Let \(uv\) be any ordered adjacent pair in a graph-backed vertex-minimal Tait
+counterexample.  Delete \(u\) and \(v\), leaving the four incident defect
+ports in their cyclic order.  There is one rotation ordering and one proper
+Tait colouring \(C\) of this deleted graph such that, for each nonzero Tait
+colour \(a\), the Kempe orbit of \(C\) contains a proper colouring \(C_a\)
+whose four missing boundary colours are all \(a\).
+\end{lemma}
+
+\begin{proof}
+The adjacent-pair planar reduction first supplies, on the literal cyclic
+ordering, a proper colouring \(C\) and a two-colour profile in which the
+first two ports belong to one Kempe side and the last two ports belong to
+the other.  If a selected two-colour component joined the two sides, then
+reinserting (u), (v), and their common edge would extend the colouring
+to the ambient graph, contrary to the counterexample assumption.  Thus the
+two side requests may be changed independently inside the Kempe closure.
+
+Fix a nonzero target colour \(a\).  Recolour the first side to \(a\) while
+leaving the second side fixed, and then recolour the second side to \(a\)
+while leaving the first fixed.  Both operations are Kempe switches in the
+deleted graph and preserve properness, so their composite gives \(C_a\).
+The cyclic ordering and the initial colouring \(C\) were selected before
+\(a\); hence the three target colourings belong to one common orbit rather
+than to three unrelated existentially chosen colourings.
+\end{proof}
+
+This lemma is nonlocal in precisely the way the original formation argument
+needs: the Kempe paths witnessing the two independent side moves may run
+through the whole retained graph.  It is therefore not a bounded-radius
+reducibility certificate.  Its remaining wall-facing gap is also exact.
+For overlapping adjacent pairs the lemma supplies a common orbit separately
+at each deletion, but it does not transport a colouring, a Kempe word, or an
+exact Count state from one deleted graph to the next.  A source-faithful
+Programme--G proof of fixed-wall exclusion must construct that overlap
+transport (or a simultaneous multi-deletion orbit) and then extract a strict
+physical replacement.  Merely pigeonholing the three constant words would
+discard the graph-dependent Kempe paths and would not prove the boxed
+assertion.
+
+There is a second, checked constraint on any such overlap transport.  It
+shows why the transfer state may not remember only an affine action on the
+four colours.
+
+\begin{lemma}[singleton-collar parity is not affine colour transport]
+\label{lem:singleton-collar-affine-parity}
+Along a nonempty closed chain of admissible adjacent-pair reentries, choose
+at each state the canonical colour frame determined by its two ordered
+boundary colours.  Allow every reentry an arbitrary additive translation of
+the four Tait colours.  The composite affine action around the closed chain
+is even.  By contrast, the rooted support monodromy of a singleton intrinsic
+collar is odd.  Consequently no change of four-state coordinates conjugates
+the singleton geometric monodromy to that closed affine colour action.
+
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AllFaceEscapeStateColorGauge.transfer_sign_eq_one_of_closed}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AllFaceIntrinsicCollarAffineColorMonodromy.targetRootedSignedMonodromy_ne_closedAffineColorWordConjugate_of_singletonPrimalCutProfile}
+\end{lemma}
+
+\begin{proof}
+The linear part of a reentry is the change from the source canonical colour
+frame to the target canonical colour frame.  These changes telescope along
+a path.  On a closed path the initial and terminal frames agree, so the net
+linear part is the identity.  Translation of the four-element colour group
+is even: every nontrivial translation is the product of two disjoint
+transpositions.  Hence the sign of an affine word is the sign of its net
+linear part, namely (+1).
+
+For a singleton collar the two sheets of the rooted support order are
+exchanged at exactly one endpoint, so its geometric permutation has sign
+(-1).  Sign is invariant under conjugacy.  An even affine colour action
+therefore cannot be conjugate to this odd geometric action.
+\end{proof}
+
+Lemma~\ref{lem:singleton-collar-affine-parity} is not, by itself, a
+wall-exclusion theorem.  It is a state-design theorem.  A valid simultaneous
+reentry invariant must retain the geometric orientation parity in addition
+to the affine colour gauge, or else separately prove that singleton collars
+cannot occur.  Treating the colour action as the whole support transport
+would make the overlap step false exactly in the dense-defect geometry now
+under investigation.
+
 \begin{theorem}[mesh isoperimetry and the bounded-cut obstruction]
 \label{thm:mesh-isoperimetry}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MeshIsoperimetry.Mesh.branchIn_card_le_or_branchOut_card_le}
