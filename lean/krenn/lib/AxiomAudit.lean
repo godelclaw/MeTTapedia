@@ -45,3 +45,10 @@ Every top-level conditional theorem, with its dependency cone printed. -/
 #print axioms NoCancellation.certified_quad_cross_relation
 #print axioms StarNormalForm.certified_detour_cross_relation
 #print axioms StarNormalForm.detour_port_reuse_forces_size_one_circuits
+#print axioms StarNormalForm.thirdColour_thirdColour
+#print axioms StarNormalForm.exists_detourPorts
+#print axioms StarNormalForm.same_side_reuse_size_one_circuit
+#print axioms StarNormalForm.crossed_one_port_dichotomy
+#print axioms StarNormalForm.double_certified_detour_overlap_normal_form
+#print axioms StarNormalForm.receiving_pair_normal_form
+#print axioms StarNormalForm.excess_site_receiving_pair_normal_form
