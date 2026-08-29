@@ -3463,6 +3463,47 @@ class of physical exterior supports whenever that class itself contains
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TargetAwareReplacementQuantifiers.physical_targetAware_iff_exists_subset_of_compl_mem}
 \end{proof}
 
+Retaining the full corridor profile does not by itself evade this quantifier
+boundary.  This point is easy to blur because the richer state really is
+essential for advancing through the next Cell.  It is nevertheless invisible
+to the final colouring splice.
+
+\begin{theorem}[rich-profile gluing erases to the boundary word]
+\label{thm:target-aware-profile-erasure}
+Let \(X\) and \(Y\) be arbitrary profile types with boundary-word projections
+\(\pi_X:X\to U\) and \(\pi_Y:Y\to U\).  For profile languages
+\(A\subseteq X\) and \(B\subseteq Y\), define them to be compatible when some
+\(a\in A\) and \(b\in B\) have \(\pi_X(a)=\pi_Y(b)\).  Then
+\[
+ A\text{ and }B\text{ are compatible}
+ \quad\Longleftrightarrow\quad
+ \pi_X[A]\cap\pi_Y[B]\ne\varnothing.
+\]
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TargetAwareProfileErasure.compatible_iff_projectedSupports_meet}
+In particular, profile languages with equal projected word support are
+indistinguishable by every exterior profile language.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TargetAwareProfileErasure.compatible_iff_of_projectedSupport_eq}
+
+If \((B_i)_{i\in I}\) is a family of rich replacement-profile languages and
+the exterior ranges over arbitrary word supports, target-aware safety again
+holds exactly when
+\[
+                 \pi_Y[B_i]\subseteq\pi_X[A]
+\]
+for some \(i\).
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TargetAwareProfileErasure.unrestricted_profileTargetAware_iff_exists_projected_subset}
+\end{theorem}
+
+\begin{proof}
+A compatible pair of profiles supplies their common projected word, and a
+word in both projected images supplies a compatible pair of profiles.  This
+proves the first equivalence and the indistinguishability statement.  Apply
+Theorem~\ref{thm:target-aware-quantifier-collapse} to the two projected word
+supports for the last assertion.  Equivalently, the complement of
+\(\pi_X[A]\) is still the maximal abstract exterior adversary.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TargetAwareProfileErasure.projected_complement_adversary_of_no_subset}
+\end{proof}
+
 This changes the correct formulation of the two-dimensional crux.  Exact
 support equality is useful for pumping because it works against every suffix,
 but a minimal-counterexample descent only needs a replacement whose support
@@ -3478,6 +3519,10 @@ cannot be justified by exact support preservation.  Theorem~
 warning: allowing the replacement to depend on an \emph{arbitrary} exterior
 does not help either.  The gain can come only from a structural theorem
 restricting which support sets are realized by actual planar exteriors.
+Theorem~\ref{thm:target-aware-profile-erasure} adds that merely enriching each
+realization by its Kempe-component pairing or face-progress coordinates does
+not supply such a restriction: those coordinates matter only insofar as their
+\emph{globally realizable family} constrains the projected word support.
 The remaining constructive problem is to exploit that physical restriction
 while preserving the topological class and decreasing size.
 
