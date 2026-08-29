@@ -4205,6 +4205,87 @@ same gluing statement says directly that a colouring exists exactly when the
 two fixed support sets meet.
 \end{proof}
 
+The first nontrivial physical restriction on the exterior support can now be
+made exact.  Say that a support language is \emph{single-orbit} if all of its
+words differ only by one global permutation of the three nonzero Tait colour
+names (equivalently, by a colour equivalence fixing \(0\)).
+
+\begin{theorem}[a single-orbit exterior admits a strict hexagon replacement]
+\label{thm:hexagon-single-orbit-replacement}
+Let \(E\subseteq\mathcal C^6\) be the ordered boundary support of the fixed
+exterior of one facial hexagon, and suppose that \(E\) is single-orbit.  If
+
+\[
+                     E\cap\operatorname{Supp}(H_6)=\varnothing,
+\]
+
+then one of the three canonical plane cubic trees on four internal vertices
+has support disjoint from \(E\).  Replacing the six-vertex hexagonal cell by
+that tree therefore produces a strictly smaller zero-Count splice.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonSingleOrbitReplacement.exists_strict_tree_replacement_of_singleGlobalColorOrbit}
+\end{theorem}
+
+\begin{proof}
+Write \(T_s,T_a,T_t\) for the supports of the separated-path,
+adjacent-path, and tripod replacements classified in
+Theorem~\ref{thm:hexagon-no-smaller-tree-support}.  Their common intersection
+is empty.  There is a short structural proof, avoiding a boundary-word
+census.
+
+Let \(w=(w_0,\ldots,w_5)\) extend through both path trees.  Write
+\(s_0,s_1,s_2\) for the three internal colours of the separated path and
+\(a_0,a_1,a_2\) for those of the adjacent path, in the edge orders used in
+the preceding theorem.  The shared leaf with port colours \(w_4,w_5\) gives
+\(s_1=a_2\), because two entries of a proper three-colour triple determine
+the third.  Comparing the two proper triples at \(w_3\) gives equality of
+their remaining unordered colour pairs.  The exchanged alternative would
+give \(s_0=a_2=s_1\), impossible at the vertex carrying
+\((w_0,s_0,s_1)\).  Hence
+
+\[
+                         s_0=a_0,\qquad s_2=a_2=s_1.
+\]
+
+Next compare the two triples at \(w_0\).  Again the remaining pairs agree up
+to exchange.  The exchanged alternative would give \(s_1=w_1\), impossible
+at the separated-path vertex carrying \((w_1,w_2,s_2)\), since
+\(s_2=s_1\).  Thus \(s_1=a_1\).  The adjacent-path triples at \(w_2,w_3\)
+are consequently \((w_2,s_0,s_1)\) and \((w_3,s_0,s_1)\), whereas the
+separated path has \((w_0,s_0,s_1)\).  Uniqueness of the remaining colour
+gives
+
+\[
+                              w_2=w_0=w_3.
+\]
+
+But any tripod extension has a proper triple
+\((w_2,w_3,t_1)\) at one leaf, and therefore requires \(w_2\ne w_3\).  No
+word lies in all three supports.  The two path implication, tripod
+implication, and empty intersection are checked respectively by
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonSingleOrbitReplacement.path_extensions_force_port_two_eq_three},
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonSingleOrbitReplacement.tripod_extension_forces_port_two_ne_three},
+and
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonSingleOrbitReplacement.no_word_mem_all_treeSupports}.
+
+Each \(T_i\) is invariant under global colour renaming.  If \(E\) met all
+three \(T_i\), choose one word from each intersection and rename each back to
+the common orbit representative of \(E\).  The representative would then
+belong to \(T_s\cap T_a\cap T_t\), a contradiction.  Hence some \(T_i\) is
+disjoint from \(E\).  The physical support-gluing equivalence in
+Theorem~\ref{thm:target-aware-support-replacement} says exactly that the
+corresponding replacement remains zero-Count, and it removes two internal
+vertices.
+\end{proof}
+
+Thus a locally irreducible zero-target wall cannot present a single global
+colour orbit to every hexagonal cell.  At each cell where all three strict
+tree reductions fail, its actual exterior must realize at least two distinct
+global colour orbits.  This is a genuine restriction supplied by the target,
+not by wall geometry.  It does not yet exclude a wall: the remaining M1 task
+is to show that a large common web cannot maintain this multi-orbit boundary
+diversity everywhere, or else to use that diversity to construct a larger
+two-dimensional replacement.
+
 \begin{theorem}[unrestricted target-awareness collapses to support inclusion]
 \label{thm:target-aware-quantifier-collapse}
 Let \(U\) be the boundary-word universe, let \(P\subseteq U\) be the support
