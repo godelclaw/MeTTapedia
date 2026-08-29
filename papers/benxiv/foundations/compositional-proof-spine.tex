@@ -2830,6 +2830,61 @@ has to retain a common trivalent web, or equivalent shared edge-incidence
 data; adding further independent pairwise closure fields cannot close this
 gap.
 
+The corresponding unquotiented joint carrier is exact.  This separates two
+questions which must not be conflated: whether the source's simultaneous
+idemposition has been represented faithfully, and whether that representation
+has already been compressed to a bounded interface receipt.
+
+\begin{theorem}[joint physical idemposition on one carrier]
+\label{thm:joint-physical-idemposition}
+Let \(T\) be a cubic port tangle and let \(C\) be a proper Tait colouring of
+its common dart carrier \(D\).  Write
+
+\[
+ \mathcal M(C)=\bigl(M_{rb}(C),M_{rp}(C),M_{bp}(C)\bigr).
+\]
+
+If \(R\subseteq D\) is a physical Kempe region for a colour pair \(q\), and
+\(C'\) is obtained by switching \(q\) on \(R\), then the \(q\)-coordinate of
+\(\mathcal M(C)\) is fixed and the other two coordinates are both replaced by
+their symmetric difference with the \emph{same} set \(R\).  Moreover the map
+\(C\mapsto\mathcal M(C)\) is injective on proper Tait colourings.
+
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PortTangleJointKempeState.manifoldTriple_switchRegion}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PortTangleJointKempeState.manifoldTriple_injective_of_proper}
+\end{theorem}
+
+\begin{proof}
+The first assertion is pointwise.  On \(R\), the two colours of \(q\) are
+interchanged.  Membership in \(M_q\) is unchanged, while membership in each
+companion bichromatic support is toggled once.  Outside \(R\), nothing
+changes.  Because all three supports are subsets of the one dart carrier, the
+two companion updates use literally the same \(R\), rather than two boundary
+sets merely having the same endpoints.
+
+For injectivity, a nonzero colour is recovered from its membership pattern in
+the three supports:
+\[
+\begin{array}{c|ccc}
+ &M_{rb}&M_{rp}&M_{bp}\\ \hline
+r&1&1&0\\
+b&1&0&1\\
+p&0&1&1.
+\end{array}
+\]
+Thus equal triples give equal colours on every dart and hence equal
+colourings.
+\end{proof}
+
+This theorem is the first carrier in this section which satisfies the exact
+cross-family law demanded by the source.  It is intentionally not yet a
+finite-profile theorem: \(\mathcal M(C)\) remembers subsets of every interior
+dart of \(T\).  The remaining interface problem is therefore precise.  One
+must quotient this shared carrier to bounded boundary data while proving that
+the quotient still determines simultaneous physical updates and the
+replacement support.  Projecting the three coordinates separately is ruled
+out by Proposition~\ref{prop:hexagon-persistent-pairwise-adversary}.
+
 There is also a sharp warning against treating an arbitrary \emph{signed}
 pairing identity as if it were already a planar counting argument.  Write a
 perfect matching of the six ports as, for example, \(01|23|45\), and let
