@@ -103,6 +103,7 @@ theorem amplitude_siteScale (W : Sym2 (V × C) → R) (c : V → C) (μ : V × C
   refine Finset.sum_congr rfl (fun σ hσ => ?_)
   rw [← prod_siteScale hσ c μ, ← Finset.prod_mul_distrib]
 
+omit [Fintype V] [DecidableEq V] in
 /-- **The gauge never moves the support.**  A weight vanishes after rescaling exactly when it
 vanished before, so support minimality is a property of the whole gauge orbit. -/
 theorem siteScale_ne_zero_iff {R : Type*} [CommRing R] [NoZeroDivisors R]
@@ -117,6 +118,7 @@ theorem siteScale_ne_zero_iff {R : Type*} [CommRing R] [NoZeroDivisors R]
       exacts [hμ p h'', hμ q h'']
     · exact hw h'
 
+omit [Fintype V] [DecidableEq V] in
 /-- **The pair identity is gauge-invariant.**  Both of its products pick up the same factor -- the
 four site factors of the four endpoints -- so the whole expression rescales rather than changing
 shape.  The identity is therefore a statement about the gauge orbit, not about a representative,

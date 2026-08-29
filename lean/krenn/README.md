@@ -1,8 +1,10 @@
 # The Krenn–Gu conjecture: a machine-checked programme
 
-A standalone Lean 4 project. It is **not** part of the MeTTapedia default build and is
-not imported by any MeTTapedia umbrella module; it is built on its own from this
-directory.
+A standalone Lean 4 project. The Krenn development itself is **not** part of the
+MeTTapedia default build and is not imported by any MeTTapedia umbrella module. Its
+reusable foundations have been promoted to `Mettapedia.Combinatorics.Matching` and
+`Mettapedia.Combinatorics.OrbitNormalization`, which are part of the shared library;
+this directory retains the conjecture-specific layer and compatibility imports.
 
 > **Claim boundary.** Nothing here proves the Krenn–Gu conjecture. The general results
 > are *conditional*: each derives the official arbitrary-size statement from an explicit
@@ -24,12 +26,20 @@ it unconditionally.
 
 ## What is proved
 
-**A general matching library, for every vertex count** (`lake build KrennLib`, sources in
-`lib/`). Amplitudes and matching sums over an arbitrary finite vertex set and an
-arbitrary commutative ring: matching parity, exchange and orbit normalisation, gauge
-freedom, cap incidence, the cancellation calculus, support minimality, and the
-star/crossing normal form. Nothing is specialised to a particular count. See
-`lib/README.md`.
+**Reusable matching foundations, for every vertex count** (sources in
+`../mettapedia/Mettapedia/Combinatorics/Matching/`). These include perfect-matching
+representations and graph bridges, weighted subset sums and two-pivot crossing,
+restriction and Kempe exchange, Hall and non-cancellation criteria, loop erasure and
+support, gauge and cap incidence, block-rank identities, alternating cycles, and the
+four-vertex pairing classification and abstract fourth-matching theorem. They are
+independent of the Krenn–Gu equations and
+available through the normal MeTTapedia combinatorics umbrella.
+
+**The Krenn structural layer, for every vertex count** (`lake build KrennLib`, sources
+in `lib/`). This specializes the shared theory to three-colour GHZ amplitudes, develops
+support-minimal systems, and proves the conditional star/crossing, degeneracy, fan, and
+descent interfaces. Compatibility modules preserve the historical Krenn import paths
+without duplicating the shared proofs. See `lib/README.md`.
 
 **Reductions to the official statement** (`lake build KrennGeneralBridge`). Theorems of
 the form
@@ -63,7 +73,7 @@ Lean `4.31.0` with Mathlib pinned in `lake-manifest.json`; no other dependency.
 
 | Target | Command | Contents |
 |---|---|---|
-| `KrennLib` | `lake build KrennLib` | the general matching library (`lib/`) |
+| `KrennLib` | `lake build KrennLib` | the Krenn/GHZ structural layer (`lib/`) |
 | `KrennGeneralBridge` | `lake build KrennGeneralBridge` | official statement and the conditional reductions |
 | `KrennRank` (default) | `lake build` | the `N = 6` certified corpus |
 | `KrennType01` | `lake build KrennType01` | the completed type-01 chart closures |
@@ -124,3 +134,8 @@ Synthesized from four audited development lanes:
 Merging them required one semantic resolution, in `lakefile.lean`: the certified lane's
 fail-closed closure machinery is retained and the structural lane's library roots are
 added to it, with the module manifest regenerated over the union.
+
+After migration, the conjecture-independent matching theory was extracted without
+changing theorem statements used by Krenn. The old module paths are either thin
+compatibility imports or contain only Krenn/GHZ consequences; the shared implementations
+live under the MeTTapedia combinatorics hierarchy.

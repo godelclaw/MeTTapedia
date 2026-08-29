@@ -1,13 +1,18 @@
-# A matching-sum library for the Krenn–Gu conjecture
+# The Krenn–Gu structural layer
 
-The conjecture concerns every even vertex count from six upward, so everything
-here is stated for an arbitrary finite vertex set and an arbitrary weight ring.
-Nothing is specialised to a particular count.
+This directory specializes MeTTapedia's reusable perfect-matching theory to the
+three-colour GHZ equations of the Krenn–Gu conjecture. The generic definitions and
+proofs now live under `Mettapedia.Combinatorics.Matching`; historical Krenn module
+paths remain as compatibility imports where downstream files still use them.
+
+The structural theorems here remain uniform in the finite vertex set. They are
+Krenn-specific because they consume the GHZ target equations, support minimality,
+or the conjecture's three-colour hypotheses—not because they assume a fixed size.
 
 Build with `lake build KrennLib`; the bridge to the official statement is
 `lake build KrennGeneralBridge`.
 
-## The objects
+## Shared objects
 
 **`amplitude W c`** — the sum, over the perfect matchings of the whole vertex
 type, of the product of the weights of their edges read through a colouring.
@@ -28,7 +33,10 @@ Mathlib's `Subgraph.IsPerfectMatching`, and preserves graph support under exchan
 **`LocalSwap V A`** — a matching of the vertex set `A`, extended by the identity.
 Its `config` is the family of whole-graph matchings agreeing with it on `A`.
 
-## The results
+All four objects above are defined in the shared MeTTapedia matching hierarchy and
+are merely imported here.
+
+## Shared results used here
 
 ### Matchings of a subset — `MatchingSum`
 
@@ -57,7 +65,7 @@ Its `config` is the family of whole-graph matchings agreeing with it on `A`.
 | `amplitude_eq_zero_of_sign_reversing` | a sign-reversing involution on matchings kills the amplitude |
 | `amplitude_eq_sum_sdiff_of_sign_reversing_on` | one defined on part of them kills exactly that part |
 
-### Alternating cycles — `MatchingParity`
+### Alternating cycles — `Mettapedia.Combinatorics.Matching.Pairing` and `Kempe`
 
 | | |
 |---|---|
@@ -65,6 +73,14 @@ Its `config` is the family of whole-graph matchings agreeing with it on `A`.
 | `four_mul_card_le_of_disjoint_disagreements` | so cycles number at most a quarter of the vertices |
 | `Pairing.exchange` | exchange along a closed set; `edges_exchange` computes its edges |
 | `exchange_trivial_of_card_le_seven` | below eight vertices every exchange is the identity or the swap |
+
+The shared hierarchy also contains the two-pivot crossing calculus, invariant-set
+restriction, Hall bounds, structural nonvanishing, loop erasure and support,
+perfect-matching graph bridges, four-vertex and six-vertex matching expansions,
+four-vertex pairing classification, block-rank identities, the fourth-matching theorem,
+and orbit normalization. None imports Krenn or assumes the GHZ equations.
+
+## Krenn-specific results
 
 ### Constructions: where solutions come from
 

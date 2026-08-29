@@ -1,4 +1,5 @@
 import NoCancellation
+import Mettapedia.Combinatorics.Matching.Crossing
 
 /-!
 # The star-circuit normal form
@@ -21,7 +22,7 @@ targets, not weaker hypotheses.  See `allDegenerate_iff_official` for that argum
 
 namespace StarNormalForm
 
-open Amplitude MatchingSum LiveDegree MinimalSupport
+open Amplitude MatchingSum MatchingCrossing LiveDegree MinimalSupport
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
 
@@ -1422,135 +1423,8 @@ theorem excess_site_normal_form (W : Sym2 (V × Fin 3) → ℂ)
       mixed_alive_fibre_certificates W hmono u v hH,
       mixed_alive_uses_own_colour W hmin.1.2 hmono hcard hvu hW hH, hnonb⟩
 
-/-! ### The two-pivot expansion and the forced crossing
-
-Adjoin two fresh sites to a set and expand the matching sum at each in turn.  Every matching either
-pairs the two new sites with each other -- leaving a matching of the old set -- or sends them to two
-distinct old sites, leaving a matching of what remains.  That is the identity below, proved from the
-one-site expansion and set bookkeeping alone; no determinant-style hafnian identity is used or
-needed.
-
-Its consequence over a field is the crossing lemma.  If the direct term is non-zero and the whole
-sum vanishes, the double sum cannot be zero termwise, so *some* crossing survives: two distinct old
-sites, live edges to them from the two new ones, and a non-zero sum on the smaller remainder.  A
-vanishing total forces a crossing rather than merely permitting one. -/
-
-section TwoPivot
-
-variable {C : Type*} {R : Type*} [CommSemiring R]
-
-/-- **Two-pivot expansion.**  Adjoining `u` and `v` to `A`: the direct pairing, plus every way of
-sending `u` and `v` to two distinct sites of `A`. -/
-theorem pmSum_insert_pair (W : Sym2 (V × C) → R) (d : V → C) {A : Finset V} {u v : V}
-    (hu : u ∉ A) (hv : v ∉ A) (huv : u ≠ v) :
-    pmSum W d (insert u (insert v A))
-      = W (Sym2.map (paint d) s(u, v)) * pmSum W d A
-        + ∑ x ∈ A, W (Sym2.map (paint d) s(u, x)) *
-            ∑ y ∈ A.erase x, W (Sym2.map (paint d) s(v, y)) *
-              pmSum W d ((A.erase x).erase y) := by
-  classical
-  have hunotin : u ∉ insert v A := by
-    simp only [Finset.mem_insert]
-    exact fun h => h.elim huv (fun h' => hu h')
-  have h1 : (insert u (insert v A)).erase u = insert v A := Finset.erase_insert hunotin
-  have h2 : (insert v A).erase v = A := Finset.erase_insert hv
-  rw [pmSum_expand W d (Finset.mem_insert_self u (insert v A)), h1,
-    ← Finset.add_sum_erase _ _ (Finset.mem_insert_self v A), h2]
-  congr 1
-  refine Finset.sum_congr rfl fun x hx => ?_
-  have hxv : x ≠ v := fun h => hv (h ▸ hx)
-  have h3 : (insert v A).erase x = insert v (A.erase x) := by
-    ext z
-    simp only [Finset.mem_erase, Finset.mem_insert]
-    constructor
-    · rintro ⟨hzx, hz | hz⟩
-      · exact Or.inl hz
-      · exact Or.inr ⟨hzx, hz⟩
-    · rintro (rfl | ⟨hzx, hz⟩)
-      · exact ⟨fun h => hxv h.symm, Or.inl rfl⟩
-      · exact ⟨hzx, Or.inr hz⟩
-  have hvnot : v ∉ A.erase x := fun h => hv (Finset.mem_of_mem_erase h)
-  rw [h3, pmSum_expand W d (Finset.mem_insert_self v (A.erase x)),
-    Finset.erase_insert hvnot, Finset.mul_sum]
-
-end TwoPivot
-
-/-- **The forced crossing.**  A vanishing total with a non-zero direct term produces a crossing:
-distinct `x, y` in `A` with live edges `u–x` and `v–y` and a surviving remainder. -/
-theorem exists_crossing {C : Type*} (W : Sym2 (V × C) → ℂ) (d : V → C) {A : Finset V} {u v : V}
-    (hu : u ∉ A) (hv : v ∉ A) (huv : u ≠ v)
-    (hdirect : W (Sym2.map (paint d) s(u, v)) ≠ 0)
-    (hA : pmSum W d A ≠ 0)
-    (hzero : pmSum W d (insert u (insert v A)) = 0) :
-    ∃ x ∈ A, ∃ y ∈ A.erase x,
-      W (Sym2.map (paint d) s(u, x)) ≠ 0 ∧ W (Sym2.map (paint d) s(v, y)) ≠ 0 ∧
-        pmSum W d ((A.erase x).erase y) ≠ 0 := by
-  classical
-  by_contra hcon
-  push_neg at hcon
-  have hsum : ∑ x ∈ A, W (Sym2.map (paint d) s(u, x)) *
-      ∑ y ∈ A.erase x, W (Sym2.map (paint d) s(v, y)) *
-        pmSum W d ((A.erase x).erase y) = 0 := by
-    refine Finset.sum_eq_zero fun x hx => ?_
-    by_cases hux : W (Sym2.map (paint d) s(u, x)) = 0
-    · rw [hux, zero_mul]
-    · refine mul_eq_zero_of_right _ (Finset.sum_eq_zero fun y hy => ?_)
-      by_cases hvy : W (Sym2.map (paint d) s(v, y)) = 0
-      · rw [hvy, zero_mul]
-      · rw [hcon x hx y hy hux hvy, mul_zero]
-  rw [pmSum_insert_pair W d hu hv huv, hsum, add_zero] at hzero
-  exact (mul_ne_zero hdirect hA) hzero
-
-/-- The crowd is not a single site: a forced crossing needs two distinct targets. -/
-theorem two_le_card_of_crossing {C : Type*} (W : Sym2 (V × C) → ℂ) (d : V → C) {A : Finset V}
-    {u v : V} (hu : u ∉ A) (hv : v ∉ A) (huv : u ≠ v)
-    (hdirect : W (Sym2.map (paint d) s(u, v)) ≠ 0)
-    (hA : pmSum W d A ≠ 0)
-    (hzero : pmSum W d (insert u (insert v A)) = 0) :
-    2 ≤ A.card := by
-  obtain ⟨x, hx, y, hy, -, -, -⟩ := exists_crossing W d hu hv huv hdirect hA hzero
-  exact Finset.one_lt_card.mpr ⟨y, Finset.mem_of_mem_erase hy, x, hx,
-    (Finset.mem_erase.mp hy).1⟩
-
-/-- **The size-two case is the four-site permanent relation.**  With the crowd a single pair, the
-two-pivot expansion is exactly the three-term hafnian of four sites. -/
-theorem pmSum_insert_pair_two {C : Type*} {R : Type*} [CommRing R] (W : Sym2 (V × C) → R)
-    (d : V → C) {u v x y : V} (hux : u ≠ x) (huy : u ≠ y) (hvx : v ≠ x) (hvy : v ≠ y)
-    (huv : u ≠ v) (hxy : x ≠ y) :
-    pmSum W d (insert u (insert v ({x, y} : Finset V)))
-      = W (Sym2.map (paint d) s(u, v)) * W (Sym2.map (paint d) s(x, y))
-        + W (Sym2.map (paint d) s(u, x)) * W (Sym2.map (paint d) s(v, y))
-        + W (Sym2.map (paint d) s(u, y)) * W (Sym2.map (paint d) s(v, x)) := by
-  classical
-  have hu : u ∉ ({x, y} : Finset V) := by
-    simp only [Finset.mem_insert, Finset.mem_singleton]
-    exact fun h => h.elim hux huy
-  have hv : v ∉ ({x, y} : Finset V) := by
-    simp only [Finset.mem_insert, Finset.mem_singleton]
-    exact fun h => h.elim hvx hvy
-  rw [pmSum_insert_pair W d hu hv huv]
-  have hpair : pmSum W d ({x, y} : Finset V) = W (Sym2.map (paint d) s(x, y)) := by
-    rw [show (Sym2.map (paint d)) s(x, y) = s((x, d x), (y, d y)) from rfl]
-    exact NoCancellation.pmSum_pair W d (Ne.symm hxy)
-  rw [hpair, Finset.sum_pair hxy]
-  have hex : ({x, y} : Finset V).erase x = ({y} : Finset V) := by
-    ext z; simp only [Finset.mem_erase, Finset.mem_insert, Finset.mem_singleton]
-    constructor
-    · rintro ⟨hz, rfl | rfl⟩
-      · exact absurd rfl hz
-      · rfl
-    · rintro rfl; exact ⟨fun h => hxy h.symm, Or.inr rfl⟩
-  have hey : ({x, y} : Finset V).erase y = ({x} : Finset V) := by
-    ext z; simp only [Finset.mem_erase, Finset.mem_insert, Finset.mem_singleton]
-    constructor
-    · rintro ⟨hz, rfl | rfl⟩
-      · rfl
-      · exact absurd rfl hz
-    · rintro rfl; exact ⟨hxy, Or.inl rfl⟩
-  rw [hex, hey, Finset.sum_singleton, Finset.sum_singleton,
-    Finset.erase_singleton, Finset.erase_singleton]
-  simp only [pmSum_empty]
-  ring
+/-! The generic two-pivot expansion and forced-crossing calculus lives in
+`Mettapedia.Combinatorics.Matching.Crossing`. -/
 
 /-! ### The crossing certificate at an excess site
 
@@ -1658,89 +1532,6 @@ theorem excess_site_crossing_certificate (W : Sym2 (V × Fin 3) → ℂ)
     exists_crossing W (Amplitude.const (V := V) (c u)) huA hvA (Ne.symm hvu) hdirect
       (hfib (c u)) hzeroA
   exact ⟨x, hx, y, hy, hux, hvy, hrem⟩
-
-/-! ## The naive same-colour transition is not available
-
-`excess_site_crossing_certificate` leaves the shrunk crowd `A ∖ {x,y}` certified, but supplies no
-vanishing extension of it.  The naive transition -- that some live pair extends the shrunk crowd to
-a vanishing sum, giving back a state of the same shape two sites smaller -- is not merely unproved.
-At the base case it is false for *every* weight function: a pair-extension of the empty crowd is its
-own weight, so it vanishes exactly when the pair is dead.  The failure is therefore structural, not
-a matter of a missing estimate: the crossing fields alone carry no partition data, and a vanishing
-matching sum can only come from a partition. -/
-
-/-- A live pair on the empty crowd never vanishes. -/
-theorem pmSum_live_pair_ne_zero {C : Type*} {R : Type*} [CommRing R] (W : Sym2 (V × C) → R)
-    (d : V → C) {p q : V} (hpq : p ≠ q)
-    (hlive : W (Sym2.map (paint d) s(p, q)) ≠ 0) :
-    pmSum W d (insert p (insert q (∅ : Finset V))) ≠ 0 := by
-  have h : (insert p (insert q (∅ : Finset V))) = ({p, q} : Finset V) := rfl
-  rw [h, NoCancellation.pmSum_pair W d (Ne.symm hpq)]
-  exact hlive
-
-/-- No crossing state has an empty crowd: the direct term alone would be the whole sum. -/
-theorem no_crossing_state_at_zero {C : Type*} (W : Sym2 (V × C) → ℂ) (d : V → C)
-    {u v : V} (huv : u ≠ v)
-    (hdirect : W (Sym2.map (paint d) s(u, v)) ≠ 0)
-    (hzero : pmSum W d (insert u (insert v (∅ : Finset V))) = 0) : False :=
-  pmSum_live_pair_ne_zero W d huv hdirect hzero
-
-/-- **The obstruction.**  With a two-site crowd the crossing empties it, and then *no* live pair
-whatever extends the result to a vanishing sum.  So a transition law phrased in the crossing fields
-alone cannot close: the state must be enriched. -/
-theorem crossing_transport_obstruction {C : Type*} (W : Sym2 (V × C) → ℂ) (d : V → C)
-    {A : Finset V} {u v : V} (hu : u ∉ A) (hv : v ∉ A) (huv : u ≠ v)
-    (hdirect : W (Sym2.map (paint d) s(u, v)) ≠ 0)
-    (hA : pmSum W d A ≠ 0)
-    (hzero : pmSum W d (insert u (insert v A)) = 0)
-    (hcard : A.card = 2) :
-    ∃ x ∈ A, ∃ y ∈ A.erase x,
-      W (Sym2.map (paint d) s(u, x)) ≠ 0 ∧ W (Sym2.map (paint d) s(v, y)) ≠ 0 ∧
-        pmSum W d ((A.erase x).erase y) ≠ 0 ∧
-        (A.erase x).erase y = ∅ ∧
-        ∀ p q : V, p ≠ q → W (Sym2.map (paint d) s(p, q)) ≠ 0 →
-          pmSum W d (insert p (insert q ((A.erase x).erase y))) ≠ 0 := by
-  obtain ⟨x, hx, y, hy, hux, hvy, hrem⟩ := exists_crossing W d hu hv huv hdirect hA hzero
-  have hemp : (A.erase x).erase y = ∅ := by
-    have h1 : (A.erase x).card = 1 := by rw [Finset.card_erase_of_mem hx, hcard]
-    have h2 : ((A.erase x).erase y).card = 0 := by rw [Finset.card_erase_of_mem hy, h1]
-    exact Finset.card_eq_zero.mp h2
-  refine ⟨x, hx, y, hy, hux, hvy, hrem, hemp, ?_⟩
-  intro p q hpq hlive
-  rw [hemp]
-  exact pmSum_live_pair_ne_zero W d hpq hlive
-
-/-- A weight function on four sites realizing the crossing state with a two-site crowd, so the
-obstruction above is not vacuous.  The entry depends only on the sum of the two indices, which makes
-it symmetric with no case analysis. -/
-noncomputable def crossingWitness : Sym2 (Fin 4 × Unit) → ℂ :=
-  Sym2.lift ⟨fun p q => if p.1.val + q.1.val = 3 then 0
-                        else if p.1.val + q.1.val = 4 then -1 else 1,
-    by intro a b; simp only [Nat.add_comm]⟩
-
-theorem crossing_state_at_two_nonvacuous :
-    ∃ (W : Sym2 (Fin 4 × Unit) → ℂ) (d : Fin 4 → Unit) (A : Finset (Fin 4)) (u v : Fin 4),
-      u ∉ A ∧ v ∉ A ∧ u ≠ v ∧
-        W (Sym2.map (paint d) s(u, v)) ≠ 0 ∧
-        pmSum W d A ≠ 0 ∧
-        pmSum W d (insert u (insert v A)) = 0 ∧
-        A.card = 2 := by
-  refine ⟨crossingWitness, fun _ => (), ({2, 3} : Finset (Fin 4)), 0, 1, by decide, by decide,
-    by decide, ?_, ?_, ?_, by decide⟩
-  · show crossingWitness s(((0 : Fin 4), ()), ((1 : Fin 4), ())) ≠ 0
-    norm_num [crossingWitness, Sym2.lift_mk]
-  · rw [NoCancellation.pmSum_pair crossingWitness (fun _ => ()) (by decide : (3 : Fin 4) ≠ 2)]
-    show crossingWitness s(((2 : Fin 4), ()), ((3 : Fin 4), ())) ≠ 0
-    norm_num [crossingWitness, Sym2.lift_mk]
-  · rw [pmSum_insert_pair_two crossingWitness (fun _ => ()) (by decide) (by decide) (by decide)
-      (by decide) (by decide) (by decide)]
-    show crossingWitness s(((0 : Fin 4), ()), ((1 : Fin 4), ())) *
-        crossingWitness s(((2 : Fin 4), ()), ((3 : Fin 4), ())) +
-      crossingWitness s(((0 : Fin 4), ()), ((2 : Fin 4), ())) *
-        crossingWitness s(((1 : Fin 4), ()), ((3 : Fin 4), ())) +
-      crossingWitness s(((0 : Fin 4), ()), ((3 : Fin 4), ())) *
-        crossingWitness s(((1 : Fin 4), ()), ((2 : Fin 4), ())) = 0
-    norm_num [crossingWitness, Sym2.lift_mk]
 
 /-! ## The enriched state and the transport law
 
@@ -1922,29 +1713,6 @@ theorem crossing_transport_dichotomy (W : Sym2 (V × Fin 3) → ℂ)
         exact ⟨fun h => hvm (h ▸ hz), fun h => hum (h ▸ hz)⟩
       rw [← hset]
       exact hfib m
-
-/-- **The descent branch is a genuine state.**  If the shrunk crowd does carry a vanishing extension
-by the same live pair, the crossing fires again on a crowd exactly two sites smaller -- and the
-original crowd had at least four sites. -/
-theorem crossing_descent_step {C : Type*} (W : Sym2 (V × C) → ℂ) (d : V → C) {A : Finset V}
-    {u v x y : V} (hu : u ∉ A) (hv : v ∉ A) (huv : u ≠ v)
-    (hdirect : W (Sym2.map (paint d) s(u, v)) ≠ 0)
-    (hx : x ∈ A) (hy : y ∈ A.erase x)
-    (hrem : pmSum W d ((A.erase x).erase y) ≠ 0)
-    (hdesc : pmSum W d (insert u (insert v ((A.erase x).erase y))) = 0) :
-    (∃ x' ∈ (A.erase x).erase y, ∃ y' ∈ ((A.erase x).erase y).erase x',
-      W (Sym2.map (paint d) s(u, x')) ≠ 0 ∧ W (Sym2.map (paint d) s(v, y')) ≠ 0 ∧
-        pmSum W d ((((A.erase x).erase y).erase x').erase y') ≠ 0)
-      ∧ ((A.erase x).erase y).card = A.card - 2 ∧ 4 ≤ A.card := by
-  have hu' : u ∉ (A.erase x).erase y := fun h =>
-    hu (Finset.mem_of_mem_erase (Finset.mem_of_mem_erase h))
-  have hv' : v ∉ (A.erase x).erase y := fun h =>
-    hv (Finset.mem_of_mem_erase (Finset.mem_of_mem_erase h))
-  have hcross := exists_crossing W d hu' hv' huv hdirect hrem hdesc
-  have hcard2 := two_le_card_of_crossing W d hu' hv' huv hdirect hrem hdesc
-  have h1 : (A.erase x).card = A.card - 1 := Finset.card_erase_of_mem hx
-  have h2 : ((A.erase x).erase y).card = (A.erase x).card - 1 := Finset.card_erase_of_mem hy
-  refine ⟨hcross, by omega, by omega⟩
 
 /-- **Base behaviour at crowd size two.**  The descent branch would leave an empty crowd carrying a
 vanishing extension by a live pair, which is impossible.  So at a two-site crowd the dichotomy
@@ -2266,14 +2034,14 @@ theorem exists_dead_pair_detour (W : Sym2 (V × Fin 3) → ℂ) {k : Fin 3}
   have hU : pmSum W (Amplitude.const (V := V) k) (Finset.univ : Finset V) ≠ 0 := by
     rw [pmSum_univ]; exact hone
   obtain ⟨p, hp, hup, hrest⟩ :=
-    NoCancellation.exists_partner_ne_zero W (Amplitude.const (V := V) k) (Finset.mem_univ u) hU
+    MatchingSum.exists_partner_ne_zero W (Amplitude.const (V := V) k) (Finset.mem_univ u) hU
   have hpu : p ≠ u := Finset.ne_of_mem_erase hp
   have hpv : p ≠ v := by
     intro h; exact hup (by rw [h]; exact hdead)
   have hvmem : v ∈ ((Finset.univ : Finset V).erase u).erase p :=
     Finset.mem_erase.mpr ⟨Ne.symm hpv, Finset.mem_erase.mpr ⟨Ne.symm huv, Finset.mem_univ v⟩⟩
   obtain ⟨q, hq, hvq, hrest'⟩ :=
-    NoCancellation.exists_partner_ne_zero W (Amplitude.const (V := V) k) hvmem hrest
+    MatchingSum.exists_partner_ne_zero W (Amplitude.const (V := V) k) hvmem hrest
   have hqv : q ≠ v := Finset.ne_of_mem_erase hq
   have hqp : q ≠ p := Finset.ne_of_mem_erase (Finset.mem_of_mem_erase hq)
   have hqu : q ≠ u :=

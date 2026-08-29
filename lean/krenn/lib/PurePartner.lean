@@ -1,6 +1,7 @@
 import Mathlib
 import Amplitude
 import MatchingSum
+import Mettapedia.Combinatorics.Matching.FourthMatching
 
 /-!
 # A pure partner at every site and every colour
@@ -30,7 +31,7 @@ three colours.
 
 namespace PurePartner
 
-open Amplitude MatchingSum
+open Amplitude MatchingSum MixedColouring
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
 
@@ -1613,72 +1614,6 @@ theorem pmSum_eq_zero_of_row (W : Sym2 (V × Fin 3) → ℂ)
   rw [Finset.sum_eq_single_of_mem b (Finset.mem_univ b)
     (fun x _ hx => by simp [hx]), if_pos rfl, one_mul] at key
   exact (mul_eq_zero.mp key).resolve_left hrow
-
-
-/-! ## Mixing colourings
-
-A perfect matching inside the union of three disjoint ones is the same thing as a colouring
-of the sites saying which of the three each uses, consistent in the sense that a site and
-the partner it picks agree.  In that language the fourth-matching lemma asks for a
-non-constant such colouring, and one half of it becomes immediate: if two of the matchings
-generate a disconnected graph, colour one component by the first and the rest by the
-second.
--/
-
-/-- A colouring saying which of three matchings each site uses, consistent at both ends. -/
-def MixColouring (σ : Fin 3 → Equiv.Perm V) (c : V → Fin 3) : Prop :=
-  ∀ x : V, c (σ (c x) x) = c x
-
-/-- Such a colouring is exactly a perfect matching inside the union of the three. -/
-theorem perm_of_mixColouring (σ : Fin 3 → Equiv.Perm V) (hσ : ∀ k, σ k ∈ pairings V)
-    (c : V → Fin 3) (hc : MixColouring σ c) :
-    ∃ τ : Equiv.Perm V, τ ∈ pairings V ∧ ∀ x : V, τ x = σ (c x) x := by
-  classical
-  have hinv : ∀ (k : Fin 3) (x : V), σ k (σ k x) = x :=
-    fun k x => (mem_pairings_iff.mp (hσ k)).1 x
-  have hnf : ∀ (k : Fin 3) (x : V), σ k x ≠ x :=
-    fun k x => (mem_pairings_iff.mp (hσ k)).2 x
-  have hinvol : Function.Involutive (fun x : V => σ (c x) x) := by
-    intro x
-    show σ (c (σ (c x) x)) (σ (c x) x) = x
-    rw [hc x, hinv (c x) x]
-  exact ⟨Function.Involutive.toPerm _ hinvol,
-    mem_pairings_iff.mpr ⟨hinvol, fun x => hnf (c x) x⟩, fun x => rfl⟩
-
-/-- **The disconnected half.**  If two of the matchings generate a disconnected graph, the
-sites can be coloured non-constantly and consistently. -/
-theorem mixColouring_of_disconnected (σ : Fin 3 → Equiv.Perm V) {k l : Fin 3} (hkl : k ≠ l)
-    {x₀ y₀ : V}
-    (hsep : ¬ Relation.EqvGen (fun x y : V => y = σ k x ∨ y = σ l x) y₀ x₀) :
-    ∃ c : V → Fin 3, MixColouring σ c ∧ ¬ (∀ x y : V, c x = c y) := by
-  classical
-  set R : V → V → Prop := fun x y => y = σ k x ∨ y = σ l x with hR
-  set c : V → Fin 3 := fun x => if Relation.EqvGen R x x₀ then k else l with hc
-  have hstep : ∀ (x : V) (j : Fin 3), (j = k ∨ j = l) →
-      (Relation.EqvGen R (σ j x) x₀ ↔ Relation.EqvGen R x x₀) := by
-    intro x j hj
-    have hxy : Relation.EqvGen R x (σ j x) := by
-      refine Relation.EqvGen.rel _ _ ?_
-      rcases hj with rfl | rfl
-      · exact Or.inl rfl
-      · exact Or.inr rfl
-    exact ⟨fun h => Relation.EqvGen.trans _ _ _ hxy h,
-      fun h => Relation.EqvGen.trans _ _ _ (Relation.EqvGen.symm _ _ hxy) h⟩
-  refine ⟨c, fun x => ?_, ?_⟩
-  · by_cases hx : Relation.EqvGen R x x₀
-    · have h1 : c x = k := by simp [hc, hx]
-      rw [h1]
-      simp [hc, (hstep x k (Or.inl rfl)).mpr hx]
-    · have h1 : c x = l := by simp [hc, hx]
-      rw [h1]
-      have : ¬ Relation.EqvGen R (σ l x) x₀ := fun h => hx ((hstep x l (Or.inr rfl)).mp h)
-      simp [hc, this]
-  · intro hconst
-    have h0 : c x₀ = k := by simp [hc, Relation.EqvGen.refl]
-    have h1 : c y₀ = l := by
-      have : ¬ Relation.EqvGen R y₀ x₀ := hsep
-      simp [hc, this]
-    exact hkl (h0 ▸ h1 ▸ hconst x₀ y₀)
 
 
 /-- **The disconnected case, closed.**  A three-regular solution whose named matchings
