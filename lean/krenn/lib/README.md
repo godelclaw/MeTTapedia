@@ -21,6 +21,10 @@ vertices never changes the type. On the whole vertex set the two agree.
 involution laws. Convenient for building matchings; `MatchingBridge` identifies it
 with the permutation form the amplitude sums over.
 
+**`Pairing.SupportedBy G`** — the condition that every edge selected by a pairing
+belongs to a graph. `GraphMatchingBridge` converts supported pairings to and from
+Mathlib's `Subgraph.IsPerfectMatching`, and preserves graph support under exchange.
+
 **`LocalSwap V A`** — a matching of the vertex set `A`, extended by the identity.
 Its `config` is the family of whole-graph matchings agreeing with it on `A`.
 

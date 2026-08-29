@@ -14,22 +14,10 @@ theorem serves_one_of_isPerfectMatching
   classical
   set W : WeightSystem G D := fun e i j =>
     if (e : Sym2 V) ∈ M.edgeSet ∧ i = c ∧ j = c then 1 else 0 with hWdef
-  set F : Finset G.edgeSet :=
-    Finset.univ.filter (fun e : G.edgeSet => (e : Sym2 V) ∈ M.edgeSet)
-    with hFdef
+  set F : Finset G.edgeSet := edgeFinsetOfSubgraph M with hFdef
   have memF : ∀ e : G.edgeSet, e ∈ F ↔ (e : Sym2 V) ∈ M.edgeSet := fun e => by
     simp [hFdef]
-  have hPMF : IsPMFinset G F := by
-    intro v
-    obtain ⟨w, hvw, huniq⟩ := hM.1 (hM.2 v)
-    refine ⟨⟨s(v, w), M.edgeSet_subset (Subgraph.mem_edgeSet.2 hvw)⟩,
-      ⟨(memF _).2 (Subgraph.mem_edgeSet.2 hvw), Sym2.mem_mk_left v w⟩, ?_⟩
-    rintro ⟨z, hz⟩ ⟨hzF, hvz⟩
-    obtain ⟨u, rfl⟩ := Sym2.mem_iff_exists.1 hvz
-    have hadj : M.Adj v u := Subgraph.mem_edgeSet.1 ((memF _).1 hzF)
-    have hu : u = w := huniq u hadj
-    subst hu
-    rfl
+  have hPMF : IsPMFinset G F := hFdef ▸ isPMFinset_edgeFinsetOfSubgraph hM
   have hsub_eq : ∀ M' : Finset G.edgeSet, IsPMFinset G M' →
       (∀ e ∈ M', (e : Sym2 V) ∈ M.edgeSet) → M' = F := by
     intro M' hPM' hsub
