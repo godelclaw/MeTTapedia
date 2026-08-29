@@ -6178,6 +6178,34 @@ The cap face count, cap sphericity,
 one-hub property, orientation reversal, connectedness, bridge-freeness,
 cubicity, and cyclic vertex rotations are no longer open.
 
+\begin{corollary}[phased literal-shore replacement]
+\label{cor:phased-literal-shore-replacement}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24LiteralShoreReplacement.exists_endpointSimple_replacement_of_cardPhasedState_eq}
+Let \(A\subsetneq B\) be two certified literal connected shores in a finite
+bridgeless spherical cubic map of zero Tait Count.  Suppose their middle sets
+have size at most \(w\), their literal boundary widths have size at most
+\(k\), and their phased canonical states agree:
+\[
+ \bigl(|B|\bmod(6w+1),\,q(B)\bigr)
+   =\bigl(|A|\bmod(6w+1),\,q(A)\bigr).
+\]
+Then there is a strictly smaller endpoint-simple bridgeless spherical cubic
+map of zero Tait Count.
+\end{corollary}
+
+\begin{proof}
+Proper containment and equality of the cardinality phases imply
+\(|B\setminus A|\ge 6w+1\).  The cubic spacing lemma therefore finds a
+vertex whose full three-edge star lies in \(B\setminus A\); this is the
+strict material deleted by the splice.  Equality of the second coordinates
+of the phased states unpacks to one common literal width and equality of the
+ordinary normalized states.  The constructive majority-shore replacement
+then gives a strictly smaller zero-Count rotation map in the complete
+bridgeless spherical cubic class.  Finally the terminating digon
+normalization removes any parallel seam while preserving that class,
+zero Count, and strict decrease.
+\end{proof}
+
 \begin{theorem}[direct Count-reductive assembly]
 \label{thm:direct-count-reductive-assembly}
 \Sconditional{ladder transport; target-forced literal connected-shore state supply; route-native finite base}
