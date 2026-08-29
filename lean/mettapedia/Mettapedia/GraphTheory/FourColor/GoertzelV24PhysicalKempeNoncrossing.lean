@@ -59,8 +59,10 @@ theorem vertexSidePortTangle_vert_boundary
 /-- **Physical common-web noncrossing, in cyclic-arc form.**
 
 `cutPort` and `separatorPort` are the endpoints of one selected Kempe
-component.  `leftPort` and `rightPort` lie on the two complementary cyclic
-arcs, and form a second component.  The two components cannot be distinct.
+component.  Distinct ports `leftPort` and `rightPort` lie on the two
+complementary cyclic arcs, and form a second component.  The two components
+cannot be distinct, including when the second component has no primal edge
+because its two boundary darts are based at one retained cubic vertex.
 
 This is the graph-backed form of the source's statement that same-pair outside
 Kempe components induce a noncrossing matching on a facial interface. -/
@@ -83,9 +85,7 @@ theorem no_distinct_kempe_components_between_boundary_arcs
     (pair : TaitColorPair)
     (cutPort separatorPort leftPort rightPort : Fin data.length)
     (hcutSeparator : cutPort ≠ separatorPort)
-    (hrouteEndpoints :
-      retainedPort graphData keep data leftPort ≠
-        retainedPort graphData keep data rightPort)
+    (hroutePorts : leftPort ≠ rightPort)
     (leftSteps rightSteps : Nat)
     (hleftPort :
       (finRotate data.length)^[leftSteps]
@@ -154,13 +154,6 @@ theorem no_distinct_kempe_components_between_boundary_arcs
       hinsidePath.isTrail houtsidePath.isTrail
   have hrouteTrail : route.IsTrail :=
     (sideWalkToAmbient_isPath keep hroutePath).isTrail
-  have hrouteVertexNe :
-      (retainedPort graphData keep data leftPort).1 ≠
-        (retainedPort graphData keep data rightPort).1 := by
-    intro heq
-    apply hrouteEndpoints
-    exact Subtype.ext heq
-  have hrouteNil : ¬route.Nil := Walk.not_nil_of_ne hrouteVertexNe
   have hrouteDisjointList : route.edges.Disjoint separator.edges :=
     sideWalkToAmbient_edges_disjoint_boundaryClosure
       graphData keep data cutPort separatorPort insidePath outsidePath
@@ -209,31 +202,44 @@ theorem no_distinct_kempe_components_between_boundary_arcs
       boundaryEdge graphData keep data rightPort ∉ route.edges :=
     crossingEdge_not_mem_sideWalkToAmbient_edges keep
       (boundaryEdge_crosses graphData keep data rightPort) routePath
-  have hfirstNe : route.firstDart hrouteNil ≠ (data.order leftPort).1.1 := by
-    intro heq
-    apply hleftBoundaryNotRoute
-    change (graphData.toRotationSystem.edgeOf
-      (data.order leftPort).1.1).1 ∈ route.edges
-    rw [← heq]
-    change (route.firstDart hrouteNil).edge ∈ route.edges
-    rw [route.edge_firstDart hrouteNil]
-    exact route.mk_start_snd_mem_edges hrouteNil
-  have hlastNe : graphData.toRotationSystem.alpha
-      (route.lastDart hrouteNil) ≠ (data.order rightPort).1.1 := by
-    intro heq
-    apply hrightBoundaryNotRoute
-    change (graphData.toRotationSystem.edgeOf
-      (data.order rightPort).1.1).1 ∈ route.edges
-    rw [← heq, graphData.toRotationSystem.edge_alpha]
-    change (route.lastDart hrouteNil).edge ∈ route.edges
-    rw [route.edge_lastDart hrouteNil]
-    exact route.mk_penultimate_end_mem_edges hrouteNil
-  exact no_disjoint_trail_between_boundary_arcs
-    graphData htwoSided hdual hconnected hsphere hcubic hrotation
-    keep data cutPort leftPort rightPort leftSteps rightSteps
-    hleftPort hrightPort separator hseparatorTrail hcut
-    hleftBoundary hrightBoundary hleftArc hrightArc route hrouteNil
-    hrouteTrail hrouteDisjoint hfirstNe hlastNe
+  by_cases hrouteVertexNe :
+      (retainedPort graphData keep data leftPort).1 ≠
+        (retainedPort graphData keep data rightPort).1
+  · have hrouteNil : ¬route.Nil := Walk.not_nil_of_ne hrouteVertexNe
+    have hfirstNe :
+        route.firstDart hrouteNil ≠ (data.order leftPort).1.1 := by
+      intro heq
+      apply hleftBoundaryNotRoute
+      change (graphData.toRotationSystem.edgeOf
+        (data.order leftPort).1.1).1 ∈ route.edges
+      rw [← heq]
+      change (route.firstDart hrouteNil).edge ∈ route.edges
+      rw [route.edge_firstDart hrouteNil]
+      exact route.mk_start_snd_mem_edges hrouteNil
+    have hlastNe : graphData.toRotationSystem.alpha
+        (route.lastDart hrouteNil) ≠ (data.order rightPort).1.1 := by
+      intro heq
+      apply hrightBoundaryNotRoute
+      change (graphData.toRotationSystem.edgeOf
+        (data.order rightPort).1.1).1 ∈ route.edges
+      rw [← heq, graphData.toRotationSystem.edge_alpha]
+      change (route.lastDart hrouteNil).edge ∈ route.edges
+      rw [route.edge_lastDart hrouteNil]
+      exact route.mk_penultimate_end_mem_edges hrouteNil
+    exact no_disjoint_trail_between_boundary_arcs
+      graphData htwoSided hdual hconnected hsphere hcubic hrotation
+      keep data cutPort leftPort rightPort leftSteps rightSteps
+      hleftPort hrightPort separator hseparatorTrail hcut
+      hleftBoundary hrightBoundary hleftArc hrightArc route hrouteNil
+      hrouteTrail hrouteDisjoint hfirstNe hlastNe
+  · apply no_distinct_same_vertex_ports_between_boundary_arcs
+      graphData htwoSided hdual hconnected hsphere hcubic hrotation
+      keep data cutPort leftPort rightPort hroutePorts leftSteps rightSteps
+      hleftPort hrightPort separator hseparatorTrail hcut
+      hleftBoundary hrightBoundary hleftArc hrightArc
+    change (retainedPort graphData keep data rightPort).1 =
+      (retainedPort graphData keep data leftPort).1
+    exact (not_ne_iff.mp hrouteVertexNe).symm
 
 end
 

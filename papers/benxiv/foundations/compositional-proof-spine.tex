@@ -2457,9 +2457,10 @@ colouring, and fix a pair of colours.  Let one bichromatic component join
 boundary ports $a$ and $c$, and let a second join $b$ and $d$.  Suppose
 $b$ lies on the forward cyclic arc from the successor of $a$ to $c$, while
 the forward cyclic arc from $d$ returns to $a$, neither open arc meeting
-$a$ or $c$.  If the retained endpoints of $b$ and $d$ are distinct, the two
-components cannot be distinct.  Thus two nondegenerate physical component
-trails cannot join alternating pairs of boundary ports.
+$a$ or $c$.  If $b$ and $d$ are distinct boundary ports, the two components
+cannot be distinct.  Thus physical components cannot join alternating pairs
+of boundary ports, even when the second component consists only of the local
+vertex wire between two ports based at one retained cubic vertex.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PhysicalKempeNoncrossing.no_distinct_kempe_components_between_boundary_arcs}
 \end{theorem}
 
@@ -2486,20 +2487,22 @@ along the other boundary arc from $d$ back to $a$, it propagates unchanged
 from the face at $d$ to the face immediately before $a$.  The faces incident
 with the boundary endpoints $b$ and $d$ consequently have opposite labels.
 
-The $b$--$d$ component trail is nonempty because its retained endpoints are
-distinct, and it is edge-disjoint from $Q$.  At either endpoint,
-cubic cyclic rotation identifies the boundary-side face label with the label
-beside the first or last trail dart; along the trail the label cannot change,
-because none of its edges lies in $Q$.  Hence its endpoint faces have equal
-labels, contradicting the preceding paragraph.  Distinct bichromatic
-components are vertex-disjoint and therefore edge-disjoint, while
+If the retained endpoints of $b$ and $d$ are distinct, their component trail
+is nonempty and edge-disjoint from $Q$.  At either endpoint, cubic cyclic
+rotation identifies the boundary-side face label with the label beside the
+first or last trail dart; along the trail the label cannot change, because
+none of its edges lies in $Q$.  Hence its endpoint faces have equal labels.
+
+If the two retained endpoints instead coincide, the two boundary darts are
+still distinct.  Their two boundary edges avoid $Q$.  At a cubic vertex any
+two distinct incident darts are consecutive in one of the two rotation
+directions.  Exact face-cut parity across the two avoided edges therefore
+gives the same label to the two boundary-side faces.  In either case this
+contradicts the opposite labels forced by the two boundary arcs.  Distinct
+bichromatic components are vertex-disjoint and therefore edge-disjoint, while
 Theorem~\ref{thm:port-tangle-kempe-two-ended} gives exactly two boundary
 endpoints for every component meeting the boundary.  This proves the stated
-nondegenerate noncrossing conclusion.  A component whose two boundary ports
-are based at one retained vertex is not covered by this separator argument;
-showing directly that such a pair is boundary-local is the remaining small
-degenerate case before promoting the conclusion to an unrestricted matching
-statement.
+unrestricted noncrossing conclusion for each physical colour pair.
 \end{proof}
 
 The reduct `PortTangle` deliberately forgets the rotation and disk, so this

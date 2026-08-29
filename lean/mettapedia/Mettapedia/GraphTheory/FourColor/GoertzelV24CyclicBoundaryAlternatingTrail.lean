@@ -295,6 +295,123 @@ theorem no_disjoint_trail_between_boundary_arcs
   apply hleftRightNe
   exact hfirstLabels.trans (htransport.trans hlastLabels)
 
+/-- A separating closed trail cannot put two distinct boundary darts based at
+one cubic vertex on opposite cyclic boundary arcs when neither of their
+boundary edges belongs to the trail.
+
+This is the zero-primal-edge endpoint case omitted by
+`no_disjoint_trail_between_boundary_arcs`.  The cyclic-arc propagation gives
+opposite face labels at the two ports.  Cubic cyclic rotation gives equal
+labels at two distinct darts based at one vertex whose incident edges both
+avoid the exact cut. -/
+theorem no_distinct_same_vertex_ports_between_boundary_arcs
+    (graphData : Data G)
+    (htwoSided : OrbitFacesTwoSided graphData.toRotationSystem)
+    (hdual : (interiorDualGraph
+      (orbitFaceBoundary graphData.toRotationSystem)
+      (Finset.univ : Finset (OrbitFace graphData.toRotationSystem))).Connected)
+    (hconnected : G.Connected)
+    (hsphere : OrbitSphericalCubicMapData graphData.toRotationSystem)
+    (hcubic : graphData.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic graphData.toRotationSystem)
+    (keep : V → Prop)
+    (data : CyclicBondBoundaryData graphData.toRotationSystem keep)
+    (cutPort leftPort rightPort : Fin data.length)
+    (hleftRight : leftPort ≠ rightPort)
+    (leftSteps rightSteps : Nat)
+    (hleftPort :
+      (finRotate data.length)^[leftSteps]
+          (finRotate data.length cutPort) = leftPort)
+    (hrightPort :
+      (finRotate data.length)^[rightSteps] rightPort = cutPort)
+    {base : V} (separator : G.Walk base base)
+    (hseparator : separator.IsTrail)
+    (hcut : (graphData.toRotationSystem.edgeOf
+      (data.order cutPort).1.1).1 ∈ separator.edges)
+    (hleftBoundary : (graphData.toRotationSystem.edgeOf
+      (data.order leftPort).1.1).1 ∉ separator.edges)
+    (hrightBoundary : (graphData.toRotationSystem.edgeOf
+      (data.order rightPort).1.1).1 ∉ separator.edges)
+    (hleftArc : ∀ index, index < leftSteps →
+      (graphData.toRotationSystem.edgeOf
+        (data.order ((finRotate data.length)^[index]
+          (finRotate data.length cutPort))).1.1).1 ∉ separator.edges)
+    (hrightArc : ∀ index, index < rightSteps →
+      (graphData.toRotationSystem.edgeOf
+        (data.order ((finRotate data.length)^[index] rightPort)).1.1).1 ∉
+          separator.edges)
+    (hbase : graphData.toRotationSystem.vertOf
+        (data.order rightPort).1.1 =
+      graphData.toRotationSystem.vertOf (data.order leftPort).1.1) :
+    False := by
+  rcases exists_orbitFaceLabeling_ne_alpha_iff_mem_edges_of_isTrail
+      graphData htwoSided hdual hconnected hsphere separator hseparator with
+    ⟨labels, _hlabels, hexact⟩
+  let dCut := (data.order cutPort).1.1
+  let dNext := (data.order (finRotate data.length cutPort)).1.1
+  let dLeft := (data.order leftPort).1.1
+  let dRight := (data.order rightPort).1.1
+  have hcutNe :
+      labels (dartOrbitFace graphData.toRotationSystem dCut) ≠
+        labels (dartOrbitFace graphData.toRotationSystem
+          (graphData.toRotationSystem.alpha dCut)) :=
+    (hexact dCut).2 hcut
+  have hcutNext :
+      dartOrbitFace graphData.toRotationSystem
+          (graphData.toRotationSystem.alpha dCut) =
+        dartOrbitFace graphData.toRotationSystem dNext := by
+    simpa [dCut, dNext] using boundaryOrder_alpha_sameFace_next
+      graphData keep data cutPort
+  have hnextLeft :
+      labels (dartOrbitFace graphData.toRotationSystem dNext) =
+        labels (dartOrbitFace graphData.toRotationSystem dLeft) := by
+    have hpropagate := labels_eq_iterate_of_boundaryEdges_not_cut
+      graphData keep data labels
+      (fun edge : G.edgeSet => edge.1 ∈ separator.edges) hexact
+      (finRotate data.length cutPort) leftSteps hleftArc
+    rw [hleftPort] at hpropagate
+    exact hpropagate
+  have hrightCut :
+      labels (dartOrbitFace graphData.toRotationSystem dRight) =
+        labels (dartOrbitFace graphData.toRotationSystem dCut) := by
+    have hpropagate := labels_eq_iterate_of_boundaryEdges_not_cut
+      graphData keep data labels
+      (fun edge : G.edgeSet => edge.1 ∈ separator.edges) hexact
+      rightPort rightSteps hrightArc
+    rw [hrightPort] at hpropagate
+    exact hpropagate
+  have hleftRightNe :
+      labels (dartOrbitFace graphData.toRotationSystem dLeft) ≠
+        labels (dartOrbitFace graphData.toRotationSystem dRight) := by
+    intro heq
+    apply hcutNe
+    calc
+      labels (dartOrbitFace graphData.toRotationSystem dCut) =
+          labels (dartOrbitFace graphData.toRotationSystem dRight) :=
+        hrightCut.symm
+      _ = labels (dartOrbitFace graphData.toRotationSystem dLeft) := heq.symm
+      _ = labels (dartOrbitFace graphData.toRotationSystem dNext) :=
+        hnextLeft.symm
+      _ = labels (dartOrbitFace graphData.toRotationSystem
+            (graphData.toRotationSystem.alpha dCut)) :=
+        congrArg labels hcutNext.symm
+  have hdartsNe : dLeft ≠ dRight := by
+    intro hdarts
+    apply hleftRight
+    apply data.order.injective
+    apply Subtype.ext
+    apply Subtype.ext
+    exact hdarts
+  apply hleftRightNe
+  apply graphData.toRotationSystem.labels_eq_of_distinct_dartsAt_of_edges_not_cut
+    hcubic hrotation labels
+      (fun edge : G.edgeSet => edge.1 ∈ separator.edges)
+      hexact dLeft dRight
+  · simpa [dLeft, dRight] using hbase
+  · exact hdartsNe
+  · exact hleftBoundary
+  · exact hrightBoundary
+
 end
 
 end GoertzelV24CyclicBoundaryAlternatingTrail
