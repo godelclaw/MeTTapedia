@@ -3054,6 +3054,83 @@ idemposition equations), or exploit a nonlinear positivity statement about
 actual extension counts.  This is a narrowing of the high-width problem,
 not evidence against the source's broader operator programme.
 
+There is one sign convention hidden in that conclusion which must be audited
+before moving on.  The source's colouring operator $F_X$ is the
+\emph{unsigned} nonnegative extension-count operator.  By contrast, an open
+Penrose contraction written in the fifteen pairing coordinates carries a
+boundary sign.  For a six-port word with even colour multiplicities, list the
+occurrences of each colour in boundary order and pair consecutive
+occurrences.  Let
+
+\[
+             \sigma(w)=(-1)^{\operatorname{cr}(M(w))}
+\]
+
+be the parity of the crossings among those three chords.  If a colour has
+odd multiplicity, all fifteen pairing contractions vanish and the value
+assigned to $\sigma(w)$ is immaterial.
+
+\begin{proposition}[the gauge-positive pairing cone still contains the
+persistent adversary]
+\label{prop:hexagon-penrose-gauge-adversary}
+Put
+\[
+ L=\delta_4-\delta_5-\delta_9+\delta_{10}
+       +\delta_{12}-\delta_{13}.
+\]
+Then, on every genuine nonzero six-port Tait word,
+\[
+ \sigma(w)L(w)\geq0,
+ \qquad
+ \sigma(w)L(w)>0\quad\Longleftrightarrow\quad w\in E,
+\]
+where $E$ is the sixty-word persistent Kempe adversary.  Moreover $L$
+vanishes on the literal hexagon support $P$.  For each of the three
+four-vertex plane cubic tree shapes there is a word in its support on which
+$\sigma L$ is positive.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPenroseGaugeAdversary.penroseKernelTensor_eq_zero_of_mem_hexagonSupport}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPenroseGaugeAdversary.gaugeCorrectedPenroseTensor_nonnegative}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPenroseGaugeAdversary.gaugeCorrectedPenroseTensor_pos_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPenroseGaugeAdversary.persistentAdversary_is_gaugePositive_pairingKernel}
+\end{proposition}
+
+\begin{proof}
+In the displayed enumeration of matchings, crossing parity alternates with
+the index.  For an even-multiplicity word, the first compatible matching in
+that enumeration is exactly the matching obtained by pairing consecutive
+occurrences of each colour.  Thus its index parity computes $\sigma(w)$.
+Evaluate this sign and the six displayed pairing coordinates on the
+$3^6=729$ boundary words.  The corrected value is nonnegative in every
+row, and its positive rows are precisely the ten colour-blind equality
+patterns defining $E$, hence precisely its sixty words.
+
+The vanishing on $P$ also has a short algebraic check.  In the notation of
+Proposition~\ref{prop:hexagon-signed-pairing-adversary},
+\[
+                         L=k_1-k_3,
+\]
+and both kernel coordinates vanish on $P$.  Finally the three positive
+rows
+\[
+ \mathtt{rrbrrb},\qquad \mathtt{rbrrrb},\qquad \mathtt{rbrpbp}
+\]
+(spaces only separate the six boundary positions) are respectively accepted
+by the separated-path, adjacent-path, and tripod tree supports.  Lean checks
+the complete table, the kernel identity, and these three explicit extension
+witnesses.
+\end{proof}
+
+This proposition is stronger than the ungauged linear-separator failure, but
+its scope is equally important.  It does \emph{not} say that $L$, or its
+positive support $E$, is realized by one planar cubic exterior.  It says
+that sign-corrected linear invariant theory plus coordinatewise positivity
+still permits exactly the already known persistent obstruction.  The next
+condition must therefore use the nonlinear, integral semigroup of tensors
+realized by actual common trivalent webs (or an equivalent shared-interior
+receipt).  That distinction keeps this negative result aligned with the
+source's unsigned operator $F_X$, rather than mistaking a formal pairing
+expansion for an extension count.
+
 \begin{theorem}[the exact width criterion]
 \label{thm:exact-width-criterion}
 \Sprose
