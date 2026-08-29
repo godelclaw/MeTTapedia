@@ -5,14 +5,19 @@ import Separation
 import FanStructure
 import MinimalSupport
 import HardCase
+import Mettapedia.Combinatorics.Matching.Crossing
+import Mettapedia.Combinatorics.Matching.Hall
+import Mettapedia.Combinatorics.Matching.Nonvanishing
+import Mettapedia.Combinatorics.Matching.Restriction
+import Mettapedia.Combinatorics.Matching.FourVertices
 
 /-!
-# Forced contributions: witnesses that cannot cancel
+# Krenn–Gu consequences of forced matching contributions
 
-Two general tools about matching sums, both aimed at the same difficulty.  A matching sum is a
-sum over very many matchings, so knowing that one of its terms is non-zero says nothing: the
-others may cancel it.  Every argument that wants to *produce* a non-vanishing quantity has to
-defeat that cancellation.
+The reusable crossing, Hall, and structural nonvanishing theorems live under
+`Mettapedia.Combinatorics.Matching`. This file applies them to three-colour GHZ amplitudes and
+develops the resulting Krenn–Gu exclusion criteria. A matching sum is a sum over very many
+matchings, so knowing that one term is non-zero says nothing by itself: the others may cancel it.
 
 The first tool turns a non-vanishing sum into a non-vanishing **term whose complement is again
 non-vanishing**.  Expanding at a site of one's choosing writes the sum as a sum of products of
@@ -30,44 +35,10 @@ whole-set sums are non-zero, and every non-constant partition kills one of the t
 
 namespace NoCancellation
 
-open Amplitude MatchingSum
+open Amplitude MatchingSum MatchingCrossing MatchingHall MatchingNonvanishing MatchingRestriction
+  MatchingFourVertices
 
-variable {V C : Type*} [Fintype V] [DecidableEq V] {R : Type*} [CommRing R]
-
-/-- **A non-vanishing matching sum has a non-cancelling partner.**
-
-Choose any site of the set.  Then some partner carries both a non-zero weight *and* a non-zero
-matching sum on what is left.  Expanding at the chosen site presents the sum as a sum of such
-products, so if no partner had both the sum would be zero.
-
-The point is the second conjunct.  A live partner is easy to find and says nothing, because the
-matchings through it may cancel; this returns one through which they demonstrably do not. -/
-theorem exists_partner_ne_zero (W : Sym2 (V × C) → R) (c : V → C) {S : Finset V} {u : V}
-    (hu : u ∈ S) (h : pmSum W c S ≠ 0) :
-    ∃ v ∈ S.erase u, W (Sym2.map (paint c) s(u, v)) ≠ 0 ∧
-      pmSum W c ((S.erase u).erase v) ≠ 0 := by
-  classical
-  by_contra hcon
-  push_neg at hcon
-  refine h ?_
-  rw [pmSum_expand W c hu]
-  refine Finset.sum_eq_zero fun v hv => ?_
-  by_cases hw : W (Sym2.map (paint c) s(u, v)) = 0
-  · rw [hw, zero_mul]
-  · rw [hcon v hv hw, mul_zero]
-
-/-- Repeating the construction once: after peeling one pair, a freshly chosen site of the
-remainder again has a non-cancelling partner. -/
-theorem exists_two_partners_ne_zero (W : Sym2 (V × C) → R) (c : V → C) {S : Finset V} {u : V}
-    (hu : u ∈ S) (h : pmSum W c S ≠ 0)
-    (p : ∀ v : V, V) :
-    ∃ v ∈ S.erase u, W (Sym2.map (paint c) s(u, v)) ≠ 0 ∧
-      (p v ∈ (S.erase u).erase v →
-        ∃ q ∈ ((S.erase u).erase v).erase (p v),
-          W (Sym2.map (paint c) s(p v, q)) ≠ 0 ∧
-          pmSum W c ((((S.erase u).erase v).erase (p v)).erase q) ≠ 0) := by
-  obtain ⟨v, hv, hw, hs⟩ := exists_partner_ne_zero W c hu h
-  exact ⟨v, hv, hw, fun hp => exists_partner_ne_zero W c hp hs⟩
+variable {V : Type*} [Fintype V] [DecidableEq V]
 
 /-! ### The product formula -/
 
@@ -76,25 +47,16 @@ section Product
 variable {V : Type*} [Fintype V] [DecidableEq V]
 
 /-- The sites wearing a given colour. -/
-def fiber (c : V → Fin 3) (k : Fin 3) : Finset V := Finset.univ.filter (fun x => c x = k)
+abbrev fiber (c : V → Fin 3) (k : Fin 3) : Finset V := MatchingSum.colourFiber c k
 
-@[simp] lemma mem_fiber {c : V → Fin 3} {k : Fin 3} {x : V} : x ∈ fiber c k ↔ c x = k := by
-  simp [fiber]
+@[simp] lemma mem_fiber {c : V → Fin 3} {k : Fin 3} {x : V} : x ∈ fiber c k ↔ c x = k :=
+  MatchingSum.mem_colourFiber
 
 /-- **A colouring whose classes are not joined splits in two.** -/
 theorem pmSum_fiber_split (W : Sym2 (V × Fin 3) → ℂ) (c : V → Fin 3)
     (hcut : ∀ x y : V, c x ≠ c y → W s((x, c x), (y, c y)) = 0) (k : Fin 3) :
-    amplitude W c = pmSum W c (fiber c k) * pmSum W c (Finset.univ \ fiber c k) := by
-  classical
-  rw [← pmSum_univ]
-  refine Separation.pmSum_split W c (fiber c k).card (fiber c k) Finset.univ rfl
-    (Finset.subset_univ _) ?_
-  intro x hx y hy
-  rw [mem_fiber] at hx
-  have hy' : c y ≠ k := by
-    intro h
-    exact (Finset.mem_sdiff.mp hy).2 (mem_fiber.mpr h)
-  exact hcut x y (by rw [hx]; exact fun h => hy' h.symm)
+    amplitude W c = pmSum W c (fiber c k) * pmSum W c (Finset.univ \ fiber c k) :=
+  MatchingSum.pmSum_colourFiber_split W c hcut k
 
 /-- **The amplitude is the product of the three colour classes' matching sums.**
 
@@ -138,60 +100,6 @@ theorem amplitude_product (W : Sym2 (V × Fin 3) → ℂ) (c : V → Fin 3)
   exact hcut x y (by rw [hx]; exact fun h => hy' h.symm)
 
 end Product
-
-/-- A two-site set matches in one way. -/
-lemma pmSum_pair {V C R : Type*} [Fintype V] [DecidableEq V] [CommRing R]
-    (W : Sym2 (V × C) → R) (c : V → C) {p q : V} (hqp : q ≠ p) :
-    pmSum W c ({p, q} : Finset V) = W s((p, c p), (q, c q)) := by
-  classical
-  have hp : p ∈ ({p, q} : Finset V) := by simp
-  have hpq : p ∉ ({q} : Finset V) := by simpa using (Ne.symm hqp)
-  have herase : ({p, q} : Finset V).erase p = {q} := Finset.erase_insert hpq
-  rw [pmSum_expand W c hp, herase, Finset.sum_singleton, Finset.erase_singleton,
-    pmSum_empty, mul_one]
-  rfl
-
-
-/-- **The forced peel.**  On any site set, if a chosen site has exactly one live partner
-inside that set, the expansion there has a single term, so the two matching sums differ by a
-non-zero factor and each is non-zero exactly when the other is.
-
-This is the general form of what makes a unique partner special: no choice is made, and no
-cancellation is possible, on any set at any stage of a peeling. -/
-theorem pmSum_peel_unique (W : Sym2 (V × C) → R) (c : V → C) {S : Finset V} {x p : V}
-    (hx : x ∈ S) (hp : p ∈ S.erase x)
-    (huniq : ∀ z ∈ S.erase x, z ≠ p → W (Sym2.map (paint c) s(x, z)) = 0) :
-    pmSum W c S = W (Sym2.map (paint c) s(x, p)) * pmSum W c ((S.erase x).erase p) := by
-  classical
-  rw [pmSum_expand W c hx]
-  exact Finset.sum_eq_single_of_mem p hp
-    (fun z hz hzp => by rw [huniq z hz hzp, zero_mul])
-
-
-/-- A site with no live partner left in a set kills that set's matching sum: every matching
-would have to pair it with something. -/
-theorem pmSum_eq_zero_of_isolated (W : Sym2 (V × C) → R) (c : V → C) {S : Finset V} {x : V}
-    (hx : x ∈ S) (hiso : ∀ z ∈ S.erase x, W (Sym2.map (paint c) s(x, z)) = 0) :
-    pmSum W c S = 0 := by
-  rw [pmSum_expand W c hx]
-  exact Finset.sum_eq_zero fun z hz => by rw [hiso z hz, zero_mul]
-
-/-- **The peel, with alternatives killed however they die.**  The uniqueness hypothesis of
-`pmSum_peel_unique` asked every other partner to be dead.  It is enough that every other
-partner's *term* vanish -- because the weight is zero, or because what would remain carries no
-matching sum at all.
-
-This is the difference between a site of degree one and a site whose other branches lead
-nowhere, and the second is far more common: a partner whose removal isolates some third site in
-the colour contributes nothing, however live its own weight. -/
-theorem pmSum_peel_of_alternatives_zero (W : Sym2 (V × C) → R) (c : V → C) {S : Finset V}
-    {x p : V} (hx : x ∈ S) (hp : p ∈ S.erase x)
-    (halt : ∀ z ∈ S.erase x, z ≠ p →
-      W (Sym2.map (paint c) s(x, z)) * pmSum W c ((S.erase x).erase z) = 0) :
-    pmSum W c S = W (Sym2.map (paint c) s(x, p)) * pmSum W c ((S.erase x).erase p) := by
-  rw [pmSum_expand W c hx]
-  exact Finset.sum_eq_single_of_mem p hp halt
-
 
 /-- **Under monochromaticity the amplitude is always the product of the three class sums.**  The
 product formula's cut hypothesis is free here: a colouring's classes cannot be joined by a live
@@ -781,7 +689,7 @@ theorem no_alternating_four_cycle (W : Sym2 (V × Fin 3) → ℂ)
       ((((Finset.univ.erase x).erase z).erase y).erase w) ≠ 0 := by
     intro hz0
     refine hp1 ?_
-    rw [pmSum_peel_unique W (Amplitude.const (V := V) j) hymem hwmem
+    rw [pmSum_of_forced W (Amplitude.const (V := V) j) hymem hwmem
       (fun t ht htw => by
         have h1 : t ≠ y := (Finset.mem_erase.mp ht).1
         have h2 : t ≠ z := (Finset.mem_erase.mp (Finset.mem_erase.mp ht).2).1
@@ -812,7 +720,7 @@ theorem no_alternating_four_cycle (W : Sym2 (V × Fin 3) → ℂ)
       · exact ⟨hzy, hzx, by simp⟩
       · exact ⟨hwy, hwx, by simp⟩
   have hfour : pmSum W (Amplitude.const (V := V) k) ({x, y, z, w} : Finset V) ≠ 0 := by
-    rw [pmSum_peel_unique W (Amplitude.const (V := V) k) hxmem hymem2
+    rw [pmSum_of_forced W (Amplitude.const (V := V) k) hxmem hymem2
       (fun t ht hty => by
         have h1 : t ≠ x := (Finset.mem_erase.mp ht).1
         have h2 := (Finset.mem_erase.mp ht).2
@@ -856,7 +764,7 @@ theorem pmSum_ne_zero_of_forcedPeel {W : Sym2 (V × Fin 3) → ℂ} {c : V → F
   induction h with
   | empty => rw [pmSum_empty]; exact one_ne_zero
   | step S x p hx hp hlive huniq _ ih =>
-      rw [pmSum_peel_unique W c hx hp huniq]
+      rw [pmSum_of_forced W c hx hp huniq]
       exact mul_ne_zero hlive ih
 
 /-- **No set is forcedly matched in one colour while its complement is forcedly matched in
@@ -898,7 +806,7 @@ theorem pmSum_ne_zero_of_forcedTail {W : Sym2 (V × Fin 3) → ℂ} {c : V → F
   | univ => rw [pmSum_univ]; exact hone
   | step T x p hx hp huniq _ ih =>
       intro hz
-      exact ih (by rw [pmSum_peel_unique W c hx hp huniq, hz, mul_zero])
+      exact ih (by rw [pmSum_of_forced W c hx hp huniq, hz, mul_zero])
 
 /-- **The master contradiction.**
 
@@ -1098,7 +1006,7 @@ theorem pmSum_ne_zero_of_exactPeel {W : Sym2 (V × Fin 3) → ℂ} {c : V → Fi
   induction h with
   | empty => rw [pmSum_empty]; exact one_ne_zero
   | step S x p hx hp hlive halt _ ih =>
-      rw [pmSum_peel_of_alternatives_zero W c hx hp halt]
+      rw [pmSum_of_alternatives_zero W c hx hp halt]
       exact mul_ne_zero hlive ih
 
 /-- The master contradiction with the stronger certificate on both sides. -/
@@ -1184,7 +1092,7 @@ theorem pmSum_ne_zero_of_exactTail {W : Sym2 (V × Fin 3) → ℂ} {c : V → Fi
   | univ => rw [pmSum_univ]; exact hone
   | step T x p hx hp halt _ ih =>
       intro hz
-      exact ih (by rw [pmSum_peel_of_alternatives_zero W c hx hp halt, hz, mul_zero])
+      exact ih (by rw [pmSum_of_alternatives_zero W c hx hp halt, hz, mul_zero])
 
 /-- **The local master contradiction.**
 
@@ -1758,7 +1666,7 @@ theorem same_colour_cross_exclusion (W : Sym2 (V × Fin 3) → ℂ)
         · exact absurd h htw
   have hval : pmSum W (Amplitude.const (V := V) j) ({x, y, z, w} : Finset V)
       = W s((x, j), (y, j)) * W s((z, j), (w, j)) := by
-    rw [pmSum_peel_unique W (Amplitude.const (V := V) j) hxmem hymem huniq,
+    rw [pmSum_of_forced W (Amplitude.const (V := V) j) hxmem hymem huniq,
       hrest2, pmSum_pair W _ hwz]
     rfl
   have hSne : ({x, y, z, w} : Finset V) ≠ Finset.univ := by
@@ -3244,92 +3152,6 @@ cancel it.  Stated positively, the equations force every set invariant under two
 to be trivial -- the two matchings together act with a single orbit.  That is a sharp structural
 demand, and it is reached with no cyclic coordinates and no vertex count. -/
 
-namespace Split
-
-variable {V : Type*} [Fintype V] [DecidableEq V]
-
-/-- An involution cut down to an invariant set: it acts as `σ` inside and fixes the outside. -/
-def restrictFun (σ : Equiv.Perm V) (A : Finset V) (x : V) : V :=
-  if x ∈ A then σ x else x
-
-theorem restrictFun_involutive {σ : Equiv.Perm V} {A : Finset V}
-    (hinv : ∀ x, σ (σ x) = x) (hcl : ∀ x ∈ A, σ x ∈ A) :
-    Function.Involutive (restrictFun σ A) := by
-  intro x
-  by_cases hx : x ∈ A
-  · simp only [restrictFun, if_pos hx, if_pos (hcl x hx), hinv]
-  · simp only [restrictFun, if_neg hx, if_neg hx]
-
-/-- The restriction of a matching to an invariant set, as a permutation. -/
-def restrictPerm (σ : Equiv.Perm V) (A : Finset V)
-    (hinv : ∀ x, σ (σ x) = x) (hcl : ∀ x ∈ A, σ x ∈ A) : Equiv.Perm V :=
-  (restrictFun_involutive hinv hcl).toPerm _
-
-theorem restrictPerm_apply {σ : Equiv.Perm V} {A : Finset V}
-    (hinv : ∀ x, σ (σ x) = x) (hcl : ∀ x ∈ A, σ x ∈ A) (x : V) :
-    restrictPerm σ A hinv hcl x = if x ∈ A then σ x else x := rfl
-
-/-- The complement of an invariant set is invariant: an involution cannot leave one side
-without arriving on the other. -/
-theorem sdiff_closed {σ : Equiv.Perm V} {S A : Finset V} (hσ : σ ∈ pairingsOn S)
-    (hcl : ∀ x ∈ A, σ x ∈ A) : ∀ x ∈ S \ A, σ x ∈ S \ A := by
-  obtain ⟨hinv, -, -⟩ := mem_pairingsOn.mp hσ
-  intro x hx
-  rw [Finset.mem_sdiff] at hx ⊢
-  refine ⟨pairingsOn_closed hσ x hx.1, ?_⟩
-  intro hmem
-  have h := hcl _ hmem
-  rw [hinv] at h
-  exact hx.2 h
-
-/-- A matching restricted to an invariant subset is a matching of that subset. -/
-theorem restrictPerm_mem {σ : Equiv.Perm V} {S A : Finset V} (hσ : σ ∈ pairingsOn S)
-    (hAS : A ⊆ S) (hcl : ∀ x ∈ A, σ x ∈ A) :
-    restrictPerm σ A (mem_pairingsOn.mp hσ).1 hcl ∈ pairingsOn A := by
-  obtain ⟨hinv, hne, -⟩ := mem_pairingsOn.mp hσ
-  refine mem_pairingsOn.mpr ⟨restrictFun_involutive hinv hcl, ?_, ?_⟩
-  · intro x hx
-    rw [restrictPerm_apply, if_pos hx]
-    exact hne x (hAS hx)
-  · intro x hx
-    rw [restrictPerm_apply, if_neg hx]
-
-/-- The restriction uses only edges of the matching it came from. -/
-theorem restrictPerm_image_subset {σ : Equiv.Perm V} {S A : Finset V}
-    (hinv : ∀ x, σ (σ x) = x) (hcl : ∀ x ∈ A, σ x ∈ A) (hAS : A ⊆ S) :
-    A.image (fun x => s(x, restrictPerm σ A hinv hcl x)) ⊆ S.image (fun x => s(x, σ x)) := by
-  intro e he
-  simp only [Finset.mem_image] at he ⊢
-  obtain ⟨x, hx, rfl⟩ := he
-  exact ⟨x, hAS hx, by rw [restrictPerm_apply, if_pos hx]⟩
-
-/-- **A set invariant under two matchings splits both of them.**  The set carries a matching
-inherited from the first, its complement one inherited from the second.  Nothing here is about
-colour or weight: it is the bare combinatorics of two involutions sharing an invariant set. -/
-theorem matchable_split_of_invariant {σ τ : Equiv.Perm V} {S A : Finset V}
-    (hσ : σ ∈ pairingsOn S) (hτ : τ ∈ pairingsOn S) (hAS : A ⊆ S)
-    (hσA : ∀ x ∈ A, σ x ∈ A) (hτA : ∀ x ∈ A, τ x ∈ A) :
-    (pairingsOn A).Nonempty ∧ (pairingsOn (S \ A)).Nonempty :=
-  ⟨⟨_, restrictPerm_mem hσ hAS hσA⟩,
-   ⟨_, restrictPerm_mem hτ Finset.sdiff_subset (sdiff_closed hτ hτA)⟩⟩
-
-/-- The restricted matching contributes a non-vanishing term: every edge it uses was already
-live in the matching it was cut from. -/
-theorem prod_restrict_ne_zero {R : Type*} [CommRing R] [NoZeroDivisors R] [Nontrivial R]
-    {D : Type*}
-    [DecidableEq D] {W : Sym2 (V × D) → R} {c : V → D} {σ : Equiv.Perm V} {S A : Finset V}
-    (hinv : ∀ x, σ (σ x) = x) (hcl : ∀ x ∈ A, σ x ∈ A) (hAS : A ⊆ S)
-    (hlive : ∀ x ∈ S, W (Sym2.map (paint c) s(x, σ x)) ≠ 0) :
-    ∏ e ∈ A.image (fun x => s(x, restrictPerm σ A hinv hcl x)),
-      W (Sym2.map (paint c) e) ≠ 0 := by
-  rw [Finset.prod_ne_zero_iff]
-  intro e he
-  simp only [Finset.mem_image] at he
-  obtain ⟨x, hx, rfl⟩ := he
-  rw [restrictPerm_apply, if_pos hx]
-  exact hlive x (hAS hx)
-
-end Split
 
 /-! ### The four-site colour swap
 
@@ -3347,45 +3169,6 @@ non-zero. -/
 section Quad
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
-
-/-- A four-set whose matching is forced: with two of the three options at `a` dead, the sum
-collapses to one product. -/
-theorem pmSum_quad_forced {D R : Type*} [CommRing R] (W : Sym2 (V × D) → R) (c : V → D)
-    {a b x y : V} (hab : a ≠ b) (hax : a ≠ x) (hay : a ≠ y)
-    (hbx : b ≠ x) (hby : b ≠ y) (hxy : x ≠ y)
-    (hdb : W (Sym2.map (paint c) s(a, b)) = 0)
-    (hdy : W (Sym2.map (paint c) s(a, y)) = 0) :
-    pmSum W c ({a, b, x, y} : Finset V)
-      = W (Sym2.map (paint c) s(a, x)) * W (Sym2.map (paint c) s(b, y)) := by
-  classical
-  have ha : a ∈ ({a, b, x, y} : Finset V) := by simp
-  have hxmem : x ∈ ({a, b, x, y} : Finset V).erase a := by
-    refine Finset.mem_erase.mpr ⟨Ne.symm hax, by simp⟩
-  have hset : ((({a, b, x, y} : Finset V).erase a).erase x) = ({b, y} : Finset V) := by
-    ext z
-    simp only [Finset.mem_erase, Finset.mem_insert, Finset.mem_singleton]
-    constructor
-    · rintro ⟨hzx, hza, h⟩
-      rcases h with rfl | rfl | rfl | rfl
-      · exact absurd rfl hza
-      · exact Or.inl rfl
-      · exact absurd rfl hzx
-      · exact Or.inr rfl
-    · rintro (rfl | rfl)
-      · exact ⟨hbx, Ne.symm hab, by simp⟩
-      · exact ⟨Ne.symm hxy, Ne.symm hay, by simp⟩
-  have huniq : ∀ z ∈ ({a, b, x, y} : Finset V).erase a, z ≠ x →
-      W (Sym2.map (paint c) s(a, z)) = 0 := by
-    intro z hz hzx
-    rcases Finset.mem_erase.mp hz with ⟨hza, hzmem⟩
-    simp only [Finset.mem_insert, Finset.mem_singleton] at hzmem
-    rcases hzmem with rfl | rfl | rfl | rfl
-    · exact absurd rfl hza
-    · exact hdb
-    · exact absurd rfl hzx
-    · exact hdy
-  rw [pmSum_peel_unique W c ha hxmem huniq, hset, pmSum_pair W c (Ne.symm hby)]
-  rfl
 
 /-- **The four-site colour swap.**  A four-set forced in colour `k`, whose complement carries a
 matching sum in colour `j`, with nothing live joining the two: the colouring built from them is
@@ -4156,7 +3939,7 @@ theorem false_of_certificate_of_lone_row {V : Type*} [Fintype V] [DecidableEq V]
   have hval : pmSum W c Finset.univ
       = W (Sym2.map (Amplitude.paint c) s(p, x))
         * pmSum W c ((Finset.univ.erase p).erase x) :=
-    pmSum_peel_unique W c (Finset.mem_univ p) hxmem huniq
+    pmSum_of_forced W c (Finset.mem_univ p) hxmem huniq
   rw [pmSum_univ, hzero c hnm] at hval
   exact (mul_ne_zero hlive hpm) hval.symm
 
@@ -4186,7 +3969,7 @@ theorem exists_second_certificate {V : Type*} [Fintype V] [DecidableEq V]
     · have hpaint : W (Sym2.map (Amplitude.paint c) s(p, z)) = W s((p, c p), (z, c z)) := rfl
       rw [hpaint, hw, zero_mul]
     · rw [hno z (Finset.mem_erase.mp hz).1 hzx hw, mul_zero]
-  have hval := pmSum_peel_of_alternatives_zero W c (Finset.mem_univ p) hxmem halt
+  have hval := pmSum_of_alternatives_zero W c (Finset.mem_univ p) hxmem halt
   rw [pmSum_univ, hzero c hnm] at hval
   exact (mul_ne_zero hlive hpm) hval.symm
 
@@ -6541,7 +6324,7 @@ so smallness applies after enough splitting, and parity applies whenever a split
 remainder.
 
 They do compose, and the composition is exactly the peel: split at a site, kill what can be
-killed, recurse.  That is what `pmSum_peel_of_alternatives_zero` does, and it is why the peel has
+killed, recurse. That is what `pmSum_of_alternatives_zero` does, and it is why the peel has
 been the workhorse throughout.
 
 The reach of the composition is the honest question, and it has a clean answer.  Splitting reduces
@@ -6563,7 +6346,7 @@ theorem compose_killers_is_peel (W : Sym2 (V × Fin 3) → ℂ) (c : V → Fin 3
     (halt : ∀ z ∈ S.erase x, z ≠ p →
       W (Sym2.map (Amplitude.paint c) s(x, z)) * pmSum W c ((S.erase x).erase z) = 0) :
     pmSum W c S = W (Sym2.map (Amplitude.paint c) s(x, p)) * pmSum W c ((S.erase x).erase p) :=
-  pmSum_peel_of_alternatives_zero W c hx hp halt
+  pmSum_of_alternatives_zero W c hx hp halt
 
 /-- **And a forced chain keeps its complement certified.**  Each step preserves non-vanishing, so
 the chain runs exactly as long as every site along it has one live alternative -- colour degree
@@ -6909,7 +6692,7 @@ theorem naming_peel_needs_alternatives_dead (W : Sym2 (V × Fin 3) → ℂ) (c :
     {S : Finset V} {x p : V} (hx : x ∈ S) (hp : p ∈ S.erase x)
     (huniq : ∀ z ∈ S.erase x, z ≠ p → W (Sym2.map (Amplitude.paint c) s(x, z)) = 0) :
     pmSum W c S = W (Sym2.map (Amplitude.paint c) s(x, p)) * pmSum W c ((S.erase x).erase p) :=
-  pmSum_peel_unique W c hx hp huniq
+  pmSum_of_forced W c hx hp huniq
 
 /-! ### An argument that needs no name
 
@@ -7260,61 +7043,6 @@ But the shape is worth recording.  A minimal terminus is a four-cycle whose two 
 non-cancelling products, and the whole difficulty of the conjecture, on this branch, sits in
 objects of that form and their larger analogues. -/
 
-/-- **The smallest terminus leaves two terms, not one.**  With the diagonal pair `ab` dead, the
-four-site sum is the two cycle matchings' products -- and a certified terminus says they do not
-cancel.  This is an inequality between weights, the first the analysis has produced. -/
-theorem pmSum_quad_two_terms (W : Sym2 (V × Fin 3) → ℂ) (c : V → Fin 3)
-    {a b x y : V} (hab : a ≠ b) (hax : a ≠ x) (hay : a ≠ y)
-    (hbx : b ≠ x) (hby : b ≠ y) (hxy : x ≠ y)
-    (hdb : W (Sym2.map (Amplitude.paint c) s(a, b)) = 0) :
-    pmSum W c ({a, b, x, y} : Finset V)
-      = W (Sym2.map (Amplitude.paint c) s(a, x))
-          * W (Sym2.map (Amplitude.paint c) s(b, y))
-        + W (Sym2.map (Amplitude.paint c) s(a, y))
-          * W (Sym2.map (Amplitude.paint c) s(b, x)) := by
-  classical
-  have ha : a ∈ ({a, b, x, y} : Finset V) := by simp
-  have herase : ({a, b, x, y} : Finset V).erase a = ({b, x, y} : Finset V) := by
-    ext z
-    simp only [Finset.mem_erase, Finset.mem_insert, Finset.mem_singleton]
-    constructor
-    · rintro ⟨hza, rfl | rfl | rfl | rfl⟩
-      exacts [absurd rfl hza, Or.inl rfl, Or.inr (Or.inl rfl), Or.inr (Or.inr rfl)]
-    · rintro (rfl | rfl | rfl)
-      exacts [⟨Ne.symm hab, by simp⟩, ⟨Ne.symm hax, by simp⟩, ⟨Ne.symm hay, by simp⟩]
-  have hbxy : (({b, x, y} : Finset V)).erase b = ({x, y} : Finset V) := by
-    ext z
-    simp only [Finset.mem_erase, Finset.mem_insert, Finset.mem_singleton]
-    constructor
-    · rintro ⟨hzb, rfl | rfl | rfl⟩
-      exacts [absurd rfl hzb, Or.inl rfl, Or.inr rfl]
-    · rintro (rfl | rfl)
-      exacts [⟨Ne.symm hbx, by simp⟩, ⟨Ne.symm hby, by simp⟩]
-  have hxby : (({b, x, y} : Finset V)).erase x = ({b, y} : Finset V) := by
-    ext z
-    simp only [Finset.mem_erase, Finset.mem_insert, Finset.mem_singleton]
-    constructor
-    · rintro ⟨hzx, rfl | rfl | rfl⟩
-      exacts [Or.inl rfl, absurd rfl hzx, Or.inr rfl]
-    · rintro (rfl | rfl)
-      exacts [⟨hbx, by simp⟩, ⟨Ne.symm hxy, by simp⟩]
-  have hybx : (({b, x, y} : Finset V)).erase y = ({b, x} : Finset V) := by
-    ext z
-    simp only [Finset.mem_erase, Finset.mem_insert, Finset.mem_singleton]
-    constructor
-    · rintro ⟨hzy, rfl | rfl | rfl⟩
-      exacts [Or.inl rfl, Or.inr rfl, absurd rfl hzy]
-    · rintro (rfl | rfl)
-      exacts [⟨hby, by simp⟩, ⟨hxy, by simp⟩]
-  have hpby : (Sym2.map (Amplitude.paint c) s(b, y)) = s((b, c b), (y, c y)) := rfl
-  have hpbx : (Sym2.map (Amplitude.paint c) s(b, x)) = s((b, c b), (x, c x)) := rfl
-  rw [pmSum_expand W c ha, herase]
-  rw [show ({b, x, y} : Finset V) = insert b (insert x {y}) from rfl]
-  rw [Finset.sum_insert (by simp [hbx, hby]), Finset.sum_insert (by simp [hxy]),
-    Finset.sum_singleton]
-  rw [hbxy, hxby, hybx, hdb, zero_mul, zero_add, hpby, hpbx,
-    pmSum_pair W c (Ne.symm hby), pmSum_pair W c (Ne.symm hbx)]
-
 /-- **A certified terminus forces its two cycle products not to cancel.**  Non-vanishing of the
 four-site sum is exactly that inequality. -/
 theorem terminus_products_do_not_cancel (W : Sym2 (V × Fin 3) → ℂ) (c : V → Fin 3)
@@ -7326,7 +7054,7 @@ theorem terminus_products_do_not_cancel (W : Sym2 (V × Fin 3) → ℂ) (c : V �
         * W (Sym2.map (Amplitude.paint c) s(b, y))
       + W (Sym2.map (Amplitude.paint c) s(a, y))
         * W (Sym2.map (Amplitude.paint c) s(b, x)) ≠ 0 := by
-  rw [pmSum_quad_two_terms W c hab hax hay hbx hby hxy hdb] at hne
+  rw [MatchingCrossing.pmSum_four_two_terms W c hab hax hay hbx hby hxy hdb] at hne
   exact hne
 
 /-! ### Two forced pairs, and the rectangle they cannot make
@@ -7387,7 +7115,8 @@ theorem forced_pairs_permanent (W : Sym2 (V × Fin 3) → ℂ)
   -- and the quad lemma reads it as the identity
   have hpaint : (Sym2.map (Amplitude.paint (Amplitude.const (V := V) j)) s(u, v))
       = s((u, j), (v, j)) := rfl
-  rw [pmSum_quad_two_terms W (Amplitude.const (V := V) j) huv huu' huv' hvu' hvv' hu'v'
+  rw [MatchingCrossing.pmSum_four_two_terms W (Amplitude.const (V := V) j)
+    huv huu' huv' hvu' hvv' hu'v'
     (by rw [hpaint]; exact hdead)] at hquad
   exact hquad
 
@@ -7572,66 +7301,6 @@ This is the first statement in the development that could distinguish configurat
 certificate machinery cannot, because it counts *room* rather than *certificates*.  A set with no
 internal live edge in a colour needs somewhere for all of its sites to go. -/
 
-section Hall
-
-variable {V C : Type*} [Fintype V] [DecidableEq V]
-variable {R : Type*} [CommRing R] [NoZeroDivisors R] [Nontrivial R]
-
-open Classical in
-/-- The live partners outside a set, in the colouring's own colours. -/
-noncomputable def liveOut (W : Sym2 (V × C) → R) (c : V → C) (S A : Finset V) : Finset V :=
-  (S \ A).filter (fun y => ∃ x ∈ A, W (Sym2.map (paint c) s(x, y)) ≠ 0)
-
-theorem mem_liveOut {W : Sym2 (V × C) → R} {c : V → C} {S A : Finset V} {y : V} :
-    y ∈ liveOut W c S A ↔
-      y ∈ S \ A ∧ ∃ x ∈ A, W (Sym2.map (paint c) s(x, y)) ≠ 0 := by
-  classical
-  simp [liveOut, Finset.mem_filter]
-
-theorem liveOut_subset (W : Sym2 (V × C) → R) (c : V → C) (S A : Finset V) :
-    liveOut W c S A ⊆ S \ A := fun _ hy => (mem_liveOut.mp hy).1
-
-/-- **Hall's condition for an internally dead set.**  If every pair inside `A` is dead, a matching
-of `S` with a non-zero term injects `A` into its live neighbourhood outside. -/
-theorem card_le_card_liveOut (W : Sym2 (V × C) → R) (c : V → C) {S A : Finset V}
-    (hAS : A ⊆ S)
-    (hdead : ∀ x ∈ A, ∀ y ∈ A, y ≠ x → W (Sym2.map (paint c) s(x, y)) = 0)
-    (hne : pmSum W c S ≠ 0) :
-    A.card ≤ (liveOut W c S A).card := by
-  classical
-  rw [pmSum] at hne
-  obtain ⟨σ, hσ, hprod⟩ := Finset.exists_ne_zero_of_sum_ne_zero hne
-  have hfac := Finset.prod_ne_zero_iff.mp hprod
-  have hlive : ∀ x ∈ A, W (Sym2.map (paint c) s(x, σ x)) ≠ 0 := fun x hx =>
-    hfac _ (Finset.mem_image.mpr ⟨x, hAS hx, rfl⟩)
-  have hmap : ∀ x ∈ A, σ x ∈ liveOut W c S A := by
-    intro x hx
-    have hout : σ x ∉ A := by
-      intro hin
-      exact hlive x hx (hdead x hx (σ x) hin ((mem_pairingsOn.mp hσ).2.1 x (hAS hx)))
-    refine mem_liveOut.mpr ⟨Finset.mem_sdiff.mpr ⟨pairingsOn_closed hσ x (hAS hx), hout⟩, ?_⟩
-    exact ⟨x, hx, hlive x hx⟩
-  exact Finset.card_le_card_of_injOn (fun x => σ x) hmap (fun a _ b _ h => σ.injective h)
-
-/-- **An internally dead set is at most half.**  Its live neighbourhood lies outside it. -/
-theorem card_le_card_compl_of_internal_dead (W : Sym2 (V × C) → R) (c : V → C) {S A : Finset V}
-    (hAS : A ⊆ S)
-    (hdead : ∀ x ∈ A, ∀ y ∈ A, y ≠ x → W (Sym2.map (paint c) s(x, y)) = 0)
-    (hne : pmSum W c S ≠ 0) :
-    A.card ≤ (S \ A).card :=
-  (card_le_card_liveOut W c hAS hdead hne).trans
-    (Finset.card_le_card (liveOut_subset W c S A))
-
-/-- **No matchings at all when the room runs out.** -/
-theorem pmSum_eq_zero_of_internal_dead (W : Sym2 (V × C) → R) (c : V → C) {S A : Finset V}
-    (hAS : A ⊆ S)
-    (hdead : ∀ x ∈ A, ∀ y ∈ A, y ≠ x → W (Sym2.map (paint c) s(x, y)) = 0)
-    (hroom : (S \ A).card < A.card) :
-    pmSum W c S = 0 := by
-  by_contra hne
-  exact absurd (card_le_card_compl_of_internal_dead W c hAS hdead hne) (by omega)
-
-end Hall
 
 section HallColour
 
@@ -7689,56 +7358,6 @@ The result is strictly stronger than the two-colour closed obstruction.  Closure
 live edge leave the set; this demands only that the live edges *inside* it form a matching.  Sites
 may have as many partners outside as they like. -/
 
-section Forced
-
-variable {V C : Type*} [Fintype V] [DecidableEq V]
-variable {R : Type*} [CommRing R] [NoZeroDivisors R] [Nontrivial R]
-
-/-- **A set with exactly one live matching does not cancel.**  If the live edges of a colour
-inside `F` form a perfect matching of `F`, the sum over matchings has a single non-zero term. -/
-theorem pmSum_ne_zero_of_forced (W : Sym2 (V × C) → R) (c : V → C) {F : Finset V}
-    (p : V → V) (hp : ∀ x ∈ F, p x ∈ F) (hinv : ∀ x ∈ F, p (p x) = x)
-    (hpne : ∀ x ∈ F, p x ≠ x)
-    (hlive : ∀ x ∈ F, W (Sym2.map (paint c) s(x, p x)) ≠ 0)
-    (hunique : ∀ x ∈ F, ∀ y ∈ F, y ≠ x → y ≠ p x → W (Sym2.map (paint c) s(x, y)) = 0) :
-    pmSum W c F ≠ 0 := by
-  classical
-  set f : V → V := fun x => if x ∈ F then p x else x with hf
-  have hinvol : Function.Involutive f := by
-    intro x
-    by_cases hx : x ∈ F
-    · simp only [hf, if_pos hx, if_pos (hp x hx)]
-      exact hinv x hx
-    · simp only [hf, if_neg hx, if_neg hx]
-  set σ : Equiv.Perm V := hinvol.toPerm f with hσdef
-  have hcoe : ∀ x, σ x = f x := fun x => rfl
-  have hmem : σ ∈ pairingsOn F := by
-    refine mem_pairingsOn.mpr ⟨fun x => ?_, fun x hx => ?_, fun x hx => ?_⟩
-    · rw [hcoe, hcoe]; exact hinvol x
-    · rw [hcoe]; simp only [hf, if_pos hx]; exact hpne x hx
-    · rw [hcoe]; simp only [hf, if_neg hx]
-  rw [pmSum, Finset.sum_eq_single_of_mem σ hmem]
-  · refine Finset.prod_ne_zero_iff.mpr (fun e he => ?_)
-    obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp he
-    rw [hcoe]
-    simp only [hf, if_pos hx]
-    exact hlive x hx
-  · intro τ hτ hne
-    obtain ⟨x, hx⟩ : ∃ x, τ x ≠ σ x := by
-      by_contra hall
-      push_neg at hall
-      exact hne (Equiv.ext hall)
-    have hxF : x ∈ F := by
-      by_contra hout
-      rw [(mem_pairingsOn.mp hτ).2.2 x hout, hcoe] at hx
-      exact hx (by simp only [hf, if_neg hout])
-    refine Finset.prod_eq_zero (i := s(x, τ x)) (Finset.mem_image.mpr ⟨x, hxF, rfl⟩) ?_
-    refine hunique x hxF (τ x) (pairingsOn_closed hτ x hxF)
-      ((mem_pairingsOn.mp hτ).2.1 x hxF) ?_
-    intro heq
-    exact hx (by rw [heq, hcoe]; simp only [hf, if_pos hxF])
-
-end Forced
 
 section ForcedColour
 
@@ -8070,7 +7689,8 @@ theorem four_core_diagonals_not_both_live (W : Sym2 (V × Fin 3) → ℂ)
     have hdead := closed_dead_other W hzero hmono hjm hone ⟨a, by simp⟩ hproper hclosed
     have hpaint : (Sym2.map (Amplitude.paint (Amplitude.const (V := V) j)) s(a, x))
         = s((a, j), (x, j)) := rfl
-    have hquad := pmSum_quad_two_terms W (Amplitude.const (V := V) j) hax hab hay
+    have hquad := MatchingCrossing.pmSum_four_two_terms W
+      (Amplitude.const (V := V) j) hax hab hay
       (Ne.symm hbx) hxy hby (by rw [hpaint]; exact hdax)
     rw [hset, hdead] at hquad
     have hpay : (Sym2.map (Amplitude.paint (Amplitude.const (V := V) j)) s(a, y))
@@ -8450,28 +8070,6 @@ two former partners, and pairing those needs a *second* chord.  So a cycle with 
 a unique matching and still dies.  Only chords that assemble an alternating cycle among themselves
 survive, which is a far smaller escape than "has a chord". -/
 
-section Unique
-
-variable {V C : Type*} [Fintype V] [DecidableEq V]
-variable {R : Type*} [CommRing R] [NoZeroDivisors R] [Nontrivial R]
-
-/-- **A unique live matching does not cancel.**  Weaker hypothesis, same conclusion: the sum has a
-single non-zero term. -/
-theorem pmSum_ne_zero_of_unique_matching (W : Sym2 (V × C) → R) (c : V → C) {S : Finset V}
-    {σ₀ : Equiv.Perm V} (hmem : σ₀ ∈ pairingsOn S)
-    (hlive : ∀ z ∈ S, W (Sym2.map (paint c) s(z, σ₀ z)) ≠ 0)
-    (huniq : ∀ τ ∈ pairingsOn S, τ ≠ σ₀ → ∃ z ∈ S, W (Sym2.map (paint c) s(z, τ z)) = 0) :
-    pmSum W c S ≠ 0 := by
-  classical
-  rw [pmSum, Finset.sum_eq_single_of_mem σ₀ hmem]
-  · refine Finset.prod_ne_zero_iff.mpr (fun e he => ?_)
-    obtain ⟨z, hz, rfl⟩ := Finset.mem_image.mp he
-    exact hlive z hz
-  · intro τ hτ hne
-    obtain ⟨z, hz, hz0⟩ := huniq τ hτ hne
-    exact Finset.prod_eq_zero (Finset.mem_image.mpr ⟨z, hz, rfl⟩) hz0
-
-end Unique
 
 section UniqueColour
 
@@ -8735,143 +8333,6 @@ theorem false_of_blocks_and_unique (W : Sym2 (V × Fin 3) → ℂ)
         exact ⟨z, hmono z (τ z) (hτne z) (c z) (c (τ z))
           (by rw [hcK z hz, hcK (τ z) (hleave z hz)]; exact fun h => hzd h.symm)⟩
 
-/-! ### The three pairings of a four-set
-
-Every uniqueness check on a four-site fibre needs the same fact: a four-set has exactly three
-pairings, and a pairing is determined by where it sends one chosen site.  Isolating it makes the
-checks mechanical, since a fibre of four sites is unique exactly when each of the other two
-pairings contains a dead edge. -/
-
-/-- **A pairing of a four-set is one of three.**  It is determined by the partner of one site. -/
-theorem mem_pairingsOn_quad {a b x y : V} (hab : a ≠ b) (hax : a ≠ x) (hay : a ≠ y)
-    (hbx : b ≠ x) (hby : b ≠ y) (hxy : x ≠ y)
-    {σ : Equiv.Perm V} (hσ : σ ∈ pairingsOn ({a, b, x, y} : Finset V)) :
-    (σ a = b ∧ σ x = y) ∨ (σ a = x ∧ σ b = y) ∨ (σ a = y ∧ σ b = x) := by
-  classical
-  obtain ⟨hinv, hne, -⟩ := mem_pairingsOn.mp hσ
-  have hmem : ∀ z : V, z ∈ ({a, b, x, y} : Finset V) ↔ z = a ∨ z = b ∨ z = x ∨ z = y := by
-    intro z; simp
-  have ha : a ∈ ({a, b, x, y} : Finset V) := by simp
-  have hb : b ∈ ({a, b, x, y} : Finset V) := by simp
-  have hx : x ∈ ({a, b, x, y} : Finset V) := by simp
-  have hsa := (hmem (σ a)).mp (pairingsOn_closed hσ a ha)
-  rcases hsa with h | h | h | h
-  · exact absurd h (hne a ha)
-  · left
-    refine ⟨h, ?_⟩
-    have hsb : σ b = a := by rw [← h, hinv]
-    have hsx := (hmem (σ x)).mp (pairingsOn_closed hσ x hx)
-    rcases hsx with h' | h' | h' | h'
-    · exact absurd (by rw [← h', hinv] : σ a = x) (by rw [h]; exact hbx)
-    · exact absurd (by rw [← h', hinv] : σ b = x) (by rw [hsb]; exact hax)
-    · exact absurd h' (hne x hx)
-    · exact h'
-  · right; left
-    refine ⟨h, ?_⟩
-    have hsx : σ x = a := by rw [← h, hinv]
-    have hsb := (hmem (σ b)).mp (pairingsOn_closed hσ b hb)
-    rcases hsb with h' | h' | h' | h'
-    · exact absurd (by rw [← h', hinv] : σ a = b) (by rw [h]; exact Ne.symm hbx)
-    · exact absurd h' (hne b hb)
-    · exact absurd (by rw [← h', hinv] : σ x = b) (by rw [hsx]; exact hab)
-    · exact h'
-  · right; right
-    refine ⟨h, ?_⟩
-    have hsy : σ y = a := by rw [← h, hinv]
-    have hsb := (hmem (σ b)).mp (pairingsOn_closed hσ b hb)
-    rcases hsb with h' | h' | h' | h'
-    · exact absurd (by rw [← h', hinv] : σ a = b) (by rw [h]; exact Ne.symm hby)
-    · exact absurd h' (hne b hb)
-    · exact h'
-    · exact absurd (by rw [← h', hinv] : σ y = b) (by rw [hsy]; exact hab)
-
-/-- **A four-site fibre is unique when the other two pairings are broken.**  Each carries two
-edges; one dead edge in each is enough. -/
-theorem quad_unique_of_dead (W : Sym2 (V × Fin 3) → ℂ) (k : Fin 3)
-    {a b x y : V} (hab : a ≠ b) (hax : a ≠ x) (hay : a ≠ y)
-    (hbx : b ≠ x) (hby : b ≠ y) (hxy : x ≠ y)
-    (h1 : W s((a, k), (x, k)) = 0 ∨ W s((b, k), (y, k)) = 0)
-    (h2 : W s((a, k), (y, k)) = 0 ∨ W s((b, k), (x, k)) = 0)
-    {σ : Equiv.Perm V} (hσ : σ ∈ pairingsOn ({a, b, x, y} : Finset V))
-    (hne : ¬ (σ a = b ∧ σ x = y)) :
-    ∃ z ∈ ({a, b, x, y} : Finset V), W s((z, k), (σ z, k)) = 0 := by
-  classical
-  rcases mem_pairingsOn_quad hab hax hay hbx hby hxy hσ with h | ⟨hA, hB⟩ | ⟨hA, hB⟩
-  · exact absurd h hne
-  · rcases h1 with h | h
-    · exact ⟨a, by simp, by rw [hA]; exact h⟩
-    · exact ⟨b, by simp, by rw [hB]; exact h⟩
-  · rcases h2 with h | h
-    · exact ⟨a, by simp, by rw [hA]; exact h⟩
-    · exact ⟨b, by simp, by rw [hB]; exact h⟩
-
-/-! ### The same, for a pairing of everything that keeps four sites together
-
-The block theorem hands over a pairing of the whole configuration, not of a fibre, so the
-four-set enumeration has to be stated for that.  All it needs is an involution without fixed
-points that maps the four-set into itself -- the pairing may move everything else however it
-likes. -/
-
-/-- **Four sites kept together are paired in one of three ways.** -/
-theorem quad_pairing_cases {a b x y : V} (hab : a ≠ b) (hax : a ≠ x) (hay : a ≠ y)
-    (hbx : b ≠ x) (hby : b ≠ y) (hxy : x ≠ y)
-    {σ : Equiv.Perm V} (hinv : ∀ z, σ (σ z) = z) (hne : ∀ z, σ z ≠ z)
-    (hmap : ∀ z ∈ ({a, b, x, y} : Finset V), σ z ∈ ({a, b, x, y} : Finset V)) :
-    (σ a = b ∧ σ x = y) ∨ (σ a = x ∧ σ b = y) ∨ (σ a = y ∧ σ b = x) := by
-  classical
-  have hmem : ∀ z : V, z ∈ ({a, b, x, y} : Finset V) ↔ z = a ∨ z = b ∨ z = x ∨ z = y := by
-    intro z; simp
-  have ha : a ∈ ({a, b, x, y} : Finset V) := by simp
-  have hb : b ∈ ({a, b, x, y} : Finset V) := by simp
-  have hx : x ∈ ({a, b, x, y} : Finset V) := by simp
-  rcases (hmem (σ a)).mp (hmap a ha) with h | h | h | h
-  · exact absurd h (hne a)
-  · left
-    refine ⟨h, ?_⟩
-    have hsb : σ b = a := by rw [← h, hinv]
-    rcases (hmem (σ x)).mp (hmap x hx) with h' | h' | h' | h'
-    · exact absurd (by rw [← h', hinv] : σ a = x) (by rw [h]; exact hbx)
-    · exact absurd (by rw [← h', hinv] : σ b = x) (by rw [hsb]; exact hax)
-    · exact absurd h' (hne x)
-    · exact h'
-  · right; left
-    refine ⟨h, ?_⟩
-    have hsx : σ x = a := by rw [← h, hinv]
-    rcases (hmem (σ b)).mp (hmap b hb) with h' | h' | h' | h'
-    · exact absurd (by rw [← h', hinv] : σ a = b) (by rw [h]; exact Ne.symm hbx)
-    · exact absurd h' (hne b)
-    · exact absurd (by rw [← h', hinv] : σ x = b) (by rw [hsx]; exact hab)
-    · exact h'
-  · right; right
-    refine ⟨h, ?_⟩
-    have hsy : σ y = a := by rw [← h, hinv]
-    rcases (hmem (σ b)).mp (hmap b hb) with h' | h' | h' | h'
-    · exact absurd (by rw [← h', hinv] : σ a = b) (by rw [h]; exact Ne.symm hby)
-    · exact absurd h' (hne b)
-    · exact h'
-    · exact absurd (by rw [← h', hinv] : σ y = b) (by rw [hsy]; exact hab)
-
-/-- **A four-site fibre inside a global pairing is unique when the other two pairings are
-broken.**  The form the block theorem consumes. -/
-theorem quad_dead_of_ne (W : Sym2 (V × Fin 3) → ℂ) (k : Fin 3)
-    {a b x y : V} (hab : a ≠ b) (hax : a ≠ x) (hay : a ≠ y)
-    (hbx : b ≠ x) (hby : b ≠ y) (hxy : x ≠ y)
-    (h1 : W s((a, k), (x, k)) = 0 ∨ W s((b, k), (y, k)) = 0)
-    (h2 : W s((a, k), (y, k)) = 0 ∨ W s((b, k), (x, k)) = 0)
-    {σ : Equiv.Perm V} (hinv : ∀ z, σ (σ z) = z) (hne : ∀ z, σ z ≠ z)
-    (hmap : ∀ z ∈ ({a, b, x, y} : Finset V), σ z ∈ ({a, b, x, y} : Finset V))
-    (hdiff : σ a ≠ b) :
-    ∃ z ∈ ({a, b, x, y} : Finset V), W s((z, k), (σ z, k)) = 0 := by
-  classical
-  rcases quad_pairing_cases hab hax hay hbx hby hxy hinv hne hmap with ⟨hA, -⟩ | ⟨hA, hB⟩ | ⟨hA, hB⟩
-  · exact absurd hA hdiff
-  · rcases h1 with h | h
-    · exact ⟨a, by simp, by rw [hA]; exact h⟩
-    · exact ⟨b, by simp, by rw [hB]; exact h⟩
-  · rcases h2 with h | h
-    · exact ⟨a, by simp, by rw [hA]; exact h⟩
-    · exact ⟨b, by simp, by rw [hB]; exact h⟩
-
 /-! ### The pendant structures of different colours are transverse
 
 Run the closed-set theorem with its two colours exchanged and it says something global that was
@@ -8989,104 +8450,6 @@ So this relation constrains the *weights* and not the support.  Whatever consume
 work with the cancellation itself -- a gauge or scaling argument -- rather than deduce that
 something is dead. -/
 
-/-- **The six-set expansion.**  With the three pairs dead, a six-set matching sum is eight
-products, grouped by the first site's partner. -/
-theorem pmSum_hex_expand (W : Sym2 (V × Fin 3) → ℂ) (c : V → Fin 3)
-    {u₁ u₂ v₁ v₂ w₁ w₂ : V}
-    (h12 : u₁ ≠ u₂) (h1v1 : u₁ ≠ v₁) (h1v2 : u₁ ≠ v₂) (h1w1 : u₁ ≠ w₁) (h1w2 : u₁ ≠ w₂)
-    (h2v1 : u₂ ≠ v₁) (h2v2 : u₂ ≠ v₂) (h2w1 : u₂ ≠ w₁) (h2w2 : u₂ ≠ w₂)
-    (hv : v₁ ≠ v₂) (hv1w1 : v₁ ≠ w₁) (hv1w2 : v₁ ≠ w₂)
-    (hv2w1 : v₂ ≠ w₁) (hv2w2 : v₂ ≠ w₂) (hw : w₁ ≠ w₂)
-    (hdu : W (Sym2.map (Amplitude.paint c) s(u₁, u₂)) = 0)
-    (hdv : W (Sym2.map (Amplitude.paint c) s(v₁, v₂)) = 0)
-    (hdw : W (Sym2.map (Amplitude.paint c) s(w₁, w₂)) = 0) :
-    pmSum W c ({u₁, u₂, v₁, v₂, w₁, w₂} : Finset V)
-      = W (Sym2.map (Amplitude.paint c) s(u₁, v₁))
-          * (W (Sym2.map (Amplitude.paint c) s(w₁, u₂))
-              * W (Sym2.map (Amplitude.paint c) s(w₂, v₂))
-            + W (Sym2.map (Amplitude.paint c) s(w₁, v₂))
-              * W (Sym2.map (Amplitude.paint c) s(w₂, u₂)))
-        + W (Sym2.map (Amplitude.paint c) s(u₁, v₂))
-          * (W (Sym2.map (Amplitude.paint c) s(w₁, u₂))
-              * W (Sym2.map (Amplitude.paint c) s(w₂, v₁))
-            + W (Sym2.map (Amplitude.paint c) s(w₁, v₁))
-              * W (Sym2.map (Amplitude.paint c) s(w₂, u₂)))
-        + (W (Sym2.map (Amplitude.paint c) s(u₁, w₁))
-          * (W (Sym2.map (Amplitude.paint c) s(v₁, u₂))
-              * W (Sym2.map (Amplitude.paint c) s(v₂, w₂))
-            + W (Sym2.map (Amplitude.paint c) s(v₁, w₂))
-              * W (Sym2.map (Amplitude.paint c) s(v₂, u₂)))
-        + W (Sym2.map (Amplitude.paint c) s(u₁, w₂))
-          * (W (Sym2.map (Amplitude.paint c) s(v₁, u₂))
-              * W (Sym2.map (Amplitude.paint c) s(v₂, w₁))
-            + W (Sym2.map (Amplitude.paint c) s(v₁, w₁))
-              * W (Sym2.map (Amplitude.paint c) s(v₂, u₂)))) := by
-  classical
-  have hu₁ : u₁ ∈ ({u₁, u₂, v₁, v₂, w₁, w₂} : Finset V) := by simp
-  have her : ({u₁, u₂, v₁, v₂, w₁, w₂} : Finset V).erase u₁ = ({u₂, v₁, v₂, w₁, w₂} : Finset V) := by
-    ext z
-    simp only [Finset.mem_erase, Finset.mem_insert, Finset.mem_singleton]
-    constructor
-    · rintro ⟨hz, rfl | rfl | rfl | rfl | rfl | rfl⟩
-      exacts [absurd rfl hz, by simp, by simp, by simp, by simp, by simp]
-    · rintro (rfl | rfl | rfl | rfl | rfl)
-      exacts [⟨Ne.symm h12, by simp⟩, ⟨Ne.symm h1v1, by simp⟩, ⟨Ne.symm h1v2, by simp⟩,
-        ⟨Ne.symm h1w1, by simp⟩, ⟨Ne.symm h1w2, by simp⟩]
-  have hq : ∀ z : V, z ≠ u₂ → z ≠ v₁ → z ≠ v₂ → z ≠ w₁ → z ≠ w₂ → True := fun _ _ _ _ _ _ => trivial
-  have e1 : ({u₂, v₁, v₂, w₁, w₂} : Finset V).erase v₁ = ({w₁, w₂, u₂, v₂} : Finset V) := by
-    ext z; simp only [Finset.mem_erase, Finset.mem_insert, Finset.mem_singleton]
-    constructor
-    · rintro ⟨hz, rfl | rfl | rfl | rfl | rfl⟩
-      exacts [by simp, absurd rfl hz, by simp, by simp, by simp]
-    · rintro (rfl | rfl | rfl | rfl)
-      exacts [⟨Ne.symm hv1w1, by simp⟩, ⟨Ne.symm hv1w2, by simp⟩, ⟨h2v1, by simp⟩,
-        ⟨Ne.symm hv, by simp⟩]
-  have e2 : ({u₂, v₁, v₂, w₁, w₂} : Finset V).erase v₂ = ({w₁, w₂, u₂, v₁} : Finset V) := by
-    ext z; simp only [Finset.mem_erase, Finset.mem_insert, Finset.mem_singleton]
-    constructor
-    · rintro ⟨hz, rfl | rfl | rfl | rfl | rfl⟩
-      exacts [by simp, by simp, absurd rfl hz, by simp, by simp]
-    · rintro (rfl | rfl | rfl | rfl)
-      exacts [⟨Ne.symm hv2w1, by simp⟩, ⟨Ne.symm hv2w2, by simp⟩, ⟨h2v2, by simp⟩,
-        ⟨hv, by simp⟩]
-  have e3 : ({u₂, v₁, v₂, w₁, w₂} : Finset V).erase w₁ = ({v₁, v₂, u₂, w₂} : Finset V) := by
-    ext z; simp only [Finset.mem_erase, Finset.mem_insert, Finset.mem_singleton]
-    constructor
-    · rintro ⟨hz, rfl | rfl | rfl | rfl | rfl⟩
-      exacts [by simp, by simp, by simp, absurd rfl hz, by simp]
-    · rintro (rfl | rfl | rfl | rfl)
-      exacts [⟨hv1w1, by simp⟩, ⟨hv2w1, by simp⟩, ⟨h2w1, by simp⟩, ⟨Ne.symm hw, by simp⟩]
-  have e4 : ({u₂, v₁, v₂, w₁, w₂} : Finset V).erase w₂ = ({v₁, v₂, u₂, w₁} : Finset V) := by
-    ext z; simp only [Finset.mem_erase, Finset.mem_insert, Finset.mem_singleton]
-    constructor
-    · rintro ⟨hz, rfl | rfl | rfl | rfl | rfl⟩
-      exacts [by simp, by simp, by simp, by simp, absurd rfl hz]
-    · rintro (rfl | rfl | rfl | rfl)
-      exacts [⟨hv1w2, by simp⟩, ⟨hv2w2, by simp⟩, ⟨h2w2, by simp⟩, ⟨hw, by simp⟩]
-  have e0 : ({u₂, v₁, v₂, w₁, w₂} : Finset V).erase u₂ = ({v₁, v₂, w₁, w₂} : Finset V) := by
-    ext z; simp only [Finset.mem_erase, Finset.mem_insert, Finset.mem_singleton]
-    constructor
-    · rintro ⟨hz, rfl | rfl | rfl | rfl | rfl⟩
-      exacts [absurd rfl hz, by simp, by simp, by simp, by simp]
-    · rintro (rfl | rfl | rfl | rfl)
-      exacts [⟨Ne.symm h2v1, by simp⟩, ⟨Ne.symm h2v2, by simp⟩, ⟨Ne.symm h2w1, by simp⟩,
-        ⟨Ne.symm h2w2, by simp⟩]
-  rw [pmSum_expand W c hu₁, her]
-  rw [show ({u₂, v₁, v₂, w₁, w₂} : Finset V) = insert u₂ (insert v₁ (insert v₂ (insert w₁ {w₂})))
-    from rfl]
-  rw [Finset.sum_insert (by simp [h2v1, h2v2, h2w1, h2w2]),
-    Finset.sum_insert (by simp [hv, hv1w1, hv1w2]),
-    Finset.sum_insert (by simp [hv2w1, hv2w2]),
-    Finset.sum_insert (by simp [hw]), Finset.sum_singleton]
-  rw [e0, e1, e2, e3, e4, hdu, zero_mul, zero_add]
-  rw [pmSum_quad_two_terms W c hw (Ne.symm h2w1) (Ne.symm hv2w1) (Ne.symm h2w2)
-      (Ne.symm hv2w2) h2v2 hdw,
-    pmSum_quad_two_terms W c hw (Ne.symm h2w1) (Ne.symm hv1w1) (Ne.symm h2w2)
-      (Ne.symm hv1w2) h2v1 hdw,
-    pmSum_quad_two_terms W c hv (Ne.symm h2v1) hv1w2 (Ne.symm h2v2) hv2w2 h2w2 hdv,
-    pmSum_quad_two_terms W c hv (Ne.symm h2v1) hv1w1 (Ne.symm h2v2) hv2w1 h2w1 hdv]
-  ring
-
 /-- **The three-pair identity.**  A union of three forced pairs is closed in its own colour, so
 its sum in any other colour vanishes -- and the expansion turns that into eight products
 cancelling.  This is the next relation after the rectangle identity, and it binds three pairs at
@@ -9120,7 +8483,8 @@ theorem forced_triple_identity (W : Sym2 (V × Fin 3) → ℂ)
           + W s((v₁, j), (w₁, j)) * W s((v₂, j), (u₂, j)))) = 0 := by
   classical
   have hdead := closed_dead_other W hzero hmono hjm hone ⟨u₁, by simp⟩ hproper hclosed
-  rw [pmSum_hex_expand W (Amplitude.const (V := V) j) h12 h1v1 h1v2 h1w1 h1w2
+  rw [MatchingCrossing.pmSum_six_three_dead W (Amplitude.const (V := V) j)
+    h12 h1v1 h1v2 h1w1 h1w2
     h2v1 h2v2 h2w1 h2w2 hv hv1w1 hv1w2 hv2w1 hv2w2 hw hdu hdv hdw] at hdead
   exact hdead
 
@@ -9226,7 +8590,8 @@ theorem false_of_same_colour_and_unique_rest (W : Sym2 (V × Fin 3) → ℂ)
       intro hτa
       obtain ⟨z, hz, hzne⟩ := hK
       have hcase : τ a = b ∧ τ x = y := by
-        rcases quad_pairing_cases hab hax hay hbx hby hxy hτinv hτne hpres with
+        rcases MatchingFourVertices.pairing_four_cases hab hax hay hbx hby hxy hτinv
+            (fun z _ => hτne z) hpres with
           h | ⟨hA, -⟩ | ⟨hA, -⟩
         · exact h
         · exact absurd (hτa.symm.trans hA) hbx
@@ -9241,8 +8606,8 @@ theorem false_of_same_colour_and_unique_rest (W : Sym2 (V × Fin 3) → ℂ)
       · have h' := hτinv x
         rw [hcase.2] at h'
         rw [h', hpy]
-    exact quad_dead_of_ne W j hab hax hay hbx hby hxy (Or.inl hdax) (Or.inl hday)
-      hτinv hτne hpres hdiff
+    exact MatchingFourVertices.zero_edge_of_pairing_four_ne W j hab hax hay hbx hby hxy
+      (Or.inl hdax) (Or.inl hday) hτinv hτne hpres hdiff
 
 end UniqueColour
 
@@ -9850,49 +9215,6 @@ theorem excess_partner_certified_in_fibre (W : Sym2 (V × Fin 3) → ℂ)
   · intro h
     exact hz0 (by rw [h, mul_zero])
 
-/-! ### Certificates inside a vanishing set
-
-The survivor's own-colour fibre has vanishing sum, and the certificate arguments apply to it with
-the top condition's sign reversed.  The first of them is immediate.
-
-A site of a set whose sum vanishes cannot have exactly one partner whose complement inside the set
-carries a sum: expanding there would leave a single non-zero term.  So every site of such a set has
-either no certified partner inside it, or at least two.
-
-For the survivor's fibre that is a lower bound of two at the excess site -- which is where its
-partner and the further partner found earlier both live.  The certified structure inside a
-vanishing set has minimum degree two wherever it is present at all, which is the same shape as a
-core, one level down. -/
-
-/-- **No site of a vanishing set has exactly one certified partner in it.** -/
-theorem no_lone_certified_in_vanishing (W : Sym2 (V × Fin 3) → ℂ) (c : V → Fin 3)
-    {S : Finset V} (hS : pmSum W c S = 0) {x w₀ : V} (hx : x ∈ S) (hw : w₀ ∈ S.erase x)
-    (hlive : W (Sym2.map (Amplitude.paint c) s(x, w₀)) ≠ 0)
-    (hcert : pmSum W c ((S.erase x).erase w₀) ≠ 0)
-    (hlone : ∀ w ∈ S.erase x, w ≠ w₀ →
-      W (Sym2.map (Amplitude.paint c) s(x, w)) * pmSum W c ((S.erase x).erase w) = 0) :
-    False := by
-  classical
-  rw [pmSum_expand W c hx, Finset.sum_eq_single_of_mem w₀ hw hlone] at hS
-  exact (mul_ne_zero hlive hcert) hS
-
-/-- **Two certified partners, or none.**  The contrapositive, in the form the fibre analysis
-uses. -/
-theorem two_or_no_certified_in_vanishing (W : Sym2 (V × Fin 3) → ℂ) (c : V → Fin 3)
-    {S : Finset V} (hS : pmSum W c S = 0) {x w₀ : V} (hx : x ∈ S) (hw : w₀ ∈ S.erase x)
-    (hlive : W (Sym2.map (Amplitude.paint c) s(x, w₀)) ≠ 0)
-    (hcert : pmSum W c ((S.erase x).erase w₀) ≠ 0) :
-    ∃ w ∈ S.erase x, w ≠ w₀ ∧
-      W (Sym2.map (Amplitude.paint c) s(x, w)) ≠ 0 ∧
-      pmSum W c ((S.erase x).erase w) ≠ 0 := by
-  classical
-  by_contra hno
-  push_neg at hno
-  refine no_lone_certified_in_vanishing W c hS hx hw hlive hcert (fun w hwS hwne => ?_)
-  by_cases h1 : W (Sym2.map (Amplitude.paint c) s(x, w)) = 0
-  · rw [h1, zero_mul]
-  · rw [hno w hwS hwne h1, mul_zero]
-
 /-- **A complementary pair of sets carries at most one colour.**  The product law in its most
 memorable form: if a set carries a sum in one colour and its complement carries one in another,
 the colours coincide.
@@ -9936,53 +9258,6 @@ theorem survivor_misses_by_one_fibre (W : Sym2 (V × Fin 3) → ℂ)
   obtain ⟨c, hcu, hcv, hnc, hother, hrest⟩ :=
     exists_survivor_colouring W hmono hmin hvu hlive hexcess
   exact ⟨c, hcu, hcv, hnc, hother, fibre_vanishes_of_two_live W hzero hmono hnc hother, hrest⟩
-
-/-! ### How much must be matched inside
-
-Hall's condition bounded a set's neighbourhood from below.  The dual bound is on how much of a set
-a matching must pair up *within* it, and it is what forbids a colour from being too sparse where
-it matters.
-
-A matching that contributes anything sends each site of a set either inside it or outside, and the
-outside-going sites inject into the complement.  So all but at most the complement's size are
-matched internally.
-
-Read on the pendant part of a colour, with the core as complement: every other colour must pair up
-all but at most `|C|` of the pendant sites among themselves.  A colour cannot avoid the pendant
-structure by routing everything through the core -- the core is too small, and past a few forced
-pairs there is nowhere else for the rest to go. -/
-
-/-- **All but the complement's size is matched inside.** -/
-theorem card_matched_inside {R : Type*} [CommRing R] [NoZeroDivisors R] [Nontrivial R]
-    (W : Sym2 (V × C) → R) (c : V → C) {S A : Finset V}
-    (hAS : A ⊆ S) (hne : pmSum W c S ≠ 0) :
-    ∃ σ ∈ pairingsOn S, (∀ z ∈ S, W (Sym2.map (paint c) s(z, σ z)) ≠ 0) ∧
-      A.card ≤ (S \ A).card + (A.filter (fun x => σ x ∈ A)).card := by
-  classical
-  rw [pmSum] at hne
-  obtain ⟨σ, hσ, hprod⟩ := Finset.exists_ne_zero_of_sum_ne_zero hne
-  have hfac := Finset.prod_ne_zero_iff.mp hprod
-  have hlive : ∀ z ∈ S, W (Sym2.map (paint c) s(z, σ z)) ≠ 0 := fun z hz =>
-    hfac _ (Finset.mem_image.mpr ⟨z, hz, rfl⟩)
-  refine ⟨σ, hσ, hlive, ?_⟩
-  have hout : (A.filter (fun x => σ x ∉ A)).card ≤ (S \ A).card := by
-    refine Finset.card_le_card_of_injOn (fun x => σ x) (fun x hx => ?_)
-      (fun a _ b _ h => σ.injective h)
-    rcases Finset.mem_filter.mp hx with ⟨hxA, hxout⟩
-    exact Finset.mem_sdiff.mpr ⟨pairingsOn_closed hσ x (hAS hxA), hxout⟩
-  have hsplit : (A.filter (fun x => σ x ∈ A)).card + (A.filter (fun x => σ x ∉ A)).card
-      = A.card := Finset.card_filter_add_card_filter_not (p := fun x => σ x ∈ A) (s := A)
-  omega
-
-/-- **A colour cannot route everything through a small complement.**  At least the difference of
-the two sizes is matched internally. -/
-theorem card_internal_ge {R : Type*} [CommRing R] [NoZeroDivisors R] [Nontrivial R]
-    (W : Sym2 (V × C) → R) (c : V → C) {S A : Finset V}
-    (hAS : A ⊆ S) (hne : pmSum W c S ≠ 0) :
-    ∃ σ ∈ pairingsOn S, (∀ z ∈ S, W (Sym2.map (paint c) s(z, σ z)) ≠ 0) ∧
-      A.card - (S \ A).card ≤ (A.filter (fun x => σ x ∈ A)).card := by
-  obtain ⟨σ, hσ, hlive, hcard⟩ := card_matched_inside W c hAS hne
-  exact ⟨σ, hσ, hlive, by omega⟩
 
 /-! ### Merging two colours
 
@@ -11176,50 +10451,6 @@ theorem cofactor_vanishes_of_colour_isolation (W Wp : Sym2 (V × Fin 3) → ℂ)
   exact merged_dead_of_excluded_right W Wp e (x := u) (y := v₀) (k := e u)
     (hplus v₀ u) (hmatch u hu hne) rfl
 
-/-! ### Two matchings that do not cancel
-
-The obstruction to a walkable survivor is a surviving cycle, and a cycle carries exactly two
-matchings.  So the certificate has to tolerate two, and ask instead that they fail to cancel.
-
-This is the honest form of the difficulty: not "no other matching exists", but "the two that exist
-have different products".  It is strictly weaker than uniqueness -- uniqueness is the case where the
-second product is absent -- and it is what a component decomposition into paths and one cycle
-delivers. -/
-
-/-- **A matching sum with only two live matchings is their sum.** -/
-theorem pmSum_eq_two_terms (W : Sym2 (V × C) → R) (c : V → C) {S : Finset V}
-    {σ₀ σ₁ : Equiv.Perm V} (h₀ : σ₀ ∈ pairingsOn S) (h₁ : σ₁ ∈ pairingsOn S) (hne : σ₁ ≠ σ₀)
-    (hrest : ∀ τ ∈ pairingsOn S, τ ≠ σ₀ → τ ≠ σ₁ →
-      ∃ z ∈ S, W (Sym2.map (Amplitude.paint c) s(z, τ z)) = 0) :
-    pmSum W c S
-      = (∏ e ∈ S.image (fun x => s(x, σ₀ x)), W (Sym2.map (Amplitude.paint c) e))
-        + ∏ e ∈ S.image (fun x => s(x, σ₁ x)), W (Sym2.map (Amplitude.paint c) e) := by
-  classical
-  rw [pmSum, ← Finset.add_sum_erase _ _ h₀,
-    ← Finset.add_sum_erase _ _ (Finset.mem_erase.mpr ⟨hne, h₁⟩)]
-  congr 1
-  have hall : ∀ τ ∈ ((pairingsOn S).erase σ₀).erase σ₁,
-      (∏ e ∈ S.image (fun x => s(x, τ x)), W (Sym2.map (Amplitude.paint c) e)) = 0 := by
-    intro τ hτ
-    have hτ₁ : τ ≠ σ₁ := Finset.ne_of_mem_erase hτ
-    have hτ' := Finset.mem_of_mem_erase hτ
-    have hτ₀ : τ ≠ σ₀ := Finset.ne_of_mem_erase hτ'
-    obtain ⟨z, hz, hz0⟩ := hrest τ (Finset.mem_of_mem_erase hτ') hτ₀ hτ₁
-    exact Finset.prod_eq_zero (Finset.mem_image.mpr ⟨z, hz, rfl⟩) hz0
-  rw [Finset.sum_eq_zero hall, add_zero]
-
-/-- **Two matchings that differ in product cannot cancel.**  The weakest certificate of
-non-vanishing the merged systems can be expected to supply. -/
-theorem pmSum_ne_zero_of_two_matchings (W : Sym2 (V × C) → R) (c : V → C) {S : Finset V}
-    {σ₀ σ₁ : Equiv.Perm V} (h₀ : σ₀ ∈ pairingsOn S) (h₁ : σ₁ ∈ pairingsOn S) (hne : σ₁ ≠ σ₀)
-    (hrest : ∀ τ ∈ pairingsOn S, τ ≠ σ₀ → τ ≠ σ₁ →
-      ∃ z ∈ S, W (Sym2.map (Amplitude.paint c) s(z, τ z)) = 0)
-    (hnocancel : (∏ e ∈ S.image (fun x => s(x, σ₀ x)), W (Sym2.map (Amplitude.paint c) e))
-      + (∏ e ∈ S.image (fun x => s(x, σ₁ x)), W (Sym2.map (Amplitude.paint c) e)) ≠ 0) :
-    pmSum W c S ≠ 0 := by
-  rw [pmSum_eq_two_terms W c h₀ h₁ hne hrest]
-  exact hnocancel
-
 /-- **The closer, with a cycle allowed.**  An onto refusal makes the merged sum vanish; two
 non-cancelling matchings make it non-zero. -/
 theorem false_of_surjective_exclusion_two_matchings (W Wp : Sym2 (V × Fin 3) → ℂ)
@@ -11750,20 +10981,6 @@ theorem false_of_pair_and_split (W : Sym2 (V × Fin 3) → ℂ)
   · rw [hcompl]; exact ⟨u, by simp⟩
   · rw [hcompl, pmSum_pair W _ hu'u]; exact ha
 
-/-- **A forced deletion stays certified.**  Where the sum over a set does not vanish and a site has
-only one live partner there, that partner is the certified one, so deleting the pair leaves the sum
-non-vanishing.
-
-Iterated along a run of consecutive pairs this certifies the complement of a whole arc, which is what
-turns the arc construction into a local condition: only the sites that start each pair need have a
-single partner in that colour, and nothing global is required. -/
-theorem certified_forced_pair (W : Sym2 (V × C) → R) (c : V → C) {S : Finset V} {u z : V}
-    (hu : u ∈ S) (hS : pmSum W c S ≠ 0) (hz : z ∈ S.erase u)
-    (huniq : ∀ y ∈ S.erase u, W (Sym2.map (Amplitude.paint c) s(u, y)) ≠ 0 → y = z) :
-    pmSum W c ((S.erase u).erase z) ≠ 0 := by
-  obtain ⟨y, hy, hlive, hrest⟩ := exists_partner_ne_zero W c hu hS
-  rwa [huniq y hy hlive] at hrest
-
 /-- **The arc argument at its shortest, with no cycle machinery.**
 
 Four sites in a row: a pair live in the second colour whose first site has no other partner there, a
@@ -11790,15 +11007,14 @@ theorem false_of_forced_run_four (W : Sym2 (V × Fin 3) → ℂ)
   have h1 : pmSum W (Amplitude.const (V := V) b)
       (((Finset.univ : Finset V).erase p).erase q) ≠ 0 := by
     refine certified_forced_pair W _ (Finset.mem_univ p) hU
-      (Finset.mem_erase.mpr ⟨hqp, Finset.mem_univ q⟩) (fun y hy hlive => ?_)
+      (fun y hy hlive => ?_)
     exact hpq y (Finset.ne_of_mem_erase hy) hlive
   have hrmem : r ∈ ((Finset.univ : Finset V).erase p).erase q :=
     Finset.mem_erase.mpr ⟨hrq, Finset.mem_erase.mpr ⟨hrp, Finset.mem_univ r⟩⟩
   have h2 : pmSum W (Amplitude.const (V := V) b)
       (((((Finset.univ : Finset V).erase p).erase q).erase r).erase t) ≠ 0 := by
     refine certified_forced_pair W _ hrmem h1
-      (Finset.mem_erase.mpr ⟨htr, Finset.mem_erase.mpr ⟨htq,
-        Finset.mem_erase.mpr ⟨htp, Finset.mem_univ t⟩⟩⟩) (fun y hy hlive => ?_)
+      (fun y hy hlive => ?_)
     have hyr : y ≠ r := Finset.ne_of_mem_erase hy
     have hyq : y ≠ q := Finset.ne_of_mem_erase (Finset.mem_of_mem_erase hy)
     have hyp : y ≠ p :=
@@ -12282,35 +11498,7 @@ has degree two: a disjoint union of cycles alternating between the colours.  Eve
 cycles is carried into itself by both pairings, and that is the only property the previous theorem
 needs.  So the cycle decomposition never has to be built: it is enough to name an invariant set.
 
-The restriction below is what turns a pairing of everything into a pairing of the part. -/
-
-/-- A pairing restricted to a set it preserves, extended by the identity outside. -/
-def restrictPairing (X : Finset V) (σ : Equiv.Perm V) (hσ : ∀ x, σ (σ x) = x)
-    (hinv : ∀ x ∈ X, σ x ∈ X) : Equiv.Perm V := by
-  refine Function.Involutive.toPerm (fun v => if v ∈ X then σ v else v) ?_
-  intro v
-  by_cases hv : v ∈ X
-  · simp only [if_pos hv, if_pos (hinv v hv), hσ v]
-  · simp only [if_neg hv]
-
-@[simp] theorem restrictPairing_apply (X : Finset V) (σ : Equiv.Perm V) (hσ : ∀ x, σ (σ x) = x)
-    (hinv : ∀ x ∈ X, σ x ∈ X) (v : V) :
-    restrictPairing X σ hσ hinv v = if v ∈ X then σ v else v := rfl
-
-theorem restrictPairing_mem {X : Finset V} {σ : Equiv.Perm V} (hσ : ∀ x, σ (σ x) = x)
-    (hinv : ∀ x ∈ X, σ x ∈ X) (hfix : ∀ x, σ x ≠ x) :
-    restrictPairing X σ hσ hinv ∈ pairingsOn X := by
-  refine MatchingSum.mem_pairingsOn.mpr ⟨?_, ?_, ?_⟩
-  · intro x
-    simp only [restrictPairing_apply]
-    by_cases hx : x ∈ X
-    · rw [if_pos hx, if_pos (hinv x hx), hσ x]
-    · rw [if_neg hx, if_neg hx]
-  · intro x hx
-    simp only [restrictPairing_apply, if_pos hx]
-    exact hfix x
-  · intro x hx
-    simp only [restrictPairing_apply, if_neg hx]
+The shared restriction theorem turns a pairing of everything into a pairing of the part. -/
 
 /-- **A set preserved by two whole-set matchings carries a second one.**  This is the previous
 theorem stated for the objects a colour actually hands over: a live perfect matching of every site
@@ -12331,10 +11519,8 @@ theorem second_matching_of_invariant_set (W : Sym2 (V × Fin 3) → ℂ)
       (∃ τ ∈ pairingsOn ((Finset.univ : Finset V) \ X), (∃ z ∈ (Finset.univ : Finset V) \ X,
         τ z ≠ σb z) ∧ ∀ z ∈ (Finset.univ : Finset V) \ X, W s((z, b), (τ z, b)) ≠ 0) := by
   classical
-  obtain ⟨hAinv, hAfix, -⟩ := MatchingSum.mem_pairingsOn.mp hAmem
-  obtain ⟨hBinv, hBfix, -⟩ := MatchingSum.mem_pairingsOn.mp hBmem
-  have hAfix' : ∀ x, σa x ≠ x := fun x => hAfix x (Finset.mem_univ x)
-  have hBfix' : ∀ x, σb x ≠ x := fun x => hBfix x (Finset.mem_univ x)
+  obtain ⟨hAinv, -, -⟩ := MatchingSum.mem_pairingsOn.mp hAmem
+  obtain ⟨hBinv, -, -⟩ := MatchingSum.mem_pairingsOn.mp hBmem
   -- the complement is preserved by `σb` as well
   have hinvBc : ∀ x ∈ (Finset.univ : Finset V) \ X, σb x ∈ (Finset.univ : Finset V) \ X := by
     intro x hx
@@ -12343,15 +11529,16 @@ theorem second_matching_of_invariant_set (W : Sym2 (V × Fin 3) → ℂ)
     have := hinvB _ hmem
     rwa [hBinv x] at this
   have hres := second_live_matching_of_invariant_split W hzero hmono hab hXne hXuniv
-    (restrictPairing_mem hAinv hinvA hAfix')
-    (fun z hz => by rw [restrictPairing_apply, if_pos hz]; exact hAlive z)
-    (restrictPairing_mem hBinv hinvBc hBfix')
-    (fun z hz => by rw [restrictPairing_apply, if_pos hz]; exact hBlive z)
+    (MatchingRestriction.restrictPerm_mem hAmem (Finset.subset_univ X) hinvA)
+    (fun z hz => by rw [MatchingRestriction.restrictPerm_apply, if_pos hz]; exact hAlive z)
+    (MatchingRestriction.restrictPerm_mem hBmem
+      (Finset.subset_univ ((Finset.univ : Finset V) \ X)) hinvBc)
+    (fun z hz => by rw [MatchingRestriction.restrictPerm_apply, if_pos hz]; exact hBlive z)
   rcases hres with ⟨τ, hτ, hne, hlive⟩ | ⟨τ, hτ, hne, hlive⟩
   · refine Or.inl ⟨τ, hτ, ?_, hlive⟩
     by_contra hall
     refine hne (Equiv.ext fun z => ?_)
-    simp only [restrictPairing_apply]
+    simp only [MatchingRestriction.restrictPerm_apply]
     by_cases hz : z ∈ X
     · rw [if_pos hz]
       by_contra hzz
@@ -12361,7 +11548,7 @@ theorem second_matching_of_invariant_set (W : Sym2 (V × Fin 3) → ℂ)
   · refine Or.inr ⟨τ, hτ, ?_, hlive⟩
     by_contra hall
     refine hne (Equiv.ext fun z => ?_)
-    simp only [restrictPairing_apply]
+    simp only [MatchingRestriction.restrictPerm_apply]
     by_cases hz : z ∈ (Finset.univ : Finset V) \ X
     · rw [if_pos hz]
       by_contra hzz
@@ -13110,58 +12297,15 @@ section Relabel
 
 variable {A B : Type*} [Fintype A] [DecidableEq A] [Fintype B] [DecidableEq B]
 
-/-- Weights transported along a relabelling of the sites. -/
-noncomputable def relabelW (φ : A ≃ B) (W : Sym2 (A × Fin 3) → ℂ) : Sym2 (B × Fin 3) → ℂ :=
-  fun x => W (Sym2.map (Prod.map φ.symm id) x)
-
-theorem sym2_map_injective (φ : A ≃ B) : Function.Injective (Sym2.map φ) := by
-  have hleft : Function.LeftInverse (Sym2.map φ.symm) (Sym2.map φ) := by
-    intro x
-    induction x using Sym2.ind with
-    | _ a b => simp
-  exact hleft.injective
-
-theorem edges_permCongr (φ : A ≃ B) (σ : Equiv.Perm A) :
-    Amplitude.edges (Equiv.permCongr φ σ) = (Amplitude.edges σ).image (Sym2.map φ) := by
-  classical
-  rw [Amplitude.edges, Amplitude.edges, Finset.image_image,
-    ← Finset.image_univ_equiv φ, Finset.image_image]
-  refine Finset.image_congr fun x _ => ?_
-  simp [Equiv.permCongr_apply]
-
-theorem prod_edges_relabel (φ : A ≃ B) (W : Sym2 (A × Fin 3) → ℂ) (c : B → Fin 3)
-    (σ : Equiv.Perm A) :
-    ∏ x ∈ Amplitude.edges (Equiv.permCongr φ σ), relabelW φ W (Sym2.map (Amplitude.paint c) x)
-      = ∏ x ∈ Amplitude.edges σ, W (Sym2.map (Amplitude.paint (c ∘ φ)) x) := by
-  classical
-  rw [edges_permCongr, Finset.prod_image (fun x _ y _ h => sym2_map_injective φ h)]
-  refine Finset.prod_congr rfl fun x _ => ?_
-  induction x using Sym2.ind with
-  | _ p q => simp [relabelW, Amplitude.paint, Prod.map]
+/-- Weights transported along a relabelling of the sites. The shared definition
+uses the inverse orientation for its equivalence argument. -/
+abbrev relabelW (φ : A ≃ B) (W : Sym2 (A × Fin 3) → ℂ) : Sym2 (B × Fin 3) → ℂ :=
+  MatchingSum.relabelW W φ.symm
 
 theorem amplitude_relabel (φ : A ≃ B) (W : Sym2 (A × Fin 3) → ℂ) (c : B → Fin 3) :
     amplitude (relabelW φ W) c = amplitude W (c ∘ φ) := by
-  classical
-  rw [Amplitude.amplitude, Amplitude.amplitude]
-  refine (Finset.sum_equiv (Equiv.permCongr φ) ?_ ?_).symm
-  · intro σ
-    simp only [Amplitude.pairings, Finset.mem_filter, Finset.mem_univ, true_and,
-      Equiv.permCongr_apply]
-    constructor
-    · rintro ⟨hinv, hfix⟩
-      refine ⟨fun y => ?_, fun y => ?_⟩
-      · simp [hinv]
-      · intro h
-        exact hfix (φ.symm y) (by simpa using congrArg φ.symm h)
-    · rintro ⟨hinv, hfix⟩
-      refine ⟨fun x => ?_, fun x => ?_⟩
-      · have h := hinv (φ x)
-        simp only [Equiv.symm_apply_apply] at h
-        exact φ.injective h
-      · intro h
-        exact hfix (φ x) (by simp [h])
-  · intro σ _
-    exact (prod_edges_relabel φ W c σ).symm
+  simpa [relabelW, Function.comp_def] using
+    (MatchingSum.amplitude_relabel W φ.symm (c ∘ φ))
 
 end Relabel
 

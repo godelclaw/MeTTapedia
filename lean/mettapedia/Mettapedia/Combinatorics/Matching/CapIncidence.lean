@@ -114,6 +114,7 @@ theorem exists_both_iff_not_le (f g : M →ₗ[K] K) (N : Submodule K M) :
 
 end Witness
 
+omit [Fintype V] [DecidableEq V] [Fintype C] in
 /-- An uncoloured edge weighs zero, whatever colours its endpoints wear. -/
 theorem weightOf_eq_zero_of_none (ec : V → V → Option C) (hsymm : ∀ u v, ec u v = ec v u)
     {u v : V} (h : ec u v = none) (i j : C) :
@@ -140,6 +141,7 @@ uncoloured edge, and it needs no assumption on where the weights came from. -/
 def OffSupport (W : Sym2 (V × C) → ℂ) (u v : V) : Prop :=
   ∀ i j : C, W s((u, i), (v, j)) = 0
 
+omit [Fintype V] [DecidableEq V] [DecidableEq C] in
 /-- **Support restriction, for arbitrary weights.**  If each of the two ways a
 residual pair can meet the contracted pair is broken by an edge off the support,
 the entry vanishes identically — for every contraction matrix and all colours.
@@ -163,11 +165,13 @@ theorem entry_eq_zero_of_offSupport (W : Sym2 (V × C) → ℂ) (M : C → C →
     · rw [h b y, mul_zero]
   rw [e₁, e₂, add_zero, mul_zero]
 
+omit [Fintype V] [DecidableEq V] [Fintype C] in
 /-- An uncoloured edge is off the support. -/
 theorem offSupport_of_none (ec : V → V → Option C) (hsymm : ∀ u v, ec u v = ec v u)
     {u v : V} (h : ec u v = none) : OffSupport (weightOf ec hsymm) u v :=
   fun i j => weightOf_eq_zero_of_none ec hsymm h i j
 
+omit [Fintype V] [DecidableEq V] in
 /-- **Support restriction.**  If neither way of meeting the contracted pair is fully
 coloured — the first summand missing an edge and the second missing one too — then
 the entry vanishes identically, for every contraction matrix and all colours.
@@ -184,6 +188,7 @@ theorem entry_eq_zero (ec : V → V → Option C) (hsymm : ∀ u v, ec u v = ec 
     (h₂.imp (offSupport_of_none ec hsymm) (offSupport_of_none ec hsymm))
 
 
+omit [Fintype V] [DecidableEq V] [DecidableEq C] in
 /-- **Star collapse from a low-degree vertex.**  Suppose `p` meets the residual set
 in at most the single vertex `k₀`: every other residual edge at `p` is off the
 support.  Then every entry outside the star centred at `k₀` vanishes.
@@ -205,6 +210,7 @@ one vertex coloured to `p` and the other coloured to `q`. -/
 def Live (ec : V → V → Option C) (p q k l : V) : Prop :=
   (ec p k ≠ none ∧ ec q l ≠ none) ∨ (ec p l ≠ none ∧ ec q k ≠ none)
 
+omit [Fintype V] [DecidableEq V] in
 /-- Everything outside `Live` is silent: the contracted system sees only live pairs. -/
 theorem entry_eq_zero_of_not_live (ec : V → V → Option C) (hsymm : ∀ u v, ec u v = ec v u)
     (M : C → C → ℂ) (p q k l : V) (x y : C) (h : ¬ Live ec p q k l) :
@@ -227,7 +233,7 @@ applies.
 
 section Incidence
 
-variable {K : Type*} [CommRing K] [Fintype C]
+variable {K : Type*} [CommRing K]
 
 /-- Pairing a cap against a coefficient array.  Both the incidence constraints and the
 contraction scalar have this shape, so they are instances of one construction. -/
@@ -240,6 +246,7 @@ noncomputable def pair (w : C → C → K) : (C → C → K) →ₗ[K] K where
   map_smul' c M := by
     simp only [Pi.smul_apply, smul_eq_mul, RingHom.id_apply, mul_assoc, Finset.mul_sum]
 
+omit [DecidableEq C] in
 @[simp] theorem pair_apply (w M : C → C → K) :
     pair w M = ∑ a : C, ∑ b : C, M a b * w a b := rfl
 
@@ -275,6 +282,7 @@ noncomputable def admissible (W : Sym2 (V × C) → K) (p q : V)
     (S : Finset (V × V × C × C)) : Submodule K (C → C → K) :=
   constDiag ⊓ ⨅ t ∈ S, LinearMap.ker (incidence W p q t.1 t.2.1 t.2.2.1 t.2.2.2)
 
+omit [Fintype V] [DecidableEq V] [DecidableEq C] in
 /-- **A usable cap exists exactly when two rank conditions hold separately.**
 
 The defining requirement is a conjunction — the admissible space must contain a cap
@@ -293,6 +301,7 @@ theorem usable_cap_iff (W : Sym2 (V × C) → K) (p q : V)
   exists_both_iff_not_le _ _ _
 
 
+omit [Fintype V] [DecidableEq V] [DecidableEq C] in
 /-- **A trivial admissible space admits no usable cap.**  If the flatness conditions cut
 the caps down to zero, there is nothing left with a nonvanishing diagonal, so no usable
 cap exists whatever the contraction scalar does.
@@ -301,7 +310,7 @@ This is the direction the incidence rank controls.  The rows lie in a sum of ten
 products of the blocks' column spaces, so blocks of full rank make them span, and a
 spanning set of conditions leaves only the zero cap.  Caps therefore require degenerate
 blocks, which is the same requirement the degeneration argument was trying to supply. -/
-theorem no_usable_cap_of_trivial {K : Type*} [CommRing K] [Fintype C]
+theorem no_usable_cap_of_trivial {K : Type*} [CommRing K]
     (W : Sym2 (V × C) → K) (p q : V) (S : Finset (V × V × C × C)) (i : C)
     (h : admissible W p q S = ⊥) :
     ¬ ∃ M ∈ admissible W p q S, diagAt i M ≠ 0 ∧ contr W p q M ≠ 0 := by
@@ -326,8 +335,9 @@ subspaces.
 
 section Coordinates
 
-variable {K : Type*} [Field K] [Infinite K] {C : Type*} [Fintype C]
+variable {K : Type*} [Field K] [Infinite K]
 
+omit [DecidableEq C] in
 /-- **Either a vector escapes every coordinate hyperplane, or one coordinate vanishes on
 the whole space.**
 
@@ -354,6 +364,7 @@ theorem exists_all_nonzero_or_coord_vanishes (N : Submodule K (C → K)) :
   simpa [hP, LinearMap.mem_ker] using hmem
 
 
+omit [Fintype V] [DecidableEq V] [DecidableEq C] in
 /-- **An outer-product cap built from a vector annihilating the block has no contraction
 scalar.**
 
@@ -366,7 +377,7 @@ correction vanish asks `lam` to annihilate the constrained partners' columns; ke
 contraction scalar alive asks it not to annihilate the block.  On a support where the
 partners are few the equations force the first to imply the second, so the route closes
 against itself. -/
-theorem contr_eq_zero_of_outer {K : Type*} [CommRing K] [Fintype C]
+theorem contr_eq_zero_of_outer {K : Type*} [CommRing K]
     (W : Sym2 (V × C) → K) (p q : V) (lam rho : C → K)
     (h : ∀ b : C, ∑ a, lam a * W s((p, a), (q, b)) = 0) :
     contr W p q (fun a b => lam a * rho b) = 0 := by

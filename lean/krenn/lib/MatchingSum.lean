@@ -13,7 +13,7 @@ namespace MatchingSum
 
 open MatchingParity Amplitude
 
-variable {V C : Type*} [Fintype V] [DecidableEq V] {R : Type*} [CommSemiring R]
+variable {V : Type*} [Fintype V] [DecidableEq V]
 
 /-- **The vertex equations.**  For a normalised solution, fixing a vertex `u` and a
 background colour `k`, the matching sums of the complements of `u`'s incident edges

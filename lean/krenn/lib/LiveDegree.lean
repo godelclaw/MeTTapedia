@@ -2,6 +2,8 @@ import Mathlib
 import Amplitude
 import MatchingSum
 import PurePartner
+import Mettapedia.Combinatorics.Matching.Loopless
+import Mettapedia.Combinatorics.Matching.Support
 
 /-!
 # The remaining hypothesis is about degree
@@ -17,7 +19,7 @@ three-regular structure outright.
 
 namespace LiveDegree
 
-open Amplitude MatchingSum
+open Amplitude MatchingSum MatchingLoopless MatchingSupport
 
 open scoped Classical
 
@@ -25,12 +27,11 @@ variable {V : Type*} [Fintype V] [DecidableEq V]
 
 /-- The live partners of a site. -/
 noncomputable def liveNbrs (W : Sym2 (V × Fin 3) → ℂ) (u : V) : Finset V :=
-  (Finset.univ.erase u).filter (fun y => ∃ a b : Fin 3, W s((u, a), (y, b)) ≠ 0)
+  MatchingSupport.liveNeighbours W u
 
 lemma mem_liveNbrs {W : Sym2 (V × Fin 3) → ℂ} {u y : V} :
-    y ∈ liveNbrs W u ↔ y ≠ u ∧ ∃ a b : Fin 3, W s((u, a), (y, b)) ≠ 0 := by
-  classical
-  simp [liveNbrs, Finset.mem_filter, Finset.mem_erase]
+    y ∈ liveNbrs W u ↔ y ≠ u ∧ ∃ a b : Fin 3, W s((u, a), (y, b)) ≠ 0 :=
+  MatchingSupport.mem_liveNeighbours
 
 /-- **Degree three is three-regularity.**  A site with no fourth live partner has exactly the
 three the fan names, and the whole structure follows. -/
@@ -89,39 +90,29 @@ theorem threeRegular_of_liveDegree (W : Sym2 (V × Fin 3) → ℂ)
 /-- Loop weights appear in no matching, so changing them changes no amplitude. -/
 theorem amplitude_ignore_loops (W W' : Sym2 (V × Fin 3) → ℂ)
     (h : ∀ (x y : V) (a b : Fin 3), x ≠ y → W' s((x, a), (y, b)) = W s((x, a), (y, b)))
-    (c : V → Fin 3) : amplitude W' c = amplitude W c := by
-  rw [← pmSum_univ, ← pmSum_univ, pmSum, pmSum]
-  refine Finset.sum_congr rfl fun σ hσ => Finset.prod_congr rfl fun e he => ?_
-  obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp he
-  have hne : σ x ≠ x := (mem_pairingsOn.mp hσ).2.1 x hx
-  exact h x (σ x) (c x) (c (σ x)) (fun hh => hne hh.symm)
+    (c : V → Fin 3) : amplitude W' c = amplitude W c :=
+  MatchingLoopless.amplitude_ignore_loops W W' h c
 
 /-- The loop-free normalisation of a weighting. -/
 noncomputable def deloop (W : Sym2 (V × Fin 3) → ℂ) : Sym2 (V × Fin 3) → ℂ :=
-  fun e => if (Sym2.map Prod.fst e).IsDiag then 0 else W e
+  MatchingLoopless.deloop W
 
+omit [Fintype V] in
 lemma deloop_off {W : Sym2 (V × Fin 3) → ℂ} {x y : V} (hxy : x ≠ y) (a b : Fin 3) :
-    deloop W s((x, a), (y, b)) = W s((x, a), (y, b)) := by
-  rw [deloop]
-  exact if_neg (by simpa [Sym2.map_pair_eq] using hxy)
+    deloop W s((x, a), (y, b)) = W s((x, a), (y, b)) :=
+  MatchingLoopless.deloop_off hxy a b
 
+omit [Fintype V] in
 lemma deloop_loop (W : Sym2 (V × Fin 3) → ℂ) (x : V) (a b : Fin 3) :
-    deloop W s((x, a), (x, b)) = 0 := by
-  rw [deloop]
-  exact if_pos (by simp [Sym2.map_pair_eq])
+    deloop W s((x, a), (x, b)) = 0 :=
+  MatchingLoopless.deloop_loop W x a b
 
 lemma amplitude_deloop (W : Sym2 (V × Fin 3) → ℂ) (c : V → Fin 3) :
     amplitude (deloop W) c = amplitude W c :=
-  amplitude_ignore_loops _ _ (fun x y a b hxy => deloop_off hxy a b) c
+  MatchingLoopless.amplitude_deloop W c
 
 lemma liveNbrs_deloop (W : Sym2 (V × Fin 3) → ℂ) (u : V) :
-    liveNbrs (deloop W) u = liveNbrs W u := by
-  ext y
-  simp only [mem_liveNbrs]
-  constructor
-  · rintro ⟨hy, a, b, hab⟩
-    exact ⟨hy, a, b, by rwa [deloop_off hy.symm a b] at hab⟩
-  · rintro ⟨hy, a, b, hab⟩
-    exact ⟨hy, a, b, by rwa [deloop_off hy.symm a b]⟩
+    liveNbrs (deloop W) u = liveNbrs W u :=
+  MatchingSupport.liveNeighbours_deloop W u
 
 end LiveDegree

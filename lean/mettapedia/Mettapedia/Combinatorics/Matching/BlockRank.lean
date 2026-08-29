@@ -186,18 +186,22 @@ variable {R : Type*} [CommRing R]
 def paintTwo (c₀ : V → C) (p q : V) (α β : C) : V → C :=
   Function.update (Function.update c₀ p α) q β
 
+omit [Fintype V] [DecidableEq C] in
 @[simp] theorem paintTwo_fst (c₀ : V → C) {p q : V} (h : p ≠ q) (α β : C) :
     paintTwo c₀ p q α β p = α := by
   simp [paintTwo, Function.update_of_ne h]
 
+omit [Fintype V] [DecidableEq C] in
 @[simp] theorem paintTwo_snd (c₀ : V → C) (p q : V) (α β : C) :
     paintTwo c₀ p q α β q = β := by
   simp [paintTwo]
 
+omit [Fintype V] [DecidableEq C] in
 theorem paintTwo_other (c₀ : V → C) {p q x : V} (hp : x ≠ p) (hq : x ≠ q) (α β : C) :
     paintTwo c₀ p q α β x = c₀ x := by
   simp [paintTwo, Function.update_of_ne hq, Function.update_of_ne hp]
 
+omit [DecidableEq C] in
 /-- **The block decomposition.**  With the colours at two sites free and every other
 colour fixed, the matching sum is the block those sites carry, scaled by the matching
 sum on the rest, plus a correction assembled from rank-one pieces — one for each
@@ -373,6 +377,7 @@ open ColourPerMatching
 
 variable {V C : Type*} [Fintype V] [DecidableEq V] [DecidableEq C]
 
+omit [Fintype V] [DecidableEq V] in
 /-- **An edge is live for at most one colour.**  Weights that come from colouring the
 matchings give an edge a single colour, and it carries weight only there.  So the
 partners live at one colour and those live at another never coincide unless the
@@ -389,6 +394,7 @@ theorem live_colour_unique (ec : V → V → Option C) (hsymm : ∀ u v, ec u v 
     · exact absurd (if_neg h') hk'
   · exact absurd (if_neg h) hk
 
+omit [Fintype V] [DecidableEq V] in
 /-- No partner is live for two distinct colours, so on such a solution a witness
 serving every colour at once cannot exist as soon as there are two colours. -/
 theorem no_simultaneous_live (ec : V → V → Option C) (hsymm : ∀ u v, ec u v = ec v u)

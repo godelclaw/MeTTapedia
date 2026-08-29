@@ -13,7 +13,7 @@ namespace Gauge
 
 open Amplitude
 
-variable {V C : Type*} [Fintype V] [DecidableEq V] {R : Type*} [CommRing R]
+variable {V : Type*} [Fintype V] [DecidableEq V]
 
 /-- **The normalisation is free.**  A GHZ configuration can be rescaled so that its
 monochromatic amplitudes are exactly one, with every vanishing condition

@@ -280,6 +280,47 @@ theorem pmSum_expand (W : Sym2 (V × C) → R) (c : V → C) {S : Finset V} {u :
     Finset.sum_image (fun _ _ _ _ h => mul_right_cancel h), pmSum, Finset.mul_sum]
   exact Finset.sum_congr rfl (fun τ hτ => prod_mul_swap W c hτ hu hvS)
 
+/-- A nonzero matching sum has a partner whose incident weight and complementary
+matching sum are both nonzero. -/
+theorem exists_partner_ne_zero (W : Sym2 (V × C) → R) (c : V → C)
+    {S : Finset V} {u : V} (hu : u ∈ S) (h : pmSum W c S ≠ 0) :
+    ∃ v ∈ S.erase u, W (Sym2.map (paint c) s(u, v)) ≠ 0 ∧
+      pmSum W c ((S.erase u).erase v) ≠ 0 := by
+  classical
+  by_contra hcon
+  push Not at hcon
+  refine h ?_
+  rw [pmSum_expand W c hu]
+  refine Finset.sum_eq_zero fun v hv => ?_
+  by_cases hw : W (Sym2.map (paint c) s(u, v)) = 0
+  · rw [hw, zero_mul]
+  · rw [hcon v hv hw, mul_zero]
+
+/-- Two successive non-cancelling deletions, with the second pivot allowed to
+depend on the first partner. -/
+theorem exists_two_partners_ne_zero (W : Sym2 (V × C) → R) (c : V → C)
+    {S : Finset V} {u : V} (hu : u ∈ S) (h : pmSum W c S ≠ 0)
+    (p : V → V) :
+    ∃ v ∈ S.erase u, W (Sym2.map (paint c) s(u, v)) ≠ 0 ∧
+      (p v ∈ (S.erase u).erase v →
+        ∃ q ∈ ((S.erase u).erase v).erase (p v),
+          W (Sym2.map (paint c) s(p v, q)) ≠ 0 ∧
+          pmSum W c ((((S.erase u).erase v).erase (p v)).erase q) ≠ 0) := by
+  obtain ⟨v, hv, hw, hs⟩ := exists_partner_ne_zero W c hu h
+  exact ⟨v, hv, hw, fun hp => exists_partner_ne_zero W c hp hs⟩
+
+/-- A two-vertex matching sum is its single edge weight. -/
+theorem pmSum_pair (W : Sym2 (V × C) → R) (c : V → C)
+    {p q : V} (hqp : q ≠ p) :
+    pmSum W c ({p, q} : Finset V) = W s((p, c p), (q, c q)) := by
+  classical
+  have hp : p ∈ ({p, q} : Finset V) := by simp
+  have hpq : p ∉ ({q} : Finset V) := by simpa using (Ne.symm hqp)
+  have herase : ({p, q} : Finset V).erase p = {q} := Finset.erase_insert hpq
+  rw [pmSum_expand W c hp, herase, Finset.sum_singleton, Finset.erase_singleton,
+    pmSum_empty, mul_one]
+  rfl
+
 /-- **The recursion determines the matching sum.**  A function on vertex subsets
 that takes the value `1` on the empty set and satisfies the deletion recursion at
 some vertex of every nonempty subset agrees with the matching sum everywhere.
@@ -367,6 +408,17 @@ theorem pmSum_of_forced (W : Sym2 (V × C) → R) (c : V → C) {S : Finset V} {
     rw [h w hw hne, zero_mul]
   · intro hcon
     exact absurd hv hcon
+
+/-- A chosen deletion term is the whole matching sum when every alternative
+term vanishes, whether at its edge weight or in its complementary sum. -/
+theorem pmSum_of_alternatives_zero (W : Sym2 (V × C) → R) (c : V → C)
+    {S : Finset V} {u v : V} (hu : u ∈ S) (hv : v ∈ S.erase u)
+    (h : ∀ w ∈ S.erase u, w ≠ v →
+      W (Sym2.map (paint c) s(u, w)) * pmSum W c ((S.erase u).erase w) = 0) :
+    pmSum W c S =
+      W (Sym2.map (paint c) s(u, v)) * pmSum W c ((S.erase u).erase v) := by
+  rw [pmSum_expand W c hu]
+  exact Finset.sum_eq_single_of_mem v hv h
 
 /-- A set whose internal edges all carry zero weight has vanishing matching sum,
 unless it is empty. -/
@@ -1364,5 +1416,32 @@ theorem pmSum_factor_of_no_crossing (W : Sym2 (V × C) → R) (c : V → C) :
         have hmem : y ∈ T \ S := Finset.mem_sdiff.mpr ⟨(Finset.mem_erase.mp hy).2, hyS⟩
         have : W (Sym2.map (paint c) s(x, y)) = 0 := hcut x hx y hmem
         rw [this, zero_mul]
+
+/-- The vertices carrying one chosen colour. -/
+def colourFiber [DecidableEq C] (c : V → C) (k : C) : Finset V :=
+  Finset.univ.filter (fun x => c x = k)
+
+omit [DecidableEq V] in
+@[simp] lemma mem_colourFiber [DecidableEq C] {c : V → C} {k : C} {x : V} :
+    x ∈ colourFiber c k ↔ c x = k := by
+  simp [colourFiber]
+
+/-- A colouring whose chosen colour class has no live crossing to its complement
+splits its amplitude into the matching sums on the two sides. -/
+theorem pmSum_colourFiber_split [DecidableEq C]
+    (W : Sym2 (V × C) → R) (c : V → C)
+    (hcut : ∀ x y : V, c x ≠ c y → W s((x, c x), (y, c y)) = 0)
+    (k : C) :
+    amplitude W c =
+      pmSum W c (colourFiber c k) * pmSum W c (Finset.univ \ colourFiber c k) := by
+  rw [← pmSum_univ]
+  refine pmSum_factor_of_no_crossing W c (colourFiber c k).card
+    (colourFiber c k) Finset.univ rfl (Finset.subset_univ _) ?_
+  intro x hx y hy
+  rw [mem_colourFiber] at hx
+  have hy' : c y ≠ k := by
+    intro h
+    exact (Finset.mem_sdiff.mp hy).2 (mem_colourFiber.mpr h)
+  exact hcut x y (by rw [hx]; exact fun h => hy' h.symm)
 
 end MatchingSum

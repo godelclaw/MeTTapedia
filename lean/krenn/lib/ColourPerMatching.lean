@@ -7,7 +7,7 @@ namespace ColourPerMatching
 
 open Amplitude
 
-variable {V C : Type*} [Fintype V] [DecidableEq V] [DecidableEq C]
+variable {V : Type*} [Fintype V] [DecidableEq V]
 
 /-- The three-colour form: such a colouring is a GHZ configuration. -/
 theorem isGHZ_of_colouring [Nonempty V] (ec : V → V → Option (Fin 3))
