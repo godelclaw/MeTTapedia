@@ -4779,20 +4779,24 @@ boundary used by the closed-web system, the following replacement is valid.
 
 \begin{lemma}[Totally closed at five outer stubs implies menu B]
 \label{lem:closed-implies-menu-b}
-\Sprose
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebCapComposedMenu.both_restoredMenuBForPair_of_totallyClosed_at_five}
 Let an annular frontier tangle have five inner and five outer stubs and a good
 inner word.  If a colouring has a totally closed web, then it is menu B for
 each majority pair.
 \end{lemma}
 
 \begin{proof}
-The Cubic Closure Theorem makes the web the whole connected tangle and rules
-out every two-colour circuit.  With ten boundary stubs, endpoint counting then
-makes every two-colour strand radial: it has one inner and one outer end.  Fix
-a majority pair.  Its four active inner spokes lie on four distinct radial
-strands.  Attaching the pentagonal cap joins them in two disjoint cap paths,
-so at least two distinct components of that colour pair meet the cap.  The
-Reformulation Theorem identifies precisely this condition with menu B.
+The Cubic Closure Theorem makes every two-colour component inner-touching.
+At the five--five boundary, the exact endpoint census then rules out two
+distinct inner stubs in one component; equivalently, every such component is
+radial, with one inner and one outer end.  Thus, for either majority pair, the
+open strand relation on the four active inner positions is diagonal: no
+strand joins two distinct positions.  Restoring the pentagonal cap contributes
+exactly its two disjoint active blocks.  Since no open strand can join those
+blocks, their generated equivalence relation still has at least two classes.
+The transverse-chord criterion identifies this condition precisely with
+cap-composed menu B.  Lean checks the entire chain on the literal graph-derived
+profile relation, including both majority pairs.
 \end{proof}
 
 For six or more outer stubs the source's Cubic Closure counting already makes
