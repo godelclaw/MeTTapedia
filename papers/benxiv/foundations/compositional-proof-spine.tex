@@ -2233,12 +2233,70 @@ a Kempe closure.
 The triangular prism is planar, cubic, and bridgeless, and its two triangular
 cycles are disjoint boundary components, so it satisfies the hypotheses as
 printed.  It is boundary-degenerate in the precise sense that it has no
-interior vertices.  A repaired theorem may therefore impose a positive-depth
-or route-realizability hypothesis, but that would be a new statement needing
-a new proof.  The v23 theorem as written cannot serve as the missing
-high-width M1 theorem.  A corrected need-based generator theorem would have
-to prove that the actual route discrepancies lie in its generated subspace
-and then connect those algebraic moves to a strict physical replacement.
+interior vertices.  That observation does not repair the theorem: the same
+failure occurs with two pentagonal boundaries and ten genuine interior
+vertices.
+
+\begin{proposition}[positive-depth dodecahedral counterexample]
+\label{prop:v23-dodecahedral-spanning-counterexample}
+\Srefuted{Mettapedia.GraphTheory.FourColor.GoertzelV24V23DodecahedralSpanningCounterexample.exists_boundaryZero_not_mem_generatorSpan}
+Let $G$ be the dodecahedral graph in its standard spherical embedding, and
+let $H$ be obtained by declaring the disjoint pentagonal faces numbered $0$
+and $6$ to be its two boundary components.  Use the remaining ten faces as
+the internal faces.  For the explicit Tait colouring $C_0$ recorded in the
+certificate, the literal Definition--4.8 generators from the exact
+three-colour Kempe closure of $C_0$ do not span $W_0(H)$.
+\end{proposition}
+
+\begin{proof}
+The two selected face boundaries each contain five edges and are disjoint;
+the ten vertices not on them are
+\[
+               6,7,8,9,10,11,12,13,14,18.
+\]
+In $C_0$, for each of the three unordered colour pairs the corresponding
+bicoloured subgraph is connected.  A Kempe component for two distinct colours
+is therefore the whole bicoloured subgraph, so switching it is just a global
+transposition of those two colours.  Switching a colour with itself changes
+nothing.  Induction on the Kempe reachability relation shows that every
+colouring in the exact source closure has the form $\sigma C_0$ for a
+permutation $\sigma$ of the three colours.
+
+Write $e_{ij}$ for the dodecahedral edge joining vertices $i,j$.  Define the
+linear functional $\lambda$ by summing the first Klein coordinate on
+\[
+ e_{01},e_{3,19},e_{9,10},e_{10,11},e_{11,18},e_{12,13},e_{12,16},
+ e_{15,16},e_{16,17},e_{17,18},e_{18,19}.
+\]
+The finite certificate checks, for all six permutations $\sigma$, all ten
+internal faces, and all three colour pairs, that
+\[
+                    \lambda\bigl(X_f^{ab}(\sigma C_0)\bigr)=0.
+\]
+Hence $\lambda$ annihilates the span of the literal source generators.
+
+Let $w$ have first coordinate one on the four-edge path
+\[
+                  e_{0,10},e_{10,11},e_{11,18},e_{18,19}
+\]
+and vanish elsewhere.  Its endpoints lie on a boundary pentagon, its three
+internal path vertices have even incidence, and all other internal vertices
+have incidence zero.  It also vanishes on both boundary cycles.  Thus
+$w\in W_0(H)$.  Exactly three of its four edges occur in the support of
+$\lambda$, so $\lambda(w)=1$ over $\mathbb F_2$.  Therefore $w$ is not in the
+generator span.  Lean checks the graph, the two five-edge boundaries, their
+disjointness, all ten Kirchhoff equations, the exact Kempe-closure reduction,
+and the separating calculation.
+\end{proof}
+
+Thus neither boundary degeneracy nor a mere positive-depth hypothesis can
+repair the literal v23 theorem.  A route-realizability restriction would be a
+new statement needing a new proof.  The v23 spanning theorem cannot serve as
+the missing high-width M1 theorem.  A corrected need-based generator theorem
+would have to prove that the actual route discrepancies lie in its generated
+subspace and then connect those algebraic moves to a strict physical
+replacement.  This refutation does not affect weak L2 or the later profile
+certificates, which make different claims.
 
 One elementary combinatorial ingredient of the long-boundary branch is the
 following sweep lemma.
