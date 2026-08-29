@@ -274,6 +274,103 @@ satisfies the same identity and has $2m+12$ nonhexagonal faces and no
 hexagons.  Lean records this precise arithmetic obstruction.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24CurvatureScope.exists_arbitrarily_large_curvatureBalance_without_hexagons}
 
+The same failure is realized by actual normal-form maps, rather than only by
+formal face multisets.
+
+\begin{proposition}[dodecahedral chains realize unbounded signed-defect cancellation]
+\label{prop:dodecahedral-chain-no-hexagons}
+\Sprose
+For every $s\geq0$ there is a connected simple cellular spherical cubic map
+$D_s$ with girth five and edge-connectivity three such that
+\[
+ \begin{aligned}
+ |V(D_s)|&=18s+20,& |E(D_s)|&=27s+30,\\
+ p_5(D_s)&=6s+12,& p_8(D_s)&=3s,
+ \end{aligned}
+\]
+and $D_s$ has no faces of any other length.  Moreover, two disjoint untouched
+pentagonal faces may be designated as boundary faces.  The resulting annular
+map has $6s+10$ internal pentagons, $3s$ internal octagons, no internal
+hexagon, and
+\[
+             \sum_{f\ \mathrm{internal}}(6-|f|)=10
+\]
+independently of $s$.
+\end{proposition}
+
+\begin{proof}
+Let $D$ be the dodecahedral map and choose opposite vertices $a,b$.  Their
+incident face sets are disjoint: vertices on one pentagonal face have graph
+distance at most two, whereas $d_D(a,b)=5$.  Arrange $s+1$ disjoint copies
+$D_0,\ldots,D_s$ in a row.  At the $i$th join delete $b$ from $D_i$ and $a$
+from $D_{i+1}$, and match the three exposed neighbours in reverse cyclic
+order.  Topologically this removes one open vertex-disc from each sphere and
+glues the two boundary circles orientation-reversingly, so the result is
+again a cellular map on the sphere.  Every exposed neighbour loses one edge
+and gains one seam edge, hence the result remains cubic and simple.
+
+Each join removes two vertices and six old edges and inserts three seam
+edges.  It also pairs the six pentagonal face wedges at the deleted vertices
+into three faces.  A pentagonal wedge left after deleting its vertex is a
+three-edge path; two such paths and the two intervening seam edges form an
+octagon.  Since the $a$- and $b$-incident faces in an internal block are
+disjoint, no face is altered at two joins.  Starting from $s+1$ copies, this
+gives
+\[
+ \begin{aligned}
+ V&=20(s+1)-2s=18s+20,\\
+ E&=30(s+1)-3s=27s+30,\\
+ p_5&=12(s+1)-6s=6s+12,\qquad p_8=3s.
+ \end{aligned}
+\]
+Thus $F=9s+12$, and both $3V=2E$ and $V-E+F=2$ hold.
+
+For completeness, the local normal-form properties survive the join.  The
+dodecahedral graph is $3$-edge-connected.  Restoring a deleted connector and
+placing it on the side containing a majority of its three neighbours turns
+any edge cut of size at most two in a three-edge sum into a cut of size at
+most two in one factor.  That factor cut is trivial; iterating along the row
+shows that the original cut was trivial.  Hence the sum is
+$3$-edge-connected.  A cycle lying in one block has length at least five.  A
+cycle using a seam uses at least two seam edges; between two distinct
+neighbours of a deleted dodecahedral vertex every path has length at least
+three, since a shorter path together with that vertex would give a triangle
+or quadrilateral in $D$.  Such a cycle therefore has length at least eight.
+This proves the girth assertion.
+
+The dodecahedron has a Tait colouring.  At a deleted cubic vertex its three
+incident colours are distinct.  Before each join, globally permute the three
+colour names on the new block so that corresponding exposed half-edges have
+the same colour, and give the new seam edge that common colour.  Induction
+therefore also gives a Tait colouring of every $D_s$.
+
+At the two free ends choose a pentagon incident with the unused connector
+vertex.  These two faces are disjoint and were not altered by a join.
+Declaring their interiors to be the two holes removes two pentagons from the
+spherical census.  The internal curvature is consequently
+\[
+       (6s+10)(6-5)+(3s)(6-8)=10,
+\]
+while all $9s+10$ internal faces are nonhexagonal.  This completes the
+construction.
+\end{proof}
+
+The census arithmetic is independently checked in Lean:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DodecahedralChainCensus.sphere_cubic_incidence}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DodecahedralChainCensus.sphere_euler}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DodecahedralChainCensus.sphereFaceSizes_curvature}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DodecahedralChainCensus.sphereFaceSizes_hexagonCount}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DodecahedralChainCensus.annularInternalFaceSizes_curvature}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DodecahedralChainCensus.exists_arbitrarily_large_annular_census_without_hexagons}
+
+Proposition~\ref{prop:dodecahedral-chain-no-hexagons} refutes precisely the
+geometry-only implication used in the source L1 and L6: fixed signed excess,
+girth five, and absence of $1$- or $2$-edge cuts do not force even one
+hexagonal face, much less a long hexagonal ladder.  The family is
+Tait-colourable, so it does \emph{not} refute a target-aware M1 theorem for a
+least zero-Count obstruction.  It shows why that theorem must use zero Count
+and minimality essentially rather than repeating the signed-defect argument.
+
 The annular and framed Excess Identities have the same sign issue, with
 boundary surplus terms added.  They bound a difference of positive and
 negative curvature resources, not their sum.  Therefore the sentence in
