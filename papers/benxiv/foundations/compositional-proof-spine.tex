@@ -2871,6 +2871,41 @@ is proved equivalent to the mathematical proposition, and the kernel reduces
 every row of the three separate certificates.
 \end{proof}
 
+\begin{proposition}[the persistent adversary does not obstruct the cap menu]
+\label{prop:persistent-adversary-cap-menu}
+Let $A$ be the sixty-word language of
+Proposition~\ref{prop:hexagon-persistent-pairwise-adversary}.  In the
+zero-based enumeration of the five noncrossing planar pairing caps, $A$ is
+disjoint from the supports of caps $0=(01)(23)(45)$ and
+$2=(03)(12)(45)$.  In particular $A$ does not meet every planar cap.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPersistentAdversaryCapMenu.persistentAdversary_disjoint_planarPairingSupport_zero}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPersistentAdversaryCapMenu.persistentAdversary_disjoint_planarPairingSupport_two}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPersistentAdversaryCapMenu.persistentAdversary_not_meets_every_planarPairing}
+\end{proposition}
+
+\begin{proof}
+The finite checker tests every word in $A$ against the two displayed pairing
+relations and finds no compatible word.  Either disjointness statement alone
+negates the assertion that $A$ meets all five cap supports.
+\end{proof}
+
+This corrects an important scope distinction.  The sixty-word language is a
+witness against compressing the common physical web to three persistent
+boundary mates; it is not an obstruction to replacing a hexagon by a member
+of the five-cap menu.  The larger parity adversary in
+Proposition~\ref{prop:hexagon-target-aware-pairing-obstruction} is the
+language which meets every cap.
+
+Nor should the universal physical cap-menu implication be treated as a
+cheap local search.  In the route's intended use, the exterior is obtained
+by deleting a facial hexagon from a hypothetical bridgeless planar cubic
+counterexample.  Exhibiting such an exterior already exhibits the
+counterexample, while proving that one cap always works is precisely a
+uniform reducibility theorem for the dual degree-six vertex.  Even that
+strong result would not by itself bound width: it supplies no exclusion of
+large pentagon--heptagon wall patches.  Thus the central width problem remains
+global.
+
 Thus even the exact boundary shadow of
 Theorem~\ref{thm:same-family-physical-kempe-persistence}, imposed separately
 for all three pairs and all of their successor states, admits a language which
