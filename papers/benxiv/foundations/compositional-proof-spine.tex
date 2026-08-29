@@ -3254,6 +3254,36 @@ does not discharge the high-width supply: that would require a proved bound on
 the reachable Myhill--Nerode quotient, or a genuinely two-dimensional
 replacement theorem.
 
+There is a second boundary on that proposed minimization.  Let
+$\{L_a:a\in A\}$ and $\{R_b:b\in B\}$ be indexed families of literal open
+tangles with one common ordered seam and fixed orientation-reversing matching,
+and define the physical right language
+\[
+ \mathcal L(R_b)=\{a\in A:L_a\mathbin{\#}R_b
+                       \text{ is Tait-colourable}\}.
+\]
+The physical/semantic bridge gives, exactly,
+\[
+ a\in\mathcal L(R_b)quad\Longleftrightarrow\quad
+ \operatorname{Supp}_{\rm out}(L_a)\cap
+ \operatorname{Supp}_{\rm in}(R_b)\ne\varnothing.
+\]
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PhysicalRightLanguageBoundary.mem_physicalRightLanguage_iff_supports_meet}
+Consequently
+\[
+ \bigl(\forall b,\ \mathcal L(R_b)=A\bigr)
+ \quad\Longleftrightarrow\quad
+ \bigl(\forall a,b,\ L_a\mathbin{\#}R_b
+                    \text{ is Tait-colourable}\bigr).
+\]
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PhysicalRightLanguageBoundary.all_physicalRightLanguages_universal_iff_all_splices_taitColorable}
+Thus physical suffix restriction can genuinely identify raw support states,
+but universality of the right languages on a target-complete family is the
+colourability target itself, not an independent compression lemma.  Any
+reachable quotient used in the descent must therefore be certified from its
+literal transition table and terminal predicate; it cannot be justified just
+by saying that all testers are physical.
+
 \begin{theorem}[raw noose Count pumping]
 \label{thm:raw-noose-count-pumping}
 \Sprose
