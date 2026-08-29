@@ -1,6 +1,6 @@
 import Mettapedia.KR.ConceptOntology.BenchmarkControl
 
--- AUTO-GENERATED from ~/claude/mizar/share/mml/conlat_1.miz. Do not edit by hand.
+-- AUTO-GENERATED from mizar/share/mml/conlat_1.miz. Do not edit by hand.
 
 namespace Mettapedia.KR.ConceptOntology.Generated.MizarConlat1
 

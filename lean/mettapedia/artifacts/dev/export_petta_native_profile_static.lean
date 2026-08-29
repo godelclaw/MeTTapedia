@@ -18,7 +18,7 @@ open Mettapedia.Languages.MeTTa.PeTTa
 open Mettapedia.Languages.MeTTa.PeTTa.Artifacts
 
 private def defaultOutDir : System.FilePath :=
-  "~/claude/lean-projects/mettapedia/artifacts/transition"
+  "lean/mettapedia/artifacts/transition"
 
 /-- Empty PeTTaSpace: no facts, no rules.
     Produces the dialect-static native profile slice. -/

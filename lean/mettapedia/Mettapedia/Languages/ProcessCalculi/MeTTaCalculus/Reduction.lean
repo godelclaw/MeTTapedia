@@ -18,7 +18,7 @@ Executable one-step semantics for the symmetric MeTTa-calculus:
 
 Semantics follows:
 
-- `~/claude/hyperon/rho4u/metta-calculus/metta-calculus.core.tex`
+- the F1R3FLY MeTTa-calculus manuscript, `metta-calculus.core.tex`
 
 especially:
 

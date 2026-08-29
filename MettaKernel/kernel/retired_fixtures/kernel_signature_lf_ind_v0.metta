@@ -28,7 +28,7 @@
 ;   proof-dependent motives) are still hard-coded / not generated here.
 ;
 ; Run:
-;   /home/aimama/aihub/hyperon/CeTTa/cetta kernel_signature_lf_ind_v0.metta
+;   lean/externals/CeTTa/cetta kernel_signature_lf_ind_v0.metta
 ; =============================================================================
 
 ; ---------- list helpers -----------------------------------------------------

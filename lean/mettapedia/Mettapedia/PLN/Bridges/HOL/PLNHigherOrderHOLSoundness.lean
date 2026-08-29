@@ -1,5 +1,6 @@
-import Mettapedia.Logic.PLNHigherOrderHOLRules
-import Mettapedia.Logic.PLNWorldModelHOLCompleteness
+import Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLRules
+import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness
+import Mettapedia.Logic.HOL.Soundness
 
 namespace Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLSoundness
 

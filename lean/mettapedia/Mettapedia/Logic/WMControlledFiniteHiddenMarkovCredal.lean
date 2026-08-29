@@ -154,7 +154,7 @@ theorem cycleCountCredibility_mem_unit
   exact Mettapedia.PLN.TruthValues.PLNWeightTV.WTV.w2c_bounds _ hw_nonneg
 
 /-- Generic bridge from the local controlled-HMM credal interval into the live
-PLN indefinite truth-value surface. -/
+PLN indefinite truth-value interface. -/
 noncomputable abbrev IndefiniteTruthValue.toPLNITV
     (tv : IndefiniteTruthValue)
     (credibility : ℝ)
@@ -480,7 +480,7 @@ noncomputable def oneStepQValueCredalTruthValue
   upper_le_one := upperOneStepQValue_le_one Θ zs a
 
 /-- One-step `qValue` envelope rendered as the live PLN indefinite truth-value
-surface. -/
+interface. -/
 noncomputable abbrev oneStepQValuePLNITV
     [Fintype ι] [Nonempty ι]
     (κ : ℝ)
@@ -529,7 +529,7 @@ theorem qValue_historyOfCycles_one_mem_PLNITV_interval
     itv.lower ≤ qValue (toEnvironment (Θ i)) π γ (historyOfCycles zs) a 1 ∧
       qValue (toEnvironment (Θ i)) π γ (historyOfCycles zs) a 1 ≤ itv.upper := by
   simpa [oneStepQValuePLNITV, IndefiniteTruthValue.toPLNITV,
-    Mettapedia.Logic.PLNIndefiniteTruthBridge.ofBoundsAndCredibility,
+    Mettapedia.PLN.TruthValues.PLNIndefiniteTruthBridge.ofBoundsAndCredibility,
     oneStepQValueCredalTruthValue]
     using qValue_historyOfCycles_one_mem_envelope Θ π γ zs a i
 
@@ -616,7 +616,7 @@ noncomputable def oneStepOptimalValueCredalTruthValue
   upper_le_one := upperOneStepOptimalValue_le_one Θ zs
 
 /-- One-step optimal decision envelope as the live PLN indefinite truth-value
-surface. -/
+interface. -/
 noncomputable abbrev oneStepOptimalValuePLNITV
     [Fintype ι] [Nonempty ι] [Fintype Action]
     (κ : ℝ)
@@ -657,7 +657,7 @@ theorem optimalValue_historyOfCycles_two_mem_PLNITV_interval
     itv.lower ≤ optimalValue (toEnvironment (Θ i)) γ (historyOfCycles zs) 2 ∧
       optimalValue (toEnvironment (Θ i)) γ (historyOfCycles zs) 2 ≤ itv.upper := by
   simpa [oneStepOptimalValuePLNITV, IndefiniteTruthValue.toPLNITV,
-    Mettapedia.Logic.PLNIndefiniteTruthBridge.ofBoundsAndCredibility,
+    Mettapedia.PLN.TruthValues.PLNIndefiniteTruthBridge.ofBoundsAndCredibility,
     oneStepOptimalValueCredalTruthValue]
     using optimalValue_historyOfCycles_two_mem_envelope Θ γ zs i
 

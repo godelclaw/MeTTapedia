@@ -19,9 +19,8 @@ Single-entry build target for Chapter-12 intensional inheritance:
 Build command:
 
 ```bash
-cd /home/zar/claude/Mettapedia/lean/mettapedia
-ulimit -Sv 6291456 && export LAKE_JOBS=3 && nice -n 19 \
-  lake build Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalRegression
+cd lean/mettapedia
+lake build Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalRegression
 ```
 -/
 

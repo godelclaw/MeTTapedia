@@ -23,7 +23,7 @@
 ; Thm, and (b) each rule being sound -- which is why the trusted core is tiny +
 ; audited (a separate Lean reference spec will PROVE the rules sound).
 ;
-; Run:  /home/aimama/aihub/hyperon/CeTTa/cetta lcf_core.metta
+; Run:  lean/externals/CeTTa/cetta lcf_core.metta
 ; ============================================================================
 
 ; ---- hypothesis lists (HCons/HNil of Prop) ---------------------------------

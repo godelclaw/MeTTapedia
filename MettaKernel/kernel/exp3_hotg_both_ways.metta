@@ -15,7 +15,7 @@
 ; whether either style hides trust.  Both styles keep axiom provenance visible.
 ;
 ; Run:
-;   /home/aimama/aihub/hyperon/CeTTa/cetta exp3_hotg_both_ways.metta
+;   lean/externals/CeTTa/cetta exp3_hotg_both_ways.metta
 ; =============================================================================
 
 !(import! &self kernel_binding_waist_v1)

@@ -2,7 +2,7 @@
 ; Dedukti cic.dk Stage-1 guest micro.
 ;
 ; Source:
-;   /home/aimama/aihub/repos/dedukti/libraries/theories/cic.dk
+;   lean/externals/dedukti/libraries/theories/cic.dk
 ;
 ; This hosts a tiny CIC-as-guest fragment in MIK.  It is not a port of
 ; Dedukti and not a replacement checker.  The guest syntax is data; a covered

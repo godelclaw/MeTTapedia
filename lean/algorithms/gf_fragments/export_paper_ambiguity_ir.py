@@ -5,9 +5,13 @@ import subprocess
 import sys
 from pathlib import Path
 
-GF_LD = '~/.local/gf-extract/usr/lib'
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parents[2]
+GF_LD = os.environ.get('GF_LIBRARY_PATH', '')
 
 def ensure_runtime_libs():
+    if not GF_LD:
+        return
     cur = os.environ.get('LD_LIBRARY_PATH', '')
     parts = [x for x in cur.split(':') if x]
     if GF_LD in parts:
@@ -19,16 +23,18 @@ def ensure_runtime_libs():
 
 ensure_runtime_libs()
 
-GF_BIN = Path('~/claude/lean-projects/mettapedia/Mettapedia/Languages/GF/SUMO/eng/gf')
-GF_LIB = Path('~/claude/gf-rgl')
-PGF_PY_EGG = Path('~/.local/gf-extract/usr/local/lib/python3.12/dist-packages/pgf-1.1-py3.12-linux-x86_64.egg')
-ROOT = Path('~/claude/lean-projects/algorithms/gf_fragments')
+GF_BIN = os.environ.get('GF_BIN', 'gf')
+GF_LIB = Path(
+    os.environ.get('GF_RGL_ROOT', REPO_ROOT / 'lean/externals/gf-rgl')
+).expanduser()
+PGF_PY_EGG = os.environ.get('PGF_PY_EGG')
+ROOT = SCRIPT_DIR
 GENERATED = ROOT / 'generated'
 JSON_EXPORT_DIR = ROOT / 'json_export'
 PGF_PATH = ROOT / 'PaperAmbiguity.pgf'
-METTAPEDIA_GENERATED = Path('~/claude/lean-projects/mettapedia/Mettapedia/Languages/GF/Generated')
+METTAPEDIA_GENERATED = REPO_ROOT / 'lean/mettapedia/Mettapedia/Languages/GF/Generated'
 LEAN_WITNESS_OUT = METTAPEDIA_GENERATED / 'PaperAmbiguityPGFWitnesses.lean'
-ALGORITHMS_GENERATED = Path('~/claude/lean-projects/algorithms/Algorithms/GF/Generated')
+ALGORITHMS_GENERATED = REPO_ROOT / 'lean/algorithms/Algorithms/GF/Generated'
 LEAN_IR_OUT = ALGORITHMS_GENERATED / 'PaperAmbiguityIR.lean'
 JSON_WITNESSES_OUT = GENERATED / 'paper_ambiguity_parse_witnesses.json'
 JSON_GRAMMAR_OUT = GENERATED / 'PaperAmbiguity.gf.json'
@@ -67,7 +73,7 @@ def gf_path_arg() -> str:
 
 def run_gf_json_export():
     cmd = [
-        str(GF_BIN),
+        GF_BIN,
         '--output-format=json',
         f'--output-dir={JSON_EXPORT_DIR}',
         f'--path={gf_path_arg()}',
@@ -81,7 +87,8 @@ def run_gf_json_export():
 
 
 def load_pgf_module():
-    sys.path.insert(0, str(PGF_PY_EGG))
+    if PGF_PY_EGG:
+        sys.path.insert(0, PGF_PY_EGG)
     import pgf  # type: ignore
     return pgf
 

@@ -12,7 +12,7 @@ import Mathlib.Topology.Basic
 This file sets up Shannon's original axiom system from:
 
 * Claude E. Shannon, *A Mathematical Theory of Communication* (1948)
-  `~/claude/literature/shannon_entropy.pdf`
+  `literature/shannon_entropy.pdf`
 
 and proves that the standard Shannon entropy `∑ negMulLog(pᵢ)` satisfies these axioms.
 

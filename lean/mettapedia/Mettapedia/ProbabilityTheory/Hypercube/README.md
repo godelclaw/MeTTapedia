@@ -26,8 +26,8 @@ plausibility order must already be total: every pair must be comparable. Otherwi
 order embedding can exist, because `ℝ` is linearly ordered.
 
 This is formalized in:
-- `Mettapedia/Logic/PLNTruthTower.lean`:
-  - `no_pointRepresentation_with_incomparables` (incomparables rule out any faithful `Θ : α → ℝ`)
+- `Mettapedia/PLN/TruthValues/PLNTruthTower.lean`:
+  - `incomparable_forces_no_order_reflecting_point_representation`
 
 This is stronger than Knuth–Skilling fidelity. K&S require lattice order to imply scalar order,
 but explicitly permit the scalar order to extend the lattice order. The Heyting/Boolean gate is
@@ -237,8 +237,7 @@ of why classical probability emerges from quantum probability when measuring com
 
 ```bash
 cd Mettapedia/lean/mettapedia
-export LAKE_JOBS=3
-nice -n 19 lake build Mettapedia.ProbabilityTheory.Hypercube
+export lake build Mettapedia.ProbabilityTheory.Hypercube
 ```
 
 ## Current Status

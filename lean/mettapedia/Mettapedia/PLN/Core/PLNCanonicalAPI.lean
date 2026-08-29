@@ -1340,7 +1340,7 @@ abbrev pln_hol_pointwiseIff_iff_queryEq :=
   @_root_.Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness.pointwiseIff_iff_queryEq
 
 noncomputable abbrev pln_hol_wmConsequenceRuleOn_of_pointwise :=
-  @_root_.Mettapedia.Logic.PLNWorldModelHOLConsequence.wmConsequenceRuleOn_of_pointwise
+  @_root_.Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLConsequence.wmConsequenceRuleOn_of_pointwise
 
 /-! ## Direct Set-Semantics -> HOL -> WM Endpoints -/
 

@@ -14,12 +14,12 @@ A practical guide for writing kernel-verified proofs in Megalodon (for Proofgold
 
 ```bash
 # Build Megalodon (requires OCaml)
-cd ~/megalodon
+cd "$MEGALODON_ROOT"
 ./makeopt
 
 # Verify a proof file
-~/megalodon/bin/megalodon -mizar \
-  -I ~/megalodon/examples/mizar/PfgMizarNov2020Preamble.mgs \
+"$MEGALODON_ROOT/bin/megalodon" -mizar \
+  -I "$MEGALODON_ROOT/examples/mizar/PfgMizarNov2020Preamble.mgs" \
   your_file.mg
 
 # Exit code 0 = kernel verified!

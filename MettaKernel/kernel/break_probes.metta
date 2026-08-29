@@ -5,7 +5,7 @@
 ;  Codex's breaks (malformed-type sig / confluence / termination / type-wf-in-check).
 ;
 ;  Each !(assertEqual ... True) below documents a CURRENTLY-ACCEPTED unsoundness.
-;  Run:  /home/aimama/aihub/hyperon/CeTTa/cetta break_probes.metta
+;  Run:  lean/externals/CeTTa/cetta break_probes.metta
 ; =============================================================================
 
 !(import! &self kernel_binding_waist_v1)

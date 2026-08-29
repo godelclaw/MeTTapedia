@@ -10,7 +10,7 @@ inspect and rewrite its own rules — but it also makes "what does this program
 *mean*?" a genuinely subtle question, because the same atom can be a value, a
 function, or a rewrite rule depending on context.
 
-This directory pins that meaning down in Lean. The same surface language admits
+This directory pins that meaning down in Lean. The same source language admits
 several complementary readings, so it is formalized in **layers**, each with its
 own notion of "running a program" and its own trust model:
 
@@ -24,7 +24,7 @@ own notion of "running a program" and its own trust model:
   used elsewhere in Mettapedia), kept as a state-indexed legacy view.
 
 Because these layers describe one language, the root of this directory also holds
-integration facades that wire them together into a single surface for the rest of
+integration facades that wire them together into a single interface for the rest of
 Mettapedia to import.
 
 This README owns the integration layer and the small modules directly under
@@ -43,15 +43,21 @@ scope (files whose nearest README is this one) is 54.
 
 Supporting modules and data:
 - `PureKernel/` — declaration kernel (inductive types as MeTTa atoms)
-- `Translation/` — HE-to-PeTTa lowering and validated-surface conformance fixtures
+- `Prime/` — Prime-facing semantic bridges. In particular,
+  `SourceScopedAdaptiveRealization.lean` separates semantic sufficiency,
+  distinction conservation, currentness, profitability, and cache residence;
+  only the justified semantic judgments may activate a native realization.
+- `Translation/` — HE-to-PeTTa lowering and validated-fragment conformance fixtures
 - `SuiteBase/` — shared test-suite base
 - `TensorDSL/` — tensor-operation layer
 - `HEPrime/` — `Telescope.lean`, a single telescope-IR module
 - `SpecProfiles/` — profile inventories as `.csv`/`.json` data (no Lean code)
+- `StigmergicSpace.lean` — a proof-relevant MeTTa space as a trace-mediated
+  coordination medium, with delayed publication/query evidence.
 
 Root-level modules (`RuntimeSpec.lean`, `ExecutionContract.lean`,
 `ElaboratedCore.lean`, etc.) are integration facades — they wire the layers
-together and export a unified surface for the rest of Mettapedia.
+together and export a unified interface for the rest of Mettapedia.
 
 ## Formalization status
 
@@ -67,7 +73,7 @@ a couple of profile/seed proofs. These compile-evaluate rather than kernel-check
 they enlarge the trusted base (they trust the Lean compiler) and are flagged for
 migration to kernel `decide`:
 
-- `Translation/HEPeTTaValidatedSurface.lean` — 31
+- `Translation/HEPeTTaValidatedFragment.lean` — 31
 - `Translation/HEPeTTaNativeLoweringContracts.lean` — 12
 - `DTTSeedProofPath.lean` — 4
 - `CoreProfile.lean` — 1

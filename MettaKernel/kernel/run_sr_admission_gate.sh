@@ -7,7 +7,8 @@
 set -u
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CETTA="${CETTA:-/home/aimama/aihub/hyperon/CeTTa/cetta}"
+REPO_ROOT="$(cd "$ROOT/../.." && pwd)"
+CETTA="${CETTA:-$REPO_ROOT/lean/externals/CeTTa/cetta}"
 ENGINE="$ROOT/kernel_signature_lf_indexed_v0.metta"
 TMP="$(mktemp -d "$ROOT/.sr_admission_mutation.XXXXXX")"
 MUT_INDEXED="$ROOT/kernel_signature_lf_indexed_sr_mut_$$.metta"

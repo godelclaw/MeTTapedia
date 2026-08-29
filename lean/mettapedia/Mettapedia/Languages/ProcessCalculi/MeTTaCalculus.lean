@@ -22,6 +22,6 @@ This module is intentionally small and shares:
 - generic premise-aware rewriting (`OSLF.MeTTaIL.Engine`)
 - generic reflexive-transitive closure (`ProcessCalculi.Common.Star`)
 
-Source alignment:
-`~/claude/hyperon/rho4u/metta-calculus/metta-calculus.core.tex`
+Source alignment: the F1R3FLY MeTTa-calculus manuscript,
+`metta-calculus.core.tex`.
 -/

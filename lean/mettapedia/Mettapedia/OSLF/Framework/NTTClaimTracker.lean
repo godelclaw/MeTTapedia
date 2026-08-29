@@ -8,8 +8,8 @@ import Mettapedia.OSLF.MeTTaIL.LPRelationEnvBridge
 /-!
 # Native Type Theory Strict Claim Tracker
 
-This tracker is keyed to endpoint-claim anchors in:
-`~/claude/literature/Hyperon Study Materials/Rho and OSLF/Native_Type_Theory.pdf`.
+This tracker is keyed to endpoint-claim anchors in the Native Type Theory
+paper.
 
 It tracks theorem-level endpoint anchors only. Semantic adequacy of the
 operational modal route is tracked separately in canonical bridge modules

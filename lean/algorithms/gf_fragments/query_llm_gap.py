@@ -8,8 +8,14 @@ Usage: python3 gf_fragments/query_llm_gap.py '{"hypothesis":"...","premises":[..
 Output: {"suggestion":"...", "model":"...", "confidence":0.7, "trees":[{...}], "errors":[...]}
 """
 import json, sys, os
+from pathlib import Path
 
-PGF_PATH = "~/claude/gf-wordnet/build/ParseEng.pgf"
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parents[2]
+GF_WORDNET_ROOT = Path(
+    os.environ.get("GF_WORDNET_ROOT", REPO_ROOT / "lean/externals/gf-wordnet")
+).expanduser()
+PGF_PATH = GF_WORDNET_ROOT / "build/ParseEng.pgf"
 
 def mock_response(hypothesis, premises, gap):
     """Mock responses for known EntailmentBank examples."""
@@ -44,7 +50,7 @@ def parse_with_gf(sentence):
     """Parse sentence through GF C runtime. Returns (trees_json, errors)."""
     try:
         import pgf
-        g = pgf.readPGF(PGF_PATH)
+        g = pgf.readPGF(str(PGF_PATH))
         eng = g.languages["ParseEng"]
         trees = []
         for i, (prob, tree) in enumerate(eng.parse(sentence, cat=g.startCat)):

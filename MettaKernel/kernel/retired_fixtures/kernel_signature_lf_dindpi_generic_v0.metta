@@ -41,7 +41,7 @@
 ;   of scope here.
 ;
 ; Run:
-;   /home/aimama/aihub/hyperon/CeTTa/cetta kernel_signature_lf_dindpi_generic_v0.metta
+;   lean/externals/CeTTa/cetta kernel_signature_lf_dindpi_generic_v0.metta
 ; =============================================================================
 
 ; ---------- list helpers -----------------------------------------------------

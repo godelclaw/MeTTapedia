@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
 import json
+import os
 import subprocess
 from pathlib import Path
 
-ROOT = Path('~/claude/lean-projects/algorithms/gf_fragments')
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parents[2]
+ROOT = SCRIPT_DIR
 GENERATED = ROOT / 'generated'
-METTAPEDIA = Path('~/claude/lean-projects/mettapedia')
+METTAPEDIA = REPO_ROOT / 'lean/mettapedia'
 LEAN_SCOPE_SCRIPT = METTAPEDIA / 'scripts' / 'export_gf_project_core_names.lean'
 OUT = GENERATED / 'project_core_manifest.json'
 
-GF_RGL = Path('~/claude/gf-rgl')
+GF_RGL = Path(
+    os.environ.get('GF_RGL_ROOT', REPO_ROOT / 'lean/externals/gf-rgl')
+).expanduser()
 
 
 def run_scope_export() -> tuple[list[str], list[str]]:
@@ -18,8 +23,7 @@ def run_scope_export() -> tuple[list[str], list[str]]:
         '-lc',
         (
             f'cd {METTAPEDIA} && '
-            'ulimit -v 6291456 && '
-            f'lake env lean --run {LEAN_SCOPE_SCRIPT}'
+            f'lake env lean --run {LEAN_SCOPE_SCRIPT.relative_to(METTAPEDIA)}'
         ),
     ]
     out = subprocess.check_output(cmd, text=True)
@@ -48,9 +52,9 @@ def build_manifest(core: list[str], core_plus_symbol: list[str]) -> dict:
             'projectCorePlusSymbolFunctions': core_plus_symbol,
         },
         'gfSourceOfTruth': {
-            'root': str(GF_RGL),
-            'englishGrammar': str(GF_RGL / 'src' / 'english' / 'GrammarEng.gf'),
-            'czechGrammar': str(GF_RGL / 'src' / 'czech' / 'GrammarCze.gf'),
+            'root': '$GF_RGL_ROOT',
+            'englishGrammar': '$GF_RGL_ROOT/src/english/GrammarEng.gf',
+            'czechGrammar': '$GF_RGL_ROOT/src/czech/GrammarCze.gf',
         },
         'concreteFamilyModules': {
             'english': [

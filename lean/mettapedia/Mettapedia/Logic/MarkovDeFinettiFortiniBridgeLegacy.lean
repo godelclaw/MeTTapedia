@@ -1,4 +1,4 @@
-import Mettapedia.Logic.MarkovDeFinettiFortiniBridgeCrux
+import Mettapedia.ProbabilityTheory.Exchangeability.MarkovDeFinettiFortiniBridgeCrux
 
 /-!
 # Markov de Finetti Fortini Bridge: Legacy Surface

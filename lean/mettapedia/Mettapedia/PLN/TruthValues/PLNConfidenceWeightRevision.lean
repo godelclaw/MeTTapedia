@@ -1,4 +1,4 @@
-import Mettapedia.Logic.PLNConfidenceWeight
+import Mettapedia.PLN.TruthValues.PLNConfidenceWeight
 import KnuthSkilling.Counterexamples.RegradeCounterexample
 import Mathlib.Analysis.SpecialFunctions.Artanh
 import Mathlib.Analysis.SpecialFunctions.Exp

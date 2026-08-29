@@ -34,7 +34,7 @@
 ;   from DInd. Generating them honestly requires indexed DInd.
 ;
 ; Run:
-;   /home/aimama/aihub/hyperon/CeTTa/cetta kernel_signature_lf_idj_v0.metta
+;   lean/externals/CeTTa/cetta kernel_signature_lf_idj_v0.metta
 ; =============================================================================
 
 ; ---------- list helpers -----------------------------------------------------

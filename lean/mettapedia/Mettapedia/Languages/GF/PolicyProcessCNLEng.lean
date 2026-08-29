@@ -233,11 +233,11 @@ private def ex_build_verify : Step :=
 -- Example 13: Set + run
 private def ex_set_run : Step :=
   .sequence
-    (.setVar "LAKE_JOBS" "3")
-    (.run "nice -n 19 lake build")
+    (.setVar "BUILD_PROFILE" "verified")
+    (.run "lake build")
 
 #eval linStep ex_set_run
--- "set LAKE_JOBS to 3, then run nice -n 19 lake build"
+-- "set BUILD_PROFILE to verified, then run lake build"
 
 -- Example 14: Check output
 private def ex_check : Step :=
@@ -287,8 +287,8 @@ private def ex_doc : PolicyDoc :=
     (.seq
       (.directive (.never (.leave "sorry in final code")))
       (.step (.sequence
-        (.setVar "LAKE_JOBS" "3")
-        (.run "nice -n 19 lake build")))))
+        (.setVar "BUILD_PROFILE" "verified")
+        (.run "lake build")))))
 
 #eval linPolicyDoc ex_doc
 

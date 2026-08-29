@@ -41,7 +41,7 @@ by a `relEnv : RelationEnv` encoding which conditions hold for the token pair.
 
 - Meredith & Stay, "Operational Semantics in Logical Form"
 - Williams & Stay, "Native Type Theory" (ACT 2021)
-- PathMap `ring.rs`: `~/claude/hyperon/PathMap/src/ring.rs`
+- PathMap `ring.rs` algebraic implementation
 -/
 
 namespace Mettapedia.OSLF.PathMap.OSLFInstance
@@ -353,6 +353,8 @@ private lemma premiseStep_preserves_find (relEnv : RelationEnv) (lang : Language
   | relationQuery rel args =>
     obtain ⟨bPrem, hmerge⟩ := premiseStepWithEnv_relationQuery_mem h_bs
     exact mergeBindings_find_preserved key val h_find hmerge
+  | forAll _ _ _ =>
+    simp [premiseStepWithEnv] at h_bs
 
 /-- The full foldl chain over premises preserves any initial binding. -/
 private lemma foldl_premises_preserves_find

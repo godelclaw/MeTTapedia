@@ -33,7 +33,7 @@
 ;   from ParamsNil would be a masquerade.
 ;
 ; Run:
-;   /home/aimama/aihub/hyperon/CeTTa/cetta kernel_signature_lf_ind_v0.metta
+;   lean/externals/CeTTa/cetta kernel_signature_lf_ind_v0.metta
 ; =============================================================================
 
 ; ---------- list helpers -----------------------------------------------------

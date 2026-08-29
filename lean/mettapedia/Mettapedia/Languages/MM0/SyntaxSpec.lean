@@ -12,12 +12,12 @@ The MM0 reference defines **two-stage parsing**:
 2. **Secondary stage**: math-string interpretation via notation declarations
    (delimiter, prefix, infixl, infixr, coercion, notation)
 
-This module defines both stages as Lean structures, exports them as
-JSON artifacts, and explicitly encodes the two-stage boundary.
-
-Design rationale: 
-  Tao (primary is CF, secondary is operator-precedence),
-  Pfenning (notation is well-studied), Tang (single-source in Lean).
+This module records both stages as Lean data, exports that data as JSON, and
+marks the two-stage boundary. It does not define an executable lexer or parser,
+recognize MM0 source text, specify the MM0/MMB transition systems, verify
+proofs, or establish NIK hosting. Consequently these records are metadata, not
+a syntax authority. Those stronger claims require executable GSLT
+presentations and correspondence theorems to the upstream languages.
 -/
 
 namespace Mettapedia.Languages.MM0.SyntaxMetadata
@@ -168,7 +168,7 @@ structure MM0SyntaxMetadataProfile where
   primaryReferenceSource : String := "mm0/mm0.md (grammar section)"
   cReferenceVerifier : String := "mm0/mm0-c/verifier.c"
   rustReferenceCompiler : String := "mm0/mm0-rs/ (mm0-rs compile)"
-  sharedArtifactSchema : String := "lean-projects/mettapedia/artifacts/parser_artifact_schema.json"
+  sharedArtifactSchema : String := "lean/mettapedia/artifacts/parser_artifact_schema.json"
   notes : List String :=
     [ "The MM0 reference describes two-stage parsing: primary (.mm0 structure) + secondary (math-string notation)."
     , "The executable MMB proof-machine semantics are not defined by this metadata."

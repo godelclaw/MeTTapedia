@@ -1,4 +1,4 @@
-!(import! &self /home/aimama/aihub/hyperon/PeTTa/lib/lib_he)
+!(import! &self ../../lean/externals/PeTTa/lib/lib_he)
 
 ; =============================================================================
 ;  imp_coherence_exp1_petta.metta  --  GOAL #3 (PeTTa parity of the EXHAUSTIVE

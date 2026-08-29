@@ -1,7 +1,7 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
-import Mettapedia.Logic.PLNDeduction
-import Mettapedia.Logic.PLNFrechetBounds
+import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction
+import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNFrechetBounds
 import KnuthSkilling.Probability.BooleanRepresentation
 
 /-!
@@ -15,7 +15,7 @@ This is a PLN bridge layer, not a proof-path module inside Knuth-Skilling.
 
 namespace Mettapedia.PLN.Bridges.ProbabilityTheory.PLNProbabilityBridge
 
-open Mettapedia.Logic.PLNDeduction
+open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction
 open KnuthSkilling.Probability.BooleanRepresentation
 
 namespace KSBooleanRepresentation

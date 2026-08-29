@@ -186,12 +186,12 @@ theorem truthMarkovDirichletTransitionITVWalley_width_add_credibility
     (truthMarkovDirichletTransitionITVWalley ctx W q).width +
       (truthMarkovDirichletTransitionITVWalley ctx W q).credibility = 1 := by
   change
-    Mettapedia.Logic.PLNWorldModel.BinaryWorldModel.queryITVWidth
-        Mettapedia.Logic.PLNWorldModel.ITVSemantics.walleyIDMPredictive ctx W q +
-      Mettapedia.Logic.PLNWorldModel.BinaryWorldModel.queryITVCredibility
-        Mettapedia.Logic.PLNWorldModel.ITVSemantics.walleyIDMPredictive ctx W q = 1
+    Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryITVWidth
+        Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics.walleyIDMPredictive ctx W q +
+      Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryITVCredibility
+        Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics.walleyIDMPredictive ctx W q = 1
   exact
-    Mettapedia.Logic.PLNWorldModel.BinaryWorldModel.queryITVWidth_add_queryITVCredibility_walley
+    Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryITVWidth_add_queryITVCredibility_walley
       (State := MarkovTransitionWMState k) (Query := MarkovTransitionQuery k) ctx W q
 
 theorem truthMarkovDirichletPredictiveChainMass_le_one

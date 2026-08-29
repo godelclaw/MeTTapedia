@@ -4,14 +4,23 @@
 Output: hypernymy.json — maps synsetId → [direct hypernym synsetIds]
 Only includes synsets that appear in our concept_grounding.json.
 
-Usage: cd lean-projects/algorithms && python3 gf_fragments/export_hypernymy.py
+Set ``GF_WORDNET_ROOT`` when GF WordNet is not checked out under
+``lean/externals/gf-wordnet``.
 """
-import json, sys
+import json
+import os
+from pathlib import Path
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parents[2]
+GF_WORDNET_ROOT = Path(
+    os.environ.get("GF_WORDNET_ROOT", REPO_ROOT / "lean/externals/gf-wordnet")
+).expanduser()
 
 def main():
-    taxonomy_path = "~/claude/gf-wordnet/taxonomy.txt"
-    grounding_path = "gf_fragments/concept_grounding.json"
-    output_path = "gf_fragments/hypernymy.json"
+    taxonomy_path = GF_WORDNET_ROOT / "taxonomy.txt"
+    grounding_path = SCRIPT_DIR / "concept_grounding.json"
+    output_path = SCRIPT_DIR / "hypernymy.json"
 
     # 1. Build pos → synset_id map from taxonomy
     print(f"Reading {taxonomy_path}...")

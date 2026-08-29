@@ -14,12 +14,12 @@ open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNInferenceRules
 
 This file is a transparent Lean transcription of the numerical truth-value rules in:
 
-* `~/claude/hyperon/PeTTa/lib/lib_pln.metta`
+* `lean/externals/PeTTa/lib/lib_pln.metta`
 * `https://github.com/trueagi-io/PeTTa/blob/main/lib/lib_pln.metta`
 
 as mirrored from the local PeTTa checkout inspected during this update:
 
-* `~/claude/hyperon/PeTTa` HEAD `6f734e33533cde865d50bfe5eb449b439235ae89`
+* `hyperon/PeTTa` HEAD `6f734e33533cde865d50bfe5eb449b439235ae89`
 
 This file is intentionally a mirror of that library interface. It is **not** the
 place where canonicity or world-model justification is decided. For the

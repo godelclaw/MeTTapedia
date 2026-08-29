@@ -6,7 +6,7 @@ Czech adjectives inflect for Gender x Number x Case = 56 theoretical slots,
 but heavy syncretism reduces this to ~15 distinct forms.
 
 ## Source
-Ported from: ~/claude/gf-rgl/src/czech/ResCze.gf (lines 426-547)
+Ported from: gf-rgl/src/czech/ResCze.gf (lines 426-547)
 
 ## Paradigms Implemented
 1. **mladyAdjForms** (mladý) - Hard declension (-ý)

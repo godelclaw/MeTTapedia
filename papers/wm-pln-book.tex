@@ -12010,8 +12010,7 @@ The refresh script is:
 
 Run command:
 \begin{lstlisting}
-cd ~/claude/lean-projects/mettapedia
-ulimit -v 6291456
+cd lean/mettapedia
 python3 scripts/wm_pln_pplbench_easy_refresh.py
 \end{lstlisting}
 
@@ -12069,8 +12068,7 @@ Companion regression checks against the updated bridge also passed for:
 
 The second script lifts the refresh into a proper held-out benchmark report:
 \begin{lstlisting}
-cd ~/claude/lean-projects/mettapedia
-ulimit -v 6291456
+cd lean/mettapedia
 python3 scripts/wm_pln_pplbench_holdout_report.py
 \end{lstlisting}
 
@@ -12159,8 +12157,7 @@ non-conjugate workloads.
 After the bridge refresh, we also ran the first direct apples-to-apples
 \emph{Stan vs WM-PLN} comparison on the same benchmark model:
 \begin{lstlisting}
-cd ~/claude/pplbench
-ulimit -v 6291456
+cd pplbench
 python3 -m pplbench examples/normal_normal_stan_vs_pln.json
 \end{lstlisting}
 
@@ -12398,8 +12395,7 @@ engine rather than a broadly promotable exact-ish inference algorithm.
 
 The benchmark command is:
 \begin{lstlisting}
-cd ~/claude/pplbench
-ulimit -v 10485760
+cd pplbench
 python3 -m pplbench examples/noisy_or_topic_stan_vs_pln.json
 \end{lstlisting}
 
@@ -12509,8 +12505,7 @@ layer and should not yet be promoted as a general reusable inference engine.
 
 The benchmark command is:
 \begin{lstlisting}
-cd ~/claude/pplbench
-ulimit -v 10485760
+cd pplbench
 python3 -m pplbench examples/crowd_sourced_annotation_stan_vs_pln.json
 \end{lstlisting}
 
@@ -12618,8 +12613,7 @@ crowd E/M scheduler or other multiclass approximate loops.
 
 The benchmark command is:
 \begin{lstlisting}
-cd ~/claude/pplbench
-ulimit -v 10485760
+cd pplbench
 python3 -m pplbench examples/dirichlet_categorical_stan_vs_pln.json
 \end{lstlisting}
 
@@ -12740,8 +12734,7 @@ than a whole-procedure exactness theorem.
 
 The benchmark command is:
 \begin{lstlisting}
-cd ~/claude/pplbench
-ulimit -v 10485760
+cd pplbench
 python3 -m pplbench examples/n_schools_stan_vs_pln.json
 \end{lstlisting}
 
@@ -12881,8 +12874,7 @@ loop is exact.
 
 The benchmark command is:
 \begin{lstlisting}
-cd ~/claude/pplbench
-ulimit -v 10485760
+cd pplbench
 python3 -m pplbench examples/logistic_regression_stan_vs_pln.json
 \end{lstlisting}
 
@@ -13022,8 +13014,7 @@ robust scheduler is exact.
 
 The benchmark command is:
 \begin{lstlisting}
-cd ~/claude/pplbench
-ulimit -v 10485760
+cd pplbench
 python3 -m pplbench examples/robust_regression_stan_vs_pln.json
 \end{lstlisting}
 
@@ -13409,9 +13400,8 @@ lake build Mettapedia.Logic.PLNBrokenSensorDemo \
 \section{Build}
 
 \begin{lstlisting}
-cd ~/claude/lean-projects/mettapedia
-export LAKE_JOBS=3
-nice -n 19 lake build          # full build
+cd lean/mettapedia
+export lake build          # full build
 lake exe cache get             # cache after update
 \end{lstlisting}
 

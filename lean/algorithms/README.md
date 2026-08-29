@@ -19,7 +19,7 @@ Lean library: `«Algorithms»` (`Algorithms.lean` is the root aggregator).
 ## Build
 
 ```bash
-cd ~/claude/Mettapedia/lean/algorithms
+cd lean/algorithms
 lake build
 ```
 

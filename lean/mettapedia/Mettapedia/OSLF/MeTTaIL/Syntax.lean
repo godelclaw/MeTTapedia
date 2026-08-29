@@ -5,8 +5,8 @@ import Mettapedia.Util.LinearHash
 /-!
 # MeTTaIL Language Definition Syntax (Locally Nameless)
 
-Formalization of the MeTTaIL `language!` macro structure from
-`~/claude/hyperon/mettail-rust/`.
+Formalization of the MeTTaIL `language!` macro structure from the
+`mettail-rust` source tree.
 
 Uses **locally nameless** representation: bound variables are de Bruijn indices
 (`.bvar n`), free variables / metavariables are named (`.fvar x`). Binders
@@ -14,7 +14,7 @@ carry no names — α-equivalent patterns are syntactically identical.
 
 ## References
 
-- `~/claude/hyperon/mettail-rust/macros/src/ast/`
+- `mettail-rust/macros/src/ast/`
 - Williams & Stay, "Native Type Theory" (ACT 2021)
 - Meredith & Stay, "Operational Semantics in Logical Form"
 - Aydemir et al., "Engineering Formal Metatheory" (POPL 2008)

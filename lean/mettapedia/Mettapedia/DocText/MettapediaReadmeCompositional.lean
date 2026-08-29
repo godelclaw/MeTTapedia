@@ -105,13 +105,13 @@ def renderMettapediaClaim : MettapediaClaim → String
       mkPresPos subj (complV2 (mkV2 (regV "run")) (properNameNP "lake update and lake exe cache get"))
   | .buildUsesLakeJobsThree =>
       let subj := linDetCN theDefArt (linUseN build_N)
-      mkPresPos subj (complV2 (mkV2 (regV "use")) (properNameNP "LAKE_JOBS=3 by default"))
+      mkPresPos subj (complV2 (mkV2 (regV "use")) (properNameNP "caller-supplied build settings"))
   | .buildCapsMemoryAtSixGiB =>
       let subj := linDetCN theDefArt (linUseN build_N)
-      mkPresPos subj (complV2 (mkV2 (regV "use")) (properNameNP "a 6 GiB memory cap via ulimit -Sv 6291456"))
+      mkPresPos subj (complV2 (mkV2 (regV "use")) (properNameNP "caller-supplied resource policy"))
   | .buildRunsNiceLakeBuild =>
       let subj := linDetCN theDefArt (linUseN build_N)
-      mkPresPos subj (complV2 (mkV2 (regV "run")) (properNameNP "nice -n 19 lake build"))
+      mkPresPos subj (complV2 (mkV2 (regV "run")) (properNameNP "lake build"))
   | .subprojectKnuthSkilling =>
       let subj := properNameNP "external KnuthSkilling"
       mkPresPos subj (complV2 (mkV2 (regV "host")) (properNameNP "Knuth-Skilling Foundations of Inference proofs"))
@@ -294,7 +294,7 @@ def mettapediaReadmeBlocks : List ReadmeBlock :=
       ]
   , .heading 2 (renderMettapediaHeading .build)
   , .codeBlock "bash"
-      "cd lean-projects/mettapedia\nlake update && lake exe cache get\n\nexport LAKE_JOBS=3\nulimit -Sv 6291456\nnice -n 19 lake build"
+      "cd lean/mettapedia\nlake update && lake exe cache get\nlake build"
   , .claimBullets
       [ claimBullet .buildRunsFromMettapediaRoot
       , claimBullet .firstBuildRunsUpdateAndCache
@@ -321,7 +321,7 @@ def mettapediaReadmeBlocks : List ReadmeBlock :=
       , renderMettapediaClaim .mettailBenchmarkRunsThreeRounds
       ]
   , .codeBlock "bash"
-      "cd ~/claude/hyperon/mettail-rust\n\n./scripts/roundtrip_mettaminimal.sh\n./scripts/bench_mettaminimal_roundtrip.sh"
+      "cd hyperon/mettail-rust\n\n./scripts/roundtrip_mettaminimal.sh\n./scripts/bench_mettaminimal_roundtrip.sh"
   , .claimBullets [claimBullet .mettailExporterPath]
   , .heading 2 (renderMettapediaHeading .statusAndReview)
   , .claimBullets

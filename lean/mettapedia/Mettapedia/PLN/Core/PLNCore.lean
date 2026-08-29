@@ -55,34 +55,35 @@ import Mettapedia.Logic.MarkovLogicClauseSemantics
 import Mettapedia.Logic.MarkovLogicClauseFactorGraph
 import Mettapedia.Logic.MarkovLogicClauseWorldModel
 import Mettapedia.Logic.MarkovLogicClauseRegression
-import Mettapedia.Logic.SoundnessCompleteness
-import Mettapedia.Logic.PLNErrorMagnificationGrounding
-import Mettapedia.Logic.PLNCanonicalAPI
-import Mettapedia.Logic.PLNFirstOrder.InfiniteRegression
-import Mettapedia.Logic.PLNFirstOrder.FuzzyQuantifierRegressionInf
-import Mettapedia.Logic.PLNFirstOrder.ChoquetQuantifierRegression
-import Mettapedia.Logic.PLNFirstOrder.FuzzyDomainQuantifierRegression
-import Mettapedia.Logic.PLNFirstOrder.FuzzySyllogismRegressionFin
-import Mettapedia.Logic.PLNWorldModelHOLSetBridge
-import Mettapedia.Logic.PLNHigherOrderHOLRegression
-import Mettapedia.Logic.SufficientStatisticSurface
-import Mettapedia.Logic.GenericWorldModelForgetting
-import Mettapedia.Logic.PLNSemitopology
-import Mettapedia.Logic.PLNSemitopologyProvenanceBridge
-import Mettapedia.Logic.PLNWorldModelAudit
-import Mettapedia.Logic.PLNWorldModelPreorder
-import Mettapedia.Logic.PLNGaussianEMExtension
-import Mettapedia.Logic.HigherOrder.PLNKyburgReduction
-import Mettapedia.Logic.PLNIntensionalWorldModel
-import Mettapedia.Logic.IntensionalInheritanceSolomonoffBridge
-import Mettapedia.Logic.PLNNARSRuleCorrespondence
-import Mettapedia.Logic.PLNTemporalCausalInference
-import Mettapedia.Logic.PLNProbabilisticEventCalculus
-import Mettapedia.Logic.SemanticsDecisionTree
-import Mettapedia.Logic.PLNLargeScaleInferenceCounterexamples
-import Mettapedia.Logic.PLNMultideductionResidual
-import Mettapedia.Logic.PLNTrailFreeDampedConvergence
-import Mettapedia.Logic.PremiseSelectionBRGI
+import Mettapedia.PLN.Core.SoundnessCompleteness
+import Mettapedia.PLN.Bridges.Languages.PLNErrorMagnificationGrounding
+import Mettapedia.PLN.Core.PLNCanonicalAPI
+import Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalAssocPatClosure
+import Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.InfiniteRegression
+import Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.FuzzyQuantifierRegressionInf
+import Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.ChoquetQuantifierRegression
+import Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.FuzzyDomainQuantifierRegression
+import Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.FuzzySyllogismRegressionFin
+import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLSetBridge
+import Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLRegression
+import Mettapedia.PLN.WorldModel.SufficientStatisticEncoder
+import Mettapedia.PLN.WorldModel.GenericWorldModelForgetting
+import Mettapedia.PLN.WorldModel.Semitopology.PLNSemitopology
+import Mettapedia.PLN.WorldModel.Semitopology.PLNSemitopologyProvenanceBridge
+import Mettapedia.PLN.WorldModel.Audit.PLNWorldModelAudit
+import Mettapedia.PLN.WorldModel.PLNWorldModelPreorder
+import Mettapedia.PLN.Bridges.ProbabilityTheory.PLNGaussianEMExtension
+import Mettapedia.PLN.Bridges.ProbabilityTheory.PLNKyburgReduction
+import Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel
+import Mettapedia.KR.ConceptGeometry.Bridges.UniversalAI.IntensionalInheritanceSolomonoffBridge
+import Mettapedia.NARS.Bridges.PLN.RuleCorrespondence
+import Mettapedia.PLN.RuleFamilies.Temporal.PLNTemporalCausalInference
+import Mettapedia.PLN.RuleFamilies.Temporal.PLNProbabilisticEventCalculus
+import Mettapedia.PLN.Comparisons.SemanticsDecisionTree
+import Mettapedia.PLN.InferenceControl.Counterexamples.PLNLargeScaleInferenceCounterexamples
+import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNMultideductionResidual
+import Mettapedia.PLN.InferenceControl.ProtocolDynamics.PLNTrailFreeDampedConvergence
+import Mettapedia.PLN.InferenceControl.PremiseSelection.BRGI
 
 /-!
 # PLN Core (Curated, theorem-complete entrypoint)
@@ -141,7 +142,14 @@ This module is a curated import interface for the currently theorem-complete PLN
 - Error-magnification grounding across WM calculus, OSLF atom semantics, and
   evidence-derived confidence transport (`PLNErrorMagnificationGrounding`)
 - Canonical API with 3-tier theorem index (`PLNCanonicalAPI`)
-- Arbitrary-domain PLN first-order quantifier surface
+- Exact formed-concept family interface, exact inheritance-query wrappers, and
+  closure/growth transport for the extensional finite concept lane
+  (`_root_.Mettapedia.KR.ConceptOntology.Formation`, `EmpiricalIntensionalFactorGraphBridge`,
+  `FormedConcept*Bridge`, exposed through canonical aliases in `PLNCanonicalAPI`)
+- Explicit mixed ASSOC+PAT boundary canary and model-based mixed threshold
+  endpoints, kept separate from the exact extensional formed-concept lane
+  (`PLNIntensionalAssocPatClosure`, especially `assocPat_boundary_canary`)
+- Arbitrary-domain PLN first-order quantifier interface
   (`PLNFirstOrder.InfiniteRegression`, plus canonical aliases in `PLNCanonicalAPI`)
 - Arbitrary-domain fuzzy first-order quantifier interface
   (`PLNFirstOrder.FuzzyQuantifierRegressionInf`, plus canonical aliases in `PLNCanonicalAPI`)

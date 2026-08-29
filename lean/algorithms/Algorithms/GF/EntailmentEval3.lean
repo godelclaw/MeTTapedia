@@ -105,15 +105,9 @@ def main : IO Unit := do
               ("hypothesis", .str hyp),
               ("premises", Json.arr (premSentences.map (Json.str ·))),
               ("gap", .str desc)]
-            let pgfEgg := "~/.local/gf-extract/usr/local/lib/python3.12/dist-packages/pgf-1.1-py3.12-linux-x86_64.egg"
-            let gfLib := "~/.local/gf-extract/usr/lib"
             let llmResult ← IO.Process.output {
               cmd := "python3"
               args := #["gf_fragments/query_llm_gap.py", gapJson.compress]
-              env := #[
-                ("PYTHONPATH", pgfEgg),
-                ("LD_LIBRARY_PATH", gfLib)
-              ].map fun (k, v) => (k, some v)
             }
             -- Strip C library noise (PGF_SYMBOL_CAPIT) after JSON on first line
             let cleanStdout := (llmResult.stdout.splitOn "\n").head!

@@ -40,7 +40,7 @@ for index in "${!LABELS[@]}"; do
 
   if ! (
     cd "$LEAN_ROOT"
-    LEAN_NUM_THREADS=1 LAKE_JOBS=1 lake env lean --run "$EXPORTER" \
+    lake env lean --run "$EXPORTER" \
       target "$SOURCE" "$label" "$fresh"
   ) >"$export_log" 2>&1; then
     echo "HOL.MM CHRONO GATE: FAIL ($label extraction/lowering; log: $export_log)"

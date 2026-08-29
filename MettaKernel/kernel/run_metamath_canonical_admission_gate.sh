@@ -45,7 +45,7 @@ generate_and_compare() {
   export_log="$LOGDIR/${basename%.metta}.export.log"
   if ! (
     cd "$LEAN_ROOT"
-    LEAN_NUM_THREADS=1 LAKE_JOBS=1 lake env lean --run "$EXPORTER" "$@" "$fresh"
+    lake env lean --run "$EXPORTER" "$@" "$fresh"
   ) >"$export_log" 2>&1; then
     fail "$basename source admission or rendering; log: $export_log"
   fi
@@ -124,7 +124,7 @@ LEAN_BUILD_LOG="$LOGDIR/lean-build.log"
 if ! (
   cd "$LEAN_ROOT"
   for source in "${LEAN_AUDIT_FILES[@]}"; do
-    LEAN_NUM_THREADS=1 LAKE_JOBS=1 lake env lean "$source"
+    lake env lean "$source"
   done
 ) >"$LEAN_BUILD_LOG" 2>&1; then
   fail "Lean build; log: $LEAN_BUILD_LOG"
@@ -133,7 +133,7 @@ fi
 NEGATIVE_LOG="$LOGDIR/negative-audit.log"
 if ! (
   cd "$LEAN_ROOT"
-  LEAN_NUM_THREADS=1 LAKE_JOBS=1 lake env lean --run "$AUDIT" \
+  lake env lean --run "$AUDIT" \
     "$DEMO0" "$REJECTED_SOURCE" "$DV_VIOLATION" "$MALFORMED_INCLUDE"
 ) >"$NEGATIVE_LOG" 2>&1; then
   fail "adversarial Lean audit; log: $NEGATIVE_LOG"

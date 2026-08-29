@@ -1299,7 +1299,7 @@ theorem coreMain_paper_parity_full_package
 #check @coreMain_theorem1_substitutability_imageFinite
 #check @coreMain_theorem1_langReduces_of_finite
 #check @coreMain_paper_parity_theorem_package
-#check @coreMain_paper_parity_theorem_package_langReduces
+#check @coreMain_paper_parity_theorem_package_langReduces_of_finite
 #check @Mettapedia.OSLF.CoreMainPaperParityCanonicalPackage
 #check @Mettapedia.OSLF.coreMain_paper_parity_canonical_package
 -- Category LambdaTheory (Thm 23 upgrade)

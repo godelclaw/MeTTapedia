@@ -539,6 +539,40 @@ theorem logRatioBits_eq_ve_query_score (t : FiniteWitnessFeatureTable) :
         ((veWeight t [⟨MembershipConcept.witness, true⟩] : ℝ) / veWeight t []) := by
   exact MembershipCounts.pointwiseIntensionalScoreBits_eq_ve_query_score (toMembershipCounts t)
 
+/-- If there are no witness-only cases in the finite 2x2 table, the witness
+marginal VE weight is exactly the feature-and-witness joint VE weight. -/
+theorem veWeight_witness_eq_feature_witness_of_no_witnessOnly
+    (t : FiniteWitnessFeatureTable)
+    (hNoWitnessOnly : t.witnessOnly = 0) :
+    veWeight t [⟨MembershipConcept.witness, true⟩] =
+      veWeight t [⟨MembershipConcept.feature, true⟩,
+        ⟨MembershipConcept.witness, true⟩] := by
+  have hWitness :
+      veWeight t [⟨MembershipConcept.witness, true⟩] =
+        (toMembershipCounts t).witnessSupport := by
+    simpa [veWeight] using
+      MembershipCounts.veWeight_witness_true (toMembershipCounts t)
+  have hJoint :
+      veWeight t [⟨MembershipConcept.feature, true⟩,
+          ⟨MembershipConcept.witness, true⟩] =
+        (toMembershipCounts t).both := by
+    simpa [veWeight] using
+      MembershipCounts.veWeight_feature_witness_true (toMembershipCounts t)
+  rw [hWitness, hJoint]
+  simp [toMembershipCounts, MembershipCounts.witnessSupport, hNoWitnessOnly]
+
+/-- For a finite witness/feature table, zero witness-only mass is exactly the
+extensional inheritance condition in the table's crisp semantic
+interpretation. -/
+theorem witnessOnly_eq_zero_iff_extensionalInherits
+    (t : FiniteWitnessFeatureTable) :
+    t.witnessOnly = 0 ↔
+      (MembershipCounts.semanticInterpretation (toMembershipCounts t)).ExtensionalInherits
+        MembershipConcept.witness MembershipConcept.feature := by
+  simpa [toMembershipCounts] using
+    MembershipCounts.witnessOnly_eq_zero_iff_semanticInterpretation_extensionalInherits
+      (toMembershipCounts t)
+
 /-- Generic finite-table BP bridge: the witness prior is also recovered by the
 BP message ratio on the translated graph. -/
 theorem witnessPrior_eq_bpMessage_ratio (t : FiniteWitnessFeatureTable) :

@@ -19,7 +19,7 @@ open Mettapedia.Languages.MeTTa.PeTTa.Artifacts
 open Mettapedia.OSLF.MeTTaIL.Syntax
 
 private def defaultOutDir : System.FilePath :=
-  "~/claude/lean-projects/mettapedia/.artifacts/petta_native_profile_sample"
+  "lean/mettapedia/.artifacts/petta_native_profile_sample"
 
 /-- Sample PeTTaSpace with representative rules. -/
 private def sampleSpace : PeTTaSpace :=

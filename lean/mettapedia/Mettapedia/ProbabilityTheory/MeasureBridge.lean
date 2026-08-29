@@ -1,7 +1,7 @@
 import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
 import Mathlib.MeasureTheory.Measure.Count
 import Mathlib.Data.Fintype.Prod
-import KnuthSkilling.Overview
+import KnuthSkilling.Core.Basic
 
 /-!
 # Bridge: Mathlib Measures → Knuth-Skilling Framework

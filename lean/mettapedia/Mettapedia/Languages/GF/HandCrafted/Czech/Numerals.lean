@@ -5,7 +5,7 @@ Numeral forms and determiner construction ported from GF Resource Grammar Librar
 Czech numerals govern noun case in complex ways (NumSize system).
 
 ## Source
-Ported from: ~/claude/gf-rgl/src/czech/ResCze.gf (lines 850-914)
+Ported from: gf-rgl/src/czech/ResCze.gf (lines 850-914)
 
 ## Numerals Implemented
 1. **oneNumeral** - jeden/jedna/jedno (singular agreement)

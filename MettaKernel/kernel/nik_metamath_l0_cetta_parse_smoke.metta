@@ -5,7 +5,7 @@
 ; Metamath parser into the NIK L0 parsed-AST admission layer.
 ;
 ; Run from this directory:
-;   /home/aimama/aihub/hyperon/CeTTa/cetta nik_metamath_l0_cetta_parse_smoke.metta
+;   lean/externals/CeTTa/cetta nik_metamath_l0_cetta_parse_smoke.metta
 ; =============================================================================
 
 !(import! &self metamath)
@@ -52,7 +52,7 @@
       (Bad unexpected-parser-shape)))
 
 (= (tiny-cverify-parsed)
-   (mm-parse-file-pverify "/home/aimama/aihub/hyperon/CeTTa/tests/support/metamath/tiny_cverify.mm"))
+   (mm-parse-file-pverify "../../lean/externals/CeTTa/tests/support/metamath/tiny_cverify.mm"))
 (= (tiny-cverify-env)
    (let $r (l0-ingest (tiny-cverify-l0 (tiny-cverify-parsed)))
      (unify $r (Ok $env) $env $r)))

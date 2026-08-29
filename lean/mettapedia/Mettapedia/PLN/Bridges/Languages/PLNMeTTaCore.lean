@@ -355,20 +355,20 @@ theorem semantic_pln_induction_measure_sound
       (tA := wA) (tB := wB) (tC := wC) (tBA := wBA) (tBC := wBC)
       ctx
       (by
-        simpa [Mettapedia.Logic.PLNLinkCalculus.Soundness.holdsTerm,
-          Mettapedia.Logic.PLNWeightTV.WTV.ofCTV, wA] using hA)
+        simpa [Mettapedia.PLN.RuleFamilies.FirstOrder.PLNLinkCalculus.Soundness.holdsTerm,
+          Mettapedia.PLN.TruthValues.PLNWeightTV.WTV.ofCTV, wA] using hA)
       (by
-        simpa [Mettapedia.Logic.PLNLinkCalculus.Soundness.holdsTerm,
-          Mettapedia.Logic.PLNWeightTV.WTV.ofCTV, wB] using hB)
+        simpa [Mettapedia.PLN.RuleFamilies.FirstOrder.PLNLinkCalculus.Soundness.holdsTerm,
+          Mettapedia.PLN.TruthValues.PLNWeightTV.WTV.ofCTV, wB] using hB)
       (by
-        simpa [Mettapedia.Logic.PLNLinkCalculus.Soundness.holdsTerm,
-          Mettapedia.Logic.PLNWeightTV.WTV.ofCTV, wC] using hC)
+        simpa [Mettapedia.PLN.RuleFamilies.FirstOrder.PLNLinkCalculus.Soundness.holdsTerm,
+          Mettapedia.PLN.TruthValues.PLNWeightTV.WTV.ofCTV, wC] using hC)
       (by
-        simpa [Mettapedia.Logic.PLNLinkCalculus.Soundness.holdsLink,
-          Mettapedia.Logic.PLNWeightTV.WTV.ofCTV, wBA] using hBA)
+        simpa [Mettapedia.PLN.RuleFamilies.FirstOrder.PLNLinkCalculus.Soundness.holdsLink,
+          Mettapedia.PLN.TruthValues.PLNWeightTV.WTV.ofCTV, wBA] using hBA)
       (by
-        simpa [Mettapedia.Logic.PLNLinkCalculus.Soundness.holdsLink,
-          Mettapedia.Logic.PLNWeightTV.WTV.ofCTV, wBC] using hBC)
+        simpa [Mettapedia.PLN.RuleFamilies.FirstOrder.PLNLinkCalculus.Soundness.holdsLink,
+          Mettapedia.PLN.TruthValues.PLNWeightTV.WTV.ofCTV, wBC] using hBC)
   have hsource :
       (Mettapedia.PLN.RuleFamilies.FirstOrder.PLNLinkCalculus.Truth.sourceRule wA wB wC wBA wBC).strength =
         μ.real (C ∩ A) / μ.real A := by
@@ -445,20 +445,20 @@ theorem semantic_pln_abduction_measure_sound
       (tA := wA) (tB := wB) (tC := wC) (tAB := wAB) (tCB := wCB)
       ctx
       (by
-        simpa [Mettapedia.Logic.PLNLinkCalculus.Soundness.holdsTerm,
-          Mettapedia.Logic.PLNWeightTV.WTV.ofCTV, wA] using hA)
+        simpa [Mettapedia.PLN.RuleFamilies.FirstOrder.PLNLinkCalculus.Soundness.holdsTerm,
+          Mettapedia.PLN.TruthValues.PLNWeightTV.WTV.ofCTV, wA] using hA)
       (by
-        simpa [Mettapedia.Logic.PLNLinkCalculus.Soundness.holdsTerm,
-          Mettapedia.Logic.PLNWeightTV.WTV.ofCTV, wB] using hB)
+        simpa [Mettapedia.PLN.RuleFamilies.FirstOrder.PLNLinkCalculus.Soundness.holdsTerm,
+          Mettapedia.PLN.TruthValues.PLNWeightTV.WTV.ofCTV, wB] using hB)
       (by
-        simpa [Mettapedia.Logic.PLNLinkCalculus.Soundness.holdsTerm,
-          Mettapedia.Logic.PLNWeightTV.WTV.ofCTV, wC] using hC)
+        simpa [Mettapedia.PLN.RuleFamilies.FirstOrder.PLNLinkCalculus.Soundness.holdsTerm,
+          Mettapedia.PLN.TruthValues.PLNWeightTV.WTV.ofCTV, wC] using hC)
       (by
-        simpa [Mettapedia.Logic.PLNLinkCalculus.Soundness.holdsLink,
-          Mettapedia.Logic.PLNWeightTV.WTV.ofCTV, wAB] using hAB)
+        simpa [Mettapedia.PLN.RuleFamilies.FirstOrder.PLNLinkCalculus.Soundness.holdsLink,
+          Mettapedia.PLN.TruthValues.PLNWeightTV.WTV.ofCTV, wAB] using hAB)
       (by
-        simpa [Mettapedia.Logic.PLNLinkCalculus.Soundness.holdsLink,
-          Mettapedia.Logic.PLNWeightTV.WTV.ofCTV, wCB] using hCB)
+        simpa [Mettapedia.PLN.RuleFamilies.FirstOrder.PLNLinkCalculus.Soundness.holdsLink,
+          Mettapedia.PLN.TruthValues.PLNWeightTV.WTV.ofCTV, wCB] using hCB)
   have hsink :
       (Mettapedia.PLN.RuleFamilies.FirstOrder.PLNLinkCalculus.Truth.sinkRule wA wB wC wAB wCB).strength =
         μ.real (C ∩ A) / μ.real A := by

@@ -24,8 +24,8 @@ mkdir -p "$FRESHDIR"
 
 if ! (
   cd "$LEAN_ROOT"
-  LEAN_NUM_THREADS=1 LAKE_JOBS=1 lake build "$MODULE"
-  LEAN_NUM_THREADS=1 LAKE_JOBS=1 lake env lean --run "$EXPORTER" "$FRESH_BASE"
+  lake build "$MODULE"
+  lake env lean --run "$EXPORTER" "$FRESH_BASE"
 ) >"$EXPORT_LOG" 2>&1; then
   echo "HOL LIGHT SOURCE GIC GATE: FAIL (presentation export; log: $EXPORT_LOG)"
   exit 1

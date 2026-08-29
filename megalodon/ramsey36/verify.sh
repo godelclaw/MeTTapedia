@@ -1,7 +1,7 @@
 #!/bin/bash
 # Verification script for Ramsey R(3,6)=18 Phase 1
 
-MEGALODON=~/claude/megalodon/bin/megalodon
+MEGALODON=megalodon/bin/megalodon
 
 echo "=== Ramsey R(3,6)=18 Phase 1 Verification ==="
 echo ""

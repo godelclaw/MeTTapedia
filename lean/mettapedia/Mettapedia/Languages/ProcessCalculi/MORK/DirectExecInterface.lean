@@ -198,8 +198,8 @@ theorem pettaEvalStep_schedulerFires
   · -- The source-level result is in fireSourceRule
     rw [hσ_eq, hef_tmpl]
     simpa [Mettapedia.Languages.MeTTa.RuntimeExec.morkRuntimeExec0,
-      Mettapedia.Languages.MeTTa.RuntimeExec.MeTTaRuntimeExecSurface.bindingsTranslation,
-      Mettapedia.Languages.MeTTa.RuntimeExec.MeTTaRuntimeExecSurface.sourceRuleTranslation] using
+      Mettapedia.Languages.MeTTa.RuntimeExec.MeTTaRuntimeExecInterface.bindingsTranslation,
+      Mettapedia.Languages.MeTTa.RuntimeExec.MeTTaRuntimeExecInterface.sourceRuleTranslation] using
       (Mettapedia.Languages.MeTTa.RuntimeExec.morkRuntimeExec0.noPremiseBridge p q x r
         Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv.empty
         (Mettapedia.Languages.MeTTa.PeTTa.LPSoundness.pettaSpaceToLangDef s)

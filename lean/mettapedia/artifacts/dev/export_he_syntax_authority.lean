@@ -3,7 +3,7 @@ import Mettapedia.Languages.MeTTa.HE.SyntaxSpec
 open Mettapedia.Languages.MeTTa.HE
 
 def defaultOutDir : System.FilePath :=
-  "~/claude/lean-projects/mettapedia/artifacts/syntax"
+  "lean/mettapedia/artifacts/syntax"
 
 def main (_args : List String) : IO UInt32 := do
   let outDir := defaultOutDir

@@ -1,5 +1,5 @@
-import Mettapedia.Logic.MarkovDeFinettiFortiniBridgeCrux
-import Mettapedia.Logic.Bridges.CheckerReflection
+import Mettapedia.ProbabilityTheory.Exchangeability.MarkovDeFinettiFortiniBridgeCrux
+import Mettapedia.Algorithms.CheckerReflection
 import Mettapedia.Logic.MarkovDeFinettiFortiniFiniteCheckers
 
 noncomputable section

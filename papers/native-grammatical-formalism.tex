@@ -1468,7 +1468,7 @@ layer with evidence-valued inference.
 $ cd lean-projects/mettapedia
 $ lean --version
 Lean (version 4.28.0, ...)
-$ export LAKE_JOBS=3 && nice -n 19 lake build \
+$ lake build \
     Mettapedia.Languages.GF
 Build completed successfully.
 $ rg '^\s*sorry\b' Mettapedia/Languages/GF/ --type lean | wc -l
@@ -1500,7 +1500,7 @@ Mathlib pin:      v4.28.0
 LeanHammer pin:   v4.28.0
 
 Build command:
-  export LAKE_JOBS=3 && nice -n 19 lake build
+  lake build
 
 Build output (final lines):
   Build completed successfully.

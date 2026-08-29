@@ -85,7 +85,8 @@ theorem higherOrderChaining_regression_leaky_continue_accumulatedBound_eq :
 theorem higherOrderChaining_regression_leaky_continue_value_eq_benchmarkBeliefPrice :
     leakyHigherOrderPlan_C.current.value =
       some (((benchmarkBeliefPrice leakyHigherOrderPayload
-        leakyHigherOrderPayload_valid01 : HOL.LogicalInduction.Price01) : Rat)) := by
+        leakyHigherOrderPayload_valid01 :
+          Mettapedia.Logic.HOL.LogicalInduction.Price01) : Rat)) := by
   change
     (applyStep cleanPlan_B .applyHigherOrderSemantic
       (PLNGuardedHigherOrderSemantics.higherOrderSemanticContraction
@@ -99,7 +100,8 @@ theorem higherOrderChaining_regression_leaky_continue_value_eq_benchmarkBeliefPr
         )
       1).current.value =
       some (((benchmarkBeliefPrice leakyHigherOrderPayload
-        leakyHigherOrderPayload_valid01 : HOL.LogicalInduction.Price01) : Rat))
+        leakyHigherOrderPayload_valid01 :
+          Mettapedia.Logic.HOL.LogicalInduction.Price01) : Rat))
   exact higherOrder_continue_current_value_eq_benchmarkBeliefPrice
     cleanPlan_B
     PLNProofCarryingContractionDemo.softGateStep_C_given_A.query

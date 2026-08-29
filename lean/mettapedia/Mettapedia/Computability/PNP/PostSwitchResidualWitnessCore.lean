@@ -1,5 +1,5 @@
 import Mettapedia.Computability.PNP.PostSwitchForkObstruction
-import Mettapedia.Computability.PNP.VisiblePostSwitchSurface
+import Mettapedia.Computability.PNP.VisiblePostSwitchData
 import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.FinCases
 

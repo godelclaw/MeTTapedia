@@ -35,6 +35,9 @@ require certifyingDatalog from "../externals/certifyingDatalog"
 
 require «mm-lean4» from "../standalone/mm-lean4"
 
+-- Editable declarative Lean-core source used by the GSLT environment-growth bridge.
+require lean4lean from "../externals/lean4lean"
+
 -- Standalone Knuth–Skilling external (canonical home; namespace `KnuthSkilling.*`).
 -- Replaces the previously embedded copy at `Mettapedia/ProbabilityTheory/KnuthSkilling/`.
 require «ks-foundations-of-inference-lean» from "../standalone/ks-foundations-of-inference"

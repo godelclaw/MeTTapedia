@@ -21,7 +21,7 @@ Author "Gemini (guided by Billingsley)".
    - setminus : MIGHT exist, check!
 
    Use grep to search:
-   grep "Definition setminus" ~/.../PfgEAug2022Preamble.mgs
+   grep "Definition setminus" "$MEGALODON_PREAMBLE"
 *)
 
 (* ===== STEP 2: Define helper operations ===== *)

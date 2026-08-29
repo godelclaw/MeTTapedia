@@ -17,8 +17,8 @@ mkdir -p "$LOGDIR"
 
 if ! (
   cd "$LEAN_ROOT"
-  LEAN_NUM_THREADS=1 LAKE_JOBS=1 lake build "$MODULE"
-  LEAN_NUM_THREADS=1 LAKE_JOBS=1 lake env lean --run "$EXPORTER" "$FRESH"
+  lake build "$MODULE"
+  lake env lean --run "$EXPORTER" "$FRESH"
 ) >"$EXPORT_LOG" 2>&1; then
   echo "HOL GENERATED GIC GATE: FAIL (extraction/export; log: $EXPORT_LOG)"
   exit 1

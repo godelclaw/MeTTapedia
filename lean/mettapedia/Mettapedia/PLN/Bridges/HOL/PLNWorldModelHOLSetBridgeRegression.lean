@@ -114,7 +114,7 @@ theorem hol_native_higherOrderRefl_singleton_fixture
     change Mettapedia.Logic.HOL.HenkinModel.models
       (Mettapedia.Logic.HOL.Semantics.SetBased.ofPointed S) holNativeHigherOrderRefl
     exact
-      (Mettapedia.Logic.PLNHigherOrderHOLSoundness.holProvable_models
+      (Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLSoundness.holProvable_models
         (Base := SetBaseTy) (Const := SetConst)
         (φ := holNativeHigherOrderRefl) holNativeHigherOrderRefl_provable
         (M := Mettapedia.Logic.HOL.Semantics.SetBased.ofPointed S))
@@ -133,7 +133,7 @@ theorem hol_native_eta_id_singleton_fixture
     change Mettapedia.Logic.HOL.HenkinModel.models
       (Mettapedia.Logic.HOL.Semantics.SetBased.ofPointed S) holNativeEtaIdEq
     exact
-      (Mettapedia.Logic.PLNHigherOrderHOLSoundness.holProvable_models
+      (Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLSoundness.holProvable_models
         (Base := SetBaseTy) (Const := SetConst)
         (φ := holNativeEtaIdEq) holNativeEtaIdEq_provable
         (M := Mettapedia.Logic.HOL.Semantics.SetBased.ofPointed S))
@@ -152,7 +152,7 @@ theorem hol_native_pred_self_imp_singleton_fixture
     change Mettapedia.Logic.HOL.HenkinModel.models
       (Mettapedia.Logic.HOL.Semantics.SetBased.ofPointed S) holNativePredSelfImp
     exact
-      (Mettapedia.Logic.PLNHigherOrderHOLSoundness.holProvable_models
+      (Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLSoundness.holProvable_models
         (Base := SetBaseTy) (Const := SetConst)
         (φ := holNativePredSelfImp) holNativePredSelfImp_provable
         (M := Mettapedia.Logic.HOL.Semantics.SetBased.ofPointed S))
@@ -171,7 +171,7 @@ theorem hol_native_pred_eta_id_singleton_fixture
     change Mettapedia.Logic.HOL.HenkinModel.models
       (Mettapedia.Logic.HOL.Semantics.SetBased.ofPointed S) holNativePredEtaIdEq
     exact
-      (Mettapedia.Logic.PLNHigherOrderHOLSoundness.holProvable_models
+      (Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLSoundness.holProvable_models
         (Base := SetBaseTy) (Const := SetConst)
         (φ := holNativePredEtaIdEq) holNativePredEtaIdEq_provable
         (M := Mettapedia.Logic.HOL.Semantics.SetBased.ofPointed S))

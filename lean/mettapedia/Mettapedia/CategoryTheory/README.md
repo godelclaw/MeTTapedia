@@ -43,7 +43,7 @@ Three strands, 29 files in total:
 - **Categorical de Finetti** (the `DeFinetti*` files plus
   `FiniteHiddenMarkovDeFinettiBridge`) — exchangeability as a limit-cone
   universal property, plus Giry / Markov-category / Borel bridges, export
-  surfaces, a smoke test, and an explicit counterexample.
+  interfaces, a smoke test, and an explicit counterexample.
 - **Supporting structure** — the unit-interval fuzzy frame for PLN truth values,
   Meredith's theory of graphs, generalized open maps (bisimulation), and the
   Kripke-Joyal internal-language file.

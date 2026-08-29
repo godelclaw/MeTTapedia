@@ -9,9 +9,8 @@ Dedicated build target for extended fuzzy-quantifier syllogism checks
 Build command:
 
 ```bash
-cd ~/claude/lean-projects/mettapedia
-ulimit -Sv 6291456 && export LAKE_JOBS=3 && nice -n 19 \
-  lake build Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.FuzzySyllogismRegression
+cd lean/mettapedia
+lake build Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.FuzzySyllogismRegression
 ```
 -/
 

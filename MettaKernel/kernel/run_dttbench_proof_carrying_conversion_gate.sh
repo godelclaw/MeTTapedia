@@ -35,8 +35,7 @@ mkdir -p "$LOGDIR"
 
 if ! (
   cd "$LEAN_ROOT"
-  export LAKE_JOBS=3
-  nice -n 19 lake build "$MODULE"
+  lake build "$MODULE"
 ) >"$BUILD_LOG" 2>&1; then
   echo "DTTBENCH PROOF-CARRYING CONVERSION GATE: FAIL (Lean build failed; log: $BUILD_LOG)"
   exit 1

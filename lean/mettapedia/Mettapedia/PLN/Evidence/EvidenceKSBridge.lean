@@ -1,4 +1,4 @@
-import Mettapedia.Logic.EvidenceQuantale
+import Mettapedia.PLN.Evidence.EvidenceQuantale
 import KnuthSkilling.Core.Basic
 
 /-!
@@ -35,7 +35,7 @@ still has to be supplied, and Boolean complement laws do not follow.
 
 namespace Mettapedia.PLN.Evidence.EvidenceKSBridge
 
-open Mettapedia.Logic.EvidenceQuantale
+open Mettapedia.PLN.Evidence.EvidenceQuantale
 open KnuthSkilling
 
 /-! ## BinaryEvidence IS a PlausibilitySpace

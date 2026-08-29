@@ -1,4 +1,4 @@
-import Mettapedia.Logic.PLNWorldModel
+import Mettapedia.PLN.WorldModel.PLNWorldModel
 
 /-!
 # World-Model Profiles: The Categorical Spine
@@ -28,11 +28,11 @@ into it via evidence extraction.
 0 sorry.
 -/
 
-namespace Mettapedia.Logic.PLNWorldModelProfiles
+namespace Mettapedia.PLN.WorldModel.PLNWorldModelProfiles
 
-open Mettapedia.Logic.PLNWorldModel
-open Mettapedia.Logic.EvidenceQuantale
-open Mettapedia.Logic.EvidenceClass
+open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence.EvidenceClass
 
 /-! ## §0: EvidenceType instance for function types -/
 
@@ -291,4 +291,4 @@ theorem evidence_not_presheaf_classifier :
   trivial  -- The positive localic theorem requires Sh(H) infrastructure
            -- not yet available in mathlib.
 
-end Mettapedia.Logic.PLNWorldModelProfiles
+end Mettapedia.PLN.WorldModel.PLNWorldModelProfiles

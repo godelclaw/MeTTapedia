@@ -448,6 +448,15 @@ noncomputable instance : BinaryWorldModel ConcreteState ConcreteQuery where
   evidence_add W₁ W₂ q := by
     cases q <;> ext <;>
       simp [scoreToEvidenceNNReal, combineAssocPatSum, add_assoc, add_left_comm]
+  evidence_zero q := by
+    cases q with
+    | ext a b => ext <;> rfl
+    | assoc a b => ext <;> rfl
+    | pat a b => ext <;> rfl
+    | mix a b =>
+        apply BinaryEvidence.ext'
+        · simp [scoreToEvidenceNNReal, combineAssocPatSum]
+        · simp [scoreToEvidenceNNReal, combineAssocPatSum]
 
 /-- Canonical query builder into the concrete 4-channel query family. -/
 def enc : PLNIntensionalWorldModel.InheritanceQueryBuilder Pattern ConcreteQuery where
@@ -527,7 +536,7 @@ theorem pat_channel_nontrivial :
     have h10 := congrArg Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.pos h
     change (1 : ℝ≥0∞) = 0 at h10
     exact one_ne_zero h10
-  change ({ pos := 1, neg := 0 } : EvidenceQuantale.BinaryEvidence) ≠ 0
+  change ({ pos := 1, neg := 0 } : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence) ≠ 0
   simpa [scoreToEvidenceNNReal] using h1
 
 /-- Mixed channel is strictly richer than ext+ASSOC when PAT is nonzero. -/
@@ -674,6 +683,33 @@ theorem binary_mixed_policy_collapse_no_go :
       PLNIntensionalWorldModel.InheritanceQueryBuilder.MixedPolicyAssoc
         (State := ConcreteState) (Atom := Pattern) (Query := ConcreteQuery) enc combine2 :=
   no_binary_mixed_policy_for_assocPat_fixture
+
+/-- Boundary canary for the mixed ASSOC+PAT lane:
+PAT contributes materially, the mixed channel is not merely extensional+ASSOC,
+and the corrected three-channel law cannot collapse to any binary
+extensional+ASSOC policy on the fixture family. -/
+theorem assocPat_boundary_canary :
+    PLNIntensionalWorldModel.InheritanceQueryBuilder.intensionalPATEvidence
+        (State := ConcreteState) (Atom := Pattern) (Query := ConcreteQuery)
+        Wdemo enc (Pattern.fvar "a0") (Pattern.fvar "p") ≠ 0
+      ∧
+      PLNIntensionalWorldModel.InheritanceQueryBuilder.mixedEvidence
+        (State := ConcreteState) (Atom := Pattern) (Query := ConcreteQuery)
+        Wdemo enc (Pattern.fvar "a0") (Pattern.fvar "p") ≠
+        PLNIntensionalWorldModel.InheritanceQueryBuilder.extensionalEvidence
+          (State := ConcreteState) (Atom := Pattern) (Query := ConcreteQuery)
+          Wdemo enc (Pattern.fvar "a0") (Pattern.fvar "p") +
+        PLNIntensionalWorldModel.InheritanceQueryBuilder.intensionalAssocEvidence
+          (State := ConcreteState) (Atom := Pattern) (Query := ConcreteQuery)
+          Wdemo enc (Pattern.fvar "a0") (Pattern.fvar "p")
+      ∧
+      ¬ ∃ combine2 : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence →
+          Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence → Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence,
+        PLNIntensionalWorldModel.InheritanceQueryBuilder.MixedPolicyAssoc
+          (State := ConcreteState) (Atom := Pattern) (Query := ConcreteQuery)
+          enc combine2 := by
+  exact ⟨pat_channel_nontrivial, mixed_not_assoc_only,
+    binary_mixed_policy_collapse_no_go⟩
 
 /-- End-to-end Chapter-12 ASSOC+PAT theorem:
 Bayes-normal selector, lower threshold, concrete semantic model. -/

@@ -5,7 +5,7 @@ import Mathlib.Data.Real.Basic
 # ProbMeTTa Presentation Layer
 
 This file formalizes the user-visible presentation layer from
-`~/claude/ProbMeTTa/lib_prob.metta`:
+`ProbMeTTa/lib_prob.metta`:
 
 - `round-to`
 - top-level `?prob`

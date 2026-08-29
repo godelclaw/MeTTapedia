@@ -133,11 +133,11 @@ theorem truthRevision_strength_eq_toStrength
     (hs1 : 0 ≤ t1.s) (hs1' : t1.s ≤ 1)
     (hs2 : 0 ≤ t2.s) (hs2' : t2.s ≤ 1) :
     (truthRevision t1 t2).s =
-      (Mettapedia.Logic.NuEvidenceQuantaleBridge.Bridge.BinaryEvidence.toTV κ
-        (Mettapedia.Logic.NuEvidenceQuantaleBridge.Bridge.TV.toEvidence κ (toMettaTV t1) +
-         Mettapedia.Logic.NuEvidenceQuantaleBridge.Bridge.TV.toEvidence κ (toMettaTV t2))).s := by
+      (Mettapedia.PLN.Evidence.NuEvidenceQuantaleBridge.Bridge.BinaryEvidence.toTV κ
+        (Mettapedia.PLN.Evidence.NuEvidenceQuantaleBridge.Bridge.TV.toEvidence κ (toMettaTV t1) +
+         Mettapedia.PLN.Evidence.NuEvidenceQuantaleBridge.Bridge.TV.toEvidence κ (toMettaTV t2))).s := by
   exact congrArg (·.s)
-    (Mettapedia.Logic.NuEvidenceQuantaleBridge.Bridge.truthRevision_eq_toTV_hplus
+    (Mettapedia.PLN.Evidence.NuEvidenceQuantaleBridge.Bridge.truthRevision_eq_toTV_hplus
       (κ := κ) hκ0 hκT (toMettaTV t1) (toMettaTV t2) hs1 hs1' hs2 hs2')
 
 theorem truthRevision_conf_eq_toConfidence
@@ -146,11 +146,11 @@ theorem truthRevision_conf_eq_toConfidence
     (hs1 : 0 ≤ t1.s) (hs1' : t1.s ≤ 1)
     (hs2 : 0 ≤ t2.s) (hs2' : t2.s ≤ 1) :
     (truthRevision t1 t2).c =
-      (Mettapedia.Logic.NuEvidenceQuantaleBridge.Bridge.BinaryEvidence.toTV κ
-        (Mettapedia.Logic.NuEvidenceQuantaleBridge.Bridge.TV.toEvidence κ (toMettaTV t1) +
-         Mettapedia.Logic.NuEvidenceQuantaleBridge.Bridge.TV.toEvidence κ (toMettaTV t2))).c := by
+      (Mettapedia.PLN.Evidence.NuEvidenceQuantaleBridge.Bridge.BinaryEvidence.toTV κ
+        (Mettapedia.PLN.Evidence.NuEvidenceQuantaleBridge.Bridge.TV.toEvidence κ (toMettaTV t1) +
+         Mettapedia.PLN.Evidence.NuEvidenceQuantaleBridge.Bridge.TV.toEvidence κ (toMettaTV t2))).c := by
   exact congrArg (·.c)
-    (Mettapedia.Logic.NuEvidenceQuantaleBridge.Bridge.truthRevision_eq_toTV_hplus
+    (Mettapedia.PLN.Evidence.NuEvidenceQuantaleBridge.Bridge.truthRevision_eq_toTV_hplus
       (κ := κ) hκ0 hκT (toMettaTV t1) (toMettaTV t2) hs1 hs1' hs2 hs2')
 
 /-- **Revision, read as evidence accumulation.** The revised TV equals

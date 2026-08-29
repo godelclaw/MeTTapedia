@@ -1,7 +1,7 @@
 import Mettapedia.Languages.GF.SUMO.EvidenceModel
-import Mettapedia.Logic.EvidenceClass
-import Mettapedia.Logic.PLNWorldModelGeneric
-import Mettapedia.Logic.BinaryEvidence
+import Mettapedia.PLN.Evidence.EvidenceClass
+import Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Provenance.Semirings.Which
 
 /-!

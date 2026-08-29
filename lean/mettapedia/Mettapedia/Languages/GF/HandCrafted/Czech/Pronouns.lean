@@ -5,7 +5,7 @@ Personal, possessive, demonstrative, and interrogative pronouns
 ported from GF Resource Grammar Library.
 
 ## Source
-Ported from: ~/claude/gf-rgl/src/czech/ResCze.gf (lines 625-846)
+Ported from: gf-rgl/src/czech/ResCze.gf (lines 625-846)
 
 ## Pronouns Implemented
 1. **personalPron** - 8 personal pronouns (ja/ty/on/ona/ono/my/vy/oni)

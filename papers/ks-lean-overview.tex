@@ -2981,21 +2981,17 @@ took the project from ``we can't prove it'' to ``we know it's unprovable.''
 From the Mettapedia project root:
 
 \begin{lstlisting}[language=bash]
-export LAKE_JOBS=3
-nice -n 19 lake build Mettapedia.ProbabilityTheory.KnuthSkilling
+export lake build Mettapedia.ProbabilityTheory.KnuthSkilling
 \end{lstlisting}
 
 For the FOI reviewer entrypoint only:
 \begin{lstlisting}[language=bash]
-export LAKE_JOBS=3
-nice -n 19 lake build Mettapedia.ProbabilityTheory.KnuthSkilling.FoundationsOfInference
+export lake build Mettapedia.ProbabilityTheory.KnuthSkilling.FoundationsOfInference
 \end{lstlisting}
 
 For memory-intensive grid/induction files (e.g. ThetaPrime.lean):
 \begin{lstlisting}[language=bash]
-ulimit -v 6291456
-export LAKE_JOBS=1
-nice -n 19 lake build Mettapedia.ProbabilityTheory.KnuthSkilling.Additive.Proofs.GridInduction.Main
+export lake build Mettapedia.ProbabilityTheory.KnuthSkilling.Additive.Proofs.GridInduction.Main
 \end{lstlisting}
 
 %------------------------------------------------------------------------------

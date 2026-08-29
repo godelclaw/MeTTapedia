@@ -8,7 +8,6 @@ import Mathlib.MeasureTheory.Group.Defs
 import Mathlib.MeasureTheory.Group.Measure
 import Mathlib.Topology.Order.Real
 import Mathlib.MeasureTheory.Constructions.BorelSpace.Basic
-import KnuthSkilling.Overview
 
 /-
 # Measure Theory from Symmetry
@@ -24,7 +23,7 @@ Key results:
 
 References:
 - Skilling & Knuth (2018), Section 2 (Measure Theory)
-- ~/claude/literature/Knuth_Skilling/Knuth_Skilling_1712.09725v3.pdf
+- literature/Knuth_Skilling/Knuth_Skilling_1712.09725v3.pdf
 -/
 
 noncomputable section
@@ -32,7 +31,6 @@ noncomputable section
 open Classical
 open scoped BigOperators Pointwise ENNReal Topology
 open MeasureTheory Filter Set
-open KnuthSkilling
 
 namespace Mettapedia.MeasureTheory
 

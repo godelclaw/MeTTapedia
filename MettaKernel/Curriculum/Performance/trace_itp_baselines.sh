@@ -1,20 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="${ROOT:-/home/aimama/aihub}"
-HOL4="${HOL4:-$ROOT/CakeML/HOL4/bin/hol}"
-MEGALODON="${MEGALODON:-$ROOT/repos/megalodon-1.13/bin/megalodon}"
-MEGALODON_FILE="${MEGALODON_FILE:-$ROOT/Mettapedia/MettaKernel/Curriculum/Megalodon/01_basics.mg}"
-KONTROLI_REPO="${KONTROLI_REPO:-$ROOT/repos/kontroli-rs}"
-LOCAL_KOCHECK="${LOCAL_KOCHECK:-$KONTROLI_REPO/target/release/kocheck}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+HOL4="${HOL4:-$(command -v hol || true)}"
+MEGALODON="${MEGALODON:-$(command -v megalodon || true)}"
+MEGALODON_FILE="${MEGALODON_FILE:-$REPO_ROOT/MettaKernel/Curriculum/Megalodon/01_basics.mg}"
+KONTROLI_REPO="${KONTROLI_REPO:-}"
+LOCAL_KOCHECK="${LOCAL_KOCHECK:-${KONTROLI_REPO:+$KONTROLI_REPO/target/release/kocheck}}"
 DED_NAME="${DED_NAME:-}"
 if [ -n "${DED_EXAMPLE:-}" ]; then
   DED_EXAMPLE="$DED_EXAMPLE"
-elif [ -f "$KONTROLI_REPO/examples/nat.dk" ]; then
+elif [ -n "$KONTROLI_REPO" ] && [ -f "$KONTROLI_REPO/examples/nat.dk" ]; then
   DED_EXAMPLE="examples/nat.dk"
   DED_WORKDIR="${DED_WORKDIR:-$KONTROLI_REPO}"
 else
-  DED_EXAMPLE="$ROOT/repos/dedukti/examples/plus.dk"
+  DED_EXAMPLE="$REPO_ROOT/lean/externals/dedukti/examples/plus.dk"
 fi
 LOGDIR="${TRACE_LOG_DIR:-$PWD/.trace_itp_baselines.logs}"
 

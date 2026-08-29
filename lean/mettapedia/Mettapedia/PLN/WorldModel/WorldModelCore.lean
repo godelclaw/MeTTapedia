@@ -1,5 +1,5 @@
-import Mettapedia.Logic.PLNWorldModelGeneric
-import Mettapedia.Logic.PLNWorldModelProfiles
+import Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
+import Mettapedia.PLN.WorldModel.PLNWorldModelProfiles
 import Mettapedia.OSLF.Framework.GSLTEvidence
 import Mathlib.Analysis.Complex.Basic
 
@@ -54,14 +54,14 @@ Everything else (forgetting, provenance, views, compiled inference, typed
 realization) is structure ON TOP of this core.
 -/
 
-namespace Mettapedia.Logic.WorldModelCore
+namespace Mettapedia.PLN.WorldModel.WorldModelCore
 
 open scoped ENNReal
-open Mettapedia.Logic.EvidenceClass
-open Mettapedia.Logic.EvidenceQuantale
-open Mettapedia.Logic.PLNWorldModel
-open Mettapedia.Logic.PLNWorldModelGeneric
-open Mettapedia.Logic.PLNWorldModelProfiles
+open Mettapedia.PLN.Evidence.EvidenceClass
+open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
+open Mettapedia.PLN.WorldModel.PLNWorldModelProfiles
 open Mettapedia.OSLF.Framework.GSLTEvidence
 
 /-! ## 1. WorldModel with zero law = AddMonoidHom
@@ -252,4 +252,4 @@ additive extraction.  Everything above is a specialization by choosing V.
 Views are PROJECTIONS that are provably non-additive.
 -/
 
-end Mettapedia.Logic.WorldModelCore
+end Mettapedia.PLN.WorldModel.WorldModelCore

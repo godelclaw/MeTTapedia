@@ -28,8 +28,7 @@ fail() {
 LEAN_BUILD_LOG="$LOGDIR/source-gslt-build.log"
 if ! (
   cd "$LEAN_ROOT"
-  LEAN_NUM_THREADS=1 LAKE_JOBS=1 \
-    lake build \
+  lake build \
       Mettapedia.GSLT.CheckedLanguage \
       Mettapedia.Languages.Megalodon.CheckedLanguageSkeleton \
       Mettapedia.GSLT.Parsing.LanguageDefSyntaxCompiler \
@@ -49,8 +48,7 @@ FRESH_GRAMMAR="$LOGDIR/lib_parse_metamath_grammar_generated_v0.fresh.metta"
 EXPORT_LOG="$LOGDIR/source-gslt-export.log"
 if ! (
   cd "$LEAN_ROOT"
-  LEAN_NUM_THREADS=1 LAKE_JOBS=1 \
-    lake env lean --run "$EXPORTER" "$FRESH_GRAMMAR"
+  lake env lean --run "$EXPORTER" "$FRESH_GRAMMAR"
 ) >"$EXPORT_LOG" 2>&1; then
   fail "source GSLT export; log: $EXPORT_LOG"
 fi
@@ -61,8 +59,7 @@ FRESH_PARSER_PRESENTATION="$LOGDIR/metamath_appendix_e_v1.fresh.metta"
 PARSER_EXPORT_LOG="$LOGDIR/source-gslt-parser-export.log"
 if ! (
   cd "$LEAN_ROOT"
-  LEAN_NUM_THREADS=1 LAKE_JOBS=1 \
-    lake env lean --run "$PARSER_EXPORTER" "$FRESH_PARSER_PRESENTATION"
+  lake env lean --run "$PARSER_EXPORTER" "$FRESH_PARSER_PRESENTATION"
 ) >"$PARSER_EXPORT_LOG" 2>&1; then
   fail "source GSLT parser-presentation export; log: $PARSER_EXPORT_LOG"
 fi
@@ -304,8 +301,7 @@ check_source forward-reference "$FORWARD_REFERENCE" \
 SEMANTIC_ORACLE_LOG="$LOGDIR/mm-lean4-semantic-oracle.log"
 if ! (
   cd "$LEAN_ROOT"
-  LEAN_NUM_THREADS=1 LAKE_JOBS=1 \
-    lake env lean --run "$SEMANTIC_ORACLE" \
+  lake env lean --run "$SEMANTIC_ORACLE" \
       "$DEMO0" "$MIU" "$PEANO" "$DV" "$NORMAL" "$COMPRESSED" \
       "$SETMM_PROPOSITIONAL"
 ) >"$SEMANTIC_ORACLE_LOG" 2>&1; then
@@ -318,8 +314,7 @@ fi
 SEMANTIC_REJECTION_LOG="$LOGDIR/mm-lean4-semantic-rejections.log"
 if ! (
   cd "$LEAN_ROOT"
-  LEAN_NUM_THREADS=1 LAKE_JOBS=1 \
-    lake env lean --run "$SEMANTIC_ORACLE" --reject \
+  lake env lean --run "$SEMANTIC_ORACLE" --reject \
       "$UNDEFINED_PROOF_LABEL" "$DV_VIOLATION" \
       "$CORRUPTED_COMPRESSED" "$FORWARD_REFERENCE"
 ) >"$SEMANTIC_REJECTION_LOG" 2>&1; then
@@ -343,8 +338,7 @@ FRESH_SEMANTIC_REFERENCE="$LOGDIR/metamath_statement_semantic_reference_v0.fresh
 SEMANTIC_EXPORT_LOG="$LOGDIR/mm-lean4-semantic-export.log"
 if ! (
   cd "$LEAN_ROOT"
-  LEAN_NUM_THREADS=1 LAKE_JOBS=1 \
-    lake env lean --run "$SEMANTIC_EXPORTER" \
+  lake env lean --run "$SEMANTIC_EXPORTER" \
       "$FRESH_SEMANTIC_REFERENCE" \
       metamath-test/demo0.mm "$DEMO0_HASH" "$DEMO0" \
       metamath-test/miu.mm "$MIU_HASH" "$MIU" \

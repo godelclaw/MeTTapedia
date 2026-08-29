@@ -2,7 +2,7 @@
 ; Dedukti cic.dk Stage-2 guest micro.
 ;
 ; Source:
-;   /home/aimama/aihub/repos/dedukti/libraries/theories/cic.dk
+;   lean/externals/dedukti/libraries/theories/cic.dk
 ;
 ; This file keeps inductive machinery inside the existing DIndG kernel engine.
 ; The new work here is only guest-side CIC witness data plus lowering into the

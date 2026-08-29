@@ -1,10 +1,12 @@
 import Mettapedia.OSLF.Formula
 import Mettapedia.OSLF.Framework.CategoryBridge
 import Mettapedia.OSLF.Framework.TypeSynthesis
-import Mettapedia.Logic.EvidenceQuantale
-import Mettapedia.Logic.PLNWorldModel
-import Mettapedia.Logic.PLNWorldModelCalculus
-import Mettapedia.Logic.PLN_KS_Bridge
+import Mettapedia.OSLF.NativeType.Construction
+import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.WorldModel.PLNWorldModel
+import Mettapedia.PLN.WorldModel.PLNWorldModelCalculus
+import Mettapedia.PLN.Evidence.PLN_KS_Bridge
+import KnuthSkilling.Core.HeytingBounds
 import KnuthSkilling.Core.TotalityImprecision
 
 /-!
@@ -30,8 +32,12 @@ open scoped ENNReal
 open CategoryTheory
 open Opposite
 open Mettapedia.OSLF.Formula
-open Mettapedia.Logic.EvidenceQuantale
-open Mettapedia.Logic.PLNWorldModel
+open Mettapedia.OSLF.Framework.CategoryBridge
+open Mettapedia.OSLF.Framework.ConstructorCategory
+open Mettapedia.OSLF.MeTTaIL.Syntax
+open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.WorldModel.PLNWorldModel
+open KnuthSkilling.Heyting
 open KnuthSkilling.TotalityImprecision
 
 abbrev Pat := Mettapedia.OSLF.MeTTaIL.Syntax.Pattern

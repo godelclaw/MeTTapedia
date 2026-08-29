@@ -1,4 +1,4 @@
-!(import! &self /home/aimama/aihub/hyperon/PeTTa/lib/lib_he)
+!(import! &self ../../../lean/externals/PeTTa/lib/lib_he)
 
 ; =============================================================================
 ; kernel_signature_lf_ind_v1.metta
@@ -35,7 +35,7 @@
 ;   from ParamsNil would be a masquerade.
 ;
 ; Run:
-;   /home/aimama/aihub/hyperon/CeTTa/cetta kernel_signature_lf_ind_v0.metta
+;   lean/externals/CeTTa/cetta kernel_signature_lf_ind_v0.metta
 ; =============================================================================
 
 ; ---------- list helpers -----------------------------------------------------
