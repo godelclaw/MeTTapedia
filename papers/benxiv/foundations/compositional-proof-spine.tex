@@ -2386,6 +2386,47 @@ replacement theorem must exploit that simultaneous physical compatibility
 (or some still stronger feature of the exact exterior language), rather than
 parity or three separately existential boundary matchings.
 
+The first joint law is now checked at its proper, edge-set level.
+
+\begin{theorem}[Kempe idemposition identity]
+\label{thm:kempe-idemposition-identity}
+Let $C:E\to\{0,r,b,p\}$ be any edge colouring and let $D\subseteq E$
+contain only red or blue edges.  Switch red and blue exactly on $D$.  If
+$M_{xy}(C)$ denotes the set of edges whose colours lie in
+$\{x,y\}$, then
+\[
+ \begin{aligned}
+ M_{rb}(C')&=M_{rb}(C),\\
+ M_{rp}(C')&=M_{rp}(C)\mathbin\triangle D,\\
+ M_{bp}(C')&=M_{bp}(C)\mathbin\triangle D.
+ \end{aligned}
+\]
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KempeIdemposition.redBlue_idemposition}
+The same statement is checked for arbitrary three pairwise distinct Klein
+colours.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KempeIdemposition.twoColorSupport_switch_left_companion}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KempeIdemposition.twoColorSupport_switch_right_companion}
+\end{theorem}
+
+\begin{proof}
+Outside $D$ no colour changes.  On $D$, every red edge becomes blue and
+every blue edge becomes red.  Thus membership in $M_{rb}$ is unchanged,
+whereas membership in each of $M_{rp}$ and $M_{bp}$ is toggled exactly
+once.  Pointwise membership is therefore precisely symmetric difference
+with $D$.
+\end{proof}
+
+This theorem identifies why three separately chosen noncrossing boundary
+matchings are not yet a physical formation.  A switch in one family changes
+the other two through the \emph{same interior edge set} $D$.  Its endpoint
+pair on the boundary does not in general determine the connected components
+of the two symmetric differences: that depends on where the three manifolds
+share interior segments.  Accordingly the next realizability test must carry
+one common trivalent web (or equivalent edge-incidence data) and check all
+three equations simultaneously.  Treating the three matchings as independent
+would discard exactly the source's idemposition coupling and cannot discharge
+the surviving physical-exterior loophole.
+
 \begin{theorem}[the exact width criterion]
 \label{thm:exact-width-criterion}
 \Sprose
