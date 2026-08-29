@@ -64,9 +64,11 @@ When that source trail is obtained by deleting its distinguished edge from a
 closed cubic map, the same vertex partition now supplies connected
 complementary edge shores and a nonempty proper majority core in the closed
 ambient map as well.
-The connected
-branch-decomposition theorem is a named external conditional; wall exclusion
-and the arbitrary-length nested exact finite-state supply are not proved \\
+The standard rooted branch-decomposition interface and its conversion to the
+literal checked consumer are machine-checked.  Width-preserving
+connectedization is isolated as the named external theorem it actually is;
+wall exclusion and the arbitrary-length nested exact finite-state supply are
+not proved \\
 $D_2$ & Count across every actual ordered noose cut factors through a finite
 boundary-word relation, and cumulative support is deletable on repetition &
 the physical port-tangle gluing bijection, matrix law, support
@@ -85,9 +87,10 @@ composition, complementary boundary order, orientation-reversed seam match,
 and sphericity are machine-checked on the literal shore carriers.  Support
 replacement, the structural class, strict decrease and the minimality
 contradiction are now machine-checked together for equal normalized nested
-majority-shore states.  What remains is the decomposition-to-literal-shore
-state adapter and, for consumers insisting on a simple graph presentation,
-the machine-checked terminating parallel-seam normalization \\
+majority-shore states.  The standard decomposition-to-literal-shore adapter
+and the terminating digon/parallel-seam normalization are machine-checked;
+the remaining obligation is global production of the supplied nested states,
+which belongs to $D_1$, not to the local splice \\
 $D_4$ & The route-native finite floor contains no zero-Count obstruction &
 open; the refuted GWCO and $A\ne\varnothing$ systems cannot be inherited \\
 $D_5$ & Well-founded assembly from $D_0$--$D_4$ & proved as the explicit
@@ -1944,6 +1947,23 @@ Accordingly, the theorem above receives no majority-nonemptiness fields.
 Lemma~\ref{lem:connected-shore-literal-node} then supplies the roots, literal
 width, and two-port fields.
 
+For clarity, the standard branch-decomposition input is now separated from
+this consumer.  Choose one leaf of the usual unrooted ternary tree, delete
+that leaf and its incident internal vertex, and call the two remaining
+binary edge-leaf trees $T_L,T_R$.  The resulting rooted encoding
+$D=(e_0,T_L,T_R)$ remembers only the duplicate-free complete leaf labelling.
+Write $\operatorname{Conn}(D)$ when both edge-induced shores are connected at
+every tree cut, including the distinguished root-leaf cut and every remaining
+leaf cut, and $\operatorname{Width}_w(D)$ when every such middle set has size
+at most $w$.  These are independent predicates.  The checked adapter first
+forgets only the root and leaf cuts that the descent does not consume, then
+converts the remaining internal cuts to the exact literal consumer via
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedBranchDecompositionAdapter.everyForkGeometry_of_connected_width}
+and
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedBranchDecompositionAdapter.rootedBranchDecompositionToConsumerAtWidth}.
+Thus ``a bounded decomposition exists'' and ``it can be connected without
+increasing its width'' can no longer be conflated in one supply field.
+
 For an ordered boundary of size at most \(k\), the manuscript's data---edge
 colours, the two noncrossing connectivity relations, capped face progress,
 and the target-specific accepting bit---form a finite typed context state.
@@ -1957,12 +1977,21 @@ doi:10.1016/0095-8956(84)90013-3) says that excluding one fixed planar
 wall as a minor bounds treewidth.  The Seymour--Thomas sphere-cut theory
 supplies noose-respecting branch decompositions of plane graphs
 (Call routing and the ratcatcher, 1994,
-doi:10.1007/BF01215352).  A more direct supplier is available here.  A
-theorem of Fomin, Fraigniaud and Thilikos (The price of connectedness in
-expansions) says that every \(2\)-edge-connected graph has a connected
-branch decomposition of optimal width: both edge shores at every tree cut
-induce connected subgraphs after isolated vertices are discarded.  This
-external theorem is not formalized here and remains a named conditional.
+doi:10.1007/BF01215352).  A more direct supplier is available here.
+Fomin, Fraigniaud and Thilikos (The price of connectedness in expansions,
+Technical Report LSI--04--28--R, 2004,
+\url{https://hdl.handle.net/2117/98590}, Theorem~1) prove exactly that,
+given a width-$w$ branch decomposition of a \(2\)-edge-connected graph,
+their algorithm \emph{Make-it-Connected} returns a connected branch
+decomposition of width at most $w$.  Here ``connected'' means that both sets
+of edge leaves at every tree cut induce connected subgraphs; there is no
+hidden factor in the width.  The finite simple-graph specialization of this
+statement is the explicit proposition
+\texttt{WidthPreservingConnectedization}.  It is not an axiom and is not
+claimed kernel-checked here: callers must supply the named external theorem.
+The graph-side fact that a connected graph without bridges is
+\(2\)-edge-connected is checked as
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedBranchDecompositionAdapter.isEdgeConnected_two_of_connected_no_bridges}.
 Theorem~\ref{thm:connected-edge-shore-majority} converts its edge shores
 canonically into nested connected complementary \emph{vertex} shores.  In
 a cubic graph their literal edge boundary has size at most the original
@@ -1982,18 +2011,16 @@ Theorem~\ref{thm:rooted-connected-branch-decomposition}.
 
 \begin{proposition}[wall-exclusion reduction, relative form]
 \label{prop:target-forced-wall}
-\Sconditional{planar wall theorem; connected branch-decomposition supply; route-native finite base}
+\Sconditional{planar wall theorem; fixed-wall exclusion; width-preserving connectedization; route-native finite base}
 Fix the normal-form class and one direct-Count or Lift target.  Suppose there
 are computable \(r,w\) such that:
 \begin{enumerate}
 \item no vertex-minimal zero-target instance contains a subdivision of the
 \(r\)-wall;
-\item every plane instance in the class with no such wall has branchwidth at
-most \(w\);
-\item every width-\(w\) instance in the class has a complete rooted
-edge-leaf decomposition whose two nondegenerate subtrees satisfy the
-nodewise connected-shore, majority-nonemptiness, and middle-set hypotheses
-of Theorem~\ref{thm:rooted-connected-branch-decomposition}, with \(k=w\).
+\item every plane instance in the class with no such wall has a complete
+rooted branch decomposition of width at most \(w\);
+\item the Fomin--Fraigniaud--Thilikos width-preserving connectedization
+theorem is available in the finite simple-graph specialization above.
 \end{enumerate}
 Then every vertex-minimal zero-target instance has an effective vertex
 bound.  If the route-native finite base below that bound is empty, there is
@@ -2006,9 +2033,10 @@ the fixed wall.  Since a wall is subcubic, a minor model can be pruned inside
 each branch set to a subdivision: the at most three incident model edges are
 joined by a minimal tree, whose three terminal paths have one common branch
 point and are otherwise internally disjoint.  Thus the minor and topological
-forms agree for this wall in a cubic host.  Hypothesis~2 supplies the width
-bound and Hypothesis~3 supplies the complete connected edge-leaf
-decomposition.  Theorem~\ref{thm:rooted-connected-branch-decomposition}
+forms agree for this wall in a cubic host.  Hypothesis~2 supplies the raw
+width-$w$ tree and Hypothesis~3 connectedizes it without increasing the
+width.  The checked standard-to-consumer adapter supplies the complete
+connected edge-leaf decomposition.  Theorem~\ref{thm:rooted-connected-branch-decomposition}
 derives its two strictly nested shore trees and gives the effective vertex
 bound; internally, a repeated normalized state is ruled out by the exact
 strict replacement of Theorem~\ref{thm:majority-shore-physical-replacement}.
@@ -4553,22 +4581,45 @@ entire implication; its only open inputs are the decomposition-producing
 function and the bounded-base proposition stated above.
 \end{proof}
 
+\begin{corollary}[factored bounded-width assembly]
+\label{cor:factored-bounded-width-assembly}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SphericalReductiveAssembly.combinatorialFourColorStatement_of_raw_connectedization_and_base}
+Fix $w$ and put $B=B(w,w)$.  Suppose every graph-backed vertex-minimal
+Tait counterexample has a complete rooted branch decomposition of width at
+most $w$.  Suppose also the width-preserving connectedization proposition
+of Fomin--Fraigniaud--Thilikos, and suppose every graph-backed bridgeless
+spherical cubic map with at most $B$ vertices is Tait colourable.  Then every
+finite combinatorially planar simple graph is vertex-four-colourable.
+\end{corollary}
+
+\begin{proof}
+A least counterexample is connected and bridge-free, hence
+$2$-edge-connected.  Apply the supplied connectedization theorem to the raw
+width-$w$ tree, then apply the checked rooted adapter to obtain the exact
+decomposition supply of Theorem~\ref{thm:spherical-reductive-assembly} with
+$k=w$.  That theorem and the bounded base give the conclusion.  Lean checks
+this composition while leaving both genuine mathematical inputs---the raw
+width bound and the external connectedization theorem---visible.
+\end{proof}
+
 \begin{corollary}[wall-exclusion assembly]
 \label{cor:wall-exclusion-assembly}
-\Sconditional{Tait bridge; fixed-wall exclusion for least counterexamples; connected branch-decomposition supply; route-native finite base}
-Assume the Tait/minimal-counterexample bridge.  Assume there is a fixed
-wall excluded from every least Tait counterexample, that wall-free members
-of the normal-form class carry the complete connected edge-leaf decomposition
-required by Theorem~\ref{thm:rooted-connected-branch-decomposition}.  If the resulting
-route-native finite base contains no counterexample, then every planar graph
-is four-colourable.
+\Sconditional{abstract-planar representation theorem; fixed-wall exclusion for least counterexamples; bounded-width decomposition; width-preserving connectedization; route-native finite base}
+Assume the conventional representation theorem from finite abstract planar
+graphs to spherical rotation presentations.  Assume there is a fixed wall
+excluded from every least Tait counterexample, and that wall-free members
+of the normal-form class carry a complete rooted branch decomposition of
+width at most $w$.  Assume the Fomin--Fraigniaud--Thilikos connectedization
+theorem and that the resulting route-native finite base contains no
+counterexample.  Then every planar graph is four-colourable.
 \end{corollary}
 
 \begin{proof}
 Proposition~\ref{prop:target-forced-wall} bounds the size of a least Tait
-counterexample and constructs the decomposition supply consumed by
-Theorem~\ref{thm:spherical-reductive-assembly}.  The finite-base hypothesis
-is its second premise.  That theorem gives the spherical Four-Colour
+counterexample and constructs the raw width supply consumed by
+Corollary~\ref{cor:factored-bounded-width-assembly}.  The connectedization
+theorem converts it to the literal decomposition supply, and the finite-base
+hypothesis is the remaining premise.  That corollary gives the spherical Four-Colour
 statement; the separate classical representation theorem from an abstract
 planar graph to a spherical rotation presentation gives the customary
 abstract-planar formulation.
@@ -4675,13 +4726,15 @@ source-preserving local ladder transport;
 Proposition~\ref{prop:target-forced-cut-chain}; the raw noose Count theorem
 and physical support-state splice; and a route-native finite base.  The
 tree-form chain replaces the global corridor proposition by fixed-wall
-exclusion plus a connected branch-decomposition supply.  Both chains
+exclusion plus a raw bounded-width decomposition and the named
+width-preserving connectedization theorem.  Both chains
 use the same checked majority-shore D3 splice and the
 same finite base.
 
 At present the decisive open premises are therefore: either the
-target-forced global cut chain or fixed-wall exclusion together with the
-connected branch-decomposition supplier; and the route-native finite
+target-forced global cut chain or fixed-wall exclusion together with the raw
+bounded-width decomposition supplier and width-preserving connectedization;
+and the route-native finite
 base.  Exact Count replacement on supplied normalized majority shores is now
 checked.  A compatible tight vertex-noose to edge-noose
 perturbation is optional rather than load-bearing.  D3's face count, Euler
