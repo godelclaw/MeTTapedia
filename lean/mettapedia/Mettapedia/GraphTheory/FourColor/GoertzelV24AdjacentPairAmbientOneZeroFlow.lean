@@ -126,7 +126,7 @@ theorem zeroEdgeCount_oneZeroAmbientChain
   simp
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
-private theorem retainedVertex_eq_portVertex_of_mem_boundaryEdge
+theorem retainedVertex_eq_portVertex_of_mem_boundaryEdge
     (data : AdjacentPairData G) (vertex : V)
     (hvertex : vertex ∈
       retainedVertexSet data.firstVertex data.secondVertex)
@@ -137,14 +137,14 @@ private theorem retainedVertex_eq_portVertex_of_mem_boundaryEdge
     simpa [boundaryEdge, boundaryEdgeValue, hvertex.1, hvertex.2] using hmem
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
-private theorem centralEdge_not_mem_at_retainedVertex
+theorem centralEdge_not_mem_at_retainedVertex
     (data : AdjacentPairData G) (vertex : V)
     (hvertex : vertex ∈
       retainedVertexSet data.firstVertex data.secondVertex) :
     vertex ∉ ((centralEdge data).1 : Sym2 V) := by
   simp [centralEdge, centralEdgeValue, hvertex.1, hvertex.2]
 
-private theorem oneZeroAmbientChain_ne_of_distinct_at_retainedVertex
+theorem oneZeroAmbientChain_ne_of_distinct_at_retainedVertex
     (data : AdjacentPairData G)
     (hcubic : ∀ vertex : V, (incidentEdgeFinset G vertex).card = 3)
     (C : (DeletedAdjacentPairGraph G data.firstVertex

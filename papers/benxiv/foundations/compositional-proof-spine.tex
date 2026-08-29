@@ -2253,6 +2253,107 @@ physical replacement.  Merely pigeonholing the three constant words would
 discard the graph-dependent Kempe paths and would not prove the boxed
 assertion.
 
+There is nevertheless no colour-extension gap at a compatible checkpoint.
+The following statement isolates the exact planar cap which may be attached
+there; it will be the closed carrier on which Kauffman's formation parity can
+legitimately be evaluated.
+
+\begin{lemma}[compatible four-port colourings extend across the paired cap]
+\label{lem:adjacent-pair-compatible-cap-extension}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairReductionColorExtension.reductionTaitColorable_iff_exists_deletedColoring_compatible}
+Fix an adjacent pair (uv), delete (u,v), and retain the four defect ports
+in their cyclic order.  Choose either of the two planar square pairings of
+those ports.  The corresponding paired square reduction is Tait-colourable
+if and only if the four-defect graph has a proper Tait colouring whose
+missing-colour word is constant on each of the two chosen pairs.
+\end{lemma}
+
+\begin{proof}
+In one direction, restrict a colouring of the paired reduction to its old
+edges.  At either endpoint of a new seam, the two retained incident colours
+are distinct and nonzero; their missing Klein-four colour is therefore the
+colour of that seam.  The two endpoints of a seam consequently have equal
+missing colours, giving the required compatible word.
+
+Conversely, start with a compatible deletion colouring.  Restore (u,v)
+temporarily by assigning the four old cut edges their four missing colours
+and assigning (uv) the colour zero.  This one-zero chain is proper at every
+retained vertex and has no zero on any retained or cut edge.  Compatibility
+says exactly that the two old cut edges identified at each selected seam
+have the same colour.  Hence their dart colouring descends through the two
+identifications.  The zero edge (uv) lies in the discarded region, so the
+descended colouring is nowhere zero and is a Tait colouring of the paired
+reduction.
+\end{proof}
+
+The four-state square used by the source is narrower than an arbitrary open
+Kempe path, and all of its intermediate words stay compatible with one fixed
+cap.
+
+\begin{lemma}[the same-side Kempe square extends through one paired cap]
+\label{lem:same-side-kempe-square-cap-extension}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairReductionKempeSquare.sameSideKempeSquare_states_extend}
+Let (C) be a deletion colouring compatible with the pairing
+(01\mid 23).  Suppose an ((a,b))-component (K_{01}) has exact boundary
+support ({0,1}), while another ((a,b))-component (K_{23}) has exact
+boundary support ({2,3}).  Switch neither, either, or both components.
+Each of the resulting four proper deletion colourings extends to a proper
+Tait colouring of the same (01\mid 23) paired reduction.
+\end{lemma}
+
+\begin{proof}
+The four boundary words are the original word, the result of interchanging
+(a,b) at ports (0,1), the result of interchanging them at ports (2,3),
+and the result of interchanging them at all four ports.  Equality within each
+of the pairs ({0,1}) and ({2,3}) is preserved in all four cases.
+Every corner therefore satisfies the compatibility hypothesis of
+Lemma~\ref{lem:adjacent-pair-compatible-cap-extension}.  Applying its explicit
+extension construction at each corner gives the four capped colourings.
+\end{proof}
+
+The source needs more than endpoint extension, but less than a universal
+path-lifting theorem.  Its two moves have exact same-side support, and such a
+move closes to one ordinary Kempe circuit when its matching seam is inserted.
+
+\begin{lemma}[a same-side Kempe switch closes through the paired cap]
+\label{lem:same-side-kempe-switch-cap-lift}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairReductionKempeSquare.exists_cappedKempeComponent_restricts_sameSideSwitch}
+In the setting of
+Lemma~\ref{lem:same-side-kempe-square-cap-extension}, and let
+\(\widehat C\) be the explicit extension of (C) across the
+(01\mid23) cap.  If (C') is obtained from (C) by switching (K_{01}),
+then some closed ((a,b))-Kempe component of \(\widehat C\) contains the
+(01)-seam, and switching that component restricts on every old edge exactly
+to (C').  The same statement holds for (K_{23}).
+\end{lemma}
+
+\begin{proof}
+Consider (K_{01}).  At each of ports (0,1), the missing colour belongs to
+({a,b}).  Of the two old edges incident with that degree-two boundary
+vertex, exactly one therefore has colour (a) or (b); exact boundary
+support says that this edge lies in (K_{01}).  The new (01)-seam has the
+missing colour, so in the capped graph it joins the two open ends of
+(K_{01}).  No other selected-colour edge is available at either endpoint.
+Consequently (K_{01}) together with the seam is a connected 2-regular
+((a,b))-subgraph, hence one whole closed Kempe circuit.
+
+Switching this circuit interchanges (a,b) on every old edge of (K_{01})
+and on the new seam, and fixes every other old edge.  Consequently its
+restriction to the old graph is exactly (C').  This is the required closed
+realization of the open switch; no separately chosen extension of (C') is
+needed.  The proof for (K_{23}) is identical.
+\end{proof}
+
+This does not assert that every open Kempe path lifts through a fixed cap:
+cross-side switches can pass through incompatible boundary words, and an
+explicit planar example shows that closed formation parity can then change
+after recapping.  The lemma instead covers exactly the two same-side switches
+used in Lemma~\ref{lem:adjacent-pair-common-constant-orbit}.  Its remaining
+checked content is the graph-level identification of the capped component:
+old edges are labelled by their original open component, that label is
+invariant across every selected cap adjacency, and the matching seam closes
+the intended component without fusing it to another one.
+
 There is a second, checked constraint on any such overlap transport.  It
 shows why the transfer state may not remember only an affine action on the
 four colours.
