@@ -2885,6 +2885,53 @@ the quotient still determines simultaneous physical updates and the
 replacement support.  Projecting the three coordinates separately is ruled
 out by Proposition~\ref{prop:hexagon-persistent-pairwise-adversary}.
 
+Even retaining the three projected coordinates in one boundary state does
+not repair that loss.
+
+\begin{proposition}[projected joint idemposition does not determine the hexagon]
+\label{prop:hexagon-projected-joint-adversary}
+Let
+\[
+ \partial\mathcal M(w)=
+ \bigl(A_{rb}(w),A_{rp}(w),A_{bp}(w)\bigr),
+\]
+where \(A_q(w)\) is the set of ports whose colours belong to \(q\).
+There is a nonempty sixty-word language \(A\), disjoint from the literal
+hexagon support, with a deterministic noncrossing mate \(m_q(w)\) for every
+\(w\in A\) and every colour pair \(q\), such that the following holds.
+Whenever \(S\) is a union of active \(m_q(w)\)-pairs and \(w'\) is obtained
+by switching \(q\) on \(S\), then
+\[
+ w'\in A,\qquad m_q(w')=m_q(w),\qquad
+ \partial\mathcal M(w')
+   =\partial\mathcal M(w)\mathbin{\operatorname{toggle}}_q S.
+\]
+In the final equation the \(q\)-coordinate is fixed and both companion
+coordinates are symmetrically differenced with the same set \(S\).
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonProjectedJointAdversary.boundaryManifoldTriple_swapBoundaryWord}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonProjectedJointAdversary.persistentAdversary_survives_projectedJointBoundary}
+\end{proposition}
+
+\begin{proof}
+Use the language and deterministic mates from
+Proposition~\ref{prop:hexagon-persistent-pairwise-adversary}.  That
+certificate already proves \(w'\in A\) and persistence of the operated mate.
+For the displayed joint equation, argue at one port.  If the port is outside
+\(S\), its colour and all three membership bits are unchanged.  If it lies in
+\(S\), its colour is one of the two colours of \(q\); exchanging them fixes
+membership in \(q\) and toggles membership in each of the other two pairs.
+This is exactly the three-coordinate toggle by the one set \(S\).
+\end{proof}
+
+The proposition does not contradict
+Theorem~\ref{thm:joint-physical-idemposition}.  It identifies the information
+lost by restricting that theorem to the ports.  At the boundary, the three
+support coordinates are already determined by \(w\), so writing them as one
+triple adds no shared-interior information.  The next receipt must retain a
+quotient of how the three manifolds overlap and reconnect inside the tangle
+(including the contraction chirality above); a word, three mates, and their
+entire boundary transition graph are still insufficient.
+
 There is also a sharp warning against treating an arbitrary \emph{signed}
 pairing identity as if it were already a planar counting argument.  Write a
 perfect matching of the six ports as, for example, \(01|23|45\), and let
