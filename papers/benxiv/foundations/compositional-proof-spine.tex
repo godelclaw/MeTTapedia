@@ -2744,6 +2744,92 @@ three equations simultaneously.  Treating the three matchings as independent
 would discard exactly the source's idemposition coupling and cannot discharge
 the surviving physical-exterior loophole.
 
+The part of this dynamics which belongs to one fixed colour pair is completely
+rigid, not merely existential.
+
+\begin{theorem}[same-family physical Kempe persistence]
+\label{thm:same-family-physical-kempe-persistence}
+Let $T$ be a finite cubic port tangle with a proper Tait colouring $C$, fix a
+colour pair $q$, and let $R$ be a union of connected components of the
+$q$-bichromatic web.  If $C'$ is obtained by switching the two colours on
+$R$, then the $q$-web has exactly the same local edges and the same connected
+components in $C'$ as in $C$.  Consequently its physical boundary mate is
+unchanged.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PortTanglePersistentKempe.kempeStep_switchRegion_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PortTanglePersistentKempe.kempeConnected_switchRegion_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PortTanglePersistentKempe.physicalMate_switchRegion_eq}
+\end{theorem}
+
+\begin{proof}
+At every dart, switching $q$ exchanges the two members of $q$ and fixes every
+other colour.  Membership in the unordered pair $q$ is therefore unchanged.
+The two kinds of local web edge---the two active darts at a cubic vertex and
+the two halves of an active interior edge---are consequently unchanged
+pointwise.  Their equivalence closure, hence each connected component, is the
+same relation before and after the switch.  The physical mate is defined as
+the unique other boundary port in that component (and fixes inactive ports),
+so it too is unchanged.
+\end{proof}
+
+This persistence is still not a boundary characterization of a literal
+hexagonal patch.  The failure persists even if one remembers a deterministic
+mate at every state rather than choosing a fresh witness after each switch.
+
+\begin{proposition}[persistent pairwise mates do not determine the hexagon]
+\label{prop:hexagon-persistent-pairwise-adversary}
+There is a sixty-word set $A$ of six-port Tait words with the following
+properties.
+\begin{enumerate}
+\item $A$ is nonempty and is disjoint from the exact boundary support of the
+      literal hexagonal patch.
+\item For every $w\in A$ and every one of the three colour pairs $q$, there is
+      a deterministic noncrossing active mate $m_q(w)$.
+\item Whenever a union of complete $m_q(w)$-pairs is switched, the resulting
+      word $w'$ belongs to $A$ and $m_q(w')=m_q(w)$.
+\end{enumerate}
+The set is colour-blind: it is the union of the ten equality-pattern classes
+\[
+\begin{gathered}
+001001,\quad001010,\quad010001,\quad010010,\quad010212,\\
+010221,\quad011202,\quad011220,\quad012102,\quad012120,
+\end{gathered}
+\]
+where equal digits require equal colours and distinct digits require distinct
+colours.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPersistentKempeAdversary.persistentAdversary_card_eq_sixty}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPersistentKempeAdversary.persistentAdversary_hasPersistentCandidate}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPersistentKempeAdversary.persistentAdversary_disjoint_hexagonSupport}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPersistentKempeAdversary.persistentAdversary_nonempty}
+\end{proposition}
+
+\begin{proof}
+Define $A$ by the ten displayed equality patterns.  Because the definition
+uses only equality and inequality, it is invariant under renaming the three
+Tait colours.  Direct finite reduction over all $3^6$ boundary words gives
+$|A|=60$.  For each of the three colour pairs and each supported word, the
+certificate supplies one of the five noncrossing matchings on the active
+ports.  The checker verifies both the ordinary active-matching conditions and
+all $2^6$ selected port sets; for every selected set which is a union of
+complete pairs, it verifies membership of the switched word in $A$ and
+equality of the selected mate before and after the switch.  The same complete
+enumeration verifies that no word in $A$ extends across the literal hexagon.
+Finally the equality pattern $001001$, instantiated by two distinct Tait
+colours, supplies an explicit member of $A$.  The flat tables used to suggest
+the five-way matching choices are not trusted: the Boolean witness condition
+is proved equivalent to the mathematical proposition, and the kernel reduces
+every row of the three separate certificates.
+\end{proof}
+
+Thus even the exact boundary shadow of
+Theorem~\ref{thm:same-family-physical-kempe-persistence}, imposed separately
+for all three pairs and all of their successor states, admits a language which
+no literal hexagon realizes.  What is absent is precisely the cross-family
+clause in Theorem~\ref{thm:kempe-idemposition-identity}: all three updates must
+be induced by one common selected interior edge set.  The next state therefore
+has to retain a common trivalent web, or equivalent shared edge-incidence
+data; adding further independent pairwise closure fields cannot close this
+gap.
+
 There is also a sharp warning against treating an arbitrary \emph{signed}
 pairing identity as if it were already a planar counting argument.  Write a
 perfect matching of the six ports as, for example, \(01|23|45\), and let
