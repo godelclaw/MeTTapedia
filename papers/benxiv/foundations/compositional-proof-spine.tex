@@ -3131,6 +3131,105 @@ receipt).  That distinction keeps this negative result aligned with the
 source's unsigned operator $F_X$, rather than mistaking a formal pairing
 expansion for an extension count.
 
+The remaining gap in that last paragraph can be seen in one small graph.
+The positive tensor is an honest unsigned extension count, but only after the
+cyclic order of the six ports is allowed to cross.
+
+\begin{proposition}[the gauge adversary is a crossed pentagon--leaf tensor]
+\label{prop:hexagon-crossed-pentagon-leaf-adversary}
+Let $Q$ be the abstract trivalent network with internal vertices
+$v_0,\ldots,v_5$, internal edges
+\[
+ v_0v_1,\ v_0v_4,\ v_1v_2,\ v_1v_5,\ v_2v_3,\ v_3v_4,
+\]
+and six boundary half-edges attached, in the prescribed cyclic port order,
+at
+\[
+                         v_3,v_0,v_2,v_4,v_5,v_5.
+\]
+For every nonzero Tait boundary word $w$, the number $N_Q(w)$ of proper
+internal edge-colourings is
+\[
+              N_Q(w)=\sigma(w)L(w)=
+              \begin{cases}1,&w\in E,\\0,&w\notin E.\end{cases}
+\]
+In particular each supported word has exactly one internal colouring.
+
+Now adjoin boundary vertices $b_0,\ldots,b_5$ at the six half-edges and the
+boundary cycle $b_0b_1\cdots b_5b_0$.  The resulting graph contains
+$K_{3,3}$ as a minor.  Consequently $Q$ has no embedding in a closed disc
+whose boundary ports occur in the displayed cyclic order.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonCrossedPentagonLeafAdversary.extension_eq_crossedPentagonLeafCandidate}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonCrossedPentagonLeafAdversary.card_crossedPentagonLeafExtensions}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonCrossedPentagonLeafAdversary.existsUnique_crossedPentagonLeafExtension_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonCrossedPentagonLeafAdversary.gaugeCorrectedPenroseTensor_eq_extensionCount}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonCrossedPentagonLeafAdversary.k33_isMinor_crossedPentagonLeafBoundaryGraph}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonCrossedPentagonLeafAdversary.persistentAdversary_is_crossedPentagonLeafTensor_with_k33Minor}
+\end{proposition}
+
+\begin{proof}
+Name the internal edge colours, in the order displayed above, by
+$x_{01},x_{04},x_{12},x_{15},x_{23},x_{34}$.  At the pendant vertex $v_5$,
+properness forces
+\[
+                         x_{15}=w_4+w_5.
+\]
+At $v_1$ the other two colours are therefore the unordered pair
+$\{w_4,w_5\}$: they are distinct and nonzero, and in $\mathbb F_2^2$ two
+pairs of distinct nonzero colours having the same sum are the same unordered
+pair.  There are consequently only two candidate orientations,
+\[
+ (x_{01},x_{12})=(w_4,w_5)
+       \quad\hbox{or}\quad
+ (x_{01},x_{12})=(w_5,w_4).
+\]
+Once one is chosen, the remaining vertices force, successively,
+\[
+ x_{23}=x_{12}+w_2,\qquad
+ x_{34}=x_{23}+w_0,\qquad
+ x_{04}=x_{34}+w_3.
+\]
+Thus every internal colouring is one of two explicitly displayed candidates;
+no enumeration over arbitrary internal colourings is involved.  Evaluating
+local properness for those two candidates on the $3^6$ boundary words gives
+one valid candidate precisely on the ten equality-pattern classes defining
+$E$, and none elsewhere.  The same finite table agrees row by row with
+$\sigma L$.  Lean proves the forcing argument, the equivalence between the
+two-candidate fibre and the full colouring fibre, and the $729$-row boundary
+check.
+
+For the topological assertion, use the following six disjoint connected
+branch sets in the boundary-cycle graph:
+\[
+\begin{array}{lll}
+A_0=\{v_1,v_2,v_5\},&A_1=\{b_0,b_1\},&
+A_2=\{v_4,b_3,b_4\},\\
+B_0=\{v_3\},&B_1=\{b_2\},&B_2=\{b_5\}.
+\end{array}
+\]
+Each $A_i$ is adjacent to each $B_j$: the nine witnessing edges are,
+row by row,
+\[
+\begin{array}{lll}
+v_2v_3,&v_2b_2,&v_5b_5,\\
+b_0v_3,&b_1b_2,&b_0b_5,\\
+v_4v_3,&b_3b_2,&b_4b_5.
+\end{array}
+\]
+Contracting each branch set therefore gives $K_{3,3}$.  If $Q$ had the
+claimed disc embedding, the six boundary-cycle edges could be drawn along
+the rim, producing a plane embedding of this augmented graph.  This is
+impossible because planarity is minor-closed and $K_{3,3}$ is nonplanar.
+\end{proof}
+
+This identifies the failure more sharply than positivity alone.  The tensor
+$\sigma L$ is the unsigned, integral, uniquely-colourable tensor of a tiny
+common trivalent network; what prevents it from being a physical exterior is
+the \emph{joint cofacial order} of that network.  The proposition does not
+claim that every possible realization of the same tensor has this particular
+$K_{3,3}$ model.  It says that any successful local receipt must be strong
+enough to distinguish a disc-realizable common web from this crossed one.
+
 \begin{theorem}[the exact width criterion]
 \label{thm:exact-width-criterion}
 \Sprose
