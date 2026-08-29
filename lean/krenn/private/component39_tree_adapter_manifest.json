@@ -1,0 +1,14 @@
+{
+  "component": 39,
+  "format": "krenn-selected-tree-adapter-export-v1",
+  "output": "KrennComponent39Tree.lean",
+  "output_sha256": "8c2e512dec2c39c8326f6d5486d030040dcc1b4c4bc82de7fe4f2663aae5abcf",
+  "root_equation_count": 661,
+  "root_system": "${KRENN_ARTIFACTS}/allcollapse_case_artifacts/case_0/components_reduced_v2/component_39/system.json",
+  "root_system_file_sha256": "19c8791ec91a4d49607fa0430690c1b34fc01deeb8fc66debb153fde80ed91e2",
+  "root_variable_count": 61,
+  "selected_manifest": "private/component39_fulltree_manifest.json",
+  "selected_manifest_sha256": "5b82473a9d4f7f7ef202c009e8359487104ea44f43ebe8bf577f151ce570e531",
+  "selected_wrapper": "KrennComponent39/SelectedSubtreeROOT.lean",
+  "selected_wrapper_sha256": "7ebc4cdd5c625b70fd45f5a9e6b8aa4785b80d35a399b648b02ce4d0ed501610"
+}

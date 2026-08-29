@@ -1,0 +1,13 @@
+{
+  "component": 15,
+  "format": "krenn-component-table-entry-export-v1",
+  "lean_table_index": 14,
+  "output": "KrennComponent15TableEntry.lean",
+  "output_sha256": "eb438c6f58cdda83094cdbe991829ef98f0509404d866932f5c16dce8bcfbe83",
+  "root_connector_audit": "private/component15_root_connector_serial_audit.json",
+  "root_connector_audit_sha256": "91c34086cd5af8f1b515b7c77e8943e67c32940ef9b5ffeb1effd99917559df9",
+  "root_olean": ".lake/build/lib/lean/KrennComponent15RootCommonZero.olean",
+  "root_olean_sha256": "ca24c397060c36e6668825dbf0b9bfe23b477ed5a73232f65bfbe3b0167192e7",
+  "root_source": "KrennComponent15RootCommonZero.lean",
+  "root_source_sha256": "45e31f70af708c53e1e0cc54aa1b0d628bb46273e218fc14310ad2ddb579f5ff"
+}

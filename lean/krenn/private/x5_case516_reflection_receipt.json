@@ -1,0 +1,42 @@
+{
+  "bridge_module_sha256": "d5d24b921af39ee191a05765e6c50bd3df2382ff3c1e01f0ca12cd4c5dbfb47e",
+  "case": 516,
+  "exporter_sha256": "71cf6447c642efee36fd4bcac0ef2ed03286d40e40edb68a7dc4330618dccbb7",
+  "format": "krenn-x5-residual-lean-reflection-v1",
+  "leaf_count": 8,
+  "leaf_modules": {
+    "b0": "cad4419936e8f99ea9fc9719ed2b31ec956a7b462d4d3a9981ac70e75b55b16d",
+    "b1": "f65800431afc280963abe3b428e6f633a42d856a737b399cd9d6da92c1aa4aab",
+    "b2": "41f2ef8bf7ba2834bb2c2d1976b9a14219760e08ebbdf366a7a17453fe410c2b",
+    "b3": "3d4d89d14349ccfdfe1820009358027314f82f7293f95e7333f67917db196b1b",
+    "b4": "84606eed1f022deda87c5708ab8a2a3c92c2024a82119fca13a381807ca0c03f",
+    "b5": "ae7e52f1267ecb80c777bb890c091052a4735c0ce962569f47cf5fadf84ccde7",
+    "b6": "e3a7242036410bfcf39c585874f2d8fdd978d5688b2a6db8a0db4db210bb79e5",
+    "b7": "a05ab04168f3c61caf2721161c5404ba038ccc4ebcd46d7d4d2f1a53dc45602f"
+  },
+  "root_selected_count": 17,
+  "root_selected_indices": [
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    421,
+    422,
+    423,
+    424,
+    425,
+    426,
+    660,
+    664,
+    671,
+    673,
+    674
+  ],
+  "source_system_file_sha256": "cbac4ad9b042cd837445e20d75714ca8f2f6f419108c56d784689b2b71f22396",
+  "source_system_semantic_sha256": "83b3899269f56ca9bad3b3a294520fa5dac317d2df45f5a86bcec7f22e5534ff",
+  "tree_manifest_sha256": "a8149a94d4eb8d8a1ddd50d42c049c95976021b42ae7e1df4f64a4ec6ef4cc41",
+  "tree_module_sha256": "5a31ea7bf586dfd801e06fb5f0747fa3a3dfadc779f64ed23a5917507170e208",
+  "tree_spec_sha256": "37360c7239146699dc70bc92a1f4e25517ace018c17813133113cd732698af84"
+}

@@ -1,0 +1,19 @@
+{
+  "base_file_sha256": "d3aad8dda7e6e2acd6bf5ecacd780d5850418e7f74b924367e8e936746ea76bc",
+  "base_provenance_count": 611,
+  "bridge_namespace": "Krenn.Component59RootBridge",
+  "chunk_count": 16,
+  "chunk_size": 40,
+  "component_provenance": [],
+  "external_component_index": 59,
+  "format": "krenn-component-root-chunks-export-v2",
+  "namespace": "Krenn.Component59RootCommonZero",
+  "normalization_namespace": "Krenn.Component59Normalization",
+  "proof_map_sha256": "dd34fd6fe19933835dd60fd22037471e058a3826cb908a9f1b5080bb70c08649",
+  "reduced_component_file_sha256": "87b458da3fad94532b9baf7908b8cbb83477d20cee36d34ed17f8bc040f3de88",
+  "root_equation_count": 611,
+  "root_equations_direct": true,
+  "root_leaf_namespace": null,
+  "tree_module": "KrennComponent59Tree",
+  "tree_namespace": "Krenn.Component59.Tree"
+}

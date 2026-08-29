@@ -1,0 +1,162 @@
+{
+  "format": "krenn-selected-subtree-serial-build-v1",
+  "mode": "source-audit-only",
+  "root_system_file_sha256": "957b3e719ac5d28c5aed70dcb8496e77643597e5a071b172f230c19e1d051584",
+  "scope": {
+    "claim": "only the named selected subtree",
+    "component": 46,
+    "prefix": "root",
+    "terminal_leaf_count": 15
+  },
+  "selected_subtree_manifest": "private/component46_selected_fulltree_manifest.json",
+  "selected_subtree_manifest_sha256": "845efa3ae502113c86284086cfa70301ec5b007a68229d5f8b1de8d1b8220d55",
+  "source_records": [
+    {
+      "source": "KrennComponent46/Root.lean",
+      "source_sha256": "f6b84f0625ef460ddd1bba6281071d0e2a6cdfdfd0ddcdef9550ae5b38310b3c"
+    },
+    {
+      "source": "KrennComponent46/SelectedLeafB0.lean",
+      "source_sha256": "f0c6c2fe8260c848eafbbf069de29297c8cdb78937a0bdb11a07c44320f8d063"
+    },
+    {
+      "source": "KrennComponent46/SelectedLeafB1.lean",
+      "source_sha256": "ea4875fdbfbd1f285f41b7386ad75dd44ec021fb685af35251b326337e66cd37"
+    },
+    {
+      "source": "KrennComponent46/SelectedLeafB2.lean",
+      "source_sha256": "8ea0d9a7e7b0fdde6c660ef37a89d4a02e19a9a4e3830b1aacc3dd1736f0284a"
+    },
+    {
+      "source": "KrennComponent46/SelectedLeafB3.lean",
+      "source_sha256": "a63d3ebbc104f345df1167a8a514f240c4875166afa20a83961d2b724e40abd6"
+    },
+    {
+      "source": "KrennComponent46/SelectedLeafB4_0.lean",
+      "source_sha256": "7ea3e7a634a2cbda5c83dc56c33138dc6e07e1bd2bdf5a7f13984eba6f842021"
+    },
+    {
+      "source": "KrennComponent46/SelectedLeafB4_1.lean",
+      "source_sha256": "d3cd5461b32f3e733dc72247d4bc766ee5a2f6caf40020e0ec3eb9cc24ec7efb"
+    },
+    {
+      "source": "KrennComponent46/SelectedLeafB4_2.lean",
+      "source_sha256": "aba25a1d7a5eec1007f880cacf048e6e0a1c4193ae8ccdb2ca4a0fbc57f89e79"
+    },
+    {
+      "source": "KrennComponent46/SelectedLeafB4_3.lean",
+      "source_sha256": "d78fda3c74fcc980a1443789960320cdb242e6aa20ef0090f25dafdd407e72c9"
+    },
+    {
+      "source": "KrennComponent46/SelectedLeafB4_4.lean",
+      "source_sha256": "de969b331f0f49fe3ffd913f341f3e961f718fdc84b74b0af2c3a4b832f37d27"
+    },
+    {
+      "source": "KrennComponent46/SelectedLeafB4_5.lean",
+      "source_sha256": "5235b4e9d8353a7bb44e05530f0ee6120a8cacb4701a40375e0500d5a7c1e2ca"
+    },
+    {
+      "source": "KrennComponent46/SelectedLeafB4_6.lean",
+      "source_sha256": "0ff8ae1ad01d7e6f64a027982ae1bf74d9f396d00fb66277af06aa234ae70bef"
+    },
+    {
+      "source": "KrennComponent46/SelectedLeafB4_7.lean",
+      "source_sha256": "7c01c927dfc5b46bba211d7063f791a5d321609527a787b837eb21685a6fc3c4"
+    },
+    {
+      "source": "KrennComponent46/SelectedLeafB5.lean",
+      "source_sha256": "7bc05c7184f83f5e4fce958bd95a49faf8b32601813b2aefd77f6f8d2f18cf0c"
+    },
+    {
+      "source": "KrennComponent46/SelectedLeafB6.lean",
+      "source_sha256": "a5a889519e4318a87370ef894d2f9aa40ccc488ff24fbe4c749adc4c71d9863a"
+    },
+    {
+      "source": "KrennComponent46/SelectedLeafB7.lean",
+      "source_sha256": "70f8ecda59bd9bc92e872ce8d4229c14d8a0ea959060f88ecd5b6f827adc8d41"
+    },
+    {
+      "source": "KrennComponent46/SelectedBridgeB0.lean",
+      "source_sha256": "c57e99587c8f3c67e00213318cdc006ea99de127e56637e24fa1e961e7418eec"
+    },
+    {
+      "source": "KrennComponent46/SelectedBridgeB1.lean",
+      "source_sha256": "f7412c3c9404c8f26a575166a3f04a5998f7dba95fa642948fcd191aa180b17d"
+    },
+    {
+      "source": "KrennComponent46/SelectedBridgeB2.lean",
+      "source_sha256": "1da6b6fedbb611adaa561c992218ecf2829b57f2a9ad0a4e990a10bd150c2b90"
+    },
+    {
+      "source": "KrennComponent46/SelectedBridgeB3.lean",
+      "source_sha256": "a17ea3ff7a9824d9fe959753b2825d07c193d2f334d2d8186230319d15c2cce9"
+    },
+    {
+      "source": "KrennComponent46/SelectedBridgeB4_0.lean",
+      "source_sha256": "2ece264d763b529d1249eb3702938755eedf5d58e137311f66e65e0db6c140a9"
+    },
+    {
+      "source": "KrennComponent46/SelectedBridgeB4_1.lean",
+      "source_sha256": "a96ae6dfc37b2cbede69a903f530c3a9f4c4d13cea218c0647dbe4c288b2fe1f"
+    },
+    {
+      "source": "KrennComponent46/SelectedBridgeB4_2.lean",
+      "source_sha256": "029d2158256ca6c7184e9cda37b2d140880fa91a0d7295e090a3bf20da7f7f1a"
+    },
+    {
+      "source": "KrennComponent46/SelectedBridgeB4_3.lean",
+      "source_sha256": "e2e2fa62329f98492964f59284737ffbd351d51bb442d245e07f3cbe73b149fa"
+    },
+    {
+      "source": "KrennComponent46/SelectedBridgeB4_4.lean",
+      "source_sha256": "a62b2e2549c47b7c9824d8c93c4139c9a0c30e71e2432ef6440d5a7ede3c3c41"
+    },
+    {
+      "source": "KrennComponent46/SelectedBridgeB4_5.lean",
+      "source_sha256": "9a958fff2a68587024799b7b9569c72c99dc2e4402bf4e2262f8086dbe328e6d"
+    },
+    {
+      "source": "KrennComponent46/SelectedBridgeB4_6.lean",
+      "source_sha256": "1bc6baa87ee2b7af9d627e2543702a31aa73b755507ad3aa897f955cb949fc17"
+    },
+    {
+      "source": "KrennComponent46/SelectedBridgeB4_7.lean",
+      "source_sha256": "47522a80219b7a380c39d98e780969ce07f36ca26175efb887039806037d2e81"
+    },
+    {
+      "source": "KrennComponent46/SelectedBridgeB5.lean",
+      "source_sha256": "233c3506633cdffb47c900d0685e83d05f37a7d4998f8822abfb686a11b6a7b0"
+    },
+    {
+      "source": "KrennComponent46/SelectedBridgeB6.lean",
+      "source_sha256": "609515ba9974f473220068b84dbefdc764ce72499e8120685d719c7738d80376"
+    },
+    {
+      "source": "KrennComponent46/SelectedBridgeB7.lean",
+      "source_sha256": "15591085fc28ba70b0b32398d8c0350e4b3510a13c01d0a07541112936825b98"
+    },
+    {
+      "source": "KrennComponent46/SelectedSubtreeROOT.lean",
+      "source_sha256": "92bae99c91b795ac70d7c5e60fab5ecaf22e981477739b8915e333d16d835833"
+    }
+  ],
+  "terminal_leaves": [
+    "b0",
+    "b1",
+    "b2",
+    "b3",
+    "b4.0",
+    "b4.1",
+    "b4.2",
+    "b4.3",
+    "b4.4",
+    "b4.5",
+    "b4.6",
+    "b4.7",
+    "b5",
+    "b6",
+    "b7"
+  ],
+  "tree_manifest_sha256": "ec5efb544998668a24e7ebcfa9ca8a01f4cb946180478e2c88ad0c04ac667eff",
+  "tree_spec_sha256": "cba1d77108e1b482404b9b8883d523c9b10219a020ab7d5feca1fc50907491d5"
+}

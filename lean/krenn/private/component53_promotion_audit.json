@@ -1,0 +1,19 @@
+{
+  "all_checks_pass": true,
+  "component_count": 1,
+  "components": [
+    {
+      "component": 53,
+      "connector_audit_sha256": "cf0e828d38b6cb39879bdba4e5b87259c6b443590c0bb846bbcfe31add78a01c",
+      "connector_modules_fresh": 20,
+      "lean_source_count": 249,
+      "lean_table_index": 52,
+      "table_entry_sha256": "fb74f9a5ae398cd9433d622a4af115056f2ba58e6fe059fb48567be0abbde60e",
+      "tree_audit_sha256": "826de15a963012fbdc0ec31676d4f03fe506f425477df6790f1f3298adf1fdb3",
+      "tree_modules_fresh": 228
+    }
+  ],
+  "connector_modules_fresh": 20,
+  "format": "krenn-component-promotion-audit-v1",
+  "tree_modules_fresh": 228
+}

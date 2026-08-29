@@ -1,0 +1,23 @@
+{
+  "component": 6,
+  "format": "krenn-selected-subtree-export-v1",
+  "internal_nodes": [
+    ""
+  ],
+  "manifest_sha256": "69cc82989181d14eb7d31e2fa2cfc70b152bb261bfeae833c6d26e2387ff21ed",
+  "prefix": "",
+  "root_system_file_sha256": "90faaaf612b677a04f156200ddc30ac051916620cfd5f8c6bcca707e8eca22a9",
+  "spec_sha256": "4be8df0674a38f4402618e09309e8a1efa2fa07fdae5683e3044b0d8b379ac1e",
+  "terminal_leaves": [
+    "b0",
+    "b1",
+    "b2",
+    "b3",
+    "b4",
+    "b5",
+    "b6",
+    "b7"
+  ],
+  "wrapper": "KrennComponent6/SelectedSubtreeROOT.lean",
+  "wrapper_sha256": "abca3e2ad9cace3ad83492a671202036bb3f3215ed29e7a3b4b4ce54489a4b2a"
+}

@@ -1,0 +1,68 @@
+{
+  "conclusion": "cycle-only P-kills cannot support a nonzero-mean potential; the unique smallest completion of the vertex-0 adjacent pair is the three remaining star edges",
+  "cycle_edges": [
+    [
+      0,
+      4
+    ],
+    [
+      0,
+      5
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      2,
+      5
+    ],
+    [
+      3,
+      4
+    ]
+  ],
+  "cycle_masks_checked": 64,
+  "field": "Q",
+  "format": "krenn-c6-potential-targets-v1",
+  "minimum_extra_kills": 3,
+  "noncollapse_vertex0_seed": [
+    [
+      0,
+      4
+    ],
+    [
+      0,
+      5
+    ]
+  ],
+  "script_sha256": "b5b31ee34712afcb7596e489565f95754de0d0a0bbcdf7da096f4146feef2a09",
+  "star_potential_basis": [
+    [
+      1,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  ],
+  "unique_minimum_extra": [
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      3
+    ]
+  ]
+}
