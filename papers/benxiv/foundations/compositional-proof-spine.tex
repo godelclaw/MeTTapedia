@@ -3305,41 +3305,99 @@ Exactly \(63\) of the \(3^6=729\) ordered boundary words extend across
 \(H_6\).
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexCellPortTangle.card_hexPortSupport}
 
-\begin{proposition}[one hexagonal cell has no smaller exact connected replacement]
-\label{prop:hex-cell-no-smaller-exact-replacement}
+\begin{proposition}[a facial cycle has no smaller exact connected replacement]
+\label{prop:facial-cycle-no-smaller-exact-replacement}
 \Sprose
-No connected cubic six-port tangle with fewer than six internal vertices has
-the same ordered boundary support as \(H_6\).
+For \(n\geq4\), let \(H_n\) be the open tangle consisting of a labelled
+\(n\)-cycle with one cyclically ordered port at each cycle vertex.  No
+connected cubic \(n\)-port tangle with fewer than \(n\) internal vertices
+has the same ordered boundary support as \(H_n\).
 \end{proposition}
 
 \begin{proof}
-Let such a tangle have \(n\) internal vertices and \(m\) internal edges.
-Counting incidences, including the six ports, gives
+First count the support of \(H_n\).  A proper colouring of its cycle edges
+is a cyclic word \(x=(x_0,\ldots,x_{n-1})\) in the three nonzero Klein
+colours with \(x_{i-1}\ne x_i\).  It induces the port word
 \[
-                            3n=2m+6.
+                             b_i=x_{i-1}+x_i.
 \]
-The internal graph is connected, so \(m\geq n-1\).  Hence \(n\geq4\), while
-the incidence equation makes \(n\) even.  Under \(n<6\) this forces
-\(n=4\) and \(m=3\); the internal graph is therefore a tree.
+Conversely this equation is exactly the local Tait equation at every cycle
+vertex, so the image of this derivative map is
+\(\operatorname{Supp}(H_n)\).
 
-Root that tree.  A proper colouring has \(3!=6\) choices for the three
-labelled incidences at the root.  At each of the other three vertices, the
-parent-edge colour is already fixed, and the remaining two labelled
-incidences can receive the other two colours in at most two orders.  Thus the
-tangle has at most
+The number of proper colourings of a labelled \(n\)-cycle with three colours
+is
 \[
-                            6\cdot2^3=48
+                         2^n+2(-1)^n.
 \]
-proper colourings, and consequently realizes at most \(48\) boundary words.
-Since \(48<63\), its support cannot equal that of \(H_6\).
+For completeness, fix the colour at one vertex.  If \(a_j\) and \(b_j\)
+count length-\(j\) proper paths ending respectively at that colour and at
+either one specified other colour, then
+\[
+ (a_{j+1},b_{j+1})=(2b_j,a_j+b_j),\qquad (a_0,b_0)=(1,0).
+\]
+Induction gives \(a_j=(2^j+2(-1)^j)/3\); multiplying by the three choices
+of the fixed colour gives the displayed cycle count.
+
+If two cycle colourings \(x,y\) induce the same boundary word, then
+\[
+ x_{i-1}+x_i=y_{i-1}+y_i,
+ \qquad\text{hence}\qquad
+ x_i+y_i=x_{i-1}+y_{i-1}.
+\]
+Thus \(y_i=x_i+c\) for one constant Klein colour \(c\).  When \(x\) uses
+all three nonzero colours, nonzeroness of \(y\) forces \(c=0\), so the
+derivative fibre is a singleton.  A proper cycle colouring using only two
+colours exists exactly when \(n\) is even.  There are then six such
+alternating colourings; translation by the omitted third colour pairs them
+into three derivative fibres.  Therefore
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FacialCycleBoundaryDerivative.boundaryDerivative_eq_iff_exists_translation}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FacialCycleBoundaryDerivative.eq_of_boundaryDerivative_eq_of_usesAll}
+\[
+|\operatorname{Supp}(H_n)|=
+ \begin{cases}
+   2^n-1,&n\ \text{even},\\
+   2^n-2,&n\ \text{odd}.
+ \end{cases}
+\]
+For \(n=6\) this recovers the checked value \(63\).
+
+Now let a proposed connected cubic replacement have \(r<n\) internal
+vertices and \(m\) internal edges.  Counting internal incidences and the
+\(n\) ports gives
+\[
+                             3r=2m+n.
+\]
+Connectivity gives \(m\geq r-1\), hence \(r\geq n-2\); the incidence
+equation gives \(r\equiv n\pmod2\).  Since \(r<n\), necessarily
+\(r=n-2\) and \(m=r-1\).  Its internal multigraph is therefore a tree.
+
+Root that tree.  A proper colouring has at most \(3!=6\) choices for the
+three labelled incidences at the root.  At each of the other \(r-1\)
+vertices the parent-edge colour is fixed, and the two remaining labelled
+incidences have at most two possible orders.  Hence the replacement has at
+most
+\[
+                    6\cdot2^{r-1}=6\cdot2^{n-3}
+                    =3\cdot2^{n-2}
+\]
+proper colourings, and no more boundary words than colourings.  For
+\(n\geq4\),
+\[
+                3\cdot2^{n-2}<2^n-2
+                \leq |\operatorname{Supp}(H_n)|.
+\]
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FacialCycleBoundaryDerivative.treeColouringUpper_lt_cycleSupportLower}
+The two ordered supports cannot be equal.
 \end{proof}
 
-This is a committed local obstruction, not wall exclusion.  It rules out an
-exact support-preserving reduction which removes one isolated hexagonal cell
-and keeps the same six ports.  It does not rule out replacing a larger patch,
-using a target-aware quotient weaker than full support equality, or performing
-a two-dimensional move whose size decrease occurs elsewhere.  Those are the
-remaining source-faithful possibilities.
+This is a generic perimeter obstruction, not wall exclusion.  It rules out
+an exact support-preserving reduction which replaces a single facial cycle
+by a smaller connected cubic tangle on the same ports; increasing the face
+length does not repair the deficit.  It does not rule out replacing a larger
+two-dimensional patch, using a target-aware quotient weaker than full
+support equality, or performing a move whose size decrease occurs elsewhere.
+Those are the remaining source-faithful possibilities.
 
 \begin{theorem}[monotone and target-aware support replacement]
 \label{thm:target-aware-support-replacement}
@@ -3386,7 +3444,7 @@ uncolourable while a proposed smaller admissible splice is colourable, then
 the replacement support cannot be contained in the original support:
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TargetAwareSupportReplacement.not_innerSupport_subset_of_original_zero_of_replacement_colorable}
 it must introduce some boundary word that the removed piece did not realize.
-Thus Proposition~\ref{prop:hex-cell-no-smaller-exact-replacement} does not
+Thus Proposition~\ref{prop:facial-cycle-no-smaller-exact-replacement} does not
 kill target-aware one-cell reduction; it shows precisely why such a reduction
 cannot be justified by exact support preservation.  The remaining constructive
 problem is to exploit the fixed exterior support while preserving the
