@@ -87,7 +87,7 @@ replacement, the structural class, strict decrease and the minimality
 contradiction are now machine-checked together for equal normalized nested
 majority-shore states.  What remains is the decomposition-to-literal-shore
 state adapter and, for consumers insisting on a simple graph presentation,
-the already-written parallel-seam normalization \\
+the machine-checked terminating parallel-seam normalization \\
 $D_4$ & The route-native finite floor contains no zero-Count obstruction &
 open; the refuted GWCO and $A\ne\varnothing$ systems cannot be inherited \\
 $D_5$ & Well-founded assembly from $D_0$--$D_4$ & proved as the explicit
@@ -4417,13 +4417,14 @@ the two exterior edges, and use the other two colours on the digon.''
 
 \begin{corollary}[parallel seams can be normalized after gluing]
 \label{cor:parallel-seam-normalization}
-\Sprose
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24IteratedDigonNormalization.exists_endpointSimpleCounterexampleBelow_of_areParallelEdges}
 Let \(M\) be a finite connected bridgeless cubic spherical loopless
 multigraph which is not Tait-colourable, and suppose that \(M\) contains a
 parallel pair.  Repeatedly suppress a parallel pair by the digon splice of
 Lemma~\ref{lem:digon-splice}.  The process terminates in a strictly smaller
-connected bridgeless cubic spherical simple graph which is still not
-Tait-colourable.
+connected bridgeless cubic spherical rotation map with injective endpoint
+map which is still not Tait-colourable.  Equivalently, the terminal map has
+the canonical simple-graph presentation used in the graph-backed layer.
 \end{corollary}
 
 \begin{proof}
@@ -4439,17 +4440,21 @@ Lemma~\ref{lem:digon-suppression-colour} therefore proves, without an
 additional colour calculation, that uncolourability is preserved.  Each
 suppression removes two vertices, so
 well-founded induction on the vertex count terminates.  The terminal graph
-has no loop and no parallel pair, hence is simple, and the first suppression
-already made it strictly smaller than \(M\).
+has no loop and no parallel pair, hence has injective endpoint map, and the
+first suppression already made it strictly smaller than \(M\).  The canonical
+simple-graph backing then preserves its structural class and Tait semantics.
 \end{proof}
 
-The checked minimal form of the same argument is already available:
+Lean carries out this well-founded normalization uniformly, returning an
+endpoint-injective rotation system in the same cap-stable class with strictly
+fewer vertices.  Endpoint injectivity is exactly the condition consumed by
+the canonical simple-graph backing.  The checked minimal form of the same
+argument is also available:
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DigonSpliceNormalization.no_wellFormed_digonPatchData_of_minimal}
 a vertex-minimal zero-Tait-count member of the bridgeless spherical cubic
 class, with two-sided face orbits, admits no well-formed digon patch.  The
-remaining difference between this declaration and the normalization
-corollary is representational: extracting such a patch from an arbitrary
-parallel seam and iterating the suppression outside the minimal object.
+arbitrary-pair extraction and the terminating iteration are therefore no
+longer representational gaps.
 
 Therefore a duplicate seam edge need not enlarge the finite receipt.  The
 replacement is performed in the loopless rotation-multigraph category, which
@@ -4470,6 +4475,9 @@ nested shore trees, edge/vertex accounting, roots, literal widths, two
 boundary ports, exact states, and strict cubic star between repeated states
 are now derived.  No ambient graph data are reread after the state has been
 formed.
+Moreover every constructive equal-state splice has a strictly smaller
+endpoint-simple zero-Count descendant:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24IteratedDigonNormalization.exists_strict_endpointSimple_replacement_of_normalizedState_eq}.
 The cap face count, cap sphericity,
 one-hub property, orientation reversal, connectedness, bridge-freeness,
 cubicity, and cyclic vertex rotations are no longer open.
