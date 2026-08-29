@@ -2293,19 +2293,19 @@ cap.
 \begin{lemma}[the same-side Kempe square extends through one paired cap]
 \label{lem:same-side-kempe-square-cap-extension}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairReductionKempeSquare.sameSideKempeSquare_states_extend}
-Let (C) be a deletion colouring compatible with the pairing
-(01\mid 23).  Suppose an ((a,b))-component (K_{01}) has exact boundary
-support ({0,1}), while another ((a,b))-component (K_{23}) has exact
-boundary support ({2,3}).  Switch neither, either, or both components.
+Let \(C\) be a deletion colouring compatible with the pairing
+\((01\mid 23)\).  Suppose an \((a,b)\)-component \(K_{01}\) has exact boundary
+support \(\{0,1\}\), while another \((a,b)\)-component \(K_{23}\) has exact
+boundary support \(\{2,3\}\).  Switch neither, either, or both components.
 Each of the resulting four proper deletion colourings extends to a proper
-Tait colouring of the same (01\mid 23) paired reduction.
+Tait colouring of the same \((01\mid 23)\) paired reduction.
 \end{lemma}
 
 \begin{proof}
 The four boundary words are the original word, the result of interchanging
 (a,b) at ports (0,1), the result of interchanging them at ports (2,3),
 and the result of interchanging them at all four ports.  Equality within each
-of the pairs ({0,1}) and ({2,3}) is preserved in all four cases.
+of the pairs \(\{0,1\}\) and \(\{2,3\}\) is preserved in all four cases.
 Every corner therefore satisfies the compatibility hypothesis of
 Lemma~\ref{lem:adjacent-pair-compatible-cap-extension}.  Applying its explicit
 extension construction at each corner gives the four capped colourings.
@@ -2319,29 +2319,29 @@ move closes to one ordinary Kempe circuit when its matching seam is inserted.
 \label{lem:same-side-kempe-switch-cap-lift}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairReductionKempeSquare.exists_cappedKempeComponent_restricts_sameSideSwitch}
 In the setting of
-Lemma~\ref{lem:same-side-kempe-square-cap-extension}, and let
-\(\widehat C\) be the explicit extension of (C) across the
-(01\mid23) cap.  If (C') is obtained from (C) by switching (K_{01}),
-then some closed ((a,b))-Kempe component of \(\widehat C\) contains the
-(01)-seam, and switching that component restricts on every old edge exactly
-to (C').  The same statement holds for (K_{23}).
+Lemma~\ref{lem:same-side-kempe-square-cap-extension}, let
+\(\widehat C\) be the explicit extension of \(C\) across the
+\((01\mid23)\) cap.  If \(C'\) is obtained from \(C\) by switching \(K_{01}\),
+then some closed \((a,b)\)-Kempe component of \(\widehat C\) contains the
+\((01)\)-seam, and switching that component restricts on every old edge exactly
+to \(C'\).  The same statement holds for \(K_{23}\).
 \end{lemma}
 
 \begin{proof}
-Consider (K_{01}).  At each of ports (0,1), the missing colour belongs to
-({a,b}).  Of the two old edges incident with that degree-two boundary
-vertex, exactly one therefore has colour (a) or (b); exact boundary
-support says that this edge lies in (K_{01}).  The new (01)-seam has the
+Consider \(K_{01}\).  At each of ports \(0,1\), the missing colour belongs to
+\(\{a,b\}\).  Of the two old edges incident with that degree-two boundary
+vertex, exactly one therefore has colour \(a\) or \(b\); exact boundary
+support says that this edge lies in \(K_{01}\).  The new \((01)\)-seam has the
 missing colour, so in the capped graph it joins the two open ends of
-(K_{01}).  No other selected-colour edge is available at either endpoint.
-Consequently (K_{01}) together with the seam is a connected 2-regular
-((a,b))-subgraph, hence one whole closed Kempe circuit.
+\(K_{01}\).  No other selected-colour edge is available at either endpoint.
+Consequently \(K_{01}\) together with the seam is a connected 2-regular
+\((a,b)\)-subgraph, hence one whole closed Kempe circuit.
 
-Switching this circuit interchanges (a,b) on every old edge of (K_{01})
+Switching this circuit interchanges \(a,b\) on every old edge of \(K_{01}\)
 and on the new seam, and fixes every other old edge.  Consequently its
-restriction to the old graph is exactly (C').  This is the required closed
-realization of the open switch; no separately chosen extension of (C') is
-needed.  The proof for (K_{23}) is identical.
+restriction to the old graph is exactly \(C'\).  This is the required closed
+realization of the open switch; no separately chosen extension of \(C'\) is
+needed.  The proof for \(K_{23}\) is identical.
 \end{proof}
 
 This does not assert that every open Kempe path lifts through a fixed cap:
