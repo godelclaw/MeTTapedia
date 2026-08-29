@@ -1,3 +1,4 @@
+import Mettapedia.GraphTheory.FourColor.GoertzelV24WidthPreservingConnectedization
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedBranchDecompositionAdapter
 import Mettapedia.GraphTheory.FourColor.GoertzelV24SphericalMinimalCounterexampleSelection
 
@@ -185,6 +186,27 @@ theorem combinatorialFourColorStatement_of_raw_connectedization_and_base
   combinatorialFourColorStatement_of_supply_and_base w w
     (connectedDecompositionSupply_of_raw_and_connectedization
       w raw connectedize)
+    base
+
+/-- The connectedizer is checked
+(`GoertzelV24WidthPreservingConnectedization.widthPreservingConnectedization`),
+so the raw width bound alone supplies the connected decomposition. -/
+noncomputable def connectedDecompositionSupply_of_raw
+    (w : Nat)
+    (raw : RawBranchDecompositionSupply.{u} w) :
+    ConnectedDecompositionSupply.{u} w w :=
+  connectedDecompositionSupply_of_raw_and_connectedization w raw
+    GoertzelV24WidthPreservingConnectedization.widthPreservingConnectedization.{u}
+
+/-- **Combinatorial headline from the raw width bound and the finite base.**
+The width-preserving connectedization is no longer a hypothesis. -/
+theorem combinatorialFourColorStatement_of_raw_and_base
+    (w : Nat)
+    (raw : RawBranchDecompositionSupply.{u} w)
+    (base : TaitBaseVerifiedAt.{u} (rawVertexBound w w)) :
+    GoertzelV24SphericalGraphPresentation.CombinatorialFourColorStatement.{u} :=
+  combinatorialFourColorStatement_of_raw_connectedization_and_base w raw
+    GoertzelV24WidthPreservingConnectedization.widthPreservingConnectedization.{u}
     base
 
 end
