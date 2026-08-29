@@ -2505,6 +2505,67 @@ endpoints for every component meeting the boundary.  This proves the stated
 unrestricted noncrossing conclusion for each physical colour pair.
 \end{proof}
 
+The original v23 CAP5 move-realizability proof tries to pass from this
+per-pair fact to a joint planar picture by contracting every edge of one
+colour.  The contraction is planar, but the asserted cross-family
+disjointness does not follow.
+
+\begin{proposition}[zero-contraction does not separate different colour-pair systems]
+\label{prop:v23-zero-contraction-crossing}
+\Srefuted{Mettapedia.GraphTheory.FourColor.GoertzelV24V23ZeroContractionCrossing.exists_spherical_tait_zero_contraction_with_crossing_pair_systems}
+There is a spherical properly Tait-coloured cubic combinatorial map and a red
+colour class whose complete contraction produces a degree-four vertex at
+which the surviving blue and purple through-pairs have alternating endpoints
+in the vertex link.
+Consequently the two post-contraction bichromatic systems are edge-disjoint
+but are not mutually disjoint as embedded arc systems away from their
+terminals.
+\end{proposition}
+
+\begin{proof}
+Take the tetrahedron on vertices $A,B,C,D$, with rotations
+
+\[
+ (AB,AC,AD),\quad (BA,BD,BC),\quad
+ (CA,CB,CD),\quad (DA,DC,DB).
+\]
+
+Give $AB,CD$ colour red, $AC,BD$ colour blue, and $AD,BC$
+colour purple.  Each vertex sees the three colours, and the displayed
+rotation system has four facial orbits, so $4-6+4=2$.
+
+Contract both red edges $AB$ and $CD$.  Deleting their four darts and
+taking first return in the vertex rotation joins the two punctured rotations
+at the image of $AB$ into
+
+\[
+                         (AC,AD,BD,BC).
+\]
+
+The corresponding colour word in the link of the contracted vertex is
+
+\[
+                    ({\rm blue},{\rm purple},{\rm blue},{\rm purple}).
+\]
+
+The red--blue component through $AB$ therefore joins link positions $0$
+and $2$, whereas the red--purple component joins positions $1$ and $3$.
+Those two chords alternate.  They meet at the contracted interior point even
+though the surviving blue and purple edge sets are disjoint.  Lean checks the
+source Tait colouring and spherical Euler count, identifies the contracted
+dart carrier with the source darts minus the four red darts, verifies the
+first-return rotation law at both contracted vertices and the spherical count
+$2-4+4=2$, and checks the alternating chords.  Thus the
+failure is caused by contraction itself, not by a nonplanar model.
+\end{proof}
+
+This proposition does not refute per-pair noncrossing, nor by itself refute
+the exceptional-CAP5 conclusion.  It refutes the particular v23 step which
+treats the two different post-contraction systems as mutually disjoint and
+then forms a Jordan curve from arcs belonging to both systems.  A repair must
+retain their common contracted vertices (equivalently, the common trivalent
+web before contraction) and prove a genuinely joint statement.
+
 The reduct `PortTangle` deliberately forgets the rotation and disk, so this
 conclusion cannot follow at that carrier level alone.  More importantly, even
 the full noncrossing bridge does not rescue the reduction, because the
