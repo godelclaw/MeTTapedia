@@ -6,6 +6,13 @@ package krenn where
 
 require mathlib from git "https://github.com/leanprover-community/mathlib4" @ "v4.31.0"
 
+/-- Shared MeTTapedia combinatorics used by the standalone Krenn development.
+The source remains in the canonical MeTTapedia tree while this small library
+keeps `lean/krenn` independently buildable. -/
+lean_lib MettapediaCombinatorics where
+  srcDir := "../mettapedia"
+  roots := #[`Mettapedia.Combinatorics]
+
 /-- The bridge from the official conjecture statement to the general matching
 library, valid at every vertex count.  Built with `lake build KrennGeneralBridge`. -/
 lean_lib KrennGeneralBridge where
