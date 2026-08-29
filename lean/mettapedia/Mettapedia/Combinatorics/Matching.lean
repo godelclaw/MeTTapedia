@@ -7,6 +7,7 @@ import Mettapedia.Combinatorics.Matching.LocalCancellation
 import Mettapedia.Combinatorics.Matching.Gauge
 import Mettapedia.Combinatorics.Matching.EdgeColoring
 import Mettapedia.Combinatorics.Matching.CapIncidence
+import Mettapedia.Combinatorics.Matching.BlockRank
 import Mettapedia.Combinatorics.Matching.EvenCycle
 
 /-!
