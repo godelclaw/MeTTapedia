@@ -65,10 +65,10 @@ closed cubic map, the same vertex partition now supplies connected
 complementary edge shores and a nonempty proper majority core in the closed
 ambient map as well.
 The standard rooted branch-decomposition interface and its conversion to the
-literal checked consumer are machine-checked.  Width-preserving
-connectedization is isolated as the named external theorem it actually is;
-wall exclusion and the arbitrary-length nested exact finite-state supply are
-not proved \\
+literal checked consumer are machine-checked.  The Fomin--Fraigniaud--Thilikos
+width-preserving connectedization theorem is now machine-checked in that
+interface.  Wall exclusion and the arbitrary-length nested exact finite-state
+supply are not proved \\
 $D_2$ & Count across every actual ordered noose cut factors through a finite
 boundary-word relation, and cumulative support is deletable on repetition &
 the physical port-tangle gluing bijection, matrix law, support
@@ -2074,18 +2074,67 @@ doi:10.1016/0095-8956(84)90013-3) says that excluding one fixed planar
 wall as a minor bounds treewidth.  The Seymour--Thomas sphere-cut theory
 supplies noose-respecting branch decompositions of plane graphs
 (Call routing and the ratcatcher, 1994,
-doi:10.1007/BF01215352).  A more direct supplier is available here.
+doi:10.1007/BF01215352).  A more direct supplier is available here, and it
+is now checked.
 Fomin, Fraigniaud and Thilikos (The price of connectedness in expansions,
 Technical Report LSI--04--28--R, 2004,
-\url{https://hdl.handle.net/2117/98590}, Theorem~1) prove exactly that,
-given a width-$w$ branch decomposition of a \(2\)-edge-connected graph,
-their algorithm \emph{Make-it-Connected} returns a connected branch
-decomposition of width at most $w$.  Here ``connected'' means that both sets
-of edge leaves at every tree cut induce connected subgraphs; there is no
-hidden factor in the width.  The finite simple-graph specialization of this
-statement is the explicit proposition
-\texttt{WidthPreservingConnectedization}.  It is not an axiom and is not
-claimed kernel-checked here: callers must supply the named external theorem.
+\url{https://hdl.handle.net/2117/98590}, Theorem~1; full proof in
+Barri\`ere, Flocchini, Fomin, Fraigniaud, Nisse, Santoro and Thilikos,
+Connected graph searching, Information and Computation 219 (2012),
+doi:10.1016/j.ic.2012.08.004, Lemma~1) prove that, given a width-$w$
+branch decomposition of a \(2\)-edge-connected graph, their algorithm
+\emph{Make-it-Connected} returns a connected branch decomposition of width
+at most $w$.  Here ``connected'' means that both sets of edge leaves at
+every tree cut induce connected subgraphs; there is no hidden factor in the
+width.
+
+\begin{theorem}[width-preserving connectedization]
+\label{thm:width-preserving-connectedization}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24WidthPreservingConnectedization.widthPreservingConnectedization}
+Let $G$ be a finite simple \(2\)-edge-connected graph and let $T$ be a
+complete rooted branch decomposition of $G$ of width at most $w$.  Then $G$
+has a complete rooted branch decomposition of width at most $w$ in which
+both edge shores of every tree cut, including the leaf cuts, induce
+connected subgraphs.
+\end{theorem}
+
+\begin{proof}
+Root the decomposition at its root leaf and carry, with every subtree, the
+set of edges outside it (its \emph{up-set}).  Every internal vertex of the
+ternary tree is then a fork whose three directions are the two child shores
+and the up-set.  Every tree edge between two internal vertices is a fork
+child of a fork.  Such a tree edge is a \emph{quartet} when one pair of
+directions is vertex-disjoint while the shores can be re-paired across the
+edge with nonempty boundaries.
+
+Re-pairing is a rotation of the fork-of-fork.  Two finite boundary facts
+drive the argument.  First, the two new cut sizes sum to at most the sum of
+the two old cut sizes.  If only one crossed matching is a quartet, its new
+boundary is contained in one old boundary.  Thus some quartet replacement
+never increases the width.  Second, at a fork with directions $S_1,S_2,S_3$
+put
+\[
+ \psi(S_1,S_2,S_3)=
+ \sum_{\{i,j,\ell\}=\{1,2,3\}}
+ [\partial(S_i,S_j)=\varnothing]\,(|S_\ell|-1),
+\]
+and sum $\psi$ over all forks.  Direct boundary calculation shows that every
+allowed quartet replacement strictly decreases this natural-number
+potential.  Strong induction therefore produces a quartet-free tree on the
+same edge leaves without increasing its width.
+
+It remains to prove this tree connected.  In a quartet-free tree of a
+$2$-edge-connected graph, every fork has pairwise-touching directions.  A
+vertex-disjoint pair can be pushed across the third direction: quartet
+freeness makes the merged pair vertex-disjoint from one of the two directions
+beyond it.  Pairs involving the up-set are pushed down the rooted tree and
+sibling pairs are pushed up; structural induction reduces either case to a
+single-edge shore.  Deleting that edge cannot disconnect a
+$2$-edge-connected graph, a contradiction.  Connected directions that touch
+at a vertex have connected union, so both shores of every cut, including
+leaf cuts, are connected.
+\end{proof}
+
 The graph-side fact that a connected graph without bridges is
 \(2\)-edge-connected is checked as
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedBranchDecompositionAdapter.isEdgeConnected_two_of_connected_no_bridges}.
@@ -2108,7 +2157,7 @@ Theorem~\ref{thm:rooted-connected-branch-decomposition}.
 
 \begin{proposition}[wall-exclusion reduction, relative form]
 \label{prop:target-forced-wall}
-\Sconditional{planar wall theorem; fixed-wall exclusion; width-preserving connectedization; route-native finite base}
+\Sconditional{planar wall theorem; fixed-wall exclusion; route-native finite base}
 Fix the normal-form class and one direct-Count or Lift target.  Suppose there
 are computable \(r,w\) such that:
 \begin{enumerate}
@@ -2116,8 +2165,6 @@ are computable \(r,w\) such that:
 \(r\)-wall;
 \item every plane instance in the class with no such wall has a complete
 rooted branch decomposition of width at most \(w\);
-\item the Fomin--Fraigniaud--Thilikos width-preserving connectedization
-theorem is available in the finite simple-graph specialization above.
 \end{enumerate}
 Then every vertex-minimal zero-target instance has an effective vertex
 bound.  If the route-native finite base below that bound is empty, there is
@@ -2131,9 +2178,10 @@ each branch set to a subdivision: the at most three incident model edges are
 joined by a minimal tree, whose three terminal paths have one common branch
 point and are otherwise internally disjoint.  Thus the minor and topological
 forms agree for this wall in a cubic host.  Hypothesis~2 supplies the raw
-width-$w$ tree and Hypothesis~3 connectedizes it without increasing the
-width.  The checked standard-to-consumer adapter supplies the complete
-connected edge-leaf decomposition.  Theorem~\ref{thm:rooted-connected-branch-decomposition}
+width-$w$ tree, and Theorem~\ref{thm:width-preserving-connectedization}
+connectedizes it without increasing the width.  The checked
+standard-to-consumer adapter supplies the complete connected edge-leaf
+decomposition.  Theorem~\ref{thm:rooted-connected-branch-decomposition}
 derives its two strictly nested shore trees and gives the effective vertex
 bound; internally, a repeated normalized state is ruled out by the exact
 strict replacement of Theorem~\ref{thm:majority-shore-physical-replacement}.
@@ -3229,6 +3277,75 @@ the \emph{joint cofacial order} of that network.  The proposition does not
 claim that every possible realization of the same tensor has this particular
 $K_{3,3}$ model.  It says that any successful local receipt must be strong
 enough to distinguish a disc-realizable common web from this crossed one.
+
+There is no hidden second pairing-linear realization with different
+multiplicities on the sixty supported words.  The following calculation
+shows that the preceding Penrose tensor spans the whole pairing-linear ray
+with that support.
+
+\begin{proposition}[rigidity of the Penrose ray on the persistent adversary]
+\label{prop:hexagon-penrose-ray-rigidity}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24HexagonPenroseRayRigidity.persistentAdversary_pairingRay_rigid}
+Let \(E\) be the sixty-word persistent adversary.  Using the zero-based
+enumeration of the fifteen pairings displayed above, let
+
+\[
+              T_c(w)=\sum_{i=0}^{14}c_i\delta_i(w),
+              \qquad c_i\in\mathbb Z.
+\]
+
+If \(T_c(w)=0\) for every nonzero six-port Tait word outside \(E\), then
+
+\[
+ c_i=c_4d_i\quad(0\leq i<15),\qquad
+ (d_0,\ldots,d_{14})
+   =e_4-e_5-e_9+e_{10}+e_{12}-e_{13}.
+\]
+
+Consequently \(T_c=c_4L\), and for every \(w\in E\),
+
+\[
+                         \sigma(w)T_c(w)=c_4.
+\]
+\end{proposition}
+
+\begin{proof}
+The following fourteen words all lie outside \(E\):
+
+\[
+\begin{array}{llll}
+\mathtt{rrrrrr},&\mathtt{rrrrbb},&\mathtt{rrrbrb},&\mathtt{rrrbbr},\\
+\mathtt{rrbbrr},&\mathtt{rrbbbb},&\mathtt{rrbbpp},&\mathtt{rrbpbp},\\
+\mathtt{rbrbrr},&\mathtt{rbrbbb},&\mathtt{rbrbpp},&\mathtt{rbbbrb},\\
+\mathtt{rbprbp},&\mathtt{rbpprb}.&&
+\end{array}
+\]
+
+Evaluate the fifteen indicators \((\delta_0,\ldots,\delta_{14})\) on these
+rows.  The resulting fourteen
+homogeneous equations are independent.  Successive integer elimination,
+with \(c_4\) left free, gives
+
+\[
+c_5=-c_4,\quad c_9=-c_4,\quad c_{10}=c_4,\quad
+c_{12}=c_4,\quad c_{13}=-c_4,
+\]
+
+and every other \(c_i\) is zero.  The checked proof evaluates the fourteen
+rows directly from the displayed mate involutions and performs this
+elimination over \(\mathbb Z\); hence no division or rank-over-a-field
+assumption is hidden.  This proves \(T_c=c_4L\).  On \(E\), the already
+checked gauge-corrected Penrose tensor is the extension count of the crossed
+pentagon--leaf network and equals \(1\).  Therefore
+\(\sigma(w)T_c(w)=c_4\) on all of \(E\).
+\end{proof}
+
+This is an algebraic rigidity result.  Within the pairing-linear ansatz it
+closes the unequal-multiplicity loophole: support exactly \(E\) forces one
+constant gauge-corrected multiplicity.  It does \emph{not} prove that a
+positive multiple of this ray is realized by a plane cubic tangle.  That
+remaining condition is topological, and the crossed realization above shows
+why cyclic order cannot be discarded.
 
 \begin{theorem}[the exact width criterion]
 \label{thm:exact-width-criterion}
@@ -5838,46 +5955,46 @@ function and the bounded-base proposition stated above.
 
 \begin{corollary}[factored bounded-width assembly]
 \label{cor:factored-bounded-width-assembly}
-\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SphericalReductiveAssembly.combinatorialFourColorStatement_of_raw_connectedization_and_base}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SphericalReductiveAssembly.combinatorialFourColorStatement_of_raw_and_base}
 Fix $w$ and put $B=B(w,w)$.  Suppose every graph-backed vertex-minimal
 Tait counterexample has a complete rooted branch decomposition of width at
-most $w$.  Suppose also the width-preserving connectedization proposition
-of Fomin--Fraigniaud--Thilikos, and suppose every graph-backed bridgeless
-spherical cubic map with at most $B$ vertices is Tait colourable.  Then every
-finite combinatorially planar simple graph is vertex-four-colourable.
+most $w$, and suppose every graph-backed bridgeless spherical cubic map with
+at most $B$ vertices is Tait colourable.  Then every finite combinatorially
+planar simple graph is vertex-four-colourable.
 \end{corollary}
 
 \begin{proof}
 A least counterexample is connected and bridge-free, hence
-$2$-edge-connected.  Apply the supplied connectedization theorem to the raw
-width-$w$ tree, then apply the checked rooted adapter to obtain the exact
-decomposition supply of Theorem~\ref{thm:spherical-reductive-assembly} with
-$k=w$.  That theorem and the bounded base give the conclusion.  Lean checks
-this composition while leaving both genuine mathematical inputs---the raw
-width bound and the external connectedization theorem---visible.
+$2$-edge-connected.  Apply
+Theorem~\ref{thm:width-preserving-connectedization} to the raw width-$w$
+tree, then apply the checked rooted adapter to obtain the exact decomposition
+supply of Theorem~\ref{thm:spherical-reductive-assembly} with $k=w$.  That
+theorem and the bounded base give the conclusion.  Lean checks this
+composition; the only remaining mathematical inputs at this boundary are
+the raw width bound and the route-native finite base.
 \end{proof}
 
 \begin{corollary}[wall-exclusion assembly]
 \label{cor:wall-exclusion-assembly}
-\Sconditional{abstract-planar representation theorem; fixed-wall exclusion for least counterexamples; bounded-width decomposition; width-preserving connectedization; route-native finite base}
+\Sconditional{abstract-planar representation theorem; fixed-wall exclusion for least counterexamples; bounded-width decomposition; route-native finite base}
 Assume the conventional representation theorem from finite abstract planar
 graphs to spherical rotation presentations.  Assume there is a fixed wall
 excluded from every least Tait counterexample, and that wall-free members
 of the normal-form class carry a complete rooted branch decomposition of
-width at most $w$.  Assume the Fomin--Fraigniaud--Thilikos connectedization
-theorem and that the resulting route-native finite base contains no
-counterexample.  Then every planar graph is four-colourable.
+width at most $w$.  Assume that the resulting route-native finite base
+contains no counterexample.  Then every planar graph is four-colourable.
 \end{corollary}
 
 \begin{proof}
 Proposition~\ref{prop:target-forced-wall} bounds the size of a least Tait
 counterexample and constructs the raw width supply consumed by
-Corollary~\ref{cor:factored-bounded-width-assembly}.  The connectedization
-theorem converts it to the literal decomposition supply, and the finite-base
-hypothesis is the remaining premise.  That corollary gives the spherical Four-Colour
-statement; the separate classical representation theorem from an abstract
-planar graph to a spherical rotation presentation gives the customary
-abstract-planar formulation.
+Corollary~\ref{cor:factored-bounded-width-assembly}.
+Theorem~\ref{thm:width-preserving-connectedization} converts it to the
+literal decomposition supply, and the finite-base hypothesis is the
+remaining premise.  That corollary gives the spherical Four-Colour statement;
+the separate classical representation theorem from an abstract planar graph
+to a spherical rotation presentation gives the customary abstract-planar
+formulation.
 \end{proof}
 
 The word ``bridgeless'' in the splice conclusion is load-bearing.  A cubic
@@ -5985,16 +6102,15 @@ source-preserving local ladder transport;
 Proposition~\ref{prop:target-forced-cut-chain}; the raw noose Count theorem
 and physical support-state splice; and a route-native finite base.  The
 tree-form chain replaces the global corridor proposition by fixed-wall
-exclusion plus a raw bounded-width decomposition and the named
-width-preserving connectedization theorem.  Both chains
+exclusion plus a raw bounded-width decomposition.  The checked
+width-preserving connectedization theorem supplies the connected tree.  Both chains
 use the same checked majority-shore D3 splice and the
 same finite base.
 
 At present the decisive open premises are therefore: either the
 target-forced global cut chain or fixed-wall exclusion together with the raw
-bounded-width decomposition supplier and width-preserving connectedization;
-and the route-native finite
-base.  Exact Count replacement on supplied normalized majority shores is now
+bounded-width decomposition supplier; and the route-native finite base.
+Exact Count replacement on supplied normalized majority shores is now
 checked.  A compatible tight vertex-noose to edge-noose
 perturbation is optional rather than load-bearing.  D3's face count, Euler
 arithmetic, and majority-shore structural packaging are no longer open.  The mesh
