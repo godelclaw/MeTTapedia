@@ -27,6 +27,9 @@ inspired by Wikipedia's breadth and Metamath's rigor.
 -- planarity declarations carry pre-existing in-place `sorry`s).
 import Mettapedia.GraphTheory.Basic
 
+-- Combinatorics
+import Mettapedia.Combinatorics
+
 -- Probability Theory
 import Mettapedia.ProbabilityTheory.Basic
 import Mettapedia.ProbabilityTheory.Moments
