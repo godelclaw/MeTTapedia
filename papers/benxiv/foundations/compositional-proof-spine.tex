@@ -3436,6 +3436,33 @@ same gluing statement says directly that a colouring exists exactly when the
 two fixed support sets meet.
 \end{proof}
 
+\begin{theorem}[unrestricted target-awareness collapses to support inclusion]
+\label{thm:target-aware-quantifier-collapse}
+Let \(U\) be the boundary-word universe, let \(P\subseteq U\) be the support
+of the removed piece, and let \((R_i)_{i\in I}\) be the supports of all
+candidate replacements.  Then
+\[
+ \bigl[
+   \forall E\subseteq U,\ E\cap P=\varnothing
+   \Longrightarrow
+   \exists i\in I,\ E\cap R_i=\varnothing
+ \bigr]
+ \quad\Longleftrightarrow\quad
+ \bigl[\exists i\in I,\ R_i\subseteq P\bigr].
+\]
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TargetAwareReplacementQuantifiers.unrestricted_targetAware_iff_exists_subset}
+\end{theorem}
+
+\begin{proof}
+For the forward implication, test the maximal abstract zero exterior
+\(E=U\setminus P\).  A candidate disjoint from \(E\) is contained in \(P\).
+Conversely, if \(R_i\subseteq P\), then every set disjoint from \(P\) is
+also disjoint from \(R_i\).  The same equivalence holds for a restricted
+class of physical exterior supports whenever that class itself contains
+\(U\setminus P\).
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TargetAwareReplacementQuantifiers.physical_targetAware_iff_exists_subset_of_compl_mem}
+\end{proof}
+
 This changes the correct formulation of the two-dimensional crux.  Exact
 support equality is useful for pumping because it works against every suffix,
 but a minimal-counterexample descent only needs a replacement whose support
@@ -3446,9 +3473,13 @@ the replacement support cannot be contained in the original support:
 it must introduce some boundary word that the removed piece did not realize.
 Thus Proposition~\ref{prop:facial-cycle-no-smaller-exact-replacement} does not
 kill target-aware one-cell reduction; it shows precisely why such a reduction
-cannot be justified by exact support preservation.  The remaining constructive
-problem is to exploit the fixed exterior support while preserving the
-topological class and decreasing size.
+cannot be justified by exact support preservation.  Theorem~
+\ref{thm:target-aware-quantifier-collapse} adds an essential quantifier
+warning: allowing the replacement to depend on an \emph{arbitrary} exterior
+does not help either.  The gain can come only from a structural theorem
+restricting which support sets are realized by actual planar exteriors.
+The remaining constructive problem is to exploit that physical restriction
+while preserving the topological class and decreasing size.
 
 \begin{theorem}[raw noose Count pumping]
 \label{thm:raw-noose-count-pumping}
