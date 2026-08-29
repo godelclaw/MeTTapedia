@@ -2063,6 +2063,38 @@ itself furnish the manuscript's long sequence of saturated cuts.  Conversely,
 the mesh theorem does not prove wall exclusion.  It explains why the missing
 implication must use zero Count and minimality rather than wall size alone.
 
+The numerical mismatch with the direct Count state is also exact.  A literal
+width-\(k\) cut has \(3^k\) Tait boundary words, hence its unminimized
+cumulative support carrier has \(2^{3^k}\) states.  For every \(k\geq1\),
+\[
+                         2k^2+1 < 2^{3^k}.
+\]
+Therefore any nested width-\(k\) sweep which acquires a new mesh branch
+position at every step is strictly shorter than the raw support carrier and
+cannot meet the cardinality premise of the raw support pigeonhole theorem.
+Both the comparison and its direct negated-pigeonhole form are checked:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MeshSupportPigeonholeObstruction.chain_length_lt_card_normalizedSupportType}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MeshSupportPigeonholeObstruction.not_card_normalizedSupportType_le_chain_length}
+This does not rule out an early accidental state collision or a much smaller
+proved reachable quotient.  It rules out deducing the required repetition
+from wall size and raw-state finiteness alone.  In particular, the source's
+L1 conclusion that an internal hexagonal ladder exists is not yet the ambient
+saturated serial decomposition consumed by pumping.
+
+There is also a version which does not require a strict gain at every cut.
+Suppose a nested width-\(k\) sweep begins with at most \(k^2\) mesh branch
+positions below it and ends with at most \(k^2\) above it.  If every consecutive
+slab acquires at most \(d\) branch positions, then the whole mesh has at most
+\(2k^2+d\) branch positions.  Consequently, when \(ab>2k^2+d\), some single
+slab must acquire more than \(d\) branch positions:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MeshSupportPigeonholeObstruction.exists_large_branch_slab_of_bounded_sweep}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MeshSupportPigeonholeObstruction.not_uniformly_local_bounded_sweep}
+Thus a uniformly local one-dimensional cell decomposition cannot sweep from
+one side of a sufficiently large two-dimensional mesh to the other.  This is
+an obstruction to the literal L1-to-pumping bridge, not a wall-exclusion
+theorem: a target-aware two-dimensional replacement principle could still
+use zero Count and minimality in a way that the raw linear receipt does not.
+
 \begin{theorem}[the exact width criterion]
 \label{thm:exact-width-criterion}
 \Sprose
