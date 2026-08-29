@@ -2566,6 +2566,62 @@ then forms a Jordan curve from arcs belonging to both systems.  A repair must
 retain their common contracted vertices (equivalently, the common trivalent
 web before contraction) and prove a genuinely joint statement.
 
+The exact local information lost by the disjoint-arc picture is one chirality
+bit per contracted edge.
+
+\begin{theorem}[local zero-contraction chirality law]
+\label{thm:zero-contraction-chirality}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ZeroContractionChirality.sameColor_pairing_and_crossing_iff_endpointOrdersAgree}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ZeroContractionChirality.endpointOrdersAgree_alpha_iff}
+Let \(M\) be a cubic combinatorial map with cyclic vertex rotations, let
+\(C\) be a proper Tait edge-colouring, and orient an edge by a dart \(d\).
+After contracting that edge, write the four surviving darts in the cyclic
+link order
+\[
+  \rho d,\quad \rho^2d,\quad \rho\alpha d,\quad
+  \rho^2\alpha d.
+\]
+The two same-colour pairs have exactly one of the following forms:
+\[
+  (0,2),(1,3)\qquad\hbox{or}\qquad (0,3),(1,2).
+\]
+The first, alternating, pairing occurs if and only if
+\[
+ C(\rho d)=C(\rho\alpha d),
+\]
+that is, if and only if the two endpoint rotations present the surviving
+colours in the same order.  The second, adjacent, pairing occurs when the
+orders are reversed.  This agreement predicate is unchanged when \(d\) is
+replaced by \(\alpha d\).
+\end{theorem}
+
+\begin{proof}
+At the endpoint of \(d\), cubicity and cyclicity say that
+\(d,\rho d,\rho^2d\) are the three distinct incident darts.  Properness and
+the nonzero Tait condition therefore put the three nonzero colours on their
+three underlying edges exactly once.  The same is true of
+\(\alpha d,\rho\alpha d,\rho^2\alpha d\) at the other endpoint, and the first
+edges in those two triples have the same colour because \(d\) and
+\(\alpha d\) are the two darts of one edge.
+
+Consequently the ordered pair of surviving colours at the second endpoint
+is either the same as the ordered pair at the first endpoint or its reverse;
+there is no third possibility.  In the same-order case the four-link colour
+word is \((x,y,x,y)\), so the equal-colour chords are \((0,2)\) and
+\((1,3)\), whose endpoints alternate.  In the reversed case it is
+\((x,y,y,x)\), so the chords are \((0,3)\) and \((1,2)\), both adjacent.
+Changing the orientation of the contracted edge exchanges the two endpoint
+blocks, so it does not change whether their orders agree.  Lean checks the
+three-dart rotation facts, proper-colouring inequalities, the exhaustive
+three-colour dichotomy, the same-colour mate at all four positions, and the
+four-point chord crossing test.
+\end{proof}
+
+Thus the v23 contraction can be repaired locally, but not by deleting the
+contracted vertices from the topology: a joint state must retain this
+chirality at every contraction site and its compatibility along the common
+web.  The theorem does not yet supply that global compatibility law.
+
 The reduct `PortTangle` deliberately forgets the rotation and disk, so this
 conclusion cannot follow at that carrier level alone.  More importantly, even
 the full noncrossing bridge does not rescue the reduction, because the

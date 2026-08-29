@@ -1,5 +1,6 @@
 import Mathlib.Tactic
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TwoEdgeCutMinimality
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ZeroContractionChirality
 
 /-!
 # The v23 zero-contraction does not separate the two colour-pair systems
@@ -31,6 +32,7 @@ open GoertzelV24FaceOrbitIncidence
 open GoertzelV24FaceOrbitPartitionBridge
 open GoertzelV24OrbitFaceCurvatureBulk
 open GoertzelV24TwoEdgeCutMinimality
+open GoertzelV24ZeroContractionChirality
 
 /-! ## The spherical Tait-coloured tetrahedron -/
 
@@ -430,21 +432,6 @@ theorem sameColorMate_fixfree (position : Fin 4) :
 theorem centerColor_sameColorMate (position : Fin 4) :
     centerColor (sameColorMate position) = centerColor position := by
   fin_cases position <;> rfl
-
-/-- Two chords in a four-point cyclic link cross when their endpoints
-alternate. -/
-def ChordsCross4 (first second third fourth : Fin 4) : Prop :=
-  let a := min first.1 second.1
-  let b := max first.1 second.1
-  let c := min third.1 fourth.1
-  let d := max third.1 fourth.1
-  (a < c ∧ c < b ∧ b < d) ∨ (c < a ∧ a < d ∧ d < b)
-
-private instance chordsCross4Decidable
-    (first second third fourth : Fin 4) :
-    Decidable (ChordsCross4 first second third fourth) := by
-  unfold ChordsCross4
-  infer_instance
 
 /-- The blue pair `(0,2)` and purple pair `(1,3)` cross in the link of the
 contracted vertex.  This is the precise failure of the v23 inference from
