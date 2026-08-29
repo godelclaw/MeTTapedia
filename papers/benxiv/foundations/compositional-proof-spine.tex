@@ -2182,12 +2182,63 @@ W_0(H)$; indeed the definition of a purified generator explicitly permits
 support on boundary edges, while $W_0(H)$ vanishes there.  The dual-forest
 peeling also treats the unique \emph{tree} edge incident with a leaf face as
 though it were the unique remaining dual-graph edge, which need not hold in a
-spanning forest.  Consequently the desired v23 spanning inclusion is not
-refuted by Proposition~\ref{prop:v23-annihilator-gap}, but its printed proof
-does not establish it.  It cannot presently serve as the missing high-width
-M1 theorem; a corrected need-based generator theorem would have to prove the
-actual route discrepancies lie in the generated subspace and then connect
-those algebraic moves to a strict physical replacement.
+spanning forest.  Proposition~\ref{prop:v23-annihilator-gap} by itself only
+refutes that inference.  The literal spanning statement is in fact false for
+an additional, concrete reason.
+
+\begin{proposition}[triangular-prism counterexample to the literal v23 spanning theorem]
+\label{prop:v23-triangular-prism-spanning-counterexample}
+\Srefuted{Mettapedia.GraphTheory.FourColor.GoertzelV24V23TriangularPrismSpanningCounterexample.exists_boundaryZero_not_mem_generatorSpan}
+Let $H$ be the triangular prism embedded as an annulus, with its two
+triangular faces as the two boundary cycles and its three rectangular faces
+as the internal faces.  Define the v23 generator $X_f^{ab}(C)$ exactly as in
+the final Kempe-closure generator-family definition: it has coefficient equal
+to the third colour on those edges of $\partial f$ whose colours lie in
+$\{a,b\}$, and coefficient zero elsewhere.  Even if one permits generators
+from \emph{every} proper Tait colouring of $H$, rather than only the Kempe
+closure of a fixed colouring, their span does not contain $W_0(H)$.
+\end{proposition}
+
+\begin{proof}
+Encode the three nonzero colours by $\mathbb F_2^2$.  Number the top triangle
+edges $t_0,t_1,t_2$, the bottom triangle edges $b_0,b_1,b_2$, and the spokes
+$s_0,s_1,s_2$, with rectangular face $f_i$ incident with
+$t_i,b_i,s_i,s_{i+1}$ (indices modulo three).  Define a linear functional
+$\lambda$ on $\mathbb F_2^2$-valued edge chains by summing the first coordinate
+on
+\[
+                    t_0,t_1,t_2,s_0,s_1,s_2.
+\]
+For every proper colouring, the three colours on
+$t_i,s_i,s_{i+1}$ are pairwise distinct.  The first two inequalities are
+properness at the two endpoints of $t_i$; the third follows because the three
+top edges have pairwise distinct colours and $s_i,s_{i+1}$ are the respective
+missing colours at consecutive top vertices.  Hence any chosen colour pair
+contains exactly two of these three edges.  On $X_{f_i}^{ab}(C)$ the two
+selected edges carry the same third-colour coefficient, so their first
+coordinates cancel in $\mathbb F_2$.  The bottom edge does not occur in
+$\lambda$.  Thus $\lambda$ annihilates every generator arising from every
+proper colouring, and therefore annihilates their span.
+
+Now let $w$ have first coordinate one on $s_0$ and be zero everywhere else.
+Every vertex of this annulus lies on a boundary component, so the v23
+Kirchhoff conditions, which are imposed only at interior vertices, are
+vacuous; moreover $w$ vanishes on both boundary cycles.  Thus $w\in W_0(H)$.
+But $\lambda(w)=1$, so $w$ is not in the generator span.  The Lean model uses
+all $3^9$ edge assignments satisfying the six literal cubic properness
+conditions and proves this separating-functional argument without enumerating
+a Kempe closure.
+\end{proof}
+
+The triangular prism is planar, cubic, and bridgeless, and its two triangular
+cycles are disjoint boundary components, so it satisfies the hypotheses as
+printed.  It is boundary-degenerate in the precise sense that it has no
+interior vertices.  A repaired theorem may therefore impose a positive-depth
+or route-realizability hypothesis, but that would be a new statement needing
+a new proof.  The v23 theorem as written cannot serve as the missing
+high-width M1 theorem.  A corrected need-based generator theorem would have
+to prove that the actual route discrepancies lie in its generated subspace
+and then connect those algebraic moves to a strict physical replacement.
 
 One elementary combinatorial ingredient of the long-boundary branch is the
 following sweep lemma.
