@@ -1,0 +1,188 @@
+{
+  "auditor_sha256": "2156c6d8b56cfba23910445d38946ff50d517f50ba3b5807d32058a8b71fdf21",
+  "carrier_trees": 17,
+  "case_count": 19,
+  "direct_parent_identities": 2,
+  "exporter_sha256": "71cf6447c642efee36fd4bcac0ef2ed03286d40e40edb68a7dc4330618dccbb7",
+  "format": "krenn-x5-0415-residual-lean-audit-v1",
+  "generated_lean_sources": 175,
+  "reflected": [
+    {
+      "case": 5,
+      "certificate_file_sha256": "fd80dd6589b63ad8a379ce700ae5e0aa25eac2c4b96f16137165efd903175177",
+      "closure_kind": "strict_parent_identity",
+      "source_system_file_sha256": "7de0b56ccd3bf6192ad6cafdd17591e52baa2a050cce115cd5cab24ea52b7db9",
+      "top_axiom_log_sha256": "c96de89fa46be369426e6040d6f15a6e3b6d83cb9947a52eedde22588850915c"
+    },
+    {
+      "case": 84,
+      "closure_kind": "strict_exhaustive_carrier_tree",
+      "root_selected_count": 40,
+      "source_system_file_sha256": "ac33975de199d1658481ae2c470f35a52401fc0146561fe6f066311fdbf70cb4",
+      "top_axiom_log_sha256": "2d6c2e56baaf02b46cb842cf8b4653d0a8b059f6df67b70aa9f148d1c4a8b91c",
+      "tree_manifest_sha256": "6a2a14e3753205f1052829b022b1b3fb9632786999546d3960de2367307f964d",
+      "tree_spec_sha256": "1c5c9d5dd9fba8625e75c349e3db19471f32494e5d0f3b48541e4cea1bf77185"
+    },
+    {
+      "case": 86,
+      "closure_kind": "strict_exhaustive_carrier_tree",
+      "root_selected_count": 51,
+      "source_system_file_sha256": "303f31f7f4393e492a4726a3d32207f410343cc5629ac1c5064e3db374b92bd0",
+      "top_axiom_log_sha256": "4464ee8ae139e5da633656a33eb21b91f2a48e84d064bd70f997c55a253d951e",
+      "tree_manifest_sha256": "99c3af256aeca82f02e164290d3ff73912aa007a147bc77cf9df06795ebab9ae",
+      "tree_spec_sha256": "db17b67f6f2b9e0496d11a2ca7bdbce993bb6632a1b331af700ab70df8f272a5"
+    },
+    {
+      "case": 98,
+      "closure_kind": "strict_exhaustive_carrier_tree",
+      "root_selected_count": 51,
+      "source_system_file_sha256": "21fed218ba922b0a46e322cfa78761defe1f2baded9280d04edaa5fa197a3d52",
+      "top_axiom_log_sha256": "387a904c86102c4f55f94570574c5f04c5b1369c71af8c67e2572f9315db8071",
+      "tree_manifest_sha256": "89c48d95810a9c3d87bf761fbb3fb90775c698692aa70617952e5f23fc047161",
+      "tree_spec_sha256": "2eacfc481280999987620306b47b0866a5b41e615b6e533ef9ce9c441b5743ff"
+    },
+    {
+      "case": 102,
+      "closure_kind": "strict_exhaustive_carrier_tree",
+      "root_selected_count": 45,
+      "source_system_file_sha256": "a0fb92b74562c6cbd883d13740a9692bb510b42ccb2692cc812084e8f757aac8",
+      "top_axiom_log_sha256": "fbf21ab00f3b116f2f218b4376a4874bef95e7b6a9eb2e02878b1ec19fc71c17",
+      "tree_manifest_sha256": "171767b6d735aec2e45c4ba6fd15bbb2015da375f0f130e5ccebca93ba9fdabf",
+      "tree_spec_sha256": "3f341898f674a0dab1244c758e35509e1806895ecfe726f6a894c272bd1dc2ae"
+    },
+    {
+      "case": 131,
+      "closure_kind": "strict_exhaustive_carrier_tree",
+      "root_selected_count": 53,
+      "source_system_file_sha256": "dab25aa7fa238dc16870f773c46cab36b31d2020318280b78d7109dc56e43536",
+      "top_axiom_log_sha256": "6bf5717d8c3fba93d749deef3dc7bf816274f72a9f223e482cbce7174587c664",
+      "tree_manifest_sha256": "f00690633684fbea3f8e96afb449ea5094ecfc6b4597311a075ea4030d4c2a3f",
+      "tree_spec_sha256": "e3a4989683b0b16f5fbe58302720fd7b617dbae14ba4f66b821610ec5c69b41c"
+    },
+    {
+      "case": 170,
+      "closure_kind": "strict_exhaustive_carrier_tree",
+      "root_selected_count": 58,
+      "source_system_file_sha256": "871892c3d63f609de3170db3521b0cedc45fb85bb5e592233dd5e735c5c7fa09",
+      "top_axiom_log_sha256": "c500c84728624a89b68bfdb8f64f63fa3d46eb90247f4ce854ee2a7992ed0878",
+      "tree_manifest_sha256": "f81150d7180ab2caef59c23a2b8bd5ad06036660f914480e9ffa376138d424a7",
+      "tree_spec_sha256": "18e5ed59bbc3af4397f01b7b27f4af84637d3f222e89e154ce06191a7e3d84a8"
+    },
+    {
+      "case": 304,
+      "closure_kind": "strict_exhaustive_carrier_tree",
+      "root_selected_count": 65,
+      "source_system_file_sha256": "55d45ca9465ab2d2190770fb6510efb6e104d7db23ce54f75ab1e75716151de5",
+      "top_axiom_log_sha256": "6c15c248db4c2035e27c1b0a609ecf59803c87d24a105e30982e980e0220107d",
+      "tree_manifest_sha256": "044ed1e800c8d9b294585c69059a6e3f395438fe1ed5fa244c7e1cc51da3e148",
+      "tree_spec_sha256": "6154db0c4b0959492805522e08d6758b0d722a60851be3d8474a1e56f479f345"
+    },
+    {
+      "case": 316,
+      "closure_kind": "strict_exhaustive_carrier_tree",
+      "root_selected_count": 62,
+      "source_system_file_sha256": "1069c2cb0be74008022bebcb879707ce75fc6b8e75b0f56f2797c382750d30e3",
+      "top_axiom_log_sha256": "846f297a2bef33a1873683cbd4a1c8412be34512f93829978f098f7b25be04b0",
+      "tree_manifest_sha256": "9b9b94f92962c78256e67bbfb303fbf75e2afb9534037f51ec57f6303a443981",
+      "tree_spec_sha256": "4f129fa57652986760eca66f703ab655c6625443dabc4d8793f8f4f6ed112def"
+    },
+    {
+      "case": 385,
+      "closure_kind": "strict_exhaustive_carrier_tree",
+      "root_selected_count": 71,
+      "source_system_file_sha256": "894dec16df37def733dd01b0fbcc9738ea9695a9d8199a38cd093450f3f83c48",
+      "top_axiom_log_sha256": "6fcadf9b3fca681990672ae0db2023d1c0c252dafef9cd0defa7d7ee56fcbe65",
+      "tree_manifest_sha256": "1c4bdbb129fc77d88f513ef9f34cf3348f9ce131748366bb90e193a70e16c737",
+      "tree_spec_sha256": "0b13d89aa25932ede306f2fd84bc297553cfec3a6a1ef31d8dc997c16f846c87"
+    },
+    {
+      "case": 388,
+      "closure_kind": "strict_exhaustive_carrier_tree",
+      "root_selected_count": 65,
+      "source_system_file_sha256": "65e4c8c682f9f87189ca5dd6f9b3eaf04609f167790f575f766297db0af63d0a",
+      "top_axiom_log_sha256": "c7e167f712fe777eb096f4492d866114a9c48816aa9eb7e86b471e21595cd07b",
+      "tree_manifest_sha256": "846e358a3d08805ae48bde4af4f9dba87002e4c9072984b0cba959d80432ec58",
+      "tree_spec_sha256": "7506d0a9d7c141b168b09019fee86e5d671e70af505169b1faabfdb548f1caf9"
+    },
+    {
+      "case": 429,
+      "closure_kind": "strict_exhaustive_carrier_tree",
+      "root_selected_count": 58,
+      "source_system_file_sha256": "284ca5fb93fce09cf4ec1f2ace56d18eaa0304a61307fc3fe9ccf5c941d0b463",
+      "top_axiom_log_sha256": "065352c577cff34160626b1505dcbcf1a6206950fd76eb5713e8986ef6630f64",
+      "tree_manifest_sha256": "3a9a07f675ce5d86cf707d0a05183d22e89ad2d5c20557d81cda2b582e6fe3f8",
+      "tree_spec_sha256": "42192270e5a26c643d995c066fe44f6f287929860e8c08511d07352fc1940b29"
+    },
+    {
+      "case": 516,
+      "closure_kind": "strict_exhaustive_carrier_tree",
+      "root_selected_count": 17,
+      "source_system_file_sha256": "cbac4ad9b042cd837445e20d75714ca8f2f6f419108c56d784689b2b71f22396",
+      "top_axiom_log_sha256": "c39e580cb694fcf92987a9f3db6e8b02df3ee8119aa4c8d2812aa9a5ba2a7873",
+      "tree_manifest_sha256": "a8149a94d4eb8d8a1ddd50d42c049c95976021b42ae7e1df4f64a4ec6ef4cc41",
+      "tree_spec_sha256": "37360c7239146699dc70bc92a1f4e25517ace018c17813133113cd732698af84"
+    },
+    {
+      "case": 642,
+      "closure_kind": "strict_exhaustive_carrier_tree",
+      "root_selected_count": 25,
+      "source_system_file_sha256": "0831ad6bb424685bc431dcd5ad514bbd5f72203e8487c05d209b2dd9776dfb8a",
+      "top_axiom_log_sha256": "69dbb45f91ead4b5f3332f8b20e1543bdbe8b4db9a94a55cd04368854d6f09a0",
+      "tree_manifest_sha256": "588ce2d5109517c8e292cfd756f33facf880f5de167a96a9682ea803cff30bf3",
+      "tree_spec_sha256": "be87ff83043c95541eae625684f6c4d849fe0a4b9302ccbef31726c75e4b287e"
+    },
+    {
+      "case": 817,
+      "closure_kind": "strict_exhaustive_carrier_tree",
+      "root_selected_count": 71,
+      "source_system_file_sha256": "a8aa29c9af8c17ac1b614adcb0df4127f2dffe2548c876882666855a9efe717b",
+      "top_axiom_log_sha256": "38a98b7f483fa6c15e4c2ce6fe60ca436c6f7d8e9ffcf2b55a06e71e8fabe5e9",
+      "tree_manifest_sha256": "74e3b0286270fbc13b8595d3d8b38ba95a7f62b518d70ad2fbaefcafdc80f696",
+      "tree_spec_sha256": "136fd8147976df55e7dc7dae43af5b9f42be2492afc8ba28ff190535752576cd"
+    },
+    {
+      "case": 861,
+      "closure_kind": "strict_exhaustive_carrier_tree",
+      "root_selected_count": 62,
+      "source_system_file_sha256": "b7bb8fc2ec00d381efdc5a84e8139b33644364f6cf8af63708fc5cdab5cd16d7",
+      "top_axiom_log_sha256": "a2fa11a5f19000173da64c36ac0b79d6eafc67c03fd32bbe84375c1c2a155e24",
+      "tree_manifest_sha256": "c6d1304c3dceacbe9c9bc2be4d6cc81372bde98a09b11d4259cd7c28e9038550",
+      "tree_spec_sha256": "8eb28e71ad984c90db14866716ad91d3b0f25e462e3d9ab91876c62654b8e1ee"
+    },
+    {
+      "case": 863,
+      "closure_kind": "strict_exhaustive_carrier_tree",
+      "root_selected_count": 37,
+      "source_system_file_sha256": "1810dd6f7a1724296f7a09758c7f64ddfec8797bb43c91ddff3aff5679b2e3c9",
+      "top_axiom_log_sha256": "6f2739ed1058b47601eb24b0748bd3d87f034225522da6bee7b842446e01c3df",
+      "tree_manifest_sha256": "b0d42fe5d1521cf9b166e558e63e2a161d90525949b322daf5c331dc0fb536c9",
+      "tree_spec_sha256": "2a9c4ff0e979302cd1825ff04c12eb1602bf2ce0342e5d943161a81064c5f46f"
+    },
+    {
+      "case": 1033,
+      "closure_kind": "strict_exhaustive_carrier_tree",
+      "root_selected_count": 17,
+      "source_system_file_sha256": "0721a47144540c8e289b8ddcd41ffa8c17c4c0b41c8477cc8b1bd2b202ab53ee",
+      "top_axiom_log_sha256": "faa41384a7665c69f58de9440c9153e62883847447015e2487c2ac29edeec31a",
+      "tree_manifest_sha256": "96332c146e723436f450fa8605e107f642a919f1557bd67d668a4cd52f1535a3",
+      "tree_spec_sha256": "78409f71112e104c4587d225de58c725e2f710eebec32b092bedf6244f9910f0"
+    },
+    {
+      "case": 1293,
+      "certificate_file_sha256": "809f0890a1ad03df288d5ef7ab8013ebc55b530c2e37607997e9aabadc1479f6",
+      "closure_kind": "strict_parent_identity",
+      "source_system_file_sha256": "194887386d5ae71e6db92f70f5ca2d82cee670c4d31c304198edc7ded7d0df4d",
+      "top_axiom_log_sha256": "74f8a61abf5b09ba37d61b1df2627c286f406273d0c8b067bf6f7531fc18117a"
+    }
+  ],
+  "registry_sha256": "66f01523cab74fe308761d5e65961fcc9e29aa5c88ac16864d67a18688bf278e",
+  "residual_manifest_sha256": "a3660e27b91639fb5b6b4756097aaa886d5d9b4989da6b0f41974c6508a51163",
+  "strict_leaf_identities": 136,
+  "top_theorem_axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "verdict": "all_19_residual_cases_reflected_into_official_lean",
+  "zero_forbidden_proof_escapes": true
+}

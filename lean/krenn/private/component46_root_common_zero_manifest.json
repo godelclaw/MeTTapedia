@@ -1,0 +1,32 @@
+{
+  "base_file_sha256": "d3aad8dda7e6e2acd6bf5ecacd780d5850418e7f74b924367e8e936746ea76bc",
+  "base_provenance_count": 635,
+  "chunk_count": 16,
+  "chunk_size": 40,
+  "component_provenance": [
+    {
+      "raw_component_index": 4,
+      "root_index": 281
+    },
+    {
+      "raw_component_index": 7,
+      "root_index": 339
+    },
+    {
+      "raw_component_index": 6,
+      "root_index": 340
+    },
+    {
+      "raw_component_index": 3,
+      "root_index": 346
+    },
+    {
+      "raw_component_index": 2,
+      "root_index": 347
+    }
+  ],
+  "format": "krenn-component46-root-chunks-export-v1",
+  "proof_map_sha256": "b89c5bda15ef7ca84b4e8569829e12299d357da48904c03be022b24a058c2dd5",
+  "reduced_component_file_sha256": "957b3e719ac5d28c5aed70dcb8496e77643597e5a071b172f230c19e1d051584",
+  "root_equation_count": 640
+}

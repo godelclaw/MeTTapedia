@@ -1,0 +1,695 @@
+{
+  "aggregate": {
+    "axiom_print_components": [
+      1,
+      6,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      22,
+      24,
+      25,
+      36,
+      37,
+      39,
+      44,
+      45,
+      46,
+      47,
+      48,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      62,
+      64,
+      65
+    ],
+    "file": "KrennAllCollapseKnownComponents.lean",
+    "imported_components": [
+      1,
+      6,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      22,
+      24,
+      25,
+      36,
+      37,
+      39,
+      44,
+      45,
+      46,
+      47,
+      48,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      62,
+      64,
+      65
+    ],
+    "sha256": "e15cfa08aa12c50b140e9d2b3e6b455498640b2afcefeec3d3c79708a64ed89e"
+  },
+  "aggregate_axiom_audit": {
+    "command": [
+      "lake",
+      "env",
+      "lean",
+      "KrennAllCollapseKnownComponents.lean"
+    ],
+    "component_count": 38,
+    "components": [
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 1
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 6
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 10
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 11
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 12
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 13
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 14
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 15
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 16
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 17
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 18
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 19
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 20
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 22
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 24
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 25
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 36
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 37
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 39
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 44
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 45
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 46
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 47
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 48
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 50
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 51
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 52
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 53
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 54
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 55
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 56
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 57
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 58
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 59
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 60
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 62
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 64
+      },
+      {
+        "axioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "component": 65
+      }
+    ],
+    "expected_axioms": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "5f9d5278c6060595c4251b9258467143b373f55e697cc5d96276ce081e89d24f"
+  },
+  "all_checks_pass": true,
+  "component_count": 28,
+  "components": [
+    {
+      "component": 10,
+      "connector_audit_sha256": "176cc1b384cc1eb088e80babc7c5114da90ccace63c4f78d2fa50167bdaf3127",
+      "connector_modules_fresh": 20,
+      "lean_source_count": 235,
+      "lean_table_index": 9,
+      "table_entry_sha256": "1b8526dcd294641e1d1bd76c466fe5694a8db8219a57a53613fdfdf00ed57232",
+      "tree_audit_sha256": "61262eaa60477b3b3d858c2dfbfde2e5ce02cf37a9d4dd63ce7020cbe8cbca41",
+      "tree_modules_fresh": 214
+    },
+    {
+      "component": 11,
+      "connector_audit_sha256": "400606a7fcdf1a2b3fd47fb68d5542d44a6b3031e97be7146b1b75c3b8455604",
+      "connector_modules_fresh": 21,
+      "lean_source_count": 236,
+      "lean_table_index": 10,
+      "table_entry_sha256": "1bbac8cb95a2e914fa1d70318ff4600670fc02d13e55f5c1249b2892615e1e2a",
+      "tree_audit_sha256": "1c786e6f991a8d3a60e5e79f9a05dc277798884da61b601b6b652b085d7dcbef",
+      "tree_modules_fresh": 214
+    },
+    {
+      "component": 12,
+      "connector_audit_sha256": "b23d1c2c914b773ac1937adecbc763483cd4a53f153db54cce54bef0f4fac515",
+      "connector_modules_fresh": 20,
+      "lean_source_count": 81,
+      "lean_table_index": 11,
+      "table_entry_sha256": "48bdbba2ab4864d78a12f03c9c12ac85b260f0b7b2f6a19cc1ed8c3508c01018",
+      "tree_audit_sha256": "4d227228724cc6c27e111c9b5edc89fd30d1d376aa9e4017ee87de7e8520ee6d",
+      "tree_modules_fresh": 60
+    },
+    {
+      "component": 13,
+      "connector_audit_sha256": "3ced84fdd5027a7ff3fa8fc16da5a35efecbb25d8719c67e7561555233396bd2",
+      "connector_modules_fresh": 20,
+      "lean_source_count": 123,
+      "lean_table_index": 12,
+      "table_entry_sha256": "d979743956ea62c688dbb0fb504a789ea234658b684e7fcca7f301a9b53199c6",
+      "tree_audit_sha256": "cb61b594b312da2520f69615af641b8d904c99b4d851c6d121fdc5279d4a8bcb",
+      "tree_modules_fresh": 102
+    },
+    {
+      "component": 14,
+      "connector_audit_sha256": "4d45736a63b69ecdb4188d9e50a3eba7c8588ec4f54557a1d3a724c09dfb8642",
+      "connector_modules_fresh": 20,
+      "lean_source_count": 193,
+      "lean_table_index": 13,
+      "table_entry_sha256": "fba7fb2e6731c1a435e561e2c4b8ced05cfbc48602f0c67549ade17786540e57",
+      "tree_audit_sha256": "3203772d73d0e06ea9664e32c4a904a62fdf4d06af52c3928b5656de395c940e",
+      "tree_modules_fresh": 172
+    },
+    {
+      "component": 15,
+      "connector_audit_sha256": "91c34086cd5af8f1b515b7c77e8943e67c32940ef9b5ffeb1effd99917559df9",
+      "connector_modules_fresh": 19,
+      "lean_source_count": 192,
+      "lean_table_index": 14,
+      "table_entry_sha256": "eb438c6f58cdda83094cdbe991829ef98f0509404d866932f5c16dce8bcfbe83",
+      "tree_audit_sha256": "8f028fad41925c2ab42efd20cf28b34e0b774175f8e986d27dc79aeb7b81ad10",
+      "tree_modules_fresh": 172
+    },
+    {
+      "component": 16,
+      "connector_audit_sha256": "21258c783640d62d811876a756dc4ae26aa6a4466914d9b943789b3ef44ad16b",
+      "connector_modules_fresh": 21,
+      "lean_source_count": 1006,
+      "lean_table_index": 15,
+      "table_entry_sha256": "e8a8ff44b7dfbd4685415a63ddcedb35214574dcd9393de9fc19d24b84670784",
+      "tree_audit_sha256": "5bfd81c6cb86e4c38c845d0cba99e7ff835b30d67c7e2cec06b482a8495b1085",
+      "tree_modules_fresh": 984
+    },
+    {
+      "component": 17,
+      "connector_audit_sha256": "9821198619a747b8a4f2e82fb671e329e235aac9b0f2d8ea5e5bcf173169c4cb",
+      "connector_modules_fresh": 20,
+      "lean_source_count": 347,
+      "lean_table_index": 16,
+      "table_entry_sha256": "0a77cd24336c3a585860d5ceb576c554a8c420a3c4adf5d8eec7fd72a62f2e05",
+      "tree_audit_sha256": "1a42e8af1ba032e03622ba394d6d1fac1313e8b5df3d63ba431ca0f329fabe81",
+      "tree_modules_fresh": 326
+    },
+    {
+      "component": 19,
+      "connector_audit_sha256": "aed7153046651dc60964a3600d9d021858e281468cc654263bb63f6e61064003",
+      "connector_modules_fresh": 21,
+      "lean_source_count": 600,
+      "lean_table_index": 18,
+      "table_entry_sha256": "470b119dd71161e3b16a9d0f3d66af5231e585a9d5bd0bf2e3c6175074f9bd0d",
+      "tree_audit_sha256": "5847d31d6d4bec503477d5953471571b8c80b3f4b4ac280f1a3271e1bc03c5a9",
+      "tree_modules_fresh": 578
+    },
+    {
+      "component": 20,
+      "connector_audit_sha256": "b3c3620ff1186b27ecbe84b9bab037a8632d0fafbd4d890b3247f7c54a7f2cb3",
+      "connector_modules_fresh": 20,
+      "lean_source_count": 263,
+      "lean_table_index": 19,
+      "table_entry_sha256": "9c22059c8687618668a55f9ff345b5e580b9adffbe5c947b74b61eee16fc7ed9",
+      "tree_audit_sha256": "b5cfea0074a5be4687dac1a3d25fc60da37d97d069451874d55f309f4f73331e",
+      "tree_modules_fresh": 242
+    },
+    {
+      "component": 22,
+      "connector_audit_sha256": "185f42f4ace7f9e522ffbbffca31128258e596bc8c86d1a1eb1fac0b319193a1",
+      "connector_modules_fresh": 20,
+      "lean_source_count": 53,
+      "lean_table_index": 21,
+      "table_entry_sha256": "f0b2314d1d1a084ec15ff2b629c1e8b9a3f16be29c3ed40b4fbde9c32d82ac30",
+      "tree_audit_sha256": "e1e81b2fb71763bcbdcdb2e4e330bb31fa5f7634c1311d71f8bbaddf33190c91",
+      "tree_modules_fresh": 32
+    },
+    {
+      "component": 24,
+      "connector_audit_sha256": "4a4c01ed050aee8972feaa61445972f0a7109e6e802bc91106d3774f4410441f",
+      "connector_modules_fresh": 21,
+      "lean_source_count": 880,
+      "lean_table_index": 23,
+      "table_entry_sha256": "a091471ce5d396c7f2de217aff5140235d922b26518ad0a0e6637db1e05117b9",
+      "tree_audit_sha256": "7478963a9151e275ef5951d86eae681f394789931348ecd2d1abee99ce218643",
+      "tree_modules_fresh": 858
+    },
+    {
+      "component": 25,
+      "connector_audit_sha256": "141fd691138928efe1cddca7d0eab4b870ac6a8d72da8d813ae5500428ed4e3e",
+      "connector_modules_fresh": 21,
+      "lean_source_count": 978,
+      "lean_table_index": 24,
+      "table_entry_sha256": "26d9b54fdc17df29532730b90db8c0b2b3bb395504ed085c819d0101823e031f",
+      "tree_audit_sha256": "b80a62ae8c103da6ac48a4740ff5b2b1155056c7a968e5977963034c1acfd02c",
+      "tree_modules_fresh": 956
+    },
+    {
+      "component": 36,
+      "connector_audit_sha256": "8bc05bccdbdab5f1f74353d8ea10988caa29fb8a3ac92c797476e8b1c7bc30de",
+      "connector_modules_fresh": 21,
+      "lean_source_count": 586,
+      "lean_table_index": 35,
+      "table_entry_sha256": "999d4c0e9fbc2e0ffd43523c9aaed8c7c247747dd4d0ba5fe33b409648901f58",
+      "tree_audit_sha256": "2f868d4e57c262d1ba3384c5f6ecd2e9bacba4dfc5900c270d2afec294365b11",
+      "tree_modules_fresh": 564
+    },
+    {
+      "component": 39,
+      "connector_audit_sha256": "e2edc3818a125dcdc85ec362a4d657149338a49b46e469263e83fdf418d025d0",
+      "connector_modules_fresh": 21,
+      "lean_source_count": 1636,
+      "lean_table_index": 38,
+      "table_entry_sha256": "f54e6e42b24270a66828cc9d4dc1dcc453e3fa2021a420321199075d877deeda",
+      "tree_audit_sha256": "9e90278b3186e5192bcd4a395ca0759432878c85b40dc4f863e228ded424ec32",
+      "tree_modules_fresh": 1614
+    },
+    {
+      "component": 45,
+      "connector_audit_sha256": "d04fbfabed2a7c21e4135524d2decd123ae010ec901d3b06672dff0a0b3e64aa",
+      "connector_modules_fresh": 18,
+      "lean_source_count": 65,
+      "lean_table_index": 44,
+      "table_entry_sha256": "3f4cdf9633f3f8692638eb4bd1a8f5c86db9435d449a48431c04f1183912c01b",
+      "tree_audit_sha256": "63370ced14456a6c40686f84e54423a7410a6205236cb98762f051dc94b9060d",
+      "tree_modules_fresh": 46
+    },
+    {
+      "component": 47,
+      "connector_audit_sha256": "f407bc32d63f27d557ddc9789a2e7a14a4ec9d6c5f7664e5d52bc9523f3e5d23",
+      "connector_modules_fresh": 19,
+      "lean_source_count": 136,
+      "lean_table_index": 46,
+      "table_entry_sha256": "ddb55c10b54f2c62a60af1f658d5ccf87b7763c13facef6b51e5a1b50078f912",
+      "tree_audit_sha256": "9325464fc4e2224476dbbd89984aee3feb5679355d385d2f2e39e34aaa8c592c",
+      "tree_modules_fresh": 116
+    },
+    {
+      "component": 48,
+      "connector_audit_sha256": "ff9f404485af73332836f7e9cbfff574e429c932ff86bd532e62da238798e702",
+      "connector_modules_fresh": 20,
+      "lean_source_count": 67,
+      "lean_table_index": 47,
+      "table_entry_sha256": "4b61e2372efbb978969346a50b703de0dde5b241ce893c92c82fa6965f565e82",
+      "tree_audit_sha256": "618a97ae4c5bd130eec8fc29026a4133d9959680dad6ba7a6b5267c42104c7ad",
+      "tree_modules_fresh": 46
+    },
+    {
+      "component": 50,
+      "connector_audit_sha256": "5f95c4905dcf165be62a4f54950a61171a79522e0f1ea0db79274f58c86b736b",
+      "connector_modules_fresh": 20,
+      "lean_source_count": 95,
+      "lean_table_index": 49,
+      "table_entry_sha256": "ac04856a248d299938f444424a1a4407a082fd4be0b6c029004ced4bdaee7ca2",
+      "tree_audit_sha256": "234f36b18f770387bad5bbcabdaa92f3d9605f65116161046a479c7794c96c10",
+      "tree_modules_fresh": 74
+    },
+    {
+      "component": 52,
+      "connector_audit_sha256": "a5518910e448cb2be8161ce147713f814f3714624a645b63f9087eb0117f9c8b",
+      "connector_modules_fresh": 20,
+      "lean_source_count": 67,
+      "lean_table_index": 51,
+      "table_entry_sha256": "f1b09175788b8f4f7580e5061c6c0a1b8923e2ff8dcb7972d9982bce93ed7fec",
+      "tree_audit_sha256": "99a8e99d57f3363aa945bbf15290dba5d9e5da29f653d8817d3bcd0256d3df90",
+      "tree_modules_fresh": 46
+    },
+    {
+      "component": 53,
+      "connector_audit_sha256": "cf0e828d38b6cb39879bdba4e5b87259c6b443590c0bb846bbcfe31add78a01c",
+      "connector_modules_fresh": 20,
+      "lean_source_count": 249,
+      "lean_table_index": 52,
+      "table_entry_sha256": "fb74f9a5ae398cd9433d622a4af115056f2ba58e6fe059fb48567be0abbde60e",
+      "tree_audit_sha256": "826de15a963012fbdc0ec31676d4f03fe506f425477df6790f1f3298adf1fdb3",
+      "tree_modules_fresh": 228
+    },
+    {
+      "component": 54,
+      "connector_audit_sha256": "f2756eb520cd709cdd6e5c2d5e5e6649bc7175454814b9e363471ab76545210f",
+      "connector_modules_fresh": 20,
+      "lean_source_count": 67,
+      "lean_table_index": 53,
+      "table_entry_sha256": "c16a296d4e1bf67a43fd956dfbe2053d01d0a52f05cef693a42651ac93b670ba",
+      "tree_audit_sha256": "89b9ae047f361a0a2556b0d4d974627024d857fdec485524d1ce7e6a4ec08694",
+      "tree_modules_fresh": 46
+    },
+    {
+      "component": 55,
+      "connector_audit_sha256": "10feb77be7a9d6be8c9f93815f3383d77f76a3720f49020773c223e9a062aff9",
+      "connector_modules_fresh": 19,
+      "lean_source_count": 94,
+      "lean_table_index": 54,
+      "table_entry_sha256": "3a2e547a6ec70ad0f1360cbb8318ed10539705cf03d49e057cc7414f7ef39ba2",
+      "tree_audit_sha256": "d8aa015d34b80850c082f86ea700161332f326340454c9b1cdb9e3ec0f223e9a",
+      "tree_modules_fresh": 74
+    },
+    {
+      "component": 58,
+      "connector_audit_sha256": "d1cc9324deaf0a5c61e5d63373e0762cc101659534d6efe34353fa4d8ca428e4",
+      "connector_modules_fresh": 20,
+      "lean_source_count": 151,
+      "lean_table_index": 57,
+      "table_entry_sha256": "4e93f756b481975cfc13ecff3fb9a5a4dbef1c328f729169d0fc67e8dfe63e21",
+      "tree_audit_sha256": "b1e5d3d642a95ea3639320c44f07bca2e3668e124a5372672c9096b8dc92b4e7",
+      "tree_modules_fresh": 130
+    },
+    {
+      "component": 59,
+      "connector_audit_sha256": "66cbe593454c6ef28a5bb3cb1902c08172503b41a88c6e97db20b24476411660",
+      "connector_modules_fresh": 20,
+      "lean_source_count": 81,
+      "lean_table_index": 58,
+      "table_entry_sha256": "8d9fc3f1b2ec2d0214dcedbfe49c5124abbf21aa81db11260e017ec87f261af2",
+      "tree_audit_sha256": "563db7820e0a176180fa46d8e81d972034d773dbf5a584322bc723044f5f98a4",
+      "tree_modules_fresh": 60
+    },
+    {
+      "component": 62,
+      "connector_audit_sha256": "14013c4a74708e5f82ab9c515f54d0ac283d275711ee46728be758ce560690c9",
+      "connector_modules_fresh": 21,
+      "lean_source_count": 656,
+      "lean_table_index": 61,
+      "table_entry_sha256": "f2c42f5b5f7269cf2981d725aec51b0f52088eb4ec55238c7a598e143fa47551",
+      "tree_audit_sha256": "94b61ceaa006a2b89f7d7bf17abb814e3b6cc21db198f08cb2c3a18f60fc4bd4",
+      "tree_modules_fresh": 634
+    },
+    {
+      "component": 64,
+      "connector_audit_sha256": "3e5bec6780962dbdc9a1cc11eb31cb33abb6381994419eb869dea604880be892",
+      "connector_modules_fresh": 20,
+      "lean_source_count": 67,
+      "lean_table_index": 63,
+      "table_entry_sha256": "4625b09f7d63133bd81fecc4a79d86e478a926a6922392b29e55ae54ef442503",
+      "tree_audit_sha256": "bb9f49d3b6b19e0de5e7fe401f64851c8f978c288cf061bb2faa18d471dd7130",
+      "tree_modules_fresh": 46
+    },
+    {
+      "component": 65,
+      "connector_audit_sha256": "a163b5c20dfbbf4221e008e2e2de494402e988be4ccc65e3bef30c6d2991eeda",
+      "connector_modules_fresh": 21,
+      "lean_source_count": 376,
+      "lean_table_index": 64,
+      "table_entry_sha256": "2c79fc88e57a74c130387d93c6133a2872788ddeea694ec82ba887f9c0b5d6f4",
+      "tree_audit_sha256": "00d22cd7c5753c885523155e95b9fb8c61f50568b4bd230366328a69c71d6b10",
+      "tree_modules_fresh": 354
+    }
+  ],
+  "connector_modules_fresh": 564,
+  "format": "krenn-component-promotion-audit-v1",
+  "tree_modules_fresh": 8988
+}
