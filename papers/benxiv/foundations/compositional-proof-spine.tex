@@ -6206,6 +6206,54 @@ normalization removes any parallel seam while preserving that class,
 zero Count, and strict decrease.
 \end{proof}
 
+\begin{corollary}[nested facial-dual nooses physically shorten the map]
+\label{cor:dual-noose-literal-replacement}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DualNooseLiteralReplacement.exists_endpointSimple_replacement_of_nested_dualNooses}
+Let \(M\) be a graph-backed vertex-minimal zero-Tait-count member of the
+bridgeless spherical cubic class.  For \(r\in\{0,1\}\), let \(W_r\) be a
+simple closed walk of length at most \(w\) in the actual facial dual of
+\(M\), let \(X_r\) be the primal edges crossed by \(W_r\), and choose a
+connected component \(C_r\) of \(M-X_r\).  Put
+
+\[
+ S_r:=\{e\in E(M): e\text{ has an endpoint in }C_r\}.
+\]
+
+Assume that \(E(M)\setminus S_r\) contains at least two edges for both
+values of \(r\), that \(S_1\subsetneq S_0\), and that the two computed
+phased canonical states agree.  Then there is a strictly smaller
+endpoint-simple bridgeless spherical cubic map of zero Tait Count.
+\end{corollary}
+
+\begin{proof}
+A simple facial-dual cycle crosses pairwise distinct primal edges.  Facial
+parity saturation proves that \(X_r\) is exactly the graph boundary of
+\(C_r\), not merely a set containing that boundary, and proves that both
+\(C_r\) and its vertex complement induce connected graphs.  Consequently
+\(S_r\) and \(E(M)\setminus S_r\) are connected edge shores.
+
+It remains to compare the geometric length with the middle-set width used by
+the finite state.  A middle vertex of \(S_r\) cannot lie in \(C_r\): every
+edge incident with a vertex of \(C_r\) belongs to \(S_r\).  Choose one
+\(S_r\)-edge incident with the middle vertex.  Its other endpoint lies in
+\(C_r\), so orienting it outward gives a crossing dart of the noose.  Distinct
+middle vertices give distinct darts because they are the distinct terminal
+endpoints.  Hence
+
+\[
+ |\operatorname{mid}(S_r)|\le |X_r|=|W_r|\le w.
+\]
+
+The chosen component is nonempty and cubic, so \(S_r\) contains at least
+three edges.  Together with the assumed two exterior edges, connectedness
+therefore supplies both nonempty majority sides.  Thus each noose constructs
+the complete literal connected-shore node of width \(w\), including roots
+and two distinct boundary darts.  The hypotheses \(S_1\subsetneq S_0\) and
+equality of their computed phased states now meet
+Corollary~\ref{cor:phased-literal-shore-replacement}, which performs the
+physical splice and terminating digon normalization.
+\end{proof}
+
 \begin{theorem}[direct Count-reductive assembly]
 \label{thm:direct-count-reductive-assembly}
 \Sconditional{ladder transport; target-forced literal connected-shore state supply; route-native finite base}
