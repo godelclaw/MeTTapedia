@@ -2434,6 +2434,65 @@ cannot occur.  Treating the colour action as the whole support transport
 would make the overlap step false exactly in the dense-defect geometry now
 under investigation.
 
+The other terminal of the all-face machine already has the literal geometry
+required by the replacement layer; it is not merely a descriptive cut
+profile.
+
+\begin{lemma}[a large all-face cut is a literal facial-dual noose]
+\label{lem:all-face-large-cut-literal-noose}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AllFaceLargeRemoteNoose.exists_dualNooseSideAt_of_largeRemotePrimalCutAtDart}
+Suppose the all-face machine reaches its large-remote-primal-cut outcome at a
+directed edge.  For every anchor vertex \(a\), there is a simple closed walk
+\(W\) in the actual facial dual, of length at least five, with crossed primal
+edge set \(X\), such that the component \(C_a\) of \(G-X\) containing \(a\)
+satisfies
+
+\[
+  \partial C_a=X.
+\]
+
+Both \(G[C_a]\) and \(G[V(G)\setminus C_a]\) are connected.  If
+
+\[
+  S_a:=\{e\in E(G):e\text{ has an endpoint in }C_a\},
+\]
+
+then its middle-set width obeys
+
+\[
+  |\operatorname{mid}(S_a)|\le |W|.
+\]
+Thus this outcome supplies the literal noose-side geometry consumed by the
+physical replacement theorem.  It does not, by itself, bound \(|W|\), produce
+a second nested noose, or prove equality of their phased states.
+\end{lemma}
+
+\begin{proof}
+Unpack the large-cut certificate.  Its witness is already a simple closed
+walk \(W\) in the literal facial dual, and its long-profile field gives
+\(|W|\ge5\).  Let \(X\) be the primal edges crossed by successive dual edges
+of \(W\), and choose the connected component of \(G-X\) containing the
+specified anchor \(a\).  These data are exactly an oriented facial-dual
+noose side; no new curve or separator is chosen.
+
+Apply spherical facial-parity saturation to this simple dual cycle.  Every
+edge of \(X\) crosses the cycle once and therefore has endpoints on opposite
+sides.  Conversely, a primal edge not in \(X\) has zero intersection with
+the cycle and cannot leave the chosen component.  Hence \(X\) is the exact
+edge boundary of \(C_a\).  The same separation argument, applied to the two
+regions of the sphere cut by \(W\), shows that the chosen component and its
+vertex complement are both connected.
+
+For the width estimate, a middle vertex of \(S_a\) lies outside \(C_a\): all
+edges incident with a vertex of \(C_a\) belong to \(S_a\).  Choose an
+\(S_a\)-edge incident with that middle vertex.  Exactness of the boundary
+orients it uniquely from \(C_a\) to the middle vertex and therefore assigns a
+crossing dart of \(W\).  Distinct middle vertices have distinct terminal
+endpoints, so this assignment is injective.  A simple dual cycle crosses one
+distinct primal edge at each step, giving
+\(|\operatorname{mid}(S_a)|\le |X|=|W|\).
+\end{proof}
+
 The preceding local facts can be assembled without adding a geometric
 supply hypothesis.  The result is useful chiefly because it states the
 remaining global obligation without hiding either of its two branches.
