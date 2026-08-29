@@ -193,6 +193,12 @@ Across a primal edge $e$ with incident faces $f,f'$ we consequently have
 In particular $q$ is a proper four-colouring of the faces.  The three faces
 incident with any primal vertex have three distinct potentials.
 
+The integration step and its edge-incidence identities are machine-checked
+on the graph-backed spherical rotation carrier:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KauffmanFacePotential.exists_colorFacePotential_of_tait}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KauffmanFacePotential.colorFacePotential_incident_add}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KauffmanFacePotential.colorFacePotential_incident_ne}
+
 For $x\in\{a,b,c\}$ let $X_x$ be the union of the closed faces whose
 potentials lie in the dyad $\{0,x\}$.  Locally at a cubic vertex, one or two
 of the three incident faces belong to $X_x$; hence $X_x$ is a compact
@@ -215,6 +221,20 @@ $\chi(X_x)=2k(X_x)-b(X_x)$.  Reducing modulo two gives
  N_{ab}(C)\equiv\chi(X_c).                     \tag{1}
 \]
 
+This boundary/component identification is not supplied by the picture.  On
+the literal dart carrier, the selected face discs are glued across the
+internal (x)-edges by a finite list of transpositions.  The resulting ribbon
+permutation returns to its boundary after one or two turns; its first-return
+permutation is transported to the ordinary complementary two-colour line
+subgraph.  Successor and predecessor are its two graph neighbours, so its
+permutation cycles are exactly graph connected components.  Consequently the
+parity form of (1), including the absence of a closed selected component
+hidden from the boundary, is machine-checked:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KauffmanFaceRibbonParity.faceRibbonSurgery_orbitCount_boundaryPerm_mod_two}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KauffmanDyadRibbon.orbitCount_dyadBoundaryPerm_mod_two}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KauffmanDyadBoundary.orbitCount_dyadBoundaryPerm_eq_bicoloredComponentCount}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KauffmanDyadBoundary.bicoloredComponentCount_mod_two_eq_dyad}
+
 We next add the three Euler characteristics cell by cell.  Every primal
 vertex belongs to all three $X_x$, and therefore contributes $3\equiv1$.
 A face of potential $0$ belongs to all three, while a face of nonzero
@@ -229,6 +249,13 @@ faces, no edge is counted twice in $d_0(C)$ because $q$ is proper.  Thus
                   \Delta(C)\equiv
                   V(G)+F(G)+d_0(C)\pmod2.       \tag{2}
 \]
+For comparison with the literal ribbon carrier used in the formalization,
+the cubic handshake identity makes $V(G)$ even.  The verified form of (2)
+therefore reads
+\(\Delta(C)\equiv F(G)+d_0(C)\pmod2\).  Both the evenness reduction and the
+complete three-dyad summation are machine-checked:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KauffmanFormationParity.even_card_vertices_of_isCubic}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KauffmanFormationParity.formationCurveCount_cast_eq_face_add_zeroPotentialParity}
 
 Now let $K$ be the $(a,b)$-circuit on which the switch is performed.
 Combinatorial separation for spherical maps says that the edge set of the
@@ -237,6 +264,16 @@ and only if exactly one of its incident faces lies in $S$.  This is the
 dual form of the fact that facial boundaries span the cycle space; it is
 precisely Corollary~\ref{cor:separation}, so no unstated Jordan-curve step is
 being used here.
+
+More precisely, the binary cycle-space vector is checked to equal the
+boundary of a finite quotient-face set, and an edge has value one exactly
+when its two dart-side faces have opposite membership:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KauffmanFacePotential.exists_faceSetBoundary_eq_of_mem_f2CycleSpace}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KauffmanFacePotential.exists_faceSet_separates_iff_eq_one_of_mem_f2CycleSpace}
+For the operated component itself, even incidence at every cubic vertex and
+the resulting exact separator are also machine-checked:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KauffmanFacePotential.kempeComponentIndicator_mem_f2CycleSpace}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KauffmanFacePotential.exists_faceSet_separates_iff_mem_kempeComponent}
 
 Define
 \[
@@ -249,6 +286,17 @@ Edges off $K$ have either both incident faces in $S$ or neither, so their
 differences are unchanged.  Along $K$, adding $c$ at exactly one end sends
 $a$ to $b$ and $b$ to $a$.  Hence $q'$ is the face potential of the
 switched colouring $C'$.
+
+The underlying translation algebra, including the separating-edge and
+same-side cases, is machine-checked.  Moreover, the resulting boundary is
+proved to be $a+b$ precisely on the operated component, and the translated
+edge chain is proved equal to the actual Kempe-switched colouring:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KauffmanFacePotential.colorFacePotential_translate_potential}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KauffmanFacePotential.faceSetBoundaryColor_eq_delta_of_separates}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KauffmanFacePotential.faceSetBoundaryColor_eq_zero_of_sameSide}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KauffmanFacePotential.faceSetBoundaryColor_eq_componentIndicator}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KauffmanFacePotential.add_componentIndicator_eq_swapOnKempeComponent}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KauffmanFacePotential.exists_translated_colorFacePotential_of_swapOnKempeComponent}
 
 Only the faces in $S$ can change their contribution to $d_0$.  Inside $S$,
 translation by $c$ exchanges potentials $0$ and $c$ and exchanges $a$ and
@@ -266,11 +314,23 @@ union of alternating $(a,b)$ circuits.  Every such circuit has even length.
 The right-hand side of (3) is thus zero, and
 $d_0(C')\equiv d_0(C)\pmod2$.
 
+The relative-boundary cycle-space calculation and the resulting preservation
+of zero-potential boundary-length parity are machine-checked:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KauffmanZeroFaceParity.even_ncard_selectedDyadBoundary}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KauffmanZeroFaceParity.zeroPotentialParity_translate_kempeComponent}
+
 The map itself has the same numbers of vertices and faces before and after
 the switch.  Formula (2) now gives
 $\Delta(C')\equiv\Delta(C)\pmod2$, as required.  This is the
 Tutte-style form of the Spencer--Brown--Kauffman parity argument: planarity
 enters exactly through face potentials and spherical cycle separation.
+On the exact graph-backed carrier, the translated potential with preserved
+zero-fibre parity, the full formation-parity theorem, and its two-cross-pair
+corollary are machine-checked:
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KauffmanFormationParity.exists_switched_colorFacePotential_zeroPotentialParity_eq}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KauffmanFormationParity.formationParity_swapOnKempeComponent_spherical}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KauffmanFormationParity.crossPairParity_swapOnKempeComponent_spherical}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KauffmanFormationParity.not_five_and_four_of_spherical_swap}
 \end{proof}
 
 Planarity is essential.  Kauffman's one-edge-deleted Petersen formation

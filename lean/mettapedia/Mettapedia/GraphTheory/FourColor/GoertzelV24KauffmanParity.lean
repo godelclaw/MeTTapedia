@@ -20,18 +20,17 @@ That statement splits cleanly into two halves at the switched pair.
   isomorphism already available in the development together with the bijection
   of connected components induced by a graph isomorphism.
 * **The two cross pairs change together, evenly.**  The switch does move
-  `N_ac` and `N_bc` individually.  The source's proof shows their *sum* changes
-  by an even amount, and that is where its topological input sits: the
-  idemposition parity formula `(L-R)/2 + B`, resting on the even-intersection
-  property of two Jordan curves in the sphere.  No combinatorial Jordan curve
-  or planar separation theorem is available here, so this half is recorded as
-  `CrossCurveParityPrinciple` and used as an explicit hypothesis.
+  `N_ac` and `N_bc` individually.  This file retains the historical abstract
+  receipt `CrossCurveParityPrinciple`; the exact spherical Tait theorem is
+  subsequently discharged by the face-potential and ribbon-Euler argument in
+  `GoertzelV24KauffmanFormationParity`.
 
 The parity lemma is then proved from the two halves, and the arithmetic core of
 Kauffman's equivalence argument — five is odd, four is even, parity is
 preserved — is proved outright.
 
-Planarity is essential to the missing half, not to the proved one: the
+Planarity is essential to the spherical half, not to the proved graph-only
+one: the
 one-edge-deleted Petersen formation changes its curve count from five to four
 under a simple operation, so any statement of the missing principle that omits
 the spherical hypothesis is false.
@@ -72,15 +71,16 @@ noncomputable def formationCurveCount (C : G.Coloring α) (a b c : α) : ℕ :=
 noncomputable def formationParity (C : G.Coloring α) (a b c : α) : ℕ :=
   formationCurveCount C a b c % 2
 
-/-- **The missing half**, stated exactly.  A switch on one `(a,b)`-component
+/-- **Legacy abstract receipt.**  A switch on one `(a,b)`-component
 changes the two cross counts `N_ac` and `N_bc` individually, but changes their
 sum by an even amount.
 
-This is the topological content of the source's proof — the idemposition parity
-formula and the even-intersection property of two Jordan curves in the sphere —
-and it is the only part of the parity lemma not proved here.  It is false
-without a spherical hypothesis, which is why the principle is stated for a
-fixed graph rather than for all graphs. -/
+This graph-only interface predates the exact map carrier and is intentionally
+not the final theorem: it quantifies over colourings more broadly than the
+source's nonzero Tait setting.  The consumer-facing spherical theorem, with
+the correct hypotheses and no receipt, is
+`GoertzelV24KauffmanFormationParity.crossPairParity_swapOnKempeComponent_spherical`.
+-/
 def CrossCurveParityPrinciple [DecidableEq α] (G : SimpleGraph V) (a b c : α) :
     Prop :=
   ∀ (C : G.Coloring α) (K : (C.bicoloredSubgraph a b).ConnectedComponent),
