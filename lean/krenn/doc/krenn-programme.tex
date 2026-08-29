@@ -1,0 +1,2810 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1.1in]{geometry}
+\usepackage{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{openq}[theorem]{Open problem}
+
+\newcommand{\pmS}{\operatorname{pm}}
+\newcommand{\amp}{\operatorname{amp}}
+
+\title{A machine-checked programme for the Krenn--Gu conjecture}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Every lemma stated here is verified by the Lean kernel, on \texttt{propext},
+\texttt{Classical.choice} and \texttt{Quot.sound} and nothing further. The
+conjecture itself is \emph{not} proved. What is offered is an architecture, the
+lemmas so far established within it, and --- stated as precisely as the proved
+material allows --- the obstructions that remain. Two claims made during the work
+are recorded as withdrawn, with the reasons, since a programme that hides its wrong
+turns is worth less than one that keeps them.
+\end{abstract}
+
+\section{The statement}
+
+Let $V$ be a finite vertex set of even size and $D$ a number of colours. A
+\emph{weight system} assigns to each unordered pair of coloured vertices a complex
+number. Its \emph{amplitude} at a colouring $c\colon V\to D$ is
+\[
+  \amp_W(c)\;=\;\sum_{\sigma}\ \prod_{e\in\sigma} W\bigl(e\text{ coloured by }c\bigr),
+\]
+the sum over perfect matchings of $V$. The system \emph{solves} the equations if
+$\amp_W(c)=1$ for every constant $c$ and $0$ for every other $c$.
+
+\begin{remark}
+The amplitude is the \emph{hafnian} of the coloured weight matrix. Its signed
+counterpart, the Pfaffian, squares to a determinant, evaluates in polynomial time,
+and satisfies contraction identities relating a matrix to smaller ones through its
+inverse. The hafnian has none of these. This is not an analogy: it is a structural
+reason to expect arguments of contraction type to fail here, and they do
+(\S\ref{sec:withdrawn}).
+\end{remark}
+
+\section{What is proved}
+
+\subsection{The problem is correctly posed}
+
+\begin{theorem}[Sharpness at four vertices]
+Four vertices carry a solution in three colours. Explicitly: their three perfect
+matchings are the three nonzero classes of the Klein four-group structure on $V$;
+give each matching a colour and weight each edge $1$ exactly when both endpoints
+wear that edge's colour.
+\end{theorem}
+
+\begin{theorem}[The bound of two is attained]
+At every even vertex count there is a solution in two colours: colour the edges of a
+Hamiltonian cycle by which of its two alternating matchings they belong to, and
+leave the chords unweighted.
+\end{theorem}
+
+\noindent The second rests on the fact that an even cycle has exactly two perfect
+matchings, proved here by an alternation argument over $\mathbb{Z}/m$.
+
+\subsection{Gauge freedom}
+
+\begin{theorem}[Normalisation is free]
+Multiplying each weight by factors attached to its endpoints' colours rescales the
+amplitude by a single number, uniformly across matchings, since every matching
+covers every vertex once. Hence a system whose monochromatic amplitudes are merely
+nonzero rescales to one where they equal $1$, with all vanishing conditions
+preserved.
+\end{theorem}
+
+\subsection{The vertex equations}
+
+Fix $u\in V$. Expanding the amplitude along $u$,
+\[
+  \amp_W(c)\;=\;\sum_{v\neq u} W\bigl(uv\text{ coloured by }c\bigr)\cdot
+  \pmS_W\bigl(c,\;V\setminus\{u,v\}\bigr),
+\]
+where $\pmS_W(c,S)$ is the matching sum over the subset $S$. The unknowns are
+indexed by $u$'s \emph{partners}: the system's size is $u$'s degree, and nothing in
+it grows with $|V|$.
+
+\begin{theorem}[Constant background]
+For each $k$ and each colour $j$ that $u$ may wear,
+$\sum_{v\neq u} W(u{:}j,\,v{:}k)\,\pmS_W(\mathbf{k},V\setminus\{u,v\})
+ = [\,j=k\,]$.
+\end{theorem}
+
+\begin{theorem}[Non-constant background]
+If $c$ is already non-constant away from $u$, the right-hand side is $0$ for
+\emph{all three} $j$. This requires no normalisation, only that non-monochromatic
+colourings vanish.
+\end{theorem}
+
+\begin{theorem}[Independence of the monochromatic row]
+At every vertex and colour, the weights keeping that vertex monochromatic are not a
+linear combination of those breaking it. No vector is annihilated by two rows and
+sent to $1$ by their combination.
+\end{theorem}
+
+\begin{proposition}[Low degree]
+A vertex with one partner carries only matching colours on that edge. A vertex with
+two forces an explicit $2\times2$ determinant of colour-breaking weights to vanish.
+\end{proposition}
+
+\subsection{A case of the conjecture, from cubic graph theory}
+
+Call a weight system \emph{colour-per-matching} when each edge carries weight at a
+single colour. The edges of each colour then form a perfect matching, each matching
+wears one colour, and this is precisely the construction giving the four-vertex
+three-colour solution above. It is also the branch that the structural split of
+\S\ref{sec:obstruct} isolates: solutions whose edges are single-coloured are of this
+kind.
+
+\begin{theorem}[The colour-per-matching case]\label{thm:cpm}
+For three colours no colour-per-matching solution exists on more than four
+vertices.
+\end{theorem}
+
+\begin{proof}[Argument]
+Such a solution needs three edge-disjoint perfect matchings whose union $U$ has
+\emph{exactly} those three: a further matching of $U$ would mix colours, and a
+colouring constant on each of its edges but not overall would have nonzero
+amplitude.
+
+$U$ is cubic and carries a proper three-edge-colouring, hence is bridgeless, since a
+cubic graph with a bridge admits no such colouring.
+
+The union of two of the classes is a disjoint union of even cycles covering every
+vertex. Were there two or more cycles, exchanging along one of them alone produces a
+fourth perfect matching --- inside the exchanged set it follows the second class
+where the first disagreed, outside it follows the first where the second disagreed.
+So every pair of classes forms a single Hamiltonian cycle, and the third class is a
+perfect matching of chords of that cycle.
+
+Now let $\{u,v\}$ be a chord whose removal splits the cycle into two paths with
+evenly many vertices each. That chord together with the cycle edges along both paths
+is a perfect matching: it contains a third-class edge, so is neither of the first
+two, and contains cycle edges, so is not the third. A fourth matching again.
+
+On four vertices the chords are the diagonals of a four-cycle, and deleting a
+diagonal's endpoints leaves two \emph{single} vertices --- odd paths, no fourth
+matching. That is the whole of the exception. From six vertices upward a chord of
+even span exists.
+\end{proof}
+
+\begin{remark}
+Exhaustively over all three-edge-coloured cubic subgraphs of the complete graph:
+one such subgraph on four vertices and it has exactly three matchings; $80$ on six
+vertices and none does; $32\,970$ on eight vertices and none does. The six-vertex
+witness is concrete: take the six-cycle as the union of the first two classes and
+the three diameters as the third; removing a diameter leaves two paths of two
+vertices, so that diameter with four cycle edges is a fourth matching. This is the
+same configuration an independent exact test locates as the colouring on which the
+construction's amplitude fails.
+\end{remark}
+
+\noindent The exchange step is machine-checked; the chord-parity step is not yet.
+
+\subsection{The vertex equations as a matrix identity}
+
+Write $A^{ij}$ for the symmetric matrix of weights at colour pair $(i,j)$, so that
+the amplitude at a colouring $c$ is the hafnian of the matrix whose $(u,v)$ entry is
+$A^{c_uc_v}_{uv}$. Write
+\[
+  H^{(k)}_{uv} \;=\; \operatorname{haf}\bigl(A^{kk}\restriction V\setminus\{u,v\}\bigr)
+\]
+for the \emph{hafnian minors} of the monochromatic matrix. Expanding along a vertex
+turns the equations into row sums of Hadamard products:
+\[
+  \bigl(A^{kk}\circ H^{(k)}\bigr)\mathbf{1} \;=\; \mathbf{1},
+  \qquad
+  \bigl(A^{mk}\circ H^{(k)}\bigr)\mathbf{1} \;=\; \mathbf{0}
+  \quad (m\neq k).
+\]
+
+The first is empty: it is the hafnian expansion of $\operatorname{haf}A^{kk}=1$ along
+each row. The content is the second --- \emph{each off-diagonal weight matrix is
+row-orthogonal to the hafnian minors of the diagonal one}.
+
+For determinants the analogous object is the adjugate, and $A\operatorname{adj}A =
+(\det A)I$ pins it down completely. There is no hafnian counterpart. That absence is
+the hafnian/Pfaffian gap in its sharpest form: the minors $H^{(k)}$ are as hard to
+compute as the hafnian itself and satisfy no identity relating them back to
+$A^{kk}$. The equations therefore constrain a quantity that the theory offers no
+handle on, and this is why a determinantal or contraction-style argument has nothing
+to grip.
+
+\subsection{Compatible matchings, and one recurring invariant}
+
+Call a matching \emph{compatible} with a colouring when each of its edges carries
+nonzero weight at the colours that colouring gives the edge's endpoints. Only
+compatible matchings contribute.
+
+\begin{theorem}[No unique compatible matching]\label{thm:uniq}
+No non-constant colouring has exactly one compatible matching.
+\end{theorem}
+
+\begin{proof}
+Its product would be the whole amplitude, which must vanish; a product of nonzero
+factors does not.
+\end{proof}
+
+\noindent Theorem~\ref{thm:uniq} mentions no complex number: it constrains the
+\emph{supports} alone, and refuting a candidate support system needs only one
+non-constant colouring admitting exactly one matching. It is Theorem~\ref{thm:cpm}
+stripped of its graph-theoretic clothing --- there the mixed colouring admits
+precisely one matching.
+
+\begin{theorem}[Two compatible matchings]
+If a non-constant colouring admits exactly two compatible matchings, their products
+are negatives of one another.
+\end{theorem}
+
+\noindent This is the refinement that reaches where Theorem~\ref{thm:uniq} cannot.
+That theorem yields a \emph{contradiction}, but only when a colouring singles out
+one matching, which never happens at full support. This yields an \emph{equation},
+and equations survive into the dense regime.
+
+\begin{lemma}[Localisation]
+If two matchings agree outside a set closed under both, and the product over the
+complement does not vanish, a relation between their whole products is the same
+relation between their products over the set alone.
+\end{lemma}
+
+\noindent Three apparently separate results are now one. A colour-slice of size two
+forces a $2\times2$ determinant to vanish; a local family cancels when its products
+sum to zero; two compatible matchings differing by one alternating four-cycle have
+opposite products. Localised, each says
+\[
+  \pmS(A) = 0 \quad\text{for a four-vertex set } A.
+\]
+The recurring invariant is the matching sum over a small set, and the equations
+reach it three different ways.
+
+\begin{theorem}[Factorisation dichotomy]
+If a colouring kills every matching crossing the boundary of a set, then the
+matching sum over that set or over its complement vanishes.
+\end{theorem}
+
+\noindent What remains factors as the two sides' matching sums, the amplitude
+vanishes, and $\mathbb{C}$ has no zero divisors. \emph{Which} side vanishes is not
+determined --- which is exactly why this is a dichotomy and not a descent.
+
+\subsection{Where the combinatorics stops}
+
+Measured at six vertices and three colours over random supports, each edge keeping
+each colour pair with probability $p$, Theorem~\ref{thm:uniq} alone refutes:
+\[
+\begin{array}{llllllll}
+p: & 0.15 & 0.25 & 0.35 & 0.5 & 0.7 & 0.9 & 1.0\\
+\text{refuted}: & 92\% & 99\% & 100\% & 100\% & 94\% & 3\% & 0\%
+\end{array}
+\]
+The method covers everything except near-full support and has exactly zero purchase
+at full support, where every matching is compatible with everything. The transition
+is sharp.
+
+This is the third independent route to the same place. The support abstraction is
+vacuous at full support; the exact algebra needs some hundred and twenty live
+variables against a tractability ceiling near fifty; and now the combinatorics dies
+there too. The three are not separate obstacles. What makes a support dense enough
+to defeat the combinatorics is what makes its algebra large.
+
+(These are \emph{random} supports. A counterexample's support would be structured,
+and structure sits anywhere. The figures bound the method's reach, not the
+probability of catching a counterexample.)
+
+\subsection{Where the missing identity does exist}
+
+The obstruction of the previous subsection is the absence of a hafnian adjugate. It
+is worth asking where that absence is repaired.
+
+A graph admits a \emph{Pfaffian orientation} when signs can be attached to its edges
+so that every perfect matching acquires the same sign. Kasteleyn's theorem supplies
+one for every planar graph, and Little's for every graph without a $K_{3,3}$ minor
+in the bipartite case. Where such an orientation exists the hafnian \emph{is} a
+Pfaffian up to sign, $\operatorname{Pf}(A)^2=\det(A)$ holds, and the adjugate
+identity returns with all of determinantal theory behind it.
+
+On that side of the divide the defining equations become determinantal. The
+monochromatic conditions read $\det = 1$ and every mixed colouring reads $\det = 0$;
+and a colouring differing from a constant one at a single vertex modifies exactly one
+row and column, so the vanishing is a rank statement about a structured perturbation
+of a matrix of determinant one. That is a problem with tools.
+
+This suggests the axis along which the remaining case should be split is not density
+but \emph{Pfaffian orientability}. The two are related --- complete graphs on six or
+more vertices are as far from Pfaffian as graphs get, and full support is exactly the
+complete graph --- which would explain, rather than merely restate, why every method
+tried here fails in the same place.
+
+\begin{proposition}[Verified]
+A uniform-sign orientation exists for $K_4$ and for no larger complete graph:
+\[
+  K_4:\ \text{yes}\qquad K_6:\ \text{no}\qquad K_8:\ \text{no}.
+\]
+\end{proposition}
+
+\begin{proof}[Method]
+Such an orientation exists exactly when the system over $\mathbb{F}_2$ requiring each
+matching's edge-parity to differ from its permutation sign by a constant is solvable.
+Gaussian elimination settles each case exactly.
+\end{proof}
+
+\noindent Since the vertex count is even and $K_4$ is the largest planar complete
+graph, $K_4$ is the \emph{unique} even complete graph that is Pfaffian. It is also
+the exceptional case of the conjecture. \textbf{The vertex count at which a solution
+exists is the vertex count at which the missing identity exists.}
+
+This is the second independent account of that exceptionality. The first, from cubic
+graph theory, made $K_4$ the unique cubic graph all of whose chords have odd span
+(Theorem~\ref{thm:cpm}). Different subject, different argument, same object singled
+out.
+
+None of this proves the conjecture: a graph failing to be Pfaffian does not thereby
+fail to carry a solution. What it does is motivate the axis. Full support \emph{is}
+the complete graph, and the complete graph on six or more vertices is exactly where
+the Pfaffian property is lost --- so if the real divide is orientability, then
+``dense'' was a proxy for ``non-Pfaffian'' throughout, and the three failures
+recorded in \S\ref{sec:obstruct} are one failure with one cause.
+
+\begin{remark}[The converse fails]
+Being Pfaffian is not sufficient for solvability. On six vertices both the cycle and
+the prism are planar, hence Pfaffian, and a numerical search finds no three-colour
+solution on either --- as it finds none on the non-Pfaffian $K_{3,3}$. So the
+property cannot be the criterion for carrying a solution; at most it is a necessary
+ingredient, and the coincidence at $K_4$ is evidence about the \emph{obstruction},
+not about sufficiency. (Three restarts each; weak evidence, recorded as such.)
+\end{remark}
+
+Formalising Kasteleyn's theorem is a large undertaking and was not attempted.
+
+\section{The cap framework, machine-checked}
+
+An external structural review supplied a sharper reduction than anything above: the
+conjecture follows from one \emph{integrable-cap} theorem. Its own ledger recorded
+that none of its results had been checked by Lean. The following now have been, each
+depending on \texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound} and
+nothing more.
+
+\begin{center}
+\begin{tabular}{ll}
+\hline
+Colour restriction $d\to3$ & checked\\
+Cap identity: the pair split & checked\\
+Constant-diagonal cap of the target & checked\\
+Integrability: no matching uses two defect edges & checked\\
+Integrability: a one-factor perturbation is exactly linear & checked\\
+Absorption: defect of matching number one, any shape & checked\\
+The $n\to n-2$ reduction & arithmetic remaining\\
+\emph{Cap existence} & \emph{open --- the difficulty}\\
+\hline
+\end{tabular}
+\end{center}
+
+Two observations are worth recording.
+
+First, the framework retro-explains the failure of \S\ref{sec:obstruct}. Contracting
+two sites leaves a flat object \emph{plus a first-order defect}, and the defect is not
+itself flat. The fragment-descent route abandoned earlier was demanding that the
+defect \emph{vanish}; the framework's insight is that it need only be
+\emph{absorbed}, which is possible exactly when its edges have matching number at
+most one. Asking for too much is why that route saw only the low-connectivity regime.
+
+The absorption holds for every shape the condition permits, not only the star. What
+made the general case go through was writing the first-order part as a sum over the
+whole defect family rather than as a case split: the no-defect and one-defect cases
+then become the same expression, and the shape of the support never enters the
+proof. The classification into star or triangle, which the framework offers as an
+aid to intuition, turns out to be unnecessary --- pairwise intersection is what the
+argument uses.
+
+Second, almost nothing had to be built. The deletion bijection --- matchings sending
+one vertex to another are the reinstatements of matchings of the rest, by right
+multiplication with a transposition --- was proved for an unrelated purpose, as were
+amplitude naturality, locality of the subset matching sum, and the factorisation of an
+edge product across a closed set. That the cap framework's combinatorial content is
+expressible almost entirely in machinery built independently is evidence both that
+these abstractions are the right ones and that the framework is natural rather than
+contrived.
+
+\subsection{Where cap existence reaches}
+
+The framework's open assertion --- that every hypothetical solution admits a cap
+whose defect has matching number at most one --- is \emph{recognisable} by cheap
+linear algebra. For a vertex pair and a candidate defect shape, the conditions
+``the defect vanishes off that shape'' are linear in the cap; solve, take the null
+space, and ask for a vector with nonzero diagonal pairing nontrivially with the
+contracted edge. Running that recognizer:
+
+\begin{center}
+\begin{tabular}{lr}
+\hline
+six-vertex two-colour solution (proved, sparse) & $648$ caps\\
+random dense, six vertices, three colours & $0$ of $10$\\
+random dense, eight vertices, three colours & $0$ of $10$\\
+\hline
+\end{tabular}
+\end{center}
+
+Both permitted shapes were searched, star and triangle, which on a simple graph are
+the only ones with matching number at most one. Caps are abundant for the sparse
+solution --- its found defects had support of size one, so almost any cap works
+without anything being arranged --- and absent for dense systems.
+
+Dense systems are not solutions, so this refutes nothing. What it rules out is the
+cheapest route to proving cap existence:
+
+\begin{quote}
+Cap existence, if true, must be forced by the defining equations. It cannot follow
+from genericity or dimension counting, since a generic system has no cap.
+\end{quote}
+
+The counting is stark. For three colours the constant-diagonal caps form a
+seven-dimensional space; confining the defect to a star at eight vertices kills
+about ten vertex pairs at nine scalar conditions each. Ninety equations against
+seven unknowns. Only a strong degeneracy satisfies that, and the sole available
+source of degeneracy is the solution's own equations.
+
+This is the fourth method to fail at dense support, after the support abstraction,
+the exact algebra, and the exclusion of a unique compatible matching. Either the
+boundary is the real object --- dense support \emph{is} the complete graph, where the
+Pfaffian property is lost --- or every method so far has been one idea in disguise.
+
+\section{Contraction and the incidence matrix}\label{sec:contract}
+
+Contracting a pair of sites replaces the amplitude by a flat term together with a
+correction. The corrections leaving the amplitude flat away from a permitted defect
+shape are the kernel of a matrix assembled from the weights.
+
+\begin{lemma}[Support restriction; sufficient, not necessary]
+An entry of that matrix vanishes whenever the weight block of a meeting edge is
+identically zero. No hypothesis on the origin of the weights is needed. The converse
+fails: an entry may vanish by cancellation inside the cap matrix with every block
+nonzero, so failure of this criterion does not establish that no cap exists.
+\end{lemma}
+
+Call a residual pair \emph{live} when one of its vertices adjoins each contracted
+site. Only live pairs can contribute a constraint.
+
+\begin{proposition}
+A family of pairs lies inside one star or one triangle if and only if it is pairwise
+intersecting. The restriction to those two shapes is therefore forced, not chosen.
+\end{proposition}
+
+\begin{lemma}[Star collapse]
+If a contracted site meets the residual set in at most one place, every live pair
+contains that place, the family is a star, and the system is empty.
+\end{lemma}
+
+Whether a \emph{usable} cap exists is not settled by the shape alone. Two linear
+functionals on the kernel must both avoid zero: the constant diagonal and the
+contraction scalar.
+
+\begin{lemma}[Two functionals, one witness]
+If each of two linear functionals is nonzero somewhere on a subspace, some single
+vector of that subspace makes both nonzero, and it is one of $u$, $v$, $u+v$.
+\end{lemma}
+
+Consequently a search that inspects basis vectors individually answers a strictly
+weaker question and under-reports cap existence.
+
+\begin{remark}[Caps at eight vertices are non-generic]
+On the cube, contracting a pair with a star defect admits a cap with constant nonzero
+diagonal $\kappa=-3/4$, contraction scalar $-91/16$, and all ninety flatness
+constraints satisfied exactly over the rationals. Such caps are not generic: with
+wide-range weights none appear on the cube or on Wagner's graph, and with small integer
+weights they appear exactly when some edge block is singular.
+
+Each incidence row's coefficient array is a symmetrised product $u(k,x)\otimes v(l,y)$
+of site vectors $u(k,x)_a=W_{(p,a),(k,x)}$ and $v(l,y)_b=W_{(q,b),(l,y)}$. On a cubic
+support only neighbours of the contracted sites contribute, and the surviving rows span
+a tensor product of two site spans, filling the cap space unless a factor drops rank.
+Cap existence at these sizes is therefore a determinantal condition on the weights.
+\end{remark}
+
+\begin{openq}
+Does the GHZ variety meet the locus on which an edge block is singular? If it does, the
+contraction route reaches eight vertices; if not, the route cannot reach the first open
+case, for a reason resting on the defining equations rather than on any recognizer.
+Sampling cannot decide this, the relevant points being exactly the non-generic ones.
+\end{openq}
+
+\section{Second-order expansion}\label{sec:second}
+
+A defect on two edges meets any matching in at most two of them, so the perturbed
+matching sum is an exact quadratic: a flat term, a linear term, and a cross term,
+arising when one matching uses both defect edges.
+
+\begin{theorem}[Second-order absorption]
+The rewriting that folds a first-order defect into perturbed weights still applies,
+leaving a residue carrying the quadratic coefficient. The reduction returns an object
+of the same kind exactly when that coefficient vanishes.
+\end{theorem}
+
+\begin{theorem}[The coefficient factors]
+The quadratic coefficient is the defect's values at its two edges times a double
+cofactor depending only on the weights. For disjoint defect edges that cofactor is the
+matching sum over the vertices they leave behind.
+\end{theorem}
+
+This development stands on its own; it is not forced by any proved failure of the
+first-order route. The four-vertex matching sum it meets recurs across several
+arguments -- the factorisation dichotomy, the criterion for a local family to cancel,
+the determinant at a colour slice of degree two, the exceptional standing of four
+vertices -- but it is a candidate crux rather than an object shown to control every
+route. What is known about it is a dichotomy: one side of a partition has vanishing
+matching sum, with which side left open, and that openness is a property of the
+statement rather than a defect in its proof.
+
+\section{What the equations force on a block}\label{sec:blockrank}
+
+Fix a colouring that already disagrees somewhere away from two chosen sites. Then the
+colouring stays non-constant however those two sites are painted, so a solution's
+matching sum vanishes identically in their colours. Splitting matchings by how the two
+sites are matched gives an identity, valid for arbitrary weights:
+
+\begin{theorem}[Block decomposition]
+With the colours at two sites free and every other colour fixed, the matching sum
+equals the block those sites carry, scaled by the matching sum on the remaining sites,
+plus one rank-one term for each ordered pair of distinct partners the two sites reach.
+\end{theorem}
+
+Grouping by the outer index shows the number of rank-one terms is the number of
+partners the \emph{first} site reaches, not the number of pairs. A site of degree three
+therefore contributes two.
+
+\begin{theorem}[Degeneration]
+If a square matrix has every entry a sum of fewer row-column products than it has rows,
+some nonzero combination of its rows vanishes.
+\end{theorem}
+
+\begin{theorem}[Dichotomy]
+Let a solution have a site $p$ reaching fewer partners than there are colours, and let
+$q$ be any other site. Then either the block $W_{pq}$ has linearly dependent rows, or
+every colouring disagreeing away from $p,q$ annihilates the matching sum on the
+remaining sites --- the vanishing half of the defining conditions two sites down.
+\end{theorem}
+
+The second alternative needs a nonvanishing monochromatic sum to become a solution on
+two fewer sites, and the equations supply one:
+
+\begin{theorem}[Live partners]
+For every site and every colour, some partner has both a nonzero block entry and a
+nonzero monochromatic matching sum on the remaining sites.
+\end{theorem}
+
+This is read off the vertex equation, which at equal colours sums to one; a sum equal to
+one cannot have every summand vanish.
+
+\section{A route that must fail}\label{sec:mustfail}
+
+The descent would close immediately if one partner were live for every colour at once.
+On weights built by colouring the matchings that never happens: such an edge wears a
+single colour and carries weight only there, so it is live for one colour only. The
+four-vertex solution is of this kind, and there each colour has its own live partner,
+the three being distinct.
+
+This does not show a simultaneous witness never exists --- a hypothetical solution need
+not come from a colouring --- but it does show one cannot be assumed. And the failure is
+compulsory rather than unfortunate: four vertices are solvable and must not descend, so
+every correct descent argument has to fail there. A route through a simultaneous witness
+fails there for the wrong reason, and would prove too much.
+
+The numerology is worth noting. At four vertices a site has three partners against three
+colours and the assignment of colours to live partners is a bijection --- the same
+coincidence that makes four vertices exceptional. A cubic support on eight vertices
+reproduces it: three neighbours, three colours. Any descent must break that coincidence
+rather than count around it.
+
+\section{What blocks a cap}\label{sec:capblock}
+
+The reduction needs a cap whose correction is absorbable. The most natural construction
+is an outer product, and it fails for reasons the equations themselves supply.
+
+\begin{theorem}[No annihilator at a site]
+No nonzero vector annihilates every weight block at a site. The vertex equation exhibits
+each basis vector as a combination of the blocks' columns in the corresponding colour, so
+those columns span, and pairing a candidate annihilator against the equation returns that
+vector's coordinate.
+\end{theorem}
+
+\begin{corollary}
+An outer-product cap is never flat: its first factor would have to annihilate every block
+at the site.
+\end{corollary}
+
+A cap that is flat only off a permitted shape fares no better in one direction:
+
+\begin{theorem}[Self-defeat]
+An outer-product cap contracts to the pairing of its second factor against the first
+applied to the block's columns. A first factor annihilating the block therefore leaves no
+contraction scalar. Where the partners are few, the equations force annihilating the
+partners to imply annihilating the block, so the two requirements cannot both hold.
+\end{theorem}
+
+So a usable cap, if one exists, is a genuinely higher-rank matrix rather than an outer
+product. Whether it exists is unresolved and asserted nowhere.
+
+\section{How far the degeneration goes}\label{sec:howfar}
+
+The dichotomy forces a block at a low-degree site to have dependent rows. It forces more
+than that.
+
+\begin{theorem}[Rank two is excluded]
+A block of rank two at such a site would have a line for its annihilator, so the
+annihilators produced at different colourings would all point one way; that single
+direction would then annihilate every block at the site, hence vanish. So the block has
+rank at most one.
+\end{theorem}
+
+Four vertices escapes precisely here. Its blocks have rank one, the annihilator is a
+plane rather than a line, the direction is not pinned, and different colourings may use
+different ones. Since four vertices is solvable and must not descend, any correct argument
+has to fail there --- and this one fails for exactly the right reason.
+
+Under rank one the blocks factor, and the vertex equation says each basis vector is a
+combination of the blocks' first factors. On a support where a site has three partners
+those three factors are then a basis, which is the same numerical coincidence that makes
+four vertices exceptional. Whether it can be sustained above four vertices is open.
+
+\section{The scope of the degeneration chain}\label{sec:scope}
+
+The chain was first stated at a site with fewer partners than there are colours, but the
+partner count is not what it depends on. A correction indexed by partners reindexes along
+any spanning family for the vectors those partners contribute, so the number of terms can
+be taken to be the dimension those vectors span. Degree is irrelevant; dimension is what
+matters.
+
+\begin{remark}[The actual hypothesis]
+The degeneration runs exactly when the columns a colouring uses at a site --- one per
+partner, at the colour that colouring assigns --- span fewer dimensions than there are
+colours. Nothing in the equations forces this. With three colours and four or more
+partners, columns in general position span all three, and then the identity reads that a
+three-by-three block equals a correction of rank at most three, which says nothing.
+\end{remark}
+
+So the chain is conditional on a rank drop among the used columns, and the condition is
+not vacuous but neither is it supplied. This is the honest position: the degeneration
+argument is available on the locus where the used columns degenerate, and the equations do
+not put a solution on that locus.
+
+The self-limitation is now visible in its proper form. The vertex equation makes the
+columns, taken over all colours, span everything. A colouring lowers the span only by
+using columns that happen to be dependent --- and under rank-one factorisation that means
+using colours where second factors vanish. The chain's own conclusion is that a witnessing
+colouring must do exactly that, so the argument establishes the condition it needs rather
+than deriving a contradiction from its failure.
+
+What would close it is a proof that some colouring is forced onto a degenerate set of
+columns, or a construction showing none need be. Neither is here.
+
+\section{The site relation}\label{sec:site}
+
+The contraction framework needed a cap, and a cap needed the blocks to degenerate, and
+the argument meant to supply that degeneracy could only conclude the condition it
+required. The way out is to obtain degeneracy from somewhere else. Expanding the
+amplitude at a site does exactly that, and asks nothing of the framework.
+
+\begin{theorem}[The site relation]
+Expanding the amplitude at a site leaves one term for each neighbour it reaches. At a
+colouring already non-constant away from that site, a solution makes those terms cancel
+--- and they cancel for every colour the site itself wears, since no coefficient sees it.
+So the columns the neighbours contribute are linearly dependent, with the complementary
+matching sums as coefficients.
+\end{theorem}
+
+With three colours the statement is sharp at degree three: three columns in three
+dimensions, dependent exactly when their determinant vanishes.
+
+\begin{corollary}
+If those columns are independent, every complementary matching sum vanishes. Colouring
+everything one way but a chosen neighbour turns this into the vanishing of a
+\emph{monochromatic} matching sum on the complement of the site and that neighbour.
+\end{corollary}
+
+The vertex equation says some neighbour keeps such a sum alive at each colour, and a site
+reaches no neighbours beyond its own. So independence cannot hold everywhere, and reading
+the implication backwards:
+
+\begin{theorem}[Liveness forces degeneracy]
+Wherever a colouring non-constant away from the site leaves a complementary matching sum
+alive, the columns that colouring selects are dependent.
+\end{theorem}
+
+The determinantal conditions are therefore indexed by live colourings, not merely by the
+three the vertex equation supplies directly.
+
+\section{What the degeneracy gives, and what it does not}\label{sec:sitelimit}
+
+Two pieces of linear algebra convert these conditions into geometry. A dependent triple
+whose last two members are independent puts the first in their span, since its coefficient
+cannot vanish. And no plane can hold every column at a site: two vectors in three colours
+always admit a common annihilator, and an annihilator of every column at a site is zero.
+
+\begin{corollary}
+If the planes spanned by the pairs of columns at the other neighbours coincide across
+colours, every column at the site lies in that one plane, which is impossible.
+\end{corollary}
+
+That closes one case. In the other, the planes are distinct and each column of the live
+neighbour's block is confined to the line where two of them meet --- a more rigid
+situation, not a weaker one, but not yet a contradiction.
+
+What decides it is how many colourings are live. Dependency is forced at each of them, so
+a solution evades the argument only by having complementary sums vanish at nearly every
+colouring. That is a statement about matching sums on two fewer sites, and it is where the
+cubic case now stands: not on a question of geometry, but on a count.
+
+\section{The spread case}\label{sec:spread}
+
+The descent branch needs one neighbour whose removal leaves all three monochromatic
+matching sums alive. The equations supply one live neighbour per colour; whether a single
+neighbour serves all three is the question. Where none does --- three colours served by
+three different neighbours --- the configuration is rigid rather than free.
+
+\begin{theorem}[Pinning]
+If at some colour exactly one neighbour leaves a nonvanishing monochromatic matching sum
+behind, the vertex equation collapses to a single term. That neighbour's column at that
+colour then vanishes off the diagonal, and on the diagonal equals the reciprocal of the
+surviving sum, so neither is zero.
+\end{theorem}
+
+At a site of degree three the assignment of colours to neighbours is a bijection, so every
+edge-end receives exactly one colour and the counts match exactly: three site-colour slots
+at each of $n$ sites, against $3n/2$ edges with two ends each. Each pinned column carries a
+single nonzero entry, on the diagonal --- the local shape of the four-vertex solution,
+reproduced at any size.
+
+\begin{remark}[What this does not show]
+Sharing that shape on the pinned entries is not being a colour-per-matching system. Such a
+system has every entry determined; a spread-case solution agrees with one only where it is
+pinned, and its blocks are otherwise unconstrained. So an impossibility theorem about
+colour-per-matching does not apply here, and the reduction suggested by the resemblance
+does not exist.
+\end{remark}
+
+What would close the case is a global obstruction: the two ends of an edge each receive a
+colour, and nothing so far forces those to agree or to disagree. Where they agree
+throughout, the colour classes are perfect matchings; where they do not, blocks carry two
+nonzero diagonal entries instead of one. Both are locally consistent. The obstruction, if
+there is one, lives in how the pinned columns interact across sites, and that is where the
+argument now stands.
+
+\section{A falsification lane at eight vertices}\label{sec:falsify}
+
+The four-vertex solution is not arbitrary: its vertex set is the Klein group, its
+weights are diagonal, and each edge is weighted by a function of the difference of its
+endpoints. The natural place to look for a counterexample at eight vertices is the same
+construction one dimension up --- the elementary abelian group of order eight --- which
+is a family of twenty-one unknowns and can be examined exactly.
+
+Diagonal weights admit only matchings whose edges join equal colours, so a colouring's
+amplitude factors over its colour classes, and the conditions become: the matching sum
+at each constant colouring is one, and for every splitting into classes of even size the
+product of the classes' matching sums vanishes.
+
+\begin{proposition}[Ownership]
+Each colour owns a difference: some difference carries nonzero weight at that colour
+while every other colour vanishes on it, and the three owned differences are distinct.
+\end{proposition}
+
+This follows by expanding the constant-colour condition at a site, which shows some
+difference has both nonzero weight and a surviving complementary sum, and then reading
+the two-class splittings at that difference.
+
+Three-class splittings say more: two classes of size two contribute a nonzero product,
+so the matching sum on the remaining four sites must vanish outright.
+
+Under ownership alone the three-class conditions do not close --- the ideal they
+generate together with the normalisation is proper. Solving the full system numerically
+over all colourings with even classes, no solution is found: every start collapses to
+zero weights, leaving the normalisation unmet. The search was validated first on four
+vertices, where a solution exists and is recovered to a residual of order $10^{-30}$, so
+the failure at eight vertices is evidence about the family rather than the method.
+
+This is a computation and is recorded as one. It supports a narrow claim worth having: a
+counterexample, if one exists, is not the algebraic generalisation of the four-vertex
+solution.
+
+\section{Why fewer colours cannot be deformed into more}\label{sec:unused}
+
+Solutions in two colours exist at every even vertex count. It is natural to ask whether
+one can be nudged into a three-colour solution, and the answer is that it cannot, for a
+reason worth recording.
+
+Read as a three-colour system with the third colour unused, the eight-cycle two-colour
+solution satisfies thirteen thousand one hundred and twenty-one of the thirteen thousand
+one hundred and twenty-two defining conditions. Every vanishing condition holds, for
+every non-constant colouring, and two of the three normalisations hold. Exactly one
+equation fails: the monochromatic amplitude at the colour it does not use.
+
+That is not encouragement. The one equation is maximally degenerate there.
+
+\begin{theorem}[An unused colour resists perturbation]
+If no edge carries weight at a colour, then perturbing the weights multiplies that
+colour's monochromatic amplitude by the perturbation raised to the number of edges in a
+matching.
+\end{theorem}
+
+So the deficient equation has vanishing gradient, and vanishing derivatives of every
+order below the matching size. A path from the two-colour locus cannot reach it; only a
+jump can. This was found by attempting the deformation numerically --- a continuation
+raising the missing amplitude from zero did not move at the first step, the residual
+equalling the target exactly --- and then explained.
+
+The consequence for searching is concrete: the low-colour locus is not a useful starting
+point, and a search in a family containing it should begin elsewhere.
+
+\section{Searching the pinned family}\label{sec:pinnedsearch}
+
+The pinning gives a family of candidate weight systems far smaller than the general one,
+and defined by a proved statement rather than a guess. Searching it required getting the
+formulation right, which took five attempts; the first four each answered a different
+question confidently.
+
+Asking directly that the amplitude meet its target fails because the zero weights satisfy
+every vanishing condition, so the trivial point is a local minimum and almost every start
+falls into it. Removing the scale and asking only that non-constant amplitudes vanish and
+the constant ones agree fails because points where \emph{every} amplitude vanishes satisfy
+that, and the search finds them. Adding a variable $s$ with $A s = 1$ to force the
+amplitude nonzero passes its control but leaves $s$ unbounded, and tracking it shows the
+amplitude shrinking as $s$ inflates --- one class appeared to approach a solution with all
+three constant amplitudes equal and nonzero, and that was this degeneration. Bounding the
+scale alone, without saturation, fails its control outright: on four sites, where a
+solution exists, every converged point has vanishing amplitude.
+
+Sphere and saturation together work. The scale is pinned so $s$ cannot inflate, and the
+saturation excludes the locus the sphere alone falls into.
+
+\begin{remark}[The separation]
+On four sites, where a solution exists, twenty-nine of thirty starts converge and the
+largest constant amplitude among them is $0.136$. Across all six cubic classes on eight
+sites --- enumerated directly from all $19355$ labelled cubic graphs and reduced by
+spectrum --- no start converges at all, in any class, in either the case where the two ends
+of each edge agree or in sampled cases where they do not.
+\end{remark}
+
+This is a computation and is recorded as one. Its value is the control: four plausible
+formulations each returned a confident negative or a spurious near-solution, and each was
+caught only by running a case whose answer was known in advance.
+
+\section{What a fully degenerate site forces}\label{sec:fan}
+
+The dichotomy of Section~\ref{sec:site} leaves two branches at each site. The first
+asks for a rank drop and is pursued elsewhere. The second says that removing the site
+together with any one other site leaves a configuration whose non-constant matching
+sums all vanish. Call such a site \emph{fully degenerate}. Read as a disjunct it is
+inert; read as a hypothesis it is very strong, and this section extracts what it costs.
+
+Write $\mu_k(x)$ for the matching sum of the constant colouring $k$ on the sites other
+than $p$ and $x$. Expanding the amplitude along $p$ shows that these numbers solve a
+linear system whose right-hand side is the monochromatic amplitude, so for each colour
+there is a partner with a live edge in that colour and $\mu_k \neq 0$ on it.
+
+\begin{theorem}[Purity]\label{thm:purity}
+At a fully degenerate site, if $\mu_k(x) \neq 0$ then $W_{p\alpha,\,x\beta} = 0$ for
+every $\alpha$ and every $\beta \neq k$.
+\end{theorem}
+
+The proof isolates a single term. Colour every site $k$, repaint $p$ with $\alpha$ and
+$x$ with $\beta \neq k$; the colouring is non-constant, so its amplitude vanishes.
+Expanding along $p$, every partner other than $x$ sees a colouring that is non-constant
+on its own complement, which degeneracy annihilates. What survives is one product, and
+one of its factors is assumed non-zero.
+
+Two consequences follow at once. A live edge admits only one colour of support, since
+purity in two colours leaves the edge nothing to carry; and the three colours therefore
+select three \emph{distinct} partners, each joined to $p$ by an edge carrying that
+colour alone at the far end. This is precisely the shape of the four-vertex solution,
+whose three matchings wear three colours and whose every site meets the other three
+along one edge per colour --- and it holds there at all four sites, which has been
+checked. The content of the theorem is that no other shape is available, at any size.
+
+\begin{theorem}[Descent]\label{thm:fandescent}
+If a fully degenerate site has a partner whose complement retains all three constant
+colourings, the complement carries a solution on two fewer sites.
+\end{theorem}
+
+At eight sites the complement has six, and there is no six-site solution; so the
+descent never fires, and every partner of a degenerate site has deficient support. That
+the six-vertex case is settled is exactly what makes this bite.
+
+\subsection*{When every site is degenerate}
+
+The complementary sums are symmetric in their two sites --- the set they run over is
+the same one --- so the hypothesis of Theorem~\ref{thm:purity} transports to the other
+end of the edge. Purity at one end kills every column but one, purity at the other
+kills every row but one, and the two survivors are the same colour.
+
+\begin{theorem}[One colour per edge]\label{thm:onecolour}
+If every site is fully degenerate then the block of every live edge which is not inert
+has a single entry: there is a colour $\kappa$ with $W_{p\alpha,\,x\beta} = 0$ unless
+$\alpha = \beta = \kappa$.
+\end{theorem}
+
+Here an edge is \emph{inert} when the sites other than its two ends carry no matching
+sum at all; such an edge appears in no amplitude, every term containing it being
+multiplied by one of those vanishing sums.
+
+This converts a hypothesis about matching sums into a statement about the weights: the
+configuration is a graph with one colour per participating edge, and the amplitude of a
+colouring is the product, over the colours, of the matching sums of the corresponding
+colour classes on the corresponding parts.
+
+It should be said plainly what this does \emph{not} yet give. One is tempted to argue
+that three colour classes, each carrying a perfect matching, must admit a matching using
+two colours, and that the associated non-constant colouring would then have non-zero
+amplitude. The first half is a combinatorial claim about pairwise edge-disjoint
+matchings; the second half is false as stated, because the polychromatic matching is one
+term among the compatible ones and the rest may cancel it. So this branch is reduced to
+a weighted question about colour classes, not settled by one.
+
+\section{A pure partner, unconditionally}\label{sec:pure}
+
+The results of Section~\ref{sec:fan} pay for their strength with a hypothesis. This
+section removes it. The change of method is small and worth stating plainly: instead of
+testing the defining equations against a colouring, test them against a \emph{separate
+vector at every site}. The vectors are independent of one another, and it is that
+independence --- not any assumption about the configuration --- which does the work.
+
+Fix a site $u$ and a colour $\alpha$. Weight each colouring by an indicator pinning $u$
+to $\alpha$, and by one test vector $\psi_w$ per remaining site, and sum. Read directly,
+the equations collapse the sum: every non-constant colouring contributes nothing, every
+constant colouring but one is refused by the indicator, and what remains is
+\[
+  \mathcal{A}_\alpha \prod_{w \neq u} \psi_w(\alpha).
+\]
+Read instead through the expansion along $u$, the sum breaks into one term per partner,
+and in the $v$-th term the colour at $v$ is summed against $\psi_v$ alone --- the
+matching sum on the complement of $\{u,v\}$ does not see it. So the $v$-th term carries
+the factor $\langle \psi_v,\, r_v\rangle$, where $r_v$ is the $\alpha$-th row of the
+block at $v$, and a test vector annihilating that row kills the term outright.
+
+\begin{theorem}[Pure partner]\label{thm:pure}
+For every solution, every site $u$ and every colour $\alpha$ there is a partner $v$ with
+$W_{u\alpha,\,vb} = 0$ for all $b \neq \alpha$ and $W_{u\alpha,\,v\alpha} \neq 0$.
+\end{theorem}
+
+Suppose not. Then at every partner one may choose a test vector annihilating the row and
+having non-zero $\alpha$-component: if the diagonal entry vanishes take the basis vector
+itself, and otherwise some off-diagonal entry is non-zero and the two combine. With such
+a choice at every partner the expansion gives zero, while the direct reading gives a
+product of non-zero numbers. In three-space the only rows admitting no such annihilator
+are the non-zero multiples of the $\alpha$-th basis vector, which is the claim.
+
+The hypothesis is exactly the defining equations. Nothing is assumed about supports,
+degrees, or the number of sites. The statement is also not vacuous: it fails on random
+weights, and it holds at every site and colour of the four-vertex solution, where the
+partner it names is the one joined by that solution's edge of that colour.
+
+Two limits should be stated. The theorem produces \emph{one} partner per site and
+colour, not all of them, and it constrains a row rather than a block --- the partner it
+names need not be pure when read from the other end. Under the degeneracy hypothesis of
+Section~\ref{sec:fan} both limits lift, giving three distinct partners and single-entry
+blocks. Whether they lift unconditionally is open; on four sites every solution the
+search returns has single-entry blocks throughout, which is evidence about four sites and
+about the formulation searched, not a theorem.
+
+\section{The master relation}\label{sec:master}
+
+Section~\ref{sec:pure} tested the equations at a site against a basis vector. This
+section tests them against an arbitrary covector, and the gain is not incremental: a
+basis vector isolates one colour, a general covector couples all three at once, and it
+is that coupling which produces a three-fold conclusion.
+
+Fix a site $u$ and a covector $\rho$. Weight each colouring by $\rho$ at $u$ and by a
+test vector $\psi_w$ at every other site, and sum. Read directly, only the constant
+colourings survive and the sum is $\sum_k \rho_k \mathcal{A}_k \prod_{w \neq u}
+\psi_w(k)$. Read through the expansion along $u$, it becomes one term per partner, and
+the $v$-th term carries the factor $\langle \psi_v,\, \rho^{\!\top} W_{uv}\rangle$: the
+colour at $v$ meets its own test vector and nothing else, because the matching sum on the
+complement of $\{u,v\}$ never sees it.
+
+\begin{theorem}[Master relation]\label{thm:master}
+If $\langle \psi_v,\, \rho^{\!\top} W_{uv}\rangle = 0$ for every $v \neq u$, then
+\[
+  \sum_{k} \rho_k\, \mathcal{A}_k \prod_{w \neq u} \psi_w(k) \;=\; 0 .
+\]
+\end{theorem}
+
+Write $r_w := \rho^{\!\top}W_{uw}$, a covector in three-space, and $L_w := \ker r_w$, of
+dimension at least two. The relation holds for every choice of $\psi_w \in L_w$.
+
+Two consequences are immediate. Testing every site with a colour's indicator gives the
+\emph{column lemma}: a covector annihilating one and the same colour's column at every
+partner has no component in that colour. And the whole of Section~\ref{sec:pure} is the
+case $\rho = e_\alpha$.
+
+\subsection*{The fan for a generic covector}
+
+\begin{theorem}[Generic fan]\label{thm:rhofan}
+Let $\rho$ have no vanishing component, and let the site have at least two partners. Then
+for every colour $k$ there is a partner $w$ with $r_w$ a non-zero multiple of $e_k$; and
+the three partners so named, one per colour, are distinct.
+\end{theorem}
+
+Suppose no partner qualified for the colour $k$. Then at each $w$ one may choose
+$\psi_w \in L_w$ with $\psi_w(k) \neq 0$: if $r_w(k) = 0$ take $e_k$ itself, and otherwise
+some other coordinate of $r_w$ is non-zero and the two combine. That alone is not enough
+--- the relation still has three live terms. What finishes it is that the other two terms
+can be killed at two \emph{different} partners.
+
+Write $k'$ and $k''$ for the other two colours. If some partner has $r_w(k) = 0$, then
+$e_k$ itself lies in $L_w$ and kills both other terms at once. Otherwise every partner has
+$r_w(k) \neq 0$, and then no partner can have both $r_w(k')$ and $r_w(k'')$ zero --- that
+would make $r_w$ a non-zero multiple of $e_k$, which was excluded. If $r_w(k'') = 0$ at
+every partner the column lemma gives $\rho_{k''} = 0$, against the hypothesis; likewise
+for $k'$. So some partner has $r_w(k'') \neq 0$ and some partner has $r_w(k') \neq 0$, and
+if these coincide, a third partner --- available because the site has at least two ---
+supplies the other. At a partner with $r_w(k'') \neq 0$ the vector
+$r_w(k'')e_k - r_w(k)e_{k''}$ lies in $L_w$, has non-zero $k$-component and vanishes in
+the colour $k'$; symmetrically for $k''$. With these choices the relation reads
+$\rho_k \mathcal{A}_k \prod_w \psi_w(k) = 0$, a product of non-zero numbers.
+
+Distinctness is immediate: a covector cannot be a non-zero multiple of two different basis
+vectors.
+
+\subsection*{From covectors to blocks}
+
+The partners named by Theorem~\ref{thm:rhofan} depend on $\rho$. They can be made not to.
+
+For a partner $w$ and a colour $b \neq k$, the covectors annihilating that column form
+the kernel of a linear form; a partner fails to be named only if one of those forms is
+non-zero, and then its kernel is a proper subspace. Finitely many proper subspaces cannot
+cover a space over an infinite field, so a covector can be chosen off all of them and off
+the three coordinate hyperplanes at once. Theorem~\ref{thm:rhofan} applied to that
+covector names a partner, and the forms it annihilates must therefore have been zero
+outright --- which is a statement about the block, with no covector left in it.
+
+\begin{corollary}[Column-supported blocks]\label{cor:colblock}
+For every site $u$ and every colour $k$ there is a partner $w$ whose block satisfies
+$W_{ua,\,wb} = 0$ for every $a$ and every $b \neq k$, with the block not identically zero.
+The three partners so named are distinct.
+\end{corollary}
+
+Read from the far end this says the block $W_{wu}$ is supported in a single row. The
+four-vertex solution realises it exactly: each of its three edges at a site carries one
+colour, and the three partners are the three other sites.
+
+\subsection*{Cancellation, turned around}
+
+The remaining steps must confront cancellation directly, and there is a way to do so that
+does not estimate anything.
+
+\begin{lemma}[No rival, no cancellation]\label{lem:unique}
+If a colouring admits exactly one matching with non-zero contribution, that colouring is
+constant.
+\end{lemma}
+
+The proof is one line --- the amplitude equals that contribution --- but the use is not.
+It converts a combinatorial statement, that some matching is alone in being compatible
+with a colouring, into an algebraic one about the equations. That is the intended route
+for what remains.
+
+\subsection*{What remains}
+
+Two steps stand between Corollary~\ref{cor:colblock} and the theorem. The second is
+settled here; the first is not.
+
+\paragraph{The steps that are settled.} Two of the three remaining links are done.
+
+\begin{lemma}[A fourth matching]\label{lem:fourth}
+A cubic graph on $2n \geq 6$ vertices which is the union of three disjoint perfect
+matchings has a perfect matching other than those three.
+\end{lemma}
+
+Write the classes $M_0, M_1, M_2$. If $M_0 \cup M_1$ has two or more cycles, exchanging
+the colours along one cycle produces a fourth matching, so it is a Hamiltonian cycle $C$;
+label its vertices $1,\dots,2n$ so that $M_0$ joins $2i-1$ to $2i$.
+
+Each edge of $M_2$ is a chord. If a chord joins two vertices at odd distance along $C$,
+deleting its ends leaves two paths with evenly many vertices, each of which its own
+alternating edges match; together with the chord this is a fourth matching. So every
+chord joins vertices of equal parity, and $M_2$ splits into a perfect matching of the odd
+positions and one of the even positions.
+
+If an odd chord and an even chord \emph{interleave} along $C$, deleting all four ends
+leaves four paths, each with evenly many vertices --- the ends of each chord agree in
+parity and the two chords disagree, so every gap is even. Matching the paths alternately,
+with the two chords, gives a fourth matching. So no odd chord interleaves an even chord.
+
+That is impossible, and a single comparison shows it. Take the coordinates the two classes
+supply: $x_i$ joined to $y_i$ by the first matching and to $y_{i+1}$ by the second, indices
+running over $\mathbb{Z}/m$ with $2m$ the number of vertices. Among all chords of the
+$x$-class choose one of shortest forward span $d$, from $x_{i_0}$ to $x_{i_0+d}$, and stand
+at $w = i_0 + 1$, the index just past its tail. The $y$-chord at $w$ runs forward some
+distance $v \geq 1$, to $y_{w+v}$.
+
+If $v < d$, that chord stops strictly inside the span, and the $x$-chord \emph{at $w$}
+interleaves with it: its near end is $x_w$, inside, and its far end lies at forward
+distance at least $d > v$, outside, because $d$ was the shortest span of any $x$-chord. If
+instead $v \geq d$, the $y$-chord reaches past $x_{i_0+d}$, which sits at forward distance
+$d-1$ from $w$, but not past $x_{i_0}$, a full turn away at distance $m-1 \geq v$; so the
+shortest chord itself interleaves with it. Either way an $x$-chord and a $y$-chord
+interleave, against the assumption. Minimality is spent once, on a single lower bound.
+
+This whole proof is machine-checked, coordinates and all. Both matchings --- the one built
+from a chord across the classes and the one built from two interleaved chords --- are
+constructed explicitly and verified compatible and non-constant; the comparison above is
+formalised as the statement that interleaved chords always exist; and the coordinates
+themselves are built from an abstract pair of disjoint involutions with connected union, as
+the orbit of their product together with its image under the first. The two classes are
+disjoint because a site of the orbit landing back inside it would force one of the two
+involutions to fix a point: the doubling map on the orbit hits one of any two consecutive
+residues. Connectivity makes the union everything.
+
+\begin{theorem}[The rigid shape is refuted]\label{thm:mixed}
+Suppose every live edge joins a site to its partner in one of three disjoint perfect
+matchings and carries that matching's colour at both ends. Then no perfect matching mixes
+two of the three.
+\end{theorem}
+
+This is machine-checked. A mixed matching induces a colouring which is non-constant, and
+for which it is the \emph{only} contributing matching: any other sends some site to a
+partner whose edge carries a different colour, and that entry is zero. The no-rival lemma
+then makes the colouring constant, a contradiction. With Lemma~\ref{lem:fourth} this says
+the rigid shape cannot be sustained above four sites.
+
+\paragraph{Where the argument now stands.} Call a configuration \emph{three-regular} when
+every site has exactly three live partners, one column-supported in each colour. The
+following is machine-checked, from the defining equations down.
+
+\begin{theorem}[The rigid shape, and its refutation]\label{thm:threereg}
+A three-regular solution is three disjoint perfect matchings whose edges are the only live
+ones, each carrying its own colour at both ends; and no perfect matching mixes two of the
+three.
+\end{theorem}
+
+Diagonality is the step that had looked hardest and turns out to be free. If a site's only
+live partners are its three column-supported ones, a covector orthogonal to one block's
+live column is orthogonal to \emph{every} block's column in that colour --- the other two
+blocks have none there --- and the column lemma then says the covector has no component in
+that colour. Two hyperplanes containing each other are equal, so the column is a multiple
+of the colour's basis vector: the block is a single entry on the diagonal.
+
+From there the shape assembles. A single diagonal entry reads the same from either end, so
+a site's colour-$k$ partner has it back as its own colour-$k$ partner; the partner maps are
+fixed-point-free involutions, that is, perfect matchings; they are disjoint because the
+three partners are distinct; and every live edge is one of theirs. A mixed matching is then
+alone on its colouring, which the equations refuse.
+
+So the whole conjecture rests on exactly two facts.
+
+\begin{enumerate}
+\item A solution is three-regular. \emph{This is the gap.} The column corollary supplies
+at least three column-supported partners; what is missing is that there are no others ---
+neither a partner outside them nor a second one serving the same colour. Both cases are
+one statement: for such a partner $v$, every colour still has a column-supported partner in
+$V \setminus \{u,v\}$, and the spared form of the master relation then forces the weighted
+matching sum of the complement to vanish identically on the product of the kernels $L_w$.
+Excluding that vanishing is all that remains.
+\item A three-regular configuration on six or more sites has a mixed matching. This is
+Lemma~\ref{lem:fourth}, proved and formalised above.
+\end{enumerate}
+
+\subsection*{Inside the gap}
+
+The gap splits, and one half yields.
+
+\begin{lemma}[Orthogonality localises the witness]\label{lem:localise}
+If a covector annihilates one colour's column at every partner outside a set, and has a
+non-zero component in that colour, then some partner inside the set has its contracted row
+pointing along that colour.
+\end{lemma}
+
+This is machine-checked, and the column lemma is its empty-set case. Testing every partner
+outside the set with the colour's basis vector is legitimate exactly under the
+orthogonality hypothesis, and it kills the other two colours outright --- each of their
+products picks up a zero factor from any site outside the set.
+
+Take the set to be the partners in question and the colour $\alpha$. The named partners of
+the other two colours have no $\alpha$-column, so the hypothesis reduces to
+$\rho \perp c_\alpha$, where $c_\alpha$ is the live column of the $\alpha$-named block.
+Hence: for every $\rho$ orthogonal to $c_\alpha$ with $\rho_\alpha \neq 0$, one of the
+partners in question is an $\alpha$-witness. Covering the hyperplane
+$\{\rho \cdot c_\alpha = 0\}$ by the subspaces of covectors naming each, one partner names
+for the whole hyperplane, so its row space carries $\alpha$'s axis on it.
+
+If that happens in all three colours at the \emph{same} partner, its row space lies in
+$\langle e_0,e_1\rangle \cap \langle e_0,e_2\rangle \cap \langle e_1,e_2\rangle = 0$, so
+its block vanishes and it was never live. In particular, when there is only one partner
+in question, the gap closes.
+
+What the lemma cannot see is the case $c_\alpha \parallel e_\alpha$ --- the named block
+already a single diagonal entry. Then $\rho \perp c_\alpha$ forces $\rho_\alpha = 0$ and
+the hypothesis is unsatisfiable. So the surviving case is: named blocks already diagonal,
+with extra live partners beside them. There the relation at the site is exhausted; every
+choice of test vectors is annihilated by one of the three named partners, and no
+information is left in it.
+
+One reduction applies there. If the complement of a pair carries no matching sum at all,
+the edge appears in no amplitude and may be set to zero without changing any of them; such
+edges can be removed. So the surviving case may be taken to have every live edge
+participating somewhere --- which is what makes the vanishing that defines the gap a
+statement with content rather than a degeneracy.
+
+Two further routes into the surviving case were followed and are recorded as closed.
+Sparing \emph{two} named partners at once, with the covector taken to be a colour's basis
+vector, does give a clean relation: the complementary sum vanishes unless the other named
+partners wear that colour. But it is the rank-one determination already in hand, read
+coefficient by coefficient, not a new equation --- and its content, that the complement of
+a site and its colour-$\alpha$ partner is supported on the constant colouring $\alpha$,
+is a consequence of the shape rather than a step towards it. Pairing the relation at a
+site with the relation at a free partner is likewise circular, whereas pairing it with the
+relation at a \emph{named} partner is not, and gives the dichotomy recorded above.
+
+\subsection*{The gap as a tensor membership}
+
+The right frame for what remains is not a further specialisation of the relation but a
+statement about the complementary matching sum as a \emph{tensor}.
+
+Read $H$, the amplitude tensor of the complement of $\{u,v\}$, as a multilinear form on
+one three-space per remaining site. The gap says $H$ vanishes on $\prod_w L_w$, a product
+of hyperplanes $L_w = \ker \ell_w$ with $\ell_w = \rho^{\!\top}W_{uw}$. Splitting each
+three-space as $L_w \oplus \langle e_w\rangle$ with $\ell_w(e_w) = 1$ and expanding shows
+that this is exactly membership in the ideal those forms generate:
+\[
+  H\big|_{\prod_w L_w} = 0
+  \quad\Longleftrightarrow\quad
+  H = \sum_{w} \ell_w \otimes G_w ,
+\]
+with $G_w$ a tensor on the remaining sites. What has to be shown is that a \emph{matching}
+tensor admits no such decomposition --- that its components $\operatorname{pm}(d)$ cannot
+be written as $\sum_w \ell_w(d_w)\,(G_w)_{d}$.
+
+Three consequences of the membership are already visible, and each is a special case of
+contracting all but a few sites with kernel vectors. Contracting all of them gives the gap
+itself. Contracting all but one gives a functional at the spared site proportional to
+$\ell_w$ --- so at a named partner, whose contracted row points along $e_\beta$, the
+combination $\sum_z (W_{\beta z}\psi_z)J_z$ points along $e_\beta$ too; and at a site dead
+for $u$, where $\ell$ vanishes, that combination vanishes outright. Contracting all but two
+gives a sum of two rank-one tensors with prescribed factors, which is the dichotomy
+recorded above.
+
+The decomposition has one immediate and useful feature: at a site \emph{dead} for $u$ the
+form $\ell_w$ vanishes, so that term is absent. The sum runs only over $u$'s live partners
+in the complement --- in the surviving case, the three named ones and whatever extra
+partners remain.
+
+\begin{corollary}[Support]\label{cor:support}
+If $u$ has exactly one extra live partner $v$, then in the complement of $\{u,v\}$
+\[
+  \operatorname{pm}(d) = 0
+  \qquad\text{whenever } d(w_\beta) \neq \beta \text{ for all three } \beta .
+\]
+\end{corollary}
+
+Only the three named terms survive, and in the surviving case $\ell_{w_\beta}$ is a
+multiple of $e_\beta$, so each term carries the indicator of $d(w_\beta) = \beta$. The
+statement itself no longer mentions the covector.
+
+What it costs to contradict is worth stating exactly, because the natural reading
+overstates it. Take any perfect matching $N$ of the complement built from live edges and
+colour each site by its $N$-edge. Named edges compatible with that colouring are exactly
+$N$'s own, since a site wearing $\beta$ has only one colour-$\beta$ partner and it is the
+one $N$ gave it. Each $w_\beta$ is then automatically coloured off its own colour --- its
+colour-$\beta$ partner is $u$, which is absent --- \emph{provided} $N$ matched it by a
+named edge. So if $N$ were the only contributing matching, its product would be non-zero
+and the corollary contradicted.
+
+Uniqueness is where it stops. Extra edges elsewhere in the complement may also be
+compatible with that colouring, and nothing so far excludes them. The argument therefore
+closes only when the complement has no extra edges at all --- when $uv$ is the sole extra
+edge of the whole configuration, in which case either such an $N$ exists and the
+corollary is contradicted, or none does and every matching sum of the complement vanishes,
+making $uv$ inert and removable. Either way that configuration is refuted.
+
+The support statement is in fact sharper than the covector reading gives, and comes out
+of the spared relation by testing against \emph{basis} vectors instead of general ones.
+Each partner is then pinned to a colour, the annihilation condition becomes the vanishing
+of a single weight, and the complementary sum collapses from a weighted average to a
+single matching sum.
+
+\begin{theorem}[Support]\label{thm:support}
+Let $\alpha$ be a colour whose row from $u$ toward $v$ does not vanish. If a colouring of
+the complement of $\{u,v\}$ places every partner at a colour where that row vanishes, and
+is not constant $\alpha$, then its matching sum on the complement is zero.
+\end{theorem}
+
+This is machine-checked. It is sharper than before because only the colour-$\alpha$ named
+partner is constrained: the other two named blocks are single entries in their own
+colours, so they have no $\alpha$-row at all and impose nothing.
+
+Four consequences follow in the surviving case, and together they say a good deal about
+what an extra edge would have to look like.
+
+First, an extra block has at least two non-zero rows as well as at least two non-zero
+columns. Being an extra partner is symmetric here: if $u$ were a named partner of $v$ its
+block would be a single entry, hence column-supported from $u$ as well, and $v$ would not
+be extra.
+
+Second, therefore, for at least two colours $\alpha$ the theorem applies, and a colouring
+of the complement with non-vanishing matching sum must place $w_\alpha$ at $\alpha$ for
+each of them.
+
+Third, such a $w_\alpha$ must be matched by an \emph{extra} edge. Its colour-$\alpha$
+partner is $u$, which is absent from the complement, and its other named edges require it
+to wear a different colour.
+
+Fourth, if some such $w_\alpha$ has no extra partner in the complement, every matching sum
+there vanishes, the edge $uv$ appears in no amplitude, and it may be deleted. So in a
+configuration with no removable edge, every site carries an extra partner --- the property
+propagates along the named matchings, which connect the sites.
+
+The same theorem also shows that when $u$ has just one extra partner, that partner
+contributes nothing to any constant colouring: taking $\alpha$ different from the constant
+puts every named partner at a colour the $\alpha$-row misses.
+
+So an extra edge is far from free.
+
+\subsection*{The gap as a determinantal condition}
+
+The covector in the gap hypothesis is existentially, not universally, quantified, and
+saying so exactly turns the condition into a determinantal one.
+
+Fix $u$, an extra partner $v$, and test vectors $\psi$ at the remaining sites. Put
+$z_w := W_{uw}\psi_w \in \mathbb{C}^3$, so that the annihilation condition
+$\psi_w \perp \rho^{\!\top}W_{uw}$ reads $\rho \perp z_w$. The spared relation is
+\[
+  \bigl(\chi^{\!\top}(\rho^{\!\top}W_{uv})\bigr)\, H(\psi)
+  \;=\; \sum_k \rho_k \mathcal{A}_k\, \chi_k \prod_{w} \psi_w(k) ,
+\]
+so $H(\psi) = 0$ follows from two things: that $\prod_w \psi_w(k)$ vanishes for every
+colour --- a condition on $\psi$ alone --- and that \emph{some} $\rho$ orthogonal to all
+the $z_w$ has $\rho^{\!\top}W_{uv} \neq 0$.
+
+In the surviving case both simplify sharply. Taking $\psi_{w_\beta}(\beta) = 0$ at each
+named partner secures the first condition, and it makes $z_{w_\beta} = 0$: the named block
+is $c_\beta \otimes e_\beta^{*}$, so $z_{w_\beta} = \psi_{w_\beta}(\beta)\,c_\beta$. Sites
+dead for $u$ give $z_w = 0$ outright. So only the \emph{other extra partners} contribute
+to the span, and the second condition is exactly
+\[
+  \operatorname{im} W_{uv} \;\not\subseteq\; \operatorname{span}\{\,z_{v'} : v' \in F(u)
+  \setminus \{v\}\,\} ,
+\]
+the image being the column space, which lives in the same three-space as the $z$'s --- the
+one indexed by $u$'s colour. (A covector kills $\rho^{\!\top}W_{uv}$ exactly when it
+annihilates that column space, not the row space.) When $W_{uv}$ has rank three the
+condition is precisely $\dim \operatorname{span}\{z_{v'}\} \leq 2$: the vanishing of every
+$3 \times 3$ minor of the $z$'s.
+
+\begin{theorem}[Span domination]\label{thm:spandom}
+In the surviving case, if the complementary sum does not vanish then
+$\operatorname{im} W_{uv}$ lies in the span of the columns the test vectors pick out at
+the remaining partners.
+\end{theorem}
+
+This is machine-checked, and the proof is separation rather than genericity: a column
+outside that span admits a functional annihilating the span but not it, and the covector
+read off that functional empties the relation. No determinantal ideal and no radicality
+enter. The three named partners cost nothing --- annihilation at the colour-$k$ named
+partner reads $\rho_k \, W_{uk,\,w_k k}\, \psi_{w_k}(k) = 0$, so either the covector
+vanishes in that colour or the test vector does, and the $k$-th direct term carries
+whichever factor vanishes. And once the test vector at a named partner sits off its own
+colour, the column it picks out is zero outright, so the span is carried by the extra
+partners alone.
+
+On basis test vectors this becomes a statement with no covector and no test vectors in
+it at all. A colouring $c$ of the complement selects one column at each partner, and the
+complementary sum collapses to the single matching sum $\operatorname{pm}(c)$:
+
+\begin{corollary}[Span domination, on colourings]\label{cor:spancol}
+If $\operatorname{pm}(c) \neq 0$ on the complement of $\{u,v\}$, then
+\[
+  \operatorname{im} W_{uv} \;\subseteq\;
+  \operatorname{span}\bigl(\{\,e_k : c(w_k) = k\,\} \cup
+    \{\,\text{the } c(v')\text{-column of } W_{uv'} : v' \in F(u)\setminus\{v\}\,\}\bigr).
+\]
+\end{corollary}
+
+The named partners contribute $e_k$ when the colouring puts them \emph{on} their own
+colour and nothing otherwise, because their blocks are single diagonal entries. So a
+colouring placing every named partner off its colour leaves only the extra partners'
+selected columns --- and if $u$ has no other extra partner, leaves nothing, forcing
+$W_{uv} = 0$. That is the support theorem, recovered; and the general statement bounds
+the rank of the spared block by the number of other extras.
+
+Read against a coordinate functional it sharpens once more. Every column the colouring
+selects misses the $a$-coordinate unless the $a$-named partner sits on colour $a$; so a
+live entry in row $a$ of the spared block forces exactly that.
+
+\begin{theorem}[The live rows are pinned]\label{thm:pinned}
+Suppose the three named blocks at $u$ are single diagonal entries and $u$'s only extra
+partner is $v$. Then every colouring of the complement with non-vanishing matching sum
+places the named partner of each live row of $W_{uv}$ on that very colour.
+\end{theorem}
+
+The diagonality hypothesis is not decoration: span domination as proved uses it, to turn
+annihilation at a named partner into the vanishing of that colour's coefficient. So this
+theorem cannot be used to \emph{derive} diagonality --- a point on which an earlier draft of
+this section was circular, and which the next paragraph repairs.
+
+This is machine-checked. An extra block has at least two live rows --- it is
+column-supported from neither end --- so every surviving colouring pins at least two named
+partners at once. And a named partner pinned to its own colour must be matched by an extra
+edge, since the partner it would otherwise use in that colour is $u$, which is absent.
+
+So the gap has become: exhibit one colouring of the complement, with non-vanishing matching
+sum, that leaves some live row's named partner off its colour. Equivalently, show the edge
+is inert, and delete it. Nothing analytic remains --- what blocks it is that a
+non-vanishing matching sum still has to be certified, and the only certificate available
+is a compatible matching with no rival.
+
+\paragraph{Tracing non-vanishing back to the constants.} The only non-vanishing the
+equations hand us sits at the constant colourings, so every certificate has to be traced
+back there. A colouring differing from a constant at exactly one site can be: expand at the
+flipped site, and its edge carries the sole off-colour weight with a monochromatic sum
+behind it. This is machine-checked, and so is its consequence.
+
+\begin{theorem}[Flip orthogonality]\label{thm:flip}
+Fix a site $w$ and a colour $k$. Let $m_z$ be the colour-$k$ matching sum on the complement
+of $\{w,z\}$. Then $\sum_z W_{(w,a)(z,k)}\, m_z$ vanishes for every $a \neq k$ and equals
+the colour-$k$ amplitude, hence is non-zero, for $a = k$.
+\end{theorem}
+
+Column support confines that sum. The named partners of the other two colours contribute
+nothing, so when a site has a single extra partner $y$ the relation has just two terms:
+\[
+  W_{(w,a)(w_k,k)}\, m_{w_k} \;+\; W_{(w,a)(y,k)}\, m_y \;=\; A_k\,\delta_{a,k}.
+\]
+Read it at $m_y = 0$. The extra drops out entirely; the diagonal case $a = k$ makes
+$m_{w_k} \neq 0$, and then every off-diagonal case forces $W_{(w,a)(w_k,k)} = 0$.
+
+\begin{corollary}[Diagonality from a vanishing complementary sum]\label{cor:diagzero}
+If a site has exactly one extra partner and the colour-$k$ matching sum on the complement of
+the site and that extra vanishes, then the colour-$k$ named block is the single diagonal
+entry.
+\end{corollary}
+
+This is machine-checked, and it uses nothing but the equations, the column fan and the flip
+relation --- no diagonality assumed anywhere, so nothing is circular. Diagonality used to be
+available only downstream of full three-regularity; it is now available one colour at a
+time, from a vanishing complementary sum.
+
+\paragraph{The spared relation for a covector.} The obstacle to going further was that the
+spared relation existed only one row at a time, and a single row cannot annihilate a
+subspace --- which is exactly why span domination had to assume diagonality. The rows do
+combine. Expanding at $u$ against a covector $\rho$,
+\[
+  \sum_{y \neq u} \langle \rho, W_{uy}\psi_y\rangle\, K_y(\psi)
+    \;=\; \sum_a \rho_a A_a \prod_{w \neq u} \psi_w(a),
+\]
+where $K_y$ is the matching sum on the complement of $\{u,y\}$ read against the test
+vectors. The one obstruction to adding the rows is bookkeeping: the paired sum carries a
+colour pin at each end of the spared edge. A swap at each end shows it does not depend on
+them. This is machine-checked, and so are its two readings.
+
+\begin{theorem}[Span domination, unconditional]\label{thm:spandom}
+If a colouring of the complement misses every colour somewhere and its matching sum does not
+vanish, the column image of the spared block lies in the span of the columns that colouring
+selects. Nothing is assumed about the named blocks.
+\end{theorem}
+
+\begin{theorem}[The constant reading]\label{thm:constread}
+For a colour $k$ and a covector $\rho$ annihilating every complement site's colour-$k$
+column, $\langle \rho, W_{uv}x\rangle$ times the colour-$k$ matching sum on the complement
+equals $\rho_k A_k x_k$.
+\end{theorem}
+
+With column support the annihilation hypothesis is cheap. At a site whose live partners are
+its three named ones and a single extra $v$, only the colour's own named partner has a
+non-zero colour-$k$ column, namely $v_k = W_{(u,\cdot)(w_k,k)}$; so any $\rho$ orthogonal to
+that single vector qualifies. This is what the count of degenerate colours needed.
+
+\begin{proposition}[Some colour is degenerate]\label{prop:onedegen}
+At a site whose live partners are its three named ones and a single live extra, the
+complementary sum at the extra vanishes for at least one colour --- and that colour's named
+block is therefore the single diagonal entry.
+\end{proposition}
+
+Suppose instead $m_v^k \neq 0$ for all three colours. Take $x$ with $x_k = 0$: the constant
+reading gives $\langle \rho, W_{uv}x\rangle = 0$ for every $\rho \perp v_k$, so each column
+$c_b$ of the extra block with $b \neq k$ lies on the line $\mathbb{C}v_k$. The flip relation
+$A_k e_k = m^k_{w_k} v_k + m^k_v c_k$ puts $e_k$ in $\mathrm{span}\{v_k, c_k\}$, hence in
+$\mathrm{span}\{v_k, v_{k'}\}$ for either other colour. If the three $v_k$ lay in a plane,
+all three $e_k$ would too; they do not, so the $v_k$ are a basis. But then each column $c_b$
+lies on both of the two distinct lines $\mathbb{C}v_{k'}$, $\mathbb{C}v_{k''}$ with
+$k',k'' \neq b$, so $c_b = 0$. The extra block vanishes, against the extra being live.
+
+This is machine-checked, together with the two theorems and the flip relation it uses.
+
+\paragraph{Minimise the support first.} The degree bound should not be attacked over every
+presentation of a solution. Any hypothetical solution has a support-minimal representative on
+the same vertex set --- zeroing a block strictly lowers the total live degree, and the process
+must stop --- and in that representative every live pair is provably non-inert, because an
+inert block could be zeroed without changing any amplitude. So the certificate the
+support-theoretic arguments keep needing is not an extra assumption; it is available on every
+live edge for free. The conjecture follows from the degree bound imposed only on
+support-minimal representatives, and that is where the remaining attack belongs.
+
+Two consequences are already in hand. A support-minimal system has no bridge: a cut cannot
+have a single live crossing pair, since minimality makes that pair participate, which forces
+the cut to be odd, and then every matching uses the pair --- three non-zero monochromatic
+amplitudes demand three diagonal colours on it, while a participating complementary colouring
+permits only one.
+
+And the site-local machinery now consumes the certificate directly.
+
+\begin{theorem}[Two terms, and a transfer]\label{thm:split}
+At a site whose live partners are its three named ones and a single extra, a colouring
+sending the site and its $\alpha$-named partner both to $\alpha$ splits the amplitude into
+exactly two pieces: the named edge times its complement's matching sum, and the extra's edge
+times its complement's. On a non-constant colouring the amplitude vanishes, so the two pieces
+cancel. A dead entry at the colouring kills the named partner's complement; a live entry
+against a participating extra hands the certificate on to the named pair.
+\end{theorem}
+
+Machine-checked. Diagonality kills every other named partner on the row and every other site
+has no live edge, which is why the split is exactly two terms and not four.
+
+The same expansion, run at a colouring that sends the site to $\alpha$ but its
+$\alpha$-named partner \emph{elsewhere}, kills the named term as well: the other two die on
+the row, and this one because the partner is off its colour. Only the extra survives, so a
+non-vanishing complementary sum there forces that row entry to zero.
+
+\begin{theorem}[Pinning from a certificate]\label{thm:certpin}
+On a colouring whose complementary sum at the extra does not vanish, every live row of the
+extra block pins its named partner to that row's colour.
+\end{theorem}
+
+Machine-checked, and the derivation is now three lines of expansion --- no separation, no span
+domination, and therefore none of the diagonality hypothesis that made the earlier route
+circular. Combined with minimality, the statement has real force: on a minimal representative
+the certificate exists at every live pair, so the pinning applies unconditionally there. In
+the case where every colour is degenerate at a site --- where the constant colourings supply
+nothing --- minimality still produces a non-constant certificate, and every live row of the
+extra block is pinned by it. The named partner's complementary sum is then determined
+outright: it is the extra's row entry at that colouring, times the extra's complementary sum,
+over the named weight.
+
+\paragraph{Degree propagates across a thick edge.} The two ends of an edge constrain each
+other, and the constraint is exactly about degree.
+
+\begin{theorem}[Both ends]\label{thm:bothends}
+If the block over a live pair has two distinct live rows, then the far end has at least four
+live neighbours.
+\end{theorem}
+
+Machine-checked. Neither endpoint can see the other as a column-supported partner when two
+rows are live, so the column fan at the far end names three partners, none of them this one.
+The contrapositive is the useful reading: at a site of degree exactly three, every live block
+is confined to a single row when read from the far end.
+
+So a fourth live partner is not a local accident. Either the extra block is \emph{thin} ---
+one live row, and then the far end may well be three-regular --- or it is thick, and the
+excess degree propagates across the edge. That splits the hard case in two, and it suggests
+looking for the contradiction along the propagation rather than at a single site.
+
+Applying the bound at both ends at once settles the three-regular part completely.
+
+\begin{corollary}[Two three-regular ends]\label{cor:singleentry}
+A block between two sites of degree three is a single entry.
+\end{corollary}
+
+Machine-checked. Degree three at the far end confines the block to one row, degree three at
+the near end to one column, and one row meeting one column leaves one entry. So no colour
+mixing can hide in the three-regular part of a configuration: every edge there is
+monochromatic at each end, and whatever is left to rule out lives entirely on the sites of
+excess degree.
+
+And in the hard case the excess sits at \emph{both} ends, whether the block is thick or thin.
+
+\begin{theorem}[A three-regular end forbids degeneracy]\label{thm:threeregend}
+At a site of degree three the live partners are exactly the three the fan names, so its
+blocks are single diagonal entries. The flip relation there, in the colour naming a given
+edge, has one surviving term --- the edge back, times the complementary sum --- and it equals
+the amplitude. So that complementary sum is non-zero.
+\end{theorem}
+
+\begin{corollary}[Excess at both ends]\label{cor:bothexcess}
+A site whose complementary sums with an extra vanish in every colour cannot have that extra
+be three-regular.
+\end{corollary}
+
+Machine-checked. The earlier propagation covered thick blocks only; this covers thin ones as
+well, and it does so through the far end's own equations rather than through the fan count.
+In the remaining configuration, then, both endpoints of the extra edge carry excess degree.
+
+\paragraph{Excess degree cannot sit alone.} One three-regular end already makes a block a
+single diagonal entry, so every edge \emph{touching} a three-regular site is monochromatic in
+one colour at both ends --- not merely the edges between two of them. That has a sharp
+consequence.
+
+\begin{theorem}[No isolated excess]\label{thm:noisolated}
+A site with four live partners has a live partner that also has four.
+\end{theorem}
+
+Machine-checked. Suppose not. Then every block at the site is a single diagonal entry, and
+four blocks in three colours must repeat a colour. The two partners sharing that colour are
+each left with this site as their \emph{only} live partner in it, because a three-regular
+site's colour classes are singletons. No perfect matching in that colour can match both to
+the same site, so every term of that colour's amplitude vanishes --- and the monochromatic
+amplitudes are not zero.
+
+The mechanism deserves its own statement, because it is used three times over: two distinct
+sites cannot share their unique live partner in one colour, since a perfect matching in that
+colour would have to send both to it. From that the count is immediate.
+
+\begin{theorem}[At most three]\label{thm:atmostthree}
+A site's three-regular live partners occupy distinct colours, so it has at most three of them
+--- and a site of degree $d$ has at least $d-3$ partners of excess degree.
+\end{theorem}
+
+Machine-checked. Globally the same lemma says: for each colour, distinct three-regular sites
+have distinct partners in that colour, so the colour's perfect matching is forced on the whole
+three-regular part at once.
+
+A naive count does not close from here, and it is worth recording why. Writing $T$ for the
+three-regular sites and $D$ for the rest, the three edges at each $T$-site give
+$3|T| = 2e(T) + e(T,D)$, the bound above gives $e(T,D) \leq 3|D|$, and the degree bound gives
+$\sum_{d \in D}(\deg d - 3) \leq 2e(D)$. These are mutually consistent for every split, so the
+contradiction has to come from the colour structure inside $D$, not from edge counting.
+
+The sites of excess degree therefore have no isolated member, and the search for the
+contradiction can be confined to the subgraph they span.
+
+The same rigidity closes another escape, this time inside the hard case itself.
+
+\begin{theorem}[A three-regular named partner destroys the certificate]\label{thm:namedkill}
+If the named blocks at a site are single diagonal entries, a colouring of the complement
+sends the $\alpha$-named partner to colour $\alpha$, and that partner is three-regular, then
+the complement's matching sum vanishes.
+\end{theorem}
+
+Machine-checked. A three-regular site's only live partner in colour $\alpha$ is the one its
+own block names, and here that is $u$ --- which the complement excludes. The partner can be
+matched to nothing, so every term dies.
+
+Read against the pinning, this says that in the hard case every named partner of a live row
+of the extra block carries excess degree. Together with the extra itself, whose degree is
+already known to exceed three, the site has at least two excess neighbours. The excess
+subgraph is not a tree of pendant attachments; every site in it that carries a degenerate
+extra has at least two neighbours inside it.
+
+\paragraph{No set is closed in two colours.} The obstruction the programme has been looking
+for turns out to be a statement about cuts rather than cycles.
+
+\begin{theorem}[Two-colour closure]\label{thm:twocolour}
+Let $C$ be a non-empty proper set of sites with no live colour-$k$ edge and no live
+colour-$l$ edge leaving it, and no live edge joining colour $l$ inside to colour $k$ outside.
+Then the equations are contradictory.
+\end{theorem}
+
+Machine-checked. Both monochromatic amplitudes factor across the cut, so all four factors are
+non-zero. The colouring wearing $l$ inside and $k$ outside respects the same cut and is not
+constant, so its amplitude vanishes --- while factoring into two of those very factors.
+
+This is the alternating cycle, in set form. A cycle alternating two colours inside the
+three-regular part is exactly such a set: each of its sites has a unique partner in each of
+the two colours, both on the cycle, and its blocks are single diagonal entries so no mixed
+edge leaves. So no such cycle exists.
+
+The consequence for the three-regular part is immediate. For each pair of colours, the graph
+of internal edges of those two colours has maximum degree two and no cycle, hence is a union
+of paths. Writing $a_k$ for the number of three-regular sites whose colour-$k$ partner lies
+outside the three-regular part, the number of paths is $(a_k+a_l)/2$, so $a_k + a_l \geq 2$
+for every pair. The three-regular part cannot be closed under any two colours at once.
+
+\paragraph{The named partners cannot all be three-regular.} The rigidity results combine into
+a closure.
+
+\begin{theorem}[Not all three named]\label{thm:notallnamed}
+A site with exactly one extra partner cannot have all three of its named partners
+three-regular.
+\end{theorem}
+
+Machine-checked. Were they, each would have this site as its unique live partner in its own
+colour, so the complementary sums with the extra would vanish in \emph{every} colour --- not
+merely one, which is all the degeneracy theorem gives. Support minimality still forces a
+surviving colouring of that complement; its pinning puts a live row's named partner on its own
+colour; and that is exactly what a three-regular named partner cannot survive, its only partner
+in that colour being the excluded site.
+
+The immediate consequence is that the excess sites cannot number two. With two, each has degree
+exactly four --- at most three three-regular partners, and the other excess site as its extra
+--- so all three of its named partners are three-regular, which the theorem forbids. With the
+earlier result that excess degree never sits alone, the excess set is empty or has at least
+three members.
+
+What blocks the extension is precise: at three or more excess sites, a named partner may itself
+be excess, and then only one colour is known degenerate rather than all three. Recovering the
+argument needs degeneracy in the colours whose named partner carries excess.
+
+\paragraph{The flattening has rank three.} One principle explains the cut theorems uniformly
+and costs nothing to state.
+
+\begin{theorem}[No rank-two flattening]\label{thm:rank2}
+If for some bipartition the amplitude is a sum of two terms, each a function of the colouring
+on one side times a function of the colouring on the other, the equations are contradictory.
+\end{theorem}
+
+Machine-checked, and with no tensor machinery: read at the two-sided constant colourings the
+flattening is diagonal with non-zero entries, since a colouring constant on each side with
+different constants is not monochromatic; a sum of two products has rank at most two, because
+three vectors in a two-dimensional space are dependent; and pairing that dependency against the
+diagonal kills a non-zero amplitude.
+
+Connectivity is the case of no crossing edge, where the amplitude is a single product. The next
+case is new.
+
+\begin{theorem}[Two crossings at one site]\label{thm:twocross}
+Let an odd part of the sites have all its outward live edges at a single site, reaching at most
+two partners, with rank-one blocks. Then the equations are contradictory.
+\end{theorem}
+
+Machine-checked. Expanding at that site, the terms that keep it inside the part die on parity
+--- the part minus two sites is still odd --- and two products remain. This strictly generalises
+the bridge theorem, which is the one-partner case, and it is the first argument here that
+consumes the \emph{rank} of a crossing block rather than only its support.
+
+The general shape is worth recording: an odd part whose outward edges all sit at one site, with
+rank-one blocks, needs at least three outward partners, since the colouring on the inside enters
+only through that site's colour and the matching sum on the rest. Interior sites of such a part
+have all their partners inside, so with minimum degree three the part has at least five sites
+and its outward site is a cut vertex. The excess subgraph has no such cut, which is why this
+lever, like the others, constrains the ambient structure without closing the remaining case.
+
+\paragraph{A rank statement at every site.} The flip relation, contracted against a covector,
+gives something the programme had not had: a rank constraint holding everywhere, with no
+hypothesis on the support.
+
+\begin{theorem}[Colour columns span]\label{thm:colspan}
+A covector annihilating every colour-$k$ column at a site has zero $k$-component. Equivalently
+$e_k$ lies in the span of the colour-$k$ columns, at every site of every solution.
+\end{theorem}
+
+Machine-checked. Pair the covector with the vector of complementary sums: each row's pairing is
+the amplitude on the diagonal and zero off it, so the contraction is the covector's own
+component times the amplitude --- and it is also zero term by term. This is the exact dual of
+the column lemma: the fan says each colour has a column-supported partner; this says that
+colour's columns reach that colour's direction.
+
+Its first consequence is diagonality from support alone.
+
+\begin{corollary}[Dead extra column]\label{cor:deadcol}
+At a site whose live partners are its three named ones and a single extra, a dead colour-$k$
+column of the extra block makes that colour's named block the single diagonal entry.
+\end{corollary}
+
+Every earlier route to diagonality went through a vanishing matching sum --- through deadness,
+or through a degenerate colour. This one reads it off where the support is, and it costs
+nothing.
+
+That restructures what is left. The extra is live, so at least one of its columns survives, and
+the remaining case splits by how many do: with one, the other two named blocks are diagonal and
+the extra block is column-supported in that colour, so the site has two column-supported
+partners there; with two or three, diagonality is free in the remaining colours and the
+surviving columns are definite objects. The previous obstruction --- that only one colour could
+be shown degenerate --- is no longer the operative one, since diagonality now comes from support
+in every colour the extra does not reach.
+
+\paragraph{Inert edges can be deleted.} The certificates all come from non-vanishing matching
+sums, so the case where none exists has to be disposed of separately --- and it disposes of
+itself. Suppose the matching sum on the complement of $\{u,v\}$ vanishes for \emph{every}
+colouring. Then setting $W_{uv} = 0$ changes no amplitude: the term of the expansion at $u$
+that uses the edge is multiplied by that sum, and no other term sees the edge, because every
+other term's matching sum runs over a set not containing $u$. The modified system satisfies
+the same equations with strictly fewer live pairs.
+
+So one may assume, of every live edge, that some colouring of its complement has
+non-vanishing matching sum --- and then the pinning theorem has something to bite on. This
+is the lever for the case where all three colours are degenerate: there the constant
+colourings give nothing, but a non-constant one must exist, and it is non-constant precisely
+because the constant sums vanish, so span domination applies to it with no side condition.
+This is machine-checked.
+
+\paragraph{The fan relation.} All of the site-local statements above are readings of one
+identity, and it is worth having in that form.
+
+\begin{theorem}[The fan relation]\label{thm:fanrel}
+At a site whose live partners are its three named ones and a single extra $v$, and for every
+colour $\alpha$ and every choice of test vectors,
+\[
+  A_\alpha \prod_{w \neq u} \psi_w(\alpha)
+    \;=\; \langle \mathrm{row}_\alpha W_{uv},\, \psi_v\rangle\, \hat H(\psi)
+      \;+\; \sum_j W_{(u,\alpha)(w_j,j)}\, \psi_{w_j}(j)\, K_j(\psi),
+\]
+where $\hat H$ is the matching sum on the complement of $\{u,v\}$ and $K_j$ that on the
+complement of $\{u,w_j\}$.
+\end{theorem}
+
+Machine-checked, with no hypothesis on the named blocks beyond column support. Setting every
+$\psi_{w_j}(j)$ to zero kills the right-hand sum and the left side at once, and recovers the
+support theorem; testing against basis vectors recovers the flip relation; testing at the
+constant colourings recovers the constant reading.
+
+It also recovers the pinning, in three lines instead of through separation and span
+domination. Put a test vector missing colour $\alpha$ at the $\alpha$-named partner. The left
+side dies, that coordinate being one of its factors; the named sum dies, diagonality leaving
+only the $j = \alpha$ term and that carrying the same coordinate; and what remains is the
+extra's row against a test vector times the matching sum on the complement. If the row is
+live, the matching sum vanishes. Both the test-vector and the colouring form of this are
+machine-checked, and the derivation needs no separation argument at all --- which also
+retires the circularity that the old route carried.
+
+\paragraph{A dead row leaves a monomial.} The fan relation reads the other way too. Put a
+test vector concentrated on colour $\alpha$ at the $\alpha$-named partner. A dead row kills
+the extra's term outright, diagonality leaves only the $\alpha$-named term, and what remains
+determines the matching sum on the complement of $\{u,w_\alpha\}$ completely.
+
+\begin{theorem}[Dead row, determined complement]\label{thm:deadrow}
+If the named blocks are single diagonal entries and row $\alpha$ of the extra block is dead,
+then the matching sum on the complement of $\{u, w_\alpha\}$ equals $A_\alpha/\lambda_\alpha$
+at the constant colouring $\alpha$ and vanishes at every other colouring.
+\end{theorem}
+
+Machine-checked. A whole complement's matching sums collapse onto a single colour --- in
+particular the sum vanishes for every colouring that sends the extra $v$ anywhere but
+$\alpha$, and the colour-$\beta$ constant sums on that complement vanish for both
+$\beta \neq \alpha$. This is the sharpest structural consequence yet extracted from a single
+extra partner, and it is what a contradiction in the all-degenerate case has to be built
+from: the surviving configurations are now pinned to a shape in which two of the three
+complements are single monomials.
+
+The determination has a consequence at the other end of the edge. Read the flip relation at
+$w_\alpha$ instead of at $u$. The edge back to $u$ is monochromatic, so it contributes only
+against row $\alpha$ --- and there it already supplies the whole colour-$\alpha$ amplitude,
+the dead row having removed the extra from $u$'s own relation.
+
+\begin{corollary}[The site carries its named partner]\label{cor:carried}
+With a dead row $\alpha$, the aggregate of $w_\alpha$'s remaining colour-$\alpha$ edges is
+zero against every row: $u$ alone accounts for $w_\alpha$'s colour-$\alpha$ amplitude.
+\end{corollary}
+
+Machine-checked. This is a constraint on a \emph{different} site's neighbourhood, which is
+what the site-local arguments have been unable to reach.
+
+\paragraph{The conjecture, modulo one statement.} Everything established assembles, in the
+official formulation, into a single implication.
+
+\begin{theorem}[Main, conditional]\label{thm:main}
+If every GHZ system on more than four sites is three-regular, then no GHZ system in three
+colours exists on more than four sites --- for every vertex count.
+\end{theorem}
+
+Machine-checked. Two points deserve emphasis. First, there is no base case: the six-vertex
+statement is not used anywhere. It was carried as a sealed hypothesis while the uniform
+argument was being built, and the uniform argument turns out not to need it, because the
+spread case is settled for every even count above four rather than by descent to six.
+Second, there is no finite check of any kind in the dependency cone, and no axiom beyond
+propositional extensionality, choice and quotient soundness.
+
+So the whole conjecture now rests on a single named hypothesis --- and that hypothesis says
+less than it first appears. The column fan already supplies three live partners at every
+site, one supported in each colour, and they are distinct. Three-regularity therefore makes
+no claim about colour structure at all; it claims only that there is no \emph{fourth} live
+partner. Loop weights, which appear in no matching and so in no amplitude, normalise away.
+
+\begin{theorem}[Main, in support terms]\label{thm:maindeg}
+If no site of a GHZ system on more than four sites has a fourth live partner, then no GHZ
+system in three colours exists on more than four sites --- for every vertex count.
+\end{theorem}
+
+Machine-checked. What is open is a statement about the support of $W$ and nothing else.
+
+\paragraph{The live graph is connected.} One global fact comes free and is worth recording.
+Suppose the sites split into two non-empty parts with no live edge between them. Every
+matching that crosses contributes zero, so each amplitude factors as the product of the two
+parts' matching sums. Since every constant amplitude is non-zero, so is every part's constant
+sum, in every colour. Now colour one part $k$ and the other $k' \neq k$: the colouring is not
+constant, yet its amplitude is a product of two non-zero numbers. So no such split exists.
+
+Both this and the factorisation it rests on are machine-checked. The factorisation is proved
+by induction on the part's size rather than by a bijection between matchings: expand at one of
+the part's sites, discard the crossing terms, and apply the induction to what is left. Stated
+for any part of any ambient set, it is the first genuinely global tool in the development.
+
+The same reading works for a \emph{live} row, at the cost of a condition. Choose test vectors
+that annihilate the extra's row in colour $\alpha$ and miss colour $\alpha$ somewhere; the fan
+relation again leaves only the $\alpha$-named term.
+
+\begin{theorem}[The named partner, spared]\label{thm:namedspared}
+The matching sum on the complement of $\{u, w_\alpha\}$ vanishes on the whole subspace where
+the extra's colour-$\alpha$ row is annihilated and some site misses colour $\alpha$.
+\end{theorem}
+
+Machine-checked; with a dead row the annihilation is automatic and this is
+Theorem~\ref{thm:deadrow}. Reading it as a divisibility: restricted to test vectors
+annihilating the row, the complement's form is a single monomial times a linear functional at
+the extra. Two of the three complements at a site are thereby pinned to monomials, and the
+third to a monomial on a hyperplane.
+
+\paragraph{A route that does not work.} It is tempting to try to bound the number of live
+rows of the extra block by playing two of them against each other: if rows $\alpha$ and
+$\beta$ are both live, $\hat H$ is divisible by $\psi_{w_\alpha}(\alpha)$ and by
+$\psi_{w_\beta}(\beta)$, and one hopes to kill the left side of the fan relation while the
+$j = \alpha$ term survives. It does not close. The left side's factors are the
+$\psi_w(\alpha)$, all in colour $\alpha$; killing it through $w_\beta$ needs
+$\psi_{w_\beta}(\alpha) = 0$, which is a different condition from
+$\psi_{w_\beta}(\beta) = 0$, and imposing both only reaches colourings that send $w_\beta$ to
+the third colour. Those never include the constant colouring the contradiction would need.
+Killing the left side through $v$ instead is available, and yields that the matching sum on
+the complement of $\{u,w_\alpha\}$ vanishes whenever the colouring sends $v$ off $\alpha$ and
+$w_\beta$ off $\beta$ --- true but not contradictory, since the sum known to be non-zero
+there is the one at the constant colouring $\alpha$, which sends $v$ to $\alpha$.
+
+\begin{corollary}[Rank support]\label{cor:triple}
+In the surviving case, if some test tuple on the complement of $\{u,v\}$ has non-vanishing
+complementary sum, then $\operatorname{im} W_{uv}$ lies in the span of the other extra
+partners' selected columns. In particular at least $\operatorname{rank} W_{uv}$ of those
+columns are linearly independent, so $u$ has at least that many extra partners besides
+$v$.
+\end{corollary}
+
+The three-fold conclusion --- three further extra partners with independent selected
+columns --- is the full-rank subcase only. A block of rank one or two forces
+correspondingly less, and the earlier statement, which omitted the rank hypothesis, was
+wrong on that point.
+
+No determinantal normal form is needed, and none is claimed. The containment above is
+obtained constructively: given $y \in \operatorname{im} W_{uv}$ outside the span, separate
+it by a covector annihilating the span --- ordinary finite-dimensional linear algebra ---
+and the relation empties. That is safer than asserting membership in a determinantal
+ideal, which would need the radicality of a pull-back that is not established here.
+
+The three named partners cost nothing in this reading. For each colour $k$, either
+$\rho_k = 0$, or the annihilation at $w_k$ forces $\psi_{w_k}(k) = 0$, since the named
+block is $c_k \otimes e_k^{*}$ and so $z_{w_k} = \psi_{w_k}(k)\,c_k$; either way the $k$-th
+term on the right vanishes. So no condition on the test vectors at the named partners has
+to be imposed --- it comes free.
+
+\subsection*{When the extra edges form a matching}
+
+Suppose the extra edges form a perfect matching $E$, so every site has exactly one. Then
+the fourth consequence above says no extra edge meets a constant colouring, and therefore
+the $\gamma$-live graph has $M_\gamma$ as its \emph{only} perfect matching, for each
+$\gamma$.
+
+Now take a mixed matching $M$ inside the three named ones and colour by it. The matchings
+compatible with that colouring are $M$ itself together with those replacing part of $M$ by
+extra edges; and the part replaced must be a union of $M$-edges \emph{and} of $E$-edges,
+hence a union of components of $M \cup E$ --- alternating cycles. Because the cycles are
+disjoint the sum factorises, and the vanishing amplitude reads
+\[
+  \prod_{C \,\subseteq\, M \cup E} \bigl(1 + r_C\bigr) \;=\; 0,
+  \qquad
+  r_C \;=\; \frac{\prod_{e \in E \cap C} W_e}{\prod_{e \in M \cap C} w_e},
+\]
+the numerator read at the colours the colouring assigns. So some cycle has $r_C = -1$
+exactly.
+
+A cycle whose $M$-edges all carry one colour cannot: it is then a cycle of
+$M_\gamma \cup E$, its colouring is the constant $\gamma$, and the uniqueness just
+established forces one of its extra edges to be dead there, so $r_C = 0$. Hence:
+
+\begin{proposition}\label{prop:noconst}
+No mixed matching has its colouring constant on the extra edges.
+\end{proposition}
+
+That is a purely combinatorial demand, and contracting each extra edge makes it plainer.
+A colouring constant on extra edges descends to the $n$ contracted nodes; the condition
+that its parts be closed under the named matchings makes each named matching a
+two-regular graph there, whose cycles partition the nodes. So the proposition says: the
+three cycle systems on $n$ nodes admit no non-trivial partition into three parts, the
+$\gamma$-th a union of $\gamma$-cycles. In particular no two of them have a disconnected
+union.
+
+That is the same shape as Lemma~\ref{lem:fourth} one level down --- but on half as many
+nodes, and, crucially, it is \emph{false} there. On three nodes a two-regular loopless
+graph must be a single triangle, so all three cycle systems are the trivial partition and
+no non-trivial splitting exists at all. Three nodes is six sites, exactly the case sealed
+off as a hypothesis; the failure is not an accident but the shadow of it. On four nodes it
+can fail too: three four-cycles with connected pairwise unions admit no splitting either.
+
+So the extra-matching case does not close on combinatorics alone. What
+Proposition~\ref{prop:noconst} then says is a condition on the \emph{weights}: for every
+mixed matching some alternating cycle has ratio exactly $-1$. That is one codimension-one
+condition per mixed matching, and there are at least as many mixed matchings as
+Lemma~\ref{lem:fourth} supplies. Whether that system is contradictory is the question this
+case now reduces to --- and it is a question about weights again, not about graphs.
+
+The reduction is still worth having: it replaces "some weighted matching sum fails to
+vanish" with "a specific product of ratios equals $-1$, simultaneously across all mixed
+matchings", which is far more rigid. But the earlier reading, that the case closes
+combinatorially, was wrong, and is corrected here.\section{Theorem ledger}\label{sec:ledger}
+
+\paragraph{Machine-checked, standard axioms only.} The pinning at a lone live neighbour,
+off the diagonal and on it; that a well-behaved subset carries a solution, and the
+restriction and relabelling that transport it; the site relation at any degree, the
+vanishing it forces under independence, and the impossibility of independence everywhere;
+that liveness forces degeneracy; that no plane holds every column at a site; the
+resistance of an unused colour to
+perturbation; the absence of an annihilator at a
+site and the consequent failure of flat outer-product caps; the self-defeat of the
+outer-product route where partners are few; the exclusion of rank-two blocks at low-degree
+sites; amplitude naturality and matching
+extraction; orbit normalisation and the classification of matching triples; the
+four-vertex solution and the exclusion of colour-per-matching solutions above it; the
+even-cycle two-colour solutions; the support restriction and star collapse for the
+contraction; the decoupling of the two cap functionals and the explicit witness among
+three vectors; the cap-incidence map for arbitrary weights and the rank
+characterisation; the exact quadratic expansions at product and matching-sum level, the
+second-order absorption identity, and the factorisation of its coefficient; the block
+decomposition, the degeneration lemma, the dichotomy and its unconditional form under a
+degree bound; live partners; the uniqueness of the live colour on colourings; and, at a fully degenerate site, the linear system solved by the complementary sums, the existence of a partner per colour, purity, the subsingleton support of a live edge, the fan of three distinct partners, the descent it yields under full support, its failure at eight sites, the symmetry of the complementary sums, the single colour carried by every participating edge when every site is degenerate; and, with no hypothesis beyond the equations, the collapse of the test sum, its vanishing under annihilation at every partner, the existence of a pure partner at every site in every colour; the splitting and factoring of sums over colourings at one site; the isolation of a single pairing and the compatibility it forces at both ends of an edge; the master relation and the column lemma it yields; the fan for a generic covector; that a colouring with exactly one contributing matching is constant; that a matching mixing two of three disjoint colour classes is refuted when the live edges are exactly those classes; that three live partners force each block to a single diagonal entry, that a three-regular configuration is three disjoint perfect matchings, and that such a configuration admits no mixed matching; that orthogonality localises the witness, of which the column lemma is the empty-set case; the support theorem for colourings of a complement; the general two-covector spared relation and the span-domination theorem it yields, together with the vanishing of a named partner column the colouring form in which the span is spanned by literal columns, and the pinning of the spared block live rows; the single-flip formula writing a one-site-flipped matching sum in single-colour ones, the flip orthogonality it yields at every site and colour, its confinement to two terms at a site with one extra partner, and the diagonality of a named block whose complementary sum vanishes; the vestigial colour pins in the paired sum, the spared relation for an arbitrary covector, span domination with no hypothesis on the named blocks, its reading at a constant colouring, the vanishing of the complementary sum in some colour at a site with one live extra; that an edge whose complement has vanishing matching sum in every colouring can be zeroed without changing any amplitude; the fan relation, the single identity of which every site-local statement above is a reading; the pinning read straight off it, in both the test-vector and the colouring form; the determination of a named partner's complement to a single monomial when the corresponding row of the extra block is dead; that the site then carries that partner's whole amplitude in the colour; the factorisation of a matching sum across a cut and the connectivity of the live graph that follows; that a perfect matching inside three disjoint ones is the same thing as a consistent colouring saying which each site uses, and that such a colouring exists non-constantly when two of the matchings generate a disconnected graph --- so that a three-regular solution with a disconnected pair is impossible; in the cycle coordinates, the fourth matching cut out by a chord across the two classes and the one cut out by two interleaved chords, the compatibility and non-constancy of each, the existence of an interleaved pair whenever every chord stays inside a class; the cycle coordinates themselves, built from any two disjoint involutions with connected union, and the disjointness of the two classes; hence a fourth matching for any three pairwise disjoint involutions of more than four sites, and hence that no three-regular solution exists above four sites; and the passage from the generic fan to column-supported blocks, together with the distinctness of the three partners it names.
+
+\paragraph{Proved on paper, not yet formalised.} That a family of pairs fits inside one
+star or triangle exactly when it is pairwise intersecting; and the connected case of the
+fourth-matching lemma, which is now machine-checked in full. The consequence is recorded as
+a single theorem: a three-regular solution of the equations on more than four sites is
+impossible, for every site count and not merely for six.
+
+\paragraph{Computation, with controls.} The pinned family across every cubic class at eight
+sites, consistent and mismatched ends, against a four-site control that converges readily:
+no start converges at eight. The dense frontier as well: complete bipartite, complete,
+and complete-minus-a-matching supports at eight sites, with an analytic Jacobian whose
+four-site control converges at every start --- no start converges at eight. These are
+searches, and their silence is evidence about the formulations tried, not a theorem.
+
+\paragraph{Computation, inconclusive.} The rank-one family at eight vertices. The search
+is validated on both sides --- four vertices recovered, six vertices correctly refused ---
+but at eight it neither finds a solution nor descends convincingly, and the gauge freedoms
+were not quotiented.
+
+\paragraph{Computation, with controls.} The least number of perfect matchings of a cubic
+graph carrying three disjoint perfect matchings, enumerated at six, eight and ten
+vertices: four, five and six respectively, never three. This tested the fourth-matching
+lemma before it was proved, and the proof does not rest on it.
+
+\paragraph{Computation, with controls.} Every four-site solution returned by the
+validated search has single-entry edge blocks throughout, and the pure-partner conclusion
+holds on each; random weights satisfy it in no trial. Evidence about four sites and about
+the formulation searched, not a theorem about all sites.
+
+\paragraph{Computation, exact arithmetic.} The infeasibility of the translation-invariant
+family at eight vertices, with the search validated on the four-vertex solution; a cap on
+the cube at eight vertices, all
+ninety flatness constraints verified over the rationals; the absence of caps at
+wide-range weights on the cube and on Wagner's graph; the coincidence of cap appearances
+with singular edge blocks; the block decomposition checked at four and six vertices.
+
+\paragraph{Conjectural.} That the weighted matching sum of a complement cannot vanish
+identically on the product of the kernels --- equivalently that every live partner is
+column-supported and its colour served once, which is what delivers the rigid shape; that the
+solution variety meets the locus where an edge block is singular, at supports not covered by the degree bound; and that the colouring
+condition in which the degeneration chain terminates cannot be met.
+
+\paragraph{Not addressed.} Weights whose used columns span fully at every colouring. The
+degeneration chain is vacuous there, and nothing here bears on them.
+
+\paragraph{Withdrawn.} See Section~\ref{sec:withdrawn}.
+
+\section{Forced contributions}\label{sec:forced}
+
+A matching sum runs over very many matchings, so exhibiting one non-zero term proves
+nothing: the others may cancel it. Every step that wants to \emph{produce} a
+non-vanishing quantity has to defeat that cancellation. Two general tools now do.
+
+\subsection*{The non-cancelling partner}
+
+Let $\mathrm{pm}(c,S)\neq 0$ and let $u\in S$ be any site. Expanding at $u$ writes
+the sum as $\sum_{v} W\!\left(u^{c(u)}v^{c(v)}\right)\,\mathrm{pm}(c,S\setminus\{u,v\})$.
+If every summand had a vanishing factor the sum would vanish. Hence some partner $v$
+carries \emph{both} a non-zero weight and a non-zero matching sum on what is left.
+
+The second conjunct is the point. A live partner is easy to find and says nothing,
+because the matchings through it may cancel; this returns one through which they
+demonstrably do not. The construction repeats on the smaller set with a freshly chosen
+site, so iterating builds a perfect matching all of whose tails are non-zero.
+
+\subsection*{The product formula}
+
+If no live edge joins two colour classes of a colouring $c$, then
+\[
+  A(c) \;=\; \prod_{k}\ \mathrm{pm}\!\left(c,\ c^{-1}(k)\right),
+\]
+by two applications of the cut factorisation. Support minimality supplies the
+hypothesis: on a support-minimal representative every live pair is non-inert, hence
+monochromatic once every site is degenerate.
+
+This is the reformulation the equations want. The weights become three weighted graphs
+$G_0,G_1,G_2$, one per colour --- no live edge mixes colours at its two ends, though a
+pair may still carry weight in more than one colour --- and the system reads
+\[
+  \operatorname{haf}(A_k)\neq 0 \ \ \text{for each } k,
+  \qquad
+  \prod_k \operatorname{haf}\!\left(A_k[S_k]\right)=0 \ \ \text{for every non-constant partition.}
+\]
+No mixed amplitude survives to cancel against anything; the whole content sits in
+hafnians of principal submatrices.
+
+\subsection*{The equations that follow}
+
+\emph{Two colours.} A set whose complement still matches in one colour carries no
+matching sum in any other. Taking the set to be a single edge: a live edge annihilates
+the other colours' complementary sums. Taking it to be a union of pairs gives the
+four-site identities.
+
+\emph{Colour exclusivity.} If a pair is live in a colour \emph{and} the rest still
+matches in that same colour, the pair is dead in every other colour --- an edge that
+mattered in two colours would annihilate its own complement. The colour classes are
+therefore disjoint by proof rather than by assumption. Combined with the partner lemma:
+every site has, in every colour, a non-cancelling partner exclusive to that colour, so
+the minimum degree is three with no case analysis.
+
+\emph{Disjoint pairs.} Two disjoint pairs of different colours cannot both be live over
+a complement that still matches in the third.
+
+\subsection*{Forced matchings, and the master contradiction}
+
+The partner lemma manufactures a non-vanishing complement but leaves the choice of
+partner to the construction. When a site has exactly \emph{one} live partner inside the
+set under consideration, no choice is made at all: the expansion there has a single
+term, and the two matching sums differ by a non-zero factor. This is the forced peel,
+and it works on any set at any stage.
+
+Two dual certificates follow. A \emph{forced peel} of $S$ takes it down to nothing, one
+pair at a time, each seed having exactly one live partner left. A \emph{forced tail} at
+$T$ peels the complement of $T$ away from the whole site set the same way. Neither
+leaves room for cancellation.
+
+They collide. A proper non-empty $S$ that peels forcedly to nothing in one colour and
+forcedly away from everything in another cannot exist: the two-colour equation says a
+set whose complement still matches in one colour carries no matching sum in another, and
+both certificates say otherwise.
+
+Both halves speak only about $S$, so the statement is usable at whatever scale the
+configuration offers, with no global matching needed on either side. Two consequences
+worth naming:
+
+\emph{An alternating four-cycle is fatal.} Four sites carrying a cycle that alternates
+between two colours, with the first colour's edges forcedly peelable and the second
+colour absent from one diagonal, contradict the equations outright.
+
+The corollary usually drawn from this --- that a colour class which is a perfect matching
+has all its alternating cycles of length at least six --- is \emph{not} new: a shorter
+cycle's vertex set is closed in both colours, which the two-colour result already forbids.
+What the statement above adds is the case where the classes carry extra edges, so that the
+vertex set is no longer closed and the uniqueness and diagonal hypotheses do the work
+instead.
+
+\emph{More generally}, an alternating cycle of any even length with no chord in the
+second colour is an instance, whatever its length, provided it does not exhaust the
+site set. That is the classical ``at least two cycles'' step, now uniform.
+
+\emph{A unique partner cannot cancel.} If a site has one live partner in a colour, that
+colour's complementary sum is automatically non-zero and the edge is exclusive to its
+colour. So where every site has exactly one partner per colour the configuration is
+three-regular, which is already excluded; and the entire residual case is a site with
+two partners of the same colour. That is the only place a complementary sum is free to
+vanish, and therefore the only place cancellation can hide.
+
+\subsection*{The exact peel}
+
+The forced peel asks every other partner of the peeled site to be dead. That is more than
+the argument needs: it is enough that every other partner's \emph{term} vanish. A branch
+dies when its weight is zero, and equally when what it leaves behind carries no matching
+sum at all --- for instance when removing that partner strands some third site with
+nothing to pair with.
+
+The distinction is the difference between a site of degree one and a site whose other
+branches lead nowhere, and the second is far more common. Two triangles joined by an edge
+are the smallest example: no site has a unique partner, yet the perfect matching is
+unique and every alternative strands a site.
+
+Every forced peel is an exact peel, and the master contradiction runs on the stronger
+certificate. The gain is exactly where the earlier version stopped: an alternating cycle
+carrying a chord in the peeled colour is still exactly peelable, because the chord branch
+strands the neighbour it leaves behind. A single fourth neighbour no longer blocks the
+argument; what blocks it is a genuinely competing matching, which needs several.
+
+\subsection*{Colour cuts}
+
+The cheapest certificate in the argument needs no peeling at all. If no live edge of a
+colour joins a set to its complement, that colour's matching sum factors as the product of
+the two parts' sums. The whole one is non-zero, so both parts are --- with no choice made
+and no cancellation to rule out. It applies to any union of connected components of a
+colour class.
+
+Two consequences follow immediately, each using only the equations: no minimality, no
+degree bound, no case analysis.
+
+\emph{The union of any two colour classes is connected.} A proper set left by neither
+colour would carry the first colour's matching sum, and its complement the second's, which
+the two-colour equation forbids. When the classes are perfect matchings this is the
+classical statement that two of them union to a single alternating cycle through every
+site. This is \emph{not} new here: the development already contained it, in a more general
+form that assumes only a single mixed crossing condition rather than that every live edge be
+monochromatic. The version above is a specialisation of that one, kept because the
+monochromatic form is what the surrounding material discharges directly.
+
+\emph{No non-constant colouring keeps every class inside its own colour.} Each class would
+carry a non-zero matching sum, the product formula makes the amplitude their product, and a
+non-constant colouring has amplitude zero. So every non-constant colouring has some class
+from which its own colour escapes.
+
+The second statement closes the three-regular configuration at once --- a second route to a
+result the development already establishes by cycle coordinates, not a replacement for it:
+there a colour class \emph{is} its matching, its components are its single edges, and the
+mixed-colouring
+construction supplies exactly a non-constant partition into unions of them.
+
+What remains is therefore purely structural, with no hafnian and no cancellation in it:
+whether there is a non-constant partition $V = S_0 \sqcup S_1 \sqcup S_2$ in which each
+$S_m$ is a union of connected components of the colour class $G_m$. At degree three the
+components are single edges and such partitions abound; at higher degree the components are
+larger and the partitions harder to find. If every colour class is connected there are
+none, and connected classes force many edges: each connected spanning subgraph needs at
+least $n-1$ edges of its own colour.
+
+\subsection*{The positive form}
+
+The reduction the codebase carried all along asks that no support-minimal solution on more
+than four sites have a site of degree four. That statement is vacuous once the conjecture
+holds --- a GHZ configuration has an even number of sites, so any site set of more than
+four carrying one is a case the conjecture covers --- and a vacuous hypothesis has no
+non-trivial models. It can be refuted but never developed.
+
+The same content states positively, and then it has objects in it:
+
+\begin{quote}
+On more than four sites, any weight system whose three constant amplitudes are non-zero has
+some non-constant colouring with non-zero amplitude.
+\end{quote}
+
+The conjecture follows in three lines. The class quantified over --- weight systems with
+non-vanishing constant amplitudes --- is full of concrete objects, and every certificate in
+this development already has the shape the statement wants: each \emph{builds} a
+non-vanishing matching sum rather than assuming one away. A set that peels exactly in one
+colour whose complement peels exactly in another \emph{is} a mixed colouring with non-zero
+amplitude; the two-colour equation was only how that fact got phrased as a contradiction.
+
+\subsection*{The partner-pair dichotomy}
+
+Working in that stance sharpens the four-site analysis. Take a live edge in one colour and a
+partner for each of its ends in a second, with the complement of the four sites still
+matching in that second colour. Then exactly one of two things holds:
+
+\begin{itemize}
+\item the pair of partners is dead in \emph{both} other colours, live only in the colour that
+produced it if at all; or
+\item the four sites carry a full four-cycle in the edge's own colour, so both ends of the
+edge have a second partner there.
+\end{itemize}
+
+The third colour dies unconditionally. The edge's own colour dies unless the four-cycle
+closes --- and a closed four-cycle is exactly the configuration in which the four-site
+matching sum cancels rather than vanishing termwise. The dichotomy is therefore ``termwise
+vanishing, or cancellation'', localised to four sites and made explicit.
+
+Two negative results bound what can be hoped for here. The hafnian has no adjugate: the
+off-diagonal analogue of the flip relation is false, so there is no matrix identity relating
+a colour class to its complementary sums. And hafnians satisfy no Pl\"ucker relation --- an
+exact check on six sites shows both sign conventions fail, the unsigned one by exactly the
+terms that split four sites two-and-two across the complement, which is the double-counting a
+Pfaffian's signs cancel and a hafnian's do not. Cancellation has to be defeated by
+construction, which is what the peels, cuts, and parity killers do.
+
+\subsection*{The crux, sharpened}
+
+The last equation is the one that would finish the argument, and exactly one quantity
+stands in the way. Let $e$ be a live $j$-edge and $f$ a disjoint live $j'$-edge with
+$j\neq j'$. If
+\[
+  \mathrm{pm}\!\left(\text{const } k,\ V\setminus(e\cup f)\right)\ \neq\ 0
+  \qquad (k\notin\{j,j'\}),
+\]
+the two live weights multiply to zero and the system collapses. Both weights are
+non-zero by construction --- take the exclusive partners of two distinct sites --- so
+the entire remaining content of the conjecture is the non-vanishing of that one
+complementary sum.
+
+The two-site version of it \emph{does} vanish: that is the live-edge equation. The
+partner lemma manufactures non-vanishing complements, but only of unions of $k$-edges,
+because it peels one colour at a time; $e$ and $f$ wear the other two. This mismatch is
+the whole gap, and it is now a single statement about one matching sum rather than a
+case analysis over configurations.
+
+\subsection*{Cuts}
+
+A separate line, and the only one here that does not need the live edges to be
+monochromatic: it constrains how the live graph may be cut, and applies to every
+configuration.
+
+If a part of \emph{even} size is joined to the rest by a single live pair, the matching sum
+still factors. Expanding at that pair's inside end, the crossing branch strands the part with
+an odd number of sites and no way out, so it contributes nothing, and every other branch
+removes the pair's inside end and leaves no crossing at all. Parity does the work through the
+odd-part killer; no crossing-count machinery is needed. The amplitude then factors as though
+the cut were clean, which gives it flattening rank one where the equations demand three. So
+\emph{an even part joined by a single live pair is impossible}, with no minimality, no degree
+bound, and no degeneracy assumption.
+
+The odd companion is not the same statement. With the part odd and one live crossing pair,
+every matching must use that pair, so the amplitude is one weight times the two sides' matching
+sums --- but the crossing weight couples the two sides, so the flattening rank is bounded only
+by the block's own rank, which may be three. The contradiction needs a rank-one block. In the
+monochromatic setting that is automatic, every block being single-entry.
+
+Two crossings behave the same way once the splits are available on an arbitrary site set.
+Expanding at the first crossing's inside end sends that branch to the odd one-crossing split
+and every other branch to the even one --- except the branch that removes the \emph{second}
+crossing's inside end, where no crossing survives and the plain split applies. Both terms then
+factor across the cut given rank-one blocks, so the amplitude has rank two and the equations
+are contradicted. Together:
+
+\begin{quote}
+Every cut whose crossing blocks have rank one is crossed at least three times.
+\end{quote}
+
+The method stops there, and not by accident. With three crossing pairs the flattening bound is
+four while the equations forbid only two; and the GHZ tensor's flattening rank across any
+bipartition is exactly three, so a cut carrying three independent channels is what the
+equations demand rather than what they forbid.
+
+What this does not give is a bound on degrees. A single site is a cut, so the conclusion
+recovers minimum degree three and says nothing about a site with a fourth neighbour.
+
+\section{Pendant certificates}\label{sec:pendant}
+
+The cuts of the previous section bound how a set may be joined to its complement. What
+follows bounds nothing: it \emph{produces} non-vanishing amplitudes, and does so without
+any cancellation argument at all.
+
+\subsection*{Splitting along an invariant set}
+
+A matching of a set is carried by a fixed-point-free involution. If a subset is closed
+under that involution the involution restricts to it --- and, because the complement of
+an invariant set is invariant too, it restricts to the complement in the same breath. So
+one matching splits along any invariant set into matchings of \emph{both} sides.
+
+Two matchings therefore split together: a set closed under both is matchable in the first
+colour and its complement in the second. The two-colour picture needs no cyclic order and
+no vertex count, only that a pair of involutions has a proper invariant set. What it does
+not give is non-vanishing: the matching just built is one term of its class's sum.
+
+\subsection*{The residual with no quantum content}
+
+Proving the positive form by contradiction supplies the vanishing condition --- that is
+what a contradiction hypothesis is --- and on a support-minimal representative with every
+site degenerate it supplies monochromaticity too. The product formula then turns an
+amplitude into a product of its classes' own-colour matching sums, and the converse holds:
+if each class carries a non-vanishing matching sum in its own colour, the amplitude does
+not vanish.
+
+So the conjecture reduces on this branch to a statement about weighted graphs:
+
+\begin{quote}
+Three weightings on a common vertex set, each with a non-vanishing perfect matching sum,
+always admit a non-trivial partition of the vertices into three parts, the $m$-th of which
+has a non-vanishing matching sum in the $m$-th weighting.
+\end{quote}
+
+No amplitudes, no edge colourings, no quantum content --- and no vertex count.
+
+\subsection*{Two pendant edges}
+
+Using all three colours removes the cancellation argument entirely. Give one colour a
+single live edge, a second colour another single live edge, and the third colour
+everything else. A two-element class has exactly one matching, so its sum \emph{is} a
+single weight; there is nothing to cancel. Only the third class is a genuine sum.
+
+The resulting certificate needs no degree bound, no vertex count, and no estimate. Its
+one substantial hypothesis is that the four sites carried off have a certified complement.
+
+\subsection*{The colour symmetry}
+
+Nothing in the equations distinguishes the three colours. Permuting the colours of the
+weights preserves both the vanishing condition and the absence of live edges mixing
+colours, and the amplitude of the permuted weights at a colouring is the amplitude of the
+original at the permuted colouring. Every certificate proved for one assignment therefore
+holds for all six, and is transported rather than restated.
+
+\subsection*{Why four sites are exceptional}
+
+At four sites the certified-complement hypothesis is free: the complement is empty and the
+empty matching sum is one. The certificate then reduces to a bare statement --- no pair
+live in one colour has a disjoint pair live in another --- and that is exactly what the
+four-site solution achieves.
+
+It achieves it for a reason that cannot survive. There the complement of a pair \emph{is}
+a pair, and it wears the pair's own colour; for the exclusive-or colouring of four
+vertices this is the identity $0\oplus 1\oplus 2\oplus 3 = 0$. Above four sites the
+complement of a pair is not a pair, the mechanism has nothing to say, and the content
+moves entirely into the certified complement.
+
+\subsection*{The certified complement always exists}
+
+And that hypothesis is always satisfiable. Expand the colour-$0$ sum at a site $a$ and
+then at its colour-$1$ partner $p$. If $\{a,p\}$ is \emph{certified} in colour $1$ then it
+is dead in colour $0$, so $p$ can never turn up as $a$'s own colour-$0$ partner and the
+expansion at $a$ lands strictly elsewhere. Two peels then produce four distinct sites
+$a,p,v,w$ with $W_0(a,v)\neq 0$, $W_0(p,w)\neq 0$, and a certified complement.
+
+\subsection*{What remains, exactly}
+
+The certificate always has its four-set. What it lacks is control over the two sites that
+come off, and the equations force precisely those to be dead to each other in the third
+colour:
+
+\begin{quote}
+Through any pair $\{a,p\}$ certified in colour $1$, the colour-$0$ expansion at $a$ and at
+$p$ produces surviving pairs $(v,w)$; the equations say none of them is live in colour $2$.
+\end{quote}
+
+Every other hypothesis of every certificate above is free. The residual is a question of
+steering an expansion onto a live pair --- fully explicit, with no cancellation estimate,
+no degree bound, no vertex count, and nothing hidden in a choice left unmade.
+
+\section{The certified colour graphs}\label{sec:certified}
+
+A pair is \emph{certified} in a colour when it is live in that colour and its complement still
+carries a matching sum in the same one. Certified pairs are what the peel produces, and they are
+the right object for the rest of the argument.
+
+\subsection*{Disjointness, and a degree of three}
+
+A certified pair is dead in every other colour: were it live in another, the complementary sum
+that survives would be annihilated. So the three certified colour graphs are pairwise
+edge-disjoint. Every site has a certified partner in every colour, so their union has minimum
+degree three.
+
+The qualifier matters. This says nothing about a merely live pair, which may carry weight in two
+colours; what is excluded is a pair that is live \emph{and} leaves its complement matching.
+
+\subsection*{On a degenerate site every live pair is certified}
+
+Support minimality makes a live pair non-inert, so some colouring survives on its complement.
+Degeneracy at the site kills every colouring that is non-constant there. What survives is
+therefore constant --- and a constant survivor is exactly a certificate.
+
+So on the branch where every site is degenerate there are no uncertified live pairs at all: the
+live graph \emph{is} the union of the three certified colour graphs, and since a certified pair is
+dead in the other colours, a live pair wears exactly one. The colour classes are edge-disjoint,
+which earlier in this programme could only be assumed.
+
+\subsection*{The colour-degree equivalence}
+
+The degree machinery counts live partners; the certified graphs are what the peel produces. On a
+degenerate site the two neighbourhoods coincide, so each is a statement about the other. In
+particular the live degree is the sum of the three colour degrees, each at least one --- a
+decomposition that previously needed exclusivity as a hypothesis and now does not.
+
+The bound between them, formerly available in one direction only, becomes an equivalence there:
+live degree at most three if and only if exactly one live partner in each colour. So a second
+partner in a single colour and a fourth live partner are the same condition, rather than one
+implying the other.
+
+\subsection*{What is left}
+
+Everything on this branch assembles. If no site has a second live partner in any one colour, the
+certified classes are perfect matchings, their union is cubic, and above four sites a cubic graph
+with a one-factorisation admits a fourth perfect matching --- which is the contradiction the
+three-regular exclusion supplies. Four vertices is exactly where that fourth matching fails to
+exist, and it is the only place in the whole development where the vertex count does structural
+work.
+
+That is worth stating plainly as a constraint on any future step. Every certificate in
+\S\ref{sec:pendant} is consistent with the four-site solution, because none of them uses the
+vertex bound for anything beyond knowing that a four-element set is not everything. A card-blind
+tool cannot force what the four-site solution satisfies, so no accumulation of them will close the
+conjecture. What is needed is a fact true above four and false at four, of the fourth-matching
+kind.
+
+\subsection*{In the official formulation}
+
+The library's solvability predicate is identified with the official equation system, so each
+conditional result can be stated where the conjecture is actually posed rather than in a
+paraphrase of it. Three such statements are recorded: from the colour-degree hypothesis, from the
+partition question, and from the degree bound alone. None of them uses the six-vertex base case;
+the uniform argument does not need it.
+
+\section{The fibre criterion}\label{sec:fibre}
+
+Everything in this section rests on one identity.  A colouring of the sites partitions them into
+three fibres.  Where no live pair mixes colours, every matching contributing to that colouring's
+amplitude must join sites of equal colour, so it decomposes into a matching of each fibre, and the
+amplitude is the \emph{product} of the three fibres' monochromatic matching sums.  A non-constant
+colouring has amplitude zero.  Hence:
+
+\begin{quote}
+If some non-constant colouring has all three fibre sums non-zero, the configuration cannot exist.
+\end{quote}
+
+Call a fibre \emph{rigid} when its own colour's matching sum over it does not vanish.  The criterion
+asks for a non-constant colouring with three rigid fibres.
+
+\subsection*{Where cancellation must live}
+
+The first thing the criterion settles is the shape of the obstruction.  Cancellation cannot be
+spread across colours: it must occur inside a single fibre, between two monochromatic matchings of
+the same colour on the same sites.  Two such matchings differ by an alternating cycle, necessarily
+monochromatic, and a monochromatic cycle requires every site on it to carry a second live partner in
+that colour.  So a configuration surviving the criterion must carry excess, and the excess must be
+concentrated enough to close a cycle within a single colour.
+
+\subsection*{Rigidity from a matching}
+
+The cheapest source of rigid fibres is a perfect matching.  Colour each site by the colour of its own
+matched pair; the fibres are then the sites matched in each colour.  If, inside each fibre, no site
+has a second live partner of that fibre's colour, the fibre's live graph in its own colour is the
+matching itself, and the fibre is rigid.  A matching using more than one colour therefore kills the
+configuration.
+
+Purity is needed only inside a fibre.  A site carrying several partners in one colour is harmless
+unless they are matched into the same fibre as itself, and the matching is ours to choose.
+
+Where nothing is in excess, every pair is pure and the criterion reduces to the existence of a
+perfect matching of the three colour classes using more than one colour.  That is elementary.  If two
+colour classes meet in two or more cycles, recolouring one of them gives such a matching.  Otherwise
+every pair of classes meets in a single Hamiltonian cycle, and the third class is a set of chords.  A
+chord joining sites at odd distance leaves two arcs of even size, each matched by its own cycle
+edges; with the chord that is a mixed perfect matching.  If instead every chord stays inside one
+parity class of the cycle, then an even-class chord crossing an odd-class chord leaves four arcs of
+even size, and two chords with those arcs again give a mixed perfect matching.  Crossing cannot be
+avoided: take the chord whose arc is shortest, of length $d$; because the classes alternate around
+the cycle, that arc contains $d/2 \ge 1$ points of the other class, which no chord may cross, so they
+are matched among themselves by a chord of arc length at most $d-2$.
+
+At four sites the argument correctly fails.  There the only perfect matchings are the three colour
+classes themselves, each of them constant, and that is exactly how the four-site solution survives.
+
+\subsection*{Rigidity for free}
+
+Rigidity need not be checked at all when a fibre is closed in its own colour, meaning that no live
+edge of that colour leaves it.  Then the colour's matching sum factors across the cut into two
+factors whose product is the colour's amplitude, which does not vanish; so neither factor does.
+
+A set closed in a colour is a union of connected components of that colour's live graph.  In this
+form the criterion carries no arithmetic whatever: it asks for a partition of the sites into a union
+of components of the first colour's graph, a union of components of the second's, and a union of
+components of the third's, with not everything in one part.
+
+Two colours never suffice.  If a colouring used only two, one part would be closed in its own colour
+and its complement closed in the other, making a single set closed in two colours, and no
+configuration admits one.  Consequently a colour whose live graph is connected can supply no fibre at
+all, and the closed form of the criterion applies precisely when the three colour graphs are
+disconnected and their components tile the sites.
+
+\subsection*{One closed set is enough}
+
+A tiling is more than is needed.  A single set closed in one colour already supplies all three
+fibres: the set itself, split between the other two colours, and its complement, whose rigidity in
+the closing colour comes free from the factorisation above.  Formally, if $A$ is closed in colour
+$a$, both $A$ and its complement are non-empty, and $A = B \sqcup C$ with the $b$-sum over $B$ and the
+$c$-sum over $C$ both non-zero, the configuration cannot exist.
+
+The smallest instance is four sites: a set closed in one colour splitting into a live pair of each of
+the other two.  The Hamiltonian construction above is another instance, with $A$ the complement of a
+pure pair and $B, C$ the two arcs.
+
+This form exposes a tension the earlier ones hide.  Extra live pairs make the split easier to find
+and the closure harder to achieve.  A configuration blocking the criterion must therefore be
+simultaneously rich enough to connect every colour graph -- which takes at least $3(n-1)$ extra live
+pairs, an average live degree near six -- and poor enough to offer no closed set that splits.
+
+\subsection*{The split, forced}
+
+The criterion's remaining content can be isolated completely.  Take the fibre of the first colour to
+be a set $F$ whose own-colour matching sum does not vanish -- a single live pair will do, its sum
+being that pair's weight.  What must be produced is a division of the remaining sites into a part
+rigid in the second colour and a part rigid in the third.
+
+Rigidity of a part in a colour means that colour's live graph, restricted to the part, is exactly a
+perfect matching of it.  So a site in the $b$-part has its $b$-partner in the $b$-part, and a site in
+the $c$-part has its $c$-partner in the $c$-part.  Each rule is symmetric within its pair, so the
+label is constant on every named $b$-pair and on every named $c$-pair, hence on each connected
+component of the union of the two colour classes restricted to the sites outside $F$.
+
+That union is a disjoint set of even cycles, and removing $F$ turns the cycles meeting it into paths.
+The labels at the ends of those paths are forced: a site whose $b$-partner has been removed cannot be
+in the $b$-part, so it lies in the $c$-part, and symmetrically.
+
+Two consequences follow at once.  If $F$ is a single pair whose sites lie on \emph{different} cycles,
+then removing one of them leaves its cycle as a single path whose two ends are its $b$-partner and its
+$c$-partner -- one forced into each part, in one component.  That is impossible, so the two sites lie
+on a common cycle.  And along that cycle the two arcs they leave must each begin and end with an edge
+of the same colour, which happens exactly when the arc has an even number of sites, that is when the
+two sites sit at odd distance.
+
+Cycles meeting $F$ nowhere survive intact, and a whole cycle is a union of $b$-pairs and equally a
+union of $c$-pairs, so each may take either label freely.
+
+\subsection*{The case with nothing in excess, and what it leaves}
+
+Here the rigidity conditions are automatic -- each colour's live graph is its named matching -- and only
+the parity survives.  If two colour classes meet in several cycles, recolouring one already gives a
+mixed matching and the criterion applies.  Otherwise they meet in a single cycle through all sites,
+and the third class is a set of chords.
+
+A chord joining sites at odd distance is exactly the pair required, and the construction closes: the
+two edges at each of its endpoints carry different colours, so the two arcs receive different labels
+and all three fibres are non-empty.
+
+If every chord joins sites at even distance the construction is not available, and an attempt to use
+two crossing chords instead fails.  Deleting four sites leaves arcs whose labels are again forced by
+the colour of the edge joining each arc to a deleted site, and nothing makes those labels differ.  On
+the eight-site cycle with its four diagonals, coloured alternately along the cycle with the diagonals
+third, the two crossing diagonals leave two arcs which both receive the same label; the third fibre
+is empty, the colouring uses two colours, and a set closed in one colour with complement closed in
+another does not exist.  So that case is not settled by this construction.
+
+That configuration is nevertheless covered, by the first case rather than the last: two of its colour
+classes meet in two four-cycles rather than one, so recolouring one of them already gives a mixed
+matching.
+
+What the construction does not reach is the case where all three pair-unions are single cycles
+\emph{and} every chord joins sites at even distance in each of them.  Such colourings exist.  Saying
+that a colour's chords all join sites at even distance says that colour preserves the two parity
+classes of the other two colours' cycle; taking the three parity functions together gives each site a
+triple, on which the three colours act by adding the three even-weight vectors.  The skeleton is
+connected, so the triple takes exactly four values and the three colours induce on those classes the
+three perfect matchings of the four-site configuration: every colouring in this case is a covering of
+it.
+
+The covering is described by a permutation of the fibre on each edge, and a pair-union is a single
+cycle exactly when the corresponding holonomy is a full cycle of the fibre.  Gauging the three edges
+of a spanning tree to the identity leaves three free permutations, and the three holonomies work out
+to $yz^{-1}$, $xz$ and $x^{-1}y$.  For a fibre of two elements a full cycle is the transposition, so
+two of the holonomies agree and the third is forced to the identity -- impossible, which is why eight
+sites admit no such colouring.  For a fibre of three the constraint is satisfiable, and the resulting
+twelve-site colouring meets every condition of the case.
+
+What this limits is the elementary \emph{existence} argument, not the criterion.  Where nothing is in
+excess the criterion needs only a perfect matching using more than one colour, and such a matching
+exists in every cubic graph carrying a proper three-edge-colouring except the one on four sites --
+classically, because such graphs are bridgeless and only the four-site one has just three perfect
+matchings.  The twelve-site covering above is no exception: it carries perfect matchings using all
+three colours, so the criterion applies to it as it does to every other configuration without excess.
+
+So the case with nothing in excess is settled, and settled by the criterion.  What the arc
+construction supplies is an elementary proof of the matching's existence in two of the three
+situations -- a pair of classes meeting in several cycles, or a chord joining sites at odd distance --
+and the remaining situation is left to the classical fact.
+
+At four sites every step still runs except the last: there the two classes form a cycle with a single
+pair of chords, at even distance and not crossing, and indeed the only perfect matchings are the three
+colour classes, each of them constant.  The exception is produced by the argument rather than assumed
+by it.
+
+\subsection*{What excess changes}
+
+Excess adds live pairs beyond the named ones.  It enlarges the supply of first-colour fibres, since
+any set with non-vanishing own-colour sum will serve, and it enlarges the supply of pairs at odd
+distance.  What it costs is the rigidity clause: an arc labelled with a colour must contain no further
+live pair of that colour.
+
+The free cycles are where the room is.  Each may be labelled either way, so the obstruction is a
+two-satisfiability question over their labels with the two arcs held fixed.  That is the open case,
+and it is the only one.
+
+\subsection*{What is not claimed}
+
+None of these forms is a reduction.  A non-constant colouring's amplitude \emph{is} the product of its
+fibre sums, so no genuine configuration admits three rigid fibres, and each criterion is equivalent
+to the conjecture rather than weaker than it.  Their value is that they fix the shape of a
+certificate and move the whole difficulty into a construction over the support: which pairs are
+live, which colours they carry, and how the resulting three graphs are connected.
+
+\section{The problem as one polynomial}\label{sec:poly}
+
+Attach a variable $x_{v,a}$ to each site and colour, and form the matrix whose entry at a pair of
+sites is $\sum_a W_a(u,v)\,x_{u,a}x_{v,a}$.  Its hafnian expands over matchings, and each matched pair
+forces one colour at both of its ends, so
+
+\[
+  \operatorname{haf} M(x)\;=\;\sum_{c} \operatorname{amplitude}(c)\;\prod_{v} x_{v,c(v)} .
+\]
+
+The equations say exactly that this polynomial is supported on the three monochromatic monomials:
+
+\begin{quote}
+$\operatorname{haf} M(x) = \sum_{j} \lambda_j \prod_v x_{v,j}$ with every $\lambda_j$ non-zero.
+\end{quote}
+
+The conjecture is that this forces at most four sites.  Everything in this programme is a way of
+reading that one identity.
+
+\subsection*{What the earlier lanes are, in this language}
+
+Refusing one colour per site and merging the other two is evaluation at a zero-one point: setting
+$x_{v,a}=0$ exactly when $a$ is the refused colour leaves $\sum_{j \notin \operatorname{im} e}
+\lambda_j$, which is why an onto refusal gives zero and a refusal missing one colour gives that
+colour's amplitude.  The row identities obtained from a live pair are differentiation in a single
+variable.  The rescaling that fixes the equations is the substitution $x_{v,a} \mapsto \mu(v,a)
+x_{v,a}$, and the cube-root twists are the special case $\mu(v,a) = \omega^{a k_v}$.
+
+That observation is worth stating because it settles the reach of all of them at once:
+
+\begin{quote}
+An identity obtained by evaluating or differentiating the polynomial identity is a consequence of the
+equations, and cannot constrain the weights beyond them.
+\end{quote}
+
+So no amount of cleverness with test points, characters or derivatives closes the question by itself.
+Each of those lanes was pushed to its limit and stopped, and this is the single reason.
+
+\subsection*{What must be combined with it}
+
+The coefficient of a colouring is the sum, over the matchings compatible with it, of their weight
+products.  A colouring whose compatible matching is \emph{unique} therefore has a non-zero
+coefficient, and must be constant.  Reading that contrapositively:
+
+\begin{quote}
+For every non-constant colouring, the live pairs admit either no compatible perfect matching, or at
+least two, which cancel.
+\end{quote}
+
+A perfect matching of the live pairs induces a colouring, compatible by construction, and that
+colouring is non-constant exactly when the matching uses more than one colour.  So a configuration
+must either have no matching using more than one colour -- which is what happens at four sites, where
+the only matchings are the colour classes themselves -- or every such matching must be cancelled by
+another compatible with the same colouring.
+
+Two matchings compatible with one colouring differ inside a single colour class, hence by a cycle
+alternating between them in that one colour.  A monochromatic cycle needs every site on it to carry a
+second partner in that colour.  So cancellation requires excess, concentrated in one colour along a
+cycle.
+
+This is where the difficulty now sits, and it is a statement about which pairs are live rather than
+about their weights.
+
+\section{Withdrawn claims}\label{sec:withdrawn}
+
+\paragraph{Contraction fails on cubic supports from eight vertices upward.}
+Withdrawn. The verdict came from a recognizer that tested each kernel basis vector for
+a nonzero diagonal and a nonzero contraction scalar simultaneously. Those are two
+linear functionals on the kernel and a witness may be a sum of basis vectors, so the
+recognizer under-reported. An exact rational recognizer exhibits a cap on the cube,
+verified in full. Everything built on the withdrawn premise falls with it: that the
+route ``misses by two pairs'', that the obstruction is one unit of matching number,
+that passing to second order is forced, and that the four-vertex matching sum is shown
+to control every route.
+
+\paragraph{Support-criterion failure implies no cap.} Withdrawn. The support
+restriction is sufficient for an incidence entry to vanish, never necessary;
+cancellation inside the cap matrix is not excluded by it. Censuses and degree tables
+computed from the live-pair criterion describe that criterion's reach and not cap
+existence.
+
+\paragraph{Named cubic graphs settle the cubic case.} Withdrawn as stated. The cube,
+Wagner's graph and Petersen are evidence about themselves; they were never a universal
+theorem about cubic supports.
+
+\paragraph{The two-colour cycle as evidence at three colours.} Withdrawn. It is a
+cross-dimensional control on the recognizer only, and says nothing about the
+hypothetical three-colour solution variety.
+
+
+\begin{enumerate}
+\item \emph{That descent is the conjecture.} The reduction ``every solution on $2n$
+vertices yields one on $2n-2$, plus a base case, implies the conjecture'' is proved.
+It was described as reducing the conjecture to one hypothesis. That description is
+wrong: descent is strictly stronger than needed and may fail even if the conjecture
+holds, since it demands descent of solutions no proof need ever meet.
+
+\item \emph{That every vertex needs three partners.} Independence of the
+monochromatic row is stated at one background colour, and there only that row is
+independent of the other two --- the other two may be dependent, and at a vertex of
+degree two must be. Changing the background repaints the columns, so rows at
+different backgrounds are different vectors and do not combine.
+\end{enumerate}
+
+\section{The obstructions, precisely}\label{sec:obstruct}
+
+\begin{openq}[A non-vacuous degeneracy]
+The constant background forces the vertex's vector nonzero but yields only two
+annihilations; the non-constant background yields three but no nonzero coordinate.
+They can be combined --- recolour the vertex $v_0$ where the constant background is
+nonzero; by locality that coordinate is a matching sum over a set excluding $v_0$
+and does not notice.
+
+\emph{The combination can be empty.} Recolouring $v_0$ moves the row entry at
+$v_0$. Tested against the four-vertex solution above, all three rows vanish at that
+coordinate in all twenty-four instances, so the annihilation holds for free. The
+tension is structural: locality preserves the coordinate only because the recoloured
+vertex is excluded, and that is the same vertex whose row entry is disturbed.
+
+\emph{What is wanted:} a coordinate that is nonzero and at which some row survives.
+\end{openq}
+
+\begin{openq}[Unavoidability]
+Local reductions are worth nothing without it. No argument here shows a minimal
+counterexample must contain any configuration that has been discharged. This is
+where the difficulty of discharging arguments has always lived.
+\end{openq}
+
+\section{Method}
+
+Two habits produced most of what is above and both are worth stating.
+
+\emph{Choose the representation that already knows the fact.} The cycle argument
+stalled over $\mathrm{Fin}\,m$, where each statement about a successor needed a case
+split on wrapping; over $\mathbb{Z}/m$ it went through as first written. Parity as a
+ring homomorphism rather than a remainder made the alternation induction disappear
+into \texttt{map\_add}.
+
+\emph{Test a claim against a proved instance before building on it.} The
+four-vertex solution serves as an oracle: any assertion about arbitrary solutions
+can be checked against it first. This caught the vacuousness above before a layer
+was built on emptiness, and caught a false hypothesis in a general theorem before it
+was formalised.
+
+\end{document}

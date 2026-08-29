@@ -1,0 +1,672 @@
+{
+  "base_satisfiable": true,
+  "encoding": {
+    "base_clauses": 15063,
+    "base_cnf_sha256": "f034ed98b98771a02087a0fe2d4ceaf98681b43e9aa006c2e38ec7decea91fc5",
+    "clause_kinds": {
+      "declared_nonzero": 1,
+      "polynomial_support": 15037,
+      "strict_factor_no_good": 25
+    },
+    "cnf_variables": 3140,
+    "monomial_auxiliaries": 3061,
+    "query_clauses": 15064,
+    "query_cnf_sha256": "ff4c5e77cb131e9af4aaf231569ea65e85478579dc3d2e66d8a75edd16d429aa",
+    "query_drat_sha256": "5faac542a54aec494147f63fb8ad7d1341479530ba79f8ec8875dab8fd253256",
+    "query_lrat_sha256": "ae658ee6c4cfaa79d4903cf4f12d778731bfb0543ae6ce0e4aec5d360a48c073",
+    "support_variable_names": [
+      "delta_0_1",
+      "factor_gb_inv",
+      "factor_l_inv",
+      "pivot_w23_inv",
+      "theta_0_1_inv",
+      "w_01_00",
+      "w_01_11",
+      "w_01_22",
+      "w_02_00",
+      "w_02_11",
+      "w_02_22",
+      "w_03_00",
+      "w_03_11",
+      "w_03_22",
+      "w_04_00",
+      "w_04_02",
+      "w_04_10",
+      "w_04_11",
+      "w_04_12",
+      "w_04_20",
+      "w_04_21",
+      "w_04_22",
+      "w_05_00",
+      "w_05_02",
+      "w_05_10",
+      "w_05_11",
+      "w_05_12",
+      "w_05_20",
+      "w_05_22",
+      "w_12_00",
+      "w_12_02",
+      "w_12_10",
+      "w_12_11",
+      "w_12_12",
+      "w_12_20",
+      "w_12_21",
+      "w_12_22",
+      "w_13_00",
+      "w_13_02",
+      "w_13_10",
+      "w_13_11",
+      "w_13_12",
+      "w_13_20",
+      "w_13_21",
+      "w_13_22",
+      "w_14_00",
+      "w_14_22",
+      "w_15_00",
+      "w_15_22",
+      "w_23_00",
+      "w_23_11",
+      "w_23_22",
+      "w_24_00",
+      "w_24_11",
+      "w_24_22",
+      "w_25_00",
+      "w_25_02",
+      "w_25_10",
+      "w_25_11",
+      "w_25_12",
+      "w_25_20",
+      "w_25_21",
+      "w_25_22",
+      "w_34_00",
+      "w_34_02",
+      "w_34_10",
+      "w_34_11",
+      "w_34_12",
+      "w_34_20",
+      "w_34_21",
+      "w_34_22",
+      "w_35_00",
+      "w_35_11",
+      "w_35_22",
+      "w_45_00",
+      "w_45_11",
+      "w_45_22",
+      "leaf_inv_0_w_24_11",
+      "leaf_inv_0_w_25_11"
+    ],
+    "support_variables": 79
+  },
+  "format": "krenn-chart0-support-theory-v1",
+  "inputs": {
+    "factor_audit_file_sha256": "9881a9d1cabbe32d2e0253ab7a79942dc3e797340400b637d14b7d5723b71e38",
+    "strict_checker_file_sha256": "6fc1003b70048eb4be2989a78faa3f0c1b10b8f448fd1dadec21625d8f2b1f16",
+    "system_file_sha256": "1dbd69a2f71711433b64b026f72bd2bf90b3f769691ec0860e23927afdc8dfd3"
+  },
+  "interpretation": "UNSAT is a sound algebraic contradiction; SAT only means the necessary support abstraction is insufficient.",
+  "proof_tools": {
+    "drat_trim_file_sha256": "66a1a9328207f502970bf42d57de1002751f1e4ad9dbcec9464b937d3999f536",
+    "lrat_check_file_sha256": "3fe35e8dc576325c28f2664df8f6b37eeec09d42eff24d56afdb2bc4b90bde14"
+  },
+  "query": {
+    "coordinate": "w_12_00",
+    "nonzero": false
+  },
+  "query_backbones": {},
+  "query_model": null,
+  "query_satisfiable": false,
+  "strict_factor_sources": [
+    {
+      "branch": 0,
+      "branch_system_file_sha256": "e931791c8263bce6db6bf36ddc938df0405e9c23ac5d788d7459db284f4bdfbf",
+      "certificate_file_sha256": "a965b07337bd096182829e9ae289bfdcf077d484c5eeb8b9a60b8f2464e6d246",
+      "coordinates": [
+        "w_12_00",
+        "w_13_00",
+        "w_05_02"
+      ],
+      "equation": 5,
+      "nonzero_bits": [
+        0,
+        0,
+        0
+      ],
+      "nonzero_multiplier_indices_1based": [
+        736,
+        740,
+        741
+      ]
+    },
+    {
+      "branch": 1,
+      "branch_system_file_sha256": "22cd61ee1f33b1b3a34095a8881f0701f6a0eea7ec90074a835c2640e1be12dc",
+      "certificate_file_sha256": "a965b07337bd096182829e9ae289bfdcf077d484c5eeb8b9a60b8f2464e6d246",
+      "coordinates": [
+        "w_12_00",
+        "w_13_00",
+        "w_05_02"
+      ],
+      "equation": 5,
+      "nonzero_bits": [
+        0,
+        0,
+        1
+      ],
+      "nonzero_multiplier_indices_1based": [
+        736,
+        740,
+        741
+      ]
+    },
+    {
+      "branch": 0,
+      "branch_system_file_sha256": "d0b685fa50a93afd1699251bfc28c3defe992661b0eedc04ae444d3f81ede1ac",
+      "certificate_file_sha256": "a88ecc1e283e03b06cc07d9ad317831f91140f3812c321aed1076a1a5a3632ce",
+      "coordinates": [
+        "w_12_00",
+        "w_34_02",
+        "w_13_00"
+      ],
+      "equation": 7,
+      "nonzero_bits": [
+        0,
+        0,
+        0
+      ],
+      "nonzero_multiplier_indices_1based": [
+        736,
+        740,
+        742
+      ]
+    },
+    {
+      "branch": 2,
+      "branch_system_file_sha256": "1e4cfb6681e3b7764b6b9d5d60fa7f89f6410fe3dd5c79804bebe35822cfc729",
+      "certificate_file_sha256": "a88ecc1e283e03b06cc07d9ad317831f91140f3812c321aed1076a1a5a3632ce",
+      "coordinates": [
+        "w_12_00",
+        "w_34_02",
+        "w_13_00"
+      ],
+      "equation": 7,
+      "nonzero_bits": [
+        0,
+        1,
+        0
+      ],
+      "nonzero_multiplier_indices_1based": [
+        736,
+        740,
+        742
+      ]
+    },
+    {
+      "branch": 3,
+      "branch_system_file_sha256": "7327ff8694b04f9a94f85a8794d72e07c97a53585f1e41a8876ed0959503c8f1",
+      "certificate_file_sha256": "78f91611c6051afff45ea21558a1ad908794b0746b4a08ee75555f124c0f823a",
+      "coordinates": [
+        "w_12_00",
+        "w_34_02",
+        "w_13_00"
+      ],
+      "equation": 7,
+      "nonzero_bits": [
+        0,
+        1,
+        1
+      ],
+      "nonzero_multiplier_indices_1based": [
+        8,
+        35,
+        740,
+        741
+      ]
+    },
+    {
+      "branch": 1,
+      "branch_system_file_sha256": "064faf8ea5df75dfcef6a833ed71d3655c923d965922befe98c8a2b0bfae5fbe",
+      "certificate_file_sha256": "23fe0a7d9d85469e019814974e36b8d43ea49c3933cb1cc1d5a6d1abf03e13ef",
+      "coordinates": [
+        "w_12_00",
+        "w_34_22",
+        "w_04_02"
+      ],
+      "equation": 25,
+      "nonzero_bits": [
+        0,
+        0,
+        1
+      ],
+      "nonzero_multiplier_indices_1based": [
+        8,
+        35,
+        736,
+        740,
+        742
+      ]
+    },
+    {
+      "branch": 2,
+      "branch_system_file_sha256": "00a7ed3afd0889bbb6e3b5ca893cde9345c4645f6a9b526abff158a03513edca",
+      "certificate_file_sha256": "993eea54d8b00dfa951fc7ec24a8e1319bfd5ecd11bac359fb4379a0b5308733",
+      "coordinates": [
+        "w_12_00",
+        "w_34_22",
+        "w_04_02"
+      ],
+      "equation": 25,
+      "nonzero_bits": [
+        0,
+        1,
+        0
+      ],
+      "nonzero_multiplier_indices_1based": [
+        26,
+        53,
+        740,
+        741
+      ]
+    },
+    {
+      "branch": 3,
+      "branch_system_file_sha256": "d5aeea6427a9916e8c3c1b0d3698f48a31d41f0420ff53788123678e00075b2b",
+      "certificate_file_sha256": "993eea54d8b00dfa951fc7ec24a8e1319bfd5ecd11bac359fb4379a0b5308733",
+      "coordinates": [
+        "w_12_00",
+        "w_34_22",
+        "w_04_02"
+      ],
+      "equation": 25,
+      "nonzero_bits": [
+        0,
+        1,
+        1
+      ],
+      "nonzero_multiplier_indices_1based": [
+        26,
+        53,
+        740,
+        741
+      ]
+    },
+    {
+      "branch": 0,
+      "branch_system_file_sha256": "bdd73fbd2d720bfab1c2d6953c39bdd937bb7aa2c1637f6d3332421f54f54d70",
+      "certificate_file_sha256": "4943220ab3d45dd21778d117ef810e83e2a6bd61263a9552a8fa4ac4e7bd785b",
+      "coordinates": [
+        "w_13_11",
+        "w_34_11",
+        "w_35_11"
+      ],
+      "equation": 148,
+      "nonzero_bits": [
+        0,
+        0,
+        0
+      ],
+      "nonzero_multiplier_indices_1based": [
+        527,
+        737,
+        741,
+        742
+      ]
+    },
+    {
+      "branch": 4,
+      "branch_system_file_sha256": "fc5ce2a0c56ff64780cecff774255fa2100686a475d125bc2e2459484f0c3e92",
+      "certificate_file_sha256": "4943220ab3d45dd21778d117ef810e83e2a6bd61263a9552a8fa4ac4e7bd785b",
+      "coordinates": [
+        "w_13_11",
+        "w_34_11",
+        "w_35_11"
+      ],
+      "equation": 148,
+      "nonzero_bits": [
+        1,
+        0,
+        0
+      ],
+      "nonzero_multiplier_indices_1based": [
+        527,
+        737,
+        741,
+        742
+      ]
+    },
+    {
+      "branch": 6,
+      "branch_system_file_sha256": "9ff2548789cb09dc20ce9b2819b083bd925d34a7030ac95428e998af0a8b9d23",
+      "certificate_file_sha256": "679c81ea9a23c6daf97ab771e2db0c259bea9d89a14f107ce721dd5434c83d4d",
+      "coordinates": [
+        "w_34_00",
+        "w_12_20",
+        "w_13_20"
+      ],
+      "equation": 163,
+      "nonzero_bits": [
+        1,
+        1,
+        0
+      ],
+      "nonzero_multiplier_indices_1based": [
+        164,
+        740,
+        741,
+        742
+      ]
+    },
+    {
+      "branch": 6,
+      "branch_system_file_sha256": "b21564755e02c5b3be36038da88394a4b9cd881a4138d4ecb5a724c1617416d1",
+      "certificate_file_sha256": "99ea2e8081a189928e204db89efac309f39d50223480cf324fa18a64a8ab5c9d",
+      "coordinates": [
+        "w_34_20",
+        "w_12_20",
+        "w_13_22"
+      ],
+      "equation": 181,
+      "nonzero_bits": [
+        1,
+        1,
+        0
+      ],
+      "nonzero_multiplier_indices_1based": [
+        182,
+        740,
+        741,
+        742
+      ]
+    },
+    {
+      "branch": 6,
+      "branch_system_file_sha256": "ae3a3d3b840741d516e64cd1ecd309902edc720a1042d3ba0ea22a872c9975b7",
+      "certificate_file_sha256": "69bc50a2a4fbc8344df5c93010b53826e405bad03e99d2b5f88a1f4d01de49a8",
+      "coordinates": [
+        "w_34_22",
+        "w_12_20",
+        "w_13_22"
+      ],
+      "equation": 187,
+      "nonzero_bits": [
+        1,
+        1,
+        0
+      ],
+      "nonzero_multiplier_indices_1based": [
+        188,
+        740,
+        741,
+        742
+      ]
+    },
+    {
+      "branch": 5,
+      "branch_system_file_sha256": "1e8178dd8ff24c847a023b64ce74e7449bfe1f4925d4f38934f28b36d2471956",
+      "certificate_file_sha256": "1612d420aff5e8eba5d4a7968420d49085c8a7263fe4dd364e2635a06142c2e6",
+      "coordinates": [
+        "w_12_22",
+        "w_13_20",
+        "w_05_02"
+      ],
+      "equation": 221,
+      "nonzero_bits": [
+        1,
+        0,
+        1
+      ],
+      "nonzero_multiplier_indices_1based": [
+        222,
+        740,
+        741,
+        742
+      ]
+    },
+    {
+      "branch": 0,
+      "branch_system_file_sha256": "643fda2f583ac8e89224b74a95b69fb263eea656291addd6cb37a664e8e15f0d",
+      "certificate_file_sha256": "6629b68a0732c1b6416674c1c6f91535243a5ff8fafe72761cc5500c306329d0",
+      "coordinates": [
+        "w_34_11",
+        "w_35_11",
+        "w_12_22"
+      ],
+      "equation": 229,
+      "nonzero_bits": [
+        0,
+        0,
+        0
+      ],
+      "nonzero_multiplier_indices_1based": [
+        527,
+        737,
+        740,
+        741
+      ]
+    },
+    {
+      "branch": 1,
+      "branch_system_file_sha256": "ac7bff133035adbed2b005d4e8754eba991ad2dff268182a7f489aa299200c9a",
+      "certificate_file_sha256": "6629b68a0732c1b6416674c1c6f91535243a5ff8fafe72761cc5500c306329d0",
+      "coordinates": [
+        "w_34_11",
+        "w_35_11",
+        "w_12_22"
+      ],
+      "equation": 229,
+      "nonzero_bits": [
+        0,
+        0,
+        1
+      ],
+      "nonzero_multiplier_indices_1based": [
+        527,
+        737,
+        740,
+        741
+      ]
+    },
+    {
+      "branch": 6,
+      "branch_system_file_sha256": "d9a118886e9113d024847efeb308d9c67cb3254150715e05f7087e1b4dc1cd2a",
+      "certificate_file_sha256": "b69f2afbad5429dac8613745562872def9138a1fa3e69d2d74d73c42ebc1e71b",
+      "coordinates": [
+        "w_34_21",
+        "w_12_22",
+        "w_25_21"
+      ],
+      "equation": 238,
+      "nonzero_bits": [
+        1,
+        1,
+        0
+      ],
+      "nonzero_multiplier_indices_1based": [
+        239,
+        740,
+        741,
+        742
+      ]
+    },
+    {
+      "branch": 0,
+      "branch_system_file_sha256": "b6ee76eb49b82d0a2814a8a8a745cb88cc7daf6db4121fa916fcf8c79b84d6ba",
+      "certificate_file_sha256": "a965b07337bd096182829e9ae289bfdcf077d484c5eeb8b9a60b8f2464e6d246",
+      "coordinates": [
+        "w_12_00",
+        "w_13_00",
+        "w_04_11"
+      ],
+      "equation": 247,
+      "nonzero_bits": [
+        0,
+        0,
+        0
+      ],
+      "nonzero_multiplier_indices_1based": [
+        736,
+        740,
+        741
+      ]
+    },
+    {
+      "branch": 1,
+      "branch_system_file_sha256": "07828aa0b44b3b50a24fa146a0ab39cf851bc4d6376a045aa7f3991dcc1b257a",
+      "certificate_file_sha256": "a965b07337bd096182829e9ae289bfdcf077d484c5eeb8b9a60b8f2464e6d246",
+      "coordinates": [
+        "w_12_00",
+        "w_13_00",
+        "w_04_11"
+      ],
+      "equation": 247,
+      "nonzero_bits": [
+        0,
+        0,
+        1
+      ],
+      "nonzero_multiplier_indices_1based": [
+        736,
+        740,
+        741
+      ]
+    },
+    {
+      "branch": 3,
+      "branch_system_file_sha256": "42cf99190c4187f5472591be702ea8dba1c828f8ecca6f9175f3837e1ccccad5",
+      "certificate_file_sha256": "1b0d0c47dad9aafc88d507dbf69417ce308fa0684f65b6d6868b2807d22399ef",
+      "coordinates": [
+        "w_12_00",
+        "w_13_00",
+        "w_04_11"
+      ],
+      "equation": 247,
+      "nonzero_bits": [
+        0,
+        1,
+        1
+      ],
+      "nonzero_multiplier_indices_1based": [
+        248,
+        491,
+        500,
+        527,
+        735,
+        737,
+        740,
+        742
+      ]
+    },
+    {
+      "branch": 3,
+      "branch_system_file_sha256": "725f5463dc05234557be08a27d49f4757d05bc45df76750c621e83901da83962",
+      "certificate_file_sha256": "840626529ac6752a4e1091ee42dd50e62976c0753570f61060e6cac1f59a7e64",
+      "coordinates": [
+        "w_12_20",
+        "w_13_20",
+        "w_04_11"
+      ],
+      "equation": 409,
+      "nonzero_bits": [
+        0,
+        1,
+        1
+      ],
+      "nonzero_multiplier_indices_1based": [
+        410,
+        740,
+        741,
+        742
+      ]
+    },
+    {
+      "branch": 3,
+      "branch_system_file_sha256": "7ea22a9b26b611224cd223d2786eeeb5b9bb41401c2fbf10b992ac801d097aa5",
+      "certificate_file_sha256": "8db9679c1b04bd41e7735af3b1a47914917b489d775ba6777dc116ce2bc28b52",
+      "coordinates": [
+        "w_04_21",
+        "w_12_00",
+        "delta_0_1"
+      ],
+      "equation": 490,
+      "nonzero_bits": [
+        0,
+        1,
+        1
+      ],
+      "nonzero_multiplier_indices_1based": [
+        491,
+        732,
+        740,
+        741
+      ]
+    },
+    {
+      "branch": 5,
+      "branch_system_file_sha256": "e04f0e234a8d8482791bbc5dc382604582907bfd3884aca8ac4bdcf54a11e6e8",
+      "certificate_file_sha256": "cc3393820d2022e2628562972b84470f22873f9ab9d0d5a17bcf5671afa0194f",
+      "coordinates": [
+        "w_04_21",
+        "w_12_00",
+        "delta_0_1"
+      ],
+      "equation": 490,
+      "nonzero_bits": [
+        1,
+        0,
+        1
+      ],
+      "nonzero_multiplier_indices_1based": [
+        491,
+        500,
+        527,
+        735,
+        737,
+        740,
+        741
+      ]
+    },
+    {
+      "branch": 1,
+      "branch_system_file_sha256": "ef229e6143f7078ffe22759ec34e4eceebc8aa5ee08d2a1ae2db1dd186ec8fb5",
+      "certificate_file_sha256": "300e4c4e3ed32054d12542a0b51dc0fdacc56908d0fa487911544fd4b445e72a",
+      "coordinates": [
+        "w_04_21",
+        "w_34_11",
+        "w_24_11"
+      ],
+      "equation": 527,
+      "nonzero_bits": [
+        0,
+        0,
+        1
+      ],
+      "nonzero_multiplier_indices_1based": [
+        527,
+        737,
+        740,
+        741
+      ]
+    },
+    {
+      "branch": 3,
+      "branch_system_file_sha256": "cec27ca4c6f6717a39a4fed7ad18c05b9b924d0838a5f272836809e56ba2085d",
+      "certificate_file_sha256": "a859753ca0eee8c7eabd2b24cdd4635370ff1beb48aa1704f760a8d1bd823cb4",
+      "coordinates": [
+        "w_34_12",
+        "w_04_22",
+        "w_25_12"
+      ],
+      "equation": 530,
+      "nonzero_bits": [
+        0,
+        1,
+        1
+      ],
+      "nonzero_multiplier_indices_1based": [
+        531,
+        740,
+        741,
+        742
+      ]
+    }
+  ]
+}
