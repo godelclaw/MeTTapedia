@@ -26,53 +26,8 @@ variable {V : Type*} [Fintype V] [DecidableEq V]
 theorem pmSum_split (W : Sym2 (V × Fin 3) → ℂ) (c : V → Fin 3) :
     ∀ (n : ℕ) (S T : Finset V), S.card = n → S ⊆ T →
       (∀ x ∈ S, ∀ y ∈ T \ S, W s((x, c x), (y, c y)) = 0) →
-      pmSum W c T = pmSum W c S * pmSum W c (T \ S) := by
-  intro n
-  induction n using Nat.strong_induction_on with
-  | _ n ih =>
-    intro S T hcard hsub hcut
-    rcases Nat.eq_zero_or_pos n with rfl | hn
-    · have hS : S = ∅ := Finset.card_eq_zero.mp hcard
-      subst hS
-      rw [pmSum_empty, one_mul, Finset.sdiff_empty]
-    · obtain ⟨x, hx⟩ : S.Nonempty := Finset.card_pos.mp (by omega)
-      have hxT : x ∈ T := hsub hx
-      rw [pmSum_expand W c hxT, pmSum_expand W c hx]
-      have hsub' : S.erase x ⊆ T.erase x := Finset.erase_subset_erase _ hsub
-      rw [← Finset.sum_subset hsub', Finset.sum_mul]
-      · refine Finset.sum_congr rfl fun y hy => ?_
-        have hyS : y ∈ S := Finset.mem_of_mem_erase hy
-        have hyx : y ≠ x := (Finset.mem_erase.mp hy).1
-        have hcard' : ((S.erase x).erase y).card = n - 2 := by
-          rw [Finset.card_erase_of_mem (Finset.mem_erase.mpr ⟨hyx, hyS⟩),
-            Finset.card_erase_of_mem hx, hcard]
-          omega
-        have hsub'' : (S.erase x).erase y ⊆ (T.erase x).erase y :=
-          Finset.erase_subset_erase _ hsub'
-        have hsdiff : (T.erase x).erase y \ ((S.erase x).erase y) = T \ S := by
-          ext z
-          simp only [Finset.mem_sdiff, Finset.mem_erase]
-          constructor
-          · rintro ⟨⟨hz1, hz2, hz3⟩, hz4⟩
-            refine ⟨hz3, fun hzS => hz4 ⟨hz1, hz2, hzS⟩⟩
-          · rintro ⟨hz1, hz2⟩
-            refine ⟨⟨fun h => hz2 (h ▸ hyS), fun h => hz2 (h ▸ hx), hz1⟩, ?_⟩
-            rintro ⟨-, -, hzS⟩
-            exact hz2 hzS
-        have hcut'' : ∀ p ∈ (S.erase x).erase y, ∀ q ∈ (T.erase x).erase y \
-            ((S.erase x).erase y), W s((p, c p), (q, c q)) = 0 := by
-          intro p hp q hq
-          rw [hsdiff] at hq
-          exact hcut p (Finset.mem_of_mem_erase (Finset.mem_of_mem_erase hp)) q hq
-        have := ih (n - 2) (by omega) ((S.erase x).erase y) ((T.erase x).erase y)
-          hcard' hsub'' hcut''
-        rw [this, hsdiff, mul_assoc]
-      · intro y hy hyn
-        have hyx : y ≠ x := (Finset.mem_erase.mp hy).1
-        have hyS : y ∉ S := fun h => hyn (Finset.mem_erase.mpr ⟨hyx, h⟩)
-        have hmem : y ∈ T \ S := Finset.mem_sdiff.mpr ⟨(Finset.mem_erase.mp hy).2, hyS⟩
-        have : W (Sym2.map (paint c) s(x, y)) = 0 := hcut x hx y hmem
-        rw [this, zero_mul]
+      pmSum W c T = pmSum W c S * pmSum W c (T \ S) :=
+  MatchingSum.pmSum_factor_of_no_crossing W c
 
 /-- **The live graph is connected.**  No non-trivial part of the sites is separated from its
 complement by dead edges alone. -/

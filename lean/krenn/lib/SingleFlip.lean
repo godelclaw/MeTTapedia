@@ -27,24 +27,8 @@ theorem pmSum_single_flip (W : Sym2 (V × Fin 3) → ℂ) {S : Finset V} {w : V}
     (k₀ k₁ : Fin 3) :
     pmSum W (Function.update (Amplitude.const (V := V) k₀) w k₁) S
       = ∑ z ∈ S.erase w, W s((w, k₁), (z, k₀))
-          * pmSum W (Amplitude.const (V := V) k₀) ((S.erase w).erase z) := by
-  rw [pmSum_expand W _ hw]
-  refine Finset.sum_congr rfl fun z hz => ?_
-  have hzw : z ≠ w := (Finset.mem_erase.mp hz).1
-  have hc1 : Function.update (Amplitude.const (V := V) k₀) w k₁ w = k₁ := by simp
-  have hc2 : Function.update (Amplitude.const (V := V) k₀) w k₁ z = k₀ := by
-    rw [Function.update_of_ne hzw]; rfl
-  have hpaint :
-      W (Sym2.map (paint (Function.update (Amplitude.const (V := V) k₀) w k₁)) s(w, z))
-        = W s((w, k₁), (z, k₀)) := by
-    rw [show Sym2.map (paint (Function.update (Amplitude.const (V := V) k₀) w k₁)) s(w, z)
-      = s((w, Function.update (Amplitude.const (V := V) k₀) w k₁ w),
-          (z, Function.update (Amplitude.const (V := V) k₀) w k₁ z)) from rfl, hc1, hc2]
-  rw [hpaint]
-  congr 1
-  refine pmSum_congr_colour W fun x hx => ?_
-  have hxw : x ≠ w := (Finset.mem_erase.mp (Finset.mem_of_mem_erase hx)).1
-  rw [Function.update_of_ne hxw]
+          * pmSum W (Amplitude.const (V := V) k₀) ((S.erase w).erase z) :=
+  MatchingSum.pmSum_single_vertex_recolour W hw k₀ k₁
 
 /-- **The off-colour rows annihilate the single-colour sums.**  Flipping one site off the
 constant colouring makes the amplitude vanish, and the flip formula reads that vanishing as
