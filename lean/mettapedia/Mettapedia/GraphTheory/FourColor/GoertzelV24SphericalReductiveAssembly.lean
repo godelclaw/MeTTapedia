@@ -106,6 +106,17 @@ theorem sphericalFourColorStatement_of_supply_and_base
     (noGraphBackedVertexMinimalTaitCounterexample_of_supply_and_base
       k w supply base)
 
+/-- **Combinatorial Four-Colour headline.**  M1 plus the route-native finite
+base imply four-colourability of every finite simple graph equipped
+componentwise with a cellular spherical rotation presentation. -/
+theorem combinatorialFourColorStatement_of_supply_and_base
+    (k w : Nat)
+    (supply : ConnectedDecompositionSupply.{u} k w)
+    (base : TaitBaseVerifiedAt.{u} (rawVertexBound k w)) :
+    GoertzelV24SphericalGraphPresentation.CombinatorialFourColorStatement.{u} :=
+  (GoertzelV24SphericalGraphPresentation.combinatorialFourColorStatement_iff_spherical.{u}).2
+    (sphericalFourColorStatement_of_supply_and_base k w supply base)
+
 end
 
 end GoertzelV24SphericalReductiveAssembly

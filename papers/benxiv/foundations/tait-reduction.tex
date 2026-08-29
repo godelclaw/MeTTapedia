@@ -36,12 +36,37 @@ which is legitimate because any bijection between colour sets will do, and
 which buys the identity we shall use twice: \emph{the three nonzero elements
 of $\mathbb{F}_2^2$ sum to zero}.
 
-\begin{theorem}[Tait's reduction]\label{thm:tait-reduction}
+\begin{definition}[combinatorial planarity]
+\label{def:combinatorial-planarity}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SphericalGraphPresentation.CombinatoriallyPlanar}
+A finite simple graph is \emph{combinatorially planar} when each connected
+component with at least three vertices carries a connected cellular spherical
+rotation-system presentation.  Thus the darts over every vertex have one
+cyclic order, the primal graph is the given component, and the face orbits
+satisfy Euler's spherical equation.
+\end{definition}
+
+\begin{theorem}[Tait's reduction for finite combinatorial maps]
+\label{thm:tait-reduction}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24StellarTaitReduction.combinatorialFourColorStatement_of_tait}
+Suppose every bridgeless spherical cubic map admits a Tait colouring. Then
+every finite combinatorially planar simple graph admits a proper vertex
+colouring with four colours.
+\end{theorem}
+
+\begin{corollary}[topological-drawing formulation]
+\label{cor:tait-reduction-topological}
 \Sconditional{Lemma~\ref{lem:planar-spherical-presentation}}
 Suppose every bridgeless spherical cubic map admits a Tait colouring. Then
-every finite planar simple graph admits a proper vertex colouring with four
+every finite planar simple graph, with planarity defined by a crossing-free
+topological drawing in the plane, admits a proper vertex colouring with four
 colours.
-\end{theorem}
+\end{corollary}
+
+\begin{proof}
+Apply Lemma~\ref{lem:planar-spherical-presentation} componentwise and then
+Theorem~\ref{thm:tait-reduction}.
+\end{proof}
 
 \begin{proposition}[audit of the legacy Lean planarity predicate]
 \label{prop:weak-planarity-refuted}
@@ -62,7 +87,7 @@ the declaration named above.
 \end{proof}
 
 This proposition concerns only the repository's legacy vocabulary, not
-Theorem~\ref{thm:tait-reduction}.  The controlling formal statement must use
+Theorem~\ref{thm:tait-reduction}.  The controlling formal statement uses
 the genuine combinatorial notion already used throughout the route: a
 graph-backed rotation system with cyclic vertex rotations, connected primal
 graph, and spherical Euler equation.  The stellar construction below then
@@ -93,11 +118,13 @@ the displayed identity.  This is the standard equivalence between a cellular
 sphere embedding and a spherical rotation system.
 
 The marker is \textsc{conditional}, rather than \textsc{prose}, because the
-repository currently has no correct abstract-planarity predicate or
-machine-checked constructor implementing this representation theorem.  The
-ordinary argument above fixes the intended bridge exactly; it must not be
-replaced by the refuted legacy predicate of
-Proposition~\ref{prop:weak-planarity-refuted}.
+repository currently has no machine-checked constructor implementing this
+topological representation theorem.  The ordinary argument above fixes the
+intended bridge exactly; it must not be replaced by the refuted legacy
+predicate of Proposition~\ref{prop:weak-planarity-refuted}.  This lemma is the
+sole extra input for Corollary~\ref{cor:tait-reduction-topological}; it is not
+a premise of the combinatorial-map Four-Colour statement in
+Theorem~\ref{thm:tait-reduction}.
 \end{proof}
 
 The proof occupies the rest of the section. It is assembled from five
@@ -340,9 +367,10 @@ a simple-graph edge set would identify them.
 
 \begin{proof}[Proof of Theorem~\ref{thm:tait-reduction}]
 By Lemma~\ref{lem:components} we may assume $G$ is connected with at least
-three vertices.  Choose a spherical rotation-system presentation $M$ of a
-plane embedding of $G$; it is connected and loopless because $G$ is connected
-and simple.  Apply Definition~\ref{def:stellar} to obtain $T=M'$.  By
+three vertices.  Let $M$ be the spherical rotation-system presentation
+supplied by Definition~\ref{def:combinatorial-planarity}; it is connected and
+loopless because its primal graph is the connected simple graph $G$.  Apply
+Definition~\ref{def:stellar} to obtain $T=M'$.  By
 Theorem~\ref{thm:stellar-darts}, $T$ is connected, spherical and loopless, it
 contains every old vertex and edge of $G$, and every face is a $3$-cycle
 meeting three distinct vertices; the same theorem also gives two distinct
@@ -452,11 +480,14 @@ on Theorem~\ref{thm:cycle-space}.  The other ingredients are now
 equally explicit: Definition~\ref{def:stellar} and
 Theorem~\ref{thm:stellar-darts} replace maximality by a finite permutation
 construction; Definition~\ref{def:dual-map} is a change of generator; and
-Corollary~\ref{cor:loop-bridge} supplies dual bridgelessness.  The remaining
-classical boundary is therefore exactly the named representation bridge of
-Lemma~\ref{lem:planar-spherical-presentation}.  The componentwise wrapper is
-now checked by Lemma~\ref{lem:components}.  No legacy \texttt{IsPlanar}
-premise is used.
+Corollary~\ref{cor:loop-bridge} supplies dual bridgelessness.  The
+componentwise wrapper is checked by Lemma~\ref{lem:components}, so the finite
+combinatorial-map form of Tait's reduction has no remaining premise besides
+the Tait-colourability hypothesis it is supposed to reduce from.  The named
+representation bridge of Lemma~\ref{lem:planar-spherical-presentation} is
+needed only to translate the separate topological-drawing convention of
+Corollary~\ref{cor:tait-reduction-topological}.  No legacy
+\texttt{IsPlanar} premise is used.
 
 \subsection{Audit of the unused maximality route}
 
@@ -772,23 +803,23 @@ that distinction.
 
 \begin{remark}[the shape of the debt]
 \Sprose
-The reduction needs neither new algebra nor a Jordan curve theorem.  At the
+The combinatorial-map reduction needs neither new algebra nor a Jordan curve theorem.  At the
 ordinary-mathematics level it consists of explicit finite permutation
 constructions plus the already-stated cycle-space theorem.  The stellar
 construction, dual transport, literal-edge Klein-group potential, and
-restriction to old vertices are now checked.  What remains outside the
-connected spherical statement is solely the adapter from an abstract planar
-graph to a spherical rotation-system presentation, recorded explicitly in
-Lemma~\ref{lem:planar-spherical-presentation}.
+restriction to old vertices are now checked.  Translating a topological plane
+drawing into this finite representation is a separate representation theorem,
+recorded explicitly in Lemma~\ref{lem:planar-spherical-presentation}; it does
+not weaken the kernel statement about finite combinatorial maps.
 \end{remark}
 
 \begin{remark}[how this closes the classical debts]
 With Corollary~\ref{cor:two-sided} established, the route's internal
-graph-backed presentation and the connected-spherical form of
-Theorem~\ref{thm:tait-reduction} are checked, including the least-counterexample
-wrapper of Theorem~\ref{thm:spherical-headline-from-no-minimal}.  The only classical boundary
-still named in the theorem statement is the standard finite
-plane-embedding representation theorem of
-Lemma~\ref{lem:planar-spherical-presentation}; keeping it named prevents the
-refuted legacy planarity predicate from re-entering the headline.
+graph-backed presentation and Theorem~\ref{thm:tait-reduction} are checked,
+including the least-counterexample wrapper of
+Theorem~\ref{thm:spherical-headline-from-no-minimal}.  The standard finite
+plane-embedding representation theorem remains named only in the separate
+topological Corollary~\ref{cor:tait-reduction-topological}; keeping that
+boundary explicit prevents the refuted legacy planarity predicate from
+re-entering the kernel headline.
 \end{remark}

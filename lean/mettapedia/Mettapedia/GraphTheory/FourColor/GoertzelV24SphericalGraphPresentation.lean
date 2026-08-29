@@ -86,11 +86,37 @@ def ComponentwiseSphericalGraphPresentable (G : SimpleGraph V) : Prop :=
     3 ≤ Fintype.card component →
       Nonempty (ConnectedSphericalGraphPresentation component.toSimpleGraph)
 
+/-- The sound combinatorial notion of planarity used by the formal headline.
+A finite simple graph is combinatorially planar when every nontrivial
+connected component carries a cellular spherical rotation presentation.
+
+This is the standard finite-map representation of planarity.  Equivalence
+with a topological crossing-free drawing is a separate representation theorem;
+unlike the legacy `Mettapedia.GraphTheory.IsPlanar`, this predicate records the
+cyclic orders and spherical Euler equation actually consumed by Tait's
+reduction. -/
+abbrev CombinatoriallyPlanar (G : SimpleGraph V) : Prop :=
+  ComponentwiseSphericalGraphPresentable G
+
 /-- The componentwise spherical form of the Four-Colour statement. -/
 def SphericalFourColorStatement : Prop :=
   ∀ {V : Type u} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
     [DecidableRel G.Adj],
     ComponentwiseSphericalGraphPresentable G → G.Colorable 4
+
+/-- The Four-Colour statement in the finite combinatorial-map convention:
+every finite simple graph carrying a cellular spherical presentation is
+four-colourable. -/
+def CombinatorialFourColorStatement : Prop :=
+  ∀ {V : Type u} [Fintype V] [DecidableEq V] (G : SimpleGraph V)
+    [DecidableRel G.Adj],
+    CombinatoriallyPlanar G → G.Colorable 4
+
+/-- The explicit combinatorial-planarity headline is definitionally the
+componentwise spherical headline used by the route. -/
+theorem combinatorialFourColorStatement_iff_spherical :
+    CombinatorialFourColorStatement.{u} ↔ SphericalFourColorStatement.{u} :=
+  Iff.rfl
 
 /-- Colouring every genuinely presented connected component colours the
 whole graph.  Small components are coloured injectively; all other

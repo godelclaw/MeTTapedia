@@ -106,6 +106,15 @@ theorem sphericalFourColorStatement_of_tait
   sphericalFourColorStatement_of_connected
     (connectedSphericalFourColorStatement_of_tait hTait)
 
+/-- **Tait's reduction in the sound finite combinatorial-map convention.**
+Tait colourability of every bridgeless spherical cubic rotation map implies
+that every combinatorially planar finite simple graph is four-colourable. -/
+theorem combinatorialFourColorStatement_of_tait
+    (hTait : EveryBridgelessSphericalCubicTaitColorable.{u}) :
+    CombinatorialFourColorStatement.{u} :=
+  (combinatorialFourColorStatement_iff_spherical.{u}).2
+    (sphericalFourColorStatement_of_tait hTait)
+
 end
 
 end GoertzelV24StellarTaitReduction
