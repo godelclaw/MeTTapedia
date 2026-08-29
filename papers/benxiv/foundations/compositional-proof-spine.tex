@@ -3218,6 +3218,42 @@ It is also exact about its price: raw-profile reachability alone does not
 justify it, and the worst-case state count is $2^{|Q|}$ before reachable-state
 minimization.
 
+\begin{theorem}[unrestricted support right languages separate states]
+\label{thm:unrestricted-support-nerode-separation}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SupportNerodeLowerBound.code_injective_of_exact_suffix_experiments}
+Let $W$ be a finite set of boundary words.  Suppose a deterministic encoding
+$e\colon\mathcal P(W)\to X$ and an observer $A\colon X\times\mathcal P(W)\to
+\{\mathsf{false},\mathsf{true}\}$ answer every abstract suffix experiment
+exactly:
+\[
+ A(e(S),T)\quad\Longleftrightarrow\quad S\cap T\ne\varnothing
+ \qquad(S,T\subseteq W).
+\]
+Then $e$ is injective.  Hence, for $W=\mathcal C^k$ with
+$|\mathcal C|=3$, every such encoding has at least
+$2^{3^k}$ states.
+\end{theorem}
+
+\begin{proof}
+If $S\ne S'$, choose a word $x$ in their symmetric difference.  The singleton
+suffix $T=\{x\}$ accepts exactly one of $S,S'$, because
+$S\cap\{x\}\ne\varnothing$ is equivalent to $x\in S$.  Thus equal codes
+would give contradictory answers to this suffix experiment, so $e$ is
+injective.  The powerset of $\mathcal C^k$ has cardinality
+$2^{|\mathcal C^k|}=2^{3^k}$.
+\end{proof}
+
+The cardinal specialization is checked separately.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SupportNerodeLowerBound.two_pow_three_pow_le_card_code}
+This lower bound says that the raw powerset is not merely a wasteful encoding
+of the \emph{unrestricted} support algebra.  It does not say that every
+singleton suffix, or every raw support, is realized by a planar cubic tangle.
+A smaller automaton remains possible after restricting both prefix and suffix
+experiments to the physically reachable language.  Consequently this theorem
+does not discharge the high-width supply: that would require a proved bound on
+the reachable Myhill--Nerode quotient, or a genuinely two-dimensional
+replacement theorem.
+
 \begin{theorem}[raw noose Count pumping]
 \label{thm:raw-noose-count-pumping}
 \Sprose
