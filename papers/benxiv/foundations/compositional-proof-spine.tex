@@ -2918,15 +2918,54 @@ matching.  The displayed inequality is therefore the defining minimality of
 \(\sigma\).
 \end{proof}
 
+\begin{corollary}[one rigid residual matching against every ordered-mesh site]
+\label{cor:ordered-mesh-rigid-site-matchings}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshResidualSiteMatching.exists_exchangeRigid_with_central_pairing_at_every_globalMeshStep}
+Let \(G\) be a graph-backed least Tait counterexample containing an ordered
+mesh.  There is one graph-supported perfect matching \(\sigma\), with
+\(d_G(\sigma)\geq2\), such that for every physical row or column step
+\(e=uv\) of the mesh there is a graph-supported perfect matching
+\(\tau_e\) satisfying
+\[
+  \tau_e(u)=v
+  \quad\hbox{and}\quad
+  d_G(\sigma)
+  \leq d_G\bigl(\sigma\mathbin\triangleleft_S\tau_e\bigr)
+\]
+for every vertex set \(S\) closed under both partner involutions.
+The matching \(\sigma\) is independent of \(e\); the matching \(\tau_e\)
+may depend on \(e\).
+\end{corollary}
+
+\begin{proof}
+Choose \(\sigma\) once, globally, to minimize residual defect among all
+graph-supported perfect matchings of \(G\).  Bridge-freeness and cubicity give
+such a matching, and non-Tait-colourability makes its residual defect positive;
+parity then gives \(d_G(\sigma)\geq2\).
+
+Now fix a global mesh step \(e=uv\).  The ordered-mesh construction chooses
+one adjacent-pair deletion datum and one proper Tait colouring of
+\(G-\{u,v\}\) for this physical step.  Apply
+Lemma~\ref{lem:adjacent-pair-central-matching} to obtain a supported perfect
+matching \(\tau_e\) with \(\tau_e(u)=v\).  If \(S\) is closed under both
+partner involutions, exchanging \(\sigma\) with \(\tau_e\) on \(S\) again
+gives a graph-supported perfect matching.  The displayed inequality follows
+from the global minimality of the same \(\sigma\).  Since \(e\) was arbitrary,
+this supplies the family for every row and column step.  A shared side of two
+mesh cells denotes the same global step, so it receives the same selected
+site datum rather than a second local choice.
+\end{proof}
+
 This is not merely another proof that a bridgeless cubic graph has a perfect
-matching.  It attaches a particular ambient matching, containing the selected
-mesh step, to each concrete colouring in an adjacent-pair Kempe orbit.  Hence
-the already constructed ordered-mesh sites can now be read by the
-minimum-residual-defect matching calculus.  What is not yet proved is the
-wall-facing statement: that the matchings obtained at neighbouring sites can
-be synchronized so that symmetric difference strictly lowers residual
-quotient oddness, or instead yields equal exact shore supports for a physical
-replacement.
+matching.  Every physical mesh step now supplies an ambient matching through
+that step, and all those site matchings are tested against one common
+minimum-residual-defect matching.  What is not yet proved is the wall-facing
+statement: that the matchings obtained at neighbouring sites can be
+synchronized so that symmetric difference strictly lowers residual quotient
+oddness, or instead yields equal exact shore supports for a physical
+replacement.  In particular, the corollary has quantifier order
+\(\exists\sigma\,\forall e\,\exists\tau_e\); it does not assert a coherent
+simultaneous choice of the \(\tau_e\).
 
 This lemma is nonlocal in precisely the way the original formation argument
 needs: the Kempe paths witnessing the two independent side moves may run
