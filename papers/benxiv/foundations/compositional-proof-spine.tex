@@ -3071,17 +3071,75 @@ colouring is different from \(C_{uv}\), since their common-core
 restrictions were assumed unequal.
 \end{proof}
 
+\begin{corollary}[nine-site Tait common-core residue]
+\label{cor:nine-site-tait-common-core-residue}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshCommonCoreDisagreementResidue.exists_taitCommonCoreResidue_in_any_nine_row_intervals}
+Fix nine injectively selected branch intervals on one row of an ordered
+injective mesh, and assign an arbitrary Tait colouring to the adjacent-pair
+deletion at each interval.  Then two of the nine sites satisfy at least one
+of the following alternatives:
+\begin{enumerate}
+\item their restricted common-core colourings have a local discrepancy which
+      is not a single colour transposition at some common-core vertex;
+\item at an intermediate Tait representative for the first site, a
+      distinct-nonzero-pair Kempe component reaches the exposed pair of the
+      second site; or
+\item the first site's colouring admits a strict Tait repair, reachable by
+      distinct-nonzero-pair Kempe switches, whose common-core restriction
+      agrees literally with the second site's colouring.
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+Corollary~\ref{cor:ordered-row-common-core-disagreement} supplies two sites
+whose Boolean common-restriction coordinate is false.  By the exact
+characterization of that coordinate, their common-core restrictions are
+unequal.  Apply Corollary~\ref{cor:common-core-disagreement-residue} to this
+pair.  Its three alternatives are precisely the three alternatives above,
+and its third alternative stays inside the nonzero Tait state space.
+\end{proof}
+
+For the last alternative, define a \emph{nine-site Tait state} to be one
+Tait colouring at each selected deletion.  A \emph{strict repair step}
+changes exactly one coordinate by valid-pair Tait Kempe switches, makes its
+common-core restriction agree with a second coordinate, and leaves the other
+eight coordinates fixed.  This is a finite state system.
+
+\begin{corollary}[the periodic-repair residue]
+\label{cor:periodic-tait-repair-residue}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshCommonCoreDisagreementResidue.exists_transGen_cycle_of_finite_serial}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshCommonCoreDisagreementResidue.exists_strictRepairCycle_of_no_branchingOrBoundary}
+Fix nine injectively selected branch intervals.  Suppose that, for every
+nine-site Tait state, no pair exhibits either a local non-transposition
+discrepancy or a valid-pair common-core Kempe component reaching the other
+pair's exposed vertices.  Then the strict-repair relation contains a
+nonempty directed cycle.
+\end{corollary}
+
+\begin{proof}
+By Corollary~\ref{cor:nine-site-tait-common-core-residue}, every state has a
+strict-repair successor.  Choose one successor at each state.  The state
+space is finite and nonempty: each coordinate is a proper colouring of a
+finite deletion graph by the three nonzero Tait colours, and the selected
+deletion sites already provide one state.  Iterating the chosen successor
+therefore repeats a state.  The segment between its first two occurrences is
+a nonempty directed cycle of strict repair steps.  Nonemptiness is
+load-bearing: each step changes its repaired coordinate strictly.
+\end{proof}
+
 Applied to the pair supplied by
 Corollary~\ref{cor:ordered-row-common-core-disagreement}, this trichotomy is
 the exact local residue.  It still does not give support equality or wall
 exclusion: repairing one pair can change the repaired colouring's
 restrictions at other mesh sites.  The remaining two-dimensional task is
-therefore to show that repeated repairs either terminate in a coherent
-atlas, which is impossible by
-Lemma~\ref{lem:global-common-core-colouring-atlas}, or force branching or
-boundary-reaching witnesses with enough geometric coherence to support a
-strict replacement.  No monotonicity of the naive number of disagreeing
-pairs is assumed.
+therefore exact: either force branching or boundary-reaching witnesses with
+enough geometric coherence to support a strict replacement, or rule out (or
+convert into a replacement) the periodic strict-repair cycles of
+Corollary~\ref{cor:periodic-tait-repair-residue}.  A coherent atlas is already
+impossible by Lemma~\ref{lem:global-common-core-colouring-atlas}.  No
+monotonicity of the naive number of disagreeing pairs is assumed; the
+periodic horn records precisely why such monotonicity cannot simply be
+postulated.
 
 This does not contradict the pentagonal-prism diagnostic above.  Four true
 agreement bits attached to the four sides of one compatible cell state do
