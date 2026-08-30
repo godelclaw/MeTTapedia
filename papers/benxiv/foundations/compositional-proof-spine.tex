@@ -3153,6 +3153,38 @@ not containing it has the same two colourings before and after and cannot be
 the lost pair.  Thus the lost agreement is anchored at the repaired site.
 \end{proof}
 
+\begin{corollary}[the arc-consistent no-section residue]
+\label{cor:arc-consistent-no-section-residue}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshCommonCoreArcConsistencyResidue.arcConsistentNoSectionResidue_of_no_branchingOrBoundary}
+Under the same no-branching and no-boundary hypothesis, the nine deletion
+sites form a finite binary constraint system with both of the following
+properties.
+\begin{enumerate}
+\item For any two distinct sites, any Tait colouring at the first site, and
+      any Tait colouring at the second, the first colouring has a
+      distinct-nonzero-pair Kempe-reachable representative agreeing with the
+      second on their exact common deletion.
+\item No simultaneous choice of one Tait colouring at every site agrees on
+      the exact common deletion for every ordered pair of sites.
+\end{enumerate}
+Thus every binary projection is repair-surjective, but the constraint system
+has no global section.
+\end{corollary}
+
+\begin{proof}
+Extend the two arbitrary supplied colourings to a nine-site state by using
+the canonically selected base colourings at the other seven sites.  If the
+two supplied colourings already agree, use the empty Kempe sequence.  If
+they disagree, apply
+Corollary~\ref{cor:common-core-disagreement-residue}.  The standing
+hypothesis excludes its branching and boundary-reaching alternatives for
+this extended state, so its strict-repair alternative gives the required
+representative.  This proves repair-surjectivity of every distinct binary
+constraint.  A global section would contradict
+Corollary~\ref{cor:nine-site-tait-common-core-residue}, which supplies a
+disagreeing pair for every simultaneous nine-site assignment.
+\end{proof}
+
 Applied to the pair supplied by
 Corollary~\ref{cor:ordered-row-common-core-disagreement}, this trichotomy is
 the exact local residue.  It still does not give support equality or wall
@@ -3161,8 +3193,10 @@ that repairing one pair must sometimes destroy another common-core agreement
 at the repaired site.  The remaining two-dimensional task is therefore
 sharper: either force branching or boundary-reaching witnesses with enough
 geometric coherence to support a strict replacement, or turn this anchored
-agreement trade into a finite holonomy/support obstruction that supplies such
-a replacement.  A coherent atlas is already impossible by
+agreement trade---equivalently, the arc-consistent no-section obstruction of
+Corollary~\ref{cor:arc-consistent-no-section-residue}---into a finite
+holonomy/support obstruction that supplies such a replacement.  A coherent
+atlas is already impossible by
 Lemma~\ref{lem:global-common-core-colouring-atlas}.  No monotonicity of the
 naive number of disagreeing pairs is assumed; the verified trade explains
 exactly how the periodic horn defeats that monotonicity.
