@@ -2466,6 +2466,58 @@ counterexample cannot be pointwise edge-disjoint.  Equality
 \(v\sigma(v)\), proving the final assertion.
 \end{proof}
 
+The first matching required by this formulation is automatic in the normal
+target class; only the disjoint second matching is difficult.
+
+\begin{theorem}[Petersen's starting matching]
+\label{thm:petersen-starting-matching}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PetersenStartingMatching.petersen_supportedPairing}
+Every finite bridge-free cubic simple graph has a graph-supported perfect
+matching.
+\end{theorem}
+
+\begin{proof}
+We verify Tutte's condition.  Let \(S\subseteq V(G)\), and let
+\(C_1,\ldots,C_q\) be the odd components of \(G-S\).  For each \(C_i\),
+degree summation in the cubic graph gives
+\[
+  3|C_i|=2|E(C_i)|+|\delta(C_i)|.
+\]
+Thus \(|\delta(C_i)|\) is odd.  It is nonzero, and it cannot equal one:
+the unique edge in a one-edge boundary would be a bridge.  Consequently
+\(|\delta(C_i)|\geq 3\).
+
+Every boundary edge of a component of \(G-S\) has its other endpoint in
+\(S\), and boundaries of distinct components are edge-disjoint.  Hence
+\[
+  3q
+  \leq \sum_{i=1}^{q}|\delta(C_i)|
+  \leq \sum_{v\in S}\deg_G(v)
+  =3|S|.
+\]
+Therefore \(q\leq |S|\) for every \(S\), which is Tutte's condition; Tutte's
+theorem supplies a perfect matching.  Turning its unique matched neighbour at
+each vertex into a fixed-point-free involution gives the graph-supported
+pairing used above.
+\end{proof}
+
+\begin{corollary}[the inhabited overlap family]
+\label{cor:inhabited-overlap-family}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PetersenStartingMatching.exists_startingPairing_all_supportedPairings_overlap}
+Let (G) be a finite bridge-free cubic simple graph that is not Tait
+colourable.  There is a graph-supported perfect matching (sigma) such that
+every graph-supported perfect matching (	au) shares an edge with (sigma).
+\end{corollary}
+
+\begin{proof}
+Choose (sigma) by Theorem~\ref{thm:petersen-starting-matching}.  If some
+supported (	au) shared no edge with it, the two-matching criterion would
+give a Tait colouring, contrary to hypothesis.
+\end{proof}
+
+Thus the high-width problem is an intersection problem for an inhabited
+family of matchings, not an existence problem for the first matching.
+
 There is also an exact limitation on the matching-exchange idea.
 
 \begin{lemma}[two-matching exchange preserves the overlap locus]
