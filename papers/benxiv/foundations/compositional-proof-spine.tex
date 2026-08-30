@@ -2388,6 +2388,55 @@ size condition in the converse, and neither is concealed in a Lean
 structure field.  The permissive fixed-mesh proposition remains a valid
 stronger alternative, but it is not imposed on the wall-facing proof.
 
+There is an exact matching-theoretic formulation of the colour obstruction
+which will be useful below.  It is global rather than a bounded-radius
+configuration test.
+
+\begin{theorem}[Tait colourings are exact three-matching decompositions]
+\label{thm:tait-three-matching-decomposition}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TaitMatchingDecomposition.taitColorable_iff_nonempty_threeMatchingDecomposition}
+Let \(G\) be a finite cubic simple graph.  An \emph{exact three-matching
+decomposition} of \(G\) consists of three fixed-point-free involutions
+\(\sigma_0,\sigma_1,\sigma_2\) of \(V(G)\) such that
+\begin{enumerate}
+\item \(v\sigma_i(v)\) is an edge of \(G\), for every \(v\) and \(i\);
+\item the three vertices \(\sigma_0(v),\sigma_1(v),\sigma_2(v)\) are distinct,
+      for every \(v\); and
+\item every edge \(v w\) of \(G\) satisfies \(\sigma_i(v)=w\) for some \(i\).
+\end{enumerate}
+Then \(G\) is Tait colourable if and only if it has an exact three-matching
+decomposition.  In particular, a cubic Tait counterexample has no such
+decomposition.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TaitMatchingDecomposition.no_threeMatchingDecomposition_of_not_taitColorable}
+\end{theorem}
+
+\begin{proof}
+Given a Tait colouring, take the three nonzero colour classes.  At every
+cubic vertex the three incident edges have distinct nonzero colours, so each
+colour occurs exactly once.  Each colour class is therefore a graph-supported
+perfect matching, the three partners are distinct, and the matchings cover
+all edges.
+
+Conversely, an edge in an exact three-matching decomposition has a unique
+matching index.  Colour it by the corresponding one of the three nonzero
+Tait colours.  If two distinct incident edges had the same index, the
+involution of that matching would give one vertex two partners, a
+contradiction.  Thus the resulting edge colouring is proper and nowhere
+zero.  The Lean proof constructs both translations on the literal
+simple-graph and shared perfect-matching types.
+\end{proof}
+
+Theorem~\ref{thm:tait-three-matching-decomposition} does not by itself
+exclude a wall.  Its purpose is to expose a route-native high-width attack
+without losing the target: supported perfect matchings may be changed along
+sets closed under two matchings, and the shared matching exchange theorem
+proves that such a change remains graph-supported.  Thus a matching-based
+proof of the boxed assertion below must show that, in a least counterexample
+containing a fixed ordered mesh, alternating exchanges either complete one
+supported matching to an exact triple or yield a strict support-preserving
+replacement.  Merely finding many perfect matchings, without this completion
+or replacement conclusion, does not discharge the zero-target condition.
+
 One sufficient way to establish Hypothesis~1 is the stronger statement that
 every zero-target instance containing the wall has either positive target or
 a strict zero-target reduction.  The route has not proved that statement.
