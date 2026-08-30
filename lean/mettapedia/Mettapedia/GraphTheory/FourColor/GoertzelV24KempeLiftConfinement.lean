@@ -372,6 +372,47 @@ theorem mem_ambientDisagreementSupport_iff
   classical
   simp [ambientDisagreementSupport]
 
+omit [DecidableEq V] in
+theorem ambientDisagreementSupport_symm
+    (source target : AdjacentPairData G)
+    (sourceColoring : (DeletedAdjacentPairGraph G source.firstVertex
+      source.secondVertex).EdgeColoring Color)
+    (targetColoring : (DeletedAdjacentPairGraph G target.firstVertex
+      target.secondVertex).EdgeColoring Color) :
+    ambientDisagreementSupport source target sourceColoring targetColoring =
+      ambientDisagreementSupport target source targetColoring sourceColoring := by
+  ext edge
+  constructor
+  · intro hedge
+    rcases (mem_ambientDisagreementSupport_iff
+      source target sourceColoring targetColoring edge).1 hedge with
+      ⟨hsource, htarget, hne⟩
+    exact (mem_ambientDisagreementSupport_iff
+      target source targetColoring sourceColoring edge).2
+        ⟨htarget, hsource, hne.symm⟩
+  · intro hedge
+    rcases (mem_ambientDisagreementSupport_iff
+      target source targetColoring sourceColoring edge).1 hedge with
+      ⟨htarget, hsource, hne⟩
+    exact (mem_ambientDisagreementSupport_iff
+      source target sourceColoring targetColoring edge).2
+        ⟨hsource, htarget, hne.symm⟩
+
+omit [DecidableEq V] in
+theorem ambientDisagreementSupport_self
+    (data : AdjacentPairData G)
+    (coloring : (DeletedAdjacentPairGraph G data.firstVertex
+      data.secondVertex).EdgeColoring Color) :
+    ambientDisagreementSupport data data coloring coloring = ∅ := by
+  ext edge
+  constructor
+  · intro hedge
+    rcases (mem_ambientDisagreementSupport_iff
+      data data coloring coloring edge).1 hedge with
+      ⟨hfirst, hsecond, hne⟩
+    exact (hne (by congr)).elim
+  · simp
+
 /-- The ambient disagreement support is nonempty exactly when literal
 common-core agreement fails. -/
 theorem ambientDisagreementSupport_nonempty_iff
@@ -451,6 +492,52 @@ theorem ambientDisagreementSupport_subset_of_confined_left_update
   exact hne (((commonCoreAgrees_iff_ambient source middle
     sourceAfter middleColoring).1 hsourceMiddle
       edge hsource hmiddle).trans hmiddleTarget)
+
+/-- Without assuming old agreement with the third patch, every disagreement
+edge after a confined repair was already a disagreement with that patch at
+the repaired site or at the gained partner. -/
+theorem ambientDisagreementSupport_subset_union_of_confined_left_update
+    (source middle target : AdjacentPairData G)
+    (sourceBefore sourceAfter :
+      (DeletedAdjacentPairGraph G source.firstVertex
+        source.secondVertex).EdgeColoring Color)
+    (middleColoring :
+      (DeletedAdjacentPairGraph G middle.firstVertex
+        middle.secondVertex).EdgeColoring Color)
+    (targetColoring :
+      (DeletedAdjacentPairGraph G target.firstVertex
+        target.secondVertex).EdgeColoring Color)
+    (hsourceMiddle : CommonCoreAgrees source middle
+      sourceAfter middleColoring)
+    (hconfined : AgreesOutsideEmbedding sourceBefore sourceAfter
+      (deletedTwoPairsToFirstDeletionEmbedding G source.firstVertex
+        source.secondVertex middle.firstVertex middle.secondVertex)) :
+    ambientDisagreementSupport source target sourceAfter targetColoring ⊆
+      ambientDisagreementSupport source target sourceBefore targetColoring ∪
+        ambientDisagreementSupport middle target middleColoring targetColoring := by
+  intro edge hedge
+  rcases (mem_ambientDisagreementSupport_iff
+      source target sourceAfter targetColoring edge).1 hedge with
+    ⟨hsource, htarget, hne⟩
+  by_cases hmiddle : IsRetainedAmbientEdge middle edge
+  · apply Finset.mem_union_right
+    apply (mem_ambientDisagreementSupport_iff
+      middle target middleColoring targetColoring edge).2
+    refine ⟨hmiddle, htarget, ?_⟩
+    intro hmiddleTarget
+    exact hne (((commonCoreAgrees_iff_ambient source middle
+      sourceAfter middleColoring).1 hsourceMiddle
+        edge hsource hmiddle).trans hmiddleTarget)
+  · apply Finset.mem_union_left
+    apply (mem_ambientDisagreementSupport_iff
+      source target sourceBefore targetColoring edge).2
+    refine ⟨hsource, htarget, ?_⟩
+    intro hbeforeTarget
+    have houtside := hconfined
+      (ambientEdgeToRetainedEdge source edge hsource)
+      (not_exists_firstCommonCore_preimage_of_not_target_retained
+        source middle edge hsource hmiddle)
+    exact hne (houtside.trans hbeforeTarget)
 
 end
 
