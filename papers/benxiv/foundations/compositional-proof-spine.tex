@@ -1255,6 +1255,56 @@ interface, so their supports are not disjoint; this is checked as
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorAlignedTwoTileBoundaryOverlap.sourceTwoTileAlignedBoundaryWalks_consecutive_not_disjoint}.
 \end{proof}
 
+\begin{lemma}[two-window serial frontier bound]
+\label{lem:source-two-window-serial-frontier}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24VertexSetBoundaryUnionCancellation.vertexSetCrossingEdges_union_subset_sdiff_union_sdiff}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorAlignedTwoTileSerialBoundary.sourceTwoTileAlignedEnclosed_unionBoundary_subset_without_shared_of_alpha}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorAlignedTwoTileSerialBoundary.sourceTwoTileAlignedEnclosed_unionBoundary_card_le_eight_of_alpha}
+Let \(A_i,A_{i+1}\) be the enclosed vertex sides of two consecutive aligned
+two-tile source windows, and let \(T_i\) be their common two-edge transverse
+interface.  If, at both positions of \(T_i\), the displayed boundary darts
+are \(\alpha\)-opposite, then
+\[
+  \partial(A_i\cup A_{i+1})
+  \subseteq
+  \bigl(\partial A_i\setminus T_i\bigr)
+  \cup
+  \bigl(\partial A_{i+1}\setminus T_i\bigr),
+  \qquad
+  \bigl|\partial(A_i\cup A_{i+1})\bigr|\le 8.
+\]
+Here \(\partial A\) is the true primal edge frontier of the vertex side
+\(A\), not merely the edge set displayed by a chosen dual walk.
+\end{lemma}
+
+\begin{proof}
+For arbitrary vertex sides \(A,B\), an edge crossing \(A\cup B\) crosses at
+least one of \(A\) and \(B\): choose its endpoint in the union and retain the
+constituent side containing that endpoint.  If every endpoint of an edge in
+a set \(T\) belongs to \(A\cup B\), no edge of \(T\) crosses the union.
+Consequently
+\[
+  \partial(A\cup B)
+  \subseteq
+  (\partial A\setminus T)\cup(\partial B\setminus T).
+\]
+
+In the source specialization, the two outgoing transverse coordinates of
+the first window are literally the two incoming coordinates of the second,
+and they are distinct; hence \(|T_i|=2\).  Each belongs to both certified
+six-edge frontiers.  The \(\alpha\)-opposite premise puts the two endpoints
+of each shared edge in the united enclosed side, so the preceding generic
+argument applies.  Finally
+\[
+  |\partial(A_i\cup A_{i+1})|
+  \le |\partial A_i\setminus T_i|
+     +|\partial A_{i+1}\setminus T_i|
+  =(6-2)+(6-2)=8.
+\]
+Only the displayed inclusion is used: no converse assertion that every
+unshared old frontier edge remains on the joined frontier is required.
+\end{proof}
+
 \begin{lemma}[separated local rail supports grow linearly]
 \label{lem:source-local-rail-support-growth}
 Let \(S\) be a finite set of aligned two-tile window starts such that any two
