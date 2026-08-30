@@ -3239,4 +3239,101 @@ theorem outward_route_overlap_sized {W : Sym2 (V × Fin 3) → ℂ}
   · simp only [Finset.mem_insert, Finset.mem_singleton, not_or]
     exact ⟨Ne.symm hx'y', hy'u, hy'p, hy'v, hy'q, hy'r, hy'nx, hy's, hy'ny⟩
 
+/-! ## Why the route is not yet a detour
+
+A `DetourPorts` at a pair needs five things: the pair dead in its colour, two live arms to its
+ports, a certificate on the complement of those four sites, and a dead chord between the ports in
+the third colour.  The outward route supplies the first three and neither of the last two.  The
+certificate it does supply is on a strictly smaller set, and a matching sum on a subset says
+nothing about one on a superset. -/
+
+/-- **Three of the five detour fields, supplied.**  At the routed pair the pair is dead in its own
+colour and both arms to the route's destinations are live. -/
+theorem routed_pair_dead_with_live_arms {W : Sym2 (V × Fin 3) → ℂ}
+    {a k : Fin 3} {u v : V}
+    (D : DetourPorts W u v a k) (E : DetourPorts W u v a (thirdColour a k))
+    (hdisj : Disjoint ({D.fst, D.snd} : Finset V) ({E.fst, E.snd} : Finset V)) :
+    ∃ x y : V, x ≠ y ∧
+      W s((E.fst, k), (E.snd, k)) = 0 ∧
+      W s((E.fst, k), (x, k)) ≠ 0 ∧
+      W s((E.snd, k), (y, k)) ≠ 0 ∧
+      pmSum W (Amplitude.const (V := V) k)
+        ((Finset.univ : Finset V) \
+          ({u, D.fst, v, D.snd, E.fst, x, E.snd, y} : Finset V)) ≠ 0 := by
+  classical
+  obtain ⟨⟨x, y, -, -, -, -, -, -, -, -, -, -, -, -, hxy, hrx, hsy, hrem⟩, -⟩ :=
+    disjoint_detours_force_outward_routes D E hdisj
+  have hchordE : W s((E.fst, k), (E.snd, k)) = 0 := by
+    have h := E.chord; rw [thirdColour_thirdColour] at h; exact h
+  exact ⟨x, y, hxy, hchordE, hrx, hsy, hrem⟩
+
+/-- **The certificate does not transfer upward.**  A non-vanishing matching sum on a subset is
+compatible with a vanishing one on a superset, so the route's certificate on the eight-site
+complement is not the certificate a detour at the routed pair would need. -/
+theorem certificate_does_not_transfer_upward :
+    ∃ (W : Sym2 (Fin 2 × Fin 3) → ℂ) (c : Fin 2 → Fin 3) (S T : Finset (Fin 2)),
+      S ⊆ T ∧ pmSum W c S ≠ 0 ∧ pmSum W c T = 0 := by
+  refine ⟨fun _ => 0, fun _ => 0, ∅, ({0, 1} : Finset (Fin 2)), Finset.empty_subset _, ?_, ?_⟩
+  · rw [MatchingSum.pmSum_empty]; exact one_ne_zero
+  · rw [MatchingSum.pmSum_pair _ _ (by decide : (1 : Fin 2) ≠ 0)]
+
+/-- **The iteration obstruction.**  Everything the route gives toward a detour at its own pair,
+together with the fact that its certificate cannot be lifted.  The two fields a detour still needs
+-- a certificate on the four-site complement, and a third-colour chord between the destinations --
+are not among them, and no field of the route constrains the chord's edge at all. -/
+theorem routing_iteration_obstruction {W : Sym2 (V × Fin 3) → ℂ}
+    {a k : Fin 3} {u v : V}
+    (D : DetourPorts W u v a k) (E : DetourPorts W u v a (thirdColour a k))
+    (hdisj : Disjoint ({D.fst, D.snd} : Finset V) ({E.fst, E.snd} : Finset V)) :
+    (∃ x y : V, x ≠ y ∧
+      W s((E.fst, k), (E.snd, k)) = 0 ∧
+      W s((E.fst, k), (x, k)) ≠ 0 ∧
+      W s((E.snd, k), (y, k)) ≠ 0 ∧
+      pmSum W (Amplitude.const (V := V) k)
+        ((Finset.univ : Finset V) \
+          ({u, D.fst, v, D.snd, E.fst, x, E.snd, y} : Finset V)) ≠ 0) ∧
+    (∃ (W' : Sym2 (Fin 2 × Fin 3) → ℂ) (c : Fin 2 → Fin 3) (S T : Finset (Fin 2)),
+      S ⊆ T ∧ pmSum W' c S ≠ 0 ∧ pmSum W' c T = 0) :=
+  ⟨routed_pair_dead_with_live_arms D E hdisj, certificate_does_not_transfer_upward⟩
+
+/-! ## The routing network at an excess site
+
+Everything the monochromatic-block branch forces at a site whose live degree is not three,
+assembled.  Each branch is a normal form, not a contradiction: none of them is excluded here. -/
+
+theorem excess_site_routing_network (W : Sym2 (V × Fin 3) → ℂ)
+    (hmin : IsSupportMinimal W)
+    (hmono : ∀ (p q : V), q ≠ p → ∀ i j : Fin 3, i ≠ j → W s((p, i), (q, j)) = 0)
+    (hcard : 4 < Fintype.card V)
+    {u : V} (hdeg : (liveNbrs W u).card ≠ 3) :
+    ∃ v ∈ liveNbrs W u, ∃ c : V → Fin 3, c v = c u ∧
+      W s((u, c u), (v, c u)) ≠ 0 ∧
+      ∀ k : Fin 3, k ≠ c u →
+        TransportedCrossing W c u v k
+          ∨ TransportedCrossing W c u v (thirdColour (c u) k)
+          ∨ SomeSizeOneCircuit W u v
+          ∨ (∃ D : DetourPorts W u v (c u) k,
+              ∃ E : DetourPorts W u v (c u) (thirdColour (c u) k),
+                (CrossedOnePortCap W u v (c u) k D.fst D.snd E.fst ∧
+                    Nonempty (CrossedCapTails W u v (c u) k D.fst D.snd E.fst))
+                  ∨ (CrossedOnePortCap W v u (c u) k D.snd D.fst E.snd ∧
+                      Nonempty (CrossedCapTails W v u (c u) k D.snd D.fst E.snd)))
+          ∨ (∃ D : DetourPorts W u v (c u) k,
+              ∃ E : DetourPorts W u v (c u) (thirdColour (c u) k),
+                Disjoint ({D.fst, D.snd} : Finset V) ({E.fst, E.snd} : Finset V)
+                  ∧ OutwardRoutes D E
+                  ∧ 8 ≤ Fintype.card V) := by
+  obtain ⟨v, hv, c, hcv, hentry, hfork⟩ :=
+    excess_site_receiving_pair_routed W hmin hmono hcard hdeg
+  refine ⟨v, hv, c, hcv, hentry, fun k hk => ?_⟩
+  rcases hfork k hk with h | h | h | ⟨D, E, hcap⟩ | hroute
+  · exact Or.inl h
+  · exact Or.inr (Or.inl h)
+  · exact Or.inr (Or.inr (Or.inl h))
+  · refine Or.inr (Or.inr (Or.inr (Or.inl ⟨D, E, ?_⟩)))
+    rcases hcap with hc | hc
+    · exact Or.inl ⟨hc, exists_crossedCapTails hc⟩
+    · exact Or.inr ⟨hc, exists_crossedCapTails hc⟩
+  · exact Or.inr (Or.inr (Or.inr (Or.inr hroute)))
+
 end StarNormalForm
