@@ -2936,6 +2936,134 @@ representatives cannot make all common restrictions agree simultaneously.
 Thus the disagreement is an obstruction of the family, not an artefact of a
 poor initial representative choice.
 
+The first structural refinement of that disagreement is independent of
+planarity.
+
+\begin{lemma}[local transpositions generate Kempe reachability]
+\label{lem:local-transpositions-generate-kempe}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24LocalSwapKempeGeneration.mem_edgeKempeClosure_of_locallySwapRelated}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24LocalSwapKempeGeneration.exists_not_locallySwapRelated_of_not_mem_edgeKempeClosure}
+Let \(G\) be a finite simple graph and let \(C,C'\) be two proper edge
+colourings of \(G\).  Suppose that for every vertex \(v\) there are colours
+\(a_v,b_v\), possibly equal, such that
+\[
+ C'(e)=(a_v\ b_v)C(e)
+ \qquad\hbox{for every edge \(e\) incident with \(v\)}.
+\]
+Then \(C'\) belongs to the edge-Kempe closure of \(C\).  Consequently, if
+\(C'\) is not in that closure, some vertex admits no such local
+transposition.
+\end{lemma}
+
+\begin{proof}
+Choose an edge \(e\) on which \(C\) and \(C'\) disagree, and put
+\(a=C(e)\), \(b=C'(e)\).  The local transposition at either endpoint of \(e\)
+must be exactly \((a\ b)\): a transposition is determined by one value which
+it moves.  The same argument across an adjacent \(a,b\)-coloured edge shows
+that \((a\ b)\) propagates along the whole \(a,b\)-Kempe component of \(e\).
+Switch that component.
+
+Every edge of the component now agrees with \(C'\).  No agreement outside
+the component is lost.  Indeed, at a vertex met by the component every
+incident \(a,b\)-coloured edge lies in that same component, while an incident
+edge of any other colour is fixed by \((a\ b)\); at a vertex not met by the
+component the colouring is unchanged.  The switched colouring therefore
+satisfies the same local-transposition hypothesis relative to \(C'\), and
+the finite set of disagreeing edges has strictly smaller cardinality.  Strong
+induction on that cardinality produces a finite sequence of Kempe switches
+from \(C\) to \(C'\).  The last assertion is the contrapositive.
+\end{proof}
+
+At an interior cubic Tait vertex, both colourings use all three nonzero
+colours.  Their relative local permutation is therefore the identity, a
+transposition, or a three-cycle.  The first two cases are precisely those
+covered by the lemma; failure of its local hypothesis is the genuine
+three-cycle, or branching, sector.  At a boundary vertex of smaller degree
+the conclusion is deliberately weaker and no three-cycle interpretation is
+asserted.
+
+The second horn can be compared exactly with the original deletion graph.
+
+\begin{lemma}[common-core Kempe sequences lift or reach the exposed pair]
+\label{lem:common-core-kempe-lift-or-boundary}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KempeComponentEmbeddingBoundary.touchesBoundary_or_exists_liftedComponentSwitch}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KempeComponentEmbeddingBoundary.boundaryAlongLiftOrbit_or_exists_liftedColoring}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairCommonCoreKempeBoundary.firstOrbitReachesSecondPair_or_exists_liftedColoring}
+Let \(D_{uv}\) be the graph obtained by deleting an adjacent pair
+\((u,v)\), and let \(H=D_{uv}-\{x,y\}\) be its common core with the deletion
+of another adjacent pair \((x,y)\).  Let \(C\) be an edge colouring of
+\(D_{uv}\), and suppose that an edge colouring \(C^*\) of \(H\) is
+Kempe-reachable from \(C|_H\).  Then one of the following holds.
+\begin{enumerate}
+\item At an intermediate colouring in the Kempe orbit of \(C\), one of the
+      common-core components used by the sequence is adjacent, in
+      \(D_{uv}\), to a same-two-colour edge outside \(H\).  Every such
+      outside edge has an endpoint \(x\) or \(y\).
+\item There is a colouring \(\widetilde C\) in the Kempe closure of \(C\)
+      such that \(\widetilde C|_H=C^*\).
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+Consider first one switch of an \(a,b\)-component \(K\) of \(H\).
+Embed its bicoloured subgraph into the corresponding bicoloured subgraph of
+\(D_{uv}\).  If an image edge of \(K\) is adjacent to an \(a,b\)-edge
+outside the image, the first alternative holds.  Otherwise the image of
+\(K\) is closed under bicoloured adjacency.  A connected component which is
+both connected and neighbour-closed is a whole connected component of the
+larger bicoloured graph.  Switching that larger component therefore
+restricts literally to the prescribed switch of \(K\).
+
+Iterate this alternative along a finite sequence witnessing
+Kempe-reachability.  Until the boundary alternative occurs, each switch
+lifts, so induction produces a colouring in the original deletion's Kempe
+orbit with the required final restriction.  Finally, an edge of \(D_{uv}\)
+outside the image of \(H\) cannot have both endpoints different from
+\(x,y\): if it did, attaching those endpoint inequalities would construct
+its preimage edge in \(H\).  Hence every outside edge in the first
+alternative is incident with \(x\) or \(y\).
+\end{proof}
+
+\begin{corollary}[exact residue of common-core disagreement]
+\label{cor:common-core-disagreement-residue}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairCommonCoreDisagreementResidue.branching_or_reachesSecondPair_or_strictRepair}
+Let \(C_{uv}\) and \(C_{xy}\) colour the two adjacent-pair deletion graphs,
+and suppose their restrictions to the common four-vertex deletion \(H\)
+are unequal.  Then at least one of the following holds.
+\begin{enumerate}
+\item Some vertex of \(H\) admits no single colour transposition carrying
+      the first restricted colouring to the second on all incident edges.
+\item At an intermediate representative in the Kempe orbit of \(C_{uv}\),
+      a common-core Kempe component reaches an edge incident with \(x\) or
+      \(y\).
+\item There is a colouring \(\widetilde C_{uv}\ne C_{uv}\) in the Kempe
+      closure of \(C_{uv}\) whose restriction to \(H\) equals
+      \(C_{xy}|_H\).
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+If \(C_{xy}|_H\) is not Kempe-reachable from \(C_{uv}|_H\), apply
+Lemma~\ref{lem:local-transpositions-generate-kempe} contrapositively to get
+the first alternative.  If it is reachable, apply
+Lemma~\ref{lem:common-core-kempe-lift-or-boundary}.  Its boundary horn is
+the second alternative and its lifting horn gives the third.  The lifted
+colouring is different from \(C_{uv}\), since their common-core
+restrictions were assumed unequal.
+\end{proof}
+
+Applied to the pair supplied by
+Corollary~\ref{cor:ordered-row-common-core-disagreement}, this trichotomy is
+the exact local residue.  It still does not give support equality or wall
+exclusion: repairing one pair can change the repaired colouring's
+restrictions at other mesh sites.  The remaining two-dimensional task is
+therefore to show that repeated repairs either terminate in a coherent
+atlas, which is impossible by
+Lemma~\ref{lem:global-common-core-colouring-atlas}, or force branching or
+boundary-reaching witnesses with enough geometric coherence to support a
+strict replacement.  No monotonicity of the naive number of disagreeing
+pairs is assumed.
+
 This does not contradict the pentagonal-prism diagnostic above.  Four true
 agreement bits attached to the four sides of one compatible cell state do
 not assert that one globally selected family agrees on the common deletion
