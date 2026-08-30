@@ -51,10 +51,11 @@ variable {V : Type u} [Fintype V] [DecidableEq V]
   {a b : Nat}
 
 /-- The exact alternating component attached to one mesh edge that is absent
-from the globally chosen matching.  The component is closed under both
-matchings, contains the prescribed edge, has at least four vertices, and is
-proper because a shared matching edge lies outside it.  Exchanging on the
-whole component cannot improve the chosen residual-defect minimizer. -/
+from the globally chosen matching.  The component is the support of a simple
+ambient alternating cycle through the prescribed edge, is closed under both
+matchings, has at least four vertices, and is proper because a shared matching
+edge lies outside it.  Exchanging on the whole component cannot improve the
+chosen residual-defect minimizer. -/
 structure ProperAlternatingSiteWitness
     (G : SimpleGraph V) [DecidableRel G.Adj]
     (sigma : Pairing V) (first second : V) where
@@ -65,6 +66,12 @@ structure ProperAlternatingSiteWitness
   carrier_eq : carrier = alternatingComponent sigma tau first
   first_mem : first ∈ carrier
   second_mem : second ∈ carrier
+  cycle : G.Walk first first
+  cycle_isCycle : cycle.IsCycle
+  central_edge_mem_cycle : s(first, second) ∈ cycle.edges
+  cycle_support_eq : cycle.support.toFinset = carrier
+  cycle_edges_alternating :
+    ∀ edge ∈ cycle.edges, edge ∈ (alternatingGraph sigma tau).edgeSet
   sigma_closed : ∀ vertex ∈ carrier, sigma.partner vertex ∈ carrier
   tau_closed : ∀ vertex ∈ carrier, tau.partner vertex ∈ carrier
   four_le : 4 ≤ carrier.card
@@ -201,6 +208,11 @@ theorem exists_exchangeRigid_with_proper_alternatingComponent_at_every_globalMes
       exact hTauClosed first hfirst
     have hfour : 4 ≤ carrier.card :=
       four_le_card_alternatingComponent sigma tau hroot
+    obtain ⟨cycle, hcycle, hcentralCycle, hcycleSupport,
+        hcycleEdges⟩ :=
+      exists_ambient_alternatingCycle sigma tau hSigma hTau hroot
+    have hcentralCycle' : s(first, second) ∈ cycle.edges := by
+      simpa only [hcentral'] using hcentralCycle
     have houtside :
         ∃ vertex : V,
           sigma.partner vertex = tau.partner vertex ∧
@@ -215,6 +227,11 @@ theorem exists_exchangeRigid_with_proper_alternatingComponent_at_every_globalMes
         carrier_eq := rfl
         first_mem := hfirst
         second_mem := hsecond
+        cycle := cycle
+        cycle_isCycle := hcycle
+        central_edge_mem_cycle := hcentralCycle'
+        cycle_support_eq := hcycleSupport
+        cycle_edges_alternating := hcycleEdges
         sigma_closed := hSigmaClosed
         tau_closed := hTauClosed
         four_le := hfour

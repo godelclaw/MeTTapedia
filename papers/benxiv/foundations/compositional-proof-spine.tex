@@ -2967,7 +2967,10 @@ matching \(\tau_e\) and a vertex set \(A_e\) such that
 \[
  \tau_e(u)=v,\qquad u,v\in A_e,\qquad |A_e|\geq4,
 \]
-\(A_e\) is closed under both partner involutions, and
+\(A_e\) is closed under both partner involutions.  More precisely, there is
+a simple cycle \(C_e\) in \(G\), containing the edge \(e\), whose vertex set
+is exactly \(A_e\) and whose edges alternate between \(\sigma\) and
+\(\tau_e\).  Furthermore,
 \[
  d_G(\sigma)
  \leq d_G\bigl(\sigma\mathbin\triangleleft_{A_e}\tau_e\bigr).
@@ -3001,6 +3004,17 @@ two matchings differ at every vertex of \(A_e\).  The four vertices
  \sigma\bigl(\tau_e(u)\bigr)
 \]
 are distinct, so \(|A_e|\geq4\).
+
+Consider the symmetric difference of the two one-factors carried by
+\(\sigma\) and \(\tau_e\).  At an agreement vertex it has degree zero.  At a
+disagreement vertex \(z\), its two neighbours are the distinct vertices
+\(\sigma(z)\) and \(\tau_e(z)\), so it has degree two.  Thus every nontrivial
+connected component of the symmetric difference is a simple alternating
+cycle.  Its component containing \(u\) has vertex set exactly \(A_e\): a
+path in the symmetric difference is a sequence of the two generating moves,
+and every generating move inside the disagreement class is an edge of the
+symmetric difference.  Call this cycle \(C_e\).  Since
+\(\tau_e(u)=v\), it contains the prescribed mesh edge \(e=uv\).
 
 The two supported perfect matchings cannot be edge-disjoint.  Indeed, in a
 cubic graph their two edges at each vertex would leave a unique third edge;
