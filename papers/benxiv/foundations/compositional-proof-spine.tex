@@ -2441,6 +2441,8 @@ corner, whereas a compositional cell must reuse one actual colouring there.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapKempeHolonomy.mem_overlapKempeCellStateSupport_iff_hasRelationalSection}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapKempeHolonomy.mem_pairwise_not_mem_realized_iff_fixedPointFreeHolonomy}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapKempeHolonomy.hasSharedWitnessObstruction_iff_exists_fixedPointFreeHolonomy}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapKempeHolonomyResidue.hasFixedPointFreeRelationalHolonomy_iff_break_or_nonempty}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapKempeHolonomyResidue.hasSharedWitnessObstruction_iff_exists_break_or_nonemptyHolonomy}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshAdjacentPairSites.meshPathStep_adjacent}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshAdjacentPairSites.exists_nonempty_overlapKempeCellStateSupport}
 Let four adjacent-pair deletions be arranged clockwise around a cell, with
@@ -2517,8 +2519,8 @@ missing datum is not an unspecified topological defect: it is exactly a pair of
 distinct proper orbit representatives with the same recorded boundary state.
 
 The obstruction has an exact relational normal form.  For a fixed side state
-$s_i$, let $R_i$ be the relation consisting of the two concrete proper orbit
-representatives which realise $s_i$.  A clockwise cell state has shared
+$s_i$, let $R_i$ be the relation consisting of the pairs of concrete proper
+orbit representatives which realise $s_i$.  A clockwise cell state has shared
 corner witnesses precisely when
 \[
    (R_{m W}\circ R_{m S}\circ R_{m E}\circ R_{m N})
@@ -2530,6 +2532,17 @@ state for which every $R_i$ is nonempty but the composite is fixed-point-free.
 This is the precise sense in which the remaining datum is a relational
 holonomy.  It does not yet give a geometric consequence for an embedded wall.
 
+There are two distinct residues hidden in the phrase ``fixed-point-free.''
+The fourfold composite may be empty, even though each of the four side
+relations is nonempty; call this a \emph{relational break}.  Otherwise the
+composite is nonempty and every completed clockwise path returns to a
+different north-west witness; call this \emph{proper relational holonomy}.
+These alternatives are exhaustive: if the composite is empty there is a
+break, while if it is inhabited then absence of a fixed point says exactly
+that every one of its pairs has distinct endpoints.  This split must precede
+any signed-permutation argument, because an empty relation is not a
+permutation.
+
 An exhaustive finite diagnostic gives an important warning about the scope of
 this criterion.  For the four edges of a square face in the pentagonal prism,
 each selected proper deletion orbit is the proper part of its full edge-Kempe
@@ -2540,11 +2553,21 @@ cycle the incident sides choose opposite representatives at exactly the two
 non-singleton corners, and every non-singleton fibre in the example is joined
 by one direct Kempe-component switch.  This computation has not yet been
 reflected into the kernel, so it is evidence rather than a formal
-counterexample.  It nevertheless rules out treating planarity, bridgeless
-cubicity, bare ordered-mesh geometry, or literal pairwise agreement as a
-reason to assume a global section.  A wall argument must either control these
-finite relational holonomies using the minimal-counterexample hypothesis or
-derive a target-specific consequence from a fixed-point-free one.
+counterexample.  In the displayed all-agreement obstruction each side
+relation has one witness pair, but the target chosen by one side is not the
+source chosen by the next at two opposite corners; its fourfold composite is
+therefore empty.  Thus this example lies in the relational-break horn, not in
+the proper-holonomy horn.  It nevertheless rules out treating planarity,
+bridgeless cubicity, bare ordered-mesh geometry, or literal pairwise agreement
+as a reason to assume a global section.  A wall argument must either control these
+relational breaks using the minimal-counterexample hypothesis or derive a
+target-specific consequence from a proper nonempty holonomy.
+
+Exhausting all $2\,792\,976$ compatible cycles in the same prism separates
+the two residues: $6\,912$ have empty composite and $6\,144$ have a
+nonempty fixed-point-free composite; the remaining $2\,779\,920$ lift.
+Thus both obstruction horns already occur in one planar bridgeless cubic
+graph.  The calculation is again external evidence, not a kernel theorem.
 
 There is nevertheless no colour-extension gap at a compatible checkpoint.
 The following statement isolates the exact planar cap which may be attached
