@@ -2474,6 +2474,49 @@ coherently across reentries or formulate its charge after quotienting this
 gauge.  Merely multiplying edge-labelled local transpositions is not a
 well-defined global observable.
 
+Even after a fixed carrier has been supplied, local oddness retains only the
+parity of the number of reentries.
+
+\begin{lemma}[parity boundary for a closed intrinsic reentry word]
+\label{lem:closed-intrinsic-reentry-parity-boundary}
+Let a closed all-intrinsic reentry chain have $n>0$ steps.  Suppose that one
+fixed finite carrier has been chosen and that the geometric transport of each
+step is represented on that carrier by an odd permutation.  Then the sign of
+the ordered product is
+\[
+  (-1)^n.
+\]
+If this product is identified, up to a change of coordinates, with the
+canonical affine colour transport around the same closed chain, then $n$ is
+even.  This conclusion is sharp at the purely algebraic level: two odd
+transpositions can have identity product.
+
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AllFaceIntrinsicCycleParityBoundary.FixedCarrierOddTransport.word_sign}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AllFaceIntrinsicCycleParityBoundary.FixedCarrierOddTransport.length_even_of_wordProduct_eq_closedGaugeConjugate}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AllFaceIntrinsicCycleParityBoundary.two_odd_transpositions_can_cancel}
+\end{lemma}
+
+\begin{proof}
+Induct on the explicitly counted reentry word.  The empty product has sign
+$(+1)=(-1)^0$.  Appending a step multiplies the geometric product by one
+odd permutation, so the sign is multiplied by $-1$.  After $n$ steps it
+is therefore $(-1)^n$.
+
+The canonical affine colour word of a closed reentry chain has identity
+linear part, and its translations are even; hence its total sign is $+1$.
+Sign is invariant under a change of coordinates.  Identification of the two
+products thus gives $(-1)^n=+1$, which is equivalent to $n$ being even.
+For sharpness, take the transposition of the two Boolean states twice: each
+factor is odd and their product is the identity.
+\end{proof}
+
+Thus a coherent fixed-carrier construction is necessary but not sufficient.
+To turn the all-intrinsic residue into a contradiction one must additionally
+prove odd length, or construct a stronger nonabelian or geometric charge that
+cannot cancel on an even orbit.  Neither property is part of the present
+closed-residue data.  This is the exact interface the high-width argument must
+now supply; no parity premise is silently added.
+
 The other terminal of the all-face machine already has the literal geometry
 required by the replacement layer; it is not merely a descriptive cut
 profile.
