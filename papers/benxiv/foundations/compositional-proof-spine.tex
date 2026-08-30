@@ -2961,6 +2961,7 @@ site datum rather than a second local choice.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshResidualSiteMatching.exists_exchangeRigid_with_proper_alternatingComponent_at_every_globalMeshStep}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshResidualSiteFacialBond.exists_exchangeRigid_with_facialBond_at_every_globalMeshStep}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualFormationSwitch.exists_exchangeRigid_with_facialFormationSwitch_at_every_globalMeshStep}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnPairing.exists_exchangeRigid_with_facialFormation_and_returnPairing_at_every_globalMeshStep}
 Under the hypotheses of
 Corollary~\ref{cor:ordered-mesh-rigid-site-matchings}, choose its one global
 minimum-residual-defect matching \(\sigma\).  For every physical mesh step
@@ -3003,6 +3004,19 @@ After exchanging \(\sigma\) with \(\tau_e\) on \(A_e\), they are
 \]
 The fixed third edge \(zq_e(z)\) is not an edge of \(C_e\), and its two
 incident orbit faces therefore lie in the same shore of the facial bond.
+
+The unchanged off-cycle residual material also defines a fixed-point-free
+involution
+\[
+                         \mu_e:A_e\longrightarrow A_e.
+\]
+For each \(z\in A_e\), the vertices \(z\) and \(\mu_e(z)\) lie in the same
+connected component of the intersection of the residual graphs before and
+after the exchange.  Equivalently, they are joined by a residual path all of
+whose edges survive the formation switch.  Thus \(\mu_e\) pairs the literal
+third-edge excursions when they return to the alternating cycle.  No
+noncrossing order or formula for the number of resulting components is
+asserted here.
 \end{corollary}
 
 \begin{proof}
@@ -3062,6 +3076,18 @@ matching edge at \(z\) is the \(\tau_e\)-edge.  This gives the two displayed
 pairs of residual edges.  The third edge is not in the alternating cycle.
 The exact facial-bond equation consequently says that it does not cross the
 face-shore boundary, which is precisely the final assertion.
+
+It remains to construct the return involution.  Intersect the residual graph
+before the exchange with the residual graph after it.  At a vertex of
+\(A_e\), the formation calculation shows that only the third edge survives,
+so its degree in the intersection is one.  Away from \(A_e\), the exchange
+does not change the selected matching edge; the two residual graphs agree
+there and the degree is two.  Consequently every connected component meeting
+\(A_e\) is a finite path with exactly two degree-one endpoints in \(A_e\).
+Pairing those two endpoints defines \(\mu_e\).  Uniqueness of the other
+endpoint in each component makes \(\mu_e\) involutive, and the two endpoints
+are distinct, so it is fixed-point-free.  The component itself supplies the
+asserted unchanged residual path.
 \end{proof}
 
 This is not merely another proof that a bridgeless cubic graph has a perfect
@@ -3074,9 +3100,11 @@ oddness, or instead yields equal exact shore supports for a physical
 replacement.  In particular, the corollary has quantifier order
 \(\exists\sigma\,\forall e\,\exists\tau_e\); it does not assert a coherent
 simultaneous choice of the \(\tau_e\).  The local formation receipts identify
-which residual edge changes at each cycle vertex, but do not yet pair the
-third-edge excursions when they return to the cycle or compute the resulting
-change in the number of odd residual components.
+which residual edge changes at each cycle vertex, and the common-residual
+components now pair the third-edge excursions when they return to the cycle.
+They do not yet put those returns in a noncrossing cyclic order, synchronize
+the pairings at neighbouring sites, or compute the resulting change in the
+number of odd residual components.
 
 This lemma is nonlocal in precisely the way the original formation argument
 needs: the Kempe paths witnessing the two independent side moves may run
