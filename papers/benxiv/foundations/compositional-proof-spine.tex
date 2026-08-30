@@ -4278,6 +4278,35 @@ connectedness gives at most two of them.  Thus there are exactly two, and the
 degree characterization identifies them exactly with the boundary ports.
 \end{proof}
 
+\begin{lemma}[boundary-free physical Kempe components are circuits]
+\label{lem:port-tangle-kempe-boundary-free-cycle}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PortTangleKempeEndpoints.activeComponent_isCycles_of_componentPortDarts_eq_empty}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PortTangleKempeEndpoints.exists_activeComponent_cycle_of_componentPortDarts_eq_empty}
+Let $T$ be a finite cubic port tangle with a proper nonzero Tait colouring,
+fix a colour pair, and choose one active dart.  If the physical bichromatic
+component of that dart contains no boundary port, then its active-web graph
+is a cycle.  More precisely, after restricting the active web to that
+connected component, every vertex has degree two, and the component contains
+a simple closed walk through the chosen dart.
+\end{lemma}
+
+\begin{proof}
+The active web has one vertex for every dart carrying one of the two selected
+colours.  At a tangle vertex, proper cubicity gives each such dart exactly one
+other selected dart.  An interior dart has one further neighbour across its
+interior edge, and these two neighbours are distinct because the tangle has
+no interior loop.  A boundary dart has no across-edge neighbour and therefore
+has degree one.  Passing to a connected component removes no neighbour.
+
+By hypothesis the chosen component has no boundary dart, so every one of its
+vertices is an interior dart and has degree two.  Thus the restricted finite
+graph is connected and $2$-regular.  Equivalently it is a graph of cycles;
+the cycle-extraction lemma applied at the chosen dart supplies a simple closed
+walk.  This is only an algebraic circuit in the physical dart web.  Turning
+its contraction into a separating simple cycle of the ambient spherical map
+is a distinct geometric step and is not asserted here.
+\end{proof}
+
 \begin{theorem}[the physical common web induces the exact boundary matching]
 \label{thm:port-tangle-physical-kempe-matching}
 Let $T$ be a finite cubic port tangle with a proper nonzero Tait colouring,
