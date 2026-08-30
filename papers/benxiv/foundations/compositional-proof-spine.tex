@@ -2550,6 +2550,94 @@ dichotomy, and unfolding the successor relation gives the final
 state-realisation equality.
 \end{proof}
 
+\begin{lemma}[one physical Kempe site per ordered-mesh step]
+\label{lem:ordered-mesh-global-site-coherence}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshGlobalSites.boundaryToGlobalStep_injective}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshGlobalSites.selectedGlobalKempeSite_boundary_endpointPair}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshSharedSides.boundaryToGlobalStep_east_eq_west}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshSharedSides.boundaryToGlobalStep_south_eq_north}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshSharedSides.eastGlobalStepSet_eq_westGlobalStepSet}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshSharedSides.southGlobalStepSet_eq_northGlobalStepSet}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairReversal.isTaitEdgeColoring_reverseColoring}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshOrientedGlobalSites.orientedGlobalBoundaryKempeSite_west_eq_reverse_east}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshOrientedGlobalSites.orientedGlobalBoundaryKempeSite_south_eq_reverse_north}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshOrientedGlobalSites.orientedGlobalBoundaryKempeSite_west_base_heq_reverse_east}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshOrientedGlobalSites.orientedGlobalBoundaryKempeSite_south_base_heq_reverse_north}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshGlobalBoundaryHolonomy.globalSuccessorWitnessRelation_nonempty}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshGlobalBoundaryHolonomy.globalBoundaryWitnessSection_or_obstruction}
+Fix one ordered injective mesh in a graph-backed vertex-minimal Tait
+counterexample.  There is one globally indexed forward site for every step of
+every row path and every column path, consisting of ordered adjacent-pair data
+and a proper base colouring of its two-vertex deletion.  Every oriented step
+on the complete boundary of a coordinate rectangle injects into this global
+carrier after its cell-side tag and orientation are forgotten.  Its unordered
+deleted endpoint pair is unchanged.
+
+Use the global site directly on the north and east sides of a clockwise cell
+boundary.  On the south and west sides use its canonical reversal: exchange
+the two deleted endpoints, exchange the two two-port blocks, and transport the
+base colouring through the canonical isomorphism between the two orders of
+the same vertex deletion.  This transport preserves the nonzero Tait
+condition.
+
+If two coordinate rectangles share a side, reversal of the finite position
+interval identifies their side-step carriers exactly.  Under this
+identification the clockwise site of one rectangle is the canonical reversal
+of the clockwise site of the other, and its base colouring is exactly the
+transported base colouring.  In particular, the two rectangles do not make
+independent Kempe-orbit choices on their common physical side.
+
+For each rectangle, the successor overlap supports built from these globally
+chosen sites are nonempty.  Hence every finite state assignment on its
+complete boundary has the same exact alternative as in
+Lemma~\ref{lem:ordered-mesh-complete-boundary-relation}: either one concrete
+colouring at every globally based site simultaneously witnesses all successor
+states, or no such boundary section exists.
+\end{lemma}
+
+\begin{proof}
+Index a physical path step by the disjoint sum of a row index and a row-step
+index, or a column index and a column-step index.  The four cell-side formulas
+map into this carrier by the corresponding branch-position interval.  Within
+one rectangle, equality of two images either equates two positions on the
+same side or would equate its distinct top and bottom row indices, its
+distinct left and right column indices, or the two summands.  This proves
+injectivity.  Minimality supplies one rotation-ordered adjacent-pair Kempe
+site and proper base colouring at every global index; make this choice once.
+
+The north and east formulas traverse their path steps forward.  The south and
+west formulas traverse them backward, so exchange the deleted endpoints and
+the two port blocks.  Swapping the two inequalities in the retained-vertex
+subtype is a graph isomorphism between the two deletion orders.  Pulling the
+base colouring back along this isomorphism preserves properness and preserves
+the assertion that every edge has nonzero colour.
+
+For neighbouring rectangles, the shared row or column interval has the same
+length.  The elementary identity
+\[
+  l+p=u-1-\bigl((u-l)-(p+1)\bigr)
+\]
+identifies a forward position on one boundary with the reversed position on
+the other.  Substitution in the four branch-position formulas proves literal
+equality of their global step indices.  The statements about adjacent-pair
+data and base colourings now follow by unfolding the globally selected site
+once, not by comparing two choices.
+
+Finally, two proper globally based colourings realise an overlap state on
+every successor edge.  Choice of one such finite state on each edge gives an
+assignment.  Excluded middle applied to a single dependent family of concrete
+site colourings gives the section alternative, exactly as in the preceding
+lemma.
+\end{proof}
+
+This lemma closes the carrier-coherence problem, not the wall theorem.  What
+remains is now intrinsically two-dimensional: prove that the relational
+returns of neighbouring cells cancel after the displayed reversal transport,
+or show that their failure produces a bounded cut, a strict compositional
+replacement, or another global invariant forbidden in a least
+counterexample.  No equality of opposite-shore supports, flatness, or
+fixed-wall exclusion is inferred merely from sharing the physical sites.
+
 This lemma is deliberately an incidence and quantifier theorem.  The second
 alternative is not yet a geometric obstruction, and the first does not yet
 identify the supports of two physical shores.  In particular, an ordered
