@@ -23,6 +23,7 @@ namespace GoertzelV24KempeLiftConfinement
 open GoertzelV24AdjacentPairBoundary
 open GoertzelV24AdjacentPairCommonCoreKempeBoundary
 open GoertzelV24AdjacentPairCommonCoreLocalization
+open GoertzelV24AdjacentPairColoringAtlas
 open GoertzelV24AdjacentPairInsertion
 open GoertzelV24AdjacentPairInsertion.AdjacentPairData
 open GoertzelV24KempeComponentEmbeddingBoundary
@@ -293,6 +294,42 @@ theorem not_exists_firstCommonCore_preimage_of_not_target_retained
   simpa [hambient] using
     (commonCoreEdgeToAmbientEdge_target_retained source target preimage)
 
+omit [Fintype V] [DecidableRel G.Adj] in
+/-- Exact image characterization: among the edges retained by the source
+deletion, the common-core embedding contains precisely those also retained
+by the target deletion. -/
+theorem exists_firstCommonCore_preimage_iff_target_retained
+    (source target : AdjacentPairData G)
+    (edge : G.edgeSet)
+    (hsource : IsRetainedAmbientEdge source edge) :
+    (∃ preimage :
+        (DeletedTwoPairsGraph G source.firstVertex source.secondVertex
+          target.firstVertex target.secondVertex).edgeSet,
+      (deletedTwoPairsToFirstDeletionEmbedding G source.firstVertex
+        source.secondVertex target.firstVertex target.secondVertex).mapEdgeSet
+          preimage = ambientEdgeToRetainedEdge source edge hsource) ↔
+      IsRetainedAmbientEdge target edge := by
+  constructor
+  · rintro ⟨preimage, hmap⟩
+    have hambient : commonCoreEdgeToAmbientEdge source target preimage = edge := by
+      calc
+        commonCoreEdgeToAmbientEdge source target preimage =
+            retainedEdgeToAmbientEdge source
+              ((deletedTwoPairsToFirstDeletionEmbedding G source.firstVertex
+                source.secondVertex target.firstVertex
+                target.secondVertex).mapEdgeSet preimage) := by
+              rw [firstCommonCoreEdge_eq_ambientRetainedEdge]
+              simp
+        _ = retainedEdgeToAmbientEdge source
+            (ambientEdgeToRetainedEdge source edge hsource) := by rw [hmap]
+        _ = edge := by simp
+    simpa [hambient] using
+      (commonCoreEdgeToAmbientEdge_target_retained source target preimage)
+  · intro htarget
+    exact ⟨ambientEdgeToCommonCoreEdge source target edge hsource htarget,
+      firstCommonCoreEdge_eq_retainedEdge
+        source target edge hsource htarget⟩
+
 /-- **Agreement transport under a confined repair.**  Suppose a source
 colouring is repaired only on the exact common deletion with a middle patch.
 If the old source agrees with a target patch, while the repaired source agrees
@@ -371,6 +408,30 @@ theorem mem_ambientDisagreementSupport_iff
             targetColoring (ambientEdgeToRetainedEdge target edge htarget) := by
   classical
   simp [ambientDisagreementSupport]
+
+/-- Every pairwise disagreement edge lies inside the exact common-deletion
+embedding; support confinement is therefore not a bounded-distance claim. -/
+theorem exists_firstCommonCore_preimage_of_mem_ambientDisagreementSupport
+    (source target : AdjacentPairData G)
+    (sourceColoring : (DeletedAdjacentPairGraph G source.firstVertex
+      source.secondVertex).EdgeColoring Color)
+    (targetColoring : (DeletedAdjacentPairGraph G target.firstVertex
+      target.secondVertex).EdgeColoring Color)
+    (edge : G.edgeSet)
+    (hedge : edge ∈ ambientDisagreementSupport source target
+      sourceColoring targetColoring) :
+    ∃ preimage :
+        (DeletedTwoPairsGraph G source.firstVertex source.secondVertex
+          target.firstVertex target.secondVertex).edgeSet,
+      (deletedTwoPairsToFirstDeletionEmbedding G source.firstVertex
+        source.secondVertex target.firstVertex target.secondVertex).mapEdgeSet
+          preimage = ambientEdgeToRetainedEdge source edge
+            ((mem_ambientDisagreementSupport_iff source target
+              sourceColoring targetColoring edge).1 hedge).1 := by
+  have hmembership := (mem_ambientDisagreementSupport_iff
+    source target sourceColoring targetColoring edge).1 hedge
+  exact (exists_firstCommonCore_preimage_iff_target_retained
+    source target edge hmembership.1).2 hmembership.2.1
 
 omit [DecidableEq V] in
 theorem ambientDisagreementSupport_symm
