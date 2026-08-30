@@ -2962,6 +2962,10 @@ site datum rather than a second local choice.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshResidualSiteFacialBond.exists_exchangeRigid_with_facialBond_at_every_globalMeshStep}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualFormationSwitch.exists_exchangeRigid_with_facialFormationSwitch_at_every_globalMeshStep}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnShore.exists_exchangeRigid_with_facialFormation_returnPairing_and_shore_at_every_globalMeshStep}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnCycleOrder.cyclePosition_card_eq_cycle_length}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnCycleOrder.cycleVertexOrder_adj_finRotate}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnCycleOrder.orderedReturnShore_partner}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnCycleOrder.orderedSiteReturnPairing_walk_support_disjoint_of_chord_ne}
 Under the hypotheses of
 Corollary~\ref{cor:ordered-mesh-rigid-site-matchings}, choose its one global
 minimum-residual-defect matching \(\sigma\).  For every physical mesh step
@@ -3019,7 +3023,23 @@ return remains on one facial shore: for every \(z\in A_e\), the orbit face on
 the \(zq_e(z)\) side of the third edge belongs to \(F_e\) if and only if the
 corresponding orbit face on the
 \(\mu_e(z)q_e(\mu_e(z))\) side belongs to \(F_e\).  No noncrossing cyclic
-order or formula for the number of resulting components is asserted here.
+order or formula for the number of resulting components is asserted by this
+local statement alone.
+
+There is, however, a canonical cyclic coordinate for this pairing.  Traverse
+the simple cycle once and write
+\[
+ \gamma_e:\mathbb Z/|A_e|\mathbb Z\longrightarrow A_e
+\]
+for the resulting bijection.  Consecutive coordinates are endpoints of an
+actual edge of \(C_e\).  Conjugating \(\mu_e\) by \(\gamma_e\) gives a
+fixed-point-free involution \(\bar\mu_e\) on the cyclic positions.  Ordering
+the two endpoints of each orbit after cutting the cycle at the chosen origin
+gives a canonical finite chord, independent of which endpoint names it.
+The indicator of membership in \(F_e\) at the chord's oriented third dart is
+a well-defined Boolean label \(\chi_e\) on these chords.  Moreover, witnessing
+paths for two different canonical chords have disjoint vertex supports (and
+hence disjoint edge sets).
 \end{corollary}
 
 \begin{proof}
@@ -3097,6 +3117,71 @@ changes across an edge exactly when that edge lies in \(C_e\).  The label is
 therefore constant along the residual return path.  At either endpoint the
 unique path edge is the canonical third edge, so the two canonical third
 darts have the same \(F_e\)-shore label, as claimed.
+
+For the cyclic coordinate, delete the repeated first vertex from the support
+list of the closed simple walk \(C_e\).  The remaining list contains every
+vertex of \(A_e\) exactly once, has length \(|C_e|\), and its cyclic successor
+follows an edge of the displayed walk, including the final wraparound edge.
+Transport \(\mu_e\) through this bijection.  Sorting the two endpoints by the
+linear order after the cut makes a canonical representative because applying
+the partner involution only swaps the two endpoints.  The preceding
+same-shore equality makes \(\chi_e\) independent of that swap.
+
+Finally, suppose two witness paths shared a vertex.  Their two initial cycle
+vertices would then be reachable from one another in the common residual
+graph.  A component of the degree--\(1/2\) graph has exactly two boundary
+vertices, so uniqueness of the other boundary endpoint says that the two
+initial vertices are partners (or equal).  In either case the two canonical
+chords coincide.  Contraposition proves vertex-disjointness for distinct
+chords.
+\end{proof}
+
+\begin{lemma}[two-sector noncrossing of physical residual returns]
+\label{lem:residual-return-two-sector-noncrossing}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnArc.orderedReturnPath_isPath}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnArc.orderedReturnPath_edge_not_cycle}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnArc.eq_start_or_eq_finish_of_mem_orderedReturnPath_support_of_mem_carrier}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnArc.orderedReturnPath_support_disjoint_of_chord_ne}
+\Sprose
+In the noncentral alternative above, let \(\chi_e\in\{0,1\}\) be the
+face-shore label on the canonical chords of \(\bar\mu_e\).  For each
+\(s\in\{0,1\}\), the chords labelled \(s\) are noncrossing in the cyclic
+order of \(C_e\).  Equivalently, two distinct chords whose four endpoints
+strictly alternate around \(C_e\) have different shore labels.  Thus the full
+return pairing is the union of two noncrossing matchings; it need not itself
+be noncrossing.
+\end{lemma}
+
+\begin{proof}
+Use the connected orientable cellular surface associated with the spherical
+rotation system.  Its Euler characteristic is two, so this surface is a
+sphere, and
+the embedded simple cycle \(C_e\) is a Jordan curve.  It bounds two open
+discs, precisely the two face shores encoded by \(F_e\) and its complement.
+
+For a return chord with endpoints \(a,c\), choose a simple path \(P\) in its
+common-residual component.  No edge of \(P\) is an edge of \(C_e\).  Moreover,
+no internal vertex of \(P\) lies on \(C_e\): every cycle vertex has degree one
+in the common residual graph, whereas an internal vertex of a simple path
+uses two incident path edges.  Hence the interior of \(P\) is a connected
+subset of the complement of the Jordan curve and lies wholly in one of its
+two open discs.  The oriented third dart at either endpoint identifies that
+disc, so it is exactly the value \(\chi_e(P)\).  This also gives the geometric
+meaning of the already-proved equality of the two endpoint labels.
+
+Now suppose two distinct chords have cyclically alternating endpoints
+\(a,b,c,d\), and choose their simple return paths \(P:a\leadsto c\) and
+\(Q:b\leadsto d\).  If their labels were equal, the interiors of both paths
+would be properly embedded arcs in the same closed disc bounded by \(C_e\).
+The Jordan arc theorem for a disc says that the proper arc \(P\) separates
+the disc into two components whose boundary portions are the two complementary
+\(a\)-to-\(c\) arcs of \(C_e\).  Alternation puts \(b\) and \(d\) on different
+such boundary portions.  Therefore every arc from \(b\) to \(d\) in that disc
+meets \(P\), so \(Q\) meets \(P\).  But distinct return chords lie in distinct
+components of the degree--\(1/2\) common residual graph; the preceding
+corollary proves their witnessing paths have disjoint vertex supports.  This
+contradiction proves that alternating chords have opposite labels, and hence
+that each fixed-label family is noncrossing.
 \end{proof}
 
 This is not merely another proof that a bridgeless cubic graph has a perfect
@@ -3112,9 +3197,11 @@ simultaneous choice of the \(\tau_e\).  The local formation receipts identify
 which residual edge changes at each cycle vertex, and the common-residual
 components now pair the third-edge excursions when they return to the cycle.
 They also prove that each individual return remains on one facial shore.
-They do not yet put those returns in a noncrossing cyclic order, synchronize
-the pairings at neighbouring sites, or compute the resulting change in the
-number of odd residual components.
+Lemma~\ref{lem:residual-return-two-sector-noncrossing} puts the returns into
+two shore-labelled noncrossing families.  What remains is to synchronize
+those two-sector pairings at neighbouring sites and compute a strict change
+in residual quotient oddness (or an equal exact support state yielding a
+physical replacement).
 
 This lemma is nonlocal in precisely the way the original formation argument
 needs: the Kempe paths witnessing the two independent side moves may run
