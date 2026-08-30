@@ -1002,6 +1002,49 @@ transversal, its crossed-edge set, an exact deletion component boundary, two
 cyclic sides, and the correspondence used for surgery.  A chord wall, an
 induced dual path, or a bounded local collar supplies only part of this data.
 
+\begin{lemma}[literal source-Cell prefixes are laminar]
+\label{lem:source-cell-prefix-laminarity}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorSerialPrefixLaminarity.sourceCorridorSerialPrefixVertexSide_mono}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorSerialPrefixLaminarity.sourceCorridorSerialPrefixVertexSide_ssubset_succ_of_fresh}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorSerialPrefixLaminarity.sourceCorridorSerialPrefixIncidentShore_mono}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FramedCorridorSerialPrefixLaminarity.sourceCorridorSerialPrefixIncidentShore_ssubset_succ_of_fresh_edge}
+Let \(C_0,C_1,\ldots\) be the literal source Cells of a realized corridor
+and let
+\[
+                     U_r=\bigcup_{i<r}V(C_i).
+\]
+Then \(r\le s\) implies \(U_r\subseteq U_s\), and the canonical incident-edge
+shores satisfy
+\[
+       \{e:e\cap U_r\ne\varnothing\}
+       \subseteq
+       \{e:e\cap U_s\ne\varnothing\}.
+\]
+If \(C_r\) contains a vertex not in \(U_r\), then
+\(U_r\subsetneq U_{r+1}\).  If that Cell also contains an endpoint of an
+edge not assigned to the old incident-edge shore, then the two consecutive
+edge shores are strictly ordered.  Thus laminarity is automatic, while strict
+shore growth has been reduced to this concrete fresh-edge condition.
+\end{lemma}
+
+\begin{proof}
+The defining index set for \(U_r\) is contained in that for \(U_s\) whenever
+\(r\le s\), so every vertex contributed before the first cut is also
+contributed before the second.  Assigning an edge to a shore when either
+endpoint lies in the chosen vertex side is monotone under inclusion of vertex
+sides.  Finally a vertex of \(C_r\setminus U_r\) belongs to \(U_{r+1}\) but not
+to \(U_r\), proving strictness of the vertex sides.  An edge with such an
+endpoint belongs to the new incident-edge shore; if it was absent from the old
+shore, monotonicity plus this witness makes the shore inclusion strict.
+\end{proof}
+
+Consequently the source-native M1 residue can be stated without a separate
+laminarity hypothesis: one must show that sufficiently many literal Cells
+contribute fresh shore edges while the true graph frontier of their cumulative
+prefix remains uniformly bounded and both complementary sides stay connected.
+The displayed moving two-edge cut is not yet known to equal that true
+frontier.
+
 The following checked lemma supplies one of those outputs for a literal
 finite segment of the source corridor.  It is useful precisely because its
 hypotheses expose, rather than suppress, the remaining global geometry.
