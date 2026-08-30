@@ -316,7 +316,15 @@ theorem exists_partnerDisagreement_of_no_branchingOrBoundary
       CommonCoreColoringsDisagree
         (rowSiteData rotation minimal ordered row slot gainedPartner)
         (rowSiteData rotation minimal ordered row slot lostPartner)
-        (target gainedPartner).1 (target lostPartner).1 := by
+        (target gainedPartner).1 (target lostPartner).1 ∧
+      ambientDisagreementSupport
+          (rowSiteData rotation minimal ordered row slot repaired)
+          (rowSiteData rotation minimal ordered row slot lostPartner)
+          (target repaired).1 (target lostPartner).1 ⊆
+        ambientDisagreementSupport
+          (rowSiteData rotation minimal ordered row slot gainedPartner)
+          (rowSiteData rotation minimal ordered row slot lostPartner)
+          (target gainedPartner).1 (target lostPartner).1 := by
   obtain ⟨assignment, cycle⟩ :=
     exists_confinedStrictRepairCycle_of_no_branchingOrBoundary
       rotation minimal ordered row slot hno
@@ -392,6 +400,47 @@ theorem exists_partnerDisagreement_of_no_branchingOrBoundary
         (target repaired).1 (target lostPartner).1 := by
       simpa [hlostEq] using hafterOldLost
     exact htargetRepairedLostDisagrees hafter
+  have hpropagateSupport (lostPartner : Fin 9)
+      (hlostNe : lostPartner ≠ repaired)
+      (hsourceRepairedLostAgrees :
+        ¬ CommonCoreColoringsDisagree
+          (rowSiteData rotation minimal ordered row slot repaired)
+          (rowSiteData rotation minimal ordered row slot lostPartner)
+          (source repaired).1 (source lostPartner).1) :
+      ambientDisagreementSupport
+          (rowSiteData rotation minimal ordered row slot repaired)
+          (rowSiteData rotation minimal ordered row slot lostPartner)
+          (target repaired).1 (target lostPartner).1 ⊆
+        ambientDisagreementSupport
+          (rowSiteData rotation minimal ordered row slot gainedPartner)
+          (rowSiteData rotation minimal ordered row slot lostPartner)
+          (target gainedPartner).1 (target lostPartner).1 := by
+    have hgainedEq : target gainedPartner = source gainedPartner :=
+      hother gainedPartner hne.symm
+    have hlostEq : target lostPartner = source lostPartner :=
+      hother lostPartner hlostNe
+    have hrepairGained : CommonCoreAgrees
+        (rowSiteData rotation minimal ordered row slot repaired)
+        (rowSiteData rotation minimal ordered row slot gainedPartner)
+        (target repaired).1 (source gainedPartner).1 :=
+      htargetGainedAgreesSource
+    have hbefore : CommonCoreAgrees
+        (rowSiteData rotation minimal ordered row slot repaired)
+        (rowSiteData rotation minimal ordered row slot lostPartner)
+        (source repaired).1 (source lostPartner).1 :=
+      (commonCoreAgrees_iff_not_coloringsDisagree
+        (rowSiteData rotation minimal ordered row slot repaired)
+        (rowSiteData rotation minimal ordered row slot lostPartner)
+        (source repaired).1 (source lostPartner).1).2
+        hsourceRepairedLostAgrees
+    simpa [hgainedEq, hlostEq] using
+      (ambientDisagreementSupport_subset_of_confined_left_update
+        (rowSiteData rotation minimal ordered row slot repaired)
+        (rowSiteData rotation minimal ordered row slot gainedPartner)
+        (rowSiteData rotation minimal ordered row slot lostPartner)
+        (source repaired).1 (target repaired).1
+        (source gainedPartner).1 (source lostPartner).1
+        hrepairGained hbefore hconfined)
   rcases hlossTouches with hfirst | hsecond
   · subst lostFirst
     have hlostNe : lostSecond ≠ repaired := by
@@ -405,7 +454,8 @@ theorem exists_partnerDisagreement_of_no_branchingOrBoundary
         hsourceGainedDisagrees, htargetGainedAgreesSource, hstrict,
         hother, hconfined⟩,
       hne, hpropagate lostSecond hlostNe
-        hsourceLostAgrees htargetLostDisagrees⟩
+        hsourceLostAgrees htargetLostDisagrees,
+      hpropagateSupport lostSecond hlostNe hsourceLostAgrees⟩
   · subst lostSecond
     have hlostNe : lostFirst ≠ repaired := by
       intro heq
@@ -436,7 +486,8 @@ theorem exists_partnerDisagreement_of_no_branchingOrBoundary
         hsourceGainedDisagrees, htargetGainedAgreesSource, hstrict,
         hother, hconfined⟩,
       hne, hpropagate lostFirst hlostNe
-        hsourceOriented htargetOriented⟩
+        hsourceOriented htargetOriented,
+      hpropagateSupport lostFirst hlostNe hsourceOriented⟩
 
 end
 
