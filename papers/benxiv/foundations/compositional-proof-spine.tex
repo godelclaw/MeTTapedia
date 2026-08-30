@@ -8023,6 +8023,40 @@ Corollary~\ref{cor:phased-literal-shore-replacement}, which performs the
 physical splice and terminating digon normalization.
 \end{proof}
 
+\begin{corollary}[nested noose replacement returns graph-backed normal form]
+\label{cor:dual-noose-graph-backed-replacement}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24GraphBackedNooseReplacement.graphBackedCounterexampleBelow_of_endpointSimpleCounterexampleBelow}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24GraphBackedNooseReplacement.exists_graphBackedCounterexampleBelow_of_nested_dualNooses}
+Under the hypotheses of
+Corollary~\ref{cor:dual-noose-literal-replacement}, there is a finite simple
+graph \(H\), equipped with graph-backed rotation data, such that its rotation
+map is connected, bridgeless, spherical and cubic with cyclic vertex
+rotations, has zero Tait Count, and satisfies
+\[
+                         |V(H)|<|V(M)|.
+\]
+Thus physical noose replacement lands in the same graph-backed normal class
+consumed by the decomposition supplier; graph backing is not a subsequent
+unproved representation step.
+\end{corollary}
+
+\begin{proof}
+Corollary~\ref{cor:dual-noose-literal-replacement} returns an endpoint-simple
+rotation system \(R\) with the complete bridgeless spherical cubic structure,
+zero Tait Count, and strictly fewer vertices.  Form the primal simple graph
+whose edges are the endpoint pairs of the edges of \(R\).  Endpoint
+injectivity makes the literal edge carrier bijective with this simple-graph
+edge carrier and makes the literal darts bijective with the two oriented
+incidences of those edges.  Transport the rotation through this dart
+bijection.  It conjugates edge reversal, vertex rotation and facial
+successor, so connectedness, bridge-freeness, cubicity, cyclic rotations and
+the spherical Euler equation all pass to the graph-backed map.  Conversely,
+any Tait colouring of the graph-backed map pulls back along the edge
+bijection to one of \(R\), so zero Count passes as well.  The vertex carrier
+is unchanged by this presentation, and hence the strict inequality remains
+the one already proved for \(R\).
+\end{proof}
+
 \begin{theorem}[direct Count-reductive assembly]
 \label{thm:direct-count-reductive-assembly}
 \Sconditional{ladder transport; target-forced literal connected-shore state supply; route-native finite base}
