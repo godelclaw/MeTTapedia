@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24RotationTaitPotential
+import Mettapedia.GraphTheory.FourColor.GoertzelV24RotationTaitCount
 import Mettapedia.GraphTheory.FourColor.GoertzelV24StellarDualStructure
 
 /-!
@@ -17,6 +18,7 @@ namespace GoertzelV24StellarTaitReduction
 
 open GoertzelV24FaceDualConnectedness
 open GoertzelV24RotationTaitPotential
+open GoertzelV24RotationTaitCount
 open GoertzelV24SphericalGraphPresentation
 open GoertzelV24StellarDualStructure
 open GoertzelV24StellarSubdivision
@@ -85,6 +87,19 @@ theorem colorable_four_of_stellarDual_taitColorable
       (stellarDual_orbitSphericalCubicMapData presentation hcard).cubic
       colouring hcolouring
   exact colorable_four_of_stellar_colorable presentation hstellar
+
+/-- A non-four-colourable connected spherical presentation enters the
+compositional route as an explicit zero-Count stellar dual.  This is the exact
+contrapositive transport used by M0; it does not assert that an arbitrary
+colouring of the old graph extends across every stellar face centre. -/
+theorem stellarDual_taitCount_eq_zero_of_not_colorable
+    (presentation : ConnectedSphericalGraphPresentation G)
+    (hcard : 3 ≤ Fintype.card V) (hnot : ¬ G.Colorable 4) :
+    rotationSystemTaitCount (StellarDualRS presentation) = 0 := by
+  rw [rotationSystemTaitCount_eq_zero_iff]
+  intro hTait
+  exact hnot
+    (colorable_four_of_stellarDual_taitColorable presentation hcard hTait)
 
 /-- The source-facing reverse Tait implication for genuine connected
 spherical graph presentations.  Abstract planar graphs enter only through

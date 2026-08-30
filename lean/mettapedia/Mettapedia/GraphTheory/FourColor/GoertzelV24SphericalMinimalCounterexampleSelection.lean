@@ -99,6 +99,23 @@ theorem connectedSphericalFourColorStatement_of_no_minimal
   connectedSphericalFourColorStatement_of_tait
     (everyBridgelessSphericalCubicTaitColorable_of_no_minimal hnominimal)
 
+/-- Conversely at the obstruction boundary, a non-four-colourable connected
+spherical presentation rules out the assertion that no graph-backed minimal
+Tait counterexample exists.  The least counterexample itself is constructed
+inside `everyBridgelessSphericalCubicTaitColorable_of_no_minimal`; this theorem
+packages the exact contrapositive consumed by the front end. -/
+theorem not_noGraphBackedVertexMinimalTaitCounterexample_of_not_colorable
+    {V : Type u} [Fintype V] [DecidableEq V]
+    {G : SimpleGraph V} [DecidableRel G.Adj]
+    (presentation :
+      GoertzelV24SphericalGraphPresentation.ConnectedSphericalGraphPresentation G)
+    (hcard : 3 ≤ Fintype.card V) (hnot : ¬ G.Colorable 4) :
+    ¬ NoGraphBackedVertexMinimalTaitCounterexample.{u} := by
+  intro hnominimal
+  exact hnot
+    (connectedSphericalFourColorStatement_of_no_minimal hnominimal
+      G hcard ⟨presentation⟩)
+
 /-- Componentwise form of the sound spherical Four-Colour headline.  The
 separate classical plane-embedding representation theorem is the only
 remaining adapter from abstract planarity to this statement. -/
