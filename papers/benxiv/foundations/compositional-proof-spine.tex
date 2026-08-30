@@ -3332,6 +3332,45 @@ deletion of adjacent cubic vertices has exactly four degree-two ports and
 is cubic elsewhere, giving the stated specialization.
 \end{proof}
 
+\begin{lemma}[the circuit horn carries a primal facial bond]
+\label{lem:confined-lift-circuit-facial-bond}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24CircuitKempeComponentPrimalCycle.isPrimalCoherentClosed_of_isCycle_of_bicolored}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24CircuitKempeComponentPrimalCycle.exists_primalCycle_of_isCircuitKempeComponent}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairCircuitKempeFacialBond.exists_ambientPrimalCycle_faceSetBond_of_deleted_isCircuitKempeComponent}
+Suppose that the circuit alternative of
+Lemma~\ref{lem:confined-lift-port-or-circuit} occurs in an adjacent-pair
+deletion of a graph-backed spherical cubic map whose orbit faces are
+two-sided.  Then the selected line-graph component contains a simple cycle
+whose primal lift is a simple cycle in the deletion graph.  Every edge of
+that primal cycle belongs to the selected Kempe component.
+
+Under the retained-vertex inclusion, this cycle remains simple in the
+ambient graph.  Moreover, there is a set of orbit faces for which an ambient
+edge lies on the cycle exactly when its two incident faces lie on opposite
+sides of the set, and the selected and unselected face sets each induce a
+connected subgraph of the facial dual.
+\end{lemma}
+
+\begin{proof}
+The circuit condition says that the connected induced two-colour line graph
+is finite and $2$-regular, so it contains a simple line-graph cycle.  At
+three successive vertices of this cycle, the first and third primal edges
+have the same one of the two selected colours: both differ from the middle
+edge.  They therefore cannot meet at one primal vertex, by properness of the
+edge colouring.  The same argument at the closing turn shows that the whole
+line-graph cycle is primal-coherent.  Its canonical primal lift is a
+nonbacktracking closed walk; extracting a simple cycle from its traced
+subgraph retains only edges represented by vertices of the original
+line-graph component.
+
+The deletion graph is an induced subgraph on the retained vertices, so its
+vertex inclusion into the ambient graph is injective and preserves the
+simple cycle.  Finally apply the primal circuit--facial bond lemma: on a
+two-sided spherical rotation system the binary edge vector of a simple
+primal cycle is the boundary of a face set, and support-minimality of the
+cycle forces both facial shores to be connected.
+\end{proof}
+
 \begin{lemma}[exact scope of common-core confinement]
 \label{lem:common-core-confinement-scope}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KempeLiftConfinement.exists_firstCommonCore_preimage_iff_target_retained}
