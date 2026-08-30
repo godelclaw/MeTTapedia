@@ -2239,13 +2239,57 @@ Finally, compose the raw supplier from the first paragraph with the checked
 finite-base assembly.
 \end{proof}
 
+The cut-counting mesh in the preceding proposition is intentionally more
+permissive than a topological wall: it does not remember the order in which
+its designated branch vertices occur on a path, and a path need not be
+simple.  Those omissions do not affect mesh isoperimetry, but they do affect
+the two-dimensional overlap transport below.  The route-specific target can
+therefore be weakened to the following wall-like carrier.
+
+\begin{proposition}[ordered fixed-mesh factorization]
+\label{prop:ordered-fixed-mesh-width-factorization}
+An \emph{ordered injective \(a\)-by-\(b\) mesh} is an injective mesh together
+with simple row and column paths and a selected position of every branch
+vertex on its row and column, strictly increasing in the other coordinate.
+Its underlying permissive mesh is vertex-injective.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedInjectiveMeshWidthFactorization.toMesh_isVertexInjective}
+
+Suppose that no graph-backed vertex-minimal Tait counterexample contains an
+ordered injective \(a\)-by-\(b\) mesh, and that absence of this carrier
+supplies a complete rooted branch decomposition of width at most \(w\).
+Then the raw width-\(w\) supplier follows.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedInjectiveMeshWidthFactorization.rawBranchDecompositionSupply_of_fixedOrderedInjectiveMeshExclusion}
+Conversely, a raw width-\(w\) supplier excludes the ordered mesh whenever
+\(B(w,w)<ab\).
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedInjectiveMeshWidthFactorization.fixedOrderedInjectiveMeshExclusion_of_rawBranchDecompositionSupply}
+Together with the route-native finite base through \(B(w,w)\), the two
+hypotheses imply the combinatorial spherical Four-Colour statement.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedInjectiveMeshWidthFactorization.combinatorialFourColorStatement_of_fixedOrderedMeshExclusion_and_base}
+The stronger exclusion from
+Proposition~\ref{prop:fixed-mesh-width-factorization} implies the ordered
+exclusion.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedInjectiveMeshWidthFactorization.fixedOrderedInjectiveMeshExclusion_of_fixedInjectiveMeshExclusion}
+\end{proposition}
+
+\begin{proof}
+Forgetting the positions and path-simplicity witnesses gives the old mesh;
+the branch-injectivity field is exactly the existing vertex-injectivity
+predicate.  The first implication feeds ordered-mesh absence to the supplied
+wall-free decomposition theorem.  The converse forgets the ordering and
+uses the same injection of the \(ab\) branch positions into \(V(G)\) as in
+Proposition~\ref{prop:fixed-mesh-width-factorization}.  The finite-base
+conclusion then uses the unchanged checked reductive assembly.
+\end{proof}
+
 The first premise of
-Proposition~\ref{prop:fixed-mesh-width-factorization} is the sole
-route-specific high-width assertion.  The second is the conventional
-wall/grid-to-branchwidth implication, expressed on the exact injective mesh
-carrier consumed here.  Neither premise entails the other without the
-quantitative size condition in the converse, and neither is concealed in a
-Lean structure field.
+Proposition~\ref{prop:ordered-fixed-mesh-width-factorization} is the sole
+route-specific high-width assertion used below.  Its second premise is the
+conventional wall/grid-to-branchwidth implication, now expressed on a
+carrier which records the rectangular order needed by the overlap
+connection.  Neither premise entails the other without the quantitative
+size condition in the converse, and neither is concealed in a Lean
+structure field.  The permissive fixed-mesh proposition remains a valid
+stronger alternative, but it is not imposed on the wall-facing proof.
 
 One sufficient way to establish Hypothesis~1 is the stronger statement that
 every zero-target instance containing the wall has either positive target or
@@ -2308,6 +2352,76 @@ transport (or a simultaneous multi-deletion orbit) and then extract a strict
 physical replacement.  Merely pigeonholing the three constant words would
 discard the graph-dependent Kempe paths and would not prove the boxed
 assertion.
+
+The first overlap object can now be stated without choosing a privileged
+representative of either Kempe orbit.
+
+\begin{lemma}[canonical finite state of two adjacent-pair orbits]
+\label{lem:adjacent-pair-overlap-kempe-state}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlap.isTaitEdgeColoring_firstDeletionCommonCoreColoring}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlap.isTaitEdgeColoring_secondDeletionCommonCoreColoring}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapKempeState.overlapKempeStateSupport_eq_of_mem}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapKempeState.overlapKempeStateSupport_nonempty}
+Let \(p=(u,v)\) and \(q=(x,y)\) be two ordered adjacent-pair data in the
+same finite graph.  Their exact common carrier is the induced graph obtained
+by deleting \(u,v,x,y\).  It embeds canonically in each of the two
+adjacent-pair deletions, and restriction along either embedding sends a
+proper nonzero Tait colouring to a proper nonzero Tait colouring of the
+common carrier.
+
+For proper base colourings \((C_p,C_q)\) of the two deletions, attach to a pair
+of proper colourings in their respective Kempe closures the following finite
+state:
+
+\begin{enumerate}
+\item the \(4\)-by-\(4\) Boolean incidence table recording which labelled
+  port vertices of \(p\) and \(q\) coincide;
+\item the exact four-port colour word at each deletion;
+\item for every ordered pair of colours and every ordered pair of ports, the
+  Boolean value saying whether those ports meet the same selected
+  two-colour component; and
+\item the Boolean value saying whether the two restrictions to the common
+  carrier agree literally.
+\end{enumerate}
+
+Let \(\mathcal R(C_p,C_q)\) be the set of all such states realised by proper
+colourings in the two closures.  Then \(\mathcal R(C_p,C_q)\) is nonempty.
+Moreover, if \(C'_p\) and \(C'_q\) are reachable from \(C_p\) and \(C_q\),
+respectively, then
+
+\[
+        \mathcal R(C_p,C_q)=\mathcal R(C'_p,C'_q).
+\]
+Thus this overlap relation belongs to the two Kempe orbits, not to the
+chosen representatives.
+\end{lemma}
+
+\begin{proof}
+Deleting all four named vertices factors through either two-vertex deletion
+by the inclusion of retained vertices.  Pulling an edge colouring back along
+either induced-graph embedding merely evaluates it on the corresponding
+ambient edge, so nonzeroness is preserved edge by edge.
+
+Every coordinate listed above has finite domain and finite codomain; their
+product is therefore finite.  The two base colourings themselves witness
+nonemptiness.  Finally, a member of a Kempe closure has the same Kempe
+closure as the base: reachability is reflexive, symmetric, and transitive.
+Replacing either base by a reachable representative consequently changes
+neither quantified colouring set and hence changes no realised overlap
+state.
+\end{proof}
+
+Applied to Lemma~\ref{lem:adjacent-pair-common-constant-orbit}, the two
+marginals of this relation each contain the three nonzero constant boundary
+words.  The lemma deliberately does \emph{not} assert that a state with
+literal common-carrier agreement is realised, nor that two neighbouring
+relations have equal Count support.  Exact agreement is false in some of the
+checked intrinsic-short reentry geometries.  The remaining wall-facing task
+is therefore a genuinely two-dimensional statement about composing these
+finite orbit relations---either a coherent flat region yields the support
+equality needed by the physical splice, or a non-coboundary holonomy yields
+a structural target.  A chosen-word transport, and any additive discrepancy
+of endpoint potentials, is too weak for that task.
 
 There is nevertheless no colour-extension gap at a compatible checkpoint.
 The following statement isolates the exact planar cap which may be attached

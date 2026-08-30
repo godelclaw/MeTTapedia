@@ -37,7 +37,7 @@ noncomputable section
 
 /- Keep the edge-subtype equality decision definitionally aligned with the
 source-profile module whose definitions are consumed below. -/
-local instance sourceEdgeSetDecidableEq : DecidableEq G.edgeSet :=
+local instance sourceEdgeSetDecidableEqTerminalProfileCompression : DecidableEq G.edgeSet :=
   Subtype.instDecidableEq
 
 namespace Instance

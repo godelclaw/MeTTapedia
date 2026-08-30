@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.EdgeColoringEmbedding
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlap
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AllFaceNormalReentry
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -33,62 +33,6 @@ attribute [local instance]
 variable {graphData : Data G}
   {minimal : GraphBackedVertexMinimalTaitCounterexample graphData}
   {baseData : AdjacentPairData G}
-
-/-- The common induced graph left after deleting two ordered vertex pairs. -/
-abbrev DeletedTwoPairsGraph
-    (G : SimpleGraph V) (first second third fourth : V) :
-    SimpleGraph {vertex : V |
-      vertex ≠ first ∧ vertex ≠ second ∧
-        vertex ≠ third ∧ vertex ≠ fourth} :=
-  G.induce {vertex |
-    vertex ≠ first ∧ vertex ≠ second ∧
-      vertex ≠ third ∧ vertex ≠ fourth}
-
-/-- The common four-vertex deletion embeds into the deletion of its first
-ordered pair. -/
-def deletedTwoPairsToFirstDeletionEmbedding
-    (G : SimpleGraph V) (first second third fourth : V) :
-    DeletedTwoPairsGraph G first second third fourth ↪g
-      DeletedAdjacentPairGraph G first second where
-  toFun vertex := ⟨vertex.1, vertex.2.1, vertex.2.2.1⟩
-  inj' left right heq := by
-    apply Subtype.ext
-    exact congrArg
-      (fun vertex : retainedVertexSet first second => vertex.1) heq
-  map_rel_iff' := Iff.rfl
-
-/-- The same common deletion embeds into the deletion of its second
-ordered pair. -/
-def deletedTwoPairsToSecondDeletionEmbedding
-    (G : SimpleGraph V) (first second third fourth : V) :
-    DeletedTwoPairsGraph G first second third fourth ↪g
-      DeletedAdjacentPairGraph G third fourth where
-  toFun vertex := ⟨vertex.1, vertex.2.2.2.1, vertex.2.2.2.2⟩
-  inj' left right heq := by
-    apply Subtype.ext
-    exact congrArg
-      (fun vertex : retainedVertexSet third fourth => vertex.1) heq
-  map_rel_iff' := Iff.rfl
-
-/-- Restrict a coloring of the first adjacent-pair deletion to the common
-four-vertex deleted graph. -/
-def firstDeletionCommonCoreColoring
-    {first second third fourth : V}
-    (coloring :
-      (DeletedAdjacentPairGraph G first second).EdgeColoring Color) :
-    (DeletedTwoPairsGraph G first second third fourth).EdgeColoring Color :=
-  coloring.pullbackEmbedding
-    (deletedTwoPairsToFirstDeletionEmbedding G first second third fourth)
-
-/-- Restrict a coloring of the second adjacent-pair deletion to the same
-common four-vertex deleted graph. -/
-def secondDeletionCommonCoreColoring
-    {first second third fourth : V}
-    (coloring :
-      (DeletedAdjacentPairGraph G third fourth).EdgeColoring Color) :
-    (DeletedTwoPairsGraph G first second third fourth).EdgeColoring Color :=
-  coloring.pullbackEmbedding
-    (deletedTwoPairsToSecondDeletionEmbedding G first second third fourth)
 
 /-- The two actual Tait colorings attached to a recursive reentry, restricted
 to their identical common four-vertex deleted graph.  No equality or Kempe

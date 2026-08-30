@@ -36,7 +36,7 @@ variable {V : Type*} [Fintype V] [DecidableEq V]
 
 noncomputable section
 
-local instance sourceEdgeSetDecidableEq : DecidableEq G.edgeSet :=
+local instance sourceEdgeSetDecidableEqSpliceGraphHoleTransport : DecidableEq G.edgeSet :=
   Subtype.instDecidableEq
 
 local instance rotationPrimalGraphAdjDecidable
