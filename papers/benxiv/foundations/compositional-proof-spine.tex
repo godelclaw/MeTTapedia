@@ -6741,13 +6741,18 @@ replacement interior have the same accepting support in \(G'\) and \(G\),
 proving the last assertion without a second, merely semantic composite.
 \end{proof}
 
-The complete replacement kernel of this argument is now checked on the
-literal majority-shore data in
+The complete replacement kernel of this argument is checked on the literal
+majority-shore data in
 Theorem~\ref{thm:majority-shore-physical-replacement}.  The present theorem
-remains marked \textsc{prose} because its stronger geometric input begins
-with independently supplied nooses.  Its formal residue is exactly the
-noose/decomposition-to-edge-shore adapter; no colouring, cap, Euler or
-minimality step remains hidden behind that adapter.
+remains marked \textsc{prose} only because it is the optional continuous
+Jordan-curve presentation.  The load-bearing discrete version is now fully
+checked in Corollary~\ref{cor:dual-noose-literal-replacement}: it starts with
+an actual simple closed walk in the facial dual and a chosen deletion
+component, derives the exact planar bond and connected complementary shores,
+computes the canonical phased state, performs the literal splice, and
+terminates parallel-seam normalization.  Thus the remaining continuous
+noose-to-facial-dual conversion belongs to the bounded-width M1 supplier; no
+colouring, cap, Euler, normalization or minimality step remains hidden in M2.
 
 \begin{theorem}[the implemented seam composite has the non-topological map fields]
 \label{thm:implemented-seam-composite-fields}
@@ -7056,6 +7061,7 @@ parity saturation proves that \(X_r\) is exactly the graph boundary of
 \(C_r\), not merely a set containing that boundary, and proves that both
 \(C_r\) and its vertex complement induce connected graphs.  Consequently
 \(S_r\) and \(E(M)\setminus S_r\) are connected edge shores.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DualNooseLiteralReplacement.DualNooseSide.exactBoundary_connectedSides}
 
 It remains to compare the geometric length with the middle-set width used by
 the finite state.  A middle vertex of \(S_r\) cannot lie in \(C_r\): every
@@ -7068,6 +7074,7 @@ endpoints.  Hence
 \[
  |\operatorname{mid}(S_r)|\le |X_r|=|W_r|\le w.
 \]
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DualNooseLiteralReplacement.DualNooseSide.middle_card_le_walk_length}
 
 The chosen component is nonempty and cubic, so \(S_r\) contains at least
 three edges.  Together with the assumed two exterior edges, connectedness
@@ -7259,7 +7266,9 @@ a splice producing a bridge would not contradict minimality inside the class
 to which Tait's equivalence applies.  Planarity, cubicity, connectedness,
 strict size decrease, and zero Count are proved together with bridgelessness
 in the ordinary argument of
-Theorem~\ref{thm:physical-noose-deletion}.  Lean now checks the literal
+Theorem~\ref{thm:physical-noose-deletion}; the corresponding discrete
+facial-dual construction is checked in
+Corollary~\ref{cor:dual-noose-literal-replacement}.  Lean checks the literal
 rotation-system composite's connectedness, bridge-freeness, cubicity, and
 rotation-cyclicity in
 Theorem~\ref{thm:implemented-seam-composite-fields}.  The
