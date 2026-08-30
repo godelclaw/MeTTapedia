@@ -3354,6 +3354,36 @@ $R$ is second.  Every target witness therefore belonged to one of the source
 pair supports, proving $U(A')\subseteq U(A)$.
 \end{proof}
 
+\begin{lemma}[a closed confined-repair circuit freezes the disagreement carrier]
+\label{lem:closed-confined-repair-carrier-rigidity}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshConfinedRepairPropagation.reflTransGen_nineSiteAmbientDisagreementUnion_antitone}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshConfinedRepairPropagation.nineSiteAmbientDisagreementUnion_eq_of_step_in_closed_run}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshConfinedRepairPropagation.exists_carrierPreservingStep_of_confinedRepairCycle}
+Suppose a confined-repair run starts and ends at the same nine-site state.
+At every displayed step $A\longrightarrow A'$ of that closed run,
+
+\[
+                              U(A')=U(A).
+\]
+
+In particular, every nonempty confined-repair cycle has a first step which
+preserves the ambient disagreement carrier exactly.
+\end{lemma}
+
+\begin{proof}
+Write the closed run as a prefix from the base state $A_0$ to $A$, the
+displayed step $A\longrightarrow A'$, and a suffix from $A'$ back to
+$A_0$.  Iterating
+Lemma~\ref{lem:confined-disagreement-union-antitone} along the prefix and
+suffix gives
+\[
+                  U(A)\subseteq U(A_0)\subseteq U(A').
+\]
+The displayed step gives the reverse inclusion
+$U(A')\subseteq U(A)$.  Hence equality holds.  Splitting a nonempty
+transitive cycle at its first step supplies the final assertion.
+\end{proof}
+
 \begin{corollary}[forced partner-disagreement propagation]
 \label{cor:forced-partner-disagreement-propagation}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KempeLiftConfinement.commonCoreAgrees_of_confined_left_update}

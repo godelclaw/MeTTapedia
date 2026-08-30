@@ -284,6 +284,73 @@ theorem nineSiteAmbientDisagreementUnion_antitone
       refine ⟨first, second, ?_⟩
       simpa [hfirstEq, hsecondEq] using hedgePair
 
+/-- The ambient disagreement union is antitone along every finite confined
+repair run. -/
+theorem reflTransGen_nineSiteAmbientDisagreementUnion_antitone
+    (row : Fin a) (slot : Fin 9 ↪ Fin n)
+    {source target : NineSiteTaitAssignment rotation minimal ordered row slot}
+    (run : Relation.ReflTransGen
+      (NineSiteConfinedStrictRepairStep
+        rotation minimal ordered row slot) source target) :
+    NineSiteAmbientDisagreementUnion
+        rotation minimal ordered row slot target ⊆
+      NineSiteAmbientDisagreementUnion
+        rotation minimal ordered row slot source := by
+  induction run with
+  | refl => exact Finset.Subset.rfl
+  | tail run step ih =>
+      intro edge hedge
+      exact ih (nineSiteAmbientDisagreementUnion_antitone
+        rotation minimal ordered row slot step hedge)
+
+/-- Every displayed step inside a closed confined-repair run preserves the
+whole ambient disagreement carrier exactly. -/
+theorem nineSiteAmbientDisagreementUnion_eq_of_step_in_closed_run
+    (row : Fin a) (slot : Fin 9 ↪ Fin n)
+    {base source target :
+      NineSiteTaitAssignment rotation minimal ordered row slot}
+    (outboundRun : Relation.ReflTransGen
+      (NineSiteConfinedStrictRepairStep
+        rotation minimal ordered row slot) base source)
+    (step : NineSiteConfinedStrictRepairStep
+      rotation minimal ordered row slot source target)
+    (returnRun : Relation.ReflTransGen
+      (NineSiteConfinedStrictRepairStep
+        rotation minimal ordered row slot) target base) :
+    NineSiteAmbientDisagreementUnion
+        rotation minimal ordered row slot target =
+      NineSiteAmbientDisagreementUnion
+        rotation minimal ordered row slot source := by
+  apply Finset.Subset.antisymm
+  · exact nineSiteAmbientDisagreementUnion_antitone
+      rotation minimal ordered row slot step
+  · exact (reflTransGen_nineSiteAmbientDisagreementUnion_antitone
+      rotation minimal ordered row slot outboundRun).trans
+        (reflTransGen_nineSiteAmbientDisagreementUnion_antitone
+          rotation minimal ordered row slot returnRun)
+
+/-- A nonempty closed confined-repair chain has a first step which preserves
+the full ambient disagreement carrier. -/
+theorem exists_carrierPreservingStep_of_confinedRepairCycle
+    (row : Fin a) (slot : Fin 9 ↪ Fin n)
+    (source : NineSiteTaitAssignment rotation minimal ordered row slot)
+    (cycle : Relation.TransGen
+      (NineSiteConfinedStrictRepairStep
+        rotation minimal ordered row slot) source source) :
+    ∃ target,
+      NineSiteConfinedStrictRepairStep
+          rotation minimal ordered row slot source target ∧
+        NineSiteAmbientDisagreementUnion
+            rotation minimal ordered row slot target =
+          NineSiteAmbientDisagreementUnion
+            rotation minimal ordered row slot source := by
+  rcases (Relation.TransGen.head'_iff).1 cycle with
+    ⟨target, step, returnRun⟩
+  exact ⟨target, step,
+    nineSiteAmbientDisagreementUnion_eq_of_step_in_closed_run
+      rotation minimal ordered row slot Relation.ReflTransGen.refl
+        step returnRun⟩
+
 /-- Every nine-site state either exposes the geometric horns or has a
 confined strict-repair successor. -/
 theorem branchingOrBoundary_or_exists_confinedStrictRepairStep
