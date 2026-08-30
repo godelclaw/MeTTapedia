@@ -3290,6 +3290,36 @@ the exact common deletion of $D_A$ and $D_B$ gives the stated adjacent-pair
 form.
 \end{proof}
 
+\begin{lemma}[exact scope of common-core confinement]
+\label{lem:common-core-confinement-scope}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KempeLiftConfinement.exists_firstCommonCore_preimage_iff_target_retained}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KempeLiftConfinement.exists_firstCommonCore_preimage_of_mem_ambientDisagreementSupport}
+Let $D_R,D_G$ be two adjacent-pair deletions and let $e$ be an ambient
+edge retained by $D_R$.  Then the copy of $e$ in $D_R$ lies in the
+image of the exact common-deletion embedding if and only if $D_G$ also
+retains $e$.  Consequently every edge in a pairwise ambient disagreement
+support lies inside the corresponding common-core image.
+
+Thus the word ``confined'' in
+Lemma~\ref{lem:common-core-lift-support-confinement} is an exact support
+statement but not a metric-locality statement.  The common core deletes only
+the four vertices of the two adjacent pairs and can contain edges arbitrarily
+far from both selected mesh intervals.  In particular, confinement alone
+does not put the persistent carrier of
+Corollary~\ref{cor:no-horn-persistent-disagreement-carrier} in a bounded
+mesh neighbourhood.
+\end{lemma}
+
+\begin{proof}
+If the retained copy of $e$ has a common-core preimage, that preimage is
+retained by the second deletion, and mapping it back to the ambient graph
+recovers $e$.  Conversely, if both deletions retain $e$, attach to its
+two endpoints the proofs that they avoid all four deleted vertices.  This
+gives an edge of the common induced graph whose first embedding is exactly
+the retained copy of $e$.  A disagreement-support edge is retained by
+both displayed patches by definition, so the final assertion follows.
+\end{proof}
+
 \begin{lemma}[pointwise disagreement transport under confinement]
 \label{lem:confined-disagreement-support-transport}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KempeLiftConfinement.ambientDisagreementSupport_nonempty_iff}
