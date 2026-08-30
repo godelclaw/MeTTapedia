@@ -2588,6 +2588,63 @@ an uncoloured zero-target counterexample.  A wall-facing use of that source
 lemma must instead eliminate the odd residual obstruction or construct the
 strict exact-support replacement required by the reductive descent.
 
+The obstruction admits a well-founded potential which makes the required
+wall surgery exact rather than qualitative.
+
+\begin{theorem}[the residual-defect descent principle]
+\label{thm:residual-defect-descent}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualDefectDescent.residualDefect_eq_zero_iff_isBipartite}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualDefectDescent.exists_supportedPairing_minimal_residualDefect}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualDefectDescent.residualDefect_pos_of_not_taitColorable}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualDefectDescent.taitColorable_of_residualDefect_descent}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualDefectDescent.exists_positive_minimal_residualDefect_of_not_taitColorable}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualDefectDescent.exists_positive_minimal_residualDefect_of_cubic_edgeBridgeFree}
+Let \(G\) be a finite cubic simple graph with at least one graph-supported
+perfect matching.  For a supported matching \(\sigma\), let
+\[
+ d_G(\sigma)=\#\{C:C\text{ is a connected component of }R_\sigma
+                         \text{ and }C\text{ is not bipartite}\}.
+\]
+Then a supported matching minimizing \(d_G\) exists.  Every such minimizer
+\(\sigma_0\) satisfies
+\[
+ d_G(\sigma_0)\leq d_G(\tau)
+ \qquad\text{for every supported perfect matching }\tau.
+\]
+Moreover:
+\begin{enumerate}
+\item if \(G\) is not Tait colourable, then \(d_G(\sigma_0)>0\), and no
+      supported perfect matching has smaller defect;
+\item if every supported \(\sigma\) with \(d_G(\sigma)>0\) admits a supported
+      \(\tau\) with \(d_G(\tau)<d_G(\sigma)\), then \(G\) is Tait colourable.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+There are only finitely many connected components of every residual graph,
+so \(d_G(\sigma)\) is a natural number.  The well ordering of the natural
+numbers chooses a minimum among the nonempty family of supported matchings.
+
+A finite graph is bipartite exactly when each connected component is
+bipartite.  Hence \(d_G(\sigma)=0\) exactly when \(R_\sigma\) is bipartite.
+Theorem~\ref{thm:residual-two-factor-obstruction} then turns defect zero into
+a Tait colouring of \(G\).  Thus a minimizer in a Tait counterexample has
+positive defect, and its minimality forbids a supported matching of smaller
+defect.
+
+Conversely, suppose every positive-defect supported matching admits a strict
+defect decrease, and choose a minimizer \(\sigma_0\).  If its defect were
+positive, the assumed decrease would contradict minimality.  Therefore its
+defect is zero, its residual graph is bipartite, and
+Theorem~\ref{thm:residual-two-factor-obstruction} gives a Tait colouring.
+\end{proof}
+
+Thus the route-specific high-width task may be sharpened once more: put a
+minimum-defect matching through the wall and either construct one supported
+matching of strictly lower defect, or extract the strict exact-support
+replacement used by the reductive descent.  Producing an arbitrary new
+matching, without controlling this potential, is not enough.
+
 There is also an exact limitation on the matching-exchange idea.
 
 \begin{lemma}[two-matching exchange preserves the overlap locus]
