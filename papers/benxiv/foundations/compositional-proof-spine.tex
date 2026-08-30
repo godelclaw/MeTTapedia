@@ -3290,6 +3290,48 @@ the exact common deletion of $D_A$ and $D_B$ gives the stated adjacent-pair
 form.
 \end{proof}
 
+\begin{lemma}[port-or-circuit classification for a confined lift]
+\label{lem:confined-lift-port-or-circuit}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DegreeTwoBoundaryKempeLiftClassification.circuit_or_exists_kempeComponentMeetsPort}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DegreeTwoBoundaryKempeLiftClassification.taitBoundaryAlongLiftOrbit_or_exists_portOrCircuitConfinedLift}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DegreeTwoBoundaryKempeLiftClassification.firstTaitOrbitReachesSecondPair_or_exists_portOrCircuitConfinedLift}
+Let $H$ be a finite graph with a finite ordered set of degree-two ports,
+and suppose that every other vertex of $H$ has degree three.  In any Tait
+colouring of $H$, every connected component selected by two distinct
+nonzero colours is either a circuit or contains an edge incident with a
+port.
+
+Consequently, in the non-boundary horn of
+Lemma~\ref{lem:common-core-lift-support-confinement}, every switch in the
+lifted sequence on $D_A$ is either circuit-shaped or meets one of the four
+ports exposed by deleting the adjacent pair $D_A$.  Thus the exact
+three-way alternative is: a component reaches the second deleted pair; a
+lifted component reaches the first deleted pair's boundary; or the lifted
+component is a circuit.  In the latter two cases the whole sequence still
+fixes every edge outside the exact common-core image.
+\end{lemma}
+
+\begin{proof}
+Suppose a selected component $K$ is not a circuit.  Some selected edge
+$e\in K$, viewed as a vertex of the induced two-colour line graph, then
+has degree different from two.  If neither endpoint of $e$ were a port,
+both endpoints would be cubic.  At either endpoint, properness and the Tait
+condition give exactly one incident edge in the other selected colour.
+The two resulting neighbours of $e$ are distinct because the graph is
+simple.  They are all of its neighbours in the selected line graph, so
+$e$ has degree two, a contradiction.  Hence $K$ meets a port.
+
+For a finite sequence, induct over its switches.  The common-core lifting
+lemma either detects contact with the second deletion, or identifies the
+small component with one whole component of the first deletion and changes
+no edge outside the common core.  Apply the preceding classification to
+that lifted component and retain its port-or-circuit tag in the step
+relation.  Valid-pair switching preserves the Tait condition, and the
+outside-core equalities compose along the sequence.  Finally, the first
+deletion of adjacent cubic vertices has exactly four degree-two ports and
+is cubic elsewhere, giving the stated specialization.
+\end{proof}
+
 \begin{lemma}[exact scope of common-core confinement]
 \label{lem:common-core-confinement-scope}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KempeLiftConfinement.exists_firstCommonCore_preimage_iff_target_retained}
