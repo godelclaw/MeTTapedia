@@ -3321,6 +3321,38 @@ agree on every edge of their exact common deletion, contradicting that this
 was the lost agreement.  Therefore $G$ and $L$ disagree.
 \end{proof}
 
+\begin{proposition}[agreement-pivot dynamics alone can cycle]
+\label{prop:agreement-pivot-cycle-countermodel}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AgreementPivotCycleCountermodel.confinedPivotStep_three_cycle}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AgreementPivotCycleCountermodel.not_exists_strictlyIncreasing_agreementRank}
+There are three sites and three reflexive symmetric agreement states
+$S_{02},S_{01},S_{12}$ with the following closed repair run:
+\[
+ S_{02}\xrightarrow{,0:2\mapsto 1,}S_{01}
+ \xrightarrow{,1:0\mapsto 2,}S_{12}
+ \xrightarrow{,2:1\mapsto 0,}S_{02}.
+\]
+At every arrow the repaired site first disagrees with the gained partner and
+agrees with the lost partner; afterwards it agrees with the gained partner
+and disagrees with the lost partner, the two partners disagree, and every
+agreement not incident with the repaired site is unchanged.  Consequently
+no natural-number-valued rank depending only on the agreement relation can
+increase strictly at every confined pivot.
+\end{proposition}
+
+\begin{proof}
+Let $S_{ij}$ consist of the diagonal pairs together with the two orientations
+of the single off-diagonal pair $\{i,j\}$.  Thus $S_{02}$ has the lone
+nontrivial agreement $0\sim2$.  Repair site $0$ by replacing that agreement
+with $0\sim1$; the untouched pair $1,2$ disagrees before and after.  The same
+description, cyclically relabelled, gives
+$S_{01}\to S_{12}\to S_{02}$.  These are confined pivots with partner
+disagreement exactly as stated.
+
+If a rank $r$ increased on every such pivot, the closed run would give
+$r(S_{02})<r(S_{01})<r(S_{12})<r(S_{02})$, an impossibility.
+\end{proof}
+
 Applied to the pair supplied by
 Corollary~\ref{cor:ordered-row-common-core-disagreement}, this trichotomy is
 the exact local residue.  It still does not give support equality or wall
@@ -3333,7 +3365,10 @@ alternative using the support receipt discarded by the earlier lift theorem.
 The defect must propagate to the two partner sites.  The remaining
 two-dimensional task is therefore to show that repeated propagation reaches
 the branching or boundary horn, or that its finite recurrent dynamics define
-an exact support-preserving replacement.  The
+an exact support-preserving replacement.  Proposition~\ref{prop:agreement-pivot-cycle-countermodel}
+shows that this step must use mesh geometry or information richer than the
+abstract agreement graph: confinement and partner disagreement alone still
+admit a periodic orbit.  The
 arc-consistent no-section obstruction of
 Corollary~\ref{cor:arc-consistent-no-section-residue} alone does not supply
 that termination or replacement.  A coherent atlas is already impossible by
