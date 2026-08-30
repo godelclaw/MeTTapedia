@@ -2943,6 +2943,8 @@ planarity.
 \label{lem:local-transpositions-generate-kempe}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24LocalSwapKempeGeneration.mem_edgeKempeClosure_of_locallySwapRelated}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24LocalSwapKempeGeneration.exists_not_locallySwapRelated_of_not_mem_edgeKempeClosure}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24LocalSwapKempeGeneration.taitKempeReachable_of_locallySwapRelated}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24LocalSwapKempeGeneration.exists_not_locallySwapRelated_of_not_taitKempeReachable}
 Let \(G\) be a finite simple graph and let \(C,C'\) be two proper edge
 colourings of \(G\).  Suppose that for every vertex \(v\) there are colours
 \(a_v,b_v\), possibly equal, such that
@@ -2952,7 +2954,11 @@ colourings of \(G\).  Suppose that for every vertex \(v\) there are colours
 \]
 Then \(C'\) belongs to the edge-Kempe closure of \(C\).  Consequently, if
 \(C'\) is not in that closure, some vertex admits no such local
-transposition.
+transposition.  If both colourings are Tait colourings, then the generating
+sequence may moreover be chosen to switch only pairs of distinct nonzero
+colours; every intermediate colouring is again a Tait colouring.  Failure of
+reachability by such valid-pair switches has the same local-transposition
+witness.
 \end{lemma}
 
 \begin{proof}
@@ -2971,7 +2977,11 @@ component the colouring is unchanged.  The switched colouring therefore
 satisfies the same local-transposition hypothesis relative to \(C'\), and
 the finite set of disagreeing edges has strictly smaller cardinality.  Strong
 induction on that cardinality produces a finite sequence of Kempe switches
-from \(C\) to \(C'\).  The last assertion is the contrapositive.
+from \(C\) to \(C'\).  If \(C,C'\) are Tait colourings, the two colours
+chosen at a disagreement edge are respectively \(C(e)\) and \(C'(e)\), so
+they are distinct and nonzero.  Switching such a pair preserves nonzeroness,
+and the same induction never leaves the Tait state space.  The two final
+assertions are the corresponding contrapositives.
 \end{proof}
 
 At an interior cubic Tait vertex, both colourings use all three nonzero
@@ -2988,19 +2998,22 @@ The second horn can be compared exactly with the original deletion graph.
 \label{lem:common-core-kempe-lift-or-boundary}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KempeComponentEmbeddingBoundary.touchesBoundary_or_exists_liftedComponentSwitch}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KempeComponentEmbeddingBoundary.boundaryAlongLiftOrbit_or_exists_liftedColoring}
-\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairCommonCoreKempeBoundary.firstOrbitReachesSecondPair_or_exists_liftedColoring}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KempeComponentEmbeddingBoundary.taitBoundaryAlongLiftOrbit_or_exists_liftedColoring}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairCommonCoreKempeBoundary.firstTaitOrbitReachesSecondPair_or_exists_liftedColoring}
 Let \(D_{uv}\) be the graph obtained by deleting an adjacent pair
 \((u,v)\), and let \(H=D_{uv}-\{x,y\}\) be its common core with the deletion
-of another adjacent pair \((x,y)\).  Let \(C\) be an edge colouring of
-\(D_{uv}\), and suppose that an edge colouring \(C^*\) of \(H\) is
-Kempe-reachable from \(C|_H\).  Then one of the following holds.
+of another adjacent pair \((x,y)\).  Let \(C\) be a Tait edge colouring of
+\(D_{uv}\), and suppose that a Tait edge colouring \(C^*\) of \(H\) is
+reachable from \(C|_H\) by switches of distinct nonzero colour pairs.  Then
+one of the following holds.
 \begin{enumerate}
 \item At an intermediate colouring in the Kempe orbit of \(C\), one of the
       common-core components used by the sequence is adjacent, in
       \(D_{uv}\), to a same-two-colour edge outside \(H\).  Every such
       outside edge has an endpoint \(x\) or \(y\).
-\item There is a colouring \(\widetilde C\) in the Kempe closure of \(C\)
-      such that \(\widetilde C|_H=C^*\).
+\item There is a Tait colouring \(\widetilde C\), reachable from \(C\) by
+      switches of distinct nonzero colour pairs, such that
+      \(\widetilde C|_H=C^*\).
 \end{enumerate}
 \end{lemma}
 
@@ -3017,7 +3030,10 @@ restricts literally to the prescribed switch of \(K\).
 Iterate this alternative along a finite sequence witnessing
 Kempe-reachability.  Until the boundary alternative occurs, each switch
 lifts, so induction produces a colouring in the original deletion's Kempe
-orbit with the required final restriction.  Finally, an edge of \(D_{uv}\)
+orbit with the required final restriction.  The selected colour pair at
+each step is distinct and nonzero, and a component switch of such a pair
+preserves the Tait condition; hence this induction stays entirely inside the
+Tait state space.  Finally, an edge of \(D_{uv}\)
 outside the image of \(H\) cannot have both endpoints different from
 \(x,y\): if it did, attaching those endpoint inequalities would construct
 its preimage edge in \(H\).  Hence every outside edge in the first
@@ -3026,24 +3042,27 @@ alternative is incident with \(x\) or \(y\).
 
 \begin{corollary}[exact residue of common-core disagreement]
 \label{cor:common-core-disagreement-residue}
-\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairCommonCoreDisagreementResidue.branching_or_reachesSecondPair_or_strictRepair}
-Let \(C_{uv}\) and \(C_{xy}\) colour the two adjacent-pair deletion graphs,
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairCommonCoreDisagreementResidue.branching_or_taitReachesSecondPair_or_strictTaitRepair}
+Let \(C_{uv}\) and \(C_{xy}\) be Tait colourings of the two adjacent-pair deletion graphs,
 and suppose their restrictions to the common four-vertex deletion \(H\)
 are unequal.  Then at least one of the following holds.
 \begin{enumerate}
 \item Some vertex of \(H\) admits no single colour transposition carrying
       the first restricted colouring to the second on all incident edges.
-\item At an intermediate representative in the Kempe orbit of \(C_{uv}\),
+\item At an intermediate representative reachable from \(C_{uv}\) by
+      distinct-nonzero-pair Kempe switches,
       a common-core Kempe component reaches an edge incident with \(x\) or
       \(y\).
-\item There is a colouring \(\widetilde C_{uv}\ne C_{uv}\) in the Kempe
-      closure of \(C_{uv}\) whose restriction to \(H\) equals
+\item There is a Tait colouring \(\widetilde C_{uv}\ne C_{uv}\), reachable
+      by distinct-nonzero-pair Kempe switches from \(C_{uv}\), whose
+      restriction to \(H\) equals
       \(C_{xy}|_H\).
 \end{enumerate}
 \end{corollary}
 
 \begin{proof}
-If \(C_{xy}|_H\) is not Kempe-reachable from \(C_{uv}|_H\), apply
+If \(C_{xy}|_H\) is not reachable from \(C_{uv}|_H\) by valid-pair
+Tait Kempe switches, apply
 Lemma~\ref{lem:local-transpositions-generate-kempe} contrapositively to get
 the first alternative.  If it is reachable, apply
 Lemma~\ref{lem:common-core-kempe-lift-or-boundary}.  Its boundary horn is

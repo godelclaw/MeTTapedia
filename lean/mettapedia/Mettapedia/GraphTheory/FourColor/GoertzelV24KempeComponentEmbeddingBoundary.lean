@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.EdgeColoringEmbedding
+import Mettapedia.GraphTheory.FourColor.GoertzelV24LocalSwapKempeGeneration
 
 /-!
 # Restricting a Kempe component along a graph embedding
@@ -19,6 +20,7 @@ namespace Mettapedia.GraphTheory.FourColor
 
 namespace GoertzelV24KempeComponentEmbeddingBoundary
 
+open GoertzelV24LocalSwapKempeGeneration
 open SimpleGraph
 
 universe u v w
@@ -288,6 +290,73 @@ theorem boundaryAlongLiftOrbit_or_exists_liftedColoring
             largeGraph.mem_edgeKempeClosure_of_mem_of_step
               hcurrent first second targetComponent
           exact ⟨lifted, hlifted, hlift⟩
+
+/-! ## The Tait-preserving lift -/
+
+/-- Pulling a nonzero edge colouring back along a graph embedding preserves
+the nonzero condition. -/
+theorem isTaitEdgeColoring_pullbackEmbedding
+    (coloring : largeGraph.EdgeColoring Color)
+    (embedding : smallGraph ↪g largeGraph)
+    (hcoloring : IsTaitEdgeColoring largeGraph coloring) :
+    IsTaitEdgeColoring smallGraph
+      (coloring.pullbackEmbedding embedding) := by
+  intro edge
+  exact hcoloring (embedding.mapEdgeSet edge)
+
+/-- A boundary-reaching valid-pair component occurs at some colouring in the
+large Tait-Kempe orbit of the supplied base. -/
+def HasTaitBoundaryStepInLiftOrbit
+    (base : largeGraph.EdgeColoring Color)
+    (embedding : smallGraph ↪g largeGraph) : Prop :=
+  ∃ current : largeGraph.EdgeColoring Color,
+    TaitKempeReachable base current ∧
+    ∃ first second : Color, ValidColorPair first second ∧
+      ∃ component : ((current.pullbackEmbedding embedding).bicoloredSubgraph
+        first second).ConnectedComponent,
+        ComponentTouchesEmbeddingBoundary current embedding
+          first second component
+
+/-- **Tait-preserving finite lift-or-boundary dichotomy.**  A finite
+valid-pair Kempe sequence on the embedded graph either reaches the embedding
+boundary or lifts to a finite valid-pair sequence upstairs. -/
+theorem taitBoundaryAlongLiftOrbit_or_exists_liftedColoring
+    (base : largeGraph.EdgeColoring Color)
+    (hbase : IsTaitEdgeColoring largeGraph base)
+    (embedding : smallGraph ↪g largeGraph)
+    (target : smallGraph.EdgeColoring Color)
+    (hreachable : TaitKempeReachable
+      (base.pullbackEmbedding embedding) target) :
+    HasTaitBoundaryStepInLiftOrbit base embedding ∨
+      ∃ lifted : largeGraph.EdgeColoring Color,
+        TaitKempeReachable base lifted ∧
+        IsTaitEdgeColoring largeGraph lifted ∧
+        lifted.pullbackEmbedding embedding = target := by
+  induction hreachable with
+  | refl =>
+      right
+      exact ⟨base, Relation.ReflTransGen.refl, hbase, rfl⟩
+  | tail hprefix hstep ih =>
+      rcases ih with hboundary | ⟨current, hcurrent, hcurrentTait, hrestrict⟩
+      · exact Or.inl hboundary
+      · rcases hstep with ⟨first, second, hpair, component, rfl⟩
+        subst hrestrict
+        rcases touchesBoundary_or_exists_liftedComponentSwitch
+            current embedding first second component with
+          htouches | ⟨targetComponent, hlift⟩
+        · left
+          exact ⟨current, hcurrent, first, second, hpair,
+            component, htouches⟩
+        · right
+          let lifted := current.swapOnKempeComponent
+            first second targetComponent
+          have hlargeStep : TaitKempeStep current lifted :=
+            ⟨first, second, hpair, targetComponent, rfl⟩
+          have hliftedReachable : TaitKempeReachable base lifted :=
+            hcurrent.tail hlargeStep
+          have hliftedTait : IsTaitEdgeColoring largeGraph lifted :=
+            isTaitEdgeColoring_of_taitKempeStep hcurrentTait hlargeStep
+          exact ⟨lifted, hliftedReachable, hliftedTait, hlift⟩
 
 end GoertzelV24KempeComponentEmbeddingBoundary
 

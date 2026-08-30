@@ -24,6 +24,7 @@ open GoertzelV24AdjacentPairBoundary
 open GoertzelV24AdjacentPairInsertion
 open GoertzelV24AdjacentPairInsertion.AdjacentPairData
 open GoertzelV24KempeComponentEmbeddingBoundary
+open GoertzelV24LocalSwapKempeGeneration
 open SimpleGraph
 
 noncomputable section
@@ -187,6 +188,66 @@ theorem firstOrbitReachesSecondPair_or_exists_liftedColoring
     rcases hboundary with
       ⟨current, hcurrent, first, second, component, htouches⟩
     exact ⟨current, hcurrent, first, second, component,
+      firstComponentReachesSecondPair_of_touchesEmbeddingBoundary
+        source target current first second component htouches⟩
+  · exact Or.inr hlifted
+
+/-! ## The nonzero Tait-world specialization -/
+
+/-- A valid-pair boundary-reaching step occurs at some representative of the
+first deletion's Tait-Kempe orbit. -/
+def FirstTaitOrbitReachesSecondPair
+    (source target : AdjacentPairData G)
+    (base : (DeletedAdjacentPairGraph G source.firstVertex
+      source.secondVertex).EdgeColoring Color) : Prop :=
+  ∃ current,
+    TaitKempeReachable base current ∧
+    ∃ first second : Color, ValidColorPair first second ∧
+      ∃ component : ((firstDeletionCommonCoreColoring
+        (third := target.firstVertex) (fourth := target.secondVertex)
+        current).bicoloredSubgraph first second).ConnectedComponent,
+        FirstComponentReachesSecondPair source target current
+          first second component
+
+omit [Fintype V] [DecidableRel G.Adj] in
+/-- **Tait-preserving common-core lift-or-boundary dichotomy.**  A whole
+valid-pair common-core Kempe sequence lifts into the first pair deletion
+without introducing zero, unless an intermediate component reaches the
+vertices of the second pair. -/
+theorem firstTaitOrbitReachesSecondPair_or_exists_liftedColoring
+    (source target : AdjacentPairData G)
+    (base : (DeletedAdjacentPairGraph G source.firstVertex
+      source.secondVertex).EdgeColoring Color)
+    (hbase : IsTaitEdgeColoring
+      (DeletedAdjacentPairGraph G source.firstVertex source.secondVertex)
+      base)
+    (targetCommon :
+      (DeletedTwoPairsGraph G source.firstVertex source.secondVertex
+        target.firstVertex target.secondVertex).EdgeColoring Color)
+    (hreachable : TaitKempeReachable
+      (firstDeletionCommonCoreColoring
+        (third := target.firstVertex) (fourth := target.secondVertex)
+        base)
+      targetCommon) :
+    FirstTaitOrbitReachesSecondPair source target base ∨
+      ∃ lifted,
+        TaitKempeReachable base lifted ∧
+        IsTaitEdgeColoring
+          (DeletedAdjacentPairGraph G source.firstVertex source.secondVertex)
+          lifted ∧
+        firstDeletionCommonCoreColoring
+          (third := target.firstVertex) (fourth := target.secondVertex)
+          lifted = targetCommon := by
+  rcases taitBoundaryAlongLiftOrbit_or_exists_liftedColoring
+      base hbase
+      (deletedTwoPairsToFirstDeletionEmbedding G source.firstVertex
+        source.secondVertex target.firstVertex target.secondVertex)
+      targetCommon hreachable with
+    hboundary | hlifted
+  · left
+    rcases hboundary with
+      ⟨current, hcurrent, first, second, hpair, component, htouches⟩
+    exact ⟨current, hcurrent, first, second, hpair, component,
       firstComponentReachesSecondPair_of_touchesEmbeddingBoundary
         source target current first second component htouches⟩
   · exact Or.inr hlifted
