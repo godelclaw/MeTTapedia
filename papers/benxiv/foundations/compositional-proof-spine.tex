@@ -2567,6 +2567,10 @@ state-realisation equality.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairStateReversal.kempePortsConnected_reverseColoring_iff}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairStateReversal.boundaryKempeState_reverseColoring}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairStateReversal.reverseBoundaryKempeState_involutive}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapStateReversal.reverseOverlapKempeState_involutive}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapStateReversal.portOverlapProfile_reverse_swap}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapStateReversal.commonRestrictionAgreementBit_reverse_swap}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapStateReversal.overlapKempeState_reverse_swap}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshSharedBoundaryStates.west_boundaryKempeState_eq_reverse_east}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshSharedBoundaryStates.south_boundaryKempeState_eq_reverse_north}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshGlobalBoundaryHolonomy.globalSuccessorWitnessRelation_nonempty}
@@ -2600,6 +2604,14 @@ ports lie in the same component of a specified two-colour subgraph under the
 same port permutation.  Hence the full boundary Kempe state on one reading of
 a shared side is exactly the involutive reversal of the state on the other
 reading.  This holds for east--west and north--south neighbours.
+
+The same transport acts on the complete two-site overlap observation.  It
+transposes the source--target port-coincidence matrix after the four-port
+reversal, exchanges and reverses the two boundary states, and leaves unchanged
+the Boolean assertion that the two colourings agree on their common
+four-vertex deletion.  This action is an involution.  Consequently, reading an
+ordered pair of physical sites backwards gives exactly the reversed overlap
+state, rather than merely an overlap state with the same boundary words.
 
 For each rectangle, the successor overlap supports built from these globally
 chosen sites are nonempty.  Hence every finite state assignment on its
@@ -2646,6 +2658,14 @@ word and connectivity-bit formulas, and applying the port permutation twice
 is the identity.  Substitution of the already proved shared-side data and
 base-colouring equalities gives the east--west and north--south state
 identities.
+
+For a pair of sites, exchange source and target while applying the same
+retained-vertex swap to both colourings.  The common four-vertex deletion is
+carried to the reversed common deletion by the identity on ambient vertices
+with the four exclusion proofs permuted.  Thus literal agreement of the two
+restricted colourings is invariant.  Together with the one-site state formula
+and the transposed port-coincidence matrix, this proves the complete overlap
+state reversal formula and its involutivity.
 
 Finally, two proper globally based colourings realise an overlap state on
 every successor edge.  Choice of one such finite state on each edge gives an
