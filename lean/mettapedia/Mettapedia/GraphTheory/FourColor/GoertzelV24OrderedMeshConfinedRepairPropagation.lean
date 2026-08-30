@@ -419,6 +419,62 @@ theorem exists_confinedStrictRepairCycle_of_no_branchingOrBoundary
   exact (branchingOrBoundary_or_exists_confinedStrictRepairStep
     rotation minimal ordered row slot assignment).resolve_left (hno assignment)
 
+/-- If the two geometric horns are globally absent, the recurrent confined
+repair alternative carries a nonempty ambient disagreement set which is
+preserved exactly by one strict step. -/
+theorem exists_nonempty_persistentDisagreementCarrier_of_no_branchingOrBoundary
+    (row : Fin a) (slot : Fin 9 ↪ Fin n)
+    (hno : ∀ assignment :
+      NineSiteTaitAssignment rotation minimal ordered row slot,
+      ¬ HasNineSiteBranchingOrBoundary rotation minimal ordered row slot
+          assignment) :
+    ∃ source target edge,
+      NineSiteConfinedStrictRepairStep
+          rotation minimal ordered row slot source target ∧
+        NineSiteAmbientDisagreementUnion
+            rotation minimal ordered row slot target =
+          NineSiteAmbientDisagreementUnion
+            rotation minimal ordered row slot source ∧
+        edge ∈ NineSiteAmbientDisagreementUnion
+          rotation minimal ordered row slot source ∧
+        edge ∈ NineSiteAmbientDisagreementUnion
+          rotation minimal ordered row slot target := by
+  obtain ⟨source, cycle⟩ :=
+    exists_confinedStrictRepairCycle_of_no_branchingOrBoundary
+      rotation minimal ordered row slot hno
+  obtain ⟨target, hstep, hcarrier⟩ :=
+    exists_carrierPreservingStep_of_confinedRepairCycle
+      rotation minimal ordered row slot source cycle
+  have hstepWitness := hstep
+  rcases hstep with
+    ⟨repaired, gainedPartner, _hne, _hreachable, hdisagrees,
+      _hagrees, _hstrict, _hother, _hconfined⟩
+  have hnotAgrees : ¬ CommonCoreAgrees
+      (rowSiteData rotation minimal ordered row slot repaired)
+      (rowSiteData rotation minimal ordered row slot gainedPartner)
+      (source repaired).1 (source gainedPartner).1 := by
+    intro hagrees
+    exact ((commonCoreAgrees_iff_not_coloringsDisagree
+      (rowSiteData rotation minimal ordered row slot repaired)
+      (rowSiteData rotation minimal ordered row slot gainedPartner)
+      (source repaired).1 (source gainedPartner).1).1 hagrees) hdisagrees
+  obtain ⟨edge, hedgePair⟩ :=
+    (ambientDisagreementSupport_nonempty_iff
+      (rowSiteData rotation minimal ordered row slot repaired)
+      (rowSiteData rotation minimal ordered row slot gainedPartner)
+      (source repaired).1 (source gainedPartner).1).2 hnotAgrees
+  have hedgeSource : edge ∈ NineSiteAmbientDisagreementUnion
+      rotation minimal ordered row slot source :=
+    (mem_nineSiteAmbientDisagreementUnion_iff
+      rotation minimal ordered row slot source edge).2
+        ⟨repaired, gainedPartner, hedgePair⟩
+  have hedgeTarget : edge ∈ NineSiteAmbientDisagreementUnion
+      rotation minimal ordered row slot target := by
+    rw [hcarrier]
+    exact hedgeSource
+  exact ⟨source, target, edge, hstepWitness, hcarrier,
+    hedgeSource, hedgeTarget⟩
+
 /-- A closed run of confined repairs still has a collateral agreement loss,
 because forgetting confinement gives the old strictly-growing agreement
 argument. -/

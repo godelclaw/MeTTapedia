@@ -3384,6 +3384,32 @@ $U(A')\subseteq U(A)$.  Hence equality holds.  Splitting a nonempty
 transitive cycle at its first step supplies the final assertion.
 \end{proof}
 
+\begin{corollary}[the no-horn residue has a nonempty persistent carrier]
+\label{cor:no-horn-persistent-disagreement-carrier}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshConfinedRepairPropagation.exists_nonempty_persistentDisagreementCarrier_of_no_branchingOrBoundary}
+If no nine-site state exposes either the branching or the boundary-reaching
+horn, then there is a confined strict repair $A\longrightarrow A'$ and an
+ambient edge $e$ such that
+\[
+                    U(A')=U(A),
+        \qquad e\in U(A)\cap U(A').
+\]
+Thus the recurrent alternative is not merely a repeated finite state: it
+carries at least one physical edge on which the selected deletion colourings
+continue to disagree.
+\end{corollary}
+
+\begin{proof}
+The no-horn hypothesis makes the finite confined-repair relation serial, so
+it has a nonempty directed cycle.  Choose the first carrier-preserving step
+from Lemma~\ref{lem:closed-confined-repair-carrier-rigidity}.  By the
+definition of a strict repair, the repaired site and its gained partner
+disagree before this step.  The exact support characterization of
+Lemma~\ref{lem:confined-disagreement-support-transport} therefore supplies
+an ambient edge $e$ in their disagreement support, hence in $U(A)$.
+Carrier equality places the same edge in $U(A')$.
+\end{proof}
+
 \begin{corollary}[forced partner-disagreement propagation]
 \label{cor:forced-partner-disagreement-propagation}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KempeLiftConfinement.commonCoreAgrees_of_confined_left_update}
