@@ -3290,6 +3290,36 @@ the exact common deletion of $D_A$ and $D_B$ gives the stated adjacent-pair
 form.
 \end{proof}
 
+\begin{lemma}[pointwise disagreement transport under confinement]
+\label{lem:confined-disagreement-support-transport}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KempeLiftConfinement.ambientDisagreementSupport_nonempty_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KempeLiftConfinement.ambientDisagreementSupport_subset_of_confined_left_update}
+Let $R,G,L$ be three adjacent-pair deletions.  Suppose a colouring
+$R_{\rm before}$ of $R$ is changed to $R_{\rm after}$ only on the exact
+common deletion of $R$ and $G$.  If
+$R_{\rm after}\sim G$ and $R_{\rm before}\sim L$, then
+\[
+ \operatorname{Disagree}(R_{\rm after},L)
+ \subseteq \operatorname{Disagree}(G,L),
+\]
+where each disagreement support is the set of ambient edges retained by the
+two displayed deletions on which their displayed colourings differ.
+\end{lemma}
+
+\begin{proof}
+Take an ambient edge $e$ in the left-hand support.  If $G$ retains $e$, then
+$R_{\rm after}(e)=G(e)$, so the inequality
+$R_{\rm after}(e)\ne L(e)$ is the same witnessed disagreement between $G$
+and $L$.
+
+If $G$ does not retain $e$, then $e$ lies outside the embedded common
+deletion of $R$ and $G$.  Confinement gives
+$R_{\rm after}(e)=R_{\rm before}(e)$, while the old agreement with $L$ gives
+$R_{\rm before}(e)=L(e)$.  This contradicts the choice of $e$.  Hence the
+second case is impossible, and every left-hand witness belongs to the
+right-hand support.
+\end{proof}
+
 \begin{corollary}[forced partner-disagreement propagation]
 \label{cor:forced-partner-disagreement-propagation}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KempeLiftConfinement.commonCoreAgrees_of_confined_left_update}
@@ -3298,7 +3328,12 @@ Under the no-branching and no-boundary hypothesis of
 Corollary~\ref{cor:periodic-tait-repair-residue}, some confined strict repair
 ends in a state with a repaired site $R$, its gained partner $G$, and a lost
 partner $L$ such that the colourings at $G$ and $L$ disagree on their exact
-common deletion.
+common deletion.  More precisely, every ambient edge witnessing the new
+$R$--$L$ disagreement also witnesses the $G$--$L$ disagreement:
+\[
+ \operatorname{Disagree}(R,L)\subseteq
+ \operatorname{Disagree}(G,L).
+\]
 \end{corollary}
 
 \begin{proof}
@@ -3319,6 +3354,8 @@ changed by this one-coordinate repair, and $R\sim L$ held before the trade,
 so the two colours are equal in this case as well.  Hence $R$ and $L$ still
 agree on every edge of their exact common deletion, contradicting that this
 was the lost agreement.  Therefore $G$ and $L$ disagree.
+Equivalently, Lemma~\ref{lem:confined-disagreement-support-transport} sends
+the nonempty new $R$--$L$ disagreement support into the $G$--$L$ support.
 \end{proof}
 
 \begin{proposition}[agreement-pivot dynamics alone can cycle]

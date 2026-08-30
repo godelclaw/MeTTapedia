@@ -340,6 +340,118 @@ theorem commonCoreAgrees_of_confined_left_update
         sourceBefore targetColoring).1 hsourceTargetBefore
           edge hsource htarget)
 
+/-- Ambient edges on which two partial deletion colourings are both defined
+and have different values. -/
+noncomputable def ambientDisagreementSupport
+    (source target : AdjacentPairData G)
+    (sourceColoring : (DeletedAdjacentPairGraph G source.firstVertex
+      source.secondVertex).EdgeColoring Color)
+    (targetColoring : (DeletedAdjacentPairGraph G target.firstVertex
+      target.secondVertex).EdgeColoring Color) : Finset G.edgeSet := by
+  classical
+  exact Finset.univ.filter fun edge =>
+    ∃ hsource : IsRetainedAmbientEdge source edge,
+      ∃ htarget : IsRetainedAmbientEdge target edge,
+        sourceColoring (ambientEdgeToRetainedEdge source edge hsource) ≠
+          targetColoring (ambientEdgeToRetainedEdge target edge htarget)
+
+omit [DecidableEq V] in
+theorem mem_ambientDisagreementSupport_iff
+    (source target : AdjacentPairData G)
+    (sourceColoring : (DeletedAdjacentPairGraph G source.firstVertex
+      source.secondVertex).EdgeColoring Color)
+    (targetColoring : (DeletedAdjacentPairGraph G target.firstVertex
+      target.secondVertex).EdgeColoring Color)
+    (edge : G.edgeSet) :
+    edge ∈ ambientDisagreementSupport source target
+        sourceColoring targetColoring ↔
+      ∃ hsource : IsRetainedAmbientEdge source edge,
+        ∃ htarget : IsRetainedAmbientEdge target edge,
+          sourceColoring (ambientEdgeToRetainedEdge source edge hsource) ≠
+            targetColoring (ambientEdgeToRetainedEdge target edge htarget) := by
+  classical
+  simp [ambientDisagreementSupport]
+
+/-- The ambient disagreement support is nonempty exactly when literal
+common-core agreement fails. -/
+theorem ambientDisagreementSupport_nonempty_iff
+    (source target : AdjacentPairData G)
+    (sourceColoring : (DeletedAdjacentPairGraph G source.firstVertex
+      source.secondVertex).EdgeColoring Color)
+    (targetColoring : (DeletedAdjacentPairGraph G target.firstVertex
+      target.secondVertex).EdgeColoring Color) :
+    (ambientDisagreementSupport source target
+        sourceColoring targetColoring).Nonempty ↔
+      ¬ CommonCoreAgrees source target sourceColoring targetColoring := by
+  constructor
+  · rintro ⟨edge, hedge⟩ hagrees
+    rcases (mem_ambientDisagreementSupport_iff
+      source target sourceColoring targetColoring edge).1 hedge with
+      ⟨hsource, htarget, hne⟩
+    exact hne ((commonCoreAgrees_iff_ambient source target
+      sourceColoring targetColoring).1 hagrees edge hsource htarget)
+  · intro hdisagrees
+    have hnotAmbient : ¬ ∀ (edge : G.edgeSet)
+        (hsource : IsRetainedAmbientEdge source edge)
+        (htarget : IsRetainedAmbientEdge target edge),
+        sourceColoring (ambientEdgeToRetainedEdge source edge hsource) =
+          targetColoring
+            (ambientEdgeToRetainedEdge target edge htarget) := by
+      intro hambient
+      exact hdisagrees ((commonCoreAgrees_iff_ambient source target
+        sourceColoring targetColoring).2 hambient)
+    push Not at hnotAmbient
+    rcases hnotAmbient with ⟨edge, hsource, htarget, hne⟩
+    exact ⟨edge, (mem_ambientDisagreementSupport_iff
+      source target sourceColoring targetColoring edge).2
+        ⟨hsource, htarget, hne⟩⟩
+
+/-- **Pointwise disagreement transport.**  If a source colouring is changed
+only on its common deletion with a middle patch, then every new disagreement
+edge with an old agreement partner is retained by the middle patch and is the
+same disagreement edge between the middle and that partner. -/
+theorem ambientDisagreementSupport_subset_of_confined_left_update
+    (source middle target : AdjacentPairData G)
+    (sourceBefore sourceAfter :
+      (DeletedAdjacentPairGraph G source.firstVertex
+        source.secondVertex).EdgeColoring Color)
+    (middleColoring :
+      (DeletedAdjacentPairGraph G middle.firstVertex
+        middle.secondVertex).EdgeColoring Color)
+    (targetColoring :
+      (DeletedAdjacentPairGraph G target.firstVertex
+        target.secondVertex).EdgeColoring Color)
+    (hsourceMiddle : CommonCoreAgrees source middle
+      sourceAfter middleColoring)
+    (hsourceTargetBefore : CommonCoreAgrees source target
+      sourceBefore targetColoring)
+    (hconfined : AgreesOutsideEmbedding sourceBefore sourceAfter
+      (deletedTwoPairsToFirstDeletionEmbedding G source.firstVertex
+        source.secondVertex middle.firstVertex middle.secondVertex)) :
+    ambientDisagreementSupport source target sourceAfter targetColoring ⊆
+      ambientDisagreementSupport middle target middleColoring targetColoring := by
+  intro edge hedge
+  rcases (mem_ambientDisagreementSupport_iff
+      source target sourceAfter targetColoring edge).1 hedge with
+    ⟨hsource, htarget, hne⟩
+  have hmiddle : IsRetainedAmbientEdge middle edge := by
+    by_contra hnotMiddle
+    have houtside := hconfined
+      (ambientEdgeToRetainedEdge source edge hsource)
+      (not_exists_firstCommonCore_preimage_of_not_target_retained
+        source middle edge hsource hnotMiddle)
+    exact hne (houtside.trans
+      ((commonCoreAgrees_iff_ambient source target
+        sourceBefore targetColoring).1 hsourceTargetBefore
+          edge hsource htarget))
+  apply (mem_ambientDisagreementSupport_iff
+    middle target middleColoring targetColoring edge).2
+  refine ⟨hmiddle, htarget, ?_⟩
+  intro hmiddleTarget
+  exact hne (((commonCoreAgrees_iff_ambient source middle
+    sourceAfter middleColoring).1 hsourceMiddle
+      edge hsource hmiddle).trans hmiddleTarget)
+
 end
 
 end GoertzelV24KempeLiftConfinement
