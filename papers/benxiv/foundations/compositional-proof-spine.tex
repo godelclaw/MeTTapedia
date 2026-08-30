@@ -4346,6 +4346,37 @@ property.  This proves the claim.  Spherical separation of the resulting
 ambient cycle is the next topological consumer, not part of this lemma.
 \end{proof}
 
+\begin{lemma}[exact face-side certificate for the boundary-free primal cycle]
+\label{lem:graph-backed-kempe-boundary-free-face-separator}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24VertexSidePrimalKempeFaceSeparator.exists_faceSet_separates_iff_mem_walk_of_isCycle}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24VertexSidePrimalKempeFaceSeparator.exists_ambientPrimalKempeCycle_faceSetSeparator_of_boundaryFree}
+Assume in addition that the ambient dart rotation is a connected bridgeless
+spherical cubic map and that every primal edge has two distinct incident
+orbit faces.  For the ambient simple cycle supplied by
+Lemma~\ref{lem:graph-backed-kempe-boundary-free-primal-cycle}, there is a
+finite set of orbit faces such that an ambient edge occurs in the cycle if
+and only if exactly one of its two incident faces belongs to that set.
+\end{lemma}
+
+\begin{proof}
+Count the traversals of each ambient edge by the simple closed walk modulo
+two.  Closedness makes the incidence boundary of this binary edge vector
+zero, so it lies in the primal binary cycle space.  On a connected spherical
+map, the orbit-face boundary vectors span that cycle space.  Therefore the
+edge vector is the boundary of a binary coefficient on the orbit faces.
+
+Every binary coefficient is the characteristic function of the finite set
+of faces on which it is one.  Two-sidedness says that its boundary has value
+one on an edge exactly when the two incident faces have different
+coefficients.  Finally, the walk is a trail, so its modulo-two value on an
+edge is one exactly when that edge occurs in the cycle.  Combining the two
+equivalences gives the stated face-side certificate.
+
+This is the exact combinatorial boundary identity needed from Jordan
+separation.  It does not yet assert that either class of faces is connected,
+nor does it construct a geometric noose; those are separate consumers.
+\end{proof}
+
 \begin{theorem}[the physical common web induces the exact boundary matching]
 \label{thm:port-tangle-physical-kempe-matching}
 Let $T$ be a finite cubic port tangle with a proper nonzero Tait colouring,
