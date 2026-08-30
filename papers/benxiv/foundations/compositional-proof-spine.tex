@@ -2901,13 +2901,13 @@ property of the least counterexample.
 
 \begin{corollary}[a long ordered row forces common-core disagreement]
 \label{cor:ordered-row-common-core-disagreement}
-\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshColoringAtlas.exists_disagreement_in_any_nine_row_intervals}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshColoringAtlas.exists_coloring_disagreement_in_any_nine_row_intervals}
 Suppose an ordered injective mesh in a graph-backed least Tait
 counterexample has a row meeting at least ten ordered branch columns.  Choose
-any nine distinct intervals between successive branch columns, and choose
-once and for all the proper deletion colouring supplied by minimality at
-every global mesh step.  Then two of the nine selected interval colourings
-have false common-restriction agreement bit.
+any nine distinct intervals between successive branch columns.  At each of
+the nine intervals choose arbitrarily any proper nonzero colouring of its
+adjacent-pair deletion graph.  Then two of the nine chosen colourings have
+false common-restriction agreement bit.
 \end{corollary}
 
 \begin{proof}
@@ -2929,6 +2929,12 @@ selected colourings had true common-restriction bit, that lemma would colour
 the ambient counterexample.  Hence at least one pair among the chosen nine
 has false bit.
 \end{proof}
+
+The quantifier over the nine deletion colourings is load-bearing.  In
+particular, replacing the chosen bases by arbitrary Kempe-reachable
+representatives cannot make all common restrictions agree simultaneously.
+Thus the disagreement is an obstruction of the family, not an artefact of a
+poor initial representative choice.
 
 This does not contradict the pentagonal-prism diagnostic above.  Four true
 agreement bits attached to the four sides of one compatible cell state do
