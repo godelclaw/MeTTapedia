@@ -3185,18 +3185,88 @@ Corollary~\ref{cor:nine-site-tait-common-core-residue}, which supplies a
 disagreeing pair for every simultaneous nine-site assignment.
 \end{proof}
 
+The binary constraints have one further exact locality property.  Although
+common-core agreement is not transitive as a relation on whole pairwise
+common deletions, its failure of transitivity cannot occur away from the
+middle deletion.
+
+\begin{lemma}[three-patch common-core localization]
+\label{lem:three-patch-common-core-localization}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairCommonCoreLocalization.commonCoreAgrees_iff_ambient}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairCommonCoreLocalization.commonCoreAgrees_symm}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairCommonCoreLocalization.commonCoreDisagreementLocalizedAt_of_chain}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairInsertion.AdjacentPairData.not_isRetainedAmbientEdge_iff}
+Let $D_A,D_B,D_C$ be three adjacent-pair deletions of one finite simple
+graph, with edge-colourings $A,B,C$ of their retained induced graphs.
+Suppose $A$ and $B$ agree on their exact common deletion, and $B$ and
+$C$ agree on theirs.  If $A$ and $C$ disagree on their exact common
+deletion, then some ambient edge $e$ has all of the following properties:
+it is retained by $D_A$ and $D_C$, it is deleted by $D_B$, and
+$A(e)\ne C(e)$.  In particular $e$ is either the central edge or one of
+the four boundary edges incident with the adjacent pair deleted by $D_B$.
+\end{lemma}
+
+\begin{proof}
+Equality of the restrictions of two deletion colourings is equivalent to
+literal equality on every ambient edge retained by both.  The forward
+direction evaluates the common restriction; conversely, every edge of the
+common deletion has a canonical ambient image retained by both deletion
+patches, so ambient equality gives equality of the restriction functions.
+This characterization also proves symmetry, despite the two orientations
+using definitionally different subtype carriers.
+
+Since the $A$- and $C$-restrictions are unequal, choose an edge of their
+common deletion on which their colours differ, and regard it as an ambient
+edge $e$.  If $D_B$ retained $e$, then $A(e)=B(e)$ by the first
+agreement and $B(e)=C(e)$ by the second, contradicting the choice of
+$e$.  Hence $D_B$ deletes $e$.  An adjacent-pair deletion removes
+exactly its central edge and its four boundary edges, which gives the final
+assertion.
+\end{proof}
+
+\begin{corollary}[localized anchored agreement trade]
+\label{cor:localized-anchored-agreement-trade}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshCommonCoreLocalizationResidue.partnerDisagreementOrLocalizedCollateralLoss_of_anchoredTrade}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshCommonCoreLocalizationResidue.exists_partnerDisagreementOrLocalizedCollateralLoss_of_no_branchingOrBoundary}
+Under the no-branching and no-boundary hypothesis of
+Corollary~\ref{cor:periodic-tait-repair-residue}, some strict repair ends in
+a state with a repaired site $R$, its gained partner $G$, and a lost
+partner $L$ such that one of the following holds:
+\begin{enumerate}
+\item the colourings at $G$ and $L$ disagree on their exact common
+      deletion; or
+\item the new disagreement between $R$ and $L$ has a witness edge among
+      the five ambient edges deleted at $G$.
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+Take the anchored trade supplied by
+Corollary~\ref{cor:anchored-agreement-trade-residue}, and orient its lost
+pair so that the repaired site is first; symmetry from
+Lemma~\ref{lem:three-patch-common-core-localization} permits this.  In the
+target state, $R$ agrees with $G$ and disagrees with $L$.  If $G$
+and $L$ disagree, the first alternative holds.  Otherwise $G$ agrees
+with $L$, and the chain $R\sim G\sim L$, together with
+$R\not\sim L$, satisfies the three-patch localization lemma.  Its witness
+is retained by the $R$- and $L$-deletions but deleted by the
+$G$-deletion, hence lies in the five-edge footprint of $G$.
+\end{proof}
+
 Applied to the pair supplied by
 Corollary~\ref{cor:ordered-row-common-core-disagreement}, this trichotomy is
 the exact local residue.  It still does not give support equality or wall
 exclusion: Corollary~\ref{cor:anchored-agreement-trade-residue} now proves
 that repairing one pair must sometimes destroy another common-core agreement
-at the repaired site.  The remaining two-dimensional task is therefore
-sharper: either force branching or boundary-reaching witnesses with enough
-geometric coherence to support a strict replacement, or turn this anchored
-agreement trade---equivalently, the arc-consistent no-section obstruction of
-Corollary~\ref{cor:arc-consistent-no-section-residue}---into a finite
-holonomy/support obstruction that supplies such a replacement.  A coherent
-atlas is already impossible by
+at the repaired site.  Corollary~\ref{cor:localized-anchored-agreement-trade}
+sharpens the periodic horn again: the defect either propagates to the two
+partner sites or leaves a witness in one named five-edge deletion footprint.
+The remaining two-dimensional task is therefore to show that repeated
+propagation reaches the branching or boundary horn, or that the accumulated
+bounded footprints define an exact support-preserving replacement.  The
+arc-consistent no-section obstruction of
+Corollary~\ref{cor:arc-consistent-no-section-residue} alone does not supply
+that termination or replacement.  A coherent atlas is already impossible by
 Lemma~\ref{lem:global-common-core-colouring-atlas}.  No monotonicity of the
 naive number of disagreeing pairs is assumed; the verified trade explains
 exactly how the periodic horn defeats that monotonicity.
