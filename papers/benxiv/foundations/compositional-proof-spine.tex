@@ -2444,6 +2444,7 @@ corner, whereas a compositional cell must reuse one actual colouring there.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapKempeHolonomyResidue.hasFixedPointFreeRelationalHolonomy_iff_break_or_nonempty}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapKempeHolonomyResidue.hasSharedWitnessObstruction_iff_exists_break_or_nonemptyHolonomy}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapKempeHolonomyResidue.nonemptyFixedPointFreeRelationalHolonomy_residue}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapKempeHolonomyResidue.equivalence_sign_eq_neg_one_of_card_eq_two}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshAdjacentPairSites.meshPathStep_adjacent}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshAdjacentPairSites.exists_nonempty_overlapKempeCellStateSupport}
 Let four adjacent-pair deletions be arranged clockwise around a cell, with
@@ -2552,7 +2553,10 @@ one of its two coordinates (relational branching); or the two supports agree
 and (R) is unique in both coordinates.  In the last case, choice of the
 unique successor constructs a bijection of the common active support, and a
 fixed-point-free (R) induces a genuine fixed-point-free permutation there.
-Only this last residue can be passed to a permutation-sign invariant.
+Only this last residue can be passed to a permutation-sign invariant.  If its
+active support has two elements, fixed-point-freeness makes the permutation's
+support the whole two-element carrier; it is therefore a transposition and
+has sign \(-1\).
 
 An exhaustive finite diagnostic gives an important warning about the scope of
 this criterion.  For the four edges of a square face in the pentagonal prism,

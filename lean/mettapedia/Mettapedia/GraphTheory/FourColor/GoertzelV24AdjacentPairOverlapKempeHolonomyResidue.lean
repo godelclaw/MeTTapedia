@@ -172,13 +172,44 @@ noncomputable def equivalence {A : Type*} {relation : A → A → Prop}
   Equiv.ofBijective transport.next
     ⟨transport.next_injective, transport.next_surjective⟩
 
-/-- The induced permutation has exactly the original relation as its graph on
-the active support. -/
+/-- The induced permutation follows the original relation on the active
+support. -/
 theorem equivalence_spec {A : Type*} {relation : A → A → Prop}
     (transport : StableRelationalTransport relation)
     (source : RelationDomain relation) :
     relation source (transport.equivalence source) := by
   exact transport.next_spec source
+
+/-- On active sources and targets, the original relation is exactly the graph
+of the induced permutation. -/
+theorem relation_iff_equivalence_eq {A : Type*}
+    {relation : A → A → Prop}
+    (transport : StableRelationalTransport relation)
+    (source target : RelationDomain relation) :
+    relation source target ↔ transport.equivalence source = target := by
+  constructor
+  · intro hrelation
+    exact Subtype.ext
+      (transport.rightUnique (transport.equivalence_spec source) hrelation)
+  · rintro rfl
+    exact transport.equivalence_spec source
+
+/-- On a two-element active support, a fixed-point-free stable transport is
+the unique transposition and therefore has negative sign. -/
+theorem equivalence_sign_eq_neg_one_of_card_eq_two
+    {A : Type*} {relation : A → A → Prop}
+    [Fintype (RelationDomain relation)]
+    [DecidableEq (RelationDomain relation)]
+    (transport : StableRelationalTransport relation)
+    (hcard : Fintype.card (RelationDomain relation) = 2)
+    (hfixed : ∀ source, transport.equivalence source ≠ source) :
+    Equiv.Perm.sign transport.equivalence = -1 := by
+  apply Equiv.Perm.IsSwap.sign_eq
+  rw [← Equiv.Perm.card_support_eq_two]
+  have hsupport : Equiv.Perm.support transport.equivalence = Finset.univ := by
+    ext source
+    simp [hfixed source]
+  rw [hsupport, Finset.card_univ, hcard]
 
 end StableRelationalTransport
 
@@ -304,5 +335,8 @@ alias GoertzelV24AdjacentPairOverlapKempeHolonomyResidue.hasSharedWitnessObstruc
 
 alias GoertzelV24AdjacentPairOverlapKempeHolonomyResidue.nonemptyFixedPointFreeRelationalHolonomy_residue :=
   GoertzelV24AdjacentPairInsertion.AdjacentPairData.nonemptyFixedPointFreeRelationalHolonomy_residue
+
+alias GoertzelV24AdjacentPairOverlapKempeHolonomyResidue.equivalence_sign_eq_neg_one_of_card_eq_two :=
+  GoertzelV24AdjacentPairInsertion.AdjacentPairData.StableRelationalTransport.equivalence_sign_eq_neg_one_of_card_eq_two
 
 end Mettapedia.GraphTheory.FourColor
