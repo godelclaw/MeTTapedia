@@ -2435,6 +2435,9 @@ corner, whereas a compositional cell must reuse one actual colouring there.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapKempeCell.overlapKempeCellStateSupport_subset_compatibleCycleSupport}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapKempeCell.sharedWitnessLifting_or_obstruction}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapKempeCell.overlapKempeCellStateSupport_eq_compatibleCycleSupport_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapKempeLifting.hasBoundaryKempeStateCollision_iff_not_separatesOrbit}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapKempeLifting.hasSharedWitnessLifting_of_boundaryKempeStateSeparatesOrbits}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapKempeLifting.exists_corner_boundaryKempeStateCollision_of_not_sharedWitnessLifting}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshAdjacentPairSites.meshPathStep_adjacent}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshAdjacentPairSites.exists_nonempty_overlapKempeCellStateSupport}
 Let four adjacent-pair deletions be arranged clockwise around a cell, with
@@ -2497,6 +2500,30 @@ The finite-state dichotomy itself is checked: shared-witness lifting holds,
 or one compatible cycle state explicitly fails to lift.  This dichotomy is a
 specification of the two possible proof obligations, not a proof that either
 alternative has the required geometric consequence.
+
+There is an exact positive criterion.  Say that the boundary observation
+\emph{separates an orbit} when two proper colourings in that Kempe orbit with
+the same boundary word and all the same labelled two-colour port-connectivity
+bits are literally the same colouring.  If the observation separates each of
+the four corner orbits, then pairwise compatibility does lift: choose witnesses
+on the four sides; corner coherence makes the two observations at a corner
+equal, separation identifies the two concrete colourings, and the four
+identified colourings are shared witnesses for the cell.  Contrapositively,
+failure of lifting forces a nontrivial fibre at one or more corners.  Thus the
+missing datum is not an unspecified topological defect: it is exactly a pair of
+distinct proper orbit representatives with the same recorded boundary state.
+
+An exhaustive finite diagnostic gives an important warning about the scope of
+this criterion.  For the four edges of a square face in the pentagonal prism,
+each selected proper deletion orbit is the proper part of its full edge-Kempe
+closure, yet a pairwise-compatible cycle fails to lift; two opposite corner
+observations have fibres of size two.  This computation has not yet been
+reflected into the kernel, so it is evidence rather than a formal
+counterexample.  It nevertheless rules out treating planarity,
+bridgeless cubicity, or the bare ordered-mesh axioms as a reason to assume
+orbit separation.  A wall argument must either control these fibres using the
+minimal-counterexample hypothesis or carry enough additional finite
+transition data to compose them.
 
 There is nevertheless no colour-extension gap at a compatible checkpoint.
 The following statement isolates the exact planar cap which may be attached
