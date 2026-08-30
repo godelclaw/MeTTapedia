@@ -2960,6 +2960,7 @@ site datum rather than a second local choice.
 \label{cor:ordered-mesh-proper-alternating-components}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshResidualSiteMatching.exists_exchangeRigid_with_proper_alternatingComponent_at_every_globalMeshStep}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshResidualSiteFacialBond.exists_exchangeRigid_with_facialBond_at_every_globalMeshStep}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualFormationSwitch.exists_exchangeRigid_with_facialFormationSwitch_at_every_globalMeshStep}
 Under the hypotheses of
 Corollary~\ref{cor:ordered-mesh-rigid-site-matchings}, choose its one global
 minimum-residual-defect matching \(\sigma\).  For every physical mesh step
@@ -2987,6 +2988,21 @@ Finally, \(C_e\) is an exact bond of the facial dual.  There is a set
 \(F_e\) of orbit faces such that a primal edge belongs to \(C_e\) exactly
 when its two incident faces lie on opposite sides of \(F_e\), and the facial
 dual subgraphs induced by \(F_e\) and by its complement are both connected.
+
+There is also a literal local formation switch at every vertex \(z\) of
+\(C_e\).  Cubicity supplies a unique third neighbour \(q_e(z)\), distinct
+from both \(\sigma(z)\) and \(\tau_e(z)\).  In the residual graph obtained by
+deleting the \(\sigma\)-matching, the two incident residual edges at \(z\)
+are
+\[
+             z\tau_e(z)\quad\hbox{and}\quad zq_e(z).
+\]
+After exchanging \(\sigma\) with \(\tau_e\) on \(A_e\), they are
+\[
+             z\sigma(z)\quad\hbox{and}\quad zq_e(z).
+\]
+The fixed third edge \(zq_e(z)\) is not an edge of \(C_e\), and its two
+incident orbit faces therefore lie in the same shore of the facial bond.
 \end{corollary}
 
 \begin{proof}
@@ -3037,6 +3053,15 @@ with two-sided orbit faces.  Apply the simple-primal-cycle facial-bond theorem
 to \(C_e\).  Its binary edge vector is an orbit-face boundary, and minimality
 of the support of a simple cycle forces each of the two face shores to be
 connected.  This supplies \(F_e\) with the asserted exact boundary equation.
+
+At a vertex \(z\in A_e\), the two alternating-cycle neighbours are the
+distinct partners \(\sigma(z)\) and \(\tau_e(z)\).  Since \(G\) is cubic,
+there is exactly one remaining neighbour \(q_e(z)\).  Before the exchange the
+residual graph deletes the \(\sigma\)-edge; after the exchange its selected
+matching edge at \(z\) is the \(\tau_e\)-edge.  This gives the two displayed
+pairs of residual edges.  The third edge is not in the alternating cycle.
+The exact facial-bond equation consequently says that it does not cross the
+face-shore boundary, which is precisely the final assertion.
 \end{proof}
 
 This is not merely another proof that a bridgeless cubic graph has a perfect
@@ -3048,7 +3073,10 @@ synchronized so that symmetric difference strictly lowers residual quotient
 oddness, or instead yields equal exact shore supports for a physical
 replacement.  In particular, the corollary has quantifier order
 \(\exists\sigma\,\forall e\,\exists\tau_e\); it does not assert a coherent
-simultaneous choice of the \(\tau_e\).
+simultaneous choice of the \(\tau_e\).  The local formation receipts identify
+which residual edge changes at each cycle vertex, but do not yet pair the
+third-edge excursions when they return to the cycle or compute the resulting
+change in the number of odd residual components.
 
 This lemma is nonlocal in precisely the way the original formation argument
 needs: the Kempe paths witnessing the two independent side moves may run

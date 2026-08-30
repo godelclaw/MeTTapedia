@@ -74,6 +74,8 @@ structure ProperAlternatingSiteWitness
     ∀ edge ∈ cycle.edges, edge ∈ (alternatingGraph sigma tau).edgeSet
   sigma_closed : ∀ vertex ∈ carrier, sigma.partner vertex ∈ carrier
   tau_closed : ∀ vertex ∈ carrier, tau.partner vertex ∈ carrier
+  disagree_on_carrier :
+    ∀ vertex ∈ carrier, sigma.partner vertex ≠ tau.partner vertex
   four_le : 4 ≤ carrier.card
   shared_edge_outside :
     ∃ vertex : V,
@@ -234,6 +236,10 @@ theorem exists_exchangeRigid_with_proper_alternatingComponent_at_every_globalMes
         cycle_edges_alternating := hcycleEdges
         sigma_closed := hSigmaClosed
         tau_closed := hTauClosed
+        disagree_on_carrier := by
+          intro vertex hvertex
+          apply disagreement_of_mem_alternatingComponent sigma tau hroot
+          simpa only [carrier] using hvertex
         four_le := hfour
         shared_edge_outside := houtside
         exchange_rigid := hrigid carrier hSigmaClosed hTauClosed }⟩
