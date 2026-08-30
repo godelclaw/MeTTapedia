@@ -279,6 +279,146 @@ theorem globalColoringFamily_coversAdjacentEdges
     selectedGlobalKempeSite_retains_of_rowStep_avoids
       rotation minimal ordered row column second hleftSecond hrightSecond⟩
 
+/-! ## Localizing the obstruction to any nine selected row intervals -/
+
+/-- Restrict the globally selected deletion colourings to an arbitrary
+family of row intervals. -/
+def rowSelectionColoringFamily {I : Type w}
+    (row : Fin a) (slot : I → Fin n) :
+    PairDeletionColoringFamily (G := G) I where
+  data index :=
+    (selectedGlobalKempeSite rotation minimal ordered
+      (globalRowStep rotation ordered row (slot index))).data
+  coloring index :=
+    (selectedGlobalKempeSite rotation minimal ordered
+      (globalRowStep rotation ordered row (slot index))).base
+  tait index :=
+    (selectedGlobalKempeSite rotation minimal ordered
+      (globalRowStep rotation ordered row (slot index))).baseTait
+
+/-- Any injective selection of at least five row intervals covers every
+ambient edge. -/
+theorem rowSelectionColoringFamily_coversEdges
+    {I : Type w} [Fintype I]
+    (row : Fin a) (slot : I → Fin n)
+    (slotInjective : Function.Injective slot)
+    (hlarge : 4 < Fintype.card I) :
+    (rowSelectionColoringFamily rotation minimal ordered row slot).CoversEdges := by
+  intro edge
+  have hcard : edge.1.toFinset.card = 2 :=
+    Sym2.card_toFinset_of_not_isDiag edge.1
+      (G.not_isDiag_of_mem_edgeSet edge.2)
+  obtain ⟨index, hfirst, hsecond⟩ := exists_avoiding_two_injective
+    (fun index => rowStepFirstEndpoint rotation ordered row (slot index))
+    (fun index => rowStepSecondEndpoint rotation ordered row (slot index))
+    ((rowStepFirstEndpoint_injective rotation ordered row).comp slotInjective)
+    ((rowStepSecondEndpoint_injective rotation ordered row).comp slotInjective)
+    edge.1.toFinset (by omega)
+  exact ⟨index, selectedGlobalKempeSite_retains_of_rowStep_avoids
+    rotation minimal ordered row (slot index) edge hfirst hsecond⟩
+
+/-- Any injective selection of nine row intervals covers every pair of
+ambient edges simultaneously, hence in particular every adjacent pair. -/
+theorem rowSelectionColoringFamily_coversAdjacentEdges
+    {I : Type w} [Fintype I]
+    (row : Fin a) (slot : I → Fin n)
+    (slotInjective : Function.Injective slot)
+    (hlarge : 8 < Fintype.card I) :
+    (rowSelectionColoringFamily rotation minimal ordered row slot).CoversAdjacentEdges := by
+  intro first second _hadjacent
+  let forbidden : Finset V := first.1.toFinset ∪ second.1.toFinset
+  have hfirstCard : first.1.toFinset.card = 2 :=
+    Sym2.card_toFinset_of_not_isDiag first.1
+      (G.not_isDiag_of_mem_edgeSet first.2)
+  have hsecondCard : second.1.toFinset.card = 2 :=
+    Sym2.card_toFinset_of_not_isDiag second.1
+      (G.not_isDiag_of_mem_edgeSet second.2)
+  have hforbiddenCard : forbidden.card ≤ 4 := by
+    calc
+      forbidden.card ≤ first.1.toFinset.card + second.1.toFinset.card :=
+        Finset.card_union_le _ _
+      _ = 4 := by rw [hfirstCard, hsecondCard]
+  obtain ⟨index, hleft, hright⟩ := exists_avoiding_two_injective
+    (fun index => rowStepFirstEndpoint rotation ordered row (slot index))
+    (fun index => rowStepSecondEndpoint rotation ordered row (slot index))
+    ((rowStepFirstEndpoint_injective rotation ordered row).comp slotInjective)
+    ((rowStepSecondEndpoint_injective rotation ordered row).comp slotInjective)
+    forbidden (by omega)
+  have hleftFirst :
+      rowStepFirstEndpoint rotation ordered row (slot index) ∉
+        first.1.toFinset :=
+    fun hmem => hleft (Finset.mem_union_left _ hmem)
+  have hrightFirst :
+      rowStepSecondEndpoint rotation ordered row (slot index) ∉
+        first.1.toFinset :=
+    fun hmem => hright (Finset.mem_union_left _ hmem)
+  have hleftSecond :
+      rowStepFirstEndpoint rotation ordered row (slot index) ∉
+        second.1.toFinset :=
+    fun hmem => hleft (Finset.mem_union_right _ hmem)
+  have hrightSecond :
+      rowStepSecondEndpoint rotation ordered row (slot index) ∉
+        second.1.toFinset :=
+    fun hmem => hright (Finset.mem_union_right _ hmem)
+  exact ⟨index,
+    selectedGlobalKempeSite_retains_of_rowStep_avoids
+      rotation minimal ordered row (slot index) first hleftFirst hrightFirst,
+    selectedGlobalKempeSite_retains_of_rowStep_avoids
+      rotation minimal ordered row (slot index) second hleftSecond hrightSecond⟩
+
+/-- Every injective nine-site sample on one ordered row contains two selected
+deletion colourings whose exact common-restriction bit is false. -/
+theorem exists_rowSelection_commonRestriction_disagreement
+    {I : Type w} [Fintype I]
+    (row : Fin a) (slot : I → Fin n)
+    (slotInjective : Function.Injective slot)
+    (hlarge : 8 < Fintype.card I) :
+    ∃ first second : I,
+      commonRestrictionAgreementBit
+        (selectedGlobalKempeSite rotation minimal ordered
+          (globalRowStep rotation ordered row (slot first))).data
+        (selectedGlobalKempeSite rotation minimal ordered
+          (globalRowStep rotation ordered row (slot second))).data
+        (selectedGlobalKempeSite rotation minimal ordered
+          (globalRowStep rotation ordered row (slot first))).base
+        (selectedGlobalKempeSite rotation minimal ordered
+          (globalRowStep rotation ordered row (slot second))).base = false := by
+  let family := rowSelectionColoringFamily rotation minimal ordered row slot
+  have hnot := family.not_pairwiseCommonRestrictionAgrees_of_minimal
+    rotation minimal
+    (rowSelectionColoringFamily_coversEdges rotation minimal ordered row slot
+      slotInjective (by omega))
+    (rowSelectionColoringFamily_coversAdjacentEdges
+      rotation minimal ordered row slot slotInjective hlarge)
+  unfold PairwiseCommonRestrictionAgrees at hnot
+  push Not at hnot
+  rcases hnot with ⟨first, second, hagrees⟩
+  refine ⟨first, second, ?_⟩
+  change commonRestrictionAgreementBit
+      (family.data first) (family.data second)
+      (family.coloring first) (family.coloring second) = false
+  cases hvalue : commonRestrictionAgreementBit
+      (family.data first) (family.data second)
+      (family.coloring first) (family.coloring second) <;>
+    simp_all
+
+/-- Publication-facing fixed-size form: any nine distinct intervals on one
+ordered row contain a disagreeing pair. -/
+theorem exists_disagreement_in_any_nine_row_intervals
+    (row : Fin a) (slot : Fin 9 ↪ Fin n) :
+    ∃ first second : Fin 9,
+      commonRestrictionAgreementBit
+        (selectedGlobalKempeSite rotation minimal ordered
+          (globalRowStep rotation ordered row (slot first))).data
+        (selectedGlobalKempeSite rotation minimal ordered
+          (globalRowStep rotation ordered row (slot second))).data
+        (selectedGlobalKempeSite rotation minimal ordered
+          (globalRowStep rotation ordered row (slot first))).base
+        (selectedGlobalKempeSite rotation minimal ordered
+          (globalRowStep rotation ordered row (slot second))).base = false := by
+  exact exists_rowSelection_commonRestriction_disagreement
+    rotation minimal ordered row slot slot.injective (by simp)
+
 /-- A least counterexample carrying an ordered mesh with ten columns has two
 globally selected deletion colourings whose exact common-restriction bit is
 false.  Thus the high-width argument must resolve a concrete disagreement;
