@@ -977,3 +977,4 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualTwoFactor
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualDefectDescent
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualExchange
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualOddness
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairMatchingExtraction
