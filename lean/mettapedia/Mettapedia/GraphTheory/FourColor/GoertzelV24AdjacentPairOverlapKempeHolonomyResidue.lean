@@ -89,6 +89,150 @@ theorem hasFixedPointFreeRelationalHolonomy_iff_break_or_nonempty
       rintro ⟨start, hpath⟩
       exact hproper.2 start start hpath rfl
 
+/-- The active source support of a relation. -/
+def RelationDomain {A B : Type*} (relation : A → B → Prop) : Set A :=
+  {source | ∃ target, relation source target}
+
+/-- The active target support of a relation. -/
+def RelationRange {A B : Type*} (relation : A → B → Prop) : Set B :=
+  {target | ∃ source, relation source target}
+
+/-- A relation has at most one target at each source. -/
+def RelationRightUnique {A B : Type*} (relation : A → B → Prop) : Prop :=
+  ∀ ⦃source first second⦄,
+    relation source first → relation source second → first = second
+
+/-- A relation has at most one source at each target. -/
+def RelationLeftUnique {A B : Type*} (relation : A → B → Prop) : Prop :=
+  ∀ ⦃first second target⦄,
+    relation first target → relation second target → first = second
+
+/-- The source and target supports of an endorelation differ. -/
+def HasRelationSupportDrift {A : Type*} (relation : A → A → Prop) : Prop :=
+  RelationDomain relation ≠ RelationRange relation
+
+/-- The relation branches forward or backward. -/
+def HasRelationBranching {A : Type*} (relation : A → A → Prop) : Prop :=
+  ¬ RelationRightUnique relation ∨ ¬ RelationLeftUnique relation
+
+/-- A relation whose source and target supports agree and which is unique in
+both directions.  It therefore induces a genuine permutation of its active
+support. -/
+structure StableRelationalTransport {A : Type*}
+    (relation : A → A → Prop) : Prop where
+  support_eq : RelationDomain relation = RelationRange relation
+  rightUnique : RelationRightUnique relation
+  leftUnique : RelationLeftUnique relation
+
+namespace StableRelationalTransport
+
+/-- The unique relation successor on the active support. -/
+noncomputable def next {A : Type*} {relation : A → A → Prop}
+    (transport : StableRelationalTransport relation)
+    (source : RelationDomain relation) : RelationDomain relation :=
+  let target := Classical.choose source.property
+  ⟨target, by
+    rw [transport.support_eq]
+    exact ⟨source, Classical.choose_spec source.property⟩⟩
+
+/-- The chosen successor is related to its source. -/
+theorem next_spec {A : Type*} {relation : A → A → Prop}
+    (transport : StableRelationalTransport relation)
+    (source : RelationDomain relation) :
+    relation source (transport.next source) := by
+  exact Classical.choose_spec source.property
+
+theorem next_injective {A : Type*} {relation : A → A → Prop}
+    (transport : StableRelationalTransport relation) :
+    Function.Injective transport.next := by
+  intro first second heq
+  have hfirst := transport.next_spec first
+  have hsecond := transport.next_spec second
+  have hvalue := congrArg Subtype.val heq
+  rw [← hvalue] at hsecond
+  exact Subtype.ext (transport.leftUnique hfirst hsecond)
+
+theorem next_surjective {A : Type*} {relation : A → A → Prop}
+    (transport : StableRelationalTransport relation) :
+    Function.Surjective transport.next := by
+  intro target
+  have htargetRange : target.1 ∈ RelationRange relation := by
+    rw [← transport.support_eq]
+    exact target.property
+  rcases htargetRange with ⟨source, hsource⟩
+  let activeSource : RelationDomain relation :=
+    ⟨source, ⟨target, hsource⟩⟩
+  refine ⟨activeSource, Subtype.ext ?_⟩
+  exact transport.rightUnique (transport.next_spec activeSource) hsource
+
+/-- The permutation induced on the stable active support. -/
+noncomputable def equivalence {A : Type*} {relation : A → A → Prop}
+    (transport : StableRelationalTransport relation) :
+    RelationDomain relation ≃ RelationDomain relation :=
+  Equiv.ofBijective transport.next
+    ⟨transport.next_injective, transport.next_surjective⟩
+
+/-- The induced permutation has exactly the original relation as its graph on
+the active support. -/
+theorem equivalence_spec {A : Type*} {relation : A → A → Prop}
+    (transport : StableRelationalTransport relation)
+    (source : RelationDomain relation) :
+    relation source (transport.equivalence source) := by
+  exact transport.next_spec source
+
+end StableRelationalTransport
+
+/-- Every nonempty fixed-point-free endorelation has one of three exact
+residues: its active support drifts, it branches, or it induces a genuine
+fixed-point-free permutation on a stable nonempty support. -/
+theorem nonemptyFixedPointFreeRelation_residue
+    {A : Type*} (relation : A → A → Prop)
+    (hnonempty : RelationNonempty relation)
+    (hmove : ∀ source target, relation source target → source ≠ target) :
+    HasRelationSupportDrift relation ∨
+      HasRelationBranching relation ∨
+      ∃ transport : StableRelationalTransport relation,
+        Nonempty (RelationDomain relation) ∧
+          ∀ source, transport.equivalence source ≠ source := by
+  by_cases hsupport : RelationDomain relation = RelationRange relation
+  · by_cases hright : RelationRightUnique relation
+    · by_cases hleft : RelationLeftUnique relation
+      · right
+        right
+        let transport : StableRelationalTransport relation := {
+          support_eq := hsupport
+          rightUnique := hright
+          leftUnique := hleft }
+        refine ⟨transport, ?_, ?_⟩
+        · rcases hnonempty with ⟨source, target, hrelation⟩
+          exact ⟨⟨source, target, hrelation⟩⟩
+        · intro source heq
+          have hne := hmove source.1 (transport.equivalence source).1
+            (transport.equivalence_spec source)
+          exact hne (congrArg Subtype.val heq).symm
+      · exact Or.inr (Or.inl (Or.inr hleft))
+    · exact Or.inr (Or.inl (Or.inl hright))
+  · exact Or.inl hsupport
+
+/-- Applied to the fourfold composite, proper relational holonomy therefore
+has support drift, branching, or a genuine fixed-point-free permutation
+residue. -/
+theorem nonemptyFixedPointFreeRelationalHolonomy_residue
+    {Northwest Northeast Southeast Southwest : Type*}
+    (north : Northwest → Northeast → Prop)
+    (east : Northeast → Southeast → Prop)
+    (south : Southeast → Southwest → Prop)
+    (west : Southwest → Northwest → Prop)
+    (hproper : HasNonemptyFixedPointFreeRelationalHolonomy
+      north east south west) :
+    let composite := fourStepRelationalHolonomy north east south west
+    HasRelationSupportDrift composite ∨
+      HasRelationBranching composite ∨
+      ∃ transport : StableRelationalTransport composite,
+        Nonempty (RelationDomain composite) ∧
+          ∀ source, transport.equivalence source ≠ source := by
+  exact nonemptyFixedPointFreeRelation_residue _ hproper.1 hproper.2
+
 /-- The concrete adjacent-pair lifting obstruction splits into a relational
 break and a proper nonempty holonomy residue. -/
 theorem hasSharedWitnessObstruction_iff_exists_break_or_nonemptyHolonomy
@@ -157,5 +301,8 @@ alias GoertzelV24AdjacentPairOverlapKempeHolonomyResidue.hasFixedPointFreeRelati
 
 alias GoertzelV24AdjacentPairOverlapKempeHolonomyResidue.hasSharedWitnessObstruction_iff_exists_break_or_nonemptyHolonomy :=
   GoertzelV24AdjacentPairInsertion.AdjacentPairData.hasSharedWitnessObstruction_iff_exists_break_or_nonemptyHolonomy
+
+alias GoertzelV24AdjacentPairOverlapKempeHolonomyResidue.nonemptyFixedPointFreeRelationalHolonomy_residue :=
+  GoertzelV24AdjacentPairInsertion.AdjacentPairData.nonemptyFixedPointFreeRelationalHolonomy_residue
 
 end Mettapedia.GraphTheory.FourColor

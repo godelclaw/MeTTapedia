@@ -2443,6 +2443,7 @@ corner, whereas a compositional cell must reuse one actual colouring there.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapKempeHolonomy.hasSharedWitnessObstruction_iff_exists_fixedPointFreeHolonomy}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapKempeHolonomyResidue.hasFixedPointFreeRelationalHolonomy_iff_break_or_nonempty}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapKempeHolonomyResidue.hasSharedWitnessObstruction_iff_exists_break_or_nonemptyHolonomy}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapKempeHolonomyResidue.nonemptyFixedPointFreeRelationalHolonomy_residue}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshAdjacentPairSites.meshPathStep_adjacent}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshAdjacentPairSites.exists_nonempty_overlapKempeCellStateSupport}
 Let four adjacent-pair deletions be arranged clockwise around a cell, with
@@ -2543,6 +2544,16 @@ that every one of its pairs has distinct endpoints.  This split must precede
 any signed-permutation argument, because an empty relation is not a
 permutation.
 
+The nonempty horn must be refined once more before it has a sign.  For an
+endorelation (R), let its domain and range be the witnesses which occur as
+first and second coordinates.  Exactly one of the following descriptions
+applies: the domain and range differ (support drift); (R) is not unique in
+one of its two coordinates (relational branching); or the two supports agree
+and (R) is unique in both coordinates.  In the last case, choice of the
+unique successor constructs a bijection of the common active support, and a
+fixed-point-free (R) induces a genuine fixed-point-free permutation there.
+Only this last residue can be passed to a permutation-sign invariant.
+
 An exhaustive finite diagnostic gives an important warning about the scope of
 this criterion.  For the four edges of a square face in the pentagonal prism,
 each selected proper deletion orbit is the proper part of its full edge-Kempe
@@ -2567,7 +2578,11 @@ Exhausting all $2\,792\,976$ compatible cycles in the same prism separates
 the two residues: $6\,912$ have empty composite and $6\,144$ have a
 nonempty fixed-point-free composite; the remaining $2\,779\,920$ lift.
 Thus both obstruction horns already occur in one planar bridgeless cubic
-graph.  The calculation is again external evidence, not a kernel theorem.
+graph.  Moreover, each of the (6,144) proper composites is a singleton
+partial transport whose one-element domain differs from its one-element
+range.  Hence every proper prism example lies in the support-drift residue,
+not the permutation residue.  The calculation is again external evidence,
+not a kernel theorem.
 
 There is nevertheless no colour-extension gap at a compatible checkpoint.
 The following statement isolates the exact planar cap which may be attached
