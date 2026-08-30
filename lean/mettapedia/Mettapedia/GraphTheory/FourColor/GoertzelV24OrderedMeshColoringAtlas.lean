@@ -296,6 +296,33 @@ def rowSelectionColoringFamily {I : Type w}
     (selectedGlobalKempeSite rotation minimal ordered
       (globalRowStep rotation ordered row (slot index))).baseTait
 
+/-- The same selected deletion patches, equipped with an arbitrary proper
+nonzero colouring at each site.  This separates the geometric cover from the
+noncanonical choice of base representatives. -/
+def rowSelectionColoringFamilyOf {I : Type w}
+    (row : Fin a) (slot : I → Fin n)
+    (coloring : ∀ index,
+      (DeletedAdjacentPairGraph G
+        (selectedGlobalKempeSite rotation minimal ordered
+          (globalRowStep rotation ordered row (slot index))).data.firstVertex
+        (selectedGlobalKempeSite rotation minimal ordered
+          (globalRowStep rotation ordered row (slot index))).data.secondVertex).EdgeColoring
+        Color)
+    (tait : ∀ index,
+      IsTaitEdgeColoring
+        (DeletedAdjacentPairGraph G
+          (selectedGlobalKempeSite rotation minimal ordered
+            (globalRowStep rotation ordered row (slot index))).data.firstVertex
+          (selectedGlobalKempeSite rotation minimal ordered
+            (globalRowStep rotation ordered row (slot index))).data.secondVertex)
+        (coloring index)) :
+    PairDeletionColoringFamily (G := G) I where
+  data index :=
+    (selectedGlobalKempeSite rotation minimal ordered
+      (globalRowStep rotation ordered row (slot index))).data
+  coloring := coloring
+  tait := tait
+
 /-- Any injective selection of at least five row intervals covers every
 ambient edge. -/
 theorem rowSelectionColoringFamily_coversEdges
@@ -365,6 +392,142 @@ theorem rowSelectionColoringFamily_coversAdjacentEdges
       rotation minimal ordered row (slot index) first hleftFirst hrightFirst,
     selectedGlobalKempeSite_retains_of_rowStep_avoids
       rotation minimal ordered row (slot index) second hleftSecond hrightSecond⟩
+
+/-- Edge coverage depends only on the selected deletion patches, not on which
+proper colourings equip them. -/
+theorem rowSelectionColoringFamilyOf_coversEdges
+    {I : Type w} [Fintype I]
+    (row : Fin a) (slot : I → Fin n)
+    (coloring : ∀ index,
+      (DeletedAdjacentPairGraph G
+        (selectedGlobalKempeSite rotation minimal ordered
+          (globalRowStep rotation ordered row (slot index))).data.firstVertex
+        (selectedGlobalKempeSite rotation minimal ordered
+          (globalRowStep rotation ordered row (slot index))).data.secondVertex).EdgeColoring
+        Color)
+    (tait : ∀ index,
+      IsTaitEdgeColoring
+        (DeletedAdjacentPairGraph G
+          (selectedGlobalKempeSite rotation minimal ordered
+            (globalRowStep rotation ordered row (slot index))).data.firstVertex
+          (selectedGlobalKempeSite rotation minimal ordered
+            (globalRowStep rotation ordered row (slot index))).data.secondVertex)
+        (coloring index))
+    (slotInjective : Function.Injective slot)
+    (hlarge : 4 < Fintype.card I) :
+    (rowSelectionColoringFamilyOf rotation minimal ordered row slot coloring
+      tait).CoversEdges := by
+  change (rowSelectionColoringFamily
+    rotation minimal ordered row slot).CoversEdges
+  exact rowSelectionColoringFamily_coversEdges
+    rotation minimal ordered row slot slotInjective hlarge
+
+/-- Adjacent-edge coverage likewise depends only on the deletion patches. -/
+theorem rowSelectionColoringFamilyOf_coversAdjacentEdges
+    {I : Type w} [Fintype I]
+    (row : Fin a) (slot : I → Fin n)
+    (coloring : ∀ index,
+      (DeletedAdjacentPairGraph G
+        (selectedGlobalKempeSite rotation minimal ordered
+          (globalRowStep rotation ordered row (slot index))).data.firstVertex
+        (selectedGlobalKempeSite rotation minimal ordered
+          (globalRowStep rotation ordered row (slot index))).data.secondVertex).EdgeColoring
+        Color)
+    (tait : ∀ index,
+      IsTaitEdgeColoring
+        (DeletedAdjacentPairGraph G
+          (selectedGlobalKempeSite rotation minimal ordered
+            (globalRowStep rotation ordered row (slot index))).data.firstVertex
+          (selectedGlobalKempeSite rotation minimal ordered
+            (globalRowStep rotation ordered row (slot index))).data.secondVertex)
+        (coloring index))
+    (slotInjective : Function.Injective slot)
+    (hlarge : 8 < Fintype.card I) :
+    (rowSelectionColoringFamilyOf rotation minimal ordered row slot coloring
+      tait).CoversAdjacentEdges := by
+  change (rowSelectionColoringFamily
+    rotation minimal ordered row slot).CoversAdjacentEdges
+  exact rowSelectionColoringFamily_coversAdjacentEdges
+    rotation minimal ordered row slot slotInjective hlarge
+
+/-- Choice-independent obstruction: for any proper colourings assigned to an
+injective selection of at least nine row intervals, some pair disagrees on
+its exact common deletion.  In particular no simultaneous choice of Kempe
+representatives can make all common-restriction bits true. -/
+theorem exists_rowSelection_coloring_disagreement
+    {I : Type w} [Fintype I]
+    (row : Fin a) (slot : I → Fin n)
+    (coloring : ∀ index,
+      (DeletedAdjacentPairGraph G
+        (selectedGlobalKempeSite rotation minimal ordered
+          (globalRowStep rotation ordered row (slot index))).data.firstVertex
+        (selectedGlobalKempeSite rotation minimal ordered
+          (globalRowStep rotation ordered row (slot index))).data.secondVertex).EdgeColoring
+        Color)
+    (tait : ∀ index,
+      IsTaitEdgeColoring
+        (DeletedAdjacentPairGraph G
+          (selectedGlobalKempeSite rotation minimal ordered
+            (globalRowStep rotation ordered row (slot index))).data.firstVertex
+          (selectedGlobalKempeSite rotation minimal ordered
+            (globalRowStep rotation ordered row (slot index))).data.secondVertex)
+        (coloring index))
+    (slotInjective : Function.Injective slot)
+    (hlarge : 8 < Fintype.card I) :
+    ∃ first second : I,
+      commonRestrictionAgreementBit
+        (selectedGlobalKempeSite rotation minimal ordered
+          (globalRowStep rotation ordered row (slot first))).data
+        (selectedGlobalKempeSite rotation minimal ordered
+          (globalRowStep rotation ordered row (slot second))).data
+        (coloring first) (coloring second) = false := by
+  let family := rowSelectionColoringFamilyOf
+    rotation minimal ordered row slot coloring tait
+  have hnot := family.not_pairwiseCommonRestrictionAgrees_of_minimal
+    rotation minimal
+    (rowSelectionColoringFamilyOf_coversEdges rotation minimal ordered row slot
+      coloring tait slotInjective (by omega))
+    (rowSelectionColoringFamilyOf_coversAdjacentEdges
+      rotation minimal ordered row slot coloring tait slotInjective hlarge)
+  unfold PairwiseCommonRestrictionAgrees at hnot
+  push Not at hnot
+  rcases hnot with ⟨first, second, hagrees⟩
+  refine ⟨first, second, ?_⟩
+  change commonRestrictionAgreementBit
+      (family.data first) (family.data second)
+      (family.coloring first) (family.coloring second) = false
+  cases hvalue : commonRestrictionAgreementBit
+      (family.data first) (family.data second)
+      (family.coloring first) (family.coloring second) <;>
+    simp_all
+
+/-- Fixed-size publication form of the choice-independent obstruction. -/
+theorem exists_coloring_disagreement_in_any_nine_row_intervals
+    (row : Fin a) (slot : Fin 9 ↪ Fin n)
+    (coloring : ∀ index : Fin 9,
+      (DeletedAdjacentPairGraph G
+        (selectedGlobalKempeSite rotation minimal ordered
+          (globalRowStep rotation ordered row (slot index))).data.firstVertex
+        (selectedGlobalKempeSite rotation minimal ordered
+          (globalRowStep rotation ordered row (slot index))).data.secondVertex).EdgeColoring
+        Color)
+    (tait : ∀ index : Fin 9,
+      IsTaitEdgeColoring
+        (DeletedAdjacentPairGraph G
+          (selectedGlobalKempeSite rotation minimal ordered
+            (globalRowStep rotation ordered row (slot index))).data.firstVertex
+          (selectedGlobalKempeSite rotation minimal ordered
+            (globalRowStep rotation ordered row (slot index))).data.secondVertex)
+        (coloring index)) :
+    ∃ first second : Fin 9,
+      commonRestrictionAgreementBit
+        (selectedGlobalKempeSite rotation minimal ordered
+          (globalRowStep rotation ordered row (slot first))).data
+        (selectedGlobalKempeSite rotation minimal ordered
+          (globalRowStep rotation ordered row (slot second))).data
+        (coloring first) (coloring second) = false := by
+  exact exists_rowSelection_coloring_disagreement rotation minimal ordered row
+    slot coloring tait slot.injective (by simp)
 
 /-- Every injective nine-site sample on one ordered row contains two selected
 deletion colourings whose exact common-restriction bit is false. -/
