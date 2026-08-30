@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.EdgeColoring
+import Mettapedia.GraphTheory.FourColor.GoertzelDefinition48
 
 /-!
 # Local colour swaps generate Kempe reachability
@@ -348,6 +348,132 @@ theorem exists_not_locallySwapRelated_of_not_mem_edgeKempeClosure
   by_contra hnone
   push Not at hnone
   exact hnot (mem_edgeKempeClosure_of_locallySwapRelated source target hnone)
+
+/-! ## The nonzero Tait-world refinement -/
+
+/-- One Kempe switch using two distinct nonzero Tait colours. -/
+def TaitKempeStep
+    (source target : G.EdgeColoring Color) : Prop :=
+  ∃ first second : Color, ValidColorPair first second ∧
+    ∃ component : (source.bicoloredSubgraph first second).ConnectedComponent,
+      target = source.swapOnKempeComponent first second component
+
+/-- Finite reachability by switches which stay in the nonzero Tait world. -/
+def TaitKempeReachable
+    (source target : G.EdgeColoring Color) : Prop :=
+  Relation.ReflTransGen (TaitKempeStep (G := G)) source target
+
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+/-- A valid nonzero component switch preserves the Tait condition. -/
+theorem isTaitEdgeColoring_of_taitKempeStep
+    {source target : G.EdgeColoring Color}
+    (hsource : IsTaitEdgeColoring G source)
+    (hstep : TaitKempeStep source target) :
+    IsTaitEdgeColoring G target := by
+  rcases hstep with ⟨first, second, hpair, component, rfl⟩
+  intro edge
+  by_cases hedge : edge ∈
+      source.kempeComponentSet first second component
+  · rw [source.swapOnKempeComponent_apply_of_mem hedge]
+    rcases source.mem_bicoloredSet_of_mem_kempeComponentSet hedge with
+      hfirst | hsecond
+    · simpa [hfirst] using hpair.2.1
+    · simpa [hsecond] using hpair.1
+  · rw [source.swapOnKempeComponent_apply_of_not_mem hedge]
+    exact hsource edge
+
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+/-- Every finite valid-pair sequence remains a proper nonzero colouring. -/
+theorem isTaitEdgeColoring_of_taitKempeReachable
+    {source target : G.EdgeColoring Color}
+    (hsource : IsTaitEdgeColoring G source)
+    (hreachable : TaitKempeReachable source target) :
+    IsTaitEdgeColoring G target := by
+  induction hreachable with
+  | refl => exact hsource
+  | tail _ hstep ih =>
+      exact isTaitEdgeColoring_of_taitKempeStep ih hstep
+
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+/-- Valid-pair reachability forgets to ordinary edge-Kempe reachability. -/
+theorem mem_edgeKempeClosure_of_taitKempeReachable
+    {source target : G.EdgeColoring Color}
+    (hreachable : TaitKempeReachable source target) :
+    target ∈ G.EdgeKempeClosure source := by
+  induction hreachable with
+  | refl => exact G.mem_edgeKempeClosure_self source
+  | tail _ hstep ih =>
+      rcases hstep with ⟨first, second, _hpair, component, rfl⟩
+      exact G.mem_edgeKempeClosure_of_mem_of_step
+        ih first second component
+
+/-- **Tait-world local swaps generate Tait Kempe reachability.**  If both
+colourings are nonzero, the disagreement-reducing construction above uses
+only distinct nonzero colour pairs. -/
+theorem taitKempeReachable_of_locallySwapRelated
+    (source target : G.EdgeColoring Color)
+    (hsource : IsTaitEdgeColoring G source)
+    (htarget : IsTaitEdgeColoring G target)
+    (hlocal : LocallySwapRelated source target) :
+    TaitKempeReachable source target := by
+  classical
+  generalize hmeasure : (disagreementEdges source target).card = measure
+  induction measure using Nat.strong_induction_on generalizing source with
+  | h measure ih =>
+      by_cases heq : source = target
+      · subst target
+        exact Relation.ReflTransGen.refl
+      · have hnonempty : (disagreementEdges source target).Nonempty := by
+          rw [Finset.nonempty_iff_ne_empty]
+          intro hempty
+          apply heq
+          apply DFunLike.ext _ _
+          intro edge
+          by_contra hedge
+          have : edge ∈ disagreementEdges source target :=
+            (mem_disagreementEdges source target edge).2 hedge
+          simp [hempty] at this
+        let seed := Classical.choose hnonempty
+        have hseedMem : seed ∈ disagreementEdges source target :=
+          Classical.choose_spec hnonempty
+        have hseed : source seed ≠ target seed :=
+          (mem_disagreementEdges source target seed).1 hseedMem
+        let component :=
+          (source.bicoloredSubgraph (source seed) (target seed)).connectedComponentMk
+            ⟨seed, Or.inl rfl⟩
+        let switched := source.swapOnKempeComponent
+          (source seed) (target seed) component
+        have hpair : ValidColorPair (source seed) (target seed) :=
+          ⟨hsource seed, htarget seed, hseed⟩
+        have hstep : TaitKempeStep source switched :=
+          ⟨source seed, target seed, hpair, component, rfl⟩
+        have hswitchedTait : IsTaitEdgeColoring G switched :=
+          isTaitEdgeColoring_of_taitKempeStep hsource hstep
+        have hsmaller : (disagreementEdges switched target).card < measure := by
+          rw [← hmeasure]
+          exact disagreementEdges_card_after_seed_switch_lt
+            hlocal seed hseed
+        have hlocal' : LocallySwapRelated switched target :=
+          locallySwapRelated_after_seed_switch hlocal seed hseed
+        have htargetReachable : TaitKempeReachable switched target :=
+          ih _ hsmaller switched hswitchedTait hlocal' rfl
+        exact (Relation.ReflTransGen.single hstep).trans htargetReachable
+
+/-- Failure of valid-pair Tait reachability already exposes a local
+non-transposition discrepancy. -/
+theorem exists_not_locallySwapRelated_of_not_taitKempeReachable
+    (source target : G.EdgeColoring Color)
+    (hsource : IsTaitEdgeColoring G source)
+    (htarget : IsTaitEdgeColoring G target)
+    (hnot : ¬ TaitKempeReachable source target) :
+    ∃ vertex : V, ¬ ∃ first second : Color,
+      ∀ edge : G.edgeSet, vertex ∈ (edge.1 : Sym2 V) →
+        target edge = Equiv.swap first second (source edge) := by
+  by_contra hnone
+  push Not at hnone
+  exact hnot
+    (taitKempeReachable_of_locallySwapRelated
+      source target hsource htarget hnone)
 
 end GoertzelV24LocalSwapKempeGeneration
 

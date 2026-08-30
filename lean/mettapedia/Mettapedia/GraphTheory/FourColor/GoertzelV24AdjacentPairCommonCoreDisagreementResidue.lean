@@ -124,6 +124,86 @@ theorem branching_or_reachesSecondPair_or_strictRepair
     exact exists_not_locallySwapRelated_of_not_mem_edgeKempeClosure
       sourceCommon targetCommon hreachable
 
+/-! ## The Tait-preserving consumer -/
+
+/-- A different representative of the first deletion's valid-pair
+Tait-Kempe orbit agrees literally with the target on the common core. -/
+def HasStrictTaitCommonCoreRepair
+    (source target : AdjacentPairData G)
+    (sourceColoring : (DeletedAdjacentPairGraph G source.firstVertex
+      source.secondVertex).EdgeColoring Color)
+    (targetColoring : (DeletedAdjacentPairGraph G target.firstVertex
+      target.secondVertex).EdgeColoring Color) : Prop :=
+  ∃ repaired,
+    TaitKempeReachable sourceColoring repaired ∧
+    IsTaitEdgeColoring
+      (DeletedAdjacentPairGraph G source.firstVertex source.secondVertex)
+      repaired ∧
+    firstDeletionCommonCoreColoring
+        (third := target.firstVertex) (fourth := target.secondVertex)
+        repaired =
+      secondDeletionCommonCoreColoring
+        (first := source.firstVertex) (second := source.secondVertex)
+        targetColoring ∧
+    repaired ≠ sourceColoring
+
+/-- **Tait-preserving common-core disagreement residue.**  For proper
+nonzero deletion colourings, every repair stays in the proper nonzero state
+space: a disagreement forces branching, a valid-pair component reaching the
+exposed pair, or a strict valid-pair repair. -/
+theorem branching_or_taitReachesSecondPair_or_strictTaitRepair
+    (source target : AdjacentPairData G)
+    (sourceColoring : (DeletedAdjacentPairGraph G source.firstVertex
+      source.secondVertex).EdgeColoring Color)
+    (targetColoring : (DeletedAdjacentPairGraph G target.firstVertex
+      target.secondVertex).EdgeColoring Color)
+    (hsource : IsTaitEdgeColoring
+      (DeletedAdjacentPairGraph G source.firstVertex source.secondVertex)
+      sourceColoring)
+    (htarget : IsTaitEdgeColoring
+      (DeletedAdjacentPairGraph G target.firstVertex target.secondVertex)
+      targetColoring)
+    (hdisagrees :
+      firstDeletionCommonCoreColoring
+          (third := target.firstVertex) (fourth := target.secondVertex)
+          sourceColoring ≠
+        secondDeletionCommonCoreColoring
+          (first := source.firstVertex) (second := source.secondVertex)
+          targetColoring) :
+    HasCommonCoreBranchingDiscrepancy source target
+        sourceColoring targetColoring ∨
+      FirstTaitOrbitReachesSecondPair source target sourceColoring ∨
+      HasStrictTaitCommonCoreRepair source target
+        sourceColoring targetColoring := by
+  let sourceCommon := firstDeletionCommonCoreColoring
+    (third := target.firstVertex) (fourth := target.secondVertex)
+    sourceColoring
+  let targetCommon := secondDeletionCommonCoreColoring
+    (first := source.firstVertex) (second := source.secondVertex)
+    targetColoring
+  have hsourceCommon : IsTaitEdgeColoring
+      (DeletedTwoPairsGraph G source.firstVertex source.secondVertex
+        target.firstVertex target.secondVertex) sourceCommon :=
+    isTaitEdgeColoring_firstDeletionCommonCoreColoring sourceColoring hsource
+  have htargetCommon : IsTaitEdgeColoring
+      (DeletedTwoPairsGraph G source.firstVertex source.secondVertex
+        target.firstVertex target.secondVertex) targetCommon :=
+    isTaitEdgeColoring_secondDeletionCommonCoreColoring targetColoring htarget
+  by_cases hreachable : TaitKempeReachable sourceCommon targetCommon
+  · rcases firstTaitOrbitReachesSecondPair_or_exists_liftedColoring
+      source target sourceColoring hsource targetCommon hreachable with
+      hboundary | ⟨repaired, hrepaired, hrepairedTait, hrestriction⟩
+    · exact Or.inr (Or.inl hboundary)
+    · right
+      right
+      refine ⟨repaired, hrepaired, hrepairedTait, hrestriction, ?_⟩
+      intro heq
+      subst repaired
+      exact hdisagrees hrestriction
+  · left
+    exact exists_not_locallySwapRelated_of_not_taitKempeReachable
+      sourceCommon targetCommon hsourceCommon htargetCommon hreachable
+
 end
 
 end GoertzelV24AdjacentPairCommonCoreDisagreementResidue
