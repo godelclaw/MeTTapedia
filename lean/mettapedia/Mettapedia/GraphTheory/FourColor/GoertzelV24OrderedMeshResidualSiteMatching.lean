@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairMatchingExtraction
+import Mettapedia.GraphTheory.FourColor.GoertzelV24AlternatingMatchingComponent
 import Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshGlobalSites
 import Mettapedia.GraphTheory.FourColor.GoertzelV24RotationEdgeBridge
 
@@ -25,6 +26,7 @@ namespace GoertzelV24OrderedMeshResidualSiteMatching
 open GoertzelV24AdjacentPairBoundary
 open GoertzelV24AdjacentPairMatchingExtraction
 open GoertzelV24AdjacentPairMatchingExtraction.AdjacentPairData
+open GoertzelV24AlternatingMatchingComponent
 open GoertzelV24OrderedInjectiveMeshWidthFactorization
 open GoertzelV24OrderedMeshGlobalSites
 open GoertzelV24ResidualDefectDescent
@@ -47,6 +49,33 @@ universe u
 variable {V : Type u} [Fintype V] [DecidableEq V]
   {G : SimpleGraph V} [DecidableRel G.Adj]
   {a b : Nat}
+
+/-- The exact alternating component attached to one mesh edge that is absent
+from the globally chosen matching.  The component is closed under both
+matchings, contains the prescribed edge, has at least four vertices, and is
+proper because a shared matching edge lies outside it.  Exchanging on the
+whole component cannot improve the chosen residual-defect minimizer. -/
+structure ProperAlternatingSiteWitness
+    (G : SimpleGraph V) [DecidableRel G.Adj]
+    (sigma : Pairing V) (first second : V) where
+  tau : Pairing V
+  tau_supported : tau.SupportedBy G
+  central : tau.partner first = second
+  carrier : Finset V
+  carrier_eq : carrier = alternatingComponent sigma tau first
+  first_mem : first ∈ carrier
+  second_mem : second ∈ carrier
+  sigma_closed : ∀ vertex ∈ carrier, sigma.partner vertex ∈ carrier
+  tau_closed : ∀ vertex ∈ carrier, tau.partner vertex ∈ carrier
+  four_le : 4 ≤ carrier.card
+  shared_edge_outside :
+    ∃ vertex : V,
+      sigma.partner vertex = tau.partner vertex ∧
+      vertex ∉ carrier ∧ sigma.partner vertex ∉ carrier
+  exchange_rigid :
+    residualDefect G sigma ≤
+      residualDefect G
+        (sigma.exchange tau carrier sigma_closed tau_closed)
 
 /-- One minimum-residual-oddness matching is rigid against a supported
 matching through every physical row/column edge of an ordered mesh.  The
@@ -108,6 +137,89 @@ theorem exists_exchangeRigid_with_central_pairing_at_every_globalMeshStep
   refine ⟨tau, htau, hcentralGlobal, ?_⟩
   intro s hSigmaS hTauS
   exact hminimal tau s hSigmaS hTauS htau
+
+/-- A single minimum-residual-defect matching controls every ordered-mesh
+edge.  If the matching does not already use the edge, the edge lies in a
+proper alternating component against a site matching, and exchange on that
+component cannot decrease residual defect.
+
+No bound on the component and no compatibility between components at
+different mesh steps is asserted.  Those are genuinely planar/global
+obligations, not consequences of matching algebra alone. -/
+theorem exists_exchangeRigid_with_proper_alternatingComponent_at_every_globalMeshStep
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (ordered : OrderedInjectiveMesh
+      (toMultigraph rotation.toRotationSystem) a b) :
+    ∃ sigma : Pairing V,
+      sigma.SupportedBy G ∧
+      2 ≤ residualDefect G sigma ∧
+      ∀ step : GlobalMeshStep rotation ordered,
+        sigma.partner (globalFirstVertex rotation ordered step) =
+            globalSecondVertex rotation ordered step ∨
+          Nonempty
+            (ProperAlternatingSiteWitness G sigma
+              (globalFirstVertex rotation ordered step)
+              (globalSecondVertex rotation ordered step)) := by
+  obtain ⟨sigma, hSigma, hodd, hsites⟩ :=
+    exists_exchangeRigid_with_central_pairing_at_every_globalMeshStep
+      rotation minimal ordered
+  refine ⟨sigma, hSigma, hodd, ?_⟩
+  have hCubic : G.IsRegularOfDegree 3 :=
+    rotation.toRotationSystem_isCubic_iff.mp minimal.spherical.cubic
+  have htriples : HasCubicIncidentEdgeTriples G :=
+    hasCubicIncidentEdgeTriples_of_incidentEdgeFinset_card_eq_three
+      fun vertex => by
+        rw [incidentEdgeFinset_card_eq_degree, hCubic vertex]
+  have hnot : ¬ TaitColorable G :=
+    graphBackedVertexMinimalTaitCounterexample_not_graphTaitColorable
+      rotation minimal
+  intro step
+  obtain ⟨tau, hTau, hcentral, hrigid⟩ := hsites step
+  by_cases hSigmaCentral :
+      sigma.partner (globalFirstVertex rotation ordered step) =
+        globalSecondVertex rotation ordered step
+  · exact Or.inl hSigmaCentral
+  · right
+    let first := globalFirstVertex rotation ordered step
+    let second := globalSecondVertex rotation ordered step
+    have hcentral' : tau.partner first = second := hcentral
+    have hroot : sigma.partner first ≠ tau.partner first := by
+      intro heq
+      exact hSigmaCentral (heq.trans hcentral')
+    let carrier := alternatingComponent sigma tau first
+    have hfirst : first ∈ carrier :=
+      root_mem_alternatingComponent sigma tau first
+    have hSigmaClosed :
+        ∀ vertex ∈ carrier, sigma.partner vertex ∈ carrier :=
+      alternatingComponent_closed_first sigma tau first
+    have hTauClosed :
+        ∀ vertex ∈ carrier, tau.partner vertex ∈ carrier :=
+      alternatingComponent_closed_second sigma tau first
+    have hsecond : second ∈ carrier := by
+      rw [← hcentral']
+      exact hTauClosed first hfirst
+    have hfour : 4 ≤ carrier.card :=
+      four_le_card_alternatingComponent sigma tau hroot
+    have houtside :
+        ∃ vertex : V,
+          sigma.partner vertex = tau.partner vertex ∧
+          vertex ∉ carrier ∧ sigma.partner vertex ∉ carrier :=
+      exists_shared_edge_outside_alternatingComponent
+        htriples hnot sigma tau hSigma hTau hroot
+    exact ⟨
+      { tau := tau
+        tau_supported := hTau
+        central := hcentral'
+        carrier := carrier
+        carrier_eq := rfl
+        first_mem := hfirst
+        second_mem := hsecond
+        sigma_closed := hSigmaClosed
+        tau_closed := hTauClosed
+        four_le := hfour
+        shared_edge_outside := houtside
+        exchange_rigid := hrigid carrier hSigmaClosed hTauClosed }⟩
 
 end
 
