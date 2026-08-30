@@ -72,7 +72,7 @@ variable {W : Type*} [Fintype W] [DecidableEq W]
   {n terminalCount faceFragmentCount : Nat}
   {web : Instance data coloring}
 
-local instance sourceEdgeSetDecidableEq : DecidableEq G.edgeSet :=
+local instance sourceEdgeSetDecidableEqSpliceGraphBoundaryData : DecidableEq G.edgeSet :=
   Subtype.instDecidableEq
 
 private abbrev ambientEndpointsInjective :

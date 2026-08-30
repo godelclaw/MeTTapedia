@@ -73,7 +73,7 @@ variable {G : SimpleGraph V} [DecidableRel G.Adj]
 attribute [local instance]
   retainedVertexFintype retainedVertexDecidableEq
 
-local instance sourceEdgeSetDecidableEq : DecidableEq G.edgeSet :=
+local instance sourceEdgeSetDecidableEqSpliceGraphGeometry : DecidableEq G.edgeSet :=
   Subtype.instDecidableEq
 
 local instance outputAdjDecidable

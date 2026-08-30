@@ -85,6 +85,7 @@ theorem exists_changedVertex_in_canonicalComponent_of_reachable_not_reachable
       vertex ∈ changed ∧
         vertex ∈ sourceColoring.kempeComponentSetAtVertex
           first second root := by
+  classical
   rcases sourceReachable with ⟨path⟩
   by_contra noChangedVertex
   push Not at noChangedVertex

@@ -37,7 +37,7 @@ noncomputable section
 attribute [local instance]
   retainedVertexFintype retainedVertexDecidableEq
 
-local instance sourceEdgeSetDecidableEq : DecidableEq G.edgeSet :=
+local instance sourceEdgeSetDecidableEqSeamArcClosureCriterion : DecidableEq G.edgeSet :=
   Subtype.instDecidableEq
 
 namespace GoertzelV24ClosedWebSpliceSeamArcClosureCriterion

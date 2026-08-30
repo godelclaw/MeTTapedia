@@ -218,7 +218,7 @@ variable {G : SimpleGraph V} [DecidableRel G.Adj]
 attribute [local instance]
   retainedVertexFintype retainedVertexDecidableEq
 
-local instance sourceEdgeSetDecidableEq : DecidableEq G.edgeSet :=
+local instance sourceEdgeSetDecidableEqSeamArcAmbientSimplicity : DecidableEq G.edgeSet :=
   Subtype.instDecidableEq
 
 /-- For the actual closed-web annulus, preservation of both hole faces makes

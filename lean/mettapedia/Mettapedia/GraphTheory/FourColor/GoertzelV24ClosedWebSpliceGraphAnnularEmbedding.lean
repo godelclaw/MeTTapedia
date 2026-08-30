@@ -65,7 +65,7 @@ attribute [-instance] GoertzelV24SeamFaceArcPartition.hitPointFintype
 attribute [local instance]
   GoertzelV24RetainedVertexRotationSplice.retainedVertexFintype
 
-local instance sourceEdgeSetDecidableEq : DecidableEq G.edgeSet :=
+local instance sourceEdgeSetDecidableEqSpliceGraphAnnularEmbedding : DecidableEq G.edgeSet :=
   Subtype.instDecidableEq
 
 local instance outputAdjDecidable

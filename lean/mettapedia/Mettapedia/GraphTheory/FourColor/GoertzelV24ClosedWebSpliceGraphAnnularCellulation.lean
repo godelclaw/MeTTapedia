@@ -257,7 +257,7 @@ attribute [-instance] GoertzelV24SeamFaceArcPartition.hitPointFintype
 attribute [local instance]
   retainedVertexFintype retainedVertexDecidableEq
 
-local instance sourceEdgeSetDecidableEq : DecidableEq G.edgeSet :=
+local instance sourceEdgeSetDecidableEqAnnularCellulation : DecidableEq G.edgeSet :=
   Subtype.instDecidableEq
 
 local instance outputAdjDecidable
