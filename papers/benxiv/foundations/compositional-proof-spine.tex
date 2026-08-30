@@ -2191,6 +2191,62 @@ strict replacement of Theorem~\ref{thm:majority-shore-physical-replacement}.
 An empty finite base rules out \(X\).
 \end{proof}
 
+The high-width receipt can be split one step more finely, so that the
+route-specific assertion is not conflated with the conventional planar wall
+theorem.
+
+\begin{proposition}[exact fixed-mesh factorization of the width input]
+\label{prop:fixed-mesh-width-factorization}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FixedMeshWidthFactorization.rawBranchDecompositionSupply_of_fixedInjectiveMeshExclusion}
+Fix positive integers $a,b,w$.  Suppose:
+\begin{enumerate}
+\item no graph-backed vertex-minimal Tait counterexample contains an
+injective $a$-by-$b$ mesh; and
+\item every such counterexample which contains no injective
+$a$-by-$b$ mesh has a complete rooted branch decomposition of width at
+most $w$.
+\end{enumerate}
+Then every graph-backed vertex-minimal Tait counterexample has a complete
+rooted branch decomposition of width at most $w$.  Conversely, if that raw
+width-$w$ conclusion holds and
+\[
+  B(w,w)<ab,
+\]
+then the fixed injective $a$-by-$b$ mesh is absent from every such
+counterexample.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FixedMeshWidthFactorization.fixedInjectiveMeshExclusion_of_rawBranchDecompositionSupply}
+With the route-native finite base through $B(w,w)$, the two displayed
+hypotheses therefore imply the combinatorial spherical Four-Colour
+statement.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FixedMeshWidthFactorization.combinatorialFourColorStatement_of_fixedMeshExclusion_and_base}
+\end{proposition}
+
+\begin{proof}
+For a fixed least counterexample, the first hypothesis supplies absence of
+the stated injective mesh.  Feed that fact to the second hypothesis; the
+result is exactly the raw branch-decomposition supplier consumed by the
+checked width-preserving connectedization and reductive assembly.
+
+For the converse, a raw width-$w$ supplier gives the checked vertex bound
+
+\[
+                         |V(G)|\le B(w,w).
+\]
+
+An injective $a$-by-$b$ mesh embeds its $ab$ branch positions into
+$V(G)$, so it gives $ab\le |V(G)|$, contrary to $B(w,w)<ab$.
+Finally, compose the raw supplier from the first paragraph with the checked
+finite-base assembly.
+\end{proof}
+
+The first premise of
+Proposition~\ref{prop:fixed-mesh-width-factorization} is the sole
+route-specific high-width assertion.  The second is the conventional
+wall/grid-to-branchwidth implication, expressed on the exact injective mesh
+carrier consumed here.  Neither premise entails the other without the
+quantitative size condition in the converse, and neither is concealed in a
+Lean structure field.
+
 One sufficient way to establish Hypothesis~1 is the stronger statement that
 every zero-target instance containing the wall has either positive target or
 a strict zero-target reduction.  The route has not proved that statement.
