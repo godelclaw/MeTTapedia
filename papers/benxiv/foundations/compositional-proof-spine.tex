@@ -4377,6 +4377,61 @@ separation.  It does not yet assert that either class of faces is connected,
 nor does it construct a geometric noose; those are separate consumers.
 \end{proof}
 
+\begin{lemma}[a simple primal cycle is a bond of the facial dual]
+\label{lem:graph-backed-kempe-face-sides-connected}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24CycleSupportMinimality.f2CycleSpace_support_eq_cycle_of_subset}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PrimalCycleFacialBond.exists_faceSet_bond_of_isCycle}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PrimalCycleFacialBond.exists_ambientPrimalKempeCycle_faceSetBond_of_boundaryFree}
+Under the hypotheses of
+Lemma~\ref{lem:graph-backed-kempe-boundary-free-face-separator}, the face set
+may be chosen so that the subgraph of the full facial dual induced by that
+set is connected, and the subgraph induced by its complement is connected.
+Both face classes are nonempty.  Thus the ambient Kempe cycle is not merely
+some facial-dual cut: it is a bond of the facial dual.
+\end{lemma}
+
+\begin{proof}
+We use two elementary minimality facts.  First, the edge set of a simple
+cycle is a minimal nonempty support in the binary cycle space.  Indeed, let
+$z$ be a nonzero binary cycle whose support is contained in a simple cycle
+$C$, and choose a selected edge of $z$.  At either endpoint, the incidence
+boundary of $z$ is zero.  Exactly two edges of $C$ meet that vertex, so the
+other one must also be selected.  Propagating this implication around $C$
+shows that every edge of $C$ is selected.  Hence
+\(\operatorname{supp}z=C\).
+
+Second, let $S$ be the face set supplied by
+Lemma~\ref{lem:graph-backed-kempe-boundary-free-face-separator}.  An edge of
+the full facial dual crosses from $S$ to its complement exactly when its
+underlying primal edge belongs to $C$.  Since $C$ is nonempty and every
+primal edge has two distinct incident faces, both $S$ and its complement are
+nonempty.
+
+Suppose that the facial-dual subgraph induced by $S$ were disconnected, and
+let $K$ be one of its connected components.  The full facial dual is
+connected, so the edge boundary of the nonempty proper set $K$ is nonempty.
+No dual edge joins $K$ to another component of the subgraph induced by $S$.
+Consequently every edge leaving $K$ leaves $S$ as well, and its underlying
+primal edge belongs to $C$.  The binary boundary of $K$ is a sum of facial
+boundary vectors, hence is a nonzero element of the primal binary cycle
+space supported inside $C$.
+
+There is another component $K'$ of the subgraph induced by $S$.  Its edge
+boundary is likewise nonempty and supported inside $C$.  Moreover the
+boundaries of $K$ and $K'$ are disjoint: an edge belonging to both would join
+the two components inside $S$.  Thus the boundary of $K$ omits at least one
+edge of $C$.  We have obtained a nonzero cycle-space support properly
+contained in the simple cycle $C$, contradicting the first paragraph.
+Therefore the subgraph induced by $S$ is connected.  Applying the same
+argument to the complementary face set proves that its induced subgraph is
+connected as well.
+
+This is the finite combinatorial circuit--bond form of Jordan separation.
+It proves the two connected face shores without introducing a topological
+embedding primitive.  Turning the cyclic dart order along their common bond
+into a geometric noose remains a separate representation step.
+\end{proof}
+
 \begin{theorem}[the physical common web induces the exact boundary matching]
 \label{thm:port-tangle-physical-kempe-matching}
 Let $T$ be a finite cubic port tangle with a proper nonzero Tait colouring,
