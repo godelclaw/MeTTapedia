@@ -61,3 +61,9 @@ Every top-level conditional theorem, with its dependency cone printed. -/
 #print axioms StarNormalForm.disjoint_detours_card_eight_exhaustion
 #print axioms StarNormalForm.receiving_pair_routed_normal_form
 #print axioms StarNormalForm.excess_site_receiving_pair_routed
+#print axioms StarNormalForm.CrossedOnePortCap.r_ne_q
+#print axioms StarNormalForm.exists_crossedCapTails
+#print axioms StarNormalForm.six_le_card_of_crossedCapTails
+#print axioms StarNormalForm.crossedCapTails_card_six
+#print axioms StarNormalForm.seven_le_card_of_distinct_tails
+#print axioms StarNormalForm.crossedCapTails_card_eight

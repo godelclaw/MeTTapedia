@@ -2781,4 +2781,171 @@ theorem excess_site_receiving_pair_routed (W : Sym2 (V × Fin 3) → ℂ)
     receiving_pair_routed_normal_form W hmin hmono hcard (mem_liveNbrs.mp hv).1 hcv hentry hfib
       ⟨z, Finset.mem_inter.mpr ⟨hz, NoCancellation.mem_fiber.mpr hcz⟩⟩ hk⟩
 
+/-! ## Tails of the crossed cap
+
+The cap's two certified complements each contain one of its free ports: the `k`-complement
+contains `r`, the third-colour complement contains `q`.  Neither can be a matching sum's dead end,
+so each has a live partner outside the cap, with a remainder that still does not vanish. -/
+
+/-- The cap forces its two free ports apart: `r = q` would make one edge both live and dead. -/
+theorem CrossedOnePortCap.r_ne_q {W : Sym2 (V × Fin 3) → ℂ} {u v : V} {a k : Fin 3} {p q r : V}
+    (H : CrossedOnePortCap W u v a k p q r) : r ≠ q := fun h =>
+  H.live_k_vq (h ▸ H.dead_k_vr)
+
+/-- Six pairwise-distinct sites span a set of size six. -/
+theorem card_six_of_pairwise_ne {u p v q r t : V}
+    (h1 : u ≠ p) (h2 : u ≠ v) (h3 : u ≠ q) (h4 : u ≠ r) (h5 : u ≠ t)
+    (h6 : p ≠ v) (h7 : p ≠ q) (h8 : p ≠ r) (h9 : p ≠ t)
+    (h10 : v ≠ q) (h11 : v ≠ r) (h12 : v ≠ t)
+    (h13 : q ≠ r) (h14 : q ≠ t) (h15 : r ≠ t) :
+    ({u, p, v, q, r, t} : Finset V).card = 6 := by
+  classical
+  rw [Finset.card_insert_of_notMem (by simp only [Finset.mem_insert, Finset.mem_singleton, not_or]; exact ⟨h1, h2, h3, h4, h5⟩),
+    Finset.card_insert_of_notMem (by simp only [Finset.mem_insert, Finset.mem_singleton, not_or]; exact ⟨h6, h7, h8, h9⟩),
+    Finset.card_insert_of_notMem (by simp only [Finset.mem_insert, Finset.mem_singleton, not_or]; exact ⟨h10, h11, h12⟩),
+    Finset.card_insert_of_notMem (by simp only [Finset.mem_insert, Finset.mem_singleton, not_or]; exact ⟨h13, h14⟩),
+    Finset.card_insert_of_notMem (by simp only [Finset.mem_singleton]; exact h15),
+    Finset.card_singleton]
+
+/-- The two tails of a crossed cap, with their live edges and certified remainders. -/
+structure CrossedCapTails (W : Sym2 (V × Fin 3) → ℂ) (u v : V) (a k : Fin 3) (p q r : V) where
+  /-- the `k`-tail of the free port `r` -/
+  kt : V
+  /-- the third-colour tail of the free port `q` -/
+  lt : V
+  kt_ne_u : kt ≠ u
+  kt_ne_p : kt ≠ p
+  kt_ne_v : kt ≠ v
+  kt_ne_q : kt ≠ q
+  kt_ne_r : kt ≠ r
+  lt_ne_u : lt ≠ u
+  lt_ne_r : lt ≠ r
+  lt_ne_v : lt ≠ v
+  lt_ne_p : lt ≠ p
+  lt_ne_q : lt ≠ q
+  live_k : W s((r, k), (kt, k)) ≠ 0
+  live_l : W s((q, thirdColour a k), (lt, thirdColour a k)) ≠ 0
+  rem_k : pmSum W (Amplitude.const (V := V) k)
+    ((Finset.univ : Finset V) \ ({u, p, v, q, r, kt} : Finset V)) ≠ 0
+  rem_l : pmSum W (Amplitude.const (V := V) (thirdColour a k))
+    ((Finset.univ : Finset V) \ ({u, r, v, p, q, lt} : Finset V)) ≠ 0
+
+theorem exists_crossedCapTails {W : Sym2 (V × Fin 3) → ℂ} {u v : V} {a k : Fin 3} {p q r : V}
+    (H : CrossedOnePortCap W u v a k p q r) : Nonempty (CrossedCapTails W u v a k p q r) := by
+  classical
+  have hrq := H.r_ne_q
+  have hmemr : r ∈ (Finset.univ : Finset V) \ ({u, p, v, q} : Finset V) := by
+    simp only [Finset.mem_sdiff, Finset.mem_univ, true_and, Finset.mem_insert,
+      Finset.mem_singleton, not_or]
+    exact ⟨H.r_ne_u, H.r_ne_p, H.r_ne_v, hrq⟩
+  obtain ⟨t, ht, hlt, hremt⟩ :=
+    MatchingSum.exists_partner_ne_zero W (Amplitude.const (V := V) k) hmemr H.cert_k
+  have htr : t ≠ r := Finset.ne_of_mem_erase ht
+  have htS := Finset.mem_of_mem_erase ht
+  simp only [Finset.mem_sdiff, Finset.mem_univ, true_and, Finset.mem_insert,
+    Finset.mem_singleton, not_or] at htS
+  have hmemq : q ∈ (Finset.univ : Finset V) \ ({u, r, v, p} : Finset V) := by
+    simp only [Finset.mem_sdiff, Finset.mem_univ, true_and, Finset.mem_insert,
+      Finset.mem_singleton, not_or]
+    exact ⟨H.q_ne_u, Ne.symm hrq, H.q_ne_v, Ne.symm H.p_ne_q⟩
+  obtain ⟨w, hw, hlw, hremw⟩ :=
+    MatchingSum.exists_partner_ne_zero W (Amplitude.const (V := V) (thirdColour a k)) hmemq H.cert_l
+  have hwq : w ≠ q := Finset.ne_of_mem_erase hw
+  have hwS := Finset.mem_of_mem_erase hw
+  simp only [Finset.mem_sdiff, Finset.mem_univ, true_and, Finset.mem_insert,
+    Finset.mem_singleton, not_or] at hwS
+  have hsetk : (((Finset.univ : Finset V) \ ({u, p, v, q} : Finset V)).erase r).erase t
+      = (Finset.univ : Finset V) \ ({u, p, v, q, r, t} : Finset V) := by
+    ext z
+    simp only [Finset.mem_erase, Finset.mem_sdiff, Finset.mem_univ, true_and,
+      Finset.mem_insert, Finset.mem_singleton, not_or]
+    tauto
+  have hsetl : (((Finset.univ : Finset V) \ ({u, r, v, p} : Finset V)).erase q).erase w
+      = (Finset.univ : Finset V) \ ({u, r, v, p, q, w} : Finset V) := by
+    ext z
+    simp only [Finset.mem_erase, Finset.mem_sdiff, Finset.mem_univ, true_and,
+      Finset.mem_insert, Finset.mem_singleton, not_or]
+    tauto
+  exact ⟨⟨t, w, htS.1, htS.2.1, htS.2.2.1, htS.2.2.2, htr,
+    hwS.1, hwS.2.1, hwS.2.2.1, hwS.2.2.2, hwq,
+    hlt, hlw, by rw [← hsetk]; exact hremt, by rw [← hsetl]; exact hremw⟩⟩
+
+/-- Six distinct sites, so a crossed cap with tails needs at least six sites. -/
+theorem six_le_card_of_crossedCapTails {W : Sym2 (V × Fin 3) → ℂ} {u v : V} {a k : Fin 3}
+    {p q r : V} (huv : u ≠ v) (H : CrossedOnePortCap W u v a k p q r)
+    (T : CrossedCapTails W u v a k p q r) : 6 ≤ Fintype.card V := by
+  classical
+  calc 6 = ({u, p, v, q, r, T.kt} : Finset V).card :=
+        (card_six_of_pairwise_ne (Ne.symm H.p_ne_u) huv (Ne.symm H.q_ne_u) (Ne.symm H.r_ne_u)
+          (Ne.symm T.kt_ne_u) H.p_ne_v H.p_ne_q (Ne.symm H.r_ne_p) (Ne.symm T.kt_ne_p)
+          (Ne.symm H.q_ne_v) (Ne.symm H.r_ne_v) (Ne.symm T.kt_ne_v)
+          (Ne.symm H.r_ne_q) (Ne.symm T.kt_ne_q) (Ne.symm T.kt_ne_r)).symm
+    _ ≤ Fintype.card V := Finset.card_le_univ _
+
+/-- **Sharp behaviour at six sites.**  The cap and its `k`-tail already fill the vertex type, the
+third-colour tail must coincide with the `k`-tail, and both remainders are empty. -/
+theorem crossedCapTails_card_six {W : Sym2 (V × Fin 3) → ℂ} {u v : V} {a k : Fin 3}
+    {p q r : V} (huv : u ≠ v) (H : CrossedOnePortCap W u v a k p q r)
+    (T : CrossedCapTails W u v a k p q r) (hcard : Fintype.card V = 6) :
+    ({u, p, v, q, r, T.kt} : Finset V) = (Finset.univ : Finset V) ∧ T.lt = T.kt ∧
+      (Finset.univ : Finset V) \ ({u, p, v, q, r, T.kt} : Finset V) = (∅ : Finset V) := by
+  classical
+  have hc6 : ({u, p, v, q, r, T.kt} : Finset V).card = 6 :=
+    card_six_of_pairwise_ne (Ne.symm H.p_ne_u) huv (Ne.symm H.q_ne_u) (Ne.symm H.r_ne_u)
+      (Ne.symm T.kt_ne_u) H.p_ne_v H.p_ne_q (Ne.symm H.r_ne_p) (Ne.symm T.kt_ne_p)
+      (Ne.symm H.q_ne_v) (Ne.symm H.r_ne_v) (Ne.symm T.kt_ne_v)
+      (Ne.symm H.r_ne_q) (Ne.symm T.kt_ne_q) (Ne.symm T.kt_ne_r)
+  have huniv : ({u, p, v, q, r, T.kt} : Finset V) = Finset.univ :=
+    Finset.eq_univ_of_card _ (by omega)
+  refine ⟨huniv, ?_, by rw [huniv, Finset.sdiff_self]⟩
+  have hmem : T.lt ∈ ({u, p, v, q, r, T.kt} : Finset V) := huniv ▸ Finset.mem_univ T.lt
+  simp only [Finset.mem_insert, Finset.mem_singleton] at hmem
+  rcases hmem with h | h | h | h | h | h
+  · exact absurd h T.lt_ne_u
+  · exact absurd h T.lt_ne_p
+  · exact absurd h T.lt_ne_v
+  · exact absurd h T.lt_ne_q
+  · exact absurd h T.lt_ne_r
+  · exact h
+
+/-- Distinct tails give a seventh site. -/
+theorem seven_le_card_of_distinct_tails {W : Sym2 (V × Fin 3) → ℂ} {u v : V} {a k : Fin 3}
+    {p q r : V} (huv : u ≠ v) (H : CrossedOnePortCap W u v a k p q r)
+    (T : CrossedCapTails W u v a k p q r) (hne : T.lt ≠ T.kt) : 7 ≤ Fintype.card V := by
+  classical
+  have hc6 : ({u, p, v, q, r, T.kt} : Finset V).card = 6 :=
+    card_six_of_pairwise_ne (Ne.symm H.p_ne_u) huv (Ne.symm H.q_ne_u) (Ne.symm H.r_ne_u)
+      (Ne.symm T.kt_ne_u) H.p_ne_v H.p_ne_q (Ne.symm H.r_ne_p) (Ne.symm T.kt_ne_p)
+      (Ne.symm H.q_ne_v) (Ne.symm H.r_ne_v) (Ne.symm T.kt_ne_v)
+      (Ne.symm H.r_ne_q) (Ne.symm T.kt_ne_q) (Ne.symm T.kt_ne_r)
+  have hnot : T.lt ∉ ({u, p, v, q, r, T.kt} : Finset V) := by
+    simp only [Finset.mem_insert, Finset.mem_singleton, not_or]
+    exact ⟨T.lt_ne_u, T.lt_ne_p, T.lt_ne_v, T.lt_ne_q, T.lt_ne_r, hne⟩
+  have hc7 : (insert T.lt ({u, p, v, q, r, T.kt} : Finset V)).card = 7 := by
+    rw [Finset.card_insert_of_notMem hnot, hc6]
+  calc 7 = (insert T.lt ({u, p, v, q, r, T.kt} : Finset V)).card := hc7.symm
+    _ ≤ Fintype.card V := Finset.card_le_univ _
+
+/-- **Sharp behaviour at eight sites.**  Each certified remainder is a two-element set whose edge
+in that colour is live -- the matching sum on a pair is that pair's own weight. -/
+theorem crossedCapTails_card_eight {W : Sym2 (V × Fin 3) → ℂ} {u v : V} {a k : Fin 3}
+    {p q r : V} (huv : u ≠ v) (H : CrossedOnePortCap W u v a k p q r)
+    (T : CrossedCapTails W u v a k p q r) (hcard : Fintype.card V = 8) :
+    ∃ e f : V, e ≠ f ∧
+      (Finset.univ : Finset V) \ ({u, p, v, q, r, T.kt} : Finset V) = ({e, f} : Finset V) ∧
+      W s((e, k), (f, k)) ≠ 0 := by
+  classical
+  have hc6 : ({u, p, v, q, r, T.kt} : Finset V).card = 6 :=
+    card_six_of_pairwise_ne (Ne.symm H.p_ne_u) huv (Ne.symm H.q_ne_u) (Ne.symm H.r_ne_u)
+      (Ne.symm T.kt_ne_u) H.p_ne_v H.p_ne_q (Ne.symm H.r_ne_p) (Ne.symm T.kt_ne_p)
+      (Ne.symm H.q_ne_v) (Ne.symm H.r_ne_v) (Ne.symm T.kt_ne_v)
+      (Ne.symm H.r_ne_q) (Ne.symm T.kt_ne_q) (Ne.symm T.kt_ne_r)
+  have hcs : ((Finset.univ : Finset V) \ ({u, p, v, q, r, T.kt} : Finset V)).card = 2 := by
+    rw [Finset.card_sdiff, Finset.inter_univ, Finset.card_univ, hc6, hcard]
+  obtain ⟨e, f, hef, hset⟩ := Finset.card_eq_two.mp hcs
+  refine ⟨e, f, hef, hset, ?_⟩
+  have hrem := T.rem_k
+  rw [hset, MatchingSum.pmSum_pair W (Amplitude.const (V := V) k) (Ne.symm hef)] at hrem
+  exact hrem
+
 end StarNormalForm
