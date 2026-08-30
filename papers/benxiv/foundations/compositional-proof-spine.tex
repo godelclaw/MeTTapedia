@@ -2434,6 +2434,46 @@ cannot occur.  Treating the colour action as the whole support transport
 would make the overlap step false exactly in the dense-defect geometry now
 under investigation.
 
+There is a further orientation gauge that must be fixed before the odd local
+transport can be regarded as a charge on a particular ambient edge.
+
+\begin{lemma}[support reversal moves the negative singleton crossing]
+\label{lem:singleton-collar-orientation-gauge}
+Let a singleton intrinsic collar be represented by an oriented scalar support
+cycle.  Reverse only that support-cycle orientation, leaving the remote
+facial-dual cycle fixed.  The reversed walk is again a valid scalar support
+state.  After both crossing orders are rooted at the distinguished target
+edge, corresponding positions denote the same two physical crossing edges,
+but the chirality at each position is toggled.  Consequently the unique
+negative crossing for the reversed orientation is a different ambient edge
+from the unique negative crossing for the original orientation.
+
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AllFaceIntrinsicCollarSignedSupportGauge.negative_crossing_edge_depends_on_support_orientation}
+\end{lemma}
+
+\begin{proof}
+Reversing a simple support cycle preserves its edge set, simplicity, target
+edge, second certified crossing, and the nonvanishing support condition.  It
+reverses the support crossing word and leaves the remote crossing word
+unchanged.  In the singleton branch these words contain exactly two entries.
+Rotating either support word to start at the target therefore gives the same
+target-rooted list.
+
+At a fixed physical crossing the facial-dual step, and hence its canonical
+remote dart, is unchanged.  The dart contributed by the reversed support walk
+is the reverse of the original support dart.  Thus agreement of the two darts
+becomes disagreement and disagreement becomes agreement: both chiralities are
+toggled.  Each orientation has exactly one negative position, so those two
+negative positions cannot denote the same physical edge.
+\end{proof}
+
+The sign $(-1)$ of singleton monodromy is therefore orientation-gauge
+invariant, but the ambient edge carrying its displayed transposition is not.
+A global noncancellation argument must either choose support orientations
+coherently across reentries or formulate its charge after quotienting this
+gauge.  Merely multiplying edge-labelled local transpositions is not a
+well-defined global observable.
+
 The other terminal of the all-face machine already has the literal geometry
 required by the replacement layer; it is not merely a descriptive cut
 profile.
