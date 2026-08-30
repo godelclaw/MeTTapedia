@@ -44,6 +44,20 @@ def orderedReturnPath
   Classical.choose
     (orderedSiteReturnPairing_reachable hG sigma hSigma site position).exists_isPath
 
+/-- The chosen return path, regarded as a literal path in the ambient graph. -/
+def orderedAmbientReturnPath
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (position : CyclePosition sigma site) :
+    G.Walk
+      (cycleVertexOrder sigma site position).1
+      (cycleVertexOrder sigma site
+        ((orderedSiteReturnPairing hG sigma hSigma site).partner position)).1 :=
+  (orderedReturnPath hG sigma hSigma site position).mapLe
+    (commonResidualGraph_le sigma site)
+
 /-- The chosen return witness is simple. -/
 theorem orderedReturnPath_isPath
     (hG : HasCubicIncidentEdgeTriples G)
@@ -54,6 +68,17 @@ theorem orderedReturnPath_isPath
     (orderedReturnPath hG sigma hSigma site position).IsPath :=
   Classical.choose_spec
     (orderedSiteReturnPairing_reachable hG sigma hSigma site position).exists_isPath
+
+/-- Mapping the chosen return into the ambient graph preserves simplicity. -/
+theorem orderedAmbientReturnPath_isPath
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (position : CyclePosition sigma site) :
+    (orderedAmbientReturnPath hG sigma hSigma site position).IsPath := by
+  exact (orderedReturnPath_isPath hG sigma hSigma site position).mapLe
+    (commonResidualGraph_le sigma site)
 
 /-- The chosen return path is nonempty because the return pairing is
 fixed-point-free. -/
@@ -70,6 +95,110 @@ theorem orderedReturnPath_not_nil
   apply (cycleVertexOrder sigma site).injective
   apply Subtype.ext
   exact hvalue.symm
+
+/-- The ambient spelling of a return is nonempty as well. -/
+theorem orderedAmbientReturnPath_not_nil
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (position : CyclePosition sigma site) :
+    ¬(orderedAmbientReturnPath hG sigma hSigma site position).Nil := by
+  unfold orderedAmbientReturnPath SimpleGraph.Walk.mapLe
+  exact (SimpleGraph.Walk.nil_map_iff
+    (SimpleGraph.Hom.ofLE (commonResidualGraph_le sigma site))).not.mpr
+      (orderedReturnPath_not_nil hG sigma hSigma site position)
+
+/-- The first ambient dart of a return is the canonical third dart at its
+initial cycle position. -/
+theorem orderedAmbientReturnPath_firstDart
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (position : CyclePosition sigma site) :
+    (orderedAmbientReturnPath hG sigma hSigma site position).firstDart
+        (orderedAmbientReturnPath_not_nil hG sigma hSigma site position) =
+      siteThirdDart hG sigma hSigma site
+        (cycleVertexOrder sigma site position) := by
+  let path := orderedReturnPath hG sigma hSigma site position
+  have hsnd :
+      (orderedAmbientReturnPath hG sigma hSigma site position).snd = path.snd := by
+    unfold orderedAmbientReturnPath SimpleGraph.Walk.mapLe path
+    simpa using SimpleGraph.Walk.getVert_map
+      (SimpleGraph.Hom.ofLE (commonResidualGraph_le sigma site))
+        (orderedReturnPath hG sigma hSigma site position) 1
+  have hneighbor := eq_siteThirdNeighbor_of_commonResidualGraph_adj
+    hG sigma hSigma site (cycleVertexOrder sigma site position)
+      ((orderedReturnPath hG sigma hSigma site position).adj_snd
+        (orderedReturnPath_not_nil hG sigma hSigma site position))
+  apply SimpleGraph.Dart.ext
+  rw [SimpleGraph.Walk.firstDart_toProd]
+  change
+    ((cycleVertexOrder sigma site position).1,
+        (orderedAmbientReturnPath hG sigma hSigma site position).snd) =
+      ((cycleVertexOrder sigma site position).1,
+        siteThirdNeighbor hG sigma hSigma site
+          (cycleVertexOrder sigma site position))
+  rw [hsnd, hneighbor]
+
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+private theorem orderedReturn_penultimate_mapLe
+    {H : SimpleGraph V} (h : G ≤ H) {start finish : V}
+    (path : G.Walk start finish) :
+    (path.mapLe h).penultimate = path.penultimate := by
+  change (path.map (SimpleGraph.Hom.ofLE h)).penultimate = path.penultimate
+  induction path with
+  | nil => rfl
+  | cons hadj path ih =>
+    by_cases hnil : path.Nil
+    · cases hnil
+      rfl
+    · have hmapNil : ¬(path.map (SimpleGraph.Hom.ofLE h)).Nil := by
+        exact (SimpleGraph.Walk.nil_map_iff
+          (SimpleGraph.Hom.ofLE h)).not.mpr hnil
+      rw [SimpleGraph.Walk.map_cons]
+      rw [SimpleGraph.Walk.penultimate_cons_of_not_nil _ _ hmapNil,
+        SimpleGraph.Walk.penultimate_cons_of_not_nil _ _ hnil]
+      exact ih
+
+/-- Reversing the final ambient dart gives the canonical third dart at the
+partner cycle position. -/
+theorem orderedAmbientReturnPath_alpha_lastDart
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (position : CyclePosition sigma site) :
+    ((orderedAmbientReturnPath hG sigma hSigma site position).lastDart
+        (orderedAmbientReturnPath_not_nil hG sigma hSigma site position)).symm =
+      siteThirdDart hG sigma hSigma site
+        (cycleVertexOrder sigma site
+          ((orderedSiteReturnPairing hG sigma hSigma site).partner position)) := by
+  let path := orderedReturnPath hG sigma hSigma site position
+  have hpenultimate :
+      (orderedAmbientReturnPath hG sigma hSigma site position).penultimate =
+        path.penultimate := by
+    exact orderedReturn_penultimate_mapLe
+      (commonResidualGraph_le sigma site) path
+  have hneighbor := eq_siteThirdNeighbor_of_commonResidualGraph_adj
+    hG sigma hSigma site
+      (cycleVertexOrder sigma site
+        ((orderedSiteReturnPairing hG sigma hSigma site).partner position))
+      ((orderedReturnPath hG sigma hSigma site position).adj_penultimate
+        (orderedReturnPath_not_nil hG sigma hSigma site position)).symm
+  apply SimpleGraph.Dart.ext
+  rw [SimpleGraph.Dart.symm_toProd, SimpleGraph.Walk.lastDart_toProd]
+  change
+    ((cycleVertexOrder sigma site
+        ((orderedSiteReturnPairing hG sigma hSigma site).partner position)).1,
+        (orderedAmbientReturnPath hG sigma hSigma site position).penultimate) =
+      ((cycleVertexOrder sigma site
+        ((orderedSiteReturnPairing hG sigma hSigma site).partner position)).1,
+        siteThirdNeighbor hG sigma hSigma site
+          (cycleVertexOrder sigma site
+            ((orderedSiteReturnPairing hG sigma hSigma site).partner position)))
+  rw [hpenultimate, hneighbor]
 
 /-- Every edge of a return arc avoids the operated alternating cycle. -/
 theorem orderedReturnPath_edge_not_cycle
@@ -129,6 +258,27 @@ theorem eq_start_or_eq_finish_of_mem_orderedReturnPath_support_of_mem_carrier
       _ = ((siteReturnPairing hG sigma hSigma site).partner start).1 :=
         (congrArg Subtype.val hpartner).symm
       _ = finish.1 := congrArg Subtype.val hfinish.symm
+
+/-- The ambient spelling of a return meets the operated cycle only at its two
+endpoints. -/
+theorem eq_start_or_eq_finish_of_mem_orderedAmbientReturnPath_support_of_mem_carrier
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (position : CyclePosition sigma site)
+    {vertex : V}
+    (hpath : vertex ∈
+      (orderedAmbientReturnPath hG sigma hSigma site position).support)
+    (hcarrier : vertex ∈ site.carrier) :
+    vertex = (cycleVertexOrder sigma site position).1 ∨
+      vertex = (cycleVertexOrder sigma site
+        ((orderedSiteReturnPairing hG sigma hSigma site).partner position)).1 := by
+  apply eq_start_or_eq_finish_of_mem_orderedReturnPath_support_of_mem_carrier
+    hG sigma hSigma site position
+  · simpa [orderedAmbientReturnPath,
+      SimpleGraph.Walk.support_mapLe_eq_support] using hpath
+  · exact hcarrier
 
 /-- Canonical arcs for distinct return chords have disjoint vertex supports. -/
 theorem orderedReturnPath_support_disjoint_of_chord_ne
