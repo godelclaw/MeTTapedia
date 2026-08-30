@@ -52,3 +52,12 @@ Every top-level conditional theorem, with its dependency cone printed. -/
 #print axioms StarNormalForm.double_certified_detour_overlap_normal_form
 #print axioms StarNormalForm.receiving_pair_normal_form
 #print axioms StarNormalForm.excess_site_receiving_pair_normal_form
+#print axioms MatchingCrossing.exists_dead_pair_detour_on
+#print axioms MatchingCrossing.four_le_card_of_dead_pair_detour
+#print axioms MatchingCrossing.dead_pair_detour_card_two
+#print axioms MatchingCrossing.dead_pair_detour_card_four
+#print axioms StarNormalForm.disjoint_detours_force_outward_routes
+#print axioms StarNormalForm.eight_le_card_of_disjoint_detours
+#print axioms StarNormalForm.disjoint_detours_card_eight_exhaustion
+#print axioms StarNormalForm.receiving_pair_routed_normal_form
+#print axioms StarNormalForm.excess_site_receiving_pair_routed

@@ -2542,4 +2542,243 @@ theorem excess_site_receiving_pair_normal_form (W : Sym2 (V × Fin 3) → ℂ)
     receiving_pair_normal_form W hmin hmono hcard (mem_liveNbrs.mp hv).1 hcv hentry hfib
       ⟨z, Finset.mem_inter.mpr ⟨hz, NoCancellation.mem_fiber.mpr hcz⟩⟩ hk⟩
 
+/-! ## Disjoint detours route outward
+
+When the two receiving-colour detours share no port, each pair of ports sits inside the *other*
+colour's certified complement, joined by an edge that colour has killed.  A non-vanishing sum cannot
+cover such a pair by joining it to itself, so it routes both sites outward, to two sites outside all
+six.  This consumes only the detour data: no minimality, no monochromatic blocks, no size bound. -/
+
+/-- Both outward routes: each colour's certified complement routes the *other* colour's
+ports to two sites outside all six. -/
+def OutwardRoutes {W : Sym2 (V × Fin 3) → ℂ} {a k : Fin 3} {u v : V}
+    (D : DetourPorts W u v a k) (E : DetourPorts W u v a (thirdColour a k)) : Prop :=
+    (∃ x y : V, x ≠ u ∧ x ≠ v ∧ x ≠ D.fst ∧ x ≠ D.snd ∧ x ≠ E.fst ∧ x ≠ E.snd ∧
+      y ≠ u ∧ y ≠ v ∧ y ≠ D.fst ∧ y ≠ D.snd ∧ y ≠ E.fst ∧ y ≠ E.snd ∧ x ≠ y ∧
+      W s((E.fst, k), (x, k)) ≠ 0 ∧ W s((E.snd, k), (y, k)) ≠ 0 ∧
+      pmSum W (Amplitude.const (V := V) k)
+        ((Finset.univ : Finset V) \
+          ({u, D.fst, v, D.snd, E.fst, x, E.snd, y} : Finset V)) ≠ 0) ∧
+    (∃ x y : V, x ≠ u ∧ x ≠ v ∧ x ≠ D.fst ∧ x ≠ D.snd ∧ x ≠ E.fst ∧ x ≠ E.snd ∧
+      y ≠ u ∧ y ≠ v ∧ y ≠ D.fst ∧ y ≠ D.snd ∧ y ≠ E.fst ∧ y ≠ E.snd ∧ x ≠ y ∧
+      W s((D.fst, thirdColour a k), (x, thirdColour a k)) ≠ 0 ∧
+      W s((D.snd, thirdColour a k), (y, thirdColour a k)) ≠ 0 ∧
+      pmSum W (Amplitude.const (V := V) (thirdColour a k))
+        ((Finset.univ : Finset V) \
+          ({u, E.fst, v, E.snd, D.fst, x, D.snd, y} : Finset V)) ≠ 0)
+
+theorem disjoint_detours_force_outward_routes {W : Sym2 (V × Fin 3) → ℂ}
+    {a k : Fin 3} {u v : V}
+    (D : DetourPorts W u v a k) (E : DetourPorts W u v a (thirdColour a k))
+    (hdisj : Disjoint ({D.fst, D.snd} : Finset V) ({E.fst, E.snd} : Finset V)) :
+    OutwardRoutes D E := by
+  classical
+  have hd := Finset.disjoint_left.mp hdisj
+  have hm1 : D.fst ∈ ({D.fst, D.snd} : Finset V) := Finset.mem_insert_self _ _
+  have hm2 : D.snd ∈ ({D.fst, D.snd} : Finset V) :=
+    Finset.mem_insert_of_mem (Finset.mem_singleton_self _)
+  have hpr : D.fst ≠ E.fst := fun h => hd hm1 (by rw [h]; exact Finset.mem_insert_self _ _)
+  have hps : D.fst ≠ E.snd := fun h => hd hm1 (by
+    rw [h]; exact Finset.mem_insert_of_mem (Finset.mem_singleton_self _))
+  have hqr : D.snd ≠ E.fst := fun h => hd hm2 (by rw [h]; exact Finset.mem_insert_self _ _)
+  have hqs : D.snd ≠ E.snd := fun h => hd hm2 (by
+    rw [h]; exact Finset.mem_insert_of_mem (Finset.mem_singleton_self _))
+  have hchordE : W s((E.fst, k), (E.snd, k)) = 0 := by
+    have h := E.chord; rw [thirdColour_thirdColour] at h; exact h
+  constructor
+  · -- route the third-colour ports outward inside the `k`-certified complement
+    have hmemr : E.fst ∈ (Finset.univ : Finset V) \ ({u, D.fst, v, D.snd} : Finset V) := by
+      simp only [Finset.mem_sdiff, Finset.mem_univ, true_and, Finset.mem_insert,
+        Finset.mem_singleton, not_or]
+      exact ⟨E.fst_ne_u, Ne.symm hpr, E.fst_ne_v, Ne.symm hqr⟩
+    have hmems : E.snd ∈ (Finset.univ : Finset V) \ ({u, D.fst, v, D.snd} : Finset V) := by
+      simp only [Finset.mem_sdiff, Finset.mem_univ, true_and, Finset.mem_insert,
+        Finset.mem_singleton, not_or]
+      exact ⟨E.snd_ne_u, Ne.symm hps, E.snd_ne_v, Ne.symm hqs⟩
+    obtain ⟨x, y, hxS, hyS, hxr, hxs, hyr, hys, hxy, hrx, hsy, hrem⟩ :=
+      MatchingCrossing.exists_dead_pair_detour_on W (Amplitude.const (V := V) k)
+        hmemr hmems E.fst_ne_snd D.cert hchordE
+    simp only [Finset.mem_sdiff, Finset.mem_univ, true_and, Finset.mem_insert,
+      Finset.mem_singleton, not_or] at hxS hyS
+    refine ⟨x, y, hxS.1, hxS.2.2.1, hxS.2.1, hxS.2.2.2, hxr, hxs,
+      hyS.1, hyS.2.2.1, hyS.2.1, hyS.2.2.2, hyr, hys, hxy, hrx, hsy, ?_⟩
+    have hset : ((Finset.univ : Finset V) \ ({u, D.fst, v, D.snd} : Finset V))
+        \ ({E.fst, x, E.snd, y} : Finset V)
+        = (Finset.univ : Finset V) \ ({u, D.fst, v, D.snd, E.fst, x, E.snd, y} : Finset V) := by
+      ext z
+      simp only [Finset.mem_sdiff, Finset.mem_univ, true_and, Finset.mem_insert,
+        Finset.mem_singleton, not_or]
+      tauto
+    rw [← hset]; exact hrem
+  · -- and symmetrically inside the third colour's certified complement
+    have hmemp : D.fst ∈ (Finset.univ : Finset V) \ ({u, E.fst, v, E.snd} : Finset V) := by
+      simp only [Finset.mem_sdiff, Finset.mem_univ, true_and, Finset.mem_insert,
+        Finset.mem_singleton, not_or]
+      exact ⟨D.fst_ne_u, hpr, D.fst_ne_v, hps⟩
+    have hmemq : D.snd ∈ (Finset.univ : Finset V) \ ({u, E.fst, v, E.snd} : Finset V) := by
+      simp only [Finset.mem_sdiff, Finset.mem_univ, true_and, Finset.mem_insert,
+        Finset.mem_singleton, not_or]
+      exact ⟨D.snd_ne_u, hqr, D.snd_ne_v, hqs⟩
+    obtain ⟨x, y, hxS, hyS, hxp, hxq, hyp, hyq, hxy, hpx, hqy, hrem⟩ :=
+      MatchingCrossing.exists_dead_pair_detour_on W
+        (Amplitude.const (V := V) (thirdColour a k)) hmemp hmemq D.fst_ne_snd E.cert D.chord
+    simp only [Finset.mem_sdiff, Finset.mem_univ, true_and, Finset.mem_insert,
+      Finset.mem_singleton, not_or] at hxS hyS
+    refine ⟨x, y, hxS.1, hxS.2.2.1, hxp, hxq, hxS.2.1, hxS.2.2.2,
+      hyS.1, hyS.2.2.1, hyp, hyq, hyS.2.1, hyS.2.2.2, hxy, hpx, hqy, ?_⟩
+    have hset : ((Finset.univ : Finset V) \ ({u, E.fst, v, E.snd} : Finset V))
+        \ ({D.fst, x, D.snd, y} : Finset V)
+        = (Finset.univ : Finset V) \ ({u, E.fst, v, E.snd, D.fst, x, D.snd, y} : Finset V) := by
+      ext z
+      simp only [Finset.mem_sdiff, Finset.mem_univ, true_and, Finset.mem_insert,
+        Finset.mem_singleton, not_or]
+      tauto
+    rw [← hset]; exact hrem
+
+/-- Eight pairwise-distinct sites span a set of size eight. -/
+theorem card_eight_of_pairwise_ne {u p v q r x s y : V}
+    (h1 : u ≠ p) (h2 : u ≠ v) (h3 : u ≠ q) (h4 : u ≠ r) (h5 : u ≠ x) (h6 : u ≠ s) (h7 : u ≠ y)
+    (h8 : p ≠ v) (h9 : p ≠ q) (h10 : p ≠ r) (h11 : p ≠ x) (h12 : p ≠ s) (h13 : p ≠ y)
+    (h14 : v ≠ q) (h15 : v ≠ r) (h16 : v ≠ x) (h17 : v ≠ s) (h18 : v ≠ y)
+    (h19 : q ≠ r) (h20 : q ≠ x) (h21 : q ≠ s) (h22 : q ≠ y)
+    (h23 : r ≠ x) (h24 : r ≠ s) (h25 : r ≠ y)
+    (h26 : x ≠ s) (h27 : x ≠ y) (h28 : s ≠ y) :
+    ({u, p, v, q, r, x, s, y} : Finset V).card = 8 := by
+  classical
+  rw [Finset.card_insert_of_notMem (by simp only [Finset.mem_insert, Finset.mem_singleton, not_or]; exact ⟨h1, h2, h3, h4, h5, h6, h7⟩),
+    Finset.card_insert_of_notMem (by simp only [Finset.mem_insert, Finset.mem_singleton, not_or]; exact ⟨h8, h9, h10, h11, h12, h13⟩),
+    Finset.card_insert_of_notMem (by simp only [Finset.mem_insert, Finset.mem_singleton, not_or]; exact ⟨h14, h15, h16, h17, h18⟩),
+    Finset.card_insert_of_notMem (by simp only [Finset.mem_insert, Finset.mem_singleton, not_or]; exact ⟨h19, h20, h21, h22⟩),
+    Finset.card_insert_of_notMem (by simp only [Finset.mem_insert, Finset.mem_singleton, not_or]; exact ⟨h23, h24, h25⟩),
+    Finset.card_insert_of_notMem (by simp only [Finset.mem_insert, Finset.mem_singleton, not_or]; exact ⟨h26, h27⟩),
+    Finset.card_insert_of_notMem (by simp only [Finset.mem_singleton]; exact h28),
+    Finset.card_singleton]
+
+/-- The `k`-route's eight sites, with their size and the live product. -/
+theorem exists_disjoint_detour_octet {W : Sym2 (V × Fin 3) → ℂ}
+    {a k : Fin 3} {u v : V} (huv : u ≠ v)
+    (D : DetourPorts W u v a k) (E : DetourPorts W u v a (thirdColour a k))
+    (hdisj : Disjoint ({D.fst, D.snd} : Finset V) ({E.fst, E.snd} : Finset V)) :
+    ∃ x y : V, x ≠ y ∧
+      ({u, D.fst, v, D.snd, E.fst, x, E.snd, y} : Finset V).card = 8 ∧
+      W s((E.fst, k), (x, k)) * W s((E.snd, k), (y, k)) ≠ 0 := by
+  classical
+  obtain ⟨⟨x, y, hxu, hxv, hxp, hxq, hxr, hxs, hyu, hyv, hyp, hyq, hyr, hys, hxy, hrx, hsy, -⟩, -⟩ :=
+    disjoint_detours_force_outward_routes D E hdisj
+  have hd := Finset.disjoint_left.mp hdisj
+  have hm1 : D.fst ∈ ({D.fst, D.snd} : Finset V) := Finset.mem_insert_self _ _
+  have hm2 : D.snd ∈ ({D.fst, D.snd} : Finset V) :=
+    Finset.mem_insert_of_mem (Finset.mem_singleton_self _)
+  have hpr : D.fst ≠ E.fst := fun h => hd hm1 (by rw [h]; exact Finset.mem_insert_self _ _)
+  have hps : D.fst ≠ E.snd := fun h => hd hm1 (by
+    rw [h]; exact Finset.mem_insert_of_mem (Finset.mem_singleton_self _))
+  have hqr : D.snd ≠ E.fst := fun h => hd hm2 (by rw [h]; exact Finset.mem_insert_self _ _)
+  have hqs : D.snd ≠ E.snd := fun h => hd hm2 (by
+    rw [h]; exact Finset.mem_insert_of_mem (Finset.mem_singleton_self _))
+  refine ⟨x, y, hxy, card_eight_of_pairwise_ne
+    (Ne.symm D.fst_ne_u) huv (Ne.symm D.snd_ne_u) (Ne.symm E.fst_ne_u) (Ne.symm hxu)
+      (Ne.symm E.snd_ne_u) (Ne.symm hyu)
+    D.fst_ne_v D.fst_ne_snd hpr (Ne.symm hxp) hps (Ne.symm hyp)
+    (Ne.symm D.snd_ne_v) (Ne.symm E.fst_ne_v) (Ne.symm hxv) (Ne.symm E.snd_ne_v) (Ne.symm hyv)
+    hqr (Ne.symm hxq) hqs (Ne.symm hyq)
+    (Ne.symm hxr) E.fst_ne_snd (Ne.symm hyr)
+    hxs hxy (Ne.symm hys), mul_ne_zero hrx hsy⟩
+
+/-- The eight sites the `k`-route exhibits are distinct, so disjoint detours need at least eight
+sites. -/
+theorem eight_le_card_of_disjoint_detours {W : Sym2 (V × Fin 3) → ℂ}
+    {a k : Fin 3} {u v : V} (huv : u ≠ v)
+    (D : DetourPorts W u v a k) (E : DetourPorts W u v a (thirdColour a k))
+    (hdisj : Disjoint ({D.fst, D.snd} : Finset V) ({E.fst, E.snd} : Finset V)) :
+    8 ≤ Fintype.card V := by
+  classical
+  obtain ⟨x, y, hx8, hcard8, -⟩ := exists_disjoint_detour_octet huv D E hdisj
+  calc 8 = ({u, D.fst, v, D.snd, E.fst, x, E.snd, y} : Finset V).card := hcard8.symm
+    _ ≤ Fintype.card V := Finset.card_le_univ _
+
+/-- **Sharp exhaustion at eight sites.**  With exactly eight sites the `k`-route uses precisely the
+two sites outside the six, the eight fill the vertex type, and the certified remainder is the
+matching sum on the empty set.  Both route edges are live, so their product does not vanish. -/
+theorem disjoint_detours_card_eight_exhaustion {W : Sym2 (V × Fin 3) → ℂ}
+    {a k : Fin 3} {u v : V} (huv : u ≠ v)
+    (D : DetourPorts W u v a k) (E : DetourPorts W u v a (thirdColour a k))
+    (hdisj : Disjoint ({D.fst, D.snd} : Finset V) ({E.fst, E.snd} : Finset V))
+    (hcard : Fintype.card V = 8) :
+    ∃ x y : V, x ≠ y ∧
+      W s((E.fst, k), (x, k)) * W s((E.snd, k), (y, k)) ≠ 0 ∧
+      ({u, D.fst, v, D.snd, E.fst, x, E.snd, y} : Finset V) = (Finset.univ : Finset V) ∧
+      (Finset.univ : Finset V) \ ({u, D.fst, v, D.snd, E.fst, x, E.snd, y} : Finset V)
+        = (∅ : Finset V) := by
+  classical
+  obtain ⟨x, y, hxy, hcard8, hlive⟩ := exists_disjoint_detour_octet huv D E hdisj
+  have huniv : ({u, D.fst, v, D.snd, E.fst, x, E.snd, y} : Finset V) = Finset.univ :=
+    Finset.eq_univ_of_card _ (by omega)
+  exact ⟨x, y, hxy, hlive, huniv, by rw [huniv, Finset.sdiff_self]⟩
+
+/-- **The refined receiving fork.**  In a receiving colour the pair is live, giving a transported
+crossing; or a route arm is bicoloured, giving a size-one circuit; or the two detours share their
+crossed port, giving the rigid cap; or they share no port, and then each colour routes the other's
+ports outward to two further sites -- which needs at least eight sites in all. -/
+theorem receiving_pair_routed_normal_form (W : Sym2 (V × Fin 3) → ℂ)
+    (hmin : IsSupportMinimal W)
+    (hmono : ∀ (p q : V), q ≠ p → ∀ i j : Fin 3, i ≠ j → W s((p, i), (q, j)) = 0)
+    (hcard : 4 < Fintype.card V)
+    {c : V → Fin 3} {u v : V} (hvu : v ≠ u) (hcv : c v = c u)
+    (hlive : W s((u, c u), (v, c u)) ≠ 0)
+    (hfib : ∀ m : Fin 3, pmSum W (Amplitude.const (V := V) m)
+      (((Finset.univ.erase u).erase v) ∩ NoCancellation.fiber c m) ≠ 0)
+    (hAne : (((Finset.univ.erase u).erase v) ∩ NoCancellation.fiber c (c u)).Nonempty)
+    {k : Fin 3} (hk : k ≠ c u) :
+    TransportedCrossing W c u v k
+      ∨ TransportedCrossing W c u v (thirdColour (c u) k)
+      ∨ SomeSizeOneCircuit W u v
+      ∨ (∃ D : DetourPorts W u v (c u) k,
+          ∃ E : DetourPorts W u v (c u) (thirdColour (c u) k),
+            CrossedOnePortCap W u v (c u) k D.fst D.snd E.fst
+              ∨ CrossedOnePortCap W v u (c u) k D.snd D.fst E.snd)
+      ∨ (∃ D : DetourPorts W u v (c u) k,
+          ∃ E : DetourPorts W u v (c u) (thirdColour (c u) k),
+            Disjoint ({D.fst, D.snd} : Finset V) ({E.fst, E.snd} : Finset V)
+              ∧ OutwardRoutes D E
+              ∧ 8 ≤ Fintype.card V) := by
+  rcases receiving_pair_normal_form W hmin hmono hcard hvu hcv hlive hfib hAne hk with
+    h | h | h | ⟨D, E, hrest⟩
+  · exact Or.inl h
+  · exact Or.inr (Or.inl h)
+  · exact Or.inr (Or.inr (Or.inl h))
+  rcases hrest with hdisj | hcap
+  · exact Or.inr (Or.inr (Or.inr (Or.inr ⟨D, E, hdisj,
+      disjoint_detours_force_outward_routes D E hdisj,
+      eight_le_card_of_disjoint_detours (Ne.symm hvu) D E hdisj⟩)))
+  · exact Or.inr (Or.inr (Or.inr (Or.inl ⟨D, E, hcap⟩)))
+
+/-- **Initialization at an excess site.**  A site whose live degree is not three supplies the sharp
+partition, hence the refined fork in both receiving colours. -/
+theorem excess_site_receiving_pair_routed (W : Sym2 (V × Fin 3) → ℂ)
+    (hmin : IsSupportMinimal W)
+    (hmono : ∀ (p q : V), q ≠ p → ∀ i j : Fin 3, i ≠ j → W s((p, i), (q, j)) = 0)
+    (hcard : 4 < Fintype.card V)
+    {u : V} (hdeg : (liveNbrs W u).card ≠ 3) :
+    ∃ v ∈ liveNbrs W u, ∃ c : V → Fin 3, c v = c u ∧
+      W s((u, c u), (v, c u)) ≠ 0 ∧
+      ∀ k : Fin 3, k ≠ c u →
+        TransportedCrossing W c u v k
+          ∨ TransportedCrossing W c u v (thirdColour (c u) k)
+          ∨ SomeSizeOneCircuit W u v
+          ∨ (∃ D : DetourPorts W u v (c u) k,
+              ∃ E : DetourPorts W u v (c u) (thirdColour (c u) k),
+                CrossedOnePortCap W u v (c u) k D.fst D.snd E.fst
+                  ∨ CrossedOnePortCap W v u (c u) k D.snd D.fst E.snd)
+          ∨ (∃ D : DetourPorts W u v (c u) k,
+              ∃ E : DetourPorts W u v (c u) (thirdColour (c u) k),
+                Disjoint ({D.fst, D.snd} : Finset V) ({E.fst, E.snd} : Finset V)
+                  ∧ OutwardRoutes D E
+                  ∧ 8 ≤ Fintype.card V) := by
+  obtain ⟨v, hv, c, hcv, hentry, hfib, hown, -, -, -⟩ :=
+    excess_site_receiving_dichotomy W hmin hmono hcard hdeg
+  obtain ⟨z, hz, hcz⟩ := hown
+  exact ⟨v, hv, c, hcv, hentry, fun k hk =>
+    receiving_pair_routed_normal_form W hmin hmono hcard (mem_liveNbrs.mp hv).1 hcv hentry hfib
+      ⟨z, Finset.mem_inter.mpr ⟨hz, NoCancellation.mem_fiber.mpr hcz⟩⟩ hk⟩
+
 end StarNormalForm

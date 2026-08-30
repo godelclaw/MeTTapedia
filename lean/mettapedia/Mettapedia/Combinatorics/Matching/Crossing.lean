@@ -455,4 +455,106 @@ theorem pmSum_six_three_dead {C R : Type*} [CommRing R]
       (Ne.symm h2v2) hv2w1 h2w1 hdv]
   ring
 
+/-! ### Routing a dead pair inside a set
+
+A pair whose own edge is dead still has to be covered by a non-vanishing matching sum on any set
+containing it, and it cannot be covered by joining the two sites to each other.  So the sum routes
+them through two *other* sites of the set, and the certified-deletion step supplies a remainder that
+still does not vanish.  Two applications of the partner lemma; no field, no enumeration, and no
+hypothesis beyond a commutative semiring. -/
+
+theorem exists_dead_pair_detour_on {C : Type*} {R : Type*} [CommSemiring R]
+    (W : Sym2 (V × C) → R) (c : V → C) {S : Finset V} {u v : V}
+    (hu : u ∈ S) (hv : v ∈ S) (huv : u ≠ v) (hS : pmSum W c S ≠ 0)
+    (hdead : W (Sym2.map (paint c) s(u, v)) = 0) :
+    ∃ x y : V, x ∈ S ∧ y ∈ S ∧
+      x ≠ u ∧ x ≠ v ∧ y ≠ u ∧ y ≠ v ∧ x ≠ y ∧
+      W (Sym2.map (paint c) s(u, x)) ≠ 0 ∧ W (Sym2.map (paint c) s(v, y)) ≠ 0 ∧
+      pmSum W c (S \ ({u, x, v, y} : Finset V)) ≠ 0 := by
+  classical
+  obtain ⟨x, hx, hux, hrest⟩ := MatchingSum.exists_partner_ne_zero W c hu hS
+  have hxu : x ≠ u := Finset.ne_of_mem_erase hx
+  have hxS : x ∈ S := Finset.mem_of_mem_erase hx
+  have hxv : x ≠ v := by
+    intro h; rw [h] at hux; exact hux hdead
+  have hvmem : v ∈ (S.erase u).erase x :=
+    Finset.mem_erase.mpr ⟨Ne.symm hxv, Finset.mem_erase.mpr ⟨Ne.symm huv, hv⟩⟩
+  obtain ⟨y, hy, hvy, hrest'⟩ := MatchingSum.exists_partner_ne_zero W c hvmem hrest
+  have hyv : y ≠ v := Finset.ne_of_mem_erase hy
+  have hyx : y ≠ x := Finset.ne_of_mem_erase (Finset.mem_of_mem_erase hy)
+  have hyu : y ≠ u :=
+    Finset.ne_of_mem_erase (Finset.mem_of_mem_erase (Finset.mem_of_mem_erase hy))
+  have hyS : y ∈ S :=
+    Finset.mem_of_mem_erase (Finset.mem_of_mem_erase (Finset.mem_of_mem_erase hy))
+  refine ⟨x, y, hxS, hyS, hxu, hxv, hyu, hyv, Ne.symm hyx, hux, hvy, ?_⟩
+  have hset : S \ ({u, x, v, y} : Finset V) = (((S.erase u).erase x).erase v).erase y := by
+    ext z
+    simp only [Finset.mem_sdiff, Finset.mem_erase, Finset.mem_insert, Finset.mem_singleton, not_or]
+    tauto
+  rw [hset]; exact hrest'
+
+/-- Four distinct sites of `S` are exhibited, so a dead pair inside a non-vanishing sum needs at
+least four sites. -/
+theorem four_le_card_of_dead_pair_detour {C : Type*} {R : Type*} [CommSemiring R]
+    (W : Sym2 (V × C) → R) (c : V → C) {S : Finset V} {u v : V}
+    (hu : u ∈ S) (hv : v ∈ S) (huv : u ≠ v) (hS : pmSum W c S ≠ 0)
+    (hdead : W (Sym2.map (paint c) s(u, v)) = 0) :
+    4 ≤ S.card := by
+  classical
+  obtain ⟨x, y, hxS, hyS, hxu, hxv, hyu, hyv, hxy, -, -, -⟩ :=
+    exists_dead_pair_detour_on W c hu hv huv hS hdead
+  have hsub : ({u, x, v, y} : Finset V) ⊆ S := by
+    intro z hz
+    simp only [Finset.mem_insert, Finset.mem_singleton] at hz
+    rcases hz with rfl | rfl | rfl | rfl <;> assumption
+  have hcard : ({u, x, v, y} : Finset V).card = 4 := by
+    rw [Finset.card_insert_of_notMem (by
+        simp only [Finset.mem_insert, Finset.mem_singleton, not_or]
+        exact ⟨Ne.symm hxu, huv, Ne.symm hyu⟩),
+      Finset.card_insert_of_notMem (by
+        simp only [Finset.mem_insert, Finset.mem_singleton, not_or]
+        exact ⟨hxv, hxy⟩),
+      Finset.card_insert_of_notMem (by
+        simp only [Finset.mem_singleton]; exact Ne.symm hyv),
+      Finset.card_singleton]
+  exact hcard ▸ Finset.card_le_card hsub
+
+/-- Base behaviour at two sites: a dead pair is the whole sum, so the hypotheses are contradictory. -/
+theorem dead_pair_detour_card_two {C : Type*} {R : Type*} [CommSemiring R]
+    (W : Sym2 (V × C) → R) (c : V → C) {u v : V} (huv : u ≠ v)
+    (hS : pmSum W c ({u, v} : Finset V) ≠ 0)
+    (hdead : W (Sym2.map (paint c) s(u, v)) = 0) : False := by
+  rw [MatchingSum.pmSum_pair W c (Ne.symm huv)] at hS
+  exact hS hdead
+
+/-- Base behaviour at four sites: the detour exhausts the set and the remainder is empty. -/
+theorem dead_pair_detour_card_four {C : Type*} {R : Type*} [CommSemiring R]
+    (W : Sym2 (V × C) → R) (c : V → C) {S : Finset V} {u v : V}
+    (hu : u ∈ S) (hv : v ∈ S) (huv : u ≠ v) (hS : pmSum W c S ≠ 0)
+    (hdead : W (Sym2.map (paint c) s(u, v)) = 0) (hcard : S.card = 4) :
+    ∃ x y : V, x ∈ S ∧ y ∈ S ∧
+      x ≠ u ∧ x ≠ v ∧ y ≠ u ∧ y ≠ v ∧ x ≠ y ∧
+      W (Sym2.map (paint c) s(u, x)) ≠ 0 ∧ W (Sym2.map (paint c) s(v, y)) ≠ 0 ∧
+      S \ ({u, x, v, y} : Finset V) = (∅ : Finset V) := by
+  classical
+  obtain ⟨x, y, hxS, hyS, hxu, hxv, hyu, hyv, hxy, hux, hvy, -⟩ :=
+    exists_dead_pair_detour_on W c hu hv huv hS hdead
+  refine ⟨x, y, hxS, hyS, hxu, hxv, hyu, hyv, hxy, hux, hvy, ?_⟩
+  have hsub : ({u, x, v, y} : Finset V) ⊆ S := by
+    intro z hz
+    simp only [Finset.mem_insert, Finset.mem_singleton] at hz
+    rcases hz with rfl | rfl | rfl | rfl <;> assumption
+  have hc4 : ({u, x, v, y} : Finset V).card = 4 := by
+    rw [Finset.card_insert_of_notMem (by
+        simp only [Finset.mem_insert, Finset.mem_singleton, not_or]
+        exact ⟨Ne.symm hxu, huv, Ne.symm hyu⟩),
+      Finset.card_insert_of_notMem (by
+        simp only [Finset.mem_insert, Finset.mem_singleton, not_or]
+        exact ⟨hxv, hxy⟩),
+      Finset.card_insert_of_notMem (by
+        simp only [Finset.mem_singleton]; exact Ne.symm hyv),
+      Finset.card_singleton]
+  have heq : ({u, x, v, y} : Finset V) = S := Finset.eq_of_subset_of_card_le hsub (by omega)
+  rw [heq, Finset.sdiff_self]
+
 end MatchingCrossing
