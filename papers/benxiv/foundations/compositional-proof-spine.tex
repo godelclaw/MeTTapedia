@@ -2426,16 +2426,87 @@ zero.  The Lean proof constructs both translations on the literal
 simple-graph and shared perfect-matching types.
 \end{proof}
 
+The three-matching formulation has a sharper two-matching form.  The third
+matching is forced by cubicity rather than supplied as additional data.
+
+\begin{corollary}[the two-matching criterion]
+\label{cor:tait-two-matching-criterion}
+\Sprose
+Let \(G\) be a finite cubic simple graph.  Then \(G\) is Tait colourable if
+and only if it has two graph-supported perfect matchings \(\sigma\) and
+\(\tau\) such that
+\[
+                 \sigma(v)\ne\tau(v)\qquad(v\in V(G)).
+\]
+Consequently, in a cubic Tait counterexample every two graph-supported
+perfect matchings share an edge.
+\end{corollary}
+
+\begin{proof}
+Two colour classes of a Tait colouring give the forward implication.  For
+the converse, fix supported matchings \(\sigma,\tau\) with distinct partners
+at every vertex.  At a vertex \(v\), the two edges
+\(v\sigma(v)\) and \(v\tau(v)\) are distinct.  Since \(G\) is cubic, there
+is a unique third incident edge; write it as \(v\rho(v)\).
+
+This local definition is consistent at the other endpoint.  Indeed, if
+\(v\rho(v)=vw\), then \(v\ne\sigma(w)\): otherwise involutivity of
+\(\sigma\) would give \(w=\sigma(v)\), contrary to the choice of the third
+edge at \(v\).  Similarly \(v\ne\tau(w)\).  Thus the same edge is the
+unique third edge at \(w\), and \(\rho(w)=v\).  Adjacency also gives
+\(\rho(v)\ne v\).  Hence \(\rho\) is a graph-supported fixed-point-free
+involution.  The three matchings \(\sigma,\tau,\rho\) have distinct partners
+at every vertex and cover all edges, so
+Theorem~\ref{thm:tait-three-matching-decomposition} gives a Tait colouring.
+
+Taking the contrapositive, two supported perfect matchings in a cubic Tait
+counterexample cannot be pointwise edge-disjoint.  Equality
+\(\sigma(v)=\tau(v)\) means that they share the undirected edge
+\(v\sigma(v)\), proving the final assertion.
+\end{proof}
+
+There is also an exact limitation on the matching-exchange idea.
+
+\begin{lemma}[two-matching exchange preserves the overlap locus]
+\label{lem:two-matching-exchange-preserves-overlap}
+\Sprose
+Let \(S\) be a vertex set closed under two perfect matchings
+\(\sigma,\tau\), and let \(\sigma',\tau'\) be obtained by swapping the two
+matchings on \(S\).  Then, for every vertex \(v\),
+\[
+  \sigma'(v)\ne\tau'(v)quad\Longleftrightarrow\quad
+  \sigma(v)\ne\tau(v).
+\]
+In particular, such an exchange cannot turn an intersecting pair of perfect
+matchings into an edge-disjoint pair.
+\end{lemma}
+
+\begin{proof}
+Inside \(S\), the two partners are interchanged; outside \(S\), both partners
+are unchanged.  Thus their unordered pair, and hence whether the two entries
+are equal, is unchanged at every vertex.  The Lean theorem proves the displayed
+pointwise equivalence directly.
+\end{proof}
+
 Theorem~\ref{thm:tait-three-matching-decomposition} does not by itself
 exclude a wall.  Its purpose is to expose a route-native high-width attack
-without losing the target: supported perfect matchings may be changed along
+without losing the target.  Supported perfect matchings may be exchanged along
 sets closed under two matchings, and the shared matching exchange theorem
-proves that such a change remains graph-supported.  Thus a matching-based
-proof of the boxed assertion below must show that, in a least counterexample
-containing a fixed ordered mesh, alternating exchanges either complete one
-supported matching to an exact triple or yield a strict support-preserving
-replacement.  Merely finding many perfect matchings, without this completion
-or replacement conclusion, does not discharge the zero-target condition.
+proves that such a change remains graph-supported.  However,
+Lemma~\ref{lem:two-matching-exchange-preserves-overlap} shows that exchanges
+between a fixed pair preserve their common-edge locus exactly.  Thus they
+cannot by themselves complete a Tait colouring.  A matching-based proof of the
+boxed assertion below must use the wall either to construct a genuinely new
+supported matching, involving edges outside the two old matchings, or to yield
+the strict support-preserving replacement required by the reductive descent.
+Merely finding many perfect matchings, or exchanging a fixed pair, does not
+discharge the zero-target condition.
+By Corollary~\ref{cor:tait-two-matching-criterion}, the completion alternative
+can equivalently be stated as the production of two supported perfect
+matchings with no common edge.  Thus the matching form of the high-width crux
+is now exact: an embedded wall must force either such a disjoint pair or the
+strict replacement used by the reductive descent.  Counting perfect matchings
+without controlling their intersections is still insufficient.
 
 One sufficient way to establish Hypothesis~1 is the stronger statement that
 every zero-target instance containing the wall has either positive target or
