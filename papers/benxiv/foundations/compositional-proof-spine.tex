@@ -2489,6 +2489,77 @@ so this construction does not assert that the four intervening path segments
 form the boundary of an embedded disc.
 \end{proof}
 
+\begin{lemma}[complete boundary relation for an ordered mesh cell]
+\label{lem:ordered-mesh-complete-boundary-relation}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshBoundaryWalk.boundaryWalk_toFinset_eq_univ}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshBoundaryWalk.boundarySuccessor_injective}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshBoundaryWalk.boundaryData_second_eq_successor_first}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshBoundaryWalk.boundaryCommonCarrier_property_iff_three_endpoints}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshBoundaryWalk.successorOverlapKempeStateSupport_nonempty}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshBoundaryHolonomy.successorWitnessRelation_nonempty}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshBoundaryHolonomy.boundaryWitnessSection_or_obstruction}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshBoundaryHolonomy.BoundaryWitnessSection.state_eq_overlapKempeState}
+For one coordinate rectangle of an ordered injective mesh, orient every
+subdivision step of its top, right, bottom and left paths clockwise.  These
+steps form a finite cyclic carrier: the displayed boundary list contains
+every step exactly once, and clockwise successor is a permutation.  This
+includes all path steps between branch vertices, not only the four steps
+selected at the corners in
+Lemma~\ref{lem:ordered-mesh-coherent-orbit-cell}.
+
+Each step canonically supplies an adjacent-pair deletion.  The terminal
+vertex of a step is literally the initial vertex of its successor, including
+at all four turns.  Therefore the two consecutive deletions compare on the
+canonical induced common carrier obtained by deleting their three named
+endpoints (with repetitions allowed).  Minimality supplies one proper base
+colouring, and hence one selected Kempe orbit, at every site.  The finite
+overlap-state relation from each selected site to its successor is nonempty.
+
+Choose one realised finite overlap state on every successor edge.  Exactly
+one of the following holds:
+\begin{enumerate}
+\item there is one concrete deletion colouring at every boundary site which
+  simultaneously witnesses the chosen incoming and outgoing states; or
+\item no such boundary-wide family exists.
+\end{enumerate}
+In the first case the state on every edge is the overlap state of the two
+displayed concrete colourings.  Thus a site colouring is reused, rather than
+chosen afresh, in its two incident relations.
+\end{lemma}
+
+\begin{proof}
+The four side lengths are the positive differences of successive branch
+positions.  List the corresponding path steps in clockwise order, reversing
+the bottom and left sides.  Successor increments within a side and moves to
+the first step of the next side at a turn.  A case split over the four sides,
+using strict monotonicity of the branch positions at the turns, proves both
+injectivity of successor and equality of consecutive endpoints.  Finiteness
+then makes successor a permutation.  The four lists are disjoint by their
+side tags and each finite index occurs once, proving completeness of the
+boundary list.
+
+The common-carrier statement follows by substituting the shared endpoint in
+the four endpoint inequalities defining the generic two-pair deletion.
+Choose the adjacent-pair data and a proper base colouring once at every
+site.  The two bases at a step and its successor realise an overlap state, so
+each one-step support is inhabited.  Choice over the finite carrier gives a
+state assignment.  A boundary section is, by definition, a dependent family
+of site colourings satisfying every selected successor relation.  Excluded
+middle applied to the existence of that single family gives the stated
+dichotomy, and unfolding the successor relation gives the final
+state-realisation equality.
+\end{proof}
+
+This lemma is deliberately an incidence and quantifier theorem.  The second
+alternative is not yet a geometric obstruction, and the first does not yet
+identify the supports of two physical shores.  In particular, an ordered
+injective mesh may have extra row--column intersections or shared path
+segments, so the cyclic carrier is not asserted to bound an embedded disc.
+The next wall-facing obligation is now exact: either construct a boundary
+section with the support equality required by the physical splice, or turn
+failure of a section into a bounded cut, a strict replacement, or a global
+invariant contradicting a least counterexample.
+
 Only one implication is claimed:
 \[
  \{\hbox{states with shared corner witnesses}\}
