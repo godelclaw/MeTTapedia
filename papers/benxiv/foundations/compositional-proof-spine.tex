@@ -4307,6 +4307,45 @@ its contraction into a separating simple cycle of the ambient spherical map
 is a distinct geometric step and is not asserted here.
 \end{proof}
 
+\begin{lemma}[a boundary-free graph-backed Kempe circuit is a primal cycle]
+\label{lem:graph-backed-kempe-boundary-free-primal-cycle}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PortTanglePrimalKempeGraph.primalKempeComponent_isCycles_of_boundaryFree}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PortTanglePrimalKempeGraph.exists_primalKempeCycle_of_boundaryFree}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24VertexSidePrimalKempeTrail.interiorEndpointInjective_vertexSide}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24VertexSidePrimalKempeTrail.exists_ambientPrimalKempeCycle_of_boundaryFree}
+Let a finite simple graph with a dart rotation be cut along a vertex shore,
+and give the resulting literal port tangle a proper nonzero Tait colouring.
+Fix a colour pair and an active dart whose physical component contains no
+boundary port.  Contract every same-vertex wire in that component.  The
+result is a simple cycle in the selected two-colour primal subgraph, and its
+inclusion in the ambient simple graph is again a simple cycle.
+\end{lemma}
+
+\begin{proof}
+Consider a primal vertex reached from the chosen active dart.  Any active dart
+based there belongs to the same physical component: primal reachability lifts
+to the common dart web, and two active darts at one vertex are joined by the
+same-vertex wire.  Hence no active boundary port is based there.  Proper
+cubicity supplies exactly two active darts at the vertex, so both are interior
+darts.  Crossing their two interior edges gives two neighbours in the selected
+primal graph.
+
+These neighbours are distinct.  Indeed, in the graph-backed tangle an
+interior dart remembers an oriented edge of the ambient simple graph.  Two
+interior darts with the same initial and terminal vertices are equal.  Thus
+equality of the two neighbours would identify the two active darts,
+contradicting their distinctness.  Conversely every selected primal edge at
+the vertex arises from one of the two active darts.  The selected primal
+component is therefore connected and $2$-regular, so it contains a simple
+cycle through the chosen vertex and in fact is exactly that cycle.
+
+The inclusion of the selected primal graph into the retained shore, and then
+into the ambient graph, is injective on vertices and preserves adjacency.
+Mapping the cycle along this inclusion therefore preserves the simple-cycle
+property.  This proves the claim.  Spherical separation of the resulting
+ambient cycle is the next topological consumer, not part of this lemma.
+\end{proof}
+
 \begin{theorem}[the physical common web induces the exact boundary matching]
 \label{thm:port-tangle-physical-kempe-matching}
 Let $T$ be a finite cubic port tangle with a proper nonzero Tait colouring,

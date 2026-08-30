@@ -20,6 +20,7 @@ open GoertzelV24HexagonPairingTargetAwareBoundary
 open GoertzelV24OpenTangleComposition
 open GoertzelV24OpenTangleComposition.OpenTangleData
 open GoertzelV24PortTangleCommonKempeWeb
+open GoertzelV24PortTangleKempeEndpoints
 open GoertzelV24PortTangleGluing
 open GoertzelV24PortTangleGluing.PortTangle
 open GoertzelV24PortTanglePrimalKempeGraph
@@ -39,6 +40,27 @@ abbrev vertexSidePortTangle
     (outer : RetainedDart graphData.toRotationSystem keep) :=
   ofOpenTangleData
     (ofVertexSide graphData.toRotationSystem keep outer)
+
+/-- Literal internal darts in a shore of a simple graph are determined by
+their ordered endpoint pair. -/
+theorem interiorEndpointInjective_vertexSide
+    (graphData : Data G) (keep : V → Prop)
+    (outer : RetainedDart graphData.toRotationSystem keep) :
+    InteriorEndpointInjective
+      (vertexSidePortTangle graphData keep outer) := by
+  intro first second hsource htarget
+  apply Subtype.ext
+  apply Subtype.ext
+  apply SimpleGraph.Dart.ext
+  apply Prod.ext
+  · simpa [vertexSidePortTangle, ofOpenTangleData, ofVertexSide,
+      vertexSideVertex, SimpleGraphDartRotation.Data.toRotationSystem_vertOf]
+      using congrArg Subtype.val hsource
+  · simpa [vertexSidePortTangle, ofOpenTangleData, ofVertexSide,
+      vertexSideVertex, internalAlpha,
+      SimpleGraphDartRotation.Data.toRotationSystem_vertOf,
+      SimpleGraphDartRotation.Data.toRotationSystem_alpha]
+      using congrArg Subtype.val htarget
 
 /-- The selected primal Kempe graph of one literal vertex shore. -/
 abbrev vertexSidePrimalKempeGraph
@@ -167,6 +189,51 @@ theorem primalKempeWalkToAmbient_isTrail
     (primalKempeWalkToAmbient graphData keep outer coloring pair walk).IsTrail := by
   simpa [primalKempeWalkToAmbient] using
     Walk.map_isTrail_of_injective Subtype.val_injective hwalk
+
+/-- Injective vertex inclusion preserves a simple closed primal cycle. -/
+theorem primalKempeWalkToAmbient_isCycle
+    (graphData : Data G) (keep : V → Prop)
+    (outer : RetainedDart graphData.toRotationSystem keep)
+    (coloring : Coloring (vertexSidePortTangle graphData keep outer))
+    (pair : TaitColorPair) {vertex : {vertex : V // keep vertex}}
+    {walk : (vertexSidePrimalKempeGraph graphData keep outer coloring pair).Walk
+      vertex vertex} (hwalk : walk.IsCycle) :
+    (primalKempeWalkToAmbient graphData keep outer coloring pair walk).IsCycle := by
+  simpa [primalKempeWalkToAmbient] using
+    hwalk.map Subtype.val_injective
+
+/-- In a graph-backed cubic shore, a physical bichromatic component with no
+boundary port contracts to a simple cycle in the ambient primal graph. -/
+theorem exists_ambientPrimalKempeCycle_of_boundaryFree
+    (graphData : Data G) (keep : V → Prop)
+    (outer : RetainedDart graphData.toRotationSystem keep)
+    (hcubic : graphData.toRotationSystem.IsCubic)
+    (coloring : Coloring (vertexSidePortTangle graphData keep outer))
+    (hproper : IsProper coloring) (pair : TaitColorPair)
+    (root : ActiveDart
+      (vertexSidePortTangle graphData keep outer) coloring pair)
+    (hboundaryFree : componentPortDarts
+      (vertexSidePortTangle graphData keep outer) coloring pair root = ∅) :
+    ∃ walk : G.Walk
+        ((vertexSidePortTangle graphData keep outer).vert root.1).1
+        ((vertexSidePortTangle graphData keep outer).vert root.1).1,
+      walk.IsCycle := by
+  have hshoreCubic :
+      GoertzelV24PortTangleCutParity.IsCubic
+        (vertexSidePortTangle graphData keep outer) :=
+    GoertzelV24PortTangleCutParity.isCubic_ofOpenTangleData
+      (ofVertexSide graphData.toRotationSystem keep outer)
+      (GoertzelV24VertexSideOpenTangle.openIsCubic_ofVertexSide
+        graphData.toRotationSystem keep outer hcubic)
+  rcases exists_primalKempeCycle_of_boundaryFree
+      (vertexSidePortTangle graphData keep outer) hshoreCubic
+      (interiorEndpointInjective_vertexSide graphData keep outer)
+      coloring hproper pair root hboundaryFree with
+    ⟨walk, hcycle⟩
+  exact ⟨primalKempeWalkToAmbient
+    graphData keep outer coloring pair walk,
+    primalKempeWalkToAmbient_isCycle
+      graphData keep outer coloring pair hcycle⟩
 
 /-- Edge-disjoint primal Kempe walks remain edge-disjoint in the ambient
 graph because the retained-vertex inclusion is injective. -/
