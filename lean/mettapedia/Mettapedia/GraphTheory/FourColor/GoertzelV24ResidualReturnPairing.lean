@@ -216,6 +216,19 @@ theorem boundaryReturnPairing_reachable
       ((boundaryReturnPairing boundary hdegree).partner start).1 :=
   (boundaryPartner_spec boundary hdegree start).2
 
+/-- The canonical return partner is the unique different boundary vertex in
+the same connected component. -/
+theorem boundaryReturnPairing_eq_of_reachable
+    (boundary : Finset W)
+    (hdegree : ∀ vertex : W,
+      H.degree vertex = if vertex ∈ boundary then 1 else 2)
+    (start finish : BoundaryVertex boundary)
+    (hne : finish ≠ start) (hreach : H.Reachable start.1 finish.1) :
+    (boundaryReturnPairing boundary hdegree).partner start = finish := by
+  exact (Classical.choose_spec
+    (existsUnique_reachable_boundaryPartner boundary hdegree start)).2
+      finish ⟨hne, hreach⟩ |>.symm
+
 /-! ## The common graph before and after one residual exchange -/
 
 variable {V : Type u} [Fintype V] [DecidableEq V]
@@ -331,6 +344,23 @@ theorem siteReturnPairing_reachable
   boundaryReturnPairing_reachable
     (H := commonResidualGraph G sigma site) site.carrier
     (degree_commonResidualGraph hG sigma hSigma site) vertex
+
+/-- A different cycle vertex reachable through the common residual graph is
+exactly the canonical return partner. -/
+theorem siteReturnPairing_eq_of_reachable
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (start finish : BoundaryVertex site.carrier)
+    (hne : finish ≠ start)
+    (hreach : (commonResidualGraph G sigma site).Reachable
+      start.1 finish.1) :
+    (siteReturnPairing hG sigma hSigma site).partner start = finish := by
+  exact boundaryReturnPairing_eq_of_reachable
+    (H := commonResidualGraph G sigma site) site.carrier
+      (degree_commonResidualGraph hG sigma hSigma site)
+        start finish hne hreach
 
 /-- Every nontrivial global mesh site carries both its facial local formation
 receipts and the physical endpoint pairing induced by the unchanged residual
