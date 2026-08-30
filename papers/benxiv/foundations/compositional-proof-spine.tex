@@ -2504,19 +2504,89 @@ pairing used above.
 \begin{corollary}[the inhabited overlap family]
 \label{cor:inhabited-overlap-family}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PetersenStartingMatching.exists_startingPairing_all_supportedPairings_overlap}
-Let (G) be a finite bridge-free cubic simple graph that is not Tait
-colourable.  There is a graph-supported perfect matching (sigma) such that
-every graph-supported perfect matching (	au) shares an edge with (sigma).
+Let \(G\) be a finite bridge-free cubic simple graph that is not Tait
+colourable.  There is a graph-supported perfect matching \(\sigma\) such that
+every graph-supported perfect matching \(\tau\) shares an edge with \(\sigma\).
 \end{corollary}
 
 \begin{proof}
-Choose (sigma) by Theorem~\ref{thm:petersen-starting-matching}.  If some
-supported (	au) shared no edge with it, the two-matching criterion would
+Choose \(\sigma\) by Theorem~\ref{thm:petersen-starting-matching}.  If some
+supported \(\tau\) shared no edge with it, the two-matching criterion would
 give a Tait colouring, contrary to hypothesis.
 \end{proof}
 
+The overlap obstruction has an equivalent parity carrier which more closely
+resembles the source's path--matching anatomy.
+
+\begin{theorem}[the residual two-factor obstruction]
+\label{thm:residual-two-factor-obstruction}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualTwoFactor.card_neighborFinset_residualGraph_eq_two}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualTwoFactor.residualGraph_isCycles}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualTwoFactor.taitColorable_iff_exists_residual_supportedPairing}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualTwoFactor.exists_isPerfectMatching_of_bipartite_degree_two}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualTwoFactor.taitColorable_of_residualGraph_isBipartite}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualTwoFactor.residualGraph_not_isBipartite_of_not_taitColorable}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualTwoFactor.exists_odd_closedWalk_residual_of_not_taitColorable}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualTwoFactor.exists_startingPairing_overlap_and_odd_residual}
+Let \(G\) be a finite cubic simple graph and let \(\sigma\) be a
+graph-supported perfect matching.  Delete the edge \(v\sigma(v)\) at every
+vertex and call the resulting spanning graph \(R_\sigma\).  Then:
+\begin{enumerate}
+\item every vertex of \(R_\sigma\) has degree two;
+\item a perfect matching \(\tau\) is supported by \(R_\sigma\) exactly when
+      it is supported by \(G\) and shares no edge with \(\sigma\); and
+\item if \(R_\sigma\) is bipartite, then \(G\) is Tait colourable.
+\end{enumerate}
+Consequently, in a cubic Tait counterexample the residual graph of every
+supported perfect matching is non-bipartite and has an odd closed walk.  If
+\(G\) is also bridge-free, one may choose \(\sigma\) so that every supported
+perfect matching overlaps it, while \(R_\sigma\) still has such an odd closed
+walk.
+\end{theorem}
+
+\begin{proof}
+At each vertex of a cubic graph, deleting the one neighbour selected by
+\(\sigma\) leaves exactly two neighbours.  This proves the first assertion
+and identifies \(R_\sigma\) as a spanning two-factor.  The definition of its
+adjacency gives the second assertion literally.  Therefore the two-matching
+criterion can be rewritten as
+\[
+ G\text{ is Tait colourable}
+ \quad\Longleftrightarrow\quad
+ \text{some supported }\sigma\text{ has a perfect matching in }R_\sigma.
+\]
+
+It remains to justify the bipartite shortcut without appealing to a cycle
+picture.  More generally, let \(H\) be a finite bipartite graph in which
+every vertex has degree two.  For any vertex set \(S\), count incidences
+between \(S\) and its neighbourhood \(N(S)\).  The vertices of \(S\)
+contribute exactly \(2|S|\) incidences.  Each vertex of \(N(S)\) receives at
+most two, so
+\[
+                         2|S|\leq 2|N(S)|.
+\]
+Thus \(|S|\leq |N(S)|\), and Hall's theorem gives a perfect matching of
+\(H\).  Apply this to \(R_\sigma\); the resulting residual matching is
+disjoint from \(\sigma\), so the two-matching criterion gives a Tait
+colouring of \(G\).
+
+The contrapositive says that every residual graph in a Tait counterexample
+is non-bipartite.  The standard characterization of bipartite graphs by even
+closed walks then supplies an odd closed walk.  Finally Petersen's theorem
+chooses \(\sigma\) in the bridge-free target class, and
+Corollary~\ref{cor:inhabited-overlap-family} supplies the simultaneous overlap
+statement.
+\end{proof}
+
 Thus the high-width problem is an intersection problem for an inhabited
-family of matchings, not an existence problem for the first matching.
+family of matchings, and equivalently an odd-residual-two-factor problem; it
+is not an existence problem for the first matching.  This formulation also
+fixes a quantifier issue in applying the source's two-paths-plus-matching
+anatomy.  That anatomy is obtained inside an already coloured closed-web
+carrier, so it cannot by itself manufacture the disjoint second matching in
+an uncoloured zero-target counterexample.  A wall-facing use of that source
+lemma must instead eliminate the odd residual obstruction or construct the
+strict exact-support replacement required by the reductive descent.
 
 There is also an exact limitation on the matching-exchange idea.
 
