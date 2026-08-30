@@ -2847,6 +2847,87 @@ The cyclic ordering and the initial colouring \(C\) were selected before
 than to three unrelated existentially chosen colourings.
 \end{proof}
 
+The same local data also has a matching interpretation which survives even
+when the full two-vertex colouring extension is impossible.
+
+\begin{lemma}[an adjacent-pair deletion colouring supplies a central matching]
+\label{lem:adjacent-pair-central-matching}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairMatchingExtraction.colorClassSubgraph_isPerfectMatching_of_boundary_absent}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairMatchingExtraction.AdjacentPairData.exists_central_supportedPairing_of_not_taitColorable}
+Let \(G\) be a finite cubic simple graph which is not Tait colourable, let
+\(u,v\) be adjacent, and suppose the four other neighbours of \(u,v\) are
+distinct.  Every proper Tait colouring of \(G-\{u,v\}\) determines a
+graph-supported perfect matching \(\tau\) of \(G\) with
+
+\[
+                              \tau(u)=v.
+\]
+\end{lemma}
+
+\begin{proof}
+Write \(w_0,w_1\) for the missing colours at the two ports formerly incident
+with \(u\), and \(w_2,w_3\) for those at the ports formerly incident with
+\(v\).  If the two deleted vertices could be restored as a proper coloured
+bridge, the resulting colouring would be a Tait colouring of \(G\).  The
+exact four-port bridge table therefore gives
+
+\[
+                         w_0=w_1,\qquad w_2=w_3.
+\]
+
+At most two of the three nonzero Tait colours occur in this word.  Choose a
+nonzero colour \(c\) which does not occur.  Consider the \(c\)-coloured edges
+of the deleted graph.  At every retained cubic vertex exactly one incident
+edge has colour \(c\).  At a boundary vertex there are two incident edges of
+distinct nonzero colours; their sum is the missing third colour \(w_i\).
+Since \(c\ne w_i\), one of those two incident edges has colour \(c\), and
+properness makes it unique.  Thus the \(c\)-colour class is a perfect
+matching of every retained vertex.
+
+Add the edge \(uv\).  It matches the only two omitted vertices, while all
+other selected edges belong to the induced deletion and hence to \(G\).
+The result is the required graph-supported perfect matching \(\tau\), and by
+construction \(\tau(u)=v\).
+\end{proof}
+
+\begin{corollary}[a coloured adjacent-pair site supplies a rigid exchange input]
+\label{cor:adjacent-pair-rigid-exchange-input}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairMatchingExtraction.AdjacentPairData.exists_exchangeRigid_with_central_sitePairing_of_cubic_edgeBridgeFree}
+Under the hypotheses of Lemma~\ref{lem:adjacent-pair-central-matching}, suppose
+in addition that \(G\) is bridge-free.  There are graph-supported perfect
+matchings \(\sigma,\tau\) such that
+\[
+ d_G(\sigma)\geq2,
+ \qquad \tau(u)=v,
+\]
+and, for every vertex set \(S\) closed under both partner involutions,
+\[
+ d_G(\sigma)
+ \leq d_G\bigl(\sigma\mathbin\triangleleft_S\tau\bigr).
+\]
+\end{corollary}
+
+\begin{proof}
+Choose \(\sigma\) of minimum residual defect.  Since \(G\) is a bridge-free
+cubic Tait counterexample, its residual defect is positive and even, hence at
+least two.  Lemma~\ref{lem:adjacent-pair-central-matching} supplies the
+graph-supported matching \(\tau\) with \(\tau(u)=v\).  Closure of \(S\) under
+both partner involutions makes
+\(\sigma\mathbin\triangleleft_S\tau\) another graph-supported perfect
+matching.  The displayed inequality is therefore the defining minimality of
+\(\sigma\).
+\end{proof}
+
+This is not merely another proof that a bridgeless cubic graph has a perfect
+matching.  It attaches a particular ambient matching, containing the selected
+mesh step, to each concrete colouring in an adjacent-pair Kempe orbit.  Hence
+the already constructed ordered-mesh sites can now be read by the
+minimum-residual-defect matching calculus.  What is not yet proved is the
+wall-facing statement: that the matchings obtained at neighbouring sites can
+be synchronized so that symmetric difference strictly lowers residual
+quotient oddness, or instead yields equal exact shore supports for a physical
+replacement.
+
 This lemma is nonlocal in precisely the way the original formation argument
 needs: the Kempe paths witnessing the two independent side moves may run
 through the whole retained graph.  It is therefore not a bounded-radius
