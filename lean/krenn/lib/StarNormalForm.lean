@@ -2308,11 +2308,12 @@ structure DetourPorts (W : Sym2 (V × Fin 3) → ℂ) (u v : V) (a k : Fin 3) wh
   cert : pmSum W (Amplitude.const (V := V) k)
     ((Finset.univ : Finset V) \ ({u, fst, v, snd} : Finset V)) ≠ 0
   chord : W s((fst, thirdColour a k), (snd, thirdColour a k)) = 0
+  dead_pair : W s((u, k), (v, k)) = 0
 
 theorem exists_detourPorts {W : Sym2 (V × Fin 3) → ℂ} {u v : V} {a k : Fin 3}
     (h : CertifiedDetour W u v a k) : Nonempty (DetourPorts W u v a k) := by
-  obtain ⟨-, p, q, hpu, hpv, hqu, hqv, hpq, hup, hvq, hcert, hchord⟩ := h
-  exact ⟨⟨p, q, hpu, hpv, hqu, hqv, hpq, hup, hvq, hcert, hchord⟩⟩
+  obtain ⟨hdead, p, q, hpu, hpv, hqu, hqv, hpq, hup, hvq, hcert, hchord⟩ := h
+  exact ⟨⟨p, q, hpu, hpv, hqu, hqv, hpq, hup, hvq, hcert, hchord, hdead⟩⟩
 
 /-- **Same-side reuse is a size-one circuit.**  If the two detours share the port carrying `u`,
 that arm is live in both receiving colours; likewise for the port carrying `v`. -/
@@ -2448,6 +2449,7 @@ def DetourPorts.swap {W : Sym2 (V × Fin 3) → ℂ} {u v : V} {a k : Fin 3}
       ext z; simp only [Finset.mem_insert, Finset.mem_singleton]; tauto
     rw [hset]; exact D.cert
   chord := by rw [Sym2.eq_swap]; exact D.chord
+  dead_pair := by rw [Sym2.eq_swap]; exact D.dead_pair
 
 /-- **The overlap normal form for two receiving-colour detours.**  Either some route arm is live in
 two colours, or the two detours use disjoint ports, or they share exactly the crossed port and the
@@ -2947,5 +2949,121 @@ theorem crossedCapTails_card_eight {W : Sym2 (V × Fin 3) → ℂ} {u v : V} {a 
   have hrem := T.rem_k
   rw [hset, MatchingSum.pmSum_pair W (Amplitude.const (V := V) k) (Ne.symm hef)] at hrem
   exact hrem
+
+/-! ## Synchronization of the two routes at eight sites
+
+With exactly eight sites the six named ones plus the `k`-route's two exhaust the vertex type, so
+the third colour's route has nowhere else to go: it uses the same two sites, in one of two
+orientations. -/
+
+theorem disjoint_detours_octet_synchronized {W : Sym2 (V × Fin 3) → ℂ}
+    {a k : Fin 3} {u v : V} (huv : u ≠ v)
+    (D : DetourPorts W u v a k) (E : DetourPorts W u v a (thirdColour a k))
+    (hdisj : Disjoint ({D.fst, D.snd} : Finset V) ({E.fst, E.snd} : Finset V))
+    (hcard : Fintype.card V = 8) :
+    ∃ x y : V, x ≠ y ∧
+      ({u, D.fst, v, D.snd, E.fst, x, E.snd, y} : Finset V) = (Finset.univ : Finset V) ∧
+      W s((E.fst, k), (x, k)) ≠ 0 ∧ W s((E.snd, k), (y, k)) ≠ 0 ∧
+      ((W s((D.fst, thirdColour a k), (x, thirdColour a k)) ≠ 0 ∧
+          W s((D.snd, thirdColour a k), (y, thirdColour a k)) ≠ 0) ∨
+        (W s((D.fst, thirdColour a k), (y, thirdColour a k)) ≠ 0 ∧
+          W s((D.snd, thirdColour a k), (x, thirdColour a k)) ≠ 0)) := by
+  classical
+  obtain ⟨⟨x, y, hxu, hxv, hxp, hxq, hxr, hxs, hyu, hyv, hyp, hyq, hyr, hys, hxy, hrx, hsy, -⟩,
+    ⟨x', y', hx'u, hx'v, hx'p, hx'q, hx'r, hx's, hy'u, hy'v, hy'p, hy'q, hy'r, hy's, hx'y',
+      hpx', hqy', -⟩⟩ := disjoint_detours_force_outward_routes D E hdisj
+  have hd := Finset.disjoint_left.mp hdisj
+  have hm1 : D.fst ∈ ({D.fst, D.snd} : Finset V) := Finset.mem_insert_self _ _
+  have hm2 : D.snd ∈ ({D.fst, D.snd} : Finset V) :=
+    Finset.mem_insert_of_mem (Finset.mem_singleton_self _)
+  have hpr : D.fst ≠ E.fst := fun h => hd hm1 (by rw [h]; exact Finset.mem_insert_self _ _)
+  have hps : D.fst ≠ E.snd := fun h => hd hm1 (by
+    rw [h]; exact Finset.mem_insert_of_mem (Finset.mem_singleton_self _))
+  have hqr : D.snd ≠ E.fst := fun h => hd hm2 (by rw [h]; exact Finset.mem_insert_self _ _)
+  have hqs : D.snd ≠ E.snd := fun h => hd hm2 (by
+    rw [h]; exact Finset.mem_insert_of_mem (Finset.mem_singleton_self _))
+  have hc8 : ({u, D.fst, v, D.snd, E.fst, x, E.snd, y} : Finset V).card = 8 :=
+    card_eight_of_pairwise_ne
+      (Ne.symm D.fst_ne_u) huv (Ne.symm D.snd_ne_u) (Ne.symm E.fst_ne_u) (Ne.symm hxu)
+        (Ne.symm E.snd_ne_u) (Ne.symm hyu)
+      D.fst_ne_v D.fst_ne_snd hpr (Ne.symm hxp) hps (Ne.symm hyp)
+      (Ne.symm D.snd_ne_v) (Ne.symm E.fst_ne_v) (Ne.symm hxv) (Ne.symm E.snd_ne_v) (Ne.symm hyv)
+      hqr (Ne.symm hxq) hqs (Ne.symm hyq)
+      (Ne.symm hxr) E.fst_ne_snd (Ne.symm hyr)
+      hxs hxy (Ne.symm hys)
+  have huniv : ({u, D.fst, v, D.snd, E.fst, x, E.snd, y} : Finset V) = Finset.univ :=
+    Finset.eq_univ_of_card _ (by omega)
+  -- the third colour's route sites lie in the same octet, hence in `{x, y}`
+  have hin : ∀ z : V, z ≠ u → z ≠ v → z ≠ D.fst → z ≠ D.snd → z ≠ E.fst → z ≠ E.snd →
+      z = x ∨ z = y := by
+    intro z h1 h2 h3 h4 h5 h6
+    have hz : z ∈ ({u, D.fst, v, D.snd, E.fst, x, E.snd, y} : Finset V) :=
+      huniv ▸ Finset.mem_univ z
+    simp only [Finset.mem_insert, Finset.mem_singleton] at hz
+    rcases hz with h | h | h | h | h | h | h | h
+    · exact absurd h h1
+    · exact absurd h h3
+    · exact absurd h h2
+    · exact absurd h h4
+    · exact absurd h h5
+    · exact Or.inl h
+    · exact absurd h h6
+    · exact Or.inr h
+  refine ⟨x, y, hxy, huniv, hrx, hsy, ?_⟩
+  rcases hin x' hx'u hx'v hx'p hx'q hx'r hx's with hxx | hxy'
+  · left
+    refine ⟨by rw [← hxx]; exact hpx', ?_⟩
+    rcases hin y' hy'u hy'v hy'p hy'q hy'r hy's with h | h
+    · exact absurd (hxx.trans h.symm) hx'y'
+    · rw [← h]; exact hqy'
+  · right
+    refine ⟨by rw [← hxy']; exact hpx', ?_⟩
+    rcases hin y' hy'u hy'v hy'p hy'q hy'r hy's with h | h
+    · rw [← h]; exact hqy'
+    · exact absurd (hxy'.trans h.symm) hx'y'
+
+/-- **The synchronized octet.**  Everything two disjoint receiving-colour detours force at exactly
+eight sites: which sites there are, which edges are live, which are dead, and which of the two
+orientations the third colour's route takes.  No field is assumed. -/
+structure DisjointDetourOctet (W : Sym2 (V × Fin 3) → ℂ) (u v : V) (a k : Fin 3)
+    (p q r s x y : V) : Prop where
+  /-- the eight sites are the whole vertex type -/
+  fills : ({u, p, v, q, r, x, s, y} : Finset V) = (Finset.univ : Finset V)
+  x_ne_y : x ≠ y
+  /-- the pair is dead in both receiving colours -/
+  dead_k_uv : W s((u, k), (v, k)) = 0
+  dead_l_uv : W s((u, thirdColour a k), (v, thirdColour a k)) = 0
+  /-- both forbidden chords -/
+  dead_l_pq : W s((p, thirdColour a k), (q, thirdColour a k)) = 0
+  dead_k_rs : W s((r, k), (s, k)) = 0
+  /-- the four `k`-live edges: the detour's two arms and its outward route -/
+  live_k_up : W s((u, k), (p, k)) ≠ 0
+  live_k_vq : W s((v, k), (q, k)) ≠ 0
+  live_k_rx : W s((r, k), (x, k)) ≠ 0
+  live_k_sy : W s((s, k), (y, k)) ≠ 0
+  /-- the third colour's two detour arms -/
+  live_l_ur : W s((u, thirdColour a k), (r, thirdColour a k)) ≠ 0
+  live_l_vs : W s((v, thirdColour a k), (s, thirdColour a k)) ≠ 0
+  /-- and its outward route, in one of the two orientations on the same two sites -/
+  orientation :
+    (W s((p, thirdColour a k), (x, thirdColour a k)) ≠ 0 ∧
+      W s((q, thirdColour a k), (y, thirdColour a k)) ≠ 0) ∨
+    (W s((p, thirdColour a k), (y, thirdColour a k)) ≠ 0 ∧
+      W s((q, thirdColour a k), (x, thirdColour a k)) ≠ 0)
+
+theorem exists_disjointDetourOctet {W : Sym2 (V × Fin 3) → ℂ}
+    {a k : Fin 3} {u v : V} (huv : u ≠ v)
+    (D : DetourPorts W u v a k) (E : DetourPorts W u v a (thirdColour a k))
+    (hdisj : Disjoint ({D.fst, D.snd} : Finset V) ({E.fst, E.snd} : Finset V))
+    (hcard : Fintype.card V = 8) :
+    ∃ x y : V, DisjointDetourOctet W u v a k D.fst D.snd E.fst E.snd x y := by
+  classical
+  obtain ⟨x, y, hxy, huniv, hrx, hsy, horient⟩ :=
+    disjoint_detours_octet_synchronized huv D E hdisj hcard
+  have hchordE : W s((E.fst, k), (E.snd, k)) = 0 := by
+    have h := E.chord; rw [thirdColour_thirdColour] at h; exact h
+  have hdeadl : W s((u, thirdColour a k), (v, thirdColour a k)) = 0 := E.dead_pair
+  exact ⟨x, y, ⟨huniv, hxy, D.dead_pair, hdeadl, D.chord, hchordE,
+    D.live_fst, D.live_snd, hrx, hsy, E.live_fst, E.live_snd, horient⟩⟩
 
 end StarNormalForm
