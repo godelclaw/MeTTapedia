@@ -2571,6 +2571,9 @@ state-realisation equality.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapStateReversal.portOverlapProfile_reverse_swap}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapStateReversal.commonRestrictionAgreementBit_reverse_swap}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapStateReversal.overlapKempeState_reverse_swap}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairKempeClosureReversal.reverseColoring_swapOnKempeComponent}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairKempeClosureReversal.mem_edgeKempeClosure_reverseColoring_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapSupportReversal.overlapKempeStateSupport_reverse_swap}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshSharedBoundaryStates.west_boundaryKempeState_eq_reverse_east}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshSharedBoundaryStates.south_boundaryKempeState_eq_reverse_north}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshGlobalBoundaryHolonomy.globalSuccessorWitnessRelation_nonempty}
@@ -2612,6 +2615,11 @@ the Boolean assertion that the two colourings agree on their common
 four-vertex deletion.  This action is an involution.  Consequently, reading an
 ordered pair of physical sites backwards gives exactly the reversed overlap
 state, rather than merely an overlap state with the same boundary words.
+The retained-vertex isomorphism also transports each selected bicoloured
+component, commutes with switching that component, and therefore identifies
+the two complete Kempe closures.  It follows that the entire realised overlap
+support in one direction is the image, under this same involution, of the
+realised support in the other direction.
 
 For each rectangle, the successor overlap supports built from these globally
 chosen sites are nonempty.  Hence every finite state assignment on its
@@ -2667,6 +2675,15 @@ restricted colourings is invariant.  Together with the one-site state formula
 and the transposed port-coincidence matrix, this proves the complete overlap
 state reversal formula and its involutivity.
 
+For the orbit statement, map a selected bicoloured component through the
+line-graph isomorphism induced by the retained-vertex swap.  Membership in the
+component is preserved in both directions, so switching before transport is
+the same colouring as transporting before switching.  Induction on a finite
+Kempe-move sequence gives one inclusion of closures; applying the same result
+after a second reversal gives the converse.  Apply the concrete overlap-state
+formula pointwise to the two closure sets.  This proves equality of the
+realised supports under the overlap-state involution.
+
 Finally, two proper globally based colourings realise an overlap state on
 every successor edge.  Choice of one such finite state on each edge gives an
 assignment.  Excluded middle applied to a single dependent family of concrete
@@ -2674,9 +2691,10 @@ site colourings gives the section alternative, exactly as in the preceding
 lemma.
 \end{proof}
 
-This lemma closes the carrier-coherence problem, not the wall theorem.  What
-remains is now intrinsically two-dimensional: prove that the relational
-returns of neighbouring cells cancel after the displayed reversal transport,
+This lemma closes the carrier- and orientation-coherence problem, not the wall
+theorem.  What remains is now intrinsically two-dimensional: prove that the
+relational returns of neighbouring cells cancel after the displayed support
+involution,
 or show that their failure produces a bounded cut, a strict compositional
 replacement, or another global invariant forbidden in a least
 counterexample.  No equality of opposite-shore supports, flatness, or
