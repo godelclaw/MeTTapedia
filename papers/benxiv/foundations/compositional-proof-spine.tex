@@ -2959,6 +2959,7 @@ site datum rather than a second local choice.
 \begin{corollary}[proper alternating component at every residual mesh step]
 \label{cor:ordered-mesh-proper-alternating-components}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshResidualSiteMatching.exists_exchangeRigid_with_proper_alternatingComponent_at_every_globalMeshStep}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshResidualSiteFacialBond.exists_exchangeRigid_with_facialBond_at_every_globalMeshStep}
 Under the hypotheses of
 Corollary~\ref{cor:ordered-mesh-rigid-site-matchings}, choose its one global
 minimum-residual-defect matching \(\sigma\).  For every physical mesh step
@@ -2982,6 +2983,10 @@ a vertex \(x\notin A_e\) for which
  \quad\hbox{and}\quad
  \sigma(x)\notin A_e.
 \]
+Finally, \(C_e\) is an exact bond of the facial dual.  There is a set
+\(F_e\) of orbit faces such that a primal edge belongs to \(C_e\) exactly
+when its two incident faces lie on opposite sides of \(F_e\), and the facial
+dual subgraphs induced by \(F_e\) and by its complement are both connected.
 \end{corollary}
 
 \begin{proof}
@@ -3026,6 +3031,12 @@ at its common partner as well; consequently neither \(x\) nor \(\sigma(x)\)
 belongs to \(A_e\).  Finally, closure of \(A_e\) makes the displayed exchange
 a supported perfect matching, and its residual defect cannot be smaller than
 that of the globally minimal \(\sigma\).
+
+The least counterexample carries a bridgeless spherical cubic rotation system
+with two-sided orbit faces.  Apply the simple-primal-cycle facial-bond theorem
+to \(C_e\).  Its binary edge vector is an orbit-face boundary, and minimality
+of the support of a simple cycle forces each of the two face shores to be
+connected.  This supplies \(F_e\) with the asserted exact boundary equation.
 \end{proof}
 
 This is not merely another proof that a bridgeless cubic graph has a perfect
