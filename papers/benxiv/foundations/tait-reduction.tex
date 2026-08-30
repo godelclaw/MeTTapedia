@@ -442,10 +442,47 @@ the genuine connected spherical presentation used in this section.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24StellarTaitReduction.connectedSphericalFourColorStatement_of_tait}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24StellarTaitReduction.sphericalFourColorStatement_of_tait}
 
+\begin{proposition}[exact entry into zero Count]
+\label{prop:stellar-zero-count-entry}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24RotationTaitCount.rotationSystemTaitCount_eq_zero_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24StellarTaitReduction.stellarDual_taitCount_eq_zero_of_not_colorable}
+For a finite closed rotation system \(R\), let
+
+\[
+ \operatorname{Count}_{\mathrm{Tait}}(R)
+ :=\#\{C:C\text{ is a proper nonzero Tait edge colouring of }R\}.
+\]
+Then
+\[
+ \operatorname{Count}_{\mathrm{Tait}}(R)=0
+ \quad\Longleftrightarrow\quad
+ R\text{ is not Tait-colourable}.
+\]
+Moreover, if a connected spherical presentation \(M\) with at least three
+vertices is not four-colourable, then its explicit stellar facial dual
+\(T^{*}\) has zero Tait Count.
+\end{proposition}
+
+\begin{proof}
+The first assertion is finite cardinality: the displayed count is positive
+exactly when its finite type of witnesses is inhabited, and inhabitation is
+the definition of Tait-colourability.  For the second assertion, suppose
+instead that \(T^{*}\) had positive Count.  Choose the corresponding Tait
+colouring.  The checked Klein-group integration construction gives a proper
+four-colouring of the stellar primal map, and restriction to the old vertices
+gives a proper four-colouring of \(M\), a contradiction.
+
+This is the exact obstruction transport required by the reductive spine.  It
+does not claim the converse local statement that every four-colouring of the
+old graph extends over all stellar face centres; that stronger statement is
+neither needed nor generally supplied by stellar subdivision.
+\end{proof}
+
 \begin{theorem}[the sound M0 least-counterexample wrapper]
 \label{thm:spherical-headline-from-no-minimal}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SphericalMinimalCounterexampleSelection.everyBridgelessSphericalCubicTaitColorable_of_no_minimal}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SphericalMinimalCounterexampleSelection.sphericalFourColorStatement_of_no_minimal}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SphericalMinimalCounterexampleSelection.not_noGraphBackedVertexMinimalTaitCounterexample_of_not_colorable}
 Suppose there is no graph-backed vertex-minimal non-Tait-colourable member of
 the connected, bridgeless, spherical cubic rotation-map class.  Then every
 bridgeless spherical cubic rotation map is Tait-colourable, and every finite
