@@ -2961,7 +2961,7 @@ site datum rather than a second local choice.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshResidualSiteMatching.exists_exchangeRigid_with_proper_alternatingComponent_at_every_globalMeshStep}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshResidualSiteFacialBond.exists_exchangeRigid_with_facialBond_at_every_globalMeshStep}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualFormationSwitch.exists_exchangeRigid_with_facialFormationSwitch_at_every_globalMeshStep}
-\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnPairing.exists_exchangeRigid_with_facialFormation_and_returnPairing_at_every_globalMeshStep}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnShore.exists_exchangeRigid_with_facialFormation_returnPairing_and_shore_at_every_globalMeshStep}
 Under the hypotheses of
 Corollary~\ref{cor:ordered-mesh-rigid-site-matchings}, choose its one global
 minimum-residual-defect matching \(\sigma\).  For every physical mesh step
@@ -3014,9 +3014,12 @@ For each \(z\in A_e\), the vertices \(z\) and \(\mu_e(z)\) lie in the same
 connected component of the intersection of the residual graphs before and
 after the exchange.  Equivalently, they are joined by a residual path all of
 whose edges survive the formation switch.  Thus \(\mu_e\) pairs the literal
-third-edge excursions when they return to the alternating cycle.  No
-noncrossing order or formula for the number of resulting components is
-asserted here.
+third-edge excursions when they return to the alternating cycle.  Each such
+return remains on one facial shore: for every \(z\in A_e\), the orbit face on
+the \(zq_e(z)\) side of the third edge belongs to \(F_e\) if and only if the
+corresponding orbit face on the
+\(\mu_e(z)q_e(\mu_e(z))\) side belongs to \(F_e\).  No noncrossing cyclic
+order or formula for the number of resulting components is asserted here.
 \end{corollary}
 
 \begin{proof}
@@ -3087,7 +3090,13 @@ there and the degree is two.  Consequently every connected component meeting
 Pairing those two endpoints defines \(\mu_e\).  Uniqueness of the other
 endpoint in each component makes \(\mu_e\) involutive, and the two endpoints
 are distinct, so it is fixed-point-free.  The component itself supplies the
-asserted unchanged residual path.
+asserted unchanged residual path.  Every edge of this path avoids \(C_e\).
+Label an oriented dart by the indicator of whether its incident orbit face
+belongs to \(F_e\).  The exact facial-bond equation says that this label
+changes across an edge exactly when that edge lies in \(C_e\).  The label is
+therefore constant along the residual return path.  At either endpoint the
+unique path edge is the canonical third edge, so the two canonical third
+darts have the same \(F_e\)-shore label, as claimed.
 \end{proof}
 
 This is not merely another proof that a bridgeless cubic graph has a perfect
@@ -3102,6 +3111,7 @@ replacement.  In particular, the corollary has quantifier order
 simultaneous choice of the \(\tau_e\).  The local formation receipts identify
 which residual edge changes at each cycle vertex, and the common-residual
 components now pair the third-edge excursions when they return to the cycle.
+They also prove that each individual return remains on one facial shore.
 They do not yet put those returns in a noncrossing cyclic order, synchronize
 the pairings at neighbouring sites, or compute the resulting change in the
 number of odd residual components.
