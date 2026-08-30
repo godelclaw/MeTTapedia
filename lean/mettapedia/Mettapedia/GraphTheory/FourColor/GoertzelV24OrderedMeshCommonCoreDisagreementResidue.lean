@@ -107,6 +107,21 @@ abbrev rowSiteData
   (selectedGlobalKempeSite rotation minimal ordered
     (globalRowStep rotation ordered row (slot index))).data
 
+/-- Two adjacent-pair deletion colourings disagree on their exact common
+four-vertex deletion. -/
+def CommonCoreColoringsDisagree
+    (source target : AdjacentPairData G)
+    (sourceColoring : (DeletedAdjacentPairGraph G source.firstVertex
+      source.secondVertex).EdgeColoring Color)
+    (targetColoring : (DeletedAdjacentPairGraph G target.firstVertex
+      target.secondVertex).EdgeColoring Color) : Prop :=
+  firstDeletionCommonCoreColoring
+      (third := target.firstVertex) (fourth := target.secondVertex)
+      sourceColoring ≠
+    secondDeletionCommonCoreColoring
+      (first := source.firstVertex) (second := source.secondVertex)
+      targetColoring
+
 /-- **Nine-site Tait common-core residue.**  Every assignment of Tait
 colourings to nine injectively selected row intervals contains a pair for
 which local branching, a valid-pair boundary-reaching component, or a strict
@@ -125,7 +140,12 @@ theorem exists_taitCommonCoreResidue_in_any_nine_row_intervals
           (rowSiteData rotation minimal ordered row slot index).secondVertex)
         (coloring index)) :
     ∃ first second : Fin 9,
-      HasCommonCoreBranchingDiscrepancy
+      first ≠ second ∧
+      CommonCoreColoringsDisagree
+          (rowSiteData rotation minimal ordered row slot first)
+          (rowSiteData rotation minimal ordered row slot second)
+          (coloring first) (coloring second) ∧
+      (HasCommonCoreBranchingDiscrepancy
           (rowSiteData rotation minimal ordered row slot first)
           (rowSiteData rotation minimal ordered row slot second)
           (coloring first) (coloring second) ∨
@@ -136,11 +156,38 @@ theorem exists_taitCommonCoreResidue_in_any_nine_row_intervals
         HasStrictTaitCommonCoreRepair
           (rowSiteData rotation minimal ordered row slot first)
           (rowSiteData rotation minimal ordered row slot second)
-          (coloring first) (coloring second) := by
+          (coloring first) (coloring second)) := by
   obtain ⟨first, second, hfalse⟩ :=
     exists_coloring_disagreement_in_any_nine_row_intervals
       rotation minimal ordered row slot coloring tait
-  refine ⟨first, second, ?_⟩
+  have hne : first ≠ second := by
+    intro heq
+    subst second
+    have hagrees :
+        firstDeletionCommonCoreColoring
+            (third := (rowSiteData rotation minimal ordered row slot first).firstVertex)
+            (fourth := (rowSiteData rotation minimal ordered row slot first).secondVertex)
+            (coloring first) =
+          secondDeletionCommonCoreColoring
+            (first := (rowSiteData rotation minimal ordered row slot first).firstVertex)
+            (second := (rowSiteData rotation minimal ordered row slot first).secondVertex)
+            (coloring first) := by
+      ext edge
+      · apply congrArg Prod.fst
+        apply congrArg (coloring first)
+        apply Subtype.ext
+        rfl
+      · apply congrArg Prod.snd
+        apply congrArg (coloring first)
+        apply Subtype.ext
+        rfl
+    have htrue :=
+      (GoertzelV24AdjacentPairColoringAtlas.commonRestrictionAgreementBit_eq_true_iff
+        (rowSiteData rotation minimal ordered row slot first)
+        (rowSiteData rotation minimal ordered row slot first)
+        (coloring first) (coloring first)).2 hagrees
+    rw [hfalse] at htrue
+    contradiction
   have hdisagrees :
       firstDeletionCommonCoreColoring
           (third := (rowSiteData rotation minimal ordered row slot second).firstVertex)
@@ -158,10 +205,11 @@ theorem exists_taitCommonCoreResidue_in_any_nine_row_intervals
         (coloring first) (coloring second)).2 hagrees
     rw [hfalse] at htrue
     contradiction
-  exact branching_or_taitReachesSecondPair_or_strictTaitRepair
-    (rowSiteData rotation minimal ordered row slot first)
-    (rowSiteData rotation minimal ordered row slot second)
-    (coloring first) (coloring second) (tait first) (tait second) hdisagrees
+  exact ⟨first, second, hne, hdisagrees,
+    branching_or_taitReachesSecondPair_or_strictTaitRepair
+      (rowSiteData rotation minimal ordered row slot first)
+      (rowSiteData rotation minimal ordered row slot second)
+      (coloring first) (coloring second) (tait first) (tait second) hdisagrees⟩
 
 /-! ## The finite repair system -/
 
@@ -203,8 +251,13 @@ def NineSiteStrictRepairStep
     (row : Fin a) (slot : Fin 9 ↪ Fin n)
     (source target : NineSiteTaitAssignment rotation minimal ordered row slot) : Prop :=
   ∃ first second : Fin 9,
+    first ≠ second ∧
     GoertzelV24LocalSwapKempeGeneration.TaitKempeReachable
       (source first).1 (target first).1 ∧
+    CommonCoreColoringsDisagree
+      (rowSiteData rotation minimal ordered row slot first)
+      (rowSiteData rotation minimal ordered row slot second)
+      (source first).1 (source second).1 ∧
     firstDeletionCommonCoreColoring
         (third := (rowSiteData rotation minimal ordered row slot second).firstVertex)
         (fourth := (rowSiteData rotation minimal ordered row slot second).secondVertex)
@@ -216,6 +269,210 @@ def NineSiteStrictRepairStep
     (target first).1 ≠ (source first).1 ∧
     ∀ index, index ≠ first → target index = source index
 
+/-- The ordered pairs of sites whose current colourings agree on their exact
+common four-vertex deletion. -/
+def NineSiteAgreementPairs
+    (row : Fin a) (slot : Fin 9 ↪ Fin n)
+    (assignment : NineSiteTaitAssignment rotation minimal ordered row slot) :
+    Finset (Fin 9 × Fin 9) := by
+  classical
+  exact Finset.univ.filter fun pair =>
+    ¬ CommonCoreColoringsDisagree
+      (rowSiteData rotation minimal ordered row slot pair.1)
+      (rowSiteData rotation minimal ordered row slot pair.2)
+      (assignment pair.1).1 (assignment pair.2).1
+
+/-- A repair loses collateral agreement when some ordered pair agreed before
+the step but disagrees afterwards. -/
+def HasCollateralAgreementLoss
+    (row : Fin a) (slot : Fin 9 ↪ Fin n)
+    (source target : NineSiteTaitAssignment rotation minimal ordered row slot) :
+    Prop :=
+  ∃ first second : Fin 9,
+    ¬ CommonCoreColoringsDisagree
+      (rowSiteData rotation minimal ordered row slot first)
+      (rowSiteData rotation minimal ordered row slot second)
+      (source first).1 (source second).1 ∧
+    CommonCoreColoringsDisagree
+      (rowSiteData rotation minimal ordered row slot first)
+      (rowSiteData rotation minimal ordered row slot second)
+      (target first).1 (target second).1
+
+/-- Without collateral loss, one strict repair strictly enlarges the finite
+set of common-core agreements: the repaired pair is new and every old
+agreement is retained. -/
+theorem nineSiteAgreementPairs_ssubset_of_not_collateralLoss
+    (row : Fin a) (slot : Fin 9 ↪ Fin n)
+    {source target : NineSiteTaitAssignment rotation minimal ordered row slot}
+    (hstep : NineSiteStrictRepairStep rotation minimal ordered row slot
+      source target)
+    (hnoLoss : ¬ HasCollateralAgreementLoss rotation minimal ordered row slot
+      source target) :
+    NineSiteAgreementPairs rotation minimal ordered row slot source ⊂
+      NineSiteAgreementPairs rotation minimal ordered row slot target := by
+  classical
+  rcases hstep with
+    ⟨repaired, partner, hne, _hreachable, hsourceDisagrees,
+      htargetAgreesSourcePartner, _hstrict, hother⟩
+  have hsubset :
+      NineSiteAgreementPairs rotation minimal ordered row slot source ⊆
+        NineSiteAgreementPairs rotation minimal ordered row slot target := by
+    intro pair hpair
+    have hsourceAgrees :
+        ¬ CommonCoreColoringsDisagree
+          (rowSiteData rotation minimal ordered row slot pair.1)
+          (rowSiteData rotation minimal ordered row slot pair.2)
+          (source pair.1).1 (source pair.2).1 := by
+      simpa [NineSiteAgreementPairs] using hpair
+    have htargetAgrees :
+        ¬ CommonCoreColoringsDisagree
+          (rowSiteData rotation minimal ordered row slot pair.1)
+          (rowSiteData rotation minimal ordered row slot pair.2)
+          (target pair.1).1 (target pair.2).1 := by
+      intro htargetDisagrees
+      exact hnoLoss ⟨pair.1, pair.2, hsourceAgrees, htargetDisagrees⟩
+    simpa [NineSiteAgreementPairs] using htargetAgrees
+  have hsourceNotMem :
+      (repaired, partner) ∉
+        NineSiteAgreementPairs rotation minimal ordered row slot source := by
+    simp [NineSiteAgreementPairs, hsourceDisagrees]
+  have hpartner : target partner = source partner :=
+    hother partner hne.symm
+  have htargetAgrees :
+      ¬ CommonCoreColoringsDisagree
+        (rowSiteData rotation minimal ordered row slot repaired)
+        (rowSiteData rotation minimal ordered row slot partner)
+        (target repaired).1 (target partner).1 := by
+    intro htargetDisagrees
+    apply htargetDisagrees
+    rw [hpartner]
+    exact htargetAgreesSourcePartner
+  have htargetMem :
+      (repaired, partner) ∈
+        NineSiteAgreementPairs rotation minimal ordered row slot target := by
+    simpa [NineSiteAgreementPairs] using htargetAgrees
+  refine Finset.ssubset_iff_subset_ne.mpr ⟨hsubset, ?_⟩
+  intro heq
+  apply hsourceNotMem
+  rw [heq]
+  exact htargetMem
+
+/-- A nonempty closed run of strict repairs must contain a collateral
+agreement loss.  Otherwise the finite agreement set would grow strictly
+around a directed cycle. -/
+theorem exists_collateralAgreementLoss_of_strictRepairCycle
+    (row : Fin a) (slot : Fin 9 ↪ Fin n)
+    {assignment : NineSiteTaitAssignment rotation minimal ordered row slot}
+    (cycle : Relation.TransGen
+      (NineSiteStrictRepairStep rotation minimal ordered row slot)
+      assignment assignment) :
+    ∃ source target,
+      NineSiteStrictRepairStep rotation minimal ordered row slot source target ∧
+      HasCollateralAgreementLoss rotation minimal ordered row slot source target := by
+  by_contra hnone
+  have hnoLoss : ∀ {source target},
+      NineSiteStrictRepairStep rotation minimal ordered row slot source target →
+        ¬ HasCollateralAgreementLoss rotation minimal ordered row slot
+          source target := by
+    intro source target hstep hloss
+    exact hnone ⟨source, target, hstep, hloss⟩
+  have hstrictRun {source target}
+      (run : Relation.TransGen
+        (NineSiteStrictRepairStep rotation minimal ordered row slot)
+        source target) :
+      NineSiteAgreementPairs rotation minimal ordered row slot source ⊂
+        NineSiteAgreementPairs rotation minimal ordered row slot target := by
+    induction run with
+    | single hstep =>
+        exact nineSiteAgreementPairs_ssubset_of_not_collateralLoss
+          rotation minimal ordered row slot hstep (hnoLoss hstep)
+    | tail hpath hstep ih =>
+        exact ih.trans
+          (nineSiteAgreementPairs_ssubset_of_not_collateralLoss
+            rotation minimal ordered row slot hstep (hnoLoss hstep))
+  have himpossible := hstrictRun cycle
+  exact himpossible.ne rfl
+
+/-- An anchored agreement trade records the exact local coherence failure:
+one repaired coordinate gains agreement with its chosen partner while losing
+an agreement on another ordered pair that contains the repaired coordinate. -/
+def HasAnchoredAgreementTrade
+    (row : Fin a) (slot : Fin 9 ↪ Fin n)
+    (source target : NineSiteTaitAssignment rotation minimal ordered row slot) :
+    Prop :=
+  ∃ repaired gainedPartner lostFirst lostSecond : Fin 9,
+    repaired ≠ gainedPartner ∧
+    (lostFirst = repaired ∨ lostSecond = repaired) ∧
+    CommonCoreColoringsDisagree
+      (rowSiteData rotation minimal ordered row slot repaired)
+      (rowSiteData rotation minimal ordered row slot gainedPartner)
+      (source repaired).1 (source gainedPartner).1 ∧
+    ¬ CommonCoreColoringsDisagree
+      (rowSiteData rotation minimal ordered row slot repaired)
+      (rowSiteData rotation minimal ordered row slot gainedPartner)
+      (target repaired).1 (target gainedPartner).1 ∧
+    ¬ CommonCoreColoringsDisagree
+      (rowSiteData rotation minimal ordered row slot lostFirst)
+      (rowSiteData rotation minimal ordered row slot lostSecond)
+      (source lostFirst).1 (source lostSecond).1 ∧
+    CommonCoreColoringsDisagree
+      (rowSiteData rotation minimal ordered row slot lostFirst)
+      (rowSiteData rotation minimal ordered row slot lostSecond)
+      (target lostFirst).1 (target lostSecond).1
+
+/-- Collateral loss in a one-coordinate repair is necessarily anchored at
+the repaired coordinate. -/
+theorem hasAnchoredAgreementTrade_of_strictRepairStep_of_collateralLoss
+    (row : Fin a) (slot : Fin 9 ↪ Fin n)
+    {source target : NineSiteTaitAssignment rotation minimal ordered row slot}
+    (hstep : NineSiteStrictRepairStep rotation minimal ordered row slot
+      source target)
+    (hloss : HasCollateralAgreementLoss rotation minimal ordered row slot
+      source target) :
+    HasAnchoredAgreementTrade rotation minimal ordered row slot source target := by
+  rcases hstep with
+    ⟨repaired, gainedPartner, hne, _hreachable, hsourceDisagrees,
+      htargetAgreesSourcePartner, _hstrict, hother⟩
+  rcases hloss with
+    ⟨lostFirst, lostSecond, hsourceLostAgrees, htargetLostDisagrees⟩
+  have htargetGainedAgrees :
+      ¬ CommonCoreColoringsDisagree
+        (rowSiteData rotation minimal ordered row slot repaired)
+        (rowSiteData rotation minimal ordered row slot gainedPartner)
+        (target repaired).1 (target gainedPartner).1 := by
+    intro htargetDisagrees
+    apply htargetDisagrees
+    rw [hother gainedPartner hne.symm]
+    exact htargetAgreesSourcePartner
+  have hlossTouches : lostFirst = repaired ∨ lostSecond = repaired := by
+    by_contra hnot
+    push Not at hnot
+    have hfirst := hother lostFirst hnot.1
+    have hsecond := hother lostSecond hnot.2
+    apply hsourceLostAgrees
+    simpa [hfirst, hsecond] using htargetLostDisagrees
+  exact ⟨repaired, gainedPartner, lostFirst, lostSecond, hne, hlossTouches,
+    hsourceDisagrees, htargetGainedAgrees, hsourceLostAgrees,
+    htargetLostDisagrees⟩
+
+/-- Every nonempty closed strict-repair run contains an anchored agreement
+trade. -/
+theorem exists_anchoredAgreementTrade_of_strictRepairCycle
+    (row : Fin a) (slot : Fin 9 ↪ Fin n)
+    {assignment : NineSiteTaitAssignment rotation minimal ordered row slot}
+    (cycle : Relation.TransGen
+      (NineSiteStrictRepairStep rotation minimal ordered row slot)
+      assignment assignment) :
+    ∃ source target,
+      NineSiteStrictRepairStep rotation minimal ordered row slot source target ∧
+      HasAnchoredAgreementTrade rotation minimal ordered row slot source target := by
+  obtain ⟨source, target, hstep, hloss⟩ :=
+    exists_collateralAgreementLoss_of_strictRepairCycle
+      rotation minimal ordered row slot cycle
+  exact ⟨source, target, hstep,
+    hasAnchoredAgreementTrade_of_strictRepairStep_of_collateralLoss
+      rotation minimal ordered row slot hstep hloss⟩
+
 /-- The finite repair relation is irreflexive: a step changes its repaired
 coordinate strictly. -/
 theorem nineSiteStrictRepairStep_ne
@@ -224,7 +481,8 @@ theorem nineSiteStrictRepairStep_ne
     (hstep : NineSiteStrictRepairStep rotation minimal ordered row slot
       source target) :
     target ≠ source := by
-  rcases hstep with ⟨first, _second, _hreachable, _hagrees, hstrict, _hother⟩
+  rcases hstep with
+    ⟨first, _second, _hne, _hreachable, _hdisagrees, _hagrees, hstrict, _hother⟩
   intro heq
   apply hstrict
   exact congrArg Subtype.val (congrFun heq first)
@@ -244,7 +502,7 @@ theorem branchingOrBoundary_or_exists_strictRepairStep
           (rowSiteData rotation minimal ordered row slot index).firstVertex
           (rowSiteData rotation minimal ordered row slot index).secondVertex)
         (coloring index) := fun index => (assignment index).2
-  obtain ⟨first, second, hbranch | hboundary | hrepair⟩ :=
+  obtain ⟨first, second, hne, hdisagrees, hbranch | hboundary | hrepair⟩ :=
     exists_taitCommonCoreResidue_in_any_nine_row_intervals
       rotation minimal ordered row slot coloring tait
   · exact Or.inl ⟨first, second, Or.inl hbranch⟩
@@ -254,7 +512,7 @@ theorem branchingOrBoundary_or_exists_strictRepairStep
       ⟨repaired, hreachable, hrepairedTait, hagrees, hstrict⟩
     let target : NineSiteTaitAssignment rotation minimal ordered row slot :=
       Function.update assignment first ⟨repaired, hrepairedTait⟩
-    refine ⟨target, first, second, ?_, ?_, ?_, ?_⟩
+    refine ⟨target, first, second, hne, ?_, hdisagrees, ?_, ?_, ?_⟩
     · simpa [target] using hreachable
     · simpa [target, coloring] using hagrees
     · simpa [target] using hstrict
@@ -291,6 +549,25 @@ theorem exists_strictRepairCycle_of_no_branchingOrBoundary
   intro assignment
   exact (branchingOrBoundary_or_exists_strictRepairStep
     rotation minimal ordered row slot assignment).resolve_left (hno assignment)
+
+/-- **Exact coherence residue.**  If none of the nine-site assignments exposes
+local branching or a boundary-reaching Kempe component, then some strict
+repair gains one common-core agreement while losing another agreement that
+touches the repaired site. -/
+theorem exists_anchoredAgreementTrade_of_no_branchingOrBoundary
+    (row : Fin a) (slot : Fin 9 ↪ Fin n)
+    (hno : ∀ assignment :
+      NineSiteTaitAssignment rotation minimal ordered row slot,
+      ¬ HasNineSiteBranchingOrBoundary rotation minimal ordered row slot
+          assignment) :
+    ∃ source target,
+      NineSiteStrictRepairStep rotation minimal ordered row slot source target ∧
+      HasAnchoredAgreementTrade rotation minimal ordered row slot source target := by
+  obtain ⟨assignment, cycle⟩ :=
+    exists_strictRepairCycle_of_no_branchingOrBoundary
+      rotation minimal ordered row slot hno
+  exact exists_anchoredAgreementTrade_of_strictRepairCycle
+    rotation minimal ordered row slot cycle
 
 end
 
