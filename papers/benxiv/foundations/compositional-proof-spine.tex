@@ -3253,17 +3253,87 @@ is retained by the $R$- and $L$-deletions but deleted by the
 $G$-deletion, hence lies in the five-edge footprint of $G$.
 \end{proof}
 
+The lift receipt contains more information than equality on the common core.
+If the boundary horn does not occur, the lifted switch is supported entirely
+inside that core.
+
+\begin{lemma}[support confinement for a common-core lift]
+\label{lem:common-core-lift-support-confinement}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KempeLiftConfinement.touchesBoundary_or_exists_liftedComponentSwitch_confined}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KempeLiftConfinement.taitBoundaryAlongLiftOrbit_or_exists_confinedLiftedColoring}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KempeLiftConfinement.firstTaitOrbitReachesSecondPair_or_exists_confinedLiftedColoring}
+Let $D_A,D_B$ be two adjacent-pair deletions, and let a valid-pair Tait
+Kempe sequence on their exact common deletion start at the restriction of a
+colouring $A$ of $D_A$.  Either an intermediate component reaches the
+vertices deleted by $D_B$, or the sequence lifts to a Tait colouring $A'$ of
+$D_A$ which has the prescribed common-core restriction and satisfies
+\[
+ A'(e)=A(e)
+ \quad\hbox{for every edge $e$ of $D_A$ outside the common-core image.}
+\]
+\end{lemma}
+
+\begin{proof}
+For one switch, suppose that the small two-colour component does not reach
+the embedding boundary.  Its image is then closed under adjacency in the
+large two-colour line graph.  Connectedness shows that this image is one
+whole large component, rather than a proper subset of one.  Switching that
+large component therefore changes exactly the image edges, gives the desired
+small restriction, and fixes every edge outside the image.
+
+Induct over the finite valid-pair Kempe sequence.  At each stage, a boundary
+contact gives the first alternative.  Otherwise the preceding one-switch
+argument lifts the next switch; the equality outside the common core is
+preserved transitively.  Ordinary Kempe switching on a valid nonzero colour
+pair preserves the Tait condition throughout.  Specializing the embedding to
+the exact common deletion of $D_A$ and $D_B$ gives the stated adjacent-pair
+form.
+\end{proof}
+
+\begin{corollary}[forced partner-disagreement propagation]
+\label{cor:forced-partner-disagreement-propagation}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KempeLiftConfinement.commonCoreAgrees_of_confined_left_update}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshConfinedRepairPropagation.exists_partnerDisagreement_of_no_branchingOrBoundary}
+Under the no-branching and no-boundary hypothesis of
+Corollary~\ref{cor:periodic-tait-repair-residue}, some confined strict repair
+ends in a state with a repaired site $R$, its gained partner $G$, and a lost
+partner $L$ such that the colourings at $G$ and $L$ disagree on their exact
+common deletion.
+\end{corollary}
+
+\begin{proof}
+Use Lemma~\ref{lem:common-core-lift-support-confinement} in the repair
+construction.  The no-boundary hypothesis selects its confined lift at every
+step.  The same finite-state argument as in
+Corollary~\ref{cor:periodic-tait-repair-residue} gives a nonempty cycle of
+confined strict repairs, and the finite agreement set must lose an old
+agreement somewhere on that cycle.  Thus there is again an anchored trade
+$R,G,L$.
+
+Suppose, for contradiction, that $G$ and $L$ agree after that trade.  Consider
+any ambient edge retained by the $R$- and $L$-deletions.  If the $G$-deletion
+also retains it, the new agreements $R\sim G$ and $G\sim L$ give equal
+colours on the edge.  If the $G$-deletion removes it, support confinement says
+that the repair did not change its colour at $R$.  The $L$ coordinate was not
+changed by this one-coordinate repair, and $R\sim L$ held before the trade,
+so the two colours are equal in this case as well.  Hence $R$ and $L$ still
+agree on every edge of their exact common deletion, contradicting that this
+was the lost agreement.  Therefore $G$ and $L$ disagree.
+\end{proof}
+
 Applied to the pair supplied by
 Corollary~\ref{cor:ordered-row-common-core-disagreement}, this trichotomy is
 the exact local residue.  It still does not give support equality or wall
 exclusion: Corollary~\ref{cor:anchored-agreement-trade-residue} now proves
 that repairing one pair must sometimes destroy another common-core agreement
 at the repaired site.  Corollary~\ref{cor:localized-anchored-agreement-trade}
-sharpens the periodic horn again: the defect either propagates to the two
-partner sites or leaves a witness in one named five-edge deletion footprint.
-The remaining two-dimensional task is therefore to show that repeated
-propagation reaches the branching or boundary horn, or that the accumulated
-bounded footprints define an exact support-preserving replacement.  The
+first localizes the only apparent alternative to propagation, while
+Corollary~\ref{cor:forced-partner-disagreement-propagation} eliminates that
+alternative using the support receipt discarded by the earlier lift theorem.
+The defect must propagate to the two partner sites.  The remaining
+two-dimensional task is therefore to show that repeated propagation reaches
+the branching or boundary horn, or that its finite recurrent dynamics define
+an exact support-preserving replacement.  The
 arc-consistent no-section obstruction of
 Corollary~\ref{cor:arc-consistent-no-section-residue} alone does not supply
 that termination or replacement.  A coherent atlas is already impossible by
