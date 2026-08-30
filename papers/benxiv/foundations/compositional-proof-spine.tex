@@ -2423,6 +2423,81 @@ equality needed by the physical splice, or a non-coboundary holonomy yields
 a structural target.  A chosen-word transport, and any additive discrepancy
 of endpoint potentials, is too weak for that task.
 
+The first exact composition object and its connection to the wall carrier
+are now available.  They remove a quantifier ambiguity which is easy to miss:
+pairwise relations may be witnessed by different colourings at their common
+corner, whereas a compositional cell must reuse one actual colouring there.
+
+\begin{lemma}[coherent orbit cell on an ordered mesh]
+\label{lem:ordered-mesh-coherent-orbit-cell}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapKempeCell.overlapKempeCellStateSupport_eq_of_mem}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapKempeCell.overlapKempeCellStateSupport_nonempty}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapKempeCell.overlapKempeCellStateSupport_subset_compatibleCycleSupport}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapKempeCell.sharedWitnessLifting_or_obstruction}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairOverlapKempeCell.overlapKempeCellStateSupport_eq_compatibleCycleSupport_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshAdjacentPairSites.meshPathStep_adjacent}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshAdjacentPairSites.exists_nonempty_overlapKempeCellStateSupport}
+Let four adjacent-pair deletions be arranged clockwise around a cell, with
+proper base colourings at the north-west, north-east, south-east and
+south-west corners.  Evaluate the overlap state on each side using the same
+concrete corner colouring for the two sides incident with that corner.  The
+set of all cell states obtained by independently ranging the four corner
+colourings through their Kempe orbits is finite and nonempty, is independent
+of the four chosen orbit representatives, and projects into the cycle of the
+four pairwise overlap supports.  At every corner its two projected boundary
+observations agree literally.
+
+Moreover, every consecutive coordinate rectangle of an ordered injective mesh in a
+graph-backed vertex-minimal Tait counterexample canonically supplies such
+four deletion sites.  They are anchored at the four mesh branch vertices,
+and the common-constant-orbit lemma supplies proper base colourings, hence a
+nonempty coherent cell support.
+\end{lemma}
+
+\begin{proof}
+For the abstract statement, choose one proper colouring at each corner and
+use it in both incident pairwise overlap evaluations.  The two boundary
+observations at that corner are then definitionally the same.  Taking all
+four colourings in their respective Kempe closures gives a finite relation;
+the base colourings witness nonemptiness.  Replacing a base colouring by a
+reachable representative leaves its whole Kempe closure unchanged, so it
+leaves the cell relation unchanged.  Forgetting the shared witnesses gives
+the asserted inclusion in the naive pairwise-compatible cycle.
+
+For the mesh statement, every step of a row or column path is an edge of the
+rotation-system multigraph and therefore an edge of its graph backing.  At
+each cell corner select the first outgoing path step in clockwise order
+(equivalently the reverse of the last incoming step on the south and west
+sides).  Strict monotonicity of the branch positions guarantees that these
+steps exist.  Cubicity and the absence of a common neighbour at an adjacent
+pair reconstruct the canonical four-port deletion data, and the selected
+step begins at the corresponding branch vertex.  Finally apply
+Lemma~\ref{lem:adjacent-pair-common-constant-orbit} independently at the four
+sites and use the nonemptiness just proved.  The ordered-mesh carrier permits
+additional row--column intersections and shared row--column path segments,
+so this construction does not assert that the four intervening path segments
+form the boundary of an embedded disc.
+\end{proof}
+
+Only one implication is claimed:
+\[
+ \{\hbox{states with shared corner witnesses}\}
+ \subseteq
+ \{\hbox{pairwise-compatible cycles}\}.
+\]
+The converse is an open lifting, or sheaf, condition: equal finite boundary
+observations can be represented by different intermediate colourings.  Thus
+Lemma~\ref{lem:ordered-mesh-coherent-orbit-cell} does not prove flatness,
+trivial holonomy, support equality across a rectangle, or fixed-wall
+exclusion.  It fixes the exact input of the next wall-facing theorem: either
+lift compatible local data to a coherent rectangular section and obtain the
+physical support replacement, or extract a non-coboundary holonomy with a
+separate structural consequence.
+The finite-state dichotomy itself is checked: shared-witness lifting holds,
+or one compatible cycle state explicitly fails to lift.  This dichotomy is a
+specification of the two possible proof obligations, not a proof that either
+alternative has the required geometric consequence.
+
 There is nevertheless no colour-extension gap at a compatible checkpoint.
 The following statement isolates the exact planar cap which may be attached
 there; it will be the closed carrier on which Kauffman's formation parity can
