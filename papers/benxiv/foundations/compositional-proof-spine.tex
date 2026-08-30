@@ -2901,20 +2901,21 @@ property of the least counterexample.
 
 \begin{corollary}[a long ordered row forces common-core disagreement]
 \label{cor:ordered-row-common-core-disagreement}
-\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshColoringAtlas.exists_global_commonRestriction_disagreement}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshColoringAtlas.exists_disagreement_in_any_nine_row_intervals}
 Suppose an ordered injective mesh in a graph-backed least Tait
 counterexample has a row meeting at least ten ordered branch columns.  Choose
+any nine distinct intervals between successive branch columns, and choose
 once and for all the proper deletion colouring supplied by minimality at
-every global mesh step.  Then two of these selected colourings have false
-common-restriction agreement bit.
+every global mesh step.  Then two of the nine selected interval colourings
+have false common-restriction agreement bit.
 \end{corollary}
 
 \begin{proof}
-Consider the nine row steps immediately following the first nine branch
-positions.  Their first endpoints are pairwise distinct because the branch
-positions are strictly ordered on a simple row.  Their second endpoints are
-also pairwise distinct by simplicity of the row.  More generally, for any
-finite forbidden vertex set \(S\), at most \(|S|\) of these steps can have
+The first endpoints of the nine chosen steps are pairwise distinct because
+the branch positions are strictly ordered on a simple row.  Their second
+endpoints are also pairwise distinct by simplicity of the row.  More
+generally, for any finite forbidden vertex set \(S\), at most \(|S|\) of
+these steps can have
 first endpoint in \(S\), and at most \(|S|\) can have second endpoint in
 \(S\).  Thus at most \(2|S|\) selected steps meet \(S\).
 
@@ -2925,7 +2926,8 @@ globally selected deletion at that step therefore retains the first edge, or
 retains the two edges simultaneously.  The two covering conditions of
 Lemma~\ref{lem:global-common-core-colouring-atlas} follow.  If every pair of
 selected colourings had true common-restriction bit, that lemma would colour
-the ambient counterexample.  Hence at least one pair has false bit.
+the ambient counterexample.  Hence at least one pair among the chosen nine
+has false bit.
 \end{proof}
 
 This does not contradict the pentagonal-prism diagnostic above.  Four true
