@@ -2563,6 +2563,12 @@ state-realisation equality.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshOrientedGlobalSites.orientedGlobalBoundaryKempeSite_south_eq_reverse_north}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshOrientedGlobalSites.orientedGlobalBoundaryKempeSite_west_base_heq_reverse_east}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshOrientedGlobalSites.orientedGlobalBoundaryKempeSite_south_base_heq_reverse_north}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairStateReversal.vertexKirchhoffSum_reverseColoring}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairStateReversal.kempePortsConnected_reverseColoring_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairStateReversal.boundaryKempeState_reverseColoring}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairStateReversal.reverseBoundaryKempeState_involutive}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshSharedBoundaryStates.west_boundaryKempeState_eq_reverse_east}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshSharedBoundaryStates.south_boundaryKempeState_eq_reverse_north}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshGlobalBoundaryHolonomy.globalSuccessorWitnessRelation_nonempty}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshGlobalBoundaryHolonomy.globalBoundaryWitnessSection_or_obstruction}
 Fix one ordered injective mesh in a graph-backed vertex-minimal Tait
@@ -2586,6 +2592,14 @@ identification the clockwise site of one rectangle is the canonical reversal
 of the clockwise site of the other, and its base colouring is exactly the
 transported base colouring.  In particular, the two rectangles do not make
 independent Kempe-orbit choices on their common physical side.
+
+This identification preserves the complete finite observation at the site.
+More precisely, reversal precomposes the four-port Kirchhoff word by
+\(0,1,2,3\mapsto2,3,0,1\), and it preserves every labelled assertion that two
+ports lie in the same component of a specified two-colour subgraph under the
+same port permutation.  Hence the full boundary Kempe state on one reading of
+a shared side is exactly the involutive reversal of the state on the other
+reading.  This holds for east--west and north--south neighbours.
 
 For each rectangle, the successor overlap supports built from these globally
 chosen sites are nonempty.  Hence every finite state assignment on its
@@ -2622,6 +2636,16 @@ the other.  Substitution in the four branch-position formulas proves literal
 equality of their global step indices.  The statements about adjacent-pair
 data and base colourings now follow by unfolding the globally selected site
 once, not by comparing two choices.
+
+The retained-vertex swap is a graph isomorphism.  It maps the incident-edge
+set at every retained vertex bijectively to the incident-edge set at its image,
+so the corresponding Kirchhoff sums agree.  On each pair of colours it also
+restricts to an isomorphism of the two bicoloured line subgraphs; reachability
+therefore agrees for every pair of ports.  These two facts give the boundary
+word and connectivity-bit formulas, and applying the port permutation twice
+is the identity.  Substitution of the already proved shared-side data and
+base-colouring equalities gives the east--west and north--south state
+identities.
 
 Finally, two proper globally based colourings realise an overlap state on
 every successor edge.  Choice of one such finite state on each edge gives an
