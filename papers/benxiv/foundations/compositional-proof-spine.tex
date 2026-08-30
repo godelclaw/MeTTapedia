@@ -2582,6 +2582,7 @@ state-realisation equality.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshSharedBoundaryStates.south_boundaryKempeState_eq_reverse_north}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshGlobalBoundaryHolonomy.globalSuccessorWitnessRelation_nonempty}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshGlobalBoundaryHolonomy.globalBoundaryWitnessSection_or_obstruction}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshGlobalBoundaryHolonomy.not_hasGlobalBoundaryWitnessObstruction_base}
 Fix one ordered injective mesh in a graph-backed vertex-minimal Tait
 counterexample.  There is one globally indexed forward site for every step of
 every row path and every column path, consisting of ordered adjacent-pair data
@@ -2631,6 +2632,15 @@ complete boundary has the same exact alternative as in
 Lemma~\ref{lem:ordered-mesh-complete-boundary-relation}: either one concrete
 colouring at every globally based site simultaneously witnesses all successor
 states, or no such boundary section exists.
+
+The mesh data alone do not force the second alternative.  There is a
+canonical assignment which records, on every successor edge, the overlap
+state realised by the two globally chosen base colourings.  Those same base
+colourings form a simultaneous boundary section, so this canonical assignment
+has no witness obstruction.  Consequently a wall-facing holonomy argument
+must constrain the successor states by additional ambient or replacement
+data; pairwise support nonemptiness and shared-site coherence by themselves
+cannot produce the obstruction.
 \end{lemma}
 
 \begin{proof}
@@ -2692,7 +2702,11 @@ Finally, two proper globally based colourings realise an overlap state on
 every successor edge.  Choice of one such finite state on each edge gives an
 assignment.  Excluded middle applied to a single dependent family of concrete
 site colourings gives the section alternative, exactly as in the preceding
-lemma.
+lemma.  For the canonical assignment, take at each successor edge precisely
+the state realised by its two global bases.  Membership follows from
+reflexivity of Kempe reachability and properness of the bases.  Reusing each
+base at its site then satisfies both incident successor relations
+definitionally, giving the asserted section and ruling out its obstruction.
 \end{proof}
 
 This lemma closes the carrier- and orientation-coherence problem, not the wall
@@ -2701,8 +2715,10 @@ relational returns of neighbouring cells cancel after the displayed support
 involution,
 or show that their failure produces a bounded cut, a strict compositional
 replacement, or another global invariant forbidden in a least
-counterexample.  No equality of opposite-shore supports, flatness, or
-fixed-wall exclusion is inferred merely from sharing the physical sites.
+counterexample.  Such a failure cannot be obtained by selecting the canonical
+base-realised successor states, since those always have a section.  No
+equality of opposite-shore supports, flatness, or fixed-wall exclusion is
+inferred merely from sharing the physical sites.
 
 This lemma is deliberately an incidence and quantifier theorem.  The second
 alternative is not yet a geometric obstruction, and the first does not yet
