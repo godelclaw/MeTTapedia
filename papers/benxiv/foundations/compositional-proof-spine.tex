@@ -2645,6 +2645,52 @@ matching of strictly lower defect, or extract the strict exact-support
 replacement used by the reductive descent.  Producing an arbitrary new
 matching, without controlling this potential, is not enough.
 
+The exact effect of a local matching exchange can be stated without any
+monotonicity assumption.
+
+\begin{lemma}[residual exchange is symmetric difference]
+\label{lem:residual-exchange-symmetric-difference}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualExchange.residualGraph_exchange_eq_symmDiff}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualExchange.exchange_supportedBy_and_residualGraph_eq_symmDiff}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualExchange.residualGraph_exchange_adj_of_mem}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualExchange.residualGraph_exchange_adj_of_notMem}
+Let \(\sigma,\tau\) be graph-supported perfect matchings of \(G\), and let
+\(S\) be a vertex set closed under both partner involutions.  Write
+\(\sigma'=\sigma\triangleleft_S\tau\) for the matching obtained by using
+\(\tau\) on \(S\) and \(\sigma\) off \(S\).  Let \(A_S(\sigma,\tau)\)
+be the graph consisting of the edges of
+\(\sigma\mathbin\triangle\tau\) whose endpoints both lie in \(S\).  Then
+\[
+ R_{\sigma'}=R_\sigma\mathbin\triangle A_S(\sigma,\tau).
+\]
+Equivalently, at a vertex in \(S\) the new residual adjacency is exactly
+the residual adjacency for \(\tau\), while at a vertex outside \(S\) it is
+the old residual adjacency for \(\sigma\).
+\end{lemma}
+
+\begin{proof}
+The supported-exchange theorem first shows that \(\sigma'\) uses only edges
+of \(G\).  It remains to identify the residual edges.
+For adjacent vertices \(v,w\), membership in \(R_\sigma\) means that
+\(vw\) is an edge of \(G\) but is not the \(\sigma\)-edge at \(v\).
+Outside \(S\), the exchanged partner is still \(\sigma(v)\), so no
+residual adjacency changes.  Inside \(S\), it is \(\tau(v)\).  If the two
+partners agree, neither the matching nor the residual graph changes.  If
+they differ, the old \(\sigma\)-edge enters the residual graph and the old
+\(\tau\)-edge leaves it.  These are precisely the two edges of the
+alternating carrier incident with \(v\), so the change is symmetric
+difference with \(A_S(\sigma,\tau)\).  Closure of \(S\) rules out an edge
+with exactly one endpoint in \(S\), and graph support ensures that every
+toggled matching edge belongs to \(G\).
+\end{proof}
+
+This identity is deliberately weaker than a defect-decrease statement.
+Symmetric difference with an alternating carrier can split, merge, or reroute
+residual components, so the number of non-bipartite components need not move
+monotonically.  A wall argument must therefore control the carrier's
+attachment to the odd residual components; the matching-exchange algebra
+alone does not supply the strict descent.
+
 There is also an exact limitation on the matching-exchange idea.
 
 \begin{lemma}[two-matching exchange preserves the overlap locus]
