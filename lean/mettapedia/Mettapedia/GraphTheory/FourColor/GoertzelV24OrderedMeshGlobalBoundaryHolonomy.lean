@@ -108,6 +108,29 @@ noncomputable def defaultGlobalBoundaryOverlapStateAssignment :
     (globalSuccessorOverlapKempeStateSupport_nonempty
       rotation minimal ordered cell step)
 
+/-- The globally chosen base colourings determine a canonical successor
+state on every boundary step.  Unlike an arbitrary independent choice from
+each pairwise support, these states are jointly realised by construction. -/
+noncomputable def baseGlobalBoundaryOverlapStateAssignment :
+    GlobalBoundaryOverlapStateAssignment rotation minimal ordered cell where
+  state step :=
+    let source := orientedGlobalBoundaryKempeSite
+      rotation minimal ordered cell step
+    let target := orientedGlobalBoundaryKempeSite
+      rotation minimal ordered cell
+        (boundarySuccessor rotation ordered cell step)
+    overlapKempeState source.data target.data source.base target.base
+  state_mem step := by
+    let source := orientedGlobalBoundaryKempeSite
+      rotation minimal ordered cell step
+    let target := orientedGlobalBoundaryKempeSite
+      rotation minimal ordered cell
+        (boundarySuccessor rotation ordered cell step)
+    exact ⟨source.base,
+      SimpleGraph.mem_edgeKempeClosure_self source.base, source.baseTait,
+      target.base, SimpleGraph.mem_edgeKempeClosure_self target.base,
+      target.baseTait, rfl⟩
+
 /-- Concrete witnesses of one globally based successor state. -/
 def globalSuccessorWitnessRelation
     (assignment : GlobalBoundaryOverlapStateAssignment
@@ -157,6 +180,29 @@ structure GlobalBoundaryWitnessSection
       (coloring step)
       (coloring (boundarySuccessor rotation ordered cell step))
 
+/-- The canonical state assignment supplied by the global base colourings
+has a simultaneous boundary section: use those same base colourings at all
+sites.  Thus a mesh does not force a relational obstruction merely from
+pairwise support nonemptiness and shared-site coherence. -/
+noncomputable def baseGlobalBoundaryWitnessSection :
+    GlobalBoundaryWitnessSection rotation minimal ordered cell
+      (baseGlobalBoundaryOverlapStateAssignment
+        rotation minimal ordered cell) where
+  coloring step :=
+    (orientedGlobalBoundaryKempeSite
+      rotation minimal ordered cell step).base
+  follows step := by
+    let source := orientedGlobalBoundaryKempeSite
+      rotation minimal ordered cell step
+    let target := orientedGlobalBoundaryKempeSite
+      rotation minimal ordered cell
+        (boundarySuccessor rotation ordered cell step)
+    exact ⟨SimpleGraph.mem_edgeKempeClosure_self source.base,
+      source.baseTait,
+      SimpleGraph.mem_edgeKempeClosure_self target.base,
+      target.baseTait,
+      rfl⟩
+
 /-- Failure of simultaneous lifting for one globally based finite-state
 assignment. -/
 def HasGlobalBoundaryWitnessObstruction
@@ -164,6 +210,18 @@ def HasGlobalBoundaryWitnessObstruction
       rotation minimal ordered cell) : Prop :=
   ¬ Nonempty (GlobalBoundaryWitnessSection
     rotation minimal ordered cell assignment)
+
+/-- In particular, the canonical globally based assignment is not
+obstructed.  Any wall-facing holonomy argument must therefore constrain the
+finite states by additional ambient or replacement data; it cannot obtain an
+obstruction from the mesh carrier and pairwise nonemptiness alone. -/
+theorem not_hasGlobalBoundaryWitnessObstruction_base :
+    ¬ HasGlobalBoundaryWitnessObstruction rotation minimal ordered cell
+      (baseGlobalBoundaryOverlapStateAssignment
+        rotation minimal ordered cell) := by
+  intro obstruction
+  exact obstruction
+    ⟨baseGlobalBoundaryWitnessSection rotation minimal ordered cell⟩
 
 /-- The exact section-versus-obstruction dichotomy after all physical site
 choices have been made globally. -/
