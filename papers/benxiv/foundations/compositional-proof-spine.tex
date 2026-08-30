@@ -2859,6 +2859,83 @@ as a reason to assume a global section.  A wall argument must either control the
 relational breaks using the minimal-counterexample hypothesis or derive a
 target-specific consequence from a proper nonempty holonomy.
 
+There is, however, a global consequence of literal common-core agreement
+which is stronger than agreement on the four sides of one chosen cell state.
+
+\begin{lemma}[global common-core colouring atlas]
+\label{lem:global-common-core-colouring-atlas}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairColoringAtlas.coloring_eq_on_common_retained_edge}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AdjacentPairColoringAtlas.PairDeletionColoringFamily.not_pairwiseCommonRestrictionAgrees_of_minimal}
+Let \(M\) be a graph-backed least Tait counterexample.  Let
+\(\{(D_i,C_i):i\in I\}\) be a family in which \(D_i\) deletes an adjacent
+vertex pair and \(C_i\) is a proper nonzero edge-colouring of the retained
+induced graph.  Suppose that
+\begin{enumerate}
+\item every ambient edge is retained by some \(D_i\);
+\item every two adjacent ambient edges are retained together by some
+      \(D_i\); and
+\item for every \(i,j\), the restrictions of \(C_i\) and \(C_j\) to the
+      graph obtained by deleting both adjacent pairs are equal.
+\end{enumerate}
+Then the \(C_i\) glue to a proper nonzero Tait colouring of \(M\), a
+contradiction.  Equivalently, any family satisfying the two covering
+conditions has two members whose common-restriction agreement bit is false.
+\end{lemma}
+
+\begin{proof}
+An ambient edge retained by both \(D_i\) and \(D_j\) has neither deleted
+pair as an endpoint, so it is an edge of the exact common four-vertex
+deletion.  The third hypothesis therefore says that \(C_i\) and \(C_j\)
+assign it the same colour.  Choose, for each ambient edge \(e\), one index
+\(i(e)\) whose deletion retains \(e\), and colour \(e\) by \(C_{i(e)}(e)\).
+The preceding agreement makes this value independent of the choice.
+
+If ambient edges \(e\) and \(f\) are adjacent, the second covering
+hypothesis gives one deletion retaining both.  In that retained graph their
+copies are adjacent, so its proper colouring assigns them different colours;
+choice-independence transfers this inequality to the glued colouring.
+Similarly, the selected local Tait condition makes every glued colour
+nonzero.  Hence the glued map is Tait-colourable, contrary to the defining
+property of the least counterexample.
+\end{proof}
+
+\begin{corollary}[a long ordered row forces common-core disagreement]
+\label{cor:ordered-row-common-core-disagreement}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshColoringAtlas.exists_global_commonRestriction_disagreement}
+Suppose an ordered injective mesh in a graph-backed least Tait
+counterexample has a row meeting at least ten ordered branch columns.  Choose
+once and for all the proper deletion colouring supplied by minimality at
+every global mesh step.  Then two of these selected colourings have false
+common-restriction agreement bit.
+\end{corollary}
+
+\begin{proof}
+Consider the nine row steps immediately following the first nine branch
+positions.  Their first endpoints are pairwise distinct because the branch
+positions are strictly ordered on a simple row.  Their second endpoints are
+also pairwise distinct by simplicity of the row.  More generally, for any
+finite forbidden vertex set \(S\), at most \(|S|\) of these steps can have
+first endpoint in \(S\), and at most \(|S|\) can have second endpoint in
+\(S\).  Thus at most \(2|S|\) selected steps meet \(S\).
+
+For one ambient edge, its endpoint set has size two, so some selected row
+step avoids it.  For two ambient edges, the union of their endpoint sets has
+size at most four, so among nine selected steps one avoids both edges.  The
+globally selected deletion at that step therefore retains the first edge, or
+retains the two edges simultaneously.  The two covering conditions of
+Lemma~\ref{lem:global-common-core-colouring-atlas} follow.  If every pair of
+selected colourings had true common-restriction bit, that lemma would colour
+the ambient counterexample.  Hence at least one pair has false bit.
+\end{proof}
+
+This does not contradict the pentagonal-prism diagnostic above.  Four true
+agreement bits attached to the four sides of one compatible cell state do
+not assert that one globally selected family agrees on the common deletion
+for every pair of mesh sites.  The corollary identifies the exact remaining
+two-dimensional task: control the forced disagreements between globally
+selected deletion colourings, rather than infer a global section from local
+nonempty relations.
+
 Exhausting all $2\,792\,976$ compatible cycles in the same prism separates
 the two residues: $6\,912$ have empty composite and $6\,144$ have a
 nonempty fixed-point-free composite; the remaining $2\,779\,920$ lift.
