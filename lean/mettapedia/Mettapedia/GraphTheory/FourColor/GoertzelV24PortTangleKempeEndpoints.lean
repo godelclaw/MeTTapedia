@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FinitePathEndpointCount
 import Mettapedia.GraphTheory.FourColor.GoertzelV24PortTangleCommonKempeWeb
+import Mathlib.Combinatorics.SimpleGraph.Matching
 
 /-!
 # Two-ended components of a finite cubic port-tangle Kempe web
@@ -497,6 +498,91 @@ theorem card_componentPortDarts_eq_two
       pair root dart).symm
   rw [hidentify]
   exact hendpoints
+
+/-- A physical bichromatic component with no boundary dart is a graph of
+cycles.  The statement is deliberately about the exact active-dart web:
+contracting its vertex wires to obtain an ambient primal cycle is a separate
+geometric operation. -/
+theorem activeComponent_isCycles_of_componentPortDarts_eq_empty
+    (T : PortTangle V I P) (hcubic : IsCubic T)
+    (coloring : Coloring T) (hproper : IsProper coloring)
+    (pair : TaitColorPair) (root : ActiveDart T coloring pair)
+    (hboundaryFree : componentPortDarts T coloring pair root = ∅) :
+    (activeComponent T coloring pair root).toSimpleGraph.IsCycles := by
+  intro dart _hneighbors
+  calc
+    ((activeComponent T coloring pair root).toSimpleGraph.neighborSet
+        dart).ncard =
+        Fintype.card
+          ((activeComponent T coloring pair root).toSimpleGraph.neighborSet
+            dart) := (Set.fintypeCard_eq_ncard _).symm
+    _ = (activeComponent T coloring pair root).toSimpleGraph.degree dart :=
+      (activeComponent T coloring pair root).toSimpleGraph
+        |>.card_neighborSet_eq_degree dart
+    _ = (activeWeb T coloring pair).degree dart.1 :=
+      activeComponent_degree_eq T coloring pair root dart
+    _ = 2 := by
+      rcases hdart : dart.1.1 with interior | port
+      · let interiorDart : ActiveDart T coloring pair :=
+          ⟨Sum.inl interior, hdart ▸ dart.1.2⟩
+        have hinteriorDart : interiorDart = dart.1 := by
+          apply Subtype.ext
+          exact hdart.symm
+        rw [← hinteriorDart]
+        exact activeWeb_degree_interior_eq_two T hcubic coloring hproper
+          pair interior (hdart ▸ dart.1.2)
+      · have hport : dart ∈ componentPortDarts T coloring pair root := by
+          simp only [componentPortDarts, Finset.mem_filter, Finset.mem_univ,
+            true_and, IsPortActiveDart]
+          exact ⟨port, hdart⟩
+        rw [hboundaryFree] at hport
+        simp at hport
+
+/-- A boundary-free physical bichromatic component contains a simple closed
+walk through its chosen root. -/
+theorem exists_activeComponent_cycle_of_componentPortDarts_eq_empty
+    (T : PortTangle V I P) (hcubic : IsCubic T)
+    (coloring : Coloring T) (hproper : IsProper coloring)
+    (pair : TaitColorPair) (root : ActiveDart T coloring pair)
+    (hboundaryFree : componentPortDarts T coloring pair root = ∅) :
+    ∃ walk : (activeComponent T coloring pair root).toSimpleGraph.Walk
+        (⟨root, rfl⟩ : activeComponent T coloring pair root)
+        (⟨root, rfl⟩ : activeComponent T coloring pair root),
+      walk.IsCycle := by
+  let component := activeComponent T coloring pair root
+  let rootInComponent : component := ⟨root, rfl⟩
+  have hcycles : component.toSimpleGraph.IsCycles :=
+    activeComponent_isCycles_of_componentPortDarts_eq_empty
+      T hcubic coloring hproper pair root hboundaryFree
+  have hrootDegree : component.toSimpleGraph.degree rootInComponent = 2 := by
+    rw [activeComponent_degree_eq T coloring pair root rootInComponent]
+    change (activeWeb T coloring pair).degree root = 2
+    rcases hdart : root.1 with interior | port
+    · let interiorDart : ActiveDart T coloring pair :=
+        ⟨Sum.inl interior, hdart ▸ root.2⟩
+      have hinteriorDart : interiorDart = root := by
+        apply Subtype.ext
+        exact hdart.symm
+      rw [← hinteriorDart]
+      exact activeWeb_degree_interior_eq_two T hcubic coloring hproper
+        pair interior (hdart ▸ root.2)
+    · have hport : rootInComponent ∈
+          componentPortDarts T coloring pair root := by
+        simp only [componentPortDarts, Finset.mem_filter, Finset.mem_univ,
+          true_and, IsPortActiveDart]
+        exact ⟨port, hdart⟩
+      rw [hboundaryFree] at hport
+      simp at hport
+  have hrootNeighbors :
+      (component.toSimpleGraph.neighborSet rootInComponent).Nonempty := by
+    rcases (component.toSimpleGraph.degree_pos_iff_exists_adj
+        rootInComponent).1 (by omega) with ⟨neighbor, hadj⟩
+    exact ⟨neighbor, hadj⟩
+  rcases hcycles.exists_cycle_toSubgraph_verts_eq_connectedComponentSupp
+      (c := component.toSimpleGraph.connectedComponentMk rootInComponent)
+      (v := rootInComponent) rfl hrootNeighbors with
+    ⟨walk, hwalk, _hsupport⟩
+  exact ⟨walk, hwalk⟩
 
 end GoertzelV24PortTangleKempeEndpoints
 
