@@ -3066,4 +3066,177 @@ theorem exists_disjointDetourOctet {W : Sym2 (V × Fin 3) → ℂ}
   exact ⟨x, y, ⟨huniv, hxy, D.dead_pair, hdeadl, D.chord, hchordE,
     D.live_fst, D.live_snd, hrx, hsy, E.live_fst, E.live_snd, horient⟩⟩
 
+/-! ## The route-overlap calculus
+
+At arbitrary size the two outward routes need not land on the same sites.  Their two-site
+destinations meet in two sites, one, or none, and in the last case four genuinely new sites appear. -/
+
+/-- Two unordered pairs meet in both, one, or neither site. -/
+theorem pair_overlap_trichotomy {x y x' y' : V} (hxy : x ≠ y) (hx'y' : x' ≠ y') :
+    ({x, y} : Finset V) = ({x', y'} : Finset V)
+      ∨ (∃ z : V, ({x, y} : Finset V) ∩ ({x', y'} : Finset V) = ({z} : Finset V))
+      ∨ Disjoint ({x, y} : Finset V) ({x', y'} : Finset V) := by
+  classical
+  by_cases hx' : x' ∈ ({x, y} : Finset V)
+  · by_cases hy' : y' ∈ ({x, y} : Finset V)
+    · refine Or.inl ?_
+      have hsub : ({x', y'} : Finset V) ⊆ ({x, y} : Finset V) := by
+        intro z hz
+        simp only [Finset.mem_insert, Finset.mem_singleton] at hz
+        rcases hz with rfl | rfl <;> assumption
+      have hc : ({x, y} : Finset V).card = 2 := Finset.card_pair hxy
+      have hc' : ({x', y'} : Finset V).card = 2 := Finset.card_pair hx'y'
+      exact (Finset.eq_of_subset_of_card_le hsub (by omega)).symm
+    · refine Or.inr (Or.inl ⟨x', ?_⟩)
+      have hx'm : x' = x ∨ x' = y := by
+        simpa only [Finset.mem_insert, Finset.mem_singleton] using hx'
+      have hy'm : ¬(y' = x ∨ y' = y) := by
+        simpa only [Finset.mem_insert, Finset.mem_singleton] using hy'
+      ext z
+      simp only [Finset.mem_inter, Finset.mem_insert, Finset.mem_singleton]
+      constructor
+      · rintro ⟨hz, hz' | rfl⟩
+        · exact hz'
+        · exact absurd hz hy'm
+      · rintro rfl
+        exact ⟨hx'm, Or.inl rfl⟩
+  · by_cases hy' : y' ∈ ({x, y} : Finset V)
+    · refine Or.inr (Or.inl ⟨y', ?_⟩)
+      have hy'm : y' = x ∨ y' = y := by
+        simpa only [Finset.mem_insert, Finset.mem_singleton] using hy'
+      have hx'm : ¬(x' = x ∨ x' = y) := by
+        simpa only [Finset.mem_insert, Finset.mem_singleton] using hx'
+      ext z
+      simp only [Finset.mem_inter, Finset.mem_insert, Finset.mem_singleton]
+      constructor
+      · rintro ⟨hz, rfl | hz'⟩
+        · exact absurd hz hx'm
+        · exact hz'
+      · rintro rfl
+        exact ⟨hy'm, Or.inr rfl⟩
+    · refine Or.inr (Or.inr ?_)
+      refine Finset.disjoint_right.mpr ?_
+      intro z hz
+      simp only [Finset.mem_insert, Finset.mem_singleton] at hz
+      rcases hz with rfl | rfl <;> assumption
+
+/-- **Both routes exposed, with their destinations classified.**  For any size: the `k`-route, the
+third colour's route, all four destinations outside the six named sites, and the trichotomy on how
+the two destination pairs meet. -/
+theorem outward_route_overlap {W : Sym2 (V × Fin 3) → ℂ}
+    {a k : Fin 3} {u v : V}
+    (D : DetourPorts W u v a k) (E : DetourPorts W u v a (thirdColour a k))
+    (hdisj : Disjoint ({D.fst, D.snd} : Finset V) ({E.fst, E.snd} : Finset V)) :
+    ∃ x y x' y' : V, x ≠ y ∧ x' ≠ y' ∧
+      W s((E.fst, k), (x, k)) ≠ 0 ∧ W s((E.snd, k), (y, k)) ≠ 0 ∧
+      pmSum W (Amplitude.const (V := V) k)
+        ((Finset.univ : Finset V) \
+          ({u, D.fst, v, D.snd, E.fst, x, E.snd, y} : Finset V)) ≠ 0 ∧
+      W s((D.fst, thirdColour a k), (x', thirdColour a k)) ≠ 0 ∧
+      W s((D.snd, thirdColour a k), (y', thirdColour a k)) ≠ 0 ∧
+      pmSum W (Amplitude.const (V := V) (thirdColour a k))
+        ((Finset.univ : Finset V) \
+          ({u, E.fst, v, E.snd, D.fst, x', D.snd, y'} : Finset V)) ≠ 0 ∧
+      (∀ z ∈ ({x, y, x', y'} : Finset V),
+        z ≠ u ∧ z ≠ v ∧ z ≠ D.fst ∧ z ≠ D.snd ∧ z ≠ E.fst ∧ z ≠ E.snd) ∧
+      (({x, y} : Finset V) = ({x', y'} : Finset V)
+        ∨ (∃ z : V, ({x, y} : Finset V) ∩ ({x', y'} : Finset V) = ({z} : Finset V))
+        ∨ Disjoint ({x, y} : Finset V) ({x', y'} : Finset V)) := by
+  classical
+  obtain ⟨⟨x, y, hxu, hxv, hxp, hxq, hxr, hxs, hyu, hyv, hyp, hyq, hyr, hys, hxy, hrx, hsy, hkr⟩,
+    ⟨x', y', hx'u, hx'v, hx'p, hx'q, hx'r, hx's, hy'u, hy'v, hy'p, hy'q, hy'r, hy's, hx'y',
+      hpx', hqy', hlr⟩⟩ := disjoint_detours_force_outward_routes D E hdisj
+  refine ⟨x, y, x', y', hxy, hx'y', hrx, hsy, hkr, hpx', hqy', hlr, ?_,
+    pair_overlap_trichotomy hxy hx'y'⟩
+  intro z hz
+  simp only [Finset.mem_insert, Finset.mem_singleton] at hz
+  rcases hz with rfl | rfl | rfl | rfl
+  · exact ⟨hxu, hxv, hxp, hxq, hxr, hxs⟩
+  · exact ⟨hyu, hyv, hyp, hyq, hyr, hys⟩
+  · exact ⟨hx'u, hx'v, hx'p, hx'q, hx'r, hx's⟩
+  · exact ⟨hy'u, hy'v, hy'p, hy'q, hy'r, hy's⟩
+
+/-- Two further sites beyond an octet give ten. -/
+theorem ten_le_card_of_two_beyond_octet {u p v q r x s y x' y' : V}
+    (hc8 : ({u, p, v, q, r, x, s, y} : Finset V).card = 8)
+    (hx' : x' ∉ ({u, p, v, q, r, x, s, y} : Finset V))
+    (hy' : y' ∉ insert x' ({u, p, v, q, r, x, s, y} : Finset V)) :
+    10 ≤ Fintype.card V := by
+  classical
+  have h9 : (insert x' ({u, p, v, q, r, x, s, y} : Finset V)).card = 9 := by
+    rw [Finset.card_insert_of_notMem hx', hc8]
+  have h10 : (insert y' (insert x' ({u, p, v, q, r, x, s, y} : Finset V))).card = 10 := by
+    rw [Finset.card_insert_of_notMem hy', h9]
+  calc 10 = (insert y' (insert x' ({u, p, v, q, r, x, s, y} : Finset V))).card := h10.symm
+    _ ≤ Fintype.card V := Finset.card_le_univ _
+
+/-- **The route-overlap calculus with its size consequence.**  The two destination pairs coincide,
+meet in one site, or are disjoint -- and disjoint destinations mean four genuinely new sites, hence
+at least ten in all. -/
+theorem outward_route_overlap_sized {W : Sym2 (V × Fin 3) → ℂ}
+    {a k : Fin 3} {u v : V} (huv : u ≠ v)
+    (D : DetourPorts W u v a k) (E : DetourPorts W u v a (thirdColour a k))
+    (hdisj : Disjoint ({D.fst, D.snd} : Finset V) ({E.fst, E.snd} : Finset V)) :
+    ∃ x y x' y' : V, x ≠ y ∧ x' ≠ y' ∧
+      W s((E.fst, k), (x, k)) ≠ 0 ∧ W s((E.snd, k), (y, k)) ≠ 0 ∧
+      W s((D.fst, thirdColour a k), (x', thirdColour a k)) ≠ 0 ∧
+      W s((D.snd, thirdColour a k), (y', thirdColour a k)) ≠ 0 ∧
+      (({x, y} : Finset V) = ({x', y'} : Finset V)
+        ∨ (∃ z : V, ({x, y} : Finset V) ∩ ({x', y'} : Finset V) = ({z} : Finset V))
+        ∨ (Disjoint ({x, y} : Finset V) ({x', y'} : Finset V) ∧ 10 ≤ Fintype.card V)) := by
+  classical
+  obtain ⟨x, y, x', y', hxy, hx'y', hrx, hsy, hkr, hpx', hqy', hlr, hout, htri⟩ :=
+    outward_route_overlap D E hdisj
+  have hmemx : x ∈ ({x, y, x', y'} : Finset V) := Finset.mem_insert_self _ _
+  have hmemy : y ∈ ({x, y, x', y'} : Finset V) :=
+    Finset.mem_insert_of_mem (Finset.mem_insert_self _ _)
+  have hmemx' : x' ∈ ({x, y, x', y'} : Finset V) :=
+    Finset.mem_insert_of_mem (Finset.mem_insert_of_mem (Finset.mem_insert_self _ _))
+  have hmemy' : y' ∈ ({x, y, x', y'} : Finset V) :=
+    Finset.mem_insert_of_mem (Finset.mem_insert_of_mem
+      (Finset.mem_insert_of_mem (Finset.mem_singleton_self _)))
+  obtain ⟨hxu, hxv, hxp, hxq, hxr, hxs⟩ := hout x hmemx
+  obtain ⟨hyu, hyv, hyp, hyq, hyr, hys⟩ := hout y hmemy
+  obtain ⟨hx'u, hx'v, hx'p, hx'q, hx'r, hx's⟩ := hout x' hmemx'
+  obtain ⟨hy'u, hy'v, hy'p, hy'q, hy'r, hy's⟩ := hout y' hmemy'
+  refine ⟨x, y, x', y', hxy, hx'y', hrx, hsy, hpx', hqy', ?_⟩
+  rcases htri with h | h | hdd
+  · exact Or.inl h
+  · exact Or.inr (Or.inl h)
+  refine Or.inr (Or.inr ⟨hdd, ?_⟩)
+  have hd := Finset.disjoint_left.mp hdisj
+  have hm1 : D.fst ∈ ({D.fst, D.snd} : Finset V) := Finset.mem_insert_self _ _
+  have hm2 : D.snd ∈ ({D.fst, D.snd} : Finset V) :=
+    Finset.mem_insert_of_mem (Finset.mem_singleton_self _)
+  have hpr : D.fst ≠ E.fst := fun h => hd hm1 (by rw [h]; exact Finset.mem_insert_self _ _)
+  have hps : D.fst ≠ E.snd := fun h => hd hm1 (by
+    rw [h]; exact Finset.mem_insert_of_mem (Finset.mem_singleton_self _))
+  have hqr : D.snd ≠ E.fst := fun h => hd hm2 (by rw [h]; exact Finset.mem_insert_self _ _)
+  have hqs : D.snd ≠ E.snd := fun h => hd hm2 (by
+    rw [h]; exact Finset.mem_insert_of_mem (Finset.mem_singleton_self _))
+  have hc8 : ({u, D.fst, v, D.snd, E.fst, x, E.snd, y} : Finset V).card = 8 :=
+    card_eight_of_pairwise_ne
+      (Ne.symm D.fst_ne_u) huv (Ne.symm D.snd_ne_u) (Ne.symm E.fst_ne_u) (Ne.symm hxu)
+        (Ne.symm E.snd_ne_u) (Ne.symm hyu)
+      D.fst_ne_v D.fst_ne_snd hpr (Ne.symm hxp) hps (Ne.symm hyp)
+      (Ne.symm D.snd_ne_v) (Ne.symm E.fst_ne_v) (Ne.symm hxv) (Ne.symm E.snd_ne_v) (Ne.symm hyv)
+      hqr (Ne.symm hxq) hqs (Ne.symm hyq)
+      (Ne.symm hxr) E.fst_ne_snd (Ne.symm hyr)
+      hxs hxy (Ne.symm hys)
+  have hddl := Finset.disjoint_right.mp hdd
+  have hmx' : x' ∈ ({x', y'} : Finset V) := Finset.mem_insert_self _ _
+  have hmy' : y' ∈ ({x', y'} : Finset V) :=
+    Finset.mem_insert_of_mem (Finset.mem_singleton_self _)
+  have hx'nx : x' ≠ x := fun h => hddl hmx' (by rw [h]; exact Finset.mem_insert_self _ _)
+  have hx'ny : x' ≠ y := fun h => hddl hmx' (by
+    rw [h]; exact Finset.mem_insert_of_mem (Finset.mem_singleton_self _))
+  have hy'nx : y' ≠ x := fun h => hddl hmy' (by rw [h]; exact Finset.mem_insert_self _ _)
+  have hy'ny : y' ≠ y := fun h => hddl hmy' (by
+    rw [h]; exact Finset.mem_insert_of_mem (Finset.mem_singleton_self _))
+  refine ten_le_card_of_two_beyond_octet (x' := x') (y' := y') hc8 ?_ ?_
+  · simp only [Finset.mem_insert, Finset.mem_singleton, not_or]
+    exact ⟨hx'u, hx'p, hx'v, hx'q, hx'r, hx'nx, hx's, hx'ny⟩
+  · simp only [Finset.mem_insert, Finset.mem_singleton, not_or]
+    exact ⟨Ne.symm hx'y', hy'u, hy'p, hy'v, hy'q, hy'r, hy'nx, hy's, hy'ny⟩
+
 end StarNormalForm
