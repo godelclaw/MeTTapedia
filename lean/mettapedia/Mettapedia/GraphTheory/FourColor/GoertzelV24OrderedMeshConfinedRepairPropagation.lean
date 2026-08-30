@@ -177,6 +177,113 @@ theorem NineSiteConfinedStrictRepairStep.toStrictRepairStep
   exact ⟨repaired, gainedPartner, hne, hreachable, hdisagrees,
     hagrees, hstrict, hother⟩
 
+/-- All ambient edges on which at least one ordered pair of the nine current
+deletion colourings disagrees. -/
+noncomputable def NineSiteAmbientDisagreementUnion
+    (row : Fin a) (slot : Fin 9 ↪ Fin n)
+    (assignment : NineSiteTaitAssignment rotation minimal ordered row slot) :
+    Finset G.edgeSet := by
+  classical
+  exact Finset.univ.biUnion fun pair : Fin 9 × Fin 9 =>
+    ambientDisagreementSupport
+      (rowSiteData rotation minimal ordered row slot pair.1)
+      (rowSiteData rotation minimal ordered row slot pair.2)
+      (assignment pair.1).1 (assignment pair.2).1
+
+theorem mem_nineSiteAmbientDisagreementUnion_iff
+    (row : Fin a) (slot : Fin 9 ↪ Fin n)
+    (assignment : NineSiteTaitAssignment rotation minimal ordered row slot)
+    (edge : G.edgeSet) :
+    edge ∈ NineSiteAmbientDisagreementUnion
+        rotation minimal ordered row slot assignment ↔
+      ∃ first second : Fin 9,
+        edge ∈ ambientDisagreementSupport
+          (rowSiteData rotation minimal ordered row slot first)
+          (rowSiteData rotation minimal ordered row slot second)
+          (assignment first).1 (assignment second).1 := by
+  classical
+  simp [NineSiteAmbientDisagreementUnion]
+
+/-- A confined one-coordinate repair cannot introduce a new ambient edge
+into the union of pairwise disagreement supports. -/
+theorem nineSiteAmbientDisagreementUnion_antitone
+    (row : Fin a) (slot : Fin 9 ↪ Fin n)
+    {source target : NineSiteTaitAssignment rotation minimal ordered row slot}
+    (hstep : NineSiteConfinedStrictRepairStep
+      rotation minimal ordered row slot source target) :
+    NineSiteAmbientDisagreementUnion
+        rotation minimal ordered row slot target ⊆
+      NineSiteAmbientDisagreementUnion
+        rotation minimal ordered row slot source := by
+  classical
+  rcases hstep with
+    ⟨repaired, gainedPartner, hne, _hreachable, _hsourceDisagrees,
+      htargetGainedAgreesSource, _hstrict, hother, hconfined⟩
+  intro edge hedge
+  rcases (mem_nineSiteAmbientDisagreementUnion_iff
+      rotation minimal ordered row slot target edge).1 hedge with
+    ⟨first, second, hedgePair⟩
+  have hsourceGained : CommonCoreAgrees
+      (rowSiteData rotation minimal ordered row slot repaired)
+      (rowSiteData rotation minimal ordered row slot gainedPartner)
+      (target repaired).1 (source gainedPartner).1 :=
+    htargetGainedAgreesSource
+  have hincident (partner : Fin 9) (hpartner : partner ≠ repaired)
+      (hpair : edge ∈ ambientDisagreementSupport
+        (rowSiteData rotation minimal ordered row slot repaired)
+        (rowSiteData rotation minimal ordered row slot partner)
+        (target repaired).1 (target partner).1) :
+      edge ∈ NineSiteAmbientDisagreementUnion
+        rotation minimal ordered row slot source := by
+    have hpartnerEq : target partner = source partner :=
+      hother partner hpartner
+    have hpairSourcePartner : edge ∈ ambientDisagreementSupport
+        (rowSiteData rotation minimal ordered row slot repaired)
+        (rowSiteData rotation minimal ordered row slot partner)
+        (target repaired).1 (source partner).1 := by
+      simpa [hpartnerEq] using hpair
+    have htransport :=
+      ambientDisagreementSupport_subset_union_of_confined_left_update
+        (rowSiteData rotation minimal ordered row slot repaired)
+        (rowSiteData rotation minimal ordered row slot gainedPartner)
+        (rowSiteData rotation minimal ordered row slot partner)
+        (source repaired).1 (target repaired).1
+        (source gainedPartner).1 (source partner).1
+        hsourceGained hconfined hpairSourcePartner
+    rcases Finset.mem_union.1 htransport with hold | hgained
+    · exact (mem_nineSiteAmbientDisagreementUnion_iff
+        rotation minimal ordered row slot source edge).2
+          ⟨repaired, partner, hold⟩
+    · exact (mem_nineSiteAmbientDisagreementUnion_iff
+        rotation minimal ordered row slot source edge).2
+          ⟨gainedPartner, partner, hgained⟩
+  by_cases hfirst : first = repaired
+  · subst first
+    by_cases hsecond : second = repaired
+    · subst second
+      have hempty := ambientDisagreementSupport_self
+        (rowSiteData rotation minimal ordered row slot repaired)
+        (target repaired).1
+      have : edge ∈ (∅ : Finset G.edgeSet) := by
+        rwa [← hempty]
+      simp at this
+    · exact hincident second hsecond hedgePair
+  · by_cases hsecond : second = repaired
+    · subst second
+      have horiented : edge ∈ ambientDisagreementSupport
+          (rowSiteData rotation minimal ordered row slot repaired)
+          (rowSiteData rotation minimal ordered row slot first)
+          (target repaired).1 (target first).1 := by
+        rw [← ambientDisagreementSupport_symm]
+        exact hedgePair
+      exact hincident first hfirst horiented
+    · have hfirstEq : target first = source first := hother first hfirst
+      have hsecondEq : target second = source second := hother second hsecond
+      apply (mem_nineSiteAmbientDisagreementUnion_iff
+        rotation minimal ordered row slot source edge).2
+      refine ⟨first, second, ?_⟩
+      simpa [hfirstEq, hsecondEq] using hedgePair
+
 /-- Every nine-site state either exposes the geometric horns or has a
 confined strict-repair successor. -/
 theorem branchingOrBoundary_or_exists_confinedStrictRepairStep

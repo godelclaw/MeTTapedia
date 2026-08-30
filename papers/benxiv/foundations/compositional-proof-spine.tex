@@ -3320,6 +3320,40 @@ second case is impossible, and every left-hand witness belongs to the
 right-hand support.
 \end{proof}
 
+\begin{lemma}[the ambient disagreement carrier cannot grow]
+\label{lem:confined-disagreement-union-antitone}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KempeLiftConfinement.ambientDisagreementSupport_subset_union_of_confined_left_update}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshConfinedRepairPropagation.nineSiteAmbientDisagreementUnion_antitone}
+For a finite family of adjacent-pair deletion colourings, let $U(A)$ be the
+union, over every ordered pair of sites, of their ambient disagreement
+supports.  If $A'$ is obtained from $A$ by one confined repair of a site $R$
+towards a gained partner $G$, then
+\[
+                         U(A')\subseteq U(A).
+\]
+More pointwise, for every third site $X$,
+\[
+ \operatorname{Disagree}(R_{\rm after},X)
+ \subseteq
+ \operatorname{Disagree}(R_{\rm before},X)
+ \cup \operatorname{Disagree}(G,X).
+\]
+\end{lemma}
+
+\begin{proof}
+Let $e$ witness a disagreement between $R_{\rm after}$ and $X$.  If $G$
+retains $e$, the new agreement $R_{\rm after}\sim G$ makes the same edge a
+disagreement between $G$ and $X$.  If $G$ deletes $e$, confinement gives
+$R_{\rm after}(e)=R_{\rm before}(e)$, so $e$ was already a disagreement
+between $R$ and $X$.  This proves the pointwise inclusion.
+
+Only pairs incident with $R$ can change in a one-coordinate repair.  Apply
+the pointwise inclusion in the displayed orientation when $R$ is first and,
+using symmetry of disagreement support, in the reversed orientation when
+$R$ is second.  Every target witness therefore belonged to one of the source
+pair supports, proving $U(A')\subseteq U(A)$.
+\end{proof}
+
 \begin{corollary}[forced partner-disagreement propagation]
 \label{cor:forced-partner-disagreement-propagation}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24KempeLiftConfinement.commonCoreAgrees_of_confined_left_update}
