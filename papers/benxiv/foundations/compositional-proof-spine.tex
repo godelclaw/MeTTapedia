@@ -3101,9 +3101,10 @@ and its third alternative stays inside the nonzero Tait state space.
 
 For the last alternative, define a \emph{nine-site Tait state} to be one
 Tait colouring at each selected deletion.  A \emph{strict repair step}
-changes exactly one coordinate by valid-pair Tait Kempe switches, makes its
-common-core restriction agree with a second coordinate, and leaves the other
-eight coordinates fixed.  This is a finite state system.
+chooses two distinct coordinates whose common-core restrictions disagree,
+changes the first coordinate strictly by valid-pair Tait Kempe switches,
+makes its new common-core restriction agree with the second coordinate, and
+leaves the other eight coordinates fixed.  This is a finite state system.
 
 \begin{corollary}[the periodic-repair residue]
 \label{cor:periodic-tait-repair-residue}
@@ -3127,19 +3128,44 @@ a nonempty directed cycle of strict repair steps.  Nonemptiness is
 load-bearing: each step changes its repaired coordinate strictly.
 \end{proof}
 
+\begin{corollary}[the anchored agreement-trade residue]
+\label{cor:anchored-agreement-trade-residue}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshCommonCoreDisagreementResidue.nineSiteAgreementPairs_ssubset_of_not_collateralLoss}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshCommonCoreDisagreementResidue.exists_anchoredAgreementTrade_of_no_branchingOrBoundary}
+Under the hypotheses of
+Corollary~\ref{cor:periodic-tait-repair-residue}, some strict repair step has
+the following form.  Its repaired site initially disagrees with its chosen
+partner and agrees with that partner after the repair, but an ordered pair
+which agreed before the repair disagrees afterwards.  The lost pair contains
+the repaired site.
+\end{corollary}
+
+\begin{proof}
+For a nine-site state, record the finite set of ordered site pairs whose
+colourings agree on their exact common deletion.  If a strict repair loses
+no old agreement, this set grows strictly: every old pair remains, while the
+chosen repaired pair is new because it disagreed before the step and agrees
+afterwards.  Strict growth at every step is impossible around the nonempty
+directed cycle supplied by
+Corollary~\ref{cor:periodic-tait-repair-residue}.  Hence one step loses an old
+agreement.  Only the repaired coordinate changes in that step, so a pair
+not containing it has the same two colourings before and after and cannot be
+the lost pair.  Thus the lost agreement is anchored at the repaired site.
+\end{proof}
+
 Applied to the pair supplied by
 Corollary~\ref{cor:ordered-row-common-core-disagreement}, this trichotomy is
 the exact local residue.  It still does not give support equality or wall
-exclusion: repairing one pair can change the repaired colouring's
-restrictions at other mesh sites.  The remaining two-dimensional task is
-therefore exact: either force branching or boundary-reaching witnesses with
-enough geometric coherence to support a strict replacement, or rule out (or
-convert into a replacement) the periodic strict-repair cycles of
-Corollary~\ref{cor:periodic-tait-repair-residue}.  A coherent atlas is already
-impossible by Lemma~\ref{lem:global-common-core-colouring-atlas}.  No
-monotonicity of the naive number of disagreeing pairs is assumed; the
-periodic horn records precisely why such monotonicity cannot simply be
-postulated.
+exclusion: Corollary~\ref{cor:anchored-agreement-trade-residue} now proves
+that repairing one pair must sometimes destroy another common-core agreement
+at the repaired site.  The remaining two-dimensional task is therefore
+sharper: either force branching or boundary-reaching witnesses with enough
+geometric coherence to support a strict replacement, or turn this anchored
+agreement trade into a finite holonomy/support obstruction that supplies such
+a replacement.  A coherent atlas is already impossible by
+Lemma~\ref{lem:global-common-core-colouring-atlas}.  No monotonicity of the
+naive number of disagreeing pairs is assumed; the verified trade explains
+exactly how the periodic horn defeats that monotonicity.
 
 This does not contradict the pentagonal-prism diagnostic above.  Four true
 agreement bits attached to the four sides of one compatible cell state do
