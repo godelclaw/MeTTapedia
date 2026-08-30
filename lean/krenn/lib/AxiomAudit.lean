@@ -77,3 +77,5 @@ Every top-level conditional theorem, with its dependency cone printed. -/
 #print axioms StarNormalForm.certificate_does_not_transfer_upward
 #print axioms StarNormalForm.routing_iteration_obstruction
 #print axioms StarNormalForm.excess_site_routing_network
+#print axioms StarNormalForm.live_pair_annihilates_complement
+#print axioms StarNormalForm.octet_ghz_relations

@@ -3336,4 +3336,77 @@ theorem excess_site_routing_network (W : Sym2 (V × Fin 3) → ℂ)
     · exact Or.inr ⟨hc, exists_crossedCapTails hc⟩
   · exact Or.inr (Or.inr (Or.inr (Or.inr hroute)))
 
+/-! ## Recolouring relations at a live pair
+
+Colour a live pair in its own colour and everything else in one other colour.  The colouring is
+non-constant, so its amplitude vanishes; under monochromatic blocks that amplitude is the product of
+three fibre sums, of which the pair's is its own live weight and the third colour's is the empty
+sum.  The remaining factor must therefore vanish: **a live pair kills every other colour on its
+complement.**  This needs no detour, no cap and no route -- only the live pair. -/
+
+theorem live_pair_annihilates_complement (W : Sym2 (V × Fin 3) → ℂ)
+    (hmin : IsSupportMinimal W)
+    (hmono : ∀ (x y : V), y ≠ x → ∀ i j : Fin 3, i ≠ j → W s((x, i), (y, j)) = 0)
+    {a k : Fin 3} (hak : a ≠ k) {u v : V} (huv : u ≠ v)
+    (hlive : W s((u, a), (v, a)) ≠ 0)
+    (hout : ∃ z : V, z ∉ ({u, v} : Finset V)) :
+    pmSum W (Amplitude.const (V := V) k)
+      ((Finset.univ : Finset V) \ ({u, v} : Finset V)) = 0 := by
+  classical
+  obtain ⟨z₀, hz₀⟩ := hout
+  set c : V → Fin 3 := fun z => if z ∈ ({u, v} : Finset V) then a else k with hc
+  have hcu : c u = a := by simp [hc]
+  have hcv : c v = a := by simp [hc]
+  have hcz : c z₀ = k := by simp only [hc]; exact if_neg hz₀
+  have hnc : ¬ Amplitude.Monochromatic c := by
+    rintro ⟨m, hm⟩
+    exact hak (by rw [← hcu, hm u, ← hm z₀, hcz])
+  have hfa : NoCancellation.fiber c a = ({u, v} : Finset V) := by
+    ext w
+    simp only [NoCancellation.mem_fiber, hc]
+    by_cases hw : w ∈ ({u, v} : Finset V) <;> simp [hw, Ne.symm hak]
+  have hfk : NoCancellation.fiber c k = (Finset.univ : Finset V) \ ({u, v} : Finset V) := by
+    ext w
+    simp only [NoCancellation.mem_fiber, Finset.mem_sdiff, Finset.mem_univ, true_and, hc]
+    by_cases hw : w ∈ ({u, v} : Finset V) <;> simp [hw, hak]
+  have hfo : ∀ m : Fin 3, m ≠ a → m ≠ k → NoCancellation.fiber c m = (∅ : Finset V) := by
+    intro m hma hmk
+    ext w
+    simp only [NoCancellation.mem_fiber, Finset.notMem_empty, iff_false, hc]
+    by_cases hw : w ∈ ({u, v} : Finset V) <;> simp [hw, Ne.symm hma, Ne.symm hmk]
+  by_contra hne
+  refine fibre_zero_of_others W hmin hmono hnc ?_
+  intro m
+  by_cases hma : m = a
+  · subst hma; rw [hfa, MatchingSum.pmSum_pair W _ (Ne.symm huv)]; exact hlive
+  by_cases hmk : m = k
+  · subst hmk; rw [hfk]; exact hne
+  · rw [hfo m hma hmk, MatchingSum.pmSum_empty]; exact one_ne_zero
+
+/-- **The octet's recolouring relations.**  At the synchronized octet the live pair in its own
+colour kills both receiving colours on the six remaining sites. -/
+theorem octet_ghz_relations (W : Sym2 (V × Fin 3) → ℂ)
+    (hmin : IsSupportMinimal W)
+    (hmono : ∀ (x y : V), y ≠ x → ∀ i j : Fin 3, i ≠ j → W s((x, i), (y, j)) = 0)
+    (hcard : 4 < Fintype.card V)
+    {a k : Fin 3} (hak : a ≠ k) {u v : V} (huv : u ≠ v)
+    (hlive : W s((u, a), (v, a)) ≠ 0) :
+    pmSum W (Amplitude.const (V := V) k)
+        ((Finset.univ : Finset V) \ ({u, v} : Finset V)) = 0 ∧
+      pmSum W (Amplitude.const (V := V) (thirdColour a k))
+        ((Finset.univ : Finset V) \ ({u, v} : Finset V)) = 0 := by
+  classical
+  have hout : ∃ z : V, z ∉ ({u, v} : Finset V) := by
+    by_contra hcon
+    push_neg at hcon
+    have hsub : (Finset.univ : Finset V) ⊆ ({u, v} : Finset V) := fun z _ => hcon z
+    have : Fintype.card V ≤ 2 := by
+      calc Fintype.card V = (Finset.univ : Finset V).card := (Finset.card_univ).symm
+        _ ≤ ({u, v} : Finset V).card := Finset.card_le_card hsub
+        _ ≤ 2 := Finset.card_insert_le _ _ |>.trans (by simp)
+    omega
+  exact ⟨live_pair_annihilates_complement W hmin hmono hak huv hlive hout,
+    live_pair_annihilates_complement W hmin hmono
+      (Ne.symm (thirdColour_ne_left hak)) huv hlive hout⟩
+
 end StarNormalForm
