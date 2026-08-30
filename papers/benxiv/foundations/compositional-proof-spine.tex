@@ -2645,6 +2645,70 @@ matching of strictly lower defect, or extract the strict exact-support
 replacement used by the reductive descent.  Producing an arbitrary new
 matching, without controlling this potential, is not enough.
 
+The potential has an exact quotient interpretation which keeps the
+multigraph information that a simple quotient would lose.
+
+\begin{theorem}[residual defect is even quotient oddness]
+\label{thm:residual-defect-quotient-oddness}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualOddness.colorable_two_iff_even_card_of_connected_degree_two}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualOddness.connectedComponent_colorable_two_iff_even_supp}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualOddness.residualDefect_eq_oddResidualQuotientVertices_ncard}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualOddness.residualDefect_even}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualOddness.two_le_residualDefect_of_pos}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualOddness.exists_exchangeRigid_residualOddness_of_cubic_edgeBridgeFree}
+Let \(G\) be a finite cubic simple graph and let \(\sigma\) be a supported
+perfect matching.  Contract every connected component of \(R_\sigma\) to one
+quotient vertex, but retain the original vertices as incident darts and pair
+those darts by the involution \(\sigma\).  Thus loops and parallel quotient
+edges remain distinct.  The degree of a quotient vertex is the number of
+original vertices in its residual component.  Then
+\[
+ d_G(\sigma)
+ =\#\{q:q\text{ is a quotient vertex of odd degree}\},
+ \qquad 2\mid d_G(\sigma).
+\]
+In particular, \(d_G(\sigma)>0\) implies \(d_G(\sigma)\geq2\).
+
+If \(G\) is bridge-free and not Tait colourable, one can moreover choose
+\(\sigma\) so that \(d_G(\sigma)\geq2\) and every exchange with a supported
+perfect matching on a set closed under both partner involutions has residual
+defect at least \(d_G(\sigma)\).
+\end{theorem}
+
+\begin{proof}
+Each residual component is a finite connected graph of degree two, hence a
+cycle.  Choose a cyclic listing \(v_0,\ldots,v_{m-1}\).  If \(m\) is even,
+colour \(v_i\) by the parity of \(i\); consecutive entries, including the
+wraparound pair, receive opposite colours.  Conversely, if the cycle is
+bipartite, its degree-two Hall condition supplies a perfect matching.  The
+partner involution partitions its vertex set into pairs, so \(m\) is even.
+Therefore a residual component is non-bipartite exactly when its support has
+odd cardinality.
+
+After contraction, the darts incident with the quotient vertex represented by
+a residual component \(C\) are exactly the vertices of \(C\).  Hence its
+degree, counted with multiplicity, is \(|C|\), and the definition of
+\(d_G(\sigma)\) gives the first displayed equality.  The component supports
+partition \(V(G)\).  Pairing every original vertex with its
+\(\sigma\)-partner shows that \(|V(G)|\) is even; equivalently, the usual
+handshaking parity argument shows that the number of odd quotient degrees is
+even.  A positive even natural number is at least two.
+
+Finally choose a supported matching of minimum residual defect by
+Theorem~\ref{thm:residual-defect-descent}.  In a Tait counterexample its defect
+is positive, hence at least two by the preceding paragraph.  An exchange on a
+set closed under both partner involutions is again graph-supported.  Since the
+chosen matching minimizes defect among all supported matchings, none of those
+exchanges can decrease it.
+\end{proof}
+
+This theorem identifies the exact high-width obstruction: an even, nonempty
+set of odd residual cycles joined by the matching-dart incidence, at a global
+minimum under all supported exchanges.  Parity alone does not move this
+minimum.  The missing wall argument must use planar placement and arbitrary
+attachments to produce a strict decrease or an exact-support replacement; it
+cannot be a purely local alternating-cycle identity.
+
 The exact effect of a local matching exchange can be stated without any
 monotonicity assumption.
 
