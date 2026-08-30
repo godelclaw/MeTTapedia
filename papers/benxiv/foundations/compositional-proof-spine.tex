@@ -2560,6 +2560,46 @@ section with the support equality required by the physical splice, or turn
 failure of a section into a bounded cut, a strict replacement, or a global
 invariant contradicting a least counterexample.
 
+\begin{corollary}[complete boundary relational residue]
+\label{cor:ordered-mesh-complete-boundary-residue}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshBoundaryHolonomyResidue.boundarySuccessor_rootPredecessor}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshBoundaryHolonomyResidue.nonempty_boundaryWitnessSection_iff_fixedPoint}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshBoundaryHolonomyResidue.hasBoundaryWitnessObstruction_iff_pairwise_and_residue}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshBoundaryHolonomyResidue.boundaryWitnessObstruction_residue}
+Cut the complete boundary immediately before its north-west first step.  Let
+(H) be the relation on proper colourings at that root obtained by imposing
+every successor relation except the cut relation on one boundary-wide family,
+and then using the cut relation from the last west-side colouring to a second
+root colouring.  A boundary section exists if and only if (H) has a fixed
+point.
+
+Consequently, if a chosen boundary-state assignment has no section, then all
+of its one-step relations are nevertheless nonempty and exactly one of the
+following global residues occurs:
+\begin{enumerate}
+\item (H) is empty: the one-step witnesses cannot be concatenated into even
+  one complete clockwise return;
+\item the domain and range of (H) differ;
+\item (H) branches forward or backward; or
+\item (H) is the graph of a fixed-point-free permutation on its nonempty
+  active support.
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+The final west-side step has the last west index, so its successor is the
+north-west root.  A section supplies a fixed point of (H) by cutting its
+family there.  Conversely, a fixed-point witness for (H) glues the two root
+colourings and satisfies every successor relation, hence is a section.
+
+If no fixed point exists, either (H) is empty or every realised return moves
+its starting colouring.  In the latter case compare the active domain and
+range.  If they differ, the second residue holds.  If they agree but either
+forward or backward uniqueness fails, the third holds.  Otherwise the unique
+successor map is a bijection of the common active support, and the absence of
+a fixed point gives the fourth residue.
+\end{proof}
+
 Only one implication is claimed:
 \[
  \{\hbox{states with shared corner witnesses}\}
