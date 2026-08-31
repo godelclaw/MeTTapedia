@@ -7376,6 +7376,35 @@ therefore supplies the bounded cyclic edge cut.  Finally,
 $2(s+1)(1+1)^2=8(s+1)$.
 \end{proof}
 
+\begin{corollary}[pointwise geometric sweep alternatives across the mesh]
+\label{cor:pointwise-mesh-residual-sweep-alternative}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.MeshResidualReturnSweep.GeometricSweepReceipt.ofTwoSector}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.MeshResidualReturnSweep.exists_geometricSweepReceipt_at_every_globalMeshStep}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.MeshResidualReturnSweep.exists_minimizer_with_geometricSweep_at_every_internal_row_junction}
+For one ordered injective mesh in a graph-backed least counterexample, choose
+the common minimum-residual-defect matching of
+Corollary~\ref{cor:global-residual-geometry-provenance}.  Every global mesh
+step is either central for this matching or carries its provenanced geometric
+sweep alternative from
+Corollary~\ref{cor:geometric-residual-return-sweep-alternative}, at every
+requested spacing.  Moreover, at each internal row junction at least one of
+the immediately incoming and outgoing arms carries this alternative.
+\end{corollary}
+
+\begin{proof}
+At a noncentral global step, retain the existing provenanced two-sector
+receipt and apply the single-site geometric alternative to its facial bond.
+This changes neither the site nor its supported matching, selected deletion
+colouring, or return pairing.  At an internal row junction the common matching
+cannot contain both incident row edges, because their outer endpoints are
+distinct while their shared branch vertex has a unique partner.  Therefore
+at least one arm is noncentral and carries the upgraded receipt.
+
+The conclusion is pointwise.  It does not choose the cut horn or the repeated
+state horn uniformly, nor does it assert that choices made at adjacent
+junctions define nested or disjoint shores.
+\end{proof}
+
 For the route, the two Kempe families suggest the matching stacks and capped
 face progress supplies additional finite labels.  However those matchings
 belong to a colouring state, whereas the physical graph surgery must be
