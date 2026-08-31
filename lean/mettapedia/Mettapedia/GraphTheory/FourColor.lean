@@ -993,6 +993,8 @@ import Mettapedia.GraphTheory.FourColor.Compositional.DeletionPathConnectivity
 import Mettapedia.GraphTheory.FourColor.Compositional.DeletionPathConnectivityState
 import Mettapedia.GraphTheory.FourColor.Compositional.NoncrossingPairingSweep
 import Mettapedia.GraphTheory.FourColor.Compositional.PhasedNoncrossingSweep
+import Mettapedia.GraphTheory.FourColor.Compositional.RestrictedNoncrossingSweep
+import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnCarrierSweep
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweep
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnCyclicCut
 import Mettapedia.GraphTheory.FourColor.Compositional.ReturnSeparatorLength
