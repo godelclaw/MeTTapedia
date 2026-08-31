@@ -3243,14 +3243,17 @@ behind a fresh existential choice.
 \begin{corollary}[proper residual geometry at every internal mesh junction]
 \label{cor:internal-mesh-junction-proper-residual-site}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.MeshJunctionAlternatingGeometry.incoming_first_ne_outgoing_second}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.MeshJunctionAlternatingGeometry.not_both_arms_central}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.MeshJunctionAlternatingGeometry.exists_minimizer_with_proper_site_at_every_internal_row_junction}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.MeshJunctionAlternatingGeometry.exists_minimizer_with_twoSector_site_at_every_internal_row_junction}
 Let an ordered injective mesh have at least two boundary columns in addition
 to its interior columns.  One common minimum-residual-defect matching
 \(\sigma\) can be chosen so that, at every interior branch vertex of every
 row, at least one of the incoming and outgoing row steps carries a proper
 alternating-component receipt.  Its second matching is the absent-colour
 completion of the globally selected deletion colouring at that physical
-step.
+step.  The same arm can be chosen with the complete facial-bond, physical
+formation, canonical return, face-shore, and two-sector noncrossing receipt.
 \end{corollary}
 
 \begin{proof}
@@ -3264,6 +3267,9 @@ Corollary~\ref{cor:global-residual-pairing-provenance} to that step: its
 globally selected deletion colouring supplies the supported completed
 matching, and the noncentral alternative supplies the provenanced proper
 alternating component.
+The provenance-preserving local geometry construction then carries this same
+arm, without another choice of matching or deletion colouring, to the full
+two-sector return receipt.
 \end{proof}
 
 \begin{corollary}[colouring provenance survives the residual geometry]

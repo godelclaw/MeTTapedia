@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.Compositional.ResidualSiteProvenance
+import Mettapedia.GraphTheory.FourColor.Compositional.ResidualSiteGeometry
 
 /-!
 # Alternating geometry at internal mesh junctions
@@ -17,6 +17,7 @@ nor compatibility between the deletion colourings at different steps.
 namespace Mettapedia.GraphTheory.FourColor.Compositional.MeshJunctionAlternatingGeometry
 
 open Compositional.ResidualSiteProvenance
+open Compositional.ResidualSiteGeometry
 open GoertzelV24MeshIsoperimetry
 open GoertzelV24OrderedInjectiveMeshWidthFactorization
 open GoertzelV24OrderedMeshGlobalSites
@@ -153,6 +154,37 @@ theorem incoming_first_ne_outgoing_second
   have hpositive := internalRowPosition_pos rotation ordered row column
   omega
 
+/-- A pairing cannot be central on both arms of an internal row junction. -/
+theorem not_both_arms_central
+    (sigma : Pairing V) (row : Fin a) (column : Fin b) :
+    ¬ (sigma.partner
+          (globalFirstVertex rotation ordered
+            (incomingGlobalStep rotation ordered row column)) =
+          globalSecondVertex rotation ordered
+            (incomingGlobalStep rotation ordered row column) ∧
+        sigma.partner
+          (globalFirstVertex rotation ordered
+            (outgoingGlobalStep rotation ordered row column)) =
+          globalSecondVertex rotation ordered
+            (outgoingGlobalStep rotation ordered row column)) := by
+  rintro ⟨hIncomingCentral, hOutgoingCentral⟩
+  have hAtBranchFromIncoming :
+      sigma.partner (ordered.toMesh.branch row (internalColumn column)) =
+        globalFirstVertex rotation ordered
+          (incomingGlobalStep rotation ordered row column) := by
+    rw [← incomingGlobalStep_second_eq_branch
+      rotation ordered row column, ← hIncomingCentral,
+      sigma.partner_partner]
+  have hAtBranchFromOutgoing :
+      sigma.partner (ordered.toMesh.branch row (internalColumn column)) =
+        globalSecondVertex rotation ordered
+          (outgoingGlobalStep rotation ordered row column) := by
+    rw [← outgoingGlobalStep_first_eq_branch
+      rotation ordered row column]
+    exact hOutgoingCentral
+  exact incoming_first_ne_outgoing_second rotation ordered row column
+    (hAtBranchFromIncoming.symm.trans hAtBranchFromOutgoing)
+
 /-- One common residual-defect minimizer has a provenanced proper
 alternating component on at least one arm of every internal row junction.
 
@@ -178,23 +210,39 @@ theorem exists_minimizer_with_proper_site_at_every_internal_row_junction :
       hIncomingCentral | hIncomingProper
   · rcases hsite (outgoingGlobalStep rotation ordered row column) with
         hOutgoingCentral | hOutgoingProper
-    · exfalso
-      have hAtBranchFromIncoming :
-          sigma.partner (ordered.toMesh.branch row (internalColumn column)) =
-            globalFirstVertex rotation ordered
-              (incomingGlobalStep rotation ordered row column) := by
-        rw [← incomingGlobalStep_second_eq_branch
-          rotation ordered row column, ← hIncomingCentral,
-          sigma.partner_partner]
-      have hAtBranchFromOutgoing :
-          sigma.partner (ordered.toMesh.branch row (internalColumn column)) =
-            globalSecondVertex rotation ordered
-              (outgoingGlobalStep rotation ordered row column) := by
-        rw [← outgoingGlobalStep_first_eq_branch
-          rotation ordered row column]
-        exact hOutgoingCentral
-      exact incoming_first_ne_outgoing_second rotation ordered row column
-        (hAtBranchFromIncoming.symm.trans hAtBranchFromOutgoing)
+    · exact False.elim
+        (not_both_arms_central rotation ordered sigma row column
+          ⟨hIncomingCentral, hOutgoingCentral⟩)
+    · exact Or.inr hOutgoingProper
+  · exact Or.inl hIncomingProper
+
+/-- The proper arm at every internal row junction carries the complete
+formation, physical return, face-shore, and two-sector noncrossing geometry,
+with its deletion-colouring provenance unchanged. -/
+theorem exists_minimizer_with_twoSector_site_at_every_internal_row_junction :
+    ∃ hG : HasCubicIncidentEdgeTriples G,
+      ∃ sigma : Pairing V,
+        sigma.SupportedBy G ∧
+        2 ≤ residualDefect G sigma ∧
+        ∀ (row : Fin a) (column : Fin b),
+          Nonempty (ProvenancedTwoSectorReturnReceipt
+            rotation minimal ordered hG sigma
+            (incomingGlobalStep rotation ordered row column)) ∨
+          Nonempty (ProvenancedTwoSectorReturnReceipt
+            rotation minimal ordered hG sigma
+            (outgoingGlobalStep rotation ordered row column)) := by
+  obtain ⟨hG, sigma, hSigma, hdefect, hsite⟩ :=
+    exists_provenancedTwoSectorReturnReceipt_at_every_globalMeshStep
+      rotation minimal ordered
+  refine ⟨hG, sigma, hSigma, hdefect, ?_⟩
+  intro row column
+  rcases hsite (incomingGlobalStep rotation ordered row column) with
+      hIncomingCentral | hIncomingProper
+  · rcases hsite (outgoingGlobalStep rotation ordered row column) with
+        hOutgoingCentral | hOutgoingProper
+    · exact False.elim
+        (not_both_arms_central rotation ordered sigma row column
+          ⟨hIncomingCentral, hOutgoingCentral⟩)
     · exact Or.inr hOutgoingProper
   · exact Or.inl hIncomingProper
 
