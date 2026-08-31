@@ -14,6 +14,7 @@ strictly nested return separator.
 namespace Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnComplementaryCycle
 
 open AlternatingSiteGeometry
+open GoertzelV24ResidualReturnArc
 open GoertzelV24ResidualReturnCycleOrder
 open GoertzelV24ResidualReturnSectorNoncrossing
 open MatchingParity
@@ -355,6 +356,25 @@ theorem mem_carrier_of_mem_complementaryCycleInterval_support
   rw [site.cycle_support_eq] at hinCycleFinset
   exact hinCycleFinset
 
+/-- Every edge of the complementary carrier interval is an edge of the full
+carrier cycle. -/
+theorem mem_cycle_edges_of_mem_complementaryCycleInterval_edges
+    (sigma : Pairing V) {first second : V}
+    (site : ProperAlternatingComponentWitness G sigma first second)
+    {pairing : Pairing (CyclePosition sigma site)}
+    (chord : OrderedReturnChord pairing) {edge : Sym2 V}
+    (hedge : edge ∈ (complementaryCycleInterval sigma site chord).edges) :
+    edge ∈ site.cycle.edges := by
+  unfold complementaryCycleInterval at hedge
+  dsimp only at hedge
+  let left := (cycleVertexOrder sigma site chord.left).1
+  have hleft : left ∈ site.cycle.support :=
+    cycleVertexOrder_mem_cycle_support sigma site chord.left
+  let rotated := site.cycle.rotate left hleft
+  have hrotated : edge ∈ rotated.edges := by
+    exact rotated.edges_dropUntil_subset_edges _ hedge
+  exact (site.cycle.rotate_edges left hleft).mem_iff.mp hrotated
+
 /-- Close a physical return along the complementary carrier arc. -/
 def complementaryReturnCycle
     (hG : HasCubicIncidentEdgeTriples G)
@@ -367,6 +387,64 @@ def complementaryReturnCycle
       (cycleVertexOrder sigma site chord.left).1 :=
   (orderedChordAmbientPath hG sigma hSigma site chord).append
     (complementaryCycleInterval sigma site chord)
+
+/-- The complementary closure's nondegeneracy condition is automatic in a
+simple graph.  If both constituent paths had one edge, they would be the
+same edge between the same endpoints; but the physical return lies in the
+residual graph while the complementary interval lies on the carrier. -/
+theorem complementaryReturnCycle_length_alternative
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingComponentWitness G sigma first second)
+    (chord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site)) :
+    1 < (orderedChordAmbientPath hG sigma hSigma site chord).length ∨
+      1 < (complementaryCycleInterval sigma site chord).length := by
+  let physical := orderedChordAmbientPath hG sigma hSigma site chord
+  let carrier := complementaryCycleInterval sigma site chord
+  have hphysicalNotNil : ¬physical.Nil := by
+    simpa only [physical] using
+      orderedChordAmbientPath_not_nil hG sigma hSigma site chord
+  have hcarrierNotNil : ¬carrier.Nil := by
+    dsimp only [carrier]
+    apply SimpleGraph.Walk.not_nil_of_ne
+    intro heq
+    apply ne_of_lt chord.left_lt_right
+    apply (cycleVertexOrder sigma site).injective
+    exact Subtype.ext heq.symm
+  by_contra hlong
+  simp only [not_or, not_lt] at hlong
+  have hphysicalLength : physical.length = 1 := by
+    have hpositive := SimpleGraph.Walk.not_nil_iff_lt_length.mp hphysicalNotNil
+    have hle : physical.length ≤ 1 := by
+      simpa only [physical] using hlong.1
+    omega
+  have hcarrierLength : carrier.length = 1 := by
+    have hpositive := SimpleGraph.Walk.not_nil_iff_lt_length.mp hcarrierNotNil
+    have hle : carrier.length ≤ 1 := by
+      simpa only [carrier] using hlong.2
+    omega
+  have heq : physical = carrier.reverse :=
+    SimpleGraph.Walk.eq_of_length_le_one hlong.1 (by
+      rw [SimpleGraph.Walk.length_reverse, hcarrierLength])
+  let edge := (physical.firstDart hphysicalNotNil).edge
+  have hedgePhysical : edge ∈ physical.edges := by
+    simpa only [edge, physical.edge_firstDart] using
+      physical.mk_start_snd_mem_edges hphysicalNotNil
+  have hedgeCarrier : edge ∈ carrier.edges := by
+    rw [heq, SimpleGraph.Walk.edges_reverse, List.mem_reverse] at hedgePhysical
+    exact hedgePhysical
+  have hedgeCycle : edge ∈ site.cycle.edges := by
+    exact mem_cycle_edges_of_mem_complementaryCycleInterval_edges
+      sigma site chord hedgeCarrier
+  have hedgeReturn : edge ∈
+      (orderedReturnPath hG sigma hSigma site chord.left).edges := by
+    simpa only [physical, orderedChordAmbientPath, orderedAmbientReturnPath,
+      SimpleGraph.Walk.edges_copy,
+      SimpleGraph.Walk.edges_mapLe_eq_edges] using hedgePhysical
+  exact (orderedReturnPath_edge_not_cycle hG sigma hSigma site
+    chord.left hedgeReturn) hedgeCycle
 
 /-- The complementary closure is a simple cycle whenever one of its two
 constituent paths has more than one edge.  The disjointness proof uses only

@@ -34,8 +34,8 @@ variable {V : Type u} [Fintype V] [DecidableEq V]
 
 /-- Two strictly nested physical returns produce a cyclic edge cut whose
 width is bounded by three times the number of vertices on the inner
-separator.  The only length hypotheses say that the two displayed closed
-walks are genuine simple cycles. -/
+separator.  The single length hypothesis says that the displayed inner
+separator has an interior edge; outer nondegeneracy is automatic. -/
 theorem exists_bounded_cyclicEdgeCut_of_strictly_nested_returns
     (rotation : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
@@ -47,10 +47,7 @@ theorem exists_bounded_cyclicEdgeCut_of_strictly_nested_returns
       (orderedSiteReturnPairing hG sigma hSigma site))
     (hleft : outer.left < inner.left)
     (hright : inner.right < outer.right)
-    (hinnerLong : 1 < inner.right.val - inner.left.val)
-    (houterLong :
-      1 < (orderedChordAmbientPath hG sigma hSigma site outer).length ∨
-        1 < (complementaryCycleInterval sigma site outer).length) :
+    (hinnerLong : 1 < inner.right.val - inner.left.val) :
     let separator := orderedReturnSeparator hG sigma hSigma site inner
     ∃ cut : ExactFaceCut rotation.toRotationSystem
         (fun edge : G.edgeSet => edge.1 ∈ separator.edges) F2,
@@ -67,7 +64,9 @@ theorem exists_bounded_cyclicEdgeCut_of_strictly_nested_returns
       hG sigma hSigma site inner hinnerLong
   have houtside : outsideCycle.IsCycle := by
     simpa only [outsideCycle] using complementaryReturnCycle_isCycle
-      hG sigma hSigma site outer houterLong
+      hG sigma hSigma site outer
+        (complementaryReturnCycle_length_alternative
+          hG sigma hSigma site outer)
   have hdisjoint : outsideCycle.support.Disjoint separator.support := by
     simpa only [outsideCycle, separator] using
       complementaryReturnCycle_support_disjoint_orderedReturnSeparator
