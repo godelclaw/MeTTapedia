@@ -7163,6 +7163,9 @@ transported back to literal equality of the local letter and every stack.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweep.exists_deep_return_shore_or_distinct_eq_rawState}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.PhasedNoncrossingSweep.SweepData.exists_deep_family_or_spaced_eq_rawState}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweep.exists_deep_return_shore_or_spaced_eq_rawState}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.NoncrossingPairingSweep.openArcs_pairwise_strictlyNested}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweep.exists_long_strictlyNested_return_family_of_deep}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweep.exists_long_strictlyNested_return_family_or_spaced_eq_rawState}
 Let a proper alternating site in a graph-backed least counterexample have
 $n$ cyclic positions and the physical residual-return receipt of
 Lemma~\ref{lem:residual-return-two-sector-noncrossing}.  Fix $D\geq0$.
@@ -7184,6 +7187,11 @@ then the deep-stack alternative holds, or there are positions $i<j$ with
 \]
 which have the same shore label, the same two return stacks, and the same
 position phase modulo $s+1$.
+
+The deep alternative is literal: it supplies more than $D$ canonical
+residual-return chords on one shore, all open across one common cut.  In
+their increasing-left-endpoint order, the right endpoints strictly decrease;
+hence these chords are pairwise strictly nested.
 \end{corollary}
 
 \begin{proof}
@@ -7202,6 +7210,12 @@ For the spaced form, augment the local letter by the cyclic coordinate
 modulo $s+1$.  This multiplies the state count by $s+1$.  Equality of two
 phases says $i\equiv j\pmod{s+1}$; since $i<j$, their difference is a
 positive multiple of $s+1$ and hence at least $s+1$.
+
+In the deep branch, filter the selected shore's canonical chord list by the
+arcs open across the witnessing cut.  Its length is exactly the corresponding
+stack depth.  Left endpoints remain strictly increasing under filtering, and
+noncrossing plus endpoint-disjointness forces right endpoints to be strictly
+decreasing.  Thus the filtered list is the asserted explicit nested family.
 
 The formal adapter constructs the sorted arc lists directly from the
 fixed-point-free return involution.  Its endpoint-disjointness proof uses

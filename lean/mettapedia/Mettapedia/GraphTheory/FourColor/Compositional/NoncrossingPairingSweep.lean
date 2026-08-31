@@ -23,6 +23,29 @@ open MatchingParity
 
 universe u
 
+/-- The arcs open across one cut of a noncrossing matching are strictly
+nested in their left-endpoint order. -/
+theorem openArcs_pairwise_strictlyNested {K : Type u} {n : Nat}
+    (matching : NoncrossingMatching K n) (cut : Fin n) :
+    (matching.openArcs cut).Pairwise fun outer inner =>
+      outer.left < inner.left ∧ inner.right < outer.right := by
+  have hleft : (matching.openArcs cut).Pairwise fun outer inner =>
+      outer.left < inner.left :=
+    matching.leftOrdered.filter _
+  have hright : (matching.openArcs cut).Pairwise fun outer inner =>
+      inner.right < outer.right :=
+    matching.openArcs_pairwise_right_decreasing cut
+  rw [List.pairwise_iff_get]
+  intro first second hfirstSecond
+  exact ⟨hleft.rel_get_of_lt hfirstSecond,
+    hright.rel_get_of_lt hfirstSecond⟩
+
+/-- Stack depth is exactly the number of arcs open across the cut. -/
+theorem stackAt_length_eq_openArcs_length {K : Type u} {n : Nat}
+    (matching : NoncrossingMatching K n) (cut : Fin n) :
+    (matching.stackAt cut).length = (matching.openArcs cut).length := by
+  simp [NoncrossingMatching.stackAt]
+
 /-- The smaller endpoints of the selected chords of a pairing. -/
 def canonicalLeftEndpoints {n : Nat} (pairing : Pairing (Fin n))
     (selected : Fin n → Prop) [DecidablePred selected] : Finset (Fin n) :=
