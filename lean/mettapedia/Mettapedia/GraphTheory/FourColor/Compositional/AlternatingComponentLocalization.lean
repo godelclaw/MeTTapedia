@@ -249,6 +249,148 @@ theorem card_provenanced_alternatingGraph_edgeDisagreement_le
     (pairingProvenance source).site.data
     (pairingProvenance target).site.data
 
+/-- Two consecutive compatible residual transitions accumulate at most twenty
+edge disagreements between their endpoint alternating graphs. -/
+theorem card_provenanced_alternatingGraph_edgeDisagreement_le_twenty
+    {rotation : Data G}
+    {minimal : GraphBackedVertexMinimalTaitCounterexample rotation}
+    {ordered : OrderedInjectiveMesh
+      (toMultigraph rotation.toRotationSystem) a b}
+    {hG : HasCubicIncidentEdgeTriples G}
+    {sigma : Pairing V}
+    {sourceStep middleStep targetStep : GlobalMeshStep rotation ordered}
+    (source : ProvenancedTwoSectorReturnReceipt
+      rotation minimal ordered hG sigma sourceStep)
+    (middle : ProvenancedTwoSectorReturnReceipt
+      rotation minimal ordered hG sigma middleStep)
+    (target : ProvenancedTwoSectorReturnReceipt
+      rotation minimal ordered hG sigma targetStep)
+    (hsourceMiddle :
+      (globalMatchingOverlapState (pairingProvenance source)
+        (pairingProvenance middle)).Compatible)
+    (hmiddleTarget :
+      (globalMatchingOverlapState (pairingProvenance middle)
+        (pairingProvenance target)).Compatible) :
+    (SimpleGraph.edgeDisagreementFinset
+      (alternatingGraph sigma (alternatingSite source).tau)
+      (alternatingGraph sigma (alternatingSite target).tau)).card ≤ 20 := by
+  calc
+    (SimpleGraph.edgeDisagreementFinset
+      (alternatingGraph sigma (alternatingSite source).tau)
+      (alternatingGraph sigma (alternatingSite target).tau)).card ≤
+        (SimpleGraph.edgeDisagreementFinset
+          (alternatingGraph sigma (alternatingSite source).tau)
+          (alternatingGraph sigma (alternatingSite middle).tau)).card +
+        (SimpleGraph.edgeDisagreementFinset
+          (alternatingGraph sigma (alternatingSite middle).tau)
+          (alternatingGraph sigma (alternatingSite target).tau)).card :=
+      SimpleGraph.card_edgeDisagreementFinset_triangle _ _ _
+    _ ≤ 10 + 10 := Nat.add_le_add
+      (card_provenanced_alternatingGraph_edgeDisagreement_le
+        source middle hsourceMiddle)
+      (card_provenanced_alternatingGraph_edgeDisagreement_le
+        middle target hmiddleTarget)
+    _ = 20 := by omega
+
+/-- A dependent bundle that lets residual-return receipts from different mesh
+steps occur in one finite chain. -/
+abbrev BundledResidualReturnReceipt
+    {rotation : Data G}
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (ordered : OrderedInjectiveMesh
+      (toMultigraph rotation.toRotationSystem) a b)
+    (hG : HasCubicIncidentEdgeTriples G) (sigma : Pairing V) :=
+  Sigma fun step : GlobalMeshStep rotation ordered =>
+    ProvenancedTwoSectorReturnReceipt
+      rotation minimal ordered hG sigma step
+
+namespace BundledResidualReturnReceipt
+
+/-- The complete alternating graph carried by a bundled residual receipt. -/
+def toAlternatingGraph
+    {rotation : Data G}
+    {minimal : GraphBackedVertexMinimalTaitCounterexample rotation}
+    {ordered : OrderedInjectiveMesh
+      (toMultigraph rotation.toRotationSystem) a b}
+    {hG : HasCubicIncidentEdgeTriples G} {sigma : Pairing V}
+    (receipt : BundledResidualReturnReceipt minimal ordered hG sigma) :
+    SimpleGraph V :=
+  alternatingGraph sigma (alternatingSite receipt.2).tau
+
+/-- Consecutive bundled receipts are compatible when their finite
+matching-overlap state is compatible. -/
+def Compatible
+    {rotation : Data G}
+    {minimal : GraphBackedVertexMinimalTaitCounterexample rotation}
+    {ordered : OrderedInjectiveMesh
+      (toMultigraph rotation.toRotationSystem) a b}
+    {hG : HasCubicIncidentEdgeTriples G} {sigma : Pairing V}
+    (source target : BundledResidualReturnReceipt minimal ordered hG sigma) :
+    Prop :=
+  (globalMatchingOverlapState (pairingProvenance source.2)
+    (pairingProvenance target.2)).Compatible
+
+/-- Every compatible chain of residual receipts has total alternating-graph
+edge-disagreement cost at most ten times its number of transitions. -/
+theorem edgeDisagreementPathCost_le
+    {rotation : Data G}
+    {minimal : GraphBackedVertexMinimalTaitCounterexample rotation}
+    {ordered : OrderedInjectiveMesh
+      (toMultigraph rotation.toRotationSystem) a b}
+    {hG : HasCubicIncidentEdgeTriples G} {sigma : Pairing V}
+    (receipts : List
+      (BundledResidualReturnReceipt minimal ordered hG sigma))
+    (hchain : receipts.IsChain Compatible) :
+    SimpleGraph.edgeDisagreementPathCost
+        (receipts.map toAlternatingGraph) ≤
+      (receipts.length - 1) * 10 := by
+  have hmapped :
+      (receipts.map toAlternatingGraph).IsChain fun source target =>
+        (SimpleGraph.edgeDisagreementFinset source target).card ≤ 10 := by
+    induction hchain with
+    | nil => exact .nil
+    | singleton receipt => exact .singleton _
+    | cons_cons hcompatible _ ih =>
+        exact .cons_cons
+          (card_provenanced_alternatingGraph_edgeDisagreement_le
+            _ _ hcompatible)
+          ih
+  simpa using
+    SimpleGraph.edgeDisagreementPathCost_le 10
+      (receipts.map toAlternatingGraph) hmapped
+
+/-- Endpoint alternating graphs of a compatible residual-receipt chain with
+`middle.length + 1` transitions disagree on at most
+`10 * (middle.length + 1)` edges. -/
+theorem card_endpoint_edgeDisagreement_le
+    {rotation : Data G}
+    {minimal : GraphBackedVertexMinimalTaitCounterexample rotation}
+    {ordered : OrderedInjectiveMesh
+      (toMultigraph rotation.toRotationSystem) a b}
+    {hG : HasCubicIncidentEdgeTriples G} {sigma : Pairing V}
+    (source target :
+      BundledResidualReturnReceipt minimal ordered hG sigma)
+    (middle : List
+      (BundledResidualReturnReceipt minimal ordered hG sigma))
+    (hchain : (source :: middle ++ [target]).IsChain Compatible) :
+    (SimpleGraph.edgeDisagreementFinset
+      source.toAlternatingGraph target.toAlternatingGraph).card ≤
+        (middle.length + 1) * 10 := by
+  calc
+    (SimpleGraph.edgeDisagreementFinset
+      source.toAlternatingGraph target.toAlternatingGraph).card ≤
+        SimpleGraph.edgeDisagreementPathCost
+          ((source :: middle ++ [target]).map toAlternatingGraph) := by
+      simpa using
+        SimpleGraph.card_edgeDisagreementFinset_le_pathCost
+          source.toAlternatingGraph target.toAlternatingGraph
+          (middle.map toAlternatingGraph)
+    _ ≤ ((source :: middle ++ [target]).length - 1) * 10 :=
+      edgeDisagreementPathCost_le (source :: middle ++ [target]) hchain
+    _ = (middle.length + 1) * 10 := by simp
+
+end BundledResidualReturnReceipt
+
 /-- Every source distinguished-cycle edge either survives in the target
 alternating graph or belongs to one of the two five-edge deletion
 footprints. -/

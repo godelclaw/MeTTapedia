@@ -3372,6 +3372,9 @@ alternating components.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingComponentLocalization.provenanced_alternatingGraphs_agree_outside_deletionFootprints}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingComponentLocalization.provenanced_alternatingGraphs_delete_overlapFootprints_eq}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingComponentLocalization.card_provenanced_alternatingGraph_edgeDisagreement_le}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingComponentLocalization.card_provenanced_alternatingGraph_edgeDisagreement_le_twenty}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingComponentLocalization.BundledResidualReturnReceipt.edgeDisagreementPathCost_le}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingComponentLocalization.BundledResidualReturnReceipt.card_endpoint_edgeDisagreement_le}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingComponentLocalization.source_cycle_edge_mem_target_or_deletionFootprints}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingComponentLocalization.source_cycle_common_arc_component_eq_in_target}
 For an adjacent-pair deletion let its \emph{deletion footprint} be the
@@ -3387,7 +3390,9 @@ distinguished alternating cycle at the first site either belongs to the
 alternating graph at the second site or lies in one of the two deletion
 footprints.  Every arc of the first cycle avoiding both footprints therefore
 has its endpoints in one connected component of the second alternating
-graph.
+graph.  More generally, along a chain of (r) consecutively compatible
+receipts, the first and last alternating graphs disagree on at most (10r)
+edge values.
 \end{lemma}
 
 \begin{proof}
@@ -3402,7 +3407,10 @@ in the two symmetric-difference graphs.  Extensionality after deleting the
 footprint gives equality of the remaining graphs.  The generic finite-graph
 localization lemma says that if deleting a finite edge set makes two graphs
 equal, their edge-set disagreement is contained in that set; the cardinal
-bound is therefore ten.  Applying the same
+bound is therefore ten.  Edge disagreement is a symmetric difference, so its
+cardinality satisfies the triangle inequality.  Iterating this inequality
+along a dependently bundled chain of residual receipts gives the (10r)
+endpoint bound.  Applying the same
 edgewise statement along a walk contained in the first alternating cycle
 transfers that walk to the second alternating graph; its endpoints are thus
 reachable in one connected component.  The statement deliberately allows
