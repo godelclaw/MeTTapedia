@@ -47,6 +47,27 @@ variable {V E A : Type*} [Fintype V] [DecidableEq V]
   [Fintype E] [DecidableEq E]
   {RS : RotationSystem V E} {selected : E → Prop}
 
+/-- Over `F2`, the two face labels adjacent to a dart sum to one exactly
+when its primal edge belongs to the cut.  This is the additive form of
+`ExactFaceCut.separates`. -/
+theorem label_add_opposite_eq_one_iff_selected
+    (cut : ExactFaceCut RS selected F2) (dart : RS.D) :
+    cut.label (dartOrbitFace RS dart) +
+        cut.label (dartOrbitFace RS (RS.alpha dart)) = 1 ↔
+      selected (RS.edgeOf dart) := by
+  rw [f2_add_eq_one_iff_ne]
+  exact cut.separates dart
+
+/-- The same binary jump law expressed between a dart face and the face
+following the dart in the vertex rotation. -/
+theorem label_add_rotation_eq_one_iff_selected
+    (cut : ExactFaceCut RS selected F2) (dart : RS.D) :
+    cut.label (dartOrbitFace RS dart) +
+        cut.label (dartOrbitFace RS (RS.rho dart)) = 1 ↔
+      selected (RS.edgeOf dart) := by
+  rw [← dartOrbitFace_alpha_eq_dartOrbitFace_rho RS dart]
+  exact cut.label_add_opposite_eq_one_iff_selected dart
+
 /-- Crossing an unselected edge preserves the face label. -/
 theorem label_eq_opposite_of_not_selected
     (cut : ExactFaceCut RS selected A) (dart : RS.D)

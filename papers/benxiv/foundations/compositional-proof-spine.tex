@@ -3142,14 +3142,11 @@ chords.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnArc.orderedReturnPath_edge_not_cycle}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnArc.eq_start_or_eq_finish_of_mem_orderedReturnPath_support_of_mem_carrier}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnArc.orderedReturnPath_support_disjoint_of_chord_ne}
-\Sverified{Mettapedia.GraphTheory.Embedding.exists_exactFaceCut_of_closedTrail}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnSectorNoncrossing.orderedReturnSeparator_isCycle}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnSectorNoncrossing.exactFaceCut_orderedReturnSeparator_of_minimal}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnSectorNoncrossing.orderedChordAmbientPath_support_disjoint_of_ne}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnSectorNoncrossing.orderedChordAmbientPath_edge_not_orderedReturnSeparator_of_ne}
-\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnSectorNoncrossing.ExactFaceCut.label_eq_otherChord_thirdDarts}
-\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnSectorNoncrossing.OrderedReturnChord.interval_long_of_crosses}
-\Sprose
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnSectorNoncrossing.not_crosses_of_orderedReturnShore_eq_of_minimal}
 In the noncentral alternative above, let \(\chi_e\in\{0,1\}\) be the
 face-shore label on the canonical chords of \(\bar\mu_e\).  For each
 \(s\in\{0,1\}\), the chords labelled \(s\) are noncrossing in the cyclic
@@ -3160,35 +3157,32 @@ be noncrossing.
 \end{lemma}
 
 \begin{proof}
-Use the connected orientable cellular surface associated with the spherical
-rotation system.  Its Euler characteristic is two, so this surface is a
-sphere, and
-the embedded simple cycle \(C_e\) is a Jordan curve.  It bounds two open
-discs, precisely the two face shores encoded by \(F_e\) and its complement.
+Let the first chord have ordered endpoints \(a<c\), with literal return path
+\(P\).  Join \(P\) to the reverse of the displayed \(a\)-to-\(c\) interval of
+\(C_e\).  The two pieces meet only at their endpoints, so their union is a
+simple closed trail.  Sphericity supplies an exact binary face cut for this
+trail: the labels on the two orbit faces incident with an edge differ exactly
+when that edge belongs to the trail.
 
-For a return chord with endpoints \(a,c\), choose a simple path \(P\) in its
-common-residual component.  No edge of \(P\) is an edge of \(C_e\).  Moreover,
-no internal vertex of \(P\) lies on \(C_e\): every cycle vertex has degree one
-in the common residual graph, whereas an internal vertex of a simple path
-uses two incident path edges.  Hence the interior of \(P\) is a connected
-subset of the complement of the Jordan curve and lies wholly in one of its
-two open discs.  The oriented third dart at either endpoint identifies that
-disc, so it is exactly the value \(\chi_e(P)\).  This also gives the geometric
-meaning of the already-proved equality of the two endpoint labels.
+Let the second chord have return path \(Q\).  Distinct residual components
+give vertex-disjoint return paths, and every edge of \(Q\) lies off
+\(C_e\).  Thus no edge of \(Q\) belongs to the first chord's closed trail.
+Transport of an exact face-cut label along such a trail says that the labels
+on the canonical third darts at the two ends of \(Q\) are equal.
 
-Now suppose two distinct chords have cyclically alternating endpoints
-\(a,b,c,d\), and choose their simple return paths \(P:a\leadsto c\) and
-\(Q:b\leadsto d\).  If their labels were equal, the interiors of both paths
-would be properly embedded arcs in the same closed disc bounded by \(C_e\).
-The Jordan arc theorem for a disc says that the proper arc \(P\) separates
-the disc into two components whose boundary portions are the two complementary
-\(a\)-to-\(c\) arcs of \(C_e\).  Alternation puts \(b\) and \(d\) on different
-such boundary portions.  Therefore every arc from \(b\) to \(d\) in that disc
-meets \(P\), so \(Q\) meets \(P\).  But distinct return chords lie in distinct
-components of the degree--\(1/2\) common residual graph; the preceding
-corollary proves their witnessing paths have disjoint vertex supports.  This
-contradiction proves that alternating chords have opposite labels, and hence
-that each fixed-label family is noncrossing.
+Suppose now that the four endpoints alternate.  In either of the two possible
+linear orders, the cycle interval between the endpoints of \(Q\) contains
+exactly one endpoint of \(P\).  At every other cycle vertex in this interval,
+the residual third edge is not in the closed trail, so both oriented
+cycle-side labels are unchanged through the local cubic turn.  At the unique
+endpoint of \(P\), the residual third edge is the first or last edge of
+\(P\), hence belongs to the trail, and the corresponding side label flips.
+The assumption that the two chords have the same shore says that their four
+endpoint third darts choose the same of the two local rotation sectors.
+Consequently the appropriate binary side label flips exactly once between
+the endpoints of \(Q\).  Those endpoint labels are therefore different,
+contradicting the transport equality along \(Q\).  Hence equal-shore chords
+cannot alternate, and each fixed-label family is noncrossing.
 \end{proof}
 
 This is not merely another proof that a bridgeless cubic graph has a perfect

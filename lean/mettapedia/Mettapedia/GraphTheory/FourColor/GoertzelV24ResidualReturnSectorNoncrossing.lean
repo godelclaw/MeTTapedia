@@ -453,6 +453,117 @@ theorem orderedChordAmbientPath_edge_not_orderedReturnSeparator_of_ne
     exact (orderedReturnPath_edge_not_cycle hG sigma hSigma site
       otherChord.left hedgeReturn) hcycle
 
+/-- Away from the two endpoints of a return chord, the residual third edge
+at a cycle coordinate does not belong to that chord's separator. -/
+theorem siteThirdDart_edge_not_orderedReturnSeparator_of_ne_endpoints
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (separatorChord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (position : CyclePosition sigma site)
+    (hneLeft : position ≠ separatorChord.left)
+    (hneRight : position ≠ separatorChord.right) :
+    (siteThirdDart hG sigma hSigma site
+        (cycleVertexOrder sigma site position)).edge ∉
+      (orderedReturnSeparator hG sigma hSigma site separatorChord).edges := by
+  intro hseparator
+  rcases (mem_orderedReturnSeparator_edges_iff hG sigma hSigma site
+      separatorChord _).1 hseparator with hreturn | hinterval
+  · have hpathSupport :
+        (siteThirdDart hG sigma hSigma site
+          (cycleVertexOrder sigma site position)).fst ∈
+        (orderedChordAmbientPath hG sigma hSigma site
+          separatorChord).support :=
+      SimpleGraph.Walk.fst_mem_support_of_mem_edges
+        (orderedChordAmbientPath hG sigma hSigma site separatorChord) hreturn
+    have hcarrier :
+        (siteThirdDart hG sigma hSigma site
+          (cycleVertexOrder sigma site position)).fst ∈ site.carrier := by
+      simpa [siteThirdDart] using
+        (cycleVertexOrder sigma site position).2
+    rcases
+        eq_left_or_eq_right_of_mem_orderedChordAmbientPath_support_of_mem_carrier
+          hG sigma hSigma site separatorChord hpathSupport hcarrier with
+      hleft | hright
+    · apply hneLeft
+      apply (cycleVertexOrder sigma site).injective
+      apply Subtype.ext
+      simpa [siteThirdDart] using hleft
+    · apply hneRight
+      apply (cycleVertexOrder sigma site).injective
+      apply Subtype.ext
+      simpa [siteThirdDart] using hright
+  · apply siteThirdDart_edge_not_cycle hG sigma hSigma site position
+    exact mem_cycle_edges_of_mem_residualCycleInterval_edges
+      sigma site separatorChord hinterval
+
+/-- At the left endpoint, the residual third edge is the first edge of the
+physical return and therefore belongs to its separator. -/
+theorem siteThirdDart_left_edge_mem_orderedReturnSeparator
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (chord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site)) :
+    (siteThirdDart hG sigma hSigma site
+        (cycleVertexOrder sigma site chord.left)).edge ∈
+      (orderedReturnSeparator hG sigma hSigma site chord).edges := by
+  apply (mem_orderedReturnSeparator_edges_iff
+    hG sigma hSigma site chord _).2
+  apply Or.inl
+  have hnil := orderedAmbientReturnPath_not_nil
+    hG sigma hSigma site chord.left
+  have hfirstMem :
+      ((orderedAmbientReturnPath hG sigma hSigma site chord.left).firstDart
+        hnil).edge ∈
+        (orderedAmbientReturnPath hG sigma hSigma site chord.left).edges :=
+    List.mem_map_of_mem
+      ((orderedAmbientReturnPath hG sigma hSigma site chord.left).firstDart_mem_darts
+        hnil)
+  rw [orderedAmbientReturnPath_firstDart
+    hG sigma hSigma site chord.left] at hfirstMem
+  simpa [orderedChordAmbientPath, SimpleGraph.Walk.edges_copy] using hfirstMem
+
+/-- At the right endpoint, the residual third edge is the reverse of the
+last edge of the physical return and therefore belongs to its separator. -/
+theorem siteThirdDart_right_edge_mem_orderedReturnSeparator
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (chord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site)) :
+    (siteThirdDart hG sigma hSigma site
+        (cycleVertexOrder sigma site chord.right)).edge ∈
+      (orderedReturnSeparator hG sigma hSigma site chord).edges := by
+  apply (mem_orderedReturnSeparator_edges_iff
+    hG sigma hSigma site chord _).2
+  apply Or.inl
+  have hnil := orderedAmbientReturnPath_not_nil
+    hG sigma hSigma site chord.left
+  have hlastMem :
+      ((orderedAmbientReturnPath hG sigma hSigma site chord.left).lastDart
+        hnil).edge ∈
+        (orderedAmbientReturnPath hG sigma hSigma site chord.left).edges :=
+    List.mem_map_of_mem
+      ((orderedAmbientReturnPath hG sigma hSigma site chord.left).lastDart_mem_darts
+        hnil)
+  have hlast := orderedAmbientReturnPath_alpha_lastDart
+    hG sigma hSigma site chord.left
+  have hedge :
+      (siteThirdDart hG sigma hSigma site
+        (cycleVertexOrder sigma site chord.right)).edge =
+      ((orderedAmbientReturnPath hG sigma hSigma site chord.left).lastDart
+        hnil).edge := by
+    rw [← chord.partner_left]
+    rw [← hlast]
+    exact SimpleGraph.Dart.edge_symm _
+  rw [hedge]
+  simpa [orderedChordAmbientPath, SimpleGraph.Walk.edges_copy] using hlastMem
+
 /-- Any exact face-cut labeling of one return separator is transported
 unchanged between the two canonical third darts of a distinct return. -/
 theorem separatorLabels_eq_otherChord_thirdDarts
@@ -553,6 +664,167 @@ theorem OrderedReturnChord.interval_long_of_crosses
     1 < left.right.val - left.left.val ∧
       1 < right.right.val - right.left.val := by
   rcases hcrosses with hforward | hreverse <;> omega
+
+/-- Two strictly interleaving return chords on the same facial shore receive
+different exact-cut labels at the endpoints of the second chord.  The proof
+is the binary one-flip calculation along the cycle interval between those
+endpoints. -/
+theorem ExactFaceCut.label_ne_otherChord_thirdDarts_of_crosses_of_shore_eq
+    (rotation : Data G)
+    (hcubic : rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic rotation.toRotationSystem)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (separatorChord otherChord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma bond.site))
+    (hcrosses : separatorChord.Crosses otherChord)
+    (hshore : orderedReturnShore rotation hG sigma hSigma bond
+        separatorChord.left =
+      orderedReturnShore rotation hG sigma hSigma bond otherChord.left)
+    (cut : ExactFaceCut rotation.toRotationSystem
+      (fun edge : G.edgeSet ↦ edge.1 ∈
+        (orderedReturnSeparator hG sigma hSigma bond.site
+          separatorChord).edges) F2) :
+    cut.label (dartOrbitFace rotation.toRotationSystem
+        (siteThirdDart hG sigma hSigma bond.site
+          (cycleVertexOrder sigma bond.site otherChord.left))) ≠
+      cut.label (dartOrbitFace rotation.toRotationSystem
+        (siteThirdDart hG sigma hSigma bond.site
+          (cycleVertexOrder sigma bond.site otherChord.right))) := by
+  have hseparatorPartner :
+      orderedReturnShore rotation hG sigma hSigma bond separatorChord.left =
+        orderedReturnShore rotation hG sigma hSigma bond
+          separatorChord.right := by
+    simpa only [separatorChord.partner_left] using
+      orderedReturnShore_partner rotation hcubic hrotation hG sigma hSigma
+        bond separatorChord.left
+  have hotherPartner :
+      orderedReturnShore rotation hG sigma hSigma bond otherChord.left =
+        orderedReturnShore rotation hG sigma hSigma bond
+          otherChord.right := by
+    simpa only [otherChord.partner_left] using
+      orderedReturnShore_partner rotation hcubic hrotation hG sigma hSigma
+        bond otherChord.left
+  rcases hcrosses with hforward | hreverse
+  · have hstartPivotShore :
+        orderedReturnShore rotation hG sigma hSigma bond otherChord.left =
+          orderedReturnShore rotation hG sigma hSigma bond
+            separatorChord.right :=
+      hshore.symm.trans hseparatorPartner
+    have hfinishPivotShore :
+        orderedReturnShore rotation hG sigma hSigma bond otherChord.right =
+          orderedReturnShore rotation hG sigma hSigma bond
+            separatorChord.right :=
+      hotherPartner.symm.trans hstartPivotShore
+    apply GoertzelV24ResidualReturnCycleOrder.ExactFaceCut.label_ne_thirdDarts_of_single_selected_cyclePosition
+      rotation hcubic hrotation hG sigma hSigma bond.site cut
+        otherChord.left separatorChord.right otherChord.right
+    · omega
+    · omega
+    · intro position hstart hfinish
+      change
+        (siteThirdDart hG sigma hSigma bond.site
+            (cycleVertexOrder sigma bond.site position)).edge ∈
+            (orderedReturnSeparator hG sigma hSigma bond.site
+              separatorChord).edges ↔
+          position = separatorChord.right
+      constructor
+      · intro hmem
+        by_contra hneRight
+        have hneLeft : position ≠ separatorChord.left := by
+          intro heq
+          have hval := congrArg Fin.val heq
+          omega
+        exact (siteThirdDart_edge_not_orderedReturnSeparator_of_ne_endpoints
+          hG sigma hSigma bond.site separatorChord position hneLeft hneRight)
+            hmem
+      · rintro rfl
+        exact siteThirdDart_right_edge_mem_orderedReturnSeparator
+          hG sigma hSigma bond.site separatorChord
+    · exact cycleRotationSector_iff_of_orderedReturnShore_eq
+        rotation hcubic hrotation hG sigma hSigma bond
+          otherChord.left separatorChord.right hstartPivotShore
+    · exact cycleRotationSector_iff_of_orderedReturnShore_eq
+        rotation hcubic hrotation hG sigma hSigma bond
+          otherChord.right separatorChord.right hfinishPivotShore
+  · have hstartPivotShore :
+        orderedReturnShore rotation hG sigma hSigma bond otherChord.left =
+          orderedReturnShore rotation hG sigma hSigma bond
+            separatorChord.left := hshore.symm
+    have hfinishPivotShore :
+        orderedReturnShore rotation hG sigma hSigma bond otherChord.right =
+          orderedReturnShore rotation hG sigma hSigma bond
+            separatorChord.left :=
+      hotherPartner.symm.trans hstartPivotShore
+    apply GoertzelV24ResidualReturnCycleOrder.ExactFaceCut.label_ne_thirdDarts_of_single_selected_cyclePosition
+      rotation hcubic hrotation hG sigma hSigma bond.site cut
+        otherChord.left separatorChord.left otherChord.right
+    · omega
+    · omega
+    · intro position hstart hfinish
+      change
+        (siteThirdDart hG sigma hSigma bond.site
+            (cycleVertexOrder sigma bond.site position)).edge ∈
+            (orderedReturnSeparator hG sigma hSigma bond.site
+              separatorChord).edges ↔
+          position = separatorChord.left
+      constructor
+      · intro hmem
+        by_contra hneLeft
+        have hneRight : position ≠ separatorChord.right := by
+          intro heq
+          have hval := congrArg Fin.val heq
+          omega
+        exact (siteThirdDart_edge_not_orderedReturnSeparator_of_ne_endpoints
+          hG sigma hSigma bond.site separatorChord position hneLeft hneRight)
+            hmem
+      · rintro rfl
+        exact siteThirdDart_left_edge_mem_orderedReturnSeparator
+          hG sigma hSigma bond.site separatorChord
+    · exact cycleRotationSector_iff_of_orderedReturnShore_eq
+        rotation hcubic hrotation hG sigma hSigma bond
+          otherChord.left separatorChord.left hstartPivotShore
+    · exact cycleRotationSector_iff_of_orderedReturnShore_eq
+        rotation hcubic hrotation hG sigma hSigma bond
+          otherChord.right separatorChord.left hfinishPivotShore
+
+/-- Physical residual returns on one facial shore are noncrossing in a
+graph-backed least counterexample.  A hypothetical crossing supplies a
+literal simple separator.  Exact face-cut transport along the second return
+makes its endpoint labels equal, whereas the single-flip calculation along
+the operated cycle makes them different. -/
+theorem not_crosses_of_orderedReturnShore_eq_of_minimal
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (left right : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma bond.site))
+    (hshore : orderedReturnShore rotation hG sigma hSigma bond left.left =
+      orderedReturnShore rotation hG sigma hSigma bond right.left) :
+    ¬left.Crosses right := by
+  intro hcrosses
+  have hlong := OrderedReturnChord.interval_long_of_crosses hcrosses
+  have hne : left ≠ right := by
+    intro heq
+    subst right
+    rcases hcrosses with hforward | hreverse <;> omega
+  rcases exactFaceCut_orderedReturnSeparator_of_minimal
+      rotation minimal hG sigma hSigma bond.site left hlong.1 with
+    ⟨cut, _⟩
+  have heq :=
+    GoertzelV24ResidualReturnSectorNoncrossing.ExactFaceCut.label_eq_otherChord_thirdDarts
+      rotation minimal.spherical.cubic minimal.vertexRotationCyclic
+        hG sigma hSigma bond.site left right hne cut
+  have hneLabels :=
+    GoertzelV24ResidualReturnSectorNoncrossing.ExactFaceCut.label_ne_otherChord_thirdDarts_of_crosses_of_shore_eq
+      rotation minimal.spherical.cubic minimal.vertexRotationCyclic
+        hG sigma hSigma bond left right hcrosses hshore cut
+  exact hneLabels heq
 
 end
 
