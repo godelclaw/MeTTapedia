@@ -162,6 +162,18 @@ theorem orderedChordAmbientPath_isPath
   simpa [orderedChordAmbientPath] using
     orderedAmbientReturnPath_isPath hG sigma hSigma site chord.left
 
+/-- A chord-typed ambient return is nonempty. -/
+theorem orderedChordAmbientPath_not_nil
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (chord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site)) :
+    ¬(orderedChordAmbientPath hG sigma hSigma site chord).Nil := by
+  simpa [orderedChordAmbientPath] using
+    orderedAmbientReturnPath_not_nil hG sigma hSigma site chord.left
+
 /-- A chord-typed ambient return meets the operated cycle only at its two
 ordered endpoints. -/
 theorem eq_left_or_eq_right_of_mem_orderedChordAmbientPath_support_of_mem_carrier
@@ -291,6 +303,204 @@ theorem exists_orderedReturnSeparator_exactFaceCut_of_minimal
     rotation minimal.facesTwoSided hdual hconnected minimal.spherical
       (orderedReturnSeparator hG sigma hSigma site chord)
       (orderedReturnSeparator_isCycle hG sigma hSigma site chord hlong).isTrail
+
+/-! ## A distinct return avoids the first separator -/
+
+/-- An ordered chord is recovered by canonicalizing its left endpoint. -/
+theorem orderedReturnChord_left_eq
+    {n : Nat} {pairing : Pairing (Fin n)}
+    (chord : OrderedReturnChord pairing) :
+    orderedReturnChord pairing chord.left = chord := by
+  apply OrderedReturnChord.ext
+  · simp [orderedReturnChord, chord.partner_left,
+      min_eq_left chord.left_lt_right.le]
+  · simp [orderedReturnChord, chord.partner_left,
+      max_eq_right chord.left_lt_right.le]
+
+/-- Canonical ambient paths belonging to distinct return components have
+disjoint vertex supports. -/
+theorem orderedChordAmbientPath_support_disjoint_of_ne
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (left right : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (hne : left ≠ right) :
+    (orderedChordAmbientPath hG sigma hSigma site left).support.Disjoint
+      (orderedChordAmbientPath hG sigma hSigma site right).support := by
+  have hchordNe :
+      orderedReturnChord
+          (orderedSiteReturnPairing hG sigma hSigma site) left.left ≠
+        orderedReturnChord
+          (orderedSiteReturnPairing hG sigma hSigma site) right.left := by
+    simpa only [orderedReturnChord_left_eq] using hne
+  have hdisjoint := orderedReturnPath_support_disjoint_of_chord_ne
+    hG sigma hSigma site left.left right.left hchordNe
+  simpa [orderedChordAmbientPath, orderedAmbientReturnPath,
+    SimpleGraph.Walk.support_mapLe_eq_support] using hdisjoint
+
+/-- Disjoint vertex supports force disjoint edge lists. -/
+theorem orderedChordAmbientPath_edges_disjoint_of_ne
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (left right : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (hne : left ≠ right) :
+    (orderedChordAmbientPath hG sigma hSigma site left).edges.Disjoint
+      (orderedChordAmbientPath hG sigma hSigma site right).edges := by
+  have hsupport := orderedChordAmbientPath_support_disjoint_of_ne
+    hG sigma hSigma site left right hne
+  rw [List.disjoint_left] at hsupport ⊢
+  intro edge hleft hright
+  induction edge using Sym2.inductionOn with
+  | _ firstVertex secondVertex =>
+      exact hsupport
+        ((orderedChordAmbientPath hG sigma hSigma site left).fst_mem_support_of_mem_edges
+          hleft)
+        ((orderedChordAmbientPath hG sigma hSigma site right).fst_mem_support_of_mem_edges
+          hright)
+
+/-- Every edge of the literal cycle interval is an edge of the full operated
+cycle. -/
+theorem mem_cycle_edges_of_mem_residualCycleInterval_edges
+    (sigma : Pairing V) {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    {pairing : Pairing (CyclePosition sigma site)}
+    (chord : OrderedReturnChord pairing) {edge : Sym2 V}
+    (hedge : edge ∈ (residualCycleInterval sigma site chord).edges) :
+    edge ∈ site.cycle.edges := by
+  have hintervalTail : edge ∈ site.cycle.tail.edges := by
+    have hsubwalk :
+        ((site.cycle.tail.drop chord.left.val).take
+            (chord.right.val - chord.left.val)).IsSubwalk site.cycle.tail :=
+      (SimpleGraph.Walk.isSubwalk_take _ _).trans
+        (SimpleGraph.Walk.isSubwalk_drop _ _)
+    apply hsubwalk.edges_subset
+    simpa [residualCycleInterval] using hedge
+  exact (site.cycle.isSubwalk_rfl.tail.edges_subset) hintervalTail
+
+/-- The separator edge list is exactly the union of the physical return and
+the selected cycle interval. -/
+theorem mem_orderedReturnSeparator_edges_iff
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (chord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (edge : Sym2 V) :
+    edge ∈ (orderedReturnSeparator hG sigma hSigma site chord).edges ↔
+      edge ∈ (orderedChordAmbientPath hG sigma hSigma site chord).edges ∨
+        edge ∈ (residualCycleInterval sigma site chord).edges := by
+  simp [orderedReturnSeparator, SimpleGraph.Walk.edges_append,
+    SimpleGraph.Walk.edges_reverse]
+
+/-- A second return component avoids every edge of the separator formed from
+a distinct first return. -/
+theorem orderedChordAmbientPath_edge_not_orderedReturnSeparator_of_ne
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (separatorChord otherChord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (hne : separatorChord ≠ otherChord)
+    {edge : Sym2 V}
+    (hedge : edge ∈
+      (orderedChordAmbientPath hG sigma hSigma site otherChord).edges) :
+    edge ∉
+      (orderedReturnSeparator hG sigma hSigma site separatorChord).edges := by
+  intro hseparator
+  rcases (mem_orderedReturnSeparator_edges_iff hG sigma hSigma site
+      separatorChord edge).1 hseparator with hreturn | hinterval
+  · have hdisjoint := orderedChordAmbientPath_edges_disjoint_of_ne
+      hG sigma hSigma site separatorChord otherChord hne
+    exact (List.disjoint_left.mp hdisjoint hreturn) hedge
+  · have hcycle := mem_cycle_edges_of_mem_residualCycleInterval_edges
+      sigma site separatorChord hinterval
+    have hedgeReturn : edge ∈
+        (orderedReturnPath hG sigma hSigma site otherChord.left).edges := by
+      simpa [orderedChordAmbientPath, orderedAmbientReturnPath,
+        SimpleGraph.Walk.edges_mapLe_eq_edges] using hedge
+    exact (orderedReturnPath_edge_not_cycle hG sigma hSigma site
+      otherChord.left hedgeReturn) hcycle
+
+/-- Any exact face-cut labeling of one return separator is transported
+unchanged between the two canonical third darts of a distinct return. -/
+theorem separatorLabels_eq_otherChord_thirdDarts
+    (rotation : Data G)
+    (hcubic : rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic rotation.toRotationSystem)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (separatorChord otherChord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (hne : separatorChord ≠ otherChord)
+    {A : Type*}
+    (labels : OrbitFace rotation.toRotationSystem → A)
+    (hexact : ∀ dart : rotation.toRotationSystem.D,
+      labels (dartOrbitFace rotation.toRotationSystem dart) ≠
+          labels (dartOrbitFace rotation.toRotationSystem
+            (rotation.toRotationSystem.alpha dart)) ↔
+        (rotation.toRotationSystem.edgeOf dart).1 ∈
+          (orderedReturnSeparator hG sigma hSigma site separatorChord).edges) :
+    labels (dartOrbitFace rotation.toRotationSystem
+        (siteThirdDart hG sigma hSigma site
+          (cycleVertexOrder sigma site otherChord.left))) =
+      labels (dartOrbitFace rotation.toRotationSystem
+        (siteThirdDart hG sigma hSigma site
+          (cycleVertexOrder sigma site otherChord.right))) := by
+  let path :=
+    orderedAmbientReturnPath hG sigma hSigma site otherChord.left
+  have hnil : ¬path.Nil :=
+    orderedAmbientReturnPath_not_nil hG sigma hSigma site otherChord.left
+  have htransport :=
+    rotation.trail_labels_eq_firstDart_alpha_lastDart_of_walk_edges_not_cut
+      hcubic hrotation labels
+        (fun edge : G.edgeSet => edge.1 ∈
+          (orderedReturnSeparator hG sigma hSigma site separatorChord).edges)
+        hexact path hnil
+        (orderedAmbientReturnPath_isPath
+          hG sigma hSigma site otherChord.left).isTrail
+        (by
+          intro edge hedge
+          apply orderedChordAmbientPath_edge_not_orderedReturnSeparator_of_ne
+            hG sigma hSigma site separatorChord otherChord hne
+          simpa [path, orderedChordAmbientPath] using hedge)
+  have hfirst :
+      path.firstDart hnil =
+        siteThirdDart hG sigma hSigma site
+          (cycleVertexOrder sigma site otherChord.left) := by
+    simpa [path] using
+      orderedAmbientReturnPath_firstDart
+        hG sigma hSigma site otherChord.left
+  have hlast :
+      rotation.toRotationSystem.alpha (path.lastDart hnil) =
+        siteThirdDart hG sigma hSigma site
+          (cycleVertexOrder sigma site
+            ((orderedSiteReturnPairing hG sigma hSigma site).partner
+              otherChord.left)) := by
+    change (path.lastDart hnil).symm = _
+    simpa [path] using
+      orderedAmbientReturnPath_alpha_lastDart
+        hG sigma hSigma site otherChord.left
+  rw [hfirst, hlast] at htransport
+  simpa only [otherChord.partner_left] using htransport
+
+/-- Either interleaving order supplies an interior point of each chord's
+linear interval. -/
+theorem OrderedReturnChord.interval_long_of_crosses
+    {n : Nat} {pairing : Pairing (Fin n)}
+    {left right : OrderedReturnChord pairing}
+    (hcrosses : left.Crosses right) :
+    1 < left.right.val - left.left.val ∧
+      1 < right.right.val - right.left.val := by
+  rcases hcrosses with hforward | hreverse <;> omega
 
 end
 
