@@ -3363,6 +3363,47 @@ site $B$'s distinguished component: the common carrier may contain several
 alternating components.
 \end{proof}
 
+\begin{lemma}[alternating-component changes are confined to two deletion footprints]
+\label{lem:alternating-component-deletion-footprint-localization}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingComponentLocalization.deletionFootprint}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingComponentLocalization.mem_deletionFootprint_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingComponentLocalization.card_deletionFootprint}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingComponentLocalization.card_overlapFootprintValues_le}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingComponentLocalization.provenanced_alternatingGraphs_agree_outside_deletionFootprints}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingComponentLocalization.provenanced_alternatingGraphs_delete_overlapFootprints_eq}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingComponentLocalization.source_cycle_edge_mem_target_or_deletionFootprints}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingComponentLocalization.source_cycle_common_arc_component_eq_in_target}
+For an adjacent-pair deletion let its \emph{deletion footprint} be the
+central edge together with the four boundary edges.  It has exactly five
+edges.  Hence the union of the footprints of two residual sites has at most
+ten edges.
+
+If the two sites have compatible matching-overlap state, delete those at
+most ten edge values from both matching symmetric-difference graphs.  The
+two remaining graphs are equal.  Equivalently, every edge of the
+distinguished alternating cycle at the first site either belongs to the
+alternating graph at the second site or lies in one of the two deletion
+footprints.  Every arc of the first cycle avoiding both footprints therefore
+has its endpoints in one connected component of the second alternating
+graph.
+\end{lemma}
+
+\begin{proof}
+An ambient edge fails to survive an adjacent-pair deletion precisely when it
+is the central edge or one of the four boundary edges.  The four boundary
+edges are distinct, and none is central, so the footprint has cardinality
+five.  The union bound gives ten for two sites.
+
+Away from this union, the edge is retained by both deletions.  Lemma
+\ref{lem:compatible-overlap-alternating-geometry} then identifies membership
+in the two symmetric-difference graphs.  Extensionality after deleting the
+footprint gives equality of the remaining graphs.  Applying the same
+edgewise statement along a walk contained in the first alternating cycle
+transfers that walk to the second alternating graph; its endpoints are thus
+reachable in one connected component.  The statement deliberately allows
+components to split or merge at footprint edges.
+\end{proof}
+
 \begin{lemma}[rooted gauge for residual face sides]
 \label{lem:rooted-residual-face-side-gauge}
 \Sverified{Mettapedia.GraphTheory.Embedding.FaceCutGauge.basedLabel_eq}
