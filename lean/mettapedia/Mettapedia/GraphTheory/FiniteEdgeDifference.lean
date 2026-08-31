@@ -1,4 +1,5 @@
 import Mathlib.Combinatorics.SimpleGraph.DeleteEdges
+import Mathlib.Data.List.Chain
 
 /-!
 # Finite edge disagreement between simple graphs
@@ -29,6 +30,102 @@ theorem mem_edgeDisagreementFinset
         (edge ∈ second.edgeSet ∧ edge ∉ first.edgeSet) := by
   classical
   simp [edgeDisagreementFinset]
+
+/-- Edge disagreement is symmetric in the two graphs. -/
+theorem edgeDisagreementFinset_comm
+    (first second : SimpleGraph V) :
+    edgeDisagreementFinset first second =
+      edgeDisagreementFinset second first := by
+  classical
+  ext edge
+  simp only [mem_edgeDisagreementFinset]
+  tauto
+
+/-- Every disagreement between the first and third graphs occurs in at least
+one of the two intermediate disagreements. -/
+theorem edgeDisagreementFinset_subset_union
+    (first second third : SimpleGraph V) :
+    edgeDisagreementFinset first third ⊆
+      edgeDisagreementFinset first second ∪
+        edgeDisagreementFinset second third := by
+  classical
+  intro edge hedge
+  rw [mem_edgeDisagreementFinset] at hedge
+  rw [Finset.mem_union]
+  rcases hedge with ⟨hfirst, hthird⟩ | ⟨hthird, hfirst⟩
+  · by_cases hsecond : edge ∈ second.edgeSet
+    · exact Or.inr ((mem_edgeDisagreementFinset second third edge).2
+        (Or.inl ⟨hsecond, hthird⟩))
+    · exact Or.inl ((mem_edgeDisagreementFinset first second edge).2
+        (Or.inl ⟨hfirst, hsecond⟩))
+  · by_cases hsecond : edge ∈ second.edgeSet
+    · exact Or.inl ((mem_edgeDisagreementFinset first second edge).2
+        (Or.inr ⟨hsecond, hfirst⟩))
+    · exact Or.inr ((mem_edgeDisagreementFinset second third edge).2
+        (Or.inr ⟨hthird, hsecond⟩))
+
+/-- Cardinal triangle inequality for finite edge disagreement. -/
+theorem card_edgeDisagreementFinset_triangle
+    (first second third : SimpleGraph V) :
+    (edgeDisagreementFinset first third).card ≤
+      (edgeDisagreementFinset first second).card +
+        (edgeDisagreementFinset second third).card := by
+  calc
+    (edgeDisagreementFinset first third).card ≤
+        (edgeDisagreementFinset first second ∪
+          edgeDisagreementFinset second third).card :=
+      Finset.card_le_card
+        (edgeDisagreementFinset_subset_union first second third)
+    _ ≤ (edgeDisagreementFinset first second).card +
+        (edgeDisagreementFinset second third).card :=
+      Finset.card_union_le _ _
+
+/-- The sum of consecutive edge disagreements along a list of graphs. -/
+noncomputable def edgeDisagreementPathCost :
+    List (SimpleGraph V) → ℕ
+  | first :: second :: rest =>
+      (edgeDisagreementFinset first second).card +
+        edgeDisagreementPathCost (second :: rest)
+  | _ => 0
+
+/-- The endpoint disagreement is at most the sum of the consecutive
+disagreements along any finite graph path. -/
+theorem card_edgeDisagreementFinset_le_pathCost
+    (first last : SimpleGraph V) :
+    ∀ middle : List (SimpleGraph V),
+      (edgeDisagreementFinset first last).card ≤
+        edgeDisagreementPathCost (first :: middle ++ [last])
+  | [] => by
+      simp [edgeDisagreementPathCost]
+  | next :: rest => by
+      change (edgeDisagreementFinset first last).card ≤
+        (edgeDisagreementFinset first next).card +
+          edgeDisagreementPathCost (next :: rest ++ [last])
+      exact (card_edgeDisagreementFinset_triangle first next last).trans
+        (Nat.add_le_add_left
+          (card_edgeDisagreementFinset_le_pathCost next last rest) _)
+
+/-- If every consecutive transition in a finite graph path has disagreement
+at most `bound`, its total path cost is at most `bound` times the number of
+transitions. -/
+theorem edgeDisagreementPathCost_le
+    (bound : ℕ) (graphs : List (SimpleGraph V))
+    (hchain : graphs.IsChain fun first second =>
+      (edgeDisagreementFinset first second).card ≤ bound) :
+    edgeDisagreementPathCost graphs ≤ (graphs.length - 1) * bound := by
+  induction graphs using List.twoStepInduction with
+  | nil => simp [edgeDisagreementPathCost]
+  | singleton graph => simp [edgeDisagreementPathCost]
+  | cons_cons first second rest _ tailIH =>
+      rcases List.isChain_cons_cons.mp hchain with ⟨hfirst, htail⟩
+      rw [edgeDisagreementPathCost]
+      calc
+        (edgeDisagreementFinset first second).card +
+            edgeDisagreementPathCost (second :: rest) ≤
+          bound + ((second :: rest).length - 1) * bound :=
+            Nat.add_le_add hfirst (tailIH second htail)
+        _ = ((first :: second :: rest).length - 1) * bound := by
+          simp [Nat.add_mul, Nat.add_comm]
 
 /-- If deleting `removed` makes two graphs equal, all their edge disagreement
 is supported on `removed`. -/
