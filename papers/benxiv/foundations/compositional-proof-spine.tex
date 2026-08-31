@@ -4510,6 +4510,52 @@ equips both sites with their exact two-sector return receipts, proving the
 second alternative.
 \end{proof}
 
+\begin{corollary}[localization along the sparse deletion path]
+\label{cor:sparse-deletion-path-localization}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.DeletionPathLocalization.pathFootprint}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.DeletionPathLocalization.card_pathFootprint_le}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.DeletionPathLocalization.pathColor_eq}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.DeletionPathLocalization.matchingStates_agree_outside_pathFootprint}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.DeletionPathLocalization.alternatingGraphs_agree_outside_pathFootprint}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.DeletionPathLocalization.card_alternatingGraph_edgeDisagreement_le}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.DeletionPathLocalization.alternatingWalk_component_eq_in_target}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.DeletionPathLocalization.exists_endpoint_edgeDisagreement_le_of_hasCoherentTwoSectorPair}
+In the second alternative of
+Corollary~\ref{cor:sparse-noncentral-mesh-deletion-atlas}, let $P$ be the
+union of the nine deletion footprints.  Then $|P|\leq45$.  The two
+receipt-bearing completed matchings agree on every ambient edge outside
+$P$, and their symmetric-difference graphs with the fixed residual-defect
+minimizer also agree outside $P$.  Consequently, every walk in the first
+symmetric-difference graph whose edges avoid $P$ is a walk between the same
+endpoints in the second graph; in particular its endpoints belong to one
+connected component there.
+\end{corollary}
+
+\begin{proof}
+Evaluate an ambient edge retained by every deletion at each coordinate of
+the coherent path.  Consecutive common-core compatibility gives equality at
+successive coordinates, and hence equality at any two coordinates by
+telescoping along the path.  The two selected coordinates use the same
+absent Tait colour, so the corresponding completed colour-class matchings
+agree on such an edge.  An edge which is not retained at some coordinate is
+in that coordinate's five-edge deletion footprint.  Therefore every
+possible disagreement is contained in $P$, and the union bound gives
+$|P|\leq9\cdot5=45$.
+
+Taking symmetric difference with one fixed matching is an edgewise Boolean
+operation, so equality outside $P$ is preserved.  Finally transfer the
+supplied walk edge by edge to the second graph.  The transferred walk is a
+reachability witness, which is exactly equality of its endpoint connected
+components.
+
+This is a localization statement, not an identification of distinguished
+components.  The remaining geometric obligation is to show that a canonical
+return component at one selected site has an anchor, or an unavoidable
+intersection, outside $P$ which forces it to be the distinguished return
+component at the other selected site.  No such identification is inferred
+merely from the $45$-edge disagreement bound.
+\end{proof}
+
 The binary constraints have one further exact locality property.  Although
 common-core agreement is not transitive as a relation on whole pairwise
 common deletions, its failure of transitivity cannot occur away from the
