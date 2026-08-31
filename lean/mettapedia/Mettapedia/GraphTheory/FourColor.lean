@@ -987,4 +987,6 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnShore
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnCycleOrder
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnArc
 import Mettapedia.GraphTheory.FourColor.Compositional.DeletionSiteGeometry
+import Mettapedia.GraphTheory.FourColor.Compositional.DeletionAtlasPath
 import Mettapedia.GraphTheory.FourColor.Compositional.MeshJunctionAlternatingGeometry
+import Mettapedia.GraphTheory.FourColor.Compositional.SparseNoncentralMeshAtlas

@@ -3461,7 +3461,7 @@ components to split or merge at footprint edges.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSide.facialBondCut_basedLabel_eq}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSide.basedReturnSide_partner}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSide.not_crosses_of_basedReturnSide_eq}
-Fix one ambient orbit face (f_0).  If two exact binary face cuts have the
+Fix one ambient orbit face \(f_0\).  If two exact binary face cuts have the
 same selected primal edges, then their normalized labels
 
 \[
@@ -3469,7 +3469,7 @@ same selected primal edges, then their normalized labels
 \]
 
 agree on every orbit face.  In particular, the facial bond at a noncentral
-residual site has a canonical (f_0)-rooted side coordinate, independent of
+residual site has a canonical \(f_0\)-rooted side coordinate, independent of
 which of its two shores was named first.  The two endpoints of every physical
 return have the same rooted coordinate, and two return chords with the same
 rooted coordinate do not cross.
@@ -3481,7 +3481,7 @@ edge, whether the two incident labels differ.  Exact cuts with the same
 selected edges therefore have equal boundary vectors.  Their difference lies
 in the kernel of the facial-boundary map.  The full facial dual is connected,
 so the kernel theorem says that this difference is constant on all orbit
-faces.  Subtracting its value at (f_0) removes that constant.
+faces.  Subtracting its value at \(f_0\) removes that constant.
 
 Apply this to the indicator of either connected face shore supplied by the
 residual facial bond.  Complementing the chosen shore merely adds the constant
@@ -4447,12 +4447,67 @@ path-repaired colouring itself, not to the unrelated globally selected
 colouring at the same physical edge.
 
 This removes the previously stated global colour-gauge obligation.  It does
-not yet prove wall exclusion: bounded edge-disagreement is now verified, but
-the remaining adapter must dispose of the branch in which the minimizer uses
-one or both selected central edges.  In the proper-component branch it must
-still compare the distinguished components, rather than merely their ambient
-alternating graphs, and then use the mesh geometry to force a strict
-compositional descent.
+not yet prove wall exclusion: bounded edge-disagreement is now verified.  The
+sparse matching-dependent refinement below disposes of the branch in which
+the minimizer uses a selected central edge at the nine sites needed by the
+path argument.  It remains to compare the distinguished components across
+those sites, rather than merely their ambient alternating graphs, and then use
+the mesh geometry to force a strict compositional descent.
+\end{proof}
+
+\begin{corollary}[a sparse noncentral mesh deletion atlas]
+\label{cor:sparse-noncentral-mesh-deletion-atlas}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.DeletionAtlasPath.pairwiseRepairSurjectivity_of_no_branchingOrBoundary}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.DeletionAtlasPath.exists_pathSection_of_no_branchingOrBoundary}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.DeletionAtlasPath.hasCoherentTwoSectorPair_of_no_branchingOrBoundary}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.SparseNoncentralMeshAtlas.sparse_branchPosition_add_two_le}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.SparseNoncentralMeshAtlas.selectedGlobalStep_noncentral}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.SparseNoncentralMeshAtlas.coloringFamily_coversEdges}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.SparseNoncentralMeshAtlas.coloringFamily_coversAdjacentEdges}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.SparseNoncentralMeshAtlas.branchingOrBoundary_or_hasCoherentTwoSectorPair}
+Let an ordered injective mesh have twenty column paths, fix one row, and fix a
+minimum-residual-defect matching.  Select the nine internal row junctions at
+columns (1,3,\ldots,17).  At each junction select the outgoing arm if the
+matching does not use it, and otherwise select the incoming arm.  These nine
+arms are noncentral for the same matching.  Their adjacent-pair deletion
+atlas covers every ambient edge and every adjacent pair of ambient edges.
+
+Moreover exactly one of the following conclusions is available.
+\begin{enumerate}
+\item Some simultaneous choice of the nine deletion colourings exposes either
+      a local non-transposition common-core discrepancy or a valid-pair Kempe
+      orbit reaching the other deleted pair.
+\item There is a consecutive common-core repair section through the nine
+      sites, ending at the canonical final colouring, in which two sites have
+      the same absent Tait colour and both carry the exact two-sector
+      residual-return receipt for the fixed matching.
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+At an internal row junction the incoming and outgoing arms share the branch
+vertex but have distinct outer endpoints.  A perfect matching cannot contain
+both arms, so the stated rule always selects a noncentral arm.  Consecutive
+selected junctions have one unused branch column between them.  Consequently
+the chosen row-step positions are strictly increasing even when the
+incoming/outgoing choice varies, and both endpoint maps from the nine sites
+are injective.
+
+An ambient edge forbids its two endpoints; an adjacent pair of ambient edges
+forbids at most four vertices.  Each forbidden vertex removes at most one
+site through each of the two injective endpoint maps.  Thus at most eight of
+the nine sites are removed, leaving a deletion patch which retains the edge
+or the adjacent pair.  This proves the two covering assertions.
+
+If a nine-site colouring assignment exposes one of the two horns, take the
+first alternative.  Otherwise the exact common-core repair theorem makes
+every consecutive binary constraint right-total.  Choose predecessors from
+the prescribed final colouring to obtain a path section.  Complete each path
+colouring by a Tait colour absent from its four boundary requests.  Among nine
+choices from three colours, two agree.  Since every selected arm is
+noncentral for the fixed matching, the state-indexed residual construction
+equips both sites with their exact two-sector return receipts, proving the
+second alternative.
 \end{proof}
 
 The binary constraints have one further exact locality property.  Although
