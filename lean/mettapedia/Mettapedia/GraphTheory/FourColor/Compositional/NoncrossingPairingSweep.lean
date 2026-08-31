@@ -80,6 +80,23 @@ def canonicalArcList {K : Type u} {n : Nat} (pairing : Pairing (Fin n))
   ((canonicalLeftEndpoints pairing selected).sort.map
     (chordArc pairing label))
 
+/-- Every record in the canonical arc list comes from a unique canonical
+endpoint of the original pairing.  This is the semantic bridge back from the
+ordered sweep representation to the pairing chord that generated it. -/
+theorem exists_canonical_position_of_mem_canonicalArcList
+    {K : Type u} {n : Nat} (pairing : Pairing (Fin n))
+    (selected : Fin n → Prop) [DecidablePred selected]
+    (label : Fin n → K) (arc : LabeledArc K n)
+    (harc : arc ∈ canonicalArcList pairing selected label) :
+    ∃ position : Fin n,
+      position < pairing.partner position ∧ selected position ∧
+        chordArc pairing label position = arc := by
+  rcases List.mem_map.1 harc with ⟨position, hposition, rfl⟩
+  have hmem : position ∈ canonicalLeftEndpoints pairing selected :=
+    (Finset.mem_sort (· ≤ ·)).1 hposition
+  exact ⟨position, (Finset.mem_filter.1 hmem).2.1,
+    (Finset.mem_filter.1 hmem).2.2, rfl⟩
+
 private theorem canonical_position_data {n : Nat}
     (pairing : Pairing (Fin n)) (selected : Fin n → Prop)
     [DecidablePred selected]
