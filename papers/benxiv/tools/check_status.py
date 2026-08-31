@@ -139,13 +139,63 @@ def lean_code_only(source: str) -> str:
     return "".join(out)
 
 
-def declaration_module(decl: str, lean_root: pathlib.Path) -> pathlib.Path | None:
-    """Map a fully qualified declaration to the file that should define it."""
+def declaration_module(
+    decl: str, lean_root: pathlib.Path, repo_root: pathlib.Path
+) -> pathlib.Path | None:
+    """Map a fully qualified declaration to its defining source file.
+
+    Most project declarations follow the module-path namespace, so try that
+    inexpensive route first.  Lean and Mathlib also routinely extend a
+    semantic namespace from another module (for example, lemmas about a
+    structure).  In that case, fall back to a tracked-source search and accept
+    only a unique declaration head.  Ambiguity fails closed rather than
+    crediting the wrong theorem.
+    """
     parts = decl.split(".")
+    short = parts[-1]
+    declaration_head = re.compile(
+        rf"(?<![A-Za-z_.])(?:theorem|lemma|def|abbrev|structure|class|inductive|opaque)\s+"
+        rf"{re.escape(short)}(?![A-Za-z_])"
+    )
     for cut in range(len(parts) - 1, 0, -1):
         candidate = lean_root.joinpath(*parts[:cut]).with_suffix(".lean")
-        if candidate.is_file():
+        if candidate.is_file() and declaration_head.search(
+            lean_code_only(candidate.read_text(encoding="utf-8"))
+        ):
             return candidate
+
+    try:
+        relative_root = lean_root.resolve().relative_to(repo_root.resolve())
+    except ValueError:
+        return None
+    grep_pattern = (
+        rf"(^|[^A-Za-z_.])(theorem|lemma|def|abbrev|structure|class|inductive|opaque)"
+        rf"[[:space:]]+{re.escape(short)}([^A-Za-z_]|$)"
+    )
+    tracked = subprocess.run(
+        [
+            "git", "-C", str(repo_root), "grep", "--cached", "-l", "-E",
+            grep_pattern, "--", str(relative_root),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if tracked.returncode not in (0, 1):
+        return None
+    matches: list[pathlib.Path] = []
+    for relative in tracked.stdout.splitlines():
+        candidate = repo_root / relative
+        # A dirty shared worktree may contain tracked deletions belonging to
+        # another lane.  They cannot define a currently checkable marker.
+        if not candidate.is_file():
+            continue
+        if declaration_head.search(lean_code_only(candidate.read_text(encoding="utf-8"))):
+            matches.append(candidate)
+            if len(matches) > 1:
+                return None
+    if len(matches) == 1:
+        return matches[0]
     return None
 
 
@@ -155,7 +205,7 @@ def check_verified(
     decl = entry["payload"]
     if not decl:
         return False, "no declaration named"
-    module = declaration_module(decl, lean_root)
+    module = declaration_module(decl, lean_root, repo_root)
     if module is None:
         return False, f"no module found for {decl}"
     try:

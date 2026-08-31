@@ -7226,6 +7226,74 @@ does not yet record the colouring support or the physical connectivity state
 needed for a splice.
 \end{proof}
 
+\begin{lemma}[pushing an exact cycle cut to a physical vertex side]
+\label{lem:exact-cycle-cut-push-off}
+\Sverified{Mettapedia.GraphTheory.Embedding.ExactFaceCut.filledCycleSide_iff_label_of_not_mem_support}
+\Sverified{Mettapedia.GraphTheory.Embedding.ExactFaceCut.filledCycleSide_iff_of_edge_endpoints_not_mem_support}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.CyclePushOffCut.mem_edges_implies_off_cycle_and_incident}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.CyclePushOffCut.card_edges_le_support_mul_degreeBound}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.CyclePushOffCut.hasCycleOnSide_filledCycleSide}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.CyclePushOffCut.cyclicEdgeCutRealization_of_complement_cycle}
+Let $W$ be a closed primal walk in a graph-backed rotation system, and let
+$\lambda$ be an exact binary face cut supported on the edges of $W$.  Fix one
+label $\epsilon\in\mathbb F_2$.  Define the filled vertex side $U_\epsilon$
+by putting every vertex of $W$ in $U_\epsilon$ and, away from $W$, putting a
+vertex in $U_\epsilon$ exactly when an incident dart outside $W$ sees face
+label $\epsilon$.  If the vertex rotations are cyclic, then this definition
+is independent of the chosen off-walk dart.  Moreover every edge crossing
+$U_\epsilon$ is not an edge of $W$ and has an endpoint on $W$.  If every
+vertex of $W$ has degree at most $\Delta$, the number of crossing edges is at
+most $\Delta\,|V(W)|$.
+\end{lemma}
+
+\begin{proof}
+At a vertex outside $W$, no incident edge belongs to the support of $W$.
+Rotating from one incident dart to the next therefore never crosses the exact
+face cut, so all incident dart faces have the same label.  If an edge has
+both endpoints outside $W$, the edge itself is also absent from the cut;
+crossing it preserves the label, and hence preserves membership in
+$U_\epsilon$.  Such an edge cannot cross the filled vertex side.  An edge of
+$W$ cannot cross either, because both of its endpoints were filled into
+$U_\epsilon$.  Thus every crossing edge is an off-walk edge with at least one
+endpoint on $W$.  All crossing edges therefore lie in the union of the
+incident-edge stars of the vertices of $W$.  Subadditivity of cardinality
+gives the displayed $\Delta\,|V(W)|$ bound.
+
+The Lean development separates the generic face-to-vertex conversion from
+the four-colour consumer.  The robust local-degree estimate is sufficient
+for finiteness; in a cubic simple cycle it can later be sharpened from the
+factor $3$ to $1$, since two incident edges are already used by the cycle.
+One side cycle is automatic: the filled side contains $W$ itself whenever
+$W$ is simple.  Consequently a cycle in the complementary filled side is the
+single remaining input needed to package the pushed-off edge set as a cyclic
+edge-cut realization.
+\end{proof}
+
+\begin{corollary}[bounded push-offs of a residual-return separator]
+\label{cor:residual-return-bounded-push-off}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnTransversal.exists_exactFaceCut_with_bounded_pushOff_edges}
+For every physical residual-return chord whose selected carrier interval has
+an interior edge, the resulting simple return separator has an exact binary
+face cut.  Pushing either binary label to the filled vertex side gives a
+literal finite edge interface of cardinality at most three times the number
+of vertices in the separator support.
+\end{corollary}
+
+\begin{proof}
+The return path and the reverse carrier interval form the simple cycle of
+Lemma~\ref{lem:residual-return-two-sector-noncrossing}.  Its exact face cut is
+the checked spherical closed-trail construction.  Apply
+Lemma~\ref{lem:exact-cycle-cut-push-off}; cubicity bounds every incident-edge
+star by three.  The statement applies independently to the two values of
+$\mathbb F_2$.
+
+This corollary constructs the bounded physical edge set rather than accepting
+one as a receipt.  To promote it to a cyclic edge-cut realization, the deep
+nest must still supply a cycle in the complementary filled side; the selected
+side already contains the return separator itself.  That opposite-cycle
+statement is the remaining nested-layer geometry.
+\end{proof}
+
 For the route, the two Kempe families suggest the matching stacks and capped
 face progress supplies additional finite labels.  However those matchings
 belong to a colouring state, whereas the physical graph surgery must be
