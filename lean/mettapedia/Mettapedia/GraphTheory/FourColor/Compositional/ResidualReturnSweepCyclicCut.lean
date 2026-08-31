@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweep
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnCyclicCut
+import Mettapedia.GraphTheory.FourColor.Compositional.ReturnSeparatorLength
 
 /-!
 # Cyclic cuts realized from residual-return sweeps
@@ -27,6 +28,7 @@ open Mettapedia.GraphTheory.Embedding
 open NoncrossingPairingSweep
 open ResidualReturnCyclicCut
 open ResidualReturnSweep
+open ReturnSeparatorLength
 open SimpleGraph
 open SimpleGraphDartRotation
 
@@ -127,6 +129,60 @@ def HasNestedReturnSeparatorLargerThan
         orderedReturnShore rotation hG sigma hSigma bond inner.left ∧
       outer.left < inner.left ∧ inner.right < outer.right ∧
       bound < (orderedReturnSeparator hG sigma hSigma bond.site inner).support.toFinset.card
+
+/-- A nested return whose path through the ambient graph has support larger
+than `bound`.  This is the genuinely two-dimensional horn: the third edges
+along the path still have to be organized into a bounded interface or a new
+laminar family. -/
+def HasNestedAmbientReturnSupportLargerThan
+    (rotation : Data G)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (bound : Nat) : Prop :=
+  ∃ outer inner : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma bond.site),
+    orderedReturnShore rotation hG sigma hSigma bond outer.left =
+        orderedReturnShore rotation hG sigma hSigma bond inner.left ∧
+      outer.left < inner.left ∧ inner.right < outer.right ∧
+      bound < (orderedChordAmbientPath hG sigma hSigma bond.site inner).support.toFinset.card
+
+/-- A nested return whose interval along the alternating carrier has support
+larger than `bound`.  Unlike the ambient-path horn, this remains on the
+one-dimensional carrier already equipped with the LIFO sweep. -/
+def HasNestedCarrierIntervalSupportLargerThan
+    (rotation : Data G)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (bound : Nat) : Prop :=
+  ∃ outer inner : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma bond.site),
+    orderedReturnShore rotation hG sigma hSigma bond outer.left =
+        orderedReturnShore rotation hG sigma hSigma bond inner.left ∧
+      outer.left < inner.left ∧ inner.right < outer.right ∧
+      bound < (residualCycleInterval sigma bond.site inner).support.toFinset.card
+
+/-- A separator larger than twice the component bound is large either through
+the ambient graph or along the carrier cycle. -/
+theorem hasNestedAmbientReturnSupportLargerThan_or_carrierInterval_of_separator
+    (rotation : Data G)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (bound : Nat)
+    (hlong : HasNestedReturnSeparatorLargerThan rotation hG sigma hSigma bond
+      (2 * bound)) :
+    HasNestedAmbientReturnSupportLargerThan rotation hG sigma hSigma bond bound ∨
+      HasNestedCarrierIntervalSupportLargerThan rotation hG sigma hSigma bond bound := by
+  rcases hlong with ⟨outer, inner, hshore, hleft, hright, hseparator⟩
+  rcases long_ambientReturn_or_long_carrierInterval
+      hG sigma hSigma bond.site inner bound hseparator with hambient | hcarrier
+  · exact Or.inl ⟨outer, inner, hshore, hleft, hright, hambient⟩
+  · exact Or.inr ⟨outer, inner, hshore, hleft, hright, hcarrier⟩
 
 /-- Two strictly nested records in one residual-return sweep stack are
 realized by two strictly nested physical returns and therefore determine the
@@ -272,6 +328,47 @@ theorem hasCyclicEdgeCutOfSizeAtMost_or_longReturnSeparator_or_spaced_eq_rawStat
     · exact Or.inr (Or.inl
         ⟨outer, inner, hshore, hleft, hright, Nat.lt_of_not_ge hshort⟩)
   · exact Or.inr (Or.inr hrepeated)
+
+/-- **Componentwise uniform-width alternative.**  The non-uniform separator
+horn splits into its two geometric coordinates.  With component bound `B`, a
+short separator gives a cyclic cut of size at most `6B`; otherwise either the
+ambient return or the carrier interval has more than `B` distinct vertices.
+The last horn is the existing materially spaced repeated sweep state. -/
+theorem hasCyclicEdgeCutOfSizeAtMost_or_longAmbientReturn_or_longCarrierInterval_or_spaced
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (componentBound spacing : Nat)
+    (hmany :
+      2 * (spacing + 1) * (1 + 1) ^ 2 <
+        bond.site.cycle.tail.support.length) :
+    HasCyclicEdgeCutOfSizeAtMost G (6 * componentBound) ∨
+      HasNestedAmbientReturnSupportLargerThan rotation hG sigma hSigma bond
+        componentBound ∨
+      HasNestedCarrierIntervalSupportLargerThan rotation hG sigma hSigma bond
+        componentBound ∨
+      ∃ firstPosition secondPosition : CyclePosition sigma bond.site,
+        firstPosition < secondPosition ∧
+          spacing + 1 ≤ secondPosition.val - firstPosition.val ∧
+          (phasedResidualReturnSweepData rotation minimal hG sigma hSigma bond
+              spacing).rawState firstPosition =
+            (phasedResidualReturnSweepData rotation minimal hG sigma hSigma bond
+              spacing).rawState secondPosition := by
+  rcases
+      hasCyclicEdgeCutOfSizeAtMost_or_longReturnSeparator_or_spaced_eq_rawState
+        rotation minimal hG sigma hSigma bond (2 * componentBound) spacing hmany with
+    hcut | hlong | hrepeated
+  · exact Or.inl (hcut.mono (by omega))
+  · rcases
+        hasNestedAmbientReturnSupportLargerThan_or_carrierInterval_of_separator
+          rotation hG sigma hSigma bond componentBound hlong with
+      hambient | hcarrier
+    · exact Or.inr (Or.inl hambient)
+    · exact Or.inr (Or.inr (Or.inl hcarrier))
+  · exact Or.inr (Or.inr (Or.inr hrepeated))
 
 end
 
