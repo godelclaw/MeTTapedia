@@ -3391,12 +3391,12 @@ distinguished alternating cycle at the first site either belongs to the
 alternating graph at the second site or lies in one of the two deletion
 footprints.  Every arc of the first cycle avoiding both footprints therefore
 has its endpoints in one connected component of the second alternating
-graph.  More generally, along a chain of (r) consecutively compatible
-receipts, the first and last alternating graphs disagree on at most (10r)
+graph.  More generally, along a chain of $r$ consecutively compatible
+receipts, the first and last alternating graphs disagree on at most $10r$
 edge values.  Taking those disagreements as an exceptional carrier, every
 walk in the first graph that avoids the carrier has its endpoints in one
 connected component of the last graph.  Thus component splitting and merging
-across the whole chain is confined to at most (10r) edge locations.
+across the whole chain is confined to at most $10r$ edge locations.
 \end{lemma}
 
 \begin{proof}
@@ -4326,6 +4326,42 @@ representative.  This proves repair-surjectivity of every distinct binary
 constraint.  A global section would contradict
 Corollary~\ref{cor:nine-site-tait-common-core-residue}, which supplies a
 disagreeing pair for every simultaneous nine-site assignment.
+\end{proof}
+
+The absence of a global section in the preceding corollary must not be
+confused with the absence of a section on a path.  Acyclic binary constraints
+have a stronger elementary property which is useful here.
+
+\begin{corollary}[a consecutive common-core repair section]
+\label{cor:consecutive-common-core-repair-section}
+\Sverified{Mettapedia.Logic.PathConstraint.sectionEndingAt}
+\Sverified{Mettapedia.GraphTheory.FourColor.OrderedMeshCommonCorePathSection.exists_consecutive_commonCoreRepair_pathSection_of_no_branchingOrBoundary}
+Under the no-branching and no-boundary hypothesis of
+Corollary~\ref{cor:arc-consistent-no-section-residue}, one can choose a proper
+nonzero edge-colouring at each of the nine ordered deletion sites so that
+consecutive choices agree on their exact common deletion.  Each nonterminal
+choice is reachable from the canonical colouring at its site by valid-pair
+Kempe moves, and the final choice may be prescribed to be the canonical final
+colouring.
+\end{corollary}
+
+\begin{proof}
+For the edge between consecutive sites $i$ and $i+1$, relate a colouring at
+$i$ to one at $i+1$ when the former is Kempe-reachable from the canonical
+colouring at $i$ and the two colourings agree on their exact common deletion.
+Pairwise repair-surjectivity says that this relation is right-total: every
+target colouring has a related source colouring.  Starting with the prescribed
+colouring at the last site and choosing a predecessor successively constructs
+the section.  Formally this is the generic dependent path-constraint theorem,
+proved by reverse induction on the finite path.
+
+There is no contradiction with the preceding no-section result.  The latter
+forbids one assignment satisfying every ordered pairwise constraint; the
+present assignment satisfies only the eight consecutive constraints.  Nor
+does this yet give a compatible chain of matching-overlap states: the absent
+Tait-colour class used to complete each deletion colouring to a perfect
+matching must still be synchronized along the path.  That colour-gauge
+condition is the exact remaining adapter.
 \end{proof}
 
 The binary constraints have one further exact locality property.  Although
