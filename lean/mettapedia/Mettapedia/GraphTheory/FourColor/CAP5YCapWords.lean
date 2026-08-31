@@ -76,4 +76,60 @@ theorem cap5YCapSupport_adjacent_iff_run :
         (w i = w (i + 1) ∧ w (i + 1) = w (i + 2))) := by
   decide
 
+/-! ## The menu-preserving reflection and colour equivariance -/
+
+/-- The reflection `i ↦ 3 - i` of the five ports.  It fixes the middle Y-cap
+pair `(1,2)`, swaps the cap pairs `(0,1)` and `(2,3)`, and preserves the
+pentagon support, so it is the reflection symmetry of the trivial-five-cut
+menu `{P5, Y₀, Y₁, Y₂}`. -/
+def cap5ReflectBoundaryWord (w : CAP5BoundaryWord) : CAP5BoundaryWord :=
+  fun i => w (3 - i)
+
+/-- Reflect an internal 5-cycle colouring compatibly: edge `j` of the
+reflected word was edge `2 - j` of the original. -/
+def cap5ReflectInternalCycleColoring
+    (x : CAP5InternalCycleColoring) : CAP5InternalCycleColoring :=
+  fun j => x (2 - j)
+
+theorem isTaitColorTriple_swap_last {a b c : Color}
+    (h : IsTaitColorTriple a b c) : IsTaitColorTriple a c b := by
+  obtain ⟨ha, hb, hc, hab, hac, hbc⟩ := h
+  exact ⟨ha, hc, hb, hac, hab, fun hcb => hbc hcb.symm⟩
+
+/-- Reflection transports pentagon extensions, with the reflected internal
+colouring as explicit witness. -/
+theorem cap5ExtendsAcrossCycleWith_reflect
+    {w : CAP5BoundaryWord} {x : CAP5InternalCycleColoring}
+    (h : CAP5ExtendsAcrossCycleWith w x) :
+    CAP5ExtendsAcrossCycleWith (cap5ReflectBoundaryWord w)
+      (cap5ReflectInternalCycleColoring x) := by
+  obtain ⟨h0, h1, h2, h3, h4⟩ := h
+  exact ⟨isTaitColorTriple_swap_last h3, isTaitColorTriple_swap_last h2,
+    isTaitColorTriple_swap_last h1, isTaitColorTriple_swap_last h0,
+    isTaitColorTriple_swap_last h4⟩
+
+theorem cap5WordExtendsAcrossCycle_reflect {w : CAP5BoundaryWord}
+    (h : CAP5WordExtendsAcrossCycle w) :
+    CAP5WordExtendsAcrossCycle (cap5ReflectBoundaryWord w) := by
+  obtain ⟨x, hx⟩ := h
+  exact ⟨cap5ReflectInternalCycleColoring x, cap5ExtendsAcrossCycleWith_reflect hx⟩
+
+/-- Reflection carries the Y-cap support at `i` to the one at `2 - i`. -/
+theorem cap5YCapSupport_reflect :
+    ∀ (w : CAP5BoundaryWord) (i : Fin 5),
+      (CAP5YCapSupport i (cap5ReflectBoundaryWord w) ↔
+        CAP5YCapSupport (2 - i) w) := by
+  decide
+
+/-- A colour equivalence fixing `0` preserves each Y-cap support. -/
+theorem cap5YCapSupport_map_equiv_of_map_zero {σ : Color ≃ Color}
+    (hσ0 : σ 0 = 0) (i : Fin 5) {w : CAP5BoundaryWord}
+    (h : CAP5YCapSupport i w) :
+    CAP5YCapSupport i (cap5MapBoundaryWord σ w) := by
+  obtain ⟨hcap, hnz, htriple⟩ := h
+  refine ⟨?_, ?_, isTaitColorTriple_map_equiv_of_map_zero hσ0 htriple⟩
+  · simp [cap5MapBoundaryWord, hcap]
+  · intro hzero
+    exact hnz (σ.injective (by simpa [cap5MapBoundaryWord, hσ0] using hzero))
+
 end Mettapedia.GraphTheory.FourColor
