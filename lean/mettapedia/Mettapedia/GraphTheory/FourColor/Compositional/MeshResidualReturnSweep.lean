@@ -7,8 +7,8 @@ import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweepCyclicC
 This module lifts the single-site geometric sweep alternative into the global
 mesh quantifiers already supplied by the residual-defect minimizer.  At every
 noncentral mesh step, one proof-carrying receipt now exposes the same exact
-alternative: a bounded cyclic return cut, or two materially spaced equal
-phased sweep states.
+trichotomy: a uniformly bounded cyclic cut, a physical return separator longer
+than the requested bound, or two materially spaced equal phased sweep states.
 
 The construction is pointwise.  It deliberately does not claim that cuts or
 repeated states chosen at neighbouring sites are mutually compatible; that is
@@ -41,7 +41,7 @@ variable {V : Type u} [Fintype V] [DecidableEq V]
   {a b : Nat}
 
 /-- A provenanced two-sector return receipt, upgraded with the geometric
-length alternative at every requested material spacing. -/
+length alternative at every requested separator bound and material spacing. -/
 structure GeometricSweepReceipt
     (rotation : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
@@ -52,11 +52,12 @@ structure GeometricSweepReceipt
     (step : GlobalMeshStep rotation ordered) where
   base : ProvenancedTwoSectorReturnReceipt
     rotation minimal ordered hG sigma step
-  alternative : ∀ spacing : Nat,
+  alternative : ∀ separatorBound spacing : Nat,
     2 * (spacing + 1) * (1 + 1) ^ 2 <
         base.base.base.bond.site.cycle.tail.support.length →
-      HasBoundedCyclicReturnCut rotation hG sigma
-          base.base.base.sigma_supported base.base.base.bond ∨
+      HasCyclicEdgeCutOfSizeAtMost G (3 * separatorBound) ∨
+        HasNestedReturnSeparatorLargerThan rotation hG sigma
+          base.base.base.sigma_supported base.base.base.bond separatorBound ∨
         ∃ firstPosition secondPosition :
             CyclePosition sigma base.base.base.bond.site,
           firstPosition < secondPosition ∧
@@ -78,13 +79,14 @@ def GeometricSweepReceipt.ofTwoSector
     (hG : HasCubicIncidentEdgeTriples G)
     (sigma : Pairing V)
     (step : GlobalMeshStep rotation ordered)
-    (receipt : ProvenancedTwoSectorReturnReceipt
+  (receipt : ProvenancedTwoSectorReturnReceipt
       rotation minimal ordered hG sigma step) :
     GeometricSweepReceipt rotation minimal ordered hG sigma step where
   base := receipt
-  alternative := fun spacing hmany =>
-    hasBoundedCyclicReturnCut_or_spaced_eq_rawState rotation minimal hG sigma
-      receipt.base.base.sigma_supported receipt.base.base.bond spacing hmany
+  alternative := fun separatorBound spacing hmany =>
+    hasCyclicEdgeCutOfSizeAtMost_or_longReturnSeparator_or_spaced_eq_rawState
+      rotation minimal hG sigma receipt.base.base.sigma_supported
+        receipt.base.base.bond separatorBound spacing hmany
 
 /-- One common residual-defect minimizer supplies the geometric sweep
 alternative at every noncentral step of an ordered mesh. -/
