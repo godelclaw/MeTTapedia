@@ -71,6 +71,15 @@ theorem pairing_supported {data : AdjacentPairData G}
   centralCompletionPairing_supportedBy (G := G) data hcubic state.coloring
     state.isTait state.absentColor state.absentAtBoundary
 
+/-- The completed matching contains the central edge restored after deleting
+the adjacent pair. -/
+theorem pairing_partner_first {data : AdjacentPairData G}
+    (state : DeletionMatchingState data)
+    (hcubic : ∀ vertex : V, (incidentEdgeFinset G vertex).card = 3) :
+    (state.pairing hcubic).partner data.firstVertex = data.secondVertex :=
+  centralCompletionPairing_partner_first (G := G) data hcubic state.coloring
+    state.isTait state.absentColor state.absentAtBoundary
+
 end DeletionMatchingState
 
 /-- The pairing recovered from a colour-class perfect matching uses an edge

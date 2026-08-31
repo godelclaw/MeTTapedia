@@ -17,6 +17,7 @@ to assume its answer.
 
 namespace Mettapedia.GraphTheory.FourColor.Compositional.ResidualSiteProvenance
 
+open Compositional.AlternatingSiteGeometry
 open GoertzelV24AdjacentPairBoundary
 open GoertzelV24AdjacentPairMatchingExtraction
 open GoertzelV24AdjacentPairMatchingExtraction.AdjacentPairData
@@ -262,61 +263,17 @@ theorem exists_exchangeRigid_with_provenanced_alternatingSite_at_every_globalMes
     let first := globalFirstVertex rotation ordered step
     let second := globalSecondVertex rotation ordered step
     have hcentral' : tau.partner first = second := hcentral
-    have hroot : sigma.partner first ≠ tau.partner first := by
-      intro heq
-      exact hSigmaCentral (heq.trans hcentral')
-    let carrier := alternatingComponent sigma tau first
-    have hfirst : first ∈ carrier :=
-      root_mem_alternatingComponent sigma tau first
-    have hSigmaClosed :
-        ∀ vertex ∈ carrier, sigma.partner vertex ∈ carrier :=
-      alternatingComponent_closed_first sigma tau first
-    have hTauClosed :
-        ∀ vertex ∈ carrier, tau.partner vertex ∈ carrier :=
-      alternatingComponent_closed_second sigma tau first
-    have hsecond : second ∈ carrier := by
-      rw [← hcentral']
-      exact hTauClosed first hfirst
-    have hfour : 4 ≤ carrier.card :=
-      four_le_card_alternatingComponent sigma tau hroot
-    obtain ⟨cycle, hcycle, hcentralCycle, hcycleSupport,
-        hcycleEdges⟩ :=
-      exists_ambient_alternatingCycle sigma tau hSigma hTau hroot
-    have hcentralCycle' : s(first, second) ∈ cycle.edges := by
-      simpa only [hcentral'] using hcentralCycle
-    have houtside :
-        ∃ vertex : V,
-          sigma.partner vertex = tau.partner vertex ∧
-          vertex ∉ carrier ∧ sigma.partner vertex ∉ carrier :=
-      exists_shared_edge_outside_alternatingComponent
-        htriples hnot sigma tau hSigma hTau hroot
-    let site : ProperAlternatingSiteWitness G sigma first second :=
-      { tau := tau
-        tau_supported := hTau
-        central := hcentral'
-        carrier := carrier
-        carrier_eq := rfl
-        first_mem := hfirst
-        second_mem := hsecond
-        cycle := cycle
-        cycle_isCycle := hcycle
-        central_edge_mem_cycle := hcentralCycle'
-        cycle_support_eq := hcycleSupport
-        cycle_edges_alternating := hcycleEdges
-        sigma_closed := hSigmaClosed
-        tau_closed := hTauClosed
-        disagree_on_carrier := by
-          intro vertex hvertex
-          apply disagreement_of_mem_alternatingComponent sigma tau hroot
-          simpa only [carrier] using hvertex
-        four_le := hfour
-        shared_edge_outside := houtside
-        exchange_rigid := hrigid carrier hSigmaClosed hTauClosed }
+    obtain ⟨site, hsiteTau⟩ :=
+      properAlternatingComponentWitness_of_partner_ne
+        htriples hnot sigma hSigma tau hTau
+          (fun carrier hSigmaClosed hTauClosed =>
+            hrigid carrier hSigmaClosed hTauClosed)
+          first second hcentral' hSigmaCentral
     refine Nonempty.intro ?_
     exact ({
       provenance := provenance
       site := site
-      site_tau_eq := rfl } :
+      site_tau_eq := by simpa only [tau] using hsiteTau } :
         ProvenancedAlternatingSiteReceipt
           rotation minimal ordered sigma step)
 

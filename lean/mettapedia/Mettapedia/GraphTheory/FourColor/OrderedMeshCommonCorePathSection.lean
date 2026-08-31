@@ -1,5 +1,6 @@
 import Mettapedia.Logic.PathConstraint
 import Mettapedia.GraphTheory.FourColor.Compositional.AlternatingComponentLocalization
+import Mettapedia.GraphTheory.FourColor.Compositional.AlternatingSiteGeometry
 import Mettapedia.GraphTheory.FourColor.Compositional.DeletionColorMatching
 import Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshCommonCoreArcConsistencyResidue
 import Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshCommonCoreLocalizationResidue
@@ -14,8 +15,10 @@ on a complete graph, always admit a section.  Applying the generic path theorem
 therefore selects Tait colourings at the nine ordered sites which agree on every
 consecutive common deletion.
 
-This does not assert an all-pairs section, nor does it synchronize the absent
-colour used to read the sites as matching-overlap states.
+This does not assert an all-pairs section or a single absent colour across all
+nine sites.  A pigeonhole argument nevertheless selects two sites with the
+same absent colour; their completed matchings and alternating graphs then have
+a uniformly bounded disagreement carrier.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -25,6 +28,7 @@ namespace OrderedMeshCommonCorePathSection
 open Amplitude
 open Compositional.AlternatingComponentLocalization
 open Compositional.AlternatingOverlapGeometry
+open Compositional.AlternatingSiteGeometry
 open Compositional.DeletionColorMatching
 open GoertzelV24AdjacentPairBoundary
 open GoertzelV24AdjacentPairCommonCoreLocalization
@@ -421,6 +425,91 @@ theorem exists_pair_pathAlternatingGraph_edgeDisagreement_le
         hagrees
     _ ≤ 45 := card_commonCoreRepairPathFootprint_le
       rotation minimal ordered row slot
+
+/-- At one path-selected deletion site, a residual-defect minimizer either
+uses the restored central edge or determines a proper alternating component
+through that edge. -/
+def PathAlternatingSiteAlternative
+    (row : Fin a) (slot : Fin 9 ↪ Fin n)
+    (minimizer : ResidualDefectMinimizer G) (index : Fin 9) : Prop :=
+  minimizer.pairing.partner
+      (rowSiteData rotation minimal ordered row slot index).firstVertex =
+      (rowSiteData rotation minimal ordered row slot index).secondVertex ∨
+    Nonempty (ProperAlternatingComponentWitness G minimizer.pairing
+      (rowSiteData rotation minimal ordered row slot index).firstVertex
+      (rowSiteData rotation minimal ordered row slot index).secondVertex)
+
+/-- Every path-selected deletion state satisfies the exact central-edge versus
+proper-alternating-component alternative. -/
+theorem pathAlternatingSiteAlternative
+    (row : Fin a) (slot : Fin 9 ↪ Fin n)
+    (pathSection : PathConstraint.Section
+      (fun index : Fin 9 ↦ NineSiteTaitColoringAt
+        (rotation := rotation) (minimal := minimal) (ordered := ordered)
+        row slot index)
+      (ConsecutiveCommonCoreRepairCompatible
+        rotation minimal ordered row slot))
+    (minimizer : ResidualDefectMinimizer G) (index : Fin 9) :
+    PathAlternatingSiteAlternative rotation minimal ordered row slot
+      minimizer index := by
+  let data := rowSiteData rotation minimal ordered row slot index
+  let state := pathDeletionMatchingState rotation minimal ordered row slot
+    pathSection index
+  let hcubic :=
+    Compositional.ResidualSiteProvenance.incidentEdgeFinset_card_eq_three
+      rotation minimal
+  by_cases hcentral :
+      minimizer.pairing.partner data.firstVertex = data.secondVertex
+  · exact Or.inl hcentral
+  · right
+    have htriples : HasCubicIncidentEdgeTriples G :=
+      hasCubicIncidentEdgeTriples_of_incidentEdgeFinset_card_eq_three hcubic
+    have hnot : ¬ TaitColorable G :=
+      graphBackedVertexMinimalTaitCounterexample_not_graphTaitColorable
+        rotation minimal
+    exact minimizer.properAlternatingComponentWitness
+      htriples hnot (state.pairing hcubic) (state.pairing_supported hcubic)
+      data.firstVertex data.secondVertex
+      (state.pairing_partner_first hcubic) hcentral
+
+/-- The two endpoints selected by the nine-site pigeonhole argument both
+carry the exact central-edge/component alternative, while their alternating
+graphs disagree on at most forty-five edges. -/
+theorem exists_pair_pathAlternatingEndpointAlternatives
+    (row : Fin a) (slot : Fin 9 ↪ Fin n)
+    (pathSection : PathConstraint.Section
+      (fun index : Fin 9 ↦ NineSiteTaitColoringAt
+        (rotation := rotation) (minimal := minimal) (ordered := ordered)
+        row slot index)
+      (ConsecutiveCommonCoreRepairCompatible
+        rotation minimal ordered row slot))
+    (minimizer : ResidualDefectMinimizer G) :
+    ∃ first second : Fin 9, first ≠ second ∧
+      PathAlternatingSiteAlternative rotation minimal ordered row slot
+        minimizer first ∧
+      PathAlternatingSiteAlternative rotation minimal ordered row slot
+        minimizer second ∧
+      (SimpleGraph.edgeDisagreementFinset
+        (alternatingGraph minimizer.pairing
+          ((pathDeletionMatchingState rotation minimal ordered row slot
+            pathSection first).pairing
+            (Compositional.ResidualSiteProvenance.incidentEdgeFinset_card_eq_three
+              rotation minimal)))
+        (alternatingGraph minimizer.pairing
+          ((pathDeletionMatchingState rotation minimal ordered row slot
+            pathSection second).pairing
+            (Compositional.ResidualSiteProvenance.incidentEdgeFinset_card_eq_three
+              rotation minimal)))).card ≤ 45 := by
+  obtain ⟨first, second, hne, hdisagreement⟩ :=
+    exists_pair_pathAlternatingGraph_edgeDisagreement_le
+      rotation minimal ordered row slot pathSection minimizer.pairing
+        minimizer.supported
+  exact ⟨first, second, hne,
+    pathAlternatingSiteAlternative rotation minimal ordered row slot
+      pathSection minimizer first,
+    pathAlternatingSiteAlternative rotation minimal ordered row slot
+      pathSection minimizer second,
+    hdisagreement⟩
 
 end
 
