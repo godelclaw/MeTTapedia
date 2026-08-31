@@ -3240,6 +3240,32 @@ absent colour survive into the residual witness rather than being hidden
 behind a fresh existential choice.
 \end{proof}
 
+\begin{corollary}[colouring provenance survives the residual geometry]
+\label{cor:global-residual-geometry-provenance}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualSiteGeometry.exists_provenancedTwoSectorReturnReceipt_at_every_globalMeshStep}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualSiteGeometry.provenancedTwoSectorReturn_site_tau_eq_pairing}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualSiteGeometry.provenancedTwoSectorReturn_site_eq_selected}
+The choice in Corollary~\ref{cor:global-residual-pairing-provenance} can be
+retained through the complete local geometry.  Thus one common
+minimum-residual-defect matching can be chosen so that every mesh step is
+central or carries a facial bond, physical formation, canonical return
+pairing, and two-sector noncrossing receipt whose second matching is exactly
+the absent-colour completion of the globally selected deletion colouring at
+that step.
+\end{corollary}
+
+\begin{proof}
+At a noncentral step, use the proper alternating cycle recorded by
+Corollary~\ref{cor:global-residual-pairing-provenance}.  Its simple primal
+cycle has two connected facial shores.  The formation switch and canonical
+return construction depend only on this supplied site and its two supported
+matchings, so they introduce no new choice of colouring or matching.  Apply
+the two-sector theorem to the resulting return-shore receipt.  The dependent
+equalities carried by the constructors identify both the final site and its
+second matching with the originally selected site and completed absent colour
+class.
+\end{proof}
+
 \begin{lemma}[rooted gauge for residual face sides]
 \label{lem:rooted-residual-face-side-gauge}
 \Sverified{Mettapedia.GraphTheory.Embedding.FaceCutGauge.basedLabel_eq}
