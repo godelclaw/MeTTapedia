@@ -2,6 +2,7 @@ import Mettapedia.Logic.PathConstraint
 import Mettapedia.GraphTheory.FourColor.Compositional.AlternatingComponentLocalization
 import Mettapedia.GraphTheory.FourColor.Compositional.AlternatingSiteGeometry
 import Mettapedia.GraphTheory.FourColor.Compositional.DeletionColorMatching
+import Mettapedia.GraphTheory.FourColor.Compositional.DeletionSiteGeometry
 import Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshCommonCoreArcConsistencyResidue
 import Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshCommonCoreLocalizationResidue
 import Mettapedia.GraphTheory.FourColor.GoertzelV24SimpleGraphTaitBridge
@@ -30,6 +31,7 @@ open Compositional.AlternatingComponentLocalization
 open Compositional.AlternatingOverlapGeometry
 open Compositional.AlternatingSiteGeometry
 open Compositional.DeletionColorMatching
+open Compositional.DeletionSiteGeometry
 open GoertzelV24AdjacentPairBoundary
 open GoertzelV24AdjacentPairCommonCoreLocalization
 open GoertzelV24AdjacentPairCommonCoreDisagreementResidue
@@ -508,6 +510,88 @@ theorem exists_pair_pathAlternatingEndpointAlternatives
     pathAlternatingSiteAlternative rotation minimal ordered row slot
       pathSection minimizer first,
     pathAlternatingSiteAlternative rotation minimal ordered row slot
+      pathSection minimizer second,
+    hdisagreement⟩
+
+/-- At one path-selected deletion state, the common residual minimizer either
+uses the restored edge or the exact path colouring carries complete
+two-sector return geometry. -/
+def PathTwoSectorSiteAlternative
+    (row : Fin a) (slot : Fin 9 ↪ Fin n)
+    (pathSection : PathConstraint.Section
+      (fun index : Fin 9 ↦ NineSiteTaitColoringAt
+        (rotation := rotation) (minimal := minimal) (ordered := ordered)
+        row slot index)
+      (ConsecutiveCommonCoreRepairCompatible
+        rotation minimal ordered row slot))
+    (minimizer : ResidualDefectMinimizer G) (index : Fin 9) : Prop :=
+  minimizer.pairing.partner
+      (rowSiteData rotation minimal ordered row slot index).firstVertex =
+      (rowSiteData rotation minimal ordered row slot index).secondVertex ∨
+    Nonempty (DeletionTwoSectorReturnReceipt rotation minimal minimizer
+      (rowSiteData rotation minimal ordered row slot index)
+      (pathDeletionMatchingState rotation minimal ordered row slot
+        pathSection index))
+
+/-- The path-selected deletion colouring itself, rather than a separate global
+choice, survives through the complete residual-return geometry whenever its
+restored edge is noncentral. -/
+theorem pathTwoSectorSiteAlternative
+    (row : Fin a) (slot : Fin 9 ↪ Fin n)
+    (pathSection : PathConstraint.Section
+      (fun index : Fin 9 ↦ NineSiteTaitColoringAt
+        (rotation := rotation) (minimal := minimal) (ordered := ordered)
+        row slot index)
+      (ConsecutiveCommonCoreRepairCompatible
+        rotation minimal ordered row slot))
+    (minimizer : ResidualDefectMinimizer G) (index : Fin 9) :
+    PathTwoSectorSiteAlternative rotation minimal ordered row slot
+      pathSection minimizer index := by
+  let data := rowSiteData rotation minimal ordered row slot index
+  let state := pathDeletionMatchingState rotation minimal ordered row slot
+    pathSection index
+  by_cases hcentral :
+      minimizer.pairing.partner data.firstVertex = data.secondVertex
+  · exact Or.inl hcentral
+  · exact Or.inr (DeletionTwoSectorReturnReceipt.ofState
+      rotation minimal minimizer data state hcentral)
+
+/-- The two equal-absent-colour endpoints selected from a coherent nine-site
+path both retain the exact central-or-two-sector alternative.  Their complete
+alternating graphs still disagree on at most forty-five ambient edges. -/
+theorem exists_pair_pathTwoSectorEndpointAlternatives
+    (row : Fin a) (slot : Fin 9 ↪ Fin n)
+    (pathSection : PathConstraint.Section
+      (fun index : Fin 9 ↦ NineSiteTaitColoringAt
+        (rotation := rotation) (minimal := minimal) (ordered := ordered)
+        row slot index)
+      (ConsecutiveCommonCoreRepairCompatible
+        rotation minimal ordered row slot))
+    (minimizer : ResidualDefectMinimizer G) :
+    ∃ first second : Fin 9, first ≠ second ∧
+      PathTwoSectorSiteAlternative rotation minimal ordered row slot
+        pathSection minimizer first ∧
+      PathTwoSectorSiteAlternative rotation minimal ordered row slot
+        pathSection minimizer second ∧
+      (SimpleGraph.edgeDisagreementFinset
+        (alternatingGraph minimizer.pairing
+          ((pathDeletionMatchingState rotation minimal ordered row slot
+            pathSection first).pairing
+            (Compositional.ResidualSiteProvenance.incidentEdgeFinset_card_eq_three
+              rotation minimal)))
+        (alternatingGraph minimizer.pairing
+          ((pathDeletionMatchingState rotation minimal ordered row slot
+            pathSection second).pairing
+            (Compositional.ResidualSiteProvenance.incidentEdgeFinset_card_eq_three
+              rotation minimal)))).card ≤ 45 := by
+  obtain ⟨first, second, hne, hdisagreement⟩ :=
+    exists_pair_pathAlternatingGraph_edgeDisagreement_le
+      rotation minimal ordered row slot pathSection minimizer.pairing
+        minimizer.supported
+  exact ⟨first, second, hne,
+    pathTwoSectorSiteAlternative rotation minimal ordered row slot
+      pathSection minimizer first,
+    pathTwoSectorSiteAlternative rotation minimal ordered row slot
       pathSection minimizer second,
     hdisagreement⟩
 
