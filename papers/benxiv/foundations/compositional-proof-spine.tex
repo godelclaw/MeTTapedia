@@ -3205,6 +3205,43 @@ made before the mesh step, so the quantifier order remains
 \(\sigma\) at each site.
 \end{proof}
 
+\begin{lemma}[rooted gauge for residual face sides]
+\label{lem:rooted-residual-face-side-gauge}
+\Sverified{Mettapedia.GraphTheory.Embedding.FaceCutGauge.basedLabel_eq}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSide.facialBondCut_basedLabel_eq}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSide.basedReturnSide_partner}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSide.not_crosses_of_basedReturnSide_eq}
+Fix one ambient orbit face (f_0).  If two exact binary face cuts have the
+same selected primal edges, then their normalized labels
+
+\[
+       \widehat\lambda(f)=\lambda(f)-\lambda(f_0)
+\]
+
+agree on every orbit face.  In particular, the facial bond at a noncentral
+residual site has a canonical (f_0)-rooted side coordinate, independent of
+which of its two shores was named first.  The two endpoints of every physical
+return have the same rooted coordinate, and two return chords with the same
+rooted coordinate do not cross.
+\end{lemma}
+
+\begin{proof}
+The facial-boundary vector of a binary face labeling records, on each primal
+edge, whether the two incident labels differ.  Exact cuts with the same
+selected edges therefore have equal boundary vectors.  Their difference lies
+in the kernel of the facial-boundary map.  The full facial dual is connected,
+so the kernel theorem says that this difference is constant on all orbit
+faces.  Subtracting its value at (f_0) removes that constant.
+
+Apply this to the indicator of either connected face shore supplied by the
+residual facial bond.  Complementing the chosen shore merely adds the constant
+(1), hence does not change the rooted label.  The previously proved
+same-shore statement for the endpoints of a return gives equality of their
+rooted coordinates.  Finally, equality of rooted coordinates is equivalent
+to equality of the local Boolean shore labels, so
+Lemma~\ref{lem:residual-return-two-sector-noncrossing} excludes crossing.
+\end{proof}
+
 This is not merely another proof that a bridgeless cubic graph has a perfect
 matching.  Every physical mesh step now supplies an ambient matching through
 that step, and all those site matchings are tested against one common
