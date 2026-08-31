@@ -170,6 +170,126 @@ theorem card_edges_le_support_mul_degreeBound
     _ ≤ cycle.support.toFinset.card * degreeBound :=
       Finset.card_biUnion_le_card_mul _ _ _ hdegree
 
+/-- A walk disjoint from the bounding cycle stays on one filled side.  This
+is the pathwise form of the local off-cycle edge transport theorem. -/
+theorem filledCycleSide_iff_of_walk_avoids_support
+    (data : Data G)
+    (hrotation : VertexRotationCyclic data.toRotationSystem)
+    {base : V} (cycle : G.Walk base base)
+    (cut : ExactFaceCut data.toRotationSystem
+      (fun edge : G.edgeSet => edge.1 ∈ cycle.edges) F2)
+    (selected : F2) {start finish : V} (walk : G.Walk start finish)
+    (havoid : ∀ vertex ∈ walk.support, vertex ∉ cycle.support) :
+    cut.filledCycleSide data cycle selected start ↔
+      cut.filledCycleSide data cycle selected finish := by
+  induction walk with
+  | nil => exact Iff.rfl
+  | @cons current next finish hadj tail ih =>
+      let dart : G.Dart := ⟨(current, next), hadj⟩
+      have hcurrent : data.toRotationSystem.vertOf dart ∉ cycle.support := by
+        simpa [dart] using havoid current (by simp)
+      have hnext : data.toRotationSystem.vertOf
+          (data.toRotationSystem.alpha dart) ∉ cycle.support := by
+        simpa [dart] using havoid next (by simp)
+      have hstep :=
+        cut.filledCycleSide_iff_of_edge_endpoints_not_mem_support
+          data hrotation cycle selected dart hcurrent hnext
+      have hstep' :
+          cut.filledCycleSide data cycle selected current ↔
+            cut.filledCycleSide data cycle selected next := by
+        simpa [dart] using hstep
+      have htail : ∀ vertex ∈ tail.support, vertex ∉ cycle.support := by
+        intro vertex hvertex
+        exact havoid vertex (by simp [hvertex])
+      exact hstep'.trans (ih htail)
+
+/-- A simple cycle disjoint from the bounding cycle lies wholly on one of
+the two vertex sides determined by any selected exact-cut label.  No Jordan
+curve theorem is used here: local exact-cut transport and a walk induction
+give the dichotomy. -/
+theorem hasCycleOnSide_or_complement_of_disjoint_cycle
+    (data : Data G)
+    (hrotation : VertexRotationCyclic data.toRotationSystem)
+    {base : V} (cycle : G.Walk base base)
+    (cut : ExactFaceCut data.toRotationSystem
+      (fun edge : G.edgeSet => edge.1 ∈ cycle.edges) F2)
+    (selected : F2) {otherBase : V} (other : G.Walk otherBase otherBase)
+    (hother : other.IsCycle)
+    (hdisjoint : other.support.Disjoint cycle.support) :
+    HasCycleOnSide G (cut.filledCycleSide data cycle selected) ∨
+      HasCycleOnSide G
+        (fun vertex => ¬cut.filledCycleSide data cycle selected vertex) := by
+  have havoid : ∀ vertex ∈ other.support, vertex ∉ cycle.support := by
+    intro vertex hvertex hcycle
+    exact (List.disjoint_left.mp hdisjoint) hvertex hcycle
+  by_cases hbaseSide : cut.filledCycleSide data cycle selected otherBase
+  · left
+    refine ⟨otherBase, hbaseSide, other, hother, ?_⟩
+    intro vertex hvertex
+    have hpathAvoid : ∀ point ∈ (other.takeUntil vertex hvertex).support,
+        point ∉ cycle.support := by
+      intro point hpoint
+      exact havoid point (other.support_takeUntil_subset_support hvertex hpoint)
+    exact (filledCycleSide_iff_of_walk_avoids_support data hrotation cycle cut
+      selected (other.takeUntil vertex hvertex) hpathAvoid).1 hbaseSide
+  · right
+    refine ⟨otherBase, hbaseSide, other, hother, ?_⟩
+    intro vertex hvertex hvertexSide
+    have hpathAvoid : ∀ point ∈ (other.takeUntil vertex hvertex).support,
+        point ∉ cycle.support := by
+      intro point hpoint
+      exact havoid point (other.support_takeUntil_subset_support hvertex hpoint)
+    exact hbaseSide
+      ((filledCycleSide_iff_of_walk_avoids_support data hrotation cycle cut
+        selected (other.takeUntil vertex hvertex) hpathAvoid).2 hvertexSide)
+
+/-- A cycle disjoint from the bounding cycle canonically supplies the
+opposite-side witness needed for a cyclic edge cut.  Read the exact-cut label
+at the disjoint cycle's first dart and select the other binary label.  The
+base vertex is then outside the filled side, and local transport propagates
+that fact around the whole cycle. -/
+theorem exists_selected_with_complement_cycle_of_disjoint_cycle
+    (data : Data G)
+    (hrotation : VertexRotationCyclic data.toRotationSystem)
+    {base : V} (cycle : G.Walk base base)
+    (cut : ExactFaceCut data.toRotationSystem
+      (fun edge : G.edgeSet => edge.1 ∈ cycle.edges) F2)
+    {otherBase : V} (other : G.Walk otherBase otherBase)
+    (hother : other.IsCycle)
+    (hdisjoint : other.support.Disjoint cycle.support) :
+    ∃ selected : F2,
+      HasCycleOnSide G
+        (fun vertex =>
+          ¬cut.filledCycleSide data cycle selected vertex) := by
+  let dart : data.toRotationSystem.D := other.firstDart hother.not_nil
+  let selected : F2 :=
+    cut.label (dartOrbitFace data.toRotationSystem dart) + 1
+  have havoid : ∀ vertex ∈ other.support, vertex ∉ cycle.support := by
+    intro vertex hvertex hcycle
+    exact (List.disjoint_left.mp hdisjoint) hvertex hcycle
+  have hbaseOff : data.toRotationSystem.vertOf dart ∉ cycle.support := by
+    simpa [dart] using havoid otherBase (by simp)
+  have hlabelNe :
+      cut.label (dartOrbitFace data.toRotationSystem dart) ≠ selected := by
+    dsimp only [selected]
+    intro heq
+    generalize cut.label (dartOrbitFace data.toRotationSystem dart) = label at heq
+    fin_cases label <;> simp at heq
+  have hbaseOutside :
+      ¬cut.filledCycleSide data cycle selected otherBase := by
+    have hread := cut.filledCycleSide_iff_label_of_not_mem_support
+      data hrotation cycle selected dart hbaseOff
+    simpa [dart] using (fun hside => hlabelNe (hread.mp hside))
+  refine ⟨selected, otherBase, hbaseOutside, other, hother, ?_⟩
+  intro vertex hvertex hvertexSide
+  have hpathAvoid : ∀ point ∈ (other.takeUntil vertex hvertex).support,
+      point ∉ cycle.support := by
+    intro point hpoint
+    exact havoid point (other.support_takeUntil_subset_support hvertex hpoint)
+  exact hbaseOutside
+    ((filledCycleSide_iff_of_walk_avoids_support data hrotation cycle cut
+      selected (other.takeUntil vertex hvertex) hpathAvoid).2 hvertexSide)
+
 /-- The filled side contains the original simple cycle. -/
 theorem hasCycleOnSide_filledCycleSide
     (data : Data G) {base : V} (cycle : G.Walk base base)
