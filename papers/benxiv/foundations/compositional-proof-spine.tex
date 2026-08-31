@@ -7156,6 +7156,44 @@ Lemma~\ref{lem:bounded-stack-sweep-pigeonhole}; equality of codes is then
 transported back to literal equality of the local letter and every stack.
 \end{proof}
 
+\begin{corollary}[physical residual-return length--depth alternative]
+\label{cor:physical-residual-return-length-depth}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.NoncrossingPairingSweep.noncrossingMatchingOfPairing}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweep.returnShoreMatching_pairwise_noncrossing}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweep.exists_deep_return_shore_or_distinct_eq_rawState}
+Let a proper alternating site in a graph-backed least counterexample have
+$n$ cyclic positions and the physical residual-return receipt of
+Lemma~\ref{lem:residual-return-two-sector-noncrossing}.  Fix $D\geq0$.
+If
+\[
+                         n>2(D+1)^2,
+\]
+then either one face shore has a residual-return stack of depth greater than
+$D$, or two distinct cyclic positions have the same shore label and the
+same two ordered stacks of currently open residual returns.
+\end{corollary}
+
+\begin{proof}
+For each return pair, retain its smaller cyclic coordinate and sort these
+canonical representatives.  The partner involution makes distinct pairs
+endpoint-disjoint.  Lemma~\ref{lem:residual-return-two-sector-noncrossing}
+says that the returns on either fixed Boolean shore are noncrossing, so the
+two sorted families are literal noncrossing matchings.  Sweep them
+simultaneously around the carrier and apply
+Lemma~\ref{lem:noncrossing-length-depth} with local alphabet
+$A=\{0,1\}$, two matching families, and the one-element arc-label set
+$K=\{*\}$.  A stack of depth at most $D$ then has $D+1$ possible
+values, and the complete raw record has at most $2(D+1)^2$ values.
+
+The formal adapter constructs the sorted arc lists directly from the
+fixed-point-free return involution.  Its endpoint-disjointness proof uses
+only involutivity, while noncrossing is supplied by the exact spherical
+face-side argument.  Since the arc label is the one-element type, equality
+of the two literal stacks is equivalently equality of their two depths; it
+does not yet record the colouring support or the physical connectivity state
+needed for a splice.
+\end{proof}
+
 For the route, the two Kempe families suggest the matching stacks and capped
 face progress supplies additional finite labels.  However those matchings
 belong to a colouring state, whereas the physical graph surgery must be
