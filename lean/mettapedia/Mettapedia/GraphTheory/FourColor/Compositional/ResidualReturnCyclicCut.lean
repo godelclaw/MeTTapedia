@@ -15,6 +15,7 @@ namespace Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnCyclicCut
 
 open AlternatingSiteGeometry
 open CyclePushOffCut
+open GoertzelV24FaceDualConnectedness
 open GoertzelV24ResidualReturnCycleOrder
 open GoertzelV24ResidualReturnSectorNoncrossing
 open GoertzelV24TwoEdgeCutMinimality
@@ -34,8 +35,8 @@ variable {V : Type u} [Fintype V] [DecidableEq V]
 
 /-- Two strictly nested physical returns produce a cyclic edge cut whose
 width is bounded by three times the number of vertices on the inner
-separator.  The single length hypothesis says that the displayed inner
-separator has an interior edge; outer nondegeneracy is automatic. -/
+separator.  Nondegeneracy of both closed walks is automatic in a simple
+graph. -/
 theorem exists_bounded_cyclicEdgeCut_of_strictly_nested_returns
     (rotation : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
@@ -46,8 +47,7 @@ theorem exists_bounded_cyclicEdgeCut_of_strictly_nested_returns
     (outer inner : OrderedReturnChord
       (orderedSiteReturnPairing hG sigma hSigma site))
     (hleft : outer.left < inner.left)
-    (hright : inner.right < outer.right)
-    (hinnerLong : 1 < inner.right.val - inner.left.val) :
+    (hright : inner.right < outer.right) :
     let separator := orderedReturnSeparator hG sigma hSigma site inner
     ∃ cut : ExactFaceCut rotation.toRotationSystem
         (fun edge : G.edgeSet => edge.1 ∈ separator.edges) F2,
@@ -60,8 +60,8 @@ theorem exists_bounded_cyclicEdgeCut_of_strictly_nested_returns
   let separator := orderedReturnSeparator hG sigma hSigma site inner
   let outsideCycle := complementaryReturnCycle hG sigma hSigma site outer
   have hseparator : separator.IsCycle := by
-    simpa only [separator] using orderedReturnSeparator_isCycle
-      hG sigma hSigma site inner hinnerLong
+    simpa only [separator] using orderedReturnSeparator_isCycle_automatic
+      hG sigma hSigma site inner
   have houtside : outsideCycle.IsCycle := by
     simpa only [outsideCycle] using complementaryReturnCycle_isCycle
       hG sigma hSigma site outer
@@ -71,9 +71,27 @@ theorem exists_bounded_cyclicEdgeCut_of_strictly_nested_returns
     simpa only [outsideCycle, separator] using
       complementaryReturnCycle_support_disjoint_orderedReturnSeparator
         hG sigma hSigma site outer inner hleft hright
-  rcases exists_exactFaceCut_with_bounded_pushOff_edges
-      rotation minimal hG sigma hSigma site inner hinnerLong with
-    ⟨cut, hwidth⟩
+  have hconnected : G.Connected := by
+    rw [←
+      GoertzelV24SimpleGraphFaceDualConnectedness.rotationPrimalGraph_toRotationSystem_eq
+        G rotation]
+    exact minimal.primalConnected
+  have hdual := orbitFaceInteriorDual_connected rotation.toRotationSystem
+    minimal.spherical.cubic minimal.primalConnected
+      minimal.vertexRotationCyclic
+  rcases exists_exactFaceCut_of_closedTrail
+      rotation minimal.facesTwoSided hdual hconnected minimal.spherical
+        separator hseparator.isTrail with
+    ⟨cut, _hboundary⟩
+  have hwidth : ∀ selected : F2,
+      (CyclePushOffCut.edges rotation separator cut selected).card ≤
+        separator.support.toFinset.card * 3 := by
+    intro selected
+    apply card_edges_le_support_mul_degreeBound
+      rotation minimal.vertexRotationCyclic separator cut selected 3
+    intro vertex _hvertex
+    exact (incidentEdgeFinset_card_eq_three_of_hasCubicIncidentEdgeTriples
+      hG vertex).le
   rcases exists_selected_with_complement_cycle_of_disjoint_cycle
       rotation minimal.vertexRotationCyclic separator cut outsideCycle
         houtside hdisjoint with

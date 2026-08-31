@@ -446,6 +446,113 @@ theorem complementaryReturnCycle_length_alternative
   exact (orderedReturnPath_edge_not_cycle hG sigma hSigma site
     chord.left hedgeReturn) hedgeCycle
 
+/-- The usual displayed return separator is likewise automatically
+nondegenerate: its residual path and carrier interval cannot both be the
+same single edge. -/
+theorem orderedReturnSeparator_length_alternative
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingComponentWitness G sigma first second)
+    (chord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site)) :
+    1 < (orderedChordAmbientPath hG sigma hSigma site chord).length ∨
+      1 < (residualCycleInterval sigma site chord).length := by
+  let physical := orderedChordAmbientPath hG sigma hSigma site chord
+  let carrier := residualCycleInterval sigma site chord
+  have hphysicalNotNil : ¬physical.Nil := by
+    simpa only [physical] using
+      orderedChordAmbientPath_not_nil hG sigma hSigma site chord
+  have hcarrierNotNil : ¬carrier.Nil := by
+    dsimp only [carrier]
+    apply SimpleGraph.Walk.not_nil_of_ne
+    intro heq
+    apply ne_of_lt chord.left_lt_right
+    apply (cycleVertexOrder sigma site).injective
+    exact Subtype.ext heq
+  by_contra hlong
+  simp only [not_or, not_lt] at hlong
+  have hphysicalLength : physical.length = 1 := by
+    have hpositive := SimpleGraph.Walk.not_nil_iff_lt_length.mp hphysicalNotNil
+    have hle : physical.length ≤ 1 := by
+      simpa only [physical] using hlong.1
+    omega
+  have hcarrierLength : carrier.length = 1 := by
+    have hpositive := SimpleGraph.Walk.not_nil_iff_lt_length.mp hcarrierNotNil
+    have hle : carrier.length ≤ 1 := by
+      simpa only [carrier] using hlong.2
+    omega
+  have heq : physical = carrier :=
+    SimpleGraph.Walk.eq_of_length_le_one hphysicalLength.le hcarrierLength.le
+  let edge := (physical.firstDart hphysicalNotNil).edge
+  have hedgePhysical : edge ∈ physical.edges := by
+    simpa only [edge, physical.edge_firstDart] using
+      physical.mk_start_snd_mem_edges hphysicalNotNil
+  have hedgeCarrier : edge ∈ carrier.edges := by
+    rw [heq] at hedgePhysical
+    exact hedgePhysical
+  have hedgeCycle : edge ∈ site.cycle.edges := by
+    exact mem_cycle_edges_of_mem_residualCycleInterval_edges
+      sigma site chord hedgeCarrier
+  have hedgeReturn : edge ∈
+      (orderedReturnPath hG sigma hSigma site chord.left).edges := by
+    simpa only [physical, orderedChordAmbientPath, orderedAmbientReturnPath,
+      SimpleGraph.Walk.edges_copy,
+      SimpleGraph.Walk.edges_mapLe_eq_edges] using hedgePhysical
+  exact (orderedReturnPath_edge_not_cycle hG sigma hSigma site
+    chord.left hedgeReturn) hedgeCycle
+
+/-- Every physical residual return closes to a simple displayed separator;
+no additional length receipt is required in a simple graph. -/
+theorem orderedReturnSeparator_isCycle_automatic
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingComponentWitness G sigma first second)
+    (chord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site)) :
+    (orderedReturnSeparator hG sigma hSigma site chord).IsCycle := by
+  let path := orderedChordAmbientPath hG sigma hSigma site chord
+  let interval := residualCycleInterval sigma site chord
+  have hpath : path.IsPath :=
+    orderedChordAmbientPath_isPath hG sigma hSigma site chord
+  have hinterval : interval.IsPath :=
+    residualCycleInterval_isPath sigma site chord
+  have hreverse : interval.reverse.IsPath :=
+    SimpleGraph.Walk.isPath_reverse_iff interval |>.2 hinterval
+  unfold orderedReturnSeparator
+  apply hpath.isCycle_append hreverse
+  · rw [List.disjoint_left]
+    intro vertex hpathTail hreverseTail
+    have hpathSupport : vertex ∈ path.support :=
+      List.mem_of_mem_tail hpathTail
+    have hreverseSupport : vertex ∈ interval.reverse.support :=
+      List.mem_of_mem_tail hreverseTail
+    have hintervalSupport : vertex ∈ interval.support := by
+      simpa only [SimpleGraph.Walk.support_reverse, List.mem_reverse] using
+        hreverseSupport
+    have hcarrier : vertex ∈ site.carrier :=
+      mem_carrier_of_mem_residualCycleInterval_support
+        sigma site chord hintervalSupport
+    rcases
+        eq_left_or_eq_right_of_mem_orderedChordAmbientPath_support_of_mem_carrier
+          hG sigma hSigma site chord hpathSupport hcarrier with hleft | hright
+    · have hleftNot :
+          (cycleVertexOrder sigma site chord.left).1 ∉ path.support.tail := by
+        have hnodup := hpath.support_nodup
+        rw [← path.cons_tail_support] at hnodup
+        exact (List.nodup_cons.mp hnodup).1
+      exact hleftNot (hleft ▸ hpathTail)
+    · have hrightNot :
+          (cycleVertexOrder sigma site chord.right).1 ∉
+            interval.reverse.support.tail := by
+        have hnodup := hreverse.support_nodup
+        rw [← interval.reverse.cons_tail_support] at hnodup
+        exact (List.nodup_cons.mp hnodup).1
+      exact hrightNot (hright ▸ hreverseTail)
+  · simpa only [path, interval, SimpleGraph.Walk.length_reverse] using
+      orderedReturnSeparator_length_alternative hG sigma hSigma site chord
+
 /-- The complementary closure is a simple cycle whenever one of its two
 constituent paths has more than one edge.  The disjointness proof uses only
 that a residual return meets the carrier at its two endpoints. -/
