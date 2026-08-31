@@ -997,4 +997,5 @@ import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweep
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnCyclicCut
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweepCyclicCut
 import Mettapedia.GraphTheory.FourColor.Compositional.MeshJunctionAlternatingGeometry
+import Mettapedia.GraphTheory.FourColor.Compositional.MeshResidualReturnSweep
 import Mettapedia.GraphTheory.FourColor.Compositional.SparseNoncentralMeshAtlas
