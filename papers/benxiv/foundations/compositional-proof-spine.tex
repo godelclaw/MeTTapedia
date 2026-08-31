@@ -3266,6 +3266,65 @@ second matching with the originally selected site and completed absent colour
 class.
 \end{proof}
 
+\begin{lemma}[colour classes and completed deletion matchings]
+\label{lem:deletion-colour-matching-overlap}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.DeletionColorMatching.colorClassPairing_mem_edge_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.DeletionColorMatching.deletedColorClassPairing_mem_edge_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.DeletionColorMatching.centralCompletionPairing_mem_retainedEdge_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.DeletionColorMatching.centralCompletionPairings_agree_on_common_retained_edge_of_bit}
+A Tait colouring of an adjacent-pair deletion, together with a colour absent
+from all four boundary requests, determines an ambient perfect matching by
+completing that colour class with the deleted central edge.  On every
+retained ambient edge, membership in the completed matching is equivalent to
+having the selected colour.  Consequently two such completed matchings agree
+on every edge retained by both deletions whenever they select the same absent
+colour and the Boolean common-restriction coordinate of their deletion
+colourings is true.
+\end{lemma}
+
+\begin{proof}
+The absent-colour boundary condition makes the selected colour class a
+perfect matching even at the four degree-two boundary vertices.  Completing
+it changes only the two deleted vertices: they are paired by their central
+edge.  Thus a retained edge belongs to the completed matching exactly when
+its deletion colouring has the selected colour.  If two deletion colourings
+agree on their common retained carrier and select the same colour, these two
+edgewise characterizations are identical.
+\end{proof}
+
+\begin{corollary}[finite matching-overlap state and its nine-site obstruction]
+\label{cor:nine-site-matching-overlap-obstruction}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualSiteMatchingOverlap.card_matchingOverlapState}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualSiteMatchingOverlap.deletionMatchingStates_agree_on_common_retained_edge}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualSiteMatchingOverlap.pairings_agree_on_common_retained_edge}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualSiteMatchingOverlap.exists_incompatible_pair_in_any_nine_row_intervals}
+For a pair of provenanced residual sites, record the absent-colour index at
+each site and the Boolean common-restriction coordinate of their selected
+deletion colourings.  There are exactly
+
+\[
+                    3\cdot 3\cdot 2=18
+\]
+
+such states.  A state is \emph{compatible} when the two absent-colour indices
+are equal and the common-restriction bit is true; compatibility forces the
+two completed site matchings to agree on every common retained edge.
+Nevertheless, among any nine distinct intervals of one ordered mesh row,
+every provenanced choice contains two sites whose matching-overlap state is
+incompatible.
+\end{corollary}
+
+\begin{proof}
+The state count is the displayed product.  Compatibility first identifies
+the selected colour and then invokes
+Lemma~\ref{lem:deletion-colour-matching-overlap} on the common retained
+carrier.  For the final assertion, forget the absent-colour proofs and retain
+the exact globally selected deletion colourings carried by the provenance
+receipts.  The nine-site colouring-atlas obstruction supplies two whose
+common-restriction bit is false.  Their matching-overlap state is therefore
+incompatible regardless of which absent colours its two receipts record.
+\end{proof}
+
 \begin{lemma}[rooted gauge for residual face sides]
 \label{lem:rooted-residual-face-side-gauge}
 \Sverified{Mettapedia.GraphTheory.Embedding.FaceCutGauge.basedLabel_eq}
@@ -3315,7 +3374,12 @@ replacement.  In particular, the corollary has quantifier order
 simultaneous choice of the \(\tau_e\).  Corollary~\ref{cor:global-residual-pairing-provenance}
 now identifies each \(\tau_e\) with the absent colour class of the exact
 globally selected deletion colouring at \(e\), but it does not yet transport
-that colouring between two distinct deletions.  The local formation receipts identify
+that colouring between two distinct deletions.  Corollary~\ref{cor:nine-site-matching-overlap-obstruction}
+shows that this is a real coherence obstruction rather than missing
+bookkeeping: the evident eighteen-state pairwise interface is incompatible
+at some pair in every nine-site row sample.  Equivalently, repetition of a
+pairwise state cannot by itself manufacture a simultaneous section.  The
+local formation receipts identify
 which residual edge changes at each cycle vertex, and the common-residual
 components now pair the third-edge excursions when they return to the cycle.
 They also prove that each individual return remains on one facial shore.
