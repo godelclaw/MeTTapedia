@@ -77,6 +77,36 @@ noncomputable def sectionEndingAt {n : Nat}
       terminal :=
   backwardChoice_last State Compatible hRightTotal terminal
 
+/-- A value which is unchanged across every adjacent edge of a finite path is
+equal to its value at the final node. -/
+theorem value_eq_last_of_adjacent_eq {n : Nat} {Value : Type*}
+    (value : Fin (n + 1) → Value)
+    (hadjacent : ∀ i : Fin n, value i.castSucc = value i.succ)
+    (index : Fin (n + 1)) :
+    value index = value (Fin.last n) := by
+  induction index using Fin.reverseInduction with
+  | last => rfl
+  | cast index ih => exact (hadjacent index).trans ih
+
+/-- Observations respected by every compatibility constraint are constant on
+any path section. -/
+theorem section_observe_eq_last {n : Nat}
+    {State : Fin (n + 1) → Type u}
+    {Compatible : (i : Fin n) → State i.castSucc → State i.succ → Prop}
+    (pathSection : Section State Compatible)
+    {Value : Type*} (observe : (i : Fin (n + 1)) → State i → Value)
+    (hobserve : ∀ (i : Fin n) (source : State i.castSucc)
+      (target : State i.succ),
+      Compatible i source target →
+        observe i.castSucc source = observe i.succ target)
+    (index : Fin (n + 1)) :
+    observe index (pathSection.state index) =
+      observe (Fin.last n) (pathSection.state (Fin.last n)) := by
+  exact value_eq_last_of_adjacent_eq
+    (fun i ↦ observe i (pathSection.state i))
+    (fun i ↦ hobserve i _ _ (pathSection.compatible i))
+    index
+
 end PathConstraint
 
 end Mettapedia.Logic
