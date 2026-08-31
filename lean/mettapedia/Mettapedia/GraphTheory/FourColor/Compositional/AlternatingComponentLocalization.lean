@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.Compositional.AlternatingOverlapGeometry
+import Mettapedia.GraphTheory.FiniteEdgeDifference
 
 /-!
 # Alternating-component localization across adjacent-pair deletions
@@ -214,6 +215,39 @@ theorem provenanced_alternatingGraphs_delete_overlapFootprints_eq
     refine ⟨?_, houtside⟩
     exact sourceGraph.mem_edgeSet.mp
       (hagrees.mpr (targetGraph.mem_edgeSet.mpr hadj))
+
+/-- Compatible residual sites change their complete alternating graphs on at
+most ten ambient edge values. -/
+theorem card_provenanced_alternatingGraph_edgeDisagreement_le
+    {rotation : Data G}
+    {minimal : GraphBackedVertexMinimalTaitCounterexample rotation}
+    {ordered : OrderedInjectiveMesh
+      (toMultigraph rotation.toRotationSystem) a b}
+    {hG : HasCubicIncidentEdgeTriples G}
+    {sigma : Pairing V}
+    {sourceStep targetStep : GlobalMeshStep rotation ordered}
+    (source : ProvenancedTwoSectorReturnReceipt
+      rotation minimal ordered hG sigma sourceStep)
+    (target : ProvenancedTwoSectorReturnReceipt
+      rotation minimal ordered hG sigma targetStep)
+    (hcompatible :
+      (globalMatchingOverlapState (pairingProvenance source)
+        (pairingProvenance target)).Compatible) :
+    (SimpleGraph.edgeDisagreementFinset
+      (alternatingGraph sigma (alternatingSite source).tau)
+      (alternatingGraph sigma (alternatingSite target).tau)).card ≤ 10 := by
+  apply le_trans
+    (SimpleGraph.card_edgeDisagreementFinset_le_of_deleteEdges_eq
+      (alternatingGraph sigma (alternatingSite source).tau)
+      (alternatingGraph sigma (alternatingSite target).tau)
+      (overlapFootprintValues
+        (pairingProvenance source).site.data
+        (pairingProvenance target).site.data)
+      (provenanced_alternatingGraphs_delete_overlapFootprints_eq
+        source target hcompatible))
+  exact card_overlapFootprintValues_le
+    (pairingProvenance source).site.data
+    (pairingProvenance target).site.data
 
 /-- Every source distinguished-cycle edge either survives in the target
 alternating graph or belongs to one of the two five-edge deletion
