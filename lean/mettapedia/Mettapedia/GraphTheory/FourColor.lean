@@ -990,5 +990,6 @@ import Mettapedia.GraphTheory.FourColor.Compositional.DeletionSiteGeometry
 import Mettapedia.GraphTheory.FourColor.Compositional.DeletionAtlasPath
 import Mettapedia.GraphTheory.FourColor.Compositional.DeletionPathLocalization
 import Mettapedia.GraphTheory.FourColor.Compositional.DeletionPathConnectivity
+import Mettapedia.GraphTheory.FourColor.Compositional.DeletionPathConnectivityState
 import Mettapedia.GraphTheory.FourColor.Compositional.MeshJunctionAlternatingGeometry
 import Mettapedia.GraphTheory.FourColor.Compositional.SparseNoncentralMeshAtlas
