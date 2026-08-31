@@ -186,6 +186,70 @@ theorem exists_deep_return_shore_or_spaced_eq_rawState
     depth spacing
   simpa using hmany
 
+/-- A deep residual-return stack is an explicit long family of strictly
+nested physical shore chords crossing one common cut. -/
+theorem exists_long_strictlyNested_return_family_of_deep
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (depth : Nat)
+    (hdeep : ∃ shore cut,
+      depth < (((residualReturnSweepData rotation minimal hG sigma hSigma bond).family
+        shore).stackAt cut).length) :
+    ∃ shore cut,
+      depth <
+          ((returnShoreMatching rotation minimal hG sigma hSigma bond
+            (returnShoreIndex shore)).openArcs cut).length ∧
+        ((returnShoreMatching rotation minimal hG sigma hSigma bond
+          (returnShoreIndex shore)).openArcs cut).Pairwise
+            (fun outer inner =>
+              outer.left < inner.left ∧ inner.right < outer.right) := by
+  rcases hdeep with ⟨shore, cut, hdepth⟩
+  refine ⟨shore, cut, ?_, ?_⟩
+  · simpa [residualReturnSweepData,
+      stackAt_length_eq_openArcs_length] using hdepth
+  · exact openArcs_pairwise_strictlyNested
+      (returnShoreMatching rotation minimal hG sigma hSigma bond
+        (returnShoreIndex shore)) cut
+
+/-- The physical length--depth dichotomy with its deep horn materialized as
+a long strictly nested chord family and its shallow horn materially spaced. -/
+theorem exists_long_strictlyNested_return_family_or_spaced_eq_rawState
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (depth spacing : Nat)
+    (hmany :
+      2 * (spacing + 1) * (depth + 1) ^ 2 <
+        bond.site.cycle.tail.support.length) :
+    (∃ shore cut,
+        depth <
+            ((returnShoreMatching rotation minimal hG sigma hSigma bond
+              (returnShoreIndex shore)).openArcs cut).length ∧
+          ((returnShoreMatching rotation minimal hG sigma hSigma bond
+            (returnShoreIndex shore)).openArcs cut).Pairwise
+              (fun outer inner =>
+                outer.left < inner.left ∧ inner.right < outer.right)) ∨
+      ∃ firstPosition secondPosition : CyclePosition sigma bond.site,
+        firstPosition < secondPosition ∧
+          spacing + 1 ≤ secondPosition.val - firstPosition.val ∧
+          (phasedResidualReturnSweepData rotation minimal hG sigma hSigma bond spacing).rawState
+              firstPosition =
+            (phasedResidualReturnSweepData rotation minimal hG sigma hSigma bond spacing).rawState
+              secondPosition := by
+  rcases exists_deep_return_shore_or_spaced_eq_rawState rotation minimal hG
+      sigma hSigma bond depth spacing hmany with hdeep | hspaced
+  · exact Or.inl
+      (exists_long_strictlyNested_return_family_of_deep rotation minimal hG
+        sigma hSigma bond depth hdeep)
+  · exact Or.inr hspaced
+
 end
 
 end Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweep
