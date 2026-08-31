@@ -3325,6 +3325,44 @@ common-restriction bit is false.  Their matching-overlap state is therefore
 incompatible regardless of which absent colours its two receipts record.
 \end{proof}
 
+\begin{lemma}[compatible overlap transports alternating geometry]
+\label{lem:compatible-overlap-alternating-geometry}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingOverlapGeometry.alternatingGraph_adj_congr_right}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingOverlapGeometry.alternatingGraphs_agree_on_common_retained_edge}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingOverlapGeometry.provenanced_alternatingGraphs_agree_on_common_retained_edge}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingOverlapGeometry.source_cycle_edge_mem_target_alternatingGraph}
+Fix the global residual-defect matching $\sigma$.  Let two provenanced
+residual sites have a compatible matching-overlap state.  On every ambient
+edge retained by both adjacent-pair deletions, the two symmetric-difference
+graphs
+\[
+        \sigma\mathbin{\triangle}\tau_A
+        \quad\hbox{and}\quad
+        \sigma\mathbin{\triangle}\tau_B
+\]
+have identical edge membership.  In particular, every such edge of the
+distinguished alternating cycle at site $A$ belongs to the alternating graph
+at site $B$.
+\end{lemma}
+
+\begin{proof}
+For a fixed edge, membership in a symmetric difference is the exclusive-or
+of membership in its two matchings.  The first matching $\sigma$ is literally
+the same at both sites.  Compatibility of the overlap state, together with
+Lemma~\ref{lem:deletion-colour-matching-overlap}, says that the second
+matchings $\tau_A$ and $\tau_B$ make the same decision on every edge retained
+by both deletions.  The two exclusive-or values are therefore equal.
+
+The provenance receipts identify $\tau_A$ and $\tau_B$ with the second
+matchings used by the final residual-cycle constructions.  Every edge of the
+distinguished cycle at $A$ already lies in
+$\sigma\mathbin{\triangle}\tau_A$; transporting its membership across the
+preceding equivalence places it in
+$\sigma\mathbin{\triangle}\tau_B$.  This does not assert that it lies in
+site $B$'s distinguished component: the common carrier may contain several
+alternating components.
+\end{proof}
+
 \begin{lemma}[rooted gauge for residual face sides]
 \label{lem:rooted-residual-face-side-gauge}
 \Sverified{Mettapedia.GraphTheory.Embedding.FaceCutGauge.basedLabel_eq}
