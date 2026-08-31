@@ -7301,6 +7301,8 @@ corollary supplies that opposite cycle from a strictly nested pair.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnComplementaryCycle.complementaryCycleInterval_support}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnComplementaryCycle.cycleVertexOrder_not_mem_complementaryCycleInterval_support}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnComplementaryCycle.complementaryReturnCycle_length_alternative}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnComplementaryCycle.orderedReturnSeparator_length_alternative}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnComplementaryCycle.orderedReturnSeparator_isCycle_automatic}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnComplementaryCycle.complementaryReturnCycle_support_disjoint_orderedReturnSeparator}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnCyclicCut.exists_bounded_cyclicEdgeCut_of_strictly_nested_returns}
 Let two physical residual-return chords be strictly nested in cyclic
@@ -7308,7 +7310,6 @@ coordinates,
 \[
                   \ell_o<\ell_i<r_i<r_o.
 \]
-Assume that the displayed inner carrier interval has more than one edge.
 Then the exact face cut of the inner return separator pushes to a cyclic
 edge-cut realization.  Its crossed-edge set has cardinality at most three
 times the number of vertices in the inner separator support.
@@ -7321,10 +7322,11 @@ followed by the prefix ending at $\ell_o$.  Consequently every carrier
 coordinate strictly between $\ell_o$ and $r_o$ is absent from that
 complementary interval.
 
-The outer closure is automatically nondegenerate.  Both its physical return
-and its complementary carrier interval are nonempty.  If both had exactly
-one edge, simplicity of the ambient graph would make them the same edge;
-this is impossible because a residual return avoids every carrier edge.
+Both closures are automatically nondegenerate.  In each case the physical
+return and the chosen carrier interval are nonempty.  If both pieces of one
+closure had exactly one edge, simplicity of the ambient graph would make
+them the same edge; this is impossible because a residual return avoids
+every carrier edge.
 
 Close the outer physical return along this complementary interval, and close
 the inner physical return along the reverse interval from $\ell_i$ to $r_i$.
@@ -7333,13 +7335,14 @@ meets the carrier only at its two endpoints.  Since both endpoints and the
 whole carrier interval of the inner return lie strictly between
 $\ell_o$ and $r_o$, the two resulting simple cycles are vertex-disjoint.
 
-Apply Corollary~\ref{cor:residual-return-bounded-push-off} to the inner
-separator.  Choose the binary cut label opposite to the face label read by a
-first dart of the disjoint outer cycle.  Exact-cut transport propagates this
-choice around the outer cycle, so the outer cycle lies in the complementary
-filled side; the inner separator lies in the filled side by construction.
-Thus the pushed edge set is a cyclic cut, and the same cubic incidence
-estimate gives the asserted factor-three bound.
+The generic closed-trail face-cut theorem gives the inner separator an exact
+binary cut.  Choose its label opposite to the face label read by a first dart
+of the disjoint outer cycle.  Exact-cut transport propagates this choice
+around the outer cycle, so the outer cycle lies in the complementary filled
+side; the inner separator lies in the filled side by construction.  Thus the
+pushed edge set is a cyclic cut, and the cubic incidence estimate of
+Corollary~\ref{cor:residual-return-bounded-push-off} gives the asserted
+factor-three bound.
 \end{proof}
 
 For the route, the two Kempe families suggest the matching stacks and capped
