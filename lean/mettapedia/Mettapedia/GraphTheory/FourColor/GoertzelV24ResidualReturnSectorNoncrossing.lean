@@ -1,5 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnArc
-import Mettapedia.GraphTheory.FourColor.GoertzelV24WalkFaceCut
+import Mettapedia.GraphTheory.Embedding.FaceCut
 
 /-!
 # Two-sector noncrossing for physical residual returns
@@ -29,6 +29,7 @@ open GoertzelV24TwoEdgeCutMinimality
 open GoertzelV24WalkFaceCut
 open GoertzelV24WalkCycleParity
 open MatchingParity
+open Mettapedia.GraphTheory.Embedding
 open SimpleGraph
 open SimpleGraphDartRotation
 
@@ -268,6 +269,38 @@ theorem orderedReturnSeparator_isCycle
 
 /-! ## Exact facial cut carried by the separator -/
 
+/-- In a graph-backed least counterexample, the literal return separator
+determines an exact binary face cut.  This structured form is the semantic
+interface used by subsequent separator arguments. -/
+theorem exactFaceCut_orderedReturnSeparator_of_minimal
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (chord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (hlong : 1 < chord.right.val - chord.left.val) :
+    ∃ cut : ExactFaceCut rotation.toRotationSystem
+        (fun edge : G.edgeSet ↦ edge.1 ∈
+          (orderedReturnSeparator hG sigma hSigma site chord).edges) F2,
+      orbitFaceBoundaryLinearMap rotation.toRotationSystem cut.label =
+        walkEdgeParity
+          (orderedReturnSeparator hG sigma hSigma site chord) := by
+  have hconnected : G.Connected := by
+    rw [←
+      GoertzelV24SimpleGraphFaceDualConnectedness.rotationPrimalGraph_toRotationSystem_eq
+        G rotation]
+    exact minimal.primalConnected
+  have hdual := orbitFaceInteriorDual_connected rotation.toRotationSystem
+    minimal.spherical.cubic minimal.primalConnected
+      minimal.vertexRotationCyclic
+  exact exists_exactFaceCut_of_closedTrail
+    rotation minimal.facesTwoSided hdual hconnected minimal.spherical
+      (orderedReturnSeparator hG sigma hSigma site chord)
+      (orderedReturnSeparator_isCycle hG sigma hSigma site chord hlong).isTrail
+
 /-- In a graph-backed least counterexample, the literal return separator has
 an exact binary face labeling: precisely its primal edges change the label.
 This is the combinatorial Jordan separator used by the noncrossing argument. -/
@@ -291,18 +324,10 @@ theorem exists_orderedReturnSeparator_exactFaceCut_of_minimal
                 (rotation.toRotationSystem.alpha dart)) ↔
             (rotation.toRotationSystem.edgeOf dart).1 ∈
               (orderedReturnSeparator hG sigma hSigma site chord).edges := by
-  have hconnected : G.Connected := by
-    rw [←
-      GoertzelV24SimpleGraphFaceDualConnectedness.rotationPrimalGraph_toRotationSystem_eq
-        G rotation]
-    exact minimal.primalConnected
-  have hdual := orbitFaceInteriorDual_connected rotation.toRotationSystem
-    minimal.spherical.cubic minimal.primalConnected
-      minimal.vertexRotationCyclic
-  exact exists_orbitFaceLabeling_ne_alpha_iff_mem_edges_of_isTrail
-    rotation minimal.facesTwoSided hdual hconnected minimal.spherical
-      (orderedReturnSeparator hG sigma hSigma site chord)
-      (orderedReturnSeparator_isCycle hG sigma hSigma site chord hlong).isTrail
+  rcases exactFaceCut_orderedReturnSeparator_of_minimal
+      rotation minimal hG sigma hSigma site chord hlong with
+    ⟨cut, hboundary⟩
+  exact ⟨cut.label, hboundary, cut.separates⟩
 
 /-! ## A distinct return avoids the first separator -/
 
@@ -491,6 +516,33 @@ theorem separatorLabels_eq_otherChord_thirdDarts
         hG sigma hSigma site otherChord.left
   rw [hfirst, hlast] at htransport
   simpa only [otherChord.partner_left] using htransport
+
+/-- A structured exact face cut carried by one return separator assigns the
+same label to the two canonical third darts of every distinct return. -/
+theorem ExactFaceCut.label_eq_otherChord_thirdDarts
+    (rotation : Data G)
+    (hcubic : rotation.toRotationSystem.IsCubic)
+    (hrotation : VertexRotationCyclic rotation.toRotationSystem)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (separatorChord otherChord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (hne : separatorChord ≠ otherChord)
+    {A : Type*}
+    (cut : ExactFaceCut rotation.toRotationSystem
+      (fun edge : G.edgeSet ↦ edge.1 ∈
+        (orderedReturnSeparator hG sigma hSigma site separatorChord).edges) A) :
+    cut.label (dartOrbitFace rotation.toRotationSystem
+        (siteThirdDart hG sigma hSigma site
+          (cycleVertexOrder sigma site otherChord.left))) =
+      cut.label (dartOrbitFace rotation.toRotationSystem
+        (siteThirdDart hG sigma hSigma site
+          (cycleVertexOrder sigma site otherChord.right))) := by
+  exact separatorLabels_eq_otherChord_thirdDarts
+    rotation hcubic hrotation hG sigma hSigma site separatorChord otherChord
+      hne cut.label cut.separates
 
 /-- Either interleaving order supplies an interior point of each chord's
 linear interval. -/
