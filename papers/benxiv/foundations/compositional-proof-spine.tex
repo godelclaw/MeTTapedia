@@ -3185,6 +3185,26 @@ contradicting the transport equality along \(Q\).  Hence equal-shore chords
 cannot alternate, and each fixed-label family is noncrossing.
 \end{proof}
 
+\begin{corollary}[global two-sector residual receipt]
+\label{cor:global-two-sector-residual-receipt}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnNoncrossing.exists_twoSectorReturnReceipt_at_every_globalMeshStep}
+For an ordered mesh in a graph-backed least counterexample, one common
+minimum-residual-defect matching can be chosen so that every mesh step is
+either central for that matching or carries the complete physical
+formation/return/shore receipt together with the two-sector noncrossing
+conclusion of Lemma~\ref{lem:residual-return-two-sector-noncrossing}.
+\end{corollary}
+
+\begin{proof}
+Choose the common residual-defect minimizer and the local physical receipts
+from the preceding global construction.  At every noncentral step, apply
+Lemma~\ref{lem:residual-return-two-sector-noncrossing} to the receipt's
+facial-bond witness and canonical return pairing.  The choice of matching is
+made before the mesh step, so the quantifier order remains
+\(\exists\sigma\,\forall e\), rather than making an unrelated choice of
+\(\sigma\) at each site.
+\end{proof}
+
 This is not merely another proof that a bridgeless cubic graph has a perfect
 matching.  Every physical mesh step now supplies an ambient matching through
 that step, and all those site matchings are tested against one common
