@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.Compositional.NoncrossingPairingSweep
+import Mettapedia.GraphTheory.FourColor.Compositional.PhasedNoncrossingSweep
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnSectorNoncrossing
 
 /-!
@@ -25,6 +26,7 @@ open GoertzelV24OrderedMeshResidualSiteFacialBond
 open GoertzelV24TwoEdgeCutMinimality
 open MatchingParity
 open NoncrossingPairingSweep
+open PhasedNoncrossingSweep
 open SimpleGraph
 open SimpleGraphDartRotation
 
@@ -137,6 +139,51 @@ theorem exists_deep_return_shore_or_distinct_eq_rawState
   apply SweepData.exists_deep_family_or_distinct_eq_rawState
     (data := residualReturnSweepData rotation minimal hG sigma hSigma bond)
     depth
+  simpa using hmany
+
+/-- The two-shore residual sweep with a cyclic-position phase adjoined to its
+local shore letter. -/
+def phasedResidualReturnSweepData
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (spacing : Nat) :
+    SweepData (Bool × Fin (spacing + 1)) Unit 2
+      bond.site.cycle.tail.support.length :=
+  PhasedNoncrossingSweep.SweepData.withPositionPhase
+    (residualReturnSweepData rotation minimal hG sigma hSigma bond) spacing
+
+/-- **Spaced physical residual-return length--depth alternative.**  A carrier
+longer than the number of shallow two-shore states and position phases has
+either a deeply nested shore family or equal phased records enclosing at
+least `spacing + 1` carrier steps. -/
+theorem exists_deep_return_shore_or_spaced_eq_rawState
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (depth spacing : Nat)
+    (hmany :
+      2 * (spacing + 1) * (depth + 1) ^ 2 <
+        bond.site.cycle.tail.support.length) :
+    (∃ shore cut,
+        depth < (((residualReturnSweepData rotation minimal hG sigma hSigma bond).family
+          shore).stackAt cut).length) ∨
+      ∃ firstPosition secondPosition : CyclePosition sigma bond.site,
+        firstPosition < secondPosition ∧
+          spacing + 1 ≤ secondPosition.val - firstPosition.val ∧
+          (phasedResidualReturnSweepData rotation minimal hG sigma hSigma bond spacing).rawState
+              firstPosition =
+            (phasedResidualReturnSweepData rotation minimal hG sigma hSigma bond spacing).rawState
+              secondPosition := by
+  apply SweepData.exists_deep_family_or_spaced_eq_rawState
+    (data := residualReturnSweepData rotation minimal hG sigma hSigma bond)
+    depth spacing
   simpa using hmany
 
 end

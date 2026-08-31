@@ -7161,6 +7161,8 @@ transported back to literal equality of the local letter and every stack.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.NoncrossingPairingSweep.noncrossingMatchingOfPairing}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweep.returnShoreMatching_pairwise_noncrossing}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweep.exists_deep_return_shore_or_distinct_eq_rawState}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.PhasedNoncrossingSweep.SweepData.exists_deep_family_or_spaced_eq_rawState}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweep.exists_deep_return_shore_or_spaced_eq_rawState}
 Let a proper alternating site in a graph-backed least counterexample have
 $n$ cyclic positions and the physical residual-return receipt of
 Lemma~\ref{lem:residual-return-two-sector-noncrossing}.  Fix $D\geq0$.
@@ -7171,6 +7173,17 @@ If
 then either one face shore has a residual-return stack of depth greater than
 $D$, or two distinct cyclic positions have the same shore label and the
 same two ordered stacks of currently open residual returns.
+
+More generally, fix a requested spacing $s\geq0$.  If
+\[
+                    n>2(s+1)(D+1)^2,
+\]
+then the deep-stack alternative holds, or there are positions $i<j$ with
+\[
+                         j-i\geq s+1
+\]
+which have the same shore label, the same two return stacks, and the same
+position phase modulo $s+1$.
 \end{corollary}
 
 \begin{proof}
@@ -7184,6 +7197,11 @@ Lemma~\ref{lem:noncrossing-length-depth} with local alphabet
 $A=\{0,1\}$, two matching families, and the one-element arc-label set
 $K=\{*\}$.  A stack of depth at most $D$ then has $D+1$ possible
 values, and the complete raw record has at most $2(D+1)^2$ values.
+
+For the spaced form, augment the local letter by the cyclic coordinate
+modulo $s+1$.  This multiplies the state count by $s+1$.  Equality of two
+phases says $i\equiv j\pmod{s+1}$; since $i<j$, their difference is a
+positive multiple of $s+1$ and hence at least $s+1$.
 
 The formal adapter constructs the sorted arc lists directly from the
 fixed-point-free return involution.  Its endpoint-disjointness proof uses
