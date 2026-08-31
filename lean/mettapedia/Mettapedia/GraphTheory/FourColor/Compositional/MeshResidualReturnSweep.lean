@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.Compositional.MeshJunctionAlternatingGeometry
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweepCyclicCut
+import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnCarrierSweep
 
 /-!
 # Residual-return sweep alternatives across an ordered mesh
@@ -27,6 +28,7 @@ open GoertzelV24TwoEdgeCutMinimality
 open MatchingParity
 open MeshJunctionAlternatingGeometry
 open ResidualReturnSweep
+open ResidualReturnCarrierSweep
 open ResidualReturnSweepCyclicCut
 open ResidualSiteGeometry
 open SimpleGraph
@@ -89,6 +91,28 @@ def GeometricSweepReceipt.ofTwoSector
     hasCyclicEdgeCutOfSizeAtMost_or_longAmbientReturn_or_longCarrierInterval_or_spaced
       rotation minimal hG sigma receipt.base.base.sigma_supported
         receipt.base.base.bond componentBound spacing hmany
+
+/-- Every geometric mesh receipt inherits the carrier-compressed alternative:
+the long carrier horn becomes a deeper local stack or a local repeated phased
+state, leaving only the long ambient-return horn geometrically uncompressed. -/
+theorem carrierCompressedAlternative_of_geometricSweepReceipt
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (ordered : OrderedInjectiveMesh
+      (toMultigraph rotation.toRotationSystem) a b)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V)
+    (step : GlobalMeshStep rotation ordered)
+    (receipt : GeometricSweepReceipt rotation minimal ordered hG sigma step)
+    (depth spacing : Nat)
+    (hmany : 2 * (spacing + 1) * (1 + 1) ^ 2 <
+      receipt.base.base.base.bond.site.cycle.tail.support.length) :
+    CarrierCompressedGeometricAlternative rotation minimal hG sigma
+      receipt.base.base.base.sigma_supported receipt.base.base.base.bond
+        depth spacing :=
+  hasCarrierCompressedGeometricAlternative rotation minimal hG sigma
+    receipt.base.base.base.sigma_supported receipt.base.base.base.bond
+      depth spacing hmany
 
 /-- One common residual-defect minimizer supplies the geometric sweep
 alternative at every noncentral step of an ordered mesh. -/

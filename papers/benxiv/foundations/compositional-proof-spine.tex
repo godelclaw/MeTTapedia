@@ -7156,6 +7156,36 @@ Lemma~\ref{lem:bounded-stack-sweep-pigeonhole}; equality of codes is then
 transported back to literal equality of the local letter and every stack.
 \end{proof}
 
+\begin{lemma}[restricted noncrossing sweep]
+\label{lem:restricted-noncrossing-sweep}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.RestrictedNoncrossingSweep.SweepData.exists_deep_family_on_or_distinct_eq_rawState}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.RestrictedNoncrossingSweep.SweepData.exists_deep_family_on_or_spaced_eq_rawState}
+In Lemma~\ref{lem:noncrossing-length-depth}, let $P$ be any selected finite
+set of cut positions.  If
+\[
+ |P|>|A|\left(\sum_{d=0}^{D}|K|^d\right)^r,
+\]
+then either some selected position has a matching stack deeper than $D$, or
+two distinct selected positions have the same raw sweep state.  After
+adjoining the position phase modulo $s+1$, the corresponding threshold is
+\[
+ |P|>|A|(s+1)\left(\sum_{d=0}^{D}|K|^d\right)^r,
+\]
+and the equal states can be ordered at positions whose difference is at
+least $s+1$.
+\end{lemma}
+
+\begin{proof}
+Restrict the state-coding function to the subtype of positions belonging to
+$P$.  If the deep alternative fails on $P$, every selected stack has depth
+at most $D$, so the same exact bounded-stack carrier used in
+Lemma~\ref{lem:noncrossing-length-depth} encodes all selected states.  The
+pigeonhole principle on the finite subtype $P$ gives two unequal selected
+positions with equal codes, and decoding gives literal equality of raw
+states.  For the phased version, equal phases make the positive coordinate
+difference a multiple of $s+1$.
+\end{proof}
+
 \begin{corollary}[physical residual-return length--depth alternative]
 \label{cor:physical-residual-return-length-depth}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.NoncrossingPairingSweep.noncrossingMatchingOfPairing}
@@ -7401,10 +7431,47 @@ third horn.  The carrier component is a simple path, so its support cardinality
 is exactly $r_i-\ell_i+1$.  Finally, $2(s+1)(1+1)^2=8(s+1)$.
 \end{proof}
 
+\begin{corollary}[carrier-local compression of a long nested return]
+\label{cor:carrier-local-residual-return-compression}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnCarrierSweep.carrierIntervalPositions_card}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnCarrierSweep.exists_deep_return_shore_on_carrierInterval_or_spaced_eq_rawState}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnCarrierSweep.hasNestedCarrierDeepReturnStack_or_spacedSweepRepeat}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnCarrierSweep.hasCarrierCompressedGeometricAlternative}
+Let $\ell<r$ be the endpoints of the inner member of a strictly nested
+physical return pair.  Fix a stack bound $D$ and spacing $s$, and put
+\[
+                         S=2(s+1)(D+1)^2.
+\]
+If the carrier interval from $\ell$ through $r$ contains more than $S$
+vertices, then, using only cut positions in that same closed interval,
+either one return shore has stack depth greater than $D$, or two positions
+$i<j$ carry the same phased two-shore state and satisfy $j-i\ge s+1$.
+
+Consequently the geometric sweep alternative may take component bound $S$.
+It then gives a cyclic edge cut of width at most $6S$, a nested ambient
+return with more than $S$ vertices, a deeper stack inside the selected
+carrier interval, a repeated phased state inside that interval, or a
+repeated phased state on the full carrier.  There is no remaining
+unstructured long-carrier horn.
+\end{corollary}
+
+\begin{proof}
+The carrier interval is a simple path and has exactly $r-\ell+1$ distinct
+vertices.  Its closed coordinate interval $[\ell,r]$ has the same
+cardinality.  Apply Lemma~\ref{lem:restricted-noncrossing-sweep} to precisely
+that finite interval, with the Boolean shore letter, two matching families,
+and the one-element arc-label set.  The exact state count is
+$2(s+1)(D+1)^2$.  Applying this local alternative to the long-carrier horn
+of Corollary~\ref{cor:geometric-residual-return-sweep-alternative} gives the
+last assertion.  The nested physical pair is retained throughout; only the
+set of sweep positions is restricted.
+\end{proof}
+
 \begin{corollary}[pointwise geometric sweep alternatives across the mesh]
 \label{cor:pointwise-mesh-residual-sweep-alternative}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.MeshResidualReturnSweep.exists_geometricSweepReceipt_at_every_globalMeshStep}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.MeshResidualReturnSweep.exists_minimizer_with_geometricSweep_at_every_internal_row_junction}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.MeshResidualReturnSweep.carrierCompressedAlternative_of_geometricSweepReceipt}
 For one ordered injective mesh in a graph-backed least counterexample, choose
 the common minimum-residual-defect matching of
 Corollary~\ref{cor:global-residual-geometry-provenance}.  Every global mesh
@@ -7426,9 +7493,11 @@ distinct while their shared branch vertex has a unique partner.  Therefore
 at least one arm is noncentral and carries the upgraded receipt.
 
 The conclusion is pointwise.  It does not choose among the short-cut,
-long-ambient-return, long-carrier-interval, and repeated-state horns uniformly,
+long-ambient-return, local-deep-stack, and repeated-state horns uniformly,
 nor does it assert that choices made at adjacent junctions define nested or
-disjoint shores.
+disjoint shores.  The carrier-compressed alternative of
+Corollary~\ref{cor:carrier-local-residual-return-compression} is available on
+every receipt and removes the unstructured long-carrier-interval horn there.
 \end{proof}
 
 For the route, the two Kempe families suggest the matching stacks and capped
@@ -7437,12 +7506,15 @@ belong to a colouring state, whereas the physical graph surgery must be
 defined before a global colouring exists.  In the shallow case an equal
 sweep state is therefore only a candidate length interface.  In the deep
 case the nested records now produce a literal bounded cyclic edge cut whenever
-both separator components are short.  A long carrier interval remains on the
-one-dimensional LIFO carrier and can be attacked by a restricted sweep.  A
-long ambient return instead requires a new sweep of the attachments along
-that path; planarity alone does not make its interface bounded.  Neither case
-is mistaken for a bounded interface.  One still has to compress these two
-long-return horns, choose interfaces coherently
+both separator components are short.  A long carrier interval is now
+compressed by the restricted LIFO sweep of
+Corollary~\ref{cor:carrier-local-residual-return-compression}; its outcomes
+are deeper laminar nesting or a materially spaced repeated state inside that
+same interval.  A long ambient return instead requires a new sweep of the
+attachments along that path; planarity alone does not make its interface
+bounded.  That case is not mistaken for a bounded interface.  One still has
+to consume the local depth/repetition alternatives, compress the ambient
+return horn, choose interfaces coherently
 across neighbouring mesh sites, and prove that the cumulative zero-count
 profile factors through the resulting ordered interfaces.  The corollary is
 therefore a graph-level local alternative at one alternating site; it proves
