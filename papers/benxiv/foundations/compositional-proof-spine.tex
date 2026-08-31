@@ -4341,6 +4341,8 @@ have a stronger elementary property which is useful here.
 \Sverified{Mettapedia.GraphTheory.FourColor.OrderedMeshCommonCorePathSection.commonCoreColor_eq}
 \Sverified{Mettapedia.GraphTheory.FourColor.OrderedMeshCommonCorePathSection.exists_pair_pathDeletionMatchingState_absentColor_eq}
 \Sverified{Mettapedia.GraphTheory.FourColor.OrderedMeshCommonCorePathSection.exists_pair_pathDeletionMatchings_agree_outside_footprint}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingOverlapGeometry.card_alternatingGraph_edgeDisagreement_le_of_pairings_agree_outside}
+\Sverified{Mettapedia.GraphTheory.FourColor.OrderedMeshCommonCorePathSection.exists_pair_pathAlternatingGraph_edgeDisagreement_le}
 Under the no-branching and no-boundary hypothesis of
 Corollary~\ref{cor:arc-consistent-no-section-residue}, one can choose a proper
 nonzero edge-colouring at each of the nine ordered deletion sites so that
@@ -4349,7 +4351,10 @@ choice is reachable from the canonical colouring at its site by valid-pair
 Kempe moves, and the final choice may be prescribed to be the canonical final
 colouring.  Moreover, two of the nine colourings may be completed using the
 same absent Tait colour.  The resulting ambient perfect matchings agree outside
-the union of the nine deletion footprints, a set of at most (45) edges.
+the union of the nine deletion footprints, a set of at most $45$ edges.  For
+any fixed graph-supported perfect matching, the corresponding two
+matching-symmetric-difference graphs consequently disagree on at most $45$
+edges.
 \end{corollary}
 
 \begin{proof}
@@ -4374,13 +4379,16 @@ colour at each site.  Among nine choices, two coincide.  Complete these two
 colour classes by the respective deleted central edges.  Their matching
 decisions agree on every edge retained at every site.  The exceptional set is
 therefore contained in the union of the nine deletion footprints; each
-footprint has five edges, so the union has cardinality at most (45).
+footprint has five edges, so the union has cardinality at most $45$.
+
+Taking symmetric difference with the same first matching preserves edgewise
+agreement, so it cannot enlarge this exceptional carrier.
 
 This removes the previously stated global colour-gauge obligation.  It does
-not yet prove wall exclusion: the remaining adapter must turn two
-same-colour matchings with a bounded disagreement carrier into compatible
-alternating-component receipts, and then use the mesh geometry to force a
-strict compositional descent.
+not yet prove wall exclusion: bounded edge-disagreement is now verified, but
+the remaining adapter must choose proper distinguished alternating components
+for a common residual-defect minimizer and then use the mesh geometry to force
+a strict compositional descent.
 \end{proof}
 
 The binary constraints have one further exact locality property.  Although

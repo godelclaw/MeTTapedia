@@ -24,6 +24,7 @@ namespace OrderedMeshCommonCorePathSection
 
 open Amplitude
 open Compositional.AlternatingComponentLocalization
+open Compositional.AlternatingOverlapGeometry
 open Compositional.DeletionColorMatching
 open GoertzelV24AdjacentPairBoundary
 open GoertzelV24AdjacentPairCommonCoreLocalization
@@ -33,6 +34,7 @@ open GoertzelV24AdjacentPairInsertion
 open GoertzelV24AdjacentPairInsertion.AdjacentPairData
 open GoertzelV24AdjacentPairMatchingExtraction
 open GoertzelV24AdjacentPairMatchingExtraction.AdjacentPairData
+open GoertzelV24AlternatingMatchingComponent
 open GoertzelV24LocalSwapKempeGeneration
 open GoertzelV24OrderedInjectiveMeshWidthFactorization
 open GoertzelV24OrderedMeshColoringAtlas
@@ -370,6 +372,55 @@ theorem exists_pair_pathDeletionMatchings_agree_outside_footprint
       pathSection second).absentAtBoundary edge (hretained second)]
   simp only [pathDeletionMatchingState_coloring]
   rw [hcolor, habsent]
+
+/-- Taking symmetric difference with any fixed supported matching preserves
+the forty-five-edge endpoint bound. -/
+theorem exists_pair_pathAlternatingGraph_edgeDisagreement_le
+    (row : Fin a) (slot : Fin 9 ↪ Fin n)
+    (pathSection : PathConstraint.Section
+      (fun index : Fin 9 ↦ NineSiteTaitColoringAt
+        (rotation := rotation) (minimal := minimal) (ordered := ordered)
+        row slot index)
+      (ConsecutiveCommonCoreRepairCompatible
+        rotation minimal ordered row slot))
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G) :
+    ∃ first second : Fin 9, first ≠ second ∧
+      (SimpleGraph.edgeDisagreementFinset
+        (alternatingGraph sigma
+          ((pathDeletionMatchingState rotation minimal ordered row slot
+            pathSection first).pairing
+            (Compositional.ResidualSiteProvenance.incidentEdgeFinset_card_eq_three
+              rotation minimal)))
+        (alternatingGraph sigma
+          ((pathDeletionMatchingState rotation minimal ordered row slot
+            pathSection second).pairing
+            (Compositional.ResidualSiteProvenance.incidentEdgeFinset_card_eq_three
+              rotation minimal)))).card ≤ 45 := by
+  obtain ⟨first, second, hne, hagrees⟩ :=
+    exists_pair_pathDeletionMatchings_agree_outside_footprint
+      rotation minimal ordered row slot pathSection
+  refine ⟨first, second, hne, ?_⟩
+  let hcubic :=
+    Compositional.ResidualSiteProvenance.incidentEdgeFinset_card_eq_three
+      rotation minimal
+  calc
+    _ ≤ (commonCoreRepairPathFootprint
+        rotation minimal ordered row slot).card :=
+      card_alternatingGraph_edgeDisagreement_le_of_pairings_agree_outside
+        sigma
+        ((pathDeletionMatchingState rotation minimal ordered row slot
+          pathSection first).pairing hcubic)
+        ((pathDeletionMatchingState rotation minimal ordered row slot
+          pathSection second).pairing hcubic)
+        hSigma
+        ((pathDeletionMatchingState rotation minimal ordered row slot
+          pathSection first).pairing_supported hcubic)
+        ((pathDeletionMatchingState rotation minimal ordered row slot
+          pathSection second).pairing_supported hcubic)
+        (commonCoreRepairPathFootprint rotation minimal ordered row slot)
+        hagrees
+    _ ≤ 45 := card_commonCoreRepairPathFootprint_le
+      rotation minimal ordered row slot
 
 end
 

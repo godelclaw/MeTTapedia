@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualSiteGeometry
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualSiteMatchingOverlap
+import Mettapedia.GraphTheory.FiniteEdgeDifference
 
 /-!
 # Alternating geometry on a compatible deletion overlap
@@ -86,6 +87,66 @@ theorem alternatingGraphs_agree_on_common_retained_edge
         (alternatingGraph sigma (target.pairing hcubic)).Adj left right
       exact alternatingGraph_adj_congr_right sigma
         (source.pairing hcubic) (target.pairing hcubic) hpairing
+
+/-- Agreement of two second pairings on one unordered edge is preserved after
+taking symmetric difference with the same first pairing. -/
+theorem alternatingGraph_mem_edgeSet_congr_right
+    (sigma source target : Pairing V) (edge : Sym2 V)
+    (hagrees : edge ∈ edges source.toPerm ↔
+      edge ∈ edges target.toPerm) :
+    edge ∈ (alternatingGraph sigma source).edgeSet ↔
+      edge ∈ (alternatingGraph sigma target).edgeSet := by
+  induction edge using Sym2.inductionOn with
+  | _ left right =>
+      rw [mem_edges_iff (MatchingBridge.toPerm_mem_pairings _),
+        mem_edges_iff (MatchingBridge.toPerm_mem_pairings _)] at hagrees
+      change (alternatingGraph sigma source).Adj left right ↔
+        (alternatingGraph sigma target).Adj left right
+      exact alternatingGraph_adj_congr_right sigma source target hagrees
+
+omit [DecidableRel G.Adj] in
+/-- If two supported second pairings agree outside a finite set of ambient
+edges, their symmetric-difference graphs with a common supported first
+pairing disagree on at most that many edges. -/
+theorem card_alternatingGraph_edgeDisagreement_le_of_pairings_agree_outside
+    (sigma source target : Pairing V)
+    (hSigma : sigma.SupportedBy G)
+    (hSource : source.SupportedBy G)
+    (hTarget : target.SupportedBy G)
+    (removed : Finset G.edgeSet)
+    (hagrees : ∀ edge : G.edgeSet, edge ∉ removed →
+      (edge.1 ∈ edges source.toPerm ↔ edge.1 ∈ edges target.toPerm)) :
+    (SimpleGraph.edgeDisagreementFinset
+      (alternatingGraph sigma source)
+      (alternatingGraph sigma target)).card ≤ removed.card := by
+  let removedValues : Finset (Sym2 V) := removed.image Subtype.val
+  have hsourceLe : alternatingGraph sigma source ≤ G :=
+    alternatingGraph_le sigma source hSigma hSource
+  have htargetLe : alternatingGraph sigma target ≤ G :=
+    alternatingGraph_le sigma target hSigma hTarget
+  have hsubset : SimpleGraph.edgeDisagreementFinset
+      (alternatingGraph sigma source) (alternatingGraph sigma target) ⊆
+      removedValues := by
+    intro edge hedge
+    rw [SimpleGraph.mem_edgeDisagreementFinset] at hedge
+    by_contra houtside
+    have hedgeG : edge ∈ G.edgeSet := by
+      rcases hedge with ⟨hsource, _⟩ | ⟨htarget, _⟩
+      · exact SimpleGraph.edgeSet_mono hsourceLe hsource
+      · exact SimpleGraph.edgeSet_mono htargetLe htarget
+    let ambient : G.edgeSet := ⟨edge, hedgeG⟩
+    have hambientOutside : ambient ∉ removed := by
+      intro hmem
+      apply houtside
+      exact Finset.mem_image.2 ⟨ambient, hmem, rfl⟩
+    have halternating := alternatingGraph_mem_edgeSet_congr_right
+      sigma source target edge (hagrees ambient hambientOutside)
+    rcases hedge with ⟨hsource, htarget⟩ | ⟨htarget, hsource⟩
+    · exact htarget (halternating.mp hsource)
+    · exact hsource (halternating.mpr htarget)
+  calc
+    _ ≤ removedValues.card := Finset.card_le_card hsubset
+    _ ≤ removed.card := Finset.card_image_le
 
 /-- The global colouring provenance nested in the final two-sector receipt. -/
 def pairingProvenance
