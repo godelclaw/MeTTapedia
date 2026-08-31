@@ -317,6 +317,16 @@ theorem CyclicEdgeCutRealization.hasCyclicEdgeCutOfSizeAtMost
     HasCyclicEdgeCutOfSizeAtMost G bound :=
   ⟨edgeCut, ⟨realization⟩, hcard⟩
 
+/-- A cyclic edge cut satisfying one cardinality bound also satisfies every
+larger bound. -/
+theorem HasCyclicEdgeCutOfSizeAtMost.mono
+    {G : SimpleGraph V} {lower upper : Nat}
+    (cut : HasCyclicEdgeCutOfSizeAtMost G lower)
+    (hbound : lower ≤ upper) :
+    HasCyclicEdgeCutOfSizeAtMost G upper := by
+  rcases cut with ⟨edgeCut, realization, hcard⟩
+  exact ⟨edgeCut, realization, hcard.trans hbound⟩
+
 /-- Build a small cyclic edge cut from realization data plus the cardinality bound. -/
 def CyclicEdgeCutRealization.toSmallCyclicEdgeCut
     {G : SimpleGraph V} {edgeCut : Finset G.edgeSet}

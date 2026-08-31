@@ -7355,21 +7355,32 @@ factor-three bound.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweepCyclicCut.hasDegreeControlledCyclicReturnCut_or_spaced_eq_rawState}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweepCyclicCut.HasNestedReturnSeparatorLargerThan}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweepCyclicCut.hasCyclicEdgeCutOfSizeAtMost_or_longReturnSeparator_or_spaced_eq_rawState}
-Fix a requested separator bound $B\geq0$ and spacing $s\geq0$.  If a proper
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ReturnSeparatorLength.support_toFinset_card_append_le}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ReturnSeparatorLength.orderedReturnSeparator_support_toFinset_card_le}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ReturnSeparatorLength.residualCycleInterval_support_toFinset_card}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ReturnSeparatorLength.long_ambientReturn_or_long_carrierInterval}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweepCyclicCut.HasNestedAmbientReturnSupportLargerThan}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweepCyclicCut.HasNestedCarrierIntervalSupportLargerThan}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweepCyclicCut.hasNestedAmbientReturnSupportLargerThan_or_carrierInterval_of_separator}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweepCyclicCut.hasCyclicEdgeCutOfSizeAtMost_or_longAmbientReturn_or_longCarrierInterval_or_spaced}
+Fix a requested component bound $B\geq0$ and spacing $s\geq0$.  If a proper
 alternating site has $n$ cyclic positions and
 \[
                               n>8(s+1),
 \]
 then one of the following holds:
 \begin{enumerate}
-\item the site has a realized cyclic edge cut of width at most $3B$;
+\item the site has a realized cyclic edge cut of width at most $6B$;
 \item two strictly nested physical returns on one facial shore have inner
-      return separator support larger than $B$;
+      ambient-return support larger than $B$;
+\item two strictly nested physical returns on one facial shore have inner
+      carrier-interval support larger than $B$;
 \item there are positions $i<j$ with $j-i\geq s+1$ carrying the same phased
       two-shore sweep state.
 \end{enumerate}
 Thus the only obstruction to converting the deep sweep horn into a uniformly
-bounded interface is an explicitly long physical return separator.
+bounded interface is now separated into a long path through the ambient graph
+and a long interval along the already ordered carrier.
 \end{corollary}
 
 \begin{proof}
@@ -7381,9 +7392,13 @@ constructed, so it lifts back to the corresponding physical return chord,
 with both endpoints and the shore label unchanged.  The first two records in
 the LIFO stack are strictly nested.  Corollary~\ref{cor:nested-residual-return-cyclic-cut}
 therefore supplies a cyclic edge cut with at most three crossed edges for
-each vertex of the inner separator.  If that separator has at most $B$
-vertices, the cut has width at most $3B$; otherwise it gives the second horn.
-Finally, $2(s+1)(1+1)^2=8(s+1)$.
+each vertex of the inner separator.  That separator is the append of the
+ambient return and the reverse carrier interval.  Its number of distinct
+vertices is at most the sum of the two component supports.  If both component
+supports have at most $B$ vertices, the separator has at most $2B$ and the cut
+has width at most $6B$.  Otherwise the long component determines the second or
+third horn.  The carrier component is a simple path, so its support cardinality
+is exactly $r_i-\ell_i+1$.  Finally, $2(s+1)(1+1)^2=8(s+1)$.
 \end{proof}
 
 \begin{corollary}[pointwise geometric sweep alternatives across the mesh]
@@ -7394,11 +7409,11 @@ For one ordered injective mesh in a graph-backed least counterexample, choose
 the common minimum-residual-defect matching of
 Corollary~\ref{cor:global-residual-geometry-provenance}.  Every global mesh
 step is either central for this matching or carries its provenanced geometric
-sweep trichotomy from
+sweep alternative from
 Corollary~\ref{cor:geometric-residual-return-sweep-alternative}, at every
-requested separator bound and spacing.  Moreover, at each internal row
+requested component bound and spacing.  Moreover, at each internal row
 junction at least one of the immediately incoming and outgoing arms carries
-this trichotomy.
+this four-way alternative.
 \end{corollary}
 
 \begin{proof}
@@ -7411,8 +7426,9 @@ distinct while their shared branch vertex has a unique partner.  Therefore
 at least one arm is noncentral and carries the upgraded receipt.
 
 The conclusion is pointwise.  It does not choose among the short-cut,
-long-separator, and repeated-state horns uniformly, nor does it assert that
-choices made at adjacent junctions define nested or disjoint shores.
+long-ambient-return, long-carrier-interval, and repeated-state horns uniformly,
+nor does it assert that choices made at adjacent junctions define nested or
+disjoint shores.
 \end{proof}
 
 For the route, the two Kempe families suggest the matching stacks and capped
@@ -7421,12 +7437,15 @@ belong to a colouring state, whereas the physical graph surgery must be
 defined before a global colouring exists.  In the shallow case an equal
 sweep state is therefore only a candidate length interface.  In the deep
 case the nested records now produce a literal bounded cyclic edge cut whenever
-the physical separator is short.  A long physical separator is retained as
-its own explicit horn rather than being mistaken for a bounded interface.
-One still has to compress that long-return horn, choose interfaces coherently
+both separator components are short.  A long carrier interval remains on the
+one-dimensional LIFO carrier and can be attacked by a restricted sweep.  A
+long ambient return instead requires a new sweep of the attachments along
+that path; planarity alone does not make its interface bounded.  Neither case
+is mistaken for a bounded interface.  One still has to compress these two
+long-return horns, choose interfaces coherently
 across neighbouring mesh sites, and prove that the cumulative zero-count
 profile factors through the resulting ordered interfaces.  The corollary is
-therefore a graph-level local trichotomy at one alternating site; it proves
+therefore a graph-level local alternative at one alternating site; it proves
 neither a coherent mesh-level family nor the splice.
 
 \subsection{The exact finite interface}

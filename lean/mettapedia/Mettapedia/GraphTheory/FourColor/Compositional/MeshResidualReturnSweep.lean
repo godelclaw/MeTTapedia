@@ -7,8 +7,8 @@ import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweepCyclicC
 This module lifts the single-site geometric sweep alternative into the global
 mesh quantifiers already supplied by the residual-defect minimizer.  At every
 noncentral mesh step, one proof-carrying receipt now exposes the same exact
-trichotomy: a uniformly bounded cyclic cut, a physical return separator longer
-than the requested bound, or two materially spaced equal phased sweep states.
+alternatives: a uniformly bounded cyclic cut, a long ambient return, a long
+carrier interval, or two materially spaced equal phased sweep states.
 
 The construction is pointwise.  It deliberately does not claim that cuts or
 repeated states chosen at neighbouring sites are mutually compatible; that is
@@ -52,12 +52,14 @@ structure GeometricSweepReceipt
     (step : GlobalMeshStep rotation ordered) where
   base : ProvenancedTwoSectorReturnReceipt
     rotation minimal ordered hG sigma step
-  alternative : ∀ separatorBound spacing : Nat,
+  alternative : ∀ componentBound spacing : Nat,
     2 * (spacing + 1) * (1 + 1) ^ 2 <
         base.base.base.bond.site.cycle.tail.support.length →
-      HasCyclicEdgeCutOfSizeAtMost G (3 * separatorBound) ∨
-        HasNestedReturnSeparatorLargerThan rotation hG sigma
-          base.base.base.sigma_supported base.base.base.bond separatorBound ∨
+      HasCyclicEdgeCutOfSizeAtMost G (6 * componentBound) ∨
+        HasNestedAmbientReturnSupportLargerThan rotation hG sigma
+          base.base.base.sigma_supported base.base.base.bond componentBound ∨
+        HasNestedCarrierIntervalSupportLargerThan rotation hG sigma
+          base.base.base.sigma_supported base.base.base.bond componentBound ∨
         ∃ firstPosition secondPosition :
             CyclePosition sigma base.base.base.bond.site,
           firstPosition < secondPosition ∧
@@ -83,10 +85,10 @@ def GeometricSweepReceipt.ofTwoSector
       rotation minimal ordered hG sigma step) :
     GeometricSweepReceipt rotation minimal ordered hG sigma step where
   base := receipt
-  alternative := fun separatorBound spacing hmany =>
-    hasCyclicEdgeCutOfSizeAtMost_or_longReturnSeparator_or_spaced_eq_rawState
+  alternative := fun componentBound spacing hmany =>
+    hasCyclicEdgeCutOfSizeAtMost_or_longAmbientReturn_or_longCarrierInterval_or_spaced
       rotation minimal hG sigma receipt.base.base.sigma_supported
-        receipt.base.base.bond separatorBound spacing hmany
+        receipt.base.base.bond componentBound spacing hmany
 
 /-- One common residual-defect minimizer supplies the geometric sweep
 alternative at every noncentral step of an ordered mesh. -/
