@@ -351,6 +351,86 @@ theorem exists_endpoint_edgeDisagreement_le_of_hasCoherentTwoSectorPair
   exact card_alternatingGraph_edgeDisagreement_le rotation minimal family
     pathSection minimizer.pairing minimizer.supported first second habsent
 
+/-- Every vertex in the carrier recorded by a target two-sector receipt lies
+in the target matching state's distinguished alternating component. -/
+theorem connectedComponentMk_eq_distinguished_of_mem_targetCarrier
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (minimizer : ResidualDefectMinimizer G)
+    (data : AdjacentPairData G)
+    (state : DeletionMatchingState data)
+    (receipt : DeletionTwoSectorReturnReceipt
+      rotation minimal minimizer data state)
+    {vertex : V} (hvertex : vertex ∈ receipt.alternating.site.carrier) :
+    (alternatingGraph minimizer.pairing
+      (state.pairing
+        (ResidualSiteProvenance.incidentEdgeFinset_card_eq_three
+          rotation minimal))).connectedComponentMk vertex =
+      (alternatingGraph minimizer.pairing
+        (state.pairing
+          (ResidualSiteProvenance.incidentEdgeFinset_card_eq_three
+            rotation minimal))).connectedComponentMk data.firstVertex := by
+  let hcubic :=
+    ResidualSiteProvenance.incidentEdgeFinset_card_eq_three rotation minimal
+  rw [← receipt.alternating.site_tau_eq]
+  have hroot : minimizer.pairing.partner data.firstVertex ≠
+      receipt.alternating.site.tau.partner data.firstVertex :=
+    receipt.alternating.site.disagree_on_carrier data.firstVertex
+      receipt.alternating.site.first_mem
+  have heqv : Relation.EqvGen
+      (AlternatingStep minimizer.pairing receipt.alternating.site.tau)
+      data.firstVertex vertex := by
+    rw [← mem_alternatingComponent_iff]
+    rw [← receipt.alternating.site.carrier_eq]
+    exact hvertex
+  exact (SimpleGraph.ConnectedComponent.sound
+    (alternatingGraph_reachable_of_eqvGen minimizer.pairing
+      receipt.alternating.site.tau hroot heqv)).symm
+
+/-- An outside-footprint source walk which reaches a vertex of the target
+receipt's distinguished carrier identifies the transferred component with
+the target distinguished component.  This is the exact anchor interface
+left to the mesh geometry. -/
+theorem alternatingWalk_lands_in_target_distinguished_of_anchor
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (family : PairDeletionColoringFamily (G := G) (Fin 9))
+    (pathSection : PathConstraint.Section
+      (fun index : Fin 9 => TaitColoringAt family index)
+      (ConsecutiveRepairCompatible family))
+    (minimizer : ResidualDefectMinimizer G)
+    (first second : Fin 9)
+    (habsent :
+      (matchingState rotation minimal family pathSection first).absentColor =
+        (matchingState rotation minimal family pathSection second).absentColor)
+    (targetReceipt : DeletionTwoSectorReturnReceipt rotation minimal minimizer
+      (family.data second)
+      (matchingState rotation minimal family pathSection second))
+    {left anchor : V}
+    (walk : (alternatingGraph minimizer.pairing
+      ((matchingState rotation minimal family pathSection first).pairing
+        (ResidualSiteProvenance.incidentEdgeFinset_card_eq_three
+          rotation minimal))).Walk left anchor)
+    (havoids : ∀ edge : G.edgeSet, edge.1 ∈ walk.edges →
+      edge ∉ pathFootprint family)
+    (hanchor : anchor ∈ targetReceipt.alternating.site.carrier) :
+    (alternatingGraph minimizer.pairing
+      ((matchingState rotation minimal family pathSection second).pairing
+        (ResidualSiteProvenance.incidentEdgeFinset_card_eq_three
+          rotation minimal))).connectedComponentMk left =
+      (alternatingGraph minimizer.pairing
+        ((matchingState rotation minimal family pathSection second).pairing
+          (ResidualSiteProvenance.incidentEdgeFinset_card_eq_three
+            rotation minimal))).connectedComponentMk
+          (family.data second).firstVertex := by
+  exact (alternatingWalk_component_eq_in_target rotation minimal family
+    pathSection minimizer.pairing minimizer.supported first second habsent
+    walk havoids).trans
+      (connectedComponentMk_eq_distinguished_of_mem_targetCarrier
+        rotation minimal minimizer (family.data second)
+        (matchingState rotation minimal family pathSection second)
+        targetReceipt hanchor)
+
 end
 
 end Mettapedia.GraphTheory.FourColor.Compositional.DeletionPathLocalization
