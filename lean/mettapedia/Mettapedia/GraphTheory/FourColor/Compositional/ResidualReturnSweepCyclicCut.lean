@@ -85,10 +85,12 @@ theorem exists_physical_chord_of_mem_openArcs
   · simpa [OnReturnShore, orderedReturnChord,
       min_eq_left hposition.le] using hshore
 
-/-- A residual site has a bounded cyclic return cut when two physical returns
-on one facial shore are strictly nested and the inner return's separator can
-be pushed to a cyclic edge cut with the cubic degree bound. -/
-def HasBoundedCyclicReturnCut
+/-- A residual site has a degree-controlled cyclic return cut when two
+physical returns on one facial shore are strictly nested and the inner
+return's separator can be pushed to a cyclic edge cut.  The cut size is
+controlled by three times the separator support; this is not a uniform-width
+bound because the physical return path may itself be arbitrarily long. -/
+def HasDegreeControlledCyclicReturnCut
     (rotation : Data G)
     (hG : HasCubicIncidentEdgeTriples G)
     (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
@@ -110,10 +112,26 @@ def HasBoundedCyclicReturnCut
              (CyclePushOffCut.edges rotation separator faceCut selected).card ≤
                separator.support.toFinset.card * 3)
 
+/-- The remaining non-uniform horn: a strictly nested pair on one return
+shore whose inner physical separator has support larger than `bound`. -/
+def HasNestedReturnSeparatorLargerThan
+    (rotation : Data G)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (bound : Nat) : Prop :=
+  ∃ outer inner : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma bond.site),
+    orderedReturnShore rotation hG sigma hSigma bond outer.left =
+        orderedReturnShore rotation hG sigma hSigma bond inner.left ∧
+      outer.left < inner.left ∧ inner.right < outer.right ∧
+      bound < (orderedReturnSeparator hG sigma hSigma bond.site inner).support.toFinset.card
+
 /-- Two strictly nested records in one residual-return sweep stack are
 realized by two strictly nested physical returns and therefore determine the
-bounded cyclic edge cut furnished by the separator geometry. -/
-theorem hasBoundedCyclicReturnCut_of_nested_openArcs
+degree-controlled cyclic edge cut furnished by the separator geometry. -/
+theorem hasDegreeControlledCyclicReturnCut_of_nested_openArcs
     (rotation : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
     (hG : HasCubicIncidentEdgeTriples G)
@@ -130,7 +148,7 @@ theorem hasBoundedCyclicReturnCut_of_nested_openArcs
         (returnShoreIndex shore)).openArcs sweepCut)
     (hleft : outer.left < inner.left)
     (hright : inner.right < outer.right) :
-    HasBoundedCyclicReturnCut rotation hG sigma hSigma bond := by
+    HasDegreeControlledCyclicReturnCut rotation hG sigma hSigma bond := by
   rcases exists_physical_chord_of_mem_openArcs rotation minimal hG sigma
       hSigma bond shore sweepCut outer houter with
     ⟨outerChord, houterLeft, houterRight, houterShore⟩
@@ -147,9 +165,9 @@ theorem hasBoundedCyclicReturnCut_of_nested_openArcs
   · simpa only [hinnerRight, houterRight] using hright
 
 /-- The deep horn of the physical residual-return sweep has direct geometric
-content: stack depth at least two already supplies a bounded cyclic return
-cut. -/
-theorem hasBoundedCyclicReturnCut_of_deep_return_shore
+content: stack depth at least two already supplies a degree-controlled cyclic
+return cut. -/
+theorem hasDegreeControlledCyclicReturnCut_of_deep_return_shore
     (rotation : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
     (hG : HasCubicIncidentEdgeTriples G)
@@ -159,7 +177,7 @@ theorem hasBoundedCyclicReturnCut_of_deep_return_shore
     (hdeep : ∃ shore cut,
       1 < (((residualReturnSweepData rotation minimal hG sigma hSigma bond).family
         shore).stackAt cut).length) :
-    HasBoundedCyclicReturnCut rotation hG sigma hSigma bond := by
+    HasDegreeControlledCyclicReturnCut rotation hG sigma hSigma bond := by
   rcases exists_long_strictlyNested_return_family_of_deep rotation minimal hG
       sigma hSigma bond 1 hdeep with ⟨shore, cut, hlength, hnested⟩
   let arcs := (returnShoreMatching rotation minimal hG sigma hSigma bond
@@ -177,7 +195,7 @@ theorem hasBoundedCyclicReturnCut_of_deep_return_shore
     apply hnested.rel_get_of_lt
     change (0 : Nat) < 1
     omega
-  apply hasBoundedCyclicReturnCut_of_nested_openArcs rotation minimal hG sigma
+  apply hasDegreeControlledCyclicReturnCut_of_nested_openArcs rotation minimal hG sigma
     hSigma bond shore cut outer inner
   · exact arcs.get_mem ⟨0, hzero⟩
   · exact arcs.get_mem ⟨1, hone⟩
@@ -185,10 +203,11 @@ theorem hasBoundedCyclicReturnCut_of_deep_return_shore
   · exact hpair.2
 
 /-- **Geometric residual-return sweep alternative.**  A sufficiently long
-alternating carrier has either a bounded cyclic return cut or two materially
-spaced positions with the same phased two-shore sweep record.  This removes
-the abstract "deep stack" outcome from the consumer-facing dichotomy. -/
-theorem hasBoundedCyclicReturnCut_or_spaced_eq_rawState
+alternating carrier has either a degree-controlled cyclic return cut or two
+materially spaced positions with the same phased two-shore sweep record.  This
+removes the abstract "deep stack" outcome from the consumer-facing dichotomy
+without claiming a uniform interface width. -/
+theorem hasDegreeControlledCyclicReturnCut_or_spaced_eq_rawState
     (rotation : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
     (hG : HasCubicIncidentEdgeTriples G)
@@ -199,7 +218,7 @@ theorem hasBoundedCyclicReturnCut_or_spaced_eq_rawState
     (hmany :
       2 * (spacing + 1) * (1 + 1) ^ 2 <
         bond.site.cycle.tail.support.length) :
-    HasBoundedCyclicReturnCut rotation hG sigma hSigma bond ∨
+    HasDegreeControlledCyclicReturnCut rotation hG sigma hSigma bond ∨
       ∃ firstPosition secondPosition : CyclePosition sigma bond.site,
         firstPosition < secondPosition ∧
           spacing + 1 ≤ secondPosition.val - firstPosition.val ∧
@@ -209,9 +228,50 @@ theorem hasBoundedCyclicReturnCut_or_spaced_eq_rawState
               spacing).rawState secondPosition := by
   rcases exists_deep_return_shore_or_spaced_eq_rawState rotation minimal hG
       sigma hSigma bond 1 spacing hmany with hdeep | hspaced
-  · exact Or.inl (hasBoundedCyclicReturnCut_of_deep_return_shore
+  · exact Or.inl (hasDegreeControlledCyclicReturnCut_of_deep_return_shore
       rotation minimal hG sigma hSigma bond hdeep)
   · exact Or.inr hspaced
+
+/-- **Uniform-width / long-return / repeated-state trichotomy.**  Supplying a
+candidate separator bound turns the degree-controlled cut horn into an actual
+uniform-width cut unless the chosen physical return separator is longer than
+that bound.  This exposes, rather than hides, the extra compression theorem
+needed by the global mesh descent. -/
+theorem hasCyclicEdgeCutOfSizeAtMost_or_longReturnSeparator_or_spaced_eq_rawState
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (separatorBound spacing : Nat)
+    (hmany :
+      2 * (spacing + 1) * (1 + 1) ^ 2 <
+        bond.site.cycle.tail.support.length) :
+    HasCyclicEdgeCutOfSizeAtMost G (3 * separatorBound) ∨
+      HasNestedReturnSeparatorLargerThan rotation hG sigma hSigma bond
+        separatorBound ∨
+      ∃ firstPosition secondPosition : CyclePosition sigma bond.site,
+        firstPosition < secondPosition ∧
+          spacing + 1 ≤ secondPosition.val - firstPosition.val ∧
+          (phasedResidualReturnSweepData rotation minimal hG sigma hSigma bond
+              spacing).rawState firstPosition =
+            (phasedResidualReturnSweepData rotation minimal hG sigma hSigma bond
+              spacing).rawState secondPosition := by
+  rcases hasDegreeControlledCyclicReturnCut_or_spaced_eq_rawState
+      rotation minimal hG sigma hSigma bond spacing hmany with hcut | hrepeated
+  · rcases hcut with
+      ⟨outer, inner, hshore, hleft, hright, faceCut, selected,
+        realization, hcard⟩
+    by_cases hshort :
+        (orderedReturnSeparator hG sigma hSigma bond.site inner).support.toFinset.card ≤
+          separatorBound
+    · left
+      apply realization.hasCyclicEdgeCutOfSizeAtMost
+      omega
+    · exact Or.inr (Or.inl
+        ⟨outer, inner, hshore, hleft, hright, Nat.lt_of_not_ge hshort⟩)
+  · exact Or.inr (Or.inr hrepeated)
 
 end
 

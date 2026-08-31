@@ -301,6 +301,22 @@ structure CyclicEdgeCutRealization (G : SimpleGraph V) (edgeCut : Finset G.edgeS
   hinside_cycle : HasCycleOnSide G side
   houtside_cycle : HasCycleOnSide G (fun v => ¬ side v)
 
+/-- Existence of a realized cyclic edge cut with a specified cardinality
+bound.  Unlike `SmallCyclicEdgeCut`, the bound is a parameter rather than the
+hard-coded value four. -/
+def HasCyclicEdgeCutOfSizeAtMost (G : SimpleGraph V) (bound : Nat) : Prop :=
+  ∃ edgeCut : Finset G.edgeSet,
+    Nonempty (CyclicEdgeCutRealization G edgeCut) ∧ edgeCut.card ≤ bound
+
+/-- Realization data and a cardinality estimate give the generic bounded-cut
+existence predicate. -/
+theorem CyclicEdgeCutRealization.hasCyclicEdgeCutOfSizeAtMost
+    {G : SimpleGraph V} {edgeCut : Finset G.edgeSet}
+    (realization : CyclicEdgeCutRealization G edgeCut) {bound : Nat}
+    (hcard : edgeCut.card ≤ bound) :
+    HasCyclicEdgeCutOfSizeAtMost G bound :=
+  ⟨edgeCut, ⟨realization⟩, hcard⟩
+
 /-- Build a small cyclic edge cut from realization data plus the cardinality bound. -/
 def CyclicEdgeCutRealization.toSmallCyclicEdgeCut
     {G : SimpleGraph V} {edgeCut : Finset G.edgeSet}
