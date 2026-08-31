@@ -3205,6 +3205,41 @@ made before the mesh step, so the quantifier order remains
 \(\sigma\) at each site.
 \end{proof}
 
+\begin{corollary}[colouring provenance of the global residual pairing]
+\label{cor:global-residual-pairing-provenance}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualSiteProvenance.nonempty_globalSitePairingProvenance}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualSiteProvenance.exists_exchangeRigid_with_provenance_at_every_globalMeshStep}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualSiteProvenance.exists_exchangeRigid_with_provenanced_alternatingSite_at_every_globalMeshStep}
+The common minimum-residual-defect matching in
+Corollary~\ref{cor:global-two-sector-residual-receipt} can be chosen together
+with the following data at every mesh step.  Retain the exact globally
+selected Tait colouring of the graph with the step's central edge deleted,
+choose a colour absent from its four boundary darts, and complete that colour
+class by the deleted central edge.  The resulting ambient perfect matching is
+supported on graph edges, contains the central edge, and is the \emph{same}
+second matching used by the proper alternating-cycle witness in the
+noncentral alternative.
+\end{corollary}
+
+\begin{proof}
+At a step, minimality colours the graph with the central edge deleted.  The
+two pairs of boundary colours on the two sides of that deleted edge agree;
+the three-colour boundary algebra therefore supplies a colour absent from all
+four boundary darts.  Its colour class matches every retained vertex except
+the two endpoints of the deleted edge.  Adding that edge produces a supported
+perfect matching through the step.
+
+Choose the ambient matching with minimum residual defect before choosing a
+mesh step.  Its exchange-rigidity applies to each of the supported matchings
+just constructed.  If the ambient matching already contains the central edge
+we are in the central alternative.  Otherwise the alternating component of
+the two matchings through that edge supplies the proper residual cycle.  By
+construction its second matching is definitionally the completed absent
+colour class just recorded, so the original deletion colouring and its
+absent colour survive into the residual witness rather than being hidden
+behind a fresh existential choice.
+\end{proof}
+
 \begin{lemma}[rooted gauge for residual face sides]
 \label{lem:rooted-residual-face-side-gauge}
 \Sverified{Mettapedia.GraphTheory.Embedding.FaceCutGauge.basedLabel_eq}
@@ -3251,7 +3286,10 @@ synchronized so that symmetric difference strictly lowers residual quotient
 oddness, or instead yields equal exact shore supports for a physical
 replacement.  In particular, the corollary has quantifier order
 \(\exists\sigma\,\forall e\,\exists\tau_e\); it does not assert a coherent
-simultaneous choice of the \(\tau_e\).  The local formation receipts identify
+simultaneous choice of the \(\tau_e\).  Corollary~\ref{cor:global-residual-pairing-provenance}
+now identifies each \(\tau_e\) with the absent colour class of the exact
+globally selected deletion colouring at \(e\), but it does not yet transport
+that colouring between two distinct deletions.  The local formation receipts identify
 which residual edge changes at each cycle vertex, and the common-residual
 components now pair the third-edge excursions when they return to the cycle.
 They also prove that each individual return remains on one facial shore.
