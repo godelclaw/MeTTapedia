@@ -4379,6 +4379,10 @@ have a stronger elementary property which is useful here.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingSiteGeometry.nonempty_residualDefectMinimizer}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingSiteGeometry.properAlternatingComponentWitness_of_partner_ne}
 \Sverified{Mettapedia.GraphTheory.FourColor.OrderedMeshCommonCorePathSection.exists_pair_pathAlternatingEndpointAlternatives}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.DeletionSiteGeometry.DeletionAlternatingSiteReceipt.ofState}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.DeletionSiteGeometry.DeletionTwoSectorReturnReceipt.ofState}
+\Sverified{Mettapedia.GraphTheory.FourColor.OrderedMeshCommonCorePathSection.pathTwoSectorSiteAlternative}
+\Sverified{Mettapedia.GraphTheory.FourColor.OrderedMeshCommonCorePathSection.exists_pair_pathTwoSectorEndpointAlternatives}
 Under the no-branching and no-boundary hypothesis of
 Corollary~\ref{cor:arc-consistent-no-section-residue}, one can choose a proper
 nonzero edge-colouring at each of the nine ordered deletion sites so that
@@ -4390,7 +4394,10 @@ same absent Tait colour.  The resulting ambient perfect matchings agree outside
 the union of the nine deletion footprints, a set of at most $45$ edges.  For
 any fixed graph-supported perfect matching, the corresponding two
 matching-symmetric-difference graphs consequently disagree on at most $45$
-edges.
+edges.  At each of these two endpoints the fixed residual-defect minimizer
+either uses the restored edge or the exact path-selected deletion colouring
+carries a proper alternating cycle, facial bond, physical formation,
+canonical return, face-shore data, and two-sector noncrossing receipt.
 \end{corollary}
 
 \begin{proof}
@@ -4428,6 +4435,16 @@ In the latter case the cycle has at least four vertices, a shared matching
 edge lies outside it, and exchange on its carrier cannot lower residual
 defect.  The two pigeonhole-selected endpoints carry this exact alternative
 simultaneously with the $45$-edge disagreement bound.
+
+The geometric construction is independent of how the deletion colouring was
+chosen.  Starting from its completed absent-colour matching and the proper
+alternating cycle, take the two connected facial shores of the cycle, perform
+the local formation switch at each boundary vertex, and pair boundary vertices
+by their canonical returns through unchanged material.  The return preserves
+the facial shore, and equal-shore returns do not cross.  Indexing this receipt
+by the deletion state ensures that the resulting geometry belongs to the
+path-repaired colouring itself, not to the unrelated globally selected
+colouring at the same physical edge.
 
 This removes the previously stated global colour-gauge obligation.  It does
 not yet prove wall exclusion: bounded edge-disagreement is now verified, but
