@@ -7166,6 +7166,7 @@ transported back to literal equality of the local letter and every stack.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.NoncrossingPairingSweep.openArcs_pairwise_strictlyNested}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweep.exists_long_strictlyNested_return_family_of_deep}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweep.exists_long_strictlyNested_return_family_or_spaced_eq_rawState}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.NoncrossingPairingSweep.exists_canonical_position_of_mem_canonicalArcList}
 Let a proper alternating site in a graph-backed least counterexample have
 $n$ cyclic positions and the physical residual-return receipt of
 Lemma~\ref{lem:residual-return-two-sector-noncrossing}.  Fix $D\geq0$.
@@ -7345,16 +7346,47 @@ Corollary~\ref{cor:residual-return-bounded-push-off} gives the asserted
 factor-three bound.
 \end{proof}
 
+\begin{corollary}[geometric residual-return sweep alternative]
+\label{cor:geometric-residual-return-sweep-alternative}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweepCyclicCut.exists_physical_chord_of_mem_openArcs}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweepCyclicCut.hasBoundedCyclicReturnCut_of_nested_openArcs}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweepCyclicCut.hasBoundedCyclicReturnCut_of_deep_return_shore}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweepCyclicCut.hasBoundedCyclicReturnCut_or_spaced_eq_rawState}
+Fix a requested spacing $s\geq0$.  If a proper alternating site has $n$
+cyclic positions and
+\[
+                              n>8(s+1),
+\]
+then either the site has a bounded cyclic return cut, or there are positions
+$i<j$ with $j-i\geq s+1$ carrying the same phased two-shore sweep state.
+Here a bounded cyclic return cut is obtained from two strictly nested physical
+returns on one facial shore; its crossed-edge set has cardinality at most
+three times the number of vertices in the inner return separator.
+\end{corollary}
+
+\begin{proof}
+Apply the spaced physical length--depth alternative with depth $D=1$.
+Its shallow horn is exactly the asserted repeated-state conclusion.  In its
+deep horn one shore has at least two open arc records.  Each record in the
+canonical sweep list remembers the canonical endpoint from which it was
+constructed, so it lifts back to the corresponding physical return chord,
+with both endpoints and the shore label unchanged.  The first two records in
+the LIFO stack are strictly nested.  Corollary~\ref{cor:nested-residual-return-cyclic-cut}
+therefore supplies the bounded cyclic edge cut.  Finally,
+$2(s+1)(1+1)^2=8(s+1)$.
+\end{proof}
+
 For the route, the two Kempe families suggest the matching stacks and capped
 face progress supplies additional finite labels.  However those matchings
 belong to a colouring state, whereas the physical graph surgery must be
 defined before a global colouring exists.  In the shallow case an equal
 sweep state is therefore only a candidate length interface.  In the deep
-case nested arcs are only candidate layer boundaries.  One still has to
-construct simple ordered transversals from the graph embedding and prove that
-the cumulative zero-count profile factors through them.  The lemma proves a
-finite classification of abstract noncrossing matchings; it proves neither
-the graph-level dichotomy nor the splice.
+case the nested records now produce a literal bounded cyclic edge cut, rather
+than merely candidate layer boundaries.  One still has to choose such cuts
+coherently across neighbouring mesh sites and prove that the cumulative
+zero-count profile factors through the resulting ordered interfaces.  The
+corollary is therefore a graph-level local dichotomy at one alternating site;
+it proves neither a coherent mesh-level family nor the splice.
 
 \subsection{The exact finite interface}
 
