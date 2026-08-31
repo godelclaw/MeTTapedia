@@ -3375,6 +3375,7 @@ alternating components.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingComponentLocalization.card_provenanced_alternatingGraph_edgeDisagreement_le_twenty}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingComponentLocalization.BundledResidualReturnReceipt.edgeDisagreementPathCost_le}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingComponentLocalization.BundledResidualReturnReceipt.card_endpoint_edgeDisagreement_le}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingComponentLocalization.BundledResidualReturnReceipt.exists_endpoint_component_exceptionalEdges}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingComponentLocalization.source_cycle_edge_mem_target_or_deletionFootprints}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingComponentLocalization.source_cycle_common_arc_component_eq_in_target}
 For an adjacent-pair deletion let its \emph{deletion footprint} be the
@@ -3392,7 +3393,10 @@ footprints.  Every arc of the first cycle avoiding both footprints therefore
 has its endpoints in one connected component of the second alternating
 graph.  More generally, along a chain of (r) consecutively compatible
 receipts, the first and last alternating graphs disagree on at most (10r)
-edge values.
+edge values.  Taking those disagreements as an exceptional carrier, every
+walk in the first graph that avoids the carrier has its endpoints in one
+connected component of the last graph.  Thus component splitting and merging
+across the whole chain is confined to at most (10r) edge locations.
 \end{lemma}
 
 \begin{proof}
@@ -3410,7 +3414,9 @@ equal, their edge-set disagreement is contained in that set; the cardinal
 bound is therefore ten.  Edge disagreement is a symmetric difference, so its
 cardinality satisfies the triangle inequality.  Iterating this inequality
 along a dependently bundled chain of residual receipts gives the (10r)
-endpoint bound.  Applying the same
+endpoint bound.  A walk whose edges avoid the endpoint symmetric difference
+transfers verbatim to the last graph, proving the component-localization
+form.  Applying the same
 edgewise statement along a walk contained in the first alternating cycle
 transfers that walk to the second alternating graph; its endpoints are thus
 reachable in one connected component.  The statement deliberately allows

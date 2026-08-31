@@ -389,6 +389,34 @@ theorem card_endpoint_edgeDisagreement_le
       edgeDisagreementPathCost_le (source :: middle ++ [target]) hchain
     _ = (middle.length + 1) * 10 := by simp
 
+/-- Along a compatible chain, all endpoint component changes are confined to
+an exceptional set of at most ten edges per transition: any source walk that
+avoids this set has its endpoints in one target component. -/
+theorem exists_endpoint_component_exceptionalEdges
+    {rotation : Data G}
+    {minimal : GraphBackedVertexMinimalTaitCounterexample rotation}
+    {ordered : OrderedInjectiveMesh
+      (toMultigraph rotation.toRotationSystem) a b}
+    {hG : HasCubicIncidentEdgeTriples G} {sigma : Pairing V}
+    (source target :
+      BundledResidualReturnReceipt minimal ordered hG sigma)
+    (middle : List
+      (BundledResidualReturnReceipt minimal ordered hG sigma))
+    (hchain : (source :: middle ++ [target]).IsChain Compatible) :
+    ∃ exceptional : Finset (Sym2 V),
+      exceptional.card ≤ (middle.length + 1) * 10 ∧
+      ∀ {left right : V}
+        (walk : source.toAlternatingGraph.Walk left right),
+        (∀ edge ∈ walk.edges, edge ∉ exceptional) →
+        target.toAlternatingGraph.connectedComponentMk left =
+          target.toAlternatingGraph.connectedComponentMk right := by
+  let exceptional := SimpleGraph.edgeDisagreementFinset
+    source.toAlternatingGraph target.toAlternatingGraph
+  refine ⟨exceptional,
+    card_endpoint_edgeDisagreement_le source target middle hchain, ?_⟩
+  intro left right walk havoids
+  exact walk.connectedComponentMk_eq_of_avoids_edgeDisagreement havoids
+
 end BundledResidualReturnReceipt
 
 /-- Every source distinguished-cycle edge either survives in the target

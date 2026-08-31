@@ -1,4 +1,6 @@
 import Mathlib.Combinatorics.SimpleGraph.DeleteEdges
+import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
+import Mathlib.Combinatorics.SimpleGraph.Walk.Maps
 import Mathlib.Data.List.Chain
 
 /-!
@@ -126,6 +128,42 @@ theorem edgeDisagreementPathCost_le
             Nat.add_le_add hfirst (tailIH second htail)
         _ = ((first :: second :: rest).length - 1) * bound := by
           simp [Nat.add_mul, Nat.add_comm]
+
+/-- A walk in the first graph whose edges avoid the edge disagreement with a
+second graph transfers verbatim to the second graph. -/
+noncomputable def Walk.transferAvoidingEdgeDisagreement
+    {first second : SimpleGraph V} {left right : V}
+    (walk : first.Walk left right)
+    (havoids : ∀ edge ∈ walk.edges,
+      edge ∉ edgeDisagreementFinset first second) :
+    second.Walk left right := by
+  apply walk.transfer second
+  intro edge hedge
+  have hfirst : edge ∈ first.edgeSet := walk.edges_subset_edgeSet hedge
+  by_contra hsecond
+  exact havoids edge hedge
+    ((mem_edgeDisagreementFinset first second edge).2
+      (Or.inl ⟨hfirst, hsecond⟩))
+
+/-- Reachability form of `Walk.transferAvoidingEdgeDisagreement`. -/
+theorem Walk.reachable_of_avoids_edgeDisagreement
+    {first second : SimpleGraph V} {left right : V}
+    (walk : first.Walk left right)
+    (havoids : ∀ edge ∈ walk.edges,
+      edge ∉ edgeDisagreementFinset first second) :
+    second.Reachable left right :=
+  (walk.transferAvoidingEdgeDisagreement havoids).reachable
+
+/-- Component-valued form of
+`Walk.reachable_of_avoids_edgeDisagreement`. -/
+theorem Walk.connectedComponentMk_eq_of_avoids_edgeDisagreement
+    {first second : SimpleGraph V} {left right : V}
+    (walk : first.Walk left right)
+    (havoids : ∀ edge ∈ walk.edges,
+      edge ∉ edgeDisagreementFinset first second) :
+    second.connectedComponentMk left = second.connectedComponentMk right :=
+  ConnectedComponent.sound
+    (walk.reachable_of_avoids_edgeDisagreement havoids)
 
 /-- If deleting `removed` makes two graphs equal, all their edge disagreement
 is supported on `removed`. -/
