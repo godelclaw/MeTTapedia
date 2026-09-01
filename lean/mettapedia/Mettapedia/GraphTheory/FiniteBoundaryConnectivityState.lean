@@ -62,6 +62,24 @@ theorem boundaryConnectivityState_reachable_iff
     · exact (boundaryConnectivityState_adj G vertex left right).2
         ⟨heq, hambient⟩ |>.reachable
 
+/-- Two graphs induce the same labelled boundary state exactly when they
+induce the same reachability relation on every pair of represented ports. -/
+theorem boundaryConnectivityState_eq_iff
+    (first second : SimpleGraph V) (vertex : Port → V) :
+    boundaryConnectivityState first vertex =
+        boundaryConnectivityState second vertex ↔
+      ∀ left right : Port,
+        first.Reachable (vertex left) (vertex right) ↔
+          second.Reachable (vertex left) (vertex right) := by
+  constructor
+  · intro hstate left right
+    rw [← boundaryConnectivityState_reachable_iff first vertex left right,
+      hstate, boundaryConnectivityState_reachable_iff second vertex left right]
+  · intro hreach
+    ext left right
+    simp only [boundaryConnectivityState_adj]
+    exact and_congr_right fun _ => hreach left right
+
 /-- The Boolean adjacency matrix is an injective code for finite simple
 graphs.  It provides a deliberately coarse but explicit state-count bound. -/
 noncomputable def adjacencyMatrixCode
