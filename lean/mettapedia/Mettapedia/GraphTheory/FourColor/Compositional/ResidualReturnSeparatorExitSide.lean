@@ -136,6 +136,69 @@ theorem exists_exactFaceCut_with_attachment_exit_side
             (regularOfDegreeThree_of_cubicIncidentTriples hG) position cut
             selected hcycleExterior hforward)
 
+/-- A proof-carrying external-attachment event on one physical residual
+return.  The receipt retains its physical position, exact separator cut, and
+the face-side interpretation of the local rotation turn. -/
+structure AttachmentExitSideReceipt
+    (rotation : Data G)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (chord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site)) where
+  position : AmbientReturnInternalPosition hG sigma hSigma site chord
+  external : IsExternalAttachment
+    (orderedChordAmbientPath_isPath hG sigma hSigma site chord)
+    (regularOfDegreeThree_of_cubicIncidentTriples hG) position
+  cut : ExactFaceCut rotation.toRotationSystem
+    (fun edge : G.edgeSet => edge.1 ∈
+      (orderedReturnSeparator hG sigma hSigma site chord).edges) F2
+  boundary : orbitFaceBoundaryLinearMap rotation.toRotationSystem cut.label =
+    walkEdgeParity (orderedReturnSeparator hG sigma hSigma site chord)
+  outcome :
+    ambientReturnAttachmentNeighbor hG sigma hSigma site chord position ∈
+        site.carrier ∨
+      ((ambientReturnAttachmentTurn rotation hG sigma hSigma site chord
+              position = .backwardToAttachment ∧
+          ∀ selected : F2,
+            cut.filledCycleSide rotation
+                (orderedReturnSeparator hG sigma hSigma site chord) selected
+                (ambientReturnAttachmentNeighbor
+                  hG sigma hSigma site chord position) ↔
+              cut.label (dartOrbitFace rotation.toRotationSystem
+                (forwardDart position)) = selected) ∨
+        (ambientReturnAttachmentTurn rotation hG sigma hSigma site chord
+              position = .forwardToAttachment ∧
+          ∀ selected : F2,
+            cut.filledCycleSide rotation
+                (orderedReturnSeparator hG sigma hSigma site chord) selected
+                (ambientReturnAttachmentNeighbor
+                  hG sigma hSigma site chord position) ↔
+              cut.label (dartOrbitFace rotation.toRotationSystem
+                (backwardDart position)) = selected))
+
+/-- Package any raw exterior-to-path attachment as the semantic separator
+exit receipt used by the mesh sweep. -/
+theorem nonempty_attachmentExitSideReceipt_of_external
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (chord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (position : AmbientReturnInternalPosition hG sigma hSigma site chord)
+    (hexternal : IsExternalAttachment
+      (orderedChordAmbientPath_isPath hG sigma hSigma site chord)
+      (regularOfDegreeThree_of_cubicIncidentTriples hG) position) :
+    Nonempty (AttachmentExitSideReceipt rotation hG sigma hSigma site chord) := by
+  rcases exists_exactFaceCut_with_attachment_exit_side rotation minimal hG
+      sigma hSigma site chord position hexternal with
+    ⟨cut, hboundary, houtcome⟩
+  exact ⟨⟨position, hexternal, cut, hboundary, houtcome⟩⟩
+
 end
 
 end ResidualReturnSeparatorExitSide
