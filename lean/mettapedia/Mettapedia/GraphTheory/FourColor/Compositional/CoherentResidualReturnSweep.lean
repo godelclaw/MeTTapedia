@@ -84,31 +84,44 @@ def DeletionGeometricSweepReceipt.ofTwoSector
       minimizer.supported receipt.base.base.bond depth spacing hmany
 
 /-- The coherent atlas outcome with both selected coordinates upgraded to
-their fully compressed residual-return sweep alternatives. -/
-def HasCoherentGeometricSweepPair
+their fully compressed residual-return sweep alternatives.  Keeping the
+witnesses in a structure lets later finite-state arguments refine the same
+pair without rebuilding an existential tuple. -/
+structure CoherentGeometricSweepPairReceipt
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (family : PairDeletionColoringFamily (G := G) (Fin 9))
+    (minimizer : ResidualDefectMinimizer G) where
+  pathSection : PathConstraint.Section
+    (fun index : Fin 9 => TaitColoringAt family index)
+    (ConsecutiveRepairCompatible family)
+  terminal : pathSection.state (Fin.last 8) =
+    (baseAssignment family) (Fin.last 8)
+  first : Fin 9
+  second : Fin 9
+  distinct : first ≠ second
+  absentColor_eq :
+    (matchingState rotation minimal family pathSection first).absentColor =
+      (matchingState rotation minimal family pathSection second).absentColor
+  firstSweep : Nonempty (DeletionGeometricSweepReceipt rotation minimal minimizer
+    (family.data first)
+    (matchingState rotation minimal family pathSection first))
+  secondSweep : Nonempty (DeletionGeometricSweepReceipt rotation minimal minimizer
+    (family.data second)
+    (matchingState rotation minimal family pathSection second))
+  edgeDisagreement_card_le :
+    (SimpleGraph.edgeDisagreementFinset
+      (pathAlternatingGraph rotation minimal family pathSection minimizer first)
+      (pathAlternatingGraph rotation minimal family pathSection minimizer second)).card ≤
+        45
+
+/-- Existence form used by the mesh alternative. -/
+abbrev HasCoherentGeometricSweepPair
     (rotation : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
     (family : PairDeletionColoringFamily (G := G) (Fin 9))
     (minimizer : ResidualDefectMinimizer G) : Prop :=
-  ∃ pathSection : PathConstraint.Section
-      (fun index : Fin 9 => TaitColoringAt family index)
-      (ConsecutiveRepairCompatible family),
-    pathSection.state (Fin.last 8) =
-        (baseAssignment family) (Fin.last 8) ∧
-      ∃ first second : Fin 9, first ≠ second ∧
-        (matchingState rotation minimal family pathSection first).absentColor =
-          (matchingState rotation minimal family pathSection second).absentColor ∧
-        Nonempty (DeletionGeometricSweepReceipt rotation minimal minimizer
-          (family.data first)
-          (matchingState rotation minimal family pathSection first)) ∧
-        Nonempty (DeletionGeometricSweepReceipt rotation minimal minimizer
-          (family.data second)
-          (matchingState rotation minimal family pathSection second)) ∧
-        (SimpleGraph.edgeDisagreementFinset
-          (pathAlternatingGraph rotation minimal family pathSection minimizer
-            first)
-          (pathAlternatingGraph rotation minimal family pathSection minimizer
-            second)).card ≤ 45
+  Nonempty (CoherentGeometricSweepPairReceipt rotation minimal family minimizer)
 
 /-- Upgrade the two coherent two-sector receipts supplied by the deletion
 atlas while retaining its path, terminal state, coordinates, and common
@@ -123,15 +136,24 @@ theorem hasCoherentGeometricSweepPair_of_twoSectorPair
   rcases hpair with
     ⟨pathSection, hterminal, first, second, hne, hcolor,
       ⟨firstReceipt⟩, ⟨secondReceipt⟩⟩
-  refine ⟨pathSection, hterminal, first, second, hne, hcolor,
-    ⟨DeletionGeometricSweepReceipt.ofTwoSector rotation minimal minimizer
-      (family.data first)
-      (matchingState rotation minimal family pathSection first)
-      firstReceipt⟩,
-    ⟨DeletionGeometricSweepReceipt.ofTwoSector rotation minimal minimizer
-      (family.data second)
-      (matchingState rotation minimal family pathSection second)
-      secondReceipt⟩, ?_⟩
+  refine ⟨{
+    pathSection := pathSection
+    terminal := hterminal
+    first := first
+    second := second
+    distinct := hne
+    absentColor_eq := hcolor
+    firstSweep :=
+      ⟨DeletionGeometricSweepReceipt.ofTwoSector rotation minimal minimizer
+        (family.data first)
+        (matchingState rotation minimal family pathSection first)
+        firstReceipt⟩
+    secondSweep :=
+      ⟨DeletionGeometricSweepReceipt.ofTwoSector rotation minimal minimizer
+        (family.data second)
+        (matchingState rotation minimal family pathSection second)
+        secondReceipt⟩
+    edgeDisagreement_card_le := ?_ }⟩
   simpa only [pathAlternatingGraph] using
     (card_alternatingGraph_edgeDisagreement_le rotation minimal family
       pathSection minimizer.pairing minimizer.supported first second hcolor)

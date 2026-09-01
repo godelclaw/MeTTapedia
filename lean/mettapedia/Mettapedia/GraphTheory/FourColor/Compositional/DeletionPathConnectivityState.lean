@@ -180,6 +180,20 @@ theorem pathConnectivityState_reachable_iff
         (pathBoundaryVertex family left) (pathBoundaryVertex family right) :=
   SimpleGraph.boundaryConnectivityState_reachable_iff _ _ _ _
 
+/-- Equality of fixed deletion-path states is precisely equality of the
+ambient reachability relation on all ninety labelled endpoint slots. -/
+theorem pathConnectivityState_eq_iff
+    (first second : SimpleGraph V)
+    (family : PairDeletionColoringFamily (G := G) (Fin 9)) :
+    pathConnectivityState first family = pathConnectivityState second family ↔
+      ∀ left right : PathBoundarySlot,
+        first.Reachable
+            (pathBoundaryVertex family left) (pathBoundaryVertex family right) ↔
+          second.Reachable
+            (pathBoundaryVertex family left)
+            (pathBoundaryVertex family right) :=
+  SimpleGraph.boundaryConnectivityState_eq_iff _ _ _
+
 /-- A coarse explicit bound on the number of normalized connectivity states
 for a nine-deletion path. -/
 theorem card_pathConnectivityState_le :
