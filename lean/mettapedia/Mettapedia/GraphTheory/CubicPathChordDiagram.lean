@@ -426,7 +426,6 @@ noncomputable def endpointAttachmentPositions
 
 /-- Distinct internal coordinates of a simple path represent distinct
 vertices. -/
-omit [G.LocallyFinite] in
 theorem internalPosition_vertex_injective
     {path : G.Walk start finish} (hpath : path.IsPath) :
     Function.Injective (fun position : InternalPosition path => position.vertex) := by
@@ -581,7 +580,6 @@ noncomputable def internalNonendpointCoordinates
 
 /-- The coordinate embedding of strict internal path positions is
 injective. -/
-omit [G.LocallyFinite] in
 theorem internalPosition_coordinate_injective
     {path : G.Walk start finish} :
     Function.Injective
