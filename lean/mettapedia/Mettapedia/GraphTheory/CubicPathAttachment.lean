@@ -200,6 +200,40 @@ theorem attachmentNeighbor_ne_nextVertex
     position.index_ne_zero position.index_lt_length, heq]
   simp [InternalPosition.nextVertex]
 
+/-- Any nonconsecutive path vertex adjacent to an internal path vertex is the
+unique third-edge neighbour there.  This representation-independent form is
+useful when a chord is first presented by its two path coordinates rather
+than by an `attachmentNeighbor` witness. -/
+theorem getVert_eq_attachmentNeighbor_of_adj_of_nonconsecutive
+    {path : G.Walk start finish} (hpath : path.IsPath)
+    (hregular : G.IsRegularOfDegree 3)
+    (position : InternalPosition path)
+    (other : Fin (path.length + 1))
+    (hadj : G.Adj position.vertex (path.getVert other))
+    (hprevious : other.val ≠ position.index - 1)
+    (hnext : other.val ≠ position.index + 1) :
+    path.getVert other = attachmentNeighbor hpath hregular position := by
+  apply eq_attachmentNeighbor_of_mem hpath hregular position
+  refine ⟨hadj, ?_⟩
+  change path.getVert other ∉
+    path.toSubgraph.neighborSet (path.getVert position.index)
+  rw [hpath.neighborSet_toSubgraph_internal
+    position.index_ne_zero position.index_lt_length]
+  simp only [Set.mem_insert_iff, Set.mem_singleton_iff]
+  push Not
+  constructor
+  · intro heq
+    have hcoordinate := hpath.getVert_injOn
+      (Nat.le_trans (Nat.sub_le _ _) (Nat.le_of_lt position.index_lt_length))
+      (Nat.lt_succ_iff.mp other.isLt) heq.symm
+    exact hprevious hcoordinate.symm
+  · intro heq
+    have hnextBound : position.index + 1 ≤ path.length := by
+      exact position.index_lt_length
+    have hcoordinate := hpath.getVert_injOn hnextBound
+      (Nat.lt_succ_iff.mp other.isLt) heq.symm
+    exact hnext hcoordinate.symm
+
 /-- A coordinate witnessing that the third edge at an internal position is a
 chord.  Its other endpoint is neither adjacent path position. -/
 structure ChordAttachment
