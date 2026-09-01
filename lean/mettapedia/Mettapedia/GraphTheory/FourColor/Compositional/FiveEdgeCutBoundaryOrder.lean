@@ -181,9 +181,10 @@ theorem exists_boundaryOrder_of_exactCyclicFiveCut
   change successor⁻¹ = (boundaryOrder.permCongr (finRotate 5))⁻¹
   rw [horder]
 
-/-- Package the retained shore of an exact cyclic five-edge cut as the
-generic cyclic-bond interface consumed by the physical Kempe theory. -/
-theorem exists_cyclicBondBoundaryData_of_exactCyclicFiveCut
+/-- The retained shore of an exact cyclic five-edge cut has its own positive
+five-cycle coordinates.  This is the orientation used by the physical Kempe
+matching consumer. -/
+theorem exists_retainedBoundaryOrder_of_exactCyclicFiveCut
     (graphData : Data G)
     (hsphere : OrbitSphericalCubicMapData graphData.toRotationSystem)
     (htwoSided : OrbitFacesTwoSided graphData.toRotationSystem)
@@ -191,8 +192,12 @@ theorem exists_cyclicBondBoundaryData_of_exactCyclicFiveCut
     (hrotation : VertexRotationCyclic graphData.toRotationSystem)
     (hcyclic : CyclicEdgeConnectivityAtLeast G 5)
     (cut : SmallCyclicEdgeCut G) (hcard : cut.edgeCut.card = 5) :
-    Nonempty (CyclicBondBoundaryData graphData.toRotationSystem
-      (deletedRegionKeep (cyclicCutVertexSide cut))) := by
+    ∃ boundaryOrder : Fin 5 ≃
+        BoundaryDart graphData.toRotationSystem
+          (deletedRegionKeep (cyclicCutVertexSide cut)),
+      boundaryOrder.permCongr (finRotate 5) =
+        retainedRegionBoundarySuccessor graphData.toRotationSystem
+          (deletedRegionKeep (cyclicCutVertexSide cut)) := by
   let RS := graphData.toRotationSystem
   let deleted := cyclicCutVertexSide cut
   let retained := retainedRegionBoundarySuccessor RS
@@ -205,8 +210,8 @@ theorem exists_cyclicBondBoundaryData_of_exactCyclicFiveCut
       successor.SameCycle first second :=
     deletedBoundarySuccessor_sameCycle_of_exactCyclicFiveCut
       graphData hsphere htwoSided hconnected hrotation hcyclic cut hcard
-  have hretainedEq : retained = successor⁻¹ := by
-    exact retainedBoundarySuccessor_eq_deleted_inverse_of_exactCyclicFiveCut
+  have hretainedEq : retained = successor⁻¹ :=
+    retainedBoundarySuccessor_eq_deleted_inverse_of_exactCyclicFiveCut
       graphData hsphere htwoSided hconnected hrotation hcyclic cut hcard
   have hretainedTransitive : ∀ first second,
       retained.SameCycle first second := by
@@ -216,11 +221,28 @@ theorem exists_cyclicBondBoundaryData_of_exactCyclicFiveCut
   rcases transitive_perm_card_five_exists_finRotate_coordinate
       retained hboundaryCard hretainedTransitive with
     ⟨boundaryOrder, horder⟩
+  exact ⟨boundaryOrder, horder.symm⟩
+
+/-- Package the retained shore of an exact cyclic five-edge cut as the
+generic cyclic-bond interface consumed by the physical Kempe theory. -/
+theorem exists_cyclicBondBoundaryData_of_exactCyclicFiveCut
+    (graphData : Data G)
+    (hsphere : OrbitSphericalCubicMapData graphData.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided graphData.toRotationSystem)
+    (hconnected : G.Connected)
+    (hrotation : VertexRotationCyclic graphData.toRotationSystem)
+    (hcyclic : CyclicEdgeConnectivityAtLeast G 5)
+    (cut : SmallCyclicEdgeCut G) (hcard : cut.edgeCut.card = 5) :
+    Nonempty (CyclicBondBoundaryData graphData.toRotationSystem
+      (deletedRegionKeep (cyclicCutVertexSide cut))) := by
+  rcases exists_retainedBoundaryOrder_of_exactCyclicFiveCut
+      graphData hsphere htwoSided hconnected hrotation hcyclic cut hcard with
+    ⟨boundaryOrder, horder⟩
   exact ⟨
     { length := 5
       two_le_length := by omega
       order := boundaryOrder
-      successor_eq := horder.symm }⟩
+      successor_eq := horder }⟩
 
 end
 
