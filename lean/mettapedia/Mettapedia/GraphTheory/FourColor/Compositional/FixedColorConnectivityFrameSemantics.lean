@@ -197,6 +197,45 @@ theorem semanticAgreement_of_fixedColorRowTransitionFrameCode_eq
         (coloringFamily rotation minimal ordered minimizer secondRow) minimizer
         second.pair second.transition.index.succ left right]
 
+/-- Consumer-facing mesh alternative with the repeated-code branch replaced
+by its exact semantic content. -/
+theorem branchingOrBoundary_or_synchronized_or_repeatedFixedColorSemanticAgreement
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (ordered : OrderedInjectiveMesh
+      (toMultigraph rotation.toRotationSystem) a 20)
+    (minimizer : ResidualDefectMinimizer G)
+    (hrows : Nat.card FixedColorRowTransitionFrameCode < a) :
+    (∃ (row : Fin a) (assignment : TaitAssignment
+        (coloringFamily rotation minimal ordered minimizer row)),
+      HasBranchingOrBoundary
+        (coloringFamily rotation minimal ordered minimizer row) assignment) ∨
+      (∃ (row : Fin a)
+          (pair : CoherentGeometricSweepPairReceipt rotation minimal
+            (coloringFamily rotation minimal ordered minimizer row) minimizer),
+        ConnectivitySynchronized rotation minimal
+          (coloringFamily rotation minimal ordered minimizer row) minimizer pair) ∨
+      ∃ (first second : Fin a)
+          (firstReceipt : FixedColorRowTransitionReceipt rotation minimal
+            ordered minimizer first)
+          (secondReceipt : FixedColorRowTransitionReceipt rotation minimal
+            ordered minimizer second),
+        first ≠ second ∧
+          FixedColorTransitionSemanticAgreement rotation minimal ordered
+            minimizer first second firstReceipt secondReceipt := by
+  rcases
+      branchingOrBoundary_or_synchronized_or_repeatedFixedColorTransitionFrame
+        rotation minimal ordered minimizer hrows with
+    hbranchingOrBoundary | hsynchronized | hrepeated
+  · exact Or.inl hbranchingOrBoundary
+  · exact Or.inr (Or.inl hsynchronized)
+  · rcases hrepeated with
+      ⟨first, second, firstReceipt, secondReceipt, hne, hframe⟩
+    exact Or.inr (Or.inr ⟨first, second, firstReceipt, secondReceipt, hne,
+      semanticAgreement_of_fixedColorRowTransitionFrameCode_eq rotation
+        minimal ordered minimizer first second firstReceipt secondReceipt
+        hframe⟩)
+
 end
 
 end FixedColorConnectivityFrameSemantics
