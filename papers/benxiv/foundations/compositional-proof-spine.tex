@@ -4763,6 +4763,43 @@ must be placed in a common geometric frame before equal observables can be
 used for a splice or a strict descent.
 \end{proof}
 
+\begin{corollary}[finite repetition of geometrically framed row transitions]
+\label{cor:fixed-colour-row-transition-frame-repetition}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FixedColorConnectivityFrame.selectedIncomingArmBit_eq_true_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FixedColorConnectivityFrame.fixedColorRowTransitionFrameCode_eq_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FixedColorConnectivityFrame.exists_distinct_rows_with_equal_fixedColorTransitionFrameCode}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FixedColorConnectivityFrame.branchingOrBoundary_or_synchronized_or_repeatedFixedColorTransitionFrame}
+Let $\mathcal F$ be the finite type whose elements consist of a fixed-colour
+row-transition code, the two Boolean choices of row arm at its adjacent
+deletions, and the complete labelled boundary-connectivity states immediately
+before and after the change.  If an ordered injective mesh has more than
+$|\mathcal F|$ rows, then one of the first two alternatives of
+Corollary~\ref{cor:fixed-colour-row-transition-repetition} holds, or two
+distinct rows carry equal elements of $\mathcal F$.
+
+Consequently the repeated rows agree on the fixed colour, transition
+coordinate, witness slots, the two local arm choices, and every reachability
+query among the ninety labelled boundary slots on both sides of the
+transition.  This is still a semantic boundary frame: it neither identifies
+the ambient vertices of the two rows nor proves equality of their exact
+colouring-support profiles.
+\end{corollary}
+
+\begin{proof}
+When neither earlier alternative occurs, choose the checked local transition
+receipt supplied on every row.  Extend its $194400$-element code by the two
+arm-selection bits and its two fixed boundary-connectivity graphs.  The
+resulting type $\mathcal F$ is finite because its boundary carrier has ninety
+slots.  The finite pigeonhole principle therefore supplies two distinct rows
+with equal framed codes.  Projecting that equality gives every listed
+agreement.
+
+The cardinality is kept as $|\mathcal F|$ rather than expanded into a closed
+decimal numeral.  This is both mathematically exact and proof-assistant
+friendly: an adjacency-matrix estimate is available, but normalizing the
+corresponding power of two contributes nothing to the argument.
+\end{proof}
+
 The binary constraints have one further exact locality property.  Although
 common-core agreement is not transitive as a relation on whole pairwise
 common deletions, its failure of transitivity cannot occur away from the
