@@ -4637,6 +4637,88 @@ across the mesh.  No cross-coordinate component equality is inferred merely
 from the $45$-edge disagreement bound.
 \end{proof}
 
+\begin{corollary}[fixed-colour localization of a synchronization failure]
+\label{cor:fixed-colour-connectivity-transition}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.CentralAugmentedColorClass.centralAugmentedColorClassGraph_eq_pairingGraph}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.CentralAugmentedColorClass.fixedColorAlternatingGraphs_delete_overlapFootprints_eq}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FixedColorConnectivityTransition.pathFixedColorAlternatingGraph_eq_pathAlternatingGraph_of_eq_absent}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FixedColorConnectivityTransition.synchronized_or_fixedColorLocalTransition}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FixedColorConnectivityTransition.FixedColorLocalConnectivityTransitionReceipt.deleteLocalFootprint_eq}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FixedColorConnectivityTransition.FixedColorLocalConnectivityTransitionReceipt.card_localFootprint_le}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FixedColorConnectivityTransition.FixedColorLocalConnectivityTransitionReceipt.not_reachable_deleteLocalFootprint}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FixedColorConnectivityTransition.FixedColorLocalConnectivityTransitionReceipt.exists_walk_hitting_localFootprint}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FixedColorConnectivityAlternative.card_fixedColorConnectivityTransitionCode}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FixedColorConnectivityAlternative.FixedColorLocalConnectivityTransitionReceipt.toCode_injective}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FixedColorConnectivityAlternative.FixedColorLocalConnectivityTransitionReceipt.card_edgeDisagreement_le}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FixedColorConnectivityAlternative.branchingOrBoundary_or_synchronized_or_fixedColorLocalTransition}
+Let $i$ and $j$ be the two coordinates selected by the coherent geometric
+sweep, and let $c$ be their common absent Tait colour.  Follow this one fixed
+colour through every coordinate of the nine-site deletion path.  At a
+coordinate $r$, restore its deleted central edge with colour $c$, retain the
+colours of all other inserted edges, and call the resulting colour-class graph
+$H_r$.  With the fixed residual-defect matching $\sigma$, put
+\[
+                         A^c_r=\sigma\mathbin\triangle H_r.
+\]
+At the two selected coordinates, $c$ is absent from the four boundary
+requests.  Hence $H_i$ and $H_j$ are exactly the completed perfect matchings
+used by the residual-return construction, so $A^c_i=A_i$ and $A^c_j=A_j$.
+
+For consecutive coordinates $r,r+1$, the common-core repair condition makes
+$H_r$ and $H_{r+1}$ agree away from the union of their two deletion
+footprints.  Taking symmetric difference with the same $\sigma$ preserves
+this agreement.  The union contains at most ten edges.  Consequently one of
+the following alternatives is available:
+\begin{enumerate}
+  \item the labelled boundary-connectivity states at $i$ and $j$ agree; or
+  \item for some consecutive $r,r+1$ and two named boundary slots $x,y$,
+        reachability of their physical vertices differs between $A^c_r$ and
+        $A^c_{r+1}$.  Deleting the two local footprints makes the graphs equal
+        and disconnects $x$ from $y$; in whichever graph connects them, every
+        connecting walk meets one of those at most ten footprint edges.
+\end{enumerate}
+There is no third alternative corresponding merely to a change in the
+locally chosen absent colour.
+
+The local transition has a fixed finite presentation: its adjacent coordinate
+is one of eight choices, and each of $x,y$ is one of the ninety labelled
+slots.  Forgetting only proof fields injects the transition receipts into a
+set of cardinality
+\[
+                           8\cdot90\cdot90=64800.
+\]
+Combining this dichotomy with the sparse mesh atlas gives the row-level
+alternative in its consumer form: a branching/boundary horn, a coherent pair
+with synchronized connectivity, or one of these finite local transitions.
+\end{corollary}
+
+\begin{proof}
+The total insertion labelling is defined for every fixed Tait colour, whether
+or not that colour is absent from the four requests at the current deletion.
+When it is absent, the restored central edge and the retained colour class
+form the completed perfect matching, proving the endpoint identifications.
+
+On an edge retained by two consecutive deletions, common-core compatibility
+is literal equality of the two deletion colourings.  The total insertion
+labellings, their fixed-colour graphs, and finally their symmetric differences
+with $\sigma$ therefore agree on that edge.  After deleting the two explicit
+five-edge footprints the consecutive graphs are equal.
+
+If the endpoint connectivity states differ, the elementary adjacent-change
+lemma for a finite path supplies consecutive states which differ.  Exactness
+of the fixed ninety-slot encoding then supplies $x,y$ with differing ambient
+reachability.  The generic finite-edge localization theorem says that such
+vertices are disconnected in the common deleted graph and that a connecting
+walk on the connected side must traverse the deleted carrier.  The ten-edge
+bound is the union bound for the two footprints.
+
+The construction follows the endpoint colour $c$ throughout; it never
+reselects the locally absent colour at an intermediate coordinate.  Thus a
+change of local completion choice creates no separate logical branch.  The
+remaining obstruction is geometric: a real component split or merge supported
+on one explicitly bounded physical patch.
+\end{proof}
+
 The binary constraints have one further exact locality property.  Although
 common-core agreement is not transitive as a relation on whole pairwise
 common deletions, its failure of transitivity cannot occur away from the

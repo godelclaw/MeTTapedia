@@ -153,9 +153,10 @@ def declaration_module(
     """
     parts = decl.split(".")
     short = parts[-1]
+    qualified_prefix = r"(?:[A-Za-z_][A-Za-z0-9_']*\.)*"
     declaration_head = re.compile(
         rf"(?<![A-Za-z_.])(?:theorem|lemma|def|abbrev|structure|class|inductive|opaque)\s+"
-        rf"{re.escape(short)}(?![A-Za-z_])"
+        rf"{qualified_prefix}{re.escape(short)}(?![A-Za-z_])"
     )
     for cut in range(len(parts) - 1, 0, -1):
         candidate = lean_root.joinpath(*parts[:cut]).with_suffix(".lean")
@@ -170,7 +171,8 @@ def declaration_module(
         return None
     grep_pattern = (
         rf"(^|[^A-Za-z_.])(theorem|lemma|def|abbrev|structure|class|inductive|opaque)"
-        rf"[[:space:]]+{re.escape(short)}([^A-Za-z_]|$)"
+        rf"[[:space:]]+([A-Za-z_][A-Za-z0-9_']*\.)*"
+        rf"{re.escape(short)}([^A-Za-z_]|$)"
     )
     tracked = subprocess.run(
         [
@@ -192,10 +194,25 @@ def declaration_module(
             continue
         if declaration_head.search(lean_code_only(candidate.read_text(encoding="utf-8"))):
             matches.append(candidate)
-            if len(matches) > 1:
-                return None
     if len(matches) == 1:
         return matches[0]
+    if len(matches) > 1 and len(parts) >= 2:
+        owner = re.escape(parts[-2])
+        owner_context = re.compile(
+            rf"(?:^|\s)namespace\s+(?:[A-Za-z_][A-Za-z0-9_']*\.)*{owner}"
+            rf"(?![A-Za-z_])|"
+            rf"(?:theorem|lemma|def|abbrev|structure|class|inductive|opaque)\s+"
+            rf"{owner}\.{re.escape(short)}(?![A-Za-z_])",
+            re.MULTILINE,
+        )
+        owned = [
+            candidate for candidate in matches
+            if owner_context.search(
+                lean_code_only(candidate.read_text(encoding="utf-8"))
+            )
+        ]
+        if len(owned) == 1:
+            return owned[0]
     return None
 
 
@@ -229,7 +246,7 @@ def check_verified(
         return False, f"{module.name} is not Git-tracked"
     source = lean_code_only(module.read_text(encoding="utf-8"))
     short = decl.split(".")[-1]
-    if not re.search(rf"(?<![A-Za-z_.]){re.escape(short)}(?![A-Za-z_])", source):
+    if not re.search(rf"(?<![A-Za-z_]){re.escape(short)}(?![A-Za-z_])", source):
         return False, f"{short} not found in {module.name}"
     holes = HOLE.findall(source)
     if holes:
