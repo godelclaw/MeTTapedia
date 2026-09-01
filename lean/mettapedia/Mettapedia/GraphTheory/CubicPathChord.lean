@@ -70,6 +70,46 @@ noncomputable def orderedCoordinates
       lt_of_le_of_ne (Fin.le_iff_val_le_val.mpr (Nat.le_of_not_gt horder))
         (chord.coordinate_ne_otherPosition hpath hregular position).symm⟩
 
+/-- A chord attachment is canonically oriented when the internal position
+which produced it is its earlier path endpoint. -/
+def IsLeftEndpoint
+    {path : G.Walk start finish} (hpath : path.IsPath)
+    (hregular : G.IsRegularOfDegree 3)
+    (position : InternalPosition path)
+    (chord : ChordAttachment hpath hregular position) : Prop :=
+  position.coordinate =
+    (chord.orderedCoordinates hpath hregular position).left
+
+/-- The position producing a chord is one of its two ordered endpoints. -/
+theorem coordinate_eq_left_or_right
+    {path : G.Walk start finish} (hpath : path.IsPath)
+    (hregular : G.IsRegularOfDegree 3)
+    (position : InternalPosition path)
+    (chord : ChordAttachment hpath hregular position) :
+    position.coordinate =
+        (chord.orderedCoordinates hpath hregular position).left ∨
+      position.coordinate =
+        (chord.orderedCoordinates hpath hregular position).right := by
+  by_cases horder : position.coordinate < chord.otherPosition
+  · exact Or.inl (by simp [orderedCoordinates, horder])
+  · exact Or.inr (by simp [orderedCoordinates, horder])
+
+/-- For a canonically oriented attachment, the recorded other position is
+the later ordered endpoint. -/
+theorem otherPosition_eq_right_of_isLeftEndpoint
+    {path : G.Walk start finish} (hpath : path.IsPath)
+    (hregular : G.IsRegularOfDegree 3)
+    (position : InternalPosition path)
+    (chord : ChordAttachment hpath hregular position)
+    (hleft : chord.IsLeftEndpoint hpath hregular position) :
+    chord.otherPosition =
+      (chord.orderedCoordinates hpath hregular position).right := by
+  by_cases horder : position.coordinate < chord.otherPosition
+  · simp [orderedCoordinates, horder]
+  · have hne := chord.coordinate_ne_otherPosition hpath hregular position
+    simp only [IsLeftEndpoint, orderedCoordinates, horder, dite_false] at hleft
+    exact False.elim (hne hleft)
+
 /-- The coordinate span of a cubic attachment chord is at least two path
 edges: the attachment edge is not either adjacent path edge. -/
 theorem one_lt_orderedCoordinates_span
@@ -144,6 +184,21 @@ noncomputable def subarc
     (chord.orderedCoordinates hpath hregular position).left
     (chord.orderedCoordinates hpath hregular position).right
     chord.orderedCoordinates.left_lt_right.le
+
+/-- The oriented darts of an attachment chord's subarc are exactly the
+corresponding slice of the ambient path. -/
+theorem subarc_darts
+    {path : G.Walk start finish} (hpath : path.IsPath)
+    (hregular : G.IsRegularOfDegree 3)
+    (position : InternalPosition path)
+    (chord : ChordAttachment hpath hregular position) :
+    (chord.subarc hpath hregular position).darts =
+      (path.darts.drop
+        (chord.orderedCoordinates hpath hregular position).left).take
+        ((chord.orderedCoordinates hpath hregular position).right -
+          (chord.orderedCoordinates hpath hregular position).left) := by
+  simp [subarc, chordDart, walkInterval,
+    SimpleGraph.Walk.darts_take, SimpleGraph.Walk.darts_drop]
 
 /-- The attachment chord's path interval remains simple. -/
 theorem subarc_isPath
