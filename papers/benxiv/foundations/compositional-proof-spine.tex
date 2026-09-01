@@ -240,6 +240,7 @@ and commutes with cyclic rotation.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FiveEdgeCutBoundaryOrder.deletedBoundarySuccessor_sameCycle_of_exactCyclicFiveCut}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FiveEdgeCutBoundaryOrder.retainedBoundarySuccessor_eq_deleted_inverse_of_exactCyclicFiveCut}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FiveEdgeCutBoundaryOrder.exists_boundaryOrder_of_exactCyclicFiveCut}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FiveEdgeCutBoundaryOrder.exists_retainedBoundaryOrder_of_exactCyclicFiveCut}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FiveEdgeCutBoundaryOrder.exists_cyclicBondBoundaryData_of_exactCyclicFiveCut}
 Let an exact cyclic five-edge cut lie in a connected spherical graph-backed
 map with cyclic vertex rotations and two-sided faces.  If both induced shores
@@ -262,16 +263,44 @@ planar bond theorem makes the complementary first-return order its inverse,
 and finite cyclic coordinates package the retained shore as a cyclic bond.
 \end{proof}
 
+\begin{lemma}[physical noncrossing on an exact five-edge shore]
+\label{lem:exact-five-cut-physical-noncrossing}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.CyclicBoundaryMatching.physicalMateInCoordinates_involutive}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.CyclicBoundaryMatching.physicalMateInCoordinates_isNoncrossing_five}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FiveEdgeCutPhysicalNoncrossing.exists_physicalMateInCoordinates_noncrossing_of_exactCyclicFiveCut}
+Fix one shore of an exact cyclic five-edge cut and a proper Tait colouring of
+that shore.  For each unordered pair of nonzero colours, following the
+physical bichromatic component from a boundary port defines an involutive
+mate of the five ports.  In the facial cyclic order supplied by
+Lemma~\ref{lem:exact-five-cut-cyclic-boundary}, no two mate chords cross.
+\end{lemma}
+
+\begin{proof}
+The physical mate is involutive because a bichromatic component has exactly
+the same two boundary endpoints when traversed from either end.  Suppose that
+two mate chords crossed.  Their endpoints then alternate in the five-port
+cyclic order.  One component together with either boundary interval between
+its endpoints forms a separator.  The other component has one endpoint on
+each interval, while its interior is disjoint from the separator.  The
+two-sided-face and connected-dual hypotheses therefore forbid the second
+component from joining those endpoints.  This contradiction proves
+noncrossing.  For an exact five-cut, connectedness of both shores, connected
+facial duality, and the cyclic coordinates are derived from the ambient
+spherical map, so no extra boundary-order hypothesis remains.
+\end{proof}
+
 Lemma~\ref{lem:abstract-birkhoff-five-cycle-propagation} is only the logical
 propagation heart of Birkhoff's short five-cycle theorem.  The $P/Q$ classes,
 their physical Kempe-switch semantics, and the exact-support consequence of an
 overlap are now checked by
 Lemma~\ref{lem:five-cycle-class-support-semantics}.  The exact five-cut's
 single cyclic boundary order and opposite shore orientation are now checked by
-Lemma~\ref{lem:exact-five-cut-cyclic-boundary}.  The remaining physical work is
-to prove the two displayed implications by planar Kempe-chain separation and
-smaller-side surgery, prove that minimality supplies a primary class on each
-shore, and instantiate the existing exact-support splice.  No finite
+Lemma~\ref{lem:exact-five-cut-cyclic-boundary}.  Literal physical Kempe
+components are now known to pair the five boundary ports noncrossingly by
+Lemma~\ref{lem:exact-five-cut-physical-noncrossing}.  The remaining physical
+work is to derive the two displayed class-closure implications from those
+noncrossing components and smaller-side surgery, prove that minimality supplies
+a primary class on each shore, and instantiate the existing exact-support splice.  No finite
 boundary-word certificate is used or licensed by these lemmas.
 
 A facial cycle of length below five would expose such a small cyclic cut (the
