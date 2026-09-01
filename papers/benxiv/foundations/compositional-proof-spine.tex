@@ -198,11 +198,45 @@ languages four times forces the first language to realize $P_{i-4}=P_{i+1}$,
 contradicting the chosen drop.
 \end{proof}
 
-This lemma is only the logical propagation heart of Birkhoff's short
-five-cycle theorem.  The remaining physical work is to define the $P/Q$
-boundary classes for the two shores, prove the two displayed implications by
-planar Kempe-chain separation, and show that an overlap glues the shores.  No
-finite boundary-word certificate is used or licensed by the lemma.
+\begin{lemma}[physical support semantics of the five-cycle classes]
+\label{lem:five-cycle-class-support-semantics}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.BoundaryKempeSwitch.switchBoundaryWord_mem_supportInCoordinates}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.BoundaryColorOrbit.relabelBoundaryWord_mem_supportInCoordinates_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.BoundaryColorOrbit.exists_common_word_of_equivalent}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FiveCycleColorClass.equivalent_of_primary}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FiveCycleColorClass.equivalent_of_secondary}
+For a finite cubic open tangle, switching any union of complete physical
+bichromatic components preserves its exact boundary support.  The same support
+is invariant under one global permutation of the three nonzero Tait colours.
+On a cyclic boundary of length five, let $P_i$ be the colour orbit of the
+rotated $(3,1,1)$ pattern and let $Q_i$ be the colour orbit of the rotated
+$(2,1,1,1)$ pattern.  Two boundary words in the same $P_i$ class, or in the
+same $Q_i$ class, differ by such a global colour permutation.  Consequently,
+if the two shore supports realize the same $P_i$ or $Q_i$ class, then after
+globally relabelling one realizing colouring the supports contain a literal
+common boundary word.
+\end{lemma}
+
+\begin{proof}
+A physical component-union switch is the restriction to the ports of the
+usual Kempe switch on the selected components.  Reindexing the ports does not
+change this statement.  Global colour relabelling transports a proper
+colouring to a proper colouring and hence preserves exact support.  Finally,
+an ordered Tait triple together with zero enumerates all four elements of the
+Klein colour group; the induced zero-fixing equivalence carries either
+five-boundary pattern to the corresponding pattern with the new colour names,
+and commutes with cyclic rotation.
+\end{proof}
+
+Lemma~\ref{lem:abstract-birkhoff-five-cycle-propagation} is only the logical
+propagation heart of Birkhoff's short five-cycle theorem.  The $P/Q$ classes,
+their physical Kempe-switch semantics, and the exact-support consequence of an
+overlap are now checked by
+Lemma~\ref{lem:five-cycle-class-support-semantics}.  The remaining physical
+work is to prove the two displayed implications by planar Kempe-chain
+separation and smaller-side surgery, then instantiate the existing
+exact-support splice.  No finite boundary-word certificate is used or licensed
+by either lemma.
 
 A facial cycle of length below five would expose such a small cyclic cut (the
 finitely small exceptional carriers are directly colourable), so every face
