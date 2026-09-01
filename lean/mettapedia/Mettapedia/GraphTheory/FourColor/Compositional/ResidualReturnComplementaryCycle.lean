@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnTransversal
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnSectorNoncrossing
 
 /-!
 # The complementary cycle of a residual return

@@ -24,6 +24,7 @@ open GoertzelV24OrderedMeshResidualSiteFacialBond
 open GoertzelV24ResidualReturnCycleOrder
 open GoertzelV24ResidualReturnSectorNoncrossing
 open MatchingParity
+open ResidualReturnComplementaryCycle
 open ResidualReturnSweepCyclicCut
 open SimpleGraph
 
@@ -111,6 +112,25 @@ def ambientReturnPathCycleClosureOfLongPath
       (orderedChordAmbientPath hG sigma hSigma site chord) :=
   ambientReturnPathCycleClosureOfNontrivial
     hG sigma hSigma site chord (Or.inl hlong)
+
+/-- The canonical path-cycle closure of a physical residual return.  In a
+simple graph the ambient return and the carrier interval cannot both be one
+edge, so no length side condition is required. -/
+def ambientReturnPathCycleClosureAutomatic
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (chord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site)) :
+    PathCycleClosure
+      (orderedChordAmbientPath hG sigma hSigma site chord) :=
+  ambientReturnPathCycleClosureOfNontrivial hG sigma hSigma site chord <| by
+    rcases orderedReturnSeparator_length_alternative
+        hG sigma hSigma site chord with hambient | hcarrier
+    · exact Or.inl hambient
+    · exact Or.inr <| by
+        simpa only [residualCycleInterval_length] using hcarrier
 
 /-- The unique neighbour reached by the third edge at an internal ambient
 return position. -/
