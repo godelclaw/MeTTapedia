@@ -52,6 +52,33 @@ abbrev AmbientReturnInternalPosition
       (orderedSiteReturnPairing hG sigma hSigma site)) :=
   InternalPosition (orderedChordAmbientPath hG sigma hSigma site chord)
 
+/-- The ambient return is one arc of its literal simple separator cycle; the
+complementary arc is the reverse operated-cycle interval.  This packages the
+global separator needed to interpret local attachment turns as genuine sides
+of the return path. -/
+def ambientReturnPathCycleClosure
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (chord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (hlong : 1 < chord.right.val - chord.left.val) :
+    PathCycleClosure
+      (orderedChordAmbientPath hG sigma hSigma site chord) where
+  complement := (residualCycleInterval sigma site chord).reverse
+  path_not_nil :=
+    orderedChordAmbientPath_not_nil hG sigma hSigma site chord
+  complement_not_nil := by
+    rw [SimpleGraph.Walk.not_nil_iff_lt_length,
+      SimpleGraph.Walk.length_reverse,
+      residualCycleInterval_length sigma site chord]
+    omega
+  cycle_isCycle := by
+    simpa [orderedReturnSeparator] using
+      orderedReturnSeparator_isCycle
+        hG sigma hSigma site chord hlong
+
 /-- The unique neighbour reached by the third edge at an internal ambient
 return position. -/
 def ambientReturnAttachmentNeighbor

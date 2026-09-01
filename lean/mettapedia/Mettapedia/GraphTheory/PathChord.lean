@@ -57,6 +57,126 @@ theorem walkInterval_getVert {V : Type u} {G : SimpleGraph V}
   simp [walkInterval, SimpleGraph.Walk.take_getVert,
     SimpleGraph.Walk.drop_getVert, Nat.min_eq_right hposition]
 
+/-- A dart in a bounded walk prefix is based at an original walk coordinate
+strictly below the bound. -/
+theorem exists_coordinate_lt_of_mem_darts_take
+    {V : Type u} {G : SimpleGraph V} {start finish : V}
+    (walk : G.Walk start finish) (bound : Nat)
+    (hbound : bound ≤ walk.length) (dart : G.Dart)
+    (hdart : dart ∈ (walk.take bound).darts) :
+    ∃ coordinate : Nat, coordinate < bound ∧
+      dart.fst = walk.getVert coordinate := by
+  rcases List.mem_iff_getElem.mp hdart with ⟨coordinate, hcoordinate, rfl⟩
+  have hcoordinateBound : coordinate < bound := by
+    simpa [SimpleGraph.Walk.length_darts,
+      SimpleGraph.Walk.take_length, Nat.min_eq_left hbound] using hcoordinate
+  refine ⟨coordinate, hcoordinateBound, ?_⟩
+  rw [SimpleGraph.Walk.darts_getElem_eq_getVert]
+  simp [SimpleGraph.Walk.take_getVert,
+    Nat.min_eq_right (Nat.le_of_lt hcoordinateBound)]
+
+/-- Taking a positive bounded prefix preserves the first oriented dart. -/
+theorem firstDart_take_eq
+    {V : Type u} {G : SimpleGraph V} {start finish : V}
+    (walk : G.Walk start finish) (bound : Nat)
+    (hpositive : 0 < bound) (hbound : bound ≤ walk.length) :
+    (walk.take bound).firstDart (by
+        rw [SimpleGraph.Walk.not_nil_iff_lt_length]
+        simp [SimpleGraph.Walk.take_length, Nat.min_eq_left hbound,
+          hpositive]) =
+      walk.firstDart (by
+        rw [SimpleGraph.Walk.not_nil_iff_lt_length]
+        exact lt_of_lt_of_le hpositive hbound) := by
+  apply SimpleGraph.Dart.ext
+  apply Prod.ext
+  · rfl
+  · simp [SimpleGraph.Walk.firstDart,
+      SimpleGraph.Walk.take_getVert,
+      Nat.min_eq_right (Nat.one_le_iff_ne_zero.mpr
+        (Nat.ne_of_gt hpositive))]
+
+/-- A dart in a dropped walk suffix is based at an original coordinate at
+or after the drop point and strictly before the original finish. -/
+theorem exists_coordinate_ge_of_mem_darts_drop
+    {V : Type u} {G : SimpleGraph V} {start finish : V}
+    (walk : G.Walk start finish) (bound : Nat)
+    (hbound : bound ≤ walk.length) (dart : G.Dart)
+    (hdart : dart ∈ (walk.drop bound).darts) :
+    ∃ coordinate : Nat, bound ≤ coordinate ∧
+      coordinate < walk.length ∧ dart.fst = walk.getVert coordinate := by
+  rcases List.mem_iff_getElem.mp hdart with ⟨offset, hoffset, rfl⟩
+  have hoffsetBound : offset < walk.length - bound := by
+    simpa [SimpleGraph.Walk.length_darts,
+      SimpleGraph.Walk.drop_length] using hoffset
+  refine ⟨bound + offset, Nat.le_add_right _ _, by omega, ?_⟩
+  rw [SimpleGraph.Walk.darts_getElem_eq_getVert]
+  simp [SimpleGraph.Walk.drop_getVert]
+
+/-- Dropping a proper prefix preserves the final oriented dart. -/
+theorem lastDart_drop_eq
+    {V : Type u} {G : SimpleGraph V} {start finish : V}
+    (walk : G.Walk start finish) (bound : Nat)
+    (hbound : bound < walk.length) :
+    (walk.drop bound).lastDart (by
+        rw [SimpleGraph.Walk.not_nil_iff_lt_length,
+          SimpleGraph.Walk.drop_length]
+        omega) =
+      walk.lastDart (by
+        rw [SimpleGraph.Walk.not_nil_iff_lt_length]
+        omega) := by
+  apply SimpleGraph.Dart.ext
+  apply Prod.ext
+  · change (walk.drop bound).penultimate = walk.penultimate
+    simp only [SimpleGraph.Walk.penultimate,
+      SimpleGraph.Walk.drop_length,
+      SimpleGraph.Walk.drop_getVert]
+    congr 1
+    omega
+  · rfl
+
+/-! ## Paths as arcs of simple cycles -/
+
+/-- A nonempty walk together with a nonempty complementary walk whose
+concatenation is a simple cycle.  This is the intrinsic graph-theoretic
+statement that the distinguished walk is one oriented arc of that cycle. -/
+structure PathCycleClosure {V : Type u} {G : SimpleGraph V}
+    {start finish : V} (path : G.Walk start finish) where
+  complement : G.Walk finish start
+  path_not_nil : ¬ path.Nil
+  complement_not_nil : ¬ complement.Nil
+  cycle_isCycle : (path.append complement).IsCycle
+
+namespace PathCycleClosure
+
+variable {V : Type u} {G : SimpleGraph V} {start finish : V}
+  {path : G.Walk start finish}
+
+/-- The distinguished arc of a simple-cycle closure is a simple path. -/
+theorem path_isPath (closure : PathCycleClosure path) : path.IsPath :=
+  closure.cycle_isCycle.isPath_of_append_left closure.complement_not_nil
+
+/-- The complementary arc of a simple-cycle closure is a simple path. -/
+theorem complement_isPath (closure : PathCycleClosure path) :
+    closure.complement.IsPath :=
+  closure.cycle_isCycle.isPath_of_append_right closure.path_not_nil
+
+/-- Apart from their common endpoints, the two arcs of a simple-cycle
+closure have disjoint vertex supports. -/
+theorem tail_support_disjoint (closure : PathCycleClosure path) :
+    path.support.tail.Disjoint closure.complement.support.tail := by
+  have hnodup := closure.cycle_isCycle.2
+  rw [SimpleGraph.Walk.tail_support_append, List.nodup_append'] at hnodup
+  exact hnodup.2.2
+
+/-- The two arcs of a simple-cycle closure have disjoint edge lists. -/
+theorem edges_disjoint (closure : PathCycleClosure path) :
+    path.edges.Disjoint closure.complement.edges := by
+  have hnodup := closure.cycle_isCycle.isTrail.edges_nodup
+  rw [SimpleGraph.Walk.edges_append, List.nodup_append'] at hnodup
+  exact hnodup.2.2
+
+end PathCycleClosure
+
 /-! ## Ordered chord coordinates -/
 
 /-- A chord on a linearly ordered path, represented by its ordered endpoint
