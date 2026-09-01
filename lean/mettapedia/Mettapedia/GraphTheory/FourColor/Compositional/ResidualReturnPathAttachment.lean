@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.CubicPathChord
+import Mettapedia.GraphTheory.CubicPathCycleAttachment
 import Mettapedia.GraphTheory.FourColor.CubicPathRotation
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweepCyclicCut
 
@@ -218,6 +219,40 @@ theorem ambientReturnChordAttachment_or_externalAttachment
   chordAttachment_or_externalAttachment
     (orderedChordAmbientPath_isPath hG sigma hSigma site chord)
     (regularOfDegreeThree_of_cubicIncidentTriples hG) position
+
+/-- An attachment that leaves an ambient residual-return path either reaches
+the complementary carrier arc or genuinely leaves the whole displayed return
+separator.  This is the semantic refinement of the raw "external to the
+path" horn used by the attachment sweep. -/
+theorem ambientReturnExternalAttachment_reachesCarrier_or_leavesSeparator
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (chord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (position : AmbientReturnInternalPosition hG sigma hSigma site chord)
+    (hexternal : IsExternalAttachment
+      (orderedChordAmbientPath_isPath hG sigma hSigma site chord)
+      (regularOfDegreeThree_of_cubicIncidentTriples hG) position) :
+    ambientReturnAttachmentNeighbor hG sigma hSigma site chord position ∈
+        site.carrier ∨
+      ambientReturnAttachmentNeighbor hG sigma hSigma site chord position ∉
+        (orderedReturnSeparator hG sigma hSigma site chord).support := by
+  by_cases hcarrierArc :
+      ambientReturnAttachmentNeighbor hG sigma hSigma site chord position ∈
+        (residualCycleInterval sigma site chord).support
+  · exact Or.inl <|
+      mem_carrier_of_mem_residualCycleInterval_support
+        sigma site chord hcarrierArc
+  · right
+    unfold orderedReturnSeparator
+    rw [SimpleGraph.Walk.mem_support_append_iff]
+    push Not
+    constructor
+    · exact hexternal
+    · simpa only [SimpleGraph.Walk.support_reverse, List.mem_reverse] using
+        hcarrierArc
 
 /-- A third edge that returns to the same ambient residual path determines
 the simple chord boundary cut off by that edge. -/
