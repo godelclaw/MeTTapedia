@@ -212,17 +212,19 @@ def orderedReturnSeparator
   (orderedChordAmbientPath hG sigma hSigma site chord).append
     (residualCycleInterval sigma site chord).reverse
 
-/-- If the chosen cycle interval has an interior edge, adjoining its reverse
-to the physical return gives a literal simple closed separator.  Interleaving
-with another chord will supply this strict length hypothesis. -/
-theorem orderedReturnSeparator_isCycle
+/-- Adjoining the reverse carrier interval to the physical return gives a
+literal simple closed separator whenever either of its two arcs is
+nontrivial. -/
+theorem orderedReturnSeparator_isCycle_of_nontrivial
     (hG : HasCubicIncidentEdgeTriples G)
     (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
     {first second : V}
     (site : ProperAlternatingSiteWitness G sigma first second)
     (chord : OrderedReturnChord
       (orderedSiteReturnPairing hG sigma hSigma site))
-    (hlong : 1 < chord.right.val - chord.left.val) :
+    (hnontrivial :
+      1 < (orderedChordAmbientPath hG sigma hSigma site chord).length ∨
+        1 < chord.right.val - chord.left.val) :
     (orderedReturnSeparator hG sigma hSigma site chord).IsCycle := by
   let path := orderedChordAmbientPath hG sigma hSigma site chord
   let interval := residualCycleInterval sigma site chord
@@ -262,10 +264,42 @@ theorem orderedReturnSeparator_isCycle
         rw [← interval.reverse.cons_tail_support] at hnodup
         exact (List.nodup_cons.mp hnodup).1
       exact hrightNot (hright ▸ hreverseTail)
-  · exact Or.inr (by
-      rw [SimpleGraph.Walk.length_reverse,
-        residualCycleInterval_length sigma site chord]
-      exact hlong)
+  · rcases hnontrivial with hambient | hcarrier
+    · exact Or.inl hambient
+    · exact Or.inr (by
+        rw [SimpleGraph.Walk.length_reverse,
+          residualCycleInterval_length sigma site chord]
+        exact hcarrier)
+
+/-- If the chosen carrier interval has an interior edge, adjoining its
+reverse to the physical return gives a literal simple closed separator.
+Interleaving with another chord supplies this strict length hypothesis. -/
+theorem orderedReturnSeparator_isCycle
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (chord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (hlong : 1 < chord.right.val - chord.left.val) :
+    (orderedReturnSeparator hG sigma hSigma site chord).IsCycle :=
+  orderedReturnSeparator_isCycle_of_nontrivial
+    hG sigma hSigma site chord (Or.inr hlong)
+
+/-- A long physical return also supplies the same separator, even when the
+chosen carrier interval consists of a single edge. -/
+theorem orderedReturnSeparator_isCycle_of_ambientPath_length
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (chord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (hlong : 1 <
+      (orderedChordAmbientPath hG sigma hSigma site chord).length) :
+    (orderedReturnSeparator hG sigma hSigma site chord).IsCycle :=
+  orderedReturnSeparator_isCycle_of_nontrivial
+    hG sigma hSigma site chord (Or.inl hlong)
 
 /-! ## Exact facial cut carried by the separator -/
 
