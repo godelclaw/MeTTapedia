@@ -4800,6 +4800,33 @@ friendly: an adjacency-matrix estimate is available, but normalizing the
 corresponding power of two contributes nothing to the argument.
 \end{proof}
 
+\begin{lemma}[semantic content of an equal fixed-colour transition frame]
+\label{lem:fixed-colour-transition-frame-semantics}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.MeshJunctionAlternatingGeometry.incomingRowStep_ne_outgoingRowStep}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FixedColorConnectivityTransition.fixedConnectivityStateAt_reachable_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FixedColorConnectivityFrameSemantics.selectedIncomingArmBit_eq_true_iff_selectedRowStep_eq_incoming}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FixedColorConnectivityFrameSemantics.semanticAgreement_of_fixedColorRowTransitionFrameCode_eq}
+If two row-transition receipts have equal framed codes, then, under their
+common labelled ninety-slot coordinates, they choose the incoming row arm at
+the same endpoint coordinates and have the same fixed-colour reachability
+relation immediately before and immediately after the transition.
+
+This conclusion compares semantic observations on a fixed finite carrier.  It
+does not identify the ambient vertices named by corresponding slots, and it
+does not assert equality of exact colouring-support profiles.
+\end{lemma}
+
+\begin{proof}
+The incoming and outgoing row steps at an internal mesh junction are distinct.
+Hence each Boolean arm bit is equivalent to choosing the incoming step.
+Equality of framed codes gives equality of both bits and both labelled
+connectivity graphs.  The definition of a labelled connectivity state is
+exact: an edge in its transitive closure is precisely fixed-colour ambient
+reachability between the physical vertices named by the corresponding slots.
+Projecting the frame equality and applying these two equivalences proves the
+claim.
+\end{proof}
+
 The binary constraints have one further exact locality property.  Although
 common-core agreement is not transitive as a relation on whole pairwise
 common deletions, its failure of transitivity cannot occur away from the

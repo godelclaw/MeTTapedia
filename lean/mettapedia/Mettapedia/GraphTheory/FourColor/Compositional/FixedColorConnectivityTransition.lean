@@ -129,6 +129,25 @@ def fixedConnectivityStateAt
       minimizer (sweepColour rotation minimal family minimizer pair) index)
     family
 
+/-- The fixed state is semantically exact: reachability of two labelled slots
+is precisely ambient reachability of the physical vertices that they name in
+the fixed-colour graph. -/
+theorem fixedConnectivityStateAt_reachable_iff
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (family : PairDeletionColoringFamily (G := G) (Fin 9))
+    (minimizer : ResidualDefectMinimizer G)
+    (pair : CoherentGeometricSweepPairReceipt
+      rotation minimal family minimizer)
+    (index : Fin 9) (left right : PathBoundarySlot) :
+    (fixedConnectivityStateAt rotation minimal family minimizer pair index).Reachable
+        left right ↔
+      (pathFixedColorAlternatingGraph rotation minimal family pair.pathSection
+          minimizer (sweepColour rotation minimal family minimizer pair)
+          index).Reachable
+        (pathBoundaryVertex family left) (pathBoundaryVertex family right) := by
+  exact pathConnectivityState_reachable_iff _ _ _ _
+
 /-- At the first selected endpoint, the fixed-colour and original component
 states coincide. -/
 theorem fixedConnectivityStateAt_first
