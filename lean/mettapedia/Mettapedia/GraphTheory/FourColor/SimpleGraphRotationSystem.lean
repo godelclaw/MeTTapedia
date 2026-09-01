@@ -1,4 +1,5 @@
 import Mathlib.Combinatorics.SimpleGraph.DegreeSum
+import Mettapedia.GraphTheory.FiniteDegree
 import Mettapedia.GraphTheory.FourColor.RotationSystem
 
 namespace Mettapedia.GraphTheory.FourColor
@@ -32,7 +33,125 @@ structure Data where
 namespace Data
 
 variable (data : Data G)
+
+/-- The vertex rotation is a single cycle on the outgoing darts at every
+vertex.  This is the graph-backed, representation-independent formulation of
+cyclic vertex rotations. -/
+def IsVertexwiseCyclic : Prop :=
+  ∀ vertex,
+    data.vertexRotation.IsCycleOn
+      {dart : G.Dart | dart.fst = vertex}
+
 variable [Fintype V] [DecidableEq V] [DecidableRel G.Adj]
+
+/-- Three distinct outgoing darts at a degree-three vertex exhaust its dart
+fiber.  Hence a cyclic vertex rotation sends the first dart to one of the
+other two. -/
+theorem vertexRotation_apply_eq_second_or_third_of_regularThree
+    [G.LocallyFinite]
+    (hregular : G.IsRegularOfDegree 3)
+    (hcyclic : data.IsVertexwiseCyclic)
+    {first second third : G.Dart}
+    (hsecondBase : second.fst = first.fst)
+    (hthirdBase : third.fst = first.fst)
+    (hfirstSecond : first ≠ second)
+    (hfirstThird : first ≠ third)
+    (hsecondThird : second ≠ third) :
+    data.vertexRotation first = second ∨
+      data.vertexRotation first = third := by
+  let fiber : Finset G.Dart :=
+    Finset.univ.filter fun dart => dart.fst = first.fst
+  have hfirstMem : first ∈ fiber := by
+    simp [fiber]
+  have hsecondMem : second ∈ fiber := by
+    simp [fiber, hsecondBase]
+  have hthirdMem : third ∈ fiber := by
+    simp [fiber, hthirdBase]
+  have htripleSubset : ({first, second, third} : Finset G.Dart) ⊆ fiber := by
+    intro dart hdart
+    simp only [Finset.mem_insert, Finset.mem_singleton] at hdart
+    rcases hdart with rfl | rfl | rfl
+    · exact hfirstMem
+    · exact hsecondMem
+    · exact hthirdMem
+  have htripleCard : ({first, second, third} : Finset G.Dart).card = 3 := by
+    simp [hfirstSecond, hfirstThird, hsecondThird]
+  have hfiberCard : fiber.card = 3 := by
+    change ({dart : G.Dart | dart.fst = first.fst} : Finset G.Dart).card = 3
+    rw [G.dart_fst_fiber_card_eq_degree]
+    exact (SimpleGraph.degree_instance_independent first.fst _ _).symm.trans
+      (hregular.degree_eq first.fst)
+  have htripleEq : ({first, second, third} : Finset G.Dart) = fiber := by
+    apply Finset.eq_of_subset_of_card_le htripleSubset
+    rw [htripleCard, hfiberCard]
+  have hrotationMem : data.vertexRotation first ∈ fiber := by
+    simp [fiber, data.vertexRotation_fst]
+  rw [← htripleEq] at hrotationMem
+  simp only [Finset.mem_insert, Finset.mem_singleton] at hrotationMem
+  rcases hrotationMem with hfixed | hsecond | hthird
+  · have hfiberNontrivial : fiber.Nontrivial := by
+      apply Finset.one_lt_card_iff_nontrivial.mp
+      rw [hfiberCard]
+      omega
+    have hsetNontrivial : (fiber : Set G.Dart).Nontrivial := by
+      simpa only [Finset.coe_sort_coe] using hfiberNontrivial
+    exact False.elim
+      ((hcyclic first.fst).apply_ne (by simpa [fiber] using hsetNontrivial)
+        (by simp) hfixed)
+  · exact Or.inl hsecond
+  · exact Or.inr hthird
+
+/-- Once the first step of a cyclic three-dart vertex fiber is fixed, the
+remaining two rotation steps are forced. -/
+theorem vertexRotation_three_cycle_of_eq_second
+    [G.LocallyFinite]
+    (hregular : G.IsRegularOfDegree 3)
+    (hcyclic : data.IsVertexwiseCyclic)
+    {first second third : G.Dart}
+    (hsecondBase : second.fst = first.fst)
+    (hthirdBase : third.fst = first.fst)
+    (hfirstSecond : first ≠ second)
+    (hfirstThird : first ≠ third)
+    (hsecondThird : second ≠ third)
+    (hfirst : data.vertexRotation first = second) :
+    data.vertexRotation second = third ∧
+      data.vertexRotation third = first := by
+  have hnext := vertexRotation_apply_eq_second_or_third_of_regularThree
+    (G := G) data hregular hcyclic
+    (first := second) (second := third) (third := first)
+    (hthirdBase.trans hsecondBase.symm) hsecondBase.symm
+    hsecondThird hfirstSecond.symm hfirstThird.symm
+  rcases hnext with hsecond | hback
+  · let fiber : Finset G.Dart :=
+      Finset.univ.filter fun dart => dart.fst = first.fst
+    have hfirstMem : first ∈ fiber := by simp [fiber]
+    have hfiberCard : fiber.card = 3 := by
+      change ({dart : G.Dart | dart.fst = first.fst} : Finset G.Dart).card = 3
+      rw [G.dart_fst_fiber_card_eq_degree]
+      exact (SimpleGraph.degree_instance_independent first.fst _ _).symm.trans
+        (hregular.degree_eq first.fst)
+    have hcycle : data.vertexRotation.IsCycleOn (fiber : Set G.Dart) := by
+      simpa [fiber] using hcyclic first.fst
+    have hcube := hcycle.pow_card_apply hfirstMem
+    rw [hfiberCard] at hcube
+    have hthird : data.vertexRotation third = first := by
+      simpa [pow_succ, hfirst, hsecond] using hcube
+    exact ⟨hsecond, hthird⟩
+  · let fiber : Finset G.Dart :=
+      Finset.univ.filter fun dart => dart.fst = first.fst
+    have hfirstMem : first ∈ fiber := by simp [fiber]
+    have hfiberCard : fiber.card = 3 := by
+      change ({dart : G.Dart | dart.fst = first.fst} : Finset G.Dart).card = 3
+      rw [G.dart_fst_fiber_card_eq_degree]
+      exact (SimpleGraph.degree_instance_independent first.fst _ _).symm.trans
+        (hregular.degree_eq first.fst)
+    have hcycle : data.vertexRotation.IsCycleOn (fiber : Set G.Dart) := by
+      simpa [fiber] using hcyclic first.fst
+    have hcube := hcycle.pow_card_apply hfirstMem
+    rw [hfiberCard] at hcube
+    have hsecondFirst : second = first := by
+      simpa [pow_succ, hfirst, hback] using hcube
+    exact False.elim (hfirstSecond hsecondFirst.symm)
 
 /-- A finite simple graph, equipped with a vertex rotation on darts and an outer
 dart, determines the bare rotation-system structure.  This construction proves

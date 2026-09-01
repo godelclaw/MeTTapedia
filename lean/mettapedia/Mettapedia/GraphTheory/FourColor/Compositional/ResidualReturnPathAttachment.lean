@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.CubicPathAttachment
+import Mettapedia.GraphTheory.FourColor.CubicPathRotation
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweepCyclicCut
 
 /-!
@@ -16,6 +17,7 @@ No planar side or noncrossing conclusion is asserted here.
 namespace Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnPathAttachment
 
 open CubicPathAttachment
+open CubicPathRotation
 open GoertzelV24OrderedMeshResidualSiteMatching
 open GoertzelV24OrderedMeshResidualSiteFacialBond
 open GoertzelV24ResidualReturnCycleOrder
@@ -77,6 +79,65 @@ def ambientReturnAttachmentEdge
   attachmentEdge
     (orderedChordAmbientPath_isPath hG sigma hSigma site chord)
     (regularOfDegreeThree_of_cubicIncidentTriples hG) position
+
+/-- Which oriented path dart is immediately followed by the unique attachment
+dart in the ambient vertex rotation. -/
+def ambientReturnAttachmentTurn
+    (rotation : SimpleGraphDartRotation.Data G)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (chord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (position : AmbientReturnInternalPosition hG sigma hSigma site chord) :
+    AttachmentTurn :=
+  attachmentTurn rotation
+    (orderedChordAmbientPath_isPath hG sigma hSigma site chord)
+    (regularOfDegreeThree_of_cubicIncidentTriples hG) position
+
+/-- The exact three-dart rotation cycle selected by an ambient return's
+attachment turn.  This is local rotation syntax only; planar noncrossing is a
+separate theorem. -/
+theorem ambientReturnAttachmentTurn_rotationCycle
+    (rotation : SimpleGraphDartRotation.Data G)
+    (hcyclic : rotation.IsVertexwiseCyclic)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (chord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (position : AmbientReturnInternalPosition hG sigma hSigma site chord) :
+    let hpath := orderedChordAmbientPath_isPath hG sigma hSigma site chord
+    let hregular := regularOfDegreeThree_of_cubicIncidentTriples hG
+    (ambientReturnAttachmentTurn rotation hG sigma hSigma site chord position =
+          .backwardToAttachment ∧
+        rotation.vertexRotation (backwardDart position) =
+          attachmentDart hpath hregular position ∧
+        rotation.vertexRotation (attachmentDart hpath hregular position) =
+          forwardDart position ∧
+        rotation.vertexRotation (forwardDart position) = backwardDart position) ∨
+      (ambientReturnAttachmentTurn rotation hG sigma hSigma site chord position =
+          .forwardToAttachment ∧
+        rotation.vertexRotation (backwardDart position) = forwardDart position ∧
+        rotation.vertexRotation (forwardDart position) =
+          attachmentDart hpath hregular position ∧
+        rotation.vertexRotation (attachmentDart hpath hregular position) =
+          backwardDart position) := by
+  dsimp only
+  let hpath := orderedChordAmbientPath_isPath hG sigma hSigma site chord
+  let hregular := regularOfDegreeThree_of_cubicIncidentTriples hG
+  rcases attachmentTurn_cases rotation hpath hregular position with
+    hbackward | hforward
+  · left
+    exact ⟨hbackward,
+      rotationCycle_of_attachmentTurn_eq_backwardToAttachment
+        rotation hcyclic hpath hregular position hbackward⟩
+  · right
+    exact ⟨hforward,
+      rotationCycle_of_attachmentTurn_eq_forwardToAttachment
+        rotation hcyclic hpath hregular position hforward⟩
 
 /-- At every internal position of an ambient residual return, the third edge
 is either a nonconsecutive chord of that return or an external attachment. -/
