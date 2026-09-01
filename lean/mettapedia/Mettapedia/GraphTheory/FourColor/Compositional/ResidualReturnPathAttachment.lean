@@ -52,18 +52,19 @@ abbrev AmbientReturnInternalPosition
       (orderedSiteReturnPairing hG sigma hSigma site)) :=
   InternalPosition (orderedChordAmbientPath hG sigma hSigma site chord)
 
-/-- The ambient return is one arc of its literal simple separator cycle; the
-complementary arc is the reverse operated-cycle interval.  This packages the
-global separator needed to interpret local attachment turns as genuine sides
-of the return path. -/
-def ambientReturnPathCycleClosure
+/-- The ambient return is one arc of its literal simple separator cycle and
+the reverse operated-cycle interval is the other.  Either arc may supply the
+nontriviality needed by the cycle constructor. -/
+def ambientReturnPathCycleClosureOfNontrivial
     (hG : HasCubicIncidentEdgeTriples G)
     (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
     {first second : V}
     (site : ProperAlternatingSiteWitness G sigma first second)
     (chord : OrderedReturnChord
       (orderedSiteReturnPairing hG sigma hSigma site))
-    (hlong : 1 < chord.right.val - chord.left.val) :
+    (hnontrivial :
+      1 < (orderedChordAmbientPath hG sigma hSigma site chord).length ∨
+        1 < chord.right.val - chord.left.val) :
     PathCycleClosure
       (orderedChordAmbientPath hG sigma hSigma site chord) where
   complement := (residualCycleInterval sigma site chord).reverse
@@ -73,11 +74,42 @@ def ambientReturnPathCycleClosure
     rw [SimpleGraph.Walk.not_nil_iff_lt_length,
       SimpleGraph.Walk.length_reverse,
       residualCycleInterval_length sigma site chord]
-    omega
+    exact Nat.sub_pos_of_lt chord.left_lt_right
   cycle_isCycle := by
     simpa [orderedReturnSeparator] using
-      orderedReturnSeparator_isCycle
-        hG sigma hSigma site chord hlong
+      orderedReturnSeparator_isCycle_of_nontrivial
+        hG sigma hSigma site chord hnontrivial
+
+/-- Carrier-interval form of the ambient return closure. -/
+def ambientReturnPathCycleClosure
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (chord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (hlong : 1 < chord.right.val - chord.left.val) :
+    PathCycleClosure
+      (orderedChordAmbientPath hG sigma hSigma site chord) :=
+  ambientReturnPathCycleClosureOfNontrivial
+    hG sigma hSigma site chord (Or.inr hlong)
+
+/-- Long-ambient-path form of the same closure.  This is the form consumed by
+the ambient attachment sweep when the paired carrier coordinates happen to
+be adjacent. -/
+def ambientReturnPathCycleClosureOfLongPath
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (chord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (hlong : 1 <
+      (orderedChordAmbientPath hG sigma hSigma site chord).length) :
+    PathCycleClosure
+      (orderedChordAmbientPath hG sigma hSigma site chord) :=
+  ambientReturnPathCycleClosureOfNontrivial
+    hG sigma hSigma site chord (Or.inl hlong)
 
 /-- The unique neighbour reached by the third edge at an internal ambient
 return position. -/
