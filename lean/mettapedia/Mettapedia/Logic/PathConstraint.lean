@@ -88,6 +88,23 @@ theorem value_eq_last_of_adjacent_eq {n : Nat} {Value : Type*}
   | last => rfl
   | cast index ih => exact (hadjacent index).trans ih
 
+/-- If two values on a finite path differ, some adjacent pair already
+differs.  This is the local witness form of pathwise constancy. -/
+theorem exists_adjacent_ne_of_ne {n : Nat} {Value : Type*}
+    (value : Fin (n + 1) → Value) {first second : Fin (n + 1)}
+    (hne : value first ≠ value second) :
+    ∃ index : Fin n, value index.castSucc ≠ value index.succ := by
+  classical
+  by_contra hno
+  have hadjacent : ∀ index : Fin n,
+      value index.castSucc = value index.succ := by
+    intro index
+    by_contra hindex
+    exact hno ⟨index, hindex⟩
+  apply hne
+  exact (value_eq_last_of_adjacent_eq value hadjacent first).trans
+    (value_eq_last_of_adjacent_eq value hadjacent second).symm
+
 /-- Observations respected by every compatibility constraint are constant on
 any path section. -/
 theorem section_observe_eq_last {n : Nat}

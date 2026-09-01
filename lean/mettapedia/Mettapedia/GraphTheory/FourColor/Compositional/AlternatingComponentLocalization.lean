@@ -106,6 +106,88 @@ theorem card_overlapFootprintValues_le
   (Finset.card_image_le.trans
     (card_union_deletionFootprint_le sourceData targetData))
 
+/-- Two compatible deletion-matching states have identical alternating-graph
+membership outside their two five-edge footprints.  This graph-free semantic
+form is the local interface later used by mesh and path constructions. -/
+theorem alternatingGraphs_agree_outside_deletionFootprints
+    {sourceData targetData : AdjacentPairData G}
+    (sigma : Pairing V)
+    (source : DeletionColorMatching.DeletionMatchingState sourceData)
+    (target : DeletionColorMatching.DeletionMatchingState targetData)
+    (hcubic : ∀ vertex : V, (incidentEdgeFinset G vertex).card = 3)
+    (hcompatible :
+      (ResidualSiteMatchingOverlap.matchingOverlapState source target).Compatible)
+    (edge : G.edgeSet)
+    (houtside : edge ∉
+      deletionFootprint sourceData ∪ deletionFootprint targetData) :
+    edge.1 ∈ (alternatingGraph sigma (source.pairing hcubic)).edgeSet ↔
+      edge.1 ∈ (alternatingGraph sigma (target.pairing hcubic)).edgeSet := by
+  have hsource : IsRetainedAmbientEdge sourceData edge := by
+    by_contra hnot
+    exact houtside (Finset.mem_union_left _
+      ((mem_deletionFootprint_iff _ _).2 hnot))
+  have htarget : IsRetainedAmbientEdge targetData edge := by
+    by_contra hnot
+    exact houtside (Finset.mem_union_right _
+      ((mem_deletionFootprint_iff _ _).2 hnot))
+  exact AlternatingOverlapGeometry.alternatingGraphs_agree_on_common_retained_edge
+    sigma source target hcubic hcompatible edge hsource htarget
+
+/-- Compatible deletion-matching states become literally equal after their
+two local footprints are deleted from the alternating graphs. -/
+theorem alternatingGraphs_delete_overlapFootprints_eq
+    {sourceData targetData : AdjacentPairData G}
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    (source : DeletionColorMatching.DeletionMatchingState sourceData)
+    (target : DeletionColorMatching.DeletionMatchingState targetData)
+    (hcubic : ∀ vertex : V, (incidentEdgeFinset G vertex).card = 3)
+    (hcompatible :
+      (ResidualSiteMatchingOverlap.matchingOverlapState source target).Compatible) :
+    (alternatingGraph sigma (source.pairing hcubic)).deleteEdges
+        (overlapFootprintValues sourceData targetData : Set (Sym2 V)) =
+      (alternatingGraph sigma (target.pairing hcubic)).deleteEdges
+        (overlapFootprintValues sourceData targetData : Set (Sym2 V)) := by
+  let sourceGraph := alternatingGraph sigma (source.pairing hcubic)
+  let targetGraph := alternatingGraph sigma (target.pairing hcubic)
+  let footprint := overlapFootprintValues sourceData targetData
+  have hsourceLe : sourceGraph ≤ G :=
+    alternatingGraph_le sigma (source.pairing hcubic) hSigma
+      (source.pairing_supported hcubic)
+  have htargetLe : targetGraph ≤ G :=
+    alternatingGraph_le sigma (target.pairing hcubic) hSigma
+      (target.pairing_supported hcubic)
+  ext left right
+  simp only [SimpleGraph.deleteEdges_adj]
+  constructor
+  · rintro ⟨hadj, houtside⟩
+    let edge : G.edgeSet := ⟨s(left, right),
+      G.mem_edgeSet.mpr (hsourceLe hadj)⟩
+    have hedgeOutside : edge ∉
+        deletionFootprint sourceData ∪ deletionFootprint targetData := by
+      intro hmem
+      apply houtside
+      change s(left, right) ∈ footprint
+      exact Finset.mem_image.2 ⟨edge, hmem, rfl⟩
+    have hagrees := alternatingGraphs_agree_outside_deletionFootprints
+      sigma source target hcubic hcompatible edge hedgeOutside
+    refine ⟨?_, houtside⟩
+    exact targetGraph.mem_edgeSet.mp
+      (hagrees.mp (sourceGraph.mem_edgeSet.mpr hadj))
+  · rintro ⟨hadj, houtside⟩
+    let edge : G.edgeSet := ⟨s(left, right),
+      G.mem_edgeSet.mpr (htargetLe hadj)⟩
+    have hedgeOutside : edge ∉
+        deletionFootprint sourceData ∪ deletionFootprint targetData := by
+      intro hmem
+      apply houtside
+      change s(left, right) ∈ footprint
+      exact Finset.mem_image.2 ⟨edge, hmem, rfl⟩
+    have hagrees := alternatingGraphs_agree_outside_deletionFootprints
+      sigma source target hcubic hcompatible edge hedgeOutside
+    refine ⟨?_, houtside⟩
+    exact sourceGraph.mem_edgeSet.mp
+      (hagrees.mpr (targetGraph.mem_edgeSet.mpr hadj))
+
 /-- Compatible provenanced sites have identical alternating-graph membership
 on every ambient edge outside their two deletion footprints. -/
 theorem provenanced_alternatingGraphs_agree_outside_deletionFootprints

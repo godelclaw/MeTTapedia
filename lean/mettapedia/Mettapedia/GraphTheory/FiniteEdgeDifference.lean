@@ -212,4 +212,62 @@ theorem card_edgeDisagreementFinset_le_of_deleteEdges_eq
   Finset.card_le_card
     (edgeDisagreementFinset_subset_of_deleteEdges_eq first second removed heq)
 
+/-- If two graphs become equal after deleting `removed`, vertices whose
+reachability differs between the graphs cannot already be joined in the
+common deleted graph. -/
+theorem not_reachable_deleteEdges_of_reachability_differs
+    (first second : SimpleGraph V) (removed : Finset (Sym2 V))
+    (heq : first.deleteEdges (removed : Set (Sym2 V)) =
+      second.deleteEdges (removed : Set (Sym2 V)))
+    {left right : V}
+    (hdiffers : ¬ (first.Reachable left right ↔
+      second.Reachable left right)) :
+    ¬ (first.deleteEdges (removed : Set (Sym2 V))).Reachable left right := by
+  intro hcommon
+  have hfirst : first.Reachable left right :=
+    hcommon.mono (first.deleteEdges_le (removed : Set (Sym2 V)))
+  have hsecondDeleted :
+      (second.deleteEdges (removed : Set (Sym2 V))).Reachable left right := by
+    rw [← heq]
+    exact hcommon
+  have hsecond : second.Reachable left right :=
+    hsecondDeleted.mono (second.deleteEdges_le (removed : Set (Sym2 V)))
+  exact hdiffers ⟨fun _ ↦ hsecond, fun _ ↦ hfirst⟩
+
+/-- If deleting `removed` makes two graphs equal but changes reachability,
+one of the two graphs has a connecting walk which traverses `removed`. -/
+theorem exists_walk_hitting_of_deleteEdges_eq_of_reachability_differs
+    (first second : SimpleGraph V) (removed : Finset (Sym2 V))
+    (heq : first.deleteEdges (removed : Set (Sym2 V)) =
+      second.deleteEdges (removed : Set (Sym2 V)))
+    {left right : V}
+    (hdiffers : ¬ (first.Reachable left right ↔
+      second.Reachable left right)) :
+    (∃ walk : first.Walk left right,
+        ∃ edge ∈ walk.edges, edge ∈ removed) ∨
+      (∃ walk : second.Walk left right,
+        ∃ edge ∈ walk.edges, edge ∈ removed) := by
+  classical
+  by_cases hfirst : first.Reachable left right
+  · have hnotSecond : ¬ second.Reachable left right := by
+      intro hsecond
+      exact hdiffers ⟨fun _ ↦ hsecond, fun _ ↦ hfirst⟩
+    rcases hfirst with ⟨walk⟩
+    rcases walk.exists_edgeDisagreement_of_not_reachable hnotSecond with
+      ⟨edge, hedgeWalk, hedgeDifference⟩
+    exact Or.inl ⟨walk, edge, hedgeWalk,
+      edgeDisagreementFinset_subset_of_deleteEdges_eq
+        first second removed heq hedgeDifference⟩
+  · have hsecond : second.Reachable left right := by
+      by_contra hnotSecond
+      apply hdiffers
+      exact ⟨fun h ↦ False.elim (hfirst h),
+        fun h ↦ False.elim (hnotSecond h)⟩
+    rcases hsecond with ⟨walk⟩
+    rcases walk.exists_edgeDisagreement_of_not_reachable hfirst with
+      ⟨edge, hedgeWalk, hedgeDifference⟩
+    exact Or.inr ⟨walk, edge, hedgeWalk,
+      edgeDisagreementFinset_subset_of_deleteEdges_eq
+        second first removed heq.symm hedgeDifference⟩
+
 end SimpleGraph
