@@ -165,6 +165,45 @@ cyclically five-edge-connected.
 
 This complete cut-and-glue argument is machine-checked.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FourEdgeCutGluing.cyclicallyFiveEdgeConnected_of_vertexMinimalTaitCounterexample}
+
+The finite logical heart of the corresponding five-boundary argument can be
+stated without enumerating boundary colourings.
+
+\begin{lemma}[abstract Birkhoff propagation on a five-cycle]
+\label{lem:abstract-birkhoff-five-cycle-propagation}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FiveCycleBoundaryClosure.exists_drop}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FiveCycleBoundaryClosure.transfer_previous}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FiveCycleBoundaryClosure.not_pointwise_disjoint}
+For each of two boundary languages, let $P_i,Q_i$ be two cyclic families of
+behaviours, indexed modulo five.  Suppose each language realizes some $P_i$
+and, for each language separately,
+\[
+ P_i\wedge\neg P_{i+1}\Longrightarrow Q_i,
+ \qquad
+ \neg P_{i+1}\wedge\neg Q_{i+1}\Longrightarrow P_i.
+\]
+Then the two languages overlap in some $P_i$ or in some $Q_i$.
+\end{lemma}
+
+\begin{proof}
+Assume the languages are pointwise disjoint.  The first language realizes
+some $P_i$ and misses some $P_j$, because the second realizes $P_j$.
+Walking once around the five-cycle therefore finds an index $i$ at which
+$P_i$ holds and $P_{i+1}$ fails.  The first implication gives $Q_i$.
+
+Disjointness says that the second language realizes neither $P_i$ nor $Q_i$.
+The second implication, followed by the first, forces it to realize both
+$P_{i-1}$ and $Q_{i-1}$.  Repeating this transfer alternately between the two
+languages four times forces the first language to realize $P_{i-4}=P_{i+1}$,
+contradicting the chosen drop.
+\end{proof}
+
+This lemma is only the logical propagation heart of Birkhoff's short
+five-cycle theorem.  The remaining physical work is to define the $P/Q$
+boundary classes for the two shores, prove the two displayed implications by
+planar Kempe-chain separation, and show that an overlap glues the shores.  No
+finite boundary-word certificate is used or licensed by the lemma.
+
 A facial cycle of length below five would expose such a small cyclic cut (the
 finitely small exceptional carriers are directly colourable), so every face
 has length at least five; this consequence is checked separately.
