@@ -7467,6 +7467,39 @@ last assertion.  The nested physical pair is retained throughout; only the
 set of sweep positions is restricted.
 \end{proof}
 
+\begin{lemma}[cubic third-edge classification along an ambient return]
+\label{lem:ambient-return-third-edge-classification}
+\Sverified{Mettapedia.GraphTheory.CubicPathAttachment.ncard_attachmentNeighborSet_eq_one}
+\Sverified{Mettapedia.GraphTheory.CubicPathAttachment.chordAttachment_or_externalAttachment}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnPathAttachment.ambientReturnChordAttachment_or_externalAttachment}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnPathAttachment.hasNestedAmbientReturnInternalPositionsMoreThan_of_support}
+Let $P$ be the simple ambient path of a physical residual return in the cubic
+graph.  Every strict internal position of $P$ has exactly one neighbour not
+joined to it by either of the two path edges.  The corresponding third edge
+either leaves the support of $P$, or is a chord whose other endpoint is a
+nonconsecutive position of $P$.  Moreover, if $P$ has more than $B+2$
+distinct support vertices, then it has more than $B$ strict internal
+positions carrying these canonical third edges.
+
+This is only the syntax of the ambient sweep.  It does not assert that the
+external attachments lie on a common planar side, that its chords are
+noncrossing, or that any set of these third edges is a bounded interface.
+Those are geometric obligations, not consequences of cubicity.
+\end{lemma}
+
+\begin{proof}
+Index the strict internal positions by
+$\operatorname{Fin}(|P|-1)$, with coordinate $i$ denoting path coordinate
+$i+1$.  The two path neighbours are distinct because $P$ is simple.  Their
+neighbour set is contained in the ambient neighbour set; the former has
+cardinality two and the latter has cardinality three.  Their set difference
+therefore has cardinality one.  If its unique member belongs to the support
+of $P$, simplicity gives its unique path coordinate, and exclusion from the
+two path neighbours shows that coordinate is neither the predecessor nor the
+successor.  Otherwise it is an external attachment.  Finally a simple path
+has exactly two fewer strict internal positions than support vertices.
+\end{proof}
+
 \begin{corollary}[pointwise geometric sweep alternatives across the mesh]
 \label{cor:pointwise-mesh-residual-sweep-alternative}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.MeshResidualReturnSweep.exists_geometricSweepReceipt_at_every_globalMeshStep}
