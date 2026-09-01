@@ -23,7 +23,7 @@ open GoertzelV24PortTangleGluing
 open GoertzelV24PortTangleGluing.PortTangle
 open GoertzelV24PortTanglePhysicalKempeClosure
 
-universe u
+universe u v
 
 variable {V I P : Type u}
   [Fintype V] [Fintype I] [Fintype P]
@@ -104,7 +104,7 @@ theorem switchBoundaryWord_mem_taitSupport
 
 /-! ## Boundary coordinates -/
 
-variable {Q : Type u} [Fintype Q] [DecidableEq Q]
+variable {Q : Type v} [Fintype Q] [DecidableEq Q]
 
 /-- Read the exact physical support in any chosen boundary coordinates. -/
 def supportInCoordinates (order : Q ≃ P) (T : PortTangle V I P) :

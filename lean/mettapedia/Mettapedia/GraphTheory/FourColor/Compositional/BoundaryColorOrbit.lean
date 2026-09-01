@@ -18,9 +18,9 @@ open GoertzelV24PortTangleGluing
 open GoertzelV24PortTangleGluing.PortTangle
 open GoertzelV24PortTanglePhysicalKempeClosure
 
-universe u
+universe u v w
 
-variable {V I P Q : Type u}
+variable {V I P : Type u} {Q : Type v}
   [Fintype V] [Fintype I] [Fintype P] [Fintype Q]
   [DecidableEq V] [DecidableEq I] [DecidableEq P] [DecidableEq Q]
 
@@ -77,7 +77,7 @@ then they contain a literal common word after globally relabelling one
 realizing colouring. -/
 theorem exists_common_word_of_equivalent
     (leftOrder : Q ≃ P) (leftTangle : PortTangle V I P)
-    {V' I' P' : Type u}
+    {V' I' P' : Type w}
     [Fintype V'] [Fintype I'] [Fintype P']
     [DecidableEq V'] [DecidableEq I'] [DecidableEq P']
     (rightOrder : Q ≃ P') (rightTangle : PortTangle V' I' P')
