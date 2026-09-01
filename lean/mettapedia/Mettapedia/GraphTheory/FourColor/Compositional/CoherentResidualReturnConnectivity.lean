@@ -84,6 +84,24 @@ def ConnectivitySynchronized
   connectivityStateAt rotation minimal family minimizer pair pair.first =
     connectivityStateAt rotation minimal family minimizer pair pair.second
 
+/-- The endpoint alternating graphs of a coherent pair are literally equal
+away from the common forty-five-edge path footprint. -/
+theorem deleteFootprint_eq
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (family : PairDeletionColoringFamily (G := G) (Fin 9))
+    (minimizer : ResidualDefectMinimizer G)
+    (pair : CoherentGeometricSweepPairReceipt
+      rotation minimal family minimizer) :
+    (pathAlternatingGraph rotation minimal family pair.pathSection minimizer
+        pair.first).deleteEdges
+          (pathFootprintValues family : Set (Sym2 V)) =
+      (pathAlternatingGraph rotation minimal family pair.pathSection minimizer
+        pair.second).deleteEdges
+          (pathFootprintValues family : Set (Sym2 V)) :=
+  pathAlternatingGraphs_deleteFootprint_eq rotation minimal family
+    pair.pathSection minimizer pair.first pair.second pair.absentColor_eq
+
 /-- Every coherent geometric sweep pair is either connectivity-synchronized
 or exposes two exact boundary ports whose component relation changes. -/
 theorem synchronized_or_transition
@@ -157,8 +175,7 @@ theorem ConnectivityTransitionWitness.not_reachable_deleteFootprint
       secondGraph.deleteEdges
         (pathFootprintValues family : Set (Sym2 V)) := by
     simpa only [firstGraph, secondGraph] using
-      pathAlternatingGraphs_deleteFootprint_eq rotation minimal family
-        pair.pathSection minimizer pair.first pair.second pair.absentColor_eq
+      deleteFootprint_eq rotation minimal family minimizer pair
   have hsecondDeleted : (secondGraph.deleteEdges
       (pathFootprintValues family : Set (Sym2 V))).Reachable
         (pathBoundaryVertex family witness.left)
@@ -171,6 +188,113 @@ theorem ConnectivityTransitionWitness.not_reachable_deleteFootprint
     hsecondDeleted.mono (secondGraph.deleteEdges_le
       (pathFootprintValues family : Set (Sym2 V)))
   exact witness.reachabilityDiffers ⟨fun _ => hsecond, fun _ => hfirst⟩
+
+set_option maxHeartbeats 800000 in
+/-- The exact finite boundary closures at the two endpoint coordinates differ
+on the transition witness.  This is the finite-state form of the remaining
+component synchronization obstruction. -/
+theorem ConnectivityTransitionWitness.boundaryClosureDiffers
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (family : PairDeletionColoringFamily (G := G) (Fin 9))
+    (minimizer : ResidualDefectMinimizer G)
+    (pair : CoherentGeometricSweepPairReceipt
+      rotation minimal family minimizer)
+    (witness : ConnectivityTransitionWitness
+      rotation minimal family minimizer pair) :
+    let left : PathBoundary family :=
+      ⟨pathBoundaryVertex family witness.left,
+        pathBoundaryVertex_mem family witness.left⟩
+    let right : PathBoundary family :=
+      ⟨pathBoundaryVertex family witness.right,
+        pathBoundaryVertex_mem family witness.right⟩
+    ¬ (Relation.ReflTransGen
+          (pathBoundaryStep rotation minimal family pair.pathSection minimizer
+            pair.first) left right ↔
+        Relation.ReflTransGen
+          (pathBoundaryStep rotation minimal family pair.pathSection minimizer
+            pair.second) left right) := by
+  dsimp only
+  let firstGraph := pathAlternatingGraph rotation minimal family
+    pair.pathSection minimizer pair.first
+  let secondGraph := pathAlternatingGraph rotation minimal family
+    pair.pathSection minimizer pair.second
+  have hfirst := pathAlternatingGraph_reachable_iff_boundaryClosure
+    rotation minimal family pair.pathSection minimizer pair.first
+      (pathBoundaryVertex_mem family witness.left)
+      (pathBoundaryVertex_mem family witness.right)
+  have hsecond := pathAlternatingGraph_reachable_iff_boundaryClosure
+    rotation minimal family pair.pathSection minimizer pair.second
+      (pathBoundaryVertex_mem family witness.left)
+      (pathBoundaryVertex_mem family witness.right)
+  intro hclosure
+  apply witness.reachabilityDiffers
+  exact hfirst.trans (hclosure.trans hsecond.symm)
+
+/-- In the nonsynchronized case, one endpoint graph has a connecting walk
+which necessarily traverses a named edge of the finite path footprint. -/
+theorem ConnectivityTransitionWitness.exists_walk_hitting_pathFootprint
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (family : PairDeletionColoringFamily (G := G) (Fin 9))
+    (minimizer : ResidualDefectMinimizer G)
+    (pair : CoherentGeometricSweepPairReceipt
+      rotation minimal family minimizer)
+    (witness : ConnectivityTransitionWitness
+      rotation minimal family minimizer pair) :
+    (∃ walk : (pathAlternatingGraph rotation minimal family pair.pathSection
+          minimizer pair.first).Walk
+            (pathBoundaryVertex family witness.left)
+            (pathBoundaryVertex family witness.right),
+        ∃ edge ∈ walk.edges, edge ∈ pathFootprintValues family) ∨
+      (∃ walk : (pathAlternatingGraph rotation minimal family pair.pathSection
+          minimizer pair.second).Walk
+            (pathBoundaryVertex family witness.left)
+            (pathBoundaryVertex family witness.right),
+        ∃ edge ∈ walk.edges, edge ∈ pathFootprintValues family) := by
+  classical
+  let firstGraph := pathAlternatingGraph rotation minimal family
+    pair.pathSection minimizer pair.first
+  let secondGraph := pathAlternatingGraph rotation minimal family
+    pair.pathSection minimizer pair.second
+  have hdeletedEq : firstGraph.deleteEdges
+        (pathFootprintValues family : Set (Sym2 V)) =
+      secondGraph.deleteEdges
+        (pathFootprintValues family : Set (Sym2 V)) := by
+    simpa only [firstGraph, secondGraph] using
+      deleteFootprint_eq rotation minimal family minimizer pair
+  by_cases hfirst : firstGraph.Reachable
+      (pathBoundaryVertex family witness.left)
+      (pathBoundaryVertex family witness.right)
+  · have hnotSecond : ¬ secondGraph.Reachable
+        (pathBoundaryVertex family witness.left)
+        (pathBoundaryVertex family witness.right) := by
+      intro hsecond
+      exact witness.reachabilityDiffers
+        ⟨fun _ => hsecond, fun _ => hfirst⟩
+    rcases hfirst with ⟨walk⟩
+    rcases walk.exists_edgeDisagreement_of_not_reachable hnotSecond with
+      ⟨edge, hedgeWalk, hedgeDifference⟩
+    left
+    refine ⟨walk, edge, hedgeWalk, ?_⟩
+    exact SimpleGraph.edgeDisagreementFinset_subset_of_deleteEdges_eq
+      firstGraph secondGraph (pathFootprintValues family) hdeletedEq
+        hedgeDifference
+  · have hsecond : secondGraph.Reachable
+        (pathBoundaryVertex family witness.left)
+        (pathBoundaryVertex family witness.right) := by
+      by_contra hnotSecond
+      apply witness.reachabilityDiffers
+      exact ⟨fun h => False.elim (hfirst h),
+        fun h => False.elim (hnotSecond h)⟩
+    rcases hsecond with ⟨walk⟩
+    rcases walk.exists_edgeDisagreement_of_not_reachable hfirst with
+      ⟨edge, hedgeWalk, hedgeDifference⟩
+    right
+    refine ⟨walk, edge, hedgeWalk, ?_⟩
+    exact SimpleGraph.edgeDisagreementFinset_subset_of_deleteEdges_eq
+      secondGraph firstGraph (pathFootprintValues family) hdeletedEq.symm
+        hedgeDifference
 
 end
 

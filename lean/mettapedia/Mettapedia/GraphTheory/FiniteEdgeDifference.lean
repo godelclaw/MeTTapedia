@@ -154,6 +154,20 @@ theorem Walk.reachable_of_avoids_edgeDisagreement
     second.Reachable left right :=
   (walk.transferAvoidingEdgeDisagreement havoids).reachable
 
+/-- If a walk in the first graph joins vertices which are disconnected in the
+second, some edge of the walk witnesses the finite graph disagreement. -/
+theorem Walk.exists_edgeDisagreement_of_not_reachable
+    {first second : SimpleGraph V} {left right : V}
+    (walk : first.Walk left right)
+    (hnot : ¬ second.Reachable left right) :
+    ∃ edge ∈ walk.edges, edge ∈ edgeDisagreementFinset first second := by
+  by_contra hnone
+  apply hnot
+  apply walk.reachable_of_avoids_edgeDisagreement
+  intro edge hedge hdisagreement
+  apply hnone
+  exact ⟨edge, hedge, hdisagreement⟩
+
 /-- Component-valued form of
 `Walk.reachable_of_avoids_edgeDisagreement`. -/
 theorem Walk.connectedComponentMk_eq_of_avoids_edgeDisagreement
