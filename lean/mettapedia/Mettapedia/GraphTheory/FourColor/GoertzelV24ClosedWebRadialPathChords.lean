@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebRadialComponents
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebFaceTracing
+import Mettapedia.GraphTheory.PathChord
 
 /-!
 # Same-path chords on the v24 closed-web radial paths
@@ -252,49 +253,6 @@ theorem mapped_walk_edges_color_pair
         rw [edgeEq]
         simpa using hcolor
       · exact ih hedge
-
-section WalkInterval
-
-omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
-/-- The oriented interval of a walk between two ordered vertex positions. -/
-def walkInterval {start finish : V} (walk : G.Walk start finish)
-    (left right : Nat) (horder : left ≤ right) :
-    G.Walk (walk.getVert left) (walk.getVert right) :=
-  ((walk.drop left).take (right - left)).copy rfl (by
-    simp [SimpleGraph.Walk.drop_getVert, Nat.add_sub_of_le horder])
-
-omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
-/-- Taking an interval of a path again gives a path. -/
-theorem walkInterval_isPath {start finish : V}
-    {walk : G.Walk start finish} (hwalk : walk.IsPath)
-    (left right : Nat) (horder : left ≤ right) :
-    (walkInterval walk left right horder).IsPath := by
-  simpa [walkInterval] using (hwalk.drop left).take (right - left)
-
-omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
-/-- Within the range of the original walk, an interval has the expected
-number of edges. -/
-theorem walkInterval_length {start finish : V}
-    (walk : G.Walk start finish) (left right : Nat)
-    (horder : left ≤ right) (hright : right ≤ walk.length) :
-    (walkInterval walk left right horder).length = right - left := by
-  simp only [walkInterval, SimpleGraph.Walk.length_copy,
-    SimpleGraph.Walk.take_length, SimpleGraph.Walk.drop_length]
-  rw [Nat.min_eq_left]
-  omega
-
-omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
-/-- Vertex lookup inside a bounded walk interval is lookup at the translated
-position in the original walk. -/
-theorem walkInterval_getVert {start finish : V}
-    (walk : G.Walk start finish) (left right position : Nat)
-    (horder : left ≤ right) (hposition : position ≤ right - left) :
-    (walkInterval walk left right horder).getVert position =
-      walk.getVert (left + position) := by
-  simp [walkInterval, SimpleGraph.Walk.take_getVert,
-    SimpleGraph.Walk.drop_getVert, Nat.min_eq_right hposition]
-
-end WalkInterval
 
 section RadialPathChord
 

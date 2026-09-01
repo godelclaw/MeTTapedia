@@ -7535,6 +7535,35 @@ is chosen, the remaining two images are forced.  Apply this generic statement
 to the simple ambient path witnessing the residual return.
 \end{proof}
 
+\begin{lemma}[exact face separator from an ambient-return chord]
+\label{lem:ambient-return-chord-face-separator}
+\Sverified{Mettapedia.GraphTheory.SamePathChordBoundary.cycleWalk_isCycle}
+\Sverified{Mettapedia.GraphTheory.CubicPathAttachment.ChordAttachment.boundary}
+\Sverified{Mettapedia.GraphTheory.Embedding.exists_exactFaceCut_of_samePathChordBoundary}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnPathAttachment.ambientReturnChordBoundary_cycleWalk_isCycle}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnChordSeparator.exists_exactFaceCut_of_ambientReturnChord}
+Suppose the canonical third edge at an internal position of an ambient
+residual-return path comes back to a nonconsecutive position of that path.
+Order its two path coordinates and join the third edge to the intervening path
+interval.  Their union is a simple cycle.  In a connected cellular sphere map
+there is consequently an exact binary face labeling that changes value across
+precisely the edges of this chord and path interval.
+
+This separator is pointwise.  The lemma neither identifies which local turn
+is the inside of the cycle nor asserts that separators produced by distinct
+third edges are nested, disjoint, or a bounded interface.
+\end{lemma}
+
+\begin{proof}
+The third edge cannot join consecutive path positions, since it is the unique
+edge outside the two path edges at its initial position.  The interval of a
+simple path between the ordered endpoints is again simple, has length greater
+than one, and does not contain the third edge.  Traversing the chord and
+returning along the reverse interval therefore gives a simple cycle.  Apply
+the exact face-cut theorem for closed trails to this cycle and use that its
+edge set is exactly the chord together with the interval edges.
+\end{proof}
+
 \begin{corollary}[pointwise geometric sweep alternatives across the mesh]
 \label{cor:pointwise-mesh-residual-sweep-alternative}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.MeshResidualReturnSweep.exists_geometricSweepReceipt_at_every_globalMeshStep}
