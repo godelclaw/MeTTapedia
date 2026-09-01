@@ -192,6 +192,121 @@ noncomputable def boundary
   subarc_isPath := chord.subarc_isPath hpath hregular position
   chord_not_mem_subarc := chord.chord_not_mem_subarc hpath hregular position
 
+/-! ## Coordinate support of the chord cycle -/
+
+/-- Every vertex of the intervening chord subarc occurs at a path coordinate
+between the two ordered chord endpoints. -/
+theorem exists_coordinate_between_of_mem_subarc_support
+    {path : G.Walk start finish} (hpath : path.IsPath)
+    (hregular : G.IsRegularOfDegree 3)
+    (position : InternalPosition path)
+    (chord : ChordAttachment hpath hregular position)
+    {vertex : V}
+    (hvertex : vertex ∈ (chord.subarc hpath hregular position).support) :
+    ∃ coordinate : Nat,
+      (chord.orderedCoordinates hpath hregular position).left.val ≤ coordinate ∧
+        coordinate ≤
+          (chord.orderedCoordinates hpath hregular position).right.val ∧
+        path.getVert coordinate = vertex := by
+  rcases SimpleGraph.Walk.mem_support_iff_exists_getVert.mp hvertex with
+    ⟨offset, hoffsetVertex, hoffsetBound⟩
+  have hrightBound :
+      (chord.orderedCoordinates hpath hregular position).right.val ≤
+        path.length := by
+    exact Nat.le_of_lt_succ
+      (chord.orderedCoordinates hpath hregular position).right.isLt
+  have hlength := walkInterval_length path
+    (chord.orderedCoordinates hpath hregular position).left
+    (chord.orderedCoordinates hpath hregular position).right
+    chord.orderedCoordinates.left_lt_right.le hrightBound
+  have hoffsetSpan : offset ≤
+      (chord.orderedCoordinates hpath hregular position).right.val -
+        (chord.orderedCoordinates hpath hregular position).left.val := by
+    change offset ≤ (walkInterval path _ _ _).length at hoffsetBound
+    rw [hlength] at hoffsetBound
+    exact hoffsetBound
+  have hcoordinateRight :
+      (chord.orderedCoordinates hpath hregular position).left.val + offset ≤
+        (chord.orderedCoordinates hpath hregular position).right.val := by
+    calc
+      (chord.orderedCoordinates hpath hregular position).left.val + offset ≤
+          (chord.orderedCoordinates hpath hregular position).left.val +
+            ((chord.orderedCoordinates hpath hregular position).right.val -
+              (chord.orderedCoordinates hpath hregular position).left.val) :=
+        Nat.add_le_add_left hoffsetSpan _
+      _ = (chord.orderedCoordinates hpath hregular position).right.val :=
+        Nat.add_sub_of_le chord.orderedCoordinates.left_lt_right.le
+  refine ⟨
+    (chord.orderedCoordinates hpath hregular position).left.val + offset,
+    by omega, hcoordinateRight, ?_⟩
+  rw [← hoffsetVertex]
+  exact (walkInterval_getVert path
+    (chord.orderedCoordinates hpath hregular position).left
+    (chord.orderedCoordinates hpath hregular position).right offset
+    chord.orderedCoordinates.left_lt_right.le hoffsetSpan).symm
+
+/-- Every endpoint of an edge of the chord cycle occurs at a path coordinate
+between the ordered chord endpoints. -/
+theorem exists_coordinate_between_of_mem_boundary_cycleWalk_edges
+    {path : G.Walk start finish} (hpath : path.IsPath)
+    (hregular : G.IsRegularOfDegree 3)
+    (position : InternalPosition path)
+    (chord : ChordAttachment hpath hregular position)
+    (edge : G.edgeSet)
+    (hedge : edge.1 ∈ (chord.boundary hpath hregular position).cycleWalk.edges)
+    {vertex : V} (hvertex : vertex ∈ (edge.1 : Sym2 V)) :
+    ∃ coordinate : Nat,
+      (chord.orderedCoordinates hpath hregular position).left.val ≤ coordinate ∧
+        coordinate ≤
+          (chord.orderedCoordinates hpath hregular position).right.val ∧
+        path.getVert coordinate = vertex := by
+  change edge.1 ∈
+    ((chord.subarc hpath hregular position).reverse.cons
+      (chord.chordDart hpath hregular position).adj).edges at hedge
+  simp only [SimpleGraph.Walk.edges_cons, List.mem_cons,
+    SimpleGraph.Walk.edges_reverse, List.mem_reverse] at hedge
+  rcases hedge with hedgeChord | hedgeSubarc
+  · rw [hedgeChord] at hvertex
+    rcases Sym2.mem_iff.mp hvertex with hleft | hright
+    · exact ⟨
+        (chord.orderedCoordinates hpath hregular position).left.val,
+        le_rfl, chord.orderedCoordinates.left_lt_right.le, hleft.symm⟩
+    · exact ⟨
+        (chord.orderedCoordinates hpath hregular position).right.val,
+        chord.orderedCoordinates.left_lt_right.le, le_rfl, hright.symm⟩
+  · exact chord.exists_coordinate_between_of_mem_subarc_support
+      hpath hregular position
+      ((chord.subarc hpath hregular position).mem_support_of_mem_edges
+        hedgeSubarc hvertex)
+
+/-- Every edge incident to a path position strictly outside a chord's closed
+endpoint interval avoids the chord cycle. -/
+theorem incidentEdge_not_mem_boundary_cycleWalk_of_coordinate_outside
+    {path : G.Walk start finish} (hpath : path.IsPath)
+    (hregular : G.IsRegularOfDegree 3)
+    (position : InternalPosition path)
+    (chord : ChordAttachment hpath hregular position)
+    (coordinate : Nat) (hcoordinate : coordinate ≤ path.length)
+    (houtside :
+      coordinate <
+          (chord.orderedCoordinates hpath hregular position).left.val ∨
+        (chord.orderedCoordinates hpath hregular position).right.val <
+          coordinate)
+    (edge : G.edgeSet)
+    (hincident : path.getVert coordinate ∈ (edge.1 : Sym2 V)) :
+    edge.1 ∉ (chord.boundary hpath hregular position).cycleWalk.edges := by
+  intro hedge
+  rcases chord.exists_coordinate_between_of_mem_boundary_cycleWalk_edges
+      hpath hregular position edge hedge hincident with
+    ⟨inside, hleft, hright, hinside⟩
+  have hinsideBound : inside ≤ path.length := by
+    have hrightBound :=
+      (chord.orderedCoordinates hpath hregular position).right.isLt
+    omega
+  have hcoordinates : inside = coordinate :=
+    hpath.getVert_injOn hinsideBound hcoordinate hinside
+  rcases houtside with hbefore | hafter <;> omega
+
 end ChordAttachment
 
 end Mettapedia.GraphTheory.CubicPathAttachment
