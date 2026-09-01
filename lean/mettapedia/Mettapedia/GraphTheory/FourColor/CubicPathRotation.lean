@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.CubicPathAttachment
+import Mettapedia.GraphTheory.CubicPathChord
 import Mettapedia.GraphTheory.FourColor.SimpleGraphRotationSystem
 
 /-!
@@ -84,6 +84,30 @@ noncomputable def attachmentDart {path : G.Walk start finish}
     (attachmentDart hpath hregular position).snd =
       attachmentNeighbor hpath hregular position :=
   rfl
+
+/-- At the earlier endpoint of a canonically oriented chord attachment, the
+generic attachment dart is exactly the ordered chord dart. -/
+theorem attachmentDart_eq_chordDart_of_isLeftEndpoint
+    {path : G.Walk start finish} (hpath : path.IsPath)
+    (hregular : G.IsRegularOfDegree 3)
+    (position : InternalPosition path)
+    (chord : ChordAttachment hpath hregular position)
+    (hleft : chord.IsLeftEndpoint hpath hregular position) :
+    attachmentDart hpath hregular position =
+      chord.chordDart hpath hregular position := by
+  apply SimpleGraph.Dart.ext
+  apply Prod.ext
+  · change path.getVert position.index =
+      path.getVert
+        (chord.orderedCoordinates hpath hregular position).left
+    apply congrArg path.getVert
+    simpa using congrArg Fin.val hleft
+  · change attachmentNeighbor hpath hregular position =
+      path.getVert
+        (chord.orderedCoordinates hpath hregular position).right
+    rw [← chord.endpoint_eq,
+      chord.otherPosition_eq_right_of_isLeftEndpoint
+        hpath hregular position hleft]
 
 /-- The predecessor and successor of an internal position on a simple path are
 distinct. -/

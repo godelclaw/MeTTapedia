@@ -996,6 +996,7 @@ import Mettapedia.GraphTheory.FourColor.Compositional.PhasedNoncrossingSweep
 import Mettapedia.GraphTheory.FourColor.Compositional.RestrictedNoncrossingSweep
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnCarrierSweep
 import Mettapedia.GraphTheory.FourColor.CubicPathRotation
+import Mettapedia.GraphTheory.Embedding.CubicPathChord
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnPathAttachment
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnChordSeparator
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweep

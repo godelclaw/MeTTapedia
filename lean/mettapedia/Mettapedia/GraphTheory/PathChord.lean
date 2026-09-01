@@ -57,6 +57,16 @@ theorem walkInterval_getVert {V : Type u} {G : SimpleGraph V}
   simp [walkInterval, SimpleGraph.Walk.take_getVert,
     SimpleGraph.Walk.drop_getVert, Nat.min_eq_right hposition]
 
+/-- The dart list of a walk interval is the corresponding slice of the
+ambient walk's dart list. -/
+theorem walkInterval_darts {V : Type u} {G : SimpleGraph V}
+    {start finish : V} (walk : G.Walk start finish)
+    (left right : Nat) (horder : left ≤ right) :
+    (walkInterval walk left right horder).darts =
+      (walk.darts.drop left).take (right - left) := by
+  simp [walkInterval, SimpleGraph.Walk.darts_take,
+    SimpleGraph.Walk.darts_drop]
+
 /-- A dart in a bounded walk prefix is based at an original walk coordinate
 strictly below the bound. -/
 theorem exists_coordinate_lt_of_mem_darts_take
@@ -359,6 +369,17 @@ theorem cycleWalk_isCycle (boundary : SamePathChordBoundary G) :
   rw [cycleWalk, SimpleGraph.Walk.cons_isCycle_iff]
   refine ⟨boundary.subarc_isPath.reverse, ?_⟩
   simpa [SimpleGraph.Dart.edge] using boundary.chord_not_mem_subarc
+
+omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+/-- The first dart of the oriented chord cycle is its chord dart. -/
+theorem firstDart_cycleWalk (boundary : SamePathChordBoundary G) :
+    boundary.cycleWalk.firstDart boundary.cycleWalk_isCycle.not_nil =
+      boundary.chord := by
+  apply SimpleGraph.Dart.ext
+  apply Prod.ext
+  · rfl
+  · simpa [cycleWalk] using
+      SimpleGraph.Walk.snd_cons boundary.subarc.reverse boundary.chord.adj
 
 /-- The generic wall contains exactly the edges of the chord cycle. -/
 theorem mem_wall_iff_mem_cycleWalk_edges
