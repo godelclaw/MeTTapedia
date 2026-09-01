@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.Compositional.AmbientReturnAttachmentSweep
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnCarrierSweep
+import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSeparatorExitSide
 
 /-!
 # Compressing both coordinates of a physical residual return
@@ -30,6 +31,7 @@ open GoertzelV24TwoEdgeCutMinimality
 open MatchingParity
 open ResidualReturnCarrierSweep
 open ResidualReturnPathAttachment
+open ResidualReturnSeparatorExitSide
 open ResidualReturnSweepCyclicCut
 open SimpleGraph
 open SimpleGraphDartRotation
@@ -56,11 +58,8 @@ def HasNestedAmbientAttachmentSweepAlternative
     orderedReturnShore rotation hG sigma hSigma bond outer.left =
         orderedReturnShore rotation hG sigma hSigma bond inner.left ∧
       outer.left < inner.left ∧ inner.right < outer.right ∧
-      ((∃ position : InternalPosition
-          (orderedChordAmbientPath hG sigma hSigma bond.site inner),
-        IsExternalAttachment
-          (orderedChordAmbientPath_isPath hG sigma hSigma bond.site inner)
-          (regularOfDegreeThree_of_cubicIncidentTriples hG) position) ∨
+      (Nonempty
+          (AttachmentExitSideReceipt rotation hG sigma hSigma bond.site inner) ∨
         ∃ closure : PathCycleClosure
             (orderedChordAmbientPath hG sigma hSigma bond.site inner),
           (∃ family cut,
@@ -104,8 +103,13 @@ theorem hasNestedAmbientAttachmentSweepAlternative
       bond depth spacing := by
   rcases hlong with ⟨outer, inner, hshore, hleft, hright, hcard⟩
   refine ⟨outer, inner, hshore, hleft, hright, ?_⟩
-  exact exists_externalAttachment_or_deepTurnStack_or_spacedSweepRepeat
-    rotation minimal hG sigma hSigma bond.site inner depth spacing hcard
+  rcases exists_externalAttachment_or_deepTurnStack_or_spacedSweepRepeat
+      rotation minimal hG sigma hSigma bond.site inner depth spacing hcard with
+    ⟨position, hexternal⟩ | hsweep
+  · exact Or.inl
+      (nonempty_attachmentExitSideReceipt_of_external rotation minimal hG sigma
+        hSigma bond.site inner position hexternal)
+  · exact Or.inr hsweep
 
 /-- One common component bound large enough for both the carrier and ambient
 two-stack state spaces. -/
