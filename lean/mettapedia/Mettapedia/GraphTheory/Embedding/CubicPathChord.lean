@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.Embedding.PathChord
 import Mettapedia.GraphTheory.FourColor.CubicPathRotation
+import Mettapedia.GraphTheory.FourColor.GoertzelV24FaceCutVertexAvoidingTransport
 import Mettapedia.GraphTheory.FourColor.GoertzelV24LocalFaceCutCycleWalkTransport
 
 /-!
@@ -19,6 +20,7 @@ open Mettapedia.GraphTheory.CubicPathAttachment
 open Mettapedia.GraphTheory.FourColor
 open Mettapedia.GraphTheory.FourColor.CubicPathRotation
 open Mettapedia.GraphTheory.FourColor.GoertzelV24FaceCutTransport
+open Mettapedia.GraphTheory.FourColor.GoertzelV24FaceCutVertexAvoidingTransport
 open Mettapedia.GraphTheory.FourColor.GoertzelV24FaceDualConnectedness
 open Mettapedia.GraphTheory.FourColor.GoertzelV24FaceOrbitIncidence
 open Mettapedia.GraphTheory.FourColor.GoertzelV24InducedHexCorridorTypes
@@ -32,6 +34,261 @@ universe u
 variable {V : Type u} [Fintype V] [DecidableEq V]
   {G : SimpleGraph V} [DecidableRel G.Adj]
   {start finish : V}
+
+/-- Every edge at a based vertex of the complementary outer-cycle interval
+avoids the selected chord cycle.  Path-suffix and path-prefix vertices are
+outside the selected coordinate interval; vertices genuinely in the closing
+arc are excluded by simplicity of the outer cycle. -/
+theorem incidentEdge_not_mem_chordCycle_of_mem_exteriorInterval_darts
+    {path : G.Walk start finish} (closure : PathCycleClosure path)
+    (hpath : path.IsPath) (hregular : G.IsRegularOfDegree 3)
+    (selectedPosition : InternalPosition path)
+    (selected : ChordAttachment hpath hregular selectedPosition)
+    (hselectedLeft : selected.IsLeftEndpoint hpath hregular selectedPosition)
+    (outerRight : Fin (path.length + 1))
+    (hright :
+      (selected.orderedCoordinates hpath hregular selectedPosition).right <
+        outerRight)
+    (based : G.Dart)
+    (hbased : based ∈
+      (closure.exteriorInterval
+        (selected.orderedCoordinates hpath hregular selectedPosition).left
+        outerRight).darts)
+    (incident : G.Dart) (hincident : incident.fst = based.fst) :
+    incident.edge ∉
+      (selected.boundary hpath hregular selectedPosition).cycleWalk.edges := by
+  rcases closure.based_vertex_of_mem_exteriorInterval_darts
+      (selected.orderedCoordinates hpath hregular selectedPosition).left
+      outerRight based hbased with
+    ⟨coordinate, houtside, hcoordinateBound, hbase⟩ | hcomplement
+  · change (⟨incident.edge, incident.edge_mem⟩ : G.edgeSet).1 ∉
+      (selected.boundary hpath hregular selectedPosition).cycleWalk.edges
+    refine selected.incidentEdge_not_mem_boundary_cycleWalk_of_coordinate_outside
+      hpath hregular selectedPosition coordinate hcoordinateBound ?_
+        ⟨incident.edge, incident.edge_mem⟩ ?_
+    · rcases houtside with hbefore | hafter
+      · exact Or.inl hbefore
+      · exact Or.inr (lt_of_lt_of_le hright hafter)
+    · change path.getVert coordinate ∈ incident.edge
+      rw [← hbase, ← hincident]
+      simp [SimpleGraph.Dart.edge, Sym2.mem_iff]
+  · intro hedge
+    have hvertex : incident.fst ∈ (incident.edge : Sym2 V) := by
+      simp [SimpleGraph.Dart.edge, Sym2.mem_iff]
+    rcases selected.exists_coordinate_between_of_mem_boundary_cycleWalk_edges
+        hpath hregular selectedPosition
+        ⟨incident.edge, incident.edge_mem⟩ hedge hvertex with
+      ⟨inside, hleft, _hrightInside, hinside⟩
+    have hselectedCoordinate : selectedPosition.index =
+        (selected.orderedCoordinates hpath hregular
+          selectedPosition).left.val := by
+      exact congrArg Fin.val hselectedLeft
+    change selectedPosition.index =
+      (selected.orderedCoordinates hpath hregular
+        selectedPosition).left.val at hselectedCoordinate
+    have hinsidePositive : inside ≠ 0 := by
+      have hpositionPositive : 0 < selectedPosition.index :=
+        Nat.pos_of_ne_zero selectedPosition.index_ne_zero
+      omega
+    have hpathNotNil : ¬path.Nil := by
+      rw [SimpleGraph.Walk.not_nil_iff_lt_length]
+      exact lt_of_le_of_lt (Nat.zero_le selectedPosition.index)
+        selectedPosition.index_lt_length
+    have hpathTail : path.getVert inside ∈ path.support.tail :=
+      path.getVert_mem_tail_support hpathNotNil hinsidePositive
+    have hbasedEq : based.fst = path.getVert inside :=
+      hincident.symm.trans hinside.symm
+    rw [hbasedEq] at hcomplement
+    exact (List.disjoint_left.mp closure.tail_support_disjoint)
+      hpathTail hcomplement
+
+/-- The final dart of the complementary outer-cycle interval enters the
+selected left endpoint along the ambient path, so reversing it gives the
+selected position's backward dart. -/
+theorem symm_lastDart_exteriorInterval_eq_backwardDart
+    {path : G.Walk start finish} (closure : PathCycleClosure path)
+    (hpath : path.IsPath) (hregular : G.IsRegularOfDegree 3)
+    (selectedPosition : InternalPosition path)
+    (selected : ChordAttachment hpath hregular selectedPosition)
+    (hselectedLeft : selected.IsLeftEndpoint hpath hregular selectedPosition)
+    (outerRight : Fin (path.length + 1))
+    (hnil : ¬(closure.exteriorInterval
+      (selected.orderedCoordinates hpath hregular selectedPosition).left
+      outerRight).Nil) :
+    ((closure.exteriorInterval
+      (selected.orderedCoordinates hpath hregular selectedPosition).left
+      outerRight).lastDart hnil).symm = backwardDart selectedPosition := by
+  let left :=
+    (selected.orderedCoordinates hpath hregular selectedPosition).left
+  let exterior := closure.exteriorInterval left outerRight
+  have hleftCoordinate : selectedPosition.index = left.val := by
+    exact congrArg Fin.val hselectedLeft
+  have hleftPositive : 0 < left.val := by
+    rw [← hleftCoordinate]
+    exact Nat.pos_of_ne_zero selectedPosition.index_ne_zero
+  have hleftBound : left.val ≤ path.length := Nat.lt_succ_iff.mp left.isLt
+  have hinitialNe : path.darts.take left.val ≠ [] := by
+    intro hempty
+    have hlength := congrArg List.length hempty
+    simp [SimpleGraph.Walk.length_darts, Nat.min_eq_left hleftBound] at hlength
+    exact (Nat.ne_of_gt hleftPositive) (by
+      simpa using congrArg Fin.val hlength)
+  have hdartsNe : exterior.darts ≠ [] :=
+    SimpleGraph.Walk.darts_eq_nil.not.mpr hnil
+  have hlastExterior : exterior.darts.getLast hdartsNe =
+      (path.darts.take left.val).getLast hinitialNe := by
+    have hrestNe :
+        closure.complement.darts ++ path.darts.take left.val ≠ [] :=
+      List.append_ne_nil_of_right_ne_nil _ hinitialNe
+    have hpiecesNe :
+        path.darts.drop outerRight ++
+          (closure.complement.darts ++ path.darts.take left.val) ≠ [] :=
+      List.append_ne_nil_of_right_ne_nil _ hrestNe
+    calc
+      exterior.darts.getLast hdartsNe =
+          (path.darts.drop outerRight ++
+            (closure.complement.darts ++ path.darts.take left.val)).getLast
+              hpiecesNe :=
+        List.getLast_congr hdartsNe hpiecesNe
+          (closure.exteriorInterval_darts left outerRight)
+      _ = (closure.complement.darts ++
+            path.darts.take left.val).getLast hrestNe :=
+        List.getLast_append_of_right_ne_nil _ _ hrestNe
+      _ = (path.darts.take left.val).getLast hinitialNe :=
+        List.getLast_append_of_right_ne_nil _ _ hinitialNe
+  have hlastPrefix : (path.darts.take left.val).getLast hinitialNe =
+      (backwardDart selectedPosition).symm := by
+    rw [List.getLast_eq_getElem]
+    simp only [List.length_take, SimpleGraph.Walk.length_darts,
+      Nat.min_eq_left hleftBound]
+    rw [List.getElem_take,
+      SimpleGraph.Walk.darts_getElem_eq_getVert]
+    apply SimpleGraph.Dart.ext
+    apply Prod.ext
+    · change path.getVert (left.val - 1) =
+        path.getVert (selectedPosition.index - 1)
+      rw [hleftCoordinate]
+    · change path.getVert (left.val - 1 + 1) =
+        path.getVert selectedPosition.index
+      have hone : 1 ≤ left.val := Nat.one_le_iff_ne_zero.mpr
+        (Nat.ne_of_gt hleftPositive)
+      rw [Nat.sub_add_cancel hone, ← hleftCoordinate]
+  have hlast : exterior.lastDart hnil =
+      (backwardDart selectedPosition).symm := by
+    rw [exterior.lastDart_eq_getLast_darts hnil]
+    exact hlastExterior.trans hlastPrefix
+  rw [hlast]
+  exact SimpleGraph.Dart.symm_symm _
+
+/-- The complementary arc of a simple outer cycle identifies the exterior
+face sides of two interleaving chords.  Starting at the later chord, cross
+its non-cut edge and follow the outer-cycle interval back to the selected
+left endpoint.  Every vertex on that interval avoids the selected chord
+cycle, so the exact-cut label is unchanged throughout. -/
+theorem labels_chordDart_eq_backwardDart_of_exteriorInterval
+    (rotation : Data G)
+    (hrotation : VertexRotationCyclic rotation.toRotationSystem)
+    {path : G.Walk start finish} (closure : PathCycleClosure path)
+    (hpath : path.IsPath) (hregular : G.IsRegularOfDegree 3)
+    (selectedPosition otherPosition : InternalPosition path)
+    (selected : ChordAttachment hpath hregular selectedPosition)
+    (other : ChordAttachment hpath hregular otherPosition)
+    (hselectedLeft : selected.IsLeftEndpoint hpath hregular selectedPosition)
+    {A : Type*} (labels : OrbitFace rotation.toRotationSystem → A)
+    (hexact : ∀ dart : rotation.toRotationSystem.D,
+      labels (dartOrbitFace rotation.toRotationSystem dart) ≠
+          labels (dartOrbitFace rotation.toRotationSystem
+            (rotation.toRotationSystem.alpha dart)) ↔
+        (rotation.toRotationSystem.edgeOf dart).1 ∈
+          (selected.boundary hpath hregular selectedPosition).cycleWalk.edges)
+    (hright :
+      (selected.orderedCoordinates hpath hregular selectedPosition).right <
+        (other.orderedCoordinates hpath hregular otherPosition).right) :
+    labels (dartOrbitFace rotation.toRotationSystem
+        (other.chordDart hpath hregular otherPosition)) =
+      labels (dartOrbitFace rotation.toRotationSystem
+        (backwardDart selectedPosition)) := by
+  let RS := rotation.toRotationSystem
+  let selectedLeft :=
+    (selected.orderedCoordinates hpath hregular selectedPosition).left
+  let otherRight :=
+    (other.orderedCoordinates hpath hregular otherPosition).right
+  let exterior := closure.exteriorInterval selectedLeft otherRight
+  have hleftRight : selectedLeft < otherRight :=
+    lt_trans selected.orderedCoordinates.left_lt_right hright
+  have hnil : ¬exterior.Nil := by
+    exact closure.exteriorInterval_not_nil hpath selectedLeft otherRight
+      hleftRight
+  have hfirstMem : exterior.firstDart hnil ∈ exterior.darts :=
+    exterior.firstDart_mem_darts hnil
+  have hfirstBase :
+      RS.vertOf (exterior.firstDart hnil) =
+        RS.vertOf (RS.alpha
+          (other.chordDart hpath hregular otherPosition)) := by
+    change (exterior.firstDart hnil).fst =
+      (other.chordDart hpath hregular otherPosition).snd
+    change path.getVert otherRight = path.getVert
+      (other.orderedCoordinates hpath hregular otherPosition).right
+    rfl
+  have halphaOtherNotCut :
+      (RS.edgeOf (RS.alpha
+        (other.chordDart hpath hregular otherPosition))).1 ∉
+          (selected.boundary hpath hregular selectedPosition).cycleWalk.edges := by
+    apply incidentEdge_not_mem_chordCycle_of_mem_exteriorInterval_darts
+      closure hpath hregular selectedPosition selected hselectedLeft
+        otherRight hright (exterior.firstDart hnil) hfirstMem
+          (RS.alpha (other.chordDart hpath hregular otherPosition))
+    exact hfirstBase.symm
+  have hotherNotCut :
+      (RS.edgeOf (other.chordDart hpath hregular otherPosition)).1 ∉
+        (selected.boundary hpath hregular selectedPosition).cycleWalk.edges := by
+    rw [RS.edge_alpha] at halphaOtherNotCut
+    exact halphaOtherNotCut
+  have hcrossOther := labels_eq_alpha_of_not_cut RS labels
+    (fun edge : G.edgeSet ↦ edge.1 ∈
+      (selected.boundary hpath hregular selectedPosition).cycleWalk.edges)
+    hexact (other.chordDart hpath hregular otherPosition) hotherNotCut
+  have hturn :
+      labels (dartOrbitFace RS
+          (RS.alpha (other.chordDart hpath hregular otherPosition))) =
+        labels (dartOrbitFace RS (exterior.firstDart hnil)) := by
+    apply labels_eq_of_same_vertex_of_all_edges_not_cut
+      RS hrotation labels
+        (fun edge : G.edgeSet ↦ edge.1 ∈
+          (selected.boundary hpath hregular selectedPosition).cycleWalk.edges)
+        hexact
+    · exact hfirstBase
+    · intro incident hincident
+      apply incidentEdge_not_mem_chordCycle_of_mem_exteriorInterval_darts
+        closure hpath hregular selectedPosition selected hselectedLeft
+          otherRight hright (exterior.firstDart hnil) hfirstMem incident
+      exact hincident.trans hfirstBase.symm
+  have htransport :=
+    walk_labels_eq_firstDart_alpha_lastDart_of_vertices_avoid_cut
+      rotation hrotation labels
+        (fun edge : G.edgeSet ↦ edge.1 ∈
+          (selected.boundary hpath hregular selectedPosition).cycleWalk.edges)
+        hexact exterior hnil (by
+          intro based hbased incident hincident
+          exact incidentEdge_not_mem_chordCycle_of_mem_exteriorInterval_darts
+            closure hpath hregular selectedPosition selected hselectedLeft
+              otherRight hright based hbased incident hincident)
+  have hlastAlpha : RS.alpha (exterior.lastDart hnil) =
+      backwardDart selectedPosition := by
+    rw [SimpleGraphDartRotation.Data.toRotationSystem_alpha]
+    exact symm_lastDart_exteriorInterval_eq_backwardDart closure hpath hregular
+      selectedPosition selected hselectedLeft otherRight hnil
+  calc
+    labels (dartOrbitFace RS
+        (other.chordDart hpath hregular otherPosition)) =
+        labels (dartOrbitFace RS
+          (RS.alpha (other.chordDart hpath hregular otherPosition))) :=
+      hcrossOther
+    _ = labels (dartOrbitFace RS (exterior.firstDart hnil)) := hturn
+    _ = labels (dartOrbitFace RS
+          (RS.alpha (exterior.lastDart hnil))) := htransport
+    _ = labels (dartOrbitFace RS (backwardDart selectedPosition)) := by
+      rw [hlastAlpha]
 
 /-- If the earlier endpoint of another canonical chord lies strictly inside
 the selected chord interval, its backward path dart occurs in the selected
@@ -120,7 +377,6 @@ and the backward path dart at every strictly interior coordinate receive the
 same oriented-side label. -/
 theorem labels_chordDart_eq_backwardDart_of_left_inside
     (rotation : Data G)
-    (hcubic : rotation.toRotationSystem.IsCubic)
     (hrotation : VertexRotationCyclic rotation.toRotationSystem)
     {path : G.Walk start finish} (hpath : path.IsPath)
     (hregular : G.IsRegularOfDegree 3)
@@ -134,7 +390,7 @@ theorem labels_chordDart_eq_backwardDart_of_left_inside
           labels (dartOrbitFace rotation.toRotationSystem
             (rotation.toRotationSystem.alpha dart)) ↔
         (rotation.toRotationSystem.edgeOf dart).1 ∈
-          (selected.boundary hpath hregular selectedPosition).cycleWalk.edges)
+        (selected.boundary hpath hregular selectedPosition).cycleWalk.edges)
     (hleft :
       (selected.orderedCoordinates hpath hregular selectedPosition).left <
         (other.orderedCoordinates hpath hregular otherPosition).left)
@@ -146,6 +402,9 @@ theorem labels_chordDart_eq_backwardDart_of_left_inside
       labels (dartOrbitFace rotation.toRotationSystem
         (backwardDart otherPosition)) := by
   let boundary := selected.boundary hpath hregular selectedPosition
+  have hcubic : rotation.toRotationSystem.IsCubic :=
+    rotation.toRotationSystem_isCubic_iff.mpr
+      (SimpleGraph.isRegularOfDegree_instance_independent 3 _ _ hregular)
   have hcycle : boundary.cycleWalk.IsCycle := boundary.cycleWalk_isCycle
   have htransport := rotation.cycle_labels_eq_firstDart_dart_of_mem_darts_of_local_cubic
     hrotation labels boundary.cycleWalk hcycle hexact
@@ -164,7 +423,6 @@ algebra in the chord-noncrossing argument; the outer-cycle separation theorem
 is responsible for supplying `hanchor`. -/
 theorem attachmentTurn_ne_of_right_interleaving_exactFaceCut
     (rotation : Data G)
-    (hcubic : rotation.toRotationSystem.IsCubic)
     (hrotation : VertexRotationCyclic rotation.toRotationSystem)
     {path : G.Walk start finish} (hpath : path.IsPath)
     (hregular : G.IsRegularOfDegree 3)
@@ -232,7 +490,7 @@ theorem attachmentTurn_ne_of_right_interleaving_exactFaceCut
       labels (dartOrbitFace RS
           (selected.chordDart hpath hregular selectedPosition)) =
         labels (dartOrbitFace RS (backwardDart otherPosition)) :=
-    labels_chordDart_eq_backwardDart_of_left_inside rotation hcubic hrotation
+    labels_chordDart_eq_backwardDart_of_left_inside rotation hrotation
       hpath hregular selectedPosition otherPosition selected other hotherLeft
       labels hexact hleft hmiddle
   have hotherBackwardCut :
@@ -391,6 +649,46 @@ theorem attachmentTurn_ne_of_right_interleaving_exactFaceCut
       exact hanchor
     exact hselectedCutNe
       (hselectedSide'.trans (hotherTransport.symm.trans hanchor'))
+
+/-- Two canonical chords whose endpoints interleave on one arc of a simple
+outer cycle have different cubic attachment turns.  This is the global
+noncrossing theorem obtained by composing the local exact-cut rotation
+algebra with transport along the complementary outer-cycle arc. -/
+theorem attachmentTurn_ne_of_right_interleaving_exactFaceCut_of_pathCycleClosure
+    (rotation : Data G)
+    (hrotation : VertexRotationCyclic rotation.toRotationSystem)
+    {path : G.Walk start finish} (closure : PathCycleClosure path)
+    (hpath : path.IsPath) (hregular : G.IsRegularOfDegree 3)
+    (selectedPosition otherPosition : InternalPosition path)
+    (selected : ChordAttachment hpath hregular selectedPosition)
+    (other : ChordAttachment hpath hregular otherPosition)
+    (hselectedLeft : selected.IsLeftEndpoint hpath hregular selectedPosition)
+    (hotherLeft : other.IsLeftEndpoint hpath hregular otherPosition)
+    {A : Type*} (labels : OrbitFace rotation.toRotationSystem → A)
+    (hexact : ∀ dart : rotation.toRotationSystem.D,
+      labels (dartOrbitFace rotation.toRotationSystem dart) ≠
+          labels (dartOrbitFace rotation.toRotationSystem
+            (rotation.toRotationSystem.alpha dart)) ↔
+        (rotation.toRotationSystem.edgeOf dart).1 ∈
+          (selected.boundary hpath hregular selectedPosition).cycleWalk.edges)
+    (hleft :
+      (selected.orderedCoordinates hpath hregular selectedPosition).left <
+        (other.orderedCoordinates hpath hregular otherPosition).left)
+    (hmiddle :
+      (other.orderedCoordinates hpath hregular otherPosition).left <
+        (selected.orderedCoordinates hpath hregular selectedPosition).right)
+    (hright :
+      (selected.orderedCoordinates hpath hregular selectedPosition).right <
+        (other.orderedCoordinates hpath hregular otherPosition).right) :
+    attachmentTurn rotation hpath hregular selectedPosition ≠
+      attachmentTurn rotation hpath hregular otherPosition := by
+  apply attachmentTurn_ne_of_right_interleaving_exactFaceCut
+    rotation hrotation hpath hregular selectedPosition otherPosition
+      selected other hselectedLeft hotherLeft labels hexact hleft hmiddle
+        hright
+  exact labels_chordDart_eq_backwardDart_of_exteriorInterval rotation
+    hrotation closure hpath hregular selectedPosition otherPosition selected
+      other hselectedLeft labels hexact hright
 
 end
 

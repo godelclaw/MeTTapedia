@@ -185,6 +185,81 @@ theorem edges_disjoint (closure : PathCycleClosure path) :
   rw [SimpleGraph.Walk.edges_append, List.nodup_append'] at hnodup
   exact hnodup.2.2
 
+/-- The arc of the closing cycle that runs from a later path coordinate back
+to an earlier one without traversing the intervening path interval.  It is
+the path suffix, followed by the stored complementary arc, followed by the
+path prefix. -/
+noncomputable def exteriorInterval (closure : PathCycleClosure path)
+    (left right : Fin (path.length + 1)) :
+    G.Walk (path.getVert right) (path.getVert left) := by
+  have hleft : left.val ≤ path.length := Nat.lt_succ_iff.mp left.isLt
+  have hright : right.val ≤ path.length := Nat.lt_succ_iff.mp right.isLt
+  let suffix : G.Walk (path.getVert right) finish :=
+    (path.drop right).copy (by simp [Nat.min_eq_left hright]) rfl
+  let initialArc : G.Walk start (path.getVert left) :=
+    (path.take left).copy rfl (by simp [Nat.min_eq_left hleft])
+  exact suffix.append (closure.complement.append initialArc)
+
+/-- The exterior interval has the expected three-piece dart list. -/
+theorem exteriorInterval_darts (closure : PathCycleClosure path)
+    (left right : Fin (path.length + 1)) :
+    (closure.exteriorInterval left right).darts =
+      path.darts.drop right ++ (closure.complement.darts ++
+        path.darts.take left) := by
+  simp [exteriorInterval, SimpleGraph.Walk.darts_append,
+    SimpleGraph.Walk.darts_drop, SimpleGraph.Walk.darts_take]
+
+/-- An exterior interval from a strictly later coordinate to a strictly
+earlier one is nonempty. -/
+theorem exteriorInterval_not_nil (closure : PathCycleClosure path)
+    (hpath : path.IsPath) (left right : Fin (path.length + 1))
+    (horder : left < right) :
+    ¬(closure.exteriorInterval left right).Nil := by
+  apply SimpleGraph.Walk.not_nil_of_ne
+  intro hvertices
+  have hcoordinates := hpath.getVert_injOn
+    (Nat.lt_succ_iff.mp right.isLt) (Nat.lt_succ_iff.mp left.isLt) hvertices
+  omega
+
+/-- Every based dart of the exterior interval either occurs at a path
+coordinate outside the open interval from `left` to `right`, or is based in
+the interior of the stored complementary arc. -/
+theorem based_vertex_of_mem_exteriorInterval_darts
+    (closure : PathCycleClosure path)
+    (left right : Fin (path.length + 1)) (dart : G.Dart)
+    (hdart : dart ∈ (closure.exteriorInterval left right).darts) :
+    (∃ coordinate : Nat,
+        (coordinate < left.val ∨ right.val ≤ coordinate) ∧
+          coordinate ≤ path.length ∧
+          dart.fst = path.getVert coordinate) ∨
+      dart.fst ∈ closure.complement.support.tail := by
+  rw [closure.exteriorInterval_darts] at hdart
+  rcases List.mem_append.mp hdart with hsuffix | hrest
+  · have hright : right.val ≤ path.length := Nat.lt_succ_iff.mp right.isLt
+    have hsuffix' : dart ∈ (path.drop right).darts := by
+      simpa [SimpleGraph.Walk.darts_drop] using hsuffix
+    rcases exists_coordinate_ge_of_mem_darts_drop path right hright dart
+        hsuffix' with ⟨coordinate, hcoordinate, hbound, hbase⟩
+    exact Or.inl ⟨coordinate, Or.inr hcoordinate,
+      Nat.le_of_lt hbound, hbase⟩
+  · rcases List.mem_append.mp hrest with hcomplement | hinitial
+    · have hsupport : dart.fst ∈ closure.complement.support :=
+        closure.complement.dart_fst_mem_support_of_mem_darts hcomplement
+      rw [closure.complement.mem_support_iff] at hsupport
+      rcases hsupport with hfinish | hinterior
+      · left
+        refine ⟨path.length, Or.inr (Nat.lt_succ_iff.mp right.isLt),
+          le_rfl, ?_⟩
+        simpa [hfinish]
+      · exact Or.inr hinterior
+    · have hleft : left.val ≤ path.length := Nat.lt_succ_iff.mp left.isLt
+      have hinitial' : dart ∈ (path.take left).darts := by
+        simpa [SimpleGraph.Walk.darts_take] using hinitial
+      rcases exists_coordinate_lt_of_mem_darts_take path left hleft dart
+          hinitial' with ⟨coordinate, hcoordinate, hbase⟩
+      exact Or.inl ⟨coordinate, Or.inl hcoordinate,
+        Nat.le_trans (Nat.le_of_lt hcoordinate) hleft, hbase⟩
+
 end PathCycleClosure
 
 /-! ## Ordered chord coordinates -/
