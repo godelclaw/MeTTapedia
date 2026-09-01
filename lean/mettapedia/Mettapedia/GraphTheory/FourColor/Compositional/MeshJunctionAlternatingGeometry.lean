@@ -97,6 +97,19 @@ def outgoingRowStep (row : Fin a) (column : Fin b) :
   exact ⟨position.val,
     internalRowPosition_lt_len rotation ordered row column⟩
 
+/-- The two row steps incident with an internal branch are distinct. -/
+theorem incomingRowStep_ne_outgoingRowStep
+    (row : Fin a) (column : Fin b) :
+    incomingRowStep rotation ordered row column ≠
+      outgoingRowStep rotation ordered row column := by
+  intro heq
+  have hval := congrArg Fin.val heq
+  change
+    (internalRowPosition rotation ordered row column).val - 1 =
+      (internalRowPosition rotation ordered row column).val at hval
+  have hpositive := internalRowPosition_pos rotation ordered row column
+  omega
+
 /-- The incoming globally indexed row site at an internal branch. -/
 def incomingGlobalStep (row : Fin a) (column : Fin b) :
     GlobalMeshStep rotation ordered :=
