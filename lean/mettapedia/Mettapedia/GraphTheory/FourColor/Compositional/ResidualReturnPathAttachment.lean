@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.CubicPathAttachment
+import Mettapedia.GraphTheory.CubicPathChord
 import Mettapedia.GraphTheory.FourColor.CubicPathRotation
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweepCyclicCut
 
@@ -159,6 +159,40 @@ theorem ambientReturnChordAttachment_or_externalAttachment
   chordAttachment_or_externalAttachment
     (orderedChordAmbientPath_isPath hG sigma hSigma site chord)
     (regularOfDegreeThree_of_cubicIncidentTriples hG) position
+
+/-- A third edge that returns to the same ambient residual path determines
+the simple chord boundary cut off by that edge. -/
+def ambientReturnChordBoundary
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (chord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (position : AmbientReturnInternalPosition hG sigma hSigma site chord)
+    (attachment : ChordAttachment
+      (orderedChordAmbientPath_isPath hG sigma hSigma site chord)
+      (regularOfDegreeThree_of_cubicIncidentTriples hG) position) :
+    SamePathChordBoundary G :=
+  attachment.boundary
+    (orderedChordAmbientPath_isPath hG sigma hSigma site chord)
+    (regularOfDegreeThree_of_cubicIncidentTriples hG) position
+
+/-- The boundary supplied by a returning third edge is a simple cycle. -/
+theorem ambientReturnChordBoundary_cycleWalk_isCycle
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (chord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (position : AmbientReturnInternalPosition hG sigma hSigma site chord)
+    (attachment : ChordAttachment
+      (orderedChordAmbientPath_isPath hG sigma hSigma site chord)
+      (regularOfDegreeThree_of_cubicIncidentTriples hG) position) :
+    (ambientReturnChordBoundary hG sigma hSigma site chord position
+      attachment).cycleWalk.IsCycle :=
+  SamePathChordBoundary.cycleWalk_isCycle _
 
 /-- A nested same-shore return whose inner ambient path contains more than
 `bound` strict internal positions. -/
