@@ -4719,6 +4719,50 @@ remaining obstruction is geometric: a real component split or merge supported
 on one explicitly bounded physical patch.
 \end{proof}
 
+\begin{corollary}[finite repetition of fixed-colour row transitions]
+\label{cor:fixed-colour-row-transition-repetition}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FixedColorConnectivityPigeonhole.card_fixedColorRowTransitionCode}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FixedColorConnectivityPigeonhole.FixedColorRowTransitionReceipt.toCode_eq_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FixedColorConnectivityPigeonhole.nonempty_fixedColorRowTransitionReceipt_of_no_horn_of_no_synchronized}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FixedColorConnectivityPigeonhole.exists_distinct_rows_with_equal_fixedColorTransitionCode}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FixedColorConnectivityPigeonhole.branchingOrBoundary_or_synchronized_or_repeatedFixedColorTransition}
+Let an ordered injective mesh have $a>194400$ rows and twenty columns.
+Fix the residual-defect minimizer used in the preceding construction.  Then
+one of the following holds:
+\begin{enumerate}
+  \item some row exposes the branching/boundary horn of the sparse mesh
+        atlas;
+  \item some row has a coherent geometric sweep pair with synchronized
+        labelled boundary connectivity; or
+  \item two distinct rows have local fixed-colour transition receipts with
+        equal finite codes.
+\end{enumerate}
+The repeated code records the fixed colour, one of the eight adjacent
+deletion-path coordinates, and the two labelled boundary slots whose
+reachability changes.  Its state space has cardinality
+\[
+                   3\cdot8\cdot90\cdot90=194400.
+\]
+Equality of these codes is only equality of the observable transition shape.
+It does not identify the two ambient row pieces and is not, by itself, a
+physical replacement theorem.
+\end{corollary}
+
+\begin{proof}
+If either of the first two alternatives occurs, there is nothing to prove.
+Otherwise the row-level alternative of
+Corollary~\ref{cor:fixed-colour-connectivity-transition} supplies a local
+transition receipt on every row.  Attach to its $64800$-element local code
+the one fixed Tait colour followed through that row.  This gives a function
+from the $a$ rows to a $194400$-element type.  The finite pigeonhole principle
+gives two distinct rows with equal codes.
+
+The receipts are retained in the conclusion rather than replaced by their
+codes.  This makes the next obligation explicit: the two physical patches
+must be placed in a common geometric frame before equal observables can be
+used for a splice or a strict descent.
+\end{proof}
+
 The binary constraints have one further exact locality property.  Although
 common-core agreement is not transitive as a relation on whole pairwise
 common deletions, its failure of transitivity cannot occur away from the
