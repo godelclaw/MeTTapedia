@@ -158,8 +158,12 @@ def declaration_module(
         rf"(?<![A-Za-z_.])(?:theorem|lemma|def|abbrev|structure|class|inductive|opaque)\s+"
         rf"{qualified_prefix}{re.escape(short)}(?![A-Za-z_])"
     )
-    for cut in range(len(parts) - 1, 0, -1):
-        candidate = lean_root.joinpath(*parts[:cut]).with_suffix(".lean")
+    # Fully qualified project declarations begin with the package root name
+    # (`Mettapedia`), while `lean_root` already points at that directory.
+    # Strip it before trying the inexpensive module-path lookup.
+    module_parts = parts[1:] if parts and parts[0] == lean_root.name else parts
+    for cut in range(len(module_parts) - 1, 0, -1):
+        candidate = lean_root.joinpath(*module_parts[:cut]).with_suffix(".lean")
         if candidate.is_file() and declaration_head.search(
             lean_code_only(candidate.read_text(encoding="utf-8"))
         ):
@@ -169,10 +173,12 @@ def declaration_module(
         relative_root = lean_root.resolve().relative_to(repo_root.resolve())
     except ValueError:
         return None
+    # `git grep` is line-oriented, so a declaration written as
+    # `theorem\n  name` cannot be recognized by requiring the keyword and name
+    # in one grep expression.  Use grep only to find tracked candidate files;
+    # `declaration_head` below performs the exact comment-aware validation.
     grep_pattern = (
-        rf"(^|[^A-Za-z_.])(theorem|lemma|def|abbrev|structure|class|inductive|opaque)"
-        rf"[[:space:]]+([A-Za-z_][A-Za-z0-9_']*\.)*"
-        rf"{re.escape(short)}([^A-Za-z_]|$)"
+        rf"(^|[^A-Za-z0-9_']){re.escape(short)}([^A-Za-z0-9_']|$)"
     )
     tracked = subprocess.run(
         [
