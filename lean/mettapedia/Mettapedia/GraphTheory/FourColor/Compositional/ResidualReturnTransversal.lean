@@ -1,5 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.Compositional.CyclePushOffCut
-import Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualReturnSectorNoncrossing
+import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSeparatorFaceCut
 
 /-!
 # Bounded physical transversals from residual-return separators
@@ -25,6 +25,7 @@ open GoertzelV24ResidualReturnSectorNoncrossing
 open GoertzelV24TwoEdgeCutMinimality
 open MatchingParity
 open Mettapedia.GraphTheory.Embedding
+open ResidualReturnSeparatorFaceCut
 open SimpleGraph
 open SimpleGraphDartRotation
 
@@ -51,8 +52,7 @@ theorem exists_exactFaceCut_with_bounded_pushOff_edges
     {first second : V}
     (site : ProperAlternatingComponentWitness G sigma first second)
     (chord : OrderedReturnChord
-      (orderedSiteReturnPairing hG sigma hSigma site))
-    (hlong : 1 < chord.right.val - chord.left.val) :
+      (orderedSiteReturnPairing hG sigma hSigma site)) :
     let separator := orderedReturnSeparator hG sigma hSigma site chord
     ∃ cut : ExactFaceCut rotation.toRotationSystem
         (fun edge : G.edgeSet => edge.1 ∈ separator.edges) F2,
@@ -60,8 +60,8 @@ theorem exists_exactFaceCut_with_bounded_pushOff_edges
         (CyclePushOffCut.edges rotation separator cut selected).card ≤
           separator.support.toFinset.card * 3 := by
   dsimp only
-  rcases exactFaceCut_orderedReturnSeparator_of_minimal
-      rotation minimal hG sigma hSigma site chord hlong with
+  rcases exists_exactFaceCut_orderedReturnSeparator
+      rotation minimal hG sigma hSigma site chord with
     ⟨cut, _hboundary⟩
   refine ⟨cut, ?_⟩
   intro selected

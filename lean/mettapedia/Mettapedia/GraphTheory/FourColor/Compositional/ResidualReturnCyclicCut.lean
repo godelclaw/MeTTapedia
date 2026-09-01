@@ -1,3 +1,4 @@
+import Mettapedia.GraphTheory.FourColor.Compositional.CyclePushOffCut
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnComplementaryCycle
 
 /-!
@@ -22,7 +23,6 @@ open GoertzelV24TwoEdgeCutMinimality
 open MatchingParity
 open Mettapedia.GraphTheory.Embedding
 open ResidualReturnComplementaryCycle
-open ResidualReturnTransversal
 open SimpleGraph
 open SimpleGraphDartRotation
 
