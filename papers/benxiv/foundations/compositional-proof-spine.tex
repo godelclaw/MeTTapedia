@@ -7500,6 +7500,41 @@ successor.  Otherwise it is an external attachment.  Finally a simple path
 has exactly two fewer strict internal positions than support vertices.
 \end{proof}
 
+\begin{lemma}[rotation side of a cubic path attachment]
+\label{lem:cubic-path-attachment-rotation-side}
+\Sverified{Mettapedia.GraphTheory.FourColor.SimpleGraphDartRotation.Data.vertexRotation_apply_eq_second_or_third_of_regularThree}
+\Sverified{Mettapedia.GraphTheory.FourColor.CubicPathRotation.rotationCycle_of_attachmentTurn_eq_backwardToAttachment}
+\Sverified{Mettapedia.GraphTheory.FourColor.CubicPathRotation.rotationCycle_of_attachmentTurn_eq_forwardToAttachment}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnPathAttachment.ambientReturnAttachmentTurn_rotationCycle}
+Orient a simple path and consider one strict internal position.  Write
+$d_-$ and $d_+$ for the darts pointing to the preceding and following path
+vertices, and write $d_a$ for the dart on the canonical third edge from
+Lemma~\ref{lem:ambient-return-third-edge-classification}.  If the vertex
+rotation is cyclic, then exactly one of the following local rotation cycles
+holds:
+\[
+       d_-\longmapsto d_a\longmapsto d_+\longmapsto d_-,
+       \qquad\hbox{or}\qquad
+       d_-\longmapsto d_+\longmapsto d_a\longmapsto d_-.
+\]
+The corresponding two-valued attachment turn is therefore defined at every
+strict internal position of every ambient residual-return path.
+
+This turn is local rotation syntax.  In particular, the lemma does not yet
+say that two attachments with the same turn lie on a common planar side, or
+that chords with equal turns cannot interleave.  Those conclusions require a
+separate face-side separation argument.
+\end{lemma}
+
+\begin{proof}
+The predecessor, successor, and attachment darts are pairwise distinct and
+have the same base vertex.  Cubicity says that they exhaust the three darts
+at that vertex.  A cyclic permutation of a three-element fibre has no fixed
+point, so the image of $d_-$ is either $d_a$ or $d_+$; after this first image
+is chosen, the remaining two images are forced.  Apply this generic statement
+to the simple ambient path witnessing the residual return.
+\end{proof}
+
 \begin{corollary}[pointwise geometric sweep alternatives across the mesh]
 \label{cor:pointwise-mesh-residual-sweep-alternative}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.MeshResidualReturnSweep.exists_geometricSweepReceipt_at_every_globalMeshStep}
