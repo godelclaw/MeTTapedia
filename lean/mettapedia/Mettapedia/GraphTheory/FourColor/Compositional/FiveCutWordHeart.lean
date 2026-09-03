@@ -235,6 +235,52 @@ theorem root_canonicalization {L : CAP5BoundaryWord → Prop}
           equivalenceBetweenTaitTriples_third hsource htargetPB]
     rwa [heq] at hmap
 
+/-! ## Orbit facts and the six computable colour equivalences -/
+
+/-- Every zero-fixing colour relabelling of `w` lies in `L`. -/
+def OrbitIn (L : CAP5BoundaryWord → Prop) (w : CAP5BoundaryWord) : Prop :=
+  ∀ σ : Color ≃ Color, σ 0 = 0 → L (cap5MapBoundaryWord σ w)
+
+/-- No zero-fixing colour relabelling of `w` lies in `L`. -/
+def OrbitOut (L : CAP5BoundaryWord → Prop) (w : CAP5BoundaryWord) : Prop :=
+  ∀ σ : Color ≃ Color, σ 0 = 0 → ¬ L (cap5MapBoundaryWord σ w)
+
+theorem orbitIn_of_mem {L : CAP5BoundaryWord → Prop}
+    (hL : BoundaryLanguage L) {w : CAP5BoundaryWord} (hw : L w) :
+    OrbitIn L w :=
+  fun σ hσ => hL.colourClosed σ hσ w hw
+
+theorem orbitOut_of_disjoint {LA LB : CAP5BoundaryWord → Prop}
+    (hdisj : ∀ w, ¬ (LA w ∧ LB w)) {w : CAP5BoundaryWord}
+    (hin : OrbitIn LA w) : OrbitOut LB w :=
+  fun σ hσ hmem => hdisj _ ⟨hin σ hσ, hmem⟩
+
+/-- The colour table sending `red, blue, purple` to the given images. -/
+def tableFun (r b p : Color) : Color → Color := fun c =>
+  if c = red then r else if c = blue then b else if c = purple then p else 0
+
+/-- The six zero-fixing colour equivalences, by their images of
+`(red, blue, purple)`. -/
+def σRBP : Color ≃ Color :=
+  ⟨tableFun red blue purple, tableFun red blue purple, by decide, by decide⟩
+def σRPB : Color ≃ Color :=
+  ⟨tableFun red purple blue, tableFun red purple blue, by decide, by decide⟩
+def σBRP : Color ≃ Color :=
+  ⟨tableFun blue red purple, tableFun blue red purple, by decide, by decide⟩
+def σPBR : Color ≃ Color :=
+  ⟨tableFun purple blue red, tableFun purple blue red, by decide, by decide⟩
+def σBPR : Color ≃ Color :=
+  ⟨tableFun blue purple red, tableFun purple red blue, by decide, by decide⟩
+def σPRB : Color ≃ Color :=
+  ⟨tableFun purple red blue, tableFun blue purple red, by decide, by decide⟩
+
+@[simp] theorem σRBP_zero : σRBP 0 = 0 := by decide
+@[simp] theorem σRPB_zero : σRPB 0 = 0 := by decide
+@[simp] theorem σBRP_zero : σBRP 0 = 0 := by decide
+@[simp] theorem σPBR_zero : σPBR 0 = 0 := by decide
+@[simp] theorem σBPR_zero : σBPR 0 = 0 := by decide
+@[simp] theorem σPRB_zero : σPRB 0 = 0 := by decide
+
 end FiveCutWordHeart
 
 end Compositional
