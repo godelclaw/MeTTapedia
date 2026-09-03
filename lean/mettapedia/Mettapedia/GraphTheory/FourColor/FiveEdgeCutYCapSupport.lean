@@ -271,6 +271,82 @@ theorem shoreColoringOfCap_isProper
         data.capVertOf_retainedOfTangleDart]
       exact congrArg Sum.inl (Subtype.ext hvertices.symm)
 
+
+/-! ## The boundary word lies in the Y support -/
+
+theorem crossingBoundaryDartEquiv_zero :
+    data.crossingBoundaryDartEquiv 0 = data.seamDart false := rfl
+
+theorem crossingBoundaryDartEquiv_one :
+    data.crossingBoundaryDartEquiv 1 = data.seamDart true := rfl
+
+theorem crossingBoundaryDartEquiv_two :
+    data.crossingBoundaryDartEquiv 2 = data.starDart 0 := rfl
+
+theorem crossingBoundaryDartEquiv_three :
+    data.crossingBoundaryDartEquiv 3 = data.starDart 1 := rfl
+
+theorem crossingBoundaryDartEquiv_four :
+    data.crossingBoundaryDartEquiv 4 = data.starDart 2 := rfl
+
+/-- **The Y-capped shore's colouring lands the shore boundary word in the
+heart's `Y` support at position zero.** -/
+theorem exists_word_in_ySupport
+    (outer : RetainedDart rotation.toRotationSystem data.keep)
+    (K : data.capRotationSystem.EdgeColoring Color)
+    (hK : data.capRotationSystem.IsTaitEdgeColoring K) :
+    ∃ w : CAP5BoundaryWord,
+      shoreLanguage data.crossingBoundaryDartEquiv
+        (vertexSidePortTangle rotation data.keep outer) w ∧
+      CAP5YCapSupport 0 w := by
+  let coloring := data.shoreColoringOfCap rotation outer K
+  have hproper := data.shoreColoringOfCap_isProper rotation outer K hK
+  refine ⟨fun j => (properBoundaryWordInCoordinates
+      data.crossingBoundaryDartEquiv coloring hproper j).1,
+    shoreLanguage_of_coloring data.crossingBoundaryDartEquiv
+      coloring hproper, ?_⟩
+  have hvalue : ∀ j : Fin 5,
+      (properBoundaryWordInCoordinates
+        data.crossingBoundaryDartEquiv coloring hproper j).1 =
+      K (data.capEdgeOfTangleDart rotation
+        (Sum.inr (data.crossingBoundaryDartEquiv j))) := fun _ => rfl
+  have h01 : ((0 : Fin 5) + 1) = 1 := by decide
+  have h02 : ((0 : Fin 5) + 2) = 2 := by decide
+  have h03 : ((0 : Fin 5) + 3) = 3 := by decide
+  have h04 : ((0 : Fin 5) + 4) = 4 := by decide
+  refine ⟨?_, ?_, ?_⟩
+  · show (properBoundaryWordInCoordinates
+        data.crossingBoundaryDartEquiv coloring hproper 0).1 =
+      (properBoundaryWordInCoordinates
+        data.crossingBoundaryDartEquiv coloring hproper (0 + 1)).1
+    rw [h01, hvalue 0, hvalue 1,
+      data.crossingBoundaryDartEquiv_zero,
+      data.crossingBoundaryDartEquiv_one,
+      data.capEdgeOfTangleDart_seam rotation false,
+      data.capEdgeOfTangleDart_seam rotation true]
+  · exact hK _
+  · show IsTaitColorTriple
+      (properBoundaryWordInCoordinates
+        data.crossingBoundaryDartEquiv coloring hproper (0 + 2)).1
+      (properBoundaryWordInCoordinates
+        data.crossingBoundaryDartEquiv coloring hproper (0 + 3)).1
+      (properBoundaryWordInCoordinates
+        data.crossingBoundaryDartEquiv coloring hproper (0 + 4)).1
+    rw [h02, h03, h04, hvalue 2, hvalue 3, hvalue 4,
+      data.crossingBoundaryDartEquiv_two,
+      data.crossingBoundaryDartEquiv_three,
+      data.crossingBoundaryDartEquiv_four,
+      data.capEdgeOfTangleDart_star rotation 0,
+      data.capEdgeOfTangleDart_star rotation 1,
+      data.capEdgeOfTangleDart_star rotation 2]
+    refine ⟨hK _, hK _, hK _, ?_, ?_, ?_⟩
+    · exact K.valid (data.capSpokeEdgeAdj_of_ne rotation
+        (show (0 : Fin 3) ≠ 1 by decide))
+    · exact K.valid (data.capSpokeEdgeAdj_of_ne rotation
+        (show (0 : Fin 3) ≠ 2 by decide))
+    · exact K.valid (data.capSpokeEdgeAdj_of_ne rotation
+        (show (1 : Fin 3) ≠ 2 by decide))
+
 end FiveEdgeCutYCapData
 
 end
