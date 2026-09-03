@@ -152,6 +152,126 @@ theorem exists_pentagonSupport_word_of_keep_eq
   exact ⟨fun i => w ((0 : Fin 5) - i), hlang',
     extendsAcrossCycle_reflect 0 w hext⟩
 
+/-- **Y-cap support on a shore**, keep-generalized and parametric in the
+reflection base `c`: given distinct seam endpoints at boundary positions
+`c` and `c - 1`, the shore language meets the Y-cap support at position
+`c - 1`. -/
+theorem exists_ySupport_word_of_keep_eq
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (hcyclic : CyclicEdgeConnectivityAtLeast G 5)
+    (cut : ExactSizedCyclicEdgeCut G 5)
+    (hdeletedCard : 6 ≤ (exactCutVertexSide cut).card)
+    (keep : V → Prop) (hkeep : shoreKeep cut = keep)
+    (outer : RetainedDart graphData.toRotationSystem keep)
+    (orderR : Fin 5 ≃ BoundaryDart graphData.toRotationSystem keep)
+    (hpin : orderR.permCongr (finRotate 5) =
+      retainedRegionBoundarySuccessor graphData.toRotationSystem keep)
+    (c : Fin 5)
+    (hseam : graphData.toRotationSystem.vertOf (orderR c).1.1 ≠
+      graphData.toRotationSystem.vertOf (orderR (c - 1)).1.1) :
+    ∃ w, shoreLanguage orderR
+        (vertexSidePortTangle graphData keep outer) w ∧
+      CAP5YCapSupport (c - 1) w := by
+  subst hkeep
+  classical
+  have hconnected : G.Connected := by
+    rw [← rotationPrimalGraph_toRotationSystem_eq G graphData]
+    exact minimal.primalConnected
+  have hsides := induce_both_sides_connected_of_exactSized
+    hconnected hcyclic cut
+  set capOrder : Fin 5 ≃ BoundaryDart graphData.toRotationSystem
+      (shoreKeep cut) :=
+    (Equiv.subLeft c).trans orderR with hcapOrder
+  have hseam' : graphData.toRotationSystem.vertOf (capOrder 0).1.1 ≠
+      graphData.toRotationSystem.vertOf (capOrder 1).1.1 := by
+    show graphData.toRotationSystem.vertOf (orderR (c - 0)).1.1 ≠
+      graphData.toRotationSystem.vertOf (orderR (c - 1)).1.1
+    rw [sub_zero]
+    exact hseam
+  set capData := yCapDataOfOrder graphData cut capOrder outer.1 outer.2
+    hseam' with hcapData
+  have hkeepEq : capData.keep =
+      deletedRegionKeep (exactCutVertexSide cut) :=
+    shoreKeep_eq_deletedRegionKeep cut
+  have hequiv : capData.crossingBoundaryDartEquiv = capOrder :=
+    crossingBoundaryDartEquiv_yCapDataOfOrder graphData cut capOrder
+      outer.1 outer.2 hseam'
+  have hsucc : retainedRegionBoundarySuccessor graphData.toRotationSystem
+      capData.keep =
+      capData.crossingBoundaryDartEquiv.permCongr (finRotate 5)⁻¹ := by
+    rw [hequiv]
+    exact anti_pin_of_pin_reflection orderR _ c hpin
+  have hretainedConnected : (G.induce {vertex |
+      deletedRegionKeep (exactCutVertexSide cut) vertex}).Connected := by
+    have hpred : {vertex |
+        deletedRegionKeep (exactCutVertexSide cut) vertex} =
+        {vertex | ¬ cut.side vertex} := by
+      ext vertex
+      change (¬ vertex ∈ exactCutVertexSide cut) ↔ ¬ cut.side vertex
+      rw [mem_exactCutVertexSide_iff]
+    rw [hpred]
+    exact hsides.2
+  have hdeletedConnected : (G.induce {vertex |
+      ¬ deletedRegionKeep (exactCutVertexSide cut) vertex}).Connected := by
+    have hpred : {vertex |
+        ¬ deletedRegionKeep (exactCutVertexSide cut) vertex} =
+        {vertex | cut.side vertex} := by
+      ext vertex
+      change (¬ vertex ∉ exactCutVertexSide cut) ↔ cut.side vertex
+      rw [not_not, mem_exactCutVertexSide_iff]
+    rw [hpred]
+    exact hsides.1
+  have hretainedAmbient : (retainedAmbientPrimalGraph
+      graphData.toRotationSystem capData.keep).Connected := by
+    show ((rotationPrimalGraph graphData.toRotationSystem).induce
+      {vertex | capData.keep vertex}).Connected
+    rw [rotationPrimalGraph_toRotationSystem_eq G graphData]
+    have hpred : {vertex | capData.keep vertex} =
+        {vertex | ¬ cut.side vertex} := by
+      ext vertex
+      change vertex ∈ exactCutVertexSide cut.compl ↔ ¬ cut.side vertex
+      rw [mem_exactCutVertexSide_iff]
+      exact Iff.rfl
+    rw [hpred]
+    exact hsides.2
+  have hregular : G.IsRegularOfDegree 3 := by
+    intro v
+    have hcub :=
+      (graphData.toRotationSystem_isCubic_iff).mp minimal.spherical.cubic v
+    convert hcub using 2
+  have hdetour : ∀ removed : InternalDart graphData.toRotationSystem
+      capData.keep,
+      (capData.internalDetourGraph removed).Reachable
+        (graphData.toRotationSystem.vertOf removed.1.1)
+        (graphData.toRotationSystem.vertOf
+          (graphData.toRotationSystem.alpha removed.1.1)) :=
+    fun removed => capData.internalDetourGraph_reachable_of_cyclicFive
+      graphData hregular hconnected hcyclic removed
+  obtain ⟨a, ha, b, hb, hab⟩ := Finset.one_lt_card.mp
+    (by omega : 1 < (exactCutVertexSide cut).card)
+  have hleft : ¬ capData.keep a := fun hmem =>
+    (mem_exactCutVertexSide_iff cut.compl a).mp hmem
+      ((mem_exactCutVertexSide_iff cut a).mp ha)
+  have hright : ¬ capData.keep b := fun hmem =>
+    (mem_exactCutVertexSide_iff cut.compl b).mp hmem
+      ((mem_exactCutVertexSide_iff cut b).mp hb)
+  obtain ⟨K, hK⟩ := FiveEdgeCutYCapData.capTaitColorable_of_vertexMinimal
+    graphData (exactCutVertexSide cut) minimal capData hsucc
+    hretainedConnected hdeletedConnected hkeepEq hretainedAmbient hdetour
+    a b hab hleft hright
+  obtain ⟨w, hlang, hsupp⟩ :=
+    capData.exists_word_in_ySupport graphData outer K hK
+  rw [hequiv] at hlang
+  have hlang' := (shoreLanguage_trans_iff (Equiv.subLeft c) orderR
+    (vertexSidePortTangle graphData (shoreKeep cut) outer) w).mp hlang
+  have hfun : (fun i => w ((Equiv.subLeft c).symm i)) =
+      fun i => w (c - i) := by
+    funext i
+    rw [subLeft_symm_apply]
+  rw [hfun] at hlang'
+  exact ⟨fun i => w (c - i), hlang', yCapSupport_reflect c w hsupp⟩
+
 end
 
 end FiveCutShoreAssembly
