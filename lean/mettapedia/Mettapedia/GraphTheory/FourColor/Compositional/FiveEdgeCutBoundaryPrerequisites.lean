@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.Compositional.CutPairDeletionConnectivity
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FourEdgeCutBoundaryOrder
+import Mettapedia.GraphTheory.FourColor.ExactSizedCyclicEdgeCut
 
 set_option maxRecDepth 100000
 
@@ -104,13 +105,13 @@ theorem transitive_perm_card_five_exists_finRotate_coordinate
 
 /-- The retained boundary carrier of an exact cyclic five-edge cut has five
 points. -/
-theorem card_boundaryDart_cyclicCutVertexSide_eq_five
+theorem card_boundaryDart_exactCutVertexSide_eq_five
     (graphData : SimpleGraphDartRotation.Data G)
-    (cut : SmallCyclicEdgeCut G) (hcard : cut.edgeCut.card = 5) :
+    (cut : ExactSizedCyclicEdgeCut G 5) :
     Fintype.card (BoundaryDart graphData.toRotationSystem
-      (deletedRegionKeep (cyclicCutVertexSide cut))) = 5 := by
+      (deletedRegionKeep (exactCutVertexSide cut))) = 5 := by
   rw [card_boundaryDart_deletedRegionKeep,
-    vertexSetCrossingEdges_cyclicCutVertexSide graphData cut, hcard]
+    vertexSetCrossingEdges_exactCutVertexSide graphData cut, cut.hcard_eq]
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
 /-- At cyclic connectivity five, an exact cyclic five-edge cut has connected
@@ -118,17 +119,17 @@ induced shores. -/
 theorem induce_both_sides_connected_of_card_eq_five
     (hconnected : G.Connected)
     (hcyclic : CyclicEdgeConnectivityAtLeast G 5)
-    (cut : SmallCyclicEdgeCut G) (hcard : cut.edgeCut.card = 5) :
+    (cut : ExactSizedCyclicEdgeCut G 5) :
     (G.induce cut.side).Connected ∧
       (G.induce (fun vertex => ¬ cut.side vertex)).Connected :=
-  induce_both_sides_connected_of_card_eq hconnected hcyclic cut hcard
+  induce_both_sides_connected_of_exactSized hconnected hcyclic cut
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
 /-- Deleting any two distinct edges of an exact five-edge bond leaves the
 graph connected.  Any one of the three remaining cut edges joins the two
 connected shores. -/
 theorem deleteEdges_pair_connected_of_exactCyclicFiveCut
-    (cut : SmallCyclicEdgeCut G) (hcard : cut.edgeCut.card = 5)
+    (cut : ExactSizedCyclicEdgeCut G 5)
     (hsideConnected : (G.induce cut.side).Connected)
     (hcomplementConnected :
       (G.induce (fun vertex ↦ ¬ cut.side vertex)).Connected)
@@ -149,7 +150,7 @@ theorem deleteEdges_pair_connected_of_exactCyclicFiveCut
     have hcardLe := Finset.card_le_card hsubset
     have hpairCard : ({first, second} : Finset G.edgeSet).card = 2 := by
       simp [hedgesNe]
-    rw [hcard, hpairCard] at hcardLe
+    rw [cut.hcard_eq, hpairCard] at hcardLe
     omega
   rcases hremaining with
     ⟨third, hthirdCut, hthirdFirst, hthirdSecond⟩
