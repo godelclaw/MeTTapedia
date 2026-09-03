@@ -294,7 +294,133 @@ theorem capRotationSystem_vertexRotationCyclic
   rw [hrho]
   simpa using htransport
 
+/-! ## Cubicity -/
+
+/-- Darts over a retained cap vertex are exactly the old darts over its
+ambient vertex. -/
+def capTargetDartsAtRetainedEquiv (vertex : RetainedVertex data.keep) :
+    { target : RetainedDart RS data.keep ⊕ Fin 3 //
+      data.capTargetVert target = Sum.inl vertex } ≃
+      { dart : RS.D // RS.vertOf dart = vertex.1 } where
+  toFun target := by
+    rcases target with ⟨retained | step, htarget⟩
+    · have hvertices :
+          (⟨RS.vertOf retained.1, retained.2⟩ :
+            RetainedVertex data.keep) = vertex := by
+        change (Sum.inl
+          (⟨RS.vertOf retained.1, retained.2⟩ :
+            RetainedVertex data.keep) : data.CapVertex) =
+          Sum.inl vertex at htarget
+        exact Sum.inl.inj htarget
+      exact ⟨retained.1, congrArg Subtype.val hvertices⟩
+    ·
+      change (Sum.inr () : data.CapVertex) = Sum.inl vertex at htarget
+      exact False.elim (by cases htarget)
+  invFun dart :=
+    ⟨Sum.inl ⟨dart.1, dart.2.symm ▸ vertex.2⟩, by
+      change (Sum.inl
+        (⟨RS.vertOf dart.1, _⟩ : RetainedVertex data.keep) :
+          data.CapVertex) = Sum.inl vertex
+      exact congrArg
+        (fun retained : RetainedVertex data.keep =>
+          (Sum.inl retained : data.CapVertex))
+        (Subtype.ext dart.2)⟩
+  left_inv target := by
+    rcases target with ⟨retained | step, htarget⟩
+    · apply Subtype.ext
+      apply congrArg
+        (fun retained : RetainedDart RS data.keep =>
+          (Sum.inl retained : RetainedDart RS data.keep ⊕ Fin 3))
+      apply Subtype.ext
+      rfl
+    ·
+      change (Sum.inr () : data.CapVertex) = Sum.inl vertex at htarget
+      exact False.elim (by cases htarget)
+  right_inv dart := by
+    apply Subtype.ext
+    rfl
+
+/-- The cap-dart equivalence restricted to one retained vertex. -/
+def capRetainedVertexDartsEquiv (vertex : RetainedVertex data.keep) :
+    { dart : data.CapDart //
+      data.capRotationSystem.vertOf dart = Sum.inl vertex } ≃
+      { dart : RS.D // RS.vertOf dart = vertex.1 } :=
+  (data.capDartEquiv.subtypeEquiv (fun dart => by
+      change data.capSeamData.vertOf dart = Sum.inl vertex ↔
+        data.capTargetVert (data.capDartEquiv dart) = Sum.inl vertex
+      rw [data.capSeamData_vertOf_eq_capTargetVert])).trans
+    (data.capTargetDartsAtRetainedEquiv vertex)
+
+/-- The local dart count at a retained vertex is unchanged. -/
+theorem capRotationSystem_dartsAt_retained_card
+    (vertex : RetainedVertex data.keep) :
+    (data.capRotationSystem.dartsAt (Sum.inl vertex)).card =
+      (RS.dartsAt vertex.1).card := by
+  classical
+  unfold RotationSystem.dartsAt
+  rw [← Fintype.card_subtype, ← Fintype.card_subtype]
+  exact Fintype.card_congr (data.capRetainedVertexDartsEquiv vertex)
+
+/-- The target darts based at the new star vertex are exactly its three
+spoke positions. -/
+def capTargetDartsAtCapEquiv :
+    { target : RetainedDart RS data.keep ⊕ Fin 3 //
+      data.capTargetVert target = Sum.inr () } ≃ Fin 3 where
+  toFun target := by
+    rcases target with ⟨retained | step, htarget⟩
+    ·
+      change (Sum.inl
+        (⟨RS.vertOf retained.1, retained.2⟩ : RetainedVertex data.keep) :
+          data.CapVertex) = Sum.inr () at htarget
+      exact False.elim (by cases htarget)
+    · exact step
+  invFun step := ⟨Sum.inr step, rfl⟩
+  left_inv target := by
+    rcases target with ⟨retained | step, htarget⟩
+    ·
+      change (Sum.inl
+        (⟨RS.vertOf retained.1, retained.2⟩ : RetainedVertex data.keep) :
+          data.CapVertex) = Sum.inr () at htarget
+      exact False.elim (by cases htarget)
+    · apply Subtype.ext
+      rfl
+  right_inv _ := rfl
+
+/-- The cap-dart equivalence restricted to the new star vertex. -/
+def capVertexDartsEquiv :
+    { dart : data.CapDart //
+      data.capRotationSystem.vertOf dart = Sum.inr () } ≃ Fin 3 :=
+  (data.capDartEquiv.subtypeEquiv (fun dart => by
+      change data.capSeamData.vertOf dart = Sum.inr () ↔
+        data.capTargetVert (data.capDartEquiv dart) = Sum.inr ()
+      rw [data.capSeamData_vertOf_eq_capTargetVert])).trans
+    data.capTargetDartsAtCapEquiv
+
+/-- The new star vertex has exactly three darts. -/
+theorem capRotationSystem_dartsAt_cap_card :
+    (data.capRotationSystem.dartsAt (Sum.inr ())).card = 3 := by
+  classical
+  unfold RotationSystem.dartsAt
+  rw [← Fintype.card_subtype]
+  calc
+    Fintype.card { dart : data.CapDart //
+        data.capRotationSystem.vertOf dart = Sum.inr () } =
+        Fintype.card (Fin 3) :=
+      Fintype.card_congr data.capVertexDartsEquiv
+    _ = 3 := Fintype.card_fin 3
+
+/-- The Y-cap preserves cubicity. -/
+theorem capRotationSystem_isCubic (hCubic : RS.IsCubic) :
+    data.capRotationSystem.IsCubic := by
+  intro vertex
+  rcases vertex with retained | cap
+  · rw [data.capRotationSystem_dartsAt_retained_card]
+    exact hCubic retained.1
+  · rcases cap with ⟨⟩
+    exact data.capRotationSystem_dartsAt_cap_card
+
 end FiveEdgeCutYCapData
+
 
 end
 
