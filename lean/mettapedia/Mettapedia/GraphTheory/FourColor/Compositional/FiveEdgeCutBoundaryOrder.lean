@@ -52,20 +52,20 @@ theorem deletedBoundarySuccessor_sameCycle_of_exactCyclicFiveCut
     (hconnected : G.Connected)
     (hrotation : VertexRotationCyclic graphData.toRotationSystem)
     (hcyclic : CyclicEdgeConnectivityAtLeast G 5)
-    (cut : SmallCyclicEdgeCut G) (hcard : cut.edgeCut.card = 5) :
+    (cut : ExactSizedCyclicEdgeCut G 5) :
     ∀ first second : BoundaryDart graphData.toRotationSystem
-        (deletedRegionKeep (cyclicCutVertexSide cut)),
+        (deletedRegionKeep (exactCutVertexSide cut)),
       (deletedRegionBoundarySuccessor graphData.toRotationSystem
-        (cyclicCutVertexSide cut)).SameCycle first second := by
+        (exactCutVertexSide cut)).SameCycle first second := by
   let RS := graphData.toRotationSystem
-  let deleted := cyclicCutVertexSide cut
+  let deleted := exactCutVertexSide cut
   let successor := deletedRegionBoundarySuccessor RS deleted
   have hsides := induce_both_sides_connected_of_card_eq_five
-    hconnected hcyclic cut hcard
+    hconnected hcyclic cut
   have hboundaryCard : Fintype.card
       (BoundaryDart RS (deletedRegionKeep deleted)) = 5 := by
-    exact card_boundaryDart_cyclicCutVertexSide_eq_five
-      graphData cut hcard
+    exact card_boundaryDart_exactCutVertexSide_eq_five
+      graphData cut
   have hfixed : ∀ boundary : BoundaryDart RS
       (deletedRegionKeep deleted), successor boundary ≠ boundary := by
     exact deletedBoundarySuccessor_fixedPointFree RS deleted htwoSided
@@ -97,15 +97,15 @@ theorem deletedBoundarySuccessor_sameCycle_of_exactCyclicFiveCut
         graphData htwoSided hdual hconnected hsphere hfaces hedgesNe
         hfirstLeft hfirstRight hsecondLeft hsecondRight
     have hfirstCut : RS.edgeOf first.1.1 ∈ cut.edgeCut := by
-      rw [← vertexSetCrossingEdges_cyclicCutVertexSide graphData cut]
+      rw [← vertexSetCrossingEdges_exactCutVertexSide graphData cut]
       exact boundaryDart_edge_mem_vertexSetCrossingEdges
         RS deleted first
     have hsecondCut : RS.edgeOf second.1.1 ∈ cut.edgeCut := by
-      rw [← vertexSetCrossingEdges_cyclicCutVertexSide graphData cut]
+      rw [← vertexSetCrossingEdges_exactCutVertexSide graphData cut]
       exact boundaryDart_edge_mem_vertexSetCrossingEdges
         RS deleted second
     have hstillConnected :=
-      deleteEdges_pair_connected_of_exactCyclicFiveCut cut hcard
+      deleteEdges_pair_connected_of_exactCyclicFiveCut cut
         hsides.1 hsides.2
         (RS.edgeOf first.1.1) (RS.edgeOf second.1.1)
         hfirstCut hsecondCut hedgesNe
@@ -120,24 +120,24 @@ theorem retainedBoundarySuccessor_eq_deleted_inverse_of_exactCyclicFiveCut
     (hconnected : G.Connected)
     (hrotation : VertexRotationCyclic graphData.toRotationSystem)
     (hcyclic : CyclicEdgeConnectivityAtLeast G 5)
-    (cut : SmallCyclicEdgeCut G) (hcard : cut.edgeCut.card = 5) :
+    (cut : ExactSizedCyclicEdgeCut G 5) :
     retainedRegionBoundarySuccessor graphData.toRotationSystem
-        (deletedRegionKeep (cyclicCutVertexSide cut)) =
+        (deletedRegionKeep (exactCutVertexSide cut)) =
       (deletedRegionBoundarySuccessor graphData.toRotationSystem
-        (cyclicCutVertexSide cut))⁻¹ := by
+        (exactCutVertexSide cut))⁻¹ := by
   have hsides := induce_both_sides_connected_of_card_eq_five
-    hconnected hcyclic cut hcard
-  have hkeep : deletedRegionKeep (cyclicCutVertexSide cut) =
+    hconnected hcyclic cut
+  have hkeep : deletedRegionKeep (exactCutVertexSide cut) =
       (fun vertex ↦ ¬ cut.side vertex) := by
     funext vertex
-    simp [deletedRegionKeep, mem_cyclicCutVertexSide_iff]
+    simp [deletedRegionKeep, mem_exactCutVertexSide_iff]
   have hdeleted :
       (fun vertex ↦ ¬ deletedRegionKeep
-        (cyclicCutVertexSide cut) vertex) = cut.side := by
+        (exactCutVertexSide cut) vertex) = cut.side := by
     funext vertex
-    simp [deletedRegionKeep, mem_cyclicCutVertexSide_iff]
+    simp [deletedRegionKeep, mem_exactCutVertexSide_iff]
   apply retained_boundarySuccessor_eq_deleted_inverse_of_planar_bond
-    graphData (cyclicCutVertexSide cut) hsphere htwoSided hconnected hrotation
+    graphData (exactCutVertexSide cut) hsphere htwoSided hconnected hrotation
   · rw [hkeep]
     exact hsides.2
   · rw [hdeleted]
@@ -153,31 +153,31 @@ theorem exists_boundaryOrder_of_exactCyclicFiveCut
     (hconnected : G.Connected)
     (hrotation : VertexRotationCyclic graphData.toRotationSystem)
     (hcyclic : CyclicEdgeConnectivityAtLeast G 5)
-    (cut : SmallCyclicEdgeCut G) (hcard : cut.edgeCut.card = 5) :
+    (cut : ExactSizedCyclicEdgeCut G 5) :
     ∃ boundaryOrder : Fin 5 ≃
         BoundaryDart graphData.toRotationSystem
-          (deletedRegionKeep (cyclicCutVertexSide cut)),
+          (deletedRegionKeep (exactCutVertexSide cut)),
       deletedRegionBoundarySuccessor graphData.toRotationSystem
-          (cyclicCutVertexSide cut) =
+          (exactCutVertexSide cut) =
         boundaryOrder.permCongr (finRotate 5) ∧
       retainedRegionBoundarySuccessor graphData.toRotationSystem
-          (deletedRegionKeep (cyclicCutVertexSide cut)) =
+          (deletedRegionKeep (exactCutVertexSide cut)) =
         (boundaryOrder.permCongr (finRotate 5))⁻¹ := by
   let successor := deletedRegionBoundarySuccessor
-    graphData.toRotationSystem (cyclicCutVertexSide cut)
+    graphData.toRotationSystem (exactCutVertexSide cut)
   have hboundaryCard : Fintype.card
       (BoundaryDart graphData.toRotationSystem
-        (deletedRegionKeep (cyclicCutVertexSide cut))) = 5 :=
-    card_boundaryDart_cyclicCutVertexSide_eq_five graphData cut hcard
+        (deletedRegionKeep (exactCutVertexSide cut))) = 5 :=
+    card_boundaryDart_exactCutVertexSide_eq_five graphData cut
   have htransitive : ∀ first second,
       successor.SameCycle first second :=
     deletedBoundarySuccessor_sameCycle_of_exactCyclicFiveCut
-      graphData hsphere htwoSided hconnected hrotation hcyclic cut hcard
+      graphData hsphere htwoSided hconnected hrotation hcyclic cut
   rcases transitive_perm_card_five_exists_finRotate_coordinate
       successor hboundaryCard htransitive with ⟨boundaryOrder, horder⟩
   refine ⟨boundaryOrder, horder, ?_⟩
   rw [retainedBoundarySuccessor_eq_deleted_inverse_of_exactCyclicFiveCut
-    graphData hsphere htwoSided hconnected hrotation hcyclic cut hcard]
+    graphData hsphere htwoSided hconnected hrotation hcyclic cut]
   change successor⁻¹ = (boundaryOrder.permCongr (finRotate 5))⁻¹
   rw [horder]
 
@@ -191,28 +191,28 @@ theorem exists_retainedBoundaryOrder_of_exactCyclicFiveCut
     (hconnected : G.Connected)
     (hrotation : VertexRotationCyclic graphData.toRotationSystem)
     (hcyclic : CyclicEdgeConnectivityAtLeast G 5)
-    (cut : SmallCyclicEdgeCut G) (hcard : cut.edgeCut.card = 5) :
+    (cut : ExactSizedCyclicEdgeCut G 5) :
     ∃ boundaryOrder : Fin 5 ≃
         BoundaryDart graphData.toRotationSystem
-          (deletedRegionKeep (cyclicCutVertexSide cut)),
+          (deletedRegionKeep (exactCutVertexSide cut)),
       boundaryOrder.permCongr (finRotate 5) =
         retainedRegionBoundarySuccessor graphData.toRotationSystem
-          (deletedRegionKeep (cyclicCutVertexSide cut)) := by
+          (deletedRegionKeep (exactCutVertexSide cut)) := by
   let RS := graphData.toRotationSystem
-  let deleted := cyclicCutVertexSide cut
+  let deleted := exactCutVertexSide cut
   let retained := retainedRegionBoundarySuccessor RS
     (deletedRegionKeep deleted)
   let successor := deletedRegionBoundarySuccessor RS deleted
   have hboundaryCard : Fintype.card
       (BoundaryDart RS (deletedRegionKeep deleted)) = 5 :=
-    card_boundaryDart_cyclicCutVertexSide_eq_five graphData cut hcard
+    card_boundaryDart_exactCutVertexSide_eq_five graphData cut
   have hsuccessorTransitive : ∀ first second,
       successor.SameCycle first second :=
     deletedBoundarySuccessor_sameCycle_of_exactCyclicFiveCut
-      graphData hsphere htwoSided hconnected hrotation hcyclic cut hcard
+      graphData hsphere htwoSided hconnected hrotation hcyclic cut
   have hretainedEq : retained = successor⁻¹ :=
     retainedBoundarySuccessor_eq_deleted_inverse_of_exactCyclicFiveCut
-      graphData hsphere htwoSided hconnected hrotation hcyclic cut hcard
+      graphData hsphere htwoSided hconnected hrotation hcyclic cut
   have hretainedTransitive : ∀ first second,
       retained.SameCycle first second := by
     intro first second
@@ -232,11 +232,11 @@ theorem exists_cyclicBondBoundaryData_of_exactCyclicFiveCut
     (hconnected : G.Connected)
     (hrotation : VertexRotationCyclic graphData.toRotationSystem)
     (hcyclic : CyclicEdgeConnectivityAtLeast G 5)
-    (cut : SmallCyclicEdgeCut G) (hcard : cut.edgeCut.card = 5) :
+    (cut : ExactSizedCyclicEdgeCut G 5) :
     Nonempty (CyclicBondBoundaryData graphData.toRotationSystem
-      (deletedRegionKeep (cyclicCutVertexSide cut))) := by
+      (deletedRegionKeep (exactCutVertexSide cut))) := by
   rcases exists_retainedBoundaryOrder_of_exactCyclicFiveCut
-      graphData hsphere htwoSided hconnected hrotation hcyclic cut hcard with
+      graphData hsphere htwoSided hconnected hrotation hcyclic cut with
     ⟨boundaryOrder, horder⟩
   exact ⟨
     { length := 5
