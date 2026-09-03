@@ -64,7 +64,8 @@ structure FiveEdgeCutPentagonCapData (RS : RotationSystem V E) where
   crossing : Fin 5 → E
   crossing_injective : Function.Injective crossing
   boundary_eq : RS.vertexSideEdgeBoundary side = orderedCut crossing
-  outer_mem : RS.vertOf RS.outer ∈ side
+  anchor : RS.D
+  anchor_mem : RS.vertOf anchor ∈ side
 
 namespace FiveEdgeCutPentagonCapData
 
@@ -202,7 +203,7 @@ def capSeamData :
   matching := Equiv.refl (Fin 5)
   rho := data.capRho
   outer := data.capDartEquiv.symm
-    (Sum.inl ⟨RS.outer, data.outer_mem⟩)
+    (Sum.inl ⟨data.anchor, data.anchor_mem⟩)
 
 @[simp]
 theorem capDartEquiv_interior (dart : InternalDart RS data.keep) :
