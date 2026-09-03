@@ -413,6 +413,124 @@ theorem card_cap_faceCycleLengths_eq_capTargetReturn_partition :
     _ = data.capTargetReturn.partition.parts.card :=
       data.card_capTargetPhi_partition_eq_capTargetReturn_partition
 
+
+/-! ## The face count under the facial boundary order -/
+
+/-- The five-position composite of the inverse facial rotation with the Y
+boundary action is the transposition of positions `1` and `4`. -/
+theorem inverse_rotation_mul_yPosition_eq_swap :
+    (finRotate 5)⁻¹ *
+        positionSplit.symm.permCongr
+          (Equiv.sumCongr seamPairSwap (finRotate 3)) =
+      Equiv.swap (1 : Fin 5) 4 := by
+  apply Equiv.ext
+  decide
+
+/-- The Y boundary action in the crossing coordinates. -/
+theorem yBoundaryCycle_eq_permCongr :
+    data.yBoundaryCycle =
+      data.crossingBoundaryDartEquiv.permCongr
+        (positionSplit.symm.permCongr
+          (Equiv.sumCongr seamPairSwap (finRotate 3))) := by
+  apply Equiv.ext
+  intro dart
+  simp [yBoundaryCycle, boundarySplitEquiv, Equiv.permCongr_apply]
+
+/-- Against the facial first-return order, the boundary action of the
+return composes with the successor to the position transposition. -/
+theorem successor_mul_yBoundaryCycle
+    (hsucc : retainedRegionBoundarySuccessor RS data.keep =
+      data.crossingBoundaryDartEquiv.permCongr (finRotate 5)⁻¹) :
+    retainedRegionBoundarySuccessor RS data.keep * data.yBoundaryCycle =
+      data.crossingBoundaryDartEquiv.permCongr
+        (Equiv.swap (1 : Fin 5) 4) := by
+  rw [hsucc, data.yBoundaryCycle_eq_permCongr]
+  apply Equiv.ext
+  intro dart
+  have hpoint := DFunLike.congr_fun inverse_rotation_mul_yPosition_eq_swap
+    (data.crossingBoundaryDartEquiv.symm dart)
+  simp only [Equiv.Perm.mul_apply, Equiv.permCongr_apply,
+    Equiv.symm_apply_apply] at hpoint ⊢
+  exact congrArg data.crossingBoundaryDartEquiv hpoint
+
+/-- First return of the capped face walk to the exposed boundary darts, in
+crossing coordinates. -/
+theorem nextHitPerm_capTargetReturn_eq
+    (hsucc : retainedRegionBoundarySuccessor RS data.keep =
+      data.crossingBoundaryDartEquiv.permCongr (finRotate 5)⁻¹) :
+    nextHitPerm data.capTargetReturn
+        (fun dart : RetainedDart RS data.keep =>
+          ¬ data.keep (RS.vertOf (RS.alpha dart.1))) =
+      data.crossingBoundaryDartEquiv.permCongr
+        (Equiv.swap (1 : Fin 5) 4) := by
+  rw [data.capTargetReturn_eq,
+    nextHitPerm_rewiredRetainedCappedFacePerm,
+    data.successor_mul_yBoundaryCycle hsucc]
+
+private theorem parts_card_eq_of_instances {T : Type*}
+    (instF1 instF2 : Fintype T) (instD1 instD2 : DecidableEq T)
+    (σ : Equiv.Perm T) :
+    (@Equiv.Perm.partition T instF1 instD1 σ).parts.card =
+      (@Equiv.Perm.partition T instF2 instD2 σ).parts.card := by
+  obtain rfl : instF1 = instF2 := Subsingleton.elim _ _
+  obtain rfl : instD1 = instD2 := Subsingleton.elim _ _
+  rfl
+
+/-- Exactly four capped face cycles meet the boundary: the seam lens, two
+star sectors, and the long face through the two free arcs. -/
+theorem card_capTargetReturn_hitOrbit_eq_four
+    (hsucc : retainedRegionBoundarySuccessor RS data.keep =
+      data.crossingBoundaryDartEquiv.permCongr (finRotate 5)⁻¹) :
+    Fintype.card
+      (HitOrbit data.capTargetReturn
+        (fun dart : RetainedDart RS data.keep =>
+          ¬ data.keep (RS.vertOf (RS.alpha dart.1)))) = 4 := by
+  rw [card_hitOrbit_eq_nextHit_partition_card,
+    data.nextHitPerm_capTargetReturn_eq hsucc]
+  have hne : (1 : Fin 5) ≠ 4 := by decide
+  have hswap : (Equiv.swap (1 : Fin 5) 4).partition.parts.card = 4 := by
+    rw [Equiv.Perm.parts_partition,
+      (Equiv.Perm.isCycle_swap hne).cycleType,
+      Equiv.Perm.support_swap hne]
+    simp [Finset.card_pair hne]
+  have hgen : ∀ {T : Type _} [Fintype T] [DecidableEq T] (e : Fin 5 ≃ T),
+      ((e.permCongr (Equiv.swap (1 : Fin 5) 4)).partition).parts.card = 4 :=
+    fun e => (card_permCongr_partition_parts e (Equiv.swap 1 4)).trans hswap
+  exact (parts_card_eq_of_instances _ _ _ _ _).trans
+    (hgen data.crossingBoundaryDartEquiv)
+
+/-- The complete Y-cap face count: four boundary-closing faces plus the
+faces which never meet an exposed retained dart. -/
+theorem card_cap_faceCycleLengths_eq_four_add_nonHit
+    (hsucc : retainedRegionBoundarySuccessor RS data.keep =
+      data.crossingBoundaryDartEquiv.permCongr (finRotate 5)⁻¹) :
+    (faceCycleLengths data.capRotationSystem).card =
+      4 + Fintype.card
+        (NonHitOrbit data.capTargetReturn
+          (fun dart : RetainedDart RS data.keep =>
+            ¬ data.keep (RS.vertOf (RS.alpha dart.1)))) := by
+  calc
+    (faceCycleLengths data.capRotationSystem).card =
+        data.capTargetReturn.partition.parts.card :=
+      data.card_cap_faceCycleLengths_eq_capTargetReturn_partition
+    _ = Fintype.card
+        (Quotient (Equiv.Perm.SameCycle.setoid data.capTargetReturn)) :=
+      (card_permOrbit_eq_card_partition_parts data.capTargetReturn).symm
+    _ = Fintype.card
+          (HitOrbit data.capTargetReturn
+            (fun dart : RetainedDart RS data.keep =>
+              ¬ data.keep (RS.vertOf (RS.alpha dart.1)))) +
+        Fintype.card
+          (NonHitOrbit data.capTargetReturn
+            (fun dart : RetainedDart RS data.keep =>
+              ¬ data.keep (RS.vertOf (RS.alpha dart.1)))) :=
+      card_permOrbit_eq_hit_add_nonHit data.capTargetReturn _
+    _ = 4 + Fintype.card
+          (NonHitOrbit data.capTargetReturn
+            (fun dart : RetainedDart RS data.keep =>
+              ¬ data.keep (RS.vertOf (RS.alpha dart.1)))) := by
+      rw [data.card_capTargetReturn_hitOrbit_eq_four hsucc]
+
 end
 
 end FiveEdgeCutYCapData
