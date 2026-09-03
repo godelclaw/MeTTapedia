@@ -30,6 +30,8 @@ open CyclicBoundaryMatching
 
 set_option maxRecDepth 100000
 set_option maxHeartbeats 8000000
+set_option synthInstance.maxSize 8192
+set_option synthInstance.maxHeartbeats 1000000
 
 /-- The boundary language of one shore: admissible words, closed under
 global colour relabelling, and chain-closed under noncrossing physical
@@ -280,6 +282,279 @@ def σPRB : Color ≃ Color :=
 @[simp] theorem σPBR_zero : σPBR 0 = 0 := by decide
 @[simp] theorem σBPR_zero : σBPR 0 = 0 := by decide
 @[simp] theorem σPRB_zero : σPRB 0 = 0 := by decide
+
+private instance : DecidableEq Color := inferInstance
+
+private instance : Fintype Color := inferInstance
+
+private instance : Fintype CAP5InternalCycleColoring := inferInstance
+
+private instance : Fintype CAP5BoundaryWord := inferInstance
+
+private instance : DecidablePred (Odd : Nat → Prop) := fun n =>
+  decidable_of_iff (n % 2 = 1) Nat.odd_iff.symm
+
+private instance (w : CAP5BoundaryWord) :
+    Decidable (CAP5BoundaryWordIsNonzero w) := by
+  unfold CAP5BoundaryWordIsNonzero; infer_instance
+
+private instance (w : CAP5BoundaryWord) :
+    Decidable (CAP5BoundaryWordHasOddColorCounts w) := by
+  unfold CAP5BoundaryWordHasOddColorCounts; infer_instance
+
+private instance (w : CAP5BoundaryWord) (x : CAP5InternalCycleColoring) :
+    Decidable (CAP5ExtendsAcrossCycleWith w x) := by
+  unfold CAP5ExtendsAcrossCycleWith IsTaitColorTriple; infer_instance
+
+private instance (w : CAP5BoundaryWord) :
+    Decidable (CAP5WordExtendsAcrossCycle w) := by
+  unfold CAP5WordExtendsAcrossCycle; infer_instance
+
+/-! ## The canonical representatives and support canonicalization -/
+
+def wordPBRRR : CAP5BoundaryWord :=
+  fun i => if i = 0 then purple else if i = 1 then blue else if i = 2 then red else if i = 3 then red else red
+
+def wordRPBRR : CAP5BoundaryWord :=
+  fun i => if i = 0 then red else if i = 1 then purple else if i = 2 then blue else if i = 3 then red else red
+
+def wordPBBBR : CAP5BoundaryWord :=
+  fun i => if i = 0 then purple else if i = 1 then blue else if i = 2 then blue else if i = 3 then blue else red
+
+def wordRRPBR : CAP5BoundaryWord :=
+  fun i => if i = 0 then red else if i = 1 then red else if i = 2 then purple else if i = 3 then blue else red
+
+def wordPPPBR : CAP5BoundaryWord :=
+  fun i => if i = 0 then purple else if i = 1 then purple else if i = 2 then purple else if i = 3 then blue else red
+
+def wordBBPBR : CAP5BoundaryWord :=
+  fun i => if i = 0 then blue else if i = 1 then blue else if i = 2 then purple else if i = 3 then blue else red
+
+def wordPRRBR : CAP5BoundaryWord :=
+  fun i => if i = 0 then purple else if i = 1 then red else if i = 2 then red else if i = 3 then blue else red
+
+def wordBPBBR : CAP5BoundaryWord :=
+  fun i => if i = 0 then blue else if i = 1 then purple else if i = 2 then blue else if i = 3 then blue else red
+
+private theorem canonical_P5_decide :
+    ∀ w : CAP5BoundaryWord,
+      CAP5BoundaryWordIsNonzero w → CAP5BoundaryWordHasOddColorCounts w →
+      (∃ x : CAP5InternalCycleColoring, CAP5ExtendsAcrossCycleWith w x) →
+      (cap5MapBoundaryWord σRBP w = wordPBRRR ∨
+        cap5MapBoundaryWord σRBP w = wordRPBRR ∨
+        cap5MapBoundaryWord σRBP w = wordPBBBR ∨
+        cap5MapBoundaryWord σRBP w = wordRRPBR ∨
+        cap5MapBoundaryWord σRBP w = wordPPPBR ∨
+        cap5MapBoundaryWord σRPB w = wordPBRRR ∨
+        cap5MapBoundaryWord σRPB w = wordRPBRR ∨
+        cap5MapBoundaryWord σRPB w = wordPBBBR ∨
+        cap5MapBoundaryWord σRPB w = wordRRPBR ∨
+        cap5MapBoundaryWord σRPB w = wordPPPBR ∨
+        cap5MapBoundaryWord σBRP w = wordPBRRR ∨
+        cap5MapBoundaryWord σBRP w = wordRPBRR ∨
+        cap5MapBoundaryWord σBRP w = wordPBBBR ∨
+        cap5MapBoundaryWord σBRP w = wordRRPBR ∨
+        cap5MapBoundaryWord σBRP w = wordPPPBR ∨
+        cap5MapBoundaryWord σPBR w = wordPBRRR ∨
+        cap5MapBoundaryWord σPBR w = wordRPBRR ∨
+        cap5MapBoundaryWord σPBR w = wordPBBBR ∨
+        cap5MapBoundaryWord σPBR w = wordRRPBR ∨
+        cap5MapBoundaryWord σPBR w = wordPPPBR ∨
+        cap5MapBoundaryWord σBPR w = wordPBRRR ∨
+        cap5MapBoundaryWord σBPR w = wordRPBRR ∨
+        cap5MapBoundaryWord σBPR w = wordPBBBR ∨
+        cap5MapBoundaryWord σBPR w = wordRRPBR ∨
+        cap5MapBoundaryWord σBPR w = wordPPPBR ∨
+        cap5MapBoundaryWord σPRB w = wordPBRRR ∨
+        cap5MapBoundaryWord σPRB w = wordRPBRR ∨
+        cap5MapBoundaryWord σPRB w = wordPBBBR ∨
+        cap5MapBoundaryWord σPRB w = wordRRPBR ∨
+        cap5MapBoundaryWord σPRB w = wordPPPBR) := by
+  decide
+
+theorem canonical_P5 {L : CAP5BoundaryWord → Prop}
+    (hL : BoundaryLanguage L) {w : CAP5BoundaryWord} (hw : L w)
+    (hsupp : CAP5WordExtendsAcrossCycle w) :
+    L wordPBRRR ∨ L wordRPBRR ∨ L wordPBBBR ∨ L wordRRPBR ∨ L wordPPPBR := by
+  obtain ⟨hnz, hodd⟩ := hL.admissible w hw
+  rcases canonical_P5_decide w hnz hodd hsupp with h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h
+  · exact Or.inl (h ▸ hL.colourClosed σRBP (by decide) w hw)
+  · exact Or.inr (Or.inl (h ▸ hL.colourClosed σRBP (by decide) w hw))
+  · exact Or.inr (Or.inr (Or.inl (h ▸ hL.colourClosed σRBP (by decide) w hw)))
+  · exact Or.inr (Or.inr (Or.inr (Or.inl (h ▸ hL.colourClosed σRBP (by decide) w hw))))
+  · exact Or.inr (Or.inr (Or.inr (Or.inr ((h ▸ hL.colourClosed σRBP (by decide) w hw)))))
+  · exact Or.inl (h ▸ hL.colourClosed σRPB (by decide) w hw)
+  · exact Or.inr (Or.inl (h ▸ hL.colourClosed σRPB (by decide) w hw))
+  · exact Or.inr (Or.inr (Or.inl (h ▸ hL.colourClosed σRPB (by decide) w hw)))
+  · exact Or.inr (Or.inr (Or.inr (Or.inl (h ▸ hL.colourClosed σRPB (by decide) w hw))))
+  · exact Or.inr (Or.inr (Or.inr (Or.inr ((h ▸ hL.colourClosed σRPB (by decide) w hw)))))
+  · exact Or.inl (h ▸ hL.colourClosed σBRP (by decide) w hw)
+  · exact Or.inr (Or.inl (h ▸ hL.colourClosed σBRP (by decide) w hw))
+  · exact Or.inr (Or.inr (Or.inl (h ▸ hL.colourClosed σBRP (by decide) w hw)))
+  · exact Or.inr (Or.inr (Or.inr (Or.inl (h ▸ hL.colourClosed σBRP (by decide) w hw))))
+  · exact Or.inr (Or.inr (Or.inr (Or.inr ((h ▸ hL.colourClosed σBRP (by decide) w hw)))))
+  · exact Or.inl (h ▸ hL.colourClosed σPBR (by decide) w hw)
+  · exact Or.inr (Or.inl (h ▸ hL.colourClosed σPBR (by decide) w hw))
+  · exact Or.inr (Or.inr (Or.inl (h ▸ hL.colourClosed σPBR (by decide) w hw)))
+  · exact Or.inr (Or.inr (Or.inr (Or.inl (h ▸ hL.colourClosed σPBR (by decide) w hw))))
+  · exact Or.inr (Or.inr (Or.inr (Or.inr ((h ▸ hL.colourClosed σPBR (by decide) w hw)))))
+  · exact Or.inl (h ▸ hL.colourClosed σBPR (by decide) w hw)
+  · exact Or.inr (Or.inl (h ▸ hL.colourClosed σBPR (by decide) w hw))
+  · exact Or.inr (Or.inr (Or.inl (h ▸ hL.colourClosed σBPR (by decide) w hw)))
+  · exact Or.inr (Or.inr (Or.inr (Or.inl (h ▸ hL.colourClosed σBPR (by decide) w hw))))
+  · exact Or.inr (Or.inr (Or.inr (Or.inr ((h ▸ hL.colourClosed σBPR (by decide) w hw)))))
+  · exact Or.inl (h ▸ hL.colourClosed σPRB (by decide) w hw)
+  · exact Or.inr (Or.inl (h ▸ hL.colourClosed σPRB (by decide) w hw))
+  · exact Or.inr (Or.inr (Or.inl (h ▸ hL.colourClosed σPRB (by decide) w hw)))
+  · exact Or.inr (Or.inr (Or.inr (Or.inl (h ▸ hL.colourClosed σPRB (by decide) w hw))))
+  · exact Or.inr (Or.inr (Or.inr (Or.inr ((h ▸ hL.colourClosed σPRB (by decide) w hw)))))
+
+private theorem canonical_Y0_decide :
+    ∀ w : CAP5BoundaryWord,
+      CAP5BoundaryWordIsNonzero w → CAP5BoundaryWordHasOddColorCounts w →
+      CAP5YCapSupport 0 w →
+      (cap5MapBoundaryWord σRBP w = wordRRPBR ∨
+        cap5MapBoundaryWord σRBP w = wordBBPBR ∨
+        cap5MapBoundaryWord σRBP w = wordPPPBR ∨
+        cap5MapBoundaryWord σRPB w = wordRRPBR ∨
+        cap5MapBoundaryWord σRPB w = wordBBPBR ∨
+        cap5MapBoundaryWord σRPB w = wordPPPBR ∨
+        cap5MapBoundaryWord σBRP w = wordRRPBR ∨
+        cap5MapBoundaryWord σBRP w = wordBBPBR ∨
+        cap5MapBoundaryWord σBRP w = wordPPPBR ∨
+        cap5MapBoundaryWord σPBR w = wordRRPBR ∨
+        cap5MapBoundaryWord σPBR w = wordBBPBR ∨
+        cap5MapBoundaryWord σPBR w = wordPPPBR ∨
+        cap5MapBoundaryWord σBPR w = wordRRPBR ∨
+        cap5MapBoundaryWord σBPR w = wordBBPBR ∨
+        cap5MapBoundaryWord σBPR w = wordPPPBR ∨
+        cap5MapBoundaryWord σPRB w = wordRRPBR ∨
+        cap5MapBoundaryWord σPRB w = wordBBPBR ∨
+        cap5MapBoundaryWord σPRB w = wordPPPBR) := by
+  decide
+
+theorem canonical_Y0 {L : CAP5BoundaryWord → Prop}
+    (hL : BoundaryLanguage L) {w : CAP5BoundaryWord} (hw : L w)
+    (hsupp : CAP5YCapSupport 0 w) :
+    L wordRRPBR ∨ L wordBBPBR ∨ L wordPPPBR := by
+  obtain ⟨hnz, hodd⟩ := hL.admissible w hw
+  rcases canonical_Y0_decide w hnz hodd hsupp with h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h
+  · exact Or.inl (h ▸ hL.colourClosed σRBP (by decide) w hw)
+  · exact Or.inr (Or.inl (h ▸ hL.colourClosed σRBP (by decide) w hw))
+  · exact Or.inr (Or.inr ((h ▸ hL.colourClosed σRBP (by decide) w hw)))
+  · exact Or.inl (h ▸ hL.colourClosed σRPB (by decide) w hw)
+  · exact Or.inr (Or.inl (h ▸ hL.colourClosed σRPB (by decide) w hw))
+  · exact Or.inr (Or.inr ((h ▸ hL.colourClosed σRPB (by decide) w hw)))
+  · exact Or.inl (h ▸ hL.colourClosed σBRP (by decide) w hw)
+  · exact Or.inr (Or.inl (h ▸ hL.colourClosed σBRP (by decide) w hw))
+  · exact Or.inr (Or.inr ((h ▸ hL.colourClosed σBRP (by decide) w hw)))
+  · exact Or.inl (h ▸ hL.colourClosed σPBR (by decide) w hw)
+  · exact Or.inr (Or.inl (h ▸ hL.colourClosed σPBR (by decide) w hw))
+  · exact Or.inr (Or.inr ((h ▸ hL.colourClosed σPBR (by decide) w hw)))
+  · exact Or.inl (h ▸ hL.colourClosed σBPR (by decide) w hw)
+  · exact Or.inr (Or.inl (h ▸ hL.colourClosed σBPR (by decide) w hw))
+  · exact Or.inr (Or.inr ((h ▸ hL.colourClosed σBPR (by decide) w hw)))
+  · exact Or.inl (h ▸ hL.colourClosed σPRB (by decide) w hw)
+  · exact Or.inr (Or.inl (h ▸ hL.colourClosed σPRB (by decide) w hw))
+  · exact Or.inr (Or.inr ((h ▸ hL.colourClosed σPRB (by decide) w hw)))
+
+private theorem canonical_Y1_decide :
+    ∀ w : CAP5BoundaryWord,
+      CAP5BoundaryWordIsNonzero w → CAP5BoundaryWordHasOddColorCounts w →
+      CAP5YCapSupport 1 w →
+      (cap5MapBoundaryWord σRBP w = wordPRRBR ∨
+        cap5MapBoundaryWord σRBP w = wordPBBBR ∨
+        cap5MapBoundaryWord σRBP w = wordPPPBR ∨
+        cap5MapBoundaryWord σRPB w = wordPRRBR ∨
+        cap5MapBoundaryWord σRPB w = wordPBBBR ∨
+        cap5MapBoundaryWord σRPB w = wordPPPBR ∨
+        cap5MapBoundaryWord σBRP w = wordPRRBR ∨
+        cap5MapBoundaryWord σBRP w = wordPBBBR ∨
+        cap5MapBoundaryWord σBRP w = wordPPPBR ∨
+        cap5MapBoundaryWord σPBR w = wordPRRBR ∨
+        cap5MapBoundaryWord σPBR w = wordPBBBR ∨
+        cap5MapBoundaryWord σPBR w = wordPPPBR ∨
+        cap5MapBoundaryWord σBPR w = wordPRRBR ∨
+        cap5MapBoundaryWord σBPR w = wordPBBBR ∨
+        cap5MapBoundaryWord σBPR w = wordPPPBR ∨
+        cap5MapBoundaryWord σPRB w = wordPRRBR ∨
+        cap5MapBoundaryWord σPRB w = wordPBBBR ∨
+        cap5MapBoundaryWord σPRB w = wordPPPBR) := by
+  decide
+
+theorem canonical_Y1 {L : CAP5BoundaryWord → Prop}
+    (hL : BoundaryLanguage L) {w : CAP5BoundaryWord} (hw : L w)
+    (hsupp : CAP5YCapSupport 1 w) :
+    L wordPRRBR ∨ L wordPBBBR ∨ L wordPPPBR := by
+  obtain ⟨hnz, hodd⟩ := hL.admissible w hw
+  rcases canonical_Y1_decide w hnz hodd hsupp with h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h
+  · exact Or.inl (h ▸ hL.colourClosed σRBP (by decide) w hw)
+  · exact Or.inr (Or.inl (h ▸ hL.colourClosed σRBP (by decide) w hw))
+  · exact Or.inr (Or.inr ((h ▸ hL.colourClosed σRBP (by decide) w hw)))
+  · exact Or.inl (h ▸ hL.colourClosed σRPB (by decide) w hw)
+  · exact Or.inr (Or.inl (h ▸ hL.colourClosed σRPB (by decide) w hw))
+  · exact Or.inr (Or.inr ((h ▸ hL.colourClosed σRPB (by decide) w hw)))
+  · exact Or.inl (h ▸ hL.colourClosed σBRP (by decide) w hw)
+  · exact Or.inr (Or.inl (h ▸ hL.colourClosed σBRP (by decide) w hw))
+  · exact Or.inr (Or.inr ((h ▸ hL.colourClosed σBRP (by decide) w hw)))
+  · exact Or.inl (h ▸ hL.colourClosed σPBR (by decide) w hw)
+  · exact Or.inr (Or.inl (h ▸ hL.colourClosed σPBR (by decide) w hw))
+  · exact Or.inr (Or.inr ((h ▸ hL.colourClosed σPBR (by decide) w hw)))
+  · exact Or.inl (h ▸ hL.colourClosed σBPR (by decide) w hw)
+  · exact Or.inr (Or.inl (h ▸ hL.colourClosed σBPR (by decide) w hw))
+  · exact Or.inr (Or.inr ((h ▸ hL.colourClosed σBPR (by decide) w hw)))
+  · exact Or.inl (h ▸ hL.colourClosed σPRB (by decide) w hw)
+  · exact Or.inr (Or.inl (h ▸ hL.colourClosed σPRB (by decide) w hw))
+  · exact Or.inr (Or.inr ((h ▸ hL.colourClosed σPRB (by decide) w hw)))
+
+private theorem canonical_Y2_decide :
+    ∀ w : CAP5BoundaryWord,
+      CAP5BoundaryWordIsNonzero w → CAP5BoundaryWordHasOddColorCounts w →
+      CAP5YCapSupport 2 w →
+      (cap5MapBoundaryWord σRBP w = wordPBRRR ∨
+        cap5MapBoundaryWord σRBP w = wordPBBBR ∨
+        cap5MapBoundaryWord σRBP w = wordBPBBR ∨
+        cap5MapBoundaryWord σRPB w = wordPBRRR ∨
+        cap5MapBoundaryWord σRPB w = wordPBBBR ∨
+        cap5MapBoundaryWord σRPB w = wordBPBBR ∨
+        cap5MapBoundaryWord σBRP w = wordPBRRR ∨
+        cap5MapBoundaryWord σBRP w = wordPBBBR ∨
+        cap5MapBoundaryWord σBRP w = wordBPBBR ∨
+        cap5MapBoundaryWord σPBR w = wordPBRRR ∨
+        cap5MapBoundaryWord σPBR w = wordPBBBR ∨
+        cap5MapBoundaryWord σPBR w = wordBPBBR ∨
+        cap5MapBoundaryWord σBPR w = wordPBRRR ∨
+        cap5MapBoundaryWord σBPR w = wordPBBBR ∨
+        cap5MapBoundaryWord σBPR w = wordBPBBR ∨
+        cap5MapBoundaryWord σPRB w = wordPBRRR ∨
+        cap5MapBoundaryWord σPRB w = wordPBBBR ∨
+        cap5MapBoundaryWord σPRB w = wordBPBBR) := by
+  decide
+
+theorem canonical_Y2 {L : CAP5BoundaryWord → Prop}
+    (hL : BoundaryLanguage L) {w : CAP5BoundaryWord} (hw : L w)
+    (hsupp : CAP5YCapSupport 2 w) :
+    L wordPBRRR ∨ L wordPBBBR ∨ L wordBPBBR := by
+  obtain ⟨hnz, hodd⟩ := hL.admissible w hw
+  rcases canonical_Y2_decide w hnz hodd hsupp with h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h|h
+  · exact Or.inl (h ▸ hL.colourClosed σRBP (by decide) w hw)
+  · exact Or.inr (Or.inl (h ▸ hL.colourClosed σRBP (by decide) w hw))
+  · exact Or.inr (Or.inr ((h ▸ hL.colourClosed σRBP (by decide) w hw)))
+  · exact Or.inl (h ▸ hL.colourClosed σRPB (by decide) w hw)
+  · exact Or.inr (Or.inl (h ▸ hL.colourClosed σRPB (by decide) w hw))
+  · exact Or.inr (Or.inr ((h ▸ hL.colourClosed σRPB (by decide) w hw)))
+  · exact Or.inl (h ▸ hL.colourClosed σBRP (by decide) w hw)
+  · exact Or.inr (Or.inl (h ▸ hL.colourClosed σBRP (by decide) w hw))
+  · exact Or.inr (Or.inr ((h ▸ hL.colourClosed σBRP (by decide) w hw)))
+  · exact Or.inl (h ▸ hL.colourClosed σPBR (by decide) w hw)
+  · exact Or.inr (Or.inl (h ▸ hL.colourClosed σPBR (by decide) w hw))
+  · exact Or.inr (Or.inr ((h ▸ hL.colourClosed σPBR (by decide) w hw)))
+  · exact Or.inl (h ▸ hL.colourClosed σBPR (by decide) w hw)
+  · exact Or.inr (Or.inl (h ▸ hL.colourClosed σBPR (by decide) w hw))
+  · exact Or.inr (Or.inr ((h ▸ hL.colourClosed σBPR (by decide) w hw)))
+  · exact Or.inl (h ▸ hL.colourClosed σPRB (by decide) w hw)
+  · exact Or.inr (Or.inl (h ▸ hL.colourClosed σPRB (by decide) w hw))
+  · exact Or.inr (Or.inr ((h ▸ hL.colourClosed σPRB (by decide) w hw)))
 
 end FiveCutWordHeart
 
