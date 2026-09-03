@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.CAP5YCapWords
 import Mettapedia.GraphTheory.FourColor.Compositional.CyclicBoundaryMatching
+import Mettapedia.GraphTheory.FourColor.Compositional.FiveCycleColorClass
 
 /-!
 # The word-level heart of the trivial-five-cut theorem
@@ -127,6 +128,112 @@ theorem mate_forced_two :
         (∀ i : Fin 5, mate i ≠ i ↔ (i = a ∨ i = b)) →
         ∀ i : Fin 5, mate i = if i = a then b else if i = b then a else i := by
   decide
+
+/-! ## Canonicalization at the root -/
+
+open FiveCycleColorClass
+
+theorem isTaitColorTriple_rotate {a b c : Color}
+    (h : IsTaitColorTriple a b c) : IsTaitColorTriple c a b := by
+  obtain ⟨ha, hb, hc, hab, hac, hbc⟩ := h
+  exact ⟨hc, ha, hb, fun h => hac h.symm, fun h => hbc h.symm, hab⟩
+
+/-- The three canonical `Y₀`-cap words: the doubled colour is red, the third
+red sits at position 4, 3, or 2, and the two minority letters read purple
+then blue in boundary order. -/
+def rootWord₁ : CAP5BoundaryWord := fun i =>
+  if i = 2 then purple else if i = 3 then blue else red
+def rootWord₂ : CAP5BoundaryWord := fun i =>
+  if i = 2 then purple else if i = 4 then blue else red
+def rootWord₃ : CAP5BoundaryWord := fun i =>
+  if i = 3 then purple else if i = 4 then blue else red
+
+/-- Any language word supported by the `Y₀` cap yields one of the three
+canonical root words, using colour closure. -/
+theorem root_canonicalization {L : CAP5BoundaryWord → Prop}
+    (hL : BoundaryLanguage L) {w : CAP5BoundaryWord}
+    (hw : L w) (hcap : CAP5YCapSupport 0 w) :
+    L rootWord₁ ∨ L rootWord₂ ∨ L rootWord₃ := by
+  obtain ⟨hcapEq, hne, htriple⟩ := hcap
+  have h2 : (0 : Fin 5) + 2 = 2 := by decide
+  have h3 : (0 : Fin 5) + 3 = 3 := by decide
+  have h4 : (0 : Fin 5) + 4 = 4 := by decide
+  rw [h2, h3, h4] at htriple
+  -- exactly one of the three vertex ports repeats the doubled colour
+  have hmem : w 2 = w 0 ∨ w 3 = w 0 ∨ w 4 = w 0 := by
+    have h2c := htriple.1
+    have h3c := htriple.2.1
+    have h4c := htriple.2.2.1
+    rcases eq_red_or_eq_blue_or_eq_purple_of_ne_zero (w 0) hne with h | h | h <;>
+    rcases eq_red_or_eq_blue_or_eq_purple_of_ne_zero (w 2) h2c with g2 | g2 | g2 <;>
+    rcases eq_red_or_eq_blue_or_eq_purple_of_ne_zero (w 3) h3c with g3 | g3 | g3 <;>
+    rcases eq_red_or_eq_blue_or_eq_purple_of_ne_zero (w 4) h4c with g4 | g4 | g4 <;>
+      first
+        | exact Or.inl (g2.trans h.symm)
+        | exact Or.inr (Or.inl (g3.trans h.symm))
+        | exact Or.inr (Or.inr (g4.trans h.symm))
+        | (exfalso
+           obtain ⟨_, _, _, hab, hac, hbc⟩ := htriple
+           first
+             | exact hab (g2.trans g3.symm)
+             | exact hac (g2.trans g4.symm)
+             | exact hbc (g3.trans g4.symm))
+  have h01 : (0 : Fin 5) + 1 = 1 := by decide
+  rw [h01] at hcapEq
+  have htargetPB : IsTaitColorTriple red purple blue :=
+    isTaitColorTriple_swap_last isTaitColorTriple_red_blue_purple
+  rcases hmem with hcase | hcase | hcase
+  · -- third doubled letter at position 2: canonical shape ₃
+    right; right
+    have hsource : IsTaitColorTriple (w 0) (w 3) (w 4) := by
+      rw [← hcase]; exact htriple
+    have hmap := hL.colourClosed
+      (equivalenceBetweenTaitTriples hsource htargetPB)
+      (equivalenceBetweenTaitTriples_zero hsource htargetPB) w hw
+    have heq : cap5MapBoundaryWord
+        (equivalenceBetweenTaitTriples hsource htargetPB) w = rootWord₃ := by
+      funext i
+      fin_cases i <;>
+        simp [cap5MapBoundaryWord, rootWord₃, ← hcapEq, hcase,
+          equivalenceBetweenTaitTriples_first hsource htargetPB,
+          equivalenceBetweenTaitTriples_second hsource htargetPB,
+          equivalenceBetweenTaitTriples_third hsource htargetPB]
+    rwa [heq] at hmap
+  · -- third doubled letter at position 3: canonical shape ₂
+    right; left
+    have hsource : IsTaitColorTriple (w 0) (w 2) (w 4) := by
+      have := isTaitColorTriple_swap_last
+        (isTaitColorTriple_rotate (isTaitColorTriple_rotate htriple))
+      rwa [hcase] at this
+    have hmap := hL.colourClosed
+      (equivalenceBetweenTaitTriples hsource htargetPB)
+      (equivalenceBetweenTaitTriples_zero hsource htargetPB) w hw
+    have heq : cap5MapBoundaryWord
+        (equivalenceBetweenTaitTriples hsource htargetPB) w = rootWord₂ := by
+      funext i
+      fin_cases i <;>
+        simp [cap5MapBoundaryWord, rootWord₂, ← hcapEq, hcase,
+          equivalenceBetweenTaitTriples_first hsource htargetPB,
+          equivalenceBetweenTaitTriples_second hsource htargetPB,
+          equivalenceBetweenTaitTriples_third hsource htargetPB]
+    rwa [heq] at hmap
+  · -- third doubled letter at position 4: canonical shape ₁
+    left
+    have hsource : IsTaitColorTriple (w 0) (w 2) (w 3) := by
+      have := isTaitColorTriple_rotate htriple
+      rwa [hcase] at this
+    have hmap := hL.colourClosed
+      (equivalenceBetweenTaitTriples hsource htargetPB)
+      (equivalenceBetweenTaitTriples_zero hsource htargetPB) w hw
+    have heq : cap5MapBoundaryWord
+        (equivalenceBetweenTaitTriples hsource htargetPB) w = rootWord₁ := by
+      funext i
+      fin_cases i <;>
+        simp [cap5MapBoundaryWord, rootWord₁, ← hcapEq, hcase,
+          equivalenceBetweenTaitTriples_first hsource htargetPB,
+          equivalenceBetweenTaitTriples_second hsource htargetPB,
+          equivalenceBetweenTaitTriples_third hsource htargetPB]
+    rwa [heq] at hmap
 
 end FiveCutWordHeart
 
