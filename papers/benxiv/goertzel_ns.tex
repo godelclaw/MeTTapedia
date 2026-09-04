@@ -1108,9 +1108,17 @@ transverse aperture at most $N^{-2}$ after rotation into the chosen frame.
 From these physical inequalities it proves the transverse bounds and the
 nontrivial axial lower bound $3/4$, hence inclusion in the four-chart annulus.
 The exact coherent-action formula therefore applies directly to the concrete
-finite shell-and-cone projections.  A measurable low-strain eigenframe construction and
-identification of these concrete finite projectors with the actual
-Littlewood--Paley coherent share are still required.
+finite shell-and-cone projections.  The modules
+\texttt{PancakeAxialFrameConstruction} and
+\texttt{PancakeStrainAxialFrame} then remove the caller-supplied pointwise
+frame.  The first constructs, by two explicit reflections, an
+orientation-preserving orthogonal map sending any unit direction to the axial
+vector; the second feeds it the smallest-eigenvalue direction supplied by the
+ordered spectral theorem for the symmetric strain.  Thus the pointwise
+$C/N$ endpoint now applies directly to a frame constructed from the strain.
+Measurable dependence of the spectral choice through eigenvalue collisions,
+and identification of these concrete finite projectors with the actual
+Littlewood--Paley coherent share, are still required.
 
 There is a second field-level issue which a fixed-axis multiplier does not
 address.  The actual pancake frame is the eigensystem of the low-frequency
@@ -1131,10 +1139,11 @@ summation and the full anisotropic square-dyadic scaling are supplied by the
 two subsequent modules above; frozen oriented-frame kernel transference is
 supplied by \texttt{PancakeFrozenFrameKernelTransfer}; the full four-sign
 annulus and its physical variable-frame endpoint are supplied by the annular
-modules above.  The remaining field-transfer pieces are measurable
-low-strain eigenframe/sector construction and identification of the
-physically conjugated annular action with the actual Littlewood--Paley
-coherent share.  The older frequencywise commutator estimate
+modules above, and the pointwise frame is now constructed from the strain.
+The remaining field-transfer pieces are measurable control of that spectral
+selection through eigenvalue collisions and identification of the physically
+conjugated annular action with the actual Littlewood--Paley coherent share.
+The older frequencywise commutator estimate
 remains correct, but the new uniform physical-kernel endpoint shows that no
 frame-oscillation estimate is needed merely to obtain the pointwise
 $L^\infty$ bound.
@@ -1176,7 +1185,8 @@ sector projector is now constructed, its six-dimensional chart is identified
 with the two independently filtered mode charts, and the genuine rotated
 radial-shell/angle-cone selector is proved to lie in that annulus.  The exact
 physical coherent formula follows without an additional support premise.  The
-remaining steps are a measurable low-strain eigenframe construction and
+pointwise strain-derived axial frame is also constructed.  The remaining
+steps are measurable spectral selection through eigenvalue collisions, and
 identification and assembly of this concrete projector/action into
 \texttt{coherent\_le} for the actual Navier--Stokes functionals.
 (ii) The misalignment budget itself: dynamical,
@@ -1374,10 +1384,11 @@ refinement (Section~\ref{sec:coherence}), the open analytic input is
 \texttt{MisalignmentStrainBudget} together with the field-level
 coherent/misaligned transfer, which jointly reproduce
 \texttt{ScaleLocalPancakeStrainBudget} (cross-referenced with the coarser
-\texttt{StochasticStretchingEstimate}).  A successful completion must prove a
-measurable low-strain eigenframe construction together with identification of
-the now-concrete annular finite-Fourier projector and kernel action with the
-actual scale-local coherent share, and a dynamical,
+\texttt{StochasticStretchingEstimate}).  A successful completion must prove
+measurable control of the pointwise strain-derived spectral frame through
+eigenvalue collisions, identify the now-concrete annular finite-Fourier
+projector and kernel action with the actual scale-local coherent share, and
+prove a dynamical,
 time-integrated control of the vorticity-direction misalignment share, strong
  enough to cover the gap band identified above.  The finite four-sign
 annular partition and its exact periodic physical transference are proved;
