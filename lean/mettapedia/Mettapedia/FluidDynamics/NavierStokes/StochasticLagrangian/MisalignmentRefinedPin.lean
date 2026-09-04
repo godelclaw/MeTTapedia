@@ -39,11 +39,13 @@ integrand, which unlike the full strain has known dynamical handles.
 1. Completion of the field-level transfer: the periodic mode split,
    continuous-frequency projection estimate, finite torus-kernel realization,
    uniform smooth kernel-mass bound, exact finite-Fourier bilinear action,
-   frozen-frame covariance, isotropic dyadic rescaling, and exact
-   variable/frozen symbol split are proved in the downstream `Pancake*`
-   modules.  What remains is the square-dyadic anisotropic
-   transverse/axial rescaling, finite chart/rotation assembly, and control of
-   the spatial eigenframe-variation remainder, followed by their assembly
+   frozen-frame covariance, isotropic and anisotropic square-dyadic
+   rescaling, exact periodization, physical input/output frame conjugation,
+   and a frame-uniform pointwise kernel endpoint are proved in the downstream
+   `Pancake*` modules.  What remains is finite oriented-chart
+   selection/partition and the identification of the resulting variable-frame
+   field action with the coherent share of the actual Littlewood--Paley
+   Navier--Stokes decomposition, followed by their assembly
    into `split_le` and `coherent_le` for actual Navier–Stokes
    Littlewood–Paley data.
 2. `MisalignmentStrainBudget` itself: the dynamical, time-integrated
