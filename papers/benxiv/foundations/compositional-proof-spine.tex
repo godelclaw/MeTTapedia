@@ -8123,6 +8123,41 @@ Lemma~\ref{lem:residual-return-attachment-matching-role} identifies $c$ with
 the reference-matching edge at its left endpoint.
 \end{proof}
 
+\begin{lemma}[one-path laminar noncrossing has no uniform depth bound]
+\label{lem:one-path-laminar-noncrossing-unbounded}
+\Sverified{Mettapedia.GraphTheory.card_rainbowChordFamily}
+\Sverified{Mettapedia.GraphTheory.rainbowChordFamily_pairwiseEndpointDisjoint}
+\Sverified{Mettapedia.GraphTheory.rainbowChordFamily_pairwiseLaminar}
+\Sverified{Mettapedia.GraphTheory.exists_constant_sector_noncrossing_family}
+\Sverified{Mettapedia.GraphTheory.no_uniform_cardinality_bound_of_laminar_fiberwiseNoncrossing}
+For every $d$ there is an endpoint-disjoint family of exactly $d$ ordered
+chords on one path whose intervals are strictly nested, whose chords are
+pairwise noncrossing, and whose Boolean sector label is constant.  Therefore
+endpoint disjointness, laminarity, and same-sector noncrossing do not imply a
+uniform bound on either the family cardinality or its nesting depth.
+\end{lemma}
+
+\begin{proof}
+On a path with $2d+1$ positions, join position $i$ to position $2d-i$ for
+$0\le i<d$.  Increasing $i$ moves the left endpoint strictly rightward and
+the right endpoint strictly leftward, so every pair is nested.  The two
+halves of the coordinate interval are disjoint, so distinct chords share no
+endpoint.  Nested chords do not cross.  Giving every chord the same Boolean
+label supplies the final claim, and choosing $d$ one larger than any proposed
+uniform bound gives a contradiction.
+\end{proof}
+
+This sharpness result does not refute the source's Sector--Alternation route.
+It fixes its required semantics.  Addendum~XXVII uses a stronger two-rail
+statement: the disk cut off by each chord drains its internal attachments to
+the opposite rail, and the pumpable depth coordinate consists of the
+resulting alternating layer boundaries.  A one-path laminar family, even
+with a global two-sector noncrossing label, is not a substitute for those
+layers.  Consequently the one-path depth adapter is retained only as a
+conditional interface theorem; the source-facing proof must construct the
+alternating two-rail layers and prove their boundaries have one uniform
+width before applying finite-state repetition.
+
 \begin{lemma}[rotation side of a cubic path attachment]
 \label{lem:cubic-path-attachment-rotation-side}
 \Sverified{Mettapedia.GraphTheory.FourColor.SimpleGraphDartRotation.Data.vertexRotation_apply_eq_second_or_third_of_regularThree}
