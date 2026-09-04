@@ -21,6 +21,7 @@ open GoertzelV24AlternatingMatchingComponent
 open GoertzelV24OrderedMeshResidualSiteMatching
 open GoertzelV24ResidualReturnCycleOrder
 open GoertzelV24ResidualReturnPairing
+open GoertzelV24ResidualReturnArc
 open GoertzelV24ResidualTwoFactor
 open MatchingParity
 open ResidualCircuitParity
@@ -202,6 +203,160 @@ theorem newResidual_reachable_iff_exists_eqvGen_and_common_reachable
               residualGraph G
                 (sigma.exchange site.tau site.carrier
                   site.sigma_closed site.tau_closed) from inf_le_right)))
+
+/-- A canonical return path exhausts its connected component in the common
+residual graph.  Endpoints have degree one and every internal path vertex has
+degree two, so the path already uses every incident edge at each of its
+vertices. -/
+theorem orderedReturnPath_toSubgraph_verts_eq_commonComponent_supp
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (position : CyclePosition sigma site) :
+    (orderedReturnPath hG sigma hSigma site position).toSubgraph.verts =
+      ((commonResidualGraph G sigma site).connectedComponentMk
+        (cycleVertexOrder sigma site position).1).supp := by
+  classical
+  let H := commonResidualGraph G sigma site
+  let path := orderedReturnPath hG sigma hSigma site position
+  let start := (cycleVertexOrder sigma site position).1
+  let finish := (cycleVertexOrder sigma site
+    ((orderedSiteReturnPairing hG sigma hSigma site).partner position)).1
+  have hpath : path.IsPath :=
+    orderedReturnPath_isPath hG sigma hSigma site position
+  have hnotNil : ¬ path.Nil :=
+    orderedReturnPath_not_nil hG sigma hSigma site position
+  have hdegree := degree_commonResidualGraph hG sigma hSigma site
+  have hncardDegree (vertex : V) :
+      (H.neighborSet vertex).ncard = H.degree vertex := by
+    calc
+      (H.neighborSet vertex).ncard =
+          Fintype.card (H.neighborSet vertex) :=
+        (Set.fintypeCard_eq_ncard (H.neighborSet vertex)).symm
+      _ = H.degree vertex := H.card_neighborSet_eq_degree vertex
+  have hclosed : ∀ vertex ∈ path.toSubgraph.verts, ∀ neighbor,
+      H.Adj vertex neighbor → path.toSubgraph.Adj vertex neighbor := by
+    intro vertex hvertex neighbor hadjacent
+    have hsupport : vertex ∈ path.support :=
+      path.mem_verts_toSubgraph.mp hvertex
+    rcases SimpleGraph.Walk.mem_support_iff_exists_getVert.mp hsupport with
+      ⟨index, hindex, hindexBound⟩
+    have hneighborSubset : path.toSubgraph.neighborSet vertex ⊆
+        H.neighborSet vertex := by
+      intro candidate hcandidate
+      exact hcandidate.adj_sub
+    have hpathCard : (path.toSubgraph.neighborSet vertex).ncard =
+        if index = 0 ∨ index = path.length then 1 else 2 := by
+      by_cases hstartIndex : index = 0
+      · rw [if_pos (Or.inl hstartIndex)]
+        have hvertexStart : vertex = start := by
+          calc
+            vertex = path.getVert index := hindex.symm
+            _ = start := by simpa [path, start, hstartIndex]
+        have hcard := congrArg Set.ncard
+          (hpath.neighborSet_toSubgraph_startpoint hnotNil)
+        rw [hvertexStart]
+        exact hcard.trans (Set.ncard_singleton path.snd)
+      · by_cases hfinishIndex : index = path.length
+        · rw [if_pos (Or.inr hfinishIndex)]
+          have hvertexFinish : vertex = finish := by
+            calc
+              vertex = path.getVert index := hindex.symm
+              _ = finish := by
+                simpa [path, finish] using
+                  (hpath.getVert_eq_end_iff hindexBound).2 hfinishIndex
+          have hcard := congrArg Set.ncard
+            (hpath.neighborSet_toSubgraph_endpoint hnotNil)
+          rw [hvertexFinish]
+          exact hcard.trans (Set.ncard_singleton path.penultimate)
+        · rw [if_neg (not_or_intro hstartIndex hfinishIndex)]
+          have hindexLt : index < path.length := by omega
+          have hcard := hpath.ncard_neighborSet_toSubgraph_internal_eq_two
+            hstartIndex hindexLt
+          simpa only [hindex] using hcard
+    have hambientCard : (H.neighborSet vertex).ncard =
+        if index = 0 ∨ index = path.length then 1 else 2 := by
+      rw [hncardDegree, hdegree]
+      by_cases hendpoint : index = 0 ∨ index = path.length
+      · simp only [hendpoint, if_true]
+        rcases hendpoint with hstartIndex | hfinishIndex
+        · have hvertexStart : vertex = start := by
+            calc
+              vertex = path.getVert index := hindex.symm
+              _ = start := by simpa [path, start, hstartIndex]
+          apply if_pos
+          simpa [hvertexStart, start] using
+            (cycleVertexOrder sigma site position).2
+        · have hvertexFinish : vertex = finish := by
+            calc
+              vertex = path.getVert index := hindex.symm
+              _ = finish := by
+                simpa [path, finish] using
+                  (hpath.getVert_eq_end_iff hindexBound).2 hfinishIndex
+          apply if_pos
+          simpa [hvertexFinish, finish] using
+            (cycleVertexOrder sigma site
+              ((orderedSiteReturnPairing hG sigma hSigma site).partner
+                position)).2
+      · simp only [hendpoint, if_false]
+        apply if_neg
+        intro hcarrier
+        have hcases :=
+          eq_start_or_eq_finish_of_mem_orderedReturnPath_support_of_mem_carrier
+            hG sigma hSigma site position hsupport hcarrier
+        rcases hcases with hvertexStart | hvertexFinish
+        · apply hendpoint
+          left
+          apply (hpath.getVert_eq_start_iff hindexBound).1
+          exact hindex.trans hvertexStart
+        · apply hendpoint
+          right
+          apply (hpath.getVert_eq_end_iff hindexBound).1
+          exact hindex.trans hvertexFinish
+    have hneighborEq : path.toSubgraph.neighborSet vertex =
+        H.neighborSet vertex := by
+      apply Set.eq_of_subset_of_ncard_le hneighborSubset
+      rw [hpathCard, hambientCard]
+    change neighbor ∈ path.toSubgraph.neighborSet vertex
+    rw [hneighborEq]
+    exact hadjacent
+  rcases path.toSubgraph_connected.exists_verts_eq_connectedComponentSupp
+      hclosed with ⟨component, hcomponent⟩
+  have hstartPath : start ∈ path.toSubgraph.verts := by
+    exact path.start_mem_verts_toSubgraph
+  have hstartComponent : start ∈ component.supp := by
+    rw [← hcomponent]
+    exact hstartPath
+  have hcomponentEq : component = H.connectedComponentMk start :=
+    ((component.mem_supp_iff start).1 hstartComponent).symm
+  simpa only [H, path, start] using hcomponent.trans
+    (congrArg SimpleGraph.ConnectedComponent.supp hcomponentEq)
+
+/-- The support cardinality of one common return component is its canonical
+return length plus its initial endpoint. -/
+theorem commonComponent_ncard_eq_orderedReturnPath_length_add_one
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (position : CyclePosition sigma site) :
+    ((commonResidualGraph G sigma site).connectedComponentMk
+        (cycleVertexOrder sigma site position).1).supp.ncard =
+      (orderedReturnPath hG sigma hSigma site position).length + 1 := by
+  let path := orderedReturnPath hG sigma hSigma site position
+  have hverts :=
+    orderedReturnPath_toSubgraph_verts_eq_commonComponent_supp
+      hG sigma hSigma site position
+  rw [← hverts]
+  have hset : path.toSubgraph.verts =
+      (path.support.toFinset : Set V) := by
+    ext vertex
+    simp
+  rw [hset, Set.ncard_coe_finset,
+    List.toFinset_card_of_nodup
+    (orderedReturnPath_isPath hG sigma hSigma site position).support_nodup,
+    path.length_support]
 
 end
 
