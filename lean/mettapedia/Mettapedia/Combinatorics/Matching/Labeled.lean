@@ -28,6 +28,22 @@ namespace LabeledPairing
 
 variable {V : Type u} {W : Type w} {A : Type v}
 
+/-- Give every edge of an unlabelled pairing the same label. -/
+def const (pairing : Pairing V) (value : A) : LabeledPairing V A where
+  toPairing := pairing
+  label _ := value
+  label_partner _ := rfl
+
+@[simp]
+theorem const_toPairing (pairing : Pairing V) (value : A) :
+    (const pairing value).toPairing = pairing :=
+  rfl
+
+@[simp]
+theorem const_label (pairing : Pairing V) (value : A) (vertex : V) :
+    (const pairing value).label vertex = value :=
+  rfl
+
 @[simp]
 theorem label_partner_apply (pairing : LabeledPairing V A) (vertex : V) :
     pairing.label (pairing.toPairing.partner vertex) = pairing.label vertex :=

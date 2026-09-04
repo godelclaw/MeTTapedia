@@ -1,5 +1,6 @@
 import Mettapedia.Combinatorics.Matching.Pairing
 import Mettapedia.Combinatorics.Matching.Labeled
+import Mettapedia.Combinatorics.Matching.CircuitPartition
 import Mettapedia.Combinatorics.Matching.Amplitude
 import Mettapedia.Combinatorics.Matching.Sum
 import Mettapedia.Combinatorics.Matching.Crossing
