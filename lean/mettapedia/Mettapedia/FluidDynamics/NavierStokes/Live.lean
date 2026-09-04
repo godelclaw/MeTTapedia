@@ -93,6 +93,7 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeAxialFr
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeStrainAxialFrame
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeComplexMisalignmentExpansion
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeComplexCoherentPDEIdentification
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakePhysicalMisalignmentSplit
 
 /-!
 # Navier-Stokes live surface

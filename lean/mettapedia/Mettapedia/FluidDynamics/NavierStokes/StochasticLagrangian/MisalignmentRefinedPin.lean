@@ -50,11 +50,15 @@ integrand, which unlike the full strain has known dynamical handles.
    interaction is also split exactly into coherent--coherent and three
    misalignment-bearing terms, and the kernel-controlled annular symbol is
    identified extensionally with the coherent--coherent complexified PDE
-   stretching term.  What remains is measurable dependence of the spectral
-   selection through eigenvalue collisions, identification with the actual
-   Littlewood--Paley blocks and time functionals, followed by assembly
-   into `split_le` and `coherent_le` for actual Navier–Stokes
-   Littlewood–Paley data.
+   stretching term.  Downstream, these facts are assembled into an exact
+   physical finite-sector identity: full stretching is the annular coherent
+   kernel action plus the three misalignment-bearing terms, and the coherent
+   share has a cardinality-free `C/N` estimate, including in the constructed
+   pointwise compressive strain frame.  What remains is measurable dependence
+   of the spectral selection through eigenvalue collisions and identification
+   with the actual Littlewood--Paley blocks and time functionals, followed by
+   assembly into `split_le` and `coherent_le` for actual Navier--Stokes
+   Littlewood--Paley data.
 2. `MisalignmentStrainBudget` itself: the dynamical, time-integrated
    control of the misalignment share.  The checked fences apply: it
    cannot be proved by operator-norm, frozen-strain, or static
