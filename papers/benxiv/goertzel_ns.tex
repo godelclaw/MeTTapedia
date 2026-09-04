@@ -86,8 +86,10 @@ $L^1$ kernel mechanism that preserves the receiver's $L^\infty$ norm.  It also
 proves the estimate at continuous real frequencies and for arbitrary projected
 amplitudes, constructs the exact periodic operator-kernel realization on finite
 Fourier fields, transports the cancellation to every frozen oriented strain
-frame, and splits the spatially varying frame multiplier into its frozen part
-and an explicit frame-variation remainder.  A spectral-gap perturbation theorem
+frame, and now transports the full square-dyadic periodized kernel and its
+cardinality-free $C/N$ endpoint uniformly to those frames.  It also splits the
+spatially varying frame multiplier into its frozen part and an explicit
+frame-variation remainder.  A spectral-gap perturbation theorem
 quantifies that remainder's eigenframe input.  The
 latest audit also isolates why the proposed pancake closure does
 not yet prove the Millennium statement: its high-low split covers all aperture
@@ -1020,6 +1022,29 @@ interactions.  The endpoint estimate is cardinality-free:
 \]
 Thus the finite-field frozen-axis square-dyadic transfer is also discharged.
 
+The module \texttt{PancakeFrozenFrameKernelTransfer} performs the frozen-frame
+step at the kernel level.  Because a general rotation does not preserve
+$\mathbb Z^3$, it first rotates the Euclidean cover kernel and only then
+periodizes on the fixed standard lattice.  Orthogonal change of variables
+preserves the exact cover $L^1$ mass, while Fourier covariance evaluates the
+symbol at the rotated reciprocal frequency.  The module constructs a genuine
+Euclidean linear isometry from every algebraic
+\texttt{OrientedFrameEquiv}, lifts it diagonally to the two interacting
+frequencies, and proves the exact finite-Fourier identity with the retained
+coherent Biot--Savart interaction in the resulting oriented square-dyadic
+chart.  One constant works for all such frames:
+\[
+ \|B_{N,F}(f,g)\|_{L^\infty(\mathbb T^3)}
+ \leq 9\frac{C}{N}\,
+   \|f\|_{L^\infty(\mathbb T^3)}
+   \|g\|_{L^\infty(\mathbb T^3)},
+ \qquad N\geq2.
+\]
+Thus frozen oriented-frame transference of the exact square-dyadic kernel is
+discharged.  Selecting and patching the finitely many oriented charts for an
+actual frequency decomposition, and controlling a frame that varies in
+space-time, remain separate steps.
+
 There is a second field-level issue which a fixed-axis multiplier does not
 address.  The actual pancake frame is the eigensystem of the low-frequency
 strain and therefore depends on $(x,t)$.  The module
@@ -1036,8 +1061,10 @@ and bounds the second term by the frequencywise symbol oscillation times the
 actual Fourier-amplitude mass.  The uniform frozen-axis periodic kernel bound
 is now supplied by \texttt{PancakeBilinearPeriodization}; exact finite-field
 summation and the full anisotropic square-dyadic scaling are supplied by the
-two subsequent modules above.  The remaining field-transfer pieces are finite
-oriented chart/rotation assembly and control of the variable-frame remainder.
+two subsequent modules above; frozen oriented-frame kernel transference is
+supplied by \texttt{PancakeFrozenFrameKernelTransfer}.  The remaining
+field-transfer pieces are finite oriented-chart selection/patching and control
+of the variable-frame remainder.
 They are not silently included in the modewise estimate, and
 \texttt{coherent\_le} has not yet been instantiated.
 
@@ -1065,9 +1092,9 @@ frequency-uniform periodic $O(\delta)$ bilinear endpoint bound are also
 proved.  Exact finite-Fourier summation, inner-chart identification with the
 coherent PDE interaction, mass-preserving isotropic dyadic rescaling, exact
 four-transverse/two-axial scaling, square-dyadic chart identification, its
-periodized coefficient formula, and its uniform $C/N$ mass bound are now
-proved as well.  The remaining steps are finite chart/rotation transference
-and a
+periodized coefficient formula, its uniform $C/N$ mass bound, and uniform
+frozen oriented-frame transference are now proved as well.  The remaining
+steps are finite oriented-chart selection/patching and a
 quantitative bound for the spatial eigenframe-variation remainder, followed
 by their assembly into \texttt{coherent\_le} for the actual Navier--Stokes
 functionals.
@@ -1270,9 +1297,9 @@ coherent/misaligned transfer, which jointly reproduce
 spatially microlocal control of the variable-frame remainder and a dynamical,
 time-integrated control of the vorticity-direction misalignment share, strong
 enough to cover the gap band identified above.  It must also finish the
- finite oriented-chart/rotation assembly of the
+ finite oriented-chart selection and partition assembly for the
 now-periodic bilinear kernel rather than assigning the aperture gain to the
-projection.
+projection; the exact kernel transference within each frozen frame is proved.
 Section
 \ref{sec:direction-dynamics} further shows that a pressure-Hessian route must
 carry inverse strain-eigenvalue-gap information or an equivalent
@@ -1311,8 +1338,10 @@ effort.  The repaired-route development comprises, under
 \texttt{PancakeBilinearKernelScaling}, and
 \texttt{PancakeUniformKernelFamily}, and
 \texttt{PancakeBilinearPeriodization},
-\texttt{PancakeFiniteFourierBilinearTransfer}, and
-\texttt{PancakeDyadicKernelScaling}), each with a regression companion where
+\texttt{PancakeFiniteFourierBilinearTransfer},
+\texttt{PancakeDyadicKernelScaling},
+\texttt{PancakeSquareDyadicFiniteTransfer}, and
+\texttt{PancakeFrozenFrameKernelTransfer}), each with a regression companion where
 applicable.  The aperture module is retained as an explicitly attenuated
 analytic model; the exact coherent projection no-go above prevents its use as
 the desired field-transfer estimate.
