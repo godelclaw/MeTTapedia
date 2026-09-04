@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.Compositional.CarrierSaturationBoundaryDecomposition
+import Mettapedia.GraphTheory.FourColor.Compositional.CarrierLocalPairingBoundary
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualCircuitComponentDecomposition
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnAttachmentMatching
 
@@ -21,6 +21,7 @@ namespace Mettapedia.GraphTheory.FourColor.Compositional
 namespace OffCarrierReferenceAttachment
 
 open CarrierSaturationBoundaryDecomposition
+open CarrierLocalPairingBoundary
 open CubicPathAttachment
 open GoertzelV24OrderedMeshResidualSiteFacialBond
 open GoertzelV24OrderedMeshResidualSiteMatching
@@ -360,6 +361,34 @@ theorem attachmentReceipt_or_card_ambientExitDart_le_stacks_add_local
     have hbound :=
       card_ambientExitDart_le_stackLengths_add_offCarrierReference_add_local
         rotation minimal hG sigma hSigma bond cut
+    omega
+
+/-- Constant-interface form of the saturated-prefix dichotomy.  The two
+carrier-local matching frontiers are the ends of a linear interval in the
+alternating carrier, so together they contribute at most four ambient exits. -/
+theorem attachmentReceipt_or_card_ambientExitDart_le_stacks_add_four
+    (rotation : SimpleGraphDartRotation.Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (cut : CyclePosition sigma bond.site) :
+    (∃ chord : OrderedReturnChord
+        (orderedSiteReturnPairing hG sigma hSigma bond.site),
+      Nonempty (AttachmentExitSideReceipt rotation hG sigma hSigma
+        bond.site chord)) ∨
+      Nat.card (AmbientExitDart hG sigma hSigma bond.site cut) ≤
+        ((returnShoreMatching rotation minimal hG sigma hSigma bond false).stackAt
+            cut).length +
+          ((returnShoreMatching rotation minimal hG sigma hSigma bond true).stackAt
+            cut).length + 4 := by
+  rcases attachmentReceipt_or_card_ambientExitDart_le_stacks_add_local
+      rotation minimal hG sigma hSigma bond cut with hreceipt | hbound
+  · exact Or.inl hreceipt
+  · right
+    have hlocal := card_orderedSitePairing_openEndpoints_add_le_four
+      sigma bond.site cut
     omega
 
 end
