@@ -8428,6 +8428,19 @@ component-saturated carrier shore whose boundary is measured by the residual
 return stacks.  A raw carrier path prefix is not such a shore: its off-carrier
 edges leave the path one vertex at a time, even when their residual components
 return later.
+The first saturation layer is now explicit.  Given a carrier cut, retain the
+earlier carrier vertices and fill every common-residual component whose paired
+return endpoints are both earlier than the cut.  Any common-residual edge
+leaving this saturated side must then start at an endpoint of a return open
+across the cut.  The two physical shore stacks contain those endpoints, and
+their combined depth bounds the number of outgoing common-residual darts.
+\Sverified{Mettapedia.GraphTheory.PairingBoundarySaturation.card_pairingBoundaryExitDart_le_openEndpoint}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnComponentSaturation.exists_open_shore_arc_of_commonResidual_exit}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnComponentSaturation.card_commonResidual_exit_le_stackLengths}
+This does not yet bound the full ambient boundary: reference-matching
+attachments form a second layer, represented by the external-exit and
+same-turn-chord alternatives above.  Keeping that layer separate prevents the
+common-residual return pairing from being mistaken for an ambient cut.
 \end{proof}
 
 For the route, the two Kempe families suggest the matching stacks and capped
