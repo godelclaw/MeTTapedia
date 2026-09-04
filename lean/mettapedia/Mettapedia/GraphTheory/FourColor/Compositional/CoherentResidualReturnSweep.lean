@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.Compositional.AmbientReturnAttachmentCompression
+import Mettapedia.GraphTheory.FourColor.Compositional.ExactStateGeometricAlternative
 import Mettapedia.GraphTheory.FourColor.Compositional.DeletionPathConnectivity
 import Mettapedia.GraphTheory.FourColor.Compositional.SparseNoncentralMeshAtlas
 
@@ -20,6 +21,7 @@ namespace Mettapedia.GraphTheory.FourColor.Compositional
 namespace CoherentResidualReturnSweep
 
 open AmbientReturnAttachmentCompression
+open ExactStateGeometricAlternative
 open AlternatingSiteGeometry
 open DeletionAtlasPath
 open DeletionColorMatching
@@ -61,7 +63,7 @@ structure DeletionGeometricSweepReceipt
   alternative : ∀ depth spacing : Nat,
     2 * (spacing + 1) * (1 + 1) ^ 2 <
         base.base.base.bond.site.cycle.tail.support.length →
-      FullyCompressedGeometricAlternative rotation minimal
+      FullyCompressedExactStateAlternative rotation minimal
         (cubicIncidentEdgeTriples rotation minimal) minimizer.pairing
         minimizer.supported base.base.base.bond depth spacing
 
@@ -79,7 +81,7 @@ def DeletionGeometricSweepReceipt.ofTwoSector
       rotation minimal minimizer data state where
   base := receipt
   alternative := fun depth spacing hmany =>
-    hasFullyCompressedGeometricAlternative rotation minimal
+    hasFullyCompressedExactStateAlternative rotation minimal
       (cubicIncidentEdgeTriples rotation minimal) minimizer.pairing
       minimizer.supported receipt.base.base.bond depth spacing hmany
 

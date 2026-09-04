@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.Compositional.MeshJunctionAlternatingGeometry
 import Mettapedia.GraphTheory.FourColor.Compositional.AmbientReturnAttachmentCompression
+import Mettapedia.GraphTheory.FourColor.Compositional.ExactStateGeometricAlternative
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweepCyclicCut
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnCarrierSweep
 
@@ -20,6 +21,7 @@ the remaining mesh-synchronization problem.
 namespace Mettapedia.GraphTheory.FourColor.Compositional.MeshResidualReturnSweep
 
 open AmbientReturnAttachmentCompression
+open ExactStateGeometricAlternative
 open GoertzelV24NoncrossingSweepLifo
 open GoertzelV24OrderedInjectiveMeshWidthFactorization
 open GoertzelV24OrderedMeshGlobalSites
@@ -135,6 +137,28 @@ theorem fullyCompressedAlternative_of_geometricSweepReceipt
       receipt.base.base.base.sigma_supported receipt.base.base.base.bond
         depth spacing :=
   hasFullyCompressedGeometricAlternative rotation minimal hG sigma
+    receipt.base.base.base.sigma_supported receipt.base.base.base.bond
+      depth spacing hmany
+
+/-- The mesh-level compressed alternative with its bounded-cut branch already
+converted to the literal connected shore state consumed by physical
+replacement. -/
+theorem fullyCompressedExactStateAlternative_of_geometricSweepReceipt
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (ordered : OrderedInjectiveMesh
+      (toMultigraph rotation.toRotationSystem) a b)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V)
+    (step : GlobalMeshStep rotation ordered)
+    (receipt : GeometricSweepReceipt rotation minimal ordered hG sigma step)
+    (depth spacing : Nat)
+    (hmany : 2 * (spacing + 1) * (1 + 1) ^ 2 <
+      receipt.base.base.base.bond.site.cycle.tail.support.length) :
+    FullyCompressedExactStateAlternative rotation minimal hG sigma
+      receipt.base.base.base.sigma_supported receipt.base.base.base.bond
+        depth spacing :=
+  hasFullyCompressedExactStateAlternative rotation minimal hG sigma
     receipt.base.base.base.sigma_supported receipt.base.base.base.bond
       depth spacing hmany
 
