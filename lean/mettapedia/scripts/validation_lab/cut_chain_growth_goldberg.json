@@ -1,0 +1,217 @@
+[
+ {
+  "name": "GP(2,0)",
+  "V": 80,
+  "E": 120,
+  "F": 42,
+  "frontier": {
+   "levels": 9,
+   "widths": [
+    5,
+    10,
+    10,
+    20,
+    10,
+    20,
+    10,
+    10,
+    5
+   ],
+   "all_exact": true,
+   "all_saturated": false,
+   "all_separating": true
+  },
+  "exhaustive": {
+   "6": {
+    "candidates": 2,
+    "m": 2,
+    "chain_widths": [
+     5,
+     5
+    ],
+    "common_seam": true,
+    "seam_types": 1
+   },
+   "8": {
+    "candidates": 32,
+    "m": 6,
+    "chain_widths": [
+     5,
+     7,
+     8,
+     8,
+     7,
+     5
+    ],
+    "common_seam": false,
+    "seam_types": 3
+   },
+   "10": {
+    "candidates": 550,
+    "m": 19,
+    "chain_widths": [
+     5,
+     7,
+     8,
+     9,
+     9,
+     9,
+     10,
+     10,
+     10,
+     10,
+     10,
+     10,
+     10,
+     10,
+     10,
+     10,
+     9,
+     9,
+     5
+    ],
+    "common_seam": false,
+    "seam_types": 10
+   }
+  },
+  "exhaustive_seconds": 2.6
+ },
+ {
+  "name": "GP(3,0)",
+  "V": 180,
+  "E": 270,
+  "F": 92,
+  "frontier": {
+   "levels": 15,
+   "widths": [
+    5,
+    10,
+    10,
+    20,
+    15,
+    30,
+    15,
+    30,
+    15,
+    30,
+    15,
+    20,
+    10,
+    10,
+    5
+   ],
+   "all_exact": true,
+   "all_saturated": false,
+   "all_separating": true
+  },
+  "exhaustive": {
+   "6": {
+    "candidates": 2,
+    "m": 2,
+    "chain_widths": [
+     5,
+     5
+    ],
+    "common_seam": true,
+    "seam_types": 1
+   },
+   "8": {
+    "candidates": 22,
+    "m": 6,
+    "chain_widths": [
+     5,
+     7,
+     8,
+     8,
+     7,
+     5
+    ],
+    "common_seam": false,
+    "seam_types": 3
+   },
+   "10": {
+    "candidates": 224,
+    "m": 12,
+    "chain_widths": [
+     5,
+     7,
+     8,
+     9,
+     10,
+     10,
+     10,
+     10,
+     10,
+     9,
+     7,
+     5
+    ],
+    "common_seam": false,
+    "seam_types": 5
+   }
+  },
+  "exhaustive_seconds": 13.7
+ },
+ {
+  "name": "GP(4,0)",
+  "V": 320,
+  "E": 480,
+  "F": 162,
+  "frontier": {
+   "levels": 21,
+   "widths": [
+    5,
+    10,
+    10,
+    20,
+    15,
+    30,
+    20,
+    40,
+    20,
+    40,
+    20,
+    40,
+    20,
+    40,
+    20,
+    30,
+    15,
+    20,
+    10,
+    10,
+    5
+   ],
+   "all_exact": true,
+   "all_saturated": false,
+   "all_separating": true
+  },
+  "exhaustive": {
+   "6": {
+    "candidates": 2,
+    "m": 2,
+    "chain_widths": [
+     5,
+     5
+    ],
+    "common_seam": true,
+    "seam_types": 1
+   },
+   "8": {
+    "candidates": 22,
+    "m": 6,
+    "chain_widths": [
+     5,
+     7,
+     8,
+     8,
+     7,
+     5
+    ],
+    "common_seam": false,
+    "seam_types": 3
+   }
+  },
+  "exhaustive_seconds": 2.7
+ }
+]

@@ -1,0 +1,934 @@
+[
+ {
+  "name": "tube(5,0) L=1",
+  "V": 30,
+  "E": 35,
+  "F": 17,
+  "frontier": {
+   "levels": 5,
+   "widths": [
+    5,
+    10,
+    5,
+    10,
+    5
+   ],
+   "all_exact": false,
+   "all_saturated": false,
+   "all_separating": false
+  },
+  "exhaustive": {
+   "6": {
+    "candidates": 1,
+    "m": 1,
+    "chain_widths": [
+     5
+    ],
+    "common_seam": true,
+    "seam_types": 1
+   },
+   "8": {
+    "candidates": 1,
+    "m": 1,
+    "chain_widths": [
+     5
+    ],
+    "common_seam": true,
+    "seam_types": 1
+   },
+   "10": {
+    "candidates": 1,
+    "m": 1,
+    "chain_widths": [
+     5
+    ],
+    "common_seam": true,
+    "seam_types": 1
+   },
+   "12": {
+    "candidates": 1,
+    "m": 1,
+    "chain_widths": [
+     5
+    ],
+    "common_seam": true,
+    "seam_types": 1
+   }
+  },
+  "exhaustive_seconds": 0.2
+ },
+ {
+  "name": "tube(5,0) L=2",
+  "V": 40,
+  "E": 50,
+  "F": 22,
+  "frontier": {
+   "levels": 7,
+   "widths": [
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5
+   ],
+   "all_exact": false,
+   "all_saturated": false,
+   "all_separating": false
+  },
+  "exhaustive": {
+   "6": {
+    "candidates": 17,
+    "m": 5,
+    "chain_widths": [
+     5,
+     6,
+     6,
+     6,
+     5
+    ],
+    "common_seam": false,
+    "seam_types": 2
+   },
+   "8": {
+    "candidates": 17,
+    "m": 5,
+    "chain_widths": [
+     5,
+     6,
+     6,
+     6,
+     5
+    ],
+    "common_seam": false,
+    "seam_types": 2
+   },
+   "10": {
+    "candidates": 17,
+    "m": 5,
+    "chain_widths": [
+     5,
+     6,
+     6,
+     6,
+     5
+    ],
+    "common_seam": false,
+    "seam_types": 2
+   },
+   "12": {
+    "candidates": 17,
+    "m": 5,
+    "chain_widths": [
+     5,
+     6,
+     6,
+     6,
+     5
+    ],
+    "common_seam": false,
+    "seam_types": 2
+   }
+  },
+  "exhaustive_seconds": 2.6
+ },
+ {
+  "name": "tube(5,0) L=3",
+  "V": 50,
+  "E": 65,
+  "F": 27,
+  "frontier": {
+   "levels": 9,
+   "widths": [
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5
+   ],
+   "all_exact": false,
+   "all_saturated": false,
+   "all_separating": false
+  },
+  "exhaustive": {
+   "6": {
+    "candidates": 33,
+    "m": 9,
+    "chain_widths": [
+     5,
+     6,
+     6,
+     6,
+     5,
+     6,
+     6,
+     6,
+     5
+    ],
+    "common_seam": false,
+    "seam_types": 2
+   },
+   "8": {
+    "candidates": 53,
+    "m": 9,
+    "chain_widths": [
+     5,
+     6,
+     6,
+     6,
+     7,
+     7,
+     6,
+     6,
+     5
+    ],
+    "common_seam": false,
+    "seam_types": 3
+   },
+   "10": {
+    "candidates": 53,
+    "m": 9,
+    "chain_widths": [
+     5,
+     6,
+     6,
+     6,
+     7,
+     7,
+     6,
+     6,
+     5
+    ],
+    "common_seam": false,
+    "seam_types": 3
+   },
+   "12": {
+    "candidates": 53,
+    "m": 9,
+    "chain_widths": [
+     5,
+     6,
+     6,
+     6,
+     7,
+     7,
+     6,
+     6,
+     5
+    ],
+    "common_seam": false,
+    "seam_types": 3
+   }
+  },
+  "exhaustive_seconds": 9.9
+ },
+ {
+  "name": "tube(5,0) L=4",
+  "V": 60,
+  "E": 80,
+  "F": 32,
+  "frontier": {
+   "levels": 11,
+   "widths": [
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5
+   ],
+   "all_exact": false,
+   "all_saturated": false,
+   "all_separating": false
+  },
+  "exhaustive": {
+   "6": {
+    "candidates": 49,
+    "m": 13,
+    "chain_widths": [
+     5,
+     6,
+     6,
+     6,
+     5,
+     6,
+     6,
+     6,
+     5,
+     6,
+     6,
+     6,
+     5
+    ],
+    "common_seam": false,
+    "seam_types": 2
+   },
+   "8": {
+    "candidates": 94,
+    "m": 13,
+    "chain_widths": [
+     5,
+     6,
+     6,
+     6,
+     7,
+     7,
+     6,
+     6,
+     7,
+     7,
+     6,
+     6,
+     5
+    ],
+    "common_seam": false,
+    "seam_types": 3
+   },
+   "10": {
+    "candidates": 149,
+    "m": 13,
+    "chain_widths": [
+     5,
+     6,
+     6,
+     6,
+     7,
+     7,
+     6,
+     6,
+     7,
+     7,
+     6,
+     6,
+     5
+    ],
+    "common_seam": false,
+    "seam_types": 3
+   },
+   "12": {
+    "candidates": 149,
+    "m": 13,
+    "chain_widths": [
+     5,
+     6,
+     6,
+     6,
+     7,
+     7,
+     6,
+     6,
+     7,
+     7,
+     6,
+     6,
+     5
+    ],
+    "common_seam": false,
+    "seam_types": 3
+   }
+  },
+  "exhaustive_seconds": 21.8
+ },
+ {
+  "name": "tube(5,0) L=5",
+  "V": 70,
+  "E": 95,
+  "F": 37,
+  "frontier": {
+   "levels": 13,
+   "widths": [
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5
+   ],
+   "all_exact": false,
+   "all_saturated": false,
+   "all_separating": false
+  }
+ },
+ {
+  "name": "tube(5,0) L=6",
+  "V": 80,
+  "E": 110,
+  "F": 42,
+  "frontier": {
+   "levels": 15,
+   "widths": [
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5
+   ],
+   "all_exact": false,
+   "all_saturated": false,
+   "all_separating": false
+  }
+ },
+ {
+  "name": "tube(5,0) L=8",
+  "V": 100,
+  "E": 140,
+  "F": 52,
+  "frontier": {
+   "levels": 19,
+   "widths": [
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5
+   ],
+   "all_exact": false,
+   "all_saturated": false,
+   "all_separating": false
+  }
+ },
+ {
+  "name": "tube(5,0) L=12",
+  "V": 140,
+  "E": 200,
+  "F": 72,
+  "frontier": {
+   "levels": 27,
+   "widths": [
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5
+   ],
+   "all_exact": false,
+   "all_saturated": false,
+   "all_separating": false
+  }
+ },
+ {
+  "name": "tube(5,0) L=16",
+  "V": 180,
+  "E": 260,
+  "F": 92,
+  "frontier": {
+   "levels": 35,
+   "widths": [
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5
+   ],
+   "all_exact": false,
+   "all_saturated": false,
+   "all_separating": false
+  }
+ },
+ {
+  "name": "tube(5,0) L=20",
+  "V": 220,
+  "E": 320,
+  "F": 112,
+  "frontier": {
+   "levels": 43,
+   "widths": [
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5,
+    10,
+    5
+   ],
+   "all_exact": false,
+   "all_saturated": false,
+   "all_separating": false
+  }
+ },
+ {
+  "name": "GP(1,0)",
+  "V": 20,
+  "E": 30,
+  "F": 12,
+  "frontier": {
+   "levels": 3,
+   "widths": [
+    5,
+    10,
+    5
+   ],
+   "all_exact": true,
+   "all_saturated": false,
+   "all_separating": true
+  },
+  "exhaustive": {
+   "6": {
+    "candidates": 17,
+    "m": 5,
+    "chain_widths": [
+     5,
+     6,
+     6,
+     6,
+     5
+    ],
+    "common_seam": false,
+    "seam_types": 2
+   },
+   "8": {
+    "candidates": 17,
+    "m": 5,
+    "chain_widths": [
+     5,
+     6,
+     6,
+     6,
+     5
+    ],
+    "common_seam": false,
+    "seam_types": 2
+   },
+   "10": {
+    "candidates": 17,
+    "m": 5,
+    "chain_widths": [
+     5,
+     6,
+     6,
+     6,
+     5
+    ],
+    "common_seam": false,
+    "seam_types": 2
+   },
+   "12": {
+    "candidates": 17,
+    "m": 5,
+    "chain_widths": [
+     5,
+     6,
+     6,
+     6,
+     5
+    ],
+    "common_seam": false,
+    "seam_types": 2
+   }
+  },
+  "exhaustive_seconds": 0.0
+ },
+ {
+  "name": "GP(2,0)",
+  "V": 80,
+  "E": 120,
+  "F": 42,
+  "frontier": {
+   "levels": 9,
+   "widths": [
+    5,
+    10,
+    10,
+    20,
+    10,
+    20,
+    10,
+    10,
+    5
+   ],
+   "all_exact": true,
+   "all_saturated": false,
+   "all_separating": true
+  },
+  "exhaustive": {
+   "6": {
+    "candidates": 2,
+    "m": 2,
+    "chain_widths": [
+     5,
+     5
+    ],
+    "common_seam": true,
+    "seam_types": 1
+   },
+   "8": {
+    "candidates": 32,
+    "m": 6,
+    "chain_widths": [
+     5,
+     7,
+     8,
+     8,
+     7,
+     5
+    ],
+    "common_seam": false,
+    "seam_types": 3
+   },
+   "10": {
+    "candidates": 550,
+    "m": 19,
+    "chain_widths": [
+     5,
+     7,
+     8,
+     9,
+     9,
+     9,
+     10,
+     10,
+     10,
+     10,
+     10,
+     10,
+     10,
+     10,
+     10,
+     10,
+     9,
+     9,
+     5
+    ],
+    "common_seam": false,
+    "seam_types": 10
+   },
+   "12": {
+    "candidates": 11040,
+    "m": 29,
+    "chain_widths": [
+     5,
+     7,
+     8,
+     9,
+     10,
+     11,
+     11,
+     11,
+     11,
+     11,
+     11,
+     11,
+     12,
+     12,
+     12,
+     12,
+     12,
+     12,
+     12,
+     12,
+     12,
+     12,
+     12,
+     12,
+     11,
+     11,
+     11,
+     9,
+     5
+    ],
+    "common_seam": false,
+    "seam_types": 14
+   }
+  },
+  "exhaustive_seconds": 35.1
+ },
+ {
+  "name": "GP(3,0)",
+  "V": 180,
+  "E": 270,
+  "F": 92,
+  "frontier": {
+   "levels": 15,
+   "widths": [
+    5,
+    10,
+    10,
+    20,
+    15,
+    30,
+    15,
+    30,
+    15,
+    30,
+    15,
+    20,
+    10,
+    10,
+    5
+   ],
+   "all_exact": true,
+   "all_saturated": false,
+   "all_separating": true
+  }
+ },
+ {
+  "name": "GP(4,0)",
+  "V": 320,
+  "E": 480,
+  "F": 162,
+  "frontier": {
+   "levels": 21,
+   "widths": [
+    5,
+    10,
+    10,
+    20,
+    15,
+    30,
+    20,
+    40,
+    20,
+    40,
+    20,
+    40,
+    20,
+    40,
+    20,
+    30,
+    15,
+    20,
+    10,
+    10,
+    5
+   ],
+   "all_exact": true,
+   "all_saturated": false,
+   "all_separating": true
+  }
+ },
+ {
+  "name": "GP(6,0)",
+  "V": 720,
+  "E": 1080,
+  "F": 362,
+  "frontier": {
+   "levels": 33,
+   "widths": [
+    5,
+    10,
+    10,
+    20,
+    15,
+    30,
+    20,
+    40,
+    25,
+    50,
+    30,
+    60,
+    30,
+    60,
+    30,
+    60,
+    30,
+    60,
+    30,
+    60,
+    30,
+    60,
+    30,
+    50,
+    25,
+    40,
+    20,
+    30,
+    15,
+    20,
+    10,
+    10,
+    5
+   ],
+   "all_exact": true,
+   "all_saturated": false,
+   "all_separating": true
+  }
+ },
+ {
+  "name": "GP(8,0)",
+  "V": 1280,
+  "E": 1920,
+  "F": 642,
+  "frontier": {
+   "levels": 45,
+   "widths": [
+    5,
+    10,
+    10,
+    20,
+    15,
+    30,
+    20,
+    40,
+    25,
+    50,
+    30,
+    60,
+    35,
+    70,
+    40,
+    80,
+    40,
+    80,
+    40,
+    80,
+    40,
+    80,
+    40,
+    80,
+    40,
+    80,
+    40,
+    80,
+    40,
+    80,
+    40,
+    70,
+    35,
+    60,
+    30,
+    50,
+    25,
+    40,
+    20,
+    30,
+    15,
+    20,
+    10,
+    10,
+    5
+   ],
+   "all_exact": true,
+   "all_saturated": false,
+   "all_separating": true
+  }
+ }
+]
