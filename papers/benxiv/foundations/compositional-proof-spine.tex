@@ -7610,6 +7610,8 @@ difference a multiple of $s+1$.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweep.exists_long_strictlyNested_return_family_of_deep}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweep.exists_long_strictlyNested_return_family_or_spaced_eq_rawState}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.NoncrossingPairingSweep.exists_canonical_position_of_mem_canonicalArcList}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnNestedFamily.strictlyNestedReturnTriple_of_deep_stack}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnNestedFamily.strictlyNestedReturnTriple_of_nestedCarrierDeepReturnStack}
 Let a proper alternating site in a graph-backed least counterexample have
 $n$ cyclic positions and the physical residual-return receipt of
 Lemma~\ref{lem:residual-return-two-sector-noncrossing}.  Fix $D\geq0$.
@@ -7988,6 +7990,8 @@ edge set is exactly the chord together with the interval edges.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ExactStateGeometricAlternative.hasFullyCompressedExactStateAlternative}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.MeshResidualReturnSweep.fullyCompressedExactStateAlternative_of_geometricSweepReceipt}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.DeepReturnExactState.saturated_of_nestedCarrierDeepReturnStack}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSeparatorNesting.orderedReturnSeparator_support_subset_filledCycleSide_of_triple_nested}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnNestedCuts.hasNestedConnectedReturnCuts_of_nestedCarrierDeepReturnStack}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.DeepReturnExactState.hasFullyRealizedExactStateAlternative}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.MeshResidualReturnSweep.fullyRealizedExactStateAlternative_of_geometricSweepReceipt}
 For one ordered injective mesh in a graph-backed least counterexample, choose
@@ -8021,6 +8025,17 @@ compressed on every receipt.  The carrier interval has the restricted LIFO
 sweep of Corollary~\ref{cor:carrier-local-residual-return-compression}; the
 ambient return path has a second sweep of its cubic third-edge attachments.
 Thus neither survives as an unstructured long-path alternative.
+
+The depth-three form of the carrier-stack horn is now physical as well as
+combinatorial.  Its first three strictly nested open arcs lift through the
+canonical sweep-to-chord bridge to three original residual-return chords on
+one shore.  The middle and inner chords give exact face-cut separators; using
+the outer complementary return cycle as a common exterior root and saturating
+both cuts at one explicit common width produces connected shores with the
+inner shore pointwise contained in the middle shore.  This removes the former
+face-side comparison gap for a nested pair.  It does not yet prove that the
+containment is strict, nor choose a long coherent family of such shores; those
+are the next M1 obligations needed by cumulative state descent.
 \end{proof}
 
 For the route, the two Kempe families suggest the matching stacks and capped
