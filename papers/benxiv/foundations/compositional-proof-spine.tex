@@ -7996,6 +7996,9 @@ edge set is exactly the chord together with the interval edges.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnNestedCuts.hasNestedConnectedReturnCuts_of_nestedCarrierDeepReturnStack}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnStrictNesting.shallow_ambientPath_outside_deep_closureSide}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnStrictNesting.incidentEdgeShore_deepClosure_ssubset_shallowClosure}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnNestedCuts.nestedConnectedReturnCutConstruction}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnStrictNesting.hasStrictlyNestedConnectedReturnCuts_of_strictlyNestedReturnQuadruple}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnStrictNesting.hasStrictlyNestedConnectedReturnCuts_of_nestedCarrierDeepReturnStack}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.DeepReturnExactState.hasFullyRealizedExactStateAlternative}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.MeshResidualReturnSweep.fullyRealizedExactStateAlternative_of_geometricSweepReceipt}
 For one ordered injective mesh in a graph-backed least counterexample, choose
@@ -8030,25 +8033,26 @@ sweep of Corollary~\ref{cor:carrier-local-residual-return-compression}; the
 ambient return path has a second sweep of its cubic third-edge attachments.
 Thus neither survives as an unstructured long-path alternative.
 
-The depth-three form of the carrier-stack horn is now physical as well as
+The depth-two form of the carrier-stack horn is now physical as well as
 combinatorial.  Its first three strictly nested open arcs lift through the
 canonical sweep-to-chord bridge to three original residual-return chords on
 one shore.  The middle and inner chords give exact face-cut separators; using
 the outer complementary return cycle as a common exterior root and saturating
 both cuts at one explicit common width produces connected shores with the
 inner shore pointwise contained in the middle shore.  This removes the former
-face-side comparison gap for a nested pair.  It does not yet prove that the
-containment is strict, nor choose a long coherent family of such shores; those
-are the next M1 obligations needed by cumulative state descent.
+face-side comparison gap for a nested pair.
 
-At depth four the next local obligation is also checked.  The outermost and
+At stack depth four the next local obligation is also checked.  The outermost and
 innermost returns orient the two middle separators.  Exact face-label
 transport places the shallower middle return path inside the shallower rooted
 shore but in the exterior component of the deeper rooted shore, even after
 saturation.  Its first edge therefore witnesses strict inclusion of the two
-incident-edge shores.  The remaining assembly task is to package this local
-strictness uniformly along a sufficiently long connected cut family and feed
-that family to the cumulative exact-state repetition theorem.
+incident-edge shores.  A provenance-retaining constructor now packages the
+two saturated separators themselves, so the depth-three carrier horn returns
+two actual \texttt{ConnectedAtWidth} receipts at one common bound with strict
+inclusion of their incident-edge shores.  The remaining M1 assembly task is
+global: construct a sufficiently long coherent family at one common width and
+feed that family to the cumulative exact-state repetition theorem.
 \end{proof}
 
 For the route, the two Kempe families suggest the matching stacks and capped

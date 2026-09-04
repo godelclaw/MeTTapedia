@@ -56,30 +56,104 @@ def HasNestedConnectedReturnCuts (G : SimpleGraph V) [DecidableRel G.Adj] :
       ∀ vertex, inner.realization.side vertex →
         middle.realization.side vertex
 
-/-- A physical strictly nested return triple constructs two nested connected
-cut shores at one explicit common width.  The common exterior root is the
-base point of the outer complementary return cycle. -/
-theorem hasNestedConnectedReturnCuts_of_strictlyNestedReturnTriple
+/-- The laws carried by the two connected cuts constructed from a nested
+return triple.  The data are explicit parameters while this proposition
+retains the separator provenance needed by later strictness consumers. -/
+structure NestedConnectedReturnCutCertificate
+    (rotation : Data G)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (outer middle inner : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma bond.site))
+    (bound : Nat)
+    (middleFaceCut : ExactFaceCut rotation.toRotationSystem
+    (fun edge : G.edgeSet => edge.1 ∈
+      (orderedReturnSeparator hG sigma hSigma bond.site middle).edges) F2)
+    (innerFaceCut : ExactFaceCut rotation.toRotationSystem
+    (fun edge : G.edgeSet => edge.1 ∈
+      (orderedReturnSeparator hG sigma hSigma bond.site inner).edges) F2)
+    (middleSelected innerSelected : F2)
+    (middleConnected innerConnected :
+      CyclicEdgeCutRealization.ConnectedAtWidth G bound) : Prop where
+  outsideMiddle : ∀ vertex,
+    vertex ∈ (complementaryReturnCycle hG sigma hSigma bond.site outer).support →
+      ¬middleFaceCut.filledCycleSide rotation
+        (orderedReturnSeparator hG sigma hSigma bond.site middle)
+        middleSelected vertex
+  outsideInner : ∀ vertex,
+    vertex ∈ (complementaryReturnCycle hG sigma hSigma bond.site outer).support →
+      ¬innerFaceCut.filledCycleSide rotation
+        (orderedReturnSeparator hG sigma hSigma bond.site inner)
+        innerSelected vertex
+  rootOutsideMiddle : ¬middleFaceCut.filledCycleSide rotation
+    (orderedReturnSeparator hG sigma hSigma bond.site middle)
+    middleSelected (cycleVertexOrder sigma bond.site outer.left).1
+  rootOutsideInner : ¬innerFaceCut.filledCycleSide rotation
+    (orderedReturnSeparator hG sigma hSigma bond.site inner)
+    innerSelected (cycleVertexOrder sigma bond.site outer.left).1
+  middleSide : ∀ vertex,
+    middleConnected.realization.side vertex ↔
+      closureSide (G := G)
+        (middleFaceCut.filledCycleSide rotation
+          (orderedReturnSeparator hG sigma hSigma bond.site middle)
+          middleSelected)
+        (cycleVertexOrder sigma bond.site outer.left).1 rootOutsideMiddle vertex
+  innerSide : ∀ vertex,
+    innerConnected.realization.side vertex ↔
+      closureSide (G := G)
+        (innerFaceCut.filledCycleSide rotation
+          (orderedReturnSeparator hG sigma hSigma bond.site inner)
+          innerSelected)
+        (cycleVertexOrder sigma bond.site outer.left).1 rootOutsideInner vertex
+  closuresNested : ∀ vertex,
+    closureSide (G := G)
+        (innerFaceCut.filledCycleSide rotation
+          (orderedReturnSeparator hG sigma hSigma bond.site inner)
+          innerSelected)
+        (cycleVertexOrder sigma bond.site outer.left).1 rootOutsideInner vertex →
+      closureSide (G := G)
+        (middleFaceCut.filledCycleSide rotation
+          (orderedReturnSeparator hG sigma hSigma bond.site middle)
+          middleSelected)
+        (cycleVertexOrder sigma bond.site outer.left).1 rootOutsideMiddle vertex
+
+/-- Construct the two connected cuts and retain the separator provenance.
+The common exterior root is the base point of the outer complementary return
+cycle. -/
+theorem nestedConnectedReturnCutConstruction
     (rotation : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
     (hG : HasCubicIncidentEdgeTriples G)
     (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
     {first second : V}
     (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
-    (triple : StrictlyNestedReturnTriple rotation hG sigma hSigma bond) :
-    HasNestedConnectedReturnCuts G := by
-  rcases triple with
-    ⟨shore, outer, middle, inner, houterShore, hmiddleShore, hinnerShore,
-      houterMiddleLeft, hmiddleInnerLeft, hinnerMiddleRight,
-      hmiddleOuterRight⟩
-  have hshoreOuterMiddle :
+    (outer middle inner : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma bond.site))
+    (houterMiddleLeft : outer.left < middle.left)
+    (hmiddleInnerLeft : middle.left < inner.left)
+    (hinnerMiddleRight : inner.right < middle.right)
+    (hmiddleOuterRight : middle.right < outer.right)
+    (hshoreOuterMiddle :
       orderedReturnShore rotation hG sigma hSigma bond outer.left =
-        orderedReturnShore rotation hG sigma hSigma bond middle.left := by
-    exact houterShore.trans hmiddleShore.symm
-  have hshoreMiddleInner :
+        orderedReturnShore rotation hG sigma hSigma bond middle.left)
+    (hshoreMiddleInner :
       orderedReturnShore rotation hG sigma hSigma bond middle.left =
-        orderedReturnShore rotation hG sigma hSigma bond inner.left := by
-    exact hmiddleShore.trans hinnerShore.symm
+        orderedReturnShore rotation hG sigma hSigma bond inner.left) :
+    ∃ (bound : Nat)
+        (middleFaceCut : ExactFaceCut rotation.toRotationSystem
+          (fun edge : G.edgeSet => edge.1 ∈
+            (orderedReturnSeparator hG sigma hSigma bond.site middle).edges) F2)
+        (innerFaceCut : ExactFaceCut rotation.toRotationSystem
+          (fun edge : G.edgeSet => edge.1 ∈
+            (orderedReturnSeparator hG sigma hSigma bond.site inner).edges) F2)
+        (middleSelected innerSelected : F2)
+        (middleConnected innerConnected :
+          CyclicEdgeCutRealization.ConnectedAtWidth G bound),
+      NestedConnectedReturnCutCertificate rotation hG sigma hSigma bond
+        outer middle inner bound middleFaceCut innerFaceCut middleSelected
+          innerSelected middleConnected innerConnected := by
   let middleSeparator :=
     orderedReturnSeparator hG sigma hSigma bond.site middle
   let innerSeparator :=
@@ -240,11 +314,56 @@ theorem hasNestedConnectedReturnCuts_of_strictlyNestedReturnTriple
         hmiddleClosureComplementConnected outsideRoot hrootInner
         hrootMiddleClosure
     exact hinnerSupportMiddleClosure
+  refine ⟨bound, middleFaceCut, innerFaceCut, middleSelected, innerSelected,
+    middleConnected, innerConnected,
+    { outsideMiddle := ?_
+      outsideInner := ?_
+      rootOutsideMiddle := ?_
+      rootOutsideInner := ?_
+      middleSide := ?_
+      innerSide := ?_
+      closuresNested := ?_ }⟩
+  · simpa only [outsideCycle, middleSeparator] using houtsideMiddle
+  · simpa only [outsideCycle, innerSeparator] using houtsideInner
+  · simpa only [middleRaw, cyclicEdgeCutRealization_of_complement_cycle,
+      outsideRoot, middleSeparator] using hrootMiddle
+  · simpa only [innerRaw, cyclicEdgeCutRealization_of_complement_cycle,
+      outsideRoot, innerSeparator] using hrootInner
+  · simpa only [middleRaw, cyclicEdgeCutRealization_of_complement_cycle,
+      outsideRoot, middleSeparator] using hmiddleSide
+  · simpa only [innerRaw, cyclicEdgeCutRealization_of_complement_cycle,
+      outsideRoot, innerSeparator] using hinnerSide
+  · simpa only [middleRaw, innerRaw,
+      cyclicEdgeCutRealization_of_complement_cycle, outsideRoot,
+      middleSeparator, innerSeparator] using hclosuresNested
+
+/-- A physical strictly nested return triple constructs two nested connected
+cut shores at one explicit common width. -/
+theorem hasNestedConnectedReturnCuts_of_strictlyNestedReturnTriple
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (triple : StrictlyNestedReturnTriple rotation hG sigma hSigma bond) :
+    HasNestedConnectedReturnCuts G := by
+  rcases triple with
+    ⟨shore, outer, middle, inner, houterShore, hmiddleShore, hinnerShore,
+      houterMiddleLeft, hmiddleInnerLeft, hinnerMiddleRight,
+      hmiddleOuterRight⟩
+  rcases nestedConnectedReturnCutConstruction rotation minimal hG sigma hSigma
+      bond outer middle inner houterMiddleLeft hmiddleInnerLeft
+      hinnerMiddleRight hmiddleOuterRight
+      (houterShore.trans hmiddleShore.symm)
+      (hmiddleShore.trans hinnerShore.symm) with
+    ⟨bound, middleFaceCut, innerFaceCut, middleSelected, innerSelected,
+      middleConnected, innerConnected, construction⟩
   refine ⟨bound, middleConnected, innerConnected, ?_⟩
   intro vertex hinner
-  apply (hmiddleSide vertex).2
-  apply hclosuresNested vertex
-  exact (hinnerSide vertex).1 hinner
+  apply (construction.middleSide vertex).2
+  apply construction.closuresNested vertex
+  exact (construction.innerSide vertex).1 hinner
 
 /-- The depth-two horn of the carrier-local sweep therefore constructs a
 literal nested pair of connected cut shores. -/

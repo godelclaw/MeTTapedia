@@ -211,6 +211,23 @@ theorem strictlyNestedReturnTriple_of_nestedCarrierDeepReturnStack
   exact strictlyNestedReturnTriple_of_deep_stack
     rotation minimal hG sigma hSigma bond ⟨shore, cut, hdepth⟩
 
+/-- The depth-three carrier horn supplies the four guarded physical returns
+needed for strict connected-shore nesting. -/
+theorem strictlyNestedReturnQuadruple_of_nestedCarrierDeepReturnStack
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (hdeep : HasNestedCarrierDeepReturnStack
+      rotation minimal hG sigma hSigma bond 3) :
+    StrictlyNestedReturnQuadruple rotation hG sigma hSigma bond := by
+  rcases hdeep with ⟨_outer, _inner, _hshore, _hleft, _hright,
+    shore, cut, _hcut, hdepth⟩
+  exact strictlyNestedReturnQuadruple_of_deep_stack
+    rotation minimal hG sigma hSigma bond ⟨shore, cut, hdepth⟩
+
 end
 
 end ResidualReturnNestedFamily
