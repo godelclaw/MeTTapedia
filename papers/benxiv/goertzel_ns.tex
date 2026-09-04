@@ -47,7 +47,7 @@
 3D Navier--Stokes Global Regularity:\\
 H1 Obstruction, Stochastic-Lagrangian Repair, and Pancake Closure}
 \author{The MeTTapedia formalization effort}
-\date{July 2026}
+\date{September 2026}
 
 \begin{document}
 \maketitle
@@ -65,7 +65,7 @@ area-preserving shears of fixed $\Hm$ displacement size whose adjoint
 $\Hm\to\Hm$ ratio is $\sqrt{1+(\varepsilon k)^2}$ and therefore unbounded.
 That refutation remains intact.
 
-This July revision records the follow-up repair campaign in full.  The
+This September revision records the follow-up repair campaign in full.  The
 corrected route does not rely on the false $\Hm\to\Hm$ adjoint bound; it
 replaces it with a stochastic-Lagrangian/cotangent transport skeleton and a
 microlocal vorticity-stretching gate.  The machine-checked surface now
@@ -77,16 +77,19 @@ fully explicit pressure; the conditional BKM chain with its gate consumers;
 nonzero exact inhabitants and end-to-end canaries; the frozen-strain pancake
 obstruction with its exact peak-amplification law; the plane-wave
 Biot--Savart null structure claimed in the pancake-closure proposal; and the
-dyadic absorption step that would turn the pancake-sector estimate into the
-BKM bound.  The latest audit also isolates why the proposed pancake closure does
+dyadic absorption step that would turn the pancake-sector estimate into a
+common BKM envelope.  The latest audit also isolates why the proposed pancake closure does
 not yet prove the Millennium statement: its high-low split covers all aperture
 angles iff the scale-local strain satisfies $\gamma\le\nu\lambda_q$, exactly
 the quantitative budget it set out to prove.  The surviving open input is the
-pointwise-in-time Lean predicate
+leading route-specific pointwise-in-time Lean predicate
 \texttt{ScaleLocalPancakeStrainBudget}, a sharpened version of the earlier
-\texttt{StochasticStretchingEstimate}.  Thus the status is neither a completed
+\texttt{StochasticStretchingEstimate}.  Field realization, the stated
+non-pancake sector interfaces, and the final BKM continuation plumbing are
+additional explicit obligations.  Thus the status is neither a completed
 Navier--Stokes proof nor a vague ``hard analytic gap'': it is a conditional
-route with one named, scale-local, machine-audited analytic pin.
+route with a named, scale-local, machine-audited leading analytic pin and a
+finite list of surrounding formalization obligations.
 \end{abstract}
 
 \section{The problem and the role of hypothesis (H1)}
@@ -431,15 +434,18 @@ Exactness (\texttt{OneFormExactness}) & div-free smooth non-exact witness & exac
 Gradients (\texttt{GradientOneForm}) & Cartan formula; self-transport identity & exact identities \\
 Pushdown (\texttt{ConstantinIyerRepresentation}) & NS with explicit pressure from transport & conditional (interface) \\
 Instances (\texttt{DecayingShearInstance}, regression) & nonzero exact inhabitant; rest canaries & exact instances \\
-Gate (\texttt{VorticityStretchingGate}) & conditional BKM route, one named pin & conditional \\
+Gate (\texttt{VorticityStretchingGate}) & pointwise common envelope from named pin & conditional \\
 Countermodel (\texttt{FrozenStrainModel}) & exact pancake solution; no uniform depletion & model refutation \\
 Aperture (\texttt{ApertureCoverageDichotomy}) & dichotomy $\iff$ strain budget; gap failures & model equivalence \\
 Null structure (\texttt{PlaneWaveSelfStrain}) & single-mode Biot--Savart null stretching & exact identity \\
 Dyadic closure (\texttt{DyadicPancakeClosure}) & absorption algebra; sharpened pin; route & conditional \\
+Coherence (\texttt{PancakeCoherentPairEstimate}) & pairwise aperture gain & exact inequality \\
+Refined pin (\texttt{MisalignmentRefinedPin}) & misalignment budget implies pancake budget & conditional \\
+Direction dynamics (\texttt{DirectionEvolutionTilting}) & direction laws; gap-free tilting no-go & exact/refutation \\
 \bottomrule
 \end{tabular}
 \caption{The formalized surface of the repair campaign (all modules under
-\texttt{Mettapedia.FluidDynamics.NavierStokes}, July 2026).  ``Model''
+\texttt{Mettapedia.FluidDynamics.NavierStokes}, September 2026).  ``Model''
 statements are proved in named analytic models; ``exact'' statements are
 unconditional identities or witnesses on $\mathbb{R}^3$-coordinate space;
 ``conditional'' statements are machine-checked implications whose analytic
@@ -780,11 +786,15 @@ the loop: given transported momentum data, dyadic relaxation data whose block
 sum dominates the high-frequency part of $\|\operatorname{curl}u\|$
 (the Littlewood--Paley decomposition interface), the scale-local pancake
 strain budget, and the coercive/residual interfaces with total gain below
-$1$, the velocity satisfies Navier--Stokes with the explicit pressure and the
-BKM integrand is interval-integrable with an explicit bound.  This reaches
-the same endpoint as the coarse conditional route with the gate replaced by
-the sharper geometric pin; the two pins are cross-referenced in the sources
-and both remain open.  An end-to-end rest-state canary
+$1$, the velocity satisfies Navier--Stokes with the explicit pressure and,
+for each fixed spatial point, the vorticity norm is interval-integrable with
+an $x$-independent bound.  This reaches the same pointwise endpoint as the
+coarse conditional route with the gate replaced by the sharper geometric
+pin; the two pins are cross-referenced in the sources and both remain open.
+The common time majorant is the correct precursor to the BKM criterion, but
+the current theorem does not yet define the spatial essential supremum,
+prove its measurability and integrability, or invoke a formal continuation
+theorem.  An end-to-end rest-state canary
 (\texttt{rest\_conditional\_route}) checks that the refined hypotheses are
 simultaneously satisfiable.
 
@@ -844,8 +854,8 @@ reproduces the original budget with gain
 $\mathrm{coherentGain} + \varepsilon$.  The refinement is strict: the
 open burden moved from the full pancake stretching sum to its
 misalignment share, whose controlling quantity is the direction
-variation --- a quantity with known dynamical handles (the vorticity
-direction equation), unlike the raw strain.
+variation.  The vorticity-direction equation exposes a dynamical handle on
+this quantity, but does not by itself give the required a priori estimate.
 
 \emph{Exact unproven boundary.}  (i) The field-level transfer:
 realizing the split and the coherent interface for actual
@@ -855,6 +865,57 @@ fields).  (ii) The misalignment budget itself: dynamical,
 time-integrated control of the misalignment share; the checked fences
 of Sections~\ref{sec:lean}, \ref{sec:aperture} and the static no-go
 apply to it verbatim.
+
+\section{Opening the dynamical stage: direction rate and the tilting gap}
+\label{sec:direction-dynamics}
+
+The first dynamical audit separates two notions that should not be
+conflated: rotation of the vorticity direction and rotation of the strain
+eigenframe.  Both are relevant to a pancake configuration, but they obey
+different equations.
+
+For a nonzero vorticity vector written $\omega=r\xi$, with $|\xi|=1$, and a
+material forcing $F$, define the transverse projection
+\[
+  P_{\xi}^{\perp}F=F-(\xi\cdot F)\xi,
+  \qquad \dot\xi=r^{-1}P_{\xi}^{\perp}F.
+\]
+The module \texttt{DirectionEvolutionTilting} verifies this formula from a
+differentiable factorization $\omega=r\xi$, including tangency
+$\xi\cdot\dot\xi=0$.  If the pointwise vorticity equation is written as
+$F=rS\xi+d$, where $S$ is the strain and $d$ is the diffusive remainder,
+the exact split is
+\[
+  \dot\xi=P_{\xi}^{\perp}(S\xi)
+       +r^{-1}P_{\xi}^{\perp}d.
+\]
+For two differentiable direction paths, the same module proves
+\[
+  \frac{d}{dt}|\xi_1-\xi_2|^2
+   =2(\xi_1-\xi_2)\cdot(\dot\xi_1-\dot\xi_2),
+\]
+together with its Cauchy--Schwarz bound by
+$2|\xi_1-\xi_2|(|\dot\xi_1|+|\dot\xi_2|)$.  Thus total direction turning is
+an exact dynamical input to misalignment production; obtaining the
+scale-critical time integral required by \texttt{MisalignmentStrainBudget}
+remains analytic work.
+
+The pressure Hessian enters through the strain-eigenframe equation instead.
+Differentiating $Se_i=\lambda_i e_i$ and pairing with $e_j$, $i\ne j$, gives
+\[
+  \langle e_j,\dot e_i\rangle
+   =\frac{\langle e_j,\dot S e_i\rangle}{\lambda_i-\lambda_j}.
+\]
+The anisotropic pressure Hessian contributes to the numerator.  The checked
+theorem \texttt{no\_uniformGapFreePressureTiltingBound} records the necessary
+denominator: no nonnegative constant bounds the angular rate from a bounded
+off-diagonal torque independently of the strain eigenvalue gap.  Unit torque
+with gap $1/(C+1)$ already defeats a proposed constant $C$.
+
+This rules out a raw pressure-Hessian norm as the next envelope.  A viable
+dynamical continuation must instead control a gap-weighted pressure torque,
+or prove cancellation/residence-time control over near-degenerate intervals,
+and then transfer that control to the Littlewood--Paley misalignment share.
 
 \section{Status and scope}
 \label{sec:scope}
@@ -942,7 +1003,14 @@ coherent/misaligned transfer, which jointly reproduce
 \texttt{ScaleLocalPancakeStrainBudget} (cross-referenced with the coarser
 \texttt{StochasticStretchingEstimate}).  A successful completion must prove a
 dynamical, time-integrated control of the vorticity-direction misalignment
-share, strong enough to cover the gap band identified above.
+share, strong enough to cover the gap band identified above.  Section
+\ref{sec:direction-dynamics} further shows that a pressure-Hessian route must
+carry inverse strain-eigenvalue-gap information or an equivalent
+time-integrated cancellation; pressure-Hessian size alone cannot close the
+pin.  Once the analytic estimates are closed, the remaining endpoint work is
+to promote the common pointwise majorant to the measurable spatial
+essential-supremum BKM integrand and apply a formal continuation theorem for
+the chosen solution class.
 
 \section*{Provenance}
 The manuscript discussed is Ben Goertzel, \emph{Global Regularity of 3D
@@ -964,6 +1032,8 @@ Phys.}\ \textbf{94} (1984), 61--66; P.~Constantin, G.~Iyer, \emph{Comm.\
 Pure Appl.\ Math.}\ \textbf{61} (2008), 330--345; D.~Ebin, J.~Marsden,
 \emph{Ann.\ of Math.}\ \textbf{92} (1970), 102--163; H.~Bahouri,
 J.-Y.~Chemin, R.~Danchin, \emph{Fourier Analysis and Nonlinear Partial
-Differential Equations}, Springer, 2011.
+Differential Equations}, Springer, 2011; P.~Constantin, C.~Fefferman,
+\emph{Indiana Univ.\ Math.\ J.}\ \textbf{42} (1993), 775--789; J.~Tom,
+M.~Carbone, A.~D.~Bragg, \emph{J.\ Fluid Mech.}\ \textbf{910} (2021), A24.
 
 \end{document}
