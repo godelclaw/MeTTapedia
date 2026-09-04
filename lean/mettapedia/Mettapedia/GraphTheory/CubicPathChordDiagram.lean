@@ -1,3 +1,4 @@
+import Mathlib.Order.Interval.Finset.Fin
 import Mettapedia.GraphTheory.CubicPathChord
 
 /-!
@@ -612,6 +613,83 @@ theorem path_length_sub_five_le_card_internalNonendpointCoordinates
   rw [card_internalNonendpointCoordinates,
     InternalPosition.card_internalPosition]
   have hendpoint := card_endpointAttachmentPositions_le_four hpath hregular
+  omega
+
+/-- Inside any internal chord, all but at most four path coordinates belong
+to the non-endpoint attachment sweep.  Equivalently, the chord span is at most
+the number of sweep-eligible coordinates in its open interval plus five. -/
+theorem OrderedPathChord.span_le_card_internalNonendpointCoordinates_inside_add_five
+    [DecidableEq V] {path : G.Walk start finish} (hpath : path.IsPath)
+    (hregular : G.IsRegularOfDegree 3)
+    (chord : OrderedPathChord (path.length + 1))
+    (hchord : IsInternalChord chord) :
+    chord.right.val - chord.left.val ≤
+      ((internalNonendpointCoordinates hpath hregular).filter
+        fun coordinate =>
+          chord.left < coordinate ∧ coordinate < chord.right).card + 5 := by
+  let exceptionalCoordinates : Finset (Fin (path.length + 1)) :=
+    (endpointAttachmentPositions hpath hregular).image
+      InternalPosition.coordinate
+  have hcover :
+      Finset.Ioo chord.left chord.right ⊆
+        (internalNonendpointCoordinates hpath hregular).filter
+            (fun coordinate =>
+              chord.left < coordinate ∧ coordinate < chord.right) ∪
+          exceptionalCoordinates := by
+    intro coordinate hcoordinate
+    have hinside := Finset.mem_Ioo.mp hcoordinate
+    let position : InternalPosition path :=
+      ⟨coordinate.val - 1, by
+        have hleftPositive := hchord.1
+        have hrightBound := hchord.2.1
+        have hcoordinatePositive : 0 < coordinate.val :=
+          lt_trans hleftPositive hinside.1
+        have hcoordinateBound : coordinate.val < path.length :=
+          lt_trans hinside.2 hrightBound
+        omega⟩
+    have hpositionCoordinate : position.coordinate = coordinate := by
+      apply Fin.ext
+      simp only [InternalPosition.coordinate_val, InternalPosition.index,
+        position]
+      have hleftPositive := hchord.1
+      have hcoordinatePositive : 0 < coordinate.val :=
+        lt_trans hleftPositive hinside.1
+      omega
+    by_cases hposition :
+        position ∈ endpointAttachmentPositions hpath hregular
+    · apply Finset.mem_union_right
+      exact Finset.mem_image.mpr
+        ⟨position, hposition, hpositionCoordinate⟩
+    · apply Finset.mem_union_left
+      apply Finset.mem_filter.mpr
+      refine ⟨?_, hinside⟩
+      rw [internalNonendpointCoordinates]
+      exact Finset.mem_image.mpr
+        ⟨position, Finset.mem_sdiff.mpr ⟨Finset.mem_univ _, hposition⟩,
+          hpositionCoordinate⟩
+  have hinterval :
+      (Finset.Ioo chord.left chord.right).card ≤
+        ((internalNonendpointCoordinates hpath hregular).filter
+          fun coordinate =>
+            chord.left < coordinate ∧ coordinate < chord.right).card + 4 := by
+    calc
+      (Finset.Ioo chord.left chord.right).card ≤
+          ((internalNonendpointCoordinates hpath hregular).filter
+              (fun coordinate =>
+                chord.left < coordinate ∧ coordinate < chord.right) ∪
+            exceptionalCoordinates).card := Finset.card_le_card hcover
+      _ ≤ ((internalNonendpointCoordinates hpath hregular).filter
+              fun coordinate =>
+                chord.left < coordinate ∧ coordinate < chord.right).card +
+            exceptionalCoordinates.card := Finset.card_union_le _ _
+      _ ≤ ((internalNonendpointCoordinates hpath hregular).filter
+              fun coordinate =>
+                chord.left < coordinate ∧ coordinate < chord.right).card + 4 := by
+        apply Nat.add_le_add_left
+        exact Finset.card_image_le.trans
+          (card_endpointAttachmentPositions_le_four hpath hregular)
+  rw [Fin.card_Ioo] at hinterval
+  have hspan := hchord.2.2.1
   omega
 
 /-- Every strict internal position belongs to exactly the geometric universe

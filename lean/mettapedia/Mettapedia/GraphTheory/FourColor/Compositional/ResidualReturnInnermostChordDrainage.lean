@@ -457,6 +457,78 @@ theorem card_eligibleCoordinatesInside_le_eight_mul_of_stackBounds
   unfold openChordsAtEnds at hcovered hopen
   omega
 
+/-- In the no-exit branch, shallow endpoint stacks bound the actual span of
+the selected innermost chord.  The additive five is one interval endpoint
+plus the at-most-four path-endpoint attachment exceptions. -/
+theorem innermostChord_span_le_eight_mul_depth_add_five_of_stackBounds
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (returnChord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (closure : PathCycleClosure
+      (orderedChordAmbientPath hG sigma hSigma site returnChord))
+    (drainage : InnermostChordDrainage rotation hG sigma hSigma site
+      returnChord)
+    (depth : Nat)
+    (hnoExit : ¬Nonempty (AttachmentExitSideReceipt rotation hG sigma hSigma
+      site returnChord))
+    (hstack : ∀ turn : CubicPathRotation.AttachmentTurn,
+      ((turnMatching rotation minimal hG sigma hSigma site returnChord closure
+          turn).stackAt drainage.chord.left).length ≤ depth ∧
+      ((turnMatching rotation minimal hG sigma hSigma site returnChord closure
+          turn).stackAt drainage.chord.right).length ≤ depth) :
+    drainage.chord.right.val - drainage.chord.left.val ≤ 8 * depth + 5 := by
+  have hchord : IsInternalChord drainage.chord :=
+    mem_internalChords_iff.mp drainage.chord_mem
+  have hspan :=
+    Mettapedia.GraphTheory.CubicPathChordDiagram.OrderedPathChord.span_le_card_internalNonendpointCoordinates_inside_add_five
+      (orderedChordAmbientPath_isPath hG sigma hSigma site returnChord)
+      (regularOfDegreeThree_of_cubicIncidentTriples hG) drainage.chord hchord
+  have hbound :=
+    card_eligibleCoordinatesInside_le_eight_mul_of_stackBounds rotation minimal
+      hG sigma hSigma site returnChord closure drainage depth hnoExit hstack
+  change drainage.chord.right.val - drainage.chord.left.val ≤
+    (eligibleCoordinatesInside hG sigma hSigma site returnChord rotation
+      drainage).card + 5 at hspan
+  omega
+
+/-- Consumer-facing quantitative drainage dichotomy: bounded endpoint stacks
+give either an exact separator-exit receipt or an `8 * depth + 5` span bound
+for the selected innermost chord. -/
+theorem exitReceipt_or_innermostChord_span_le_eight_mul_depth_add_five
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (returnChord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (closure : PathCycleClosure
+      (orderedChordAmbientPath hG sigma hSigma site returnChord))
+    (drainage : InnermostChordDrainage rotation hG sigma hSigma site
+      returnChord)
+    (depth : Nat)
+    (hstack : ∀ turn : CubicPathRotation.AttachmentTurn,
+      ((turnMatching rotation minimal hG sigma hSigma site returnChord closure
+          turn).stackAt drainage.chord.left).length ≤ depth ∧
+      ((turnMatching rotation minimal hG sigma hSigma site returnChord closure
+          turn).stackAt drainage.chord.right).length ≤ depth) :
+    Nonempty (AttachmentExitSideReceipt rotation hG sigma hSigma site
+        returnChord) ∨
+      drainage.chord.right.val - drainage.chord.left.val ≤ 8 * depth + 5 := by
+  by_cases hexit : Nonempty (AttachmentExitSideReceipt rotation hG sigma
+      hSigma site returnChord)
+  · exact Or.inl hexit
+  · exact Or.inr <|
+      innermostChord_span_le_eight_mul_depth_add_five_of_stackBounds rotation
+        minimal hG sigma hSigma site returnChord closure drainage depth hexit
+        hstack
+
 end
 
 end ResidualReturnInnermostChordDrainage
