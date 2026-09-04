@@ -3371,6 +3371,9 @@ chords.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualCircuitDefectFormula.oldOddCircuitClasses_ncard_eq_oldCarrierOddComponents}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualCircuitDefectFormula.newOddCircuitClasses_ncard_eq_newCarrierOddComponents}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualCircuitDefectFormula.residualDefect_add_newOddCircuitClasses_eq_new_add_old}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualCircuitDefectFormula.oldOddCircuitClasses_ncard_le_new}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualCircuitDefectFormula.residualDefect_eq_exchange_iff_oldOddCircuitClasses_ncard_eq_new}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualCircuitDefectFormula.residualDefect_lt_exchange_iff_oldOddCircuitClasses_ncard_lt_new}
 At one proper alternating site, combine the return involution with the old
 local matching \(\tau_e\), or with the new local matching \(\sigma\), to form
 a finite circuit partition on the cyclic positions of \(A_e\).  For every
@@ -3401,6 +3404,15 @@ components meeting \(A_e\).  Under these bijections, a class is odd exactly
 when the circuit-parity bit of any representative is one.  Hence the two
 local cardinalities in the displayed identity are literal counts of odd
 finite circuit classes.
+
+The proper-site witness is exchange-rigid: the global residual defect cannot
+fall under this exchange.  Substituting that inequality into the exact
+identity shows that the old odd-circuit count is at most the new one.
+Moreover, equality of the two global defects is equivalent to equality of the
+two finite counts, and strict growth of the global defect is equivalent to
+strict growth of the finite count.  Thus the direction comes from global
+minimality, while the local circuit calculation supplies its exact finite
+form; parity alone is not being used as a monotonicity principle.
 \end{lemma}
 
 \begin{proof}
@@ -3422,7 +3434,9 @@ therefore retains exactly its support, and the induced component graphs are
 isomorphic.  Partition the old and new odd-component sets into components
 disjoint from \(A_e\) and components meeting \(A_e\).  The first parts are
 in support-preserving bijection; cancel their equal cardinalities to obtain
-the displayed identity.
+the displayed identity.  Finally apply the exchange-rigidity inequality and
+elementary arithmetic to obtain the weak, equality, and strict comparison
+statements for the finite circuit counts.
 \end{proof}
 
 \begin{lemma}[two-sector noncrossing of physical residual returns]
