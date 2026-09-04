@@ -8182,6 +8182,19 @@ This three-colour object is an internal refinement, not an identification with
 the source's two complementary closed-web roles.  Such an identification still
 requires the closed-web/no-hole sector hypotheses, so no sector or boundary
 conclusion is inferred from this corollary alone.
+There is nevertheless an exact local representation bridge.  On the carrier of
+every proper alternating-component witness, the two residual matching roles
+are pointwise distinct.  Their symmetric-difference carrier is therefore
+literally the union of the two restricted one-factor graphs, just as a selected
+two-colour graph is the union (equivalently, the symmetric difference) of its
+two disjoint colour classes.
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingCarrierUnion.ProperAlternatingComponentWitness.exchangeCarrier_eq_pairingUnion}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingCarrierUnion.colorClassGraph_symmDiff_eq_colorPairGraph}
+Every edge of the distinguished residual cycle belongs to this literal union.
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AlternatingCarrierUnion.ProperAlternatingComponentWitness.cycle_edges_pairingUnion}
+This bridge is deliberately carrier-local: it justifies importing
+two-matching arguments on an actual residual component, but it does not assert
+that the full ambient sweep graph has the source closed-web/no-hole structure.
 The local transition has now been put into a row-independent finite frame.  Its
 code retains the explicit colour, adjacent path index, two boundary slots, both
 row-arm choices, and the complete labelled connectivity relations in all three
