@@ -268,13 +268,17 @@ structure ConnectedAtWidth (G : SimpleGraph V) [DecidableRel G.Adj]
   complement_connected :
     (G.induce (fun vertex => ¬ realization.side vertex)).Connected
 
-/-- Every bounded cyclic cut in a connected finite graph has a saturated
-connected receipt at the same width. -/
-theorem exists_connectedAtWidth_of_hasCyclicEdgeCutOfSizeAtMost
-    (hconnected : G.Connected) (bound : Nat)
-    (hcut : HasCyclicEdgeCutOfSizeAtMost G bound) :
-    Nonempty (ConnectedAtWidth G bound) := by
-  rcases hcut with ⟨edgeCut, ⟨realization⟩, hcard⟩
+/-- Saturate one specified cyclic cut while retaining the fact that the
+connected result uses only edges of the original cut.  This is the
+provenance-preserving form needed when the original cut came from a concrete
+geometric separator. -/
+theorem exists_connectedAtWidth_subcut
+    (hconnected : G.Connected)
+    {edgeCut : Finset G.edgeSet}
+    (realization : CyclicEdgeCutRealization G edgeCut)
+    (bound : Nat) (hcard : edgeCut.card ≤ bound) :
+    ∃ connected : ConnectedAtWidth G bound,
+      connected.edgeCut ⊆ edgeCut := by
   rcases realization.exists_connectedSides_subcut hconnected with
     ⟨connectedCut, connectedRealization, hsubset, hside, hcomplement⟩
   exact ⟨
@@ -282,7 +286,19 @@ theorem exists_connectedAtWidth_of_hasCyclicEdgeCutOfSizeAtMost
       realization := connectedRealization
       card_le := (Finset.card_le_card hsubset).trans hcard
       side_connected := hside
-      complement_connected := hcomplement }⟩
+      complement_connected := hcomplement },
+    hsubset⟩
+
+/-- Every bounded cyclic cut in a connected finite graph has a saturated
+connected receipt at the same width. -/
+theorem exists_connectedAtWidth_of_hasCyclicEdgeCutOfSizeAtMost
+    (hconnected : G.Connected) (bound : Nat)
+    (hcut : HasCyclicEdgeCutOfSizeAtMost G bound) :
+    Nonempty (ConnectedAtWidth G bound) := by
+  rcases hcut with ⟨edgeCut, ⟨realization⟩, hcard⟩
+  rcases realization.exists_connectedAtWidth_subcut hconnected bound hcard with
+    ⟨connected, _hsubset⟩
+  exact ⟨connected⟩
 
 end
 

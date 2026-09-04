@@ -1,6 +1,7 @@
 import Mettapedia.GraphTheory.FourColor.Compositional.MeshJunctionAlternatingGeometry
 import Mettapedia.GraphTheory.FourColor.Compositional.AmbientReturnAttachmentCompression
 import Mettapedia.GraphTheory.FourColor.Compositional.ExactStateGeometricAlternative
+import Mettapedia.GraphTheory.FourColor.Compositional.DeepReturnExactState
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweepCyclicCut
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnCarrierSweep
 
@@ -22,6 +23,7 @@ namespace Mettapedia.GraphTheory.FourColor.Compositional.MeshResidualReturnSweep
 
 open AmbientReturnAttachmentCompression
 open ExactStateGeometricAlternative
+open DeepReturnExactState
 open GoertzelV24NoncrossingSweepLifo
 open GoertzelV24OrderedInjectiveMeshWidthFactorization
 open GoertzelV24OrderedMeshGlobalSites
@@ -161,6 +163,27 @@ theorem fullyCompressedExactStateAlternative_of_geometricSweepReceipt
   hasFullyCompressedExactStateAlternative rotation minimal hG sigma
     receipt.base.base.base.sigma_supported receipt.base.base.base.bond
       depth spacing hmany
+
+/-- The mesh-level alternative after the carrier-deep branch has also been
+materialized as a saturated, provenanced cyclic cut. -/
+theorem fullyRealizedExactStateAlternative_of_geometricSweepReceipt
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (ordered : OrderedInjectiveMesh
+      (toMultigraph rotation.toRotationSystem) a b)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V)
+    (step : GlobalMeshStep rotation ordered)
+    (receipt : GeometricSweepReceipt rotation minimal ordered hG sigma step)
+    (depth spacing : Nat) (hdepth : 1 ≤ depth)
+    (hmany : 2 * (spacing + 1) * (1 + 1) ^ 2 <
+      receipt.base.base.base.bond.site.cycle.tail.support.length) :
+    FullyRealizedExactStateAlternative rotation minimal hG sigma
+      receipt.base.base.base.sigma_supported receipt.base.base.base.bond
+        depth spacing :=
+  hasFullyRealizedExactStateAlternative rotation minimal hG sigma
+    receipt.base.base.base.sigma_supported receipt.base.base.base.bond
+      depth spacing hdepth hmany
 
 /-- One common residual-defect minimizer supplies the geometric sweep
 alternative at every noncentral step of an ordered mesh. -/
