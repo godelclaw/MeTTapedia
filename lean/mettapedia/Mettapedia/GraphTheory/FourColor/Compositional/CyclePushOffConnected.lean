@@ -20,6 +20,7 @@ namespace Mettapedia.GraphTheory.FourColor.Compositional.CyclePushOffCut
 
 open GoertzelV24CyclicThreeCutConnectedSides
 open GoertzelV24FaceDualConnectedness
+open GoertzelV24FaceOrbitIncidence
 open Mettapedia.GraphTheory.Embedding
 open SimpleGraph
 open SimpleGraphDartRotation
@@ -115,6 +116,50 @@ theorem induce_filledCycleSide_connected
   intro vertex
   rcases hall vertex.1 vertex.2 with ⟨_hvertex, hreachable⟩
   simpa [component] using hreachable
+
+/-- Choose the binary face label opposite a specified disjoint cycle, while
+retaining that very cycle as the complement witness.  This strengthens the
+older existential `HasCycleOnSide` interface with the provenance needed to
+use one common exterior cycle for a nested family. -/
+theorem exists_selected_with_specific_complement_cycle
+    (data : Data G)
+    (hrotation : VertexRotationCyclic data.toRotationSystem)
+    {base : V} (cycle : G.Walk base base)
+    (cut : ExactFaceCut data.toRotationSystem
+      (fun edge : G.edgeSet => edge.1 ∈ cycle.edges) F2)
+    {otherBase : V} (other : G.Walk otherBase otherBase)
+    (hother : other.IsCycle)
+    (hdisjoint : other.support.Disjoint cycle.support) :
+    ∃ selected : F2, ∀ vertex, vertex ∈ other.support →
+      ¬cut.filledCycleSide data cycle selected vertex := by
+  let dart : data.toRotationSystem.D := other.firstDart hother.not_nil
+  let selected : F2 :=
+    cut.label (dartOrbitFace data.toRotationSystem dart) + 1
+  have havoid : ∀ vertex ∈ other.support, vertex ∉ cycle.support := by
+    intro vertex hvertex hcycle
+    exact (List.disjoint_left.mp hdisjoint) hvertex hcycle
+  have hbaseOff : data.toRotationSystem.vertOf dart ∉ cycle.support := by
+    simpa [dart] using havoid otherBase (by simp)
+  have hlabelNe :
+      cut.label (dartOrbitFace data.toRotationSystem dart) ≠ selected := by
+    dsimp only [selected]
+    intro heq
+    generalize cut.label (dartOrbitFace data.toRotationSystem dart) = label at heq
+    fin_cases label <;> simp at heq
+  have hbaseOutside :
+      ¬cut.filledCycleSide data cycle selected otherBase := by
+    have hread := cut.filledCycleSide_iff_label_of_not_mem_support
+      data hrotation cycle selected dart hbaseOff
+    simpa [dart] using (fun hside => hlabelNe (hread.mp hside))
+  refine ⟨selected, ?_⟩
+  intro vertex hvertex hvertexSide
+  have hpathAvoid : ∀ point ∈ (other.takeUntil vertex hvertex).support,
+      point ∉ cycle.support := by
+    intro point hpoint
+    exact havoid point (other.support_takeUntil_subset_support hvertex hpoint)
+  exact hbaseOutside
+    ((filledCycleSide_iff_of_walk_avoids_support data hrotation cycle cut
+      selected (other.takeUntil vertex hvertex) hpathAvoid).2 hvertexSide)
 
 end
 
