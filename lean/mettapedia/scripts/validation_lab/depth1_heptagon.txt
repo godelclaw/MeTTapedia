@@ -1,0 +1,10 @@
+  50: good 8 (0.160), mean 0.02s/word, supp hits 1
+  100: good 18 (0.180), mean 0.02s/word, supp hits 8
+  150: good 27 (0.180), mean 0.02s/word, supp hits 12
+  200: good 40 (0.200), mean 0.02s/word, supp hits 19
+  250: good 52 (0.208), mean 0.02s/word, supp hits 23
+  300: good 65 (0.217), mean 0.02s/word, supp hits 29
+  350: good 80 (0.229), mean 0.02s/word, supp hits 34
+  400: good 94 (0.235), mean 0.02s/word, supp hits 39
+RESULT pentaheptite_r2_heptagon.json: depth-1 good 94/400 = 0.235 of non-support admissible words (supp hits 39); 9s
+OUTCOME: G1 (closure grows; engine investment plausible)

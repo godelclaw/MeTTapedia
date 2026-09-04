@@ -14,8 +14,6 @@ import networkx as nx
 import wall_flower_lab as W
 from patch_reducibility_lab import analyze_tangle
 
-RING_MAX = int(sys.argv[1]) if len(sys.argv) > 1 else 13
-MAXF = int(sys.argv[2]) if len(sys.argv) > 2 else 3
 R = 10
 vpos, rot, hexes, centres = W.hex_lattice(R)
 (a1, b1), (a2, b2) = (0, -2), (-2, 0)
@@ -71,36 +69,41 @@ def wl_key(fset):
     for v in G.nodes: G.nodes[v]['d'] = str(G.degree(v))
     return (tuple(sorted(len(faces[fi]) for fi in fset)), nx.weisfeiler_lehman_graph_hash(G, node_attr='d', iterations=4))
 
-subsets = set()
-def grow(fset):
-    if len(fset) >= MAXF: return
+def grow(fset, subsets, maxf):
+    if len(fset) >= maxf: return
     for fi in fset:
         for g in fadj[fi]:
             if g not in fset:
                 ns = frozenset(fset | {g})
                 if ns not in subsets:
-                    subsets.add(ns); grow(ns)
-for fi in interior:
-    subsets.add(frozenset([fi])); grow(frozenset([fi]))
-types = {}
-for fs in subsets:
-    key = wl_key(fs)
-    if key in types: continue
-    t = disk_tangle(fs)
-    if t is None: continue
-    types[key] = (fs, t)
-print(f"interior faces {len(interior)}, connected subsets {len(subsets)}, distinct disk types {len(types)}", flush=True)
-out = []
-for key, (fs, (n, nv, E)) in sorted(types.items(), key=lambda kv: kv[1][1][0]):
-    sizes = [len(faces[fi]) for fi in fs]
-    if n > RING_MAX:
-        print(json.dumps(dict(faces=sizes, ring=n, vertices=nv, skipped='ring > RING_MAX')), flush=True)
-        out.append(dict(faces=sizes, ring=n, vertices=nv, reducible=None)); continue
-    r = analyze_tangle(n, nv, E, del_max=3)
-    r['faces'] = sizes; r['wl'] = key[1]
-    print(json.dumps(r), flush=True); out.append(r)
-json.dump(out, open(f'pentaheptite_disks_ring{RING_MAX}.json', 'w'), indent=1)
-red = [r for r in out if r.get('reducible')]
-unk = [r for r in out if r.get('reducible') is None]
-print(f"SUMMARY: disk types {len(out)}, reducible {len(red)}, irreducible {len(out) - len(red) - len(unk)}, beyond scale {len(unk)}")
-print("OUTCOME:", ("PD1 reducible disks: " + str([(r['faces'], r['ring']) for r in red])) if red else "PD2 (no reducible bounded disk at this scale)")
+                    subsets.add(ns); grow(ns, subsets, maxf)
+
+
+if __name__ == '__main__':
+    RING_MAX = int(sys.argv[1]) if len(sys.argv) > 1 else 13
+    MAXF = int(sys.argv[2]) if len(sys.argv) > 2 else 3
+    subsets = set()
+    for fi in interior:
+        subsets.add(frozenset([fi])); grow(frozenset([fi]), subsets, MAXF)
+    types = {}
+    for fs in subsets:
+        key = wl_key(fs)
+        if key in types: continue
+        t = disk_tangle(fs)
+        if t is None: continue
+        types[key] = (fs, t)
+    print(f"interior faces {len(interior)}, connected subsets {len(subsets)}, distinct disk types {len(types)}", flush=True)
+    out = []
+    for key, (fs, (n, nv, E)) in sorted(types.items(), key=lambda kv: kv[1][1][0]):
+        sizes = [len(faces[fi]) for fi in fs]
+        if n > RING_MAX:
+            print(json.dumps(dict(faces=sizes, ring=n, vertices=nv, skipped='ring > RING_MAX')), flush=True)
+            out.append(dict(faces=sizes, ring=n, vertices=nv, reducible=None)); continue
+        r = analyze_tangle(n, nv, E, del_max=3)
+        r['faces'] = sizes; r['wl'] = key[1]
+        print(json.dumps(r), flush=True); out.append(r)
+    json.dump(out, open(f'pentaheptite_disks_ring{RING_MAX}.json', 'w'), indent=1)
+    red = [r for r in out if r.get('reducible')]
+    unk = [r for r in out if r.get('reducible') is None]
+    print(f"SUMMARY: disk types {len(out)}, reducible {len(red)}, irreducible {len(out) - len(red) - len(unk)}, beyond scale {len(unk)}")
+    print("OUTCOME:", ("PD1 reducible disks: " + str([(r['faces'], r['ring']) for r in red])) if red else "PD2 (no reducible bounded disk at this scale)")
