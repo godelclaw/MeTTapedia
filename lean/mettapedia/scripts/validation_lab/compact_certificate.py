@@ -26,5 +26,5 @@ for f in files:
             bypairs[canon_key(mu)] = sorted(tuple(sorted(mu[t])) for t in sub)
         ordered = [bypairs[k] for k in sorted(bypairs)]
         ders.append([list(w), r['x'], r['y'], ordered])
-json.dump(dict(cap=best['cap'], derivations=ders), open(out, 'w'))
+json.dump(dict(cap=(best[0] if isinstance(best, list) else best)['cap'], derivations=ders), open(out, 'w'))
 print(f"compact certificate: {len(ders)} derivations -> {out}")
