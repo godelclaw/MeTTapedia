@@ -52,6 +52,86 @@ def pathPrefixSide {start finish : V} (path : G.Walk start finish)
   · intro hcoordinate
     exact ⟨coordinate, hcoordinate, rfl⟩
 
+/-- A positive strict prefix is exactly the support of the walk obtained by
+taking the preceding number of edges. -/
+theorem pathPrefixSide_iff_mem_take_support
+    {start finish : V} {path : G.Walk start finish} (hpath : path.IsPath)
+    (cut : Fin (path.length + 1)) (hcut : 0 < cut.val) (vertex : V) :
+    pathPrefixSide path cut vertex ↔
+      vertex ∈ (path.take (cut.val - 1)).support := by
+  constructor
+  · rintro ⟨coordinate, hcoordinate, rfl⟩
+    rw [SimpleGraph.Walk.mem_support_iff_exists_getVert]
+    refine ⟨coordinate.val, ?_, ?_⟩
+    · rw [SimpleGraph.Walk.take_getVert]
+      congr 1
+      omega
+    · simp only [SimpleGraph.Walk.take_length]
+      have hbound : cut.val - 1 ≤ path.length := by
+        have := Nat.lt_succ_iff.mp cut.isLt
+        omega
+      rw [Nat.min_eq_left hbound]
+      omega
+  · intro hvertex
+    rw [SimpleGraph.Walk.mem_support_iff_exists_getVert] at hvertex
+    rcases hvertex with ⟨coordinate, hcoordinateVertex, hcoordinateBound⟩
+    have htakeBound : cut.val - 1 ≤ path.length := by
+      have := Nat.lt_succ_iff.mp cut.isLt
+      omega
+    rw [SimpleGraph.Walk.take_length, Nat.min_eq_left htakeBound]
+      at hcoordinateBound
+    have hcoordinatePath : coordinate ≤ path.length := by omega
+    let index : Fin (path.length + 1) :=
+      ⟨coordinate, Nat.lt_succ_iff.mpr hcoordinatePath⟩
+    refine ⟨index, ?_, ?_⟩
+    · change coordinate < cut.val
+      omega
+    · change path.getVert coordinate = vertex
+      rw [← hcoordinateVertex, SimpleGraph.Walk.take_getVert]
+      congr 1
+      omega
+
+/-- Every positive strict path prefix induces a connected subgraph. -/
+theorem induce_pathPrefixSide_connected
+    {start finish : V} {path : G.Walk start finish} (hpath : path.IsPath)
+    (cut : Fin (path.length + 1)) (hcut : 0 < cut.val) :
+    (G.induce (pathPrefixSide path cut)).Connected := by
+  let prefixWalk := path.take (cut.val - 1)
+  have hconnected :
+      (G.induce {vertex | vertex ∈ prefixWalk.support}).Connected :=
+    SimpleGraph.Walk.connected_induce_support prefixWalk
+  have heq : pathPrefixSide path cut =
+      (fun vertex => vertex ∈ prefixWalk.support) := by
+    funext vertex
+    exact propext (pathPrefixSide_iff_mem_take_support hpath cut hcut vertex)
+  rw [heq]
+  exact hconnected
+
+/-- A simple path has exactly `cut` distinct vertices in its positive strict
+prefix. -/
+theorem natCard_pathPrefixSide_eq
+    {start finish : V} {path : G.Walk start finish} (hpath : path.IsPath)
+    (cut : Fin (path.length + 1)) (hcut : 0 < cut.val) :
+    Nat.card {vertex : V // pathPrefixSide path cut vertex} = cut.val := by
+  classical
+  rw [Nat.card_eq_fintype_card, Fintype.card_subtype]
+  let prefixWalk := path.take (cut.val - 1)
+  have hfinset : Finset.univ.filter (pathPrefixSide path cut) =
+      prefixWalk.support.toFinset := by
+    ext vertex
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and,
+      List.mem_toFinset]
+    exact pathPrefixSide_iff_mem_take_support hpath cut hcut vertex
+  rw [hfinset, List.toFinset_card_of_nodup]
+  · simp only [SimpleGraph.Walk.length_support]
+    have hbound : cut.val - 1 ≤ path.length := by
+      have := Nat.lt_succ_iff.mp cut.isLt
+      omega
+    change (path.take (cut.val - 1)).length + 1 = cut.val
+    rw [SimpleGraph.Walk.take_length, Nat.min_eq_left hbound]
+    omega
+  · exact (hpath.take _).support_nodup
+
 /-- The path edge crossing the gap immediately before a positive sweep
 coordinate. -/
 def forwardPathEdge {start finish : V} (path : G.Walk start finish)
