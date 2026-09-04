@@ -8,6 +8,9 @@ Pre-registered outcomes: G1 = some good-word closed web has a same-sector
 nested chord pair / drainage failure -> the Sector-Alternation Lemma fails
 on its own target population.  G2 = none -> universal drainage holds on
 every known real-graph good-word closed web (deep branch alive there).
+
+Run with the v24 toolchain directory (smallful.py, lift_lab.py, census.py) on
+PYTHONPATH, e.g. PYTHONPATH=<4ct_toolchain dir> nice -n 19 python3 <this file>
 """
 import json
 from collections import Counter

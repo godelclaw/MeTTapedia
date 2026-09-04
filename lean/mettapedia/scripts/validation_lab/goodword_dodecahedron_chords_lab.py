@@ -9,6 +9,9 @@ Sector-Alternation / drainage layer has nothing to act on.
 Input: the GWCO witness JSON (graph, tangle edges, spokes, caps, colourings).
 Uses the census pipeline's closure test and rail extraction only (no faces
 needed for a chord count).
+
+Run with the v24 toolchain directory (smallful.py, lift_lab.py, census.py) on
+PYTHONPATH, e.g. PYTHONPATH=<4ct_toolchain dir> nice -n 19 python3 <this file>
 """
 import sys
 import json

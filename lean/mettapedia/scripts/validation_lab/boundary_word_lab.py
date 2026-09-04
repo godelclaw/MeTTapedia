@@ -8,6 +8,9 @@ Outcomes: B1 = nesting occurs on some (3,1,1)/(3,1,1) web -> the
 good-word restriction does not rescue universal drainage.
 B2 = nesting occurs only on webs with a (3,2,0) boundary -> the
 good-word restriction is a genuine scope (deep branch alive there).
+
+Run with the v24 toolchain directory (smallful.py, lift_lab.py, census.py) on
+PYTHONPATH, e.g. PYTHONPATH=<4ct_toolchain dir> nice -n 19 python3 <this file>
 """
 import sys
 import json
