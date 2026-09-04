@@ -1006,9 +1006,8 @@ the periodized square-dyadic kernel has both the exact coefficient
 \]
 and the uniform fundamental-cell estimate
 $\int\|K_N^{\rm per}\|\leq C/N$ for every $N\geq2$.
-Thus the frozen-axis anisotropic square-dyadic transfer is discharged.  What
-remains at this endpoint is finite oriented chart/rotation assembly and the
-variable-frame remainder.
+Thus the frozen-axis anisotropic square-dyadic transfer is discharged.  The
+full-annulus and variable-frame assembly is described below.
 
 The module \texttt{PancakeSquareDyadicFiniteTransfer} descends this final
 kernel through the canonical half-open representative of the unit six-torus.
@@ -1043,9 +1042,9 @@ chart.  One constant works for all such frames:
  \qquad N\geq2.
 \]
 Thus frozen oriented-frame transference of the exact square-dyadic kernel is
-discharged.  Selecting and patching the finitely many oriented charts for an
-actual frequency decomposition remains separate; physical vector conjugation
-and pointwise frame variation are handled next.
+discharged.  Physical vector conjugation, pointwise frame variation, and the
+replacement of the initial demonstration chart by the full annulus are
+handled next.
 
 The module \texttt{PancakePhysicalFrameKernelTransfer} supplies the missing
 input/output conjugation.  It complexifies the algebraic real frame, proves
@@ -1063,9 +1062,40 @@ continuous bounded fields and then for an arbitrary pointwise frame field
 $F=F(x)$, simply by instantiating the frame-uniform kernel estimate at the
 observation point.  No derivative of $F$ occurs.  This removes the
 variable-frame commutator as an analytic loss at this particular pointwise
-$L^\infty$ endpoint.  A measurable global frame/chart selection at eigenvalue
-degeneracies and identification with the actual Littlewood--Paley coherent
-share are still required.
+$L^\infty$ endpoint.
+
+The modules \texttt{PancakeAnnularChartCutoff},
+\texttt{PancakeAnnularUniformKernel}, and
+\texttt{PancakeAnnularMultiplierAssembly} remove the remaining
+demonstration-chart restriction.  On a square-dyadic annulus the cone
+inequality forces each normalized axial coordinate into
+$[-2,-3/4]\cup[3/4,2]$, while the transverse coordinates lie in $[-2,2]$.
+There are therefore exactly four source/receiver sign combinations.  Smooth
+compact buffers are constructed for them, their coherent denominators are
+proved globally nonzero, and their inner cutoffs satisfy the exact partition
+identity
+\[
+ \chi_{++}+\chi_{+-}+\chi_{-+}+\chi_{--}=1
+\]
+throughout the normalized annulus.  The parametric Schwartz estimate is
+proved for every buffered cutoff and yields one aperture-uniform inverse
+Fourier $L^1$ bound for the assembled four-chart kernel.  Its Fourier symbol
+is machine-checked to equal the \emph{uncut} coherent Biot--Savart stretching
+interaction on the whole annulus.
+
+Finally, \texttt{PancakeAnnularFrozenFrameTransfer} and
+\texttt{PancakeAnnularPhysicalFrameTransfer} carry this assembled multiplier
+through the rotated Euclidean cover, square-dyadic rescaling, periodization,
+physical input/output conjugation, and arbitrary pointwise frame fields.  The
+exact finite-Fourier identity and the cardinality-free estimate
+\[
+ \|B^{\rm ann}_{N,F(x)}(f,g)(x)\|
+ \le 243\frac{C}{N}\|f\|_{L^\infty}\|g\|_{L^\infty}
+\]
+hold uniformly for $N\ge2$.  Thus finite sign-chart coverage and partition
+assembly are discharged.  A measurable low-strain eigenframe/sector
+construction and identification of this annular action with the actual
+Littlewood--Paley coherent share are still required.
 
 There is a second field-level issue which a fixed-axis multiplier does not
 address.  The actual pancake frame is the eigensystem of the low-frequency
@@ -1084,10 +1114,12 @@ actual Fourier-amplitude mass.  The uniform frozen-axis periodic kernel bound
 is now supplied by \texttt{PancakeBilinearPeriodization}; exact finite-field
 summation and the full anisotropic square-dyadic scaling are supplied by the
 two subsequent modules above; frozen oriented-frame kernel transference is
-supplied by \texttt{PancakeFrozenFrameKernelTransfer}.  The remaining
-field-transfer pieces are measurable finite oriented-chart selection/patching
-and identification of the physically conjugated kernel action with the actual
-Littlewood--Paley coherent share.  The older frequencywise commutator estimate
+supplied by \texttt{PancakeFrozenFrameKernelTransfer}; the full four-sign
+annulus and its physical variable-frame endpoint are supplied by the annular
+modules above.  The remaining field-transfer pieces are measurable
+low-strain eigenframe/sector construction and identification of the
+physically conjugated annular action with the actual Littlewood--Paley
+coherent share.  The older frequencywise commutator estimate
 remains correct, but the new uniform physical-kernel endpoint shows that no
 frame-oscillation estimate is needed merely to obtain the pointwise
 $L^\infty$ bound.
@@ -1120,10 +1152,14 @@ coherent PDE interaction, mass-preserving isotropic dyadic rescaling, exact
 four-transverse/two-axial scaling, square-dyadic chart identification, its
 periodized coefficient formula, its uniform $C/N$ mass bound, and uniform
 frozen oriented-frame transference, physical input/output conjugation, and the
-pointwise endpoint for an arbitrary frame field are now proved as well.  The
-remaining steps are measurable finite oriented-chart selection/patching and
-their identification and assembly into \texttt{coherent\_le} for the actual Navier--Stokes
-functionals.
+pointwise endpoint for an arbitrary frame field are now proved as well.
+Four-sign coverage of the full normalized annulus, exact partition assembly,
+one uniform inverse-Fourier mass bound for the assembled multiplier, its exact
+uncut coherent-symbol identity on the annulus, and its physical
+variable-frame $C/N$ endpoint are also proved.  The remaining steps are a
+measurable low-strain eigenframe/sector construction and identification and
+assembly of this annular action into \texttt{coherent\_le} for the actual
+Navier--Stokes functionals.
 (ii) The misalignment budget itself: dynamical,
 time-integrated control of the misalignment share; the checked fences
 of Sections~\ref{sec:lean}, \ref{sec:aperture} and the static no-go
@@ -1320,13 +1356,14 @@ refinement (Section~\ref{sec:coherence}), the open analytic input is
 coherent/misaligned transfer, which jointly reproduce
 \texttt{ScaleLocalPancakeStrainBudget} (cross-referenced with the coarser
 \texttt{StochasticStretchingEstimate}).  A successful completion must prove a
-measurable eigenframe/chart selection together with identification of the
-kernel action with the actual scale-local coherent share, and a dynamical,
+measurable low-strain eigenframe/sector construction together with
+identification of the annular kernel action with the actual scale-local
+coherent share, and a dynamical,
 time-integrated control of the vorticity-direction misalignment share, strong
-enough to cover the gap band identified above.  It must also finish the
- finite oriented-chart selection and partition assembly for the
-now-periodic bilinear kernel rather than assigning the aperture gain to the
-projection; the exact kernel transference within each frozen frame is proved.
+ enough to cover the gap band identified above.  The finite four-sign
+annular partition and its exact periodic physical transference are proved;
+the remaining identification may not assign the aperture gain to the
+projection.
 Section
 \ref{sec:direction-dynamics} further shows that a pressure-Hessian route must
 carry inverse strain-eigenvalue-gap information or an equivalent
