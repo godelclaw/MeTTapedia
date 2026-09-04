@@ -79,6 +79,7 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeUniform
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeBilinearPeriodization
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeFiniteFourierBilinearTransfer
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeDyadicKernelScaling
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeSquareDyadicFiniteTransfer
 
 /-!
 # Navier-Stokes live surface
