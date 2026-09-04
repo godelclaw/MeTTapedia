@@ -92,7 +92,12 @@ frame and conjugating both inputs and the output gives a physical-frame bound;
 uniformity then permits an arbitrary frame choice at each output point without
 a frame-derivative loss at this $L^\infty$ kernel endpoint.  A separate exact
 variable/frozen split and a spectral-gap perturbation theorem remain available
-for formulations that differentiate the symbol.  The
+for formulations that differentiate the symbol.  The physical finite-sector
+stretching sum is now proved to equal this coherent annular kernel action plus
+the exact three-term misalignment remainder, both in an arbitrary frozen frame
+and in the pointwise compressive frame constructed from the strain.  Hence the
+coherent term has a cardinality-free $C/N$ bound without an abstract split
+hypothesis.  The
 latest audit also isolates why the proposed pancake closure does
 not yet prove the Millennium statement: its high-low split covers all aperture
 angles iff the scale-local strain satisfies $\gamma\le\nu\lambda_q$, exactly
@@ -1120,8 +1125,9 @@ Measurable dependence of the spectral choice through eigenvalue collisions,
 and identification of these concrete finite projectors with the actual
 Littlewood--Paley coherent share, are still required.
 
-The modules \texttt{PancakeComplexMisalignmentExpansion} and
-\texttt{PancakeComplexCoherentPDEIdentification} close the algebraic split
+The modules \texttt{PancakeComplexMisalignmentExpansion},
+\texttt{PancakeComplexCoherentPDEIdentification}, and
+\texttt{PancakePhysicalMisalignmentSplit} close the algebraic split
 behind that remaining analytic task.  The former expands the actual complex
 Biot--Savart stretching interaction into the coherent--coherent term and the
 three terms containing at least one misalignment factor, first modewise and
@@ -1133,6 +1139,23 @@ PDE stretching operator applied to the two coherent chart projections.  On
 the genuine rotated square-dyadic sector, the exact physical kernel formula
 is therefore rewritten directly as a sum of coherent--coherent PDE
 interactions; no analogy between two separately defined expressions remains.
+The third module performs the sum-level substitution: for arbitrary finite
+Fourier data it proves the exact physical identity
+\[
+  \mathcal S_{N,F}
+   =\mathcal K^{\mathrm{coh}}_{N,F}
+    +\mathcal R^{\mathrm{mis}}_{N,F},
+\]
+where the remainder is precisely the sum of the coherent--misaligned,
+misaligned--coherent, and misaligned--misaligned interactions.  A triangle
+inequality and the annular kernel theorem give
+\[
+  |\mathcal S_{N,F}(x)|
+   \leq 243(C/N)MP+|\mathcal R^{\mathrm{mis}}_{N,F}(x)|,
+\]
+with no dependence on the two Fourier support cardinalities.  The same theorem
+is specialized to the pointwise frame built from the most compressive strain
+eigenvector, so this statement no longer accepts a caller-supplied frame.
 
 There is a second field-level issue which a fixed-axis multiplier does not
 address.  The actual pancake frame is the eigensystem of the low-frequency
@@ -1155,14 +1178,15 @@ supplied by \texttt{PancakeFrozenFrameKernelTransfer}; the full four-sign
 annulus and its physical variable-frame endpoint are supplied by the annular
 modules above, and the pointwise frame is now constructed from the strain.
 The remaining field-transfer pieces are measurable control of that spectral
-selection through eigenvalue collisions and identification of the physically
-conjugated annular action with the actual Littlewood--Paley coherent share.
+selection through eigenvalue collisions and identification of the concrete
+finite-sector split with the actual Littlewood--Paley time functionals.
 The older frequencywise commutator estimate
 remains correct, but the new uniform physical-kernel endpoint shows that no
 frame-oscillation estimate is needed merely to obtain the pointwise
 $L^\infty$ bound.
-They are not silently included in the modewise estimate, and
-\texttt{coherent\_le} has not yet been instantiated.
+They are not silently included in the finite-sector estimate, and
+\texttt{coherent\_le} has not yet been instantiated for the time-dependent
+Navier--Stokes data structure.
 
 \emph{The refined pin (committed).}  The module
 \texttt{MisalignmentRefinedPin} splits the pancake-sector functional
@@ -1199,10 +1223,13 @@ sector projector is now constructed, its six-dimensional chart is identified
 with the two independently filtered mode charts, and the genuine rotated
 radial-shell/angle-cone selector is proved to lie in that annulus.  The exact
 physical coherent formula follows without an additional support premise.  The
-pointwise strain-derived axial frame is also constructed.  The remaining
-steps are measurable spectral selection through eigenvalue collisions, and
-identification and assembly of this concrete projector/action and the exact
-three-term misalignment remainder into
+pointwise strain-derived axial frame is also constructed.  Finally, the full
+physical finite-sector stretching sum is proved to be exactly that annular
+coherent action plus the three-term misalignment remainder, with a uniform
+$C/N$ bound on the first term, including in the strain-derived frame.  The
+remaining steps are measurable spectral selection through eigenvalue
+collisions, and identification and assembly of this concrete finite-sector
+identity into
 \texttt{coherent\_le} for the actual Navier--Stokes functionals.
 (ii) The misalignment budget itself: dynamical,
 time-integrated control of the misalignment share; the checked fences
@@ -1401,8 +1428,8 @@ coherent/misaligned transfer, which jointly reproduce
 \texttt{ScaleLocalPancakeStrainBudget} (cross-referenced with the coarser
 \texttt{StochasticStretchingEstimate}).  A successful completion must prove
 measurable control of the pointwise strain-derived spectral frame through
-eigenvalue collisions, identify the now-concrete annular finite-Fourier
-projector and kernel action with the actual scale-local coherent share, and
+eigenvalue collisions, identify the now-exact finite-sector physical split
+with the actual scale-local Littlewood--Paley time functionals, and
 prove a dynamical,
 time-integrated control of the vorticity-direction misalignment share, strong
  enough to cover the gap band identified above.  The finite four-sign
