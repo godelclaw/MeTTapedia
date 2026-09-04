@@ -185,6 +185,32 @@ $D_{2b}$, with weights ten and four respectively.  Future recounts must keep
 these weights fixed; only the earned column may change when a cited premise is
 sealed or refuted.
 
+For scheduling only, the remaining obligations are ranked by fixed ledger
+weight times a pre-audit tractability estimate.  These estimates never change
+the ledger.  The first D1c falsification gate lowered its estimate because the
+checked local carrier does not supply the complete cumulative interface on the
+Goldberg test family.  The current order is therefore
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.12\textwidth}p{0.49\textwidth}rrr@{}}
+\toprule
+Node & Obligation & weight & estimate & product \\
+\midrule
+$D_{2b}$ & executable optimized closure certificate & 4 & $.88$ & $3.52$ \\
+$D_{1b}$ & target-forced cut chain and constants & 10 & $.32$ & $3.20$ \\
+$D_{1c}$ & geodesic and perimeter transfers, now after $D_{1b}$ & 6 & $.42$ & $2.52$ \\
+$D_{4b}$ & concrete finite-base trace and empty audit & 9 & $.25$ & $2.25$ \\
+$D_{1d}$ & fixed-wall exclusion & 8 & $.18$ & $1.44$ \\
+$D_5$ & assemblies, gated by conjunctive premises & 6 & $0$ & $0$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The estimates are explicit search policy, not confidence annotations on
+theorems.  In particular the D1c gate changes the attack order, not the fixed
+six-point weight or its current earned score of zero.
+
 Consequently the route is a conditional proof, not yet a proof of the
 Four-Color Theorem.  The point of the remainder of this section is that the
 conditions are now explicit enough to attack independently and cannot be
@@ -803,6 +829,36 @@ hexagonal region is not automatically a one-dimensional bounded-interface
 ladder.  The deterministic generator and all per-radius arrays are in
 \texttt{tools/fourcolor/v24\_goldberg\_frontier\_width\_audit.py} and its
 JSON certificate.
+
+\begin{proposition}[small-case gate for local-to-complete geodesic transfer]
+\label{prop:geodesic-transfer-small-case-gate}
+\Sprose
+The bounded radius-one carrier around one cut does not, by itself, give a
+bounded complete interface for cumulative prefixes of a dual geodesic.  On
+the deterministic diameter geodesic of \(\mathrm{GP}(k,0)\), for
+\(1\le k\le12\), every four-face radius-one cut carrier has primal edge
+frontier at most $30$.  Nevertheless the maximum frontier of the
+radius-one band around a geodesic prefix is
+
+\[
+  10,30,42,54,66,78,90,102,114,126,138,150,
+\]
+
+respectively.  For $k\ge2$ this is $12k+6$.  The positive control is the
+source's \((5,0)\) tube through length $20$, whose corresponding radial
+frontiers remain at most $10$.  The generator also reproduces the earlier
+Goldberg calibrations $|V|=20k^2$ and maximum cap-radial frontier $10k$.
+
+Thus the direct inference ``bounded local carrier implies a bounded
+one-dimensional cumulative Count interface'' fails on the tested family.
+This does not refute Proposition~\ref{prop:global-corridor-alternative}: a
+target-forced cut chain or a second-direction transfer may absorb the lateral
+attachments.  It does show that D1c cannot be discharged from
+Lemma~\ref{lem:geodesic-locality} alone, so D1b now precedes D1c in the attack
+order.  The deterministic audit and full arrays are
+\texttt{tools/fourcolor/v24\_geodesic\_transfer\_gate.py} and
+\texttt{results/fourcolor/v24\_geodesic\_transfer\_gate.json}.
+\end{proposition}
 
 \subsection{The cap-composed Menu predicate}
 
