@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.Compositional.AmbientReturnAttachmentCompression
+import Mettapedia.GraphTheory.FourColor.Compositional.AmbientReturnSweepInterface
 import Mettapedia.GraphTheory.FourColor.Compositional.PathChordStrictFamily
 
 /-!
@@ -21,6 +22,7 @@ namespace AmbientReturnStrictChordFamily
 
 open AmbientReturnAttachmentCompression
 open AmbientReturnAttachmentSweep
+open AmbientReturnSweepInterface
 open CubicPathChordDiagram
 open CubicPathRotation
 open GoertzelV24OrderedMeshResidualSiteFacialBond
@@ -65,26 +67,8 @@ def HasRealizedNestedAmbientAttachmentAlternative
               HasStrictlyNestedChordFamily
                 (turnChords rotation hG sigma hSigma bond.site inner turn)
                 length) ∨
-            ∃ firstCut secondCut : Fin
-                ((orderedChordAmbientPath hG sigma hSigma bond.site inner).length + 1),
-              firstCut ∈ eligibleAmbientReturnSweepPositions hG sigma hSigma
-                bond.site inner ∧
-              secondCut ∈ eligibleAmbientReturnSweepPositions hG sigma hSigma
-                bond.site inner ∧
-              firstCut < secondCut ∧
-              spacing + 1 ≤ secondCut.val - firstCut.val ∧
-              IsInternalChordEndpoint
-                (orderedChordAmbientPath hG sigma hSigma bond.site inner)
-                firstCut ∧
-              IsInternalChordEndpoint
-                (orderedChordAmbientPath hG sigma hSigma bond.site inner)
-                secondCut ∧
-              ((PhasedNoncrossingSweep.SweepData.withPositionPhase
-                  (ambientReturnAttachmentSweepData rotation minimal hG sigma
-                    hSigma bond.site inner closure) spacing).rawState firstCut =
-                (PhasedNoncrossingSweep.SweepData.withPositionPhase
-                  (ambientReturnAttachmentSweepData rotation minimal hG sigma
-                    hSigma bond.site inner closure) spacing).rawState secondCut))
+            Nonempty (SpacedAmbientReturnInterfaceReceipt rotation minimal hG
+              sigma hSigma bond.site inner closure spacing))
 
 /-- Realize the deep-stack branch of the compressed ambient-attachment
 alternative as original graph chords. -/
@@ -123,8 +107,15 @@ theorem realized_of_nestedAmbientAttachmentSweepAlternative
         (pairwiseNoncrossing_turnChords rotation minimal hG sigma hSigma
           bond.site inner closure (indexedAttachmentTurn familyIndex))
         (fun _ => ()) cut length hlength'
-    · exact ⟨outer, inner, hshore, hleft, hright,
-        Or.inr ⟨closure, Or.inr hrepeat⟩⟩
+    · rcases hrepeat with
+        ⟨firstCut, secondCut, hfirstEligible, hsecondEligible, hordered,
+          hseparated, hfirstEndpoint, hsecondEndpoint, heq⟩
+      exact ⟨outer, inner, hshore, hleft, hright,
+        Or.inr ⟨closure, Or.inr
+          (nonempty_spacedAmbientReturnInterfaceReceipt rotation minimal hG
+            sigma hSigma bond.site inner closure spacing firstCut secondCut
+            hfirstEligible hsecondEligible hordered hseparated hfirstEndpoint
+            hsecondEndpoint heq)⟩⟩
 
 end
 
