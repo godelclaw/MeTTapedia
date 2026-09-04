@@ -43,9 +43,12 @@ integrand, which unlike the full strain has known dynamical handles.
    rescaling, exact periodization, physical input/output frame conjugation,
    a frame-uniform pointwise kernel endpoint, four-sign coverage of the full
    normalized annulus, its exact partition identity, and the assembled
-   annular multiplier are proved in the downstream `Pancake*` modules.  What
-   remains is measurable low-strain eigenframe/sector construction and the
-   identification of the resulting variable-frame annular action with the
+   annular multiplier, the genuine finite shell-and-cone selector, an explicit
+   oriented frame aligned with any unit axial direction, and the pointwise
+   frame constructed from the smallest strain eigenvector are proved in the
+   downstream `Pancake*` modules.  What remains is measurable dependence of
+   the spectral selection through eigenvalue collisions and the identification
+   of the resulting variable-frame annular action with the
    coherent share of the actual Littlewood--Paley Navier--Stokes
    decomposition, followed by its assembly
    into `split_le` and `coherent_le` for actual Navier–Stokes
