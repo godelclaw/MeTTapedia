@@ -46,6 +46,18 @@ theorem stackAt_length_eq_openArcs_length {K : Type u} {n : Nat}
     (matching.stackAt cut).length = (matching.openArcs cut).length := by
   simp [NoncrossingMatching.stackAt]
 
+/-- A sweep stack contains no repeated arc records. -/
+theorem openArcs_nodup {K : Type u} {n : Nat}
+    (matching : NoncrossingMatching K n) (cut : Fin n) :
+    (matching.openArcs cut).Nodup := by
+  have hleft : (matching.openArcs cut).Pairwise fun outer inner =>
+      outer.left < inner.left :=
+    matching.leftOrdered.filter _
+  letI : Std.Irrefl
+      (fun outer inner : LabeledArc K n => outer.left < inner.left) :=
+    ⟨fun arc => lt_irrefl arc.left⟩
+  exact hleft.nodup
+
 /-- The smaller endpoints of the selected chords of a pairing. -/
 def canonicalLeftEndpoints {n : Nat} (pairing : Pairing (Fin n))
     (selected : Fin n → Prop) [DecidablePred selected] : Finset (Fin n) :=
@@ -224,5 +236,38 @@ def noncrossingMatchingOfPairing {K : Type u} {n : Nat}
       simpa only [orderedReturnChord, min_eq_left hleft.1.le,
         min_eq_left hright.1.le, max_eq_right hleft.1.le,
         max_eq_right hright.1.le] using hcrossing
+
+/-- A canonical pairing chord which straddles a cut occurs in the literal
+open-arc list of the matching constructed above.  This is the membership
+direction used when a physical boundary edge is first identified by its
+paired endpoint. -/
+theorem chordArc_mem_openArcs_of_lt_cut_le_partner
+    {K : Type u} {n : Nat}
+    (pairing : Pairing (Fin n))
+    (selected : Fin n → Prop) [DecidablePred selected]
+    (label : Fin n → K)
+    (hnoncrossing : ∀ first second : OrderedReturnChord pairing,
+      selected first.left → selected second.left → ¬ first.Crosses second)
+    (position cut : Fin n)
+    (hposition : position < pairing.partner position)
+    (hselected : selected position)
+    (hleft : position < cut)
+    (hright : cut ≤ pairing.partner position) :
+    chordArc pairing label position ∈
+      (noncrossingMatchingOfPairing pairing selected label hnoncrossing).openArcs
+        cut := by
+  have hcanonical : position ∈ canonicalLeftEndpoints pairing selected := by
+    simp [canonicalLeftEndpoints, hposition, hselected]
+  have harc : chordArc pairing label position ∈
+      canonicalArcList pairing selected label := by
+    rw [canonicalArcList, List.mem_map]
+    exact ⟨position, (Finset.mem_sort (fun left right => left ≤ right)).2
+      hcanonical, rfl⟩
+  rw [GoertzelV24NoncrossingSweepLifo.NoncrossingMatching.openArcs,
+    List.mem_filter]
+  refine ⟨harc, ?_⟩
+  simp only [chordArc_left_of_lt pairing label position hposition,
+    chordArc_right_of_lt pairing label position hposition]
+  exact decide_eq_true ⟨hleft, hright⟩
 
 end Mettapedia.GraphTheory.FourColor.Compositional.NoncrossingPairingSweep
