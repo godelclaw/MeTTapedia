@@ -1,0 +1,124 @@
+{
+ "cone": [
+  {
+   "q": 3,
+   "lambda": 8.0,
+   "delta": 0.3535533905932738,
+   "n_receivers": 116,
+   "n_sources": 68,
+   "diagonal_max": 2.3405556457178003e-17,
+   "rowsum_max": 34.0,
+   "rowsum_mean": 33.95375573245357,
+   "pairmax": 0.5000000000000001
+  },
+  {
+   "q": 4,
+   "lambda": 16.0,
+   "delta": 0.25,
+   "n_receivers": 228,
+   "n_sources": 324,
+   "diagonal_max": 1.3614428239993388e-17,
+   "rowsum_max": 162.0,
+   "rowsum_mean": 161.92175785398285,
+   "pairmax": 0.5000000000000001
+  },
+  {
+   "q": 5,
+   "lambda": 32.0,
+   "delta": 0.1767766952966369,
+   "n_receivers": 404,
+   "n_sources": 1308,
+   "diagonal_max": 1.3704890552376618e-17,
+   "rowsum_max": 654.0,
+   "rowsum_mean": 653.9154168462295,
+   "pairmax": 0.5000000000000002
+  },
+  {
+   "q": 6,
+   "lambda": 64.0,
+   "delta": 0.125,
+   "n_receivers": 852,
+   "n_sources": 5156,
+   "receivers_sampled": 600,
+   "diagonal_max": 1.3605662543156404e-17,
+   "rowsum_max": 2578.0,
+   "rowsum_mean": 2577.907489597452,
+   "pairmax": 0.5000000000000002
+  }
+ ],
+ "full": [
+  {
+   "q": 3,
+   "lambda": 8.0,
+   "delta": 1.0,
+   "n_receivers": 1592,
+   "n_sources": 224,
+   "receivers_sampled": 600,
+   "diagonal_max": 9.749024697719687e-17,
+   "rowsum_max": 112.0,
+   "rowsum_mean": 109.9072934385244,
+   "pairmax": 0.5000000000000001
+  },
+  {
+   "q": 4,
+   "lambda": 16.0,
+   "delta": 1.0,
+   "n_receivers": 5504,
+   "n_sources": 2076,
+   "receivers_sampled": 600,
+   "diagonal_max": 8.782140728488385e-17,
+   "rowsum_max": 1038.0,
+   "rowsum_mean": 1018.6267146442098,
+   "pairmax": 0.5000000000000001
+  },
+  {
+   "q": 5,
+   "lambda": 32.0,
+   "delta": 1.0,
+   "n_receivers": 20504,
+   "n_sources": 17044,
+   "receivers_sampled": 600,
+   "diagonal_max": 7.86210585689386e-17,
+   "rowsum_max": 8520.350925599829,
+   "rowsum_mean": 8362.309476131664,
+   "pairmax": 0.5000000000000002
+  },
+  {
+   "q": 6,
+   "lambda": 64.0,
+   "delta": 1.0,
+   "n_receivers": 79952,
+   "n_sources": 137032,
+   "receivers_sampled": 600,
+   "sources_sampled": 20000,
+   "source_scale": 6.8516,
+   "diagonal_max": 7.062538697205992e-17,
+   "rowsum_max": 68515.33523492083,
+   "rowsum_mean": 67230.94909478477,
+   "pairmax": 0.5000000000000002
+  }
+ ],
+ "alpha_last_two": 2.057104902868272,
+ "table": [
+  [
+   3,
+   0.3535533905932738,
+   0.30357142857142855
+  ],
+  [
+   4,
+   0.25,
+   0.15606936416184972
+  ],
+  [
+   5,
+   0.1767766952966369,
+   0.07675740186182047
+  ],
+  [
+   6,
+   0.125,
+   0.03762661294965171
+  ]
+ ]
+}
