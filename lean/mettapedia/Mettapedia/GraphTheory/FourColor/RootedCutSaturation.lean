@@ -288,8 +288,10 @@ theorem induce_complement_closureSide_connected
         fun hnot => Classical.byContradiction hnot⟩)).mp hcomponent
 
 /-- A width-bounded connected cut obtained by rooted saturation.  Besides
-the standard `ConnectedAtWidth` receipt, `edgeCut_subset` records that no new
-boundary edge was introduced. -/
+the standard `ConnectedAtWidth` receipt, the returned equalities retain the
+exact edge set and side predicate of the rooted construction.  This
+provenance is what lets a family saturated at one exterior root inherit the
+nesting of its unsaturated sides. -/
 theorem exists_connectedAtWidth
     (hconnected : G.Connected)
     {oldEdgeCut : Finset G.edgeSet}
@@ -300,7 +302,11 @@ theorem exists_connectedAtWidth
     (hcycle : outsideCycle.IsCycle)
     (hsupport : ∀ vertex, vertex ∈ outsideCycle.support → ¬ old.side vertex)
     (bound : Nat) (hcard : oldEdgeCut.card ≤ bound) :
-    Nonempty (CyclicEdgeCutRealization.ConnectedAtWidth G bound) := by
+    ∃ connected : CyclicEdgeCutRealization.ConnectedAtWidth G bound,
+      connected.edgeCut = edgeCut old outsideRoot houtsideRoot ∧
+      ∀ vertex,
+        connected.realization.side vertex ↔
+          closureSide (G := G) old.side outsideRoot houtsideRoot vertex := by
   rcases old.hinside_cycle with
     ⟨sideRoot, hsideRoot, _insideCycle, _hinsideCycle, _hinsideSupport⟩
   refine ⟨
@@ -310,7 +316,7 @@ theorem exists_connectedAtWidth
       card_le := (Finset.card_le_card
         (edgeCut_subset old outsideRoot houtsideRoot)).trans hcard
       side_connected := ?_
-      complement_connected := ?_ }⟩
+      complement_connected := ?_ }, rfl, fun _ => Iff.rfl⟩
   · change (G.induce
       (closureSide (G := G) old.side outsideRoot houtsideRoot)).Connected
     exact induce_closureSide_connected hconnected old.side hsideConnected
