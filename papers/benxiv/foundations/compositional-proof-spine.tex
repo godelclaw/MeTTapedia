@@ -7917,6 +7917,33 @@ successor.  Otherwise it is an external attachment.  Finally a simple path
 has exactly two fewer strict internal positions than support vertices.
 \end{proof}
 
+\begin{lemma}[matching role and genuine exit of a residual-return attachment]
+\label{lem:residual-return-attachment-matching-role}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnAttachmentMatching.ambientReturnAttachmentNeighbor_eq_partner}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnAttachmentMatching.ambientReturnAttachmentNeighbor_not_mem_carrier}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnAttachmentMatching.ambientReturnExternalAttachment_leavesSeparator}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnAttachmentMatching.AttachmentExitSideReceipt.faceSide}
+At every strict internal position of a physical residual return, the canonical
+third edge is the edge of the reference matching.  Its other endpoint cannot
+belong to the operated alternating carrier.  Consequently, if that edge is
+external to the return path, it genuinely leaves the complete separator made
+from the return and its complementary carrier interval.  The exact face-side
+branch of its separator-exit receipt therefore always holds; the former
+``returns to the carrier'' alternative is impossible.
+\end{lemma}
+
+\begin{proof}
+The return path lies in the common residual graph before and after the
+alternating exchange.  Its two path edges at an internal vertex are therefore
+different from the reference-matching edge.  Cubicity leaves exactly one
+third edge, so its neighbour is the reference partner.  If that partner lay
+on the carrier, closure of the carrier under the reference matching and
+involutivity would put the internal path vertex on the carrier.  But a simple
+physical return meets the carrier only at its two endpoints, contradicting
+strict internality.  The earlier separator alternative now has only its
+face-side branch.
+\end{proof}
+
 \begin{lemma}[rotation side of a cubic path attachment]
 \label{lem:cubic-path-attachment-rotation-side}
 \Sverified{Mettapedia.GraphTheory.FourColor.SimpleGraphDartRotation.Data.vertexRotation_apply_eq_second_or_third_of_regularThree}
@@ -8089,9 +8116,13 @@ from the open arcs counted by a deep LIFO stack.  Applied to the two
 same-turn attachment families, it returns a strictly nested family of actual
 internal chords of the ambient residual path.  Consequently both deep-stack
 outcomes of the fully compressed alternative now carry original graph
-objects.  The external attachment and the two repeated-state outcomes remain
-explicit; in particular, equality of the present unlabelled stack shapes is
-not asserted to be a colour-preserving splice interface.
+objects.  The external-attachment outcome is now a genuine separator exit
+with an exact face-side receipt; the impossible return-to-carrier branch has
+been removed by
+Lemma~\ref{lem:residual-return-attachment-matching-role}.  That exit and the
+two repeated-state outcomes remain explicit; in particular, equality of the
+present unlabelled stack shapes is not asserted to be a colour-preserving
+splice interface.
 
 The repeated residual-return outcomes now expose their exact topological
 content as well.  Equality of raw states identifies, family by family, the
@@ -8120,9 +8151,10 @@ of the two repeated positions.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AmbientReturnSweepWidth.card_ambientReturnPrefixBoundary_le_stack_lengths}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AmbientReturnSweepBoundedRepeat.BoundedSpacedAmbientReturnInterfaceReceipt.firstBoundaryWidth}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AmbientReturnSweepBoundedRepeat.BoundedSpacedAmbientReturnInterfaceReceipt.secondBoundaryWidth}
-Thus a sufficiently long ambient return yields an external attachment, a
-strictly nested physical chord family, or a materially spaced raw-state
-repeat whose two actual cut boundaries share one graph-independent bound.
+Thus a sufficiently long ambient return yields an exact face-sided separator
+exit, a strictly nested physical chord family, or a materially spaced
+raw-state repeat whose two actual cut boundaries share one graph-independent
+bound.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AmbientReturnBoundedAlternative.hasBoundedRealizedNestedAmbientAttachmentAlternative}
 
 The second, semantic compression is now checked without identifying a raw
@@ -8145,9 +8177,9 @@ central family at width \(k\) has cardinality at most
 the exact cardinality of the already checked profile carrier.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AmbientReturnConnectedCutProfileBound.ShallowCentralCutFamilyReceipt.card_le_profileStateCount}
 Consequently an ambient-return support larger than
-\(6+N(7+2d)+2(7+2d)\) has an external attachment or contains \(d+1\)
-strictly nested original internal chords; the shallow repeat branch has
-disappeared rather than been postulated colour-compatible.
+\(6+N(7+2d)+2(7+2d)\) has an exact face-sided separator exit or contains
+\(d+1\) strictly nested original internal chords; the shallow repeat branch
+has disappeared rather than been postulated colour-compatible.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AmbientReturnFullProfileAlternative.exists_externalAttachment_or_strictlyNestedChordFamily}
 The cardinality argument is path-generic: any finite family of bounded cubic
 path prefixes with the same two margins admits the same common-root
