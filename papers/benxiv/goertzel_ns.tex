@@ -1093,8 +1093,16 @@ exact finite-Fourier identity and the cardinality-free estimate
  \le 243\frac{C}{N}\|f\|_{L^\infty}\|g\|_{L^\infty}
 \]
 hold uniformly for $N\ge2$.  Thus finite sign-chart coverage and partition
-assembly are discharged.  A measurable low-strain eigenframe/sector
-construction and identification of this annular action with the actual
+assembly are discharged.  The module
+\texttt{PancakeAnnularSectorProjector} then defines the concrete finite
+Fourier projector obtained by filtering a given support with the normalized
+pancake-annulus predicate.  It proves, coordinate by coordinate, that the
+six-dimensional frozen square-dyadic chart of a selected pair is exactly the
+pair of their independently selected three-dimensional normalized modes.
+Consequently the full-annulus premise of the exact physical kernel formula is
+automatic on these projected fields; it is no longer a free support
+hypothesis.  A measurable low-strain eigenframe construction and
+identification of these concrete finite projectors with the actual
 Littlewood--Paley coherent share are still required.
 
 There is a second field-level issue which a fixed-axis multiplier does not
@@ -1156,10 +1164,13 @@ pointwise endpoint for an arbitrary frame field are now proved as well.
 Four-sign coverage of the full normalized annulus, exact partition assembly,
 one uniform inverse-Fourier mass bound for the assembled multiplier, its exact
 uncut coherent-symbol identity on the annulus, and its physical
-variable-frame $C/N$ endpoint are also proved.  The remaining steps are a
-measurable low-strain eigenframe/sector construction and identification and
-assembly of this annular action into \texttt{coherent\_le} for the actual
-Navier--Stokes functionals.
+variable-frame $C/N$ endpoint are also proved.  The finite-support annular
+sector projector is now constructed, its six-dimensional chart is identified
+with the two independently filtered mode charts, and the exact physical
+coherent formula follows without an additional support premise.  The
+remaining steps are a measurable low-strain eigenframe construction and
+identification and assembly of this concrete projector/action into
+\texttt{coherent\_le} for the actual Navier--Stokes functionals.
 (ii) The misalignment budget itself: dynamical,
 time-integrated control of the misalignment share; the checked fences
 of Sections~\ref{sec:lean}, \ref{sec:aperture} and the static no-go
@@ -1356,9 +1367,9 @@ refinement (Section~\ref{sec:coherence}), the open analytic input is
 coherent/misaligned transfer, which jointly reproduce
 \texttt{ScaleLocalPancakeStrainBudget} (cross-referenced with the coarser
 \texttt{StochasticStretchingEstimate}).  A successful completion must prove a
-measurable low-strain eigenframe/sector construction together with
-identification of the annular kernel action with the actual scale-local
-coherent share, and a dynamical,
+measurable low-strain eigenframe construction together with identification of
+the now-concrete annular finite-Fourier projector and kernel action with the
+actual scale-local coherent share, and a dynamical,
 time-integrated control of the vorticity-direction misalignment share, strong
  enough to cover the gap band identified above.  The finite four-sign
 annular partition and its exact periodic physical transference are proved;
