@@ -8481,6 +8481,23 @@ weight-dependent threshold or a clean hexagonal corridor exists
 (\texttt{GoertzelV24WeightedOrbitFaceCorridor}) --- no restriction to
 pentagonal and hexagonal faces is used anywhere.
 
+The exact five-edge rung is now also complete.  An earlier five-cut endpoint
+was vacuous because it combined the cardinality-four carrier
+\texttt{SmallCyclicEdgeCut} with an assumption that its cut had cardinality
+five; the repaired chain uses \texttt{ExactSizedCyclicEdgeCut G 5} throughout.
+For each shore, the pentagon cap and three consecutive $Y$-caps are constructed
+as strictly smaller bridgeless spherical cubic maps, so minimality supplies
+their Tait colourings.  Physical noncrossing Kempe mates and colour relabelling
+make the resulting shore supports boundary languages; a twelve-leaf Birkhoff
+case argument forces the two languages to share a literal five-edge boundary
+word, and the dart-level splice glues its realizing colourings.  Hence a
+vertex-minimal counterexample has no nontrivial exact cyclic five-edge cut, and
+every exact cyclic five-edge cut has a shore of cardinality at most five
+(\texttt{no\_nontrivial\_exactCyclicFiveEdgeCut\_of\_vertexMinimalTaitCounterexample},
+\texttt{exactCyclicFiveEdgeCut\_has\_small\_shore\_of\_vertexMinimalTaitCounterexample}).
+This closes the ring-five normal-form instance of the compositional method; it
+does not close the arbitrary-width wall theorem.
+
 \paragraph{In progress and open.} On this normal form the endgame reduction is
 under active construction: a fusion-chain / rebase-pumping dynamics that, from
 any adjacent pair of the counterexample, produces either a fusion terminal or
@@ -8490,9 +8507,9 @@ a strictly descending rebase pumping
 classification of the remote facial-dual cycles it generates (length $\geq5$
 exact cut, length-three single-vertex cut, length-four adjacent-pair cut with
 an internal dual chord). What remains \emph{open} is the coloring transport
-that turns each classified case into a contradiction with minimality --- the
-large-cut splice/interface law and the explicit consumption of the
-singleton-star and adjacent-pair-collar cases --- and hence Trail
+for the classified remote separators beyond the now-closed exact-five case,
+together with the explicit consumption of the singleton-star and
+adjacent-pair-collar cases in the fusion dynamics --- and hence Trail
 Completability, the L1--L10 chain, and a proved Short-Strand replacement. The
 v23-era collar obligations are taken up only where this route consumes them.
 Nothing in this section claims the Four-Color Theorem or the completion of the
