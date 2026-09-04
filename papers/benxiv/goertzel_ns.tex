@@ -87,10 +87,12 @@ proves the estimate at continuous real frequencies and for arbitrary projected
 amplitudes, constructs the exact periodic operator-kernel realization on finite
 Fourier fields, transports the cancellation to every frozen oriented strain
 frame, and now transports the full square-dyadic periodized kernel and its
-cardinality-free $C/N$ endpoint uniformly to those frames.  It also splits the
-spatially varying frame multiplier into its frozen part and an explicit
-frame-variation remainder.  A spectral-gap perturbation theorem
-quantifies that remainder's eigenframe input.  The
+cardinality-free $C/N$ endpoint uniformly to those frames.  Complexifying the
+frame and conjugating both inputs and the output gives a physical-frame bound;
+uniformity then permits an arbitrary frame choice at each output point without
+a frame-derivative loss at this $L^\infty$ kernel endpoint.  A separate exact
+variable/frozen split and a spectral-gap perturbation theorem remain available
+for formulations that differentiate the symbol.  The
 latest audit also isolates why the proposed pancake closure does
 not yet prove the Millennium statement: its high-low split covers all aperture
 angles iff the scale-local strain satisfies $\gamma\le\nu\lambda_q$, exactly
@@ -1042,8 +1044,28 @@ chart.  One constant works for all such frames:
 \]
 Thus frozen oriented-frame transference of the exact square-dyadic kernel is
 discharged.  Selecting and patching the finitely many oriented charts for an
-actual frequency decomposition, and controlling a frame that varies in
-space-time, remain separate steps.
+actual frequency decomposition remains separate; physical vector conjugation
+and pointwise frame variation are handled next.
+
+The module \texttt{PancakePhysicalFrameKernelTransfer} supplies the missing
+input/output conjugation.  It complexifies the algebraic real frame, proves
+that complexification commutes with inversion, and bounds both the forward and
+inverse maps by the dimension-only coordinate constant $3$.  Applying the
+frequency-rotated kernel to the two frame-coordinate inputs and rotating the
+output back therefore gives
+\[
+ \|B^{\rm phys}_{N,F}(f,g)\|_{L^\infty}
+ \leq 243\frac{C}{N}\|f\|_{L^\infty}\|g\|_{L^\infty}.
+\]
+The exact coherent finite-Fourier formula is proved with these three frame
+maps in place.  More importantly, the same estimate is proved for arbitrary
+continuous bounded fields and then for an arbitrary pointwise frame field
+$F=F(x)$, simply by instantiating the frame-uniform kernel estimate at the
+observation point.  No derivative of $F$ occurs.  This removes the
+variable-frame commutator as an analytic loss at this particular pointwise
+$L^\infty$ endpoint.  A measurable global frame/chart selection at eigenvalue
+degeneracies and identification with the actual Littlewood--Paley coherent
+share are still required.
 
 There is a second field-level issue which a fixed-axis multiplier does not
 address.  The actual pancake frame is the eigensystem of the low-frequency
@@ -1063,8 +1085,12 @@ is now supplied by \texttt{PancakeBilinearPeriodization}; exact finite-field
 summation and the full anisotropic square-dyadic scaling are supplied by the
 two subsequent modules above; frozen oriented-frame kernel transference is
 supplied by \texttt{PancakeFrozenFrameKernelTransfer}.  The remaining
-field-transfer pieces are finite oriented-chart selection/patching and control
-of the variable-frame remainder.
+field-transfer pieces are measurable finite oriented-chart selection/patching
+and identification of the physically conjugated kernel action with the actual
+Littlewood--Paley coherent share.  The older frequencywise commutator estimate
+remains correct, but the new uniform physical-kernel endpoint shows that no
+frame-oscillation estimate is needed merely to obtain the pointwise
+$L^\infty$ bound.
 They are not silently included in the modewise estimate, and
 \texttt{coherent\_le} has not yet been instantiated.
 
@@ -1093,10 +1119,10 @@ proved.  Exact finite-Fourier summation, inner-chart identification with the
 coherent PDE interaction, mass-preserving isotropic dyadic rescaling, exact
 four-transverse/two-axial scaling, square-dyadic chart identification, its
 periodized coefficient formula, its uniform $C/N$ mass bound, and uniform
-frozen oriented-frame transference are now proved as well.  The remaining
-steps are finite oriented-chart selection/patching and a
-quantitative bound for the spatial eigenframe-variation remainder, followed
-by their assembly into \texttt{coherent\_le} for the actual Navier--Stokes
+frozen oriented-frame transference, physical input/output conjugation, and the
+pointwise endpoint for an arbitrary frame field are now proved as well.  The
+remaining steps are measurable finite oriented-chart selection/patching and
+their identification and assembly into \texttt{coherent\_le} for the actual Navier--Stokes
 functionals.
 (ii) The misalignment budget itself: dynamical,
 time-integrated control of the misalignment share; the checked fences
@@ -1294,7 +1320,8 @@ refinement (Section~\ref{sec:coherence}), the open analytic input is
 coherent/misaligned transfer, which jointly reproduce
 \texttt{ScaleLocalPancakeStrainBudget} (cross-referenced with the coarser
 \texttt{StochasticStretchingEstimate}).  A successful completion must prove a
-spatially microlocal control of the variable-frame remainder and a dynamical,
+measurable eigenframe/chart selection together with identification of the
+kernel action with the actual scale-local coherent share, and a dynamical,
 time-integrated control of the vorticity-direction misalignment share, strong
 enough to cover the gap band identified above.  It must also finish the
  finite oriented-chart selection and partition assembly for the
@@ -1341,7 +1368,8 @@ effort.  The repaired-route development comprises, under
 \texttt{PancakeFiniteFourierBilinearTransfer},
 \texttt{PancakeDyadicKernelScaling},
 \texttt{PancakeSquareDyadicFiniteTransfer}, and
-\texttt{PancakeFrozenFrameKernelTransfer}), each with a regression companion where
+\texttt{PancakeFrozenFrameKernelTransfer}, and
+\texttt{PancakePhysicalFrameKernelTransfer}), each with a regression companion where
 applicable.  The aperture module is retained as an explicitly attenuated
 analytic model; the exact coherent projection no-go above prevents its use as
 the desired field-transfer estimate.
