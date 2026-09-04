@@ -20,6 +20,7 @@ namespace GoertzelV24ConnectedVertexSideEdgeShore
 
 open SimpleGraph
 open GoertzelV24ConnectedEdgeShoreMajority
+open GoertzelV24SphereCutMaterial
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
   {G : SimpleGraph V} [DecidableRel G.Adj]
@@ -45,6 +46,81 @@ theorem mem_incidentEdgeShore_iff
     edge ∈ incidentEdgeShore G side ↔
       ∃ vertex, vertex ∈ (edge : Sym2 V) ∧ side vertex := by
   simp [incidentEdgeShore]
+
+/-! ## Boundary width of an incident-edge shore -/
+
+/-- For the monotone incident-edge shore of a vertex side, a middle vertex
+lies outside the side and is the outer endpoint of a canonically chosen
+crossing dart. -/
+private noncomputable def middleVertexCrossingDart
+    (side : V → Prop)
+    (vertex : {vertex // vertex ∈
+      edgeShoreMiddleVertices G (incidentEdgeShore G side)}) :
+    GoertzelV24CubicSmallBoundaryCycle.CrossingSideDart G side := by
+  classical
+  have hmiddle :=
+    (mem_middleVertices_iff
+      (fun vertex (edge : G.edgeSet) => vertex ∈ (edge : Sym2 V))
+      (incidentEdgeShore G side) vertex.1).1 vertex.2
+  let shoreEdge : G.edgeSet := Classical.choose hmiddle.1
+  have hshoreEdge : shoreEdge ∈ incidentEdgeShore G side :=
+    (Classical.choose_spec hmiddle.1).1
+  have hvertexEdge : vertex.1 ∈ (shoreEdge : Sym2 V) :=
+    (Classical.choose_spec hmiddle.1).2
+  let outsideEdge : G.edgeSet := Classical.choose hmiddle.2
+  have houtsideEdge : outsideEdge ∉ incidentEdgeShore G side :=
+    (Classical.choose_spec hmiddle.2).1
+  have hvertexOutsideEdge : vertex.1 ∈ (outsideEdge : Sym2 V) :=
+    (Classical.choose_spec hmiddle.2).2
+  have hvertexOutside : ¬ side vertex.1 := by
+    intro hvertexSide
+    exact houtsideEdge ((mem_incidentEdgeShore_iff side outsideEdge).2
+      ⟨vertex.1, hvertexOutsideEdge, hvertexSide⟩)
+  let inside : V := Classical.choose
+    ((mem_incidentEdgeShore_iff side shoreEdge).1 hshoreEdge)
+  have hinsideSpec := Classical.choose_spec
+    ((mem_incidentEdgeShore_iff side shoreEdge).1 hshoreEdge)
+  have hinsideEdge : inside ∈ (shoreEdge : Sym2 V) := hinsideSpec.1
+  have hinside : side inside := hinsideSpec.2
+  have hne : inside ≠ vertex.1 := by
+    intro heq
+    exact hvertexOutside (heq ▸ hinside)
+  have hedge : (shoreEdge : Sym2 V) = s(inside, vertex.1) :=
+    sym2_eq_mk_of_mem_of_mem_of_ne hinsideEdge hvertexEdge hne
+  have hadj : G.Adj inside vertex.1 :=
+    (SimpleGraph.mem_edgeSet G).1 (by simpa [hedge] using shoreEdge.property)
+  exact ⟨⟨⟨inside, vertex.1⟩, hadj⟩, hinside, hvertexOutside⟩
+
+/-- Distinct middle vertices give distinct chosen crossing darts because the
+terminal endpoint of the chosen dart is the original middle vertex. -/
+private theorem middleVertexCrossingDart_injective (side : V → Prop) :
+    Function.Injective (middleVertexCrossingDart (G := G) side) := by
+  intro left right heq
+  apply Subtype.ext
+  have hsnd := congrArg
+    (fun dart : GoertzelV24CubicSmallBoundaryCycle.CrossingSideDart G side =>
+      dart.1.snd) heq
+  simpa [middleVertexCrossingDart] using hsnd
+
+/-- The middle set of the monotone edge shore associated to a vertex side
+has at most one vertex per outgoing crossing dart.  This is graph-theoretic:
+it uses neither an embedding nor a chosen noose. -/
+theorem card_middle_incidentEdgeShore_le_crossingSideDart
+    [G.LocallyFinite] (side : V → Prop) :
+    (edgeShoreMiddleVertices G (incidentEdgeShore G side)).card ≤
+      Fintype.card
+        (GoertzelV24CubicSmallBoundaryCycle.CrossingSideDart G side) := by
+  calc
+    (edgeShoreMiddleVertices G (incidentEdgeShore G side)).card =
+        Fintype.card {vertex // vertex ∈
+          edgeShoreMiddleVertices G (incidentEdgeShore G side)} := by
+      symm
+      exact Fintype.card_coe _
+    _ ≤ Fintype.card
+        (GoertzelV24CubicSmallBoundaryCycle.CrossingSideDart G side) :=
+      Fintype.card_le_of_injective
+        (middleVertexCrossingDart (G := G) side)
+        (middleVertexCrossingDart_injective (G := G) side)
 
 /-- Enlarging the vertex side enlarges its incident-edge shore. -/
 theorem incidentEdgeShore_mono {first second : V → Prop}
