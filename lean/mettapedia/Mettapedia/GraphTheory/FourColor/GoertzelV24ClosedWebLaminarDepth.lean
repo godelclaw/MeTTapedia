@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebLengthDepthDichotomy
+import Mettapedia.GraphTheory.PathChordNesting
 
 /-!
 # From a deep radial transversal to laminar chord depth
@@ -71,12 +72,10 @@ theorem card_spanningChordsAtCut
       radialChordCutLoad C majority first second radial cut := by
   rfl
 
-/-- A finite chord family is laminar when every distinct pair of endpoint
-intervals is strictly nested in one direction. -/
-def PairwiseLaminar {length : Nat}
+/-- Compatibility name for the graph-free laminar-family predicate. -/
+abbrev PairwiseLaminar {length : Nat}
     (chords : Finset (OrderedPathChord length)) : Prop :=
-  ∀ first ∈ chords, ∀ second ∈ chords, first ≠ second →
-    first.NestedIn second ∨ second.NestedIn first
+  Mettapedia.GraphTheory.PairwiseLaminar chords
 
 /-- The precise topological interface still required from the annular
 embedding: actual chords receive one of two sector labels, and chords drawn
