@@ -394,6 +394,75 @@ theorem residualDefect_add_newOddCircuitClasses_eq_new_add_old
   exact residualDefect_add_newCarrier_eq_new_add_oldCarrier
     hG sigma hSigma site
 
+/-- If the old pairing is residual-defect minimal against this exchange, then
+the finite odd-circuit count on the carrier cannot decrease.  The direction is
+an exact consequence of the global defect comparison and the balance formula;
+it is not a parity-only local monotonicity principle. -/
+theorem oldOddCircuitClasses_ncard_le_new_of_residualDefect_le
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (hminimal :
+      residualDefect G sigma ≤
+        residualDefect G
+          (sigma.exchange site.tau site.carrier
+            site.sigma_closed site.tau_closed)) :
+    (oldOddCircuitClasses hG sigma hSigma site).ncard ≤
+      (newOddCircuitClasses hG sigma hSigma site).ncard := by
+  have hbalance :=
+    residualDefect_add_newOddCircuitClasses_eq_new_add_old
+      hG sigma hSigma site
+  omega
+
+/-- For the exchange-rigid site witness used by the mesh route, the finite
+odd-circuit count is therefore monotone without any additional hypothesis. -/
+theorem oldOddCircuitClasses_ncard_le_new
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second) :
+    (oldOddCircuitClasses hG sigma hSigma site).ncard ≤
+      (newOddCircuitClasses hG sigma hSigma site).ncard :=
+  oldOddCircuitClasses_ncard_le_new_of_residualDefect_le
+    hG sigma hSigma site site.exchange_rigid
+
+/-- The exchange preserves global residual defect exactly when it preserves
+the number of odd finite circuit classes on the carrier. -/
+theorem residualDefect_eq_exchange_iff_oldOddCircuitClasses_ncard_eq_new
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second) :
+    residualDefect G sigma =
+        residualDefect G
+          (sigma.exchange site.tau site.carrier
+            site.sigma_closed site.tau_closed) ↔
+      (oldOddCircuitClasses hG sigma hSigma site).ncard =
+        (newOddCircuitClasses hG sigma hSigma site).ncard := by
+  have hbalance :=
+    residualDefect_add_newOddCircuitClasses_eq_new_add_old
+      hG sigma hSigma site
+  omega
+
+/-- Strict growth of global residual defect is equivalent to strict growth of
+the finite odd-circuit count on the exchange carrier. -/
+theorem residualDefect_lt_exchange_iff_oldOddCircuitClasses_ncard_lt_new
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second) :
+    residualDefect G sigma <
+        residualDefect G
+          (sigma.exchange site.tau site.carrier
+            site.sigma_closed site.tau_closed) ↔
+      (oldOddCircuitClasses hG sigma hSigma site).ncard <
+        (newOddCircuitClasses hG sigma hSigma site).ncard := by
+  have hbalance :=
+    residualDefect_add_newOddCircuitClasses_eq_new_add_old
+      hG sigma hSigma site
+  omega
+
 end
 
 end ResidualCircuitDefectFormula
