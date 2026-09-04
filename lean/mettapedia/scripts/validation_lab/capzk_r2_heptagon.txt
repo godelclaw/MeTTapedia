@@ -1,0 +1,3 @@
+pentaheptite_r2_heptagon.json: ring 20, vertices 60, caps 16796
+caps tested 16796, survivors 0, mean rejection index 0.3, 2s
+OUTCOME: ZK2 (no cap survives)
