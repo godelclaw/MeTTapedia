@@ -1,6 +1,7 @@
 import Mettapedia.GraphTheory.FourColor.Compositional.ExactStateGeometricAlternative
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnStrictFamily
 import Mettapedia.GraphTheory.FourColor.Compositional.AmbientReturnStrictChordFamily
+import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweepInterface
 
 /-!
 # Compressed return sweeps with the deep horn realized as a strict family
@@ -29,6 +30,7 @@ open GoertzelV24TwoEdgeCutMinimality
 open MatchingParity
 open ResidualReturnCarrierSweep
 open ResidualReturnStrictFamily
+open ResidualReturnSweepInterface
 open SimpleGraph
 open SimpleGraphDartRotation
 
@@ -174,6 +176,75 @@ theorem hasFullyRealizedStrictFamilyAlternative
     length spacing
     (hasFullyCompressedStrictFamilyAlternative rotation minimal hG sigma
       hSigma bond length spacing hmany)
+
+/-- The fully realized alternative with both residual-return repetition horns
+packaged as ordered open-wire interface receipts. -/
+def FullyWiredStrictFamilyAlternative
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (length spacing : Nat) : Prop :=
+  Nonempty
+      (ConnectedShoreNode (G := G)
+        (6 * fullyCompressedComponentBound (length + 1) spacing)
+        (6 * fullyCompressedComponentBound (length + 1) spacing)) ∨
+    HasRealizedNestedAmbientAttachmentAlternative rotation minimal hG sigma
+      hSigma bond length spacing ∨
+    HasStrictlyNestedConnectedReturnCutFamily G length ∨
+    Nonempty (CarrierSpacedResidualReturnInterfaceReceipt rotation minimal hG
+      sigma hSigma bond spacing) ∨
+    Nonempty (SpacedResidualReturnInterfaceReceipt rotation minimal hG sigma
+      hSigma bond spacing)
+
+/-- Add the canonical ordered open-wire equivalences to both residual-return
+repetition branches. -/
+theorem wired_of_fullyRealizedStrictFamily
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (length spacing : Nat)
+    (alternative : FullyRealizedStrictFamilyAlternative rotation minimal hG
+      sigma hSigma bond length spacing) :
+    FullyWiredStrictFamilyAlternative rotation minimal hG sigma hSigma bond
+      length spacing := by
+  rcases alternative with
+    hstate | hambient | hfamily | hcarrierRepeat | hreturnRepeat
+  · exact Or.inl hstate
+  · exact Or.inr (Or.inl hambient)
+  · exact Or.inr (Or.inr (Or.inl hfamily))
+  · exact Or.inr (Or.inr (Or.inr (Or.inl
+      (nonempty_carrierSpacedResidualReturnInterfaceReceipt_of_repeat
+        rotation minimal hG sigma hSigma bond spacing hcarrierRepeat))))
+  · exact Or.inr (Or.inr (Or.inr (Or.inr
+      (nonempty_spacedResidualReturnInterfaceReceipt_of_repeat
+        rotation minimal hG sigma hSigma bond spacing hreturnRepeat))))
+
+/-- **Wired qualitative compression.**  Deep states are original graph
+families, and repeated residual-return states carry canonical equivalences of
+their ordered open-wire interfaces.  Colour/Count agreement across those
+equivalences is intentionally not asserted. -/
+theorem hasFullyWiredStrictFamilyAlternative
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (length spacing : Nat)
+    (hmany : 2 * (spacing + 1) * (1 + 1) ^ 2 <
+      bond.site.cycle.tail.support.length) :
+    FullyWiredStrictFamilyAlternative rotation minimal hG sigma hSigma bond
+      length spacing :=
+  wired_of_fullyRealizedStrictFamily rotation minimal hG sigma hSigma bond
+    length spacing
+    (hasFullyRealizedStrictFamilyAlternative rotation minimal hG sigma hSigma
+      bond length spacing hmany)
 
 end
 

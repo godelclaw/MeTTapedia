@@ -8007,6 +8007,9 @@ edge set is exactly the chord together with the interval edges.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.PathChordStrictFamily.hasStrictlyNestedChordFamily_of_stackAt_length_le}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AmbientReturnStrictChordFamily.realized_of_nestedAmbientAttachmentSweepAlternative}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.StrictFamilyGeometricAlternative.hasFullyRealizedStrictFamilyAlternative}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.NoncrossingSweepInterface.openArcInterfaceEquivOfPhasedRawStateEq}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweepInterface.SpacedResidualReturnInterfaceReceipt.openWireEquiv}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.StrictFamilyGeometricAlternative.hasFullyWiredStrictFamilyAlternative}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.DeepReturnExactState.hasFullyRealizedExactStateAlternative}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.MeshResidualReturnSweep.fullyRealizedExactStateAlternative_of_geometricSweepReceipt}
 For one ordered injective mesh in a graph-backed least counterexample, choose
@@ -8089,6 +8092,15 @@ outcomes of the fully compressed alternative now carry original graph
 objects.  The external attachment and the two repeated-state outcomes remain
 explicit; in particular, equality of the present unlabelled stack shapes is
 not asserted to be a colour-preserving splice interface.
+
+The repeated residual-return outcomes now expose their exact topological
+content as well.  Equality of raw states identifies, family by family, the
+cardinality of the ordered lists of open arcs, and therefore gives a
+canonical equivalence of their ordered open-wire slots.  The carrier-local
+receipt retains membership of both cuts in the same inner carrier interval.
+This is the correct input boundary for a second, semantic compression by
+Count profiles.  It is not itself that compression: corresponding open-wire
+slots have not yet been proved to carry equal Tait-colouring behaviour.
 \end{proof}
 
 For the route, the two Kempe families suggest the matching stacks and capped
