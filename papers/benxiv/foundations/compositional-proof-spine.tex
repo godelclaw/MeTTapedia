@@ -7964,6 +7964,8 @@ earlier separator alternative now has only its face-side branch.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnInnermostChordDrainage.exists_exitSideReceipt_or_all_eligible_inside_drain}
 \Sverified{Mettapedia.GraphTheory.card_orderedPathChordEndpoints_le_two_mul}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnInnermostChordDrainage.card_eligibleCoordinatesInside_le_eight_mul_of_stackBounds}
+\Sverified{Mettapedia.GraphTheory.CubicPathChordDiagram.OrderedPathChord.span_le_card_internalNonendpointCoordinates_inside_add_five}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnInnermostChordDrainage.exitReceipt_or_innermostChord_span_le_eight_mul_depth_add_five}
 If the full internal-chord diagram of a physical residual return is nonempty,
 it contains an innermost chord $c$.  This chord is an actual edge of the
 reference matching.  Every distinct internal chord having an endpoint on the
@@ -7982,7 +7984,10 @@ no-exit branch every eligible coordinate strictly inside the chord is an
 endpoint of a chord open at one of those two endpoints.  A finite chord family
 uses at most two endpoint coordinates per chord, while the four open stacks
 contain at most $4d$ chords in total.  Hence the eligible interior contains at
-most $8d$ coordinates.
+most $8d$ coordinates.  Cubicity supplies a separate sharp bound of four on
+the discarded endpoint-return attachments in any path interval.  Consequently
+the selected chord itself has span at most $8d+5$, unless the exact separator
+exit receipt exists.
 
 This is the exact residual-return analogue of the combinatorial drainage core
 of the source's Sector-Alternation Lemma.  It does not by itself construct the
