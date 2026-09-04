@@ -56,6 +56,7 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.VorticityStret
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.DecayingShearInstance
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.DyadicPancakeClosure
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.BlockwisePancakeDecomposition
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeConeDirectionDichotomy
 
 /-!
 # Navier-Stokes live surface
