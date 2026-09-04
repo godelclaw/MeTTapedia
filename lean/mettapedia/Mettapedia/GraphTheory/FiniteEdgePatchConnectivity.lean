@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FiniteEdgeDifference
+import Mettapedia.GraphTheory.ComponentAvoidance
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
 
 /-!
@@ -53,6 +54,76 @@ theorem card_edgeBoundaryVertices_le (patch : Finset (Sym2 V)) :
       rw [Sym2.card_toFinset]
       split <;> omega
     _ = 2 * patch.card := by simp [Nat.mul_comm]
+
+/-! ## Exact invariance outside the patch boundary -/
+
+/-- If deleting a finite patch makes two graphs equal, their adjacency
+relations already agree at every vertex not incident with a patch edge. -/
+theorem adj_iff_of_deleteEdges_eq_of_not_mem_edgeBoundaryVertices
+    (first second : SimpleGraph V) (patch : Finset (Sym2 V))
+    (heq : first.deleteEdges (patch : Set (Sym2 V)) =
+      second.deleteEdges (patch : Set (Sym2 V)))
+    {left right : V} (hleft : left ∉ edgeBoundaryVertices patch) :
+    first.Adj left right ↔ second.Adj left right := by
+  have hedge : s(left, right) ∉ patch := by
+    intro hedge
+    exact hleft ((mem_edgeBoundaryVertices patch left).2
+      ⟨s(left, right), hedge, by simp⟩)
+  have hdeleted :
+      (first.deleteEdges (patch : Set (Sym2 V))).Adj left right ↔
+        (second.deleteEdges (patch : Set (Sym2 V))).Adj left right := by
+    rw [heq]
+  simpa only [deleteEdges_adj, Finset.mem_coe, hedge, not_false_eq_true,
+    and_true] using hdeleted
+
+/-- A component disjoint from every endpoint of a finite modification patch
+has unchanged reachability after that patch is modified. -/
+theorem reachable_iff_of_avoids_edgeBoundaryVertices_of_deleteEdges_eq
+    (first second : SimpleGraph V) (patch : Finset (Sym2 V))
+    (heq : first.deleteEdges (patch : Set (Sym2 V)) =
+      second.deleteEdges (patch : Set (Sym2 V)))
+    {root target : V}
+    (havoid : ∀ vertex, vertex ∈ edgeBoundaryVertices patch →
+      ¬ first.Reachable root vertex) :
+    first.Reachable root target ↔ second.Reachable root target := by
+  apply Mettapedia.GraphTheory.reachable_iff_of_adj_iff_off_set
+    (modified := (edgeBoundaryVertices patch : Set V)) havoid
+  intro left right hleft
+  exact adj_iff_of_deleteEdges_eq_of_not_mem_edgeBoundaryVertices
+    first second patch heq (by simpa using hleft)
+
+/-- The support of a component disjoint from the finite patch boundary is
+literally unchanged. -/
+theorem connectedComponentMk_supp_eq_of_avoids_edgeBoundaryVertices_of_deleteEdges_eq
+    (first second : SimpleGraph V) (patch : Finset (Sym2 V))
+    (heq : first.deleteEdges (patch : Set (Sym2 V)) =
+      second.deleteEdges (patch : Set (Sym2 V)))
+    (root : V)
+    (havoid : ∀ vertex, vertex ∈ edgeBoundaryVertices patch →
+      ¬ first.Reachable root vertex) :
+    (first.connectedComponentMk root).supp =
+      (second.connectedComponentMk root).supp := by
+  apply Mettapedia.GraphTheory.connectedComponentMk_supp_eq_of_adj_iff_off_set
+    (modified := (edgeBoundaryVertices patch : Set V)) root havoid
+  intro left right hleft
+  exact adj_iff_of_deleteEdges_eq_of_not_mem_edgeBoundaryVertices
+    first second patch heq (by simpa using hleft)
+
+/-- Exact metric localization: modifying a finite edge patch cannot change
+distances inside a component which is disjoint from every patch endpoint. -/
+theorem dist_eq_of_avoids_edgeBoundaryVertices_of_deleteEdges_eq
+    (first second : SimpleGraph V) (patch : Finset (Sym2 V))
+    (heq : first.deleteEdges (patch : Set (Sym2 V)) =
+      second.deleteEdges (patch : Set (Sym2 V)))
+    {root target : V}
+    (havoid : ∀ vertex, vertex ∈ edgeBoundaryVertices patch →
+      ¬ first.Reachable root vertex) :
+    first.dist root target = second.dist root target := by
+  apply Mettapedia.GraphTheory.dist_eq_of_adj_iff_off_set
+    (modified := (edgeBoundaryVertices patch : Set V)) havoid
+  intro left right hleft
+  exact adj_iff_of_deleteEdges_eq_of_not_mem_edgeBoundaryVertices
+    first second patch heq (by simpa using hleft)
 
 /-- The part of `G` supported on a prescribed finite edge patch. -/
 def exceptionalEdgeGraph (G : SimpleGraph V) (patch : Finset (Sym2 V)) :
