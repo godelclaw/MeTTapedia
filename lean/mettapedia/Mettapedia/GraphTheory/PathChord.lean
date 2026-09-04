@@ -346,6 +346,50 @@ def OrderedPathChord.HasEndpointInside {length : Nat}
   (outer.left < chord.left ∧ chord.left < outer.right) ∨
     (outer.left < chord.right ∧ chord.right < outer.right)
 
+/-- Every nonempty finite chord family has an innermost member.  Choose a
+chord of minimum endpoint span; a chord strictly nested inside it would have
+strictly smaller span. -/
+theorem exists_innermost_orderedPathChord
+    {length : Nat} {chords : Finset (OrderedPathChord length)}
+    (hnonempty : chords.Nonempty) :
+    ∃ chord ∈ chords, InnermostIn chord chords := by
+  obtain ⟨chord, hchord, hminimal⟩ :=
+    Finset.exists_min_image chords
+      (fun candidate => candidate.right.val - candidate.left.val)
+      hnonempty
+  refine ⟨chord, hchord, ?_⟩
+  intro inner hinner _hne hnested
+  have hspanStrict :
+      inner.right.val - inner.left.val <
+        chord.right.val - chord.left.val := by
+    unfold OrderedPathChord.NestedIn at hnested
+    have hinnerOrder := inner.left_lt_right
+    have hchordOrder := chord.left_lt_right
+    omega
+  exact (Nat.not_lt_of_ge (hminimal inner hinner)) hspanStrict
+
+/-- In an endpoint-disjoint chord family, every distinct chord touching the
+open interval of an innermost member crosses that member.  The only other
+order type would put the touching chord strictly inside. -/
+theorem OrderedPathChord.crosses_of_hasEndpointInside_of_innermost
+    {length : Nat} {chords : Finset (OrderedPathChord length)}
+    {outer chord : OrderedPathChord length}
+    (hdisjoint : PairwiseEndpointDisjoint chords)
+    (hinnermost : InnermostIn outer chords)
+    (houter : outer ∈ chords) (hchord : chord ∈ chords)
+    (hne : chord ≠ outer)
+    (htouches : chord.HasEndpointInside outer) :
+    chord.Crosses outer := by
+  have hendpoints := hdisjoint outer houter chord hchord hne.symm
+  have hnotNested : ¬ chord.NestedIn outer :=
+    hinnermost chord hchord hne
+  unfold OrderedPathChord.HasEndpointInside at htouches
+  unfold OrderedPathChord.NestedIn at hnotNested
+  unfold OrderedPathChord.Crosses
+  have houterOrder := outer.left_lt_right
+  have hchordOrder := chord.left_lt_right
+  omega
+
 /-- For an innermost chord in a noncrossing endpoint-disjoint family, no
 other chord can touch its open subarc. -/
 theorem not_hasEndpointInside_of_innermost_of_pairwiseNoncrossing

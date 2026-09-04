@@ -178,21 +178,7 @@ theorem exists_innermost_majorityChord
     ∃ chord ∈ majorityChordDiagram C majority first second radial,
       InnermostIn chord
         (majorityChordDiagram C majority first second radial) := by
-  obtain ⟨chord, hchord, hminimal⟩ :=
-    Finset.exists_min_image
-      (majorityChordDiagram C majority first second radial)
-      (fun candidate => candidate.right.val - candidate.left.val)
-      hnonempty
-  refine ⟨chord, hchord, ?_⟩
-  intro inner hinner _hne hnested
-  have hspanStrict :
-      inner.right.val - inner.left.val <
-        chord.right.val - chord.left.val := by
-    unfold OrderedPathChord.NestedIn at hnested
-    have hinnerOrder := inner.left_lt_right
-    have hchordOrder := chord.left_lt_right
-    omega
-  exact (Nat.not_lt_of_ge (hminimal inner hinner)) hspanStrict
+  exact exists_innermost_orderedPathChord hnonempty
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
 /-- Every distinct actual chord touching the open subarc of an innermost
@@ -215,17 +201,10 @@ theorem other_chord_crosses_of_hasEndpointInside_innermost
     (hne : chord ≠ outer)
     (htouches : chord.HasEndpointInside outer) :
     chord.Crosses outer := by
-  have hdisjoint :=
-    majorityChordDiagram_pairwiseEndpointDisjoint
-      C majority first second radial outer houter chord hchord hne.symm
-  have hnotNested : ¬ chord.NestedIn outer :=
-    hinnermost chord hchord hne
-  unfold OrderedPathChord.HasEndpointInside at htouches
-  unfold OrderedPathChord.NestedIn at hnotNested
-  unfold OrderedPathChord.Crosses
-  have houterOrder := outer.left_lt_right
-  have hchordOrder := chord.left_lt_right
-  omega
+  exact OrderedPathChord.crosses_of_hasEndpointInside_of_innermost
+    (majorityChordDiagram_pairwiseEndpointDisjoint C majority first second
+      radial)
+    hinnermost houter hchord hne htouches
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
 /-- Correct source-facing drainage premise: once the rotation-system layer
