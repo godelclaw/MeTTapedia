@@ -46,11 +46,13 @@ integrand, which unlike the full strain has known dynamical handles.
    annular multiplier, the genuine finite shell-and-cone selector, an explicit
    oriented frame aligned with any unit axial direction, and the pointwise
    frame constructed from the smallest strain eigenvector are proved in the
-   downstream `Pancake*` modules.  What remains is measurable dependence of
-   the spectral selection through eigenvalue collisions and the identification
-   of the resulting variable-frame annular action with the
-   coherent share of the actual Littlewood--Paley Navier--Stokes
-   decomposition, followed by its assembly
+   downstream `Pancake*` modules.  The actual complex Fourier stretching
+   interaction is also split exactly into coherent--coherent and three
+   misalignment-bearing terms, and the kernel-controlled annular symbol is
+   identified extensionally with the coherent--coherent complexified PDE
+   stretching term.  What remains is measurable dependence of the spectral
+   selection through eigenvalue collisions, identification with the actual
+   Littlewood--Paley blocks and time functionals, followed by assembly
    into `split_le` and `coherent_le` for actual Navier–Stokes
    Littlewood–Paley data.
 2. `MisalignmentStrainBudget` itself: the dynamical, time-integrated
