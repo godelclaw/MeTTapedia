@@ -29,6 +29,7 @@ open GoertzelV24TwoEdgeCutMinimality
 open MatchingParity
 open ResidualReturnAttachmentMatching
 open ResidualReturnPathAttachment
+open ResidualReturnSeparatorExitSide
 open SimpleGraph
 open SimpleGraphDartRotation
 
@@ -227,6 +228,59 @@ theorem external_or_oppositeTurnChord_of_eligible_inside
   · exact Or.inl ⟨position, hcoordinate, hexternal⟩
   · exact Or.inr ⟨other, hother, by
       simpa only [← hcoordinate] using hincident, hturn⟩
+
+/-- Uniform source-facing drainage alternative.  Either one eligible point
+inside the selected chord supplies a proof-carrying separator exit, or every
+eligible point in that interval is incident to an opposite-turn chord. -/
+theorem exists_exitSideReceipt_or_all_eligible_inside_drain
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (returnChord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (drainage : InnermostChordDrainage rotation hG sigma hSigma site
+      returnChord) :
+    Nonempty (AttachmentExitSideReceipt rotation hG sigma hSigma site
+        returnChord) ∨
+      ∀ coordinate : Fin
+          ((orderedChordAmbientPath hG sigma hSigma site returnChord).length + 1),
+        coordinate ∈ eligibleAmbientReturnSweepPositions hG sigma hSigma site
+            returnChord →
+        drainage.chord.left < coordinate →
+        coordinate < drainage.chord.right →
+        ∃ other,
+          other ∈ internalChords
+            (orderedChordAmbientPath hG sigma hSigma site returnChord) ∧
+          (coordinate = other.left ∨ coordinate = other.right) ∧
+          internalChordTurn rotation hG sigma hSigma site returnChord other ≠
+            internalChordTurn rotation hG sigma hSigma site returnChord
+              drainage.chord := by
+  by_cases hexit : ∃ position : AmbientReturnInternalPosition hG sigma hSigma
+      site returnChord,
+      position.coordinate ∈ eligibleAmbientReturnSweepPositions hG sigma
+        hSigma site returnChord ∧
+      drainage.chord.left < position.coordinate ∧
+      position.coordinate < drainage.chord.right ∧
+      IsExternalAttachment
+        (orderedChordAmbientPath_isPath hG sigma hSigma site returnChord)
+        (regularOfDegreeThree_of_cubicIncidentTriples hG) position
+  · rcases hexit with ⟨position, _heligible, _hleft, _hright, hexternal⟩
+    exact Or.inl <| nonempty_attachmentExitSideReceipt_of_external rotation
+      minimal hG sigma hSigma site returnChord position hexternal
+  · right
+    intro coordinate heligible hleft hright
+    rcases external_or_oppositeTurnChord_of_eligible_inside rotation hG sigma
+        hSigma site returnChord drainage coordinate heligible ⟨hleft, hright⟩ with
+      ⟨position, hcoordinate, hexternal⟩ |
+        ⟨other, hother, hincident, hturn⟩
+    · exact False.elim <| hexit ⟨position, by
+        simpa only [hcoordinate] using heligible, by
+        simpa only [hcoordinate] using hleft, by
+        simpa only [hcoordinate] using hright, hexternal⟩
+    · exact ⟨other, hother, hincident, hturn⟩
 
 end
 
