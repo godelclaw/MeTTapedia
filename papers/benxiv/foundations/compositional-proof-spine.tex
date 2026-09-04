@@ -7920,11 +7920,19 @@ has exactly two fewer strict internal positions than support vertices.
 \begin{lemma}[matching role and genuine exit of a residual-return attachment]
 \label{lem:residual-return-attachment-matching-role}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnAttachmentMatching.ambientReturnAttachmentNeighbor_eq_partner}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnAttachmentMatching.ambientReturnPathEdge_partner_ne}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnAttachmentMatching.internalChord_partner_leftVertex_eq_rightVertex}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnAttachmentMatching.ambientReturnAttachmentNeighbor_not_mem_carrier}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnAttachmentMatching.ambientReturnExternalAttachment_leavesSeparator}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnAttachmentMatching.AttachmentExitSideReceipt.faceSide}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnPairingChordRole.ambientReturnPathEdge_not_pairingGraph}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnPairingChordRole.turnChord_pairingGraph_adj}
 At every strict internal position of a physical residual return, the canonical
-third edge is the edge of the reference matching.  Its other endpoint cannot
+third edge is the edge of the reference matching.  Every edge traversed by the
+return path lies outside that matching, while every internal chord of the path
+is exactly the reference-matching edge at either endpoint.  Thus each
+same-turn chord stack used below is a family of actual matching edges, rather
+than merely a coordinate diagram.  The other endpoint of an attachment cannot
 belong to the operated alternating carrier.  Consequently, if that edge is
 external to the return path, it genuinely leaves the complete separator made
 from the return and its complementary carrier interval.  The exact face-side
@@ -7936,12 +7944,15 @@ branch of its separator-exit receipt therefore always holds; the former
 The return path lies in the common residual graph before and after the
 alternating exchange.  Its two path edges at an internal vertex are therefore
 different from the reference-matching edge.  Cubicity leaves exactly one
-third edge, so its neighbour is the reference partner.  If that partner lay
-on the carrier, closure of the carrier under the reference matching and
-involutivity would put the internal path vertex on the carrier.  But a simple
-physical return meets the carrier only at its two endpoints, contradicting
-strict internality.  The earlier separator alternative now has only its
-face-side branch.
+third edge, so its neighbour is the reference partner.  Applying this identity
+to the canonical left attachment of any internal path chord identifies the
+chord's right endpoint with that partner.  Filtering the chord diagram by
+local turn preserves this identity and proves the same statement for every
+member of either turn stack.  If the partner lay on the carrier, closure of
+the carrier under the reference matching and involutivity would put the
+internal path vertex on the carrier.  But a simple physical return meets the
+carrier only at its two endpoints, contradicting strict internality.  The
+earlier separator alternative now has only its face-side branch.
 \end{proof}
 
 \begin{lemma}[rotation side of a cubic path attachment]
