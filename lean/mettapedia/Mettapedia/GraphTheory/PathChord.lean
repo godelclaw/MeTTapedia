@@ -346,6 +346,52 @@ def OrderedPathChord.HasEndpointInside {length : Nat}
   (outer.left < chord.left ∧ chord.left < outer.right) ∨
     (outer.left < chord.right ∧ chord.right < outer.right)
 
+/-- The two endpoint coordinates of one ordered chord. -/
+def OrderedPathChord.endpointFinset {length : Nat}
+    (chord : OrderedPathChord length) : Finset (Fin length) :=
+  {chord.left, chord.right}
+
+@[simp] theorem OrderedPathChord.card_endpointFinset
+    {length : Nat} (chord : OrderedPathChord length) :
+    chord.endpointFinset.card = 2 := by
+  simp [OrderedPathChord.endpointFinset, ne_of_lt chord.left_lt_right]
+
+/-- All endpoint coordinates used by a finite chord family. -/
+def orderedPathChordEndpoints {length : Nat}
+    (chords : Finset (OrderedPathChord length)) : Finset (Fin length) :=
+  chords.biUnion OrderedPathChord.endpointFinset
+
+@[simp] theorem mem_orderedPathChordEndpoints_iff
+    {length : Nat} {chords : Finset (OrderedPathChord length)}
+    {coordinate : Fin length} :
+    coordinate ∈ orderedPathChordEndpoints chords ↔
+      ∃ chord ∈ chords,
+        coordinate = chord.left ∨ coordinate = chord.right := by
+  simp [orderedPathChordEndpoints, OrderedPathChord.endpointFinset]
+
+/-- A chord family uses at most two endpoint coordinates per chord.  No
+disjointness hypothesis is needed for this upper bound. -/
+theorem card_orderedPathChordEndpoints_le_two_mul
+    {length : Nat} (chords : Finset (OrderedPathChord length)) :
+    (orderedPathChordEndpoints chords).card ≤ 2 * chords.card := by
+  calc
+    (orderedPathChordEndpoints chords).card ≤
+        ∑ chord ∈ chords, chord.endpointFinset.card := by
+      exact Finset.card_biUnion_le
+    _ = 2 * chords.card := by simp [Nat.mul_comm]
+
+/-- A chord crossing `outer` is open at the sweep cut through one of
+`outer`'s two endpoints. -/
+theorem OrderedPathChord.open_at_left_or_right_of_crosses
+    {length : Nat} {chord outer : OrderedPathChord length}
+    (hcrosses : chord.Crosses outer) :
+    (chord.left < outer.left ∧ outer.left ≤ chord.right) ∨
+      (chord.left < outer.right ∧ outer.right ≤ chord.right) := by
+  unfold OrderedPathChord.Crosses at hcrosses
+  rcases hcrosses with hleft | hright
+  · exact Or.inl ⟨hleft.1, hleft.2.1.le⟩
+  · exact Or.inr ⟨hright.2.1, hright.2.2.le⟩
+
 /-- Every nonempty finite chord family has an innermost member.  Choose a
 chord of minimum endpoint span; a chord strictly nested inside it would have
 strictly smaller span. -/

@@ -7962,6 +7962,8 @@ earlier separator alternative now has only its face-side branch.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnInnermostChordDrainage.exists_innermostChordDrainage}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnInnermostChordDrainage.external_or_oppositeTurnChord_of_eligible_inside}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnInnermostChordDrainage.exists_exitSideReceipt_or_all_eligible_inside_drain}
+\Sverified{Mettapedia.GraphTheory.card_orderedPathChordEndpoints_le_two_mul}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnInnermostChordDrainage.card_eligibleCoordinatesInside_le_eight_mul_of_stackBounds}
 If the full internal-chord diagram of a physical residual return is nonempty,
 it contains an innermost chord $c$.  This chord is an actual edge of the
 reference matching.  Every distinct internal chord having an endpoint on the
@@ -7973,6 +7975,14 @@ exactly the bounded endpoint-return exceptions already accounted for by the
 sweep budget.  Uniformly over the interval, either one such external edge
 supplies an exact face-side separator-exit receipt, or every eligible
 coordinate drains through an opposite-turn chord.
+
+This alternative is quantitative.  Suppose that, at each endpoint of the
+selected chord, each of the two turn stacks has depth at most $d$.  In the
+no-exit branch every eligible coordinate strictly inside the chord is an
+endpoint of a chord open at one of those two endpoints.  A finite chord family
+uses at most two endpoint coordinates per chord, while the four open stacks
+contain at most $4d$ chords in total.  Hence the eligible interior contains at
+most $8d$ coordinates.
 
 This is the exact residual-return analogue of the combinatorial drainage core
 of the source's Sector-Alternation Lemma.  It does not by itself construct the

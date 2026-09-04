@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnPairingChordRole
+import Mettapedia.GraphTheory.FourColor.Compositional.AmbientReturnSweepWidth
 
 /-!
 # Innermost-chord drainage on a residual return
@@ -19,6 +20,7 @@ namespace Mettapedia.GraphTheory.FourColor.Compositional
 namespace ResidualReturnInnermostChordDrainage
 
 open AmbientReturnAttachmentSweep
+open AmbientReturnSweepWidth
 open CubicPathAttachment
 open CubicPathChordDiagram
 open GoertzelV24OrderedMeshResidualSiteMatching
@@ -27,6 +29,8 @@ open GoertzelV24ResidualReturnCycleOrder
 open GoertzelV24ResidualReturnSectorNoncrossing
 open GoertzelV24TwoEdgeCutMinimality
 open MatchingParity
+open Mettapedia.GraphTheory
+open PathPrefixBoundary
 open ResidualReturnAttachmentMatching
 open ResidualReturnPathAttachment
 open ResidualReturnSeparatorExitSide
@@ -281,6 +285,177 @@ theorem exists_exitSideReceipt_or_all_eligible_inside_drain
         simpa only [hcoordinate] using hleft, by
         simpa only [hcoordinate] using hright, hexternal⟩
     · exact ⟨other, hother, hincident, hturn⟩
+
+/-- Eligible sweep coordinates strictly inside the selected innermost chord. -/
+def eligibleCoordinatesInside
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (returnChord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (rotation : Data G)
+    (drainage : InnermostChordDrainage rotation hG sigma hSigma site
+      returnChord) :
+    Finset (Fin
+      ((orderedChordAmbientPath hG sigma hSigma site returnChord).length + 1)) :=
+  (eligibleAmbientReturnSweepPositions hG sigma hSigma site returnChord).filter
+    fun coordinate =>
+      drainage.chord.left < coordinate ∧ coordinate < drainage.chord.right
+
+/-- Internal chords open at either endpoint of the selected chord. -/
+def openChordsAtEnds
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (returnChord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (rotation : Data G)
+    (drainage : InnermostChordDrainage rotation hG sigma hSigma site
+      returnChord) :
+    Finset (OrderedPathChord
+      ((orderedChordAmbientPath hG sigma hSigma site returnChord).length + 1)) :=
+  openInternalChords
+      (orderedChordAmbientPath hG sigma hSigma site returnChord)
+      drainage.chord.left ∪
+    openInternalChords
+      (orderedChordAmbientPath hG sigma hSigma site returnChord)
+      drainage.chord.right
+
+/-- If the innermost interval has no separator-exit receipt, each eligible
+coordinate in it is an endpoint of a chord open at one of the interval's two
+ends. -/
+theorem eligibleCoordinatesInside_subset_chordEndpoints_openChordsAtEnds
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (returnChord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (drainage : InnermostChordDrainage rotation hG sigma hSigma site
+      returnChord)
+    (hnoExit : ¬Nonempty (AttachmentExitSideReceipt rotation hG sigma hSigma
+      site returnChord)) :
+    eligibleCoordinatesInside hG sigma hSigma site returnChord rotation
+        drainage ⊆
+      orderedPathChordEndpoints
+        (openChordsAtEnds hG sigma hSigma site returnChord rotation
+          drainage) := by
+  intro coordinate hcoordinate
+  have heligible := (Finset.mem_filter.mp hcoordinate).1
+  have hinside := (Finset.mem_filter.mp hcoordinate).2
+  rcases exists_exitSideReceipt_or_all_eligible_inside_drain rotation minimal
+      hG sigma hSigma site returnChord drainage with hexit | hdrain
+  · exact False.elim (hnoExit hexit)
+  · rcases hdrain coordinate heligible hinside.1 hinside.2 with
+      ⟨other, hother, hincident, _hturn⟩
+    have hne : other ≠ drainage.chord := by
+      intro heq
+      subst other
+      rcases hincident with hleft | hright
+      · have := hinside.1
+        rw [hleft] at this
+        exact (lt_irrefl _ this)
+      · have := hinside.2
+        rw [hright] at this
+        exact (lt_irrefl _ this)
+    have htouches : other.HasEndpointInside drainage.chord := by
+      rcases hincident with hleft | hright
+      · left
+        simpa only [← hleft] using hinside
+      · right
+        simpa only [← hright] using hinside
+    have hcrosses : other.Crosses drainage.chord :=
+      OrderedPathChord.crosses_of_hasEndpointInside_of_innermost
+        (pairwiseEndpointDisjoint_internalChords
+          (orderedChordAmbientPath_isPath hG sigma hSigma site returnChord)
+          (regularOfDegreeThree_of_cubicIncidentTriples hG))
+        drainage.innermost drainage.chord_mem hother hne htouches
+    have hopen := other.open_at_left_or_right_of_crosses hcrosses
+    apply mem_orderedPathChordEndpoints_iff.mpr
+    refine ⟨other, ?_, hincident⟩
+    unfold openChordsAtEnds
+    rw [Finset.mem_union]
+    rcases hopen with hopen | hopen
+    · exact Or.inl (Finset.mem_filter.mpr ⟨hother, hopen⟩)
+    · exact Or.inr (Finset.mem_filter.mpr ⟨hother, hopen⟩)
+
+/-- Endpoint counting turns the uniform drainage statement into a finite
+bound by the number of chords open at the selected interval's ends. -/
+theorem card_eligibleCoordinatesInside_le_two_mul_openChordsAtEnds
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (returnChord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (drainage : InnermostChordDrainage rotation hG sigma hSigma site
+      returnChord)
+    (hnoExit : ¬Nonempty (AttachmentExitSideReceipt rotation hG sigma hSigma
+      site returnChord)) :
+    (eligibleCoordinatesInside hG sigma hSigma site returnChord rotation
+      drainage).card ≤
+        2 * (openChordsAtEnds hG sigma hSigma site returnChord rotation
+          drainage).card := by
+  exact (Finset.card_le_card
+    (eligibleCoordinatesInside_subset_chordEndpoints_openChordsAtEnds rotation
+      minimal hG sigma hSigma site returnChord drainage hnoExit)).trans
+    (card_orderedPathChordEndpoints_le_two_mul _)
+
+/-- If all four turn-stack depths at the endpoints of the selected chord are
+at most `depth`, its sweep-eligible interior contains at most `8 * depth`
+coordinates unless a separator-exit receipt exists. -/
+theorem card_eligibleCoordinatesInside_le_eight_mul_of_stackBounds
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (returnChord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (closure : PathCycleClosure
+      (orderedChordAmbientPath hG sigma hSigma site returnChord))
+    (drainage : InnermostChordDrainage rotation hG sigma hSigma site
+      returnChord)
+    (depth : Nat)
+    (hnoExit : ¬Nonempty (AttachmentExitSideReceipt rotation hG sigma hSigma
+      site returnChord))
+    (hstack : ∀ turn : CubicPathRotation.AttachmentTurn,
+      ((turnMatching rotation minimal hG sigma hSigma site returnChord closure
+          turn).stackAt drainage.chord.left).length ≤ depth ∧
+      ((turnMatching rotation minimal hG sigma hSigma site returnChord closure
+          turn).stackAt drainage.chord.right).length ≤ depth) :
+    (eligibleCoordinatesInside hG sigma hSigma site returnChord rotation
+      drainage).card ≤ 8 * depth := by
+  have hcovered :=
+    card_eligibleCoordinatesInside_le_two_mul_openChordsAtEnds rotation minimal
+      hG sigma hSigma site returnChord drainage hnoExit
+  have hopen :
+      (openChordsAtEnds hG sigma hSigma site returnChord rotation
+        drainage).card ≤
+        (openInternalChords
+          (orderedChordAmbientPath hG sigma hSigma site returnChord)
+          drainage.chord.left).card +
+        (openInternalChords
+          (orderedChordAmbientPath hG sigma hSigma site returnChord)
+          drainage.chord.right).card := by
+    exact Finset.card_union_le _ _
+  have hleft := card_openInternalChords_eq_stack_lengths rotation minimal hG
+    sigma hSigma site returnChord closure drainage.chord.left
+  have hright := card_openInternalChords_eq_stack_lengths rotation minimal hG
+    sigma hSigma site returnChord closure drainage.chord.right
+  have hbackward :=
+    hstack CubicPathRotation.AttachmentTurn.backwardToAttachment
+  have hforward :=
+    hstack CubicPathRotation.AttachmentTurn.forwardToAttachment
+  unfold openChordsAtEnds at hcovered hopen
+  omega
 
 end
 
