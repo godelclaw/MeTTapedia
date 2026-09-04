@@ -8441,6 +8441,22 @@ This does not yet bound the full ambient boundary: reference-matching
 attachments form a second layer, represented by the external-exit and
 same-turn-chord alternatives above.  Keeping that layer separate prevents the
 common-residual return pairing from being mistaken for an ambient cut.
+The full ambient boundary has nevertheless been decomposed without an annular
+assumption.  Every outgoing dart is either a common-residual return dart, a
+reference-matching dart, or a local incoming-matching dart on the alternating
+carrier.  Moreover saturation acquires no additional carrier vertices: on the
+carrier it is exactly the displayed prefix.  Consequently the full boundary
+cardinality is bounded by the two return-stack depths plus the two explicitly
+named matching frontiers, and the local incoming-matching frontier injects
+into the open endpoints of its transported carrier pairing.
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.CarrierSaturationBoundaryDecomposition.ambientExit_classification}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.CarrierSaturationBoundaryDecomposition.cycleVertex_mem_carrierPrefixReturnSaturation_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.CarrierSaturationBoundaryDecomposition.card_localTauExitDart_le_openEndpoint}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.CarrierSaturationBoundaryDecomposition.card_ambientExitDart_le_stackLengths_add_reference_add_localTau}
+Thus the remaining unbounded object is no longer ``the ambient boundary'' in
+general: it is the reference-matching attachment frontier (together with a
+finite carrier-pairing boundary term).  This is the exact object the
+external-exit/same-turn-chord horn must consume.
 \end{proof}
 
 For the route, the two Kempe families suggest the matching stacks and capped
