@@ -492,6 +492,34 @@ theorem circuitParity_eq (returns : LabeledPairing.ParityPairing V)
   congr 1
   simp [orientedLabelSum]
 
+/-- If every return edge has odd label, its contribution cancels the unit
+contribution of the corresponding local edge on every alternating circuit. -/
+theorem circuitParity_eq_zero_of_label_eq_one
+    (returns : LabeledPairing.ParityPairing V)
+    (localPairing : Pairing V) (root : V)
+    (hlabel : ∀ vertex : V, returns.label vertex = 1) :
+    circuitParity returns localPairing root = 0 := by
+  rw [circuitParity_eq]
+  simp only [orientedLabelSum, hlabel, Finset.sum_const, nsmul_eq_mul]
+  change
+    ((Fintype.card
+        {vertex // vertex ∈ orientedOrbit returns.toPairing localPairing root} :
+      Nat) : ZMod 2) * 1 +
+      ((orientedOrbit returns.toPairing localPairing root).card : ZMod 2) = 0
+  rw [Fintype.card_coe]
+  simp only [mul_one]
+  exact ZModModule.add_self (G := ZMod 2) _
+
+/-- In particular, assigning the constant odd label to an arbitrary return
+matching makes every circuit even, independently of the local matching. -/
+theorem circuitParity_const_one_eq_zero
+    (returns localPairing : Pairing V) (root : V) :
+    circuitParity (LabeledPairing.const returns (1 : ZMod 2))
+        localPairing root = 0 :=
+  circuitParity_eq_zero_of_label_eq_one
+    (LabeledPairing.const returns (1 : ZMod 2)) localPairing root
+    (fun _ => rfl)
+
 /-- Circuit parity is independent of the root within one orientation. -/
 theorem circuitParity_eq_of_sameCycle
     (returns : LabeledPairing.ParityPairing V) (localPairing : Pairing V)
