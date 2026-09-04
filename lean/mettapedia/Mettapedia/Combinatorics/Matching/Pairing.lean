@@ -30,6 +30,30 @@ structure Pairing (V : Type*) where
   /-- No vertex is its own partner. -/
   partner_ne : ∀ x, partner x ≠ x
 
+omit [DecidableEq V] in
+/-- Restrict a pairing to a predicate invariant under its partner map. -/
+def Pairing.subtype (pairing : Pairing V) (predicate : V → Prop)
+    (closed : ∀ vertex, predicate vertex → predicate (pairing.partner vertex)) :
+    Pairing {vertex // predicate vertex} where
+  partner vertex :=
+    ⟨pairing.partner vertex, closed vertex vertex.property⟩
+  partner_partner vertex := by
+    apply Subtype.ext
+    exact pairing.partner_partner vertex
+  partner_ne vertex hfixed := by
+    apply pairing.partner_ne vertex
+    exact congrArg Subtype.val hfixed
+
+omit [DecidableEq V] in
+@[simp]
+theorem Pairing.subtype_partner_val (pairing : Pairing V)
+    (predicate : V → Prop)
+    (closed : ∀ vertex, predicate vertex → predicate (pairing.partner vertex))
+    (vertex : {vertex // predicate vertex}) :
+    ((pairing.subtype predicate closed).partner vertex).1 =
+      pairing.partner vertex :=
+  rfl
+
 variable (M : Pairing V)
 
 /-- A vertex set closed under the pairing splits into matched pairs, so it has

@@ -167,6 +167,19 @@ def orderedSiteReturnParityPairing
     (fun length : Nat => (length : ZMod 2))
     (orderedSiteReturnDistancePairing hG sigma hSigma site)
 
+/-- The parity label is literally the parity of the chosen physical return
+path's length. -/
+theorem orderedSiteReturnParityPairing_label
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (position : CyclePosition sigma site) :
+    (orderedSiteReturnParityPairing hG sigma hSigma site).label position =
+      ((orderedReturnPath hG sigma hSigma site position).length : ZMod 2) := by
+  simp only [orderedSiteReturnParityPairing, LabeledPairing.mapLabel_label]
+  rw [orderedSiteReturnDistancePairing_label]
+
 end
 
 end ResidualReturnParity
