@@ -1,0 +1,4 @@
+pentaheptite_r2_heptagon.json cap#0 exact coverage 0.762; testing 3 of 2347 missing words at depth 3
+  1 words: good 1, ext tests 142216, 7s
+RESULT depth 3: 3/3 missing words good (1.00); extension tests 444985; 25s
+derivations saved: 63 (ancestor DAG of 3 certified targets) -> pentaheptite_r2_heptagon_kgd_d3_d3fail_derivations.jsonl

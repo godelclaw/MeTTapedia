@@ -27,10 +27,18 @@ for e in d['edges']:
     E.append((u, v))
 best = json.load(open(bpath))[ci]; cap = [tuple(p) for p in best['cap']]
 cert = json.load(open(cpath))
+COMPACT = isinstance(cert.get('derivations'), list) and cert['derivations'] and isinstance(cert['derivations'][0], list)
 # derivations may be streamed to a JSONL file (word, depth, x, y, entries), shallow first
+def _stream(path):
+    with open(path) as fh:
+        for l in fh:
+            r = json.loads(l)
+            yield dict(word=r['word'], depth=r['depth'], cert=[r['x'], r['y'], r['entries']])
 if 'derivations_file' in cert:
-    cert['derivations'] = [dict(word=r['word'], depth=r['depth'], cert=[r['x'], r['y'], r['entries']])
-                           for r in (json.loads(l) for l in open(cert['derivations_file']))]
+    cert['derivations'] = _stream(cert['derivations_file'])     # lazy: never holds the whole DAG
+    n_listed = sum(1 for _ in open(cert['derivations_file']))
+else:
+    n_listed = len(cert['derivations'])
 
 # ---------- independent extension solver: vertex-based DFS
 adj = defaultdict(list)          # node -> list of (edge id, other)
@@ -110,28 +118,44 @@ def in_supp(w):
     return supp_cache[w]
 n_ok = 0
 for idx, r in enumerate(cert['derivations']):
-    w = tuple(r['word']); c = r['cert']
+    if COMPACT:
+        w = tuple(r[0]); x, y, ordered = r[1], r[2], r[3]
+    else:
+        w = tuple(r['word']); c = r['cert']; x, y, entries = c[0], c[1], c[2]
     if in_supp(w):
         accepted.add(w); continue          # already a support word; certificate not needed
-    x, y, entries = c[0], c[1], c[2]
     if x not in (0, 1, 2) or y not in (0, 1, 2) or x == y: print("FAIL: bad pair", w); sys.exit(1)
     P = [i for i in range(n) if w[i] in (x, y)]
-    listed = {}
-    for mu, sub in entries:
-        key = frozenset(tuple(p) for p in mu)
-        if key in listed: print("FAIL: duplicate matching listed", w); sys.exit(1)
-        listed[key] = ([tuple(p) for p in mu], sub)
     mine = matchings(P)
-    if len(mine) != len(listed) or any(frozenset(m) not in listed for m in mine):
-        print("FAIL: matching set mismatch for", w, len(mine), len(listed)); sys.exit(1)
+    if COMPACT:
+        # canonical order: lexicographic on the sorted pair list, computed here independently
+        mine_sorted = sorted(mine, key=lambda m: tuple(sorted(tuple(sorted(p)) for p in m)))
+        if len(mine_sorted) != len(ordered): print("FAIL: matching count mismatch", w, len(mine_sorted), len(ordered)); sys.exit(1)
+        pairs_of = {tuple(sorted(tuple(sorted(p)) for p in m)): m for m in mine_sorted}
+        listed = {frozenset(m): (m, None) for m in mine_sorted}
+        chain_lists = {frozenset(m): [tuple(c_) for c_ in ordered[k]] for k, m in enumerate(mine_sorted)}
+    else:
+        listed = {}
+        for mu, sub in entries:
+            key = frozenset(tuple(p) for p in mu)
+            if key in listed: print("FAIL: duplicate matching listed", w); sys.exit(1)
+            listed[key] = ([tuple(p) for p in mu], sub)
+        if len(mine) != len(listed) or any(frozenset(m) not in listed for m in mine):
+            print("FAIL: matching set mismatch for", w, len(mine), len(listed)); sys.exit(1)
     for m in mine:
-        mu_l, sub = listed[frozenset(m)]
-        chains = [mu_l[t] for t in sub]
+        if COMPACT:
+            chains = chain_lists[frozenset(m)]
+            if any(tuple(sorted(c_)) not in {tuple(sorted(p)) for p in m} for c_ in chains):
+                print("FAIL: listed chain not in matching", w, m, chains); sys.exit(1)
+        else:
+            mu_l, sub = listed[frozenset(m)]
+            chains = [mu_l[t] for t in sub]
         sw = switch(w, x, y, chains)
         if not (in_supp(sw) or sw in accepted):
             print("FAIL: switched word neither in supp nor accepted earlier", w, m, sub); sys.exit(1)
     accepted.add(w); n_ok += 1
-print(f"accepted derivations: {n_ok} (of {len(cert['derivations'])} listed); independent extension tests {len(supp_cache)}")
+    if n_ok % 500 == 0: print(f'  verified {n_ok} derivations, {len(supp_cache)} solver calls', flush=True)
+print(f"accepted derivations: {n_ok} (of {n_listed} listed); independent extension tests {len(supp_cache)}", flush=True)
 # cap coverage
 missing = 0; total = 0
 for cols in itertools.product(range(3), repeat=len(cap)):
