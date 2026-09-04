@@ -128,11 +128,17 @@ def bridgeless_with_ring(n, nverts, edges):
 
 def analyze_flower(s, outs, del_max=3, verbose=False):
     n, nv, E = flower(s, outs)
+    r = analyze_tangle(n, nv, E, del_max)
+    r.update(dict(s=s, outs=list(outs)))
+    return r
+
+
+def analyze_tangle(n, nv, E, del_max=3):
     t0 = time.time()
     S0 = support(n, nv, E, None)
     adm = admissible_mask(all_words(n))
     C = closure(n, S0, verbose=False)
-    res = dict(s=s, outs=list(outs), ring=n, vertices=nv, supp=int(S0.sum()), admissible=int(adm.sum()),
+    res = dict(ring=n, vertices=nv, supp=int(S0.sum()), admissible=int(adm.sum()),
                closure=int(C.sum()), D_reducible=bool((C & adm).sum() == adm.sum()))
     if res['D_reducible']:
         res['reducible'] = True; res['certificate'] = 'D'; res['seconds'] = round(time.time() - t0, 1)
