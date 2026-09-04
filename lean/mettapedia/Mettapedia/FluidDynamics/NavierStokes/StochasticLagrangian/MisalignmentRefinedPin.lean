@@ -41,11 +41,13 @@ integrand, which unlike the full strain has known dynamical handles.
    uniform smooth kernel-mass bound, exact finite-Fourier bilinear action,
    frozen-frame covariance, isotropic and anisotropic square-dyadic
    rescaling, exact periodization, physical input/output frame conjugation,
-   and a frame-uniform pointwise kernel endpoint are proved in the downstream
-   `Pancake*` modules.  What remains is finite oriented-chart
-   selection/partition and the identification of the resulting variable-frame
-   field action with the coherent share of the actual Littlewood--Paley
-   Navier--Stokes decomposition, followed by their assembly
+   a frame-uniform pointwise kernel endpoint, four-sign coverage of the full
+   normalized annulus, its exact partition identity, and the assembled
+   annular multiplier are proved in the downstream `Pancake*` modules.  What
+   remains is measurable low-strain eigenframe/sector construction and the
+   identification of the resulting variable-frame annular action with the
+   coherent share of the actual Littlewood--Paley Navier--Stokes
+   decomposition, followed by its assembly
    into `split_le` and `coherent_le` for actual Navier–Stokes
    Littlewood–Paley data.
 2. `MisalignmentStrainBudget` itself: the dynamical, time-integrated
