@@ -8002,6 +8002,8 @@ edge set is exactly the chord together with the interval edges.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnNestedCuts.closureSide_subset_of_nested_return_separators}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnStrictFamily.hasStrictlyNestedConnectedReturnCutFamily_of_deep_stack}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnStrictFamily.exists_width_with_length_le_stateCount_of_deep_stack}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnStrictFamily.hasStrictlyNestedConnectedReturnCutFamily_of_nestedCarrierDeepReturnStack}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.StrictFamilyGeometricAlternative.hasFullyCompressedStrictFamilyAlternative}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.DeepReturnExactState.hasFullyRealizedExactStateAlternative}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.MeshResidualReturnSweep.fullyRealizedExactStateAlternative_of_geometricSweepReceipt}
 For one ordered injective mesh in a graph-backed least counterexample, choose
@@ -8065,6 +8067,15 @@ cumulative exact-state repetition theorem directly.  This closes family
 coherence.  The remaining high-width obligation is quantitative: replace the
 finite but graph-dependent common width by a bound controlled independently
 of the ambient counterexample.
+
+Composing this family construction with the both-coordinate compression
+theorem removes the deep-stack predicate from the consumer-facing
+alternative.  For every requested family length, a sufficiently long
+residual site now yields either a bounded connected exact-state shore, a
+strict family of that length, a structured ambient-attachment sweep, or one
+of the two materially spaced repeated-state horns.  This is a qualitative
+decomposition theorem: it leaves all three unresolved horns visible and does
+not treat the finite, graph-dependent family width as a uniform bound.
 \end{proof}
 
 For the route, the two Kempe families suggest the matching stacks and capped

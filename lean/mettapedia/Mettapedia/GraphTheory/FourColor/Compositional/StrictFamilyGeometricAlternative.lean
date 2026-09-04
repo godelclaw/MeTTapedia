@@ -1,0 +1,111 @@
+import Mettapedia.GraphTheory.FourColor.Compositional.ExactStateGeometricAlternative
+import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnStrictFamily
+
+/-!
+# Compressed return sweeps with the deep horn realized as a strict family
+
+The two-coordinate compression theorem has five outcomes.  Its bounded-cut
+outcome already carries a connected exact state, while its deep carrier-stack
+outcome now carries an arbitrarily long strictly nested family of connected
+cut shores.  This file composes those results without weakening or hiding the
+three remaining attachment/repetition outcomes.
+
+The common width of the strict family is finite but may still depend on the
+ambient graph.  Uniform quantitative control remains a separate high-width
+obligation.
+-/
+
+namespace Mettapedia.GraphTheory.FourColor.Compositional
+
+namespace StrictFamilyGeometricAlternative
+
+open AmbientReturnAttachmentCompression
+open ExactStateGeometricAlternative
+open GoertzelV24ConnectedShoreLiteralNode
+open GoertzelV24OrderedMeshResidualSiteFacialBond
+open GoertzelV24TwoEdgeCutMinimality
+open MatchingParity
+open ResidualReturnCarrierSweep
+open ResidualReturnStrictFamily
+open SimpleGraph
+open SimpleGraphDartRotation
+
+noncomputable section
+
+universe u
+
+variable {V : Type u} [Fintype V] [DecidableEq V]
+  {G : SimpleGraph V} [DecidableRel G.Adj]
+
+/-- The fully compressed single-site alternative after realizing a deep
+carrier stack as a strict connected-cut family of the requested length. -/
+def FullyCompressedStrictFamilyAlternative
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (length spacing : Nat) : Prop :=
+  Nonempty
+      (ConnectedShoreNode (G := G)
+        (6 * fullyCompressedComponentBound (length + 1) spacing)
+        (6 * fullyCompressedComponentBound (length + 1) spacing)) ∨
+    HasNestedAmbientAttachmentSweepAlternative rotation minimal hG sigma hSigma
+      bond (length + 1) spacing ∨
+    HasStrictlyNestedConnectedReturnCutFamily G length ∨
+    HasNestedCarrierSpacedSweepRepeat rotation minimal hG sigma hSigma bond
+      spacing ∨
+    HasSpacedResidualReturnSweepRepeat rotation minimal hG sigma hSigma bond
+      spacing
+
+/-- Replace the carrier-deep branch of an exact-state compressed alternative
+by the strict connected-cut family extracted from it. -/
+theorem strictFamilyAlternative_of_exactState
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (length spacing : Nat)
+    (alternative : FullyCompressedExactStateAlternative rotation minimal hG
+      sigma hSigma bond (length + 1) spacing) :
+    FullyCompressedStrictFamilyAlternative rotation minimal hG sigma hSigma
+      bond length spacing := by
+  rcases alternative with
+    hstate | hambient | hdeep | hcarrierRepeat | hreturnRepeat
+  · exact Or.inl hstate
+  · exact Or.inr (Or.inl hambient)
+  · exact Or.inr (Or.inr (Or.inl
+      (hasStrictlyNestedConnectedReturnCutFamily_of_nestedCarrierDeepReturnStack
+        rotation minimal hG sigma hSigma bond length hdeep)))
+  · exact Or.inr (Or.inr (Or.inr (Or.inl hcarrierRepeat)))
+  · exact Or.inr (Or.inr (Or.inr (Or.inr hreturnRepeat)))
+
+/-- **Strict-family both-coordinate compression.**  At a sufficiently long
+residual site, either a bounded connected exact state already exists, an
+arbitrarily requested finite strict connected-cut family exists, or one of
+the three explicitly retained attachment/repetition alternatives occurs. -/
+theorem hasFullyCompressedStrictFamilyAlternative
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (length spacing : Nat)
+    (hmany : 2 * (spacing + 1) * (1 + 1) ^ 2 <
+      bond.site.cycle.tail.support.length) :
+    FullyCompressedStrictFamilyAlternative rotation minimal hG sigma hSigma
+      bond length spacing :=
+  strictFamilyAlternative_of_exactState rotation minimal hG sigma hSigma bond
+    length spacing
+    (hasFullyCompressedExactStateAlternative rotation minimal hG sigma hSigma
+      bond (length + 1) spacing hmany)
+
+end
+
+end StrictFamilyGeometricAlternative
+
+end Mettapedia.GraphTheory.FourColor.Compositional

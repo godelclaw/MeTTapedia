@@ -185,6 +185,27 @@ theorem hasStrictlyNestedConnectedReturnCutFamily_of_deep_stack
       (strictlyNestedReturnFamily_of_deep_stack
         rotation minimal hG sigma hSigma bond (length + 1) hdeep)
 
+/-- The carrier-compression form of a deep stack supplies the same strict
+connected-cut family.  The carrier-interval membership is retained by the
+compression receipt but is not needed after the stack itself has been
+extracted. -/
+theorem hasStrictlyNestedConnectedReturnCutFamily_of_nestedCarrierDeepReturnStack
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (length : Nat)
+    (hdeep : ResidualReturnCarrierSweep.HasNestedCarrierDeepReturnStack
+      rotation minimal hG sigma hSigma bond (length + 1)) :
+    HasStrictlyNestedConnectedReturnCutFamily G length := by
+  rcases hdeep with
+    ⟨_outer, _inner, _hshore, _hleft, _hright,
+      shore, cut, _hposition, hstack⟩
+  exact hasStrictlyNestedConnectedReturnCutFamily_of_deep_stack
+    rotation minimal hG sigma hSigma bond length ⟨shore, cut, hstack⟩
+
 /-- The connected-cut family feeds the existing literal-shore pigeonhole
 theorem directly.  The returned width is the finite common bound produced by
 the family construction. -/
