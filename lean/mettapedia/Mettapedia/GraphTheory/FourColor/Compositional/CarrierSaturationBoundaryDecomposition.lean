@@ -74,6 +74,30 @@ def ReferenceMatchingExitDart
   {exit : AmbientExitDart hG sigma hSigma site cut //
     sigma.partner exit.1.fst = exit.1.snd}
 
+/-- Reference-matching exits whose inside endpoint still lies on the
+alternating carrier.  These are finite carrier-interface data, not external
+attachments along a return path. -/
+def LocalSigmaExitDart
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (cut : CyclePosition sigma site) :=
+  {exit : AmbientExitDart hG sigma hSigma site cut //
+    exit.1.fst ∈ site.carrier ∧ sigma.partner exit.1.fst = exit.1.snd}
+
+/-- The genuinely off-carrier part of the reference-matching frontier.  This
+is the only reference class which can become an attachment to the interior of
+a common-residual return. -/
+def OffCarrierReferenceMatchingExitDart
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (cut : CyclePosition sigma site) :=
+  {exit : AmbientExitDart hG sigma hSigma site cut //
+    sigma.partner exit.1.fst = exit.1.snd ∧ exit.1.fst ∉ site.carrier}
+
 /-- Ambient exits supplied by the incoming local matching on the alternating
 carrier. -/
 def LocalTauExitDart
@@ -136,6 +160,91 @@ theorem cycleVertex_mem_carrierPrefixReturnSaturation_iff
       · simpa only [carrierPrefixSelected, hpartner] using hpartnerSelected
   · exact cycleVertex_mem_carrierPrefixReturnSaturation
       hG sigma hSigma site cut position
+
+/-- A local reference-matching exit is an open endpoint of the reference
+pairing transported to cyclic carrier coordinates. -/
+noncomputable def localSigmaExitToOpenEndpoint
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (cut : CyclePosition sigma site) :
+    LocalSigmaExitDart hG sigma hSigma site cut →
+      PairingBoundaryOpenEndpoint
+        (orderedSiteSigmaPairing sigma site) (carrierPrefixSelected cut) := by
+  intro exit
+  let position : CyclePosition sigma site :=
+    (cycleVertexOrder sigma site).symm
+      ⟨exit.1.1.fst, exit.2.1⟩
+  have hpositionVertex :
+      (cycleVertexOrder sigma site position).1 = exit.1.1.fst :=
+    congrArg Subtype.val <|
+      (cycleVertexOrder sigma site).apply_symm_apply
+        ⟨exit.1.1.fst, exit.2.1⟩
+  refine ⟨position, ?_, ?_⟩
+  · unfold carrierPrefixSelected
+    apply (cycleVertex_mem_carrierPrefixReturnSaturation_iff
+      hG sigma hSigma site cut position).1
+    simpa only [hpositionVertex] using exit.1.2.1
+  · intro hpartnerSelected
+    have hsaturated := cycleVertex_mem_carrierPrefixReturnSaturation
+      hG sigma hSigma site cut
+        ((orderedSiteSigmaPairing sigma site).partner position)
+        hpartnerSelected
+    have hpartnerVertex := congrArg Subtype.val
+      (cycleVertexOrder_orderedSiteSigmaPairing_partner sigma site position)
+    change
+      (cycleVertexOrder sigma site
+          ((orderedSiteSigmaPairing sigma site).partner position)).1 =
+        sigma.partner (cycleVertexOrder sigma site position).1
+      at hpartnerVertex
+    apply exit.1.2.2
+    rw [hpartnerVertex, hpositionVertex, exit.2.2] at hsaturated
+    exact hsaturated
+
+theorem localSigmaExitToOpenEndpoint_injective
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (cut : CyclePosition sigma site) :
+    Function.Injective
+      (localSigmaExitToOpenEndpoint hG sigma hSigma site cut) := by
+  intro left right heq
+  have hposition := congrArg Subtype.val heq
+  have hfst : left.1.1.fst = right.1.1.fst := by
+    have happly := congrArg
+      (fun position : CyclePosition sigma site =>
+        (cycleVertexOrder sigma site position).1) hposition
+    simpa only [localSigmaExitToOpenEndpoint, Equiv.apply_symm_apply] using happly
+  have hsnd : left.1.1.snd = right.1.1.snd := by
+    calc
+      left.1.1.snd = sigma.partner left.1.1.fst := left.2.2.symm
+      _ = sigma.partner right.1.1.fst := congrArg sigma.partner hfst
+      _ = right.1.1.snd := right.2.2
+  apply Subtype.ext
+  apply Subtype.ext
+  apply SimpleGraph.Dart.ext
+  exact Prod.ext hfst hsnd
+
+/-- The carrier-local part of the reference frontier is controlled by the
+open endpoints of the transported reference pairing. -/
+theorem card_localSigmaExitDart_le_openEndpoint
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (cut : CyclePosition sigma site) :
+    Nat.card (LocalSigmaExitDart hG sigma hSigma site cut) ≤
+      Nat.card (PairingBoundaryOpenEndpoint
+        (orderedSiteSigmaPairing sigma site) (carrierPrefixSelected cut)) := by
+  letI : Finite (PairingBoundaryOpenEndpoint
+      (orderedSiteSigmaPairing sigma site) (carrierPrefixSelected cut)) := by
+    unfold PairingBoundaryOpenEndpoint
+    infer_instance
+  exact Nat.card_le_card_of_injective
+    (localSigmaExitToOpenEndpoint hG sigma hSigma site cut)
+    (localSigmaExitToOpenEndpoint_injective hG sigma hSigma site cut)
 
 /-- A local `tau` exit determines an endpoint of a local carrier edge which
 is open across the same displayed prefix cut. -/
@@ -221,6 +330,94 @@ theorem card_localTauExitDart_le_openEndpoint
   exact Nat.card_le_card_of_injective
     (localTauExitToOpenEndpoint hG sigma hSigma site cut)
     (localTauExitToOpenEndpoint_injective hG sigma hSigma site cut)
+
+/-- Forget whether a reference-matching exit begins on or off the carrier. -/
+def unclassifyReferenceExit
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (cut : CyclePosition sigma site) :
+    LocalSigmaExitDart hG sigma hSigma site cut ⊕
+        OffCarrierReferenceMatchingExitDart hG sigma hSigma site cut →
+      ReferenceMatchingExitDart hG sigma hSigma site cut
+  | Sum.inl exit => ⟨exit.1, exit.2.2⟩
+  | Sum.inr exit => ⟨exit.1, exit.2.1⟩
+
+/-- Split a reference-matching exit according to whether its inside endpoint
+is a carrier vertex. -/
+noncomputable def classifyReferenceExit
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (cut : CyclePosition sigma site)
+    (exit : ReferenceMatchingExitDart hG sigma hSigma site cut) :
+    LocalSigmaExitDart hG sigma hSigma site cut ⊕
+      OffCarrierReferenceMatchingExitDart hG sigma hSigma site cut := by
+  by_cases hcarrier : exit.1.1.fst ∈ site.carrier
+  · exact Sum.inl ⟨exit.1, hcarrier, exit.2⟩
+  · exact Sum.inr ⟨exit.1, exit.2, hcarrier⟩
+
+@[simp] theorem unclassifyReferenceExit_classifyReferenceExit
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (cut : CyclePosition sigma site)
+    (exit : ReferenceMatchingExitDart hG sigma hSigma site cut) :
+    unclassifyReferenceExit hG sigma hSigma site cut
+        (classifyReferenceExit hG sigma hSigma site cut exit) = exit := by
+  unfold classifyReferenceExit
+  split <;> rfl
+
+theorem classifyReferenceExit_injective
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (cut : CyclePosition sigma site) :
+    Function.Injective (classifyReferenceExit hG sigma hSigma site cut) := by
+  intro left right heq
+  have hforgotten := congrArg
+    (unclassifyReferenceExit hG sigma hSigma site cut) heq
+  simpa only [unclassifyReferenceExit_classifyReferenceExit] using hforgotten
+
+/-- Cardinal form of the local/off-carrier split of the reference frontier. -/
+theorem card_referenceMatchingExitDart_le_local_add_offCarrier
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (cut : CyclePosition sigma site) :
+    Nat.card (ReferenceMatchingExitDart hG sigma hSigma site cut) ≤
+      Nat.card (LocalSigmaExitDart hG sigma hSigma site cut) +
+        Nat.card (OffCarrierReferenceMatchingExitDart
+          hG sigma hSigma site cut) := by
+  letI : Finite (AmbientExitDart hG sigma hSigma site cut) := by
+    unfold AmbientExitDart
+    infer_instance
+  letI : Finite (ReferenceMatchingExitDart hG sigma hSigma site cut) := by
+    unfold ReferenceMatchingExitDart
+    infer_instance
+  letI : Finite (LocalSigmaExitDart hG sigma hSigma site cut) := by
+    unfold LocalSigmaExitDart
+    infer_instance
+  letI : Finite
+      (OffCarrierReferenceMatchingExitDart hG sigma hSigma site cut) := by
+    unfold OffCarrierReferenceMatchingExitDart
+    infer_instance
+  calc
+    Nat.card (ReferenceMatchingExitDart hG sigma hSigma site cut) ≤
+        Nat.card (LocalSigmaExitDart hG sigma hSigma site cut ⊕
+          OffCarrierReferenceMatchingExitDart hG sigma hSigma site cut) :=
+      Nat.card_le_card_of_injective
+        (classifyReferenceExit hG sigma hSigma site cut)
+        (classifyReferenceExit_injective hG sigma hSigma site cut)
+    _ = Nat.card (LocalSigmaExitDart hG sigma hSigma site cut) +
+        Nat.card (OffCarrierReferenceMatchingExitDart
+          hG sigma hSigma site cut) := by
+      rw [Nat.card_sum]
 
 /-- The common-residual ambient exits are merely the generic pairing-boundary
 exit darts with their ambient adjacency remembered. -/
@@ -397,6 +594,39 @@ theorem card_ambientExitDart_le_stackLengths_add_reference_add_localTau
   have hcommonCard :=
     natCard_commonResidualExitDart_eq_pairingBoundaryExitDart
       hG sigma hSigma bond.site cut
+  omega
+
+/-- Refined ambient boundary bound.  Both carrier-local matching frontiers
+are paid for by open endpoints of finite cyclic pairings; the only remaining
+ambient term is the genuinely off-carrier reference-matching frontier. -/
+theorem card_ambientExitDart_le_stackLengths_add_offCarrierReference_add_local
+    (rotation : SimpleGraphDartRotation.Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (cut : CyclePosition sigma bond.site) :
+    Nat.card (AmbientExitDart hG sigma hSigma bond.site cut) ≤
+      ((returnShoreMatching rotation minimal hG sigma hSigma bond false).stackAt
+          cut).length +
+        ((returnShoreMatching rotation minimal hG sigma hSigma bond true).stackAt
+          cut).length +
+        Nat.card (OffCarrierReferenceMatchingExitDart
+          hG sigma hSigma bond.site cut) +
+        Nat.card (PairingBoundaryOpenEndpoint
+          (orderedSiteSigmaPairing sigma bond.site) (carrierPrefixSelected cut)) +
+        Nat.card (PairingBoundaryOpenEndpoint
+          (orderedSiteTauPairing sigma bond.site) (carrierPrefixSelected cut)) := by
+  have hambient :=
+    card_ambientExitDart_le_stackLengths_add_reference_add_localTau
+      rotation minimal hG sigma hSigma bond cut
+  have href := card_referenceMatchingExitDart_le_local_add_offCarrier
+    hG sigma hSigma bond.site cut
+  have hsigma := card_localSigmaExitDart_le_openEndpoint
+    hG sigma hSigma bond.site cut
+  have htau := card_localTauExitDart_le_openEndpoint
+    hG sigma hSigma bond.site cut
   omega
 
 end
