@@ -55,6 +55,23 @@ theorem pairingBoundarySaturation_of_reachable
     pairingBoundarySaturation (H := H) embed pairing selected vertex :=
   Or.inr ⟨boundary, hselected, hpartner, hreachable⟩
 
+/-- Enlarging the selected boundary set can only enlarge its component
+saturation. -/
+theorem pairingBoundarySaturation_mono
+    (embed : B → V) (pairing : Pairing B)
+    {selected₁ selected₂ : B → Prop}
+    (hselected : ∀ boundary, selected₁ boundary → selected₂ boundary) :
+    ∀ vertex,
+      pairingBoundarySaturation (H := H) embed pairing selected₁ vertex →
+        pairingBoundarySaturation (H := H) embed pairing selected₂ vertex := by
+  intro vertex hsaturated
+  rcases hsaturated with
+    ⟨boundary, hboundary, heq⟩ |
+      ⟨boundary, hboundary, hpartner, hreachable⟩
+  · exact Or.inl ⟨boundary, hselected boundary hboundary, heq⟩
+  · exact Or.inr ⟨boundary, hselected boundary hboundary,
+      hselected (pairing.partner boundary) hpartner, hreachable⟩
+
 /-- Filling whole components whose paired boundary endpoints are selected
 preserves connectedness of a connected selected boundary skeleton.  The
 component graph may be a subgraph of the ambient graph: its paths are lifted

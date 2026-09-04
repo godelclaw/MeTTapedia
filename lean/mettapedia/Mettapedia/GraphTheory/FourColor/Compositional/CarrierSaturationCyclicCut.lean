@@ -369,6 +369,41 @@ theorem card_crossingEdgeFinset_carrierPrefixExteriorComponent_le
       card_crossingEdgeFinset_carrierPrefixReturnSaturation
         hG sigma hSigma site cut
 
+/-- The rooted exterior of a saturated carrier prefix contains a cycle once
+the displayed carrier suffix exceeds the cubic-tree boundary budget. -/
+theorem hasCycleOnSide_carrierPrefixExteriorComponent
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (cut : CyclePosition sigma site)
+    (bound : Nat)
+    (hboundary : Nat.card (AmbientExitDart hG sigma hSigma site cut) ≤ bound)
+    (hsuffixLarge : bound <
+      (Fintype.card (CyclePosition sigma site) - cut.val) + 2) :
+    HasCycleOnSide G
+      (carrierPrefixExteriorComponent hG sigma hSigma site cut) := by
+  let exterior := carrierPrefixExteriorComponent hG sigma hSigma site cut
+  have hexteriorConnected : (G.induce exterior).Connected :=
+    induce_carrierPrefixExteriorComponent_connected hG sigma hSigma site cut
+  have hexteriorNonempty : ∃ vertex, exterior vertex := by
+    refine ⟨(cycleVertexOrder sigma site cut).1, ?_⟩
+    exact inducedReachableSide_root
+      (fun vertex =>
+        ¬carrierPrefixReturnSaturation hG sigma hSigma site cut vertex)
+      (cycleVertexOrder sigma site cut).1
+      (not_carrierPrefixReturnSaturation_cycleVertex_cut
+        hG sigma hSigma site cut)
+  have hexteriorBoundary : (crossingEdgeFinset G exterior).card ≤ bound :=
+    (card_crossingEdgeFinset_carrierPrefixExteriorComponent_le
+      hG sigma hSigma site cut).trans hboundary
+  apply hasCycleOnSide_of_connected_cubic_of_boundary_lt_card_add_two
+    (regularOfDegreeThree_of_cubicIncidentTriples hG)
+    exterior hexteriorNonempty hexteriorConnected bound hexteriorBoundary
+  have hcard := suffixLength_le_natCard_carrierPrefixExteriorComponent
+    hG sigma hSigma site cut
+  exact hsuffixLarge.trans_le (Nat.add_le_add_right hcard 2)
+
 /-- With two margins beyond the cubic tree budget, a bounded saturated
 carrier prefix is a genuine cyclic edge cut. -/
 def carrierPrefixCyclicEdgeCutRealization
