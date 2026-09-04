@@ -1,3 +1,4 @@
+import Mettapedia.GraphTheory.CubicPathChordDiagram
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSeparatorExitSide
 
 /-!
@@ -20,6 +21,7 @@ namespace Mettapedia.GraphTheory.FourColor.Compositional
 namespace ResidualReturnAttachmentMatching
 
 open CubicPathAttachment
+open CubicPathChordDiagram
 open GoertzelV24FaceOrbitIncidence
 open GoertzelV24OrderedMeshResidualSiteMatching
 open GoertzelV24ResidualReturnArc
@@ -152,6 +154,73 @@ theorem ambientReturnAttachmentNeighbor_eq_partner
   · exact ((commonResidualGraph_adj sigma site).1
       (commonResidualGraph_adj_nextVertex
         hG sigma hSigma site chord position)).2.1
+
+/-- Every edge traversed by an ambient residual return lies outside the
+reference pairing. -/
+theorem ambientReturnPathEdge_partner_ne
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (chord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    {left right : V}
+    (hadj : (orderedChordAmbientPath hG sigma hSigma site chord).toSubgraph.Adj
+      left right) :
+    sigma.partner left ≠ right := by
+  let ambientPath := orderedChordAmbientPath hG sigma hSigma site chord
+  let sourcePath := orderedReturnPath hG sigma hSigma site chord.left
+  have hambientEdge : s(left, right) ∈ ambientPath.edges := by
+    rw [← ambientPath.mem_edges_toSubgraph, SimpleGraph.Subgraph.mem_edgeSet]
+    exact hadj
+  have hsourceEdge : s(left, right) ∈ sourcePath.edges := by
+    rw [← orderedChordAmbientPath_edges_eq_orderedReturnPath
+      hG sigma hSigma site chord]
+    exact hambientEdge
+  have hcommon : (commonResidualGraph G sigma site).Adj left right :=
+    (commonResidualGraph G sigma site).mem_edgeSet.mp
+      (sourcePath.edges_subset_edgeSet hsourceEdge)
+  exact ((commonResidualGraph_adj sigma site).1 hcommon).2.1
+
+/-- Every internal chord of an ambient residual return is exactly the
+reference-pairing edge at its left endpoint. -/
+theorem internalChord_partner_leftVertex_eq_rightVertex
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (returnChord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (internalChord : OrderedPathChord
+      ((orderedChordAmbientPath hG sigma hSigma site returnChord).length + 1))
+    (hinternal : IsInternalChord internalChord) :
+    sigma.partner
+        ((orderedChordAmbientPath hG sigma hSigma site returnChord).getVert
+          internalChord.left) =
+      (orderedChordAmbientPath hG sigma hSigma site returnChord).getVert
+        internalChord.right := by
+  let path := orderedChordAmbientPath hG sigma hSigma site returnChord
+  let hpath := orderedChordAmbientPath_isPath hG sigma hSigma site returnChord
+  let hregular := regularOfDegreeThree_of_cubicIncidentTriples hG
+  let position := leftPosition internalChord hinternal
+  have hleft : position.vertex = path.getVert internalChord.left := by
+    change path.getVert position.index = path.getVert internalChord.left
+    exact congrArg path.getVert (leftPosition_index internalChord hinternal)
+  have hpartner := ambientReturnAttachmentNeighbor_eq_partner
+    hG sigma hSigma site returnChord position
+  have hendpoint :=
+    (leftAttachment hpath hregular internalChord hinternal).endpoint_eq
+  change path.getVert internalChord.right =
+      attachmentNeighbor hpath hregular position at hendpoint
+  change attachmentNeighbor hpath hregular position =
+      sigma.partner position.vertex at hpartner
+  change sigma.partner (path.getVert internalChord.left) =
+    path.getVert internalChord.right
+  calc
+    sigma.partner (path.getVert internalChord.left) =
+        sigma.partner position.vertex := by rw [hleft]
+    _ = attachmentNeighbor hpath hregular position := hpartner.symm
+    _ = path.getVert internalChord.right := hendpoint.symm
 
 /-- A strict internal residual-return attachment cannot return to the
 alternating carrier. -/
