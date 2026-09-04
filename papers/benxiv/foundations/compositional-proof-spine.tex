@@ -289,19 +289,46 @@ facial duality, and the cyclic coordinates are derived from the ambient
 spherical map, so no extra boundary-order hypothesis remains.
 \end{proof}
 
-Lemma~\ref{lem:abstract-birkhoff-five-cycle-propagation} is only the logical
-propagation heart of Birkhoff's short five-cycle theorem.  The $P/Q$ classes,
-their physical Kempe-switch semantics, and the exact-support consequence of an
-overlap are now checked by
-Lemma~\ref{lem:five-cycle-class-support-semantics}.  The exact five-cut's
-single cyclic boundary order and opposite shore orientation are now checked by
-Lemma~\ref{lem:exact-five-cut-cyclic-boundary}.  Literal physical Kempe
-components are now known to pair the five boundary ports noncrossingly by
-Lemma~\ref{lem:exact-five-cut-physical-noncrossing}.  The remaining physical
-work is to derive the two displayed class-closure implications from those
-noncrossing components and smaller-side surgery, prove that minimality supplies
-a primary class on each shore, and instantiate the existing exact-support splice.  No finite
-boundary-word certificate is used or licensed by these lemmas.
+Lemma~\ref{lem:abstract-birkhoff-five-cycle-propagation} is a checked abstract
+sufficient condition, but it is not the physical heart of the five-cut proof:
+the support of a single $Y$-cap already refutes its proposed per-shore closure
+laws.  The completed argument therefore does not derive or consume those laws.
+Instead it retains the physical content proved above---global colour closure
+and noncrossing bichromatic mates---and performs Birkhoff's short case argument
+directly on the five boundary positions.
+
+\begin{theorem}[compositional exact-five-cut theorem]
+\label{thm:compositional-exact-five-cut}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FiveCutWordHeart.exists_common_word}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FiveCutShorePhysical.boundaryLanguage_retainedShore}
+\Sverified{Mettapedia.GraphTheory.FourColor.FiveCutShoreAssembly.exists_common_word_on_shores}
+\Sverified{Mettapedia.GraphTheory.FourColor.FiveCutSplice.false_of_nontrivial_exactCyclicFiveEdgeCut}
+\Sverified{Mettapedia.GraphTheory.FourColor.FiveCutSplice.no_nontrivial_exactCyclicFiveEdgeCut_of_vertexMinimalTaitCounterexample}
+\Sverified{Mettapedia.GraphTheory.FourColor.FiveCutSplice.exactCyclicFiveEdgeCut_has_small_shore_of_vertexMinimalTaitCounterexample}
+A graph-backed vertex-minimal Tait counterexample contains no exact cyclic
+five-edge cut whose two vertex shores both have at least six vertices.
+Equivalently, every exact cyclic five-edge cut in such a counterexample has a
+shore of cardinality at most five.
+\end{theorem}
+
+\begin{proof}
+Use an exact-size-five cut carrier; this is distinct from the earlier
+\texttt{SmallCyclicEdgeCut}, whose defining cardinality bound is four.  Pin the
+facial cyclic order on one shore and transport the opposite orientation to the
+other.  Capping either shore by the pentagon and by three consecutive $Y$-caps
+produces smaller bridgeless spherical cubic maps.  Vertex minimality colours
+those maps, so each shore language meets the four corresponding cap supports.
+The physical Kempe theorem makes each shore language closed under every
+noncrossing bichromatic mate, while global colour relabelling gives colour
+closure.  The twelve-leaf Birkhoff word argument then forces the two shore
+languages to contain one literal common boundary word.  Realizing colourings
+with that word agree on all five cut edges; gluing them dart by dart gives a
+Tait colouring of the ambient map, contradicting minimality.
+\end{proof}
+
+This is one generic bounded-interface normal-form theorem, not a covering
+argument over planar configurations.  It strengthens the entry normal form but
+does not settle the high-width decomposition theorem below.
 
 A facial cycle of length below five would expose such a small cyclic cut (the
 finitely small exceptional carriers are directly colourable), so every face
