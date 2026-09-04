@@ -1206,12 +1206,20 @@ shore growth has been reduced to this concrete fresh-edge condition.
 \begin{lemma}[connected cyclic cuts are literal exact-state interfaces]
 \label{lem:connected-cyclic-cut-exact-state-interface}
 \Sverified{Mettapedia.GraphTheory.FourColor.CyclicEdgeCutRealization.card_middle_incidentEdgeShore_le_edgeCut}
+\Sverified{Mettapedia.GraphTheory.FourColor.CyclicEdgeCutRealization.exists_connectedSides_subcut}
+\Sverified{Mettapedia.GraphTheory.FourColor.CyclicEdgeCutRealization.exists_connectedAtWidth_subcut}
 \Sverified{Mettapedia.GraphTheory.FourColor.CyclicEdgeCutRealization.toConnectedShoreNodeOfConnectedSides}
 \Sverified{Mettapedia.GraphTheory.FourColor.CyclicEdgeCutRealization.toConnectedShoreNodeOfVertexMinimal}
+\Sverified{Mettapedia.GraphTheory.FourColor.CyclicEdgeCutRealization.exists_connectedShoreNode_of_hasCyclicEdgeCutOfSizeAtMost}
 \Sverified{Mettapedia.GraphTheory.FourColor.CyclicEdgeCutRealization.exists_endpointSimple_replacement_of_nested_connected_cyclicCuts}
-Let an exact cyclic edge cut have connected induced vertex sides in a finite
-cubic graph, and let its cut size be at most (b).  Assign to the chosen
-side every edge with at least one endpoint there.  This is a connected shore
+Let an exact cyclic edge cut in a connected finite cubic graph have cut size
+at most (b).  If either induced vertex side is disconnected, retain the
+reachable component containing its certified cycle and recompute the exact
+boundary.  The new boundary is a subcut of the old one and is strictly
+smaller whenever the chosen side was disconnected.  Finite strict induction
+therefore produces a cyclic subcut of size at most (b) whose two induced
+vertex sides are connected.  Assign to the chosen side every edge with at
+least one endpoint there.  This is a connected shore
 whose complementary edge shore is connected, whose two majority regions are
 nonempty, and whose middle set has cardinality at most (b).  Consequently
 the cut canonically carries the literal phased exact-support state used by
@@ -1221,7 +1229,11 @@ counterexample.
 \end{lemma}
 
 \begin{proof}
-Connectivity of the two induced vertex sides transports to connectivity of
+The saturation step terminates because each disconnected-side repair strictly
+shrinks the finite cut support; repairing the complementary side is the same
+construction applied to the complementary realization.  Cut containment
+preserves the original width bound.  Connectivity of the two resulting
+induced vertex sides transports to connectivity of
 the incident-edge shore and its complement.  A cycle on either side supplies
 a vertex in the corresponding majority region.  Every middle vertex lies on
 the outer endpoint of a chosen dart leaving the selected vertex side;
@@ -7973,6 +7985,11 @@ edge set is exactly the chord together with the interval edges.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AmbientReturnAttachmentCompression.hasNestedAmbientAttachmentSweepAlternative}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AmbientReturnAttachmentCompression.hasFullyCompressedGeometricAlternative}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.MeshResidualReturnSweep.fullyCompressedAlternative_of_geometricSweepReceipt}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ExactStateGeometricAlternative.hasFullyCompressedExactStateAlternative}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.MeshResidualReturnSweep.fullyCompressedExactStateAlternative_of_geometricSweepReceipt}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.DeepReturnExactState.saturated_of_nestedCarrierDeepReturnStack}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.DeepReturnExactState.hasFullyRealizedExactStateAlternative}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.MeshResidualReturnSweep.fullyRealizedExactStateAlternative_of_geometricSweepReceipt}
 For one ordered injective mesh in a graph-backed least counterexample, choose
 the common minimum-residual-defect matching of
 Corollary~\ref{cor:global-residual-geometry-provenance}.  Every global mesh
@@ -7981,7 +7998,10 @@ sweep alternative from
 Corollary~\ref{cor:geometric-residual-return-sweep-alternative}, at every
 requested component bound and spacing.  Moreover, at each internal row
 junction at least one of the immediately incoming and outgoing arms carries
-this four-way alternative.
+this finite alternative.  Its bounded-cut horn already returns a connected
+literal exact-state shore.  If the carrier stack has depth at least two, its
+deep horn likewise returns a connected cyclic subcut, retaining the fact that
+it lies inside the physical return separator.
 \end{corollary}
 
 \begin{proof}
@@ -8007,20 +8027,24 @@ For the route, the two Kempe families suggest the matching stacks and capped
 face progress supplies additional finite labels.  However those matchings
 belong to a colouring state, whereas the physical graph surgery must be
 defined before a global colouring exists.  In the shallow case an equal
-sweep state is therefore only a candidate length interface.  In the deep
-case the nested records now produce a literal bounded cyclic edge cut whenever
-both separator components are short.  A long carrier interval is compressed
-by the restricted LIFO sweep; its outcomes are deeper laminar nesting or a
-materially spaced repeated state inside that same interval.  A long ambient
+sweep state is therefore only a candidate length interface.  A short
+separator now produces a connected exact-state shore directly.  A deep
+carrier stack produces a physical cyclic cut from two nested return chords
+and saturates it to connected complementary shores, with an explicit bound
+equal to three times the chosen separator support.  Thus realization of that
+horn is closed, while uniform control of its separator-dependent width is
+not.  A long carrier interval is compressed by the restricted LIFO sweep;
+its remaining shallow outcome is a materially spaced repeated state inside
+that same interval.  A long ambient
 return is likewise compressed by the attachment sweep: its outcomes are an
 external separator exit, a deep same-turn chord nest, or a materially spaced
 repeated attachment state.  What remains is to consume these structured
-depth/repetition/exit alternatives, choose compatible interfaces coherently
-across neighbouring mesh sites, saturate them to connected complementary
-shores, and prove that the cumulative zero-count profile factors through the
-resulting ordered interfaces.  The corollary is therefore a graph-level local
-alternative at one alternating site; it proves neither a coherent mesh-level
-family nor the splice.
+attachment/repetition alternatives, obtain a uniform bound for the realized
+deep-return states, choose compatible interfaces coherently across
+neighbouring mesh sites, and prove that the cumulative zero-count profile
+factors through the resulting ordered interfaces.  The corollary is therefore
+a graph-level local alternative at one alternating site; it proves neither a
+coherent mesh-level family nor the splice.
 
 \subsection{The exact finite interface}
 
