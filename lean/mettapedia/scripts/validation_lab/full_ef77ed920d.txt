@@ -1,0 +1,16 @@
+cand_ef77ed920d.json: ring 14 vertices 28 |supp| 74802 admissible 1195743 (2s)
+  iter 1: +52776 -> |S|=127578/1195743  (21.0s)
+  iter 2: +20502 -> |S|=148080/1195743  (31.6s)
+  iter 3: +11880 -> |S|=159960/1195743  (30.3s)
+  iter 4: +4698 -> |S|=164658/1195743  (37.1s)
+  iter 5: +1692 -> |S|=166350/1195743  (31.5s)
+  iter 6: +1278 -> |S|=167628/1195743  (29.6s)
+  iter 7: +462 -> |S|=168090/1195743  (40.6s)
+  iter 8: +120 -> |S|=168210/1195743  (37.5s)
+  iter 9: +12 -> |S|=168222/1195743  (35.1s)
+  iter 10: +0 -> |S|=168222/1195743  (28.4s)
+  closure 168222 / 1195743 (0.141); D-reducible False [327s]
+  caps 429: best cap misses 321 closure-outside words
+  deletions size 1: tried 35, best miss (24012, [25], 26)
+  deletions size 2: tried 616, best miss (7590, [3, 17], 24)
+RESULT: {"tangle": "cand_ef77ed920d.json", "ring": 14, "vertices": 28, "supp": 74802, "admissible": 1195743, "closure": 168222, "D_reducible": false, "closure_seconds": 327, "best_deletion": [7590, [3, 17], 24], "reducible": false, "seconds": 1819}
