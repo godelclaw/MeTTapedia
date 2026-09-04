@@ -4,11 +4,9 @@ import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSeparatorNes
 /-!
 # Physical return triples extracted from a deep residual stack
 
-The LIFO sweep records residual returns as ordered labelled arcs.  Separator
-geometry, however, is stated for the original chords of the physical return
-pairing.  This file closes that representation seam: every selected sweep arc
-is realized by a physical chord on the selected shore, with exactly the same
-two endpoints.
+The LIFO sweep records residual returns as ordered labelled arcs.  The
+existing sweep-to-cut bridge realizes each such arc as its original physical
+return chord.  This file consumes that bridge three times at one deep stack.
 
 Consequently a residual stack of depth at least three supplies three literal
 same-shore return chords in strict nesting order.  These are the direct input
@@ -27,6 +25,7 @@ open MatchingParity
 open NoncrossingPairingSweep
 open ResidualReturnCarrierSweep
 open ResidualReturnSweep
+open ResidualReturnSweepCyclicCut
 open SimpleGraph
 open SimpleGraphDartRotation
 
@@ -54,46 +53,6 @@ def StrictlyNestedReturnTriple
       orderedReturnShore rotation hG sigma hSigma bond inner.left = shore ∧
       outer.left < middle.left ∧ middle.left < inner.left ∧
       inner.right < middle.right ∧ middle.right < outer.right
-
-/-- Every arc retained by one shore matching comes from a literal physical
-return chord on that shore, with exactly the displayed arc endpoints. -/
-theorem exists_physical_chord_of_mem_returnShoreMatching_arcs
-    (rotation : Data G)
-    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
-    (hG : HasCubicIncidentEdgeTriples G)
-    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
-    {first second : V}
-    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
-    (shore : Bool)
-    (arc : LabeledArc Unit bond.site.cycle.tail.support.length)
-    (harc : arc ∈
-      (returnShoreMatching rotation minimal hG sigma hSigma bond shore).arcs) :
-    ∃ chord : OrderedReturnChord
-        (orderedSiteReturnPairing hG sigma hSigma bond.site),
-      orderedReturnShore rotation hG sigma hSigma bond chord.left = shore ∧
-        chord.left = arc.left ∧ chord.right = arc.right := by
-  let selected : CyclePosition sigma bond.site → Prop :=
-    OnReturnShore rotation hG sigma hSigma bond shore
-  letI : DecidablePred selected := fun position => by
-    dsimp [selected, OnReturnShore]
-    infer_instance
-  have hcanonical : arc ∈ canonicalArcList
-      (orderedSiteReturnPairing hG sigma hSigma bond.site)
-      selected (fun _ => ()) := by
-    simpa [returnShoreMatching, noncrossingMatchingOfPairing, selected] using harc
-  rcases exists_canonical_position_of_mem_canonicalArcList
-      (orderedSiteReturnPairing hG sigma hSigma bond.site)
-      selected (fun _ => ()) arc hcanonical with
-    ⟨position, hposition, hselected, harcEq⟩
-  let chord := orderedReturnChord
-    (orderedSiteReturnPairing hG sigma hSigma bond.site) position
-  refine ⟨chord, ?_, ?_, ?_⟩
-  · simpa [chord, selected, OnReturnShore, orderedReturnChord,
-      min_eq_left hposition.le] using hselected
-  · have := congrArg LabeledArc.left harcEq
-    simpa [chord, chordArc] using this
-  · have := congrArg LabeledArc.right harcEq
-    simpa [chord, chordArc] using this
 
 /-- A residual-return stack deeper than two is not merely an abstract list:
 it contains three literal physical return chords on one shore, in strict
@@ -138,21 +97,15 @@ theorem strictlyNestedReturnTriple_of_deep_stack
     simpa [arcs, middleArc] using List.get_mem arcs one
   have hinnerOpen : innerArc ∈ matching.openArcs cut := by
     simpa [arcs, innerArc] using List.get_mem arcs two
-  have houterArc : outerArc ∈ matching.arcs := by
-    exact List.mem_of_mem_filter houterOpen
-  have hmiddleArc : middleArc ∈ matching.arcs := by
-    exact List.mem_of_mem_filter hmiddleOpen
-  have hinnerArc : innerArc ∈ matching.arcs := by
-    exact List.mem_of_mem_filter hinnerOpen
-  rcases exists_physical_chord_of_mem_returnShoreMatching_arcs
-      rotation minimal hG sigma hSigma bond shore outerArc houterArc with
-    ⟨outer, houterShore, houterLeft, houterRight⟩
-  rcases exists_physical_chord_of_mem_returnShoreMatching_arcs
-      rotation minimal hG sigma hSigma bond shore middleArc hmiddleArc with
-    ⟨middle, hmiddleShore, hmiddleLeft, hmiddleRight⟩
-  rcases exists_physical_chord_of_mem_returnShoreMatching_arcs
-      rotation minimal hG sigma hSigma bond shore innerArc hinnerArc with
-    ⟨inner, hinnerShore, hinnerLeft, hinnerRight⟩
+  rcases exists_physical_chord_of_mem_openArcs
+      rotation minimal hG sigma hSigma bond shoreIndex cut outerArc houterOpen with
+    ⟨outer, houterLeft, houterRight, houterShore⟩
+  rcases exists_physical_chord_of_mem_openArcs
+      rotation minimal hG sigma hSigma bond shoreIndex cut middleArc hmiddleOpen with
+    ⟨middle, hmiddleLeft, hmiddleRight, hmiddleShore⟩
+  rcases exists_physical_chord_of_mem_openArcs
+      rotation minimal hG sigma hSigma bond shoreIndex cut innerArc hinnerOpen with
+    ⟨inner, hinnerLeft, hinnerRight, hinnerShore⟩
   refine ⟨shore, outer, middle, inner,
     houterShore, hmiddleShore, hinnerShore, ?_, ?_, ?_, ?_⟩
   · simpa only [houterLeft, hmiddleLeft] using houterMiddle.1
