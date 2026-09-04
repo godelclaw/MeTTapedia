@@ -18,9 +18,16 @@ radius 2 as it was at radius 1 (outcome B stands at radius 2).
 
 Usage: python3 kempe_goal_directed.py tangle.json bestcaps.json [cap_index] [n_words] [depth] [time_budget_s]
 """
-import sys, json, time, itertools, random
+import sys, os, json, time, itertools, random
 sys.path.insert(0, '/home/oruzi/repos/ai-agents/lean/private/4cp-hexagon-lp')
-from kempe import noncrossing
+from kempe import noncrossing as _noncrossing
+_nc_memo = {}
+def noncrossing(P):
+    k = tuple(P)
+    r = _nc_memo.get(k)
+    if r is None:
+        r = [[tuple(pr) for pr in mu] for mu in _noncrossing(list(P))]; _nc_memo[k] = r
+    return r
 from cap_zero_kempe_test import load, Extender, word_of
 
 
@@ -32,9 +39,11 @@ class Closure:
         self.tests = 0
 
     def in_supp(self, w):
-        r = self.supp_memo.get(w)
+        c = 0
+        for t in reversed(w): c = c * 3 + t
+        r = self.supp_memo.get(c)
         if r is None:
-            r = self.X.extends(list(w)); self.supp_memo[w] = r; self.tests += 1
+            r = self.X.extends(list(w)); self.supp_memo[c] = r; self.tests += 1
         return r
 
     def switched(self, w, x, y, chains):
@@ -83,6 +92,8 @@ def main():
     missing = [tuple(word_of(mu, cols, n)) for cols in best['missing_words']]
     rng = random.Random(11); rng.shuffle(missing)
     sample = missing[:nw]
+    if os.environ.get('KGD_WORDS'):
+        sample = [tuple(w) for w in json.load(open(os.environ['KGD_WORDS']))]
     C = Closure(X, n)
     print(f"{tpath} cap#{ci} exact coverage {best['exact']:.3f}; testing {len(sample)} of {best['missing']} missing words at depth {depth}", flush=True)
     t0 = time.time(); deadline = t0 + budget
@@ -97,8 +108,37 @@ def main():
             print(f"  {k+1} words: good {good}, ext tests {C.tests}, {time.time()-t0:.0f}s", flush=True)
     done = len(results)
     print(f"RESULT depth {depth}: {good}/{done} missing words good ({good/max(1,done):.2f}); extension tests {C.tests}; {time.time()-t0:.0f}s")
-    json.dump(dict(tangle=tpath, cap=mu, depth=depth, tested=done, good=good, results=results),
-              open(tpath.replace('.json', f'_kgd_d{depth}.json'), 'w'))
+    # derivation DAG restricted to ancestors of the certified targets, streamed shallow-first as JSON lines
+    suffix = os.environ.get("KGD_SUFFIX", "")
+    outp = tpath.replace('.json', f'_kgd_d{depth}{suffix}_derivations.jsonl')
+    need = {}
+    def collect(w, d):
+        if d == 0 or (w, d) in need: return
+        c = C.good_memo.get((w, d))
+        if not c or c == 'supp': return
+        need[(w, d)] = True
+        x, y, entries = c
+        for mu, sub in entries:
+            sw = C.switched(w, x, y, [mu[t] for t in sub])
+            if not C.in_supp(sw):
+                collect(sw, d - 1)
+    for r in results:
+        if r['good']: collect(tuple(r['word']), depth)
+    written = 0; seen = set()
+    with open(outp, 'w') as fh:
+        for dd in range(1, depth + 1):
+            for (w, d) in list(need.keys()):
+                if d != dd or w in seen: continue
+                seen.add(w)
+                x, y, entries = C.good_memo[(w, d)]
+                fh.write(json.dumps(dict(word=list(w), depth=d, x=x, y=y,
+                                         entries=[[[list(p) for p in mu], sub] for mu, sub in entries])) + '\n')
+                written += 1
+    for r in results:
+        w = tuple(r['word']); r['cert'] = 'supp' if C.in_supp(w) else ('derived' if w in seen else None)
+    json.dump(dict(tangle=tpath, cap=mu, depth=depth, tested=done, good=good, results=results, derivations_file=outp),
+              open(tpath.replace('.json', f'_kgd_d{depth}{suffix}.json'), 'w'))
+    print(f"derivations saved: {written} (ancestor DAG of {sum(1 for r in results if r['good'])} certified targets) -> {outp}")
 
 
 if __name__ == '__main__':

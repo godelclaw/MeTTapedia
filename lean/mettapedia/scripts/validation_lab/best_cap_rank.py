@@ -22,5 +22,5 @@ for cov, mu in ranked[:TOP]:
         if X.extends(word_of(mu, cols, n)): ok += 1
         else: missing.append(cols)
     print(f"  cap {mu}: exact coverage {ok}/{tot} = {ok/tot:.3f} (canonical words); missing {len(missing)}")
-    out.append(dict(cap=mu, sampled=cov, exact=ok / tot, total=tot, missing=len(missing), missing_words=missing[:2000]))
+    out.append(dict(cap=mu, sampled=cov, exact=ok / tot, total=tot, missing=len(missing), missing_words=missing))
 json.dump(out, open(path.replace('.json', '_bestcaps.json'), 'w'))
