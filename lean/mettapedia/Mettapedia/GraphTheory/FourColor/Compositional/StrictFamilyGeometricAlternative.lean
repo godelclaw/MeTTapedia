@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.Compositional.ExactStateGeometricAlternative
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnStrictFamily
+import Mettapedia.GraphTheory.FourColor.Compositional.AmbientReturnStrictChordFamily
 
 /-!
 # Compressed return sweeps with the deep horn realized as a strict family
@@ -20,6 +21,7 @@ namespace Mettapedia.GraphTheory.FourColor.Compositional
 namespace StrictFamilyGeometricAlternative
 
 open AmbientReturnAttachmentCompression
+open AmbientReturnStrictChordFamily
 open ExactStateGeometricAlternative
 open GoertzelV24ConnectedShoreLiteralNode
 open GoertzelV24OrderedMeshResidualSiteFacialBond
@@ -103,6 +105,75 @@ theorem hasFullyCompressedStrictFamilyAlternative
     length spacing
     (hasFullyCompressedExactStateAlternative rotation minimal hG sigma hSigma
       bond (length + 1) spacing hmany)
+
+/-- The same alternative after the ambient deep-stack subcase has also been
+lifted from anonymous stack labels to a strict family of original graph
+chords. -/
+def FullyRealizedStrictFamilyAlternative
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (length spacing : Nat) : Prop :=
+  Nonempty
+      (ConnectedShoreNode (G := G)
+        (6 * fullyCompressedComponentBound (length + 1) spacing)
+        (6 * fullyCompressedComponentBound (length + 1) spacing)) ∨
+    HasRealizedNestedAmbientAttachmentAlternative rotation minimal hG sigma
+      hSigma bond length spacing ∨
+    HasStrictlyNestedConnectedReturnCutFamily G length ∨
+    HasNestedCarrierSpacedSweepRepeat rotation minimal hG sigma hSigma bond
+      spacing ∨
+    HasSpacedResidualReturnSweepRepeat rotation minimal hG sigma hSigma bond
+      spacing
+
+/-- Realize both deep-stack branches of the compressed alternative: carrier
+stacks become strict connected-cut families and ambient stacks become strict
+families of original path chords. -/
+theorem fullyRealized_of_compressedStrictFamily
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (length spacing : Nat)
+    (alternative : FullyCompressedStrictFamilyAlternative rotation minimal hG
+      sigma hSigma bond length spacing) :
+    FullyRealizedStrictFamilyAlternative rotation minimal hG sigma hSigma bond
+      length spacing := by
+  rcases alternative with
+    hstate | hambient | hfamily | hcarrierRepeat | hreturnRepeat
+  · exact Or.inl hstate
+  · exact Or.inr (Or.inl
+      (realized_of_nestedAmbientAttachmentSweepAlternative rotation minimal hG
+        sigma hSigma bond length spacing hambient))
+  · exact Or.inr (Or.inr (Or.inl hfamily))
+  · exact Or.inr (Or.inr (Or.inr (Or.inl hcarrierRepeat)))
+  · exact Or.inr (Or.inr (Or.inr (Or.inr hreturnRepeat)))
+
+/-- **Fully realized qualitative compression.**  Every deep stack in either
+coordinate is now returned as a family of original graph objects.  The only
+remaining nonphysical data are the two explicitly named repeated sweep-state
+horns. -/
+theorem hasFullyRealizedStrictFamilyAlternative
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (length spacing : Nat)
+    (hmany : 2 * (spacing + 1) * (1 + 1) ^ 2 <
+      bond.site.cycle.tail.support.length) :
+    FullyRealizedStrictFamilyAlternative rotation minimal hG sigma hSigma bond
+      length spacing :=
+  fullyRealized_of_compressedStrictFamily rotation minimal hG sigma hSigma bond
+    length spacing
+    (hasFullyCompressedStrictFamilyAlternative rotation minimal hG sigma
+      hSigma bond length spacing hmany)
 
 end
 
