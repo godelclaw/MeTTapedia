@@ -1,6 +1,7 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedBranchDecompositionForest
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedVertexSideEdgeShore
 import Mettapedia.GraphTheory.FourColor.GoertzelV24LiteralShoreReplacement
+import Mettapedia.GraphTheory.FourColor.CyclicCutSaturation
 
 /-!
 # Connected shore states from cyclic edge cuts
@@ -32,6 +33,7 @@ open GoertzelV24CubicSmallBoundaryCycle
 open GoertzelV24IteratedDigonNormalization
 open GoertzelV24LiteralShoreReplacement
 open GoertzelV24SimpleGraphTaitBridge
+open GoertzelV24SimpleGraphFaceDualConnectedness
 open GoertzelV24TwoEdgeCutMinimality
 open SimpleGraph
 open SimpleGraphDartRotation
@@ -145,6 +147,40 @@ theorem toConnectedShoreNodeOfVertexMinimal_shore
       hside hcomplement bound hcard).shore =
       incidentEdgeShore G realization.side :=
   rfl
+
+/-- A saturated bounded cyclic-cut receipt canonically carries the exact
+connected shore state of a graph-backed least counterexample. -/
+noncomputable def ConnectedAtWidth.toConnectedShoreNode
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    {bound : Nat} (cut : ConnectedAtWidth G bound) :
+    ConnectedShoreNode (G := G) bound bound :=
+  cut.realization.toConnectedShoreNodeOfVertexMinimal rotation minimal
+    cut.side_connected cut.complement_connected bound cut.card_le
+
+@[simp]
+theorem ConnectedAtWidth.toConnectedShoreNode_shore
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    {bound : Nat} (cut : ConnectedAtWidth G bound) :
+    (cut.toConnectedShoreNode rotation minimal).shore =
+      incidentEdgeShore G cut.realization.side :=
+  rfl
+
+/-- Consumer-facing form of the bounded-cut horn: in a graph-backed least
+counterexample, every bounded cyclic-cut witness supplies a connected shore
+node with its literal exact support state. -/
+theorem exists_connectedShoreNode_of_hasCyclicEdgeCutOfSizeAtMost
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (bound : Nat) (hcut : HasCyclicEdgeCutOfSizeAtMost G bound) :
+    Nonempty (ConnectedShoreNode (G := G) bound bound) := by
+  have hconnected : G.Connected := by
+    rw [← rotationPrimalGraph_toRotationSystem_eq G rotation]
+    exact minimal.primalConnected
+  rcases exists_connectedAtWidth_of_hasCyclicEdgeCutOfSizeAtMost
+      (G := G) hconnected bound hcut with ⟨cut⟩
+  exact ⟨cut.toConnectedShoreNode rotation minimal⟩
 
 /-- **Cyclic-cut consumer form of physical replacement.**  Two strictly
 nested connected cyclic-cut shores with the same exact phased support state
