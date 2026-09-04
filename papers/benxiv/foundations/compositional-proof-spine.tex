@@ -8182,6 +8182,21 @@ This three-colour object is an internal refinement, not an identification with
 the source's two complementary closed-web roles.  Such an identification still
 requires the closed-web/no-hole sector hypotheses, so no sector or boundary
 conclusion is inferred from this corollary alone.
+The local transition has now been put into a row-independent finite frame.  Its
+code retains the explicit colour, adjacent path index, two boundary slots, both
+row-arm choices, and the complete labelled connectivity relations in all three
+colours immediately before and after the change.  Therefore, if the mesh has
+more rows than such frames, there is a branching/boundary horn, a coherent pair
+whose three connectivity states already agree, or two distinct physical rows
+with the same framed transition.  In the last case the transition code and arm
+directions agree, and reachability between every pair of the ninety labelled
+boundary slots agrees in every colour on both sides of the transition.
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FullProfileColorConnectivityFrame.branchingOrBoundary_or_colorSynchronized_or_repeatedFullProfileColorFrame}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.FullProfileColorConnectivityFrame.semanticAgreement_of_fullProfileColorTransitionFrame_eq}
+The threshold is left as the symbolic cardinality of the finite frame.  This
+avoids elaborating its enormous adjacency-matrix cardinal as a numeral, and the
+conclusion is still a repeated residual-matching observable rather than a
+splice or a source closed-web profile.
 The remaining work is geometric and mesh-level: consume the external
 attachment horn, add the source's closed-web sector hypotheses before using
 sector alternation on a same-turn chord family, and construct the
