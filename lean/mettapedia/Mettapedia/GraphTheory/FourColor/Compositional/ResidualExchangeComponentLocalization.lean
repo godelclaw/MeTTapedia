@@ -172,6 +172,115 @@ theorem oldComponentAvoidsCarrier_iff_forall_cyclePosition
         ((cycleVertexOrder sigma site).apply_symm_apply ⟨vertex, hvertex⟩)
     simpa only [hposition] using havoid position
 
+/-! ### Symmetric cancellation and oddness -/
+
+/-- A new residual component avoids the exchange carrier when none of the
+carrier vertices is reachable from its root after exchange. -/
+def NewComponentAvoidsCarrier
+    (sigma : Pairing V) {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (root : V) : Prop :=
+  ∀ vertex, vertex ∈ site.carrier →
+    ¬ (residualGraph G
+      (sigma.exchange site.tau site.carrier
+        site.sigma_closed site.tau_closed)).Reachable root vertex
+
+/-- The reachability cancellation theorem is symmetric: starting from a new
+component which avoids the carrier gives the same component in the old
+residual graph. -/
+theorem newResidual_reachable_iff_oldResidual_of_avoids_carrier
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (root : V) (havoid : NewComponentAvoidsCarrier sigma site root)
+    (target : V) :
+    (residualGraph G
+      (sigma.exchange site.tau site.carrier
+        site.sigma_closed site.tau_closed)).Reachable root target ↔
+      (residualGraph G sigma).Reachable root target := by
+  apply Mettapedia.GraphTheory.reachable_iff_of_adj_iff_off_set
+    (G := residualGraph G
+      (sigma.exchange site.tau site.carrier
+        site.sigma_closed site.tau_closed))
+    (H := residualGraph G sigma)
+    (modified := (site.carrier : Set V))
+  · exact havoid
+  · intro left right hleft
+    exact (oldResidual_adj_iff_newResidual_of_not_mem_carrier
+      sigma hSigma site (by simpa using hleft)).symm
+
+/-- Avoiding the carrier is independent of whether it is tested before or
+after the exchange. -/
+theorem oldComponentAvoidsCarrier_iff_newComponentAvoidsCarrier
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (root : V) :
+    OldComponentAvoidsCarrier sigma site root ↔
+      NewComponentAvoidsCarrier sigma site root := by
+  constructor
+  · intro hOld vertex hvertex hNewReachable
+    exact hOld vertex hvertex
+      ((oldResidual_reachable_iff_newResidual_of_avoids_carrier
+        sigma hSigma site root hOld vertex).2 hNewReachable)
+  · intro hNew vertex hvertex hOldReachable
+    exact hNew vertex hvertex
+      ((newResidual_reachable_iff_oldResidual_of_avoids_carrier
+        sigma hSigma site root hNew vertex).2 hOldReachable)
+
+/-- Set-level cancellation in the reverse orientation. -/
+theorem newResidual_connectedComponent_supp_eq_oldResidual_of_avoids_carrier
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (root : V) (havoid : NewComponentAvoidsCarrier sigma site root) :
+    ((residualGraph G
+      (sigma.exchange site.tau site.carrier
+        site.sigma_closed site.tau_closed)).connectedComponentMk root).supp =
+      ((residualGraph G sigma).connectedComponentMk root).supp := by
+  apply Mettapedia.GraphTheory.connectedComponentMk_supp_eq_of_adj_iff_off_set
+    (G := residualGraph G
+      (sigma.exchange site.tau site.carrier
+        site.sigma_closed site.tau_closed))
+    (H := residualGraph G sigma)
+    (modified := (site.carrier : Set V))
+  · exact havoid
+  · intro left right hleft
+    exact (oldResidual_adj_iff_newResidual_of_not_mem_carrier
+      sigma hSigma site (by simpa using hleft)).symm
+
+/-- An off-carrier residual component has the same cardinality parity before
+and after exchange. -/
+theorem oldResidual_component_odd_iff_newResidual_of_avoids_carrier
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (root : V) (havoid : OldComponentAvoidsCarrier sigma site root) :
+    Odd ((residualGraph G sigma).connectedComponentMk root).supp.ncard ↔
+      Odd ((residualGraph G
+        (sigma.exchange site.tau site.carrier
+          site.sigma_closed site.tau_closed)).connectedComponentMk root).supp.ncard := by
+  rw [oldResidual_connectedComponent_supp_eq_newResidual_of_avoids_carrier
+    sigma hSigma site root havoid]
+
+/-- Equivalently, membership in the physical odd-component set is preserved
+for every component disjoint from the operated carrier. -/
+theorem oldResidual_component_mem_oddComponents_iff_newResidual_of_avoids_carrier
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (root : V) (havoid : OldComponentAvoidsCarrier sigma site root) :
+    (residualGraph G sigma).connectedComponentMk root ∈
+        (residualGraph G sigma).oddComponents ↔
+      (residualGraph G
+        (sigma.exchange site.tau site.carrier
+          site.sigma_closed site.tau_closed)).connectedComponentMk root ∈
+        (residualGraph G
+          (sigma.exchange site.tau site.carrier
+            site.sigma_closed site.tau_closed)).oddComponents := by
+  exact oldResidual_component_odd_iff_newResidual_of_avoids_carrier
+    sigma hSigma site root havoid
+
 end
 
 end ResidualExchangeComponentLocalization
