@@ -42,7 +42,7 @@ def orderedReturnPath
       (cycleVertexOrder sigma site
         ((orderedSiteReturnPairing hG sigma hSigma site).partner position)).1 :=
   Classical.choose
-    (orderedSiteReturnPairing_reachable hG sigma hSigma site position).exists_isPath
+    (orderedSiteReturnPairing_reachable hG sigma hSigma site position).exists_path_of_dist
 
 /-- The chosen return path, regarded as a literal path in the ambient graph. -/
 def orderedAmbientReturnPath
@@ -66,8 +66,24 @@ theorem orderedReturnPath_isPath
     (site : ProperAlternatingSiteWitness G sigma first second)
     (position : CyclePosition sigma site) :
     (orderedReturnPath hG sigma hSigma site position).IsPath :=
-  Classical.choose_spec
-    (orderedSiteReturnPairing_reachable hG sigma hSigma site position).exists_isPath
+  (Classical.choose_spec
+    (orderedSiteReturnPairing_reachable hG sigma hSigma site position).exists_path_of_dist).1
+
+/-- The canonical return path is chosen geodesically in the common residual
+graph. -/
+theorem orderedReturnPath_length_eq_dist
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (position : CyclePosition sigma site) :
+    (orderedReturnPath hG sigma hSigma site position).length =
+      (commonResidualGraph G sigma site).dist
+        (cycleVertexOrder sigma site position).1
+        (cycleVertexOrder sigma site
+          ((orderedSiteReturnPairing hG sigma hSigma site).partner position)).1 :=
+  (Classical.choose_spec
+    (orderedSiteReturnPairing_reachable hG sigma hSigma site position).exists_path_of_dist).2
 
 /-- Mapping the chosen return into the ambient graph preserves simplicity. -/
 theorem orderedAmbientReturnPath_isPath
