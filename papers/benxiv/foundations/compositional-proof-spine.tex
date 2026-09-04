@@ -8124,9 +8124,34 @@ Thus a sufficiently long ambient return yields an external attachment, a
 strictly nested physical chord family, or a materially spaced raw-state
 repeat whose two actual cut boundaries share one graph-independent bound.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AmbientReturnBoundedAlternative.hasBoundedRealizedNestedAmbientAttachmentAlternative}
-This is the correct input boundary for a second, semantic compression by
-Count profiles.  It is not itself that compression: corresponding open-wire
-slots have not yet been proved to carry equal Tait-colouring behaviour.
+
+The second, semantic compression is now checked without identifying a raw
+sweep state with a colouring interface.  First discard a margin of
+\(k=7+2d\) positions at both ends.  Cubic tree counting promotes every
+remaining shallow prefix to an actual cyclic cut.  Choose the last such cut,
+take a cycle in its suffix component, and use that cycle and one exterior root
+to saturate every earlier prefix.  The resulting connected shores are
+strictly nested: the first forward path edge after an earlier cut belongs to
+the later incident-edge shore but not the earlier one.
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.PathPrefixCyclicCut.hasCycleOnSide_prefixExteriorComponent}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.PathPrefixRootedNesting.incidentEdgeShore_closureSide_ssubset}
+
+In a vertex-minimal counterexample, two strictly nested literal shores cannot
+have the same complete phased normalized Count profile.  Therefore a shallow
+central family at width \(k\) has cardinality at most
+\[
+  N(k)=(6k+1)\sum_{j=0}^{k} j!\,2^{3^j},
+\]
+the exact cardinality of the already checked profile carrier.
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AmbientReturnConnectedCutProfileBound.ShallowCentralCutFamilyReceipt.card_le_profileStateCount}
+Consequently an ambient-return support larger than
+\(6+N(7+2d)+2(7+2d)\) has an external attachment or contains \(d+1\)
+strictly nested original internal chords; the shallow repeat branch has
+disappeared rather than been postulated colour-compatible.
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AmbientReturnFullProfileAlternative.exists_externalAttachment_or_strictlyNestedChordFamily}
+The remaining work is geometric and mesh-level: consume the external
+attachment horn and turn the strict chord family into a uniformly bounded,
+coherent family of compositional cuts across adjacent sites.
 \end{proof}
 
 For the route, the two Kempe families suggest the matching stacks and capped
@@ -8141,16 +8166,15 @@ equal to three times the chosen separator support.  Thus realization of that
 horn is closed, while uniform control of its separator-dependent width is
 not.  A long carrier interval is compressed by the restricted LIFO sweep;
 its remaining shallow outcome is a materially spaced repeated state inside
-that same interval.  A long ambient
-return is likewise compressed by the attachment sweep: its outcomes are an
-external separator exit, a deep same-turn chord nest, or a materially spaced
-repeated attachment state.  What remains is to consume these structured
-attachment/repetition alternatives, obtain a uniform bound for the realized
-deep-return states, choose compatible interfaces coherently across
-neighbouring mesh sites, and prove that the cumulative zero-count profile
-factors through the resulting ordered interfaces.  The corollary is therefore
-a graph-level local alternative at one alternating site; it proves neither a
-coherent mesh-level family nor the splice.
+that same interval.  A long ambient return is likewise compressed by the
+attachment sweep.  Complete-profile compression now removes its shallow
+repeated-state outcome: beyond the explicit profile threshold it yields an
+external separator exit or a deep same-turn chord nest of prescribed length.
+What remains is to consume these two geometric horns, obtain a uniform bound
+for the realized deep-return cuts, and choose compatible interfaces coherently
+across neighbouring mesh sites.  The corollary is therefore a graph-level
+local alternative at one alternating site; it proves neither a coherent
+mesh-level family nor the final splice.
 
 \subsection{The exact finite interface}
 

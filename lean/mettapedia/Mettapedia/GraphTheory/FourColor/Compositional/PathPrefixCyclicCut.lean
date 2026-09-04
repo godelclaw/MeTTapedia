@@ -164,6 +164,52 @@ theorem hasCycleOnSide_of_connected_cubic_of_boundary_lt_card_add_two
         hsideNonempty.choose_spec⟩⟩
     omega
 
+/-- The suffix component rooted at the first omitted vertex contains a cycle
+whenever its physical boundary and its displayed path suffix satisfy the
+cubic tree inequality. -/
+theorem hasCycleOnSide_prefixExteriorComponent
+    {start finish : V} {path : G.Walk start finish} (hpath : path.IsPath)
+    (hregular : G.IsRegularOfDegree 3)
+    (cut : Fin (path.length + 1))
+    (bound : Nat)
+    (hboundary :
+      (crossingEdgeFinset G (pathPrefixSide path cut)).card ≤ bound)
+    (hsuffixLarge : bound < (path.length + 1 - cut.val) + 2) :
+    HasCycleOnSide G (prefixExteriorComponent hpath cut) := by
+  let exterior := prefixExteriorComponent hpath cut
+  have hexteriorConnected : (G.induce exterior).Connected := by
+    exact induce_inducedReachableSide_connected
+      (fun vertex => ¬pathPrefixSide path cut vertex) (path.getVert cut)
+      (not_pathPrefixSide_getVert_cut hpath cut)
+  have hexteriorNonempty : ∃ vertex, exterior vertex := by
+    refine ⟨path.getVert cut, ?_⟩
+    exact inducedReachableSide_root
+      (fun vertex => ¬pathPrefixSide path cut vertex) (path.getVert cut)
+      (not_pathPrefixSide_getVert_cut hpath cut)
+  have hexteriorBoundary :
+      (crossingEdgeFinset G exterior).card ≤ bound := by
+    apply le_trans (Finset.card_le_card ?_) hboundary
+    intro edge hedge
+    apply (mem_crossingEdgeFinset_iff (pathPrefixSide path cut) edge).2
+    have hcrossExterior :=
+      (mem_crossingEdgeFinset_iff exterior edge).1 hedge
+    have hcrossComplement : EdgeCrossesVertexSide G
+        (fun vertex => ¬pathPrefixSide path cut vertex) edge :=
+      edgeCrossesVertexSide_of_inducedReachableSide
+        (fun vertex => ¬pathPrefixSide path cut vertex)
+        (path.getVert cut) (not_pathPrefixSide_getVert_cut hpath cut)
+        edge hcrossExterior
+    exact (edgeCrossesVertexSide_compl G (pathPrefixSide path cut) edge).1
+      hcrossComplement
+  apply hasCycleOnSide_of_connected_cubic_of_boundary_lt_card_add_two
+    hregular exterior hexteriorNonempty hexteriorConnected bound
+      hexteriorBoundary
+  have hsuffixCard : path.length + 1 - cut.val ≤
+      Fintype.card {vertex : V // exterior vertex} := by
+    simpa [exterior] using
+      suffixLength_le_natCard_prefixExteriorComponent hpath cut
+  omega
+
 /-- A path prefix whose boundary is bounded and whose two path margins exceed
 the cubic tree budget realizes a cyclic cut. -/
 def pathPrefixCyclicEdgeCutRealization
