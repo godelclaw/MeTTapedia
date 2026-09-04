@@ -20,6 +20,16 @@ while the chart radius stays fixed.
 
 This is a route refutation for that H1 hypothesis. It is not a proof of
 Navier-Stokes global regularity.
+
+**Scope of this obstruction.**  It applies to the scalar-potential route of
+the manuscript (any closure requiring a uniform `H^m -> H^m`
+composition/adjoint bound on a fixed chart radius).  The
+stochastic-Lagrangian (Constantin-Iyer) formulation of the equations does
+not factor through this operator: on the same normalized shear family the
+pointwise flow-Jacobian deviation is uniformly bounded, so a pointwise gate
+of the form `int_0^T E ||DX_t||_inf dt` is not stressed by this family.  See
+`Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.ShearJacobianBounds`
+(`shearFamily_pointwise_bounded_while_sobolev_ratio_unbounded`).
 -/
 
 set_option autoImplicit false
