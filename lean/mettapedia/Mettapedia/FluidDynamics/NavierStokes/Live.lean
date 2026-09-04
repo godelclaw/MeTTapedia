@@ -80,6 +80,7 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeBilinea
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeFiniteFourierBilinearTransfer
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeDyadicKernelScaling
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeSquareDyadicFiniteTransfer
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeFrozenFrameKernelTransfer
 
 /-!
 # Navier-Stokes live surface
