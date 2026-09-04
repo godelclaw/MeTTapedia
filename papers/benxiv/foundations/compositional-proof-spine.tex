@@ -7999,6 +7999,9 @@ edge set is exactly the chord together with the interval edges.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnNestedCuts.nestedConnectedReturnCutConstruction}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnStrictNesting.hasStrictlyNestedConnectedReturnCuts_of_strictlyNestedReturnQuadruple}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnStrictNesting.hasStrictlyNestedConnectedReturnCuts_of_nestedCarrierDeepReturnStack}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnNestedCuts.closureSide_subset_of_nested_return_separators}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnStrictFamily.hasStrictlyNestedConnectedReturnCutFamily_of_deep_stack}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnStrictFamily.exists_width_with_length_le_stateCount_of_deep_stack}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.DeepReturnExactState.hasFullyRealizedExactStateAlternative}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.MeshResidualReturnSweep.fullyRealizedExactStateAlternative_of_geometricSweepReceipt}
 For one ordered injective mesh in a graph-backed least counterexample, choose
@@ -8050,9 +8053,18 @@ saturation.  Its first edge therefore witnesses strict inclusion of the two
 incident-edge shores.  A provenance-retaining constructor now packages the
 two saturated separators themselves, so the depth-three carrier horn returns
 two actual \texttt{ConnectedAtWidth} receipts at one common bound with strict
-inclusion of their incident-edge shores.  The remaining M1 assembly task is
-global: construct a sufficiently long coherent family at one common width and
-feed that family to the cumulative exact-state repetition theorem.
+inclusion of their incident-edge shores.
+
+The same construction is now uniform over every finite prefix of a deep
+stack.  Keep the first return as a common exterior root and the last as a
+common orientation guard; each intervening return gives one connected cut.
+A generic face-side comparison proves every later shore strictly contained
+in every earlier shore.  Widening the finitely many receipts to the sum of
+their local bounds gives one common width, and the resulting family feeds the
+cumulative exact-state repetition theorem directly.  This closes family
+coherence.  The remaining high-width obligation is quantitative: replace the
+finite but graph-dependent common width by a bound controlled independently
+of the ambient counterexample.
 \end{proof}
 
 For the route, the two Kempe families suggest the matching stacks and capped

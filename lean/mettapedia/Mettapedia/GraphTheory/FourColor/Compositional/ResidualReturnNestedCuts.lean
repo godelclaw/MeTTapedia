@@ -119,6 +119,111 @@ structure NestedConnectedReturnCutCertificate
           middleSelected)
         (cycleVertexOrder sigma bond.site outer.left).1 rootOutsideMiddle vertex
 
+/-- Exact face-side nesting survives rooted saturation at a common exterior
+root.  This is the comparison core used both by one paired construction and
+by a whole family of independently constructed return cuts. -/
+theorem closureSide_subset_of_nested_return_separators
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (outer middle inner : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma bond.site))
+    (houterMiddleLeft : outer.left < middle.left)
+    (hmiddleInnerLeft : middle.left < inner.left)
+    (hinnerMiddleRight : inner.right < middle.right)
+    (hmiddleOuterRight : middle.right < outer.right)
+    (hshoreOuterMiddle :
+      orderedReturnShore rotation hG sigma hSigma bond outer.left =
+        orderedReturnShore rotation hG sigma hSigma bond middle.left)
+    (hshoreMiddleInner :
+      orderedReturnShore rotation hG sigma hSigma bond middle.left =
+        orderedReturnShore rotation hG sigma hSigma bond inner.left)
+    (middleFaceCut : ExactFaceCut rotation.toRotationSystem
+      (fun edge : G.edgeSet => edge.1 ∈
+        (orderedReturnSeparator hG sigma hSigma bond.site middle).edges) F2)
+    (middleSelected : F2)
+    (innerFaceCut : ExactFaceCut rotation.toRotationSystem
+      (fun edge : G.edgeSet => edge.1 ∈
+        (orderedReturnSeparator hG sigma hSigma bond.site inner).edges) F2)
+    (innerSelected : F2)
+    (houtsideMiddle : ∀ vertex,
+      vertex ∈
+          (complementaryReturnCycle hG sigma hSigma bond.site outer).support →
+        ¬middleFaceCut.filledCycleSide rotation
+          (orderedReturnSeparator hG sigma hSigma bond.site middle)
+          middleSelected vertex)
+    (hrootMiddle : ¬middleFaceCut.filledCycleSide rotation
+      (orderedReturnSeparator hG sigma hSigma bond.site middle)
+      middleSelected (cycleVertexOrder sigma bond.site outer.left).1)
+    (hrootInner : ¬innerFaceCut.filledCycleSide rotation
+      (orderedReturnSeparator hG sigma hSigma bond.site inner)
+      innerSelected (cycleVertexOrder sigma bond.site outer.left).1) :
+    ∀ vertex,
+      closureSide (G := G)
+          (innerFaceCut.filledCycleSide rotation
+            (orderedReturnSeparator hG sigma hSigma bond.site inner)
+            innerSelected)
+          (cycleVertexOrder sigma bond.site outer.left).1 hrootInner vertex →
+        closureSide (G := G)
+          (middleFaceCut.filledCycleSide rotation
+            (orderedReturnSeparator hG sigma hSigma bond.site middle)
+            middleSelected)
+          (cycleVertexOrder sigma bond.site outer.left).1 hrootMiddle vertex := by
+  let middleSeparator :=
+    orderedReturnSeparator hG sigma hSigma bond.site middle
+  let innerSeparator :=
+    orderedReturnSeparator hG sigma hSigma bond.site inner
+  let outsideRoot := (cycleVertexOrder sigma bond.site outer.left).1
+  have hinnerSupportMiddleFilled : ∀ vertex,
+      vertex ∈ innerSeparator.support →
+        middleFaceCut.filledCycleSide rotation middleSeparator
+          middleSelected vertex := by
+    simpa only [middleSeparator, innerSeparator] using
+      orderedReturnSeparator_support_subset_filledCycleSide_of_triple_nested
+        rotation minimal hG sigma hSigma bond outer middle inner
+          houterMiddleLeft hmiddleInnerLeft hinnerMiddleRight
+          hmiddleOuterRight hshoreOuterMiddle hshoreMiddleInner
+          middleFaceCut middleSelected houtsideMiddle
+  have hinnerSupportMiddleClosure : ∀ vertex,
+      vertex ∈ innerSeparator.support →
+        closureSide (G := G)
+          (middleFaceCut.filledCycleSide rotation middleSeparator
+            middleSelected) outsideRoot hrootMiddle vertex := by
+    intro vertex hvertex
+    apply side_subset_closureSide
+      (middleFaceCut.filledCycleSide rotation middleSeparator middleSelected)
+      outsideRoot hrootMiddle vertex
+    exact hinnerSupportMiddleFilled vertex hvertex
+  have hrootMiddleClosure :
+      ¬closureSide (G := G)
+        (middleFaceCut.filledCycleSide rotation middleSeparator middleSelected)
+        outsideRoot hrootMiddle outsideRoot := by
+    intro hclosure
+    apply hclosure
+    exact inducedReachableSide_root
+      (fun vertex => ¬middleFaceCut.filledCycleSide rotation middleSeparator
+        middleSelected vertex) outsideRoot hrootMiddle
+  have hmiddleClosureComplementConnected :
+      (G.induce (fun vertex =>
+        ¬closureSide (G := G)
+          (middleFaceCut.filledCycleSide rotation middleSeparator middleSelected)
+          outsideRoot hrootMiddle vertex)).Connected :=
+    induce_complement_closureSide_connected
+      (middleFaceCut.filledCycleSide rotation middleSeparator middleSelected)
+      outsideRoot hrootMiddle
+  apply closureSide_filledCycleSide_subset_of_cycle_support_subset
+    rotation minimal.vertexRotationCyclic innerSeparator innerFaceCut
+      innerSelected
+      (closureSide (G := G)
+        (middleFaceCut.filledCycleSide rotation middleSeparator middleSelected)
+        outsideRoot hrootMiddle)
+      hmiddleClosureComplementConnected outsideRoot hrootInner
+      hrootMiddleClosure
+  exact hinnerSupportMiddleClosure
+
 /-- Construct the two connected cuts and retain the separator provenance.
 The common exterior root is the base point of the outer complementary return
 cycle. -/
@@ -272,48 +377,22 @@ theorem nestedConnectedReturnCutConstruction
       hconnected innerRaw hinnerRawConnected outsideRoot hrootInner
       outsideCycle houtsideCycle houtsideInner bound hinnerWidth with
     ⟨innerConnected, _hinnerEdgeCut, hinnerSide⟩
-  have hinnerSupportMiddleFilled : ∀ vertex,
-      vertex ∈ innerSeparator.support →
-        middleFaceCut.filledCycleSide rotation middleSeparator
-          middleSelected vertex := by
-    simpa only [middleSeparator, innerSeparator] using
-      orderedReturnSeparator_support_subset_filledCycleSide_of_triple_nested
-        rotation minimal hG sigma hSigma bond outer middle inner
-          houterMiddleLeft hmiddleInnerLeft hinnerMiddleRight
-          hmiddleOuterRight hshoreOuterMiddle hshoreMiddleInner
-          middleFaceCut middleSelected houtsideMiddle
-  have hinnerSupportMiddleClosure : ∀ vertex,
-      vertex ∈ innerSeparator.support →
-        closureSide (G := G) middleRaw.side outsideRoot
-          hrootMiddle vertex := by
-    intro vertex hvertex
-    apply side_subset_closureSide middleRaw.side outsideRoot
-      hrootMiddle vertex
-    exact hinnerSupportMiddleFilled vertex hvertex
-  have hrootMiddleClosure :
-      ¬closureSide (G := G) middleRaw.side outsideRoot
-        hrootMiddle outsideRoot := by
-    intro hclosure
-    apply hclosure
-    exact inducedReachableSide_root
-      (fun vertex => ¬middleRaw.side vertex) outsideRoot hrootMiddle
-  have hmiddleClosureComplementConnected :
-      (G.induce (fun vertex =>
-        ¬closureSide (G := G) middleRaw.side outsideRoot
-          hrootMiddle vertex)).Connected :=
-    induce_complement_closureSide_connected middleRaw.side
-      outsideRoot hrootMiddle
-  have hclosuresNested : ∀ vertex,
-      closureSide (G := G) innerRaw.side outsideRoot hrootInner vertex →
-        closureSide (G := G) middleRaw.side outsideRoot
-          hrootMiddle vertex := by
-    apply closureSide_filledCycleSide_subset_of_cycle_support_subset
-      rotation minimal.vertexRotationCyclic innerSeparator innerFaceCut
-        innerSelected
-        (closureSide (G := G) middleRaw.side outsideRoot hrootMiddle)
-        hmiddleClosureComplementConnected outsideRoot hrootInner
-        hrootMiddleClosure
-    exact hinnerSupportMiddleClosure
+  have hrootMiddle' : ¬middleFaceCut.filledCycleSide rotation
+      middleSeparator middleSelected outsideRoot := by
+    simpa only [middleRaw, cyclicEdgeCutRealization_of_complement_cycle] using
+      hrootMiddle
+  have hrootInner' : ¬innerFaceCut.filledCycleSide rotation
+      innerSeparator innerSelected outsideRoot := by
+    simpa only [innerRaw, cyclicEdgeCutRealization_of_complement_cycle] using
+      hrootInner
+  have hclosuresNested := closureSide_subset_of_nested_return_separators
+    rotation minimal hG sigma hSigma bond outer middle inner
+      houterMiddleLeft hmiddleInnerLeft hinnerMiddleRight hmiddleOuterRight
+      hshoreOuterMiddle hshoreMiddleInner middleFaceCut middleSelected
+      innerFaceCut innerSelected (by
+        simpa only [outsideCycle, middleSeparator] using houtsideMiddle)
+      (by simpa only [outsideRoot, middleSeparator] using hrootMiddle')
+      (by simpa only [outsideRoot, innerSeparator] using hrootInner')
   refine ⟨bound, middleFaceCut, innerFaceCut, middleSelected, innerSelected,
     middleConnected, innerConnected,
     { outsideMiddle := ?_
@@ -325,10 +404,8 @@ theorem nestedConnectedReturnCutConstruction
       closuresNested := ?_ }⟩
   · simpa only [outsideCycle, middleSeparator] using houtsideMiddle
   · simpa only [outsideCycle, innerSeparator] using houtsideInner
-  · simpa only [middleRaw, cyclicEdgeCutRealization_of_complement_cycle,
-      outsideRoot, middleSeparator] using hrootMiddle
-  · simpa only [innerRaw, cyclicEdgeCutRealization_of_complement_cycle,
-      outsideRoot, innerSeparator] using hrootInner
+  · simpa only [outsideRoot, middleSeparator] using hrootMiddle'
+  · simpa only [outsideRoot, innerSeparator] using hrootInner'
   · simpa only [middleRaw, cyclicEdgeCutRealization_of_complement_cycle,
       outsideRoot, middleSeparator] using hmiddleSide
   · simpa only [innerRaw, cyclicEdgeCutRealization_of_complement_cycle,
