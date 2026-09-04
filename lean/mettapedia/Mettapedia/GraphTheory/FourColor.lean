@@ -1005,6 +1005,8 @@ import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnPathAttachme
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnChordSeparator
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweep
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnCyclicCut
+import Mettapedia.GraphTheory.FourColor.Compositional.CyclePushOffConnected
+import Mettapedia.GraphTheory.FourColor.RootedCutSaturation
 import Mettapedia.GraphTheory.FourColor.Compositional.ReturnSeparatorLength
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweepCyclicCut
 import Mettapedia.GraphTheory.FourColor.Compositional.MeshJunctionAlternatingGeometry
