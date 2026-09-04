@@ -8107,6 +8107,23 @@ ordered open-attachment interfaces.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AmbientReturnSweepInterface.SpacedAmbientReturnInterfaceReceipt.openWireEquiv}
 Consequently all three repeated-sweep branches now expose ordered physical
 wire slots rather than bare equalities of implementation states.
+
+The ambient sweep now also controls the size of the corresponding physical
+cuts.  At an internal cut position, every edge crossing the strict path
+prefix belongs to one of four explicit classes: an edge incident to the
+initial endpoint, an edge incident to the terminal endpoint, the forward
+path edge, or an internal chord that is open at the cut.  The LIFO sweep
+stack counts those open chords exactly.  Hence, if both same-turn stacks have
+depth at most (d), the physical boundary has size at most (7+2d) at each
+of the two repeated positions.
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.PathPrefixBoundary.card_crossingEdgeFinset_pathPrefixSide_le}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AmbientReturnSweepWidth.card_ambientReturnPrefixBoundary_le_stack_lengths}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AmbientReturnSweepBoundedRepeat.BoundedSpacedAmbientReturnInterfaceReceipt.firstBoundaryWidth}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AmbientReturnSweepBoundedRepeat.BoundedSpacedAmbientReturnInterfaceReceipt.secondBoundaryWidth}
+Thus a sufficiently long ambient return yields an external attachment, a
+strictly nested physical chord family, or a materially spaced raw-state
+repeat whose two actual cut boundaries share one graph-independent bound.
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.AmbientReturnBoundedAlternative.hasBoundedRealizedNestedAmbientAttachmentAlternative}
 This is the correct input boundary for a second, semantic compression by
 Count profiles.  It is not itself that compression: corresponding open-wire
 slots have not yet been proved to carry equal Tait-colouring behaviour.
