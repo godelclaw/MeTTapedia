@@ -65,7 +65,9 @@ theorem cross_coherentW (k : Vec3) :
 `N1, N2` are the squared wavevector norms; the numerator is the exact
 squared norm of the stretching vector of one coherent mode on the
 other, times `4`. -/
-theorem core_inequality (a1 b1 c1 a2 b2 c2 d1 d2 : ℚ)
+theorem core_inequality {R : Type*} [Field R] [LinearOrder R]
+    [IsStrictOrderedRing R]
+    (a1 b1 c1 a2 b2 c2 d1 d2 : R)
     (hn1 : 0 < a1 ^ 2 + b1 ^ 2 + c1 ^ 2)
     (hn2 : 0 < a2 ^ 2 + b2 ^ 2 + c2 ^ 2)
     (hcone1 : a1 ^ 2 + b1 ^ 2 ≤ d1 * (a1 ^ 2 + b1 ^ 2 + c1 ^ 2))
@@ -96,7 +98,7 @@ theorem core_inequality (a1 b1 c1 a2 b2 c2 d1 d2 : ℚ)
       mul_le_mul hc1sq hb2sq (sq_nonneg b2) (le_of_lt hn1)
     have hbc : b1 ^ 2 * c2 ^ 2 ≤ d1 * N1 * N2 := by
       have := mul_le_mul hb1sq hc2sq (sq_nonneg c2)
-        (by nlinarith : (0:ℚ) ≤ d1 * N1)
+        (by nlinarith : (0:R) ≤ d1 * N1)
       linarith [this]
     have hsum : (c1 * b2 - b1 * c2) ^ 2 ≤ 2 * (d1 + d2) * (N1 * N2) := by
       nlinarith [hinner, hcb, hbc]
@@ -107,7 +109,7 @@ theorem core_inequality (a1 b1 c1 a2 b2 c2 d1 d2 : ℚ)
     calc a2 ^ 2 * (c1 * b2 - b1 * c2) ^ 2
         ≤ (d2 * N2) * (2 * (d1 + d2) * (N1 * N2)) := by
           exact mul_le_mul ha2sq hsum (sq_nonneg _)
-            (by nlinarith : (0:ℚ) ≤ d2 * N2)
+            (by nlinarith : (0:R) ≤ d2 * N2)
       _ = 2 * d2 * (d1 + d2) * N1 * (N2 * N2) := by ring
   -- Q^2 ≤ 2 (d1+d2) N1 N2^2
   have hQsq : Q ^ 2 ≤ 2 * (d1 + d2) * N1 * (N2 * N2) := by
@@ -123,14 +125,14 @@ theorem core_inequality (a1 b1 c1 a2 b2 c2 d1 d2 : ℚ)
       have : (N2 * a1) ^ 2 = a1 ^ 2 * (N2 * N2) := by ring
       rw [this]
       exact mul_le_mul_of_nonneg_right ha1sq
-        (by positivity : (0:ℚ) ≤ N2 * N2)
+        (by positivity : (0:R) ≤ N2 * N2)
     have ht2 : (a2 * (a1 * a2 + b1 * b2 + c1 * c2)) ^ 2 ≤
         d2 * N2 * (N1 * N2) := by
       have hexp : (a2 * (a1 * a2 + b1 * b2 + c1 * c2)) ^ 2 =
           a2 ^ 2 * (a1 * a2 + b1 * b2 + c1 * c2) ^ 2 := by ring
       rw [hexp]
       exact mul_le_mul ha2sq hcs (sq_nonneg _)
-        (by nlinarith : (0:ℚ) ≤ d2 * N2)
+        (by nlinarith : (0:R) ≤ d2 * N2)
     nlinarith [hsplit, ht1, ht2, hd2, mul_pos hn1 hn2,
       mul_nonneg hd2nn (le_of_lt (mul_pos hn1 (mul_pos hn2 hn2)))]
   -- b1^2 + c1^2 ≤ (1 + d1) N1 ≤ (5/4) N1
@@ -142,10 +144,10 @@ theorem core_inequality (a1 b1 c1 a2 b2 c2 d1 d2 : ℚ)
     nlinarith [this]
   have hterm2 : Q ^ 2 * (b1 ^ 2 + c1 ^ 2) ≤
       2 * (d1 + d2) * (5 / 4) * (N1 * N1) * (N2 * N2) := by
-    have hbcnn : (0 : ℚ) ≤ b1 ^ 2 + c1 ^ 2 := by positivity
+    have hbcnn : (0 : R) ≤ b1 ^ 2 + c1 ^ 2 := by positivity
     have := mul_le_mul hQsq hbc1 hbcnn
       (by nlinarith [mul_pos hn1 (mul_pos hn2 hn2)] :
-        (0:ℚ) ≤ 2 * (d1 + d2) * N1 * (N2 * N2))
+        (0:R) ≤ 2 * (d1 + d2) * N1 * (N2 * N2))
     nlinarith [this]
   nlinarith [hterm1, hterm2, hd2,
     mul_nonneg hddnn (le_of_lt (mul_pos (mul_pos hn1 hn1) (mul_pos hn2 hn2))),

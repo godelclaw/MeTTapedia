@@ -78,7 +78,18 @@ nonzero exact inhabitants and end-to-end canaries; the frozen-strain pancake
 obstruction with its exact peak-amplification law; the plane-wave
 Biot--Savart null structure claimed in the pancake-closure proposal; and the
 dyadic absorption step that would turn the pancake-sector estimate into a
-common BKM envelope.  The latest audit also isolates why the proposed pancake closure does
+common BKM envelope.  The September field-transfer work additionally constructs
+the coherent/misaligned projection for arbitrary complex periodic Fourier
+coefficients, transfers the coherent stretching estimate to those coefficients,
+proves the exact square-dyadic cone lattice count, and verifies the anisotropic
+$L^1$ kernel mechanism that preserves the receiver's $L^\infty$ norm.  It also
+proves the estimate at continuous real frequencies and for arbitrary projected
+amplitudes, constructs the exact periodic operator-kernel realization on finite
+Fourier fields, transports the cancellation to every frozen oriented strain
+frame, and splits the spatially varying frame multiplier into its frozen part
+and an explicit frame-variation remainder.  A spectral-gap perturbation theorem
+quantifies that remainder's eigenframe input.  The
+latest audit also isolates why the proposed pancake closure does
 not yet prove the Millennium statement: its high-low split covers all aperture
 angles iff the scale-local strain satisfies $\gamma\le\nu\lambda_q$, exactly
 the quantitative budget it set out to prove.  The surviving open input is the
@@ -843,6 +854,160 @@ reference direction.  The bound aggregates over any finite family of
 coherent sources (\texttt{sum\_sigmaSq\_coherent\_le}), matching the
 measured coherent-aggregate gain of the second lab.
 
+\emph{Amplitude and field-transfer layer (proved, but not yet complete).}
+The module \texttt{PancakeCoherentWeightedTransfer} inserts the actual scalar
+Fourier amplitudes into the pair estimate.  It proves the cardinality-free
+finite convolution bound
+\[
+  \Bigl\|\sum_{k\in E} T_k(a_kp_k,bp_\ell)\Bigr\|_{\ell^1(\mathbb C^3)}
+  \le 6(\delta_1+\delta_2)\Bigl(\sum_{k\in E}|a_k|\Bigr)|b|,
+\]
+and its Cauchy--Schwarz energy form, where $p_k=P_ke_0$.  The exact theorem
+\texttt{PancakeConeLatticeCount.card\_le\_pancakeBox} shows that, at
+$\lambda=N^2$ and aperture $1/N$, the cone lies in a box of cardinality
+$(4N+1)^2(4N^2+1)=O(\lambda^2)$, rather than the ambient
+$O(\lambda^3)$ count.
+
+The modules \texttt{PancakePeriodicCoherentSplit} and
+\texttt{PancakePeriodicComplexStretch} then move from the rational symbol
+model to the genuine Fourier lattice $\mathbb Z^3$ and arbitrary complex
+coefficients.  For every cone mode they construct the exact orthogonal split
+\[
+ \widehat\omega(k)=
+ \frac{\langle P_ke_0,\widehat\omega(k)\rangle}
+      {\langle P_ke_0,P_ke_0\rangle}P_ke_0
+ +\widehat\omega_{\rm mis}(k),
+ \qquad
+ \langle P_ke_0,\widehat\omega_{\rm mis}(k)\rangle=0,
+\]
+prove that both terms remain divergence-free, define the complexified
+Biot--Savart strain symbol, and prove its agreement with the rational symbol.
+The aperture estimate and the $O(\lambda^2)$ energy bound therefore hold for
+arbitrary complex coherent amplitudes, not only rational test vectors.
+
+The module \texttt{PancakeRealCoherentPairEstimate} removes the rational-grid
+restriction needed for a smooth multiplier.  It proves the same cancellation
+for all real frequencies, constructs the rank-one orthogonal coherent
+projection of an arbitrary amplitude, proves that this projection does not
+increase Euclidean energy, and obtains the field-facing pointwise estimate
+against the energies of the original input amplitudes.
+
+The first attempted receiver-only endpoint has now been fenced off rather
+than promoted.  The generic modules \texttt{PancakeConeKernelScaling} and
+\texttt{PancakeConeOperatorKernel} correctly prove that
+$K_\delta(x_\perp,z)=\delta^3K(\delta x_\perp,z)$ has
+$\|K_\delta\|_{L^1}=\delta\|K\|_{L^1}$, but one of those three powers must
+already be a genuine symbol gain; only two come from the transverse
+Jacobian.  The periodic theorem
+\texttt{PancakePeriodicOperatorKernel} now proves the corresponding no-go:
+if an exact projection fixes a unit Fourier mode, its kernel has $L^1$ mass
+at least one.  Thus the smooth family in
+\texttt{PancakeSmoothCoherentAperture}, whose symbol was explicitly
+attenuated by an additional factor $\delta$, is a useful analytic model but
+is not the desired coherent field projection.
+
+The genuine aperture factor has instead been located in the complete
+bilinear interaction.  For
+$k_1=(\delta a,\delta b,c)$ and
+$k_2=(\delta d,\delta e,f)$,
+\texttt{PancakeCoherentStretchFactorization} proves exactly, both for the
+canonical coherent vectors and for coherent projections of arbitrary input
+amplitudes,
+\[
+ T(k_1,k_2)=\delta\,T_{\rm norm}(\delta,a,b,c,d,e,f),
+\]
+where $T_{\rm norm}$ is smooth through $\delta=0$ before the projection
+denominators are introduced.  The module
+\texttt{PancakeSmoothCoherentStretchSymbol} supplies nested cutoffs keeping
+both axial frequencies away from zero, constructs all $27$ entries of the
+localized normalized tensor as compactly supported Schwartz symbols on six
+frequency variables, proves the tensor is nonzero, and gives an integrable
+inverse-Fourier kernel with exact entrywise and tensor Fourier recovery for
+each fixed $\delta$.  Finally,
+\texttt{PancakeBilinearKernelScaling} proves the correct four-transverse
+variable scaling
+\[
+ K_\delta(y_\perp,z_\perp;y_\parallel,z_\parallel)
+ =\delta^5K(\delta y_\perp,\delta z_\perp;
+             y_\parallel,z_\parallel),
+\]
+whose four-dimensional Jacobian leaves one power of $\delta$, together with
+the resulting bilinear $L^\infty\times L^\infty\to L^\infty$ Young bound.
+The module \texttt{PancakeUniformKernelFamily} differentiates the symbol
+jointly in $\delta$ and all six frequency variables, uses its fixed compact
+support to obtain uniform Schwartz seminorms, converts those bounds into
+uniform polynomial decay of every inverse-Fourier entry, and sums the $27$
+entries to prove
+\[
+ \sup_{0\leq\delta\leq 1/2}\int_{\mathbb R^6}
+   \lVert K_{\mathrm{norm},\delta}(y,z)\rVert\,dy\,dz < \infty.
+\]
+Thus the normalized Euclidean kernel-mass obligation is discharged.  The
+module \texttt{PancakeBilinearPeriodization} then carries this kernel to the
+standard six-torus.  It proves the fundamental-domain unfolding lemma,
+matches the torus characters to the Euclidean Fourier normalization, and
+shows for every $n\in\mathbb Z^6$ that
+\[
+ \widehat{K^{\rm per}_{\mathrm{norm},\delta}}(n)
+   =M_{\mathrm{norm},\delta}(n).
+\]
+It also proves that the resulting six-dimensional kernel acts on a pair of
+three-torus Fourier monomials through this exact coefficient.  Restoring the
+algebraically extracted factor gives a periodic kernel realizing the
+localized coherent-stretching symbol and one constant $C$, independent of
+$0\leq\delta\leq 1/2$, such that
+\[
+ \|B_\delta(f,g)\|_{L^\infty(\mathbb T^3)}
+ \leq 9\,\delta C\,
+   \|f\|_{L^\infty(\mathbb T^3)}
+   \|g\|_{L^\infty(\mathbb T^3)}.
+\]
+Thus Euclidean-to-torus transference and the frequency-uniform frozen-axis
+coherent aperture bound are discharged.  The module
+\texttt{PancakeFiniteFourierBilinearTransfer} distributes the bilinear action
+over arbitrary finite trigonometric polynomials and proves the exact double
+Fourier sum without a mode-cardinality loss.  It also identifies the assembled
+27-entry symbol, on the retained chart, with the complex-bilinear extension
+of the coherently projected normalized Biot--Savart stretching interaction;
+off that chart both sides vanish.  Thus the periodic kernel now acts exactly
+as the localized coherent PDE interaction on finite Fourier fields.
+
+The module \texttt{PancakeDyadicKernelScaling} starts the passage from this
+base chart to actual dyadic shells.  For every positive $r$ it proves
+\[
+ \int_{\mathbb R^6}\!\|r^6K(rx)\|\,dx
+   =\int_{\mathbb R^6}\!\|K(x)\|\,dx,
+ \qquad
+ \widehat{r^6K(r\,\cdot)}(\xi)=\widehat K(\xi/r),
+\]
+and proves the corresponding exact fundamental-cell coefficient after
+periodization.  It also constructs the square-dyadic chart and checks that
+at aperture $\delta=1/N$ its source and receiver frequencies are exactly the
+physical lattice frequencies divided by $N^2$.  What remains at this endpoint
+is the four-transverse/two-axial anisotropic rescaling, finite chart/rotation
+assembly, and the variable-frame remainder.
+
+There is a second field-level issue which a fixed-axis multiplier does not
+address.  The actual pancake frame is the eigensystem of the low-frequency
+strain and therefore depends on $(x,t)$.  The module
+\texttt{PancakeFrameCovariance} proves that the continuous coherent estimate is
+rotation-covariant for every frozen oriented orthonormal frame, including
+arbitrary projected amplitudes.  The module
+\texttt{PancakeVariableFrameCommutator} then gives the exact finite-Fourier
+identity
+\[
+ T_{m(x,\cdot)}f=T_{m(x_0,\cdot)}f+
+ T_{m(x,\cdot)-m(x_0,\cdot)}f
+\]
+and bounds the second term by the frequencywise symbol oscillation times the
+actual Fourier-amplitude mass.  The uniform frozen-axis periodic kernel bound
+is now supplied by \texttt{PancakeBilinearPeriodization}; exact finite-field
+summation and isotropic dyadic scaling are supplied by the two subsequent
+modules above.  The remaining field-transfer pieces are the anisotropic
+square-dyadic rescaling, finite chart/rotation assembly, and control of the
+variable-frame remainder.  They are not silently included in the modewise
+estimate, and \texttt{coherent\_le} has not yet been instantiated.
+
 \emph{The refined pin (committed).}  The module
 \texttt{MisalignmentRefinedPin} splits the pancake-sector functional
 into a direction-coherent share, carrying the interface form of the
@@ -857,11 +1022,22 @@ misalignment share, whose controlling quantity is the direction
 variation.  The vorticity-direction equation exposes a dynamical handle on
 this quantity, but does not by itself give the required a priori estimate.
 
-\emph{Exact unproven boundary.}  (i) The field-level transfer:
-realizing the split and the coherent interface for actual
-Littlewood--Paley Navier--Stokes data from the mode-level kinematics
-(a quantitative coherent/misaligned decomposition of real vorticity
-fields).  (ii) The misalignment budget itself: dynamical,
+\emph{Exact unproven boundary.}  (i) Completion of the field-level transfer:
+the modewise complex split, amplitude estimate, lattice count, exact
+bilinear aperture factor, fixed-$\delta$ smooth tensor kernel, bilinear
+scaling/Young bound, exact finite torus realization, frozen-frame covariance,
+and variable/frozen split are now proved.  Uniform normalized Euclidean
+bilinear-kernel mass, exact standard-six-torus Fourier realization, and the
+frequency-uniform periodic $O(\delta)$ bilinear endpoint bound are also
+proved.  Exact finite-Fourier summation, inner-chart identification with the
+coherent PDE interaction, mass-preserving isotropic dyadic rescaling, and its
+cover-side periodized coefficient formula are now proved as well.  The
+remaining steps are the four-transverse/two-axial square-dyadic rescaling,
+finite chart/rotation transference, and a
+quantitative bound for the spatial eigenframe-variation remainder, followed
+by their assembly into \texttt{coherent\_le} for the actual Navier--Stokes
+functionals.
+(ii) The misalignment budget itself: dynamical,
 time-integrated control of the misalignment share; the checked fences
 of Sections~\ref{sec:lean}, \ref{sec:aperture} and the static no-go
 apply to it verbatim.
@@ -916,6 +1092,60 @@ This rules out a raw pressure-Hessian norm as the next envelope.  A viable
 dynamical continuation must instead control a gap-weighted pressure torque,
 or prove cancellation/residence-time control over near-degenerate intervals,
 and then transfer that control to the Littlewood--Paley misalignment share.
+
+The same denominator is now proved for spatial frame freezing.  In
+\texttt{PancakeEigenframePerturbation}, if $Ae=\lambda e$, $Bf=\mu f$, $B$
+is self-adjoint, and $e,f$ are unit vectors, then
+\[
+  (\lambda-\mu)\langle f,e\rangle
+    =\langle f,(A-B)e\rangle,
+  \qquad
+  |\lambda-\mu|\,|\langle f,e\rangle|\leq\|A-B\|.
+\]
+Consequently, at every positive threshold, either the eigenvalues are in the
+near-degenerate band or the frame overlap is bounded by the strain oscillation
+divided by that threshold.  This is the exact gap/near-degeneracy alternative
+needed by the variable-frame remainder; it is not yet the scale-summed bound
+needed for closure.
+
+Two further modules turn this into an intrinsic local dynamics statement.
+\texttt{PancakeStrainSpectralFrame} constructs, for every symmetric
+three-dimensional strain operator, an ordered orthonormal eigenframe and
+proves the three-coordinate Parseval and Rayleigh identities.  Thus the
+spectral coordinates used below are constructed objects, not assumed data.
+For a unit vorticity direction $\xi$ and a moving unit top eigenvector $e$,
+\texttt{PancakeAlignmentDynamics} defines
+\[
+  E(\xi,e)=1-\langle\xi,e\rangle^2
+\]
+and proves the exact simple-gap identity
+\[
+ \dot E
+ =-2\langle\xi,e\rangle^2
+     \bigl(\lambda_0-\langle\xi,S\xi\rangle\bigr)
+   -2\langle\xi,e\rangle
+     \bigl(\langle d,e\rangle+\langle\xi,\theta\rangle\bigr),
+\]
+where $d$ is the non-strain direction forcing and $\theta=\dot e$.  The
+Rayleigh defect is bounded below by the top spectral gap times $E$, and the
+module integrates this damping to obtain the residence estimate
+\[
+ \int_0^T (\lambda_0-\lambda_1)E\,dt
+ \le E(0)+2\int_0^T
+   |\langle d,e\rangle+\langle\xi,\theta\rangle|\,dt
+\]
+under its stated regularity and simple-gap hypotheses.  It also proves the
+complementary upper bound by the full spectral width.
+
+These identities expose rather than hide the hard cases.  Substituting the
+usual eigenvector perturbation estimate
+$|\theta|\lesssim|\dot S|/(\lambda_0-\lambda_1)$ into the residence inequality
+and applying a naive Young inequality produces still worse inverse-gap costs;
+it is not a closure.  Moreover, a large trace-free strain may be isotropic on
+a strongly expanding two-plane.  Such a partially degenerate plane supplies
+damping toward the plane but does not select a coherent line inside it.
+Controlling those intervals requires a projector/cluster formulation or a
+genuine time-integrated cancellation, and remains part of the dynamical pin.
 
 \section{Status and scope}
 \label{sec:scope}
@@ -983,14 +1213,15 @@ the coercive/residual sector estimates are named interfaces consumed from
 the source analysis, not re-proved.  None of these statements is a claim
 about general Navier--Stokes solutions beyond what its label says.
 
-\paragraph{Verification metadata.}  Every headline theorem named in this
-paper carries a machine axiom audit: each depends on exactly the three
-standard Lean axioms \texttt{propext}, \texttt{Classical.choice},
-\texttt{Quot.sound} --- no \texttt{sorry}, no additional axioms, no unsafe
-definitions, and no elaboration-limit overrides anywhere in the campaign's
-modules.  The Navier--Stokes live-surface and regression aggregates build
-green, and every conditional theorem ships with an instantiation canary
-demonstrating its hypotheses are simultaneously satisfiable.
+\paragraph{Verification metadata.}  The named campaign modules contain no
+\texttt{sorry}, \texttt{admit}, or unsafe definitions.  Selected load-bearing
+theorems carry explicit machine axiom audits; the remaining newly added
+headlines are checked by the Navier--Stokes live surface and are being added
+to the same audit boundary.  The live surface builds green.  Earlier
+conditional route theorems retain their instantiation canaries demonstrating
+that their stated hypotheses are simultaneously satisfiable.  This is a
+claim about proof integrity, not about discharge of the explicitly open
+analytic hypotheses.
 
 \paragraph{What remains open.} We make no claim to have proved the Millennium
 Navier--Stokes statement.  The latest pancake-closure proposal fails as a
@@ -1002,8 +1233,13 @@ refinement (Section~\ref{sec:coherence}), the open analytic input is
 coherent/misaligned transfer, which jointly reproduce
 \texttt{ScaleLocalPancakeStrainBudget} (cross-referenced with the coarser
 \texttt{StochasticStretchingEstimate}).  A successful completion must prove a
-dynamical, time-integrated control of the vorticity-direction misalignment
-share, strong enough to cover the gap band identified above.  Section
+spatially microlocal control of the variable-frame remainder and a dynamical,
+time-integrated control of the vorticity-direction misalignment share, strong
+enough to cover the gap band identified above.  It must also finish the
+ anisotropic square-dyadic and finite chart/rotation assembly of the
+now-periodic bilinear kernel rather than assigning the aperture gain to the
+projection.
+Section
 \ref{sec:direction-dynamics} further shows that a pressure-Hessian route must
 carry inverse strain-eigenvalue-gap information or an equivalent
 time-integrated cancellation; pressure-Hessian size alone cannot close the
@@ -1026,7 +1262,26 @@ effort.  The repaired-route development comprises, under
 \texttt{StochasticLagrangian} layer (\texttt{PullbackOneForm},
 \texttt{ShearJacobianBounds}, \texttt{ConstantinIyerRepresentation},
 \texttt{VorticityStretchingGate}, \texttt{DecayingShearInstance},
-\texttt{DyadicPancakeClosure}), each with a regression companion.
+\texttt{DyadicPancakeClosure}, \texttt{PancakeCoherentPairEstimate},
+\texttt{PancakeRealCoherentPairEstimate}, \texttt{PancakeConeOperatorKernel},
+\texttt{PancakePeriodicCoherentSplit},
+\texttt{PancakePeriodicComplexStretch},
+\texttt{PancakePeriodicOperatorKernel}, \texttt{PancakeFrameCovariance},
+\texttt{PancakeVariableFrameCommutator}, and
+\texttt{PancakeEigenframePerturbation},
+\texttt{PancakeAlignmentDynamics}, \texttt{PancakeStrainSpectralFrame},
+\texttt{PancakeSmoothCoherentSymbol},
+\texttt{PancakeSmoothCoherentAperture},
+\texttt{PancakeCoherentStretchFactorization},
+\texttt{PancakeSmoothCoherentStretchSymbol}, and
+\texttt{PancakeBilinearKernelScaling}, and
+\texttt{PancakeUniformKernelFamily}, and
+\texttt{PancakeBilinearPeriodization},
+\texttt{PancakeFiniteFourierBilinearTransfer}, and
+\texttt{PancakeDyadicKernelScaling}), each with a regression companion where
+applicable.  The aperture module is retained as an explicitly attenuated
+analytic model; the exact coherent projection no-go above prevents its use as
+the desired field-transfer estimate.
 Background references: J.~T. Beale, T.~Kato, A.~Majda, \emph{Comm.\ Math.\
 Phys.}\ \textbf{94} (1984), 61--66; P.~Constantin, G.~Iyer, \emph{Comm.\
 Pure Appl.\ Math.}\ \textbf{61} (2008), 330--345; D.~Ebin, J.~Marsden,

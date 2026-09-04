@@ -36,10 +36,16 @@ vorticity-direction variation — the Constantin–Fefferman coherence
 integrand, which unlike the full strain has known dynamical handles.
 
 **Unproven boundary (exact).**
-1. The field-level transfer: realizing `split_le` and `coherent_le`
-   for actual Navier–Stokes Littlewood–Paley data from the mode-level
-   kinematics proved here (a coherent/misaligned decomposition of real
-   vorticity fields with quantitative constants).
+1. Completion of the field-level transfer: the periodic mode split,
+   continuous-frequency projection estimate, finite torus-kernel realization,
+   uniform smooth kernel-mass bound, exact finite-Fourier bilinear action,
+   frozen-frame covariance, isotropic dyadic rescaling, and exact
+   variable/frozen symbol split are proved in the downstream `Pancake*`
+   modules.  What remains is the square-dyadic anisotropic
+   transverse/axial rescaling, finite chart/rotation assembly, and control of
+   the spatial eigenframe-variation remainder, followed by their assembly
+   into `split_le` and `coherent_le` for actual Navier–Stokes
+   Littlewood–Paley data.
 2. `MisalignmentStrainBudget` itself: the dynamical, time-integrated
    control of the misalignment share.  The checked fences apply: it
    cannot be proved by operator-norm, frozen-strain, or static
