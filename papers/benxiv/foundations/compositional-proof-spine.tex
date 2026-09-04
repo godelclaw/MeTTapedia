@@ -3543,6 +3543,27 @@ absent colour survive into the residual witness rather than being hidden
 behind a fresh existential choice.
 \end{proof}
 
+\begin{corollary}[finite odd-circuit monotonicity across the mesh]
+\label{cor:global-residual-circuit-monotonicity}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualMeshCircuitMonotonicity.exists_pairing_with_oddCircuitMonotonicity_at_every_globalMeshStep}
+For an ordered mesh in a graph-backed least counterexample, one supported
+residual-defect minimizer can be chosen before the mesh step so that every
+step is either central for that matching or carries a physical proper-site
+receipt whose old odd-circuit count is at most its new odd-circuit count.
+The circuit counts are taken in the finite quotient of the carrier positions
+from Lemma~\ref{lem:residual-circuit-state-is-physical}.
+\end{corollary}
+
+\begin{proof}
+Use the common minimizer and provenanced alternating-site receipts from
+Corollary~\ref{cor:global-residual-pairing-provenance}.  At a noncentral step,
+Lemma~\ref{lem:residual-circuit-state-is-physical} identifies the finite odd
+circuit classes with the physical odd components meeting the alternating
+carrier.  Its exact balance law and the receipt's exchange-rigidity give the
+claimed inequality.  No compatibility between different sites and no strict
+inequality are asserted.
+\end{proof}
+
 \begin{corollary}[proper residual geometry at every internal mesh junction]
 \label{cor:internal-mesh-junction-proper-residual-site}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.MeshJunctionAlternatingGeometry.incoming_first_ne_outgoing_second}
