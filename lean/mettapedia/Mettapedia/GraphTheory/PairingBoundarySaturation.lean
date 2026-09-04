@@ -55,6 +55,68 @@ theorem pairingBoundarySaturation_of_reachable
     pairingBoundarySaturation (H := H) embed pairing selected vertex :=
   Or.inr ⟨boundary, hselected, hpartner, hreachable⟩
 
+/-- Filling whole components whose paired boundary endpoints are selected
+preserves connectedness of a connected selected boundary skeleton.  The
+component graph may be a subgraph of the ambient graph: its paths are lifted
+to the ambient graph and remain inside the saturation by construction. -/
+theorem induce_pairingBoundarySaturation_connected
+    [DecidableEq V]
+    {G : SimpleGraph V}
+    (embed : B → V) (pairing : Pairing B) (selected : B → Prop)
+    (hHG : H ≤ G)
+    (hboundaryConnected :
+      (G.induce (fun vertex => ∃ boundary, selected boundary ∧
+        embed boundary = vertex)).Connected) :
+    (G.induce
+      (pairingBoundarySaturation (H := H) embed pairing selected)).Connected := by
+  have hsub : ∀ vertex,
+      (∃ boundary, selected boundary ∧ embed boundary = vertex) →
+        pairingBoundarySaturation (H := H) embed pairing selected vertex := by
+    intro vertex hvertex
+    exact Or.inl hvertex
+  rw [SimpleGraph.connected_iff_exists_forall_reachable]
+  rcases hboundaryConnected.nonempty with ⟨root⟩
+  refine ⟨⟨root.1, hsub root.1 root.2⟩, ?_⟩
+  intro vertex
+  rcases vertex.2 with hboundary | hcomponent
+  · have hrootBoundary :
+        (G.induce (fun point => ∃ boundary, selected boundary ∧
+          embed boundary = point)).Reachable root
+            ⟨vertex.1, hboundary⟩ :=
+      hboundaryConnected.preconnected root ⟨vertex.1, hboundary⟩
+    exact hrootBoundary.map (G.induceHomOfLE hsub).toHom
+  · rcases hcomponent with
+      ⟨boundary, hselected, hpartnerSelected, hreachable⟩
+    have hboundaryMem :
+        (∃ point, selected point ∧ embed point = embed boundary) :=
+      ⟨boundary, hselected, rfl⟩
+    have hrootBoundary :
+        (G.induce (fun point => ∃ boundary, selected boundary ∧
+          embed boundary = point)).Reachable root
+            ⟨embed boundary, hboundaryMem⟩ :=
+      hboundaryConnected.preconnected root ⟨embed boundary, hboundaryMem⟩
+    have hrootBoundaryMapped :=
+      hrootBoundary.map (G.induceHomOfLE hsub).toHom
+    rcases hreachable with ⟨walk⟩
+    let ambientWalk := walk.mapLe hHG
+    have hall : ∀ point ∈ ambientWalk.support,
+        pairingBoundarySaturation (H := H) embed pairing selected point := by
+      intro point hpoint
+      have hpointH : point ∈ walk.support := by
+        simpa only [ambientWalk, SimpleGraph.Walk.support_mapLe_eq_support]
+          using hpoint
+      exact Or.inr ⟨boundary, hselected, hpartnerSelected,
+        (walk.takeUntil point hpointH).reachable⟩
+    have hcomponentInduced :
+        (G.induce
+          (pairingBoundarySaturation (H := H) embed pairing selected)).Reachable
+            ⟨embed boundary, hsub _ hboundaryMem⟩ vertex := by
+      exact ⟨ambientWalk.induce
+        {point |
+          pairingBoundarySaturation (H := H) embed pairing selected point}
+        hall⟩
+    exact hrootBoundaryMapped.trans hcomponentInduced
+
 /-- Any graph edge leaving the saturated side leaves from an open selected
 boundary endpoint.  No degree or planarity assumption is needed for this
 local statement. -/
