@@ -33,7 +33,9 @@ open MatchingParity
 open Mettapedia.GraphTheory.Embedding
 open ResidualReturnComplementaryCycle
 open ResidualReturnNestedFamily
+open ResidualReturnNestedCuts
 open ResidualReturnSeparatorNesting
+open ResidualReturnSweep
 open RootedCutSaturation
 open SimpleGraph
 open SimpleGraphDartRotation
@@ -426,6 +428,125 @@ theorem incidentEdgeShore_deepClosure_ssubset_shallowClosure
         hdeepShallowRight hshallowOuterRight hshoreOuterShallow
         hshoreShallowDeep hshoreDeepInner deepCut deepSelected houtsideDeep
         hrootDeep vertex (by simpa only [path] using hvertex)
+
+/-- Two connected residual-return cut shores at one width, with strict
+inclusion of their literal incident-edge shores. -/
+def HasStrictlyNestedConnectedReturnCuts
+    (G : SimpleGraph V) [DecidableRel G.Adj] : Prop :=
+  ∃ bound : Nat,
+    ∃ shallow deep : CyclicEdgeCutRealization.ConnectedAtWidth G bound,
+      (∀ vertex, deep.realization.side vertex →
+        shallow.realization.side vertex) ∧
+      incidentEdgeShore G deep.realization.side ⊂
+        incidentEdgeShore G shallow.realization.side
+
+/-- Four strictly nested physical returns construct two connected cut shores
+whose literal incident-edge shores are strictly nested.  The outer return
+provides the common root and the inner return orients the deep separator. -/
+theorem hasStrictlyNestedConnectedReturnCuts_of_strictlyNestedReturnQuadruple
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (quadruple : StrictlyNestedReturnQuadruple
+      rotation hG sigma hSigma bond) :
+    HasStrictlyNestedConnectedReturnCuts G := by
+  rcases quadruple with
+    ⟨shore, outer, shallow, deep, inner, houterShore, hshallowShore,
+      hdeepShore, hinnerShore, houterShallowLeft, hshallowDeepLeft,
+      hdeepInnerLeft, hinnerDeepRight, hdeepShallowRight,
+      hshallowOuterRight⟩
+  have hshoreOuterShallow :
+      orderedReturnShore rotation hG sigma hSigma bond outer.left =
+        orderedReturnShore rotation hG sigma hSigma bond shallow.left :=
+    houterShore.trans hshallowShore.symm
+  have hshoreShallowDeep :
+      orderedReturnShore rotation hG sigma hSigma bond shallow.left =
+        orderedReturnShore rotation hG sigma hSigma bond deep.left :=
+    hshallowShore.trans hdeepShore.symm
+  have hshoreDeepInner :
+      orderedReturnShore rotation hG sigma hSigma bond deep.left =
+        orderedReturnShore rotation hG sigma hSigma bond inner.left :=
+    hdeepShore.trans hinnerShore.symm
+  rcases nestedConnectedReturnCutConstruction rotation minimal hG sigma hSigma
+      bond outer shallow deep houterShallowLeft hshallowDeepLeft
+      hdeepShallowRight hshallowOuterRight hshoreOuterShallow
+      hshoreShallowDeep with
+    ⟨bound, shallowFaceCut, deepFaceCut, shallowSelected, deepSelected,
+      shallowConnected, deepConnected, construction⟩
+  have hnested : ∀ vertex,
+      deepConnected.realization.side vertex →
+        shallowConnected.realization.side vertex := by
+    intro vertex hdeep
+    apply (construction.middleSide vertex).2
+    apply construction.closuresNested vertex
+    exact (construction.innerSide vertex).1 hdeep
+  have hstrictClosure :=
+    incidentEdgeShore_deepClosure_ssubset_shallowClosure
+      rotation minimal hG sigma hSigma bond outer shallow deep inner
+        houterShallowLeft hshallowDeepLeft hdeepInnerLeft hinnerDeepRight
+        hdeepShallowRight hshallowOuterRight hshoreOuterShallow
+        hshoreShallowDeep hshoreDeepInner shallowFaceCut shallowSelected
+        deepFaceCut deepSelected construction.outsideInner
+        construction.rootOutsideMiddle construction.rootOutsideInner
+        construction.closuresNested
+  have hshallowSide : shallowConnected.realization.side =
+      closureSide (G := G)
+        (shallowFaceCut.filledCycleSide rotation
+          (orderedReturnSeparator hG sigma hSigma bond.site shallow)
+          shallowSelected)
+        (cycleVertexOrder sigma bond.site outer.left).1
+        construction.rootOutsideMiddle := by
+    funext vertex
+    exact propext (construction.middleSide vertex)
+  have hdeepSide : deepConnected.realization.side =
+      closureSide (G := G)
+        (deepFaceCut.filledCycleSide rotation
+          (orderedReturnSeparator hG sigma hSigma bond.site deep)
+          deepSelected)
+        (cycleVertexOrder sigma bond.site outer.left).1
+        construction.rootOutsideInner := by
+    funext vertex
+    exact propext (construction.innerSide vertex)
+  refine ⟨bound, shallowConnected, deepConnected, hnested, ?_⟩
+  simpa only [hshallowSide, hdeepSide] using hstrictClosure
+
+/-- A depth-four physical stack therefore supplies a strict pair of
+connected cut shores at one common width. -/
+theorem hasStrictlyNestedConnectedReturnCuts_of_deep_stack
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (hdeep : ∃ shore cut,
+      3 < (((residualReturnSweepData rotation minimal hG sigma hSigma bond).family
+        shore).stackAt cut).length) :
+    HasStrictlyNestedConnectedReturnCuts G :=
+  hasStrictlyNestedConnectedReturnCuts_of_strictlyNestedReturnQuadruple
+    rotation minimal hG sigma hSigma bond
+      (strictlyNestedReturnQuadruple_of_deep_stack
+        rotation minimal hG sigma hSigma bond hdeep)
+
+/-- Consumer-facing carrier form: the depth-three geometric horn already
+contains a strict pair of connected cut shores. -/
+theorem hasStrictlyNestedConnectedReturnCuts_of_nestedCarrierDeepReturnStack
+    (rotation : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (hdeep : ResidualReturnCarrierSweep.HasNestedCarrierDeepReturnStack
+      rotation minimal hG sigma hSigma bond 3) :
+    HasStrictlyNestedConnectedReturnCuts G :=
+  hasStrictlyNestedConnectedReturnCuts_of_strictlyNestedReturnQuadruple
+    rotation minimal hG sigma hSigma bond
+      (strictlyNestedReturnQuadruple_of_nestedCarrierDeepReturnStack
+        rotation minimal hG sigma hSigma bond hdeep)
 
 end
 
