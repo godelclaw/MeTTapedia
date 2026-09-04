@@ -8463,6 +8463,17 @@ This is the exact object the external-exit/same-turn-chord horn must consume.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.CarrierSaturationBoundaryDecomposition.card_localSigmaExitDart_le_openEndpoint}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.CarrierSaturationBoundaryDecomposition.card_referenceMatchingExitDart_le_local_add_offCarrier}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.CarrierSaturationBoundaryDecomposition.card_ambientExitDart_le_stackLengths_add_offCarrierReference_add_local}
+The off-carrier term now has the intended physical meaning, rather than merely
+the right name.  Saturation puts its inside endpoint in a completed
+common-residual return component; the canonical return path exhausts that
+component, so the endpoint occurs strictly inside the path.  Cubicity then
+identifies the outgoing reference edge with the path's unique third edge, and
+the fact that its outside endpoint is not saturated proves that this third edge
+is an external attachment.  It therefore produces the exact separator
+face-side receipt already consumed by the ambient-return alternative.
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.OffCarrierReferenceAttachment.exists_completedReturnExitWitness}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.OffCarrierReferenceAttachment.exists_offCarrierAttachmentWitness}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.OffCarrierReferenceAttachment.exists_attachmentExitSideReceipt_of_offCarrierReferenceExit}
 \end{proof}
 
 For the route, the two Kempe families suggest the matching stacks and capped
