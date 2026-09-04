@@ -5,13 +5,16 @@ goodword_realgraph_nest_C30.json), reusing the census module's verifiers.
 Run with the v24 toolchain on PYTHONPATH."""
 import json, re
 from collections import defaultdict
+from pathlib import Path
 import sector_alternation_lab as L
 from lift_lab import components_of
 
-CENSUS = '/home/oruzi/repos/MeTTapedia-4cplab/lean/mettapedia/Mettapedia/GraphTheory/ClosedWebSectorNestingWitness.lean'
-OUT = '/home/oruzi/repos/MeTTapedia-4cplab/lean/mettapedia/Mettapedia/GraphTheory/GoodWordRealGraphNestingWitness.lean'
+HERE = Path(__file__).resolve().parent
+LEAN_ROOT = HERE.parents[1]
+CENSUS = LEAN_ROOT / 'Mettapedia/GraphTheory/ClosedWebSectorNestingWitness.lean'
+OUT = LEAN_ROOT / 'Mettapedia/GraphTheory/GoodWordRealGraphNestingWitness.lean'
 
-cert = json.load(open('goodword_realgraph_nest_C30.json'))['C30']['certificate']
+cert = json.loads((HERE / 'goodword_realgraph_nest_C30.json').read_text())['C30']['certificate']
 p1, p2 = cert['caps']; col = cert['coloring']
 nbrs, edges, faces, pent = L.build_small('C30')
 tedges, v2e, spokes, caps = L.two_hole_tangle(nbrs, edges, faces, p1, p2)
