@@ -8454,9 +8454,15 @@ into the open endpoints of its transported carrier pairing.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.CarrierSaturationBoundaryDecomposition.card_localTauExitDart_le_openEndpoint}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.CarrierSaturationBoundaryDecomposition.card_ambientExitDart_le_stackLengths_add_reference_add_localTau}
 Thus the remaining unbounded object is no longer ``the ambient boundary'' in
-general: it is the reference-matching attachment frontier (together with a
-finite carrier-pairing boundary term).  This is the exact object the
-external-exit/same-turn-chord horn must consume.
+general.  The reference-matching frontier itself splits into a carrier-local
+part and a genuinely off-carrier part.  The carrier-local part injects into
+the open endpoints of the transported reference pairing, just as the incoming
+matching part injects into its own open endpoints.  Hence the only unbounded
+term in the refined estimate is the off-carrier reference-matching frontier.
+This is the exact object the external-exit/same-turn-chord horn must consume.
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.CarrierSaturationBoundaryDecomposition.card_localSigmaExitDart_le_openEndpoint}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.CarrierSaturationBoundaryDecomposition.card_referenceMatchingExitDart_le_local_add_offCarrier}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.CarrierSaturationBoundaryDecomposition.card_ambientExitDart_le_stackLengths_add_offCarrierReference_add_local}
 \end{proof}
 
 For the route, the two Kempe families suggest the matching stacks and capped
