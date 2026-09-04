@@ -1,0 +1,3789 @@
+{
+  "algorithm": "diameter-geodesic-radius-one-prefix-frontier-v1",
+  "goldberg_cumulative_exceeds_local_bound": true,
+  "goldberg_local_bound_passed": true,
+  "goldberg_rows": [
+    {
+      "complete_axis_frontier_width": 14,
+      "complete_radius_one_band_frontier_width": 0,
+      "diameter": 3,
+      "diameter_geodesic": [
+        0,
+        1,
+        6,
+        10
+      ],
+      "face_count": 12,
+      "frequency": 1,
+      "graph_hash": "ad051534f49ef0ebd37b6a958e4a54c0733865ee873717889e3da7fdbdf300f8",
+      "local_cut_carriers": [
+        {
+          "carrier_face_count": 10,
+          "carrier_frontier_width": 8,
+          "cut": 0
+        },
+        {
+          "carrier_face_count": 12,
+          "carrier_frontier_width": 0,
+          "cut": 1
+        },
+        {
+          "carrier_face_count": 10,
+          "carrier_frontier_width": 8,
+          "cut": 2
+        }
+      ],
+      "maximum_axis_prefix_frontier_width": 14,
+      "maximum_cap_radial_frontier_width": 10,
+      "maximum_local_carrier_face_count": 12,
+      "maximum_local_carrier_frontier_width": 8,
+      "maximum_radius_one_prefix_frontier_width": 10,
+      "prefixes": [
+        {
+          "axis_face_count": 1,
+          "axis_frontier_width": 5,
+          "radius_one_band_face_count": 6,
+          "radius_one_band_frontier_width": 10
+        },
+        {
+          "axis_face_count": 2,
+          "axis_frontier_width": 8,
+          "radius_one_band_face_count": 8,
+          "radius_one_band_frontier_width": 10
+        },
+        {
+          "axis_face_count": 3,
+          "axis_frontier_width": 11,
+          "radius_one_band_face_count": 10,
+          "radius_one_band_frontier_width": 8
+        },
+        {
+          "axis_face_count": 4,
+          "axis_frontier_width": 14,
+          "radius_one_band_face_count": 12,
+          "radius_one_band_frontier_width": 0
+        }
+      ],
+      "primal_vertex_count": 20
+    },
+    {
+      "complete_axis_frontier_width": 26,
+      "complete_radius_one_band_frontier_width": 30,
+      "diameter": 6,
+      "diameter_geodesic": [
+        0,
+        1,
+        2,
+        18,
+        17,
+        32,
+        31
+      ],
+      "face_count": 42,
+      "frequency": 2,
+      "graph_hash": "b740c434e27b8cf6bbe8f74ba1f9d32d6697655a6157561208eeb7d98e17c127",
+      "local_cut_carriers": [
+        {
+          "carrier_face_count": 11,
+          "carrier_frontier_width": 20,
+          "cut": 0
+        },
+        {
+          "carrier_face_count": 14,
+          "carrier_frontier_width": 23,
+          "cut": 1
+        },
+        {
+          "carrier_face_count": 14,
+          "carrier_frontier_width": 23,
+          "cut": 2
+        },
+        {
+          "carrier_face_count": 14,
+          "carrier_frontier_width": 23,
+          "cut": 3
+        },
+        {
+          "carrier_face_count": 14,
+          "carrier_frontier_width": 23,
+          "cut": 4
+        },
+        {
+          "carrier_face_count": 11,
+          "carrier_frontier_width": 20,
+          "cut": 5
+        }
+      ],
+      "maximum_axis_prefix_frontier_width": 26,
+      "maximum_cap_radial_frontier_width": 20,
+      "maximum_local_carrier_face_count": 14,
+      "maximum_local_carrier_frontier_width": 23,
+      "maximum_radius_one_prefix_frontier_width": 30,
+      "prefixes": [
+        {
+          "axis_face_count": 1,
+          "axis_frontier_width": 5,
+          "radius_one_band_face_count": 6,
+          "radius_one_band_frontier_width": 15
+        },
+        {
+          "axis_face_count": 2,
+          "axis_frontier_width": 9,
+          "radius_one_band_face_count": 9,
+          "radius_one_band_frontier_width": 18
+        },
+        {
+          "axis_face_count": 3,
+          "axis_frontier_width": 12,
+          "radius_one_band_face_count": 11,
+          "radius_one_band_frontier_width": 20
+        },
+        {
+          "axis_face_count": 4,
+          "axis_frontier_width": 16,
+          "radius_one_band_face_count": 14,
+          "radius_one_band_frontier_width": 23
+        },
+        {
+          "axis_face_count": 5,
+          "axis_frontier_width": 19,
+          "radius_one_band_face_count": 16,
+          "radius_one_band_frontier_width": 25
+        },
+        {
+          "axis_face_count": 6,
+          "axis_frontier_width": 23,
+          "radius_one_band_face_count": 19,
+          "radius_one_band_frontier_width": 28
+        },
+        {
+          "axis_face_count": 7,
+          "axis_frontier_width": 26,
+          "radius_one_band_face_count": 21,
+          "radius_one_band_frontier_width": 30
+        }
+      ],
+      "primal_vertex_count": 80
+    },
+    {
+      "complete_axis_frontier_width": 38,
+      "complete_radius_one_band_frontier_width": 42,
+      "diameter": 9,
+      "diameter_geodesic": [
+        0,
+        1,
+        2,
+        3,
+        36,
+        35,
+        33,
+        66,
+        65,
+        63
+      ],
+      "face_count": 92,
+      "frequency": 3,
+      "graph_hash": "22bb9f63081ab81b32afdcf5f95135d9ebb65d12ec4866da3f923560397d9899",
+      "local_cut_carriers": [
+        {
+          "carrier_face_count": 12,
+          "carrier_frontier_width": 22,
+          "cut": 0
+        },
+        {
+          "carrier_face_count": 14,
+          "carrier_frontier_width": 24,
+          "cut": 1
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 26,
+          "cut": 2
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 26,
+          "cut": 3
+        },
+        {
+          "carrier_face_count": 14,
+          "carrier_frontier_width": 24,
+          "cut": 4
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 26,
+          "cut": 5
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 26,
+          "cut": 6
+        },
+        {
+          "carrier_face_count": 14,
+          "carrier_frontier_width": 24,
+          "cut": 7
+        },
+        {
+          "carrier_face_count": 12,
+          "carrier_frontier_width": 22,
+          "cut": 8
+        }
+      ],
+      "maximum_axis_prefix_frontier_width": 38,
+      "maximum_cap_radial_frontier_width": 30,
+      "maximum_local_carrier_face_count": 15,
+      "maximum_local_carrier_frontier_width": 26,
+      "maximum_radius_one_prefix_frontier_width": 42,
+      "prefixes": [
+        {
+          "axis_face_count": 1,
+          "axis_frontier_width": 5,
+          "radius_one_band_face_count": 6,
+          "radius_one_band_frontier_width": 15
+        },
+        {
+          "axis_face_count": 2,
+          "axis_frontier_width": 9,
+          "radius_one_band_face_count": 9,
+          "radius_one_band_frontier_width": 19
+        },
+        {
+          "axis_face_count": 3,
+          "axis_frontier_width": 13,
+          "radius_one_band_face_count": 12,
+          "radius_one_band_frontier_width": 22
+        },
+        {
+          "axis_face_count": 4,
+          "axis_frontier_width": 16,
+          "radius_one_band_face_count": 14,
+          "radius_one_band_frontier_width": 24
+        },
+        {
+          "axis_face_count": 5,
+          "axis_frontier_width": 20,
+          "radius_one_band_face_count": 17,
+          "radius_one_band_frontier_width": 28
+        },
+        {
+          "axis_face_count": 6,
+          "axis_frontier_width": 24,
+          "radius_one_band_face_count": 20,
+          "radius_one_band_frontier_width": 31
+        },
+        {
+          "axis_face_count": 7,
+          "axis_frontier_width": 27,
+          "radius_one_band_face_count": 22,
+          "radius_one_band_frontier_width": 33
+        },
+        {
+          "axis_face_count": 8,
+          "axis_frontier_width": 31,
+          "radius_one_band_face_count": 25,
+          "radius_one_band_frontier_width": 37
+        },
+        {
+          "axis_face_count": 9,
+          "axis_frontier_width": 35,
+          "radius_one_band_face_count": 28,
+          "radius_one_band_frontier_width": 40
+        },
+        {
+          "axis_face_count": 10,
+          "axis_frontier_width": 38,
+          "radius_one_band_face_count": 30,
+          "radius_one_band_frontier_width": 42
+        }
+      ],
+      "primal_vertex_count": 180
+    },
+    {
+      "complete_axis_frontier_width": 50,
+      "complete_radius_one_band_frontier_width": 54,
+      "diameter": 12,
+      "diameter_geodesic": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        60,
+        59,
+        57,
+        54,
+        112,
+        111,
+        109,
+        106
+      ],
+      "face_count": 162,
+      "frequency": 4,
+      "graph_hash": "999a9d4507a96b2c85cc78e2f9bdadbb1112fca4bca2a2104111be18e99489c3",
+      "local_cut_carriers": [
+        {
+          "carrier_face_count": 12,
+          "carrier_frontier_width": 23,
+          "cut": 0
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 26,
+          "cut": 1
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 26,
+          "cut": 2
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 3
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 4
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 26,
+          "cut": 5
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 26,
+          "cut": 6
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 7
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 8
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 26,
+          "cut": 9
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 26,
+          "cut": 10
+        },
+        {
+          "carrier_face_count": 12,
+          "carrier_frontier_width": 23,
+          "cut": 11
+        }
+      ],
+      "maximum_axis_prefix_frontier_width": 50,
+      "maximum_cap_radial_frontier_width": 40,
+      "maximum_local_carrier_face_count": 15,
+      "maximum_local_carrier_frontier_width": 27,
+      "maximum_radius_one_prefix_frontier_width": 54,
+      "prefixes": [
+        {
+          "axis_face_count": 1,
+          "axis_frontier_width": 5,
+          "radius_one_band_face_count": 6,
+          "radius_one_band_frontier_width": 15
+        },
+        {
+          "axis_face_count": 2,
+          "axis_frontier_width": 9,
+          "radius_one_band_face_count": 9,
+          "radius_one_band_frontier_width": 19
+        },
+        {
+          "axis_face_count": 3,
+          "axis_frontier_width": 13,
+          "radius_one_band_face_count": 12,
+          "radius_one_band_frontier_width": 23
+        },
+        {
+          "axis_face_count": 4,
+          "axis_frontier_width": 17,
+          "radius_one_band_face_count": 15,
+          "radius_one_band_frontier_width": 26
+        },
+        {
+          "axis_face_count": 5,
+          "axis_frontier_width": 20,
+          "radius_one_band_face_count": 17,
+          "radius_one_band_frontier_width": 28
+        },
+        {
+          "axis_face_count": 6,
+          "axis_frontier_width": 24,
+          "radius_one_band_face_count": 20,
+          "radius_one_band_frontier_width": 32
+        },
+        {
+          "axis_face_count": 7,
+          "axis_frontier_width": 28,
+          "radius_one_band_face_count": 23,
+          "radius_one_band_frontier_width": 36
+        },
+        {
+          "axis_face_count": 8,
+          "axis_frontier_width": 32,
+          "radius_one_band_face_count": 26,
+          "radius_one_band_frontier_width": 39
+        },
+        {
+          "axis_face_count": 9,
+          "axis_frontier_width": 35,
+          "radius_one_band_face_count": 28,
+          "radius_one_band_frontier_width": 41
+        },
+        {
+          "axis_face_count": 10,
+          "axis_frontier_width": 39,
+          "radius_one_band_face_count": 31,
+          "radius_one_band_frontier_width": 45
+        },
+        {
+          "axis_face_count": 11,
+          "axis_frontier_width": 43,
+          "radius_one_band_face_count": 34,
+          "radius_one_band_frontier_width": 49
+        },
+        {
+          "axis_face_count": 12,
+          "axis_frontier_width": 47,
+          "radius_one_band_face_count": 37,
+          "radius_one_band_frontier_width": 52
+        },
+        {
+          "axis_face_count": 13,
+          "axis_frontier_width": 50,
+          "radius_one_band_face_count": 39,
+          "radius_one_band_frontier_width": 54
+        }
+      ],
+      "primal_vertex_count": 320
+    },
+    {
+      "complete_axis_frontier_width": 62,
+      "complete_radius_one_band_frontier_width": 66,
+      "diameter": 15,
+      "diameter_geodesic": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        90,
+        89,
+        87,
+        84,
+        80,
+        170,
+        169,
+        167,
+        164,
+        160
+      ],
+      "face_count": 252,
+      "frequency": 5,
+      "graph_hash": "588ee83868ed70cbc6a92a76c3b40c7bf63e8bf1b70ad1448acbc4268bae616d",
+      "local_cut_carriers": [
+        {
+          "carrier_face_count": 12,
+          "carrier_frontier_width": 23,
+          "cut": 0
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 1
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 28,
+          "cut": 2
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 3
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 4
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 5
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 6
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 28,
+          "cut": 7
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 8
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 9
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 10
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 11
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 28,
+          "cut": 12
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 13
+        },
+        {
+          "carrier_face_count": 12,
+          "carrier_frontier_width": 23,
+          "cut": 14
+        }
+      ],
+      "maximum_axis_prefix_frontier_width": 62,
+      "maximum_cap_radial_frontier_width": 50,
+      "maximum_local_carrier_face_count": 16,
+      "maximum_local_carrier_frontier_width": 28,
+      "maximum_radius_one_prefix_frontier_width": 66,
+      "prefixes": [
+        {
+          "axis_face_count": 1,
+          "axis_frontier_width": 5,
+          "radius_one_band_face_count": 6,
+          "radius_one_band_frontier_width": 15
+        },
+        {
+          "axis_face_count": 2,
+          "axis_frontier_width": 9,
+          "radius_one_band_face_count": 9,
+          "radius_one_band_frontier_width": 19
+        },
+        {
+          "axis_face_count": 3,
+          "axis_frontier_width": 13,
+          "radius_one_band_face_count": 12,
+          "radius_one_band_frontier_width": 23
+        },
+        {
+          "axis_face_count": 4,
+          "axis_frontier_width": 17,
+          "radius_one_band_face_count": 15,
+          "radius_one_band_frontier_width": 27
+        },
+        {
+          "axis_face_count": 5,
+          "axis_frontier_width": 21,
+          "radius_one_band_face_count": 18,
+          "radius_one_band_frontier_width": 30
+        },
+        {
+          "axis_face_count": 6,
+          "axis_frontier_width": 24,
+          "radius_one_band_face_count": 20,
+          "radius_one_band_frontier_width": 32
+        },
+        {
+          "axis_face_count": 7,
+          "axis_frontier_width": 28,
+          "radius_one_band_face_count": 23,
+          "radius_one_band_frontier_width": 36
+        },
+        {
+          "axis_face_count": 8,
+          "axis_frontier_width": 32,
+          "radius_one_band_face_count": 26,
+          "radius_one_band_frontier_width": 40
+        },
+        {
+          "axis_face_count": 9,
+          "axis_frontier_width": 36,
+          "radius_one_band_face_count": 29,
+          "radius_one_band_frontier_width": 44
+        },
+        {
+          "axis_face_count": 10,
+          "axis_frontier_width": 40,
+          "radius_one_band_face_count": 32,
+          "radius_one_band_frontier_width": 47
+        },
+        {
+          "axis_face_count": 11,
+          "axis_frontier_width": 43,
+          "radius_one_band_face_count": 34,
+          "radius_one_band_frontier_width": 49
+        },
+        {
+          "axis_face_count": 12,
+          "axis_frontier_width": 47,
+          "radius_one_band_face_count": 37,
+          "radius_one_band_frontier_width": 53
+        },
+        {
+          "axis_face_count": 13,
+          "axis_frontier_width": 51,
+          "radius_one_band_face_count": 40,
+          "radius_one_band_frontier_width": 57
+        },
+        {
+          "axis_face_count": 14,
+          "axis_frontier_width": 55,
+          "radius_one_band_face_count": 43,
+          "radius_one_band_frontier_width": 61
+        },
+        {
+          "axis_face_count": 15,
+          "axis_frontier_width": 59,
+          "radius_one_band_face_count": 46,
+          "radius_one_band_frontier_width": 64
+        },
+        {
+          "axis_face_count": 16,
+          "axis_frontier_width": 62,
+          "radius_one_band_face_count": 48,
+          "radius_one_band_frontier_width": 66
+        }
+      ],
+      "primal_vertex_count": 500
+    },
+    {
+      "complete_axis_frontier_width": 74,
+      "complete_radius_one_band_frontier_width": 78,
+      "diameter": 18,
+      "diameter_geodesic": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        126,
+        125,
+        123,
+        120,
+        116,
+        111,
+        240,
+        239,
+        237,
+        234,
+        230,
+        225
+      ],
+      "face_count": 362,
+      "frequency": 6,
+      "graph_hash": "0e1c8ebe1e1d45d513a65db06154a9a0e524b3b54cfe8a69af6b8649b9cc378a",
+      "local_cut_carriers": [
+        {
+          "carrier_face_count": 12,
+          "carrier_frontier_width": 23,
+          "cut": 0
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 1
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 2
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 3
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 4
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 5
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 6
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 7
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 8
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 9
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 10
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 11
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 12
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 13
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 14
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 15
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 16
+        },
+        {
+          "carrier_face_count": 12,
+          "carrier_frontier_width": 23,
+          "cut": 17
+        }
+      ],
+      "maximum_axis_prefix_frontier_width": 74,
+      "maximum_cap_radial_frontier_width": 60,
+      "maximum_local_carrier_face_count": 16,
+      "maximum_local_carrier_frontier_width": 29,
+      "maximum_radius_one_prefix_frontier_width": 78,
+      "prefixes": [
+        {
+          "axis_face_count": 1,
+          "axis_frontier_width": 5,
+          "radius_one_band_face_count": 6,
+          "radius_one_band_frontier_width": 15
+        },
+        {
+          "axis_face_count": 2,
+          "axis_frontier_width": 9,
+          "radius_one_band_face_count": 9,
+          "radius_one_band_frontier_width": 19
+        },
+        {
+          "axis_face_count": 3,
+          "axis_frontier_width": 13,
+          "radius_one_band_face_count": 12,
+          "radius_one_band_frontier_width": 23
+        },
+        {
+          "axis_face_count": 4,
+          "axis_frontier_width": 17,
+          "radius_one_band_face_count": 15,
+          "radius_one_band_frontier_width": 27
+        },
+        {
+          "axis_face_count": 5,
+          "axis_frontier_width": 21,
+          "radius_one_band_face_count": 18,
+          "radius_one_band_frontier_width": 31
+        },
+        {
+          "axis_face_count": 6,
+          "axis_frontier_width": 25,
+          "radius_one_band_face_count": 21,
+          "radius_one_band_frontier_width": 34
+        },
+        {
+          "axis_face_count": 7,
+          "axis_frontier_width": 28,
+          "radius_one_band_face_count": 23,
+          "radius_one_band_frontier_width": 36
+        },
+        {
+          "axis_face_count": 8,
+          "axis_frontier_width": 32,
+          "radius_one_band_face_count": 26,
+          "radius_one_band_frontier_width": 40
+        },
+        {
+          "axis_face_count": 9,
+          "axis_frontier_width": 36,
+          "radius_one_band_face_count": 29,
+          "radius_one_band_frontier_width": 44
+        },
+        {
+          "axis_face_count": 10,
+          "axis_frontier_width": 40,
+          "radius_one_band_face_count": 32,
+          "radius_one_band_frontier_width": 48
+        },
+        {
+          "axis_face_count": 11,
+          "axis_frontier_width": 44,
+          "radius_one_band_face_count": 35,
+          "radius_one_band_frontier_width": 52
+        },
+        {
+          "axis_face_count": 12,
+          "axis_frontier_width": 48,
+          "radius_one_band_face_count": 38,
+          "radius_one_band_frontier_width": 55
+        },
+        {
+          "axis_face_count": 13,
+          "axis_frontier_width": 51,
+          "radius_one_band_face_count": 40,
+          "radius_one_band_frontier_width": 57
+        },
+        {
+          "axis_face_count": 14,
+          "axis_frontier_width": 55,
+          "radius_one_band_face_count": 43,
+          "radius_one_band_frontier_width": 61
+        },
+        {
+          "axis_face_count": 15,
+          "axis_frontier_width": 59,
+          "radius_one_band_face_count": 46,
+          "radius_one_band_frontier_width": 65
+        },
+        {
+          "axis_face_count": 16,
+          "axis_frontier_width": 63,
+          "radius_one_band_face_count": 49,
+          "radius_one_band_frontier_width": 69
+        },
+        {
+          "axis_face_count": 17,
+          "axis_frontier_width": 67,
+          "radius_one_band_face_count": 52,
+          "radius_one_band_frontier_width": 73
+        },
+        {
+          "axis_face_count": 18,
+          "axis_frontier_width": 71,
+          "radius_one_band_face_count": 55,
+          "radius_one_band_frontier_width": 76
+        },
+        {
+          "axis_face_count": 19,
+          "axis_frontier_width": 74,
+          "radius_one_band_face_count": 57,
+          "radius_one_band_frontier_width": 78
+        }
+      ],
+      "primal_vertex_count": 720
+    },
+    {
+      "complete_axis_frontier_width": 86,
+      "complete_radius_one_band_frontier_width": 90,
+      "diameter": 21,
+      "diameter_geodesic": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        168,
+        167,
+        165,
+        162,
+        158,
+        153,
+        147,
+        322,
+        321,
+        319,
+        316,
+        312,
+        307,
+        301
+      ],
+      "face_count": 492,
+      "frequency": 7,
+      "graph_hash": "377f1349896788f64808ad639e9ab644d75eeab502759dbf3daa22f982c5b99d",
+      "local_cut_carriers": [
+        {
+          "carrier_face_count": 12,
+          "carrier_frontier_width": 23,
+          "cut": 0
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 1
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 2
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 3
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 4
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 5
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 6
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 7
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 8
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 9
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 10
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 11
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 12
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 13
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 14
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 15
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 16
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 17
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 18
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 19
+        },
+        {
+          "carrier_face_count": 12,
+          "carrier_frontier_width": 23,
+          "cut": 20
+        }
+      ],
+      "maximum_axis_prefix_frontier_width": 86,
+      "maximum_cap_radial_frontier_width": 70,
+      "maximum_local_carrier_face_count": 16,
+      "maximum_local_carrier_frontier_width": 30,
+      "maximum_radius_one_prefix_frontier_width": 90,
+      "prefixes": [
+        {
+          "axis_face_count": 1,
+          "axis_frontier_width": 5,
+          "radius_one_band_face_count": 6,
+          "radius_one_band_frontier_width": 15
+        },
+        {
+          "axis_face_count": 2,
+          "axis_frontier_width": 9,
+          "radius_one_band_face_count": 9,
+          "radius_one_band_frontier_width": 19
+        },
+        {
+          "axis_face_count": 3,
+          "axis_frontier_width": 13,
+          "radius_one_band_face_count": 12,
+          "radius_one_band_frontier_width": 23
+        },
+        {
+          "axis_face_count": 4,
+          "axis_frontier_width": 17,
+          "radius_one_band_face_count": 15,
+          "radius_one_band_frontier_width": 27
+        },
+        {
+          "axis_face_count": 5,
+          "axis_frontier_width": 21,
+          "radius_one_band_face_count": 18,
+          "radius_one_band_frontier_width": 31
+        },
+        {
+          "axis_face_count": 6,
+          "axis_frontier_width": 25,
+          "radius_one_band_face_count": 21,
+          "radius_one_band_frontier_width": 35
+        },
+        {
+          "axis_face_count": 7,
+          "axis_frontier_width": 29,
+          "radius_one_band_face_count": 24,
+          "radius_one_band_frontier_width": 38
+        },
+        {
+          "axis_face_count": 8,
+          "axis_frontier_width": 32,
+          "radius_one_band_face_count": 26,
+          "radius_one_band_frontier_width": 40
+        },
+        {
+          "axis_face_count": 9,
+          "axis_frontier_width": 36,
+          "radius_one_band_face_count": 29,
+          "radius_one_band_frontier_width": 44
+        },
+        {
+          "axis_face_count": 10,
+          "axis_frontier_width": 40,
+          "radius_one_band_face_count": 32,
+          "radius_one_band_frontier_width": 48
+        },
+        {
+          "axis_face_count": 11,
+          "axis_frontier_width": 44,
+          "radius_one_band_face_count": 35,
+          "radius_one_band_frontier_width": 52
+        },
+        {
+          "axis_face_count": 12,
+          "axis_frontier_width": 48,
+          "radius_one_band_face_count": 38,
+          "radius_one_band_frontier_width": 56
+        },
+        {
+          "axis_face_count": 13,
+          "axis_frontier_width": 52,
+          "radius_one_band_face_count": 41,
+          "radius_one_band_frontier_width": 60
+        },
+        {
+          "axis_face_count": 14,
+          "axis_frontier_width": 56,
+          "radius_one_band_face_count": 44,
+          "radius_one_band_frontier_width": 63
+        },
+        {
+          "axis_face_count": 15,
+          "axis_frontier_width": 59,
+          "radius_one_band_face_count": 46,
+          "radius_one_band_frontier_width": 65
+        },
+        {
+          "axis_face_count": 16,
+          "axis_frontier_width": 63,
+          "radius_one_band_face_count": 49,
+          "radius_one_band_frontier_width": 69
+        },
+        {
+          "axis_face_count": 17,
+          "axis_frontier_width": 67,
+          "radius_one_band_face_count": 52,
+          "radius_one_band_frontier_width": 73
+        },
+        {
+          "axis_face_count": 18,
+          "axis_frontier_width": 71,
+          "radius_one_band_face_count": 55,
+          "radius_one_band_frontier_width": 77
+        },
+        {
+          "axis_face_count": 19,
+          "axis_frontier_width": 75,
+          "radius_one_band_face_count": 58,
+          "radius_one_band_frontier_width": 81
+        },
+        {
+          "axis_face_count": 20,
+          "axis_frontier_width": 79,
+          "radius_one_band_face_count": 61,
+          "radius_one_band_frontier_width": 85
+        },
+        {
+          "axis_face_count": 21,
+          "axis_frontier_width": 83,
+          "radius_one_band_face_count": 64,
+          "radius_one_band_frontier_width": 88
+        },
+        {
+          "axis_face_count": 22,
+          "axis_frontier_width": 86,
+          "radius_one_band_face_count": 66,
+          "radius_one_band_frontier_width": 90
+        }
+      ],
+      "primal_vertex_count": 980
+    },
+    {
+      "complete_axis_frontier_width": 98,
+      "complete_radius_one_band_frontier_width": 102,
+      "diameter": 24,
+      "diameter_geodesic": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        216,
+        215,
+        213,
+        210,
+        206,
+        201,
+        195,
+        188,
+        416,
+        415,
+        413,
+        410,
+        406,
+        401,
+        395,
+        388
+      ],
+      "face_count": 642,
+      "frequency": 8,
+      "graph_hash": "4d0df71095aa7641cd3e672c3bf53d56bea1c8e209d7a6aeb7f44d27e4284f93",
+      "local_cut_carriers": [
+        {
+          "carrier_face_count": 12,
+          "carrier_frontier_width": 23,
+          "cut": 0
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 1
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 2
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 3
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 4
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 5
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 6
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 7
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 8
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 9
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 10
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 11
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 12
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 13
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 14
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 15
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 16
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 17
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 18
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 19
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 20
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 21
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 22
+        },
+        {
+          "carrier_face_count": 12,
+          "carrier_frontier_width": 23,
+          "cut": 23
+        }
+      ],
+      "maximum_axis_prefix_frontier_width": 98,
+      "maximum_cap_radial_frontier_width": 80,
+      "maximum_local_carrier_face_count": 16,
+      "maximum_local_carrier_frontier_width": 30,
+      "maximum_radius_one_prefix_frontier_width": 102,
+      "prefixes": [
+        {
+          "axis_face_count": 1,
+          "axis_frontier_width": 5,
+          "radius_one_band_face_count": 6,
+          "radius_one_band_frontier_width": 15
+        },
+        {
+          "axis_face_count": 2,
+          "axis_frontier_width": 9,
+          "radius_one_band_face_count": 9,
+          "radius_one_band_frontier_width": 19
+        },
+        {
+          "axis_face_count": 3,
+          "axis_frontier_width": 13,
+          "radius_one_band_face_count": 12,
+          "radius_one_band_frontier_width": 23
+        },
+        {
+          "axis_face_count": 4,
+          "axis_frontier_width": 17,
+          "radius_one_band_face_count": 15,
+          "radius_one_band_frontier_width": 27
+        },
+        {
+          "axis_face_count": 5,
+          "axis_frontier_width": 21,
+          "radius_one_band_face_count": 18,
+          "radius_one_band_frontier_width": 31
+        },
+        {
+          "axis_face_count": 6,
+          "axis_frontier_width": 25,
+          "radius_one_band_face_count": 21,
+          "radius_one_band_frontier_width": 35
+        },
+        {
+          "axis_face_count": 7,
+          "axis_frontier_width": 29,
+          "radius_one_band_face_count": 24,
+          "radius_one_band_frontier_width": 39
+        },
+        {
+          "axis_face_count": 8,
+          "axis_frontier_width": 33,
+          "radius_one_band_face_count": 27,
+          "radius_one_band_frontier_width": 42
+        },
+        {
+          "axis_face_count": 9,
+          "axis_frontier_width": 36,
+          "radius_one_band_face_count": 29,
+          "radius_one_band_frontier_width": 44
+        },
+        {
+          "axis_face_count": 10,
+          "axis_frontier_width": 40,
+          "radius_one_band_face_count": 32,
+          "radius_one_band_frontier_width": 48
+        },
+        {
+          "axis_face_count": 11,
+          "axis_frontier_width": 44,
+          "radius_one_band_face_count": 35,
+          "radius_one_band_frontier_width": 52
+        },
+        {
+          "axis_face_count": 12,
+          "axis_frontier_width": 48,
+          "radius_one_band_face_count": 38,
+          "radius_one_band_frontier_width": 56
+        },
+        {
+          "axis_face_count": 13,
+          "axis_frontier_width": 52,
+          "radius_one_band_face_count": 41,
+          "radius_one_band_frontier_width": 60
+        },
+        {
+          "axis_face_count": 14,
+          "axis_frontier_width": 56,
+          "radius_one_band_face_count": 44,
+          "radius_one_band_frontier_width": 64
+        },
+        {
+          "axis_face_count": 15,
+          "axis_frontier_width": 60,
+          "radius_one_band_face_count": 47,
+          "radius_one_band_frontier_width": 68
+        },
+        {
+          "axis_face_count": 16,
+          "axis_frontier_width": 64,
+          "radius_one_band_face_count": 50,
+          "radius_one_band_frontier_width": 71
+        },
+        {
+          "axis_face_count": 17,
+          "axis_frontier_width": 67,
+          "radius_one_band_face_count": 52,
+          "radius_one_band_frontier_width": 73
+        },
+        {
+          "axis_face_count": 18,
+          "axis_frontier_width": 71,
+          "radius_one_band_face_count": 55,
+          "radius_one_band_frontier_width": 77
+        },
+        {
+          "axis_face_count": 19,
+          "axis_frontier_width": 75,
+          "radius_one_band_face_count": 58,
+          "radius_one_band_frontier_width": 81
+        },
+        {
+          "axis_face_count": 20,
+          "axis_frontier_width": 79,
+          "radius_one_band_face_count": 61,
+          "radius_one_band_frontier_width": 85
+        },
+        {
+          "axis_face_count": 21,
+          "axis_frontier_width": 83,
+          "radius_one_band_face_count": 64,
+          "radius_one_band_frontier_width": 89
+        },
+        {
+          "axis_face_count": 22,
+          "axis_frontier_width": 87,
+          "radius_one_band_face_count": 67,
+          "radius_one_band_frontier_width": 93
+        },
+        {
+          "axis_face_count": 23,
+          "axis_frontier_width": 91,
+          "radius_one_band_face_count": 70,
+          "radius_one_band_frontier_width": 97
+        },
+        {
+          "axis_face_count": 24,
+          "axis_frontier_width": 95,
+          "radius_one_band_face_count": 73,
+          "radius_one_band_frontier_width": 100
+        },
+        {
+          "axis_face_count": 25,
+          "axis_frontier_width": 98,
+          "radius_one_band_face_count": 75,
+          "radius_one_band_frontier_width": 102
+        }
+      ],
+      "primal_vertex_count": 1280
+    },
+    {
+      "complete_axis_frontier_width": 110,
+      "complete_radius_one_band_frontier_width": 114,
+      "diameter": 27,
+      "diameter_geodesic": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        270,
+        269,
+        267,
+        264,
+        260,
+        255,
+        249,
+        242,
+        234,
+        522,
+        521,
+        519,
+        516,
+        512,
+        507,
+        501,
+        494,
+        486
+      ],
+      "face_count": 812,
+      "frequency": 9,
+      "graph_hash": "229345c7299293de67d87b59377531177d3c21e7c9ddbd03ab1119faff7e5a0b",
+      "local_cut_carriers": [
+        {
+          "carrier_face_count": 12,
+          "carrier_frontier_width": 23,
+          "cut": 0
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 1
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 2
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 3
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 4
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 5
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 6
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 7
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 8
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 9
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 10
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 11
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 12
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 13
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 14
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 15
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 16
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 17
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 18
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 19
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 20
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 21
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 22
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 23
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 24
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 25
+        },
+        {
+          "carrier_face_count": 12,
+          "carrier_frontier_width": 23,
+          "cut": 26
+        }
+      ],
+      "maximum_axis_prefix_frontier_width": 110,
+      "maximum_cap_radial_frontier_width": 90,
+      "maximum_local_carrier_face_count": 16,
+      "maximum_local_carrier_frontier_width": 30,
+      "maximum_radius_one_prefix_frontier_width": 114,
+      "prefixes": [
+        {
+          "axis_face_count": 1,
+          "axis_frontier_width": 5,
+          "radius_one_band_face_count": 6,
+          "radius_one_band_frontier_width": 15
+        },
+        {
+          "axis_face_count": 2,
+          "axis_frontier_width": 9,
+          "radius_one_band_face_count": 9,
+          "radius_one_band_frontier_width": 19
+        },
+        {
+          "axis_face_count": 3,
+          "axis_frontier_width": 13,
+          "radius_one_band_face_count": 12,
+          "radius_one_band_frontier_width": 23
+        },
+        {
+          "axis_face_count": 4,
+          "axis_frontier_width": 17,
+          "radius_one_band_face_count": 15,
+          "radius_one_band_frontier_width": 27
+        },
+        {
+          "axis_face_count": 5,
+          "axis_frontier_width": 21,
+          "radius_one_band_face_count": 18,
+          "radius_one_band_frontier_width": 31
+        },
+        {
+          "axis_face_count": 6,
+          "axis_frontier_width": 25,
+          "radius_one_band_face_count": 21,
+          "radius_one_band_frontier_width": 35
+        },
+        {
+          "axis_face_count": 7,
+          "axis_frontier_width": 29,
+          "radius_one_band_face_count": 24,
+          "radius_one_band_frontier_width": 39
+        },
+        {
+          "axis_face_count": 8,
+          "axis_frontier_width": 33,
+          "radius_one_band_face_count": 27,
+          "radius_one_band_frontier_width": 43
+        },
+        {
+          "axis_face_count": 9,
+          "axis_frontier_width": 37,
+          "radius_one_band_face_count": 30,
+          "radius_one_band_frontier_width": 46
+        },
+        {
+          "axis_face_count": 10,
+          "axis_frontier_width": 40,
+          "radius_one_band_face_count": 32,
+          "radius_one_band_frontier_width": 48
+        },
+        {
+          "axis_face_count": 11,
+          "axis_frontier_width": 44,
+          "radius_one_band_face_count": 35,
+          "radius_one_band_frontier_width": 52
+        },
+        {
+          "axis_face_count": 12,
+          "axis_frontier_width": 48,
+          "radius_one_band_face_count": 38,
+          "radius_one_band_frontier_width": 56
+        },
+        {
+          "axis_face_count": 13,
+          "axis_frontier_width": 52,
+          "radius_one_band_face_count": 41,
+          "radius_one_band_frontier_width": 60
+        },
+        {
+          "axis_face_count": 14,
+          "axis_frontier_width": 56,
+          "radius_one_band_face_count": 44,
+          "radius_one_band_frontier_width": 64
+        },
+        {
+          "axis_face_count": 15,
+          "axis_frontier_width": 60,
+          "radius_one_band_face_count": 47,
+          "radius_one_band_frontier_width": 68
+        },
+        {
+          "axis_face_count": 16,
+          "axis_frontier_width": 64,
+          "radius_one_band_face_count": 50,
+          "radius_one_band_frontier_width": 72
+        },
+        {
+          "axis_face_count": 17,
+          "axis_frontier_width": 68,
+          "radius_one_band_face_count": 53,
+          "radius_one_band_frontier_width": 76
+        },
+        {
+          "axis_face_count": 18,
+          "axis_frontier_width": 72,
+          "radius_one_band_face_count": 56,
+          "radius_one_band_frontier_width": 79
+        },
+        {
+          "axis_face_count": 19,
+          "axis_frontier_width": 75,
+          "radius_one_band_face_count": 58,
+          "radius_one_band_frontier_width": 81
+        },
+        {
+          "axis_face_count": 20,
+          "axis_frontier_width": 79,
+          "radius_one_band_face_count": 61,
+          "radius_one_band_frontier_width": 85
+        },
+        {
+          "axis_face_count": 21,
+          "axis_frontier_width": 83,
+          "radius_one_band_face_count": 64,
+          "radius_one_band_frontier_width": 89
+        },
+        {
+          "axis_face_count": 22,
+          "axis_frontier_width": 87,
+          "radius_one_band_face_count": 67,
+          "radius_one_band_frontier_width": 93
+        },
+        {
+          "axis_face_count": 23,
+          "axis_frontier_width": 91,
+          "radius_one_band_face_count": 70,
+          "radius_one_band_frontier_width": 97
+        },
+        {
+          "axis_face_count": 24,
+          "axis_frontier_width": 95,
+          "radius_one_band_face_count": 73,
+          "radius_one_band_frontier_width": 101
+        },
+        {
+          "axis_face_count": 25,
+          "axis_frontier_width": 99,
+          "radius_one_band_face_count": 76,
+          "radius_one_band_frontier_width": 105
+        },
+        {
+          "axis_face_count": 26,
+          "axis_frontier_width": 103,
+          "radius_one_band_face_count": 79,
+          "radius_one_band_frontier_width": 109
+        },
+        {
+          "axis_face_count": 27,
+          "axis_frontier_width": 107,
+          "radius_one_band_face_count": 82,
+          "radius_one_band_frontier_width": 112
+        },
+        {
+          "axis_face_count": 28,
+          "axis_frontier_width": 110,
+          "radius_one_band_face_count": 84,
+          "radius_one_band_frontier_width": 114
+        }
+      ],
+      "primal_vertex_count": 1620
+    },
+    {
+      "complete_axis_frontier_width": 122,
+      "complete_radius_one_band_frontier_width": 126,
+      "diameter": 30,
+      "diameter_geodesic": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        330,
+        329,
+        327,
+        324,
+        320,
+        315,
+        309,
+        302,
+        294,
+        285,
+        640,
+        639,
+        637,
+        634,
+        630,
+        625,
+        619,
+        612,
+        604,
+        595
+      ],
+      "face_count": 1002,
+      "frequency": 10,
+      "graph_hash": "48923dd4414eb08c4ed645b60b174ddab1f2d85aa7b4c66d1266bf6b3accaac0",
+      "local_cut_carriers": [
+        {
+          "carrier_face_count": 12,
+          "carrier_frontier_width": 23,
+          "cut": 0
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 1
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 2
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 3
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 4
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 5
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 6
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 7
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 8
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 9
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 10
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 11
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 12
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 13
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 14
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 15
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 16
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 17
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 18
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 19
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 20
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 21
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 22
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 23
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 24
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 25
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 26
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 27
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 28
+        },
+        {
+          "carrier_face_count": 12,
+          "carrier_frontier_width": 23,
+          "cut": 29
+        }
+      ],
+      "maximum_axis_prefix_frontier_width": 122,
+      "maximum_cap_radial_frontier_width": 100,
+      "maximum_local_carrier_face_count": 16,
+      "maximum_local_carrier_frontier_width": 30,
+      "maximum_radius_one_prefix_frontier_width": 126,
+      "prefixes": [
+        {
+          "axis_face_count": 1,
+          "axis_frontier_width": 5,
+          "radius_one_band_face_count": 6,
+          "radius_one_band_frontier_width": 15
+        },
+        {
+          "axis_face_count": 2,
+          "axis_frontier_width": 9,
+          "radius_one_band_face_count": 9,
+          "radius_one_band_frontier_width": 19
+        },
+        {
+          "axis_face_count": 3,
+          "axis_frontier_width": 13,
+          "radius_one_band_face_count": 12,
+          "radius_one_band_frontier_width": 23
+        },
+        {
+          "axis_face_count": 4,
+          "axis_frontier_width": 17,
+          "radius_one_band_face_count": 15,
+          "radius_one_band_frontier_width": 27
+        },
+        {
+          "axis_face_count": 5,
+          "axis_frontier_width": 21,
+          "radius_one_band_face_count": 18,
+          "radius_one_band_frontier_width": 31
+        },
+        {
+          "axis_face_count": 6,
+          "axis_frontier_width": 25,
+          "radius_one_band_face_count": 21,
+          "radius_one_band_frontier_width": 35
+        },
+        {
+          "axis_face_count": 7,
+          "axis_frontier_width": 29,
+          "radius_one_band_face_count": 24,
+          "radius_one_band_frontier_width": 39
+        },
+        {
+          "axis_face_count": 8,
+          "axis_frontier_width": 33,
+          "radius_one_band_face_count": 27,
+          "radius_one_band_frontier_width": 43
+        },
+        {
+          "axis_face_count": 9,
+          "axis_frontier_width": 37,
+          "radius_one_band_face_count": 30,
+          "radius_one_band_frontier_width": 47
+        },
+        {
+          "axis_face_count": 10,
+          "axis_frontier_width": 41,
+          "radius_one_band_face_count": 33,
+          "radius_one_band_frontier_width": 50
+        },
+        {
+          "axis_face_count": 11,
+          "axis_frontier_width": 44,
+          "radius_one_band_face_count": 35,
+          "radius_one_band_frontier_width": 52
+        },
+        {
+          "axis_face_count": 12,
+          "axis_frontier_width": 48,
+          "radius_one_band_face_count": 38,
+          "radius_one_band_frontier_width": 56
+        },
+        {
+          "axis_face_count": 13,
+          "axis_frontier_width": 52,
+          "radius_one_band_face_count": 41,
+          "radius_one_band_frontier_width": 60
+        },
+        {
+          "axis_face_count": 14,
+          "axis_frontier_width": 56,
+          "radius_one_band_face_count": 44,
+          "radius_one_band_frontier_width": 64
+        },
+        {
+          "axis_face_count": 15,
+          "axis_frontier_width": 60,
+          "radius_one_band_face_count": 47,
+          "radius_one_band_frontier_width": 68
+        },
+        {
+          "axis_face_count": 16,
+          "axis_frontier_width": 64,
+          "radius_one_band_face_count": 50,
+          "radius_one_band_frontier_width": 72
+        },
+        {
+          "axis_face_count": 17,
+          "axis_frontier_width": 68,
+          "radius_one_band_face_count": 53,
+          "radius_one_band_frontier_width": 76
+        },
+        {
+          "axis_face_count": 18,
+          "axis_frontier_width": 72,
+          "radius_one_band_face_count": 56,
+          "radius_one_band_frontier_width": 80
+        },
+        {
+          "axis_face_count": 19,
+          "axis_frontier_width": 76,
+          "radius_one_band_face_count": 59,
+          "radius_one_band_frontier_width": 84
+        },
+        {
+          "axis_face_count": 20,
+          "axis_frontier_width": 80,
+          "radius_one_band_face_count": 62,
+          "radius_one_band_frontier_width": 87
+        },
+        {
+          "axis_face_count": 21,
+          "axis_frontier_width": 83,
+          "radius_one_band_face_count": 64,
+          "radius_one_band_frontier_width": 89
+        },
+        {
+          "axis_face_count": 22,
+          "axis_frontier_width": 87,
+          "radius_one_band_face_count": 67,
+          "radius_one_band_frontier_width": 93
+        },
+        {
+          "axis_face_count": 23,
+          "axis_frontier_width": 91,
+          "radius_one_band_face_count": 70,
+          "radius_one_band_frontier_width": 97
+        },
+        {
+          "axis_face_count": 24,
+          "axis_frontier_width": 95,
+          "radius_one_band_face_count": 73,
+          "radius_one_band_frontier_width": 101
+        },
+        {
+          "axis_face_count": 25,
+          "axis_frontier_width": 99,
+          "radius_one_band_face_count": 76,
+          "radius_one_band_frontier_width": 105
+        },
+        {
+          "axis_face_count": 26,
+          "axis_frontier_width": 103,
+          "radius_one_band_face_count": 79,
+          "radius_one_band_frontier_width": 109
+        },
+        {
+          "axis_face_count": 27,
+          "axis_frontier_width": 107,
+          "radius_one_band_face_count": 82,
+          "radius_one_band_frontier_width": 113
+        },
+        {
+          "axis_face_count": 28,
+          "axis_frontier_width": 111,
+          "radius_one_band_face_count": 85,
+          "radius_one_band_frontier_width": 117
+        },
+        {
+          "axis_face_count": 29,
+          "axis_frontier_width": 115,
+          "radius_one_band_face_count": 88,
+          "radius_one_band_frontier_width": 121
+        },
+        {
+          "axis_face_count": 30,
+          "axis_frontier_width": 119,
+          "radius_one_band_face_count": 91,
+          "radius_one_band_frontier_width": 124
+        },
+        {
+          "axis_face_count": 31,
+          "axis_frontier_width": 122,
+          "radius_one_band_face_count": 93,
+          "radius_one_band_frontier_width": 126
+        }
+      ],
+      "primal_vertex_count": 2000
+    },
+    {
+      "complete_axis_frontier_width": 134,
+      "complete_radius_one_band_frontier_width": 138,
+      "diameter": 33,
+      "diameter_geodesic": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        396,
+        395,
+        393,
+        390,
+        386,
+        381,
+        375,
+        368,
+        360,
+        351,
+        341,
+        770,
+        769,
+        767,
+        764,
+        760,
+        755,
+        749,
+        742,
+        734,
+        725,
+        715
+      ],
+      "face_count": 1212,
+      "frequency": 11,
+      "graph_hash": "e03d161b67eef89537dda0d9ca9ffebbcda8764876e741cc12c1d60db6b7a984",
+      "local_cut_carriers": [
+        {
+          "carrier_face_count": 12,
+          "carrier_frontier_width": 23,
+          "cut": 0
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 1
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 2
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 3
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 4
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 5
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 6
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 7
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 8
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 9
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 10
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 11
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 12
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 13
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 14
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 15
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 16
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 17
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 18
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 19
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 20
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 21
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 22
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 23
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 24
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 25
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 26
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 27
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 28
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 29
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 30
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 31
+        },
+        {
+          "carrier_face_count": 12,
+          "carrier_frontier_width": 23,
+          "cut": 32
+        }
+      ],
+      "maximum_axis_prefix_frontier_width": 134,
+      "maximum_cap_radial_frontier_width": 110,
+      "maximum_local_carrier_face_count": 16,
+      "maximum_local_carrier_frontier_width": 30,
+      "maximum_radius_one_prefix_frontier_width": 138,
+      "prefixes": [
+        {
+          "axis_face_count": 1,
+          "axis_frontier_width": 5,
+          "radius_one_band_face_count": 6,
+          "radius_one_band_frontier_width": 15
+        },
+        {
+          "axis_face_count": 2,
+          "axis_frontier_width": 9,
+          "radius_one_band_face_count": 9,
+          "radius_one_band_frontier_width": 19
+        },
+        {
+          "axis_face_count": 3,
+          "axis_frontier_width": 13,
+          "radius_one_band_face_count": 12,
+          "radius_one_band_frontier_width": 23
+        },
+        {
+          "axis_face_count": 4,
+          "axis_frontier_width": 17,
+          "radius_one_band_face_count": 15,
+          "radius_one_band_frontier_width": 27
+        },
+        {
+          "axis_face_count": 5,
+          "axis_frontier_width": 21,
+          "radius_one_band_face_count": 18,
+          "radius_one_band_frontier_width": 31
+        },
+        {
+          "axis_face_count": 6,
+          "axis_frontier_width": 25,
+          "radius_one_band_face_count": 21,
+          "radius_one_band_frontier_width": 35
+        },
+        {
+          "axis_face_count": 7,
+          "axis_frontier_width": 29,
+          "radius_one_band_face_count": 24,
+          "radius_one_band_frontier_width": 39
+        },
+        {
+          "axis_face_count": 8,
+          "axis_frontier_width": 33,
+          "radius_one_band_face_count": 27,
+          "radius_one_band_frontier_width": 43
+        },
+        {
+          "axis_face_count": 9,
+          "axis_frontier_width": 37,
+          "radius_one_band_face_count": 30,
+          "radius_one_band_frontier_width": 47
+        },
+        {
+          "axis_face_count": 10,
+          "axis_frontier_width": 41,
+          "radius_one_band_face_count": 33,
+          "radius_one_band_frontier_width": 51
+        },
+        {
+          "axis_face_count": 11,
+          "axis_frontier_width": 45,
+          "radius_one_band_face_count": 36,
+          "radius_one_band_frontier_width": 54
+        },
+        {
+          "axis_face_count": 12,
+          "axis_frontier_width": 48,
+          "radius_one_band_face_count": 38,
+          "radius_one_band_frontier_width": 56
+        },
+        {
+          "axis_face_count": 13,
+          "axis_frontier_width": 52,
+          "radius_one_band_face_count": 41,
+          "radius_one_band_frontier_width": 60
+        },
+        {
+          "axis_face_count": 14,
+          "axis_frontier_width": 56,
+          "radius_one_band_face_count": 44,
+          "radius_one_band_frontier_width": 64
+        },
+        {
+          "axis_face_count": 15,
+          "axis_frontier_width": 60,
+          "radius_one_band_face_count": 47,
+          "radius_one_band_frontier_width": 68
+        },
+        {
+          "axis_face_count": 16,
+          "axis_frontier_width": 64,
+          "radius_one_band_face_count": 50,
+          "radius_one_band_frontier_width": 72
+        },
+        {
+          "axis_face_count": 17,
+          "axis_frontier_width": 68,
+          "radius_one_band_face_count": 53,
+          "radius_one_band_frontier_width": 76
+        },
+        {
+          "axis_face_count": 18,
+          "axis_frontier_width": 72,
+          "radius_one_band_face_count": 56,
+          "radius_one_band_frontier_width": 80
+        },
+        {
+          "axis_face_count": 19,
+          "axis_frontier_width": 76,
+          "radius_one_band_face_count": 59,
+          "radius_one_band_frontier_width": 84
+        },
+        {
+          "axis_face_count": 20,
+          "axis_frontier_width": 80,
+          "radius_one_band_face_count": 62,
+          "radius_one_band_frontier_width": 88
+        },
+        {
+          "axis_face_count": 21,
+          "axis_frontier_width": 84,
+          "radius_one_band_face_count": 65,
+          "radius_one_band_frontier_width": 92
+        },
+        {
+          "axis_face_count": 22,
+          "axis_frontier_width": 88,
+          "radius_one_band_face_count": 68,
+          "radius_one_band_frontier_width": 95
+        },
+        {
+          "axis_face_count": 23,
+          "axis_frontier_width": 91,
+          "radius_one_band_face_count": 70,
+          "radius_one_band_frontier_width": 97
+        },
+        {
+          "axis_face_count": 24,
+          "axis_frontier_width": 95,
+          "radius_one_band_face_count": 73,
+          "radius_one_band_frontier_width": 101
+        },
+        {
+          "axis_face_count": 25,
+          "axis_frontier_width": 99,
+          "radius_one_band_face_count": 76,
+          "radius_one_band_frontier_width": 105
+        },
+        {
+          "axis_face_count": 26,
+          "axis_frontier_width": 103,
+          "radius_one_band_face_count": 79,
+          "radius_one_band_frontier_width": 109
+        },
+        {
+          "axis_face_count": 27,
+          "axis_frontier_width": 107,
+          "radius_one_band_face_count": 82,
+          "radius_one_band_frontier_width": 113
+        },
+        {
+          "axis_face_count": 28,
+          "axis_frontier_width": 111,
+          "radius_one_band_face_count": 85,
+          "radius_one_band_frontier_width": 117
+        },
+        {
+          "axis_face_count": 29,
+          "axis_frontier_width": 115,
+          "radius_one_band_face_count": 88,
+          "radius_one_band_frontier_width": 121
+        },
+        {
+          "axis_face_count": 30,
+          "axis_frontier_width": 119,
+          "radius_one_band_face_count": 91,
+          "radius_one_band_frontier_width": 125
+        },
+        {
+          "axis_face_count": 31,
+          "axis_frontier_width": 123,
+          "radius_one_band_face_count": 94,
+          "radius_one_band_frontier_width": 129
+        },
+        {
+          "axis_face_count": 32,
+          "axis_frontier_width": 127,
+          "radius_one_band_face_count": 97,
+          "radius_one_band_frontier_width": 133
+        },
+        {
+          "axis_face_count": 33,
+          "axis_frontier_width": 131,
+          "radius_one_band_face_count": 100,
+          "radius_one_band_frontier_width": 136
+        },
+        {
+          "axis_face_count": 34,
+          "axis_frontier_width": 134,
+          "radius_one_band_face_count": 102,
+          "radius_one_band_frontier_width": 138
+        }
+      ],
+      "primal_vertex_count": 2420
+    },
+    {
+      "complete_axis_frontier_width": 146,
+      "complete_radius_one_band_frontier_width": 150,
+      "diameter": 36,
+      "diameter_geodesic": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        468,
+        467,
+        465,
+        462,
+        458,
+        453,
+        447,
+        440,
+        432,
+        423,
+        413,
+        402,
+        912,
+        911,
+        909,
+        906,
+        902,
+        897,
+        891,
+        884,
+        876,
+        867,
+        857,
+        846
+      ],
+      "face_count": 1442,
+      "frequency": 12,
+      "graph_hash": "ec92e9d51a74848a609d45824a077863d624150377b1812b603f8c2b1b702575",
+      "local_cut_carriers": [
+        {
+          "carrier_face_count": 12,
+          "carrier_frontier_width": 23,
+          "cut": 0
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 1
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 2
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 3
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 4
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 5
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 6
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 7
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 8
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 9
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 10
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 11
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 12
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 13
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 14
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 15
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 16
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 17
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 18
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 19
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 20
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 21
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 22
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 23
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 24
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 25
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 26
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 27
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 28
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 29
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 30
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 31
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 30,
+          "cut": 32
+        },
+        {
+          "carrier_face_count": 16,
+          "carrier_frontier_width": 29,
+          "cut": 33
+        },
+        {
+          "carrier_face_count": 15,
+          "carrier_frontier_width": 27,
+          "cut": 34
+        },
+        {
+          "carrier_face_count": 12,
+          "carrier_frontier_width": 23,
+          "cut": 35
+        }
+      ],
+      "maximum_axis_prefix_frontier_width": 146,
+      "maximum_cap_radial_frontier_width": 120,
+      "maximum_local_carrier_face_count": 16,
+      "maximum_local_carrier_frontier_width": 30,
+      "maximum_radius_one_prefix_frontier_width": 150,
+      "prefixes": [
+        {
+          "axis_face_count": 1,
+          "axis_frontier_width": 5,
+          "radius_one_band_face_count": 6,
+          "radius_one_band_frontier_width": 15
+        },
+        {
+          "axis_face_count": 2,
+          "axis_frontier_width": 9,
+          "radius_one_band_face_count": 9,
+          "radius_one_band_frontier_width": 19
+        },
+        {
+          "axis_face_count": 3,
+          "axis_frontier_width": 13,
+          "radius_one_band_face_count": 12,
+          "radius_one_band_frontier_width": 23
+        },
+        {
+          "axis_face_count": 4,
+          "axis_frontier_width": 17,
+          "radius_one_band_face_count": 15,
+          "radius_one_band_frontier_width": 27
+        },
+        {
+          "axis_face_count": 5,
+          "axis_frontier_width": 21,
+          "radius_one_band_face_count": 18,
+          "radius_one_band_frontier_width": 31
+        },
+        {
+          "axis_face_count": 6,
+          "axis_frontier_width": 25,
+          "radius_one_band_face_count": 21,
+          "radius_one_band_frontier_width": 35
+        },
+        {
+          "axis_face_count": 7,
+          "axis_frontier_width": 29,
+          "radius_one_band_face_count": 24,
+          "radius_one_band_frontier_width": 39
+        },
+        {
+          "axis_face_count": 8,
+          "axis_frontier_width": 33,
+          "radius_one_band_face_count": 27,
+          "radius_one_band_frontier_width": 43
+        },
+        {
+          "axis_face_count": 9,
+          "axis_frontier_width": 37,
+          "radius_one_band_face_count": 30,
+          "radius_one_band_frontier_width": 47
+        },
+        {
+          "axis_face_count": 10,
+          "axis_frontier_width": 41,
+          "radius_one_band_face_count": 33,
+          "radius_one_band_frontier_width": 51
+        },
+        {
+          "axis_face_count": 11,
+          "axis_frontier_width": 45,
+          "radius_one_band_face_count": 36,
+          "radius_one_band_frontier_width": 55
+        },
+        {
+          "axis_face_count": 12,
+          "axis_frontier_width": 49,
+          "radius_one_band_face_count": 39,
+          "radius_one_band_frontier_width": 58
+        },
+        {
+          "axis_face_count": 13,
+          "axis_frontier_width": 52,
+          "radius_one_band_face_count": 41,
+          "radius_one_band_frontier_width": 60
+        },
+        {
+          "axis_face_count": 14,
+          "axis_frontier_width": 56,
+          "radius_one_band_face_count": 44,
+          "radius_one_band_frontier_width": 64
+        },
+        {
+          "axis_face_count": 15,
+          "axis_frontier_width": 60,
+          "radius_one_band_face_count": 47,
+          "radius_one_band_frontier_width": 68
+        },
+        {
+          "axis_face_count": 16,
+          "axis_frontier_width": 64,
+          "radius_one_band_face_count": 50,
+          "radius_one_band_frontier_width": 72
+        },
+        {
+          "axis_face_count": 17,
+          "axis_frontier_width": 68,
+          "radius_one_band_face_count": 53,
+          "radius_one_band_frontier_width": 76
+        },
+        {
+          "axis_face_count": 18,
+          "axis_frontier_width": 72,
+          "radius_one_band_face_count": 56,
+          "radius_one_band_frontier_width": 80
+        },
+        {
+          "axis_face_count": 19,
+          "axis_frontier_width": 76,
+          "radius_one_band_face_count": 59,
+          "radius_one_band_frontier_width": 84
+        },
+        {
+          "axis_face_count": 20,
+          "axis_frontier_width": 80,
+          "radius_one_band_face_count": 62,
+          "radius_one_band_frontier_width": 88
+        },
+        {
+          "axis_face_count": 21,
+          "axis_frontier_width": 84,
+          "radius_one_band_face_count": 65,
+          "radius_one_band_frontier_width": 92
+        },
+        {
+          "axis_face_count": 22,
+          "axis_frontier_width": 88,
+          "radius_one_band_face_count": 68,
+          "radius_one_band_frontier_width": 96
+        },
+        {
+          "axis_face_count": 23,
+          "axis_frontier_width": 92,
+          "radius_one_band_face_count": 71,
+          "radius_one_band_frontier_width": 100
+        },
+        {
+          "axis_face_count": 24,
+          "axis_frontier_width": 96,
+          "radius_one_band_face_count": 74,
+          "radius_one_band_frontier_width": 103
+        },
+        {
+          "axis_face_count": 25,
+          "axis_frontier_width": 99,
+          "radius_one_band_face_count": 76,
+          "radius_one_band_frontier_width": 105
+        },
+        {
+          "axis_face_count": 26,
+          "axis_frontier_width": 103,
+          "radius_one_band_face_count": 79,
+          "radius_one_band_frontier_width": 109
+        },
+        {
+          "axis_face_count": 27,
+          "axis_frontier_width": 107,
+          "radius_one_band_face_count": 82,
+          "radius_one_band_frontier_width": 113
+        },
+        {
+          "axis_face_count": 28,
+          "axis_frontier_width": 111,
+          "radius_one_band_face_count": 85,
+          "radius_one_band_frontier_width": 117
+        },
+        {
+          "axis_face_count": 29,
+          "axis_frontier_width": 115,
+          "radius_one_band_face_count": 88,
+          "radius_one_band_frontier_width": 121
+        },
+        {
+          "axis_face_count": 30,
+          "axis_frontier_width": 119,
+          "radius_one_band_face_count": 91,
+          "radius_one_band_frontier_width": 125
+        },
+        {
+          "axis_face_count": 31,
+          "axis_frontier_width": 123,
+          "radius_one_band_face_count": 94,
+          "radius_one_band_frontier_width": 129
+        },
+        {
+          "axis_face_count": 32,
+          "axis_frontier_width": 127,
+          "radius_one_band_face_count": 97,
+          "radius_one_band_frontier_width": 133
+        },
+        {
+          "axis_face_count": 33,
+          "axis_frontier_width": 131,
+          "radius_one_band_face_count": 100,
+          "radius_one_band_frontier_width": 137
+        },
+        {
+          "axis_face_count": 34,
+          "axis_frontier_width": 135,
+          "radius_one_band_face_count": 103,
+          "radius_one_band_frontier_width": 141
+        },
+        {
+          "axis_face_count": 35,
+          "axis_frontier_width": 139,
+          "radius_one_band_face_count": 106,
+          "radius_one_band_frontier_width": 145
+        },
+        {
+          "axis_face_count": 36,
+          "axis_frontier_width": 143,
+          "radius_one_band_face_count": 109,
+          "radius_one_band_frontier_width": 148
+        },
+        {
+          "axis_face_count": 37,
+          "axis_frontier_width": 146,
+          "radius_one_band_face_count": 111,
+          "radius_one_band_frontier_width": 150
+        }
+      ],
+      "primal_vertex_count": 2880
+    }
+  ],
+  "pre_registered_bounds": {
+    "local_carrier_frontier": 30,
+    "tube_frontier": 10
+  },
+  "schema": "fourcolor-v24-geodesic-transfer-gate-v1",
+  "scope_warning": "This refutes only the inference from the checked radius-one locality lemma to a bounded complete one-dimensional interface. It does not refute a target-forced or two-directional transfer.",
+  "tube_control_passed": true,
+  "tube_controls": [
+    {
+      "frontier_widths": [
+        5,
+        10,
+        5,
+        10,
+        5
+      ],
+      "length": 1,
+      "maximum_distance": 5,
+      "maximum_frontier_width": 10,
+      "primal_vertex_count": 30
+    },
+    {
+      "frontier_widths": [
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5
+      ],
+      "length": 2,
+      "maximum_distance": 7,
+      "maximum_frontier_width": 10,
+      "primal_vertex_count": 40
+    },
+    {
+      "frontier_widths": [
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5
+      ],
+      "length": 3,
+      "maximum_distance": 9,
+      "maximum_frontier_width": 10,
+      "primal_vertex_count": 50
+    },
+    {
+      "frontier_widths": [
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5
+      ],
+      "length": 4,
+      "maximum_distance": 11,
+      "maximum_frontier_width": 10,
+      "primal_vertex_count": 60
+    },
+    {
+      "frontier_widths": [
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5
+      ],
+      "length": 5,
+      "maximum_distance": 13,
+      "maximum_frontier_width": 10,
+      "primal_vertex_count": 70
+    },
+    {
+      "frontier_widths": [
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5
+      ],
+      "length": 6,
+      "maximum_distance": 15,
+      "maximum_frontier_width": 10,
+      "primal_vertex_count": 80
+    },
+    {
+      "frontier_widths": [
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5
+      ],
+      "length": 7,
+      "maximum_distance": 17,
+      "maximum_frontier_width": 10,
+      "primal_vertex_count": 90
+    },
+    {
+      "frontier_widths": [
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5
+      ],
+      "length": 8,
+      "maximum_distance": 19,
+      "maximum_frontier_width": 10,
+      "primal_vertex_count": 100
+    },
+    {
+      "frontier_widths": [
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5
+      ],
+      "length": 9,
+      "maximum_distance": 21,
+      "maximum_frontier_width": 10,
+      "primal_vertex_count": 110
+    },
+    {
+      "frontier_widths": [
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5
+      ],
+      "length": 10,
+      "maximum_distance": 23,
+      "maximum_frontier_width": 10,
+      "primal_vertex_count": 120
+    },
+    {
+      "frontier_widths": [
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5
+      ],
+      "length": 11,
+      "maximum_distance": 25,
+      "maximum_frontier_width": 10,
+      "primal_vertex_count": 130
+    },
+    {
+      "frontier_widths": [
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5
+      ],
+      "length": 12,
+      "maximum_distance": 27,
+      "maximum_frontier_width": 10,
+      "primal_vertex_count": 140
+    },
+    {
+      "frontier_widths": [
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5
+      ],
+      "length": 13,
+      "maximum_distance": 29,
+      "maximum_frontier_width": 10,
+      "primal_vertex_count": 150
+    },
+    {
+      "frontier_widths": [
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5
+      ],
+      "length": 14,
+      "maximum_distance": 31,
+      "maximum_frontier_width": 10,
+      "primal_vertex_count": 160
+    },
+    {
+      "frontier_widths": [
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5
+      ],
+      "length": 15,
+      "maximum_distance": 33,
+      "maximum_frontier_width": 10,
+      "primal_vertex_count": 170
+    },
+    {
+      "frontier_widths": [
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5
+      ],
+      "length": 16,
+      "maximum_distance": 35,
+      "maximum_frontier_width": 10,
+      "primal_vertex_count": 180
+    },
+    {
+      "frontier_widths": [
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5
+      ],
+      "length": 17,
+      "maximum_distance": 37,
+      "maximum_frontier_width": 10,
+      "primal_vertex_count": 190
+    },
+    {
+      "frontier_widths": [
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5
+      ],
+      "length": 18,
+      "maximum_distance": 39,
+      "maximum_frontier_width": 10,
+      "primal_vertex_count": 200
+    },
+    {
+      "frontier_widths": [
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5
+      ],
+      "length": 19,
+      "maximum_distance": 41,
+      "maximum_frontier_width": 10,
+      "primal_vertex_count": 210
+    },
+    {
+      "frontier_widths": [
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5,
+        10,
+        5
+      ],
+      "length": 20,
+      "maximum_distance": 43,
+      "maximum_frontier_width": 10,
+      "primal_vertex_count": 220
+    }
+  ],
+  "verdict": "second_direction_required_on_test_family"
+}
