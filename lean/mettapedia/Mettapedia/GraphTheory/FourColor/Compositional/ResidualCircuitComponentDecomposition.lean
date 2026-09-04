@@ -27,6 +27,7 @@ open MatchingParity
 open ResidualCircuitParity
 open ResidualCircuitPhysicalReachability
 open SimpleGraph
+open scoped Function
 
 attribute [-instance]
   GoertzelV24RetainedVertexRotationSplice.retainedVertexFintype
@@ -204,6 +205,148 @@ theorem newResidual_reachable_iff_exists_eqvGen_and_common_reachable
                 (sigma.exchange site.tau site.carrier
                   site.sigma_closed site.tau_closed) from inf_le_right)))
 
+/-! ## One oriented circuit covers one physical component -/
+
+/-- An old residual component rooted on the carrier is covered exactly by the
+common return components whose roots lie in one oriented finite circuit.
+
+The earlier `EqvGen` statement sees both orientations.  The return pairing
+identifies the two roots of each common path, so one oriented orbit is a
+sufficient transversal for the physical component. -/
+theorem oldResidual_reachable_iff_exists_mem_orientedOrbit_and_common_reachable
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (root : CyclePosition sigma site) (target : V) :
+    (residualGraph G sigma).Reachable
+        (cycleVertexOrder sigma site root).1 target ↔
+      ∃ position : CyclePosition sigma site,
+        position ∈ CircuitPartition.orientedOrbit
+          (orderedSiteReturnPairing hG sigma hSigma site)
+          (orderedSiteTauPairing sigma site) root ∧
+        (commonResidualGraph G sigma site).Reachable
+          (cycleVertexOrder sigma site position).1 target := by
+  let returns := orderedSiteReturnPairing hG sigma hSigma site
+  constructor
+  · intro hreach
+    rcases (oldResidual_reachable_iff_exists_eqvGen_and_common_reachable
+      hG sigma hSigma site root target).1 hreach with
+      ⟨position, habstract, hcommon⟩
+    change Relation.EqvGen
+      (fun left right =>
+        right = returns.partner left ∨
+          right = (orderedSiteTauPairing sigma site).partner left)
+      root position at habstract
+    have hsplit :=
+      (CircuitPartition.eqvGen_alternatingStep_iff_sameCycle_or_firstPartner
+        returns (orderedSiteTauPairing sigma site) root position).1
+        habstract
+    rcases hsplit with hsame | hopposite
+    · exact ⟨position,
+        (CircuitPartition.mem_orientedOrbit _ _ _ _).2 hsame, hcommon⟩
+    · let opposite := returns.partner position
+      refine ⟨opposite,
+        (CircuitPartition.mem_orientedOrbit _ _ _ _).2 hopposite, ?_⟩
+      have hreturn :=
+        orderedSiteReturnPairing_reachable hG sigma hSigma site position
+      exact hreturn.symm.trans hcommon
+  · rintro ⟨position, horbit, hcommon⟩
+    exact (oldResidual_reachable_of_mem_orientedOrbit
+      hG sigma hSigma site root position horbit).trans
+        (hcommon.map (SimpleGraph.Hom.ofLE
+          (show commonResidualGraph G sigma site ≤ residualGraph G sigma from
+            inf_le_left)))
+
+/-- The same one-orientation cover after exchange, with the local `sigma`
+pairing in place of `tau`. -/
+theorem newResidual_reachable_iff_exists_mem_orientedOrbit_and_common_reachable
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (root : CyclePosition sigma site) (target : V) :
+    (residualGraph G
+      (sigma.exchange site.tau site.carrier
+        site.sigma_closed site.tau_closed)).Reachable
+        (cycleVertexOrder sigma site root).1 target ↔
+      ∃ position : CyclePosition sigma site,
+        position ∈ CircuitPartition.orientedOrbit
+          (orderedSiteReturnPairing hG sigma hSigma site)
+          (orderedSiteSigmaPairing sigma site) root ∧
+        (commonResidualGraph G sigma site).Reachable
+          (cycleVertexOrder sigma site position).1 target := by
+  let returns := orderedSiteReturnPairing hG sigma hSigma site
+  constructor
+  · intro hreach
+    rcases (newResidual_reachable_iff_exists_eqvGen_and_common_reachable
+      hG sigma hSigma site root target).1 hreach with
+      ⟨position, habstract, hcommon⟩
+    change Relation.EqvGen
+      (fun left right =>
+        right = returns.partner left ∨
+          right = (orderedSiteSigmaPairing sigma site).partner left)
+      root position at habstract
+    have hsplit :=
+      (CircuitPartition.eqvGen_alternatingStep_iff_sameCycle_or_firstPartner
+        returns (orderedSiteSigmaPairing sigma site) root position).1
+        habstract
+    rcases hsplit with hsame | hopposite
+    · exact ⟨position,
+        (CircuitPartition.mem_orientedOrbit _ _ _ _).2 hsame, hcommon⟩
+    · let opposite := returns.partner position
+      refine ⟨opposite,
+        (CircuitPartition.mem_orientedOrbit _ _ _ _).2 hopposite, ?_⟩
+      have hreturn :=
+        orderedSiteReturnPairing_reachable hG sigma hSigma site position
+      exact hreturn.symm.trans hcommon
+  · rintro ⟨position, horbit, hcommon⟩
+    exact (newResidual_reachable_of_mem_orientedOrbit
+      hG sigma hSigma site root position horbit).trans
+        (hcommon.map (SimpleGraph.Hom.ofLE
+          (show commonResidualGraph G sigma site ≤
+              residualGraph G
+                (sigma.exchange site.tau site.carrier
+                  site.sigma_closed site.tau_closed) from inf_le_right)))
+
+/-- Distinct positions in one oriented finite circuit index distinct common
+return components.  The only two carrier positions in one common component
+are return partners, and a return-pair edge reverses the circuit orientation. -/
+theorem commonComponent_ne_of_mem_orientedOrbit_of_ne
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (localPairing : Pairing (CyclePosition sigma site))
+    (root : CyclePosition sigma site)
+    {left right : CyclePosition sigma site}
+    (hleft : left ∈ CircuitPartition.orientedOrbit
+      (orderedSiteReturnPairing hG sigma hSigma site) localPairing root)
+    (hright : right ∈ CircuitPartition.orientedOrbit
+      (orderedSiteReturnPairing hG sigma hSigma site) localPairing root)
+    (hne : left ≠ right) :
+    (commonResidualGraph G sigma site).connectedComponentMk
+        (cycleVertexOrder sigma site left).1 ≠
+      (commonResidualGraph G sigma site).connectedComponentMk
+        (cycleVertexOrder sigma site right).1 := by
+  intro heq
+  have hreach := SimpleGraph.ConnectedComponent.exact heq
+  rcases eq_or_eq_orderedReturnPartner_of_commonResidual_reachable
+      hG sigma hSigma site left right hreach with hsame | hpartner
+  · exact hne hsame.symm
+  · let returns := orderedSiteReturnPairing hG sigma hSigma site
+    apply CircuitPartition.not_sameCycle_first_partner
+      returns localPairing left
+    have hleftCycle :=
+      (CircuitPartition.mem_orientedOrbit
+        returns localPairing root left).1 hleft
+    have hrightCycle :=
+      (CircuitPartition.mem_orientedOrbit
+        returns localPairing root right).1 hright
+    have hcycle : (CircuitPartition.step returns localPairing).SameCycle
+        left right := hleftCycle.symm.trans hrightCycle
+    simpa only [returns, hpartner] using hcycle
+
 /-- A canonical return path exhausts its connected component in the common
 residual graph.  Endpoints have degree one and every internal path vertex has
 degree two, so the path already uses every incident edge at each of its
@@ -357,6 +500,253 @@ theorem commonComponent_ncard_eq_orderedReturnPath_length_add_one
     List.toFinset_card_of_nodup
     (orderedReturnPath_isPath hG sigma hSigma site position).support_nodup,
     path.length_support]
+
+/-! ## Physical component cardinality and circuit parity -/
+
+/-- An old residual component based on the alternating carrier is the disjoint
+union, over one oriented finite circuit, of its common return components. -/
+theorem oldResidual_component_supp_eq_iUnion_commonComponent
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (root : CyclePosition sigma site) :
+    ((residualGraph G sigma).connectedComponentMk
+        (cycleVertexOrder sigma site root).1).supp =
+      ⋃ position :
+          {position // position ∈ CircuitPartition.orientedOrbit
+            (orderedSiteReturnPairing hG sigma hSigma site)
+            (orderedSiteTauPairing sigma site) root},
+        ((commonResidualGraph G sigma site).connectedComponentMk
+          (cycleVertexOrder sigma site position).1).supp := by
+  ext target
+  constructor
+  · intro htarget
+    have hreach : (residualGraph G sigma).Reachable
+        (cycleVertexOrder sigma site root).1 target := by
+      exact (SimpleGraph.ConnectedComponent.exact htarget).symm
+    rcases
+        (oldResidual_reachable_iff_exists_mem_orientedOrbit_and_common_reachable
+          hG sigma hSigma site root target).1 hreach with
+      ⟨position, horbit, hcommon⟩
+    apply Set.mem_iUnion.2
+    refine ⟨⟨position, horbit⟩, ?_⟩
+    exact SimpleGraph.ConnectedComponent.sound hcommon.symm
+  · intro htarget
+    rcases Set.mem_iUnion.1 htarget with ⟨position, hposition⟩
+    have hcommon : (commonResidualGraph G sigma site).Reachable
+        (cycleVertexOrder sigma site position).1 target := by
+      exact (SimpleGraph.ConnectedComponent.exact hposition).symm
+    have hreach :=
+      (oldResidual_reachable_iff_exists_mem_orientedOrbit_and_common_reachable
+        hG sigma hSigma site root target).2
+        ⟨position, position.property, hcommon⟩
+    exact SimpleGraph.ConnectedComponent.sound hreach.symm
+
+/-- The analogous disjoint-union description of the residual component after
+the matching exchange. -/
+theorem newResidual_component_supp_eq_iUnion_commonComponent
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (root : CyclePosition sigma site) :
+    ((residualGraph G
+      (sigma.exchange site.tau site.carrier
+        site.sigma_closed site.tau_closed)).connectedComponentMk
+          (cycleVertexOrder sigma site root).1).supp =
+      ⋃ position :
+          {position // position ∈ CircuitPartition.orientedOrbit
+            (orderedSiteReturnPairing hG sigma hSigma site)
+            (orderedSiteSigmaPairing sigma site) root},
+        ((commonResidualGraph G sigma site).connectedComponentMk
+          (cycleVertexOrder sigma site position).1).supp := by
+  ext target
+  constructor
+  · intro htarget
+    have hreach : (residualGraph G
+        (sigma.exchange site.tau site.carrier
+          site.sigma_closed site.tau_closed)).Reachable
+        (cycleVertexOrder sigma site root).1 target := by
+      exact (SimpleGraph.ConnectedComponent.exact htarget).symm
+    rcases
+        (newResidual_reachable_iff_exists_mem_orientedOrbit_and_common_reachable
+          hG sigma hSigma site root target).1 hreach with
+      ⟨position, horbit, hcommon⟩
+    apply Set.mem_iUnion.2
+    refine ⟨⟨position, horbit⟩, ?_⟩
+    exact SimpleGraph.ConnectedComponent.sound hcommon.symm
+  · intro htarget
+    rcases Set.mem_iUnion.1 htarget with ⟨position, hposition⟩
+    have hcommon : (commonResidualGraph G sigma site).Reachable
+        (cycleVertexOrder sigma site position).1 target := by
+      exact (SimpleGraph.ConnectedComponent.exact hposition).symm
+    have hreach :=
+      (newResidual_reachable_iff_exists_mem_orientedOrbit_and_common_reachable
+        hG sigma hSigma site root target).2
+        ⟨position, position.property, hcommon⟩
+    exact SimpleGraph.ConnectedComponent.sound hreach.symm
+
+/-- The size of an old physical residual component is the sum of the sizes of
+the canonical return paths selected by one oriented finite circuit. -/
+theorem oldResidual_component_ncard_eq_sum_return_lengths
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (root : CyclePosition sigma site) :
+    ((residualGraph G sigma).connectedComponentMk
+        (cycleVertexOrder sigma site root).1).supp.ncard =
+      ∑ position :
+          {position // position ∈ CircuitPartition.orientedOrbit
+            (orderedSiteReturnPairing hG sigma hSigma site)
+            (orderedSiteTauPairing sigma site) root},
+        ((orderedReturnPath hG sigma hSigma site position).length + 1) := by
+  let orbit := CircuitPartition.orientedOrbit
+    (orderedSiteReturnPairing hG sigma hSigma site)
+    (orderedSiteTauPairing sigma site) root
+  let pieces : {position // position ∈ orbit} → Set V := fun position =>
+    ((commonResidualGraph G sigma site).connectedComponentMk
+      (cycleVertexOrder sigma site position).1).supp
+  have hunion : ((residualGraph G sigma).connectedComponentMk
+        (cycleVertexOrder sigma site root).1).supp =
+      ⋃ position : {position // position ∈ orbit}, pieces position := by
+    simpa only [orbit, pieces] using
+      oldResidual_component_supp_eq_iUnion_commonComponent
+        hG sigma hSigma site root
+  have hdisjoint : Pairwise (Disjoint on pieces) := by
+    intro left right hne
+    apply SimpleGraph.pairwise_disjoint_supp_connectedComponent
+    apply commonComponent_ne_of_mem_orientedOrbit_of_ne
+      hG sigma hSigma site (orderedSiteTauPairing sigma site) root
+      left.property right.property
+    exact fun heq => hne (Subtype.ext heq)
+  calc
+    ((residualGraph G sigma).connectedComponentMk
+        (cycleVertexOrder sigma site root).1).supp.ncard =
+        (⋃ position : {position // position ∈ orbit}, pieces position).ncard :=
+      congrArg Set.ncard hunion
+    _ = ∑ᶠ position : {position // position ∈ orbit},
+          (pieces position).ncard :=
+      Set.ncard_iUnion_of_finite (fun _ => Set.toFinite _) hdisjoint
+    _ = ∑ position : {position // position ∈ orbit},
+          (pieces position).ncard := finsum_eq_sum_of_fintype _
+    _ = ∑ position : {position // position ∈ orbit},
+          ((orderedReturnPath hG sigma hSigma site position).length + 1) := by
+      exact Fintype.sum_congr
+        (fun position : {position // position ∈ orbit} =>
+          (pieces position).ncard)
+        (fun position : {position // position ∈ orbit} =>
+          (orderedReturnPath hG sigma hSigma site position).length + 1)
+        (fun position => by
+          simpa only [pieces] using
+            commonComponent_ncard_eq_orderedReturnPath_length_add_one
+              hG sigma hSigma site (position : CyclePosition sigma site))
+
+/-- The corresponding exact cardinality formula after exchange. -/
+theorem newResidual_component_ncard_eq_sum_return_lengths
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (root : CyclePosition sigma site) :
+    ((residualGraph G
+      (sigma.exchange site.tau site.carrier
+        site.sigma_closed site.tau_closed)).connectedComponentMk
+          (cycleVertexOrder sigma site root).1).supp.ncard =
+      ∑ position :
+          {position // position ∈ CircuitPartition.orientedOrbit
+            (orderedSiteReturnPairing hG sigma hSigma site)
+            (orderedSiteSigmaPairing sigma site) root},
+        ((orderedReturnPath hG sigma hSigma site position).length + 1) := by
+  let orbit := CircuitPartition.orientedOrbit
+    (orderedSiteReturnPairing hG sigma hSigma site)
+    (orderedSiteSigmaPairing sigma site) root
+  let pieces : {position // position ∈ orbit} → Set V := fun position =>
+    ((commonResidualGraph G sigma site).connectedComponentMk
+      (cycleVertexOrder sigma site position).1).supp
+  have hunion : ((residualGraph G
+      (sigma.exchange site.tau site.carrier
+        site.sigma_closed site.tau_closed)).connectedComponentMk
+          (cycleVertexOrder sigma site root).1).supp =
+      ⋃ position : {position // position ∈ orbit}, pieces position := by
+    simpa only [orbit, pieces] using
+      newResidual_component_supp_eq_iUnion_commonComponent
+        hG sigma hSigma site root
+  have hdisjoint : Pairwise (Disjoint on pieces) := by
+    intro left right hne
+    apply SimpleGraph.pairwise_disjoint_supp_connectedComponent
+    apply commonComponent_ne_of_mem_orientedOrbit_of_ne
+      hG sigma hSigma site (orderedSiteSigmaPairing sigma site) root
+      left.property right.property
+    exact fun heq => hne (Subtype.ext heq)
+  calc
+    ((residualGraph G
+      (sigma.exchange site.tau site.carrier
+        site.sigma_closed site.tau_closed)).connectedComponentMk
+          (cycleVertexOrder sigma site root).1).supp.ncard =
+        (⋃ position : {position // position ∈ orbit}, pieces position).ncard :=
+      congrArg Set.ncard hunion
+    _ = ∑ᶠ position : {position // position ∈ orbit},
+          (pieces position).ncard :=
+      Set.ncard_iUnion_of_finite (fun _ => Set.toFinite _) hdisjoint
+    _ = ∑ position : {position // position ∈ orbit},
+          (pieces position).ncard := finsum_eq_sum_of_fintype _
+    _ = ∑ position : {position // position ∈ orbit},
+          ((orderedReturnPath hG sigma hSigma site position).length + 1) := by
+      exact Fintype.sum_congr
+        (fun position : {position // position ∈ orbit} =>
+          (pieces position).ncard)
+        (fun position : {position // position ∈ orbit} =>
+          (orderedReturnPath hG sigma hSigma site position).length + 1)
+        (fun position => by
+          simpa only [pieces] using
+            commonComponent_ncard_eq_orderedReturnPath_length_add_one
+              hG sigma hSigma site (position : CyclePosition sigma site))
+
+/-- The finite old-circuit parity is exactly the cardinality parity of its
+physical residual connected component. -/
+theorem oldResidual_component_cardParity_eq_oldCircuitParity
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (root : CyclePosition sigma site) :
+    (((residualGraph G sigma).connectedComponentMk
+        (cycleVertexOrder sigma site root).1).supp.ncard : ZMod 2) =
+      oldCircuitParity hG sigma hSigma site root := by
+  rw [oldCircuitParity_eq_path_sum,
+    ResidualReturnParity.orderedSiteReturnParityPairing_toPairing]
+  have hcard := congrArg (fun cardinality : Nat => (cardinality : ZMod 2))
+    (oldResidual_component_ncard_eq_sum_return_lengths
+      hG sigma hSigma site root)
+  rw [hcard]
+  push_cast
+  simp only [Finset.sum_add_distrib, Finset.sum_const, nsmul_eq_mul,
+    mul_one, Finset.card_univ, Fintype.card_coe]
+
+/-- The finite new-circuit parity is likewise the cardinality parity of the
+physical residual component after exchange. -/
+theorem newResidual_component_cardParity_eq_newCircuitParity
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (root : CyclePosition sigma site) :
+    (((residualGraph G
+      (sigma.exchange site.tau site.carrier
+        site.sigma_closed site.tau_closed)).connectedComponentMk
+          (cycleVertexOrder sigma site root).1).supp.ncard : ZMod 2) =
+      newCircuitParity hG sigma hSigma site root := by
+  rw [newCircuitParity_eq_path_sum,
+    ResidualReturnParity.orderedSiteReturnParityPairing_toPairing]
+  have hcard := congrArg (fun cardinality : Nat => (cardinality : ZMod 2))
+    (newResidual_component_ncard_eq_sum_return_lengths
+      hG sigma hSigma site root)
+  rw [hcard]
+  push_cast
+  simp only [Finset.sum_add_distrib, Finset.sum_const, nsmul_eq_mul,
+    mul_one, Finset.card_univ, Fintype.card_coe]
 
 end
 

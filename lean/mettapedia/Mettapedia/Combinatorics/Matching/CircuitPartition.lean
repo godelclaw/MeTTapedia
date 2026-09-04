@@ -157,6 +157,220 @@ theorem orientedOrbit_first_partner_eq_second_partner
   orientedOrbit_eq_of_sameCycle first second
     (sameCycle_first_partner_second_partner first second root)
 
+omit [Fintype V] [DecidableEq V] in
+/-- Moving the first pairing past an alternating-step power reverses the
+direction of that power. -/
+theorem first_mul_step_pow (first second : Pairing V) (exponent : Nat) :
+    first.toPerm * ((step first second) ^ exponent) =
+      ((step first second)⁻¹ ^ exponent) * first.toPerm := by
+  have hconj : first.toPerm * step first second * first.toPerm =
+      (step first second)⁻¹ := by
+    simpa only [step] using first.conj_comp_eq_inv second
+  have hfirstStep : first.toPerm * step first second =
+      (step first second)⁻¹ * first.toPerm := by
+    calc
+      first.toPerm * step first second =
+          (first.toPerm * step first second * first.toPerm) *
+            first.toPerm := by
+              rw [mul_assoc, first.toPerm_mul_self, mul_one]
+      _ = (step first second)⁻¹ * first.toPerm := by rw [hconj]
+  induction exponent with
+  | zero => simp
+  | succ exponent ih =>
+      calc
+        first.toPerm * (step first second) ^ (exponent + 1) =
+            first.toPerm * ((step first second) ^ exponent *
+              step first second) := by rw [pow_succ]
+        _ = (first.toPerm * (step first second) ^ exponent) *
+              step first second := by rw [mul_assoc]
+        _ = (((step first second)⁻¹ ^ exponent) * first.toPerm) *
+              step first second := by rw [ih]
+        _ = ((step first second)⁻¹ ^ exponent) *
+              (first.toPerm * step first second) := by rw [mul_assoc]
+        _ = ((step first second)⁻¹ ^ exponent) *
+              ((step first second)⁻¹ * first.toPerm) := by rw [hfirstStep]
+        _ = (((step first second)⁻¹ ^ exponent) *
+              (step first second)⁻¹) * first.toPerm := by rw [mul_assoc]
+        _ = ((step first second)⁻¹ ^ (exponent + 1)) *
+              first.toPerm := by rw [pow_succ]
+
+omit [DecidableEq V] in
+/-- The two oriented halves of an alternating circuit are distinct.  If an
+alternating-step power carried `root` to its first partner, splitting the
+power into even and odd cases would respectively give a fixed point of the
+first or second pairing. -/
+theorem not_sameCycle_first_partner
+    (first second : Pairing V) (root : V) :
+    ¬ (step first second).SameCycle root (first.partner root) := by
+  intro hcycle
+  obtain ⟨n, hn⟩ := hcycle.exists_nat_pow_eq
+  rcases Nat.even_or_odd' n with ⟨k, rfl | rfl⟩
+  · apply first.partner_ne (((step first second) ^ k) root)
+    change first.toPerm (((step first second) ^ k) root) =
+      ((step first second) ^ k) root
+    rw [← Equiv.Perm.mul_apply, first_mul_step_pow,
+      Equiv.Perm.mul_apply]
+    change ((step first second)⁻¹ ^ k) (first.partner root) =
+      ((step first second) ^ k) root
+    rw [← hn, ← Equiv.Perm.mul_apply]
+    simpa only [Equiv.Perm.mul_apply] using
+      congrArg (fun p : Equiv.Perm V => p root)
+        (show ((step first second)⁻¹ ^ k) *
+            (step first second) ^ (2 * k) =
+          (step first second) ^ k by group)
+  · apply second.partner_ne (((step first second) ^ k) root)
+    change second.toPerm (((step first second) ^ k) root) =
+      ((step first second) ^ k) root
+    have hfirstStep : first.toPerm * step first second = second.toPerm := by
+      simp only [step]
+      rw [← mul_assoc, first.toPerm_mul_self, one_mul]
+    have hsecondMove : second.toPerm * ((step first second) ^ k) =
+        ((step first second)⁻¹ ^ (k + 1)) * first.toPerm := by
+      calc
+        second.toPerm * (step first second) ^ k =
+            (first.toPerm * step first second) *
+              (step first second) ^ k := by rw [hfirstStep]
+        _ = first.toPerm *
+              (step first second * (step first second) ^ k) := by rw [mul_assoc]
+        _ = first.toPerm * (step first second) ^ (k + 1) := by
+          rw [pow_succ']
+        _ = ((step first second)⁻¹ ^ (k + 1)) * first.toPerm :=
+          first_mul_step_pow _ _ _
+    rw [← Equiv.Perm.mul_apply, hsecondMove, Equiv.Perm.mul_apply]
+    change ((step first second)⁻¹ ^ (k + 1)) (first.partner root) =
+      ((step first second) ^ k) root
+    rw [← hn, ← Equiv.Perm.mul_apply]
+    simpa only [Equiv.Perm.mul_apply] using
+      congrArg (fun p : Equiv.Perm V => p root)
+        (show ((step first second)⁻¹ ^ (k + 1)) *
+            (step first second) ^ (2 * k + 1) =
+          (step first second) ^ k by group)
+
+/-- The two oriented orbit carriers of one alternating circuit are disjoint. -/
+theorem disjoint_orientedOrbit_first_partner
+    (first second : Pairing V) (root : V) :
+    Disjoint (orientedOrbit first second root)
+      (orientedOrbit first second (first.partner root)) := by
+  rw [Finset.disjoint_left]
+  intro vertex hroot hopposite
+  apply not_sameCycle_first_partner first second root
+  exact ((mem_orientedOrbit first second root vertex).1 hroot).trans
+    ((mem_orientedOrbit first second (first.partner root) vertex).1
+      hopposite).symm
+
+/-! ### Oriented halves and the undirected alternating component -/
+
+omit [DecidableEq V] in
+/-- The equivalence relation generated by the two matching edges is the union
+of the two orientations of an alternating circuit.  The first disjunct keeps
+the chosen orientation; the second reaches the opposite orientation through
+one `first` edge.
+
+This is the graph-free transversal statement needed when an alternating
+circuit is assembled from physical paths: one oriented orbit chooses one end
+of every path represented by the `first` matching. -/
+theorem eqvGen_alternatingStep_iff_sameCycle_or_firstPartner
+    (first second : Pairing V) (root vertex : V) :
+    Relation.EqvGen
+        (fun left right =>
+          right = first.partner left ∨ right = second.partner left)
+        root vertex ↔
+      (step first second).SameCycle root vertex ∨
+        (step first second).SameCycle root (first.partner vertex) := by
+  let sameUndirected : V → V → Prop := fun left right =>
+    (step first second).SameCycle left right ∨
+      (step first second).SameCycle left (first.partner right)
+  have hsymm : ∀ {left right}, sameUndirected left right →
+      sameUndirected right left := by
+    intro left right h
+    rcases h with hsame | hopposite
+    · exact Or.inl hsame.symm
+    · right
+      have hpartner : (step first second).SameCycle
+          (first.partner left) right := by
+        apply (sameCycle_first_partner_iff first second
+          (first.partner left) right).1
+        simpa only [first.partner_partner] using hopposite
+      exact hpartner.symm
+  have htrans : ∀ {left middle right},
+      sameUndirected left middle → sameUndirected middle right →
+        sameUndirected left right := by
+    intro left middle right hleft hright
+    rcases hleft with hleft | hleft <;>
+      rcases hright with hright | hright
+    · exact Or.inl (hleft.trans hright)
+    · exact Or.inr (hleft.trans hright)
+    · right
+      have hpartner : (step first second).SameCycle
+          (first.partner middle) (first.partner right) :=
+        (sameCycle_first_partner_iff first second middle right).2 hright
+      exact hleft.trans hpartner
+    · left
+      have hpartner : (step first second).SameCycle
+          (first.partner middle) right := by
+        apply (sameCycle_first_partner_iff first second
+          (first.partner middle) right).1
+        simpa only [first.partner_partner] using hright
+      exact hleft.trans hpartner
+  constructor
+  · intro hreach
+    change sameUndirected root vertex
+    induction hreach with
+    | rel left right hedge =>
+        rcases hedge with rfl | rfl
+        · right
+          simpa only [first.partner_partner] using
+            (Equiv.Perm.SameCycle.rfl (f := step first second) (x := left))
+        · right
+          exact ⟨1, by simp only [zpow_one, step_apply]⟩
+    | refl =>
+        exact Or.inl
+          (Equiv.Perm.SameCycle.rfl (f := step first second) (x := _))
+    | symm _ _ _ ih => exact hsymm ih
+    | trans _ _ _ _ _ ihLeft ihRight => exact htrans ihLeft ihRight
+  · intro h
+    have hsameCycle : ∀ {left right},
+        (step first second).SameCycle left right →
+          Relation.EqvGen
+            (fun x y =>
+              y = first.partner x ∨ y = second.partner x)
+            left right := by
+      intro left right hcycle
+      obtain ⟨power, hpower⟩ := hcycle.exists_nat_pow_eq
+      have hpowers : ∀ exponent : Nat,
+          Relation.EqvGen
+            (fun x y =>
+              y = first.partner x ∨ y = second.partner x)
+            left (((step first second) ^ exponent) left) := by
+        intro exponent
+        induction exponent with
+        | zero =>
+            simpa using Relation.EqvGen.refl left
+        | succ exponent ih =>
+            let current := ((step first second) ^ exponent) left
+            have hsecond : Relation.EqvGen
+                (fun x y =>
+                  y = first.partner x ∨ y = second.partner x)
+                current (second.partner current) :=
+              Relation.EqvGen.rel _ _ (Or.inr rfl)
+            have hfirst : Relation.EqvGen
+                (fun x y =>
+                  y = first.partner x ∨ y = second.partner x)
+                (second.partner current)
+                (first.partner (second.partner current)) :=
+              Relation.EqvGen.rel _ _ (Or.inl rfl)
+            have hnext := Relation.EqvGen.trans _ _ _
+              (Relation.EqvGen.trans _ _ _ ih hsecond) hfirst
+            simpa only [current, step_apply, pow_succ', Equiv.Perm.mul_apply]
+              using hnext
+      simpa only [hpower] using hpowers power
+    rcases h with hsame | hopposite
+    · exact hsameCycle hsame
+    · exact Relation.EqvGen.trans root (first.partner vertex) vertex
+        (hsameCycle hopposite)
+        (Relation.EqvGen.symm _ _
+          (Relation.EqvGen.rel vertex (first.partner vertex) (Or.inl rfl)))
+
 variable {A : Type v} [AddCommMonoid A]
 
 /-- Sum one matching's edge labels over an oriented circuit.  Each edge of
