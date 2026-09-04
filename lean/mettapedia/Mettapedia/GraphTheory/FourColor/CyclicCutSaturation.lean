@@ -268,6 +268,24 @@ structure ConnectedAtWidth (G : SimpleGraph V) [DecidableRel G.Adj]
   complement_connected :
     (G.induce (fun vertex => ¬ realization.side vertex)).Connected
 
+/-- A connected cut certified at one width remains certified at every larger
+width.  The underlying cut, realization, and connected sides are unchanged. -/
+def ConnectedAtWidth.widen
+    {small large : Nat} (cut : ConnectedAtWidth G small)
+    (hbound : small ≤ large) : ConnectedAtWidth G large where
+  edgeCut := cut.edgeCut
+  realization := cut.realization
+  card_le := cut.card_le.trans hbound
+  side_connected := cut.side_connected
+  complement_connected := cut.complement_connected
+
+@[simp]
+theorem ConnectedAtWidth.widen_realization
+    {small large : Nat} (cut : ConnectedAtWidth G small)
+    (hbound : small ≤ large) :
+    (cut.widen hbound).realization = cut.realization :=
+  rfl
+
 /-- Saturate one specified cyclic cut while retaining the fact that the
 connected result uses only edges of the original cut.  This is the
 provenance-preserving form needed when the original cut came from a concrete
