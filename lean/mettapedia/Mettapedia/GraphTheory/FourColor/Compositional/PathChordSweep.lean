@@ -127,4 +127,31 @@ def noncrossingMatchingOfChordDiagram
     left
     exact ⟨hleft, hcrossing.2.1, hcrossing.2.2⟩
 
+/-- The LIFO stack has one entry for each physical chord crossing the sweep
+cut.  This is the cardinality seam between the finite sweep representation
+and the underlying chord diagram; labels do not affect it. -/
+theorem stackAt_length_noncrossingMatchingOfChordDiagram
+    {K : Type u} {length : Nat}
+    (chords : Finset (OrderedPathChord length))
+    (hdisjoint : PairwiseEndpointDisjoint chords)
+    (hnoncrossing : PairwiseNoncrossing chords)
+    (label : OrderedPathChord length → K)
+    (cut : Fin length) :
+    ((noncrossingMatchingOfChordDiagram chords hdisjoint hnoncrossing label).stackAt
+        cut).length =
+      (chords.filter fun chord => chord.left < cut ∧ cut ≤ chord.right).card := by
+  simp only [GoertzelV24NoncrossingSweepLifo.NoncrossingMatching.stackAt,
+    GoertzelV24NoncrossingSweepLifo.NoncrossingMatching.openArcs,
+    noncrossingMatchingOfChordDiagram, List.length_map, List.length_reverse,
+    orderedArcList, List.filter_map]
+  have hnodup :
+      (List.filter
+        ((fun arc => decide (arc.left < cut ∧ cut ≤ arc.right)) ∘
+          chordArc label)
+        (chords.sort (fun first second => first ≤ second))).Nodup := by
+    apply List.Nodup.filter
+    simp
+  rw [← List.toFinset_card_of_nodup hnodup]
+  simp [chordArc]
+
 end Mettapedia.GraphTheory.FourColor.Compositional.PathChordSweep
