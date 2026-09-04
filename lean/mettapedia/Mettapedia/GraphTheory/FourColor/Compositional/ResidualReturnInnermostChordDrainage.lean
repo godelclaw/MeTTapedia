@@ -19,6 +19,7 @@ namespace Mettapedia.GraphTheory.FourColor.Compositional
 namespace ResidualReturnInnermostChordDrainage
 
 open AmbientReturnAttachmentSweep
+open CubicPathAttachment
 open CubicPathChordDiagram
 open GoertzelV24OrderedMeshResidualSiteMatching
 open GoertzelV24ResidualExchange
@@ -115,6 +116,117 @@ theorem exists_innermostChordDrainage
       site returnChord other hotherInternal,
       internalChordTurn_of_isInternalChord rotation hG sigma hSigma site
         returnChord selected hselectedInternal] using hturnNe
+
+/-- Every non-endpoint-exception position in the open interval cut off by an
+innermost chord either leaves the ambient return path or is incident to an
+internal chord of the opposite turn. -/
+theorem external_or_oppositeTurnChord_of_inside
+    (rotation : Data G)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (returnChord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (drainage : InnermostChordDrainage rotation hG sigma hSigma site
+      returnChord)
+    (position : AmbientReturnInternalPosition hG sigma hSigma site
+      returnChord)
+    (hinside : drainage.chord.left < position.coordinate ∧
+      position.coordinate < drainage.chord.right)
+    (hnotEndpoint : ¬IsEndpointAttachment
+      (orderedChordAmbientPath_isPath hG sigma hSigma site returnChord)
+      (regularOfDegreeThree_of_cubicIncidentTriples hG) position) :
+    IsExternalAttachment
+        (orderedChordAmbientPath_isPath hG sigma hSigma site returnChord)
+        (regularOfDegreeThree_of_cubicIncidentTriples hG) position ∨
+      ∃ other,
+        other ∈ internalChords
+          (orderedChordAmbientPath hG sigma hSigma site returnChord) ∧
+        (position.coordinate = other.left ∨
+          position.coordinate = other.right) ∧
+        internalChordTurn rotation hG sigma hSigma site returnChord other ≠
+          internalChordTurn rotation hG sigma hSigma site returnChord
+            drainage.chord := by
+  let path := orderedChordAmbientPath hG sigma hSigma site returnChord
+  let hpath := orderedChordAmbientPath_isPath hG sigma hSigma site returnChord
+  let hregular := regularOfDegreeThree_of_cubicIncidentTriples hG
+  rcases external_or_endpoint_or_mem_internalChord hpath hregular position with
+    hexternal | hendpoint | ⟨other, hother, hincident⟩
+  · exact Or.inl hexternal
+  · exact False.elim (hnotEndpoint hendpoint)
+  · right
+    have hne : other ≠ drainage.chord := by
+      intro heq
+      subst other
+      rcases hincident with hleft | hright
+      · have := hinside.1
+        rw [hleft] at this
+        exact (lt_irrefl _ this)
+      · have := hinside.2
+        rw [hright] at this
+        exact (lt_irrefl _ this)
+    have htouches : other.HasEndpointInside drainage.chord := by
+      rcases hincident with hleft | hright
+      · left
+        simpa only [← hleft] using hinside
+      · right
+        simpa only [← hright] using hinside
+    exact ⟨other, hother, hincident,
+      drainage.touching_chords_drain other hother hne htouches⟩
+
+/-- Sweep coordinates have already discarded the endpoint-return exceptions.
+Consequently, every eligible coordinate inside an innermost chord either has
+an external attachment or belongs to an opposite-turn internal chord. -/
+theorem external_or_oppositeTurnChord_of_eligible_inside
+    (rotation : Data G)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (site : ProperAlternatingSiteWitness G sigma first second)
+    (returnChord : OrderedReturnChord
+      (orderedSiteReturnPairing hG sigma hSigma site))
+    (drainage : InnermostChordDrainage rotation hG sigma hSigma site
+      returnChord)
+    (coordinate : Fin
+      ((orderedChordAmbientPath hG sigma hSigma site returnChord).length + 1))
+    (heligible : coordinate ∈ eligibleAmbientReturnSweepPositions hG sigma
+      hSigma site returnChord)
+    (hinside : drainage.chord.left < coordinate ∧
+      coordinate < drainage.chord.right) :
+    (∃ position : AmbientReturnInternalPosition hG sigma hSigma site
+        returnChord,
+      position.coordinate = coordinate ∧
+        IsExternalAttachment
+          (orderedChordAmbientPath_isPath hG sigma hSigma site returnChord)
+          (regularOfDegreeThree_of_cubicIncidentTriples hG) position) ∨
+      ∃ other,
+        other ∈ internalChords
+          (orderedChordAmbientPath hG sigma hSigma site returnChord) ∧
+        (coordinate = other.left ∨ coordinate = other.right) ∧
+        internalChordTurn rotation hG sigma hSigma site returnChord other ≠
+          internalChordTurn rotation hG sigma hSigma site returnChord
+            drainage.chord := by
+  rcases Finset.mem_image.mp heligible with
+    ⟨position, hposition, hcoordinate⟩
+  have hnotEndpoint : ¬IsEndpointAttachment
+      (orderedChordAmbientPath_isPath hG sigma hSigma site returnChord)
+      (regularOfDegreeThree_of_cubicIncidentTriples hG) position := by
+    intro hendpoint
+    exact (Finset.mem_sdiff.mp hposition).2
+      ((mem_endpointAttachmentPositions_iff
+        (orderedChordAmbientPath_isPath hG sigma hSigma site returnChord)
+        (regularOfDegreeThree_of_cubicIncidentTriples hG) position).mpr
+          hendpoint)
+  have hinsidePosition : drainage.chord.left < position.coordinate ∧
+      position.coordinate < drainage.chord.right := by
+    simpa only [hcoordinate] using hinside
+  rcases external_or_oppositeTurnChord_of_inside rotation hG sigma hSigma site
+      returnChord drainage position hinsidePosition hnotEndpoint with
+    hexternal | ⟨other, hother, hincident, hturn⟩
+  · exact Or.inl ⟨position, hcoordinate, hexternal⟩
+  · exact Or.inr ⟨other, hother, by
+      simpa only [← hcoordinate] using hincident, hturn⟩
 
 end
 

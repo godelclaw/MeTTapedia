@@ -7960,11 +7960,16 @@ earlier separator alternative now has only its face-side branch.
 \Sverified{Mettapedia.GraphTheory.exists_innermost_orderedPathChord}
 \Sverified{Mettapedia.GraphTheory.OrderedPathChord.crosses_of_hasEndpointInside_of_innermost}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnInnermostChordDrainage.exists_innermostChordDrainage}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnInnermostChordDrainage.external_or_oppositeTurnChord_of_eligible_inside}
 If the full internal-chord diagram of a physical residual return is nonempty,
 it contains an innermost chord $c$.  This chord is an actual edge of the
 reference matching.  Every distinct internal chord having an endpoint on the
 open path interval cut off by $c$ crosses $c$, and therefore has the opposite
-local attachment turn.
+local attachment turn.  More precisely, every sweep-eligible coordinate in
+that open interval either has a third edge leaving the ambient return path or
+is incident to such an opposite-turn chord.  The eligibility condition removes
+exactly the bounded endpoint-return exceptions already accounted for by the
+sweep budget.
 
 This is the exact residual-return analogue of the combinatorial drainage core
 of the source's Sector-Alternation Lemma.  It does not by itself construct the
