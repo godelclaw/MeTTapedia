@@ -788,6 +788,74 @@ and both remain open.  An end-to-end rest-state canary
 (\texttt{rest\_conditional\_route}) checks that the refined hypotheses are
 simultaneously satisfiable.
 
+\section{The direction-coherence refinement of the pin}
+\label{sec:coherence}
+
+The September 2026 campaign adjudicated the Biot--Savart self-depletion
+mechanism of the pancake budget by pre-registered kinematic experiment,
+then distilled and proved the surviving content, and committed a
+strictly sharper pin.  All statements below are machine-checked with
+the standard three axioms; the labs are
+\texttt{ns\_pancake\_kinematic\_depletion\_lab.py} and
+\texttt{ns\_pancake\_coherent\_aggregate\_lab.py} in the validation lab,
+with pre-registered verdict criteria recorded in the files before
+execution.
+
+\emph{The dichotomy.}  Wavevector-cone confinement alone does not
+deplete pairwise stretching.  In the exact lattice interaction model
+(the amplitude-level Fourier symbol of $S(u)\omega$ with Biot--Savart
+velocity), the aggregate cone gain equals the cone measure (measured
+$D \sim \delta^{2.06}$ across dyadic shells), while the worst pair
+saturates the generic maximum at every aperture.  The distilled exact
+statement (\texttt{PancakeConeDirectionDichotomy}): the axial source
+$k_1=(0,0,m)$ with vorticity $e_x$ stretches the \emph{perpendicular}
+in-plane vorticity direction $e_y$ of the cone receiver $k_2=(1,0,M)$
+with $\sigma^2 = 1/4$ exactly, for all $m, M$; the \emph{aligned}
+polarization $(-M,0,1)$ of the same wavevector pair is depleted at
+exactly $\sigma^2 = 1/(4(1+M^2))$.  The operative small parameter of
+the self-depletion mechanism is therefore the vorticity-direction
+misalignment inside the pancake --- the Constantin--Fefferman coherence
+quantity --- not the wavevector cone.
+
+\emph{The coherent pair estimate (proved).}  Give every mode the
+direction-coherent polarization: the fixed in-plane reference $e_x$
+projected off the wavevector.  Then
+(\texttt{PancakeCoherentPairEstimate.sigmaSq\_coherent\_le}) for
+wavevectors inside pancake cones of squared apertures
+$d_1, d_2 \le 1/4$,
+\[
+  \sigma^2 \le 6\,(d_1 + d_2),
+\]
+with the mechanism carried by the exact identity
+$k \times (|k|^2 e_x - (k\cdot e_x)k) = |k|^2 (0, k_z, -k_y)$: the
+Biot--Savart velocity of a coherent mode is perpendicular to the
+reference direction.  The bound aggregates over any finite family of
+coherent sources (\texttt{sum\_sigmaSq\_coherent\_le}), matching the
+measured coherent-aggregate gain of the second lab.
+
+\emph{The refined pin (committed).}  The module
+\texttt{MisalignmentRefinedPin} splits the pancake-sector functional
+into a direction-coherent share, carrying the interface form of the
+proved aperture-gain kinematics, and a misalignment share; the new pin
+\texttt{MisalignmentStrainBudget} demands the time-integrable envelope
+only for the misalignment share, and the sealed reduction
+\texttt{scaleLocalPancakeStrainBudget\_of\_misalignmentBudget}
+reproduces the original budget with gain
+$\mathrm{coherentGain} + \varepsilon$.  The refinement is strict: the
+open burden moved from the full pancake stretching sum to its
+misalignment share, whose controlling quantity is the direction
+variation --- a quantity with known dynamical handles (the vorticity
+direction equation), unlike the raw strain.
+
+\emph{Exact unproven boundary.}  (i) The field-level transfer:
+realizing the split and the coherent interface for actual
+Littlewood--Paley Navier--Stokes data from the mode-level kinematics
+(a quantitative coherent/misaligned decomposition of real vorticity
+fields).  (ii) The misalignment budget itself: dynamical,
+time-integrated control of the misalignment share; the checked fences
+of Sections~\ref{sec:lean}, \ref{sec:aperture} and the static no-go
+apply to it verbatim.
+
 \section{Status and scope}
 \label{sec:scope}
 
@@ -867,11 +935,14 @@ demonstrating its hypotheses are simultaneously satisfiable.
 Navier--Stokes statement.  The latest pancake-closure proposal fails as a
 complete proof because its aperture split requires the pointwise scale-local
 condition $\gamma\le\nu\lambda_q$, and that condition is exactly the burden of
-the unresolved self-consistent strain estimate.  The open analytic input is
-\texttt{ScaleLocalPancakeStrainBudget}, cross-referenced with the coarser
-\texttt{StochasticStretchingEstimate}.  A successful completion must prove a
-pointwise-in-time, scale-local, Biot--Savart self-consistency estimate strong
-enough to cover the gap band identified above.
+the unresolved self-consistent strain estimate.  After the September 2026
+refinement (Section~\ref{sec:coherence}), the open analytic input is
+\texttt{MisalignmentStrainBudget} together with the field-level
+coherent/misaligned transfer, which jointly reproduce
+\texttt{ScaleLocalPancakeStrainBudget} (cross-referenced with the coarser
+\texttt{StochasticStretchingEstimate}).  A successful completion must prove a
+dynamical, time-integrated control of the vorticity-direction misalignment
+share, strong enough to cover the gap band identified above.
 
 \section*{Provenance}
 The manuscript discussed is Ben Goertzel, \emph{Global Regularity of 3D
