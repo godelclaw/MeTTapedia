@@ -972,8 +972,8 @@ of the coherently projected normalized Biot--Savart stretching interaction;
 off that chart both sides vanish.  Thus the periodic kernel now acts exactly
 as the localized coherent PDE interaction on finite Fourier fields.
 
-The module \texttt{PancakeDyadicKernelScaling} starts the passage from this
-base chart to actual dyadic shells.  For every positive $r$ it proves
+The module \texttt{PancakeDyadicKernelScaling} carries this base chart to
+actual square-dyadic shells.  For every positive $r$ it proves
 \[
  \int_{\mathbb R^6}\!\|r^6K(rx)\|\,dx
    =\int_{\mathbb R^6}\!\|K(x)\|\,dx,
@@ -981,11 +981,30 @@ base chart to actual dyadic shells.  For every positive $r$ it proves
  \widehat{r^6K(r\,\cdot)}(\xi)=\widehat K(\xi/r),
 \]
 and proves the corresponding exact fundamental-cell coefficient after
-periodization.  It also constructs the square-dyadic chart and checks that
-at aperture $\delta=1/N$ its source and receiver frequencies are exactly the
-physical lattice frequencies divided by $N^2$.  What remains at this endpoint
-is the four-transverse/two-axial anisotropic rescaling, finite chart/rotation
-assembly, and the variable-frame remainder.
+periodization.  It then constructs a volume-preserving regrouping of the six
+variables into four transverse and two axial coordinates and proves
+\[
+ \int_{\mathbb R^6}\!\|\delta^5K(\delta x_\perp,x_{\rm ax})\|\,dx
+   =\delta\int_{\mathbb R^6}\!\|K(x)\|\,dx,
+ \qquad
+ \widehat K_\delta(\xi)
+   =\delta\widehat K(\xi_\perp/\delta,\xi_{\rm ax}).
+\]
+At aperture $\delta=1/N$ and shell scale $r=N^2$, the reciprocal argument is
+machine-checked to be precisely the source/receiver chart
+$(k_1/N,k_2/N,k_3/N^2)$ (and similarly for the second input).  Consequently
+the periodized square-dyadic kernel has both the exact coefficient
+\[
+ \widehat K_N^{\rm per}(k,l)=\frac1N
+ M_{\mathrm{norm},1/N}
+ \left(\frac{k_1}{N},\frac{k_2}{N},\frac{k_3}{N^2};
+       \frac{l_1}{N},\frac{l_2}{N},\frac{l_3}{N^2}\right)
+\]
+and the uniform fundamental-cell estimate
+$\int\|K_N^{\rm per}\|\leq C/N$ for every $N\geq2$.
+Thus the frozen-axis anisotropic square-dyadic transfer is discharged.  What
+remains at this endpoint is finite oriented chart/rotation assembly and the
+variable-frame remainder.
 
 There is a second field-level issue which a fixed-axis multiplier does not
 address.  The actual pancake frame is the eigensystem of the low-frequency
@@ -1002,11 +1021,11 @@ identity
 and bounds the second term by the frequencywise symbol oscillation times the
 actual Fourier-amplitude mass.  The uniform frozen-axis periodic kernel bound
 is now supplied by \texttt{PancakeBilinearPeriodization}; exact finite-field
-summation and isotropic dyadic scaling are supplied by the two subsequent
-modules above.  The remaining field-transfer pieces are the anisotropic
-square-dyadic rescaling, finite chart/rotation assembly, and control of the
-variable-frame remainder.  They are not silently included in the modewise
-estimate, and \texttt{coherent\_le} has not yet been instantiated.
+summation and the full anisotropic square-dyadic scaling are supplied by the
+two subsequent modules above.  The remaining field-transfer pieces are finite
+oriented chart/rotation assembly and control of the variable-frame remainder.
+They are not silently included in the modewise estimate, and
+\texttt{coherent\_le} has not yet been instantiated.
 
 \emph{The refined pin (committed).}  The module
 \texttt{MisalignmentRefinedPin} splits the pancake-sector functional
@@ -1030,10 +1049,11 @@ and variable/frozen split are now proved.  Uniform normalized Euclidean
 bilinear-kernel mass, exact standard-six-torus Fourier realization, and the
 frequency-uniform periodic $O(\delta)$ bilinear endpoint bound are also
 proved.  Exact finite-Fourier summation, inner-chart identification with the
-coherent PDE interaction, mass-preserving isotropic dyadic rescaling, and its
-cover-side periodized coefficient formula are now proved as well.  The
-remaining steps are the four-transverse/two-axial square-dyadic rescaling,
-finite chart/rotation transference, and a
+coherent PDE interaction, mass-preserving isotropic dyadic rescaling, exact
+four-transverse/two-axial scaling, square-dyadic chart identification, its
+periodized coefficient formula, and its uniform $C/N$ mass bound are now
+proved as well.  The remaining steps are finite chart/rotation transference
+and a
 quantitative bound for the spatial eigenframe-variation remainder, followed
 by their assembly into \texttt{coherent\_le} for the actual Navier--Stokes
 functionals.
@@ -1236,7 +1256,7 @@ coherent/misaligned transfer, which jointly reproduce
 spatially microlocal control of the variable-frame remainder and a dynamical,
 time-integrated control of the vorticity-direction misalignment share, strong
 enough to cover the gap band identified above.  It must also finish the
- anisotropic square-dyadic and finite chart/rotation assembly of the
+ finite chart/rotation assembly of the
 now-periodic bilinear kernel rather than assigning the aperture gain to the
 projection.
 Section
