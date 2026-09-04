@@ -187,11 +187,18 @@ if __name__ == '__main__':
         RING_MAX = int(sys.argv[3]) if len(sys.argv) > 3 else 12
         DEL = int(sys.argv[4]) if len(sys.argv) > 4 else 3
         out = []
+        done = {}
+        logp = f'patch_sweep_B{B}_r{RING_MAX}.log'
+        if os.path.exists(logp):            # resume: skip flower types already recorded
+            for line in open(logp):
+                if line.startswith('{'):
+                    r = json.loads(line); done[(r['s'], tuple(r['outs']))] = r
+            out.extend(done.values())
         for s in (5, 6, 7):
-            seen = set()
+            seen = set(done_key for done_key in done if done_key[0] == s)
             for outs in itertools.product(range(5, B + 1), repeat=s):
                 key = canon_outs(s, list(outs))
-                if key in seen: continue
+                if (s, key) in seen or key in seen: continue
                 seen.add(key)
                 n = sum(x - 4 for x in key)
                 if n > RING_MAX: continue
