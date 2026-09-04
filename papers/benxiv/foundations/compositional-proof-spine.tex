@@ -8147,16 +8147,70 @@ label supplies the final claim, and choosing $d$ one larger than any proposed
 uniform bound gives a contradiction.
 \end{proof}
 
-This sharpness result does not refute the source's Sector--Alternation route.
-It fixes its required semantics.  Addendum~XXVII uses a stronger two-rail
-statement: the disk cut off by each chord drains its internal attachments to
-the opposite rail, and the pumpable depth coordinate consists of the
-resulting alternating layer boundaries.  A one-path laminar family, even
-with a global two-sector noncrossing label, is not a substitute for those
-layers.  Consequently the one-path depth adapter is retained only as a
-conditional interface theorem; the source-facing proof must construct the
-alternating two-rail layers and prove their boundaries have one uniform
-width before applying finite-state repetition.
+The abstract sharpness result alone does not decide the source's stronger
+two-rail drainage premise.  That premise has therefore been tested directly
+on the annular specimens cited by the source.
+
+\begin{proposition}[small-case falsification gate for universal chord drainage]
+\label{prop:universal-chord-drainage-refuted-on-census}
+The statement that \emph{every} same-rail chord drains all of its strict
+interior third-colour attachments to the other rail or to a hole is false on
+the cited closed-web census annuli.  In the $C_{30}$ census there are $5412$
+proper colourings, $360$ totally closed webs, and $240$ two-rail webs.  Those
+two-rail webs contain $360$ same-rail chords and $240$ same-sector nested
+pairs, with nesting depth three.  In the $C_{40}$ census the corresponding
+figures are $31704$, $720$, $480$, $1440$, and $960$, again with depth three.
+
+On the $C_{30}$ two-rail webs, drainage holds for all $180$ innermost chords
+and fails for all $180$ chords which contain another chord.  A transparent
+certificate has the strict same-sector nest
+\[
+       (19,21)\supset(12,20)\supset(14,23).
+\]
+For the outer chord $(19,21)$, the third-colour edge $(12,20)$ begins and ends
+strictly inside the outer interval in the same face sector.  The standalone
+checker
+\texttt{lean/mettapedia/scripts/validation\_lab/verify\_sector\_alternation\_depth3.py}
+reconstructs proper Tait colouring, total closure, the two rails, the two
+face sectors, the depth-three nest, and this explicit drainage failure from
+the accompanying JSON certificate.
+
+This witness has boundary colour multiplicities $(3,2,0)$, not the good-word
+type $(3,1,1)$.  It therefore refutes the universal statement applied to the
+source's census specimens, but does not refute a new theorem explicitly
+restricted to good-word closed webs.  That distinction must remain visible
+in every downstream use.
+
+The source's separate raw count of $460$ chords is not reproduced by this
+audit.  Any raw statistic invariant under global permutation of the three
+nonzero colours has orbit sizes divisible by six on these proper colourings,
+whereas $460$ is not divisible by six.  Thus that number uses an unstated
+filter or quotient, or is a transcription error; it cannot be used as an
+unqualified raw count.
+\end{proposition}
+
+The failure is localized.  The checked arbitrary-chord construction still
+gives an exact chord cycle with a hole-free side,
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebChordHoleSideCutWitness.exists_exact_chordCycle_faceCut_with_holeFreeSide}
+and every strict internal path position still has its canonical third-colour
+edge,
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebRadialPathChords.exists_thirdColor_external_port_of_interior}.
+What fails is the extra inference that an edge not lying on the chord-cycle
+boundary must have its far endpoint outside the selected disk: a nested
+chord is not a boundary edge, does not cross the outer chord, and remains
+inside the disk.
+
+The surviving source-facing engine is innermost peeling.  For a minimum-span
+chord the prohibited nested case is absent, and the checked theorem supplies
+uniform drainage,
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ClosedWebInnermostChordDrainage.exists_innermost_exact_holeFreeSide_with_uniform_drainage}.
+After peeling that disk, the next proof obligation is not universal sector
+alternation.  It is a quantitative dichotomy: either one peeled band has a
+long gap yielding a shallow pumpable corridor, or many bounded gaps expose a
+fixed-width physical interface whose profile must repeat.  The observed
+depth-three census bound is evidence for this re-aim, not a general theorem.
+No finite-state pumping step may use it until that uniform interface theorem
+is constructed.
 
 \begin{lemma}[rotation side of a cubic path attachment]
 \label{lem:cubic-path-attachment-rotation-side}
