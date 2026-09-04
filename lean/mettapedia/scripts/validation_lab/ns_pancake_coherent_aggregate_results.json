@@ -1,0 +1,59 @@
+{
+ "rows": [
+  {
+   "q": 3,
+   "lambda": 8.0,
+   "delta": 0.3535533905932738,
+   "n_receivers": 116,
+   "n_sources": 68,
+   "rowsum_coherent": 14.170871982927425,
+   "rowsum_coherent_axial": 6.124301376126443,
+   "rowsum_coherent_plane": 11.155159092229328,
+   "rowsum_worst_cone": 34.0,
+   "coherent_gain": 0.4167903524390419,
+   "axial_fraction": 0.4321753370932141
+  },
+  {
+   "q": 4,
+   "lambda": 16.0,
+   "delta": 0.25,
+   "n_receivers": 228,
+   "n_sources": 324,
+   "rowsum_coherent": 49.90644270200288,
+   "rowsum_coherent_axial": 17.63815971046318,
+   "rowsum_coherent_plane": 43.925402979683255,
+   "rowsum_worst_cone": 162.0,
+   "coherent_gain": 0.3080644611234746,
+   "axial_fraction": 0.3534245030402721
+  },
+  {
+   "q": 5,
+   "lambda": 32.0,
+   "delta": 0.1767766952966369,
+   "n_receivers": 404,
+   "n_sources": 1308,
+   "rowsum_coherent": 140.05249911299828,
+   "rowsum_coherent_axial": 35.70951537542952,
+   "rowsum_coherent_plane": 131.30605741304825,
+   "rowsum_worst_cone": 654.0,
+   "coherent_gain": 0.21414755216054782,
+   "axial_fraction": 0.2549723539500576
+  },
+  {
+   "q": 6,
+   "lambda": 64.0,
+   "delta": 0.125,
+   "n_receivers": 852,
+   "n_sources": 5156,
+   "rowsum_coherent": 411.62283019122674,
+   "rowsum_coherent_axial": 80.30424366460761,
+   "rowsum_coherent_plane": 396.3557508537609,
+   "rowsum_worst_cone": 2578.0,
+   "coherent_gain": 0.1596675058926403,
+   "axial_fraction": 0.1950918116648215
+  }
+ ],
+ "fits": {
+  "coherent_gain": 0.8470688964708649
+ }
+}
