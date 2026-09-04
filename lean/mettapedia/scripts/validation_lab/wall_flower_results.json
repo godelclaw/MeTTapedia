@@ -1,0 +1,497 @@
+[
+ {
+  "name": "k0 L<(0,-2),(-2,0)> idx4",
+  "valid": true,
+  "rotations": 70,
+  "skipped": 21,
+  "interior_faces": 185,
+  "face_size_hist": {
+   "5": 93,
+   "7": 92
+  },
+  "verdict": {
+   "irreducible": 6,
+   "unknown": 179
+  },
+  "types": [
+   [
+    5,
+    [
+     5,
+     6,
+     7,
+     7,
+     7
+    ],
+    12,
+    "irreducible"
+   ],
+   [
+    5,
+    [
+     5,
+     7,
+     7,
+     7,
+     7
+    ],
+    13,
+    "unknown"
+   ],
+   [
+    7,
+    [
+     5,
+     5,
+     7,
+     5,
+     7,
+     5,
+     7
+    ],
+    13,
+    "unknown"
+   ]
+  ]
+ },
+ {
+  "name": "k0 L<(0,-2),(-1,0)> idx2",
+  "valid": true,
+  "rotations": 145,
+  "skipped": 26,
+  "interior_faces": 182,
+  "face_size_hist": {
+   "6": 182
+  },
+  "verdict": {
+   "unknown": 182
+  },
+  "types": [
+   [
+    6,
+    [
+     5,
+     6,
+     6,
+     6,
+     6,
+     6
+    ],
+    11,
+    "unknown"
+   ],
+   [
+    6,
+    [
+     6,
+     6,
+     6,
+     6,
+     6,
+     6
+    ],
+    12,
+    "unknown"
+   ]
+  ]
+ },
+ {
+  "name": "k0 L<(1,-2),(-2,0)> idx4",
+  "valid": true,
+  "rotations": 72,
+  "skipped": 13,
+  "interior_faces": 183,
+  "face_size_hist": {
+   "7": 88,
+   "5": 95
+  },
+  "verdict": {
+   "irreducible": 2,
+   "unknown": 181
+  },
+  "types": [
+   [
+    5,
+    [
+     5,
+     7,
+     6,
+     7,
+     7
+    ],
+    12,
+    "irreducible"
+   ],
+   [
+    5,
+    [
+     5,
+     7,
+     7,
+     7,
+     7
+    ],
+    13,
+    "unknown"
+   ],
+   [
+    7,
+    [
+     5,
+     5,
+     6,
+     5,
+     7,
+     5,
+     7
+    ],
+    12,
+    "unknown"
+   ],
+   [
+    7,
+    [
+     5,
+     5,
+     7,
+     5,
+     7,
+     5,
+     7
+    ],
+    13,
+    "unknown"
+   ]
+  ]
+ },
+ {
+  "name": "k1 L<(0,-2),(-2,0)> idx4",
+  "valid": true,
+  "rotations": 70,
+  "skipped": 21,
+  "interior_faces": 185,
+  "face_size_hist": {
+   "7": 92,
+   "5": 93
+  },
+  "verdict": {
+   "irreducible": 6,
+   "unknown": 179
+  },
+  "types": [
+   [
+    5,
+    [
+     5,
+     6,
+     7,
+     7,
+     7
+    ],
+    12,
+    "irreducible"
+   ],
+   [
+    5,
+    [
+     5,
+     7,
+     7,
+     7,
+     7
+    ],
+    13,
+    "unknown"
+   ],
+   [
+    7,
+    [
+     5,
+     5,
+     7,
+     5,
+     7,
+     5,
+     7
+    ],
+    13,
+    "unknown"
+   ]
+  ]
+ },
+ {
+  "name": "k1 L<(0,-2),(-2,1)> idx4",
+  "valid": true,
+  "rotations": 72,
+  "skipped": 13,
+  "interior_faces": 183,
+  "face_size_hist": {
+   "7": 88,
+   "5": 95
+  },
+  "verdict": {
+   "irreducible": 2,
+   "unknown": 181
+  },
+  "types": [
+   [
+    5,
+    [
+     5,
+     7,
+     6,
+     7,
+     7
+    ],
+    12,
+    "irreducible"
+   ],
+   [
+    5,
+    [
+     5,
+     7,
+     7,
+     7,
+     7
+    ],
+    13,
+    "unknown"
+   ],
+   [
+    7,
+    [
+     5,
+     5,
+     6,
+     5,
+     7,
+     5,
+     7
+    ],
+    12,
+    "unknown"
+   ],
+   [
+    7,
+    [
+     5,
+     5,
+     7,
+     5,
+     7,
+     5,
+     7
+    ],
+    13,
+    "unknown"
+   ]
+  ]
+ },
+ {
+  "name": "k1 L<(0,-2),(-1,0)> idx2",
+  "valid": true,
+  "rotations": 145,
+  "skipped": 26,
+  "interior_faces": 181,
+  "face_size_hist": {
+   "6": 181
+  },
+  "verdict": {
+   "unknown": 181
+  },
+  "types": [
+   [
+    6,
+    [
+     5,
+     6,
+     6,
+     6,
+     6,
+     6
+    ],
+    11,
+    "unknown"
+   ],
+   [
+    6,
+    [
+     6,
+     6,
+     6,
+     6,
+     6,
+     6
+    ],
+    12,
+    "unknown"
+   ]
+  ]
+ },
+ {
+  "name": "k2 L<(0,-2),(-2,0)> idx4",
+  "valid": true,
+  "rotations": 70,
+  "skipped": 21,
+  "interior_faces": 185,
+  "face_size_hist": {
+   "5": 93,
+   "7": 92
+  },
+  "verdict": {
+   "irreducible": 6,
+   "unknown": 179
+  },
+  "types": [
+   [
+    5,
+    [
+     5,
+     6,
+     7,
+     7,
+     7
+    ],
+    12,
+    "irreducible"
+   ],
+   [
+    5,
+    [
+     5,
+     7,
+     7,
+     7,
+     7
+    ],
+    13,
+    "unknown"
+   ],
+   [
+    7,
+    [
+     5,
+     5,
+     7,
+     5,
+     7,
+     5,
+     7
+    ],
+    13,
+    "unknown"
+   ]
+  ]
+ },
+ {
+  "name": "k2 L<(0,-2),(-2,1)> idx4",
+  "valid": true,
+  "rotations": 72,
+  "skipped": 13,
+  "interior_faces": 185,
+  "face_size_hist": {
+   "5": 97,
+   "7": 88
+  },
+  "verdict": {
+   "irreducible": 2,
+   "unknown": 183
+  },
+  "types": [
+   [
+    5,
+    [
+     5,
+     7,
+     6,
+     7,
+     7
+    ],
+    12,
+    "irreducible"
+   ],
+   [
+    5,
+    [
+     5,
+     7,
+     7,
+     7,
+     7
+    ],
+    13,
+    "unknown"
+   ],
+   [
+    7,
+    [
+     5,
+     5,
+     6,
+     5,
+     7,
+     5,
+     7
+    ],
+    12,
+    "unknown"
+   ],
+   [
+    7,
+    [
+     5,
+     5,
+     7,
+     5,
+     7,
+     5,
+     7
+    ],
+    13,
+    "unknown"
+   ]
+  ]
+ },
+ {
+  "name": "k2 L<(0,-2),(-1,1)> idx2",
+  "valid": true,
+  "rotations": 145,
+  "skipped": 26,
+  "interior_faces": 182,
+  "face_size_hist": {
+   "6": 182
+  },
+  "verdict": {
+   "unknown": 182
+  },
+  "types": [
+   [
+    6,
+    [
+     5,
+     6,
+     6,
+     6,
+     6,
+     6
+    ],
+    11,
+    "unknown"
+   ],
+   [
+    6,
+    [
+     6,
+     6,
+     6,
+     6,
+     6,
+     6
+    ],
+    12,
+    "unknown"
+   ]
+  ]
+ }
+]
