@@ -7955,6 +7955,36 @@ carrier only at its two endpoints, contradicting strict internality.  The
 earlier separator alternative now has only its face-side branch.
 \end{proof}
 
+\begin{lemma}[innermost residual chords drain to the opposite turn]
+\label{lem:residual-return-innermost-chord-drainage}
+\Sverified{Mettapedia.GraphTheory.exists_innermost_orderedPathChord}
+\Sverified{Mettapedia.GraphTheory.OrderedPathChord.crosses_of_hasEndpointInside_of_innermost}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnInnermostChordDrainage.exists_innermostChordDrainage}
+If the full internal-chord diagram of a physical residual return is nonempty,
+it contains an innermost chord $c$.  This chord is an actual edge of the
+reference matching.  Every distinct internal chord having an endpoint on the
+open path interval cut off by $c$ crosses $c$, and therefore has the opposite
+local attachment turn.
+
+This is the exact residual-return analogue of the combinatorial drainage core
+of the source's Sector-Alternation Lemma.  It does not by itself construct the
+source's named annular holes or prove that one of the two regions bounded by
+$c$ is hole-free; those are global realization fields, not consequences of
+the residual pairings alone.
+\end{lemma}
+
+\begin{proof}
+Choose $c$ with minimum endpoint span.  A chord strictly inside its interval
+would have smaller span.  Cubicity and simplicity make the internal chords an
+endpoint-disjoint partial matching.  Hence any other chord entering the open
+interval can neither be nested there nor share an endpoint with $c$; the
+linear order of the four endpoints forces it to cross $c$.  The exact
+face-cut crossing theorem for residual-return chords then gives unequal local
+turns.  Finally
+Lemma~\ref{lem:residual-return-attachment-matching-role} identifies $c$ with
+the reference-matching edge at its left endpoint.
+\end{proof}
+
 \begin{lemma}[rotation side of a cubic path attachment]
 \label{lem:cubic-path-attachment-rotation-side}
 \Sverified{Mettapedia.GraphTheory.FourColor.SimpleGraphDartRotation.Data.vertexRotation_apply_eq_second_or_third_of_regularThree}
