@@ -1,0 +1,9 @@
+V=10: structures=256092 good closed webs=32 chords=0 same-sector nests=0 (webs 0) opposite-sector nests=0 (webs 0) depth hist={0: 32} [7s]
+OUTCOME: W3 (no nests at all on good-word closed webs)
+V=12: structures=1217258 good closed webs=96 chords=40 same-sector nests=0 (webs 0) opposite-sector nests=0 (webs 0) depth hist={1: 40, 0: 56} [39s]
+OUTCOME: W3 (no nests at all on good-word closed webs)
+V=14: structures=6160624 good closed webs=272 chords=192 same-sector nests=32 (webs 32) opposite-sector nests=0 (webs 0) depth hist={2: 32, 1: 112, 0: 128} [212s]
+  example same-sector nest: {"V": 14, "p": 2, "q": 12, "kin": 0, "kout": 1, "prsS": [[11, 7], [13, 5], ["Oa0", 3], [0, 2]], "prsT": [[12, "Oa1"], [10, "Oa2"], [9, 1], [8, "Ia2"], [6, "Ia1"], [4, "Ia0"]], "colouring": [1, 2, [1, 2, 0, 0, 0]]}
+OUTCOME: W1 (same-sector nest on a good-word closed web)
+
+[exited with code 0]
