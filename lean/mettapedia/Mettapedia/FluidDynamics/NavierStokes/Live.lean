@@ -57,6 +57,7 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.DecayingShearI
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.DyadicPancakeClosure
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.BlockwisePancakeDecomposition
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeConeDirectionDichotomy
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeCoherentPairEstimate
 
 /-!
 # Navier-Stokes live surface
