@@ -1,0 +1,50 @@
+{
+ "C30": {
+  "((3, 2, 0), (3, 2, 0))": {
+   "webs": 240,
+   "nrails": {
+    "2": 240
+   },
+   "nested_webs": 120,
+   "nested_pairs": 240,
+   "drain_bad": 480,
+   "max_depth": 3,
+   "chords": 360
+  },
+  "((4, 1, 0), (4, 1, 0))": {
+   "webs": 120,
+   "nrails": {
+    "1": 120
+   },
+   "nested_webs": 60,
+   "nested_pairs": 360,
+   "drain_bad": 720,
+   "max_depth": 4,
+   "chords": 720
+  }
+ },
+ "C40": {
+  "((3, 2, 0), (3, 2, 0))": {
+   "webs": 480,
+   "nrails": {
+    "2": 480
+   },
+   "nested_webs": 360,
+   "nested_pairs": 960,
+   "drain_bad": 1920,
+   "max_depth": 3,
+   "chords": 1440
+  },
+  "((4, 1, 0), (4, 1, 0))": {
+   "webs": 240,
+   "nrails": {
+    "1": 240
+   },
+   "nested_webs": 180,
+   "nested_pairs": 1440,
+   "drain_bad": 2880,
+   "max_depth": 4,
+   "chords": 2640
+  }
+ }
+}

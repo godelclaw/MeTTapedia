@@ -1,0 +1,12 @@
+== C30: census 5412, closed 360 ==
+inner-word  outer-word  webs  rails{1,2,fail}  chords  nested-webs  nested-pairs  drain-bad  max-depth
+(3, 2, 0)  (3, 2, 0)   240  {2: 240}    360    120    240    480  3
+(4, 1, 0)  (4, 1, 0)   120  {1: 120}    720     60    360    720  4
+good-word (3,1,1)/(3,1,1) webs: 0, same-sector nested pairs on them: 0
+OUTCOME: B2 (nesting only off good words)
+== C40: census 31704, closed 720 ==
+inner-word  outer-word  webs  rails{1,2,fail}  chords  nested-webs  nested-pairs  drain-bad  max-depth
+(3, 2, 0)  (3, 2, 0)   480  {2: 480}   1440    360    960   1920  3
+(4, 1, 0)  (4, 1, 0)   240  {1: 240}   2640    180   1440   2880  4
+good-word (3,1,1)/(3,1,1) webs: 0, same-sector nested pairs on them: 0
+OUTCOME: B2 (nesting only off good words)
