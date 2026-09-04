@@ -54,7 +54,9 @@ integrand, which unlike the full strain has known dynamical handles.
    physical finite-sector identity: full stretching is the annular coherent
    kernel action plus the three misalignment-bearing terms, and the coherent
    share has a cardinality-free `C/N` estimate, including in the constructed
-   pointwise compressive strain frame.  What remains is measurable dependence
+   pointwise strain frame which maps the most expanding eigenvector to the
+   coherent reference and the most compressive eigenvector to the axial
+   direction.  What remains is measurable dependence
    of the spectral selection through eigenvalue collisions and identification
    with the actual Littlewood--Paley blocks and time functionals, followed by
    assembly into `split_le` and `coherent_le` for actual Navier--Stokes

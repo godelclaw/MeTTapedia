@@ -95,7 +95,9 @@ variable/frozen split and a spectral-gap perturbation theorem remain available
 for formulations that differentiate the symbol.  The physical finite-sector
 stretching sum is now proved to equal this coherent annular kernel action plus
 the exact three-term misalignment remainder, both in an arbitrary frozen frame
-and in the pointwise compressive frame constructed from the strain.  Hence the
+and in the full pointwise frame constructed from the strain.  This frame maps
+the most expanding eigenvector to the coherent reference $e_x$ and the most
+compressive eigenvector to the axial reference $e_z$.  Hence the
 coherent term has a cardinality-free $C/N$ bound without an abstract split
 hypothesis.  The
 latest audit also isolates why the proposed pancake closure does
@@ -1155,7 +1157,14 @@ inequality and the annular kernel theorem give
 \]
 with no dependence on the two Fourier support cardinalities.  The same theorem
 is specialized to the pointwise frame built from the most compressive strain
-eigenvector, so this statement no longer accepts a caller-supplied frame.
+eigenvector, so this statement no longer accepts a caller-supplied frame.  The
+follow-up module \texttt{PancakeFullStrainFrame} fixes the residual rotation
+around the compressive axis by an explicit orientation-preserving planar
+rotation.  It proves that the inverse complex image of $e_x$ is exactly the
+most expanding strain eigenvector and repeats the exact split and $C/N$ bound
+in this full eigenline-aligned frame.  Consequently the Fourier remainder's
+coherent reference is now the same expanding line used by the invariant
+alignment-energy dynamics below.
 
 There is a second field-level issue which a fixed-axis multiplier does not
 address.  The actual pancake frame is the eigensystem of the low-frequency
@@ -1223,7 +1232,8 @@ sector projector is now constructed, its six-dimensional chart is identified
 with the two independently filtered mode charts, and the genuine rotated
 radial-shell/angle-cone selector is proved to lie in that annulus.  The exact
 physical coherent formula follows without an additional support premise.  The
-pointwise strain-derived axial frame is also constructed.  Finally, the full
+pointwise strain-derived axial frame and its expanding-line orientation are
+also constructed.  Finally, the full
 physical finite-sector stretching sum is proved to be exactly that annular
 coherent action plus the three-term misalignment remainder, with a uniform
 $C/N$ bound on the first term, including in the strain-derived frame.  The
