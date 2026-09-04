@@ -58,6 +58,7 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.DyadicPancakeC
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.BlockwisePancakeDecomposition
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeConeDirectionDichotomy
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeCoherentPairEstimate
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.MisalignmentRefinedPin
 
 /-!
 # Navier-Stokes live surface
