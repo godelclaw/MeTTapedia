@@ -3374,6 +3374,7 @@ chords.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualCircuitDefectFormula.oldOddCircuitClasses_ncard_le_new}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualCircuitDefectFormula.residualDefect_eq_exchange_iff_oldOddCircuitClasses_ncard_eq_new}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualCircuitDefectFormula.residualDefect_lt_exchange_iff_oldOddCircuitClasses_ncard_lt_new}
+\Sverified{MatchingParity.CircuitPartition.circuitParity_const_one_eq_zero}
 At one proper alternating site, combine the return involution with the old
 local matching \(\tau_e\), or with the new local matching \(\sigma\), to form
 a finite circuit partition on the cyclic positions of \(A_e\).  For every
@@ -3413,6 +3414,14 @@ two finite counts, and strict growth of the global defect is equivalent to
 strict growth of the finite count.  Thus the direction comes from global
 minimality, while the local circuit calculation supplies its exact finite
 form; parity alone is not being used as a monotonicity principle.
+
+The comparison does not, by itself, constrain the unlabelled return matching.
+Indeed, for any two perfect matchings, assigning the constant odd label to
+every return edge makes every alternating-circuit parity zero: each return
+contributes one and its corresponding local edge contributes one.  Therefore
+the high-width argument must use the physical return-length labels and their
+compatibility across sites; chord shape plus the local inequality is
+insufficient.
 \end{lemma}
 
 \begin{proof}
