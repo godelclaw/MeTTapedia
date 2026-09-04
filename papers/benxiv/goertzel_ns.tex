@@ -1006,6 +1006,20 @@ Thus the frozen-axis anisotropic square-dyadic transfer is discharged.  What
 remains at this endpoint is finite oriented chart/rotation assembly and the
 variable-frame remainder.
 
+The module \texttt{PancakeSquareDyadicFiniteTransfer} descends this final
+kernel through the canonical half-open representative of the unit six-torus.
+It proves that torus Fourier coefficients and torus $L^1$ mass are exactly the
+corresponding fundamental-cell quantities, and hence that arbitrary finite
+Fourier fields are acted on by the exact double sum of square-dyadic coherent
+interactions.  The endpoint estimate is cardinality-free:
+\[
+ \|B_N(f,g)\|_{L^\infty(\mathbb T^3)}
+ \leq 9\frac{C}{N}\,
+   \|f\|_{L^\infty(\mathbb T^3)}
+   \|g\|_{L^\infty(\mathbb T^3)},\qquad N\geq2.
+\]
+Thus the finite-field frozen-axis square-dyadic transfer is also discharged.
+
 There is a second field-level issue which a fixed-axis multiplier does not
 address.  The actual pancake frame is the eigensystem of the low-frequency
 strain and therefore depends on $(x,t)$.  The module
@@ -1256,7 +1270,7 @@ coherent/misaligned transfer, which jointly reproduce
 spatially microlocal control of the variable-frame remainder and a dynamical,
 time-integrated control of the vorticity-direction misalignment share, strong
 enough to cover the gap band identified above.  It must also finish the
- finite chart/rotation assembly of the
+ finite oriented-chart/rotation assembly of the
 now-periodic bilinear kernel rather than assigning the aperture gain to the
 projection.
 Section
