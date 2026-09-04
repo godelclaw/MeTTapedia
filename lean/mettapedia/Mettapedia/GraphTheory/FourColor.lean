@@ -1016,6 +1016,7 @@ import Mettapedia.GraphTheory.FourColor.Compositional.DeepReturnExactState
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnRootedCut
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSeparatorNesting
 import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnNestedFamily
+import Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnNestedCuts
 import Mettapedia.GraphTheory.FourColor.Compositional.MeshResidualReturnSweep
 import Mettapedia.GraphTheory.FourColor.Compositional.SparseNoncentralMeshAtlas
 import Mettapedia.GraphTheory.FourColor.Compositional.CoherentResidualReturnSweep
