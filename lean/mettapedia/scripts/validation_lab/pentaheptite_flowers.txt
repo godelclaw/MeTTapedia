@@ -1,2 +1,4 @@
 {"s": 7, "outs": [5, 5, 6, 5, 7, 5, 7], "ring": 12, "vertices": 26, "supp": 20004, "admissible": 132861, "closure": 117501, "D_reducible": false, "reducible": true, "certificate": ["cap", [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9], [10, 11]]], "seconds": 22.2}
 {"s": 5, "outs": [5, 7, 7, 7, 7], "ring": 13, "vertices": 23, "supp": 26700, "admissible": 398580, "closure": 40248, "D_reducible": false, "reducible": false, "best_miss": [2670, [5, 12, 14], 17], "candidates_tried": 3329, "seconds": 146.2}
+{"s": 7, "outs": [5, 5, 7, 5, 7, 5, 7], "ring": 13, "vertices": 27, "supp": 41574, "admissible": 398580, "closure": 101772, "D_reducible": false, "reducible": false, "best_miss": [2040, [4, 8, 12], 21], "candidates_tried": 6142, "seconds": 543.0}
+DONE
