@@ -1,0 +1,19 @@
+{
+ "C24": {
+  "stats": {
+   "pairs": 42,
+   "colourings": 70992,
+   "closed": 1800,
+   "closed_311": 288,
+   "good_closed": 72,
+   "rails2": 72,
+   "chords": 0,
+   "nested_pairs": 0,
+   "drain_bad": 0
+  },
+  "depth": {
+   "0": 72
+  },
+  "certificate": null
+ }
+}
