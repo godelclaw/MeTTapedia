@@ -7610,8 +7610,10 @@ difference a multiple of $s+1$.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweep.exists_long_strictlyNested_return_family_of_deep}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSweep.exists_long_strictlyNested_return_family_or_spaced_eq_rawState}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.NoncrossingPairingSweep.exists_canonical_position_of_mem_canonicalArcList}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnNestedFamily.strictlyNestedReturnFamily_of_deep_stack}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnNestedFamily.strictlyNestedReturnTriple_of_deep_stack}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnNestedFamily.strictlyNestedReturnTriple_of_nestedCarrierDeepReturnStack}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnNestedFamily.strictlyNestedReturnQuadruple_of_deep_stack}
 Let a proper alternating site in a graph-backed least counterexample have
 $n$ cyclic positions and the physical residual-return receipt of
 Lemma~\ref{lem:residual-return-two-sector-noncrossing}.  Fix $D\geq0$.
@@ -7992,6 +7994,8 @@ edge set is exactly the chord together with the interval edges.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.DeepReturnExactState.saturated_of_nestedCarrierDeepReturnStack}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnSeparatorNesting.orderedReturnSeparator_support_subset_filledCycleSide_of_triple_nested}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnNestedCuts.hasNestedConnectedReturnCuts_of_nestedCarrierDeepReturnStack}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnStrictNesting.shallow_ambientPath_outside_deep_closureSide}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.ResidualReturnStrictNesting.incidentEdgeShore_deepClosure_ssubset_shallowClosure}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.DeepReturnExactState.hasFullyRealizedExactStateAlternative}
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.MeshResidualReturnSweep.fullyRealizedExactStateAlternative_of_geometricSweepReceipt}
 For one ordered injective mesh in a graph-backed least counterexample, choose
@@ -8036,6 +8040,15 @@ inner shore pointwise contained in the middle shore.  This removes the former
 face-side comparison gap for a nested pair.  It does not yet prove that the
 containment is strict, nor choose a long coherent family of such shores; those
 are the next M1 obligations needed by cumulative state descent.
+
+At depth four the next local obligation is also checked.  The outermost and
+innermost returns orient the two middle separators.  Exact face-label
+transport places the shallower middle return path inside the shallower rooted
+shore but in the exterior component of the deeper rooted shore, even after
+saturation.  Its first edge therefore witnesses strict inclusion of the two
+incident-edge shores.  The remaining assembly task is to package this local
+strictness uniformly along a sufficiently long connected cut family and feed
+that family to the cumulative exact-state repetition theorem.
 \end{proof}
 
 For the route, the two Kempe families suggest the matching stacks and capped
