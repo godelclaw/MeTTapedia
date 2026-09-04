@@ -22,6 +22,7 @@ namespace OffCarrierReferenceAttachment
 
 open CarrierSaturationBoundaryDecomposition
 open CubicPathAttachment
+open GoertzelV24OrderedMeshResidualSiteFacialBond
 open GoertzelV24OrderedMeshResidualSiteMatching
 open GoertzelV24ResidualReturnArc
 open GoertzelV24ResidualReturnCycleOrder
@@ -29,11 +30,13 @@ open GoertzelV24ResidualReturnPairing
 open GoertzelV24ResidualReturnSectorNoncrossing
 open GoertzelV24TwoEdgeCutMinimality
 open MatchingParity
+open ResidualCircuitParity
 open ResidualCircuitComponentDecomposition
 open ResidualReturnAttachmentMatching
 open ResidualReturnComponentSaturation
 open ResidualReturnPathAttachment
 open ResidualReturnSeparatorExitSide
+open ResidualReturnSweep
 open SimpleGraph
 
 noncomputable section
@@ -305,6 +308,59 @@ theorem exists_attachmentExitSideReceipt_of_offCarrierReferenceExit
   exact nonempty_attachmentExitSideReceipt_of_external
     rotation minimal hG sigma hSigma site witness.chord witness.position
       witness.external
+
+/-- The component-saturated carrier prefix has the route's desired dichotomy:
+either a physical separator-exit receipt exists on a completed return, or its
+entire ambient boundary is bounded by the two return stacks and the two
+carrier-local pairing interfaces. -/
+theorem attachmentReceipt_or_card_ambientExitDart_le_stacks_add_local
+    (rotation : SimpleGraphDartRotation.Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hG : HasCubicIncidentEdgeTriples G)
+    (sigma : Pairing V) (hSigma : sigma.SupportedBy G)
+    {first second : V}
+    (bond : ProperAlternatingSiteFacialBondWitness rotation sigma first second)
+    (cut : CyclePosition sigma bond.site) :
+    (∃ chord : OrderedReturnChord
+        (orderedSiteReturnPairing hG sigma hSigma bond.site),
+      Nonempty (AttachmentExitSideReceipt rotation hG sigma hSigma
+        bond.site chord)) ∨
+      Nat.card (AmbientExitDart hG sigma hSigma bond.site cut) ≤
+        ((returnShoreMatching rotation minimal hG sigma hSigma bond false).stackAt
+            cut).length +
+          ((returnShoreMatching rotation minimal hG sigma hSigma bond true).stackAt
+            cut).length +
+          Nat.card (PairingBoundaryOpenEndpoint
+            (orderedSiteSigmaPairing sigma bond.site)
+            (carrierPrefixSelected cut)) +
+          Nat.card (PairingBoundaryOpenEndpoint
+            (orderedSiteTauPairing sigma bond.site)
+            (carrierPrefixSelected cut)) := by
+  by_cases hexit : Nonempty (OffCarrierReferenceMatchingExitDart
+      hG sigma hSigma bond.site cut)
+  · rcases hexit with ⟨exit⟩
+    exact Or.inl <|
+      exists_attachmentExitSideReceipt_of_offCarrierReferenceExit
+        rotation minimal hG sigma hSigma bond.site cut exit
+  · right
+    letI : Finite (AmbientExitDart hG sigma hSigma bond.site cut) := by
+      unfold AmbientExitDart
+      infer_instance
+    letI : Finite (OffCarrierReferenceMatchingExitDart
+        hG sigma hSigma bond.site cut) := by
+      unfold OffCarrierReferenceMatchingExitDart
+      infer_instance
+    have hcard : Nat.card (OffCarrierReferenceMatchingExitDart
+        hG sigma hSigma bond.site cut) = 0 := by
+      have hnotPositive : ¬0 < Nat.card (OffCarrierReferenceMatchingExitDart
+          hG sigma hSigma bond.site cut) := by
+        intro hpositive
+        exact hexit (Finite.card_pos_iff.mp hpositive)
+      omega
+    have hbound :=
+      card_ambientExitDart_le_stackLengths_add_offCarrierReference_add_local
+        rotation minimal hG sigma hSigma bond cut
+    omega
 
 end
 
