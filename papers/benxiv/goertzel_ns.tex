@@ -111,8 +111,11 @@ a homogeneous spectral-gap estimate now converts the frozen transverse
 energy into the integrated top Rayleigh defect, without normalizing vorticity
 at its zeros.  Finite aggregation of the coercive cells and generic
 hard-set/smooth-weight bounded-overlap integral estimates are also checked.
-The analytic localization bridge (including the frequency leakage produced
-by spatial cutoffs), space--time treatment of the small-gap branch, and
+The frequency-support part of the analytic localization bridge is now closed:
+for fixed normalized cutoff margins, a four-chart multiplier is constructed
+which is exactly coherent on every leaked output mode and has a uniform
+inverse-kernel $L^1$ bound.  Its commutator with the original smooth sector
+projector, space--time treatment of the small-gap branch, and
 conversion from this $L^2$/defect control to the scale-local endpoint budget
 remain open.  The
 latest audit also isolates why the proposed pancake closure does
@@ -1282,8 +1285,24 @@ annulus into the explicit buffered box
  \qquad \tfrac34-\rho_\parallel\leq|v_3|
        \leq2+\rho_\parallel.
 \]
-What remains at this junction is to construct the annular kernel uniformly on
-that buffered box and bound its mismatch with the original smooth projector.
+For the fixed margins
+$(\rho_\perp,\rho_\parallel)=(1/4,1/8)$, the module
+\texttt{PancakeBufferedAnnularMultiplier} now completes the next part of this
+junction.  It enlarges the signed retained axial gates from radius $3/4$ to
+$7/8$, while leaving their support radius $1$ and the old denominator-safe
+outer gates unchanged.  The resulting four cutoffs form an exact partition on
+the whole leaked box
+\[
+ |v_{1,2}|\leq\frac94,
+ \qquad \frac58\leq|v_3|\leq\frac{17}{8}.
+\]
+The assembled tensor symbol therefore equals the uncut coherent stretching
+symbol on every permitted localized output pair.  Applying the generic
+buffered-cutoff theorem chartwise and summing gives one aperture-uniform
+$L^1$ bound for the assembled inverse kernel.  What remains at this junction
+is to compare this enlarged multiplier with the original smooth sector
+projector; this is a genuine projector commutator or collar estimate, not a
+support-coverage question.
 
 There is a second field-level issue which a fixed-axis multiplier does not
 address.  The actual pancake frame is the eigensystem of the low-frequency
@@ -1373,7 +1392,9 @@ steps are the localization/commutator estimate connecting global finite
 reconstructions to the spatial cells.  Exact finite cutoff convolution,
 Minkowski-sum support leakage, and the sharp physical $L^2$ cutoff bound are
 now proved, as is the exact buffered annulus containing every shifted output
-mode.  The buffered multiplier construction and projector commutator remain.
+mode.  A denominator-safe four-chart multiplier is now constructed on that
+buffer, proved exactly coherent there, and given one aperture-uniform
+inverse-kernel $L^1$ bound.  The projector commutator remains.
 Further steps are aggregation of the small-gap branch
 over space and time, conversion of this $L^2$/defect estimate to the required
 scale-local endpoint budget, and identification and assembly of this concrete
@@ -1629,7 +1650,9 @@ effort.  The repaired-route development comprises, under
 \texttt{PancakeDyadicKernelScaling},
 \texttt{PancakeSquareDyadicFiniteTransfer}, and
 \texttt{PancakeFrozenFrameKernelTransfer}, and
-\texttt{PancakePhysicalFrameKernelTransfer}), each with a regression companion where
+\texttt{PancakePhysicalFrameKernelTransfer}, through the later annular,
+full-strain-frame, coercivity, cell-aggregation, finite-localization, and
+\texttt{PancakeBufferedAnnularMultiplier} modules), each with a regression companion where
 applicable.  The aperture module is retained as an explicitly attenuated
 analytic model; the exact coherent projection no-go above prevents its use as
 the desired field-transfer estimate.

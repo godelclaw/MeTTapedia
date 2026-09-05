@@ -28,6 +28,7 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeTransve
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeTransverseEnergyCoercivity
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeCellAggregation
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeFiniteFourierLocalization
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeBufferedAnnularMultiplier
 
 /-!
 # Seal audit for the coherent-field and alignment-dynamics tranche
@@ -108,3 +109,6 @@ the Lean compiler.  It adds no assumptions and proves no mathematical step.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeFiniteFourierLocalization.outputMode_eq_cutoff_add_field
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeFiniteFourierLocalization.outputMode_mem_expandedNormalizedPancakeAnnulus
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeFiniteFourierLocalization.integral_localizedEnergy_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeBufferedAnnularMultiplier.localizationFourChartInner_eq_one_of_mem_buffer
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeBufferedAnnularMultiplier.apply_localizationFourChartTensorSymbol_eq_coherent
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeBufferedAnnularMultiplier.exists_uniform_localizationFourChartTensorKernel_mass

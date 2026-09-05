@@ -100,6 +100,7 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeTransve
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeTransverseEnergyCoercivity
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeCellAggregation
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeFiniteFourierLocalization
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeBufferedAnnularMultiplier
 
 /-!
 # Navier-Stokes live surface
