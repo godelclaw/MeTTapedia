@@ -150,7 +150,11 @@ Finally, the hard shell-and-cone selector is proved invariant under
 $k\mapsto-k$.  Hence physical conjugate symmetry
 $\widehat\omega(-k)=\overline{\widehat\omega(k)}$ makes the selected complex
 reconstruction exactly real-valued.  The real block in the direction law is
-therefore the actual physical pancake block, not a lossy projection.
+therefore the actual physical pancake block, not a lossy projection.  The
+unit-torus Biot--Savart, strain, transport, and viscous symbols are furthermore
+proved to preserve conjugate symmetry, and a finite-pair reindexing theorem
+shows that the complete finite vorticity RHS preserves the real Fourier
+subspace.
 The frequency-support part of the analytic localization bridge is now closed:
 for fixed normalized cutoff margins, a four-chart multiplier is constructed
 which is exactly coherent on every leaked output mode and has a uniform
@@ -1748,7 +1752,12 @@ negation.  Reindexing the finite Fourier sum by $k\mapsto-k$, using character
 and coefficient conjugate symmetry, proves
 $\overline{P_{N,F}\omega}=P_{N,F}\omega$ coordinatewise.  It follows that the
 complex block has zero imaginary part and complexifying the real block used
-above returns the full reconstruction exactly.
+above returns the full reconstruction exactly.  The same module then checks
+symbol-by-symbol conjugate covariance of the physical unit-torus equation and
+reindexes both convolution supports simultaneously.  For negation-closed
+supports and real coefficient fields it proves
+${\rm RHS}(-q)=\overline{{\rm RHS}(q)}$, so the finite dynamics is internally
+consistent with the real block on which the direction law is stated.
 
 The pressure Hessian enters through the strain-eigenframe equation instead.
 Differentiating $Se_i=\lambda_i e_i$ and pairing with $e_j$, $i\ne j$, gives

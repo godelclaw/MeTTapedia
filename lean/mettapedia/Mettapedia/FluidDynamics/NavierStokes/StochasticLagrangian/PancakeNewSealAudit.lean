@@ -183,3 +183,4 @@ the Lean compiler.  It adds no assumptions and proves no mathematical step.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeBlockReality.mem_squareDyadicPancakeModes_neg_iff
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeBlockReality.squareDyadicPancakeBlock_conj_eq_self
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeBlockReality.ofReal_squareDyadicPancakeRealBlock_eq
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeBlockReality.finiteUnitTorusVorticityRHS_neg_conjugate
