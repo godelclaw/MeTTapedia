@@ -1,0 +1,35 @@
+{
+ "per_n": {
+  "4": {
+   "graphs": 1,
+   "trails": 6,
+   "classes": 6,
+   "violating": 0
+  },
+  "6": {
+   "graphs": 1,
+   "trails": 9,
+   "classes": 9,
+   "violating": 0
+  },
+  "8": {
+   "graphs": 3,
+   "trails": 34,
+   "classes": 34,
+   "violating": 0
+  },
+  "10": {
+   "graphs": 8,
+   "trails": 112,
+   "classes": 112,
+   "violating": 0
+  },
+  "12": {
+   "graphs": 28,
+   "trails": 464,
+   "classes": 464,
+   "violating": 0
+  }
+ },
+ "violations": []
+}
