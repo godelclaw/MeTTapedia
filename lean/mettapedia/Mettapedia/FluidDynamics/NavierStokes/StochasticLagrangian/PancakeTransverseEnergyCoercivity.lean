@@ -134,6 +134,18 @@ theorem gap_mul_complexTransverseLineEnergy_le_complexStrainDefect
   rw [complexEuclideanNormSq_eq_parts]
   linarith [hre, him]
 
+/-- The complex top Rayleigh defect is nonnegative.  This is the zero-gap
+case of homogeneous coercivity and therefore also holds at vorticity zeros. -/
+theorem complexStrainDefect_nonneg
+    (S : R3 →L[ℝ] R3)
+    (hSsymm : ∀ (u v : R3), inner ℝ u (S v) = inner ℝ (S u) v)
+    (u : ComplexVec3) :
+    0 ≤ complexStrainDefect S hSsymm u := by
+  obtain ⟨hgap₁, hgap₂⟩ := orderedEigenframe_gaps_nonnegative S hSsymm
+  have h := gap_mul_complexTransverseLineEnergy_le_complexStrainDefect
+    S hSsymm u 0 hgap₁ hgap₂
+  simpa using h
+
 theorem continuous_complexStrainDefect_comp
     {X : Type*} [TopologicalSpace X]
     (S : R3 →L[ℝ] R3)
