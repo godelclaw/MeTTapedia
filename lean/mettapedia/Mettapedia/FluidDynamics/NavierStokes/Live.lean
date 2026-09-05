@@ -97,6 +97,7 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakePhysica
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeFullStrainFrame
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeMisalignmentEnergyBridge
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeTransverseEnergyFreezing
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeTransverseEnergyCoercivity
 
 /-!
 # Navier-Stokes live surface
