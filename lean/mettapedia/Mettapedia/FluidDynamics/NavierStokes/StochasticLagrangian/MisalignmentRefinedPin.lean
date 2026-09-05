@@ -70,8 +70,11 @@ integrand, which unlike the full strain has known dynamical handles.
    separated cells and generic hard-set and smooth-weight bounded-overlap
    integral lemmas are also checked.  What remains is the analytic
    localization bridge identifying the global finite-reconstruction energies
-   with those weighted cell densities (including frequency leakage or
-   commutator errors), aggregation of the small-gap branch over space-time,
+   with those weighted cell densities.  Its first exact step is checked:
+   finite Fourier cutoff multiplication has Minkowski-sum output support and
+   preserves the physical `L²` bound with the sharp squared cutoff norm.
+   Controlled thickening of the pancake sector and the resulting projector
+   commutator remain, as do aggregation of the small-gap branch over space-time,
    identification with the actual Littlewood--Paley blocks and time
    functionals, and conversion of this `L²`/Rayleigh-defect control into the
    scale-local endpoint budget, followed by assembly into `split_le` and

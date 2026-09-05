@@ -1263,6 +1263,22 @@ smooth-localized cell energy.  A spatial cutoff changes Fourier support, so
 that step requires a genuine localization/commutator or almost-orthogonality
 estimate; bounded overlap alone cannot supply it.
 
+The first part of that localization junction is now exact rather than an
+interface.  The module \texttt{PancakeFiniteFourierLocalization} proves that
+for finite Fourier cutoff $\chi$ and vector field $U$,
+\[
+ \chi(x)U(x)=\sum_{p,k}e^{2\pi i(p+k)\cdot x}\,\widehat\chi(p)\widehat U(k).
+\]
+Thus the localized output support is precisely contained in the Minkowski
+sum of the cutoff and field supports, and every output mode differs from an
+original sector mode by an actual cutoff frequency.  It also proves directly
+in physical space that $\|\chi U\|_{L^2}^2\leq C^2\|U\|_{L^2}^2$ whenever
+$\|\chi\|_{L^\infty}\leq C$; there is no mode-count loss.  What remains at
+this junction is geometric: show that the permitted low cutoff frequencies
+thicken the square-dyadic pancake sector by only a controlled margin, and
+bound the mismatch between that thickened selector and the original smooth
+projector.
+
 There is a second field-level issue which a fixed-axis multiplier does not
 address.  The actual pancake frame is the eigensystem of the low-frequency
 strain and therefore depends on $(x,t)$.  The module
@@ -1348,7 +1364,10 @@ branch, homogeneous spectral-gap coercivity now bounds the transverse energy
 by the integrated top Rayleigh defect.  The separated-cell finite sum and
 generic bounded-overlap integration are now checked as well.  The remaining
 steps are the localization/commutator estimate connecting global finite
-reconstructions to the spatial cells, aggregation of the small-gap branch
+reconstructions to the spatial cells.  Exact finite cutoff convolution,
+Minkowski-sum support leakage, and the sharp physical $L^2$ cutoff bound are
+now proved; controlled sector thickening and the projector commutator remain.
+Further steps are aggregation of the small-gap branch
 over space and time, conversion of this $L^2$/defect estimate to the required
 scale-local endpoint budget, and identification and assembly of this concrete
 finite-sector identity into \texttt{coherent\_le} for the actual
