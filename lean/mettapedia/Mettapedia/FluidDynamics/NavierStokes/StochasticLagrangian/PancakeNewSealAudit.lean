@@ -27,6 +27,7 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeMisalig
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeTransverseEnergyFreezing
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeTransverseEnergyCoercivity
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeCellAggregation
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeFiniteFourierLocalization
 
 /-!
 # Seal audit for the coherent-field and alignment-dynamics tranche
@@ -103,3 +104,6 @@ the Lean compiler.  It adds no assumptions and proves no mathematical step.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeCellAggregation.sum_separated_cellRemainder_le_all_cellEnergy
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeCellAggregation.sum_setIntegral_le_overlap_mul_integral
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeCellAggregation.sum_integral_weight_mul_local_le_overlap_mul_integral
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeFiniteFourierLocalization.finiteScalar_mul_finiteFourierReconstruction
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeFiniteFourierLocalization.outputMode_eq_cutoff_add_field
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeFiniteFourierLocalization.integral_localizedEnergy_le
