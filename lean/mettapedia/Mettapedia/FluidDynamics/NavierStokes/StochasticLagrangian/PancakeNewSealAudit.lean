@@ -47,6 +47,7 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeExpandi
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeDyadicDirectionEvolution
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeFourierStretchingEvolution
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakePeriodicVorticityEquation
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeBlockReality
 
 /-!
 # Seal audit for the coherent-field and alignment-dynamics tranche
@@ -179,3 +180,6 @@ the Lean compiler.  It adds no assumptions and proves no mathematical step.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakePeriodicVorticityEquation.unitTorusStrainStretchAmp_eq_neg_complexStretchAmp
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakePeriodicVorticityEquation.finiteFourierReconstruction_unitTorusStretchingCoeff
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakePeriodicVorticityEquation.dyadicPancakeDirectionDerivative_eq_unitTorusVorticityChannels
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeBlockReality.mem_squareDyadicPancakeModes_neg_iff
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeBlockReality.squareDyadicPancakeBlock_conj_eq_self
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeBlockReality.ofReal_squareDyadicPancakeRealBlock_eq

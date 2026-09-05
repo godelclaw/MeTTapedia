@@ -146,6 +146,11 @@ $2\pi i$, so the physical strain--vorticity coefficient is the \emph{negative}
 of the phase-suppressed symbol.  This sign identity, the right-hand-side
 transport coefficient, viscosity, and the resulting finite vorticity RHS are
 all checked before they enter the two-channel block residual.
+Finally, the hard shell-and-cone selector is proved invariant under
+$k\mapsto-k$.  Hence physical conjugate symmetry
+$\widehat\omega(-k)=\overline{\widehat\omega(k)}$ makes the selected complex
+reconstruction exactly real-valued.  The real block in the direction law is
+therefore the actual physical pancake block, not a lossy projection.
 The frequency-support part of the analytic localization bridge is now closed:
 for fixed normalized cutoff margins, a four-chart multiplier is constructed
 which is exactly coherent on every leaked output mode and has a uniform
@@ -1737,6 +1742,13 @@ transport plus viscosity; the second is the physical stretching
 projection/variable-strain defect.  What remains is a scale-critical estimate
 for those two concrete channels and a controlled passage from finite
 convolutions to the full periodic solution, not a normalization ambiguity.
+The companion module \texttt{PancakeBlockReality} proves that both the radial
+shell and oriented squared-aperture predicate are invariant under frequency
+negation.  Reindexing the finite Fourier sum by $k\mapsto-k$, using character
+and coefficient conjugate symmetry, proves
+$\overline{P_{N,F}\omega}=P_{N,F}\omega$ coordinatewise.  It follows that the
+complex block has zero imaginary part and complexifying the real block used
+above returns the full reconstruction exactly.
 
 The pressure Hessian enters through the strain-eigenframe equation instead.
 Differentiating $Se_i=\lambda_i e_i$ and pairing with $e_j$, $i\ne j$, gives
@@ -1969,7 +1981,8 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeExpandingPlaneResidence}, and
 \texttt{PancakeDyadicDirectionEvolution}, and
 \texttt{PancakeFourierStretchingEvolution}, and
-\texttt{PancakePeriodicVorticityEquation} modules), each with a regression companion where
+\texttt{PancakePeriodicVorticityEquation}, and
+\texttt{PancakeBlockReality} modules), each with a regression companion where
 applicable.  The aperture module is retained as an explicitly attenuated
 analytic model; the exact coherent projection no-go above prevents its use as
 the desired field-transfer estimate.
