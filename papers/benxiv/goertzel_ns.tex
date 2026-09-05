@@ -123,7 +123,11 @@ The top-gap collision band is further resolved by the stable complementary
 cluster: if the bottom gap remains open, the expanding two-plane projector is
 locally Lipschitz and measurable; if both adjacent gaps are small, trace-free
 strain forces the whole spectrum to be small and yields a direct small-rate
-stretching bound.
+stretching bound.  On the stable-plane branch, the sign-invariant energy in
+the contracting line now satisfies an exact direction-evolution law and a
+bottom-gap-weighted residence inequality.  Its only undischarged forcing
+channels are the non-strain direction forcing and motion of the contracting
+line.
 The frequency-support part of the analytic localization bridge is now closed:
 for fixed normalized cutoff margins, a four-chart multiplier is constructed
 which is exactly coherent on every leaked output mode and has a uniform
@@ -1477,6 +1481,29 @@ Thus a small top gap now has two explicit subbranches: a stable expanding
 plane, or uniformly small stretching.  The unresolved collision geometry is
 specifically the dynamical coherence problem inside that stable plane.
 
+The module \texttt{PancakeExpandingPlaneResidence} supplies the first dynamic
+estimate on that branch.  For a unit vorticity direction $\xi$ and a unit
+bottom eigenvector $e_2$, define the sign-invariant contracting-line energy
+$C=\langle\xi,e_2\rangle^2$.  This is exactly the energy escaping the stable
+expanding-plane projector.  The checked spectral identity gives
+\[
+ g_{\mathrm{bot}}(1-C)
+ \leq \langle\xi,S\xi\rangle-\lambda_2 .
+\]
+Consequently, while $C\leq1/2$, the direction equation yields the integrated
+residence estimate
+\[
+ \int_0^T g_{\mathrm{bot}}(t)C(t)\,dt
+ \leq C(0)+2\int_0^T
+ \left|\langle d,e_2\rangle+\langle\xi,\dot e_2\rangle\right|\,dt,
+\]
+where $d$ is the non-strain part of the direction rate.  This proves that
+strain damps leakage into the contracting line even when the two expanding
+eigenvalues collide.  It deliberately does not replace the two right-hand
+forcing channels by an a priori Navier--Stokes bound; doing so, and controlling
+coherence between directions inside the expanding plane, is the remaining
+dynamic content rather than a consequence of spectral algebra alone.
+
 There is a second field-level issue which a fixed-axis multiplier does not
 address.  The actual pancake frame is the eigensystem of the low-frequency
 strain and therefore depends on $(x,t)$.  The module
@@ -1513,6 +1540,17 @@ $L^\infty$ bound.
 They are not silently included in the finite-sector estimate, and
 \texttt{coherent\_le} has not yet been instantiated for the time-dependent
 Navier--Stokes data structure.
+
+There is also a concrete scale warning at this junction.  The present
+$5^3$ smooth cover is a fixed-scale localization device.  It gives a valid
+bounded-overlap energy comparison and uniform Fourier-cutoff transfer, but it
+cannot by itself force an arbitrarily oscillatory strain field to be
+$\varepsilon$-close to a constant on each cell.  Instantiating the weighted
+freezing theorem therefore requires a scale-refined cover with overlap bounds
+independent of the refinement (and compatible cutoff-frequency margins), or a
+pointwise variable-strain argument.  Treating the fixed 125 cells as if they
+automatically supplied arbitrary strain oscillation would be an invalid
+closure.
 
 \emph{The refined pin (committed).}  The module
 \texttt{MisalignmentRefinedPin} splits the pancake-sector functional
@@ -1862,7 +1900,8 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeConcreteCoverEnergy},
 \texttt{PancakeConcreteWeightedFreezing}, and
 \texttt{PancakeSpectralProjectorRegularity}, and
-\texttt{PancakeSpectralClusterDichotomy} modules), each with a regression companion where
+\texttt{PancakeSpectralClusterDichotomy}, and
+\texttt{PancakeExpandingPlaneResidence} modules), each with a regression companion where
 applicable.  The aperture module is retained as an explicitly attenuated
 analytic model; the exact coherent projection no-go above prevents its use as
 the desired field-transfer estimate.
