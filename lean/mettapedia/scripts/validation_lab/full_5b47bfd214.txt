@@ -1,0 +1,13 @@
+cand_5b47bfd214.json: ring 14 vertices 26 |supp| 61899 admissible 1195743 (2s)
+  iter 1: +28746 -> |S|=90645/1195743  (21.3s)
+  iter 2: +7398 -> |S|=98043/1195743  (26.2s)
+  iter 3: +3954 -> |S|=101997/1195743  (26.0s)
+  iter 4: +924 -> |S|=102921/1195743  (25.8s)
+  iter 5: +54 -> |S|=102975/1195743  (25.9s)
+  iter 6: +12 -> |S|=102987/1195743  (25.7s)
+  iter 7: +0 -> |S|=102987/1195743  (26.4s)
+  closure 102987 / 1195743 (0.086); D-reducible False [182s]
+  caps 429: best cap misses 720 closure-outside words
+  deletions size 1: tried 32, best miss (21240, [8], 24)
+  deletions size 2: tried 514, best miss (6840, [7, 26], 22)
+RESULT: {"tangle": "cand_5b47bfd214.json", "ring": 14, "vertices": 26, "supp": 61899, "admissible": 1195743, "closure": 102987, "D_reducible": false, "closure_seconds": 182, "best_deletion": [6840, [7, 26], 22], "reducible": false, "seconds": 957}

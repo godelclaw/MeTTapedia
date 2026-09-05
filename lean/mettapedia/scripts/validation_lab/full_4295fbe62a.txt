@@ -1,0 +1,19 @@
+cand_4295fbe62a.json: ring 14 vertices 28 |supp| 77958 admissible 1195743 (2s)
+  iter 1: +48168 -> |S|=126126/1195743  (20.9s)
+  iter 2: +23328 -> |S|=149454/1195743  (26.0s)
+  iter 3: +12558 -> |S|=162012/1195743  (26.5s)
+  iter 4: +9216 -> |S|=171228/1195743  (27.0s)
+  iter 5: +3252 -> |S|=174480/1195743  (27.1s)
+  iter 6: +2310 -> |S|=176790/1195743  (27.2s)
+  iter 7: +1680 -> |S|=178470/1195743  (27.3s)
+  iter 8: +1356 -> |S|=179826/1195743  (27.3s)
+  iter 9: +540 -> |S|=180366/1195743  (27.2s)
+  iter 10: +342 -> |S|=180708/1195743  (27.4s)
+  iter 11: +132 -> |S|=180840/1195743  (27.1s)
+  iter 12: +42 -> |S|=180882/1195743  (27.2s)
+  iter 13: +0 -> |S|=180882/1195743  (27.1s)
+  closure 180882 / 1195743 (0.151); D-reducible False [349s]
+  caps 429: best cap misses 549 closure-outside words
+  deletions size 1: tried 35, best miss (21195, [16], 26)
+  deletions size 2: tried 616, best miss (6555, [5, 32], 24)
+RESULT: {"tangle": "cand_4295fbe62a.json", "ring": 14, "vertices": 28, "supp": 77958, "admissible": 1195743, "closure": 180882, "D_reducible": false, "closure_seconds": 349, "best_deletion": [6555, [5, 32], 24], "reducible": false, "seconds": 1111}
