@@ -128,6 +128,60 @@ theorem le_of_tubeOf_nodes
   · exact cardPhasedState_ne_of_ssubset rotation minimal (nodes (idx j)) (nodes (idx j'))
       (hnested _ _ (by simp only [idx, Fin.mk_lt_mk]; omega)) (hstate j j' hf)
 
+/-- **No long periodic corridor of any shape, period `p`.** -/
+theorem le_of_tubeOf_nodes_period
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    {w : Nat} {Vt It : Type u} {T : TwoSidedOpenTangleData Vt It (Fin k) (Fin k)} {m p : Nat}
+    (hp : 0 < p)
+    (hstab : ∀ W : Set (Fin k → Color), (relImage T)^[m + p] W = (relImage T)^[m] W)
+    {inner : V → Prop} {n : Nat}
+    (t : TubeOf rotation.toRotationSystem T inner n) (hc : t.Coherent)
+    (nodes : Fin (n + 1) → LiteralShoreNode rotation k w)
+    (hkeep : ∀ r : Fin (n + 1), majorityRetainedKeep G (nodes r).shore = t.side r)
+    (hnested : ∀ r r' : Fin (n + 1), r < r' → (nodes r).shore ⊂ (nodes r').shore) :
+    n + 1 - m ≤ p * (Nat.factorial k * (Nat.factorial k * (6 * w + 1))) := by
+  by_contra hlt
+  have hlt : p * (Nat.factorial k * (Nat.factorial k * (6 * w + 1))) < n + 1 - m :=
+    Nat.lt_of_not_le hlt
+  let idx : Fin (n + 1 - m) → Fin (n + 1) := fun j => ⟨m + j, by omega⟩
+  have hw : ∀ r : Fin (n + 1), boundaryWidth rotation (nodes r).shore = k := fun r =>
+    boundaryWidth_eq_of_equiv rotation _ ((t.sideEquiv r).trans (castBoundary (hkeep r).symm))
+  let f : Fin (n + 1 - m) → Fin p × Carrier.{u} k w := fun j =>
+    (⟨(j : Nat) % p, Nat.mod_lt _ hp⟩,
+      (sigma rotation (nodes (idx j)).shore (hw _) (hkeep (idx j)) (t.sideEquiv (idx j)),
+        (normalizedState rotation (nodes (idx j)).shore (nodes (idx j)).innerOuter k (hw _)).hubRotation,
+        shoreCardPhase w (nodes (idx j)).shore))
+  have hcard : Fintype.card (Fin p × Carrier.{u} k w) < Fintype.card (Fin (n + 1 - m)) := by
+    rw [Fintype.card_prod, card_carrier, Fintype.card_fin, Fintype.card_fin]; exact hlt
+  obtain ⟨j, j', hne, hf⟩ := Fintype.exists_ne_map_eq_of_card_lt f hcard
+  have hstate : ∀ a b : Fin (n + 1 - m), f a = f b →
+      (nodes (idx a)).cardPhasedState = (nodes (idx b)).cardPhasedState := by
+    intro a b hab
+    simp only [f, Prod.mk.injEq, Fin.mk.injEq] at hab
+    obtain ⟨hmod, hσ, hhub, hphase⟩ := hab
+    unfold LiteralShoreNode.cardPhasedState LiteralShoreNode.state
+    rw [boundedNormalizedState_eq_of_width rotation _ _ _ (hw (idx a)),
+      boundedNormalizedState_eq_of_width rotation _ _ _ (hw (idx b)), hphase]
+    congr 2
+    apply State.ext' hhub
+    ext word
+    rw [mem_support_iff_sideWords _ (nodes (idx a)).innerOuter (hw _) (hkeep (idx a))
+        (t.sideEquiv (idx a)),
+      mem_support_iff_sideWords _ (nodes (idx b)).innerOuter (hw _) (hkeep (idx b))
+        (t.sideEquiv (idx b)), hσ]
+    have hside : sideWords (t.side (idx a)) (t.sideEquiv (idx a)) =
+        sideWords (t.side (idx b)) (t.sideEquiv (idx b)) := by
+      show sideWords (t.side (m + a)) (t.sideEquiv (m + a)) =
+        sideWords (t.side (m + b)) (t.sideEquiv (m + b))
+      rw [TubeOf.sideWords_eq_mod hp hstab t hc a (by omega),
+        TubeOf.sideWords_eq_mod hp hstab t hc b (by omega), hmod]
+    rw [hside]
+  rcases lt_or_gt_of_ne hne with hjj | hjj
+  · exact cardPhasedState_ne_of_ssubset rotation minimal (nodes (idx j')) (nodes (idx j))
+      (hnested _ _ (by simp only [idx, Fin.mk_lt_mk]; omega)) (hstate j' j hf.symm)
+  · exact cardPhasedState_ne_of_ssubset rotation minimal (nodes (idx j)) (nodes (idx j'))
+      (hnested _ _ (by simp only [idx, Fin.mk_lt_mk]; omega)) (hstate j j' hf)
+
 end Nodes
 
 end TubeSlab

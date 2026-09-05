@@ -107,6 +107,43 @@ theorem sideWords_stable {m : Nat}
     rw [Nat.add_comm m j, Function.iterate_add_apply]
   rw [h1, h2, hstab]
 
+/-- **stationarity with period `p`**: once the `(m+p)`-fold image equals the `m`-fold image on
+every word set, the sides after `m+j` and `m+p+j` slabs accept the same words -/
+theorem sideWords_stable_period {m p : Nat}
+    (hstab : ∀ W : Set (Fin k → Color), (relImage T)^[m + p] W = (relImage T)^[m] W)
+    {inner : V → Prop} {n : Nat} (t : TubeOf RS T inner n) (hc : t.Coherent) (j : Nat)
+    (hn : m + p + j ≤ n) :
+    sideWords (t.side (m + p + j)) (t.sideEquiv (m + p + j)) =
+      sideWords (t.side (m + j)) (t.sideEquiv (m + j)) := by
+  rw [sideWords_side t hc _ hn, sideWords_side t hc _ (by omega)]
+  have h1 : (relImage T)^[m + p + j] (sideWords inner t.firstEquiv) =
+      (relImage T)^[j] ((relImage T)^[m + p] (sideWords inner t.firstEquiv)) := by
+    rw [Nat.add_comm (m + p) j, Function.iterate_add_apply]
+  have h2 : (relImage T)^[m + j] (sideWords inner t.firstEquiv) =
+      (relImage T)^[j] ((relImage T)^[m] (sideWords inner t.firstEquiv)) := by
+    rw [Nat.add_comm m j, Function.iterate_add_apply]
+  rw [h1, h2, hstab]
+
+/-- past the index, the side words depend only on the position modulo the period -/
+theorem sideWords_eq_mod {m p : Nat} (hp : 0 < p)
+    (hstab : ∀ W : Set (Fin k → Color), (relImage T)^[m + p] W = (relImage T)^[m] W)
+    {inner : V → Prop} {n : Nat} (t : TubeOf RS T inner n) (hc : t.Coherent) :
+    ∀ j, m + j ≤ n →
+      sideWords (t.side (m + j)) (t.sideEquiv (m + j)) =
+        sideWords (t.side (m + j % p)) (t.sideEquiv (m + j % p)) := by
+  intro j
+  induction j using Nat.strong_induction_on with
+  | _ j ih =>
+    intro hj
+    by_cases hjp : j < p
+    · rw [Nat.mod_eq_of_lt hjp]
+    · have hjp' : p ≤ j := Nat.le_of_not_lt hjp
+      have hstep := sideWords_stable_period hstab t hc (j - p) (by omega)
+      rw [show m + p + (j - p) = m + j by omega] at hstep
+      rw [hstep, ih (j - p) (by omega) (by omega),
+        show (j - p) % p = j % p from by
+          conv_rhs => rw [← Nat.sub_add_cancel hjp', Nat.add_mod_right]]
+
 end TubeOf
 
 end TubeSlab

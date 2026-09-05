@@ -393,6 +393,22 @@ theorem le_of_tubeOf [Nonempty Vt] (minimal : GraphBackedVertexMinimalTaitCounte
   exact le_of_tubeOf_nodes minimal hstab t hc nodes (fun r => mkNode_keep _ _ _)
     (fun r r' hrr' => t.sideShore_ssubset_of_lt hT r r' hrr' (by omega))
 
+/-- the period-`p` form of the tube theorem -/
+theorem le_of_tubeOf_period [Nonempty Vt]
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    {m p : Nat} (hp : 0 < p)
+    (hstab : ∀ W : Set (Fin k → Color), (relImage T)^[m + p] W = (relImage T)^[m] W)
+    (hk2 : 2 ≤ k) {inner : V → Prop} {n : Nat}
+    (t : TubeOf rotation.toRotationSystem T inner n) (hc : t.Coherent)
+    (hgood : GoodSide (G := G) inner) (hconn : EdgeShoreConnected G (sideShore inner))
+    (hcconn : EdgeShoreConnected G (ZigzagSlab.compShore (t.side n))) :
+    n + 1 - m ≤ p * (Nat.factorial k * (Nat.factorial k * (6 * k + 1))) := by
+  let nodes : Fin (n + 1) → LiteralShoreNode rotation k k := fun r =>
+    mkNode ⟨t.goodSide_side hT hgood r (by omega), t.conn_side hT hgood hconn r (by omega),
+      t.cconn_side hT hcconn r (by omega)⟩ (t.sideEquiv r) hk2
+  exact le_of_tubeOf_nodes_period minimal hp hstab t hc nodes (fun r => mkNode_keep _ _ _)
+    (fun r r' hrr' => t.sideShore_ssubset_of_lt hT r r' hrr' (by omega))
+
 end TubeOf
 
 end TubeTheorem
