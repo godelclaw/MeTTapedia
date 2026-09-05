@@ -1941,6 +1941,68 @@ transport-diffusion equations with almost Lipschitz coefficients},
 \emph{Rev.\ Mat.\ Iberoamericana} \textbf{21} (2005), 863--888,
 Section~2, require time-integrated velocity-gradient control.
 
+The module \texttt{PancakeSignedTransportEnergy} now retains signed
+quadratic transfer before taking absolute values.  For a negation-closed
+finite source set $K$ and conjugate-symmetric source coefficients, let
+\[
+ b_{q\ell}=\mathbf1_{q-\ell\in K}\,
+   \ell\cdot\bigl(|q-\ell|^{-2}(q-\ell)\times
+     \widehat\omega_{q-\ell}\bigr).
+\]
+This is proved to be the matrix of the existing physical negative-advection
+convolution, with its defined zero-mode value, and
+$b_{\ell q}=-\overline{b_{q\ell}}$.  Consequently
+$F_{q\ell}=\operatorname{Re}\langle\widehat\eta_q,
+b_{q\ell}\widehat\eta_\ell\rangle$ is antisymmetric.  On any finite
+receiver/output mode set $M$, a real filter $\gamma$ satisfies the exact
+transport-energy identity
+\[
+ 2\sum_{q\in M}\gamma_q^2
+   \operatorname{Re}\langle\widehat\eta_q,(T\widehat\eta)_q\rangle
+ =\sum_{q,\ell\in M}(\gamma_q^2-\gamma_\ell^2)F_{q\ell}.
+\]
+Thus an exact quadratic frequency partition $\sum_i\gamma_i(q)^2=1$
+cancels the total signed transport contribution.  Differentiating a
+differentiable such partition also proves
+$\sum_i2\gamma_i\dot\gamma_i=0$, rather than assuming the filter-rate
+cancellation.  These are identities for exact frequency partitions, not a
+claim that the previously constructed approximate spatial partitions already
+satisfy them.  The full filtered coefficient-energy derivative is checked
+with filter motion, transport, stretching, and viscous dissipation all retained.
+
+Directional energy has an additional term.  For self-adjoint
+complex-linear mode weights $A_q$, the same argument leaves
+\[
+ 2\sum_{q\in M}\operatorname{Re}
+   \langle A_q\widehat\eta_q,(T\widehat\eta)_q\rangle
+ =\sum_{q,\ell\in M}\operatorname{Re}
+   \langle\widehat\eta_q,b_{q\ell}(A_q-A_\ell)
+       \widehat\eta_\ell\rangle.
+\]
+A common frozen weight cancels; different directional weights need not.
+The module proves self-adjointness and idempotence of the route's actual
+\texttt{misalignmentComponent} projector $Q_q$, including its degenerate
+reference case, and specializes this identity to that projector.  Under
+the physical finite vorticity coefficient equation it then proves
+\begin{align*}
+ \frac{d}{dt}\sum_{q\in M}|Q_q\widehat\eta_q|^2
+ ={}&\sum_{q,\ell\in M}\operatorname{Re}
+       \langle\widehat\eta_q,b_{q\ell}(Q_q-Q_\ell)
+          \widehat\eta_\ell\rangle\\
+ &+2\sum_{q\in M}\operatorname{Re}
+       \langle Q_q\widehat\eta_q,(S\widehat\eta)_q\rangle
+   -2\nu(2\pi)^2\sum_{q\in M}|q|^2|Q_q\widehat\eta_q|^2.
+\end{align*}
+Here the coherent reference is fixed, $S\widehat\eta$ is the already
+constructed physical stretching convolution, and the energy normalization
+is the one used by the finite Parseval theorem.  This is a differential
+identity for the existing projector and coefficient equation, not a
+constructed solution or a dynamical budget.  The remaining estimate must
+control the projector-mismatch and stretching terms together with
+dissipation; moving strain references, spatial localization, and the
+scale-critical time sum still require additional work.  In particular,
+scalar energy conservation does not by itself close the misalignment pin.
+
 The pressure Hessian enters through the strain-eigenframe equation instead.
 Differentiating $Se_i=\lambda_i e_i$ and pairing with $e_j$, $i\ne j$, gives
 \[
@@ -2181,6 +2243,7 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeMovingBlockEvolution}, and
 \texttt{PancakeHardBoundaryObstruction}, and
 \texttt{PancakeEvolvingFilter}, and
+\texttt{PancakeSignedTransportEnergy}, and
 \texttt{SpatialBKMIntegrand}, and
 \texttt{PancakeAdaptiveStrainCover}, and
 \texttt{PancakeAdaptiveFourierPartition}, and
