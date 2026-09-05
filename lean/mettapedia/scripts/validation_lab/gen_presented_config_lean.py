@@ -61,6 +61,8 @@ port_arms = '\n'.join(f'    | {i} => ({portPos[i][0]}, {portPos[i][1]})' for i i
 # the base list length is needed for the chunk count; read it from the certificate data module
 lab = os.path.dirname(os.path.abspath(__file__))
 data_path = os.path.join(lab, '..', '..', 'Mettapedia', 'GraphTheory', 'FourColor', certmod + 'Data.lean')
+if not os.path.exists(data_path):
+    data_path = os.path.join(lab, '..', '..', 'Mettapedia', 'GraphTheory', 'FourColor', certmod + '.lean')
 src = open(data_path).read()
 start = src.index('def base : List (Word')
 end = src.index(']', start)

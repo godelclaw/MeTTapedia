@@ -69,8 +69,10 @@ ambient map as well.
 The standard rooted branch-decomposition interface and its conversion to the
 literal checked consumer are machine-checked.  The Fomin--Fraigniaud--Thilikos
 width-preserving connectedization theorem is now machine-checked in that
-interface.  Wall exclusion and the arbitrary-length nested exact finite-state
-supply are not proved \\
+interface.  A checked configuration-exclusion instrument
+(Section~\ref{subsec:configuration-exclusion}) now supplies the wall half for one
+presented patch at a time.  Wall exclusion and the arbitrary-length nested exact
+finite-state supply are not proved \\
 $D_2$ & Count across every actual ordered noose cut factors through a finite
 boundary-word relation, and cumulative support is deletable on repetition &
 the physical port-tangle gluing bijection, matrix law, support
@@ -4317,7 +4319,11 @@ $s_i$, let $R_i$ be the relation consisting of the pairs of concrete proper
 orbit representatives which realise $s_i$.  A clockwise cell state has shared
 corner witnesses precisely when
 \[
-   (R_{m W}\circ R_{m S}\circ R_{m E}\circ R_{m N})
+   (R_{
+m W}\circ R_{
+m S}\circ R_{
+m E}\circ R_{
+m N})
       \cap \Delta \ne \varnothing;
 \]
 that is, the four-step relation on the north-west fibre has a fixed point.
@@ -11182,3 +11188,36 @@ Cell closure remains important for making the base small enough to replay,
 while the raw finite semantics no longer depends on the refuted closed-web
 carrier.  Neither Trail Completability nor Kauffman factor gluing lies on
 this direct reductive critical path.
+
+\subsection{Configuration exclusion from enumerated Kempe certificates}
+\label{subsec:configuration-exclusion}
+
+The wall half of $D_1$ needs, for a fixed radius-two patch, the statement that no least
+obstruction contains it as a disk.  This is now a checked instrument on presented data.
+A cap on the shore's ports that is a disc (connected, boundary-essential, cubic, with
+cyclic rotations, distinct hub faces, and the spherical Euler count of its hub closure
+under the rotation forced by the shore) sews to the shore of a deleted disk as a
+bridgeless spherical cubic map in the minimality class; if every seam word of the cap
+derives, by the sound boundary Kempe derivations at any arity, into the deleted disk's
+support, the sewn map is not Tait colourable; if the cap is smaller than the disk,
+minimality is contradicted.
+\Sverified{Mettapedia.GraphTheory.FourColor.KempeDerivation.CapExclusion.false_of_derivable_cap}
+For a cap presented by vertex triples of slots, the disc facts are decided by a verified
+reachability closure and a verified cycle counter,
+\Sverified{Mettapedia.GraphTheory.FourColor.KempeDerivation.PresentedCap.Pres.capDiscData_of_discCheck}
+and its seam support is enumerated exactly in the certificate checker's coordinates.
+\Sverified{Mettapedia.GraphTheory.FourColor.KempeDerivation.PresentedCap.Pres.mem_wordsOf_taitInnerSupport_iff}
+A presented configuration isomorphic to the deleted side, with its ports numbered by the
+shore's facial order, has the deleted side's support equal to its enumerated word list, so
+a sealed enumerated certificate whose base words are verified on the configuration and
+whose nodes cover the cap's words excludes the configuration.
+\Sverified{Mettapedia.GraphTheory.FourColor.KempeDerivation.CapEmbedding.false_of_certificate'}
+The first instance is the ring-eight pentagon flower (a pentagon with its five surrounding
+faces), replaced by the octagon cap: the six hundred base words of its certificate are
+verified by the enumerator on the configuration, the octagon's support words are covered,
+and the octagon passes the disc check, all by kernel decision.
+\Sverified{Mettapedia.GraphTheory.FourColor.KempeDerivation.PresentedCap.Flower8.excluded}
+Two provisos are visible in the statements: the instance is stated for vertex types in
+universe zero, and the configuration's ports must follow the ring's facial order.  A
+counterexample in a higher universe is to be transported through an enumeration of its
+vertices, and a rotated appearance needs the certificate in rotated coordinates.
