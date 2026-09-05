@@ -1,0 +1,66 @@
+{
+ "perfect c5 h8": {
+  "V": 80,
+  "boundaries": 7,
+  "boundary_cross": [
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5
+  ],
+  "max_cross": 7
+ },
+ "defect c5 h8": {
+  "V": 80,
+  "boundaries": 7,
+  "boundary_cross": [
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5
+  ],
+  "max_cross": 7
+ },
+ "perfect c5 h12": {
+  "V": 120,
+  "boundaries": 11,
+  "boundary_cross": [
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5
+  ],
+  "max_cross": 7
+ },
+ "defect c5 h12": {
+  "V": 120,
+  "boundaries": 11,
+  "boundary_cross": [
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5
+  ],
+  "max_cross": 7
+ }
+}
