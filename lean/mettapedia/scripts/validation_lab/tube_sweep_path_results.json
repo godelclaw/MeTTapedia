@@ -1,0 +1,104 @@
+{
+ "2": {
+  "V": 30,
+  "path_ok": true,
+  "layers": 6,
+  "max_cross": 7,
+  "max_boundary_cross": 5,
+  "boundary_positions": 2,
+  "cross_at_boundaries": [
+   5,
+   5
+  ]
+ },
+ "4": {
+  "V": 50,
+  "path_ok": true,
+  "layers": 10,
+  "max_cross": 7,
+  "max_boundary_cross": 5,
+  "boundary_positions": 4,
+  "cross_at_boundaries": [
+   5,
+   5,
+   5,
+   5
+  ]
+ },
+ "6": {
+  "V": 70,
+  "path_ok": true,
+  "layers": 14,
+  "max_cross": 7,
+  "max_boundary_cross": 5,
+  "boundary_positions": 6,
+  "cross_at_boundaries": [
+   5,
+   5,
+   5,
+   5,
+   5,
+   5
+  ]
+ },
+ "8": {
+  "V": 90,
+  "path_ok": true,
+  "layers": 18,
+  "max_cross": 7,
+  "max_boundary_cross": 5,
+  "boundary_positions": 8,
+  "cross_at_boundaries": [
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5
+  ]
+ },
+ "10": {
+  "V": 110,
+  "path_ok": true,
+  "layers": 22,
+  "max_cross": 7,
+  "max_boundary_cross": 5,
+  "boundary_positions": 10,
+  "cross_at_boundaries": [
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5
+  ]
+ },
+ "14": {
+  "V": 150,
+  "path_ok": true,
+  "layers": 30,
+  "max_cross": 7,
+  "max_boundary_cross": 5,
+  "boundary_positions": 14,
+  "cross_at_boundaries": [
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5
+  ]
+ }
+}
