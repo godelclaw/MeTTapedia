@@ -2003,6 +2003,55 @@ dissipation; moving strain references, spatial localization, and the
 scale-critical time sum still require additional work.  In particular,
 scalar energy conservation does not by itself close the misalignment pin.
 
+The next module, \texttt{PancakeFrequencyProjectorCommutator}, estimates
+this specific projector-mismatch channel.  In a complex Hilbert space,
+normalization and rank-one projection give the checked bound
+\[
+ \|Q_q-Q_\ell\|\le
+   \frac{16|q-\ell|}{|q|\,|p(q)|},
+ \qquad p(q)=P_qe_x,
+\]
+provided both frequencies and both coherent references are nonzero.
+The Hilbert-space construction is identified exactly with the periodic
+\texttt{misalignmentComponent}; it is not a surrogate projector.
+The actual identity-frame pancake cone at $N\ge2$ gives
+$|p(q)|\ge1/2$ and $N^2\le|q|<2N^2$.  A separate checked physical-symbol
+estimate gives
+\[
+ |b_{q\ell}|\le
+   \frac{6|\ell|}{|q-\ell|}\,|\widehat\omega_{q-\ell}|
+\]
+for a retained nonzero source frequency.  Thus the source-frequency factors
+cancel.  For $q,\ell$ in the same pancake shell,
+\[
+ |b_{q\ell}(Q_q-Q_\ell)v|
+   \le384\,|\widehat\omega_{q-\ell}|\,|v|.
+\]
+The more general theorem needs only $|\ell|\le2|q|$ and the two
+coherent-reference norms at least $1/2$, so it also applies to buffered
+frequencies satisfying those conditions.  The coincident-frequency and
+absent-source cases are included explicitly.
+
+Injectivity of the frequency shifts bounds both row and column sums of the
+source convolution matrix.  A checked finite Schur estimate then yields
+\[
+ \left|\sum_{q,\ell\in M}\operatorname{Re}
+   \langle\widehat\eta_q,b_{q\ell}(Q_q-Q_\ell)
+     \widehat\eta_\ell\rangle\right|
+ \le384\left(\sum_{k\in K}|\widehat\omega_k|\right)
+          \left(\sum_{q\in M}|\widehat\eta_q|^2\right),
+\]
+with no additional mode-count or frequency factor.  It plugs directly into
+the signed misalignment-energy derivative above.  This removes a derivative
+loss from the same-shell projector-mismatch channel, but it does not prove
+the time budget: the source Fourier $\ell^1$ vorticity factor still needs
+dynamical control, and the right-hand energy is full receiver energy, not
+misalignment energy alone.  Nor does this estimate control a hard-selector
+crossing, transfers from other sectors, or moving strain-frame terms.
+Uniform physical-frame localization and the scale-critical time sum remain
+required before this estimate can discharge any part of
+\texttt{MisalignmentStrainBudget} for actual solution data.
+
 The pressure Hessian enters through the strain-eigenframe equation instead.
 Differentiating $Se_i=\lambda_i e_i$ and pairing with $e_j$, $i\ne j$, gives
 \[
@@ -2244,6 +2293,7 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeHardBoundaryObstruction}, and
 \texttt{PancakeEvolvingFilter}, and
 \texttt{PancakeSignedTransportEnergy}, and
+\texttt{PancakeFrequencyProjectorCommutator}, and
 \texttt{SpatialBKMIntegrand}, and
 \texttt{PancakeAdaptiveStrainCover}, and
 \texttt{PancakeAdaptiveFourierPartition}, and
