@@ -114,8 +114,11 @@ hard-set/smooth-weight bounded-overlap integral estimates are also checked.
 The frequency-support part of the analytic localization bridge is now closed:
 for fixed normalized cutoff margins, a four-chart multiplier is constructed
 which is exactly coherent on every leaked output mode and has a uniform
-inverse-kernel $L^1$ bound.  Its commutator with the original smooth sector
-projector, space--time treatment of the small-gap branch, and
+inverse-kernel $L^1$ bound.  For finite-band cutoffs this multiplier is now
+transferred through square-dyadic scaling, rotation, periodization, and
+physical frames, and applied exactly to the localized products.  Control of
+the Fourier tail of a genuine spatial cutoff and the remaining smooth
+projector collar, space--time treatment of the small-gap branch, and
 conversion from this $L^2$/defect control to the scale-local endpoint budget
 remain open.  The
 latest audit also isolates why the proposed pancake closure does
@@ -1299,10 +1302,28 @@ the whole leaked box
 The assembled tensor symbol therefore equals the uncut coherent stretching
 symbol on every permitted localized output pair.  Applying the generic
 buffered-cutoff theorem chartwise and summing gives one aperture-uniform
-$L^1$ bound for the assembled inverse kernel.  What remains at this junction
-is to compare this enlarged multiplier with the original smooth sector
-projector; this is a genuine projector commutator or collar estimate, not a
-support-coverage question.
+$L^1$ bound for the assembled inverse kernel.
+
+The modules \texttt{PancakeBufferedAnnularFrozenFrameTransfer} and
+\texttt{PancakeBufferedAnnularPhysicalFrameTransfer} carry this enlarged
+operator through anisotropic aperture scaling, square-dyadic rescaling,
+frozen rotation, periodization, and physical input/output conjugation.  They
+prove the exact torus coefficient formula and retain the cardinality-free
+$C/N$ endpoint, uniformly even when a different frozen frame is selected at
+each output point.  Finally, \texttt{PancakeLocalizedBufferedTransfer}
+collects the repeated cutoff/field pairs by their output frequency and proves
+the exact physical coherent identity directly on products $\chi U$ and
+$\psi V$.  Its premises mention only the original annular modes and the
+finite-band cutoff margin; the leaked-support condition is derived rather
+than assumed.  It also proves the expected endpoint with losses only
+$\|\chi\|_\infty\|U\|_\infty$ and
+$\|\psi\|_\infty\|V\|_\infty$, never a support cardinality.
+
+This closes the finite-band localization junction.  It does not turn a
+nonconstant spatial cell cutoff into a finitely supported Fourier polynomial:
+a genuinely localized smooth cutoff has an infinite Fourier tail.  The next
+analytic step is therefore a quantitative truncation/tail estimate (followed
+by the smooth sector-projector collar), not another support-coverage lemma.
 
 There is a second field-level issue which a fixed-axis multiplier does not
 address.  The actual pancake frame is the eigensystem of the low-frequency
@@ -1394,7 +1415,10 @@ Minkowski-sum support leakage, and the sharp physical $L^2$ cutoff bound are
 now proved, as is the exact buffered annulus containing every shifted output
 mode.  A denominator-safe four-chart multiplier is now constructed on that
 buffer, proved exactly coherent there, and given one aperture-uniform
-inverse-kernel $L^1$ bound.  The projector commutator remains.
+inverse-kernel $L^1$ bound.  Its complete square-dyadic, rotated, periodized,
+and physical transfer is proved, and finite-band cutoff products are connected
+to it with no support-cardinality loss.  The infinite Fourier tail of a true
+spatial cell cutoff and the smooth projector collar remain.
 Further steps are aggregation of the small-gap branch
 over space and time, conversion of this $L^2$/defect estimate to the required
 scale-local endpoint budget, and identification and assembly of this concrete
@@ -1652,7 +1676,8 @@ effort.  The repaired-route development comprises, under
 \texttt{PancakeFrozenFrameKernelTransfer}, and
 \texttt{PancakePhysicalFrameKernelTransfer}, through the later annular,
 full-strain-frame, coercivity, cell-aggregation, finite-localization, and
-\texttt{PancakeBufferedAnnularMultiplier} modules), each with a regression companion where
+\texttt{PancakeBufferedAnnularMultiplier}, buffered physical-transfer, and
+\texttt{PancakeLocalizedBufferedTransfer} modules), each with a regression companion where
 applicable.  The aperture module is retained as an explicitly attenuated
 analytic model; the exact coherent projection no-go above prevents its use as
 the desired field-transfer estimate.
