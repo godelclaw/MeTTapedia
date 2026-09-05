@@ -12,10 +12,10 @@ frequency.  This module collects the pair sum over fibers of
 `source + receiver`, and proves that reconstructing the collected coefficients
 is exactly the original stretching polynomial.
 
-This supplies the canonical proposed-stretching field in the two-channel
-direction residual.  The remaining equation term is then
-`omegaDot - stretchingCoeff`, while the second term is the difference between
-projecting these stretching coefficients and stretching the projected block.
+This supplies the canonical phase-suppressed field used by the coherent norm
+estimates.  The unit-torus Fourier equation must additionally restore the
+sign coming from curl inversion and spatial differentiation; that separate
+normalization is carried out in `PancakePeriodicVorticityEquation`.
 -/
 
 set_option autoImplicit false
@@ -131,8 +131,9 @@ theorem dyadicPancakeDirectionResidual_eq_finiteStretchingEvolution_add_projecti
         (finiteComplexStretchingConvolutionCoeff
           sourceModes receiverModes omega eta) r xi x
 
-/-- Direction evolution of the actual hard block with the full finite
-stretching convolution selected as its stretching channel. -/
+/-- Direction evolution of the actual hard block with the collected
+phase-suppressed stretching convolution selected as its comparison channel.
+The physical unit-torus channel has the opposite sign. -/
 theorem dyadicPancakeDirectionDerivative_eq_finiteStretchingChannels
     (S : R3 →L[ℝ] R3) (F : OrientedFrameEquiv) (N : ℕ)
     (sourceModes receiverModes : Finset Wavevector)
@@ -170,4 +171,3 @@ end PancakeFourierStretchingEvolution
 end NavierStokes
 end FluidDynamics
 end Mettapedia
-
