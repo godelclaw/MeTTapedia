@@ -249,9 +249,16 @@ deleted always extends across that edge.  With frozen boundary stubs, the two
 missing colours differ by the frozen boundary flux, and legal framed moves
 leave that flux unchanged.  Thus defect-path moves do not create a dynamic
 completion mechanism.  Kauffman's closed-cubic parity theorem remains valid,
-but it cannot be applied to the noncubic defect paths.  This retirement does
-not touch the direct reductive Count theorem, which is the controlling
-assembly below.
+but it cannot be applied to the noncubic defect paths.  Under Kauffman's own
+formation definitions the hypothesis of the source's Theorem~3.1 is not
+vacuous but false: a kernel-checked twenty-vertex instance has a
+Tait-colourable extended graph while no trail colouring of the deletion can
+be completed by simple operations
+(Proposition~\ref{prop:kauffman-completability-counterexample}).  Restricting
+that hypothesis to prime trails repairs it, but the restricted statement is
+Kauffman's Primality Principle, equivalent to the theorem sought.  This
+retirement does not touch the direct reductive Count theorem, which is the
+controlling assembly below.
 
 \subsection{The idea in plain language}
 
@@ -9334,6 +9341,15 @@ Each entry is a route or reading that was tried and set aside; several are
 themselves machine-checked theorems that a stated step \emph{fails}.
 
 \begin{description}
+  \item[The universal Trail Completability hypothesis of Theorem~3.1.]
+        Vacuous under the manuscript's graph-side convention (the two-defect
+        boundary-flux identity) and false under Kauffman's own completability:
+        a kernel-checked twenty-vertex trail has a Tait-colourable extended
+        graph and no completable state
+        (\texttt{KauffmanTrailCounterexample.all\_ok},
+        Proposition~\ref{prop:kauffman-completability-counterexample}).  Only
+        the prime-restricted form survives, and that is Kauffman's Primality
+        Principle itself.
   \item[The spanning \emph{equality} $\Wz(H)=\mathrm{span}(\mathcal{G})$.] Refuted
         on every closed-walk exact shell (\S\ref{sec:pillarA}); superseded by the
         need-based inclusion, which is what the synthesis actually consumes.

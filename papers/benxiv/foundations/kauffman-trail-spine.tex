@@ -394,6 +394,75 @@ argument would require a boundary-relative potential or torsor together with
 formation definitions supporting Lemma~\ref{lem:kauffman-curve-count};
 neither is presently supplied by the source or this companion.
 
+\subsection{Kauffman's own completability refutes the universal trail hypothesis}
+\label{subsec:kauffman-completability-refuted}
+
+The two collapses above concern the graph-side rendering of the source.
+Kauffman's formation calculus has a different accepting condition, and it is
+the last reading under which the source's Theorem~3.1 could carry content.
+There a trail is a formation with two container curves and one empty edge
+whose tips lie on formation curves; in graph terms, the two edges at each
+tip carry one colour.  A \emph{simple operation} switches the two colours of
+one two-colour circuit.  The trail is \emph{completable} when some sequence
+of simple operations produces a colouring in which the two tips lie on a
+common two-colour circuit through their tip colours; the complex operation
+then switches the open arc between the tips and colours the empty edge.
+The source's Theorem~3.1 assumes that every trail whose extended graph is
+Tait-colourable is completable in this sense, and derives the Four-Colour
+Theorem from that assumption.
+
+\begin{proposition}[a colourable trail that is not completable]
+\label{prop:kauffman-completability-counterexample}
+\Sverified{Mettapedia.GraphTheory.FourColor.KauffmanTrailCounterexample.all_ok}
+There is a three-connected, cyclically four-edge-connected planar cubic graph
+on twenty vertices with an edge $e_0$ such that the graph is
+Tait-colourable, while the trail obtained by deleting $e_0$ has exactly
+thirty-six trail colourings, all in one class under simple operations, and
+in none of them do the two tips lie on a common two-colour circuit.  The
+trail is therefore not completable by simple operations although its
+extended graph is colourable.
+\end{proposition}
+
+\begin{proof}
+The cited module lists the graph, the deleted edge, a proper
+three-edge-colouring of the extended graph, the thirty-six trail colourings,
+and, for each trail colouring and colour pair, the partition of the vertices
+into two-colour components together with the index of the colouring obtained
+by switching each component.  The kernel checks that the extended colouring
+is proper; that every listed trail colouring is proper away from the tips
+with equal colours at each tip; that every certified block is connected in
+the two-colour subgraph, that the blocks partition the vertex set, and that
+no edge of the pair's colours leaves a block, so the blocks are exactly the
+components; that the two tips never share a block; and that switching any
+block yields a listed colouring, so the list is closed under simple
+operations.  The instance was found by exhaustive search over the $7{,}595$
+three-connected planar cubic graphs on twenty vertices; the same search
+finds none at any smaller order.
+\end{proof}
+
+The instance does not contradict Kauffman's theorem.  Since the Four-Colour
+Theorem holds, the Primality Principle holds, so every nonempty uncolourable
+planar trail is factored; the trail above must be factored, and it is the
+distance between ``every trail'' and ``every prime trail'' that the source's
+Theorem~3.1 ignores.  Restricting the source's hypothesis to prime trails
+repairs the statement, but the restricted statement is the Primality
+Principle itself, which Kauffman proves equivalent to the theorem being
+sought.  The universal hypothesis is thus false under Kauffman's definitions
+and vacuous under the source's graph-side convention
+(Corollary~\ref{cor:deleted-edge-trail-collapses}); no reading of
+Theorem~3.1 yields a reduction with content short of the theorem itself.
+\Srefuted{the universal Trail Completability hypothesis of source Theorem~3.1 under Kauffman's completability}
+
+The failure is not confined to graphs outside the least-counterexample
+regime.  A replayable exhaustive audit
+(\texttt{lean/mettapedia/scripts/validation\_lab/kauffman\_completability\_exhaustive.py})
+finds the same phenomenon among fullerene-like cubic maps: a $C_{30}$
+fullerene with twelve pentagons and five hexagons has, for one deleted edge,
+$192$ trail colourings in four classes under simple operations, and the
+class of thirty-six contains no completable state, though the fullerene is
+Tait-colourable.  Cyclic four-edge-connectivity does not exclude the
+phenomenon either, since the twenty-vertex instance already has it.
+
 \subsection{The extra theorem required by the compositional route}
 
 The source now proposes to prove its Trail Completability theorem by strong
@@ -571,7 +640,11 @@ Only after these are proved may a primality implication be assembled.
 The Kauffman layer is therefore not a presently valid terminal bridge.
 Its closed-cubic parity theorem and the generic finite synchronization lemma
 remain useful mathematics, while the deleted-edge bridge is retired and the
-relative formation theorem is open.  No Lean development should package the
+relative formation theorem is open.  Proposition
+\ref{prop:kauffman-completability-counterexample} adds that item~3 cannot be
+met by Kauffman's own accepting condition either, unless the hypothesis is
+restricted to prime trails, at which point the target is the Primality
+Principle.  No Lean development should package the
 four requirements above as hypotheses merely to recreate the old conclusion.
 The direct cumulative-Count descent in
 Theorem~\ref{thm:direct-count-reductive-assembly} is independent of this
