@@ -111,6 +111,14 @@ a homogeneous spectral-gap estimate now converts the frozen transverse
 energy into the integrated top Rayleigh defect, without normalizing vorticity
 at its zeros.  Finite aggregation of the coercive cells and generic
 hard-set/smooth-weight bounded-overlap integral estimates are also checked.
+The concrete cover now permits a different frozen strain on each of its 125
+cells: on the separated branch the complete arbitrary-data misalignment
+energy is bounded by the sum of localized frozen Rayleigh defects plus one
+fixed-cover projector-oscillation error.  The sign-invariant expanding-line
+projector is quantitatively locally Lipschitz wherever the top eigenvalue is
+simple, so a continuous strain field gives a continuous, measurable
+transverse-energy density on every separated-gap region without choosing an
+eigenvector sign.
 The frequency-support part of the analytic localization bridge is now closed:
 for fixed normalized cutoff margins, a four-chart multiplier is constructed
 which is exactly coherent on every leaked output mode and has a uniform
@@ -1411,9 +1419,36 @@ This is specialized to complete pancake-block energy, transverse
 misalignment energy, and frozen-strain Rayleigh defect.  Spectral-gap
 coercivity is also proved after multiplication by each genuine smooth-cell
 weight, and summing the weighted inequalities introduces no cell-count factor
-beyond the explicit fixed cover comparison.  What remains at this junction
-is to let the frozen strain vary from cell to cell and control its oscillation
-against the true space--time strain field.
+beyond the explicit fixed cover comparison.  The module
+\texttt{PancakeConcreteWeightedFreezing} then allows the frozen strain $B_j$
+to vary with the cell.  If every $B_j$ is within $\varepsilon$ of the
+observation strain and its top gap dominates $\mathrm{threshold}+\varepsilon$,
+the complete arbitrary-data misalignment energy satisfies
+\[
+ (\mathrm{threshold}+\varepsilon)\,M
+ \leq \sum_{j=1}^{125}\int |\chi_j|^2 D_{B_j}
+ + (\mathrm{threshold}+\varepsilon)
+   \frac{4\varepsilon}{\mathrm{threshold}}
+   125\|\chi\|_\infty^2\int |u_{\mathrm{pan}}|^2 .
+\]
+Thus varying the frozen strain from cell to cell introduces neither a
+frequency-support cardinality nor an additional cell-count loss.  What remains
+is to construct these $B_j$ from the true space--time strain with the required
+oscillation bound and to treat cells entering the small-gap branch.
+
+The module \texttt{PancakeSpectralProjectorRegularity} addresses the
+measurability issue on the complementary separated branch.  Writing
+$P_{\max}(S)$ for the rank-one projector onto the expanding line and
+$g(S)=\lambda_0(S)-\lambda_1(S)$, it proves that if
+$\|A-B\|<g(B)/2$, then
+\[
+  \|P_{\max}(A)-P_{\max}(B)\|
+  \leq \frac{8}{g(B)}\|A-B\|.
+\]
+Consequently $P_{\max}(S(x,t))$, and the complex transverse-energy density
+formed from it, are continuous and measurable on every region where a
+continuous strain field has positive top gap.  This avoids both arbitrary
+eigenvector signs and any false continuity claim through a collision.
 
 There is a second field-level issue which a fixed-axis multiplier does not
 address.  The actual pancake frame is the eigensystem of the low-frequency
@@ -1437,9 +1472,9 @@ annulus and its physical variable-frame endpoint are supplied by the annular
 modules above, and the pointwise frame is now constructed from the strain.
 The hard dyadic time profiles, their pointwise Parseval identities, and their
 interval integrability for jointly continuous fields are now explicit.  The
-remaining field-transfer pieces are measurable control of the spectral
-selection through eigenvalue collisions, aggregation of the proved
-frozen-cell/small-gap alternative over a physical space--time cover, passage
+remaining field-transfer pieces are aggregation of the proved
+frozen-cell/small-gap alternative over a physical space--time cover (the
+separated projector is now measurable; the collision band remains), passage
 to the intended smooth projectors, and identification of the hard
 pancake/nonpancake split with the route's dynamically defined
 coherent/misalignment functional.
@@ -1494,14 +1529,15 @@ $C/N$ bound on the first term, including in the strain-derived frame.  The
 complex coefficient remainder is now bounded by transverse expanding-line
 energy, first modewise, then after finite-sector summation, and finally by an
 exact physical-space $L^2$ integral via finite Parseval, with no
-support-cardinality loss.  The remaining steps are measurable spectral
-selection through eigenvalue collisions; a sign-invariant line-projector
-theorem now controls the frozen-to-varying-frame error by
+support-cardinality loss.  A sign-invariant line-projector theorem controls
+the frozen-to-varying-frame error by
 $4\varepsilon/\mathrm{threshold}$ times the full $L^2$ energy, with the
 ordinary frozen top-gap band returned as the alternative.  On its separated
 branch, homogeneous spectral-gap coercivity now bounds the transverse energy
-by the integrated top Rayleigh defect.  The separated-cell finite sum and
-generic bounded-overlap integration are now checked as well.  The
+by the integrated top Rayleigh defect.  The separated-cell finite sum,
+generic bounded-overlap integration, the actual 125-cell weighted sum with
+cell-dependent frozen strains, and continuity/measurability of the
+sign-invariant projector on every positive-gap region are now checked.  The
 localization/commutator connection from global reconstructions to spatial
 cells is now checked through the concrete smooth cover.  Exact finite cutoff convolution,
 Minkowski-sum support leakage, and the sharp physical $L^2$ cutoff bound are
@@ -1521,9 +1557,10 @@ square-dyadic scales, and each has an exact four-way lower/upper and
 pancake/nonpancake split.  For componentwise $L^2$ data these shell energies
 are summable and, together with the zero mode, equal the full physical energy.
 
-The remaining field-level steps are the smooth-projector collar, measurable
-spectral selection through eigenvalue collisions, aggregation of the
-small-gap branch over space and time, conversion of the resulting
+The remaining field-level steps are the smooth-projector collar, aggregation
+of the small-gap branch over space and time, construction of the cellwise
+frozen strains from the actual strain field with the needed oscillation,
+conversion of the resulting
 $L^2$/defect estimate to the required scale-local endpoint budget, and
 identification and assembly of the hard dyadic pancake split into
 \texttt{coherent\_le} for the actual Navier--Stokes functionals.
@@ -1724,9 +1761,10 @@ refinement (Section~\ref{sec:coherence}), the open analytic input is
 and aggregation of the now-concrete hard dyadic coherent/misaligned transfer,
 which jointly reproduce
 \texttt{ScaleLocalPancakeStrainBudget} (cross-referenced with the coarser
-\texttt{StochasticStretchingEstimate}).  A successful completion must prove
-measurable control of the pointwise strain-derived spectral frame through
-eigenvalue collisions, pass from the hard selector to the intended smooth
+\texttt{StochasticStretchingEstimate}).  A successful completion must control
+the pointwise strain-derived spectral frame on the collision band (the
+separated sign-invariant projector is now measurable), pass from the hard
+selector to the intended smooth
 projector, identify the now-exact hard-block physical split with the route's
 scale-local misalignment functional, aggregate the
 proved frozen-cell/small-gap projector alternative and convert its $L^2$
@@ -1788,7 +1826,9 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeConcreteSpatialCoverTransfer}, and
 \texttt{PancakeArbitraryDataBlocks} and
 \texttt{PancakeArbitraryDataMisalignment}, and
-\texttt{PancakeConcreteCoverEnergy} modules), each with a regression companion where
+\texttt{PancakeConcreteCoverEnergy},
+\texttt{PancakeConcreteWeightedFreezing}, and
+\texttt{PancakeSpectralProjectorRegularity} modules), each with a regression companion where
 applicable.  The aperture module is retained as an explicitly attenuated
 analytic model; the exact coherent projection no-go above prevents its use as
 the desired field-transfer estimate.
