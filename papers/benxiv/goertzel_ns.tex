@@ -680,7 +680,7 @@ def StochasticStretchingEstimate
 Its consumers are mechanical and checked: a time-uniform Jacobian bound gives
 a time-uniform vorticity bound
 (\texttt{vorticity\_uniform\_bound\_of\_jacobian\_bound}), and under the gate
-the BKM integrand $t\mapsto\|\omega(t,x)\|$ is interval-integrable with
+the vorticity norm $t\mapsto\|\omega(t,x)\|$ at each fixed point is interval-integrable with
 $\int_0^T\|\omega\| \le \|\omega_0\|_\infty \int_0^T
 \mathbb{E}\|DX_t\|_\infty$
 (\texttt{bkm\_integrand\_intervalIntegrable}, \texttt{bkm\_integral\_bound}).
@@ -888,10 +888,45 @@ for each fixed spatial point, the vorticity norm is interval-integrable with
 an $x$-independent bound.  This reaches the same pointwise endpoint as the
 coarse conditional route with the gate replaced by the sharper geometric
 pin; the two pins are cross-referenced in the sources and both remain open.
-The common time majorant is the correct precursor to the BKM criterion, but
-the current theorem does not yet define the spatial essential supremum,
-prove its measurability and integrability, or invoke a formal continuation
-theorem.  An end-to-end rest-state canary
+The module \texttt{SpatialBKMIntegrand} now promotes that common time
+majorant to the actual spatial BKM quantity
+\[
+ \Omega_\infty(t)=\operatorname*{ess\,sup}_{x}
+          \|\operatorname{curl}u(t,x)\|\in[0,\infty].
+\]
+It proves exact equality with the library's $L^\infty$ seminorm.  Spatial
+continuity and positivity of volume on nonempty open sets identify this
+essential supremum with the supremum over a countable dense spatial set.
+Thus pointwise a.e. time measurability suffices to prove a.e. measurability
+of the spatial supremum without interchanging an uncountable family of
+exceptional time sets.  For the transported velocity data the result is
+stronger: explicit spatial difference quotients, together with the recorded
+time derivatives of velocity and its $C^2$ spatial regularity, prove time
+measurability of curl itself.  The constructed spatial supremum is therefore
+measurable with no additional curl-measurability hypothesis.
+
+The common envelope proves that $\Omega_\infty(t)<\infty$ on the relevant
+slab before conversion to its real representative $\Omega(t)$.  The theorem
+\texttt{spatialBKM\_of\_misalignmentBudget} gives
+\[
+ \int_0^T\Omega(t)\,dt
+ \leq \int_0^T D_{\mathrm{low}}(t)\,dt+
+ \frac{C_{\mathrm{relax}}+B+C_c+C_r}
+ {1-(g_{\mathrm{coherent}}+\varepsilon+\varepsilon_c+\varepsilon_r)},
+\]
+under the existing decomposition, misalignment-budget, coercive-sector,
+and residual-sector hypotheses and the strict total-gain condition.
+The extended-valued integral is also bounded directly, so finiteness is
+not an artifact of the convention that converts infinity to real zero.
+
+Finally, an increasing exhaustion of $(0,T_*)$ proves that a single bound
+on the envelope integrals for all shorter horizons yields a finite spatial
+BKM integral on that open terminal interval.  The envelopes may vary with
+the shorter horizon, but their integral bound must be uniform.  This
+constructs the spatial endpoint and its limiting step; it does not prove
+that uniform analytic bound, construct the stochastic data from arbitrary
+initial data, or invoke a formal continuation theorem.
+An end-to-end rest-state canary
 (\texttt{rest\_conditional\_route}) checks that the refined hypotheses are
 simultaneously satisfiable.
 
@@ -2083,10 +2118,13 @@ Section
 \ref{sec:direction-dynamics} further shows that a pressure-Hessian route must
 carry inverse strain-eigenvalue-gap information or an equivalent
 time-integrated cancellation; pressure-Hessian size alone cannot close the
-pin.  Once the analytic estimates are closed, the remaining endpoint work is
-to promote the common pointwise majorant to the measurable spatial
-essential-supremum BKM integrand and apply a formal continuation theorem for
-the chosen solution class.
+pin.  The spatial essential-supremum BKM integrand is now constructed and
+measurable, its integral is controlled by the common pointwise majorant, and
+the passage to an open terminal interval is proved under a uniform bound on
+shorter-horizon envelope integrals.  What remains at that junction is proving
+the uniform analytic bound and applying an actual formal continuation
+theorem for the chosen solution class; finite-time integrability alone does
+not establish global regularity.
 
 \section*{Provenance}
 The manuscript discussed is Ben Goertzel, \emph{Global Regularity of 3D
@@ -2143,6 +2181,7 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeMovingBlockEvolution}, and
 \texttt{PancakeHardBoundaryObstruction}, and
 \texttt{PancakeEvolvingFilter}, and
+\texttt{SpatialBKMIntegrand}, and
 \texttt{PancakeAdaptiveStrainCover}, and
 \texttt{PancakeAdaptiveFourierPartition}, and
 \texttt{PancakeQuadraticFourierSupport}, and

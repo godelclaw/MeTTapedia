@@ -34,9 +34,16 @@ summed functionals:
 * `stochasticLagrangian_conditional_route_of_pancakeBudget` is the headline:
   momentum-transport data plus the budget (and the two sector interfaces)
   yield the Navier–Stokes equations with the representation pressure *and*
-  interval-integrability of the BKM integrand with an explicit bound — the
-  same endpoint as `stochasticLagrangian_conditional_route`, with the coarse
+  interval-integrability of the vorticity norm at each spatial point with a
+  common explicit bound — the same endpoint as `stochasticLagrangian_conditional_route`, with the coarse
   gate `StochasticStretchingEstimate` replaced by the sharper geometric pin.
+
+The companion `SpatialBKMIntegrand` constructs the actual spatial essential
+supremum, proves its measurability from the transported velocity data, and
+promotes this common envelope to a bound on its time integral.  It also proves
+the passage to an open terminal interval when the envelope integral bounds
+are uniform over shorter horizons.  Neither module proves the uniform
+analytic budget or a continuation theorem.
 
 The a-priori finiteness used by the absorption (the left side of
 `relaxation_bound` is a real number) is carried by the integrability fields;
@@ -275,7 +282,7 @@ gain below `1`, then simultaneously:
 
 1. the velocity satisfies the Navier–Stokes equations with the explicit
    representation pressure (the pushdown theorem, unconditional), and
-2. for every point the Beale–Kato–Majda integrand `t ↦ ‖curl u(t, x)‖` is
+2. for every point the vorticity norm `t ↦ ‖curl u(t, x)‖` is
    interval-integrable on `[0, T]` with an explicit integral bound.
 
 This reaches the same endpoint as
