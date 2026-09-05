@@ -64,8 +64,8 @@ for c in range(nchunks):
         out.append(f'  · exact W{c}.chunk X ' + ('' if lo == 0 else '(by omega) ') + f'c{c}')
     else:
         out.append(f'  exact W{c}.chunk X ' + ('' if lo == 0 else '(by omega) ') + 'hX')
-out += ['', 'theorem table_eq : P.table = labTable :=',
-        '  table_eq_of_forall P labTable (by decide) all_words', '']
+out += ['', 'set_option maxRecDepth 100000 in', 'theorem table_eq : P.table = labTable :=',
+        '  table_eq_of_forall P labTable (by decide +kernel) all_words', '']
 PER = '' if period == 1 else 'Period'
 PARG = '' if period == 1 else f' {period}'
 for c in range(nchunks):
