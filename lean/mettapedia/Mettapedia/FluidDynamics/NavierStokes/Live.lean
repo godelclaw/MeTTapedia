@@ -113,6 +113,7 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeArbitra
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeArbitraryDataMisalignment
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeConcreteCoverEnergy
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeConcreteWeightedFreezing
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeSpectralProjectorRegularity
 
 /-!
 # Navier-Stokes live surface
