@@ -49,6 +49,21 @@ structure SlabShape (T : TwoSidedOpenTangleData Vt It (Fin k) (Fin k)) : Prop wh
     NotOut x ∧ NotOut x' ∧ DistinctEdge x x'
   connected : ∀ u v : Vt, Relation.ReflTransGen (InteriorAdj T) u v
 
+/-- the weak shape hypotheses: two darts per vertex, and every vertex reachable along
+interior edges from some in-port vertex and from some out-port vertex (a layer may be
+disconnected, e.g. a rung at each end of a strip) -/
+structure SlabShapeW (T : TwoSidedOpenTangleData Vt It (Fin k) (Fin k)) : Prop where
+  two_darts : ∀ v : Vt, ∃ x x' : SlabDart T, T.vertOf x = v ∧ T.vertOf x' = v ∧
+    NotOut x ∧ NotOut x' ∧ DistinctEdge x x'
+  reach_in : ∀ v : Vt, ∃ i : Fin k,
+    Relation.ReflTransGen (InteriorAdj T) (T.vertOf (Sum.inr (Sum.inl i))) v
+  reach_out : ∀ v : Vt, ∃ i : Fin k,
+    Relation.ReflTransGen (InteriorAdj T) (T.vertOf (Sum.inr (Sum.inr i))) v
+
+theorem SlabShape.toW {T : TwoSidedOpenTangleData Vt It (Fin k) (Fin k)} (h : SlabShape T) :
+    SlabShapeW T :=
+  ⟨h.two_darts, fun v => ⟨0, h.connected _ v⟩, fun v => ⟨0, h.connected _ v⟩⟩
+
 namespace SlabOf
 
 variable {inner : V → Prop} (S : SlabOf rotation.toRotationSystem T inner)
@@ -91,7 +106,7 @@ theorem dartEdge_ne_of_distinct {x x' : SlabDart T} (h : DistinctEdge x x') :
       exact S.out_not_slab i' (T.vertOf x) (by rw [← hv]; exact S.vert_ι x)
 
 /-- **a slab keeps the side good** -/
-theorem goodSide_slab (hT : SlabShape T) (h : GoodSide (G := G) inner) :
+theorem goodSide_slab (hT : SlabShapeW T) (h : GoodSide (G := G) inner) :
     GoodSide (G := G) S.inner' where
   outside := by
     intro v hv
@@ -158,17 +173,24 @@ theorem inVertex_inner (i : Fin k) : inner (S.inVertex i) := S.in_inner i
 def outVertex (i : Fin k) : V := (S.ι (Sum.inr (Sum.inr i))).snd
 
 /-- **a slab keeps the shore connected** -/
-theorem edgeShoreConnected_slab (hT : SlabShape T) (hgood : GoodSide (G := G) inner)
+theorem edgeShoreConnected_slab (hT : SlabShapeW T) (hgood : GoodSide (G := G) inner)
     (hconn : EdgeShoreConnected G (sideShore inner)) :
     EdgeShoreConnected G (sideShore S.inner') := by
   rw [edgeShoreConnected_iff]
   let base := S.vtx (T.vertOf (Sum.inr (Sum.inl 0)))
-  have hslab : ∀ u : Vt, ShoreWalk (G := G) (sideShore S.inner') base (S.vtx u) :=
-    fun u => S.walk_of_reach S.slabEdge_mem (hT.connected _ u)
-  have hinV : ∀ i, ShoreWalk (G := G) (sideShore S.inner') base (S.inVertex i) := fun i => by
+  have hport : ∀ i, ShoreWalk (G := G) (sideShore S.inner')
+      (S.vtx (T.vertOf (Sum.inr (Sum.inl i)))) (S.inVertex i) := fun i => by
     have := ShoreWalk.step _ (S.inEdge_mem i)
     rw [S.fst_ι] at this
-    exact (hslab _).trans this
+    exact this
+  have hslab : ∀ u : Vt, ShoreWalk (G := G) (sideShore S.inner') base (S.vtx u) := fun u => by
+    obtain ⟨i, hi⟩ := hT.reach_in u
+    have hw := ShoreWalk.mono (sideShore_mono (fun _ => S.inner'_of_inner))
+      (hconn (touches_of_goodSide hgood (S.inVertex_inner 0))
+        (touches_of_goodSide hgood (S.inVertex_inner i)))
+    exact ((hport 0).trans hw).trans ((hport i).symm.trans (S.walk_of_reach S.slabEdge_mem hi))
+  have hinV : ∀ i, ShoreWalk (G := G) (sideShore S.inner') base (S.inVertex i) := fun i =>
+    (hslab _).trans (hport i)
   have key : ∀ u : V, (∃ e ∈ sideShore (G := G) S.inner', u ∈ (e : Sym2 V)) →
       ShoreWalk (G := G) (sideShore S.inner') base u := by
     intro u ⟨e, he, hu⟩
@@ -241,16 +263,22 @@ theorem outVertex_touches (i : Fin k) :
   ⟨_, S.outEdge_mem_comp' i, Sym2.mem_mk_right _ _⟩
 
 /-- **a slab keeps the complement connected, inward** -/
-theorem edgeShoreConnected_comp_slab (hT : SlabShape T)
+theorem edgeShoreConnected_comp_slab (hT : SlabShapeW T)
     (hconn : EdgeShoreConnected G (ZigzagSlab.compShore S.inner')) :
     EdgeShoreConnected G (ZigzagSlab.compShore inner) := by
   rw [edgeShoreConnected_iff]
   -- from the base out-partner to every slab vertex, in the complement of `inner`
+  have hport : ∀ j, ShoreWalk (G := G) (ZigzagSlab.compShore inner)
+      (S.vtx (T.vertOf (Sum.inr (Sum.inr j)))) (S.outVertex j) := fun j => by
+    have h1 := ShoreWalk.step _ (S.outEdge_mem_comp j)
+    rw [S.fst_ι] at h1
+    exact h1
   have cwalk : ∀ u : Vt, ShoreWalk (G := G) (ZigzagSlab.compShore inner) (S.outVertex 0) (S.vtx u) := by
     intro u
-    have h1 := ShoreWalk.step _ (S.outEdge_mem_comp 0)
-    rw [S.fst_ι] at h1
-    exact h1.symm.trans (S.walk_of_reach S.slabEdge_mem_comp (hT.connected _ u))
+    obtain ⟨j, hj⟩ := hT.reach_out u
+    have hw := ShoreWalk.mono (ZigzagSlab.compShore_mono (fun _ => S.inner'_of_inner))
+      (hconn (S.outVertex_touches 0) (S.outVertex_touches j))
+    exact (hw.trans (hport j).symm).trans (S.walk_of_reach S.slabEdge_mem_comp hj)
   have key : ∀ u : V, (∃ e ∈ ZigzagSlab.compShore (G := G) inner, u ∈ (e : Sym2 V)) →
       ShoreWalk (G := G) (ZigzagSlab.compShore inner) (S.outVertex 0) u := by
     intro u ⟨e, he, hu⟩
@@ -304,7 +332,7 @@ theorem edgeShoreConnected_comp_slab (hT : SlabShape T)
   intro u v hu hv
   exact (key u hu).symm.trans (key v hv)
 
-theorem sideShore_ssubset_inner' (hT : SlabShape T) [Nonempty Vt] :
+theorem sideShore_ssubset_inner' (hT : SlabShapeW T) [Nonempty Vt] :
     sideShore (G := G) inner ⊂ sideShore S.inner' := by
   rw [Finset.ssubset_iff_of_subset (sideShore_mono (fun _ => S.inner'_of_inner))]
   obtain ⟨x, x', hx, hx', hnx, hnx', hd⟩ := hT.two_darts (Classical.arbitrary Vt)
@@ -337,7 +365,7 @@ theorem goodSide_side : {inner : V → Prop} → {n : Nat} →
     ∀ r, r ≤ n → GoodSide (G := G) (t.side r)
   | _, _, nil _ _, h, _, _ => h
   | _, _, cons _ _, h, 0, _ => h
-  | _, _, cons S rest, h, r + 1, hr => goodSide_side rest (S.goodSide_slab hT h) r (by omega)
+  | _, _, cons S rest, h, r + 1, hr => goodSide_side rest (S.goodSide_slab hT.toW h) r (by omega)
 
 theorem conn_side : {inner : V → Prop} → {n : Nat} →
     (t : TubeOf rotation.toRotationSystem T inner n) → GoodSide (G := G) inner →
@@ -346,7 +374,7 @@ theorem conn_side : {inner : V → Prop} → {n : Nat} →
   | _, _, nil _ _, _, hc, _, _ => hc
   | _, _, cons _ _, _, hc, 0, _ => hc
   | _, _, cons S rest, hg, hc, r + 1, hr =>
-    conn_side rest (S.goodSide_slab hT hg) (S.edgeShoreConnected_slab hT hg hc) r (by omega)
+    conn_side rest (S.goodSide_slab hT.toW hg) (S.edgeShoreConnected_slab hT.toW hg hc) r (by omega)
 
 theorem cconn_side : {inner : V → Prop} → {n : Nat} →
     (t : TubeOf rotation.toRotationSystem T inner n) →
@@ -356,14 +384,14 @@ theorem cconn_side : {inner : V → Prop} → {n : Nat} →
   | _, _, cons S rest, hc, r + 1, hr => cconn_side rest hc r (by omega)
   | _, _, cons S rest, hc, 0, _ => by
     have h0 := cconn_side rest hc 0 (by omega)
-    cases rest <;> exact S.edgeShoreConnected_comp_slab hT h0
+    cases rest <;> exact S.edgeShoreConnected_comp_slab hT.toW h0
 
 theorem sideShore_ssubset_succ [Nonempty Vt] : {inner : V → Prop} → {n : Nat} →
     (t : TubeOf rotation.toRotationSystem T inner n) → ∀ r, r < n →
     sideShore (G := G) (t.side r) ⊂ sideShore (t.side (r + 1))
   | _, _, nil _ _, _, hr => absurd hr (Nat.not_lt_zero _)
   | _, _, cons S rest, 0, _ => by
-    cases rest <;> exact S.sideShore_ssubset_inner' hT
+    cases rest <;> exact S.sideShore_ssubset_inner' hT.toW
   | _, _, cons _ rest, r + 1, hr => sideShore_ssubset_succ rest r (by omega)
 
 theorem sideShore_ssubset_of_lt [Nonempty Vt] {inner : V → Prop} {n : Nat}

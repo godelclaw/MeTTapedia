@@ -86,6 +86,23 @@ def rung(L):
     return V, N, k, tri, ends, inpos, outpos
 
 
+def rung_pair(L):
+    """two rungs of thickness L, the second mirrored (slot order reversed): the layer that
+    grows a strip at both ends; ports of the second copy follow those of the first"""
+    V1, N1, k1, tri1, ends1, in1, out1 = rung(L)
+
+    def sh(s, dv, de, dp):
+        t, i = s
+        return (t, i + de) if t == 'edge' else (t, i + dp)
+    tri = [list(row) for row in tri1] + [[sh(s, V1, N1, k1) for s in reversed(row)] for row in tri1]
+    ends = list(ends1)
+    for (u, su), (w, sw) in ends1:
+        ends.append(((u + V1, 2 - su), (w + V1, 2 - sw)))
+    inpos = list(in1) + [(v + V1, 2 - sl) for v, sl in in1]
+    outpos = list(out1) + [(v + V1, 2 - sl) for v, sl in out1]
+    return 2 * V1, 2 * N1, 2 * k1, tri, ends, inpos, outpos
+
+
 def slot_str(s):
     return f'{s[0]} {s[1]}'
 
@@ -138,6 +155,11 @@ if __name__ == '__main__':
         lit = [int(m) for m in re.findall(r'\b(\d+)\b', lit.split(']')[0])]
         mine = table(*rung(2))
         print('rung(2) vs rungTableLit:', 'match' if mine == lit[:len(mine)] and len(lit) == 81 else 'MISMATCH')
+    elif cmd == 'rungpair':
+        L, name = int(sys.argv[2]), sys.argv[3]
+        data = rung_pair(L)
+        emit(name, f'# Two thickness-{L} rungs, the second mirrored: the layer of a strip growing at both ends\n\nWidth {2 * L + 4}.  No word table: the corridor bound comes from the tube-free\nlemma; only the shape check is needed.', *data, [])
+        print(name, 'written (no table)')
     elif cmd == 'rung':
         L, name = int(sys.argv[2]), sys.argv[3]
         data = rung(L)

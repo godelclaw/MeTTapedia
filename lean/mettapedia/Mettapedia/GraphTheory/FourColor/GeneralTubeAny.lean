@@ -5,7 +5,7 @@ import Mettapedia.GraphTheory.FourColor.GeneralTubeExclusion
 # No long corridor of bounded width, of any shapes
 
 A chain of slabs of *arbitrary* shapes (`TubeAny`): each slab carries its own
-shape check, and no relation between consecutive slabs is assumed beyond the
+(weak) shape check, and no relation between consecutive slabs is assumed beyond the
 nesting of sides.  The exclusion argument of `GeneralTubeExclusion` used the
 stabilisation of a fixed shape's relation only to make the accepted word sets
 of two nested cuts equal; putting the word set itself into the pigeonhole
@@ -46,7 +46,7 @@ inductive TubeAny (RS : RotationSystem.{u, u, u} V E) (k : Nat) [NeZero k] :
     (V → Prop) → Nat → Type (u + 1)
   | nil (inner : V → Prop) (e : Fin k ≃ BoundaryDart RS inner) : TubeAny RS k inner 0
   | cons {inner : V → Prop} {Vt It : Type u} [Nonempty Vt]
-      {T : TwoSidedOpenTangleData Vt It (Fin k) (Fin k)} (hT : SlabShape T)
+      {T : TwoSidedOpenTangleData Vt It (Fin k) (Fin k)} (hT : SlabShapeW T)
       (S : SlabOf RS T inner) {n : Nat} (rest : TubeAny RS k S.inner' n) :
       TubeAny RS k inner (n + 1)
 
@@ -72,7 +72,28 @@ def TubeOf.toAny {RS : RotationSystem.{u, u, u} V E} {k : Nat} [NeZero k] {Vt It
     [Nonempty Vt] {T : TwoSidedOpenTangleData Vt It (Fin k) (Fin k)} (hT : SlabShape T) :
     {inner : V → Prop} → {n : Nat} → TubeOf RS T inner n → TubeAny RS k inner n
   | _, _, .nil inner e => .nil inner e
-  | _, _, .cons S rest => .cons hT S (rest.toAny hT)
+  | _, _, .cons S rest => .cons hT.toW S (rest.toAny hT)
+
+theorem TubeOf.side_toAny {RS : RotationSystem.{u, u, u} V E} {k : Nat} [NeZero k] {Vt It : Type u}
+    [Nonempty Vt] {T : TwoSidedOpenTangleData Vt It (Fin k) (Fin k)} (hT : SlabShape T) :
+    {inner : V → Prop} → {n : Nat} → (t : TubeOf RS T inner n) → ∀ r, (t.toAny hT).side r = t.side r
+  | _, _, .nil _ _, _ => rfl
+  | _, _, .cons _ _, 0 => rfl
+  | _, _, .cons _ rest, r + 1 => rest.side_toAny hT r
+
+/-- a chain with a weak shape check is a chain -/
+def TubeOf.toAnyW {RS : RotationSystem.{u, u, u} V E} {k : Nat} [NeZero k] {Vt It : Type u}
+    [Nonempty Vt] {T : TwoSidedOpenTangleData Vt It (Fin k) (Fin k)} (hT : SlabShapeW T) :
+    {inner : V → Prop} → {n : Nat} → TubeOf RS T inner n → TubeAny RS k inner n
+  | _, _, .nil inner e => .nil inner e
+  | _, _, .cons S rest => .cons hT S (rest.toAnyW hT)
+
+theorem TubeOf.side_toAnyW {RS : RotationSystem.{u, u, u} V E} {k : Nat} [NeZero k] {Vt It : Type u}
+    [Nonempty Vt] {T : TwoSidedOpenTangleData Vt It (Fin k) (Fin k)} (hT : SlabShapeW T) :
+    {inner : V → Prop} → {n : Nat} → (t : TubeOf RS T inner n) → ∀ r, (t.toAnyW hT).side r = t.side r
+  | _, _, .nil _ _, _ => rfl
+  | _, _, .cons _ _, 0 => rfl
+  | _, _, .cons _ rest, r + 1 => rest.side_toAnyW hT r
 
 end Chain
 
@@ -224,6 +245,17 @@ theorem TubeAny.le_of_tubeAny (minimal : GraphBackedVertexMinimalTaitCounterexam
       t.cconn_side hcconn r (by omega)⟩ (t.sideEquiv r) hk2
   exact le_of_tubeAny_nodes minimal t nodes (fun r => mkNode_keep _ _ _)
     (fun r r' hrr' => t.sideShore_ssubset_of_lt r r' hrr' (by omega))
+
+/-- **No long periodic corridor of a weakly-shaped slab, without a table.**  The
+stabilisation-free bound for chains of one shape whose layers may be disconnected. -/
+theorem TubeOf.le_of_tubeOf_any {Vt It : Type u} [Nonempty Vt]
+    {T : TwoSidedOpenTangleData Vt It (Fin k) (Fin k)} (hT : SlabShapeW T)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation) (hk2 : 2 ≤ k)
+    {inner : V → Prop} {n : Nat} (t : TubeOf rotation.toRotationSystem T inner n)
+    (hgood : GoodSide (G := G) inner) (hconn : EdgeShoreConnected G (sideShore inner))
+    (hcconn : EdgeShoreConnected G (ZigzagSlab.compShore (t.side n))) :
+    n + 1 ≤ Nat.factorial k * (Nat.factorial k * (6 * k + 1)) * 2 ^ (4 ^ k) :=
+  TubeAny.le_of_tubeAny minimal hk2 (t.toAnyW hT) hgood hconn (by rwa [t.side_toAnyW hT])
 
 end Graph
 
