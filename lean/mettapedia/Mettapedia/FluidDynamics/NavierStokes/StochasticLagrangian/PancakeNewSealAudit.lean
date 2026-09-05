@@ -51,6 +51,7 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeBlockRe
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeMaterialTransportCommutator
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeMovingBlockEvolution
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeAdaptiveStrainCover
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeAdaptiveFourierPartition
 
 /-!
 # Seal audit for the coherent-field and alignment-dynamics tranche
@@ -198,3 +199,5 @@ the Lean compiler.  It adds no assumptions and proves no mathematical step.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeAdaptiveStrainCover.exists_finite_adaptive_spatial_strain_partition
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeAdaptiveStrainCover.exists_finite_adaptive_spacetime_strain_partition
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeAdaptiveStrainCover.sum_weight_mul_norm_strainError_apply_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeAdaptiveFourierPartition.exists_finsupp_mFourier_partition_normSq_approximation_with_leakage
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeAdaptiveFourierPartition.exists_finsupp_mFourier_partition_coverage_bounds

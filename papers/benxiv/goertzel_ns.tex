@@ -1590,10 +1590,25 @@ Consequently a nonzero cell weight certifies the local freezing estimate at
 that point.  The weighted linear and quadratic freezing errors are proved
 bounded by $\varepsilon$ and $\varepsilon^2$, respectively, with no cell-count
 factor; applying the operator error to a vector costs only its norm.  This
-closes the finite adaptive-cover existence and aggregation problem.  It does
-not yet provide the scale-uniform smooth Fourier cutoffs and buffered
-frequency margins required to splice this adaptive partition into the
-periodic multiplier transfer, nor does it control the small-gap time branch.
+closes the finite adaptive-cover existence and aggregation problem.
+
+The module \texttt{PancakeAdaptiveFourierPartition} supplies the next splice.
+Multivariate Stone--Weierstrass density of torus characters is converted into
+finitely supported Fourier coefficients approximating every continuous
+adaptive weight, simultaneously over the finite family.  More robustly, it
+approximates the square roots of the nonnegative partition weights and uses
+the squared complex norms of the resulting trigonometric polynomials.  These
+quadratic weights are nonnegative, differ pointwise from the original weights
+by at most $\delta(\delta+2)$, and their total differs from one by at most
+$N\delta(\delta+2)$ for $N$ adaptive cells.  If this last quantity is at most
+$1/2$, the total Fourier weight stays between $1/2$ and $3/2$ everywhere.
+Exact spatial support is necessarily lost under Fourier approximation, but
+where an original cell weight vanishes the corresponding quadratic tail is
+proved smaller than $\delta^2$.  Thus the remaining localization task is no
+longer construction of Fourier-compatible adaptive weights; it is the
+scale-uniform bookkeeping that absorbs these quantified tails into buffered
+frequency margins and boundary-transfer estimates.  The small-gap time
+branch also remains open.
 
 \emph{The refined pin (committed).}  The module
 \texttt{MisalignmentRefinedPin} splits the pancake-sector functional
@@ -2051,7 +2066,8 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeBlockReality}, and
 \texttt{PancakeMaterialTransportCommutator}, and
 \texttt{PancakeMovingBlockEvolution}, and
-\texttt{PancakeAdaptiveStrainCover} modules), each with a regression companion where
+\texttt{PancakeAdaptiveStrainCover}, and
+\texttt{PancakeAdaptiveFourierPartition} modules), each with a regression companion where
 applicable.  The aperture module is retained as an explicitly attenuated
 analytic model; the exact coherent projection no-go above prevents its use as
 the desired field-transfer estimate.
