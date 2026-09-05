@@ -44,6 +44,7 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeConcret
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeSpectralProjectorRegularity
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeSpectralClusterDichotomy
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeExpandingPlaneResidence
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeDyadicDirectionEvolution
 
 /-!
 # Seal audit for the coherent-field and alignment-dynamics tranche
@@ -168,3 +169,5 @@ the Lean compiler.  It adds no assumptions and proves no mathematical step.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeSpectralClusterDichotomy.traceFree_smallTopGap_bottomSeparated_or_complexRayleigh_le
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeExpandingPlaneResidence.bottomGap_mul_expandingPlaneEnergy_le_rayleighExcess
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeExpandingPlaneResidence.bottomGapWeightedContractingResidence_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeDyadicDirectionEvolution.hasDerivAt_squareDyadicPancakeRealBlock_of_components
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeDyadicDirectionEvolution.dyadicPancakeDirectionDerivative_eq_strain_add_residual
