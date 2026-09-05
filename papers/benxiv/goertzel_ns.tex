@@ -116,20 +116,30 @@ for fixed normalized cutoff margins, a four-chart multiplier is constructed
 which is exactly coherent on every leaked output mode and has a uniform
 inverse-kernel $L^1$ bound.  For finite-band cutoffs this multiplier is now
 transferred through square-dyadic scaling, rotation, periodization, and
-physical frames, and applied exactly to the localized products.  Control of
-the Fourier coefficients of the concrete spatial cell cutoffs and the remaining smooth
-projector collar, space--time treatment of the small-gap branch, and
-conversion from this $L^2$/defect control to the scale-local endpoint budget
-remain open.  The
+physical frames, and applied exactly to the localized products.  The concrete
+localization layer is now closed as well: a compactly supported smooth bump is
+periodized, its Fourier coefficients are proved absolutely summable, its 125
+translated three-torus cells admit one common finite approximation, and the
+actual smooth-cell interaction differs from the coherent finite convolution
+by an explicit $O(\varepsilon/N)$ error.  Complete ordinary dyadic shells are
+also constructed for arbitrary Fourier data, split exactly into pancake and
+nonpancake shares, and reconciled with the square-dyadic multiplier scales.
+For componentwise $L^2$ fields their shell energies form a summable series;
+the zero-mode energy plus that series is exactly the physical $L^2$ energy.
+The remaining smooth projector collar, space--time treatment of the small-gap
+branch, and conversion from this $L^2$/defect control to the scale-local
+endpoint budget remain open.  The
 latest audit also isolates why the proposed pancake closure does
 not yet prove the Millennium statement: its high-low split covers all aperture
 angles iff the scale-local strain satisfies $\gamma\le\nu\lambda_q$, exactly
 the quantitative budget it set out to prove.  The surviving open input is the
 leading route-specific pointwise-in-time Lean predicate
 \texttt{ScaleLocalPancakeStrainBudget}, a sharpened version of the earlier
-\texttt{StochasticStretchingEstimate}.  Field realization, the stated
-non-pancake sector interfaces, and the final BKM continuation plumbing are
-additional explicit obligations.  Thus the status is neither a completed
+\texttt{StochasticStretchingEstimate}.  Identification of the new hard
+dyadic blocks with the route's dynamical misalignment functional, the stated
+non-pancake sector estimates, the smooth projector passage, and the final BKM
+continuation plumbing are additional explicit obligations.  Thus the status
+is neither a completed
 Navier--Stokes proof nor a vague ``hard analytic gap'': it is a conditional
 route with a named, scale-local, machine-audited leading analytic pin and a
 finite list of surrounding formalization obligations.
@@ -1319,12 +1329,9 @@ than assumed.  It also proves the expected endpoint with losses only
 $\|\chi\|_\infty\|U\|_\infty$ and
 $\|\psi\|_\infty\|V\|_\infty$, never a support cardinality.
 
-This closes the finite-band localization junction.  It does not turn a
-nonconstant spatial cell cutoff into a finitely supported Fourier polynomial:
-a genuinely localized smooth cutoff has an infinite Fourier tail.  The next
-analytic step is therefore a quantitative truncation/tail estimate, not
-another support-coverage lemma.  The operator side of this approximation is
-already checked in \texttt{PancakeBilinearActionStability} and
+This closes the finite-band localization junction.  A nonconstant smooth
+spatial cutoff still has an infinite Fourier tail, so the operator side of its
+finite approximation is checked in \texttt{PancakeBilinearActionStability} and
 \texttt{PancakeBufferedLocalizationStability}: for the physical buffered
 operator $\mathcal B_N$,
 \[
@@ -1335,18 +1342,52 @@ operator $\mathcal B_N$,
 \]
 A further specialization transfers uniform scalar cutoff-approximation errors
 for $\chi-\chi_0$ and $\psi-\psi_0$ directly into this bound.  Thus only the
-cutoff-specific Fourier decay input and the subsequent smooth
-sector-projector collar remain at this junction.  More precisely,
+cutoff-specific Fourier decay input remained after that module.  More precisely,
 \texttt{PancakeSmoothCutoffFourierTail} proves that every continuous torus
 cutoff with absolutely summable Fourier coefficients has, for each
 $\varepsilon>0$, a finite Fourier approximation within $\varepsilon$
 uniformly in space.  It further proves that one such finite support lies in
 the fixed normalized cutoff-margin box at all sufficiently large
 square-dyadic scales.  The scale threshold is uniform over every oriented
-frame because rotations preserve the Euclidean norm.  The remaining
-mathematics here is therefore not convergence bookkeeping: it is to construct
-the actual spatial cover cutoffs and prove absolute summability (or an
-explicit derivative-decay estimate) for their Fourier coefficients.
+frame because rotations preserve the Euclidean norm.
+
+That remaining cutoff construction is now discharged in
+\texttt{PancakeConcreteSmoothCellCutoff}.  A fixed compactly supported smooth
+real bump is periodized on the unit circle and tensored over three coordinates.
+Poisson transference identifies its Fourier coefficients with integer samples
+of a Schwartz Fourier transform, proving absolute summability.  Translating
+this cutoff over an explicit $5^3=125$ quarter-grid produces a finite smooth
+cover: at every torus point at least one cutoff equals one, the summed
+quadratic weights have explicit uniform lower and upper bounds, and every
+translated cutoff retains absolute Fourier summability.  One common scale
+therefore supplies simultaneous finite-Fourier approximations of all 125
+cells.  The module \texttt{PancakeConcreteSpatialCoverTransfer} feeds those
+approximations through the buffered stability theorem.  For every pair of
+actual smooth cells and every sufficiently large scale, the localized
+physical interaction differs from the named coherent finite convolution by
+the explicit $O(\varepsilon/N)$ error, uniformly in the cells, frame, and
+support sizes.  At this junction only the passage from the hard annular
+selector to the route's chosen smooth Littlewood--Paley projector remains.
+
+The new module \texttt{PancakeArbitraryDataBlocks} removes the separate
+finite-ambient-support restriction.  It enumerates complete hard radial shells
+directly in the integer lattice, proves that every nonzero mode belongs to a
+unique ordinary dyadic shell, and shows that each ordinary shell is covered
+without a gap by two adjacent square-dyadic multiplier shells.  The lower and
+upper pieces split exactly into pancake and nonpancake modes, both as Fourier
+polynomials and as Parseval energies.  Applied to an arbitrary periodic field,
+the pancake pieces satisfy the exact coherent multiplier formula and the
+actual smooth-cell $O(\varepsilon/N)$ transfer above; the ambient field need
+not have finite Fourier support.  For a jointly continuous time-dependent
+field, every shell-energy profile is continuous and interval-integrable.  At
+the natural $L^2$ level, vector Parseval and an explicit reindexing prove
+\[
+  \|u\|_{L^2}^2
+  = |\widehat u(0)|^2 + \sum_{q\geq0}\|\Delta_q u\|_{L^2}^2,
+\]
+with summability of the nonnegative shell series; for mean-zero data the first
+term vanishes.  This is the complete hard Littlewood--Paley energy ledger,
+not a finite-support surrogate.
 
 There is a second field-level issue which a fixed-axis multiplier does not
 address.  The actual pancake frame is the eigensystem of the low-frequency
@@ -1368,11 +1409,14 @@ two subsequent modules above; frozen oriented-frame kernel transference is
 supplied by \texttt{PancakeFrozenFrameKernelTransfer}; the full four-sign
 annulus and its physical variable-frame endpoint are supplied by the annular
 modules above, and the pointwise frame is now constructed from the strain.
-The remaining field-transfer pieces are measurable control of that spectral
+The hard dyadic time profiles, their pointwise Parseval identities, and their
+interval integrability for jointly continuous fields are now explicit.  The
+remaining field-transfer pieces are measurable control of the spectral
 selection through eigenvalue collisions, aggregation of the proved
-frozen-cell/small-gap alternative over a physical space--time cover, and
-identification of the concrete finite-sector split with the actual
-Littlewood--Paley time functionals.
+frozen-cell/small-gap alternative over a physical space--time cover, passage
+to the intended smooth projectors, and identification of the hard
+pancake/nonpancake split with the route's dynamically defined
+coherent/misalignment functional.
 The older frequencywise commutator estimate
 remains correct, but the new uniform physical-kernel endpoint shows that no
 frame-oscillation estimate is needed merely to obtain the pointwise
@@ -1431,27 +1475,32 @@ $4\varepsilon/\mathrm{threshold}$ times the full $L^2$ energy, with the
 ordinary frozen top-gap band returned as the alternative.  On its separated
 branch, homogeneous spectral-gap coercivity now bounds the transverse energy
 by the integrated top Rayleigh defect.  The separated-cell finite sum and
-generic bounded-overlap integration are now checked as well.  The remaining
-steps are the localization/commutator estimate connecting global finite
-reconstructions to the spatial cells.  Exact finite cutoff convolution,
+generic bounded-overlap integration are now checked as well.  The
+localization/commutator connection from global reconstructions to spatial
+cells is now checked through the concrete smooth cover.  Exact finite cutoff convolution,
 Minkowski-sum support leakage, and the sharp physical $L^2$ cutoff bound are
 now proved, as is the exact buffered annulus containing every shifted output
 mode.  A denominator-safe four-chart multiplier is now constructed on that
 buffer, proved exactly coherent there, and given one aperture-uniform
 inverse-kernel $L^1$ bound.  Its complete square-dyadic, rotated, periodized,
 and physical transfer is proved, and finite-band cutoff products are connected
-to it with no support-cardinality loss.  The infinite Fourier tail of a true
-spatial cell cutoff and the smooth projector collar remain; a checked physical
-operator-stability theorem now converts any uniform cutoff-tail estimate into
-the required multiplier error.  Absolute summability is already proved
-sufficient for a scale-compatible finite approximation, uniformly over all
-frames; that summability must still be established for the concrete cell
-cutoffs.
-Further steps are aggregation of the small-gap branch
-over space and time, conversion of this $L^2$/defect estimate to the required
-scale-local endpoint budget, and identification and assembly of this concrete
-finite-sector identity into \texttt{coherent\_le} for the actual
-Navier--Stokes functionals.
+to it with no support-cardinality loss.  The actual spatial cutoff is now a
+periodized compactly supported smooth bump; its Fourier coefficients are
+proved absolutely summable by Schwartz decay and Poisson transference.  Its
+explicit 125 translates cover the torus, admit a common scale-compatible
+finite approximation, and satisfy the uniform smooth-cell-to-coherent
+$O(\varepsilon/N)$ transfer.  Complete ordinary dyadic shells for arbitrary
+Fourier data are also constructed, each is covered by two adjacent
+square-dyadic scales, and each has an exact four-way lower/upper and
+pancake/nonpancake split.  For componentwise $L^2$ data these shell energies
+are summable and, together with the zero mode, equal the full physical energy.
+
+The remaining field-level steps are the smooth-projector collar, measurable
+spectral selection through eigenvalue collisions, aggregation of the
+small-gap branch over space and time, conversion of the resulting
+$L^2$/defect estimate to the required scale-local endpoint budget, and
+identification and assembly of the hard dyadic pancake split into
+\texttt{coherent\_le} for the actual Navier--Stokes functionals.
 (ii) The misalignment budget itself: dynamical,
 time-integrated control of the misalignment share; the checked fences
 of Sections~\ref{sec:lean}, \ref{sec:aperture} and the static no-go
@@ -1645,13 +1694,15 @@ complete proof because its aperture split requires the pointwise scale-local
 condition $\gamma\le\nu\lambda_q$, and that condition is exactly the burden of
 the unresolved self-consistent strain estimate.  After the September 2026
 refinement (Section~\ref{sec:coherence}), the open analytic input is
-\texttt{MisalignmentStrainBudget} together with the field-level
-coherent/misaligned transfer, which jointly reproduce
+\texttt{MisalignmentStrainBudget} together with the dynamical identification
+and aggregation of the now-concrete hard dyadic coherent/misaligned transfer,
+which jointly reproduce
 \texttt{ScaleLocalPancakeStrainBudget} (cross-referenced with the coarser
 \texttt{StochasticStretchingEstimate}).  A successful completion must prove
 measurable control of the pointwise strain-derived spectral frame through
-eigenvalue collisions, identify the now-exact finite-sector physical split
-with the actual scale-local Littlewood--Paley time functionals, aggregate the
+eigenvalue collisions, pass from the hard selector to the intended smooth
+projector, identify the now-exact hard-block physical split with the route's
+scale-local misalignment functional, aggregate the
 proved frozen-cell/small-gap projector alternative and convert its $L^2$
 control to the endpoint scale budget, and
 prove a dynamical,
@@ -1706,7 +1757,10 @@ effort.  The repaired-route development comprises, under
 full-strain-frame, coercivity, cell-aggregation, finite-localization, and
 \texttt{PancakeBufferedAnnularMultiplier}, buffered physical-transfer, and
 \texttt{PancakeLocalizedBufferedTransfer}, bilinear stability, and buffered
-localization-stability and smooth-cutoff Fourier-tail modules), each with a regression companion where
+localization-stability, smooth-cutoff Fourier-tail,
+\texttt{PancakeConcreteSmoothCellCutoff},
+\texttt{PancakeConcreteSpatialCoverTransfer}, and
+\texttt{PancakeArbitraryDataBlocks} modules), each with a regression companion where
 applicable.  The aperture module is retained as an explicitly attenuated
 analytic model; the exact coherent projection no-go above prevents its use as
 the desired field-transfer estimate.
