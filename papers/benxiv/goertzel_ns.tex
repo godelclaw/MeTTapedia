@@ -1273,11 +1273,17 @@ Thus the localized output support is precisely contained in the Minkowski
 sum of the cutoff and field supports, and every output mode differs from an
 original sector mode by an actual cutoff frequency.  It also proves directly
 in physical space that $\|\chi U\|_{L^2}^2\leq C^2\|U\|_{L^2}^2$ whenever
-$\|\chi\|_{L^\infty}\leq C$; there is no mode-count loss.  What remains at
-this junction is geometric: show that the permitted low cutoff frequencies
-thicken the square-dyadic pancake sector by only a controlled margin, and
-bound the mismatch between that thickened selector and the original smooth
-projector.
+$\|\chi\|_{L^\infty}\leq C$; there is no mode-count loss.  Additivity of the
+normalized oriented-frame chart then proves that cutoff support bounded by
+transverse and axial margins $(\rho_\perp,\rho_\parallel)$ moves the original
+annulus into the explicit buffered box
+\[
+ |v_{1,2}|\leq2+\rho_\perp,
+ \qquad \tfrac34-\rho_\parallel\leq|v_3|
+       \leq2+\rho_\parallel.
+\]
+What remains at this junction is to construct the annular kernel uniformly on
+that buffered box and bound its mismatch with the original smooth projector.
 
 There is a second field-level issue which a fixed-axis multiplier does not
 address.  The actual pancake frame is the eigensystem of the low-frequency
@@ -1366,7 +1372,8 @@ generic bounded-overlap integration are now checked as well.  The remaining
 steps are the localization/commutator estimate connecting global finite
 reconstructions to the spatial cells.  Exact finite cutoff convolution,
 Minkowski-sum support leakage, and the sharp physical $L^2$ cutoff bound are
-now proved; controlled sector thickening and the projector commutator remain.
+now proved, as is the exact buffered annulus containing every shifted output
+mode.  The buffered multiplier construction and projector commutator remain.
 Further steps are aggregation of the small-gap branch
 over space and time, conversion of this $L^2$/defect estimate to the required
 scale-local endpoint budget, and identification and assembly of this concrete

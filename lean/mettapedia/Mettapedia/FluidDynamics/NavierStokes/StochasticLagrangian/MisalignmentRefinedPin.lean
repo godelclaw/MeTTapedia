@@ -73,8 +73,10 @@ integrand, which unlike the full strain has known dynamical handles.
    with those weighted cell densities.  Its first exact step is checked:
    finite Fourier cutoff multiplication has Minkowski-sum output support and
    preserves the physical `L²` bound with the sharp squared cutoff norm.
-   Controlled thickening of the pancake sector and the resulting projector
-   commutator remain, as do aggregation of the small-gap branch over space-time,
+   Additivity of the normalized frame chart further puts every shifted mode
+   in an explicit annulus thickened by exactly the cutoff's transverse and
+   axial margins.  Construction of the buffered annular multiplier and the
+   resulting projector commutator remain, as do aggregation of the small-gap branch over space-time,
    identification with the actual Littlewood--Paley blocks and time
    functionals, and conversion of this `L²`/Rayleigh-defect control into the
    scale-local endpoint budget, followed by assembly into `split_le` and
