@@ -12,6 +12,11 @@ The character-rate term is kept explicit.  For a fluid trajectory it is the
 positive advection of the projected block; the companion material-commutator
 module identifies its cancellation with the projected PDE transport as a
 pure frequency-boundary transfer.
+
+The spatial path moves, but the frame and hard mode set in these theorems are
+fixed in time.  `PancakeEvolvingFilter` includes the additional derivative for
+time-dependent differentiable Fourier weights; hard membership changes do
+not automatically satisfy that differentiability hypothesis.
 -/
 
 set_option autoImplicit false
