@@ -253,24 +253,24 @@ theorem inEdge_mem (i : Fin k) :
 /-- the base vertex `d 0` -/
 def base : V := S.vtx (Sum.inl 0)
 
-/-- around the ring: `d 0` reaches `d m` -/
-theorem walk_to_d : ∀ m : Nat,
-    ShoreWalk (G := G) (sideShore S.inner') (S.base) (S.vtx (Sum.inl (Fin.ofNat k m)))
-  | 0 => by simpa [base] using (ShoreWalk.refl (G := G) (shore := sideShore S.inner') (u := S.base))
+/-- around the ring: `d 0` reaches `d m`, in any shore containing the ring edges -/
+theorem walk_to_d {shore : Finset G.edgeSet}
+    (hs : ∀ x : ZigzagRing.Dart k, dartEdge (S.ι (Sum.inl x)) ∈ shore) : ∀ m : Nat,
+    ShoreWalk (G := G) shore S.base (S.vtx (Sum.inl (Fin.ofNat k m)))
+  | 0 => by simpa [base] using (ShoreWalk.refl (G := G) (shore := shore) (u := S.base))
   | m + 1 => by
-    have ih := walk_to_d m
-    -- d m → e m via a_m, e m → d (m+1) via b_m
-    have h1 : ShoreWalk (G := G) (sideShore S.inner') (S.vtx (Sum.inl (Fin.ofNat k m)))
+    have ih := walk_to_d hs m
+    have h1 : ShoreWalk (G := G) shore (S.vtx (Sum.inl (Fin.ofNat k m)))
         (S.vtx (Sum.inr (Fin.ofNat k m))) := by
-      have := ShoreWalk.step _ (S.slabEdge_mem (Sum.inl (Fin.ofNat k m, false)))
+      have := ShoreWalk.step _ (hs (Sum.inl (Fin.ofNat k m, false)))
       rwa [show (S.ι (Sum.inl (Sum.inl (Fin.ofNat k m, false)))).fst = S.vtx (Sum.inl (Fin.ofNat k m)) from
         S.vert_ι _, show (S.ι (Sum.inl (Sum.inl (Fin.ofNat k m, false)))).snd =
           S.vtx (Sum.inr (Fin.ofNat k m)) from by
             show rotation.toRotationSystem.vertOf (rotation.toRotationSystem.alpha _) = _
             rw [S.alpha_interior, S.vert_ι]; rfl] at this
-    have h2 : ShoreWalk (G := G) (sideShore S.inner') (S.vtx (Sum.inr (Fin.ofNat k m)))
+    have h2 : ShoreWalk (G := G) shore (S.vtx (Sum.inr (Fin.ofNat k m)))
         (S.vtx (Sum.inl (Fin.ofNat k (m + 1)))) := by
-      have := ShoreWalk.step _ (S.slabEdge_mem (Sum.inr (Fin.ofNat k m, false)))
+      have := ShoreWalk.step _ (hs (Sum.inr (Fin.ofNat k m, false)))
       rwa [show (S.ι (Sum.inl (Sum.inr (Fin.ofNat k m, false)))).fst = S.vtx (Sum.inr (Fin.ofNat k m)) from
         S.vert_ι _, show (S.ι (Sum.inl (Sum.inr (Fin.ofNat k m, false)))).snd =
           S.vtx (Sum.inl (Fin.ofNat k (m + 1))) from by
@@ -280,14 +280,15 @@ theorem walk_to_d : ∀ m : Nat,
             rw [ofNat'_succ]] at this
     exact ih.trans (h1.trans h2)
 
-/-- `d 0` reaches every slab vertex -/
-theorem walk_to_slab (u : ZigzagRing.Vtx k) :
-    ShoreWalk (G := G) (sideShore S.inner') S.base (S.vtx u) := by
+/-- `d 0` reaches every slab vertex, in any shore containing the ring edges -/
+theorem walk_to_slab {shore : Finset G.edgeSet}
+    (hs : ∀ x : ZigzagRing.Dart k, dartEdge (S.ι (Sum.inl x)) ∈ shore) (u : ZigzagRing.Vtx k) :
+    ShoreWalk (G := G) shore S.base (S.vtx u) := by
   rcases u with i | i
-  · simpa [ofNat'_val] using S.walk_to_d (i : Nat)
-  · have hd := S.walk_to_d (i : Nat)
+  · simpa [ofNat'_val] using S.walk_to_d hs (i : Nat)
+  · have hd := S.walk_to_d hs (i : Nat)
     rw [ofNat'_val] at hd
-    have := ShoreWalk.step _ (S.slabEdge_mem (Sum.inl (i, false)))
+    have := ShoreWalk.step _ (hs (Sum.inl (i, false)))
     rw [show (S.ι (Sum.inl (Sum.inl (i, false)))).fst = S.vtx (Sum.inl i) from S.vert_ι _,
       show (S.ι (Sum.inl (Sum.inl (i, false)))).snd = S.vtx (Sum.inr i) from by
         show rotation.toRotationSystem.vertOf (rotation.toRotationSystem.alpha _) = _
@@ -299,12 +300,14 @@ def inVertex (i : Fin k) : V := (S.ι (Sum.inr (Sum.inl i))).snd
 
 theorem inVertex_inner (i : Fin k) : inner (S.inVertex i) := S.in_inner i
 
-/-- `d 0` reaches every in-partner vertex -/
-theorem walk_to_inVertex (i : Fin k) :
-    ShoreWalk (G := G) (sideShore S.inner') S.base (S.inVertex i) := by
-  have := ShoreWalk.step _ (S.inEdge_mem i)
+/-- `d 0` reaches every in-partner vertex, in any shore containing the ring and in-edges -/
+theorem walk_to_inVertex {shore : Finset G.edgeSet}
+    (hs : ∀ x : ZigzagRing.Dart k, dartEdge (S.ι (Sum.inl x)) ∈ shore)
+    (hin : ∀ i, dartEdge (S.ι (Sum.inr (Sum.inl i))) ∈ shore) (i : Fin k) :
+    ShoreWalk (G := G) shore S.base (S.inVertex i) := by
+  have := ShoreWalk.step _ (hin i)
   rw [show (S.ι (Sum.inr (Sum.inl i))).fst = S.vtx (Sum.inl i) from S.vert_ι _] at this
-  exact (S.walk_to_slab (Sum.inl i)).trans this
+  exact (S.walk_to_slab hs (Sum.inl i)).trans this
 
 /-- **a slab keeps the shore connected** -/
 theorem edgeShoreConnected_slab (hgood : GoodSide (G := G) inner)
@@ -321,7 +324,7 @@ theorem edgeShoreConnected_slab (hgood : GoodSide (G := G) inner)
       have hp0 := touches_of_goodSide hgood (S.inVertex_inner 0)
       by_cases htouch : ∃ e ∈ sideShore (G := G) inner, u ∈ (e : Sym2 V)
       · have hw := hconn htouch hp0
-        exact (S.walk_to_inVertex 0).trans
+        exact (S.walk_to_inVertex S.slabEdge_mem S.inEdge_mem 0).trans
           ((ShoreWalk.mono (sideShore_mono (fun _ => S.inner'_of_inner)) hw).symm)
       · -- the shore edge at `u` leads to a slab vertex; the dart back is an in-port
         let w := Sym2.Mem.other hu
@@ -352,12 +355,122 @@ theorem edgeShoreConnected_slab (hgood : GoodSide (G := G) inner)
             rw [hsnd]; exact hin
           · have : S.inVertex i = u := hsnd
             rw [← this]
-            exact S.walk_to_inVertex i
+            exact S.walk_to_inVertex S.slabEdge_mem S.inEdge_mem i
           · exfalso
             apply S.out_not_inner i
             show inner (S.ι (Sum.inr (Sum.inr i))).snd
             rw [hsnd]; exact hin
-    · exact S.walk_to_slab w
+    · exact S.walk_to_slab S.slabEdge_mem w
+  intro u v hu hv
+  exact (key u hu).symm.trans (key v hv)
+
+/-! ## Stage four: complement connectivity propagates inward through a slab -/
+
+/-- the complement shore: edges with an end outside the side -/
+noncomputable def compShore (side : V → Prop) : Finset G.edgeSet :=
+  Finset.univ \ sideShore side
+
+theorem mem_compShore {side : V → Prop} {e : G.edgeSet} :
+    e ∈ compShore (G := G) side ↔ ∃ v ∈ (e : Sym2 V), ¬ side v := by
+  classical
+  simp [compShore, mem_sideShore]
+
+theorem compShore_mono {side side' : V → Prop} (h : ∀ v, side v → side' v) :
+    compShore (G := G) side' ⊆ compShore side := by
+  intro e he
+  rw [mem_compShore] at he ⊢
+  obtain ⟨v, hv, hn⟩ := he
+  exact ⟨v, hv, fun h' => hn (h v h')⟩
+
+theorem slabEdge_mem_comp (x : ZigzagRing.Dart k) :
+    dartEdge (S.ι (Sum.inl x)) ∈ compShore (G := G) inner := by
+  rw [mem_compShore]
+  exact ⟨(S.ι (Sum.inl x)).fst, Sym2.mem_mk_left _ _, S.slab_not_inner _⟩
+
+theorem inEdge_mem_comp (i : Fin k) :
+    dartEdge (S.ι (Sum.inr (Sum.inl i))) ∈ compShore (G := G) inner := by
+  rw [mem_compShore]
+  exact ⟨(S.ι (Sum.inr (Sum.inl i))).fst, Sym2.mem_mk_left _ _, S.slab_not_inner _⟩
+
+theorem outEdge_mem_comp (i : Fin k) :
+    dartEdge (S.ι (Sum.inr (Sum.inr i))) ∈ compShore (G := G) inner := by
+  rw [mem_compShore]
+  exact ⟨(S.ι (Sum.inr (Sum.inr i))).fst, Sym2.mem_mk_left _ _, S.slab_not_inner _⟩
+
+theorem outEdge_mem_comp' (i : Fin k) :
+    dartEdge (S.ι (Sum.inr (Sum.inr i))) ∈ compShore (G := G) S.inner' := by
+  rw [mem_compShore]
+  exact ⟨(S.ι (Sum.inr (Sum.inr i))).snd, Sym2.mem_mk_right _ _, (S.outPort i).2⟩
+
+/-- the out-port partner vertex -/
+def outVertex (i : Fin k) : V := (S.ι (Sum.inr (Sum.inr i))).snd
+
+theorem outVertex_touches (i : Fin k) :
+    ∃ e ∈ compShore (G := G) S.inner', S.outVertex i ∈ (e : Sym2 V) :=
+  ⟨_, S.outEdge_mem_comp' i, Sym2.mem_mk_right _ _⟩
+
+/-- the base out-partner reaches every slab vertex in the complement of `inner` -/
+theorem cwalk_to_slab (u : ZigzagRing.Vtx k) :
+    ShoreWalk (G := G) (compShore inner) (S.outVertex 0) (S.vtx u) := by
+  have h1 := ShoreWalk.step _ (S.outEdge_mem_comp 0)
+  rw [show (S.ι (Sum.inr (Sum.inr 0))).fst = S.vtx (Sum.inr 0) from S.vert_ι _] at h1
+  exact h1.symm.trans ((S.walk_to_slab S.slabEdge_mem_comp (Sum.inr 0)).symm.trans
+    (S.walk_to_slab S.slabEdge_mem_comp u))
+
+/-- **a slab keeps the complement connected, inward** -/
+theorem edgeShoreConnected_comp_slab
+    (hconn : EdgeShoreConnected G (compShore S.inner')) :
+    EdgeShoreConnected G (compShore inner) := by
+  rw [edgeShoreConnected_iff]
+  have key : ∀ u : V, (∃ e ∈ compShore (G := G) inner, u ∈ (e : Sym2 V)) →
+      ShoreWalk (G := G) (compShore inner) (S.outVertex 0) u := by
+    intro u ⟨e, he, hu⟩
+    by_cases htouch : ∃ e ∈ compShore (G := G) S.inner', u ∈ (e : Sym2 V)
+    · exact ShoreWalk.mono (compShore_mono (fun _ => S.inner'_of_inner))
+        (hconn (S.outVertex_touches 0) htouch)
+    · -- `u` is in the enlarged side, and `e` has an end in the slab
+      have hu' : S.inner' u := by
+        by_contra hn
+        exact htouch ⟨e, by rw [mem_compShore]; exact ⟨u, hu, hn⟩, hu⟩
+      rcases hu' with hin | ⟨w, rfl⟩
+      · -- an inner vertex with a complement edge: its other end lies in the slab
+        let x := Sym2.Mem.other hu
+        have hz : s(u, x) = (e : Sym2 V) := Sym2.other_spec hu
+        have hx : ¬ inner x := by
+          rw [mem_compShore] at he
+          obtain ⟨y, hy, hny⟩ := he
+          rw [← hz] at hy
+          rcases Sym2.mem_iff.mp hy with rfl | rfl
+          · exact absurd hin hny
+          · exact hny
+        have hx' : S.inner' x := by
+          by_contra hn
+          exact htouch ⟨e, by rw [mem_compShore]; exact ⟨x, by rw [← hz]; exact Sym2.mem_mk_right _ _, hn⟩, hu⟩
+        rcases hx' with hxin | ⟨v', hv'⟩
+        · exact absurd hxin hx
+        · have hadj : G.Adj x u := by
+            have := e.2
+            rw [← hz, SimpleGraph.mem_edgeSet] at this
+            exact this.symm
+          let d : G.Dart := ⟨(x, u), hadj⟩
+          obtain ⟨y, hy⟩ := S.cubic_slab d ⟨v', hv'⟩
+          have hsnd : (S.ι y).snd = u := by rw [hy]
+          rcases y with y | i | i
+          · exfalso
+            apply S.slab_not_inner (Sum.inl (ZigzagRing.flip k y))
+            show inner (rotation.toRotationSystem.vertOf (S.ι (Sum.inl (ZigzagRing.flip k y))))
+            rw [← S.alpha_interior]
+            show inner (S.ι (Sum.inl y)).snd
+            rw [hsnd]; exact hin
+          · have : S.inVertex i = u := hsnd
+            rw [← this]
+            exact (S.cwalk_to_slab (Sum.inl 0)).trans
+              ((S.walk_to_inVertex S.slabEdge_mem_comp S.inEdge_mem_comp i))
+          · exfalso
+            apply S.out_not_inner i
+            show inner (S.ι (Sum.inr (Sum.inr i))).snd
+            rw [hsnd]; exact hin
+      · exact S.cwalk_to_slab w
   intro u v hu hv
   exact (key u hu).symm.trans (key v hv)
 
