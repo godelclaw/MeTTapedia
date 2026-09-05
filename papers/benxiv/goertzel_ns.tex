@@ -1604,10 +1604,23 @@ $N\delta(\delta+2)$ for $N$ adaptive cells.  If this last quantity is at most
 $1/2$, the total Fourier weight stays between $1/2$ and $3/2$ everywhere.
 Exact spatial support is necessarily lost under Fourier approximation, but
 where an original cell weight vanishes the corresponding quadratic tail is
-proved smaller than $\delta^2$.  Thus the remaining localization task is no
-longer construction of Fourier-compatible adaptive weights; it is the
-scale-uniform bookkeeping that absorbs these quantified tails into buffered
-frequency margins and boundary-transfer estimates.  The small-gap time
+proved smaller than $\delta^2$.
+
+The module \texttt{PancakeQuadraticFourierSupport} then collects the quadratic
+weight itself as a finite Fourier polynomial.  If $p$ has coefficient support
+$K$, the collected support is proved contained in
+$-K+K$, has cardinality at most $|K|^2$, and evaluates exactly to $|p(x)|^2$;
+thus the analytic weight and its multiplier coefficients are not separate
+surrogates.  The finite difference set eventually fits the fixed normalized
+localization-margin box at every sufficiently large square-dyadic scale,
+uniformly over every oriented frozen frame.  For a finite adaptive family,
+one common scale threshold works for all cells.  The integrated existence
+theorem supplies, for one and the same coefficient family, the $1/2$--$3/2$
+coverage bound, the $\delta^2$ off-cell leakage, the exact quadratic
+coefficient identity, and the common buffered-frequency threshold.
+Consequently the remaining localization burden is the analytic estimate
+that absorbs the quantified tails after nonlinear material boundary transfer,
+uniformly across dyadic scale and adaptive aggregation; the small-gap time
 branch also remains open.
 
 \emph{The refined pin (committed).}  The module
@@ -2067,7 +2080,8 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeMaterialTransportCommutator}, and
 \texttt{PancakeMovingBlockEvolution}, and
 \texttt{PancakeAdaptiveStrainCover}, and
-\texttt{PancakeAdaptiveFourierPartition} modules), each with a regression companion where
+\texttt{PancakeAdaptiveFourierPartition}, and
+\texttt{PancakeQuadraticFourierSupport} modules), each with a regression companion where
 applicable.  The aperture module is retained as an explicitly attenuated
 analytic model; the exact coherent projection no-go above prevents its use as
 the desired field-transfer estimate.

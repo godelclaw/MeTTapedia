@@ -124,6 +124,7 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeMateria
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeMovingBlockEvolution
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeAdaptiveStrainCover
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeAdaptiveFourierPartition
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeQuadraticFourierSupport
 
 /-!
 # Navier-Stokes live surface
