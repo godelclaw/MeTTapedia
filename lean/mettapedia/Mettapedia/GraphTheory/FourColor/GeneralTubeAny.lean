@@ -257,6 +257,63 @@ theorem TubeOf.le_of_tubeOf_any {Vt It : Type u} [Nonempty Vt]
     n + 1 ≤ Nat.factorial k * (Nat.factorial k * (6 * k + 1)) * 2 ^ (4 ^ k) :=
   TubeAny.le_of_tubeAny minimal hk2 (t.toAnyW hT) hgood hconn (by rwa [t.side_toAnyW hT])
 
+/-! ### The bound through the stack's own state
+
+The card-phased state of a node is already finite; pigeonholing on it directly
+drops the coordinate factor `k!` and counts supports over the `3^k` nonzero
+words rather than `4^k` colour functions. -/
+
+noncomputable instance instFintypeState (k : Nat) : Fintype (State.{u} k) :=
+  Fintype.ofEquiv _ (stateEquiv.{u} k).symm
+
+theorem card_state (k : Nat) :
+    Fintype.card (State.{u} k) = Nat.factorial k * 2 ^ (3 ^ k) := by
+  rw [Fintype.card_congr (stateEquiv.{u} k), Fintype.card_prod, Fintype.card_perm,
+    Fintype.card_finset, card_cutWord, Fintype.card_ulift, Fintype.card_fin]
+
+/-- **Nested width-`k` nodes are few, through the stack's state**: at most
+`(6w+1)·k!·2^(3^k)`. -/
+theorem le_of_nested_nodes_state (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    {w n : Nat} (nodes : Fin (n + 1) → LiteralShoreNode rotation k w)
+    (hw : ∀ r, boundaryWidth rotation (nodes r).shore = k)
+    (hnested : ∀ r r' : Fin (n + 1), r < r' → (nodes r).shore ⊂ (nodes r').shore) :
+    n + 1 ≤ (6 * w + 1) * (Nat.factorial k * 2 ^ (3 ^ k)) := by
+  by_contra hlt
+  have hlt : (6 * w + 1) * (Nat.factorial k * 2 ^ (3 ^ k)) < n + 1 := Nat.lt_of_not_le hlt
+  let f : Fin (n + 1) → Fin (6 * w + 1) × State.{u} k := fun r =>
+    (shoreCardPhase w (nodes r).shore,
+      normalizedState rotation (nodes r).shore (nodes r).innerOuter k (hw r))
+  have hcard : Fintype.card (Fin (6 * w + 1) × State.{u} k) < Fintype.card (Fin (n + 1)) := by
+    rw [Fintype.card_prod, Fintype.card_fin, card_state, Fintype.card_fin]; exact hlt
+  obtain ⟨j, j', hne, hf⟩ := Fintype.exists_ne_map_eq_of_card_lt f hcard
+  have hstate : ∀ a b : Fin (n + 1), f a = f b →
+      (nodes a).cardPhasedState = (nodes b).cardPhasedState := by
+    intro a b hab
+    simp only [f, Prod.mk.injEq] at hab
+    obtain ⟨hphase, hst⟩ := hab
+    unfold LiteralShoreNode.cardPhasedState LiteralShoreNode.state
+    rw [boundedNormalizedState_eq_of_width rotation _ _ _ (hw a),
+      boundedNormalizedState_eq_of_width rotation _ _ _ (hw b), hphase, hst]
+  rcases lt_or_gt_of_ne hne with hjj | hjj
+  · exact cardPhasedState_ne_of_ssubset rotation minimal (nodes j') (nodes j)
+      (hnested _ _ hjj) (hstate j' j hf.symm)
+  · exact cardPhasedState_ne_of_ssubset rotation minimal (nodes j) (nodes j')
+      (hnested _ _ hjj) (hstate j j' hf)
+
+/-- **Nested good sides of width `k` are few**, sharper: at most `(6k+1)·k!·2^(3^k)`. -/
+theorem le_of_nested_sides_state (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hk2 : 2 ≤ k) {n : Nat} (side : Fin (n + 1) → (V → Prop))
+    (e : ∀ r, Fin k ≃ BoundaryDart rotation.toRotationSystem (side r))
+    (hgood : ∀ r, GoodSide (G := G) (side r))
+    (hconn : ∀ r, EdgeShoreConnected G (sideShore (side r)))
+    (hcconn : ∀ r, EdgeShoreConnected G (ZigzagSlab.compShore (side r)))
+    (hnested : ∀ r r' : Fin (n + 1), r < r' → sideShore (G := G) (side r) ⊂ sideShore (side r')) :
+    n + 1 ≤ (6 * k + 1) * (Nat.factorial k * 2 ^ (3 ^ k)) := by
+  let nodes : Fin (n + 1) → LiteralShoreNode rotation k k := fun r =>
+    mkNode ⟨hgood r, hconn r, hcconn r⟩ (e r) hk2
+  refine le_of_nested_nodes_state minimal nodes (fun r => ?_) hnested
+  exact boundaryWidth_eq_of_equiv rotation _ ((e r).trans (castBoundary (mkNode_keep _ _ _).symm))
+
 end Graph
 
 end TubeSlab
