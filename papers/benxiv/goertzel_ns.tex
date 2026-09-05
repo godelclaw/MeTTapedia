@@ -1858,7 +1858,53 @@ physical stretching of the projected block and $rS\xi$.  At coefficient
 level, Lean proves that $R_{\partial B,\nu}$ contains only incoming/outgoing
 frequency-boundary interactions and the viscous multiplier.  This is still
 an exact finite-dimensional identity, not the scale-critical estimate needed
-for global regularity.
+for global regularity.  In this theorem the observation point moves, but
+the frame $F$ and the hard mode set are fixed in time.
+
+The module \texttt{PancakeHardBoundaryObstruction} tests that residual at
+the actual angular boundary.  For every integer $N\geq2$, set
+\[
+ k=(-1,0,0),\qquad \ell=(N+1,0,N^2),\qquad q=k+\ell=(N,0,N^2),
+ \qquad w_k=w_\ell=(0,1,0).
+\]
+The receiver $\ell$ lies outside the identity-frame hard pancake sector,
+while $q$ lies inside its complete square-dyadic shell-and-cone selector.
+Both input amplitudes are transverse and have norm one.  The physical
+transport symbol is exactly $-N^2(0,1,0)$, and the physical stretching
+symbol is zero.  Lean checks that the corresponding incoming material
+boundary coefficient has norm exactly $N^2$ and hence admits no
+scale-independent instantaneous bilinear bound by the product of the two
+input amplitude norms.  Adding the conjugate partner modes $-k,-\ell$
+leaves the coefficient at $q$ unchanged, so the calculation also applies
+to real trigonometric inputs.  This is a bilinear obstruction, not a
+self-consistent solution counterexample or a refutation of a
+time-integrated budget with viscosity.
+
+The module \texttt{PancakeEvolvingFilter} supplies the derivative term needed
+when the filter itself changes.  For differentiable weights $\gamma(t,k)$
+on a fixed finite ambient support, it differentiates the filter, vorticity
+coefficient, and moving Fourier character.  At a fixed time the exact
+material residual coefficient is
+\[
+ R_q=\dot\gamma(q)\widehat\eta_q
+   +\sum_{k+\ell=q}\bigl(\gamma(q)-\gamma(\ell)\bigr)
+       \bigl(T_{k,\ell}+S_{k,\ell}\bigr)
+   +\gamma(q)V_q,
+\]
+where $T,S,V$ are the physical transport, strain-stretching, and viscous
+symbols with the same finite supports as the vorticity equation.  The
+nonlinear formula specializes exactly to the previously constructed hard
+commutator when $\gamma$ is the indicator of its block.  A changing hard
+membership predicate need not be differentiable at a crossing; the product
+rule does not supply that missing hypothesis.  An adaptive argument must
+control the filter-motion term as well as the nonlinear boundary transfer.
+Standard smooth Littlewood--Paley transport estimates provide useful
+comparison machinery, but their velocity-gradient assumptions must also be
+discharged: for example, the regularity-preserving estimates in
+R.~Danchin, \emph{Estimates in Besov spaces for transport and
+transport-diffusion equations with almost Lipschitz coefficients},
+\emph{Rev.\ Mat.\ Iberoamericana} \textbf{21} (2005), 863--888,
+Section~2, require time-integrated velocity-gradient control.
 
 The pressure Hessian enters through the strain-eigenframe equation instead.
 Differentiating $Se_i=\lambda_i e_i$ and pairing with $e_j$, $i\ne j$, gives
@@ -2095,6 +2141,8 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeBlockReality}, and
 \texttt{PancakeMaterialTransportCommutator}, and
 \texttt{PancakeMovingBlockEvolution}, and
+\texttt{PancakeHardBoundaryObstruction}, and
+\texttt{PancakeEvolvingFilter}, and
 \texttt{PancakeAdaptiveStrainCover}, and
 \texttt{PancakeAdaptiveFourierPartition}, and
 \texttt{PancakeQuadraticFourierSupport}, and
