@@ -1322,8 +1322,21 @@ $\|\psi\|_\infty\|V\|_\infty$, never a support cardinality.
 This closes the finite-band localization junction.  It does not turn a
 nonconstant spatial cell cutoff into a finitely supported Fourier polynomial:
 a genuinely localized smooth cutoff has an infinite Fourier tail.  The next
-analytic step is therefore a quantitative truncation/tail estimate (followed
-by the smooth sector-projector collar), not another support-coverage lemma.
+analytic step is therefore a quantitative truncation/tail estimate, not
+another support-coverage lemma.  The operator side of this approximation is
+already checked in \texttt{PancakeBilinearActionStability} and
+\texttt{PancakeBufferedLocalizationStability}: for the physical buffered
+operator $\mathcal B_N$,
+\[
+ \|\mathcal B_N(f,g)-\mathcal B_N(f_0,g_0)\|
+ \leq \frac{243C}{N}
+ \bigl(\|f-f_0\|_\infty\|g\|_\infty
+      +\|f_0\|_\infty\|g-g_0\|_\infty\bigr).
+\]
+A further specialization transfers uniform scalar cutoff-approximation errors
+for $\chi-\chi_0$ and $\psi-\psi_0$ directly into this bound.  Thus only the
+cutoff-specific Fourier decay/truncation theorem and the subsequent smooth
+sector-projector collar remain at this junction.
 
 There is a second field-level issue which a fixed-axis multiplier does not
 address.  The actual pancake frame is the eigensystem of the low-frequency
@@ -1418,7 +1431,9 @@ buffer, proved exactly coherent there, and given one aperture-uniform
 inverse-kernel $L^1$ bound.  Its complete square-dyadic, rotated, periodized,
 and physical transfer is proved, and finite-band cutoff products are connected
 to it with no support-cardinality loss.  The infinite Fourier tail of a true
-spatial cell cutoff and the smooth projector collar remain.
+spatial cell cutoff and the smooth projector collar remain; a checked physical
+operator-stability theorem now converts any uniform cutoff-tail estimate into
+the required multiplier error.
 Further steps are aggregation of the small-gap branch
 over space and time, conversion of this $L^2$/defect estimate to the required
 scale-local endpoint budget, and identification and assembly of this concrete
@@ -1677,7 +1692,8 @@ effort.  The repaired-route development comprises, under
 \texttt{PancakePhysicalFrameKernelTransfer}, through the later annular,
 full-strain-frame, coercivity, cell-aggregation, finite-localization, and
 \texttt{PancakeBufferedAnnularMultiplier}, buffered physical-transfer, and
-\texttt{PancakeLocalizedBufferedTransfer} modules), each with a regression companion where
+\texttt{PancakeLocalizedBufferedTransfer}, bilinear stability, and buffered
+localization-stability modules), each with a regression companion where
 applicable.  The aperture module is retained as an explicitly attenuated
 analytic model; the exact coherent projection no-go above prevents its use as
 the desired field-transfer estimate.
