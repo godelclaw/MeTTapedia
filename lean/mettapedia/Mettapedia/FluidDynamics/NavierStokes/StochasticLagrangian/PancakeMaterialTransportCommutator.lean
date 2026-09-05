@@ -142,6 +142,137 @@ theorem finiteMaterialTransportCommutatorCoeff_eq_boundaryCrossing
     exact finiteMaterialTransportCommutatorCoeff_eq_neg_outgoing
       sourceModes receiverModes blockModes omega eta hq
 
+/-! ## The matching stretching commutator -/
+
+/-- The collected physical stretching coefficient written as an ordered
+double sum. -/
+theorem finiteUnitTorusStretchingCoeff_eq_doubleSum
+    (sourceModes receiverModes : Finset Wavevector)
+    (omega eta : FourierVelocity) (q : Wavevector) :
+    finiteUnitTorusStretchingCoeff
+        sourceModes receiverModes omega eta q =
+      ∑ source ∈ sourceModes, ∑ receiver ∈ receiverModes,
+        if source + receiver = q then
+          unitTorusStrainStretchAmp source
+            (omega source) (eta receiver)
+        else 0 := by
+  classical
+  unfold finiteUnitTorusStretchingCoeff
+  rw [Finset.sum_filter, Finset.sum_product]
+
+/-- Physical stretching splits exactly according to whether its receiver
+frequency begins inside or outside the hard block. -/
+theorem finiteUnitTorusStretchingCoeff_eq_inside_add_outside
+    (sourceModes receiverModes blockModes : Finset Wavevector)
+    (omega eta : FourierVelocity) (q : Wavevector) :
+    finiteUnitTorusStretchingCoeff
+        sourceModes receiverModes omega eta q =
+      finiteUnitTorusStretchingCoeff sourceModes
+          (receiverModesInside receiverModes blockModes) omega eta q +
+        finiteUnitTorusStretchingCoeff sourceModes
+          (receiverModesOutside receiverModes blockModes) omega eta q := by
+  classical
+  rw [finiteUnitTorusStretchingCoeff_eq_doubleSum,
+    finiteUnitTorusStretchingCoeff_eq_doubleSum,
+    finiteUnitTorusStretchingCoeff_eq_doubleSum,
+    ← Finset.sum_add_distrib]
+  apply Finset.sum_congr rfl
+  intro source hsource
+  rw [receiverModesInside, receiverModesOutside,
+    ← Finset.sum_filter_add_sum_filter_not receiverModes
+      (fun receiver ↦ receiver ∈ blockModes)]
+
+/-- Fourier coefficient of the physical stretching commutator
+`P_B(S eta) - S(P_B eta)`. -/
+def finiteStretchingProjectionCommutatorCoeff
+    (sourceModes receiverModes blockModes : Finset Wavevector)
+    (omega eta : FourierVelocity) (q : Wavevector) : VelocityCoefficient :=
+  (if q ∈ blockModes then
+      finiteUnitTorusStretchingCoeff
+        sourceModes receiverModes omega eta q
+    else 0) -
+  finiteUnitTorusStretchingCoeff sourceModes
+    (receiverModesInside receiverModes blockModes) omega eta q
+
+theorem finiteStretchingProjectionCommutatorCoeff_eq_incoming
+    (sourceModes receiverModes blockModes : Finset Wavevector)
+    (omega eta : FourierVelocity) {q : Wavevector}
+    (hq : q ∈ blockModes) :
+    finiteStretchingProjectionCommutatorCoeff
+        sourceModes receiverModes blockModes omega eta q =
+      finiteUnitTorusStretchingCoeff sourceModes
+        (receiverModesOutside receiverModes blockModes) omega eta q := by
+  unfold finiteStretchingProjectionCommutatorCoeff
+  rw [if_pos hq,
+    finiteUnitTorusStretchingCoeff_eq_inside_add_outside
+      sourceModes receiverModes blockModes omega eta q]
+  abel
+
+theorem finiteStretchingProjectionCommutatorCoeff_eq_neg_outgoing
+    (sourceModes receiverModes blockModes : Finset Wavevector)
+    (omega eta : FourierVelocity) {q : Wavevector}
+    (hq : q ∉ blockModes) :
+    finiteStretchingProjectionCommutatorCoeff
+        sourceModes receiverModes blockModes omega eta q =
+      -finiteUnitTorusStretchingCoeff sourceModes
+        (receiverModesInside receiverModes blockModes) omega eta q := by
+  simp [finiteStretchingProjectionCommutatorCoeff, hq]
+
+theorem finiteStretchingProjectionCommutatorCoeff_eq_boundaryCrossing
+    (sourceModes receiverModes blockModes : Finset Wavevector)
+    (omega eta : FourierVelocity) (q : Wavevector) :
+    finiteStretchingProjectionCommutatorCoeff
+        sourceModes receiverModes blockModes omega eta q =
+      if q ∈ blockModes then
+        finiteUnitTorusStretchingCoeff sourceModes
+          (receiverModesOutside receiverModes blockModes) omega eta q
+      else
+        -finiteUnitTorusStretchingCoeff sourceModes
+          (receiverModesInside receiverModes blockModes) omega eta q := by
+  by_cases hq : q ∈ blockModes
+  · rw [if_pos hq]
+    exact finiteStretchingProjectionCommutatorCoeff_eq_incoming
+      sourceModes receiverModes blockModes omega eta hq
+  · rw [if_neg hq]
+    exact finiteStretchingProjectionCommutatorCoeff_eq_neg_outgoing
+      sourceModes receiverModes blockModes omega eta hq
+
+/-! ## The complete material nonlinear boundary transfer -/
+
+/-- Sum of the material transport and physical stretching commutators. -/
+def finiteMaterialNonlinearBoundaryCoeff
+    (sourceModes receiverModes blockModes : Finset Wavevector)
+    (omega eta : FourierVelocity) (q : Wavevector) : VelocityCoefficient :=
+  finiteMaterialTransportCommutatorCoeff
+      sourceModes receiverModes blockModes omega eta q +
+    finiteStretchingProjectionCommutatorCoeff
+      sourceModes receiverModes blockModes omega eta q
+
+/-- The complete material nonlinear coefficient consists only of interactions
+crossing the hard frequency boundary. -/
+theorem finiteMaterialNonlinearBoundaryCoeff_eq
+    (sourceModes receiverModes blockModes : Finset Wavevector)
+    (omega eta : FourierVelocity) (q : Wavevector) :
+    finiteMaterialNonlinearBoundaryCoeff
+        sourceModes receiverModes blockModes omega eta q =
+      if q ∈ blockModes then
+        finiteUnitTorusNegativeTransportCoeff sourceModes
+            (receiverModesOutside receiverModes blockModes) omega eta q +
+          finiteUnitTorusStretchingCoeff sourceModes
+            (receiverModesOutside receiverModes blockModes) omega eta q
+      else
+        -(finiteUnitTorusNegativeTransportCoeff sourceModes
+            (receiverModesInside receiverModes blockModes) omega eta q +
+          finiteUnitTorusStretchingCoeff sourceModes
+            (receiverModesInside receiverModes blockModes) omega eta q) := by
+  unfold finiteMaterialNonlinearBoundaryCoeff
+  rw [finiteMaterialTransportCommutatorCoeff_eq_boundaryCrossing,
+    finiteStretchingProjectionCommutatorCoeff_eq_boundaryCrossing]
+  by_cases hq : q ∈ blockModes
+  · simp [hq]
+  · simp [hq]
+    abel
+
 end PancakeMaterialTransportCommutator
 end NavierStokes
 end FluidDynamics
