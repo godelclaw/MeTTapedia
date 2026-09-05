@@ -56,11 +56,15 @@ integrand, which unlike the full strain has known dynamical handles.
    share has a cardinality-free `C/N` estimate, including in the constructed
    pointwise strain frame which maps the most expanding eigenvector to the
    coherent reference and the most compressive eigenvector to the axial
-   direction.  What remains is measurable dependence
-   of the spectral selection through eigenvalue collisions and identification
-   with the actual Littlewood--Paley blocks and time functionals, followed by
-   assembly into `split_le` and `coherent_le` for actual Navier--Stokes
-   Littlewood--Paley data.
+   direction.  The exact complex Fourier coefficient remainder is now also
+   bounded modewise, on every finite physical pancake sector, and after an
+   exact finite Parseval transfer by the physical `L²` energy transverse to
+   the expanding eigenline of a frozen strain frame, without a mode-count
+   loss.  What remains is the frozen-to-spatially-varying eigenframe
+   commutator (including eigenvalue collisions), identification with the
+   actual Littlewood--Paley blocks and time functionals, and conversion of
+   this `L²` control into the scale-local endpoint budget, followed by
+   assembly into `split_le` and `coherent_le` for actual Navier--Stokes data.
 2. `MisalignmentStrainBudget` itself: the dynamical, time-integrated
    control of the misalignment share.  The checked fences apply: it
    cannot be proved by operator-norm, frozen-strain, or static
