@@ -161,6 +161,7 @@ def cert : CertificateEnum {n} := ⟨nodes⟩
 
 {node_theorems}
 set_option maxRecDepth 100000 in
+set_option maxHeartbeats 0 in
 theorem ok : cert.Ok base := by
   intro k hk
   simp only [cert, nodes, List.length_cons, List.length_nil] at hk
@@ -187,8 +188,8 @@ else:
         f'/-! Data of the enumerated certificate `{os.path.basename(tpath)}` (ring {n}): support words and nodes. -/\n\n' + head +
         f'\n/-- a word from its digits -/\ndef w ({' '.join('d' + str(i) for i in range(n))} : Fin 3) : Word {n} :=\n'
         f'  ![{', '.join('tc d' + str(i) for i in range(n))}]\n\n'
-        f'def base : List (Word {n}) := [\n  ' + ',\n  '.join(word(x) for x in supp_words) + ']\n\n'
-        f'def nodes : List (Word {n} × TaitColorPair × (Nat → Finset (Fin {n}))) := [\n  ' +
+        f'set_option maxHeartbeats 0 in\ndef base : List (Word {n}) := [\n  ' + ',\n  '.join(word(x) for x in supp_words) + ']\n\n'
+        f'set_option maxHeartbeats 0 in\ndef nodes : List (Word {n} × TaitColorPair × (Nat → Finset (Fin {n}))) := [\n  ' +
         ',\n  '.join(f'({word(x)}, {PAIR[pi]}, {sel_fun(sels)})' for (x, pi, sels) in cert) + ']\n\n'
         f'def cert : CertificateEnum {n} := ⟨nodes⟩\n' + tail)
     open(os.path.join(lean_dir, modname + 'Data.lean'), 'w').write(data)
@@ -203,7 +204,7 @@ else:
             f'import Mettapedia.GraphTheory.FourColor.{modname}Data\n\n/-! Nodes {lo}–{hi - 1}. -/\n\n' + head + '\n' + body + tail)
     asm = ('\n'.join(f'import Mettapedia.GraphTheory.FourColor.{modname}N{c}' for c in range(nchunks)) +
         f'\n\n/-! The enumerated certificate `{os.path.basename(tpath)}` (ring {n}, {len(cert)} nodes) checks; every node word is derivable. -/\n\n' + head +
-        '\nset_option maxRecDepth 100000 in\ntheorem ok : cert.Ok base := by\n  intro k hk\n'
+        '\nset_option maxRecDepth 100000 in\nset_option maxHeartbeats 0 in\ntheorem ok : cert.Ok base := by\n  intro k hk\n'
         '  simp only [cert, nodes, List.length_cons, List.length_nil] at hk\n  interval_cases k\n' + node_exacts + '\n\n'
         f'theorem derivable {{target : Set (Word {n})}} (hbase : ∀ u ∈ base, u ∈ target) :\n'
         '    ∀ k (h : k < cert.nodes.length), Derivable target (cert.nodes[k]).1 :=\n  cert.derivable_of_ok hbase ok\n' + tail)
