@@ -60,11 +60,15 @@ integrand, which unlike the full strain has known dynamical handles.
    bounded modewise, on every finite physical pancake sector, and after an
    exact finite Parseval transfer by the physical `L²` energy transverse to
    the expanding eigenline of a frozen strain frame, without a mode-count
-   loss.  What remains is the frozen-to-spatially-varying eigenframe
-   commutator (including eigenvalue collisions), identification with the
-   actual Littlewood--Paley blocks and time functionals, and conversion of
-   this `L²` control into the scale-local endpoint budget, followed by
-   assembly into `split_le` and `coherent_le` for actual Navier--Stokes data.
+   loss.  A downstream sign-invariant line-projector theorem now quantifies
+   the frozen-to-varying eigenframe passage: away from an explicit small
+   frozen top-gap branch, strain oscillation `epsilon` costs
+   `4 * epsilon / threshold` times the full `L²` energy.  What remains is
+   aggregation of the small-gap and separated branches over the physical
+   space-time cover, identification with the actual Littlewood--Paley blocks
+   and time functionals, and conversion of this `L²` control into the
+   scale-local endpoint budget, followed by assembly into `split_le` and
+   `coherent_le` for actual Navier--Stokes data.
 2. `MisalignmentStrainBudget` itself: the dynamical, time-integrated
    control of the misalignment share.  The checked fences apply: it
    cannot be proved by operator-norm, frozen-strain, or static
