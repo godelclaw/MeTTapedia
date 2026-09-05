@@ -118,6 +118,7 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeSpectra
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeExpandingPlaneResidence
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeDyadicDirectionEvolution
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeFourierStretchingEvolution
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakePeriodicVorticityEquation
 
 /-!
 # Navier-Stokes live surface

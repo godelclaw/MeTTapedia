@@ -138,12 +138,14 @@ pure strain stretching; transport, viscosity, interscale transfer, and
 localization commutators must be controlled there.  This removes the invalid
 shortcut of using coherence of the total vorticity direction as if it
 automatically controlled the projected block.
-The pair-indexed complex Biot--Savart stretching polynomial is now also
-collected over equal output frequencies into a canonical coefficient field;
-reconstructing that field is proved exactly equal to the existing physical
-stretching sum.  It therefore supplies the proposed stretching term in the
-two-channel residual, connecting the block-direction equation directly to the
-audited coherent/misaligned stretching split.
+The pair-indexed phase-suppressed Biot--Savart stretching polynomial is now
+also collected over equal output frequencies into a canonical coefficient
+field.  A subsequent unit-torus normalization restores the Fourier phases:
+curl inversion contributes $-(2\pi i)^{-1}$ and differentiation contributes
+$2\pi i$, so the physical strain--vorticity coefficient is the \emph{negative}
+of the phase-suppressed symbol.  This sign identity, the right-hand-side
+transport coefficient, viscosity, and the resulting finite vorticity RHS are
+all checked before they enter the two-channel block residual.
 The frequency-support part of the analytic localization bridge is now closed:
 for fixed normalized cutoff margins, a four-chart multiplier is constructed
 which is exactly coherent on every leaked output mode and has a uniform
@@ -1719,14 +1721,22 @@ defect once $G$ is identified with the coefficients of $S\omega$.  This
 separates the two estimates needed for closure instead of charging both to an
 undifferentiated direction-coherence premise.
 The companion module \texttt{PancakeFourierStretchingEvolution} constructs
-this canonical $G$: every retained source/receiver pair is collected in the
+the canonical phase-suppressed coefficient field: every retained
+source/receiver pair is collected in the
 fiber $k+\ell=q$, and finite reconstruction of the resulting output
 coefficients is proved exactly equal to the previously defined pair-indexed
-complex stretching polynomial.  Substituting this $G$ in the three-channel
-direction theorem links the same-block direction residual to the existing
-coherent/coherent plus three-term misalignment expansion.  The next step is
-to identify the remaining coefficient evolution with transport and viscosity
-in the true periodic vorticity equation, with all unit-torus constants fixed.
+complex stretching polynomial.  The module
+\texttt{PancakePeriodicVorticityEquation} then fixes the unit-torus constants.
+Writing $D=2\pi i$, it defines the physical Biot--Savart coefficient as
+$-D^{-1}|k|^{-2}k\times\widehat\omega_k$ and proves exactly that physical
+strain stretching is the negative of the suppressed symbol.  It also derives
+the right-hand-side transport sign, includes the multiplier
+$\nu D^2|q|^2$, and packages the finite coefficient equation.  Under that
+equation the first block residual is proved to be precisely projected
+transport plus viscosity; the second is the physical stretching
+projection/variable-strain defect.  What remains is a scale-critical estimate
+for those two concrete channels and a controlled passage from finite
+convolutions to the full periodic solution, not a normalization ambiguity.
 
 The pressure Hessian enters through the strain-eigenframe equation instead.
 Differentiating $Se_i=\lambda_i e_i$ and pairing with $e_j$, $i\ne j$, gives
@@ -1958,7 +1968,8 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeSpectralClusterDichotomy}, and
 \texttt{PancakeExpandingPlaneResidence}, and
 \texttt{PancakeDyadicDirectionEvolution}, and
-\texttt{PancakeFourierStretchingEvolution} modules), each with a regression companion where
+\texttt{PancakeFourierStretchingEvolution}, and
+\texttt{PancakePeriodicVorticityEquation} modules), each with a regression companion where
 applicable.  The aperture module is retained as an explicitly attenuated
 analytic model; the exact coherent projection no-go above prevents its use as
 the desired field-transfer estimate.
