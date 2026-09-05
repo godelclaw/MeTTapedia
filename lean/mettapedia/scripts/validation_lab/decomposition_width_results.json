@@ -1,0 +1,57 @@
+[
+ {
+  "family": "tube c=5 h=8 defects=0",
+  "V": 80,
+  "width": 7
+ },
+ {
+  "family": "tube c=5 h=8 defects=1",
+  "V": 80,
+  "width": 7
+ },
+ {
+  "family": "tube c=5 h=12 defects=0",
+  "V": 120,
+  "width": 7
+ },
+ {
+  "family": "tube c=5 h=12 defects=3",
+  "V": 120,
+  "width": 7
+ },
+ {
+  "family": "tube c=5 h=16 defects=0",
+  "V": 160,
+  "width": 7
+ },
+ {
+  "family": "tube c=5 h=16 defects=5",
+  "V": 160,
+  "width": 7
+ },
+ {
+  "family": "GP(1,0)",
+  "V": 20,
+  "width": 6
+ },
+ {
+  "family": "GP(2,0)",
+  "V": 80,
+  "width": 11
+ },
+ {
+  "family": "GP(3,0)",
+  "V": 180,
+  "width": 16
+ },
+ {
+  "family": "GP(4,0)",
+  "V": 320,
+  "width": 21
+ },
+ {
+  "family": "GP(5,0)",
+  "V": 500,
+  "width": 26
+ }
+]
