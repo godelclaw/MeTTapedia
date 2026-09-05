@@ -1389,6 +1389,18 @@ with summability of the nonnegative shell series; for mean-zero data the first
 term vanishes.  This is the complete hard Littlewood--Paley energy ledger,
 not a finite-support surrogate.
 
+The companion module \texttt{PancakeArbitraryDataMisalignment} connects these
+complete blocks to the exact PDE stretching split.  On every complete
+square-dyadic pancake block, the full physical stretching sum is the coherent
+kernel action plus the exact three-term misalignment remainder, and the
+coherent term keeps its support-cardinality-free $C/N$ bound.  For
+divergence-free data, the squared misalignment coefficients are controlled by
+the physical transverse energy in the expanding strain frame; their
+frozen-frame time profile is continuous and interval-integrable whenever the
+Fourier coefficients are continuous.  The collision-safe frozen-strain
+dichotomy therefore now applies to complete arbitrary-data blocks rather than
+an externally supplied finite support.
+
 There is a second field-level issue which a fixed-axis multiplier does not
 address.  The actual pancake frame is the eigensystem of the low-frequency
 strain and therefore depends on $(x,t)$.  The module
@@ -1760,7 +1772,8 @@ full-strain-frame, coercivity, cell-aggregation, finite-localization, and
 localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeConcreteSmoothCellCutoff},
 \texttt{PancakeConcreteSpatialCoverTransfer}, and
-\texttt{PancakeArbitraryDataBlocks} modules), each with a regression companion where
+\texttt{PancakeArbitraryDataBlocks} and
+\texttt{PancakeArbitraryDataMisalignment} modules), each with a regression companion where
 applicable.  The aperture module is retained as an explicitly attenuated
 analytic model; the exact coherent projection no-go above prevents its use as
 the desired field-transfer estimate.
