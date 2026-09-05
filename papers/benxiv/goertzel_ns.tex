@@ -1758,6 +1758,17 @@ reindexes both convolution supports simultaneously.  For negation-closed
 supports and real coefficient fields it proves
 ${\rm RHS}(-q)=\overline{{\rm RHS}(q)}$, so the finite dynamics is internally
 consistent with the real block on which the direction law is stated.
+The next exact cancellation is material transport.  If $B$ is the hard
+pancake mode set, then
+\[
+ P_B[-(u\cdot\nabla)\omega]+(u\cdot\nabla)(P_B\omega)
+   =[u\cdot\nabla,P_B]\omega
+\]
+is checked coefficientwise for finite supports.  For an output $q\in B$ the
+surviving sum contains only receiver frequencies initially outside $B$
+(incoming transfer); for $q\notin B$ it is minus the sum from receivers inside
+$B$ (outgoing transfer).  Thus following the fluid removes bulk advection and
+leaves an explicit frequency-boundary flux.
 
 The pressure Hessian enters through the strain-eigenframe equation instead.
 Differentiating $Se_i=\lambda_i e_i$ and pairing with $e_j$, $i\ne j$, gives
@@ -1991,7 +2002,8 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeDyadicDirectionEvolution}, and
 \texttt{PancakeFourierStretchingEvolution}, and
 \texttt{PancakePeriodicVorticityEquation}, and
-\texttt{PancakeBlockReality} modules), each with a regression companion where
+\texttt{PancakeBlockReality}, and
+\texttt{PancakeMaterialTransportCommutator} modules), each with a regression companion where
 applicable.  The aperture module is retained as an explicitly attenuated
 analytic model; the exact coherent projection no-go above prevents its use as
 the desired field-transfer estimate.
