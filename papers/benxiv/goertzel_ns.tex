@@ -2052,6 +2052,105 @@ Uniform physical-frame localization and the scale-critical time sum remain
 required before this estimate can discharge any part of
 \texttt{MisalignmentStrainBudget} for actual solution data.
 
+\paragraph{Projected-amplitude absorption and the remaining source cutoff.}
+The modules \texttt{PancakeViscousMisalignmentAbsorption} and
+\texttt{PancakeSameSectorDissipation} strengthen this estimate by retaining
+the misaligned output amplitude.  Write
+\[
+ E_Q=\sum_{q\in M}|Q_q\widehat\eta_q|^2,\qquad
+ E=\sum_{q\in M}|\widehat\eta_q|^2,\qquad
+ D_Q=\sum_{q\in M}|q|^2|Q_q\widehat\eta_q|^2,\qquad
+ A_K=\sum_{k\in K}|\widehat\omega_k|.
+\]
+For the same finite source set $K$, closed under negation, and
+conjugate-symmetric source coefficients, transport of $Q\eta$ has zero
+total energy rate.  Subtracting that identity gives the exact expression
+\[
+ T_Q=2\operatorname{Re}\sum_{q,\ell\in M}
+   \langle Q_q\widehat\eta_q,
+       b_{q\ell}(Q_q-Q_\ell)\widehat\eta_\ell\rangle.
+\]
+A weighted finite Schur estimate, with an arbitrary parameter $r>0$, yields
+\[
+ |T_Q|\le384A_K(rE_Q+E/r).
+\]
+In particular, for every $\delta>0$,
+\[
+ |T_Q|\le\delta E_Q+\frac{(384A_K)^2}{\delta}E.
+\]
+The zero-source case is proved separately, so this optimization does not
+divide by an amplitude assumed positive.
+
+Stretching can be treated with the same projected amplitude.  The exact
+complex Lagrange identity for a real lattice frequency is
+\[
+ |k\mathbin\times w|^2=|k|^2|w|^2-|k\mathbin\cdot w|^2.
+\]
+It gives $|k|\,|\widetilde u_k|\le|w|$ for the phase-suppressed
+Biot--Savart symbol $\widetilde u_k$.  Restoring the physical Fourier
+phases and estimating both terms of the symmetric strain gives the
+checked, non-sharp bound
+\[
+ |S_k(w)v|\le3|w|\,|v|,
+ \qquad |S_Q|\le3A_K(rE_Q+E/r).
+\]
+This includes the zero source frequency.  The second inequality follows
+by reindexing the actual physical stretching convolution by its receiver
+frequency and applying the same row/column estimate.
+
+Transport and stretching are therefore absorbed \emph{together}, spending
+the physical diffusion only once.  Since $N^4E_Q\le D_Q$, their combined
+constant $387=384+3$ gives
+\begin{equation}\label{eq:ns-same-sector-absorption}
+ E_Q'+\nu(2\pi)^2D_Q\le C_{K,N},
+ \qquad C_{K,N}:=\frac{(387A_K)^2}{\nu(2\pi)^2N^4}E.
+\end{equation}
+Lean identifies the derivative here under the previously defined physical
+finite coefficient equation.  With the displayed rates explicitly
+interval-integrable on $[0,T]$, it also proves
+\[
+ E_Q(T)+\nu(2\pi)^2\int_0^T D_Q(t)\,dt
+ \le E_Q(0)+\int_0^T C_{K,N}(t)\,dt.
+\]
+Neither statement constructs a solution of that coefficient equation or
+asserts that a sector of a full Navier--Stokes solution is an autonomous
+subsystem.  Incoming receiver-sector interactions and moving-projector
+terms must be restored for that application.
+
+The remaining amplitude cost has a precise physical energy interpretation.
+Let
+\[
+ U_K=\sum_{k\in K}|u_k|^2,\qquad
+ V_M=\sum_{q\in M}|v_q|^2,\qquad
+ H_K=\sum_{k\in K}|k|^2,
+\]
+where $u_k$ and $v_q$ are the physical unit-torus Biot--Savart velocities
+of $\widehat\omega_k$ and $\widehat\eta_q$.  These sums use the squared
+Parseval norm, without the conventional kinetic-energy factor $1/2$.
+For nonzero transverse source modes, the checked exact identity
+$(2\pi)^2|k|^2|u_k|^2=|\widehat\omega_k|^2$ and Cauchy--Schwarz give
+\[
+ A_K^2\le(2\pi)^2H_KU_K.
+\]
+For transverse receiver modes in the actual pancake shell, its upper
+frequency bound gives $E\le4(2\pi)^2N^4V_M$.  Consequently
+\begin{equation}\label{eq:ns-same-sector-kinetic-cost}
+ C_{K,N}\le\frac{4\cdot387^2(2\pi)^2}{\nu}\,H_KU_KV_M.
+\end{equation}
+For a finite family of disjoint receiver sectors of a single coefficient
+field, with the same source set $K$, Lean sums this estimate with $V_M$
+replaced by the velocity energy on the union.  There is no extra
+receiver-sector count or receiver-frequency factor.
+
+The explicit factor $H_K$ is essential to the present bound.  A fixed
+finite source set permits low-source energy accounting, but allowing its
+cutoff to grow is not free.  Source-cutoff-uniform control, incoming
+cross-sector interactions, evolving strain frames, physical localization,
+and the conversion to the scale-critical misalignment strain budget remain
+unproved.  Equations~\eqref{eq:ns-same-sector-absorption}
+and~\eqref{eq:ns-same-sector-kinetic-cost} do not establish the
+arbitrary-data continuation theorem.
+
 The pressure Hessian enters through the strain-eigenframe equation instead.
 Differentiating $Se_i=\lambda_i e_i$ and pairing with $e_j$, $i\ne j$, gives
 \[
@@ -2294,6 +2393,8 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeEvolvingFilter}, and
 \texttt{PancakeSignedTransportEnergy}, and
 \texttt{PancakeFrequencyProjectorCommutator}, and
+\texttt{PancakeViscousMisalignmentAbsorption}, and
+\texttt{PancakeSameSectorDissipation}, and
 \texttt{SpatialBKMIntegrand}, and
 \texttt{PancakeAdaptiveStrainCover}, and
 \texttt{PancakeAdaptiveFourierPartition}, and
