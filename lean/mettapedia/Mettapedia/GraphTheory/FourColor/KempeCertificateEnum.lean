@@ -90,6 +90,9 @@ def CertificateEnum.Ok (base : Finset (Word n)) (c : CertificateEnum n) : Prop :
   ∀ k (h : k < c.nodes.length),
     StepOkEnum (c.nodes[k]).1 (c.nodes[k]).2.1 (c.knownAt base k) (c.nodes[k]).2.2
 
+instance (base : Finset (Word n)) (c : CertificateEnum n) : Decidable (c.Ok base) := by
+  unfold CertificateEnum.Ok; infer_instance
+
 /-- **soundness of enumerated certificates** -/
 theorem CertificateEnum.derivable_of_ok {target : Set (Word n)} {base : Finset (Word n)}
     (hbase : ∀ u ∈ base, u ∈ target) (c : CertificateEnum n) (hok : c.Ok base) :
