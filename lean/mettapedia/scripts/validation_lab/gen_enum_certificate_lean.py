@@ -17,6 +17,7 @@ args = sys.argv[1:]
 tpath, modname = args[0], args[1]
 MAXD = int(args[args.index('--maxdepth') + 1]) if '--maxdepth' in args else 6
 LIMIT = int(args[args.index('--limit') + 1]) if '--limit' in args else None
+CHUNK = int(args[args.index('--chunk') + 1]) if '--chunk' in args else None
 n, nv, E0 = load(tpath)
 PORT = 1000
 E = [tuple((PORT + z[1]) if isinstance(z, tuple) else z for z in e) for e in E0]
@@ -174,6 +175,37 @@ theorem derivable {{target : Set (Word {n})}} (hbase : ∀ u ∈ base, u ∈ tar
 end {modname}
 end Mettapedia.GraphTheory.FourColor.KempeDerivation
 '''
-out = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'Mettapedia', 'GraphTheory', 'FourColor', modname + '.lean')
-open(out, 'w').write(lean)
-print('wrote', modname, 'nodes', len(cert), 'base', len(supp_words))
+lean_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'Mettapedia', 'GraphTheory', 'FourColor')
+if CHUNK is None:
+    open(os.path.join(lean_dir, modname + '.lean'), 'w').write(lean)
+    print('wrote', modname, 'nodes', len(cert), 'base', len(supp_words))
+else:
+    NS = 'Mettapedia.GraphTheory.FourColor.KempeDerivation'
+    head = f'namespace {NS}\nnamespace {modname}\n\nopen GoertzelV24HexagonPairingTargetAwareBoundary\n'
+    tail = f'\nend {modname}\nend {NS}\n'
+    data = ('import Mettapedia.GraphTheory.FourColor.KempeCertificateEnum\n\n'
+        f'/-! Data of the enumerated certificate `{os.path.basename(tpath)}` (ring {n}): support words and nodes. -/\n\n' + head +
+        f'\n/-- a word from its digits -/\ndef w ({' '.join('d' + str(i) for i in range(n))} : Fin 3) : Word {n} :=\n'
+        f'  ![{', '.join('tc d' + str(i) for i in range(n))}]\n\n'
+        f'def base : List (Word {n}) := [\n  ' + ',\n  '.join(word(x) for x in supp_words) + ']\n\n'
+        f'def nodes : List (Word {n} × TaitColorPair × (Nat → Finset (Fin {n}))) := [\n  ' +
+        ',\n  '.join(f'({word(x)}, {PAIR[pi]}, {sel_fun(sels)})' for (x, pi, sels) in cert) + ']\n\n'
+        f'def cert : CertificateEnum {n} := ⟨nodes⟩\n' + tail)
+    open(os.path.join(lean_dir, modname + 'Data.lean'), 'w').write(data)
+    nchunks = (len(cert) + CHUNK - 1) // CHUNK
+    for c in range(nchunks):
+        lo, hi = c * CHUNK, min((c + 1) * CHUNK, len(cert))
+        body = '\n'.join(
+            f'set_option maxRecDepth 100000 in\nset_option maxHeartbeats 0 in\n'
+            f'theorem node_{k} : StepOkEnum ({word(x)}) {PAIR[pi]} (cert.knownAt base {k}) {sel_fun(sels)} := by\n  decide +kernel\n'
+            for k, (x, pi, sels) in list(enumerate(cert))[lo:hi])
+        open(os.path.join(lean_dir, f'{modname}N{c}.lean'), 'w').write(
+            f'import Mettapedia.GraphTheory.FourColor.{modname}Data\n\n/-! Nodes {lo}–{hi - 1}. -/\n\n' + head + '\n' + body + tail)
+    asm = ('\n'.join(f'import Mettapedia.GraphTheory.FourColor.{modname}N{c}' for c in range(nchunks)) +
+        f'\n\n/-! The enumerated certificate `{os.path.basename(tpath)}` (ring {n}, {len(cert)} nodes) checks; every node word is derivable. -/\n\n' + head +
+        '\nset_option maxRecDepth 100000 in\ntheorem ok : cert.Ok base := by\n  intro k hk\n'
+        '  simp only [cert, nodes, List.length_cons, List.length_nil] at hk\n  interval_cases k\n' + node_exacts + '\n\n'
+        f'theorem derivable {{target : Set (Word {n})}} (hbase : ∀ u ∈ base, u ∈ target) :\n'
+        '    ∀ k (h : k < cert.nodes.length), Derivable target (cert.nodes[k]).1 :=\n  cert.derivable_of_ok hbase ok\n' + tail)
+    open(os.path.join(lean_dir, modname + '.lean'), 'w').write(asm)
+    print('wrote', modname, 'Data +', nchunks, 'chunks + assembly; nodes', len(cert), 'base', len(supp_words))
