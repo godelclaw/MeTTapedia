@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.CyclicCutSaturation
 import Mathlib.Combinatorics.SimpleGraph.Connectivity.Finite
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedBranchDecompositionAdapter
 
 /-!
 # One connected cut of the length-4 (5,0)-tube annulus as a `ConnectedAtWidth` object
@@ -104,5 +105,48 @@ def cut0 : CyclicEdgeCutRealization.ConnectedAtWidth tube 6 where
   card_le := cutEdges_card
   side_connected := side_connected
   complement_connected := complement_connected
+
+
+/-! ## A rooted branch decomposition of the tube of width 11, in the stack's type -/
+
+open GoertzelV24ConnectedBranchDecompositionForest GoertzelV24ConnectedBranchDecompositionAdapter
+open GoertzelV24ConnectedEdgeShoreMajority GoertzelV24SphereCutMaterial
+
+/-- computable middle set: vertices touching an edge in the shore and one outside -/
+def middleB (shore : Finset tube.edgeSet) : Finset (Fin 50) :=
+  Finset.univ.filter fun v =>
+    (∃ e ∈ shore, v ∈ (e : Sym2 (Fin 50))) ∧ ∃ e ∈ Finset.univ \ shore, v ∈ (e : Sym2 (Fin 50))
+
+theorem middle_eq (shore : Finset tube.edgeSet) :
+    edgeShoreMiddleVertices tube shore = middleB shore := by
+  ext v
+  simp [edgeShoreMiddleVertices, middleVertices, middleB]
+
+def everyCutWidthAtMostB (bound : Nat) : EdgeLeafTree tube.edgeSet → Bool
+  | .leaf e => (middleB {e}).card ≤ bound
+  | .fork l r => (middleB (EdgeLeafTree.fork l r).shore).card ≤ bound &&
+      everyCutWidthAtMostB bound l && everyCutWidthAtMostB bound r
+
+theorem everyCutWidthAtMost_iff (bound : Nat) :
+    ∀ t : EdgeLeafTree tube.edgeSet,
+      EveryCutWidthAtMost (G := tube) bound t ↔ everyCutWidthAtMostB bound t = true
+  | .leaf e => by simp [EveryCutWidthAtMost, everyCutWidthAtMostB, middle_eq]
+  | .fork l r => by
+      simp only [EveryCutWidthAtMost, everyCutWidthAtMostB, middle_eq, Bool.and_eq_true,
+        decide_eq_true_eq, everyCutWidthAtMost_iff bound l, everyCutWidthAtMost_iff bound r]
+      tauto
+
+def decomp : RootedBranchDecomposition (G := tube) where
+  rootEdge := ⟨s((30 : Fin 50), (32 : Fin 50)), by decide⟩
+  left := EdgeLeafTree.leaf ⟨s((30 : Fin 50), (34 : Fin 50)), by decide⟩
+  right := EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((22 : Fin 50), (30 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((31 : Fin 50), (32 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((32 : Fin 50), (40 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((31 : Fin 50), (39 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((29 : Fin 50), (31 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((33 : Fin 50), (34 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((34 : Fin 50), (43 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((33 : Fin 50), (36 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((24 : Fin 50), (33 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((35 : Fin 50), (36 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((36 : Fin 50), (45 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((35 : Fin 50), (38 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((26 : Fin 50), (35 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((37 : Fin 50), (38 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((37 : Fin 50), (39 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((38 : Fin 50), (47 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((39 : Fin 50), (41 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((28 : Fin 50), (37 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((40 : Fin 50), (42 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((41 : Fin 50), (42 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((40 : Fin 50), (44 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((43 : Fin 50), (44 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((41 : Fin 50), (49 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((47 : Fin 50), (49 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((43 : Fin 50), (46 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((45 : Fin 50), (46 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((45 : Fin 50), (48 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((47 : Fin 50), (48 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((20 : Fin 50), (22 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((20 : Fin 50), (24 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((21 : Fin 50), (22 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((21 : Fin 50), (29 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((23 : Fin 50), (24 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((23 : Fin 50), (26 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((25 : Fin 50), (26 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((25 : Fin 50), (28 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((27 : Fin 50), (28 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((27 : Fin 50), (29 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((12 : Fin 50), (20 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((14 : Fin 50), (23 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((16 : Fin 50), (25 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((18 : Fin 50), (27 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((19 : Fin 50), (21 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((10 : Fin 50), (12 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((10 : Fin 50), (14 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((11 : Fin 50), (12 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((11 : Fin 50), (19 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((13 : Fin 50), (14 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((13 : Fin 50), (16 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((15 : Fin 50), (16 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((15 : Fin 50), (18 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((17 : Fin 50), (18 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((17 : Fin 50), (19 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((2 : Fin 50), (10 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((4 : Fin 50), (13 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((6 : Fin 50), (15 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((8 : Fin 50), (17 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((9 : Fin 50), (11 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((0 : Fin 50), (2 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((0 : Fin 50), (4 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((1 : Fin 50), (2 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((1 : Fin 50), (9 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((3 : Fin 50), (4 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((3 : Fin 50), (6 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((5 : Fin 50), (6 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((5 : Fin 50), (8 : Fin 50)), by decide⟩) (EdgeLeafTree.fork (EdgeLeafTree.leaf ⟨s((7 : Fin 50), (8 : Fin 50)), by decide⟩) (EdgeLeafTree.leaf ⟨s((7 : Fin 50), (9 : Fin 50)), by decide⟩)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+  leavesNodup := by decide
+  leavesCover := by decide
+
+theorem decomp_width : decomp.WidthAtMost 11 := by
+  refine ⟨?_, ?_, ?_⟩
+  · rw [middle_eq]; decide
+  · rw [everyCutWidthAtMost_iff]; decide
+  · rw [everyCutWidthAtMost_iff]; decide
 
 end Mettapedia.GraphTheory.FourColor.TubeCutPackage
