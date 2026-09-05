@@ -63,10 +63,13 @@ integrand, which unlike the full strain has known dynamical handles.
    loss.  A downstream sign-invariant line-projector theorem now quantifies
    the frozen-to-varying eigenframe passage: away from an explicit small
    frozen top-gap branch, strain oscillation `epsilon` costs
-   `4 * epsilon / threshold` times the full `L²` energy.  What remains is
-   aggregation of the small-gap and separated branches over the physical
-   space-time cover, identification with the actual Littlewood--Paley blocks
-   and time functionals, and conversion of this `L²` control into the
+   `4 * epsilon / threshold` times the full `L²` energy.  On the separated
+   branch, homogeneous spectral-gap coercivity now converts the frozen
+   transverse energy into the integrated top Rayleigh defect, without
+   normalizing vorticity at its zeros.  What remains is aggregation of the
+   small-gap and separated branches over the physical space-time cover,
+   identification with the actual Littlewood--Paley blocks and time
+   functionals, and conversion of this `L²`/Rayleigh-defect control into the
    scale-local endpoint budget, followed by assembly into `split_le` and
    `coherent_le` for actual Navier--Stokes data.
 2. `MisalignmentStrainBudget` itself: the dynamical, time-integrated

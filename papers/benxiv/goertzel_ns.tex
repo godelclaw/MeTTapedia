@@ -106,9 +106,12 @@ mode-count loss, and finite Parseval identifies the right-hand side with a
 physical-space $L^2$ transverse-energy integral for a frozen full strain
 frame.  A sign-invariant line-projector perturbation theorem further controls
 freezing error by $4\varepsilon/\mathrm{gap}$ times the full $L^2$ energy,
-with an explicit small frozen-top-gap alternative.  Space--time aggregation
-of those two branches and conversion from this $L^2$ control to the
-scale-local endpoint budget remain open.  The
+with an explicit small frozen-top-gap alternative.  On the separated branch,
+a homogeneous spectral-gap estimate now converts the frozen transverse
+energy into the integrated top Rayleigh defect, without normalizing vorticity
+at its zeros.  Space--time aggregation of the small-gap and coercive branches
+and conversion from this $L^2$/defect control to the scale-local endpoint
+budget remain open.  The
 latest audit also isolates why the proposed pancake closure does
 not yet prove the Millennium statement: its high-low split covers all aperture
 angles iff the scale-local strain satisfies $\gamma\le\nu\lambda_q$, exactly
@@ -1219,6 +1222,25 @@ hidden in a continuity premise.  The remaining task is to aggregate this
 cellwise alternative with the same-strain small-gap coercivity and the
 space--time Littlewood--Paley budget.
 
+The module \texttt{PancakeTransverseEnergyCoercivity} closes the separated
+cell algebra.  If $S$ is symmetric, $e_0$ is its top eigenvector, and both top
+gaps dominate $g$, then for every vector $u$---including $u=0$---
+\[
+ g\bigl(|u|^2-|u\mathbin{\cdot}e_0|^2\bigr)
+ \leq \lambda_0(S)|u|^2-u\mathbin{\cdot}Su.
+\]
+The proof is the three-dimensional spectral expansion and is deliberately
+homogeneous, so it never divides by vorticity magnitude.  Applying it to the
+real and imaginary parts, integrating the finite reconstruction, and
+composing with the freezing theorem yields the checked cellwise dichotomy:
+either a frozen top gap is below $\mathrm{threshold}+\varepsilon$, or the
+gap-weighted exact Fourier remainder is bounded by the integrated complex
+Rayleigh defect plus
+$(\mathrm{threshold}+\varepsilon)4\varepsilon/\mathrm{threshold}$ times the
+full sector energy.  The remaining issue is no longer the separated-cell
+estimate itself, but its bounded-overlap space--time aggregation and endpoint
+scaling.
+
 There is a second field-level issue which a fixed-axis multiplier does not
 address.  The actual pancake frame is the eigensystem of the low-frequency
 strain and therefore depends on $(x,t)$.  The module
@@ -1296,13 +1318,15 @@ complex coefficient remainder is now bounded by transverse expanding-line
 energy, first modewise, then after finite-sector summation, and finally by an
 exact physical-space $L^2$ integral via finite Parseval, with no
 support-cardinality loss.  The remaining steps are measurable spectral
-selection through eigenvalue collisions and a sign-invariant
-line-projector theorem now controls the frozen-to-varying-frame error by
+selection through eigenvalue collisions; a sign-invariant line-projector
+theorem now controls the frozen-to-varying-frame error by
 $4\varepsilon/\mathrm{threshold}$ times the full $L^2$ energy, with the
-ordinary frozen top-gap band returned as the alternative.  The remaining
-steps are aggregation of that alternative over space and time, conversion of
-the transverse $L^2$ estimate to the required scale-local endpoint budget,
-and identification and assembly of this concrete finite-sector identity into
+ordinary frozen top-gap band returned as the alternative.  On its separated
+branch, homogeneous spectral-gap coercivity now bounds the transverse energy
+by the integrated top Rayleigh defect.  The remaining steps are aggregation
+of the small-gap/coercive dichotomy over space and time, conversion of this
+$L^2$/defect estimate to the required scale-local endpoint budget, and
+identification and assembly of this concrete finite-sector identity into
 \texttt{coherent\_le} for the actual Navier--Stokes functionals.
 (ii) The misalignment budget itself: dynamical,
 time-integrated control of the misalignment share; the checked fences
