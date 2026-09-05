@@ -1,0 +1,202 @@
+[
+ {
+  "k": 2,
+  "seed": 0,
+  "defects": 2,
+  "valid": true,
+  "ok": false,
+  "max_cross": null,
+  "boundary_cross": null
+ },
+ {
+  "k": 2,
+  "seed": 1,
+  "defects": 2,
+  "valid": true,
+  "ok": false,
+  "max_cross": null,
+  "boundary_cross": null
+ },
+ {
+  "k": 2,
+  "seed": 2,
+  "defects": 2,
+  "valid": true,
+  "ok": true,
+  "max_cross": 7,
+  "boundary_cross": [
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5
+  ]
+ },
+ {
+  "k": 2,
+  "seed": 3,
+  "defects": 2,
+  "valid": true,
+  "ok": true,
+  "max_cross": 7,
+  "boundary_cross": [
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5
+  ]
+ },
+ {
+  "k": 4,
+  "seed": 0,
+  "defects": 4,
+  "valid": true,
+  "ok": true,
+  "max_cross": 8,
+  "boundary_cross": [
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5
+  ]
+ },
+ {
+  "k": 4,
+  "seed": 1,
+  "defects": 4,
+  "valid": false,
+  "ok": false,
+  "max_cross": null,
+  "boundary_cross": null
+ },
+ {
+  "k": 4,
+  "seed": 2,
+  "defects": 4,
+  "valid": true,
+  "ok": false,
+  "max_cross": null,
+  "boundary_cross": null
+ },
+ {
+  "k": 4,
+  "seed": 3,
+  "defects": 4,
+  "valid": true,
+  "ok": true,
+  "max_cross": 7,
+  "boundary_cross": [
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5,
+   5
+  ]
+ },
+ {
+  "k": 8,
+  "seed": 0,
+  "defects": 8,
+  "valid": false,
+  "ok": false,
+  "max_cross": null,
+  "boundary_cross": null
+ },
+ {
+  "k": 8,
+  "seed": 1,
+  "defects": 8,
+  "valid": false,
+  "ok": false,
+  "max_cross": null,
+  "boundary_cross": null
+ },
+ {
+  "k": 8,
+  "seed": 2,
+  "defects": 8,
+  "valid": false,
+  "ok": false,
+  "max_cross": null,
+  "boundary_cross": null
+ },
+ {
+  "k": 8,
+  "seed": 3,
+  "defects": 8,
+  "valid": false,
+  "ok": false,
+  "max_cross": null,
+  "boundary_cross": null
+ },
+ {
+  "k": 12,
+  "seed": 0,
+  "defects": 12,
+  "valid": false,
+  "ok": false,
+  "max_cross": null,
+  "boundary_cross": null
+ },
+ {
+  "k": 12,
+  "seed": 1,
+  "defects": 12,
+  "valid": false,
+  "ok": false,
+  "max_cross": null,
+  "boundary_cross": null
+ },
+ {
+  "k": 12,
+  "seed": 2,
+  "defects": 12,
+  "valid": false,
+  "ok": false,
+  "max_cross": null,
+  "boundary_cross": null
+ },
+ {
+  "k": 12,
+  "seed": 3,
+  "defects": 12,
+  "valid": false,
+  "ok": false,
+  "max_cross": null,
+  "boundary_cross": null
+ }
+]
