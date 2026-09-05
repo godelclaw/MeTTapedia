@@ -599,5 +599,103 @@ theorem mkNode_keep {side : V → Prop} (h : NodeSide (G := G) side)
 
 end Node
 
+/-! ## Stage six: the tube theorem with base hypotheses only -/
+
+section TubeTheorem
+
+open GoertzelV24TwoEdgeCutMinimality
+open GoertzelV24MajorityShoreStateDescent
+open TubeRingOrbit
+
+variable {rotation} {k : Nat} [NeZero k]
+
+namespace ZigzagSlab
+
+variable {inner : V → Prop} (S : ZigzagSlab rotation.toRotationSystem k inner)
+
+theorem sideShore_ssubset_inner' : sideShore (G := G) inner ⊂ sideShore S.inner' := by
+  rw [Finset.ssubset_iff_of_subset (sideShore_mono (fun _ => S.inner'_of_inner))]
+  refine ⟨dartEdge (S.ι (Sum.inl (Sum.inl (0, false)))), S.slabEdge_mem _, ?_⟩
+  intro h
+  rw [mem_sideShore] at h
+  exact S.slab_not_inner _ (h _ (Sym2.mem_mk_left _ _))
+
+end ZigzagSlab
+
+namespace Tube
+
+theorem goodSide_side : {inner : V → Prop} → {n : Nat} →
+    (t : Tube rotation.toRotationSystem k inner n) → GoodSide (G := G) inner →
+    ∀ r, r ≤ n → GoodSide (G := G) (t.side r)
+  | _, _, nil _ _, h, _, _ => h
+  | _, _, cons _ _, h, 0, _ => h
+  | _, _, cons S rest, h, r + 1, hr => goodSide_side rest (h.slab rotation S) r (by omega)
+
+theorem conn_side : {inner : V → Prop} → {n : Nat} →
+    (t : Tube rotation.toRotationSystem k inner n) → GoodSide (G := G) inner →
+    EdgeShoreConnected G (sideShore inner) →
+    ∀ r, r ≤ n → EdgeShoreConnected G (sideShore (t.side r))
+  | _, _, nil _ _, _, hc, _, _ => hc
+  | _, _, cons _ _, _, hc, 0, _ => hc
+  | _, _, cons S rest, hg, hc, r + 1, hr =>
+    conn_side rest (hg.slab rotation S) (S.edgeShoreConnected_slab hg hc) r (by omega)
+
+theorem cconn_side : {inner : V → Prop} → {n : Nat} →
+    (t : Tube rotation.toRotationSystem k inner n) →
+    EdgeShoreConnected G (ZigzagSlab.compShore (t.side n)) →
+    ∀ r, r ≤ n → EdgeShoreConnected G (ZigzagSlab.compShore (t.side r))
+  | _, _, nil _ _, hc, _, _ => hc
+  | _, _, cons S rest, hc, r + 1, hr => cconn_side rest hc r (by omega)
+  | _, _, cons S rest, hc, 0, _ => by
+    have h0 := cconn_side rest hc 0 (by omega)
+    cases rest <;> exact S.edgeShoreConnected_comp_slab h0
+
+theorem sideShore_ssubset_succ : {inner : V → Prop} → {n : Nat} →
+    (t : Tube rotation.toRotationSystem k inner n) → ∀ r, r < n →
+    sideShore (G := G) (t.side r) ⊂ sideShore (t.side (r + 1))
+  | _, _, nil _ _, _, hr => absurd hr (Nat.not_lt_zero _)
+  | _, _, cons S rest, 0, _ => by
+    cases rest <;> exact S.sideShore_ssubset_inner'
+  | _, _, cons _ rest, r + 1, hr => sideShore_ssubset_succ rest r (by omega)
+
+theorem sideShore_ssubset_of_lt {inner : V → Prop} {n : Nat}
+    (t : Tube rotation.toRotationSystem k inner n) (r : Nat) :
+    ∀ r', r < r' → r' ≤ n → sideShore (G := G) (t.side r) ⊂ sideShore (t.side r')
+  | 0, h, _ => absurd h (Nat.not_lt_zero _)
+  | r' + 1, h, hr' => by
+    rcases Nat.lt_succ_iff_lt_or_eq.mp h with h | rfl
+    · exact (sideShore_ssubset_of_lt t r r' h (by omega)).trans
+        (t.sideShore_ssubset_succ r' (by omega))
+    · exact t.sideShore_ssubset_succ r (by omega)
+
+/-- **No long zigzag tube in a least counterexample, from base hypotheses.**  A coherent
+chain of `n` zigzag slabs whose innermost side is good with connected shore and whose
+outermost complement is connected satisfies `n + 2 - k ≤ k!·k!·(6k+1)`. -/
+theorem le_of_tube (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (hk : stabilizes k = true) (hk2 : 2 ≤ k) {inner : V → Prop} {n : Nat}
+    (t : Tube rotation.toRotationSystem k inner n) (hc : t.Coherent)
+    (hgood : GoodSide (G := G) inner) (hconn : EdgeShoreConnected G (sideShore inner))
+    (hcconn : EdgeShoreConnected G (ZigzagSlab.compShore (t.side n))) :
+    n + 2 - k ≤ Nat.factorial k * (Nat.factorial k * (6 * k + 1)) := by
+  let nodes : Fin (n + 1) → LiteralShoreNode rotation k k := fun r =>
+    mkNode ⟨t.goodSide_side hgood r (by omega), t.conn_side hgood hconn r (by omega),
+      t.cconn_side hcconn r (by omega)⟩ (t.sideEquiv r) hk2
+  exact le_of_tube_nodes minimal hk t hc nodes (fun r => mkNode_keep _ _ _)
+    (fun r r' hrr' => t.sideShore_ssubset_of_lt r r' hrr' (by omega))
+
+theorem le_of_tube_five (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    {inner : V → Prop} {n : Nat}
+    (t : Tube rotation.toRotationSystem 5 inner n) (hc : t.Coherent)
+    (hgood : GoodSide (G := G) inner) (hconn : EdgeShoreConnected G (sideShore inner))
+    (hcconn : EdgeShoreConnected G (ZigzagSlab.compShore (t.side n))) :
+    n ≤ 446403 := by
+  have := le_of_tube minimal zigzag5_stabilizes (by norm_num) t hc hgood hconn hcconn
+  norm_num [Nat.factorial] at this
+  omega
+
+end Tube
+
+end TubeTheorem
+
 end TubeSlab
 end Mettapedia.GraphTheory.FourColor
