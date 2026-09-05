@@ -74,16 +74,17 @@ def sweep_and_measure(n, rot, A, label):
     return dict(V=n, boundaries=len(bidx), boundary_cross=[cross[t] for t in bidx], max_cross=max(cross))
 
 out = {}
-for c, h in [(5, 8), (5, 12)]:
-    n, rot, A, B, vid = zigzag_tube_rot(c, h)
-    sizes = sorted(len(f) for f in faces_of(rot))
-    out[f'perfect c{c} h{h}'] = sweep_and_measure(n, rot, A, f"perfect tube c={c} h={h} (faces {set(sizes)})")
-    # one Stone-Wales rotation on a mid-tube zig bond
-    r0 = h // 2; a, b = vid[(r0, 0, 0)], vid[(r0, 0, 1)]
-    ok = sw_rotate(rot, a, b)
-    sizes2 = [len(f) for f in faces_of(rot)]
-    from collections import Counter
-    out[f'defect c{c} h{h}'] = sweep_and_measure(n, rot, A, f"defected tube c={c} h={h} (rotation {ok}; faces {dict(Counter(s for s in sizes2 if s < 30))})")
-json.dump(out, open('defected_tube_sweep_results.json', 'w'), indent=1)
-res = [r for r in out.values()]
-print("OUTCOME:", "DT1" if all(r and r['max_cross'] <= 11 for r in res) else "DT2")
+if __name__ == '__main__':
+    for c, h in [(5, 8), (5, 12)]:
+        n, rot, A, B, vid = zigzag_tube_rot(c, h)
+        sizes = sorted(len(f) for f in faces_of(rot))
+        out[f'perfect c{c} h{h}'] = sweep_and_measure(n, rot, A, f"perfect tube c={c} h={h} (faces {set(sizes)})")
+        # one Stone-Wales rotation on a mid-tube zig bond
+        r0 = h // 2; a, b = vid[(r0, 0, 0)], vid[(r0, 0, 1)]
+        ok = sw_rotate(rot, a, b)
+        sizes2 = [len(f) for f in faces_of(rot)]
+        from collections import Counter
+        out[f'defect c{c} h{h}'] = sweep_and_measure(n, rot, A, f"defected tube c={c} h={h} (rotation {ok}; faces {dict(Counter(s for s in sizes2 if s < 30))})")
+    json.dump(out, open('defected_tube_sweep_results.json', 'w'), indent=1)
+    res = [r for r in out.values()]
+    print("OUTCOME:", "DT1" if all(r and r['max_cross'] <= 11 for r in res) else "DT2")
