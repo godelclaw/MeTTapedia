@@ -111,6 +111,7 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeConcret
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeConcreteSpatialCoverTransfer
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeArbitraryDataBlocks
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeArbitraryDataMisalignment
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeConcreteCoverEnergy
 
 /-!
 # Navier-Stokes live surface

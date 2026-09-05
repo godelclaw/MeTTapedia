@@ -1401,6 +1401,20 @@ Fourier coefficients are continuous.  The collision-safe frozen-strain
 dichotomy therefore now applies to complete arbitrary-data blocks rather than
 an externally supplied finite support.
 
+Finally, \texttt{PancakeConcreteCoverEnergy} performs the first actual
+cell-aggregation step.  For every continuous nonnegative density $f$,
+\[
+ \int f\leq\sum_{j=1}^{125}\int |\chi_j|^2f
+ \leq 125\|\chi\|_\infty^2\int f.
+\]
+This is specialized to complete pancake-block energy, transverse
+misalignment energy, and frozen-strain Rayleigh defect.  Spectral-gap
+coercivity is also proved after multiplication by each genuine smooth-cell
+weight, and summing the weighted inequalities introduces no cell-count factor
+beyond the explicit fixed cover comparison.  What remains at this junction
+is to let the frozen strain vary from cell to cell and control its oscillation
+against the true space--time strain field.
+
 There is a second field-level issue which a fixed-axis multiplier does not
 address.  The actual pancake frame is the eigensystem of the low-frequency
 strain and therefore depends on $(x,t)$.  The module
@@ -1773,7 +1787,8 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeConcreteSmoothCellCutoff},
 \texttt{PancakeConcreteSpatialCoverTransfer}, and
 \texttt{PancakeArbitraryDataBlocks} and
-\texttt{PancakeArbitraryDataMisalignment} modules), each with a regression companion where
+\texttt{PancakeArbitraryDataMisalignment}, and
+\texttt{PancakeConcreteCoverEnergy} modules), each with a regression companion where
 applicable.  The aperture module is retained as an explicitly attenuated
 analytic model; the exact coherent projection no-go above prevents its use as
 the desired field-transfer estimate.
