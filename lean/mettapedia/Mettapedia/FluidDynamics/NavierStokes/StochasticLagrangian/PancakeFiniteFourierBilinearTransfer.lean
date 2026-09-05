@@ -71,7 +71,7 @@ theorem realVec3ToComplexVec3_apply (w : RealVec3) (i : Fin 3) :
 fixed frequency chart. -/
 def complexCoherentChartCoeff (k : RealVec3) (u : ComplexVec3) : ℂ :=
   ∑ j : Fin 3,
-    (coordinate (coherentW k) j / normSq (coherentW k) : ℂ) * u j
+    ((coordinate (coherentW k) j / normSq (coherentW k) : ℝ) : ℂ) * u j
 
 /-- The complexified normalized coherent projection of two amplitudes in one
 source/receiver frequency chart, including its retained cutoff. -/

@@ -99,7 +99,13 @@ and in the full pointwise frame constructed from the strain.  This frame maps
 the most expanding eigenvector to the coherent reference $e_x$ and the most
 compressive eigenvector to the axial reference $e_z$.  Hence the
 coherent term has a cardinality-free $C/N$ bound without an abstract split
-hypothesis.  The
+hypothesis.  A further checked projection argument bounds the exact complex
+Fourier misalignment coefficient by its energy transverse to the expanding
+line.  This estimate sums over the genuine finite pancake sector without a
+mode-count loss, and finite Parseval identifies the right-hand side with a
+physical-space $L^2$ transverse-energy integral for a frozen full strain
+frame.  The frozen-to-spatially-varying frame passage and the conversion from
+this $L^2$ control to the scale-local endpoint budget remain open.  The
 latest audit also isolates why the proposed pancake closure does
 not yet prove the Millennium statement: its high-low split covers all aperture
 angles iff the scale-local strain satisfies $\gamma\le\nu\lambda_q$, exactly
@@ -1166,6 +1172,29 @@ in this full eigenline-aligned frame.  Consequently the Fourier remainder's
 coherent reference is now the same expanding line used by the invariant
 alignment-energy dynamics below.
 
+The module \texttt{PancakeMisalignmentEnergyBridge} makes that compatibility
+quantitative.  If a complex Fourier amplitude $u$ is divergence free at
+frequency $k$, its exact coherent-line remainder $u-P_k u$ satisfies
+\[
+  |u-P_k u|^2
+  \leq |u_y|^2+|u_z|^2
+\]
+in the full strain chart, where the chart's $x$-axis is the expanding
+eigenline.  The proof applies the real orthogonal-projection inequality to
+the real and imaginary parts and proves that complexification of the
+oriented frame preserves the divergence pairing.  Summing over the actual
+integer modes selected by the physical square-dyadic projector introduces no
+cardinality factor.  An exact finite Parseval theorem then gives
+\[
+  \sum_{k\in\Gamma_{N,F}} |u_k-P_k u_k|^2
+  \leq \int_{\mathbb T^3}
+     \bigl(|U_y(x)|^2+|U_z(x)|^2\bigr)\,dx,
+\]
+where $U$ is the finite reconstruction in one frozen full strain frame.
+This closes the coefficient-to-$L^2$ bridge; it does not by itself control a
+frame varying with $x$, nor does an $L^2$ estimate alone supply the
+$L^\infty$-based BKM integrand.
+
 There is a second field-level issue which a fixed-axis multiplier does not
 address.  The actual pancake frame is the eigensystem of the low-frequency
 strain and therefore depends on $(x,t)$.  The module
@@ -1187,8 +1216,10 @@ supplied by \texttt{PancakeFrozenFrameKernelTransfer}; the full four-sign
 annulus and its physical variable-frame endpoint are supplied by the annular
 modules above, and the pointwise frame is now constructed from the strain.
 The remaining field-transfer pieces are measurable control of that spectral
-selection through eigenvalue collisions and identification of the concrete
-finite-sector split with the actual Littlewood--Paley time functionals.
+selection through eigenvalue collisions, a quantitative frozen-to-varying
+frame estimate for the new transverse-energy bridge, and identification of
+the concrete finite-sector split with the actual Littlewood--Paley time
+functionals.
 The older frequencywise commutator estimate
 remains correct, but the new uniform physical-kernel endpoint shows that no
 frame-oscillation estimate is needed merely to obtain the pointwise
@@ -1237,9 +1268,14 @@ also constructed.  Finally, the full
 physical finite-sector stretching sum is proved to be exactly that annular
 coherent action plus the three-term misalignment remainder, with a uniform
 $C/N$ bound on the first term, including in the strain-derived frame.  The
-remaining steps are measurable spectral selection through eigenvalue
-collisions, and identification and assembly of this concrete finite-sector
-identity into
+complex coefficient remainder is now bounded by transverse expanding-line
+energy, first modewise, then after finite-sector summation, and finally by an
+exact physical-space $L^2$ integral via finite Parseval, with no
+support-cardinality loss.  The remaining steps are measurable spectral
+selection through eigenvalue collisions, control of the
+frozen-to-varying-frame error, conversion of the transverse $L^2$ estimate to
+the required scale-local endpoint budget, and identification and assembly of
+this concrete finite-sector identity into
 \texttt{coherent\_le} for the actual Navier--Stokes functionals.
 (ii) The misalignment budget itself: dynamical,
 time-integrated control of the misalignment share; the checked fences
@@ -1420,8 +1456,9 @@ about general Navier--Stokes solutions beyond what its label says.
 \paragraph{Verification metadata.}  The named campaign modules contain no
 \texttt{sorry}, \texttt{admit}, or unsafe definitions.  Selected load-bearing
 theorems carry explicit machine axiom audits; the remaining newly added
-headlines are checked by the Navier--Stokes live surface and are being added
-to the same audit boundary.  The live surface builds green.  Earlier
+headlines, including the finite Parseval misalignment-energy bridge, are
+checked by the Navier--Stokes live surface and the same explicit audit
+boundary.  The live surface builds green.  Earlier
 conditional route theorems retain their instantiation canaries demonstrating
 that their stated hypotheses are simultaneously satisfiable.  This is a
 claim about proof integrity, not about discharge of the explicitly open
@@ -1439,7 +1476,9 @@ coherent/misaligned transfer, which jointly reproduce
 \texttt{StochasticStretchingEstimate}).  A successful completion must prove
 measurable control of the pointwise strain-derived spectral frame through
 eigenvalue collisions, identify the now-exact finite-sector physical split
-with the actual scale-local Littlewood--Paley time functionals, and
+with the actual scale-local Littlewood--Paley time functionals, control the
+passage from the frozen-frame $L^2$ transverse estimate to the spatially
+varying frame and the endpoint scale budget, and
 prove a dynamical,
 time-integrated control of the vorticity-direction misalignment share, strong
  enough to cover the gap band identified above.  The finite four-sign
