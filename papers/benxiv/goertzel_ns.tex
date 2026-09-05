@@ -2151,6 +2151,83 @@ unproved.  Equations~\eqref{eq:ns-same-sector-absorption}
 and~\eqref{eq:ns-same-sector-kinetic-cost} do not establish the
 arbitrary-data continuation theorem.
 
+\paragraph{Incoming low sources: full receivers and a fixed-cutoff time bound.}
+\texttt{PancakeIncomingLowSourceEnergy} removes the same-receiver-sector
+restriction for the low-source channel.  Let $S$ be the finite ambient
+source support, $R$ the full finite receiver support, and $M$ the selected
+output modes.  They need not coincide.  For a fixed cutoff $L$, set
+\[
+ K_L=\{k\in S:|k|\le L\},\quad K_L^+=S\setminus K_L,
+ \quad B_L=\sum_{k\in K_L}|u_k|,\quad
+ E_R=\sum_{\ell\in R}|\widehat\eta_\ell|^2.
+\]
+Assume $|q|\ge L$ for $q\in M$.  For an actual pancake output shell this
+follows from $L\le N^2$, with no restriction on receiver modes.
+
+The physical Biot--Savart velocity satisfies
+\[
+ \ell\cdot u_{q-\ell}=q\cdot u_{q-\ell}.
+\]
+Thus the transport derivative can be estimated at the output frequency,
+where diffusion is available.  Lean checks
+\[
+ |T_{q\ell}|\le3(2\pi)|q|\,|u_{q-\ell}|\,|\widehat\eta_\ell|,
+ \qquad
+ |S_k\widehat\eta_\ell|
+   \le3(2\pi)|k|\,|u_k|\,|\widehat\eta_\ell|.
+\]
+For low sources, $|k|\le L\le|q|$, so both terms have the same
+output-frequency bound.  Pairing with $Q_q\widehat\eta_q$ and using a
+rectangular Schur estimate over $M\times R$ gives
+\[
+ |I_L|\le6(2\pi)B_L(rD_Q+E_R/r),\qquad r>0,
+\]
+where $I_L$ is the actual low-source contribution to the derivative of
+$E_Q$.  Optimizing the parameter proves
+\[
+ |I_L|\le\nu(2\pi)^2D_Q+C_L,
+ \qquad C_L=\frac{36B_L^2}{\nu}E_R.
+\]
+Every incoming receiver mode remains in $R$, including modes outside the
+hard pancake boundary.  No scalar cutoff smoothing or cancellation between
+an inside-only set of receivers is assumed.
+
+The source split is also an exact identity for the physical nonlinear
+coefficient and its energy rate.  Under the full finite coefficient
+equation, the checked differential inequality is therefore
+\begin{equation}\label{eq:ns-incoming-low-source}
+ E_Q'+\nu(2\pi)^2D_Q\le I_L^+ + C_L,
+\end{equation}
+where $I_L^+$ is the explicitly defined physical contribution from
+$K_L^+\times R$, not an abstract error variable.  Lean integrates this
+inequality with all displayed rates interval-integrable.  The high-source
+term is retained, not declared controlled.
+
+There is now a fixed-cutoff, horizon-uniform bound for the low-source
+\emph{cost}, conditional on physical energy estimates.  Writing
+$U_L(t)=\sum_{k\in K_L}|u_k(t)|^2$, Cauchy--Schwarz gives
+$B_L^2\le\#K_L\,U_L$.  For a natural cutoff $L$, an explicitly constructed
+integer cube gives $\#K_L\le(2L+1)^3$, independently of $S$.  If
+\[
+ U_L(t)\le U\quad(0\le t\le T),\qquad
+ 2\nu\int_0^T E_R(t)\,dt\le U,\qquad U\ge0,
+\]
+then, with the stated integrability assumptions, Lean proves
+\begin{equation}\label{eq:ns-incoming-fixed-cutoff-budget}
+ \int_0^T C_L(t)\,dt\le
+   \frac{18(2L+1)^3U^2}{\nu^2}.
+\end{equation}
+This bound has no time-horizon, output-frequency, output-mode-count, or
+ambient-support factor.  It does depend on the \emph{fixed} source cutoff
+$L$; choosing $L$ to grow with output frequency does not preserve a uniform
+constant.  The kinetic and enstrophy bounds above remain explicit inputs;
+this module does not derive them from an arbitrary-data solution
+construction.  It also leaves $I_L^+$, moving-frame terms, physical
+localization, the strain-budget conversion, and continuation open.  The
+previous instantaneous hard-boundary obstruction is consistent with this
+estimate: its output-frequency growth is paid for by diffusion rather than
+denied.
+
 The pressure Hessian enters through the strain-eigenframe equation instead.
 Differentiating $Se_i=\lambda_i e_i$ and pairing with $e_j$, $i\ne j$, gives
 \[
@@ -2395,6 +2472,7 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeFrequencyProjectorCommutator}, and
 \texttt{PancakeViscousMisalignmentAbsorption}, and
 \texttt{PancakeSameSectorDissipation}, and
+\texttt{PancakeIncomingLowSourceEnergy}, and
 \texttt{SpatialBKMIntegrand}, and
 \texttt{PancakeAdaptiveStrainCover}, and
 \texttt{PancakeAdaptiveFourierPartition}, and
