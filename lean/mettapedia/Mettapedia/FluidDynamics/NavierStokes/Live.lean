@@ -116,6 +116,7 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeConcret
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeSpectralProjectorRegularity
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeSpectralClusterDichotomy
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeExpandingPlaneResidence
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeDyadicDirectionEvolution
 
 /-!
 # Navier-Stokes live surface
