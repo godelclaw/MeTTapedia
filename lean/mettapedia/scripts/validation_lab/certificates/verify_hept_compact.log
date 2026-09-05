@@ -1,0 +1,16 @@
+  verified 500 derivations, 13817 solver calls
+  verified 1000 derivations, 28753 solver calls
+  verified 1500 derivations, 42894 solver calls
+  verified 2000 derivations, 54518 solver calls
+  verified 2500 derivations, 66313 solver calls
+  verified 3000 derivations, 77688 solver calls
+  verified 3500 derivations, 89561 solver calls
+  verified 4000 derivations, 100422 solver calls
+  verified 4500 derivations, 111166 solver calls
+  verified 5000 derivations, 121118 solver calls
+  verified 5500 derivations, 131077 solver calls
+  verified 6000 derivations, 140705 solver calls
+  verified 6500 derivations, 149465 solver calls
+accepted derivations: 6974 (of 6974 listed); independent extension tests 151685
+cap words 59049, not covered 0
+VERIFIED: cap C-reducibility certificate complete
