@@ -1578,6 +1578,22 @@ independent of the refinement (and compatible cutoff-frequency margins), or a
 pointwise variable-strain argument.  Treating the fixed 125 cells as if they
 automatically supplied arbitrary strain oscillation would be an invalid
 closure.
+The module \texttt{PancakeAdaptiveStrainCover} now supplies the correct
+topological replacement.  For every continuous spatial strain, and also for
+every continuous strain on the compact space--time cylinder, it constructs a
+finite field- and tolerance-dependent cover together with a continuous
+partition of unity subordinate to the sets
+\[
+ \{z:\|S(z)-S(z_j)\|<\varepsilon\}.
+\]
+Consequently a nonzero cell weight certifies the local freezing estimate at
+that point.  The weighted linear and quadratic freezing errors are proved
+bounded by $\varepsilon$ and $\varepsilon^2$, respectively, with no cell-count
+factor; applying the operator error to a vector costs only its norm.  This
+closes the finite adaptive-cover existence and aggregation problem.  It does
+not yet provide the scale-uniform smooth Fourier cutoffs and buffered
+frequency margins required to splice this adaptive partition into the
+periodic multiplier transfer, nor does it control the small-gap time branch.
 
 \emph{The refined pin (committed).}  The module
 \texttt{MisalignmentRefinedPin} splits the pancake-sector functional
@@ -2034,7 +2050,8 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakePeriodicVorticityEquation}, and
 \texttt{PancakeBlockReality}, and
 \texttt{PancakeMaterialTransportCommutator}, and
-\texttt{PancakeMovingBlockEvolution} modules), each with a regression companion where
+\texttt{PancakeMovingBlockEvolution}, and
+\texttt{PancakeAdaptiveStrainCover} modules), each with a regression companion where
 applicable.  The aperture module is retained as an explicitly attenuated
 analytic model; the exact coherent projection no-go above prevents its use as
 the desired field-transfer estimate.

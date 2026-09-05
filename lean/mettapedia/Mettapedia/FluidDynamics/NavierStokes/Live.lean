@@ -122,6 +122,7 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakePeriodi
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeBlockReality
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeMaterialTransportCommutator
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeMovingBlockEvolution
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeAdaptiveStrainCover
 
 /-!
 # Navier-Stokes live surface
