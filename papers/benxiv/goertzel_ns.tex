@@ -138,6 +138,12 @@ pure strain stretching; transport, viscosity, interscale transfer, and
 localization commutators must be controlled there.  This removes the invalid
 shortcut of using coherence of the total vorticity direction as if it
 automatically controlled the projected block.
+The pair-indexed complex Biot--Savart stretching polynomial is now also
+collected over equal output frequencies into a canonical coefficient field;
+reconstructing that field is proved exactly equal to the existing physical
+stretching sum.  It therefore supplies the proposed stretching term in the
+two-channel residual, connecting the block-direction equation directly to the
+audited coherent/misaligned stretching split.
 The frequency-support part of the analytic localization bridge is now closed:
 for fixed normalized cutoff margins, a four-chart multiplier is constructed
 which is exactly coherent on every leaked output mode and has a uniform
@@ -1712,6 +1718,15 @@ for the vorticity equation); the second is the projection/variable-strain
 defect once $G$ is identified with the coefficients of $S\omega$.  This
 separates the two estimates needed for closure instead of charging both to an
 undifferentiated direction-coherence premise.
+The companion module \texttt{PancakeFourierStretchingEvolution} constructs
+this canonical $G$: every retained source/receiver pair is collected in the
+fiber $k+\ell=q$, and finite reconstruction of the resulting output
+coefficients is proved exactly equal to the previously defined pair-indexed
+complex stretching polynomial.  Substituting this $G$ in the three-channel
+direction theorem links the same-block direction residual to the existing
+coherent/coherent plus three-term misalignment expansion.  The next step is
+to identify the remaining coefficient evolution with transport and viscosity
+in the true periodic vorticity equation, with all unit-torus constants fixed.
 
 The pressure Hessian enters through the strain-eigenframe equation instead.
 Differentiating $Se_i=\lambda_i e_i$ and pairing with $e_j$, $i\ne j$, gives
@@ -1942,7 +1957,8 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeSpectralProjectorRegularity}, and
 \texttt{PancakeSpectralClusterDichotomy}, and
 \texttt{PancakeExpandingPlaneResidence}, and
-\texttt{PancakeDyadicDirectionEvolution} modules), each with a regression companion where
+\texttt{PancakeDyadicDirectionEvolution}, and
+\texttt{PancakeFourierStretchingEvolution} modules), each with a regression companion where
 applicable.  The aperture module is retained as an explicitly attenuated
 analytic model; the exact coherent projection no-go above prevents its use as
 the desired field-transfer estimate.
