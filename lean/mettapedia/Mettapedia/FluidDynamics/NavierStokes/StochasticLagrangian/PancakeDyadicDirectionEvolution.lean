@@ -188,6 +188,79 @@ theorem blockDerivative_eq_stretching_add_residual
         dyadicPancakeDirectionResidual S F N omegaDot r xi x := by
   simp [dyadicPancakeDirectionResidual]
 
+/-! ## Separating evolution forcing from the projection defect -/
+
+/-- The real hard pancake reconstruction is additive. -/
+theorem squareDyadicPancakeRealBlock_add
+    (F : OrientedFrameEquiv) (N : ℕ) (omega eta : FourierVelocity)
+    (x : BilinearSpatialTorus) :
+    squareDyadicPancakeRealBlock F N (omega + eta) x =
+      squareDyadicPancakeRealBlock F N omega x +
+        squareDyadicPancakeRealBlock F N eta x := by
+  have hcomplex :
+      squareDyadicPancakeBlock F N (omega + eta) x =
+        squareDyadicPancakeBlock F N omega x +
+          squareDyadicPancakeBlock F N eta x := by
+    unfold squareDyadicPancakeBlock finiteFourierReconstruction
+    simp_rw [Pi.add_apply, smul_add, Finset.sum_add_distrib]
+  unfold squareDyadicPancakeRealBlock
+  rw [hcomplex, ← complexRealPartEuclideanCLM_apply,
+    map_add, complexRealPartEuclideanCLM_apply,
+    complexRealPartEuclideanCLM_apply]
+
+/-- The real hard pancake reconstruction commutes with subtraction. -/
+theorem squareDyadicPancakeRealBlock_sub
+    (F : OrientedFrameEquiv) (N : ℕ) (omega eta : FourierVelocity)
+    (x : BilinearSpatialTorus) :
+    squareDyadicPancakeRealBlock F N (omega - eta) x =
+      squareDyadicPancakeRealBlock F N omega x -
+        squareDyadicPancakeRealBlock F N eta x := by
+  have hcomplex :
+      squareDyadicPancakeBlock F N (omega - eta) x =
+        squareDyadicPancakeBlock F N omega x -
+          squareDyadicPancakeBlock F N eta x := by
+    unfold squareDyadicPancakeBlock finiteFourierReconstruction
+    simp_rw [Pi.sub_apply, smul_sub, Finset.sum_sub_distrib]
+  unfold squareDyadicPancakeRealBlock
+  rw [hcomplex, ← complexRealPartEuclideanCLM_apply,
+    map_sub, complexRealPartEuclideanCLM_apply,
+    complexRealPartEuclideanCLM_apply]
+
+/-- The part of the block residual coming from all coefficient evolution not
+assigned to a proposed stretching coefficient field.  For the Navier--Stokes
+vorticity equation this is where projected transport and viscosity enter. -/
+def dyadicPancakeEvolutionRemainder
+    (F : OrientedFrameEquiv) (N : ℕ)
+    (omegaDot proposedStretching : FourierVelocity)
+    (x : BilinearSpatialTorus) : R3 :=
+  squareDyadicPancakeRealBlock F N
+    (omegaDot - proposedStretching) x
+
+/-- The discrepancy between the projected proposed stretching field and
+stretching the projected block by the pointwise strain.  Once
+`proposedStretching` is identified with the Fourier coefficients of `S omega`,
+this is precisely the scale-projection/variable-strain commutator channel. -/
+def dyadicPancakeStretchingProjectionDefect
+    (S : R3 →L[ℝ] R3) (F : OrientedFrameEquiv) (N : ℕ)
+    (proposedStretching : FourierVelocity) (r : ℝ) (xi : R3)
+    (x : BilinearSpatialTorus) : R3 :=
+  squareDyadicPancakeRealBlock F N proposedStretching x - r • S xi
+
+/-- Exact two-channel decomposition of the same-block direction residual.
+No equation or estimate is assumed: `proposedStretching` is arbitrary. -/
+theorem dyadicPancakeDirectionResidual_eq_evolutionRemainder_add_projectionDefect
+    (S : R3 →L[ℝ] R3) (F : OrientedFrameEquiv) (N : ℕ)
+    (omegaDot proposedStretching : FourierVelocity) (r : ℝ) (xi : R3)
+    (x : BilinearSpatialTorus) :
+    dyadicPancakeDirectionResidual S F N omegaDot r xi x =
+      dyadicPancakeEvolutionRemainder F N omegaDot proposedStretching x +
+        dyadicPancakeStretchingProjectionDefect
+          S F N proposedStretching r xi x := by
+  rw [dyadicPancakeDirectionResidual, dyadicPancakeEvolutionRemainder,
+    dyadicPancakeStretchingProjectionDefect,
+    squareDyadicPancakeRealBlock_sub]
+  abel
+
 /-- **Same-block direction bridge.**  A differentiable factorization of the
 actual hard pancake block obeys the exact strain-plus-residual direction law.
 Thus the direction governing the Fourier misalignment is no longer replaced
@@ -221,6 +294,38 @@ theorem dyadicPancakeDirectionDerivative_eq_strain_add_residual
     exact hblock
   exact directionDerivative_eq_stretching_diffusion_of_factorization
     S hevolution hr hxi hfactor hunit hrne
+
+/-- Route-facing three-channel form of the same-block direction law.  Pure
+strain turning, non-stretching coefficient evolution, and the
+projection/variable-strain defect are displayed separately. -/
+theorem dyadicPancakeDirectionDerivative_eq_strain_add_evolutionRemainder_add_projectionDefect
+    (S : R3 →L[ℝ] R3) (F : OrientedFrameEquiv) (N : ℕ)
+    {omega : ℝ → FourierVelocity} (omegaDot proposedStretching : FourierVelocity)
+    (x : BilinearSpatialTorus)
+    {r : ℝ → ℝ} {xi : ℝ → R3}
+    {eta : R3} {radialRate t : ℝ}
+    (hcoeff : ∀ k ∈ squareDyadicPancakeModes F N, ∀ i,
+      HasDerivAt (fun τ ↦ omega τ k i) (omegaDot k i) t)
+    (hr : HasDerivAt r radialRate t)
+    (hxi : HasDerivAt xi eta t)
+    (hfactor :
+      (fun τ ↦ squareDyadicPancakeRealBlock F N (omega τ) x) =
+        fun τ ↦ r τ • xi τ)
+    (hunit : ∀ τ, ⟪xi τ, xi τ⟫ = 1)
+    (hrne : r t ≠ 0) :
+    eta = transverseComponent (xi t) (S (xi t)) +
+      (r t)⁻¹ • transverseComponent (xi t)
+        (dyadicPancakeEvolutionRemainder
+          F N omegaDot proposedStretching x) +
+      (r t)⁻¹ • transverseComponent (xi t)
+        (dyadicPancakeStretchingProjectionDefect
+          S F N proposedStretching (r t) (xi t) x) := by
+  rw [dyadicPancakeDirectionDerivative_eq_strain_add_residual
+    S F N omegaDot x hcoeff hr hxi hfactor hunit hrne]
+  rw [dyadicPancakeDirectionResidual_eq_evolutionRemainder_add_projectionDefect
+    S F N omegaDot proposedStretching (r t) (xi t) x,
+    transverseComponent_add, smul_add]
+  abel
 
 end PancakeDyadicDirectionEvolution
 end NavierStokes

@@ -1695,12 +1695,23 @@ If this real block is $r\xi$, the exact direction equation is
 \[
  \dot\xi=P_\xi^\perp(S\xi)+r^{-1}P_\xi^\perp R_{N,F},
  \qquad
- R_{N,F}=\Re(P_{N,F}\dot\omega)-rS\xi.
+R_{N,F}=\Re(P_{N,F}\dot\omega)-rS\xi.
 \]
 Thus the previously separate physical-direction and Fourier-block statements
 now meet at a single explicit residual.  This is not yet a bound on that
 residual: its Navier--Stokes decomposition and scale-critical time estimate
 are the next dynamical obligations.
+For any proposed coefficient field $G$ representing the stretching part, the
+same module further proves the exact split
+\[
+ R_{N,F}=\Re P_{N,F}(\dot\omega-G)
+   +\bigl(\Re P_{N,F}G-rS\xi\bigr).
+\]
+The first term is the projected equation remainder (transport and viscosity
+for the vorticity equation); the second is the projection/variable-strain
+defect once $G$ is identified with the coefficients of $S\omega$.  This
+separates the two estimates needed for closure instead of charging both to an
+undifferentiated direction-coherence premise.
 
 The pressure Hessian enters through the strain-eigenframe equation instead.
 Differentiating $Se_i=\lambda_i e_i$ and pairing with $e_j$, $i\ne j$, gives
