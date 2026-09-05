@@ -53,6 +53,7 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeMovingB
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeAdaptiveStrainCover
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeAdaptiveFourierPartition
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeQuadraticFourierSupport
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeAdaptiveFourierFreezing
 
 /-!
 # Seal audit for the coherent-field and alignment-dynamics tranche
@@ -205,3 +206,5 @@ the Lean compiler.  It adds no assumptions and proves no mathematical step.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeQuadraticFourierSupport.fourierPolynomial_quadraticFourierCoeff
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeQuadraticFourierSupport.quadraticFourierCoeff_support_subset
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeQuadraticFourierSupport.exists_adaptiveQuadraticFourierPackage
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeAdaptiveFourierFreezing.sum_quadraticFourierWeight_mul_norm_strainError_apply_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeAdaptiveFourierFreezing.exists_adaptiveQuadraticFourierFreezingPackage

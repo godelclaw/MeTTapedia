@@ -1622,6 +1622,22 @@ Consequently the remaining localization burden is the analytic estimate
 that absorbs the quantified tails after nonlinear material boundary transfer,
 uniformly across dyadic scale and adaptive aggregation; the small-gap time
 branch also remains open.
+The module \texttt{PancakeAdaptiveFourierFreezing} makes the first such cost
+explicit at the frozen-strain level.  If the Fourier quadratic weights differ
+from the subordinate partition by at most
+$\eta=\delta(\delta+2)$ and every center error is globally bounded by $M$,
+then
+\[
+ \sum_i |p_i(x)|^2\,\|(S(x)-S(x_i))v\|
+ \leq \bigl(\varepsilon+N\eta M\bigr)\|v\|.
+\]
+The same coefficient family simultaneously retains coverage, leakage, and
+the common frequency margin.  This removes any hidden claim that Fourier
+replacement preserves exact subordination.  It also exposes the remaining
+uniformity issue: on each compact regular interval $\delta$ may be chosen
+after $N$ and $M$ are known, but continuation up to a putative singular time
+requires a noncircular way to prevent the resulting choices and transfer
+costs from degenerating.
 
 \emph{The refined pin (committed).}  The module
 \texttt{MisalignmentRefinedPin} splits the pancake-sector functional
@@ -2081,7 +2097,8 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeMovingBlockEvolution}, and
 \texttt{PancakeAdaptiveStrainCover}, and
 \texttt{PancakeAdaptiveFourierPartition}, and
-\texttt{PancakeQuadraticFourierSupport} modules), each with a regression companion where
+\texttt{PancakeQuadraticFourierSupport}, and
+\texttt{PancakeAdaptiveFourierFreezing} modules), each with a regression companion where
 applicable.  The aperture module is retained as an explicitly attenuated
 analytic model; the exact coherent projection no-go above prevents its use as
 the desired field-transfer estimate.
