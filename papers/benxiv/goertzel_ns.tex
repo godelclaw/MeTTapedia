@@ -1775,6 +1775,30 @@ outgoing stretching otherwise.  Combining the two shows that the entire
 material nonlinear commutator consists only of transport-plus-stretching
 interactions crossing the boundary of $B$; interactions staying within the
 same hard block cancel from this residual exactly.
+The module — now completed as
+\texttt{PancakeMovingBlockEvolution} — verifies that this commutator is the
+one actually produced by a moving observation point, rather than merely a
+formal coefficient subtraction.  It differentiates both factors in
+\[
+  \sum_{k\in B}e^{2\pi i k\cdot X(t)}\widehat\omega_k(t).
+\]
+For the finite velocity-generated character rate, the character derivative
+is proved exactly equal to positive advection of $P_B\omega$, including the
+$2\pi i$ normalization.  Combining this product rule with the finite
+vorticity equation gives the material hard-block direction law
+\[
+ \dot\xi=P_\xi^\perp(S\xi)
+   +r^{-1}P_\xi^\perp\!\left(
+       R_{\partial B,\nu}+R_{\rm proj}
+     \right).
+\]
+Here $R_{\partial B,\nu}$ is the material nonlinear boundary-transfer field
+plus projected viscosity, and $R_{\rm proj}$ is the discrepancy between
+physical stretching of the projected block and $rS\xi$.  At coefficient
+level, Lean proves that $R_{\partial B,\nu}$ contains only incoming/outgoing
+frequency-boundary interactions and the viscous multiplier.  This is still
+an exact finite-dimensional identity, not the scale-critical estimate needed
+for global regularity.
 
 The pressure Hessian enters through the strain-eigenframe equation instead.
 Differentiating $Se_i=\lambda_i e_i$ and pairing with $e_j$, $i\ne j$, gives
@@ -2009,7 +2033,8 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeFourierStretchingEvolution}, and
 \texttt{PancakePeriodicVorticityEquation}, and
 \texttt{PancakeBlockReality}, and
-\texttt{PancakeMaterialTransportCommutator} modules), each with a regression companion where
+\texttt{PancakeMaterialTransportCommutator}, and
+\texttt{PancakeMovingBlockEvolution} modules), each with a regression companion where
 applicable.  The aperture module is retained as an explicitly attenuated
 analytic model; the exact coherent projection no-go above prevents its use as
 the desired field-transfer estimate.
