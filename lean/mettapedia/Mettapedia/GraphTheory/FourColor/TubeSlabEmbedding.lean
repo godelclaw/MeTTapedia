@@ -335,6 +335,136 @@ theorem exists_of_mem_sideSupport_inner' (w' : Fin k → Color)
     simp only [outEquiv_symm_outPort] at this
     exact this
 
+/-! ## Gluing: a colouring of `inner` and a ring colouring with matching seam give a colouring of the enlarged side -/
+
+theorem exists_slab_of_not_inner (x : RetainedDart RS S.inner') (h : ¬ inner (RS.vertOf x.1)) :
+    ∃ y, S.ι y = x.1 := by
+  rcases x.2 with hx | ⟨v, hv⟩
+  · exact absurd hx h
+  · exact S.cubic_slab x.1 ⟨v, hv⟩
+
+variable (c₀ : SideColoring RS inner) (rc : AllDart k → Color)
+
+open Classical in
+/-- the glued colouring: `c₀` on `inner`, `rc` on the slab -/
+noncomputable def glueColor (x : RetainedDart RS S.inner') : Color :=
+  if h : inner (RS.vertOf x.1) then c₀.color ⟨x.1, h⟩
+  else rc (Classical.choose (S.exists_slab_of_not_inner x h))
+
+theorem glueColor_inner (x : RetainedDart RS S.inner') (h : inner (RS.vertOf x.1)) :
+    S.glueColor c₀ rc x = c₀.color ⟨x.1, h⟩ := by
+  unfold glueColor; rw [dif_pos h]
+
+theorem glueColor_slab (y : AllDart k) : S.glueColor c₀ rc (S.slabDart y) = rc y := by
+  unfold glueColor
+  rw [dif_neg (show ¬ inner (RS.vertOf (S.slabDart y).1) from S.slab_not_inner y)]
+  congr 1
+  apply S.ι_inj
+  exact Classical.choose_spec (S.exists_slab_of_not_inner (S.slabDart y) (S.slab_not_inner y))
+
+theorem inPartnerDart'_eq_alpha_slabDart (i : Fin k) :
+    S.inPartnerDart' i = ⟨RS.alpha (S.slabDart (Sum.inr (Sum.inl i))).1, Or.inl (S.in_inner i)⟩ :=
+  rfl
+
+/-- **gluing** -/
+theorem mem_sideSupport_inner'_of (w w' : Fin k → Color)
+    (hw : ∀ i, c₀.color (S.inPartner i).1 = w i)
+    (hrc : (ring k).IsTaitColoring rc)
+    (hl : ∀ i, rc (Sum.inr (Sum.inl i)) = w i)
+    (hr : ∀ i, rc (Sum.inr (Sum.inr i)) = w' i) :
+    (fun b => w' (S.outEquiv.symm b)) ∈ sideSupport RS S.inner' := by
+  obtain ⟨halpha, hvert, hnz⟩ := hrc
+  refine ⟨⟨S.glueColor c₀ rc, ?_, ?_, ?_⟩, ?_⟩
+  · intro x h
+    by_cases hx : inner (RS.vertOf x.1)
+    · by_cases hp : inner (RS.vertOf (RS.alpha x.1))
+      · rw [S.glueColor_inner c₀ rc _ hp, S.glueColor_inner c₀ rc _ hx]
+        exact c₀.alpha_internal ⟨x.1, hx⟩ hp
+      · obtain ⟨y, hy⟩ := S.exists_slab_of_not_inner ⟨RS.alpha x.1, h⟩ hp
+        rcases y with y | i | i
+        · exfalso
+          have := S.slab_not_inner (Sum.inl (flip k y))
+          rw [← S.alpha_interior, hy, RS.alpha_involutive] at this
+          exact this hx
+        · have hx1 : x.1 = RS.alpha (S.ι (Sum.inr (Sum.inl i))) := by
+            rw [hy, RS.alpha_involutive]
+          have h1 : (⟨RS.alpha x.1, h⟩ : RetainedDart RS S.inner') =
+              S.slabDart (Sum.inr (Sum.inl i)) := Subtype.ext hy.symm
+          rw [h1, S.glueColor_slab, hl, S.glueColor_inner c₀ rc _ hx, ← hw i]
+          congr 1
+          exact Subtype.ext hx1.symm
+        · exfalso
+          apply S.out_not_inner i
+          rw [hy, RS.alpha_involutive]
+          exact hx
+    · obtain ⟨y, hy⟩ := S.exists_slab_of_not_inner x hx
+      have hxd : x = S.slabDart y := Subtype.ext hy.symm
+      subst hxd
+      rcases y with y | i | i
+      · have h1 : (⟨RS.alpha (S.slabDart (Sum.inl y)).1, h⟩ : RetainedDart RS S.inner') =
+            S.slabDart (Sum.inl (flip k y)) := by
+          apply Subtype.ext
+          show RS.alpha (S.ι (Sum.inl y)) = S.ι (Sum.inl (flip k y))
+          exact S.alpha_interior y
+        rw [h1, S.glueColor_slab, S.glueColor_slab]
+        exact halpha y
+      · have hp : inner (RS.vertOf (RS.alpha (S.slabDart (Sum.inr (Sum.inl i))).1)) :=
+          S.in_inner i
+        rw [S.glueColor_inner c₀ rc _ hp, S.glueColor_slab, hl, ← hw i]
+        rfl
+      · exfalso
+        exact (S.outPort i).2 h
+  · intro x
+    by_cases hx : inner (RS.vertOf x.1)
+    · rw [S.glueColor_inner c₀ rc _ hx]; exact c₀.ne_zero _
+    · obtain ⟨y, hy⟩ := S.exists_slab_of_not_inner x hx
+      rw [show x = S.slabDart y from Subtype.ext hy.symm, S.glueColor_slab]
+      exact hnz y
+  · intro x x' hv hne
+    by_cases hx : inner (RS.vertOf x.1) <;> by_cases hx' : inner (RS.vertOf x'.1)
+    · rw [S.glueColor_inner c₀ rc _ hx, S.glueColor_inner c₀ rc _ hx']
+      exact c₀.proper _ _ hv (fun h => hne (Subtype.ext (Subtype.mk.inj h)))
+    · exfalso
+      obtain ⟨y, hy⟩ := S.exists_slab_of_not_inner x' hx'
+      apply S.slab_not_inner y
+      rw [hy, ← hv]; exact hx
+    · exfalso
+      obtain ⟨y, hy⟩ := S.exists_slab_of_not_inner x hx
+      apply S.slab_not_inner y
+      rw [hy, hv]; exact hx'
+    · obtain ⟨y, hy⟩ := S.exists_slab_of_not_inner x hx
+      obtain ⟨y', hy'⟩ := S.exists_slab_of_not_inner x' hx'
+      rw [show x = S.slabDart y from Subtype.ext hy.symm,
+        show x' = S.slabDart y' from Subtype.ext hy'.symm, S.glueColor_slab, S.glueColor_slab]
+      apply hvert
+      · apply S.vtx_inj
+        rw [← S.vert_ι, ← S.vert_ι, hy, hy']
+        exact hv
+      · intro h
+        apply hne
+        rw [show x = S.slabDart y from Subtype.ext hy.symm,
+          show x' = S.slabDart y' from Subtype.ext hy'.symm, h]
+  · intro b
+    obtain ⟨i, rfl⟩ := S.outPort_surjective b
+    show S.glueColor c₀ rc (S.slabDart (Sum.inr (Sum.inr i))) = w' (S.outEquiv.symm (S.outPort i))
+    rw [S.glueColor_slab, hr, outEquiv_symm_outPort]
+
+/-- **The slab lemma.**  The enlarged side accepts `w'` iff `inner` accepts some `w`
+with `(w, w')` in the ring relation. -/
+theorem mem_sideSupport_inner'_iff (w' : Fin k → Color) :
+    (fun b => w' (S.outEquiv.symm b)) ∈ sideSupport RS S.inner' ↔
+      ∃ w : Fin k → Color, (fun b => w (S.inEquiv.symm b)) ∈ sideSupport RS inner ∧
+        (ring k).AcceptsBoundaryWords w w' := by
+  constructor
+  · exact S.exists_of_mem_sideSupport_inner' w'
+  · rintro ⟨w, ⟨c₀, hc₀⟩, rc, hrc, hl, hr⟩
+    refine S.mem_sideSupport_inner'_of c₀ rc w w' ?_ hrc (fun i => congrFun hl i)
+      (fun i => congrFun hr i)
+    intro i
+    have := hc₀ (S.inPartner i)
+    simp only [inEquiv_symm_inPartner] at this
+    exact this
+
 end ZigzagSlab
 
 end TubeSlab
