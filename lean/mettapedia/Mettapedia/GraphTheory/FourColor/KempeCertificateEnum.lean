@@ -40,19 +40,23 @@ def nodeMatchings (w : Word n) (pair : TaitColorPair) : List (List (Fin n × Fin
   enumPairs n (activeList w pair)
 
 /-- **the enumerated step condition**: one switch set per listed matching -/
-def StepOkEnum (w : Word n) (pair : TaitColorPair) (known : Finset (Word n))
+def StepOkEnum (w : Word n) (pair : TaitColorPair) (known : List (Word n))
     (sel : Nat → Finset (Fin n)) : Prop :=
   ∀ k (h : k < (nodeMatchings w pair).length),
     IsComponentUnion (mateOf (nodeMatchings w pair)[k]) (sel k) ∧
       switchBoundaryWord w pair (sel k) ∈ known
 
-instance (w : Word n) (pair : TaitColorPair) (known : Finset (Word n)) (sel : Nat → Finset (Fin n)) :
+instance (w : Word n) (pair : TaitColorPair) (known : List (Word n)) (sel : Nat → Finset (Fin n)) :
     Decidable (StepOkEnum w pair known sel) := by
   unfold StepOkEnum; infer_instance
 
-/-- **soundness of the enumerated check** -/
-theorem stepOk_of_stepOkEnum {w : Word n} {pair : TaitColorPair} {known : Finset (Word n)}
-    {sel : Nat → Finset (Fin n)} (h : StepOkEnum w pair known sel) : StepOk w pair known := by
+/-- **soundness of the enumerated check**: the step condition over all port maps, with the
+known words as a list -/
+theorem stepOk_of_stepOkEnum {w : Word n} {pair : TaitColorPair} {known : List (Word n)}
+    {sel : Nat → Finset (Fin n)} (h : StepOkEnum w pair known sel) :
+    ∀ mate : Fin n → Fin n, IsActiveMatching w pair mate → IsNoncrossingMatching mate →
+      ∃ selected : Finset (Fin n), IsComponentUnion mate selected ∧
+        switchBoundaryWord w pair selected ∈ known := by
   intro mate ha hn
   have hinv : ∀ i, mate (mate i) = i := fun i => (ha i).2.1
   have hperf : ∀ i ∈ activeList w pair, mate i ∈ activeList w pair ∧ mate i ≠ i := fun i hi =>
@@ -82,29 +86,31 @@ theorem stepOk_of_stepOkEnum {w : Word n} {pair : TaitColorPair} {known : Finset
 structure CertificateEnum (n : Nat) where
   nodes : List (Word n × TaitColorPair × (Nat → Finset (Fin n)))
 
-def CertificateEnum.knownAt (base : Finset (Word n)) (c : CertificateEnum n) (k : Nat) :
-    Finset (Word n) :=
-  base ∪ ((c.nodes.take k).map fun t => t.1).toFinset
+def CertificateEnum.knownAt (base : List (Word n)) (c : CertificateEnum n) (k : Nat) :
+    List (Word n) :=
+  base ++ (c.nodes.take k).map fun t => t.1
 
-def CertificateEnum.Ok (base : Finset (Word n)) (c : CertificateEnum n) : Prop :=
+def CertificateEnum.Ok (base : List (Word n)) (c : CertificateEnum n) : Prop :=
   ∀ k (h : k < c.nodes.length),
     StepOkEnum (c.nodes[k]).1 (c.nodes[k]).2.1 (c.knownAt base k) (c.nodes[k]).2.2
 
-instance (base : Finset (Word n)) (c : CertificateEnum n) : Decidable (c.Ok base) := by
+instance (base : List (Word n)) (c : CertificateEnum n) : Decidable (c.Ok base) := by
   unfold CertificateEnum.Ok; infer_instance
 
 /-- **soundness of enumerated certificates** -/
-theorem CertificateEnum.derivable_of_ok {target : Set (Word n)} {base : Finset (Word n)}
+theorem CertificateEnum.derivable_of_ok {target : Set (Word n)} {base : List (Word n)}
     (hbase : ∀ u ∈ base, u ∈ target) (c : CertificateEnum n) (hok : c.Ok base) :
     ∀ k (h : k < c.nodes.length), Derivable target (c.nodes[k]).1 := by
   intro k
   induction k using Nat.strong_induction_on with
   | _ k ih =>
     intro h
-    refine Derivable.of_known (c.nodes[k]).2.1 (known := c.knownAt base k) ?_
-      (stepOk_of_stepOkEnum (hok k h))
+    have hknown : ∀ u ∈ c.knownAt base k, Derivable target u := ?_
+    · exact Derivable.step_of_forall (c.nodes[k]).2.1 fun mate ha hn =>
+        let ⟨selected, hsel, hmem⟩ := stepOk_of_stepOkEnum (hok k h) mate ha hn
+        ⟨selected, hsel, hknown _ hmem⟩
     intro u hu
-    simp only [CertificateEnum.knownAt, Finset.mem_union, List.mem_toFinset, List.mem_map] at hu
+    simp only [CertificateEnum.knownAt, List.mem_append, List.mem_map] at hu
     rcases hu with hu | ⟨t, hmem, rfl⟩
     · exact Derivable.base (hbase u hu)
     · obtain ⟨j, hj, hjk⟩ := List.getElem_of_mem hmem

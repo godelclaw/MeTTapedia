@@ -126,6 +126,11 @@ def sel_fun(sels):
 
 
 supp_words = list(supp)
+node_theorems = '\n'.join(
+    f'set_option maxRecDepth 100000 in\nset_option maxHeartbeats 0 in\n'
+    f'theorem node_{k} : StepOkEnum ({word(x)}) {PAIR[pi]} (cert.knownAt base {k}) {sel_fun(sels)} := by\n  decide +kernel\n'
+    for k, (x, pi, sels) in enumerate(cert))
+node_exacts = '\n'.join(f'  · exact node_{k}' for k in range(len(cert)))
 lean = f'''import Mettapedia.GraphTheory.FourColor.KempeCertificateEnum
 
 /-!
@@ -145,17 +150,21 @@ open GoertzelV24HexagonPairingTargetAwareBoundary
 def w ({' '.join('d' + str(i) for i in range(n))} : Fin 3) : Word {n} :=
   ![{', '.join('tc d' + str(i) for i in range(n))}]
 
-def base : Finset (Word {n}) := [
-  {(',\n  '.join(word(x) for x in supp_words))}].toFinset
+def base : List (Word {n}) := [
+  {(',\n  '.join(word(x) for x in supp_words))}]
 
 def nodes : List (Word {n} × TaitColorPair × (Nat → Finset (Fin {n}))) := [
   {(',\n  '.join(f'({word(x)}, {PAIR[pi]}, {sel_fun(sels)})' for (x, pi, sels) in cert))}]
 
 def cert : CertificateEnum {n} := ⟨nodes⟩
 
+{node_theorems}
 set_option maxRecDepth 100000 in
-set_option maxHeartbeats 0 in
-theorem ok : cert.Ok base := by decide +kernel
+theorem ok : cert.Ok base := by
+  intro k hk
+  simp only [cert, nodes, List.length_cons, List.length_nil] at hk
+  interval_cases k
+{node_exacts}
 
 /-- every node word is derivable into any target containing the support words -/
 theorem derivable {{target : Set (Word {n})}} (hbase : ∀ u ∈ base, u ∈ target) :
