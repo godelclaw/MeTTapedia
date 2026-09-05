@@ -240,6 +240,56 @@ theorem false_of_certificate
   rw [← hjt]
   exact cert.derivable_of_ok hbase hok j hj
 
+/-- **The same, with the certificate's own base list**, each base word verified by the
+enumerator on the configuration, and the cap's words covered by the base or the nodes. -/
+theorem false_of_certificate'
+    (graphData : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
+    (deleted : Finset V)
+    (hretainedConnected :
+      (G.induce {vertex | deletedRegionKeep deleted vertex}).Connected)
+    (hdeletedConnected :
+      (G.induce {vertex | ¬ deletedRegionKeep deleted vertex}).Connected)
+    (outerRetained : RetainedDart graphData.toRotationSystem (deletedRegionKeep deleted))
+    (outerDeleted : RetainedDart graphData.toRotationSystem (deletedSideKeep deleted))
+    {n : Nat} [NeZero n] (hn : 2 ≤ n)
+    (order : Fin n ≃ BoundaryDart graphData.toRotationSystem (deletedRegionKeep deleted))
+    (hsuccessor : order.permCongr (finRotate n) =
+      retainedRegionBoundarySuccessor graphData.toRotationSystem (deletedRegionKeep deleted))
+    {VK NK : Nat} (K : Pres VK NK n) (hK : K.Valid)
+    (iso : OpenTangleIso
+      (ofVertexSide graphData.toRotationSystem (deletedSideKeep deleted) outerDeleted)
+      (K.toCap hK))
+    (hports : ∀ b, iso.boundary (complementBoundaryAlphaEquiv graphData.toRotationSystem
+      deleted b) = order.symm b)
+    {VC NC : Nat} (C : Pres VC NC n) (hC : C.Valid) (hdisc : C.discCheck hC = true)
+    (hsmall : VC < VK)
+    (base : List (Word n)) (hbaseK : ∀ u ∈ base, K.acceptsWord u = true)
+    (cert : CertificateEnum n) (hok : cert.Ok base)
+    (hcover : ∀ w ∈ C.capWords hC, w ∈ base ∨ w ∈ cert.nodes.map fun t => t.1) :
+    False := by
+  have hcard := card_deleted_eq graphData deleted outerDeleted K hK iso
+  refine false_of_derivable_cap graphData minimal deleted hretainedConnected hdeletedConnected
+    outerRetained outerDeleted hn order hsuccessor (C.toCap hC) order.symm
+    (C.capDiscData_of_discCheck _ _ order.symm
+      (Pres.capHubRotation_eq_finRotate _ _ order hsuccessor) hC hdisc)
+    (by rw [Fintype.card_fin, hcard]; exact hsmall) ?_
+  intro w hw
+  rw [C.mem_wordsOf_taitInnerSupport_iff hC order w] at hw
+  have hbase : ∀ u ∈ base, u ∈ wordsOf order (taitInnerSupport (rightClosedPortTangle
+      (ofVertexSide graphData.toRotationSystem (deletedSideKeep deleted) outerDeleted)
+      (complementBoundaryAlphaEquiv graphData.toRotationSystem deleted))) := by
+    intro u hu
+    rw [mem_wordsOf_deleted_iff graphData deleted outerDeleted order K hK iso hports u,
+      K.mem_capWords_iff hK, ← K.acceptsWord_iff hK]
+    exact hbaseK u hu
+  rcases hcover w hw with hbw | hnw
+  · exact Derivable.base (hbase w hbw)
+  · obtain ⟨t, ht, rfl⟩ := List.mem_map.1 hnw
+    obtain ⟨j, hj, hjt⟩ := List.getElem_of_mem ht
+    rw [← hjt]
+    exact cert.derivable_of_ok hbase hok j hj
+
 end Deleted
 
 end CapEmbedding

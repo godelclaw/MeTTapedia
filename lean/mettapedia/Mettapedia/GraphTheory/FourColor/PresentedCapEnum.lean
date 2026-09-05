@@ -345,6 +345,29 @@ theorem mem_capWords_iff (hP : P.Valid) (w : Word k) :
     · funext i
       exact Subtype.ext (wordOf_numeralOf w i)
 
+/-- the digits of a Tait word -/
+def digitsOf (w : Word k) : Fin k → Fin 3 := fun i => ⟨idx (w i).1, idx_lt _⟩
+
+theorem inWord_numeralOf (w : Word k) :
+    TubeSlab.Presented.Pres.inWord (numeralOf w) = digitsOf w := by
+  funext i
+  apply Fin.ext
+  show digit (numeralOf w) i = idx (w i).1
+  unfold numeralOf
+  rw [digit_eq_digB, digB_encB (by norm_num) k (fun j hj => by
+    rw [dif_pos hj]; exact idx_lt _) i i.isLt]
+  simp [i.isLt]
+
+/-- the enumerator on a Tait word -/
+def acceptsWord (w : Word k) : Bool := P.accepts (digitsOf w)
+
+theorem acceptsWord_iff (hP : P.Valid) (w : Word k) :
+    P.acceptsWord w = true ↔ ∃ c, P.CapValid c fun i => (w i).1 := by
+  unfold acceptsWord
+  rw [← inWord_numeralOf, P.accepts_iff hP]
+  have : wordOf k (numeralOf w) = fun i => (w i).1 := funext (wordOf_numeralOf w)
+  rw [this]
+
 /-- **the support in certificate coordinates is the enumerated list** -/
 theorem mem_wordsOf_taitInnerSupport_iff (hP : P.Valid) {L : Type} [Fintype L] [DecidableEq L]
     (order : Fin k ≃ L) (w : Word k) :
