@@ -117,12 +117,12 @@ def word(w):
 
 
 def fset(ports):
-    return '(∅ : Finset (Fin ' + str(n) + '))' if not ports else '{' + ', '.join(str(p) for p in ports) + '}'
+    return '(∅ : Finset (Fin ' + str(n) + '))' if not ports else '({' + ', '.join(str(p) for p in ports) + '} : Finset (Fin ' + str(n) + '))'
 
 
 def sel_fun(sels):
     arms = ' '.join(f'| {k} => {fset(s)}' for k, s in enumerate(sels))
-    return f'(fun k => match k with {arms} | _ => (∅ : Finset (Fin {n})))'
+    return f'(fun (k : Nat) => match k with {arms} | _ => (∅ : Finset (Fin {n})))'
 
 
 supp_words = list(supp)
