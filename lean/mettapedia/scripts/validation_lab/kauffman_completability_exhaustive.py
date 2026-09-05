@@ -13,10 +13,13 @@ src = src.replace("NMAX = int(sys.argv[1]) if len(sys.argv) > 1 else 12", "NMAX 
     "SAMPLES = int(sys.argv[2]) if len(sys.argv) > 2 else 400", "SAMPLES = 0")
 exec(src)
 plantri, N = sys.argv[1], int(sys.argv[2])
-conn = '-c2' if '--c2' in sys.argv else '-c3'
-out = subprocess.run([plantri, '-a', '-d', conn, str(N)], capture_output=True, text=True)
+conn = '-c2' if '--c2' in sys.argv else ('-c4' if '--c4' in sys.argv else '-c3')
+extra = ['-m5'] if '--m5' in sys.argv else []
+out = subprocess.run([plantri, '-a', '-d', conn] + extra + [str(N)], capture_output=True)
+out_stdout = out.stdout.decode('utf-8', errors='ignore')
+tag = conn[1:] + ('m5' if extra else '')
 graphs = []
-for line in out.stdout.strip().split('\n'):
+for line in out_stdout.strip().split('\n'):
     if not line.strip(): continue
     head, body = line.split(' ', 1)
     G = nx.Graph()
@@ -37,6 +40,6 @@ for gi, G in enumerate(graphs):
             classes_n += 1
             if not any(completable(edges, c, v1, v2) for c in cls):
                 bad += 1; viol.append({"graph": gi, "edges": [list(x) for x in G.edges()], "e": [v1, v2], "class_size": len(cls)})
-print(f"triangulation order {N} = cubic order {2*N-4} {conn}: graphs {len(graphs)} trails {trails} classes {classes_n} violating {bad}", flush=True)
+print(f"triangulation order {N} = cubic order {2*N-4} {conn}{' -m5' if extra else ''}: graphs {len(graphs)} trails {trails} classes {classes_n} violating {bad}", flush=True)
 json.dump({"order": N, "conn": conn, "graphs": len(graphs), "trails": trails, "classes": classes_n, "violating": bad, "violations": viol},
-          open(os.path.join(here, f"kauffman_exhaustive_{conn[1:]}_n{N}.json"), "w"), indent=1)
+          open(os.path.join(here, f"kauffman_exhaustive_{tag}_n{N}.json"), "w"), indent=1)
