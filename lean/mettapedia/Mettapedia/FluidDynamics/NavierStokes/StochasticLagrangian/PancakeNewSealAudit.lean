@@ -48,6 +48,7 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeDyadicD
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeFourierStretchingEvolution
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakePeriodicVorticityEquation
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeBlockReality
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeMaterialTransportCommutator
 
 /-!
 # Seal audit for the coherent-field and alignment-dynamics tranche
@@ -184,3 +185,5 @@ the Lean compiler.  It adds no assumptions and proves no mathematical step.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeBlockReality.squareDyadicPancakeBlock_conj_eq_self
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeBlockReality.ofReal_squareDyadicPancakeRealBlock_eq
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeBlockReality.finiteUnitTorusVorticityRHS_neg_conjugate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeMaterialTransportCommutator.finiteUnitTorusNegativeTransportCoeff_eq_inside_add_outside
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeMaterialTransportCommutator.finiteMaterialTransportCommutatorCoeff_eq_boundaryCrossing
