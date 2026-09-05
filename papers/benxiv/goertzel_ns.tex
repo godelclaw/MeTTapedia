@@ -117,7 +117,7 @@ which is exactly coherent on every leaked output mode and has a uniform
 inverse-kernel $L^1$ bound.  For finite-band cutoffs this multiplier is now
 transferred through square-dyadic scaling, rotation, periodization, and
 physical frames, and applied exactly to the localized products.  Control of
-the Fourier tail of a genuine spatial cutoff and the remaining smooth
+the Fourier coefficients of the concrete spatial cell cutoffs and the remaining smooth
 projector collar, space--time treatment of the small-gap branch, and
 conversion from this $L^2$/defect control to the scale-local endpoint budget
 remain open.  The
@@ -1335,8 +1335,18 @@ operator $\mathcal B_N$,
 \]
 A further specialization transfers uniform scalar cutoff-approximation errors
 for $\chi-\chi_0$ and $\psi-\psi_0$ directly into this bound.  Thus only the
-cutoff-specific Fourier decay/truncation theorem and the subsequent smooth
-sector-projector collar remain at this junction.
+cutoff-specific Fourier decay input and the subsequent smooth
+sector-projector collar remain at this junction.  More precisely,
+\texttt{PancakeSmoothCutoffFourierTail} proves that every continuous torus
+cutoff with absolutely summable Fourier coefficients has, for each
+$\varepsilon>0$, a finite Fourier approximation within $\varepsilon$
+uniformly in space.  It further proves that one such finite support lies in
+the fixed normalized cutoff-margin box at all sufficiently large
+square-dyadic scales.  The scale threshold is uniform over every oriented
+frame because rotations preserve the Euclidean norm.  The remaining
+mathematics here is therefore not convergence bookkeeping: it is to construct
+the actual spatial cover cutoffs and prove absolute summability (or an
+explicit derivative-decay estimate) for their Fourier coefficients.
 
 There is a second field-level issue which a fixed-axis multiplier does not
 address.  The actual pancake frame is the eigensystem of the low-frequency
@@ -1433,7 +1443,10 @@ and physical transfer is proved, and finite-band cutoff products are connected
 to it with no support-cardinality loss.  The infinite Fourier tail of a true
 spatial cell cutoff and the smooth projector collar remain; a checked physical
 operator-stability theorem now converts any uniform cutoff-tail estimate into
-the required multiplier error.
+the required multiplier error.  Absolute summability is already proved
+sufficient for a scale-compatible finite approximation, uniformly over all
+frames; that summability must still be established for the concrete cell
+cutoffs.
 Further steps are aggregation of the small-gap branch
 over space and time, conversion of this $L^2$/defect estimate to the required
 scale-local endpoint budget, and identification and assembly of this concrete
@@ -1693,7 +1706,7 @@ effort.  The repaired-route development comprises, under
 full-strain-frame, coercivity, cell-aggregation, finite-localization, and
 \texttt{PancakeBufferedAnnularMultiplier}, buffered physical-transfer, and
 \texttt{PancakeLocalizedBufferedTransfer}, bilinear stability, and buffered
-localization-stability modules), each with a regression companion where
+localization-stability and smooth-cutoff Fourier-tail modules), each with a regression companion where
 applicable.  The aperture module is retained as an explicitly attenuated
 analytic model; the exact coherent projection no-go above prevents its use as
 the desired field-transfer estimate.

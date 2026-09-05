@@ -106,6 +106,7 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeBuffere
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeLocalizedBufferedTransfer
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeBilinearActionStability
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeBufferedLocalizationStability
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeSmoothCutoffFourierTail
 
 /-!
 # Navier-Stokes live surface
