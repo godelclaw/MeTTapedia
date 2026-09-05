@@ -109,9 +109,12 @@ freezing error by $4\varepsilon/\mathrm{gap}$ times the full $L^2$ energy,
 with an explicit small frozen-top-gap alternative.  On the separated branch,
 a homogeneous spectral-gap estimate now converts the frozen transverse
 energy into the integrated top Rayleigh defect, without normalizing vorticity
-at its zeros.  Space--time aggregation of the small-gap and coercive branches
-and conversion from this $L^2$/defect control to the scale-local endpoint
-budget remain open.  The
+at its zeros.  Finite aggregation of the coercive cells and generic
+hard-set/smooth-weight bounded-overlap integral estimates are also checked.
+The analytic localization bridge (including the frequency leakage produced
+by spatial cutoffs), space--time treatment of the small-gap branch, and
+conversion from this $L^2$/defect control to the scale-local endpoint budget
+remain open.  The
 latest audit also isolates why the proposed pancake closure does
 not yet prove the Millennium statement: its high-low split covers all aperture
 angles iff the scale-local strain satisfies $\gamma\le\nu\lambda_q$, exactly
@@ -1241,6 +1244,25 @@ full sector energy.  The remaining issue is no longer the separated-cell
 estimate itself, but its bounded-overlap space--time aggregation and endpoint
 scaling.
 
+The finite combinatorics of that aggregation is now checked in
+\texttt{PancakeCellAggregation}.  It packages one frozen comparison datum,
+filters an arbitrary finite family into collision and separated cells, and
+sums the separated coercive estimates with no support-cardinality constant.
+Nonnegativity of both the complex Rayleigh defect and full energy allows the
+right-hand sums to be enlarged to the whole family.  Two generic analytic
+lemmas prove the corresponding bounded-overlap transfer: for measurable hard
+cells of multiplicity at most $M$,
+\[
+  \sum_i\int_{Q_i}f\leq M\int f,
+\]
+and for nonnegative smooth weights $\chi_i$ satisfying
+$\sum_i\chi_i\leq M$, the same conclusion holds for varying local densities
+dominated by one global density.  This does \emph{not} yet identify the
+global Parseval energy in each frozen comparison with a hard- or
+smooth-localized cell energy.  A spatial cutoff changes Fourier support, so
+that step requires a genuine localization/commutator or almost-orthogonality
+estimate; bounded overlap alone cannot supply it.
+
 There is a second field-level issue which a fixed-axis multiplier does not
 address.  The actual pancake frame is the eigensystem of the low-frequency
 strain and therefore depends on $(x,t)$.  The module
@@ -1323,11 +1345,14 @@ theorem now controls the frozen-to-varying-frame error by
 $4\varepsilon/\mathrm{threshold}$ times the full $L^2$ energy, with the
 ordinary frozen top-gap band returned as the alternative.  On its separated
 branch, homogeneous spectral-gap coercivity now bounds the transverse energy
-by the integrated top Rayleigh defect.  The remaining steps are aggregation
-of the small-gap/coercive dichotomy over space and time, conversion of this
-$L^2$/defect estimate to the required scale-local endpoint budget, and
-identification and assembly of this concrete finite-sector identity into
-\texttt{coherent\_le} for the actual Navier--Stokes functionals.
+by the integrated top Rayleigh defect.  The separated-cell finite sum and
+generic bounded-overlap integration are now checked as well.  The remaining
+steps are the localization/commutator estimate connecting global finite
+reconstructions to the spatial cells, aggregation of the small-gap branch
+over space and time, conversion of this $L^2$/defect estimate to the required
+scale-local endpoint budget, and identification and assembly of this concrete
+finite-sector identity into \texttt{coherent\_le} for the actual
+Navier--Stokes functionals.
 (ii) The misalignment budget itself: dynamical,
 time-integrated control of the misalignment share; the checked fences
 of Sections~\ref{sec:lean}, \ref{sec:aperture} and the static no-go
