@@ -1,0 +1,9 @@
+{
+ "order": 8,
+ "conn": "-c3",
+ "graphs": 14,
+ "trails": 252,
+ "classes": 252,
+ "violating": 0,
+ "violations": []
+}
