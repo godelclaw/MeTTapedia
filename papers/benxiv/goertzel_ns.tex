@@ -104,8 +104,11 @@ Fourier misalignment coefficient by its energy transverse to the expanding
 line.  This estimate sums over the genuine finite pancake sector without a
 mode-count loss, and finite Parseval identifies the right-hand side with a
 physical-space $L^2$ transverse-energy integral for a frozen full strain
-frame.  The frozen-to-spatially-varying frame passage and the conversion from
-this $L^2$ control to the scale-local endpoint budget remain open.  The
+frame.  A sign-invariant line-projector perturbation theorem further controls
+freezing error by $4\varepsilon/\mathrm{gap}$ times the full $L^2$ energy,
+with an explicit small frozen-top-gap alternative.  Space--time aggregation
+of those two branches and conversion from this $L^2$ control to the
+scale-local endpoint budget remain open.  The
 latest audit also isolates why the proposed pancake closure does
 not yet prove the Millennium statement: its high-low split covers all aperture
 angles iff the scale-local strain satisfies $\gamma\le\nu\lambda_q$, exactly
@@ -1195,6 +1198,27 @@ This closes the coefficient-to-$L^2$ bridge; it does not by itself control a
 frame varying with $x$, nor does an $L^2$ estimate alone supply the
 $L^\infty$-based BKM integrand.
 
+The follow-up module \texttt{PancakeTransverseEnergyFreezing} supplies the
+local varying-frame comparison without choosing eigenvector signs.  For
+symmetric strains $A,B$ with $\|A-B\|\leq\varepsilon$, it first proves the
+top-eigenvalue Weyl bound
+\[
+  |\lambda_0(A)-\lambda_0(B)|\leq\|A-B\|.
+\]
+It then applies the matched-eigenline projector estimate.  For every positive
+threshold, either a frozen top gap of $B$ is smaller than
+$\text{threshold}+\varepsilon$, or
+\[
+  \sum_{k\in\Gamma_{N,A}} |u_k-P_{A,k}u_k|^2
+  \leq \int_{\mathbb T^3}|U_{\perp B}(x)|^2\,dx
+    +4\frac{\varepsilon}{\text{threshold}}
+       \int_{\mathbb T^3}|U(x)|^2\,dx .
+\]
+Thus the eigenvector-sign and eigenvalue-collision problems are no longer
+hidden in a continuity premise.  The remaining task is to aggregate this
+cellwise alternative with the same-strain small-gap coercivity and the
+space--time Littlewood--Paley budget.
+
 There is a second field-level issue which a fixed-axis multiplier does not
 address.  The actual pancake frame is the eigensystem of the low-frequency
 strain and therefore depends on $(x,t)$.  The module
@@ -1216,10 +1240,10 @@ supplied by \texttt{PancakeFrozenFrameKernelTransfer}; the full four-sign
 annulus and its physical variable-frame endpoint are supplied by the annular
 modules above, and the pointwise frame is now constructed from the strain.
 The remaining field-transfer pieces are measurable control of that spectral
-selection through eigenvalue collisions, a quantitative frozen-to-varying
-frame estimate for the new transverse-energy bridge, and identification of
-the concrete finite-sector split with the actual Littlewood--Paley time
-functionals.
+selection through eigenvalue collisions, aggregation of the proved
+frozen-cell/small-gap alternative over a physical space--time cover, and
+identification of the concrete finite-sector split with the actual
+Littlewood--Paley time functionals.
 The older frequencywise commutator estimate
 remains correct, but the new uniform physical-kernel endpoint shows that no
 frame-oscillation estimate is needed merely to obtain the pointwise
@@ -1272,10 +1296,13 @@ complex coefficient remainder is now bounded by transverse expanding-line
 energy, first modewise, then after finite-sector summation, and finally by an
 exact physical-space $L^2$ integral via finite Parseval, with no
 support-cardinality loss.  The remaining steps are measurable spectral
-selection through eigenvalue collisions, control of the
-frozen-to-varying-frame error, conversion of the transverse $L^2$ estimate to
-the required scale-local endpoint budget, and identification and assembly of
-this concrete finite-sector identity into
+selection through eigenvalue collisions and a sign-invariant
+line-projector theorem now controls the frozen-to-varying-frame error by
+$4\varepsilon/\mathrm{threshold}$ times the full $L^2$ energy, with the
+ordinary frozen top-gap band returned as the alternative.  The remaining
+steps are aggregation of that alternative over space and time, conversion of
+the transverse $L^2$ estimate to the required scale-local endpoint budget,
+and identification and assembly of this concrete finite-sector identity into
 \texttt{coherent\_le} for the actual Navier--Stokes functionals.
 (ii) The misalignment budget itself: dynamical,
 time-integrated control of the misalignment share; the checked fences
@@ -1476,9 +1503,9 @@ coherent/misaligned transfer, which jointly reproduce
 \texttt{StochasticStretchingEstimate}).  A successful completion must prove
 measurable control of the pointwise strain-derived spectral frame through
 eigenvalue collisions, identify the now-exact finite-sector physical split
-with the actual scale-local Littlewood--Paley time functionals, control the
-passage from the frozen-frame $L^2$ transverse estimate to the spatially
-varying frame and the endpoint scale budget, and
+with the actual scale-local Littlewood--Paley time functionals, aggregate the
+proved frozen-cell/small-gap projector alternative and convert its $L^2$
+control to the endpoint scale budget, and
 prove a dynamical,
 time-integrated control of the vorticity-direction misalignment share, strong
  enough to cover the gap band identified above.  The finite four-sign
