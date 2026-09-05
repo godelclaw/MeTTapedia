@@ -478,5 +478,126 @@ end Slab
 
 end ZigzagSlab
 
+/-! ## Stage five: the literal shore node of a side -/
+
+section Node
+
+open GoertzelV24RotationCutDartDecomposition
+open GoertzelV24MajorityShoreStateDescent
+open GoertzelV24MajorityShoreNormalizedState
+
+variable {rotation} {k : Nat} [NeZero k]
+
+/-- a side that carries a literal shore node: good, connected, with connected complement -/
+structure NodeSide (side : V → Prop) : Prop where
+  good : GoodSide (G := G) side
+  conn : EdgeShoreConnected G (sideShore side)
+  cconn : EdgeShoreConnected G (ZigzagSlab.compShore side)
+
+/-- a retained dart of the majority keep, from a dart at a vertex of the side -/
+def retainedOfSide {side : V → Prop} (hgood : GoodSide (G := G) side) (d : G.Dart)
+    (hd : side d.fst) : RetainedDart rotation.toRotationSystem (majorityRetainedKeep G (sideShore side)) :=
+  ⟨d, by rw [majorityRetainedKeep_sideShore hgood]; exact hd⟩
+
+/-- a retained dart of the deleted keep, from a dart at a vertex off the side -/
+def deletedOfSide {side : V → Prop} (hgood : GoodSide (G := G) side) (d : G.Dart)
+    (hd : ¬ side d.fst) : RetainedDart rotation.toRotationSystem (majorityDeletedKeep G (sideShore side)) :=
+  ⟨d, by
+    rw [majorityDeletedKeep_iff, ← majorityRetainedKeep_iff, majorityRetainedKeep_sideShore hgood]
+    exact hd⟩
+
+/-- the partner of a boundary dart of the side is a boundary dart of the deleted side -/
+def deletedBoundaryOfSide {side : V → Prop} (hgood : GoodSide (G := G) side)
+    (b : BoundaryDart rotation.toRotationSystem side) :
+    BoundaryDart rotation.toRotationSystem (majorityDeletedKeep G (sideShore side)) :=
+  ⟨⟨b.1.1.symm, by
+    rw [majorityDeletedKeep_iff, ← majorityRetainedKeep_iff, majorityRetainedKeep_sideShore hgood]
+    exact b.2⟩, by
+    show ¬ majorityDeletedKeep G (sideShore side) b.1.1.symm.symm.fst
+    rw [SimpleGraph.Dart.symm_symm, majorityDeletedKeep_iff, ← majorityRetainedKeep_iff,
+      majorityRetainedKeep_sideShore hgood]
+    exact fun h => h b.1.2⟩
+
+theorem deletedBoundaryOfSide_injective {side : V → Prop} (hgood : GoodSide (G := G) side) :
+    Function.Injective (deletedBoundaryOfSide (rotation := rotation) hgood) := by
+  intro b b' h
+  have h1 : b.1.1.symm = b'.1.1.symm :=
+    congrArg (fun x : BoundaryDart rotation.toRotationSystem (majorityDeletedKeep G (sideShore side)) => x.1.1) h
+  have h2 : b.1.1 = b'.1.1 := by
+    have := congrArg SimpleGraph.Dart.symm h1
+    simp only [SimpleGraph.Dart.symm_symm] at this
+    exact this
+  exact Subtype.ext (Subtype.ext h2)
+
+/-- every middle vertex of a side's shore carries a boundary dart -/
+theorem middle_subset_boundary {side : V → Prop}
+    (e : Fin k ≃ BoundaryDart rotation.toRotationSystem side) :
+    edgeShoreMiddleVertices G (sideShore side) ⊆
+      Finset.univ.image (fun i : Fin k => ((e i).1.1 : G.Dart).fst) := by
+  intro v hv
+  simp only [edgeShoreMiddleVertices, GoertzelV24SphereCutMaterial.middleVertices,
+    Finset.mem_filter, Finset.mem_univ, true_and] at hv
+  obtain ⟨⟨e1, he1, hv1⟩, ⟨e2, he2, hv2⟩⟩ := hv
+  have hside : side v := (mem_sideShore.mp he1) v hv1
+  -- the other end of `e2` is off the side
+  let x := Sym2.Mem.other hv2
+  have hz : s(v, x) = (e2 : Sym2 V) := Sym2.other_spec hv2
+  have hx : ¬ side x := by
+    intro hxs
+    apply he2
+    rw [mem_sideShore]
+    intro y hy
+    rw [← hz] at hy
+    rcases Sym2.mem_iff.mp hy with rfl | rfl
+    exacts [hside, hxs]
+  have hadj : G.Adj v x := by
+    have := e2.2
+    rw [← hz, SimpleGraph.mem_edgeSet] at this
+    exact this
+  let b : BoundaryDart rotation.toRotationSystem side := ⟨⟨⟨(v, x), hadj⟩, hside⟩, hx⟩
+  obtain ⟨i, hi⟩ := e.surjective b
+  rw [Finset.mem_image]
+  exact ⟨i, Finset.mem_univ _, by rw [hi]⟩
+
+theorem card_middle_le {side : V → Prop}
+    (e : Fin k ≃ BoundaryDart rotation.toRotationSystem side) :
+    (edgeShoreMiddleVertices G (sideShore side)).card ≤ k :=
+  le_trans (Finset.card_le_card (middle_subset_boundary e))
+    (le_trans Finset.card_image_le (by simp))
+
+/-- **the literal shore node of a side** -/
+noncomputable def mkNode {side : V → Prop} (h : NodeSide (G := G) side)
+    (e : Fin k ≃ BoundaryDart rotation.toRotationSystem side) (hk2 : 2 ≤ k) :
+    LiteralShoreNode rotation k k where
+  shore := sideShore side
+  shoreConnected := h.conn
+  complementConnected := h.cconn
+  majorityNonempty := ⟨(e 0).1.1.fst, by
+    rw [← majorityRetainedKeep_iff, majorityRetainedKeep_sideShore h.good]; exact (e 0).1.2⟩
+  complementNonempty := ⟨(e 0).1.1.snd, by
+    rw [← majorityRetainedKeep_iff, majorityRetainedKeep_sideShore h.good]; exact (e 0).2⟩
+  outsideOuter := deletedOfSide h.good (e 0).1.1.symm (e 0).2
+  innerOuter := retainedOfSide h.good (e 0).1.1 (e 0).1.2
+  widthBound := le_of_eq (boundaryWidth_eq_of_equiv rotation _
+    (e.trans (castBoundary (majorityRetainedKeep_sideShore h.good).symm)))
+  middleBound := card_middle_le e
+  first := deletedBoundaryOfSide h.good (e 0)
+  second := deletedBoundaryOfSide h.good (e ⟨1, by omega⟩)
+  first_ne_second := by
+    intro heq
+    have := e.injective (deletedBoundaryOfSide_injective h.good heq)
+    exact absurd (congrArg Fin.val this) (by simp)
+
+theorem mkNode_shore {side : V → Prop} (h : NodeSide (G := G) side)
+    (e : Fin k ≃ BoundaryDart rotation.toRotationSystem side) (hk2 : 2 ≤ k) :
+    (mkNode h e hk2).shore = sideShore side := rfl
+
+theorem mkNode_keep {side : V → Prop} (h : NodeSide (G := G) side)
+    (e : Fin k ≃ BoundaryDart rotation.toRotationSystem side) (hk2 : 2 ≤ k) :
+    majorityRetainedKeep G (mkNode h e hk2).shore = side :=
+  majorityRetainedKeep_sideShore h.good
+
+end Node
+
 end TubeSlab
 end Mettapedia.GraphTheory.FourColor
