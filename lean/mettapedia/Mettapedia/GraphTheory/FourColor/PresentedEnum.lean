@@ -69,9 +69,12 @@ def runVertices (x : Fin k → Fin 3) : List (Fin V) → List (PA N k) → List 
   | [], σs => σs
   | v :: vs, σs => runVertices x vs (P.stepVertex x v σs)
 
-/-- the out-word numeral of a complete assignment (unassigned out-ports read as 0) -/
-def outNumeral (σ : PA N k) : Nat :=
-  (List.finRange k).foldr (fun i acc => acc * 3 + ((σ.o i).getD 0).val) 0
+/-- the out-digit at position `i` (unassigned or out of range read as 0) -/
+def outDigit (σ : PA N k) (i : Nat) : Nat :=
+  if h : i < k then ((σ.o ⟨i, h⟩).getD 0).val else 0
+
+/-- the out-word numeral of a complete assignment -/
+def outNumeral (σ : PA N k) : Nat := ZigzagRing.encB 3 (outDigit σ) k
 
 /-- the in-word of a numeral -/
 def inWord (X : Nat) : Fin k → Fin 3 := fun i => ⟨(X / 3 ^ (i : Nat)) % 3, Nat.mod_lt _ (by omega)⟩
