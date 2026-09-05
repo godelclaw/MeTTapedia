@@ -24,6 +24,11 @@ open PeriodicFourierTriad
 open PancakeMisalignmentEnergyBridge
 open PancakePeriodicCoherentSplit
 open PancakeTransverseEnergyFreezing
+open PancakeAnnularChartCutoff
+open PancakeAnnularSectorProjector
+open PancakeFrameCovariance
+open PancakePhysicalFrameKernelTransfer
+open PancakeRealCoherentPairEstimate
 open MeasureTheory
 
 local instance : MeasureSpace UnitAddCircle := ⟨AddCircle.haarAddCircle⟩
@@ -103,6 +108,108 @@ theorem outputMode_eq_cutoff_add_field
   obtain ⟨p, hp, k, hk, rfl⟩ :=
     (mem_finiteCutoffOutputModes_iff cutoffModes fieldModes q).mp hq
   exact ⟨p, hp, k, hk, by simp⟩
+
+/-! ## Quantitative chart thickening -/
+
+/-- Coordinatewise normalized support allowed for a cutoff frequency. -/
+def InNormalizedPancakeShift
+    (transverseMargin axialMargin : ℝ) (v : RealVec3) : Prop :=
+  |v.1| ≤ transverseMargin ∧
+    |v.2.1| ≤ transverseMargin ∧
+      |v.2.2| ≤ axialMargin
+
+/-- The original normalized annulus enlarged by explicit transverse and
+axial cutoff-frequency margins. -/
+def InExpandedNormalizedPancakeAnnulus
+    (transverseMargin axialMargin : ℝ) (v : RealVec3) : Prop :=
+  |v.1| ≤ 2 + transverseMargin ∧
+    |v.2.1| ≤ 2 + transverseMargin ∧
+      3 / 4 - axialMargin ≤ |v.2.2| ∧
+        |v.2.2| ≤ 2 + axialMargin
+
+theorem euclideanWavevectorOfWavevector_add (p k : Wavevector) :
+    euclideanWavevectorOfWavevector (p + k) =
+      euclideanWavevectorOfWavevector p +
+        euclideanWavevectorOfWavevector k := by
+  apply WithLp.ofLp_injective 2
+  funext i
+  fin_cases i <;>
+    simp [euclideanWavevectorOfWavevector]
+
+/-- Square-dyadic oriented-frame normalization is additive in frequency. -/
+theorem orientedFrameSquareDyadicNormalizedMode_add
+    (F : OrientedFrameEquiv) (N : ℕ) (p k : Wavevector) :
+    orientedFrameSquareDyadicNormalizedMode F N (p + k) =
+      orientedFrameSquareDyadicNormalizedMode F N p +
+        orientedFrameSquareDyadicNormalizedMode F N k := by
+  rw [orientedFrameSquareDyadicNormalizedMode,
+    orientedFrameSquareDyadicNormalizedMode,
+    orientedFrameSquareDyadicNormalizedMode,
+    euclideanWavevectorOfWavevector_add, map_add]
+  apply Prod.ext
+  · simp only [Prod.fst_add, WithLp.ofLp_add, Pi.add_apply]
+    ring
+  · apply Prod.ext <;>
+      simp only [Prod.snd_add, Prod.fst_add, WithLp.ofLp_add,
+        Pi.add_apply] <;>
+      ring
+
+/-- Adding a normalized cutoff shift to a mode in the original annulus lands
+in the explicitly thickened annulus. -/
+theorem add_mem_expandedNormalizedPancakeAnnulus
+    {transverseMargin axialMargin : ℝ} {v w : RealVec3}
+    (hv : InNormalizedPancakeAnnulus v)
+    (hw : InNormalizedPancakeShift transverseMargin axialMargin w) :
+    InExpandedNormalizedPancakeAnnulus
+      transverseMargin axialMargin (v + w) := by
+  obtain ⟨x, y, z⟩ := v
+  obtain ⟨a, b, c⟩ := w
+  change |x| ≤ 2 ∧ |y| ≤ 2 ∧ 3 / 4 ≤ |z| ∧ |z| ≤ 2 at hv
+  change |a| ≤ transverseMargin ∧ |b| ≤ transverseMargin ∧
+    |c| ≤ axialMargin at hw
+  change |x + a| ≤ 2 + transverseMargin ∧
+    |y + b| ≤ 2 + transverseMargin ∧
+      3 / 4 - axialMargin ≤ |z + c| ∧
+        |z + c| ≤ 2 + axialMargin
+  have hx := abs_add_le x a
+  have hy := abs_add_le y b
+  have hzUpper := abs_add_le z c
+  have hzLower : |z| ≤ |z + c| + |c| := by
+    calc
+      |z| = |(z + c) + (-c)| := by congr 1; ring
+      _ ≤ |z + c| + |-c| := abs_add_le _ _
+      _ = |z + c| + |c| := by rw [abs_neg]
+  constructor
+  · linarith [hv.1, hw.1]
+  constructor
+  · linarith [hv.2.1, hw.2.1]
+  constructor
+  · linarith [hv.2.2.1, hw.2.2]
+  · linarith [hv.2.2.2, hw.2.2]
+
+/-- **Localized support thickening.**  If every original field mode lies in
+the normalized annulus and every cutoff mode lies in a normalized margin box,
+then every Minkowski-sum output lies in the corresponding expanded annulus. -/
+theorem outputMode_mem_expandedNormalizedPancakeAnnulus
+    (F : OrientedFrameEquiv) (N : ℕ)
+    {cutoffModes fieldModes : Finset Wavevector}
+    {transverseMargin axialMargin : ℝ}
+    (hfield : ∀ k ∈ fieldModes,
+      InNormalizedPancakeAnnulus
+        (orientedFrameSquareDyadicNormalizedMode F N k))
+    (hcutoff : ∀ p ∈ cutoffModes,
+      InNormalizedPancakeShift transverseMargin axialMargin
+        (orientedFrameSquareDyadicNormalizedMode F N p))
+    {q : Wavevector}
+    (hq : q ∈ finiteCutoffOutputModes cutoffModes fieldModes) :
+    InExpandedNormalizedPancakeAnnulus transverseMargin axialMargin
+      (orientedFrameSquareDyadicNormalizedMode F N q) := by
+  obtain ⟨p, hp, k, hk, hpk⟩ :=
+    (mem_finiteCutoffOutputModes_iff cutoffModes fieldModes q).mp hq
+  rw [← hpk, add_comm,
+    orientedFrameSquareDyadicNormalizedMode_add]
+  exact add_mem_expandedNormalizedPancakeAnnulus
+    (hfield k hk) (hcutoff p hp)
 
 /-- A constant cutoff has zero frequency leakage. -/
 theorem zero_cutoff_outputModes (fieldModes : Finset Wavevector) :
