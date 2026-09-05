@@ -307,6 +307,9 @@ theorem exists_adaptiveQuadraticFourierPackage
       (Fintype.card ι : ℝ) * (delta * (delta + 2)) ≤ 1 / 2) :
     ∃ (coeff : ι → FourierCoeff (Fin 3)) (N₀ : ℕ),
       2 ≤ N₀ ∧
+      (∀ i x,
+        |Complex.normSq (fourierPolynomial (coeff i) x) - weight i x| ≤
+          delta * (delta + 2)) ∧
       (∀ x,
         1 / 2 ≤ ∑ i : ι,
           Complex.normSq (fourierPolynomial (coeff i) x) ∧
@@ -332,7 +335,7 @@ theorem exists_adaptiveQuadraticFourierPackage
   obtain ⟨N₀, hN₀, hmargin⟩ :=
     eventually_familyQuadraticFourierCoeff_support_mem_localizationShift_uniformFrame
       coeff
-  refine ⟨coeff, N₀, hN₀, ?_, hleak', hmargin⟩
+  refine ⟨coeff, N₀, hN₀, happrox', ?_, hleak', hmargin⟩
   intro x
   have hsum : (∑ i : ι, weight i x) = 1 := by
     simpa only [finsum_eq_sum_of_fintype] using
