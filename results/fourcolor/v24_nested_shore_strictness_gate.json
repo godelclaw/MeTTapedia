@@ -1,0 +1,245 @@
+{
+  "cubic_controls": [
+    {
+      "checked_pairs": 554,
+      "edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          3,
+          5
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          5
+        ]
+      ],
+      "name": "triangular_prism",
+      "two_sided_cyclic_pairs": 0,
+      "vertices": 6
+    },
+    {
+      "checked_pairs": 5138,
+      "edges": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          1,
+          5
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          2,
+          6
+        ],
+        [
+          3,
+          7
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          4,
+          6
+        ],
+        [
+          5,
+          7
+        ],
+        [
+          6,
+          7
+        ]
+      ],
+      "name": "cube",
+      "two_sided_cyclic_pairs": 0,
+      "vertices": 8
+    },
+    {
+      "checked_pairs": 352350,
+      "edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          9
+        ],
+        [
+          9,
+          10
+        ],
+        [
+          10,
+          11
+        ],
+        [
+          11,
+          6
+        ],
+        [
+          0,
+          6
+        ],
+        [
+          1,
+          7
+        ],
+        [
+          2,
+          8
+        ],
+        [
+          3,
+          9
+        ],
+        [
+          4,
+          10
+        ],
+        [
+          5,
+          11
+        ]
+      ],
+      "name": "hexagonal_prism",
+      "two_sided_cyclic_pairs": 594,
+      "vertices": 12
+    }
+  ],
+  "exhaustive_rows": [
+    {
+      "checked_pairs": 0,
+      "graphs": 1,
+      "two_sided_cyclic_pairs": 0,
+      "vertices": 0
+    },
+    {
+      "checked_pairs": 0,
+      "graphs": 1,
+      "two_sided_cyclic_pairs": 0,
+      "vertices": 1
+    },
+    {
+      "checked_pairs": 2,
+      "graphs": 2,
+      "two_sided_cyclic_pairs": 0,
+      "vertices": 2
+    },
+    {
+      "checked_pairs": 48,
+      "graphs": 8,
+      "two_sided_cyclic_pairs": 0,
+      "vertices": 3
+    },
+    {
+      "checked_pairs": 1684,
+      "graphs": 64,
+      "two_sided_cyclic_pairs": 0,
+      "vertices": 4
+    },
+    {
+      "checked_pairs": 105360,
+      "graphs": 1024,
+      "two_sided_cyclic_pairs": 0,
+      "vertices": 5
+    }
+  ],
+  "omitted_connectivity_counterexample": {
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "new_side": [
+      0,
+      1
+    ],
+    "old_side": [
+      1
+    ],
+    "vertices": 3
+  },
+  "schema": "fourcolor-nested-shore-strictness-gate-v1",
+  "scope": "Generic incident-shore strictness only; cuts, their full boundaries and boundary order are unchanged. No global chain supply.",
+  "verdict": "strictness_gate_survives_connected_complement"
+}
