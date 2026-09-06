@@ -2228,6 +2228,80 @@ previous instantaneous hard-boundary obstruction is consistent with this
 estimate: its output-frequency growth is paid for by diffusion rather than
 denied.
 
+\paragraph{Exchange-symmetric refinement: the complete low-touch budget.}
+The modules \texttt{PancakeExchangeSymmetricCurl} and
+\texttt{PancakeLowTouchEnergy} now impose physical self-consistency:
+the receiver is the same transverse vorticity field as the source, and
+the finite support $S$ excludes the zero mode.  The existing physical
+Biot--Savart formula then satisfies
+$\widehat\omega_k=(2\pi i)k\times u_k$.  With $q=k+\ell$, Lean checks
+\[
+ T(k,\ell)+S(k,\ell)
+  =(2\pi i)q\times(u_k\times\widehat\omega_\ell)
+    -\tfrac12\widehat\omega_k\times\widehat\omega_\ell.
+\]
+The last term sums to zero on every finite ordered pair family closed
+under exchanging $k$ and $\ell$.  The curl-recovery condition is essential:
+transversality alone does not imply it at zero frequency, as an explicit
+checked counterexample records.
+
+Write $H_L=S\setminus K_L$.  The disjoint physical partition is
+\[
+ F_{S,S}=F_L^{\mathrm{touch}}+F_L^{HH},\qquad
+ F_L^{\mathrm{touch}}=F_{K_L,S}+F_{H_L,K_L},\qquad
+ F_L^{HH}=F_{H_L,H_L}.
+\]
+Both pair families are exchange-symmetric.  Thus
+\[
+ F_L^{\mathrm{touch}}
+   =\nabla\times(u_{K_L}\times\omega+u_{H_L}\times\omega_{K_L}),
+ \qquad
+ F_L^{HH}=\nabla\times(u_{H_L}\times\omega_{H_L}).
+\]
+This repartitions the \emph{full} nonlinearity.  The old high-source
+term alone is $I_L^+=I_{H_L,K_L}+I_{H_L,H_L}$; it is not the sum of
+the complete low-touch and high-high contributions.
+
+Let $m_L=\#K_L$, $U(t)=\sum_{k\in S}|u_k(t)|^2$, and
+$\Omega(t)=\sum_{k\in S}|\widehat\omega_k(t)|^2$.
+The complex Lagrange identity gives the sharp Euclidean estimate
+$|a\times b|\le |a|\,|b|$.  A rectangular Schur estimate for the
+output-curl convolution, applied once in each input orientation, proves
+for every $\theta>0$ that
+\begin{equation}\label{eq:ns-low-touch-absorption}
+ |I_L^{\mathrm{touch}}|
+ \le \theta\nu(2\pi)^2D_Q+C_L^{\mathrm{touch}},\qquad
+ C_L^{\mathrm{touch}}=\frac{4m_L}{\theta\nu}U\Omega.
+\end{equation}
+No lower bound on output frequency, same-sector receiver confinement,
+or moving-frame cancellation is used.  The output projector remains the
+actual fixed misalignment projector.
+
+If $U(t)\le U_0$, $U_0\ge0$, and
+$2\nu\int_0^T\Omega(t)\,dt\le U_0$, with the displayed rates
+interval-integrable, Lean proves
+\begin{equation}\label{eq:ns-low-touch-time-cost}
+ \int_0^T C_L^{\mathrm{touch}}(t)\,dt
+ \le\frac{2m_LU_0^2}{\theta\nu^2}
+ \le\frac{2(2L+1)^3U_0^2}{\theta\nu^2}
+ \quad(L\in\mathbb N).
+\end{equation}
+It also integrates the absolute flux in
+\eqref{eq:ns-low-touch-absorption}, retaining its viscous payment.
+Under the full self-consistent finite vorticity equation, the resulting
+checked evolution estimate is
+\begin{equation}\label{eq:ns-high-high-remainder}
+ E_Q(T)+(2-\theta)\nu(2\pi)^2\int_0^T D_Q(t)\,dt
+ \le E_Q(0)+\int_0^T I_L^{HH}(t)\,dt
+      +\frac{2m_LU_0^2}{\theta\nu^2}.
+\end{equation}
+Choosing $0<\theta<2$ retains positive output dissipation.  The cost
+is uniform in time horizon, output frequency and output count, and in the
+ambient retained support, at a \emph{fixed} low cutoff and uniform $U_0$.
+The kinetic/enstrophy estimates, integrability, and solution realization
+remain explicit hypotheses.  The high-high dynamics, moving-frame terms,
+field-level strain transfer, and arbitrary-data continuation remain open.
+
 The pressure Hessian enters through the strain-eigenframe equation instead.
 Differentiating $Se_i=\lambda_i e_i$ and pairing with $e_j$, $i\ne j$, gives
 \[
@@ -2473,6 +2547,8 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeViscousMisalignmentAbsorption}, and
 \texttt{PancakeSameSectorDissipation}, and
 \texttt{PancakeIncomingLowSourceEnergy}, and
+\texttt{PancakeExchangeSymmetricCurl}, and
+\texttt{PancakeLowTouchEnergy}, and
 \texttt{SpatialBKMIntegrand}, and
 \texttt{PancakeAdaptiveStrainCover}, and
 \texttt{PancakeAdaptiveFourierPartition}, and
