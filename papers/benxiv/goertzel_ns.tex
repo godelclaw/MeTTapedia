@@ -178,6 +178,12 @@ The resulting integrated estimate retains the signed high-high remainder;
 it does not assume separate energy, enstrophy, or time-integrability budgets.
 Existence and invariant-subspace preservation of the coefficient paths are
 not supplied by this a priori bridge.
+The moving-localization energy is now formulated with the positive
+noncommuting sandwich $C^*PC$, with transport and diffusion domains explicit.
+Its material directional rate $F=\dot P+[B,P]$ is proved off-diagonal:
+the quadratic transfer pairs the coherent and misaligned amplitudes.
+The exact identities are specialized to the physical finite Fourier
+operators, but do not bound $F$ for the actual strain-eigenframe path.
 The remaining smooth projector collar, space--time treatment of the small-gap
 branch, and conversion from this $L^2$/defect control to the scale-local
 endpoint budget remain open.  The
@@ -2363,6 +2369,81 @@ They also do not replace the fixed misalignment projector by the moving
 strain-eigenframe projector.  High-high control, that moving-frame passage,
 the scale-critical strain budget, and BKM continuation remain open.
 
+\paragraph{Moving localization: positive energy and material projector tangency.}
+\texttt{PancakeLocalizedQuadraticEnergy} implements the noncommuting
+localized energy
+\[
+ A=C^*PC,\qquad \mathcal E_A=\langle\omega,A\omega\rangle
+       =\|PC\omega\|_2^2
+\]
+for an orthogonal projector $P$.  No commutation of $C$ and $P$ is
+required.  Its coherent/complementary partner is $C^*(I-P)C$, and the
+two operators sum exactly to $C^*C$.  The unsandwiched expression
+$C^2P$ is not used as though it were self-adjoint.
+
+For $\dot\omega=-B\omega+s+\nu\Delta\omega$, the checked identity is
+\begin{align*}
+ \dot{\mathcal E}_A
+  ={}&\langle\omega,\dot A\omega\rangle
+      +\langle\omega,[B,A]\omega\rangle
+      +2\langle A\omega,s\rangle\\
+    &+\nu\langle\omega,(A\Delta+\Delta A)\omega\rangle.
+\end{align*}
+The abstract statement requires skew symmetry of $B$ and symmetry of
+$\Delta$ on an explicit common core containing $\omega$ and $A\omega$;
+neither unbounded operator is declared bounded on ambient $L^2$.
+Nor is advection treated as an endomorphism of divergence-free fields.
+Finite complete operator partitions cancel the summed motion and signed
+transport-transfer terms, not the corresponding individual sector terms.
+
+Writing $z=C\omega$, the sum of the motion and transport terms is exactly
+\[
+ 2\langle Pz,(\dot C+[B,C])\omega\rangle
+   +\langle z,(\dot P+[B,P])z\rangle.
+\]
+The common-core hypotheses now include $z$ and $Pz$.
+The diffusion anticommutator remains explicit; positivity of $A$ alone
+does not turn it into a commuting negative dissipation term.
+
+\texttt{PancakeMaterialProjectorTangent} sharpens the second term.
+For a differentiable path of orthogonal projectors and bounded
+skew-adjoint $B$, differentiation of $P^2=P$ proves that
+\[
+ F:=\dot P+[B,P],\qquad F^*=F,\qquad FP+PF=F,
+ \qquad PFP=0.
+\]
+Consequently Lean checks the exact off-diagonal identity and bounds
+\begin{align*}
+ \langle z,Fz\rangle&=2\langle Pz,F(I-P)z\rangle,\\
+ |\langle z,Fz\rangle|&\le2\|F\|\,\|Pz\|_2\,\|(I-P)z\|_2\\
+ &\le\rho\|(I-P)z\|_2^2
+        +\frac{\|F\|^2}{\rho}\|Pz\|_2^2\qquad(\rho>0).
+\end{align*}
+For the complementary energy the projector-motion term has the opposite
+sign, so the same absolute estimate applies.  This retains a misalignment
+factor; it does not assert that the squared material-rate cost is integrable.
+Vanishing of the diagonal block is instantaneous and does not imply
+persistence of a pure coherent or misaligned sector.
+
+\texttt{PancakeFiniteLocalizedEvolution} constructs the ambient retained
+Hilbert space $\mathbb C^{S\times\{0,1,2\}}$, its restriction/extension
+maps, and the actual advection and Laplacian matrices.  Their real inner
+product agrees with the previous Fourier Hermitian sum, and their squared
+norm with the previous coefficient energy.  Advection is exactly the
+negative of the physical RHS transport; its skew-adjointness follows from
+source reality.  The Laplacian is the physical $(2\pi i)^2|q|^2$ multiplier.
+The moving-energy identity follows directly from a physical velocity path
+by the preceding curl bridge, with no separate abstract vorticity ODE or
+transport identity assumed.  The off-diagonal material-rate estimate is
+also specialized to this actual finite advection operator.
+
+The localizer and projector paths remain explicit inputs.  Constructing
+them from the actual evolving strain, bounding their material rates and
+diffusion errors uniformly in truncation and dyadic scale, controlling the
+high-high channel, and reaching the pointwise strain/BKM budget remain
+open.  The bounded-operator tangent theorem does not by itself extend to
+unbounded advection on the infinite-dimensional ambient space.
+
 The pressure Hessian enters through the strain-eigenframe equation instead.
 Differentiating $Se_i=\lambda_i e_i$ and pairing with $e_j$, $i\ne j$, gives
 \[
@@ -2612,6 +2693,9 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeLowTouchEnergy}, and
 \texttt{PancakeGalerkinKineticEnergy}, and
 \texttt{PancakeGalerkinVorticityBridge}, and
+\texttt{PancakeLocalizedQuadraticEnergy}, and
+\texttt{PancakeMaterialProjectorTangent}, and
+\texttt{PancakeFiniteLocalizedEvolution}, and
 \texttt{SpatialBKMIntegrand}, and
 \texttt{PancakeAdaptiveStrainCover}, and
 \texttt{PancakeAdaptiveFourierPartition}, and
