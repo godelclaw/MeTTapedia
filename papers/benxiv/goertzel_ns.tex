@@ -170,6 +170,14 @@ also constructed for arbitrary Fourier data, split exactly into pancake and
 nonpancake shares, and reconciled with the square-dyadic multiplier scales.
 For componentwise $L^2$ fields their shell energies form a summable series;
 the zero-mode energy plus that series is exactly the physical $L^2$ energy.
+At the finite dynamical level, the physical velocity equation now supplies
+the exact kinetic-energy identity and the vorticity equation used by the
+misalignment estimates.  Exchange symmetry makes every interaction with at
+least one fixed-cutoff low input affordable from that energy identity.
+The resulting integrated estimate retains the signed high-high remainder;
+it does not assume separate energy, enstrophy, or time-integrability budgets.
+Existence and invariant-subspace preservation of the coefficient paths are
+not supplied by this a priori bridge.
 The remaining smooth projector collar, space--time treatment of the small-gap
 branch, and conversion from this $L^2$/defect control to the scale-local
 endpoint budget remain open.  The
@@ -2302,6 +2310,59 @@ The kinetic/enstrophy estimates, integrability, and solution realization
 remain explicit hypotheses.  The high-high dynamics, moving-frame terms,
 field-level strain transfer, and arbitrary-data continuation remain open.
 
+\paragraph{Physical velocity realization of the energy and vorticity inputs.}
+\texttt{PancakeGalerkinKineticEnergy} and
+\texttt{PancakeGalerkinVorticityBridge} now discharge the independent
+kinetic/enstrophy, vorticity-evolution, and integrability inputs above for
+coefficient paths satisfying the physical finite velocity equation.
+Let $S$ be a finite nonzero mode set closed under negation and let
+$u_k(t)$ be conjugate-symmetric and transverse, $k\cdot u_k(t)=0$,
+on $[0,T]$.  Write $c=2\pi i$ and define
+\[
+ \widehat\omega_k=c\,k\times u_k,\qquad
+ V_q(u)=-c P_q\!\sum_{\substack{k,\ell\in S\\ k+\ell=q}}
+              (\ell\cdot u_k)u_\ell
+             -\nu(2\pi)^2|q|^2u_q.
+\]
+The source velocity recovered from $\widehat\omega$ is exactly $u$ on
+$S$.  This identifies the implemented RHS with $V$, including the
+unit-torus normalization.  For every path with $\dot u_q=V_q(u)$ on
+the retained modes, pressure does no kinetic work and signed transport
+cancels.  Lean proves
+\begin{equation}\label{eq:ns-galerkin-kinetic-identity}
+ U(T)+2\nu\int_0^T\Omega(t)\,dt=U(0).
+\end{equation}
+The coefficient equation itself implies continuity of the finite enstrophy
+sum and hence its time integrability; that integrability is not a premise.
+
+For the curl bridge, exchanging the two inputs cancels the gradient defect
+in the identity between $u\times\operatorname{curl}u$ and negative velocity
+convection.  Pressure has zero curl and viscosity commutes with curl.
+Consequently the exact implemented coefficient identity is
+\[
+ c\,q\times V_q(u)
+   =F_{S,S}(\widehat\omega,\widehat\omega)_q
+      -\nu(2\pi)^2|q|^2\widehat\omega_q.
+\]
+The pathwise vorticity ODE follows by differentiating the finite linear curl
+map.  Continuity of the fixed misalignment projector and finite bilinear
+convolution supplies all remaining rate-integrability facts.
+
+Thus \texttt{integrated\_highHigh\_remainder\_of\_velocityRHS} proves
+\eqref{eq:ns-high-high-remainder} for every output subset $M\subseteq S$
+using $U_0=U(0)$, without independent kinetic, enstrophy, vorticity-ODE,
+or rate-integrability assumptions.  Its natural-cutoff version replaces
+$m_L$ by $(2L+1)^3$.  The output dynamics still use the full retained
+source and receiver sets; the selected output sector is not declared
+autonomous.
+
+These results are a priori theorems about paths satisfying the finite ODE.
+They do not construct such paths, prove preservation of the real transverse
+subspace from initial data, or pass to an infinite-dimensional solution.
+They also do not replace the fixed misalignment projector by the moving
+strain-eigenframe projector.  High-high control, that moving-frame passage,
+the scale-critical strain budget, and BKM continuation remain open.
+
 The pressure Hessian enters through the strain-eigenframe equation instead.
 Differentiating $Se_i=\lambda_i e_i$ and pairing with $e_j$, $i\ne j$, gives
 \[
@@ -2549,6 +2610,8 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeIncomingLowSourceEnergy}, and
 \texttt{PancakeExchangeSymmetricCurl}, and
 \texttt{PancakeLowTouchEnergy}, and
+\texttt{PancakeGalerkinKineticEnergy}, and
+\texttt{PancakeGalerkinVorticityBridge}, and
 \texttt{SpatialBKMIntegrand}, and
 \texttt{PancakeAdaptiveStrainCover}, and
 \texttt{PancakeAdaptiveFourierPartition}, and
