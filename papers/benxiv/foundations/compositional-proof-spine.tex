@@ -11356,3 +11356,113 @@ Cell closure remains important for making the base small enough to replay,
 while the raw finite semantics no longer depends on the refuted closed-web
 carrier.  Neither Trail Completability nor Kauffman factor gluing lies on
 this direct reductive critical path.
+
+\subsection{Generic handoff integration and strict nested-cut transport}
+\label{sec:generic-handoff-integration}
+
+The generic part of the development at lab revision
+\texttt{5ed2e5968} has been integrated selectively.  The imported consumers
+are exact side-colouring semantics, arbitrary-shape slab and node
+constructions, colour-orbit state compression, and a sound and complete
+enumerator for a presented tangle.  Configuration catalogues, flower
+certificates, and their production sweeps are not part of this integration.
+Concrete width-specific zigzag tables remain on the lab branch; the generic
+consumers do not require their decision computations.
+
+\begin{proposition}[compressed bound for supplied nested sides]
+\label{prop:compressed-supplied-nested-sides}
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.le_of_nested_nodes_orbit}
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.le_of_nested_sides_five}
+In a graph-backed vertex-minimal Tait counterexample, a strictly nested
+family of literal nodes of exact boundary width $k$ and middle bound $w$
+has at most
+\[
+                 (6w+1)k!\,2^{q_k}
+\]
+members, where $q_k$ is the number of global colour-permutation orbits of
+zero-sum nonzero boundary words.  In particular, $q_5=10$, and a family of
+good sides of exact width five with connected internal edge shores and
+connected complementary edge shores has at most
+\[
+                         31\cdot120\cdot2^{10}=3{,}809{,}280
+\]
+members, provided its internal edge shores are strictly nested.
+\end{proposition}
+
+\begin{proof}
+The actual support of a cubic vertex side has zero colour sum and is
+invariant under the six global permutations of nonzero colours.  Its set
+of orbit keys therefore determines the support exactly.  Keep the hub
+rotation and shore-size phase, and apply pigeonhole to these data and the
+key set.  Equality recovers the original phased state, so the existing
+strict physical replacement contradicts minimality.
+\end{proof}
+
+This bound counts supplied sides, not vertices of the ambient graph.  It is
+universe-polymorphic.  Boundary coordinates are supplied bijections, with
+their induced hub rotation retained in the state; cyclic order has not been
+discarded.  Neither the good-side condition nor strict shore growth follows
+merely from having local patches of small width.
+
+\begin{lemma}[connected exterior forces strict shore growth]
+\label{lem:connected-exterior-strict-shore}
+\Sverified{Mettapedia.GraphTheory.FourColor.NestedCyclicCutStrictness.incidentEdgeShore_ssubset}
+\Sverified{Mettapedia.GraphTheory.FourColor.NestedCyclicCutStrictness.cyclicCut_nodes_strict}
+Let $S\subsetneq T\subsetneq V(G)$, and suppose $G[V(G)\setminus S]$
+is connected.  Assign to a vertex side every edge with at least one endpoint
+there.  Then its incident-edge shores satisfy $I(S)\subsetneq I(T)$.
+Consequently the connected-cyclic-cut node constructor preserves strict
+vertex-side nesting, without an additional fresh-edge hypothesis.
+\end{lemma}
+
+\begin{proof}
+Choose $x\in T\setminus S$ and $y\notin T$.  A path from $x$ to $y$
+inside the old complement crosses from $T\setminus S$ to $V(G)\setminus T$.
+The crossing edge belongs to $I(T)$ but not to $I(S)$.  The existing
+incident-shore map is monotone, proving strictness.  For realized cyclic
+cuts the outer cycle certifies $y$; their widths, vertex sides and boundary
+order are unchanged by this argument.
+\end{proof}
+
+The pre-formalization gate checks all labelled simple graphs through five
+vertices and three cubic controls, including $594$ nested pairs with cycles
+on both sides in the hexagonal prism.  The three-vertex path shows that
+dropping connectedness of the old exterior permits equal shores at strictly
+nested vertex sides.  These are generic geometric tests, not target
+counterexamples.  The implementation and receipts are
+\texttt{tools/fourcolor/v24\_nested\_shore\_strictness\_gate.py} and
+\texttt{results/fourcolor/v24\_nested\_shore\_strictness\_gate.json}.
+
+\begin{proposition}[presented enumeration has literal tangle semantics]
+\label{prop:presented-enumeration-literal-semantics}
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.Presented.Pres.enumMask_testBit_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.Presented.Pres.accepts_iff}
+For a valid finite presentation with $k>0$ ports on each side, bit $Y<3^k$
+of its computed output mask at input $X$ is set exactly when there is a
+proper nonzero internal colouring extending the two encoded boundary words;
+equivalently the constructed two-sided tangle accepts those words.
+\end{proposition}
+
+This is an enumeration correctness theorem, not a certificate of closure of
+the route's physical alphabet.  Initial states, accepting states, coverage,
+and the concrete finite-base audit remain separate obligations.
+
+\paragraph{Trail-refutation scope.}
+The lab's \texttt{KauffmanTrailCounterexample.all\_ok} checks its explicitly
+defined finite transition certificate: proper full colouring, a list of
+$36$ defect states, component partitions, switch closure, and absence of a
+component joining the two tips.  Its Boolean statement does not itself
+construct a spherical rotation system or identify its transition system
+with the manuscript's frozen-boundary trail predicate.  These semantic
+qualifications must accompany any use of that certificate.  The trail
+terminal assembly above remains retired; no stronger interpretation of this
+additional finite certificate is needed by the direct Count assembly.
+The latter still explicitly takes raw bounded-width decomposition and the
+route-native finite base as premises.  Their absence is not cured by the
+fact that its import graph is unchanged.
+
+The fixed obligation-weighted ledger remains $57/100$.  The results here
+strengthen already credited generic infrastructure; they do not discharge
+D1b's long-chain supply, either D1c transfer, D2b's executable physical
+closure, or D4b's base.  In particular, the strictness lemma does not bound
+the complete interface of a long geodesic or control its lateral material.
