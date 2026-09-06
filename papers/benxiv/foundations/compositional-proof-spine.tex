@@ -11466,3 +11466,104 @@ strengthen already credited generic infrastructure; they do not discharge
 D1b's long-chain supply, either D1c transfer, D2b's executable physical
 closure, or D4b's base.  In particular, the strictness lemma does not bound
 the complete interface of a long geodesic or control its lateral material.
+
+\subsection{Optimizing the complete geodesic interface}
+\label{sec:canonical-geodesic-cuts}
+
+A large frontier for one chosen sweep is not a lower bound on the best
+interface.  To test whether rerouting can repair the geodesic construction,
+allow every off-axis vertex to move and minimize the complete cut.  The
+following generic construction removes arbitrary choices from that attempt.
+
+\begin{theorem}[canonical terminal cuts nest]
+\label{thm:canonical-terminal-cuts}
+\Sverified{Mettapedia.GraphTheory.FourColor.CanonicalTerminalCuts.exists_canonical}
+\Sverified{Mettapedia.GraphTheory.FourColor.CanonicalTerminalCuts.canonical_mono}
+\Sverified{Mettapedia.GraphTheory.FourColor.CanonicalTerminalCuts.canonical_ssubset}
+In a finite multigraph, let $A,B$ be disjoint vertex sets.  Among all sides
+$S$ containing $A$ and disjoint from $B$, choose one minimizing
+$|\delta(S)|$, then $|S|$.  Such a canonical side exists and is unique.
+If $A\subseteq A'$ and $B'\subseteq B$, the canonical sides satisfy
+$S\subseteq S'$.  If also $B\cap A'\ne\varnothing$, then
+$S\subsetneq S'$.
+\end{theorem}
+
+\begin{proof}
+Finite minimization of $(|V|+1)|\delta(S)|+|S|$ gives existence with the
+stated tie-break.  The edge-cut cardinality is submodular, as checked one
+edge at a time.  For canonical sides $S,T$ at the two terminal pairs,
+$S\cap T$ is feasible for the earlier pair and $S\cup T$ for the later
+one.  Minimality and submodularity force equality of the respective cut
+cardinalities.  The first side's cardinality tie-break then gives
+$S\cap T=S$.  Applying nesting in both directions proves uniqueness.
+A vertex in $B\cap A'$ belongs to the later side and not the earlier one,
+proving strictness.
+\end{proof}
+
+This is a finite construction, not an assumed interface supply.  Lean's
+selection uses classical choice from the proved finite minimum; the lab's
+flow algorithm is a separate executable implementation, not yet identified
+with that selection by a Lean theorem.  Neither the construction nor its
+nesting theorem supplies a uniform width bound, connectedness, or boundary
+order.
+
+\begin{lemma}[path packing lower-bounds every feasible cut]
+\label{lem:terminal-path-packing-bound}
+\Sverified{Mettapedia.GraphTheory.FourColor.CanonicalTerminalCuts.paths_le_boundary}
+If $r$ pairwise edge-disjoint paths each meet $A$ and $B$, every side
+containing $A$ and avoiding $B$ has at least $r$ boundary edges.
+\end{lemma}
+
+\begin{proof}
+Each path crosses the boundary.  Choose a crossed edge on each path;
+edge-disjointness makes the choice injective into the complete cut.
+\end{proof}
+
+\paragraph{Calibrated laboratory.}
+Along a facial-dual diameter geodesic $F_0,\ldots,F_L$, fix all vertices
+of $F_0,\ldots,F_i$ inside and all vertices of
+$F_{i+2},\ldots,F_L$ outside.  The intervening face is unconstrained.
+In the tested cubic maps these terminal sets are disjoint, connected, and
+contain face cycles.  A terminal changes sides after two steps, so canonical
+cuts give strict progress at that spacing.  The lab checks connectivity of
+both resulting sides and traces the complete cut as one simple dual cycle,
+recording its edge order.  It also supplies an equally large family of
+edge-disjoint terminal paths: the displayed cut is an upper bound, and the
+packing is a matching lower bound on \emph{every} feasible cut.
+
+For the source tube controls of lengths $1$ through $12$, all optimum
+widths are five.  On Goldberg controls the maximum optimum widths are:
+\[
+\begin{array}{c|rrrrrr}
+\text{frequency}&2&4&6&8&10&12\\ \hline
+\text{optimum complete width}&8&14&20&26&32&38\\
+\text{distinct nested sides}&5&11&17&23&29&35.
+\end{array}
+\]
+Thus the local-carrier bound $30$ does not even bound the optimally rerouted
+interfaces for these terminal requirements.  Unlike the earlier large
+measured frontiers, these are lower bounds for the specified edge-separation
+problem.  They count cut edges (ports), not middle-set vertices; they are
+not lower bounds on optimum branchwidth.  If only the final
+cap is required to stay outside while the prefix grows, all tested Goldberg
+widths are five, but only two distinct canonical sides remain.  Small width
+alone therefore does not give the needed long chain.
+
+The script \texttt{tools/fourcolor/v24\_geodesic\_mincut\_gate.py} and
+\texttt{results/fourcolor/v24\_geodesic\_mincut\_gate.json} record these
+tests.  The small-case gate also checks every graph through four vertices
+and every monotone terminal transition; its flow solver is compared against
+exhaustive minimization on connected terminal controls.  Saved worst-cut
+certificates can be checked without rerunning the flow solver, and duplicated
+path witnesses are rejected.  These numerical graph witnesses are checked
+by the executable verifier, not instantiated as kernel theorems about the
+Goldberg graphs.  The two generic results above are kernel-checked.
+
+No tested graph is a claimed zero-target counterexample.  A finite list of
+growing optima is not itself a theorem of unbounded growth, and these fixed
+terminal requirements do not exhaust every possible compositional
+decomposition.  What fails here is the proposed repair that lets arbitrary
+lateral reassignment turn this ordered geodesic sweep into a width-$30$
+chain.  D1b/D1c still need a target-specific width-and-progress argument or
+a different source-faithful global construction.  The fixed ledger remains
+$57/100$.
