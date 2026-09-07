@@ -4394,8 +4394,91 @@ evolutions or smoothness bounds.
 This closes a local nonlinear-consistency hypothesis gap. It does not
 bound the full misalignment-strain accumulation through an arbitrary
 lifespan, close the pressure and moving-weight budgets, or prove global
-BKM continuation. Higher material differentiability and the corresponding
-pointwise evolution identities still require their explicit bridges.
+BKM continuation. The following step supplies the local pointwise velocity
+equation; the higher material-strain identities still require their bridges.
+
+\paragraph{From coefficient evolution to the pointwise projected PDE.}
+The second-moment envelope now pays the full velocity right-hand side,
+summed over every output frequency. Define
+\[
+ (g*g)(q)=\sum_k g(k)g(q-k),\qquad
+ H_{\nu,g}(q)=3(2\pi)(g*g)(q)+|\nu|(2\pi)^2g(q).
+\]
+In \texttt{PancakeInfiniteVelocityEnvelope}, the map
+$(q,k)\mapsto(k,q-k)$ reindexes a summable product envelope, proving
+$g*g\in\ell^1$. The first moments of the two inputs absorb the output
+derivative in convection, and the second moment absorbs viscosity.
+Thus, for the infinite velocity RHS $R_\nu(a)$,
+\[
+ |R_\nu(a(t))_q|\le H_{\nu,g}(q),\qquad
+ \sum_q H_{\nu,g}(q)<\infty\quad(0\le t\le T).
+\]
+The factor three is the proved comparison from componentwise bounds to
+the Euclidean coefficient norm, not a mode-count loss.
+
+\texttt{PancakeInfiniteFourierTime} realizes each coefficient-to-mode
+map as a continuous linear map into $C(\mathbb T^3;\mathbb C^3)$.
+The summable derivative envelope permits time differentiation of the
+series on $(0,T)$ in this Banach space:
+\[
+ \frac{d}{dt}U(t)=F_{\mathrm{id},R_\nu(a(t))}.
+\]
+The right-hand side is continuous in the uniform spatial norm on $[0,T]$,
+and jointly continuous in time and space. No derivative equation is
+claimed for the artificial extension beyond the local interval.
+
+The spatial operators are ordinary derivatives, not prescribed symbols.
+\texttt{PancakeInfiniteSpatialLaplacian} proves, for every pair of coordinate
+directions $j,l$,
+\[
+ \partial_l\partial_jF_{\mathrm{id},a}
+   =F_{\mathrm{id},(2\pi i)^2k_lk_j a_k},\qquad
+ \Delta F_{\mathrm{id},a}
+   =F_{\mathrm{id},(2\pi i)^2|k|^2 a_k}.
+\]
+Consequently the reconstructed viscous term is exactly $\nu\Delta U$.
+
+The nonlinear identification uses actual Fourier integrals.
+\texttt{PancakePhysicalConvectionCoefficients} first proves the product
+formula for a continuous scalar field $f$,
+\[
+ \widehat{U_i f}(q)=\sum_k a_{k,i}\widehat f(q-k).
+\]
+Applying it to the coordinate derivatives of $U$, and using
+$k\cdot a_k=0$, yields
+\[
+ \widehat{(U\cdot\nabla)U}_i(q)
+  =2\pi i\sum_k\bigl((q-k)\cdot a_k\bigr)a_{q-k,i}
+  =2\pi i\sum_k(q\cdot a_k)a_{q-k,i}.
+\]
+All product integrations and finite/infinite sum exchanges have their
+summability proofs. The multiplier in the coefficient evolution therefore
+acts on the Fourier coefficients of the physical advection field.
+
+Finally, \texttt{PancakeLocalProjectedEquation} defines the spatial Leray
+operator from those actual Fourier integrals:
+$\mathbb P f=F_{\mathrm{id},\,P_q\widehat f(q)}$.
+Its application to advection has an explicitly summable coefficient series.
+The constructed local field satisfies, pointwise,
+\[
+ \boxed{\quad
+ \partial_t U=-\mathbb P\bigl((U\cdot\nabla)U\bigr)+\nu\Delta U,\qquad
+ \nabla\cdot U=0,\qquad 0<t<T.
+ \quad}
+\]
+The theorem
+\texttt{exists\_physical\_local\_projected\_equation}
+constructs this field from the order-eight physical initial jets, positive
+viscosity, real conjugacy, mean-zero and Fourier transversality hypotheses.
+It also proves $U(0)=f$ and reality of the evolving field. The divergence in
+the display is computed from actual coordinate derivatives.
+
+This is a local Navier--Stokes equation in pressure-projected form.
+It neither constructs the scalar pressure and its material Hessian here,
+nor establishes the route's all-time strain or misalignment bounds.
+The next material step must keep the same field while reconstructing those
+pressure and differentiated-evolution channels; local existence alone
+does not imply global continuation.
 
 
 
