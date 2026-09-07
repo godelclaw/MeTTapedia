@@ -4705,6 +4705,14 @@ colouring is different from \(C_{uv}\), since their common-core
 restrictions were assumed unequal.
 \end{proof}
 
+The boundary alternative is an unrooted encounter, not a strand required
+to start near the first deletion. Subsection~\ref{sec:separated-deletion-boundary}
+below supplies ambient-separated sites, rules out common-core repair
+there, and proves that this boundary alternative already has a local
+witness at the original colouring. The conditional repair-cycle and
+no-section results below remain valid; their no-boundary hypothesis
+cannot hold when the selected family contains such a separated pair.
+
 \begin{corollary}[nine-site Tait common-core residue]
 \label{cor:nine-site-tait-common-core-residue}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OrderedMeshCommonCoreDisagreementResidue.exists_taitCommonCoreResidue_in_any_nine_row_intervals}
@@ -13595,3 +13603,108 @@ perimeter from this named-cofaciality reduction's threshold, not from any
 consumer which genuinely needs complete hole words, lengths or facial
 cycles. The stronger whole-face construction remains available for those
 consumers. The fixed obligation ledger remains $57/100$.
+
+\subsection{Separated mesh deletions: exact gluing and the unrooted boundary limit}
+\label{sec:separated-deletion-boundary}
+
+The ordered-mesh alternative still needs a target-facing reduction. Its
+common-core route admits a useful simplification, but the simplification
+also exposes why the existing boundary observable is not a supply theorem.
+No wall exclusion or new ledger credit is asserted here.
+
+\paragraph{Two patches, with full local coverage.}
+For a finite vertex set $S$, write $N[S]$ for its closed neighborhood in
+the full ambient graph. Let $S$ and $T$ be two adjacent deleted vertex
+pairs. If
+\[
+                         N[S]\cap N[T]=\varnothing,
+\]
+the complements $G-S$ and $G-T$ jointly contain every ambient edge and
+every incident pair of ambient edges. Indeed, any endpoint of an edge
+removed by $S$ lies in $N[S]$. If neither deletion retained an edge, its
+endpoint would lie in both neighborhoods. If neither retained an incident
+pair, their shared vertex would lie in both neighborhoods, using one
+removed edge from each deletion.
+\Sverified{Mettapedia.GraphTheory.FourColor.SeparatedPairDeletion.retained_or_retained}
+\Sverified{Mettapedia.GraphTheory.FourColor.SeparatedPairDeletion.adjacent_retained_or_retained}
+
+Two proper nonzero deletion colourings which agree literally on
+$G-(S\cup T)$ therefore glue through the existing atlas theorem to an
+ambient Tait colouring. In a graph-backed vertex-minimal counterexample,
+no choices of the two deletion colourings can have equal common-core
+restrictions. In particular, a proper Kempe-repaired representative cannot
+agree either: the strict-repair alternative of
+Corollary~\ref{cor:common-core-disagreement-residue} is impossible at this
+pair, leaving its branching/boundary disjunction.
+\Sverified{Mettapedia.GraphTheory.FourColor.SeparatedPairDeletion.not_commonCore_eq_of_minimal}
+\Sverified{Mettapedia.GraphTheory.FourColor.SeparatedPairDeletion.branching_or_taitReachesSecondPair_of_separated}
+
+\paragraph{Ambient separation is constructed, not presumed.}
+In maximum degree $d$,
+\[
+                  |N[S]|\leq(d+1)|S|.
+\]
+Thus for a cubic graph and a deleted pair $S$, the twice-closed
+neighborhood $N[N[S]]$ has at most $32$ vertices. The first and second
+endpoint maps of the designated steps on an ordered mesh row are
+separately injective. At most $64$ such steps meet this forbidden set.
+If the row has $n\geq65$ branch intervals, every designated source step
+has a different target step with both endpoints outside $N[N[S]]$.
+Symmetry of adjacency gives disjoint closed neighborhoods. All ambient
+shortcuts and lateral attachments are included in this argument; row
+distance alone is not used as a separation certificate.
+\Sverified{Mettapedia.GraphTheory.FourColor.SeparatedPairDeletion.card_close_le}
+\Sverified{Mettapedia.GraphTheory.FourColor.SeparatedPairDeletion.disjoint_close_of_avoid_twice}
+\Sverified{Mettapedia.GraphTheory.FourColor.SeparatedOrderedMeshSites.exists_separated_rowSite}
+\Sverified{Mettapedia.GraphTheory.FourColor.SeparatedOrderedMeshSites.exists_rowSite_with_no_commonCore_agreement}
+\Sverified{Mettapedia.GraphTheory.FourColor.SeparatedOrderedMeshSites.exists_rowSite_forcing_branching_or_boundary}
+
+\paragraph{The boundary horn is already true locally.}
+Fix any proper nonzero colouring of $G-S$. Choose a port $z$ of the
+second deleted pair $T$, with exposed edge $tz$ for $t\in T$.
+The neighborhoods are disjoint, so $z\notin N[S]$ and every edge at $z$
+survives the first deletion. Cubicity at $z$ supplies a neighbor
+$w\notin T$. Consequently $zw$ is an edge of the common core, while
+$tz$ is an adjacent exposed edge of $G-S$.
+
+Select their two colours. They are distinct by properness and nonzero by
+the Tait condition. The common-core two-colour component containing $zw$
+touches $tz$, exactly witnessing
+\texttt{FirstComponentReachesSecondPair}. Taking the current colouring
+to be the original base and the preceding Kempe sequence to be empty
+then witnesses \texttt{FirstTaitOrbitReachesSecondPair}.
+This construction requires neither a target colouring nor planarity,
+minimality, a mesh, or any path from the first deletion.
+\Sverified{Mettapedia.GraphTheory.FourColor.SeparatedDeletionBoundary.atBase_of_adjacent_edges}
+\Sverified{Mettapedia.GraphTheory.FourColor.SeparatedDeletionBoundary.atBase_of_separated}
+\Sverified{Mettapedia.GraphTheory.FourColor.SeparatedDeletionBoundary.orbit_of_separated}
+\Sverified{Mettapedia.GraphTheory.FourColor.SeparatedDeletionBoundary.exists_rowSite_with_atBase_boundary}
+
+The actual nine-site horn predicate is therefore true for every assignment
+whenever its selected family contains a separated pair. Its universal
+no-horn premise is then false, not a surviving difficult synchronization
+case. This does not assert separation for every arbitrary nine-site
+selection, nor refute the earlier conditional theorems.
+\Sverified{Mettapedia.GraphTheory.FourColor.SeparatedDeletionBoundary.nineSite_horn_of_separated_pair}
+\Sverified{Mettapedia.GraphTheory.FourColor.SeparatedDeletionBoundary.not_nineSite_no_horn_of_separated_pair}
+
+\paragraph{Verification and remaining implication.}
+The structural gate checks $12900$ labelled subcubic graphs on four to
+six vertices, $186270$ deletion-pair comparisons, and $780$ designated
+sources in full ambient cubic row controls. Its calibrations are all
+$64$ labelled four-vertex graphs and the $70$ labelled cubic six-vertex
+graphs. Negative controls distinguish disjoint deletions, coverage of
+individual edges, and coverage of incident pairs; an off-row shortcut
+can invalidate separation. Every long-row control also supplies the
+local two-edge boundary witness. No colourings or configuration
+certificates are enumerated.
+
+The next high-width implication must retain more information than this
+unrooted encounter: for example, a component selected by an actual
+discrepancy-repair sequence, with the anchoring or separating data needed
+by a physical reduction. The present theorem does not supply those data
+or justify assuming them. It removes a common-core repair branch at
+supplied separated sites and identifies the exact weakness of its
+remaining boundary observable. Fixed ordered-mesh exclusion, the full
+D1b/D1c supply, and the generating base remain open; the ledger is still
+$57/100$.
