@@ -1,0 +1,16 @@
+{
+  "schema": "fourcolor-v24-contour-separation-v1",
+  "population": [
+    {"frequency": 1, "vertices": 20, "contours": 3, "triples": 1},
+    {"frequency": 2, "vertices": 80, "contours": 6, "triples": 20},
+    {"frequency": 3, "vertices": 180, "contours": 9, "triples": 84},
+    {"frequency": 4, "vertices": 320, "contours": 12, "triples": 220},
+    {"frequency": 5, "vertices": 500, "contours": 15, "triples": 455},
+    {"frequency": 6, "vertices": 720, "contours": 18, "triples": 816},
+    {"frequency": 7, "vertices": 980, "contours": 21, "triples": 1330},
+    {"frequency": 8, "vertices": 1280, "contours": 24, "triples": 2024}
+  ],
+  "triples": 4950,
+  "missing_common_face_control": "required",
+  "outcome": "passed"
+}
