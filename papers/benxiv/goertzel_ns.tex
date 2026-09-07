@@ -3794,6 +3794,75 @@ common envelope on its lifespan, or bound that envelope globally. The
 intrinsic high-strain, pressure, moving-weight and scale-critical
 misalignment estimates remain open.
 
+\paragraph{Constructing the common envelope from physical regularity.}
+The envelope can now be obtained from defined spatial derivatives of a
+physical input field. For a scalar field $f:\mathbb T^3\to\mathbb C$, set
+\[
+ D_jf(x)=\left.\frac{d}{dh}f(x+h e_j)\right|_{h=0},
+ \qquad J_{j,n}f=D_j^n f.
+\]
+\texttt{PancakeContinuousCoordinateJet} uses these iterates themselves.
+Its order-six regularity predicate requires continuity of $J_{j,n}f$
+for $0\le n\le6$ and coordinate differentiability of the iterates for
+$n<6$. No independently chosen derivative fields are supplied.
+
+Haar translation invariance gives
+\[
+ \widehat{f(\,\cdot+c\,)}(k)=e_k(c)\widehat f(k).
+\]
+Differentiation under this integral, dominated by the norm of the
+continuous derivative, proves
+$\widehat{D_jf}(k)=2\pi i k_j\widehat f(k)$ in
+\texttt{PancakePhysicalFourierDerivative}. Iteration yields
+\[
+ (2\pi|k_j|)^n|\widehat f(k)|
+       \le \|J_{j,n}f\|_\infty .
+\]
+If $B\ge0$ bounds the sup norms of the three field components and all
+their pure sixth coordinate derivatives,
+\texttt{PancakePhysicalSixthDecay} proves the explicit vector estimate
+\[
+ (1+|k|)^6|\widehat f(k)|\le12288B .
+\]
+The proof selects a coordinate controlling the frequency norm, retains
+the physical $2\pi$ factor, and handles the low-frequency case with the
+field norm.
+
+\texttt{PancakeLatticeDecayEnvelope} applies lattice summability in
+dimension three, with the zero frequency handled separately, to prove
+\[
+ w_k=(1+|k|)^{-4},\qquad \sum_{k\in\mathbb Z^3}w_k<\infty.
+\]
+Thus a uniform sixth-order coefficient bound $A$ constructs
+$g_k=Aw_k$ and pays $m_2(\widehat f,k)\le g_k$.
+For a compact parameter space $P$, joint continuity on
+$P\times\mathbb T^3$ of the field and its defined sixth coordinate
+derivatives supplies the uniform $B$. The lower derivatives need the
+stated coordinate-jet regularity in each parameter slice.
+\texttt{PancakeCompactJetEnvelope} consequently constructs one
+nonnegative summable $g$ for the whole physical family.
+
+\texttt{PancakePhysicalFieldReconstruction} proves that the actual Fourier
+integrals reconstruct the original continuous field under this
+summability, and that a real input has conjugate-symmetric coefficients.
+Combining this identification with the envelope construction,
+\texttt{PancakePhysicalFamilyConsistency} proves: for a compact family
+$f_p$ with the preceding regularity, reality, mean-zero coefficients and
+transversality, every $\varepsilon>0$ admits one finite frequency core
+$K$ such that, for every finite $M\supset K$,
+\[
+ \sup_{p\in P,\ x\in\mathbb T^3}
+ \left|\nabla\times\bigl(f_p\times(\nabla\times f_p)\bigr)(x)
+       -\mathcal N_{M\setminus\{0\}}(\widehat f_p,x)\right|
+ <\varepsilon .
+\]
+The formal statement bounds each $p,x$ uniformly; $f_p$ is identified
+with its real Euclidean field. This theorem assumes physical regularity,
+not a Fourier envelope. It does not construct a Navier--Stokes evolution
+or prove that this regularity persists. A compact subinterval of an
+established smooth lifespan is an admissible parameter space; extending
+that lifespan still requires the intrinsic dynamical estimates.
+
 The eigenvalue-gap denominator also appears in spatial frame freezing. In
 \texttt{PancakeEigenframePerturbation}, if $Ae=\lambda e$, $Bf=\mu f$, $B$
 is self-adjoint, and $e,f$ are unit vectors, then
@@ -4131,7 +4200,14 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeInfiniteSpatialCurl},
 \texttt{PancakeInfiniteFourierProduct},
 \texttt{PancakeInfiniteRealCurl},
-\texttt{PancakeFullAnalyticNonlinearity}, and
+\texttt{PancakeFullAnalyticNonlinearity},
+\texttt{PancakeLatticeDecayEnvelope},
+\texttt{PancakePhysicalFourierDerivative},
+\texttt{PancakeContinuousCoordinateJet},
+\texttt{PancakePhysicalSixthDecay},
+\texttt{PancakeCompactJetEnvelope},
+\texttt{PancakePhysicalFieldReconstruction},
+\texttt{PancakePhysicalFamilyConsistency}, and
 \texttt{SpatialBKMIntegrand}, and
 \texttt{PancakeAdaptiveStrainCover}, and
 \texttt{PancakeAdaptiveFourierPartition}, and
