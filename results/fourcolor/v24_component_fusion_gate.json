@@ -1,0 +1,75 @@
+{
+  "census": [
+    {
+      "components": 1,
+      "exact": 1,
+      "fused": 0,
+      "graphs": 1,
+      "harmless_boundary": 0,
+      "subsets": 2,
+      "vertices": 1
+    },
+    {
+      "components": 7,
+      "exact": 7,
+      "fused": 0,
+      "graphs": 2,
+      "harmless_boundary": 2,
+      "subsets": 8,
+      "vertices": 2
+    },
+    {
+      "components": 73,
+      "exact": 67,
+      "fused": 6,
+      "graphs": 8,
+      "harmless_boundary": 33,
+      "subsets": 64,
+      "vertices": 3
+    },
+    {
+      "components": 1346,
+      "exact": 1046,
+      "fused": 300,
+      "graphs": 64,
+      "harmless_boundary": 672,
+      "subsets": 1024,
+      "vertices": 4
+    },
+    {
+      "components": 46358,
+      "exact": 29338,
+      "fused": 17020,
+      "graphs": 1024,
+      "harmless_boundary": 22150,
+      "subsets": 32768,
+      "vertices": 5
+    }
+  ],
+  "controls": {
+    "harmless_path": [
+      [
+        true,
+        true,
+        false
+      ]
+    ],
+    "merging_path": [
+      [
+        false,
+        true,
+        true
+      ],
+      [
+        false,
+        true,
+        true
+      ]
+    ]
+  },
+  "gate": "component-map singleton fibres",
+  "joint_minimum_checks": 4190,
+  "minimum_balance_checks": 9996,
+  "scope": "No planarity, counterexample-class membership, or remote anchoring asserted.",
+  "verdict": "all structural checks passed"
+}

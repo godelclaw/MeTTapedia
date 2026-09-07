@@ -13708,3 +13708,110 @@ supplied separated sites and identifies the exact weakness of its
 remaining boundary observable. Fixed ordered-mesh exclusion, the full
 D1b/D1c supply, and the generating base remain open; the ledger is still
 $57/100$.
+
+\subsection{Discrepancy-rooted component fusion at joint orbit minima}
+\label{sec:discrepancy-rooted-fusion}
+
+The unrooted boundary limitation in
+Section~\ref{sec:separated-deletion-boundary} is addressed by an exact
+single-switch criterion and an actual disagreement-minimizing construction.
+The result supplies two-sided rooted witnesses in one explicit alternative;
+it does not yet supply bounded interfaces or eliminate the other alternative.
+
+\paragraph{The exact single-switch obstruction.}
+For a graph embedding $f:H\hookrightarrow G$, let $f_*$ be its map on
+connected components. A small component $K$ \emph{fuses} if some
+$K'\ne K$ has $f_*(K')=f_*(K)$. On the selected two-colour line graphs,
+for distinct colours $a,b$,
+\[
+ \text{the switch on $K$ is the restriction of one ambient $(a,b)$ switch}
+ \quad\Longleftrightarrow\quad
+ \neg\exists K'\ne K:\ f_*(K')=f_*(K).
+\]
+The forward implication follows because the changed-edge set is exactly
+the switched component. The reverse uses the ambient component $f_*(K)$.
+Boundary contact is allowed in this reverse implication: an excursion
+outside the image need not merge two small components.
+\Sverified{Mettapedia.GraphTheory.FourColor.KempeEmbeddingFusion.exists_lifted_switch_iff_not_fuses}
+
+Fusion gives a walk between different small components, and every such
+walk leaves the image. This is stronger than an arbitrary outside neighbor.
+\Sverified{Mettapedia.GraphTheory.FourColor.KempeEmbeddingFusion.fuses_iff_reachable}
+\Sverified{Mettapedia.GraphTheory.FourColor.KempeEmbeddingFusion.walk_leaves_range}
+\Sverified{Mettapedia.GraphTheory.FourColor.KempeEmbeddingFusion.exists_fusion_walk}
+
+A prescribed finite common-core repair can be lifted step by step until
+a genuinely fusing step, retaining an exactly lifted prefix and a suffix
+to the target. This does not establish productive progress by itself:
+an existential suffix may undo the switch. The stronger argument below
+uses literal disagreement, not a suffix as a progress certificate.
+\Sverified{Mettapedia.GraphTheory.FourColor.KempeTargetFusion.targetFusion_or_lifted}
+\Sverified{Mettapedia.GraphTheory.FourColor.KempeTargetFusion.TargetFusion.exists_failed_step}
+
+\paragraph{A wrong edge forces a correct-edge blocker.}
+Fix a proper nonzero target colouring $t$ on the common core $C$ and
+a deletion colouring $c_0$. Minimize
+\[
+             d(c,t)=|\{e\in E(C):c(e)\ne t(e)\}|
+\]
+over the valid-pair Kempe orbit of $c_0$. This minimum is constructed
+by well-ordering the natural-valued measure; it is not supplied as a
+hypothesis. For any wrong edge $e$, switch its ambient component using
+the pair $(c(e),t(e))$. The switch fixes $e$. Minimality forces some
+previously correct common-core edge $f$ to become wrong, and $f$ lies
+in that same ambient component.
+\Sverified{Mettapedia.GraphTheory.FourColor.KempeTargetFusion.exists_minimum}
+\Sverified{Mettapedia.GraphTheory.FourColor.KempeTargetFusion.blocking_edge_of_minimum}
+
+If $c|_C$ and $t$ are locally related by one transposition at each vertex,
+the existing seed-switch theorem says that switching the small component
+of $e$ fixes all its edges and creates no errors. Hence a correct-edge
+blocker cannot belong to this small component: it belongs to a different
+component fused with it upstairs. Every wrong edge therefore roots a
+wrong-to-correct fusion witness. No target-reachability premise is needed.
+\Sverified{Mettapedia.GraphTheory.FourColor.KempeTargetFusion.seed_fuses_of_minimum_of_local}
+\Sverified{Mettapedia.GraphTheory.FourColor.KempeTargetFusion.seedBlockingFusion_of_minimum_of_local}
+
+\paragraph{Both deletions, with the same root.}
+For separated deleted pairs $S,T$, minimize common-core disagreement
+over the product of the two deletion-colouring orbits. Holding either
+representative fixed gives the requisite minimum on the other side.
+The two-patch gluing theorem rules out zero disagreement, so an actual
+wrong edge exists. At this constructed pair, either some common-core
+vertex has a non-transposition discrepancy, or \emph{every} wrong edge
+roots blocking fusions in both deletion graphs. The ordered-row
+construction supplies the separated target for every source when the
+row has at least $65$ branch intervals, and the conclusion holds for
+every pair of initial proper nonzero deletion colourings.
+\Sverified{Mettapedia.GraphTheory.FourColor.KempeTargetFusion.exists_joint_minimum}
+\Sverified{Mettapedia.GraphTheory.FourColor.SeparatedDeletionFusion.jointMinimumObstruction_of_separated}
+\Sverified{Mettapedia.GraphTheory.FourColor.SeparatedDeletionFusion.exists_rowSite_with_joint_minimum_obstruction}
+
+Instantiating the existing minimality-supplied base colourings leaves
+no colouring, minimum, discrepancy, or reachability premise to supply.
+\Sverified{Mettapedia.GraphTheory.FourColor.SeparatedDeletionFusion.exists_selected_joint_minimum_obstruction}
+
+In the fusion alternative, the walk in $G-S$ encounters an edge at $T$;
+the walk in $G-T$ encounters an edge at $S$. They share the chosen
+common-edge root and use the same unordered pair of colours, but belong
+to two different deletion colourings. They are not claimed to be a
+single ambient Tait component, disjoint strands, or the boundary of a noose.
+\Sverified{Mettapedia.GraphTheory.FourColor.SeparatedDeletionFusion.physical_walk_of_seedBlockingFusion}
+\Sverified{Mettapedia.GraphTheory.FourColor.SeparatedDeletionFusion.physical_second_walk_of_seedBlockingFusion}
+
+\paragraph{Gate and remaining geometric obligation.}
+The generic structural gate checks all $1099$ labelled simple graphs
+on one through five vertices, giving $47785$ component/subset cases.
+Path controls distinguish harmless boundary contact from actual fusion.
+Independent finite-set toggle checks cover $9996$ one-sided balance cases
+and $4190$ joint-minimum cases. These are component and disagreement-set
+diagnostics, not configuration or ring-colouring enumerations, and are
+not asserted to be examples in the least-counterexample class.
+
+The surviving obligations are precise: resolve the local
+non-transposition alternative, and turn the paired rooted fusion walks
+into a physically valid reduction with controlled complete interfaces.
+The present argument does not prove either implication, a long nested
+chain, fixed ordered-mesh exclusion, or the generating base. It does
+replace arbitrary boundary encounters by discrepancy-driven witnesses
+on an actually supplied pair. The fixed ledger remains $57/100$.
