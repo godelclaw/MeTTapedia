@@ -3788,9 +3788,10 @@ hypotheses used above, the retained nonlinear RHS therefore satisfies
             -\mathcal N_M(u)\right\|_{L^\infty}
        \le \sigma_M(g)\longrightarrow0.
 \]
-This removes the spatial series-identification gap. It does not construct
-a time-evolving Navier--Stokes solution from arbitrary data, establish a
-common envelope on its lifespan, or bound that envelope globally. The
+This removes the spatial series-identification gap. This identification
+theorem alone does not construct a time-evolving Navier--Stokes solution or
+its common envelope. The higher-order local construction below supplies
+both on a positive interval, but does not bound that envelope globally. The
 intrinsic high-strain, pressure, moving-weight and scale-critical
 misalignment estimates remain open.
 
@@ -4294,10 +4295,107 @@ same constructed Galerkin subsequence therefore satisfies
        \qquad (i=1,2,3).
 \]
 Thus the local coefficient construction now has a jointly continuous real
-spatial realization and a strong spatial approximation theorem. Higher
-spatial differentiability, the corresponding pointwise PDE and material
-strain identities, and the all-time critical estimates remain necessary;
-joint continuity alone is not a smooth global Navier--Stokes theorem.
+spatial realization and a strong spatial approximation theorem. Joint
+continuity alone is not a smooth global Navier--Stokes theorem; the next
+construction supplies higher-order local control and its physical curl.
+
+\paragraph{Higher-order local control and a constructed nonlinear envelope.}
+The local argument now applies to each fixed integer order $m\ge2$.
+Write
+\[
+ w_m(k)=(1+|k|)^m,\qquad
+ E_m(M,u)=\sum_{k\in M}w_m(k)^2|u_k|^2,\qquad
+ D_m(M,u)=\sum_{k\in M}w_m(k)^2|k|^2|u_k|^2.
+\]
+The inverse-square weight sum is at most
+$L=\sum_k(1+|k|)^{-4}$, independently of $m$ and the finite mode set.
+The elementary splitting inequality
+\[
+ w_m(k+l)\le 2^m\bigl(w_m(k)+w_m(l)\bigr)
+\]
+and the finite convolution estimate give the weighted triad bound
+$2^{m+1}\sqrt L\,E_m\sqrt{D_m}$ in
+\texttt{PancakeHigherSobolevWeights}.
+\texttt{PancakeHigherSobolevVelocityRate} retains the exact Leray
+cancellation and the physical viscous symbol, hence
+\[
+ E_m'+2\nu(2\pi)^2D_m
+       \le 2^{m+2}(2\pi)\sqrt L\,E_m\sqrt{D_m}.
+\]
+Absorbing half the viscous term gives
+\[
+ E_m'+\nu(2\pi)^2D_m\le C_{m,\nu}E_m^2,\qquad
+ C_{m,\nu}=\frac{4(2^m)^2L}{\nu}.
+\]
+This coarse order-dependent constant is not claimed sharp. It has no
+frequency-cutoff or mode-count dependence.
+
+The initial energy is constructed from actual physical derivatives.
+\texttt{PancakeHigherInitialEnergy} generalizes the coordinate Fourier
+decay argument to order $N$. Compactness bounds the finitely many original
+components and their pure order-$N$ coordinate derivatives by nonnegative
+constants $B_0,B_N$, and gives
+\[
+ (1+|k|)^N|\widehat f(k)|\le A_N,\qquad
+ A_N=3\cdot4^N(B_0+B_N).
+\]
+For $N=m+2$ this yields
+$E_m(M,\widehat f)\le A_{m+2}^2L$ for every finite $M$.
+Given this initial allowance $\mathcal B_0$, the common time and bound are
+\[
+ T_m=\frac{1}{2(C_{m,\nu}+1)(\mathcal B_0+1)}>0,\qquad
+ E_m(M,u_M(t))\le 2(\mathcal B_0+1)\quad(0\le t\le T_m).
+\]
+\texttt{PancakeHigherSobolevWindow} proves the estimate and
+\texttt{PancakeHigherGalerkinWindow} constructs the finite solutions on
+this interval. No future trajectory is an input.
+
+Finite partial energies are continuous functions of finitely many
+coefficients. Their bounds therefore pass to the extracted coefficient
+limit. \texttt{PancakeHigherLocalVelocity} constructs a
+\texttt{LocalInfiniteVelocitySolution} whose coefficients are exactly
+that curve, and proves its higher-order bound. Thus the nonlinear equation
+and the energy estimate hold for the same solution. The assertion is for
+each fixed $m$; a common interval for all orders simultaneously is not
+asserted by this comparison argument.
+
+A singleton energy bound gives
+$(1+|k|)^m|a_k(t)|\le\sqrt{\mathcal B}$.
+Taking $m=p+4$ constructs the time-independent summable envelope
+\[
+ (1+|k|)^p|a_k(t)|
+       \le g(k):=\sqrt{\mathcal B}(1+|k|)^{-4},
+       \qquad 0\le t\le T_m.
+\]
+In particular, order-eight initial coordinate jets supply the common
+second-moment envelope along an actual sixth-order-controlled evolution.
+The module \texttt{PancakeLocalPhysicalNonlinearity} applies the existing
+derivative theorems to this solution: its coordinate derivatives and curl
+are the differentiated Fourier series, and the full nonlinear interaction
+is the derivative-defined real field
+$\nabla\times(U\times(\nabla\times U))$.
+
+The same module also discharges the common-envelope hypothesis in the
+local, time-integrated nonlinear alignment consistency theorem. For each
+filter bound $C\ge0$ and $\varepsilon>0$, it constructs a finite core such
+that every larger cutoff, after removing zero, satisfies
+\[
+ \int_0^{T_m}\!\int_{\mathbb T^3}
+ \left|\left\langle
+   G_{\chi,M}(x)\omega_M(x),
+   \nabla\times(U\times(\nabla\times U))(x)-\mathcal N_M(a)(x)
+ \right\rangle\right|\,dx\,dt<\varepsilon
+ \qquad(\sup_k|\chi(k)|\le C).
+\]
+All fields in this display are evaluated at time $t$, and $G_{\chi,M}$
+is the previously constructed filtered strain-gap weight. The physical
+solution and its envelope are now outputs of this theorem, not supplied
+evolutions or smoothness bounds.
+This closes a local nonlinear-consistency hypothesis gap. It does not
+bound the full misalignment-strain accumulation through an arbitrary
+lifespan, close the pressure and moving-weight budgets, or prove global
+BKM continuation. Higher material differentiability and the corresponding
+pointwise evolution identities still require their explicit bridges.
 
 
 
