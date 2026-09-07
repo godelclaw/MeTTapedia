@@ -12936,8 +12936,80 @@ be a Lean-certified target counterexample.
 
 Thus the order theorem alone does not construct a full seam fixing frozen
 wires: their positions, or equivalently the intervening boundary gaps,
-must also be matched.  Adding this data to the repeated profile is a
-possible next construction, not a theorem claimed here.  A smaller map
-preserving designated holes and the target minimality class, and the
-source-facing global supply, remain open.  The fixed ledger is unchanged
-at $57/100$.
+must also be matched.  The following refinement supplies those positions
+and constructs the full named seam.  Designated-hole and target-specific
+prescription transport, and the source-facing global supply, remain open.
+The fixed ledger is unchanged at $57/100$.
+
+\subsection{Marked positions supply the full physical seam}
+\label{sec:marked-seam-positions}
+
+The existing normalized state records a hub permutation and a set of
+realizable Tait boundary words, but no names for persistent edges.
+For a fixed family $M$ of $t$ designated ambient darts, augment the state
+at width $j$ by a function
+\[
+ M\longrightarrow \{\bot\}\sqcup\operatorname{Port}_j.
+\]
+It records the complete-boundary coordinate of each named dart, or its
+absence.  This is not merely its relative rank among the surviving wires.
+The exact fixed-width cardinality is
+$j!\,2^{3^j}(j+1)^t$.  Including all widths $j\leq k$ gives the bound
+\[
+ Q(k,t)=\left(\sum_{j=0}^{k} j!\,2^{3^j}\right)(k+1)^t.
+\]
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedSeamState.card_marked}
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedSeamState.card_bounded_le}
+The cost depends on the number of named darts, not the number of all
+ambient edges.  Duplicate labels are allowed and no colour table is evaluated.
+
+Equality of these records gives the same literal boundary width, the old
+exact state equality, and identity of each named dart under the coordinate
+change.  Membership on the replacement boundary is derived as well.
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedSeamState.boundedOfShore_eq_elim}
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedSeamState.matching_fixes_mark}
+For the existing physical replacement matching, both orientations retain
+the ambient edge partner; the matching constructor is not replaced by an
+abstract existence hypothesis.
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedSeamState.replacementMatching_mark}
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedSeamState.replacementMatching_symm_mark}
+
+\paragraph{Geometric supply and its actual consumer.}
+The connected-shore node constructor requires only the ambient connected,
+bridgeless spherical cubic data, not minimality or non-colourability.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedShoreLiteralNode.ConnectedShoreNode.toLiteralOfSpherical}
+Let every dual face be at distance at most $h$ from a named root face,
+let $k=2h+1$, and let $s$ vertices be marked.  If
+\[
+ |V|>4^{(6k+1)(s+1)Q(k,t)+1+2k},
+\]
+the actual marked cotree supplier gives $Q(k,t)+1$ literal nodes.
+Finite-state repetition produces two strictly nested shores with equal
+marked states, a strict cubic star between them, and no marked vertex
+in the removed material.  Neither a chain nor a seam is supplied as a
+premise of this theorem.
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedCotreeSeam.exists_seamPair_of_large_card}
+If named darts are based at marked vertices and the family contains both
+orientations of each named edge, all those darts remain present and their
+edge involution is exactly the original one.
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedCotreeSeam.SeamPair.mark_survives}
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedCotreeSeam.SeamPair.candidate_alpha_mark}
+With zero ambient Count, the existing physical replacement theorem supplies
+a strictly smaller connected, bridgeless spherical cubic zero-Count map,
+using precisely this matching and preserving the named edge pairs.
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedCotreeSeam.exists_marked_replacement_of_large_card}
+
+\paragraph{Diagnostic and remaining boundary.}
+The position gate checks $4096$ combinations of actual nested prism cuts,
+marked subsets, absent labels and relative cyclic roots.  All $24$ previous
+full-matching obstructions are rejected when every common wire is marked;
+empty and singleton mark controls also pass.  The receipt is
+\texttt{results/fourcolor/v24\_marked\_seam\_position\_gate.json}.
+This is a generic geometric test, not configuration enumeration.
+
+The theorem assumes bounded \emph{complete dual radius}; it does not
+derive that condition from the source's wall-free hypotheses.  Preserving
+named edge pairs also does not by itself prove preservation of designated
+face orbits or the joint support under arbitrary prescribed frozen colours.
+Those target-specific transports and the global D1b/D1c implications remain
+open.  No whole fixed ledger row is newly discharged: $57/100$.
