@@ -11608,3 +11608,60 @@ claim that such a value is uncomputable in principle, nor a refutation of the
 compositional route.  It records why bare least-size selection does not
 advance the effective D1b/D1c or D4b obligations.  The diagnostic module is
 not added as a premise supplier to the headline; the ledger stays $57/100$.
+
+\subsection{Narrow decomposition does not bound a prescribed whole-face cut}
+\label{sec:thin-annulus-forced-cut-audit}
+
+The next attempted repair was to transfer a small decomposition width to the
+canonical cuts prescribed by the facial geodesic.  With long faces this
+transfer fails even on thin spherical cubic graphs.  This is a diagnostic
+of the routing requirements, not a new counterexample to the target theorem.
+
+The gate builds the thickness-two annulus with two cap faces of length $q$,
+using six vertices per rung.  Besides the caps it has $2q$ pentagons and
+$q$ hexagons.  It checks the complete spherical rotation data, connectedness,
+girth at least five, and a cap-to-cap facial-dual geodesic of length four.
+Require the first cap's vertices inside and the future geodesic faces after
+one free face outside.  The $q$ disjoint rungs join these terminals, so every
+feasible cut has at least $q$ edges.  The first cap itself realizes equality;
+its entire boundary and its cyclic order are checked.
+
+\[
+\begin{array}{c|rrrrr}
+q&5&8&16&32&64\\ \hline
+|V|&30&48&96&192&384\\
+\text{optimum forced cut}&5&8&16&32&64\\
+\text{displayed decomposition width}&8&8&8&8&8\\
+\text{width-eight perimeter sides}&2&5&13&29&61.
+\end{array}
+\]
+
+The decomposition certificate lists each edge exactly once, takes the first
+edge as root leaf, the second as the other leaf at the root fork, and the
+remaining edges as a comb.  Every tree cut is checked: internal shores are
+suffixes, whose middle sets equal those of the complementary prefixes;
+singleton leaf cuts are checked separately.  This proves an upper bound on
+branchwidth, not optimality.  Some raw tree shores are disconnected, and
+the receipt records them rather than asserting a connected decomposition.
+
+For comparison, intervals of two through $q-2$ complete rungs give strictly
+nested vertex sides and strictly nested internal edge shores.  Both sides
+are connected, contain cycles, and have internal vertex degree at least two.
+Their full cuts have eight edges, including both ends of the strip and both
+cap-face crossings.  The entire simple dual-cycle order is retained.
+
+The executable witnesses and checker are
+\texttt{results/fourcolor/v24\_thin\_annulus\_cut\_gate.json} and
+\texttt{tools/fourcolor/v24\_thin\_annulus\_cut\_gate.py}.  Independent replay
+uses no cut optimizer; corrupted leaf lists, packed paths, and boundary
+orders are rejected.  The graph-specific assertions are executable checks,
+not newly kernel-instantiated Lean theorems.  The generic path-packing
+lower-bound lemma above supplies their mathematical justification.
+
+Thus even a displayed raw width of eight does not put these prescribed
+whole-face cuts within the earlier local budget thirty.  No exclusion of the
+stack's injective mesh is certified here; no zero Count is asserted.  The
+long cap faces also prevent this family from refuting a uniform
+\emph{bounded-face} transfer.  The successful perimeter cuts are controls,
+not a substitute for supplying comparable cuts in every large target
+instance.  D1b/D1c and the $57/100$ ledger are unchanged.
