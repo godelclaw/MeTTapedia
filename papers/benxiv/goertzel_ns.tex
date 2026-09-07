@@ -3387,6 +3387,106 @@ strain remainder, transport variation, growing diffusion constant and
 arbitrary-data limiting construction remain to be controlled. No new
 time-integrated projection budget is claimed here.
 
+\paragraph{Localizing the cancellation: the exact escaping field.}
+For finite scalar cutoff frequencies $P$ and coefficients $c_p$, let
+$\rho=\sum_{p\in P}c_pe^{2\pi i p\cdot x}$ be real-valued.
+Let $b_q=\sum_{p+k=q,\ p\in P,\ k\in M}c_p\omega_k$ be the
+already constructed cutoff convolution, and define
+\[
+ R_\rho=\operatorname{Re}\sum_{q\in M}e^{2\pi iq\cdot x}b_q,
+ \qquad
+ E_\rho=\operatorname{Re}\sum_{q\in(P+M)\setminus M}
+                    e^{2\pi iq\cdot x}b_q.
+\]
+Here $E_\rho$ is escaped \emph{localized vorticity}, not the discarded
+\emph{nonlinear output} $D$ above.
+\texttt{PancakeLocalizedProjectionBoundary} proves
+\[
+ \rho w=R_\rho+E_\rho,\qquad
+ \int\langle A(\rho w),D\rangle=\int\langle AE_\rho,D\rangle
+\]
+for every constant real operator $A$ and negation-closed $M$.
+\texttt{PancakeRealFourierProjection} removes the need for conjugate
+symmetry of the localized coefficients in this step: on a
+negation-closed set, replacing $b_q$ by
+$(b_q+\overline{b_{-q}})/2$ leaves the real reconstruction unchanged and
+makes it real as a complex reconstruction. Thus reflection of frequencies
+under real-part extraction is explicitly accounted for.
+
+The source of $E_\rho$ is narrowed further by
+\texttt{PancakeCutoffBoundarySupport}. Define the actual finite boundary
+receiver set
+\[
+ \partial_P M=\{k\in M:\ \exists p\in P,\ p+k\notin M\}.
+\]
+At every exterior output $q\notin M$, replacing receiver set $M$ by
+$\partial_PM$ leaves $b_q$ unchanged. Accordingly $E_\rho$ reconstructs
+only outputs in $(P+\partial_PM)\setminus M$. If every shift of every
+active receiver lies inside $M$, then $E_\rho=0$ exactly. This is a
+buffered-support theorem, not a claim that the full unbuffered field
+has no boundary receivers.
+
+\paragraph{Quadratic weights, coverage error, and a count-free energy bound.}
+Take the previously constructed weights
+$\rho_i=|p_i|^2\ge0$ with their actual collected Fourier coefficients.
+\texttt{PancakeQuadraticProjectionLocalization} identifies their scalar
+reconstructions with $\rho_i$ and sets $E_i=E_{\rho_i}$.
+The support of each quadratic coefficient family lies in the proved
+difference set $\operatorname{supp}p_i-\operatorname{supp}p_i$; a buffer
+containing all these candidate shifts makes the corresponding $E_i$ zero.
+For a continuous operator field $L(x)$ and constant operators $A_i$, the
+exact integrated decomposition is
+\[
+ \begin{aligned}
+ \int\langle Lw,D\rangle
+ &=\int\sum_i\rho_i\langle(L-A_i)w,D\rangle
+      +\sum_i\int\langle A_iE_i,D\rangle\\
+ &\quad+\int\left(1-\sum_i\rho_i\right)\langle Lw,D\rangle.
+ \end{aligned}
+\]
+The three terms are local freezing error, boundary-frequency coupling,
+and coverage defect. The approximate Fourier partition is not silently
+normalized or treated as exact.
+
+\texttt{PancakeBoundaryEnergy} proves the orthogonal energy splitting
+\[
+ \int|\rho w|^2=\int|R_\rho|^2+\int|E_\rho|^2.
+\]
+In particular, if $\sum_i\rho_i(x)\le C$ everywhere, positivity and
+finite Parseval give
+\[
+ \sum_i\int|E_i|^2
+ \le\int\sum_i\rho_i^2|w|^2
+ \le C^2\int|w|^2
+ \le C^2\Omega.
+\]
+There is no cell-count or retained-mode-count factor. This controls the
+\emph{sum of individual squared norms}, not the squared norm of an
+unweighted sum of exterior fields. The latter does not follow without
+additional cross-term control.
+
+For a fixed quadratic family and a supplied retained velocity solution,
+\texttt{PancakeBoundaryTimeBudget} constructs continuity of the actual
+parameterized cutoff convolution and its mean energy. Time integrability
+is therefore proved, not supplied as a budget assumption. With $\nu>0$,
+$T\ge0$, the preceding retained reality/incompressibility hypotheses
+and the retained ODE supplied on $\mathbb R$, kinetic dissipation gives
+\[
+ \boxed{\quad
+ \int_0^T\sum_i\int_{\mathbb T^3}|E_i(t,x)|^2
+       \le\frac{C^2}{2\nu}U(0).
+ \quad}
+\]
+For the constructed coverage bound $C=3/2$, the price is
+$9U(0)/(8\nu)$, independent of cell count, cutoff bandwidth and retained
+mode count. The weights are fixed in time in this theorem. Moving their
+supports or coefficients requires further time-regularity work.
+Most importantly, this pays only the escaped-vorticity side of
+$\sum_i\int\langle A_iE_i,D\rangle$. It does not bound the nonlinear
+field $D$, the weighted sum's cross terms, moving-patch rates, or the
+remaining high-strain and strain-remainder terms. The scale-critical
+coupled budget and arbitrary-data continuation remain open.
+
 The eigenvalue-gap denominator also appears in spatial frame freezing. In
 \texttt{PancakeEigenframePerturbation}, if $Ae=\lambda e$, $Bf=\mu f$, $B$
 is self-adjoint, and $e,f$ are unit vectors, then
@@ -3693,6 +3793,12 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeProjectionEnergyCancellation}, and
 \texttt{PancakeProjectionWeightOscillation}, and
 \texttt{PancakeProjectionMaterialBudget}, and
+\texttt{PancakeRealFourierProjection}, and
+\texttt{PancakeLocalizedProjectionBoundary}, and
+\texttt{PancakeCutoffBoundarySupport}, and
+\texttt{PancakeQuadraticProjectionLocalization}, and
+\texttt{PancakeBoundaryEnergy}, and
+\texttt{PancakeBoundaryTimeBudget}, and
 \texttt{SpatialBKMIntegrand}, and
 \texttt{PancakeAdaptiveStrainCover}, and
 \texttt{PancakeAdaptiveFourierPartition}, and
