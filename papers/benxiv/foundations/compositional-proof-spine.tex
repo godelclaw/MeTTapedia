@@ -13011,7 +13011,8 @@ The theorem assumes bounded \emph{complete dual radius}; it does not
 derive that condition from the source's wall-free hypotheses.  Preserving
 named edge pairs also does not by itself prove preservation of designated
 face orbits or the joint support under arbitrary prescribed frozen colours.
-Those target-specific transports and the global D1b/D1c implications remain
+The face-orbit transport is established in Section~\ref{sec:marked-face-reduction};
+joint frozen-colour support and the global D1b/D1c implications remain
 open. The next construction removes the separately supplied radius bound
 under ordered-mesh exclusion for the closed-map Count system. No whole
 fixed ledger row is newly discharged: $57/100$.
@@ -13092,3 +13093,59 @@ ordered mesh, identify its absence with every informal wall-free premise,
 or verify the generating base. The former smaller target-class bounds are
 not replaced by this coarser constructive bound. Fixed-wall exclusion and
 the full D1b/D1c obligations remain open; the ledger stays at $57/100$.
+
+\subsection{Designated faces survive the supplied physical reduction}
+\label{sec:marked-face-reduction}
+
+Preserving a named edge partner is not, by itself, a theorem about faces:
+one must also preserve vertex rotation and show that an entire facial orbit
+survives, without merging into another orbit. The actual sewn map now has
+these properties on designated faces. Its ambient dart map is injective,
+because the retained inner shore and the exterior of the outer shore are
+disjoint. It intertwines vertex rotation on every surviving dart, independently
+of which seam matching is used.
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedCotreeSeam.SeamPair.ambientDart_injective}
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedCotreeSeam.SeamPair.ambientDart_rho}
+
+Let a designated facial orbit be covered by the named darts, with the named
+family closed under edge reversal. The existing edge-partner theorem then
+intertwines the facial successor $\phi=\rho\alpha$ on that orbit. Induction
+intertwines every natural power of $\phi$; finiteness and injectivity give
+both directions of the same-face relation. Consequently the image of the
+entire candidate face is exactly the original face, with the same length
+and rooted cyclic sequence. This does not require the whole marked family
+to be closed under vertex rotation, a substantially stronger condition.
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedCotreeSeam.SeamPair.sameCycle_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedCotreeSeam.SeamPair.designated_face_survives}
+
+\paragraph{Marks are constructed, not assumed.}
+Given a finite set of ambient face roots, take the union of their complete
+facial dart sets, add all reversed darts, and mark the base vertices of
+the resulting set. These operations discharge every endpoint and
+edge-reversal premise. All vertex visits of the designated faces avoid
+the removed material; persistent seam crossings are allowed.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalMarkedFaceReduction.face_avoids_material}
+Applying the previous mesh-or-seam supplier with these computed marks gives
+an ordered mesh or an actual strictly smaller connected, bridgeless,
+spherical cubic zero-Count map preserving every designated face. No radius,
+chain, matching, endpoint marking or facial transport is supplied as a
+hypothesis. The bound is exactly $V_{\mathrm{seam}}(a,b,s,t)$ above, for
+the cardinalities $s,t$ of these computed vertex and dart sets.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalMarkedFaceReduction.exists_orderedMesh_or_replacement}
+
+\paragraph{Gate and remaining scope.}
+On $35$ nested full-cut pairs in prisms, the edge-fixing matching preserves
+the marked face crossing the seam; $105$ deliberately shifted cyclic
+matchings change it. Both shores and complements are connected and cyclic,
+the cuts have width four, and the removed material contains a strict
+cubic star. These are colourable geometric controls, not instances of the
+minimal-counterexample class. The receipt is
+\texttt{results/fourcolor/v24\_marked\_face\_splice\_gate.json}.
+
+The threshold depends on the total designated perimeter, not merely the
+number of holes. In particular this does not bound an arbitrarily long
+designated face by treating its perimeter as a fixed parameter. Ordinary
+closed-map zero Count is preserved; joint supports under prescribed frozen
+colours are not yet transported. Fixed-mesh exclusion, the complete
+source-facing D1b/D1c claims and the generating base remain open.
+The fixed ledger stays at $57/100$.
