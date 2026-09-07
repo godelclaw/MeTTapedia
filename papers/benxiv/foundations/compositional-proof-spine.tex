@@ -11665,3 +11665,87 @@ long cap faces also prevent this family from refuting a uniform
 \emph{bounded-face} transfer.  The successful perimeter cuts are controls,
 not a substitute for supplying comparable cuts in every large target
 instance.  D1b/D1c and the $57/100$ ledger are unchanged.
+
+\subsection{Constructed distance components and contour--linkage meshes}
+\label{sec:contour-linkage-mesh-extraction}
+
+The next extraction step uses the exact mesh carrier rather than first
+building a grid-minor model.  The external constructive branchwidth argument
+of Gu and Tamaki, \emph{Improved Bounds on the Planar Branchwidth with
+Respect to the Largest Grid Minor Size}, Algorithmica 64 (2012), 416--453,
+\href{https://doi.org/10.1007/s00453-012-9627-5}{doi:10.1007/s00453-012-9627-5},
+Section~4, uses nested contours and vertex-disjoint crossing paths.  Here
+those data can supply the weaker, exact \texttt{Mesh} carrier directly;
+this observation does not import their global decomposition theorem.
+
+\begin{proposition}[deep face components and disjoint frontiers]
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceDistanceFrontiers.deepRegion_connected}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceDistanceFrontiers.deepRegion_compl_connected}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceDistanceFrontiers.mixed_disjoint}
+In a connected graph $H$ on faces, fix a root $r$ and a far face $z$.
+Define $R_i$ by walks from $z$ all of whose vertices have distance strictly
+greater than $i$ from $r$.  If $d(r,z)>i$, this constructs a nonempty
+connected component.  Its complement is also connected: every exterior
+face has a distance-decreasing walk to $r$ which stays exterior.
+The regions nest with increasing $i$; every cut edge joins distances
+$i+1$ and $i$.
+
+Suppose the faces incident at each primal vertex form a clique in $H$.
+A vertex incident to both $R_i$ and its complement then has minimum
+incident-face distance exactly $i$.  Thus the complete mixed-vertex
+frontiers at different depths are disjoint.
+\end{proposition}
+
+\begin{proposition}[constructing the exact injective mesh]
+\Sverified{Mettapedia.GraphTheory.FourColor.ContourMeshExtraction.ofPaths_isVertexInjective}
+\Sverified{Mettapedia.GraphTheory.FourColor.ContourMeshExtraction.exists_injectiveMesh_of_frontiers}
+\Sverified{Mettapedia.GraphTheory.FourColor.ContourMeshExtraction.exists_injectiveMesh_of_distanceFrontiers}
+Let $a$ row walks and $b$ column paths meet on every row--column pair,
+with each family vertex-disjoint.  Choosing one meeting vertex per pair
+constructs a \texttt{Mesh} with \texttt{IsVertexInjective}; within-family
+edge-disjointness follows from vertex-disjointness.  Closed contour walks
+are allowed by the existing carrier.  The distance-frontier result above
+discharges row disjointness when the rows lie on distinct such frontiers.
+
+Alternatively, intersections are derived from regions whose complete
+outer edge frontiers are covered by the rows: a column meeting the region
+and its exterior must meet that row.  Columns already meeting a row,
+including at an extreme contour endpoint, are handled directly.
+\end{proposition}
+
+The preregistered gate constructs these data in complete cubic spherical
+$GP(k,0)$ graphs for $k=1,\ldots,8$, with only pentagonal and hexagonal
+faces.  The root is face zero and the far face is the first at maximum
+distance.  Boundaries of its deep components are traced in full, and the
+middle half of the contours is selected.  A vertex-capacitated flow on
+the entire ambient graph constructs the columns; both terminal sets have
+unit vertex capacities too.  The resulting row and column counts are
+\[
+\begin{array}{c|rrrrrrrr}
+k&1&2&3&4&5&6&7&8\\ \hline
+\text{rows}&3&4&5&6&9&10&11&12\\
+\text{columns}&5&10&15&20&20&25&30&35.
+\end{array}
+\]
+At $k=8$ the mesh has $420$ distinct branch vertices in a graph of $1280$
+vertices.  Replay checks all edges and faces, both connected dual regions,
+strict region nesting, full cyclic boundaries, the incident-face clique,
+the disjoint column paths and all branch positions.  A matching-size
+vertex separator certifies optimality for these selected terminals, not
+optimal branchwidth.  Twenty-four corruptions are rejected without running
+a flow optimizer.  The executable receipts are in
+\texttt{results/fourcolor/v24\_contour\_mesh\_gate.json}, with verifier
+\texttt{tools/fourcolor/v24\_contour\_mesh\_gate.py}.
+
+\paragraph{Remaining extraction boundary.}
+The generic metric and mesh lemmas are kernel-checked; the eight concrete
+graph receipts are independently executable checks, not Lean instances.
+No zero Count is asserted.  To complete the global extraction one must
+still establish the cubic rotation-system incidence bridge, identify each
+complete frontier with a single primal cycle, prove the small-noose versus
+large-linkage alternative, and assemble the recursive decompositions while
+retaining their entire seams.  Connected \emph{dual face regions} above
+are not automatically the connected primal shores needed for a Count
+splice.  The new constructors produce the exact mesh existential used by
+\texttt{RawDecompositionOfNoInjectiveMesh}; they do not prove that theorem,
+fixed-mesh exclusion, or D1b/D1c.  The fixed ledger remains $57/100$.
