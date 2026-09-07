@@ -3863,6 +3863,72 @@ or prove that this regularity persists. A compact subinterval of an
 established smooth lifespan is an admissible parameter space; extending
 that lifespan still requires the intrinsic dynamical estimates.
 
+\paragraph{Constructed local retained evolution from physical data.}
+The finite coefficient evolution is now constructed, rather than supplied
+as a path satisfying an equation. Write
+\[
+ E_M=\mathbb C^{M\times\{1,2,3\}},\qquad
+ H_M=\{v\in E_M:\ k\cdot v_k=0,\ v_{-k}=\overline{v_k}\},
+\]
+where coefficients outside $M$ are extended by zero. The subspace $H_M$
+is a real Hilbert space. Assume $M=-M$ and $0\notin M$.
+\texttt{PancakeFiniteVelocitySmooth} proves that the previously defined
+physical velocity RHS, restricted to $E_M$, is smooth: its expression is
+finite and quadratic, and every inverse wave-number factor is constant
+with respect to the state.
+
+\texttt{PancakeFiniteVelocityInvariant} proves directly that this vector
+field maps $H_M$ into $H_M$. The Fourier Leray projection preserves
+conjugate symmetry, and its output is transverse. The transport
+convolution and viscous coefficient respect the same reality symmetry.
+An orthogonal projection gives a smooth map with codomain $H_M$; the
+checked inclusion identity proves that this projection changes no
+coefficient of the actual vector field on $H_M$.
+
+Picard--Lindel\"of on this complete finite-dimensional space yields, in
+\texttt{PancakeLocalVelocityExistence}, a time $T_M>0$ and a coefficient
+curve $u_M$ such that
+\[
+ \begin{split}
+ &(u_M)_k(0)=\widehat u_0(k)\quad(k\in M),\qquad
+   (u_M)_k(t)=0\quad(k\notin M),\\
+ &\partial_t(u_M)_k=V_M(u_M)_k\quad(0\le t\le T_M,\ k\in M),\\
+ &k\cdot(u_M)_k=0,\qquad (u_M)_{-k}=\overline{(u_M)_k}.
+ \end{split}
+\]
+A closed positive-time interval is chosen strictly inside the open
+existence interval, so the derivative statements hold at both endpoints.
+There is no input evolution or assumed invariant-subspace preservation.
+
+The already checked energy and curl identities now apply to this
+constructed curve. \texttt{PancakeLocalVelocityEnergy} proves the actual
+finite vorticity equation and
+\[
+ U_M(t)+2\nu\int_0^t\Omega_M(s)\,ds=U_M(0),\qquad 0\le t\le T_M.
+\]
+For $\nu\ge0$, \texttt{PancakeLocalVelocityUnique} proves uniqueness on
+this interval: the energy ball is compact, the smooth finite vector
+field is Lipschitz on it, and the ODE uniqueness theorem applies.
+
+Finally, \texttt{PancakeLocalL2Velocity} takes actual componentwise
+$L^2(\mathbb T^3)$ data, not a free Fourier coefficient sequence.
+Almost-everywhere reality gives conjugate symmetry of the Fourier
+integrals; incompressibility is stated as their Fourier divergence
+condition. Parseval yields, for every retained set and on its constructed
+lifespan,
+\[
+ U_M(t)\le\|u_0\|_{L^2}^2,\qquad
+ 2\nu\int_0^t\Omega_M(s)\,ds\le\|u_0\|_{L^2}^2.
+\]
+Thus the energy payment has no cutoff or mode-count loss. The quantifier
+order is still $\forall M\,\exists T_M>0$: neither a common positive
+smooth lifespan nor an infinite-dimensional evolution has been proved
+here. The nonzero truncations exclude the initial mean; their initial
+matching is asserted only on retained modes. Uniform higher-regularity
+estimates, passage to the continuum, and the intrinsic global alignment
+budget remain necessary.
+
+
 The eigenvalue-gap denominator also appears in spatial frame freezing. In
 \texttt{PancakeEigenframePerturbation}, if $Ae=\lambda e$, $Bf=\mu f$, $B$
 is self-adjoint, and $e,f$ are unit vectors, then
