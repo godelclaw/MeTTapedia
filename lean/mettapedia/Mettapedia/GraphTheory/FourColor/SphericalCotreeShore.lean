@@ -69,13 +69,14 @@ theorem connected_reachable_region (K : SimpleGraph V) (hKG : K ≤ G) (u : V) :
 
 variable {data : Data G} {root : OrbitFace data.toRotationSystem}
 
-/-- Every edge of the primal tree supplies a full connected-shore cut of bounded width. -/
-theorem exists_bounded_fundamental_shore (T : DualBFSTree data root)
+/-- The endpoint component of a deleted primal-tree edge has full bounded boundary. -/
+theorem bounded_fundamental_shore (T : DualBFSTree data root)
     (htree : T.toRankedDualForest.complementGraph.IsTree)
     (htwo : OrbitFacesTwoSided data.toRotationSystem)
     (u v : V) (huv : T.toRankedDualForest.complementGraph.Adj u v)
     (h : ℕ) (hradius : ∀ f, (orbitFaceDualGraph data).dist f root ≤ h) :
-    ∃ side : V → Prop, side u ∧ ¬ side v ∧
+    let side := (T.toRankedDualForest.complementGraph.deleteEdges {s(u, v)}).Reachable u
+    ¬ side v ∧
       (G.induce {w | side w}).Connected ∧ (G.induce {w | ¬ side w}).Connected ∧
       (localCrossingEdgeFinset G side).card ≤ 2 * h + 1 ∧
       localCrossingEdgeFinset G side \ T.edges = {⟨s(u, v), huv.1⟩} := by
@@ -119,8 +120,20 @@ theorem exists_bounded_fundamental_shore (T : DualBFSTree data root)
       have hKab : K.Adj a b := SimpleGraph.deleteEdges_adj.mpr ⟨hHab, hne'⟩
       apply (not_side_iff_of_edgeCrossesVertexSide_of_sym2_eq rfl hcross)
       exact ⟨fun ha => ha.trans hKab.reachable, fun hb => hb.trans hKab.symm.reachable⟩
-  refine ⟨side, .rfl, hnot, hside, hcomp, ?_, hout⟩
+  refine ⟨hnot, hside, hcomp, ?_, hout⟩
   exact crossing_card_le_of_singleton_sdiff T htwo side e hout h hradius
+
+/-- Every edge of the primal tree supplies a full connected-shore cut of bounded width. -/
+theorem exists_bounded_fundamental_shore (T : DualBFSTree data root)
+    (htree : T.toRankedDualForest.complementGraph.IsTree)
+    (htwo : OrbitFacesTwoSided data.toRotationSystem)
+    (u v : V) (huv : T.toRankedDualForest.complementGraph.Adj u v)
+    (h : ℕ) (hradius : ∀ f, (orbitFaceDualGraph data).dist f root ≤ h) :
+    ∃ side : V → Prop, side u ∧ ¬ side v ∧
+      (G.induce {w | side w}).Connected ∧ (G.induce {w | ¬ side w}).Connected ∧
+      (localCrossingEdgeFinset G side).card ≤ 2 * h + 1 ∧
+      localCrossingEdgeFinset G side \ T.edges = {⟨s(u, v), huv.1⟩} := by
+  exact ⟨_, .rfl, bounded_fundamental_shore T htree htwo u v huv h hradius⟩
 
 /-- Instantiate the complete-shore construction with the actual dual BFS tree. -/
 theorem exists_bounded_cotree_shore (data : Data G)

@@ -1,0 +1,48 @@
+{
+  "outcome": "passed",
+  "rows": [
+    {
+      "comparisons": 0,
+      "cuts": 0,
+      "paths": 1,
+      "trees": 1,
+      "vertices": 1
+    },
+    {
+      "comparisons": 0,
+      "cuts": 2,
+      "paths": 4,
+      "trees": 1,
+      "vertices": 2
+    },
+    {
+      "comparisons": 6,
+      "cuts": 24,
+      "paths": 27,
+      "trees": 3,
+      "vertices": 3
+    },
+    {
+      "comparisons": 120,
+      "cuts": 312,
+      "paths": 256,
+      "trees": 16,
+      "vertices": 4
+    },
+    {
+      "comparisons": 2220,
+      "cuts": 4720,
+      "paths": 3125,
+      "trees": 125,
+      "vertices": 5
+    },
+    {
+      "comparisons": 43920,
+      "cuts": 82800,
+      "paths": 46656,
+      "trees": 1296,
+      "vertices": 6
+    }
+  ],
+  "schema": "fourcolor-v24-tree-path-shore-v1"
+}
