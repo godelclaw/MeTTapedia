@@ -13441,8 +13441,9 @@ The designated-face supplier preserves complete facial cycles, and its
 threshold consequently depends on their total perimeter. For a transfer
 which needs only named edges to stay cofacial, preserving every intervening
 dart is stronger than necessary. The following compositional geometry
-provides a finite record of the required observation. It does not yet
-replace the marked-state choice in the geometric supplier.
+provides a finite record of the required observation. The refined geometric
+supplier in Subsection~\ref{sec:supplied-named-cofacial-reduction} below
+uses this record in its marked-state choice.
 
 \paragraph{Compression commutes with supported rewiring.}
 Let $p$ be a permutation of a finite dart carrier, let $H$ be a set of
@@ -13497,13 +13498,100 @@ $288$ unmarked-arc subdivisions, and $1824$ physical prism sewing cases.
 No colouring or configuration catalogue is enumerated. The generic
 permutation theorem, unlike these diagnostics, has no carrier-size bound.
 
-\paragraph{Remaining geometric obligation.}
-The supplied Count seam must still be chosen using compatible named-face
-records on its two actual shores, with the corresponding naming and port
-coordinates. Existing equality of Count support alone is not asserted to
-imply this refinement. Nor does preservation of cofaciality preserve an
-entire hole word, facial length, or all designated face darts. The result
-removes perimeter from this particular observation's local state cost;
-it does not yet remove perimeter from the supplied reduction's threshold.
-D1b/D1c, fixed-mesh exclusion and the generating base remain open, with
-the fixed ledger unchanged at $57/100$.
+\paragraph{What the local law alone leaves.}
+A supplied Count seam needs compatible named-face records on its two
+actual shores, with their naming and port coordinates. Equality of Count
+support alone does not assert this refinement. The next construction
+discharges this compatibility through an enlarged finite state and the
+existing geometric suppliers. Neither construction identifies preservation
+of cofaciality with preservation of an entire hole word or facial cycle.
+
+\subsection{Supplied reduction preserving named cofaciality}
+\label{sec:supplied-named-cofacial-reduction}
+
+There is now a supplied version of the preceding face semantics. Given a
+sufficiently large bridgeless spherical cubic map with two-sided orbit
+faces and finitely many named darts, the construction returns either an
+actual ordered injective mesh, or a strictly smaller structural map with
+the same named-colour acceptance and the same cofaciality relation among
+the named darts. The size threshold depends on the mesh parameters and
+the number of names, not on the lengths of their faces.
+
+\paragraph{A record that keeps absence and aliases.}
+Let $\ell:L\to\operatorname{Option}(D)$ locate names on one side and
+let $H$ be its observed image. Embed $H$ in $\operatorname{Fin}(|L|)$,
+extend its first-return permutation by fixed points on unused coordinates,
+and retain the optional coordinate of every name. The record carrier has
+exactly
+\[
+ |L|!\,(|L|+1)^{|L|}
+\]
+elements. Equality of two records constructs a bijection of their actual
+observed dart carriers: equality of the name maps identifies the occupied
+coordinate ranges, and equality of the padded permutations then preserves
+first returns. Absent names and multiple names for the same dart are not
+silently discarded.
+\Sverified{Mettapedia.GraphTheory.FourColor.NamedFaceRecord.card_record}
+\Sverified{Mettapedia.GraphTheory.FourColor.NamedFaceRecord.matching_named_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.NamedFaceRecord.matching_permCongr}
+\Sverified{Mettapedia.GraphTheory.FourColor.NamedFaceRecord.replacement_congr}
+
+For a width-$k$ shore and $t$ persistent names, use $L$ equal to the sum of
+the standard port carrier and the name carrier. All ports are present;
+dart names may be absent or may alias each other or a port. The unchanged
+exterior's return permutation combines with that of the inner side by
+disjoint union. The induced observed-dart bijection commutes with the
+actual seam swap because it fixes the standard port labels. Hence equal
+inner records preserve and reflect named cofaciality after sewing to the
+same exterior in \texttt{composeRotationSystem}.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceReturnSum.nextHitPerm_sum}
+\Sverified{Mettapedia.GraphTheory.FourColor.NamedOpenFace.totalMatching_swap_permCongr}
+\Sverified{Mettapedia.GraphTheory.FourColor.NamedOpenFace.physicalCofacial_iff}
+Complementary vertex-side sewing reconstructs the original face
+permutation; the observations read the literal ambient names. The resulting
+equivalence on an actual marked seam therefore concerns the original and
+replacement maps, rather than two auxiliary open permutations.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSideCofacial.reassemblyEquiv_phi}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSideCofacial.physicalCofacial_reassembly_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedCotreeSeam.SeamPair.cofacial_iff}
+
+\paragraph{The geometric supplier chooses the equality.}
+Retain the complete structural and frozen joint-colour state, and append
+the named return record. If $Q(k,t)$ is the preceding bounded frozen-state
+bound, a bound for the refined state is
+\[
+ \widehat Q(k,t)=Q(k,t)\,(k+t)!\,(k+t+1)^{k+t}.
+\]
+The bounded-width dependent sum is counted explicitly, rather than using
+the state count at one exact width as its cardinality.
+\Sverified{Mettapedia.GraphTheory.FourColor.CofacialSeamState.card_bounded_le}
+Both the far-face contour branch and the bounded-radius cotree branch
+now request enough literal nodes for $\widehat Q+1$. Pigeonhole selects
+equal refined states; their projections supply the original structural
+and joint-support equalities as well as the new face equality. Full
+boundary order, connected shores and complements, fixed marked vertices,
+and a strict unmarked star come from those geometric constructions.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalCofacialReduction.exists_joint_face_seam_of_nodes}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalCofacialReduction.exists_joint_face_seam_of_no_orderedMesh}
+The final theorem supplies the smaller map, its structural certificate,
+strict vertex-count decrease and lifted named darts. For every prescribed
+colour assignment it preserves acceptance, and for every pair of names
+it preserves and reflects cofaciality. No chain, radius bound, repeated
+state, face-compatibility receipt, or ordinary non-colourability assumption
+is an input to this final alternative.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalCofacialReduction.exists_orderedMesh_or_cofacial_replacement}
+
+\paragraph{Scope and remaining crux.}
+The independent gate checks $3446$ small named records, $8474$ supported
+replacement comparisons and $288$ unmarked-arc subdivisions. Negative
+controls show why absence and alias coordinates cannot be dropped. These
+are permutation diagnostics, not colouring enumerations or claimed
+counterexamples in the target class.
+
+The ordered-mesh branch is still explicit. This construction does not
+exclude all fixed meshes, supply the entire source-facing D1b/D1c
+implication, or verify the generating base. It removes designated-face
+perimeter from this named-cofaciality reduction's threshold, not from any
+consumer which genuinely needs complete hole words, lengths or facial
+cycles. The stronger whole-face construction remains available for those
+consumers. The fixed obligation ledger remains $57/100$.
