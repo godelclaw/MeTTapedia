@@ -1,0 +1,12 @@
+{
+  "distinct_records": 26,
+  "named_cases": 3446,
+  "omission_controls": [
+    "presence is necessary",
+    "alias coordinates are necessary"
+  ],
+  "schema": "fourcolor-v24-named-face-record-v1",
+  "scope": "Finite named permutation records, not a supplied Count seam.",
+  "stretched_carrier_checks": 288,
+  "supported_replacement_checks": 8474
+}
