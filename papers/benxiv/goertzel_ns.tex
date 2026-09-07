@@ -2858,11 +2858,12 @@ strain paths whenever the top eigenvalue is differentiable; its norm is
 at most twice that of the strain derivative. This uses the unit
 Rayleigh derivative, not an inverse eigenvalue gap. The finite sum over
 spatial directions and multiplication by $\nu\ge0$ are also checked.
-This proves the gradient algebra only. A spatial weak chain rule and
-integration-by-parts bridge, a scale-uniform bound for the resulting
-time-integrated strain-gradient cost, and control of the regularization in the complete
-alignment budget remain obligations. In particular, $\delta$ is not
-silently sent to zero and the estimate is not yet scale-uniform.
+This theorem proves the gradient algebra only. The spatial coordinate
+diffusion bridge is proved below by finite differences, without a smooth
+eigenframe. The full material balance, a scale-uniform bound for the
+time-integrated strain-gradient cost, and control of the regularization
+in the complete alignment budget remain obligations. In particular,
+$\delta$ is not silently sent to zero and the estimate is not scale-uniform.
 
 \paragraph{Physical payment for a fixed low strain cutoff.}
 The modules \texttt{PancakeFourierStrainGradient} and
@@ -2924,10 +2925,70 @@ for the top eigenvalue yield, for every $\delta>0$,
 There is no spectral-gap assumption. Summing with
 $T=S_{\sigma(i)}$, $v=w_{\sigma(i)}-w_i$ for a permutation of a finite
 index set cancels the energy differences exactly; this telescoping
-inequality is also checked. Passage from finite increments to the
-continuum spatial diffusion operator, including the measure-theoretic
-justification, remains to be proved. The finite theorem is not presented
-as that limit.
+inequality is also checked. The next result supplies a spatial continuum
+limit for actual finite Fourier fields, with its full-rate envelope
+and measure-theoretic hypotheses stated explicitly.
+
+\paragraph{Collision-safe Haar diffusion limit.}
+Write
+\[
+ \mathcal L_\delta(S,w;A,b)
+  =\bigl(\langle e_S,Ae_S\rangle|w|^2-\langle w,Aw\rangle\bigr)
+       +2\langle K_\delta(S)w,b\rangle.
+\]
+For the actual finite Fourier reconstructions $S_K$ and
+$w=\omega_{\mathcal M}$, set
+$A_j=\partial_j^2 S_K$ and $b_j=\partial_j^2 w$.
+The module \texttt{PancakePhysicalDiffusionLimit} constructs these
+derivatives from the Fourier coefficients and checks their derivative
+identities. For $\delta>0$, $\nu\ge0$, and integrable real fields $F,B$,
+the almost-everywhere envelope
+\[
+ F(x)\le\nu\mathcal L_\delta(S_K(x),w(x);A_j(x),b_j(x))+B(x)
+\]
+implies, for normalized Haar measure on the unit torus,
+\[
+ \int F\le \frac{16\nu}{\delta}\,B_{K,\chi}\,U\Omega+\int B,
+ \qquad
+ B_{K,\chi}=\sum_{q\in K}
+       \bigl(9(2\pi)^2|\chi(q)|\,|q|^2\bigr)^2
+       =\frac{C_{K,\chi}}3.
+\]
+There is no retained-high-mode cardinality factor. This is a coordinate
+diffusion estimate for any integrable full-rate envelope, not an
+assumption that the frame-dependent response is separately integrable.
+
+The proof pairs translations by $\pm h$ in coordinate $j$.
+Haar invariance cancels both translated energy differences exactly.
+The reconstructed Fourier fields define twice continuously differentiable
+curves in the normed space of continuous spatial fields, so a proved
+vector-valued Taylor argument makes their centered second differences
+converge uniformly in space. Real continuous linear maps transfer this
+construction to the real strain operator and vorticity.
+The first strain increment is bounded by
+$|h|\sum_{q\in K}9(2\pi)^2|\chi(q)||q|^2|\widehat u_q|$;
+Cauchy--Schwarz and finite Parseval then give the displayed price.
+The consistency errors are multiplied only by the continuous envelopes
+$|w|^2$ and $|K_\delta(S_K)w|$, whose integrals are finite.
+No twice differentiable top eigenvalue and no measurable selection of
+$e_S$ is required.
+
+Separately, \texttt{PancakeRegularizedMaterialRate} identifies
+$\mathcal L_\delta(S,w;\dot S,\dot w)$ with the derivative of the
+actual energy wherever the top eigenvalue is time-differentiable.
+For $\dot S=-S^2+R+\nu A$ and $\dot w=Sw+f+\nu b$, the exact split is
+\[
+ \dot E_\delta=-|z|^2+\mathcal A_R+2\langle z,f\rangle
+       +2\delta\langle w,Sw+f\rangle
+       +\nu\mathcal L_\delta(S,w;A,b),
+ \qquad z=(\lambda_{\max}I-S)w.
+\]
+The extra regularization term is retained. Combining spatial coordinates
+and advection into a single measurable full material-rate inequality,
+constructing the required trajectories from arbitrary data, and closing
+the scale-summed alignment budget remain open. One cannot obtain the
+full material theorem merely by separately integrating the selected-frame
+coordinate responses. The fixed-low constant also grows as $K$ expands.
 
 The eigenvalue-gap denominator also appears in spatial frame freezing. In
 \texttt{PancakeEigenframePerturbation}, if $Ae=\lambda e$, $Bf=\mu f$, $B$
@@ -3187,6 +3248,13 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeFourierStrainGradient}, and
 \texttt{PancakeLowDiffusionBudget}, and
 \texttt{PancakeSpectralFiniteDifference}, and
+\texttt{PancakeRegularizedMaterialRate}, and
+\texttt{PancakeHaarDiffusionIncrement}, and
+\texttt{PancakeCentralDifferenceLimit}, and
+\texttt{PancakeFourierTranslationCurve}, and
+\texttt{PancakeWeakDiffusionLimit}, and
+\texttt{PancakeMappedFourierDiffusion}, and
+\texttt{PancakePhysicalDiffusionLimit}, and
 \texttt{SpatialBKMIntegrand}, and
 \texttt{PancakeAdaptiveStrainCover}, and
 \texttt{PancakeAdaptiveFourierPartition}, and
