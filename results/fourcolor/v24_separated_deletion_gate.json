@@ -1,0 +1,141 @@
+{
+  "census": [
+    {
+      "cubic_graphs": 1,
+      "subcubic_graphs": 64,
+      "vertices": 4
+    },
+    {
+      "cubic_graphs": 0,
+      "subcubic_graphs": 768,
+      "vertices": 5
+    },
+    {
+      "cubic_graphs": 70,
+      "subcubic_graphs": 12068,
+      "vertices": 6
+    }
+  ],
+  "full_ambient_row_controls": [
+    {
+      "edges": 120,
+      "local_boundary_germs": 65,
+      "max_forbidden": 14,
+      "seed": 0,
+      "sources": 65,
+      "vertices": 80
+    },
+    {
+      "edges": 120,
+      "local_boundary_germs": 65,
+      "max_forbidden": 14,
+      "seed": 1,
+      "sources": 65,
+      "vertices": 80
+    },
+    {
+      "edges": 120,
+      "local_boundary_germs": 65,
+      "max_forbidden": 14,
+      "seed": 2,
+      "sources": 65,
+      "vertices": 80
+    },
+    {
+      "edges": 120,
+      "local_boundary_germs": 65,
+      "max_forbidden": 14,
+      "seed": 3,
+      "sources": 65,
+      "vertices": 80
+    },
+    {
+      "edges": 120,
+      "local_boundary_germs": 65,
+      "max_forbidden": 14,
+      "seed": 4,
+      "sources": 65,
+      "vertices": 80
+    },
+    {
+      "edges": 120,
+      "local_boundary_germs": 65,
+      "max_forbidden": 14,
+      "seed": 5,
+      "sources": 65,
+      "vertices": 80
+    },
+    {
+      "edges": 120,
+      "local_boundary_germs": 65,
+      "max_forbidden": 14,
+      "seed": 6,
+      "sources": 65,
+      "vertices": 80
+    },
+    {
+      "edges": 120,
+      "local_boundary_germs": 65,
+      "max_forbidden": 14,
+      "seed": 7,
+      "sources": 65,
+      "vertices": 80
+    },
+    {
+      "edges": 120,
+      "local_boundary_germs": 65,
+      "max_forbidden": 14,
+      "seed": 8,
+      "sources": 65,
+      "vertices": 80
+    },
+    {
+      "edges": 120,
+      "local_boundary_germs": 65,
+      "max_forbidden": 14,
+      "seed": 9,
+      "sources": 65,
+      "vertices": 80
+    },
+    {
+      "edges": 120,
+      "local_boundary_germs": 65,
+      "max_forbidden": 14,
+      "seed": 10,
+      "sources": 65,
+      "vertices": 80
+    },
+    {
+      "edges": 120,
+      "local_boundary_germs": 65,
+      "max_forbidden": 14,
+      "seed": 11,
+      "sources": 65,
+      "vertices": 80
+    }
+  ],
+  "implication": "separated closed neighborhoods imply full local coverage",
+  "negative_controls": [
+    {
+      "edge_cover": false,
+      "incident_pair_cover": false,
+      "path_vertices": 4
+    },
+    {
+      "edge_cover": true,
+      "incident_pair_cover": false,
+      "path_vertices": 5
+    },
+    {
+      "edge_cover": true,
+      "incident_pair_cover": true,
+      "path_vertices": 6
+    }
+  ],
+  "scope": "structural geometry only; no colourings enumerated",
+  "totals": {
+    "graphs": 12900,
+    "pair_comparisons": 186270,
+    "separated_pairs": 4518
+  }
+}

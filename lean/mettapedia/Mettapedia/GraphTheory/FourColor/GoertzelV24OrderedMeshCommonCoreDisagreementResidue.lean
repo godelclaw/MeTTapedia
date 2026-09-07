@@ -229,8 +229,11 @@ def NineSiteTaitAssignment
           (rowSiteData rotation minimal ordered row slot index).secondVertex)
         coloring }
 
-/-- The repair process has already exposed one of its two geometrically
-meaningful exceptional horns. -/
+/-- A common-core branching discrepancy or boundary encounter.  The boundary
+predicate is unrooted: it does not require travel from the first deletion or
+membership in a prescribed target-repair sequence.  At separated sites it
+already has a local witness at the base colouring; see
+`SeparatedDeletionBoundary.atBase_of_separated`. -/
 def HasNineSiteBranchingOrBoundary
     (row : Fin a) (slot : Fin 9 ↪ Fin n)
     (assignment : NineSiteTaitAssignment rotation minimal ordered row slot) : Prop :=
