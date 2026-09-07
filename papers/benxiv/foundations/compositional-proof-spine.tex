@@ -12763,3 +12763,95 @@ none of these follows from vertex avoidance alone.  Designated holes,
 the remaining frozen-data transport, common seam typing and the
 source-facing global supply remain open.  No whole ledger row is
 closed by this partial construction, so the fixed score stays $57/100$.
+
+\subsection{Physical Count across nested cuts with persistent wires}
+\label{sec:nested-side-wires}
+
+The persistent crossings in Section~\ref{sec:marked-cotree-material}
+expose a representation restriction, not a failure of Count composition.
+The vertex-attached slab interface requires every inner boundary edge
+to enter a vertex of the slab.  In particular, its enlarged side contains
+the opposite endpoint of each inner boundary dart.
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.NestedSideWire.attachedSlab_enters}
+An edge crossing both nested cuts does not have such an endpoint in the
+intervening material.  The following construction works directly with
+the ambient vertex sides and leaves the vertex-attached API unchanged.
+
+Let $A\subseteq B$ be vertex sides of a finite rotation system, and put
+$S=B\setminus A$.  A colouring of $B$ restricts to colourings of $A$
+and $S$ agreeing on every edge joining the two pieces.  Conversely these
+restrictions glue uniquely, using the original ambient darts.  Properness,
+nonzero colours and internal-edge equality are proved in both directions.
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.NestedSideWire.coloringEquiv}
+
+For input and output words $x$ and $y$, a layer colouring must satisfy
+three boundary conditions: it reads $x$ at edges entering the material
+from $A$, it reads $y$ at edges leaving the material toward the complement
+of $B$, and every persistent crossing copies the same \emph{nonzero}
+colour from $x$ to $y$.  A persistent crossing has no vertex in $S$,
+so nonzeroness must be checked explicitly rather than inferred from a
+layer vertex.  There is no new edge identity or freely chosen permutation
+at such a wire.
+
+\begin{theorem}[exact nested-side Count composition]
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.NestedSideWire.wordColoringEquiv}
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.NestedSideWire.sideCount_eq_sum}
+Write $C_A(x)$ for the number of proper colourings of $A$ with word $x$,
+and $M_{A,B}(x,y)$ for the number of proper colourings of $S$ satisfying
+the material and nonzero-wire boundary conditions above.  Then
+\[
+ C_B(y)=\sum_x C_A(x)M_{A,B}(x,y).
+\]
+The intermediate word is uniquely determined by the inner colouring,
+so this is a bijection of finite colouring fibres, not merely an
+equivalence of nonemptiness assertions.
+\end{theorem}
+
+The matrix's support is exactly the physical layer relation, and the
+side count's support is exactly the existing side support.
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.NestedSideWire.slabCount_ne_zero_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.NestedSideWire.sideCount_ne_zero_iff}
+For $A=B$, the material is empty and the transfer is the identity on
+nonzero Tait words, with zero entries for any word containing zero.
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.NestedSideWire.slabCount_refl}
+A mismatched wire gives count zero; a zero input colour also gives
+count zero, whether the port enters material or traverses a wire.
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.NestedSideWire.slabCount_eq_zero_of_wire_mismatch}
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.NestedSideWire.slabCount_eq_zero_of_zero_input}
+
+\paragraph{Frozen data and the existing consumer.}
+Prescriptions are placed on original ambient darts.  If none of their
+bases lies in $S$, restriction and gluing induce a bijection preserving
+all prescribed colours.
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.NestedSideWire.fixedColoringEquiv}
+Marking the endpoints of frozen edges and using the constant majority-side
+window supplies precisely this avoidance of prescribed dart bases.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalMarkedCotreeChain.frozen_restriction_iff}
+The support-composition theorem transports to the stack's existing
+\texttt{innerSupport} under explicit input and output coordinates.
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.NestedSideWire.mem_innerSupport_iff}
+The coordinate of a through wire is determined by its ambient dart,
+and its colour is copied to the corresponding output coordinate.
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.NestedSideWire.wireIndex_dart}
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.NestedSideWire.coordinateRel_wire}
+
+The diagnostic receipt
+\texttt{results/fourcolor/v24\_nested\_side\_wire\_gate.json}
+checks all ten nested pairs, including equal pairs, of the four prism
+cuts.  It tests $41020$ dart assignments with $60$ known proper controls,
+and rejects $168$ mismatched-wire and $168$ equal-but-zero-wire mutations.
+It also rejects $36$ internal-seam mutations that leave both pieces
+individually properly coloured but make their gluing improper.
+This is a test of generic composition, not a configuration support table.
+The Lean results quantify over arbitrary finite rotation systems and
+nested vertex sides, including disconnected or empty material.
+
+\paragraph{Remaining geometric obligation.}
+These theorems establish exact colouring semantics and frozen-dart
+preservation for decomposition and reassembly.  They do not establish
+that deleting a repeated block preserves designated holes, cyclic seam
+order, spherical admissibility or the target minimality class.  Coordinate
+transport is not a proof that an arbitrary coordinate permutation is a
+planar splice.  The source-facing global supply and those replacement
+obligations remain open; no whole fixed ledger row is discharged, and
+the score remains $57/100$.

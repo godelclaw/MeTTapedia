@@ -1,0 +1,437 @@
+{
+  "cases": [
+    {
+      "assignments": 4102,
+      "fixed_dart_assignments": 4102,
+      "inner_rungs": 2,
+      "outer_rungs": 2,
+      "proper_assignments": 6,
+      "rejected_seam_mutations": 0,
+      "rejected_wire_mutations": 24,
+      "rejected_zero_wire_mutations": 24,
+      "slab_vertices": 0,
+      "through_darts": [
+        [
+          1,
+          2
+        ],
+        [
+          0,
+          7
+        ],
+        [
+          9,
+          10
+        ],
+        [
+          8,
+          15
+        ]
+      ]
+    },
+    {
+      "assignments": 4102,
+      "fixed_dart_assignments": 4102,
+      "inner_rungs": 2,
+      "outer_rungs": 3,
+      "proper_assignments": 6,
+      "rejected_seam_mutations": 6,
+      "rejected_wire_mutations": 12,
+      "rejected_zero_wire_mutations": 12,
+      "slab_vertices": 2,
+      "through_darts": [
+        [
+          0,
+          7
+        ],
+        [
+          8,
+          15
+        ]
+      ]
+    },
+    {
+      "assignments": 4102,
+      "fixed_dart_assignments": 4102,
+      "inner_rungs": 2,
+      "outer_rungs": 4,
+      "proper_assignments": 6,
+      "rejected_seam_mutations": 6,
+      "rejected_wire_mutations": 12,
+      "rejected_zero_wire_mutations": 12,
+      "slab_vertices": 4,
+      "through_darts": [
+        [
+          0,
+          7
+        ],
+        [
+          8,
+          15
+        ]
+      ]
+    },
+    {
+      "assignments": 4102,
+      "fixed_dart_assignments": 4102,
+      "inner_rungs": 2,
+      "outer_rungs": 5,
+      "proper_assignments": 6,
+      "rejected_seam_mutations": 6,
+      "rejected_wire_mutations": 12,
+      "rejected_zero_wire_mutations": 12,
+      "slab_vertices": 6,
+      "through_darts": [
+        [
+          0,
+          7
+        ],
+        [
+          8,
+          15
+        ]
+      ]
+    },
+    {
+      "assignments": 4102,
+      "fixed_dart_assignments": 4102,
+      "inner_rungs": 3,
+      "outer_rungs": 3,
+      "proper_assignments": 6,
+      "rejected_seam_mutations": 0,
+      "rejected_wire_mutations": 24,
+      "rejected_zero_wire_mutations": 24,
+      "slab_vertices": 0,
+      "through_darts": [
+        [
+          2,
+          3
+        ],
+        [
+          0,
+          7
+        ],
+        [
+          10,
+          11
+        ],
+        [
+          8,
+          15
+        ]
+      ]
+    },
+    {
+      "assignments": 4102,
+      "fixed_dart_assignments": 4102,
+      "inner_rungs": 3,
+      "outer_rungs": 4,
+      "proper_assignments": 6,
+      "rejected_seam_mutations": 6,
+      "rejected_wire_mutations": 12,
+      "rejected_zero_wire_mutations": 12,
+      "slab_vertices": 2,
+      "through_darts": [
+        [
+          0,
+          7
+        ],
+        [
+          8,
+          15
+        ]
+      ]
+    },
+    {
+      "assignments": 4102,
+      "fixed_dart_assignments": 4102,
+      "inner_rungs": 3,
+      "outer_rungs": 5,
+      "proper_assignments": 6,
+      "rejected_seam_mutations": 6,
+      "rejected_wire_mutations": 12,
+      "rejected_zero_wire_mutations": 12,
+      "slab_vertices": 4,
+      "through_darts": [
+        [
+          0,
+          7
+        ],
+        [
+          8,
+          15
+        ]
+      ]
+    },
+    {
+      "assignments": 4102,
+      "fixed_dart_assignments": 4102,
+      "inner_rungs": 4,
+      "outer_rungs": 4,
+      "proper_assignments": 6,
+      "rejected_seam_mutations": 0,
+      "rejected_wire_mutations": 24,
+      "rejected_zero_wire_mutations": 24,
+      "slab_vertices": 0,
+      "through_darts": [
+        [
+          3,
+          4
+        ],
+        [
+          0,
+          7
+        ],
+        [
+          11,
+          12
+        ],
+        [
+          8,
+          15
+        ]
+      ]
+    },
+    {
+      "assignments": 4102,
+      "fixed_dart_assignments": 4102,
+      "inner_rungs": 4,
+      "outer_rungs": 5,
+      "proper_assignments": 6,
+      "rejected_seam_mutations": 6,
+      "rejected_wire_mutations": 12,
+      "rejected_zero_wire_mutations": 12,
+      "slab_vertices": 2,
+      "through_darts": [
+        [
+          0,
+          7
+        ],
+        [
+          8,
+          15
+        ]
+      ]
+    },
+    {
+      "assignments": 4102,
+      "fixed_dart_assignments": 4102,
+      "inner_rungs": 5,
+      "outer_rungs": 5,
+      "proper_assignments": 6,
+      "rejected_seam_mutations": 0,
+      "rejected_wire_mutations": 24,
+      "rejected_zero_wire_mutations": 24,
+      "slab_vertices": 0,
+      "through_darts": [
+        [
+          4,
+          5
+        ],
+        [
+          0,
+          7
+        ],
+        [
+          12,
+          13
+        ],
+        [
+          8,
+          15
+        ]
+      ]
+    }
+  ],
+  "control": {
+    "endpoints_avoided": true,
+    "frozen_edge": [
+      0,
+      7
+    ],
+    "frozen_edge_crossed": true,
+    "full_width": 4,
+    "graph": {
+      "face_cycles": [
+        [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        [
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        [
+          0,
+          1,
+          9,
+          8
+        ],
+        [
+          1,
+          2,
+          10,
+          9
+        ],
+        [
+          2,
+          3,
+          11,
+          10
+        ],
+        [
+          3,
+          4,
+          12,
+          11
+        ],
+        [
+          4,
+          5,
+          13,
+          12
+        ],
+        [
+          5,
+          6,
+          14,
+          13
+        ],
+        [
+          6,
+          7,
+          15,
+          14
+        ],
+        [
+          7,
+          0,
+          8,
+          15
+        ]
+      ],
+      "primal_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          0,
+          7
+        ],
+        [
+          8,
+          9
+        ],
+        [
+          9,
+          10
+        ],
+        [
+          10,
+          11
+        ],
+        [
+          11,
+          12
+        ],
+        [
+          12,
+          13
+        ],
+        [
+          13,
+          14
+        ],
+        [
+          14,
+          15
+        ],
+        [
+          8,
+          15
+        ],
+        [
+          0,
+          8
+        ],
+        [
+          1,
+          9
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          3,
+          11
+        ],
+        [
+          4,
+          12
+        ],
+        [
+          5,
+          13
+        ],
+        [
+          6,
+          14
+        ],
+        [
+          7,
+          15
+        ]
+      ],
+      "primal_vertex_count": 16
+    },
+    "majority_sides_equal": true,
+    "opposite_returns_inverse": true,
+    "prefix_rungs": [
+      2,
+      3,
+      4,
+      5
+    ],
+    "vertices": 16
+  },
+  "outcome": "passed",
+  "schema": "fourcolor-v24-nested-side-wire-v1"
+}

@@ -1,5 +1,6 @@
 import Mettapedia.GraphTheory.FourColor.FiniteMarkedChain
 import Mettapedia.GraphTheory.FourColor.SphericalCotreePathChain
+import Mettapedia.GraphTheory.FourColor.NestedSideWireComposition
 
 /-!
 # Full cotree cuts avoiding marked vertex material
@@ -30,6 +31,49 @@ noncomputable section
 
 local instance : Fintype G.edgeSet := SimpleGraph.fintypeEdgeSet G
 local instance : DecidableEq G.edgeSet := Subtype.instDecidableEq
+
+omit [G.LocallyFinite] in
+/-- Inclusion of the actual majority sides of two strictly nested nodes. -/
+def nodeSideInclusion {N w : ℕ} (nodes : Fin N → ConnectedShoreNode (G := G) w w)
+    {i j : Fin N} (hij : (nodes i).shore ⊂ (nodes j).shore) :
+    ∀ v, majorityVertexSide G (nodes i).shore v →
+      majorityVertexSide G (nodes j).shore v :=
+  fun _ hv => majorityVertexSide_mono hij.1 hv
+
+omit [G.LocallyFinite] in
+/-- Endpoint marking excludes frozen dart bases from the material layer.
+It does not exclude the edge from crossing both boundaries. -/
+theorem frozen_dart_base_in_inner {N w : ℕ}
+    (nodes : Fin N → ConnectedShoreNode (G := G) w w)
+    (marks : Finset V) (frozen : Finset G.edgeSet)
+    (hends : ∀ e ∈ frozen, ∀ v ∈ (e : Sym2 V), v ∈ marks)
+    {i j : Fin N}
+    (hmarks : ∀ v ∈ marks, majorityVertexSide G (nodes i).shore v ↔
+      majorityVertexSide G (nodes j).shore v)
+    (d : G.Dart) (hd : (⟨d.edge, d.edge_mem⟩ : G.edgeSet) ∈ frozen)
+    (ho : majorityVertexSide G (nodes j).shore d.fst) :
+    majorityVertexSide G (nodes i).shore d.fst :=
+  (hmarks d.fst (hends _ hd _ (Sym2.mem_mk_left _ _))).mpr ho
+
+omit [G.LocallyFinite] in
+/-- Consumer of the marked cotree window: restriction preserves exactly
+the prescribed colours on every frozen ambient dart. The wire-aware gluing
+bijection supplies the inverse, so these prescriptions lose no colourings. -/
+theorem frozen_restriction_iff (data : Data G) {N w : ℕ}
+    (nodes : Fin N → ConnectedShoreNode (G := G) w w)
+    (marks : Finset V) (frozen : Finset G.edgeSet)
+    (hends : ∀ e ∈ frozen, ∀ v ∈ (e : Sym2 V), v ∈ marks)
+    {i j : Fin N} (hij : (nodes i).shore ⊂ (nodes j).shore)
+    (hmarks : ∀ v ∈ marks, majorityVertexSide G (nodes i).shore v ↔
+      majorityVertexSide G (nodes j).shore v)
+    (value : G.Dart → Color)
+    (c : TubeSlab.SideColoring data.toRotationSystem (majorityVertexSide G (nodes j).shore)) :
+    TubeSlab.NestedSideWire.Respects {d : G.Dart | (⟨d.edge, d.edge_mem⟩ : G.edgeSet) ∈ frozen} value
+      (TubeSlab.NestedSideWire.restrict (nodeSideInclusion nodes hij) c) ↔
+    TubeSlab.NestedSideWire.Respects {d : G.Dart | (⟨d.edge, d.edge_mem⟩ : G.edgeSet) ∈ frozen} value c := by
+  apply TubeSlab.NestedSideWire.respects_restrict_iff
+  intro d hd ho
+  exact frozen_dart_base_in_inner nodes marks frozen hends hmarks d hd ho
 
 omit [G.LocallyFinite] in
 /-- Marked endpoints give a constant frozen crossing set, not an empty one.
