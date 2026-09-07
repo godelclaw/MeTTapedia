@@ -4553,11 +4553,107 @@ time in the uniform spatial norm; $p$, $\nabla p$, and $\nabla^2p$ are
 jointly continuous on $[0,T]\times\mathbb T^3$.
 
 These are local pressure geometry and momentum identities, not an
-all-time pressure budget. The remaining material-strain step must
-differentiate the evolving velocity gradient, preserve its signed
-cancellations, and bound pressure, moving weights, and misalignment
-over an arbitrary lifespan. No such global bound follows merely from
-the local envelope or the construction of this Hessian.
+all-time pressure budget. The following step differentiates this same
+evolving velocity gradient and preserves the signed strain source.
+No global bound follows merely from the local envelope or the
+construction of the Hessian.
+
+\paragraph{The actual local gradient and strain equations.}
+A common third absolute moment now pays the differentiated velocity
+equation. The construction uses
+\texttt{exists\_physical\_localMomentEnvelope} with $p=3$, so physical
+initial coordinate jets of order nine provide one interval $[0,T]$,
+one evolving velocity, and a summable envelope
+\[
+ (1+|q|)^3|a_q(t)|\le g(q)\qquad(0\le t\le T).
+\]
+\texttt{PancakeHigherDerivativeMoments} proves monotonicity of these
+moments and the one-derivative cost
+\[
+ \operatorname{moment}_m(\partial_j a)_q
+ \le 2\pi\,\operatorname{moment}_{m+1}(a)_q.
+\]
+In \texttt{PancakeVelocityGradientEnvelope}, the same convolution
+envelope used above bounds
+\[
+ |q|\,|R_\nu(a)_q|\le H_{\nu,g}(q),\qquad
+ |(\partial_j R_\nu(a))_q|\le 2\pi H_{\nu,g}(q).
+\]
+The nonlinear output derivative is paid by the two input moments
+already used for the pressure Hessian. Differentiated viscosity
+costs $|q|^3|a_q|$, paid by the third moment.
+
+\texttt{PancakeLocalVelocityGradientTime} applies the continuous-field
+series differentiation theorem to the derivative coefficients:
+\[
+ \frac{d}{dt}F_{\mathrm{id},\,\partial_j a(t)}
+   =F_{\mathrm{id},\,\partial_j R_\nu(a(t))}
+       \quad\hbox{in }C(\mathbb T^3;\mathbb C^3).
+\]
+At each spatial point this is the time derivative of the ordinary
+$\partial_j U$, not merely of a formal multiplier. The identification
+uses equality in a neighborhood inside $(0,T)$, and makes no claim for
+the artificially extended coefficient curve outside its local interval.
+
+The spatial product rule, proved in
+\texttt{PancakeSpatialGradientDifferentiation}, separates
+\[
+ \partial_j\bigl((U\cdot\nabla)U\bigr)
+  =(U\cdot\nabla)(\partial_jU)
+       +\sum_m(\partial_jU_m)\,\partial_m U.
+\]
+The pressure term differentiates to its already constructed Hessian.
+\texttt{PancakeSpatialViscousDifferentiation} proves
+$\partial_j\Delta U=\Delta\partial_jU$ from summable ordinary third
+derivatives. Uniqueness of these spatial derivatives, applied to the
+actual momentum equation, gives the differentiated RHS.
+
+Let $A_{ij}=\partial_jU_i$. In \texttt{PancakeLocalGradientEquation},
+the product term is exactly $(A^2)_{ij}$, and the constructed field obeys
+\[
+ \partial_t A+(U\cdot\nabla)A=-A^2-\nabla^2p+\nu\Delta A.
+\]
+Here matrix transport and the matrix Laplacian are defined by ordinary
+coordinate derivatives of their columns. The existence theorem
+\texttt{exists\_physical\_local\_gradient\_equation} supplies this identity
+directly from the physical initial data, on the same positive local interval.
+
+Set $S=(A+A^\mathsf T)/2$ and $W=(A-A^\mathsf T)/2$.
+\texttt{PancakeMatrixDifferentialSymmetry} proves that symmetrization
+commutes with the ordinary matrix transport and Laplacian under their
+explicit differentiability hypotheses.
+\texttt{PancakeSpatialGradientRegularity} discharges those hypotheses
+for this $A$ using the same third velocity moment.
+The algebraic identity
+\[
+ \operatorname{sym}(A^2)=S^2+W^2
+\]
+cancels the mixed strain--spin terms. Therefore
+\texttt{PancakeLocalStrainEquation} proves
+\[
+ \boxed{\quad
+ \partial_tS+(U\cdot\nabla)S
+       =-S^2-W^2-\nabla^2p+\nu\Delta S,\qquad 0<t<T.
+ \quad}
+\]
+Its theorem \texttt{exists\_physical\_local\_strain\_equation} constructs
+the local solution from order-nine physical initial jets. Neither
+the strain equation nor its differentiability is an independent
+future-evolution hypothesis.
+
+Finally, \texttt{PancakeLocalStrainReality} proves that the physical
+derivative multiplier preserves coefficient conjugacy. Thus $A$, $S$,
+and $W$ are real; $S$ is symmetric and trace-free, and $W$ is
+antisymmetric. These are geometric properties of the actual spatial
+derivatives, not prescribed matrix data.
+
+This completes the local Eulerian strain identity, not its global
+critical estimate or its evaluation along constructed material trajectories.
+The next bridge must connect this same infinite field to material transport
+and the collision-safe spectral-defect calculation, retaining the signed
+quadratic and diffusion terms. Pressure, moving-weight, and misalignment
+accumulation over an arbitrary lifespan remain unbounded by the present
+local construction.
 
 
 
