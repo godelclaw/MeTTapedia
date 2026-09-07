@@ -12274,9 +12274,66 @@ or examples in the zero-Count target class.  The replay and receipt are
 JSON under \texttt{results/fourcolor/}.
 
 \paragraph{Next construction.}
-Construct the ranked forest and its $|F|-1$ edge count from the actual
-dual distance function; prove the full fundamental-cut width bound; then
-extract enough cyclic nested shores to feed the existing node constructor.
-Until those steps are proved, this is a gated long-face construction with
-its generic parity and tree-complement lemmas, not a global supply theorem.
+The following subsection constructs the ranked forest and its $|F|-1$
+edge count from actual dual distances.  The full fundamental-cut width
+bound and extraction of enough cyclic nested shores remain to be proved.
+Until those steps are complete, this is a gated long-face construction,
+not a global supply theorem.
 The fixed ledger remains $57/100$.
+
+\subsection{Constructing the dual BFS tree on original edges}
+\label{sec:dual-bfs-tree}
+
+\begin{theorem}[actual distance-ranked dual tree]
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalDualBFSTree.exists_adj_dist_pred}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalDualBFSTree.edge_incidence_iff_pair}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalDualBFSTree.of_connected}
+For any root quotient face in a connected full facial dual, select one
+original edge from every nonroot face to a predecessor at distance one
+less.  These edges form a ranked dual forest with exactly $|F|-1$ edges.
+Every nonroot face is the child of a selected edge; its rank is its
+actual full-dual distance to the root, and each parent has rank exactly
+one less.
+\end{theorem}
+
+The predecessor comes from the first edge of a shortest dual walk.
+Its adjacency supplies an original shared edge.  Two distinct incident
+faces exhaust that edge's quotient-face incidence.  If two distinct
+children chose the same edge, each would be the other's predecessor,
+contradicting strict distance decrease.  This proves injectivity of the
+selection and hence the $|F|-1$ count.  No tree, contour, bounded-face
+condition or decomposition is supplied as an input to the construction.
+
+\begin{theorem}[selected paths and the primal spanning tree]
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalDualBFSTree.DualBFSTree.faceGraph_le}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalDualBFSTree.DualBFSTree.exists_root_walk}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalDualBFSTree.DualBFSTree.faceGraph_connected}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalDualBFSTree.DualBFSTree.faceGraph_dist_le}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalDualBFSTree.DualBFSTree.dist_root_eq}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalDualBFSTree.DualBFSTree.exists_root_path}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalDualBFSTree.DualBFSTree.faceGraph_isTree}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalDualBFSTree.of_connected_complement_isTree}
+The selected face graph is a spanning tree of the full dual and preserves exact distances to
+the root.  It supplies simple root paths of those lengths, and the
+selected-graph distance between $f$ and $g$ is at most
+$d(f,r)+d(g,r)$.  For a graph-backed bridgeless spherical cubic map with
+two-sided quotient faces, the primal complement of the constructed
+dual BFS edges is a spanning tree.
+\end{theorem}
+
+Induction on rank constructs the root walks.  Every selected edge changes
+rank by one, so no shorter root walk exists.  The selected dual graph is
+itself a tree by connectedness and the constructed edge count.  The primal conclusion
+instantiates the ranked-forest complement theorem with the constructed
+edge set and count, using the actual map's connectedness and spherical
+Euler equation.  Two-sidedness is an explicit hypothesis already present
+in the vertex-minimal target class.  The construction itself only needs
+connected facial geometry.
+
+\paragraph{Exact remaining metric bridge.}
+The estimate $d(f,r)+d(g,r)\leq 2h$ concerns selected dual paths.
+Identifying each \emph{complete} primal fundamental cut with the dual
+path plus its extra edge, and thus proving its width is at most $2h+1$,
+is still the next lemma.  Long nested cyclic shores, the global supply
+consumer, fixed-mesh exclusion and the generating base are not discharged
+by this construction.  The fixed ledger remains $57/100$.
