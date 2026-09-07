@@ -3659,6 +3659,78 @@ must not be relabelled an a priori global bound. Intrinsic high-strain,
 pressure, moving-weight and scale-summed misalignment estimates remain
 separate open obligations.
 
+\paragraph{Joint input/output consistency against a constructed full series.}
+An output-only limit does not justify restricting a continuum solution
+to a Galerkin system: high input frequencies can also contribute to
+retained outputs. The full comparison is now constructed explicitly.
+With $e_q(x)=\exp(2\pi i q\cdot x)$, set
+\[
+ C_{k,l}(u)=2\pi i(k+l)\times(u_k\times\omega_l),\qquad
+ \mathcal N_\infty(u,x)=\sum_{k,l}\operatorname{Re}
+       \bigl(e_{k+l}(x)C_{k,l}(u)\bigr).
+\]
+Here $\omega_l=2\pi i\,l\times u_l$ is the physical curl coefficient.
+\texttt{PancakeInfinitePairReconstruction} constructs this type of real
+pair series, proves absolute summability under a summable coefficient
+majorant, and proves continuity by uniform convergence. Finite coefficient
+collection is identified exactly with the existing reconstruction.
+
+For a mean-zero velocity the pair $C_{k,l}(u)$ is zero if $k=0$, $l=0$
+or $k+l=0$. Thus \texttt{PancakeZeroSafeInteractionTail} replaces $H_g$ by
+\[
+ H_g^0(k,l)=
+ \begin{cases}
+ (2\pi)^2g_kg_l,& k\ne0,\ l\ne0,\ k+l\ne0,\\
+ 0,&\text{otherwise}.
+ \end{cases}
+\]
+Let $\mathcal T_M=\{(k,l):k,l,k+l\in M\}$ and
+\[
+ \sigma_M(g)=\sum_{(k,l)\notin\mathcal T_M}H_g^0(k,l).
+\]
+\texttt{PancakeInteractionTruncationTail} proves that this combined
+input/output tail tends to zero. Moreover,
+$\sigma_{M\setminus\{0\}}(g)=\sigma_M(g)$ exactly: excluding the zero
+frequency does not leave a spurious positive majorant contribution.
+This makes the exhaustion compatible with nonzero retained-mode sets.
+
+Write $\mathcal N_M(u)$ for the real reconstruction on $M$ of the
+actual finite nonviscous vorticity RHS, using $M$ for both inputs.
+\texttt{PancakeFullNonlinearConsistency} proves, for $u_0=0$,
+transversality on $M$, and the preceding common second-moment envelope,
+\[
+ \|\mathcal N_\infty(u)-\mathcal N_M(u)\|_{L^\infty}
+ \le\sigma_M(g)\longrightarrow0.
+\]
+Its finite-core theorem is uniform over all coefficient fields under $g$,
+including exhaustion through $M\setminus\{0\}$.
+
+\texttt{PancakeParametricInfiniteCurl} proves joint continuity of the
+infinite series for continuously parameterized coefficients under a common
+envelope. The parameter space may be the compact interval $[0,T]$ itself.
+Accordingly \texttt{PancakeFullNonlinearTimeLimit} needs only coordinate
+continuity, the common envelope and the algebraic hypotheses on that
+interval, not on all of $\mathbb R$. For fixed $|\chi_k|\le B$, with
+$R_M=\mathcal N_\infty(u)-\mathcal N_M(u)$, it proves
+\[
+ \boxed{\quad
+ \int_0^T\int_{\mathbb T^3}
+       |\langle K_0(S_{\chi,M})w_M,R_M\rangle|\,dx\,dt
+ \le T C(B,g)\sigma_M(g)\longrightarrow0.
+ \quad}
+\]
+Absolute value is now inside both integrals. Spatial and temporal
+integrability are constructed, and the same conclusion holds with
+$M\setminus\{0\}$ throughout.
+
+This closes the combined Fourier-series consistency estimate under the
+stated envelope. It does not yet identify $\mathcal N_\infty$ with the
+differentiated nonlinearity of a constructed continuum solution, construct
+that solution or its envelope, or pass the complete material inequality
+to the limit. Those analytic identifications and the intrinsic
+scale-critical dynamical budget remain necessary; convergence of an
+explicit nonlinear series is not an unconditional regularity theorem.
+
 The eigenvalue-gap denominator also appears in spatial frame freezing. In
 \texttt{PancakeEigenframePerturbation}, if $Ae=\lambda e$, $Bf=\mu f$, $B$
 is self-adjoint, and $e,f$ are unit vectors, then
@@ -3984,7 +4056,13 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeDiscardedNonlinearLimit},
 \texttt{PancakeSmoothSpectralEnvelope},
 \texttt{PancakeSmoothProjectionPairing},
-\texttt{PancakeSmoothProjectionTimeLimit}, and
+\texttt{PancakeSmoothProjectionTimeLimit},
+\texttt{PancakeInteractionTruncationTail},
+\texttt{PancakeInfinitePairReconstruction},
+\texttt{PancakeZeroSafeInteractionTail},
+\texttt{PancakeFullNonlinearConsistency},
+\texttt{PancakeParametricInfiniteCurl},
+\texttt{PancakeFullNonlinearTimeLimit}, and
 \texttt{SpatialBKMIntegrand}, and
 \texttt{PancakeAdaptiveStrainCover}, and
 \texttt{PancakeAdaptiveFourierPartition}, and
