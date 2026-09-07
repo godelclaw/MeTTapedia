@@ -3483,9 +3483,103 @@ mode count. The weights are fixed in time in this theorem. Moving their
 supports or coefficients requires further time-regularity work.
 Most importantly, this pays only the escaped-vorticity side of
 $\sum_i\int\langle A_iE_i,D\rangle$. It does not bound the nonlinear
-field $D$, the weighted sum's cross terms, moving-patch rates, or the
+field $D$, the weighted sum's cross terms by itself, moving-patch rates, or the
 remaining high-strain and strain-remainder terms. The scale-critical
 coupled budget and arbitrary-data continuation remain open.
+
+\paragraph{The full boundary sum retains spectral depletion.}
+The cross terms can now be handled explicitly. For arbitrary constant real
+operators $A_i,A_j$, \texttt{PancakeWeightedBoundaryAssembly} proves
+\[
+ \int\langle A_iR_i,A_jE_j\rangle=0.
+\]
+Indeed the adjoint moves $A_j$ to the retained factor, after which the
+negation-closed real Fourier orthogonality applies. Neither operator needs
+to be symmetric. Set
+\[
+ G=\sum_i\rho_i A_iw,\qquad
+ \mathcal R=\sum_iA_iR_i,\qquad
+ \mathcal B=\sum_iA_iE_i.
+\]
+Then $G=\mathcal R+\mathcal B$ and
+\[
+ \int|G|^2=\int|\mathcal R|^2+\int|\mathcal B|^2.
+\]
+Weighted Cauchy--Schwarz, checked in
+\texttt{PancakeWeightedBoundaryDepletion}, therefore gives
+\[
+ \boxed{\quad \int|\mathcal B|^2
+       \le C\int\sum_i\rho_i|A_iw|^2.\quad}
+\]
+This is the squared norm of the \emph{complete operator-weighted sum}.
+No cell count enters the bound, and the actual operator action has not
+been replaced by $\|A_i\|\,|w|$.
+
+For symmetric $S$, write $K_0(S)=\lambda_{\max}(S)I-S$,
+$d_S(w)=\lambda_{\max}(S)|w|^2-\langle w,Sw\rangle$ and
+$\sigma(S)=\lambda_{\max}(S)-\lambda_{\min}(S)$.
+The two proved spectral-coordinate identities yield
+\[
+ |K_0(S)w|^2\le\sigma(S)d_S(w)
+                \le 2\|S\|d_S(w).
+\]
+\texttt{PancakeSpectralResidualDepletion} also proves
+$d_S(w)=0\iff K_0(S)w=0$. These statements hold at eigenvalue collisions
+and refer to the entire top eigenspace; there is no inverse gap. With
+$A_i=K_0(S_i)$, the assembled boundary estimate thus becomes
+\[
+ \int|\mathcal B|^2
+   \le C\int\sum_i\rho_i\sigma(S_i)d_{S_i}(w).
+\]
+
+Unfreezing must retain the same benefit. The collision-safe inequality
+$\|K_\delta(T)-K_\delta(S)\|\le2\|T-S\|$ implies
+\[
+ |K_\delta(T)w|^2
+ \le2|K_\delta(S)w|^2+8\|T-S\|^2|w|^2.
+\]
+\texttt{PancakeBoundaryFreezingError} consequently proves, for a continuous
+strain field $S(x)$ and constant sampled strains $S_i$,
+\[
+ \begin{aligned}
+ Q(x)&=\sum_i\rho_i(x)\|S_i-S(x)\|^2,\\
+ \int|\mathcal B|^2
+ &\le2C^2\int|K_\delta(S(x))w(x)|^2
+       +8C\int Q(x)|w(x)|^2,
+ \end{aligned}
+\]
+where here $A_i=K_\delta(S_i)$. The unregularized case $\delta=0$ is
+specialized in \texttt{PancakePhysicalBoundaryDepletion} to the actual
+filtered Fourier strain, its sampled values at the patch centers, and
+$w=\operatorname{Re}\operatorname{Rec}_M\operatorname{curl}u$.
+The exact three-term nonlinear pairing above then uses the single field
+$\mathcal B$ in its middle term, including all cross-cell contributions.
+
+The variance is quantified in \texttt{PancakeBoundaryFreezingVariance}.
+If an exactly subordinate partition $\psi_i$ has active-cell oscillation
+at most $\varepsilon$, $|\rho_i-\psi_i|\le\eta_i$, and the global
+oscillation from center $i$ is at most $L_i$, then
+\[
+ Q(x)\le\varepsilon^2+\sum_i\eta_iL_i^2.
+\]
+For the constructed quadratic family with approximation tolerance $a>0$,
+one may take $\eta_i=a(a+2)$ and $L_i=L$, obtaining
+$V=\varepsilon^2+na(a+2)L^2$ with $n$ cells. Provided
+$na(a+2)\le1/2$, the same
+existentially constructed family has coverage between $1/2$ and $3/2$,
+off-cell leakage below $a^2$, and
+\[
+ \int|\mathcal B|^2
+   \le\frac92\int|K_0(S)w|^2+12V\int|w|^2.
+\]
+The partition and its active-cell/global oscillation bounds are explicit
+inputs to this last construction. Its Fourier approximation precision
+must pay the displayed aggregate tail; no uniform bandwidth or moving
+support cost is inferred. In particular, this aligns the boundary energy
+with the actual negative residual square in the material identity, but
+does not yet control $\int\langle\mathcal B,D\rangle$. Squaring $D$ by
+Young's inequality would leave an unpaid nonlinear-output energy, not a
+closed arbitrary-data estimate.
 
 The eigenvalue-gap denominator also appears in spatial frame freezing. In
 \texttt{PancakeEigenframePerturbation}, if $Ae=\lambda e$, $Bf=\mu f$, $B$
@@ -3799,6 +3893,12 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeQuadraticProjectionLocalization}, and
 \texttt{PancakeBoundaryEnergy}, and
 \texttt{PancakeBoundaryTimeBudget}, and
+\texttt{PancakeWeightedBoundaryAssembly}, and
+\texttt{PancakeSpectralResidualDepletion}, and
+\texttt{PancakeWeightedBoundaryDepletion}, and
+\texttt{PancakeBoundaryFreezingError}, and
+\texttt{PancakePhysicalBoundaryDepletion}, and
+\texttt{PancakeBoundaryFreezingVariance}, and
 \texttt{SpatialBKMIntegrand}, and
 \texttt{PancakeAdaptiveStrainCover}, and
 \texttt{PancakeAdaptiveFourierPartition}, and
