@@ -2983,12 +2983,100 @@ For $\dot S=-S^2+R+\nu A$ and $\dot w=Sw+f+\nu b$, the exact split is
        +\nu\mathcal L_\delta(S,w;A,b),
  \qquad z=(\lambda_{\max}I-S)w.
 \]
-The extra regularization term is retained. Combining spatial coordinates
-and advection into a single measurable full material-rate inequality,
-constructing the required trajectories from arbitrary data, and closing
-the scale-summed alignment budget remain open. One cannot obtain the
-full material theorem merely by separately integrating the selected-frame
-coordinate responses. The fixed-low constant also grows as $K$ expands.
+The extra regularization term is retained. The next construction combines
+the coordinates before integration and identifies a measurable material
+derivative; it never separately integrates the selected-frame coordinate
+responses.
+
+\paragraph{Joint Laplacian and the constructed material derivative.}
+\texttt{PancakeLaplacianDiffusion} sums the linear responses before taking
+the spatial integral. The summed continuous finite-difference envelopes
+converge with uniform consistency errors, giving
+\[
+ \int F\le\frac{16\nu}{\delta}C_{K,\chi}U\Omega+\int B
+ \quad\text{if}\quad
+ F\le\nu\mathcal L_\delta(S_K,w;\Delta S_K,\Delta w)+B
+ \quad\text{a.e.}
+\]
+Here $F,B$ are integrable. \texttt{PancakePhysicalLaplacian} constructs
+both Laplacians by summing the actual three second Fourier derivatives.
+Their coefficient multiplier is $(2\pi i)^2|q|^2$. It also proves that
+the reconstructed viscous coefficients equal $\nu\Delta S_K$ and
+$\nu\Delta w$. Thus these are the viscous directions of the retained
+equation, not assigned operator fields.
+
+Let $R_0,f_0$ denote the previously constructed strain remainder and
+vorticity forcing with their viscous coefficient terms omitted, evaluated
+at the current velocity. Setting the coefficient parameter to zero here
+does not replace the trajectory by an Euler solution.
+\texttt{PancakePhysicalViscousSplit} proves the exact identities
+$R_\nu=R_0+\nu\Delta S_K$ and
+$f_\nu=f_0+\nu\Delta w$, including the finite-support restrictions.
+The material equations therefore have the form used above.
+Young's inequality gives the pointwise bound
+\[
+ \dot E_\delta+\tfrac12|z|^2
+ \le \nu\mathcal L_\delta(S_K,w;\Delta S_K,\Delta w)
+       +\mathcal B_\delta,
+ \qquad
+ \mathcal B_\delta=2\|R_0\||w|^2+2|f_0|^2
+                       +2\delta\langle w,S_Kw+f_0\rangle.
+\]
+The last term keeps its sign; it is not discarded as if it were negative.
+
+To define the rate without a measurable eigenframe, write $v_K(t,x)$
+for the actual filtered real velocity and set
+\[
+ \mathfrak m_\delta(t,x)=
+ \left.\frac{d}{dh}\right|_{h=0}
+ E_\delta\bigl(S_K(t+h,x+h v_K(t,x)),
+                       w(t+h,x+h v_K(t,x))\bigr),
+\]
+with addition in the unit torus. Lean's derivative takes the value zero
+where it does not exist; the subsequent AE agreement theorem is essential.
+\texttt{PancakeMeasurableMaterialRate} proves joint measurability of this
+constructed scalar from continuous retained coefficients.
+\texttt{PancakeFrozenMaterialDerivative} derives its physical rate using
+the retained velocity equation and the straight path with the actual
+instantaneous material tangent. Only that tangent is needed for the
+chain rule, not a separately supplied global flow.
+
+\texttt{PancakeSpacetimeSpectralDifferentiability} and
+\texttt{PancakeAEMaterialRate} remove the spectral differentiability
+hypothesis for C$^1$ coefficient paths. The real spacetime Fourier strain
+is proved C$^1$. On each compact ball its operator field is Lipschitz;
+the largest eigenvalue is globally $1$-Lipschitz in that operator.
+Rademacher's theorem and countable ball exhaustion give real spacetime
+Fr\'echet differentiability almost everywhere. Every frozen material
+direction is then differentiable at these points. The quotient map of
+the measured fundamental cube to the torus is proved measure-preserving;
+measurability of the differentiability set and Fubini give the required
+AE-space statement at AE times. No simple eigenvalue or smooth
+eigenvector assumption is used, including at spectral collisions.
+
+Finally, \texttt{PancakeMaterialSpatialEstimate} derives C$^1$ coefficient
+regularity from a supplied finite velocity solution on $\mathbb R$,
+using the explicit continuity of its RHS. Under the retained reality,
+incompressibility, mode-symmetry and finite-output closure hypotheses,
+it proves for almost every time
+\[
+ \int_{\mathbb T^3}\mathfrak m_\delta
+       +\frac12\int_{\mathbb T^3}|z|^2
+ \le \frac{16\nu}{\delta}C_{K,\chi}U\Omega
+       +\int_{\mathbb T^3}\mathcal B_\delta.
+\]
+Spatial integrability of the rate is a conclusion: its AE physical
+representative has a constructed continuous absolute envelope on the
+compact torus. No extra full-rate integrability budget is assumed.
+The finite velocity solution itself is still supplied, not constructed
+from arbitrary admissible data by this theorem.
+
+This is an AE-time spatial material-rate estimate, not yet the
+time-integrated Eulerian energy balance. Justifying the advective
+cancellation in that balance, paying the remaining nonlinear forcing
+at all scales, constructing the required stochastic objects, and closing
+continuation remain open. The fixed-low constant grows as $K$ expands,
+and neither $K\to\infty$ nor $\delta\to0$ is justified by this estimate.
 
 The eigenvalue-gap denominator also appears in spatial frame freezing. In
 \texttt{PancakeEigenframePerturbation}, if $Ae=\lambda e$, $Bf=\mu f$, $B$
@@ -3255,6 +3343,15 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeWeakDiffusionLimit}, and
 \texttt{PancakeMappedFourierDiffusion}, and
 \texttt{PancakePhysicalDiffusionLimit}, and
+\texttt{PancakeLaplacianDiffusion}, and
+\texttt{PancakePhysicalLaplacian}, and
+\texttt{PancakePhysicalViscousSplit}, and
+\texttt{PancakeMaterialDiffusionBudget}, and
+\texttt{PancakeMeasurableMaterialRate}, and
+\texttt{PancakeFrozenMaterialDerivative}, and
+\texttt{PancakeSpacetimeSpectralDifferentiability}, and
+\texttt{PancakeAEMaterialRate}, and
+\texttt{PancakeMaterialSpatialEstimate}, and
 \texttt{SpatialBKMIntegrand}, and
 \texttt{PancakeAdaptiveStrainCover}, and
 \texttt{PancakeAdaptiveFourierPartition}, and
