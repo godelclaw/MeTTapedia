@@ -13358,3 +13358,78 @@ width. The repair supplies local regions and their valid Count interfaces;
 it does not yet force a sufficiently long chain of uniformly bounded
 interfaces in the mesh alternative. Fixed-mesh exclusion and the global
 D1b/D1c obligations remain open. The fixed ledger remains $57/100$.
+
+\subsection{Reordering filled cells has an intermediate-width cost}
+\label{sec:mesh-region-order-obstruction}
+
+The hull construction repairs connectivity, but it does not make the
+largest intermediate cut equal to the largest endpoint or individual-cell
+cut. Write $A_i$ for the vertex set of cell $i$, fix the same exterior
+anchor $b$, and put
+\[
+ w(s)=\left|\delta\left(V\setminus
+   \operatorname{Comp}_{G[V\setminus\bigcup_{i\in s}A_i]}(b)\right)\right|.
+\]
+The attempted bound was that some order of the cells keeps every filled
+prefix at width at most
+$\max\{\max_i w(\{i\}),w(\text{all cells})\}$.
+
+\paragraph{An exact minimax obstruction.}
+The numbered $GP(3,0)$ control has a band with eight selected face cells.
+Its ambient graph has $180$ vertices and $270$ distinct edges, with cubic
+degree checked in Lean.
+\Sverified{Mettapedia.GraphTheory.FourColor.MeshRegionOrderObstruction.edge_pairs_nodup}
+\Sverified{Mettapedia.GraphTheory.FourColor.MeshRegionOrderObstruction.ambient_cubic}
+For this band,
+\[
+ \forall i,\quad w(\{i\})\le15,\qquad
+ w(\{0,\ldots,7\})=15,\qquad
+ \forall s\ (|s|=6),\quad w(s)\ge16.
+\]
+The six-cell statement covers all $\binom86=28$ choices, including choices
+that are not face-connected. Every permutation therefore has a six-cell
+prefix of width greater than fifteen.
+\Sverified{Mettapedia.GraphTheory.FourColor.MeshRegionOrderObstruction.local_and_final_width}
+\Sverified{Mettapedia.GraphTheory.FourColor.MeshRegionOrderObstruction.six_cells_width}
+\Sverified{Mettapedia.GraphTheory.FourColor.MeshRegionOrderObstruction.every_order_exceeds_fifteen}
+The explicit local order $(1,2,3,4,5,7,0,6)$ keeps every nonempty prefix
+at width at most sixteen. Thus the optimal peak over these cell orders is
+exactly sixteen; neither half of this claim relies on trusting an optimizer.
+\Sverified{Mettapedia.GraphTheory.FourColor.MeshRegionOrderObstruction.optimal_order_width_at_most_sixteen}
+
+\paragraph{Checking the complete physical hull.}
+The encoded raw side is proved to be precisely the union of the selected
+cell vertex sets. For each recorded side, the retained exterior contains
+$b$, avoids the raw side, is closed under every allowed ambient edge, and
+has a rank-decreasing parent edge from each other vertex. A generic
+rank-induction theorem identifies it with the entire exterior component.
+Its complement is therefore the actual hull, and direct endpoint tests
+are proved to give its complete ambient edge boundary.
+\Sverified{Mettapedia.GraphTheory.FourColor.MeshRegionOrderObstruction.mem_rawMask_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.RankedRegionComponent.flood_eq_of_rank}
+\Sverified{Mettapedia.GraphTheory.FourColor.MeshRegionOrderObstruction.component_exact}
+\Sverified{Mettapedia.GraphTheory.FourColor.MeshRegionOrderObstruction.boundary_exact}
+The finite checks use flat byte pages and individually checked component
+witnesses. Sphericity, face-cell extraction and the geometric admissibility
+of the displayed order are checked in the ambient lab receipt; they are
+not additional Lean rotation-system claims here.
+
+\paragraph{Scope of the diagnostic.}
+The gate replays all eight archived spherical controls and searches the
+complete cell-subset lattices of their $52$ bands. Allowed states have
+connected face regions, complete connected cyclic vertex shores,
+inside-majority and full boundary orders; steps must grow strictly.
+The proposed bound fails in $44$ bands. The recurrence agrees with full
+permutation searches in $14$ controls, including all $40320$ orders of
+the eight-cell specimen. At frequency eight the largest prefix width
+across the bands falls from $80$ to $48$ after optimizing these orders;
+the largest candidate bound there is $42$.
+
+This refutes the proposed exact bound for this region-selection method.
+It does not refute a larger quantitative bound, refinement or regrouping
+of cells, arbitrary branch decompositions, or the target-counterexample
+implication of Proposition~\ref{prop:target-forced-cut-chain}. No
+non-colourability premise or colouring enumeration is involved. The
+remaining construction must control complete intermediate interfaces,
+not just local and final cuts. D1b/D1c and fixed-mesh exclusion remain
+open, and the fixed ledger stays at $57/100$.
