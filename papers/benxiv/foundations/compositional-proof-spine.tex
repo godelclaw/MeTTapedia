@@ -13012,8 +13012,8 @@ derive that condition from the source's wall-free hypotheses.  Preserving
 named edge pairs also does not by itself prove preservation of designated
 face orbits or the joint support under arbitrary prescribed frozen colours.
 The face-orbit transport is established in Section~\ref{sec:marked-face-reduction};
-joint frozen-colour support and the global D1b/D1c implications remain
-open. The next construction removes the separately supplied radius bound
+joint frozen-colour transport is established in Section~\ref{sec:frozen-joint-reduction}.
+The global D1b/D1c implications remain open. The next construction removes the separately supplied radius bound
 under ordered-mesh exclusion for the closed-map Count system. No whole
 fixed ledger row is newly discharged: $57/100$.
 
@@ -13146,6 +13146,83 @@ The threshold depends on the total designated perimeter, not merely the
 number of holes. In particular this does not bound an arbitrarily long
 designated face by treating its perimeter as a fixed parameter. Ordinary
 closed-map zero Count is preserved; joint supports under prescribed frozen
-colours are not yet transported. Fixed-mesh exclusion, the complete
+colours are handled by the refinement below. Fixed-mesh exclusion, the complete
 source-facing D1b/D1c claims and the generating base remain open.
 The fixed ledger stays at $57/100$.
+
+\subsection{A supplied reduction preserving joint frozen-colour support}
+\label{sec:frozen-joint-reduction}
+
+Preserving the marginal set of seam words is insufficient for a prescribed
+colour problem: the colour of an observed dart may be correlated with that
+word. For a family $M$ of named darts, each piece now records the joint set
+of pairs $(x,f)$, where $x$ is its seam word and $f:M\to\mathrm{Color}$ is
+a prescription realized by the same proper colouring. A name absent from
+a piece imposes no constraint on that piece. Gluing requires a common $x$
+and the same $f$ on both sides. The existing colouring bijection proves this
+identity while retaining the witnesses and their observations.
+\Sverified{Mettapedia.GraphTheory.FourColor.FrozenCountSupport.closedAccepts_iff}
+
+The semantic-to-physical bridge reads these colours on the actual computed
+edge orbits of the sewn rotation system. Exact dart transport strengthens
+the old colourability-only reassembly theorem by a pointwise colour equation.
+For complementary shores, the resulting prescription is exactly the one
+on the original ambient dart names. Reindexing a boundary changes word
+coordinates but does not change the observed input darts.
+\Sverified{Mettapedia.GraphTheory.FourColor.FrozenPhysicalCount.physicalAccepts_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.FrozenVertexSideCount.physicalAccepts_reassembly_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.FrozenJointReindex.joint_eq_of_coordinate_eq}
+
+\paragraph{The equality is supplied, not assumed.}
+At width $j$, append the joint set to the full marked seam state. With
+$t=|M|$, its additional carrier has cardinality $2^{4^{j+t}}$; zero colours
+are included in this coarse carrier and rejected by proper colourings.
+Thus a bound for the varying-width refined state is
+\[
+ Q_f(k,t)=Q(k,t)\,2^{4^{k+t}}.
+\]
+\Sverified{Mettapedia.GraphTheory.FourColor.FrozenSeamState.card_bounded_le}
+Use $Q_f$ in place of $Q$ throughout the contour/cotree construction of
+Section~\ref{sec:meshfree-full-seam}: in $N$, in $H=aN$, and in the final
+cotree threshold. The larger geometric chain supplies two equal refined
+states. The old components determine the same orientation-compatible,
+ambient-name-fixing matching; the new component supplies joint-support
+equality in precisely its coordinates. Every named dart actually survives,
+so the prescription cannot be preserved vacuously by removing its names.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalFrozenReduction.exists_joint_seam_of_no_orderedMesh}
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedCotreeSeam.SeamPair.accepts_iff}
+
+The resulting alternative is an actual ordered mesh or a strictly smaller
+connected, bridgeless spherical cubic map accepting exactly the same
+prescriptions, for every $f$ simultaneously. Neither ordinary zero Count
+nor minimality is a construction premise. Structural closure and strict
+decrease are proved independently of the acceptance predicate. In
+particular, rejection of a fixed prescription transfers even if the ambient
+map is ordinarily colourable.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalFrozenReduction.exists_orderedMesh_or_frozen_replacement}
+
+\paragraph{Faces and prescriptions on one candidate.}
+Take all darts of the designated faces together with the supplied frozen
+darts, close under edge reversal, and mark their base vertices. Applying
+the refined supplier to these computed names yields one candidate retaining
+every designated face's complete rooted cyclic orbit and each named edge
+partner, while preserving all prescriptions on the named family.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalFrozenFaceReduction.exists_orderedMesh_or_replacement}
+
+\paragraph{Diagnostic and remaining scope.}
+The preregistered control glues two three-port cubic vertices to the planar
+theta multigraph. Its six proper words give $144$ prescription controls;
+all $48$ equal-joint-support controls pass. Forgetting the observation
+distinguishes acceptance in $36$ cases, despite identical marginal seam
+support. This is a generic gluing control, not a configuration certificate
+or a target counterexample. Receipt:
+\texttt{results/fourcolor/v24\_frozen\_joint\_support\_gate.json}.
+
+The universal results are the Lean theorems, not extrapolations from that
+control. They preserve acceptance, not equality of numerical colouring
+multiplicities after deletion. The bound depends on the total designated
+perimeter and the number of frozen names. It supplies neither a uniform
+long-face bound nor fixed-mesh exclusion, nor the complete saturated-chain
+claims of Proposition~\ref{prop:target-forced-cut-chain}. Those D1b/D1c
+obligations and the generating base remain open. The ledger stays at
+$57/100$.

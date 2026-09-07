@@ -38,16 +38,16 @@ variable {V₁ : Type uV₁} {E₁ : Type uE₁}
 the displayed vertex partition transports a Tait coloring.  No compatibility
 with `rho`, faces, or the distinguished outer dart is needed: Tait colorability
 depends only on edge pairs and their common vertices. -/
-theorem rotationSystemTaitColorable_of_dartEquiv
+theorem exists_taitColoring_of_dartEquiv
     (source : RotationSystem V₁ E₁) (target : RotationSystem V₂ E₂)
     (dartEquiv : source.D ≃ target.D) (vertexEquiv : V₁ ≃ V₂)
     (hAlpha : ∀ dart,
       dartEquiv (source.alpha dart) = target.alpha (dartEquiv dart))
     (hVert : ∀ dart,
       vertexEquiv (source.vertOf dart) = target.vertOf (dartEquiv dart))
-    (hColorable : RotationSystemTaitColorable source) :
-    RotationSystemTaitColorable target := by
-  rcases hColorable with ⟨coloring, hTait⟩
+    (coloring : source.EdgeColoring Color) (hTait : source.IsTaitEdgeColoring coloring) :
+    ∃ result : target.EdgeColoring Color, target.IsTaitEdgeColoring result ∧
+      ∀ dart, result (target.edgeOf (dartEquiv dart)) = coloring (source.edgeOf dart) := by
   let dartColor : target.D → Color := fun dart =>
     coloring (source.edgeOf (dartEquiv.symm dart))
   have hinverseAlpha (dart : target.D) :
@@ -93,10 +93,29 @@ theorem rotationSystemTaitColorable_of_dartEquiv
         (source.mem_endpoints_iff).2
           ⟨sourceRight, (source.mem_dartsOn).2 rfl,
             hsourceVertex.symm⟩⟩
-  refine ⟨edgeColoringOfDartColor target dartColor hDartAlpha hDartProper, ?_⟩
-  apply edgeColoringOfDartColor_isTait
-  intro dart
-  exact hTait _
+  refine ⟨edgeColoringOfDartColor target dartColor hDartAlpha hDartProper, ?_, ?_⟩
+  · apply edgeColoringOfDartColor_isTait
+    intro dart
+    exact hTait _
+  · intro dart
+    rw [edgeColoringOfDartColor_edgeOf]
+    simp only [dartColor, Equiv.symm_apply_apply]
+
+/-- Forgetting the pointwise colour equation recovers the original
+colourability-only transport interface. -/
+theorem rotationSystemTaitColorable_of_dartEquiv
+    (source : RotationSystem V₁ E₁) (target : RotationSystem V₂ E₂)
+    (dartEquiv : source.D ≃ target.D) (vertexEquiv : V₁ ≃ V₂)
+    (hAlpha : ∀ dart,
+      dartEquiv (source.alpha dart) = target.alpha (dartEquiv dart))
+    (hVert : ∀ dart,
+      vertexEquiv (source.vertOf dart) = target.vertOf (dartEquiv dart))
+    (hColorable : RotationSystemTaitColorable source) :
+    RotationSystemTaitColorable target := by
+  obtain ⟨coloring, hTait⟩ := hColorable
+  obtain ⟨result, hresult, _⟩ := exists_taitColoring_of_dartEquiv source target
+    dartEquiv vertexEquiv hAlpha hVert coloring hTait
+  exact ⟨result, hresult⟩
 
 /-- Exact dart and vertex relabelings preserve Tait colorability in both
 directions. -/
