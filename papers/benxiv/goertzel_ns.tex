@@ -3225,10 +3225,87 @@ Under the same supplied finite-solution hypotheses,
  \end{aligned}
 \]
 This resolves the mismatch transport algebraically, not its all-scale
-budget. Bounds for the signed weight variation, the reduced nonlinear
+budget. Uniform bounds for the signed weight variation, the reduced nonlinear
 and projection forcing, the growing cutoff constant and the limiting
 construction remain necessary. No frequency-uniform regularity theorem
 follows from this finite-cutoff identity alone.
+
+\paragraph{Actual weight-gradient bound and its cutoff price.}
+\texttt{PancakeWeightVariationGradient} identifies the weak coordinate
+derivative of $K_\delta(S_K)$ almost everywhere with
+\[
+ G_j=\langle e,\partial_jS_K e\rangle I-\partial_jS_K,
+ \qquad \|G_j\|\le2\|\partial_jS_K\|,
+\]
+where $e$ is a constructed unit top eigenvector. Only the scalar largest
+eigenvalue is differentiated, almost everywhere; $e$ is not differentiated.
+The actual entrywise transport sum is proved to equal
+$\mathcal W_\delta=\sum_j a_j\langle w,G_jw\rangle$ almost everywhere.
+Consequently,
+\[
+ |\mathcal W_\delta|
+ \le2|a|\Bigl(\sum_j\|\partial_jS_K\|^2\Bigr)^{1/2}|w|^2.
+\]
+The operator norm is used for each coordinate derivative. This estimate
+is independent of $\delta$ and contains no inverse eigenvalue gap.
+
+For an arbitrary transporting multiplier $\beta$, put
+\[
+ H_{M,\beta}=\sum_{q\in M}|\beta(q)|^2,
+ \qquad D_{K,M,\chi,\beta}=2\sqrt{H_{M,\beta}}\sqrt{C_{K,\chi}}.
+\]
+\texttt{PancakeWeightVariationCutoff} proves the physical velocity bound
+$|v_\beta|\le\sqrt{H_{M,\beta}}\sqrt U$ and then, by finite Parseval,
+$\int|\mathcal W_\delta|\le D_{K,M,\chi,\beta}U\Omega$.
+For the mismatch $\beta=\chi-1$, write $D=D_{K,M,\chi,\chi-1}$.
+Under the supplied retained-solution hypotheses and $\nu>0$, the checked
+time payment and its insertion into the alignment budget are
+\[
+ \begin{aligned}
+ \int_0^T\left|\int_{\mathbb T^3}\mathcal W_\delta\right|
+   &\le \frac{D\,U(0)^2}{2\nu},\\
+ \overline E_\delta(T)+\frac12\int_0^T\!\int|z|^2
+   &\le\overline E_\delta(0)
+      +\left(\frac{8C_{K,\chi}}\delta+\frac{D}{2\nu}\right)U(0)^2
+      +\int_0^T\!\int\widetilde{\mathcal B}_\delta.
+ \end{aligned}
+\]
+This is a finite-cutoff payment, not a uniform one. The same module proves
+the exact identity
+\[
+ H_{M,\chi-1}=|M\setminus K|+\sum_{q\in K}|\chi(q)-1|^2,
+ \qquad K\subseteq M,\quad\operatorname{supp}\chi\subseteq K.
+\]
+Thus the estimate itself exposes a retained-high-mode count. This is a
+limitation of this bound, not a lower bound on the actual transport term
+and not a refutation of a finer cancellation.
+
+\paragraph{Alignment depletion, including the full top eigenspace.}
+\texttt{PancakeAnisotropyDepletion} retains the transverse component
+$\eta=w-\langle e,w\rangle e$. For any real continuous linear operator $A$
+and unit $e$, it proves
+\[
+ \left|\langle e,Ae\rangle|w|^2-\langle w,Aw\rangle\right|
+       \le4\|A\|\,|w|\,|\eta|.
+\]
+The exact expansion into the transverse quadratic term and two mixed
+terms gives the bound. Applied to the physical weight variation, it yields
+\[
+ |\mathcal W_\delta|
+   \le4\Bigl(\sum_j|a_j|\|\partial_jS_K\|\Bigr)|w|\,|\eta|
+ \quad\hbox{almost everywhere}.
+\]
+No time-integrated estimate of this depleted expression is asserted here.
+
+At a repeated largest eigenvalue, the selected line is not the full
+aligned space. \texttt{PancakeTopSpaceTransport} proves the stronger exact
+vanishing statement: if $K_0(S_K)w=0$, then $\mathcal W_\delta=0$ almost
+everywhere. Indeed, along a differentiable operator path, the nonnegative
+scalar function $\langle w,K_0(S_K)w\rangle$ has derivative zero whenever
+its value is zero. This applies to every vector in the entire top
+eigenspace, without choosing a differentiable eigenvector or dividing by
+a spectral gap. Quantitative control near that space, uniform summation,
+the remaining reduced forcing, and arbitrary-data continuation are still open.
 
 The eigenvalue-gap denominator also appears in spatial frame freezing. In
 \texttt{PancakeEigenframePerturbation}, if $Ae=\lambda e$, $Bf=\mu f$, $B$
@@ -3526,6 +3603,10 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeReducedMaterialBudget}, and
 \texttt{PancakeReducedForcingContinuity}, and
 \texttt{PancakeReducedEulerianBudget}, and
+\texttt{PancakeWeightVariationGradient}, and
+\texttt{PancakeWeightVariationCutoff}, and
+\texttt{PancakeAnisotropyDepletion}, and
+\texttt{PancakeTopSpaceTransport}, and
 \texttt{SpatialBKMIntegrand}, and
 \texttt{PancakeAdaptiveStrainCover}, and
 \texttt{PancakeAdaptiveFourierPartition}, and
