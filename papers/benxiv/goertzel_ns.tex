@@ -184,6 +184,13 @@ Its material directional rate $F=\dot P+[B,P]$ is proved off-diagonal:
 the quadratic transfer pairs the coherent and misaligned amplitudes.
 The exact identities are specialized to the physical finite Fourier
 operators, but do not bound $F$ for the actual strain-eigenframe path.
+An intrinsic weighted alternative now has a checked evolution identity:
+the lost-stretching energy $\lambda_{\max}\|w\|^2-\langle w,Sw\rangle$
+has negative squared-residual damping plus explicit anisotropic forcing.
+The largest eigenvalue is constructed from the strain; absolute continuity
+permits integration through spectral collisions without an inverse-gap
+constant.  This does not bound the forcing integral or convert weighted
+defect control into the unweighted multiscale misalignment budget.
 The remaining smooth projector collar, space--time treatment of the small-gap
 branch, and conversion from this $L^2$/defect control to the scale-local
 endpoint budget remain open.  The
@@ -2456,10 +2463,86 @@ denominator: no nonnegative constant bounds the angular rate from a bounded
 off-diagonal torque independently of the strain eigenvalue gap.  Unit torque
 with gap $1/(C+1)$ already defeats a proposed constant $C$.
 
-This rules out a raw pressure-Hessian norm as the next envelope.  A viable
+This rules out a gap-free angular-rate envelope based only on a raw
+pressure-Hessian norm.  A viable
 dynamical continuation must instead control a gap-weighted pressure torque,
 or prove cancellation/residence-time control over near-degenerate intervals,
 and then transfer that control to the Littlewood--Paley misalignment share.
+
+\paragraph{An intrinsic defect identity through collisions.}
+The new \texttt{PancakeTopEigenvalueDerivative},
+\texttt{PancakeSpectralDefectEvolution}, and
+\texttt{PancakeSpectralDefectBudget} modules work directly with
+\[
+ \lambda=\lambda_{\max}(S),\qquad
+ D=\lambda\|w\|^2-\langle w,Sw\rangle\ge0,\qquad
+ z=(\lambda I-S)w.
+\]
+These are still strain-alignment quantities: in the constructed ordered
+eigenbasis,
+\begin{align*}
+ D&=(\lambda_0-\lambda_1)|w_1|^2
+       +(\lambda_0-\lambda_2)|w_2|^2,\\
+ \|z\|^2&=(\lambda_0-\lambda_1)^2|w_1|^2
+       +(\lambda_0-\lambda_2)^2|w_2|^2.
+\end{align*}
+For real Hilbert-space paths obeying
+\[
+ \dot w=Sw+f,\qquad \dot S=-S^2+R,
+\]
+and a unit top eigenvector $e$ at the time in question, the exact checked
+cancellation is
+\begin{equation}\label{eq:ns-spectral-defect-rate}
+ \dot D=-\|z\|^2+\mathcal A_R(e,w)+2\langle z,f\rangle,
+ \qquad
+ \mathcal A_R(e,w)=\langle e,Re\rangle\|w\|^2-\langle w,Rw\rangle.
+\end{equation}
+In particular no derivative of a chosen eigenvector appears. On a simple
+top-eigenvalue branch, the derivative
+$\dot\lambda=\langle e,\dot S e\rangle$ is proved using the continuous
+spectral projector applied to one fixed reference eigenvector, not an
+assumed differentiable eigenframe.
+
+The time-integrated statement requires no simple-gap hypothesis at all.
+The top eigenvalue is globally 1-Lipschitz as a function of the symmetric
+operator. Along a $C^1$ strain path on a compact interval it is absolutely
+continuous. At every time where its derivative exists, the Rayleigh
+variational minimum proves the same derivative formula for every unit top
+eigenvector, including at repeated eigenvalues. The resulting almost-everywhere
+identity and absolute continuity of $D$ yield
+\[
+ D(b)+\int_a^b\|z\|^2
+ =D(a)+\int_a^b\mathcal A_R(e,w)+2\int_a^b\langle z,f\rangle.
+\]
+For $a\le b$ and $\theta>0$, Young's inequality gives
+\[
+ D(b)+(1-\theta)\int_a^b\|z\|^2
+ \le D(a)+\int_a^b\mathcal A_R(e,w)
+       +\theta^{-1}\int_a^b\|f\|^2.
+\]
+The formal hypotheses are $C^1$ strain and vector paths, continuous $f$,
+and the two displayed differential equations on the compact interval.
+Integrability of the scalar anisotropy is derived from the almost-everywhere
+identity, not assumed for a potentially discontinuous eigenvector selection.
+No bound on that integral from the initial data is obtained.
+
+Isotropic forcing cancels exactly:
+$\mathcal A_{R+\alpha I}=\mathcal A_R$. For skew-adjoint spin $W$,
+\[
+ \mathcal A_{-W^2}(e,w)
+ =\|We\|^2\|w\|^2-\|Ww\|^2.
+\]
+Thus when $Ww=0$, its contribution is nonnegative and cannot be discarded
+as damping. For a high-frequency receiver and low-frequency spin,
+$W_{<L}w$ need not vanish; the full two-term identity must be retained.
+In the full strain equation, $R$ includes $-W^2$, the negative
+pressure Hessian, and viscous strain forcing. A filtered equation also has
+the actual subgrid forcing; see the gradient equation (2.4b) in
+\href{https://arxiv.org/pdf/2005.04300v1}{Tom--Carbone--Bragg}.
+Their identification from the physical velocity dynamics and a uniform
+estimate of their signed combination remain required. Moreover each
+corresponding squared-gap weight vanishes at a collision: this budget is not an unweighted
+line-misalignment estimate or a completed Littlewood--Paley/BKM bridge.
 
 The same denominator is now proved for spatial frame freezing.  In
 \texttt{PancakeEigenframePerturbation}, if $Ae=\lambda e$, $Bf=\mu f$, $B$
@@ -2696,6 +2779,9 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeLocalizedQuadraticEnergy}, and
 \texttt{PancakeMaterialProjectorTangent}, and
 \texttt{PancakeFiniteLocalizedEvolution}, and
+\texttt{PancakeTopEigenvalueDerivative}, and
+\texttt{PancakeSpectralDefectEvolution}, and
+\texttt{PancakeSpectralDefectBudget}, and
 \texttt{SpatialBKMIntegrand}, and
 \texttt{PancakeAdaptiveStrainCover}, and
 \texttt{PancakeAdaptiveFourierPartition}, and
