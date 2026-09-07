@@ -2539,9 +2539,9 @@ In the full strain equation, $R$ includes $-W^2$, the negative
 pressure Hessian, and viscous strain forcing. A filtered equation also has
 the actual subgrid forcing; see the gradient equation (2.4b) in
 \href{https://arxiv.org/pdf/2005.04300v1}{Tom--Carbone--Bragg}.
-Their coefficient-level identification is now checked below; real-field
-material-path assembly and a uniform estimate of their signed combination
-remain required. Moreover each
+Their coefficient-level and real-material-path identifications are now
+checked below; a uniform estimate of their signed combination remains
+required. Moreover each
 corresponding squared-gap weight vanishes at a collision: this budget is not an unweighted
 line-misalignment estimate or a completed Littlewood--Paley/BKM bridge.
 
@@ -2579,7 +2579,7 @@ convolutions. Their coefficient time derivatives are derived from the
 original retained-mode velocity ODE. When $\chi$ vanishes outside the
 retained modes, the derivative theorem holds at every output frequency
 without assuming an equation for discarded modes. Reconstruction along
-real material paths remains a separate bridge. A moving multiplier would
+real material paths is supplied by the next bridge below. A moving multiplier would
 also require its time-derivative term, which is not suppressed by this
 static-filter theorem.
 
@@ -2627,6 +2627,78 @@ high--high inputs. It does not pay high pressure outputs: $C_K$ grows
 with the output cutoff. The signed high-pressure/spin/subgrid combination,
 the remaining high--high transfer, and the scale-uniform BKM closure
 are still open.
+
+\paragraph{The defect identity for actual material fields.}
+The \texttt{PancakeFourierMaterialPaths} and
+\texttt{PancakeSpatialStrainEvolution} modules now construct that bridge.
+For a differentiable real coordinate path $X(t)$, the Fourier character
+rate is proved from the exponential formula:
+\[
+ \frac{d}{dt}e^{2\pi i q\cdot X(t)}
+ =2\pi i\,(q\cdot\dot X(t))e^{2\pi i q\cdot X(t)}.
+\]
+The real trajectory equation $\dot X=u_\chi(t,X)$ therefore supplies the
+fluid-generated phase rate; no independent phase-derivative hypothesis
+is needed. The reconstructed Fourier gradient is also proved to give
+the directional derivative of the real velocity field along every such
+path. Its real operator splits into self-adjoint strain and skew-adjoint
+spin. Conjugate symmetry justifies multiplication of reconstructed real
+matrices; multiplicativity of real part is not presumed.
+
+The output set is constructed as $Q=S\cup(S+S)$ for retained modes $S$.
+Thus reconstruction includes every linear and quadratic output.
+Finite convolution becomes the full matrix product, and positive
+advection cancels the trajectory's character-motion contribution exactly.
+The resulting real material equation is
+\[
+ \dot S_\chi=-S_\chi^2+R_\chi,\qquad
+ R_\chi=-W_\chi^2+F_\chi,
+\]
+where $F_\chi$ is the reconstructed pressure/viscous/subgrid expression
+above, not an assumed forcing operator. The checked spin contribution
+retains both terms:
+\[
+ \mathcal A_{R_\chi}(e,w)
+ =\|W_\chi e\|^2\|w\|^2-\|W_\chi w\|^2
+   +\mathcal A_{F_\chi}(e,w).
+\]
+
+The \texttt{PancakePhysicalSpectralDefect} module constructs
+$w=\omega(t,X(t))$ from the retained curl coefficients and its exact
+material rate from the physical vorticity RHS and the derived character
+rate. Subtracting $S_\chi w$ defines the explicit mismatch $f_\chi$;
+there is no time derivative hidden in that definition, and no smallness
+claim is attached to it. Both evolution hypotheses of
+\eqref{eq:ns-spectral-defect-rate} are thereby discharged from the
+original velocity and real trajectory equations.
+
+Finally, \texttt{PancakePhysicalDefectODEBudget} derives $C^1$ regularity
+of the retained velocity coefficients and real path from those ODEs.
+Finite reconstruction transfers it to strain and vorticity. The
+largest eigenvalue is absolutely continuous across collisions, and
+the actual vector forcing is continuous because it equals
+$\dot w-S_\chi w$ on the compact interval. The endpoint argument uses
+the within-interval derivative and handles the singleton interval separately.
+The resulting exact physical identity is
+\[
+ D(b)+\int_a^b\|z\|^2
+ =D(a)+\int_a^b\mathcal A_{R_\chi}(e,w)
+       +2\int_a^b\langle z,f_\chi\rangle.
+\]
+Integrability of the signed anisotropy is a conclusion. No separate
+strain ODE, phase ODE, $C^1$ field assumption, positive eigenvalue gap,
+or forcing-integrability budget occurs in the final theorem. A Young
+inequality version is also checked, but the exact signed pairing is
+retained for the next estimate: bounding the viscous part of
+$\|f_\chi\|^2$ term by term would introduce second-derivative costs
+that have not been paid.
+
+These theorems still assume an existing retained-mode velocity solution
+and an existing trajectory, together with the stated support,
+conjugate-symmetry and incompressibility conditions. They prove neither
+arbitrary-data existence nor a uniform bound for the remaining signed
+forcing. Passage from individual paths to spatial and scale-uniform
+budgets, the high--high channel, and BKM continuation remain open.
 
 The same denominator is now proved for spatial frame freezing.  In
 \texttt{PancakeEigenframePerturbation}, if $Ae=\lambda e$, $Bf=\mu f$, $B$
@@ -2870,6 +2942,10 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeFilteredStrainDynamics}, and
 \texttt{PancakeLowPressureBudget}, and
 \texttt{PancakePressureAnisotropyBudget}, and
+\texttt{PancakeFourierMaterialPaths}, and
+\texttt{PancakeSpatialStrainEvolution}, and
+\texttt{PancakePhysicalSpectralDefect}, and
+\texttt{PancakePhysicalDefectODEBudget}, and
 \texttt{SpatialBKMIntegrand}, and
 \texttt{PancakeAdaptiveStrainCover}, and
 \texttt{PancakeAdaptiveFourierPartition}, and
