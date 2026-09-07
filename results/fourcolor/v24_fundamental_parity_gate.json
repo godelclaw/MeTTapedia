@@ -1,0 +1,46 @@
+{
+  "outcome": "passed",
+  "rows": [
+    {
+      "fundamental_checks": 0,
+      "parallel_checks": 0,
+      "root_checks": 1,
+      "subset_checks": 0,
+      "trees": 1,
+      "vertices": 1
+    },
+    {
+      "fundamental_checks": 2,
+      "parallel_checks": 2,
+      "root_checks": 4,
+      "subset_checks": 8,
+      "trees": 1,
+      "vertices": 2
+    },
+    {
+      "fundamental_checks": 27,
+      "parallel_checks": 18,
+      "root_checks": 27,
+      "subset_checks": 216,
+      "trees": 3,
+      "vertices": 3
+    },
+    {
+      "fundamental_checks": 384,
+      "parallel_checks": 192,
+      "root_checks": 256,
+      "subset_checks": 6144,
+      "trees": 16,
+      "vertices": 4
+    },
+    {
+      "fundamental_checks": 6250,
+      "parallel_checks": 2500,
+      "root_checks": 3125,
+      "subset_checks": 200000,
+      "trees": 125,
+      "vertices": 5
+    }
+  ],
+  "schema": "fourcolor-v24-fundamental-parity-v1"
+}
