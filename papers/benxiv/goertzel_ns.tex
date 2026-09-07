@@ -3307,6 +3307,86 @@ eigenspace, without choosing a differentiable eigenvector or dividing by
 a spectral gap. Quantitative control near that space, uniform summation,
 the remaining reduced forcing, and arbitrary-data continuation are still open.
 
+\paragraph{The actual projection defect and its signed oscillation cost.}
+Let $M\subseteq O$ and assume $M+M\subseteq O$, with the preceding
+nonzero retained frequencies, incompressibility, conjugate reality and
+negation symmetry. Write $N_q$ for the actual nonviscous convolution
+coefficient and define the discarded output field
+\[
+ D(x)=\operatorname{Re}\sum_{q\in O\setminus M}e^{2\pi i q\cdot x}N_q.
+\]
+\texttt{PancakePhysicalNonlinearReconstruction} identifies the full-output
+reconstruction with $S_Mw-(v_M\cdot\nabla)w$. It uses physical curl
+inversion, the exact matrix--vector convolution and real reconstruction
+of the velocity and strain. Consequently
+\texttt{PancakeRetainedProjectionDefect} proves
+\[
+ f_{M,0}=-D,\qquad g=(S_M-S_K)w-D.
+\]
+These are instantaneous identities for the same coefficients $u$;
+setting the viscosity parameter to zero in this expression does not
+replace the viscous solution by an Euler solution.
+
+\texttt{PancakeFiniteFourierOrthogonality} proves orthogonality of
+disjoint finite Fourier supports, including the real vector pairing when
+the first reconstructed field is real. No reality assumption on the
+second output set is needed. The retained curl has conjugate symmetry,
+and \texttt{PancakeProjectionWeightOscillation} extends the cancellation
+to every constant real linear operator $A$:
+\[
+ \int_{\mathbb T^3}\langle Aw,D\rangle=0.
+\]
+For any continuous operator weight $L(x)$ it follows that
+\[
+ \int\langle L(x)w,D\rangle
+   =\int\langle(L(x)-A)w,D\rangle.
+\]
+This cancellation is global. Multiplying by a spatial cell cutoff can
+mix frequencies, so the same cancellation is not asserted on each cell.
+
+\texttt{PancakeProjectionEnergyCancellation} first removes the scalar
+regularization from the integrated projection pairing. Taking
+$A=K_0(S_K(x_0))$ then gives the checked exact identity
+\[
+ \int 2\langle K_\delta(S_K)w,f_{M,0}\rangle
+  =-2\int\bigl\langle
+       [K_0(S_K(x))-K_0(S_K(x_0))]w,D\bigr\rangle.
+\]
+If $\|S_K(x)-S_K(x_0)\|\le\varepsilon$ for all $x$, the already
+proved gap-operator Lipschitz bound yields
+\[
+ \left|\int 2\langle K_\delta(S_K)w,f_{M,0}\rangle\right|
+       \le4\varepsilon\int |w|\,|D|.
+\]
+There is no inverse eigenvalue gap, inverse $\delta$ or mode count in
+this inequality. The size and time integral of $D$ are still unbounded
+here; the displayed estimate alone is not a cutoff-uniform budget.
+
+\texttt{PancakeProjectionMaterialBudget} preserves this cancellation
+inside the material estimate. Set
+\[
+ h=(S_M-S_K)w,\qquad
+ \mathcal B^h_\delta=2\|R_0\||w|^2+2|h|^2
+                           +2\delta\langle w,S_Kw+h\rangle.
+\]
+For integrable $F$ dominated almost everywhere by the actual material
+rate, $\delta>0$ and $\nu\ge0$, the checked spatial estimate is
+\[
+ \begin{aligned}
+ \int F+\frac12\int|z|^2
+ &\le\frac{16\nu}{\delta}C_{K,\chi}U\Omega
+       +\int\mathcal B^h_\delta-\int\mathcal W_\delta\\
+ &\quad-2\int\bigl\langle
+       [K_0(S_K(x))-K_0(S_K(x_0))]w,D\bigr\rangle.
+ \end{aligned}
+\]
+Only $h$, not $h-D$, is squared by Young's inequality. Thus the
+projection defect has a signed linear cost instead of an artificial
+squared cost. The spatially varying projection term, high-strain term,
+strain remainder, transport variation, growing diffusion constant and
+arbitrary-data limiting construction remain to be controlled. No new
+time-integrated projection budget is claimed here.
+
 The eigenvalue-gap denominator also appears in spatial frame freezing. In
 \texttt{PancakeEigenframePerturbation}, if $Ae=\lambda e$, $Bf=\mu f$, $B$
 is self-adjoint, and $e,f$ are unit vectors, then
@@ -3607,6 +3687,12 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeWeightVariationCutoff}, and
 \texttt{PancakeAnisotropyDepletion}, and
 \texttt{PancakeTopSpaceTransport}, and
+\texttt{PancakePhysicalNonlinearReconstruction}, and
+\texttt{PancakeRetainedProjectionDefect}, and
+\texttt{PancakeFiniteFourierOrthogonality}, and
+\texttt{PancakeProjectionEnergyCancellation}, and
+\texttt{PancakeProjectionWeightOscillation}, and
+\texttt{PancakeProjectionMaterialBudget}, and
 \texttt{SpatialBKMIntegrand}, and
 \texttt{PancakeAdaptiveStrainCover}, and
 \texttt{PancakeAdaptiveFourierPartition}, and
