@@ -1,0 +1,1391 @@
+{
+  "frozen_edge_control": {
+    "endpoints_avoided": true,
+    "frozen_edge": [
+      0,
+      7
+    ],
+    "frozen_edge_crossed": true,
+    "full_width": 4,
+    "graph": {
+      "face_cycles": [
+        [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        [
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        [
+          0,
+          1,
+          9,
+          8
+        ],
+        [
+          1,
+          2,
+          10,
+          9
+        ],
+        [
+          2,
+          3,
+          11,
+          10
+        ],
+        [
+          3,
+          4,
+          12,
+          11
+        ],
+        [
+          4,
+          5,
+          13,
+          12
+        ],
+        [
+          5,
+          6,
+          14,
+          13
+        ],
+        [
+          6,
+          7,
+          15,
+          14
+        ],
+        [
+          7,
+          0,
+          8,
+          15
+        ]
+      ],
+      "primal_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          0,
+          7
+        ],
+        [
+          8,
+          9
+        ],
+        [
+          9,
+          10
+        ],
+        [
+          10,
+          11
+        ],
+        [
+          11,
+          12
+        ],
+        [
+          12,
+          13
+        ],
+        [
+          13,
+          14
+        ],
+        [
+          14,
+          15
+        ],
+        [
+          8,
+          15
+        ],
+        [
+          0,
+          8
+        ],
+        [
+          1,
+          9
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          3,
+          11
+        ],
+        [
+          4,
+          12
+        ],
+        [
+          5,
+          13
+        ],
+        [
+          6,
+          14
+        ],
+        [
+          7,
+          15
+        ]
+      ],
+      "primal_vertex_count": 16
+    },
+    "majority_sides_equal": true,
+    "opposite_returns_inverse": true,
+    "prefix_rungs": [
+      2,
+      3,
+      4,
+      5
+    ],
+    "vertices": 16
+  },
+  "outcome": "passed",
+  "population": [
+    {
+      "cyclic_cuts": 2,
+      "dual_height": 3,
+      "family": "GP(1,0)",
+      "full_cut_checks": 38,
+      "marked_cases": [
+        {
+          "end": 1,
+          "marks": [],
+          "slabs": 1,
+          "start": 0
+        }
+      ],
+      "material_cases": [],
+      "vertices": 20
+    },
+    {
+      "cyclic_cuts": 5,
+      "dual_height": 6,
+      "family": "GP(2,0)",
+      "full_cut_checks": 237,
+      "marked_cases": [
+        {
+          "end": 4,
+          "marks": [],
+          "slabs": 4,
+          "start": 0
+        },
+        {
+          "end": 2,
+          "marks": [
+            0
+          ],
+          "slabs": 2,
+          "start": 0
+        },
+        {
+          "end": 2,
+          "marks": [
+            0,
+            79
+          ],
+          "slabs": 1,
+          "start": 1
+        },
+        {
+          "end": 2,
+          "marks": [
+            0,
+            40,
+            79
+          ],
+          "slabs": 1,
+          "start": 1
+        }
+      ],
+      "material_cases": [],
+      "vertices": 80
+    },
+    {
+      "cyclic_cuts": 9,
+      "dual_height": 9,
+      "family": "GP(3,0)",
+      "full_cut_checks": 537,
+      "marked_cases": [
+        {
+          "end": 8,
+          "marks": [],
+          "slabs": 8,
+          "start": 0
+        },
+        {
+          "end": 4,
+          "marks": [
+            0
+          ],
+          "slabs": 4,
+          "start": 0
+        },
+        {
+          "end": 2,
+          "marks": [
+            0,
+            179
+          ],
+          "slabs": 2,
+          "start": 0
+        },
+        {
+          "end": 2,
+          "marks": [
+            0,
+            90,
+            179
+          ],
+          "slabs": 2,
+          "start": 0
+        }
+      ],
+      "material_cases": [],
+      "vertices": 180
+    },
+    {
+      "cyclic_cuts": 13,
+      "dual_height": 12,
+      "family": "GP(4,0)",
+      "full_cut_checks": 957,
+      "marked_cases": [
+        {
+          "end": 12,
+          "marks": [],
+          "slabs": 12,
+          "start": 0
+        },
+        {
+          "end": 6,
+          "marks": [
+            0
+          ],
+          "slabs": 6,
+          "start": 0
+        },
+        {
+          "end": 4,
+          "marks": [
+            0,
+            319
+          ],
+          "slabs": 4,
+          "start": 0
+        },
+        {
+          "end": 3,
+          "marks": [
+            0,
+            160,
+            319
+          ],
+          "slabs": 3,
+          "start": 0
+        }
+      ],
+      "material_cases": [],
+      "vertices": 320
+    },
+    {
+      "cyclic_cuts": 17,
+      "dual_height": 15,
+      "family": "GP(5,0)",
+      "full_cut_checks": 1497,
+      "marked_cases": [
+        {
+          "end": 16,
+          "marks": [],
+          "slabs": 16,
+          "start": 0
+        },
+        {
+          "end": 8,
+          "marks": [
+            0
+          ],
+          "slabs": 8,
+          "start": 0
+        },
+        {
+          "end": 5,
+          "marks": [
+            0,
+            499
+          ],
+          "slabs": 5,
+          "start": 0
+        },
+        {
+          "end": 4,
+          "marks": [
+            0,
+            250,
+            499
+          ],
+          "slabs": 4,
+          "start": 0
+        }
+      ],
+      "material_cases": [],
+      "vertices": 500
+    },
+    {
+      "cyclic_cuts": 21,
+      "dual_height": 18,
+      "family": "GP(6,0)",
+      "full_cut_checks": 2157,
+      "marked_cases": [
+        {
+          "end": 20,
+          "marks": [],
+          "slabs": 20,
+          "start": 0
+        },
+        {
+          "end": 10,
+          "marks": [
+            0
+          ],
+          "slabs": 10,
+          "start": 0
+        },
+        {
+          "end": 6,
+          "marks": [
+            0,
+            719
+          ],
+          "slabs": 6,
+          "start": 0
+        },
+        {
+          "end": 5,
+          "marks": [
+            0,
+            360,
+            719
+          ],
+          "slabs": 5,
+          "start": 0
+        }
+      ],
+      "material_cases": [],
+      "vertices": 720
+    },
+    {
+      "cyclic_cuts": 25,
+      "dual_height": 21,
+      "family": "GP(7,0)",
+      "full_cut_checks": 2937,
+      "marked_cases": [
+        {
+          "end": 24,
+          "marks": [],
+          "slabs": 24,
+          "start": 0
+        },
+        {
+          "end": 12,
+          "marks": [
+            0
+          ],
+          "slabs": 12,
+          "start": 0
+        },
+        {
+          "end": 8,
+          "marks": [
+            0,
+            979
+          ],
+          "slabs": 8,
+          "start": 0
+        },
+        {
+          "end": 6,
+          "marks": [
+            0,
+            490,
+            979
+          ],
+          "slabs": 6,
+          "start": 0
+        }
+      ],
+      "material_cases": [],
+      "vertices": 980
+    },
+    {
+      "cyclic_cuts": 29,
+      "dual_height": 24,
+      "family": "GP(8,0)",
+      "full_cut_checks": 3837,
+      "marked_cases": [
+        {
+          "end": 28,
+          "marks": [],
+          "slabs": 28,
+          "start": 0
+        },
+        {
+          "end": 14,
+          "marks": [
+            0
+          ],
+          "slabs": 14,
+          "start": 0
+        },
+        {
+          "end": 9,
+          "marks": [
+            0,
+            1279
+          ],
+          "slabs": 9,
+          "start": 0
+        },
+        {
+          "end": 7,
+          "marks": [
+            0,
+            640,
+            1279
+          ],
+          "slabs": 7,
+          "start": 0
+        }
+      ],
+      "material_cases": [],
+      "vertices": 1280
+    },
+    {
+      "cyclic_cuts": 6,
+      "dual_height": 3,
+      "family": "annulus(8,1)",
+      "full_cut_checks": 62,
+      "marked_cases": [
+        {
+          "end": 5,
+          "marks": [],
+          "slabs": 5,
+          "start": 0
+        },
+        {
+          "end": 2,
+          "marks": [
+            0
+          ],
+          "slabs": 2,
+          "start": 0
+        },
+        {
+          "end": 1,
+          "marks": [
+            0,
+            31
+          ],
+          "slabs": 1,
+          "start": 0
+        },
+        {
+          "end": 1,
+          "marks": [
+            0,
+            16,
+            31
+          ],
+          "slabs": 1,
+          "start": 0
+        }
+      ],
+      "material_cases": [],
+      "vertices": 32
+    },
+    {
+      "cyclic_cuts": 14,
+      "dual_height": 3,
+      "family": "annulus(16,1)",
+      "full_cut_checks": 126,
+      "marked_cases": [
+        {
+          "end": 13,
+          "marks": [],
+          "slabs": 13,
+          "start": 0
+        },
+        {
+          "end": 6,
+          "marks": [
+            0
+          ],
+          "slabs": 6,
+          "start": 0
+        },
+        {
+          "end": 4,
+          "marks": [
+            0,
+            63
+          ],
+          "slabs": 4,
+          "start": 0
+        },
+        {
+          "end": 3,
+          "marks": [
+            0,
+            32,
+            63
+          ],
+          "slabs": 3,
+          "start": 0
+        }
+      ],
+      "material_cases": [],
+      "vertices": 64
+    },
+    {
+      "cyclic_cuts": 30,
+      "dual_height": 3,
+      "family": "annulus(32,1)",
+      "full_cut_checks": 254,
+      "marked_cases": [
+        {
+          "end": 29,
+          "marks": [],
+          "slabs": 29,
+          "start": 0
+        },
+        {
+          "end": 14,
+          "marks": [
+            0
+          ],
+          "slabs": 14,
+          "start": 0
+        },
+        {
+          "end": 9,
+          "marks": [
+            0,
+            127
+          ],
+          "slabs": 9,
+          "start": 0
+        },
+        {
+          "end": 7,
+          "marks": [
+            0,
+            64,
+            127
+          ],
+          "slabs": 7,
+          "start": 0
+        }
+      ],
+      "material_cases": [],
+      "vertices": 128
+    },
+    {
+      "cyclic_cuts": 62,
+      "dual_height": 3,
+      "family": "annulus(64,1)",
+      "full_cut_checks": 510,
+      "marked_cases": [
+        {
+          "end": 61,
+          "marks": [],
+          "slabs": 61,
+          "start": 0
+        },
+        {
+          "end": 30,
+          "marks": [
+            0
+          ],
+          "slabs": 30,
+          "start": 0
+        },
+        {
+          "end": 20,
+          "marks": [
+            0,
+            255
+          ],
+          "slabs": 20,
+          "start": 0
+        },
+        {
+          "end": 15,
+          "marks": [
+            0,
+            128,
+            255
+          ],
+          "slabs": 15,
+          "start": 0
+        }
+      ],
+      "material_cases": [
+        {
+          "end": 1,
+          "marks": [],
+          "slabs": 1,
+          "start": 0,
+          "stride": 43
+        }
+      ],
+      "vertices": 256
+    },
+    {
+      "cyclic_cuts": 7,
+      "dual_height": 4,
+      "family": "annulus(8,2)",
+      "full_cut_checks": 94,
+      "marked_cases": [
+        {
+          "end": 6,
+          "marks": [],
+          "slabs": 6,
+          "start": 0
+        },
+        {
+          "end": 3,
+          "marks": [
+            0
+          ],
+          "slabs": 3,
+          "start": 0
+        },
+        {
+          "end": 2,
+          "marks": [
+            0,
+            47
+          ],
+          "slabs": 2,
+          "start": 0
+        },
+        {
+          "end": 1,
+          "marks": [
+            0,
+            24,
+            47
+          ],
+          "slabs": 1,
+          "start": 0
+        }
+      ],
+      "material_cases": [],
+      "vertices": 48
+    },
+    {
+      "cyclic_cuts": 15,
+      "dual_height": 4,
+      "family": "annulus(16,2)",
+      "full_cut_checks": 190,
+      "marked_cases": [
+        {
+          "end": 14,
+          "marks": [],
+          "slabs": 14,
+          "start": 0
+        },
+        {
+          "end": 7,
+          "marks": [
+            0
+          ],
+          "slabs": 7,
+          "start": 0
+        },
+        {
+          "end": 4,
+          "marks": [
+            0,
+            95
+          ],
+          "slabs": 4,
+          "start": 0
+        },
+        {
+          "end": 3,
+          "marks": [
+            0,
+            48,
+            95
+          ],
+          "slabs": 3,
+          "start": 0
+        }
+      ],
+      "material_cases": [],
+      "vertices": 96
+    },
+    {
+      "cyclic_cuts": 31,
+      "dual_height": 4,
+      "family": "annulus(32,2)",
+      "full_cut_checks": 382,
+      "marked_cases": [
+        {
+          "end": 30,
+          "marks": [],
+          "slabs": 30,
+          "start": 0
+        },
+        {
+          "end": 15,
+          "marks": [
+            0
+          ],
+          "slabs": 15,
+          "start": 0
+        },
+        {
+          "end": 10,
+          "marks": [
+            0,
+            191
+          ],
+          "slabs": 10,
+          "start": 0
+        },
+        {
+          "end": 7,
+          "marks": [
+            0,
+            96,
+            191
+          ],
+          "slabs": 7,
+          "start": 0
+        }
+      ],
+      "material_cases": [],
+      "vertices": 192
+    },
+    {
+      "cyclic_cuts": 63,
+      "dual_height": 4,
+      "family": "annulus(64,2)",
+      "full_cut_checks": 766,
+      "marked_cases": [
+        {
+          "end": 62,
+          "marks": [],
+          "slabs": 62,
+          "start": 0
+        },
+        {
+          "end": 31,
+          "marks": [
+            0
+          ],
+          "slabs": 31,
+          "start": 0
+        },
+        {
+          "end": 20,
+          "marks": [
+            0,
+            383
+          ],
+          "slabs": 20,
+          "start": 0
+        },
+        {
+          "end": 15,
+          "marks": [
+            0,
+            192,
+            383
+          ],
+          "slabs": 15,
+          "start": 0
+        }
+      ],
+      "material_cases": [
+        {
+          "end": 1,
+          "marks": [],
+          "slabs": 1,
+          "start": 0,
+          "stride": 55
+        }
+      ],
+      "vertices": 384
+    },
+    {
+      "cyclic_cuts": 8,
+      "dual_height": 5,
+      "family": "annulus(8,3)",
+      "full_cut_checks": 126,
+      "marked_cases": [
+        {
+          "end": 7,
+          "marks": [],
+          "slabs": 7,
+          "start": 0
+        },
+        {
+          "end": 3,
+          "marks": [
+            0
+          ],
+          "slabs": 3,
+          "start": 0
+        },
+        {
+          "end": 2,
+          "marks": [
+            0,
+            63
+          ],
+          "slabs": 2,
+          "start": 0
+        },
+        {
+          "end": 1,
+          "marks": [
+            0,
+            32,
+            63
+          ],
+          "slabs": 1,
+          "start": 0
+        }
+      ],
+      "material_cases": [],
+      "vertices": 64
+    },
+    {
+      "cyclic_cuts": 16,
+      "dual_height": 5,
+      "family": "annulus(16,3)",
+      "full_cut_checks": 254,
+      "marked_cases": [
+        {
+          "end": 15,
+          "marks": [],
+          "slabs": 15,
+          "start": 0
+        },
+        {
+          "end": 7,
+          "marks": [
+            0
+          ],
+          "slabs": 7,
+          "start": 0
+        },
+        {
+          "end": 5,
+          "marks": [
+            0,
+            127
+          ],
+          "slabs": 5,
+          "start": 0
+        },
+        {
+          "end": 3,
+          "marks": [
+            0,
+            64,
+            127
+          ],
+          "slabs": 3,
+          "start": 0
+        }
+      ],
+      "material_cases": [],
+      "vertices": 128
+    },
+    {
+      "cyclic_cuts": 32,
+      "dual_height": 5,
+      "family": "annulus(32,3)",
+      "full_cut_checks": 510,
+      "marked_cases": [
+        {
+          "end": 31,
+          "marks": [],
+          "slabs": 31,
+          "start": 0
+        },
+        {
+          "end": 15,
+          "marks": [
+            0
+          ],
+          "slabs": 15,
+          "start": 0
+        },
+        {
+          "end": 10,
+          "marks": [
+            0,
+            255
+          ],
+          "slabs": 10,
+          "start": 0
+        },
+        {
+          "end": 7,
+          "marks": [
+            0,
+            128,
+            255
+          ],
+          "slabs": 7,
+          "start": 0
+        }
+      ],
+      "material_cases": [],
+      "vertices": 256
+    },
+    {
+      "cyclic_cuts": 64,
+      "dual_height": 5,
+      "family": "annulus(64,3)",
+      "full_cut_checks": 1022,
+      "marked_cases": [
+        {
+          "end": 63,
+          "marks": [],
+          "slabs": 63,
+          "start": 0
+        },
+        {
+          "end": 31,
+          "marks": [
+            0
+          ],
+          "slabs": 31,
+          "start": 0
+        },
+        {
+          "end": 21,
+          "marks": [
+            0,
+            511
+          ],
+          "slabs": 21,
+          "start": 0
+        },
+        {
+          "end": 15,
+          "marks": [
+            0,
+            256,
+            511
+          ],
+          "slabs": 15,
+          "start": 0
+        }
+      ],
+      "material_cases": [],
+      "vertices": 512
+    },
+    {
+      "cyclic_cuts": 9,
+      "dual_height": 6,
+      "family": "annulus(8,4)",
+      "full_cut_checks": 158,
+      "marked_cases": [
+        {
+          "end": 8,
+          "marks": [],
+          "slabs": 8,
+          "start": 0
+        },
+        {
+          "end": 4,
+          "marks": [
+            0
+          ],
+          "slabs": 4,
+          "start": 0
+        },
+        {
+          "end": 4,
+          "marks": [
+            0,
+            79
+          ],
+          "slabs": 2,
+          "start": 2
+        },
+        {
+          "end": 6,
+          "marks": [
+            0,
+            40,
+            79
+          ],
+          "slabs": 2,
+          "start": 4
+        }
+      ],
+      "material_cases": [],
+      "vertices": 80
+    },
+    {
+      "cyclic_cuts": 17,
+      "dual_height": 6,
+      "family": "annulus(16,4)",
+      "full_cut_checks": 318,
+      "marked_cases": [
+        {
+          "end": 16,
+          "marks": [],
+          "slabs": 16,
+          "start": 0
+        },
+        {
+          "end": 8,
+          "marks": [
+            0
+          ],
+          "slabs": 8,
+          "start": 0
+        },
+        {
+          "end": 5,
+          "marks": [
+            0,
+            159
+          ],
+          "slabs": 5,
+          "start": 0
+        },
+        {
+          "end": 4,
+          "marks": [
+            0,
+            80,
+            159
+          ],
+          "slabs": 4,
+          "start": 0
+        }
+      ],
+      "material_cases": [],
+      "vertices": 160
+    },
+    {
+      "cyclic_cuts": 33,
+      "dual_height": 6,
+      "family": "annulus(32,4)",
+      "full_cut_checks": 638,
+      "marked_cases": [
+        {
+          "end": 32,
+          "marks": [],
+          "slabs": 32,
+          "start": 0
+        },
+        {
+          "end": 16,
+          "marks": [
+            0
+          ],
+          "slabs": 16,
+          "start": 0
+        },
+        {
+          "end": 10,
+          "marks": [
+            0,
+            319
+          ],
+          "slabs": 10,
+          "start": 0
+        },
+        {
+          "end": 8,
+          "marks": [
+            0,
+            160,
+            319
+          ],
+          "slabs": 8,
+          "start": 0
+        }
+      ],
+      "material_cases": [],
+      "vertices": 320
+    },
+    {
+      "cyclic_cuts": 65,
+      "dual_height": 6,
+      "family": "annulus(64,4)",
+      "full_cut_checks": 1278,
+      "marked_cases": [
+        {
+          "end": 64,
+          "marks": [],
+          "slabs": 64,
+          "start": 0
+        },
+        {
+          "end": 32,
+          "marks": [
+            0
+          ],
+          "slabs": 32,
+          "start": 0
+        },
+        {
+          "end": 21,
+          "marks": [
+            0,
+            639
+          ],
+          "slabs": 21,
+          "start": 0
+        },
+        {
+          "end": 16,
+          "marks": [
+            0,
+            320,
+            639
+          ],
+          "slabs": 16,
+          "start": 0
+        }
+      ],
+      "material_cases": [],
+      "vertices": 640
+    },
+    {
+      "cyclic_cuts": 254,
+      "dual_height": 3,
+      "family": "annulus(256,1)",
+      "full_cut_checks": 2046,
+      "marked_cases": [
+        {
+          "end": 253,
+          "marks": [],
+          "slabs": 253,
+          "start": 0
+        },
+        {
+          "end": 126,
+          "marks": [
+            0
+          ],
+          "slabs": 126,
+          "start": 0
+        },
+        {
+          "end": 84,
+          "marks": [
+            0,
+            1023
+          ],
+          "slabs": 84,
+          "start": 0
+        },
+        {
+          "end": 63,
+          "marks": [
+            0,
+            512,
+            1023
+          ],
+          "slabs": 63,
+          "start": 0
+        }
+      ],
+      "material_cases": [
+        {
+          "end": 5,
+          "marks": [],
+          "slabs": 5,
+          "start": 0,
+          "stride": 43
+        },
+        {
+          "end": 2,
+          "marks": [
+            0
+          ],
+          "slabs": 2,
+          "start": 0,
+          "stride": 43
+        },
+        {
+          "end": 1,
+          "marks": [
+            0,
+            1023
+          ],
+          "slabs": 1,
+          "start": 0,
+          "stride": 43
+        }
+      ],
+      "vertices": 1024
+    }
+  ],
+  "schedules": {
+    "arrival_schedules": 351144,
+    "sharpness_controls": [
+      {
+        "cuts": 1,
+        "marks": 0,
+        "slabs": 1
+      },
+      {
+        "cuts": 2,
+        "marks": 0,
+        "slabs": 2
+      },
+      {
+        "cuts": 3,
+        "marks": 0,
+        "slabs": 3
+      },
+      {
+        "cuts": 4,
+        "marks": 0,
+        "slabs": 4
+      },
+      {
+        "cuts": 2,
+        "marks": 1,
+        "slabs": 1
+      },
+      {
+        "cuts": 4,
+        "marks": 1,
+        "slabs": 2
+      },
+      {
+        "cuts": 6,
+        "marks": 1,
+        "slabs": 3
+      },
+      {
+        "cuts": 8,
+        "marks": 1,
+        "slabs": 4
+      },
+      {
+        "cuts": 3,
+        "marks": 2,
+        "slabs": 1
+      },
+      {
+        "cuts": 6,
+        "marks": 2,
+        "slabs": 2
+      },
+      {
+        "cuts": 9,
+        "marks": 2,
+        "slabs": 3
+      },
+      {
+        "cuts": 12,
+        "marks": 2,
+        "slabs": 4
+      },
+      {
+        "cuts": 4,
+        "marks": 3,
+        "slabs": 1
+      },
+      {
+        "cuts": 8,
+        "marks": 3,
+        "slabs": 2
+      },
+      {
+        "cuts": 12,
+        "marks": 3,
+        "slabs": 3
+      },
+      {
+        "cuts": 16,
+        "marks": 3,
+        "slabs": 4
+      },
+      {
+        "cuts": 5,
+        "marks": 4,
+        "slabs": 1
+      },
+      {
+        "cuts": 10,
+        "marks": 4,
+        "slabs": 2
+      },
+      {
+        "cuts": 15,
+        "marks": 4,
+        "slabs": 3
+      },
+      {
+        "cuts": 20,
+        "marks": 4,
+        "slabs": 4
+      }
+    ]
+  },
+  "schema": "fourcolor-v24-marked-cotree-v1"
+}

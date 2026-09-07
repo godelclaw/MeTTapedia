@@ -12683,3 +12683,83 @@ target of Proposition~\ref{prop:target-forced-cut-chain}, optimized
 physical closure and the actual generating base remain open.  The fixed
 ledger therefore remains $57/100$; the completed implication is recorded
 without assigning partial credit to a larger unresolved row.
+
+\subsection{Marked material in the complete cotree chain}
+\label{sec:marked-cotree-material}
+
+The designated-boundary clause of
+Proposition~\ref{prop:target-forced-cut-chain} requires control of the
+actual sides used by Count.  Avoidance by preliminary cotree vertex shores
+does not suffice: conversion to the majority side can add vertices.
+The following construction instead marks those majority sides directly.
+
+\begin{lemma}[a constant marked window]
+\Sverified{Mettapedia.GraphTheory.FourColor.FiniteMarkedChain.exists_constant_window}
+A monotone sequence of $(t+1)n+1$ vertex sides, with $t$ designated
+vertices, contains $n+1$ consecutive sides on which membership of every
+designated vertex is constant.
+\end{lemma}
+
+Each designated vertex can enter only once.  The proof samples the
+$t+2$ endpoints of $t+1$ disjoint length-$n$ intervals.  Two samples
+have equal marked-intersection cardinality; monotonicity gives equality
+through an intervening interval.  Thus the loss is linear in $t$, not
+the number $2^t$ of all subsets.  No colouring states are enumerated.
+
+The cotree supplier itself now uses only bridgeless spherical cubic
+geometry and two-sided face orbits, before imposing non-colourability
+or vertex minimality.  Bounded full-dual radius $h$ and sufficiently
+large vertex count construct the cotree, its long path and the connected
+edge-shore nodes; no path or chain is an input.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalCotreePathChain.exists_nested_nodes_of_large_card_of_spherical}
+The old target-class API remains a specialization.
+
+\begin{theorem}[marked-free strict material from spherical geometry]
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalMarkedCotreeChain.exists_marked_nodes_of_large_card}
+Put $w=2h+1$, $r=(t+1)n$ and
+\[
+ U_{\mathrm{mark}}(h,t,n)=4^{(6w+1)r+1+2w}.
+\]
+Let a bridgeless spherical cubic map with two-sided face orbits have
+all full-dual distances from a chosen face at most $h$, and more than
+$U_{\mathrm{mark}}(h,t,n)$ vertices.  For any $t$ marked vertices it
+supplies $n+1$ strictly nested connected edge-shore nodes, each of
+middle width at most $w$.  Marked membership in their actual majority
+sides is constant.  Between every two selected nodes there is an
+unmarked vertex lying strictly between their majority sides, with all
+three incident edges in the edge-shore difference.
+\end{theorem}
+
+Select every $(6w+1)$st node before applying the marked-window lemma.
+Strict edge-shore inclusion forces cardinality growth at least the
+index gap.  The cubic middle-set bound then places a full vertex star
+inside each selected slab, which forces strict majority-side growth.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalMarkedCotreeChain.exists_star_of_index_gap}
+Only indices change: the original complete cotree cuts and their
+boundary orders are not altered.  In the least-counterexample class,
+the existing node completion supplies the literal Count nodes.  This
+does not itself prove the fixed-boundary target statement.
+
+\paragraph{Frozen edges: persistence is not avoidance.}
+If both endpoints of every frozen edge are marked, their crossing set
+is identical at all selected majority-side cuts.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalMarkedCotreeChain.frozen_crossing_invariant}
+That set need not be empty.  A checked octagonal-prism control takes
+the four prefix strips of $2,3,4,5$ rungs.  Both shores remain connected
+and cyclic, each complete cut has width $4$, and the frozen edge joining
+positions $0$ and $7$ crosses all four cuts although neither endpoint
+lies in an intervening slab.  The control also checks the spherical
+rotation, inverse opposite boundary returns and equality with the
+majority sides.  It is a reproducible finite geometric test, not a
+Lean-certified spherical counterexample or a zero-Count instance.
+
+The gate exhausts $351144$ marked-entry schedules and $20$ sharpness
+controls, and replays complete cuts on $25$ spherical maps, including
+nonempty marked sets in the strict-star tests.  Its receipt is
+\texttt{results/fourcolor/v24\_marked\_cotree\_gate.json}.
+It shows why a frozen-data splice must either exclude persistent
+crossings or preserve their identities, colours and boundary order;
+none of these follows from vertex avoidance alone.  Designated holes,
+the remaining frozen-data transport, common seam typing and the
+source-facing global supply remain open.  No whole ledger row is
+closed by this partial construction, so the fixed score stays $57/100$.
