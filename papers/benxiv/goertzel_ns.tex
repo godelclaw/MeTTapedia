@@ -3922,8 +3922,8 @@ lifespan,
 \]
 Thus the energy payment has no cutoff or mode-count loss. At this stage
 the quantifier order is $\forall M\,\exists T_M>0$; the continuation
-construction below subsequently provides a common interval. An
-infinite-dimensional evolution is not yet constructed. The nonzero
+construction below subsequently provides a common interval and then an
+infinite coefficient evolution. The nonzero
 truncations exclude the initial mean; their initial
 matching is asserted only on retained modes. Uniform higher-regularity
 estimates, passage to the continuum, and the intrinsic global alignment
@@ -4161,13 +4161,87 @@ Consequently the infinite series is proved summable, with
  \qquad}
 \]
 This is a constructed infinite coefficient field with physical
-constraints and a genuine Sobolev energy bound. It is not yet a
-proved Navier--Stokes evolution: strong convergence sufficient for
-the nonlinear products, passage to the evolution equation, and
-the subsequent global intrinsic alignment estimate remain open.
+constraints and a genuine Sobolev energy bound. The next step proves
+nonlinear convergence and the coefficient evolution equation.
 The local $H^2$ bound also does not by itself provide the common
 summable pointwise second-moment envelope used by the earlier
 higher-regularity consistency theorem.
+
+\paragraph{Passing the actual nonlinear equation to the coefficient limit.}
+The common second-order bound supplies a more direct route than a
+second-moment pointwise envelope. Define
+\[
+ d(k)=(1+|k|)^{-4},\qquad
+ f_q(u,k)=(q\cdot u_k)u_{q-k}.
+\]
+The singleton energy inequality gives $|u_k|^2\le B d(k)$.
+For each fixed output $q$, Cauchy--Schwarz and $2ab\le a^2+b^2$ give
+\[
+ |f_q(u,k)|\le
+       \frac{|q|B}{2}\bigl(d(k)+d(q-k)\bigr)
+       =:G_{B,q}(k),
+ \qquad \sum_k G_{B,q}(k)<\infty.
+\]
+The same bound holds for every approximation and every time in $[0,T]$.
+\texttt{PancakeSobolevFiberEnvelope} proves the componentwise version of
+this bound and its summability. Its constant depends on the fixed output:
+this is not a frequency-uniform critical estimate.
+
+\texttt{PancakeConvectionPathLimit} constructs the series in the complete
+normed space $C_b([0,T];\mathbb C)$. Each summand converges in that space,
+because both coefficient paths converge uniformly in time. Dominated
+convergence for series, using $G_{B,q}$, therefore yields
+\[
+ \sup_{0\le t\le T}
+ \left|\sum_k f_q(u_{M_{\phi(n)}}(t),k)
+              -\sum_k f_q(a(t),k)\right|\longrightarrow0 .
+\]
+This step does not interchange an unjustified pointwise limit with a
+quadratic infinite sum.
+
+\texttt{PancakeConvectionFiberIdentity} identifies this series exactly with
+the finite convection tensor on each supported approximation. When $k+l=q$,
+source transversality gives $l\cdot u_k=q\cdot u_k$; finite support eliminates
+all terms outside the retained set. Thus the derivative is on $q$ before
+taking the infinite limit.
+\texttt{PancakeVelocityPathLimit} carries this convergence through the
+existing Leray projection and viscous multiplier, identifying the resulting
+paths with the actual finite velocity right-hand sides.
+
+For $q\ne0$, the mode belongs to every sufficiently large member of the
+subsequence. Uniform convergence of the derivatives and pointwise
+convergence of the coefficients then give, in
+\texttt{PancakeCoefficientLimitEquation},
+\[
+ \boxed{\quad
+ \partial_t a_q(t)
+   =-2\pi i\,P_q\sum_{k\in\mathbb Z^3}(q\cdot a_k(t))a_{q-k}(t)
+      -\nu(2\pi)^2|q|^2a_q(t),\qquad 0<t<T.
+ \quad}
+\]
+The zero mode is treated separately: both its coefficient and its
+right-hand side vanish. A constant extension beyond $[0,T]$ supplies a
+real-domain representative for the derivative theorem; no equation is
+claimed outside the open local interval.
+
+Finally, \texttt{PancakeLocalInfiniteVelocity} proves the existence theorem
+\begin{center}
+\texttt{exists\_physical\_localInfiniteVelocitySolution}.
+\end{center}
+For positive viscosity and mean-zero, real physical initial data with the
+stated sixth coordinate jets and Fourier incompressibility, it constructs
+$T>0$, $B\ge0$, and a continuous coefficient evolution with the exact initial
+Fourier coefficients, reality, zero mean, transversality, the bounded
+summable second-order energy, and the displayed nonlinear coefficient
+equation. The future evolution and nonlinear convergence are outputs, not
+hypotheses.
+
+This closes the local infinite coefficient-equation construction. Spatial
+PDE reconstruction with sufficient regularity for the material strain
+identities, and the intrinsic all-time alignment/pressure/weight estimates,
+remain to be proved. In particular, the local inequality $E'\le C_\nu E^2$
+does not provide the global continuation estimate.
+
 
 
 The eigenvalue-gap denominator also appears in spatial frame freezing. In
