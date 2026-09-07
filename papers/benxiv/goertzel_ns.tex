@@ -2539,10 +2539,94 @@ In the full strain equation, $R$ includes $-W^2$, the negative
 pressure Hessian, and viscous strain forcing. A filtered equation also has
 the actual subgrid forcing; see the gradient equation (2.4b) in
 \href{https://arxiv.org/pdf/2005.04300v1}{Tom--Carbone--Bragg}.
-Their identification from the physical velocity dynamics and a uniform
-estimate of their signed combination remain required. Moreover each
+Their coefficient-level identification is now checked below; real-field
+material-path assembly and a uniform estimate of their signed combination
+remain required. Moreover each
 corresponding squared-gap weight vanishes at a collision: this budget is not an unweighted
 line-misalignment estimate or a completed Littlewood--Paley/BKM bridge.
+
+\paragraph{Physical pressure and the filtered strain equation.}
+The \texttt{PancakeFourierPressureStrain} module constructs pressure from
+the same finite convection convolution as the physical velocity RHS.
+Writing $c=2\pi i$, $A_{q,ij}=c q_j u_{q,i}$ and
+$C_q=\sum_{k+\ell=q}(\ell\cdot u_k)u_\ell$, it sets
+\[
+ p_q=-\frac{q\cdot C_q}{|q|^2},\qquad p_0=0,\qquad
+ H_{q,ij}=c^2q_iq_jp_q.
+\]
+The Poisson equation, pressure-gradient identity, and exact material
+gradient coefficient equation are proved from these definitions and the
+physical velocity RHS. Strain and spin are the transpose-symmetric and
+transpose-antisymmetric parts of $A_q$; individual complex Fourier
+coefficients are not incorrectly declared Hermitian.
+
+For a static multiplier $\chi$, \texttt{PancakeFilteredStrainDynamics}
+retains the explicit stress-divergence coefficient
+\[
+ T^\chi_q=\sum_{k+\ell=q}
+  \bigl[\chi(q)-\chi(k)\chi(\ell)\bigr](\ell\cdot u_k)u_\ell.
+\]
+Thus $\chi C(u,u)=C(\chi u,\chi u)+T^\chi$ exactly. Differentiating
+convection and symmetrizing after exchanging the ordered Fourier pair
+gives the coefficient form of
+\[
+ \partial_t S_\chi+(u_\chi\cdot\nabla)S_\chi
+ =-S_\chi^2-W_\chi^2-\chi H
+   +\nu\Delta S_\chi+\operatorname{sym}\nabla(-cT^\chi).
+\]
+Products and advection here mean the explicitly defined finite Fourier
+convolutions. Their coefficient time derivatives are derived from the
+original retained-mode velocity ODE. When $\chi$ vanishes outside the
+retained modes, the derivative theorem holds at every output frequency
+without assuming an equation for discarded modes. Reconstruction along
+real material paths remains a separate bridge. A moving multiplier would
+also require its time-derivative term, which is not suppressed by this
+static-filter theorem.
+
+\paragraph{Low-output pressure is paid by kinetic energy.}
+The \texttt{PancakeLowPressureBudget} module uses incompressibility to
+move both numerator derivatives to the output mode:
+\[
+ q\cdot C_q=\sum_{k+\ell=q}(q\cdot u_k)(q\cdot u_\ell),\qquad
+ |p_q|\le U,\qquad U=\sum_k|u_k|^2.
+\]
+The constant in the last bound is exactly one, independent of the
+source support and all input frequencies. Each convolution fiber uses
+each source and receiver at most once, so Cauchy--Schwarz incurs no
+cardinality factor. For a fixed finite pressure output set $K$, define
+\[
+ C_K=(2\pi)^2\sum_{q\in K}|q|^2,\qquad
+ H_K(x)=\sum_{q\in K}e^{2\pi i q\cdot x}H_q.
+\]
+The constructed Hessian operators satisfy
+$\|H_K(x)\|\le\sum_{q\in K}\|H_q\|\le C_K U$, uniformly in space.
+Let $\Omega=\sum_k|\omega_k|^2$. The physical energy identity yields
+\[
+ \int_0^T 2\!\sum_{q\in K}\|H_q(t)\|\,\Omega(t)\,dt
+ \le \frac{C_K U(0)^2}{\nu}.
+\]
+The \texttt{PancakePressureAnisotropyBudget} module connects this envelope
+to the actual spatial quadratic term. For unit directions $e(t,x)$ and
+the reconstructed vorticity, finite Parseval gives
+\[
+ \int_0^T\!\int_{\mathbb T^3}
+  |\mathcal A_{H_K(t,x)}(e(t,x),\omega(t,x))|\,dx\,dt
+ \le \frac{C_K U(0)^2}{\nu}.
+\]
+The bound is proved on complex amplitudes regarded as a real Hilbert
+space, so real fields are included. Spatial integrability follows for
+measurable unit directions. The time theorem explicitly assumes
+measurability of the spatial integral and derives its time integrability
+and bound; it does not assume a pressure or enstrophy budget.
+All these dynamic statements assume a retained-mode velocity solution
+with preserved reality and incompressibility; existence and preservation
+are not proved by the estimates themselves.
+
+This pays all pressure inputs generating a fixed low output, including
+high--high inputs. It does not pay high pressure outputs: $C_K$ grows
+with the output cutoff. The signed high-pressure/spin/subgrid combination,
+the remaining high--high transfer, and the scale-uniform BKM closure
+are still open.
 
 The same denominator is now proved for spatial frame freezing.  In
 \texttt{PancakeEigenframePerturbation}, if $Ae=\lambda e$, $Bf=\mu f$, $B$
@@ -2782,6 +2866,10 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeTopEigenvalueDerivative}, and
 \texttt{PancakeSpectralDefectEvolution}, and
 \texttt{PancakeSpectralDefectBudget}, and
+\texttt{PancakeFourierPressureStrain}, and
+\texttt{PancakeFilteredStrainDynamics}, and
+\texttt{PancakeLowPressureBudget}, and
+\texttt{PancakePressureAnisotropyBudget}, and
 \texttt{SpatialBKMIntegrand}, and
 \texttt{PancakeAdaptiveStrainCover}, and
 \texttt{PancakeAdaptiveFourierPartition}, and
