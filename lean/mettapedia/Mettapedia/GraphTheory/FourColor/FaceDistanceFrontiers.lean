@@ -130,6 +130,28 @@ theorem deepRegion_compl_connected (hconnected : H.Connected) (depth : ℕ) :
   obtain ⟨w, hw⟩ := exists_outside_walk H root far hconnected depth f.property
   exact ⟨(w.induce _ hw).reverse⟩
 
+/-- Every intervening depth is attained on the complete boundary. Thus the
+deep components strictly shrink before the far face disappears. -/
+theorem deepRegion_ssubset (hconnected : H.Connected) {i j : ℕ}
+    (hij : i < j) (hfar : i < H.dist root far) :
+    deepRegion H root far j ⊂ deepRegion H root far i := by
+  have hroot : root ∉ deepRegion H root far i := by
+    intro h
+    have hd := dist_gt_of_mem H root far h
+    simp at hd
+  obtain ⟨w⟩ := hconnected far root
+  obtain ⟨d, _hd, hin, hout⟩ := w.exists_boundary_dart
+    (deepRegion H root far i) (far_mem H root far hfar) hroot
+  have hdist := (cut_distance H root far hin hout d.adj).1
+  have hn : d.fst ∉ deepRegion H root far j := by
+    intro h
+    have hd := dist_gt_of_mem H root far h
+    omega
+  refine Set.ssubset_iff_subset_ne.mpr
+    ⟨deepRegion_antitone H root far (Nat.le_of_lt hij), ?_⟩
+  intro heq
+  exact hn (heq.symm ▸ hin)
+
 /-- Faces incident at a vertex meet both a region and its complement. -/
 def Mixed (incident : V → Set F) (region : Set F) (v : V) : Prop :=
   (∃ f, f ∈ incident v ∧ f ∈ region) ∧ ∃ h, h ∈ incident v ∧ h ∉ region
