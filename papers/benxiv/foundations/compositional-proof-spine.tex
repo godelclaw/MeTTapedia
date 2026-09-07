@@ -13226,3 +13226,66 @@ long-face bound nor fixed-mesh exclusion, nor the complete saturated-chain
 claims of Proposition~\ref{prop:target-forced-cut-chain}. Those D1b/D1c
 obligations and the generating base remain open. The ledger stays at
 $57/100$.
+
+\subsection{Ordered mesh corners do not automatically bound cells}
+\label{sec:ordered-mesh-cell-obstruction}
+
+The ordered-mesh alternative is not yet a decomposition into disk cells.
+One attempted construction takes adjacent rows and columns, cuts their
+four branch-to-branch subpaths, and concatenates them into a rectangular
+rim. The existing ordered-mesh definition deliberately permits shared
+row--column segments. Thus strict branch order and simple paths do not
+make this rim simple, even when each family is vertex-disjoint.
+
+\paragraph{An exact obstruction.}
+In the dodecahedral control, take the trimmed rows
+$(10,14,12)$ and $(17,19)$, and columns $(10,11,17)$ and $(12,14,19)$.
+The designated branch matrix is
+\[
+ \begin{pmatrix}10&12\\17&19\end{pmatrix}.
+\]
+These paths inhabit the actual \texttt{OrderedInjectiveMesh} carrier;
+within-family vertex-disjointness and ambient cubic degree are checked.
+\Sverified{Mettapedia.GraphTheory.FourColor.OrderedMeshCellBoundaryCounterexample.ordered_cell_obstruction}
+\Sverified{Mettapedia.GraphTheory.FourColor.OrderedMeshCellBoundaryCounterexample.families_vertex_disjoint}
+\Sverified{Mettapedia.GraphTheory.FourColor.OrderedMeshCellBoundaryCounterexample.ambient_cubic}
+The four sides concatenate to
+$(10,14,12,14,19,17,11,10)$. Corner $12$ has only neighbour $14$ in
+their entire edge union. No simple cycle in that union contains $12$,
+regardless of where the cycle is rooted. In particular, loop erasure
+cannot retain all four designated corners.
+\Sverified{Mettapedia.GraphTheory.FourColor.OrderedMeshCellBoundaryCounterexample.corner_not_on_cycle}
+Erasing the backtrack does leave the simple cycle
+$(10,14,19,17,11,10)$, but it loses corner $12$.
+\Sverified{Mettapedia.GraphTheory.FourColor.OrderedMeshCellBoundaryCounterexample.erased_is_cycle}
+
+\paragraph{Complete-interface diagnostic.}
+The union contains every ambient edge induced on its vertex set. The
+full ambient edge boundary has size six, but corner $12$ has just one
+internal incident edge, violating the inside-majority condition needed
+for this vertex set to be a good side.
+\Sverified{Mettapedia.GraphTheory.FourColor.OrderedMeshCellBoundaryCounterexample.cellEdges_induced}
+\Sverified{Mettapedia.GraphTheory.FourColor.OrderedMeshCellBoundaryCounterexample.complete_boundary_card}
+\Sverified{Mettapedia.GraphTheory.FourColor.OrderedMeshCellBoundaryCounterexample.corner_internal_edge_count}
+The lab separately checks that both induced sides are connected and
+contain cycles. Thus connectivity alone does not repair this candidate.
+
+The preregistered gate replays the eight full spherical $GP(k,0)$ controls,
+$1\le k\le8$, with their previously selected ordered meshes. Of their
+$316$ adjacent cells, $252$ have non-simple candidate rims and a pendant
+designated corner. A pentagonal facial-cycle control passes. The receipt
+\texttt{results/fourcolor/v24\_ordered\_mesh\_cell\_gate.json} includes
+the complete ambient graph and face data for the first obstruction.
+Sphericity of that receipt is checked by the lab; the Lean statements above
+check the finite ordered-mesh and cycle obstruction, not an additional
+rotation-system theorem.
+
+\paragraph{What fails, and what remains.}
+This refutes the corner-preserving four-subpath cell construction, not
+ordered-mesh extraction or fixed-mesh exclusion in the counterexample
+class. A repair must allow branch relocation or another boundary
+construction, then prove global consistency, full lateral-interface
+coverage and the required saturated nested sides. Independent loop
+erasure does not supply those conclusions. No non-colourability premise
+or colouring enumeration was used. D1b/D1c and fixed-mesh exclusion remain
+open; the fixed ledger stays at $57/100$.
