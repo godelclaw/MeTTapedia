@@ -3581,6 +3581,84 @@ does not yet control $\int\langle\mathcal B,D\rangle$. Squaring $D$ by
 Young's inequality would leave an unpaid nonlinear-output energy, not a
 closed arbitrary-data estimate.
 
+\paragraph{Removing the projection artifact under a common smoothness envelope.}
+The discarded field $D$ is a finite-projection error. One can remove this
+error by a consistency limit under an explicit smoothness hypothesis,
+without claiming an initial-energy bound for $|D|^2$.
+For velocity coefficients $u_k$, put
+\[
+ m_s(u,k)=(1+|k|)^s|u_k|.
+\]
+Suppose $g_k\ge0$, $G=\sum_k g_k<\infty$, and $m_2(u,k)\le g_k$.
+\texttt{PancakeCurlOutputTail} checks the two physical curl factors,
+including the unit-torus derivative phase $2\pi i$. In particular, the
+ordered coefficient of $\operatorname{curl}(u\times\operatorname{curl}u)$
+at an input pair $(k,l)$ has norm at most
+\[
+ H_g(k,l)=(2\pi)^2g_kg_l.
+\]
+This majorant is summable over all lattice pairs. Define
+\[
+ \tau_M(g)=\sum_{k,l:\ k+l\notin M}H_g(k,l).
+\]
+\texttt{PancakeSummableOutputTail} proves $\tau_M(g)\to0$ as the finite
+retained sets exhaust the lattice: each fixed output eventually lies in
+$M$, and the entire pair series has a common summable bound.
+\texttt{PancakeExteriorReconstructionTail} proves the corresponding
+uniform reconstruction estimate, allowing arbitrary finite input-pair
+and output sets.
+
+For mean-zero velocity, $u_0=0$, with $k\cdot u_k=0$ on $M$,
+\texttt{PancakeZeroModeCurlBridge} identifies the actual nonviscous
+vorticity coefficients with this output curl even when $0\in M$.
+\texttt{PancakeDiscardedNonlinearLimit} consequently gives
+\[
+ \|D_{M,O}(u)\|_{L^\infty}\le\tau_M(g).
+\]
+The same finite core works for every coefficient field under the same
+$g$ and every finite output set $O$; this is not restricted to a single
+fixed polynomial.
+
+If $|\chi_k|\le B$ with $B\ge0$, the actual physical fields satisfy
+\[
+ \|w_M\|_{L^\infty}\le2\pi G,\qquad
+ \|S_{\chi,M}\|_{L^\infty}\le9(2\pi)BG,\qquad
+ \|K_0(S_{\chi,M})\|_{L^\infty}\le18(2\pi)BG.
+\]
+The factor $9$ is the explicit matrix-to-operator estimate used in
+\texttt{PancakeSmoothSpectralEnvelope}, not a frequency count.
+For normalized torus measure, \texttt{PancakeSmoothProjectionPairing}
+therefore proves
+\[
+ \left|\int\langle K_0(S_{\chi,M})w_M,D_{M,O}\rangle\right|
+ \le C(B,g)\tau_M(g),\qquad C(B,g)=18(2\pi)^2BG^2.
+\]
+
+For a time-dependent coefficient path continuous in each retained
+coordinate, \texttt{PancakeSmoothProjectionTimeLimit} constructs joint
+continuity of the actual discarded nonlinearity and continuity of this
+spatial mean. If the same envelope and mean-zero/transversality hypotheses
+hold throughout $[0,T]$, with $T\ge0$ and a fixed multiplier $\chi$, then
+\[
+ \boxed{\quad
+ \int_0^T\left|\int\langle K_0(S_{\chi,M})w_M,D_{M,O}\rangle\right|\,dt
+ \le T C(B,g)\tau_M(g)\longrightarrow0.
+ \quad}
+\]
+The coefficient continuity used here is on $\mathbb R$; domination is
+required only on $[0,T]$. The convergence is uniform over paths with the
+same envelope and multiplier bound. Time integrability is proved, not
+inserted as an assumption.
+
+This is a conditional consistency theorem, not a global regularity
+estimate. It neither constructs the common envelope from a solution,
+derives it from kinetic energy, constructs an arbitrary-data Galerkin
+family, nor passes the complete material identity to a continuum limit.
+The envelope may be used only where it has been established; its cost
+must not be relabelled an a priori global bound. Intrinsic high-strain,
+pressure, moving-weight and scale-summed misalignment estimates remain
+separate open obligations.
+
 The eigenvalue-gap denominator also appears in spatial frame freezing. In
 \texttt{PancakeEigenframePerturbation}, if $Ae=\lambda e$, $Bf=\mu f$, $B$
 is self-adjoint, and $e,f$ are unit vectors, then
@@ -3898,7 +3976,15 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeWeightedBoundaryDepletion}, and
 \texttt{PancakeBoundaryFreezingError}, and
 \texttt{PancakePhysicalBoundaryDepletion}, and
-\texttt{PancakeBoundaryFreezingVariance}, and
+\texttt{PancakeBoundaryFreezingVariance},
+\texttt{PancakeSummableOutputTail},
+\texttt{PancakeExteriorReconstructionTail},
+\texttt{PancakeCurlOutputTail},
+\texttt{PancakeZeroModeCurlBridge},
+\texttt{PancakeDiscardedNonlinearLimit},
+\texttt{PancakeSmoothSpectralEnvelope},
+\texttt{PancakeSmoothProjectionPairing},
+\texttt{PancakeSmoothProjectionTimeLimit}, and
 \texttt{SpatialBKMIntegrand}, and
 \texttt{PancakeAdaptiveStrainCover}, and
 \texttt{PancakeAdaptiveFourierPartition}, and
