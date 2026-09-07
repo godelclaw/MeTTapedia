@@ -1,0 +1,604 @@
+{
+  "forest_control": {
+    "forests": 340,
+    "graphs": 1100
+  },
+  "outcome": "passed",
+  "population": [
+    {
+      "cut_checks": 38,
+      "faces": 12,
+      "family": "GP(1,0)",
+      "max_cut_width": 6,
+      "max_dual_height": 3,
+      "nesting_checks": 14,
+      "roots": [
+        {
+          "cyclic_chain": 2,
+          "dual_height": 3,
+          "dual_root": 0,
+          "primal_height": 9
+        },
+        {
+          "cyclic_chain": 2,
+          "dual_height": 3,
+          "dual_root": 11,
+          "primal_height": 7
+        }
+      ],
+      "vertices": 20
+    },
+    {
+      "cut_checks": 237,
+      "faces": 42,
+      "family": "GP(2,0)",
+      "max_cut_width": 12,
+      "max_dual_height": 6,
+      "nesting_checks": 51,
+      "roots": [
+        {
+          "cyclic_chain": 5,
+          "dual_height": 6,
+          "dual_root": 0,
+          "primal_height": 21
+        },
+        {
+          "cyclic_chain": 5,
+          "dual_height": 5,
+          "dual_root": 1,
+          "primal_height": 21
+        },
+        {
+          "cyclic_chain": 9,
+          "dual_height": 5,
+          "dual_root": 41,
+          "primal_height": 12
+        }
+      ],
+      "vertices": 80
+    },
+    {
+      "cut_checks": 537,
+      "faces": 92,
+      "family": "GP(3,0)",
+      "max_cut_width": 18,
+      "max_dual_height": 9,
+      "nesting_checks": 79,
+      "roots": [
+        {
+          "cyclic_chain": 9,
+          "dual_height": 9,
+          "dual_root": 0,
+          "primal_height": 33
+        },
+        {
+          "cyclic_chain": 7,
+          "dual_height": 8,
+          "dual_root": 1,
+          "primal_height": 31
+        },
+        {
+          "cyclic_chain": 15,
+          "dual_height": 8,
+          "dual_root": 91,
+          "primal_height": 18
+        }
+      ],
+      "vertices": 180
+    },
+    {
+      "cut_checks": 957,
+      "faces": 162,
+      "family": "GP(4,0)",
+      "max_cut_width": 24,
+      "max_dual_height": 12,
+      "nesting_checks": 111,
+      "roots": [
+        {
+          "cyclic_chain": 13,
+          "dual_height": 12,
+          "dual_root": 0,
+          "primal_height": 45
+        },
+        {
+          "cyclic_chain": 11,
+          "dual_height": 11,
+          "dual_root": 1,
+          "primal_height": 43
+        },
+        {
+          "cyclic_chain": 21,
+          "dual_height": 10,
+          "dual_root": 161,
+          "primal_height": 26
+        }
+      ],
+      "vertices": 320
+    },
+    {
+      "cut_checks": 1497,
+      "faces": 252,
+      "family": "GP(5,0)",
+      "max_cut_width": 30,
+      "max_dual_height": 15,
+      "nesting_checks": 145,
+      "roots": [
+        {
+          "cyclic_chain": 17,
+          "dual_height": 15,
+          "dual_root": 0,
+          "primal_height": 57
+        },
+        {
+          "cyclic_chain": 15,
+          "dual_height": 14,
+          "dual_root": 1,
+          "primal_height": 55
+        },
+        {
+          "cyclic_chain": 29,
+          "dual_height": 13,
+          "dual_root": 251,
+          "primal_height": 36
+        }
+      ],
+      "vertices": 500
+    },
+    {
+      "cut_checks": 2157,
+      "faces": 362,
+      "family": "GP(6,0)",
+      "max_cut_width": 36,
+      "max_dual_height": 18,
+      "nesting_checks": 177,
+      "roots": [
+        {
+          "cyclic_chain": 21,
+          "dual_height": 18,
+          "dual_root": 0,
+          "primal_height": 69
+        },
+        {
+          "cyclic_chain": 19,
+          "dual_height": 17,
+          "dual_root": 1,
+          "primal_height": 67
+        },
+        {
+          "cyclic_chain": 35,
+          "dual_height": 16,
+          "dual_root": 361,
+          "primal_height": 44
+        }
+      ],
+      "vertices": 720
+    },
+    {
+      "cut_checks": 2937,
+      "faces": 492,
+      "family": "GP(7,0)",
+      "max_cut_width": 42,
+      "max_dual_height": 21,
+      "nesting_checks": 209,
+      "roots": [
+        {
+          "cyclic_chain": 25,
+          "dual_height": 21,
+          "dual_root": 0,
+          "primal_height": 81
+        },
+        {
+          "cyclic_chain": 23,
+          "dual_height": 20,
+          "dual_root": 1,
+          "primal_height": 79
+        },
+        {
+          "cyclic_chain": 41,
+          "dual_height": 19,
+          "dual_root": 491,
+          "primal_height": 52
+        }
+      ],
+      "vertices": 980
+    },
+    {
+      "cut_checks": 3837,
+      "faces": 642,
+      "family": "GP(8,0)",
+      "max_cut_width": 48,
+      "max_dual_height": 24,
+      "nesting_checks": 241,
+      "roots": [
+        {
+          "cyclic_chain": 29,
+          "dual_height": 24,
+          "dual_root": 0,
+          "primal_height": 93
+        },
+        {
+          "cyclic_chain": 27,
+          "dual_height": 23,
+          "dual_root": 1,
+          "primal_height": 91
+        },
+        {
+          "cyclic_chain": 47,
+          "dual_height": 22,
+          "dual_root": 641,
+          "primal_height": 60
+        }
+      ],
+      "vertices": 1280
+    },
+    {
+      "cut_checks": 62,
+      "faces": 18,
+      "family": "annulus(8,1)",
+      "max_cut_width": 6,
+      "max_dual_height": 3,
+      "nesting_checks": 20,
+      "roots": [
+        {
+          "cyclic_chain": 6,
+          "dual_height": 3,
+          "dual_root": 0,
+          "primal_height": 12
+        },
+        {
+          "cyclic_chain": 6,
+          "dual_height": 3,
+          "dual_root": 17,
+          "primal_height": 10
+        }
+      ],
+      "vertices": 32
+    },
+    {
+      "cut_checks": 126,
+      "faces": 34,
+      "family": "annulus(16,1)",
+      "max_cut_width": 6,
+      "max_dual_height": 3,
+      "nesting_checks": 36,
+      "roots": [
+        {
+          "cyclic_chain": 14,
+          "dual_height": 3,
+          "dual_root": 0,
+          "primal_height": 20
+        },
+        {
+          "cyclic_chain": 14,
+          "dual_height": 3,
+          "dual_root": 33,
+          "primal_height": 18
+        }
+      ],
+      "vertices": 64
+    },
+    {
+      "cut_checks": 254,
+      "faces": 66,
+      "family": "annulus(32,1)",
+      "max_cut_width": 6,
+      "max_dual_height": 3,
+      "nesting_checks": 68,
+      "roots": [
+        {
+          "cyclic_chain": 30,
+          "dual_height": 3,
+          "dual_root": 0,
+          "primal_height": 36
+        },
+        {
+          "cyclic_chain": 30,
+          "dual_height": 3,
+          "dual_root": 65,
+          "primal_height": 34
+        }
+      ],
+      "vertices": 128
+    },
+    {
+      "cut_checks": 510,
+      "faces": 130,
+      "family": "annulus(64,1)",
+      "max_cut_width": 6,
+      "max_dual_height": 3,
+      "nesting_checks": 132,
+      "roots": [
+        {
+          "cyclic_chain": 62,
+          "dual_height": 3,
+          "dual_root": 0,
+          "primal_height": 68
+        },
+        {
+          "cyclic_chain": 62,
+          "dual_height": 3,
+          "dual_root": 129,
+          "primal_height": 66
+        }
+      ],
+      "vertices": 256
+    },
+    {
+      "cut_checks": 94,
+      "faces": 26,
+      "family": "annulus(8,2)",
+      "max_cut_width": 8,
+      "max_dual_height": 4,
+      "nesting_checks": 24,
+      "roots": [
+        {
+          "cyclic_chain": 7,
+          "dual_height": 4,
+          "dual_root": 0,
+          "primal_height": 15
+        },
+        {
+          "cyclic_chain": 7,
+          "dual_height": 4,
+          "dual_root": 25,
+          "primal_height": 11
+        }
+      ],
+      "vertices": 48
+    },
+    {
+      "cut_checks": 190,
+      "faces": 50,
+      "family": "annulus(16,2)",
+      "max_cut_width": 8,
+      "max_dual_height": 4,
+      "nesting_checks": 40,
+      "roots": [
+        {
+          "cyclic_chain": 15,
+          "dual_height": 4,
+          "dual_root": 0,
+          "primal_height": 23
+        },
+        {
+          "cyclic_chain": 15,
+          "dual_height": 4,
+          "dual_root": 49,
+          "primal_height": 19
+        }
+      ],
+      "vertices": 96
+    },
+    {
+      "cut_checks": 382,
+      "faces": 98,
+      "family": "annulus(32,2)",
+      "max_cut_width": 8,
+      "max_dual_height": 4,
+      "nesting_checks": 72,
+      "roots": [
+        {
+          "cyclic_chain": 31,
+          "dual_height": 4,
+          "dual_root": 0,
+          "primal_height": 39
+        },
+        {
+          "cyclic_chain": 31,
+          "dual_height": 4,
+          "dual_root": 97,
+          "primal_height": 35
+        }
+      ],
+      "vertices": 192
+    },
+    {
+      "cut_checks": 766,
+      "faces": 194,
+      "family": "annulus(64,2)",
+      "max_cut_width": 8,
+      "max_dual_height": 4,
+      "nesting_checks": 136,
+      "roots": [
+        {
+          "cyclic_chain": 63,
+          "dual_height": 4,
+          "dual_root": 0,
+          "primal_height": 71
+        },
+        {
+          "cyclic_chain": 63,
+          "dual_height": 4,
+          "dual_root": 193,
+          "primal_height": 67
+        }
+      ],
+      "vertices": 384
+    },
+    {
+      "cut_checks": 126,
+      "faces": 34,
+      "family": "annulus(8,3)",
+      "max_cut_width": 10,
+      "max_dual_height": 5,
+      "nesting_checks": 28,
+      "roots": [
+        {
+          "cyclic_chain": 8,
+          "dual_height": 5,
+          "dual_root": 0,
+          "primal_height": 18
+        },
+        {
+          "cyclic_chain": 8,
+          "dual_height": 5,
+          "dual_root": 33,
+          "primal_height": 12
+        }
+      ],
+      "vertices": 64
+    },
+    {
+      "cut_checks": 254,
+      "faces": 66,
+      "family": "annulus(16,3)",
+      "max_cut_width": 10,
+      "max_dual_height": 5,
+      "nesting_checks": 44,
+      "roots": [
+        {
+          "cyclic_chain": 16,
+          "dual_height": 5,
+          "dual_root": 0,
+          "primal_height": 26
+        },
+        {
+          "cyclic_chain": 16,
+          "dual_height": 5,
+          "dual_root": 65,
+          "primal_height": 20
+        }
+      ],
+      "vertices": 128
+    },
+    {
+      "cut_checks": 510,
+      "faces": 130,
+      "family": "annulus(32,3)",
+      "max_cut_width": 10,
+      "max_dual_height": 5,
+      "nesting_checks": 76,
+      "roots": [
+        {
+          "cyclic_chain": 32,
+          "dual_height": 5,
+          "dual_root": 0,
+          "primal_height": 42
+        },
+        {
+          "cyclic_chain": 32,
+          "dual_height": 5,
+          "dual_root": 129,
+          "primal_height": 36
+        }
+      ],
+      "vertices": 256
+    },
+    {
+      "cut_checks": 1022,
+      "faces": 258,
+      "family": "annulus(64,3)",
+      "max_cut_width": 10,
+      "max_dual_height": 5,
+      "nesting_checks": 140,
+      "roots": [
+        {
+          "cyclic_chain": 64,
+          "dual_height": 5,
+          "dual_root": 0,
+          "primal_height": 74
+        },
+        {
+          "cyclic_chain": 64,
+          "dual_height": 5,
+          "dual_root": 257,
+          "primal_height": 68
+        }
+      ],
+      "vertices": 512
+    },
+    {
+      "cut_checks": 158,
+      "faces": 42,
+      "family": "annulus(8,4)",
+      "max_cut_width": 12,
+      "max_dual_height": 6,
+      "nesting_checks": 32,
+      "roots": [
+        {
+          "cyclic_chain": 9,
+          "dual_height": 6,
+          "dual_root": 0,
+          "primal_height": 21
+        },
+        {
+          "cyclic_chain": 9,
+          "dual_height": 6,
+          "dual_root": 41,
+          "primal_height": 13
+        }
+      ],
+      "vertices": 80
+    },
+    {
+      "cut_checks": 318,
+      "faces": 82,
+      "family": "annulus(16,4)",
+      "max_cut_width": 12,
+      "max_dual_height": 6,
+      "nesting_checks": 48,
+      "roots": [
+        {
+          "cyclic_chain": 17,
+          "dual_height": 6,
+          "dual_root": 0,
+          "primal_height": 29
+        },
+        {
+          "cyclic_chain": 17,
+          "dual_height": 6,
+          "dual_root": 81,
+          "primal_height": 21
+        }
+      ],
+      "vertices": 160
+    },
+    {
+      "cut_checks": 638,
+      "faces": 162,
+      "family": "annulus(32,4)",
+      "max_cut_width": 12,
+      "max_dual_height": 6,
+      "nesting_checks": 80,
+      "roots": [
+        {
+          "cyclic_chain": 33,
+          "dual_height": 6,
+          "dual_root": 0,
+          "primal_height": 45
+        },
+        {
+          "cyclic_chain": 33,
+          "dual_height": 6,
+          "dual_root": 161,
+          "primal_height": 37
+        }
+      ],
+      "vertices": 320
+    },
+    {
+      "cut_checks": 1278,
+      "faces": 322,
+      "family": "annulus(64,4)",
+      "max_cut_width": 12,
+      "max_dual_height": 6,
+      "nesting_checks": 144,
+      "roots": [
+        {
+          "cyclic_chain": 65,
+          "dual_height": 6,
+          "dual_root": 0,
+          "primal_height": 77
+        },
+        {
+          "cyclic_chain": 65,
+          "dual_height": 6,
+          "dual_root": 321,
+          "primal_height": 69
+        }
+      ],
+      "vertices": 640
+    }
+  ],
+  "schema": "fourcolor-v24-tree-cotree-v1"
+}

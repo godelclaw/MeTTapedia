@@ -12203,3 +12203,80 @@ from the counting step.  Their complete-interface construction, fixed-mesh
 exclusion, a full raw branch-decomposition supply and the generating-base
 audit remain open.  Since the fixed D1c obligation includes both geometric
 transfers, the ledger remains $57/100$.
+
+\subsection{Ranked dual forests and the long-face tree--cotree gate}
+\label{sec:ranked-dual-forest}
+
+A possible way to handle long faces is to choose a breadth-first tree in
+the full face dual and retain the complementary original edges in the
+primal graph.  The intended small cuts are the fundamental cuts of that
+primal tree, rather than cuts forced to keep an entire long face on one
+side.  The following generic lemmas establish the parity and connectivity
+parts of this construction.
+
+\begin{theorem}[ranked forest parity]
+\Sverified{Mettapedia.GraphTheory.FourColor.RankedForestParity.exists_singleton_incidence}
+\Sverified{Mettapedia.GraphTheory.FourColor.RankedForestParity.eq_empty_of_even_incidence}
+Orient a finite edge set from child to parent, with distinct children and
+a natural-number rank strictly decreasing along every edge.  Every
+nonempty selected edge set has a vertex incident to exactly one selected
+edge.  Consequently an edge set with even incidence at every vertex is
+empty.
+\end{theorem}
+
+Choose a selected edge whose child has maximum rank.  No other selected
+edge can enter that child, since its own child would have larger rank;
+injectivity of the child assignment excludes a second outgoing edge.
+This argument uses neither Euler counting nor planarity.
+
+\begin{theorem}[the primal complement of a ranked dual forest]
+\Sverified{Mettapedia.GraphTheory.FourColor.RankedDualForestComplement.RankedDualForest.crossing_eq_empty}
+\Sverified{Mettapedia.GraphTheory.FourColor.RankedDualForestComplement.RankedDualForest.complement_connected}
+\Sverified{Mettapedia.GraphTheory.FourColor.RankedDualForestComplement.RankedDualForest.complement_isTree}
+In a connected graph-backed rotation system with two-sided quotient
+faces, let a selected original-edge set carry a ranked forest on the
+incident faces.  Every full primal cut contained in that set is empty.
+Deleting the selected edges preserves primal connectedness.  If the
+quotient-face Euler equation is spherical and the selected set has
+$|F|-1$ edges, its primal complement is a spanning tree.
+\end{theorem}
+
+The forest incidence field is exact: the quotient faces incident to each
+selected original edge are its child and parent.  Existing literal facial
+transition parity makes every full primal cut even in this incidence.
+The preceding lemma therefore rules out a nonempty cut inside the forest.
+Applying this to a component of the edge-deleted graph proves
+connectedness.  Euler then gives $|V|-1$ complementary edges, and the
+existing finite connected-graph cardinality theorem gives acyclicity.
+The spanning and metric properties of an actual dual breadth-first tree
+are not asserted by these relative lemmas.
+
+The preregistered tree--cotree gate checks $24$ spherical maps: $GP(k,0)$
+for $1\le k\le8$ and annuli of thickness $1$ through $4$ and circumference
+$8,16,32,64$.  At up to three deterministic dual roots per map, it
+constructs the dual breadth-first tree, its primal complement, and every
+fundamental primal cut: $18{,}885$ full cuts.  Each cut equals the entire
+dual fundamental cycle and has size at most $2h+1$, where $h$ is that
+dual tree's height.  Both induced shores are connected; the complete dual
+boundary is cyclic; the two literal facial first-return permutations are
+inverse; and the incident-edge middle set has size at most the cut size.
+Along longest primal tree paths, $2147$ consecutive comparisons verify
+strict vertex and incident-edge nesting.  The gate also records which
+cuts have cycles on both shores.  No colouring is enumerated.
+
+On the sampled annuli the maximum cut widths are $6,8,10,12$, respectively,
+independent of the four tested circumferences.  The auxiliary parity gate
+exhausts all $1100$ labelled simple graphs on at most five vertices;
+among the $340$ forests, every one with a nonempty edge set has an odd-degree vertex.
+These results are executable controls, not a formal general metric bound
+or examples in the zero-Count target class.  The replay and receipt are
+\texttt{tools/fourcolor/v24\_tree\_cotree\_gate.py} and its corresponding
+JSON under \texttt{results/fourcolor/}.
+
+\paragraph{Next construction.}
+Construct the ranked forest and its $|F|-1$ edge count from the actual
+dual distance function; prove the full fundamental-cut width bound; then
+extract enough cyclic nested shores to feed the existing node constructor.
+Until those steps are proved, this is a gated long-face construction with
+its generic parity and tree-complement lemmas, not a global supply theorem.
+The fixed ledger remains $57/100$.
