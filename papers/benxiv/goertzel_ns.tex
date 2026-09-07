@@ -2859,10 +2859,75 @@ at most twice that of the strain derivative. This uses the unit
 Rayleigh derivative, not an inverse eigenvalue gap. The finite sum over
 spatial directions and multiplication by $\nu\ge0$ are also checked.
 This proves the gradient algebra only. A spatial weak chain rule and
-integration-by-parts bridge, a bound for the resulting time-integrated
-strain-gradient cost, and control of the regularization in the complete
+integration-by-parts bridge, a scale-uniform bound for the resulting
+time-integrated strain-gradient cost, and control of the regularization in the complete
 alignment budget remain obligations. In particular, $\delta$ is not
 silently sent to zero and the estimate is not yet scale-uniform.
+
+\paragraph{Physical payment for a fixed low strain cutoff.}
+The modules \texttt{PancakeFourierStrainGradient} and
+\texttt{PancakeLowDiffusionBudget} now pay the preceding gradient cost
+when strain is restricted to a fixed finite frequency set $K$.
+Let $\chi$ be its multiplier, let $\mathcal M\supseteq K$ be the retained
+velocity modes, and let $U=\sum_{q\in\mathcal M}|\widehat u_q|^2$ and
+$\Omega=\sum_{q\in\mathcal M}|\widehat\omega_q|^2$.
+The strain is the actual symmetric gradient of the reconstructed
+filtered velocity; its coordinate derivatives are proved by
+differentiating the Fourier characters. A deliberately coarse explicit
+bound is
+\[
+ \sum_{j=1}^3\|\partial_j S_K(x)\|^2\le C_{K,\chi}U,
+ \qquad C_{K,\chi}=243(2\pi)^4
+       \sum_{q\in K}|\chi(q)|^2|q|^4.
+\]
+The fixed factor $243$ comes from a checked elementary matrix-to-operator
+bound and the three spatial directions, not a source-frequency count.
+Cauchy--Schwarz supplies the fourth frequency moment. Restriction
+identities identify this $K$-reconstruction with the full retained
+reconstruction whenever $\chi$ vanishes outside $K$.
+
+The actual spatial density
+$G_K(x)=\sum_j\|\partial_j S_K(x)\|^2|\omega_{\mathcal M}(x)|^2$
+satisfies $\int G_K\le C_{K,\chi}U\Omega$ by finite Parseval, without
+a receiver-cardinality factor. For coefficient paths satisfying the
+retained velocity ODE, conjugate symmetry and incompressibility, the
+previously checked kinetic-energy identity gives
+\[
+ \int_0^T\!\int G_K\le \frac{C_{K,\chi}U(0)^2}{2\nu},
+ \qquad
+ \frac{16\nu}{\delta}\int_0^T\!\int G_K
+       \le \frac{8C_{K,\chi}U(0)^2}{\delta}.
+\]
+Time continuity and integrability of the spatial integral are derived
+from the coefficient paths, not supplied as extra budget hypotheses.
+These bounds are independent of the larger retained cutoff at fixed
+$K,\chi$ and initial energy, but not uniform as $K$ expands. They do not
+construct the coefficient trajectories or close the full alignment budget.
+
+\paragraph{Finite differences through spectral collisions.}
+The module \texttt{PancakeSpectralFiniteDifference} supplies an exact
+precursor to a weak spatial chain rule. For symmetric strains $S,T$,
+let $e_S$ be a constructed unit top eigenvector,
+$E_\delta(S,w)=\langle w,K_\delta(S)w\rangle$, and
+\[
+ L=\bigl(\langle e_S,(T-S)e_S\rangle|w|^2
+                  -\langle w,(T-S)w\rangle\bigr)
+             +2\langle K_\delta(S)w,v\rangle.
+\]
+The supporting Rayleigh inequality and the global Lipschitz estimate
+for the top eigenvalue yield, for every $\delta>0$,
+\[
+ L+\frac\delta2|v|^2
+ \le E_\delta(T,w+v)-E_\delta(S,w)
+                 +\frac8\delta\|T-S\|^2|w|^2.
+\]
+There is no spectral-gap assumption. Summing with
+$T=S_{\sigma(i)}$, $v=w_{\sigma(i)}-w_i$ for a permutation of a finite
+index set cancels the energy differences exactly; this telescoping
+inequality is also checked. Passage from finite increments to the
+continuum spatial diffusion operator, including the measure-theoretic
+justification, remains to be proved. The finite theorem is not presented
+as that limit.
 
 The eigenvalue-gap denominator also appears in spatial frame freezing. In
 \texttt{PancakeEigenframePerturbation}, if $Ae=\lambda e$, $Bf=\mu f$, $B$
@@ -3119,6 +3184,9 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeTwoShearSpatialMean}, and
 \texttt{PancakeTwoShearHeatWitness}, and
 \texttt{PancakeRegularizedDiffusion}, and
+\texttt{PancakeFourierStrainGradient}, and
+\texttt{PancakeLowDiffusionBudget}, and
+\texttt{PancakeSpectralFiniteDifference}, and
 \texttt{SpatialBKMIntegrand}, and
 \texttt{PancakeAdaptiveStrainCover}, and
 \texttt{PancakeAdaptiveFourierPartition}, and
