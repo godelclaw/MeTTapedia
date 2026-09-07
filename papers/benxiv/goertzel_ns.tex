@@ -4080,6 +4080,95 @@ global alignment budget remain to be proved. In particular, finite
 horizon existence at every cutoff is not continuum global regularity;
 the bound $E'\le C_\nu E^2$ remains a local comparison.
 
+\paragraph{A constructed, time-uniform coefficient limit.}
+The fixed-output estimate can use kinetic energy alone.
+Incompressibility gives
+\[
+ k\cdot u_k=0,\quad k+l=q
+ \quad\Longrightarrow\quad
+ l\cdot u_k=q\cdot u_k .
+\]
+The already checked convolution-fiber bound, together with this
+identity, yields in \texttt{PancakeFixedOutputVelocityBound}
+\[
+ \left|\sum_{\substack{k,l\in M\\k+l=q}}(u_k\cdot l)u_l\right|
+       \le |q|\,U_M(u),\qquad U_M(u)=\sum_{k\in M}|u_k|^2 .
+\]
+The Euclidean norm of the actual Leray symbol is proved contractive,
+including its defined zero-mode branch. Retaining viscosity and the
+unit-torus derivative factor gives
+\[
+ |V_M(u)_q|
+   \le (2\pi)|q|\,U_M(u)
+         +|\nu|(2\pi)^2|q|^2|u_q|.
+\]
+There is no input-frequency or mode-count factor.
+
+For a constructed solution with $U_M(t)\le U$,
+\texttt{PancakeCoefficientEquicontinuity} proves
+\[
+ |(u_M)_q(t)|\le\sqrt U,\qquad
+ |\partial_t(u_M)_{q,i}(t)|
+   \le A_q:=(2\pi)|q|U+|\nu|(2\pi)^2|q|^2\sqrt U .
+\]
+Every fixed component is therefore $A_q$-Lipschitz on the common
+interval. Excluded coefficients are identically zero. Dependence
+on the fixed output $q$ is explicit; a uniform Lipschitz constant
+over all output frequencies is not asserted.
+
+\texttt{PancakeCountablePathCompactness} proves a reusable extraction
+theorem. For each coordinate, the bounded equicontinuous paths have
+compact closure in the uniform norm by Arzel\`a--Ascoli. The countable
+product of these compact closures is compact and first countable.
+Sequential compactness therefore supplies one strictly increasing
+subsequence for every coordinate simultaneously, rather than a
+different subsequence for each coordinate.
+
+\texttt{PancakeGalerkinCoefficientLimit} takes the explicit nested
+sets
+\[
+ M_n=\{k\in\mathbb Z^3:\ |k_i|\le n\text{ for all }i\}\setminus\{0\}
+\]
+and proves their symmetry, exclusion of zero, monotonicity, and
+eventual inclusion of every nonzero mode. The common physical
+existence theorem supplies $u_{M_n}$, and $U_{M_n}\le E_{M_n}\le B$
+supplies the kinetic bound. A single extraction $\phi:\mathbb N\to
+\mathbb N$ and continuous coefficient paths $a_{q,i}$ are constructed,
+with
+\[
+ \sup_{0\le t\le T}
+       |(u_{M_{\phi(n)}})_{q,i}(t)-a_{q,i}(t)|
+            \longrightarrow0
+       \qquad\text{for every fixed }q,i .
+\]
+The original physical initial field is an input; these finite
+trajectories and the subsequential coefficient field are outputs.
+
+\texttt{PancakeCoefficientLimitProperties} proves that this same
+coefficient limit retains conjugate symmetry, Fourier transversality,
+and zero mean. Every nonzero initial coefficient is preserved.
+Full initial matching is proved under the explicit mean-zero
+initial condition. For every finite set $F$, the finite-support
+energy comparison and passage to the coefficient limit give
+\[
+ \sum_{q\in F}(1+|q|)^4|a_q(t)|^2\le B .
+\]
+Consequently the infinite series is proved summable, with
+\[
+ \boxed{\qquad
+   \sum_{q\in\mathbb Z^3}(1+|q|)^4|a_q(t)|^2\le B
+       \qquad(0\le t\le T).
+ \qquad}
+\]
+This is a constructed infinite coefficient field with physical
+constraints and a genuine Sobolev energy bound. It is not yet a
+proved Navier--Stokes evolution: strong convergence sufficient for
+the nonlinear products, passage to the evolution equation, and
+the subsequent global intrinsic alignment estimate remain open.
+The local $H^2$ bound also does not by itself provide the common
+summable pointwise second-moment envelope used by the earlier
+higher-regularity consistency theorem.
+
 
 The eigenvalue-gap denominator also appears in spatial frame freezing. In
 \texttt{PancakeEigenframePerturbation}, if $Ae=\lambda e$, $Bf=\mu f$, $B$
