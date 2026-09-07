@@ -2758,9 +2758,9 @@ This refutes a pointwise heat-subsolution claim for this defect. It does
 \emph{not} refute a spatially integrated estimate, the repaired alignment
 route, or Navier--Stokes regularity.
 
-\paragraph{Two-shear test of the integrated sign.}
-A simpler candidate tests whether spatial integration restores a good
-sign. Let
+\paragraph{Two-shear obstruction to the integrated sign.}
+A simpler constructed heat evolution shows that spatial integration does
+not restore free monotonicity. Its initial velocity is
 \[
  u=(2\varepsilon N^{-1}\sin(Ny),-2\sin x,0),\quad
  f=\varepsilon\cos(Ny),\quad g=\cos x.
@@ -2795,11 +2795,74 @@ heat rate between $35.433$ and $35.439$. These computations are
 \emph{diagnostic, not certified quadrature or a formal integral theorem}.
 The script \texttt{ns\_two\_shear\_diffusion\_sanity.py} reproduces the
 diagnostic and a finite-difference check under exact Fourier heat decay.
-The sign-pairing passage to the actual spatial integral, its cosine
-moments, and differentiation through the crossing set remain to be
-checked. This test redirects the next estimate toward a paid diffusion
-budget or a corrected alignment energy; it does not close the global
-regularity argument.
+
+A separate exact finite-time theorem now certifies an integrated
+counterexample, with $N=128$. The modules
+\texttt{PancakePeriodicMean}, \texttt{PancakeTwoShearFiniteTime}, and
+\texttt{PancakeTwoShearSpatialMean} use the actual normalized Lebesgue
+integral over $[0,2\pi]^2$. Half-period translation performs the sign
+pairing, and integer-period repetition removes $N$ from the spatial
+average, but not from the heat rate. Write
+\[
+ M(p,q)=\mathop{\mathrm{mean}}_{x,y}
+          P(p|\cos y|,q|\cos x|).
+\]
+The checked finite-time comparison, valid for all $F,G\ge0$ and
+$0\le\alpha\le1$, is
+\[
+ P(\alpha F,G)-P(F,G)
+ \ge (1-\alpha^2)(4G-8F)F^2.
+\]
+Its proof treats all three amplitude-ordering regions, including their
+boundaries. Thus no derivative through a crossing or null-set hypothesis
+is needed. The exact moment $\mathrm{mean}(\cos^2)=1/2$ and the bound
+$\mathrm{mean}(|\cos|)\ge1/2$ give
+\[
+ M(\alpha\varepsilon,1)-M(\varepsilon,1)
+ \ge \tfrac12(1-\alpha^2)(2-8\varepsilon)\varepsilon^2.
+\]
+In \texttt{PancakeTwoShearHeatWitness}, the actual velocity is constructed as
+\[
+ u(t,x,y)=\left(\frac{2\varepsilon}{N}e^{-\nu N^2t}\sin(Ny),
+                    -2e^{-\nu t}\sin x,0\right).
+\]
+Its component heat equations, divergence zero, periodicity, strain and
+curl are verified by differentiation. For their constructed top spectral
+defect $D(t)$, at $\nu=1$, $N=128$, $\varepsilon=1/16$, Lean proves
+\[
+ \mathrm{mean}\,D(1/16384)-\mathrm{mean}\,D(0)
+ \ge \frac{24567}{33554432}>0.
+\]
+This uses cubic homogeneity, $M(1/16,1)\le4$, and elementary exponential
+bounds; it is not certified numerical quadrature. The evolution solves
+the heat equation, not the nonlinear NS equation. It refutes free
+integrated heat monotonicity of this alignment defect, not the repaired
+route or global regularity.
+
+\paragraph{A regularized paid gradient bound.}
+The module \texttt{PancakeRegularizedDiffusion} constructs
+$K_\delta=(\lambda_{\max}(S)+\delta)I-S$. Its quadratic form equals
+$D+\delta|\omega|^2$ and is bounded below by $\delta|\omega|^2$.
+For $G_j=\partial_jK_\delta$, $v_j=\partial_j\omega$, the two mixed
+diffusion product-rule terms have the checked algebraic bound
+\begin{align*}
+ Q_j&=-2\langle v_j,K_\delta v_j\rangle
+                -4\langle v_j,G_j\omega\rangle,\\
+ Q_j+\delta|v_j|^2
+    &\le \frac{4}{\delta}\|G_j\|^2|\omega|^2
+     \le \frac{16}{\delta}\|\partial_jS\|^2|\omega|^2,
+       \qquad \delta>0.
+\end{align*}
+The derivative of $K_\delta$ is constructed along actual differentiable
+strain paths whenever the top eigenvalue is differentiable; its norm is
+at most twice that of the strain derivative. This uses the unit
+Rayleigh derivative, not an inverse eigenvalue gap. The finite sum over
+spatial directions and multiplication by $\nu\ge0$ are also checked.
+This proves the gradient algebra only. A spatial weak chain rule and
+integration-by-parts bridge, a bound for the resulting time-integrated
+strain-gradient cost, and control of the regularization in the complete
+alignment budget remain obligations. In particular, $\delta$ is not
+silently sent to zero and the estimate is not yet scale-uniform.
 
 The eigenvalue-gap denominator also appears in spatial frame freezing. In
 \texttt{PancakeEigenframePerturbation}, if $Ae=\lambda e$, $Bf=\mu f$, $B$
@@ -3051,6 +3114,11 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakePlanarDiffusion}, and
 \texttt{PancakePeriodicDiffusionWitness}, and
 \texttt{PancakeTwoShearDiffusion}, and
+\texttt{PancakePeriodicMean}, and
+\texttt{PancakeTwoShearFiniteTime}, and
+\texttt{PancakeTwoShearSpatialMean}, and
+\texttt{PancakeTwoShearHeatWitness}, and
+\texttt{PancakeRegularizedDiffusion}, and
 \texttt{SpatialBKMIntegrand}, and
 \texttt{PancakeAdaptiveStrainCover}, and
 \texttt{PancakeAdaptiveFourierPartition}, and
