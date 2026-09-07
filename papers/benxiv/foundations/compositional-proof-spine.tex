@@ -13289,3 +13289,72 @@ coverage and the required saturated nested sides. Independent loop
 erasure does not supply those conclusions. No non-colourability premise
 or colouring enumeration was used. D1b/D1c and fixed-mesh exclusion remain
 open; the fixed ledger stays at $57/100$.
+
+\subsection{Face-region hulls repair the local mesh-cell construction}
+\label{sec:face-region-hulls}
+
+The obstruction above motivates a different construction, allowing the
+designated corners to disappear. Retain the full contour cycles and
+linkage paths as an ambient edge barrier $B$. Delete dual adjacencies
+across those edges and take an actual connected component $R$ of the
+remaining face graph. This construction is global across neighbouring
+cells, rather than an independent loop erasure of each four-path rim.
+Its connectivity in the full facial dual is proved; every original edge
+between $R$ and a face outside $R$ belongs to $B$.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionHull.cell_dual_connected}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionHull.cell_crossing_in_barrier}
+
+\paragraph{From faces to a complete vertex bond.}
+Work in a connected cubic map with two-sided facial edges. Let $S(R)$
+contain every vertex incident with a face of $R$. Facial cycles
+and the shared endpoints of adjacent faces construct connectedness of
+$G[S(R)]$ from connectedness of the face region. Its vertex complement
+need not be connected, even when the complementary face region is.
+Fix $b\notin S(R)$ and set
+\[
+ H_b(R)=V\setminus\operatorname{Comp}_{G[V\setminus S(R)]}(b).
+\]
+Thus every complementary pocket except the component containing $b$ is
+filled. Both induced sides of $H_b(R)$ are connected. Every edge of its
+complete ambient cut already crosses $S(R)$; filling introduces no new
+cut edge. The operation is monotone and idempotent as a vertex-set hull.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionHull.closed_connected}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionHull.hull_connected_sides}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionHull.hull_boundary_subset}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionHull.hull_mono}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionHull.filled_idem}
+
+An outside face disjoint from $S(R)$ and containing $b$ stays wholly in
+the retained exterior. Together with an inside face this supplies cycles
+on both sides. With sphericity and cyclic vertex rotations, the existing planar-bond theorem
+therefore computes unique touched-face occurrences and inverse
+complementary boundary-successor orders for the full constructed cut.
+The incident-edge adapter constructs an existing exact Count node whose
+middle-set width is at most $|\delta S(R)|$. Shore connectivity and the
+middle-set bound are outputs, not extra inputs to that constructor.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionHull.hull_hasCycles}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionHull.hull_boundary_order}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionHull.toConnectedNode}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionHull.cellNode}
+
+\paragraph{Strictness and width are still separate tasks.}
+For $S\subseteq T$, the filled side grows strictly if and only if $T$
+contains a vertex in the old retained exterior. Adding faces or vertices
+inside an already filled pocket does not suffice.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionHull.filled_strict_iff}
+The diagnostic \texttt{v24\_mesh\_region\_gate.json} replays the eight
+existing spherical controls. All $384$ barrier cells have simple full
+rims. Of $368$ cumulative band prefixes, $88$ have disconnected vertex
+complements before filling, including $38$ proper prefixes whose face
+complements are connected. Filling restores two connected cyclic sides
+and complete boundary order in all $368$ cases. A whole outside face
+containing the chosen anchor survives each time, and strict growth is
+checked in this sample. These finite measurements are not universal
+theorems about prefix growth.
+
+The largest filled prefix cut at frequency eight still has $80$ edges.
+This is a measurement of this construction, not a lower bound on optimal
+width. The repair supplies local regions and their valid Count interfaces;
+it does not yet force a sufficiently long chain of uniformly bounded
+interfaces in the mesh alternative. Fixed-mesh exclusion and the global
+D1b/D1c obligations remain open. The fixed ledger remains $57/100$.
