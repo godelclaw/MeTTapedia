@@ -2650,6 +2650,11 @@ statement.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FixedMeshWidthFactorization.combinatorialFourColorStatement_of_fixedMeshExclusion_and_base}
 \end{proposition}
 
+The second premise now has an explicit target-class supplier for
+$a\geq2$, proved in Section~\ref{sec:cotree-path-size}.  Its width is
+coarse but computable.  The first premise, fixed permissive-mesh exclusion,
+and the finite base remain separate open inputs.
+
 \begin{proof}
 For a fixed least counterexample, the first hypothesis supplies absence of
 the stated injective mesh.  Feed that fact to the second hypothesis; the
@@ -2719,6 +2724,10 @@ connection.  Neither premise entails the other without the quantitative
 size condition in the converse, and neither is concealed in a Lean
 structure field.  The permissive fixed-mesh proposition remains a valid
 stronger alternative, but it is not imposed on the wall-facing proof.
+The supplier in Section~\ref{sec:cotree-path-size} discharges the
+\emph{permissive}-mesh decomposition premise only.  Absence of ordered
+meshes does not imply absence of permissive meshes, so that result does
+not discharge the ordered supplier stated here.
 
 There is an exact matching-theoretic formulation of the colour obstruction
 which will be useful below.  It is global rather than a bounded-radius
@@ -12421,11 +12430,134 @@ subset-boundary comparisons.  No Tait or ring colouring is enumerated.
 The script is \texttt{tools/fourcolor/v24\_fundamental\_parity\_gate.py},
 with its replay receipt under \texttt{results/fourcolor/}.
 
-\paragraph{Remaining supply step.}
-The complete cuts now exist with a uniform target-class width.
-To discharge the global geometric obligation, large vertex count must
-still produce sufficiently many strictly nested cuts with cycles on both
-shores, and those cuts must feed the exact-support node constructor and
-state bound.  That extraction, fixed-mesh exclusion, the raw
-decomposition consumer and the generating-base audit remain open.
-The fixed ledger remains $57/100$.
+\paragraph{Consumer.}
+The complete cuts now exist with a uniform target-class width.  The next
+section constructs their nested cyclic subchain from large vertex count
+and feeds it to the exact-support state bound.  Fixed-mesh exclusion and
+the generating-base audit are not supplied by the width theorem.
+
+\subsection{Cotree paths give a mesh-free size bound and the raw supplier}
+\label{sec:cotree-path-size}
+
+\begin{lemma}[strict nested fundamental shores]
+\Sverified{Mettapedia.GraphTheory.FourColor.TreePathShore.getVert_mem_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.TreePathShore.shore_ssubset}
+Let $p=(v_0,\ldots,v_L)$ be a simple path in a tree $H$.
+For $0\le i<L$, let $S_i$ be the component of $v_0$ after deleting
+$v_iv_{i+1}$.  Then $v_j\in S_i$ exactly when $j\le i$.
+For $i<j<L$, $S_i\subsetneq S_j$.  Moreover
+\[
+                    |S_i|\ge i+1,
+        \qquad |V(H)\setminus S_i|\ge L-i.
+\]
+\Sverified{Mettapedia.GraphTheory.FourColor.TreePathShore.prefix_card_le}
+\Sverified{Mettapedia.GraphTheory.FourColor.TreePathShore.suffix_card_le}
+\end{lemma}
+
+The proof transfers path prefixes and suffixes to the edge-deleted graph.
+Path simplicity prevents either segment from using the removed edge;
+tree acyclicity separates its endpoints.  A later removed edge lies
+outside the earlier start component, which gives inclusion.  The path
+vertex between the cuts witnesses strictness.  The size estimates inject
+the whole prefix and suffix, not only their endpoints.
+
+\begin{theorem}[large cardinality supplies nested exact-support nodes]
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalCotreePathChain.exists_nested_nodes_of_large_card}
+Let $G$ belong to the graph-backed vertex-minimal target class.  Suppose
+all full-dual distances to an actual root face are at most $h$, and put
+$w=2h+1$.  If
+\[
+                         |V(G)|>4^{n+2w},
+\]
+then $G$ has $n$ strictly nested connected-shore nodes at width at most
+$w$, with their literal exact-support states.
+\end{theorem}
+
+The primal cotree is a spanning tree of maximum degree at most three.
+The existing bounded-degree estimate therefore constructs a simple path
+of length at least $n+2w$.  Choose its cuts at positions $w+i$,
+$0\le i<n$.  Both sides contain more than $w$ vertices.  The previous
+complete-cut theorem bounds their entire original boundary by $w$ and
+gives connected original shores.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalCotreePathChain.path_shore_bounds}
+In a cubic graph a connected acyclic shore has at most its boundary size
+minus two vertices, so both selected shores contain cycles.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalCotreePathChain.hasCycle_of_boundary_lt_card}
+The existing cyclic-cut adapter supplies every connected-shore node
+field.  Connected complements preserve strict incident-edge nesting;
+the literal node constructor supplies its existing planar boundary-order
+and exact-support data.  No chain, path, cyclic shore or ordering receipt
+is assumed in the displayed large-cardinality theorem.
+
+\begin{theorem}[mesh-free size without bounded faces]
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalCotreePathChain.vertex_card_le_of_no_injectiveMesh}
+For $a\ge2$, define $W(a,b)$ as in Section~\ref{sec:complete-cotree-cuts}
+and
+\[
+             U(a,b)=4^{N(W(a,b))+1+2W(a,b)}.
+\]
+Every graph-backed vertex-minimal Tait counterexample containing no
+vertex-injective permissive $a\times b$ mesh has at most $U(a,b)$ vertices.
+\end{theorem}
+
+Its actual full-dual radius is supplied by the previously proved
+mesh-free distance theorem.  Were the vertex bound violated, the
+large-cardinality theorem would supply $N(W)+1$ strictly nested nodes,
+contradicting their checked state bound $N(W)$.  The root face is the
+orbit of the distinguished outer dart.  No bounded-face, supplied
+decomposition or unknown-counterexample-size parameter remains.
+Equivalently, any larger instance in that exact target class supplies a
+vertex-injective permissive $a\times b$ mesh.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalCotreePathChain.exists_injectiveMesh_of_large_card}
+This positive structural alternative assumes neither a chain nor mesh
+absence, but its mesh has not been upgraded to an ordered rectangular one.
+
+\begin{proposition}[the permissive-mesh raw premise is discharged]
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalMeshFreeRawDecomposition.rawDecompositionOfNoInjectiveMesh}
+For $a\ge2$, the existing proposition
+\texttt{RawDecompositionOfNoInjectiveMesh} holds with parameters
+$(a,b,U(a,b))$.
+\end{proposition}
+
+This adapter is deliberately coarse.  A cubic graph-backed instance has
+at least three distinct edges.  List all its edges without repetition,
+use two as the root and one leaf, and place the nonempty remainder in a
+binary comb.  The complete rooted leaf encoding is checked, and every
+middle set is a subset of $V(G)$, so its width is at most $U$.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalMeshFreeRawDecomposition.exists_rooted_decomposition}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalMeshFreeRawDecomposition.widthAtMost_of_card_le}
+Consequently the existing permissive-mesh headline specialization now
+needs only fixed-mesh exclusion and the route-native base through
+$B(U,U)$; its decomposition premise is no longer supplied externally.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalMeshFreeRawDecomposition.combinatorialFourColorStatement_of_fixedMeshExclusion_and_base}
+This is not the general planar grid theorem, nor a claim that this very
+large base is computationally feasible.
+
+The sharper consumer bypasses that coarse compatibility adapter: apply
+the Count-derived size bound $U$ directly to the existing
+minimal-counterexample selection theorem.  Fixed permissive-mesh exclusion
+and \texttt{TaitBaseVerifiedAt}$(U(a,b))$ already imply the same
+combinatorial spherical headline.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalMeshFreeRawDecomposition.combinatorialFourColorStatement_of_fixedMeshExclusion_and_direct_base}
+Thus this specialization does not require the additional expansion to
+$B(U,U)$.  Both the fixed exclusion and the actual base verification remain
+visible unproved hypotheses; the smaller required bound is still enormous.
+
+\paragraph{Tests and remaining boundary.}
+Before formalization, the tree-path gate exhausted all labelled trees
+through six vertices and all ordered endpoint pairs, calibrated by
+$1,1,3,16,125,1296$ trees.  It checked $50069$ paths, $87858$ full tree
+cuts and $46266$ strict comparisons, including the prefix and suffix
+cardinality bounds.  The separate spherical full-cut/order gate was
+replayed.  A further comb control checked $1144$ cuts on cycles of sizes
+$3$--$32$ and complete graphs of sizes $3$--$8$.  These are generic
+controls, not claimed zero-Count examples; no colouring or configuration
+catalogue is enumerated.
+
+The wall-facing \emph{ordered}-mesh exclusion hypothesis is weaker than
+permissive-mesh exclusion, and its decomposition supplier remains open.
+The boundary/frozen-data generality of
+Proposition~\ref{prop:target-forced-cut-chain}, fixed-mesh exclusion,
+optimized physical closure and the actual generating base are not
+discharged here.  Thus no complete fixed ledger row is newly closed:
+the score remains $57/100$, despite the proved mathematical state change.
