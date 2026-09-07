@@ -4474,11 +4474,90 @@ It also proves $U(0)=f$ and reality of the evolving field. The divergence in
 the display is computed from actual coordinate derivatives.
 
 This is a local Navier--Stokes equation in pressure-projected form.
-It neither constructs the scalar pressure and its material Hessian here,
-nor establishes the route's all-time strain or misalignment bounds.
-The next material step must keep the same field while reconstructing those
-pressure and differentiated-evolution channels; local existence alone
-does not imply global continuation.
+The following construction restores the scalar pressure for this same
+velocity. Neither result establishes the route's all-time strain or
+misalignment bounds.
+
+\paragraph{Scalar pressure, ordinary Hessian, and the unprojected equation.}
+Write
+\[
+ C(a)_q=\sum_k(q\cdot a_k)a_{q-k},\qquad
+ p_q=-\frac{q\cdot C(a)_q}{|q|^2}\quad(q\ne0),\qquad p_0=0.
+\]
+In \texttt{PancakeInfinitePressureCoefficients}, this definition satisfies
+the pressure Poisson coefficient identity at every frequency, including
+zero:
+\[
+ |q|^2p_q=-q\cdot C(a)_q,\qquad
+ |q|\,|p_q|\le |C(a)_q|.
+\]
+A nonzero integer wavevector has Euclidean norm at least one. Thus
+$|p_q|\le |C(a)_q|$ as well, and the existing summable convection envelope
+pays both pressure and its first derivatives. Conjugate symmetry of the
+velocity gives $C(a)_{-q}=-\overline{C(a)_q}$ and
+$p_{-q}=\overline{p_q}$; the reconstructed pressure is real.
+
+\texttt{PancakeInfiniteSpatialPressure} defines the continuous scalar field
+$p=F_{\mathrm{id},(p_q)}$. Termwise differentiation is justified by absolute
+summability, so its ordinary spatial gradient is
+\[
+ \partial_jp=F_{\mathrm{id},(2\pi i)q_jp_q}.
+\]
+Actual Fourier integrals recover every $p_q$, and the zero mode gives
+$\int_{\mathbb T^3}p\,dx=0$. This is a normalization of the constructed
+pressure, not an assumed auxiliary field. The same module reconstructs
+the actual advection from its Fourier coefficients.
+
+The coefficient identity
+\[
+ R_\nu(a)_q=-(2\pi i)C(a)_q-(2\pi i)q\,p_q
+             +\nu(2\pi i)^2|q|^2a_q
+\]
+therefore lifts, in \texttt{PancakeLocalPressureEquation}, to
+\[
+ \boxed{\quad
+ \partial_t U=-(U\cdot\nabla)U-\nabla p+\nu\Delta U,\qquad
+ \nabla\cdot U=0,\qquad 0<t<T.
+ \quad}
+\]
+The theorem \texttt{exists\_physical\_local\_pressure\_equation} constructs
+this same local velocity and its real zero-mean pressure from order-eight
+physical initial jets and positive viscosity. It retains initial matching,
+velocity reality, and ordinary spatial divergence zero.
+
+The second pressure derivatives require an output derivative of convection.
+The second input moments already pay it:
+\[
+ \begin{split}
+ |q|\,|(q\cdot a_k)a_{q-k,i}|&\le g(k)g(q-k),\\
+ |q|\,|C(a)_q|&\le 3(g*g)(q),\\
+ |(2\pi i)^2q_jq_l p_q|&\le (2\pi)^2|q|\,|C(a)_q|.
+ \end{split}
+\]
+Here $|q|\le(1+|k|)(1+|q-k|)$ supplies each of the two output factors.
+There is no additional cell-count or output-frequency factor.
+\texttt{PancakeInfinitePressureHessian} uses these bounds to construct
+ordinary continuous mixed second derivatives of $p$ and prove their
+symmetry. \texttt{PancakeInfinitePressurePoisson} identifies the trace of
+that actual Hessian with the divergence of actual advection:
+\[
+ \Delta p=-\nabla\cdot\bigl((U\cdot\nabla)U\bigr).
+\]
+The finite coordinate sums and infinite mode sums are interchanged only
+after their summability is proved.
+
+Finally, \texttt{PancakeLocalPressureContinuity} uses the same common
+local envelope and the already constructed convection paths.
+Pressure and its first and second derivative series are continuous in
+time in the uniform spatial norm; $p$, $\nabla p$, and $\nabla^2p$ are
+jointly continuous on $[0,T]\times\mathbb T^3$.
+
+These are local pressure geometry and momentum identities, not an
+all-time pressure budget. The remaining material-strain step must
+differentiate the evolving velocity gradient, preserve its signed
+cancellations, and bound pressure, moving weights, and misalignment
+over an arbitrary lifespan. No such global bound follows merely from
+the local envelope or the construction of this Hessian.
 
 
 
