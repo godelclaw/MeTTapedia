@@ -3920,10 +3920,11 @@ lifespan,
  U_M(t)\le\|u_0\|_{L^2}^2,\qquad
  2\nu\int_0^t\Omega_M(s)\,ds\le\|u_0\|_{L^2}^2.
 \]
-Thus the energy payment has no cutoff or mode-count loss. The quantifier
-order is still $\forall M\,\exists T_M>0$: neither a common positive
-smooth lifespan nor an infinite-dimensional evolution has been proved
-here. The nonzero truncations exclude the initial mean; their initial
+Thus the energy payment has no cutoff or mode-count loss. At this stage
+the quantifier order is $\forall M\,\exists T_M>0$; the continuation
+construction below subsequently provides a common interval. An
+infinite-dimensional evolution is not yet constructed. The nonzero
+truncations exclude the initial mean; their initial
 matching is asserted only on retained modes. Uniform higher-regularity
 estimates, passage to the continuum, and the intrinsic global alignment
 budget remain necessary.
@@ -3995,12 +3996,89 @@ physical initial field. It combines that construction with actual local
 Galerkin existence, assuming reality and the Fourier divergence condition.
 No regularity or Fourier envelope of a future trajectory is an input.
 
-This is a cutoff-independent local \emph{a priori} estimate. Its final
-theorem bounds each solution on the intersection of its existing lifespan
-with the common window. Extension of every retained solution to the whole
-window has not yet been proved here. That continuation step, convergence
-to a continuum evolution, and the global intrinsic alignment budget remain
-open; the quadratic growth inequality is not a global regularity bound.
+This cutoff-independent local \emph{a priori} estimate bounds each
+solution on the intersection of its existing lifespan with the common
+window. The following continuation construction extends that conclusion
+to actual solutions on the entire common window. The quadratic growth
+inequality is not a global regularity bound.
+
+\paragraph{Constructed continuation and a common Galerkin interval.}
+\texttt{PancakeDissipativeFiniteODE} proves a finite-dimensional
+continuation theorem directly. Let $F$ be a smooth vector field on a
+finite-dimensional real Hilbert space, with
+$\langle x,F(x)\rangle\le0$ for every $x$.
+Choose a smooth scalar bump $\chi$ that is one on
+$|x|\le|x_0|+1$, nonnegative everywhere, and zero outside a larger ball.
+The field $G=\chi F$ is smooth with compact support, hence globally
+bounded and Lipschitz. Picard--Lindel\"of on $[-1,T+1]$, with a spatial
+ball enlarged to pay its global speed bound, constructs a trajectory
+for every prescribed finite $T\ge0$. There is no small-time restriction
+on the Lipschitz constant in this construction.
+
+Along the constructed curve,
+\[
+ \frac{d}{dt}|a(t)|^2
+   =2\chi(a(t))\langle a(t),F(a(t))\rangle\le0
+       \qquad(0\le t\le T).
+\]
+Thus $|a(t)|\le|x_0|$, so $\chi(a(t))=1$ throughout the required
+interval. The output therefore solves $a'=F(a)$, not merely the
+auxiliary cutoff equation. The larger initial time interval supplies
+two-sided derivatives at both endpoints of $[0,T]$.
+
+\texttt{PancakeFiniteVelocityContinuation} applies this construction
+to the already defined physical invariant subspace. Its actual vector
+field satisfies
+\[
+ 2\langle v,F_M(v)\rangle
+    =-2\nu\sum_{k\in M}|\widehat{\operatorname{curl}u}(k)|^2\le0
+       \qquad(\nu\ge0).
+\]
+The equality uses the exact retained kinetic cancellation. The
+codomain projection is proved equal to the original velocity RHS,
+so neither that projection nor the auxiliary bump changes the
+dynamics. A physical retained solution now exists on every prescribed
+finite horizon. Uniqueness proves agreement with any previously
+constructed solution on their common interval; no separate extension
+hypothesis is supplied.
+
+Combining this with the preceding second-order estimate,
+\texttt{PancakeCommonGalerkinWindow} closes the lifespan quantifier gap:
+\[
+ \boxed{\quad
+ \exists\,\tau>0,\ B\ge0\quad
+ \forall\,M\quad
+ \exists\,u_M\text{ on }[0,\tau]\quad
+ \forall\,t\in[0,\tau],\ E_M(u_M(t))\le B .
+ \quad}
+\]
+Here $M$ is any symmetric finite set excluding zero. The initial
+coefficients are the Fourier integrals of the physical field with the
+defined order-six continuous coordinate derivatives, reality and the
+Fourier divergence condition. The interval and bound precede the
+choice of $M$. Separately, actual $L^2$ initial data give solutions on
+any finite horizon with the same Parseval-paid kinetic and integrated
+enstrophy bounds, without a uniform high-regularity claim for those data.
+
+\texttt{PancakeSobolevTimeBudget} also proves continuity, and hence
+integrability, of the finite viscous quantity directly from the
+coefficient equation. The absorbed differential estimate yields
+\[
+ E_M(t)+\nu(2\pi)^2\int_0^t D_M(s)\,ds
+       \le E_M(0)+C_\nu B^2t .
+\]
+Consequently the common physical family has the cutoff-independent
+time budget
+\[
+ \nu(2\pi)^2\int_0^t D_M(s)\,ds
+       \le H,\qquad H=B+C_\nu B^2\tau,\qquad 0\le t\le\tau .
+\]
+This constructs the common finite family and its local bounds.
+Convergence to a continuum evolution, propagation of the regularity
+needed by the full nonlinear consistency theorem, and the intrinsic
+global alignment budget remain to be proved. In particular, finite
+horizon existence at every cutoff is not continuum global regularity;
+the bound $E'\le C_\nu E^2$ remains a local comparison.
 
 
 The eigenvalue-gap denominator also appears in spatial frame freezing. In
