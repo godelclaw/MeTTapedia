@@ -1,0 +1,17 @@
+{
+  "schema": "fourcolor-v24-contour-bond-nesting-v1",
+  "population": [
+    {"frequency": 1, "vertices": 20, "windows": 3, "bonds": 9, "comparisons": 9},
+    {"frequency": 2, "vertices": 80, "windows": 15, "bonds": 45, "comparisons": 315},
+    {"frequency": 3, "vertices": 180, "windows": 36, "bonds": 108, "comparisons": 1890},
+    {"frequency": 4, "vertices": 320, "windows": 66, "bonds": 198, "comparisons": 6435},
+    {"frequency": 5, "vertices": 500, "windows": 105, "bonds": 315, "comparisons": 16380},
+    {"frequency": 6, "vertices": 720, "windows": 153, "bonds": 459, "comparisons": 34884},
+    {"frequency": 7, "vertices": 980, "windows": 210, "bonds": 630, "comparisons": 65835},
+    {"frequency": 8, "vertices": 1280, "windows": 276, "bonds": 828, "comparisons": 113850}
+  ],
+  "bonds": 2592,
+  "comparisons": 239598,
+  "disconnected_shore_control": {"frequency": 1, "i": 0, "j": 1, "vertex": 15},
+  "outcome": "passed"
+}

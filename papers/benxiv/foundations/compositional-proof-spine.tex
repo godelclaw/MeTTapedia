@@ -11988,3 +11988,134 @@ the recursive decomposition with complete seam accounting.  The cubic
 factor three cannot be transferred unchanged to contracted hubs.  No
 global supply theorem, fixed-mesh exclusion or explicit generating base
 is claimed by this checkpoint; the fixed ledger remains $57/100$.
+
+\subsection{Exact meshes, forced nesting, and a mesh-free dual-distance bound}
+\label{sec:contour-mesh-node-chain}
+
+Write $H$ for the actual face-dual graph, $R_d$ for the far-rooted
+component beyond distance $d$, and $C_d$ for its complete mixed primal
+frontier.  These are the regions and cycles constructed in
+Section~\ref{sec:integral-contour-linkage}, not supplied local patches.
+
+\begin{theorem}[all intermediate contour crossings]
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceDistanceFrontiers.walk_meets_mixed}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.adjacent_share_face}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.walk_meets_intermediate}
+Every ambient walk from $C_i$ to $C_j$ meets $C_d$ whenever
+$i\le d\le j$.  The walk is not required to stay inside the intervening
+band.  Generically, a walk leaving the vertices incident to a face region
+meets the mixed frontier, provided adjacent vertices share an incident face.
+\end{theorem}
+
+An original edge supplies the common face at its two endpoints.  The
+incident-face clique property puts $C_i$ outside the vertices touching
+$R_d$ for $i<d$, whereas $C_j$ touches $R_d$ for $d\le j$.  Applying the
+generic crossing lemma to the whole walk derives all row--column
+intersections, including excursions outside the selected band.
+
+\begin{theorem}[the exact mesh-or-bond alternative]
+\Sverified{Mettapedia.GraphTheory.FourColor.RotationWalkMeshPath.exists_vert_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.exists_injectiveMesh_of_contour_linkage}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.exists_injectiveMesh_or_ordered_bond}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.exists_ordered_bond_of_no_injectiveMesh}
+Let $a\ge2$ and $\ell+a\le d_H(r,z)$.  Either the rotation
+multigraph has an injective $a$-by-$b$ mesh in the exact predicate of
+\texttt{RawDecompositionOfNoInjectiveMesh}, or a complete bond retains
+$C_\ell$ and excludes $C_{\ell+a-1}$.  Both induced shores are connected;
+the entire crossing-edge and exposed-port carriers have size at most
+$3(b-1)$; touched-face uniqueness and inverse complementary first-return
+orders hold on that bond.
+\end{theorem}
+
+Rows are the $a$ actual consecutive contour cycles; columns are the
+constructed vertex-disjoint linkage.  The walk adapter chooses original
+rotation-multigraph edges without changing the vertex carrier or support.
+Distinct depths make rows vertex-disjoint and the linkage makes columns
+vertex-disjoint.  The preceding crossing theorem supplies every
+intersection.  The conclusion uses the stack's mesh predicate, not an
+unstated grid-minor or ordered-crossings surrogate.  No row, column,
+intersection, separator or small cut is an input to the alternative.
+
+\begin{theorem}[localization forces strict nesting]
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.contour_bond_avoids_touches}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.contour_bond_contains_outside}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.contour_bonds_strict}
+A connected bond retaining $C_i$ and excluding $C_j$, $i<j$, retains
+every vertex incident to a face outside $R_i$ and excludes every vertex
+incident to a face inside $R_j$.  Consequently any two such bonds in
+windows $i<j\le p<q$ have strictly nested retained vertex sets.
+\end{theorem}
+
+This removes the need to uncross independently chosen bonds in separated
+windows.  A path within either connected shore cannot cross the opposite
+terminal frontier.  The later first frontier witnesses strictness.
+Connectedness matters; the claim does not extend to arbitrary vertex sets
+having only the required terminal inclusions.
+
+\begin{theorem}[constructed nested bonds and exact-support nodes]
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.exists_nested_contour_bonds}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.crossingEquivBoundary}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.OrderedContourBond.toConnectedNode}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.exists_nested_contour_nodes}
+Suppose the exact injective $a$-by-$b$ mesh is absent and
+$na\le d_H(r,z)$.  The windows $[ta,ta+a-1]$, $0\le t<n$,
+construct $n$ complete ordered bonds of width at most $w=3(b-1)$,
+strictly nested as vertex shores and full incident-edge shores.
+In a graph-backed least counterexample these produce $n$ strictly nested
+connected exact-support nodes, each with literal middle width at most $w$.
+\end{theorem}
+
+The node conversion reuses the existing connected incident-edge adapter.
+The two terminal contour cycles guarantee nonempty majority sides;
+equality of the original vertex side with its majority side is unnecessary.
+Crossing darts and actual exposed ports are equivalent, so the
+middle-set bound is on the quantity consumed by the splice theorem.
+The conversion does not silently identify the bond's vertex boundary
+order with that of a possibly different majority side: the existing
+literal-node constructor derives the latter from the connected edge shores.
+
+Define the existing raw varying-width state bound by
+\[
+ N(w)=(6w+1)\sum_{j=0}^{w}j!\,2^{3^j}.
+\]
+\begin{theorem}[explicit dual-distance bound in a mesh-free least counterexample]
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.le_contourStateBound_of_nested_nodes}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.dual_distance_lt_of_no_injectiveMesh}
+Under the preceding exact no-mesh premise and $a\ge2$, every pair of
+quotient faces in a graph-backed vertex-minimal Tait counterexample satisfies
+\[
+ d_H(r,z)<a\bigl(N(3(b-1))+1\bigr).
+\]
+\end{theorem}
+
+The supplied-chain assumption is absent: if the displayed bound failed,
+the construction would give $N(w)+1$ nested nodes.  Their card-phased
+states are pairwise distinct by the already proved physical splice and
+minimality theorem, contradicting the exact state count.  This is a raw
+finite-state bound, not a new claim of efficient enumeration.
+
+The crossing gate replays all $4950$ depth triples in the verified
+$GP(k,0)$ archive, $1\le k\le8$, deleting the entire intermediate
+frontier in the full ambient graph.  An abstract two-vertex control
+demonstrates failure without common-face incidence.  The nesting gate
+constructs three deterministic grown-and-filled bond samples in every depth
+window (repetitions allowed): $2592$ samples and $239{,}598$ separated-window comparisons.  It
+checks full-shore connectedness, localization, strict vertex and
+incident-edge inclusion, and the actual middle-width bound.  Adding a
+deep isolated vertex gives a negative connected-shore control.  These are
+generic geometric controls, not zero-Count examples or colouring
+certificates.  Replays are
+\texttt{v24\_contour\_separation\_gate.py} and
+\texttt{v24\_contour\_bond\_nesting\_gate.py} under
+\texttt{tools/fourcolor/}, with corresponding JSON receipts under
+\texttt{results/fourcolor/}.
+
+\paragraph{Remaining global obligations.}
+Fixed-mesh exclusion is still an explicit open route premise.  The new
+bound is on face-dual distance, not vertex count: turning bounded face
+size and this distance bound into an explicit size bound, and handling
+the long-face case, remain geometric work.  A complete raw recursive
+branch decomposition and the actual generating-base audit are not proved
+here.  This checkpoint closes intermediate crossings, separated-window
+compatibility and the exact-node conversion, but not all of D1b or D1c.
+The fixed obligation ledger remains $57/100$.
