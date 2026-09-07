@@ -3140,6 +3140,96 @@ $\delta\to0$ is justified. Construction from arbitrary data, the required
 stochastic objects, scale-uniform field transfer and continuation remain
 open.
 
+\paragraph{Signed transport before Young's inequality.}
+The vector forcing in the last estimate can be split before its norm is
+squared. Write $v_M,S_M$ for the full retained velocity and strain,
+and let $f_{M,0}$ be the previously defined nonviscous vorticity forcing
+with velocity multiplier identically one. Define
+\[
+ a=v_K-v_M,\qquad
+ g=f_{M,0}+(S_M-S_K)w.
+\]
+\texttt{PancakeVorticityTransportSplit} proves for the actual Fourier
+reconstructions
+\[
+ f_{K,0}=g+(a\cdot\nabla)w.
+\]
+The character-motion term is identified with the actual coordinate
+derivatives of $w$. Reality of the reconstructed velocity is used when
+passing from complex Fourier products to real transport; it is not
+assumed that real-part extraction preserves arbitrary products.
+The term $f_{M,0}$ remains explicit: finite-output truncation has not been
+discarded, and this term is not asserted to vanish.
+
+For a symmetric matrix weight $K(x)$ with locally Lipschitz entries,
+\texttt{PancakeWeightedWeakTransport} and
+\texttt{PancakeWeightedMatrixTransport} prove the signed identity
+\[
+ 2\int_{\mathbb T^3}\langle Kw,(a\cdot\nabla)w\rangle
+   =-\int_{\mathbb T^3}\sum_{i,j,k=1}^3
+             a_k(\partial_k K_{ij})w_iw_j,
+ \qquad \operatorname{div}a=0.
+\]
+The proof differentiates scalar products almost everywhere, integrates by
+parts, and uses symmetry to identify the two transported-field terms.
+\texttt{PancakeWeightedOperatorTransport} constructs the entries in the
+canonical Euclidean basis and identifies the matrix sum with the actual
+operator inner product. No operator derivative is supplied independently.
+
+\texttt{PancakePhysicalWeightedTransport} applies the identity to
+$K=K_\delta(S_K)=(\lambda_{\max}(S_K)+\delta)I-S_K$ and to the actual
+filtered velocity difference. The weight is locally Lipschitz even at
+spectral collisions: the already proved estimate
+$\|K_\delta(S)-K_\delta(T)\|\le2\|S-T\|$ suffices.
+Set
+\[
+ \mathcal W_\delta=\sum_{i,j,k=1}^3
+       a_k\,\partial_k(K_\delta(S_K))_{ij}\,w_iw_j.
+\]
+The weak entry derivatives are actual coordinate derivatives, with the
+AE interpretation established above. The module also proves the exact
+identity $\mathcal W_\delta=\mathcal W_0$: adding a constant multiple
+of the identity matrix does not change its spatial transport derivative.
+The signed forcing identity is therefore
+\[
+ \int_{\mathbb T^3}2\langle K_\delta w,f_{K,0}\rangle
+ =\int_{\mathbb T^3}2\langle K_\delta w,g\rangle
+       -\int_{\mathbb T^3}\mathcal W_0.
+\]
+It contains no squared derivative of $w$ from the transport mismatch.
+It does not assign a favorable sign to $\mathcal W_0$.
+
+Define the reduced envelope
+\[
+ \widetilde{\mathcal B}_\delta
+   =2\|R_0\||w|^2+2|g|^2
+                  +2\delta\langle w,S_Kw+g\rangle.
+\]
+\texttt{PancakeReducedMaterialBudget} applies Young's inequality only
+to $g$, retains the signed transport pairing, and pays the same joint
+diffusion term as before. The spatial mean of $\mathcal W_\delta$ is
+continuous in time even though its pointwise weak derivatives need not
+be: \texttt{PancakeReducedForcingContinuity} identifies that mean with
+a difference of continuous physical forcing pairings. Thus time
+integrability is proved without an extra budget assumption.
+Under the same supplied finite-solution hypotheses,
+\texttt{PancakeReducedEulerianBudget} obtains
+\[
+ \begin{aligned}
+ \overline E_\delta(T)
+    +\frac12\int_0^T\!\int_{\mathbb T^3}|z|^2
+ &\le \overline E_\delta(0)
+       +\frac{8C_{K,\chi}U(0)^2}{\delta}\\
+ &\quad+\int_0^T\!\int_{\mathbb T^3}\widetilde{\mathcal B}_\delta
+       -\int_0^T\!\int_{\mathbb T^3}\mathcal W_0.
+ \end{aligned}
+\]
+This resolves the mismatch transport algebraically, not its all-scale
+budget. Bounds for the signed weight variation, the reduced nonlinear
+and projection forcing, the growing cutoff constant and the limiting
+construction remain necessary. No frequency-uniform regularity theorem
+follows from this finite-cutoff identity alone.
+
 The eigenvalue-gap denominator also appears in spatial frame freezing. In
 \texttt{PancakeEigenframePerturbation}, if $Ae=\lambda e$, $Bf=\mu f$, $B$
 is self-adjoint, and $e,f$ are unit vectors, then
@@ -3427,6 +3517,15 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakePhysicalMeanBalance}, and
 \texttt{PancakeParametricForcing}, and
 \texttt{PancakeEulerianAlignmentBudget}, and
+\texttt{PancakeWeightedWeakTransport}, and
+\texttt{PancakeWeightedMatrixTransport}, and
+\texttt{PancakeWeightedOperatorTransport}, and
+\texttt{PancakePhysicalWeightedTransport}, and
+\texttt{PancakeVorticityTransportSplit}, and
+\texttt{PancakeSignedTransportForcing}, and
+\texttt{PancakeReducedMaterialBudget}, and
+\texttt{PancakeReducedForcingContinuity}, and
+\texttt{PancakeReducedEulerianBudget}, and
 \texttt{SpatialBKMIntegrand}, and
 \texttt{PancakeAdaptiveStrainCover}, and
 \texttt{PancakeAdaptiveFourierPartition}, and
