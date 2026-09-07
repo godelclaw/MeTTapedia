@@ -1,0 +1,8 @@
+{
+  "schema": "fourcolor-v24-vertex-split-v1",
+  "counts": {
+    "graphs_2": 2, "instances": 16396, "low": 13480,
+    "high": 2916, "graphs_3": 8, "graphs_4": 64
+  },
+  "outcome": "passed"
+}
