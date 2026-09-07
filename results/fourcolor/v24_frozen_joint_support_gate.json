@@ -1,0 +1,16 @@
+{
+  "all_prescriptions": 144,
+  "joint_equal_controls": 48,
+  "marginal_only_failures": 36,
+  "proper_words": 6,
+  "scope": "theta tangle semantics; no nested-chain or target-class claim",
+  "specimen": {
+    "changed_accepts": false,
+    "changed_observed_port": 1,
+    "exterior_port0_colour": 1,
+    "old_accepts": true,
+    "old_observed_port": 0,
+    "prescribed_colour": 1
+  },
+  "status": "passed"
+}
