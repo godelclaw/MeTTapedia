@@ -3724,12 +3724,75 @@ integrability are constructed, and the same conclusion holds with
 $M\setminus\{0\}$ throughout.
 
 This closes the combined Fourier-series consistency estimate under the
-stated envelope. It does not yet identify $\mathcal N_\infty$ with the
-differentiated nonlinearity of a constructed continuum solution, construct
-that solution or its envelope, or pass the complete material inequality
-to the limit. Those analytic identifications and the intrinsic
-scale-critical dynamical budget remain necessary; convergence of an
-explicit nonlinear series is not an unconditional regularity theorem.
+stated envelope. The spatial nonlinear identification is supplied next.
+Constructing a continuum solution and its envelope, passing the complete
+material inequality to the limit, and obtaining the intrinsic
+scale-critical dynamical budget remain separate obligations.
+
+\paragraph{Identification with the actual real curl nonlinearity.}
+The infinite interaction is now identified with a derivative-defined
+physical field. This step does not define curl by its Fourier symbol.
+For a frequency map $\kappa:I\to\mathbb Z^3$ and complex vector coefficients
+$a_n$, construct the series in the Banach space of continuous fields:
+\[
+ F_{\kappa,a}(x)=\sum_{n\in I}e_{\kappa(n)}(x)a_n,\qquad
+ d_j a_n=2\pi i\,\kappa(n)_j a_n.
+\]
+\texttt{PancakeInfiniteFourierDerivative} differentiates its translation
+curve in that Banach space under absolute summability of $a$ and $d_ja$.
+Evaluation gives the ordinary coordinate derivative on the torus.
+\texttt{PancakeIndexedFourierMoments} pays these hypotheses with
+\[
+ M_1^\kappa(a_n)=(1+|\kappa(n)|)|a_n|,\qquad
+ |d_ja_n|_\infty,\ |2\pi i\,\kappa(n)\times a_n|_\infty
+       \le 2\pi M_1^\kappa(a_n).
+\]
+Here the unsubscripted coefficient norm is Euclidean; its relation to the
+coordinate sup norm is proved explicitly.
+\texttt{PancakeInfiniteSpatialCurl} consequently proves
+\[
+ \nabla\times F_{\kappa,a}
+   = F_{\kappa,\,2\pi i\kappa\times a},
+\]
+where the left side uses actual derivatives of coordinate translations.
+
+For $\kappa(k,l)=k+l$, the product estimate is
+\[
+ (1+|k+l|)|u_k\times v_l|
+       \le (1+|k|)|u_k|\,(1+|l|)|v_l|.
+\]
+Thus two summable first moments pay the first moment of the pair series.
+Continuous bilinearity and absolute double summation in
+\texttt{PancakeInfiniteFourierProduct} identify it exactly with
+$F_{\mathrm{id},u}\times F_{\mathrm{id},v}$.
+\texttt{PancakeInfiniteRealCurl} proves reality by conjugation and
+reindexing $k\mapsto-k$, and commutes real part with the actual derivatives.
+
+Write $U=\operatorname{Re}F_{\mathrm{id},u}$. Assume the reality symmetry
+$u_{-k}=\overline{u_k}$ and a summable second moment
+$\sum_k(1+|k|)^2|u_k|<\infty$.
+The theorem in \texttt{PancakeFullAnalyticNonlinearity} gives
+\[
+ \boxed{\quad
+ \mathcal N_\infty(u)
+   =\nabla\times\bigl(U\times(\nabla\times U)\bigr).
+ \quad}
+\]
+Both curls here are ordinary derivatives of real fields. The second
+moment pays the first moments of both $u$ and its curl. No incompressibility
+or zero-mean hypothesis is needed for this identification itself.
+Under the additional mean-zero, transversality and common-envelope
+hypotheses used above, the retained nonlinear RHS therefore satisfies
+\[
+ \left\|\nabla\times\bigl(U\times(\nabla\times U)\bigr)
+            -\mathcal N_M(u)\right\|_{L^\infty}
+       \le \sigma_M(g)\longrightarrow0.
+\]
+This removes the spatial series-identification gap. It does not construct
+a time-evolving Navier--Stokes solution from arbitrary data, establish a
+common envelope on its lifespan, or bound that envelope globally. The
+intrinsic high-strain, pressure, moving-weight and scale-critical
+misalignment estimates remain open.
 
 The eigenvalue-gap denominator also appears in spatial frame freezing. In
 \texttt{PancakeEigenframePerturbation}, if $Ae=\lambda e$, $Bf=\mu f$, $B$
@@ -4062,7 +4125,13 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeZeroSafeInteractionTail},
 \texttt{PancakeFullNonlinearConsistency},
 \texttt{PancakeParametricInfiniteCurl},
-\texttt{PancakeFullNonlinearTimeLimit}, and
+\texttt{PancakeFullNonlinearTimeLimit},
+\texttt{PancakeInfiniteFourierDerivative},
+\texttt{PancakeIndexedFourierMoments},
+\texttt{PancakeInfiniteSpatialCurl},
+\texttt{PancakeInfiniteFourierProduct},
+\texttt{PancakeInfiniteRealCurl},
+\texttt{PancakeFullAnalyticNonlinearity}, and
 \texttt{SpatialBKMIntegrand}, and
 \texttt{PancakeAdaptiveStrainCover}, and
 \texttt{PancakeAdaptiveFourierPartition}, and
