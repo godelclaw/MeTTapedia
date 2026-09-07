@@ -11816,3 +11816,73 @@ or assemble the recursive bounded-width decomposition.  Those geometric
 obligations, fixed-mesh exclusion and the explicit route-native base remain
 open.  No catalogue or reducibility computation is used.  The unchanged
 obligation ledger is still $57/100$.
+
+\subsection{Small vertex separators construct complete connected contour cuts}
+\label{sec:contour-separator-bonds}
+
+\begin{theorem}[separator-to-bond construction]
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSeparatorBond.basin_connected}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSeparatorBond.filled_connected}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSeparatorBond.exists_bond_of_separator}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSeparatorBond.exists_bounded_bond}
+Let $G$ be a connected finite simple graph, and let $A,B$ be disjoint
+nonempty vertex sets, each inducing a connected subgraph.  Suppose every
+$A$--$B$ walk meets a vertex set $X$, possibly at a terminal vertex.
+If every vertex of $X$ has degree at most $d$, there is a vertex shore
+$S$ with $A\subseteq S$, $B\subseteq S^c$, both induced shores connected,
+and complete edge boundary $|\delta_G(S)|\le d|X|$.
+\end{theorem}
+
+\begin{proof}
+Let $C$ consist of $A$ and every vertex reachable from $A$ by a walk
+avoiding $X$.  Restoring all of $A$ connects these components.  The
+separator property implies $B\subseteq C^c$.  Let $R$ be the component of
+$G[C^c]$ containing $B$, and put $S=R^c$: all other complementary
+components are filled into the first shore.  A walk from a vertex outside
+$R$ to $C$ first reaches $C$ without entering $R$; otherwise that vertex
+would belong to $R$.  Since $C$ is connected, $S$ is connected too.
+Every edge from $R$ to $S$ has its $S$ endpoint in $C$, and every edge
+leaving $C$ has an endpoint in $X$.  Charging crossing edges to the union
+of the incidence sets at $X$ gives
+$|\delta_G(S)|\le\sum_{x\in X}\deg_G(x)\le d|X|$.
+\end{proof}
+
+\begin{theorem}[application to the constructed spherical contours]
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.frontier_connected}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.exists_bounded_bond_between_frontiers}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.card_boundaryDart_le_edgeBoundary}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.exists_ordered_bond_between_frontiers}
+In the spherical cubic setting of the preceding subsection, take any two
+distinct depths below $d_H(r,z)$.  A vertex separator $X$ between their
+\emph{complete} mixed frontiers constructs a bond retaining the entire
+first contour and excluding the entire second.  Its full edge boundary
+and its actual exposed-port carrier each have size at most $3|X|$.
+The computed complementary first-return boundary orders are inverse, and
+each touched ambient face contains at most one retained boundary dart.
+\end{theorem}
+
+Connectivity of the terminals comes from the constructed primal cycles;
+disjointness comes from the distance-incidence theorem.  Neither is an
+extra supplied geometric witness.  The boundary-order conclusions use the
+existing planar-bond theorem on the newly constructed shores.  The bound
+is on the full ambient cut, including all lateral attachments, not on a
+selected local carrier.  It is a factor-three bound, not an assertion of
+a separator-length-optimal noose.
+
+The preregistered gate exhausted all connected labelled simple graphs on
+$2$ through $5$ vertices (respectively $1,4,38,728$ graphs), all ordered
+disjoint connected terminal pairs, and all vertex separators.  All
+$1{,}669{,}306$ cases passed; $1{,}635{,}062$ include separator vertices
+on a terminal, and $306{,}400$ require filling complementary components.
+The general-degree bound is attained in $14{,}266$ cases.  These are
+executable generic-graph checks, not zero-Count graphs or Lean instances.
+The gate and fixed-population replay are
+\texttt{tools/fourcolor/v24\_separator\_bond\_gate.py}, with receipt
+\texttt{results/fourcolor/v24\_separator\_bond\_gate.json}.
+
+This discharges the conversion needed on the small-separator branch of
+the contour extraction.  It does not yet construct the separator/linkage
+alternative, uncross a family of separators, or assemble branch
+decompositions with their complete recursive seams.  No global
+counterexample supplier, fixed-mesh exclusion, or route-native base is
+claimed.  The unchanged ledger remains $57/100$.
