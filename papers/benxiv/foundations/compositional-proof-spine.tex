@@ -11741,11 +11741,78 @@ a flow optimizer.  The executable receipts are in
 The generic metric and mesh lemmas are kernel-checked; the eight concrete
 graph receipts are independently executable checks, not Lean instances.
 No zero Count is asserted.  To complete the global extraction one must
-still establish the cubic rotation-system incidence bridge, identify each
-complete frontier with a single primal cycle, prove the small-noose versus
-large-linkage alternative, and assemble the recursive decompositions while
+prove the small-noose versus large-linkage alternative, and assemble the recursive decompositions while
 retaining their entire seams.  Connected \emph{dual face regions} above
 are not automatically the connected primal shores needed for a Count
 splice.  The new constructors produce the exact mesh existential used by
 \texttt{RawDecompositionOfNoInjectiveMesh}; they do not prove that theorem,
 fixed-mesh exclusion, or D1b/D1c.  The fixed ledger remains $57/100$.
+The incidence and single-cycle frontier steps are now supplied below.
+
+\subsection{Complete spherical distance contours}
+\label{sec:complete-spherical-distance-contours}
+
+\begin{theorem}[a facial bond has one complete primal boundary cycle]
+\Sverified{Mettapedia.GraphTheory.FourColor.FacialBondPrimalCycle.boundary_support_eq_of_bond}
+\Sverified{Mettapedia.GraphTheory.FourColor.FacialBondPrimalCycle.exists_cycle_of_facial_bond}
+Let a finite simple graph carry the stack's connected bridgeless spherical
+cubic rotation structure, with two-sided quotient faces.  If a set $S$ of
+faces and its complement both induce connected facial-dual subgraphs,
+then there is a simple primal cycle containing exactly the edges with one
+incident face in $S$ and the other outside $S$.  Neither the cycle nor a
+chosen boundary component is an input.
+\end{theorem}
+
+\begin{proof}
+The binary facial boundary of $S$ is a nonzero circulation.  Cubicity
+provides a simple cycle supported in this circulation.  Spherical
+face-boundary/cycle-space equality represents that cycle by another face
+set $T$.  Along every dual edge internal to $S$ or its complement, the
+boundary of $T$ is zero, since its support is contained in the original
+cut.  Its binary face labels are therefore constant on each of the two
+connected sides.  The constants differ because the cycle is nonempty.
+Consequently every edge of the original cut belongs to that cycle.
+\end{proof}
+
+\begin{theorem}[constructed, strictly nested distance regions and contours]
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceDistanceFrontiers.deepRegion_ssubset}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalDistanceContours.vertexFaces_clique}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalDistanceContours.mixed_iff_boundary_dart}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalDistanceContours.exists_distance_contour}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalDistanceContours.distance_frontiers_disjoint}
+For the actual quotient facial dual $H$, fix faces $r,z$ and let $R_i$ be
+the constructed deep component above.  At every $i<d_H(r,z)$ its complete
+boundary is a simple primal cycle, whose vertex support is exactly the set
+of vertices incident to both $R_i$ and its complement.  These cycles are
+vertex-disjoint at distinct depths.  Moreover, $R_j\subsetneq R_i$ whenever
+$i<j$ and $i<d_H(r,z)$.
+\end{theorem}
+
+The local incidence hypothesis is discharged, not retained: two outgoing
+darts at a cyclic cubic vertex are consecutive in one orientation, so
+their distinct face sectors share a dual edge.  A mixed vertex supplies a
+literal boundary dart based there; the opposite edge face is also incident
+there through the rotated dart.  Thus the complete cyclic frontier, not
+just a subset of its vertices, is identified.  Strict nesting follows from
+a walk from $z$ to $r$: its exit from $R_i$ has an inside endpoint at
+distance $i+1$, which is absent from every later $R_j$.
+
+Before formalization, the gate exhausted all $4094$ nonempty proper face
+sets of the dodecahedral sphere.  Exactly $2336$ have connected selected
+and complementary dual sides, and all have one complete boundary cycle.
+For the $3\times3$ periodic honeycomb torus, $486$ of $510$ face sets have
+both sides connected; $180$ have two boundary cycles.  This negative control
+shows that the spherical hypothesis cannot simply be dropped.  Full edge,
+face and rotation data are checked; the torus has $18$ vertices, $27$ edges,
+nine hexagonal faces and Euler characteristic zero.  The executable gate
+and replay receipt are \texttt{tools/fourcolor/v24\_facial\_bond\_gate.py}
+and \texttt{results/fourcolor/v24\_facial\_bond\_gate.json}.  The concrete
+controls are executable checks, not new Lean instances or zero-Count graphs.
+
+This closes the contour-construction and cubic-incidence steps in the mesh
+extraction argument.  It does not bound contour lengths, construct the
+inter-contour linkage, turn the primal contours into Count splice nooses,
+or assemble the recursive bounded-width decomposition.  Those geometric
+obligations, fixed-mesh exclusion and the explicit route-native base remain
+open.  No catalogue or reducibility computation is used.  The unchanged
+obligation ledger is still $57/100$.
