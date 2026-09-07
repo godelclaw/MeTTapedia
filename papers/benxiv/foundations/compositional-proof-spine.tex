@@ -13433,3 +13433,77 @@ non-colourability premise or colouring enumeration is involved. The
 remaining construction must control complete intermediate interfaces,
 not just local and final cuts. D1b/D1c and fixed-mesh exclusion remain
 open, and the fixed ledger stays at $57/100$.
+
+\subsection{Marked face returns rather than whole-face perimeter}
+\label{sec:marked-face-return-rewire}
+
+The designated-face supplier preserves complete facial cycles, and its
+threshold consequently depends on their total perimeter. For a transfer
+which needs only named edges to stay cofacial, preserving every intervening
+dart is stronger than necessary. The following compositional geometry
+provides a finite record of the required observation. It does not yet
+replace the marked-state choice in the geometric supplier.
+
+\paragraph{Compression commutes with supported rewiring.}
+Let $p$ be a permutation of a finite dart carrier, let $H$ be a set of
+recorded points, and let $r_H(p)$ be the next-return permutation on $H$.
+For a permutation $\tau$ of $H$, write $\bar\tau$ for its extension by
+the identity off $H$. With rightmost factors acting first,
+\[
+ r_H(p\bar\tau)=r_H(p)\tau.
+\]
+Indeed, starting at $x\in H$, the rewired traversal follows the old arc
+from $\tau(x)$ until its first return. There are no intervening recorded
+points at which another rewire can occur. Both the exact return time and
+the return permutation identity are checked generically.
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedFaceReturnRewire.returnTime_rewire}
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedFaceReturnRewire.nextHitPerm_rewire}
+The cycles of this finite product compute precisely the new cofaciality
+of the recorded darts. Equal records in common coordinates remain
+interchangeable under every common rewire, even for different ambient
+carrier sizes; no equality of unmarked arc lengths is needed.
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedFaceReturnRewire.sameCycle_rewire_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedFaceReturnRewire.replacement_congr}
+
+\paragraph{Actual open-tangle sewing.}
+For an open tangle, temporarily fix each boundary dart under the edge
+involution and compose with its vertex rotation to obtain an open face
+permutation. On the disjoint union of two tangles, actual sewing changes
+only boundary partners. After the existing dart reassociation, its face
+permutation is exactly the disjoint open permutation followed by the
+concrete boundary swap. Applying the return law therefore computes face
+membership in the existing \texttt{composeRotationSystem}, not merely in
+an abstract permutation claimed to model it.
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleMarkedFace.compose_phi}
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleMarkedFace.compose_sameCycle_iff}
+Take $H$ to contain every port and the requested dart observations. For
+boundary sizes $k_1,k_2$ and $t$ named darts, $|H|\le k_1+k_2+t$; the
+return-permutation component has at most $(k_1+k_2+t)!$ possibilities.
+This is not the cardinality of the entire refined Count state: support,
+presence and naming coordinates still have to be retained.
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleMarkedFace.card_observed_le}
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleMarkedFace.card_return_records_le}
+
+\paragraph{Why the cofacial partition alone is insufficient.}
+The cycles $(0\,1\,2\,3)$ and $(0\,2\,1\,3)$ have identical cofacial
+partitions. After right multiplication by $(0\,1)$, the first still puts
+$0$ and $2$ together, while the second separates them. Both claims are
+kernel-checked. Cyclic return order, not just existing face equivalence,
+is necessary for compositional rewiring.
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedFaceReturnRewire.same_partition_before}
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedFaceReturnRewire.different_partition_after}
+The independent diagnostic checks $232503$ small supported rewirings,
+$288$ unmarked-arc subdivisions, and $1824$ physical prism sewing cases.
+No colouring or configuration catalogue is enumerated. The generic
+permutation theorem, unlike these diagnostics, has no carrier-size bound.
+
+\paragraph{Remaining geometric obligation.}
+The supplied Count seam must still be chosen using compatible named-face
+records on its two actual shores, with the corresponding naming and port
+coordinates. Existing equality of Count support alone is not asserted to
+imply this refinement. Nor does preservation of cofaciality preserve an
+entire hole word, facial length, or all designated face darts. The result
+removes perimeter from this particular observation's local state cost;
+it does not yet remove perimeter from the supplied reduction's threshold.
+D1b/D1c, fixed-mesh exclusion and the generating base remain open, with
+the fixed ledger unchanged at $57/100$.
