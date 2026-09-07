@@ -1,0 +1,81 @@
+{
+  "arc_stretch_checks": 288,
+  "exhaustive": [
+    {
+      "checks": 1,
+      "points": 1
+    },
+    {
+      "checks": 8,
+      "points": 2
+    },
+    {
+      "checks": 78,
+      "points": 3
+    },
+    {
+      "checks": 936,
+      "points": 4
+    },
+    {
+      "checks": 13320,
+      "points": 5
+    },
+    {
+      "checks": 218160,
+      "points": 6
+    }
+  ],
+  "largest_stretched_carrier": 512,
+  "partition_counterexample": {
+    "after_first": [
+      [
+        0,
+        2,
+        3
+      ],
+      [
+        1
+      ]
+    ],
+    "after_second": [
+      [
+        0,
+        3
+      ],
+      [
+        1,
+        2
+      ]
+    ],
+    "before": [
+      [
+        0,
+        1,
+        2,
+        3
+      ]
+    ],
+    "first": [
+      1,
+      2,
+      3,
+      0
+    ],
+    "rewire": [
+      1,
+      0,
+      2,
+      3
+    ],
+    "second": [
+      2,
+      3,
+      1,
+      0
+    ]
+  },
+  "physical_prism_gluing_checks": 1824,
+  "schema": "fourcolor-v24-marked-face-return-v1",
+  "scope": "Generic rewiring and physical tangle gluing; no Count supplier asserted."
+}
