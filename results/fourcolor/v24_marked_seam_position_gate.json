@@ -1,0 +1,33 @@
+{
+  "cases": [
+    {
+      "absent_label_tests": 160,
+      "accepted": 70,
+      "coordinate_tests": 160,
+      "marked_sizes": [
+        0,
+        1,
+        2
+      ],
+      "no_full_wire_matching": 0,
+      "pairs": 10,
+      "prism": 5
+    },
+    {
+      "absent_label_tests": 3936,
+      "accepted": 1380,
+      "coordinate_tests": 3936,
+      "marked_sizes": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "no_full_wire_matching": 24,
+      "pairs": 156,
+      "prism": 6
+    }
+  ],
+  "outcome": "position_criterion_passes_controls",
+  "schema": "fourcolor-v24-marked-seam-position-v1"
+}

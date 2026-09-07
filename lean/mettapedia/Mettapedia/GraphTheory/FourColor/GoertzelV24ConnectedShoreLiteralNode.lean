@@ -246,9 +246,9 @@ namespace LiteralShoreNode
 /-- Connected complementary edge shores produce the complete
 literal node consumed by finite physical descent.  Roots and two distinct
 exterior boundary darts are derived rather than supplied. -/
-noncomputable def ofConnectedShore
+noncomputable def ofConnectedShoreOfSpherical
     (rotation : SimpleGraphDartRotation.Data G)
-    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (ambient : BridgelessSphericalCubicMapData rotation.toRotationSystem)
     (shore : Finset G.edgeSet)
     (hshoreConnected : EdgeShoreConnected G shore)
     (hcomplementConnected :
@@ -269,17 +269,17 @@ noncomputable def ofConnectedShore
   have houtsideVertex : ¬ majorityVertexSide G shore outsideVertex :=
     Classical.choose_spec hcomplementNonempty
   let innerOuter : RetainedDart RS (majorityRetainedKeep G shore) :=
-    retainedDartOfVertex RS minimal.spherical.cubic
+    retainedDartOfVertex RS ambient.spherical.cubic
       (majorityRetainedKeep G shore) innerVertex
       ((majorityRetainedKeep_iff shore innerVertex).2 hinnerVertex)
   let outsideOuter : RetainedDart RS (majorityDeletedKeep G shore) :=
-    retainedDartOfVertex RS minimal.spherical.cubic
+    retainedDartOfVertex RS ambient.spherical.cubic
       (majorityDeletedKeep G shore) outsideVertex
       ((majorityDeletedKeep_iff shore outsideVertex).2 houtsideVertex)
   have htwo : 2 ≤ Fintype.card
       (BoundaryDart RS (majorityDeletedKeep G shore)) :=
     two_le_card_boundaryDart_of_connected_edgeBridgeFree RS
-      minimal.primalConnected minimal.edgeBridgeFree
+      ambient.primalConnected ambient.edgeBridgeFree
       (majorityDeletedKeep G shore)
       ⟨outsideVertex,
         (majorityDeletedKeep_iff shore outsideVertex).2 houtsideVertex⟩
@@ -295,7 +295,7 @@ noncomputable def ofConnectedShore
   have hcubicEdges :
       ∀ vertex : V, (incidentEdgeFinset G vertex).card = 3 :=
     incidentEdgeFinset_card_eq_three_of_toRotationSystem_isCubic
-      rotation minimal.spherical.cubic
+      rotation ambient.spherical.cubic
   have hwidth : boundaryWidth rotation shore ≤ k := by
     rw [boundaryWidth_eq_card_crossingSideDart rotation shore]
     exact (card_crossingSideDart_majority_le_middle hcubicEdges shore).trans
@@ -314,6 +314,24 @@ noncomputable def ofConnectedShore
       second := second
       first_ne_second := hne }
 
+/-- The original minimal-counterexample interface, obtained from the
+geometric construction which does not require non-colourability. -/
+noncomputable def ofConnectedShore
+    (rotation : SimpleGraphDartRotation.Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (shore : Finset G.edgeSet)
+    (hshoreConnected : EdgeShoreConnected G shore)
+    (hcomplementConnected : EdgeShoreConnected G (Finset.univ \ shore))
+    (hmajorityNonempty : ∃ vertex, majorityVertexSide G shore vertex)
+    (hcomplementNonempty : ∃ vertex, ¬ majorityVertexSide G shore vertex)
+    (k w : Nat)
+    (hwidthMiddle : (edgeShoreMiddleVertices G shore).card ≤ k)
+    (hmiddle : (edgeShoreMiddleVertices G shore).card ≤ w) :
+    LiteralShoreNode rotation k w :=
+  ofConnectedShoreOfSpherical rotation minimal.toBridgelessSphericalCubicMapData
+    shore hshoreConnected hcomplementConnected hmajorityNonempty hcomplementNonempty
+    k w hwidthMiddle hmiddle
+
 end LiteralShoreNode
 
 /-! ## A connected-shore tree consumed directly -/
@@ -331,6 +349,16 @@ structure ConnectedShoreNode (k w : Nat) where
   middleBound : (edgeShoreMiddleVertices G shore).card ≤ w
 
 namespace ConnectedShoreNode
+
+/-- Complete a geometric node before any counterexample hypothesis. -/
+noncomputable def toLiteralOfSpherical
+    (rotation : SimpleGraphDartRotation.Data G)
+    (ambient : BridgelessSphericalCubicMapData rotation.toRotationSystem)
+    {k w : Nat} (node : ConnectedShoreNode (G := G) k w) :
+    LiteralShoreNode rotation k w :=
+  LiteralShoreNode.ofConnectedShoreOfSpherical rotation ambient node.shore
+    node.shoreConnected node.complementConnected node.majorityNonempty
+    node.complementNonempty k w node.widthMiddle node.middleBound
 
 /-- Complete a connected-shore node to the literal node used by the physical
 replacement theorem. -/
