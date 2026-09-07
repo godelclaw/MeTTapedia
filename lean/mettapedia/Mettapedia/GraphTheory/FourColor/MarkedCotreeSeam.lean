@@ -57,20 +57,22 @@ structure SeamPair (rotation : Data G) (marks : Finset V) (mark : M → G.Dart)
   state_eq : ofShore rotation outer.shore outer.innerOuter mark width outerWidth =
     ofShore rotation inner.shore inner.innerOuter mark width innerWidth
 
-/-- The marked geometric supplier followed by finite-state repetition.
-Neither minimality nor non-colourability is a premise of the construction. -/
-theorem exists_seamPair_of_large_card (rotation : Data G)
+/-- Finite-state repetition on a marked chain with actual strict material.
+Both geometric suppliers use this same physical state and seam. -/
+theorem exists_seamPair_of_marked_nodes (rotation : Data G)
     (ambient : BridgelessSphericalCubicMapData rotation.toRotationSystem)
-    (htwo : OrbitFacesTwoSided rotation.toRotationSystem)
-    (root : OrbitFace rotation.toRotationSystem) (h : ℕ)
+    (w : ℕ)
     (marks : Finset V) (mark : M → G.Dart)
-    (hradius : ∀ f, (orbitFaceDualGraph rotation).dist f root ≤ h)
-    (hlarge : vertexBound h marks.card (Fintype.card M) < Fintype.card V) :
-    Nonempty (SeamPair rotation marks mark (2 * h + 1)) := by
-  let w := 2 * h + 1
+    (nodes : Fin (stateBound w (Fintype.card M) + 1) → ConnectedShoreNode (G := G) w w)
+    (hnest : ∀ i j, i < j → (nodes i).shore ⊂ (nodes j).shore)
+    (hmarks : ∀ i v, v ∈ marks → (majorityVertexSide G (nodes i).shore v ↔
+      majorityVertexSide G (nodes 0).shore v))
+    (hstar : ∀ i j, i < j → ∃ v, v ∉ marks ∧
+      majorityVertexSide G (nodes j).shore v ∧
+      ¬ majorityVertexSide G (nodes i).shore v ∧
+      ∀ e ∈ incidentEdgeFinset G v, e ∈ (nodes j).shore \ (nodes i).shore) :
+    Nonempty (SeamPair rotation marks mark w) := by
   let n := stateBound w (Fintype.card M)
-  obtain ⟨nodes, hnest, hmarks, hstar⟩ :=
-    exists_marked_nodes_of_large_card rotation ambient htwo root h n marks hradius hlarge
   let literal := fun i => (nodes i).toLiteralOfSpherical rotation ambient
   let state := fun i => boundedOfShore rotation (literal i).shore
     (literal i).innerOuter mark w (literal i).widthBound
@@ -100,6 +102,21 @@ theorem exists_seamPair_of_large_card (rotation : Data G)
     outerWidth := outerWidth
     innerWidth := innerWidth
     state_eq := hs }⟩
+
+/-- The marked geometric supplier followed by finite-state repetition.
+Neither minimality nor non-colourability is a premise of the construction. -/
+theorem exists_seamPair_of_large_card (rotation : Data G)
+    (ambient : BridgelessSphericalCubicMapData rotation.toRotationSystem)
+    (htwo : OrbitFacesTwoSided rotation.toRotationSystem)
+    (root : OrbitFace rotation.toRotationSystem) (h : ℕ)
+    (marks : Finset V) (mark : M → G.Dart)
+    (hradius : ∀ f, (orbitFaceDualGraph rotation).dist f root ≤ h)
+    (hlarge : vertexBound h marks.card (Fintype.card M) < Fintype.card V) :
+    Nonempty (SeamPair rotation marks mark (2 * h + 1)) := by
+  obtain ⟨nodes, hnest, hmarks, hstar⟩ := exists_marked_nodes_of_large_card
+    rotation ambient htwo root h (stateBound (2 * h + 1) (Fintype.card M)) marks hradius hlarge
+  exact exists_seamPair_of_marked_nodes rotation ambient (2 * h + 1)
+    marks mark nodes hnest hmarks hstar
 
 namespace SeamPair
 variable {rotation : Data G} {marks : Finset V} {mark : M → G.Dart} {w : ℕ}

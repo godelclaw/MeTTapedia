@@ -180,16 +180,16 @@ def spacedIndex (w r : ℕ) : Fin (r + 1) ↪o Fin ((6 * w + 1) * r + 1) where
 def markedCotreeVertexBound (h t n : ℕ) : ℕ :=
   4 ^ ((6 * (2 * h + 1) + 1) * ((t + 1) * n) + 1 + 2 * (2 * h + 1))
 
-/-- Construct connected-shore nodes from spherical geometry and large size.
-The marks apply to the actual majority sides consumed by the Count nodes,
-not merely to the preliminary fundamental vertex shores. -/
-theorem exists_marked_nodes_of_large_card (data : Data G)
+/-- Space a complete nested node chain and remove its marked transitions.
+This selection is independent of whether contours or cotree cuts supplied
+the nodes. Marks apply to the actual majority sides. -/
+theorem exists_marked_nodes_of_nested_nodes (data : Data G)
     (hclass : BridgelessSphericalCubicMapData data.toRotationSystem)
-    (htwo : OrbitFacesTwoSided data.toRotationSystem)
-    (root : OrbitFace data.toRotationSystem) (h n : ℕ) (marks : Finset V)
-    (hradius : ∀ f, (orbitFaceDualGraph data).dist f root ≤ h)
-    (hlarge : markedCotreeVertexBound h marks.card n < Fintype.card V) :
-    ∃ nodes : Fin (n + 1) → ConnectedShoreNode (G := G) (2 * h + 1) (2 * h + 1),
+    (w n : ℕ) (marks : Finset V)
+    (raw : Fin ((6 * w + 1) * ((marks.card + 1) * n) + 1) →
+      ConnectedShoreNode (G := G) w w)
+    (hraw : ∀ i j, i < j → (raw i).shore ⊂ (raw j).shore) :
+    ∃ nodes : Fin (n + 1) → ConnectedShoreNode (G := G) w w,
       (∀ i j, i < j → (nodes i).shore ⊂ (nodes j).shore) ∧
       (∀ i v, v ∈ marks → (majorityVertexSide G (nodes i).shore v ↔
         majorityVertexSide G (nodes 0).shore v)) ∧
@@ -198,10 +198,7 @@ theorem exists_marked_nodes_of_large_card (data : Data G)
         ¬ majorityVertexSide G (nodes i).shore v ∧
         ∀ e ∈ incidentEdgeFinset G v, e ∈ (nodes j).shore \ (nodes i).shore) := by
   classical
-  let w := 2 * h + 1
   let r := (marks.card + 1) * n
-  obtain ⟨raw, hraw⟩ := exists_nested_nodes_of_large_card_of_spherical data hclass htwo
-    root h ((6 * w + 1) * r + 1) hradius hlarge
   let spaced := fun i => raw (spacedIndex w r i)
   have hs : ∀ i j, i < j → (spaced i).shore ⊂ (spaced j).shore :=
     fun i j hij => hraw _ _ ((spacedIndex w r).strictMono hij)
@@ -232,6 +229,26 @@ theorem exists_marked_nodes_of_large_card (data : Data G)
   refine ⟨v, ?_, hvj, hvi, hstar⟩
   intro hv
   exact hvi ((hm i v hv).mpr ((hm j v hv).mp hvj))
+
+/-- Construct connected-shore nodes from spherical geometry and large size.
+The generic selection above supplies strict unmarked material. -/
+theorem exists_marked_nodes_of_large_card (data : Data G)
+    (hclass : BridgelessSphericalCubicMapData data.toRotationSystem)
+    (htwo : OrbitFacesTwoSided data.toRotationSystem)
+    (root : OrbitFace data.toRotationSystem) (h n : ℕ) (marks : Finset V)
+    (hradius : ∀ f, (orbitFaceDualGraph data).dist f root ≤ h)
+    (hlarge : markedCotreeVertexBound h marks.card n < Fintype.card V) :
+    ∃ nodes : Fin (n + 1) → ConnectedShoreNode (G := G) (2 * h + 1) (2 * h + 1),
+      (∀ i j, i < j → (nodes i).shore ⊂ (nodes j).shore) ∧
+      (∀ i v, v ∈ marks → (majorityVertexSide G (nodes i).shore v ↔
+        majorityVertexSide G (nodes 0).shore v)) ∧
+      (∀ i j, i < j → ∃ v, v ∉ marks ∧
+        majorityVertexSide G (nodes j).shore v ∧
+        ¬ majorityVertexSide G (nodes i).shore v ∧
+        ∀ e ∈ incidentEdgeFinset G v, e ∈ (nodes j).shore \ (nodes i).shore) := by
+  obtain ⟨raw, hraw⟩ := exists_nested_nodes_of_large_card_of_spherical data hclass htwo
+    root h ((6 * (2 * h + 1) + 1) * ((marks.card + 1) * n) + 1) hradius hlarge
+  exact exists_marked_nodes_of_nested_nodes data hclass (2 * h + 1) n marks raw hraw
 
 end
 end Mettapedia.GraphTheory.FourColor.SphericalMarkedCotreeChain

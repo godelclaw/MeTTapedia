@@ -33,9 +33,11 @@ variable {V : Type u} [Fintype V] [DecidableEq V]
 local instance : Fintype G.edgeSet := SimpleGraph.fintypeEdgeSet G
 local instance : DecidableEq G.edgeSet := Subtype.instDecidableEq
 
-/-- Construct the nodes from distance and absence of the ordered carrier. -/
-theorem exists_nested_nodes_of_no_orderedMesh (data : Data G)
-    (minimal : GraphBackedVertexMinimalTaitCounterexample data)
+/-- Construct the nodes from distance and absence of the ordered carrier.
+The construction needs spherical geometry, not minimality or zero Count. -/
+theorem exists_nested_nodes_of_no_orderedMesh_of_spherical (data : Data G)
+    (ambient : BridgelessSphericalCubicMapData data.toRotationSystem)
+    (htwo : GoertzelV24OrbitFaceTwoSided.OrbitFacesTwoSided data.toRotationSystem)
     (root far : OrbitFace data.toRotationSystem) (a b n : ℕ)
     (ha : 2 ≤ a) (hd : n * a ≤ (orbitFaceDualGraph data).dist root far)
     (hno : ¬ Nonempty (OrderedInjectiveMesh (toMultigraph data.toRotationSystem) a b)) :
@@ -49,14 +51,25 @@ theorem exists_nested_nodes_of_no_orderedMesh (data : Data G)
     exact hmul.trans hd
   have hcut (t : Fin n) : Nonempty (OrderedContourBond data root far
       (t.val * a) (t.val * a + a - 1) (3 * (orderedLinkageSize a b - 1))) :=
-    (exists_orderedMesh_or_contour_bond data minimal.toBridgelessSphericalCubicMapData
-      minimal.facesTwoSided root far (t.val * a) a b ha (hdepth t)).resolve_left hno
+    (exists_orderedMesh_or_contour_bond data ambient
+      htwo root far (t.val * a) a b ha (hdepth t)).resolve_left hno
   let cuts := fun t : Fin n => Classical.choice (hcut t)
-  have hnested := ordered_contour_bonds_nested data minimal.toBridgelessSphericalCubicMapData
-    minimal.facesTwoSided root far a n _ ha hd cuts
-  let nodes := fun t => (cuts t).toConnectedNode data minimal.toBridgelessSphericalCubicMapData
-    minimal.facesTwoSided root far (by have := hdepth t; omega) (by have := hdepth t; omega)
+  have hnested := ordered_contour_bonds_nested data ambient htwo root far a n _ ha hd cuts
+  let nodes := fun t => (cuts t).toConnectedNode data ambient
+    htwo root far (by have := hdepth t; omega) (by have := hdepth t; omega)
   exact ⟨nodes, fun i j hij => (hnested i j hij).2⟩
+
+/-- The original target-class interface is a specialization of the geometric supplier. -/
+theorem exists_nested_nodes_of_no_orderedMesh (data : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample data)
+    (root far : OrbitFace data.toRotationSystem) (a b n : ℕ)
+    (ha : 2 ≤ a) (hd : n * a ≤ (orbitFaceDualGraph data).dist root far)
+    (hno : ¬ Nonempty (OrderedInjectiveMesh (toMultigraph data.toRotationSystem) a b)) :
+    ∃ nodes : Fin n → ConnectedShoreNode (G := G)
+        (3 * (orderedLinkageSize a b - 1)) (3 * (orderedLinkageSize a b - 1)),
+      ∀ i j, i < j → (nodes i).shore ⊂ (nodes j).shore :=
+  exists_nested_nodes_of_no_orderedMesh_of_spherical data
+    minimal.toBridgelessSphericalCubicMapData minimal.facesTwoSided root far a b n ha hd hno
 
 /-- No ordered mesh implies an explicit full face-dual diameter bound. -/
 theorem dual_distance_lt_of_no_orderedMesh (data : Data G)
