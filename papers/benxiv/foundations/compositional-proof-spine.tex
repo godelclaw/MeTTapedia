@@ -12332,8 +12332,100 @@ connected facial geometry.
 
 \paragraph{Exact remaining metric bridge.}
 The estimate $d(f,r)+d(g,r)\leq 2h$ concerns selected dual paths.
-Identifying each \emph{complete} primal fundamental cut with the dual
-path plus its extra edge, and thus proving its width is at most $2h+1$,
-is still the next lemma.  Long nested cyclic shores, the global supply
+The following subsection identifies each \emph{complete} primal
+fundamental cut by original-edge parity and proves its width is at most
+$2h+1$.  Long nested cyclic shores, the global supply
 consumer, fixed-mesh exclusion and the generating base are not discharged
 by this construction.  The fixed ledger remains $57/100$.
+
+\subsection{Complete cotree cuts without a face-size bound}
+\label{sec:complete-cotree-cuts}
+
+Let $T_D$ be the selected original edges of the constructed dual BFS
+tree, rooted at the quotient face $r$, and let $T_P=G\setminus T_D$ be
+its primal spanning-tree complement.  Incidence parity below is computed
+on original edges.  Different edges joining the same two quotient faces
+are never identified.
+
+\begin{theorem}[parity identifies the entire fundamental cut]
+\Sverified{Mettapedia.GraphTheory.FourColor.FiniteEdgeParity.boundary_symmDiff}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalCotreeCutWidth.exists_root_support}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalCotreeCutWidth.eq_of_boundary_eq_of_sdiff_eq}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalCotreeCutWidth.crossing_eq_fundamental_support}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalCotreeCutWidth.crossing_card_le_of_singleton_sdiff}
+Suppose a full primal cut $C$ meets $T_P$ in just the original edge $e$,
+whose incident quotient faces are $f,g$.  With $P_f,P_g\subseteq T_D$
+the constructed root-path supports,
+\[
+ C=P_f\mathbin{\triangle}P_g\mathbin{\triangle}\{e\},
+ \qquad |C|\leq d(f,r)+d(g,r)+1\leq 2h+1
+\]
+whenever every face has root distance at most $h$.
+\end{theorem}
+
+The finite incidence boundary takes values in $\mathbb Z/2\mathbb Z$;
+symmetric difference adds these boundaries.  Rank induction constructs
+$P_f$ with at most $d(f,r)$ original edges and boundary supported exactly
+at $f,r$ (with cancellation when they coincide).  The two root boundaries
+and the boundary of $e$ cancel.  Full primal cuts also have zero boundary,
+by literal facial-transition parity.  Their symmetric difference is an
+even edge set supported entirely in the ranked forest $T_D$, so the
+previous forest-parity lemma makes it empty.  This proves equality of
+the whole cut, not merely containment of a local carrier, and needs no
+unique-shared-edge hypothesis.
+
+\begin{theorem}[constructing both complete connected shores]
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalCotreeShore.reachable_or_reachable_after_delete}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalCotreeShore.exists_bounded_fundamental_shore}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalCotreeShore.exists_bounded_cotree_shore}
+For each edge $uv$ of the actual primal cotree $T_P$, deleting $uv$
+constructs a side containing $u$ and avoiding $v$.  Both this side and its
+complement induce connected subgraphs of the original graph $G$.  Its
+complete original cut meets $T_P$ in exactly $uv$ and has at most $2h+1$
+edges.
+\end{theorem}
+
+The side is the reachable region of $u$ in $T_P-uv$.  Tree acyclicity
+separates $u$ and $v$, while connectedness of $T_P$ puts every vertex in
+one of their two reachable regions after deletion.  These regions give
+connected original shores.  Every retained tree edge stays within a
+region, so the full cut has precisely one non-$T_D$ edge.  The preceding
+parity theorem now applies to the constructed cut.
+
+\begin{theorem}[mesh-free target-class width, with no face-size premise]
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalCotreeShore.exists_bounded_cotree_shore_of_no_injectiveMesh}
+In a graph-backed vertex-minimal counterexample with no vertex-injective
+$a\times b$ mesh, $a\geq2$, every edge of the constructed primal cotree
+supplies such a pair of connected shores of width at most
+\[
+ W(a,b)=2\bigl(N(3(b-1))+1\bigr)a+1,
+ \qquad
+ N(w)=(6w+1)\sum_{j=0}^{w}j!\,2^{3^j}.
+\]
+\end{theorem}
+
+Here $N$ is the already proved normalized contour-state bound.  Its
+mesh-free dual-distance consequence supplies the root-radius premise of
+the generic cotree construction.  The width $W$ is an explicit
+natural-number expression independent of face sizes and vertex count.
+The mesh-exclusion premise is retained visibly; this theorem does not
+establish fixed-mesh exclusion.
+
+The original preregistered spherical tree--cotree gate was replayed
+successfully.  An additional original-edge parity regression exhausts
+all labelled trees on one through five vertices, every root and every
+possible extra endpoint pair, including parallel copies of tree edges.
+The calibrated tree counts are $1,1,3,16,125$.  It checks $6663$
+fundamental supports, including $2712$ parallel-edge cases, and $206368$
+subset-boundary comparisons.  No Tait or ring colouring is enumerated.
+The script is \texttt{tools/fourcolor/v24\_fundamental\_parity\_gate.py},
+with its replay receipt under \texttt{results/fourcolor/}.
+
+\paragraph{Remaining supply step.}
+The complete cuts now exist with a uniform target-class width.
+To discharge the global geometric obligation, large vertex count must
+still produce sufficiently many strictly nested cuts with cycles on both
+shores, and those cuts must feed the exact-support node constructor and
+state bound.  That extraction, fixed-mesh exclusion, the raw
+decomposition consumer and the generating-base audit remain open.
+The fixed ledger remains $57/100$.
