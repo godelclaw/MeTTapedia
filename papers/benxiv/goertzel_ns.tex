@@ -4236,11 +4236,68 @@ summable second-order energy, and the displayed nonlinear coefficient
 equation. The future evolution and nonlinear convergence are outputs, not
 hypotheses.
 
-This closes the local infinite coefficient-equation construction. Spatial
-PDE reconstruction with sufficient regularity for the material strain
-identities, and the intrinsic all-time alignment/pressure/weight estimates,
-remain to be proved. In particular, the local inequality $E'\le C_\nu E^2$
-does not provide the global continuation estimate.
+This closes the local infinite coefficient-equation construction. The next
+step supplies its continuous spatial realization. Higher regularity for the
+material strain identities and the intrinsic all-time alignment/pressure/weight
+estimates remain to be proved. In particular, the local inequality
+$E'\le C_\nu E^2$ does not provide the global continuation estimate.
+
+\paragraph{Joint spatial reconstruction and actual Fourier recovery.}
+The second-order bound also suffices to reconstruct a continuous spatial
+field without the stronger pointwise second-moment envelope. For a finite
+set $F\subset\mathbb Z^3$, put
+\[
+ R_B(F)=\sqrt B\,
+   \sqrt{\,L-\sum_{k\in F}(1+|k|)^{-4}\,}.
+\]
+The expression under the square root is nonnegative and tends to zero as
+$F$ increases. For every finite $M$ disjoint from $F$, weighted
+Cauchy--Schwarz gives
+\[
+ \sum_{k\in M}|a_k(t)|
+ \le
+ \left(\sum_{k\in M}(1+|k|)^{-4}\right)^{1/2}
+ \left(\sum_{k\in M}(1+|k|)^4|a_k(t)|^2\right)^{1/2}
+ \le R_B(F).
+\]
+\texttt{PancakeSobolevAbsoluteTail} proves this estimate uniformly over
+every field satisfying the same finite-partial-energy bound.
+
+\texttt{PancakeSobolevSpaceTime} uses it in the Banach space of bounded
+continuous functions on $[0,T]\times\mathbb T^3$. The finite Fourier tails
+are uniformly small, so the series converges in that space. Its sum $U$
+is jointly continuous and, componentwise,
+\[
+ U_i(t,x)=\sum_k e^{2\pi i k\cdot x}a_{k,i}(t),\qquad
+ \sup_{t,x}\left|U_i(t,x)-\sum_{k\in F}e^{2\pi i k\cdot x}a_{k,i}(t)\right|
+       \le R_B(F).
+\]
+The argument proves summability of the time--space function series from
+small finite tails; it does not assume summability of the individual
+time-supremum coefficient bounds.
+
+Absolute coefficient summability at each time permits termwise Fourier
+integration. Character orthogonality, formalized in
+\texttt{PancakeSpatialCoefficientRecovery}, gives
+$\widehat{U(t)}(q)=a_q(t)$ for every $q$.
+\texttt{PancakeLocalSpatialVelocity} then proves reality of $U$, exact
+matching $U(0)=u_0$ for the original physical input, zero mean and
+incompressibility in Fourier form, and the nonlinear evolution equation
+for the actual Fourier integrals of $U$.
+
+Finally, \texttt{PancakeGalerkinSpatialLimit} combines two uniform tails
+with the finitely many converging coefficient paths between them. The
+same constructed Galerkin subsequence therefore satisfies
+\[
+ \sup_{(t,x)\in[0,T]\times\mathbb T^3}
+       |(U_{M_{\phi(n)}})_i(t,x)-U_i(t,x)|\longrightarrow0
+       \qquad (i=1,2,3).
+\]
+Thus the local coefficient construction now has a jointly continuous real
+spatial realization and a strong spatial approximation theorem. Higher
+spatial differentiability, the corresponding pointwise PDE and material
+strain identities, and the all-time critical estimates remain necessary;
+joint continuity alone is not a smooth global Navier--Stokes theorem.
 
 
 
