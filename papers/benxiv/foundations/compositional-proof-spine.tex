@@ -13012,4 +13012,83 @@ derive that condition from the source's wall-free hypotheses.  Preserving
 named edge pairs also does not by itself prove preservation of designated
 face orbits or the joint support under arbitrary prescribed frozen colours.
 Those target-specific transports and the global D1b/D1c implications remain
-open.  No whole fixed ledger row is newly discharged: $57/100$.
+open. The next construction removes the separately supplied radius bound
+under ordered-mesh exclusion for the closed-map Count system. No whole
+fixed ledger row is newly discharged: $57/100$.
+
+\subsection{Ordered mesh or an actual smaller Count instance}
+\label{sec:meshfree-full-seam}
+
+The complete contour and cotree constructions can be combined before
+minimality is invoked. This matters because deriving a radius bound from
+minimality and then invoking a radius-dependent supplier does not exhibit
+a reduction on arbitrary large zero-Count instances.
+
+Let $a\geq2$, fix an ordered-mesh width $b$, and let $s$ vertices and $t$
+ambient darts be designated. Using $Q$ from
+Section~\ref{sec:marked-seam-positions}, define
+\[
+ c=3b^{2^a},\qquad
+ N=(6c+1)(s+1)Q(c,t)+1,\qquad H=aN,\qquad k=2H+1,
+\]
+and the explicit size threshold
+\[
+ V_{\mathrm{seam}}(a,b,s,t)
+   =4^{(6k+1)(s+1)Q(k,t)+1+2k}.
+\]
+Every connected bridgeless spherical cubic graph with two-sided face
+orbits and more than this many vertices supplies either an actual
+$a$-by-$b$ ordered injective mesh, or a full marked seam of width at most
+$\max(c,k)$. The latter includes two connected and coconnected literal
+shores, their common exact state and boundary width, and a strict unmarked
+cubic star between them. No radius, chain, or matching is an input.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalMeshFreeSeam.exists_orderedMesh_or_seamPair}
+
+\paragraph{Construction, not a minimality contradiction.}
+Choose a root face. If some face has distance greater than $H$, use the
+mesh-or-complete-bond alternative in $N$ disjoint windows of $a$ depth
+levels. In the absence of the ordered mesh, the resulting full bonds
+give strictly nested connected-shore nodes of width $c$.
+The contour-node supplier requires only the ambient spherical class;
+its former minimal-counterexample interface is retained as a specialization.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalOrderedMeshReduction.exists_nested_nodes_of_no_orderedMesh_of_spherical}
+Spacing by $6c+1$ gives strict cubic material, and a window avoiding all
+marked transitions leaves $Q(c,t)+1$ nodes. The same full marked-state
+pigeonhole used for cotree nodes supplies the seam.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalMarkedCotreeChain.exists_marked_nodes_of_nested_nodes}
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedCotreeSeam.exists_seamPair_of_marked_nodes}
+
+Otherwise every face has distance at most $H$ from the root. The existing
+marked cotree theorem then applies directly at width $k$ using the displayed
+size threshold. Thus mesh exclusion alone selects one of these two
+constructions; it need not imply that the graph has small dual radius.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalMeshFreeSeam.exists_seamPair_of_no_orderedMesh}
+
+If ambient Count is zero, the produced seam feeds the existing physical
+replacement theorem. For designated darts based at marked vertices and
+closed under edge reversal, this returns a strictly smaller connected,
+bridgeless spherical cubic zero-Count map, with those original edge
+partners still present.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalMeshFreeSeam.exists_marked_replacement_of_no_orderedMesh}
+Equivalently, every sufficiently large zero-Count map has an ordered mesh
+or an actual smaller zero-Count map. The mesh is an output alternative,
+not an assumed external witness or a configuration catalogue.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalMeshFreeSeam.exists_orderedMesh_or_marked_replacement}
+
+\paragraph{Verification and scope.}
+The complete-contour nesting and marked-cotree geometry receipts were
+replayed without modification. The branch gate additionally checks $3500$
+radius-boundary cases and $1750$ spaced windows, including equality and
+both adjacent sides of the radius threshold. Its receipt is
+\texttt{results/fourcolor/v24\_meshfree\_seam\_branch\_gate.json}.
+These are generic geometric and arithmetic controls, not zero-Count
+examples or colouring enumerations; the universal claim is the Lean theorem.
+
+The closed-map direct Count consumer has no designated-hole or frozen-colour
+input. This result therefore does not assert the corresponding transport
+for the more general boundary-conditioned species in
+Proposition~\ref{prop:target-forced-cut-chain}. Nor does it exclude the
+ordered mesh, identify its absence with every informal wall-free premise,
+or verify the generating base. The former smaller target-class bounds are
+not replaced by this coarser constructive bound. Fixed-wall exclusion and
+the full D1b/D1c obligations remain open; the ledger stays at $57/100$.

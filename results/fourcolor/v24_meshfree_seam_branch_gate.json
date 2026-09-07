@@ -1,0 +1,6 @@
+{
+  "schema": "fourcolor-v24-meshfree-seam-branch-v1",
+  "branch_boundary_checks": 3500,
+  "spacing_windows": 1750,
+  "outcome": "passed"
+}
