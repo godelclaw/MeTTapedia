@@ -11886,3 +11886,105 @@ alternative, uncross a family of separators, or assemble branch
 decompositions with their complete recursive seams.  No global
 counterexample supplier, fixed-mesh exclusion, or route-native base is
 claimed.  The unchanged ledger remains $57/100$.
+
+\subsection{Integral flow constructs the contour separator/linkage alternative}
+\label{sec:integral-contour-linkage}
+
+\begin{theorem}[finite integral max-flow/min-cut]
+\Sverified{Mettapedia.GraphTheory.FourColor.IntegralFlow.Flow.exists_max_flow_min_cut}
+For a finite directed network with natural capacities and distinct source
+and sink, there exist an integer skew flow and a source--sink cut whose
+values agree.  This flow maximizes the value among all feasible integer
+flows, and this cut minimizes capacity among all source--sink cuts.
+\end{theorem}
+
+The proof uses boundedness of attainable integer flow values, not a
+real-flow rounding theorem.  A simple residual route would augment a
+maximizer by one; hence the sink is outside its residual-reachable shore.
+Every outward arc of that shore is saturated.  Conservation and internal
+skew cancellation identify its entire cut capacity with the flow value.
+The existence proof uses classical finite mathematics; it does not claim
+that the executable gate's search algorithm has been verified in Lean.
+
+\begin{theorem}[positive-route extraction and unit-gate exclusion]
+\Sverified{Mettapedia.GraphTheory.FourColor.IntegralFlow.Flow.exists_positive_route}
+\Sverified{Mettapedia.GraphTheory.FourColor.IntegralFlow.Flow.exists_routes}
+\Sverified{Mettapedia.GraphTheory.FourColor.IntegralFlow.Route.unit_gate_disjoint}
+An integer flow of value at least $m$ supplies $m$ simple source--sink
+routes using only positive-capacity arcs.  On each arc with zero reverse
+capacity, their total signed usage is bounded by the original flow on
+that arc.  Consequently two such routes cannot both use a unit-capacity
+arc whose reverse capacity is zero.
+\end{theorem}
+
+A positive-valued flow reaches the sink through positive-flow arcs:
+otherwise its reachable shore has nonpositive outward flow, contradicting
+conservation.  Subtracting a simple positive route leaves a feasible
+integer flow with value smaller by one.  Iteration proves the aggregate
+usage bound.  The zero-reverse-capacity condition is essential to the
+nonnegativity of each route's usage on a given gate.
+
+\begin{theorem}[full-ambient vertex separator/linkage alternative]
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSplitCut.separates_of_small_cut}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSplitCut.decode_route}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSplitCut.exists_linkage_of_flow}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSplitCut.Linkage.le_separator}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSplitCut.exists_linkage_or_separator}
+For any finite simple graph $G$, terminal sets $A,B$ and natural number
+$k$, either there are $k$ pairwise vertex-disjoint $A$--$B$ paths, or a
+vertex set $X$ with $|X|<k$ meets every $A$--$B$ walk.  Endpoints count
+towards disjointness and may belong to $X$.  Every such separator has
+cardinality at least the size of any such linkage.  Neither connectivity
+nor planarity is assumed here.
+\end{theorem}
+
+Each original vertex is split into an entry and exit joined by a unit
+gate, including every terminal.  Source, sink and original adjacency
+connectors have capacity $k$.  A cut of capacity less than $k$ cannot
+cross a connector, so its crossing gates meet every original walk.
+Otherwise the integral flow supplies $k$ simple routes.  Decoding the
+entry--exit alternation produces walks in the original graph; every
+visited vertex uses its own gate.  Removing repeated vertices preserves
+the gate witnesses, and the unit-gate bound proves vertex disjointness.
+No original adjacency is omitted, even if it lies outside a chosen
+geometric band.
+
+\begin{theorem}[constructed alternative between the spherical contours]
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.exists_linkage_or_ordered_bond}
+In the spherical cubic setting of Section~\ref{sec:contour-separator-bonds},
+take two distinct depths below $d_H(r,z)$ and $k\ge1$.  Either their
+complete mixed frontiers are joined by $k$ vertex-disjoint ambient paths,
+or there is a finite deleted region retaining the entire first frontier
+and excluding the second, whose two induced shores are connected and
+whose full edge boundary and exposed-port carrier both have size at most
+$3(k-1)$.  Its touched-face uniqueness and opposite first-return boundary
+orders are proved on that constructed region.
+\end{theorem}
+
+Here neither a separator nor a linkage is a supplied premise.  The small
+branch composes the new alternative with the preceding component-filling
+construction.  The large branch supplies actual paths in the complete
+ambient graph, not merely an optimum value of a flow problem.
+
+The preregistered integral gate exhausted all $4164$ directed loop-free
+unit-capacity networks on $2$ through $4$ vertices, comparing residual
+search with exhaustive cut capacities.  A six-vertex control requires
+reverse residual cancellation.  Positive-flow subtraction was separately
+checked throughout that population before its formalization.  The
+vertex-splitting gate exhausted all labelled simple graphs on $2$ through
+$4$ vertices, all ordered disjoint nonempty terminal sets, and thresholds
+$1$ through $|V|+1$: $16{,}396$ cases, with $13{,}480$ small cuts and
+$2916$ large-flow cases.  It independently exhausts original simple-path
+packings and vertex separators, decodes the extracted routes, and checks
+their vertex disjointness.  Both receipts replay the fixed populations:
+\texttt{tools/fourcolor/v24\_integer\_flow\_gate.py} and
+\texttt{tools/fourcolor/v24\_vertex\_split\_gate.py}, with corresponding
+JSON receipts under \texttt{results/fourcolor/}.  These are generic
+executable controls, not Lean-instantiated examples or zero-Count graphs.
+
+The remaining global steps are to connect the linkage to the full family
+of intermediate contours, make the small cuts compatible, and assemble
+the recursive decomposition with complete seam accounting.  The cubic
+factor three cannot be transferred unchanged to contracted hubs.  No
+global supply theorem, fixed-mesh exclusion or explicit generating base
+is claimed by this checkpoint; the fixed ledger remains $57/100$.
