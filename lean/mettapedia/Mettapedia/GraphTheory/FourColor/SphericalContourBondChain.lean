@@ -49,21 +49,20 @@ structure OrderedContourBond (data : Data G) (root far : OrbitFace data.toRotati
   opposite_order : retainedRegionBoundarySuccessor data.toRotationSystem (deletedRegionKeep deleted) =
     (deletedRegionBoundarySuccessor data.toRotationSystem deleted)⁻¹
 
-/-- Large dual distance in an exact mesh-free map constructs all n bonds,
-their complete width/order receipts, and both forms of strict nesting. -/
-theorem exists_nested_contour_bonds (data : Data G)
+/-- Independently constructed bonds in separated depth windows are strictly
+nested. This geometric step is independent of which mesh excludes a linkage. -/
+theorem ordered_contour_bonds_nested (data : Data G)
     (hclass : BridgelessSphericalCubicMapData data.toRotationSystem)
     (htwo : OrbitFacesTwoSided data.toRotationSystem)
-    (root far : OrbitFace data.toRotationSystem) (a b n : ℕ)
+    (root far : OrbitFace data.toRotationSystem) (a n w : ℕ)
     (ha : 2 ≤ a) (hd : n * a ≤ (orbitFaceDualGraph data).dist root far)
-    (hno : ¬ ∃ M : Mesh (toMultigraph data.toRotationSystem) a b, IsVertexInjective M) :
-    ∃ cuts : (t : Fin n) → OrderedContourBond data root far
-        (t.val * a) (t.val * a + a - 1) (3 * (b - 1)),
-      ∀ i j, i < j →
-        {v | deletedRegionKeep (cuts i).deleted v} ⊂
-          {v | deletedRegionKeep (cuts j).deleted v} ∧
-        incidentEdgeShore G (deletedRegionKeep (cuts i).deleted) ⊂
-          incidentEdgeShore G (deletedRegionKeep (cuts j).deleted) := by
+    (cuts : (t : Fin n) → OrderedContourBond data root far
+      (t.val * a) (t.val * a + a - 1) w) :
+    ∀ i j, i < j →
+      {v | deletedRegionKeep (cuts i).deleted v} ⊂
+        {v | deletedRegionKeep (cuts j).deleted v} ∧
+      incidentEdgeShore G (deletedRegionKeep (cuts i).deleted) ⊂
+        incidentEdgeShore G (deletedRegionKeep (cuts j).deleted) := by
   classical
   have hdepth (t : Fin n) : t.val * a + a ≤ (orbitFaceDualGraph data).dist root far := by
     have hmul := Nat.mul_le_mul_right a (Nat.succ_le_of_lt t.isLt)
@@ -71,14 +70,6 @@ theorem exists_nested_contour_bonds (data : Data G)
       t.val * a + a = (t.val + 1) * a := by simp [Nat.add_mul]
       _ ≤ n * a := hmul
       _ ≤ _ := hd
-  have hcut (t : Fin n) : Nonempty (OrderedContourBond data root far
-      (t.val * a) (t.val * a + a - 1) (3 * (b - 1))) := by
-    obtain ⟨deleted, hfirst, hlast, hconn, hcomp, hedge, hport, hface, horder⟩ :=
-      exists_ordered_bond_of_no_injectiveMesh data hclass htwo root far
-        (t.val * a) a b ha (hdepth t) hno
-    exact ⟨⟨deleted, hfirst, hlast, hconn, hcomp, hedge, hport, hface, horder⟩⟩
-  let cuts := fun t : Fin n => Classical.choice (hcut t)
-  refine ⟨cuts, ?_⟩
   intro i j hij
   have hmul := Nat.mul_le_mul_right a (Nat.succ_le_of_lt hij)
   simp only [Nat.succ_mul] at hmul
@@ -96,6 +87,35 @@ theorem exists_nested_contour_bonds (data : Data G)
   exact NestedCyclicCutStrictness.incidentEdgeShore_ssubset
     (fun _ h => hstrict.subset h) ⟨x, hx, hxold⟩ ⟨y, y.property⟩
     (cuts i).complement_connected.preconnected
+
+/-- Large dual distance in an exact mesh-free map constructs all n bonds,
+their complete width/order receipts, and both forms of strict nesting. -/
+theorem exists_nested_contour_bonds (data : Data G)
+    (hclass : BridgelessSphericalCubicMapData data.toRotationSystem)
+    (htwo : OrbitFacesTwoSided data.toRotationSystem)
+    (root far : OrbitFace data.toRotationSystem) (a b n : ℕ)
+    (ha : 2 ≤ a) (hd : n * a ≤ (orbitFaceDualGraph data).dist root far)
+    (hno : ¬ ∃ M : Mesh (toMultigraph data.toRotationSystem) a b, IsVertexInjective M) :
+    ∃ cuts : (t : Fin n) → OrderedContourBond data root far
+        (t.val * a) (t.val * a + a - 1) (3 * (b - 1)),
+      ∀ i j, i < j →
+        {v | deletedRegionKeep (cuts i).deleted v} ⊂
+          {v | deletedRegionKeep (cuts j).deleted v} ∧
+        incidentEdgeShore G (deletedRegionKeep (cuts i).deleted) ⊂
+          incidentEdgeShore G (deletedRegionKeep (cuts j).deleted) := by
+  classical
+  have hcut (t : Fin n) : Nonempty (OrderedContourBond data root far
+      (t.val * a) (t.val * a + a - 1) (3 * (b - 1))) := by
+    have hdepth : t.val * a + a ≤ (orbitFaceDualGraph data).dist root far := by
+      have hmul := Nat.mul_le_mul_right a (Nat.succ_le_of_lt t.isLt)
+      simp only [Nat.succ_mul] at hmul
+      exact hmul.trans hd
+    obtain ⟨deleted, hfirst, hlast, hconn, hcomp, hedge, hport, hface, horder⟩ :=
+      exists_ordered_bond_of_no_injectiveMesh data hclass htwo root far
+        (t.val * a) a b ha hdepth hno
+    exact ⟨⟨deleted, hfirst, hlast, hconn, hcomp, hedge, hport, hface, horder⟩⟩
+  let cuts := fun t : Fin n => Classical.choice (hcut t)
+  exact ⟨cuts, ordered_contour_bonds_nested data hclass htwo root far a n _ ha hd cuts⟩
 
 end
 end Mettapedia.GraphTheory.FourColor.SphericalContourSeparators

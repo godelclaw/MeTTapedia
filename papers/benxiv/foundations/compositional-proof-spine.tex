@@ -2726,8 +2726,11 @@ structure field.  The permissive fixed-mesh proposition remains a valid
 stronger alternative, but it is not imposed on the wall-facing proof.
 The supplier in Section~\ref{sec:cotree-path-size} discharges the
 \emph{permissive}-mesh decomposition premise only.  Absence of ordered
-meshes does not imply absence of permissive meshes, so that result does
-not discharge the ordered supplier stated here.
+meshes does not imply absence of permissive meshes.  Section~\ref{sec:ordered-mesh-supply}
+closes the ordered supplier separately: it constructs ordered meshes by
+first-hit ordering and simultaneous monotone thinning, then applies the
+same complete-cut descent with an explicit larger width.  Fixed ordered
+exclusion and the actual base remain open.
 
 There is an exact matching-theoretic formulation of the colour obstruction
 which will be useful below.  It is global rather than a bounded-radius
@@ -6201,12 +6204,15 @@ Thus the checked implication is
  \text{exclusion of one sufficiently large injective wall mesh}.
 \]
 
-The reverse implication still uses the planar wall/grid theorem: exclusion
-of one fixed wall bounds width and thereby supplies the raw branch
-decomposition.  The proposition does not claim that theorem and does not
-exclude a wall directly from zero Count.  It makes precise that the sole
-route-specific high-width task is fixed-wall exclusion for least
-counterexamples; all mathematics after a raw width bound is already checked.
+For arbitrary planar graphs, the reverse implication is the wall/grid
+theorem: exclusion of one fixed wall bounds width.  For the exact
+least-counterexample class here, Sections~\ref{sec:cotree-path-size}
+and~\ref{sec:ordered-mesh-supply} now supply the corresponding raw
+decomposition directly, for permissive and ordered meshes respectively.
+They use the target's checked Count descent, so they are not a proof of the
+general planar grid theorem.  Neither excludes a fixed wall directly from
+zero Count.  Fixed-wall exclusion remains the route-specific high-width
+task; its width-to-descent consumer is checked.
 
 The numerical mismatch with the direct Count state is also exact.  A literal
 width-\(k\) cut has \(3^k\) Tait boundary words, hence its unminimized
@@ -12510,7 +12516,8 @@ Equivalently, any larger instance in that exact target class supplies a
 vertex-injective permissive $a\times b$ mesh.
 \Sverified{Mettapedia.GraphTheory.FourColor.SphericalCotreePathChain.exists_injectiveMesh_of_large_card}
 This positive structural alternative assumes neither a chain nor mesh
-absence, but its mesh has not been upgraded to an ordered rectangular one.
+absence.  Its mesh is permissive; the ordered upgrade, at a larger explicit
+threshold, is proved in Section~\ref{sec:ordered-mesh-supply}.
 
 \begin{proposition}[the permissive-mesh raw premise is discharged]
 \Sverified{Mettapedia.GraphTheory.FourColor.SphericalMeshFreeRawDecomposition.rawDecompositionOfNoInjectiveMesh}
@@ -12555,9 +12562,124 @@ controls, not claimed zero-Count examples; no colouring or configuration
 catalogue is enumerated.
 
 The wall-facing \emph{ordered}-mesh exclusion hypothesis is weaker than
-permissive-mesh exclusion, and its decomposition supplier remains open.
+permissive-mesh exclusion.  The next section supplies its decomposition
+premise without silently strengthening that exclusion hypothesis.
 The boundary/frozen-data generality of
 Proposition~\ref{prop:target-forced-cut-chain}, fixed-mesh exclusion,
 optimized physical closure and the actual generating base are not
 discharged here.  Thus no complete fixed ledger row is newly closed:
 the score remains $57/100$, despite the proved mathematical state change.
+
+\subsection{First-hit ordering closes the ordered-mesh supplier}
+\label{sec:ordered-mesh-supply}
+
+\begin{lemma}[simultaneous monotone thinning]
+\Sverified{Mettapedia.GraphTheory.FourColor.SimultaneousMonotoneThinning.exists_orderEmbedding}
+Let $f_1,\ldots,f_a$ be injective natural-number coordinates on an ordered set of $q$
+indices.  If $q>b^{2^a}$, there is an increasing selection of $b+1$
+indices on which each $f_i$ is strictly increasing or strictly decreasing.
+The direction may differ between coordinates.
+\end{lemma}
+
+The proof iterates the finite Erd\H{o}s--Szekeres theorem already in
+mathlib's \texttt{Archive.Wiedijk100Theorems.AscendingDescendingSequences}.
+At each step the increasing embedding of the surviving indices preserves
+all earlier coordinate orders.  The induction squares the threshold;
+it does not assume that the original row orders agree.
+
+\begin{lemma}[ordered first encounters with full contours]
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.exists_strictMono_frontier_hits}
+A full-ambient walk from distance contour $\ell$ to contour
+$\ell+a-1$ has strictly increasing first-hit positions on the $a$
+consecutive contours.  Repeated encounters and excursions outside the
+displayed band are permitted.
+\end{lemma}
+
+Apply the previously checked intermediate-contour crossing theorem to
+the prefix ending at the first encounter with a later contour.  It must
+already meet each earlier one.  Distinct complete distance frontiers
+share no vertices, so the first-hit positions are strictly ordered.
+A simple contour cycle becomes a simple row path by removing its first
+edge; all its vertices remain, including the old start at the path's end.
+The walk-to-multigraph adapter preserves path-vertex injectivity.
+\Sverified{Mettapedia.GraphTheory.FourColor.RotationWalkMeshPath.cycle_tail_support}
+\Sverified{Mettapedia.GraphTheory.FourColor.RotationWalkMeshPath.vert_injective_of_isPath}
+
+\begin{theorem}[ordered mesh or complete bounded bond]
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.exists_orderedMesh_of_contour_linkage}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.exists_orderedMesh_or_contour_bond}
+Put $q(a,b)=b^{2^a}+1$ and $c(a,b)=3(q(a,b)-1)$.
+In a bridgeless spherical cubic instance, a window of $a\ge2$
+consecutive full distance contours supplies either an ordered injective
+$a\times b$ mesh or a complete contour bond of width at most $c(a,b)$.
+The bond has both original shores connected, bounded exposed-port count,
+unique boundary-face incidences and inverse opposite first-return orders.
+\end{theorem}
+
+The existing ambient linkage--separator alternative is used at size $q$.
+For the linkage branch, take the first-hit vertices on each column and
+their unique positions on each opened simple row.  Distinct columns give
+injective row-position coordinates.  The thinning lemma selects common
+columns; reverse each decreasing row and retain $b$ of the selected
+$b+1$ columns.  Both branch-position orders and every field of the
+existing \texttt{OrderedInjectiveMesh} are then proved.
+\Sverified{Mettapedia.GraphTheory.FourColor.OrderedContourExtraction.exists_orderedMesh_of_paths}
+No unique-intersection claim is made: the carrier permits additional
+row--column intersections or shared path segments, as required by cubic
+wall representations.  Each individual path is simple and each family
+is vertex-disjoint.  For the separator branch, the prior full-bond
+constructor retains all lateral attachments and its complete order data.
+
+\begin{theorem}[ordered-mesh-free size and raw decomposition]
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalOrderedMeshReduction.vertex_card_le_of_no_orderedMesh}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalOrderedMeshReduction.rawDecompositionOfNoOrderedInjectiveMesh}
+Write $N$ for the contour-state bound, and define
+\[
+ h_o(a,b)=(N(c(a,b))+1)a,\qquad w_o(a,b)=2h_o(a,b)+1,
+ \qquad U_o(a,b)=4^{N(w_o(a,b))+1+2w_o(a,b)}.
+\]
+For $a\ge2$, every graph-backed vertex-minimal Tait counterexample with
+no ordered injective $a\times b$ mesh has at most $U_o(a,b)$ vertices.
+The pre-existing \texttt{RawDecompositionOfNoOrderedInjectiveMesh}
+holds at parameters $(a,b,U_o(a,b))$.
+\end{theorem}
+
+Ordered-mesh absence forces a complete bond in every depth window.
+The geometry-only nesting argument is shared with the permissive branch.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.ordered_contour_bonds_nested}
+The terminal cycles supply cyclic shores and the literal Count nodes;
+their finite state bound gives full-dual diameter less than $h_o$.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalOrderedMeshReduction.exists_nested_nodes_of_no_orderedMesh}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalOrderedMeshReduction.dual_distance_lt_of_no_orderedMesh}
+The complete cotree-path construction then gives the displayed vertex
+bound, with no bounded-face or supplied-decomposition hypothesis.
+Equivalently, every larger instance in that target class supplies an
+actual ordered mesh.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalOrderedMeshReduction.exists_orderedMesh_of_large_card}
+The checked complete edge comb supplies the compatibility raw decomposition.
+
+Consequently fixed ordered-mesh exclusion and the route-native base
+through $B(U_o,U_o)$ suffice for the existing headline, without a separate
+decomposition premise.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalOrderedMeshReduction.combinatorialFourColorStatement_of_fixedOrderedMeshExclusion_and_base}
+The direct consumer needs only \texttt{TaitBaseVerifiedAt}$(U_o(a,b))$.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalOrderedMeshReduction.combinatorialFourColorStatement_of_fixedOrderedMeshExclusion_and_direct_base}
+Neither fixed exclusion nor that actual base audit is established here.
+
+\paragraph{Gate and scope.}
+Before formalization the ordered-contour gate replayed all eight original
+GP$(k,0)$ ambient receipts, checked increasing first hits and extracted
+simple ordered submeshes.  Independent order controls exhausted $34979$
+permutation families in one through three coordinates and $34$ seeded
+cases beyond the strict threshold.  Of $183$ checked depth traces,
+$179$ revisit a depth.  Negative controls reject arbitrary branch choices
+and weakening the strict threshold.  The existing full-cut/order and
+nesting receipts are unchanged.  These controls do not assert zero Count
+and enumerate no configuration colouring.
+
+This closes the exact ordered supplier, not the general planar grid
+theorem and not fixed ordered-mesh exclusion.  The full boundary/frozen
+target of Proposition~\ref{prop:target-forced-cut-chain}, optimized
+physical closure and the actual generating base remain open.  The fixed
+ledger therefore remains $57/100$; the completed implication is recorded
+without assigning partial credit to a larger unresolved row.

@@ -1,0 +1,209 @@
+{
+  "finite": {
+    "arbitrary_hit_negative": true,
+    "depth_traces": 183,
+    "permutation_families": {
+      "1": 5913,
+      "2": 15017,
+      "3": 14049
+    },
+    "strict_threshold_negative": true,
+    "threshold_random_cases": 34,
+    "traces_with_reentry": 179
+  },
+  "schema": "fourcolor-v24-ordered-contour-v1",
+  "spheres": [
+    {
+      "columns_after": 2,
+      "columns_before": 5,
+      "frequency": 1,
+      "row_directions": [
+        false,
+        false,
+        false
+      ],
+      "rows": 3,
+      "selected_columns": [
+        3,
+        4
+      ]
+    },
+    {
+      "columns_after": 6,
+      "columns_before": 10,
+      "frequency": 2,
+      "row_directions": [
+        true,
+        true,
+        false,
+        true
+      ],
+      "rows": 4,
+      "selected_columns": [
+        0,
+        1,
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    {
+      "columns_after": 8,
+      "columns_before": 15,
+      "frequency": 3,
+      "row_directions": [
+        true,
+        true,
+        false,
+        false,
+        true
+      ],
+      "rows": 5,
+      "selected_columns": [
+        0,
+        1,
+        8,
+        9,
+        11,
+        12,
+        13,
+        14
+      ]
+    },
+    {
+      "columns_after": 7,
+      "columns_before": 20,
+      "frequency": 4,
+      "row_directions": [
+        false,
+        false,
+        true,
+        true,
+        true,
+        false
+      ],
+      "rows": 6,
+      "selected_columns": [
+        4,
+        5,
+        6,
+        7,
+        10,
+        12,
+        13
+      ]
+    },
+    {
+      "columns_after": 6,
+      "columns_before": 20,
+      "frequency": 5,
+      "row_directions": [
+        false,
+        false,
+        false,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true
+      ],
+      "rows": 9,
+      "selected_columns": [
+        5,
+        6,
+        7,
+        10,
+        12,
+        13
+      ]
+    },
+    {
+      "columns_after": 7,
+      "columns_before": 25,
+      "frequency": 6,
+      "row_directions": [
+        false,
+        false,
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true
+      ],
+      "rows": 10,
+      "selected_columns": [
+        6,
+        7,
+        8,
+        12,
+        14,
+        15,
+        16
+      ]
+    },
+    {
+      "columns_after": 8,
+      "columns_before": 30,
+      "frequency": 7,
+      "row_directions": [
+        false,
+        false,
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true
+      ],
+      "rows": 11,
+      "selected_columns": [
+        7,
+        8,
+        9,
+        14,
+        16,
+        17,
+        18,
+        19
+      ]
+    },
+    {
+      "columns_after": 8,
+      "columns_before": 35,
+      "frequency": 8,
+      "row_directions": [
+        false,
+        false,
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        true
+      ],
+      "rows": 12,
+      "selected_columns": [
+        9,
+        10,
+        16,
+        18,
+        19,
+        20,
+        21,
+        22
+      ]
+    }
+  ]
+}
