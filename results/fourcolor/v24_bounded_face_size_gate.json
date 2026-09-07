@@ -1,0 +1,21 @@
+{
+  "schema": "fourcolor-v24-bounded-face-size-v1",
+  "population": [
+    {"frequency": 1, "vertices": 20, "faces": 12, "face_bound": 5, "dual_diameter": 3, "reach_checks": 48},
+    {"frequency": 2, "vertices": 80, "faces": 42, "face_bound": 6, "dual_diameter": 6, "reach_checks": 264},
+    {"frequency": 3, "vertices": 180, "faces": 92, "face_bound": 6, "dual_diameter": 9, "reach_checks": 840},
+    {"frequency": 4, "vertices": 320, "faces": 162, "face_bound": 6, "dual_diameter": 12, "reach_checks": 1866},
+    {"frequency": 5, "vertices": 500, "faces": 252, "face_bound": 6, "dual_diameter": 15, "reach_checks": 3612},
+    {"frequency": 6, "vertices": 720, "faces": 362, "face_bound": 6, "dual_diameter": 18, "reach_checks": 6088},
+    {"frequency": 7, "vertices": 980, "faces": 492, "face_bound": 6, "dual_diameter": 21, "reach_checks": 9624},
+    {"frequency": 8, "vertices": 1280, "faces": 642, "face_bound": 6, "dual_diameter": 24, "reach_checks": 14250}
+  ],
+  "long_face_controls": [
+    {"circumference": 8, "vertices": 48, "faces": 26, "face_bound": 8, "dual_diameter": 4, "reach_checks": 130},
+    {"circumference": 16, "vertices": 96, "faces": 50, "face_bound": 16, "dual_diameter": 4, "reach_checks": 250},
+    {"circumference": 32, "vertices": 192, "faces": 98, "face_bound": 32, "dual_diameter": 4, "reach_checks": 490},
+    {"circumference": 64, "vertices": 384, "faces": 194, "face_bound": 64, "dual_diameter": 4, "reach_checks": 970}
+  ],
+  "reach_checks": 38432,
+  "outcome": "passed"
+}
