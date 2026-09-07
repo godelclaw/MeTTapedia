@@ -2700,7 +2700,108 @@ arbitrary-data existence nor a uniform bound for the remaining signed
 forcing. Passage from individual paths to spatial and scale-uniform
 budgets, the high--high channel, and BKM continuation remain open.
 
-The same denominator is now proved for spatial frame freezing.  In
+\paragraph{Diffusion is not free damping of the intrinsic defect.}
+The signed viscous term cannot be discarded on the strength of
+incompressibility alone. The modules \texttt{PancakePlanarSpectralDefect},
+\texttt{PancakePlanarDiffusion}, and
+\texttt{PancakePeriodicDiffusionWitness} give an explicit pointwise test.
+For a planar incompressible velocity, write
+\[
+ S=\begin{pmatrix}a&b&0\\b&-a&0\\0&0&0\end{pmatrix},
+ \qquad \omega=(0,0,w).
+\]
+The constructed top eigenvalue is identified with
+$\sqrt{a^2+b^2}$ on the branch $a>0$, and the actual defect is
+$D=\sqrt{a^2+b^2}\,w^2$. At a normalized point $a=w=1$, $b=0$,
+the checked second-derivative formula in one spatial direction is
+\[
+ D''=a''+(b')^2+4a'w'+2(w')^2+2w''.
+\]
+The mixed term has no fixed sign. More generally, at $b=0$, $a>0$,
+the corresponding directional heat-chain-rule production has the
+completed-square algebra
+\begin{align*}
+ Q&=-\frac{w^2(b')^2}{a}-4wa'w'-2a(w')^2\\
+  &=\frac{2w^2(a')^2}{a}-\frac{w^2(b')^2}{a}
+       -2a\left(w'+\frac{wa'}a\right)^2
+   \le \frac{2w^2(a')^2}{a}-\frac{w^2(b')^2}{a}.
+\end{align*}
+The algebraic equality and bound are checked; they expose a gradient cost
+rather than supplying a scale-uniform estimate of it.
+
+On the $2\pi$-periodic torus, take the smooth velocity
+\begin{align*}
+ u_1(x,y)&=-\tfrac12\sin y+\sin x\cos y
+                -9\cos x\cos y+16\cos y,\\
+ u_2(x,y)&=\tfrac12\sin x-\cos x\sin y
+                +8\cos x-9\sin x\sin y,\qquad u_3=0.
+\end{align*}
+Lean differentiates this velocity and verifies divergence zero, its
+strain, its curl, and periodicity. At the origin the values are
+\begin{gather*}
+ (a,b,w)=(1,0,1),\qquad (\Delta a,\Delta b,\Delta w)=(-2,0,-1),\\
+ \nabla a=(9,0),\qquad \nabla b=(-4,-8),\qquad \nabla w=(-8,-2).
+\end{gather*}
+For the actual constructed spectral defect, the checked values are
+\[
+ D_{xx}=-146,\qquad D_{yy}=70,\qquad \Delta D=-76.
+\]
+The directional derivative of $D$ in the physical viscous direction
+$(\nu\Delta S,\nu\Delta\omega)$ is $-4\nu$. An explicit affine jet
+realizes this derivative; it is not asserted to solve the heat equation
+at nonzero time. Thus the instantaneous viscous chain-rule production is
+\[
+ D'[\nu\Delta S,\nu\Delta\omega]-\nu\Delta D=72\nu>0
+ \qquad(\nu>0).
+\]
+This refutes a pointwise heat-subsolution claim for this defect. It does
+\emph{not} refute a spatially integrated estimate, the repaired alignment
+route, or Navier--Stokes regularity.
+
+\paragraph{Two-shear test of the integrated sign.}
+A simpler candidate tests whether spatial integration restores a good
+sign. Let
+\[
+ u=(2\varepsilon N^{-1}\sin(Ny),-2\sin x,0),\quad
+ f=\varepsilon\cos(Ny),\quad g=\cos x.
+\]
+The module \texttt{PancakeTwoShearDiffusion} identifies the actual
+off-diagonal-strain defect with $4|f-g|(f+g)^2$ and proves the exact
+opposite-sign pairing, for nonnegative amplitudes $F,G$:
+\[
+ P(F,G)=\tfrac12\{D(F,G)+D(-F,G)\}
+ =\begin{cases}
+ 4G(G^2-F^2),&F\le G,\\
+ 4F(F^2-G^2),&G\le F.
+ \end{cases}
+\]
+Its fast logarithmic amplitude rate away from $F=G$ is
+\[
+ A(F,G)=\begin{cases}
+ -8GF^2,&F<G,\\
+ 12F^3-4FG^2,&G<F.
+ \end{cases}
+\]
+Assigning zero at the cusp preserves the checked bound
+$A\le-8GF^2+16F^3$. The actual two heat rates
+$F'=-\nu N^2F$, $G'=-\nu G$ give
+$P'=-\nu[3P+(N^2-1)A]$ away from the crossing; this derivative identity
+is checked. The negative leading amplitude term explains why removing a
+small fast shear can increase this alignment defect.
+
+For $\varepsilon=1/16$, $N=64$, $\nu=1$, numerical periodic quadrature
+at resolutions $256$, $512$, $1024$, and $2048$ gives a normalized mean
+heat rate between $35.433$ and $35.439$. These computations are
+\emph{diagnostic, not certified quadrature or a formal integral theorem}.
+The script \texttt{ns\_two\_shear\_diffusion\_sanity.py} reproduces the
+diagnostic and a finite-difference check under exact Fourier heat decay.
+The sign-pairing passage to the actual spatial integral, its cosine
+moments, and differentiation through the crossing set remain to be
+checked. This test redirects the next estimate toward a paid diffusion
+budget or a corrected alignment energy; it does not close the global
+regularity argument.
+
+The eigenvalue-gap denominator also appears in spatial frame freezing. In
 \texttt{PancakeEigenframePerturbation}, if $Ae=\lambda e$, $Bf=\mu f$, $B$
 is self-adjoint, and $e,f$ are unit vectors, then
 \[
@@ -2946,6 +3047,10 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeSpatialStrainEvolution}, and
 \texttt{PancakePhysicalSpectralDefect}, and
 \texttt{PancakePhysicalDefectODEBudget}, and
+\texttt{PancakePlanarSpectralDefect}, and
+\texttt{PancakePlanarDiffusion}, and
+\texttt{PancakePeriodicDiffusionWitness}, and
+\texttt{PancakeTwoShearDiffusion}, and
 \texttt{SpatialBKMIntegrand}, and
 \texttt{PancakeAdaptiveStrainCover}, and
 \texttt{PancakeAdaptiveFourierPartition}, and
