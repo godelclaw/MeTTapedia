@@ -1,6 +1,7 @@
 import Mettapedia.GraphTheory.FourColor.FiniteMarkedChain
 import Mettapedia.GraphTheory.FourColor.SphericalCotreePathChain
 import Mettapedia.GraphTheory.FourColor.NestedSideWireComposition
+import Mettapedia.GraphTheory.FourColor.SphericalNestedBoundaryOrder
 
 /-!
 # Full cotree cuts avoiding marked vertex material
@@ -10,7 +11,9 @@ assumption. Spacing its cuts by `6*w+1` produces a strict cubic star in
 every slab. A constant marked-material window then keeps every marked
 vertex on the same majority side, without changing width or boundary order.
 This does not say that a frozen edge is uncut, or that frozen boundary
-colours are preserved by a later splice.
+colours are preserved by a later splice. The persistent-wire order theorem
+below identifies the exact cyclic orders at the two supplied boundaries;
+it does not yet construct that smaller splice.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor.SphericalMarkedCotreeChain
@@ -39,6 +42,34 @@ def nodeSideInclusion {N w : ℕ} (nodes : Fin N → ConnectedShoreNode (G := G)
     ∀ v, majorityVertexSide G (nodes i).shore v →
       majorityVertexSide G (nodes j).shore v :=
   fun _ hv => majorityVertexSide_mono hij.1 hv
+
+omit [G.LocallyFinite] in
+/-- The cotree nodes' persistent wires have the same computed cyclic order
+on both actual majority-side boundaries. Connectivity is derived from the
+nodes, and their ambient dart identities are unchanged. -/
+theorem node_wire_boundaryOrder (data : Data G)
+    (hsphere : GoertzelV24OrbitFaceCurvatureBulk.OrbitSphericalCubicMapData data.toRotationSystem)
+    (htwo : OrbitFacesTwoSided data.toRotationSystem) (hconn : G.Connected)
+    (hrot : GoertzelV24FaceDualConnectedness.VertexRotationCyclic data.toRotationSystem)
+    {N w : ℕ} (nodes : Fin N → ConnectedShoreNode (G := G) w w)
+    {i j : Fin N} (hij : (nodes i).shore ⊂ (nodes j).shore) :
+    SphericalNestedBoundaryOrder.boundaryOrderOn data.toRotationSystem
+        (majorityVertexSide G (nodes j).shore)
+        (SphericalNestedBoundaryOrder.CommonWire data.toRotationSystem
+          (majorityVertexSide G (nodes i).shore) (majorityVertexSide G (nodes j).shore))
+        (fun _ h => nodeSideInclusion nodes hij _ h.1) (fun _ h => h.2) =
+      SphericalNestedBoundaryOrder.boundaryOrderOn data.toRotationSystem
+        (majorityVertexSide G (nodes i).shore)
+        (SphericalNestedBoundaryOrder.CommonWire data.toRotationSystem
+          (majorityVertexSide G (nodes i).shore) (majorityVertexSide G (nodes j).shore))
+        (fun _ h => h.1) (fun _ h hv => h.2 (nodeSideInclusion nodes hij _ hv)) := by
+  apply SphericalNestedBoundaryOrder.commonWire_boundaryOrder data hsphere htwo hconn hrot
+    _ _ (nodeSideInclusion nodes hij)
+  · exact connected_induce_majorityVertexSide _ (nodes i).shoreConnected (nodes i).majorityNonempty
+  · exact connected_induce_majorityVertexSide _ (nodes j).shoreConnected (nodes j).majorityNonempty
+  · exact connected_induce_not_majorityVertexSide
+      (incidentEdgeFinset_card_eq_three_of_toRotationSystem_isCubic data hsphere.cubic)
+      _ (nodes j).complementConnected (nodes j).complementNonempty
 
 omit [G.LocallyFinite] in
 /-- Endpoint marking excludes frozen dart bases from the material layer.

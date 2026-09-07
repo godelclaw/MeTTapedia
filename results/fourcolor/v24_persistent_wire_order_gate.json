@@ -1,0 +1,525 @@
+{
+  "cases": [
+    {
+      "cyclic_sides": 2,
+      "family": "prism(3)",
+      "rejected_reversals": 0,
+      "strict_pairs_by_common_width": [],
+      "vertices": 6,
+      "witness": null
+    },
+    {
+      "cyclic_sides": 6,
+      "family": "prism(4)",
+      "rejected_reversals": 0,
+      "strict_pairs_by_common_width": [],
+      "vertices": 8,
+      "witness": null
+    },
+    {
+      "cyclic_sides": 32,
+      "family": "prism(5)",
+      "rejected_reversals": 40,
+      "strict_pairs_by_common_width": [
+        [
+          2,
+          10
+        ],
+        [
+          3,
+          40
+        ]
+      ],
+      "vertices": 10,
+      "witness": {
+        "common_edges": [
+          4,
+          6,
+          9
+        ],
+        "common_successor": [
+          [
+            4,
+            6
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            9,
+            4
+          ]
+        ],
+        "inner": [
+          0,
+          1,
+          5,
+          6
+        ],
+        "inner_successor": [
+          [
+            1,
+            6
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            9,
+            4
+          ]
+        ],
+        "inner_width": 4,
+        "outer": [
+          0,
+          1,
+          2,
+          5,
+          6
+        ],
+        "outer_successor": [
+          [
+            2,
+            12
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            6,
+            9
+          ],
+          [
+            9,
+            4
+          ],
+          [
+            12,
+            6
+          ]
+        ],
+        "outer_width": 5
+      }
+    },
+    {
+      "cyclic_sides": 116,
+      "family": "prism(6)",
+      "rejected_reversals": 336,
+      "strict_pairs_by_common_width": [
+        [
+          0,
+          6
+        ],
+        [
+          1,
+          48
+        ],
+        [
+          2,
+          204
+        ],
+        [
+          3,
+          192
+        ],
+        [
+          4,
+          144
+        ]
+      ],
+      "vertices": 12,
+      "witness": {
+        "common_edges": [
+          5,
+          7,
+          11,
+          14
+        ],
+        "common_successor": [
+          [
+            5,
+            14
+          ],
+          [
+            7,
+            11
+          ],
+          [
+            11,
+            5
+          ],
+          [
+            14,
+            7
+          ]
+        ],
+        "inner": [
+          0,
+          1,
+          2,
+          6,
+          7
+        ],
+        "inner_successor": [
+          [
+            2,
+            14
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            7,
+            11
+          ],
+          [
+            11,
+            5
+          ],
+          [
+            14,
+            7
+          ]
+        ],
+        "inner_width": 5,
+        "outer": [
+          0,
+          1,
+          2,
+          3,
+          6,
+          7
+        ],
+        "outer_successor": [
+          [
+            3,
+            15
+          ],
+          [
+            5,
+            3
+          ],
+          [
+            7,
+            11
+          ],
+          [
+            11,
+            5
+          ],
+          [
+            14,
+            7
+          ],
+          [
+            15,
+            14
+          ]
+        ],
+        "outer_width": 6
+      }
+    },
+    {
+      "cyclic_sides": 1499,
+      "family": "annulus(6,1)",
+      "rejected_reversals": 99349,
+      "strict_pairs_by_common_width": [
+        [
+          0,
+          322
+        ],
+        [
+          1,
+          2388
+        ],
+        [
+          2,
+          7962
+        ],
+        [
+          3,
+          15796
+        ],
+        [
+          4,
+          21351
+        ],
+        [
+          5,
+          21768
+        ],
+        [
+          6,
+          17952
+        ],
+        [
+          7,
+          12132
+        ],
+        [
+          8,
+          6738
+        ],
+        [
+          9,
+          2820
+        ],
+        [
+          10,
+          792
+        ]
+      ],
+      "vertices": 24,
+      "witness": {
+        "common_edges": [
+          1,
+          4,
+          8,
+          10,
+          12,
+          16,
+          20,
+          22,
+          24,
+          34
+        ],
+        "common_successor": [
+          [
+            1,
+            34
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            8,
+            4
+          ],
+          [
+            10,
+            8
+          ],
+          [
+            12,
+            10
+          ],
+          [
+            16,
+            12
+          ],
+          [
+            20,
+            16
+          ],
+          [
+            22,
+            20
+          ],
+          [
+            24,
+            22
+          ],
+          [
+            34,
+            24
+          ]
+        ],
+        "inner": [
+          0,
+          1,
+          4,
+          5,
+          6,
+          8,
+          12,
+          13,
+          14,
+          16,
+          20
+        ],
+        "inner_successor": [
+          [
+            1,
+            34
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            8,
+            4
+          ],
+          [
+            10,
+            8
+          ],
+          [
+            12,
+            10
+          ],
+          [
+            16,
+            12
+          ],
+          [
+            20,
+            16
+          ],
+          [
+            22,
+            20
+          ],
+          [
+            24,
+            22
+          ],
+          [
+            30,
+            24
+          ],
+          [
+            34,
+            30
+          ]
+        ],
+        "inner_width": 11,
+        "outer": [
+          0,
+          1,
+          4,
+          5,
+          6,
+          8,
+          12,
+          13,
+          14,
+          16,
+          20,
+          21
+        ],
+        "outer_successor": [
+          [
+            1,
+            34
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            8,
+            4
+          ],
+          [
+            10,
+            8
+          ],
+          [
+            12,
+            10
+          ],
+          [
+            16,
+            12
+          ],
+          [
+            20,
+            16
+          ],
+          [
+            22,
+            20
+          ],
+          [
+            24,
+            22
+          ],
+          [
+            28,
+            24
+          ],
+          [
+            31,
+            28
+          ],
+          [
+            34,
+            31
+          ]
+        ],
+        "outer_width": 12
+      }
+    }
+  ],
+  "euler": {
+    "nonplanar_rejections": 7428,
+    "nonplanar_specimen": {
+      "base": [],
+      "base_order": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          0
+        ]
+      ],
+      "edges": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          3
+        ]
+      ],
+      "euler": 0,
+      "final_order": [
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          1
+        ]
+      ],
+      "marks": [
+        0,
+        1,
+        2
+      ],
+      "rotation": [
+        1,
+        2,
+        3,
+        0
+      ]
+    },
+    "plane_restrictions": 101473
+  },
+  "nested_restrictions": 2127,
+  "outcome": "passed",
+  "permutation_surgeries": 12566,
+  "schema": "fourcolor-v24-persistent-wire-order-v1"
+}

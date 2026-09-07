@@ -12855,3 +12855,89 @@ transport is not a proof that an arbitrary coordinate permutation is a
 planar splice.  The source-facing global supply and those replacement
 obligations remain open; no whole fixed ledger row is discharged, and
 the score remains $57/100$.
+
+\subsection{Exact cyclic order of persistent crossing wires}
+\label{sec:persistent-wire-order}
+
+The order compatibility needed by the preceding wire semantics is now
+proved for actual nested spherical vertex sides.  Let $A\subseteq B$,
+with $A$, $B$ and the complement of $B$ inducing connected graphs in
+a connected spherical cubic map with cyclic vertex rotations and two-sided
+face orbits.  Let $W$
+be the original outward darts based in $A$ whose opposite endpoints lie
+outside $B$.  Restrict each complete capped boundary successor to $W$.
+The resulting permutations are equal under literal ambient dart identity.
+No new port permutation, cyclic shift or reversal is chosen.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalNestedBoundaryOrder.commonWire_boundaryOrder}
+The result is uniform in the boundary sizes and the number of surviving
+wires; the material between $A$ and $B$ need not be connected, and the
+complement of $A$ is not an additional hypothesis.
+
+\paragraph{Euler equality supplies order preservation.}
+First return to a marked subset is independent of an intermediate
+restriction.  A transposition cannot reorder marks that lie on one cycle
+both before and after surgery.
+\Sverified{Mettapedia.GraphTheory.FourColor.PermutationFirstReturnRestriction.nextHit_nested}
+\Sverified{Mettapedia.GraphTheory.FourColor.PermutationFirstReturnRestriction.nextHit_swap_mul_of_one_cycle}
+For an edge presentation, genus-zero Euler equality is hereditary under
+edge deletion.  Adding an edge within an existing component must split
+a face; a face merge there would create genus that later additions cannot
+remove.  Consequently marked darts of one original component which lie
+on one final face retain their first-return order throughout the extension.
+Intermediate one-face hypotheses are derived, not supplied.
+\Sverified{Mettapedia.GraphTheory.FourColor.PlanarMapBoundaryRestriction.plane_tail_and_split}
+\Sverified{Mettapedia.GraphTheory.FourColor.PlanarMapBoundaryRestriction.nextHit_face_extension}
+
+The actual internal-edge involutions of $A$ and $B$ are presented in
+that order by restricting the ambient flip.  The complementary parts have
+exactly the original edge count, and ambient sphericity supplies the Euler
+equality used by the deletion theorem.
+\Sverified{Mettapedia.GraphTheory.FourColor.InvolutionRestrictionEdgeList.length_restrict_add_compl}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalNestedBoundaryOrder.exists_capped_edge_extension}
+Existing planar-bond closure gives one capped face for the outer boundary;
+the retained-dart inclusion identifies its first return with the original
+boundary API.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalNestedBoundaryOrder.retained_boundary_sameCycle}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalNestedBoundaryOrder.boundaryOrderOn_eq}
+For the supplied cotree nodes, shore connectivity and cubicity discharge
+the required majority-side connectivity.  Thus the wire-order result
+applies to the same nodes as the frozen-colour restriction theorem.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalMarkedCotreeChain.node_wire_boundaryOrder}
+
+\paragraph{Diagnostic and exact remaining boundary.}
+The reproducible geometry gate checks all cyclic connected/coconnected
+sides of small prisms and all admissible middle-band choices between two
+fixed caps in a $24$-vertex annulus.  It rejects $99725$ deliberate
+reversals of interfaces with at least three common wires.  Independent
+permutation tests check $12566$ surgeries, $2127$ nested restrictions and
+$101473$ planar extensions; omitting planarity gives $7428$ failing
+controls.  The receipt is
+\texttt{results/fourcolor/v24\_persistent\_wire\_order\_gate.json}.
+These are geometric tests, not colouring catalogues or target
+counterexamples.  The formal theorem proves the universal order statement.
+
+\paragraph{Equal order is not a full matching fixing the wires.}
+A stronger proposed implication fails: even if the two complete boundaries
+have the same size, their cyclic bijection need not fix every persistent
+wire.  In the hexagonal prism, take vertex sides
+$A=\{0,1,2,6,7\}$ and $B=\{0,1,2,5,6,7,8\}$ in the receipt's
+numbering.  Both shores and their complements are connected and cyclic;
+both cuts have width $5$.  Relative to one common wire, the other is at
+cyclic position $3$ on the inner boundary but position $2$ on the outer.
+A full cyclic matching fixing the first wire is unique and cannot fix
+the second.  The normalized five-position obstruction is kernel-checked.
+\Sverified{Mettapedia.GraphTheory.FourColor.PersistentWireMatchingObstruction.no_full_matching}
+The finite geometry gate finds $24$ failures among $156$ eligible nested
+pairs in that prism, and none among the $10$ pentagonal-prism controls.
+Its receipt is
+\texttt{results/fourcolor/v24\_persistent\_wire\_matching\_gate.json}.
+The prism's geometry is checked by the executable gate, not asserted to
+be a Lean-certified target counterexample.
+
+Thus the order theorem alone does not construct a full seam fixing frozen
+wires: their positions, or equivalently the intervening boundary gaps,
+must also be matched.  Adding this data to the repeated profile is a
+possible next construction, not a theorem claimed here.  A smaller map
+preserving designated holes and the target minimality class, and the
+source-facing global supply, remain open.  The fixed ledger is unchanged
+at $57/100$.
