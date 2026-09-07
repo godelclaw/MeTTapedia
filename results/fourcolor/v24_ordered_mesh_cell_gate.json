@@ -1,0 +1,483 @@
+{
+  "positive": {
+    "branches": [
+      [
+        0,
+        1
+      ],
+      [
+        3,
+        4
+      ]
+    ],
+    "columns": [
+      [
+        0,
+        2,
+        3
+      ],
+      [
+        1,
+        4
+      ]
+    ],
+    "complement_connected": true,
+    "complement_edges": 20,
+    "complement_vertices": 15,
+    "complete_vertex_boundary": 5,
+    "inside_majority_failures": [],
+    "pendant_corners": [],
+    "rim_paths": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        4,
+        3
+      ],
+      [
+        3,
+        2,
+        0
+      ]
+    ],
+    "rows": [
+      [
+        0,
+        1
+      ],
+      [
+        3,
+        4
+      ]
+    ],
+    "side_connected": true,
+    "side_edges": 5,
+    "side_vertices": 5,
+    "simple": true,
+    "union_edges": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        1,
+        4
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        4
+      ]
+    ],
+    "walk": [
+      0,
+      1,
+      4,
+      3,
+      2
+    ]
+  },
+  "schema": "fourcolor-v24-ordered-mesh-cell-v1",
+  "scope": "generic ordered-mesh geometry, not target mesh exclusion or a 4CT refutation",
+  "spheres": [
+    {
+      "cells": 2,
+      "frequency": 1,
+      "nonsimple": 1,
+      "pendant_corner_cells": 1
+    },
+    {
+      "cells": 15,
+      "frequency": 2,
+      "nonsimple": 10,
+      "pendant_corner_cells": 10
+    },
+    {
+      "cells": 28,
+      "frequency": 3,
+      "nonsimple": 21,
+      "pendant_corner_cells": 21
+    },
+    {
+      "cells": 30,
+      "frequency": 4,
+      "nonsimple": 24,
+      "pendant_corner_cells": 24
+    },
+    {
+      "cells": 40,
+      "frequency": 5,
+      "nonsimple": 29,
+      "pendant_corner_cells": 29
+    },
+    {
+      "cells": 54,
+      "frequency": 6,
+      "nonsimple": 42,
+      "pendant_corner_cells": 42
+    },
+    {
+      "cells": 70,
+      "frequency": 7,
+      "nonsimple": 58,
+      "pendant_corner_cells": 58
+    },
+    {
+      "cells": 77,
+      "frequency": 8,
+      "nonsimple": 67,
+      "pendant_corner_cells": 67
+    }
+  ],
+  "verdict": "corner-preserving rim construction refuted",
+  "witness": {
+    "branches": [
+      [
+        10,
+        12
+      ],
+      [
+        17,
+        19
+      ]
+    ],
+    "column_pair": [
+      0,
+      1
+    ],
+    "columns": [
+      [
+        3,
+        10,
+        11,
+        17
+      ],
+      [
+        4,
+        12,
+        14,
+        19
+      ]
+    ],
+    "complement_connected": true,
+    "complement_edges": 18,
+    "complement_vertices": 14,
+    "complete_vertex_boundary": 6,
+    "frequency": 1,
+    "graph": {
+      "face_cycles": [
+        [
+          0,
+          1,
+          4,
+          3,
+          2
+        ],
+        [
+          0,
+          1,
+          6,
+          7,
+          5
+        ],
+        [
+          0,
+          2,
+          8,
+          9,
+          5
+        ],
+        [
+          2,
+          3,
+          10,
+          11,
+          8
+        ],
+        [
+          1,
+          4,
+          12,
+          13,
+          6
+        ],
+        [
+          3,
+          4,
+          12,
+          14,
+          10
+        ],
+        [
+          5,
+          7,
+          16,
+          15,
+          9
+        ],
+        [
+          8,
+          9,
+          15,
+          17,
+          11
+        ],
+        [
+          6,
+          7,
+          16,
+          18,
+          13
+        ],
+        [
+          10,
+          11,
+          17,
+          19,
+          14
+        ],
+        [
+          15,
+          16,
+          18,
+          19,
+          17
+        ],
+        [
+          12,
+          13,
+          18,
+          19,
+          14
+        ]
+      ],
+      "primal_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          5
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          1,
+          6
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          2,
+          8
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          3,
+          10
+        ],
+        [
+          4,
+          12
+        ],
+        [
+          5,
+          7
+        ],
+        [
+          5,
+          9
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          6,
+          13
+        ],
+        [
+          7,
+          16
+        ],
+        [
+          8,
+          9
+        ],
+        [
+          8,
+          11
+        ],
+        [
+          9,
+          15
+        ],
+        [
+          10,
+          11
+        ],
+        [
+          10,
+          14
+        ],
+        [
+          11,
+          17
+        ],
+        [
+          12,
+          13
+        ],
+        [
+          12,
+          14
+        ],
+        [
+          13,
+          18
+        ],
+        [
+          14,
+          19
+        ],
+        [
+          15,
+          16
+        ],
+        [
+          15,
+          17
+        ],
+        [
+          16,
+          18
+        ],
+        [
+          17,
+          19
+        ],
+        [
+          18,
+          19
+        ]
+      ],
+      "primal_vertex_count": 20
+    },
+    "inside_majority_failures": [
+      12
+    ],
+    "pendant_corners": [
+      12
+    ],
+    "rim_paths": [
+      [
+        10,
+        14,
+        12
+      ],
+      [
+        12,
+        14,
+        19
+      ],
+      [
+        19,
+        17
+      ],
+      [
+        17,
+        11,
+        10
+      ]
+    ],
+    "row_pair": [
+      1,
+      2
+    ],
+    "rows": [
+      [
+        9,
+        8,
+        11,
+        10,
+        14,
+        12,
+        13,
+        6,
+        7,
+        5
+      ],
+      [
+        17,
+        19,
+        18,
+        16,
+        15
+      ]
+    ],
+    "side_connected": true,
+    "side_edges": 6,
+    "side_vertices": 6,
+    "simple": false,
+    "union_edges": [
+      [
+        10,
+        11
+      ],
+      [
+        10,
+        14
+      ],
+      [
+        11,
+        17
+      ],
+      [
+        12,
+        14
+      ],
+      [
+        14,
+        19
+      ],
+      [
+        17,
+        19
+      ]
+    ],
+    "walk": [
+      10,
+      14,
+      12,
+      14,
+      19,
+      17,
+      11
+    ]
+  }
+}
