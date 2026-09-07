@@ -3071,12 +3071,74 @@ compact torus. No extra full-rate integrability budget is assumed.
 The finite velocity solution itself is still supplied, not constructed
 from arbitrary admissible data by this theorem.
 
-This is an AE-time spatial material-rate estimate, not yet the
-time-integrated Eulerian energy balance. Justifying the advective
-cancellation in that balance, paying the remaining nonlinear forcing
-at all scales, constructing the required stochastic objects, and closing
-continuation remain open. The fixed-low constant grows as $K$ expands,
-and neither $K\to\infty$ nor $\delta\to0$ is justified by this estimate.
+\paragraph{Eulerian transport and time integration.}
+The spatial estimate now feeds a checked time-integrated balance.
+\texttt{PancakeLocallyLipschitzEnergy} proves that the actual regularized
+alignment energy is locally Lipschitz on real spacetime, including at
+eigenvalue collisions. Compact time intervals and bounded representatives
+of the unit torus give spatially uniform time-Lipschitz bounds. The same
+construction supplies uniform coordinate-translation bounds.
+\texttt{PancakePeriodicWeakDerivative} derives periodic integration by
+parts for these locally Lipschitz scalar fields: Rademacher gives actual
+coordinate derivatives almost everywhere, the measured fundamental cube
+transfers them to Haar measure, and differentiation of a translated
+spatial mean gives zero. Product differentiation then proves
+\[
+ \int_{\mathbb T^3}(\partial_j F)G
+   =-\int_{\mathbb T^3}F(\partial_j G).
+\]
+\texttt{PancakePhysicalTransportCancellation} identifies the coordinate
+derivatives of the actual filtered velocity with their Fourier
+reconstructions. Retained incompressibility gives
+$\operatorname{div}v_K=0$, hence
+$\int_{\mathbb T^3}v_K\cdot\nabla E_\delta=0$.
+
+\texttt{PancakeMaterialChainRule} and
+\texttt{PancakeAEMaterialChainRule} identify the actual frozen material
+derivative almost everywhere as
+$\mathfrak m_\delta=\partial_tE_\delta+v_K\cdot\nabla E_\delta$.
+\texttt{PancakeCompactMeanDerivative} justifies differentiation under the
+spatial integral using the uniform local Lipschitz bound. The mean energy
+is absolutely continuous on compact time intervals, so
+\texttt{PancakePhysicalMeanBalance} proves
+\[
+ \int_a^b\!\int_{\mathbb T^3}\mathfrak m_\delta\,dx\,dt
+   =\overline E_\delta(b)-\overline E_\delta(a),
+ \qquad
+ \overline E_\delta(t)=\int_{\mathbb T^3}E_\delta(t,x)\,dx.
+\]
+Time integrability of the mean material rate is a conclusion, not an
+assumption. No smooth eigenframe or separately supplied
+volume-preserving flow is used.
+
+\texttt{PancakeParametricForcing} proves joint continuity of the actual
+nonviscous envelope from continuous retained coefficients. At viscosity
+parameter zero, the strain forcing depends only on finite quadratic
+expressions in those coefficients, even at output modes outside the
+retained set. The vorticity RHS is the actual curl of the velocity RHS.
+Spatial integration therefore gives continuous residual and forcing
+means. In \texttt{PancakeEulerianAlignmentBudget}, the integrated spatial
+estimate and the retained kinetic-energy identity yield, for
+$\delta>0$, $\nu>0$, and $T\ge0$,
+\[
+ \boxed{\quad
+ \overline E_\delta(T)
+   +\frac12\int_0^T\!\int_{\mathbb T^3}|z|^2
+ \le \overline E_\delta(0)
+   +\frac{8C_{K,\chi}U(0)^2}{\delta}
+   +\int_0^T\!\int_{\mathbb T^3}\mathcal B_\delta.
+ \quad}
+\]
+The intermediate estimate pays
+$(16\nu/\delta)C_{K,\chi}\int_0^T U\Omega$; kinetic dissipation bounds
+$\int_0^T U\Omega\le U(0)^2/(2\nu)$.
+This is a finite-cutoff Eulerian alignment budget for the supplied
+finite solution on $\mathbb R$, not arbitrary-data global regularity.
+The nonviscous forcing remains unpaid at all scales, the fixed-low
+constant grows as $K$ expands, and neither $K\to\infty$ nor
+$\delta\to0$ is justified. Construction from arbitrary data, the required
+stochastic objects, scale-uniform field transfer and continuation remain
+open.
 
 The eigenvalue-gap denominator also appears in spatial frame freezing. In
 \texttt{PancakeEigenframePerturbation}, if $Ae=\lambda e$, $Bf=\mu f$, $B$
@@ -3352,6 +3414,19 @@ localization-stability, smooth-cutoff Fourier-tail,
 \texttt{PancakeSpacetimeSpectralDifferentiability}, and
 \texttt{PancakeAEMaterialRate}, and
 \texttt{PancakeMaterialSpatialEstimate}, and
+\texttt{PancakeCompactMeanDerivative}, and
+\texttt{PancakeLocallyLipschitzEnergy}, and
+\texttt{PancakeHaarTransportRate}, and
+\texttt{PancakePeriodicLipschitz}, and
+\texttt{PancakePeriodicWeakDerivative}, and
+\texttt{PancakeWeakIncompressibleTransport}, and
+\texttt{PancakePhysicalTransportCancellation}, and
+\texttt{PancakeMaterialChainRule}, and
+\texttt{PancakeAEMaterialChainRule}, and
+\texttt{PancakeMeanMaterialBalance}, and
+\texttt{PancakePhysicalMeanBalance}, and
+\texttt{PancakeParametricForcing}, and
+\texttt{PancakeEulerianAlignmentBudget}, and
 \texttt{SpatialBKMIntegrand}, and
 \texttt{PancakeAdaptiveStrainCover}, and
 \texttt{PancakeAdaptiveFourierPartition}, and
