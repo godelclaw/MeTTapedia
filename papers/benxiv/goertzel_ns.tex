@@ -3929,6 +3929,80 @@ estimates, passage to the continuum, and the intrinsic global alignment
 budget remain necessary.
 
 
+\paragraph{Cutoff-independent local second-order energy control.}
+Set
+\[
+ w(k)=(1+|k|)^2,\qquad
+ E_M(u)=\sum_{k\in M}w(k)^2|u_k|^2,\qquad
+ D_M(u)=\sum_{k\in M}w(k)^2|k|^2|u_k|^2,
+\]
+and let $L=\sum_{k\in\mathbb Z^3}(1+|k|)^{-4}<\infty$ be the
+already constructed lattice sum. All coefficient norms here are Euclidean.
+\texttt{PancakeFiniteConvolutionL2} proves a finite convolution estimate
+without a mode-count factor. If $a_M$ is the zero extension of a sequence
+on $M$, translation injectivity and Cauchy--Schwarz give
+\[
+ \sum_{k,l\in M}a_M(k+l)b_kc_l
+ \le \|a\|_{\ell^2(M)}\|b\|_{\ell^2(M)}
+           \sum_{l\in M}c_l
+ \quad(c_l\ge0),
+\]
+and the analogous bound with the two inputs exchanged.
+\texttt{PancakeSobolevWeights} proves
+\[
+ w(k+l)\le2\bigl(w(k)+w(l)\bigr),\qquad
+ \sum_{k\in M}a_k\le\sqrt L\,
+       \left(\sum_{k\in M}w(k)^2a_k^2\right)^{1/2}.
+\]
+Applying these two input placements to $a_k=|u_k|$ gives the
+weighted convection majorant $4\sqrt L\,E_M\sqrt{D_M}$.
+
+\texttt{PancakeSobolevVelocityRate} identifies this majorant with the
+existing physical velocity equation, not a replacement convolution.
+The Leray projection does no work against the transverse output
+coefficient; the nonzero transverse source coefficients justify the
+existing curl-to-velocity recovery identity. Retaining the physical
+$2\pi$ factor and the exact viscosity term yields
+\[
+ E'_M+2\nu(2\pi)^2D_M
+       \le8(2\pi)\sqrt L\,E_M\sqrt{D_M}.
+\]
+The derivative is obtained from the actual coefficient ODE.
+\texttt{PancakeSobolevAbsorption} then proves, for $\nu>0$,
+\[
+ \boxed{\qquad E'_M+\nu(2\pi)^2D_M
+                 \le C_\nu E_M^2,\qquad C_\nu=\frac{16L}{\nu}.\qquad}
+\]
+There is no cutoff radius or cardinality in $C_\nu$.
+
+For any initial bound $E_M(0)\le B_0$, $B_0\ge0$, define
+\[
+ \tau_\nu(B_0)=\frac{1}{2(C_\nu+1)(B_0+1)}>0.
+\]
+\texttt{PancakeQuadraticGrowthWindow} uses monotonicity of
+$(E+1)^{-1}+C_\nu t$ to handle zero initial energy without division by it.
+\texttt{PancakeUniformLocalSobolev} applies this scalar comparison to the
+constructed local coefficient solution:
+\[
+ E_M(t)\le2(B_0+1),\qquad
+ 0\le t\le T_M,\quad t\le\tau_\nu(B_0).
+\]
+A nonnegative summable initial envelope $m_2(u_0,k)\le g_k$ pays
+$E_M(0)\le(\sum_k g_k)^2$ for every $M$.
+\texttt{PancakePhysicalInitialWindow} constructs such an envelope from
+the defined order-six continuous coordinate derivatives of the original
+physical initial field. It combines that construction with actual local
+Galerkin existence, assuming reality and the Fourier divergence condition.
+No regularity or Fourier envelope of a future trajectory is an input.
+
+This is a cutoff-independent local \emph{a priori} estimate. Its final
+theorem bounds each solution on the intersection of its existing lifespan
+with the common window. Extension of every retained solution to the whole
+window has not yet been proved here. That continuation step, convergence
+to a continuum evolution, and the global intrinsic alignment budget remain
+open; the quadratic growth inequality is not a global regularity bound.
+
+
 The eigenvalue-gap denominator also appears in spatial frame freezing. In
 \texttt{PancakeEigenframePerturbation}, if $Ae=\lambda e$, $Bf=\mu f$, $B$
 is self-adjoint, and $e,f$ are unit vectors, then
