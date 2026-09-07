@@ -11567,3 +11567,44 @@ lateral reassignment turn this ordered geodesic sweep into a width-$30$
 chain.  D1b/D1c still need a target-specific width-and-progress argument or
 a different source-faithful global construction.  The fixed ledger remains
 $57/100$.
+
+\subsection{Least-size selection does not compute the structural threshold}
+\label{sec:least-size-bound-audit}
+
+One attempted use of the target's extra hypotheses is to appeal directly to
+global vertex minimality for a uniform bound.  This proves an existential
+statement, but does not yet give the numerical threshold required by the
+reductive route.  The distinction can be checked against the live definitions.
+
+\begin{proposition}[semantic least-size bound]
+\Sverified{Mettapedia.GraphTheory.FourColor.LeastSizeBoundAudit.card_eq_semanticThreshold}
+\Sverified{Mettapedia.GraphTheory.FourColor.LeastSizeBoundAudit.exists_uniform_minimal_size_bound}
+Fix a universe and let $N_*$ be the infimum in $\mathbb N$ of the vertex
+counts of non-Tait-colourable bridgeless spherical cubic maps in the
+minimality class.  Every graph-backed vertex-minimal counterexample has
+exactly $N_*$ vertices.  In particular, there exists a uniform bound on the
+sizes of such minimal counterexamples, independently of corridor geometry.
+\end{proposition}
+
+\begin{proof}
+Its vertex count belongs to the bad-size set.  If that count exceeded the
+least element, the corresponding smaller bad map would contradict its
+\texttt{smallerColorable} field.  If the set is empty there is no minimal
+counterexample to bound.
+\end{proof}
+
+\begin{proposition}[the semantic base carries the universal target]
+\Sverified{Mettapedia.GraphTheory.FourColor.LeastSizeBoundAudit.base_at_semanticThreshold_iff_universal}
+The live predicate \texttt{TaitBaseVerifiedAt} at $N_*$ is equivalent to
+\texttt{EveryBridgelessSphericalCubicTaitColorable}.
+\end{proposition}
+
+The equivalence itself is not an obstruction: a successful reductive proof
+also gives a biconditional with its finite base.  What this particular
+construction lacks is an explicit numerical bound derived independently of
+the unknown bad-size set.  No value of $N_*$ is computed here, no finite audit
+is performed, and no raw decomposition supplier is obtained.  This is not a
+claim that such a value is uncomputable in principle, nor a refutation of the
+compositional route.  It records why bare least-size selection does not
+advance the effective D1b/D1c or D4b obligations.  The diagnostic module is
+not added as a premise supplier to the headline; the ledger stays $57/100$.
