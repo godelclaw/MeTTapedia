@@ -15,6 +15,7 @@ namespace Mettapedia.GraphTheory.FourColor.SphericalCotreePathChain
 open SimpleGraph SimpleGraphDartRotation
 open GoertzelV24FaceOrbitIncidence GoertzelV24OrbitFaceTwoSided
 open GoertzelV24PrimalCycleFacialBond GoertzelV24TwoEdgeCutMinimality
+open GoertzelV24SimpleGraphTaitBridge
 open GoertzelV24FramedLocalDualCycleBond GoertzelV24CubicSmallBoundaryCycle
 open GoertzelV24ConnectedShoreLiteralNode GoertzelV24ConnectedVertexSideEdgeShore
 open GoertzelV24RotationMultigraphAdapter GoertzelV24MeshIsoperimetry
@@ -74,10 +75,12 @@ theorem path_shore_bounds (T : DualBFSTree data root)
   rw [TreePathShore.shore_eq_endpoint_region p hp hi]
   exact ⟨hs.2.1, hs.2.2.1, hs.2.2.2.1⟩
 
-/-- A long cotree path supplies actual nested exact-support nodes. -/
-theorem exists_nested_nodes_of_long_path (T : DualBFSTree data root)
+/-- A long cotree path supplies actual nested nodes using spherical geometry
+alone, before imposing any zero-Count or vertex-minimality assumption. -/
+theorem exists_nested_nodes_of_long_path_of_spherical (T : DualBFSTree data root)
     (htree : T.toRankedDualForest.complementGraph.IsTree)
-    (minimal : GraphBackedVertexMinimalTaitCounterexample data)
+    (hclass : BridgelessSphericalCubicMapData data.toRotationSystem)
+    (htwo : OrbitFacesTwoSided data.toRotationSystem)
     (h : ℕ) (hradius : ∀ f, (orbitFaceDualGraph data).dist f root ≤ h)
     {a b : V} (p : T.toRankedDualForest.complementGraph.Walk a b) (hp : p.IsPath)
     (n : ℕ) (hlen : n + 2 * (2 * h + 1) ≤ p.length) :
@@ -88,13 +91,13 @@ theorem exists_nested_nodes_of_long_path (T : DualBFSTree data root)
   let idx : Fin n → ℕ := fun i => w + i.val
   have hi : ∀ i, idx i < p.length := by intro i; dsimp [idx, w]; omega
   let sides : Fin n → Set V := fun i => TreePathShore.shore p (idx i)
-  have hprops := fun i => path_shore_bounds T htree minimal.facesTwoSided p hp (hi i) h hradius
+  have hprops := fun i => path_shore_bounds T htree htwo p hp (hi i) h hradius
   have hcubic : ∀ v, G.degree v = 3 := by
     intro v
     exact (degree_instance_independent v _ (Subtype.fintype _)).trans
       (by
         letI : G.LocallyFinite := fun _ => Subtype.fintype _
-        exact (data.toRotationSystem_isCubic_iff.mp minimal.spherical.cubic).degree_eq v)
+        exact (data.toRotationSystem_isCubic_iff.mp hclass.spherical.cubic).degree_eq v)
   have hinside : ∀ i, HasCycleOnSide G (sides i) := by
     intro i
     apply hasCycle_of_boundary_lt_card hcubic (sides i) (hprops i).1
@@ -116,7 +119,8 @@ theorem exists_nested_nodes_of_long_path (T : DualBFSTree data root)
     omega
   let cuts : ∀ i : Fin n, CyclicEdgeCutRealization G (localCrossingEdgeFinset G (sides i)) :=
     fun i => ⟨sides i, mem_localCrossingEdgeFinset_iff _, hinside i, houtside i⟩
-  let nodes := fun i => (cuts i).toConnectedShoreNodeOfVertexMinimal data minimal
+  let nodes := fun i => (cuts i).toConnectedShoreNodeOfConnectedSides
+    (incidentEdgeFinset_card_eq_three_of_toRotationSystem_isCubic data hclass.spherical.cubic)
     (hprops i).1 (hprops i).2.1 w (hprops i).2.2
   refine ⟨nodes, ?_⟩
   intro i j hij
@@ -127,9 +131,23 @@ theorem exists_nested_nodes_of_long_path (T : DualBFSTree data root)
   exact NestedCyclicCutStrictness.incidentEdgeShore_ssubset (fun _ hv => hss.1 hv)
     hnew ⟨b, TreePathShore.end_not_mem htree p hp (hi j)⟩ (hprops i).2.1.preconnected
 
-/-- Large vertex count constructs the path as well as the full nested cuts. -/
-theorem exists_nested_nodes_of_large_card (data : Data G)
+/-- Compatibility with the original target-class path supplier. -/
+theorem exists_nested_nodes_of_long_path (T : DualBFSTree data root)
+    (htree : T.toRankedDualForest.complementGraph.IsTree)
     (minimal : GraphBackedVertexMinimalTaitCounterexample data)
+    (h : ℕ) (hradius : ∀ f, (orbitFaceDualGraph data).dist f root ≤ h)
+    {a b : V} (p : T.toRankedDualForest.complementGraph.Walk a b) (hp : p.IsPath)
+    (n : ℕ) (hlen : n + 2 * (2 * h + 1) ≤ p.length) :
+    ∃ nodes : Fin n → ConnectedShoreNode (G := G) (2 * h + 1) (2 * h + 1),
+      ∀ i j, i < j → (nodes i).shore ⊂ (nodes j).shore :=
+  exists_nested_nodes_of_long_path_of_spherical T htree
+    minimal.toBridgelessSphericalCubicMapData minimal.facesTwoSided h hradius p hp n hlen
+
+/-- Large vertex count constructs the cotree, path and full nested cuts from
+spherical geometry alone. -/
+theorem exists_nested_nodes_of_large_card_of_spherical (data : Data G)
+    (hclass : BridgelessSphericalCubicMapData data.toRotationSystem)
+    (htwo : OrbitFacesTwoSided data.toRotationSystem)
     (root : OrbitFace data.toRotationSystem) (h n : ℕ)
     (hradius : ∀ f, (orbitFaceDualGraph data).dist f root ≤ h)
     (hlarge : 4 ^ (n + 2 * (2 * h + 1)) < Fintype.card V) :
@@ -137,23 +155,34 @@ theorem exists_nested_nodes_of_large_card (data : Data G)
       ∀ i j, i < j → (nodes i).shore ⊂ (nodes j).shore := by
   classical
   let T := of_connected data
-    (orbitFaceDualGraph_connected data minimal.toBridgelessSphericalCubicMapData) root
+    (orbitFaceDualGraph_connected data hclass) root
   let H := T.toRankedDualForest.complementGraph
   letI : H.LocallyFinite := fun _ => Subtype.fintype _
   have htree : H.IsTree := of_connected_complement_isTree data
-    minimal.toBridgelessSphericalCubicMapData minimal.facesTwoSided root
+    hclass htwo root
   have hdegree : ∀ v, H.degree v ≤ 3 := by
     intro v
     have hG : G.degree v = 3 := by
       exact (degree_instance_independent v _ (Subtype.fintype _)).trans
         (by
           letI : G.LocallyFinite := fun _ => Subtype.fintype _
-          exact (data.toRotationSystem_isCubic_iff.mp minimal.spherical.cubic).degree_eq v)
+          exact (data.toRotationSystem_isCubic_iff.mp hclass.spherical.cubic).degree_eq v)
     exact (SimpleGraph.degree_le_of_le (G := H) (SimpleGraph.deleteEdges_le _)).trans hG.le
   obtain ⟨a, b, p, hp, _, hlen⟩ :=
     GoertzelV24BoundedDegreePath.exists_geodesicPath_length_ge_of_pow_lt_card
       H htree.connected 3 (n + 2 * (2 * h + 1)) hdegree hlarge
-  exact exists_nested_nodes_of_long_path T htree minimal h hradius p hp n hlen
+  exact exists_nested_nodes_of_long_path_of_spherical T htree hclass htwo h hradius p hp n hlen
+
+/-- Compatibility with the original target-class cardinality supplier. -/
+theorem exists_nested_nodes_of_large_card (data : Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample data)
+    (root : OrbitFace data.toRotationSystem) (h n : ℕ)
+    (hradius : ∀ f, (orbitFaceDualGraph data).dist f root ≤ h)
+    (hlarge : 4 ^ (n + 2 * (2 * h + 1)) < Fintype.card V) :
+    ∃ nodes : Fin n → ConnectedShoreNode (G := G) (2 * h + 1) (2 * h + 1),
+      ∀ i j, i < j → (nodes i).shore ⊂ (nodes j).shore :=
+  exists_nested_nodes_of_large_card_of_spherical data
+    minimal.toBridgelessSphericalCubicMapData minimal.facesTwoSided root h n hradius hlarge
 
 /-- Explicit size threshold supplied by mesh exclusion and complete cotree cuts. -/
 def meshFreeVertexBound (a b : ℕ) : ℕ :=
