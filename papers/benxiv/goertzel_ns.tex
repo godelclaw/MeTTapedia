@@ -4647,13 +4647,104 @@ and $W$ are real; $S$ is symmetric and trace-free, and $W$ is
 antisymmetric. These are geometric properties of the actual spatial
 derivatives, not prescribed matrix data.
 
-This completes the local Eulerian strain identity, not its global
-critical estimate or its evaluation along constructed material trajectories.
-The next bridge must connect this same infinite field to material transport
-and the collision-safe spectral-defect calculation, retaining the signed
-quadratic and diffusion terms. Pressure, moving-weight, and misalignment
-accumulation over an arbitrary lifespan remain unbounded by the present
-local construction.
+This completes the local Eulerian strain identity. The following construction
+evaluates it along actual material trajectories; neither identity alone
+supplies the global critical estimate.
+
+\paragraph{Constructed material flow and its strain equation.}
+Write $G=\sum_q g(q)$ for the common local envelope above.
+\texttt{PancakeInfiniteVelocityLipschitz} proves, on the real periodic lift,
+\[
+ \|U(t,x)\|\le G,\qquad
+ \|U(t,x)-U(t,y)\|\le 6\pi G\,\|x-y\|.
+\]
+These estimates use the coordinate sup norm; the coefficient Euclidean
+norm in the absolute moment dominates that norm explicitly.
+The character estimate is obtained by differentiating along a straight
+real segment and using
+\[
+ |q\cdot v|\le 3|q|\,\|v\|,\qquad
+ |\chi_q(x)-\chi_q(y)|\le 6\pi|q|\,\|x-y\|.
+\]
+Summability of the first absolute moment justifies the infinite sum.
+No chosen chart radius or number of localization cells enters the bound.
+
+\texttt{PancakeLocalMaterialTrajectories} defines the real lift of the
+constructed velocity and proves its time continuity, boundedness, and
+spatial Lipschitz estimate. The Picard--Lindelof hypotheses hold on the
+entire existing interval $[0,T]$: for an initial point $x$, a ball of
+radius $GT$ contains the possible displacement. This constructs $X_x$
+with
+\[
+ X_x(0)=x,\qquad
+ \dot X_x(t)=\operatorname{Re}U(t,[X_x(t)]).
+\]
+The equation holds with one-sided derivatives at the endpoints and
+ordinary derivatives in $(0,T)$. The spatial field is real, so taking
+real parts changes no physical velocity.
+\texttt{PancakeLocalMaterialFlow} constructs trajectories simultaneously
+for every initial point and proves uniqueness on $[0,T]$. With
+$K=6\pi G$, its Gronwall estimate is
+\[
+ \|X_x(t)-X_y(t)\|\le e^{Kt}\|x-y\|,\qquad 0\le t\le T.
+\]
+This is a local flow regularity estimate, not a scale-critical bound:
+$G$ is the local high-regularity envelope.
+
+The material derivative is proved directly for the infinite series.
+\texttt{PancakeInfiniteDirectionalTransport} defines
+\[
+ D_v a_q=(2\pi i)(q\cdot v)a_q
+       =\sum_j v_j\,\partial_j a_q
+\]
+and identifies its reconstruction with ordinary spatial transport.
+\texttt{PancakeInfiniteMaterialSeries} proves
+\[
+ \frac{d}{dt}F_{a(t)}([X(t)])
+       =F_{\dot a(t)}([X(t)])+F_{D_{\dot X(t)}a(t)}([X(t)]).
+\]
+For a common first-moment bound $g$, derivative-coefficient bound $h$,
+and speed bound $M$, the term derivatives are dominated by the summable
+envelope $h(q)+6\pi M g(q)$. Both coefficient evolution and character
+motion are present in the product rule.
+
+\texttt{PancakeLocalMaterialGradient} applies this result to the actual
+gradient coefficients. The time derivative and moving-character term
+cancel Eulerian advection exactly:
+\[
+ \frac{d}{dt}A(t,[X_x(t)])
+       =(-A^2-\nabla^2p+\nu\Delta A)(t,[X_x(t)]).
+\]
+The common third velocity moment pays the differentiated equation and
+the spatial derivatives. No material gradient equation is assumed.
+\texttt{PancakeLocalMaterialStrain} then symmetrizes, using the checked
+ordinary Laplacian commutation:
+\[
+ \boxed{\quad
+ \frac{d}{dt}S(t,[X_x(t)])
+       =(-S^2-W^2-\nabla^2p+\nu\Delta S)(t,[X_x(t)]),
+       \qquad 0<t<T.
+ \quad}
+\]
+The theorem
+\texttt{PancakePhysicalMaterialStrain.exists\_physical\_material\_strain}
+constructs one velocity and one such flow from the order-nine physical
+initial jets, with initial matching and the strain equation along every
+trajectory.
+
+Finally, \texttt{PancakeMaterialFlowQuotient} proves that initial lifts
+representing the same torus point give the same torus trajectory.
+The difference of the initial lifts is a period; translating one real
+trajectory by it preserves the ODE, and uniqueness identifies the two.
+Thus the real flow factors through a torus-valued particle map.
+
+This is a deterministic local material construction. Spatial Jacobians,
+measure preservation, and a stochastic flow have not been constructed by
+these modules. The next dynamical connection must identify the actual
+vorticity-direction evolution along this flow and attach the collision-safe
+spectral-defect estimate. Pressure, moving-weight, and misalignment
+accumulation over an arbitrary lifespan still require the global critical
+bound; the finite local envelope is not such a bound.
 
 
 
