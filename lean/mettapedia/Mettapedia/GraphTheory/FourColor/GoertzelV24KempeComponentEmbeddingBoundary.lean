@@ -5,10 +5,14 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24LocalSwapKempeGeneration
 # Restricting a Kempe component along a graph embedding
 
 A Kempe component in a subgraph need not be a Kempe component of the larger
-graph: an alternating path may leave the image.  This file gives the exact
-dichotomy.  Either the small component has a selected neighbour outside the
+graph: an alternating path may leave the image.  This file gives a boundary
+alternative.  Either the small component has a selected neighbour outside the
 edge image, or its switch is the restriction of one ordinary Kempe-component
 switch in the larger graph.
+
+Boundary contact alone does not prevent such a lift.  The exact obstruction
+for a single same-pair switch is component fusion, as characterized in
+`KempeEmbeddingFusion`.
 
 The result is generic graph theory.  In the Four-Colour application the
 embedding is the exact common deletion of two adjacent pairs into either one
