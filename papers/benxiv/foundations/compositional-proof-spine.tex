@@ -12119,3 +12119,87 @@ branch decomposition and the actual generating-base audit are not proved
 here.  This checkpoint closes intermediate crossings, separated-window
 compatibility and the exact-node conversion, but not all of D1b or D1c.
 The fixed obligation ledger remains $57/100$.
+
+\subsection{Bounded-face size transfer and an explicit vertex threshold}
+\label{sec:bounded-face-size-transfer}
+
+The distance bound of Section~\ref{sec:contour-mesh-node-chain} now has
+an actual vertex-count consequence when all quotient-face boundaries have
+at most $B$ edges.  This is the bounded-face component of the geometric
+transfer; the long-face component remains separate.
+
+\begin{theorem}[degree and Euler on the actual face carrier]
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.orbitFaceDualGraph_degree_le_boundary}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.card_vertices_add_four_eq_two_mul_faces}
+The degree of a quotient face in the full face-dual graph is at most the
+cardinality of its edge boundary.  A cubic rotation system satisfying the
+quotient-face spherical Euler equation satisfies
+\[
+ |V|+4=2|F|.
+\]
+Here $F$ is the quotient of darts by face orbits, not a deduplicated
+collection of face-edge sets.
+\end{theorem}
+
+The degree proof transports the existing at-most-two-face incidence bound
+through the full ambient-face subtype.  The Euler calculation combines
+$3|V|=2|E|$ with $|V|-|E|+|F|=2$.  Thus both counts refer to the same
+literal rotation system as the preceding contour construction.
+
+\begin{theorem}[vertex largeness supplies a long dual axis]
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.exists_dual_distance_ge_of_large_vertex_card}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.vertex_card_le_of_dual_distances_lt}
+For a bridgeless spherical cubic map with every face boundary of size at
+most $B$, if
+\[
+ 2(B+1)^r-4<|V|,
+\]
+then two actual quotient faces have dual distance at least $r$.
+Consequently, if all dual distances are strictly below $r$, then
+$|V|\le 2(B+1)^r-4$.  Subtraction in the formal threshold is natural-number
+subtraction.
+\end{theorem}
+
+This reuses the existing bounded-degree closed-neighborhood estimate:
+a radius-$r$ reachable set has at most $(B+1)^r$ vertices.  Dual
+connectedness, that estimate and the literal Euler count supply the axis;
+no path, contour or decomposition is a hypothesis of this transfer.
+
+\begin{theorem}[bounded-face reduction from vertex largeness]
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.exists_nested_nodes_of_bounded_faces_large}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalContourSeparators.vertex_card_le_of_noMesh_and_bounded_faces}
+Let $a\ge2$ and consider a graph-backed vertex-minimal Tait
+counterexample with face sizes at most $B$ and no exact injective
+$a$-by-$b$ mesh.  Set $w=3(b-1)$ and retain the explicit $N(w)$ from
+Section~\ref{sec:contour-mesh-node-chain}.  Vertex count greater than
+$2(B+1)^{na}-4$ constructs $n$ strictly nested connected exact-support
+nodes of width at most $w$.  In particular,
+\[
+ |V|\le 2(B+1)^{a(N(w)+1)}-4.
+\]
+\end{theorem}
+
+Taking $n=N(w)+1$ contradicts the existing physical-splice state bound.
+The threshold depends only on the displayed natural-number parameters,
+not on the unknown least-counterexample size.  The proof is
+universe-polymorphic.  It does not discharge the exact no-mesh premise.
+
+The preregistered gate revalidates the $GP(k,0)$ archive for $1\le k\le8$,
+calibrated by $|V|=20k^2$ and $|F|=10k^2+2$.  Every root and reachable
+radius is checked using the complete dual graph and cubic Euler counts.
+Four thickness-two annulus controls have circumferences $8,16,32,64$:
+their dual diameters are all $4$, while their vertex counts are
+$48,96,192,384$ and their largest face sizes grow with circumference.
+There are $38{,}432$ reach/count checks in total.  These are finite
+generic geometric controls; they are neither zero-Count instances nor
+a formal unbounded-family refutation.  The replay is
+\texttt{tools/fourcolor/v24\_bounded\_face\_size\_gate.py}, with its
+JSON receipt under \texttt{results/fourcolor/}.
+
+\paragraph{Remaining global obligations.}
+The bounded-face component now supplies actual nodes from vertex count.
+Long faces cannot simply be handled by dropping the face-size hypothesis
+from the counting step.  Their complete-interface construction, fixed-mesh
+exclusion, a full raw branch-decomposition supply and the generating-base
+audit remain open.  Since the fixed D1c obligation includes both geometric
+transfers, the ledger remains $57/100$.
