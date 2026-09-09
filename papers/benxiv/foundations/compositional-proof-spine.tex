@@ -13815,3 +13815,99 @@ The present argument does not prove either implication, a long nested
 chain, fixed ordered-mesh exclusion, or the generating base. It does
 replace arbitrary boundary encounters by discrepancy-driven witnesses
 on an actually supplied pair. The fixed ledger remains $57/100$.
+
+\subsection{Removing the choice of Kempe orbits from the minimum}
+\label{sec:absolute-deletion-minimum}
+
+The minimum in Section~\ref{sec:discrepancy-rooted-fusion} was taken
+over two specified Kempe orbits. A calibrated reconfiguration experiment
+shows why positivity of that restricted minimum is not itself a geometric
+contradiction, even with planarity and no local branching. The construction
+below removes this dependence on the initial orbit choices.
+
+\paragraph{Restriction and simultaneous compatibility.}
+One ambient component can restrict to several smaller components.
+Switching it need not restrict to one switch, but does restrict to a
+finite valid-pair Kempe sequence. The proof first restricts the local
+transposition relation and then uses local-swap generation. Thus an ambient
+Kempe orbit lies in one deletion orbit under restriction; no converse
+lifting assertion is made.
+\Sverified{Mettapedia.GraphTheory.FourColor.KempeRestriction.locallySwapRelated_switch}
+\Sverified{Mettapedia.GraphTheory.FourColor.KempeRestriction.locallySwapRelated_pullback}
+\Sverified{Mettapedia.GraphTheory.FourColor.KempeRestriction.reachable_pullback_of_step}
+\Sverified{Mettapedia.GraphTheory.FourColor.KempeRestriction.reachable_pullback}
+
+For separated deletions $S,T$, two specified deletion orbits have
+representatives agreeing on the common core if and only if there is
+\emph{one} ambient Tait colouring whose restrictions belong to both
+orbits. This follows by constructing the glued colouring with its two
+prescribed restrictions. Individual extendability of each orbit does
+not replace simultaneous extendability.
+\Sverified{Mettapedia.GraphTheory.FourColor.DeletionOrbitCompatibility.glued_restrict}
+\Sverified{Mettapedia.GraphTheory.FourColor.DeletionOrbitCompatibility.exists_extension_of_agreement}
+\Sverified{Mettapedia.GraphTheory.FourColor.DeletionOrbitCompatibility.compatible_iff_simultaneouslyExtendable}
+\Sverified{Mettapedia.GraphTheory.FourColor.DeletionOrbitCompatibility.simultaneous_membership_of_ambient_reachable}
+
+Allowing arbitrary orbit choices makes existence of compatible choices
+exactly ambient Tait colourability. This is an equivalence describing the
+remaining task, not a new assumed supplier of compatible orbits.
+\Sverified{Mettapedia.GraphTheory.FourColor.DeletionOrbitCompatibility.exists_compatible_iff_taitColorable}
+
+\paragraph{A colourable negative control.}
+The structural lab uses two independent complete enumerators, one ordered
+by edges and one by vertices. They recover $6$, $12$, and $60$ Tait
+colourings for $K_4$, $K_{3,3}$, and the dodecahedron, respectively.
+The last graph's ten six-element Kempe classes agree with the description
+in Khovanov--Robert, \emph{Conical $SL(3)$ foams}, Section~3.2,
+\href{https://doi.org/10.4171/JCA/61}{doi:10.4171/JCA/61}.
+Its spherical cubic rotation is checked independently of the colouring
+enumeration. No least-counterexample assumption is asserted for it.
+
+Each of its $30$ adjacent-pair deletions has $108$ colourings in two
+Kempe orbits of sizes $36$ and $72$. The $135$ separated deletion pairs
+give $540$ orbit-pair comparisons. Agreement is possible in $525$ cases;
+the other $15$ have minimum disagreement $7$. All $360$ minimum pairs
+in these positive cases are locally transposition-related. For one
+minimum in each exceptional case, the lab directly checks a correct-edge
+fusion blocker and an outside-image path on both sides of every wrong
+edge ($210$ rooted checks). Both orbits in the recorded incompatible
+pair have nonempty, disjoint sets of ambient Kempe classes extending
+them. Consequently the observed rooted fusions and positive orbit minimum
+do not alone contradict planarity or ambient colourability.
+These are reproducible computational diagnostics, not Lean-certified
+graph specimens, ring-word tables, or reducibility certificates.
+
+\paragraph{The absolute minimum is constructed.}
+Instead minimize
+\[
+  d(c,d)=|\{e\in E(G-(S\cup T)):c(e)\ne d(e)\}|
+\]
+over \emph{all} proper nonzero colourings of $G-S$ and $G-T$.
+The input colourings witness nonemptiness only. Well-ordering of the
+natural-valued measure supplies a pair whose disagreement cannot be
+decreased by changing either colouring, or both, into any other Kempe
+orbit. This minimum supplies both one-sided orbit minima needed by the
+existing rooted-blocker theorem.
+\Sverified{Mettapedia.GraphTheory.FourColor.DeletionAbsoluteMinimum.exists_absolute_minimum}
+\Sverified{Mettapedia.GraphTheory.FourColor.DeletionAbsoluteMinimum.AbsoluteMinimum.orbit_minima}
+
+For a colourable ambient graph every such absolute minimum is zero.
+For separated deletions the converse also holds, by gluing; on all $135$
+separated dodecahedral controls the unrestricted minimum is indeed zero.
+\Sverified{Mettapedia.GraphTheory.FourColor.DeletionAbsoluteMinimum.absolute_minimum_eq_of_tait}
+\Sverified{Mettapedia.GraphTheory.FourColor.DeletionAbsoluteMinimum.absolute_minimum_eq_iff_taitColorable}
+
+In a least counterexample, zero is impossible. At the same constructed
+absolute minimizers, either there is a local non-transposition discrepancy,
+or every wrong edge roots blocking fusions in both deletion graphs.
+The final ordered-row corollary supplies the separated target and uses
+minimality to supply the nonempty colouring spaces; its inputs contain
+no colouring, chosen Kempe orbit, minimum, or reachability premise.
+\Sverified{Mettapedia.GraphTheory.FourColor.DeletionAbsoluteMinimum.absoluteObstruction_of_separated}
+\Sverified{Mettapedia.GraphTheory.FourColor.DeletionAbsoluteMinimum.exists_rowSite_with_absolute_obstruction}
+
+This strengthens the target-facing minimum and excludes the arbitrary-orbit
+artefact exposed by the lab. It does not eliminate branching or construct
+a bounded complete interface from the paired walks. Fixed ordered-mesh
+exclusion, full D1b/D1c supply, and the generating base remain open.
+The fixed obligation ledger stays $57/100$.
