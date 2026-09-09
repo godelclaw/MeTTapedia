@@ -58,6 +58,29 @@ regularity, blowup, or any other Millennium-problem conclusion.
 
 ## Current Status
 
+### September 2026 material-flow development
+
+The stochastic-Lagrangian lane now constructs a local infinite Fourier
+velocity and a common-interval material flow for arbitrary admissible smooth
+periodic data, with no small-data restriction. Along that flow it derives
+the actual velocity-gradient and strain equations, retaining the pressure
+Hessian, spin, and viscous terms.
+
+`StochasticLagrangian/LocalMaterialVorticity.lean` derives the actual curl
+equation `Dₜω = Sω + νΔω`, including its real Euclidean formulation.
+`LocalVorticityDiffusion.lean` proves continuity of the viscous source from
+the common third Fourier-moment envelope and applies the reusable
+`Mettapedia.Analysis.ODE.QuadraticFormBound` estimate. The strain growth bound
+remains an explicit hypothesis of that estimate. The accompanying
+`LocalMaterialVorticityAudit.lean` checks the theorem dependencies.
+
+None of this closes the scale-critical dynamical misalignment budget,
+the remaining field-transfer estimates, or unconditional BKM continuation.
+The older route-audit summary below describes earlier layers, not the full
+extent of the current local PDE construction.
+
+### Earlier route-audit layers
+
 The directory is best read as a route audit and obstruction library. It has
 concrete theorem surfaces and some fully checked toy or boundary cases, but it
 does not solve global regularity or blowup.
