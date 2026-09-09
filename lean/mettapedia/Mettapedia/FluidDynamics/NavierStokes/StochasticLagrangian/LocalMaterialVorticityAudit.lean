@@ -1,0 +1,11 @@
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.LocalVorticityDiffusion
+
+/-! Axiom audit for the actual material vorticity equation and its estimate. -/
+
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeMatrixCurlAlgebra.matrixCurl_neg_square_trace_zero
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PancakeMatrixCurlAlgebra.spatialLaplacian_matrixCurl
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LocalMaterialVorticity.hasDerivAt_spatialCurl_material
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LocalMaterialVorticity.vorticityAlong_eq_realSpatialCurl
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LocalMaterialVorticity.hasDerivAt_vorticityAlong
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LocalVorticityDiffusion.continuous_diffusion_spaceTime
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LocalVorticityDiffusion.norm_vorticityAlong_le_weight_mul_integral
