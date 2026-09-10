@@ -540,8 +540,8 @@ eigenvector, the checked identity is
 For every scalar majorant `F` with `F(0)=0`, the universal pointwise bound
 `||P⊥ Hess(p) e|| ≤ F(D)` therefore fails on this family. This is not a
 blowup construction or a refutation of a nonlocal/time-integrated budget.
-It does not yet assert a nonzero total material source after combining
-pressure, spin, feedback, transport and viscosity.
+The static obstruction alone does not assert a nonzero total material
+source; the actual evolution is treated separately below.
 The checked anisotropy estimate remains valid: its mixed term contains
 `||m||` as well as the tilt, so it still vanishes at exact alignment.
 
@@ -553,6 +553,42 @@ its ordinary spatial Hessian. No independently assigned pressure matrix,
 truncated vorticity receiver, or external forcing is used. All Fourier
 moments of the datum are summable. `PressureTiltDatumAudit.lean` audits
 the dependencies and checks both zero and nonzero perturbations.
+
+`PressureTiltTangent.lean` and `PressureTiltResidualRate.lean` compute the
+ordinary gradient of the actual infinite Navier–Stokes right-hand side,
+including convection, its determined pressure and viscosity. For the
+spectral residual `z = (λ I − S)ω`, its initial rate is
+
+```text
+z'(0+) = (64π³ε/5) (3 − 5πν, −3 − 5πν, 10πν),
+z'(0+)₁ − z'(0+)₂ = 384π³ε/5,
+||z'(0+)||² = (24576/25) π⁶ε² (25π²ν² + 3).
+```
+
+`PressureTiltEvolution.exists_local_defect_growth` attaches the computation
+to an actual local infinite Fourier solution: for every `ν > 0` and `ε ≠ 0`,
+the alignment defect at the fixed spatial origin is zero initially and
+strictly positive for all sufficiently small positive times. The initial
+velocity at the origin is zero. The checked conclusion concerns the fixed
+point; no material trajectory or second time derivative is asserted here.
+Neither viscosity nor the other terms in the full right-hand side erase
+the computed first-order residual response.
+
+The construction uses `FourierFiniteJets.lean` to supply continuous
+coordinate jets of every order, and `PressureTiltLocalSolution.lean` to
+instantiate the physical local-solution constructor. `EndpointDerivative.lean`
+specializes mathlib's derivative-extension theorem, while
+`LocalInitialGradient.lean` and `LocalInitialSpectral.lean` prove the initial
+right derivatives from the interior equation and the common third-moment
+envelope. `SpectralEigenvalueWithin.lean` gives the one-sided top-eigenvalue
+derivative without a differentiable choice of eigenvector.
+`PressureTiltEvolutionAudit.lean` checks all new dependencies and the
+zero/nonzero-perturbation cases.
+
+This excludes automatic persistence of pointwise perfect alignment, not
+global regularity or a spatially nonlocal, time-integrated estimate.
+Misalignment can be generated even while the solution remains regular.
+Uniform control of its accumulated cost is still the central open step.
 
 `SpectralSourceCommutatorTests.lean` checks a commuting source on the
 simple-top branch and constructs a commuting rank-one source with
