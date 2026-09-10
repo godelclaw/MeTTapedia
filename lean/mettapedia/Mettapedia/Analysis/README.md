@@ -12,7 +12,9 @@ Reusable analysis, independent of any particular fluid construction.
 | `LogarithmicScaleBound.lean` | Explicit scale selection and elimination of a logarithmic/high-frequency cutoff | Any positive real decay exponent; sharp estimate requires no sign assumption on the low or logarithmic costs |
 | `SimpleImplicitRoot.lean` | A continuous simple root of a smooth scalar equation is smooth | Real Banach parameter space; derived from mathlib's implicit-function theorem |
 | `OperatorQuadraticForm.lean` | Two derivatives of a moving operator quadratic form, retaining all cross terms | Any real inner product space; no completeness or dimension assumption |
-| `IdempotentDerivatives.lean` | First-order tangent identity, second-order quadratic correction, and the material-minus-diffusion constraint | Any real normed algebra; no commutativity assumption |
+| `IdempotentDerivatives.lean` | First-order tangent identity, second-order quadratic correction, material-minus-diffusion constraint, and signed diagonal defect blocks | Derivatives in a real normed algebra; diagonal block identities in any ring |
+| `SpectralRelationDerivatives.lean` | First and second derivatives of `SP = μP`, and principal parabolic diffusion cancellation | Any real normed algebra; no eigenvector choices or commutativity assumption |
+| `KernelCrossTerm.lean` | A linear cross term is unbounded on the kernel when its transverse pairing is nonzero | Any real inner product space and continuous linear map; rules out projected-square-only absorption |
 
 The first module is used by
 `FluidDynamics/NavierStokes/StochasticLagrangian/LocalVorticityDiffusion.lean`.
@@ -36,14 +38,19 @@ projectors through collisions of the two top strain eigenvalues. The
 quadratic-form and idempotent calculus then supplies the actual local
 bottom-vorticity diffusion identity. In particular, a projector's
 material-minus-diffusion rate has a quadratic correction and cannot be
-treated as an ordinary tangent rate. These modules are new derivations
-using mathlib, not additional adaptations from the external source below.
+treated as an ordinary tangent rate. The spectral-relation calculus now
+cancels the actual principal strain diffusion, retaining the mixed gradient
+term. `KernelCrossTerm` isolates why the remaining vorticity-gradient
+cross term cannot generally be absorbed by a projected gradient alone.
+These modules are new derivations using mathlib, not additional adaptations
+from the external source below.
 
 `Tests.lean` checks a path with a nondifferentiable corner, a forced trajectory
 crossing zero, a negative growth coefficient, an exponent other than one
 quarter, a simple root through a collision of other roots, a moving
-quadratic form with nonzero cross terms, and the axioms of the public
-comparison theorems.
+quadratic form with nonzero cross terms, a nontrivial rank-one kernel
+obstruction, two opposite nonzero diagonal defect blocks, and the axioms
+of the public comparison theorems.
 
 ## Provenance and changes
 

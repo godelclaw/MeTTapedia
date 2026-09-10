@@ -645,11 +645,61 @@ WP + PW = W + 2ν Σⱼ Pⱼ².
 
 Thus W is not generally an ordinary projector tangent. The preceding
 first-order transfer estimate cannot be applied to W unchanged. These
-identities preserve the signed dissipative square, but do not yet cancel
-the strain-Laplacian part inside W, control the cross terms, justify
-integration over moving gap regions, or provide a time/scale-uniform
-unforced source budget. `LocalBottomDiffusionAudit.lean` checks all 49
-theorems in this development.
+identities preserve the signed dissipative square. The next layer below
+cancels the principal strain diffusion inside W; control of the remaining
+cross terms, integration over moving gap regions, and a time/scale-uniform
+unforced source budget remain open. `LocalBottomDiffusionAudit.lean`
+checks all 49 theorems in that diffusion-identity development.
+
+### Parabolic projector cancellation and transverse control
+
+`Analysis/SpectralRelationDerivatives.lean` differentiates `SP = μP`
+twice and proves the material-minus-diffusion subtraction in a general
+noncommutative normed algebra. `LocalSpatialSpectralRelation.lean` supplies
+the actual Fourier strain derivatives, bottom eigenvalue derivatives,
+and projector derivatives. Write
+
+```text
+S = Sχ, μ = λmin(S), g = λmiddle(S)-μ > 0, P = Pbottom, Q = I-P,
+R₀ = the actual nonviscous strain remainder,
+M = Σⱼ [(∂ⱼS)(∂ⱼP) - (∂ⱼμ)(∂ⱼP)],
+H = Σⱼ ||∂ⱼS||op², K = Σⱼ (∂ⱼP)², W = DᵤP - νΔP.
+
+(-S²+R₀)P + SW = (Dᵤμ-νΔμ)P + μW + 2νM.
+PWP =  2ν PKP,   QWQ = -2ν QKQ.
+||QWP|| ≤ ||QR₀P||/g + 4νH/g²                 (ν ≥ 0).
+```
+
+The first identity cancels the explicit `νΔS` term, not the gradient
+correction. `BottomParabolicProjectorMotion.lean` obtains off-diagonal
+coercivity directly from the spectral equation, without assuming that W
+is tangent or self-adjoint. `LocalSpatialSpectralBounds.lean` proves
+`|∂ⱼμ| ≤ ||∂ⱼS||`, `||(∂ⱼP)e_min|| ≤ ||∂ⱼS||/g`, and
+`||QMP|| ≤ 2H/g`. No top-eigenvalue differentiability is required.
+
+`LocalParabolicProjectorEquation.lean` proves the displayed equations for
+the actual local solution almost everywhere on the positive-gap branch.
+`LocalParabolicProjectorBound.lean` constructs one physical-data solution
+supporting both the signed bottom-energy balance and the new transverse
+bound for every admissible finite filter. The exceptional null sets may
+depend on the filter and interior interval. The bound is for `QWP`, not
+the entire operator W; the nonzero diagonal blocks are kept separately.
+
+`Analysis/KernelCrossTerm.lean` and `LocalBottomGradientObstruction.lean`
+rule out one tempting pointwise shortcut. If `(∂ⱼP)(Pω) ≠ 0`, there are
+no constants A and B such that, for every vector v,
+
+```text
+-4<v,(∂ⱼP)ω> ≤ A ||Pv||² + B.
+```
+
+The cross term can grow in `ker P`, where the projected square vanishes.
+This is not a counterexample using actual NS solution jets: it rules out
+the unrestricted algebraic absorption rule. Coupled-sector dissipation,
+additional dynamical constraints, or an integrated cancellation may still
+control the actual vorticity-gradient term. The scale-critical estimate
+near gap closure and across filters has not been proved.
+`LocalParabolicProjectorAudit.lean` audits all 38 new theorems in this layer.
 
 `FilteredHighHighExample.lean` supplies real, transverse, zero-mean finite
 Fourier data whose retained velocity vanishes while its retained subgrid
