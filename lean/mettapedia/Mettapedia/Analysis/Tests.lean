@@ -2,10 +2,45 @@ import Mettapedia.Analysis.ODE.QuadraticFormBound
 import Mettapedia.Analysis.ODE.AbsolutelyContinuousComparison
 import Mettapedia.Analysis.ODE.VariableGronwall
 import Mettapedia.Analysis.LogarithmicScaleBound
+import Mettapedia.Analysis.SimpleImplicitRoot
+import Mettapedia.Analysis.OperatorQuadraticForm
+import Mettapedia.Analysis.IdempotentDerivatives
 
 /-! Regression examples for the analysis estimates. -/
 
 open Set MeasureTheory Mettapedia.Analysis Mettapedia.Analysis.ODE
+open scoped ContDiff RealInnerProductSpace
+
+-- The root -2 is simple even when the other two roots 1±x coincide.
+example : ContDiffAt ℝ ∞ (fun _ : ℝ ↦ (-2 : ℝ)) 0 := by
+  apply contDiffAt_of_simple_implicit_root
+    (f := fun p : ℝ × ℝ ↦ ((p.2 - 1) ^ 2 - p.1 ^ 2) * (p.2 + 2)) (c := 9)
+  · fun_prop
+  · simp
+  · fun_prop
+  · exact Filter.Eventually.of_forall (fun _ ↦ by norm_num)
+  · convert! (((hasDerivAt_id (-2 : ℝ)).sub_const 1).pow 2).mul
+      ((hasDerivAt_id (-2 : ℝ)).add_const 2) using 1 <;> norm_num
+    rfl
+  · norm_num
+
+-- The vector-gradient and mixed terms contribute: <t,t·t> = t³ has second derivative 6 at 1.
+example : HasDerivAt (deriv (fun t : ℝ ↦
+    OperatorQuadraticForm.value (t • ContinuousLinearMap.id ℝ ℝ) t)) 6 1 := by
+  let P : ℝ → ℝ →L[ℝ] ℝ := fun t ↦ t • ContinuousLinearMap.id ℝ ℝ
+  have hP : ContDiffAt ℝ 2 P 1 := by dsimp [P]; fun_prop
+  have hDP : deriv P = fun _ ↦ ContinuousLinearMap.id ℝ ℝ := by
+    funext t
+    convert! ((hasDerivAt_id t).smul_const (ContinuousLinearMap.id ℝ ℝ)).deriv using 1
+    simp only [one_smul]
+  have hs : ∀ᶠ t in nhds (1 : ℝ), ∀ a b, inner ℝ (P t a) b = inner ℝ a (P t b) := by
+    apply Filter.Eventually.of_forall
+    intro t a b
+    simp [P, mul_comm, mul_left_comm]
+  have h := OperatorQuadraticForm.hasDerivAt_deriv_value hP
+    (contDiffAt_id : ContDiffAt ℝ 2 (fun t : ℝ ↦ t) 1) hs
+  convert! h using 1
+  norm_num [hDP, P]
 
 -- A Lipschitz path with a corner at zero: the differential equation is only
 -- almost everywhere, and the derivative forcing need not be continuous.
