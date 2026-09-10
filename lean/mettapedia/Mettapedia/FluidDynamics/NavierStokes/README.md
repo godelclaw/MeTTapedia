@@ -765,6 +765,62 @@ cutoff Fourier-moment bound or a time-integrated source budget.
 collision, transition, separated-gap, zero-vorticity, and square-root
 regressions. The original linear-weight theorems remain unchanged.
 
+### Elliptic localization with physical product costs
+
+The first-gradient estimate above does not bound the first Fourier
+coefficient moment used by the earlier commutator estimate.
+`PressureTiltEllipticIdentity.lean` instead expands the pressure
+multiplier's exact elliptic product identity. Writing `q=p+k`,
+`mₑ(k)=P⊥ₑ k(k·e)/|k|²`, and `b(k)=|k|² φ(k)`, it gives
+
+```text
+|k|² [mₑ(k)−mₑ(q)]
+  = (2p·k+|p|²)mₑ(q)
+    − P⊥ₑ [p(k·e)+k(p·e)+p(p·e)].
+```
+
+This includes `k=0` and `q=0`; no inverse output-frequency assumption
+is introduced. `FourierPressureEllipticCommutator.lean` supplies `φ`
+from the actual pressure coefficients, real-symmetrized before
+localization. It retains the original unit-torus derivative phase
+already present in `pressureAmplitude`: `φ` is the potential for the
+integer-frequency multiplier `|k|²`, not an unscaled pressure value.
+
+`FourierEllipticProductCoefficients.lean` identifies the resulting
+scalar and matrix coefficients with mixed first-coordinate products
+and second-coordinate cutoff products. `FourierProductEnergy.lean`
+uses Parseval and a physical supremum norm, with no coefficient-count
+factor. Let `G(c)=ΣⱼΣₚ |pⱼ c(p)|²` and
+`H(c)=ΣᵢⱼΣₚ |pᵢpⱼ c(p)|²`. For
+
+```text
+B₀ = ||Σₖ φ(k)eₖ||∞,
+B₁ = Σⱼ ||Σₖ kⱼ φ(k)eₖ||∞,
+```
+
+`LocalPressureEllipticBudget.lean` proves for every unit frozen line
+
+```text
+Ecomm(c) ≤ 192 B₁² G(c) + 36 B₀² H(c).
+```
+
+The constants count only the three coordinates, not Fourier modes or
+patches. They are convenient, nonsharp bounds. The same module
+constructs the actual squared-gap patches and substitutes the estimate
+in their angular pressure budget: `4Σ Ecomm` becomes
+`768 B₁² ΣG(cᵢ) + 144 B₀² ΣH(cᵢ)`. The weighted trace, angular tail,
+coverage error, and separate collision cost remain present.
+
+`FourierCoordinateDerivatives.lean` proves that these coordinate
+energies are genuine finite-polynomial derivative energies: first
+derivatives contribute `|2πi|²` and mixed second derivatives contribute
+`|2πi|⁴` in Parseval. The second-derivative cost is not supplied by the
+previous first-gradient theorem. Quantitative patch derivative control
+and bounds for `B₀,B₁` along the actual solution remain open, as does
+uniformity in the pressure truncation, gap cutoff, and time.
+`PressureEllipticBudgetAudit.lean` checks the identities, derivative
+normalization, complex cutoff, and nonzero-to-zero output regressions.
+
 `PressureTiltDatum.lean`, `PressureTiltOrigin.lean`, and
 `PressureTiltAlignment.lean` supply a physical obstruction to a
 pointwise-alignment-only pressure closure. On the unit torus, the finite

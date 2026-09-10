@@ -24,6 +24,8 @@ Reusable analysis, independent of any particular fluid construction.
 | `IntegralEndpointEstimate.lean` | Extends an integral inequality from interior time pairs to both endpoints | Continuous energy and integrable signed source and dissipation; integrands need not be continuous |
 | `FiniteConvolutionEnergy.lean` | Weighted finite Young inequality for a two-input vector kernel, collecting coincident outputs before squaring | Additive commutative group of modes; arbitrary normed additive codomain; no explicit cardinality loss |
 | `FiniteMultiplierLocalization.lean` | Exact localization commutator, symbol-variation energy estimate, and small-symbol/tail split | Any normed scalar field and normed vector space; finite supports; all unfavorable modes retained |
+| `FiniteSumEnergy.lean` | Squared-norm Cauchy--Schwarz for finite linear combinations and its cardinality specialization | Normed scalar field and normed vector codomain; the unweighted version needs only a normed additive group |
+| `FiniteCoefficientEnergy.lean` | Nonnegativity, constant scaling, and two-, three-, and finite-sum energy bounds | Arbitrary finite index sets and normed scalar fields; cardinality is explicit where used |
 | `LocallyLipschitz.lean` | Finite sums, finite products of coordinates, algebra multiplication, and real scalar multiplication | Local Lipschitz maps on pseudometric spaces; no global constant required |
 | `LocallyLipschitzDifferentiability.lean` | Rademacher theorem by compact-ball exhaustion; strong measurability of derivatives of continuous parameter families at fixed parameters | Finite-dimensional real domain and codomain for Rademacher, any additive Haar measure; complete normed codomain and second-countability of either parameter space or codomain for the parameter lemma |
 
@@ -98,6 +100,9 @@ form at the kernel direction and increment `(0,-1)` attains zero with
 three nonzero terms `2 - 4 + 2`. This checks the mixed-term coefficient.
 The convolution tests collect two inputs at the same output, exhibit a
 nonzero one-shift commutator, and check that a constant cutoff commutes.
+The finite-sum tests attain the scalar Cauchy--Schwarz and three-term
+energy factors. In the elliptic pressure application the counted index
+is a spatial coordinate, not a Fourier mode or adaptive patch.
 The local Lipschitz tests include a nonsmooth scalar factor, a
 vector-valued map with a corner, and a parameter-dependent derivative.
 The derivative lemmas supply almost-everywhere coordinate derivatives
@@ -127,6 +132,8 @@ repository's Lean 4.34.0-rc2 toolchain.
 The local Lipschitz and parameter-derivative lemmas are new derivations
 from mathlib's compactness, Rademacher, and measurable-derivative APIs,
 not adaptations from either external fluid construction.
+The finite-sum and coefficient-energy lemmas likewise derive directly
+from norm inequalities and finite Cauchy--Schwarz in mathlib.
 
 ## Further translation work
 
