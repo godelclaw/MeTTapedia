@@ -14355,3 +14355,86 @@ smoothings at edge $01$ of the checked dodecahedron give $18$-vertex
 spherical maps, one with two square faces and the other with two triangular
 faces.  The positive
 finite gate cannot be used to bypass the erased-mark transport problem.
+
+\subsection{A smaller physical piece for one equality observation}
+\label{sec:marked-square-boundary-reduction}
+
+The complete erased-colour profile is stronger than a particular equality
+test. This distinction changes the local realization problem of
+Section~\ref{sec:marked-square-observable}. For the observation $x_0=w_2$,
+replace the square by a digon attached to ports $0,1$, together with a wire
+joining ports $2,3$. Label the two parallel edges $c_0,c_1$, the two
+terminal edges $c_2,c_3$, and the separate wire $c_4$. The mark moves to
+$c_0$ and the reference edge is $c_4$; these edges are nonincident.
+There are two internal cubic vertices instead of four, with the same four
+labelled boundary terminals. The Lean fibre is identified with nonzero
+proper edge colourings of these explicit endpoint pairs, rather than
+declared to be a physical state by definition alone.
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedSquareBoundaryReduction.extension_iff_edgeProper}
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedSquareBoundaryReduction.marked_reference_nonadjacent}
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedSquareBoundaryReduction.fewer_internal_vertices}
+
+There is an exact equivalence at every boundary word:
+\[
+ \{x:\operatorname{SquareExt}(w,x),\ x_0=w_2\}
+ \simeq
+ \{c:\operatorname{DigonWireExt}(w,c),\ c_0=c_4\}.
+\]
+The forward map is
+$(x_0,x_1,w_0,w_1,w_2)$; its inverse is
+$(c_0,c_1,w_0,c_1)$. Both validity and inverse laws are kernel checked.
+The equivalence retains the entire exterior state when applied fibrewise
+over its boundary word; it is not a claim that an arbitrarily frozen
+exterior colouring can be changed.
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedSquareBoundaryReduction.equalityEquiv}
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedSquareBoundaryReduction.equality_count}
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedSquareBoundaryReduction.physicalEqualityEquiv}
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedSquareBoundaryReduction.exteriorEquiv}
+
+Suppressing the remaining digon exposes the change of predicate. For
+nonzero $w$ the count is exactly
+\[
+ N_{x_0=w_2}(w)=
+ \mathbf 1\{w_0=w_1,\ w_2=w_3,\ w_0\ne w_2\}.
+\]
+The equality of the marked digon edge and reference wire has become
+\emph{inequality} of the two surviving wire colours. In particular the
+all-red boundary is an ordinary colourable smoothing with an empty
+inequality target. This is not closure of the original equality-target
+class under digon suppression; any enlarged state class needs its own
+proved closure and generating floor.
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedSquareBoundaryReduction.suppressed_count}
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedSquareBoundaryReduction.zero_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedSquareBoundaryReduction.all_red_suppressed_target_empty}
+
+The constructor gate also tests the stronger realization claim. A cubic
+four-terminal endpoint model with fewer than four internal vertices has
+zero or two internal vertices, since $3v+4$ is even. All three matchings
+of four endpoint slots and all $945$ matchings of ten slots were checked,
+with every choice of marked edge. Loops, parallel edges, disconnected
+pieces and nonplanar pairings were allowed, so planarity was not used to
+exclude a prospective realization. No nonempty marked-colour support is
+contained in the square's support. Thus no nonnegative sum of these
+smaller pieces gives the complete marked profile: a positive summand
+would necessarily introduce a forbidden state. This is a complete
+computational gate for that endpoint model, not a new Lean theorem or a
+refutation of representations with extra constraints. Vertex-free circle
+components are outside the enumerated endpoint model.
+
+The receipt is
+\texttt{results/fourcolor/v24\_square\_physical\_observable\_gate.json}.
+It also checks the explicit digon-and-wire drawing: adding the four
+boundary-cycle edges gives a connected cubic rotation with six vertices,
+nine edges and five face cycles; the boundary cycle is a face in the
+specified terminal order. This embedding check is computational. The
+Lean results certify incidence semantics and fibre transport, not a
+general ambient spherical-splice theorem for this replacement.
+
+The result is therefore an equality-specific physical repair and a warning
+against demanding full-profile transport unnecessarily. It does not
+handle an arbitrary remote reference edge, close L4 as a whole, settle the
+ordered-mesh alternative, or verify the enlarged generating base. No
+ordinary non-colourability claim follows from the empty refined fibre:
+a colourable smaller map may have no colouring satisfying its carried
+equality or inequality observation. No
+obligation weight changes: the ledger remains $57/100$.
