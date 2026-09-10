@@ -510,12 +510,46 @@ the actual pointwise bound
 m = P⊥ω.
 ```
 
-No separate adjoint channel is needed for this symmetric source. This
-direct-tilt refinement has not yet been propagated into the measurable
-spacetime envelope; the integrated source treatment still uses the full
-commutator rather than the direct tilt.
-Uniform angular, feedback and diffusion budgets remain open.
-`LocalPressureTiltAudit.lean` checks the new dependencies.
+No separate adjoint channel is needed for this symmetric source.
+`LocalPressureTiltAudit.lean` checks these identities.
+
+`SpectralTiltExcess.lean` absorbs the source using the direct tilt rather
+than the full commutator. With `g` the top gap, `W₀` the limiting transverse
+weight, and `Yold` the previous source excess, it defines
+
+```text
+Ytilt = min(Yold, max(2||R₀||−g²/8,0) W₀ + 8|K|²|ω|²/g²)   if g>0,
+        Yold                                                if g=0.
+```
+
+It proves `|anisotropy(R₀,e,ω)|≤Q/4+Ytilt`, where `Q` is the squared
+spectral residual, and `0≤Ytilt≤Yold≤2||R₀||||ω||²`. At a top collision
+the coarse fallback remains; at separated exact alignment the cost is
+zero. Preserving the top line suffices for complete absorption below the
+threshold `16||R₀||≤g²`, even when the transverse-plane commutator is
+nonzero. The intrinsic tilt norm is `||(1−P)R₀P||`; positive-gap projector
+continuity and measurable restriction prove measurability of the capped
+cost without selecting measurable signed eigenvectors.
+
+`LocalTiltSource.lean` applies this bound directly to the physical material
+rate, then reapplies weak spatial diffusion and its smoothing limit. It
+does not decrease the right side of an older inequality without proof.
+`LocalTiltAlignmentEnergy.lean` supplies an actual local solution from
+arbitrary admissible periodic data satisfying, simultaneously for all
+admissible finite strain filters and positive energy regularizers,
+
+```text
+mean Φδ(t) + ¼∫∫Q ≤ mean Φδ(0) + ∫∫[Xdiff + Ytilt
+                         + 2<z,(Sfull−Sχ)ω> + 2δ<ω,Sfullω>].
+```
+
+The estimate includes both endpoints of the local solution window.
+`Analysis/IntegralEndpointEstimate.lean` requires only integrable source
+terms for that extension, not continuity through collisions.
+`LocalTiltSourceAudit.lean` checks the physical factory and regressions.
+Uniform angular, feedback, collision-sector and diffusion budgets remain
+open; the actual pressure-patch estimates still need the vorticity/gap
+weights appearing in this source cost.
 
 `FourierPressureTiltEnergy.lean` removes the output-count loss in the
 spatial pressure estimate. For a fixed unit direction `f`, write

@@ -21,6 +21,7 @@ Reusable analysis, independent of any particular fluid construction.
 | `PositiveOperatorKernelCurvature.lean` | Second-order positivity coupling operator curvature, the mixed derivative, and vector-gradient energy at a kernel vector | Any real inner product space; local `C²` regularity, positivity, and symmetry only |
 | `RankOneCommutator.lean` | Exact rank-one commutator, arbitrary scalar-shift cancellation, transverse-residual norm bound, and commutation on an eigenvector | Any real inner product space and symmetric bounded operator; no completeness or dimension assumption |
 | `OrthonormalOperatorBound.lean` | Squared operator norm bounded by the sum of squared images of an orthonormal basis, with no dimension factor | Real or complex inner-product domain with a finite orthonormal basis; arbitrary normed codomain |
+| `IntegralEndpointEstimate.lean` | Extends an integral inequality from interior time pairs to both endpoints | Continuous energy and integrable signed source and dissipation; integrands need not be continuous |
 
 The first module is used by
 `FluidDynamics/NavierStokes/StochasticLagrangian/LocalVorticityDiffusion.lean`.
