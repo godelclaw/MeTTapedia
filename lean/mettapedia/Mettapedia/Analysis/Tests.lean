@@ -13,6 +13,7 @@ import Mettapedia.Analysis.SecondDerivative
 import Mettapedia.Analysis.PositiveOperatorKernelCurvature
 import Mettapedia.Analysis.RankOneCommutator
 import Mettapedia.Analysis.OrthonormalOperatorBound
+import Mettapedia.Analysis.FiniteMultiplierLocalization
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.InnerProductSpace.Adjoint
 
@@ -20,6 +21,47 @@ import Mathlib.Analysis.InnerProductSpace.Adjoint
 
 open Set MeasureTheory Mettapedia.Analysis Mettapedia.Analysis.ODE
 open scoped ContDiff RealInnerProductSpace
+
+-- Coincident output modes interfere; they must be collected before squaring.
+example : FiniteMultiplierLocalization.scalarConvolution ({0, 1} : Finset ℤ)
+    {0, 1} (fun _ ↦ (1 : ℝ)) (fun _ ↦ 1) 1 = 2 := by
+  unfold FiniteMultiplierLocalization.scalarConvolution
+  rw [Finset.sum_filter, Finset.sum_product]
+  norm_num [Finset.filter_insert, Finset.filter_singleton]
+
+-- A single frequency shift already creates a nonzero commutator.
+example : FiniteMultiplierLocalization.commutatorCoefficient ({1} : Finset ℤ)
+    {1} (fun _ ↦ (1 : ℝ)) (fun _ ↦ 1) (fun k ↦ (k : ℝ)) 2 = -1 := by
+  norm_num [FiniteMultiplierLocalization.commutatorCoefficient, Finset.sum_filter,
+    Finset.sum_product]
+
+example : FiniteMultiplierLocalization.vectorConvolution ({1} : Finset ℤ)
+    {1} (fun _ ↦ (1 : ℝ)) (fun k ↦ (k : ℝ)) 2 = 1 ∧
+    FiniteMultiplierLocalization.scalarConvolution ({1} : Finset ℤ)
+      {1} (fun _ ↦ (1 : ℝ)) (fun _ ↦ 1) 2 * 2 = 2 := by
+  unfold FiniteMultiplierLocalization.vectorConvolution FiniteMultiplierLocalization.scalarConvolution
+  simp only [Finset.sum_filter, Finset.sum_product]
+  norm_num [Finset.filter_insert, Finset.filter_singleton]
+
+-- Constant spatial cutoffs have no multiplier commutator, including at zero.
+example {G E : Type*} [AddCommGroup G] [DecidableEq G]
+    [NormedAddCommGroup E] [NormedSpace ℝ E] (K : Finset G)
+    (c b : G → ℝ) (m : G → E) (q : G) :
+    FiniteMultiplierLocalization.commutatorCoefficient {0} K c b m q = 0 := by
+  classical
+  unfold FiniteMultiplierLocalization.commutatorCoefficient
+  apply Finset.sum_eq_zero
+  intro pk hpk
+  have hp : pk.1 = 0 := Finset.mem_singleton.mp (Finset.mem_product.mp (Finset.mem_filter.mp hpk).1).1
+  simp [hp]
+
+#print axioms Mettapedia.Analysis.FiniteConvolutionEnergy.sum_fiber_weight_le
+#print axioms Mettapedia.Analysis.FiniteConvolutionEnergy.sum_norm_sq_le
+#print axioms Mettapedia.Analysis.FiniteMultiplierLocalization.vectorConvolution_multiplier_eq
+#print axioms Mettapedia.Analysis.FiniteMultiplierLocalization.commutator_energy_le
+#print axioms Mettapedia.Analysis.FiniteMultiplierLocalization.localized_multiplier_energy_le
+#print axioms Mettapedia.Analysis.FiniteMultiplierLocalization.localized_multiplier_energy_le_of_variation
+#print axioms Mettapedia.Analysis.FiniteMultiplierLocalization.localized_multiplier_energy_le_with_tail
 
 -- Rank-one projection attains the orthonormal-basis energy bound.
 example :

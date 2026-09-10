@@ -22,6 +22,8 @@ Reusable analysis, independent of any particular fluid construction.
 | `RankOneCommutator.lean` | Exact rank-one commutator, arbitrary scalar-shift cancellation, transverse-residual norm bound, and commutation on an eigenvector | Any real inner product space and symmetric bounded operator; no completeness or dimension assumption |
 | `OrthonormalOperatorBound.lean` | Squared operator norm bounded by the sum of squared images of an orthonormal basis, with no dimension factor | Real or complex inner-product domain with a finite orthonormal basis; arbitrary normed codomain |
 | `IntegralEndpointEstimate.lean` | Extends an integral inequality from interior time pairs to both endpoints | Continuous energy and integrable signed source and dissipation; integrands need not be continuous |
+| `FiniteConvolutionEnergy.lean` | Weighted finite Young inequality for a two-input vector kernel, collecting coincident outputs before squaring | Additive commutative group of modes; arbitrary normed additive codomain; no explicit cardinality loss |
+| `FiniteMultiplierLocalization.lean` | Exact localization commutator, symbol-variation energy estimate, and small-symbol/tail split | Any normed scalar field and normed vector space; finite supports; all unfavorable modes retained |
 
 The first module is used by
 `FluidDynamics/NavierStokes/StochasticLagrangian/LocalVorticityDiffusion.lean`.
@@ -72,6 +74,11 @@ the off-diagonal block needed to control that direction.
 The orthonormal-basis operator bound supplies a pressure-Hessian `L²`
 estimate with no frequency-count factor; a rank-one projection attains
 the general bound in the regression suite.
+The finite convolution estimate supplies the localization commutator's
+energy bound without replacing weighted sums by a mode count. Its
+multiplier extension keeps the small-symbol main energy separate from
+an explicit tail and the commutator. These estimates do not assert that
+the cutoff-weight sums or angular tails are uniformly controlled.
 These modules are new derivations using mathlib, not additional adaptations
 from the external source below.
 
@@ -87,6 +94,8 @@ of the public comparison theorems.
 The positive-operator test uses `A(t) = [[t²,t],[t,1]]`: its second-order
 form at the kernel direction and increment `(0,-1)` attains zero with
 three nonzero terms `2 - 4 + 2`. This checks the mixed-term coefficient.
+The convolution tests collect two inputs at the same output, exhibit a
+nonzero one-shift commutator, and check that a constant cutoff commutes.
 
 ## Provenance and changes
 

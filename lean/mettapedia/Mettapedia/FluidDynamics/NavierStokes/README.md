@@ -669,9 +669,49 @@ filtered strain and full vorticity of any Fourier velocity with summable
 first moment, and proves the actual joint-source split. It assumes
 neither a global positive gap nor a continuous signed eigenvector.
 `WeightedPressurePatchAudit.lean` checks these results and regressions.
-Angular control of the weighted patch energies, the collision cost,
-feedback and diffusion still require uniform dynamical estimates; these
-spatial constructions do not establish global regularity.
+
+`PressureTiltSymbol.lean` factors the pressure action through its real,
+even, order-zero symbol `mₑ(k)=(k·e)P⊥ₑk/|k|²`, defined as zero at `k=0`.
+It proves `|mₑ(k)−mₑ(l)|≤4|k−l|/|k|` for `k≠0`, including `l=0`.
+`FourierPressureTraceSymbol.lean` factors the physical tilt coefficients
+and proves that real symmetrization commutes with this symbol. The real
+pressure field is formed before multiplication by a complex cutoff.
+
+`FourierPressureLocalization.lean` retains the exact cutoff commutator.
+For `Bᵢ=cᵢ*b` with `b` the real-symmetrized Laplacian-pressure coefficients,
+
+```text
+Cᵢ(q) = Σ_{p+k=q} cᵢ(p)b(k)[mₑᵢ(k)−mₑᵢ(q)],
+Eᵢ ≤ 2η² Σq |Bᵢ(q)|² + 2 Tᵢ(η) + 2 Σq |Cᵢ(q)|²,
+Tᵢ(η) = Σ_{q: |mₑᵢ(q)|>η} |Bᵢ(q)|².
+```
+
+This is an unconditional split, not a cone assumption. The threshold is
+on the actual tilt symbol: both parallel and perpendicular modes have
+zero symbol. If all input frequencies have magnitude at least `κ>0`,
+the commutator energy is at most
+`16 κ⁻² (Σp |cᵢ(p)||p|)² EH`. A separate conditional cone estimate
+widens the input gain `η` to `η+4r/κ` for cutoff radius `r`.
+
+`PressureTracePatchEnergy.lean` identifies the scalar patch energy with
+`∫ |pᵢ|² |tr Hχ|²`. `WeightedPressureAngularBudget.lean` constructs a
+single patch family, valid for every finite negation-closed pressure
+truncation and every `η≥0`, with
+
+```text
+∫ a |P⊥ₑ Hχ e|² ≤ 4η² ∫ a |tr Hχ|²
+                   + 4Σᵢ Tᵢ(η) + 4Σᵢ ||Cᵢ||₂²
+                   + (32ρ²+2δ+4η²δ) EH.
+```
+
+`LocalPressureAngularBudget.lean` constructs that family from the actual
+filtered strain and full vorticity, with the same collision-safe weight
+`a`. Neither pressure-cone membership nor tail/commutator smallness is
+assumed. `PressureAngularBudgetAudit.lean` checks the dependency closure
+and zero, parallel, perpendicular, oblique, and threshold regressions.
+Uniform time/scale control of the weighted trace term, angular tails,
+cutoff Fourier moments, collision cost, feedback and diffusion is still
+open. These spatial constructions do not establish global regularity.
 
 `PressureTiltDatum.lean`, `PressureTiltOrigin.lean`, and
 `PressureTiltAlignment.lean` supply a physical obstruction to a
