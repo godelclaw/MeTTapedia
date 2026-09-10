@@ -58,6 +58,39 @@ regularity, blowup, or any other Millennium-problem conclusion.
 
 ## Current Status
 
+### Constructive pressure-patch smoothing
+
+`StochasticLagrangian/FourierResolventSmoothing.lean` constructs the finite
+coefficients `d(k) = c(k) / (1 + ε |k|²)` and proves, for `ε > 0`,
+
+```text
+G(d) ≤ G(c),       H(d) ≤ G(c)/(4ε),       ||p_c - p_d||₂² ≤ ε G(c)/4.
+```
+
+Here `G(c) = Σ|k|²|c(k)|²` and `H(c) = Σ|k|⁴|c(k)|²` use integer torus
+frequencies. The physical derivative factors are retained separately in
+`FourierCoordinateDerivatives.lean`. Smoothing preserves the exact support,
+fixes constant modes, and solves its elliptic coefficient equation. The
+sharp constants are attained by the audited single-mode examples.
+
+`PressurePatchSmoothing.lean` charges the approximation error against the
+actual pressure Hessian and trace supremum norms. `SmoothedPressureBudget.lean`
+constructs the same strain/vorticity-weighted patch family for every smoothing
+parameter, pressure truncation, and angular threshold. Its bound retains the
+weighted pressure trace and angular tails, with cutoff cost
+
+```text
+[1536 B₁² + 72 B₀²/ε + ε B_H² + 4εη² B_T²] Σ_i G(c_i).
+```
+
+`B₀` and `B₁` are the normalized pressure-potential supremum and coordinate
+gradient bound; `B_H` and `B_T` are the physical Hessian and trace suprema.
+No mode-count or patch-count factor is inserted. This removes a separate
+second-derivative cutoff cost but does **not** bound the original patch
+gradient energy by the fluid dissipation, control the angular tails, or
+establish uniform pressure bounds. Those dynamical estimates remain open.
+`PressureSmoothingAudit.lean` checks the new NS theorem dependencies.
+
 ### September 2026 material-flow development
 
 Ben Goertzel's [September 9 commentary](https://bengoertzel.substack.com/p/navier-stokes-blows-up-the-internet)

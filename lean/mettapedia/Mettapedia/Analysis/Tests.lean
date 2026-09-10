@@ -17,10 +17,38 @@ import Mettapedia.Analysis.FiniteMultiplierLocalization
 import Mettapedia.Analysis.LocallyLipschitz
 import Mettapedia.Analysis.LocallyLipschitzDifferentiability
 import Mettapedia.Analysis.FiniteCoefficientEnergy
+import Mettapedia.Analysis.FiniteResolventEnergy
+import Mettapedia.Analysis.QuadraticWeightStability
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.InnerProductSpace.Adjoint
 
 /-! Regression examples for the analysis estimates. -/
+
+/-- Both sharp resolvent constants are attained at epsilon times weight equal to one. -/
+example :
+    (1 - Mettapedia.Analysis.FiniteResolventEnergy.multiplier 1 1) ^ 2 = (1 / 4 : ℝ) ∧
+      Mettapedia.Analysis.FiniteResolventEnergy.multiplier 1 1 ^ 2 = (1 / 4 : ℝ) := by
+  norm_num [Mettapedia.Analysis.FiniteResolventEnergy.multiplier]
+
+/-- A different scale attains the same sharp weighted estimate. -/
+example :
+    16 * Mettapedia.Analysis.FiniteResolventEnergy.multiplier (1 / 4) 4 ^ 2 = (4 : ℝ) ∧
+      (1 - Mettapedia.Analysis.FiniteResolventEnergy.multiplier (1 / 4) 4) ^ 2 = (1 / 4 : ℝ) := by
+  norm_num [Mettapedia.Analysis.FiniteResolventEnergy.multiplier]
+
+#print axioms Mettapedia.Analysis.FiniteResolventEnergy.multiplier_pos
+#print axioms Mettapedia.Analysis.FiniteResolventEnergy.multiplier_le_one
+#print axioms Mettapedia.Analysis.FiniteResolventEnergy.four_mul_smoothing_le
+#print axioms Mettapedia.Analysis.FiniteResolventEnergy.sub_multiplier_eq
+#print axioms Mettapedia.Analysis.FiniteResolventEnergy.squared_error_le
+#print axioms Mettapedia.Analysis.FiniteResolventEnergy.weighted_smoothing_le
+#print axioms Mettapedia.Analysis.FiniteResolventEnergy.norm_smooth_sq
+#print axioms Mettapedia.Analysis.FiniteResolventEnergy.norm_sub_smooth_sq
+#print axioms Mettapedia.Analysis.FiniteResolventEnergy.energy_smooth_le
+#print axioms Mettapedia.Analysis.FiniteResolventEnergy.first_energy_smooth_le
+#print axioms Mettapedia.Analysis.FiniteResolventEnergy.second_energy_smooth_le
+#print axioms Mettapedia.Analysis.FiniteResolventEnergy.error_energy_le
+#print axioms Mettapedia.Analysis.QuadraticWeightStability.integral_mul_le
 
 open Set MeasureTheory Mettapedia.Analysis Mettapedia.Analysis.ODE
 open scoped ContDiff RealInnerProductSpace
