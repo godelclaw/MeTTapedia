@@ -939,8 +939,12 @@ vanish before the final estimate. No selected eigenvector is integrated.
 
 `LocalDepletedDiffusionBudget.lean` discharges those consistency hypotheses
 for the actual finite-filter strain and full, untruncated vorticity.
-Writing `Lχ = strainGradientAmplitude`, the diffusion cost becomes
-`(16ν/δ)·3Lχ²·Wε`. The regularized energy uses `δ`, while the diffusion
+`LocalizedDiffusionIncrement.lean` and `LocalizedLaplacianDiffusion.lean`
+retain the actual first-derivative norms under the weak-limit integral.
+The diffusion cost is `(16ν/δ)·H·Wε`, where
+`H(x)=Σⱼ||∂ⱼSχ(x)||op²`. Writing `Lχ = strainGradientAmplitude`, the
+global bound `H≤3Lχ²` is used for dominated convergence only.
+The regularized energy uses `δ`, while the diffusion
 weight and nonlinear anisotropy envelope use independent parameters
 `ε` and `η`. `LocalDepletedDiffusionEnergy.lean` integrates this estimate
 on the constructed local solution, including both time endpoints.
@@ -960,7 +964,7 @@ satisfies, for every admissible finite filter and every fixed `δ>0`,
 
 ```text
 mean Φδ(t) + ∫₀ᵗ∫ |z|²
-  ≤ mean Φδ(0) + ∫₀ᵗ∫ (16ν/δ)·3Lχ²·W₀ + ∫₀ᵗ∫ Rδ,lim.
+  ≤ mean Φδ(0) + ∫₀ᵗ∫ (16ν/δ)·H·W₀ + ∫₀ᵗ∫ Rδ,lim.
 ```
 
 The diffusion cost vanishes on separated aligned eigenlines and never
@@ -970,11 +974,32 @@ the `2δ<ω,Sfullω>` regularization stretching. Neither auxiliary limit
 removes `δ`. This weak estimate discards the extra gradient and curvature
 damping; it does not silently retain what was spent or dropped.
 
-The cost still uses a global finite-Fourier gradient amplitude, not the
-pointwise `H=Σⱼ||∂ⱼSχ||op²` of the smooth-branch identity. Its localization,
-uniform scale/time control, collision-sector payment, and global
-continuation remain open. `LocalDepletedDiffusionAudit.lean` audits the
-weak-limit and actual-data results. The previous coarse APIs are unchanged.
+`SpectralDiffusionExcess.lean` proves `g²W₀≤|z|²` without a positive-gap
+assumption. Define
+
+```text
+a = (16ν/δ)H,          X = max(a−g²/2,0)W₀.
+aW₀ ≤ |z|²/2 + X,    0 ≤ X ≤ aW₀.
+```
+
+`LocalExcessDiffusionEnergy.lean` proves spatial and temporal integrability
+of this actual excess, including collisions, and constructs one physical
+local solution satisfying, for every admissible filter and fixed `δ>0`,
+
+```text
+mean Φδ(t) + (1/2)∫₀ᵗ∫ |z|²
+  ≤ mean Φδ(0) + ∫₀ᵗ∫ X + ∫₀ᵗ∫ Rδ,lim.
+```
+
+The excess is zero wherever `32νH≤δg²`. At a top collision it is
+`a|ω|²`; no collision cost is erased by the split. This spends half the
+coherent spectral residual, not previously spent curvature or gradient
+damping. Uniform scale/time control of the excess and nonlinear source,
+collision-sector payment, and global continuation remain open.
+`LocalDepletedDiffusionAudit.lean` and `LocalDiffusionDensityAudit.lean`
+audit the weak-limit and actual-data results. The previous coarse APIs
+remain available; the existing depleted cost definitions are strengthened
+to use the local density.
 
 `FilteredHighHighExample.lean` supplies real, transverse, zero-mean finite
 Fourier data whose retained velocity vanishes while its retained subgrid
