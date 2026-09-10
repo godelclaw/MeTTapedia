@@ -61,6 +61,24 @@ theorem norm_topSpectralResidual_sq_le_opNorm_defect (S : SymmetricStrain) (w : 
   (norm_topSpectralResidual_sq_le_width_defect S w).trans
     (mul_le_mul_of_nonneg_right (spectralWidth_le_twice_opNorm S) (topSpectralDefect_nonneg S w))
 
+/-- The coherent damping also has a lower bound. It degenerates, rather
+than becoming singular, when the top gap closes. -/
+theorem topGap_mul_defect_le_norm_topSpectralResidual_sq (S : SymmetricStrain) (w : R3) :
+    topGap S * topSpectralDefect S w ≤ ‖spectralResidual S.1 (topEigenvalue S) w‖ ^ 2 := by
+  let F := orderedEigenframe S.1 S.2
+  have h02 : 0 ≤ F.eigenvalue 0 - F.eigenvalue 2 :=
+    sub_nonneg.mpr (F.antitone_eigenvalue (by decide : (0 : Fin 3) ≤ 2))
+  have h12 : 0 ≤ F.eigenvalue 1 - F.eigenvalue 2 :=
+    sub_nonneg.mpr (F.antitone_eigenvalue (by decide : (1 : Fin 3) ≤ 2))
+  have h := mul_nonneg (mul_nonneg h02 h12) (sq_nonneg ⟪w, F.eigenbasis 2⟫)
+  rw [norm_topSpectralResidual_sq_coordinates, topSpectralDefect_coordinates]
+  change (F.eigenvalue 0 - F.eigenvalue 1) *
+      ((F.eigenvalue 0 - F.eigenvalue 1) * ⟪w, F.eigenbasis 1⟫ ^ 2 +
+        (F.eigenvalue 0 - F.eigenvalue 2) * ⟪w, F.eigenbasis 2⟫ ^ 2) ≤
+    (F.eigenvalue 0 - F.eigenvalue 1) ^ 2 * ⟪w, F.eigenbasis 1⟫ ^ 2 +
+      (F.eigenvalue 0 - F.eigenvalue 2) ^ 2 * ⟪w, F.eigenbasis 2⟫ ^ 2
+  nlinarith only [h]
+
 theorem topSpectralResidual_eq_zero_of_defect_eq_zero (S : SymmetricStrain) (w : R3)
     (h : topSpectralDefect S w = 0) : spectralResidual S.1 (topEigenvalue S) w = 0 := by
   have hb := norm_topSpectralResidual_sq_le_width_defect S w

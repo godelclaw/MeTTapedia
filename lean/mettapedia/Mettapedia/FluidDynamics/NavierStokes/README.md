@@ -867,6 +867,62 @@ and exact signed nonviscous anisotropy on the simple-top branch.
 This layer is a new derivation using mathlib and the existing spectral
 energy calculus, not a further port from either external construction.
 
+### Curvature-paid alignment depletion of diffusion
+
+`Analysis/PositiveOperatorKernelCurvature.lean` tests a positive operator
+curve on an affine vector curve through a kernel vector. Applied to the
+actual spectral gap operator, it gives, for every scalar `c` and vector `v`,
+
+```text
+κⱼ c² + 4c<v,(∂ⱼA₀)e> + 2<v,A₀v> ≥ 0,
+κⱼ = ∂ⱼ²λmax − <e,(∂ⱼ²Sχ)e>,       Σⱼκⱼ = Γ.
+```
+
+`LocalSpectralDiffusionDepletion.lean` uses this inequality with
+`c = <e,ω>` and `v = ∂ⱼω`. The aligned curvature pays the aligned mixed
+gradient. Writing `m = ω−<e,ω>e`, the remaining estimate is
+
+```text
+(Dᵤ−νΔ)Φδ + |z|² + νΓ|m|² + νδ Σⱼ|∂ⱼω|²
+  ≤ Rδ + (16ν/δ)H|m|²,                  δ > 0.
+```
+
+Thus the gradient price is proportional to squared misalignment, not
+full enstrophy. The remaining curvature is also weighted by `|m|²`:
+the aligned part was spent in the cancellation and cannot be retained
+again as extra damping. The nonlinear source `Rδ` is unchanged.
+Both `|m|² ≤ D/g` on `g = topGap(Sχ) > 0` and
+`|m|² ≤ Φδ/(g+δ)` are checked. The coherent residual satisfies
+`g²|m|² ≤ gD ≤ |z|²`.
+
+`LocalSpectralDiffusionBudget.lean` constructs this depleted estimate on
+the same physical local solution, for all admissible filters, positive
+top-gap points, and positive constant regularizations. It also proves:
+if `32νH ≤ δg²`, half of `|z|²` pays the depleted gradient cost. Neither
+this condition nor a global bound for `Rδ` has been proved uniformly.
+
+`SpectralDiffusionIncrementDepletion.lean` provides a separate,
+collision-safe finite-increment version. For old/new strains `S,T`,
+`c = <eS,w>`, `m = w−c eS`, `B = Aδ(T)−Aδ(S)`, and the nonnegative
+supporting remainder `σ = <eS,A₀(T)eS>`, the exact remainder is
+
+```text
+Eδ(T,w+v) − Eδ(S,w) − incrementRate
+  = <v+c eS,A₀(T)(v+c eS)> + σ|m|² + 2<v,Bm> + δ|v|².
+```
+
+Consequently the paid increment cost is `(8/δ)||T−S||op²|m|²`, with
+`(δ/2)|v|² + σ|m|²` retained on the left. The aligned case has zero
+strain-increment cost. No gap or differentiable eigenvector is required.
+A scalar majorant uses `Eε(S,w)/(topGap(S)+ε)` with an independent positive
+smoothing parameter `ε`; it is not identified with `δ`.
+
+Passing this improved finite-increment estimate to the weak spatial
+budget remains to be done. The already checked coarse weak estimate is
+unchanged. `LocalSpectralDiffusionDepletionAudit.lean` audits all 20 new
+theorems in this layer; the generic attained-curvature regression and
+the aligned finite-increment specialization test its zero-cost limits.
+
 `FilteredHighHighExample.lean` supplies real, transverse, zero-mean finite
 Fourier data whose retained velocity vanishes while its retained subgrid
 force does not. The input squared frequencies are five and two; the output
