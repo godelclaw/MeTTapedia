@@ -14187,3 +14187,79 @@ hypotheses, bounding the agreeing crossing edges as well as the
 disagreeing ones. No hypothesis asserting that sweep has been substituted
 for its construction. No obligation row is discharged; the ledger remains
 $57/100$.
+
+\subsection{A disk-local repair can be overconstrained by its exterior}
+\label{sec:disk-exchange-boundary-control}
+
+The next attempted construction recolours both deletion graphs inside a
+disk containing the two sites and the entire disagreement, while fixing
+every edge outside its interior. This is stronger than merely assuming
+sphericity. It can fail even when arbitrary joint recolouring is allowed,
+with no restriction to Kempe orbits.
+
+The control is the spherical dodecahedron with the explicit edge and star
+presentation in \texttt{DiskExchangeBoundaryControl.lean}. Its deleted
+adjacent pairs are $\{0,1\}$ and $\{17,19\}$, whose closed neighbourhoods
+are disjoint. The chosen disk consists of ten faces; its complement is
+two adjacent pentagons. The lab checks the spherical rotation, both
+connected facial sides, the complete simple eight-edge rim, and the disk
+Euler count. All edges incident with either deletion site are strictly
+inside the disk. These geometric checks are computational; the Lean
+theorems below certify the colouring obstruction on the stated edge
+presentation, not a separate geometric realization theorem.
+
+There are nine frozen edges: the eight rim edges and the shared edge of
+the two exterior pentagons. In edge-index order they are
+\[
+  (10,11,12,13,14,17,23,25,27),
+\]
+with colour codes $(2,0,1,0,0,2,1,1,2)$. Here $0,1,2$ denote the three
+nonzero Tait colours, not the zero Klein element. Their dictionary and
+the incident-star presentation are kernel checked.
+\Sverified{Mettapedia.GraphTheory.FourColor.DiskExchangeBoundaryControl.color_encoding}
+\Sverified{Mettapedia.GraphTheory.FourColor.DiskExchangeBoundaryControl.presentation_valid}
+
+Two independent complete enumerators find $60$ full colourings and $108$
+colourings of each deletion. With this exterior fixed, those populations
+shrink to $0$, $2$, and $1$ respectively. Both remaining deletion pairs
+disagree on exactly six common-core edges, all inside the disk. Thus even
+the best boundary-fixed exchange cannot improve them. The two-colouring
+existence witnesses, impossibility of a full extension, and the gluing
+implication are proved in Lean. A least-disagreement argument then proves
+existence of a positive boundary-fixed minimum and refutes the universal
+strict-improvement rule, without trusting the enumeration for minimality.
+\Sverified{Mettapedia.GraphTheory.FourColor.DiskExchangeBoundaryControl.deletion_witnesses}
+\Sverified{Mettapedia.GraphTheory.FourColor.DiskExchangeBoundaryControl.no_full_extension}
+\Sverified{Mettapedia.GraphTheory.FourColor.DiskExchangeBoundaryControl.glue_proper}
+\Sverified{Mettapedia.GraphTheory.FourColor.DiskExchangeBoundaryControl.no_fixed_agreement}
+\Sverified{Mettapedia.GraphTheory.FourColor.DiskExchangeBoundaryControl.exists_frozen_positive_minimum}
+\Sverified{Mettapedia.GraphTheory.FourColor.DiskExchangeBoundaryControl.no_universal_fixed_exchange}
+
+The graph itself remains colourable. An explicit full colouring changes
+exactly one of the nine frozen edges, edge $11=(5,9)$; Lean verifies this
+witness. The lab also verifies that adding either exterior face to the
+disk leaves two full extensions of the new exterior. There is no claim
+that one-face enlargement suffices in general.
+\Sverified{Mettapedia.GraphTheory.FourColor.DiskExchangeBoundaryControl.escape_changes_one}
+The receipts and replay are in
+\texttt{results/fourcolor/v24\_disk\_exchange\_gate.json} and
+\texttt{tools/fourcolor/v24\_disk\_exchange\_gate.py}.
+
+\paragraph{What changes in the proof plan.}
+This refutes our proposed fixed-exterior localization rule, not an
+assertion that the source requires that rule. It is not a positive
+boundary-unrestricted absolute minimum or a least counterexample.
+Likewise a general theorem making every positive absolute minimum
+strictly improve would force agreement and hence ambient colourability;
+that is not automatically an easier intermediate target than the source's
+large-instance descent theorem.
+
+The source-compatible target remains an actual smaller admissible piece
+whose complete boundary behaviour transfers zero Count. The existing
+support-based physical replacement theorem already gives that semantic
+transfer; it does not require repairing an arbitrarily selected exterior
+colouring. It still requires construction of the replacement, a valid
+physical seam and strict size decrease. No such construction is assumed
+or claimed here, and no configuration catalogue is introduced. This is a
+refutation checkpoint on the global reduction attack, with the fixed
+obligation ledger unchanged at $57/100$.
