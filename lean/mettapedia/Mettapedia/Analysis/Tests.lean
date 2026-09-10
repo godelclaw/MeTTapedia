@@ -5,11 +5,47 @@ import Mettapedia.Analysis.LogarithmicScaleBound
 import Mettapedia.Analysis.SimpleImplicitRoot
 import Mettapedia.Analysis.OperatorQuadraticForm
 import Mettapedia.Analysis.IdempotentDerivatives
+import Mettapedia.Analysis.SpectralRelationDerivatives
+import Mettapedia.Analysis.KernelCrossTerm
+import Mathlib.Analysis.InnerProductSpace.PiL2
+import Mathlib.Analysis.InnerProductSpace.Adjoint
 
 /-! Regression examples for the analysis estimates. -/
 
 open Set MeasureTheory Mettapedia.Analysis Mettapedia.Analysis.ODE
 open scoped ContDiff RealInnerProductSpace
+
+-- A rank-one projection leaves a genuinely transverse cross term unpaid.
+example :
+    let e : EuclideanSpace ℝ (Fin 2) := (EuclideanSpace.basisFun (Fin 2) ℝ) 0
+    let z : EuclideanSpace ℝ (Fin 2) := (EuclideanSpace.basisFun (Fin 2) ℝ) 1
+    ¬ ∃ A B : ℝ, ∀ v : EuclideanSpace ℝ (Fin 2),
+      -4 * ⟪v, z⟫ ≤ A * ‖InnerProductSpace.rankOne ℝ e e v‖ ^ 2 + B := by
+  dsimp only
+  apply KernelCrossTerm.not_exists_projectedSquare_bound _ ((EuclideanSpace.basisFun (Fin 2) ℝ) 1)
+  · simp [InnerProductSpace.rankOne_apply, EuclideanSpace.inner_eq_star_dotProduct, dotProduct]
+  · simp
+
+-- The parabolic defect has opposite nonzero diagonal blocks.
+example :
+    let P : Matrix (Fin 2) (Fin 2) ℝ := !![1, 0; 0, 0]
+    let W : Matrix (Fin 2) (Fin 2) ℝ := !![2, 0; 0, -2]
+    let K : Matrix (Fin 2) (Fin 2) ℝ := !![2, 0; 0, 2]
+    P * W * P = P * K * P ∧
+      (1 - P) * W * (1 - P) = -(1 - P) * K * (1 - P) ∧ W * P + P * W ≠ W := by
+  dsimp only
+  have hp : (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℝ) * !![1, 0; 0, 0] = !![1, 0; 0, 0] := by
+    ext i j
+    fin_cases i <;> fin_cases j <;> norm_num [Matrix.mul_fin_two]
+  have hw : (!![2, 0; 0, -2] : Matrix (Fin 2) (Fin 2) ℝ) * !![1, 0; 0, 0] +
+      !![1, 0; 0, 0] * !![2, 0; 0, -2] = !![2, 0; 0, -2] + !![2, 0; 0, 2] := by
+    ext i j
+    fin_cases i <;> fin_cases j <;> norm_num [Matrix.mul_fin_two, Matrix.add_apply]
+  refine ⟨idempotent_defect_image_block _ _ _ hp hw,
+    idempotent_defect_complement_block _ _ _ hp hw, ?_⟩
+  intro he
+  have h00 := congrArg (fun A : Matrix (Fin 2) (Fin 2) ℝ ↦ A 0 0) he
+  norm_num [Matrix.mul_fin_two, Matrix.add_apply] at h00
 
 -- The root -2 is simple even when the other two roots 1±x coincide.
 example : ContDiffAt ℝ ∞ (fun _ : ℝ ↦ (-2 : ℝ)) 0 := by

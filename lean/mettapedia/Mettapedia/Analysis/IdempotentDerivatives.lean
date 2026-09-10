@@ -55,4 +55,27 @@ theorem parabolic_idempotent_constraint {ι : Type*} [Fintype ι]
     _ = (D * P + P * D) - nu • (L * P + P * L) := by module
     _ = _ := by rw [hD, he]; module
 
+/-- Compressing a defective tangent identity to the image determines its
+diagonal block. No symmetry or finite-dimensionality is needed. -/
+theorem idempotent_defect_image_block {R : Type*} [Ring R] (P W K : R) (hP : P * P = P)
+    (hW : W * P + P * W = W + K) : P * W * P = P * K * P := by
+  have h := congrArg (fun X : R ↦ P * X * P) hW
+  simp only [mul_add, add_mul] at h
+  have hl : P * (W * P) * P = P * W * P := by simp only [mul_assoc, hP]
+  have hr : P * (P * W) * P = P * W * P := by rw [← mul_assoc P P W, hP]
+  rw [hl, hr] at h
+  linear_combination (norm := abel) h
+
+/-- The complementary diagonal block has the opposite sign. -/
+theorem idempotent_defect_complement_block {R : Type*} [Ring R] (P W K : R) (hP : P * P = P)
+    (hW : W * P + P * W = W + K) :
+    (1 - P) * W * (1 - P) = -(1 - P) * K * (1 - P) := by
+  have h := congrArg (fun X : R ↦ (1 - P) * X * (1 - P)) hW
+  have hl : (1 - P) * P = 0 := by rw [sub_mul, one_mul, hP, sub_self]
+  have hr : P * (1 - P) = 0 := by rw [mul_sub, mul_one, hP, sub_self]
+  simp only [mul_add, add_mul, mul_assoc, hr, mul_zero] at h
+  rw [← mul_assoc (1 - P) P (W * (1 - P)), hl, zero_mul] at h
+  simp only [← mul_assoc, neg_mul] at h ⊢
+  linear_combination (norm := abel) -h
+
 end Mettapedia.Analysis
