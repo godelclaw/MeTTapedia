@@ -1,0 +1,63 @@
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.LocalJointSourceTilt
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.LocalExcessDiffusionEnergy
+
+/-!
+# Axiom audit and zero-mode regressions for the actual pressure-tilt kernel
+-/
+
+open Mettapedia.FluidDynamics.NavierStokes
+open PeriodicFourierTriad PancakePeriodicCoherentSplit FourierPressureCommutator
+open LocalPressureCommutator PancakeInfinitePressureCoefficients
+
+example (chi : Wavevector → ℂ) (u : FourierVelocity) (x : UnitAddTorus (Fin 3)) :
+    pressureModeAmplitude chi u 0 x = 0 := by
+  simp only [pressureModeAmplitude, infinitePressureCoeff_zero, mul_zero, Complex.zero_re]
+
+example (chi : Wavevector → ℂ) (u : FourierVelocity) (x : UnitAddTorus (Fin 3)) :
+    filteredPressureOperator chi ∅ u x = 0 := by
+  rw [filteredPressureOperator_eq_sum, Finset.sum_empty]
+
+#print axioms InnerProductSpace.rankOne_commutator
+#print axioms InnerProductSpace.rankOne_self_commutator_eq_shifted
+#print axioms InnerProductSpace.norm_rankOne_self_commutator_le
+#print axioms InnerProductSpace.rankOne_self_commutes_of_eigenvector
+#print axioms PancakeFourierPressureStrain.strainCoeff_add
+#print axioms PancakeFourierPressureStrain.strainCoeff_neg
+#print axioms PancakeFilteredStrainDynamics.strainCoeff_filtered
+#print axioms PancakeAnisotropyDepletion.lineRemainder_smul
+#print axioms PancakeAnisotropyDepletion.lineRemainder_sum
+#print axioms SpectralSourceCommutator.commutator_smul
+#print axioms SpectralSourceCommutator.commutator_sum
+#print axioms InfiniteFilteredPressure.infinitePressureCoeff_eq_finite
+#print axioms InfiniteFilteredPressure.infinitePressureHessianCoeff_eq_finite
+#print axioms InfiniteFilteredPressure.strain_infinitePressureGradientCoeff
+#print axioms InfiniteFilteredPressure.pressureGradient_subgridForce_balance
+#print axioms InfiniteFilteredPressure.pressureHessian_subgridStrain_balance
+#print axioms InfiniteFilteredPressure.resolvedPressure_subgridStrain_balance
+#print axioms LocalPressureCommutator.pressure_subgrid_balance
+#print axioms LocalPressureCommutator.nonviscousRemainder_eq_joint
+#print axioms LocalPressureCommutator.sourceCommutator_eq_joint
+#print axioms LocalPressureCommutator.sourceCommutator_eq_joint_of_localSolution
+#print axioms FourierPressureCommutator.realMatrixOperator_rankOne
+#print axioms FourierPressureCommutator.pressure_mode_eq_rankOne
+#print axioms FourierPressureCommutator.filteredPressureOperator_eq_sum
+#print axioms FourierPressureCommutator.commutator_filteredPressure_eq_sum
+#print axioms FourierPressureCommutator.norm_commutator_filteredPressure_le
+#print axioms FourierPressureCommutator.commutator_filteredPressure_eq_zero_of_eigenvectors
+#print axioms FourierPressureTilt.filteredPressure_apply_eq_sum
+#print axioms FourierPressureTilt.transverse_filteredPressure_eq_sum
+#print axioms FourierPressureTilt.norm_transverse_filteredPressure_le
+#print axioms FourierPressureTilt.filteredPressure_symmetric
+#print axioms FourierPressureTilt.filteredPressure_apply_eq_zero_of_perpendicular
+#print axioms FourierPressureTilt.abs_pressureAnisotropy_le_transverse
+#print axioms FourierPressureTilt.abs_pressureAnisotropy_le_quadratic_of_perpendicular
+#print axioms LocalJointSourceTilt.spatialSpin_adjoint
+#print axioms LocalJointSourceTilt.pressureOperator_adjoint
+#print axioms LocalJointSourceTilt.subgridOperator_adjoint
+#print axioms LocalJointSourceTilt.transportOperator_adjoint
+#print axioms LocalJointSourceTilt.nonviscousRemainder_adjoint
+#print axioms LocalJointSourceTilt.abs_sourceAnisotropy_le_jointTilt
+#print axioms LocalJointSourceTilt.jointTilt_eq_pressure_kernel
+#print axioms LocalJointSourceTilt.jointTilt_eq_pressure_kernel_of_localSolution
+#print axioms LocalExcessDiffusionEnergy.meanEnergy_add_half_integral_residual_le_initial
+#print axioms LocalExcessDiffusionEnergy.exists_physical_localExcessDiffusionEnergy

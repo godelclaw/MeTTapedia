@@ -57,6 +57,20 @@ def viscousGradientCoeff (nu : ℝ) (u : FourierVelocity) (q : Wavevector) : Mat
 theorem pressureCoeff_zero (modes : Finset Wavevector) (u : FourierVelocity) :
     pressureCoeff modes u 0 = 0 := by simp [pressureCoeff, modeDot]
 
+theorem strainCoeff_add (u v : FourierVelocity) (q : Wavevector) :
+    strainCoeff (u + v) q = strainCoeff u q + strainCoeff v q := by
+  ext i j
+  simp only [strainCoeff, gradientCoeff, Matrix.smul_apply, Matrix.add_apply,
+    Matrix.transpose_apply, Pi.add_apply, smul_eq_mul]
+  ring
+
+theorem strainCoeff_neg (u : FourierVelocity) (q : Wavevector) :
+    strainCoeff (-u) q = -strainCoeff u q := by
+  ext i j
+  simp only [strainCoeff, gradientCoeff, Matrix.smul_apply, Matrix.add_apply,
+    Matrix.transpose_apply, Matrix.neg_apply, Pi.neg_apply, smul_eq_mul]
+  ring
+
 theorem gradientCoeff_trace (u : FourierVelocity) (q : Wavevector) :
     (gradientCoeff u q).trace = unitTorusDerivativePhase * modeDot q (u q) := by
   simp only [Matrix.trace, Matrix.diag_apply, gradientCoeff, modeDot, Finset.mul_sum]

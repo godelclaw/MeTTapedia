@@ -468,6 +468,54 @@ for the actual local solution. The improvement propagates through the
 existing spacetime, smoothing-limit, and excess-diffusion theorems.
 No all-scale estimate of this commutator is supplied.
 
+`InfiniteFilteredPressure.lean` and `LocalPressureCommutator.lean` now
+cancel the resolved pressure against the pressure correction inside the
+projected subgrid force, at every output frequency and in the actual
+local solution:
+
+```text
+−Hess(p_v) + sym ∇gχ = −χ Hess(p_u) + sym ∇Fraw,
+Fraw = −2πi · subgridConvection(χ,u).
+```
+
+The infinite fiber is retained, including both-high inputs; finite
+support is used only to identify the resolved pressure. The filter acts
+on the output of the full pressure, not on its two input velocities.
+The raw force is generated filtering feedback in the unforced equation,
+not an externally prescribed force.
+`FourierPressureCommutator.lean` identifies its real Hessian operator as
+`H = Σ_q a_q (q ⊗ q)`, with the full real spatial phase in `a_q`. Thus
+`[S,H] = Σ_q a_q ((Sq−b_q q)⊗q − q⊗(Sq−b_q q))` for any scalar shifts
+`b_q`. The signed sum precedes the separate norm upper bound.
+
+`FourierPressureTilt.lean` extracts the more selective direct action:
+
+```text
+P⊥ H e = Σ_q a_q <q,e> P⊥q.
+```
+
+Modes perpendicular to `e` cannot tilt that line. If every active mode is
+perpendicular, `H e=0` and
+`|anisotropy(H,e,ω)| ≤ ||H|| ||P⊥ω||²`. This hypothesis is not inferred
+from pointwise alignment of vorticity. The complete commutator can remain
+nonzero because it also measures rotation inside the transverse plane.
+
+`LocalJointSourceTilt.lean` proves symmetry of the actual nonviscous
+source and identifies its complete direct tilt `K = P⊥ R₀ e`, preserving
+the pressure sum jointly with spin, raw feedback and transport. It proves
+the actual pointwise bound
+
+```text
+|anisotropy(R₀,e,ω)| ≤ 2||R₀|| ||m||² + 2||ω|| ||m|| ||K||,
+m = P⊥ω.
+```
+
+No separate adjoint channel is needed for this symmetric source. This
+direct-tilt refinement has not yet been propagated into the measurable
+spacetime envelope; the preceding integrated theorem still uses `C*`.
+Uniform angular, feedback and diffusion budgets remain open.
+`LocalPressureTiltAudit.lean` checks the new dependencies.
+
 `SpectralSourceCommutatorTests.lean` checks a commuting source on the
 simple-top branch and constructs a commuting rank-one source with
 anisotropy one at zero strain. This rules out deleting the positive-gap
