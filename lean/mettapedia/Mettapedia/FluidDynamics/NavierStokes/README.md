@@ -489,6 +489,49 @@ source payment is proved. The spectral identities alone do not distinguish
 unforced regularity from a forced blowup construction. The new theorem
 dependencies are checked by `LocalClusterAnisotropyAudit.lean`.
 
+`StrainEigenvalueRates.lean` differentiates all three ordered eigenvalues
+without differentiating a chosen eigenbasis: variational extrema give the
+extreme rates, and the trace gives the middle rate.
+`LocalSpectralFunctionDifferentiability.lean` extends the actual periodic
+almost-everywhere material differentiability theorem to every Lipschitz
+scalar strain functional. In particular it supplies both extreme-eigenvalue
+differentiability hypotheses for the actual local solution.
+
+`TopPlaneGapTransport.lean` retains the signed source inside the expanding
+plane. With ordered eigenvectors `e₀,e₁,e₂`, coordinates `aᵢ = <eᵢ,w>`,
+top gap `gₜ`, bottom gap `gᵦ > 0`, and `Rᵢⱼ = <eᵢ,Reⱼ>`, it proves
+
+```text
+gₜ' = -(λ₀+λ₁)gₜ + R₀₀-R₁₁,
+Q = a₁²(gₜ' + (λ₀+λ₁)gₜ) - a₀a₁(R₀₁+R₁₀),
+|anisotropy(R,e₀,w) - Q| ≤ 4||R||||w|| sqrt(E₀/gᵦ).
+```
+
+Here `Q` is exactly the anisotropy evaluated on the expanding-plane
+projection of `w`. This holds also for small positive top gaps: the
+gap-rate and in-plane mixing are retained, not bounded away by the bottom
+gap. `LocalTopPlaneRate.lean` constructs the actual frozen top-gap rate
+and derives the corresponding almost-everywhere material inequality,
+using `R = Rν` and the full vorticity. Only its transverse term is replaced
+by the absolute bound. These statements do not prove measurability or
+time-integrated affordability of the individual chosen-frame terms, nor
+a scale-uniform source budget. `LocalTopPlaneRateAudit.lean` checks their
+dependencies.
+
+`BottomSpectralProjectorPolynomial.lean` proves the basis-independent formula
+
+```text
+Pbottom = ((λ₀-λ₂)(λ₁-λ₂))⁻¹ (S-λ₀I)(S-λ₁I),   λ₁ > λ₂.
+```
+
+The numerator identity holds even without a positive gap. With a positive
+bottom gap, differentiating this polynomial quotient constructs bottom-line
+and expanding-plane projector derivatives from the operator and scalar
+eigenvalue derivatives. `LocalTopPlaneRate.lean` supplies these hypotheses
+almost everywhere for the actual frozen material path. No moving
+eigenvector choice or positive top gap is required. A quantitative rate
+bound and its time-integrated cost remain separate obligations.
+
 `FilteredHighHighExample.lean` supplies real, transverse, zero-mean finite
 Fourier data whose retained velocity vanishes while its retained subgrid
 force does not. The input squared frequencies are five and two; the output
