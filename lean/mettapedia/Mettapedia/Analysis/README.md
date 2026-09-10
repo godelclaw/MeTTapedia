@@ -20,6 +20,7 @@ Reusable analysis, independent of any particular fluid construction.
 | `SecondDerivative.lean` | Local second-derivative linearity, constant-vector multiplication/subtraction, and nonnegative second derivative at a continuous local minimum | Real scalar parameters and normed-space values; the minimum sign uses Lean's total derivative |
 | `PositiveOperatorKernelCurvature.lean` | Second-order positivity coupling operator curvature, the mixed derivative, and vector-gradient energy at a kernel vector | Any real inner product space; local `C²` regularity, positivity, and symmetry only |
 | `RankOneCommutator.lean` | Exact rank-one commutator, arbitrary scalar-shift cancellation, transverse-residual norm bound, and commutation on an eigenvector | Any real inner product space and symmetric bounded operator; no completeness or dimension assumption |
+| `OrthonormalOperatorBound.lean` | Squared operator norm bounded by the sum of squared images of an orthonormal basis, with no dimension factor | Real or complex inner-product domain with a finite orthonormal basis; arbitrary normed codomain |
 
 The first module is used by
 `FluidDynamics/NavierStokes/StochasticLagrangian/LocalVorticityDiffusion.lean`.
@@ -67,6 +68,9 @@ The rank-one commutator identities identify the Fourier pressure-tilt
 kernel. A transverse-plane regression has a nonzero commutator but zero
 action on the leading direction, distinguishing the full commutator from
 the off-diagonal block needed to control that direction.
+The orthonormal-basis operator bound supplies a pressure-Hessian `L²`
+estimate with no frequency-count factor; a rank-one projection attains
+the general bound in the regression suite.
 These modules are new derivations using mathlib, not additional adaptations
 from the external source below.
 

@@ -12,6 +12,7 @@ import Mettapedia.Analysis.OrthogonalProjectionWeightedDiffusion
 import Mettapedia.Analysis.SecondDerivative
 import Mettapedia.Analysis.PositiveOperatorKernelCurvature
 import Mettapedia.Analysis.RankOneCommutator
+import Mettapedia.Analysis.OrthonormalOperatorBound
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.InnerProductSpace.Adjoint
 
@@ -19,6 +20,18 @@ import Mathlib.Analysis.InnerProductSpace.Adjoint
 
 open Set MeasureTheory Mettapedia.Analysis Mettapedia.Analysis.ODE
 open scoped ContDiff RealInnerProductSpace
+
+-- Rank-one projection attains the orthonormal-basis energy bound.
+example :
+    let b := EuclideanSpace.basisFun (Fin 2) ℝ
+    let R := InnerProductSpace.rankOne ℝ (b 0) (b 0)
+    ‖R‖ ^ 2 = ∑ j, ‖R (b j)‖ ^ 2 := by
+  dsimp only
+  simp [InnerProductSpace.norm_rankOne, InnerProductSpace.rankOne_apply,
+    Fin.sum_univ_two, EuclideanSpace.inner_single_right]
+
+#print axioms ContinuousLinearMap.norm_apply_sq_le_sum_orthonormalBasis
+#print axioms ContinuousLinearMap.norm_sq_le_sum_orthonormalBasis
 
 -- A rank-one operator can annihilate the leading direction while its
 -- commutator still rotates the transverse plane. This is operator algebra,
