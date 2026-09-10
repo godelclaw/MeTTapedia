@@ -16,6 +16,7 @@ import Mettapedia.Analysis.OrthonormalOperatorBound
 import Mettapedia.Analysis.FiniteMultiplierLocalization
 import Mettapedia.Analysis.LocallyLipschitz
 import Mettapedia.Analysis.LocallyLipschitzDifferentiability
+import Mettapedia.Analysis.FiniteCoefficientEnergy
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.InnerProductSpace.Adjoint
 
@@ -23,6 +24,27 @@ import Mathlib.Analysis.InnerProductSpace.Adjoint
 
 open Set MeasureTheory Mettapedia.Analysis Mettapedia.Analysis.ODE
 open scoped ContDiff RealInnerProductSpace
+
+-- Equal vectors attain the finite linear-combination bound.
+example : ‖∑ _j : Fin 3, (1 : ℝ) • (2 : ℝ)‖ ^ 2 =
+    (∑ _j : Fin 3, ‖(1 : ℝ)‖ ^ 2) * (∑ _j : Fin 3, ‖(2 : ℝ)‖ ^ 2) := by
+  norm_num
+
+-- Three identical terms attain the three-term coefficient-energy factor.
+example : FiniteMultiplierLocalization.scalarEnergy ({0} : Finset ℕ)
+    (fun _ ↦ (1 : ℂ) + 1 + 1) =
+      3 * (FiniteMultiplierLocalization.scalarEnergy ({0} : Finset ℕ) (fun _ ↦ (1 : ℂ)) +
+        FiniteMultiplierLocalization.scalarEnergy ({0} : Finset ℕ) (fun _ ↦ (1 : ℂ)) +
+        FiniteMultiplierLocalization.scalarEnergy ({0} : Finset ℕ) (fun _ ↦ (1 : ℂ))) := by
+  norm_num [FiniteMultiplierLocalization.scalarEnergy]
+
+#print axioms Finset.norm_sum_smul_sq_le
+#print axioms Finset.norm_sum_sq_le_card_mul_sum_norm_sq
+#print axioms Mettapedia.Analysis.FiniteMultiplierLocalization.scalarEnergy_nonneg
+#print axioms Mettapedia.Analysis.FiniteMultiplierLocalization.scalarEnergy_add_le
+#print axioms Mettapedia.Analysis.FiniteMultiplierLocalization.scalarEnergy_sum_le
+#print axioms Mettapedia.Analysis.FiniteMultiplierLocalization.scalarEnergy_const_mul
+#print axioms Mettapedia.Analysis.FiniteMultiplierLocalization.scalarEnergy_add_add_le
 
 -- A corner in the scalar factor is compatible with local Lipschitz regularity.
 example : LocallyLipschitz (fun x : ℝ ↦ ‖x‖ • (x, x ^ 2)) := by
