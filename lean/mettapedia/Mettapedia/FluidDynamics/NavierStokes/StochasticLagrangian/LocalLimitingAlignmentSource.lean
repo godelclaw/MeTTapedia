@@ -1,4 +1,4 @@
-import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.SpectralAnisotropyLimit
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.SpectralCommutatorLimit
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.LocalDepletedAlignmentSource
 
 /-!
@@ -22,7 +22,8 @@ open PancakeFrequencyProjectorCommutator PancakeHigherDerivativeMoments
 open PancakeLocalInfiniteVelocity PancakeMeasurableMaterialRate PancakeFourierMaterialPaths
 open PancakeFilteredStrainDynamics
 open LocalLowDiffusionBudget LocalAlignmentForcing LocalAlignmentContinuity
-open LocalDepletedAlignmentSource SpectralAnisotropyLimit
+open LocalDepletedAlignmentSource SpectralCommutatorLimit
+open SpectralAnisotropyLimit (approximationParameter approximationParameter_pos tendsto_approximationParameter)
 
 local notation "T3" => UnitAddTorus (Fin 3)
 
@@ -56,8 +57,8 @@ theorem norm_depletedForcingEnvelope_le (chi : Wavevector → ℂ) (modes output
     (u : FourierVelocity) (delta epsilon : ℝ) (x : T3) :
     ‖depletedForcingEnvelope chi modes outputs u delta epsilon x‖ ≤
       absoluteSourceBound chi modes outputs u delta x := by
-  exact abs_add_add_le_of_between _ _ _ _ (SpectralAnisotropyEnvelope.envelope_nonneg _ _ _ _)
-    (SpectralAnisotropyEnvelope.envelope_le_coarse _ _ _ _)
+  exact abs_add_add_le_of_between _ _ _ _ (SpectralCommutatorEnvelope.envelope_nonneg _ _ _ _)
+    (SpectralCommutatorEnvelope.envelope_le_coarse _ _ _ _)
 
 theorem norm_limitingForcingEnvelope_le (chi : Wavevector → ℂ) (modes outputs : Finset Wavevector)
     (u : FourierVelocity) (delta : ℝ) (x : T3) :

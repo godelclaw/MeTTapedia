@@ -1,11 +1,12 @@
-import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.SpectralAnisotropyEnvelope
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.SpectralCommutatorEnvelope
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.LocalInitialAlignmentBudget
 
 /-!
 # Continuous alignment-depleted source for the actual local fields
 
 Only the strain is filtered. A scalar envelope retains alignment depletion
-without integrating a selected eigenline. It is pointwise no larger than
+and distinguishes source tilt through the strain commutator, without
+integrating a selected eigenline. It is pointwise no larger than
 the previous signed source, and leaves the mismatch and regularizer
 stretching with their signs. No all-scale source bound is asserted.
 The source smoothing parameter `epsilon` is independent of the energy
@@ -38,7 +39,7 @@ local instance : IsProbabilityMeasure (volume : Measure UnitAddCircle) :=
 
 def depletedForcingEnvelope (chi : Wavevector → ℂ) (modes outputs : Finset Wavevector)
     (u : FourierVelocity) (delta epsilon : ℝ) (x : T3) : ℝ :=
-  SpectralAnisotropyEnvelope.envelope (spatialStrain modes (filteredVelocity chi u) x)
+  SpectralCommutatorEnvelope.envelope (spatialStrain modes (filteredVelocity chi u) x)
     (nonviscousRemainder chi modes outputs u x) (fullVorticity u x) epsilon +
       2 * ⟪residual chi modes u x, strainMismatch chi modes u x⟫ +
       2 * delta * ⟪fullVorticity u x, fullStrainOperator u x (fullVorticity u x)⟫
@@ -47,7 +48,7 @@ theorem depletedForcingEnvelope_le_signed (chi : Wavevector → ℂ) (modes outp
     (u : FourierVelocity) (delta epsilon : ℝ) (x : T3) :
     depletedForcingEnvelope chi modes outputs u delta epsilon x ≤
       signedForcingEnvelope chi modes outputs u delta x := by
-  have h := SpectralAnisotropyEnvelope.envelope_le_coarse
+  have h := SpectralCommutatorEnvelope.envelope_le_coarse
     (spatialStrain modes (filteredVelocity chi u) x)
     (nonviscousRemainder chi modes outputs u x) (fullVorticity u x) epsilon
   unfold depletedForcingEnvelope signedForcingEnvelope
@@ -61,7 +62,7 @@ theorem materialRate_depleted_le (chi : Wavevector → ℂ) (modes outputs : Fin
       depletedForcingEnvelope chi modes outputs u delta epsilon x := by
   have hR := (le_abs_self (remainderAnisotropy (nonviscousRemainder chi modes outputs u x)
     (topVector (spatialStrain modes (filteredVelocity chi u) x)) (fullVorticity u x))).trans
-      (SpectralAnisotropyEnvelope.abs_remainderAnisotropy_le_envelope _ _ _ epsilon heps)
+      (SpectralCommutatorEnvelope.abs_remainderAnisotropy_le_envelope _ _ _ epsilon heps)
   unfold materialRate
   rw [linearRate_viscous_split, resolved_add_strainMismatch]
   unfold depletedForcingEnvelope LocalAlignmentForcing.residual
@@ -72,7 +73,7 @@ theorem continuous_depletedForcingEnvelope (chi : Wavevector → ℂ)
     (hu : Summable (fourierMoment 1 u)) (delta epsilon : ℝ) (heps : 0 < epsilon) :
     Continuous (depletedForcingEnvelope chi modes outputs u delta epsilon) := by
   have hw := continuous_fullVorticity u hu
-  have hE := SpectralAnisotropyEnvelope.continuous_envelope _ _ _ epsilon heps
+  have hE := SpectralCommutatorEnvelope.continuous_envelope _ _ _ epsilon heps
     (PancakeMaterialDiffusionBudget.continuous_strain modes (filteredVelocity chi u))
     (continuous_nonviscousRemainder chi modes outputs u) hw
   exact (hE.add (continuous_const.mul ((continuous_residual chi modes u hu).inner
@@ -96,7 +97,7 @@ theorem continuous_depletedForcingEnvelope_spaceTime {nu T B : ℝ} {u₀ : Four
   have hR := continuous_nonviscousRemainder_parametric _ hc g hg hSum (fun t ↦ hu t t.2)
     chi C hchi modes outputs
   have hF := continuous_fullStrainOperator_parametric _ hc g hSum (fun t ↦ hu t t.2)
-  have hE := SpectralAnisotropyEnvelope.continuous_envelope _ _ _ epsilon heps hS hR hw
+  have hE := SpectralCommutatorEnvelope.continuous_envelope _ _ _ epsilon heps hS hR hw
   exact (hE.add (continuous_const.mul ((continuous_residual_spaceTime s g hSum hu chi modes).inner
     (continuous_strainMismatch_spaceTime s g hSum hu chi modes)))).add
     (continuous_const.mul (hw.inner (hF.clm_apply hw)))
