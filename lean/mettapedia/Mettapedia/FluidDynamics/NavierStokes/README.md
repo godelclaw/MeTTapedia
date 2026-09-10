@@ -512,9 +512,45 @@ m = P⊥ω.
 
 No separate adjoint channel is needed for this symmetric source. This
 direct-tilt refinement has not yet been propagated into the measurable
-spacetime envelope; the preceding integrated theorem still uses `C*`.
+spacetime envelope; the integrated source treatment still uses the full
+commutator rather than the direct tilt.
 Uniform angular, feedback and diffusion budgets remain open.
 `LocalPressureTiltAudit.lean` checks the new dependencies.
+
+`FourierPressureTiltEnergy.lean` removes the output-count loss in the
+spatial pressure estimate. For a fixed unit direction `f`, write
+`a(q)=χ(q)(2πi)²p̂(q)`, with pressure determined by the full velocity.
+Finite Parseval gives
+
+```text
+∫ |P⊥_f Hχ f|² ≤ Σq |a(q)|²(q·f)²(|q|²−(q·f)²).
+```
+
+The angular sum is at most a quarter of the Hessian coefficient energy
+`EH=Σq |a(q)|²|q|⁴`. If active pressure modes satisfy
+`(q·f)²≤η²|q|²`, it is at most `η² EH`. This is an explicit condition
+on the pressure output modes, not a consequence of pointwise alignment.
+
+`FourierPressureHessianEnergy.lean` proves `∫||Hχ||op²≤EH` by applying
+Parseval on an orthonormal basis and the generic operator bound from
+`Analysis/OrthonormalOperatorBound.lean`. Neither estimate has a mode-count
+or basis-cardinality factor.
+`SpectralTiltFreezing.lean` compares transverse actions in nearby unit
+directions. Its squared bound uses the sign-invariant distance
+`dline(e,f)²=min(|e−f|²,|e+f|²)`; eigenvector sign flips cost nothing.
+`FourierPressureTiltFreezing.lean` then proves, for any measurable unit
+direction field with `dline(e(x),f)≤ρ` and the pressure cone condition,
+
+```text
+∫ |P⊥_e(x) Hχ(x) e(x)|² ≤ (2η²+32ρ²) EH.
+```
+
+The direction error is paid by Hessian coefficient energy, not an `ℓ¹`
+coefficient envelope. These are spatial estimates for the actual pressure
+operator. They do not construct an adaptive partition, prove that its
+pressure modes obey the cone condition, or control the weighted
+time-integrated source cost. `FourierPressureEnergyAudit.lean` checks the
+new declarations, zero-filter behavior and antipodal-line invariance.
 
 `PressureTiltDatum.lean`, `PressureTiltOrigin.lean`, and
 `PressureTiltAlignment.lean` supply a physical obstruction to a
