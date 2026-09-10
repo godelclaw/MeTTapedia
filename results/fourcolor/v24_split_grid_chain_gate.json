@@ -1,0 +1,192 @@
+{
+  "cases": [
+    {
+      "side": 1,
+      "subsets": 4,
+      "vertices": 2,
+      "widths": [
+        {
+          "maximum_steps": 1,
+          "polynomial_bound": 1,
+          "width": 0
+        },
+        {
+          "maximum_steps": 2,
+          "polynomial_bound": 7,
+          "width": 1
+        }
+      ]
+    },
+    {
+      "side": 2,
+      "subsets": 256,
+      "vertices": 8,
+      "widths": [
+        {
+          "maximum_steps": 1,
+          "polynomial_bound": 1,
+          "width": 0
+        },
+        {
+          "maximum_steps": 3,
+          "polynomial_bound": 7,
+          "width": 1
+        },
+        {
+          "maximum_steps": 8,
+          "polynomial_bound": 21,
+          "width": 2
+        },
+        {
+          "maximum_steps": 8,
+          "polynomial_bound": 43,
+          "width": 3
+        },
+        {
+          "maximum_steps": 8,
+          "polynomial_bound": 73,
+          "width": 4
+        },
+        {
+          "maximum_steps": 8,
+          "polynomial_bound": 111,
+          "width": 5
+        },
+        {
+          "maximum_steps": 8,
+          "polynomial_bound": 157,
+          "width": 6
+        },
+        {
+          "maximum_steps": 8,
+          "polynomial_bound": 211,
+          "width": 7
+        },
+        {
+          "maximum_steps": 8,
+          "polynomial_bound": 273,
+          "width": 8
+        }
+      ]
+    },
+    {
+      "side": 3,
+      "subsets": 262144,
+      "vertices": 18,
+      "widths": [
+        {
+          "maximum_steps": 1,
+          "polynomial_bound": 1,
+          "width": 0
+        },
+        {
+          "maximum_steps": 3,
+          "polynomial_bound": 7,
+          "width": 1
+        },
+        {
+          "maximum_steps": 9,
+          "polynomial_bound": 21,
+          "width": 2
+        },
+        {
+          "maximum_steps": 16,
+          "polynomial_bound": 43,
+          "width": 3
+        },
+        {
+          "maximum_steps": 18,
+          "polynomial_bound": 73,
+          "width": 4
+        },
+        {
+          "maximum_steps": 18,
+          "polynomial_bound": 111,
+          "width": 5
+        },
+        {
+          "maximum_steps": 18,
+          "polynomial_bound": 157,
+          "width": 6
+        },
+        {
+          "maximum_steps": 18,
+          "polynomial_bound": 211,
+          "width": 7
+        },
+        {
+          "maximum_steps": 18,
+          "polynomial_bound": 273,
+          "width": 8
+        },
+        {
+          "maximum_steps": 18,
+          "polynomial_bound": 343,
+          "width": 9
+        },
+        {
+          "maximum_steps": 18,
+          "polynomial_bound": 421,
+          "width": 10
+        },
+        {
+          "maximum_steps": 18,
+          "polynomial_bound": 507,
+          "width": 11
+        },
+        {
+          "maximum_steps": 18,
+          "polynomial_bound": 601,
+          "width": 12
+        },
+        {
+          "maximum_steps": 18,
+          "polynomial_bound": 703,
+          "width": 13
+        },
+        {
+          "maximum_steps": 18,
+          "polynomial_bound": 813,
+          "width": 14
+        },
+        {
+          "maximum_steps": 18,
+          "polynomial_bound": 931,
+          "width": 15
+        },
+        {
+          "maximum_steps": 18,
+          "polynomial_bound": 1057,
+          "width": 16
+        },
+        {
+          "maximum_steps": 18,
+          "polynomial_bound": 1191,
+          "width": 17
+        },
+        {
+          "maximum_steps": 18,
+          "polynomial_bound": 1333,
+          "width": 18
+        },
+        {
+          "maximum_steps": 18,
+          "polynomial_bound": 1483,
+          "width": 19
+        },
+        {
+          "maximum_steps": 18,
+          "polynomial_bound": 1641,
+          "width": 20
+        },
+        {
+          "maximum_steps": 18,
+          "polynomial_bound": 1807,
+          "width": 21
+        }
+      ]
+    }
+  ],
+  "schema": "fourcolor-split-grid-chain-gate-v1",
+  "scope": "all vertex subsets of the specified open split grids; not a closed minimal-counterexample class"
+}

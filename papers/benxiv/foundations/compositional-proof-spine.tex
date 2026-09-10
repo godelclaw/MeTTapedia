@@ -14510,3 +14510,86 @@ bounded-width interfaces nor a strict reduction on that branch.
 These are separate geometric and semantic obligations. No fixed
 obligation has been discharged by this refinement: the ledger remains
 $57/100$.
+
+\subsection{A size-independent full-vertex obstruction to generic pumping}
+\label{sec:split-grid-chain-obstruction}
+
+The mesh isoperimetric theorem controls changes in the designated branch
+set, not arbitrary vertices attached to the mesh. An explicit dense family
+closes that distinction without assuming strict branch growth. At each
+position $(i,j)$ of an $r\times r$ grid put vertices $A_{ij},B_{ij}$ and
+edge $A_{ij}B_{ij}$. Add edges $B_{ij}A_{i,j+1}$ and
+$B_{ij}A_{i+1,j}$ whenever their indices exist. There are $2r^2$ vertices.
+The full row and column paths alternate $A,B$ vertices and give an actual
+ordered injective mesh with branches $A_{ij}$. Its vertices have degree at
+most three. Colouring internal, horizontal and vertical edges with three
+distinct colours is proper on the entire family.
+\Sverified{Mettapedia.GraphTheory.FourColor.SplitGridMesh.ordered}
+\Sverified{Mettapedia.GraphTheory.FourColor.SplitGridMesh.vertex_card}
+\Sverified{Mettapedia.GraphTheory.FourColor.SplitGridMesh.edgeKind_proper}
+\Sverified{Mettapedia.GraphTheory.FourColor.SplitGridMesh.degree_le_three}
+
+Let $\delta(S)$ be the complete cut in this graph. The matching edges
+give the estimate
+\[
+ |S|\leq 2\,|\{(i,j):A_{ij}\in S\}|+|\delta(S)|.
+\]
+Indeed a partner $B_{ij}\in S$ with $A_{ij}\notin S$ consumes its own
+distinct crossing matching edge. If $|\delta(S)|\leq k<r$, the existing
+mesh theorem says one side has at most $k^2$ branch vertices. Applying
+the estimate to that side yields
+\[
+ \min(|S|,|S^c|)\leq 2k^2+k.
+\]
+\Sverified{Mettapedia.GraphTheory.FourColor.SplitGridMesh.extra_card_le_cut}
+\Sverified{Mettapedia.GraphTheory.FourColor.SplitGridMesh.card_le_twice_selected_add_cut}
+\Sverified{Mettapedia.GraphTheory.FourColor.SplitGridMesh.small_side_of_cut}
+
+Consequently every strictly nested chain $S_0\subsetneq\cdots\subsetneq
+S_m$ with all complete cuts of size at most $k$ satisfies
+\[
+ m\leq 4k^2+2k+1.
+\]
+This is independent of $r$ and holds for every width: when $k\geq r$,
+the total vertex count already bounds the chain by $2r^2\leq2k^2$.
+No condition on branch-set growth, connectedness, majority saturation,
+cell order or one-vertex increments is needed. Imposing additional
+admissibility requirements only restricts the allowed chains.
+\Sverified{Mettapedia.GraphTheory.FourColor.SplitGridMesh.full_chain_length_le}
+
+For $k\geq1$ the polynomial bound is strictly less than $2^{3^k}$.
+Thus neither increasing $r$ nor choosing another positive width reaches
+the generic pigeonhole threshold for all subsets of $3^k$ boundary words
+on this family. A theorem explicitly constructs an example above every
+prescribed vertex bound. At width five there are at most $112$ sets,
+irrespective of wall size; this is much less than the previously audited
+$3{,}809{,}280$ state-carrier bound for nested good sides. That numerical
+comparison is not an identification of the open-wall carrier with the
+minimal-counterexample class.
+\Sverified{Mettapedia.GraphTheory.FourColor.SplitGridMesh.polynomial_lt_support_carrier}
+\Sverified{Mettapedia.GraphTheory.FourColor.SplitGridMesh.no_full_support_pigeonhole_chain}
+\Sverified{Mettapedia.GraphTheory.FourColor.SplitGridMesh.width_five_chain_sets}
+\Sverified{Mettapedia.GraphTheory.FourColor.SplitGridMesh.arbitrarily_large_no_full_support_chain}
+
+The pre-formalization gate checks every vertex subset at side lengths
+one, two and three, with every distinct width threshold. A Boolean-lattice
+dynamic program computes the longest valid nested chain while allowing
+jumps over invalid intermediate sets. Its recurrence is independently
+compared with all orders for every validity assignment on a three-element
+ground set. Boundary counts are compared with direct edge scans. The
+receipt is \texttt{results/fourcolor/v24\_split\_grid\_chain\_gate.json};
+the all-size Lean bound does not trust the optimizer.
+
+\paragraph{Scope of the obstruction.}
+These are colourable subcubic open walls, not closed cubic spherical
+minimal counterexamples. The cut is complete in the explicitly defined
+graph. Restoring external terminal incidences can only increase the cost
+of a fixed side; arbitrary nested growth in an attached exterior is not
+bounded by this theorem. No rotation-system sphericity seal is claimed
+for this family. Most importantly, failure to reach a worst-case
+pigeonhole threshold does not mean that actual supports cannot repeat
+earlier. Stronger semantic compression, early stabilization,
+non-pumping reductions, or a theorem genuinely using non-colourability
+remain possible. What is excluded is rescuing this generic full-support
+counting argument merely by adjusting size and width. The fixed ledger
+remains $57/100$.
