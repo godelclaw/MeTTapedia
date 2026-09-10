@@ -95,6 +95,18 @@ theorem characteristicValue_bottom_derivative (S : SymmetricStrain) :
   unfold spectralWidth bottomGap
   ring
 
+theorem characteristicValue_top_eq_zero (S : SymmetricStrain) :
+    characteristicValue S.1 (topEigenvalue S) = 0 := by
+  rw [characteristicValue_eq_prod, sub_self, zero_mul, zero_mul]
+
+theorem characteristicValue_top_derivative (S : SymmetricStrain) :
+    3 * topEigenvalue S ^ 2 - 2 * operatorTrace S.1 * topEigenvalue S + secondInvariant S.1 =
+      spectralWidth S * topGap S := by
+  rw [secondInvariant_eq, show operatorTrace S.1 = topEigenvalue S + secondEigenvalue S + thirdEigenvalue S from
+    trace_eq_sum_orderedEigenvalues S]
+  unfold spectralWidth topGap
+  ring
+
 theorem contDiff_operatorTrace {n : ℕ∞ω} : ContDiff ℝ n operatorTrace := by
   change ContDiff ℝ n (fun A : Op ↦ operatorTrace A)
   simp_rw [operatorTrace, LinearMap.trace_eq_sum_inner _ (EuclideanSpace.basisFun (Fin 3) ℝ)]

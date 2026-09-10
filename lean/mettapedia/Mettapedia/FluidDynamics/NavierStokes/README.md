@@ -806,6 +806,67 @@ without differentiating that weight, or supply the remaining time- and
 scale-uniform source budget. `LocalWeightedSectorAudit.lean` audits all
 32 new theorems in this layer.
 
+### Actual spectral-defect diffusion and top curvature
+
+`TopEigenvalueSmoothness.lean` constructs smooth top eigenvalues on the
+positive-top-gap branch, including through collisions of the lower two
+eigenvalues. A variational local-minimum argument proves that the second
+derivative of the top eigenvalue dominates the frozen top-direction
+Rayleigh second derivative. `LocalSpatialTopEigenvalue.lean` applies this
+to the actual filtered spatial strain and proves
+
+```text
+Γ = Δλmax − <e, (ΔSχ)e> ≥ 0,       e = top strain eigenvector.
+```
+
+No differentiable eigenvector choice is used. Write `ω` for full vorticity,
+`S = Sχ`, `λ = λmax(S)`, `Aδ = (λ+δ)I−S`, `z = (λI−S)ω`, and
+`F = (Sfull−S)ω`. For every constant real `δ`, the actual energy is
+`Φδ = <ω,Aδω> = D + δ|ω|²`, where `D` is the existing top spectral defect.
+`LocalSpectralDefectDiffusion.lean` proves its coordinate second-derivative
+and Laplacian product rules. `LocalSpectralDefectBalance.lean` combines
+these with the actual frozen material derivative:
+
+```text
+(Dᵤ−νΔ)Φδ + |z|² + νΓ|ω|² + 2ν Σⱼ<∂ⱼω,Aδ∂ⱼω>
+  = Rδ − 4ν Σⱼ<∂ⱼω,(∂ⱼAδ)ω>,
+
+Rδ = <e,R₀e>|ω|² − <ω,R₀ω> + 2<z,F> + 2δ<ω,Sfullω>.
+```
+
+Here `R₀` is the actual nonviscous filtered strain remainder. The explicit
+`νΔSχ` and `νΔω` responses have canceled against energy diffusion; the
+nonviscous pressure, spin, and subgrid terms have not been discarded.
+For `ν ≥ 0` and `δ > 0`, the previously proved regularized gradient
+inequality pays the mixed term and gives
+
+```text
+(Dᵤ−νΔ)Φδ + |z|² + νΓ|ω|² + νδ Σⱼ|∂ⱼω|²
+  ≤ Rδ + (16ν/δ) H|ω|²,            H = Σⱼ||∂ⱼSχ||op².
+```
+
+`LocalSpectralDefectControl.lean` constructs one local solution from real,
+divergence-free, zero-mean periodic data with continuous coordinate jets
+through order nine. The identities and paid estimate hold for every
+admissible finite filter, every interior interval, and every point with a
+positive top gap. No exceptional set or independent spectral derivative
+hypothesis is required on that branch. The construction supplies all
+constant regularizations on the same solution; `δ = 0` recovers the
+unregularized defect and its exact signed identity, not the paid inequality.
+
+This does not extend the spatial identity through top-eigenvalue collisions,
+justify variable regularization without product-rule terms, or bound
+`Rδ + (16ν/δ)H|ω|²` uniformly in time and frequency. In particular, the
+regularization adds stretching and its gradient price grows as `δ` tends
+to zero. `LocalSpectralDefectDiffusionAudit.lean` audits the 24 new theorems.
+The energy and material rate reuse `LocalAlignmentTransport.alignmentEnergy`
+and `LocalAlignmentForcing.materialRate`. The earlier collision-safe weak
+integral estimate in `LocalJointDiffusionBudget.lean` remains available;
+the new pointwise identity additionally exposes the favorable curvature
+and exact signed nonviscous anisotropy on the simple-top branch.
+This layer is a new derivation using mathlib and the existing spectral
+energy calculus, not a further port from either external construction.
+
 `FilteredHighHighExample.lean` supplies real, transverse, zero-mean finite
 Fourier data whose retained velocity vanishes while its retained subgrid
 force does not. The input squared frequencies are five and two; the output
