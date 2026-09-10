@@ -13989,3 +13989,65 @@ fixed ordered-mesh exclusion. The ledger remains $57/100$.
 The exchange statements concern ordinary Tait colourings; preservation of
 the source's additional marked-pair equality constraints in a refined
 count is not asserted.
+
+\subsection{Adversarial audit of the bounded-interface pumping step}
+\label{sec:bounded-interface-pumping-audit}
+
+The proposed bounded-interface continuation survives the algebraic attack
+\emph{when the repeated state is complete}. It does not follow from merely
+revisiting an interface type. A single interface state and a single Count
+letter $[2]$ give the distinct cumulative rows $[2^n]$. There is no finite
+lossless code for these exact rows, although their supports are identical.
+Thus finitely many interface objects and finitely many generators do not
+imply finite exact Count image. This control refutes that inference, not
+the finiteness of a Booleanized interface semantics.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedInterfacePumpingAudit.doublingRow_step}
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedInterfacePumpingAudit.no_finite_exact_count_code}
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedInterfacePumpingAudit.doublingRow_support}
+
+Nor may a support be replaced by its cardinality. A two-state swap maps
+$\{0\}$ to $\{1\}$; deleting this one-letter endomorphism preserves the
+interface and the support cardinality but changes acceptance against
+$\{0\}$. More generally, two abstract supports are indistinguishable by
+\emph{all} terminal-set intersection tests exactly when they are equal.
+Any code preserving all those tests on all subsets of a state set $Q$
+therefore needs at least $2^{|Q|}$ codes. This is not a lower bound on the
+actually realizable planar-tangle supports: restricting supports or
+contexts can permit further compression.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedInterfacePumpingAudit.cardinality_repeat_does_not_license_deletion}
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedInterfacePumpingAudit.support_eq_iff_terminal_tests}
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedInterfacePumpingAudit.complete_code_card_lower_bound}
+
+Topology is a separate field of the receipt. A three-cycle and its inverse
+allow the same nonempty proper-triple support, but identity matching of two
+three-port seams is orientation reversing for opposite rotations and not
+for equal rotations. This is a kernel-checked seam-algebra example, not a
+constructed least-counterexample or a claim that every non-reversing glue
+is nonspherical.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedInterfacePumpingAudit.three_port_support_ignores_orientation}
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedInterfacePumpingAudit.seam_order_matters}
+
+\paragraph{Surviving implication and the remaining target.}
+The existing support-deletion theorem already preserves every terminal
+test after a repeated complete prefix support. The physical serial-tangle
+composition theorem identifies this relational semantics with colouring,
+and the literal-shore chain theorem separately supplies the physical
+minimality contradiction from its certified shore hypotheses. These
+theorems were re-audited, not re-proved or newly credited.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24CountSupportSynchronization.runSupport_delete_block}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24RawNooseCountPumping.supportRel_series}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MajorityShoreStateDescent.length_le_of_literalShoreChain}
+
+An independent two-state control exhausts all $262144$ combinations of
+four Boolean transfer letters and an initial support, with $1048576$
+terminal acceptance comparisons after deleting a repeated-support block;
+there are no failures. Of these runs, $93255$ have nonempty final support,
+so the control is not merely testing rejection of empty supports. The
+control concerns transfer algebra, not a census of planar configurations.
+
+The open implication is still geometric: a sufficiently large anchored
+disagreement region must supply sufficiently many properly nested,
+bounded, complete interfaces, or some other route-native reduction.
+Neither unbounded exact counts nor the failure of coarse summaries
+refutes that implication. No classical configuration machinery is used;
+the obligation ledger remains $57/100$.

@@ -1,0 +1,53 @@
+{
+  "scope": "abstract two-state transfer algebra and three-port seam condition",
+  "reference_step_checks": 64,
+  "complete_support_runs": 262144,
+  "terminal_context_checks": 1048576,
+  "runs_with_nonempty_final_support": 93255,
+  "support_separation_checks": 16,
+  "same_cardinality_deletion_counterexample": {
+    "letter": 6,
+    "initial_support": 1,
+    "final_support": 2,
+    "accepting_support": 1,
+    "before_deletion_accepts": false,
+    "after_deletion_accepts": true
+  },
+  "one_state_count_control": [
+    1,
+    2,
+    4,
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    512,
+    1024,
+    2048,
+    4096,
+    8192,
+    16384,
+    32768
+  ],
+  "three_port_seam": {
+    "left": [
+      1,
+      2,
+      0
+    ],
+    "reversing_right": [
+      2,
+      0,
+      1
+    ],
+    "nonreversing_right": [
+      1,
+      2,
+      0
+    ]
+  },
+  "failures_of_complete_support_deletion": 0,
+  "geometric_supply_established": false
+}
