@@ -16,6 +16,8 @@ Reusable analysis, independent of any particular fluid construction.
 | `SpectralRelationDerivatives.lean` | First and second derivatives of `SP = μP`, and principal parabolic diffusion cancellation | Any real normed algebra; no eigenvector choices or commutativity assumption |
 | `KernelCrossTerm.lean` | A linear cross term is unbounded on the kernel when its transverse pairing is nonzero | Any real inner product space and continuous linear map; rules out projected-square-only absorption |
 | `OrthogonalProjectionParabolic.lean` | Signed diagonal defects, completed gradient square, complementary-gradient cross term, and off-diagonal Young bound | Any real inner product space and finite family of symmetric projector tangents; no completeness or dimension assumption |
+| `OrthogonalProjectionWeightedDiffusion.lean` | Two-sector weighted completion, inverse-weight frame cost, and weighted off-diagonal Young bound | Any real inner product space; identities require nonzero weight, dissipation applications require a weight in `(0,1]` |
+| `SecondDerivative.lean` | Second derivative of a constant linear combination | Locally `C²` real scalar functions; no global differentiability assumption |
 
 The first module is used by
 `FluidDynamics/NavierStokes/StochasticLagrangian/LocalVorticityDiffusion.lean`.
@@ -47,6 +49,10 @@ cross term cannot generally be absorbed by a projected gradient alone.
 retain a completed square and isolate the complementary-gradient pairing.
 The actual Navier--Stokes application proves the required symmetry and
 parabolic defect, instead of assuming that the parabolic rate is tangent.
+The weighted extension completes both sector gradient squares. It exposes
+the exact inverse-weight cost rather than claiming that a small weight
+makes complementary-sector transfer free. The Navier--Stokes application
+proves the weighted energy's actual material derivative and Laplacian.
 These modules are new derivations using mathlib, not additional adaptations
 from the external source below.
 
@@ -55,7 +61,8 @@ crossing zero, a negative growth coefficient, an exponent other than one
 quarter, a simple root through a collision of other roots, a moving
 quadratic form with nonzero cross terms, a nontrivial rank-one kernel
 obstruction, two opposite nonzero diagonal defect blocks, a completed square
-with a nonzero tangent swapping two orthogonal sectors, and the axioms
+with a nonzero tangent swapping two orthogonal sectors, a half-weight
+completion and an attained nonzero frame cost, and the axioms
 of the public comparison theorems.
 
 ## Provenance and changes

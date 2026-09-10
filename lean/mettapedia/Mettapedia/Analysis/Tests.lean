@@ -8,6 +8,7 @@ import Mettapedia.Analysis.IdempotentDerivatives
 import Mettapedia.Analysis.SpectralRelationDerivatives
 import Mettapedia.Analysis.KernelCrossTerm
 import Mettapedia.Analysis.OrthogonalProjectionParabolic
+import Mettapedia.Analysis.OrthogonalProjectionWeightedDiffusion
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.InnerProductSpace.Adjoint
 
@@ -15,6 +16,23 @@ import Mathlib.Analysis.InnerProductSpace.Adjoint
 
 open Set MeasureTheory Mettapedia.Analysis Mettapedia.Analysis.ODE
 open scoped ContDiff RealInnerProductSpace
+
+-- The half-weight identity retains the inverse-weight image cost.
+example (a b c d : EuclideanSpace ℝ (Fin 2)) :
+    (1 / 2 : ℝ) * (‖c + b‖ ^ 2 + 2 * ⟪d, a⟫ - ‖a‖ ^ 2) +
+        (1 / 2 : ℝ) * (‖c‖ ^ 2 + ‖d‖ ^ 2) =
+      ‖c + (1 / 2 : ℝ) • b‖ ^ 2 + (1 / 2 : ℝ) * ‖d + a‖ ^ 2 +
+        (1 / 4 : ℝ) * ‖b‖ ^ 2 - ‖a‖ ^ 2 := by
+  have h := OrthogonalProjectionWeightedDiffusion.weighted_completed_squares
+    (1 / 2) (by norm_num) c d a b
+  norm_num at h ⊢
+  exact h
+
+-- With a transverse gradient chosen at the square's center, the cost is attained.
+example (a : EuclideanSpace ℝ (Fin 2)) :
+    (1 / 2 : ℝ) * (2 * ⟪-a, a⟫ - ‖a‖ ^ 2) + (1 / 2 : ℝ) * ‖-a‖ ^ 2 = -‖a‖ ^ 2 := by
+  simp only [inner_neg_left, real_inner_self_eq_norm_sq, norm_neg]
+  ring
 
 -- A nonzero tangent swaps the two sectors; the completed square must
 -- retain the complementary-gradient cross term for arbitrary v and w.
