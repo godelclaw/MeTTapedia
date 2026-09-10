@@ -7,6 +7,7 @@ Reusable analysis, independent of any particular fluid construction.
 | Module | Mathematical content | Scope |
 | --- | --- | --- |
 | `ODE/QuadraticFormBound.lean` | Dissipative forced-ODE comparison, positive integrating factors, additional exponential growth, interval-only forcing, and source-envelope estimates | Any real inner product space; no completeness or finite-dimensionality assumption |
+| `ODE/AbsolutelyContinuousComparison.lean` | Dissipative comparison with an almost-everywhere equation and integrable forcing | Absolutely continuous paths; allows corners and eigenvalue collisions |
 | `ODE/VariableGronwall.lean` | Scalar comparison by the exponential of the actual growth integral | Arbitrary finite interval; interior derivatives; coefficient and solution may have either sign |
 | `LogarithmicScaleBound.lean` | Explicit scale selection and elimination of a logarithmic/high-frequency cutoff | Any positive real decay exponent; sharp estimate requires no sign assumption on the low or logarithmic costs |
 
@@ -17,17 +18,24 @@ continuity of its viscous source from a common third Fourier-moment envelope.
 It retains the scalar strain growth hypothesis explicitly. It is a local
 estimate, not an unconditional global regularity theorem.
 
+`AbsolutelyContinuousComparison.lean` extends this interface and reuses its
+norm-derivative lemma. `LocalSpectralResidualBudget.lean` applies the extension
+to the actual material spectral residual. Absolute continuity and source
+integrability are proved from the local PDE solution, including at eigenvalue
+collisions; the source size remains a dynamical problem.
+
 The scalar logarithmic estimate is not itself a logarithmic gradient bound or
 a BKM theorem. The spatial estimates that would instantiate its hypotheses
 must still be proved for the domain and function spaces of the application.
 
-`Tests.lean` checks a forced trajectory crossing zero, a negative growth
-coefficient, an exponent other than one quarter, and the axioms of the public
-comparison theorems.
+`Tests.lean` checks a path with a nondifferentiable corner, a forced trajectory
+crossing zero, a negative growth coefficient, an exponent other than one
+quarter, and the axioms of the public comparison theorems.
 
 ## Provenance and changes
 
-These three modules adapt selected arguments from
+The original three modules (`QuadraticFormBound`, `VariableGronwall`, and
+`LogarithmicScaleBound`) adapt selected arguments from
 [OpenAI/NavierStokesAndEuler](https://github.com/openai/NavierStokesAndEuler/tree/8937a8f4cbc7abaab5e9e97d1cc7f5d2319d9538),
 revision `8937a8f4cbc7abaab5e9e97d1cc7f5d2319d9538`:
 
@@ -74,4 +82,5 @@ From the Lean package directory:
 ```sh
 lake build Mettapedia.Analysis.Tests
 lake build Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.LocalMaterialVorticityAudit
+lake build Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.LocalSpectralDefectAudit
 ```

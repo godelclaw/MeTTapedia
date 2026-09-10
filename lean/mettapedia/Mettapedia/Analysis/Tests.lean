@@ -1,10 +1,27 @@
 import Mettapedia.Analysis.ODE.QuadraticFormBound
+import Mettapedia.Analysis.ODE.AbsolutelyContinuousComparison
 import Mettapedia.Analysis.ODE.VariableGronwall
 import Mettapedia.Analysis.LogarithmicScaleBound
 
 /-! Regression examples for the analysis estimates. -/
 
-open Set Mettapedia.Analysis Mettapedia.Analysis.ODE
+open Set MeasureTheory Mettapedia.Analysis Mettapedia.Analysis.ODE
+
+-- A Lipschitz path with a corner at zero: the differential equation is only
+-- almost everywhere, and the derivative forcing need not be continuous.
+example (a b : ℝ) (hab : a ≤ b) :
+    |b| ≤ |a| + ∫ t in a..b, ‖deriv (fun τ : ℝ ↦ ‖τ‖) t‖ := by
+  have hu : AbsolutelyContinuousOnInterval (fun t : ℝ ↦ ‖t‖) a b :=
+    absolutelyContinuousOnInterval_norm
+      (contDiff_id.contDiffOn.absolutelyContinuousOnInterval :
+        AbsolutelyContinuousOnInterval (fun t : ℝ ↦ t) a b)
+  have h := norm_le_initial_add_integral_of_ae_dissipative
+    (fun _ ↦ (0 : ℝ →L[ℝ] ℝ)) hab hu hu.intervalIntegrable_deriv
+    (by
+      filter_upwards [hu.ae_differentiableAt] with t ht hmem
+      simpa using (ht hmem).hasDerivAt)
+    (by simp)
+  simpa only [Real.norm_eq_abs, abs_abs] using h
 
 -- A forced solution crosses zero inside the interval.
 example : ∀ t ∈ Icc (0 : ℝ) 1, |t - 1 / 2| ≤ 1 / 2 + t := by
@@ -34,6 +51,7 @@ example {X C L W H : ℝ} (hC : 0 ≤ C) (hH : 0 ≤ H)
   le_logarithmic_of_le_scale_bound hC hH (by norm_num) h
 
 #print axioms Mettapedia.Analysis.ODE.norm_le_initial_add_integral_of_dissipative
+#print axioms Mettapedia.Analysis.ODE.norm_le_initial_add_integral_of_ae_dissipative
 #print axioms Mettapedia.Analysis.ODE.norm_div_le_initial_add_integral
 #print axioms Mettapedia.Analysis.ODE.norm_le_exp_mul_weight_mul_integral_on
 #print axioms Mettapedia.Analysis.ODE.norm_le_exp_mul_weight_mul_of_source_le
