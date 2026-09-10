@@ -13911,3 +13911,81 @@ artefact exposed by the lab. It does not eliminate branching or construct
 a bounded complete interface from the paired walks. Fixed ordered-mesh
 exclusion, full D1b/D1c supply, and the generating base remain open.
 The fixed obligation ledger stays $57/100$.
+
+\subsection{Whole-component exchange at the absolute minimum}
+\label{sec:whole-component-exchange}
+
+Let $D$ be the common-core edges where the two deletion colourings differ,
+and connect two edges of $D$ when they share a vertex. This is the graph
+of \emph{all} disagreement, not one selected two-colour Kempe graph.
+Its components may branch. A whole component can be copied from the
+donor colouring to the recipient whenever no incident recipient edge
+leaves the common embedding. At the component frontier, every unselected
+common edge already has equal colours. Hence the copied assignment is
+proper, remains nonzero, and strictly decreases disagreement.
+\Sverified{Mettapedia.GraphTheory.FourColor.DisagreementComponentExchange.copyColoring_tait}
+\Sverified{Mettapedia.GraphTheory.FourColor.DisagreementComponentExchange.copyColoring_decreases}
+
+The constructed absolute minimum permits this change even if it leaves
+the original Kempe orbit. Applying exchange in each direction proves
+that \emph{every} nonempty disagreement component has a boundary contact
+in both deletion embeddings. Both contacts lie in the same component;
+there is no exceptional non-transposition case.
+\Sverified{Mettapedia.GraphTheory.FourColor.DisagreementComponentExchange.boundary_of_minimum}
+\Sverified{Mettapedia.GraphTheory.FourColor.DisagreementComponentExchange.absolute_component_touches_both}
+
+An adjacent edge outside the first common-core embedding leads to a
+vertex of the second deleted pair. Its common endpoint is therefore one
+of that pair's four ports; the reverse direction is symmetric. Thus every
+component joins the two sets of ports. Distinct components cannot use the
+same port, so there are at most four components. The ordered-row supplier
+constructs this situation, including the colourings, absolute minimum,
+and nonempty disagreement, from the least-counterexample and ordered-mesh
+inputs already used in Section~\ref{sec:absolute-deletion-minimum}.
+\Sverified{Mettapedia.GraphTheory.FourColor.DeletionDisagreementSpanning.allComponentsSpan_of_absolute}
+\Sverified{Mettapedia.GraphTheory.FourColor.DeletionDisagreementSpanning.card_components_le_four}
+\Sverified{Mettapedia.GraphTheory.FourColor.DeletionDisagreementSpanning.exists_rowSite_with_spanning_minimum}
+
+\paragraph{Controls and rejected shortcuts.}
+A complete, independently cross-checked enumeration for one separated
+dodecahedral site pair tests all $108^2=11664$ deletion-colouring pairs.
+It exercises $528$ boundary-avoiding component copies, all valid and
+strictly improving, and finds $26688$ invalid copies when the boundary
+condition is omitted. Counts are over attempted oriented component copies,
+not distinct counterexamples. A separate three-edge-star control proves
+in the kernel that the unrestricted copying rule is false.
+\Sverified{Mettapedia.GraphTheory.FourColor.ComponentExchangeControls.unchecked_copy_fails}
+
+Closed-map face potentials cannot simply be reused on a deleted graph:
+the sum of two distinct nonzero Klein colours at a degree-two port is
+nonzero. A relative boundary construction would be needed before invoking
+the closed spherical cubic face-potential theorem.
+\Sverified{Mettapedia.GraphTheory.FourColor.ComponentExchangeControls.degree_two_flux_ne_zero}
+
+The next attempted interpolation also has an exact local limitation.
+Normalize the three incident colours of one proper cubic star to the
+identity. If a second and a proposed mixed star are permutations $p,q$
+of these colours, and $q(i)\in\{i,p(i)\}$ on every edge, then $q$ is
+either the identity or $p$. Merely choosing between the two existing
+colours edge by edge cannot create a third proper star, including in the
+three-cycle case. The lab exhausts all $36$ ordered pairs of star
+permutations and their eight binary selections; the same normalized
+statement is kernel-decided.
+\Sverified{Mettapedia.GraphTheory.FourColor.ComponentExchangeControls.cubic_binary_mixing_rigid}
+
+\paragraph{What remains geometric.}
+Four components need not mean four short paths, small components, or
+bounded complete interfaces. The present proofs supply no such bound.
+Likewise mesh isoperimetry bounds branch vertices on a small side, not
+every ambient vertex or every attached corridor. Neither it nor a finite
+control census refutes all size-sensitive reductions. A distance argument
+would need ambient separation of the sites (not just distant mesh indices),
+and port-to-site attachment edges must be included in its constants.
+The next missing implication is a route-native reduction or controlled
+interface construction for these anchored disagreement components; a
+catalogue of replaceable patches is not supplied or used. This is progress
+inside the open D1b/D1c attack, not discharge of those obligations or of
+fixed ordered-mesh exclusion. The ledger remains $57/100$.
+The exchange statements concern ordinary Tait colourings; preservation of
+the source's additional marked-pair equality constraints in a refined
+count is not asserted.
