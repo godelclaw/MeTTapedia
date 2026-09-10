@@ -43,4 +43,10 @@ theorem mul_algebra {E : Type*} [NormedRing E] [NormedAlgebra ℝ E]
   have hm : ContDiff ℝ 1 (fun z : E × E ↦ z.1 * z.2) := contDiff_fst.mul contDiff_snd
   exact hm.locallyLipschitz.comp (hf.prodMk hg)
 
+theorem smul_real {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    {f : X → ℝ} {g : X → E} (hf : LocallyLipschitz f) (hg : LocallyLipschitz g) :
+    LocallyLipschitz (fun x ↦ f x • g x) := by
+  have hm : ContDiff ℝ 1 (fun z : ℝ × E ↦ z.1 • z.2) := contDiff_fst.smul contDiff_snd
+  exact hm.locallyLipschitz.comp (hf.prodMk hg)
+
 end LocallyLipschitz
