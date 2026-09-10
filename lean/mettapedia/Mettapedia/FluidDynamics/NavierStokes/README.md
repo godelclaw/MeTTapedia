@@ -404,9 +404,43 @@ above with `Nδ,ε_depleted` replacing `Nδ`, including one constructed local
 solution for every admissible filter. `LocalDepletedAlignmentAudit.lean`
 checks its dependencies. The source parameter `ε` and energy regularizer
 `δ` are independently quantified, so varying the source approximation
-does not change the viscous payment `Kχ/δ`. No `ε → 0` limit is taken here.
-The sharper source does not supply a uniform
+does not change the viscous payment `Kχ/δ`. The sharper source does not supply a uniform
 bound on its accumulated cost, eliminate `Kχ/δ`, or close continuation.
+
+`SpectralAnisotropyLimit.lean` removes the auxiliary source parameter:
+
+```text
+B* = min (2||R₀||||ω||²) (4||R₀||||ω|| sqrt(E₀/g))  if g > 0;
+B* = 2||R₀||||ω||²                                  if g = 0.
+Nδ,* = B* + 2<z,f₀> + 2δ<ω,Sfull ω>.
+```
+
+The scalar limit is measurable and bounded by the coarse envelope. On a
+simple top eigenline it vanishes at exact alignment. Continuity through
+collisions is not asserted. `LocalLimitingAlignmentSource.lean` constructs
+the actual limiting source and proves spatial dominated convergence under
+an absolute majorant independent of `ε`. `LocalAlignmentSourceLimit.lean`
+proves interval integrability and the time-integral limit.
+`LocalLimitingAlignmentBudget.lean` then proves the initial-data estimate
+with `Nδ,*`, keeping `δ > 0` and its viscous payment fixed. One local solution
+and interval again work for all admissible filters and regularizers.
+This is a local estimate, not uniform control toward a singular time.
+
+`LocalCoherentAlignmentRate.lean` identifies additional cancellation that
+the collision fallback loses. Unregularized alignment energy is nonnegative;
+at a zero its frozen scalar derivative is zero. The proved almost-everywhere
+identification with the actual material rate therefore gives, at `z = 0`,
+
+```text
+materialRateδ = δ Dᵤ||ω||²,
+anisotropy(R₀,e,ω) + ν anisotropy(ΔSχ,e,ω) = 0.
+```
+
+These statements hold almost everywhere in time and space for the actual
+local solution, including multiple top eigenvalues. Neither anisotropy
+is asserted to vanish separately, and a zero first derivative does not
+prove preservation of coherence. `LocalLimitingAlignmentAudit.lean` checks
+the dependencies of the limit and coherent-rate development.
 
 `FilteredHighHighExample.lean` supplies real, transverse, zero-mean finite
 Fourier data whose retained velocity vanishes while its retained subgrid
