@@ -1,0 +1,71 @@
+{
+ "summary": {
+  "graphs": 50,
+  "sites": 400,
+  "orbit_pairs": 426,
+  "positive": 10,
+  "L0_fail": 0,
+  "L1_fail": 0,
+  "L2_fail": 0,
+  "free_wall_cases": 0,
+  "free_region_cases": 0,
+  "walls_total": 17,
+  "spanning_cases": 10
+ },
+ "region_sizes": [],
+ "deltas": [
+  4,
+  4,
+  5,
+  6,
+  5,
+  5,
+  5,
+  5,
+  5,
+  5
+ ],
+ "dist_delta": [
+  [
+   3,
+   4
+  ],
+  [
+   3,
+   4
+  ],
+  [
+   3,
+   5
+  ],
+  [
+   3,
+   6
+  ],
+  [
+   3,
+   5
+  ],
+  [
+   3,
+   5
+  ],
+  [
+   3,
+   5
+  ],
+  [
+   3,
+   5
+  ],
+  [
+   3,
+   5
+  ],
+  [
+   3,
+   5
+  ]
+ ],
+ "specimens": []
+}
