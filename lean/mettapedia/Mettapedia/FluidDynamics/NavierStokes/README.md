@@ -564,9 +564,50 @@ Taking `ρ = gᵦ` leaves the explicit source cost
 `4||K||²/gᵦ³ ||Qw||²`. This is an absorption inequality, not a proof of
 its time integral or a complete residence bound. The pressure, all-input
 subgrid, discarded-velocity transport, and viscous terms remain in Rν.
-The coupling-cost integrability, actual vorticity-energy balance, and
-scale-uniform unforced payment are still required.
+The following development supplies the actual vorticity-energy balance
+and fixed-positive-gap spatial integrability. Time integration and
+scale-uniform unforced payment remain open.
 `LocalProjectorMotionAudit.lean` checks all 35 new theorem dependencies.
+
+`FilteredStrainTrace.lean` derives trace-free filtered strain from the
+actual Fourier incompressibility condition, then proves
+`λmin ≤ -(2/3)gᵦ`. `BottomProjectedEnergy.lean` uses the unnormalized
+bottom-projected energy, which remains defined at vorticity zeros:
+
+```text
+Eᵦ = ||Pbottom ω||² = <ω,Pbottom ω>,
+fν = (Sfull-Sχ)ω + νΔω,
+DᵤEᵦ = 2λmin Eᵦ + 2<Pbottom ω,fν> + <ω,(DᵤPbottom)ω>.
+```
+
+`LocalFrozenVorticity.lean` differentiates full vorticity along the same
+actual frozen material path as the projector. `LocalBottomEnergy.lean`
+combines the exact identity, incompressibility, and the checked transfer
+absorption to prove almost everywhere, on the positive-bottom-gap branch,
+
+```text
+DᵤEᵦ + (gᵦ/3)Eᵦ ≤ 2<Pbottom ω,fν> + 4||Kν||²/gᵦ³ ||Pplane ω||²,
+Kν = Pplane Rν Pbottom.
+```
+
+The viscosity pairing remains signed. Its exact split into mismatch and
+`2ν<Pbottom ω,Δω>` is proved; the viscous strain contribution also remains
+inside Kν. Neither contribution has been dropped or globally paid.
+
+`LocalPhysicalBottomEnergy.lean` constructs one positive local interval
+and one solution from real, zero-mean, divergence-free periodic initial
+data with continuous coordinate jets through order nine. The derivative
+identity and damping estimate hold for every admissible finite filter on
+that solution; the common third-moment majorant is constructed from the
+data, not added as an independent hypothesis.
+
+`LocalBottomEnergyRegularity.lean` proves continuity of the energy and
+signed source wherever `gᵦ > 0`, and spatial integrability on each closed
+region `gᵦ ≥ η > 0`. These are not threshold-uniform or time-integrated
+estimates. Moving-region boundary terms, spatial projector derivatives,
+viscous cancellation, and the unforced all-scale source budget remain
+separate obligations. `LocalBottomEnergyAudit.lean` checks all 27 new
+theorem dependencies.
 
 `FilteredHighHighExample.lean` supplies real, transverse, zero-mean finite
 Fourier data whose retained velocity vanishes while its retained subgrid
