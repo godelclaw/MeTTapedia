@@ -917,11 +917,64 @@ strain-increment cost. No gap or differentiable eigenvector is required.
 A scalar majorant uses `Eε(S,w)/(topGap(S)+ε)` with an independent positive
 smoothing parameter `ε`; it is not identified with `δ`.
 
-Passing this improved finite-increment estimate to the weak spatial
-budget remains to be done. The already checked coarse weak estimate is
-unchanged. `LocalSpectralDiffusionDepletionAudit.lean` audits all 20 new
-theorems in this layer; the generic attained-curvature regression and
-the aligned finite-increment specialization test its zero-cost limits.
+`LocalSpectralDiffusionDepletionAudit.lean` audits the 20 theorems in this
+pointwise layer; the generic attained-curvature regression and aligned
+finite-increment specialization test its zero-cost limits.
+
+### Collision-safe weak and spacetime depletion
+
+`SpectralDiffusionWeight.lean` caps the scalar transverse majorant:
+
+```text
+Wε(S,ω) = min(|ω|², (D+ε|ω|²)/(g+ε)),       ε > 0.
+|ω−<e,ω>e|² ≤ Wε ≤ |ω|².
+```
+
+The weight is continuous through top collisions. At `g=0` it equals the
+coarse weight; on an aligned eigenline it equals `ε|ω|²/(g+ε)`.
+`DepletedLaplacianDiffusion.lean` passes the improved finite-increment
+inequality through Haar averaging and simultaneous uniform spatial
+second differences. Approximation errors still use full vorticity, but
+vanish before the final estimate. No selected eigenvector is integrated.
+
+`LocalDepletedDiffusionBudget.lean` discharges those consistency hypotheses
+for the actual finite-filter strain and full, untruncated vorticity.
+Writing `Lχ = strainGradientAmplitude`, the diffusion cost becomes
+`(16ν/δ)·3Lχ²·Wε`. The regularized energy uses `δ`, while the diffusion
+weight and nonlinear anisotropy envelope use independent parameters
+`ε` and `η`. `LocalDepletedDiffusionEnergy.lean` integrates this estimate
+on the constructed local solution, including both time endpoints.
+
+`SpectralDiffusionWeightLimit.lean` and `LocalDiffusionWeightLimit.lean`
+remove the diffusion-weight smoothing by dominated convergence in space
+and time. They prove measurability and integrability of the limit without
+assuming continuity across collisions:
+
+```text
+W₀(S,ω) = min(|ω|²,D/g)  if g>0;  |ω|² if g=0.
+```
+
+`LocalLimitingDiffusionEnergy.lean` also reuses the previously proved
+nonlinear-source limit to remove `η`. One physical local solution then
+satisfies, for every admissible finite filter and every fixed `δ>0`,
+
+```text
+mean Φδ(t) + ∫₀ᵗ∫ |z|²
+  ≤ mean Φδ(0) + ∫₀ᵗ∫ (16ν/δ)·3Lχ²·W₀ + ∫₀ᵗ∫ Rδ,lim.
+```
+
+The diffusion cost vanishes on separated aligned eigenlines and never
+exceeds the earlier full-vorticity cost. The limiting nonlinear source
+retains pressure/spin/subgrid anisotropy, signed strain mismatch, and
+the `2δ<ω,Sfullω>` regularization stretching. Neither auxiliary limit
+removes `δ`. This weak estimate discards the extra gradient and curvature
+damping; it does not silently retain what was spent or dropped.
+
+The cost still uses a global finite-Fourier gradient amplitude, not the
+pointwise `H=Σⱼ||∂ⱼSχ||op²` of the smooth-branch identity. Its localization,
+uniform scale/time control, collision-sector payment, and global
+continuation remain open. `LocalDepletedDiffusionAudit.lean` audits the
+weak-limit and actual-data results. The previous coarse APIs are unchanged.
 
 `FilteredHighHighExample.lean` supplies real, transverse, zero-mean finite
 Fourier data whose retained velocity vanishes while its retained subgrid
