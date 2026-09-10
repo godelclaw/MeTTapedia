@@ -548,8 +548,9 @@ The estimate includes both endpoints of the local solution window.
 terms for that extension, not continuity through collisions.
 `LocalTiltSourceAudit.lean` checks the physical factory and regressions.
 Uniform angular, feedback, collision-sector and diffusion budgets remain
-open; the actual pressure-patch estimates still need the vorticity/gap
-weights appearing in this source cost.
+open. The weighted spatial pressure localization below retains the
+vorticity/gap weight appearing in this source cost; it does not yet bound
+its accumulation in time or across scales.
 
 `FourierPressureTiltEnergy.lean` removes the output-count loss in the
 spatial pressure estimate. For a fixed unit direction `f`, write
@@ -622,6 +623,55 @@ through an eigenvalue collision. Pressure-angle control of `ΣEᵢ`, collision
 sector treatment and the vorticity/gap-weighted time budget remain open.
 `FourierPressurePatchAudit.lean` checks the new dependencies and regressions,
 including a purely imaginary cutoff and arbitrary eigenvector sign choices.
+
+`WeightedLineFreezing.lean` instead freezes `sqrt(a) P`. For unit lines,
+
+```text
+a dline(e,f)² ≤ 2 ||sqrt(a) Pe − sqrt(b) Pf||².
+```
+
+Thus the cells can follow a continuous weighted projector even when the
+unweighted line has no continuous extension at zero weight.
+`WeightedProjectorTilt.lean` proves continuity of `a |P⊥ R e|²` under
+exactly that hypothesis: at zero weight it is squeezed by `a ||R||²`;
+at positive weight the projector is recovered by division.
+`QuadraticFourierWeightApproximation.lean` approximates general
+nonnegative continuous weights, with no unit-interval restriction and
+a prescribed total absolute approximation error for finite families.
+
+`WeightedFourierPressurePatch.lean` constructs Fourier polynomials
+approximating the square roots of `a` times the partition weights. It
+proves, with the same exact localized coefficient energies `Eᵢ`,
+
+```text
+|Σᵢ |pᵢ(x)|² − a(x)| ≤ δ,
+∫ a(x) |P⊥_e(x) Hχ(x) e(x)|² ≤ 2Σᵢ Eᵢ + (32ρ²+2δ) EH.
+```
+
+The weight remains inside the patches. No cell-count factor or global
+supremum of `a` multiplies the pressure energy. Patch bandwidth is still
+allowed to depend on the weighted field and tolerances.
+
+`SpectralGapTiltWeight.lean` constructs the actual continuous weight
+`a=κγ(g)|ω|²/max(g,γ)²`, where `γ>0`, `κγ=0` for `g≤γ`, and `κγ=1`
+for `g≥2γ`. The weighted top projector is continuous through collisions.
+The source split keeps the full joint tilt and the complementary cost:
+
+```text
+Ytilt ≤ κγ max(2||R₀||−g²/8,0) W₀
+        + min(2||R₀||||ω||², 8a|K|²)
+        + (1−κγ) 2||R₀||||ω||².
+```
+
+At `g=0` the last term is the original coarse cost, not zero.
+`LocalWeightedPressurePatch.lean` constructs the patches for the actual
+filtered strain and full vorticity of any Fourier velocity with summable
+first moment, and proves the actual joint-source split. It assumes
+neither a global positive gap nor a continuous signed eigenvector.
+`WeightedPressurePatchAudit.lean` checks these results and regressions.
+Angular control of the weighted patch energies, the collision cost,
+feedback and diffusion still require uniform dynamical estimates; these
+spatial constructions do not establish global regularity.
 
 `PressureTiltDatum.lean`, `PressureTiltOrigin.lean`, and
 `PressureTiltAlignment.lean` supply a physical obstruction to a
