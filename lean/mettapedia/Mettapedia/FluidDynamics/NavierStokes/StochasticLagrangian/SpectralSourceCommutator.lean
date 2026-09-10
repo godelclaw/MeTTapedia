@@ -37,6 +37,16 @@ theorem commutator_neg (S : SymmetricStrain) (R : R3 →L[ℝ] R3) :
   simp only [commutator, sub_apply, mul_apply_eq_comp, neg_apply, map_neg, neg_sub]
   abel_nf
 
+theorem commutator_smul (S : SymmetricStrain) (a : ℝ) (R : R3 →L[ℝ] R3) :
+    commutator S (a • R) = a • commutator S R := by
+  ext v
+  simp only [commutator, sub_apply, mul_apply_eq_comp, smul_apply, map_smul, smul_sub]
+
+theorem commutator_sum {ι : Type*} (S : SymmetricStrain)
+    (I : Finset ι) (R : ι → R3 →L[ℝ] R3) :
+    commutator S (∑ i ∈ I, R i) = ∑ i ∈ I, commutator S (R i) := by
+  simp only [commutator, Finset.mul_sum, Finset.sum_mul, Finset.sum_sub_distrib]
+
 theorem commutator_mul (S : SymmetricStrain) (R Q : R3 →L[ℝ] R3) :
     commutator S (R * Q) = commutator S R * Q + R * commutator S Q := by
   simp only [commutator, sub_mul, mul_sub, mul_assoc]

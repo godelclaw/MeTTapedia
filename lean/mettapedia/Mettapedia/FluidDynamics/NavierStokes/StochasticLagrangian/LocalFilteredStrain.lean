@@ -33,10 +33,8 @@ local notation "X3" => Fin 3 → ℝ
 local notation "R3" => EuclideanSpace ℝ (Fin 3)
 
 theorem strainCoeff_add (u v : FourierVelocity) (q : Wavevector) :
-    strainCoeff (u + v) q = strainCoeff u q + strainCoeff v q := by
-  ext i j
-  simp [strainCoeff, gradientCoeff]
-  ring
+    strainCoeff (u + v) q = strainCoeff u q + strainCoeff v q :=
+  PancakeFourierPressureStrain.strainCoeff_add u v q
 
 /-- The finite nonlinear algebra for an unfiltered, resolved velocity. -/
 theorem strain_velocityRHS_material (modes : Finset Wavevector) (u : FourierVelocity)

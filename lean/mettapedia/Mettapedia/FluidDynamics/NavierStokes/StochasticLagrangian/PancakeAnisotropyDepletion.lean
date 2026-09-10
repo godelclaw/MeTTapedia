@@ -25,6 +25,14 @@ variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℝ H]
 
 def lineRemainder (e w : H) : H := w - ⟪e, w⟫ • e
 
+theorem lineRemainder_smul (e v : H) (a : ℝ) :
+    lineRemainder e (a • v) = a • lineRemainder e v := by
+  simp only [lineRemainder, real_inner_smul_right, smul_sub, smul_smul]
+
+theorem lineRemainder_sum {ι : Type*} (e : H) (I : Finset ι) (v : ι → H) :
+    lineRemainder e (∑ i ∈ I, v i) = ∑ i ∈ I, lineRemainder e (v i) := by
+  simp only [lineRemainder, inner_sum, Finset.sum_smul, Finset.sum_sub_distrib]
+
 theorem norm_lineRemainder_sq (e w : H) (he : ‖e‖ = 1) :
     ‖lineRemainder e w‖ ^ 2 = ‖w‖ ^ 2 - ⟪e, w⟫ ^ 2 := by
   rw [← real_inner_self_eq_norm_sq]

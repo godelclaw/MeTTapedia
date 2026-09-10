@@ -71,6 +71,13 @@ theorem gradientCoeff_filtered (chi : Wavevector → ℂ) (u : FourierVelocity)
   simp [gradientCoeff, filteredVelocity]
   ring
 
+theorem strainCoeff_filtered (chi : Wavevector → ℂ) (u : FourierVelocity) (q : Wavevector) :
+    strainCoeff (filteredVelocity chi u) q = chi q • strainCoeff u q := by
+  ext i j
+  simp only [strainCoeff, gradientCoeff, filteredVelocity, Matrix.smul_apply, Matrix.add_apply,
+    Matrix.transpose_apply, Pi.smul_apply, smul_eq_mul]
+  ring
+
 theorem viscousGradientCoeff_filtered (chi : Wavevector → ℂ) (u : FourierVelocity)
     (nu : ℝ) (q : Wavevector) :
     viscousGradientCoeff nu (filteredVelocity chi u) q = chi q • viscousGradientCoeff nu u q := by

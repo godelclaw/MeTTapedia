@@ -11,6 +11,7 @@ import Mettapedia.Analysis.OrthogonalProjectionParabolic
 import Mettapedia.Analysis.OrthogonalProjectionWeightedDiffusion
 import Mettapedia.Analysis.SecondDerivative
 import Mettapedia.Analysis.PositiveOperatorKernelCurvature
+import Mettapedia.Analysis.RankOneCommutator
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.InnerProductSpace.Adjoint
 
@@ -18,6 +19,26 @@ import Mathlib.Analysis.InnerProductSpace.Adjoint
 
 open Set MeasureTheory Mettapedia.Analysis Mettapedia.Analysis.ODE
 open scoped ContDiff RealInnerProductSpace
+
+-- A rank-one operator can annihilate the leading direction while its
+-- commutator still rotates the transverse plane. This is operator algebra,
+-- not an assertion about a pressure produced by a PDE solution.
+example :
+    let e := (EuclideanSpace.basisFun (Fin 3) ℝ) 0
+    let f := (EuclideanSpace.basisFun (Fin 3) ℝ) 1
+    let g := (EuclideanSpace.basisFun (Fin 3) ℝ) 2
+    let T := InnerProductSpace.rankOne ℝ e e - InnerProductSpace.rankOne ℝ g g
+    let H := InnerProductSpace.rankOne ℝ (f + g) (f + g)
+    H e = 0 ∧ (T * H - H * T) f = -g ∧ ‖(T * H - H * T) f‖ = 1 := by
+  dsimp only
+  simp [sub_apply, mul_apply_eq_comp, InnerProductSpace.rankOne_apply,
+    inner_add_right, EuclideanSpace.inner_single_right]
+
+example {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+    (T : E →L[ℝ] E) (hT : T.toLinearMap.IsSymmetric) (q : E) (a : ℝ)
+    (hq : T q = a • q) : T * InnerProductSpace.rankOne ℝ q q =
+      InnerProductSpace.rankOne ℝ q q * T :=
+  InnerProductSpace.rankOne_self_commutes_of_eigenvector T hT q a hq
 
 -- A(t) = [[t²,t],[t,1]] is positive. At its kernel vector e and
 -- increment -f, the curvature, cross term, and gradient square sum to zero.

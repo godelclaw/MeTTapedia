@@ -19,6 +19,7 @@ Reusable analysis, independent of any particular fluid construction.
 | `OrthogonalProjectionWeightedDiffusion.lean` | Two-sector weighted completion, inverse-weight frame cost, and weighted off-diagonal Young bound | Any real inner product space; identities require nonzero weight, dissipation applications require a weight in `(0,1]` |
 | `SecondDerivative.lean` | Local second-derivative linearity, constant-vector multiplication/subtraction, and nonnegative second derivative at a continuous local minimum | Real scalar parameters and normed-space values; the minimum sign uses Lean's total derivative |
 | `PositiveOperatorKernelCurvature.lean` | Second-order positivity coupling operator curvature, the mixed derivative, and vector-gradient energy at a kernel vector | Any real inner product space; local `C²` regularity, positivity, and symmetry only |
+| `RankOneCommutator.lean` | Exact rank-one commutator, arbitrary scalar-shift cancellation, transverse-residual norm bound, and commutation on an eigenvector | Any real inner product space and symmetric bounded operator; no completeness or dimension assumption |
 
 The first module is used by
 `FluidDynamics/NavierStokes/StochasticLagrangian/LocalVorticityDiffusion.lean`.
@@ -62,6 +63,10 @@ Testing the positive gap operator on an affine vector curve through a
 kernel vector then pays the aligned part of the mixed gradient. The
 remaining NS diffusion cost contains only transverse vorticity, with
 positive constant regularization still required to pay that cost.
+The rank-one commutator identities identify the Fourier pressure-tilt
+kernel. A transverse-plane regression has a nonzero commutator but zero
+action on the leading direction, distinguishing the full commutator from
+the off-diagonal block needed to control that direction.
 These modules are new derivations using mathlib, not additional adaptations
 from the external source below.
 
