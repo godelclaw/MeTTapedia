@@ -378,7 +378,6 @@ The nonlinear anisotropy envelope is refined in
 ```text
 Bε = min (2||R₀|| ||ω||²)
          (4||R₀|| ||ω|| sqrt(Eε/(g+ε))).
-Nδ,ε_depleted = Bε + 2<z,f₀> + 2δ<ω,Sfull ω>.
 ```
 
 The source retains a quantitative alignment gain without choosing a
@@ -396,7 +395,23 @@ For aligned vorticity and `g ≥ 63ε`, it is at most one quarter of the
 coarse bound. At `g = 0` it equals the coarse bound exactly. Neither
 alignment nor spectral separation is assumed for the full local theorem.
 
-`LocalDepletedAlignmentSource.lean` constructs this source from the actual
+`SpectralSourceCommutator.lean` separates the two transverse source blocks
+from the quadratic misalignment term. It proves
+`g||P⊥R₀e|| ≤ ||SχR₀−R₀Sχ||` and the corresponding adjoint estimate;
+the source need not be symmetric. `SpectralCommutatorEnvelope.lean` uses
+the capped scalar weight to improve the source further:
+
+```text
+J = ||SχR₀−R₀Sχ||,       Wε = min(|ω|²,Eε/(g+ε)),
+Cε = min(Bε, 2||R₀||Wε + 2(J+ε||R₀||)/(g+ε) |ω|sqrt(Wε)),
+Nδ,ε_depleted = Cε + 2<z,f₀> + 2δ<ω,Sfull ω>,       ε>0.
+```
+
+The continuous refinement never exceeds `Bε`. Its definition includes a
+positive part for nonpositive auxiliary parameters; this is inactive
+when `ε>0`. At a top collision it still equals the coarse envelope.
+
+`LocalDepletedAlignmentSource.lean` constructs this sharper source from the actual
 full vorticity, proves joint time-space continuity and the pointwise
 material estimate, and keeps joint diffusion intact.
 `LocalDepletedAlignmentBudget.lean` proves the initial-data inequality
@@ -412,12 +427,23 @@ bound on its accumulated cost, eliminate `Kχ/δ`, or close continuation.
 ```text
 B* = min (2||R₀||||ω||²) (4||R₀||||ω|| sqrt(E₀/g))  if g > 0;
 B* = 2||R₀||||ω||²                                  if g = 0.
-Nδ,* = B* + 2<z,f₀> + 2δ<ω,Sfull ω>.
 ```
 
-The scalar limit is measurable and bounded by the coarse envelope. On a
-simple top eigenline it vanishes at exact alignment. Continuity through
-collisions is not asserted. `LocalLimitingAlignmentSource.lean` constructs
+`SpectralCommutatorLimit.lean` removes smoothing from the sharper envelope:
+
+```text
+C* = min(B*, 2||R₀||W₀ + 2(J/g)|ω|sqrt(W₀))  if g>0;
+C* = 2||R₀||||ω||²                          if g=0,
+W₀ = min(|ω|²,E₀/g)                         if g>0;
+W₀ = |ω|²                                  if g=0,
+Nδ,* = C* + 2<z,f₀> + 2δ<ω,Sfull ω>.
+```
+
+The scalar limits are measurable and bounded by the coarse envelope. On a
+simple top eigenline they vanish at exact alignment. For a commuting
+source and `g>0`, the new envelope is at most `2||R₀||W₀`: the
+linear-in-misalignment channel disappears. Continuity through collisions
+is not asserted. `LocalLimitingAlignmentSource.lean` constructs
 the actual limiting source and proves spatial dominated convergence under
 an absolute majorant independent of `ε`. `LocalAlignmentSourceLimit.lean`
 proves interval integrability and the time-integral limit.
@@ -425,6 +451,28 @@ proves interval integrability and the time-integral limit.
 with `Nδ,*`, keeping `δ > 0` and its viscous payment fixed. One local solution
 and interval again work for all admissible filters and regularizers.
 This is a local estimate, not uniform control toward a singular time.
+
+`LocalSourceCommutator.lean` identifies the actual combined commutator:
+
+```text
+[Sχ,R₀] = −([Sχ,Wχ]Wχ + Wχ[Sχ,Wχ])
+          −[Sχ,Hess(p_v)] + [Sχ,sym ∇gχ] + [Sχ,(u−v)·∇Sχ].
+```
+
+Here `v=χu`, `p_v` is the resolved pressure (not the filtered full pressure),
+all operators use the explicit finite output reconstructions, and
+`gχ` is the all-input, Leray-projected subgrid force. The combined
+commutator is formed before taking its norm; cancellation between
+channels is not discarded. Its joint space-time continuity is proved
+for the actual local solution. The improvement propagates through the
+existing spacetime, smoothing-limit, and excess-diffusion theorems.
+No all-scale estimate of this commutator is supplied.
+
+`SpectralSourceCommutatorTests.lean` checks a commuting source on the
+simple-top branch and constructs a commuting rank-one source with
+anisotropy one at zero strain. This rules out deleting the positive-gap
+condition from that branch, not a dynamically constrained NS estimate.
+`LocalSourceCommutatorAudit.lean` audits the new and strengthened results.
 
 `LocalCoherentAlignmentRate.lean` identifies additional cancellation that
 the collision fallback loses. Unregularized alignment energy is nonnegative;
