@@ -14051,3 +14051,62 @@ bounded, complete interfaces, or some other route-native reduction.
 Neither unbounded exact counts nor the failure of coarse summaries
 refutes that implication. No classical configuration machinery is used;
 the obligation ledger remains $57/100$.
+
+\subsection{Agreement saturation: a construction and its exact obstruction}
+\label{sec:agreement-closed-cuts}
+
+One attempted supplier enlarges a seed shore along every edge on which
+the two colourings agree. Let $H$ be this agreeing-edge subgraph, with
+the full ambient vertex set. The enlargement is constructed as the set
+of vertices reachable in $H$ from the seeds. It is the least $H$-closed
+set containing the seeds; the operation is monotone and idempotent.
+\Sverified{Mettapedia.GraphTheory.FourColor.AgreementClosedCuts.mem_hull_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.AgreementClosedCuts.hull_least}
+\Sverified{Mettapedia.GraphTheory.FourColor.AgreementClosedCuts.hull_mono}
+\Sverified{Mettapedia.GraphTheory.FourColor.AgreementClosedCuts.hull_idempotent}
+
+This gives an exact, constructive criterion: there is a shore containing
+$A$, avoiding $B$, and having only disagreeing ambient crossing edges
+if and only if no $H$-path joins a vertex of $A$ to a vertex of $B$.
+Necessity follows by propagating shore membership along a path;
+sufficiency uses the constructed reachable set. Closure is explicitly
+equivalent to the assertion about \emph{all ambient} crossing edges.
+No width estimate or long chain is part of this theorem.
+\Sverified{Mettapedia.GraphTheory.FourColor.AgreementClosedCuts.closed_iff_boundary_disagrees}
+\Sverified{Mettapedia.GraphTheory.FourColor.AgreementClosedCuts.exists_disagreeing_separator_iff}
+
+\paragraph{A proper-colouring negative control.}
+On the cube, alternate two colours around both squares and use the third
+colour on the spokes. Swap the first two colours on the upper square
+only. Both edge colourings are proper and nonzero, and disagreement is
+exactly the upper square. The agreeing subgraph nevertheless connects all
+eight vertices through the lower square and the spokes. Every nonempty
+seed therefore saturates to the whole cube, and no $H$-closed shore
+separates upper vertices $0$ and $2$. These facts are kernel-checked.
+\Sverified{Mettapedia.GraphTheory.FourColor.AgreementHullPrismControl.proper_nonzero}
+\Sverified{Mettapedia.GraphTheory.FourColor.AgreementHullPrismControl.disagrees_exactly_on_top}
+\Sverified{Mettapedia.GraphTheory.FourColor.AgreementHullPrismControl.agreeing_preconnected}
+\Sverified{Mettapedia.GraphTheory.FourColor.AgreementHullPrismControl.every_nonempty_hull_is_univ}
+\Sverified{Mettapedia.GraphTheory.FourColor.AgreementHullPrismControl.no_closed_separation}
+
+The accompanying lab checks the same fixed colour pair on $19$ even
+prisms of circumferences $4$ through $40$, over $399$ proper top prefixes.
+A prefix of $t$ upper vertices has two disagreeing crossing edges but
+$t+2$ full ambient crossing edges. Adding the corresponding lower prefix,
+instead of saturating along every agreeing edge, gives a strictly nested
+chain of connected, co-connected shores with four full crossing edges.
+Thus the lab contains a surviving selective construction on the same
+family that defeats indiscriminate saturation.
+
+\paragraph{Scope of the failed attack.}
+These controls are ordinary colourable graphs, not positive absolute
+deletion minima, least counterexamples, or instances of the ordered-mesh
+supplier. They refute only the proposed generic enlargement rule. They
+do not refute the existence of another controlled-interface construction;
+indeed the paired-prefix control exhibits one on prisms. The open step
+is to construct an appropriate \emph{selective} sweep or another
+route-native reduction from the full absolute-minimum and ordered-mesh
+hypotheses, bounding the agreeing crossing edges as well as the
+disagreeing ones. No hypothesis asserting that sweep has been substituted
+for its construction. No obligation row is discharged; the ledger remains
+$57/100$.
