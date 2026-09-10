@@ -1,0 +1,263 @@
+{
+  "branch_only_avoidance_sufficient": false,
+  "cases": [
+    {
+      "forbidden_vertices": 2,
+      "loss_bound": 6,
+      "radius": 0,
+      "selected_columns": [
+        0,
+        1,
+        2,
+        4
+      ],
+      "selected_rows": [
+        0,
+        1,
+        2
+      ],
+      "source": [
+        9,
+        10
+      ],
+      "target": [
+        3,
+        4
+      ],
+      "vertices": 180
+    },
+    {
+      "forbidden_vertices": 8,
+      "loss_bound": 24,
+      "radius": 1,
+      "selected_columns": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "selected_rows": [
+        0,
+        1,
+        2
+      ],
+      "source": [
+        27,
+        28
+      ],
+      "target": [
+        3,
+        4
+      ],
+      "vertices": 1512
+    },
+    {
+      "forbidden_vertices": 20,
+      "loss_bound": 96,
+      "radius": 2,
+      "selected_columns": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "selected_rows": [
+        0,
+        1,
+        2
+      ],
+      "source": [
+        99,
+        100
+      ],
+      "target": [
+        3,
+        4
+      ],
+      "vertices": 19800
+    }
+  ],
+  "enclosed_mark_control": {
+    "bridgeless": true,
+    "carrier_avoids_mark": true,
+    "cubic": true,
+    "degree_of_mark": 3,
+    "edges": 33,
+    "edges_and_colours": [
+      [
+        0,
+        1,
+        1
+      ],
+      [
+        0,
+        14,
+        2
+      ],
+      [
+        0,
+        15,
+        3
+      ],
+      [
+        1,
+        4,
+        2
+      ],
+      [
+        1,
+        8,
+        3
+      ],
+      [
+        2,
+        3,
+        1
+      ],
+      [
+        2,
+        8,
+        2
+      ],
+      [
+        2,
+        16,
+        3
+      ],
+      [
+        3,
+        6,
+        2
+      ],
+      [
+        3,
+        17,
+        3
+      ],
+      [
+        4,
+        5,
+        3
+      ],
+      [
+        4,
+        21,
+        1
+      ],
+      [
+        5,
+        9,
+        2
+      ],
+      [
+        5,
+        20,
+        1
+      ],
+      [
+        6,
+        7,
+        1
+      ],
+      [
+        6,
+        9,
+        3
+      ],
+      [
+        7,
+        18,
+        3
+      ],
+      [
+        7,
+        19,
+        2
+      ],
+      [
+        8,
+        10,
+        1
+      ],
+      [
+        9,
+        11,
+        1
+      ],
+      [
+        10,
+        12,
+        2
+      ],
+      [
+        10,
+        13,
+        3
+      ],
+      [
+        11,
+        12,
+        3
+      ],
+      [
+        11,
+        13,
+        2
+      ],
+      [
+        12,
+        13,
+        1
+      ],
+      [
+        14,
+        15,
+        1
+      ],
+      [
+        14,
+        21,
+        3
+      ],
+      [
+        15,
+        16,
+        2
+      ],
+      [
+        16,
+        17,
+        1
+      ],
+      [
+        17,
+        18,
+        2
+      ],
+      [
+        18,
+        19,
+        1
+      ],
+      [
+        19,
+        20,
+        3
+      ],
+      [
+        20,
+        21,
+        2
+      ]
+    ],
+    "integer_drawing_checked": true,
+    "mark_strictly_inside_cell": true,
+    "maximum_degree": 3,
+    "tait_colourable": true,
+    "target_counterexample_class": false,
+    "vertices": 22
+  },
+  "full_path_avoidance": true,
+  "schema": "fourcolor-protected-mesh-gate-v2",
+  "scope": "ordered path carrier, not a disk interior or a complete separator; no physical reduction supplied"
+}

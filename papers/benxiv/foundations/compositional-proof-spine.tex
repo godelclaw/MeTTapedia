@@ -14438,3 +14438,75 @@ ordinary non-colourability claim follows from the empty refined fibre:
 a colourable smaller map may have no colouring satisfying its carried
 equality or inequality observation. No
 obligation weight changes: the ledger remains $57/100$.
+
+\subsection{A protected mesh carrier is constructed, not assumed}
+\label{sec:protected-mesh-carrier}
+
+The ordered-mesh branch can be separated from finite marked-edge
+bookkeeping without changing the colouring predicate. Let $S$ be a finite
+set of ambient vertices. For an edge set $F$, at most $|F|$ rows and at
+most $|F|$ columns of an ordered injective mesh meet $F$: each blocked
+path selects an edge of $F$, and within-family edge-disjointness makes
+the selection injective. Discard these paths and take order-preserving
+embeddings of the remaining index sets. The output retains the entire
+original paths, including their tails, and the strict order of the
+designated crossings. Indices need not be consecutive.
+\Sverified{Mettapedia.GraphTheory.FourColor.ProtectedOrderedMesh.card_blocked_le}
+\Sverified{Mettapedia.GraphTheory.FourColor.ProtectedOrderedMesh.exists_restriction_avoiding_edges}
+
+Take $F$ to be the set of all ambient edges incident to $S$. In a cubic
+rotation system $|F|\leq 3|S|$. Every vertex of a nontrivial path is
+incident to one of its edges; target dimensions $p,q\geq2$ guarantee
+that every retained path is nontrivial. Consequently an ordered mesh
+with at least $p+3|S|$ rows and $q+3|S|$ columns contains a $p\times q$
+ordered submesh whose full row and column vertex sets avoid $S$.
+\Sverified{Mettapedia.GraphTheory.FourColor.ProtectedOrderedMesh.path_vertex_incident}
+\Sverified{Mettapedia.GraphTheory.FourColor.ProtectedOrderedMesh.star_card_le_three}
+\Sverified{Mettapedia.GraphTheory.FourColor.ProtectedOrderedMesh.exists_unmarked_submesh}
+
+The protected set can include an actual ambient neighbourhood, including
+lateral attachments outside the mesh. If $B_0(S)=S$ and
+$B_{r+1}(S)=N[B_r(S)]$, the degree bound gives
+$|B_r(S)|\leq |S|4^r$. Thus the dimension loss
+\[
+ d=3|S|4^r
+\]
+is sufficient to construct a $p\times q$ mesh avoiding $B_r(S)$ from a
+$(p+d)\times(q+d)$ mesh. No minimality, colouring choice, frozen
+exterior, supplied clean carrier, or planarity assumption is required
+for this extraction.
+\Sverified{Mettapedia.GraphTheory.FourColor.ProtectedOrderedMesh.card_buffer_le}
+\Sverified{Mettapedia.GraphTheory.FourColor.ProtectedOrderedMesh.exists_buffer_avoiding_submesh}
+
+Substituting the inflated dimensions into the existing spherical
+mesh-or-replacement construction gives an actual protected mesh or the
+existing strictly smaller spherical, bridgeless cubic zero-Count map
+preserving the designated edges. The input is the same ambient class,
+two-sided orbit faces, ordinary non-colourability, an alpha-closed list
+of marked darts with endpoints in $S$, and the explicit size threshold
+at the inflated dimensions. No clean-mesh supply hypothesis is added.
+The replacement branch retains ordinary non-colourability; it is not
+the empty equality-constrained fibre of the preceding subsection.
+\Sverified{Mettapedia.GraphTheory.FourColor.ProtectedSphericalMeshSeam.exists_protectedMesh_or_marked_replacement}
+
+\paragraph{The precise geometric limitation.}
+A protected path carrier is not a protected disk interior. A direct
+integer-coordinate control has twenty-two vertices and is cubic and
+bridgeless: subdivide two opposite edges of a split-grid cell and join the
+subdivision vertices through a diamond, then fill the exterior degree
+deficits with an eight-cycle. The full mesh paths avoid the marked diamond
+vertex, but the cell encloses it. The drawing,
+path incidence, disjointness, strict interior test, edge-deletion
+connectedness, and an explicit proper Tait colouring are checked in
+\texttt{results/fourcolor/v24\_protected\_mesh\_gate.json}. This is a
+computational cubic planar control, not a minimal-counterexample
+specimen or a Lean topological theorem. Positive buffer gates cover
+radii zero, one and two; an off-mesh attachment regression checks that
+the buffer is ambient rather than mesh-relative.
+
+The extraction therefore removes finite mark avoidance from the open
+mesh branch, but supplies neither clean disk interiors nor complete
+bounded-width interfaces nor a strict reduction on that branch.
+These are separate geometric and semantic obligations. No fixed
+obligation has been discharged by this refinement: the ledger remains
+$57/100$.
