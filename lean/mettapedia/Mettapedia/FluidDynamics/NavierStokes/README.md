@@ -570,7 +570,8 @@ to an actual local infinite Fourier solution: for every `ν > 0` and `ε ≠ 0`,
 the alignment defect at the fixed spatial origin is zero initially and
 strictly positive for all sufficiently small positive times. The initial
 velocity at the origin is zero. The checked conclusion concerns the fixed
-point; no material trajectory or second time derivative is asserted here.
+point; its material-trajectory strengthening is stated below. No second
+time derivative is assumed.
 Neither viscosity nor the other terms in the full right-hand side erase
 the computed first-order residual response.
 
@@ -589,6 +590,36 @@ This excludes automatic persistence of pointwise perfect alignment, not
 global regularity or a spatially nonlocal, time-integrated estimate.
 Misalignment can be generated even while the solution remains regular.
 Uniform control of its accumulated cost is still the central open step.
+
+`MaterialInitialGradient.lean` extends the physical material gradient
+equation to the initial endpoint using closed-interval continuity of
+the actual gradient, pressure Hessian and viscous term. At a stagnation
+point its initial rate equals the full Eulerian Navier–Stokes rate.
+`PressureTiltMaterialEvolution.lean` then constructs the particle starting
+at the origin on the same local existence interval, with its ordinary
+trajectory equation on the closed interval. On this particle the initial
+spectral residual rate is again the nonzero vector computed above, and
+the alignment defect becomes strictly positive immediately afterwards.
+
+The sharper theorem
+`PressureTiltQuadraticGrowth.exists_material_quadratic_growth` proves
+
+```text
+D(t, X(t)) / t² → (4096/25) π⁵ ε² (25π²ν² + 3)  as t → 0+.
+```
+
+The coefficient is strictly positive for every `ε ≠ 0`, `ν > 0`.
+`SpectralDefectAsymptotics.lean` supplies the reusable mechanism: when the
+two transverse strain eigenvalues coincide initially, the lower gap and
+spectral width bounds squeeze the quadratic defect coefficient to the
+squared residual rate divided by the initial gap. Continuity and a first
+right derivative suffice; no second derivative is assumed or claimed.
+`PressureTiltMaterialAudit.lean` checks the dependency chain and the
+constructed-solution-and-trajectory statement.
+
+Following the fluid therefore does not restore automatic persistence of
+perfect alignment. This remains a regular local solution, not a blowup
+construction. A closing budget must accommodate this generated defect.
 
 `SpectralSourceCommutatorTests.lean` checks a commuting source on the
 simple-top branch and constructs a commuting rank-one source with

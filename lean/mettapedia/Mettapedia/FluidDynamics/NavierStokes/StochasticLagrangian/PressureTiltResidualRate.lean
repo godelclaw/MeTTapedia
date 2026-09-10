@@ -1,5 +1,6 @@
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PressureTiltTangent
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeMatrixCurlAlgebra
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.SpectralEigenvalueWithin
 
 /-!
 # Spectral-residual response to the full Navier–Stokes tangent
@@ -137,6 +138,26 @@ theorem hasDerivAt_residual_of_rates (epsilon nu t : ℝ)
     ⟪topVector (S t), strainRate epsilon nu (topVector (S t))⟫ t at hl
   rw [hS0] at hl
   change HasDerivAt (fun tau ↦ topEigenvalue (S tau)) (eigenvalueRate epsilon nu) t at hl
+  have hz := (hl.smul hw).sub (hS.clm_apply hw)
+  apply hz.congr_deriv
+  simp only [hS0, hw0, residualRate]
+  module
+
+/-- One-sided version, suitable for the initial endpoint of a physical solution. -/
+theorem hasDerivWithinAt_residual_of_rates (epsilon nu t : ℝ) (domain : Set ℝ)
+    (S : ℝ → SymmetricStrain) (w : ℝ → R3)
+    (hS : HasDerivWithinAt (fun tau ↦ (S tau).1) (strainRate epsilon nu) domain t)
+    (hw : HasDerivWithinAt w (vorticityRate epsilon nu) domain t)
+    (hS0 : S t = originStrain epsilon) (hw0 : w t = fullVorticity (velocity epsilon) 0) :
+    HasDerivWithinAt (fun tau ↦ spectralResidual (S tau).1 (topEigenvalue (S tau)) (w tau))
+      (residualRate epsilon nu) domain t := by
+  have hg : 0 < topGap (S t) := by rw [hS0, topGap_origin]; positivity
+  have hl := SpectralEigenvalueWithin.hasDerivWithinAt_topEigenvalue
+    S (strainRate epsilon nu) domain t hS hg
+  change HasDerivWithinAt (fun tau ↦ topEigenvalue (S tau))
+    ⟪topVector (S t), strainRate epsilon nu (topVector (S t))⟫ domain t at hl
+  rw [hS0] at hl
+  change HasDerivWithinAt (fun tau ↦ topEigenvalue (S tau)) (eigenvalueRate epsilon nu) domain t at hl
   have hz := (hl.smul hw).sub (hS.clm_apply hw)
   apply hz.congr_deriv
   simp only [hS0, hw0, residualRate]

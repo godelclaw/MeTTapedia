@@ -68,17 +68,8 @@ theorem residual_hasDerivWithinAt_initial (hT : 0 < T) (hB : 0 ≤ B) :
   have hS0 : S 0 = originStrain epsilon := by
     dsimp only [S]
     rw [s.initial, fullSymmetricStrain_origin]
-  have hg0 : 0 < topGap (S 0) := by rw [hS0, topGap_origin]; positivity
-  have hl := hasDerivWithinAt_topEigenvalue S (strainRate epsilon nu) (Set.Ici 0) 0 hS hg0
-  change HasDerivWithinAt (fun t ↦ topEigenvalue (S t))
-    ⟪topVector (S 0), strainRate epsilon nu (topVector (S 0))⟫ (Set.Ici 0) 0 at hl
-  rw [hS0] at hl
-  change HasDerivWithinAt (fun t ↦ topEigenvalue (S t))
-    (eigenvalueRate epsilon nu) (Set.Ici 0) 0 at hl
-  have hz := (hl.smul hw).sub (hS.clm_apply hw)
-  apply hz.congr_deriv
-  simp only [s.initial, fullStrainOperator_origin, hS0, residualRate, strainRate, vorticityRate]
-  module
+  exact hasDerivWithinAt_residual_of_rates epsilon nu 0 (Set.Ici 0) S
+    (fun t ↦ fullVorticity (s.coefficients t) 0) hS hw hS0 (by rw [s.initial])
 
 theorem eventually_residual_ne_zero (hT : 0 < T) (hB : 0 ≤ B) (he : epsilon ≠ 0) :
     ∀ᶠ t in nhdsWithin (0 : ℝ) (Set.Ioi 0), residualAtOrigin (s.coefficients t) ≠ 0 := by
