@@ -60,6 +60,10 @@ regularity, blowup, or any other Millennium-problem conclusion.
 
 ### September 2026 material-flow development
 
+Ben Goertzel's [September 9 commentary](https://bengoertzel.substack.com/p/navier-stokes-blows-up-the-internet)
+identifies unforced A/B as his target and distinguishes the core idea from
+its unverified details. This documents author intent, not a completed proof.
+
 The stochastic-Lagrangian lane now constructs a local infinite Fourier
 velocity and a common-interval material flow for arbitrary admissible smooth
 periodic data, with no small-data restriction. Along that flow it derives
