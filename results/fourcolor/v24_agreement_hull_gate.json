@@ -1,0 +1,368 @@
+{
+  "schema": 1,
+  "scope": "generic fixed colour-pair controls; not absolute deletion minima",
+  "verdict": "saturation fails; selective paired-prefix sweep survives",
+  "prisms": [
+    {
+      "circumference": 4,
+      "vertices": 8,
+      "edges": 12,
+      "proper_colourings": true,
+      "agreeing_hull_vertices": 8,
+      "prefix_count": 3,
+      "disagreement_cut_sizes": [
+        2
+      ],
+      "full_cut_range": [
+        3,
+        5
+      ],
+      "paired_cut_sizes": [
+        4
+      ],
+      "paired_chain_strict_connected_coconnected": true
+    },
+    {
+      "circumference": 6,
+      "vertices": 12,
+      "edges": 18,
+      "proper_colourings": true,
+      "agreeing_hull_vertices": 12,
+      "prefix_count": 5,
+      "disagreement_cut_sizes": [
+        2
+      ],
+      "full_cut_range": [
+        3,
+        7
+      ],
+      "paired_cut_sizes": [
+        4
+      ],
+      "paired_chain_strict_connected_coconnected": true
+    },
+    {
+      "circumference": 8,
+      "vertices": 16,
+      "edges": 24,
+      "proper_colourings": true,
+      "agreeing_hull_vertices": 16,
+      "prefix_count": 7,
+      "disagreement_cut_sizes": [
+        2
+      ],
+      "full_cut_range": [
+        3,
+        9
+      ],
+      "paired_cut_sizes": [
+        4
+      ],
+      "paired_chain_strict_connected_coconnected": true
+    },
+    {
+      "circumference": 10,
+      "vertices": 20,
+      "edges": 30,
+      "proper_colourings": true,
+      "agreeing_hull_vertices": 20,
+      "prefix_count": 9,
+      "disagreement_cut_sizes": [
+        2
+      ],
+      "full_cut_range": [
+        3,
+        11
+      ],
+      "paired_cut_sizes": [
+        4
+      ],
+      "paired_chain_strict_connected_coconnected": true
+    },
+    {
+      "circumference": 12,
+      "vertices": 24,
+      "edges": 36,
+      "proper_colourings": true,
+      "agreeing_hull_vertices": 24,
+      "prefix_count": 11,
+      "disagreement_cut_sizes": [
+        2
+      ],
+      "full_cut_range": [
+        3,
+        13
+      ],
+      "paired_cut_sizes": [
+        4
+      ],
+      "paired_chain_strict_connected_coconnected": true
+    },
+    {
+      "circumference": 14,
+      "vertices": 28,
+      "edges": 42,
+      "proper_colourings": true,
+      "agreeing_hull_vertices": 28,
+      "prefix_count": 13,
+      "disagreement_cut_sizes": [
+        2
+      ],
+      "full_cut_range": [
+        3,
+        15
+      ],
+      "paired_cut_sizes": [
+        4
+      ],
+      "paired_chain_strict_connected_coconnected": true
+    },
+    {
+      "circumference": 16,
+      "vertices": 32,
+      "edges": 48,
+      "proper_colourings": true,
+      "agreeing_hull_vertices": 32,
+      "prefix_count": 15,
+      "disagreement_cut_sizes": [
+        2
+      ],
+      "full_cut_range": [
+        3,
+        17
+      ],
+      "paired_cut_sizes": [
+        4
+      ],
+      "paired_chain_strict_connected_coconnected": true
+    },
+    {
+      "circumference": 18,
+      "vertices": 36,
+      "edges": 54,
+      "proper_colourings": true,
+      "agreeing_hull_vertices": 36,
+      "prefix_count": 17,
+      "disagreement_cut_sizes": [
+        2
+      ],
+      "full_cut_range": [
+        3,
+        19
+      ],
+      "paired_cut_sizes": [
+        4
+      ],
+      "paired_chain_strict_connected_coconnected": true
+    },
+    {
+      "circumference": 20,
+      "vertices": 40,
+      "edges": 60,
+      "proper_colourings": true,
+      "agreeing_hull_vertices": 40,
+      "prefix_count": 19,
+      "disagreement_cut_sizes": [
+        2
+      ],
+      "full_cut_range": [
+        3,
+        21
+      ],
+      "paired_cut_sizes": [
+        4
+      ],
+      "paired_chain_strict_connected_coconnected": true
+    },
+    {
+      "circumference": 22,
+      "vertices": 44,
+      "edges": 66,
+      "proper_colourings": true,
+      "agreeing_hull_vertices": 44,
+      "prefix_count": 21,
+      "disagreement_cut_sizes": [
+        2
+      ],
+      "full_cut_range": [
+        3,
+        23
+      ],
+      "paired_cut_sizes": [
+        4
+      ],
+      "paired_chain_strict_connected_coconnected": true
+    },
+    {
+      "circumference": 24,
+      "vertices": 48,
+      "edges": 72,
+      "proper_colourings": true,
+      "agreeing_hull_vertices": 48,
+      "prefix_count": 23,
+      "disagreement_cut_sizes": [
+        2
+      ],
+      "full_cut_range": [
+        3,
+        25
+      ],
+      "paired_cut_sizes": [
+        4
+      ],
+      "paired_chain_strict_connected_coconnected": true
+    },
+    {
+      "circumference": 26,
+      "vertices": 52,
+      "edges": 78,
+      "proper_colourings": true,
+      "agreeing_hull_vertices": 52,
+      "prefix_count": 25,
+      "disagreement_cut_sizes": [
+        2
+      ],
+      "full_cut_range": [
+        3,
+        27
+      ],
+      "paired_cut_sizes": [
+        4
+      ],
+      "paired_chain_strict_connected_coconnected": true
+    },
+    {
+      "circumference": 28,
+      "vertices": 56,
+      "edges": 84,
+      "proper_colourings": true,
+      "agreeing_hull_vertices": 56,
+      "prefix_count": 27,
+      "disagreement_cut_sizes": [
+        2
+      ],
+      "full_cut_range": [
+        3,
+        29
+      ],
+      "paired_cut_sizes": [
+        4
+      ],
+      "paired_chain_strict_connected_coconnected": true
+    },
+    {
+      "circumference": 30,
+      "vertices": 60,
+      "edges": 90,
+      "proper_colourings": true,
+      "agreeing_hull_vertices": 60,
+      "prefix_count": 29,
+      "disagreement_cut_sizes": [
+        2
+      ],
+      "full_cut_range": [
+        3,
+        31
+      ],
+      "paired_cut_sizes": [
+        4
+      ],
+      "paired_chain_strict_connected_coconnected": true
+    },
+    {
+      "circumference": 32,
+      "vertices": 64,
+      "edges": 96,
+      "proper_colourings": true,
+      "agreeing_hull_vertices": 64,
+      "prefix_count": 31,
+      "disagreement_cut_sizes": [
+        2
+      ],
+      "full_cut_range": [
+        3,
+        33
+      ],
+      "paired_cut_sizes": [
+        4
+      ],
+      "paired_chain_strict_connected_coconnected": true
+    },
+    {
+      "circumference": 34,
+      "vertices": 68,
+      "edges": 102,
+      "proper_colourings": true,
+      "agreeing_hull_vertices": 68,
+      "prefix_count": 33,
+      "disagreement_cut_sizes": [
+        2
+      ],
+      "full_cut_range": [
+        3,
+        35
+      ],
+      "paired_cut_sizes": [
+        4
+      ],
+      "paired_chain_strict_connected_coconnected": true
+    },
+    {
+      "circumference": 36,
+      "vertices": 72,
+      "edges": 108,
+      "proper_colourings": true,
+      "agreeing_hull_vertices": 72,
+      "prefix_count": 35,
+      "disagreement_cut_sizes": [
+        2
+      ],
+      "full_cut_range": [
+        3,
+        37
+      ],
+      "paired_cut_sizes": [
+        4
+      ],
+      "paired_chain_strict_connected_coconnected": true
+    },
+    {
+      "circumference": 38,
+      "vertices": 76,
+      "edges": 114,
+      "proper_colourings": true,
+      "agreeing_hull_vertices": 76,
+      "prefix_count": 37,
+      "disagreement_cut_sizes": [
+        2
+      ],
+      "full_cut_range": [
+        3,
+        39
+      ],
+      "paired_cut_sizes": [
+        4
+      ],
+      "paired_chain_strict_connected_coconnected": true
+    },
+    {
+      "circumference": 40,
+      "vertices": 80,
+      "edges": 120,
+      "proper_colourings": true,
+      "agreeing_hull_vertices": 80,
+      "prefix_count": 39,
+      "disagreement_cut_sizes": [
+        2
+      ],
+      "full_cut_range": [
+        3,
+        41
+      ],
+      "paired_cut_sizes": [
+        4
+      ],
+      "paired_chain_strict_connected_coconnected": true
+    }
+  ]
+}
