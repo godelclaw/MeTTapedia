@@ -749,6 +749,63 @@ source, control the complement of the geometric criterion, or close BKM
 continuation. `LocalBottomSectorAudit.lean` audits all 30 new theorems in
 this layer; `Analysis/Tests.lean` includes a nonzero-tangent regression.
 
+### Weighted coupled-sector dissipation
+
+`LocalEnstrophyDiffusion.lean` supplies the actual local full-vorticity
+energy derivative, Laplacian, and full-gradient dissipation. Together with
+the bottom energy, `LocalWeightedSectorEnergy.lean` constructs, for a
+constant weight `0 < θ ≤ 1`,
+
+```text
+Φθ = E + θ||b||² = θ||ω||² + (1-θ)E,
+θ||ω||² ≤ Φθ ≤ ||ω||².
+```
+
+Both its material derivative and its Laplacian are proved for the actual
+fields. Put `q = 1-θ`. The generic weighted square completion gives the
+nonnegative quantity
+
+```text
+Dθ = Σⱼ ||cⱼ + q Pⱼb||²
+     + θ Σⱼ ||dⱼ + (q/θ)Pⱼa||²
+     + θq Σⱼ ||Pⱼb||².
+```
+
+`LocalWeightedSectorBalance.lean` proves the exact signed balance
+
+```text
+(Dᵤ-νΔ)Φθ + 2νDθ
+  = 2μE + 2θ<b,Sχb> + 2<a+θb,(Sfull-Sχ)ω>
+    + q·2<a,Wb> + 2ν(q/θ)A.
+```
+
+The complementary-gradient cross term is now paid by two-sector
+dissipation, at the explicit cost `2ν(q/θ)A`. It is no longer a separate
+source. Using the earlier rank-one and parabolic coupling bounds,
+`LocalWeightedSectorBudget.lean` proves
+
+```text
+(Dᵤ-νΔ)Φθ + 2νDθ + (g - 2ν(q/θ)H/g²)E
+  ≤ 2<a+θb,(Sfull-Sχ)ω> + (2θλmax + 3q²Koff²/g)||b||².
+```
+
+The condition `4νqH ≤ θg³` leaves at least `g/2` bottom damping. The
+expanding-plane stretching term is not controlled by this condition and
+remains on the right. At `θ=1`, the energy and dissipation reduce exactly
+to full enstrophy density and its usual gradient square; these endpoint
+identities are also checked. Taking `θ` toward zero increases the frame
+cost and weakens control of total vorticity.
+
+The physical-data theorem constructs one local solution from the same
+order-nine periodic data class as above. For each admissible finite filter
+and interior interval, its almost-everywhere positive-gap conclusions
+hold for all constant weights in `(0,1]` on a common full-measure set.
+The exceptional sets may still depend on the filter and interval. This
+does not justify replacing the constant by a space/time-dependent weight
+without differentiating that weight, or supply the remaining time- and
+scale-uniform source budget. `LocalWeightedSectorAudit.lean` audits all
+32 new theorems in this layer.
+
 `FilteredHighHighExample.lean` supplies real, transverse, zero-mean finite
 Fourier data whose retained velocity vanishes while its retained subgrid
 force does not. The input squared frequencies are five and two; the output
