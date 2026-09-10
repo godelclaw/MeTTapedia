@@ -288,6 +288,48 @@ singularity. The sign of `<z,f₀>` is retained, not asserted favorable;
 `Kχ` and `1/δ` still prevent an unproved all-scale limit.
 `LocalAlignmentAudit.lean` checks the new theorem dependencies.
 
+The actual local mean balance is developed separately:
+
+- `LocalVorticityTime.lean` differentiates full curl in the uniform norm
+  of continuous fields and proves a spatially uniform time Lipschitz
+  bound from the third absolute Fourier moment.
+- `LocalSpaceTimeExtension.lean` clamps time to a compact interior
+  interval. It extends field data, not the PDE solution, and proves
+  space-time local Lipschitz regularity of full vorticity, filtered
+  strain and the alignment energy, including spectral collisions.
+- `LocalMeanAlignmentBalance.lean` proves spatial integrability almost
+  everywhere, differentiates the spatial mean, and proves
+  `∫ₐᵇ∫ DᶠᵘEδ = mean Eδ(b) - mean Eδ(a)` for the original local
+  solution. Here `Dᶠᵘ` is the derivative along the straight line with the
+  instantaneous **full** velocity. Its mean time integrability is a
+  conclusion, not an assumption.
+- `LocalMeanAlignmentEstimate.lean` combines that identity with signed
+  damping. Subject to the explicit almost-everywhere comparison
+  `DᶠᵘEδ ≤ materialRate`, it proves
+
+  ```text
+  mean Eδ(b) + ∫ₐᵇ∫||z||²
+    ≤ mean Eδ(a) + 4 Kχ E(0)²/δ + ∫ₐᵇ∫Nδ.
+  ```
+
+  `LocalEnergySubinterval.lean` supplies the initial-energy payment on
+  subintervals; it does not require the dominated cost to be nonnegative.
+- `LocalInteriorTrajectory.lean` constructs actual flow curves through
+  any prescribed point and time. `LocalVorticityTangency.lean` transfers
+  the vorticity equation to curves with the same instantaneous velocity.
+  `LocalAlignmentDifferential.lean` identifies the actual energy
+  derivative with `materialRate` along such curves wherever the largest
+  eigenvalue is differentiable along the curve. It does not assume the
+  curve is a trajectory at other times.
+
+The reusable tangent-curve theorem is in `Mettapedia.Analysis.TangentCurveDerivative`:
+a locally Lipschitz outer map preserves agreement of derivatives along
+tangent curves, even without differentiability of the outer map itself.
+Finite local Lipschitz constructions are in `Mettapedia.Analysis.LocallyLipschitz`.
+`LocalMeanAlignmentAudit.lean` checks the dependencies of this stage.
+The remaining local splice is the almost-everywhere frozen-rate comparison;
+the all-scale signed nonlinear estimate and continuation remain unproved.
+
 `FilteredHighHighExample.lean` supplies real, transverse, zero-mean finite
 Fourier data whose retained velocity vanishes while its retained subgrid
 force does not. The input squared frequencies are five and two; the output
