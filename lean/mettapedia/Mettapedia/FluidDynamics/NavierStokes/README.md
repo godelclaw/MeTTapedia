@@ -516,6 +516,44 @@ spacetime envelope; the preceding integrated theorem still uses `C*`.
 Uniform angular, feedback and diffusion budgets remain open.
 `LocalPressureTiltAudit.lean` checks the new dependencies.
 
+`PressureTiltDatum.lean`, `PressureTiltOrigin.lean`, and
+`PressureTiltAlignment.lean` supply a physical obstruction to a
+pointwise-alignment-only pressure closure. On the unit torus, the finite
+Fourier coefficients describe the real mean-zero divergence-free datum
+
+```text
+u = (2 sin(2πz) + ε(sin(4πy) − 2 sin(2πy)),
+     2 sin(2πx), 2 sin(2πy)).
+```
+
+At the origin its actual strain and full spatial curl are independent of
+`ε`: `S = 2π [[0,1,1],[1,0,1],[1,1,0]]` and `ω = 4π(1,1,1)`.
+The top eigenvalue is `4π`, the top gap is `6π`, and both spectral residual
+and defect vanish. Nevertheless the Hessian of the pressure determined
+by this same velocity is `(48π²ε/5) diag(1,−1,0)`. With `e` the unit top
+eigenvector, the checked identity is
+
+```text
+||P⊥ Hess(p) e||² = (1536/25) π⁴ ε².
+```
+
+For every scalar majorant `F` with `F(0)=0`, the universal pointwise bound
+`||P⊥ Hess(p) e|| ≤ F(D)` therefore fails on this family. This is not a
+blowup construction or a refutation of a nonlocal/time-integrated budget.
+It does not yet assert a nonzero total material source after combining
+pressure, spin, feedback, transport and viscosity.
+The checked anisotropy estimate remains valid: its mixed term contains
+`||m||` as well as the tilt, so it still vanishes at exact alignment.
+
+`FourierPressurePairSum.lean` evaluates the pressure from its ordered input
+pairs; `FourierFiniteSupport.lean` identifies full-series reconstruction,
+ordinary coordinate derivatives, strain and curl with finite formulas.
+The pressure computation also uses the infinite-pressure operator and
+its ordinary spatial Hessian. No independently assigned pressure matrix,
+truncated vorticity receiver, or external forcing is used. All Fourier
+moments of the datum are summable. `PressureTiltDatumAudit.lean` audits
+the dependencies and checks both zero and nonzero perturbations.
+
 `SpectralSourceCommutatorTests.lean` checks a commuting source on the
 simple-top branch and constructs a commuting rank-one source with
 anisotropy one at zero strain. This rules out deleting the positive-gap
