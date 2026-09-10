@@ -97,6 +97,42 @@ the almost-everywhere extension of the OpenAI-derived dissipative ODE
 comparison. There is no exponential factor or spectral-gap assumption.
 `LocalSpectralDefectAudit.lean` checks the dependencies of these results.
 
+`InfiniteFilteredEquation.lean` derives the static-filter equation of this
+same infinite solution, including the absolutely convergent subgrid fiber
+with multiplier `χ(q) - χ(k)χ(q-k)`. It identifies the resolved finite algebra
+without assuming autonomous Galerkin evolution. The pressure-corrected
+subgrid force is `gχ = Leray(-2πi subgridConvection)`.
+
+`LocalFilteredStrain.lean` derives the resolved strain equation along the
+**full** velocity's material path. Writing `v = χu`, it retains the
+coefficient reconstructions of
+
+```text
+D_u S_v = -S_v² - W_v² - Hess(p_v) + νΔS_v
+          + sym ∇gχ + (u-v)·∇S_v.
+```
+
+Here `p_v` is resolved pressure; the difference from the filtered full
+pressure is included in the Leray-projected `gχ`. Nonlinear output sets
+include every resolved pair output. Both the matrix equation and its real
+self-adjoint operator form are proved from the local solution's equation.
+The static filter has no time derivative; a moving filter would add one.
+
+`InfiniteConvectionEnergy.lean` proves, for `E = ∑ k, |u_k|²`, the all-input
+bounds `|convection_q| ≤ |q|E`, `|p_q| ≤ E`, and
+`|gχ_q| ≤ 2π|q|E` at a retained sharp-filter output. Square summability is
+proved for the actual local solution. Reconstructing finitely many output
+modes gives the spatially uniform bound `2π(∑ q, |q|)E`, with the output
+cutoff cost explicit. This is not an estimate uniform over all output scales;
+the local bound `E ≤ B` is not promoted to a global initial-energy estimate.
+
+`FilteredHighHighExample.lean` supplies real, transverse, zero-mean finite
+Fourier data whose retained velocity vanishes while its retained subgrid
+force does not. The input squared frequencies are five and two; the output
+squared frequency is one. This rules out discarding unresolved quadratic
+feedback, not unforced global regularity. `LocalFilteredStrainAudit.lean`
+checks the dependencies of the filtering identities, witness and estimates.
+
 ### Forced-construction pressure test
 
 The [OpenAI forced blowup construction](https://cdn.openai.com/pdf/32d9f210-8b73-45e0-91bc-82a30aef8a9a/navier-stokes.pdf)
