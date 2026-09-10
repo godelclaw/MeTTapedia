@@ -1,0 +1,523 @@
+{
+  "schema": 1,
+  "scope": "one nonplanar graph; fixed source, all separated target edges",
+  "verification": "two complete Python enumerators; not a Lean kernel certificate",
+  "vertices": 20,
+  "edges": [
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      2
+    ],
+    [
+      0,
+      3
+    ],
+    [
+      1,
+      5
+    ],
+    [
+      1,
+      17
+    ],
+    [
+      2,
+      7
+    ],
+    [
+      2,
+      19
+    ],
+    [
+      3,
+      6
+    ],
+    [
+      3,
+      18
+    ],
+    [
+      4,
+      5
+    ],
+    [
+      4,
+      6
+    ],
+    [
+      4,
+      7
+    ],
+    [
+      5,
+      9
+    ],
+    [
+      6,
+      11
+    ],
+    [
+      7,
+      10
+    ],
+    [
+      8,
+      9
+    ],
+    [
+      8,
+      10
+    ],
+    [
+      8,
+      11
+    ],
+    [
+      9,
+      13
+    ],
+    [
+      10,
+      15
+    ],
+    [
+      11,
+      14
+    ],
+    [
+      12,
+      13
+    ],
+    [
+      12,
+      14
+    ],
+    [
+      12,
+      15
+    ],
+    [
+      13,
+      17
+    ],
+    [
+      14,
+      19
+    ],
+    [
+      15,
+      18
+    ],
+    [
+      16,
+      17
+    ],
+    [
+      16,
+      18
+    ],
+    [
+      16,
+      19
+    ]
+  ],
+  "cubic": true,
+  "bridgeless": true,
+  "girth": 5,
+  "K33_subdivision": {
+    "left": [
+      8,
+      12,
+      16
+    ],
+    "right": [
+      13,
+      14,
+      15
+    ],
+    "paths": [
+      [
+        8,
+        9,
+        13
+      ],
+      [
+        8,
+        11,
+        14
+      ],
+      [
+        8,
+        10,
+        15
+      ],
+      [
+        12,
+        13
+      ],
+      [
+        12,
+        14
+      ],
+      [
+        12,
+        15
+      ],
+      [
+        16,
+        17,
+        13
+      ],
+      [
+        16,
+        19,
+        14
+      ],
+      [
+        16,
+        18,
+        15
+      ]
+    ]
+  },
+  "full_Tait_colourings": 0,
+  "compared_pairs": 50544,
+  "absolute_minimizers": 120,
+  "rows": [
+    {
+      "source": [
+        0,
+        1
+      ],
+      "target": [
+        8,
+        10
+      ],
+      "colouring_counts": [
+        108,
+        90
+      ],
+      "compared_pairs": 9720,
+      "absolute_minimum": 3,
+      "minimizer_count": 12,
+      "signatures": [
+        {
+          "components": 2,
+          "branches": 0,
+          "cycle_rank": 0,
+          "count": 12
+        }
+      ],
+      "all_components_span_both_ports": true
+    },
+    {
+      "source": [
+        0,
+        1
+      ],
+      "target": [
+        8,
+        11
+      ],
+      "colouring_counts": [
+        108,
+        90
+      ],
+      "compared_pairs": 9720,
+      "absolute_minimum": 3,
+      "minimizer_count": 12,
+      "signatures": [
+        {
+          "components": 2,
+          "branches": 0,
+          "cycle_rank": 0,
+          "count": 12
+        }
+      ],
+      "all_components_span_both_ports": true
+    },
+    {
+      "source": [
+        0,
+        1
+      ],
+      "target": [
+        10,
+        15
+      ],
+      "colouring_counts": [
+        108,
+        54
+      ],
+      "compared_pairs": 5832,
+      "absolute_minimum": 5,
+      "minimizer_count": 36,
+      "signatures": [
+        {
+          "components": 2,
+          "branches": 0,
+          "cycle_rank": 0,
+          "count": 36
+        }
+      ],
+      "all_components_span_both_ports": true
+    },
+    {
+      "source": [
+        0,
+        1
+      ],
+      "target": [
+        11,
+        14
+      ],
+      "colouring_counts": [
+        108,
+        54
+      ],
+      "compared_pairs": 5832,
+      "absolute_minimum": 5,
+      "minimizer_count": 36,
+      "signatures": [
+        {
+          "components": 2,
+          "branches": 0,
+          "cycle_rank": 0,
+          "count": 36
+        }
+      ],
+      "all_components_span_both_ports": true
+    },
+    {
+      "source": [
+        0,
+        1
+      ],
+      "target": [
+        12,
+        14
+      ],
+      "colouring_counts": [
+        108,
+        90
+      ],
+      "compared_pairs": 9720,
+      "absolute_minimum": 3,
+      "minimizer_count": 12,
+      "signatures": [
+        {
+          "components": 2,
+          "branches": 0,
+          "cycle_rank": 0,
+          "count": 12
+        }
+      ],
+      "all_components_span_both_ports": true
+    },
+    {
+      "source": [
+        0,
+        1
+      ],
+      "target": [
+        12,
+        15
+      ],
+      "colouring_counts": [
+        108,
+        90
+      ],
+      "compared_pairs": 9720,
+      "absolute_minimum": 3,
+      "minimizer_count": 12,
+      "signatures": [
+        {
+          "components": 2,
+          "branches": 0,
+          "cycle_rank": 0,
+          "count": 12
+        }
+      ],
+      "all_components_span_both_ports": true
+    }
+  ],
+  "witnesses_by_minimum": {
+    "3": {
+      "source": [
+        0,
+        1
+      ],
+      "target": [
+        8,
+        10
+      ],
+      "left_colours": [
+        0,
+        1,
+        1,
+        0,
+        0,
+        2,
+        1,
+        1,
+        0,
+        2,
+        0,
+        1,
+        2,
+        2,
+        0,
+        1,
+        1,
+        0,
+        2,
+        0,
+        2,
+        1,
+        1,
+        2,
+        0
+      ],
+      "right_colours": [
+        1,
+        0,
+        2,
+        2,
+        0,
+        2,
+        1,
+        1,
+        0,
+        0,
+        2,
+        1,
+        1,
+        0,
+        0,
+        1,
+        1,
+        0,
+        2,
+        2,
+        2,
+        1,
+        1,
+        2,
+        0
+      ],
+      "disagreement_components": [
+        [
+          [
+            2,
+            7
+          ]
+        ],
+        [
+          [
+            9,
+            13
+          ],
+          [
+            13,
+            17
+          ]
+        ]
+      ]
+    },
+    "5": {
+      "source": [
+        0,
+        1
+      ],
+      "target": [
+        10,
+        15
+      ],
+      "left_colours": [
+        0,
+        1,
+        1,
+        0,
+        0,
+        2,
+        1,
+        1,
+        0,
+        2,
+        0,
+        1,
+        2,
+        2,
+        0,
+        1,
+        1,
+        0,
+        2,
+        0,
+        2,
+        1,
+        1,
+        2,
+        0
+      ],
+      "right_colours": [
+        0,
+        2,
+        1,
+        2,
+        1,
+        0,
+        1,
+        2,
+        0,
+        0,
+        1,
+        2,
+        1,
+        0,
+        0,
+        2,
+        2,
+        1,
+        1,
+        0,
+        0,
+        2,
+        2,
+        1,
+        0
+      ],
+      "disagreement_components": [
+        [
+          [
+            3,
+            6
+          ],
+          [
+            4,
+            6
+          ],
+          [
+            4,
+            7
+          ]
+        ],
+        [
+          [
+            16,
+            17
+          ],
+          [
+            16,
+            18
+          ]
+        ]
+      ]
+    }
+  },
+  "verdict": "absolute minimality plus two spanning disagreement paths does not imply agreement without further hypotheses"
+}
