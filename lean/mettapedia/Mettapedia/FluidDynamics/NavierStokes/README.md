@@ -1202,6 +1202,40 @@ audit the weak-limit and actual-data results. The previous coarse APIs
 remain available; the existing depleted cost definitions are strengthened
 to use the local density.
 
+`SpectralSourceExcess.lean` then spends a further quarter of the full residual
+on the complete nonviscous source. With `R` that source, `J=||[Sχ,R]||`,
+and `C*` the preceding commutator envelope, the source excess is
+
+```text
+Y = min(C*, max(2||R||−g²/8,0)W₀ + 8(J/g²)²|ω|²)   if g>0;
+Y = C* = 2||R|| |ω|²                                if g=0.
+C* ≤ |z|²/4 + Y,                  0 ≤ Y ≤ C*.
+```
+
+The minimum prevents an artificial inverse-gap singularity and preserves
+zero excess at exact separated alignment. If `[Sχ,R]=0` and
+`16||R||≤g²` with `g>0`, the source excess vanishes. Commutation at a
+collision is not sufficient: the checked collision regression retains
+nonzero anisotropy and excess.
+
+`LocalSourceExcess.lean` proves spatial and time integrability of this
+actual source, including the collision fallback. The source commutator
+is formed before taking a norm, retaining the previously proved joint
+pressure/subgrid cancellation. `LocalExcessAlignmentEnergy.lean` constructs
+one physical solution from arbitrary admissible data for which all
+admissible finite filters and fixed positive `δ` satisfy
+
+```text
+mean Φδ(t) + (1/4)∫₀ᵗ∫ |z|²
+  ≤ mean Φδ(0) + ∫₀ᵗ∫ X
+    + ∫₀ᵗ∫ (Y + 2<z,(Sfull−Sχ)ω> + 2δ<ω,Sfullω>).
+```
+
+This is an explicit absorption inequality, not a uniform bound on its
+right side. The commutator cost, collision sectors, strain mismatch,
+energy-regularizer limit and global continuation still require estimates.
+`LocalSourceExcessAudit.lean` checks the new declarations and regressions.
+
 `FilteredHighHighExample.lean` supplies real, transverse, zero-mean finite
 Fourier data whose retained velocity vanishes while its retained subgrid
 force does not. The input squared frequencies are five and two; the output
