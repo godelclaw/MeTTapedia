@@ -45,6 +45,15 @@ theorem isSymmetric_derivative {P : ℝ → H →L[ℝ] H} {D : H →L[ℝ] H} {
   have h := (hl.congr_of_eventuallyEq he.symm).unique hr
   simpa only [map_zero, add_zero, inner_zero_left, inner_zero_right, zero_add] using h.symm
 
+theorem isSymmetric_second_derivative {P : ℝ → H →L[ℝ] H} {t : ℝ}
+    (hP : ContDiffAt ℝ 2 P t)
+    (hs : ∀ᶠ τ in 𝓝 t, ∀ a b, ⟪P τ a, b⟫ = ⟪a, P τ b⟫) :
+    ∀ a b, ⟪deriv (deriv P) t a, b⟫ = ⟪a, deriv (deriv P) t b⟫ := by
+  have hdd := ((hP.derivWithin (m := 1) (by norm_num)).differentiableAt (by norm_num)).hasDerivAt
+  apply isSymmetric_derivative hdd
+  filter_upwards [hP.eventually (by norm_num), hs.eventually_nhds] with τ hτ hsτ
+  exact isSymmetric_derivative (hτ.differentiableAt (by norm_num)).hasDerivAt hsτ
+
 theorem hasDerivAt_rate {P D : ℝ → H →L[ℝ] H} {w v : ℝ → H}
     {L : H →L[ℝ] H} {z : H} {t : ℝ}
     (hP : HasDerivAt P (D t) t) (hD : HasDerivAt D L t)

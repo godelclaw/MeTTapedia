@@ -701,6 +701,54 @@ control the actual vorticity-gradient term. The scale-critical estimate
 near gap closure and across filters has not been proved.
 `LocalParabolicProjectorAudit.lean` audits all 38 new theorems in this layer.
 
+### Signed bottom-sector balance and explicit damping loss
+
+`Analysis/OrthogonalProjectionParabolic.lean` gives the replacement for
+projected-gradient-only absorption. `LocalBottomParabolicSectors.lean`
+proves symmetry of the actual second spatial projector derivatives and W,
+then instantiates the signed identity. With the preceding notation, write
+
+```text
+a = Pω, b = Qω, cⱼ = P∂ⱼω, dⱼ = Q∂ⱼω, Pⱼ = ∂ⱼP,
+A = Σⱼ ||Pⱼa||², C = Σⱼ ||cⱼ + Pⱼb||², T = Σⱼ <dⱼ,Pⱼa>.
+
+<ω,Wω> - 2ν Σⱼ ||cⱼ||² - 4ν Σⱼ <∂ⱼω,Pⱼω>
+  = 2<a,Wb> + 2νA - 4νT - 2νC.
+
+(Dᵤ-νΔ)E + 2νC = 2μE + 2<a,(Sfull-Sχ)ω> + 2<a,Wb> + 2νA - 4νT,
+E = ||Pω||²,    A ≤ (H/g²)E.
+```
+
+The last bound uses the rank-one estimate
+`||Pⱼ(Pw)|| ≤ (||∂ⱼS||/g)||Pw||`, avoiding an unnecessary factor from
+the full operator norm of Pⱼ. The complementary-gradient term T stays
+signed; completing the square does not make it disappear.
+
+`LocalBottomSectorBudget.lean` combines this identity with the actual
+parabolic coupling estimate, trace-free strain, and Young's inequality:
+
+```text
+Koff = ||QR₀P||/g + 4νH/g²,
+(Dᵤ-νΔ)E + 2νC + (g - 2νH/g²)E
+  ≤ 2<a,(Sfull-Sχ)ω> + (3 Koff²/g)||b||² - 4νT.
+```
+
+In particular, `4νH ≤ g³` implies `g - 2νH/g² ≥ g/2`. This is a
+conditional local geometric criterion, not a property proved for all
+solutions. The right-hand side is defined from actual fields, not an
+assumed source envelope.
+
+The physical-data theorem constructs one local solution from real,
+divergence-free, zero-mean periodic data with continuous coordinate jets
+through order nine. For every admissible finite filter, on each interior
+interval and almost everywhere on its positive-bottom-gap branch, it
+proves both the exact balance and the damping inequality with the actual
+ordinary material derivative of E. The null sets may depend on the filter
+and interval. It does not supply a time/scale-uniform bound for the signed
+source, control the complement of the geometric criterion, or close BKM
+continuation. `LocalBottomSectorAudit.lean` audits all 30 new theorems in
+this layer; `Analysis/Tests.lean` includes a nonzero-tangent regression.
+
 `FilteredHighHighExample.lean` supplies real, transverse, zero-mean finite
 Fourier data whose retained velocity vanishes while its retained subgrid
 force does not. The input squared frequencies are five and two; the output

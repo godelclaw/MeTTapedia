@@ -119,6 +119,27 @@ theorem norm_projectorFirst_le (chi : Wavevector → ℂ) (modes : Finset Waveve
       exact norm_projectorFirst_apply_bottom_le chi modes u j x hg
     _ = _ := by ring
 
+theorem norm_projectorFirst_apply_bottomProjector_le (chi : Wavevector → ℂ)
+    (modes : Finset Wavevector) (u : FourierVelocity) (j : Fin 3) (x : T3)
+    (hg : 0 < bottomGap (spatialStrain modes (filteredVelocity chi u) x)) (w : R3) :
+    let S := spatialStrain modes (filteredVelocity chi u) x
+    ‖projectorFirst chi modes u j x (bottomEigenlineProjector S w)‖ ≤
+      ‖strainGradient modes (filteredVelocity chi u) x j‖ / bottomGap S * ‖bottomEigenlineProjector S w‖ := by
+  let S := spatialStrain modes (filteredVelocity chi u) x
+  have hp : ‖bottomEigenlineProjector S w‖ = |⟪bottomVector S, w⟫| := by
+    change ‖⟪bottomVector S, w⟫ • bottomVector S‖ = _
+    rw [norm_smul, bottomVector_norm, Real.norm_eq_abs, mul_one]
+  have hd : ‖projectorFirst chi modes u j x (bottomEigenlineProjector S w)‖ =
+      |⟪bottomVector S, w⟫| * ‖projectorFirst chi modes u j x (bottomVector S)‖ := by
+    change ‖projectorFirst chi modes u j x (⟪bottomVector S, w⟫ • bottomVector S)‖ = _
+    rw [map_smul, norm_smul, Real.norm_eq_abs]
+  dsimp only
+  rw [hd, hp]
+  calc
+    _ ≤ |⟪bottomVector S, w⟫| * (‖strainGradient modes (filteredVelocity chi u) x j‖ / bottomGap S) :=
+      mul_le_mul_of_nonneg_left (norm_projectorFirst_apply_bottom_le chi modes u j x hg) (abs_nonneg _)
+    _ = _ := by ring
+
 def strainGradientSquare (chi : Wavevector → ℂ) (modes : Finset Wavevector)
     (u : FourierVelocity) (x : T3) : ℝ :=
   ∑ j : Fin 3, ‖strainGradient modes (filteredVelocity chi u) x j‖ ^ 2
