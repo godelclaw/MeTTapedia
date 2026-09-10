@@ -442,6 +442,53 @@ is asserted to vanish separately, and a zero first derivative does not
 prove preservation of coherence. `LocalLimitingAlignmentAudit.lean` checks
 the dependencies of the limit and coherent-rate development.
 
+The whole-eigenspace cancellation is quantified in
+`SpectralClusterAnisotropy.lean`. For a differentiable symmetric strain path
+`S' = -S² + R`, differentiability of the largest eigenvalue implies
+
+```text
+<v,Rv> = (λmax' + λmax²)||v||²,   Sv = λmax v.
+```
+
+Thus the remainder's quadratic compression is scalar on the entire top
+eigenspace. At a double top eigenvalue, the anisotropy is bounded using
+distance from the expanding plane and the bottom gap. At a triple
+eigenvalue it vanishes for every vector. No continuous or measurable
+choice of eigenvectors is assumed.
+
+`SpectralClusterEnvelope.lean` combines these branches in a measurable
+scalar envelope. With `r = g` if `g > 0`, and `r = λsecond-λmin` otherwise,
+
+```text
+Rν = R₀ + νΔSχ,
+Cν = min (2||Rν||||ω||²) (4||Rν||||ω|| sqrt(E₀/r)).
+```
+
+The envelope is zero at zero defect, including multiple top eigenvalues.
+Its anisotropy bound at collisions requires the actual strain equation
+and spectral differentiability; it is not valid for arbitrary remainders.
+`LocalClusterAnisotropy.lean` proves that the actual frozen strain derivative
+satisfies this equation, and derives the cluster bound almost everywhere
+in time and space, simultaneously for every vector. For full vorticity,
+the scalar envelope is spatially measurable and integrable.
+
+`LocalClusterMaterialRate.lean` proves the exact joint splitting and the
+almost-everywhere estimate
+
+```text
+materialRateδ + ||z||²
+  ≤ Cν + 2<z,f₀+νΔω> + δ Dᵤ||ω||².
+```
+
+Its source is spatially integrable under the third-moment regularity of
+the constructed local solution. This preserves joint cancellation but is
+not a replacement for the diffusion-paid estimate: `νΔSχ` remains inside
+`Rν`, and `νΔω` remains in the signed pairing. Small positive top gaps still
+use the line branch; no uniform near-collision modulus or all-scale
+source payment is proved. The spectral identities alone do not distinguish
+unforced regularity from a forced blowup construction. The new theorem
+dependencies are checked by `LocalClusterAnisotropyAudit.lean`.
+
 `FilteredHighHighExample.lean` supplies real, transverse, zero-mean finite
 Fourier data whose retained velocity vanishes while its retained subgrid
 force does not. The input squared frequencies are five and two; the output
