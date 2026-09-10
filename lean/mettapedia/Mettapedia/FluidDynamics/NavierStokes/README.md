@@ -547,10 +547,47 @@ direction field with `dline(e(x),f)≤ρ` and the pressure cone condition,
 
 The direction error is paid by Hessian coefficient energy, not an `ℓ¹`
 coefficient envelope. These are spatial estimates for the actual pressure
-operator. They do not construct an adaptive partition, prove that its
-pressure modes obey the cone condition, or control the weighted
-time-integrated source cost. `FourierPressureEnergyAudit.lean` checks the
+operator. They do not prove that pressure modes obey the cone condition
+or control the weighted time-integrated source cost.
+`FourierPressureEnergyAudit.lean` checks the
 new declarations, zero-filter behavior and antipodal-line invariance.
+
+`RealFourierLocalizationEnergy.lean` realizes a squared Fourier cutoff
+weight exactly in coefficient energy. It symmetrizes the real field before
+multiplying by the possibly complex cutoff, collects repeated frequencies,
+and retains the entire Minkowski-sum output support. Negation closure of
+the original field's finite output set is explicit. No spatial compact
+support or hard frequency truncation is substituted for the Fourier tail.
+
+`FourierLinePartition.lean` chooses the square-root approximation accuracy
+after the finite cell count is known. For arbitrary positive `δ`, the same
+family of Fourier weights satisfies `1/2≤Σwᵢ≤3/2` and total squared line
+error `Σwᵢ dline(e,fᵢ)²≤(3/2)ρ²+2δ²`; the second term pays the off-cell
+tails. `FourierPressurePatchEnergy.lean` then proves
+
+```text
+∫ |P⊥_e(x) Hχ(x) e(x)|² ≤ 4Σᵢ Eᵢ + (96ρ²+128δ²) EH,
+Eᵢ = ∫ wᵢ(x) |P⊥_fᵢ Hχ(x) fᵢ|²
+   = exact collected localized Fourier coefficient energy.
+```
+
+There is no multiplicative cell-count factor. The cells and cutoff
+bandwidths may depend on the line field and tolerances; no uniform
+bandwidth over time or dyadic scale is claimed. The frozen patch energies
+remain localized, rather than being replaced by a sum of unweighted
+whole-domain bounds.
+
+`LineProjectorTilt.lean` identifies the tilt norm with `||(1−P)HχP||`,
+where `P=e⊗e`. Its square is continuous when the projector and pressure
+operator are continuous, without any measurable choice of a signed unit
+vector. `AdaptiveLinePartition.lean` constructs the required continuous
+partition from that projector. The resulting pressure-patch existence
+theorem constructs both cells and cutoffs, independent of the subsequent
+pressure coefficients. This construction does not extend a top eigenline
+through an eigenvalue collision. Pressure-angle control of `ΣEᵢ`, collision
+sector treatment and the vorticity/gap-weighted time budget remain open.
+`FourierPressurePatchAudit.lean` checks the new dependencies and regressions,
+including a purely imaginary cutoff and arbitrary eigenvector sign choices.
 
 `PressureTiltDatum.lean`, `PressureTiltOrigin.lean`, and
 `PressureTiltAlignment.lean` supply a physical obstruction to a
