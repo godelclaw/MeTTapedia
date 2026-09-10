@@ -372,6 +372,42 @@ The all-scale signed nonlinear estimate, a global continuation bound, and
 the unconditional arbitrary-data theorem remain unproved. The constants
 `Kχ` and `1/δ` and the unresolved source are explicit in the local theorem.
 
+The nonlinear anisotropy envelope is refined in
+`SpectralAnisotropyEnvelope.lean`. Put `g = λmax(Sχ)-λsecond(Sχ)` and
+
+```text
+Bε = min (2||R₀|| ||ω||²)
+         (4||R₀|| ||ω|| sqrt(Eε/(g+ε))).
+Nδ,ε_depleted = Bε + 2<z,f₀> + 2δ<ω,Sfull ω>.
+```
+
+The source retains a quantitative alignment gain without choosing a
+measurable eigenline. `StrainEigenvalueContinuity.lean` proves continuity
+of all three ordered eigenvalues and the adjacent gaps, using the Weyl
+bounds for the extremes and the trace identity for the middle eigenvalue.
+Regularized transverse coercivity gives
+`(g+ε)||ω-<e,ω>e||² ≤ Eε` for a unit top eigenvector `e`. This combines with
+the existing anisotropy-depletion bound to give `|anisotropy| ≤ Bε`.
+
+The refined bound is continuous for `ε > 0` and never exceeds the coarse
+bound. Its improvement is quantitative: if
+`Eε ≤ c²(g+ε)||ω||²` with `c ≥ 0`, then `Bε ≤ 4c||R₀||||ω||²`.
+For aligned vorticity and `g ≥ 63ε`, it is at most one quarter of the
+coarse bound. At `g = 0` it equals the coarse bound exactly. Neither
+alignment nor spectral separation is assumed for the full local theorem.
+
+`LocalDepletedAlignmentSource.lean` constructs this source from the actual
+full vorticity, proves joint time-space continuity and the pointwise
+material estimate, and keeps joint diffusion intact.
+`LocalDepletedAlignmentBudget.lean` proves the initial-data inequality
+above with `Nδ,ε_depleted` replacing `Nδ`, including one constructed local
+solution for every admissible filter. `LocalDepletedAlignmentAudit.lean`
+checks its dependencies. The source parameter `ε` and energy regularizer
+`δ` are independently quantified, so varying the source approximation
+does not change the viscous payment `Kχ/δ`. No `ε → 0` limit is taken here.
+The sharper source does not supply a uniform
+bound on its accumulated cost, eliminate `Kχ/δ`, or close continuation.
+
 `FilteredHighHighExample.lean` supplies real, transverse, zero-mean finite
 Fourier data whose retained velocity vanishes while its retained subgrid
 force does not. The input squared frequencies are five and two; the output
