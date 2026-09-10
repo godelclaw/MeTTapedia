@@ -282,8 +282,9 @@ regularity and signed estimates:
   differentiability claims. `LocalKineticEnergy` supplies the corresponding
   almost-everywhere energy-enstrophy majorant lemma.
 
-This does **not** yet identify `F` with the actual Eulerian time derivative
-of `Eδ`. Nor does local integrability bound `∫Nδ` uniformly at a potential
+This module does not identify `F` with the actual Eulerian time derivative
+of `Eδ`; the actual mean-energy estimate below no longer needs that supplied
+comparison. Local integrability does not bound `∫Nδ` uniformly at a potential
 singularity. The sign of `<z,f₀>` is retained, not asserted favorable;
 `Kχ` and `1/δ` still prevent an unproved all-scale limit.
 `LocalAlignmentAudit.lean` checks the new theorem dependencies.
@@ -327,8 +328,49 @@ a locally Lipschitz outer map preserves agreement of derivatives along
 tangent curves, even without differentiability of the outer map itself.
 Finite local Lipschitz constructions are in `Mettapedia.Analysis.LocallyLipschitz`.
 `LocalMeanAlignmentAudit.lean` checks the dependencies of this stage.
-The remaining local splice is the almost-everywhere frozen-rate comparison;
-the all-scale signed nonlinear estimate and continuation remain unproved.
+
+The local comparison and initial-data construction are now proved:
+
+- `PeriodicMaterialDifferentiability.lean` transfers almost-everywhere
+  differentiability of a locally Lipschitz real space-time lift to frozen
+  material paths on the torus. The advecting velocity need only be spatially
+  continuous at each time; no eigenvector field is chosen.
+- `LocalAESpectralDifferentiability.lean` applies this to the largest
+  eigenvalue of the actual filtered strain. `LocalFrozenAlignmentRate.lean`
+  identifies the frozen scalar derivative with the algebraic rate.
+- `LocalAlignmentEnergyBudget.lean` proves their equality almost everywhere
+  in time and space, spatial integrability of the algebraic rate almost
+  everywhere in time, its mean time integrability, and the mean fundamental
+  theorem of calculus. Its signed energy estimate has no additional
+  derivative-comparison or spectral-differentiability hypothesis.
+- `LocalInitialAlignmentBudget.lean` extends the estimate to both ends of
+  the local existence interval by continuity. For every real, zero-mean,
+  Fourier-divergence-free periodic field with continuous coordinate jets
+  through order nine and every positive viscosity, it constructs **one**
+  local solution on which **every** admissible finite strain filter obeys
+
+  ```text
+  mean Eδ(t) + ∫₀ᵗ∫||z||²
+    ≤ mean Eδ(0) + 4 Kχ E(0)²/δ + ∫₀ᵗ∫Nδ,    0 ≤ t ≤ T.
+  ```
+
+  The quantified filters have finite symmetric support excluding the zero
+  mode, conjugate symmetry, and a finite output set containing the support
+  and its pairwise sums. Neither the local solution nor its existence
+  interval is chosen separately for each filter. The reusable endpoint
+  estimate is in `Mettapedia.Analysis.IntegralEndpointEstimate`.
+- `RegularizedSpectralEnergySplitting.lean` and
+  `LocalAlignmentRegularization.lean` prove the exact identities
+  `mean Eδ = mean E₀ + δ∫||ω||²` and
+  `materialRateδ = materialRate₀ + δ Dᵤ||ω||²`, with the latter derivative
+  constructed along paths tangent to the full velocity. Its stretching
+  contribution is precisely the `2δ<ω,Sfull ω>` retained in `Nδ`.
+  Added enstrophy is therefore not free global control.
+
+`LocalInitialAlignmentAudit.lean` checks this stage's theorem dependencies.
+The all-scale signed nonlinear estimate, a global continuation bound, and
+the unconditional arbitrary-data theorem remain unproved. The constants
+`Kχ` and `1/δ` and the unresolved source are explicit in the local theorem.
 
 `FilteredHighHighExample.lean` supplies real, transverse, zero-mean finite
 Fourier data whose retained velocity vanishes while its retained subgrid
