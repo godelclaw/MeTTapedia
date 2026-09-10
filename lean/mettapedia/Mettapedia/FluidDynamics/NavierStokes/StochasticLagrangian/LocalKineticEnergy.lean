@@ -204,6 +204,32 @@ theorem energy_enstrophy_integral_le_initial {nu T B : ℝ} {u₀ : FourierVeloc
   have he := energy_sq_identity s g hg hSum hu t ht
   nlinarith [sq_nonneg (kineticEnergy (s.coefficients t))]
 
+/-- Almost-everywhere domination suffices for the initial-energy payment,
+as needed for weak time derivatives of locally Lipschitz energies. -/
+theorem integral_le_of_energy_enstrophy_majorant_ae {nu T B : ℝ} {u₀ : FourierVelocity}
+    (s : LocalInfiniteVelocitySolution nu u₀ T B) (hnu : 0 < nu)
+    (g : Wavevector → ℝ) (hg : ∀ q, 0 ≤ g q) (hSum : Summable g)
+    (hu : ∀ t ∈ Set.Icc (0 : ℝ) T, ∀ q, fourierMoment 2 (s.coefficients t) q ≤ g q)
+    (t : ℝ) (ht : t ∈ Set.Icc (0 : ℝ) T) (f : ℝ → ℝ) (C : ℝ) (hC : 0 ≤ C)
+    (hf : IntervalIntegrable f volume 0 t)
+    (hb : ∀ᵐ τ ∂volume.restrict (Set.Icc (0 : ℝ) t), f τ ≤ C *
+      (kineticEnergy (s.coefficients τ) * kineticEnergy (fourierCurl (s.coefficients τ)))) :
+    (∫ τ in (0 : ℝ)..t, f τ) ≤ C * kineticEnergy u₀ ^ 2 / (4 * nu) := by
+  have hsub : Set.Icc (0 : ℝ) t ⊆ Set.Icc (0 : ℝ) T :=
+    fun _ hτ ↦ ⟨hτ.1, hτ.2.trans ht.2⟩
+  have hi : IntervalIntegrable (fun τ ↦ kineticEnergy (s.coefficients τ) *
+      kineticEnergy (fourierCurl (s.coefficients τ))) volume 0 t :=
+    ContinuousOn.intervalIntegrable_of_Icc ht.1
+      (((continuousOn_energy s g hg hSum hu).mul
+        (continuousOn_enstrophy s g hg hSum hu)).mono hsub)
+  have hm := intervalIntegral.integral_mono_ae_restrict ht.1 hf (hi.const_mul C) hb
+  rw [intervalIntegral.integral_const_mul] at hm
+  apply hm.trans
+  apply (le_div_iff₀ (by positivity : 0 < 4 * nu)).mpr
+  have he := mul_le_mul_of_nonneg_left
+    (energy_enstrophy_integral_le_initial s g hg hSum hu t ht) hC
+  nlinarith
+
 /-- Any integrable cost bounded by `C * energy * enstrophy` is paid from
 initial energy alone. Integrability and domination remain explicit here. -/
 theorem integral_le_of_energy_enstrophy_majorant {nu T B : ℝ} {u₀ : FourierVelocity}
@@ -215,20 +241,8 @@ theorem integral_le_of_energy_enstrophy_majorant {nu T B : ℝ} {u₀ : FourierV
     (hb : ∀ τ ∈ Set.Icc (0 : ℝ) t, f τ ≤ C *
       (kineticEnergy (s.coefficients τ) * kineticEnergy (fourierCurl (s.coefficients τ)))) :
     (∫ τ in (0 : ℝ)..t, f τ) ≤ C * kineticEnergy u₀ ^ 2 / (4 * nu) := by
-  have hsub : Set.Icc (0 : ℝ) t ⊆ Set.Icc (0 : ℝ) T :=
-    fun _ hτ ↦ ⟨hτ.1, hτ.2.trans ht.2⟩
-  have hi : IntervalIntegrable (fun τ ↦ kineticEnergy (s.coefficients τ) *
-      kineticEnergy (fourierCurl (s.coefficients τ))) volume 0 t :=
-    ContinuousOn.intervalIntegrable_of_Icc ht.1
-      (((continuousOn_energy s g hg hSum hu).mul
-        (continuousOn_enstrophy s g hg hSum hu)).mono hsub)
-  have hm := intervalIntegral.integral_mono_on ht.1 hf (hi.const_mul C) hb
-  rw [intervalIntegral.integral_const_mul] at hm
-  apply hm.trans
-  apply (le_div_iff₀ (by positivity : 0 < 4 * nu)).mpr
-  have he := mul_le_mul_of_nonneg_left
-    (energy_enstrophy_integral_le_initial s g hg hSum hu t ht) hC
-  nlinarith
+  exact integral_le_of_energy_enstrophy_majorant_ae s hnu g hg hSum hu t ht f C hC hf
+    ((ae_restrict_mem measurableSet_Icc).mono (fun τ hτ ↦ hb τ hτ))
 
 /-- Physical data construct the solution and the envelope needed above;
 no energy inequality is added to the solution interface as an assumption. -/
