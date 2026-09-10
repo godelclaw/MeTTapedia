@@ -241,6 +241,53 @@ material-path identity does not automatically discharge them in space-time.
 No all-scale estimate, bound for the high-strain mismatch, or terminal-time
 continuation follows yet. `LocalJointDiffusionAudit.lean` checks dependencies.
 
+The Eulerian full-field extension now separates transport, forcing
+regularity and signed estimates:
+
+- `InfiniteFourierTransport.lean` identifies ordinary full-velocity
+  coordinate derivatives and proves zero mean incompressible transport
+  of periodic locally Lipschitz scalars. There is no advector cutoff.
+- `LocalAlignmentTransport.lean` applies this to
+  `Eδ = <ω, ((λmax(Sχ)+δ)I-Sχ)ω>`, with full ordinary vorticity. Local
+  Lipschitz regularity includes eigenvalue crossings; no spectral gap is
+  assumed.
+- `LocalAlignmentForcing.lean` constructs Eulerian versions of the
+  actual path rate and remainder, with their equality checked. The
+  remainder contains the all-input subgrid force and discarded-velocity
+  transport. Its spatial continuity is proved, not assumed.
+- `LocalAlignmentContinuity.lean` proves joint continuity of that
+  all-input remainder, strain mismatch, residual and energy on the local
+  time window. Dominated convergence is applied to the entire subgrid
+  fiber. The corresponding scalar spatial means are time-integrable.
+- `LocalSignedAlignmentBudget.lean` retains the signed mismatch pairing
+  and the full residual damping. For `z = (λmax(Sχ)I-Sχ)ω`,
+  `f₀ = (Sfull-Sχ)ω`, and the actual nonviscous remainder `R₀`, set
+
+  ```text
+  Nδ = 2||R₀|| ||ω||² + 2<z,f₀> + 2δ<ω,Sfull ω>.
+  ```
+
+  If an integrable scalar `F` satisfies
+  `F + u·∇Eδ ≤ actual material rate` almost everywhere in space-time,
+  the checked full-velocity transport cancellation and joint diffusion
+  payment give
+
+  ```text
+  ∫₀ᵗ∫F + ∫₀ᵗ∫||z||² ≤ 4 Kχ E(0)²/δ + ∫₀ᵗ∫Nδ.
+  ```
+
+  Integrability of `Nδ` and the residual is derived from the actual
+  local solution; only `F` and its chain-rule comparison remain supplied.
+  The time hypotheses are almost-everywhere statements, not everywhere
+  differentiability claims. `LocalKineticEnergy` supplies the corresponding
+  almost-everywhere energy-enstrophy majorant lemma.
+
+This does **not** yet identify `F` with the actual Eulerian time derivative
+of `Eδ`. Nor does local integrability bound `∫Nδ` uniformly at a potential
+singularity. The sign of `<z,f₀>` is retained, not asserted favorable;
+`Kχ` and `1/δ` still prevent an unproved all-scale limit.
+`LocalAlignmentAudit.lean` checks the new theorem dependencies.
+
 `FilteredHighHighExample.lean` supplies real, transverse, zero-mean finite
 Fourier data whose retained velocity vanishes while its retained subgrid
 force does not. The input squared frequencies are five and two; the output
