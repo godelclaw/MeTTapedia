@@ -23,6 +23,7 @@ open LocalAlignmentContinuity LocalDepletedDiffusionBudget
 open SpectralAnisotropyLimit SpectralDiffusionWeight SpectralDiffusionWeightLimit
 open LocalLowDiffusionBudget PancakeGalerkinKineticEnergy PancakeFourierMaterialPaths
 open PancakeFilteredStrainDynamics
+open LocalStrainGradientDensity LocalSpatialSpectralBounds
 
 local notation "T3" => UnitAddTorus (Fin 3)
 
@@ -34,7 +35,7 @@ local instance : IsProbabilityMeasure (volume : Measure UnitAddCircle) :=
 
 def limitingDiffusionCost (chi : Wavevector → ℂ) (modes : Finset Wavevector)
     (u : FourierVelocity) (delta nu : ℝ) (x : T3) : ℝ :=
-  (16 * nu / delta) * (3 * strainGradientAmplitude modes chi u ^ 2) *
+  (16 * nu / delta) * strainGradientSquare chi modes u x *
     limitingWeight (spatialStrain modes (filteredVelocity chi u) x) (fullVorticity u x)
 
 def coarseDiffusionCost (chi : Wavevector → ℂ) (modes : Finset Wavevector)
@@ -50,21 +51,45 @@ theorem limitingDiffusionCost_eq_zero_of_aligned (chi : Wavevector → ℂ) (mod
     limitingDiffusionCost chi modes u delta nu x = 0 := by
   rw [limitingDiffusionCost, hw, limitingWeight_aligned _ c hg, mul_zero]
 
+theorem norm_limitingDiffusionCost_le_absolute (chi : Wavevector → ℂ) (modes : Finset Wavevector)
+    (u : FourierVelocity) (delta nu : ℝ) (x : T3) :
+    ‖limitingDiffusionCost chi modes u delta nu x‖ ≤
+      |16 * nu / delta| * (3 * strainGradientAmplitude modes chi u ^ 2) * ‖fullVorticity u x‖ ^ 2 := by
+  simp only [limitingDiffusionCost, norm_mul, Real.norm_of_nonneg (strainGradientSquare_nonneg chi modes u x),
+    Real.norm_of_nonneg (limitingWeight_nonneg _ _), Real.norm_eq_abs]
+  gcongr
+  · exact limitingWeight_nonneg _ _
+  · exact strainGradientSquare_le_amplitude chi modes u x
+  · exact limitingWeight_le_norm_sq _ _
+
+theorem norm_diffusionCost_le_absolute (chi : Wavevector → ℂ) (modes : Finset Wavevector)
+    (u : FourierVelocity) (delta epsilon nu : ℝ) (heps : 0 < epsilon) (x : T3) :
+    ‖diffusionCost chi modes u delta epsilon nu x‖ ≤
+      |16 * nu / delta| * (3 * strainGradientAmplitude modes chi u ^ 2) * ‖fullVorticity u x‖ ^ 2 := by
+  simp only [diffusionCost, norm_mul, Real.norm_of_nonneg (strainGradientSquare_nonneg chi modes u x),
+    Real.norm_of_nonneg (weight_nonneg _ _ epsilon heps), Real.norm_eq_abs]
+  gcongr
+  · exact weight_nonneg _ _ epsilon heps
+  · exact strainGradientSquare_le_amplitude chi modes u x
+  · exact weight_le_norm_sq _ _ _
+
 theorem integrable_limitingDiffusionCost (chi : Wavevector → ℂ) (modes : Finset Wavevector)
     (u : FourierVelocity) (hu : Summable (fourierMoment 1 u)) (delta nu : ℝ) :
     Integrable (limitingDiffusionCost chi modes u delta nu) := by
   have hw := continuous_fullVorticity u hu
-  exact (integrable_limitingWeight volume _ _
-    (PancakeMaterialDiffusionBudget.continuous_strain modes (filteredVelocity chi u)) hw
-    ((hw.norm.pow 2).integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _))).const_mul _
+  have hS := PancakeMaterialDiffusionBudget.continuous_strain modes (filteredVelocity chi u)
+  have hI : Integrable (fun x ↦ |16 * nu / delta| * (3 * strainGradientAmplitude modes chi u ^ 2) *
+      ‖fullVorticity u x‖ ^ 2) :=
+    (((hw.norm.pow 2).const_mul _).integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _))
+  apply hI.mono' (((continuous_strainGradientSquare chi modes u).const_mul _).measurable.mul
+    (measurable_limitingWeight _ _ hS hw)).aestronglyMeasurable
+  exact Eventually.of_forall (norm_limitingDiffusionCost_le_absolute chi modes u delta nu)
 
 theorem norm_limitingDiffusionCost_le (chi : Wavevector → ℂ) (modes : Finset Wavevector)
     (u : FourierVelocity) (delta nu : ℝ) (hd : 0 < delta) (hnu : 0 ≤ nu) (x : T3) :
     ‖limitingDiffusionCost chi modes u delta nu x‖ ≤ coarseDiffusionCost chi modes u delta nu x := by
-  have hn : 0 ≤ limitingDiffusionCost chi modes u delta nu x :=
-    mul_nonneg (by positivity) (limitingWeight_nonneg _ _)
-  rw [Real.norm_of_nonneg hn]
-  exact mul_le_mul_of_nonneg_left (limitingWeight_le_norm_sq _ _) (by positivity)
+  simpa only [coarseDiffusionCost, abs_of_nonneg (by positivity : 0 ≤ 16 * nu / delta)] using
+    norm_limitingDiffusionCost_le_absolute chi modes u delta nu x
 
 theorem continuous_coarseDiffusionCost (chi : Wavevector → ℂ) (modes : Finset Wavevector)
     (u : FourierVelocity) (hu : Summable (fourierMoment 1 u)) (delta nu : ℝ) :
@@ -92,11 +117,17 @@ theorem tendsto_integral_diffusionCost (chi : Wavevector → ℂ) (modes : Finse
     Tendsto (fun n ↦ ∫ x : T3, diffusionCost chi modes u delta (approximationParameter n) nu x)
       atTop (𝓝 (∫ x : T3, limitingDiffusionCost chi modes u delta nu x)) := by
   have hw := LocalLowDiffusionBudget.continuous_fullVorticity u hu
-  have h := tendsto_integral_weight volume _ _
-    (PancakeMaterialDiffusionBudget.continuous_strain modes (filteredVelocity chi u)) hw
-    ((hw.norm.pow 2).integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _))
-  simpa only [diffusionCost, limitingDiffusionCost, integral_const_mul] using
-    h.const_mul ((16 * nu / delta) * (3 * strainGradientAmplitude modes chi u ^ 2))
+  apply tendsto_integral_of_dominated_convergence
+    (fun x ↦ |16 * nu / delta| * (3 * strainGradientAmplitude modes chi u ^ 2) * ‖fullVorticity u x‖ ^ 2)
+  · exact fun n ↦ (continuous_diffusionCost chi modes u hu delta _ nu
+      (approximationParameter_pos n)).measurable.aestronglyMeasurable
+  · exact ((hw.norm.pow 2).const_mul _).integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
+  · exact fun n ↦ Eventually.of_forall (norm_diffusionCost_le_absolute chi modes u delta _ nu
+      (approximationParameter_pos n))
+  · exact Eventually.of_forall (fun x ↦
+      (tendsto_weight (spatialStrain modes (filteredVelocity chi u) x) (fullVorticity u x)
+        approximationParameter (Eventually.of_forall approximationParameter_pos) tendsto_approximationParameter).const_mul
+          ((16 * nu / delta) * strainGradientSquare chi modes u x))
 
 theorem intervalIntegrable_and_tendsto_integral_cost {nu T B : ℝ} {u₀ : FourierVelocity}
     (s : LocalInfiniteVelocitySolution nu u₀ T B) (hnu : 0 ≤ nu)
