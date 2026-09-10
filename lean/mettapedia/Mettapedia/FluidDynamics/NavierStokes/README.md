@@ -529,8 +529,44 @@ bottom gap, differentiating this polynomial quotient constructs bottom-line
 and expanding-plane projector derivatives from the operator and scalar
 eigenvalue derivatives. `LocalTopPlaneRate.lean` supplies these hypotheses
 almost everywhere for the actual frozen material path. No moving
-eigenvector choice or positive top gap is required. A quantitative rate
-bound and its time-integrated cost remain separate obligations.
+eigenvector choice or positive top gap is required. The following
+development bounds the rate; its time-integrated cost remains unpaid.
+
+`RankOneProjectorTangent.lean` represents a self-adjoint projector tangent
+`D` as the sum of two rank-one operators determined by `De₂`. In
+`BottomProjectorMotion.lean`, the differentiated bottom spectral equation
+is tested against `De₂`. Its strain-square term vanishes because `De₂`
+is perpendicular to `e₂`. Bottom-gap coercivity then proves
+
+```text
+P = Pbottom, Q = I-P, gᵦ = λ₁-λ₂ > 0,
+K = Q R P,
+||P'e₂|| ≤ ||K||/gᵦ,
+||P'|| = ||Q'|| ≤ 2||K||/gᵦ,
+|<w,Q'w>| ≤ 4||K||/gᵦ ||Pw||||Qw||.
+```
+
+The coupling norm is at most `||R||`, but retains the off-diagonal block
+instead of charging the whole remainder. Adding a component which
+preserves the bottom eigenline does not change K. If R itself preserves
+that line, the plane derivative is zero at the evaluation time; this is
+not a claim of coherence preservation over an interval.
+
+`LocalProjectorMotion.lean` derives these bounds almost everywhere for
+the actual frozen material projector, with `R = Rν` and no extra assumed
+projector derivative or positive top gap. For every `ρ > 0`, it also proves
+
+```text
+|<w,DᵤQ w>| ≤ ρ||Pw||² + 4||K||²/(ρ gᵦ²) ||Qw||².
+```
+
+Taking `ρ = gᵦ` leaves the explicit source cost
+`4||K||²/gᵦ³ ||Qw||²`. This is an absorption inequality, not a proof of
+its time integral or a complete residence bound. The pressure, all-input
+subgrid, discarded-velocity transport, and viscous terms remain in Rν.
+The coupling-cost integrability, actual vorticity-energy balance, and
+scale-uniform unforced payment are still required.
+`LocalProjectorMotionAudit.lean` checks all 35 new theorem dependencies.
 
 `FilteredHighHighExample.lean` supplies real, transverse, zero-mean finite
 Fourier data whose retained velocity vanishes while its retained subgrid
