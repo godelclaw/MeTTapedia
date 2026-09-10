@@ -9,6 +9,7 @@ import Mettapedia.Analysis.SpectralRelationDerivatives
 import Mettapedia.Analysis.KernelCrossTerm
 import Mettapedia.Analysis.OrthogonalProjectionParabolic
 import Mettapedia.Analysis.OrthogonalProjectionWeightedDiffusion
+import Mettapedia.Analysis.SecondDerivative
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.InnerProductSpace.Adjoint
 
@@ -16,6 +17,30 @@ import Mathlib.Analysis.InnerProductSpace.Adjoint
 
 open Set MeasureTheory Mettapedia.Analysis Mettapedia.Analysis.ODE
 open scoped ContDiff RealInnerProductSpace
+
+-- The local-minimum criterion permits a flat quartic minimum.
+example : 0 ≤ deriv (deriv (fun t : ℝ ↦ t ^ 4)) 0 := by
+  apply second_derivative_nonneg_of_isLocalMin
+  · apply Filter.Eventually.of_forall
+    intro t
+    change (0 : ℝ) ^ 4 ≤ t ^ 4
+    norm_num only [zero_pow]
+    positivity
+  · fun_prop
+
+-- Constant-vector multiplication preserves curvature; the linear term has none.
+example (v : EuclideanSpace ℝ (Fin 2)) :
+    deriv (deriv (fun t : ℝ ↦ t ^ 2 • v - t • v)) 1 = (2 : ℝ) • v := by
+  have h2 : deriv (fun t : ℝ ↦ t ^ 2) = fun t ↦ 2 * t := by
+    funext t
+    simp
+  have h1 : deriv (fun t : ℝ ↦ t • v) = fun _ ↦ v := by
+    funext t
+    simpa using ((hasDerivAt_id t).smul_const v).deriv
+  rw [deriv_deriv_smul_const_sub (by fun_prop) (by fun_prop) v, h2, h1]
+  simp only [deriv_const, sub_zero]
+  congr 1
+  simp
 
 -- The half-weight identity retains the inverse-weight image cost.
 example (a b c d : EuclideanSpace ℝ (Fin 2)) :
