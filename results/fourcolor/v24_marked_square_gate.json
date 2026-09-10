@@ -1,0 +1,40 @@
+{
+  "extensions": 18,
+  "schema": "fourcolor-marked-square-gate-v1",
+  "scope": "generic square law; literal erased-edge tracking fails; virtual seed is not a physical replacement",
+  "seeded_reconstruction": true,
+  "tagged_checks": 972,
+  "unmarked_identity": true,
+  "witness": {
+    "boundary": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "extensions": [
+      [
+        2,
+        3,
+        2,
+        3
+      ],
+      [
+        3,
+        2,
+        3,
+        2
+      ]
+    ],
+    "external_reference_port": 2,
+    "internal_mark": 0,
+    "literal_image_reduction_counts": [
+      1,
+      1
+    ],
+    "reference_color": 1,
+    "swap_fixes_both_labelled_reduction_states": true,
+    "upstairs_equal_count": 0
+  },
+  "words": 81
+}

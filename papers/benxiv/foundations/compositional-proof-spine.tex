@@ -14263,3 +14263,95 @@ physical seam and strict size decrease. No such construction is assumed
 or claimed here, and no configuration catalogue is introduced. This is a
 refutation checkpoint on the global reduction attack, with the fixed
 obligation ledger unchanged at $57/100$.
+
+\subsection{An erased colour mark is not a surviving edge name}
+\label{sec:marked-square-observable}
+
+Addendum~XXVI, flag L4, requires transport when a ladder reduction touches
+one of the two named edges.  The ordinary square count identity does not
+provide this by assigning the erased name to a surviving seam edge.
+This is a different question from the retired arbitrary-target
+Kempe-orbit transport claim: the obstruction here is already an ordinary
+refined count at a fixed boundary word.
+
+Let the four outer colours of a facial square be
+$w=(r,r,r,r)$, and mark the internal edge $x_0$ between corners $0$ and $1$.
+Use the colour of outer port $2$ as the reference; that port is not incident
+with $x_0$.  The two square extensions are
+\[
+             (b,p,b,p),\qquad(p,b,p,b).
+\]
+In both planar smoothings, both surviving seam edges have colour $r$.
+Thus the target $x_0=w_2$ has count zero upstairs and count one on
+\emph{each} smoothing under \emph{either} literal seam-edge image.
+The unmarked counts still obey $2=1+1$.
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedSquareObservable.explicit_extensions}
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedSquareObservable.literal_image_zero_failure}
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedSquareObservable.literal_count_failure}
+
+Even choosing a boundary-dependent extension for each labelled smoothing
+cannot be done equivariantly without extra information: the colour
+transposition exchanging $b,p$ fixes $w$ and each labelled smoothing
+colouring, but exchanges the two square extensions.  The kernel proves
+that no selector into the square fibre is fixed by this transposition.
+This does not forbid a non-equivariant choice, or a richer transported
+observable; it rules out treating the unmarked cardinal identity as an
+equivariant fibre identification with an internal colour observation.
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedSquareObservable.no_equivariant_selector}
+
+There is an exact finite local repair. Retain a virtual seed $t=x_0$ and
+reconstruct all erased colours in the Klein group by
+\[
+ R(w,t)=\bigl(t,\ w_1+t,\ w_2+w_1+t,\ w_3+w_2+w_1+t\bigr).
+\]
+For a nonzero boundary word, validity is precisely
+\[
+       w_0+w_1+w_2+w_3=0,
+       \qquad R(w,t)_i\ne0\quad(0\le i<4).
+\]
+Every square extension is uniquely $R(w,x_0)$.  The reconstruction
+commutes with additive colour automorphisms when the seed transforms too.
+For any predicate $P$ inspecting any or all internal colours, there is
+an actual equivalence
+\[
+ \{x:\operatorname{SquareExt}(w,x)\land P(x)\}
+ \simeq
+ \{t:\operatorname{SquareExt}(w,R(w,t))\land P(R(w,t))\}.
+\]
+Consequently the two counts, and their zero predicates, agree.  The seed
+has at most three nonzero values; it is not a physical edge of a smoothing.
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedSquareObservable.reconstruct_map}
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedSquareObservable.extension_reconstruct}
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedSquareObservable.seedOK_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedSquareObservable.targetEquiv}
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedSquareObservable.target_count}
+\Sverified{Mettapedia.GraphTheory.FourColor.MarkedSquareObservable.target_empty_iff}
+
+The constructor gate independently compares all $81$ nonzero boundary
+words, their $18$ total extensions, and $972$ tagged-edge equality tests.
+Its receipt is \texttt{results/fourcolor/v24\_marked\_square\_gate.json}.
+This is the source's generic square operator, not a configuration
+catalogue or a reducibility check.  The new equivalence corrects its
+observable semantics; it does not identify the seed fibre with colourings
+of a smaller admissible physical map.  Closing that realization and
+closure obligation, or avoiding the erased marks in the geometric
+construction, is still necessary for descent.  In particular this does
+not discharge the ordered-mesh branch, D1c, or the finite generating base.
+The ledger remains $57/100$.
+
+\paragraph{A tested but insufficient alternative.}
+The preliminary attempt to explain every cofacial forced-equal edge pair
+by a two-edge cut fails on the pentagonal prism: its $30$ labelled Tait
+colourings force five such pairs equal, yet deleting any indicated pair
+leaves the graph connected.  It has square faces, so it is not a
+normal-form counterexample.  A separate exhaustive generator gate
+\texttt{-a -d -m5 -c5} found no forced-equal cofacial pair on its $303$
+maps through $38$ vertices.  The receipt
+\texttt{results/fourcolor/v24\_cofacial\_rigidity\_gate.json}
+records hashes, populations and complete dual-enumerator checks, not a
+kernel proof of that stronger universal claim.  More importantly, a
+reduction need not preserve this girth-five normal form: the two planar
+smoothings at edge $01$ of the checked dodecahedron give $18$-vertex
+spherical maps, one with two square faces and the other with two triangular
+faces.  The positive
+finite gate cannot be used to bypass the erased-mark transport problem.

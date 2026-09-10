@@ -1,0 +1,254 @@
+{
+  "normal_form_loss": [
+    {"pairing": [[2, 5], [4, 6]], "vertices": 18,
+     "face_lengths": [4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 6]},
+    {"pairing": [[2, 4], [5, 6]], "vertices": 18,
+     "face_lengths": [3, 3, 5, 5, 5, 5, 5, 5, 5, 5, 8]}
+  ],
+  "conclusion": "broad two-cut implication false; stronger normal-form implication unproved",
+  "control": {
+    "analysis": {
+      "colorings": 30,
+      "rigid": [
+        {
+          "edges": [
+            0,
+            10
+          ],
+          "still_connected": true
+        },
+        {
+          "edges": [
+            1,
+            11
+          ],
+          "still_connected": true
+        },
+        {
+          "edges": [
+            3,
+            12
+          ],
+          "still_connected": true
+        },
+        {
+          "edges": [
+            5,
+            13
+          ],
+          "still_connected": true
+        },
+        {
+          "edges": [
+            7,
+            14
+          ],
+          "still_connected": true
+        }
+      ],
+      "tested_pairs": 20,
+      "vertices": 10
+    },
+    "graph": {
+      "face_cycles": [
+        [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        [
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        [
+          0,
+          1,
+          6,
+          5
+        ],
+        [
+          1,
+          2,
+          7,
+          6
+        ],
+        [
+          2,
+          3,
+          8,
+          7
+        ],
+        [
+          3,
+          4,
+          9,
+          8
+        ],
+        [
+          4,
+          0,
+          5,
+          9
+        ]
+      ],
+      "primal_edges": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          0,
+          5
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          6
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          2,
+          7
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          3,
+          8
+        ],
+        [
+          4,
+          9
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          5,
+          9
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          8,
+          9
+        ]
+      ],
+      "primal_vertex_count": 10
+    }
+  },
+  "flags": [
+    "-a",
+    "-d",
+    "-m5",
+    "-c5"
+  ],
+  "generator_sha256": "e1cb2780f1535dce38c607f520fe58620b96473e4e90b443bbea4dc5cbc212ee",
+  "population": [
+    {
+      "colorings": 60,
+      "embeddings_sha256": "cbe7de9d8a993c45923fd6d183423781cdbe122445bf2ce63f571cfa8b006cf0",
+      "graphs": 1,
+      "pairs": 60,
+      "rigid_pairs": 0,
+      "vertices": 20
+    },
+    {
+      "colorings": 0,
+      "embeddings_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "graphs": 0,
+      "pairs": 0,
+      "rigid_pairs": 0,
+      "vertices": 22
+    },
+    {
+      "colorings": 120,
+      "embeddings_sha256": "0a3a9bc4eb5839f9b27b0a841b2275d09a23784e67886b19805c7918f2a8b55b",
+      "graphs": 1,
+      "pairs": 78,
+      "rigid_pairs": 0,
+      "vertices": 24
+    },
+    {
+      "colorings": 192,
+      "embeddings_sha256": "27755bee34e372e258d42f5c648eb2d604516cf646b6fa06ab00ebd5cd0bfe47",
+      "graphs": 1,
+      "pairs": 87,
+      "rigid_pairs": 0,
+      "vertices": 26
+    },
+    {
+      "colorings": 594,
+      "embeddings_sha256": "edf51fd30dca22ddb53233a2cff543118e173e6852e66d1ffdefe450c4c6417b",
+      "graphs": 3,
+      "pairs": 290,
+      "rigid_pairs": 0,
+      "vertices": 28
+    },
+    {
+      "colorings": 660,
+      "embeddings_sha256": "6707edb71485695e400d8b9dc02c3cc2a651bf1183e0e829c8f04771faa6c4e5",
+      "graphs": 4,
+      "pairs": 421,
+      "rigid_pairs": 0,
+      "vertices": 30
+    },
+    {
+      "colorings": 3564,
+      "embeddings_sha256": "6c61df1c1aafd73a91cc3ad8c1cb84739f4a8330399efb7fecc19c4c5882e603",
+      "graphs": 12,
+      "pairs": 1382,
+      "rigid_pairs": 0,
+      "vertices": 32
+    },
+    {
+      "colorings": 9354,
+      "embeddings_sha256": "d5178bacc5038567e993815b74e934a009cde3eb5bcd05caf631d32d014cf88e",
+      "graphs": 23,
+      "pairs": 2862,
+      "rigid_pairs": 0,
+      "vertices": 34
+    },
+    {
+      "colorings": 37428,
+      "embeddings_sha256": "5937e6c6804ad96e3e95b6c6d4c8023b98614669414e71d4be638eb20f89e73a",
+      "graphs": 71,
+      "pairs": 9507,
+      "rigid_pairs": 0,
+      "vertices": 36
+    },
+    {
+      "colorings": 124932,
+      "embeddings_sha256": "96b48916ea3409db376ef9c88dd1c3f94843ac8d6bd9527d588e9b629c7a9c3c",
+      "graphs": 187,
+      "pairs": 26817,
+      "rigid_pairs": 0,
+      "vertices": 38
+    }
+  ],
+  "schema": "fourcolor-cofacial-rigidity-gate-v1"
+}
