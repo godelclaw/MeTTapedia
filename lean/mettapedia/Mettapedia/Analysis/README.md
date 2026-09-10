@@ -18,6 +18,7 @@ Reusable analysis, independent of any particular fluid construction.
 | `OrthogonalProjectionParabolic.lean` | Signed diagonal defects, completed gradient square, complementary-gradient cross term, and off-diagonal Young bound | Any real inner product space and finite family of symmetric projector tangents; no completeness or dimension assumption |
 | `OrthogonalProjectionWeightedDiffusion.lean` | Two-sector weighted completion, inverse-weight frame cost, and weighted off-diagonal Young bound | Any real inner product space; identities require nonzero weight, dissipation applications require a weight in `(0,1]` |
 | `SecondDerivative.lean` | Local second-derivative linearity, constant-vector multiplication/subtraction, and nonnegative second derivative at a continuous local minimum | Real scalar parameters and normed-space values; the minimum sign uses Lean's total derivative |
+| `PositiveOperatorKernelCurvature.lean` | Second-order positivity coupling operator curvature, the mixed derivative, and vector-gradient energy at a kernel vector | Any real inner product space; local `C²` regularity, positivity, and symmetry only |
 
 The first module is used by
 `FluidDynamics/NavierStokes/StochasticLagrangian/LocalVorticityDiffusion.lean`.
@@ -57,6 +58,10 @@ The local-minimum sign lemma also supplies nonnegative top-eigenvalue
 curvature without differentiating a choice of eigenvector. The actual
 spectral-defect application combines this sign with the quadratic-form
 product rule to cancel principal strain and vorticity diffusion.
+Testing the positive gap operator on an affine vector curve through a
+kernel vector then pays the aligned part of the mixed gradient. The
+remaining NS diffusion cost contains only transverse vorticity, with
+positive constant regularization still required to pay that cost.
 These modules are new derivations using mathlib, not additional adaptations
 from the external source below.
 
@@ -69,6 +74,9 @@ with a nonzero tangent swapping two orthogonal sectors, a half-weight
 completion and an attained nonzero frame cost, a flat quartic minimum,
 constant-vector second-derivative linearity, and the axioms
 of the public comparison theorems.
+The positive-operator test uses `A(t) = [[t²,t],[t,1]]`: its second-order
+form at the kernel direction and increment `(0,-1)` attains zero with
+three nonzero terms `2 - 4 + 2`. This checks the mixed-term coefficient.
 
 ## Provenance and changes
 

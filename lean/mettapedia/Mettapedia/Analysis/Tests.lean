@@ -10,6 +10,7 @@ import Mettapedia.Analysis.KernelCrossTerm
 import Mettapedia.Analysis.OrthogonalProjectionParabolic
 import Mettapedia.Analysis.OrthogonalProjectionWeightedDiffusion
 import Mettapedia.Analysis.SecondDerivative
+import Mettapedia.Analysis.PositiveOperatorKernelCurvature
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.InnerProductSpace.Adjoint
 
@@ -17,6 +18,52 @@ import Mathlib.Analysis.InnerProductSpace.Adjoint
 
 open Set MeasureTheory Mettapedia.Analysis Mettapedia.Analysis.ODE
 open scoped ContDiff RealInnerProductSpace
+
+-- A(t) = [[t²,t],[t,1]] is positive. At its kernel vector e and
+-- increment -f, the curvature, cross term, and gradient square sum to zero.
+example :
+    let e := (EuclideanSpace.basisFun (Fin 2) ℝ) 0
+    let f := (EuclideanSpace.basisFun (Fin 2) ℝ) 1
+    let P := InnerProductSpace.rankOne ℝ e e
+    let Q := InnerProductSpace.rankOne ℝ f f
+    let G := InnerProductSpace.rankOne ℝ e f + InnerProductSpace.rankOne ℝ f e
+    let A := fun t : ℝ ↦ t ^ 2 • P + t • G + Q
+    let q := 2 * ⟪-f, A 0 (-f)⟫ + 4 * ⟪-f, deriv A 0 e⟫ + ⟪e, deriv (deriv A) 0 e⟫;
+    0 ≤ q ∧ q = 0 := by
+  let e := (EuclideanSpace.basisFun (Fin 2) ℝ) 0
+  let f := (EuclideanSpace.basisFun (Fin 2) ℝ) 1
+  let P := InnerProductSpace.rankOne ℝ e e
+  let Q := InnerProductSpace.rankOne ℝ f f
+  let G := InnerProductSpace.rankOne ℝ e f + InnerProductSpace.rankOne ℝ f e
+  let A := fun t : ℝ ↦ t ^ 2 • P + t • G + Q
+  have hA : ContDiffAt ℝ 2 A 0 := by dsimp [A]; fun_prop
+  have hs : ∀ᶠ t in nhds (0 : ℝ), ∀ a b, ⟪A t a, b⟫ = ⟪a, A t b⟫ := by
+    apply Filter.Eventually.of_forall
+    intro t a b
+    simp only [A, P, Q, G, add_apply, smul_apply, InnerProductSpace.rankOne_apply,
+      inner_add_left, inner_add_right, real_inner_smul_left, real_inner_smul_right,
+      real_inner_comm a e, real_inner_comm a f]
+    ring
+  have hp : ∀ᶠ t in nhds (0 : ℝ), ∀ w, 0 ≤ ⟪w, A t w⟫ := by
+    apply Filter.Eventually.of_forall
+    intro t w
+    simp only [A, P, Q, G, add_apply, smul_apply, InnerProductSpace.rankOne_apply,
+      inner_add_right, real_inner_smul_right, real_inner_comm w e, real_inner_comm w f]
+    nlinarith only [sq_nonneg (t * ⟪w, e⟫ + ⟪w, f⟫)]
+  have hk : A 0 e = 0 := by simp [A, Q, e, f, InnerProductSpace.rankOne_apply, EuclideanSpace.inner_single_left]
+  have hd : deriv A = fun t ↦ (2 * t) • P + G := by
+    funext t
+    simpa [A] using
+      (((((hasDerivAt_id t).pow 2).smul_const P).add ((hasDerivAt_id t).smul_const G)).add_const Q).deriv
+  have hdd : deriv (deriv A) 0 = (2 : ℝ) • P := by
+    rw [hd]
+    simpa only [id_eq, mul_one] using
+      ((((hasDerivAt_id (0 : ℝ)).const_mul 2).smul_const P).add_const G).deriv
+  constructor
+  · exact PositiveOperatorKernelCurvature.second_order_form_nonneg hA hs hp e (-f) hk
+  · change 2 * ⟪-f, A 0 (-f)⟫ + 4 * ⟪-f, deriv A 0 e⟫ + ⟪e, deriv (deriv A) 0 e⟫ = 0
+    rw [hdd, hd]
+    norm_num [A, P, Q, G, e, f, InnerProductSpace.rankOne_apply, EuclideanSpace.inner_single_left]
 
 -- The local-minimum criterion permits a flat quartic minimum.
 example : 0 ≤ deriv (deriv (fun t : ℝ ↦ t ^ 4)) 0 := by
