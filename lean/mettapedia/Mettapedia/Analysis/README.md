@@ -24,6 +24,8 @@ Reusable analysis, independent of any particular fluid construction.
 | `IntegralEndpointEstimate.lean` | Extends an integral inequality from interior time pairs to both endpoints | Continuous energy and integrable signed source and dissipation; integrands need not be continuous |
 | `FiniteConvolutionEnergy.lean` | Weighted finite Young inequality for a two-input vector kernel, collecting coincident outputs before squaring | Additive commutative group of modes; arbitrary normed additive codomain; no explicit cardinality loss |
 | `FiniteMultiplierLocalization.lean` | Exact localization commutator, symbol-variation energy estimate, and small-symbol/tail split | Any normed scalar field and normed vector space; finite supports; all unfavorable modes retained |
+| `LocallyLipschitz.lean` | Finite sums, finite products of coordinates, algebra multiplication, and real scalar multiplication | Local Lipschitz maps on pseudometric spaces; no global constant required |
+| `LocallyLipschitzDifferentiability.lean` | Rademacher theorem by compact-ball exhaustion; strong measurability of derivatives of continuous parameter families at fixed parameters | Finite-dimensional real domain and codomain for Rademacher, any additive Haar measure; complete normed codomain and second-countability of either parameter space or codomain for the parameter lemma |
 
 The first module is used by
 `FluidDynamics/NavierStokes/StochasticLagrangian/LocalVorticityDiffusion.lean`.
@@ -96,6 +98,11 @@ form at the kernel direction and increment `(0,-1)` attains zero with
 three nonzero terms `2 - 4 + 2`. This checks the mixed-term coefficient.
 The convolution tests collect two inputs at the same output, exhibit a
 nonzero one-shift commutator, and check that a constant cutoff commutes.
+The local Lipschitz tests include a nonsmooth scalar factor, a
+vector-valued map with a corner, and a parameter-dependent derivative.
+The derivative lemmas supply almost-everywhere coordinate derivatives
+and measurable derivative energy for the NS spectral cutoff, without
+assuming an everywhere differentiable eigenvector selection.
 
 ## Provenance and changes
 
@@ -116,6 +123,10 @@ The license text is in the repository-root `LICENSES/Apache-2.0.txt`.
 Other MeTTapedia files retain their existing licenses. The adaptations target
 MeTTapedia's Lean 4.31.0/mathlib version; they do not require the source
 repository's Lean 4.34.0-rc2 toolchain.
+
+The local Lipschitz and parameter-derivative lemmas are new derivations
+from mathlib's compactness, Rademacher, and measurable-derivative APIs,
+not adaptations from either external fluid construction.
 
 ## Further translation work
 

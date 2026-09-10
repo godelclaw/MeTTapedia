@@ -713,6 +713,58 @@ Uniform time/scale control of the weighted trace term, angular tails,
 cutoff Fourier moments, collision cost, feedback and diffusion is still
 open. These spatial constructions do not establish global regularity.
 
+### Quantitatively regular spectral pressure weights
+
+`GapCutoffRegularity.lean` proves that the square root of the linear gap
+ramp is not Lipschitz: at `g = γ + γr²` its value is exactly `r` for
+`0 ≤ r ≤ 1`. The previous continuous patch construction is valid, but
+does not by itself provide the spatial derivative control needed for a
+quantitative cutoff estimate.
+
+`GapTruncatedProjector.lean` and `SquaredGapTiltWeight.lean` construct
+
+```text
+κ = max(0, min(1, (g−γ)/γ)),  γ > 0,
+a₂ = κ² |ω|² / max(g,γ)²,
+M = sqrt(a₂) P = κ |ω| P / max(g,γ).
+```
+
+The new energy weight is `κ` times the previous weight. For arbitrary
+symmetric strains `A,B` and vectors `w,v`, the checked two-state estimate is
+
+```text
+||M(A,w)−M(B,v)|| ≤ ||w−v||/γ + 20 |v| ||A−B||/γ².
+```
+
+The associated squared line-distance bound retains the local weight,
+without requiring a continuous eigenvector choice. The complementary
+source cost is now `(1−κ²) 2||R|| |ω|²`, exactly the old collision cost
+plus `κ(1−κ) 2||R|| |ω|²`. Regularizing the cutoff does not discard this
+additional transition cost.
+
+`LocalSquaredGapPressure.lean` instantiates the regularized weight using
+the actual filtered strain and full vorticity. It proves local spatial
+and interior space-time Lipschitz regularity, the same angular pressure
+budget with weight `a₂`, and the joint-source bound with the adjusted
+collision cost. The space-time statement uses a clamped extension of
+the coefficients, not a claim of global PDE existence.
+
+`LocalSquaredGapGradient.lean` proves almost-everywhere coordinate
+differentiability for periodic Haar measure, measurability and
+integrability of the derivative energy, and the physical bound
+
+```text
+∫ Σj ||∂j M||² ≤ (2/γ²) ∫ Σj ||∂j ω||²
+                  + (800/γ⁴) ∫ |ω|² Σj ||∂j Sχ||².
+```
+
+The coordinate and integral estimates use a summable third Fourier
+moment of the actual velocity. They do not establish a scale-uniform
+cutoff Fourier-moment bound or a time-integrated source budget.
+`SquaredGapPressureAudit.lean` checks the dependency closure and the
+collision, transition, separated-gap, zero-vorticity, and square-root
+regressions. The original linear-weight theorems remain unchanged.
+
 `PressureTiltDatum.lean`, `PressureTiltOrigin.lean`, and
 `PressureTiltAlignment.lean` supply a physical obstruction to a
 pointwise-alignment-only pressure closure. On the unit torus, the finite

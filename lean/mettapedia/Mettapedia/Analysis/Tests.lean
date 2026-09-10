@@ -14,6 +14,8 @@ import Mettapedia.Analysis.PositiveOperatorKernelCurvature
 import Mettapedia.Analysis.RankOneCommutator
 import Mettapedia.Analysis.OrthonormalOperatorBound
 import Mettapedia.Analysis.FiniteMultiplierLocalization
+import Mettapedia.Analysis.LocallyLipschitz
+import Mettapedia.Analysis.LocallyLipschitzDifferentiability
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.InnerProductSpace.Adjoint
 
@@ -21,6 +23,25 @@ import Mathlib.Analysis.InnerProductSpace.Adjoint
 
 open Set MeasureTheory Mettapedia.Analysis Mettapedia.Analysis.ODE
 open scoped ContDiff RealInnerProductSpace
+
+-- A corner in the scalar factor is compatible with local Lipschitz regularity.
+example : LocallyLipschitz (fun x : ℝ ↦ ‖x‖ • (x, x ^ 2)) := by
+  have hg : ContDiff ℝ 1 (fun x : ℝ ↦ (x, x ^ 2)) := by fun_prop
+  exact lipschitzWith_one_norm.locallyLipschitz.smul_real hg.locallyLipschitz
+
+-- Rademacher applies to vector-valued maps without a globally smooth choice.
+example : ∀ᵐ x : ℝ, DifferentiableAt ℝ (fun x : ℝ ↦ (‖x‖, x)) x := by
+  have hf : LocallyLipschitz (fun x : ℝ ↦ (‖x‖, x)) :=
+    lipschitzWith_one_norm.locallyLipschitz.prodMk LipschitzWith.id.locallyLipschitz
+  exact hf.ae_differentiableAt volume
+
+example : StronglyMeasurable (fun x : ℝ ↦ deriv (fun t : ℝ ↦ (x * t, t ^ 2)) 0) := by
+  apply Continuous.stronglyMeasurable_deriv_const
+  fun_prop
+
+#print axioms LocallyLipschitz.smul_real
+#print axioms LocallyLipschitz.ae_differentiableAt
+#print axioms Continuous.stronglyMeasurable_deriv_const
 
 -- Coincident output modes interfere; they must be collected before squaring.
 example : FiniteMultiplierLocalization.scalarConvolution ({0, 1} : Finset ℤ)
