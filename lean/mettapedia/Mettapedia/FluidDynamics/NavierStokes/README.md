@@ -205,6 +205,42 @@ the Laplacian. This identity does not construct that partition, estimate its
 individual sectors, or turn approximate Fourier coverage into exact coverage.
 `LocalRetainedEnergyAudit.lean` checks these dependencies.
 
+`LocalFilteredSpectralDefect.lean` pairs the **filtered strain with full
+vorticity** along the actual material path. Its gap-weighted defect has a
+signed balance across eigenvalue collisions. The discarded strain still
+acts through `(S-Sχ)ω`; pressure, subgrid feedback and unresolved transport
+remain in the filtered strain remainder. `LocalFilteredViscousDefect.lean`
+retains `νΔSχ` and `νΔω` jointly in the regularized energy rate. The full
+material rate is integrable on compact interior intervals, without separate
+measurability assumptions on chosen-eigenvector terms.
+
+The receiver cutoff is removed in the diffusion payment:
+
+- `InfiniteFourierParseval.lean` proves scalar and vector Parseval for the
+  actual infinite continuous reconstruction and its ordinary spatial curl.
+- `LocalLowDiffusionBudget.lean` integrates the low-strain gradient cost
+  against that full curl, using the actual energy-squared identity.
+- `InfiniteFourierDiffusion.lean` proves uniform second-difference
+  convergence in the continuous-field Banach norm, including real linear
+  images, from two summable coordinate derivatives.
+- `LocalJointDiffusionBudget.lean` applies that limit to the filtered
+  strain and full vorticity Laplacians. If an integrable full-rate envelope
+  satisfies `F ≤ ν linearRate(Sχ,δ,ω,ΔSχ,Δω) + R`, then
+
+  ```text
+  ∫₀ᵗ ∫ F ≤ 4 Kχ E(0)² / δ + ∫₀ᵗ ∫ R,
+  Kχ = 243 (2π)⁴ ∑ q ∈ modes, |χ(q)|² |q|⁴.
+  ```
+
+Here `δ > 0`, `ν > 0`, and `E` is the full squared velocity norm, without
+a factor one half. A common third Fourier moment justifies the spatial
+limit; its magnitude does not enter the payment. The strain cutoff and
+`1/δ` remain explicit. The full-rate/nonviscous integrability hypotheses
+in this weak spatial envelope theorem remain explicit too; the separate
+material-path identity does not automatically discharge them in space-time.
+No all-scale estimate, bound for the high-strain mismatch, or terminal-time
+continuation follows yet. `LocalJointDiffusionAudit.lean` checks dependencies.
+
 `FilteredHighHighExample.lean` supplies real, transverse, zero-mean finite
 Fourier data whose retained velocity vanishes while its retained subgrid
 force does not. The input squared frequencies are five and two; the output
