@@ -4,9 +4,10 @@ import Mathlib.Topology.Order.OrderClosed
 /-!
 # Extending an integral estimate to interval endpoints
 
-Continuity extends an inequality proved only for strictly interior pairs
+Continuity of the energy extends an inequality proved only for strictly interior pairs
 of times to an estimate from the initial endpoint at every time of the
-closed interval. No sign assumption on the integrands is required.
+closed interval. The integrands need only be integrable; no continuity
+or sign assumption on them is required.
 -/
 
 set_option autoImplicit false
@@ -16,17 +17,17 @@ namespace intervalIntegral
 
 open MeasureTheory Set
 
-theorem endpoint_estimate_of_interior {A Z R : ℝ → ℝ} {T C : ℝ} (hT : 0 < T)
-    (hA : ContinuousOn A (Icc 0 T)) (hZ : ContinuousOn Z (Icc 0 T))
-    (hR : ContinuousOn R (Icc 0 T))
+theorem endpoint_estimate_of_interior_of_integrable {A Z R : ℝ → ℝ} {T C : ℝ} (hT : 0 < T)
+    (hA : ContinuousOn A (Icc 0 T)) (hZ : IntegrableOn Z (Icc 0 T))
+    (hR : IntegrableOn R (Icc 0 T))
     (h : ∀ a b : ℝ, 0 < a → a < b → b < T →
       A b + (∫ t in a..b, Z t) ≤ A a + C + ∫ t in a..b, R t) :
     ∀ b ∈ Icc (0 : ℝ) T,
       A b + (∫ t in (0 : ℝ)..b, Z t) ≤ A 0 + C + ∫ t in (0 : ℝ)..b, R t := by
   have hZI : IntegrableOn Z (uIcc 0 T) := by
-    simpa only [uIcc_of_le hT.le] using hZ.integrableOn_Icc
+    simpa only [uIcc_of_le hT.le] using hZ
   have hRI : IntegrableOn R (uIcc 0 T) := by
-    simpa only [uIcc_of_le hT.le] using hR.integrableOn_Icc
+    simpa only [uIcc_of_le hT.le] using hR
   have hZp : ContinuousOn (fun b ↦ ∫ t in (0 : ℝ)..b, Z t) (Icc 0 T) := by
     simpa only [uIcc_of_le hT.le] using continuousOn_primitive_interval hZI
   have hRp : ContinuousOn (fun b ↦ ∫ t in (0 : ℝ)..b, R t) (Icc 0 T) := by
@@ -35,9 +36,9 @@ theorem endpoint_estimate_of_interior {A Z R : ℝ → ℝ} {T C : ℝ} (hT : 0 
       A b + (∫ t in (0 : ℝ)..b, Z t) ≤ A 0 + C + ∫ t in (0 : ℝ)..b, R t := by
     have hsub : Icc (0 : ℝ) b ⊆ Icc (0 : ℝ) T := fun _ ht ↦ ⟨ht.1, ht.2.trans hb.2.le⟩
     have hZIb : IntegrableOn Z (uIcc 0 b) := by
-      simpa only [uIcc_of_le hb.1.le] using (hZ.mono hsub).integrableOn_Icc
+      simpa only [uIcc_of_le hb.1.le] using hZ.mono_set hsub
     have hRIb : IntegrableOn R (uIcc 0 b) := by
-      simpa only [uIcc_of_le hb.1.le] using (hR.mono hsub).integrableOn_Icc
+      simpa only [uIcc_of_le hb.1.le] using hR.mono_set hsub
     have hZl : ContinuousOn (fun a ↦ ∫ t in a..b, Z t) (Icc 0 b) := by
       simpa only [uIcc_of_le hb.1.le] using continuousOn_primitive_interval_left hZIb
     have hRl : ContinuousOn (fun a ↦ ∫ t in a..b, R t) (Icc 0 b) := by
@@ -51,5 +52,14 @@ theorem endpoint_estimate_of_interior {A Z R : ℝ → ℝ} {T C : ℝ} (hT : 0 
   intro b hb
   exact le_on_closure hinner (hcl ▸ hA.add hZp)
     (hcl ▸ continuousOn_const.add hRp) (hcl ▸ hb)
+
+theorem endpoint_estimate_of_interior {A Z R : ℝ → ℝ} {T C : ℝ} (hT : 0 < T)
+    (hA : ContinuousOn A (Icc 0 T)) (hZ : ContinuousOn Z (Icc 0 T))
+    (hR : ContinuousOn R (Icc 0 T))
+    (h : ∀ a b : ℝ, 0 < a → a < b → b < T →
+      A b + (∫ t in a..b, Z t) ≤ A a + C + ∫ t in a..b, R t) :
+    ∀ b ∈ Icc (0 : ℝ) T,
+      A b + (∫ t in (0 : ℝ)..b, Z t) ≤ A 0 + C + ∫ t in (0 : ℝ)..b, R t :=
+  endpoint_estimate_of_interior_of_integrable hT hA hZ.integrableOn_Icc hR.integrableOn_Icc h
 
 end intervalIntegral
