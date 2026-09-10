@@ -210,6 +210,9 @@ $D_5$ & assemblies, gated by conjunctive premises & 6 & $0$ & $0$ \\
 The estimates are explicit search policy, not confidence annotations on
 theorems.  In particular the D1c gate changes the attack order, not the fixed
 six-point weight or its current earned score of zero.
+They are the initial scheduling estimates, not a current probability model;
+Section~\ref{sec:absolute-topology-gate} revisits the schedule against the
+actual direct-headline dependencies without changing any ledger weight.
 
 Consequently the route is a conditional proof, not yet a proof of the
 Four-Color Theorem.  The point of the remainder of this section is that the
@@ -11590,6 +11593,80 @@ lateral reassignment turn this ordered geodesic sweep into a width-$30$
 chain.  D1b/D1c still need a target-specific width-and-progress argument or
 a different source-faithful global construction.  The fixed ledger remains
 $57/100$.
+
+\subsection{Dependency-directed scheduling and a genuinely absolute control}
+\label{sec:absolute-topology-gate}
+
+The fixed ledger is coarse: it deliberately credits complete obligations,
+not each internal construction. Consequently a plateau is compatible with
+useful internal work, but is not evidence that the remaining obligations
+are nearly proved. Nor are the remaining $43$ points independent jobs.
+In the existing direct specialization, fixed-mesh exclusion and the
+route-native base at \texttt{meshFreeVertexBound} are sufficient; the
+mesh-free raw-decomposition adapter is already constructed in
+\texttt{SphericalMeshFreeRawDecomposition}. In particular $D_{2b}$ denotes
+optimized executable physical closure, not that adapter or a missing
+general grid theorem.
+
+Proposition~\ref{prop:exact-closure-gate} explicitly makes optimized closure
+optional when the conservative finite state bound is retained. Closing its
+four-point row would still require the physical alphabet, labelled steps,
+literal initial and accepting sets, their soundness and completeness, and
+the three independently replayed closure counts. It is not just running
+an optimizer on the available unlabelled relation. Likewise the final
+finite-base audit cannot be credited by an audit at a smaller convenient
+threshold. The immediate mathematical priority is an ordered-mesh
+reduction using actual target hypotheses, with a genuine decrease or
+compatible smaller-piece gluing, not a smaller state count alone.
+
+\paragraph{A stronger falsification control.}
+Colourable closed controls have zero disagreement at unrestricted absolute
+minima. Positive Kempe-orbit minima test a weaker hypothesis. To test
+absolute minimality nonvacuously while deliberately withholding planarity,
+the new lab uses the following single cubic graph. Its vertices are
+$(i,s)$ for $i\in\mathbb Z/5\mathbb Z$ and $s\in\{0,1,2,3\}$.
+Join $(i,0)$ to the other three vertices in its block, and add edges
+\[
+ (i,1)(i+1,1),\qquad (i,2)(i+1,3),\qquad (i,3)(i+1,2).
+\]
+Two complete independent enumerators agree that this graph has no Tait
+colouring. Direct checks confirm connectedness, absence of bridges, and
+girth five. Vertex numbers below mean $4i+s$.
+
+Fix the deleted edge $(0,1)$ and inspect all six target edges whose closed
+endpoint neighbourhoods are disjoint from its own. Both deletion graphs
+are colourable in each case. Across all $50544$ pairs of deletion
+colourings, there are $120$ absolute minimizers. The minimum is three for
+four target edges and five for the other two. Every minimizing
+disagreement graph is exactly two paths, each meeting both deletion-port
+sets; none has a branch or a cycle. Thus even a secondary minimization of
+branch count or cycle rank leaves these positive absolute minima intact.
+
+The omitted planar hypothesis is exhibited by a literal subdivision of
+$K_{3,3}$, with branch classes $\{8,12,16\}$ and $\{13,14,15\}$.
+Its nine paths are
+\[
+\begin{array}{lll}
+8,9,13 & 8,11,14 & 8,10,15\\
+12,13 & 12,14 & 12,15\\
+16,17,13 & 16,19,14 & 16,18,15.
+\end{array}
+\]
+The checker verifies actual edges, every required branch pair, and
+pairwise disjoint path interiors. No planar-embedding oracle is trusted
+for this receipt.
+
+This is an independently cross-checked computational control, not a Lean
+kernel certificate or a least spherical counterexample. It refutes only
+a generic conclusion of zero disagreement from absolute minimality and
+two spanning paths without additional hypotheses. It does not refute the
+spherical, ordered-mesh, or minimal-counterexample route. Its purpose is
+to reject exchange arguments which never use those missing hypotheses.
+The reproducible files are
+\texttt{tools/fourcolor/v24\_absolute\_topology\_gate.py} and
+\texttt{results/fourcolor/v24\_absolute\_topology\_gate.json}.
+No configuration catalogue or reducibility certificate is involved. No
+ledger row is newly discharged: $57/100$.
 
 \subsection{Least-size selection does not compute the structural threshold}
 \label{sec:least-size-bound-audit}
