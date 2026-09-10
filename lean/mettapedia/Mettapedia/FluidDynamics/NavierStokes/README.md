@@ -74,6 +74,46 @@ the common third Fourier-moment envelope and applies the reusable
 remains an explicit hypothesis of that estimate. The accompanying
 `LocalMaterialVorticityAudit.lean` checks the theorem dependencies.
 
+`LocalMaterialStrain.lean` constructs the real symmetric strain path and
+proves its `C¹` regularity from the common third-moment envelope.
+`LocalSpectralDefect.lean` applies the collision-safe integrated spectral
+defect identity to this actual strain and vorticity, without assuming their
+ODEs or regularity as extra input. `LocalSpectralDefectSources.lean` exposes
+the nonnegative spin contribution and the signed pressure/viscosity terms.
+
+`LocalSpectralResidual.lean` derives the almost-everywhere equation
+
+```text
+z = λω - Sω,       R = -W² - Hess(p) + νΔS,       f = νΔω
+z' = -λz + source
+source = <e,Re>ω - Rω + (λI-S)f,       λ = λ_max(S) ≥ 0
+```
+
+Here `e` is a selected top unit eigenvector. No regularity of that selection
+is assumed. `LocalSpectralResidualBudget.lean` proves absolute continuity of
+`z`, integrability of the actual source, and
+`‖z(b)‖ ≤ ‖z(a)‖ + ∫ a..b, ‖source(t)‖` on compact local intervals. It uses
+the almost-everywhere extension of the OpenAI-derived dissipative ODE
+comparison. There is no exponential factor or spectral-gap assumption.
+`LocalSpectralDefectAudit.lean` checks the dependencies of these results.
+
+### Forced-construction pressure test
+
+The [OpenAI forced blowup construction](https://cdn.openai.com/pdf/32d9f210-8b73-45e0-91bc-82a30aef8a9a/navier-stokes.pdf)
+claims bounded-energy singular solutions with smooth compactly supported
+forcing (Theorem 1.1 and Corollary 10.6). If correct, this excludes a complete
+regularity argument that would also cover those solutions. Its oscillatory
+pulses have nonzero mean quadratic stresses despite zero angular mean;
+mean-zero oscillation alone cannot justify discarding their feedback.
+
+This does not refute the local identities above or automatically refute the
+unforced misalignment-budget conjecture. An external body force adds
+`sym ∇F` to the strain rate and `curl F` to the vorticity rate, with pressure
+still determined by the actual equation. Setting `F = 0` removes these direct
+inputs, not `R` or `νΔω`. Any proposed uniform closure must control the
+surviving terms and identify its genuinely unforced mechanism. Integrability
+on each compact local interval is not a bound uniform up to a singular time.
+
 None of this closes the scale-critical dynamical misalignment budget,
 the remaining field-transfer estimates, or unconditional BKM continuation.
 The older route-audit summary below describes earlier layers, not the full
