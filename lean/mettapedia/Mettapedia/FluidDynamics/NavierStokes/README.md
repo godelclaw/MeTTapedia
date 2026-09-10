@@ -128,7 +128,43 @@ bounds `|convection_q| ≤ |q|E`, `|p_q| ≤ E`, and
 proved for the actual local solution. Reconstructing finitely many output
 modes gives the spatially uniform bound `2π(∑ q, |q|)E`, with the output
 cutoff cost explicit. This is not an estimate uniform over all output scales;
-the local bound `E ≤ B` is not promoted to a global initial-energy estimate.
+the original local estimate uses `E ≤ B`. The following energy development
+replaces this local Sobolev payment by the initial kinetic energy.
+
+`InfiniteKineticCancellation.lean` proves the skew-Hermitian transport
+cancellation for the actual infinite convection. An absolute first Fourier
+moment justifies the exchange of the two energy slots. Pressure projection
+does no kinetic work; viscosity gives the signed curl-energy loss.
+
+`LocalKineticEnergy.lean` derives, on the constructed local interval,
+
+```text
+E(t) + 2ν ∫₀ᵗ Ω = E(0),
+E(t)² + 4ν ∫₀ᵗ EΩ = E(0)²,
+E = ∑ q, |u_q|²,       Ω = ∑ q, |curl(u)_q|².
+```
+
+The common second-moment envelope justifies differentiation and continuity
+of the infinite sums. It disappears from these identities. The fundamental
+theorem of calculus uses the equation only in the open interval and
+continuity at the endpoints. The physical-data existence theorem constructs
+the needed envelope for admissible periodic data with eight continuous
+coordinate derivatives; no energy inequality is added as an assumption.
+
+`LocalLowFrequencyBudget.lean` applies this payment to the full pressure,
+whose convolution still contains every input mode. With
+`C_M = (2π)² ∑ q ∈ M, |q|²`, it proves the spatially uniform retained-Hessian
+bound `C_M E(0)` and the time-integrated pressure cost
+`∫ 2 (∑ q ∈ M, |Hess(p)_q|) Ω ≤ C_M E(0)² / (2ν)`.
+The retained subgrid-force bound also now uses `E(0)` instead of `B`.
+
+The same module evaluates the existing incoming low-source cost on the
+actual full vorticity and proves `∫ lowSourceCost ≤ 9 |S| E(0)² / ν²` for a
+fixed nonzero source set `S`, independently of the finite receiver set.
+Integrability and the required kinetic/enstrophy bounds are derived, not
+assumed. This does not yet derive the full high-receiver evolution or control
+an expanding source set. `LocalEnergyBudgetAudit.lean` checks dependencies
+of the cancellation, actual energy identities and their sector applications.
 
 `FilteredHighHighExample.lean` supplies real, transverse, zero-mean finite
 Fourier data whose retained velocity vanishes while its retained subgrid
