@@ -7,6 +7,7 @@ import Mettapedia.Analysis.OperatorQuadraticForm
 import Mettapedia.Analysis.IdempotentDerivatives
 import Mettapedia.Analysis.SpectralRelationDerivatives
 import Mettapedia.Analysis.KernelCrossTerm
+import Mettapedia.Analysis.OrthogonalProjectionParabolic
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.InnerProductSpace.Adjoint
 
@@ -14,6 +15,37 @@ import Mathlib.Analysis.InnerProductSpace.Adjoint
 
 open Set MeasureTheory Mettapedia.Analysis Mettapedia.Analysis.ODE
 open scoped ContDiff RealInnerProductSpace
+
+-- A nonzero tangent swaps the two sectors; the completed square must
+-- retain the complementary-gradient cross term for arbitrary v and w.
+example (v w : EuclideanSpace ℝ (Fin 2)) :
+    let e := (EuclideanSpace.basisFun (Fin 2) ℝ) 0
+    let f := (EuclideanSpace.basisFun (Fin 2) ℝ) 1
+    let P := InnerProductSpace.rankOne ℝ e e
+    let G := InnerProductSpace.rankOne ℝ f e + InnerProductSpace.rankOne ℝ e f;
+    -2 * ‖P v‖ ^ 2 - 4 * ⟪v, G w⟫ - 2 * ‖G ((1 - P) w)‖ ^ 2 =
+      -4 * ⟪(1 - P) v, G (P w)⟫ - 2 * ‖P v + G ((1 - P) w)‖ ^ 2 := by
+  let e := (EuclideanSpace.basisFun (Fin 2) ℝ) 0
+  let f := (EuclideanSpace.basisFun (Fin 2) ℝ) 1
+  let P := InnerProductSpace.rankOne ℝ e e
+  let G := InnerProductSpace.rankOne ℝ f e + InnerProductSpace.rankOne ℝ e f
+  have h00 : ⟪e, e⟫ = 1 := by simp [e]
+  have h01 : ⟪e, f⟫ = 0 := by simp [e, f, EuclideanSpace.inner_single_left]
+  have h10 : ⟪f, e⟫ = 0 := by rw [real_inner_comm]; exact h01
+  have hp : P * P = P := InnerProductSpace.isIdempotentElem_rankOne_self
+    ((EuclideanSpace.basisFun (Fin 2) ℝ).norm_eq_one 0)
+  have hs : ∀ a b, ⟪P a, b⟫ = ⟪a, P b⟫ := by
+    intro a b
+    simp only [P, InnerProductSpace.rankOne_apply, real_inner_smul_left, real_inner_smul_right]
+    rw [real_inner_comm a e]
+    ring
+  have ht : G * P + P * G = G := by
+    apply ContinuousLinearMap.ext
+    intro a
+    simp only [P, G, add_apply, mul_apply_eq_comp, InnerProductSpace.rankOne_apply,
+      inner_add_right, real_inner_smul_right, h00, h01, h10, mul_one, mul_zero,
+      zero_smul, add_zero, zero_add]
+  simpa only [mul_one] using OrthogonalProjectionParabolic.gradient_completed_square P G hp hs ht 1 v w
 
 -- A rank-one projection leaves a genuinely transverse cross term unpaid.
 example :
