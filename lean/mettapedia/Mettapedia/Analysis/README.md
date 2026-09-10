@@ -10,6 +10,9 @@ Reusable analysis, independent of any particular fluid construction.
 | `ODE/AbsolutelyContinuousComparison.lean` | Dissipative comparison with an almost-everywhere equation and integrable forcing | Absolutely continuous paths; allows corners and eigenvalue collisions |
 | `ODE/VariableGronwall.lean` | Scalar comparison by the exponential of the actual growth integral | Arbitrary finite interval; interior derivatives; coefficient and solution may have either sign |
 | `LogarithmicScaleBound.lean` | Explicit scale selection and elimination of a logarithmic/high-frequency cutoff | Any positive real decay exponent; sharp estimate requires no sign assumption on the low or logarithmic costs |
+| `SimpleImplicitRoot.lean` | A continuous simple root of a smooth scalar equation is smooth | Real Banach parameter space; derived from mathlib's implicit-function theorem |
+| `OperatorQuadraticForm.lean` | Two derivatives of a moving operator quadratic form, retaining all cross terms | Any real inner product space; no completeness or dimension assumption |
+| `IdempotentDerivatives.lean` | First-order tangent identity, second-order quadratic correction, and the material-minus-diffusion constraint | Any real normed algebra; no commutativity assumption |
 
 The first module is used by
 `FluidDynamics/NavierStokes/StochasticLagrangian/LocalVorticityDiffusion.lean`.
@@ -28,9 +31,19 @@ The scalar logarithmic estimate is not itself a logarithmic gradient bound or
 a BKM theorem. The spatial estimates that would instantiate its hypotheses
 must still be proved for the domain and function spaces of the application.
 
+The simple-root theorem is used to construct smooth bottom spectral
+projectors through collisions of the two top strain eigenvalues. The
+quadratic-form and idempotent calculus then supplies the actual local
+bottom-vorticity diffusion identity. In particular, a projector's
+material-minus-diffusion rate has a quadratic correction and cannot be
+treated as an ordinary tangent rate. These modules are new derivations
+using mathlib, not additional adaptations from the external source below.
+
 `Tests.lean` checks a path with a nondifferentiable corner, a forced trajectory
 crossing zero, a negative growth coefficient, an exponent other than one
-quarter, and the axioms of the public comparison theorems.
+quarter, a simple root through a collision of other roots, a moving
+quadratic form with nonzero cross terms, and the axioms of the public
+comparison theorems.
 
 ## Provenance and changes
 

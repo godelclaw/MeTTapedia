@@ -604,10 +604,52 @@ data, not added as an independent hypothesis.
 `LocalBottomEnergyRegularity.lean` proves continuity of the energy and
 signed source wherever `gᵦ > 0`, and spatial integrability on each closed
 region `gᵦ ≥ η > 0`. These are not threshold-uniform or time-integrated
-estimates. Moving-region boundary terms, spatial projector derivatives,
-viscous cancellation, and the unforced all-scale source budget remain
-separate obligations. `LocalBottomEnergyAudit.lean` checks all 27 new
+estimates. The following development constructs the spatial projector
+derivatives and signed parabolic product rule. Moving-region boundary
+terms, viscous source cancellation, and the unforced all-scale budget
+remain open. `LocalBottomEnergyAudit.lean` checks all 27 new
 theorem dependencies.
+
+`StrainSpectralInvariants.lean` expresses the three-dimensional spectral
+cubic in traces of operator powers. `BottomProjectorSmoothness.lean`
+uses `Analysis/SimpleImplicitRoot.lean` and a rational invariant formula
+to prove smoothness of the bottom projector from smooth strain and a
+positive bottom gap. No differentiability or separation of the two top
+eigenvalues is assumed. `LocalSpatialBottomProjector.lean` constructs
+the actual spatial projector derivatives; `LocalSpatialVorticityJets.lean`
+supplies the two full-vorticity derivatives from a summable third velocity
+moment, without a receiver truncation.
+
+`LocalBottomEnergyDiffusion.lean` proves the actual energy Laplacian
+product rule. Writing `P = Pbottom`, `Pⱼ = ∂ⱼP`, `ωⱼ = ∂ⱼω`, and
+`W = DᵤP - νΔP`, the signed parabolic source is
+
+```text
+Rpar = 2<Pω,(Sfull-Sχ)ω> + <ω,Wω> - 4ν Σⱼ<ωⱼ,Pⱼω>.
+(Dᵤ-νΔ)Eᵦ + 2ν Σⱼ||Pωⱼ||² = 2λmin Eᵦ + Rpar.
+(Dᵤ-νΔ)Eᵦ + 2ν Σⱼ||Pωⱼ||² + (4gᵦ/3)Eᵦ ≤ Rpar.
+```
+
+`LocalPhysicalBottomDiffusion.lean` proves this balance almost everywhere
+on the positive-gap branch of one local solution constructed from the
+same real, zero-mean, divergence-free order-nine initial data, for every
+admissible finite filter. No source-size assumption is added.
+
+The independent `Analysis/OperatorQuadraticForm.lean` proves the two
+quadratic-form derivatives. `Analysis/IdempotentDerivatives.lean` exposes
+an important correction, also instantiated for the actual spatial projector:
+
+```text
+WP + PW = W + 2ν Σⱼ Pⱼ².
+```
+
+Thus W is not generally an ordinary projector tangent. The preceding
+first-order transfer estimate cannot be applied to W unchanged. These
+identities preserve the signed dissipative square, but do not yet cancel
+the strain-Laplacian part inside W, control the cross terms, justify
+integration over moving gap regions, or provide a time/scale-uniform
+unforced source budget. `LocalBottomDiffusionAudit.lean` checks all 49
+theorems in this development.
 
 `FilteredHighHighExample.lean` supplies real, transverse, zero-mean finite
 Fourier data whose retained velocity vanishes while its retained subgrid
