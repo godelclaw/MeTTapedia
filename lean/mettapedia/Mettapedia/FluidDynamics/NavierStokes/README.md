@@ -162,9 +162,48 @@ The same module evaluates the existing incoming low-source cost on the
 actual full vorticity and proves `∫ lowSourceCost ≤ 9 |S| E(0)² / ν²` for a
 fixed nonzero source set `S`, independently of the finite receiver set.
 Integrability and the required kinetic/enstrophy bounds are derived, not
-assumed. This does not yet derive the full high-receiver evolution or control
-an expanding source set. `LocalEnergyBudgetAudit.lean` checks dependencies
+assumed. This alone does not control an expanding source set.
+`LocalEnergyBudgetAudit.lean` checks dependencies
 of the cancellation, actual energy identities and their sector applications.
+
+`LocalFilteredVorticity.lean` now derives the curl equation of the actual
+filtered infinite solution. At each retained sharp-filter output it is the
+finite vorticity RHS plus `curl(gχ)`, not an autonomous Galerkin equation.
+The exact misalignment energy derivative retains the signed subgrid work
+`2 ∑ q ∈ O, Re <ω_mis,q, curl(gχ)_q>`.
+`LocalRetainedEnergyBudget.lean` consumes the initial-data low-source budget
+in that equation. Continuity and time integrability of the actual subgrid
+curl and remainder are proved, including at the interval endpoints.
+
+`LocalHighHighEnergyBudget.lean` goes further: exchange symmetry absorbs
+interactions with a low frequency in either input slot. For `θ > 0`, it proves
+
+```text
+E_mis,O(t) + (2-θ)ν(2π)² ∫₀ᵗ D_mis,O
+  ≤ E_mis,O(0) + ∫₀ᵗ R_HH + |lowSources| E(0)² / (θν²),
+R_HH = resolved high-high work + signed subgrid-curl work.
+```
+
+Here `O ⊆ M`, the retained set `M` excludes zero, and `D_mis,O` is the
+frequency-squared misalignment energy. There is no output-frequency lower
+bound. Choosing `θ < 2` leaves positive dissipation. For a fixed integer
+low cutoff `L`, `|lowSources| ≤ (2L+1)³`, so the paid term is uniform over
+expanding retained sets. Its constant uses the energy-squared identity;
+neither the local Sobolev bound nor the moment envelope appears in it.
+The high-high-plus-subgrid remainder remains unestimated.
+
+`LocalRetainedLocalizedEnergy.lean` constructs compressed advection using
+the **full velocity** at each difference frequency `q-l`; it proves
+skew-adjointness without requiring a symmetric retained patch. The actual
+retained curl equation under moving spatial/directional operator localizers
+keeps their material rates, resolved stretching, subgrid curl, and the
+correction from resolved to full advection. Its viscous contribution is the
+signed anticommutator `ν <w, AΔw + ΔAw>`. For an exact self-adjoint operator
+partition `∑ Aᵢ = I`, the sum of those contributions equals
+`2ν <w, Δw> ≤ 0`, without a cell-count loss or individual commutation with
+the Laplacian. This identity does not construct that partition, estimate its
+individual sectors, or turn approximate Fourier coverage into exact coverage.
+`LocalRetainedEnergyAudit.lean` checks these dependencies.
 
 `FilteredHighHighExample.lean` supplies real, transverse, zero-mean finite
 Fourier data whose retained velocity vanishes while its retained subgrid
