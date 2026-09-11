@@ -58,6 +58,50 @@ regularity, blowup, or any other Millennium-problem conclusion.
 
 ## Current Status
 
+### Real pressure-pair depletion, including localization divergence
+
+`CoherentPressurePair.lean` retains the cross-product numerator of the
+real Biot--Savart pressure pair, including nearly cancelling inputs. For
+a unit direction `e`, `PressurePairMisalignment.lean` proves
+
+```text
+T = [(p · (k × w))(k · (p × v)) / (|k|² |p|²)] tiltSymbol_e(k+p),
+z_w = w - (e·w)e,        D(k,w) = |k·w| / |k|,
+|T| ≤ 2(|z_w| |v| + |w| |z_v|) + D(k,w)|v| + |w|D(p,v).
+```
+
+The divergence terms vanish for divergence-free vorticity pairs. They
+are retained in the general statement because spatial multiplication
+by a patch does not preserve divergence-freeness. There is no cone
+assumption and no lower bound for `|k+p|`; zero input/output frequencies
+are included. When both inputs are exactly aligned and divergence-free,
+the pair vanishes.
+
+The coherent numerator is `-(e·(k×p))²`. Near cancellation its cross
+product supplies a compensating small factor, so a bad output angle does
+not by itself defeat the estimate. The regression family
+`k=(n,0,1), p=(-n,1,0), e=(0,0,1)` has a fixed 45-degree output angle while
+its coherent pair equals `(0,-n²/[2(n²+1)²],0)`.
+
+`PressurePairConvolution.lean` collects coincident outputs before taking
+energy and retains both source/receiver error channels. With
+`E(k,w)=|z_w|+D(k,w)/2`, the finite real convolution satisfies
+
+```text
+Σ_q |Σ_{k+p=q} T(k,p;w_k,v_p)|²
+  ≤ 8 (Σ_k E(k,w_k))² Σ_p |v_p|²
+    + 8 (Σ_k |w_k|)² Σ_p E(p,v_p)².
+```
+
+No explicit mode-count or frequency-ratio factor is inserted. The source
+norm is still **l1**, which can grow with scale. These are real bilinear
+pair estimates in a fixed frame, not yet a bound on the actual localized
+complex pressure field. Complex phase identification, the localization
+divergence budget, and scale/time summation remain required. No dynamical
+misalignment budget or unconditional regularity theorem follows yet.
+`PressurePairMisalignmentAudit.lean` checks cancellation, the bad-output
+angle family, and the necessity of the divergence condition.
+
 ### Quantitative Gaussian pressure patches
 
 `LocalGaussianGradientBudget.lean` constructs one finite family of real

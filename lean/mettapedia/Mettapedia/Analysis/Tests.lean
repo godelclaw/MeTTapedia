@@ -21,10 +21,42 @@ import Mettapedia.Analysis.FiniteResolventEnergy
 import Mettapedia.Analysis.QuadraticWeightStability
 import Mettapedia.Analysis.GaussianPartitionTests
 import Mettapedia.Analysis.UnitTorusFourierTests
+import Mettapedia.Analysis.EuclideanCrossProduct
+import Mettapedia.Analysis.FiniteTwoChannelConvolutionEnergy
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.InnerProductSpace.Adjoint
 
 /-! Regression examples for the analysis estimates. -/
+
+example : Mettapedia.Analysis.EuclideanCrossProduct.cross
+    (WithLp.toLp 2 ![1, 0, 0]) (WithLp.toLp 2 ![0, 1, 0]) = WithLp.toLp 2 ![0, 0, 1] := by
+  simp [Mettapedia.Analysis.EuclideanCrossProduct.cross, cross_apply]
+
+example (v : EuclideanSpace ℝ (Fin 3)) :
+    Mettapedia.Analysis.EuclideanCrossProduct.cross v ((3 : ℝ) • v) = 0 := by
+  rw [Mettapedia.Analysis.EuclideanCrossProduct.cross_smul_right]
+  simp
+
+-- Equal singleton channels attain the factor two in the energy bound.
+example :
+    (∑ q ∈ ({0} : Finset ℤ), ‖∑ pk ∈ ({0} : Finset ℤ) ×ˢ ({0} : Finset ℤ) with
+      pk.1 + pk.2 = q, (2 : ℝ)‖ ^ 2) = (2 * 1 ^ 2 * 1 + 2 * 1 ^ 2 * 1 : ℝ) := by
+  norm_num [Finset.filter_singleton]
+
+#print axioms Mettapedia.Analysis.EuclideanCrossProduct.cross_self
+#print axioms Mettapedia.Analysis.EuclideanCrossProduct.cross_zero
+#print axioms Mettapedia.Analysis.EuclideanCrossProduct.zero_cross
+#print axioms Mettapedia.Analysis.EuclideanCrossProduct.cross_add_left
+#print axioms Mettapedia.Analysis.EuclideanCrossProduct.cross_add_right
+#print axioms Mettapedia.Analysis.EuclideanCrossProduct.cross_smul_left
+#print axioms Mettapedia.Analysis.EuclideanCrossProduct.cross_smul_right
+#print axioms Mettapedia.Analysis.EuclideanCrossProduct.cross_swap
+#print axioms Mettapedia.Analysis.EuclideanCrossProduct.inner_self_cross
+#print axioms Mettapedia.Analysis.EuclideanCrossProduct.inner_cross_self
+#print axioms Mettapedia.Analysis.EuclideanCrossProduct.inner_cross_cycle
+#print axioms Mettapedia.Analysis.EuclideanCrossProduct.norm_cross_sq
+#print axioms Mettapedia.Analysis.EuclideanCrossProduct.norm_cross_le
+#print axioms Mettapedia.Analysis.FiniteConvolutionEnergy.sum_norm_sq_le_two_channels
 
 /-- Both sharp resolvent constants are attained at epsilon times weight equal to one. -/
 example :
