@@ -14773,3 +14773,60 @@ copying map or arbitrary intersection. The protected-mesh branch still
 requires an actual smaller admissible zero-Count map. This failed
 construction discharges no fixed-ledger obligation; the total stays
 $57/100$.
+
+\subsection{Why exposing a closed seam does not give free-port rigidity}
+\label{sec:internal-edge-opening}
+
+An attempted use of Section~\ref{sec:physical-support-intersection} in
+the physical mesh reduction is to open two seam edges of a smaller map,
+transfer their forced colour relation to the new free ports, and invoke
+no-fanout. The middle implication is false. Internal-edge observations
+and free-port observations have different quantifiers.
+
+The literal triangular prism has vertices $0,\ldots,5$, triangle edges
+$01,12,20$ and $34,45,53$, and joining edges $03,14,25$.
+Every proper three-edge-colouring assigns $01$ and $34$ the same colour.
+The proof uses only uniqueness of the third colour at a cubic vertex;
+the graph has an explicit proper colouring.
+\Sverified{Mettapedia.GraphTheory.FourColor.InternalEdgeOpening.closed_forces_equal}
+\Sverified{Mettapedia.GraphTheory.FourColor.InternalEdgeOpening.closedWitness_proper}
+
+Cut $01$ and $34$ into four terminal edges, ordered by their incident
+vertices $0,1,3,4$. Retain all seven other edges. The free opening has a
+proper colouring with terminal word $(0,1,1,0)$, in the three-colour
+palette $\{0,1,2\}$ (these are colour names, not a zero flow value).
+In particular the two chosen half-edges at $0$ and $3$ no longer agree.
+\Sverified{Mettapedia.GraphTheory.FourColor.InternalEdgeOpening.escape_proper}
+\Sverified{Mettapedia.GraphTheory.FourColor.InternalEdgeOpening.escape_separates_signals}
+\Sverified{Mettapedia.GraphTheory.FourColor.InternalEdgeOpening.free_opening_does_not_preserve_rigidity}
+
+There is an exact positive statement. Cutting and rejoining give a
+bijection between closed proper colourings and proper colourings of the
+opening \emph{subject to} $w_0=w_1$ and $w_2=w_3$. Within this conditioned
+family the original forced equality still holds. The displayed escape
+violates reclosure and is not the cut image of any closed colouring.
+\Sverified{Mettapedia.GraphTheory.FourColor.InternalEdgeOpening.colouringEquiv}
+\Sverified{Mettapedia.GraphTheory.FourColor.InternalEdgeOpening.reclosable_forces_equal}
+\Sverified{Mettapedia.GraphTheory.FourColor.InternalEdgeOpening.escape_not_in_cut_image}
+
+The constructor gate checks the triangular and pentagonal prisms using
+two independent whole-graph colouring enumerators. Their numbers of
+labelled colourings are respectively $6$ and $30$; opening the two
+selected edges gives $30$ and $102$, of which precisely $6$ and $30$
+reclose. Opening just one edge is a positive control: it gives no extra
+colourings. The gate also verifies explicit spherical rotations,
+bridge-freeness, cofaciality of the chosen edges, connectedness after the
+two-edge deletion, and properness of a free-path switch. Switching the
+whole corresponding closed component preserves the forced equality.
+Receipt: \texttt{results/fourcolor/v24\_internal\_edge\_opening\_gate.json}.
+
+The Lean witness verifies literal incidence and the cut/glue bijection;
+the drawing and the two numerical counts are computational gates, not
+new kernel planarity or counting theorems. These colourable controls have
+short faces, so they do not refute an implication genuinely using the
+protected mesh or minimal-counterexample hypotheses. The existing
+adjacent-pair surgery and its spherical class theorems are reused, not
+reproved. This attempted passage from internal rigidity to free-port
+rigidity supplies no strict ordinary zero-Count reduction. Such a
+reduction still needs to respect the actual reclosure equations; the
+ledger remains $57/100$.
