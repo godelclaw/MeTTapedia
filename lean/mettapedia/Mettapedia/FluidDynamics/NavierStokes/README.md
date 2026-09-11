@@ -58,6 +58,65 @@ regularity, blowup, or any other Millennium-problem conclusion.
 
 ## Current Status
 
+### Complex pressure identification and localization costs
+
+`ComplexPressurePair.lean` and `ComplexPressureMisalignment.lean` extend
+the real pressure-pair depletion estimate below to arbitrary complex
+vorticity coefficients, with the **same constant 2** and the same explicit
+normalized divergence defects. The transverse error is the existing
+complex orthogonal projection off a real unit direction. No reality or
+phase-alignment assumption is imposed. `ComplexPressureConvolution.lean`
+proves the two-channel finite energy bound with constant 8.
+
+`PhysicalPressurePair.lean` identifies these symbols with the actual
+finite pressure Hessian and the convergent infinite pressure coefficients:
+
+```text
+omega = fourierCurl u,
+traceAmplitude(chi,u,q) = -chi(q) sum_k tracePair(k,q-k;omega_k,omega_(q-k)),
+tiltCoefficient(chi,u,e,q) = -chi(q) sum_k tiltPair(e,k,q-k;omega_k,omega_(q-k)).
+```
+
+The infinite identities assume divergence-free velocity and summable
+second absolute Fourier moment; convergence is proved. Mean velocity
+and zero input/output frequencies are included. The physical derivative
+and inverse-curl phases are checked explicitly, not suppressed in the
+identification. A finite physical pressure-tilt energy estimate follows
+with both vorticity-misalignment channels retained.
+
+`FourierLocalizationDivergence.lean` uses the existing coefficient of a
+genuine scalar-cutoff product. For divergence-free input,
+
+```text
+q dot (c*w)_q = sum_(p+k=q) c_p (p dot w_k),
+sum_q |q dot (c*w)_q|² <= (sum_k |w_k|)² G(c),
+G(c) = sum_p |p|² |c_p|².
+```
+
+On an output band of radius at least `R`, the squared normalized
+divergence budget gains `R^(-2)`; output zero contributes zero. `G(c)` is
+the same first-derivative energy controlled by the Gaussian Fourier
+patch construction. Fixed transverse projection commutes exactly with
+this localization. The remaining field l1 norm is not scale-uniform.
+
+`PressurePairOutputStability.lean` proves, for arbitrary complex inputs,
+that `|tracePair| |k| |p| <= |k+p|² |w| |v|`. This compensates the
+output-direction symbol's apparent singularity:
+
+```text
+|k| |tracePair(k,p;w,v) [tiltSymbol_e(k+p)-tiltSymbol_e(r)]|
+  <= 8 |k+p-r| |w| |v|.
+```
+
+This is only the **output-symbol part** of the bilinear localization
+commutator. Input-symbol variation and comparison between pressure of
+localized vorticity and localized original pressure remain to be
+controlled. These results do not close the adaptive scale/time budgets,
+the dynamical misalignment estimate, or unconditional regularity.
+`ComplexPressureAudit.lean` checks phases, zero modes, an actual cutoff
+that creates divergence despite perfect line alignment, a sharp
+derivative-energy example, and the axiom closures of all 44 new theorems.
+
 ### Real pressure-pair depletion, including localization divergence
 
 `CoherentPressurePair.lean` retains the cross-product numerator of the
@@ -95,9 +154,9 @@ energy and retains both source/receiver error channels. With
 
 No explicit mode-count or frequency-ratio factor is inserted. The source
 norm is still **l1**, which can grow with scale. These are real bilinear
-pair estimates in a fixed frame, not yet a bound on the actual localized
-complex pressure field. Complex phase identification, the localization
-divergence budget, and scale/time summation remain required. No dynamical
+pair estimates in a fixed frame; the complex and physical coefficient
+extensions are recorded above. Full bilinear localization and scale/time
+summation remain required. No dynamical
 misalignment budget or unconditional regularity theorem follows yet.
 `PressurePairMisalignmentAudit.lean` checks cancellation, the bad-output
 angle family, and the necessity of the divergence condition.
