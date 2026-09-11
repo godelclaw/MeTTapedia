@@ -1,4 +1,5 @@
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeUniformKernelFamily
+import Mettapedia.Analysis.FundamentalDomainPeriodization
 import Mathlib.Algebra.Module.ZLattice.Basic
 import Mathlib.Analysis.Fourier.AddCircleMulti
 import Mathlib.MeasureTheory.Group.FundamentalDomain
@@ -34,140 +35,13 @@ open PancakeUniformKernelFamily
 open Set
 open scoped ENNReal FourierTransform Pointwise
 
-/-- The periodization of a kernel under a countable additive action. -/
-def addPeriodization
-    {G α E : Type*} [AddGroup G] [AddAction G α]
-    [NormedAddCommGroup E]
-    (K : α → E) (x : α) : E :=
-  ∑' g : G, K (g +ᵥ x)
-
-/-- A periodization of a measurable function is measurable. -/
-theorem measurable_addPeriodization
-    {G α E : Type*} [AddGroup G] [Countable G] [AddAction G α]
-    [MeasurableSpace α] [MeasurableConstVAdd G α]
-    [NormedAddCommGroup E] [CompleteSpace E] [SecondCountableTopology E]
-    [MeasurableSpace E] [BorelSpace E]
-    (K : α → E) (hK : Measurable K) :
-    Measurable (addPeriodization (G := G) K) := by
-  exact Measurable.tsum fun g ↦ hK.comp (measurable_const_vadd g)
-
-/-- The cover-side periodization is invariant under every lattice shift. -/
-theorem addPeriodization_vadd
-    {G α E : Type*} [AddCommGroup G] [AddAction G α]
-    [NormedAddCommGroup E]
-    (K : α → E) (g₀ : G) (x : α) :
-    addPeriodization (G := G) K (g₀ +ᵥ x) =
-      addPeriodization (G := G) K x := by
-  unfold addPeriodization
-  calc
-    (∑' g : G, K (g +ᵥ (g₀ +ᵥ x))) =
-        ∑' g : G, K ((g + g₀) +ᵥ x) := by
-      apply tsum_congr
-      intro g
-      rw [add_vadd]
-    _ = ∑' g : G, K (g +ᵥ x) := by
-      simpa only [Equiv.coe_addRight] using
-        (Equiv.addRight g₀).tsum_eq (fun g : G ↦ K (g +ᵥ x))
-
-/-- Periodization does not increase `L¹` mass when measured on a fundamental
-domain.  The statement uses the lower integral, so it also records the bound
-before any separate measurability proof for the vector-valued periodization.
--/
-theorem setLIntegral_enorm_addPeriodization_le
-    {G α E : Type*} [AddGroup G] [Countable G] [AddAction G α]
-    [MeasurableSpace α] [MeasurableConstVAdd G α]
-    {μ : Measure α} [VAddInvariantMeasure G α μ]
-    [NormedAddCommGroup E] [MeasurableSpace E] [BorelSpace E]
-    {s : Set α} (hfund : IsAddFundamentalDomain G s μ)
-    (K : α → E) (hK : Measurable K) :
-    (∫⁻ x in s, ‖addPeriodization (G := G) K x‖ₑ ∂μ) ≤
-      ∫⁻ x, ‖K x‖ₑ ∂μ := by
-  calc
-    (∫⁻ x in s, ‖addPeriodization (G := G) K x‖ₑ ∂μ) ≤
-        ∫⁻ x in s, ∑' g : G, ‖K (g +ᵥ x)‖ₑ ∂μ := by
-      apply lintegral_mono
-      intro x
-      simpa [addPeriodization] using
-        (enorm_tsum_le_tsum_enorm
-          (f := fun g : G ↦ K (g +ᵥ x)))
-    _ = ∑' g : G, ∫⁻ x in s, ‖K (g +ᵥ x)‖ₑ ∂μ := by
-      rw [lintegral_tsum]
-      intro g
-      exact ((hK.comp (measurable_const_vadd g)).enorm).aemeasurable
-    _ = ∫⁻ x, ‖K x‖ₑ ∂μ :=
-      (hfund.lintegral_eq_tsum'' fun x ↦ ‖K x‖ₑ).symm
-
-/-- If the original kernel is integrable, its periodization is integrable on
-one fundamental domain. -/
-theorem integrableOn_addPeriodization
-    {G α E : Type*} [AddGroup G] [Countable G] [AddAction G α]
-    [MeasurableSpace α] [MeasurableConstVAdd G α]
-    {μ : Measure α} [VAddInvariantMeasure G α μ]
-    [NormedAddCommGroup E] [CompleteSpace E] [SecondCountableTopology E]
-    [MeasurableSpace E] [BorelSpace E]
-    {s : Set α} (hfund : IsAddFundamentalDomain G s μ)
-    (K : α → E) (hKmeas : Measurable K) (hKint : Integrable K μ) :
-    IntegrableOn (addPeriodization (G := G) K) s μ := by
-  refine ⟨(measurable_addPeriodization K hKmeas).aestronglyMeasurable, ?_⟩
-  rw [hasFiniteIntegral_iff_enorm]
-  exact lt_of_le_of_lt
-    (setLIntegral_enorm_addPeriodization_le hfund K hKmeas)
-    hKint.hasFiniteIntegral
-
-/-- Unfolding a periodized kernel against a lattice-invariant unit character
-recovers the corresponding integral on the Euclidean cover.  This is the
-fundamental-domain core of the Fourier-coefficient transference theorem. -/
-theorem setIntegral_character_smul_addPeriodization_eq
-    {G α E : Type*} [AddGroup G] [Countable G] [AddAction G α]
-    [MeasurableSpace α] [MeasurableConstVAdd G α]
-    {μ : Measure α} [VAddInvariantMeasure G α μ]
-    [NormedAddCommGroup E] [NormedSpace ℂ E] [CompleteSpace E]
-    [SecondCountableTopology E]
-    [MeasurableSpace E] [BorelSpace E]
-    {s : Set α} (hfund : IsAddFundamentalDomain G s μ)
-    (K : α → E) (hKmeas : Measurable K) (hKint : Integrable K μ)
-    (χ : α → ℂ) (hχmeas : Measurable χ)
-    (hχnorm : ∀ x, ‖χ x‖ = 1)
-    (hχvadd : ∀ (g : G) (x : α), χ (g +ᵥ x) = χ x) :
-    (∫ x in s, χ x • addPeriodization (G := G) K x ∂μ) =
-      ∫ x, χ x • K x ∂μ := by
-  let F : G → α → E := fun g x ↦ χ x • K (g +ᵥ x)
-  have hFmeas (g : G) : AEStronglyMeasurable (F g) (μ.restrict s) := by
-    exact (hχmeas.smul (hKmeas.comp (measurable_const_vadd g))).aestronglyMeasurable
-  have hFenorm (g : G) (x : α) : ‖F g x‖ₑ = ‖K (g +ᵥ x)‖ₑ := by
-    rw [show F g x = χ x • K (g +ᵥ x) by rfl, enorm_smul]
-    have hχenorm : ‖χ x‖ₑ = 1 := by
-      rw [← ofReal_norm (χ x), hχnorm, ENNReal.ofReal_one]
-    rw [hχenorm, one_mul]
-  have hsumFinite :
-      ∑' g : G, ∫⁻ x in s, ‖F g x‖ₑ ∂μ ≠ ∞ := by
-    have hcover :
-        (∑' g : G, ∫⁻ x in s, ‖F g x‖ₑ ∂μ) =
-          ∫⁻ x, ‖K x‖ₑ ∂μ := by
-      simp_rw [hFenorm]
-      exact (hfund.lintegral_eq_tsum'' fun x ↦ ‖K x‖ₑ).symm
-    rw [hcover]
-    exact (hasFiniteIntegral_iff_enorm.mp hKint.hasFiniteIntegral).ne
-  have hweighted : Integrable (fun x ↦ χ x • K x) μ := by
-    apply hKint.bdd_smul 1 hχmeas.aestronglyMeasurable
-    exact Filter.Eventually.of_forall fun x ↦ by rw [hχnorm x]
-  calc
-    (∫ x in s, χ x • addPeriodization (G := G) K x ∂μ) =
-        ∫ x in s, ∑' g : G, F g x ∂μ := by
-      apply integral_congr_ae
-      filter_upwards with x
-      simp only [F, addPeriodization]
-      exact (tsum_const_smul'' (χ x)).symm
-    _ = ∑' g : G, ∫ x in s, F g x ∂μ := by
-      exact integral_tsum hFmeas hsumFinite
-    _ = ∑' g : G, ∫ x in s, (χ (g +ᵥ x) • K (g +ᵥ x)) ∂μ := by
-      apply tsum_congr
-      intro g
-      apply integral_congr_ae
-      filter_upwards with x
-      rw [hχvadd]
-    _ = ∫ x, χ x • K x ∂μ :=
-      (hfund.integral_eq_tsum'' (fun x ↦ χ x • K x) hweighted).symm
+export Mettapedia.Analysis.FundamentalDomainPeriodization
+  (addPeriodization
+    measurable_addPeriodization
+    addPeriodization_vadd
+    setLIntegral_enorm_addPeriodization_le
+    integrableOn_addPeriodization
+    setIntegral_character_smul_addPeriodization_eq)
 
 /-- The standard orthonormal basis of the Euclidean six-space used for the
 two three-dimensional input frequencies. -/
