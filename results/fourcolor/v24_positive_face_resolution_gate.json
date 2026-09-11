@@ -1,0 +1,10 @@
+{
+  "classes": [
+    {"contained": 0, "distinct_supports": 10, "endpoint_pairings": 105, "first_candidate": null, "nonempty": 60, "scalar_multipliers": {"1": 60}, "vertices": 1},
+    {"contained": 0, "distinct_supports": 25, "endpoint_pairings": 135135, "first_candidate": null, "nonempty": 59400, "scalar_multipliers": {"1": 32400, "2": 25920, "6": 1080}, "vertices": 3}
+  ],
+  "controls": {"pentagon_words": 30, "square_words": 15, "triangle_words": 6},
+  "positive_resolution_ruled_out": true,
+  "schema": "fourcolor-positive-face-resolution-v1",
+  "scope": "Complete smaller endpoint-piece gate; no target-class reduction claim."
+}
