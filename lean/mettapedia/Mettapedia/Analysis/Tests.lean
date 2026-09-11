@@ -7,6 +7,7 @@ import Mettapedia.Analysis.CompactRangeCoverTests
 import Mettapedia.Analysis.SqrtEnergyAbsorptionTests
 import Mettapedia.Analysis.BilinearSeriesTests
 import Mettapedia.Analysis.DyadicAnnulusTests
+import Mettapedia.Analysis.DyadicLowPassTests
 import Mettapedia.Analysis.BilinearKernelIntegrabilityTests
 import Mettapedia.Analysis.SquaredWeightLocalizationTests
 import Mettapedia.Analysis.SchwartzLinearChangeTests
