@@ -25,6 +25,23 @@ def tailLocalization (N : ℝ) (hN : 0 < N) (J : ℕ) (e : R3)
     (f g : C(T3, C3)) (c d : C(T3, ℂ)) : C(T3, C3) :=
   (c * d) • tailOperator N hN J e f g - tailOperator N hN J e (c • f) (d • g)
 
+/-- Moving scalar factors inside both inputs retains the actual
+localization residual. No spatial derivative or frequency estimate is
+needed for this algebraic step. -/
+theorem norm_weighted_action_sq_le (N : ℝ) (hN : 0 < N) (J : ℕ) (e : R3)
+    (f g : C(T3, C3)) (c d : C(T3, ℂ)) (x : T3) :
+    ‖c x‖ ^ 2 * ‖d x‖ ^ 2 * ‖tailOperator N hN J e f g x‖ ^ 2 ≤
+      2 * ‖tailOperator N hN J e (c • f) (d • g) x‖ ^ 2 +
+        2 * ‖tailLocalization N hN J e f g c d x‖ ^ 2 := by
+  let a : C3 := (c x * d x) • tailOperator N hN J e f g x
+  let b : C3 := tailOperator N hN J e (c • f) (d • g) x
+  have hid : tailLocalization N hN J e f g c d x = a - b := rfl
+  have hs := pow_le_pow_left₀ (norm_nonneg a) (norm_le_norm_sub_add a b) 2
+  rw [← hid] at hs
+  have h : ‖a‖ ^ 2 ≤ 2 * ‖b‖ ^ 2 + 2 * ‖tailLocalization N hN J e f g c d x‖ ^ 2 := by
+    nlinarith only [hs, sq_nonneg (‖tailLocalization N hN J e f g c d x‖ - ‖b‖)]
+  simpa only [a, b, norm_smul, norm_mul, mul_pow, mul_assoc] using h
+
 theorem hasSum_tailLocalization (N : ℝ) (hN : 0 < N) (J : ℕ) (e : R3) (he : ‖e‖ = 1)
     (f g : C(T3, C3)) (c d : C(T3, ℂ)) :
     HasSum (fun j : ℕ ↦ localization N hN (J + j) e f g c d)
