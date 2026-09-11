@@ -81,6 +81,12 @@ theorem integrable_complexify (f : T3 → R3) (hf : Integrable f) :
   intro i
   exact Complex.ofRealCLM.integrable_comp (hf.eval_piLp i)
 
+theorem memLp_complexify (f : T3 → R3) {p : ENNReal} (hf : MemLp f p) :
+    MemLp (fun x ↦ complexifyVector (f x)) p := by
+  apply MemLp.of_eval_piLp
+  intro i
+  exact Complex.ofRealCLM.comp_memLp' (hf.eval_piLp i)
+
 theorem integrable_character_smul {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
     (f : T3 → E) (hf : Integrable f) (q : Wavevector) :
     Integrable (fun x ↦ UnitAddTorus.mFourier q x • f x) :=

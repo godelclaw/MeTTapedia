@@ -7,6 +7,8 @@ Reusable analysis, independent of any particular fluid construction.
 | Module | Mathematical content | Scope |
 | --- | --- | --- |
 | `BilinearKernelIntegrability.lean` | Integrable operator kernels act on bounded strongly measurable fields; compact continuous fields supply all needed bounds | Real or complex normed spaces; kernel continuity and absolute input Fourier summability are not required |
+| `WeightedIntegralEnergy.lean` | Weighted Cauchy–Schwarz and the squared norm of an actual Bochner integral bounded by mass times weighted energy | Nonnegative integrable weights, including zero mass; almost-everywhere strongly measurable inputs |
+| `BilinearTranslatedKernel.lean` | Bilinear L¹ kernels acting on one L² input and one bounded measurable input, in either slot; almost-everywhere integrability, representative independence, and an L² input-difference estimate | Measurable additive commutative groups with a right-invariant s-finite measure; actual translated integrals, no input Fourier-summability hypothesis |
 | `BilinearCoefficientSums.lean` | Coordinatewise convergent coefficient sums reconstruct a convergent series of bilinear operators | Independent finite Euclidean input and output index sets; actual `HasSum`, not a formal series |
 | `BilinearRankOne.lean` | Continuous bilinear map `(u,v) -> f(u) g(v) w` with exact norm `norm(f) norm(g) norm(w)` | Any nontrivially normed scalar field and normed input/output spaces; no finite-dimensionality assumption |
 | `DyadicAnnulus.lean` | Finite overlap, dyadic invariance, positivity, and punctured smoothness of the annulus normalizer | Any real normed space admitting smooth bumps; the normalizer lies between one and three away from zero |
