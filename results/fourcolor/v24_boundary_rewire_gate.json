@@ -1,0 +1,12 @@
+{
+  "rows": [
+    {"cases": 1, "changed_cycle_count": 0, "points": 0},
+    {"cases": 2, "changed_cycle_count": 0, "points": 1},
+    {"cases": 10, "changed_cycle_count": 2, "points": 2},
+    {"cases": 96, "changed_cycle_count": 40, "points": 3},
+    {"cases": 1560, "changed_cycle_count": 878, "points": 4},
+    {"cases": 39120, "changed_cycle_count": 25148, "points": 5}
+  ],
+  "schema": "fourcolor-boundary-rewire-v1",
+  "scope": "Exhaustive finite permutation control; generic proof is separate."
+}
