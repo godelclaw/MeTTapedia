@@ -14593,3 +14593,92 @@ non-pumping reductions, or a theorem genuinely using non-colourability
 remain possible. What is excluded is rescuing this generic full-support
 counting argument merely by adjusting size and width. The fixed ledger
 remains $57/100$.
+
+\subsection{Physical contexts do not by themselves give a small exact code}
+\label{sec:physical-context-bits}
+
+The unrestricted support lower bound uses singleton suffixes which need
+not be physically realizable. A different construction shows that an
+exponential lower bound survives for a particular family of literal
+physical contexts, without frozen colours or abstract singleton tests.
+It does not establish such a lower bound for the admissible
+minimal-counterexample contexts.
+
+Use four ports in cyclic order. Piece $A$ is two digons, pairing ports
+$01\mid23$; piece $B$ pairs $03\mid12$. Both pieces have four cubic
+vertices and four internal edges. Piece $T$ is a triangle with a stem
+to a fourth vertex: ports $0,1$ attach to two triangle vertices and
+ports $2,3$ to the stem's far endpoint. The remaining triangle vertex
+meets the stem. Its four interior edges also join distinct vertices.
+Explicit dart involutions and cyclic vertex rotations construct all
+three as \texttt{OpenTangleData}.
+
+An $A$-extension has $w_0=w_1$, since each digon forces its two port
+colours equal. A $T$-extension has $w_0\ne w_1$, by the triangle's
+proper-colouring constraints. Their supports cannot meet. Conversely
+$B$ and $T$ have a common extension, for example over boundary word
+$(r,b,b,r)$. Both $A$ and $B$ can be closed colourably by an $A$ piece.
+These claims are proved on the actual dart-incidence predicates.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalContextBits.a_rejected}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalContextBits.b_accepted}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalContextBits.neutral_exists}
+
+For $s\in\{0,1\}^n$, let $P_s$ be the disjoint union of $n$ pieces,
+using $A$ or $B$ according to each bit. Let context $C_i$ use $T$ at
+block $i$ and $A$ everywhere else. Reflect the exterior rotations before
+gluing the identically labelled ports. The resulting literal sewn
+rotation system is cubic, and
+\[
+  \operatorname{TaitColorable}(C_i\circ P_s)
+  \quad\Longleftrightarrow\quad s_i=1.
+\]
+The proof transports the block colourings through the existing physical
+Count/gluing equivalence; it is not a new uninterpreted acceptance
+predicate. Every entire boundary word is retained. There are $4n$ ports,
+$4n$ vertices on each side, and no vertex-free wire components.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalContextBits.block_realizes_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalContextBits.physical_test}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalContextBits.sewn_cubic}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalContextBits.port_card}
+
+If a deterministic code answers all these physical tests exactly, equality
+of codes implies equality of every bit. Thus it needs at least $2^n$
+states at width $4n$. This is smaller than the full powerset bound but
+still exponential. For $n\ge16$ it already exceeds
+$4(4n)^2+2(4n)+2$, the full-set chain bound from the split-grid family.
+The two families are different: this comparison limits a \emph{uniform}
+exact code for all these pieces, not a quotient restricted to the states
+actually attained on one split-grid sweep.
+The distinction is about the number of semantic states, not their storage:
+the family is represented by just $n$ bits. Symbolic representations may
+remain efficient without reducing the number relevant to pigeonholing.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalContextBits.exact_code_injective}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalContextBits.two_pow_le_card_code}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalContextBits.exponential_exceeds_quadratic}
+
+\paragraph{The admissibility boundary is essential.}
+The rejecting $A$--$T$ closure has a bridge (the stem). Other neutral
+blocks may be separate components. Accordingly these tests do not belong
+to a family of connected bridgeless minimal-counterexample splices.
+Planarity alone does not imply this stronger admissibility, and the
+lower bound must not be transferred to that class. A target-restricted
+quotient, an exterior-dependent replacement, or a one-sided support
+simulation remains possible. Each requires its own constructive
+soundness and physical class-preservation proof; exact coding of every
+planar physical context is a stronger requirement.
+
+The pre-formalization gate checks the three ordered-disc embeddings by
+adding a terminal cycle and verifying the explicit dart rotation and
+Euler count, then checks the four elementary closures componentwise.
+Their colouring counts are respectively $144,48,0,24$ for $AA,BA,AT,BT$;
+the direct closed-edge search agrees with independent composition of
+local extensions. Only $AT$ has a bridge. A crossing port-order control
+fails the disc check. Two-block closures are also searched directly, and
+the generated bit tests are checked through six bits. These geometric
+embedding receipts are computational checks, not a new general Lean
+planarity theorem. The generic physical colourability and code bounds
+above are kernel theorems. Receipt:
+\texttt{results/fourcolor/v24\_planar\_context\_code\_gate.json}.
+This narrows the semantic-compression alternative but discharges no
+global reduction or generating-base obligation; the ledger remains
+$57/100$.
