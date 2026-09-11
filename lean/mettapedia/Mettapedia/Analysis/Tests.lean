@@ -50,6 +50,7 @@ import Mettapedia.Analysis.FiniteCoefficientEnergy
 import Mettapedia.Analysis.FiniteResolventEnergy
 import Mettapedia.Analysis.QuadraticWeightStability
 import Mettapedia.Analysis.GaussianPartitionTests
+import Mettapedia.Analysis.GaussianAmplitudeOverlapTests
 import Mettapedia.Analysis.UnitTorusFourierTests
 import Mettapedia.Analysis.EuclideanCrossProduct
 import Mettapedia.Analysis.EuclideanCrossProductCalculus
