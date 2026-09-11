@@ -16003,3 +16003,77 @@ an exterior-dependent relation, or retaining such pieces among generators
 changes the question and still requires a genuine global descent and
 coverage proof. No configuration catalogue or target-class exclusion is
 constructed. The fixed ledger remains $57/100$.
+
+\subsection{The five-port context tensor retains one positive obstruction}
+\label{sec:pentagon-context-tensor}
+
+Failure of a context-independent positive resolution leaves a different
+possibility: use constraints on the exterior's count vector. The next gate
+tests the signed $\delta\epsilon$ span with its cyclic boundary sign,
+coordinatewise nonnegativity, and abstract noncrossing Kempe closure.
+It does not identify this relaxation with actual plane exteriors.
+
+Five-port admissible words have colour multiplicities $(3,1,1)$.
+Modulo colour relabelling, their ten coordinates are indexed by the two
+singleton positions in the order
+\[
+  01,02,03,04,12,13,14,23,24,34.
+\]
+For each pair $ij$, the signed elementary tensor is
+$\delta(w_i,w_j)\epsilon(w_a,w_b,w_c)$, with $a<b<c$ the other
+positions. Correct its sign using any compatible adjacent wire and the
+complementary Y; the gate checks independence of that choice on all sixty
+admissible words. The displayed span has rank six. Its coordinate
+vectors satisfy
+\[
+\begin{split}
+ -f_0+f_1-f_2+f_3&=0,\qquad -f_0+f_4-f_5+f_6=0,\\
+ -f_1+f_4-f_7+f_8&=0,\qquad -f_2+f_5-f_7+f_9=0.
+\end{split}
+\]
+\Sverified{Mettapedia.GraphTheory.FourColor.PentagonContextTensor.tensor_relations}
+Vanishing on the pentagon coordinates $0,3,4,7,9$ forces
+\[
+             f=t(0,1,1,0,0,1,1,0,1,0).
+\]
+Nonnegativity says only $t\geq0$, not $t=0$.
+\Sverified{Mettapedia.GraphTheory.FourColor.PentagonContextTensor.positive_ray_of_relations}
+An explicit integer combination of three elementary tensors realizes
+the vector with $t=1$. On every genuine three-colour boundary word it
+is one exactly when the word is admissible and rejected by the pentagon,
+and zero otherwise.
+\Sverified{Mettapedia.GraphTheory.FourColor.PentagonContextTensor.adversary_value}
+\Sverified{Mettapedia.GraphTheory.FourColor.PentagonContextTensor.adversary_nonzero}
+
+There is a more directly physical description. Write $B$ for this vector,
+$P$ for the pentagon count, $Y_r$ for the five cyclic Y-with-wire counts,
+and $T_r$ for the five cyclic three-vertex tree counts. Pointwise,
+\[
+              B=\sum_{r=0}^4Y_r-2P,
+       \qquad 3B=\sum_{r=0}^4T_r-P.
+\]
+\Sverified{Mettapedia.GraphTheory.FourColor.PentagonContextTensor.signed_physical_identity}
+\Sverified{Mettapedia.GraphTheory.FourColor.PentagonContextTensor.signed_connected_identity}
+Thus even connected plane controls span the obstruction: disconnected
+wires are not its cause. No homogeneous linear functional vanishing on
+those six connected count profiles can exclude $B$.
+\Sverified{Mettapedia.GraphTheory.FourColor.PentagonContextTensor.no_homogeneous_separator}
+
+The independent gate also checks all ninety word/colour-pair cases of
+abstract Kempe closure: for each rejected word and colour pair there is
+a noncrossing matching of the active ports for which switching any union
+of pairs stays in the thirty-word rejected support. This closure check,
+the ranks, and the gauge-choice audit are program checks, not additional
+Lean theorems. The signed identities, all-word values, and ray implication
+are kernel-checked. The gate checks all $3^5$ words, calibrates fifteen
+cyclic plane controls, and tests colour equivariance and boundary order.
+
+This isolates a loss of information, not a counterexample to the route.
+The vector is not claimed to be an actual plane exterior. Its existence
+rules out using just the stated linear identities, positivity and
+abstract closure to force a pentagon extension. A useful further argument
+must add a genuine restriction on simultaneous physical realization,
+an additional inequality, or a different global compositional reduction.
+No particular mesh geometry, catalogue, or new execution trust follows.
+The generating-base and global-descent obligations remain open and the
+fixed ledger remains $57/100$.
