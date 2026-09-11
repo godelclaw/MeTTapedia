@@ -1,6 +1,8 @@
 import Mettapedia.Analysis.ODE.QuadraticFormBound
 import Mettapedia.Analysis.NormalizationConvolutionTests
 import Mettapedia.Analysis.FiniteVectorConvolutionTests
+import Mettapedia.Analysis.RadialSquareRootTests
+import Mettapedia.Analysis.RootPartitionEnergyTests
 import Mettapedia.Analysis.ODE.AbsolutelyContinuousComparison
 import Mettapedia.Analysis.ODE.VariableGronwall
 import Mettapedia.Analysis.LogarithmicScaleBound
