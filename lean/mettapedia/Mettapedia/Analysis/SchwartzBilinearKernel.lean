@@ -67,6 +67,12 @@ theorem norm_assemble_le (s : K → I → J → 𝓢(X, ℂ)) (x : X) :
   exact norm_reconstruct_le _
 
 omit [DecidableEq I] [DecidableEq J] in
+theorem assemble_sub (s t : K → I → J → 𝓢(X, ℂ)) :
+    assemble (fun i j l ↦ s i j l - t i j l) = assemble s - assemble t := by
+  ext x
+  simp [assemble_apply, reconstruct, sub_smul, Finset.sum_sub_distrib]
+
+omit [DecidableEq I] [DecidableEq J] in
 theorem moment_assemble_le (s : K → I → J → 𝓢(X, ℂ)) (m : ℕ) :
     (∫ x : X, ‖x‖ ^ m * ‖assemble s x‖) ≤
       ∑ i, ∑ j, ∑ l, ∫ x : X, ‖x‖ ^ m * ‖s i j l x‖ := by

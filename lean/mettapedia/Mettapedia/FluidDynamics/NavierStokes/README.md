@@ -76,7 +76,7 @@ fractions of a completed proof.
 | Step | Obligation and completion test | Status and present evidence |
 | --- | --- | --- |
 | S1. Actual equation and objects | Construct the solution, stochastic/material objects, and frequency decomposition from arbitrary admissible data; derive every evolution identity used later from the actual unforced equation. Track the periodic and Euclidean realizations separately. | **Partial.** The local periodic solution, common-interval material flow, vorticity and strain equations are constructed; see `StochasticLagrangian/LocalMaterialVorticity.lean`, `LocalMaterialStrain.lean`, and `LocalSpectralResidual.lean`. This is not a complete arbitrary-data stochastic/Euclidean realization. |
-| S2. Spatial field transfer | Transfer the coherent/misaligned geometry to the actual localized operator fields, retaining uniform kernel constants and the inverse-scale gain through integration and limits. | **Partial.** Exact dyadic kernels, common envelopes, and integrated localization budgets are checked. `PressureHighInputJointSource.lean` reconstructs the complete high-input pressure operator pointwise in the actual joint source, retaining a finite low-input complement. `GaussianRootHighInputBudget.lean` localizes this actual operator directly. Transferring the moving spectral direction to frozen patch directions with the needed angular gain, and controlling the other interactions, remain required. |
+| S2. Spatial field transfer | Transfer the coherent/misaligned geometry to the actual localized operator fields, retaining uniform kernel constants and the inverse-scale gain through integration and limits. | **Partial.** `PressureHighInputJointSource.lean` reconstructs the complete high-input pressure operator in the actual joint source, retaining a finite low-input complement. `GaussianRootHighInputBudget.lean` localizes it directly. `GaussianRootDirectionFreezing.lean` now transfers the moving direction to actual adaptive patch directions with a squared unoriented-line error and quarter-geometric tail gain. Combining this pointwise transfer with the localized coherent/misaligned sector bounds, spatial measurability, and the signed evolution estimate remains required. |
 | S3. All scales and sectors | Sum over input scales and pay for the other frequency interactions, angular tails, collision sectors, and adaptive cutoff terms without uncontrolled scale, patch-count, or regularization losses. | **Partial.** `PressureHighInputAction.lean` sums all high-input scales in bilinear operator norm. `GaussianRootHighInputBudget.lean` retains the quarter-geometric tail gain after localization and spatial integration, with explicit vorticity-supremum and patch-gradient costs. `PressureHighInputComplement.lean` identifies the remaining input sector as an exact finite sum. Finite support does not establish a uniform or dynamically affordable bound. The other sectors, scale-critical time control, and regularization limits are open. |
 | S4. Dynamical misalignment budget | Prove the signed time-integrated nonlinear estimate from the actual unforced evolution, with bounds that remain finite up to any candidate finite singular time. Construct `MisalignmentStrainBudget`, rather than pass it in as a hypothesis. | **Open; decisive mathematical core.** `LocalExcessAlignmentEnergy.lean` supplies an actual-data absorption inequality with explicit source costs. `MisalignmentRefinedPin.lean` proves a conditional reduction, not the required dynamical budget. |
 | S5. Vorticity control and continuation | Construct the spatial essential-supremum vorticity integrand, prove its finite-time integral is controlled by the preceding estimates, and apply the continuation theorem to the actual solution. | **Open.** Continuation target surfaces and conditional reductions exist. The current `||omega||_sup² sqrt(G)` spatial cost is not yet a controlled BKM integrand. |
@@ -334,8 +334,9 @@ R_(>=J,i) = c_i^2 T_(N,>=J,e_i)(omega,omega)
 ```
 
 This is the localization of the infinite operator sum itself, not only a
-series of upper bounds. The remaining direction-freezing/sector estimates
-and the time control of `W` and `G` are not supplied by this theorem. The
+series of upper bounds. The direction-freezing estimate below is a separate
+argument; the remaining sector estimates and time control of `W` and `G`
+are not supplied by this theorem. The
 low-input complement's finiteness likewise does not make its cost uniform
 in the input threshold or bounded up to a singular time.
 
@@ -343,6 +344,55 @@ in the input threshold or bounded up to a singular time.
 `-96/40768625` at threshold zero, the half-sized value `-48/40768625`
 after raising the threshold, the complementary input weights, the actual
 operator value at a spatial point, and zero output for full inputs.
+
+### Direction freezing with the actual high-input kernel gain
+
+`PressureDirectionSecant.lean` uses the linear-minus-cubic dependence of the
+normalized pressure symbol on its direction. A cubic-exact centered
+derivative stencil and Simpson identity construct a smooth secant family
+with the same compact frequency support. The symbol difference equals the
+direction gap times this secant, including coincident directions. Uniform
+inverse-Fourier moments follow from this exact identity, not from a
+pointwise multiplier comparison.
+
+`PressureDirectionKernel.lean` and `PressureDirectionOperatorKernel.lean`
+carry the gain through the physical coordinate changes, finite bilinear
+assembly, and actual periodization:
+
+```text
+integral |K_(N,rho,e) - K_(N,rho,f)|       <= C0 * rho^2 * |e-f|,
+integral |x| |K_(N,rho,e) - K_(N,rho,f)|   <= C1 * (rho/N) * |e-f|.
+```
+
+`PressureDirectionAction.lean` sums the actual operators in both output
+and input indices, proving
+
+```text
+||T_(N,>=J,e) - T_(N,>=J,f)||_bilinear <= C * 4^(-J) * |e-f|.
+```
+
+The constant is independent of positive `N`, unit directions, and input
+threshold `J`. `PressureDirectionParity.lean` proves the exact reversal
+identity `T_(-e) = -T_e` for full continuous fields. Consequently the norm
+freezing estimate uses the unoriented distance
+`min(|e-f|^2, |e+f|^2)`, not a globally continuous choice of eigenvector sign.
+
+`GaussianRootDirectionFreezing.lean` constructs the actual adaptive root
+partition from the strain and vorticity, with `Q = sum_i c_i^4` and its
+weighted line error at most `epsilon^2`. At every spatial point,
+
+```text
+Q(x) * |T_(N,>=J,e(x))(omega,omega)(x)|^2
+  <= 2 * sum_i c_i(x)^4 * |T_(N,>=J,e_i)(omega,omega)(x)|^2
+     + 2 * (C * 4^(-J))^2 * ||omega||_infinity^4 * epsilon^2.
+```
+
+No patch-count factor enters this transfer. This is a pointwise estimate
+for the constructed high-input operator, not yet a signed time-integrated
+bound for the full source. The frozen fields still need their localized
+coherent/misaligned sector estimates. Making the angular tolerance smaller
+also changes the partition-gradient cost in the localization estimate;
+the error cannot be treated as arbitrarily small at no other expense.
 
 `GaussianRootIntegrableKernelBudget.lean` applies the weighted root-patch
 difference estimate to these actual kernels, retaining vorticity factors

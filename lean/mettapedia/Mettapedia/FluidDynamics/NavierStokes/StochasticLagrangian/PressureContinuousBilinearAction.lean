@@ -101,4 +101,30 @@ theorem norm_bilinearAction_le (K : T6 → Op) (hK : Integrable K) :
     ‖bilinearAction K hK‖ ≤ ∫ q : T6, ‖K q‖ :=
   LinearMap.mkContinuous₂_norm_le _ (integral_nonneg (fun _ ↦ norm_nonneg _)) _
 
+theorem bilinearAction_congr_ae (K L : T6 → Op) (hK : Integrable K) (hL : Integrable L)
+    (h : K =ᵐ[volume] L) : bilinearAction K hK = bilinearAction L hL := by
+  apply ContinuousLinearMap.ext
+  intro f
+  apply ContinuousLinearMap.ext
+  intro g
+  apply ContinuousMap.ext
+  intro x
+  apply integral_congr_ae
+  filter_upwards [h] with q hq
+  rw [hq]
+
+theorem bilinearAction_sub_kernel (K L : T6 → Op) (hK : Integrable K) (hL : Integrable L) :
+    bilinearAction (fun q ↦ K q - L q) (hK.sub hL) = bilinearAction K hK - bilinearAction L hL := by
+  apply ContinuousLinearMap.ext
+  intro f
+  apply ContinuousLinearMap.ext
+  intro g
+  apply ContinuousMap.ext
+  intro x
+  change (∫ q : T6, (K q - L q) (f (x - firstTorusDisplacement q))
+    (g (x - secondTorusDisplacement q))) = _
+  simp only [sub_apply]
+  exact integral_sub (integrable_action_integrand K f g x hK f.continuous g.continuous)
+    (integrable_action_integrand L f g x hL f.continuous g.continuous)
+
 end Mettapedia.FluidDynamics.NavierStokes.PressureContinuousBilinearAction
