@@ -1,0 +1,129 @@
+{
+  "boundary_only_negative": [
+    1,
+    0,
+    2,
+    5
+  ],
+  "receipts": [
+    {
+      "bands": 3,
+      "complement_component_counts": {
+        "0": 1,
+        "1": 2
+      },
+      "complete_boundary_edges_checked": 10,
+      "disjoint_pairs": 0,
+      "frequency": 1,
+      "mark_checks": 211,
+      "shortened_paths": 10,
+      "trimmed_paths": 15
+    },
+    {
+      "bands": 15,
+      "complement_component_counts": {
+        "0": 1,
+        "1": 8,
+        "2": 6
+      },
+      "complete_boundary_edges_checked": 160,
+      "disjoint_pairs": 15,
+      "frequency": 2,
+      "mark_checks": 516,
+      "shortened_paths": 50,
+      "trimmed_paths": 60
+    },
+    {
+      "bands": 36,
+      "complement_component_counts": {
+        "0": 1,
+        "1": 14,
+        "2": 21
+      },
+      "complete_boundary_edges_checked": 630,
+      "disjoint_pairs": 126,
+      "frequency": 3,
+      "mark_checks": 616,
+      "shortened_paths": 135,
+      "trimmed_paths": 150
+    },
+    {
+      "bands": 66,
+      "complement_component_counts": {
+        "0": 1,
+        "1": 20,
+        "2": 45
+      },
+      "complete_boundary_edges_checked": 1600,
+      "disjoint_pairs": 495,
+      "frequency": 4,
+      "mark_checks": 756,
+      "shortened_paths": 280,
+      "trimmed_paths": 300
+    },
+    {
+      "bands": 105,
+      "complement_component_counts": {
+        "0": 1,
+        "1": 26,
+        "2": 78
+      },
+      "complete_boundary_edges_checked": 3250,
+      "disjoint_pairs": 1365,
+      "frequency": 5,
+      "mark_checks": 936,
+      "shortened_paths": 700,
+      "trimmed_paths": 720
+    },
+    {
+      "bands": 153,
+      "complement_component_counts": {
+        "0": 1,
+        "1": 32,
+        "2": 120
+      },
+      "complete_boundary_edges_checked": 5760,
+      "disjoint_pairs": 3060,
+      "frequency": 6,
+      "mark_checks": 1156,
+      "shortened_paths": 1100,
+      "trimmed_paths": 1125
+    },
+    {
+      "bands": 210,
+      "complement_component_counts": {
+        "0": 1,
+        "1": 38,
+        "2": 171
+      },
+      "complete_boundary_edges_checked": 9310,
+      "disjoint_pairs": 5985,
+      "frequency": 7,
+      "mark_checks": 1416,
+      "shortened_paths": 1620,
+      "trimmed_paths": 1650
+    },
+    {
+      "bands": 276,
+      "complement_component_counts": {
+        "0": 1,
+        "1": 44,
+        "2": 231
+      },
+      "complete_boundary_edges_checked": 14080,
+      "disjoint_pairs": 10626,
+      "frequency": 8,
+      "mark_checks": 1716,
+      "shortened_paths": 2275,
+      "trimmed_paths": 2310
+    }
+  ],
+  "schema": "fourcolor-v24-protected-contour-band-v1",
+  "scope": "geometric controls; no width bound or zero-Count descent",
+  "touching_windows_negative": [
+    1,
+    0,
+    1,
+    2
+  ]
+}
