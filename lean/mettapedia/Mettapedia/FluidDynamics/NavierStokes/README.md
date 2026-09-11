@@ -90,11 +90,40 @@ and all 27 basis entries. `PressureDyadicAudit.lean` checks a nonzero band
 coefficient `-48/40768625`, its reconstructed sum `-96/40768625`, and zero
 output.
 
-The original overlapping-cutoff operator and periodization developments
-below remain unchanged. Applying their generic assembly and periodic-transfer
-machinery to this new exact-partition family remains to be done. Full-field
-integrable-kernel action, the other frequency sectors, and the root-weighted
-dynamical scale/time budget are also open. This is not global NS regularity.
+### Corrected periodic operators and continuous full-field action
+
+`PressureDyadicOperatorKernel.lean` assembles the corrected scalar kernels
+into a complex-bilinear operator-valued Schwartz kernel.
+`PressureDyadicPeriodization.lean` transfers it to the unit six-torus with
+the exact lattice Fourier coefficients, summable operator-norm masses,
+and summed wrapped first moments bounded by `C/N`. Both input displacements
+are accounted for; their combined moment is bounded by twice the Euclidean
+first moment. The original overlapping-cutoff family below is unchanged.
+
+`Analysis/BilinearKernelIntegrability.lean` and
+`PressureIntegrableKernelAction.lean` establish the actual Bochner action
+using only operator-norm integrability of the kernel. Arbitrary continuous
+complex fields produce continuous output; no absolute summability of their
+Fourier coefficients is assumed. The exact two-input localization identity
+and its weighted difference bound hold in this integrable-kernel setting.
+
+`PressureDyadicAction.lean` proves absolute convergence of the actual
+output-band actions in the continuous-field supremum norm, with a bound
+`C * ||f||_infinity * ||g||_infinity` independent of input scale and unit
+frozen direction. The full band sum retains the exact localization identity.
+On Fourier monomials it reconstructs the retained low-output pressure
+coefficient, including zero output. `PressureDyadicActionAudit.lean` checks
+nonzero periodic coefficients, actual nonzero monomial actions, double
+imaginary phase, their reconstructed sum, and full-field convergence.
+
+`GaussianRootIntegrableKernelBudget.lean` applies the weighted root-patch
+difference estimate to these actual kernels, retaining vorticity factors
+without inverse vorticity magnitude or an assumed scalar-root gradient.
+This makes the per-band localization bound integrable, not dynamically
+affordable. Summing input scales, the other frequency sectors, and the
+signed root-weighted dynamical scale/time budget remain open. The
+supremum-norm action bound is not a scale-critical continuation estimate.
+This is not global NS regularity.
 
 ### Periodic low-output pressure with wrapped spatial moments
 
