@@ -393,6 +393,46 @@ difference `|c_i(x)-c_i(y)| |omega(y)|` using scalar-factor and vorticity
 differences, with no inverse vorticity magnitude. The finite pressure-kernel
 integration of this estimate is proved above.
 
+`Analysis/SquaredWeightLocalization.lean` gives another estimate that avoids
+derivatives of the scalar roots. For real `a,b,c` with `b*c >= 0`, it proves
+
+```text
+(a-b*c)² <= (a-b²)² + (a-c²)².
+```
+
+The difference between the right and left sides equals
+`(a-b²-c²+b*c)² + 2*b*c*(b-c)²`. Applying this with `a=c_i(x)²` and summing
+controls the squared bilinear localization errors by
+
+```text
+L² |omega(y)|² |omega(z)|² *
+  (sum_i (c_i(x)²-c_i(y)²)² + sum_i (c_i(x)²-c_i(z)²)²),
+```
+
+provided each patch's bilinear operator has norm at most `L` at that input
+pair. There is no additional patch-count multiplier.
+`GaussianSquaredRootLocalization.lean` instantiates this for the actual
+nonnegative Gaussian roots. Their squares satisfy `c_i² = kappa*p_i`, where
+`p_i` are the original Gaussian patches, and their real lifts are locally
+Lipschitz, including at vorticity zeros. The actual coordinate derivatives
+satisfy, Haar almost everywhere,
+
+```text
+sum_i |d(c_i²)|² <= 2 |d kappa|² sum_i p_i² + 2 kappa² sum_i |d p_i|².
+```
+
+The generic product estimate is in `Analysis/ScaledPartitionDerivative.lean`.
+The gate and patch-gradient costs remain explicit. This is not yet an
+integrated, scale-uniform pressure bound: when kernels depend on patch
+directions, a common integrable pointwise kernel envelope still has to be
+constructed. Uniform integral bounds for the individual kernels do not
+alone provide that envelope. The weighted translation estimates and signed
+time-integrated dynamical budget are also not discharged here.
+`Analysis/SquaredWeightLocalizationTests.lean` and
+`GaussianSquaredRootAudit.lean` check the sharp zero-weight case, the
+failure for opposite-sign weights, nonzero complex errors, actual product
+derivatives, and vorticity-zero endpoints, and audit the theorem axioms.
+
 `Analysis/RootPartitionEnergy.lean` and `GaussianRootEnergy.lean` prove a
 summed weighted derivative bound for the actual fields, Haar almost
 everywhere. For `b = kappa / sqrt(gbar)`, coordinate-projector map `M`,
