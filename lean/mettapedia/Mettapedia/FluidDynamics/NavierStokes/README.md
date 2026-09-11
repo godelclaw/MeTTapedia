@@ -58,6 +58,44 @@ regularity, blowup, or any other Millennium-problem conclusion.
 
 ## Current Status
 
+### Exact low-output dyadic reconstruction with actual kernel costs
+
+`PressureDyadicSymbol.lean` replaces both annular cutoffs by the smooth
+normalized cutoff `eta`, whose integer dyadic dilates sum to one away from
+zero. A globally smooth correction multiplies the existing pressure symbol,
+preserving its exact algebra and common compact support.
+`PressureDyadicKernel.lean` proves fresh inverse-Fourier moment bounds for
+the corrected symbols. No Fourier-kernel norm comparison is inferred from
+the pointwise inequality between corrected and original cutoffs.
+
+`PressureDyadicPhysicalKernel.lean` transfers these new scalar-entry kernels
+to the original input coordinates and any positive input scale `N`.
+`PressureDyadicPartition.lean` proves
+
+```text
+rho_n = 2^(-n)/256,
+sum_n Fourier(K_(N,rho_n,e;w,v,i))(k,p)
+  = eta(k/N) * pressurePair(e,k,p;w,v,i),
+                       whenever |k+p| <= N/256,
+sum_n integral |K_(N,rho_n,e;i,j,l)|       <= C_0,
+sum_n integral |x| |K_(N,rho_n,e;i,j,l)(x)| <= C_1/N.
+```
+
+The first statement is an actual `HasSum` identity for the Fourier
+transforms of the constructed Schwartz kernels. It includes exact zero
+output, where the pressure coefficient vanishes; the annular partition
+itself is never asserted to sum to one at zero. The last two statements
+include summability and constants uniform in `N`, unit frozen direction,
+and all 27 basis entries. `PressureDyadicAudit.lean` checks a nonzero band
+coefficient `-48/40768625`, its reconstructed sum `-96/40768625`, and zero
+output.
+
+The original overlapping-cutoff operator and periodization developments
+below remain unchanged. Applying their generic assembly and periodic-transfer
+machinery to this new exact-partition family remains to be done. Full-field
+integrable-kernel action, the other frequency sectors, and the root-weighted
+dynamical scale/time budget are also open. This is not global NS regularity.
+
 ### Periodic low-output pressure with wrapped spatial moments
 
 `PressureLowOutputPeriodization.lean` constructs an actual integrable
@@ -86,9 +124,10 @@ uniformly in input scale and frozen unit direction.
 `PressurePeriodizationAudit.lean` checks the periodic seam, a quarter-period
 wrapped distance, the attained two-input factor, complex phases, and a
 nonzero periodized Fourier entry equal to `-1/130052`.
-This closes periodic transfer for these low-output bands. Exact band
-decomposition, the other frequency sectors, and the root-weighted dynamical
-scale/time budget remain open; integrability here is not a claim of
+This closes periodic transfer for the original overlapping low-output bands.
+The distinct exact-partition family is supplied above, but its connection
+to this periodic operator interface remains open. The other frequency sectors
+and root-weighted dynamical scale/time budget remain open; integrability here is not a claim of
 pointwise continuity of the orbit sum or global NS regularity.
 
 ### Actual complex pressure operators with summable low-output band costs
@@ -122,8 +161,9 @@ constant and by a constant divided by `N`, respectively.
 single- and double-imaginary phases, a nonzero low-output pressure entry,
 and exact cancellation at opposite frequencies. This closes scalar-to-operator
 reconstruction, not the decomposition of the full pressure into bands.
-Periodic transfer is supplied above. Exact partition of unity, the other
-frequency sectors, and the scale/time-weighted localization budget remain open.
+Periodic transfer for these overlapping bands is supplied above. The corrected
+partition family is separate; its operator assembly, the other frequency
+sectors, and the scale/time-weighted localization budget remain open.
 
 ### Physical low-output pressure band costs at every input scale
 
@@ -151,8 +191,9 @@ proved to preserve the pressure-pair amplitude, including negative scales.
 `PressureLowOutputDyadicBudget.lean` proves actual summability of band-kernel
 mass and first moments over `rho_n = 2^(-n)/256`. Their sums are bounded by
 a constant and a constant divided by `N`, respectively. This is not yet a
-reconstruction theorem: the overlapping cutoffs have not been promoted to
-an exact partition of unity. Complex-bilinear reconstruction is supplied above;
+reconstruction theorem for these original overlapping cutoffs. The exact
+partition and its new scalar kernels are supplied separately above.
+Complex-bilinear reconstruction of the original bands is supplied above;
 periodic transfer is also supplied above. The other frequency sectors and
 root-weighted scale/time budget remain open. `PressurePhysicalKernelAudit.lean` checks cancellation, orientation,
 geometric sums, and a physical Fourier entry equal to `-1/130052`.
