@@ -15765,10 +15765,72 @@ connected. The independent topology gate covers five controls and $60$
 reindexings. Petersen passes these topology checks, so neither the filter
 nor these controls establish planarity or colourability.
 
-This supplies concrete coverage, colourability and primal-topology
-components for the base work, not the completed base reflection.
-Spherical admissibility still needs a filter with proved coverage, and the resulting
-bad-state audit must actually succeed. No spherical filter, optimized
-closure, explicit global reduction threshold, or successful finite-base
-audit is asserted here. No full structural or topological envelope has
-been enumerated. The fixed obligation ledger remains $57/100$.
+\paragraph{The supplied rotation and spherical admissibility.}
+The incidence trace is now augmented by the edge-flip and vertex-rotation
+permutations on $\operatorname{Fin}(n)\times\operatorname{Fin}(3)$.
+The actual source darts are bijective with these positions: a dart is
+located by its vertex and incident-edge index. Conjugating $\alpha$ and
+$\rho$ along this bijection constructs the encoded rotation; no embedding
+search or preferred geometric pattern is required. Facial cycles are
+the cycles of $\rho\alpha$, with singleton cycles retained. The executable
+cycle count equals the source map's quotient-face count.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedCubicColourTrace.encodeRotation_faceCount}
+
+The admissibility check includes incidence validity, edge-flip compatibility,
+absence of self-loops, one cyclic rotation per vertex, primal connectivity,
+bridge-freeness and the Euler equation $n-m+F=2$. On an actual cubic
+rotation map, acceptance is equivalent to inhabiting the existing structural
+class \texttt{BridgelessSphericalCubicMapData}.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedCubicColourTrace.encodeRotation_admissible_iff}
+In particular, every bounded map in the target class has its actual code in
+the executable \texttt{sphericalEnvelope}. Coverage is constructed for every
+symbolic bound, including arbitrary finite source universes.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedCubicColourTrace.rotationTrace_mem_sphericalEnvelope}
+
+\paragraph{The concrete base consumer.}
+The generic spherical base reflection is now instantiated with this finite
+code space, its admissibility filter and its actual colouring test.
+Writing
+\[
+ \operatorname{Bad}_B
+   =\{C\in\operatorname{sphericalEnvelope}(B):
+                    \operatorname{Col}(C)=\mathrm{false}\},
+\]
+the remaining input to that consumer is precisely the finite audit
+$\operatorname{Bad}_B=\varnothing$, equivalently
+\texttt{baseAudit B = true}. It implies the existing
+\texttt{TaitBaseVerifiedAt B}; trace coverage and colourability adequacy are
+no longer extra hypotheses of this numerical consumer.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedCubicColourTrace.taitBaseVerifiedAt_of_baseAudit}
+This is not a converse asserting that every raw accepted code has been
+realized by a graph-backed simple map. A sound covering set suffices for
+the base consumer.
+
+\paragraph{Controls and the size boundary.}
+On the same two-vertex, three-parallel-edge incidence graph, opposite vertex
+rotations have three face cycles and pass the spherical check, whereas
+equal vertex rotations have one face cycle and are rejected.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedCubicColourTrace.Controls.parallelSphere_admissible}
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedCubicColourTrace.Controls.parallelTorus_not_admissible}
+The pre-registered rotation gate checks $1108$ orientation assignments
+across four control graphs and $48$ dart reindexings. These are
+representation checks, not a census of the target base.
+
+The deliberately uncompressed raw carrier has
+\[
+ \sum_{n=0}^{B}\sum_{m=0}^{\lfloor3B/2\rfloor}
+               m^{3n}\bigl((3n)!\bigr)^2
+\]
+elements before validation. At $B=2$ this is already $411610900$, proved by
+the cardinality formula and kernel arithmetic without enumerating the
+carrier.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedCubicColourTrace.raw_code_count_two}
+Only the vacuous full audits at bounds zero and one have been evaluated;
+there is no connected loopless cubic map in either domain.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedCubicColourTrace.baseAudit_one}
+No audit at a useful reduction threshold, efficient generation, optimized
+interface closure, or global reduction is asserted. The raw carrier count
+measures this representation, not an intrinsic lower bound on the cost of
+the route. It motivates generation of valid data and removal of redundant
+labellings before a substantial computation. The fixed obligation ledger
+remains $57/100$.
