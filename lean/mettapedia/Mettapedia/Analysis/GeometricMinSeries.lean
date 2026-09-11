@@ -100,4 +100,40 @@ theorem tsum_min_half_pow_le {A D : ℝ} (hA : 0 ≤ A) (hD : 0 ≤ D) :
   norm_num at h
   exact h
 
+/-- A nonnegative sequence below a scaled capped geometric sequence is summable,
+with the same explicit logarithmic cost. -/
+theorem tsum_le_logarithmic_of_nonneg_of_le {a : ℕ → ℝ} {C A D : ℝ}
+    (hC : 0 ≤ C) (hA : 0 ≤ A) (hD : 0 ≤ D) (ha : ∀ m, 0 ≤ a m)
+    (hle : ∀ m, a m ≤ C * min (A * (1 / 2 : ℝ) ^ m) D) :
+    Summable a ∧ (∑' m, a m) ≤ C * D * (3 + Real.log (1 + A / D) / Real.log 2) := by
+  have hs := (summable_min hA hD (by norm_num : (0 : ℝ) ≤ 1 / 2)
+    (by norm_num : (1 / 2 : ℝ) < 1)).mul_left C
+  have hsa := Summable.of_nonneg_of_le ha hle hs
+  refine ⟨hsa, ?_⟩
+  calc
+    _ ≤ ∑' m : ℕ, C * min (A * (1 / 2 : ℝ) ^ m) D := hsa.tsum_le_tsum hle hs
+    _ = C * ∑' m : ℕ, min (A * (1 / 2 : ℝ) ^ m) D := tsum_mul_left
+    _ ≤ C * (D * (3 + Real.log (1 + A / D) / Real.log 2)) :=
+      mul_le_mul_of_nonneg_left (tsum_min_half_pow_le hA hD) hC
+    _ = _ := by ring
+
+/-- A second geometric input index can be summed without losing the logarithmic
+gain from the capped output index. Both summability claims are included. -/
+theorem iterated_tsum_le_logarithmic_of_nonneg_of_le {a : ℕ → ℕ → ℝ} {C A D : ℝ}
+    (hC : 0 ≤ C) (hA : 0 ≤ A) (hD : 0 ≤ D) (ha : ∀ j m, 0 ≤ a j m)
+    (hle : ∀ j m, a j m ≤ C * (1 / 2 : ℝ) ^ j * min (A * (1 / 2 : ℝ) ^ m) D) :
+    (∀ j, Summable (a j)) ∧ Summable (fun j ↦ ∑' m, a j m) ∧
+      (∑' j, ∑' m, a j m) ≤ 2 * C * D * (3 + Real.log (1 + A / D) / Real.log 2) := by
+  have hi (j : ℕ) := tsum_le_logarithmic_of_nonneg_of_le
+    (mul_nonneg hC (pow_nonneg (by norm_num : (0 : ℝ) ≤ 1 / 2) j)) hA hD (ha j) (hle j)
+  let B := C * D * (3 + Real.log (1 + A / D) / Real.log 2)
+  have hs := hasSum_geometric_two.mul_left B
+  have hj (j : ℕ) : (∑' m, a j m) ≤ B * (1 / 2 : ℝ) ^ j :=
+    (hi j).2.trans_eq (by dsimp [B]; ring)
+  have ho := Summable.of_nonneg_of_le (fun j ↦ tsum_nonneg (ha j)) hj hs.summable
+  refine ⟨fun j ↦ (hi j).1, ho, ?_⟩
+  have h := ho.tsum_le_tsum hj hs.summable
+  rw [hs.tsum_eq] at h
+  exact h.trans_eq (by dsimp [B]; ring)
+
 end Mettapedia.Analysis.GeometricMinSeries

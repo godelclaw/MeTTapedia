@@ -6,6 +6,7 @@ import Mettapedia.Analysis.ContinuousFieldMinkowskiTests
 import Mettapedia.Analysis.CompactRangeCoverTests
 import Mettapedia.Analysis.SqrtEnergyAbsorptionTests
 import Mettapedia.Analysis.BilinearSeriesTests
+import Mettapedia.Analysis.BilinearRankOneTests
 import Mettapedia.Analysis.DyadicAnnulusTests
 import Mettapedia.Analysis.DyadicLowPassTests
 import Mettapedia.Analysis.DyadicHighPassTests
