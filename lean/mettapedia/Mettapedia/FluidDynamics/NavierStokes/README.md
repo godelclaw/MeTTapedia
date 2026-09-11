@@ -125,6 +125,53 @@ signed root-weighted dynamical scale/time budget remain open. The
 supremum-norm action bound is not a scale-critical continuation estimate.
 This is not global NS regularity.
 
+### One integrable envelope for every frozen pressure direction
+
+`Analysis/CompactFourierEnvelope.lean` strengthens the compact-family
+moment estimate to one continuous nonnegative majorant, with any prescribed
+integrable spatial moment. It constructs a polynomially decaying envelope
+from the already proved uniform inverse-Fourier decay. No supremum is
+exchanged with an integral.
+
+`Analysis/DensityLinearChange.lean` transfers nonnegative integrable
+densities through linear changes with the exact absolute Jacobian.
+`PressureDyadicEnvelope.lean` applies these results to the corrected pressure
+symbols and assembles the actual complex-bilinear operator kernels. The
+resulting envelope is independent of the unit frozen direction.
+
+`FrequencyPairEnvelope.lean` and `PressurePeriodicEnvelope.lean` periodize
+the envelope itself. For each input scale `N > 0` there are nonnegative
+measurable functions `M_(N,n)` such that, on one full-Haar-measure set,
+
+```text
+for every output band n and every unit direction e:
+  ||K_(N,n,e)(q)|| <= M_(N,n)(q).
+
+sum_n integral M_(N,n)             <= C0,
+sum_n integral |q| * M_(N,n)(q)     <= C1 / N.
+```
+
+Both series are summable. The constants are independent of `N`, the frozen
+directions, and adaptive patch count. Before summing, the mass and first
+moment retain the gains `ratio²` and `ratio/N`. Summability of the envelope's
+lattice translates supplies a common exceptional set even for the uncountable
+unit sphere; separate exceptional sets for individual directions are not used.
+
+`GaussianRootEnvelope.lean` uses this kernel envelope in a bound for the actual
+Gaussian root-patch localization integrands, with both translated full-vorticity
+inputs and the actual center directions. Its final existential theorem includes
+the envelope construction and summable costs; kernel domination is not an
+additional hypothesis of that theorem. The squared-weight differences remain
+on the right-hand side. Their weighted translation estimates, the input-scale
+sum, and the signed time-integrated dynamical estimate are still open. In
+particular, an integrable envelope does not by itself assert integrability of
+its square or close the spatially integrated squared-error estimate.
+
+`Analysis/CompactFourierEnvelopeTests.lean` and `PressureEnvelopeAudit.lean`
+check exact tail values, a nontrivial Jacobian-weighted dilation, the zero-ratio
+boundary, and simultaneous domination across an uncountable amplitude family
+and all dyadic bands. They also print the new theorem axioms.
+
 ### Periodic low-output pressure with wrapped spatial moments
 
 `PressureLowOutputPeriodization.lean` constructs an actual integrable
@@ -422,12 +469,12 @@ sum_i |d(c_i²)|² <= 2 |d kappa|² sum_i p_i² + 2 kappa² sum_i |d p_i|².
 ```
 
 The generic product estimate is in `Analysis/ScaledPartitionDerivative.lean`.
-The gate and patch-gradient costs remain explicit. This is not yet an
-integrated, scale-uniform pressure bound: when kernels depend on patch
-directions, a common integrable pointwise kernel envelope still has to be
-constructed. Uniform integral bounds for the individual kernels do not
-alone provide that envelope. The weighted translation estimates and signed
-time-integrated dynamical budget are also not discharged here.
+The gate and patch-gradient costs remain explicit. The common integrable
+pointwise kernel envelope is now constructed in `PressurePeriodicEnvelope.lean`
+and applied in `GaussianRootEnvelope.lean`, as described above. It comes from
+uniform Fourier decay, not merely from the integral bounds for the individual
+kernels. The weighted translation estimates and signed time-integrated
+dynamical budget are not discharged here.
 `Analysis/SquaredWeightLocalizationTests.lean` and
 `GaussianSquaredRootAudit.lean` check the sharp zero-weight case, the
 failure for opposite-sign weights, nonzero complex errors, actual product
