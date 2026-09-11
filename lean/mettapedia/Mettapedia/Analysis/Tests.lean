@@ -47,6 +47,7 @@ import Mettapedia.Analysis.QuadraticWeightStability
 import Mettapedia.Analysis.GaussianPartitionTests
 import Mettapedia.Analysis.UnitTorusFourierTests
 import Mettapedia.Analysis.EuclideanCrossProduct
+import Mettapedia.Analysis.EuclideanCrossProductCalculus
 import Mettapedia.Analysis.FiniteTwoChannelConvolutionEnergy
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.InnerProductSpace.Adjoint
