@@ -58,6 +58,76 @@ regularity, blowup, or any other Millennium-problem conclusion.
 
 ## Current Status
 
+### Root-weighted vorticity and exact fourth-power coverage
+
+`GaussianRootVorticity.lean` constructs scalar root patches `c_i` and
+actual weighted fields `c_i * omega` from the existing adaptive Gaussian
+cover. Write `kappa` for the gap ramp, `gbar = max(gap, gamma)`, and
+`theta_i` for the normalized Gaussian amplitudes, with `sum theta_i² = 1`.
+The construction is
+
+```text
+c_i = kappa / sqrt(gbar) * sqrt(|omega|) * sqrt(theta_i),
+a_i = kappa / sqrt(gbar) * sqrt(theta_i),
+c_i * omega = a_i * (sqrt(|omega|) * omega).
+```
+
+`GaussianRootPartition.lean` proves
+
+```text
+sum c_i⁴ = kappa⁴ |omega|² / gbar² = W4.
+```
+
+It retains the old cover's line-freezing error bound without adding a
+patch-count factor. The real lifts of the weighted vorticities are locally
+Lipschitz, including at zero vorticity. `Analysis/RadialSquareRoot.lean`
+proves the needed generic radial regularity and an actual zero derivative
+at the origin. **The scalar root patch itself is not asserted to be locally
+Lipschitz or to have a square-integrable derivative.**
+
+`GaussianRootDifferentiation.lean` proves, Haar almost everywhere, the
+actual coordinate derivative bound
+
+```text
+|d(c_i * omega)|² <= 2 |d a_i|² |omega|³ + 8 a_i² |omega| |d omega|².
+```
+
+`GaussianRootDifference.lean` also bounds the weighted two-point cutoff
+difference `|c_i(x)-c_i(y)| |omega(y)|` using scalar-factor and vorticity
+differences, with no inverse vorticity magnitude. Pressure-kernel
+integration is not part of this two-point estimate.
+
+`Analysis/RootPartitionEnergy.lean` and `GaussianRootEnergy.lean` prove a
+summed weighted derivative bound for the actual fields, Haar almost
+everywhere. For `b = kappa / sqrt(gbar)`, coordinate-projector map `M`,
+and any selected center `M_k`, put `E_N = |M-M_k|² + tau log(N)`. Then
+
+```text
+sum c_i² |d(c_i * omega)|²
+  <= 2 b² (d b)² |omega|⁴
+   + b⁴ E_N |d M|² |omega|⁴ / (2 tau²)
+   + 8 b⁴ |omega|² |d omega|².
+```
+
+The proof differentiates the **squares** of the root factors and uses the
+Gaussian normalization's exact cross-term cancellation. There is no added
+linear patch-count multiplier. The existing logarithmic count/temperature
+dependence and actual gap-factor and projector derivatives are retained;
+this is not a scale-uniform bound.
+
+The added gap ramp is paid for explicitly in `QuarticGapTiltWeight.lean`.
+The source split still uses the actual joint nonviscous remainder; its
+collision cost becomes `(1-kappa⁴) 2 |R| |omega|²`, which equals the old
+cost plus `kappa² (1-kappa²) 2 |R| |omega|²`. The old and new weights agree
+where the gate is one. The transition cost is not declared small.
+
+This repairs the **weight factorization and weighted-field regularity**.
+It does not yet justify applying the scalar-cutoff gradient estimate below
+to `c_i`: a weighted pressure commutator, compatible Fourier approximation,
+and scale/time-uniform bounds for the retained costs remain open. No
+unconditional regularity theorem follows. `GaussianRootAudit.lean` and
+`Analysis/RadialSquareRootTests.lean` audit these statements and boundaries.
+
 ### Two-input pressure localization and the exact spatial weight
 
 `PressureTwoInputLocalization.lean` now proves the actual finite identity
@@ -96,10 +166,12 @@ the commutator energy is at most
 `PressureTwoInputReconstruction.lean` proves the exact spatial product
 identity and its Parseval energy identity. **Using the same cutoff twice
 produces the fourth-power energy weight `|c|⁴`, not `|c|²`.** Thus this
-two-input estimate does not yet supply the earlier Gaussian quadratic
-weight estimate. The weight factorization, cutoff Fourier-l1 cost,
-scale-uniform field norms, and time-integrated inverse-gap budget remain
-open analytic work. No unconditional regularity theorem is claimed.
+two-input estimate does not by itself supply the earlier Gaussian quadratic
+weight estimate. The root construction above supplies a fourth-power
+factorization for a quartic-gated variant with its added collision cost
+retained. Its weighted commutator, cutoff Fourier-l1 cost, scale-uniform
+field norms, and time-integrated inverse-gap budget remain open analytic
+work. No unconditional regularity theorem is claimed.
 `PressureTwoInputAudit.lean` checks constant-cutoff scaling, frequency
 shifts to zero, independently shifted inputs, and created divergence.
 
