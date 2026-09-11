@@ -58,6 +58,34 @@ regularity, blowup, or any other Millennium-problem conclusion.
 
 ## Current Status
 
+### Uniform low-output pressure moments in normalized coordinates
+
+`PressureLowOutputCoordinates.lean` writes the receiver frequency as
+`rho * q - k`, exposing the exact factor `rho²` in the pressure-pair symbol.
+The identity includes `rho = 0`; it does not assume a small output angle.
+`PressureLowOutputCutoff.lean` constructs input/output annuli and buffered
+denominators that are globally positive and exactly physical wherever the
+retained cutoff is nonzero. The cutoff equals one on the target annuli.
+
+`PressureLowOutputSymbol.lean` constructs the resulting actual complex-valued
+Schwartz entries, jointly smooth in the ratio parameter and frozen direction.
+`PressureLowOutputKernel.lean` proves uniform moments of their inverse Fourier
+transforms. For every natural moment order `m`, one constant controls all 27
+real-basis entries, all unit frozen directions, and `0 <= rho <= 1/256`:
+
+```text
+integral |x|^m |K_retained(rho,e;i,j,l)(x)| dx <= rho² C_m.
+```
+
+These transforms use **input/normalized-output coordinates**, not the original
+two-input coordinates. The physical shear/dilation, its first-moment loss,
+complex-bilinear reconstruction, periodization, other frequency sectors, and
+the all-scale/time budget remain to be joined. In particular this is not yet
+a frequency-uniform bound for the full physical pressure localization error.
+`PressureLowOutputAudit.lean` tests the ratio endpoints, exact cancellation,
+receiver collisions outside the cutoff, and a nonzero normalized limiting
+symbol; the estimate is not obtained by choosing a zero cutoff.
+
 ### Full-field coefficient selection and the retained physical pressure
 
 `PressureKernelCoefficientAction.lean` proves that a finite pressure kernel
