@@ -15872,3 +15872,64 @@ bound is still empty. No useful reduction threshold or substantive
 simple-map base audit is established. Incidence labelling remains highly
 redundant, and the global descent is independently open. The ledger is
 unchanged.
+
+\subsection{Scalar normalization does not make exact tangle counts finite}
+\label{sec:projective-tangle-count}
+
+The source's digon and pendant two-cut laws multiply all relevant counts
+by a common factor. This suggests an algebraic alternative to a finite
+exact-Count image: retain relative multiplicities but identify matrices
+that differ by an overall positive scalar. That alternative still has an
+infinite image, already on a single physical serial-composition family
+with two ports at each end.
+
+The generating rung has two cubic vertices joined by an interior edge,
+with an input and output port at each vertex. For monochromatic input
+and output pairs with nonzero colours $c,d$, there is exactly one extension
+if $c\ne d$, and none otherwise. The file constructs the literal tangle
+and identifies its colouring cardinality with the executable extension
+count, rather than postulating a transfer matrix.
+\Sverified{Mettapedia.GraphTheory.FourColor.ProjectiveTangleCount.count_rung}
+Serial gluing preserves cubicity, and the existing physical gluing
+bijection supplies the exact count convolution.
+\Sverified{Mettapedia.GraphTheory.FourColor.ProjectiveTangleCount.series_cubic}
+The constructed \texttt{chain n} consists of $n+1$ such rungs; its actual
+colouring row from a fixed monochromatic input is the iterated transfer
+row.
+\Sverified{Mettapedia.GraphTheory.FourColor.ProjectiveTangleCount.chain_row}
+
+For $2r$ rungs, this row is
+\[
+ D+a_r U,\qquad a_0=0,\qquad a_{r+1}=4a_r+1,
+\]
+where $D$ singles out the input colour on the output pair, and $U$
+indicates all three monochromatic nonzero output words. Thus its
+distinguished and other monochromatic entries are $a_r+1$ and $a_r$.
+\Sverified{Mettapedia.GraphTheory.FourColor.ProjectiveTangleCount.row_even}
+If positive integer multiples of two such rows are equal, subtracting
+these two entries first equates the multipliers; strict growth of $a_r$
+then equates the lengths. This also rules out equality after positive
+rational normalization by clearing denominators.
+\Sverified{Mettapedia.GraphTheory.FourColor.ProjectiveTangleCount.projective_row_injective}
+Consequently no finite code can identify these physical chains while
+retaining the row up to positive rescaling.
+\Srefuted{Mettapedia.GraphTheory.FourColor.ProjectiveTangleCount.no_finite_projective_chain_code}
+
+This is not an obstruction to Boolean support: every positive even-length
+row has the same support, namely the three monochromatic nonzero words.
+\Sverified{Mettapedia.GraphTheory.FourColor.ProjectiveTangleCount.even_row_support}
+It refutes the proposed scalar-normalized \emph{exact-count} repair, not
+the already proved zero-Count support laws, a target-restricted invariant,
+or the global compositional route. No claim is made that these colourable
+controls occur in a least counterexample.
+
+The pre-registered independent gate enumerates all colourings of the
+literal ladders of lengths one through eight. At even lengths it finds
+the pairs $(2,1),(6,5),(22,21),(86,85)$, and checks colour equivariance and
+constant support. The rectangular drawings have an explicit four-terminal
+boundary completion; its rotation cycles pass Euler characteristic two
+and a facial terminal-cycle check in all eight controls. The kernel
+statement records the actual cubic tangles and their serial compositions,
+not an additional rotation-system sphericity theorem. This separation of
+the count proof and the geometric controls is intentional. No fixed
+ledger obligation is discharged: earned completion remains $57/100$.

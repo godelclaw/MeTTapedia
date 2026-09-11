@@ -1,0 +1,14 @@
+{
+  "cases": [
+    {"completed_faces": 5, "diagonal": 0, "full_colorings": 12, "off_diagonal": 1, "rungs": 1, "vertices": 2},
+    {"completed_faces": 6, "diagonal": 2, "full_colorings": 18, "off_diagonal": 1, "rungs": 2, "vertices": 4},
+    {"completed_faces": 7, "diagonal": 2, "full_colorings": 30, "off_diagonal": 3, "rungs": 3, "vertices": 6},
+    {"completed_faces": 8, "diagonal": 6, "full_colorings": 54, "off_diagonal": 5, "rungs": 4, "vertices": 8},
+    {"completed_faces": 9, "diagonal": 10, "full_colorings": 102, "off_diagonal": 11, "rungs": 5, "vertices": 10},
+    {"completed_faces": 10, "diagonal": 22, "full_colorings": 198, "off_diagonal": 21, "rungs": 6, "vertices": 12},
+    {"completed_faces": 11, "diagonal": 42, "full_colorings": 390, "off_diagonal": 43, "rungs": 7, "vertices": 14},
+    {"completed_faces": 12, "diagonal": 86, "full_colorings": 774, "off_diagonal": 85, "rungs": 8, "vertices": 16}
+  ],
+  "scope": "Physical planar tangle count normalization; no least-counterexample supplier.",
+  "status": "pass"
+}
