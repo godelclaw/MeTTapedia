@@ -2,6 +2,7 @@ import Mettapedia.Analysis.UnitTorusL2Projection
 import Mettapedia.Analysis.UnitTorusFourierApproximation
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PressureL2KernelAction
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PressureKernelFourier
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PressureKernelSwap
 
 /-!
 # Reconstructing weak-input pressure identities from Fourier coefficients
@@ -134,5 +135,23 @@ theorem smul_kernelAction_eq_ae
     (Mettapedia.Analysis.UnitTorusFourierApproximation.dense_polynomial_range g)
   rintro _ ⟨⟨Q, v⟩, rfl⟩
   exact smul_toLpAction_polynomial_eq K L hK hL f d hf hd z hc Q v
+
+/-- Second-slot reconstruction by a proved displacement-and-input change of variables. -/
+theorem smul_kernelAction_eq_ae_right
+    (K L : T6 → Op) (hK : Integrable K) (hL : Integrable L)
+    (f : C(T3, C3)) (g d : T3 → C3) (hg : MemLp g 2) (hd : MemLp d 2) (z : ℂ)
+    (hc : ∀ k p : Wavevector, ∀ v : C3,
+      z • (UnitAddTorus.mFourierCoeff K (pairWavevector k p)
+        v (UnitAddTorus.mFourierCoeff g p)) =
+      UnitAddTorus.mFourierCoeff L (pairWavevector k p) v (UnitAddTorus.mFourierCoeff d p)) :
+    (fun x ↦ z • kernelAction K f g x) =ᵐ[volume] kernelAction L f d := by
+  have h := smul_kernelAction_eq_ae (PressureKernelSwap.swapKernel K) (PressureKernelSwap.swapKernel L)
+    (PressureKernelSwap.integrable_swapKernel K hK) (PressureKernelSwap.integrable_swapKernel L hL)
+    g d hg hd f z (fun k p v ↦ ?_)
+  · filter_upwards [h] with x hx
+    simpa only [PressureKernelSwap.kernelAction_swapKernel] using hx
+  · rw [PressureKernelSwap.mFourierCoeff_swapKernel_apply K hK,
+      PressureKernelSwap.mFourierCoeff_swapKernel_apply L hL]
+    exact hc p k v
 
 end Mettapedia.FluidDynamics.NavierStokes.PressureL2FourierReconstruction
