@@ -37,4 +37,14 @@ theorem integral_mul_le (p q : C(X, ℂ)) (f : X → ℝ) (hf : Continuous f)
     have hb := mul_le_mul_of_nonneg_left (hB x) (sq_nonneg ‖p x - q x‖)
     nlinarith only [hm, hb]
 
+/-- Composing two approximations charges both physical squared errors.
+No orthogonality between the errors is assumed. -/
+theorem integral_sub_sq_le (p q r : C(X, ℂ)) :
+    (∫ x, ‖p x - r x‖ ^ 2 ∂mu) ≤
+      2 * (∫ x, ‖p x - q x‖ ^ 2 ∂mu) + 2 * (∫ x, ‖q x - r x‖ ^ 2 ∂mu) := by
+  have h := integral_mul_le mu (p - r) (q - r) (fun _ ↦ 1) continuous_const
+    (fun _ ↦ by norm_num) 1 (fun _ ↦ le_rfl)
+  simp only [ContinuousMap.coe_sub, Pi.sub_apply, sub_sub_sub_cancel_right, mul_one] at h
+  linarith only [h]
+
 end Mettapedia.Analysis.QuadraticWeightStability

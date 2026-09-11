@@ -51,6 +51,7 @@ example :
 #print axioms Mettapedia.Analysis.FiniteResolventEnergy.second_energy_smooth_le
 #print axioms Mettapedia.Analysis.FiniteResolventEnergy.error_energy_le
 #print axioms Mettapedia.Analysis.QuadraticWeightStability.integral_mul_le
+#print axioms Mettapedia.Analysis.QuadraticWeightStability.integral_sub_sq_le
 
 open Set MeasureTheory Mettapedia.Analysis Mettapedia.Analysis.ODE
 open scoped ContDiff RealInnerProductSpace
