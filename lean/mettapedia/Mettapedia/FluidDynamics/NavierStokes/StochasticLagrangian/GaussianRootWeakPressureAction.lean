@@ -1,5 +1,6 @@
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PressureL2KernelAction
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.GaussianRootWeakDivergence
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PressureCoherentWeakFieldTransfer
 
 /-!
 # Pressure kernels applied to the actual root-vorticity weak derivative
@@ -118,5 +119,19 @@ theorem secondDerivativeAction_energy_le (N : ℝ) (hN : 0 < N) (t : ℝ) (e : R
     (kernelAction_memLp_two_and_energy_le_right _ (integrable_periodicKernel N hN t e .undifferentiated)
       (rootInput gamma hg chi modes u hu centers hc tau i) _
       (memLp_derivativeInput gamma hg chi modes u hu centers hc tau i j)).2.2
+
+/-- Identification with the actual weak derivative, including the Fourier normalization. -/
+theorem first_channel_eq_ae (N : ℝ) (hN : 0 < N) (t : ℝ) (e : R3) (j : Fin 3) :
+    (fun x ↦ (PancakePeriodicVorticityEquation.unitTorusDerivativePhase * (N : ℂ)) •
+      kernelAction (periodicKernel N hN t e (.first j))
+        (rootInput gamma hg chi modes u hu centers hc tau i)
+        (rootInput gamma hg chi modes u hu centers hc tau i) x) =ᵐ[volume]
+      firstDerivativeAction gamma hg chi modes u hu centers hc tau i N hN t e j :=
+  PressureCoherentWeakFieldTransfer.first_channel_eq_ae N hN t e j
+    (rootVorticity gamma chi modes u centers tau i)
+    (continuous_rootVorticity gamma hg chi modes u
+      (summable_fourierMoment_of_le u (by omega : 1 ≤ 2) hu) centers hc tau i)
+    (locallyLipschitz_rootVorticity gamma hg chi modes u hu centers hc tau i)
+    (rootInput gamma hg chi modes u hu centers hc tau i)
 
 end Mettapedia.FluidDynamics.NavierStokes.GaussianRootWeakPressureAction

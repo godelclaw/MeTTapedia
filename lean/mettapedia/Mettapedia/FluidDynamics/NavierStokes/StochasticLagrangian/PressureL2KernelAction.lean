@@ -1,4 +1,5 @@
 import Mettapedia.Analysis.BilinearTranslatedKernel
+import Mettapedia.Analysis.L2IntegralEnergy
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PressureIntegrableKernelAction
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PressureCoherentChannelPeriodization
 
@@ -16,7 +17,8 @@ noncomputable section
 
 namespace Mettapedia.FluidDynamics.NavierStokes.PressureL2KernelAction
 
-open MeasureTheory PancakeBilinearPeriodization PressureKernelAction
+open MeasureTheory Filter PancakeBilinearPeriodization PressureKernelAction
+open scoped Topology
 open Mettapedia.Analysis.BilinearTranslatedKernel
 open PressureCoherentDivergenceChannel (Factor)
 open PressureCoherentChannelPeriodization
@@ -63,6 +65,81 @@ theorem kernelAction_congr_ae (K L : T6 → Op) (hKL : K =ᵐ[volume] L)
     kernelAction K f g =ᵐ[volume] kernelAction L f' g' :=
   action_congr_ae K L hKL firstTorusDisplacement secondTorusDisplacement
     (by fun_prop) (by fun_prop) f f' g g' hf hg
+
+theorem kernelAction_sub_left_energy_le (K : T6 → Op) (hK : Integrable K)
+    (f f' : T3 → C3) (g : C(T3, C3)) (hf : MemLp f 2) (hf' : MemLp f' 2) :
+    (∫ x : T3, ‖kernelAction K f g x - kernelAction K f' g x‖ ^ 2) ≤
+      (∫ q : T6, ‖K q‖) ^ 2 * ‖g‖ ^ 2 * ∫ x : T3, ‖f x - f' x‖ ^ 2 :=
+  action_sub_left_energy_le K hK firstTorusDisplacement secondTorusDisplacement
+    (by fun_prop) (by fun_prop) f f' g hf hf' g.continuous.aestronglyMeasurable
+    (norm_nonneg _) g.norm_coe_le_norm
+
+theorem kernelAction_sub_right_ae (K : T6 → Op) (hK : Integrable K)
+    (f : T3 → C3) (g g' : C(T3, C3)) (hf : MemLp f 2) :
+    kernelAction K f ⇑(g - g') =ᵐ[volume]
+      fun x ↦ kernelAction K f g x - kernelAction K f g' x := by
+  filter_upwards [(kernelAction_memLp_two_and_energy_le K hK f g hf).1,
+    (kernelAction_memLp_two_and_energy_le K hK f g' hf).1] with x hx hx'
+  simp only [kernelAction, ContinuousMap.sub_apply, map_sub]
+  exact integral_sub hx hx'
+
+theorem kernelAction_sub_right_energy_le (K : T6 → Op) (hK : Integrable K)
+    (f : T3 → C3) (g g' : C(T3, C3)) (hf : MemLp f 2) :
+    (∫ x : T3, ‖kernelAction K f g x - kernelAction K f g' x‖ ^ 2) ≤
+      (∫ q : T6, ‖K q‖) ^ 2 * ‖g - g'‖ ^ 2 * ∫ x : T3, ‖f x‖ ^ 2 := by
+  have h := (kernelAction_memLp_two_and_energy_le K hK f (g - g') hf).2.2
+  convert h using 1
+  apply integral_congr_ae
+  filter_upwards [kernelAction_sub_right_ae K hK f g g' hf] with x hx
+  rw [hx]
+
+/-- The L² class of the actual pressure integral. -/
+def toLpAction (K : T6 → Op) (hK : Integrable K)
+    (f : T3 → C3) (hf : MemLp f 2) (g : C(T3, C3)) : Lp C3 2 (volume : Measure T3) :=
+  (kernelAction_memLp_two_and_energy_le K hK f g hf).2.1.toLp (kernelAction K f g)
+
+theorem coeFn_toLpAction (K : T6 → Op) (hK : Integrable K)
+    (f : T3 → C3) (hf : MemLp f 2) (g : C(T3, C3)) :
+    ⇑(toLpAction K hK f hf g) =ᵐ[volume] kernelAction K f g :=
+  (kernelAction_memLp_two_and_energy_le K hK f g hf).2.1.coeFn_toLp
+
+theorem smul_toLpAction_eq_iff (K L : T6 → Op) (hK : Integrable K) (hL : Integrable L)
+    (f d : T3 → C3) (hf : MemLp f 2) (hd : MemLp d 2) (g : C(T3, C3)) (z : ℂ) :
+    z • toLpAction K hK f hf g = toLpAction L hL d hd g ↔
+      (fun x ↦ z • kernelAction K f g x) =ᵐ[volume] kernelAction L d g := by
+  have ha : ⇑(z • toLpAction K hK f hf g) =ᵐ[volume]
+      fun x ↦ z • kernelAction K f g x := by
+    filter_upwards [Lp.coeFn_smul z (toLpAction K hK f hf g),
+      coeFn_toLpAction K hK f hf g] with x hx hy
+    simp only [hx, Pi.smul_apply, hy]
+  have hb := coeFn_toLpAction L hL d hd g
+  constructor
+  · intro h
+    rw [h] at ha
+    exact ha.symm.trans hb
+  · intro h
+    exact Lp.ext (ha.trans (h.trans hb.symm))
+
+theorem tendsto_toLpAction_left {ι : Type*} {l : Filter ι}
+    (K : T6 → Op) (hK : Integrable K) (f : ι → T3 → C3) (f' : T3 → C3)
+    (hf : ∀ i, MemLp (f i) 2) (hf' : MemLp f' 2) (g : C(T3, C3))
+    (h : Tendsto (fun i ↦ ∫ x : T3, ‖f i x - f' x‖ ^ 2) l (𝓝 0)) :
+    Tendsto (fun i ↦ toLpAction K hK (f i) (hf i) g) l (𝓝 (toLpAction K hK f' hf' g)) := by
+  apply Mettapedia.Analysis.L2IntegralEnergy.tendsto_toLp_of_integral_sub_sq
+  apply squeeze_zero (fun _ ↦ integral_nonneg (fun _ ↦ sq_nonneg _))
+    (fun i ↦ kernelAction_sub_left_energy_le K hK (f i) f' g (hf i) hf')
+  simpa only [mul_zero] using h.const_mul ((∫ q : T6, ‖K q‖) ^ 2 * ‖g‖ ^ 2)
+
+theorem tendsto_toLpAction_right {ι : Type*} {l : Filter ι}
+    (K : T6 → Op) (hK : Integrable K) (f : T3 → C3) (hf : MemLp f 2)
+    (g : ι → C(T3, C3)) (g' : C(T3, C3)) (h : Tendsto g l (𝓝 g')) :
+    Tendsto (fun i ↦ toLpAction K hK f hf (g i)) l (𝓝 (toLpAction K hK f hf g')) := by
+  apply Mettapedia.Analysis.L2IntegralEnergy.tendsto_toLp_of_integral_sub_sq
+  apply squeeze_zero (fun _ ↦ integral_nonneg (fun _ ↦ sq_nonneg _))
+    (fun i ↦ kernelAction_sub_right_energy_le K hK f (g i) g' hf)
+  have hn := (tendsto_iff_norm_sub_tendsto_zero.mp h).pow 2
+  simpa only [zero_pow (by decide : 2 ≠ 0), mul_zero, zero_mul] using
+    (hn.const_mul ((∫ q : T6, ‖K q‖) ^ 2)).mul_const (∫ x : T3, ‖f x‖ ^ 2)
 
 theorem exists_uniform_coherent_energy_bound :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ N : ℝ, ∀ hN : 0 < N, ∀ t ∈ Set.Icc (0 : ℝ) (1 / 2),
