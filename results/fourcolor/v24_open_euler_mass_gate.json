@@ -1,0 +1,13 @@
+{
+  "rows": [
+    {"control": "tetrahedron", "disconnected_sides": 0, "maximum_mass": 4, "proper_sides": 15, "sides": 16},
+    {"control": "prism3", "disconnected_sides": 12, "maximum_mass": 8, "proper_sides": 63, "sides": 64},
+    {"control": "prism4", "disconnected_sides": 88, "maximum_mass": 16, "proper_sides": 255, "sides": 256},
+    {"control": "prism5", "disconnected_sides": 520, "maximum_mass": 16, "proper_sides": 1023, "sides": 1024},
+    {"control": "prism6", "disconnected_sides": 2654, "maximum_mass": 24, "proper_sides": 4095, "sides": 4096},
+    {"control": "prism8", "disconnected_sides": 83, "maximum_mass": 24, "proper_sides": 100, "sides": 100},
+    {"control": "prism24", "disconnected_sides": 100, "maximum_mass": 52, "proper_sides": 100, "sides": 100}
+  ],
+  "schema": "fourcolor-open-euler-mass-v1",
+  "scope": "Actual planar vertex subsets; universal theorem is a separate proof."
+}
