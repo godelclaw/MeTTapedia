@@ -1,0 +1,18 @@
+{
+  "schema": "fourcolor-pentagon-context-tensor-v1",
+  "rank": 6,
+  "relation_rank": 4,
+  "bad_only_dimension": 1,
+  "bad_vector": [0, 1, 1, 0, 0, 1, 1, 0, 1, 0],
+  "coefficients": [0, -1, 0, 0, 1, -1, 0, 0, 0, 0],
+  "planar_controls": 15,
+  "physical_span_rank": 6,
+  "physical_identity": "adversary = sum(five cyclic Y-wire counts) - 2 pentagonCount",
+  "connected_span_rank": 6,
+  "connected_identity": "3 adversary = sum(five cyclic tree counts) - pentagonCount",
+  "admissible_words": 60,
+  "adversary_words": 30,
+  "noncrossing_closure_cases": 90,
+  "verdict": "Linear identities, positivity and abstract Kempe closure are insufficient.",
+  "scope": "No realization as an actual plane exterior is claimed."
+}
