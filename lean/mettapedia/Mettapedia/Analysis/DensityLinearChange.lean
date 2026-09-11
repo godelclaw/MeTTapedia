@@ -37,15 +37,30 @@ theorem integral_pullbackDensity (L : E ≃L[ℝ] E) (H : E → ℝ) :
     (∫ x : E, pullbackDensity L H x) = ∫ x : E, H x :=
   integral_jacobian_comp L H
 
-theorem integral_moment_pullbackDensity (L : E ≃L[ℝ] E) (H : E → ℝ) (m : ℕ) :
-    (∫ x : E, ‖x‖ ^ m * pullbackDensity L H x) =
-      ∫ y : E, ‖L.symm y‖ ^ m * H y := by
-  have he (x : E) : ‖x‖ ^ m * pullbackDensity L H x =
-      pullbackDensity L (fun y ↦ ‖L.symm y‖ ^ m * H y) x := by
+/-- Change of variables with an arbitrary scalar observable retained. -/
+theorem integral_mul_pullbackDensity (L : E ≃L[ℝ] E) (H w : E → ℝ) :
+    (∫ x : E, w x * pullbackDensity L H x) = ∫ y : E, w (L.symm y) * H y := by
+  have he (x : E) : w x * pullbackDensity L H x =
+      pullbackDensity L (fun y ↦ w (L.symm y) * H y) x := by
     simp only [pullbackDensity, L.symm_apply_apply]
     ring
   simp_rw [he]
   exact integral_pullbackDensity _ _
+
+theorem integrable_mul_pullbackDensity (L : E ≃L[ℝ] E) (H w : E → ℝ)
+    (hi : Integrable (fun y ↦ w (L.symm y) * H y)) :
+    Integrable (fun x : E ↦ w x * pullbackDensity L H x) := by
+  have he (x : E) : w x * pullbackDensity L H x =
+      pullbackDensity L (fun y ↦ w (L.symm y) * H y) x := by
+    simp only [pullbackDensity, L.symm_apply_apply]
+    ring
+  simp_rw [he]
+  exact integrable_pullbackDensity _ _ hi
+
+theorem integral_moment_pullbackDensity (L : E ≃L[ℝ] E) (H : E → ℝ) (m : ℕ) :
+    (∫ x : E, ‖x‖ ^ m * pullbackDensity L H x) =
+      ∫ y : E, ‖L.symm y‖ ^ m * H y :=
+  integral_mul_pullbackDensity L H (fun x ↦ ‖x‖ ^ m)
 
 theorem integrable_moment_pullbackDensity (L : E ≃L[ℝ] E) (H : E → ℝ)
     (hH : ∀ x, 0 ≤ H x) (hHc : Continuous H) (m : ℕ)
@@ -63,12 +78,7 @@ theorem integrable_moment_pullbackDensity (L : E ≃L[ℝ] E) (H : E → ℝ)
         gcongr
         exact L.symm.toContinuousLinearMap.le_opNorm y
       _ = _ := by rw [mul_pow]; ring
-  have he (x : E) : ‖x‖ ^ m * pullbackDensity L H x =
-      pullbackDensity L (fun y ↦ ‖L.symm y‖ ^ m * H y) x := by
-    simp only [pullbackDensity, L.symm_apply_apply]
-    ring
-  simp_rw [he]
-  exact integrable_pullbackDensity _ _ hi
+  exact integrable_mul_pullbackDensity L H (fun x ↦ ‖x‖ ^ m) hi
 
 theorem integral_moment_pullbackDensity_le (L : E ≃L[ℝ] E) (H : E → ℝ)
     (hH : ∀ x, 0 ≤ H x) (m : ℕ) (hHm : Integrable (fun x ↦ ‖x‖ ^ m * H x)) :
