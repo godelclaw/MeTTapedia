@@ -15228,3 +15228,69 @@ separation gives a marked colour-lifting reduction. That latter
 geometric-to-semantic implication remains open. The formula is the
 existing exact-state carrier, not a new small-constant claim; no
 fixed-ledger obligation is discharged, and the ledger remains $57/100$.
+
+\subsection{A common-cycle lift is stronger than colourability}
+\label{sec:smoothing-cycle-obstruction}
+
+A concrete attack on the remaining wide case deletes an adjacent pair
+and smooths each of its two degree-two vertices. Its inverse subdivides
+the two new edges and joins the subdivision vertices. If a colouring
+of the smaller graph puts both new edges on one bichromatic cycle,
+the inverse insertion can be coloured by alternating along the expanded
+cycle and assigning its third colour to the inserted edge. This is a
+sufficient lift, not an automatic consequence of colourability.
+
+The generic assertion that two nonincident cofacial edges can always
+be put on one bichromatic cycle is false. The closed control in
+\texttt{results/fourcolor/v24\_smoothing\_cycle\_gate.json} has $18$
+vertices, $27$ edges and $11$ faces. Its designated edges are
+$\{3,9\}$ and $\{4,10\}$, indices $8$ and $9$ in the recorded edge
+list. They lie on the common facial cycle
+$(0,3,9,15,16,10,4,1)$. The full spherical rotation and
+three-connectivity are checked by the constructor replay.
+
+The graph has $36$ labelled Tait colourings, all in one Kempe orbit.
+None connects the designated edges in any two-colour subgraph.
+All nine assignments to the two designated colours nevertheless occur,
+four times each: colour values alone do not detect the missing
+connectivity. Independent edge-order and vertex-order colouring
+searches agree. A separate perfect-matching enumeration finds $23$
+matchings and $13$ even complementary $2$-factors: eight Hamiltonian
+cycles, four factors of cycle lengths $(6,12)$, and one of lengths
+$(8,10)$. None contains a cycle through both designated edges.
+
+The Lean proof does not assume completeness of these searches.
+After a colour permutation fixes the three colours at vertex $0$,
+explicit third-colour deductions classify the six remaining colourings.
+For each colouring and each omitted colour, a finite separating edge
+set is checked to be closed under actual edge adjacency. Induction on
+a connecting walk proves that the two designated edges cannot be
+joined. Normalization then removes the initial choice of colour names.
+\Sverified{Mettapedia.GraphTheory.FourColor.SmoothingCycleObstruction.normalized_cases}
+\Sverified{Mettapedia.GraphTheory.FourColor.SmoothingCycleObstruction.samples_not_joined}
+\Sverified{Mettapedia.GraphTheory.FourColor.SmoothingCycleObstruction.exists_normalization}
+\Sverified{Mettapedia.GraphTheory.FourColor.SmoothingCycleObstruction.no_coloring_joins}
+\Sverified{Mettapedia.GraphTheory.FourColor.SmoothingCycleObstruction.colorable_but_never_joined}
+These kernel statements certify literal colouring and reachability;
+the embedding and inverse surgery are separate constructor checks.
+
+Inverse insertion is spherical and three-connected, has $20$ vertices,
+and admits $72$ labelled Tait colourings. Thus failure to find a common
+cycle in \emph{any} colouring of the smaller graph does not imply
+non-colourability of the enlarged graph. In particular, changing Kempe
+orbit cannot repair this particular sufficient lifting rule.
+The same cofacial-cycle assertion is stated as Conjecture~2 in
+E.~Kendall, \emph{Simple Numerical Algorithm for Generating Hamiltonian
+Cycles and Edge Labels on Planar Cubic Maps} (2021), \S2.3,
+\url{https://arxiv.org/abs/2104.05896}; the control rejects that assertion
+as stated, not the Four-Color Theorem.
+
+The domain restriction is essential: the smaller graph has triangles
+and the enlarged graph has squares. Neither is a least-counterexample
+normal-form specimen. Nor is either a zero-Count example. The result
+does not refute a lifting theorem that uses the actual source of the
+smoothing inside a protected, normal-form ordered mesh. A future such
+theorem must retain those hypotheses or use a different lifting
+construction; it cannot silently appeal to the false generic cofacial
+cycle assertion. No target-facing wide-case implication is discharged,
+and the fixed ledger remains $57/100$.
