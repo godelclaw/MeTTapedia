@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.FourPortCountRewire
+import Mettapedia.GraphTheory.FourColor.FourPortCompositeEndpoint
 import Mettapedia.GraphTheory.FourColor.PhysicalContextLanguage
 
 /-!
@@ -71,5 +72,16 @@ theorem nonvacuous_rewire_obstruction :
       ¬ ClosedColorable outside (cap false) ∧ ClosedColorable outside (cap true) := by
   obtain ⟨c, hc, _⟩ := (closedColorable_cap_iff outside true).1 flip_colorable
   exact ⟨outside_cubic, ⟨c, hc⟩, original_not_colorable, flip_colorable⟩
+
+/-- The endpoint hypotheses are inhabited, independently of the executable controls. -/
+theorem nonvacuous_endpoint_obstruction :
+    ∃ hne : ∃ c : Coloring outside, IsProper c,
+      ∀ m : FourPortCompositeEndpoint.Pairing,
+        Nonempty (Col (FourPortCompositeEndpoint.wireClosure outside m
+          (FourPortCompositeEndpoint.ports_injective_of_zero outside outside_cubic
+            hne original_not_colorable)) PEmpty.elim) := by
+  obtain ⟨_, hne, _, _⟩ := nonvacuous_rewire_obstruction
+  exact ⟨hne, fun m => FourPortCompositeEndpoint.every_wire_endpoint_colorable
+    outside outside_cubic hne original_not_colorable m⟩
 
 end Mettapedia.GraphTheory.FourColor.FourPortCountRewireControl

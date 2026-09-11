@@ -15526,3 +15526,69 @@ colourable intermediate graphs. Such a construction must still recover
 an admissible, strictly smaller zero-Count graph; the exact additive
 identities alone do not construct it. No global descent or base
 obligation is discharged here. The fixed ledger remains $57/100$.
+
+\subsection{Composite endpoints: temporary expansion cannot repair a fixed two-vertex footprint}
+\label{sec:four-port-composite-endpoint}
+
+The preceding obstruction can be strengthened without specifying the
+intermediate rewrite sequence. Keep a finite cubic exterior $T$ with four
+unrestricted ports. Assume that $T$ has a proper Tait colouring but its
+original two-vertex closure $T\circ I$ has none. Then every proper exterior
+colouring has equal colours on ports $01$ and on ports $23$.
+\Sverified{Mettapedia.GraphTheory.FourColor.FourPortCompositeEndpoint.forced_pairs}
+More strongly, some proper exterior colouring makes \emph{all four} port
+colours equal.
+\Sverified{Mettapedia.GraphTheory.FourColor.FourPortCompositeEndpoint.exists_monochromatic_coloring}
+
+\paragraph{The physical switch argument.}
+Write the two forced pair colours as $a,a,b,b$. If $a=b$, nothing is
+needed. Otherwise switch the $(a,b)$ component starting at port $0$.
+It must also contain port $1$: otherwise the switched colouring violates
+the forced $01$ equality. It cannot contain port $2$, because a
+bichromatic component reaching a boundary has exactly two boundary ends,
+already $0$ and $1$. The switch therefore makes ports $0$ and $2$ equal
+to $b$; the forced pair equalities make all four ports equal. This uses
+the existing physical mate theorem, not an assumed planar separator.
+
+The monochromatic conclusion is a known fact about isochromatic
+four-poles, not a new claim of mathematical novelty; see Karab\'{a}\v{s},
+M\'{a}\v{c}ajov\'{a}, Nedela and \v{S}koviera,
+\emph{Cubic graphs with colouring defect 3}, Section~2 and the proof of
+Claim~4 in Theorem~5.3,
+\href{https://arxiv.org/abs/2308.13639}{arXiv:2308.13639}.
+Here it is proved against the port-tangle colouring semantics and used
+to construct literal endpoints.
+
+\paragraph{Every pairing endpoint is colourable.}
+The monochromatic proper colouring first proves that the four port
+vertices are distinct. For any fixed-point-free involution on the four
+ports, move those darts into the interior carrier and pair them by that
+involution. This constructs a closed, loop-free cubic port tangle with
+the same exterior vertices. Parallel edges are permitted. The same
+colouring extends to every such pairing, since all four port colours agree.
+\Sverified{Mettapedia.GraphTheory.FourColor.FourPortCompositeEndpoint.wireClosure_cubic}
+\Sverified{Mettapedia.GraphTheory.FourColor.FourPortCompositeEndpoint.every_wire_endpoint_colorable}
+The endpoint has two fewer vertices than the original closure.
+\Sverified{Mettapedia.GraphTheory.FourColor.FourPortCompositeEndpoint.endpoint_vertex_count}
+A reused two-digon exterior supplies a kernel-checked nonvacuous instance.
+\Sverified{Mettapedia.GraphTheory.FourColor.FourPortCountRewireControl.nonvacuous_endpoint_obstruction}
+
+The executable gate independently checks all $45$ adjacent-pair deletions
+of the Petersen graph and the five-flower snark, hence $135$ pairing
+endpoints. Both controls are nonplanar, bridgeless and uncolourable;
+their deletion exteriors are colourable. Two independent complete
+enumerators agree, and a monochromatic exterior colouring is explicitly
+extended at each endpoint. The source and receipt are
+\texttt{tools/fourcolor/v24\_composite\_endpoint\_gate.py} and
+\texttt{results/fourcolor/v24\_composite\_endpoint\_gate.json}.
+
+\paragraph{Exact restriction, not a global impossibility claim.}
+Whatever happens during a composite rewrite, if its final graph keeps
+this exterior unchanged and merely pairs these four ports, it cannot be
+a smaller zero-Count graph under the stated hypotheses. This is an
+endpoint result, not a formalization of an arbitrary rewrite language.
+It does not exclude larger-footprint moves, exterior changes, or a
+different proved descent mechanism. Exterior colourability remains an
+explicit hypothesis; no supplier from the target counterexample class,
+planarity of the endpoint, or global reduction is proved here. The
+formal carriers are in universe zero. The fixed ledger remains $57/100$.
