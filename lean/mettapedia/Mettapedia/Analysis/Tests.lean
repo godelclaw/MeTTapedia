@@ -26,6 +26,7 @@ import Mettapedia.Analysis.FundamentalDomainPeriodizationTests
 import Mettapedia.Analysis.NormalizationConvolutionTests
 import Mettapedia.Analysis.FiniteVectorConvolutionTests
 import Mettapedia.Analysis.RadialSquareRootTests
+import Mettapedia.Analysis.RadialPowerTests
 import Mettapedia.Analysis.RootPartitionEnergyTests
 import Mettapedia.Analysis.BilinearKernelLocalizationTests
 import Mettapedia.Analysis.FiniteTorusProductTests
