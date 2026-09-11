@@ -75,6 +75,17 @@ def boundary_partition(states, width):
     return tuple(tuple(group) for group in groups.values())
 
 
+def component_count(states, selected):
+    """Distinct zero-cut columns, as in BoundaryComponentCount.count.
+
+    The selected ports can repeat and can omit hidden components. This
+    counts the components touched by a seam, not all components of a piece.
+    """
+    zero = [bits for bits, _, _, cost in states if cost == 0]
+    assert zero
+    return len({tuple(bits[p] for bits in zero) for p in selected})
+
+
 def face_step(letter, previous):
     l, r, star, wires = letter
     assert valid(letter) and len(previous) == l
@@ -107,11 +118,9 @@ def joint_step(state, letter):
     returns, cuts, support = state
     l, _, star, _ = letter
     assert valid(letter) and len(returns) == l
-    partition = boundary_partition(cuts, l)
-    touched = {next(i for i, block in enumerate(partition) if p in block)
-               for p in star if p < l}
+    touched = component_count(cuts, (p for p in star if p < l))
     out, delta = face_step(letter, returns)
-    twice_genus = 1 + sum(p < l for p in star) - 2 * len(touched) - delta
+    twice_genus = 1 + sum(p < l for p in star) - 2 * touched - delta
     assert twice_genus >= 0 and twice_genus % 2 == 0
     if twice_genus:
         return None

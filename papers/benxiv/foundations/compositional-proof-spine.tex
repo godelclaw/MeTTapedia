@@ -16783,3 +16783,87 @@ tests are proved; the complete oriented vertex interpreter and its
 fixed-point certificate still require kernel verification. No
 all-arity bound, global descent or generating-base verification follows.
 The consumer is D2b and the earned ledger remains $57/100$.
+
+\subsection{One physical vertex step, with exact component accounting}
+\label{sec:physical-vertex-attachment}
+
+The one-vertex operation needs no preferred mesh geometry. Split the
+old boundary into retained ports $L$ and consumed ports $P$, and let
+$R$ be the new exposed ports. An explicit cyclic enumeration
+$\{0,1,2\}\simeq P+R$ constructs a one-vertex tangle with no interior
+edges. Serial composition sews precisely $P$, preserves $L$, and
+exposes $R$. In particular, persistent ports are not represented by a
+fictitious zero-vertex wire tangle. The supplied enumeration determines
+the actual rotation; the vertex accepts exactly the nonzero,
+pairwise-distinct assignments on its three darts.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexAttachmentTransfer.star_rotation}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexAttachmentTransfer.star_accepts}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexAttachmentTransfer.joint_append}
+
+Let $d$ be the number of old components met by the consumed ports.
+Attaching a new vertex merges those components with the new vertex and
+leaves every other component untouched. The component quotient is
+therefore the untouched old quotient plus one point, and
+\[
+ C_{\mathrm{new}}+d=C_{\mathrm{old}}+1.
+\]
+This includes an empty seam, hidden components, and multiple ports at
+the same vertex. Counting consumed ports in place of consumed
+components would be wrong. The generic multigraph quotient theorem is
+transported to the literal serial tangle through equality of all cut
+sizes, not through an assumed component-update hypothesis.
+\Sverified{Mettapedia.GraphTheory.FourColor.StarAttachmentComponents.componentEquiv}
+\Sverified{Mettapedia.GraphTheory.FourColor.StarAttachmentComponents.component_count_profile}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexAttachmentTransfer.cutSize_append}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexAttachmentTransfer.component_count_append}
+
+The number $d$ is executable from the complete boundary record:
+restrict attention to realized zero-cut records, form the column of
+bits for each consumed port, and count distinct columns. Equality of
+columns is exactly old-component equality. Neither a connected-prefix
+assumption nor visibility of every component is needed for this
+\emph{consumed}-component count.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundaryComponentCount.column_eq_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundaryComponentCount.count_extractTangle}
+
+Writing $\sigma$ for the old boundary return and $\tau$ for the new
+three-cycle, the boundary rewire determines
+\[
+ \Delta F=\operatorname{cyc}((\sigma+\tau)\,\mathrm{seam})
+                 -\operatorname{cyc}(\sigma).
+\]
+This is the change in the \emph{total} face count, including faces
+that close when consumed ports disappear. With $m=2V-I+2F$ and
+$D=4C-m$, the literal constructor satisfies
+\[
+ D_{\mathrm{new}}-D_{\mathrm{old}}
+       =2(1+|P|-2d-\Delta F).
+\]
+For valid vertex rotations $D$ is four times total genus, giving the
+tested formula $2\Delta g=1+|P|-2d-\Delta F$. On unrestricted tangles
+the theorem is an integer Euler identity; it does not silently assume
+cyclicity or nonnegative genus.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexAttachmentTransfer.star_face_code}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexAttachmentTransfer.face_change}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexAttachmentTransfer.defect_change_executable}
+
+The attachment gate exhausts $5{,}795$ small graph/port instances.
+Kernel controls cover zero through three consumed ports, persistent
+ports, repeated attachments, and the two-star orientation test: the
+same cut profile yields three faces or one face depending on cyclic
+order. The Python evaluator now uses the distinct-column component
+counter; its previous closure receipts are unchanged.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexAttachmentChecks.persistent_and_new_ports_connected}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexAttachmentChecks.flat_faces}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexAttachmentChecks.twisted_faces}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexAttachmentChecks.same_cut_profile}
+
+This closes the component/Euler identity for one constructed vertex
+step, not D2b in full. A complete bridge from every finite evaluator
+letter and its persistent-port coordinates to this constructor,
+initialization and iterated decoding, and the required fixed-point
+certificate remain to be sealed. The empty initial boundary state is
+not an empty tangle with a fictitious distinguished dart; the first
+vertex can be initialized as the star. Global coverage, strict
+reduction, and the generating base remain open. The earned ledger
+stays $57/100$.
