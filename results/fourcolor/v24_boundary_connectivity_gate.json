@@ -1,0 +1,11 @@
+{
+  "rows": [
+    {"connected_sewings": 12, "hidden_pairs": 143, "ports": 0, "sewings": 144, "sides": 12, "visible_pairs": 1},
+    {"connected_sewings": 225, "hidden_pairs": 616, "ports": 1, "sewings": 841, "sides": 29, "visible_pairs": 225},
+    {"connected_sewings": 2829, "hidden_pairs": 3536, "ports": 2, "sewings": 6561, "sides": 81, "visible_pairs": 3025},
+    {"connected_sewings": 31533, "hidden_pairs": 20800, "ports": 3, "sewings": 54289, "sides": 233, "visible_pairs": 33489},
+    {"connected_sewings": 476, "hidden_pairs": 0, "ports": 4, "sewings": 900, "sides": 30, "visible_pairs": 900}
+  ],
+  "schema": "fourcolor-boundary-connectivity-v1",
+  "scope": "Finite structural controls, separate from the universal Lean theorem."
+}

@@ -1,0 +1,12 @@
+{
+  "boundary_partition": [0, 0, 0, 0],
+  "composites": [
+    {"bridge_count": 1, "components": 1, "edges": 9, "euler": 2, "faces": 5, "vertices": 6},
+    {"bridge_count": 0, "components": 1, "edges": 9, "euler": 2, "faces": 5, "vertices": 6}
+  ],
+  "face_return": [1, 2, 3, 0],
+  "low_cut_counts": [[1], []],
+  "mass": 4,
+  "schema": "fourcolor-structural-bridge-v1",
+  "scope": "Program witness only; no colouring-support equality or kernel refutation asserted."
+}
