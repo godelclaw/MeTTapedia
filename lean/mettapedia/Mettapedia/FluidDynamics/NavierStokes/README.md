@@ -76,7 +76,7 @@ fractions of a completed proof.
 | Step | Obligation and completion test | Status and present evidence |
 | --- | --- | --- |
 | S1. Actual equation and objects | Construct the solution, stochastic/material objects, and frequency decomposition from arbitrary admissible data; derive every evolution identity used later from the actual unforced equation. Track the periodic and Euclidean realizations separately. | **Partial.** The local periodic solution, common-interval material flow, vorticity and strain equations are constructed; see `StochasticLagrangian/LocalMaterialVorticity.lean`, `LocalMaterialStrain.lean`, and `LocalSpectralResidual.lean`. This is not a complete arbitrary-data stochastic/Euclidean realization. |
-| S2. Spatial field transfer | Transfer the coherent/misaligned geometry to the actual localized operator fields, retaining uniform kernel constants and the inverse-scale gain through integration and limits. | **Partial.** Exact dyadic pressure kernels, the common envelope, and the mixed spatial-norm budget are checked. `GaussianRootOperatorBudget.lean` now transfers that budget to the integrated Gaussian localization residual and its complete output-band sum at each fixed input scale. This is one pressure-sector transfer, not all coherent/misaligned interactions or all adaptive limits. |
+| S2. Spatial field transfer | Transfer the coherent/misaligned geometry to the actual localized operator fields, retaining uniform kernel constants and the inverse-scale gain through integration and limits. | **Partial.** Exact dyadic pressure kernels, the common envelope, and the mixed spatial-norm budget are checked. `GaussianRootOperatorBudget.lean` transfers that budget to the integrated Gaussian localization residual and its complete output-band sum at each fixed input scale. `PressureDyadicJointSource.lean` identifies this kernel's normalized input-annulus contribution in the actual joint source, retaining the complementary pressure sector and output filter. Commuting that filter through adaptive patch products and controlling all remaining interactions are still required. |
 | S3. All scales and sectors | Sum over input scales and pay for the other frequency interactions, angular tails, collision sectors, and adaptive cutoff terms without uncontrolled scale, patch-count, or regularization losses. | **Partial.** `GaussianRootDiffusionBudget.lean` constructs uniformly bounded adaptive covers and sums this pressure-localization sector over high dyadic input scales for fixed smooth real divergence-free data. The bound uses actual vorticity-gradient energy, not an absolute Fourier moment. Vorticity-supremum and geometric cutoff costs remain; other sectors, scale-critical time control, and regularization limits are open. |
 | S4. Dynamical misalignment budget | Prove the signed time-integrated nonlinear estimate from the actual unforced evolution, with bounds that remain finite up to any candidate finite singular time. Construct `MisalignmentStrainBudget`, rather than pass it in as a hypothesis. | **Open; decisive mathematical core.** `LocalExcessAlignmentEnergy.lean` supplies an actual-data absorption inequality with explicit source costs. `MisalignmentRefinedPin.lean` proves a conditional reduction, not the required dynamical budget. |
 | S5. Vorticity control and continuation | Construct the spatial essential-supremum vorticity integrand, prove its finite-time integral is controlled by the preceding estimates, and apply the continuation theorem to the actual solution. | **Open.** Continuation target surfaces and conditional reductions exist. The current `||omega||_sup² sqrt(G)` spatial cost is not yet a controlled BKM integrand. |
@@ -161,6 +161,61 @@ On Fourier monomials it reconstructs the retained low-output pressure
 coefficient, including zero output. `PressureDyadicActionAudit.lean` checks
 nonzero periodic coefficients, actual nonzero monomial actions, double
 imaginary phase, their reconstructed sum, and full-field convergence.
+
+### Full Fourier reconstruction and the signed physical source
+
+`PressureContinuousBilinearAction.lean` packages each integrable kernel as
+a continuous bilinear map on continuous fields. Its norm is bounded by
+the integral of the kernel's operator norm.
+`PressureDyadicBilinearAction.lean` proves that the output-band series
+converges absolutely in **bilinear operator norm**, uniformly in input
+scale and unit frozen direction; evaluation equals the existing `sumAction`.
+
+The reusable `Analysis/BilinearSeries.lean` justifies the product-indexed
+expansion of a bounded bilinear map on two absolutely convergent series.
+`Analysis/UnitTorusContinuousFourier.lean` supplies norm-at-most-one
+vector-valued Fourier coefficient maps. Applying these to actual continuous
+Fourier reconstructions gives `PressureDyadicFourierReconstruction.lean`:
+for `|q| <= N/256`,
+
+```text
+FourierCoeff(sumAction_N(f,g), q)
+  = sum_k chi_N(k) B_e(k,q-k)(a_k,b_(q-k)),
+chi_N(k) = normalizedCutoff(k/N).
+```
+
+Both input series are full series; the coefficient identity assumes
+absolute summability to justify reconstruction, not a uniform moment bound
+as an additional operator cost. The zero-output coefficient vanishes by
+the pressure symbol, not by asserting a partition of unity at the origin.
+
+`PressureDyadicPhysicalIdentification.lean` applies the identity to the
+actual complexified real vorticity of smooth conjugate-symmetric velocity
+data. With incompressibility, the physical pressure-tilt coefficient is
+exactly
+
+```text
+physicalTilt_q = -chi(q) * [FourierCoeff(sumAction_N(omega,omega), q) + complement_q],
+complement_q  = sum_k (1-chi_N(k)) B_e(k,q-k)(omega_k,omega_(q-k)).
+```
+
+The complementary series is genuinely convergent and retained. Finite
+output reconstruction, with every output in the low ball, identifies the
+actual spatial pressure channel. `PressureDyadicJointSource.lean` inserts
+this decomposition after the existing resolved-pressure/subgrid-pressure
+cancellation, preserving the spin, raw-subgrid, transport, and complement
+terms in the signed joint alignment source.
+
+This is an exact identity, **not** a bound on the signed time-integrated
+source. Passing the output filter through adaptive patch products, summing
+the corresponding physical sectors, and controlling their geometric and
+vorticity costs over time remain open. The original localization budget
+cannot be substituted through those products without an additional argument.
+
+`PressureDyadicReconstructionAudit.lean` checks a nonzero reconstructed
+coefficient `-96/40768625`, its nonzero complementary half, and zero output
+for arbitrary absolutely summable full inputs. Generic tests also detect
+the loss of cross interactions and verify the double-imaginary phase sign.
 
 `GaussianRootIntegrableKernelBudget.lean` applies the weighted root-patch
 difference estimate to these actual kernels, retaining vorticity factors
