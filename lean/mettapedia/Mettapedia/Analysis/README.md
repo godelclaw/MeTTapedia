@@ -6,6 +6,8 @@ Reusable analysis, independent of any particular fluid construction.
 
 | Module | Mathematical content | Scope |
 | --- | --- | --- |
+| `EuclideanBilinearCoordinates.lean` | Exact coordinate reconstruction of continuous bilinear maps and operator norm bounded by the sum of absolute entries | Real or complex Euclidean spaces with independent finite input and output index sets |
+| `SchwartzBilinearKernel.lean` | Scalar-entry assembly into bilinear-operator-valued Schwartz kernels, exact Fourier identity, and every operator-norm moment bound | Complex Euclidean input/output spaces; any finite Euclidean spatial dimension; bilinear, not sesquilinear |
 | `SchwartzLinearChange.lean` | Absolute-Jacobian pullback, exact Fourier inverse-adjoint identity, mass preservation, and inverse-map spatial-moment cost | Finite-dimensional real inner-product spaces; arbitrary invertible continuous linear changes |
 | `SchwartzDilation.lean` | Exact dilation Jacobian, Fourier argument, and every spatial moment | Positive or negative nonzero real scales; absolute Jacobian handles orientation |
 | `CompactSchwartzFamily.lean` | Uniform Schwartz seminorms, inverse-Fourier decay, and every spatial kernel moment from joint smoothness and common compact support | Compact parameter sets in real normed spaces; Fourier kernels in any finite Euclidean dimension; no assumed continuity in the Schwartz topology |
@@ -56,6 +58,11 @@ The moment constants remain uniform as the output/input ratio tends to zero.
 physical-coordinate and common-frequency-scale costs. The corresponding
 low-output pressure band kernels retain quadratic mass smallness and linear
 first-moment smallness; these costs are summable over dyadic output ratios.
+`EuclideanBilinearCoordinates.lean` and `SchwartzBilinearKernel.lean`
+assemble these scalar entries into the actual complex pressure operator,
+preserving both gains with the explicit finite coordinate cost.
+`EuclideanBilinearCoordinatesTests.lean` checks complex phases, independent
+input-coordinate selection, exact reconstruction, and Fourier assembly.
 `SchwartzLinearChangeTests.lean` checks orientation, six-dimensional
 Jacobian scaling, mass preservation, and first-moment scaling.
 `CompactSchwartzFamilyTests.lean` checks the annular boundaries and a
@@ -78,7 +85,7 @@ retained modes, opposite frequencies, and the nonzero error from omitting
 a unit character. No pointwise coverage property is inferred from L²
 convergence.
 
-The first module is used by
+`ODE/QuadraticFormBound.lean` is used by
 `FluidDynamics/NavierStokes/StochasticLagrangian/LocalVorticityDiffusion.lean`.
 That application supplies the actual material vorticity equation and proves
 continuity of its viscous source from a common third Fourier-moment envelope.

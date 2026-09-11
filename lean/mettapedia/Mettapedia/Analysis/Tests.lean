@@ -1,6 +1,7 @@
 import Mettapedia.Analysis.ODE.QuadraticFormBound
 import Mettapedia.Analysis.CompactSchwartzFamilyTests
 import Mettapedia.Analysis.SchwartzLinearChangeTests
+import Mettapedia.Analysis.EuclideanBilinearCoordinatesTests
 import Mettapedia.Analysis.NormalizationConvolutionTests
 import Mettapedia.Analysis.FiniteVectorConvolutionTests
 import Mettapedia.Analysis.RadialSquareRootTests

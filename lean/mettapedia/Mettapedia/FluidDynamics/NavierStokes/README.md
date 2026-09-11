@@ -58,6 +58,40 @@ regularity, blowup, or any other Millennium-problem conclusion.
 
 ## Current Status
 
+### Actual complex pressure operators with summable low-output band costs
+
+`PressureOperatorCoordinates.lean` reconstructs the existing continuous
+complex-bilinear `pressurePairOperator` from its real-basis entries.
+`PressureLowOutputOperatorKernel.lean` assembles the physical scalar kernels
+into an operator-valued Schwartz kernel and proves, at every lattice pair,
+
+```text
+Fourier(K_(N,rho,e))(k,p) = physicalCutoff_(N,rho)(k,p) * pressurePairOperator(e,k,p).
+```
+
+This equality holds as a bilinear operator, hence on arbitrary complex
+input vectors, without imposing reality or incompressibility on those vectors.
+Generic coordinate assembly bounds its mass and first spatial moment by the
+sum of the 27 scalar-entry costs. Consequently,
+
+```text
+integral ||K_(N,rho,e)(x)|| dx       <= C_0 rho²,
+integral |x| ||K_(N,rho,e)(x)|| dx   <= C_1 rho/N,
+```
+
+where the norm is the bilinear operator norm. Constants are independent of
+the positive input scale, low-output ratio, and unit frozen direction.
+`PressureLowOutputOperatorBudget.lean` proves actual summability of these
+operator-norm costs over `rho_n = 2^(-n)/256`; their sums are bounded by a
+constant and by a constant divided by `N`, respectively.
+
+`PressureOperatorKernelAudit.lean` checks arbitrary complex input action,
+single- and double-imaginary phases, a nonzero low-output pressure entry,
+and exact cancellation at opposite frequencies. This closes scalar-to-operator
+reconstruction, not the decomposition of the full pressure into bands.
+Exact partition of unity, periodization, the other frequency sectors, and
+the scale/time-weighted localization budget remain open.
+
 ### Physical low-output pressure band costs at every input scale
 
 `PressureLowOutputChange.lean` constructs the spatial change
@@ -85,9 +119,9 @@ proved to preserve the pressure-pair amplitude, including negative scales.
 mass and first moments over `rho_n = 2^(-n)/256`. Their sums are bounded by
 a constant and a constant divided by `N`, respectively. This is not yet a
 reconstruction theorem: the overlapping cutoffs have not been promoted to
-an exact partition of unity. Complex-bilinear reconstruction, periodization,
-the other frequency sectors, and the root-weighted scale/time budget remain
-open. `PressurePhysicalKernelAudit.lean` checks cancellation, orientation,
+an exact partition of unity. Complex-bilinear reconstruction is supplied above;
+periodization, the other frequency sectors, and the root-weighted scale/time
+budget remain open. `PressurePhysicalKernelAudit.lean` checks cancellation, orientation,
 geometric sums, and a physical Fourier entry equal to `-1/130052`.
 
 ### Uniform low-output pressure moments in normalized coordinates
