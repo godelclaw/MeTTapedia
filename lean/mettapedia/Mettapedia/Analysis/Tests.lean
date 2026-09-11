@@ -4,6 +4,7 @@ import Mettapedia.Analysis.FiniteVectorConvolutionTests
 import Mettapedia.Analysis.RadialSquareRootTests
 import Mettapedia.Analysis.RootPartitionEnergyTests
 import Mettapedia.Analysis.BilinearKernelLocalizationTests
+import Mettapedia.Analysis.FiniteTorusProductTests
 import Mettapedia.Analysis.ODE.AbsolutelyContinuousComparison
 import Mettapedia.Analysis.ODE.VariableGronwall
 import Mettapedia.Analysis.LogarithmicScaleBound
