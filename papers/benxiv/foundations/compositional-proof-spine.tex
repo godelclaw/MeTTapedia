@@ -16221,3 +16221,64 @@ state preserves the target graph class. Exact natural-number Count is
 not asserted to have finite image. Global descent, the target-specific
 closure certificate and the generating-base verification remain open;
 the fixed ledger stays $57/100$.
+
+\subsection{Vertex-splice orientation: a failed matching and its repair}
+\label{sec:vertex-splice-orientation}
+
+The exact Count sweep of Section~\ref{sec:constructed-vertex-count} does
+not by itself make every support-preserving splice spherical. This can
+be separated from colourability on the two-vertex, three-parallel-edge
+map. Give its vertices opposite cyclic orders to obtain three faces;
+give them the same cyclic order to obtain one face. Both stored rotations
+are genuinely cyclic at each vertex, cubic and loopless. Both maps are
+Tait colourable, and for \emph{every} vertex side and boundary word their
+actual Count functions agree, through an explicit colouring-fibre
+bijection. The Euler characteristics are nevertheless $2$ and $0$.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSpliceOrientation.cyclic}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSpliceOrientation.same_side_support}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSpliceOrientation.same_side_count}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSpliceOrientation.colorable}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSpliceOrientation.flat_spherical}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSpliceOrientation.twisted_not_spherical}
+Consequently no predicate of the Count function of the varying half alone
+can classify sphericity after gluing to the fixed other half in these
+stored coordinates.
+\Srefuted{Mettapedia.GraphTheory.FourColor.VertexSpliceOrientation.no_count_only_sphericity}
+
+The independent vertex-splice gate starts with spherical bridgeless cubic
+controls, extracts their actual cyclic stars and persistent wires, and
+deletes intervals between equal nonempty prefix supports. It reconstructs
+the smaller rotation system, including its faces and bridges. Across $160$
+checked orders (not asserted distinct), $743$ support repeats include $72$
+identity-coordinate splices with failed spherical Euler equality. Requiring
+equal boundary first-return permutations retains $671$ cases and no
+observed failure; adding the boundary component partition leaves this
+count unchanged, and also adding the set of component partitions after
+one internal-edge deletion leaves $564$ cases. These are finite program
+observations, not proofs that any proposed signature is universally
+sufficient.
+
+More importantly, \emph{all $72$ failures have a repair in this gate}:
+a port permutation preserves the colouring support, identifies the
+boundary face-return permutation and component partition, and produces
+an actually spherical, connected, bridgeless, loopless smaller map.
+One saved example removes two vertices of the tetrahedron and produces
+the two-vertex map above. Another removes four vertices of the hexagonal
+prism and produces a simple eight-vertex graph. The latter identity
+splice has Euler characteristic zero, while the repaired matching gives
+Euler characteristic two. Its full colouring count changes from $72$ to
+$24$; equality of supports preserves existence, not total multiplicity.
+Independent incidence colourings and face walks reproduce both examples.
+The eight-vertex identity splice also has other cyclic rotations with
+Euler characteristic two, so the failure is \emph{not} a claim that its
+underlying graph is nonplanar.
+
+This is a correction to an under-specified matching rule, not a refutation
+of geometrically compatible compositional deletion. Parallel edges in
+the first repaired example are allowed in the existing smaller-map
+minimality class. Neither control is a least counterexample. The next
+physical-state obligation is to prove the appropriate context congruence:
+equal combined colouring and structural data must permit an admissible
+replacement in the required contexts. A check of first-return order alone
+is not here promoted to that theorem. The global reduction, target-facing
+closure certificate and generating base remain open, with ledger $57/100$.
