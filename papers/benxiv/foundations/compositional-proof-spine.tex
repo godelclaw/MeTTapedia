@@ -15742,10 +15742,33 @@ edge-colouring solvers on $K_4$, $K_{3,3}$, Petersen and the bridged control,
 and checks $48$ vertex/edge/slot reindexings. These are encoding controls,
 not a base census or a catalogue of reducible configurations.
 
-This supplies a concrete coverage and colourability component for the base
-work, not the completed base reflection. An admissibility filter must still
-retain every spherical bridgeless trace while excluding irrelevant bad
-codes; the filtered audit must then actually succeed. No such filter,
-optimized closure, explicit global reduction threshold, or successful
-finite-base audit is asserted here. No full structural envelope has been
-enumerated. The fixed obligation ledger remains $57/100$.
+\paragraph{Connectivity and single-edge deletion are now reflected.}
+For a numerical code, reconstruct the primal graph using the two endpoints
+of each edge index. After deleting an edge, omit only that index: parallel
+edges with other indices remain. The resulting graph is proved isomorphic
+to the original rotation-system primal graph, both before and after each
+single-edge deletion. Consequently the executable connectivity and
+bridge-freeness tests are equivalent to those properties of the original
+map.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedCubicColourTrace.connected_encode_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedCubicColourTrace.bridgeFree_encode_iff}
+The refined \texttt{topologicalEnvelope} checks structural validity,
+connectivity and bridge-freeness. Every bounded connected bridgeless cubic
+map has its actual trace in this filter; no topological coverage premise
+is introduced.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedCubicColourTrace.trace_mem_topologicalEnvelope}
+The bridged control is excluded for every $B\ge6$.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedCubicColourTrace.Controls.bridged_not_in_topologicalEnvelope}
+Kernel checks also distinguish a connected parallel triple from two
+disjoint parallel triples: both are bridge-free, only the former is
+connected. The independent topology gate covers five controls and $60$
+reindexings. Petersen passes these topology checks, so neither the filter
+nor these controls establish planarity or colourability.
+
+This supplies concrete coverage, colourability and primal-topology
+components for the base work, not the completed base reflection.
+Spherical admissibility still needs a filter with proved coverage, and the resulting
+bad-state audit must actually succeed. No spherical filter, optimized
+closure, explicit global reduction threshold, or successful finite-base
+audit is asserted here. No full structural or topological envelope has
+been enumerated. The fixed obligation ledger remains $57/100$.

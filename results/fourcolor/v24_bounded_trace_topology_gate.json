@@ -1,0 +1,11 @@
+{
+  "controls": [
+    {"bridges": 0, "connected": true, "name": "K4", "reindexings": 12},
+    {"bridges": 0, "connected": true, "name": "Petersen", "reindexings": 12},
+    {"bridges": 0, "connected": true, "name": "parallel3", "reindexings": 12},
+    {"bridges": 1, "connected": true, "name": "bridged", "reindexings": 12},
+    {"bridges": 0, "connected": false, "name": "disconnected", "reindexings": 12}
+  ],
+  "scope": "Incidence topology only; no spherical-base verification.",
+  "status": "pass"
+}
