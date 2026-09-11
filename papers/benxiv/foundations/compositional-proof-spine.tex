@@ -16077,3 +16077,76 @@ an additional inequality, or a different global compositional reduction.
 No particular mesh geometry, catalogue, or new execution trust follows.
 The generating-base and global-descent obligations remain open and the
 fixed ledger remains $57/100$.
+
+\subsection{Joint physical matchings do not force immediate repair}
+\label{sec:pentagon-kempe-plateau}
+
+The preceding tensor gate leaves simultaneous physical realization open.
+A more specific attempted strengthening is false: even when the three
+bichromatic boundary matchings come from one proper colouring of one plane
+exterior, a single switch need not make the boundary extend across the
+pentagon. This is a generic reconfiguration control, not a new
+configuration-exclusion certificate.
+
+Open the first facial pentagon of the fixed thirty-vertex spherical control
+used by the smoothing-provenance gate. The resulting connected exterior
+has twenty-five cubic vertices, five degree-one terminals, and forty edges.
+The program checks the rotation and spherical Euler count, the facial port
+order, and connectivity with and without the terminals. Two independent
+proper-colouring searches agree on all $354$ colourings. They form one
+Kempe orbit, accepting all sixty admissible boundary words, thirty of which
+extend across the pentagon. Thus this is \emph{not} a physical realization
+of the rejected-only support.
+
+A displayed proper colouring has word $(0,0,2,0,1)$ and boundary matchings
+\[
+ (01):\{04,13\},\qquad (02):\{03,12\},\qquad (12):\{24\}.
+\]
+Here the parenthesized pair denotes colours and the braces list port pairs.
+Lean checks properness against the explicit graph incidence.
+\Sverified{Mettapedia.GraphTheory.FourColor.PentagonKempePlateau.states_proper}
+Five explicit bichromatic paths force the displayed matching constraints
+for every union of components of the respective colour pair.
+\Sverified{Mettapedia.GraphTheory.FourColor.PentagonKempePlateau.matches_of_region}
+Only the $32$ boundary-selection masks then need checking: none gives a
+positive pentagon extension count. No enumeration over forty-edge subsets
+is needed for this conclusion.
+\Srefuted{Mettapedia.GraphTheory.FourColor.PentagonKempePlateau.no_immediate_repair}
+
+Three explicit switches do reach an extendable colouring. The kernel checks
+that each selected edge set is a union of bichromatic components, verifies
+the three switch equalities, and computes extension counts $0,0,0,1$ along
+the four states.
+\Sverified{Mettapedia.GraphTheory.FourColor.PentagonKempePlateau.escape_regions}
+\Sverified{Mettapedia.GraphTheory.FourColor.PentagonKempePlateau.escape_switches}
+\Sverified{Mettapedia.GraphTheory.FourColor.PentagonKempePlateau.intermediate_counts}
+\Sverified{Mettapedia.GraphTheory.FourColor.PentagonKempePlateau.final_count}
+The program additionally verifies that these are single-component switches
+and that three is the shortest length; these and the spherical embedding
+are separate program checks, not additional Lean theorems. Distances to
+extension have histogram $96,150,84,24$ at distances $0,1,2,3$.
+
+There is also a concrete failure of the proposed state compression for
+\emph{reconfiguration}. Let $\pi(c)$ retain a colouring's boundary word
+and all three boundary matchings. Among $144$ profile fibres, eighteen
+contain colourings with different shortest repair distances. An explicit
+pair in the same fibre has distances three and two, respectively, and
+different sets of one-switch successor profiles. This mismatch also holds
+when a step may switch an arbitrary union of components of one colour pair.
+The program preserves both colourings and witnesses for both transition
+conventions. An existential quotient relation can still be defined, but
+the observed equality of profiles does not let one lift every abstract
+transition from every representative.
+Even adding the lengths of all bichromatic cycles missing the boundary
+leaves six mixed-distance fibres among $192$ refined profiles in this
+control; the receipt includes an explicit pair. Thus merely remembering
+those forgotten cycles does not repair this state compression either.
+
+Consequently, joint realization at one colouring does not replace a theorem
+about compatibility \emph{across} colourings. A profile sufficient for
+gluing must not silently be assumed sufficient for Kempe reconfiguration.
+This does not refute the existing gluing semantics, arbitrary eventual
+repair, or a different well-founded measure. It removes an unnecessarily
+strong immediate-repair step from this candidate attack on global descent;
+it supplies neither global coverage nor the generating base. The fixed
+ledger stays $57/100$.
