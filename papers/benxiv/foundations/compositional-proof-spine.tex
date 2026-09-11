@@ -15933,3 +15933,73 @@ statement records the actual cubic tangles and their serial compositions,
 not an additional rotation-system sphericity theorem. This separation of
 the count proof and the geometric controls is intentional. No fixed
 ledger obligation is discharged: earned completion remains $57/100$.
+
+\subsection{Positive count resolution stops at the pentagon frontier}
+\label{sec:pentagon-positive-resolution}
+
+Infinite relative counts do not by themselves prevent a finite algebraic
+presentation. A different candidate, suggested by the source's square
+identity, is a positive sum of counts of smaller physical pieces. Such an
+identity would preserve zero Count after contraction with any exterior.
+The triangle and square admit this kind of resolution; the pentagon
+already obstructs a uniform continuation of that particular mechanism.
+
+Consider pieces with five labelled terminals and fewer than five cubic
+vertices, encoded by perfect pairings of all vertex slots and terminals.
+The internal vertex count must be odd, hence is one or three. The gate
+includes all $105+135135=135240$ pairings at those sizes, without assuming
+planarity, connectedness, simplicity, or a favourable boundary order. It
+finds $59460$ colourable labelled pieces, and none has support contained
+in that of the five-cycle. Vertex-free circle components are omitted from
+the endpoint encoding; they only multiply counts by three and do not
+alter this support test.
+
+There is a small description of all the nonzero profiles found by the
+gate. Up to boundary permutation and a scalar factor, they are the count
+of a cubic Y with a separate wire, or the count of a three-vertex cubic
+path. These give respectively ten and fifteen distinct profiles. With
+boundary word $w$, the first requires a proper triple at ports $0,1,2$
+and equal nonzero colours at ports $3,4$. The second counts colours $a,b$
+making the triples
+\[
+       (w_0,w_1,a),\quad(a,w_2,b),\quad(b,w_3,w_4)
+\]
+proper. The gate verifies the full profiles, not only their supports:
+the only scalar multipliers required are $1,2,6$.
+
+The obstruction for these two types has a compact kernel certificate.
+Write the nonzero colours as $r,b,p$. The five words
+\[
+ (b,r,p,r,r),\quad(b,r,r,p,r),\quad(r,b,r,p,r),\quad
+ (r,b,r,r,p),\quad(r,r,b,r,p)
+\]
+all have zero pentagon extension count.
+\Sverified{Mettapedia.GraphTheory.FourColor.PentagonPositiveResolution.badWord_count_zero}
+Every boundary permutation of each of the two smaller types accepts at
+least one of those words.
+\Sverified{Mettapedia.GraphTheory.FourColor.PentagonPositiveResolution.every_shape_accepts_badWord}
+Thus none of these smaller supports is contained in the pentagon support.
+\Sverified{Mettapedia.GraphTheory.FourColor.PentagonPositiveResolution.no_small_support_subset}
+In any proposed nonnegative integer combination, evaluate at a rejected
+word accepted by a chosen summand. Positivity forces that summand's
+coefficient to vanish. All coefficients must therefore vanish, whereas
+the pentagon has an extension at $(r,r,r,b,p)$. Consequently there is no
+such positive count identity, with any fixed weights on the two types
+and all their boundary permutations.
+\Srefuted{Mettapedia.GraphTheory.FourColor.PentagonPositiveResolution.no_positive_resolution}
+
+The trust boundary is explicit: the kernel theorem covers the displayed
+count definitions and every boundary permutation. The classification of
+\emph{all} smaller endpoint pieces into their scalar multiples is the
+separate exhaustive gate, not an additional Lean structural theorem. The
+gate is independently calibrated by the triangle and square identities,
+cycle-edge versus boundary-recurrence enumeration, and edge-colour versus
+vertex-colour enumeration on controls.
+
+This is not a proof that a generating base or a global positive reduction
+is impossible. It excludes a uniform, context-independent positive
+resolution of this one face by smaller endpoint pieces. A larger piece,
+an exterior-dependent relation, or retaining such pieces among generators
+changes the question and still requires a genuine global descent and
+coverage proof. No configuration catalogue or target-class exclusion is
+constructed. The fixed ledger remains $57/100$.
