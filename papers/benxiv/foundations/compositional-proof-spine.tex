@@ -15592,3 +15592,86 @@ different proved descent mechanism. Exterior colourability remains an
 explicit hypothesis; no supplier from the target counterexample class,
 planarity of the endpoint, or global reduction is proved here. The
 formal carriers are in universe zero. The fixed ledger remains $57/100$.
+
+\subsection{A finite semantic image is not an effective generating-base certificate}
+\label{sec:finite-image-base-audit}
+
+One attempted shortcut to the source's categorical presentation is to
+enumerate physical objects of unbounded size, retain one representative of
+each finite profile, and use the resulting representatives as a generating
+base. The missing step in this shortcut is an effective
+certificate that \emph{all} realizable profiles have been found. A finite
+codomain alone does not supply that certificate, even if observation of each
+enumerated object is computable.
+
+\paragraph{A generic obstruction with two observations.}
+For a partial-recursive program code $c$, let $b_c(k)$ be true exactly when
+mathlib's bounded evaluator, with bound $k$ and input zero, returns an
+output. This observation is primitive recursive. The evaluator parameter
+is a bound in its operational definition, not elapsed running time.
+Write
+\[
+ S_c(k)=\{b_c(j):0\le j\le k\},\qquad
+ \mathrm{Complete}(c,k)\iff
+       \forall j\; b_c(j)\in S_c(k).
+\]
+Each $S_c(k)$ has at most two elements. For every $c$ there exists a finite
+$k$ with $\mathrm{Complete}(c,k)$: if $c$ halts, choose a bound witnessing
+its output; otherwise the sole observation is false.
+\Sverified{Mettapedia.GraphTheory.FourColor.FiniteImageBaseAudit.exists_complete_cutoff}
+Nevertheless there is no total computable function $B$ on program codes
+such that $\mathrm{Complete}(c,B(c))$ for all $c$.
+\Sverified{Mettapedia.GraphTheory.FourColor.FiniteImageBaseAudit.no_computable_complete_cutoff}
+Otherwise bounded evaluation at $B(c)$ would decide whether $c$ halts.
+This proof reuses mathlib's halting theorem; for the computability
+formalization see Carneiro, \emph{Formalizing Computability Theory via
+Partial Recursive Functions},
+\href{https://doi.org/10.4230/LIPIcs.ITP.2019.12}{ITP 2019, paper 12}.
+
+The explicit constant-output-$8$ control has
+$S_c(1)=S_c(7)=\{\mathrm{false}\}$ but $b_c(8)=\mathrm{true}$.
+Thus even a run of unchanged observed images is not a closure certificate.
+\Sverified{Mettapedia.GraphTheory.FourColor.FiniteImageBaseAudit.plateau_control}
+There is also no function $f:\mathrm{Bool}\to\mathrm{Bool}$ satisfying
+$b_c(k+1)=f(b_c(k))$ for this control: the same false observation has
+different successors at different stages.
+\Sverified{Mettapedia.GraphTheory.FourColor.FiniteImageBaseAudit.plateau_has_no_observation_transition}
+There are two \emph{observations}, not two internal machine states.
+
+\paragraph{What a genuine finite presentation adds.}
+This does not obstruct closure computation for an explicitly given finite
+generator algebra with computable operations on a finite state carrier.
+Such an algebra supplies the successor information missing from the
+countermodel. A proof that every relevant physical object is generated
+then connects this closure to the graph class. The existing exact closure
+interface already separates alphabet completeness, transition soundness
+and completeness, initial-state coverage, and reachability; its state-array
+exactness theorem is available.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FiniteClosureInterfaces.ExactReachableClosureCertificate.state_entry_iff_reachable}
+None of those physical obligations is constructed by the generic audit.
+
+\paragraph{The base consumer does not require exactness.}
+Exact image exhaustion is not a prerequisite of the existing spherical
+base reflection. Its finite reachable set may \emph{overapproximate} the
+traces of realizable bounded maps. It suffices to cover every actual trace
+and to verify that the finite set contains no state satisfying the necessary
+counterexample condition.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24SphericalRouteNativeBaseReflection.TaitBaseReflection.taitBaseVerifiedAt_of_filter_eq_empty}
+Consequently the exact-closure optimization and the finite-base obligation
+must not be conflated. A sound, computable overapproximation with an empty
+bad-state filter would discharge the base without solving exact realizability.
+The construction of that overapproximation, its coverage proof, and its
+successful audit remain open; the theorem here supplies none of them.
+Likewise, once an explicit vertex bound and a complete finite encoding of
+the bounded maps are supplied, exhausting that finite domain terminates.
+The obstruction does not make the resulting finite base undecidable or
+prevent its direct computation; it concerns extracting a cutoff from
+unbounded enumeration using only finite observations.
+
+The precise failed shortcut is therefore
+\emph{finite profile image $\Rightarrow$ computably certified exhaustion},
+not the source's stronger generating-presentation strategy. No particular
+mesh, corridor, or smoothing geometry is mandated by this observation.
+Nor is this a reduction of a fixed Four-Color base problem to halting, a
+claim that that problem is undecidable, or a lower bound on human proof
+length. The base and global descent remain open; the ledger stays $57/100$.
