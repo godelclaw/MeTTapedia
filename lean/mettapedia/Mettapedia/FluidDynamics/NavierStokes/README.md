@@ -58,6 +58,64 @@ regularity, blowup, or any other Millennium-problem conclusion.
 
 ## Current Status
 
+### Physical pressure kernels and weighted root-cutoff differences
+
+`PressureBilinearOperator.lean` realizes the actual pressure-pair symbol as
+a continuous complex-bilinear operator on Euclidean three-vectors. Its
+operator norm is at most one for a unit frozen direction. The representation
+does not change the coefficient norm or introduce a coordinate-count factor.
+`Analysis/FiniteTorusSymbolKernel.lean` constructs finite symbol kernels in
+any finite torus dimension; `FinitePressureKernel.lean` specializes this to
+the six-dimensional pair torus and proves exact retained Fourier support.
+
+`PressureKernelFourier.lean` identifies the kernel action on finite Fourier
+polynomials with the pressure-pair convolution, collecting all colliding
+output modes. The original incompressible velocity's pressure-Hessian tilt
+polynomial is the **negative** of this kernel action on its Fourier curls.
+Kernel supports may contain the input supports strictly.
+
+`Analysis/BilinearKernelLocalization.lean` and `PressureKernelAction.lean`
+prove the physical two-input localization identity. Writing `B_K` for the
+bilinear kernel action and `y,z` for the two translated input points,
+
+```text
+c(x)d(x) B_K(f,g)(x) - B_K(cf,dg)(x)
+  = integral [c(x)d(x)-c(y)d(z)] K(x-y,x-z)[f(y),g(z)].
+```
+
+The norm bound keeps each cutoff difference with its corresponding input.
+For the actual Gaussian root patch `c_i = a_i sqrt(|omega|)`, put
+
+```text
+Delta_i(x,y) = |a_i(x)-a_i(y)| sqrt(|omega(y)|) |omega(y)|
+             + |a_i(x)| sqrt(|omega(y)|) |omega(x)-omega(y)|.
+```
+
+`GaussianRootKernelBudget.lean` proves that
+
+```text
+|c_i(x)^2 B_K(omega,omega)(x) - B_K(c_i omega,c_i omega)(x)|
+  <= integral |K(x-y,x-z)| *
+       [|c_i(x)| Delta_i(x,y) |omega(z)|
+        + |c_i(y)| |omega(y)| Delta_i(x,z)].
+```
+
+Here `omega` is the actual full vorticity (complexified isometrically),
+and `K` is the constructed finite pressure kernel. Integrability is derived
+from continuity on the compact torus. No unweighted scalar-root derivative,
+inverse vorticity magnitude, or divergence-free condition on the localized
+inputs is assumed.
+
+**Open boundaries:** a finite retained kernel is not the untruncated
+pressure operator. The full-field coefficient identification/limit, a
+frequency-uniform weighted kernel bound, and the summed scale/time budget
+remain to be proved. The uniform bound on each symbol alone does not give
+a uniform kernel mass. The aperture-uniform coherent-stretch kernel is a
+different operator and cannot supply this missing pressure estimate without
+a proved identification. `PressureKernelAudit.lean` and
+`Analysis/BilinearKernelLocalizationTests.lean` check the new theorem axioms
+and regression cases, including excluded modes and zero vorticity.
+
 ### Root-weighted vorticity and exact fourth-power coverage
 
 `GaussianRootVorticity.lean` constructs scalar root patches `c_i` and
@@ -94,8 +152,8 @@ actual coordinate derivative bound
 
 `GaussianRootDifference.lean` also bounds the weighted two-point cutoff
 difference `|c_i(x)-c_i(y)| |omega(y)|` using scalar-factor and vorticity
-differences, with no inverse vorticity magnitude. Pressure-kernel
-integration is not part of this two-point estimate.
+differences, with no inverse vorticity magnitude. The finite pressure-kernel
+integration of this estimate is proved above.
 
 `Analysis/RootPartitionEnergy.lean` and `GaussianRootEnergy.lean` prove a
 summed weighted derivative bound for the actual fields, Haar almost
@@ -122,9 +180,9 @@ cost plus `kappa² (1-kappa²) 2 |R| |omega|²`. The old and new weights agree
 where the gate is one. The transition cost is not declared small.
 
 This repairs the **weight factorization and weighted-field regularity**.
-It does not yet justify applying the scalar-cutoff gradient estimate below
-to `c_i`: a weighted pressure commutator, compatible Fourier approximation,
-and scale/time-uniform bounds for the retained costs remain open. No
+It does not justify applying the scalar-cutoff gradient estimate below
+to `c_i`. The weighted physical commutator above avoids that step, but its
+compatible Fourier limit and scale/time-uniform cost bounds remain open. No
 unconditional regularity theorem follows. `GaussianRootAudit.lean` and
 `Analysis/RadialSquareRootTests.lean` audit these statements and boundaries.
 
