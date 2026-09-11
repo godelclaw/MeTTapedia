@@ -6,6 +6,8 @@ Reusable analysis, independent of any particular fluid construction.
 
 | Module | Mathematical content | Scope |
 | --- | --- | --- |
+| `SchwartzLinearChange.lean` | Absolute-Jacobian pullback, exact Fourier inverse-adjoint identity, mass preservation, and inverse-map spatial-moment cost | Finite-dimensional real inner-product spaces; arbitrary invertible continuous linear changes |
+| `SchwartzDilation.lean` | Exact dilation Jacobian, Fourier argument, and every spatial moment | Positive or negative nonzero real scales; absolute Jacobian handles orientation |
 | `CompactSchwartzFamily.lean` | Uniform Schwartz seminorms, inverse-Fourier decay, and every spatial kernel moment from joint smoothness and common compact support | Compact parameter sets in real normed spaces; Fourier kernels in any finite Euclidean dimension; no assumed continuity in the Schwartz topology |
 | `SmoothAnnulus.lean` | Smooth annular cutoffs, exact larger buffers, and positive regularized squared-norm denominators | Any real normed space admitting smooth bumps; compact support in finite dimensions |
 | `ODE/QuadraticFormBound.lean` | Dissipative forced-ODE comparison, positive integrating factors, additional exponential growth, interval-only forcing, and source-envelope estimates | Any real inner product space; no completeness or finite-dimensionality assumption |
@@ -50,8 +52,12 @@ Reusable analysis, independent of any particular fluid construction.
 The compact-family and annulus modules construct actual normalized low-output
 pressure kernels in `StochasticLagrangian/PressureLowOutputKernel.lean`.
 The moment constants remain uniform as the output/input ratio tends to zero.
-Returning to the original input coordinates incurs an additional dilation
-cost; that step is not contained in the compact-family estimate.
+`SchwartzLinearChange.lean` and `SchwartzDilation.lean` account for the
+physical-coordinate and common-frequency-scale costs. The corresponding
+low-output pressure band kernels retain quadratic mass smallness and linear
+first-moment smallness; these costs are summable over dyadic output ratios.
+`SchwartzLinearChangeTests.lean` checks orientation, six-dimensional
+Jacobian scaling, mass preservation, and first-moment scaling.
 `CompactSchwartzFamilyTests.lean` checks the annular boundaries and a
 nonconstant amplitude-parameter family. These are new derivations from
 mathlib, not external-source ports.

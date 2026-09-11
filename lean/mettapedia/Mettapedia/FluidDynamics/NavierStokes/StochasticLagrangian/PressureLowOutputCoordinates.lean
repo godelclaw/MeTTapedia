@@ -51,4 +51,18 @@ theorem tiltPair_eq_lowOutput (e : R3) (rho : ℝ) (k q w v : R3) :
       tracePair_eq_lowOutput, tiltSymbol_smul e q rho hr,
       mul_smul]
 
+theorem tracePair_smul_frequencies (a : ℝ) (ha : a ≠ 0) (k p w v : R3) :
+    tracePair (a • k) (a • p) w v = tracePair k p w v := by
+  simp only [tracePair, cross_smul_left, real_inner_smul_left, inner_smul_right,
+    norm_smul, Real.norm_eq_abs, mul_pow, sq_abs]
+  calc
+    _ = (a ^ 4 * (⟪p, cross k w⟫ * ⟪k, cross p v⟫)) /
+        (a ^ 4 * (‖k‖ ^ 2 * ‖p‖ ^ 2)) := by ring
+    _ = _ := mul_div_mul_left _ _ (pow_ne_zero 4 ha)
+
+theorem tiltPair_smul_frequencies (a : ℝ) (ha : a ≠ 0) (e k p w v : R3) :
+    tiltPair e (a • k) (a • p) w v = tiltPair e k p w v := by
+  rw [tiltPair, tracePair_smul_frequencies a ha, ← smul_add, tiltSymbol_smul e (k + p) a ha]
+  rfl
+
 end Mettapedia.FluidDynamics.NavierStokes.PressureLowOutputCoordinates

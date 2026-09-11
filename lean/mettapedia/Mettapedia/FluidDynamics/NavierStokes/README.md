@@ -58,6 +58,38 @@ regularity, blowup, or any other Millennium-problem conclusion.
 
 ## Current Status
 
+### Physical low-output pressure band costs at every input scale
+
+`PressureLowOutputChange.lean` constructs the spatial change
+`(x,y) -> (x-y,rho*y)` and identifies its inverse adjoint with the original
+input-frequency change `(k,p) -> (k,(k+p)/rho)`. The inverse spatial map has
+operator norm at most `3/rho` for `0 < rho <= 1`. Generic Jacobian-normalized
+Schwartz pullback preserves mass and retains this exact first-moment cost.
+
+`PressureLowOutputPhysicalKernel.lean` therefore proves quadratic kernel-mass
+smallness and linear first-moment smallness. Its Fourier transform is the
+actual retained pressure-pair entry in the original two-input coordinates.
+The zero-ratio kernel is zero, consistently with its retained symbol.
+`PressureLowOutputScaledKernel.lean` restores any common input scale `N > 0`:
+
+```text
+integral |K_(N,rho,e;i,j,l)(x)| dx       <= C_0 rho²,
+integral |x| |K_(N,rho,e;i,j,l)(x)| dx   <= C_1 rho/N.
+```
+
+The constants are independent of `N`, `0 <= rho <= 1/256`, the unit frozen
+direction, and all 27 real-basis entries. Common frequency scaling is
+proved to preserve the pressure-pair amplitude, including negative scales.
+
+`PressureLowOutputDyadicBudget.lean` proves actual summability of band-kernel
+mass and first moments over `rho_n = 2^(-n)/256`. Their sums are bounded by
+a constant and a constant divided by `N`, respectively. This is not yet a
+reconstruction theorem: the overlapping cutoffs have not been promoted to
+an exact partition of unity. Complex-bilinear reconstruction, periodization,
+the other frequency sectors, and the root-weighted scale/time budget remain
+open. `PressurePhysicalKernelAudit.lean` checks cancellation, orientation,
+geometric sums, and a physical Fourier entry equal to `-1/130052`.
+
 ### Uniform low-output pressure moments in normalized coordinates
 
 `PressureLowOutputCoordinates.lean` writes the receiver frequency as
@@ -78,10 +110,11 @@ integral |x|^m |K_retained(rho,e;i,j,l)(x)| dx <= rho² C_m.
 ```
 
 These transforms use **input/normalized-output coordinates**, not the original
-two-input coordinates. The physical shear/dilation, its first-moment loss,
-complex-bilinear reconstruction, periodization, other frequency sectors, and
-the all-scale/time budget remain to be joined. In particular this is not yet
-a frequency-uniform bound for the full physical pressure localization error.
+two-input coordinates. The physical shear/dilation and first-moment loss are
+now accounted for by the physical-kernel modules above. Reconstruction,
+periodization, other frequency sectors, and the all-scale/time budget remain
+to be joined. In particular this is not yet a frequency-uniform bound for
+the full physical pressure localization error.
 `PressureLowOutputAudit.lean` tests the ratio endpoints, exact cancellation,
 receiver collisions outside the cutoff, and a nonzero normalized limiting
 symbol; the estimate is not obtained by choosing a zero cutoff.
