@@ -76,7 +76,7 @@ fractions of a completed proof.
 | Step | Obligation and completion test | Status and present evidence |
 | --- | --- | --- |
 | S1. Actual equation and objects | Construct the solution, stochastic/material objects, and frequency decomposition from arbitrary admissible data; derive every evolution identity used later from the actual unforced equation. Track the periodic and Euclidean realizations separately. | **Partial.** The local periodic solution, common-interval material flow, vorticity and strain equations are constructed; see `StochasticLagrangian/LocalMaterialVorticity.lean`, `LocalMaterialStrain.lean`, and `LocalSpectralResidual.lean`. This is not a complete arbitrary-data stochastic/Euclidean realization. |
-| S2. Spatial field transfer | Transfer the coherent/misaligned geometry to the actual localized operator fields, retaining uniform kernel constants and the inverse-scale gain through integration and limits. | **Partial.** The complete high-input pressure operator is identified in the joint source, including its finite low-input complement. `PressureMovingDirectionEnergy.lean` proves the actual weighted moving-line energy continuous and integrable without a regularity assumption on signed eigenvectors. `GaussianRootMovingPressureBudget.lean` transfers its spatial integral to actual localized inputs, retaining both angular and gradient costs. `PressureCoherentDivergenceDecomposition.lean` factors the coherent symbol into explicit input-divergence and transverse-divergence channels. `PressureCoherentChannelEnvelopeBudget.lean` constructs common direction/channel-independent periodic envelopes with summable mass and logarithmic first-moment costs. `PressureCoherentChannelAction.lean` realizes their integrated complex-field actions and absolutely convergent band sums. Weak derivative identities for localized vorticity, the patch-square-sum transfer for these channels, and the other source interactions remain required. |
+| S2. Spatial field transfer | Transfer the coherent/misaligned geometry to the actual localized operator fields, retaining uniform kernel constants and the inverse-scale gain through integration and limits. | **Partial.** The complete high-input pressure operator and finite low-input complement are identified. `PressureMovingDirectionEnergy.lean` and `GaussianRootMovingPressureBudget.lean` transfer the actual moving-line energy to localized inputs, retaining angular and gradient costs. `PressureCoherentDivergenceDecomposition.lean` isolates input-divergence and transverse-divergence channels. `PressureCoherentChannelEnvelopeBudget.lean` and `PressureCoherentChannelAction.lean` construct common periodic envelopes and convergent continuous-field actions. `GaussianRootWeakDivergence.lean` constructs the actual localized weak derivatives/divergences in L² and controls their weighted spatial energy. `PressureCoherentChannelWeakFourier.lean` proves the derivative-channel coefficient identities with the exact phase and input scale. Their integrated L² operator realization, the channel patch-square-sum transfer, and the other source interactions remain required. |
 | S3. All scales and sectors | Sum over input scales and pay for the other frequency interactions, angular tails, collision sectors, and adaptive cutoff terms without uncontrolled scale, patch-count, or regularization losses. | **Partial.** `PressureHighInputAction.lean` sums all high-input scales in bilinear operator norm. `GaussianRootHighInputBudget.lean` retains the quarter-geometric tail gain after localization and spatial integration, with explicit vorticity-supremum and patch-gradient costs. `PressureHighInputComplement.lean` identifies the remaining input sector as an exact finite sum. Finite support does not establish a uniform or dynamically affordable bound. The other sectors, scale-critical time control, and regularization limits are open. |
 | S4. Dynamical misalignment budget | Prove the signed time-integrated nonlinear estimate from the actual unforced evolution, with bounds that remain finite up to any candidate finite singular time. Construct `MisalignmentStrainBudget`, rather than pass it in as a hypothesis. | **Open; decisive mathematical core.** `LocalExcessAlignmentEnergy.lean` supplies an actual-data absorption inequality with explicit source costs. `MisalignmentRefinedPin.lean` proves a conditional reduction, not the required dynamical budget. |
 | S5. Vorticity control and continuation | Construct the spatial essential-supremum vorticity integrand, prove its finite-time integral is controlled by the preceding estimates, and apply the continuation theorem to the actual solution. | **Open.** Continuation target surfaces and conditional reductions exist. The current `||omega||_sup² sqrt(G)` spatial cost is not yet a controlled BKM integrand. |
@@ -494,9 +494,10 @@ not prove that the actual summed kernel has an infinite first moment.
 The periodic wrapped-moment repair is proved below, as are the common
 direction/channel-independent envelopes and normalized complex bilinear
 channel kernels. Their continuous-field actions and band sums are also
-constructed. Weak derivative identities for localized vorticity and the
-patch-square-sum transfer for these channels remain required. Uniform
-individual kernel masses do not alone justify that square-sum estimate.
+constructed. The actual localized weak derivatives and their Fourier
+identities are constructed below. Their integrated L² operator realization
+and patch-square-sum transfer remain required. Uniform individual kernel
+masses do not alone justify that square-sum estimate.
 The full localized coherent/misaligned field estimate and its signed
 time-integrated cost remain open.
 
@@ -600,11 +601,52 @@ channel vary between bands, and its norm is at most
 `C 2^(-J) norm(f) norm(g)`. The exact two-input scalar localization
 identity is proved without assuming the localized fields divergence-free.
 
-This does not yet identify the derivative/divergence fields of localized
-NS vorticity in a weak formulation, control their patch-square-sum error,
-or make the resulting costs affordable in time. `PressureCoherentChannelAudit.lean`
+The weak derivative/divergence fields and their coefficient identities are
+constructed in the next section. Their L² operator realization and
+patch-square-sum error remain open, as does time control of the resulting
+costs. `PressureCoherentChannelAudit.lean`
 checks the channel count, complex bilinear phase, zero ratio, normalized
 input coordinates, arbitrary band choices, and localized continuous inputs.
+
+### Actual localized weak divergence and its derivative budget
+
+`PeriodicVectorWeakDerivative.lean` extends the scalar periodic weak
+Fourier derivative to real vector fields with locally Lipschitz lifts.
+Its coordinatewise definition is in L² and agrees almost everywhere
+with the actual vector derivative. The divergence has zero spatial mean,
+but is not assumed pointwise zero. Its Fourier coefficient is
+`2 pi i sum_j k_j fhat_j(k)`.
+
+`GaussianRootWeakDivergence.lean` applies this construction to the actual
+root-localized vorticities `F_i = c_i omega`. The entire vector `F_i` is
+locally Lipschitz; no differentiability of `c_i` at a zero of vorticity is
+assumed. Both `partial_j F_i` and `D_i = div F_i` are actual L² fields.
+Their weighted energies are integrable and satisfy
+
+```text
+integral sum_i c_i^2 D_i^2
+  <= 3 sum_j integral sum_i c_i^2 |partial_j F_i|^2.
+```
+
+The existing fourth-power-normalized derivative estimate is transferred
+to these weak derivatives and to `D_i`, with only the fixed factor three.
+The explicit bound retains the Gaussian `tau^-2` cost, `tau log(card centers)`,
+projector and gap-factor derivatives, and vorticity-gradient terms. It is
+not a bound uniform in all regularizations or up to a singular time.
+
+`PressureCoherentChannelWeakFourier.lean` proves that applying the base
+coherent multiplier to the actual weak derivative coefficient is exactly
+`2 pi i N` times applying the corresponding input-coordinate channel to
+the original field coefficient. Both input slots are treated, and the
+derivative's field need only be locally Lipschitz before differentiation.
+This is not yet an interchange of an L² derivative with the physical-space
+kernel integral; the earlier continuous-input action does not supply that
+step automatically.
+
+`PressureWeakDivergenceAudit.lean` checks constant fields, an explicit
+nonzero divergence after scalar localization, both input-scale factors,
+zero mean for the actual root-localized divergence, and the channel identity
+instantiated at the actual root-vorticity derivative.
 
 ### One integrable envelope for every frozen pressure direction
 
