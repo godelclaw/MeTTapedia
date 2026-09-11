@@ -14682,3 +14682,94 @@ above are kernel theorems. Receipt:
 This narrows the semantic-compression alternative but discharges no
 global reduction or generating-base obligation; the ledger remains
 $57/100$.
+
+\subsection{An adaptive conjunction need not be a physical replacement}
+\label{sec:physical-support-intersection}
+
+There is a further realization issue in a proposed target-aware repair.
+Suppose every word of the actual exterior is rejected by at least one of
+several smaller candidates. Then the exterior misses the intersection of
+their supports. A tempting construction is to realize that intersection by
+one new tangle, sharing the same boundary variables between the candidates.
+The following obstruction rules out this \emph{generic} compilation step.
+It is not a claim that the source manuscript requires such a step.
+
+\begin{theorem}[no literal colour fanout]
+Let $T$ be a finite cubic port tangle with at least one proper Tait
+colouring. If $p,q,r$ are three distinct boundary ports, then they are not
+equal in every proper colouring of $T$. More generally, every equivalence
+class of ports forced equal in all proper colourings has cardinality at
+most two.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalColorNoFanout.not_three_forced_equal}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalColorNoFanout.forcedEqual_class_card_le_two}
+\end{theorem}
+
+\begin{proof}
+If some proper colouring already separates the three ports, there is
+nothing to prove. Otherwise let their common colour be $a$ and choose a
+different nonzero colour $b$. The physical $(a,b)$ Kempe component through
+$p$ has exactly two boundary endpoints. It cannot contain both $q$ and
+$r$. Switch that whole component. Properness is preserved, $p$ changes
+colour, and at least one of $q,r$ retains colour $a$. This is an actual
+colouring construction on the common dart carrier, not a separately chosen
+boundary matching.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalColorNoFanout.exists_split_coloring}
+The cardinality assertion follows by choosing three ports from any larger
+forced-equality class.
+\end{proof}
+
+The interior can be arbitrarily large. No planarity or connectedness is
+needed. Additional \emph{free} boundary ports do not help: the second
+endpoint of the switched component may be one of them. Nonemptiness is
+essential, since an uncolourable tangle satisfies every universal equality
+vacuously. The assertion is about individual boundary-edge colours, not
+encoded signals, internal-edge observations, or a family restricted by
+frozen exterior colours.
+
+\begin{theorem}[nonempty physical supports are not closed under conjunction]
+Let $A$ and $B$ be the two literal four-port digon pairings of
+Section~\ref{sec:physical-context-bits}. Their support intersection is
+nonempty, but no finite cubic four-port tangle $R$ with nonempty support
+satisfies
+\[
+       \operatorname{Supp}(R)\subseteq
+       \operatorname{Supp}(A)\cap\operatorname{Supp}(B).
+\]
+In particular, no such tangle realizes the intersection exactly, regardless
+of its number of internal vertices.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalSupportIntersection.intersection_nonempty}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalSupportIntersection.no_nonempty_support_below_intersection}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalSupportIntersection.no_exact_intersection}
+\end{theorem}
+
+\begin{proof}
+Both pairings accept the all-red word, with their parallel internal edges
+coloured blue and purple. An $A$-extension forces $w_0=w_1$; a
+$B$-extension forces $w_1=w_2$. Hence every common word has three equal
+designated ports. The no-fanout theorem rules out every nonempty physical
+support contained in their intersection.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalSupportIntersection.mem_support_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalSupportIntersection.intersection_forces_three_equal}
+\end{proof}
+
+This obstruction concerns the class allowing disconnected pieces, as does
+the source's disjoint-union operation: $A$ and $B$ themselves are
+disconnected. No analogous connected-source claim is made. The conclusion
+is stronger than failure of one copying gadget but weaker than failure of
+all adaptive reduction: a replacement for one actual exterior need not
+realize this intersection at all.
+
+The constructor gate uses explicit colourings, not a boundary-word census.
+The two-port digon is the positive equality control; even cycles with
+$4,6,8,20$ ports and two disjoint digons exhibit the two-ended switch.
+Tests vary the root and colour names, check the inverse switch and free
+auxiliary ports, and reject a non-cubic copying vertex. Receipt:
+\texttt{results/fourcolor/v24\_copy\_gate.json}.
+
+The proof-plan correction is to keep physical realizability alongside
+every proposed operation on supports. Disjoint union tensors independent
+interfaces; gluing consumes matched ports. Neither supplies a diagonal
+copying map or arbitrary intersection. The protected-mesh branch still
+requires an actual smaller admissible zero-Count map. This failed
+construction discharges no fixed-ledger obligation; the total stays
+$57/100$.
