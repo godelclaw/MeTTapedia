@@ -20,6 +20,7 @@ import Mettapedia.Analysis.FiniteCoefficientEnergy
 import Mettapedia.Analysis.FiniteResolventEnergy
 import Mettapedia.Analysis.QuadraticWeightStability
 import Mettapedia.Analysis.GaussianPartitionTests
+import Mettapedia.Analysis.UnitTorusFourierTests
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.InnerProductSpace.Adjoint
 

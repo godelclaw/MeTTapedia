@@ -78,15 +78,48 @@ bound controls the mean squared distance by the nearest squared distance
 plus `τ log N`. Local Lipschitz regularity proves genuine almost-everywhere
 differentiability, separately from the zero default of the total derivative.
 
-These are spatial amplitudes, **not yet finite Fourier polynomials**.
-Derivative-preserving Fourier approximation is still required to insert
-this budget into the smoothed commutator theorem below. There is no
+These are spatial amplitudes. `LocalGaussianFourierBudget.lean` now
+constructs finite Fourier approximants from their actual coefficients;
+see the next subsection. Their pressure-error transfer is still required
+to insert this budget into the smoothed commutator theorem below. There is no
 multiplicative patch-count loss, but the displayed logarithmic count,
 inverse-radius, amplitude, and inverse-gap-threshold costs remain. No
 uniform dynamical budget or unconditional regularity theorem is claimed.
 `GaussianPressurePartitionAudit.lean` audits the NS dependency closure;
 `Analysis/GaussianPartitionTests.lean` checks the generic cancellations,
 sharp variance constant, norm corner, and Hilbert/operator norm comparison.
+
+### Energy-controlled finite Fourier approximation
+
+`PeriodicFourierWeakDerivative.lean` extends periodic integration by parts
+to a real locally Lipschitz field and a smooth complex character. It proves
+the actual coefficient identity, including sign and normalization,
+
+```text
+Fourier(∂ⱼβ)(k) = (2πi) kⱼ Fourier(β)(k).
+```
+
+`PeriodicFourierGradientEnergy.lean` uses Bessel's inequality to bound
+every finite restriction of those coefficients by the physical gradient
+energy. `PeriodicFourierProjection.lean` supplies the finite coefficient
+objects and identifies their evaluation with the L² projections.
+`LocalGaussianFourierBudget.lean` then constructs, for the actual Gaussian
+patches `βᵢ` and every `δ > 0`, polynomials `pᵢ` with coefficients `cᵢ`:
+
+```text
+Σᵢ ||pᵢ - βᵢ||₂² < δ,
+|2πi|² Σᵢ G(cᵢ) ≤ ∫ gradientDensity(γ,ρ,τ).
+```
+
+No mode-count or patch-count factor is introduced by this approximation.
+The density retains the costs displayed above. This is **L² approximation,
+not uniform approximation**: exact coverage and weighted line localization
+still refer to `βᵢ`. The pressure application must combine those spatial
+identities with a charged L² replacement error; it cannot reuse the old
+pointwise coverage assumption for `pᵢ`. Angular tails, uniform pressure
+norms, and the dynamical source budget remain open.
+`GaussianFourierBudgetAudit.lean` checks the dependency closure, constant
+and negative-frequency derivatives, and finite-coefficient energies.
 
 ### Constructive pressure-patch smoothing
 
@@ -879,8 +912,9 @@ energies are genuine finite-polynomial derivative energies: first
 derivatives contribute `|2πi|²` and mixed second derivatives contribute
 `|2πi|⁴` in Parseval. The second-derivative cost is not supplied by the
 previous first-gradient theorem. The Gaussian construction above now gives
-quantitative spatial patch derivative control; its transfer to finite
-Fourier approximants and bounds for `B₀,B₁` along the actual solution remain open, as does
+quantitative spatial patch derivative control, and the Fourier projection
+construction transfers that control to finite approximants. The charged
+pressure replacement and bounds for `B₀,B₁` along the actual solution remain open, as does
 uniformity in the pressure truncation, gap cutoff, and time.
 `PressureEllipticBudgetAudit.lean` checks the identities, derivative
 normalization, complex cutoff, and nonzero-to-zero output regressions.

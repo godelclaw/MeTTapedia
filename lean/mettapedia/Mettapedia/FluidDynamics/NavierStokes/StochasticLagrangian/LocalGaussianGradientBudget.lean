@@ -5,8 +5,9 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.LocalGaussianP
 
 This closes the spatial construction with actual vorticity and strain
 gradients. It does not assert that the budget is uniform in the spectral
-threshold, the localization radius, time, or dyadic scale. Passing this
-bound to finite Fourier approximants remains a separate approximation step.
+threshold, the localization radius, time, or dyadic scale. The separate
+`LocalGaussianFourierBudget` module transfers this bound to finite Fourier
+approximants using the actual weak derivative coefficients.
 -/
 
 set_option autoImplicit false
