@@ -77,7 +77,7 @@ fractions of a completed proof.
 | --- | --- | --- |
 | S1. Actual equation and objects | Construct the solution, stochastic/material objects, and frequency decomposition from arbitrary admissible data; derive every evolution identity used later from the actual unforced equation. Track the periodic and Euclidean realizations separately. | **Partial.** The local periodic solution, common-interval material flow, vorticity and strain equations are constructed; see `StochasticLagrangian/LocalMaterialVorticity.lean`, `LocalMaterialStrain.lean`, and `LocalSpectralResidual.lean`. This is not a complete arbitrary-data stochastic/Euclidean realization. |
 | S2. Spatial field transfer | Transfer the coherent/misaligned geometry to the actual localized operator fields, retaining uniform kernel constants and the inverse-scale gain through integration and limits. | **Partial.** Exact dyadic pressure kernels, the common envelope, and the mixed spatial-norm budget are checked. `GaussianRootOperatorBudget.lean` now transfers that budget to the integrated Gaussian localization residual and its complete output-band sum at each fixed input scale. This is one pressure-sector transfer, not all coherent/misaligned interactions or all adaptive limits. |
-| S3. All scales and sectors | Sum over input scales and pay for the other frequency interactions, angular tails, collision sectors, and adaptive cutoff terms without uncontrolled scale, patch-count, or regularization losses. | **Partial.** `GaussianRootInputBudget.lean` constructs uniformly bounded adaptive covers and sums this pressure-localization sector over high dyadic input scales for a fixed smooth field. Its bound retains the full second Fourier moment, vorticity supremum, and vorticity-gradient energy. Other sectors, scale-critical control, and regularization limits remain open. |
+| S3. All scales and sectors | Sum over input scales and pay for the other frequency interactions, angular tails, collision sectors, and adaptive cutoff terms without uncontrolled scale, patch-count, or regularization losses. | **Partial.** `GaussianRootDiffusionBudget.lean` constructs uniformly bounded adaptive covers and sums this pressure-localization sector over high dyadic input scales for fixed smooth real divergence-free data. The bound uses actual vorticity-gradient energy, not an absolute Fourier moment. Vorticity-supremum and geometric cutoff costs remain; other sectors, scale-critical time control, and regularization limits are open. |
 | S4. Dynamical misalignment budget | Prove the signed time-integrated nonlinear estimate from the actual unforced evolution, with bounds that remain finite up to any candidate finite singular time. Construct `MisalignmentStrainBudget`, rather than pass it in as a hypothesis. | **Open; decisive mathematical core.** `LocalExcessAlignmentEnergy.lean` supplies an actual-data absorption inequality with explicit source costs. `MisalignmentRefinedPin.lean` proves a conditional reduction, not the required dynamical budget. |
 | S5. Vorticity control and continuation | Construct the spatial essential-supremum vorticity integrand, prove its finite-time integral is controlled by the preceding estimates, and apply the continuation theorem to the actual solution. | **Open.** Continuation target surfaces and conditional reductions exist. The current `||omega||_sup² sqrt(G)` spatial cost is not yet a controlled BKM integrand. |
 | S6. Unconditional theorem and audit | Assemble the arbitrary-data theorem for each claimed domain; check every hypothesis, forcing/pressure convention, limit, and imported result against the target. Compile and audit the final theorem with no assumed analytic budgets or extra axioms. | **Open.** Local lemma builds and foundational-axiom audits are necessary evidence, not completion of this obligation. |
@@ -358,6 +358,62 @@ the failure of finite covering for unbounded separated values.
 `GaussianRootInputAudit.lean` checks temperatures, input scales, genuine
 finite Fourier data, and constructed input-scale summability. Together
 they audit 26 new or refactored theorems.
+
+### Replacing the Fourier-moment cost by physical diffusion energy
+
+`FourierMatrixEnergy.lean` applies Parseval to the columns of the actual
+matrix reconstruction and bounds its real operator norm by its coefficient
+energy, without mode-count or extra dimension multipliers.
+`VorticityGradientEnergy.lean` identifies the full physical gradient energy
+with its Fourier coefficient sum. Conjugate symmetry is explicit: real-part
+projection does not preserve the energy of arbitrary complex data.
+
+For real divergence-free data and every contractive finite Fourier filter,
+`StrainGradientEnergy.integral_sum_strainGradient_sq_le` proves
+
+```text
+integral_x sum_j ||partial_j S_filtered||_op²
+  <= D := integral_x sum_j |partial_j omega|².
+```
+
+Thus `GaussianRootDiffusionBudget.exists_uniform_input_diffusion_budget`
+strengthens the preceding fixed-field input sum to
+
+```text
+Lambda = 4 A / gamma² + (72 + 1600 A) W² / gamma⁴
+R := sum_j ||complete output-band localization at input N_0 2^j||
+R <= (2 C / N_0) W² sqrt(6 Lambda D).
+```
+
+The same theorem constructs every patch family, preserves coverage and
+line accuracy, proves genuine summability, and retains the order in which
+the cover bound is chosen before all filters and input scales. Smoothness
+is required to identify the actual derivatives, but no absolute Fourier
+moment occurs in this stronger bound. The earlier moment-based theorem
+remains available without reality or incompressibility hypotheses.
+
+For every nonnegative scalar test norm `Y` and positive `epsilon`, the
+constructed output sum also satisfies the explicit absorption inequality
+
+```text
+R Y <= epsilon D + 6 C² Lambda W⁴ Y² / (epsilon N_0²).
+```
+
+`Analysis/SqrtEnergyAbsorption.lean` supplies the elementary sharp
+square-root absorption inequality used here. This identifies the remainder;
+it does not prove it affordable over time. In particular, a signed term
+in the actual evolution must still be identified with the tested operator
+output, and its time-dependent cutoff, test norm, vorticity supremum, and
+geometric costs must be controlled. None of these are replaced by an
+assumed `MisalignmentStrainBudget`.
+
+`GaussianRootDiffusionAudit.lean` checks matrix normalization,
+antisymmetric cancellation, a longitudinal-mode refutation when
+incompressibility is omitted, filter uniformity, and actual input-family
+construction. Together with `Analysis/SqrtEnergyAbsorptionTests.lean`, it
+also tests sharp absorption and failure for a negative absorption weight.
+The eight examples are checked alongside 25 new or refactored theorem
+axiom audits.
 
 ### Periodic low-output pressure with wrapped spatial moments
 

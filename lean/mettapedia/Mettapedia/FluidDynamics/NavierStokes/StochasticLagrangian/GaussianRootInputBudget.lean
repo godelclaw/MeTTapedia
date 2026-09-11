@@ -81,6 +81,53 @@ def fullOutputNorm (N : ℝ) (hN : 0 < N) (gamma : ℝ) (chi : Wavevector → �
   Real.sqrt (∫ x : T3, ∑ i : ↑centers,
     ‖rootLocalizationSumAction N hN gamma chi modes u centers (temperature centers.card rho) x i‖ ^ 2)
 
+/-- Operator summation with an explicit common gradient bound. The adaptive
+construction and the choice of this bound are supplied by the subsequent
+actual-data theorems, rather than hidden in the operator constant. -/
+theorem exists_uniform_input_operator_budget :
+    ∃ C : ℝ, 0 ≤ C ∧ ∀ u : FourierVelocity, ∀ hu : Summable (fourierMoment 2 u),
+      let w : C(T3, R3) := ⟨fullVorticity u, continuous_fullVorticity u
+        (summable_fourierMoment_of_le u (by omega : 1 ≤ 2) hu)⟩
+      ∀ gamma : ℝ, 0 < gamma → ∀ N : ℝ, ∀ hN : 0 < N,
+      ∀ chi : ℕ → Wavevector → ℂ, ∀ modes : ℕ → Finset Wavevector,
+      ∀ centers : ℕ → Finset T3, (∀ j, (centers j).Nonempty) → ∀ rho E : ℝ,
+      (∀ j, (∫ x : T3, squaredRootGradientSquare gamma (chi j) (modes j) u (centers j)
+        (temperature (centers j).card rho) x) ≤ E) →
+      Summable (fun j : ℕ ↦ fullOutputNorm (inputScale N j) (inputScale_pos N hN j)
+        gamma (chi j) (modes j) u (centers j) rho) ∧
+      (∑' j : ℕ, fullOutputNorm (inputScale N j) (inputScale_pos N hN j)
+        gamma (chi j) (modes j) u (centers j) rho) ≤
+        (2 * C / N) * (‖w‖ ^ 2 * Real.sqrt (6 * E)) := by
+  obtain ⟨C, hC, hpressure⟩ := exists_uniform_sum_operator_budget_for_fullVorticity
+  refine ⟨C, hC, ?_⟩
+  intro u hu w gamma hg N hN chi modes centers hc rho E hE
+  let B := (C / N) * (‖w‖ ^ 2 * Real.sqrt (6 * E))
+  have hbound (j : ℕ) : fullOutputNorm (inputScale N j) (inputScale_pos N hN j)
+      gamma (chi j) (modes j) u (centers j) rho ≤ B * (1 / 2 : ℝ) ^ j := by
+    have hp := hpressure (inputScale N j) (inputScale_pos N hN j) gamma hg (chi j) (modes j)
+      u hu (centers j) (hc j) (temperature (centers j).card rho)
+    calc
+      _ ≤ _ := hp
+      _ ≤ (C / inputScale N j) * (‖w‖ ^ 2 * Real.sqrt (6 * E)) :=
+        mul_le_mul_of_nonneg_left
+          (mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt
+            (mul_le_mul_of_nonneg_left (hE j) (by norm_num))) (sq_nonneg _))
+          (div_nonneg hC (inputScale_pos N hN j).le)
+      _ = _ := by
+        simp only [B, inputScale, div_eq_mul_inv, mul_inv_rev, one_mul, inv_pow]
+        ring
+  have hgeom : HasSum (fun j : ℕ ↦ (1 / 2 : ℝ) ^ j) 2 := by
+    convert hasSum_geometric_of_lt_one (by norm_num : (0 : ℝ) ≤ 1 / 2)
+      (by norm_num : (1 / 2 : ℝ) < 1) using 1
+    norm_num
+  have hB := hgeom.mul_left B
+  have hs := hB.summable.of_nonneg_of_le (fun j ↦ Real.sqrt_nonneg _) hbound
+  refine ⟨hs, ?_⟩
+  calc
+    _ ≤ ∑' j : ℕ, B * (1 / 2 : ℝ) ^ j := hs.tsum_le_tsum hbound hB.summable
+    _ = B * 2 := hB.tsum_eq
+    _ = _ := by dsimp [B]; ring
+
 /-- The common cover bound is chosen before the input scale and all filters.
 All patch families are constructed, and their true output sums are used. -/
 theorem exists_uniform_input_budget :
@@ -105,7 +152,7 @@ theorem exists_uniform_input_budget :
             gamma (chi j) (modes j) u (centers j) rho) ≤
             (2 * C / N) * (‖w‖ ^ 2 * Real.sqrt (6 *
               gradientEnergyBudget gamma ‖w‖ (partitionMultiplier M gamma ‖w‖ rho) u)) := by
-  obtain ⟨C, hC, hpressure⟩ := exists_uniform_sum_operator_budget_for_fullVorticity
+  obtain ⟨C, hC, hpressure⟩ := exists_uniform_input_operator_budget
   refine ⟨C, hC, ?_⟩
   intro u hu gamma hg rho hrho
   let w : C(T3, R3) := ⟨fullVorticity u, continuous_fullVorticity u
@@ -118,36 +165,12 @@ theorem exists_uniform_input_budget :
     (fun j : ℕ ↦ hgeometry (chi j) (modes j) u hu w.norm_coe_le_norm)
   let A := partitionMultiplier M gamma ‖w‖ rho
   let E := gradientEnergyBudget gamma ‖w‖ A u
-  let B := (C / N) * (‖w‖ ^ 2 * Real.sqrt (6 * E))
   have hE (j : ℕ) :
       (∫ x : T3, squaredRootGradientSquare gamma (chi j) (modes j) u (centers j)
         (temperature (centers j).card rho) x) ≤ E :=
     (hG j).trans (integral_gradientDensity_le gamma ‖w‖ A
       (partitionMultiplier_nonneg M gamma ‖w‖ rho) (chi j) (modes j) (hchi j) u hu2)
-  have hbound (j : ℕ) : fullOutputNorm (inputScale N j) (inputScale_pos N hN j)
-      gamma (chi j) (modes j) u (centers j) rho ≤ B * (1 / 2 : ℝ) ^ j := by
-    have hp := hpressure (inputScale N j) (inputScale_pos N hN j) gamma hg (chi j) (modes j)
-      u hu2 (centers j) (hc j) (temperature (centers j).card rho)
-    have hfrac : 0 ≤ C / inputScale N j := div_nonneg hC (inputScale_pos N hN j).le
-    calc
-      _ ≤ _ := hp
-      _ ≤ (C / inputScale N j) * (‖w‖ ^ 2 * Real.sqrt (6 * E)) :=
-        mul_le_mul_of_nonneg_left
-          (mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt
-            (mul_le_mul_of_nonneg_left (hE j) (by norm_num))) (sq_nonneg _)) hfrac
-      _ = _ := by
-        simp only [B, inputScale, div_eq_mul_inv, mul_inv_rev, one_mul, inv_pow]
-        ring
-  have hgeom : HasSum (fun j : ℕ ↦ (1 / 2 : ℝ) ^ j) 2 := by
-    convert hasSum_geometric_of_lt_one (by norm_num : (0 : ℝ) ≤ 1 / 2)
-      (by norm_num : (1 / 2 : ℝ) < 1) using 1
-    norm_num
-  have hB := hgeom.mul_left B
-  have hs := hB.summable.of_nonneg_of_le (fun j ↦ Real.sqrt_nonneg _) hbound
-  refine ⟨centers, fun j ↦ ⟨hc j, hcard j, hmass j, hline j⟩, hs, ?_⟩
-  calc
-    _ ≤ ∑' j : ℕ, B * (1 / 2 : ℝ) ^ j := hs.tsum_le_tsum hbound hB.summable
-    _ = B * 2 := hB.tsum_eq
-    _ = _ := by dsimp [B, E, A]; ring
+  exact ⟨centers, fun j ↦ ⟨hc j, hcard j, hmass j, hline j⟩,
+    hpressure u hu2 gamma hg N hN chi modes centers hc rho E hE⟩
 
 end Mettapedia.FluidDynamics.NavierStokes.GaussianRootInputBudget
