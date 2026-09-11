@@ -5,12 +5,21 @@ from pathlib import Path
 import unittest
 
 from v24_joint_vertex_step_gate import (
-    bounded_closure, check_sweep, encode_rotation, joint_step, rejects_extension,
+    bounded_closure, check_sweep, component_count, encode_rotation, joint_step, rejects_extension,
     run, structurally_accepting,
 )
 
 
 class JointVertexStepTests(unittest.TestCase):
+    def test_consumed_component_columns(self):
+        connected = (((False, False), False, True, 0),
+                     ((True, True), True, False, 0))
+        disconnected = connected + (((False, True), True, True, 0),
+                                    ((True, False), True, True, 0))
+        self.assertEqual(component_count(connected, (0, 1, 1)), 1)
+        self.assertEqual(component_count(disconnected, (0, 1, 1)), 2)
+        self.assertEqual(component_count(disconnected, ()), 0)
+
     def test_receipt_reproduces(self):
         receipt = Path(__file__).resolve().parents[2] / 'results/fourcolor/v24_joint_vertex_step_gate.json'
         self.assertEqual(json.loads(json.dumps(run())), json.loads(receipt.read_text()))
