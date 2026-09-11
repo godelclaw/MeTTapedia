@@ -1,0 +1,789 @@
+{
+  "controls": {
+    "flower5": {
+      "bridgeless": true,
+      "cases": [
+        {
+          "completion_counts": [
+            108,
+            36,
+            36
+          ],
+          "exterior_count": 108,
+          "monochromatic_count": 36,
+          "site": [
+            0,
+            1
+          ]
+        },
+        {
+          "completion_counts": [
+            90,
+            30,
+            30
+          ],
+          "exterior_count": 90,
+          "monochromatic_count": 30,
+          "site": [
+            0,
+            2
+          ]
+        },
+        {
+          "completion_counts": [
+            90,
+            30,
+            30
+          ],
+          "exterior_count": 90,
+          "monochromatic_count": 30,
+          "site": [
+            0,
+            3
+          ]
+        },
+        {
+          "completion_counts": [
+            36,
+            12,
+            12
+          ],
+          "exterior_count": 36,
+          "monochromatic_count": 12,
+          "site": [
+            1,
+            5
+          ]
+        },
+        {
+          "completion_counts": [
+            36,
+            12,
+            12
+          ],
+          "exterior_count": 36,
+          "monochromatic_count": 12,
+          "site": [
+            1,
+            17
+          ]
+        },
+        {
+          "completion_counts": [
+            54,
+            18,
+            18
+          ],
+          "exterior_count": 54,
+          "monochromatic_count": 18,
+          "site": [
+            2,
+            7
+          ]
+        },
+        {
+          "completion_counts": [
+            54,
+            18,
+            18
+          ],
+          "exterior_count": 54,
+          "monochromatic_count": 18,
+          "site": [
+            2,
+            19
+          ]
+        },
+        {
+          "completion_counts": [
+            54,
+            18,
+            18
+          ],
+          "exterior_count": 54,
+          "monochromatic_count": 18,
+          "site": [
+            3,
+            6
+          ]
+        },
+        {
+          "completion_counts": [
+            54,
+            18,
+            18
+          ],
+          "exterior_count": 54,
+          "monochromatic_count": 18,
+          "site": [
+            3,
+            18
+          ]
+        },
+        {
+          "completion_counts": [
+            108,
+            36,
+            36
+          ],
+          "exterior_count": 108,
+          "monochromatic_count": 36,
+          "site": [
+            4,
+            5
+          ]
+        },
+        {
+          "completion_counts": [
+            90,
+            30,
+            30
+          ],
+          "exterior_count": 90,
+          "monochromatic_count": 30,
+          "site": [
+            4,
+            6
+          ]
+        },
+        {
+          "completion_counts": [
+            90,
+            30,
+            30
+          ],
+          "exterior_count": 90,
+          "monochromatic_count": 30,
+          "site": [
+            4,
+            7
+          ]
+        },
+        {
+          "completion_counts": [
+            36,
+            12,
+            12
+          ],
+          "exterior_count": 36,
+          "monochromatic_count": 12,
+          "site": [
+            5,
+            9
+          ]
+        },
+        {
+          "completion_counts": [
+            54,
+            18,
+            18
+          ],
+          "exterior_count": 54,
+          "monochromatic_count": 18,
+          "site": [
+            6,
+            11
+          ]
+        },
+        {
+          "completion_counts": [
+            54,
+            18,
+            18
+          ],
+          "exterior_count": 54,
+          "monochromatic_count": 18,
+          "site": [
+            7,
+            10
+          ]
+        },
+        {
+          "completion_counts": [
+            108,
+            36,
+            36
+          ],
+          "exterior_count": 108,
+          "monochromatic_count": 36,
+          "site": [
+            8,
+            9
+          ]
+        },
+        {
+          "completion_counts": [
+            90,
+            30,
+            30
+          ],
+          "exterior_count": 90,
+          "monochromatic_count": 30,
+          "site": [
+            8,
+            10
+          ]
+        },
+        {
+          "completion_counts": [
+            90,
+            30,
+            30
+          ],
+          "exterior_count": 90,
+          "monochromatic_count": 30,
+          "site": [
+            8,
+            11
+          ]
+        },
+        {
+          "completion_counts": [
+            36,
+            12,
+            12
+          ],
+          "exterior_count": 36,
+          "monochromatic_count": 12,
+          "site": [
+            9,
+            13
+          ]
+        },
+        {
+          "completion_counts": [
+            54,
+            18,
+            18
+          ],
+          "exterior_count": 54,
+          "monochromatic_count": 18,
+          "site": [
+            10,
+            15
+          ]
+        },
+        {
+          "completion_counts": [
+            54,
+            18,
+            18
+          ],
+          "exterior_count": 54,
+          "monochromatic_count": 18,
+          "site": [
+            11,
+            14
+          ]
+        },
+        {
+          "completion_counts": [
+            108,
+            36,
+            36
+          ],
+          "exterior_count": 108,
+          "monochromatic_count": 36,
+          "site": [
+            12,
+            13
+          ]
+        },
+        {
+          "completion_counts": [
+            90,
+            30,
+            30
+          ],
+          "exterior_count": 90,
+          "monochromatic_count": 30,
+          "site": [
+            12,
+            14
+          ]
+        },
+        {
+          "completion_counts": [
+            90,
+            30,
+            30
+          ],
+          "exterior_count": 90,
+          "monochromatic_count": 30,
+          "site": [
+            12,
+            15
+          ]
+        },
+        {
+          "completion_counts": [
+            36,
+            12,
+            12
+          ],
+          "exterior_count": 36,
+          "monochromatic_count": 12,
+          "site": [
+            13,
+            17
+          ]
+        },
+        {
+          "completion_counts": [
+            54,
+            18,
+            18
+          ],
+          "exterior_count": 54,
+          "monochromatic_count": 18,
+          "site": [
+            14,
+            19
+          ]
+        },
+        {
+          "completion_counts": [
+            54,
+            18,
+            18
+          ],
+          "exterior_count": 54,
+          "monochromatic_count": 18,
+          "site": [
+            15,
+            18
+          ]
+        },
+        {
+          "completion_counts": [
+            108,
+            36,
+            36
+          ],
+          "exterior_count": 108,
+          "monochromatic_count": 36,
+          "site": [
+            16,
+            17
+          ]
+        },
+        {
+          "completion_counts": [
+            90,
+            30,
+            30
+          ],
+          "exterior_count": 90,
+          "monochromatic_count": 30,
+          "site": [
+            16,
+            18
+          ]
+        },
+        {
+          "completion_counts": [
+            90,
+            30,
+            30
+          ],
+          "exterior_count": 90,
+          "monochromatic_count": 30,
+          "site": [
+            16,
+            19
+          ]
+        }
+      ],
+      "edges": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          5
+        ],
+        [
+          1,
+          17
+        ],
+        [
+          2,
+          7
+        ],
+        [
+          2,
+          19
+        ],
+        [
+          3,
+          6
+        ],
+        [
+          3,
+          18
+        ],
+        [
+          4,
+          5
+        ],
+        [
+          4,
+          6
+        ],
+        [
+          4,
+          7
+        ],
+        [
+          5,
+          9
+        ],
+        [
+          6,
+          11
+        ],
+        [
+          7,
+          10
+        ],
+        [
+          8,
+          9
+        ],
+        [
+          8,
+          10
+        ],
+        [
+          8,
+          11
+        ],
+        [
+          9,
+          13
+        ],
+        [
+          10,
+          15
+        ],
+        [
+          11,
+          14
+        ],
+        [
+          12,
+          13
+        ],
+        [
+          12,
+          14
+        ],
+        [
+          12,
+          15
+        ],
+        [
+          13,
+          17
+        ],
+        [
+          14,
+          19
+        ],
+        [
+          15,
+          18
+        ],
+        [
+          16,
+          17
+        ],
+        [
+          16,
+          18
+        ],
+        [
+          16,
+          19
+        ]
+      ],
+      "planar": false,
+      "vertices": 20
+    },
+    "petersen": {
+      "bridgeless": true,
+      "cases": [
+        {
+          "completion_counts": [
+            18,
+            6,
+            6
+          ],
+          "exterior_count": 18,
+          "monochromatic_count": 6,
+          "site": [
+            0,
+            1
+          ]
+        },
+        {
+          "completion_counts": [
+            18,
+            6,
+            6
+          ],
+          "exterior_count": 18,
+          "monochromatic_count": 6,
+          "site": [
+            0,
+            4
+          ]
+        },
+        {
+          "completion_counts": [
+            18,
+            6,
+            6
+          ],
+          "exterior_count": 18,
+          "monochromatic_count": 6,
+          "site": [
+            0,
+            5
+          ]
+        },
+        {
+          "completion_counts": [
+            18,
+            6,
+            6
+          ],
+          "exterior_count": 18,
+          "monochromatic_count": 6,
+          "site": [
+            1,
+            2
+          ]
+        },
+        {
+          "completion_counts": [
+            18,
+            6,
+            6
+          ],
+          "exterior_count": 18,
+          "monochromatic_count": 6,
+          "site": [
+            1,
+            6
+          ]
+        },
+        {
+          "completion_counts": [
+            18,
+            6,
+            6
+          ],
+          "exterior_count": 18,
+          "monochromatic_count": 6,
+          "site": [
+            2,
+            3
+          ]
+        },
+        {
+          "completion_counts": [
+            18,
+            6,
+            6
+          ],
+          "exterior_count": 18,
+          "monochromatic_count": 6,
+          "site": [
+            2,
+            7
+          ]
+        },
+        {
+          "completion_counts": [
+            18,
+            6,
+            6
+          ],
+          "exterior_count": 18,
+          "monochromatic_count": 6,
+          "site": [
+            3,
+            4
+          ]
+        },
+        {
+          "completion_counts": [
+            18,
+            6,
+            6
+          ],
+          "exterior_count": 18,
+          "monochromatic_count": 6,
+          "site": [
+            3,
+            8
+          ]
+        },
+        {
+          "completion_counts": [
+            18,
+            6,
+            6
+          ],
+          "exterior_count": 18,
+          "monochromatic_count": 6,
+          "site": [
+            4,
+            9
+          ]
+        },
+        {
+          "completion_counts": [
+            18,
+            6,
+            6
+          ],
+          "exterior_count": 18,
+          "monochromatic_count": 6,
+          "site": [
+            5,
+            7
+          ]
+        },
+        {
+          "completion_counts": [
+            18,
+            6,
+            6
+          ],
+          "exterior_count": 18,
+          "monochromatic_count": 6,
+          "site": [
+            5,
+            8
+          ]
+        },
+        {
+          "completion_counts": [
+            18,
+            6,
+            6
+          ],
+          "exterior_count": 18,
+          "monochromatic_count": 6,
+          "site": [
+            6,
+            8
+          ]
+        },
+        {
+          "completion_counts": [
+            18,
+            6,
+            6
+          ],
+          "exterior_count": 18,
+          "monochromatic_count": 6,
+          "site": [
+            6,
+            9
+          ]
+        },
+        {
+          "completion_counts": [
+            18,
+            6,
+            6
+          ],
+          "exterior_count": 18,
+          "monochromatic_count": 6,
+          "site": [
+            7,
+            9
+          ]
+        }
+      ],
+      "edges": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          0,
+          5
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          6
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          2,
+          7
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          3,
+          8
+        ],
+        [
+          4,
+          9
+        ],
+        [
+          5,
+          7
+        ],
+        [
+          5,
+          8
+        ],
+        [
+          6,
+          8
+        ],
+        [
+          6,
+          9
+        ],
+        [
+          7,
+          9
+        ]
+      ],
+      "planar": false,
+      "vertices": 10
+    }
+  },
+  "endpoint_cases": 45,
+  "scope": "Nonplanar controls: not a refutation of the planar compositional route."
+}

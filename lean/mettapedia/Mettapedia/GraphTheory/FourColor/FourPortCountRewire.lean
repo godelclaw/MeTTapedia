@@ -151,7 +151,8 @@ theorem card_cap_col (h : Bool) (w : SquareBoundaryWord) :
   rw [Nat.card_congr (capColEquiv h w), Nat.card_eq_fintype_card]
   simp [Fintype.card_subtype, fiberCount]
 
-private theorem extension_iff_ne : ∀ h (w : SquareBoundaryWord),
+/-- Cut parity reduces the two-vertex extension test to one inequality. -/
+theorem extension_iff_ne : ∀ h (w : SquareBoundaryWord),
     w.Nonzero → (∑ p, w p) = 0 →
       ((∃ z, IsExtension h w z) ↔ w 0 ≠ w (if h then 3 else 1)) := by
   decide +kernel
