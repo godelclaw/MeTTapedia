@@ -11,6 +11,8 @@ Reusable analysis, independent of any particular fluid construction.
 | `DyadicAnnulus.lean` | Finite overlap, dyadic invariance, positivity, and punctured smoothness of the annulus normalizer | Any real normed space admitting smooth bumps; the normalizer lies between one and three away from zero |
 | `DyadicAnnulusPartition.lean` | Smooth exact dyadic partition, compact support, and one-sided reconstruction in the punctured unit ball | Zero excluded from the partition identity; all annular bands vanish there |
 | `DyadicAnnulusCorrection.lean` | Globally smooth bounded multiplier realizing the normalization on annular support | Extends the reciprocal normalizer by one near zero without changing an annularly supported symbol |
+| `DyadicHighPass.lean` | The exact one-sided high-input annular sum and its low-pass complement | Valid at zero; zero on the half-unit ball, one beyond radius two, and one half at unit norm |
+| `WeightedSeries.lean` | Bounded scalar weighting and exact complementary splitting of absolutely convergent Banach-space series | Any normed scalar field; signed or complex weights are allowed |
 | `FundamentalDomainPeriodization.lean` | Measurable orbit sums, exact character-integral transfer, and invariant-weight mass contraction on a fundamental domain | Countable measure-preserving additive actions; the unweighted core is shared with the existing coherent-kernel development |
 | `EuclideanBilinearCoordinates.lean` | Exact coordinate reconstruction of continuous bilinear maps and operator norm bounded by the sum of absolute entries | Real or complex Euclidean spaces with independent finite input and output index sets |
 | `SchwartzBilinearKernel.lean` | Scalar-entry assembly into bilinear-operator-valued Schwartz kernels, exact Fourier identity, and every operator-norm moment bound | Complex Euclidean input/output spaces; any finite Euclidean spatial dimension; bilinear, not sesquilinear |
@@ -56,6 +58,7 @@ Reusable analysis, independent of any particular fluid construction.
 | `EuclideanCrossProduct.lean` | Cross-product bilinearity, cyclic triple product, Lagrange identity, and sharp norm bound | Real three-dimensional Euclidean space, transporting mathlib's coordinate cross product into the L2 norm |
 | `UnitTorusFourierEnergy.lean` | Parseval, finite-set Bessel bounds, and character coefficient orthogonality for actual measurable functions | Any finite-dimensional unit torus with normalized Haar measure; `MemLp` rather than continuity suffices for the energy bounds |
 | `UnitTorusFourierApproximation.lean` | Finite Fourier projections and vanishing total physical L² error for finite families | Continuous complex fields on any finite-dimensional unit torus; neither uniform convergence nor absolute coefficient summability is assumed |
+| `UnitTorusFourierUniqueness.lean` | Banach-valued continuous fields are determined by their Fourier coefficients; finite coefficient support gives exact pointwise reconstruction | Derived from scalar L² completeness, full support of Haar measure, and separating continuous linear functionals; no pointwise convergence assumption |
 
 The compact-family and annulus modules construct actual normalized low-output
 pressure kernels in `StochasticLagrangian/PressureLowOutputKernel.lean`.
