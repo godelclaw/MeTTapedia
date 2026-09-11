@@ -78,7 +78,7 @@ fractions of a completed proof.
 | S1. Actual equation and objects | Construct the solution, stochastic/material objects, and frequency decomposition from arbitrary admissible data; derive every evolution identity used later from the actual unforced equation. Track the periodic and Euclidean realizations separately. | **Partial.** The local periodic solution, common-interval material flow, vorticity and strain equations are constructed; see `StochasticLagrangian/LocalMaterialVorticity.lean`, `LocalMaterialStrain.lean`, and `LocalSpectralResidual.lean`. This is not a complete arbitrary-data stochastic/Euclidean realization. |
 | S2. Spatial field transfer | Transfer the coherent/misaligned geometry to the actual localized operator fields, retaining uniform kernel constants and the inverse-scale gain through integration and limits. | **Partial.** High-input pressure and the low-input complement are identified; moving-line and divergence decompositions retain their source costs. Common periodic envelopes and actual localized weak derivatives in L² are constructed. `PressureCoherentWeakFieldTransfer.lean` identifies both input-coordinate channels, retaining the uniform ratio²/input-scale² energy gain. `GaussianRootWeakChannelBudget.lean` transfers both patch-square sums to the integrable two-point derivative density without individual input suprema or a patch-count factor. `GaussianRootTwoPointDerivative.lean` bounds that density by actual gap/projector derivatives and Gaussian two-point moments, on a common null set that survives translation. `PressureCoherentRelativeMoment.lean` retains the ratio in every prescribed relative kernel moment and integrates squared field separation with an explicit Lipschitz cost. `GaussianRootTwoPointIntegral.lean` proves integrability of the full Gaussian derivative cost and transfers both actual channel-energy sums to it using one constructed envelope. `GaussianRootIncrementBudget.lean` replaces projector separation by actual vorticity/strain increments inside both integrated channel costs, using constructed adaptive centers. `GaussianRootWeightedIncrement.lean` controls the bare vorticity increment by actual sixth-power-weighted palinstrophy with the relative second-moment gain, and splits the full cost while retaining its two-endpoint projector coefficient. Quantitative control of the derivative-weighted costs, remaining interactions, and time affordability are still required. |
 | S3. All scales and sectors | Sum over input scales and pay for the other frequency interactions, angular tails, collision sectors, and adaptive cutoff terms without uncontrolled scale, patch-count, or regularization losses. | **Partial.** `PressureHighInputAction.lean` sums all high-input scales in bilinear operator norm. `GaussianRootHighInputBudget.lean` retains the quarter-geometric tail gain after localization and spatial integration, with explicit vorticity-supremum and patch-gradient costs. `PressureHighInputComplement.lean` identifies the remaining input sector as an exact finite sum. Finite support does not establish a uniform or dynamically affordable bound. The other sectors, scale-critical time control, and regularization limits are open. |
-| S4. Dynamical misalignment budget | Prove the signed time-integrated nonlinear estimate from the actual unforced evolution, with bounds that remain finite up to any candidate finite singular time. Construct `MisalignmentStrainBudget`, rather than pass it in as a hypothesis. | **Open; decisive mathematical core.** `LocalExcessAlignmentEnergy.lean` supplies an actual-data absorption inequality with explicit source costs. `LocalVorticityEighthEnergy.lean` derives the exact initial-data eighth-moment identity with both positive dissipation terms and signed stretching, using the same weighted palinstrophy as the increment estimate. Neither source is dynamically controlled. `MisalignmentRefinedPin.lean` proves a conditional reduction, not the required dynamical budget. |
+| S4. Dynamical misalignment budget | Prove the signed time-integrated nonlinear estimate from the actual unforced evolution, with bounds that remain finite up to any candidate finite singular time. Construct `MisalignmentStrainBudget`, rather than pass it in as a hypothesis. | **Open; decisive mathematical core.** `LocalExcessAlignmentEnergy.lean` supplies an actual-data absorption inequality with explicit source costs. `LocalVorticityEighthEnergy.lean` derives the exact initial-data eighth-moment identity with both positive dissipation terms and signed stretching, using the same weighted palinstrophy as the increment estimate. `VorticityWeightedStretching.lean` identifies that actual full source as the limit of signed two-point cross-product/radial-difference integrals. Neither source is dynamically controlled. `MisalignmentRefinedPin.lean` proves a conditional reduction, not the required dynamical budget. |
 | S5. Vorticity control and continuation | Construct the spatial essential-supremum vorticity integrand, prove its finite-time integral is controlled by the preceding estimates, and apply the continuation theorem to the actual solution. | **Open.** Continuation target surfaces and conditional reductions exist. The current `||omega||_sup² sqrt(G)` spatial cost is not yet a controlled BKM integrand. |
 | S6. Unconditional theorem and audit | Assemble the arbitrary-data theorem for each claimed domain; check every hypothesis, forcing/pressure convention, limit, and imported result against the target. Compile and audit the final theorem with no assumed analytic budgets or extra axioms. | **Open.** Local lemma builds and foundational-axiom audits are necessary evidence, not completion of this obligation. |
 
@@ -1046,6 +1046,63 @@ global continuation still require independent estimates.
 `LocalVorticityEighthAudit.lean` checks zero-vorticity, zero-viscosity,
 initial-endpoint, sign and numerical-coefficient cases and audits the
 generic calculus, local balance and actual-data declarations.
+
+#### Signed exchange representation of the actual stretching source
+
+`Analysis/SignedCrossKernel.lean` proves the exchange identity for an even
+continuous kernel on a compact measured space. With `F_n(a)=|a|^n a`,
+
+```text
+|a|^n <a cross b,H a> + |b|^n <b cross a,H b>
+  = <a cross b,H(F_n(a)-F_n(b))>.
+```
+
+The integrated identity includes the factor one half from exchanging
+the endpoints. Collinear inputs give zero, including opposite directions
+and zeros. Adding any scalar multiple of the identity to `H` changes
+nothing. The cross product and signed radial difference are retained
+before the separate absolute-value estimate.
+
+`VorticityStretchingKernel.lean` constructs the finite periodic kernel
+
+```text
+P_k a = (<k,a>/|k|^2) k,                  P_0 = 0,
+H_M(z) = sum_(k in M) Re(exp(2 pi i k.z)) P_k.
+```
+
+For real transverse velocity coefficients, its quadratic action on the
+full physical vorticity equals the finite reconstruction of the actual
+strain. The proof retains the physical Fourier phases and handles the
+zero mode. Evenness holds for every finite set `M`; no symmetry assumption
+on that set and no separately prescribed strain are required.
+
+`FullStrainFourierSeries.lean` identifies the strain series with the
+symmetric derivative of the full velocity and proves convergence over
+finite frequency sets from one absolute velocity moment.
+`VorticityWeightedStretching.lean` then proves
+
+```text
+S8(u) = lim_M (1/2) integral_x integral_y
+  <omega(x) cross omega(y),
+   H_M(x-y) (F_6(omega(x))-F_6(omega(y)))>.
+```
+
+The receiver at each endpoint is the full vorticity throughout. The limit
+is outside the signed double integral; this does not assert existence of
+an ordinary integrable infinite kernel or exchange that limit with the
+double integral. The domination used for the limit depends on the current
+absolute velocity moment, and is not a uniform dynamical bound. The
+generic theorem applies to every natural radial weight and recovers the
+exact `S8` in the preceding energy identity at weight six.
+
+This supplies the actual source expression on which an alignment estimate
+must act. It does not bound that expression by `G8`, construct a direction
+modulus, or close any time budget. A fixed-line collinearity corollary
+annuls the source, but its alignment hypothesis is not asserted for
+arbitrary data. `VorticityStretchingAudit.lean` and
+`Analysis/SignedCrossKernelTests.lean` check the physical local-solution
+interface, exchange factor, zero mode, isotropic cancellation, endpoint
+degeneracies and a nonzero signed triple product.
 
 #### Endpoint and forcing restrictions
 
