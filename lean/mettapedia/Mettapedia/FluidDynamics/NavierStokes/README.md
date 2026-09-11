@@ -58,6 +58,39 @@ regularity, blowup, or any other Millennium-problem conclusion.
 
 ## Current Status
 
+### Periodic low-output pressure with wrapped spatial moments
+
+`PressureLowOutputPeriodization.lean` constructs an actual integrable
+complex-bilinear kernel on mathlib's unit six-torus. Its Fourier coefficient
+at each input-frequency pair is exactly the retained physical pressure
+operator, using the same Fourier sign and normalized Haar measure as the
+existing pressure-kernel action.
+
+`FrequencyPairPeriodization.lean` reuses the standard lattice geometry and
+proves kernel-independent Fourier transfer and contraction of every spatial
+moment under periodization. The torus norm measures wrapped distance in the
+standard product norm; it is not the norm of the representative in the
+half-open unit cube. Consequently the periodic pressure kernels satisfy
+
+```text
+integral ||K_T(q)|| dq                         <= C_0 rho²,
+integral ||q|| ||K_T(q)|| dq                   <= C_1 rho/N,
+integral (||first(q)|| + ||second(q)||) ||K_T(q)|| dq <= C_2 rho/N.
+```
+
+The first two constants incur no extra periodization factor. The last
+estimate explicitly pays both input-displacement channels with a factor
+of two. All three actual costs are summable over the dyadic output bands,
+uniformly in input scale and frozen unit direction.
+
+`PressurePeriodizationAudit.lean` checks the periodic seam, a quarter-period
+wrapped distance, the attained two-input factor, complex phases, and a
+nonzero periodized Fourier entry equal to `-1/130052`.
+This closes periodic transfer for these low-output bands. Exact band
+decomposition, the other frequency sectors, and the root-weighted dynamical
+scale/time budget remain open; integrability here is not a claim of
+pointwise continuity of the orbit sum or global NS regularity.
+
 ### Actual complex pressure operators with summable low-output band costs
 
 `PressureOperatorCoordinates.lean` reconstructs the existing continuous
@@ -89,8 +122,8 @@ constant and by a constant divided by `N`, respectively.
 single- and double-imaginary phases, a nonzero low-output pressure entry,
 and exact cancellation at opposite frequencies. This closes scalar-to-operator
 reconstruction, not the decomposition of the full pressure into bands.
-Exact partition of unity, periodization, the other frequency sectors, and
-the scale/time-weighted localization budget remain open.
+Periodic transfer is supplied above. Exact partition of unity, the other
+frequency sectors, and the scale/time-weighted localization budget remain open.
 
 ### Physical low-output pressure band costs at every input scale
 
@@ -120,8 +153,8 @@ mass and first moments over `rho_n = 2^(-n)/256`. Their sums are bounded by
 a constant and a constant divided by `N`, respectively. This is not yet a
 reconstruction theorem: the overlapping cutoffs have not been promoted to
 an exact partition of unity. Complex-bilinear reconstruction is supplied above;
-periodization, the other frequency sectors, and the root-weighted scale/time
-budget remain open. `PressurePhysicalKernelAudit.lean` checks cancellation, orientation,
+periodic transfer is also supplied above. The other frequency sectors and
+root-weighted scale/time budget remain open. `PressurePhysicalKernelAudit.lean` checks cancellation, orientation,
 geometric sums, and a physical Fourier entry equal to `-1/130052`.
 
 ### Uniform low-output pressure moments in normalized coordinates
@@ -145,9 +178,10 @@ integral |x|^m |K_retained(rho,e;i,j,l)(x)| dx <= rho² C_m.
 
 These transforms use **input/normalized-output coordinates**, not the original
 two-input coordinates. The physical shear/dilation and first-moment loss are
-now accounted for by the physical-kernel modules above. Reconstruction,
-periodization, other frequency sectors, and the all-scale/time budget remain
-to be joined. In particular this is not yet a frequency-uniform bound for
+now accounted for by the physical-kernel modules above. Operator assembly and
+periodic transfer are also proved above. Exact band decomposition, other
+frequency sectors, and the all-scale/time budget remain to be joined.
+In particular this is not yet a frequency-uniform bound for
 the full physical pressure localization error.
 `PressureLowOutputAudit.lean` tests the ratio endpoints, exact cancellation,
 receiver collisions outside the cutoff, and a nonzero normalized limiting

@@ -6,6 +6,7 @@ Reusable analysis, independent of any particular fluid construction.
 
 | Module | Mathematical content | Scope |
 | --- | --- | --- |
+| `FundamentalDomainPeriodization.lean` | Measurable orbit sums, exact character-integral transfer, and invariant-weight mass contraction on a fundamental domain | Countable measure-preserving additive actions; the unweighted core is shared with the existing coherent-kernel development |
 | `EuclideanBilinearCoordinates.lean` | Exact coordinate reconstruction of continuous bilinear maps and operator norm bounded by the sum of absolute entries | Real or complex Euclidean spaces with independent finite input and output index sets |
 | `SchwartzBilinearKernel.lean` | Scalar-entry assembly into bilinear-operator-valued Schwartz kernels, exact Fourier identity, and every operator-norm moment bound | Complex Euclidean input/output spaces; any finite Euclidean spatial dimension; bilinear, not sesquilinear |
 | `SchwartzLinearChange.lean` | Absolute-Jacobian pullback, exact Fourier inverse-adjoint identity, mass preservation, and inverse-map spatial-moment cost | Finite-dimensional real inner-product spaces; arbitrary invertible continuous linear changes |
@@ -68,6 +69,13 @@ Jacobian scaling, mass preservation, and first-moment scaling.
 `CompactSchwartzFamilyTests.lean` checks the annular boundaries and a
 nonconstant amplitude-parameter family. These are new derivations from
 mathlib, not external-source ports.
+
+`FundamentalDomainPeriodization.lean` isolates the kernel-independent core
+previously housed in the coherent-stretching application and adds weighted
+mass transfer. The NS frequency-pair application uses wrapped torus distance,
+not the norm of a chosen cell representative, to bound every wrapped spatial
+moment by the corresponding Euclidean moment. Its first moment pays the
+two physical input-displacement channels with an explicit factor of two.
 
 The Gaussian modules construct derivative-controlled spatial NS patches.
 Their localization cost is the nearest squared distance plus `τ log N`,
