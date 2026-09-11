@@ -16435,3 +16435,136 @@ $4$; a full connected closed side has positive mass with no ports; and
 two rotations of the theta multigraph have masses $4$ and $0$, so genus
 cannot be ignored. These controls are separate from the universal kernel
 theorems and do not enumerate colouring configurations.
+
+\subsection{Boundary connectivity and structural replacement}
+\label{sec:boundary-connectivity-replacement}
+
+The component coordinate above can be absorbed into the boundary
+connectivity partition. For a port-indexed multigraph $A$, write
+$a\sim_A b$ when its ports $a,b$ are joined within $A$. On sewing $X$
+to $A$, connectivity between seam ports is exactly the equivalence
+closure of ${\sim_X}\cup{\sim_A}$. This is proved by compressing actual
+glued paths into alternating within-side paths; conversely each such
+boundary path lifts through the literal seam edges. No connected-side
+assumption is used, and loops and parallel edges are retained.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundaryConnectivity.boundaryReach_iff}
+
+If every component of each side meets a port, the joined partition
+also determines connectivity of the whole composite. For replacement,
+the exterior need not even satisfy this assumption: with a nonempty
+seam, connectivity of either composite implies that every exterior
+component meets the seam. Thus replacing a port-visible piece by one
+with the same boundary partition preserves connectivity in every fixed
+exterior.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundaryConnectivity.connected_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundaryConnectivity.replacement_connected_any_exterior}
+
+The bridge to actual open tangles uses the existing isomorphism between
+their sewn rotation system and literal multigraph gluing. Proper vertex
+sides of a connected ambient graph are port-visible, even when they or
+their complements are disconnected. In common coordinates $K$, the
+partition has a Boolean-table code in $K\to K\to\mathrm{Bool}$, of
+cardinality $2^{|K|^2}$. This is a raw carrier bound, not a claim that
+all its tables are realizable partitions or a verified executable
+extractor.
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleBoundaryConnectivity.visible_ofVertexSide}
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleBoundaryConnectivity.card_code_carrier}
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleBoundaryConnectivity.replacement_connected}
+
+The boundary-component maps of two proper sides are surjective. Equality
+of their partition codes identifies the kernels of these maps, hence
+their quotient cardinalities and side component counts. With
+Section~\ref{sec:vertex-side-euler-mass}, this determines the Euler mass
+without an additional component-count field. Consequently, for proper
+vertex sides of connected spherical cubic rotation systems with cyclic
+vertex rotations, equality of the connectivity and named face-return
+records preserves both Euler characteristic and primal connectedness
+under sewing to any fixed exterior. The two pieces can have different
+internal carriers and come from different ambient maps.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSideStructuralReplacement.components_eq_of_code}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSideStructuralReplacement.replacement_euler_and_connected}
+
+The structural gate checks $62{,}735$ sewings: all simple graphs on at most
+three vertices with all port assignments through arity three, and two
+differently sized realizations of each partition at arity four. It
+compares literal glued-graph paths to an independent boundary union-find.
+Negative controls distinguish equal component counts with different
+partitions and expose components invisible at the boundary. The empty
+graph convention is tested explicitly; the actual open-tangle
+replacement theorem obtains a nonempty seam from port visibility.
+These program checks are separate from the universal Lean proofs.
+
+This is a structural consumer for the compositional interface, not a
+complete admissibility signature. Bridgelessness, executable state
+transitions, global descent and the generating base remain separate.
+No universal width bound, forced repetition or strict decrease follows
+from fixed-arity finiteness. The ledger remains $57/100$.
+
+\subsection{Small-cut profiles retain the bridge condition}
+\label{sec:boundary-small-cut-profile}
+
+Connectivity and face return alone do not retain all structural
+information needed by replacement. A program control uses two connected
+four-port pieces, each consisting of two cubic vertices and one internal
+edge. Their port groupings are $(01\mid23)$ and $(12\mid30)$, with
+rotations giving the same return cycle $(0123)$. Both have Euler mass
+$4$ and the indiscrete boundary connectivity partition. Sew either to
+the same exterior consisting of two two-port digons, grouping ports
+$01$ and $23$. Both composites are connected spherical cubic
+multigraphs with six vertices, nine edges and five faces, but the first
+has one bridge and the second has none. This is a reproducible program
+specimen, not a kernel-certified refutation. It does not assert equality
+of colouring supports or refute a complete Count profile.
+
+The repair need not choose a new corridor geometry. For a vertex subset
+$U$ of an open multigraph $A$, retain its boundary membership bits,
+whether $U$ and its complement contain vertices, and
+$\min(2,|\delta_A U|)$. The two flags exclude empty and full cuts,
+including when a component has no ports. The profile is the set of
+\emph{realized} records. With $k$ ports, the record carrier has
+$12\cdot2^k$ elements and the profile carrier has
+$2^{12\cdot2^k}$ elements. These are raw upper bounds, independent of
+interior size; no efficient extractor or realizability of every formal
+record is asserted.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundarySmallCutProfile.card_state}
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundarySmallCutProfile.card_profile_carrier}
+
+For subsets $U$ and $W$ of the two pieces, the actual sewn cut size is
+\[
+ |\delta_{A\#B}(U\sqcup W)|
+ =|\delta_A U|+|\delta_B W|
+   +\#\{p:\mathbf{1}_U(p_A)\ne\mathbf{1}_W(p_B)\}.
+\]
+Capping the two internal contributions at two preserves exactly the
+test for a total at most one. Existentially ranging over the realized
+records therefore gives the exact nontrivial-small-cut test for the
+whole sewing, not a necessary-condition approximation.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundarySmallCutProfile.cutSize_glue}
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundarySmallCutProfile.hasSmallCut_glue_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundarySmallCutProfile.replacement_hasSmallCut}
+
+A separate path/cut proof identifies absence of nontrivial zero- and
+one-edge cuts with connectedness and bridgelessness. A disconnected
+graph supplies a reachability-component cut of size zero; a bridge
+supplies such a cut after deleting its own edge identifier. Conversely,
+a nontrivial cut in a connected graph crosses an edge, and if that is
+its only crossing edge there is no alternate path avoiding it.
+\Sverified{Mettapedia.GraphTheory.FourColor.SmallCutConnectedBridgeless.no_small_cut_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.SmallCutConnectedBridgeless.replacement_connected_bridgeless}
+The existing seam-multigraph isomorphism transports the result to the
+actual open-tangle constructor: equal low-cut codes preserve the
+conjunction of primal connectedness and \texttt{EdgeBridgeFree} in
+every fixed exterior. No side-connectivity or port-visibility hypothesis
+is needed, and parallel edge identifiers are preserved.
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleSmallCutReplacement.replacement_connected_bridgeFree}
+
+The low-cut gate checks the same $62{,}735$ sewings as the connectivity
+gate, comparing profile composition with independent graph connectivity
+and single-edge-deletion tests. It distinguishes the two bridge
+specimens. These are controls for the universal Lean proofs, not a
+configuration catalogue. Combined with the preceding Euler replacement
+law, this supplies the structural tests needed by an enriched
+compositional interface. It does not yet prove the complete state-update
+law, a strict size decrease, global coverage or the generating-base
+verification. In particular fixed-arity finiteness still does not force
+repetition at unbounded arity. Earned completion remains $57/100$.
