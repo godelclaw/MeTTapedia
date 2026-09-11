@@ -6,6 +6,9 @@ Reusable analysis, independent of any particular fluid construction.
 
 | Module | Mathematical content | Scope |
 | --- | --- | --- |
+| `DyadicAnnulus.lean` | Finite overlap, dyadic invariance, positivity, and punctured smoothness of the annulus normalizer | Any real normed space admitting smooth bumps; the normalizer lies between one and three away from zero |
+| `DyadicAnnulusPartition.lean` | Smooth exact dyadic partition, compact support, and one-sided reconstruction in the punctured unit ball | Zero excluded from the partition identity; all annular bands vanish there |
+| `DyadicAnnulusCorrection.lean` | Globally smooth bounded multiplier realizing the normalization on annular support | Extends the reciprocal normalizer by one near zero without changing an annularly supported symbol |
 | `FundamentalDomainPeriodization.lean` | Measurable orbit sums, exact character-integral transfer, and invariant-weight mass contraction on a fundamental domain | Countable measure-preserving additive actions; the unweighted core is shared with the existing coherent-kernel development |
 | `EuclideanBilinearCoordinates.lean` | Exact coordinate reconstruction of continuous bilinear maps and operator norm bounded by the sum of absolute entries | Real or complex Euclidean spaces with independent finite input and output index sets |
 | `SchwartzBilinearKernel.lean` | Scalar-entry assembly into bilinear-operator-valued Schwartz kernels, exact Fourier identity, and every operator-norm moment bound | Complex Euclidean input/output spaces; any finite Euclidean spatial dimension; bilinear, not sesquilinear |
@@ -149,6 +152,11 @@ an explicit tail and the commutator. These estimates do not assert that
 the cutoff-weight sums or angular tails are uniformly controlled.
 These modules are new derivations using mathlib, not additional adaptations
 from the external source below.
+
+`DyadicAnnulusTests.lean` checks exact support endpoints, the zero mode,
+unit-frequency weights of one half, very small frequencies, negative inputs,
+and smoothness. The original unnormalized bands sum to two at a unit
+frequency; they are not silently treated as an exact partition.
 
 `Tests.lean` checks a path with a nondifferentiable corner, a forced trajectory
 crossing zero, a negative growth coefficient, an exponent other than one

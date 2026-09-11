@@ -1,5 +1,6 @@
 import Mettapedia.Analysis.ODE.QuadraticFormBound
 import Mettapedia.Analysis.CompactSchwartzFamilyTests
+import Mettapedia.Analysis.DyadicAnnulusTests
 import Mettapedia.Analysis.SchwartzLinearChangeTests
 import Mettapedia.Analysis.EuclideanBilinearCoordinatesTests
 import Mettapedia.Analysis.FundamentalDomainPeriodizationTests
