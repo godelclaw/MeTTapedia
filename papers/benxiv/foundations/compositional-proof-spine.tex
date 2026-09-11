@@ -14913,7 +14913,94 @@ This changes the input available for the remaining geometric surgery,
 not its semantic conclusion. No fixed contour-width bound, periodicity,
 support equality, or deletion of the linked band is proved. In particular
 a two-boundary band is not automatically a connected-complement Count
-shore; its complement can have two components. The next reduction must
+shore; its complement can have two or more components. The next reduction must
 use these actual annular regions and full interfaces without dropping
 reclosure constraints. No fixed-ledger obligation is fully discharged:
 the total remains $57/100$.
+
+\subsection{Buffered absorption constructs connected caps and full ordered interfaces}
+\label{sec:buffered-contour-shell}
+
+There is a second geometric distinction: two complete nested contours
+do not imply that the complement of their closed vertex band has exactly
+two connected components. The gate records a spherical cubic graph on
+$36$ vertices with only pentagonal and hexagonal faces. Its dual remains
+connected after every deletion of at most four vertices, checked directly
+in $6196$ cases. The band between depths $1$ and $2$ from root face $13$
+towards far face $2$ has three complementary components of sizes $1,2,5$,
+despite $8$ vertex-disjoint ambient paths between its complete contours
+of lengths $13$ and $15$. Thus the raw band cannot simply be read as
+a serial piece between two connected caps. This is a computational
+geometric counterexample, not a kernel-certified literal map or a
+counterexample to an implication using ordinary zero Count.
+
+\paragraph{The repaired construction.}
+Take a protected linked band $B_{\ell,h}$ with at least four consecutive
+contours and at least one column. Its middle is
+$S=B_{\ell+1,h-1}$. Choose vertices $x$ and $y$ on the buffered extreme
+contours, and let $C,D$ be their respective connected components in
+$G-S$. Set
+\[
+                    H=V(G)\setminus(C\cup D).
+\]
+Every ambient $x$--$y$ path crosses an intermediate complete contour,
+so $C$ and $D$ are disjoint. The confined column connects the entire
+middle band. Every other component of $G-S$ attaches to $S$, so absorbing
+those components makes $H$ connected. Each cap and its complement are
+connected as well.
+\Sverified{Mettapedia.GraphTheory.FourColor.BufferedContourShell.floods_disjoint}
+\Sverified{Mettapedia.GraphTheory.FourColor.BufferedContourShell.shell_connected}
+
+Absorption must not swallow protected material. Vertices touching
+$R_\ell^c$ form a connected set containing the outer contour: every
+inside endpoint of an edge leaving that set is mixed at depth $\ell$.
+The analogous statement holds for vertices touching $R_h$. The cubic
+incident-face distance lemma separates both sets from $S$. They therefore
+lie entirely in $C$ and $D$, respectively. Every vertex outside the
+buffer belongs to one of those touched sets. Consequently
+\[
+                 B_{\ell+1,h-1}\subseteq H\subseteq B_{\ell,h}.
+\]
+This proves buffer containment rather than adding it as an assumption.
+No original edge joins the two caps; every shell-side endpoint of a
+shell cut edge lies in $S$. Marked vertices avoid $H$, and all original
+neighbours of each marked vertex lie in a single cap.
+\Sverified{Mettapedia.GraphTheory.FourColor.BufferedContourShell.touches_disjoint_compl}
+\Sverified{Mettapedia.GraphTheory.FourColor.BufferedContourShell.exists_shell}
+\Sverified{Mettapedia.GraphTheory.FourColor.BufferedContourShell.ShellOf.unmarked}
+\Sverified{Mettapedia.GraphTheory.FourColor.BufferedContourShell.ShellOf.marked_star}
+
+\paragraph{The actual interfaces, not a selected-path boundary.}
+Apply the existing planar-bond theorem to the shores $C$ and $D^c$.
+It supplies unique retained boundary darts on crossing faces and the
+opposite complementary first-return orders. The resulting bonds lie
+between depths $(\ell,\ell+1)$ and $(h-1,h)$; their vertex shores and
+full incident-edge shores are strictly nested. Their widths are the
+actual sizes $|\delta C|$ and $|\delta D^c|$, with no uniform bound
+inferred from the chosen number of columns. The existing cycle-based
+adapter then supplies two genuine connected Count nodes. This does
+not assert that majority vertex sides equal the cap vertex sets.
+\Sverified{Mettapedia.GraphTheory.FourColor.BufferedContourShell.ShellOf.exists_ordered_bonds}
+\Sverified{Mettapedia.GraphTheory.FourColor.BufferedContourShell.ShellOf.exists_connected_nodes}
+
+The global alternative of Section~\ref{sec:protected-linked-band}, with
+$a\geq4$, now constructs this buffered shell in its linked-band branch;
+the other branch remains the existing strict ordinary zero-Count
+replacement preserving the marked edges. There is no new shell-supply
+or cap-connectedness hypothesis.
+\Sverified{Mettapedia.GraphTheory.FourColor.BufferedContourShell.exists_bufferedShell_or_marked_replacement}
+
+The gate checks $1388$ buffered windows: $672$ on the eight existing
+$GP(k,0)$ controls and $716$ on a $144$-vertex triangular refinement of
+the irregular specimen, over all $74$ root faces. The latter has twelve
+pentagons and $62$ hexagons. Twelve windows require absorption, with
+$24$ absorbed-vertex occurrences in total; all stay in their buffers.
+Complete ambient cut edges, both cap complements, and the largest
+allowed marked set $V(G)\setminus B_{\ell,h}$ are checked. Receipt:
+\texttt{results/fourcolor/v24\_buffered\_shell\_gate.json}.
+
+This repairs the geometric carrier of the intended composition, not
+its shrinking law. Neither equal boundary support nor a smaller
+reclosable replacement is proved. A reduction must still preserve
+ordinary zero Count, the spherical cubic bridgeless class, and marked
+edges on these full interfaces. The fixed ledger remains $57/100$.
