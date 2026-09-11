@@ -34,6 +34,23 @@ example (A D : ℝ) (hA : 0 ≤ A) (hD : 0 ≤ D) :
   norm_num at h
   exact h
 
+example : Summable (fun j : ℕ ↦ ∑' m : ℕ,
+    (1 / 2 : ℝ) ^ j * min (8 * (1 / 2 : ℝ) ^ m) 1) := by
+  have h := iterated_tsum_le_logarithmic_of_nonneg_of_le
+    (a := fun j m ↦ (1 / 2 : ℝ) ^ j * min (8 * (1 / 2 : ℝ) ^ m) 1)
+    (C := (1 : ℝ)) (A := 8) (D := 1) (by norm_num) (by norm_num) (by norm_num)
+    (fun j m ↦ by positivity)
+    (fun j m ↦ by simp)
+  exact h.2.1
+
+example (a : ℕ → ℕ → ℝ) (ha : ∀ j m, 0 ≤ a j m)
+    (hzero : ∀ j m, a j m ≤ 0) :
+    (∀ j, Summable (a j)) ∧ Summable (fun j ↦ ∑' m, a j m) ∧ (∑' j, ∑' m, a j m) ≤ 0 := by
+  have h := iterated_tsum_le_logarithmic_of_nonneg_of_le
+    (C := (2 : ℝ)) (A := 1) (D := 0) (by norm_num) (by norm_num) (by norm_num) ha
+    (fun j m ↦ by simpa [min_eq_right (by positivity : (0 : ℝ) ≤ 1 * (1 / 2 : ℝ) ^ m)] using hzero j m)
+  simpa using h
+
 end Mettapedia.Analysis.GeometricMinSeriesTests
 
 #print axioms Mettapedia.Analysis.GeometricMinSeries.summable_min
@@ -41,3 +58,5 @@ end Mettapedia.Analysis.GeometricMinSeriesTests
 #print axioms Mettapedia.Analysis.GeometricMinSeries.exists_logarithmic_cutoff
 #print axioms Mettapedia.Analysis.GeometricMinSeries.tsum_min_le_logarithmic
 #print axioms Mettapedia.Analysis.GeometricMinSeries.tsum_min_half_pow_le
+#print axioms Mettapedia.Analysis.GeometricMinSeries.tsum_le_logarithmic_of_nonneg_of_le
+#print axioms Mettapedia.Analysis.GeometricMinSeries.iterated_tsum_le_logarithmic_of_nonneg_of_le
