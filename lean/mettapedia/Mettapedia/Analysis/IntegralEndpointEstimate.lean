@@ -62,4 +62,34 @@ theorem endpoint_estimate_of_interior {A Z R : ℝ → ℝ} {T C : ℝ} (hT : 0 
       A b + (∫ t in (0 : ℝ)..b, Z t) ≤ A 0 + C + ∫ t in (0 : ℝ)..b, R t :=
   endpoint_estimate_of_interior_of_integrable hT hA hZ.integrableOn_Icc hR.integrableOn_Icc h
 
+/-- An exact interior balance extends to the initial endpoint. Neither
+integrand is required to have a sign. -/
+theorem endpoint_identity_of_interior_of_integrable {A Z R : ℝ → ℝ} {T : ℝ} (hT : 0 < T)
+    (hA : ContinuousOn A (Icc 0 T)) (hZ : IntegrableOn Z (Icc 0 T))
+    (hR : IntegrableOn R (Icc 0 T))
+    (h : ∀ a b : ℝ, 0 < a → a < b → b < T →
+      A b + (∫ t in a..b, Z t) = A a + ∫ t in a..b, R t) :
+    ∀ b ∈ Icc (0 : ℝ) T,
+      A b + (∫ t in (0 : ℝ)..b, Z t) = A 0 + ∫ t in (0 : ℝ)..b, R t := by
+  have hle := endpoint_estimate_of_interior_of_integrable (C := 0) hT hA hZ hR
+    (fun a b ha hab hb ↦ by simpa only [add_zero] using (h a b ha hab hb).le)
+  have hge := endpoint_estimate_of_interior_of_integrable (C := 0) hT hA.neg hZ.neg hR.neg
+    (fun a b ha hab hb ↦ by
+      simp only [Pi.neg_apply, integral_neg, add_zero]
+      linarith only [h a b ha hab hb])
+  intro b hb
+  have hl := hle b hb
+  have hr := hge b hb
+  simp only [Pi.neg_apply, integral_neg, add_zero] at hl hr
+  linarith only [hl, hr]
+
+theorem endpoint_identity_of_interior {A Z R : ℝ → ℝ} {T : ℝ} (hT : 0 < T)
+    (hA : ContinuousOn A (Icc 0 T)) (hZ : ContinuousOn Z (Icc 0 T))
+    (hR : ContinuousOn R (Icc 0 T))
+    (h : ∀ a b : ℝ, 0 < a → a < b → b < T →
+      A b + (∫ t in a..b, Z t) = A a + ∫ t in a..b, R t) :
+    ∀ b ∈ Icc (0 : ℝ) T,
+      A b + (∫ t in (0 : ℝ)..b, Z t) = A 0 + ∫ t in (0 : ℝ)..b, R t :=
+  endpoint_identity_of_interior_of_integrable hT hA hZ.integrableOn_Icc hR.integrableOn_Icc h
+
 end intervalIntegral
