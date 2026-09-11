@@ -1,0 +1,7 @@
+{
+  "bound": 2,
+  "counts": {"admissible": 72, "bad": 0, "raw": 3252, "valid": 145},
+  "local_rotations": [[1, 2, 0], [2, 0, 1]],
+  "scope": "All tiny multigraph codes; no global threshold or simple-map base claim.",
+  "status": "pass"
+}

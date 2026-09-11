@@ -15825,12 +15825,50 @@ elements before validation. At $B=2$ this is already $411610900$, proved by
 the cardinality formula and kernel arithmetic without enumerating the
 carrier.
 \Sverified{Mettapedia.GraphTheory.FourColor.BoundedCubicColourTrace.raw_code_count_two}
-Only the vacuous full audits at bounds zero and one have been evaluated;
+Only the vacuous raw full audits at bounds zero and one have been directly evaluated;
 there is no connected loopless cubic map in either domain.
 \Sverified{Mettapedia.GraphTheory.FourColor.BoundedCubicColourTrace.baseAudit_one}
-No audit at a useful reduction threshold, efficient generation, optimized
-interface closure, or global reduction is asserted. The raw carrier count
+This raw evaluator supplies no audit at a useful reduction threshold,
+efficient generation, optimized interface closure, or global reduction. The raw carrier count
 measures this representation, not an intrinsic lower bound on the cost of
 the route. It motivates generation of valid data and removal of redundant
 labellings before a substantial computation. The fixed obligation ledger
 remains $57/100$.
+
+\paragraph{Eliminating redundant edge-flip and vertex permutations.}
+For valid incidence data, every dart has exactly one other occurrence of
+its edge at a different vertex. This constructs its edge-flip partner by
+finite search. At each cubic vertex, a cyclic rotation is a fixed-point-free
+permutation of three positions, hence one of two orientations. A compact
+code therefore stores only the incidence function and one Boolean per
+vertex. Its decoder reconstructs every valid raw rotation code exactly,
+including the given embedding; this is not a quotient that identifies
+spherical and nonspherical rotations.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedCubicColourTrace.decode_compress}
+
+The resulting audit is equivalent to the raw audit for every symbolic
+bound, not merely for the tested examples.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedCubicColourTrace.compactAudit_iff_baseAudit}
+Its unfiltered carrier has size
+\[
+ \sum_{n=0}^{B}\sum_{m=0}^{\lfloor3B/2\rfloor} m^{3n}2^n,
+\]
+which removes the two factorial factors. At bound two it has $3252$
+elements rather than $411610900$.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedCubicColourTrace.compact_code_count_two}
+The complete compact audit at this bound succeeds by kernel decision,
+and the equivalence transfers the result to the raw audit without
+enumerating its carrier.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedCubicColourTrace.compactAudit_two}
+The existing base consumer is reached through this equivalence.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedCubicColourTrace.taitBaseVerifiedAt_of_compactAudit}
+
+The pre-registered independent gate finds $145$ structurally valid codes
+at this bound, including the empty rotation, and $72$ accepted spherical
+codes, all colourable. These accepted codes represent the two-vertex
+parallel-edge graph. Thus the code audit has nonempty mathematical
+content, but the graph-backed \emph{simple} cubic target class at this
+bound is still empty. No useful reduction threshold or substantive
+simple-map base audit is established. Incidence labelling remains highly
+redundant, and the global descent is independently open. The ledger is
+unchanged.
