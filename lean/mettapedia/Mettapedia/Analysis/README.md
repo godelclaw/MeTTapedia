@@ -28,6 +28,20 @@ Reusable analysis, independent of any particular fluid construction.
 | `FiniteCoefficientEnergy.lean` | Nonnegativity, constant scaling, and two-, three-, and finite-sum energy bounds | Arbitrary finite index sets and normed scalar fields; cardinality is explicit where used |
 | `LocallyLipschitz.lean` | Finite sums, finite products of coordinates, algebra multiplication, and real scalar multiplication | Local Lipschitz maps on pseudometric spaces; no global constant required |
 | `LocallyLipschitzDifferentiability.lean` | Rademacher theorem by compact-ball exhaustion; strong measurability of derivatives of continuous parameter families at fixed parameters | Finite-dimensional real domain and codomain for Rademacher, any additive Haar measure; complete normed codomain and second-countability of either parameter space or codomain for the parameter lemma |
+| `FiniteExponentialWeights.lean` | Normalized exponential weights and square-root amplitudes, entropy bound, and mean-cost localization | Any nonempty finite family; the localization temperature is positive |
+| `ExponentialAmplitudeDerivative.lean` | Actual normalization derivative, variance identity, common-rate cancellation, and orthogonal radial/angular energy split | Finite scalar score families |
+| `GaussianPartitionEnergy.lean` | Gaussian square partitions and derivative energy controlled by their mean squared distance | Real inner product spaces; no compact-support claim |
+| `NormScaledGaussianPartition.lean` | Exact norm-squared coverage and total-derivative bounds including zero-amplitude points | Real inner product spaces; differentiability at a norm corner is not assumed |
+| `GaussianPartitionRegularity.lean` | Smooth normalized factors and locally Lipschitz norm-scaled amplitudes | Real inner product spaces; supplies genuine almost-everywhere derivatives via Rademacher |
+| `EuclideanOperatorCoordinates.lean` | Hilbert matrix coordinates, operator-norm comparison, and rank-one normalization | Finite-dimensional Euclidean operators; no ambient matrix-norm instance changes |
+
+The Gaussian modules construct derivative-controlled spatial NS patches.
+Their localization cost is the nearest squared distance plus `τ log N`,
+not a factor `N`. The logarithmic cost and inverse-temperature derivative
+loss remain explicit. `GaussianPartitionTests.lean`, imported by the main
+test module, checks uniform weights, sharp variance, common-rate cancellation,
+the zero-amplitude norm corner, and the attained dimension factor. These
+modules are new derivations from mathlib, not new external-source ports.
 
 The first module is used by
 `FluidDynamics/NavierStokes/StochasticLagrangian/LocalVorticityDiffusion.lean`.

@@ -58,6 +58,36 @@ regularity, blowup, or any other Millennium-problem conclusion.
 
 ## Current Status
 
+### Quantitative Gaussian pressure patches
+
+`LocalGaussianGradientBudget.lean` constructs one finite family of real
+patch amplitudes from the actual squared-gap weighted projector `M = rP`.
+For every positive localization radius `ρ`, the same patches satisfy
+
+```text
+Σᵢ βᵢ² = r²,             Σᵢ βᵢ² dline(e,eᵢ)² ≤ ρ²,
+Σⱼᵢ |∂ⱼβᵢ|² ≤ 3[1 + r²ρ²/(2τ²)] Σⱼ ||∂ⱼM||²   almost everywhere,
+τ = ρ² / [4(1 + log N)],  N = number of cover centers ≥ 1.
+```
+
+The integral bound substitutes the actual vorticity and filtered-strain
+gradient estimate for `M`. The construction uses normalized Gaussian
+amplitudes in Hilbert matrix coordinates, not a differentiable choice of
+eigenvector. Exact normalization cancels the common score rate. An entropy
+bound controls the mean squared distance by the nearest squared distance
+plus `τ log N`. Local Lipschitz regularity proves genuine almost-everywhere
+differentiability, separately from the zero default of the total derivative.
+
+These are spatial amplitudes, **not yet finite Fourier polynomials**.
+Derivative-preserving Fourier approximation is still required to insert
+this budget into the smoothed commutator theorem below. There is no
+multiplicative patch-count loss, but the displayed logarithmic count,
+inverse-radius, amplitude, and inverse-gap-threshold costs remain. No
+uniform dynamical budget or unconditional regularity theorem is claimed.
+`GaussianPressurePartitionAudit.lean` audits the NS dependency closure;
+`Analysis/GaussianPartitionTests.lean` checks the generic cancellations,
+sharp variance constant, norm corner, and Hilbert/operator norm comparison.
+
 ### Constructive pressure-patch smoothing
 
 `StochasticLagrangian/FourierResolventSmoothing.lean` constructs the finite
@@ -848,8 +878,9 @@ coverage error, and separate collision cost remain present.
 energies are genuine finite-polynomial derivative energies: first
 derivatives contribute `|2πi|²` and mixed second derivatives contribute
 `|2πi|⁴` in Parseval. The second-derivative cost is not supplied by the
-previous first-gradient theorem. Quantitative patch derivative control
-and bounds for `B₀,B₁` along the actual solution remain open, as does
+previous first-gradient theorem. The Gaussian construction above now gives
+quantitative spatial patch derivative control; its transfer to finite
+Fourier approximants and bounds for `B₀,B₁` along the actual solution remain open, as does
 uniformity in the pressure truncation, gap cutoff, and time.
 `PressureEllipticBudgetAudit.lean` checks the identities, derivative
 normalization, complex cutoff, and nonzero-to-zero output regressions.
