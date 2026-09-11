@@ -15675,3 +15675,77 @@ mesh, corridor, or smoothing geometry is mandated by this observation.
 Nor is this a reduction of a fixed Four-Color base problem to halting, a
 claim that that problem is undecidable, or a lower bound on human proof
 length. The base and global descent remain open; the ledger stays $57/100$.
+
+\subsection{Constructed bounded incidence traces for the finite base}
+\label{sec:bounded-cubic-colour-trace}
+
+The finite-base reflection requires an actual trace of every bounded map,
+not merely a finite set with an assumed coverage field. There is now a
+concrete, deliberately uncompressed incidence trace. For $n$ vertices and
+$m$ edges, a code is a function
+\[
+       C:\operatorname{Fin}(n)\times\operatorname{Fin}(3)
+          \longrightarrow\operatorname{Fin}(m).
+\]
+The three entries at a vertex name its three incident edges. Structural
+validity requires distinct entries at each vertex and exactly two distinct
+incident vertices for each edge; parallel edges are permitted. The
+executable Boolean test $\operatorname{Col}(C)$ enumerates assignments of
+the three nonzero Klein-group colours to the numbered edges and tests
+pairwise distinctness at every vertex. It does not assume colourability.
+
+\paragraph{Coverage and adequacy are constructed.}
+For every cubic rotation system $M$, number its vertices and edges and
+number the three incident edges at each vertex. This constructs
+$C_M$, with no presentation-supply hypothesis. The no-self-loop field of
+the rotation system makes dart-degree and edge-degree coincide, and the
+two-dart edge fibres supply the two distinct endpoints. The resulting code
+is structurally valid.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedCubicColourTrace.encode_valid}
+Colourings transfer in both directions along the edge enumeration:
+\[
+        \operatorname{Col}(C_M)=\mathrm{true}
+          \quad\Longleftrightarrow\quad M\text{ is Tait colourable}.
+\]
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedCubicColourTrace.hasColouring_encode_iff}
+The numbering is chosen at proof level; evaluation on a supplied numerical
+code is computable. This is exact colourability semantics, not a claim that
+the code preserves embedding or exact colouring multiplicities.
+
+If $|V(M)|\le B$, double-counting darts gives
+$|E(M)|\le\lfloor3B/2\rfloor$. Thus all such traces belong to the explicit
+finite carrier
+\[
+ \coprod_{0\le n\le B}\;\coprod_{0\le m\le\lfloor3B/2\rfloor}
+       \operatorname{Fin}(m)^{\operatorname{Fin}(n)\times\operatorname{Fin}(3)}.
+\]
+Filtering this carrier by structural validity gives the computable
+\texttt{structuralEnvelope}; membership of every actual cubic-map trace
+is proved, rather than supplied as a premise.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedCubicColourTrace.trace_mem_structuralEnvelope}
+The false Boolean value is equivalent to noncolourability of that same map.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedCubicColourTrace.trace_bad_iff}
+
+\paragraph{Why this is not yet the spherical base.}
+The trace carries no chosen rotation; structural validity does not check
+connectedness, bridge-freeness or spherical admissibility. The entire
+structural envelope therefore cannot be used as a successful spherical
+bridgeless audit. A six-vertex code, consisting of two doubled-edge
+triangles joined at their remaining degree-two vertices, is structurally
+valid and has no colouring. Its obstruction is checked in the kernel, and
+for every $B\ge6$ it witnesses a bad state in the structural envelope.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedCubicColourTrace.Controls.structuralEnvelope_contains_bad}
+For calibration, the tetrahedral code is structurally valid and colourable.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedCubicColourTrace.Controls.tetrahedron_hasColouring}
+The executable gate compares the trace evaluator with independent
+edge-colouring solvers on $K_4$, $K_{3,3}$, Petersen and the bridged control,
+and checks $48$ vertex/edge/slot reindexings. These are encoding controls,
+not a base census or a catalogue of reducible configurations.
+
+This supplies a concrete coverage and colourability component for the base
+work, not the completed base reflection. An admissibility filter must still
+retain every spherical bridgeless trace while excluding irrelevant bad
+codes; the filtered audit must then actually succeed. No such filter,
+optimized closure, explicit global reduction threshold, or successful
+finite-base audit is asserted here. No full structural envelope has been
+enumerated. The fixed obligation ledger remains $57/100$.

@@ -1,0 +1,10 @@
+{
+  "controls": [
+    {"colourings": 6, "edges": 6, "name": "K4", "planar": true, "reindexings": 12, "vertices": 4},
+    {"colourings": 12, "edges": 9, "name": "K33", "planar": false, "reindexings": 12, "vertices": 6},
+    {"colourings": 0, "edges": 15, "name": "Petersen", "planar": false, "reindexings": 12, "vertices": 10},
+    {"colourings": 0, "edges": 9, "name": "bridged", "planar": true, "reindexings": 12, "vertices": 6}
+  ],
+  "scope": "Exact incidence-code tests; no finite-base verification.",
+  "status": "pass"
+}
