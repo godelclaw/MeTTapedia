@@ -82,6 +82,11 @@ theorem cutoff_eq_one (x : E) (hlo : 1 ≤ ‖x‖) (hhi : ‖x‖ ≤ 2) : cuto
     simpa [innerBump, dist_zero_right] using hlo)
   simp [cutoff, ho, hi]
 
+@[simp] theorem cutoff_zero : cutoff (0 : E) = 0 := by
+  have h : (innerBump (E := E)) (0 : E) = 1 :=
+    (innerBump (E := E)).one_of_mem_closedBall (by simp [innerBump, Metric.mem_closedBall])
+  simp [cutoff, h]
+
 theorem buffer_zero : buffer (0 : E) = 0 := by
   have h : (innerBuffer (E := E)) (0 : E) = 1 := (innerBuffer (E := E)).one_of_mem_closedBall (by
     simp [innerBuffer, Metric.mem_closedBall])
