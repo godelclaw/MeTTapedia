@@ -12,6 +12,7 @@ import Mettapedia.Analysis.DyadicHighPassTests
 import Mettapedia.Analysis.UnitTorusFourierUniquenessTests
 import Mettapedia.Analysis.WeightedSeriesTests
 import Mettapedia.Analysis.OddMapLineEstimateTests
+import Mettapedia.Analysis.OddMapWeightedContinuityTests
 import Mettapedia.Analysis.BilinearKernelIntegrabilityTests
 import Mettapedia.Analysis.SquaredWeightLocalizationTests
 import Mettapedia.Analysis.SchwartzLinearChangeTests

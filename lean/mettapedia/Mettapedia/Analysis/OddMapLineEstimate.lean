@@ -18,6 +18,35 @@ namespace Mettapedia.Analysis.OddMapLineEstimate
 
 variable {E F : Type*} [NormedAddCommGroup E] [NormedAddCommGroup F]
 
+theorem norm_sub_norm_sq_le_unoriented (f : E → F) (hodd : ∀ r, f (-r) = -f r)
+    (L : ℝ)
+    (h : ∀ e r, ‖e‖ = 1 → ‖r‖ = 1 → ‖f e - f r‖ ≤ L * ‖e - r‖)
+    (e r : E) (he : ‖e‖ = 1) (hr : ‖r‖ = 1) :
+    (‖f e‖ - ‖f r‖) ^ 2 ≤ L ^ 2 * min (‖e - r‖ ^ 2) (‖e + r‖ ^ 2) := by
+  have oriented (s : E) (hs : ‖s‖ = 1) :
+      (‖f e‖ - ‖f s‖) ^ 2 ≤ L ^ 2 * ‖e - s‖ ^ 2 := by
+    have hp := pow_le_pow_left₀ (abs_nonneg (‖f e‖ - ‖f s‖))
+      ((abs_norm_sub_norm_le (f e) (f s)).trans (h e s he hs)) 2
+    simpa only [sq_abs, mul_pow] using hp
+  rcases le_total (‖e - r‖ ^ 2) (‖e + r‖ ^ 2) with hp | hn
+  · simpa only [min_eq_left hp] using oriented r hr
+  · simpa only [min_eq_right hn, hodd, norm_neg, sub_neg_eq_add] using
+      oriented (-r) (by simpa using hr)
+
+theorem abs_weight_mul_norm_sub_norm_le (f : E → F) (hodd : ∀ r, f (-r) = -f r)
+    (L : ℝ) (hL : 0 ≤ L)
+    (h : ∀ e r, ‖e‖ = 1 → ‖r‖ = 1 → ‖f e - f r‖ ≤ L * ‖e - r‖)
+    (e r : E) (he : ‖e‖ = 1) (hr : ‖r‖ = 1) (a d : ℝ) (hd : 0 ≤ d)
+    (hline : a ^ 2 * min (‖e - r‖ ^ 2) (‖e + r‖ ^ 2) ≤ 2 * d ^ 2) :
+    |a * (‖f e‖ - ‖f r‖)| ≤ 2 * L * d := by
+  have hn := mul_le_mul_of_nonneg_left
+    (norm_sub_norm_sq_le_unoriented f hodd L h e r he hr) (sq_nonneg a)
+  have hl := mul_le_mul_of_nonneg_left hline (sq_nonneg L)
+  have hs : (a * (‖f e‖ - ‖f r‖)) ^ 2 ≤ (2 * L * d) ^ 2 := by
+    nlinarith only [hn, hl, sq_nonneg (L * d)]
+  exact (sq_le_sq₀ (abs_nonneg _) (mul_nonneg (mul_nonneg (by norm_num) hL) hd)).mp
+    (by simpa only [sq_abs] using hs)
+
 theorem norm_sq_le_oriented (f : E → F) (L : ℝ)
     (e r : E) (h : ‖f e - f r‖ ≤ L * ‖e - r‖) :
     ‖f e‖ ^ 2 ≤ 2 * ‖f r‖ ^ 2 + 2 * L ^ 2 * ‖e - r‖ ^ 2 := by

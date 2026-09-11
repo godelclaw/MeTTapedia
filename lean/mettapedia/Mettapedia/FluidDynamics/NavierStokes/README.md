@@ -76,7 +76,7 @@ fractions of a completed proof.
 | Step | Obligation and completion test | Status and present evidence |
 | --- | --- | --- |
 | S1. Actual equation and objects | Construct the solution, stochastic/material objects, and frequency decomposition from arbitrary admissible data; derive every evolution identity used later from the actual unforced equation. Track the periodic and Euclidean realizations separately. | **Partial.** The local periodic solution, common-interval material flow, vorticity and strain equations are constructed; see `StochasticLagrangian/LocalMaterialVorticity.lean`, `LocalMaterialStrain.lean`, and `LocalSpectralResidual.lean`. This is not a complete arbitrary-data stochastic/Euclidean realization. |
-| S2. Spatial field transfer | Transfer the coherent/misaligned geometry to the actual localized operator fields, retaining uniform kernel constants and the inverse-scale gain through integration and limits. | **Partial.** `PressureHighInputJointSource.lean` reconstructs the complete high-input pressure operator in the actual joint source, retaining a finite low-input complement. `GaussianRootHighInputBudget.lean` localizes it directly. `GaussianRootDirectionFreezing.lean` now transfers the moving direction to actual adaptive patch directions with a squared unoriented-line error and quarter-geometric tail gain. Combining this pointwise transfer with the localized coherent/misaligned sector bounds, spatial measurability, and the signed evolution estimate remains required. |
+| S2. Spatial field transfer | Transfer the coherent/misaligned geometry to the actual localized operator fields, retaining uniform kernel constants and the inverse-scale gain through integration and limits. | **Partial.** The complete high-input pressure operator is identified in the joint source, including its finite low-input complement. `PressureMovingDirectionEnergy.lean` proves the actual weighted moving-line energy continuous and integrable without a regularity assumption on signed eigenvectors. `GaussianRootMovingPressureBudget.lean` transfers its spatial integral to actual localized inputs, retaining both angular and gradient costs. The localized coherent/misaligned pressure-sector bounds and the other source interactions remain required. |
 | S3. All scales and sectors | Sum over input scales and pay for the other frequency interactions, angular tails, collision sectors, and adaptive cutoff terms without uncontrolled scale, patch-count, or regularization losses. | **Partial.** `PressureHighInputAction.lean` sums all high-input scales in bilinear operator norm. `GaussianRootHighInputBudget.lean` retains the quarter-geometric tail gain after localization and spatial integration, with explicit vorticity-supremum and patch-gradient costs. `PressureHighInputComplement.lean` identifies the remaining input sector as an exact finite sum. Finite support does not establish a uniform or dynamically affordable bound. The other sectors, scale-critical time control, and regularization limits are open. |
 | S4. Dynamical misalignment budget | Prove the signed time-integrated nonlinear estimate from the actual unforced evolution, with bounds that remain finite up to any candidate finite singular time. Construct `MisalignmentStrainBudget`, rather than pass it in as a hypothesis. | **Open; decisive mathematical core.** `LocalExcessAlignmentEnergy.lean` supplies an actual-data absorption inequality with explicit source costs. `MisalignmentRefinedPin.lean` proves a conditional reduction, not the required dynamical budget. |
 | S5. Vorticity control and continuation | Construct the spatial essential-supremum vorticity integrand, prove its finite-time integral is controlled by the preceding estimates, and apply the continuation theorem to the actual solution. | **Open.** Continuation target surfaces and conditional reductions exist. The current `||omega||_sup² sqrt(G)` spatial cost is not yet a controlled BKM integrand. |
@@ -393,6 +393,44 @@ bound for the full source. The frozen fields still need their localized
 coherent/misaligned sector estimates. Making the angular tolerance smaller
 also changes the partition-gradient cost in the localization estimate;
 the error cannot be treated as arbitrarily small at no other expense.
+
+### Spatial energy of the moving spectral direction
+
+`PressureMovingDirectionEnergy.lean` proves that
+`Q(x) * |T_(N,>=J,e(x))(omega,omega)(x)|^2` is continuous and integrable on
+the torus under the stated Fourier-moment hypothesis. It does not assume
+that the selected signed top eigenvector is measurable. Instead, the
+continuous weighted projector controls the weighted line distance, and
+oddness of the actual pressure action controls the difference of output
+norms. The argument includes vanishing vorticity and spectral collisions.
+
+`GaussianRootMovingPressureBudget.lean` combines this regularity with the
+direction-freezing and actual localization bounds. For the constructed
+root patches, define
+
+```text
+E_moving = integral Q(x) |T_(N,>=J,e(x))(omega,omega)(x)|^2,
+E_patch  = integral sum_i |T_(N,>=J,e_i)(c_i omega,c_i omega)(x)|^2,
+G        = integral sum_(i,j) |d_j(c_i^2)|^2,
+W        = ||omega||_infinity.
+```
+
+The checked estimate, with constants uniform in all displayed choices, is
+
+```text
+E_moving <= 4 E_patch
+            + 24 (C1/N)^2 16^(-J) W^4 G
+            +  2 C0^2     16^(-J) W^4 rho^2.
+```
+
+The root partition has the same `rho`-dependent temperature in both error
+terms. Thus reducing the angular error does not silently discard the
+resulting gradient cost. All fields inside `E_patch` are actual continuous
+bilinear operator outputs on localized full vorticity, not placeholders
+for future kernel bounds. Controlling these outputs by the coherent and
+misaligned fields, and bounding all accumulated costs in time, remain
+open obligations. This theorem is spatial and does not establish the BKM
+integral or unconditional regularity.
 
 `GaussianRootIntegrableKernelBudget.lean` applies the weighted root-patch
 difference estimate to these actual kernels, retaining vorticity factors
