@@ -1,0 +1,534 @@
+{
+  "schema": "fourcolor-vertex-splice-v1",
+  "scope": "Generic physical controls, not counterexamples; no universal topology claim.",
+  "specimens": {
+    "0": {
+      "after": {
+        "components": 1,
+        "euler": 2,
+        "face_return": [
+          2,
+          0,
+          1
+        ],
+        "faces": 2,
+        "failures": [
+          [
+            [
+              0,
+              1,
+              2
+            ]
+          ]
+        ],
+        "internal_faces": 1,
+        "partition": [
+          [
+            0,
+            1,
+            2
+          ]
+        ]
+      },
+      "before": {
+        "components": 1,
+        "euler": 2,
+        "face_return": [
+          1,
+          2,
+          0
+        ],
+        "faces": 1,
+        "failures": [],
+        "internal_faces": 0,
+        "partition": [
+          [
+            0,
+            1,
+            2
+          ]
+        ]
+      },
+      "control": "tetrahedron",
+      "cuts": [
+        1,
+        3
+      ],
+      "letters": [
+        [
+          0,
+          3,
+          [
+            0,
+            1,
+            2
+          ],
+          [
+            null,
+            null,
+            null
+          ]
+        ],
+        [
+          3,
+          4,
+          [
+            0,
+            6,
+            5
+          ],
+          [
+            1,
+            2,
+            null,
+            null
+          ]
+        ],
+        [
+          4,
+          3,
+          [
+            1,
+            6,
+            3
+          ],
+          [
+            0,
+            2,
+            null
+          ]
+        ],
+        [
+          3,
+          0,
+          [
+            0,
+            1,
+            2
+          ],
+          []
+        ]
+      ],
+      "order": [
+        0,
+        1,
+        3,
+        2
+      ],
+      "repair": {
+        "match": [
+          0,
+          2,
+          1
+        ],
+        "smaller": {
+          "admissible": true,
+          "bridges": [],
+          "components": 1,
+          "euler": 2,
+          "faces": 3,
+          "loopless": true,
+          "simple": false,
+          "vertices": 2
+        }
+      },
+      "rotations": [
+        [
+          1,
+          2,
+          3
+        ],
+        [
+          0,
+          3,
+          2
+        ],
+        [
+          0,
+          1,
+          3
+        ],
+        [
+          0,
+          2,
+          1
+        ]
+      ],
+      "smaller": {
+        "admissible": false,
+        "bridges": [],
+        "components": 1,
+        "euler": 0,
+        "faces": 1,
+        "loopless": true,
+        "simple": false,
+        "vertices": 2
+      },
+      "support_size": 6,
+      "width": 3
+    },
+    "simple": {
+      "after": {
+        "components": 1,
+        "euler": 2,
+        "face_return": [
+          1,
+          3,
+          0,
+          2
+        ],
+        "faces": 5,
+        "failures": [
+          [
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ]
+        ],
+        "internal_faces": 4,
+        "partition": [
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ]
+      },
+      "before": {
+        "components": 1,
+        "euler": 2,
+        "face_return": [
+          2,
+          0,
+          3,
+          1
+        ],
+        "faces": 3,
+        "failures": [
+          [
+            [
+              0,
+              1,
+              2,
+              3
+            ]
+          ]
+        ],
+        "internal_faces": 2,
+        "partition": [
+          [
+            0,
+            1,
+            2,
+            3
+          ]
+        ]
+      },
+      "control": "prism6",
+      "cuts": [
+        6,
+        10
+      ],
+      "letters": [
+        [
+          0,
+          3,
+          [
+            1,
+            0,
+            2
+          ],
+          [
+            null,
+            null,
+            null
+          ]
+        ],
+        [
+          3,
+          4,
+          [
+            5,
+            6,
+            2
+          ],
+          [
+            0,
+            1,
+            null,
+            null
+          ]
+        ],
+        [
+          4,
+          5,
+          [
+            5,
+            1,
+            6
+          ],
+          [
+            0,
+            null,
+            null,
+            2,
+            3
+          ]
+        ],
+        [
+          5,
+          4,
+          [
+            4,
+            8,
+            2
+          ],
+          [
+            0,
+            1,
+            3,
+            null
+          ]
+        ],
+        [
+          4,
+          5,
+          [
+            5,
+            1,
+            6
+          ],
+          [
+            0,
+            null,
+            null,
+            2,
+            3
+          ]
+        ],
+        [
+          5,
+          4,
+          [
+            4,
+            8,
+            2
+          ],
+          [
+            0,
+            1,
+            3,
+            null
+          ]
+        ],
+        [
+          4,
+          5,
+          [
+            5,
+            1,
+            6
+          ],
+          [
+            0,
+            null,
+            null,
+            2,
+            3
+          ]
+        ],
+        [
+          5,
+          4,
+          [
+            4,
+            8,
+            2
+          ],
+          [
+            0,
+            1,
+            3,
+            null
+          ]
+        ],
+        [
+          4,
+          5,
+          [
+            4,
+            1,
+            6
+          ],
+          [
+            null,
+            0,
+            null,
+            2,
+            3
+          ]
+        ],
+        [
+          5,
+          4,
+          [
+            4,
+            7,
+            2
+          ],
+          [
+            0,
+            1,
+            null,
+            3
+          ]
+        ],
+        [
+          4,
+          3,
+          [
+            1,
+            0,
+            4
+          ],
+          [
+            null,
+            2,
+            3
+          ]
+        ],
+        [
+          3,
+          0,
+          [
+            1,
+            2,
+            0
+          ],
+          []
+        ]
+      ],
+      "order": [
+        5,
+        11,
+        4,
+        10,
+        3,
+        9,
+        2,
+        8,
+        1,
+        7,
+        0,
+        6
+      ],
+      "repair": {
+        "match": [
+          1,
+          0,
+          3,
+          2
+        ],
+        "smaller": {
+          "admissible": true,
+          "bridges": [],
+          "components": 1,
+          "euler": 2,
+          "faces": 6,
+          "loopless": true,
+          "simple": true,
+          "vertices": 8
+        }
+      },
+      "rotations": [
+        [
+          5,
+          1,
+          6
+        ],
+        [
+          0,
+          2,
+          7
+        ],
+        [
+          1,
+          3,
+          8
+        ],
+        [
+          2,
+          4,
+          9
+        ],
+        [
+          3,
+          5,
+          10
+        ],
+        [
+          4,
+          0,
+          11
+        ],
+        [
+          7,
+          11,
+          0
+        ],
+        [
+          8,
+          6,
+          1
+        ],
+        [
+          9,
+          7,
+          2
+        ],
+        [
+          10,
+          8,
+          3
+        ],
+        [
+          11,
+          9,
+          4
+        ],
+        [
+          6,
+          10,
+          5
+        ]
+      ],
+      "smaller": {
+        "admissible": false,
+        "bridges": [],
+        "components": 1,
+        "euler": 0,
+        "faces": 4,
+        "loopless": true,
+        "simple": true,
+        "vertices": 8
+      },
+      "support_size": 15,
+      "width": 4
+    }
+  },
+  "tally": {
+    "level0_cases": 743,
+    "level0_failures": 72,
+    "level1_cases": 671,
+    "level2_cases": 671,
+    "level3_cases": 564,
+    "orders": 160,
+    "repair_attempts": 72,
+    "repaired": 72,
+    "support_repeats": 743
+  }
+}
