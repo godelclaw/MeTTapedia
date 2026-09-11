@@ -15455,3 +15455,74 @@ The source's finite-interface semantics remains distinct from a theorem
 that the relevant class has a bounded-interface generating presentation.
 No global reduction or finite base is proved here; the fixed ledger
 remains $57/100$.
+
+\subsection{Count reconnection: a graph-changing move need not preserve zero}
+\label{sec:four-port-count-rewire}
+
+The next experiment changes the graph itself, rather than changing its
+decomposition tree. At four cyclic ports, let $I$ be two cubic vertices
+joined by an edge, with port pairs $01$ and $23$. Let $H$ be the alternative
+connection, with pairs $03$ and $12$. These are not the two wire smoothings
+$A=01|23$ and $B=03|12$: the latter contain no cubic vertices.
+
+For a boundary word $w$ let $i(w),h(w),a(w),b(w)$ be the numbers of
+extensions into those pieces. Including words containing the zero colour,
+the exact identity is
+\[
+ i(w)+a(w)=h(w)+b(w),
+ \qquad q(w)=a(w)+b(w),
+\]
+where $q(w)$ is the existing square-extension count. Multiplying by any
+nonnegative exterior multiplicity $W(w)$ and summing preserves both
+identities. In particular, if the contextual $I$ count is zero, the $H$
+count is zero exactly when the two contextual smoothing counts agree.
+\Sverified{Mettapedia.GraphTheory.FourColor.FourPortCountRewire.weighted_balance}
+\Sverified{Mettapedia.GraphTheory.FourColor.FourPortCountRewire.flip_zero_iff_smoothing_balance}
+The square can be expanded from zero Count only when \emph{both} smoothing
+counts vanish; zero for one branch does not suffice.
+\Sverified{Mettapedia.GraphTheory.FourColor.FourPortCountRewire.square_zero_iff_both_smoothings_zero}
+This reuses the source's SQ1 count law, not its retired weak-completability
+claim. A bijection identifies the two-vertex extension count with the
+actual port-tangle colouring fibre, preserving multiplicities.
+\Sverified{Mettapedia.GraphTheory.FourColor.FourPortCountRewire.card_cap_col}
+
+\paragraph{An arbitrary-exterior obstruction, not just a numerical test.}
+Let $T$ be a finite cubic exterior with four unrestricted ports, and suppose
+it has a proper Tait colouring. If the actual serial composite $T\circ I$
+is uncolourable, then $T\circ H$ is colourable.
+\Sverified{Mettapedia.GraphTheory.FourColor.FourPortCountRewire.flip_colorable_of_original_not_colorable}
+The proof needs neither planarity nor connectedness. Cut parity gives
+$w_0+w_1+w_2+w_3=0$. On nonzero words satisfying this equation, $I$ extends
+exactly when $w_0\ne w_1$, and $H$ extends exactly when $w_0\ne w_3$.
+If both closures failed, every exterior colouring would have
+$w_0=w_1=w_3$. The already proved physical no-fanout theorem excludes
+that: a bichromatic component switch separates at least two of these
+three distinct ports.
+
+The nonempty-exterior hypothesis is essential. It is not supplied here
+from a hypothetical minimal counterexample. Frozen extra boundaries
+would also change the hypothesis. The current formal exterior carriers
+are in universe zero, with no numerical bound on their finite sizes.
+
+\paragraph{Nonvacuity, control, and remaining task.}
+A kernel-checked control reuses two disjoint digons with one port at each
+vertex. Its $I$ closure is uncolourable and its $H$ closure is colourable.
+\Sverified{Mettapedia.GraphTheory.FourColor.FourPortCountRewireControl.nonvacuous_rewire_obstruction}
+A separate executable control uses two copies of $K_4$ with one edge
+removed. Two independent complete colouring enumerators yield
+\[
+ (\#I,\#H,\#A,\#B,\#Q)=(0,24,36,12,48).
+\]
+The executable also checks simplicity, cubicity, planarity and bridges;
+its $I$ closure has a bridge and its $A$ closure is disconnected. Neither
+control is claimed to be a least-counterexample specimen. The files are
+\texttt{tools/fourcolor/v24\_count\_rewire\_gate.py} and
+\texttt{results/fourcolor/v24\_count\_rewire\_gate.json}.
+
+Thus a chain of elementary two-vertex flips cannot simply be declared
+zero-preserving. This does not exclude a composite graph rewrite,
+growing interfaces, or a separately justified invariant allowing
+colourable intermediate graphs. Such a construction must still recover
+an admissible, strictly smaller zero-Count graph; the exact additive
+identities alone do not construct it. No global descent or base
+obligation is discharged here. The fixed ledger remains $57/100$.
