@@ -16859,11 +16859,85 @@ counter; its previous closure receipts are unchanged.
 \Sverified{Mettapedia.GraphTheory.FourColor.VertexAttachmentChecks.same_cut_profile}
 
 This closes the component/Euler identity for one constructed vertex
-step, not D2b in full. A complete bridge from every finite evaluator
-letter and its persistent-port coordinates to this constructor,
-initialization and iterated decoding, and the required fixed-point
-certificate remain to be sealed. The empty initial boundary state is
+step, not D2b in full. The next subsection supplies the bridge from
+every valid finite evaluator letter and its persistent-port coordinates
+to this constructor, initialization, and iterated decoding. The required
+fixed-point certificate remains open. The empty initial boundary state is
 not an empty tangle with a fictitious distinguished dart; the first
 vertex can be initialized as the star. Global coverage, strict
 reduction, and the generating base remain open. The earned ledger
 stays $57/100$.
+
+\subsection{Executable code runs now construct the object they describe}
+\label{sec:executable-physical-code-runs}
+
+The physical-realization gap for the finite vertex-code interpreter is
+closed. A valid code partitions old ports into retained and consumed
+ports, and new ports into retained and fresh ports. The two boundary
+coordinate maps and the cyclic three-dart map are proved bijective;
+their inverses are finite searches. The cyclic order is retained as
+data, not replaced by an arbitrary enumeration of the incident darts.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodePartition.input_bijective}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodePartition.output_bijective}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodePartition.starOrder_spec}
+
+Every nonempty well-typed code run constructs a literal two-sided
+tangle: initialize with an actual star, then apply serial attachment
+with the proved boundary changes of coordinates. Its extendable
+boundary words are exactly the relational evaluation of the codes.
+At the empty terminal boundary, acceptance is equivalent to existence
+of a proper Tait colouring of that constructed closed object.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeRealization.supports_attach_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeRealization.initial_support}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeTrace.Trace.support_exact}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeTrace.Trace.closed_exact}
+
+The same construction is reflected by the executable joint evaluator:
+finite colour supports, boundary-face permutation, complete capped
+small-cut profile, and exact integer Euler mass all refer to the
+\emph{same} object. In particular, repeated attachment does not merely
+match a separately asserted transition relation.
+\Sverified{Mettapedia.GraphTheory.FourColor.TwoSidedBoundaryJoint.joint_reindex}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeJoint.Trace.signature_exact}
+\Sverified{Mettapedia.GraphTheory.FourColor.ExecutableJointTransfer.transfer_exact}
+\Sverified{Mettapedia.GraphTheory.FourColor.ExecutableVertexCode.evaluate_physical}
+\Sverified{Mettapedia.GraphTheory.FourColor.ExecutableVertexCode.accepts_exact}
+
+The first-return implementation uses a bounded search of at most the
+dart-carrier size, proved equal to the semantic least positive return.
+An earlier unbounded least-witness implementation executed in compiled
+code but got stuck during a multi-step kernel control; the bounded
+implementation removes that dependence on proof reduction.
+\Sverified{Mettapedia.GraphTheory.FourColor.FiniteFaceReturn.time_eq}
+\Sverified{Mettapedia.GraphTheory.FourColor.FiniteFaceReturn.transfer_eq}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeChecks.returns_to_single_marker}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeChecks.returns_to_next_marker}
+
+There is also a precise negative result. The unrestricted exact-mass
+carrier is infinite even at frontier width three: disjoint planar
+two-vertex, three-edge components give masses $4(n+1)$. This is a
+refutation of unrestricted carrier finiteness, not of the connected
+source route. A completed component is invisible at the boundary and
+prevents later connected growth. The executable visibility test is
+proved exact on decoded runs, as is the connected/bridgeless cut test;
+in particular every nonempty closed run rejects \emph{extension},
+without thereby rejecting terminal acceptance.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeUnboundedMass.family_width}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeUnboundedMass.unbounded_mass}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeUnboundedMass.distinct_profiles}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeViability.connected_bridgeless_exact}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeViability.visibility_exact}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeViability.closed_rejects_extension}
+
+The coordinate gate exhausts $20{,}820$ raw codes through width three,
+finds $96$ valid codes, and compares $18{,}144$ colour pairs with the
+independent transfer. Kernel controls include malformed wires,
+persistent-port order, and identical colour/cut data with different
+Euler mass. These are operation controls, not a configuration catalogue.
+D2b remains open: the source-facing cyclic encoding/round trip,
+integrated admissible-prefix pruning, and the exact raw/support/Nerode
+closure certificates of Proposition~\ref{prop:exact-closure-gate} still
+require discharge. Constructing a physical object for every valid code
+does not by itself prove coverage of every required source witness.
+No optimized threshold or generating base is inferred, and the fixed
+earned ledger remains $57/100$.
