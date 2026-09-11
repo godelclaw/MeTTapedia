@@ -15004,3 +15004,75 @@ its shrinking law. Neither equal boundary support nor a smaller
 reclosable replacement is proved. A reduction must still preserve
 ordinary zero Count, the spherical cubic bridgeless class, and marked
 edges on these full interfaces. The fixed ledger remains $57/100$.
+
+\subsection{A transverse shell sweep must account for both caps}
+\label{sec:unsplit-cap-sweep}
+
+The buffered construction does not justify treating a narrow shell as
+a bounded-interface corridor while keeping its caps intact. There is
+an all-orders obstruction to that additional restriction, even for the
+following elementary closed family. For $n\geq3$, take four cyclic rows
+$O_i,D_i,E_i,I_i$, indexed modulo $n$, with the six edge families
+\[
+ O_iO_{i+1},\quad O_iD_i,\quad D_iE_i,\quad
+ E_iD_{i+1},\quad E_iI_i,\quad I_iI_{i+1}.
+\]
+The middle rows form a single zigzag ring; the outer and inner rows are
+the two caps. The width measured here is the number of \emph{all original
+edges} crossing a vertex cut, not the cut restricted to the ring and
+not a branch-decomposition middle-vertex measure.
+
+\paragraph{The obstruction.}
+Let $S$ contain exactly $n$ of the $2n$ shell vertices. Suppose each cap
+is wholly in $S$ or wholly outside it, allowing all four choices.
+Then $|\delta S|\geq n$. If both caps are outside, charge the $n$
+included shell vertices to their distinct cap spokes. If both are
+inside, charge the $n$ excluded vertices instead. If the caps are on
+opposite sides, each of the $n$ edge-disjoint paths
+$O_i,D_i,E_i,I_i$ contains a crossing edge. These are proved injections
+into the actual full cut.
+\Sverified{Mettapedia.GraphTheory.FourColor.UnsplitCapSweep.outside_caps}
+\Sverified{Mettapedia.GraphTheory.FourColor.UnsplitCapSweep.inside_caps}
+\Sverified{Mettapedia.GraphTheory.FourColor.UnsplitCapSweep.opposite_caps}
+\Sverified{Mettapedia.GraphTheory.FourColor.UnsplitCapSweep.balanced_cut}
+
+Consequently the middle prefix of \emph{every} shell-vertex ordering
+has width at least $n$, even if whole caps change their ownership at
+every stage. Explicit prefix cuts realize these hypotheses, giving an
+unboundedness theorem quantified over every ordering and every
+stagewise cap assignment, not a conditional assertion about a supplied
+sweep.
+\Sverified{Mettapedia.GraphTheory.FourColor.UnsplitCapSweep.sweep_width_lower_bound}
+\Sverified{Mettapedia.GraphTheory.FourColor.UnsplitCapSweep.unbounded_unsplit_cap_sweeps}
+
+\paragraph{A positive escape control on the same family.}
+Include all four vertices in columns $0\leq i<t$, for $0<t<n$.
+Now both caps participate in the cut. Only edge families $0,3,5$
+can cross, each at columns $t-1$ and $n-1$, so the full cut has at most
+six edges, independently of $n$.
+\Sverified{Mettapedia.GraphTheory.FourColor.UnsplitCapSweep.slice_width_le_six}
+This is why the preceding lower bound is not a claim of unbounded
+optimal branchwidth. It rules out the unsplit-cap restriction, not
+coordinated cuts through the caps.
+
+The gate exhausts all half-shell subsets and four cap assignments for
+$3\leq n\leq8$: $70272$ full cuts, with exact minima
+$4,6,6,8,8,10$. It checks explicit oriented faces, spherical Euler
+counts, simplicity, cubicity, bridgelessness, connected caps and
+connected cap complements. The ring-only consecutive sweep has width
+two, while the whole-graph column slices have width six. Receipt:
+\texttt{results/fourcolor/v24\_unsplit\_cap\_sweep\_gate.json}.
+The parametric Lean theorems concern the displayed endpoint graph and
+its full cuts; they do not additionally formalize its rotation system.
+The finite geometry checks are not an all-orders kernel proof of
+sphericity. Nor is this a family of least counterexamples or a
+bounded-face family: its two cap faces have length $n$.
+
+The resulting design correction is precise. Preserving designated
+marks does not require preserving \emph{all} unmarked cap material as
+an indivisible geometric object. A prospective general shortening may
+cut through that material, but must then prove its complete-interface
+bound, reclosure conditions, colouring lift and strict decrease. The
+six-edge slices above do not supply those assertions for arbitrary
+caps, nor do they discharge a source-facing reduction obligation.
+The fixed ledger remains $57/100$.
