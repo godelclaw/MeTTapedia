@@ -80,8 +80,8 @@ differentiability, separately from the zero default of the total derivative.
 
 These are spatial amplitudes. `LocalGaussianFourierBudget.lean` now
 constructs finite Fourier approximants from their actual coefficients;
-see the next subsection. Their pressure-error transfer is still required
-to insert this budget into the smoothed commutator theorem below. There is no
+`LocalGaussianPressureBudget.lean` charges the pressure replacement error
+and inserts this density into the smoothed commutator estimate below. There is no
 multiplicative patch-count loss, but the displayed logarithmic count,
 inverse-radius, amplitude, and inverse-gap-threshold costs remain. No
 uniform dynamical budget or unconditional regularity theorem is claimed.
@@ -114,12 +114,51 @@ patches `βᵢ` and every `δ > 0`, polynomials `pᵢ` with coefficients `cᵢ`:
 No mode-count or patch-count factor is introduced by this approximation.
 The density retains the costs displayed above. This is **L² approximation,
 not uniform approximation**: exact coverage and weighted line localization
-still refer to `βᵢ`. The pressure application must combine those spatial
-identities with a charged L² replacement error; it cannot reuse the old
-pointwise coverage assumption for `pᵢ`. Angular tails, uniform pressure
-norms, and the dynamical source budget remain open.
+still refer to `βᵢ`. The pressure application combines those spatial
+identities with a charged L² replacement error; it does not reuse the old
+pointwise coverage assumption for `pᵢ`. The strengthened
+`exists_local_gaussian_fourier_family` fixes the cover and its derivative
+budget before quantifying over `δ`. Angular tails, uniform pressure norms,
+and the dynamical source budget remain open.
 `GaussianFourierBudgetAudit.lean` checks the dependency closure, constant
 and negative-frequency derivatives, and finite-coefficient energies.
+
+### Gaussian pressure budget with charged approximation errors
+
+`WeightedPressureL2Replacement.lean` integrates exact spatial line
+localization and then charges the total L² change in quadratic weights.
+`SmoothedPressureL2Budget.lean` also pays for resolvent smoothing and the
+elliptic commutator. `LocalGaussianPressureBudget.lean` applies the estimate
+to the actual strain/vorticity patches, not an assumed cutoff family:
+
+```text
+∫ a₂ Tilt_e(H)²
+  ≤ 16η² ∫ a₂ trace(H)² + 8 Σᵢ angularTail(dᵢ)
+    + Cε,η / |2πi|² · ∫ gradientDensity(γ,ρ,τ)
+    + Rη δ + 32ρ² HessianEnergy,
+Cε,η = 1536 B₁² + 72 B₀²/ε + 2ε B_H² + 8εη² B_T²,
+Rη = 8 B_H² + 32η² B_T²,        dᵢ = resolvent_ε(cᵢ).
+```
+
+The cover depends on `γ,ρ` and the actual field, but not on `δ`, the
+pressure truncation, smoothing parameter, or angular threshold. For each
+`δ > 0`, one finite coefficient family works for every positive `ε`, every
+symmetric finite pressure truncation, and every nonnegative `η`. There is
+no additional mode-count or patch-count multiplier. The displayed density
+still contains the logarithmic cover-size and inverse-gap/radius costs.
+
+`PressureSmoothingBalance.lean` completes the square in `Cε,η`. Writing
+`Q = B_H² + 4η²B_T²`, its exact lower envelope is
+`1536 B₁² + 24 B₀ sqrt(Q)`, attained at `ε = 6 B₀ / sqrt(Q)` when both
+`B₀` and `Q` are positive. This optimizes only the displayed derivative
+coefficient, **not** the angular tail or the full pressure bound. In
+particular, taking `ε` to zero cannot remove a nonzero commutator cost.
+
+No fluid-dissipation absorption or scale/time-uniform bound follows yet.
+The actual angular tails and pressure norms must still be controlled in
+the dynamical source estimate. `GaussianPressureBudgetAudit.lean` checks
+zero and nonzero replacement errors, composed errors, sharp physical
+smoothing error, and the dependency closure.
 
 ### Constructive pressure-patch smoothing
 
@@ -137,8 +176,10 @@ fixes constant modes, and solves its elliptic coefficient equation. The
 sharp constants are attained by the audited single-mode examples.
 
 `PressurePatchSmoothing.lean` charges the approximation error against the
-actual pressure Hessian and trace supremum norms. `SmoothedPressureBudget.lean`
-constructs the same strain/vorticity-weighted patch family for every smoothing
+actual pressure Hessian and trace supremum norms. The earlier
+`SmoothedPressureBudget.lean` constructs a uniform-approximation patch
+family, distinct from the derivative-controlled Gaussian family above,
+for every smoothing
 parameter, pressure truncation, and angular threshold. Its bound retains the
 weighted pressure trace and angular tails, with cutoff cost
 
@@ -914,7 +955,8 @@ derivatives contribute `|2πi|²` and mixed second derivatives contribute
 previous first-gradient theorem. The Gaussian construction above now gives
 quantitative spatial patch derivative control, and the Fourier projection
 construction transfers that control to finite approximants. The charged
-pressure replacement and bounds for `B₀,B₁` along the actual solution remain open, as does
+pressure replacement is proved in `LocalGaussianPressureBudget.lean`.
+Bounds for `B₀,B₁` along the actual solution remain open, as does
 uniformity in the pressure truncation, gap cutoff, and time.
 `PressureEllipticBudgetAudit.lean` checks the identities, derivative
 normalization, complex cutoff, and nonzero-to-zero output regressions.
