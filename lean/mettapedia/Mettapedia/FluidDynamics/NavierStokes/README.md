@@ -58,6 +58,59 @@ regularity, blowup, or any other Millennium-problem conclusion.
 
 ## Current Status
 
+### Complete one-input pressure localization and Gaussian derivative budget
+
+`NormalizedPressureTrace.lean` writes the actual complex trace as a
+polynomial in normalized input directions. Its trace variation costs 4;
+combining this with the output-symbol cancellation costs 12:
+
+```text
+|k| |T_e(k,p;w,v) - T_e(l,p;w,v)| <= 12 |k-l| |w| |v|.
+```
+
+`PressurePairInputStability.lean` includes shifted input zero and zero or
+nearly cancelling outputs, without cone or buffer assumptions. The
+corresponding right-input bound follows by pair symmetry.
+
+`PressureBilinearLocalization.lean` proves the exact finite identity
+
+```text
+c * B_e(w,v) - B_e(c*w,v) = C_e(c;w,v),
+C_e(q) = sum_(p+k+a=q) c_a [T_e(p,k;w_p,v_k) - T_e(a+p,k;w_p,v_k)].
+```
+
+Here `*` is scalar-vector Fourier convolution and `B_e` is the actual
+complex pressure-pair convolution. Equal output frequencies are grouped
+before squaring. With `w(0)=0`, the energy bound is
+
+```text
+sum_q |C_e(q)|² <= 144 (sum_p |w_p|/|p|)² (sum_k |v_k|)² G(c),
+G(c) = sum_a |a|² |c_a|².
+```
+
+For actual `w = fourierCurl u`, `PhysicalPressureLocalization.lean`
+charges the inverse source frequency to the velocity. The result is
+`144 (sum |u_p|)² (sum |v_k|)²` times the **physical first-derivative
+energy of the scalar patch**. The physical pressure sign and the
+zero-frequency curl condition are proved from the existing definitions.
+
+`GaussianPressureCommutatorBudget.lean` constructs the same actual
+Gaussian patch family before selecting Fourier tolerance or source and
+output sets. Its summed commutator energy is bounded by that explicit
+Fourier l1 factor times the existing integral of `gradientDensity`.
+No additional patch-count factor is inserted. Approximation error,
+inverse-gap costs, and the gradient density's existing temperature
+dependence remain visible.
+
+This closes the **one-input** localization comparison. Assembly with
+both localized inputs and the adaptive weighted pressure estimate is
+still required. The Fourier l1 costs and inverse-gap density do not yet
+have the scale/time-uniform control needed for the dynamical
+misalignment budget or BKM continuation. No unconditional regularity
+claim follows from these spatial bounds. `PressureLocalizationAudit.lean`
+and `Analysis/NormalizationConvolutionTests.lean` check the new boundary
+cases, coincident-source interference, and theorem axiom closures.
+
 ### Complex pressure identification and localization costs
 
 `ComplexPressurePair.lean` and `ComplexPressureMisalignment.lean` extend
@@ -108,10 +161,10 @@ output-direction symbol's apparent singularity:
   <= 8 |k+p-r| |w| |v|.
 ```
 
-This is only the **output-symbol part** of the bilinear localization
-commutator. Input-symbol variation and comparison between pressure of
-localized vorticity and localized original pressure remain to be
-controlled. These results do not close the adaptive scale/time budgets,
+This is the **output-symbol part** of the bilinear localization
+commutator; the one-input variation and comparison are completed in
+the modules listed above. Two-input weighted localization and the
+adaptive scale/time budgets remain unresolved. These results do not close
 the dynamical misalignment estimate, or unconditional regularity.
 `ComplexPressureAudit.lean` checks phases, zero modes, an actual cutoff
 that creates divergence despite perfect line alignment, a sharp
