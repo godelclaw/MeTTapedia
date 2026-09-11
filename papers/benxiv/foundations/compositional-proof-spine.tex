@@ -15294,3 +15294,104 @@ theorem must retain those hypotheses or use a different lifting
 construction; it cannot silently appeal to the false generic cofacial
 cycle assertion. No target-facing wide-case implication is discharged,
 and the fixed ledger remains $57/100$.
+
+\subsection{Actual smoothing provenance does not select a Kempe orbit}
+\label{sec:smoothing-provenance-gate}
+
+The next constructor gate starts with a spherical cubic graph of girth
+five whose dual remains connected after every deletion of at most four
+vertices. It smooths an actual adjacent pair, preserving the old cyclic
+orders. This tests provenance from the stronger geometric population,
+not an arbitrary cofacial pair in an unrelated smaller graph. The
+original graph is colourable, not a least counterexample; no large
+protected ordered mesh is asserted by this control.
+
+The fixed original has $30$ vertices and $96$ labelled Tait colourings.
+Deleting edge $\{0,1\}$ and smoothing its endpoints gives a spherical
+bridgeless cubic graph with $28$ vertices, girth four, and $192$ labelled
+Tait colourings. The two new edges have indices $0,5$ in the recorded
+edge list. Its four Kempe orbits have the following exact counts:
+\[
+\begin{array}{c|rrrr}
+ \text{orbit size} & 6 & 36 & 6 & 144\\
+ \text{colourings with a common marked cycle} & 6 & 0 & 6 & 72
+\end{array}
+\]
+Two independent complete colouring enumerators agree, and exhaustive
+component switching closes these four orbits. Consequently, the claim
+that \emph{every} smaller colouring can be repaired by Kempe moves is
+false even for this actual smoothing of a normal-form geometric
+control. The claim that \emph{some} smaller colouring has the cycle is
+not refuted. Nor may normal form be transferred silently to the
+smaller map: its squares are created by the surgery.
+
+\paragraph{An orbit-independent construction was attempted.}
+Let $M$ be a colour-class perfect matching of a trapped colouring.
+Search for a supported matching $N$ such that $M\mathbin{\triangle}N$
+is one alternating cycle, the residual factor $H-N$ has only even
+cycles, and one residual cycle contains both marked edges. Alternate
+two colours around the residual cycles, assign the third colour to
+$N$, and apply the literal inverse-insertion lift. This is not an
+exchange of two fixed colour classes: the selected alternating carrier
+can contain all three old colours, and its resulting colouring can
+lie outside the initial Kempe orbit.
+
+The gate constructs such an exchange and an actual lifted colouring
+for every one of the $36$ trapped colourings of the fixed control.
+The background algebra is already available, rather than newly
+assumed: supported matching exchange changes the residual graph by
+the selected symmetric difference, and a bipartite residual factor
+supplies a Tait colouring.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualExchange.exchange_supportedBy_and_residualGraph_eq_symmDiff}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ResidualTwoFactor.taitColorable_of_residualGraph_isBipartite}
+
+The attempted existence proof fails at the simultaneous parity and
+joining requirement. The smaller control has $102$ perfect matchings:
+\[
+\begin{array}{c|rr}
+ & \text{marks on different cycles or absent} & \text{marks on one cycle}\\
+ \text{all residual cycles even} & 45 & 12\\
+ \text{two odd residual cycles} & 30 & 15
+\end{array}
+\]
+The receipt includes a single alternating-cycle exchange which joins
+the marks but creates two odd residual cycles. Thus graph support,
+one connected exchange carrier, and joining do not imply that the
+new factor can be alternately coloured. The theorem of A.~Diwan,
+\emph{Chords of 2-factors in planar cubic bridgeless graphs} (2021),
+\url{https://arxiv.org/abs/2110.12584}, supplies cofacial joining in an
+ordinary $2$-factor, not the missing all-even condition. Minimizing
+oddness over joining factors does not prove that its minimum is zero.
+Indeed the previous $18$-vertex control shows that zero need not be
+attained in the broader geometric class.
+
+More explicitly, cutting the old even residual cycles along the
+alternating carrier leaves arcs. A new residual cycle has parity equal
+to the sum of its surviving arc lengths and its newly inserted
+matching edges. Evenness of the old cycles constrains the total of
+the old arcs, not each new grouping. In the recorded failed exchange,
+the new grouping gives cycle lengths $23$ and $5$. Thus the attempted
+proof by ``one even alternating carrier preserves evenness'' fails
+at an explicit parity implication, not at a missing exchange API.
+
+\paragraph{Finite reach and remaining obligation.}
+The optional gate over the $10$ generated dual $5$-connected controls
+of cubic orders $20$ through $30$ checks all $411$ adjacent-pair
+smoothings. Some lifting colouring exists in each tested smoothing,
+but there are $26$ trapped Kempe orbits containing $936$ colourings.
+The matching construction lifts all $936$; the chosen exchange
+carriers have at most $24$ edges in this finite run. This is neither a
+universal bound nor a proof of the exchange-existence statement.
+No frozen exterior or named-colour preservation beyond the explicitly
+unchanged part of the lifted cycle is claimed.
+
+The executable attempt and its finite receipt are
+\texttt{tools/fourcolor/v24\_smoothing\_provenance\_gate.py} and
+\texttt{results/fourcolor/v24\_smoothing\_provenance\_gate.json}.
+These new conclusions are constructor and exhaustive finite checks,
+not new Lean seals. The source-facing wide-case implication still
+requires constructing an admissible reduction with a physical lift
+from its exact protected geometry. Replacing that requirement by an
+assumed all-even joining factor would only rename it. This is the
+second sustained wide-case attack without that implication; the
+fixed ledger remains $57/100$, and the proof plan is due for review.
