@@ -16356,9 +16356,82 @@ information: the cyclic order affects the result of sewing.
 
 This supplies the Euler component of context congruence for the physical
 compositional language; it does not by itself preserve connectivity or
-bridgelessness. Nor is $m$ here proved to have finite range, or equality
-of boundary records proved to force equality of $m$. A complete finite
+bridgelessness. The generic law does not bound $m$; the next section does
+so for actual proper vertex sides of spherical maps. Equality of boundary
+records alone is not asserted to force equality of $m$. A complete finite
 admissibility signature, its transition law, the global reduction and
 the generating-base verification remain open. No particular mesh,
 corridor shape or universal frontier bound has been assumed. The fixed
 obligation ledger remains $57/100$.
+
+\subsection{Planar Euler mass is a finite component coordinate}
+\label{sec:vertex-side-euler-mass}
+
+The integer in Section~\ref{sec:boundary-rewire-euler} is now controlled
+on arbitrary actual vertex sides, rather than on a chosen corridor
+shape. Let $G$ be a connected spherical cubic rotation system with one
+cyclic rotation on each vertex, let $S$ be a vertex subset, and let $A$
+be its literal open tangle \texttt{ofVertexSide}. The constructor takes
+a retained outer dart; neither $S$ nor its complement is required to be
+connected. Write $c_S$ for the number of connected components of $G[S]$.
+Then
+\[
+             m(A)=4c_S.
+\]
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSideEulerMass.mass_eq_four_components}
+
+This is inherited planarity, not an assumed disc certificate. On the
+original dart carrier, delete every edge not internal to $S$ by fixing
+its two darts under the capped edge involution. The remaining permutation
+components are precisely the components of $G[S]$, together with one
+isolated rotation orbit for every outside vertex. An explicit quotient
+equivalence proves that assertion.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSideCappedComponents.componentEquiv}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSideCappedComponents.wordOrbitCount_capped}
+The existing planar edge-deletion theorem supplies Euler equality for
+this edge presentation. Splitting its face permutation into the retained
+open walk and the outside rotations cancels the outside vertices. Twice
+the number of internal edges is the number of internal darts, yielding
+the displayed formula.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSideEulerMass.capped_plane}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSideEulerMass.openPhi_ofVertexSide}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSideEulerMass.cycle_count_cappedPhi}
+
+If $S$ is proper, every component of $G[S]$ meets an exposed port:
+otherwise it would be a whole component of the connected ambient graph.
+The proof constructs the surjection from actual boundary darts to side
+components and therefore gives
+\[
+       0\le m(A)=4c_S\le4|\partial S|.
+\]
+Consequently, at width at most $k$, $c_S$ is a coordinate in
+$\{0,\ldots,k\}$. This is a $k+1$-element carrier, not a claim that every
+value is realized by the nonempty open-tangle constructor.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSideCappedComponents.boundaryComponent_surjective}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSideCappedComponents.components_le_boundary}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSideEulerMass.mass_range}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSideEulerMass.componentCode}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSideEulerMass.mass_eq_four_code}
+
+There is an actual replacement consumer: two such pieces, possibly from
+different ambient maps and with different internal carriers, have equal
+sewn Euler characteristic in every fixed exterior when their named
+boundary-return records and component counts agree.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexSideEulerMass.replacement_euler}
+Equal Euler characteristic is still not a proof of connectivity or
+bridgelessness of the replacement. Those structural conditions, the
+complete transition law, global descent and the generating base remain
+separate obligations. No universal width bound or forced repetition is
+inferred, and the ledger remains $57/100$.
+
+The structural gate checks $5{,}656$ actual vertex subsets: every subset
+of a tetrahedron and the prisms on $6,8,10,12$ vertices, and seeded samples
+on the $16$- and $48$-vertex prisms. Direct open-face walks agree with an
+independent leaf-capped construction. Empty sides are included in the
+program bookkeeping; they do not instantiate the retained-outer-dart
+argument of the open constructor. Negative controls explain the
+hypotheses: two disconnected isolated side vertices have mass $8$, not
+$4$; a full connected closed side has positive mass with no ports; and
+two rotations of the theta multigraph have masses $4$ and $0$, so genus
+cannot be ignored. These controls are separate from the universal kernel
+theorems and do not enumerate colouring configurations.
