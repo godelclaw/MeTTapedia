@@ -1,0 +1,13 @@
+{
+  "overlapping_atom_checks": 120,
+  "split_grid": {
+    "edges": 21,
+    "intermediate_cuts_checked": 30192,
+    "minimum_intermediate_cut": 2,
+    "n": 2,
+    "threshold": 3,
+    "vertices": 18,
+    "width": 1
+  },
+  "tree_threshold_checks": 7106
+}

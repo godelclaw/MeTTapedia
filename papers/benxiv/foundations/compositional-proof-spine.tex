@@ -15395,3 +15395,63 @@ from its exact protected geometry. Replacing that requirement by an
 assumed all-even joining factor would only rename it. This is the
 second sustained wide-case attack without that implication; the
 fixed ledger remains $57/100$, and the proof plan is due for review.
+
+\subsection{Branching is not an escape from bounded-interface generation}
+\label{sec:branching-interface-obstruction}
+
+A different proof-plan experiment replaces a corridor by an arbitrary
+binary composition tree. The finite-state tree-pumping theorem is already
+available; changing the tree shape does not supply a bounded-interface
+presentation. The following obstruction concerns the presentation itself,
+before any colour-state count or pumping threshold is chosen.
+
+Let every leaf carry at most $a$ ambient vertices, and let every parent
+carry the union of its children's carriers. At each subtree require the
+\emph{complete ambient edge cut} to have size at most $k$. No connectedness,
+strict nesting, disjointness of atoms, or choice of balanced tree is assumed.
+For the split-grid family of Section~\ref{sec:split-grid-chain-obstruction},
+put $B=2k^2+k$. If $k<n+1$, the existing small-cut theorem says each such
+carrier or its complement has at most $B$ vertices. Any binary union-tree
+presentation of the whole graph therefore satisfies
+\[
+  2(n+1)^2 \leq 3\max\{a,2k^2+k\}.
+\]
+\Sverified{Mettapedia.GraphTheory.FourColor.BranchingInterfaceObstruction.splitGrid_size_bound}
+
+Here is the complete combinatorial reason. Put $t=\max\{a,B\}$. A union
+tree with more than $t$ vertices at its root has a subtree $S$ with
+$t<|S|\leq2t$: descend into a child larger than $t$ until neither child
+is larger, then take their parent. Union subadditivity suffices even
+when the atoms overlap. If the whole graph has more than $3t$ vertices,
+both $S$ and its complement are larger than $B$, contradicting the
+small-cut theorem.
+\Sverified{Mettapedia.GraphTheory.FourColor.BranchingInterfaceObstruction.exists_intermediate}
+\Sverified{Mettapedia.GraphTheory.FourColor.BranchingInterfaceObstruction.card_le_three_max}
+
+Consequently, for every fixed atom bound $a$, interface width $k$, and
+size threshold $N$, an explicit larger split grid admits no such
+presentation, whatever the binary branching shape.
+\Sverified{Mettapedia.GraphTheory.FourColor.BranchingInterfaceObstruction.no_uniform_bounded_presentation}
+The calibrated executable gate checks all binary shapes and leaf
+orders through five singleton atoms, overlapping-atom controls, and
+all $30{,}192$ intermediate cuts of the $18$-vertex control.
+The files are \texttt{tools/fourcolor/v24\_branching\_interface\_gate.py}
+and \texttt{results/fourcolor/v24\_branching\_interface\_gate.json}.
+
+\paragraph{Scope and route consequence.}
+These are open, properly three-edge-colourable split grids, not least
+counterexamples. This is a full vertex-carrier cut theorem, not a
+claimed identification with standard edge-middle-set branchwidth or
+with every possible graph grammar. It excludes bounded-atom,
+bounded-interface generation \emph{when the intermediate pieces are
+retained as ambient vertex subsets}. It does not exclude growing
+interfaces, semantic rewrites whose intermediate pieces are not such
+subsets, or a counterexample-specific structural theorem.
+
+Thus changing a chain to a tree is not by itself the missing mathematical
+step. A revised compositional proof must justify its interface bounds
+on the actual target class, or explicitly use a different kind of descent.
+The source's finite-interface semantics remains distinct from a theorem
+that the relevant class has a bounded-interface generating presentation.
+No global reduction or finite base is proved here; the fixed ledger
+remains $57/100$.
