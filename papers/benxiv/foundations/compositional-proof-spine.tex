@@ -15150,3 +15150,81 @@ state repetition, marked-edge preservation through a splice, or strict
 ordinary zero-Count replacement follows from this construction alone.
 Those target-facing conditions remain to be proved, and the fixed
 ledger remains $57/100$.
+
+\subsection{Buffered path cuts reach Count descent, or force a wide terminal separation}
+\label{sec:path-count-sweep}
+
+The connection from the preceding constructed bonds to the Count-node
+consumer can be made without assuming cyclicity of each side. Endpoint
+cuts must first be excluded: even an optimal connected bond of width
+three on the cube can isolate a vertex. Connectedness and optimality
+alone therefore do not supply the cycles required by the node adapter.
+
+For a nonempty connected vertex side $S$ in a cubic graph, an acyclic
+induced side is a tree, and degree counting gives
+$|\delta S|=|S|+2$. The existing cubic-side counting theorem consequently
+implies that $|\delta S|\leq |S|$ forces a cycle in $S$. The same applies
+to the complement. The cut used here is the set of \emph{all} original
+crossing edges; its equality with the boundary minimized by the
+rotation-to-multigraph adapter is proved.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalPathCountSweep.cut_eq_boundaryEdges}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalPathCountSweep.cycle_of_card}
+
+Let $p$ be an actual simple path of length $L$. Its prefix at index $t$
+contains $t+1$ distinct vertices, and its suffix contains $L-t$.
+For the canonical full cut $S_t$, suppose $|\delta S_t|\leq w$,
+$w\leq t+1$, and $w\leq L-t$. Feasibility puts the prefix in $S_t$
+and the suffix in $S_t^c$. Their cardinalities force cycles on both
+sides. The existing cyclic-cut adapter then constructs a connected
+Count node with boundary and middle bounds at most $w$, deriving its
+majority-region nonemptiness and edge-shore connectedness. Its shore
+is exactly the original incident-edge shore of $S_t$; no new majority
+identity for the original vertex partition is assumed.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalPathCountSweep.realization}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalPathCountSweep.node}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalPathCountSweep.node_shore}
+
+Write the existing exact phased-state bound as
+\[
+ Q(w)=(6w+1)\sum_{j=0}^{w} j!\,2^{3^j}.
+\]
+In a graph-backed vertex-minimal Tait counterexample, if every canonical
+cut of $p$ has full width at most $w$, then
+\[
+ L\leq Q(w)+2w.
+\]
+Indeed, discard an endpoint buffer and use the $L-2w$ interior cuts.
+The preceding construction supplies their actual Count nodes, while
+canonical nesting supplies strict incident-edge-shore nesting. The
+already proved literal-shore chain theorem bounds their number by
+$Q(w)$. This does not replace the physical splice with an abstract
+repeated-interface assumption: the existing exact phased-state
+descent is the consumer.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalPathCountSweep.buffered_length_le}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalPathCountSweep.length_le}
+
+Consequently, if $L>Q(w)+2w$, there is an index $t$ such that
+\emph{every} full cut containing the path prefix and avoiding its suffix
+has more than $w$ crossing edges. Canonical optimality upgrades the
+conclusion from the chosen side to all feasible cap assignments.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalPathCountSweep.exists_wide_separation}
+
+The geometric gate checks all $166$ nonempty proper connected sides of
+the cube: $100$ tree sides obey the exact tree equation and $66$ sides
+contain cycles. On the eight preceding spherical path controls,
+$18$ cuts meet the conservative terminal-size criterion. All such cuts
+have cycles on both sides. All $47$ actually cyclic cuts pass the full
+incident-edge-shore connectivity, majority nonemptiness, middle-width,
+and strict-nesting checks. The width-three endpoint cut is retained as
+a negative control. No colourings or configuration certificates are
+enumerated. Receipt:
+\texttt{results/fourcolor/v24\_path\_count\_gate.json}.
+
+This completes the narrow-cut implication for the constructed path
+sweep. A complete source contour supplies such a path by deleting its
+first edge. It does not prove that a sufficiently large source map
+supplies a long \emph{narrow} path sweep, nor that a forced wide
+separation gives a marked colour-lifting reduction. That latter
+geometric-to-semantic implication remains open. The formula is the
+existing exact-state carrier, not a new small-constant claim; no
+fixed-ledger obligation is discharged, and the ledger remains $57/100$.
