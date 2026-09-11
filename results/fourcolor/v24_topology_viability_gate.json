@@ -1,0 +1,35 @@
+{
+  "edge_insertion": {
+    "checked": 38024,
+    "increments": {
+      "0": 22430,
+      "2": 15594
+    },
+    "wrong_face_coordinates_refuted": {
+      "actual": 2,
+      "added": [0, 1],
+      "edges": [[0, 1], [0, 2]],
+      "rho": [0, 2, 1],
+      "wrong": 0
+    }
+  },
+  "scope": "generic edge presentations and small graph gluing; not a Lean certificate",
+  "visibility": {
+    "checked": 1466,
+    "empty_initial_object_has_no_hidden_record": true,
+    "hidden": 515,
+    "nonempty_exterior_checks": 3198,
+    "reject_closed_finished_object_is_unsound": true
+  },
+  "width3_viable_closure": {
+    "accepting_states": 1,
+    "alphabet": 96,
+    "genus_rejections": 252,
+    "hidden_extension_rejections": 2,
+    "longest_witness": 7,
+    "scope": "Python fixed-point check, not a kernel closure certificate or global width bound.",
+    "states": 36,
+    "transitions": 1320,
+    "width": 3
+  }
+}

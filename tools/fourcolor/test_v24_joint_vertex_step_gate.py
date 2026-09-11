@@ -5,7 +5,8 @@ from pathlib import Path
 import unittest
 
 from v24_joint_vertex_step_gate import (
-    bounded_closure, check_sweep, encode_rotation, joint_step, run, structurally_accepting,
+    bounded_closure, check_sweep, encode_rotation, joint_step, rejects_extension,
+    run, structurally_accepting,
 )
 
 
@@ -34,14 +35,25 @@ class JointVertexStepTests(unittest.TestCase):
         start = (0, 3, (0, 1, 2), (None, None, None))
         finish = (3, 0, (2, 1, 0), ())
         self.assertFalse(structurally_accepting(initial))
+        self.assertFalse(rejects_extension(initial))
         first = joint_step(initial, start)
         self.assertFalse(structurally_accepting(first))
+        self.assertFalse(rejects_extension(first))
         theta = joint_step(first, finish)
         self.assertTrue(structurally_accepting(theta))
+        self.assertTrue(rejects_extension(theta))
         two_theta = joint_step(joint_step(theta, start), finish)
         self.assertFalse(structurally_accepting(two_theta))
         self.assertIn(((), True, True, 0), two_theta[1])
         self.assertEqual(check_sweep((start, finish, start, finish))['components'], 2)
+
+    def test_viability_pruning_keeps_final_acceptance(self):
+        full = bounded_closure(3)
+        viable = bounded_closure(3, prune_hidden=True)
+        self.assertLess(viable['states'], full['states'])
+        self.assertLess(viable['transitions'], full['transitions'])
+        self.assertGreater(viable['hidden_extension_rejections'], 0)
+        self.assertEqual(viable['accepting_states'], full['accepting_states'])
 
     def test_empty_support_does_not_skip_syntax_validation(self):
         empty = ((), frozenset({((), False, False, 0)}), frozenset())
