@@ -58,6 +58,52 @@ regularity, blowup, or any other Millennium-problem conclusion.
 
 ## Current Status
 
+### Completion outline: proof obligations, not percentages
+
+The end target is an unconditional arbitrary-data unforced regularity theorem
+following the repaired stochastic-Lagrangian/pancake route. The periodic
+and Euclidean claims must each match their own admissibility and solution
+conditions; a periodic construction does not by itself establish the
+Euclidean theorem. Local integrability is not uniform control up to a
+possible singular time.
+
+The following is a living dependency outline. **Checked** means the stated
+obligation is proved for its actual objects, **partial** means some necessary
+components are proved, and **open** means the full obligation is not proved.
+The steps are not equally difficult and are not units of elapsed time or
+fractions of a completed proof.
+
+| Step | Obligation and completion test | Status and present evidence |
+| --- | --- | --- |
+| S1. Actual equation and objects | Construct the solution, stochastic/material objects, and frequency decomposition from arbitrary admissible data; derive every evolution identity used later from the actual unforced equation. Track the periodic and Euclidean realizations separately. | **Partial.** The local periodic solution, common-interval material flow, vorticity and strain equations are constructed; see `StochasticLagrangian/LocalMaterialVorticity.lean`, `LocalMaterialStrain.lean`, and `LocalSpectralResidual.lean`. This is not a complete arbitrary-data stochastic/Euclidean realization. |
+| S2. Spatial field transfer | Transfer the coherent/misaligned geometry to the actual localized operator fields, retaining uniform kernel constants and the inverse-scale gain through integration and limits. | **Partial.** Exact dyadic pressure kernels, the common envelope, and the mixed spatial-norm budget are checked. `GaussianRootOperatorBudget.lean` now transfers that budget to the integrated Gaussian localization residual and its complete output-band sum at each fixed input scale. This is one pressure-sector transfer, not all coherent/misaligned interactions or all adaptive limits. |
+| S3. All scales and sectors | Sum over input scales and pay for the other frequency interactions, angular tails, collision sectors, and adaptive cutoff terms without uncontrolled scale, patch-count, or regularization losses. | **Open.** Output-band summability at one input scale is checked; it does not discharge this step. The local bounds retain vorticity, strain, gate, and patch-gradient costs. |
+| S4. Dynamical misalignment budget | Prove the signed time-integrated nonlinear estimate from the actual unforced evolution, with bounds that remain finite up to any candidate finite singular time. Construct `MisalignmentStrainBudget`, rather than pass it in as a hypothesis. | **Open; decisive mathematical core.** `LocalExcessAlignmentEnergy.lean` supplies an actual-data absorption inequality with explicit source costs. `MisalignmentRefinedPin.lean` proves a conditional reduction, not the required dynamical budget. |
+| S5. Vorticity control and continuation | Construct the spatial essential-supremum vorticity integrand, prove its finite-time integral is controlled by the preceding estimates, and apply the continuation theorem to the actual solution. | **Open.** Continuation target surfaces and conditional reductions exist. The current `||omega||_sup² sqrt(G)` spatial cost is not yet a controlled BKM integrand. |
+| S6. Unconditional theorem and audit | Assemble the arbitrary-data theorem for each claimed domain; check every hypothesis, forcing/pressure convention, limit, and imported result against the target. Compile and audit the final theorem with no assumed analytic budgets or extra axioms. | **Open.** Local lemma builds and foundational-axiom audits are necessary evidence, not completion of this obligation. |
+
+```text
+S1 actual NS objects + S2 spatial transfer
+                    |
+                    v
+             S3 all scales/sectors
+                    |
+                    v
+             S4 dynamical budget       <- decisive open estimate
+                    |
+                    v
+             S5 BKM + continuation
+                    |
+                    v
+             S6 unconditional A/B audit
+```
+
+The dependencies guide the work, not a rigid chronological schedule:
+counterexamples to a proposed S3 or S4 estimate can require revising S2.
+Imported fluid-equation results must retain their domain, forcing, and
+regularity hypotheses. A genuine route obstruction is a result to record
+and use to repair the attack, not a completed regularity proof.
+
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
 `PressureDyadicSymbol.lean` replaces both annular cutoffs by the smooth
@@ -207,10 +253,32 @@ constant `C` is independent of input scale and adaptive patch count, but
 `G` still depends on the gates and patch geometry. The final theorem uses
 the actual continuous-map supremum of vorticity, not an assumed field bound.
 
-This is an `L1(q; L2(x; ell2(patches)))` estimate. The corresponding
-Minkowski transfer to the integrated operator output, the sum over input
-scales, and the signed dynamical/time budget remain to be closed. In
-particular, neither `||omega||_sup²` nor `G` has been proved dynamically
+This is an `L1(q; L2(x; ell2(patches)))` estimate.
+
+`Analysis/ContinuousFieldMinkowski.lean` proves the finite-family integral
+and infinite-series triangle inequalities by bundling the components in
+one Hilbert space and mapping continuous fields into `L2`.
+`PressureLocalizationField.lean` proves Bochner integrability in the
+continuous-field norm and identifies its integral with the actual
+two-input pressure localization. `PressureDyadicLocalization.lean` proves
+convergence to the localization of `PressureDyadicAction.sumAction`.
+
+`GaussianRootOperatorBudget.lean` applies these results to the actual root
+patches and full vorticity. Writing `A_(n,i) = integral_q R_(n,i)`, it proves
+genuine convergence and the bounds
+
+```text
+sqrt(integral_x sum_i |sum_n A_(n,i)(x)|²)
+  <= sum_n sqrt(integral_x sum_i |A_(n,i)(x)|²)
+  <= (C / N) ||omega||_sup² sqrt(6 G).
+```
+
+The first series is identified with the already constructed continuous
+pressure output-band sum, not a nonsummable-series default. The finite
+patch family has no additional cardinality multiplier. Only output bands
+at a fixed input scale have been summed. The sum over input scales, the
+other interaction sectors, and the signed dynamical/time budget remain
+open; neither `||omega||_sup²` nor `G` has been proved dynamically
 affordable. This does not prove global regularity.
 
 `Analysis/UnitTorusTranslationEnergyTests.lean` and
@@ -218,6 +286,12 @@ affordable. This does not prove global regularity.
 Fourier translation phase, a nonsmooth norm-corner field, empty-family
 defaults, and output-band summability for actual data. All new theorem
 axioms are printed for inspection.
+
+`Analysis/ContinuousFieldMinkowskiTests.lean` checks quadratic component
+aggregation, non-probability measure normalization, an empty family, and
+signed cancellation. `GaussianRootOperatorAudit.lean` checks constant
+weights, the empty-family default, actual-data norm summability, and
+pointwise series convergence. All 22 new theorem dependencies are audited.
 
 ### Periodic low-output pressure with wrapped spatial moments
 
