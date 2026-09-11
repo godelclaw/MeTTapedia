@@ -58,6 +58,51 @@ regularity, blowup, or any other Millennium-problem conclusion.
 
 ## Current Status
 
+### Two-input pressure localization and the exact spatial weight
+
+`PressureTwoInputLocalization.lean` now proves the actual finite identity
+
+```text
+c * (d * B(w,v)) - B(d*w,c*v)
+  = c * C(d;w,v) + C(c;v,d*w).
+```
+
+The second commutator shifts the **original** second input. The localized
+first input is only a receiver, so no zero-mean or divergence-free condition
+is imposed on it. `FiniteCutoffAlgebra.lean` proves the support associativity,
+pair symmetry, and collected-coefficient norm bound used in this identity.
+
+`PressureTwoInputEnergy.lean` bounds the error energy, for original inputs
+with zero mean, by
+
+```text
+288 [ C1² Wminus1² V1² G(d) + D1² W1² Vminus1² G(c) ].
+```
+
+Here `C1,D1` are the cutoffs' Fourier l1 norms, `W1,V1` are the original
+input Fourier l1 norms, `Wminus1,Vminus1` contain one inverse original
+frequency, and `G` is the cutoff's first-derivative Fourier energy.
+The resulting localized-pressure estimate retains both actual
+`localizationDefect` channels, including cutoff-created divergence.
+
+`PressureTwoInputPhysical.lean` identifies the sign against the actual
+finite pressure Hessian. For two copies of `curl u` and one cutoff `c`,
+the commutator energy is at most
+
+```text
+576 C1² (sum |u_k|)² (sum |curl(u)_k|)² integral |grad c|².
+```
+
+`PressureTwoInputReconstruction.lean` proves the exact spatial product
+identity and its Parseval energy identity. **Using the same cutoff twice
+produces the fourth-power energy weight `|c|⁴`, not `|c|²`.** Thus this
+two-input estimate does not yet supply the earlier Gaussian quadratic
+weight estimate. The weight factorization, cutoff Fourier-l1 cost,
+scale-uniform field norms, and time-integrated inverse-gap budget remain
+open analytic work. No unconditional regularity theorem is claimed.
+`PressureTwoInputAudit.lean` checks constant-cutoff scaling, frequency
+shifts to zero, independently shifted inputs, and created divergence.
+
 ### Complete one-input pressure localization and Gaussian derivative budget
 
 `NormalizedPressureTrace.lean` writes the actual complex trace as a
@@ -102,9 +147,9 @@ No additional patch-count factor is inserted. Approximation error,
 inverse-gap costs, and the gradient density's existing temperature
 dependence remain visible.
 
-This closes the **one-input** localization comparison. Assembly with
-both localized inputs and the adaptive weighted pressure estimate is
-still required. The Fourier l1 costs and inverse-gap density do not yet
+This closes the **one-input** localization comparison. The two-input
+finite comparison above is also checked, but assembly with the adaptive
+quadratic pressure weight is still required. The Fourier l1 costs and inverse-gap density do not yet
 have the scale/time-uniform control needed for the dynamical
 misalignment budget or BKM continuation. No unconditional regularity
 claim follows from these spatial bounds. `PressureLocalizationAudit.lean`
