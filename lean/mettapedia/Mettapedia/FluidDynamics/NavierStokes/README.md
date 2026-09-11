@@ -76,7 +76,7 @@ fractions of a completed proof.
 | Step | Obligation and completion test | Status and present evidence |
 | --- | --- | --- |
 | S1. Actual equation and objects | Construct the solution, stochastic/material objects, and frequency decomposition from arbitrary admissible data; derive every evolution identity used later from the actual unforced equation. Track the periodic and Euclidean realizations separately. | **Partial.** The local periodic solution, common-interval material flow, vorticity and strain equations are constructed; see `StochasticLagrangian/LocalMaterialVorticity.lean`, `LocalMaterialStrain.lean`, and `LocalSpectralResidual.lean`. This is not a complete arbitrary-data stochastic/Euclidean realization. |
-| S2. Spatial field transfer | Transfer the coherent/misaligned geometry to the actual localized operator fields, retaining uniform kernel constants and the inverse-scale gain through integration and limits. | **Partial.** High-input pressure and the low-input complement are identified; moving-line and divergence decompositions retain their source costs. Common periodic envelopes and actual localized weak derivatives in L² are constructed. `PressureCoherentWeakFieldTransfer.lean` identifies both input-coordinate channels with the actual weak derivative fields, retaining the uniform ratio²/input-scale² energy gain. `GaussianRootWeakChannelBudget.lean` transfers both patch-square sums to the integrable two-point weighted derivative density, without extracting individual input suprema or introducing a patch-count factor. Controlling that shifted density, other source interactions, and time affordability remain required. |
+| S2. Spatial field transfer | Transfer the coherent/misaligned geometry to the actual localized operator fields, retaining uniform kernel constants and the inverse-scale gain through integration and limits. | **Partial.** High-input pressure and the low-input complement are identified; moving-line and divergence decompositions retain their source costs. Common periodic envelopes and actual localized weak derivatives in L² are constructed. `PressureCoherentWeakFieldTransfer.lean` identifies both input-coordinate channels, retaining the uniform ratio²/input-scale² energy gain. `GaussianRootWeakChannelBudget.lean` transfers both patch-square sums to the integrable two-point derivative density without individual input suprema or a patch-count factor. `GaussianRootTwoPointDerivative.lean` bounds that density by actual gap/projector derivatives and Gaussian two-point moments, on a common null set that survives translation. Integration of this new bound, remaining interactions, and time affordability are still required. |
 | S3. All scales and sectors | Sum over input scales and pay for the other frequency interactions, angular tails, collision sectors, and adaptive cutoff terms without uncontrolled scale, patch-count, or regularization losses. | **Partial.** `PressureHighInputAction.lean` sums all high-input scales in bilinear operator norm. `GaussianRootHighInputBudget.lean` retains the quarter-geometric tail gain after localization and spatial integration, with explicit vorticity-supremum and patch-gradient costs. `PressureHighInputComplement.lean` identifies the remaining input sector as an exact finite sum. Finite support does not establish a uniform or dynamically affordable bound. The other sectors, scale-critical time control, and regularization limits are open. |
 | S4. Dynamical misalignment budget | Prove the signed time-integrated nonlinear estimate from the actual unforced evolution, with bounds that remain finite up to any candidate finite singular time. Construct `MisalignmentStrainBudget`, rather than pass it in as a hypothesis. | **Open; decisive mathematical core.** `LocalExcessAlignmentEnergy.lean` supplies an actual-data absorption inequality with explicit source costs. `MisalignmentRefinedPin.lean` proves a conditional reduction, not the required dynamical budget. |
 | S5. Vorticity control and continuation | Construct the spatial essential-supremum vorticity integrand, prove its finite-time integral is controlled by the preceding estimates, and apply the continuation theorem to the actual solution. | **Open.** Continuation target surfaces and conditional reductions exist. The current `||omega||_sup² sqrt(G)` spatial cost is not yet a controlled BKM integrand. |
@@ -761,9 +761,45 @@ two-point cost. A separate algebraic example shows why pointwise
 normalization alone does not permit moving weights between the two points;
 it is not a counterexample for an actual root field or PDE solution.
 
-The same-point weighted derivative budget does not yet bound this two-point
-cost. Its spatial-variation estimate, summation through the remaining scales
-and interactions, and signed time-integrated control remain required.
+### Gaussian overlap controls the two-point derivative density
+
+`Analysis/ExponentialAmplitudeOverlap.lean` proves the exact product identity
+for normalized exponential amplitudes: the product is their total overlap
+times the normalized weight at the average score. The overlap is at most
+one. `Analysis/GaussianAmplitudeOverlap.lean` identifies that weight as the
+Gaussian at the midpoint, since the common score offset cancels.
+
+`Analysis/RootPartitionTwoPointEnergy.lean` uses this identity on the actual
+derivatives of `b sqrt(gaussianAmplitude)`, then on the root-vorticity field.
+`GaussianRootTwoPointDerivative.lean` instantiates the resulting inequality
+at the localized weak coordinate derivatives. Writing `w(x) = |omega(x)|`,
+`P` for the Euclidean coordinates of the squared-gap projector, `b` for the
+common root-gap factor, and `H(y,z)` for the two-point Gaussian distance
+moment, the bound is
+
+```text
+rho_j(y,z)
+  <= 2 b(z)² w(z)³ w(y)³
+       [2 |partial_j b(y)|² + b(y)² |partial_j P(y)|² H(y,z)/tau²]
+     + 8 b(z)² b(y)² w(z)³ w(y) |partial_j omega(y)|².
+
+H(y,z) <= 2 |P(y)-P(k)|² + |P(z)-P(k)|² + 3 tau log(card(centres))
+         <= 4 |P(y)-P(k)|² + 2 |P(y)-P(z)|² + 3 tau log(card(centres)).
+```
+
+The moment bounds require positive temperature and hold for any chosen
+centre `k`. They do not require a centre at the midpoint. One full-measure
+set of derivative points works for every partner point and chosen centre;
+the product-measure translation theorem justifies substituting the two
+kernel displacements. The bound has no inverse vorticity norm and remains
+valid at vorticity zeros. Its tests include opposite Gaussian centres and
+both zero-vorticity positions.
+
+This is a pointwise/product-measure bound. Integrability and quantitative
+kernel integration of its right-hand side, scale summation, and the signed
+time-integrated budget are not established by it. The powers of vorticity,
+inverse temperature, gap/projector derivatives, and logarithmic centre
+count are explicit costs, not dynamically controlled quantities.
 
 ### One integrable envelope for every frozen pressure direction
 
