@@ -189,12 +189,14 @@ $c(\sigma\beta) = c(\sigma\beta') - 1$. Therefore
 \]
 \end{proof}
 
-The two cases repay contrast. In case (i) the component count is frozen
-while the face count may rise, so the inequality loses ground --- by
-exactly one unit per independent cycle, which is the genus. In case (ii)
-the component count falls, but the face count is \emph{forced} to fall with
-it and the ledger balances exactly. The bound is tight because a new edge
-across two components can never create a face.
+The two cases repay contrast. In case (i) the component count is frozen.
+Splitting a face raises the face and edge counts together and preserves
+the Euler defect; merging two faces lowers the face count while the edge
+count rises, increasing the defect by two, or the genus by one. It is
+handle creation, not every independent graph cycle, that creates slack.
+In case (ii) the component count falls, but the face count is \emph{forced}
+to fall with it and the ledger balances exactly. The exact recursion is
+recorded in Section~\ref{sec:topology-viability}.
 
 \begin{corollary}[Euler's inequality for maps]\label{cor:euler-map}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24InvolutionEdgeList.orbitCount_add_orbitCount_mul_le'}

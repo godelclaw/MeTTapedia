@@ -127,14 +127,23 @@ def structurally_accepting(state):
                         for _, selected, omitted, cost in cuts))
 
 
-def bounded_closure(width):
+def rejects_extension(state):
+    """A hidden component forbids further vertices, not final acceptance."""
+    return any(selected and cost == 0 and not any(bits)
+               for bits, selected, _, cost in state[1])
+
+
+def bounded_closure(width, prune_hidden=False):
     """Exhaust all valid letters at the bound, not a list of graph patches."""
     letters = tuple(alphabet(width))
     initial = ((), frozenset({((), False, False, 0)}), frozenset({()}))
     paths, queue = {initial: ()}, deque([initial])
-    transitions, genus_rejections = 0, 0
+    transitions, genus_rejections, extension_rejections = 0, 0, 0
     while queue:
         state = queue.popleft()
+        if prune_hidden and rejects_extension(state):
+            extension_rejections += 1
+            continue
         for letter in letters:
             if letter[0] != len(state[0]):
                 continue
@@ -151,11 +160,14 @@ def bounded_closure(width):
         check_sweep(path)
         if structurally_accepting(state):
             assert () in state[2], ('colourless accepting state', path)
-    return dict(width=width, alphabet=len(letters), states=len(paths),
-                transitions=transitions, genus_rejections=genus_rejections,
-                accepting_states=sum(map(structurally_accepting, paths)),
-                longest_witness=max(map(len, paths.values())),
-                scope='Python fixed-point check, not a kernel closure certificate or global width bound.')
+    result = dict(width=width, alphabet=len(letters), states=len(paths),
+                  transitions=transitions, genus_rejections=genus_rejections,
+                  accepting_states=sum(map(structurally_accepting, paths)),
+                  longest_witness=max(map(len, paths.values())),
+                  scope='Python fixed-point check, not a kernel closure certificate or global width bound.')
+    if prune_hidden:
+        result['hidden_extension_rejections'] = extension_rejections
+    return result
 
 
 def check_sweep(letters, direct_colours=True):

@@ -22,9 +22,10 @@ spherical case.  Nonnegativity of the genus is the same fact.
 The proof is one induction over the edge list, and its two cases are supplied
 by the two laws proved in the sibling modules:
 
-* adding an edge whose endpoints are already connected can only *split* a
-  face orbit (`orbitCount_swap_mul_of_sameCycle`), and leaves the component
-  count unchanged (`wordOrbitCount_cons_swap_eq_of_reachable`);
+* adding an edge whose endpoints are already connected either splits a face
+  orbit or merges two face orbits, so increases the face count by at most
+  one, and leaves the component count unchanged
+  (`wordOrbitCount_cons_swap_eq_of_reachable`);
 * adding an edge across two components must *merge* two face orbits
   (`orbitCount_swap_mul_of_not_sameCycle`), and the component count can fall
   by at most one (`wordOrbitCount_le_cons_swap_add_one`).
@@ -197,7 +198,7 @@ theorem orbitCount_add_orbitCount_mul_swapProduct_le (σ : Perm D) :
         wordOrbitCount_eq_of_mem_iff hmem
       by_cases hconn : WordReachable L a b
       · -- the endpoints were already connected: components are unchanged,
-        -- and the new edge can only split a face
+        -- and the new edge increases the face count by at most one
         have hcomp : wordOrbitCount L' = wordOrbitCount L := by
           rw [hcount, wordOrbitCount_cons_swap_eq_of_reachable hconn]
         have hface : orbitCount (σ * swapProduct (edge :: rest)) ≤
