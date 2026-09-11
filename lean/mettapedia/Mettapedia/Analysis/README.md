@@ -34,6 +34,8 @@ Reusable analysis, independent of any particular fluid construction.
 | `NormScaledGaussianPartition.lean` | Exact norm-squared coverage and total-derivative bounds including zero-amplitude points | Real inner product spaces; differentiability at a norm corner is not assumed |
 | `GaussianPartitionRegularity.lean` | Smooth normalized factors and locally Lipschitz norm-scaled amplitudes | Real inner product spaces; supplies genuine almost-everywhere derivatives via Rademacher |
 | `EuclideanOperatorCoordinates.lean` | Hilbert matrix coordinates, operator-norm comparison, and rank-one normalization | Finite-dimensional Euclidean operators; no ambient matrix-norm instance changes |
+| `UnitTorusFourierEnergy.lean` | Parseval, finite-set Bessel bounds, and character coefficient orthogonality for actual measurable functions | Any finite-dimensional unit torus with normalized Haar measure; `MemLp` rather than continuity suffices for the energy bounds |
+| `UnitTorusFourierApproximation.lean` | Finite Fourier projections and vanishing total physical L² error for finite families | Continuous complex fields on any finite-dimensional unit torus; neither uniform convergence nor absolute coefficient summability is assumed |
 
 The Gaussian modules construct derivative-controlled spatial NS patches.
 Their localization cost is the nearest squared distance plus `τ log N`,
@@ -42,6 +44,14 @@ loss remain explicit. `GaussianPartitionTests.lean`, imported by the main
 test module, checks uniform weights, sharp variance, common-rate cancellation,
 the zero-amplitude norm corner, and the attained dimension factor. These
 modules are new derivations from mathlib, not new external-source ports.
+
+The unit-torus modules transfer mathlib's Hilbert-basis Fourier convergence
+to physical integral errors and actual finite projections. The NS weak
+derivative identity then gives a simultaneous derivative-energy bound for
+the same approximation coefficients. `UnitTorusFourierTests.lean` checks
+retained modes, opposite frequencies, and the nonzero error from omitting
+a unit character. No pointwise coverage property is inferred from L²
+convergence.
 
 The first module is used by
 `FluidDynamics/NavierStokes/StochasticLagrangian/LocalVorticityDiffusion.lean`.
