@@ -15076,3 +15076,77 @@ bound, reclosure conditions, colouring lift and strict decrease. The
 six-edge slices above do not supply those assertions for arbitrary
 caps, nor do they discharge a source-facing reduction obligation.
 The fixed ledger remains $57/100$.
+
+\subsection{Optimal complete path sweeps have connected shores and derived boundary orders}
+\label{sec:canonical-terminal-bonds}
+
+Permitting caps to split must give an actual family of complete
+interfaces, not a new assumption that suitable cap partitions exist.
+The canonical terminal cuts already constructed earlier minimize the
+number of original crossing edges, with side cardinality breaking ties.
+They nest as source terminals grow and sink terminals shrink. The
+remaining connectivity condition can now be proved.
+
+\paragraph{Every minimum cut is a bond.}
+Let $A,B$ be disjoint nonempty connected vertex sets in a finite connected
+graph. Let $S$ minimize its full edge boundary among sides containing
+$A$ and avoiding $B$. Flood from $A$ using only vertices of $S$, giving
+$R\subseteq S$. Every edge leaving $R$ also leaves $S$, since an edge
+to another vertex of $S$ would extend the flood. Thus
+$\delta R\subseteq\delta S$. Minimality gives equality of these full
+boundaries. In a connected graph, equal edge boundaries determine a
+vertex side up to complementation: equality of membership propagates
+along a walk once fixed at a shared vertex. A vertex of $A$ fixes it,
+so $R=S$ and $S$ is connected. Applying the same argument with $A,B$
+exchanged proves $S^c$ connected. No tie-break is needed for this part.
+\Sverified{Mettapedia.GraphTheory.FourColor.CanonicalTerminalBonds.eq_of_boundary_eq}
+\Sverified{Mettapedia.GraphTheory.FourColor.CanonicalTerminalBonds.minimum_bond}
+\Sverified{Mettapedia.GraphTheory.FourColor.CanonicalTerminalBonds.canonical_bond}
+
+The endpoint multigraph retains edge multiplicity; simple-graph
+adjacency is used only for walks through the proved rotation adapter.
+For a spherical cubic map with two-sided orbit faces, the existing
+planar-bond theorem now supplies the unique retained dart on each
+crossing face and opposite complementary first-return orders on the
+\emph{constructed} canonical cut. Advancing terminals also gives strict
+nesting on the full original incident-edge shores.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalCanonicalTerminalBonds.full_boundary_orders}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalCanonicalTerminalBonds.full_shores_strict}
+
+\paragraph{No terminal-connectivity supplier is needed for a path sweep.}
+Given an actual simple path $p$ and $0\leq t<\operatorname{length}(p)$,
+take its first $t+1$ vertices as $A_t$ and the remaining vertices as
+$B_t$. Both sets are connected, disjoint and nonempty. Canonical finite
+minimization then constructs $S_t$, allowing \emph{all} off-path
+vertices to move, including cap material. The construction returns
+the minimum-width property, connected shores, complete boundary orders,
+and strict nesting of the full incident-edge shores for every $i<j$.
+A complete simple contour cycle supplies the path by removing its first
+edge, using the existing \texttt{Walk.IsCycle.isPath\_tail} theorem.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalPathBondSweep.side_spec}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalPathBondSweep.side_strict}
+
+The gate checks $2574$ connected-terminal pairs on $K_4$, a six-cycle
+and the cube, examining all $3656$ optimal sides and cross-checking the
+canonical choice against the flow solver. Dropping terminal or ambient
+connectedness gives explicit negative controls. It also constructs and
+certifies $148$ strictly nested full cuts on eight spherical controls.
+The ring-and-caps controls have maximal optimum widths $4,6,6,6$ at
+circumferences $3,5,8,12$. On the selected middle contours of
+$GP(k,0)$ for $1\leq k\leq4$, the corresponding widths are
+$6,11,16,21$. Equal-sized edge-disjoint terminal path packings certify
+optimality, and the complete dual cycles certify the boundary orders.
+Receipt: \texttt{results/fourcolor/v24\_canonical\_bond\_gate.json}.
+The receipt retains the maximum-width cut and packing for each control;
+the replay checks all intermediate cuts.
+
+This constructs optimally split-cap geometry but does not remove its
+cost. In particular, the width-$21$ packing prevents a narrower cut for
+that \emph{specified terminal split}; it is not a lower bound over
+every choice of contour, terminal placement, or branch decomposition.
+Nor are arbitrary path shores asserted to be the good cyclic sides
+required by every Count-node adapter. No uniform width, sufficient
+state repetition, marked-edge preservation through a splice, or strict
+ordinary zero-Count replacement follows from this construction alone.
+Those target-facing conditions remain to be proved, and the fixed
+ledger remains $57/100$.
