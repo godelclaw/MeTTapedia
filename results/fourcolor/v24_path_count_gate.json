@@ -1,0 +1,498 @@
+{
+  "cube": {
+    "connected_sides": 166,
+    "cyclic_sides": 66,
+    "tree_sides": 100
+  },
+  "endpoint_counterexample": {
+    "path": [
+      0,
+      1,
+      3,
+      7
+    ],
+    "side": [
+      0
+    ],
+    "width": 3
+  },
+  "schema": "fourcolor-v24-path-count-v1",
+  "scope": "geometry and node fields only; no colour enumeration or universal width claim",
+  "sweeps": [
+    {
+      "actual_cyclic": [
+        {
+          "full_width": 4,
+          "middle_width": 4,
+          "t": 3
+        }
+      ],
+      "name": "ring-3",
+      "path_vertices": 6,
+      "terminal_guaranteed": [],
+      "widths": [
+        3,
+        4,
+        4,
+        4,
+        3
+      ]
+    },
+    {
+      "actual_cyclic": [
+        {
+          "full_width": 6,
+          "middle_width": 6,
+          "t": 5
+        },
+        {
+          "full_width": 6,
+          "middle_width": 6,
+          "t": 6
+        },
+        {
+          "full_width": 5,
+          "middle_width": 5,
+          "t": 7
+        }
+      ],
+      "name": "ring-5",
+      "path_vertices": 10,
+      "terminal_guaranteed": [],
+      "widths": [
+        3,
+        4,
+        5,
+        6,
+        6,
+        6,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "actual_cyclic": [
+        {
+          "full_width": 6,
+          "middle_width": 6,
+          "t": 5
+        },
+        {
+          "full_width": 6,
+          "middle_width": 6,
+          "t": 6
+        },
+        {
+          "full_width": 6,
+          "middle_width": 6,
+          "t": 7
+        },
+        {
+          "full_width": 6,
+          "middle_width": 6,
+          "t": 8
+        },
+        {
+          "full_width": 6,
+          "middle_width": 6,
+          "t": 9
+        },
+        {
+          "full_width": 6,
+          "middle_width": 6,
+          "t": 10
+        },
+        {
+          "full_width": 6,
+          "middle_width": 6,
+          "t": 11
+        },
+        {
+          "full_width": 6,
+          "middle_width": 6,
+          "t": 12
+        },
+        {
+          "full_width": 5,
+          "middle_width": 5,
+          "t": 13
+        }
+      ],
+      "name": "ring-8",
+      "path_vertices": 16,
+      "terminal_guaranteed": [
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "widths": [
+        3,
+        4,
+        5,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "actual_cyclic": [
+        {
+          "full_width": 6,
+          "middle_width": 6,
+          "t": 5
+        },
+        {
+          "full_width": 6,
+          "middle_width": 6,
+          "t": 6
+        },
+        {
+          "full_width": 6,
+          "middle_width": 6,
+          "t": 7
+        },
+        {
+          "full_width": 6,
+          "middle_width": 6,
+          "t": 8
+        },
+        {
+          "full_width": 6,
+          "middle_width": 6,
+          "t": 9
+        },
+        {
+          "full_width": 6,
+          "middle_width": 6,
+          "t": 10
+        },
+        {
+          "full_width": 6,
+          "middle_width": 6,
+          "t": 11
+        },
+        {
+          "full_width": 6,
+          "middle_width": 6,
+          "t": 12
+        },
+        {
+          "full_width": 6,
+          "middle_width": 6,
+          "t": 13
+        },
+        {
+          "full_width": 6,
+          "middle_width": 6,
+          "t": 14
+        },
+        {
+          "full_width": 6,
+          "middle_width": 6,
+          "t": 15
+        },
+        {
+          "full_width": 6,
+          "middle_width": 6,
+          "t": 16
+        },
+        {
+          "full_width": 6,
+          "middle_width": 6,
+          "t": 17
+        },
+        {
+          "full_width": 6,
+          "middle_width": 6,
+          "t": 18
+        },
+        {
+          "full_width": 6,
+          "middle_width": 6,
+          "t": 19
+        },
+        {
+          "full_width": 6,
+          "middle_width": 6,
+          "t": 20
+        },
+        {
+          "full_width": 5,
+          "middle_width": 5,
+          "t": 21
+        }
+      ],
+      "name": "ring-12",
+      "path_vertices": 24,
+      "terminal_guaranteed": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "widths": [
+        3,
+        4,
+        5,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        6,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "actual_cyclic": [
+        {
+          "full_width": 6,
+          "middle_width": 6,
+          "t": 5
+        },
+        {
+          "full_width": 6,
+          "middle_width": 6,
+          "t": 6
+        },
+        {
+          "full_width": 5,
+          "middle_width": 5,
+          "t": 7
+        }
+      ],
+      "name": "GP-1",
+      "path_vertices": 10,
+      "terminal_guaranteed": [],
+      "widths": [
+        3,
+        4,
+        5,
+        6,
+        6,
+        6,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "actual_cyclic": [
+        {
+          "full_width": 11,
+          "middle_width": 11,
+          "t": 10
+        },
+        {
+          "full_width": 10,
+          "middle_width": 10,
+          "t": 11
+        },
+        {
+          "full_width": 10,
+          "middle_width": 9,
+          "t": 12
+        },
+        {
+          "full_width": 9,
+          "middle_width": 9,
+          "t": 13
+        },
+        {
+          "full_width": 8,
+          "middle_width": 7,
+          "t": 14
+        },
+        {
+          "full_width": 7,
+          "middle_width": 7,
+          "t": 15
+        }
+      ],
+      "name": "GP-2",
+      "path_vertices": 20,
+      "terminal_guaranteed": [],
+      "widths": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        11,
+        10,
+        10,
+        9,
+        8,
+        7,
+        6,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "actual_cyclic": [
+        {
+          "full_width": 16,
+          "middle_width": 16,
+          "t": 15
+        },
+        {
+          "full_width": 16,
+          "middle_width": 16,
+          "t": 16
+        },
+        {
+          "full_width": 15,
+          "middle_width": 15,
+          "t": 17
+        },
+        {
+          "full_width": 14,
+          "middle_width": 13,
+          "t": 18
+        }
+      ],
+      "name": "GP-3",
+      "path_vertices": 30,
+      "terminal_guaranteed": [],
+      "widths": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        16,
+        16,
+        15,
+        14,
+        13,
+        12,
+        11,
+        10,
+        9,
+        8,
+        7,
+        6,
+        5,
+        4,
+        3
+      ]
+    },
+    {
+      "actual_cyclic": [
+        {
+          "full_width": 21,
+          "middle_width": 21,
+          "t": 20
+        },
+        {
+          "full_width": 20,
+          "middle_width": 20,
+          "t": 21
+        },
+        {
+          "full_width": 20,
+          "middle_width": 19,
+          "t": 22
+        },
+        {
+          "full_width": 19,
+          "middle_width": 19,
+          "t": 23
+        }
+      ],
+      "name": "GP-4",
+      "path_vertices": 40,
+      "terminal_guaranteed": [],
+      "widths": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        21,
+        20,
+        20,
+        19,
+        18,
+        17,
+        16,
+        15,
+        14,
+        13,
+        12,
+        11,
+        10,
+        9,
+        8,
+        7,
+        6,
+        5,
+        4,
+        3
+      ]
+    }
+  ]
+}
