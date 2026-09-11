@@ -58,6 +58,45 @@ regularity, blowup, or any other Millennium-problem conclusion.
 
 ## Current Status
 
+### Full-field coefficient selection and the retained physical pressure
+
+`PressureKernelCoefficientAction.lean` proves that a finite pressure kernel
+acts on arbitrary **continuous full fields** by selecting their retained
+Fourier coefficients. No finite-polynomial assumption or Fourier-density
+argument is needed for this identification. The proof uses generic
+product-Haar integration in `Analysis/FiniteTorusProduct.lean` and the
+vector-valued character integral in `Analysis/UnitTorusFourierTranslation.lean`.
+The two input frequencies are selected independently before their outputs
+are collected.
+
+`FullVorticityFourierCoefficients.lean` proves that the Fourier coefficients
+of the complexified **actual real spatial curl** equal `fourierCurl u`.
+The first absolute velocity moment justifies differentiation and coefficient
+recovery; the original conjugate symmetry is explicitly required to recover
+the complex field from its real part. This symmetry is not asserted for
+arbitrary complex coefficient arrays.
+
+`GaussianRootPressureIdentification.lean` joins these results to the
+weighted localization inequality. If `P_M` is the pressure-Hessian tilt
+polynomial computed from original velocity modes in `M`, `omega` is the
+full actual vorticity, and `K_M` retains both input sets `M`, it proves
+
+```text
+P_M = -B_(K_M)(omega,omega),
+|c_i² P_M + B_(K_M)(c_i omega,c_i omega)| <= weighted kernel error.
+```
+
+The error is precisely the spatial density displayed below. The localized
+inputs remain the actual root-weighted full fields, with no imposed
+zero-mean or divergence-free property. Original velocity incompressibility
+is required on `M`; original reality symmetry is required at every mode.
+
+This closes the **full-input identification at finite retained pressure
+frequencies**. It does not remove the pressure truncation, prove a
+frequency-uniform weighted kernel bound, or pay the dynamical budget.
+`FullPressureKernelAudit.lean` tests this distinction, retained coefficient
+selection, and the failure of unrestricted complexification of real parts.
+
 ### Physical pressure kernels and weighted root-cutoff differences
 
 `PressureBilinearOperator.lean` realizes the actual pressure-pair symbol as
@@ -107,9 +146,9 @@ inverse vorticity magnitude, or divergence-free condition on the localized
 inputs is assumed.
 
 **Open boundaries:** a finite retained kernel is not the untruncated
-pressure operator. The full-field coefficient identification/limit, a
-frequency-uniform weighted kernel bound, and the summed scale/time budget
-remain to be proved. The uniform bound on each symbol alone does not give
+pressure operator. The full-field coefficient identification is proved above;
+removing the pressure truncation, a frequency-uniform weighted kernel bound,
+and the summed scale/time budget remain open. The uniform bound on each symbol alone does not give
 a uniform kernel mass. The aperture-uniform coherent-stretch kernel is a
 different operator and cannot supply this missing pressure estimate without
 a proved identification. `PressureKernelAudit.lean` and
