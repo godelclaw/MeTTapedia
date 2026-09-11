@@ -1,0 +1,157 @@
+{
+  "checked_prefixes": 1594,
+  "controls": [
+    {
+      "components": 1,
+      "control": "prism3",
+      "count": 6,
+      "euler": 2,
+      "final_width": 0,
+      "genus": 0,
+      "genus_steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "vertices": 6
+    },
+    {
+      "components": 1,
+      "control": "prism3",
+      "count": 6,
+      "euler": 2,
+      "final_width": 0,
+      "genus": 0,
+      "genus_steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "vertices": 6
+    },
+    {
+      "components": 1,
+      "control": "prism4",
+      "count": 24,
+      "euler": 2,
+      "final_width": 0,
+      "genus": 0,
+      "genus_steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "vertices": 8
+    },
+    {
+      "components": 1,
+      "control": "prism4",
+      "count": 24,
+      "euler": 2,
+      "final_width": 0,
+      "genus": 0,
+      "genus_steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "vertices": 8
+    },
+    {
+      "components": 1,
+      "control": "prism5",
+      "count": 30,
+      "euler": 2,
+      "final_width": 0,
+      "genus": 0,
+      "genus_steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "vertices": 10
+    },
+    {
+      "components": 1,
+      "control": "prism5",
+      "count": 30,
+      "euler": 2,
+      "final_width": 0,
+      "genus": 0,
+      "genus_steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "vertices": 10
+    },
+    {
+      "components": 1,
+      "control": "Petersen_nonplanar_zero",
+      "count": 0,
+      "euler": -2,
+      "final_width": 0,
+      "genus": 2,
+      "genus_steps": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      "vertices": 10
+    }
+  ],
+  "schema": "fourcolor-joint-vertex-step-v1",
+  "scope": "Joint physical prefix semantics; no global width, reduction or base claim.",
+  "tetra_genus_histogram": {
+    "0": 48,
+    "1": 336
+  },
+  "tetra_sweeps": 384,
+  "width3_joint_closure": {
+    "accepting_states": 1,
+    "alphabet": 96,
+    "genus_rejections": 504,
+    "longest_witness": 9,
+    "scope": "Python fixed-point check, not a kernel closure certificate or global width bound.",
+    "states": 71,
+    "transitions": 2658,
+    "width": 3
+  }
+}

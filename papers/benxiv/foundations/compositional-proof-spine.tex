@@ -16650,3 +16650,70 @@ yet assemble the joint Count/face/structural closure, establish global
 coverage or strict descent, or verify the generating base. Fixed-arity
 finiteness is still not a bound across unbounded interface arities.
 The global reduction remains open and the earned ledger remains $57/100$.
+
+\subsection{Joint serial semantics without a preferred mesh geometry}
+\label{sec:joint-serial-semantics}
+
+The colour, face and structural coordinates now have a single joint
+transfer on the literal serial constructor. The face update must retain
+the vertex rotations: the unordered incidence data sufficient for
+colour support do not determine topology. During sewing, record all
+ports of both pieces, including the ports that will become internal.
+The old return permutations combine by disjoint union; the seam
+involution changes partners; first return to the remaining outer ports
+then forgets the consumed seam. This computes the complete outgoing
+cyclic order, not only its cycle partition.
+\Sverified{Mettapedia.GraphTheory.FourColor.SerialTangleFaceTransfer.serial_phi}
+\Sverified{Mettapedia.GraphTheory.FourColor.SerialTangleFaceTransfer.outputReturn_eq}
+\Sverified{Mettapedia.GraphTheory.FourColor.SerialTangleFaceTransfer.serial_return}
+
+The intermediate permutation lives on $(L\sqcup P)\sqcup(P\sqcup R)$,
+regardless of the sizes of the interior dart carriers. If $\pi_A,\pi_B$
+are the input boundary returns and $\tau$ exchanges the two seam
+copies, the output is the first return of
+$(\pi_A\sqcup\pi_B)\tau$ to $L\sqcup R$. The coordinate theorem
+identifies this boundary-only operation with extraction from the actual
+serial tangle, with no sphere or connectedness assumption.
+\Sverified{Mettapedia.GraphTheory.FourColor.SerialTangleFaceCode.encode_serial}
+
+Face cycles that miss the outgoing ports cannot simply be discarded
+when checking topology. They are accounted for by the exact correction
+to Euler mass $m(T)=2|V_T|-|I_T|+2F_T$, where $F_T$ counts all open
+face cycles and $I_T$ is the interior dart carrier. Writing
+$\pi=\pi_A\sqcup\pi_B$ gives
+\[
+ m(A;B)=m(A)+m(B)-2|P|
+             +2\operatorname{cyc}(\pi\tau)-2\operatorname{cyc}(\pi).
+\]
+This is an integer identity, not an assertion that arbitrary pieces
+have bounded Euler mass or that every sewing is spherical.
+\Sverified{Mettapedia.GraphTheory.FourColor.SerialTangleFaceTransfer.serial_face_count}
+\Sverified{Mettapedia.GraphTheory.FourColor.SerialTangleFaceTransfer.serial_eulerMass}
+
+The joint signature contains boundary-colouring support, the full
+face-return permutation, the realized small-cut profile, and Euler mass.
+Its extraction commutes with serial sewing: colour support composes
+relationally, small cuts by the preceding image formula, faces by the
+boundary-return operation, and mass by the correction above. These are
+four coordinates of the \emph{same} constructed tangle.
+\Sverified{Mettapedia.GraphTheory.FourColor.SerialTangleJointTransfer.encode_serial}
+
+The joint vertex-step gate compares $1{,}594$ prefixes with direct
+reconstruction, including all vertex orders and all star reversals of
+the tetrahedron. Its $384$ sweeps include $48$ spherical and $336$
+genus-one rotations, all with the same six Tait colourings. Prism and
+nonplanar zero-colouring controls are also included. At width three,
+the Python evaluator exhausts all $96$ valid oriented letters, reaches
+$71$ summaries, and finds one structurally accepting closed summary,
+which has nonzero colour support. Six regression tests additionally
+check the receipt, hidden disconnected components, empty support, and
+malformed arities. This is a small fixed-point computation over a
+generating alphabet, not a catalogue of reducible patches.
+
+The named consumer remains D2b's physical compositional closure. The
+generic joint transfer is proved in Lean; the vertex evaluator's
+genus rejection and its fixed-point receipt are not yet a kernel
+closure certificate. The joint signature's integer mass has no global
+finite-range claim here. Neither all-graph bounded-width coverage,
+global strict descent nor the generating-base verification follows.
+The earned ledger remains $57/100$.
