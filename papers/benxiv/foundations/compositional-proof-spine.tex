@@ -16282,3 +16282,83 @@ equal combined colouring and structural data must permit an admissible
 replacement in the required contexts. A check of first-return order alone
 is not here promoted to that theorem. The global reduction, target-facing
 closure certificate and generating base remain open, with ledger $57/100$.
+
+\subsection{Boundary surgery and exterior-independent Euler replacement}
+\label{sec:boundary-rewire-euler}
+
+The face-count gap in Section~\ref{sec:vertex-splice-orientation} admits
+a generic permutation calculation. Let $p$ be a permutation of a finite
+dart set, $H$ its marked interface, $R(p)$ its first-return permutation
+on $H$, and $s$ a permutation of $H$, extended by the identity away from
+$H$. Write $c$ for the number of cycles, including fixed points. The
+existing first-return identity gives $R(p\widetilde{s})=R(p)s$.
+Cycles disjoint from $H$ are preserved by an explicit equivalence of
+their orbit carriers. Splitting all cycles into those meeting $H$ and
+those missing it therefore proves
+\[
+ c(p\widetilde{s})+c(R(p))=c(p)+c(R(p)s).
+\]
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundaryRewireCycles.nonHitEquiv}
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundaryRewireCycles.cycle_count_rewire}
+This includes empty interfaces, disconnected carriers and multiple
+boundary cycles; no disc assumption is used.
+
+For the actual open-tangle constructor, temporarily fixing each unpaired
+boundary dart defines $p$. The stored composite face permutation is
+proved to be $p\widetilde{s}$, where $s$ swaps the matched ports.
+Consequently the formula computes its actual quotient-face count, not
+just a proposed transfer statistic.
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleRewireFaces.compositePhi_eq_unsewn_mul}
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleRewireFaces.composite_face_count}
+Transporting $R(p)$ to the bare port carrier $L\sqcup R$ gives a code
+with at most $(|L|+|R|)!$ possibilities. For fixed pieces, two matchings
+give the same Euler characteristic exactly when their products with
+this code have the same number of cycles; their vertex and edge counts
+are unchanged. This raw code bound does not assert physical realizability
+of every code.
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleRewireFaces.card_boundary_codes}
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleRewireFaces.composite_euler_eq_iff_code}
+
+Replacement of a piece is stronger than changing the matching of fixed
+pieces. Let $A,B$ be two open pieces whose existing named boundary-return
+records agree in common port coordinates. Let $X$ be any fixed exterior
+with a matching to those coordinates. Define the intrinsic integer
+\[
+ m(A)=2|V_A|-|I_A|+2c(\phi_A^{\rm open}),
+\]
+where $I_A$ is the set of \emph{internal darts}, not internal edges.
+The open permutation fixes the provisional boundary partners and then
+applies the vertex rotation. The disjoint-sum return theorem and the
+record-induced seam correspondence give
+\[
+ F(X\# A)+c(\phi_B^{\rm open})
+   =F(X\# B)+c(\phi_A^{\rm open}).
+\]
+Using twice-edge-count equals dart-count, this yields the exact law
+\[
+ 2\chi(X\# A)-2\chi(X\# B)=m(A)-m(B).
+\]
+Thus, under equality of the named return records, the two actual
+composites have equal Euler characteristic if and only if $m(A)=m(B)$.
+The exterior does not enter $m$, and the two pieces may have different
+vertex and interior-dart carriers.
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleReplacementEuler.face_count_replacement}
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleReplacementEuler.twice_euler_replacement}
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleReplacementEuler.euler_eq_iff_mass}
+
+The independent finite gate checks all $40{,}789$ permutation, marked-set
+and marked-permutation combinations on up to five points. Another
+$2{,}229$ sewing comparisons check the replacement correction against
+different interior carriers and fixed exteriors. These program controls
+are separate from the general kernel proofs. They include untouched
+cycles and show why the number of boundary cycles alone loses necessary
+information: the cyclic order affects the result of sewing.
+
+This supplies the Euler component of context congruence for the physical
+compositional language; it does not by itself preserve connectivity or
+bridgelessness. Nor is $m$ here proved to have finite range, or equality
+of boundary records proved to force equality of $m$. A complete finite
+admissibility signature, its transition law, the global reduction and
+the generating-base verification remain open. No particular mesh,
+corridor shape or universal frontier bound has been assumed. The fixed
+obligation ledger remains $57/100$.
