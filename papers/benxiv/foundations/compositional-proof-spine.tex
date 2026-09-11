@@ -14511,6 +14511,10 @@ These are separate geometric and semantic obligations. No fixed
 obligation has been discharged by this refinement: the ledger remains
 $57/100$.
 
+The stronger supplier in Section~\ref{sec:protected-linked-band} repairs
+the region-avoidance limitation by retaining the original contours before
+the mesh projection. It does not infer a disk from arbitrary mesh paths.
+
 \subsection{A size-independent full-vertex obstruction to generic pumping}
 \label{sec:split-grid-chain-obstruction}
 
@@ -14830,3 +14834,86 @@ reproved. This attempted passage from internal rigidity to free-port
 rigidity supplies no strict ordinary zero-Count reduction. Such a
 reduction still needs to respect the actual reclosure equations; the
 ledger remains $57/100$.
+
+\subsection{Retaining complete contours supplies a protected linked band}
+\label{sec:protected-linked-band}
+
+The geometric supplier already constructs more than its ordered-mesh
+output records: complete nested distance contours and vertex-disjoint
+ambient paths between them. Projection to an abstract mesh forgets the
+facial regions. Instead of reconstructing simple cell rims from that
+lossy output, retain the constructed regions and linkage.
+
+Let $R_d$ be the connected component of the far face among dual faces
+at distance greater than $d$ from the root, and let $F(v)$ be the set
+of actual face sectors incident at $v$. Define the \emph{closed vertex
+band}
+\[
+ B_{\ell,h}=\{v:F(v)\cap R_\ell\ne\varnothing,
+                      \ F(v)\setminus R_h\ne\varnothing\}.
+\]
+It includes both complete boundary contours. If $h<p$, then
+$B_{\ell,h}$ and $B_{p,q}$ are vertex-disjoint. A vertex in both would
+be mixed at depth $h$ yet touch the deeper region $R_p$, contradicting
+the cubic incident-face distance lemma. Thus $m+1$ separated bands
+contain a wholly unmarked one for any set of $m$ marked vertices.
+This protects the material between the contours, not just their paths.
+\Sverified{Mettapedia.GraphTheory.FourColor.ProtectedContourBand.bands_disjoint}
+\Sverified{Mettapedia.GraphTheory.FourColor.ProtectedContourBand.exists_unmarked_band}
+
+Every ambient path between the extreme contours can be shortened to a
+path inside any chosen intervening closed band, using only vertices of
+the original path. Minimize length among candidate paths on that support.
+An outer excursion gives a later outer-contour encounter; an inner
+excursion gives an earlier inner-contour encounter. Either produces a
+shorter candidate. Applying this independently to the disjoint columns
+retains their number and their vertex-disjointness.
+\Sverified{Mettapedia.GraphTheory.FourColor.ProtectedContourBand.exists_confined_path}
+\Sverified{Mettapedia.GraphTheory.FourColor.ProtectedContourBand.exists_confined_linkage}
+
+Every original edge leaving the band has its inside endpoint on one of
+the two actual contours. A confined column joins these connected
+contours; together they form a connected seed containing the whole
+inside boundary. An ambient walk from any band vertex first reaches
+this seed without leaving the band, proving that the entire induced
+band, including lateral material, is connected.
+\Sverified{Mettapedia.GraphTheory.FourColor.ProtectedContourBand.boundary_based_on_contours}
+\Sverified{Mettapedia.GraphTheory.FourColor.ProtectedContourBand.band_connected}
+
+\paragraph{The strengthened large-map alternative.}
+Re-run the existing dual-radius, contour-linkage and cotree construction,
+returning the linkage source whenever it occurs, instead of first
+testing whether an arbitrary ordered mesh exists. If no window supplies
+that linkage, the complete ordered bonds in all windows give the same
+repeated full marked seam as before.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalProtectedLinkedBand.exists_linkedContours_or_seamPair}
+
+For $a\geq2$, put $A=(|S|+1)a$. At the existing size threshold
+\texttt{sizeBound}$(A,b,|S|,|M|)$, a spherical bridgeless cubic
+ordinary zero-Count map with two-sided orbit faces supplies either:
+(i) a wholly $S$-avoiding connected closed band with $a$ complete
+consecutive contours and \texttt{orderedLinkageSize}$(A,b)$ confined
+disjoint columns; or (ii) the existing strictly smaller spherical
+bridgeless cubic ordinary zero-Count map preserving the alpha-closed
+marked dart pairs. The band is constructed from the source hypotheses;
+it is not a supplied-region premise.
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalProtectedLinkedBand.exists_linkedBand}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalProtectedLinkedBand.exists_linkedBand_or_marked_replacement}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalProtectedLinkedBand.LinkedBand.complete_contour}
+\Sverified{Mettapedia.GraphTheory.FourColor.SphericalProtectedLinkedBand.LinkedBand.connected}
+
+The gate independently replays the eight existing spherical
+$GP(k,0)$ controls, $1\leq k\leq8$, and checks $6330$ trimmed column
+paths, complete ambient cut edges, and whole-band mark avoidance.
+Boundary-only avoidance and windows sharing an endpoint contour are
+negative controls. Receipt:
+\texttt{results/fourcolor/v24\_protected\_contour\_band\_gate.json}.
+
+This changes the input available for the remaining geometric surgery,
+not its semantic conclusion. No fixed contour-width bound, periodicity,
+support equality, or deletion of the linked band is proved. In particular
+a two-boundary band is not automatically a connected-complement Count
+shore; its complement can have two components. The next reduction must
+use these actual annular regions and full interfaces without dropping
+reclosure constraints. No fixed-ledger obligation is fully discharged:
+the total remains $57/100$.
