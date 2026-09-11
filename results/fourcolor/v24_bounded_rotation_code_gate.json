@@ -1,0 +1,11 @@
+{
+  "controls": [
+    {"edges": 6, "euler_histogram": {"0": 14, "2": 2}, "name": "K4", "reindexings": 12, "rotations": 16, "vertices": 4},
+    {"edges": 3, "euler_histogram": {"0": 2, "2": 2}, "name": "parallel3", "reindexings": 12, "rotations": 4, "vertices": 2},
+    {"edges": 9, "euler_histogram": {"-2": 24, "0": 40}, "name": "K33", "reindexings": 12, "rotations": 64, "vertices": 6},
+    {"edges": 15, "euler_histogram": {"-4": 320, "-2": 664, "0": 40}, "name": "Petersen", "reindexings": 12, "rotations": 1024, "vertices": 10}
+  ],
+  "raw_code_counts": {"0": 1, "1": 38, "2": 411610900, "3": 37179068599875605},
+  "scope": "Rotation and face-count encoding; no base audit.",
+  "status": "pass"
+}
