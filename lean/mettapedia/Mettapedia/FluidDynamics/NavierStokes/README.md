@@ -76,7 +76,7 @@ fractions of a completed proof.
 | Step | Obligation and completion test | Status and present evidence |
 | --- | --- | --- |
 | S1. Actual equation and objects | Construct the solution, stochastic/material objects, and frequency decomposition from arbitrary admissible data; derive every evolution identity used later from the actual unforced equation. Track the periodic and Euclidean realizations separately. | **Partial.** The local periodic solution, common-interval material flow, vorticity and strain equations are constructed; see `StochasticLagrangian/LocalMaterialVorticity.lean`, `LocalMaterialStrain.lean`, and `LocalSpectralResidual.lean`. This is not a complete arbitrary-data stochastic/Euclidean realization. |
-| S2. Spatial field transfer | Transfer the coherent/misaligned geometry to the actual localized operator fields, retaining uniform kernel constants and the inverse-scale gain through integration and limits. | **Partial.** High-input pressure and the low-input complement are identified; moving-line and divergence decompositions retain their source costs. Common periodic envelopes and actual localized weak derivatives in L² are constructed. `PressureCoherentWeakFieldTransfer.lean` identifies both input-coordinate channels, retaining the uniform ratio²/input-scale² energy gain. `GaussianRootWeakChannelBudget.lean` transfers both patch-square sums to the integrable two-point derivative density without individual input suprema or a patch-count factor. `GaussianRootTwoPointDerivative.lean` bounds that density by actual gap/projector derivatives and Gaussian two-point moments, on a common null set that survives translation. `PressureCoherentRelativeMoment.lean` retains the ratio in every prescribed relative kernel moment and integrates squared field separation with an explicit Lipschitz cost. `GaussianRootTwoPointIntegral.lean` proves integrability of the full Gaussian derivative cost and transfers both actual channel-energy sums to it using one constructed envelope. `GaussianRootIncrementBudget.lean` replaces projector separation by actual vorticity/strain increments inside both integrated channel costs, using constructed adaptive centers. Quantitative control of the derivative-weighted costs, remaining interactions, and time affordability are still required. |
+| S2. Spatial field transfer | Transfer the coherent/misaligned geometry to the actual localized operator fields, retaining uniform kernel constants and the inverse-scale gain through integration and limits. | **Partial.** High-input pressure and the low-input complement are identified; moving-line and divergence decompositions retain their source costs. Common periodic envelopes and actual localized weak derivatives in L² are constructed. `PressureCoherentWeakFieldTransfer.lean` identifies both input-coordinate channels, retaining the uniform ratio²/input-scale² energy gain. `GaussianRootWeakChannelBudget.lean` transfers both patch-square sums to the integrable two-point derivative density without individual input suprema or a patch-count factor. `GaussianRootTwoPointDerivative.lean` bounds that density by actual gap/projector derivatives and Gaussian two-point moments, on a common null set that survives translation. `PressureCoherentRelativeMoment.lean` retains the ratio in every prescribed relative kernel moment and integrates squared field separation with an explicit Lipschitz cost. `GaussianRootTwoPointIntegral.lean` proves integrability of the full Gaussian derivative cost and transfers both actual channel-energy sums to it using one constructed envelope. `GaussianRootIncrementBudget.lean` replaces projector separation by actual vorticity/strain increments inside both integrated channel costs, using constructed adaptive centers. `GaussianRootWeightedIncrement.lean` controls the bare vorticity increment by actual sixth-power-weighted palinstrophy with the relative second-moment gain, and splits the full cost while retaining its two-endpoint projector coefficient. Quantitative control of the derivative-weighted costs, remaining interactions, and time affordability are still required. |
 | S3. All scales and sectors | Sum over input scales and pay for the other frequency interactions, angular tails, collision sectors, and adaptive cutoff terms without uncontrolled scale, patch-count, or regularization losses. | **Partial.** `PressureHighInputAction.lean` sums all high-input scales in bilinear operator norm. `GaussianRootHighInputBudget.lean` retains the quarter-geometric tail gain after localization and spatial integration, with explicit vorticity-supremum and patch-gradient costs. `PressureHighInputComplement.lean` identifies the remaining input sector as an exact finite sum. Finite support does not establish a uniform or dynamically affordable bound. The other sectors, scale-critical time control, and regularization limits are open. |
 | S4. Dynamical misalignment budget | Prove the signed time-integrated nonlinear estimate from the actual unforced evolution, with bounds that remain finite up to any candidate finite singular time. Construct `MisalignmentStrainBudget`, rather than pass it in as a hypothesis. | **Open; decisive mathematical core.** `LocalExcessAlignmentEnergy.lean` supplies an actual-data absorption inequality with explicit source costs. `MisalignmentRefinedPin.lean` proves a conditional reduction, not the required dynamical budget. |
 | S5. Vorticity control and continuation | Construct the spatial essential-supremum vorticity integrand, prove its finite-time integral is controlled by the preceding estimates, and apply the continuation theorem to the actual solution. | **Open.** Continuation target surfaces and conditional reductions exist. The current `||omega||_sup² sqrt(G)` spatial cost is not yet a controlled BKM integrand. |
@@ -901,6 +901,125 @@ replacement integrable, and both actual normalized channel energies are
 bounded by its iterated integral with the appropriate endpoint order.
 The regression applies these estimates to constructed centers and the
 constructed common pressure envelope.
+
+### Product-weighted increments and the remaining dynamical debt
+
+`Analysis/RadialPower.lean` proves, in a real inner-product space, for every
+natural number `n`, with `F_n(a) = ||a||^n a`,
+
+```text
+||F_n(a)-F_n(b)||² - ||a||^n ||b||^n ||a-b||²
+  = (||a||^n-||b||^n)(||a||^(n+2)-||b||^(n+2)) >= 0.
+```
+
+The product-weighted comparison has constant one and includes zeros and
+antipodal vectors. For `n=3`, the same module proves local Lipschitz
+regularity, differentiability including at zero, and the derivative bound
+`||D F_3(w)[v]|| <= 4 ||w||³ ||v||`.
+
+`PeriodicWeightedIncrement.lean` applies this to continuous, locally
+Lipschitz periodic real vector fields, using their actual almost-everywhere
+coordinate derivatives. It proves integrability and
+
+```text
+I_f(y,z) = ||f(y)||³ ||f(z)||³ ||f(y)-f(z)||²,
+G8(f)    = integral_x ||f(x)||⁶ sum_j ||D_j f(x)||²,
+
+integral_x I_f(x-a,x-b) <= 48 ||a-b||_torus² G8(f),
+integral_x integral_q M(q) I_f(x-a(q),x-b(q))
+  <= 48 (integral_q ||a(q)-b(q)||_torus² M(q)) G8(f).
+```
+
+Here `M` is nonnegative and integrable with the stated relative second
+moment; the translations are measurable. All iterated integrals are
+justified by product integrability. The factor 48 is `16 * 3`: the cubic
+derivative bound is squared, and the torus uses its wrapped sup norm.
+No quantitative Lipschitz constant of `f` appears on the right. This is
+not yet an extension to arbitrary Sobolev fields without the stated local
+Lipschitz regularity.
+
+`GaussianRootWeightedIncrement.lean` identifies the weak derivatives with
+the actual full-vorticity Fourier derivatives and constructs one envelope
+for all admissible snapshots, directions, channels and positive input
+scales. The bare vorticity-increment bound retains
+
+```text
+48 * ratio(t) * C * min(1/4, N^(-2)) * G8(omega).
+```
+
+As in the kernel construction, `t` here parametrizes the frequency ratio,
+not physical time. The full Gaussian channel cost is **not** the bare
+increment. Its coefficient is
+
+```text
+A_j(y,z) = 24 B(z)² B(y)² ||D_j P(y)||² / (tau² gamma²).
+```
+
+The file proves an exact decomposition of the existing `incrementBudget`
+into an explicit `remainderBudget` and `A_j(y,z) I_omega(y,z)`. It proves
+the latter is at most `A_j(y,z) ||F_3(omega(y))-F_3(omega(z))||²`, retaining
+the full coefficient. If an explicit bound `A_j <= A` is supplied, the
+integrated **full** cost is at most the integrated remainder plus
+`48 A * relativeSecondMoment(M) * G8(omega)`. Neither a dynamically
+affordable `A` nor a time bound on `G8` has been constructed. The remainder
+still includes strain increments, local derivatives, localization error
+and the Gaussian entropy term. No patch-count or time-uniform estimate
+is inferred from this decomposition.
+
+`RadialPowerTests.lean` and `GaussianRootWeightedIncrementAudit.lean` check
+zero, constant, coincident, antipodal, positive-defect, endpoint-order,
+derivative and exact-cost-splitting cases, and audit the theorem axioms.
+
+#### Restrictions on a proposed higher-moment closure
+
+The candidate eighth-moment dissipation is a useful named debt, not an
+already supplied energy budget. Kinetic energy and vorticity enstrophy
+have different identities:
+
+```text
+(1/2) d/dt ||u||_2²     + nu ||omega||_2²        = 0,
+(1/2) d/dt ||omega||_2² + nu ||grad omega||_2²   = integral <omega,S omega>.
+```
+
+Consequently `LocalKineticEnergy.energy_identity` is not the `p=2` case
+of an `L^p` vorticity identity. At `p=8`, the required identity has stretching
+source `integral ||omega||⁶ <omega,S omega>` and includes both `nu G8` and
+the additional radial-gradient dissipation. That identity and an affordable
+bound on its source require separate proofs; the new spatial lemma proves
+neither. Scaling the bare `G8` at fixed kinetic energy does not by itself
+classify the full projector-weighted cost, whose other factors also scale,
+or exclude estimates using signed cancellation.
+
+A proposed endpoint argument using `I_(3/2): L²(R³) -> L∞(R³)` cannot use
+the strong Hardy--Littlewood--Sobolev bound at that endpoint. For the
+unnormalized kernel `|x|^(-3/2)`, the explicit functions
+
+```text
+g_epsilon(y) = |y|^(-3/2) 1_{epsilon<|y|<1} / sqrt(log(1/epsilon))
+```
+
+have squared `L²` norm `4 pi` but potential at zero
+`4 pi sqrt(log(1/epsilon))`. Each potential is continuous near zero, so
+this also obstructs an essential-supremum bound, not just point evaluation.
+This elementary analytic check is not a Lean declaration in this update.
+Moreover a direct global Hölder modulus of exponent greater than one
+forces a direction projector to be locally constant on its nonzero region;
+it is not an appropriate generic target for arbitrary data.
+
+Uniformity in `p` as `p -> infinity` is not necessary for every continuation
+argument. The whole-space one-half-Hölder direction criterion already gives
+conditional regularity; see [Beirao da Veiga's review, Theorem 2](https://people.dm.unipi.it/beiraodaveiga/pdf/hbv-116.pdf).
+Its hypotheses and domain must be retained in any translation. The missing
+step here is proving an adequate dynamical coherence or signed source bound,
+not imposing that criterion on arbitrary initial data.
+
+Finally, forcing-insensitive spatial lemmas can be essential parts of an
+unforced proof. A forced counterexample excludes only a complete chain whose
+**entire** hypotheses it satisfies. Smooth forcing can still permit finite
+energy and integrated enstrophy bounds on finite horizons; finiteness of
+those quantities alone does not distinguish regularity. The unforced
+equation must enter the successful dynamic estimate, but the monotone
+kinetic-energy identity is not the only logically possible way to use it.
 
 ### A periodic concentration obstruction to an energy-only shortcut
 
