@@ -1,0 +1,123 @@
+{
+  "receipts": [
+    {
+      "circumference": 3,
+      "half_cuts": 80,
+      "internal_sweep_width": 2,
+      "minimum_full_width": 4,
+      "split_cap_slice_width": 6,
+      "vertices": 12,
+      "witness": {
+        "inner_inside": false,
+        "outer_inside": true,
+        "shell": [
+          3,
+          4,
+          6
+        ]
+      }
+    },
+    {
+      "circumference": 4,
+      "half_cuts": 280,
+      "internal_sweep_width": 2,
+      "minimum_full_width": 6,
+      "split_cap_slice_width": 6,
+      "vertices": 16,
+      "witness": {
+        "inner_inside": false,
+        "outer_inside": true,
+        "shell": [
+          4,
+          5,
+          6,
+          8
+        ]
+      }
+    },
+    {
+      "circumference": 5,
+      "half_cuts": 1008,
+      "internal_sweep_width": 2,
+      "minimum_full_width": 6,
+      "split_cap_slice_width": 6,
+      "vertices": 20,
+      "witness": {
+        "inner_inside": false,
+        "outer_inside": true,
+        "shell": [
+          5,
+          6,
+          7,
+          10,
+          11
+        ]
+      }
+    },
+    {
+      "circumference": 6,
+      "half_cuts": 3696,
+      "internal_sweep_width": 2,
+      "minimum_full_width": 8,
+      "split_cap_slice_width": 6,
+      "vertices": 24,
+      "witness": {
+        "inner_inside": false,
+        "outer_inside": true,
+        "shell": [
+          6,
+          7,
+          8,
+          9,
+          12,
+          13
+        ]
+      }
+    },
+    {
+      "circumference": 7,
+      "half_cuts": 13728,
+      "internal_sweep_width": 2,
+      "minimum_full_width": 8,
+      "split_cap_slice_width": 6,
+      "vertices": 28,
+      "witness": {
+        "inner_inside": false,
+        "outer_inside": true,
+        "shell": [
+          7,
+          8,
+          9,
+          10,
+          14,
+          15,
+          16
+        ]
+      }
+    },
+    {
+      "circumference": 8,
+      "half_cuts": 51480,
+      "internal_sweep_width": 2,
+      "minimum_full_width": 10,
+      "split_cap_slice_width": 6,
+      "vertices": 32,
+      "witness": {
+        "inner_inside": false,
+        "outer_inside": true,
+        "shell": [
+          8,
+          9,
+          10,
+          11,
+          12,
+          16,
+          17,
+          18
+        ]
+      }
+    }
+  ],
+  "schema": "fourcolor-v24-unsplit-cap-sweep-v1",
+  "scope": "whole caps only; not a lower bound when caps may be split, or a zero-Count obstruction"
+}
