@@ -16150,3 +16150,74 @@ repair, or a different well-founded measure. It removes an unnecessarily
 strong immediate-repair step from this candidate attack on global descent;
 it supplies neither global coverage nor the generating base. The fixed
 ledger stays $57/100$.
+
+\subsection{Constructed vertex letters and complete Count sweeps}
+\label{sec:constructed-vertex-count}
+
+Instead of compressing Kempe reconfiguration, the following construction
+returns to exact composition. For an arbitrary side $A$ of a finite
+loopless rotation system and a vertex $v\notin A$, adjoining $v$ gives one
+vertex star and the edges crossing both cuts as persistent wires.
+Every dart at $v$ receives its colour either from the opposite dart on
+the old boundary or from its own dart on the new boundary. No embedding
+of a supplied slab, connected shore, or width estimate is assumed.
+
+For boundary words $x,y$, let $\operatorname{Test}_v(x,y)$ require nonzero
+boundary colours, distinct colours on the new vertex's incident darts,
+and equal colours on each persistent wire with its original ambient
+identity. These equations construct an actual layer colouring, and every
+such colouring satisfies them. Fixed boundary words determine the layer
+colouring uniquely. Thus the literal matrix is
+\[
+ M_{A,v}(x,y)=[\operatorname{Test}_v(x,y)],\qquad
+ C_{A\cup\{v\}}(y)=\sum_x C_A(x)[\operatorname{Test}_v(x,y)].
+\]
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.VertexTransfer.slabRel_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.VertexTransfer.slabCount_eq}
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.VertexTransfer.sideCount_step}
+
+For a cubic system the three dart positions are constructed from cubicity.
+After explicit input and output enumeration, the letter consists of three
+port indices and a partial map from output indices to the corresponding
+persistent input indices. The star indices are distinct and two wire
+outputs cannot copy the same input edge.
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.VertexTransfer.starEquiv}
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.VertexTransfer.encode_star_injective}
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.VertexTransfer.encode_wire_injective}
+For arities $l,r$, the unrestricted raw code type has
+$(l+r)^3(l+1)^r$ members. This is a syntax bound, not a claim that all
+those codes are well-formed or planar in the chosen boundary order.
+The test of an extracted code is equivalent to the literal boundary
+equations, and computes the literal Count entry.
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.VertexTransfer.card_code}
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.VertexTransfer.count_encode}
+
+Starting at the empty side with count one and processing every vertex
+gives exactly the number of proper colourings of the whole rotation
+system. Finite vertex enumeration supplies the complete sweep; it is
+not a new supply hypothesis. Every fresh cubic step can be evaluated
+through its extracted finite code.
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.VertexTransfer.sweepCount_cons_code}
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.VertexTransfer.sweepCount_closed}
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.VertexTransfer.canonicalCount_eq}
+
+The independent program gate compares actual star-and-wire edge colourings
+with every extracted letter and every well-formed letter of arities at
+most three. Complete sweeps give counts $6,60,0$ for the tetrahedron,
+dodecahedron, and nonplanar Petersen zero control. Reordering vertices
+or edges preserves the count, not necessarily the peak frontier width.
+The width-three alphabet has $96$ ordered letters. From the empty word,
+with acceptance at the empty terminal word and ill-typed transitions
+rejected, raw reachability, subset reachability and the Nerode quotient
+have sizes $10,4,4$. An independent literal-relation implementation
+checks these figures. These numerical figures are program checks, not
+additional kernel closure certificates.
+
+This constructs the algebraic physical-letter input for a vertex-sweep
+version of Proposition~\ref{prop:exact-closure-gate}. It does not identify
+that unrestricted alphabet with all and only the source-admissible planar
+Cells, supply a uniform frontier bound, or show that deleting a repeated
+state preserves the target graph class. Exact natural-number Count is
+not asserted to have finite image. Global descent, the target-specific
+closure certificate and the generating-base verification remain open;
+the fixed ledger stays $57/100$.

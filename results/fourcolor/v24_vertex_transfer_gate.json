@@ -1,0 +1,61 @@
+{
+  "checked_extracted_letters": 40,
+  "controls": [
+    {
+      "control": "tetrahedron",
+      "count": 6,
+      "max_support": 12,
+      "order": "numeric",
+      "width": 4
+    },
+    {
+      "control": "tetrahedron",
+      "count": 6,
+      "max_support": 12,
+      "order": "bfs",
+      "width": 4
+    },
+    {
+      "control": "dodecahedron",
+      "count": 60,
+      "max_support": 192,
+      "order": "numeric",
+      "width": 7
+    },
+    {
+      "control": "dodecahedron",
+      "count": 60,
+      "max_support": 240,
+      "order": "bfs",
+      "width": 8
+    },
+    {
+      "control": "Petersen_nonplanar_zero_control",
+      "count": 0,
+      "max_support": 120,
+      "order": "numeric",
+      "width": 7
+    },
+    {
+      "control": "Petersen_nonplanar_zero_control",
+      "count": 0,
+      "max_support": 192,
+      "order": "bfs",
+      "width": 8
+    }
+  ],
+  "schema": "fourcolor-vertex-transfer-v1",
+  "scope": "Exact cubic vertex-sweep Count, not a uniform width or source-planarity theorem.",
+  "width3_alphabet": 96,
+  "width3_closure": {
+    "nerode_classes": 4,
+    "raw_reachable": 10,
+    "subset_reachable": 4,
+    "subset_sizes": [
+      0,
+      1,
+      3,
+      6
+    ]
+  }
+}
