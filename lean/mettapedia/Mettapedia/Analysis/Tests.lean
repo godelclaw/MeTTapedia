@@ -4,6 +4,7 @@ import Mettapedia.Analysis.CompactFourierEnvelopeTests
 import Mettapedia.Analysis.UnitTorusTranslationEnergyTests
 import Mettapedia.Analysis.ContinuousFieldMinkowskiTests
 import Mettapedia.Analysis.CompactRangeCoverTests
+import Mettapedia.Analysis.SqrtEnergyAbsorptionTests
 import Mettapedia.Analysis.DyadicAnnulusTests
 import Mettapedia.Analysis.BilinearKernelIntegrabilityTests
 import Mettapedia.Analysis.SquaredWeightLocalizationTests
