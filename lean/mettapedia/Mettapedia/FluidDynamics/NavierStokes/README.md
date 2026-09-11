@@ -76,7 +76,7 @@ fractions of a completed proof.
 | Step | Obligation and completion test | Status and present evidence |
 | --- | --- | --- |
 | S1. Actual equation and objects | Construct the solution, stochastic/material objects, and frequency decomposition from arbitrary admissible data; derive every evolution identity used later from the actual unforced equation. Track the periodic and Euclidean realizations separately. | **Partial.** The local periodic solution, common-interval material flow, vorticity and strain equations are constructed; see `StochasticLagrangian/LocalMaterialVorticity.lean`, `LocalMaterialStrain.lean`, and `LocalSpectralResidual.lean`. This is not a complete arbitrary-data stochastic/Euclidean realization. |
-| S2. Spatial field transfer | Transfer the coherent/misaligned geometry to the actual localized operator fields, retaining uniform kernel constants and the inverse-scale gain through integration and limits. | **Partial.** The complete high-input pressure operator is identified in the joint source, including its finite low-input complement. `PressureMovingDirectionEnergy.lean` proves the actual weighted moving-line energy continuous and integrable without a regularity assumption on signed eigenvectors. `GaussianRootMovingPressureBudget.lean` transfers its spatial integral to actual localized inputs, retaining both angular and gradient costs. `PressureCoherentDivergenceDecomposition.lean` factors the coherent symbol into explicit input-divergence and transverse-divergence channels; `PressureCoherentDivergencePhysicalKernel.lean` bounds its actual derivative kernels with the linear ratio gain. Their localized field realization, all-output-band moment control, and the other source interactions remain required. |
+| S2. Spatial field transfer | Transfer the coherent/misaligned geometry to the actual localized operator fields, retaining uniform kernel constants and the inverse-scale gain through integration and limits. | **Partial.** The complete high-input pressure operator is identified in the joint source, including its finite low-input complement. `PressureMovingDirectionEnergy.lean` proves the actual weighted moving-line energy continuous and integrable without a regularity assumption on signed eigenvectors. `GaussianRootMovingPressureBudget.lean` transfers its spatial integral to actual localized inputs, retaining both angular and gradient costs. `PressureCoherentDivergenceDecomposition.lean` factors the coherent symbol into explicit input-divergence and transverse-divergence channels. `PressureCoherentDivergencePeriodization.lean` realizes the scalar derivative kernels on the torus, with summable mass and wrapped first moments at an explicit logarithmic cost. Their common patch-uniform envelopes, complex bilinear field realization, and the other source interactions remain required. |
 | S3. All scales and sectors | Sum over input scales and pay for the other frequency interactions, angular tails, collision sectors, and adaptive cutoff terms without uncontrolled scale, patch-count, or regularization losses. | **Partial.** `PressureHighInputAction.lean` sums all high-input scales in bilinear operator norm. `GaussianRootHighInputBudget.lean` retains the quarter-geometric tail gain after localization and spatial integration, with explicit vorticity-supremum and patch-gradient costs. `PressureHighInputComplement.lean` identifies the remaining input sector as an exact finite sum. Finite support does not establish a uniform or dynamically affordable bound. The other sectors, scale-critical time control, and regularization limits are open. |
 | S4. Dynamical misalignment budget | Prove the signed time-integrated nonlinear estimate from the actual unforced evolution, with bounds that remain finite up to any candidate finite singular time. Construct `MisalignmentStrainBudget`, rather than pass it in as a hypothesis. | **Open; decisive mathematical core.** `LocalExcessAlignmentEnergy.lean` supplies an actual-data absorption inequality with explicit source costs. `MisalignmentRefinedPin.lean` proves a conditional reduction, not the required dynamical budget. |
 | S5. Vorticity control and continuation | Construct the spatial essential-supremum vorticity integrand, prove its finite-time integral is controlled by the preceding estimates, and apply the continuation theorem to the actual solution. | **Open.** Continuation target surfaces and conditional reductions exist. The current `||omega||_sup² sqrt(G)` spatial cost is not yet a controlled BKM integrand. |
@@ -488,18 +488,71 @@ to zero still leaves differentiated transverse inputs, not a free
 cancellation. Localization does not in general preserve divergence
 freedom.
 
-The next field-level obligations are to realize these channels on the
-complex periodic fields with the correct derivative normalization and
-weak localization identities, and then obtain summable moment bounds
-for the output-band series. In particular, the displayed first-moment
-bound has no output-ratio decay: summing that upper bound over all output
-bands is insufficient. This does not prove that the actual summed kernel
-has an infinite first moment. The full localized coherent/misaligned
-field estimate and its signed time-integrated cost remain open.
+The displayed Euclidean first-moment bound has no output-ratio decay:
+summing that upper bound over all output bands is insufficient. This does
+not prove that the actual summed kernel has an infinite first moment.
+The periodic wrapped-moment repair is proved below. The remaining
+field-level obligations include common patch-uniform envelopes, the
+complex bilinear derivative channels with correct normalization, and the
+weak localization identities. Uniform individual kernel masses do not
+alone justify a patch-count-independent square-sum estimate. The full
+localized coherent/misaligned field estimate and its signed time-integrated
+cost remain open.
 
 `PressureCoherentDivergenceAudit.lean` checks joint smoothness, degenerate
 ratio handling, longitudinal cancellation without a divergence hypothesis,
 the physical Fourier identity, and the uniform scale quantifiers.
+
+### Logarithmic repair of the periodic derivative-kernel moment budget
+
+`Analysis/GeometricMinSeries.lean` proves, for nonnegative `A,D`,
+
+```text
+sum_m min(A 2^(-m), D)
+  <= D (3 + log(1 + A/D) / log 2).
+```
+
+Summability is proved independently, including at `D = 0`. The general
+theorem allows every geometric ratio strictly between zero and one.
+`Analysis/TruncatedKernelMoment.lean` bounds
+`integral min(R,|x|) |K(x)|` by the smaller of `R` times the mass and
+the full first moment.
+
+`PressureCoherentDivergenceTruncatedBudget.lean` applies these results to
+the actual matched kernels at input scale `N 2^j` and output ratio
+`2^(-j-m)/256`. It proves both infinite sums summable, even for arbitrary
+band-dependent unit directions. The total truncated moment over inputs
+`j >= J` is bounded by
+
+```text
+C 2^(-J) / N (3 + log(1 + R N/256) / log 2).
+```
+
+`FrequencyPairTruncatedMoment.lean` uses the actual product supremum norm
+on the unit frequency-pair torus. Wrapped distance is at most `1/2` and
+at most the Euclidean norm of every lift. Weighted periodization therefore
+bounds the true wrapped first moment by the Euclidean moment truncated
+at `R = 1/2`.
+
+`PressureCoherentDivergencePeriodization.lean` constructs the periodic
+scalar component kernels, proves their exact Fourier coefficient
+factorization, and obtains
+
+```text
+sum_(j >= J,m) integral |K_periodic(j,m)|
+  <= C0 2^(-J),
+sum_(j >= J,m) integral |q| |K_periodic(j,m)(q)|
+  <= C1 2^(-J) / N (3 + log(1 + N/512) / log 2).
+```
+
+All constants precede the input scale, tail index, band-dependent unit
+directions, and output coordinate. The cap is justified by the periodic
+geometry, not an arbitrary cutoff of a whole-space displacement cost.
+This repairs the periodic scalar derivative-kernel summation issue;
+it neither estimates the full localized field channels nor makes their
+costs uniformly affordable in time. `PressureCoherentPeriodicBudgetAudit.lean`
+checks the attained wrapped-distance bound, a numerical logarithmic scale,
+alternating band directions, and the exact output-frequency normalization.
 
 ### One integrable envelope for every frozen pressure direction
 

@@ -13,6 +13,8 @@ Reusable analysis, independent of any particular fluid construction.
 | `DyadicAnnulusCorrection.lean` | Globally smooth bounded multiplier realizing the normalization on annular support | Extends the reciprocal normalizer by one near zero without changing an annularly supported symbol |
 | `DyadicHighPass.lean` | The exact one-sided high-input annular sum and its low-pass complement | Valid at zero; zero on the half-unit ball, one beyond radius two, and one half at unit norm |
 | `WeightedSeries.lean` | Bounded scalar weighting and exact complementary splitting of absolutely convergent Banach-space series | Any normed scalar field; signed or complex weights are allowed |
+| `GeometricMinSeries.lean` | Summability, finite-cutoff bounds, and logarithmic optimization for `sum min(A q^m, D)` | Nonnegative costs, any geometric ratio strictly between zero and one; includes zero fixed cost |
+| `TruncatedKernelMoment.lean` | Integrability and simultaneous mass/first-moment control of `integral min(R, norm x) norm(K x)` | Any Borel normed domain and normed codomain, arbitrary measure, nonnegative cap |
 | `OddMapLineEstimate.lean` | Squared-norm freezing for odd maps with a Lipschitz estimate on unit directions, including finite weighted families | Normed additive groups; uses the smaller of the two oriented distances and introduces no family-size factor |
 | `OddMapWeightedContinuity.lean` | Continuity of weighted output norms controlled by a continuous comparison field | The unit direction need not be measurable; the weighted unoriented-line estimate is explicit, including at zero weight |
 | `FundamentalDomainPeriodization.lean` | Measurable orbit sums, exact character-integral transfer, and invariant-weight mass contraction on a fundamental domain | Countable measure-preserving additive actions; the unweighted core is shared with the existing coherent-kernel development |
@@ -58,6 +60,7 @@ Reusable analysis, independent of any particular fluid construction.
 | `GaussianPartitionRegularity.lean` | Smooth normalized factors and locally Lipschitz norm-scaled amplitudes | Real inner product spaces; supplies genuine almost-everywhere derivatives via Rademacher |
 | `EuclideanOperatorCoordinates.lean` | Hilbert matrix coordinates, operator-norm comparison, and rank-one normalization | Finite-dimensional Euclidean operators; no ambient matrix-norm instance changes |
 | `EuclideanCrossProduct.lean` | Cross-product bilinearity, cyclic triple product, Lagrange identity, and sharp norm bound | Real three-dimensional Euclidean space, transporting mathlib's coordinate cross product into the L2 norm |
+| `EuclideanCrossProductCalculus.lean` | Joint smoothness of the cross product in both inputs | Real three-dimensional Euclidean space; includes varying coherent directions |
 | `UnitTorusFourierEnergy.lean` | Parseval, finite-set Bessel bounds, and character coefficient orthogonality for actual measurable functions | Any finite-dimensional unit torus with normalized Haar measure; `MemLp` rather than continuity suffices for the energy bounds |
 | `UnitTorusFourierApproximation.lean` | Finite Fourier projections and vanishing total physical L² error for finite families | Continuous complex fields on any finite-dimensional unit torus; neither uniform convergence nor absolute coefficient summability is assumed |
 | `UnitTorusFourierUniqueness.lean` | Banach-valued continuous fields are determined by their Fourier coefficients; finite coefficient support gives exact pointwise reconstruction | Derived from scalar L² completeness, full support of Haar measure, and separating continuous linear functionals; no pointwise convergence assumption |
@@ -86,6 +89,15 @@ mass transfer. The NS frequency-pair application uses wrapped torus distance,
 not the norm of a chosen cell representative, to bound every wrapped spatial
 moment by the corresponding Euclidean moment. Its first moment pays the
 two physical input-displacement channels with an explicit factor of two.
+
+`TruncatedKernelMoment.lean` and `GeometricMinSeries.lean` handle a kernel
+family whose first-moment bound lacks geometric decay while its mass
+still decays. Taking the smaller cost gives a summable truncated moment
+with an explicit logarithmic loss. In the periodic NS application, bounded
+wrapped distance converts this into a true wrapped first-moment budget.
+The general truncation lemma does not imply an untruncated whole-space
+first-moment bound. Tests include a sharp finite-cutoff example, a
+non-dyadic ratio, zero cost, and displacement-cap saturation.
 
 The Gaussian modules construct derivative-controlled spatial NS patches.
 Their localization cost is the nearest squared distance plus `τ log N`,
