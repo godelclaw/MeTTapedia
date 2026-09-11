@@ -6,6 +6,8 @@ Reusable analysis, independent of any particular fluid construction.
 
 | Module | Mathematical content | Scope |
 | --- | --- | --- |
+| `BilinearKernelIntegrability.lean` | Integrable operator kernels act on bounded strongly measurable fields; compact continuous fields supply all needed bounds | Real or complex normed spaces; kernel continuity and absolute input Fourier summability are not required |
+| `BilinearCoefficientSums.lean` | Coordinatewise convergent coefficient sums reconstruct a convergent series of bilinear operators | Independent finite Euclidean input and output index sets; actual `HasSum`, not a formal series |
 | `DyadicAnnulus.lean` | Finite overlap, dyadic invariance, positivity, and punctured smoothness of the annulus normalizer | Any real normed space admitting smooth bumps; the normalizer lies between one and three away from zero |
 | `DyadicAnnulusPartition.lean` | Smooth exact dyadic partition, compact support, and one-sided reconstruction in the punctured unit ball | Zero excluded from the partition identity; all annular bands vanish there |
 | `DyadicAnnulusCorrection.lean` | Globally smooth bounded multiplier realizing the normalization on annular support | Extends the reciprocal normalizer by one near zero without changing an annularly supported symbol |
@@ -157,6 +159,12 @@ from the external source below.
 unit-frequency weights of one half, very small frequencies, negative inputs,
 and smoothness. The original unnormalized bands sum to two at a unit
 frequency; they are not silently treated as an exact partition.
+
+`BilinearKernelIntegrabilityTests.lean` checks a genuinely discontinuous
+operator-valued indicator kernel, proves its action on constants has integral
+six, and proves the kernel is not continuous. Thus this interface is not
+silently routed through a kernel-continuity assumption. It also audits the
+public integrability and coefficient-sum theorems.
 
 `Tests.lean` checks a path with a nondifferentiable corner, a forced trajectory
 crossing zero, a negative growth coefficient, an exponent other than one
