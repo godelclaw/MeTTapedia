@@ -162,15 +162,62 @@ Gaussian root-patch localization integrands, with both translated full-vorticity
 inputs and the actual center directions. Its final existential theorem includes
 the envelope construction and summable costs; kernel domination is not an
 additional hypothesis of that theorem. The squared-weight differences remain
-on the right-hand side. Their weighted translation estimates, the input-scale
-sum, and the signed time-integrated dynamical estimate are still open. In
-particular, an integrable envelope does not by itself assert integrability of
-its square or close the spatially integrated squared-error estimate.
+on the right-hand side; the spatial translation estimate below now controls
+them. The input-scale sum and the signed time-integrated dynamical estimate
+remain open. An integrable envelope alone does not imply integrability of
+its square, and the spatial estimate below does not make that inference.
 
 `Analysis/CompactFourierEnvelopeTests.lean` and `PressureEnvelopeAudit.lean`
 check exact tail values, a nontrivial Jacobian-weighted dilation, the zero-ratio
 boundary, and simultaneous domination across an uncountable amplitude family
 and all dyadic bands. They also print the new theorem axioms.
+
+### Full spatial translation energy and the inverse-scale localization budget
+
+`Analysis/UnitTorusTranslationEnergy.lean` proves a full translation bound
+from finite Fourier gradient-energy estimates using Parseval. It constructs
+a norm-preserving real lift of every torus displacement, so the bound uses
+wrapped distance. `PeriodicTranslationEnergy.lean` supplies the finite
+Fourier bounds from the actual weak derivatives of a locally Lipschitz real
+periodic field. In three dimensions,
+
+```text
+integral_x |f(x) - f(x-a)|² <= 3 |a|² integral_x sum_j |partial_j f(x)|².
+```
+
+`GaussianSquaredRootTranslation.lean` applies this to the squares of the
+actual nonnegative root patches. Their summed gradient energy `G` is
+integrable and retains the gate-gradient and Gaussian-patch-gradient costs.
+There is no derivative of the unsquared scalar root at a vorticity zero.
+
+`GaussianRootSpatialBudget.lean` then proves, for the actual localization
+integrands `R_(n,i)(q,x)` and full continuous vorticity `omega`,
+
+```text
+sum_n integral_q sqrt(integral_x sum_i |R_(n,i)(q,x)|²)
+  <= (C / N) ||omega||_sup² sqrt(6 G).
+
+G = integral_x sum_i sum_j |partial_j (rootPatch_i²)(x)|².
+```
+
+The left-hand summands are integrable and their series is summable. The
+common pressure envelope is constructed and used only to its first power
+after the spatial square root; its first moment supplies `1/N`. The kernel
+constant `C` is independent of input scale and adaptive patch count, but
+`G` still depends on the gates and patch geometry. The final theorem uses
+the actual continuous-map supremum of vorticity, not an assumed field bound.
+
+This is an `L1(q; L2(x; ell2(patches)))` estimate. The corresponding
+Minkowski transfer to the integrated operator output, the sum over input
+scales, and the signed dynamical/time budget remain to be closed. In
+particular, neither `||omega||_sup²` nor `G` has been proved dynamically
+affordable. This does not prove global regularity.
+
+`Analysis/UnitTorusTranslationEnergyTests.lean` and
+`GaussianRootSpatialAudit.lean` check wrapped representatives, the signed
+Fourier translation phase, a nonsmooth norm-corner field, empty-family
+defaults, and output-band summability for actual data. All new theorem
+axioms are printed for inspection.
 
 ### Periodic low-output pressure with wrapped spatial moments
 
