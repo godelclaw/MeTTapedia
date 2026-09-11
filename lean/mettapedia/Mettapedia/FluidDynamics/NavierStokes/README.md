@@ -77,7 +77,7 @@ fractions of a completed proof.
 | --- | --- | --- |
 | S1. Actual equation and objects | Construct the solution, stochastic/material objects, and frequency decomposition from arbitrary admissible data; derive every evolution identity used later from the actual unforced equation. Track the periodic and Euclidean realizations separately. | **Partial.** The local periodic solution, common-interval material flow, vorticity and strain equations are constructed; see `StochasticLagrangian/LocalMaterialVorticity.lean`, `LocalMaterialStrain.lean`, and `LocalSpectralResidual.lean`. This is not a complete arbitrary-data stochastic/Euclidean realization. |
 | S2. Spatial field transfer | Transfer the coherent/misaligned geometry to the actual localized operator fields, retaining uniform kernel constants and the inverse-scale gain through integration and limits. | **Partial.** Exact dyadic pressure kernels, the common envelope, and the mixed spatial-norm budget are checked. `GaussianRootOperatorBudget.lean` now transfers that budget to the integrated Gaussian localization residual and its complete output-band sum at each fixed input scale. This is one pressure-sector transfer, not all coherent/misaligned interactions or all adaptive limits. |
-| S3. All scales and sectors | Sum over input scales and pay for the other frequency interactions, angular tails, collision sectors, and adaptive cutoff terms without uncontrolled scale, patch-count, or regularization losses. | **Open.** Output-band summability at one input scale is checked; it does not discharge this step. The local bounds retain vorticity, strain, gate, and patch-gradient costs. |
+| S3. All scales and sectors | Sum over input scales and pay for the other frequency interactions, angular tails, collision sectors, and adaptive cutoff terms without uncontrolled scale, patch-count, or regularization losses. | **Partial.** `GaussianRootInputBudget.lean` constructs uniformly bounded adaptive covers and sums this pressure-localization sector over high dyadic input scales for a fixed smooth field. Its bound retains the full second Fourier moment, vorticity supremum, and vorticity-gradient energy. Other sectors, scale-critical control, and regularization limits remain open. |
 | S4. Dynamical misalignment budget | Prove the signed time-integrated nonlinear estimate from the actual unforced evolution, with bounds that remain finite up to any candidate finite singular time. Construct `MisalignmentStrainBudget`, rather than pass it in as a hypothesis. | **Open; decisive mathematical core.** `LocalExcessAlignmentEnergy.lean` supplies an actual-data absorption inequality with explicit source costs. `MisalignmentRefinedPin.lean` proves a conditional reduction, not the required dynamical budget. |
 | S5. Vorticity control and continuation | Construct the spatial essential-supremum vorticity integrand, prove its finite-time integral is controlled by the preceding estimates, and apply the continuation theorem to the actual solution. | **Open.** Continuation target surfaces and conditional reductions exist. The current `||omega||_sup² sqrt(G)` spatial cost is not yet a controlled BKM integrand. |
 | S6. Unconditional theorem and audit | Assemble the arbitrary-data theorem for each claimed domain; check every hypothesis, forcing/pressure convention, limit, and imported result against the target. Compile and audit the final theorem with no assumed analytic budgets or extra axioms. | **Open.** Local lemma builds and foundational-axiom audits are necessary evidence, not completion of this obligation. |
@@ -275,11 +275,11 @@ sqrt(integral_x sum_i |sum_n A_(n,i)(x)|²)
 
 The first series is identified with the already constructed continuous
 pressure output-band sum, not a nonsummable-series default. The finite
-patch family has no additional cardinality multiplier. Only output bands
-at a fixed input scale have been summed. The sum over input scales, the
-other interaction sectors, and the signed dynamical/time budget remain
-open; neither `||omega||_sup²` nor `G` has been proved dynamically
-affordable. This does not prove global regularity.
+patch family has no additional cardinality multiplier. This operator
+theorem sums output bands at a fixed input scale. The construction below
+additionally sums high input scales for a fixed smooth field, with explicit
+regularity costs. The other interaction sectors and the signed
+dynamical/time budget remain open. This does not prove global regularity.
 
 `Analysis/UnitTorusTranslationEnergyTests.lean` and
 `GaussianRootSpatialAudit.lean` check wrapped representatives, the signed
@@ -292,6 +292,72 @@ aggregation, non-probability measure normalization, an empty family, and
 signed cancellation. `GaussianRootOperatorAudit.lean` checks constant
 weights, the empty-family default, actual-data norm summability, and
 pointwise series convergence. All 22 new theorem dependencies are audited.
+
+### Bounded adaptive covers and high-input summation
+
+`Analysis/CompactRangeCover.lean` constructs adaptive covers with a common
+cardinality bound for all maps into a fixed compact target set. One actual
+source point is selected from each occupied target-net ball. The source
+map need not be continuous for this cover-size result; its oscillation
+does not affect the bound. Range control is essential.
+
+`BoundedGaussianLinePartition.lean` applies this construction to weighted
+rank-one projectors. For a vorticity bound `W`, positive gap threshold
+`gamma`, and positive line tolerance `rho`, their coordinate norm is at
+most `W / gamma`. A cover-size bound `M` is chosen before the filter or
+mode set, and every chosen Gaussian temperature is at least
+
+```text
+tau_* = rho² / (4 (1 + log M)) > 0.
+A = 3 (1 + (W/gamma)² rho² / (2 tau_*²)).
+```
+
+`LocalGapGateGradient.lean` proves almost-everywhere differentiability of
+the clipped gap gate and the explicit `36 / gamma²` strain-gradient
+bound. `UniformGaussianGradientBudget.lean` combines it with the actual
+weighted-projector derivatives and constructs patches with
+
+```text
+sum_i |gradient(rootPatch_i²)|²
+  <= (4 A / gamma²) sum_j |partial_j omega|²
+     + ((72 + 1600 A) W² / gamma⁴) sum_j |partial_j S_filtered|²
+```
+
+almost everywhere. Exact squared coverage and the prescribed weighted
+line-error bound hold for these same patch families.
+
+For filters bounded by one, `UniformStrainGradientBudget.lean` bounds each
+strain derivative by
+`L = 9 (2 pi)² sum_k (1 + |k|)² |u_hat(k)|`, independently of the finite
+mode set. Consequently the integrated patch energy has the common bound
+
+```text
+H = (4 A / gamma²) integral_x sum_j |partial_j omega|²
+    + ((72 + 1600 A) W² / gamma⁴) 3 L².
+```
+
+`GaussianRootInputBudget.exists_uniform_input_budget` uses the actual
+continuous vorticity supremum for `W` and proves, for input scales
+`N_j = N_0 2^j`,
+
+```text
+sum_j ||complete output-band localization at input N_j||_(L2_x ell2_patches)
+  <= (2 C / N_0) W² sqrt(6 H).
+```
+
+The patch families are constructed, their norms form a genuinely
+summable series, and `M` is selected before `N_0` and every contractive
+filter sequence. This is a fixed-smooth-field estimate for one pressure
+sector. `W`, `L`, and the vorticity-gradient energy are not controlled up
+to a candidate singular time; `gamma` and `rho` are not sent to zero.
+It is not the dynamical `MisalignmentStrainBudget` or the final theorem.
+
+`Analysis/CompactRangeCoverTests.lean` checks a discontinuous bounded
+field, an empty source, uniformity over arbitrary bounded sequences, and
+the failure of finite covering for unbounded separated values.
+`GaussianRootInputAudit.lean` checks temperatures, input scales, genuine
+finite Fourier data, and constructed input-scale summability. Together
+they audit 26 new or refactored theorems.
 
 ### Periodic low-output pressure with wrapped spatial moments
 
