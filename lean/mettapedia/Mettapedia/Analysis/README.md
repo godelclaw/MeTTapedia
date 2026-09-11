@@ -23,6 +23,7 @@ Reusable analysis, independent of any particular fluid construction.
 | `OrthonormalOperatorBound.lean` | Squared operator norm bounded by the sum of squared images of an orthonormal basis, with no dimension factor | Real or complex inner-product domain with a finite orthonormal basis; arbitrary normed codomain |
 | `IntegralEndpointEstimate.lean` | Extends an integral inequality from interior time pairs to both endpoints | Continuous energy and integrable signed source and dissipation; integrands need not be continuous |
 | `FiniteConvolutionEnergy.lean` | Weighted finite Young inequality for a two-input vector kernel, collecting coincident outputs before squaring | Additive commutative group of modes; arbitrary normed additive codomain; no explicit cardinality loss |
+| `FiniteTwoChannelConvolutionEnergy.lean` | Two separable kernel channels retained independently through convolution energy | Nonnegative source/receiver weights; an l1 source norm and l2 receiver norm in each channel |
 | `FiniteMultiplierLocalization.lean` | Exact localization commutator, symbol-variation energy estimate, and small-symbol/tail split | Any normed scalar field and normed vector space; finite supports; all unfavorable modes retained |
 | `FiniteSumEnergy.lean` | Squared-norm Cauchy--Schwarz for finite linear combinations and its cardinality specialization | Normed scalar field and normed vector codomain; the unweighted version needs only a normed additive group |
 | `FiniteCoefficientEnergy.lean` | Nonnegativity, constant scaling, and two-, three-, and finite-sum energy bounds | Arbitrary finite index sets and normed scalar fields; cardinality is explicit where used |
@@ -35,6 +36,7 @@ Reusable analysis, independent of any particular fluid construction.
 | `NormScaledGaussianPartition.lean` | Exact norm-squared coverage and total-derivative bounds including zero-amplitude points | Real inner product spaces; differentiability at a norm corner is not assumed |
 | `GaussianPartitionRegularity.lean` | Smooth normalized factors and locally Lipschitz norm-scaled amplitudes | Real inner product spaces; supplies genuine almost-everywhere derivatives via Rademacher |
 | `EuclideanOperatorCoordinates.lean` | Hilbert matrix coordinates, operator-norm comparison, and rank-one normalization | Finite-dimensional Euclidean operators; no ambient matrix-norm instance changes |
+| `EuclideanCrossProduct.lean` | Cross-product bilinearity, cyclic triple product, Lagrange identity, and sharp norm bound | Real three-dimensional Euclidean space, transporting mathlib's coordinate cross product into the L2 norm |
 | `UnitTorusFourierEnergy.lean` | Parseval, finite-set Bessel bounds, and character coefficient orthogonality for actual measurable functions | Any finite-dimensional unit torus with normalized Haar measure; `MemLp` rather than continuity suffices for the energy bounds |
 | `UnitTorusFourierApproximation.lean` | Finite Fourier projections and vanishing total physical L² error for finite families | Continuous complex fields on any finite-dimensional unit torus; neither uniform convergence nor absolute coefficient summability is assumed |
 
