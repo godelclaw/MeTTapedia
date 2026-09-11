@@ -16568,3 +16568,85 @@ compositional interface. It does not yet prove the complete state-update
 law, a strict size decrease, global coverage or the generating-base
 verification. In particular fixed-arity finiteness still does not force
 repetition at unbounded arity. Earned completion remains $57/100$.
+
+\subsection{Executable structural transfer with exposed outer ports}
+\label{sec:small-cut-open-transfer}
+
+The small-cut signature now has an exact open-to-open transition.
+Let $A$ have boundary $L\sqcup P$ and $B$ boundary $P\sqcup R$.
+Sew the two copies of $P$, keeping $L\sqcup R$ exposed. For a pair
+of realized records, the output retains the outer membership bits,
+takes the Boolean disjunction of each nonemptiness flag, and sets
+\[
+ c_{\rm out}=\min\bigl(2,c_A+c_B+
+       \#\{p\in P:x_A(p)\ne x_B(p)\}\bigr).
+\]
+The image of the two realized profiles under this operation is
+\emph{exactly} the whole realized output profile. This includes
+cost-two records, not merely a closed acceptance test. Every subset of
+the sewn vertex sum splits into two subsets, and every pair of input
+subsets realizes the prescribed output. Empty seams, hidden components,
+repeated port vertices and disconnected pieces require no exceptions.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundarySmallCutTransfer.state_glue}
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundarySmallCutTransfer.profile_glue}
+
+The cap commutes with nonnegative addition. Consequently both the
+record operation and its image operation on profiles are associative,
+with the common outer boundary $L\sqcup R$ retained under either
+parenthesization. These laws hold even for formal records not known to
+be realizable; realizability is preserved when the inputs are realized.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundarySmallCutTransfer.composeState_assoc}
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundarySmallCutTransfer.composeProfile_assoc}
+
+This update also applies to the stack's literal serial-tangle
+constructor, in common seam coordinates with identity matching. The
+adapter forgets only the distinction between input and output ports.
+A chosen dart and its involutive mate enumerate each interior edge
+exactly twice, so the symmetric dart sum is twice the actual multigraph
+cut size. Splitting the serial dart carrier into old darts and seam
+darts gives the same cut formula, without collapsing parallel edges.
+Thus the verified colouring-acceptance composition and the structural
+profile transition concern the same sewn object.
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleCutDartSum.twice_cutSize}
+\Sverified{Mettapedia.GraphTheory.FourColor.SerialTangleSmallCutTransfer.cutSize_serial}
+\Sverified{Mettapedia.GraphTheory.FourColor.SerialTangleSmallCutTransfer.profile_serial}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24OpenTangleComposition.TwoSidedOpenTangleData.serialCompose_acceptsBoundaryWords_iff}
+
+There is a computable extractor for explicitly finite multigraphs,
+proved equal to their mathematical profile. It enumerates vertex
+subsets; no claim of efficient extraction for large pieces is made.
+For literal tangles a second extractor uses the symmetric dart sum
+divided by two, avoiding noncomputable choices of quotient-edge
+representatives. It is proved equal to the actual side profile and
+commutes with serial composition.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundarySmallCutExecutable.extractTangle_correct}
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundarySmallCutExecutable.extractTangle_serial}
+The computable transfer instead uses only the two finite sets of
+records, with duplicate outputs removed. Its correctness, associativity
+and equality with extraction from the actual serial tangle are proved.
+The Boolean acceptance test rejects any realized nontrivial cut of
+size zero or one; on a closed graph it is exactly connectedness and
+bridgelessness. It is only a structural test, not colour acceptance
+or a test of all counterexample-class conditions.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundarySmallCutExecutable.extract_correct}
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundarySmallCutExecutable.transfer_correct}
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundarySmallCutExecutable.transfer_assoc}
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundarySmallCutExecutable.extract_serial}
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundarySmallCutExecutable.accepts_extract}
+
+The preregistered gate checks exact profiles for $138{,}125$ sewings:
+all simple pieces on at most three vertices, with every port assignment
+and $|L|+|P|+|R|\le3$. Additional controls cover associativity,
+parallel edges, loops and saturated costs. Seven small Lean decisions
+check the executable definitions themselves, including bridge rejection,
+parallel-edge acceptance, an actual open transfer, and direct execution
+on a literal two-sided tangle and its serial composite. These are generic
+structural tests, not ring-colouring or reducibility catalogues.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundarySmallCutChecks.actual_open_transfer}
+
+This supplies an executable structural coordinate for the source's
+compositional closure, without choosing a mesh geometry. It does not
+yet assemble the joint Count/face/structural closure, establish global
+coverage or strict descent, or verify the generating base. Fixed-arity
+finiteness is still not a bound across unbounded interface arities.
+The global reduction remains open and the earned ledger remains $57/100$.

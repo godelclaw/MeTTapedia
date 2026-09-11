@@ -1,0 +1,26 @@
+{
+  "rows": [
+    {"left": 0, "right": 0, "seam": 0, "sewings": 144},
+    {"left": 0, "right": 1, "seam": 0, "sewings": 348},
+    {"left": 0, "right": 2, "seam": 0, "sewings": 972},
+    {"left": 0, "right": 3, "seam": 0, "sewings": 2796},
+    {"left": 0, "right": 0, "seam": 1, "sewings": 841},
+    {"left": 0, "right": 1, "seam": 1, "sewings": 2349},
+    {"left": 0, "right": 2, "seam": 1, "sewings": 6757},
+    {"left": 0, "right": 0, "seam": 2, "sewings": 6561},
+    {"left": 0, "right": 1, "seam": 2, "sewings": 18873},
+    {"left": 0, "right": 0, "seam": 3, "sewings": 54289},
+    {"left": 1, "right": 0, "seam": 0, "sewings": 348},
+    {"left": 1, "right": 1, "seam": 0, "sewings": 841},
+    {"left": 1, "right": 2, "seam": 0, "sewings": 2349},
+    {"left": 1, "right": 0, "seam": 1, "sewings": 2349},
+    {"left": 1, "right": 1, "seam": 1, "sewings": 6561},
+    {"left": 1, "right": 0, "seam": 2, "sewings": 18873},
+    {"left": 2, "right": 0, "seam": 0, "sewings": 972},
+    {"left": 2, "right": 1, "seam": 0, "sewings": 2349},
+    {"left": 2, "right": 0, "seam": 1, "sewings": 6757},
+    {"left": 3, "right": 0, "seam": 0, "sewings": 2796}
+  ],
+  "schema": "fourcolor-small-cut-transfer-v1",
+  "scope": "Full realized open profiles on literal graph sewings; universal Lean proof separate."
+}
