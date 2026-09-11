@@ -76,7 +76,7 @@ fractions of a completed proof.
 | Step | Obligation and completion test | Status and present evidence |
 | --- | --- | --- |
 | S1. Actual equation and objects | Construct the solution, stochastic/material objects, and frequency decomposition from arbitrary admissible data; derive every evolution identity used later from the actual unforced equation. Track the periodic and Euclidean realizations separately. | **Partial.** The local periodic solution, common-interval material flow, vorticity and strain equations are constructed; see `StochasticLagrangian/LocalMaterialVorticity.lean`, `LocalMaterialStrain.lean`, and `LocalSpectralResidual.lean`. This is not a complete arbitrary-data stochastic/Euclidean realization. |
-| S2. Spatial field transfer | Transfer the coherent/misaligned geometry to the actual localized operator fields, retaining uniform kernel constants and the inverse-scale gain through integration and limits. | **Partial.** High-input pressure and the low-input complement are identified; moving-line and divergence decompositions retain their source costs. Common periodic envelopes and actual localized weak derivatives in L² are constructed. `PressureCoherentWeakFieldTransfer.lean` identifies both input-coordinate channels, retaining the uniform ratio²/input-scale² energy gain. `GaussianRootWeakChannelBudget.lean` transfers both patch-square sums to the integrable two-point derivative density without individual input suprema or a patch-count factor. `GaussianRootTwoPointDerivative.lean` bounds that density by actual gap/projector derivatives and Gaussian two-point moments, on a common null set that survives translation. `PressureCoherentRelativeMoment.lean` retains the ratio in every prescribed relative kernel moment and integrates squared field separation with an explicit Lipschitz cost. `GaussianRootTwoPointIntegral.lean` proves integrability of the full Gaussian derivative cost and transfers both actual channel-energy sums to it using one constructed envelope. Quantitative control of the derivative-weighted costs, remaining interactions, and time affordability are still required. |
+| S2. Spatial field transfer | Transfer the coherent/misaligned geometry to the actual localized operator fields, retaining uniform kernel constants and the inverse-scale gain through integration and limits. | **Partial.** High-input pressure and the low-input complement are identified; moving-line and divergence decompositions retain their source costs. Common periodic envelopes and actual localized weak derivatives in L² are constructed. `PressureCoherentWeakFieldTransfer.lean` identifies both input-coordinate channels, retaining the uniform ratio²/input-scale² energy gain. `GaussianRootWeakChannelBudget.lean` transfers both patch-square sums to the integrable two-point derivative density without individual input suprema or a patch-count factor. `GaussianRootTwoPointDerivative.lean` bounds that density by actual gap/projector derivatives and Gaussian two-point moments, on a common null set that survives translation. `PressureCoherentRelativeMoment.lean` retains the ratio in every prescribed relative kernel moment and integrates squared field separation with an explicit Lipschitz cost. `GaussianRootTwoPointIntegral.lean` proves integrability of the full Gaussian derivative cost and transfers both actual channel-energy sums to it using one constructed envelope. `GaussianRootIncrementBudget.lean` replaces projector separation by actual vorticity/strain increments inside both integrated channel costs, using constructed adaptive centers. Quantitative control of the derivative-weighted costs, remaining interactions, and time affordability are still required. |
 | S3. All scales and sectors | Sum over input scales and pay for the other frequency interactions, angular tails, collision sectors, and adaptive cutoff terms without uncontrolled scale, patch-count, or regularization losses. | **Partial.** `PressureHighInputAction.lean` sums all high-input scales in bilinear operator norm. `GaussianRootHighInputBudget.lean` retains the quarter-geometric tail gain after localization and spatial integration, with explicit vorticity-supremum and patch-gradient costs. `PressureHighInputComplement.lean` identifies the remaining input sector as an exact finite sum. Finite support does not establish a uniform or dynamically affordable bound. The other sectors, scale-critical time control, and regularization limits are open. |
 | S4. Dynamical misalignment budget | Prove the signed time-integrated nonlinear estimate from the actual unforced evolution, with bounds that remain finite up to any candidate finite singular time. Construct `MisalignmentStrainBudget`, rather than pass it in as a hypothesis. | **Open; decisive mathematical core.** `LocalExcessAlignmentEnergy.lean` supplies an actual-data absorption inequality with explicit source costs. `MisalignmentRefinedPin.lean` proves a conditional reduction, not the required dynamical budget. |
 | S5. Vorticity control and continuation | Construct the spatial essential-supremum vorticity integrand, prove its finite-time integral is controlled by the preceding estimates, and apply the continuation theorem to the actual solution. | **Open.** Continuation target surfaces and conditional reductions exist. The current `||omega||_sup² sqrt(G)` spatial cost is not yet a controlled BKM integrand. |
@@ -872,6 +872,60 @@ not its dynamical affordability. The derivative/vorticity products still
 need estimates suitable for the scale sums and signed time-integrated
 misalignment budget. In particular, `rho = t/128` is the low-output
 parameter here; it is not physical time.
+
+### Field increments replace projector separation in both channel integrals
+
+`SquaredGapProjectorIncrement.lean` converts the collision-safe operator
+difference bound to Euclidean coordinate energy. For `P` the weighted
+projector coordinates, `omega` the vorticity, and `S` the filtered strain,
+
+```text
+|P(y)-P(z)|^2 <= 6 (|omega(y)-omega(z)|/gamma)^2
+                + 2400 (|omega(z)| |S(y)-S(z)|/gamma^2)^2.
+```
+
+`GaussianRootIncrementBudget.lean` constructs a finite cover of the actual
+projector image. With cover radius `epsilon`, positive temperature `tau`,
+and `m` centers, the Gaussian moment in the full derivative cost is at most
+
+```text
+4 epsilon^2 + 3 tau log(m)
+  + 12 (|omega(y)-omega(z)|/gamma)^2
+  + 4800 (|omega(z)| |S(y)-S(z)|/gamma^2)^2.
+```
+
+There is no positive-gap assumption and no inverse vorticity norm. The
+gap-factor, projector, and vorticity derivatives remain in the cost. A
+continuous-coefficient extension of the integrability helper proves the
+replacement integrable, and both actual normalized channel energies are
+bounded by its iterated integral with the appropriate endpoint order.
+The regression applies these estimates to constructed centers and the
+constructed common pressure envelope.
+
+### A periodic concentration obstruction to an energy-only shortcut
+
+`Analysis/FiniteFourierConcentration.lean` proves a cubic lower bound for
+the convolution energy of unit coefficients on an embedded integer
+interval. `PeriodicFourierProductConcentration.lean` transfers this through
+the actual unit-torus Parseval identity to explicit mean-zero packets:
+
+```text
+f_n(x) = exp(2 pi i (2n+1) x_1) sum_{k=0}^{2n} exp(2 pi i k x_1)
+integral |f_n|^2 = 2n+1
+integral |f_n|^4 >= (n+1)^3.
+```
+
+The frequencies lie on one axis between `2n+1` and `4n+1`. Normalization
+also constructs mean-zero continuous periodic fields with square energy
+exactly one and fourth-power energy larger than any prescribed constant.
+Thus no universal constant can bound a product's square energy using
+only the two input square energies, even on this finite Fourier class.
+
+This is not a Navier--Stokes blowup construction or a refutation of the
+linked dynamical estimate. It rules out discarding all derivative,
+frequency, and correlation information when estimating the mixed costs
+above. Exploiting that retained structure in the relative-kernel integral,
+the scale sums, and the signed time-integrated budget remains necessary.
 
 ### One integrable envelope for every frozen pressure direction
 
