@@ -134,4 +134,17 @@ theorem first_channel_eq_ae (N : ℝ) (hN : 0 < N) (t : ℝ) (e : R3) (j : Fin 3
     (locallyLipschitz_rootVorticity gamma hg chi modes u hu centers hc tau i)
     (rootInput gamma hg chi modes u hu centers hc tau i)
 
+theorem second_channel_eq_ae (N : ℝ) (hN : 0 < N) (t : ℝ) (e : R3) (j : Fin 3) :
+    (fun x ↦ (PancakePeriodicVorticityEquation.unitTorusDerivativePhase * (N : ℂ)) •
+      kernelAction (periodicKernel N hN t e (.second j))
+        (rootInput gamma hg chi modes u hu centers hc tau i)
+        (rootInput gamma hg chi modes u hu centers hc tau i) x) =ᵐ[volume]
+      secondDerivativeAction gamma hg chi modes u hu centers hc tau i N hN t e j :=
+  PressureCoherentWeakFieldTransfer.second_channel_eq_ae N hN t e j
+    (rootInput gamma hg chi modes u hu centers hc tau i)
+    (rootVorticity gamma chi modes u centers tau i)
+    (continuous_rootVorticity gamma hg chi modes u
+      (summable_fourierMoment_of_le u (by omega : 1 ≤ 2) hu) centers hc tau i)
+    (locallyLipschitz_rootVorticity gamma hg chi modes u hu centers hc tau i)
+
 end Mettapedia.FluidDynamics.NavierStokes.GaussianRootWeakPressureAction

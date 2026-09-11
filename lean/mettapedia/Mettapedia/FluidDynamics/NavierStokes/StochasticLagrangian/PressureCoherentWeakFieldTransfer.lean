@@ -4,8 +4,8 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PressureCohere
 /-!
 # Coherent channel identities for the actual weak-input fields
 
-The first input-coordinate channel, multiplied by `2 pi i N`, is the
-undifferentiated kernel acting on the actual weak coordinate derivative.
+Each input-coordinate channel, multiplied by `2 pi i N`, is the
+undifferentiated kernel acting on the actual weak coordinate derivative in that slot.
 The equality holds almost everywhere in physical space, not only for
 Fourier coefficients. The derivative-energy cost remains explicit.
 -/
@@ -47,6 +47,44 @@ theorem first_channel_eq_ae (N : ℝ) (hN : 0 < N) (t : ℝ) (e : R3) (j : Fin 3
     (memLp_complexify f (hf.memLp_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)))
     (memLp_complexify _ (memLp_coordinateRate f j hf hfL)) g _
     (PressureCoherentChannelWeakFourier.first_channel_weakDerivative N hN t e j f hf hfL)
+
+theorem second_channel_eq_ae (N : ℝ) (hN : 0 < N) (t : ℝ) (e : R3) (j : Fin 3)
+    (f : C(T3, C3)) (g : T3 → R3) (hg : Continuous g)
+    (hgL : LocallyLipschitz (fun r : Fin 3 → ℝ ↦ g (torusPoint r))) :
+    (fun x ↦ (unitTorusDerivativePhase * (N : ℂ)) •
+      kernelAction (periodicKernel N hN t e (.second j)) f (fun y ↦ complexifyVector (g y)) x) =ᵐ[volume]
+      kernelAction (periodicKernel N hN t e .undifferentiated) f
+        (fun y ↦ complexifyVector (coordinateRate g j y)) := by
+  exact PressureL2FourierReconstruction.smul_kernelAction_eq_ae_right _ _
+    (integrable_periodicKernel N hN t e (.second j))
+    (integrable_periodicKernel N hN t e .undifferentiated) f _ _
+    (memLp_complexify g (hg.memLp_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)))
+    (memLp_complexify _ (memLp_coordinateRate g j hg hgL)) _
+    (PressureCoherentChannelWeakFourier.second_channel_weakDerivative N hN t e j g hg hgL)
+
+theorem second_channel_energy_le (N : ℝ) (hN : 0 < N) (t : ℝ) (e : R3) (j : Fin 3)
+    (f : C(T3, C3)) (g : T3 → R3) (hg : Continuous g)
+    (hgL : LocallyLipschitz (fun r : Fin 3 → ℝ ↦ g (torusPoint r))) :
+    ‖unitTorusDerivativePhase * (N : ℂ)‖ ^ 2 *
+      (∫ x : T3, ‖kernelAction (periodicKernel N hN t e (.second j))
+        f (fun y ↦ complexifyVector (g y)) x‖ ^ 2) ≤
+      (∫ q : T6, ‖periodicKernel N hN t e .undifferentiated q‖) ^ 2 * ‖f‖ ^ 2 *
+        ∫ x : T3, ‖coordinateRate g j x‖ ^ 2 := by
+  calc
+    _ = ∫ x : T3, ‖(unitTorusDerivativePhase * (N : ℂ)) •
+        kernelAction (periodicKernel N hN t e (.second j))
+          f (fun y ↦ complexifyVector (g y)) x‖ ^ 2 := by
+      simp only [norm_smul, mul_pow, integral_const_mul]
+    _ = ∫ x : T3, ‖kernelAction (periodicKernel N hN t e .undifferentiated)
+        f (fun y ↦ complexifyVector (coordinateRate g j y)) x‖ ^ 2 := by
+      apply integral_congr_ae
+      filter_upwards [second_channel_eq_ae N hN t e j f g hg hgL] with x hx
+      rw [hx]
+    _ ≤ _ := by
+      simpa only [FourierPressureTraceSymbol.norm_complexifyVector] using
+        (kernelAction_memLp_two_and_energy_le_right _
+          (integrable_periodicKernel N hN t e .undifferentiated) f _
+          (memLp_complexify _ (memLp_coordinateRate g j hg hgL))).2.2
 
 theorem first_channel_energy_le (N : ℝ) (hN : 0 < N) (t : ℝ) (e : R3) (j : Fin 3)
     (f : T3 → R3) (hf : Continuous f)
@@ -110,6 +148,30 @@ theorem exists_uniform_first_channel_derivative_energy_bound :
     _ ≤ (C * PressureLowOutputCutoff.ratio t ^ 2 * ‖g‖ ^ 2 *
         ∫ x : T3, ‖coordinateRate f j x‖ ^ 2) / (2 * Real.pi * N) ^ 2 :=
       (le_div_iff₀ hd).mpr (by simpa only [mul_comm _ ((2 * Real.pi * N) ^ 2)] using h)
+    _ = _ := by ring
+
+theorem exists_uniform_second_channel_derivative_energy_bound :
+    ∃ C : ℝ, 0 ≤ C ∧ ∀ N : ℝ, ∀ hN : 0 < N, ∀ t ∈ Set.Icc (0 : ℝ) (1 / 2),
+      ∀ e : R3, ‖e‖ = 1 → ∀ j : Fin 3, ∀ f : C(T3, C3), ∀ g : T3 → R3, Continuous g →
+      LocallyLipschitz (fun r : Fin 3 → ℝ ↦ g (torusPoint r)) →
+        (∫ x : T3, ‖kernelAction (periodicKernel N hN t e (.second j))
+          f (fun y ↦ complexifyVector (g y)) x‖ ^ 2) ≤
+          C * PressureLowOutputCutoff.ratio t ^ 2 / (2 * Real.pi * N) ^ 2 * ‖f‖ ^ 2 *
+            ∫ x : T3, ‖coordinateRate g j x‖ ^ 2 := by
+  obtain ⟨C, _, hC⟩ := exists_uniform_periodic_mass_bound
+  refine ⟨C ^ 2, sq_nonneg _, fun N hN t ht e he j f g hg hgL ↦ ?_⟩
+  have h := second_channel_energy_le N hN t e j f g hg hgL
+  rw [norm_mul, PancakeIncomingLowSourceEnergy.norm_derivativePhase,
+    Complex.norm_real, Real.norm_eq_abs, abs_of_pos hN] at h
+  have hm := pow_le_pow_left₀ (integral_nonneg (fun q ↦ norm_nonneg _))
+    (hC N hN t ht e he .undifferentiated) 2
+  have hb := h.trans (mul_le_mul_of_nonneg_right
+    (mul_le_mul_of_nonneg_right hm (sq_nonneg ‖f‖)) (integral_nonneg (fun x ↦ sq_nonneg _)))
+  have hd : 0 < (2 * Real.pi * N) ^ 2 := by positivity
+  calc
+    _ ≤ ((PressureLowOutputCutoff.ratio t * C) ^ 2 * ‖f‖ ^ 2 *
+        ∫ x : T3, ‖coordinateRate g j x‖ ^ 2) / (2 * Real.pi * N) ^ 2 :=
+      (le_div_iff₀ hd).mpr (by simpa only [mul_comm _ ((2 * Real.pi * N) ^ 2)] using hb)
     _ = _ := by ring
 
 end Mettapedia.FluidDynamics.NavierStokes.PressureCoherentWeakFieldTransfer

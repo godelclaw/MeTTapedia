@@ -114,4 +114,15 @@ theorem exists_uniform_periodic_envelope :
       exact ((h.trans hmom).trans
         (div_le_div_of_nonneg_right (le_max_right _ _) hN.le)).trans_eq (by ring)
 
+theorem exists_uniform_periodic_mass_bound :
+    ∃ C : ℝ, 0 ≤ C ∧ ∀ N : ℝ, ∀ hN : 0 < N, ∀ t ∈ Set.Icc (0 : ℝ) (1 / 2),
+      ∀ e : R3, ‖e‖ = 1 → ∀ c : Factor,
+        (∫ q : T6, ‖periodicKernel N hN t e c q‖) ≤ ratio t * C := by
+  obtain ⟨C, hC, M, hb⟩ := exists_uniform_periodic_envelope
+  refine ⟨C, hC, fun N hN t ht e he c ↦ ?_⟩
+  obtain ⟨_, _, hMi, _, hdom, hmass, _⟩ := hb N hN t ht
+  apply (integral_mono_ae (integrable_periodicKernel N hN t e c).norm hMi ?_).trans hmass
+  filter_upwards [hdom] with q hq
+  exact hq e he c
+
 end Mettapedia.FluidDynamics.NavierStokes.PressureCoherentChannelPeriodization
