@@ -245,9 +245,9 @@ A_N <= symmetricAngularIntegral_N <= 2*A_N.
 The source payment also holds with this symmetric integral. Its endpoint
 rate is derived along the actual local material paths, including zeros,
 and separates amplitude growth, common strain, strain variation, and the
-two viscous endpoint terms. This is not yet an evolution theorem or an
-upper bound for the entire kernel-weighted integral: relative-velocity
-kernel transport and the integrated viscous calculation remain required.
+two viscous endpoint terms. This endpoint identity by itself does not
+supply an integrated estimate. The spatial and temporal identities below
+retain the transport and viscosity channels, without bounding their sum.
 
 `TraceFreeWeightedAngularRate.lean` retains the spectral gap and the
 weighted top defects in this rate. In the common-strain case, put
@@ -273,6 +273,57 @@ The test is **not** a self-consistent spatial NS solution, a blowup example,
 or a refutation of a quantitative integrated budget.
 `WeightedAngularEvolutionAudit.lean` checks the source comparison, actual
 endpoint dynamics, and the limited scope of the obstruction. S4 is still open.
+
+`Analysis/WeightedCrossProductCurvature.lean` derives the complete second
+variation. For the sixth-power amplitude weight, set
+`W = |a|^6 + |b|^6`, `c = a cross b`, and `c' = v cross b + a cross w`.
+The acceleration-free curvature is
+
+```text
+C(a,b;v,w) = W''*|c|^2 + 4*W'*<c,c'> + 2*W*|c'|^2 + 4*W*<c,v cross w>.
+```
+
+Here `W'` and `W''` are explicitly constructed polynomial first and second
+variations, not unknown rates. `WeightedCrossProductCurvatureTests.lean`
+checks `C = -638` at `a = (3,1,0)`, `b = (1,0,0)`, `v = (1,-1,0)`,
+`w = 0`, including the derivative of the first-variation formula along
+the affine endpoint curve. Thus pointwise convexity is false. This test
+does not determine the sign of the integrated curvature of an NS solution.
+
+`LocalWeightedAngularDiffusion.lean` proves, for the actual full Fourier
+vorticity, that common spatial translation cancels the total second
+derivative. With `K_N(h) = |h|*||H_N(h)||`, its integrated viscosity
+contribution is exactly `-nu*Q_N`, where
+
+```text
+Q_N = integral_h integral_x K_N(h) * sum_j C(w(x),w(x-h);partial_j w(x),partial_j w(x-h)).
+```
+
+All spatial integrability obligations are proved. The kernel stays fixed
+under common translation, so no kernel derivative is dropped from this
+viscosity calculation.
+
+`LocalWeightedAngularMeanRegularity.lean`,
+`LocalWeightedAngularMeanBalance.lean`, and
+`LocalWeightedAngularMeanChannels.lean` then prove the actual mean balance.
+The finite Fourier kernel representative has exactly the same angular
+integral. Its norm and torus distance are treated as locally Lipschitz;
+material differentiability is established almost everywhere, including
+the correct treatment of their nonsmooth sets. Relative transport remains
+the derivative of this kernel weight along the actual velocity difference.
+For `A_N = symmetricAngularIntegral_N` and its constructed joint rate,
+
+```text
+J_N = integral_(x,y) [materialKernelRate_N*P + K_N*nonviscousPairRate] - nu*Q_N,
+integral_a^b A_N(t) dt = (b-a)*A_N(a) + integral_a^b (b-t)*J_N(t) dt.
+```
+
+This is an exact signed identity on compact interior intervals of the
+actual local solution with its common third-moment Fourier envelope.
+Neither a cutoff-uniform bound on `J_N`, a budget up to a candidate
+singular time, nor global directional coherence has been proved.
+`WeightedAngularMeanAudit.lean` checks these distinctions and the
+foundational dependencies. The decisive S4 budget remains open.
 
 The dependencies guide the work, not a rigid chronological schedule:
 counterexamples to a proposed S3 or S4 estimate can require revising S2.

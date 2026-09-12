@@ -34,6 +34,18 @@ local instance : IsProbabilityMeasure (volume : Measure UnitAddCircle) :=
 
 def torusPoint (r : X) : T := fun i ↦ (r i : UnitAddCircle)
 
+omit [DecidableEq d] in
+theorem lipschitzWith_torusPoint : LipschitzWith 1 (torusPoint : X → T) := by
+  apply LipschitzWith.of_dist_le_mul
+  intro x y
+  simp only [NNReal.coe_one, one_mul]
+  apply (dist_pi_le_iff dist_nonneg).mpr
+  intro i
+  rw [dist_eq_norm]
+  change ‖((x i - y i : ℝ) : UnitAddCircle)‖ ≤ dist x y
+  exact (QuotientAddGroup.norm_mk_le_norm).trans (by
+    simpa only [dist_eq_norm, Pi.sub_apply] using norm_le_pi_norm (x - y) i)
+
 def coordinateLine (r : X) (j : d) (h : ℝ) : X :=
   fun i ↦ r i + h * if i = j then 1 else 0
 

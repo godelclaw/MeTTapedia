@@ -1,0 +1,52 @@
+import Mettapedia.Analysis.WeightedCrossProductCurvatureTests
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.LocalWeightedAngularMeanChannels
+
+/-! Actual signed angular mean balance and the limits of pointwise curvature. -/
+
+set_option autoImplicit false
+noncomputable section
+
+open Mettapedia.Analysis Mettapedia.FluidDynamics.NavierStokes
+open PeriodicFourierTriad PancakeCurlOutputTail PancakeHigherDerivativeMoments
+
+example (N : ℕ) (u : FourierVelocity) (hu : Summable (fourierMoment 3 u)) :
+    LocalWeightedAngularDiffusion.diffusionIntegral N u =
+      -LocalWeightedAngularDiffusion.curvatureIntegral N u :=
+  LocalWeightedAngularDiffusion.diffusionIntegral_eq_neg_curvatureIntegral N u hu
+
+example : ¬ ∀ a b v w : EuclideanSpace ℝ (Fin 3), 0 ≤ WeightedCrossProduct.curvature 1 a b v w :=
+  WeightedCrossProductCurvatureTests.not_curvature_nonneg
+
+#print axioms UnitTorusWeakDerivative.lipschitzWith_torusPoint
+#print axioms WeightedCrossProduct.locallyLipschitz_energy
+#print axioms WeightedCrossProduct.hasDerivAt_amplitudeRate
+#print axioms WeightedCrossProduct.hasDerivAt_rate
+#print axioms WeightedCrossProduct.rate_sum
+#print axioms WeightedCrossProduct.continuous_rate
+#print axioms WeightedCrossProduct.continuous_curvature
+#print axioms WeightedCrossProductCurvatureTests.curvature_value
+#print axioms WeightedCrossProductCurvatureTests.negative_secondVariation
+#print axioms WeightedCrossProductCurvatureTests.not_curvature_nonneg
+#print axioms LocalWeightedAngularDiffusion.hasDerivAt_firstRate_shift
+#print axioms LocalWeightedAngularDiffusion.integral_secondRate_eq_zero
+#print axioms LocalWeightedAngularDiffusion.sum_secondRate_eq
+#print axioms LocalWeightedAngularDiffusion.integral_diffusion_eq_neg_curvature
+#print axioms LocalWeightedAngularDiffusion.integrable_weighted_diffusion
+#print axioms LocalWeightedAngularDiffusion.integrable_weighted_curvature
+#print axioms LocalWeightedAngularDiffusion.diffusionIntegral_eq_neg_curvatureIntegral
+#print axioms LocalWeightedAngularMeanRegularity.locallyLipschitz_kernelWeight_lift
+#print axioms LocalWeightedAngularMeanRegularity.integral_density_eq
+#print axioms LocalWeightedAngularMeanRegularity.continuous_extendedDensity
+#print axioms LocalWeightedAngularMeanRegularity.locallyLipschitz_extendedDensity
+#print axioms LocalWeightedAngularMeanRegularity.absolutelyContinuousOnInterval_mean
+#print axioms LocalWeightedAngularMeanBalance.frozenKernel_eq_relativeShift
+#print axioms LocalWeightedAngularMeanBalance.ae_differentiableAt_frozenKernel
+#print axioms LocalWeightedAngularMeanBalance.frozenMaterialRate_eq
+#print axioms LocalWeightedAngularMeanBalance.ae_hasDerivAt_mean
+#print axioms LocalWeightedAngularMeanBalance.integral_angular_eq_initial_add_weighted_rate
+#print axioms LocalWeightedAngularMeanChannels.explicitRate_eq
+#print axioms LocalWeightedAngularMeanChannels.continuous_diffusionRate
+#print axioms LocalWeightedAngularMeanChannels.integral_diffusionRate_eq
+#print axioms LocalWeightedAngularMeanChannels.meanRate_eq_jointRate
+#print axioms LocalWeightedAngularMeanChannels.ae_meanRate_eq_jointRate
+#print axioms LocalWeightedAngularMeanChannels.integral_angular_eq_initial_add_weighted_channels
