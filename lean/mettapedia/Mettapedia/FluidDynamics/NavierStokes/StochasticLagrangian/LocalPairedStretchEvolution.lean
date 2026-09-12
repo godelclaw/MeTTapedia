@@ -63,6 +63,28 @@ variable {nu T B : ℝ} {u₀ : FourierVelocity}
 
 include hg hSum hu hab hI ht hX hY
 
+theorem hasDerivAt_pairedStretch_path_of_kernel (n : ℕ) (H : ℝ → R3 →L[ℝ] R3)
+    (Hdot : R3 →L[ℝ] R3) (hH : HasDerivAt H Hdot t) :
+    HasDerivAt (fun τ ↦ pairedStretch (2 * (n + 1)) (H τ)
+      (fullVorticity (s.coefficients τ) (torusPoint (X τ)))
+      (fullVorticity (s.coefficients τ) (torusPoint (Y τ))))
+      (pairedStretchRate n
+        (fullStrainOperator (s.coefficients t) (torusPoint (X t)))
+        (fullStrainOperator (s.coefficients t) (torusPoint (Y t))) (H t) Hdot
+        (fullVorticity (s.coefficients t) (torusPoint (X t)))
+        (fullVorticity (s.coefficients t) (torusPoint (Y t)))
+        (nu • fullVorticityLaplacian (s.coefficients t) (torusPoint (X t)))
+        (nu • fullVorticityLaplacian (s.coefficients t) (torusPoint (Y t)))) t := by
+  have hwX := LocalVorticityTangency.hasDerivAt_fullVorticity_path s g hg hSum hu a b hab hI X t ht hX
+  have hwY := LocalVorticityTangency.hasDerivAt_fullVorticity_path s g hg hSum hu a b hab hI Y t ht hY
+  have hm := hSum.of_nonneg_of_le (fourierMoment_nonneg _ _)
+    (hu t (Set.Ioo_subset_Icc_self (hI (Set.Ioo_subset_Icc_self ht))))
+  have hm2 := summable_fourierMoment_of_le _ (by norm_num : 2 ≤ 3) hm
+  exact hasDerivAt_pairedStretch n _ _ _ _ _ hwX hwY hH
+    (cross_fullStrain_apply_add _ hm2 (s.transverse t) _ _ _)
+    (cross_fullStrain_apply_add _ hm2 (s.transverse t) _ _ _)
+    (mean_fullStrain_symmetric _ _ _)
+
 theorem hasDerivAt_pairedStretch_path (n : ℕ) (modes : Finset Wavevector) :
     HasDerivAt (fun τ ↦ pairedStretch (2 * (n + 1))
       (kernel modes (torusPoint (X τ) - torusPoint (Y τ)))
@@ -70,16 +92,8 @@ theorem hasDerivAt_pairedStretch_path (n : ℕ) (modes : Finset Wavevector) :
       (fullVorticity (s.coefficients τ) (torusPoint (Y τ))))
       (materialPairedRate n modes (s.coefficients t) nu (torusPoint (X t)) (torusPoint (Y t))
         (liftedVelocity s t (X t)) (liftedVelocity s t (Y t))) t := by
-  have hwX := LocalVorticityTangency.hasDerivAt_fullVorticity_path s g hg hSum hu a b hab hI X t ht hX
-  have hwY := LocalVorticityTangency.hasDerivAt_fullVorticity_path s g hg hSum hu a b hab hI Y t ht hY
-  have hm := hSum.of_nonneg_of_le (fourierMoment_nonneg _ _)
-    (hu t (Set.Ioo_subset_Icc_self (hI (Set.Ioo_subset_Icc_self ht))))
-  have hm2 := summable_fourierMoment_of_le _ (by norm_num : 2 ≤ 3) hm
-  exact hasDerivAt_pairedStretch n _ _ _ _ _ hwX hwY
+  exact hasDerivAt_pairedStretch_path_of_kernel s g hg hSum hu a b hab hI X Y t ht hX hY n _ _
     (hasDerivAt_kernel_pair_path modes X Y _ _ t hX hY)
-    (cross_fullStrain_apply_add _ hm2 (s.transverse t) _ _ _)
-    (cross_fullStrain_apply_add _ hm2 (s.transverse t) _ _ _)
-    (mean_fullStrain_symmetric _ _ _)
 
 theorem hasDerivAt_highAmplitudeStretch_path_left (n : ℕ) (modes : Finset Wavevector)
     (L : ℝ) (hL : 0 < L)
