@@ -98,6 +98,14 @@ S1 actual NS objects + S2 spatial transfer
              S6 unconditional A/B audit
 ```
 
+The current S4 attack has checked actual two-point top-gap damping and the
+signed radial-source evolution. The latter retains kernel transport,
+mean-strain commutators, amplitude growth, viscosity and strict-branch
+cutoff motion. A checked prescribed-strain example shows why angular decay
+alone does not pay this source. Uniform integrated control of these terms,
+including amplitude interfaces and the annular-kernel realization, remains
+the open mathematical obligation.
+
 The dependencies guide the work, not a rigid chronological schedule:
 counterexamples to a proposed S3 or S4 estimate can require revising S2.
 Imported fluid-equation results must retain their domain, forcing, and
@@ -1314,6 +1322,73 @@ statements, including the zero-endpoint definition of `q`. The remaining
 task is to control the signed perturbation and normalized spectral costs
 in the high-amplitude source's time integral. An instantaneous angle
 equation, by itself, does not supply this budget or close S4.
+
+#### Signed source evolution: kernel commutator and radial amplification
+
+`LocalPairedStretchEvolution.lean` differentiates the paired source along
+two actual material trajectories. Both vorticities are the full solution's
+vorticity, not finitely truncated vorticities. Here the kernel is the finite
+real-character reconstruction from `VorticityStretchingKernel.lean`, whose
+spatial pairing is already identified with `finiteStretching`.
+`VorticityKernelTransport.lean` derives its transport from the actual
+velocity difference, rather than assuming Fourier-phase derivatives.
+
+At radial exponent six, write `A=|a|^6 a`, `B=|b|^6 b`, `r=A-B`,
+`c=a cross b`, and `M=(S+T)/2`. The exact signed identity is
+
+```text
+Q = <c,Hr>,
+Q' = <c,(Hdot + H M - M H)r>
+     + <F_sym,Hr> + <c,H R_rad>,
+R_rad = (1/2)(S-T)(A+B)
+        + 6|a|^4<a,Sa>a - 6|b|^4<b,Tb>b
+        + DF_6(a)[nu Delta a] - DF_6(b)[nu Delta b].
+```
+
+`Hdot` is the kernel derivative under the relative material velocity.
+The commutator sign is `H M - M H`. Common strain cancels from the
+linear-vector part, but radial amplitude growth remains. Even powers are
+differentiated through powers of the squared norm, so this unnormalized
+identity also applies at zero vorticity.
+
+For `sigma=1-L/max(L,min(|a|,|b|))`, on the strict branch
+`L < |a| < |b|`, the actual high-amplitude integrand has derivative
+
+```text
+(sigma Q)' = sigma Q' + sigma' Q,
+sigma' = L <a,Sa+nu Delta a> / |a|^3.
+```
+
+The other strict branch is also checked, with the endpoints exchanged.
+No derivative is asserted at a threshold or equal-amplitude interface.
+The normalization term is not assumed to be dissipative.
+
+`Analysis/SignedCrossKernelEvolutionTests.lean` checks a precise warning
+against transferring angular decay directly to source decay. For common
+strain `diag(2,-1,-1)`, unit endpoints `(4/5,0,3/5)` and `(4/5,0,-3/5)`,
+and the commuting positive rank-one operator `H=e e^T`, `e=(0,1,1)`,
+
+```text
+q' = -24192/15625 < 0,
+Q  = 144/125 > 0,
+Q' = 19872/3125 > 0.
+```
+
+Both values are actual first derivatives of explicitly defined test curves
+with the prescribed strain velocities at zero. The generic identity is
+`Q' = 6 alpha Q` when the two Rayleigh quotients equal `alpha` and the
+fixed kernel commutes with the common strain. This is a prescribed-strain
+counterexample to a source-decay shortcut, not a self-consistent fluid
+solution or a refutation of the repaired route.
+
+`LocalPairedStretchAudit.lean` checks actual-solution source identification,
+empty-cutoff behavior, kernel transport and both strict amplitude branches.
+The signed spatial/time estimate is still open. In particular, these
+identities do not yet supply a cutoff-uniform transport bound, a derivative
+for the periodized annular representative, or the argument needed to pass
+across amplitude interfaces and integrate. The previous cutoff-uniform
+low-amplitude payment remains intact and is not replaced by a finite-cutoff
+constant here.
 
 #### Concentration test for an instantaneous energy-only closure
 
