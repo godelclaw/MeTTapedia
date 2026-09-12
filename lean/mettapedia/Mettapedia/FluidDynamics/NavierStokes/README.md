@@ -161,6 +161,29 @@ radius decreases. Neither a time-varying choice based on an unknown
 supremum nor a bound uniform as `L` tends to infinity is asserted.
 The remaining task is a dynamical estimate on this signed near source.
 
+`TwoShearStretchingJet.lean` and `TwoShearStretchingMean.lean` now test a
+zero-source sign law against a self-consistent unforced initial jet. The
+smooth, divergence-free, `2*pi`-periodic datum
+`u0(x,y,z) = (sin y, 0, sin x)` has initial NS acceleration
+`(-nu*sin y, 0, -sin y*cos x - nu*sin x)` with zero pressure. The affine
+jet satisfies the full momentum equation at time zero, with its actual
+Frechet gradient, curl and Laplacian. The normalized Lebesgue mean `R`
+of the physical eighth-moment stretching density satisfies
+
+```text
+R(0) = 0,
+R'(0) = 125/128 > 0
+```
+
+for every viscosity. Thus `R' <= b*R` fails for this initial jet for every
+coefficient `b`, even after spatial averaging. The affine path is **not**
+asserted to solve NS at positive times, and this is not a counterexample
+to a quantitative integrated budget, to the retained near-source estimate,
+or to global regularity. The check requires the proposed dynamic argument
+to account for additive positive production rather than infer a sign law
+from vanishing initial stretching. `TwoShearStretchingAudit.lean` records
+the momentum and mean-rate checks and their foundational dependencies.
+
 The dependencies guide the work, not a rigid chronological schedule:
 counterexamples to a proposed S3 or S4 estimate can require revising S2.
 Imported fluid-equation results must retain their domain, forcing, and
