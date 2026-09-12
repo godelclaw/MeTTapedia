@@ -17034,13 +17034,67 @@ already identifies its word-orbit count with a component count.
 \Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeRotationCyclic.realize_rotationCyclic}
 \Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeRotationCyclic.realize_openRotationCyclic}
 
-What remains is the transport itself: the face identification, which is the
-edge product of an involution's edge list composed with the rotation; the
-edge count, which is twice the edge-list length; and the two counting
-bijections above. Until that transport is written, the carrier is finite and
-exactly interpreted but is not yet known to retain every required source
-prefix. No closure count, threshold or generating base is claimed, and the
-earned ledger remains $57/100$.
+The transport and losslessness on constructed runs are now proved in
+Section~\ref{sec:vertex-code-lossless-pruning} below. Source coverage still
+needs the rotation-faithful run-level round trip. No closure count, threshold
+or generating base is claimed, and the earned ledger remains $57/100$.
+
+\subsection{Euler transport and lossless vertex-code pruning}
+\label{sec:vertex-code-lossless-pruning}
+
+The four counting identifications now hold for an actual open tangle whose
+vertex map is surjective and whose vertex fibers are rotation cycles. Its
+provisional edge involution fixes boundary darts; its word orbits are the
+components of the side multigraph, its rotation orbits are the displayed
+vertices, and twice its edge-list length is its interior-dart count. The
+resulting identity, including disconnected objects and hidden components, is
+\[
+ D_T(T)=2D_M\bigl(\rho_T,\operatorname{edgeList}(\alpha_T)\bigr).
+\]
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleEulerPresentation.wordOrbitCount_eq_components}
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleEulerPresentation.twice_edges}
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleEulerPresentation.face_count}
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleEulerPresentation.defect_eq_twice}
+
+Changing dart coordinates preserves defect, and disjoint union adds it.
+Restricting an involution to any invariant subset of its edges cannot increase
+defect. These assertions are independent of the chosen edge-list order.
+On the actual serial constructor, erasing the seams recovers the disjoint
+union on the same dart carrier. Sewing therefore has defect at least the
+sum of the two input defects. A newly attached star has defect zero.
+\Sverified{Mettapedia.GraphTheory.FourColor.InvolutionEulerDefect.defect_restrict_le}
+\Sverified{Mettapedia.GraphTheory.FourColor.InvolutionEulerDefect.defect_congr}
+\Sverified{Mettapedia.GraphTheory.FourColor.InvolutionEulerDefect.defect_sum}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeDefectMonotone.serial_defect}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeDefectMonotone.step_mono}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeDefectMonotone.face_change_bound}
+
+Every realized run has a surjective vertex map as well as cyclic vertex
+rotations, so its defect is nonnegative and monotone along prefixes. A
+zero-defect \emph{completion} consequently forces all earlier defects to
+vanish. The terminal hypothesis is essential: starting at a zero-defect star
+alone does not prevent subsequent handle creation.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeDefectMonotone.realize_surjective}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeDefectMonotone.realize_defect_nonneg}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeDefectMonotone.planar_prefix}
+
+A hidden component stays hidden after attachment and is separated from the
+new vertex. Thus every \emph{proper} prefix of a connected planar constructed
+run passes the finite viable-prefix test. No colourability assumption occurs
+in this theorem: it also retains any uncolourable object satisfying those
+structural hypotheses. The executable pruning schedule tests a prefix only
+when attaching another vertex, and leaves terminal acceptance unchanged.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeLosslessPruning.hidden_extension}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeLosslessPruning.viable_of_connected_planar_completion}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeLosslessPruning.prefixesViable_of_connected_planar}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeLosslessPruning.prunedAccepts_eq}
+
+This closes the defect-monotonicity and losslessness gap on decoded runs,
+not source coverage or the optimized closure certificate. The latter still
+requires its physical alphabet, exact raw and cumulative-support semantics,
+and all three kernel-certified closure counts. In particular the evaluator's
+set of boundary colourings is already a support object; it must not be
+reported as the raw carrier merely by renaming it.
 
 \subsection{The accepting predicate for the direct Count system}
 \label{sec:direct-count-acceptance}
@@ -17069,10 +17123,11 @@ closed components are likewise rejected, their mass being four per component.
 \Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeTerminalAcceptance.twisted_rejected}
 \Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeTerminalAcceptance.two_components_rejected}
 
-This supplies $F$ for the direct Count system of
-Proposition~\ref{prop:exact-closure-gate}. It does not supply $I$, $E$, the
-reachability replays or any count, and it is not the Lift/Seed accepting
-array, which remains the cap-composed predicate.
+This supplies the terminal predicate for the direct Count system of
+Proposition~\ref{prop:exact-closure-gate}. An enumerated accepting array and
+its source-realization biconditional are still owed alongside $I$, $E$ and
+the reachability replays. No closure count is supplied, and this is not the
+Lift/Seed accepting array, which remains the cap-composed predicate.
 
 \subsection{Source-facing cyclic encoding}
 \label{sec:source-facing-cyclic-encoding}
