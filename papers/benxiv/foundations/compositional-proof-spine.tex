@@ -16934,11 +16934,13 @@ finds $96$ valid codes, and compares $18{,}144$ colour pairs with the
 independent transfer. Kernel controls include malformed wires,
 persistent-port order, and identical colour/cut data with different
 Euler mass. These are operation controls, not a configuration catalogue.
-D2b remains open: the source-facing cyclic encoding/round trip,
-integrated admissible-prefix pruning, and the exact raw/support/Nerode
-closure certificates of Proposition~\ref{prop:exact-closure-gate} still
-require discharge. Constructing a physical object for every valid code
-does not by itself prove coverage of every required source witness.
+D2b remains open. Source-facing cyclic encoding, the geometric round trip,
+and lossless admissible-prefix pruning are now connected in
+Section~\ref{sec:source-vertex-code-roundtrip}. The exact raw/support/Nerode
+closure certificates of Proposition~\ref{prop:exact-closure-gate}, their
+enumerated initialization/acceptance data, and the required width interface
+still require discharge. Constructing a physical object for every valid code
+does not by itself prove those remaining obligations.
 No optimized threshold or generating base is inferred, and the fixed
 earned ledger remains $57/100$.
 
@@ -16996,15 +16998,15 @@ obligations and this predicate must never be used as the accepting array $F$
 of Proposition~\ref{prop:exact-closure-gate}.
 \Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeViablePrefix.closed_not_viable}
 
-What is \emph{not} established here is that pruning is lossless. Visibility
-is already known to be inherited by prefixes of a connected object. The
-planar half is not: it needs monotonicity of the Euler defect under the
-literal vertex attachment, equivalently
+Finiteness alone does not establish that pruning is lossless. Visibility
+is inherited by prefixes of a connected object; the planar half requires
+monotonicity of the Euler defect under literal vertex attachment, equivalently
 \[
  \Delta F\le 1+|P|-2d
 \]
-in the notation of \S\ref{sec:physical-vertex-attachment}, and that
-inequality is open.
+in the notation of \S\ref{sec:physical-vertex-attachment}. This was the
+remaining obstruction at the finite-carrier checkpoint; it is now proved
+in Section~\ref{sec:vertex-code-lossless-pruning}.
 
 Its content is narrower than it looks. Writing the seams' face effect as
 $\Delta F=1-\#\mathrm{merge}+\#\mathrm{split}$ with
@@ -17012,8 +17014,8 @@ $\#\mathrm{merge}+\#\mathrm{split}=|P|$, the slack is
 $1+|P|-2d-\Delta F=2(\#\mathrm{merge}-d)$, so the inequality says exactly
 that at least $d$ seams merge two faces --- which is the contrapositive of
 the already-proved fact that darts sharing a face share a component. The
-missing step is therefore not a new combinatorial lemma but a presentation
-bridge: identifying the vertex, face, component and edge counts of a
+required step is a presentation bridge: identifying the vertex, face,
+component and edge counts of a
 constructed tangle with the orbit counts of its edge presentation, after
 which the proved monotonicity and nonnegativity of the edge-presentation
 defect apply verbatim. Concretely, the tangle defect is twice the
@@ -17035,8 +17037,9 @@ already identifies its word-orbit count with a component count.
 \Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeRotationCyclic.realize_openRotationCyclic}
 
 The transport and losslessness on constructed runs are now proved in
-Section~\ref{sec:vertex-code-lossless-pruning} below. Source coverage still
-needs the rotation-faithful run-level round trip. No closure count, threshold
+Section~\ref{sec:vertex-code-lossless-pruning} below. The rotation-faithful
+source round trip is now proved in Section~\ref{sec:source-vertex-code-roundtrip}.
+No closure count, threshold
 or generating base is claimed, and the earned ledger remains $57/100$.
 
 \subsection{Euler transport and lossless vertex-code pruning}
@@ -17089,8 +17092,9 @@ when attaching another vertex, and leaves terminal acceptance unchanged.
 \Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeLosslessPruning.prefixesViable_of_connected_planar}
 \Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeLosslessPruning.prunedAccepts_eq}
 
-This closes the defect-monotonicity and losslessness gap on decoded runs,
-not source coverage or the optimized closure certificate. The latter still
+This closes the defect-monotonicity and losslessness gap on decoded runs.
+The source bridge below connects these results to actual source sweeps;
+it does not produce the optimized closure certificate. The latter still
 requires its physical alphabet, exact raw and cumulative-support semantics,
 and all three kernel-certified closure counts. In particular the evaluator's
 set of boundary colourings is already a support object; it must not be
@@ -17170,9 +17174,72 @@ exclusive and exhaustive.
 \Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeCyclicEncoder.encodeWith_valid}
 \Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeCyclicEncoder.cyclicEncode_valid}
 
-This is the single-letter half of source coverage. It does not yet give the
-run-level round trip: that one sweep of a source map emits a well-typed run
-whose realization is isomorphic to the source, with interior darts, the edge
-involution, persistent-port permutations and named boundary coordinates all
-corresponding. Nor does it supply a source class for which cyclicity holds at
-every swept vertex. Both remain open, and the earned ledger is unchanged.
+These are the single-letter ingredients for source coverage. The following
+construction supplies their run-level round trip. Cyclicity is not inferred
+from bare cubicity: it is the vertex-rotation field already required by the
+route's bridgeless spherical cubic source class.
+
+\subsection{Geometric source round trip and source-prefix retention}
+\label{sec:source-vertex-code-roundtrip}
+
+Every nonempty duplicate-free vertex sweep of a cubic rotation map with one
+rotation cycle per vertex now constructs an actual valid code trace. The
+sweep processes its tail first, in the order of the existing source Count
+recurrence. Output boundary coordinates may be supplied arbitrarily;
+intermediate finite coordinates and a cyclic root dart at each new vertex
+are chosen within the construction. There is no planarity, colourability,
+or uniform-width assumption in this encoding theorem.
+\Sverified{Mettapedia.GraphTheory.FourColor.SourceVertexCodeTrace.source_covered}
+
+The induction invariant is a geometric isomorphism, not merely agreement of
+colour support. It bijects decoded vertices with swept source vertices and
+decoded darts with retained source darts, commutes with the source rotation
+and internal edge flip, and identifies each output port with its prescribed
+source boundary dart. Initial stars and actual attachment steps construct
+the invariant. Persistent ports retain their names and consumed ports become
+the two actual seam darts. The ambient distinguished outer dart is not
+preserved as a marking: it need not belong to a proper swept side. The
+literal side below is pointed at the image of the decoded outer dart.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeDartGeometry.stepDarts_consumed}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeDartGeometry.stepDarts_retained}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeSourceGeometry.nextDart_port}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeSourceGeometry.nextDart_rho}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeSourceGeometry.nextDart_mate}
+
+This invariant is transported to the existing literal vertex-side tangle.
+The dart equivalence conjugates the open face permutation; the internal-dart
+and vertex equivalences identify Euler mass; graph steps and reachability
+identify connected components. Consequently the two objects have exactly the
+same Euler defect, including for disconnected swept sides.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeSourceSemantics.sourceDarts_phi}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeSourceSemantics.source_faces}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeSourceSemantics.source_mass}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeSourceSemantics.source_reach}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeSourceSemantics.source_defect}
+
+For a connected spherical source with cyclic vertex rotations, the decoded
+complete sweep is connected and has zero defect. The earlier lossless-prefix
+theorem therefore applies with hypotheses on the \emph{source}, not on an
+assumed decoded surrogate. Every proper prefix passes the viable-prefix
+test. No Tait colouring is assumed: a hypothetical counterexample is retained
+as well. The cap-stable source class used by vertex minimality supplies all
+these hypotheses, and its coverage corollary chooses a complete vertex sweep
+and constructs the surviving closed trace itself.
+\Sverified{Mettapedia.GraphTheory.FourColor.SourceVertexCodePlanar.model_planar}
+\Sverified{Mettapedia.GraphTheory.FourColor.SourceVertexCodePlanar.model_connected}
+\Sverified{Mettapedia.GraphTheory.FourColor.SourceVertexCodePlanar.source_prefixes_viable}
+\Sverified{Mettapedia.GraphTheory.FourColor.SourceVertexCodePlanar.class_covered}
+
+An independent dart-level control checked $2{,}000$ generated source maps
+and $17{,}740$ prefixes with arbitrary sweep orders, cyclic roots and boundary
+coordinates: no round-trip failures, including $7{,}792$ disconnected
+prefixes. Sources were not restricted to planar or colourable maps. Reversing
+only the encoded cyclic order preserves incidence but is detected by the
+rotation comparison. These are sampled constructor controls, not exhaustive
+closure computations or configuration data.
+
+The construction does not bound the maximum frontier of its chosen sweep,
+and does not identify raw, cumulative-support and Nerode closures with one
+another. An enumerated accepting array with its source-facing semantics and
+the exact closure certificates remain to be supplied. D2b and the earned
+ledger therefore remain open and $57/100$, respectively.
