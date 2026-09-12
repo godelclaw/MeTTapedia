@@ -34,6 +34,15 @@ theorem locallyLipschitz_pairedStretch_even {X : Type*} [PseudoMetricSpace X]
     ((contDiff_pairedStretch_even n).of_le (by simp : (1 : WithTop ℕ∞) ≤ ∞)).locallyLipschitz
   exact hF.comp (g := fun t ↦ (H t, (u t, v t))) (hH.prodMk (hu.prodMk hv))
 
+theorem locallyLipschitz_highAmplitudeStretch_even {X : Type*} [PseudoMetricSpace X]
+    (n : ℕ) {L : ℝ} (hL : 0 < L) {H : X → R3 →L[ℝ] R3} {u v : X → R3}
+    (hH : LocallyLipschitz H) (hu : LocallyLipschitz u) (hv : LocallyLipschitz v) :
+    LocallyLipschitz (fun t ↦ highAmplitudeStretch (2 * n) L (H t) (u t) (v t)) := by
+  have hw : LocallyLipschitz (fun t ↦ 1 - lowAmplitudeWeight L (u t) (v t)) :=
+    (lipschitzWith_highAmplitudeWeight L hL).locallyLipschitz.comp
+      (g := fun t ↦ (u t, v t)) (hu.prodMk hv)
+  exact hw.mul_algebra (locallyLipschitz_pairedStretch_even n hH hu hv)
+
 theorem absolutelyContinuousOnInterval_highAmplitudeStretch_even (n : ℕ)
     {H : ℝ → R3 →L[ℝ] R3} {u v : ℝ → R3} {a b L : ℝ} (hL : 0 < L)
     (hH : LocallyLipschitz H) (hu : LocallyLipschitz u) (hv : LocallyLipschitz v) :

@@ -2,6 +2,7 @@ import Mettapedia.Analysis.ODE.QuadraticFormBound
 import Mettapedia.Analysis.CompactSchwartzFamilyTests
 import Mettapedia.Analysis.CompactFourierEnvelopeTests
 import Mettapedia.Analysis.UnitTorusTranslationEnergyTests
+import Mettapedia.Analysis.UnitTorusMaterialBalanceTests
 import Mettapedia.Analysis.ContinuousFieldMinkowskiTests
 import Mettapedia.Analysis.CompactRangeCoverTests
 import Mettapedia.Analysis.SqrtEnergyAbsorptionTests
