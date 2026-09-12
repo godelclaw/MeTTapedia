@@ -26,6 +26,8 @@ Reusable analysis, independent of any particular fluid construction.
 | `SmoothAmplitudeCutoff.lean` | Smooth rational pair retention with complement times minimum amplitude bounded by one threshold | Symmetric and smooth at zero/ties; not a sharp high-amplitude indicator |
 | `SmoothAmplitudeCutoffEvolution.lean` | Exact first and second variations of the rational amplitude weight | Actual differentiable paths; signed curvature and positive fixed threshold |
 | `SmoothAmplitudePairing.lean` | Smooth retained pairing with the same complementary radial-increment payment | Kernel and source signs unrestricted; integrability retained in the spatial estimate |
+| `SmoothAmplitudePairingEvolution.lean` | Complete retained-pair second variation, mixed terms, diagonal gradient increment and isotropic cancellation | Explicit signed curvature; endpoint coincidence does not imply gradient coincidence |
+| `SmoothAmplitudePairingRate.lean` | Strain, relative kernel transport and viscous endpoint channels with smooth retention | Retains the common-strain commutator and amplitude growth; no channel budget |
 | `UnitTorusContinuousRate.lean` | A continuous translation derivative has zero periodic mean | Any finite-dimensional unit torus; compactness derives the needed derivative bound |
 | `UnitTorusPairIntegration.lean` | Exact change from two endpoints to one endpoint and their separation | Continuous real pair observables and normalized Haar measure |
 | `HighAmplitudeWeightEvolution.lean` | Derivative of the symmetric high-amplitude weight on either strict smaller-endpoint branch | Positive threshold, above-threshold endpoint and strict ordering; reuses the norm derivative in the attributed `ODE/QuadraticFormBound.lean` port |

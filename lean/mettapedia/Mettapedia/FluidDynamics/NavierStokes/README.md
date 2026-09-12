@@ -1661,6 +1661,35 @@ time affordability still require proof. `LocalSmoothAmplitudeAudit.lean`
 checks the construction, actual-field payment, local energy reduction and
 zero/subthreshold/threshold tests separately.
 
+#### Complete smooth-retention curvature and material channels
+
+`SmoothAmplitudePairingEvolution.lean` makes the full second-order product
+rule explicit. For the retained pairing `sigma * Q`, its first-gradient
+curvature is `sigma * K_Q + 2 * Dsigma * DQ + K_sigma * Q`.
+At equal endpoint values, `Q` and `DQ` vanish, but `K_Q` can survive through
+the gradient increment. The exact formula and isotropic-kernel cancellation
+are proved. Positive rank-one algebraic tests give both signs even after
+retention; they are not claimed to be actual fluid fields.
+
+`LocalSmoothPairedDiffusion.lean` applies both derivatives to the full
+vorticity along common spatial translations. Periodicity cancels the
+complete second derivative. `LocalSmoothAnnularDiffusion.lean` then proves
+`diffusionSource = -curvatureSource` for the actual finite annular kernel,
+including all weight-curvature and mixed terms. The diffusion calculation
+has no kernel derivative; this does not remove relative-velocity kernel
+transport from the material evolution.
+
+`LocalSmoothSourceEvolution.lean` proves the actual local material-path
+derivative, including zero and amplitude-tie contacts, and separates strain,
+relative kernel transport, and viscosity without absolute values. Its
+eighth-moment viscosity channel is exactly `diffusionDensity 1` above.
+The common-strain commutator remains visible in `retainedStrainRate`.
+The spatial mean evolution and joint time-integrated nonlinear estimate
+for this smooth retained source remain to be proved. No bound on its
+curvature or signed time budget follows from these identities.
+`LocalSmoothDiffusionAudit.lean` audits the actual derivative and spatial
+identity separately from the generic algebra and sign tests.
+
 #### Concentration test for an instantaneous energy-only closure
 
 The reproducible symbolic diagnostic
