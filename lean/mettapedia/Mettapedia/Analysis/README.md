@@ -6,6 +6,10 @@ Reusable analysis, independent of any particular fluid construction.
 
 | Module | Mathematical content | Scope |
 | --- | --- | --- |
+| `IntegralContinuousTest.lean` | Continuous test functions determine an integrable complex density almost everywhere | Borel spaces with bounded continuous approximations to closed-set indicators; no continuity or square-integrability hypothesis on the density |
+| `UnitTorusFourierL1Uniqueness.lean` | Fourier uniqueness and finite polynomial reconstruction almost everywhere for integrable complex fields | Any finite-dimensional unit torus; uses density of the Fourier span in continuous functions |
+| `AnnularRieszFourierSupport.lean` | Explicit finite coordinate box containing every nonzero partial annular multiplier | Arbitrary finite dimension, including zero cutoff |
+| `PeriodicRieszPolynomial.lean` | Continuous real even finite Fourier representative, identified almost everywhere with the constructed Riesz periodization | Exact nonlinear spatial-integral replacement and the same cutoff-independent second-moment bound; no pathwise differentiation of almost-everywhere equality |
 | `CrossProductEvolution.lean` | Matrix action on cross products, differentiation, and the normalized squared-angle derivative | Real dimension three; normalization derivative requires nonzero endpoints |
 | `CrossProductStrain.lean` | Exact separation of common-strain angle evolution from signed strain-difference and endpoint-force terms | No angle damping assumed; a rational growing-angle first-variation test is checked in `CrossProductStrainTests.lean` |
 | `SymmetricCrossProductStrain.lean` | Averaging of both endpoint strain decompositions, with an exact signed angle derivative | Preserves both endpoint forces; no top-eigenvalue comparison or time budget assumed |

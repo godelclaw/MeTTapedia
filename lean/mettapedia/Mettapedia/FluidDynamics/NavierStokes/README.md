@@ -1384,11 +1384,50 @@ solution or a refutation of the repaired route.
 `LocalPairedStretchAudit.lean` checks actual-solution source identification,
 empty-cutoff behavior, kernel transport and both strict amplitude branches.
 The signed spatial/time estimate is still open. In particular, these
-identities do not yet supply a cutoff-uniform transport bound, a derivative
-for the periodized annular representative, or the argument needed to pass
-across amplitude interfaces and integrate. The previous cutoff-uniform
-low-amplitude payment remains intact and is not replaced by a finite-cutoff
-constant here.
+identities do not yet supply a cutoff-uniform transport bound or the
+argument needed to pass across amplitude interfaces and integrate.
+
+#### The same annular kernel in the source payment and material derivative
+
+`Analysis/AnnularRieszFourierSupport.lean` proves that the partial annular
+multiplier vanishes outside an explicit finite coordinate box.
+`Analysis/UnitTorusFourierL1Uniqueness.lean` proves Fourier uniqueness and
+finite reconstruction almost everywhere for integrable fields; it does
+not assume that the periodization is continuous or square integrable.
+`Analysis/PeriodicRieszPolynomial.lean` then constructs the finite real
+Fourier representative and identifies it almost everywhere with the
+constructed periodized operator. It has exact evenness and satisfies
+
+```text
+integral |h|^2 ||H_N(h)|| <= secondMomentBound 3,
+```
+
+with the same constant, independent of `N`. Its zero-cutoff kernel is zero.
+Spatial integrals involving arbitrary nonlinear tests of `H_N(x-y)` are
+unchanged by this replacement. This is deliberately not an assertion that
+almost-everywhere equality can be differentiated along arbitrary paths.
+
+`VorticityAnnularKernelTransport.lean` proves smoothness of the lifted
+representative and its actual Fourier derivative under relative material
+velocity. `VorticityAnnularPolynomialSource.lean` identifies its signed
+paired source and high-amplitude remainder with the previous regularized
+objects. Thus the existing positive viscosity-dependent threshold pays
+the low-amplitude source at every cutoff without changing the constant,
+and the paired sources still converge to actual full stretching.
+
+`LocalAnnularStretchEvolution.lean` derives the signed source derivative
+along actual material trajectories for this same representative. The
+kernel commutator, radial amplification and both viscous terms above
+remain present. Both strict amplitude-cutoff branches are also checked.
+The common full-vorticity derivative is factored through
+`LocalPairedStretchEvolution.hasDerivAt_pairedStretch_path_of_kernel` so
+the two kernel realizations use the same actual-solution argument.
+
+`LocalAnnularStretchAudit.lean` checks this connection, the preserved
+dissipation threshold and zero-cutoff behavior. The next missing step is
+the signed spatial/time estimate, including amplitude interfaces; smooth
+finite kernels do not by themselves give a cutoff-uniform derivative
+bound or the dynamical misalignment budget.
 
 #### Concentration test for an instantaneous energy-only closure
 
