@@ -1631,6 +1631,36 @@ the Lean integral definitions is not yet proved. It tests the isolated
 signed heat channel, not the full nonlinear evolution or growth of the
 absolute stretching source. The cutoff-uniform signed budget remains open.
 
+#### Smooth amplitude retention with unchanged low-part payment
+
+`SmoothAmplitudeCutoff.lean` constructs `q_L(a) = |a|^2 / (L^2 + |a|^2)`
+and the symmetric pair weight `q_L(a) q_L(b)`. For every positive threshold,
+`(1 - q_L(a) q_L(b)) min(|a|, |b|) <= L`; the complement is no larger than
+the old low-amplitude weight. Both weights and the even-exponent retained
+pairing are smooth, including at zero and equal-amplitude inputs.
+
+`VorticitySmoothAmplitudeSource.lean` uses the actual annular polynomial
+kernel and full vorticity. Its complementary source is bounded by
+`2 L * incrementIntegral`, so the existing `dissipationThreshold nu`
+pays it with exactly `nu / 2 * weightedPalinstrophy`, uniformly in the
+annular cutoff and the admissible field. It also proves twice continuous
+differentiability along actual common spatial translations.
+
+`LocalSmoothAmplitudeSource.lean` proves time continuity through the initial
+endpoint and the same actual L8 energy reduction from a time-integrated,
+cutoff-independent upper budget on this smooth retained source. That budget
+remains a hypothesis. The first and second rational-weight variations are
+explicit in `SmoothAmplitudeCutoffEvolution.lean`; their curvature is signed.
+
+This is an additional, proved-sufficient source split, not an identity with
+the original high-amplitude source. It retains nonzero weight below the
+threshold. The original split is unchanged, and its unresolved second-order
+interface terms are not discarded. The smooth variant permits ordinary
+second-order calculus, but its nonlinear derivative costs and their joint
+time affordability still require proof. `LocalSmoothAmplitudeAudit.lean`
+checks the construction, actual-field payment, local energy reduction and
+zero/subthreshold/threshold tests separately.
+
 #### Concentration test for an instantaneous energy-only closure
 
 The reproducible symbolic diagnostic
