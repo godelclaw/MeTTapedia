@@ -6,6 +6,10 @@ Reusable analysis, independent of any particular fluid construction.
 
 | Module | Mathematical content | Scope |
 | --- | --- | --- |
+| `CompactMeanDerivative.lean` | Differentiation under a compact probability-space mean and preservation of uniform sectional Lipschitz bounds | Joint continuity, locally uniform sectional bounds, and almost-everywhere differentiability; shared with the periodic material-balance applications |
+| `UnitTorusWeakDerivative.lean` | Measured fundamental-cube transfer, weak coordinate differentiation, periodic integration by parts, and incompressible transport cancellation | Arbitrary finite index type; locally Lipschitz real lifts, not globally smooth scalar fields |
+| `UnitTorusMaterialBalance.lean` | Almost-everywhere material chain rule, spatial mean balance, and a signed time-weighted identity | Finite-dimensional unit torus; time integrability is proved, no measure-preserving flow is assumed |
+| `UnitTorusProductTransport.lean` | Two-endpoint coordinates, product velocity divergence, and exact product-Haar integration | Independent finite endpoint index types; applies the mean balance to pair observables |
 | `IntegralContinuousTest.lean` | Continuous test functions determine an integrable complex density almost everywhere | Borel spaces with bounded continuous approximations to closed-set indicators; no continuity or square-integrability hypothesis on the density |
 | `UnitTorusFourierL1Uniqueness.lean` | Fourier uniqueness and finite polynomial reconstruction almost everywhere for integrable complex fields | Any finite-dimensional unit torus; uses density of the Fourier span in continuous functions |
 | `AnnularRieszFourierSupport.lean` | Explicit finite coordinate box containing every nonzero partial annular multiplier | Arbitrary finite dimension, including zero cutoff |

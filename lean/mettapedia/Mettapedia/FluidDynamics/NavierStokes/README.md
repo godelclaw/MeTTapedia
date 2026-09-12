@@ -1524,9 +1524,45 @@ Thus the accumulated source, rather than just its endpoint change, is linked
 to the explicit signed material rate. Integrability of the weighted rate is
 proved, not assumed.
 
-This is still a pathwise identity. The two-point spatial mean balance and
-the cutoff-uniform signed time budget are not proved by it. In particular,
-no measure-preservation theorem for a chosen flow is assumed here.
+This pathwise theorem does not itself provide a spatial mean balance.
+The following weak-transport argument supplies that balance independently;
+no measure-preservation theorem for a chosen flow is assumed.
+
+### Signed two-point spatial mean balance
+
+`Analysis/UnitTorusWeakDerivative.lean` and
+`Analysis/UnitTorusMaterialBalance.lean` generalize the periodic weak
+calculus to arbitrary finite coordinate index types. Rademacher
+differentiability descends through the measured fundamental cube, Haar
+translation invariance gives integration by parts, and zero divergence
+cancels transport. The compact-mean differentiation lemma is shared with
+the existing one-point development.
+
+`Analysis/UnitTorusProductTransport.lean` identifies the sum-index torus
+with two spatial endpoints, preserves product Haar measure, and proves
+that the product velocity's divergence is the sum of the endpoint
+divergences. `LocalAnnularMeanBalance.lean` applies this to the actual
+full-vorticity source and both actual full velocities. On every compact
+interior interval, at each finite annular cutoff and positive threshold,
+
+```text
+R_N(t) = (1/2) integral_(x,y) highAmplitudeStretch_(2n)(t,x,y)
+R_N(b) - R_N(a) = integral_a^b meanMaterialRate_N(t) d t
+integral_a^b R_N(t) d t
+  = (b-a) R_N(a) + integral_a^b (b-t) meanMaterialRate_N(t) d t.
+```
+
+Here the material rate is the actual derivative along the instantaneous
+two-endpoint velocity, not an assumed algebraic source. Its spatial
+integrability almost everywhere in time, time integrability, and weighted
+time integrability are conclusions. The nonsmooth threshold and
+equal-amplitude interfaces are retained.
+
+This theorem concerns the original local solution, not its temporary
+constant time extension. Identifying its spatial almost-everywhere rate
+with the expanded strain/commutator/diffusion formula, and estimating the
+signed time budget uniformly in cutoff and toward a maximal existence
+time, remain separate obligations. The latter is the decisive open estimate.
 `LocalAnnularPathChainRuleAudit.lean` checks constructed paths, the explicit
 integrated rate and zero-cutoff behavior.
 
