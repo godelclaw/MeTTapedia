@@ -484,11 +484,64 @@ integral (kernel transport + common deformation + remainder + nu*viscosity)
 ```
 
 The identity supplies neither a sign nor a uniform bound on this integral.
-Differentiation through the infinite image sum, the cutoff limit and the
-spatial integral remains to be justified with suitable joint estimates.
+These individual-image lemmas do not by themselves justify differentiation
+through the infinite image sum, the cutoff limit or the spatial integral.
+The fixed-cutoff image-sum transfer is established in the following section.
 In particular, local absolute continuity does not bound the signed source
 up to a candidate singular time. `RadialImageEvolutionAudit.lean` checks
 the dependencies; the decisive S4 estimate and unconditional A/B are open.
+
+### Whole periodic pairing and its signed image-rate series
+
+`Analysis/UnitTorusSchwartzPeriodization.lean` constructs a summable
+majorant for translates of an arbitrary Schwartz function on each bounded
+set of real lifts. Near lattice points are finite and controlled by the
+zeroth seminorm; the tail uses a seminorm of order `d+1` and the convergent
+lattice inverse-power series. This works at lattice points as well as
+away from them. Applied to the Schwartz derivative, the majorant justifies
+termwise differentiation and proves that the lifted sum is continuously
+differentiable. The constants depend on the input Schwartz seminorms;
+no uniformity over a cutoff-dependent kernel family is inferred.
+
+Changing real lifts only reindexes the lattice sum. Both the value and
+derivative depend on the projected torus point, not on a representative.
+`Analysis/PeriodicRadialRieszEvolution.lean` assembles the actual tensor as
+an operator-valued Schwartz function, identifies its sum with the periodic
+tensor at every real lift, and sums its derivative series. The signed
+radial rate is identified with the derivative of this actual tensor pairing,
+not with a separately assumed radial kernel.
+
+`LocalRadialPeriodicEvolution.lean` gives the full actual-solution identity
+at fixed cutoff:
+
+```text
+d/dt pairedStretch_N(omega(X), omega(Y))
+  = sum_z materialImageRate_N(z, X, Y).
+```
+
+The complete signed image-rate series converges absolutely at each
+snapshot. All four channels from the preceding section remain inside
+each term. Coincident torus endpoints are handled exactly: the vorticities
+agree, so every first variation is zero. This does not discard a diagonal
+or assume that material paths avoid it. The summed rate is also identified
+with `fieldRate`, a well-defined field on the product torus.
+
+`LocalRadialPeriodicIntegral.lean` identifies the spatial integral of this
+pairing with the actual regularized source and proves the pathwise identity
+on every compact interior interval with the stated local Fourier envelope:
+
+```text
+integral_time (sum_z complete_signed_image_rate_z)
+  = periodic_pairing(end) - periodic_pairing(start).
+```
+
+This is an integral of the image sum, not a claim that time integrals may
+be interchanged termwise. It is not a uniform upper bound on the source.
+For this radial family, the spatially averaged signed balance and the
+initial-data-controlled, cutoff-uniform S4 budget remain to be proved.
+No equality with the earlier annular kernel family is assumed.
+`RadialPeriodicEvolutionAudit.lean` checks the dependencies; BKM continuation
+and unconditional arbitrary-data A/B remain open.
 
 The dependencies guide the work, not a rigid chronological schedule:
 counterexamples to a proposed S3 or S4 estimate can require revising S2.

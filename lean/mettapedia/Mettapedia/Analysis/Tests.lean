@@ -39,6 +39,7 @@ import Mettapedia.Analysis.WeightedCrossProductCurvatureTests
 import Mettapedia.Analysis.ScalarTripleProductEvolutionTests
 import Mettapedia.Analysis.RadialRieszTensorTests
 import Mettapedia.Analysis.SignedRadialStretchEvolutionTests
+import Mettapedia.Analysis.PeriodicRadialRieszEvolutionTests
 import Mettapedia.Analysis.SignedCrossKernelEvolutionTests
 import Mettapedia.Analysis.SignedCrossKernelRateDecompositionTests
 import Mettapedia.Analysis.SignedCrossKernelCurvatureTests
