@@ -75,6 +75,16 @@ theorem contDiff_retainedStretch_comp_even {X : Type*}
       (ENat.natCast_le_of_coe_top_le_withTop le_rfl k)
   exact hf.comp (f := fun x ↦ (K x, (a x, b x))) (hK.prodMk (ha.prodMk hb))
 
+theorem locallyLipschitz_retainedStretch_even {X : Type*} [PseudoEMetricSpace X]
+    (n : ℕ) (L : ℝ) (hL : 0 < L) {K : X → Op} {a b : X → R3}
+    (hK : LocallyLipschitz K) (ha : LocallyLipschitz a) (hb : LocallyLipschitz b) :
+    LocallyLipschitz (fun x ↦ retainedStretch (2 * n) L (K x) (a x) (b x)) := by
+  have hf : LocallyLipschitz
+      (fun p : Op × (R3 × R3) ↦ retainedStretch (2 * n) L p.1 p.2.1 p.2.2) :=
+    ((contDiff_retainedStretch_even n L hL).of_le
+      (ENat.natCast_le_of_coe_top_le_withTop le_rfl 1)).locallyLipschitz
+  exact hf.comp (g := fun x ↦ (K x, (a x, b x))) (hK.prodMk (ha.prodMk hb))
+
 theorem continuous_retainedStretch {X : Type*} [TopologicalSpace X]
     (n : ℕ) (L : ℝ) (hL : 0 < L) {H : X → Op} {a b : X → R3}
     (hH : Continuous H) (ha : Continuous a) (hb : Continuous b) :
