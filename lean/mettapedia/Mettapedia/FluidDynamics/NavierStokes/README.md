@@ -1429,6 +1429,52 @@ the signed spatial/time estimate, including amplitude interfaces; smooth
 finite kernels do not by themselves give a cutoff-uniform derivative
 bound or the dynamical misalignment budget.
 
+#### A signed time-integrated remainder is sufficient
+
+`LocalAnnularSourceContinuity.lean` proves continuity of the actual paired
+and high-amplitude sources in time, including amplitude interfaces.
+`VorticityRegularizedSourceBound.lean` supplies a cutoff-independent local
+dominating function for the paired source from the common Fourier envelope.
+`LocalAnnularSourceIntegral.lean` uses it to pass the paired-source limit
+through the time integral. This is a local dominated-convergence argument,
+not a uniform bound on the Fourier envelope near a possible singular time.
+
+For `L_nu = dissipationThreshold nu`, write `R_N(t)` for the existing signed
+high-amplitude source. The checked sufficient hypothesis is now only
+
+```text
+for every N, integral_0^t R_N(tau) d tau <= remainder.
+```
+
+It yields, for the actual periodic local solution,
+
+```text
+E8(t)/8 + (nu/2) integral_0^t G8(tau) d tau <= E8(0)/8 + remainder.
+```
+
+There is no assumed pointwise remainder envelope and no assumed convergence
+of the remainders. Their signs are retained. The local Fourier dominating
+constant does not occur in the resulting energy bound. Constructing an
+appropriate remainder budget from the unforced dynamics remains open.
+
+`Analysis/HighAmplitudeWeightRegularity.lean` proves that the high-amplitude
+weight is globally Lipschitz with constant `1/L`, across both threshold and
+equal-amplitude interfaces. `Analysis/RadialPowerRegularity.lean` proves
+smoothness of even radial powers on real inner-product spaces, including
+at zero. `Analysis/SignedCrossKernelRegularity.lean` combines these facts
+with the smooth signed pairing.
+`LocalAnnularSourcePathIntegral.lean` then proves absolute continuity of
+the actual high-amplitude source along locally Lipschitz spatial paths on
+compact interior time intervals, integrability of its total derivative,
+and the exact fundamental-theorem-of-calculus identity. No interface-null
+assumption is needed. This does not yet identify the derivative on the
+interfaces, integrate the material formula in space, or bound its signed
+time integral uniformly in the cutoff.
+
+`LocalAnnularSourceIntegralAudit.lean` and
+`Analysis/SignedCrossKernelRegularityTests.lean` check the integrated
+implication, persistent equal-amplitude paths and foundational dependencies.
+
 #### Concentration test for an instantaneous energy-only closure
 
 The reproducible symbolic diagnostic
