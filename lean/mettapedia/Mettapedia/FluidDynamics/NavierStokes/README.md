@@ -132,6 +132,35 @@ budget: `E8` is still unknown. The nearby retained interaction remains
 signed and dynamically uncontrolled. Letting `r` shrink requires control
 of the resulting radius-dependent cost.
 
+The near increment payment now has an explicit radius gain.
+`Analysis/PeriodicRieszNearMoment.lean` proves a cutoff-uniform first
+moment bound `C1` and therefore
+
+```text
+integral_{|h| < r} |h|^2 ||H_N(h)|| <= r*C1,
+nearIncrement(r,N,u) <= 48*r*C1*weightedPalinstrophy(u).
+```
+
+`VorticityNearIncrement.lean` absorbs the near complement of any fixed
+positive amplitude threshold `L` whenever
+`r <= nu/(192*L*(C1+1))`. `LocalNearSourceBudget.lean` combines this
+with the separated-source payment: for every fixed `L > 0`, a positive
+radius depending only on `nu`, `L` and the fixed kernels gives
+
+```text
+source_N <= (nu/2)*G8 + nearSource(r,L,N,u) + b(t)*E8,
+integral_0^t b <= C*t/2 + C*initialKineticEnergy/(4*nu).
+```
+
+Here the radius is chosen using half the viscosity and the sum of `L`
+and the earlier viscosity-dependent threshold, so the two absorption
+steps together consume only `nu/2`. The signed near source uses the
+existing smooth amplitude weight; it is not a sharp support restriction
+to amplitudes above `L`. Constants may grow when `L` increases and the
+radius decreases. Neither a time-varying choice based on an unknown
+supremum nor a bound uniform as `L` tends to infinity is asserted.
+The remaining task is a dynamical estimate on this signed near source.
+
 The dependencies guide the work, not a rigid chronological schedule:
 counterexamples to a proposed S3 or S4 estimate can require revising S2.
 Imported fluid-equation results must retain their domain, forcing, and

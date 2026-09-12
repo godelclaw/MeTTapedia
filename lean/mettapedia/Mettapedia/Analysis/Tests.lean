@@ -15,6 +15,7 @@ import Mettapedia.Analysis.PeriodicRieszKernelTests
 import Mettapedia.Analysis.PeriodicRieszOperatorFourierTests
 import Mettapedia.Analysis.PeriodicRieszPolynomialTests
 import Mettapedia.Analysis.PeriodicRieszSeparatedTests
+import Mettapedia.Analysis.PeriodicRieszNearMomentTests
 import Mettapedia.Analysis.UnitTorusFourierUniquenessTests
 import Mettapedia.Analysis.WeightedSeriesTests
 import Mettapedia.Analysis.GeometricMinSeriesTests
