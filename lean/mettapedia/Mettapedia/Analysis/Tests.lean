@@ -10,6 +10,7 @@ import Mettapedia.Analysis.BilinearRankOneTests
 import Mettapedia.Analysis.DyadicAnnulusTests
 import Mettapedia.Analysis.DyadicLowPassTests
 import Mettapedia.Analysis.DyadicHighPassTests
+import Mettapedia.Analysis.PeriodicRieszKernelTests
 import Mettapedia.Analysis.UnitTorusFourierUniquenessTests
 import Mettapedia.Analysis.WeightedSeriesTests
 import Mettapedia.Analysis.GeometricMinSeriesTests
