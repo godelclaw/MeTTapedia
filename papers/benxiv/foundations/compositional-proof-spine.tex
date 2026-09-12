@@ -17004,10 +17004,25 @@ literal vertex attachment, equivalently
  \Delta F\le 1+|P|-2d
 \]
 in the notation of \S\ref{sec:physical-vertex-attachment}, and that
-inequality is open. Until it is proved, the carrier above is finite and
-exactly interpreted but is not yet known to retain every required source
-prefix. No closure count, threshold or generating base is claimed, and the
-earned ledger remains $57/100$.
+inequality is open.
+
+Its content is narrower than it looks. Writing the seams' face effect as
+$\Delta F=1-\#\mathrm{merge}+\#\mathrm{split}$ with
+$\#\mathrm{merge}+\#\mathrm{split}=|P|$, the slack is
+$1+|P|-2d-\Delta F=2(\#\mathrm{merge}-d)$, so the inequality says exactly
+that at least $d$ seams merge two faces --- which is the contrapositive of
+the already-proved fact that darts sharing a face share a component. The
+missing step is therefore not a new combinatorial lemma but a presentation
+bridge: identifying the vertex, face, component and edge counts of a
+constructed tangle with the orbit counts of its edge presentation, after
+which the proved monotonicity of the edge-presentation defect applies. Only
+the vertex identification needs a genuinely new invariant, namely that the
+stored rotation is one cycle per vertex on a constructed run.
+
+Until that bridge exists, the carrier above is finite and exactly interpreted
+but is not yet known to retain every required source prefix. No closure
+count, threshold or generating base is claimed, and the earned ledger remains
+$57/100$.
 
 \subsection{Source-facing cyclic encoding}
 \label{sec:source-facing-cyclic-encoding}
