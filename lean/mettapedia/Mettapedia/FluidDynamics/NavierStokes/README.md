@@ -1559,12 +1559,28 @@ time integrability are conclusions. The nonsmooth threshold and
 equal-amplitude interfaces are retained.
 
 This theorem concerns the original local solution, not its temporary
-constant time extension. Identifying its spatial almost-everywhere rate
-with the expanded strain/commutator/diffusion formula, and estimating the
-signed time budget uniformly in cutoff and toward a maximal existence
-time, remain separate obligations. The latter is the decisive open estimate.
-`LocalAnnularPathChainRuleAudit.lean` checks constructed paths, the explicit
-integrated rate and zero-cutoff behavior.
+constant time extension. `LocalAnnularWeightDifferentiability.lean` proves
+the cutoff's frozen material differentiability almost everywhere in
+spacetime. `LocalAnnularExplicitRate.lean` then uses straight tangent
+curves and the actual vorticity equation to identify the spatial rate with
+the full strain/commutator/diffusion formula, including amplitude contacts.
+`LocalAnnularExplicitMean.lean` transfers spatial integrability and both
+signed integral identities to that explicit formula. The eighth-moment
+source uses mean-density index `3` and explicit-rate index `2`.
+
+`LocalAnnularRateDecomposition.lean` separates the actual rate algebraically
+into strain, relative-velocity kernel transport, and viscosity times an
+endpoint-increment channel. It preserves signs and does not assert that
+the viscosity channel is individually nonpositive. At ties the separated
+pieces are not independent chain rules; the full rate is what was proved
+to equal the material derivative. An exact radial-decay test demonstrates
+why decreasing amplitudes alone do not imply a decreasing signed source.
+
+Estimating the combined signed time budget uniformly in cutoff and toward
+a maximal existence time remains the decisive open obligation. These local
+identities do not supply that bound. `LocalAnnularExplicitAudit.lean` checks
+the identification, the integral laws, the algebraic split and zero-cutoff
+behavior; `LocalAnnularPathChainRuleAudit.lean` checks constructed paths.
 
 #### Concentration test for an instantaneous energy-only closure
 

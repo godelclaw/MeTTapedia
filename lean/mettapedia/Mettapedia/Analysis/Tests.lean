@@ -33,6 +33,7 @@ import Mettapedia.Analysis.RadialSquareRootTests
 import Mettapedia.Analysis.RadialPowerTests
 import Mettapedia.Analysis.CrossProductStrainTests
 import Mettapedia.Analysis.SignedCrossKernelEvolutionTests
+import Mettapedia.Analysis.SignedCrossKernelRateDecompositionTests
 import Mettapedia.Analysis.SignedCrossKernelRegularityTests
 import Mettapedia.Analysis.HighAmplitudeWeightChainRuleTests
 import Mettapedia.Analysis.SignedCrossKernelTests
