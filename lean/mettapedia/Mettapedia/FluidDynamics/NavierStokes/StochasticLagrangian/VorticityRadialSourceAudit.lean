@@ -1,0 +1,42 @@
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.VorticityRadialPairing
+import Mettapedia.Analysis.RadialRieszTensorTests
+
+/-! # Foundational audit of radial source reconstruction -/
+
+#print axioms Mettapedia.Analysis.RadialHessian.eq_profile_norm_sq
+#print axioms Mettapedia.Analysis.RadialHessian.contDiffAt_profile
+#print axioms Mettapedia.Analysis.RadialHessian.fderiv_profile_norm_sq
+#print axioms Mettapedia.Analysis.RadialHessian.secondFDeriv_profile_norm_sq
+#print axioms Mettapedia.Analysis.RadialHessian.secondFDeriv_eq
+#print axioms Mettapedia.Analysis.RadialRieszRegularization.realPotential_isometry
+#print axioms Mettapedia.Analysis.RadialRieszRegularization.lineDerivOp_postcomp_re
+#print axioms Mettapedia.Analysis.RadialRieszRegularization.secondFDeriv_realPotential
+#print axioms Mettapedia.Analysis.RadialRieszRegularization.kernel_re_eq
+#print axioms Mettapedia.Analysis.RadialRieszRegularization.tensor_eq
+#print axioms Mettapedia.Analysis.RadialRieszRegularization.pairedStretch_tensor
+#print axioms Mettapedia.Analysis.RadialRieszRegularization.pairedStretch_tensor_eq_zero_of_coplanar
+#print axioms Mettapedia.Analysis.UnitTorusSchwartzLattice.torusProjection_displacement
+#print axioms Mettapedia.Analysis.UnitTorusSchwartzLattice.summable_norm_images
+#print axioms Mettapedia.Analysis.PeriodicRadialRiesz.mFourierCoeff_entry
+#print axioms Mettapedia.Analysis.PeriodicRadialRiesz.mFourierCoeff_re_entry
+#print axioms Mettapedia.Analysis.PeriodicRadialRiesz.tendsto_mFourierCoeff_entry
+#print axioms Mettapedia.Analysis.PeriodicRadialRiesz.tensor_neg_ae
+#print axioms Mettapedia.Analysis.PeriodicRadialRiesz.hasSum_tensor_images
+#print axioms Mettapedia.Analysis.PeriodicRadialRiesz.hasSum_pairedStretch_images
+#print axioms Mettapedia.Analysis.PeriodicRadialRiesz.moment_tensor_le
+#print axioms Mettapedia.Analysis.SignedCrossKernel.integral_weightedStretch_eq_half_pair_of_integrable_of_ae_symmetry
+#print axioms Mettapedia.Analysis.RadialRieszTensorTests.constructed_coplanar_depletion
+#print axioms Mettapedia.Analysis.RadialRieszTensorTests.periodic_firstMoment
+#print axioms Mettapedia.Analysis.RadialRieszTensorTests.periodic_secondMoment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.VorticityRadialQuadratic.hasSum_entry_convolution
+#print axioms Mettapedia.FluidDynamics.NavierStokes.VorticityRadialQuadratic.hasSum_quadraticStretch
+#print axioms Mettapedia.FluidDynamics.NavierStokes.VorticityRadialSource.hasSum_weighted_strainTerm
+#print axioms Mettapedia.FluidDynamics.NavierStokes.VorticityRadialSource.tendsto_quadraticStretch
+#print axioms Mettapedia.FluidDynamics.NavierStokes.VorticityRadialSource.norm_quadraticStretch_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.VorticityRadialSource.tendsto_eighthMoment_source
+#print axioms Mettapedia.FluidDynamics.NavierStokes.VorticityRadialPairing.tensor_sub_swap_ae
+#print axioms Mettapedia.FluidDynamics.NavierStokes.VorticityRadialPairing.integrable_weightedStretch
+#print axioms Mettapedia.FluidDynamics.NavierStokes.VorticityRadialPairing.source_eq_pairedSource
+#print axioms Mettapedia.FluidDynamics.NavierStokes.VorticityRadialPairing.hasSum_imageDensity
+#print axioms Mettapedia.FluidDynamics.NavierStokes.VorticityRadialPairing.source_eq_imageSource
+#print axioms Mettapedia.FluidDynamics.NavierStokes.VorticityRadialPairing.tendsto_eighthMoment_imageSource
