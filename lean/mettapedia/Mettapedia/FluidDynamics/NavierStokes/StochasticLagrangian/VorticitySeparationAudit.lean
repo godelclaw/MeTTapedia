@@ -1,0 +1,36 @@
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.LocalVorticitySeparation
+import Mettapedia.Analysis.ScalarTripleProductEvolutionTests
+
+/-! # Foundational audit of signed separation dynamics and radial regularization -/
+
+#print axioms Mettapedia.Analysis.EuclideanCrossProduct.hasDerivAt_tripleProduct
+#print axioms Mettapedia.Analysis.EuclideanCrossProduct.tripleRate_common
+#print axioms Mettapedia.Analysis.EuclideanCrossProduct.tripleRate_cancel_common
+#print axioms Mettapedia.Analysis.EuclideanCrossProduct.abs_tripleRate_le
+#print axioms Mettapedia.Analysis.EuclideanCrossProduct.pairedStretch_radialOperator
+#print axioms Mettapedia.Analysis.ScalarTripleProductEvolutionTests.tripleProduct_value
+#print axioms Mettapedia.Analysis.ScalarTripleProductEvolutionTests.conserved_tripleProduct_firstVariation
+#print axioms Mettapedia.Analysis.ScalarTripleProductEvolutionTests.triple_cancellation_is_not_weighted_damping
+#print axioms Mettapedia.Analysis.ScalarTripleProductEvolutionTests.coplanar_radial_depletion
+#print axioms Mettapedia.Analysis.RadialRieszRegularization.weight_nonneg
+#print axioms Mettapedia.Analysis.RadialRieszRegularization.weight_le_one
+#print axioms Mettapedia.Analysis.RadialRieszRegularization.contDiff_weight
+#print axioms Mettapedia.Analysis.RadialRieszRegularization.hasCompactSupport_weight
+#print axioms Mettapedia.Analysis.RadialRieszRegularization.weight_isometry
+#print axioms Mettapedia.Analysis.RadialRieszRegularization.weight_eq_lowPass_sub
+#print axioms Mettapedia.Analysis.RadialRieszRegularization.tendsto_weight
+#print axioms Mettapedia.Analysis.RadialRieszRegularization.denominator_pos
+#print axioms Mettapedia.Analysis.RadialRieszRegularization.entry_eq_weight_mul
+#print axioms Mettapedia.Analysis.RadialRieszRegularization.potential_isometry
+#print axioms Mettapedia.Analysis.RadialRieszRegularization.fourier_kernel_apply
+#print axioms Mettapedia.Analysis.RadialRieszRegularization.lineDerivOp_lineDerivOp_potential
+#print axioms Mettapedia.Analysis.RadialRieszRegularization.weight_eq_sum
+#print axioms Mettapedia.Analysis.RadialRieszRegularization.kernel_eq_sum
+#print axioms Mettapedia.Analysis.RadialRieszRegularization.moment_kernel_le
+#print axioms Mettapedia.Analysis.RadialRieszRegularization.firstMoment_kernel_le
+#print axioms Mettapedia.Analysis.RadialRieszRegularization.secondMoment_kernel_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LocalVorticitySeparation.trace_gradientMatrix
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LocalVorticitySeparation.gradient_vorticity
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LocalVorticitySeparation.materialRate_eq
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LocalVorticitySeparation.abs_nonviscousRate_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LocalVorticitySeparation.hasDerivAt_signedSeparation_path
