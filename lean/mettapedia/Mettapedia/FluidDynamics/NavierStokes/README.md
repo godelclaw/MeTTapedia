@@ -98,13 +98,16 @@ S1 actual NS objects + S2 spatial transfer
              S6 unconditional A/B audit
 ```
 
-The current S4 attack has checked actual two-point top-gap damping and the
-signed radial-source evolution. The latter retains kernel transport,
-mean-strain commutators, amplitude growth, viscosity and strict-branch
-cutoff motion. A checked prescribed-strain example shows why angular decay
-alone does not pay this source. Uniform integrated control of these terms,
-including amplitude interfaces and the annular-kernel realization, remains
-the open mathematical obligation.
+The current S4 attack has checked actual two-point top-gap damping and signed
+radial-source evolution. The smooth amplitude variant now has an actual
+spatial-mean derivative and signed time-weighted identity, with strain,
+relative kernel transport and complete viscous curvature retained together.
+Its low complement has the same uniform dissipation payment as the original
+split. A checked prescribed-strain example shows why angular decay alone
+does not pay the source. The missing result is an initial-data-controlled,
+cutoff-uniform upper bound on the joint signed time expression, remaining
+finite up to a candidate singular time. The current identities are local
+on compact interior intervals; no lifespan-uniform bound is inferred.
 
 The dependencies guide the work, not a rigid chronological schedule:
 counterexamples to a proposed S3 or S4 estimate can require revising S2.
@@ -1684,11 +1687,43 @@ derivative, including zero and amplitude-tie contacts, and separates strain,
 relative kernel transport, and viscosity without absolute values. Its
 eighth-moment viscosity channel is exactly `diffusionDensity 1` above.
 The common-strain commutator remains visible in `retainedStrainRate`.
-The spatial mean evolution and joint time-integrated nonlinear estimate
-for this smooth retained source remain to be proved. No bound on its
-curvature or signed time budget follows from these identities.
+The joint time-integrated nonlinear estimate remains to be proved. No bound
+on curvature or the signed time budget follows from these identities.
 `LocalSmoothDiffusionAudit.lean` audits the actual derivative and spatial
 identity separately from the generic algebra and sign tests.
+
+#### Actual signed time identity for smooth retention
+
+`LocalSmoothMeanRegularity.lean` supplies spacetime continuity, a locally
+Lipschitz lift, and absolute continuity of the actual two-point spatial
+mean on each compact interior time interval. The constant time extension
+is a calculus device, not a global NS solution.
+
+`LocalSmoothMeanBalance.lean` identifies the frozen material derivative
+pointwise using paths tangent to the full velocity. The existing actual
+product velocity is divergence-free; periodic transport then gives the
+mean derivative almost everywhere, its endpoint integral identity, and
+the exact signed time-weighted source identity.
+
+`LocalSmoothMeanChannels.lean` keeps strain and relative kernel transport
+grouped as `nonviscousRate`. Its integrability is derived from the actual
+material rate and the continuous diffusion channel, not assumed as a new
+budget. After the complete spatial integration-by-parts identity,
+`jointRate = integral nonviscousRate - nu * curvatureSource` is the actual
+retained-source derivative almost everywhere. For each fixed annular
+cutoff and positive amplitude threshold, the checked identity is
+
+```text
+integral_a^b retainedSource(t) dt
+  = (b-a) retainedSource(a) + integral_a^b (b-t) jointRate(t) dt.
+```
+
+Here `a <= b` and `[a,b]` is contained in the local solution's open time
+interval. The joint weighted rate is proved integrable; separate absolute
+channel payments are not required. This equality is not the required
+initial-data-controlled upper estimate. The initial endpoint passage and
+uniformity up to a possible finite singular time still need justification
+in that estimate. `LocalSmoothMeanAudit.lean` checks these distinctions.
 
 #### Concentration test for an instantaneous energy-only closure
 
