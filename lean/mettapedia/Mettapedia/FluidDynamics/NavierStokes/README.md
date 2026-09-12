@@ -376,14 +376,52 @@ spatial moments are bounded by `2` and `4/3` times the respective base
 moments, independently of `N` (and with a geometric formula for every
 positive integer moment).
 
-The remaining bridge must derive the radial tensor decomposition from
-this potential and periodize it with each lifted displacement retained.
-The Euclidean moment bounds must also be transferred to that periodic
-representation. This new family has not been
-silently substituted for the previous angular kernel. Even after that
-bridge, amplitude weights, kernel transport, viscosity and the signed
-time-integrated budget still require control. `VorticitySeparationAudit.lean`
-checks the dependencies; S4, BKM continuation and unconditional A/B remain open.
+`Analysis/RadialHessian.lean` now derives the tensor decomposition from
+rotational invariance. For a unit vector `e`, the constructed profile is
+`g(r) = realPotential(sqrt(r) * e)`. Away from the origin, its Hessian is
+`2 g' I + 4 g'' (h tensor h)`, evaluated at `r = |h|^2`.
+`Analysis/RadialRieszTensor.lean` transfers this identity to the actual
+Fourier-defined kernel, with the Fourier normalization retained. Its
+signed stretching pair therefore contains the scalar triple product.
+A checked example gives zero stretching for this constructed kernel
+while the two endpoint vorticities have nonzero cross product.
+
+`Analysis/PeriodicRadialRiesz.lean` periodizes this new family. It proves
+the regularized Riesz Fourier coefficients, their limit, almost-everywhere
+evenness, and cutoff-independent positive spatial moments. The first and
+second operator moments are at most `2` and `4/3` times the sums of the
+corresponding base entry moments. The periodic operator is not claimed
+to be radial in a single torus displacement.
+
+`VorticityRadialQuadratic.lean` identifies its convolution with the full
+vorticity through the actual curl Fourier series. `VorticityRadialSource.lean`
+proves convergence of the weighted spatial source to actual stretching,
+including the eighth-moment alignment functional. This is fixed-snapshot
+convergence under a summable first Fourier moment, reality and transversality;
+the Fourier majorant is not an a priori bound at a possible singular time.
+
+`VorticityRadialPairing.lean` proves the exact signed image representation:
+
+```text
+h_z = z + representative(x-y),  F_n(a) = |a|^n a,
+imageDensity_z = d_N(h_z) * ((omega_x cross omega_y) dot h_z)
+                 * (h_z dot (F_n(omega_x)-F_n(omega_y))),
+source_n,N = (1/2) integral_x integral_y sum_z imageDensity_z.
+```
+
+Here `d_N` is the radial coefficient constructed from the profile, not an
+assumed scalar kernel. The image series converges absolutely for distinct
+endpoints; on the diagonal every contribution vanishes. Exchange uses
+almost-everywhere symmetry only under spatial integration. The source at
+`n=6` tends to the actual eighth-moment stretching term.
+
+This family has its own proved source identification; no equality with the
+previous annular kernel is assumed. Spatial representatives are not smooth
+material lifts, and spatial convergence does not permit differentiating the
+image sum or interchanging its cutoff limit with time. Amplitude weights,
+kernel transport, viscosity and the signed time-integrated budget still
+require joint control. `VorticityRadialSourceAudit.lean` checks the new
+dependencies; S4, BKM continuation and unconditional A/B remain open.
 
 The dependencies guide the work, not a rigid chronological schedule:
 counterexamples to a proposed S3 or S4 estimate can require revising S2.

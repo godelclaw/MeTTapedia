@@ -15,6 +15,29 @@ local notation "R3" => EuclideanSpace ℝ (Fin 3)
 variable {X : Type*} [MeasurableSpace X] (μ : Measure X) [SFinite μ]
   (H : X → X → R3 →L[ℝ] R3) (w : X → R3)
 
+/-- Almost-everywhere exchange symmetry suffices; no representative on the
+exceptional set is chosen or evaluated along a trajectory. -/
+theorem integral_weightedStretch_eq_half_pair_of_integrable_of_ae_symmetry (n : ℕ)
+    (hi : Integrable (fun p : X × X ↦ weightedStretch n (H p.1 p.2) (w p.1) (w p.2)) (μ.prod μ))
+    (hs : ∀ᵐ p : X × X ∂μ.prod μ, H p.2 p.1 = H p.1 p.2) :
+    (∫ x, ∫ y, weightedStretch n (H x y) (w x) (w y) ∂μ ∂μ) =
+      (1 / 2 : ℝ) * ∫ x, ∫ y, pairedStretch n (H x y) (w x) (w y) ∂μ ∂μ := by
+  have hj := hi.swap
+  change Integrable (fun p : X × X ↦
+    weightedStretch n (H p.2 p.1) (w p.2) (w p.1)) (μ.prod μ) at hj
+  have he : (fun p : X × X ↦ pairedStretch n (H p.1 p.2) (w p.1) (w p.2)) =ᵐ[μ.prod μ]
+      (fun p ↦ weightedStretch n (H p.1 p.2) (w p.1) (w p.2) +
+        weightedStretch n (H p.2 p.1) (w p.2) (w p.1)) := by
+    filter_upwards [hs] with p hp
+    rw [hp, weightedStretch_add_swap]
+  have hp := (hi.add hj).congr he.symm
+  rw [← integral_prod _ hi, ← integral_prod _ hp, integral_congr_ae he]
+  have hswap := integral_prod_swap (μ := μ) (ν := μ)
+    (fun p : X × X ↦ weightedStretch n (H p.1 p.2) (w p.1) (w p.2))
+  simp only [Prod.fst_swap, Prod.snd_swap] at hswap
+  rw [integral_add hi hj, hswap]
+  ring
+
 theorem integral_weightedStretch_eq_half_pair_of_integrable (n : ℕ)
     (hi : Integrable (fun p : X × X ↦ weightedStretch n (H p.1 p.2) (w p.1) (w p.2)) (μ.prod μ))
     (hs : ∀ x y, H y x = H x y) :
