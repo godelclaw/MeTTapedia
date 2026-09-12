@@ -1582,6 +1582,30 @@ identities do not supply that bound. `LocalAnnularExplicitAudit.lean` checks
 the identification, the integral laws, the algebraic split and zero-cutoff
 behavior; `LocalAnnularPathChainRuleAudit.lean` checks constructed paths.
 
+#### Common-translation diffusion without a kernel derivative
+
+`LocalPairedDiffusion.lean` fixes the endpoint separation and translates
+both actual full-vorticity fields together. The second derivative splits
+into the endpoint-Laplacian contribution and an explicit signed quadratic
+curvature in the two vorticity gradients. Periodic integration cancels
+the full translation derivative.
+
+`LocalAnnularDiffusion.lean` changes back to the two-endpoint integral and
+applies the same finite annular kernel used in the stretching source. It
+proves `diffusionSource = -curvatureSource`; the viscous contribution is
+therefore `-nu * curvatureSource`. Here index `n = 1` gives the radial
+exponent six used by the eighth-moment source. No spatial derivative of the kernel or
+receiver truncation appears. The scalar curvature vanishes on the diagonal
+and when both vorticities and both gradients lie on one common line.
+
+This calculation concerns the smooth paired source before amplitude
+cutoff. It does not justify a second-order chain rule through the cutoff's
+threshold or tie surfaces, and does not prove positive curvature or a
+uniform dynamical bound. The signed curvature must still be estimated
+jointly with the strain and relative-transport channels. The exact radial
+second-variation test and zero-annulus tests are checked by
+`LocalAnnularDiffusionAudit.lean`.
+
 #### Concentration test for an instantaneous energy-only closure
 
 The reproducible symbolic diagnostic
