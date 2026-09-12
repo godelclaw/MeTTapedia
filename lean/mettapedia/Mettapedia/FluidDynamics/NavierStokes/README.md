@@ -233,6 +233,47 @@ or a suitable localized high-vorticity estimate, remains required.
 `AngularCoherenceAudit.lean` separately checks the unconditional and
 conditional statements and their foundational dependencies. S4 remains open.
 
+`Analysis/WeightedCrossProductEvolution.lean` and
+`LocalWeightedAngularEvolution.lean` make a smooth version of the angular
+cost available for a dynamical attack. The polynomial endpoint energy is
+
+```text
+P(a,b) = (|a|^6 + |b|^6)*|a cross b|^2,
+A_N <= symmetricAngularIntegral_N <= 2*A_N.
+```
+
+The source payment also holds with this symmetric integral. Its endpoint
+rate is derived along the actual local material paths, including zeros,
+and separates amplitude growth, common strain, strain variation, and the
+two viscous endpoint terms. This is not yet an evolution theorem or an
+upper bound for the entire kernel-weighted integral: relative-velocity
+kernel transport and the integrated viscous calculation remain required.
+
+`TraceFreeWeightedAngularRate.lean` retains the spectral gap and the
+weighted top defects in this rate. In the common-strain case, put
+`D = |a|^4*topDefect(S,a) + |b|^4*topDefect(S,b)`. The strain contribution
+satisfies
+
+```text
+strainRate + 6*D*|a cross b|^2 <= (10*lambda_max - 2*topGap)*P.
+```
+
+For trace-free ordered three-dimensional strain, the displayed growth
+coefficient is at least `7*lambda_max`. This is a statement about the
+upper-bound coefficient, not a lower bound on every pair's actual rate.
+Thus the gap term cannot simply be relabeled as net damping of the
+weighted cost. Favorable weighted defects remain on the left.
+
+The explicit test `S = diag(1,0,-1)`, `a = (1,0,0)`, `b = (1,1,0)` has
+`P = 9`, `P' = 48`, and squared-angle derivative `-1/2`. Both derivatives
+are checked for curves with initial velocities `S*a` and `S*b`.
+`WeightedCrossProductTests.lean` therefore refutes the implication from
+normalized-angle damping to weighted-angular damping under common strain.
+The test is **not** a self-consistent spatial NS solution, a blowup example,
+or a refutation of a quantitative integrated budget.
+`WeightedAngularEvolutionAudit.lean` checks the source comparison, actual
+endpoint dynamics, and the limited scope of the obstruction. S4 is still open.
+
 The dependencies guide the work, not a rigid chronological schedule:
 counterexamples to a proposed S3 or S4 estimate can require revising S2.
 Imported fluid-equation results must retain their domain, forcing, and
