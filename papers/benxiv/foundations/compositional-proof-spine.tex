@@ -16941,3 +16941,118 @@ require discharge. Constructing a physical object for every valid code
 does not by itself prove coverage of every required source witness.
 No optimized threshold or generating base is inferred, and the fixed
 earned ledger remains $57/100$.
+
+\subsection{A finite carrier for viable planar prefixes}
+\label{sec:viable-planar-prefix-carrier}
+
+The unrestricted exact-mass carrier is infinite already at frontier width
+three, so a finite state space cannot come from the width alone. It comes
+instead from an admissibility test on the evaluator's own coordinates: no
+component hidden from the boundary, and exact integer Euler mass equal to
+four times the number of components visible there. The visible count is the
+number of distinct zero-cut columns, which never exceeds the interface size,
+so the test itself forces $0\le m\le 4w$. The range is \emph{derived} from
+the test; no mass bound is assumed of the carrier.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeViablePrefix.visibleComponents_le}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeViablePrefix.mass_range}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeViablePrefix.viable_finite}
+
+Finiteness is what a closure computation needs, but the measured bound
+\[
+ 2^{4^{w}}\cdot w!\cdot 2^{12\cdot 2^{w}}\cdot(4w+1)
+\]
+also shows what it does not license: a certificate must replay the
+\emph{reachable} states, never enumerate $Q$.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeViablePrefix.viable_card_le}
+
+On decoded runs the test means what it is meant to mean. Its integer
+coordinate is the literal Euler mass of the constructed tangle; when nothing
+is hidden, its column count is that tangle's actual number of connected
+components; and the conjunction holds exactly when every component is exposed
+at the boundary and the Euler defect vanishes.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeViablePrefix.mass_exact}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeViablePrefix.visibleComponents_exact}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeViablePrefix.viable_exact}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeViablePrefix.viable_iff_visible_planar}
+
+Both halves are load-bearing and neither implies the other. A bare star
+passes; so does a prefix that is genuinely disconnected, since the test
+bounds the number of components rather than demanding connectivity. A
+completed planar component behind the frontier fails the mass equation
+because it contributes no column. A completed \emph{handle} behind the
+frontier \emph{satisfies} the mass equation exactly, its two units of defect
+cancelling against the component it hides; only the visibility half rejects
+it. Dropping visibility would therefore admit nonphysical prefixes, and
+dropping the mass equation would leave the carrier unbounded.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeViablePrefix.star_viable}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeViablePrefix.disjoint_viable}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeViablePrefix.hidden_planar_not_viable}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeViablePrefix.hidden_handle_passes_mass_test}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeViablePrefix.hidden_handle_not_viable}
+
+This is a prefix predicate and not an accepting one. Every closed run fails
+the extension test, so initialization and terminal closure remain separate
+obligations and this predicate must never be used as the accepting array $F$
+of Proposition~\ref{prop:exact-closure-gate}.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeViablePrefix.closed_not_viable}
+
+What is \emph{not} established here is that pruning is lossless. Visibility
+is already known to be inherited by prefixes of a connected object. The
+planar half is not: it needs monotonicity of the Euler defect under the
+literal vertex attachment, equivalently
+\[
+ \Delta F\le 1+|P|-2d
+\]
+in the notation of \S\ref{sec:physical-vertex-attachment}, and that
+inequality is open. Until it is proved, the carrier above is finite and
+exactly interpreted but is not yet known to retain every required source
+prefix. No closure count, threshold or generating base is claimed, and the
+earned ledger remains $57/100$.
+
+\subsection{Source-facing cyclic encoding}
+\label{sec:source-facing-cyclic-encoding}
+
+The interpreter reads a code's three slots as a cyclic order: the realized
+star satisfies $\rho(\text{slot }i)=\text{slot}(i+1)$. An encoder that merely
+enumerates the three incident darts by cardinality therefore need not
+describe the source rotation. The discrepancy is invisible to the colour
+test, which asks only that the three darts carry distinct nonzero colours,
+and it is invisible to the cut records; it is \emph{not} invisible to the
+Euler mass, as the two cyclic orders of one incidence pattern already give
+masses four and zero on identical cut data. An encoder for this interpreter
+consequently owes a rotation statement, not merely an incidence statement.
+
+At a cubic vertex whose stored rotation is genuinely one cyclic order per
+fiber, no dart is fixed, so the restricted rotation has order three and the
+three darts are $d$, $\rho d$, $\rho^{2}d$. That enumeration is a bijection
+with the new darts and its successor is the source rotation.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeCyclicEncoder.rot_ne}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeCyclicEncoder.rot_three}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeCyclicEncoder.cyclicStarEquiv_succ}
+
+Encoding is factored through an arbitrary supplied enumeration, so the
+earlier encoder is one instance and nothing proved about it is lost. Star
+injectivity, wire injectivity, the forced boundary colour and the finite
+colour test hold for every choice; the last of these is precisely why a
+wrong rotation cannot be detected downstream by colour data alone.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeCyclicEncoder.encodeWith_starEquiv}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeCyclicEncoder.encodeWith_codeAccepts_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeCyclicEncoder.encodeWith_count}
+
+The emitted letter also lies in the interpreter's domain. Each remaining
+incidence clause is an actual dichotomy about ambient darts: a new boundary
+port is fresh exactly when it is based at the new vertex, and an old boundary
+port is consumed exactly when its mate is, so consumption and persistence are
+exclusive and exhaustive.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeCyclicEncoder.encodeWith_inr_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeCyclicEncoder.encodeWith_inl_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeCyclicEncoder.encodeWith_some_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeCyclicEncoder.encodeWith_valid}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeCyclicEncoder.cyclicEncode_valid}
+
+This is the single-letter half of source coverage. It does not yet give the
+run-level round trip: that one sweep of a source map emits a well-typed run
+whose realization is isomorphic to the source, with interior darts, the edge
+involution, persistent-port permutations and named boundary coordinates all
+corresponding. Nor does it supply a source class for which cyclicity holds at
+every swept vertex. Both remain open, and the earned ledger is unchanged.
