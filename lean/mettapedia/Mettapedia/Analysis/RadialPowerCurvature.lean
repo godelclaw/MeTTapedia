@@ -32,6 +32,25 @@ theorem continuous_evenRadialCurvature {X : Type*} [TopologicalSpace X]
   unfold evenRadialCurvature
   fun_prop
 
+theorem norm_evenRadialRate_le (n : ℕ) (a v : E) :
+    ‖evenRadialRate n a v‖ ≤ (2 * (n + 1) + 1 : ℝ) * ‖a‖ ^ (2 * (n + 1)) * ‖v‖ := by
+  have hc : 0 ≤ (2 * (n + 1) : ℝ) := by positivity
+  have hp : 0 ≤ ‖a‖ ^ (2 * n) := by positivity
+  calc
+    _ ≤ ‖‖a‖ ^ (2 * (n + 1)) • v‖ +
+        ‖((2 * (n + 1) : ℝ) * ‖a‖ ^ (2 * n) * ⟪a, v⟫) • a‖ := norm_add_le _ _
+    _ = ‖a‖ ^ (2 * (n + 1)) * ‖v‖ +
+        (2 * (n + 1) : ℝ) * ‖a‖ ^ (2 * n) * |⟪a, v⟫| * ‖a‖ := by
+      simp only [norm_smul, Real.norm_eq_abs, abs_mul, abs_of_nonneg hc,
+        abs_of_nonneg hp, abs_of_nonneg (pow_nonneg (norm_nonneg a) _)]
+    _ ≤ ‖a‖ ^ (2 * (n + 1)) * ‖v‖ +
+        (2 * (n + 1) : ℝ) * ‖a‖ ^ (2 * n) * (‖a‖ * ‖v‖) * ‖a‖ := by
+      gcongr
+      exact abs_real_inner_le_norm a v
+    _ = _ := by
+      rw [show 2 * (n + 1) = 2 * n + 2 by omega, pow_add]
+      ring
+
 theorem hasDerivAt_evenRadialRate (n : ℕ) {a v : ℝ → E} {z : E} {t : ℝ}
     (ha : HasDerivAt a (v t) t) (hv : HasDerivAt v z t) :
     HasDerivAt (fun τ ↦ evenRadialRate (n + 1) (a τ) (v τ))

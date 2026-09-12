@@ -1606,6 +1606,31 @@ jointly with the strain and relative-transport channels. The exact radial
 second-variation test and zero-annulus tests are checked by
 `LocalAnnularDiffusionAudit.lean`.
 
+`LocalAnnularCurvatureIncrement.lean` retains the actual gradient increment
+when the two endpoint vorticities agree. With radial exponent six, the
+pointwise bound has coefficient fourteen and contains both the transverse
+cross product and the gradient increment norm. This is not a bound by the
+eighth-moment dissipation alone. Isotropic kernel action vanishes before
+estimating the norm.
+
+The same module proves `curvatureSource n N (-u) = -curvatureSource n N u`
+for the actual spatial integral. Consequently, a nonnegative-curvature
+claim on any negation-closed class of Fourier data would force this source
+to vanish throughout that class. The scalar positive-semidefinite rank-one
+tests exhibit both curvature signs at equal unit endpoint values; they
+are not self-consistent fluid fields. `LocalAnnularCurvatureAudit.lean`
+checks these separate levels of evidence.
+
+The exact rational Fourier diagnostic `papers/benxiv/ns_paired_source_heat_sign.py`
+uses the smooth divergence-free field
+`u = (sin(y), 0, sin(x) + sin(x+y))` on the `2*pi` periodic torus.
+Its normalized eighth-moment stretching is `-3289/128`; its derivative
+along the viscosity-one heat tangent is `22289/64`. Both signs reverse for
+`-u`. This calculation has no quadrature error, but its correspondence to
+the Lean integral definitions is not yet proved. It tests the isolated
+signed heat channel, not the full nonlinear evolution or growth of the
+absolute stretching source. The cutoff-uniform signed budget remains open.
+
 #### Concentration test for an instantaneous energy-only closure
 
 The reproducible symbolic diagnostic
