@@ -1475,6 +1475,61 @@ time integral uniformly in the cutoff.
 `Analysis/SignedCrossKernelRegularityTests.lean` check the integrated
 implication, persistent equal-amplitude paths and foundational dependencies.
 
+#### The explicit material rate includes the cutoff interfaces
+
+`Analysis/DerivativeContact.lean` proves equality of derivatives when two
+differentiable real functions touch under a local ordering.
+`Analysis/HighAmplitudeWeightChainRule.lean` applies this at a tie: above
+threshold the cutoff touches either endpoint branch, so their derivatives
+agree wherever the cutoff is differentiable. At or below threshold the
+nonnegative cutoff touches zero and its derivative is zero. Absolute
+continuity gives the resulting rule almost everywhere without assuming
+the threshold or equal-amplitude sets have measure zero.
+
+The rate selects the smaller endpoint above threshold and is zero otherwise.
+Endpoint-exchange symmetry is proved under the differentiable-contact
+hypotheses. The raw branch-selected algebraic rate is not symmetric for
+arbitrary unrelated endpoint derivative data; an explicit regression checks
+this distinction.
+
+`LocalAnnularSourcePathChainRule.lean` combines this cutoff rate with the
+actual full-vorticity equations and the annular paired-source derivative.
+It proves integrability of the full explicit material rate along locally
+Lipschitz material paths and the exact signed identity
+
+```text
+integral_a^b materialHighAmplitudeRate(t) d t
+  = highAmplitudeSourceAlong(b) - highAmplitudeSourceAlong(a).
+```
+
+The mean-strain kernel commutator, actual relative-velocity kernel transport,
+radial amplitude growth, strain variation and both viscous terms remain.
+`LocalCompactMaterialPath.lean` constructs suitable paths through arbitrary
+prescribed lifted points from the actual local velocity; their constant
+extension outside the compact interior interval does not extend the PDE.
+`LocalAnnularMaterialPaths.exists_paths_integrated_source_identity` constructs
+both paths and proves the identity for every finite annular cutoff and every
+positive amplitude threshold. Path existence and regularity are conclusions,
+not additional geometric assumptions.
+
+`Analysis/AbsolutelyContinuousTimeWeight.lean` applies integration by parts
+without taking absolute values. The same constructed paths also satisfy
+
+```text
+integral_a^b sourceAlong(t) d t
+  = (b-a) sourceAlong(a) + integral_a^b (b-t) materialRate(t) d t.
+```
+
+Thus the accumulated source, rather than just its endpoint change, is linked
+to the explicit signed material rate. Integrability of the weighted rate is
+proved, not assumed.
+
+This is still a pathwise identity. The two-point spatial mean balance and
+the cutoff-uniform signed time budget are not proved by it. In particular,
+no measure-preservation theorem for a chosen flow is assumed here.
+`LocalAnnularPathChainRuleAudit.lean` checks constructed paths, the explicit
+integrated rate and zero-cutoff behavior.
+
 #### Concentration test for an instantaneous energy-only closure
 
 The reproducible symbolic diagnostic
