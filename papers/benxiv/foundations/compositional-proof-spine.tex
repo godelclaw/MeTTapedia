@@ -17015,14 +17015,64 @@ the already-proved fact that darts sharing a face share a component. The
 missing step is therefore not a new combinatorial lemma but a presentation
 bridge: identifying the vertex, face, component and edge counts of a
 constructed tangle with the orbit counts of its edge presentation, after
-which the proved monotonicity of the edge-presentation defect applies. Only
-the vertex identification needs a genuinely new invariant, namely that the
-stored rotation is one cycle per vertex on a constructed run.
+which the proved monotonicity and nonnegativity of the edge-presentation
+defect apply verbatim. Concretely, the tangle defect is twice the
+edge-presentation defect once the rotation orbit count is the vertex count
+and the word-orbit count is the component count.
 
-Until that bridge exists, the carrier above is finite and exactly interpreted
-but is not yet known to retain every required source prefix. No closure
-count, threshold or generating base is claimed, and the earned ledger remains
-$57/100$.
+The invariant those two identifications rest on is now available. A
+constructed run has one rotation cycle per vertex: every vertex is born as a
+star whose rotation is a three-cycle, and neither boundary reindexing nor
+serial composition alters the rotation at an existing vertex, both being
+conjugation by a carrier equivalence and a disjoint union respectively. This
+is the tangle-level form of the condition the source-facing encoder supplies,
+and it is exactly the hypothesis under which the capped ambient presentation
+already identifies its word-orbit count with a component count.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeRotationCyclic.star_rotationCyclic}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeRotationCyclic.reindex_rotationCyclic}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeRotationCyclic.serialCompose_rotationCyclic}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeRotationCyclic.realize_rotationCyclic}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeRotationCyclic.realize_openRotationCyclic}
+
+What remains is the transport itself: the face identification, which is the
+edge product of an involution's edge list composed with the rotation; the
+edge count, which is twice the edge-list length; and the two counting
+bijections above. Until that transport is written, the carrier is finite and
+exactly interpreted but is not yet known to retain every required source
+prefix. No closure count, threshold or generating base is claimed, and the
+earned ledger remains $57/100$.
+
+\subsection{The accepting predicate for the direct Count system}
+\label{sec:direct-count-acceptance}
+
+The prefix predicate is deliberately not an accepting one. The separate
+terminal test reads the same four coordinates: the constructed closed object
+is connected and bridgeless, its exact Euler mass is four, and it carries a
+proper Tait colouring. Each clause is identified with the literal property of
+that object.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeTerminalAcceptance.accepts_exact}
+
+Connectivity is what turns the mass clause into a planarity test. Mass is
+four times the component count minus the Euler defect, so at one component
+mass four says exactly that the defect vanishes; without the connectivity
+clause, two components sharing one handle would pass.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeTerminalAcceptance.card_component_eq_one}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeTerminalAcceptance.mass_four_iff_planar}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeTerminalAcceptance.accepts_iff_planar_colouring}
+
+The controls are the same two-vertex three-edge pair as before. The planar
+map is accepted; its handled twin, with the same colour support and the same
+cut data, is rejected. Colour acceptance alone cannot separate them, which is
+why the accepting array may not be the colour test on its own. Accumulated
+closed components are likewise rejected, their mass being four per component.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeTerminalAcceptance.flat_accepted}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeTerminalAcceptance.twisted_rejected}
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeTerminalAcceptance.two_components_rejected}
+
+This supplies $F$ for the direct Count system of
+Proposition~\ref{prop:exact-closure-gate}. It does not supply $I$, $E$, the
+reachability replays or any count, and it is not the Lift/Seed accepting
+array, which remains the cap-composed predicate.
 
 \subsection{Source-facing cyclic encoding}
 \label{sec:source-facing-cyclic-encoding}
