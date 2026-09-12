@@ -423,6 +423,73 @@ kernel transport, viscosity and the signed time-integrated budget still
 require joint control. `VorticityRadialSourceAudit.lean` checks the new
 dependencies; S4, BKM continuation and unconditional A/B remain open.
 
+### Complete signed material image rate
+
+`Analysis/SignedRadialStretchEvolution.lean` differentiates all factors of
+the radial source, with `p = 2*(n+1)` (`n=2` for the eighth-moment source):
+
+```text
+B = h dot (|a|^p a - |b|^p b),  D = (a cross b) dot h,
+Q = k D B,
+Q' = k' D B + k D B'_common + k (D'_residual B + D B'_residual).
+```
+
+Only the common trace-free contribution to `D'` cancels. The common
+amplitude derivative retains both the deformation of `h` and the radial
+strain excess at the two endpoints. Common rotations contribute zero to
+this amplitude derivative; general trace-free strains need not. A checked
+finite-dimensional example has `D'=0`, `B=8`, `B'=24` and
+`Q'=8*k'+24*k`. With a fixed scalar coefficient `k=1`, the full signed
+density grows at rate `24`. This is not a spatial NS counterexample or an
+evaluation of the constructed kernel; it excludes an algebraic inference
+from triple-product conservation to full-source damping.
+
+A second test includes the moving homogeneous radial coefficient
+`k(h)=-(|h|^2/2)^(-5/2)`. At its initial separation, `k=-1`, `k'=-5/2`,
+`D=1`, `D'=0`, `B=-8`, and `B'=-24`. Thus `Q=8` and `Q'=44`:
+kernel transport contributes `20` and amplitude growth contributes `24`.
+The negative inverse-fifth-power shape alone does not repair pointwise
+damping. This remains a finite-dimensional test, not a self-consistent
+spatial NS solution or an identification of the cutoff-dependent kernel.
+
+`Analysis/RadialRieszCoefficientEvolution.lean` differentiates the actual
+constructed coefficient away from zero separation. If
+`k(h)=-(2*pi)^(-2)*4*g''(|h|^2)`, its material derivative is
+`-(2*pi)^(-2)*8*g'''(|h|^2)*(h dot h')`. The same rate is proved for
+the signed pairing of the Fourier-defined Euclidean tensor.
+
+`LocalRadialImageEvolution.lean` instantiates the full rate with the actual
+local unforced solution. It separates kernel transport, common-deformation
+amplitude growth, unequal-gradient/velocity remainders and both viscous
+endpoints. For a constant image shift `z`,
+
+```text
+h_z = z + X-Y,
+r_v,z = u(X)-u(Y)-A_X h_z = r_v,0 - A_X z.
+```
+
+The image shift is not advected affinely. Freezing an image at a reference
+time produces a genuine lattice shift, proved using the kernel of the
+torus projection. At that time its density is exactly the previously
+constructed periodic image density. No derivative of the discontinuous
+canonical representative is used.
+
+`LocalRadialImageIntegral.lean` proves absolute continuity and the signed
+time identity for a fixed cutoff and image, on a compact interior interval
+with nonzero image separation and the stated local Fourier envelope:
+
+```text
+integral (kernel transport + common deformation + remainder + nu*viscosity)
+  = Q(end) - Q(start).
+```
+
+The identity supplies neither a sign nor a uniform bound on this integral.
+Differentiation through the infinite image sum, the cutoff limit and the
+spatial integral remains to be justified with suitable joint estimates.
+In particular, local absolute continuity does not bound the signed source
+up to a candidate singular time. `RadialImageEvolutionAudit.lean` checks
+the dependencies; the decisive S4 estimate and unconditional A/B are open.
+
 The dependencies guide the work, not a rigid chronological schedule:
 counterexamples to a proposed S3 or S4 estimate can require revising S2.
 Imported fluid-equation results must retain their domain, forcing, and
