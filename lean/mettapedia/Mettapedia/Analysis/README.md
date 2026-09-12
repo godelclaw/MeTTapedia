@@ -6,6 +6,9 @@ Reusable analysis, independent of any particular fluid construction.
 
 | Module | Mathematical content | Scope |
 | --- | --- | --- |
+| `CrossProductEvolution.lean` | Matrix action on cross products, differentiation, and the normalized squared-angle derivative | Real dimension three; normalization derivative requires nonzero endpoints |
+| `CrossProductStrain.lean` | Exact separation of common-strain angle evolution from signed strain-difference and endpoint-force terms | No angle damping assumed; a rational growing-angle first-variation test is checked in `CrossProductStrainTests.lean` |
+| `SymmetricCrossProductStrain.lean` | Averaging of both endpoint strain decompositions, with an exact signed angle derivative | Preserves both endpoint forces; no top-eigenvalue comparison or time budget assumed |
 | `IntegrableKernelPairing.lean` | Integrable scalar kernels define bounded functionals on continuous fields | Compact domains with measurable open sets; no kernel continuity or uniform mass hypothesis |
 | `UnitTorusFourierReal.lean` | Fourier coefficients under conjugation, reversal, real-part extraction and real-even symmetrization | Any finite-dimensional unit torus; integrability retained where addition is used |
 | `UnitTorusIntegrableConvolution.lean` | Convolution of an integrable kernel with a uniformly convergent Fourier series | No continuity of the kernel; actual `HasSum` in the continuous-field norm |

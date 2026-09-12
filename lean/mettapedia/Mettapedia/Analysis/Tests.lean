@@ -29,6 +29,7 @@ import Mettapedia.Analysis.NormalizationConvolutionTests
 import Mettapedia.Analysis.FiniteVectorConvolutionTests
 import Mettapedia.Analysis.RadialSquareRootTests
 import Mettapedia.Analysis.RadialPowerTests
+import Mettapedia.Analysis.CrossProductStrainTests
 import Mettapedia.Analysis.SignedCrossKernelTests
 import Mettapedia.Analysis.RootPartitionEnergyTests
 import Mettapedia.Analysis.BilinearKernelLocalizationTests

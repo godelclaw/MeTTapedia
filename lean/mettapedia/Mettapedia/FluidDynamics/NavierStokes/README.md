@@ -1226,8 +1226,8 @@ S_(6,N) -> S8.
 S_(6,N) <= (nu/2) G8 + R_(L_nu,N)             (every N).
 ```
 
-The same positive `L_nu` works for all cutoffs and fields. The remainder
-vanishes when either endpoint vorticity norm is at most `L_nu`.
+The same positive `L_nu` works for all cutoffs and fields. The remainder's
+integrand vanishes when either endpoint vorticity norm is at most `L_nu`.
 A uniform upper bound `R_(L_nu,N) <= b` would pass to
 `S8 <= (nu/2) G8 + b`; this conditional implication is checked and does
 not require convergence of the remainder itself. Constructing a signed
@@ -1245,6 +1245,75 @@ chosen before time and cutoff, the zero-endpoint case, and the explicitly
 conditional remainder-to-source implication at those same coefficients.
 `Analysis/PeriodicRieszOperatorFourierTests.lean` checks zero frequencies,
 dimension-independent operator assembly and integrable-kernel convolution.
+
+#### Actual two-point angle dynamics and its spectral-defect cost
+
+`LocalVorticityPairAngle.lean` derives the evolution of the cross product
+appearing in that signed source along two actual material trajectories.
+Write `a=omega(X(t))`, `b=omega(Y(t))`, `S=S(X(t))`, `T=S(Y(t))`,
+`f=nu Delta omega(X(t))`, and `g=nu Delta omega(Y(t))`. Then
+
+```text
+c = a cross b,
+F = a cross ((T-S)b) + f cross b + a cross g,
+c' = -S c + F.
+```
+
+The common-strain cancellation uses actual incompressibility and strain
+symmetry. Both strain variation and viscosity remain in `F`. For nonzero
+endpoints, put `q=|c|^2/(|a|^2|b|^2)` and let `lambda` be the top eigenvalue
+of `S`. The checked derivative estimate is
+
+```text
+d_S(v) = (lambda |v|^2 - <v,Sv>) / |v|^2,
+q' <= 2 (d_S(a)+d_S(b)) q + P,
+P = 2 <c,F>/(|a|^2|b|^2)
+    - 2 q (<a,f>/|a|^2 + (<b,(T-S)b>+<b,g>)/|b|^2).
+```
+
+`TraceFreeStrainAngle.lean` proves the underlying bound
+`<v,Sv> >= -2 lambda |v|^2` and the common-strain estimate. Both defects
+above refer to the **same strain at the first endpoint**; the difference
+from the other strain remains explicit in `P`. No inverse spectral gap or
+global direction modulus is used. The actual trajectory theorem uses the
+existing local third-moment envelope needed for differentiating full
+vorticity; it does not assert such an envelope up to a singular time.
+
+`LocalVorticityPairAngleSymmetric.lean` improves this to endpoint-local
+defects by averaging the two exact equations, before taking any bounds:
+
+```text
+F_sym = (1/2) (a cross ((T-S)b) + ((S-T)a) cross b)
+        + f cross b + a cross g,
+c' = -(1/2) (S+T)c + F_sym,
+gap_S = lambda_top(S) - lambda_middle(S),
+q' <= [2 (d_S(a)+d_T(b)) - (gap_S+gap_T)] q + P_sym,
+P_sym = 2 <c,F_sym>/(|a|^2|b|^2)
+        - 2 q (<a,f>/|a|^2 + <b,g>/|b|^2).
+```
+
+Thus each endpoint's own normalized top spectral defect competes with
+the sum of the top gaps. The sharper Rayleigh lower bound is
+`<v,Sv> >= (gap_S-2 lambda_top(S)) |v|^2`, since the coefficient equals
+the bottom eigenvalue for trace-free three-dimensional strain. The damping
+term survives without division by a gap, including at collisions.
+No top-eigenvalue difference or exchanged strain defect remains.
+`P_sym` is still signed and unpaid; the averaging is not a proof that
+strain variation or viscosity is favorable. Dropping the nonnegative gap
+terms recovers the weaker pure-growth estimate.
+
+The estimate is not universal damping. The exact rational regression takes
+`S=diag(2,-1,-1)`, `a=(3/5,0,4/5)`, `b=(-3/5,0,4/5)`. Both vectors have
+unit norm and positive stretching `2/25`, yet their common-strain
+squared-angle rate is `24192/15625 > 0`. An actual first-variation witness
+is checked. This refutes an angle-monotonicity shortcut for prescribed
+strain, not the repaired route or an actual Navier–Stokes solution.
+
+`LocalVorticityPairAngleAudit.lean` checks the derivative and spectral
+statements, including the zero-endpoint definition of `q`. The remaining
+task is to control the signed perturbation and normalized spectral costs
+in the high-amplitude source's time integral. An instantaneous angle
+equation, by itself, does not supply this budget or close S4.
 
 #### Concentration test for an instantaneous energy-only closure
 
