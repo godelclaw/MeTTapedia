@@ -184,6 +184,55 @@ to account for additive positive production rather than infer a sign law
 from vanishing initial stretching. `TwoShearStretchingAudit.lean` records
 the momentum and mean-rate checks and their foundational dependencies.
 
+The actual source also has an unconditional angular payment split.
+`VorticityAngularPayment.lean` defines an inverse-distance radial increment
+`I_N` and an angular integral `A_N`, using the actual vorticity and the
+constructed even kernel `H_N`. With `F3(w) = |w|^3*w` and
+`M = max(|w(x)|, |w(x-h)|)`, these are
+
+```text
+I_N = integral_h (||H_N(h)||/|h|) integral_x |F3(w(x))-F3(w(x-h))|^2,
+A_N = integral_h integral_x |h|*||H_N(h)||*M^6*|w(x) cross w(x-h)|^2.
+
+I_N <= 48*C1*G8,
+|source_N| <= (nu/2)*G8 + (24*(C1+1)/nu)*A_N.
+```
+
+The coincident-point case is handled separately, and integrability is
+proved. Neither a vorticity supremum nor a bound on unweighted kernel
+mass enters the constants. `Analysis/SchwartzDyadicDecay.lean` constructs
+a rational telescoping majorant for dyadic Schwartz sums;
+`AnnularRieszSingularity.lean` and `PeriodicRieszSingularity.lean` use it
+to prove the dimension-sharp bound `|h|^3*||H_N(h)|| <= C`, uniformly
+in the top cutoff.
+
+`VorticityCoherenceBudget.lean` calibrates this payment against the
+**explicit extra hypothesis**
+
+```text
+|w(x) cross w(y)| <= K*|x-y|*|w(x)|*|w(y)|.
+```
+
+Under this projective Lipschitz condition, `A_N <= 2*K^2*C*E8*Z`.
+The resulting actual stretching estimate is
+`|stretching| <= (nu/2)*G8 + b*E8`, with `b = C'*K^2*Z/nu`.
+`LocalCoherenceBudget.lean` derives, for the actual local unforced
+solution with a common `K`,
+
+```text
+integral_0^t b <= C'*K^2*initialKineticEnergy/(2*nu^2),
+E8(t)/8 + (nu/2)*integral_0^t G8 <= E8(0)/8 + integral_0^t b*E8.
+```
+
+These are conditional estimates, not propagation of coherence. A common
+global projective Lipschitz bound is not supplied by the energy identity
+or by the fact that the initial velocity is smooth. It is a sufficient
+calibration condition, not a necessary new hypothesis for the overall
+arbitrary-data route. Direct dynamical control of the angular integral,
+or a suitable localized high-vorticity estimate, remains required.
+`AngularCoherenceAudit.lean` separately checks the unconditional and
+conditional statements and their foundational dependencies. S4 remains open.
+
 The dependencies guide the work, not a rigid chronological schedule:
 counterexamples to a proposed S3 or S4 estimate can require revising S2.
 Imported fluid-equation results must retain their domain, forcing, and
