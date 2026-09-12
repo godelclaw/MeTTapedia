@@ -97,6 +97,26 @@ theorem ae_gradientDensity_radialPower_three_le (f : T3 → R3) (hf : Continuous
   simpa only [gradientDensity, weightedGradientDensity, Finset.mul_sum, mul_assoc] using
     Finset.sum_le_sum (fun j (_ : j ∈ (Finset.univ : Finset (Fin 3))) ↦ hb j)
 
+/-- The cubic radial increment itself is paid by the weighted gradient. -/
+theorem integral_radialPower_three_sub_le (f : T3 → R3) (hf : Continuous f)
+    (hfL : LocallyLipschitz (fun r : X3 ↦ f (torusPoint r))) (a : T3) :
+    (∫ x : T3, ‖radialPower 3 (f x) - radialPower 3 (f (x - a))‖ ^ 2) ≤
+      48 * ‖a‖ ^ 2 * ∫ x : T3, weightedGradientDensity f x := by
+  let g := fun y ↦ radialPower 3 (f y)
+  have hg : Continuous g := (continuous_radialPower 3).comp hf
+  have hgL : LocallyLipschitz (fun r : X3 ↦ g (torusPoint r)) :=
+    locallyLipschitz_radialPower_three.comp hfL
+  have hd := integral_mono_ae (integrable_gradientDensity g hg hgL)
+    ((integrable_weightedGradientDensity f hf hfL).const_mul 16)
+    (ae_gradientDensity_radialPower_three_le f hf hfL)
+  rw [integral_const_mul] at hd
+  calc
+    _ ≤ 3 * ‖a‖ ^ 2 * ∫ x : T3, gradientDensity g x :=
+      integral_norm_sub_translate_sq_le g hg hgL a
+    _ ≤ 3 * ‖a‖ ^ 2 * (16 * ∫ x : T3, weightedGradientDensity f x) :=
+      mul_le_mul_of_nonneg_left hd (by positivity)
+    _ = _ := by ring
+
 /-- The sixth-power-weighted weak gradient pays for the bare increment channel.
 Additional endpoint-dependent coefficients are not discarded. -/
 theorem integral_incrementDensity_sub_le (f : T3 → R3) (hf : Continuous f)

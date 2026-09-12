@@ -78,7 +78,7 @@ fractions of a completed proof.
 | S1. Actual equation and objects | Construct the solution, stochastic/material objects, and frequency decomposition from arbitrary admissible data; derive every evolution identity used later from the actual unforced equation. Track the periodic and Euclidean realizations separately. | **Partial.** The local periodic solution, common-interval material flow, vorticity and strain equations are constructed; see `StochasticLagrangian/LocalMaterialVorticity.lean`, `LocalMaterialStrain.lean`, and `LocalSpectralResidual.lean`. This is not a complete arbitrary-data stochastic/Euclidean realization. |
 | S2. Spatial field transfer | Transfer the coherent/misaligned geometry to the actual localized operator fields, retaining uniform kernel constants and the inverse-scale gain through integration and limits. | **Partial.** High-input pressure and the low-input complement are identified; moving-line and divergence decompositions retain their source costs. Common periodic envelopes and actual localized weak derivatives in L² are constructed. `PressureCoherentWeakFieldTransfer.lean` identifies both input-coordinate channels, retaining the uniform ratio²/input-scale² energy gain. `GaussianRootWeakChannelBudget.lean` transfers both patch-square sums to the integrable two-point derivative density without individual input suprema or a patch-count factor. `GaussianRootTwoPointDerivative.lean` bounds that density by actual gap/projector derivatives and Gaussian two-point moments, on a common null set that survives translation. `PressureCoherentRelativeMoment.lean` retains the ratio in every prescribed relative kernel moment and integrates squared field separation with an explicit Lipschitz cost. `GaussianRootTwoPointIntegral.lean` proves integrability of the full Gaussian derivative cost and transfers both actual channel-energy sums to it using one constructed envelope. `GaussianRootIncrementBudget.lean` replaces projector separation by actual vorticity/strain increments inside both integrated channel costs, using constructed adaptive centers. `GaussianRootWeightedIncrement.lean` controls the bare vorticity increment by actual sixth-power-weighted palinstrophy with the relative second-moment gain, and splits the full cost while retaining its two-endpoint projector coefficient. Quantitative control of the derivative-weighted costs, remaining interactions, and time affordability are still required. |
 | S3. All scales and sectors | Sum over input scales and pay for the other frequency interactions, angular tails, collision sectors, and adaptive cutoff terms without uncontrolled scale, patch-count, or regularization losses. | **Partial.** `PressureHighInputAction.lean` sums all high-input scales in bilinear operator norm. `GaussianRootHighInputBudget.lean` retains the quarter-geometric tail gain after localization and spatial integration, with explicit vorticity-supremum and patch-gradient costs. `PressureHighInputComplement.lean` identifies the remaining input sector as an exact finite sum. Finite support does not establish a uniform or dynamically affordable bound. The other sectors, scale-critical time control, and regularization limits are open. |
-| S4. Dynamical misalignment budget | Prove the signed time-integrated nonlinear estimate from the actual unforced evolution, with bounds that remain finite up to any candidate finite singular time. Construct `MisalignmentStrainBudget`, rather than pass it in as a hypothesis. | **Open; decisive mathematical core.** `LocalExcessAlignmentEnergy.lean` supplies an actual-data absorption inequality with explicit source costs. `LocalVorticityEighthEnergy.lean` derives the exact initial-data eighth-moment identity with both positive dissipation terms and signed stretching, using the same weighted palinstrophy as the increment estimate. `VorticityWeightedStretching.lean` identifies that actual full source as the limit of signed two-point cross-product/radial-difference integrals. Neither source is dynamically controlled. `MisalignmentRefinedPin.lean` proves a conditional reduction, not the required dynamical budget. |
+| S4. Dynamical misalignment budget | Prove the signed time-integrated nonlinear estimate from the actual unforced evolution, with bounds that remain finite up to any candidate finite singular time. Construct `MisalignmentStrainBudget`, rather than pass it in as a hypothesis. | **Open; decisive mathematical core.** `LocalExcessAlignmentEnergy.lean` supplies an actual-data absorption inequality with explicit source costs. `LocalVorticityEighthEnergy.lean` derives the exact initial-data eighth-moment identity with both positive dissipation terms and signed stretching, using the same weighted palinstrophy as the increment estimate. `VorticityWeightedStretching.lean` identifies that actual full source as the limit of signed two-point cross-product/radial-difference integrals. `VorticityHighAmplitudeSource.lean` pays the bounded-amplitude part at each finite cutoff with actual weighted dissipation, retaining a signed high-amplitude remainder. Cutoff uniformity and the time-integrated source bound remain open. `MisalignmentRefinedPin.lean` proves a conditional reduction, not the required dynamical budget. |
 | S5. Vorticity control and continuation | Construct the spatial essential-supremum vorticity integrand, prove its finite-time integral is controlled by the preceding estimates, and apply the continuation theorem to the actual solution. | **Open.** Continuation target surfaces and conditional reductions exist. The current `||omega||_sup² sqrt(G)` spatial cost is not yet a controlled BKM integrand. |
 | S6. Unconditional theorem and audit | Assemble the arbitrary-data theorem for each claimed domain; check every hypothesis, forcing/pressure convention, limit, and imported result against the target. Compile and audit the final theorem with no assumed analytic budgets or extra axioms. | **Open.** Local lemma builds and foundational-axiom audits are necessary evidence, not completion of this obligation. |
 
@@ -1103,6 +1103,105 @@ arbitrary data. `VorticityStretchingAudit.lean` and
 `Analysis/SignedCrossKernelTests.lean` check the physical local-solution
 interface, exchange factor, zero mode, isotropic cancellation, endpoint
 degeneracies and a nonzero signed triple product.
+
+#### Bounded-amplitude payment with a signed high-amplitude remainder
+
+For every natural `n`, `Analysis/RadialPower.lean` proves the pointwise
+comparisons, including zero and opposite endpoints,
+
+```text
+max(|a|,|b|)^n |a-b| <= 2 |F_n(a)-F_n(b)|,
+|F_(2n)(a)-F_(2n)(b)| <= 2 max(|a|,|b|)^n |F_n(a)-F_n(b)|.
+```
+
+Combining these with `|a cross b| <= min(|a|,|b|)|a-b|` gives
+
+```text
+|<a cross b,H(F_(2n)(a)-F_(2n)(b))>|
+  <= 4 min(|a|,|b|) ||H|| |F_n(a)-F_n(b)|^2.
+```
+
+`VorticityRadialSourceBound.lean` applies the estimate to the actual
+periodic vorticity and finite strain reconstruction. The remaining
+smaller-endpoint amplitude is explicit; no vorticity supremum has been
+declared controlled. At `n=3`, `PeriodicWeightedIncrement.lean` bounds the
+spatial integral of the squared `F_3` increment by `48 |h|^2 G8`.
+
+`VorticityHighAmplitudeSource.lean` defines, for a positive threshold `L`,
+
+```text
+m(a,b) = min(|a|,|b|),
+theta_L(a,b) = L / max(L,m(a,b)),
+Q_M(a,b) = <a cross b,H_M(x-y)(F_6(a)-F_6(b))>,
+High_(L,M) = (1/2) integral_x integral_y (1-theta_L(a,b)) Q_M(a,b),
+M2(M) = integral_h |h|^2 ||H_M(h)||,
+```
+
+where `a=omega(x)` and `b=omega(y)`. The continuous symmetric weight
+satisfies `0 <= theta_L <= 1` and `theta_L m <= L`. The high-amplitude
+integrand retains its sign and is zero if either endpoint has norm at
+most `L`. Haar translation and the weighted increment estimate give
+
+```text
+|S8_M - High_(L,M)| <= 96 L M2(M) G8.
+```
+
+For `nu>0`, the explicitly constructed
+`L_M = nu / (192 (M2(M)+1))` is positive and yields
+
+```text
+S8_M <= (nu/2) G8 + High_(L_M,M).
+```
+
+These are actual-field statements from a third absolute velocity moment,
+reality and transversality, with a regression at a local physical solution.
+They do not impose an alignment hypothesis. **The estimate is at each
+finite strain cutoff.** No uniform bound on `M2(M)`, positive lower bound
+on `L_M` as the cutoff grows, cutoff limit of `High_(L_M,M)`, or dynamical
+payment for that signed remainder is proved here. The existing limit of
+`S8_M` alone does not supply any of these missing estimates.
+
+#### Concentration test for an instantaneous energy-only closure
+
+The reproducible symbolic diagnostic
+[`ns_eighth_moment_scaling.py`](../../../scripts/ns_eighth_moment_scaling.py)
+uses the smooth, rapidly decreasing, divergence-free velocity on `R^3`
+
+```text
+u = curl(exp(-|x|^2) (0,x*z,3*x*y))
+  = exp(-|x|^2) (-6*x*y^2+2*x*z^2+2*x, 6*x^2*y-3*y, -2*x^2*z+z).
+```
+
+Exact rational Gaussian-moment arithmetic gives
+
+```text
+S8 = (9959571879362560 / 282429536481) (pi/9)^(3/2) > 0.
+```
+
+For `u_r(x)=r^3 u(r^2 x)`, `r>0`, the integral scaling powers are
+
+| Quantity | Definition | Power of `r` |
+| --- | --- | --- |
+| `K2` | `integral |u|^2` | 0 |
+| `Z2` | `integral |omega|^2` | 4 |
+| `E8` | `integral |omega|^8` | 34 |
+| `G8` | `integral |omega|^6 |grad omega|^2` | 38 |
+| `R8` | `integral |omega|^4 sum_j <omega,partial_j omega>^2` | 38 |
+| `S8` | `integral |omega|^6 <omega,S omega>` | 39 |
+
+Thus a universal instantaneous inequality
+`S8 <= nu (G8+6 R8) + C(K2,nu) Z2 E8`, with a finite constant depending
+only on the fixed energy and viscosity, fails under concentration.
+Adding `C(K2,nu) E8` does not repair its scaling. The script checks the
+curl, divergence, strain, symbolic derivative scaling, and independent
+Gaussian integration-by-parts identities; run it with Python and SymPy.
+
+This is a **symbolic initial-data diagnostic, not a Lean-verified
+counterexample or a constructed time-evolving NS solution**. Its domain
+is `R^3`; no periodic counterexample is asserted. It excludes this
+particular energy-only instantaneous ansatz, not a signed time-integrated
+bound with appropriate initial-data dependence, a conditional coherence
+criterion, or global regularity itself.
 
 #### Endpoint and forcing restrictions
 
