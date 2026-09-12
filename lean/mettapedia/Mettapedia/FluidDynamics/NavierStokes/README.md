@@ -325,6 +325,66 @@ singular time, nor global directional coherence has been proved.
 `WeightedAngularMeanAudit.lean` checks these distinctions and the
 foundational dependencies. The decisive S4 budget remains open.
 
+### Signed separation and radial kernel geometry
+
+`LocalVorticitySeparation.lean` retains the separation direction in the
+scalar triple product. Write `a = omega(x)`, `b = omega(y)`,
+`h = x-y` for a difference of real lifts, and `A_x = grad u(x)`.
+The actual local unforced equation gives
+
+```text
+D = (a cross b) dot h,
+r_v = u(x)-u(y)-A_x h,
+r_g = (A_y-A_x)b,
+D' = (a cross r_g) dot h + (a cross b) dot r_v
+     + nu * (Delta a cross b + a cross Delta b) dot h.
+```
+
+This is an exact material derivative, including zeros. The common full
+velocity gradient cancels because its trace vanishes; it need not be
+symmetric. Both remainders are constructed from the same velocity field.
+The nonviscous part satisfies
+
+```text
+|D'_nonviscous| <= |a| |b| (||A_y-A_x|| |h| + |r_v|).
+```
+
+The estimate supplies no uniform bound for either remainder. A real lift
+is not a globally smooth shortest displacement on the torus. The tests
+also retain an example where `D'=0` but the old weighted cross-product
+energy has derivative `48`, so this cancellation is not weighted damping.
+
+`Analysis/ScalarTripleProductEvolution.lean` proves the radial algebra:
+for `H = c I + d (h tensor h)` and `F_n(a)=|a|^n a`,
+
+```text
+pairedStretch_n(H,a,b) = d * D * (h dot (F_n(a)-F_n(b))).
+```
+
+The earlier annular construction uses a chosen smooth bump, whose API
+provides evenness but not rotational invariance. It is not treated as a
+radial kernel. `Analysis/RadialRieszRegularization.lean` instead constructs
+an explicitly radial cutoff by applying a scalar bump to the squared
+Euclidean norm. Its compact weights lie in `[0,1]` and tend to one at
+every frequency of norm at least one. Its inverse-Fourier scalar potential
+is invariant under every linear isometry.
+`Analysis/RadialRieszHessian.lean` constructs the Riesz kernel entries and
+proves `partial_i partial_j potential_N = -(2*pi)^2 kernel_N(i,j)`.
+`Analysis/RadialRieszMoments.lean` reconstructs this family as a finite
+sum of dilates of its lowest annulus. Its first and second absolute
+spatial moments are bounded by `2` and `4/3` times the respective base
+moments, independently of `N` (and with a geometric formula for every
+positive integer moment).
+
+The remaining bridge must derive the radial tensor decomposition from
+this potential and periodize it with each lifted displacement retained.
+The Euclidean moment bounds must also be transferred to that periodic
+representation. This new family has not been
+silently substituted for the previous angular kernel. Even after that
+bridge, amplitude weights, kernel transport, viscosity and the signed
+time-integrated budget still require control. `VorticitySeparationAudit.lean`
+checks the dependencies; S4, BKM continuation and unconditional A/B remain open.
+
 The dependencies guide the work, not a rigid chronological schedule:
 counterexamples to a proposed S3 or S4 estimate can require revising S2.
 Imported fluid-equation results must retain their domain, forcing, and
