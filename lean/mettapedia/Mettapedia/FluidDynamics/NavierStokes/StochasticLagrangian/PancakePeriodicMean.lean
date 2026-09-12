@@ -58,7 +58,9 @@ theorem circleMean_mono (f g : ℝ → ℝ) (hf : Continuous f) (hg : Continuous
   exact intervalIntegral.integral_mono_on (by positivity) (hf.intervalIntegrable _ _) (hg.intervalIntegrable _ _)
     (fun x _ ↦ h x)
 
-theorem continuous_circleMean (f : ℝ → ℝ → ℝ) (hf : Continuous f.uncurry) :
+theorem continuous_circleMean {P : Type*} [TopologicalSpace P] [FirstCountableTopology P]
+    [LocallyCompactSpace P]
+    (f : P → ℝ → ℝ) (hf : Continuous f.uncurry) :
     Continuous (fun x ↦ circleMean (f x)) := by
   have h := continuous_parametric_integral_of_continuous (μ := volume) hf
     (isCompact_Icc (a := 0) (b := 2 * π))
@@ -91,6 +93,27 @@ theorem circleMean_cos_sq : circleMean (fun x ↦ cos x ^ 2) = 1 / 2 := by
   simp [circleMean, integral_cos_sq, sin_two_pi, cos_two_pi]
   field_simp
 
+/-- The full-period cosine moment recurrence, obtained from integration by parts. -/
+theorem circleMean_cos_pow_add_two (n : ℕ) :
+    circleMean (fun x ↦ cos x ^ (n + 2)) =
+      ((n : ℝ) + 1) / ((n : ℝ) + 2) * circleMean (fun x ↦ cos x ^ n) := by
+  unfold circleMean
+  rw [integral_cos_pow]
+  simp only [sin_two_pi, sin_zero, mul_zero, sub_self, zero_div, zero_add]
+  ring
+
+theorem circleMean_cos_pow_four : circleMean (fun x ↦ cos x ^ 4) = 3 / 8 := by
+  rw [show (4 : ℕ) = 2 + 2 by decide, circleMean_cos_pow_add_two, circleMean_cos_sq]
+  norm_num
+
+theorem circleMean_cos_pow_six : circleMean (fun x ↦ cos x ^ 6) = 5 / 16 := by
+  rw [show (6 : ℕ) = 4 + 2 by decide, circleMean_cos_pow_add_two, circleMean_cos_pow_four]
+  norm_num
+
+theorem circleMean_cos_pow_eight : circleMean (fun x ↦ cos x ^ 8) = 35 / 128 := by
+  rw [show (8 : ℕ) = 6 + 2 by decide, circleMean_cos_pow_add_two, circleMean_cos_pow_six]
+  norm_num
+
 theorem circleMean_abs_cos_lower : (1 : ℝ) / 2 ≤ circleMean (fun x ↦ |cos x|) := by
   rw [← circleMean_cos_sq]
   apply circleMean_mono _ _ (by fun_prop) (by fun_prop)
@@ -106,6 +129,16 @@ theorem circleMean_scaled_abs_cos_sq (eps : ℝ) :
   ring
 
 def spatialMean (f : ℝ → ℝ → ℝ) : ℝ := circleMean (fun x ↦ circleMean (f x))
+
+theorem continuous_spatialMean {P : Type*} [TopologicalSpace P] [FirstCountableTopology P]
+    [LocallyCompactSpace P]
+    (f : P → ℝ → ℝ → ℝ)
+    (hf : Continuous (fun q : P × (ℝ × ℝ) ↦ f q.1 q.2.1 q.2.2)) :
+    Continuous (fun p ↦ spatialMean (f p)) := by
+  apply continuous_circleMean
+  apply continuous_circleMean
+  exact hf.comp (show Continuous (fun q : (P × ℝ) × ℝ ↦ (q.1.1, (q.1.2, q.2)))
+    from by fun_prop)
 
 theorem spatialMean_congr (f g : ℝ → ℝ → ℝ) (h : ∀ x y, f x y = g x y) :
     spatialMean f = spatialMean g := by
@@ -133,6 +166,17 @@ theorem spatialMean_sub (f g : ℝ → ℝ → ℝ) (hf : Continuous f.uncurry)
     exact circleMean_sub _ _ (hf.comp (continuous_const.prodMk continuous_id))
       (hg.comp (continuous_const.prodMk continuous_id))
   rw [heq, circleMean_sub _ _ (continuous_circleMean f hf) (continuous_circleMean g hg)]
+
+theorem spatialMean_add (f g : ℝ → ℝ → ℝ) (hf : Continuous f.uncurry)
+    (hg : Continuous g.uncurry) :
+    spatialMean (fun x y ↦ f x y + g x y) = spatialMean f + spatialMean g := by
+  unfold spatialMean
+  have heq : (fun x ↦ circleMean (fun y ↦ f x y + g x y)) =
+      (fun x ↦ circleMean (f x) + circleMean (g x)) := by
+    funext x
+    exact circleMean_add _ _ (hf.comp (continuous_const.prodMk continuous_id))
+      (hg.comp (continuous_const.prodMk continuous_id))
+  rw [heq, circleMean_add _ _ (continuous_circleMean f hf) (continuous_circleMean g hg)]
 
 theorem spatialMean_const_mul (c : ℝ) (f : ℝ → ℝ → ℝ) :
     spatialMean (fun x y ↦ c * f x y) = c * spatialMean f := by
