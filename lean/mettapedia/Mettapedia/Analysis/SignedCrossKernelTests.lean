@@ -35,6 +35,25 @@ example (n : ℕ) (a b : R3) :
     pairedStretch n (ContinuousLinearMap.id ℝ R3) a b = 0 := by
   simpa using pairedStretch_scalar_identity n a b 1
 
+example (H : R3 →L[ℝ] R3) (a b : R3) :
+    |pairedStretch 6 H a b| ≤
+      4 * (min ‖a‖ ‖b‖ * ‖H‖ * ‖radialPower 3 a - radialPower 3 b‖ ^ 2) := by
+  simpa only [mul_assoc] using abs_pairedStretch_double_le 3 H a b
+
+example (n : ℕ) (L : ℝ) (hL : 0 < L) (H : R3 →L[ℝ] R3) (a : R3) :
+    highAmplitudeStretch n L H a 0 = 0 := by
+  apply highAmplitudeStretch_eq_zero_of_min_le n L hL
+  exact (min_le_right _ _).trans (by simpa using hL.le)
+
+example (n : ℕ) (L : ℝ) (hL : 0 < L) (H : R3 →L[ℝ] R3) (a b : R3)
+    (h : min ‖a‖ ‖b‖ = L) : highAmplitudeStretch n L H a b = 0 :=
+  highAmplitudeStretch_eq_zero_of_min_le n L hL H a b h.le
+
+example (n : ℕ) (L : ℝ) (H : R3 →L[ℝ] R3) (a : R3) :
+    highAmplitudeStretch n L H a (-a) = 0 := by
+  simp [highAmplitudeStretch, show pairedStretch n H a (-a) = 0 from
+    by simpa using pairedStretch_collinear n H a 1 (-1)]
+
 #print axioms Mettapedia.Analysis.SignedCrossKernel.weightedStretch_add_swap
 #print axioms Mettapedia.Analysis.SignedCrossKernel.pairedStretch_swap
 #print axioms Mettapedia.Analysis.SignedCrossKernel.pairedStretch_collinear
@@ -42,3 +61,9 @@ example (n : ℕ) (a b : R3) :
 #print axioms Mettapedia.Analysis.SignedCrossKernel.pairedStretch_add_scalar_identity
 #print axioms Mettapedia.Analysis.SignedCrossKernel.abs_pairedStretch_le
 #print axioms Mettapedia.Analysis.SignedCrossKernel.integral_weightedStretch_eq_half_pair
+#print axioms Mettapedia.Analysis.SignedCrossKernel.norm_cross_le_min_norm_mul_sub
+#print axioms Mettapedia.Analysis.SignedCrossKernel.abs_pairedStretch_double_le
+#print axioms Mettapedia.Analysis.SignedCrossKernel.abs_lowAmplitudeWeight_mul_pairedStretch_double_le
+#print axioms Mettapedia.Analysis.SignedCrossKernel.highAmplitudeStretch_eq_zero_of_min_le
+#print axioms Mettapedia.Analysis.SignedCrossKernel.abs_integral_paired_sub_high_le
+#print axioms Mettapedia.Analysis.SignedCrossKernel.abs_integral_weightedStretch_double_le

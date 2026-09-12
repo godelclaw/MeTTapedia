@@ -35,3 +35,20 @@ example {w : ℝ → E} {v z : E} {t : ℝ} (hw : HasDerivAt w v t)
   have h := norm_derivative_radialPower_three_le hw hz
   simp only [hzero, norm_zero, zero_pow (by omega : 3 ≠ 0), mul_zero, zero_mul] at h
   exact norm_eq_zero.mp (le_antisymm h (norm_nonneg _))
+
+example (n : ℕ) (a b : E) :
+    max ‖a‖ ‖b‖ ^ n * ‖a - b‖ ≤ 2 * ‖radialPower n a - radialPower n b‖ :=
+  max_norm_pow_mul_norm_sub_le n a b
+
+example (a b : E) :
+    ‖radialPower 6 a - radialPower 6 b‖ ≤
+      2 * max ‖a‖ ‖b‖ ^ 3 * ‖radialPower 3 a - radialPower 3 b‖ :=
+  norm_radialPower_double_sub_le 3 a b
+
+example (a : E) : ‖a - (0 : E)‖ ≤ 2 * ‖a - (0 : E)‖ := by
+  simpa [radialPower] using max_norm_pow_mul_norm_sub_le 0 a (0 : E)
+
+#print axioms Mettapedia.Analysis.RadialPower.norm_radialPower
+#print axioms Mettapedia.Analysis.RadialPower.radial_gap_mul_norm_le
+#print axioms Mettapedia.Analysis.RadialPower.max_norm_pow_mul_norm_sub_le
+#print axioms Mettapedia.Analysis.RadialPower.norm_radialPower_double_sub_le

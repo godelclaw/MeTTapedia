@@ -24,6 +24,70 @@ def radialPower (n : ℕ) (x : E) : E := ‖x‖ ^ n • x
 theorem continuous_radialPower (n : ℕ) : Continuous (radialPower n : E → E) :=
   (continuous_norm.pow n).smul continuous_id
 
+theorem norm_radialPower (n : ℕ) (a : E) : ‖radialPower n a‖ = ‖a‖ ^ (n + 1) := by
+  simp only [radialPower, norm_smul, Real.norm_eq_abs,
+    abs_of_nonneg (pow_nonneg (norm_nonneg _) _), pow_succ]
+
+theorem radial_gap_mul_norm_le (n : ℕ) (a b : E) (hab : ‖b‖ ≤ ‖a‖) :
+    (‖a‖ ^ n - ‖b‖ ^ n) * ‖b‖ ≤ ‖radialPower n a - radialPower n b‖ := by
+  calc
+    _ ≤ ‖a‖ ^ (n + 1) - ‖b‖ ^ (n + 1) := by
+      simp only [pow_succ]
+      nlinarith [mul_le_mul_of_nonneg_left hab (pow_nonneg (norm_nonneg a) n)]
+    _ ≤ _ := by simpa only [norm_radialPower] using
+      norm_sub_norm_le (radialPower n a) (radialPower n b)
+
+theorem norm_pow_mul_norm_sub_le_of_norm_le (n : ℕ) (a b : E) (hab : ‖b‖ ≤ ‖a‖) :
+    ‖a‖ ^ n * ‖a - b‖ ≤ 2 * ‖radialPower n a - radialPower n b‖ := by
+  have hp : 0 ≤ ‖a‖ ^ n - ‖b‖ ^ n :=
+    sub_nonneg.mpr (pow_le_pow_left₀ (norm_nonneg b) hab n)
+  have he : ‖a‖ ^ n • (a - b) =
+      radialPower n a - radialPower n b - (‖a‖ ^ n - ‖b‖ ^ n) • b := by
+    unfold radialPower
+    module
+  have hn := norm_sub_le (radialPower n a - radialPower n b)
+    ((‖a‖ ^ n - ‖b‖ ^ n) • b)
+  rw [← he] at hn
+  simp only [norm_smul, Real.norm_eq_abs, abs_of_nonneg hp,
+    abs_of_nonneg (pow_nonneg (norm_nonneg a) n)] at hn
+  linarith only [hn, radial_gap_mul_norm_le n a b hab]
+
+/-- A max-weight increment is controlled uniformly, including opposite endpoints. -/
+theorem max_norm_pow_mul_norm_sub_le (n : ℕ) (a b : E) :
+    max ‖a‖ ‖b‖ ^ n * ‖a - b‖ ≤ 2 * ‖radialPower n a - radialPower n b‖ := by
+  rcases le_total ‖b‖ ‖a‖ with hab | hab
+  · simpa only [max_eq_left hab] using norm_pow_mul_norm_sub_le_of_norm_le n a b hab
+  · simpa only [max_eq_right hab, norm_sub_rev] using
+      norm_pow_mul_norm_sub_le_of_norm_le n b a hab
+
+theorem norm_radialPower_double_sub_le_of_norm_le (n : ℕ) (a b : E) (hab : ‖b‖ ≤ ‖a‖) :
+    ‖radialPower (2 * n) a - radialPower (2 * n) b‖ ≤
+      2 * ‖a‖ ^ n * ‖radialPower n a - radialPower n b‖ := by
+  have hp : 0 ≤ ‖a‖ ^ n - ‖b‖ ^ n :=
+    sub_nonneg.mpr (pow_le_pow_left₀ (norm_nonneg b) hab n)
+  have he : radialPower (2 * n) a - radialPower (2 * n) b =
+      ‖a‖ ^ n • (radialPower n a - radialPower n b) +
+        (‖a‖ ^ n - ‖b‖ ^ n) • radialPower n b := by
+    simp only [radialPower, two_mul, pow_add, mul_smul]
+    module
+  rw [he]
+  have hn := norm_add_le (‖a‖ ^ n • (radialPower n a - radialPower n b))
+    ((‖a‖ ^ n - ‖b‖ ^ n) • radialPower n b)
+  simp only [norm_smul, Real.norm_eq_abs, abs_of_nonneg hp,
+    abs_of_nonneg (pow_nonneg (norm_nonneg a) n), norm_radialPower, pow_succ] at hn
+  have h := mul_le_mul (pow_le_pow_left₀ (norm_nonneg b) hab n)
+    (radial_gap_mul_norm_le n a b hab) (mul_nonneg hp (norm_nonneg b))
+    (pow_nonneg (norm_nonneg a) n)
+  nlinarith only [hn, h]
+
+theorem norm_radialPower_double_sub_le (n : ℕ) (a b : E) :
+    ‖radialPower (2 * n) a - radialPower (2 * n) b‖ ≤
+      2 * max ‖a‖ ‖b‖ ^ n * ‖radialPower n a - radialPower n b‖ := by
+  rcases le_total ‖b‖ ‖a‖ with hab | hab
+  · simpa only [max_eq_left hab] using norm_radialPower_double_sub_le_of_norm_le n a b hab
+  · simpa only [max_eq_right hab, norm_sub_rev] using
+      norm_radialPower_double_sub_le_of_norm_le n b a hab
+
 /-- The exact defect is a product of two equally ordered radial differences. -/
 theorem norm_sub_sq_identity (n : ℕ) (a b : E) :
     ‖radialPower n a - radialPower n b‖ ^ 2 -

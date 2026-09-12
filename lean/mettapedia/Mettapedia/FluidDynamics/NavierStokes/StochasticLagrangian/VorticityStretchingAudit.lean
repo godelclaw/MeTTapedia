@@ -1,4 +1,5 @@
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.VorticityWeightedStretching
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.VorticityHighAmplitudeSource
 import Mettapedia.Analysis.SignedCrossKernelTests
 
 /-! Actual-field, zero-mode and sign regressions for the signed stretching representation. -/
@@ -13,6 +14,7 @@ open PancakePeriodicVorticityEquation PancakeFourierPressureStrain PancakeCurlOu
 open PancakeGalerkinKineticEnergy
 open PancakeBlockReality PancakeHigherDerivativeMoments PancakeLocalInfiniteVelocity
 open VorticityStretchingKernel VorticityWeightedStretching
+open VorticityHighAmplitudeSource
 open Mettapedia.Analysis.SignedCrossKernel Mettapedia.Analysis.EuclideanCrossProduct
 
 local notation "T3" => UnitAddTorus (Fin 3)
@@ -74,3 +76,35 @@ example :
 #print axioms Mettapedia.FluidDynamics.NavierStokes.VorticityWeightedStretching.tendsto_pairedIntegral
 #print axioms Mettapedia.FluidDynamics.NavierStokes.VorticityWeightedStretching.tendsto_eighthMoment_pair
 #print axioms Mettapedia.FluidDynamics.NavierStokes.VorticityWeightedStretching.fullStretching_eq_zero_of_collinear
+
+example (nu : ℝ) (hnu : 0 < nu) (modes : Finset Wavevector) :
+    0 < dissipationThreshold nu modes ∧
+      96 * dissipationThreshold nu modes * kernelSecondMoment modes ≤ nu / 2 :=
+  ⟨dissipationThreshold_pos nu hnu modes, dissipationThreshold_pays nu hnu.le modes⟩
+
+example (L : ℝ) (n : ℕ) (u : FourierVelocity) : highAmplitudeSource n L ∅ u = 0 := by
+  simp [highAmplitudeSource, highAmplitudeStretch, pairedStretch, kernel]
+
+example {nu T B : ℝ} {u₀ : FourierVelocity} (s : LocalInfiniteVelocitySolution nu u₀ T B)
+    (hnu : 0 < nu) (t : ℝ) (hu : Summable (fourierMoment 3 (s.coefficients t)))
+    (modes : Finset Wavevector) :
+    finiteStretching 6 modes (s.coefficients t) ≤
+      (nu / 2) * LocalVorticityEighthMoment.weightedPalinstrophy (s.coefficients t) +
+        highAmplitudeSource 6 (dissipationThreshold nu modes) modes (s.coefficients t) :=
+  finiteStretching_le_half_dissipation_add_remainder nu hnu modes _ hu
+    (s.reality t) (s.transverse t)
+
+example (L : ℝ) (hL : 0 < L) (modes : Finset Wavevector) (u : FourierVelocity) (x y : T3)
+    (h : ‖LocalLowDiffusionBudget.fullVorticity u y‖ ≤ L) :
+    highAmplitudeStretch 6 L (kernel modes (x - y))
+      (LocalLowDiffusionBudget.fullVorticity u x) (LocalLowDiffusionBudget.fullVorticity u y) = 0 :=
+  highAmplitudeStretch_eq_zero_of_endpoint_le L hL modes u x y (Or.inr h)
+
+#print axioms Mettapedia.FluidDynamics.NavierStokes.PeriodicWeightedIncrement.integral_radialPower_three_sub_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.VorticityRadialSourceBound.abs_eighthMoment_finiteStretching_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.VorticityHighAmplitudeSource.bareRadialIntegral_three_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.VorticityHighAmplitudeSource.abs_finiteStretching_sub_highAmplitudeSource_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.VorticityHighAmplitudeSource.dissipationThreshold_pos
+#print axioms Mettapedia.FluidDynamics.NavierStokes.VorticityHighAmplitudeSource.dissipationThreshold_pays
+#print axioms Mettapedia.FluidDynamics.NavierStokes.VorticityHighAmplitudeSource.finiteStretching_le_half_dissipation_add_remainder
+#print axioms Mettapedia.FluidDynamics.NavierStokes.VorticityHighAmplitudeSource.highAmplitudeStretch_eq_zero_of_endpoint_le
