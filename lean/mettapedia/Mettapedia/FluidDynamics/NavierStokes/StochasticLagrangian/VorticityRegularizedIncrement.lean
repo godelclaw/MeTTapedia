@@ -7,8 +7,9 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.VorticityHighA
 The constructed even Riesz kernel family pays cubic radial increments with
 the actual weighted palinstrophy. Unlike the sharp finite-frequency bound,
 the constant and the positive dissipation threshold are independent of the
-cutoff. Identifying the full signed source with the limit of this new
-regularization and controlling its high-amplitude part are separate steps.
+cutoff. `VorticityRegularizedSource` identifies the limiting actual source,
+and `VorticityRegularizedPayment` applies this payment to its signed split.
+Controlling the high-amplitude remainder dynamically is a separate step.
 -/
 
 set_option autoImplicit false

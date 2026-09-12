@@ -78,7 +78,7 @@ fractions of a completed proof.
 | S1. Actual equation and objects | Construct the solution, stochastic/material objects, and frequency decomposition from arbitrary admissible data; derive every evolution identity used later from the actual unforced equation. Track the periodic and Euclidean realizations separately. | **Partial.** The local periodic solution, common-interval material flow, vorticity and strain equations are constructed; see `StochasticLagrangian/LocalMaterialVorticity.lean`, `LocalMaterialStrain.lean`, and `LocalSpectralResidual.lean`. This is not a complete arbitrary-data stochastic/Euclidean realization. |
 | S2. Spatial field transfer | Transfer the coherent/misaligned geometry to the actual localized operator fields, retaining uniform kernel constants and the inverse-scale gain through integration and limits. | **Partial.** High-input pressure and the low-input complement are identified; moving-line and divergence decompositions retain their source costs. Common periodic envelopes and actual localized weak derivatives in L² are constructed. `PressureCoherentWeakFieldTransfer.lean` identifies both input-coordinate channels, retaining the uniform ratio²/input-scale² energy gain. `GaussianRootWeakChannelBudget.lean` transfers both patch-square sums to the integrable two-point derivative density without individual input suprema or a patch-count factor. `GaussianRootTwoPointDerivative.lean` bounds that density by actual gap/projector derivatives and Gaussian two-point moments, on a common null set that survives translation. `PressureCoherentRelativeMoment.lean` retains the ratio in every prescribed relative kernel moment and integrates squared field separation with an explicit Lipschitz cost. `GaussianRootTwoPointIntegral.lean` proves integrability of the full Gaussian derivative cost and transfers both actual channel-energy sums to it using one constructed envelope. `GaussianRootIncrementBudget.lean` replaces projector separation by actual vorticity/strain increments inside both integrated channel costs, using constructed adaptive centers. `GaussianRootWeightedIncrement.lean` controls the bare vorticity increment by actual sixth-power-weighted palinstrophy with the relative second-moment gain, and splits the full cost while retaining its two-endpoint projector coefficient. Quantitative control of the derivative-weighted costs, remaining interactions, and time affordability are still required. |
 | S3. All scales and sectors | Sum over input scales and pay for the other frequency interactions, angular tails, collision sectors, and adaptive cutoff terms without uncontrolled scale, patch-count, or regularization losses. | **Partial.** `PressureHighInputAction.lean` sums all high-input scales in bilinear operator norm. `GaussianRootHighInputBudget.lean` retains the quarter-geometric tail gain after localization and spatial integration, with explicit vorticity-supremum and patch-gradient costs. `PressureHighInputComplement.lean` identifies the remaining input sector as an exact finite sum. Finite support does not establish a uniform or dynamically affordable bound. The other sectors, scale-critical time control, and regularization limits are open. |
-| S4. Dynamical misalignment budget | Prove the signed time-integrated nonlinear estimate from the actual unforced evolution, with bounds that remain finite up to any candidate finite singular time. Construct `MisalignmentStrainBudget`, rather than pass it in as a hypothesis. | **Open; decisive mathematical core.** `LocalExcessAlignmentEnergy.lean` supplies an actual-data absorption inequality with explicit source costs. `LocalVorticityEighthEnergy.lean` derives the exact initial-data eighth-moment identity with both positive dissipation terms and signed stretching, using the same weighted palinstrophy as the increment estimate. `VorticityWeightedStretching.lean` identifies that actual full source as the limit of signed two-point cross-product/radial-difference integrals. `VorticityHighAmplitudeSource.lean` pays the bounded-amplitude part at each finite cutoff with actual weighted dissipation, retaining a signed high-amplitude remainder. `VorticityRegularizedIncrement.lean` supplies a cutoff-uniform increment payment for a constructed smooth-annular Riesz regularization. Its full signed-source identification and the time-integrated high-amplitude source bound remain open. `MisalignmentRefinedPin.lean` proves a conditional reduction, not the required dynamical budget. |
+| S4. Dynamical misalignment budget | Prove the signed time-integrated nonlinear estimate from the actual unforced evolution, with bounds that remain finite up to any candidate finite singular time. Construct `MisalignmentStrainBudget`, rather than pass it in as a hypothesis. | **Open; decisive mathematical core.** `LocalExcessAlignmentEnergy.lean` supplies an actual-data absorption inequality with explicit source costs. `LocalVorticityEighthEnergy.lean` derives the exact initial-data eighth-moment identity with both positive dissipation terms and signed stretching, using the same weighted palinstrophy as the increment estimate. `VorticityWeightedStretching.lean` identifies that actual full source as the limit of signed two-point cross-product/radial-difference integrals. `VorticityHighAmplitudeSource.lean` pays the bounded-amplitude part at each finite cutoff with actual weighted dissipation, retaining a signed high-amplitude remainder. `VorticityRegularizedIncrement.lean` supplies a cutoff-uniform increment payment for a constructed smooth-annular Riesz regularization. `VorticityRegularizedSource.lean` now identifies its limit with actual stretching; `VorticityRegularizedPayment.lean` pays its low-amplitude source with a single positive threshold independent of cutoff and field. The signed time-integrated high-amplitude bound remains open. `MisalignmentRefinedPin.lean` proves a conditional reduction, not the required dynamical budget. |
 | S5. Vorticity control and continuation | Construct the spatial essential-supremum vorticity integrand, prove its finite-time integral is controlled by the preceding estimates, and apply the continuation theorem to the actual solution. | **Open.** Continuation target surfaces and conditional reductions exist. The current `||omega||_sup² sqrt(G)` spatial cost is not yet a controlled BKM integrand. |
 | S6. Unconditional theorem and audit | Assemble the arbitrary-data theorem for each claimed domain; check every hypothesis, forcing/pressure convention, limit, and imported result against the target. Compile and audit the final theorem with no assumed analytic budgets or extra axioms. | **Open.** Local lemma builds and foundational-axiom audits are necessary evidence, not completion of this obligation. |
 
@@ -1201,19 +1201,50 @@ L_nu = nu / (192 (C+1)) > 0                   (nu>0),
 2 L_nu I_N <= (nu/2) G8                      (every N).
 ```
 
-This is a uniform payment for the increment cost, with one positive
-threshold for all cutoffs. It is not yet a theorem identifying the
-new operator family's signed two-point source with `S8`, nor a
-time-integrated bound on its high-amplitude remainder. The scalar
-Fourier coefficients and their limits are checked; passing through the
-operator assembly, signed pairing and source limit remains explicit
-work. No uniform unweighted kernel mass, vorticity supremum, alignment
+This uniform increment payment now applies to the actual signed source.
+`VorticityRegularizedConvolution.lean` and
+`VorticityRegularizedQuadratic.lean` identify the integrable real-even
+operator acting on the full vorticity, including its exact Fourier series.
+`VorticityRegularizedSource.lean` proves that the resulting weighted source
+converges to actual stretching. `VorticityRegularizedPairing.lean` proves
+the source-receiver exchange identity with joint integrability, without
+assuming continuity of the periodized kernel. In particular, with
+`F_n(a) = |a|^n a`,
+
+```text
+S_(n,N) = (1/2) integral_x integral_y
+  <omega(x) cross omega(y), H_N(x-y) (F_n(omega(x))-F_n(omega(y)))>,
+S_(6,N) -> S8.
+```
+
+`VorticityRegularizedPayment.lean` uses the symmetric weight
+`l_L(a,b) = L / max(L,min(|a|,|b|))` and retains the signed remainder
+`R_(L,N)` obtained by multiplying the paired integrand by `1-l_L`:
+
+```text
+|S_(6,N) - R_(L,N)| <= 2 L I_N,
+S_(6,N) <= (nu/2) G8 + R_(L_nu,N)             (every N).
+```
+
+The same positive `L_nu` works for all cutoffs and fields. The remainder
+vanishes when either endpoint vorticity norm is at most `L_nu`.
+A uniform upper bound `R_(L_nu,N) <= b` would pass to
+`S8 <= (nu/2) G8 + b`; this conditional implication is checked and does
+not require convergence of the remainder itself. Constructing a signed
+time-integrated remainder bound from the unforced dynamics remains open.
+The fixed-snapshot domination used for the source limit is not such a
+bound. No uniform unweighted kernel mass, vorticity supremum, alignment
 modulus or global-in-time palinstrophy bound is inferred.
 
 `Analysis/PeriodicRieszKernelTests.lean` checks normalization, the unit
 frequency shell, zero mode, symmetry and dimension-independent moment
 uniformity. `VorticityRegularizedAudit.lean` checks the same threshold
 at every cutoff for actual local-solution coefficients.
+`VorticityRegularizedSourceAudit.lean` checks source convergence, a threshold
+chosen before time and cutoff, the zero-endpoint case, and the explicitly
+conditional remainder-to-source implication at those same coefficients.
+`Analysis/PeriodicRieszOperatorFourierTests.lean` checks zero frequencies,
+dimension-independent operator assembly and integrable-kernel convolution.
 
 #### Concentration test for an instantaneous energy-only closure
 

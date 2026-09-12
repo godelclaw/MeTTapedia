@@ -6,6 +6,11 @@ Reusable analysis, independent of any particular fluid construction.
 
 | Module | Mathematical content | Scope |
 | --- | --- | --- |
+| `IntegrableKernelPairing.lean` | Integrable scalar kernels define bounded functionals on continuous fields | Compact domains with measurable open sets; no kernel continuity or uniform mass hypothesis |
+| `UnitTorusFourierReal.lean` | Fourier coefficients under conjugation, reversal, real-part extraction and real-even symmetrization | Any finite-dimensional unit torus; integrability retained where addition is used |
+| `UnitTorusIntegrableConvolution.lean` | Convolution of an integrable kernel with a uniformly convergent Fourier series | No continuity of the kernel; actual `HasSum` in the continuous-field norm |
+| `PeriodicRieszOperatorFourier.lean` | Real-even scalar entries reconstruct the actual operator and retain its exact annular Fourier symbol | Arbitrary finite dimension; includes zero modes |
+| `SignedCrossKernelIntegrable.lean` | Signed source-receiver exchange and low/high-amplitude splitting for integrable kernels | Explicit joint integrability; no continuity or boundedness of the kernel assumed |
 | `BilinearKernelIntegrability.lean` | Integrable operator kernels act on bounded strongly measurable fields; compact continuous fields supply all needed bounds | Real or complex normed spaces; kernel continuity and absolute input Fourier summability are not required |
 | `WeightedIntegralEnergy.lean` | Weighted Cauchy–Schwarz and the squared norm of an actual Bochner integral bounded by mass times weighted energy | Nonnegative integrable weights, including zero mass; almost-everywhere strongly measurable inputs |
 | `BilinearTranslatedKernel.lean` | Bilinear L¹ kernels acting on one L² input and one bounded measurable input, in either slot; almost-everywhere integrability, representative independence, and an L² input-difference estimate | Measurable additive commutative groups with a right-invariant s-finite measure; actual translated integrals, no input Fourier-summability hypothesis |
