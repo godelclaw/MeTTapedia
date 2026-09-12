@@ -109,6 +109,29 @@ cutoff-uniform upper bound on the joint signed time expression, remaining
 finite up to a candidate singular time. The current identities are local
 on compact interior intervals; no lifespan-uniform bound is inferred.
 
+The separated part of the retained source now has a cutoff-uniform upper
+estimate. For every fixed `r > 0`, `VorticitySeparatedSource.lean` proves
+the exact near/far split and
+
+```text
+|R_far,N(t)| <= b_r(t) E8(t),
+b_r(t) = C_r/2 * (1 + ||omega(t)||_2^2),
+integral_0^t b_r <= C_r*t/2 + C_r*||u0||_2^2/(4*nu).
+```
+
+The displayed enstrophy is the Fourier kinetic energy of the actual curl;
+Parseval supplies the physical-space comparison. The coefficient payment
+is proved in `LocalSeparatedSourceBudget.lean` from the actual unforced
+energy identity, including time zero. The constant is independent of the
+kernel cutoff, amplitude threshold, local Fourier envelope and solution.
+It depends on the fixed separation radius. `Analysis/AnnularRieszDecay.lean`,
+`UnitTorusSeparatedLattice.lean` and `PeriodicRieszSeparated.lean` construct
+the bound from annular Schwartz decay and a summable lattice majorant.
+This is a paid **linear growth coefficient**, not an absolute source
+budget: `E8` is still unknown. The nearby retained interaction remains
+signed and dynamically uncontrolled. Letting `r` shrink requires control
+of the resulting radius-dependent cost.
+
 The dependencies guide the work, not a rigid chronological schedule:
 counterexamples to a proposed S3 or S4 estimate can require revising S2.
 Imported fluid-equation results must retain their domain, forcing, and
