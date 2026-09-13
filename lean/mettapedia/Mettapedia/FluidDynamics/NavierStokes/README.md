@@ -2004,11 +2004,49 @@ preserving the signed helicity pairing and the spectral defect. The
 new cost vanishes on the shear, as checked alongside the strictly
 positive old projection cost in `MonochromaticShearTests.lean`.
 
-This is an angular repair ingredient, not a replacement energy balance:
-its material evolution, compatibility with a coercive correction, and
-the initial-data-controlled signed dynamical budget remain to be proved.
-The old projection evolution cannot be applied to the new functional
-without deriving its different derivative terms.
+The new functional has its own evolution and finite-band coercivity
+development below. The old projection evolution is not applied to it.
+
+### Actual angular evolution and a retained radial coercivity margin
+
+`LocalVorticityGradientEvolution.lean` differentiates the actual infinite
+Fourier NS equation and the moving evaluation point to obtain the material
+rate of each vorticity gradient. It separates viscosity as the ordinary
+Laplacian of that reconstructed gradient. A common fourth-moment envelope
+justifies these local derivatives; it is not a global initial-data budget.
+
+`Analysis/AngularCurlEvolution.lean` differentiates the angular subtraction
+and its squared-amplitude weight. `LocalAngularCurlEvolution.lean` applies
+that exact first variation to the actual material vorticity and gradient
+rates, retaining both inviscid work and the linear viscous contribution.
+Removing radial derivatives does not remove amplitude growth: common
+amplitude rate `c` contributes exactly `8*c*K_ang` to the density rate.
+
+`FiniteBandAngularEnergy.lean` retains the radial term in the existing
+quartic-tensor Bernstein identity:
+
+```text
+K_ang + 16*R8 <= (8*pi*R)^2*E8,
+C_ang = E8/8 - (3/kappa)*K_ang,
+E8/16 + (48/kappa)*R8 <= C_ang <= E8/8
+  whenever kappa > 0 and kappa >= 48*(8*pi*R)^2.
+```
+
+`FiniteAngularCurlVariation.lean` and `FilteredAngularMean.lean` derive
+the actual spatial-mean evolution for any finite output filter. The
+variation uses the filtered full RHS. Resolved and subgrid work are
+separated exactly, and the signed integral balance reaches the initial
+endpoint. This filtered calculation does not assume a closed Galerkin
+evolution or an all-scale high-order envelope for the full solution.
+
+`AngularEvolutionTests.lean` checks that the new correction is positive
+on the same unforced shear where the spectrally matched old correction
+is negative. It does not assert matched-scale coercivity for other fields.
+
+Still required: sign-sensitive viscous-curvature payment, uniform control
+of the signed nonlinear and subgrid work, any moving-filter costs, and
+the all-scale continuation argument. The finite-band coercivity estimate
+does not control the spectral mismatch at that normalization.
 
 ### Exact low-output dyadic reconstruction with actual kernel costs
 

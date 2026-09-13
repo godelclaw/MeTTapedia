@@ -8,6 +8,11 @@ and bounds its eighth-degree energy density by twice angular dissipation,
 including at zero amplitude. This is not an evolution estimate for the
 resulting functional.
 
+`AngularCurlEvolution.lean` proves its exact first variation, including
+amplitude subtraction and the outer norm weight. It records linearity
+in the supplied rates and eighth-degree common-amplitude growth; the
+algebraic tests check both growth signs without claiming NS trajectories.
+
 ## Checked modules
 
 | Module | Mathematical content | Scope |
