@@ -44,6 +44,11 @@ reference rate. The transport tests check both deformation signs on
 trace-zero local jets and invariance under arbitrary radial jet additions.
 These identities alone do not supply a dynamical growth bound.
 
+`AngularCurlSkewDeformation.lean` identifies the rotational stress with
+negative weighted longitudinal helicity for divergence-free first jets.
+The derivative-first skew matrix and its factor one half are explicit.
+Exact local-jet tests give both signs; rotational work is not generally zero.
+
 ## Checked modules
 
 | Module | Mathematical content | Scope |

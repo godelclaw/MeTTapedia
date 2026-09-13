@@ -2194,6 +2194,50 @@ signed strain/subgrid source, moving-filter costs if used, and the passage
 to all-scale continuation. `AngularTransportAudit.lean` audits these
 declarations separately from the unconditional global-regularity target.
 
+### Integrated strain/subgrid source and exact rotational work
+
+`FiniteAngularTransportContinuity.lean` supplies joint continuity from the
+actual finite-output coefficients. `FilteredAngularStrainIntegral.lean`
+integrates the transport-paid inequality to the initial endpoint:
+
+```text
+E8(t)/16 + integral_0^t [(nu/4)*G8 + 6*nu*R8]
+  <= E8(0)/8 + integral_0^t Phi,
+Phi = stretching - (3/kappa)*angularStrainWork + fullSubgridWork.
+```
+
+All energy and dissipation quantities here use the retained field. The
+normalization satisfies both previously stated conditions. A physical-data
+corollary constructs the common moment envelope from real, divergence-free,
+mean-zero data with eight continuous coordinate derivatives. The signed
+integral of `Phi` is still an unpaid dynamical obligation, not a prescribed
+integrable budget. Integrability on the constructed local interval does not
+give uniform control approaching a possible maximal endpoint.
+
+`FiniteAngularSkewTransport.lean` identifies the antisymmetric velocity
+gradient from its actual vorticity. Its deformation contribution equals
+negative weighted longitudinal helicity:
+
+```text
+deformationIntegral = symmetricDeformationIntegral - angularHelicityIntegral.
+```
+
+Combining this with the existing weighted curl identity gives, for nonzero
+normalization and the full actual source,
+
+```text
+kappa*W = 3*symmetricDeformationIntegral - 3*angularStrainWork
+            - 9*angularHelicityIntegral - weightedStrainSpectralDefect
+            + kappa*fullSubgridWork.
+```
+
+The helicity coefficient is `9`, not a cancellation to zero. Both rotational
+signs are checked on divergence-free local first jets, without claiming
+global trajectories for those tests. This identity connects the rotational
+transport to the already identified spectral defect; it does not pay either
+channel or prove a cutoff-uniform bound. `AngularStrainSourceAudit.lean`
+audits the new declarations.
+
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
 `PressureDyadicSymbol.lean` replaces both annular cutoffs by the smooth
