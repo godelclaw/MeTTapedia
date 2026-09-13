@@ -1,5 +1,4 @@
-import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.LocalPairedDiffusion
-import Mettapedia.Analysis.UnitTorusPairIntegration
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.LocalPairedKernelDiffusion
 import Mettapedia.Analysis.PeriodicRieszPolynomial
 
 /-!
@@ -47,36 +46,18 @@ def curvatureSource (n N : ℕ) (u : FourierVelocity) : ℝ :=
 
 theorem continuous_diffusionDensity (n N : ℕ) (u : FourierVelocity)
     (hu : Summable (fourierMoment 3 u)) : Continuous (diffusionDensity n N u).uncurry := by
-  have hw := continuous_fullVorticity u (summable_fourierMoment_of_le u (by omega : 1 ≤ 3) hu)
-  have hl := LocalPairedDiffusion.continuous_fullVorticityLaplacian u hu
-  exact continuous_pairedEndpointRate (n + 1)
-    ((PeriodicRieszPolynomial.continuous_kernel N).comp (continuous_fst.sub continuous_snd))
-    (hw.comp continuous_fst) (hw.comp continuous_snd) (hl.comp continuous_fst) (hl.comp continuous_snd)
+  exact LocalPairedKernelDiffusion.continuous_diffusionDensity n
+    (PeriodicRieszPolynomial.kernel N) (PeriodicRieszPolynomial.continuous_kernel N) u hu
 
 theorem continuous_curvatureDensity (n N : ℕ) (u : FourierVelocity)
     (hu : Summable (fourierMoment 1 u)) : Continuous (curvatureDensity n N u).uncurry := by
-  have hw := continuous_fullVorticity u hu
-  exact continuous_finsetSum (Finset.univ : Finset (Fin 3)) (fun j _ ↦ continuous_pairedCurvature n
-    ((PeriodicRieszPolynomial.continuous_kernel N).comp (continuous_fst.sub continuous_snd))
-    (hw.comp continuous_fst) (hw.comp continuous_snd)
-    ((LocalSquaredGapGradient.continuous_fullCurlGradient u j).comp continuous_fst)
-    ((LocalSquaredGapGradient.continuous_fullCurlGradient u j).comp continuous_snd))
+  exact LocalPairedKernelDiffusion.continuous_curvatureDensity n
+    (PeriodicRieszPolynomial.kernel N) (PeriodicRieszPolynomial.continuous_kernel N) u hu
 
 theorem diffusionSource_eq_neg_curvatureSource (n N : ℕ) (u : FourierVelocity)
     (hu : Summable (fourierMoment 3 u)) :
-    diffusionSource n N u = -curvatureSource n N u := by
-  have he (h : T3) : (∫ x : T3, diffusionDensity n N u x (x - h)) =
-      -(∫ x : T3, curvatureDensity n N u x (x - h)) := by
-    simpa only [diffusionDensity, curvatureDensity, sub_sub_cancel,
-      LocalPairedDiffusion.diffusion, LocalPairedDiffusion.curvature] using
-      LocalPairedDiffusion.integral_diffusion_eq_neg_curvature n
-        (PeriodicRieszPolynomial.kernel N h) u hu h
-  rw [diffusionSource, curvatureSource,
-    UnitTorusPairIntegration.integral_pair_eq_separation _ (continuous_diffusionDensity n N u hu),
-    UnitTorusPairIntegration.integral_pair_eq_separation _
-      (continuous_curvatureDensity n N u (summable_fourierMoment_of_le u (by omega : 1 ≤ 3) hu))]
-  simp_rw [he]
-  rw [integral_neg]
-  ring
+    diffusionSource n N u = -curvatureSource n N u :=
+  LocalPairedKernelDiffusion.diffusionSource_eq_neg_curvatureSource n
+    (PeriodicRieszPolynomial.kernel N) (PeriodicRieszPolynomial.continuous_kernel N) u hu
 
 end Mettapedia.FluidDynamics.NavierStokes.LocalAnnularDiffusion
