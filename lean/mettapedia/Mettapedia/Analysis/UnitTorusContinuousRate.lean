@@ -37,4 +37,21 @@ theorem integral_rate_eq_zero (f rate : T → ℝ) (s : ℝ → T)
     simpa only [shiftRate, hs0, add_zero] using (hd x 0).deriv
   simpa only [he] using hzero
 
+/-- Integration by parts for actual continuous translation derivatives. -/
+theorem integral_rate_mul (f g df dg : T → ℝ) (s : ℝ → T)
+    (hf : Continuous f) (hg : Continuous g) (hdf : Continuous df) (hdg : Continuous dg)
+    (hs : Continuous s) (hs0 : s 0 = 0)
+    (hf' : ∀ x h, HasDerivAt (fun t ↦ f (x + s t)) (df (x + s h)) h)
+    (hg' : ∀ x h, HasDerivAt (fun t ↦ g (x + s t)) (dg (x + s h)) h) :
+    (∫ x : T, df x * g x) = -(∫ x : T, f x * dg x) := by
+  have hz := integral_rate_eq_zero (fun x ↦ f x * g x)
+    (fun x ↦ df x * g x + f x * dg x) s (hf.mul hg)
+    ((hdf.mul hg).add (hf.mul hdg)) hs hs0 (fun x h ↦ (hf' x h).mul (hg' x h))
+  have hi₁ : Integrable (fun x : T ↦ df x * g x) :=
+    (hdf.mul hg).integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
+  have hi₂ : Integrable (fun x : T ↦ f x * dg x) :=
+    (hf.mul hdg).integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
+  rw [integral_add hi₁ hi₂] at hz
+  linarith
+
 end Mettapedia.Analysis.UnitTorusContinuousRate
