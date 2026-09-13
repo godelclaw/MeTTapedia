@@ -2238,6 +2238,62 @@ transport to the already identified spectral defect; it does not pay either
 channel or prove a cutoff-uniform bound. `AngularStrainSourceAudit.lean`
 audits the new declarations.
 
+### Polarized angular strain work and bounded-source payment
+
+`VorticityTestedStrainKernel.lean` polarizes the actual Biot--Savart kernel
+identity. For a continuous test `f` and the actual vorticity `a`, the
+finite strain work is one quarter of the exchanged double integral
+
+```text
+P(H,a,b,f,g) = <f cross b,H a> + <g cross a,H b>
+                + <a cross b,H(f-g)>.
+```
+
+Both `a` and `b` are values of the same vorticity field. The finite strain
+series converges to its full physical strain, with no assumed infinite
+singular-kernel interchange. `AngularStrainTwoPointWork.lean` applies this
+to the actual corrected gradient. Writing `T` for its previously defined
+transverse angular gradient and `r = |a|^6 - (24/kappa)*|angularCurl|^2`,
+
+```text
+F_kappa = r*a - (3/kappa)*T,
+Phi = (1/2)*integral_xy <a cross b,H(r(x)*a-r(y)*b)>
+        - (3/(4*kappa))*integral_xy P(H,a,b,T(x),T(y))
+        + fullSubgridWork.
+```
+
+The complete subgrid term is unchanged. The radial coefficient has no
+asserted pointwise sign. The transverse pairing cannot in general be
+replaced by its increment term alone; the algebraic endpoint tests are
+not counterexamples to an actual-solution dynamical budget.
+
+`FiniteAngularSourceBound.lean` supplies a separate uniform estimate.
+For the actual finite vorticity of radius `R`, a continuously differentiable
+source satisfying
+
+```text
+|f| <= M*|omega|,
+|partial_j f| <= M*|partial_j omega| + N*|omega|,
+M,N >= 0,
+kappa >= 1 + (8*pi*R)^2,
+```
+
+has corrected work bounded by
+
+```text
+|integral <F_kappa,f>| <= (577*M + 360*N)*E8.
+```
+
+The constant is independent of the retained support and radius. The
+proof uses the signed first-variation identity and quartic tensor
+Bernstein, not a vorticity-gradient supremum. `M` and `N` remain explicit
+source bounds. Applying this estimate to a fixed low-strain source still
+requires constructing those bounds from the actual solution; applying it
+to the full strain with uncontrolled coefficients does not close S4.
+Neither this estimate nor the polarized identity controls the complete
+signed high-strain/subgrid time integral. `AngularTwoPointAudit.lean`
+records the new declarations and their foundational dependencies.
+
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
 `PressureDyadicSymbol.lean` replaces both annular cutoffs by the smooth

@@ -2,6 +2,7 @@ import Mettapedia.Analysis.ODE.QuadraticFormBound
 import Mettapedia.Analysis.AngularCurlVariationTests
 import Mettapedia.Analysis.AngularCurlTransportTests
 import Mettapedia.Analysis.AngularCurlSkewDeformationTests
+import Mettapedia.Analysis.PolarizedCrossKernelTests
 import Mettapedia.Analysis.WeightedCurlCancellationTests
 import Mettapedia.Analysis.WeightedCurlHelicityTests
 import Mettapedia.Analysis.LongitudinalHelicityBudgetTests

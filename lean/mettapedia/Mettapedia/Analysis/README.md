@@ -49,6 +49,18 @@ negative weighted longitudinal helicity for divergence-free first jets.
 The derivative-first skew matrix and its factor one half are explicit.
 Exact local-jet tests give both signs; rotational work is not generally zero.
 
+`PolarizedCrossKernel.lean` extends even-kernel exchange to arbitrary test
+vectors. Two endpoint terms survive in addition to a test increment;
+radial tests recover the existing signed cross-product identity. Isotropic
+kernel contributions cancel. Exact tests show both signs at equal endpoint
+values and equal transverse tests for an anisotropic kernel. These are
+algebraic tests, not assertions about Navier--Stokes trajectories.
+
+`AngularCurlSourceBound.lean` bounds the angular first variation from bounds
+on the incoming source and its first derivative. The resulting costs are
+weighted first-jet energy and the eighth power of the value; no second-jet
+or vorticity-gradient supremum is introduced.
+
 ## Checked modules
 
 | Module | Mathematical content | Scope |
