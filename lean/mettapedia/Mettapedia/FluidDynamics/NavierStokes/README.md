@@ -1075,6 +1075,47 @@ dissipation. `WeightedCurlHelicityTests.lean` checks the sharp Young constant
 on an explicit divergence-free first jet, and `HelicityAbsorptionAudit.lean`
 audits the algebra and actual initial-endpoint inequality.
 
+### Longitudinally depleted helicity cost
+
+`Analysis/LongitudinalHelicityBudget.lean` retains the direction of the
+amplitude gradient before applying Young's inequality. Write
+`g_j = <omega, partial_j omega>`, so `g` is half the gradient of
+`|omega|^2`, and define
+
+```text
+K10 = integral |omega|^4 * (omega dot g)^2 / |g|^2
+        * <omega, curl omega>^2.
+```
+
+The quotient is zero at `g = 0`. Its measurability is proved; continuity
+at those zeros is not asserted. Pointwise Cauchy--Schwarz proves
+`0 <= K10 <= H10`. The sharper absorption is proved directly from the
+exact product identity between the longitudinal defect, radial density,
+and directional helicity density, not inferred by reducing an old upper
+bound. `LocalLongitudinalHelicityBudget.lean` derives spatial and time
+integrability from the actual local fields and the `H10` majorant, then proves
+
+```text
+E8(t)/8 + nu*integral_0^t G8 + 3*nu*integral_0^t R8
+  + (integral_0^t J_kappa)/kappa
+  <= E8(0)/8 + 3/(nu*kappa^2)*integral_0^t K10.
+```
+
+If vorticity is perpendicular to its amplitude gradient, this helicity
+cost vanishes even with nonzero curl helicity. More specifically, if
+`g = c*n` for a unit normal `n`, its density is bounded by
+`|omega|^4 * <omega,n>^2 * <omega,curl omega>^2`. This identifies a normal
+misalignment factor, but the normal-gradient hypothesis is explicit:
+membership in a strain eigenplane does not supply it here. Its dynamical
+propagation, the weighted payment, and the signed spectral defect remain
+open for arbitrary data.
+
+`LongitudinalHelicityBudgetTests.lean` proves strict improvement on a
+divergence-free first jet with both nonzero amplitude gradient and nonzero
+helicity, and preserves the sharp aligned case. These are algebraic tests,
+not global periodic solutions. `LongitudinalHelicityAudit.lean` audits this
+geometry and the actual initial-endpoint estimate.
+
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
 `PressureDyadicSymbol.lean` replaces both annular cutoffs by the smooth
