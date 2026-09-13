@@ -1425,6 +1425,67 @@ strain terms, weighted diffusion, and time budget remain open.
 `VorticityJetSourceTests.lean` checks both signs on curl-compatible
 algebraic jets; `HelicityRotationAudit.lean` audits the full new chain.
 
+`Analysis/VorticityStrainProduction.lean` combines the changing sixth-power
+weight with the symmetric source before estimating either. Let `P(S)` denote
+this combined weighted production, `rho = (omega dot b)/(delta + |omega|^2)`,
+`r = b - rho*omega`, and `J = |r|^2 + delta*rho^2`. Curl compatibility gives
+
+```text
+P(S) = P(S - sigma*I) - 2*sigma*delta*rho^2*|omega|^6.
+```
+
+`LocalCoherentStrainProduction.lean` proves this identity for the actual
+strain and vorticity and transfers it to the material equation. The full
+shifted strain remains; it is not assumed small. The generic rank-one
+normal-strain identity identifies its source as
+`-2*c*n cross partial_n(omega)` for `S - sigma*I = c*n tensor n`, retaining
+the other normal components in the production formula.
+
+`VorticityStrainProductionTests.lean` checks an expanding-plane-aligned,
+trace-free velocity-gradient jet with zero normal vorticity derivative.
+For this jet `rho = 0`, `J = 1`, and `P(S) = 6*sigma > 0` when `sigma > 0`.
+Thus those instantaneous conditions do not make this weighted functional
+nonincreasing. This is a jet-level test, not a constructed NS solution.
+
+`Analysis/WeightedProjectionParabolic.lean` proves the complete weighted
+Hessian. Write `a = omega`, `v = partial_j omega`,
+`z = partial_j b`, `q = z - rho*v`, and `rho_j = partial_j rho`. Then
+
+```text
+C_j = 2*| |a|^3*q + 6*|a|*(a dot v)*r |^2
+      + 6*|a|^4*|v|^2*J - 48*|a|^2*(a dot v)^2*J
+      + 72*delta*|a|^2*(a dot v)^2*rho^2
+      - 2*|a|^6*(delta + |a|^2)*rho_j^2.
+```
+
+This completion uses no division by `|a|`. Its lower bound is
+`C_j >= -42*|a|^4*|v|^2*J - 2*|a|^6*(delta + |a|^2)*rho_j^2`.
+`LocalWeightedProjectionDiffusion.lean` proves for the actual periodic fields
+
+```text
+weightedViscousRate = Delta(|omega|^6*J) - sum_j C_j,
+integral weightedViscousRate = -integral sum_j C_j,
+integral weightedViscousRate
+  <= integral (42*|omega|^4*J*|grad omega|^2
+               + 2*|omega|^6*(delta + |omega|^2)*|grad rho|^2).
+```
+
+The module combines the exact diffusion and coherent-production identities
+on the actual material trajectory, retaining rotation and all signed terms.
+The spatial integral identities do not yet interchange the time derivative
+with the integral of the weighted energy. The local fourth-moment envelope
+remains an explicit calculus hypothesis, not an initial-data estimate.
+
+`WeightedProjectionParabolicTests.lean` checks curl-compatible, trace-free
+jets with `grad rho = 0` but `sum_j C_j = -30`. Thus even the weighted
+curvature is not pointwise nonnegative, and controlling only the center
+gradient does not justify discarding the mixed radial cost. This does not
+assert a positive spatially integrated viscous rate for an NS solution.
+The two displayed diffusion costs still lack a dynamical budget. In
+particular, dropping the favorable square is only an upper-bound step,
+not a claim that the resulting cost is payable. S4 and unconditional A/B
+remain open. `CoherentProjectionAudit.lean` audits this chain and both tests.
+
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
 `PressureDyadicSymbol.lean` replaces both annular cutoffs by the smooth

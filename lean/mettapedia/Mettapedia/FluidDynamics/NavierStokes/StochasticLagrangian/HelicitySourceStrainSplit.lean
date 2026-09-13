@@ -50,7 +50,7 @@ theorem strainRows_componentGradient (u : FourierVelocity) (m : Fin 3) (x : T3) 
       LocalAlignmentForcing.fullStrainOperator, PancakeFourierMaterialPaths.realMatrixOperator_apply,
       PancakeLocalStrainEquation.spatialStrain, PancakeFilteredStrainDynamics.symmetrize,
       PancakeLocalGradientEquation.spatialVelocityGradient, complexRealPartEuclideanCLM_apply,
-      complexRealPartEuclidean, EuclideanSpace.single_apply, Fin.sum_univ_three, Matrix.cons_val_two]
+      complexRealPartEuclidean]
   all_goals ring
 
 theorem source_eq_strain_add_rotation (u : FourierVelocity)
