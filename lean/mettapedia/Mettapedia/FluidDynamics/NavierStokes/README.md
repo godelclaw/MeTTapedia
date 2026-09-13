@@ -910,6 +910,44 @@ for the actual periodic kernel and a self-consistent fluid field.
 `OcticDiffusionAudit.lean` audits the signed balance and endpoint results.
 The arbitrary-data global regularity theorem remains open.
 
+### Exact parallel heat-flow tests of the correction
+
+`ParallelHeatFlow.lean` constructs the full infinite Fourier NS evolution of
+`u=(0,0,theta(x,y))`. Every nonlinear convolution interaction vanishes before
+summation because the velocity is vertical and the frequencies are horizontal.
+Finite, real, zero-mean scalar coefficients supply a solution on every finite
+forward interval, with every absolute Fourier moment bounded by its initial
+value. Neither the solution nor its common regularity envelope is assumed.
+`ParallelHeatCorrelation.lean` applies the actual signed octic balance to this
+family, retaining its residual. This explicit globally regular family is an
+adversarial test, not a replacement for the arbitrary-data target.
+
+`ParallelHeatWitness.lean` instantiates eleven horizontal sine modes with rapid
+frequency 65536. The standalone exact-rational diagnostic
+`papers/benxiv/ns_octic_parallel_shear_sanity.py` checks their complementary
+trigonometric expansion and evaluates the limiting Riesz-multiplier pairing.
+At viscosity one, with `H=E8/8+C/576`, it finds
+
+```text
+E8'(0) < 0,           12*G8(0) < H'(0) < 13*G8(0).
+```
+
+The sign comparisons are rational, not floating-point tests. The script
+independently checks the pure and mixed curvature formulas against
+`D+P+M=0`, and the eighth-moment derivative against
+`E8'=-8*G8-48*radialDissipation`. These computations are **not Lean proofs**.
+They warn against automatic monotonicity of this correction at this coefficient;
+they do not rule out all smaller coefficients or a signed time-integrated budget.
+
+`Analysis/UnitTorusPolynomialPairing.lean` proves the exact spatial-pairing
+formula for polynomial test factors. `Analysis/PeriodicRadialPolynomialPairing.lean`
+then proves convergence for the actual regularized kernels to the finite
+limiting multiplier sum, including persistence of strict inequalities for
+sufficiently large cutoffs. The particular witness's quartic polynomial
+expansions and positive slope have **not yet been certified in Lean**; that
+bridge is required before calling this an integrated NS counterexample to a
+candidate monotonicity claim. `ParallelHeatAudit.lean` audits the new declarations.
+
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
 `PressureDyadicSymbol.lean` replaces both annular cutoffs by the smooth
