@@ -2449,6 +2449,58 @@ endpoint. The new identity alone does not pay either its longitudinal
 derivative or its test-mismatch term from the eighth-moment dissipation.
 `FullLambWorkAudit.lean` checks the foundational dependencies.
 
+### Longitudinal evolution, curvature creation, and signed diffusion work
+
+Write `q = (omega.grad)omega`. `FullVorticityGradientTransport.lean`
+differentiates the full vorticity equation and
+`LocalLongitudinalVorticity.lean` proves its material contraction on the
+actual solution and trajectory. `LongitudinalVorticityDiffusion.lean`
+constructs the ordinary coordinate Laplacian of `q` and proves
+
+```text
+(D_t - nu Delta)q = (q.grad)u + Hess(u)[omega,omega]
+                   - 2 nu sum_k ((partial_k omega).grad)(partial_k omega).
+```
+
+The material statements retain the common fourth Fourier-moment envelope,
+actual unforced solution, and actual material-path hypotheses. The spatial
+identities are not formal jets with an assumed Laplacian. The connection
+to the preceding octic work is
+`(omega.grad)(|omega|^6 omega) = D(a -> |a|^6 a)[q]`.
+
+`LongitudinalCurvatureWork.lean` keeps both inviscid terms together in
+the spatial pairing with `q`. Incompressibility of vorticity cancels the
+explicit velocity-Hessian contribution against the deformation term
+after integration by parts. The full spatial material-rate work is
+
+```text
+integral <q,D_t q> + nu sum_k integral |partial_k q|^2
+  = -integral <(omega.grad)q, S omega>
+    + 2 nu sum_k integral <((partial_k omega).grad)q, partial_k omega>.
+```
+
+Here `D_t q` denotes the reconstructed material rate already identified
+on the actual trajectory. This statement does not yet differentiate a
+time-dependent spatial integral or bound either retained signed flux.
+The ordinary Laplacian pairing and both flux transfers are proved,
+not assigned signs by convention.
+
+`CoherenceCreationSnapshot.lean` supplies real, mean-zero, transverse,
+finite Fourier coefficients, hence all absolute Fourier moments. Its
+velocity is `(-sin y + sin x sin z, 0, cos x cos z - cos(2x)/2)`, with
+angles `2 pi x`, `2 pi y`, `2 pi z`. At the origin the entire first
+vorticity jet, polynomial angular jets, angular density, and `q` vanish,
+but the actual NS material rate of `q` is `-(2 pi)^4 e_z` for every
+viscosity. Thus no pointwise estimate of the curvature source by a
+constant times `|q|` can hold even for these admissible data. The snapshot
+is not asserted to evolve within a finite-mode invariant subspace and
+is not a blowup example or a refutation of global regularity.
+
+**Still open:** controlling the remaining weighted stretching and gradient
+fluxes, coupling them to the complete nonlocal test mismatch, and obtaining
+the cutoff-uniform time budget. Local coherence cannot simply be assumed
+to persist. `LongitudinalVorticityAudit.lean` checks the declarations.
+
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
 `PressureDyadicSymbol.lean` replaces both annular cutoffs by the smooth
