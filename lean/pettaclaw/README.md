@@ -41,6 +41,10 @@ are derived from the models, deployed, and re-observed live.
 - `ContextAttention.lean` — an interruptible task capsule with a separate
   foreground human-event lane, exact acknowledgement, stop dominance, and
   bounded semantic retrieval that cannot erase required context.
+- `InputDelivery.lean` — the transport refinement missing from the original
+  attention model: stable observation under relational re-entry,
+  history-before-acknowledgement, exact-prefix settlement, failure retention,
+  restart recovery, and a destructive-observation counterexample.
 - `AgentArchitecture.lean` — an architecture-neutral reliability contract:
   protected constraints outside lossy compaction, append-only receipts,
   distinct process/cognitive/verified liveness, end-to-end completion evidence,
@@ -117,6 +121,7 @@ LEAN_PATH=. lean -o IterAuthoring.olean IterAuthoring.lean
 LEAN_PATH=. lean ProtectedPlasticity.lean
 LEAN_PATH=. lean CodingAgent.lean
 LEAN_PATH=. lean ContextAttention.lean
+lean InputDelivery.lean
 LEAN_PATH=. lean AgentArchitecture.lean
 LEAN_PATH=. lean VerifiedFrontier.lean
 LEAN_PATH=. lean MinimalKernel.lean
