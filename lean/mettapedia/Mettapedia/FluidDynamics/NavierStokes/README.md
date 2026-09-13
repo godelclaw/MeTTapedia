@@ -2587,6 +2587,54 @@ The cross-frequency factor exposes the relevant directional cancellation.
 It does not yet bound the weighted scale sum or its time integral by
 initial data; these remain part of the decisive dynamical obligation.
 
+`PeriodicGradientFluxTriple.lean` and
+`LongitudinalInviscidFluxFourier.lean` reconstruct the inviscid part of
+this same projected flux as an absolutely convergent triple series.
+For inputs `k,l,m`, output `n = k+l+m`, and `zeta = 2 pi i`, its
+amplitude is the negative of
+
+```text
+zeta * n_j / |n|^2 * ((l+m) dot omegaHat(k))
+  * (m dot omegaHat(l)) * uHat(m).
+```
+
+The contracted formula is proved from the coordinate series, with
+finite and infinite sums interchanged using summability. The squared
+norm of the signed inviscid triple series plus the viscous pair series
+is exactly `projectedFluxSquare`; neither term is bounded separately.
+
+`LongitudinalFluxParity.lean` supplies a snapshot consistency test.
+Writing `A(u)` for the inviscid projected tensor and `B(u)` for the
+viscous tensor without its `2 nu` factor, the former is odd and the
+latter even under `u -> -u`. Consequently
+
+```text
+cost(u) + cost(-u) = 2 * (||A(u)||^2 + 4 nu^2 ||B(u)||^2).
+```
+
+At least one sign has joint cost at least the sum of the separate
+squared costs. This excludes uniform strict destructive interference
+at both initial-data signs. It does not exclude dynamical cancellation:
+negating an entire viscous NS trajectory need not give a solution.
+
+`PeriodicGradientFluxAngle.lean` proves the sharp angular estimate
+for transverse coefficients `k dot a = l dot b = 0`:
+
+```text
+|k+l|^2 * sum_j |(P(k+l)(a tensor b))_j|^2
+  <= |l|^2 * |a cross b|^2.
+```
+
+The factor involving frequency cannot be discarded. The exact family
+`k=(N,0,0)`, `l=(-N,1,0)`, `a=(0,N,0)`, `b=(1,N,0)` saturates this
+bound; its projected energy is `N^2+N^4` while its cross-product energy
+is `N^2`. Lean refutes any universal constant replacing that frequency
+ratio. This is a counterexample to a coefficient estimate, not to NS
+regularity. The corresponding viscous pair estimate retains its
+physical derivative multiplier. `LongitudinalJointFourierAudit.lean`
+audits the new declarations. Initial-data-controlled, weighted time
+bounds remain open.
+
 `CoherenceCreationSnapshot.lean` supplies real, mean-zero, transverse,
 finite Fourier coefficients, hence all absolute Fourier moments. Its
 velocity is `(-sin y + sin x sin z, 0, cos x cos z - cos(2x)/2)`, with
