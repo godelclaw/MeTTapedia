@@ -1271,6 +1271,50 @@ that the angular pairing has both signs at the algebraic level.
 `HelicitySourceAudit.lean` checks the dependencies. S4 and unconditional
 arbitrary-data A/B remain open.
 
+`LocalWeightedDivCurl.lean` and `LocalMixedGradientBudget.lean` now remove
+that mixed gradient cost from the angular-source estimate. They first prove
+the exact identity for the same real, divergence-free full Fourier velocity:
+
+```text
+M4 = E6 - 4*integral |omega|^2 *
+       sum_j (omega dot partial_j omega) * ((u dot grad)u)_j,
+M4 <= E6 + epsilon*R8 + (4/epsilon)*A2,
+A2 = integral |(u dot grad)u|^2,    E6 = integral |omega|^6.
+```
+
+The signed integration-by-parts correction is retained. It uses radial
+dissipation `R8`, complementary to the preceding angular dissipation
+`G8 - R8`. Taking `epsilon = eta^2` gives, for every `eta > 0`,
+
+```text
+integral |omega|^4 * |omega dot F_curl|
+  <= eta*G8 + E6/eta + 4*A2/eta^3.
+```
+
+`LocalAdvectionEnstrophy.lean` constructs the supremum norm `U` of the
+actual continuous velocity and proves `A2 <= U^2*integral |omega|^2`,
+with the latter integral bounded by the existing Fourier enstrophy.
+On the normalized torus it also proves `E6 <= 1 + E8`. These are spatial
+estimates, not initial-data bounds for `U` or its time-weighted products.
+
+`LocalHelicityCenterSourceBudget.lean` applies the estimate to the actual
+regularized center `rho_delta = (omega dot curl omega)/(delta + |omega|^2)`.
+Its material derivative is split exactly into angular forcing, amplitude
+feedback, and viscosity. The forcing satisfies
+
+```text
+integral |omega|^6 * |(omega dot F_curl)/(delta + |omega|^2)|
+  <= eta*G8 + E6/eta + 4*A2/eta^3,    delta > 0.
+```
+
+There is no inverse-`delta` constant in this estimate. The feedback and
+viscous rates are not discarded or assumed favorable. Controlling them,
+the remaining velocity/enstrophy product, and the signed time-integrated
+spectral/center remainder is still necessary for S4 and continuation.
+`MixedGradientTests.lean` checks `M4 = E6` and zero advection on the exact
+parallel heat-flow family, together with its center-source cancellation.
+`MixedGradientAudit.lean` audits the declarations and tests.
+
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
 `PressureDyadicSymbol.lean` replaces both annular cutoffs by the smooth
