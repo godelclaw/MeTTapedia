@@ -751,6 +751,64 @@ No channel has yet been bounded uniformly up to a possible singular time
 using only initial data and viscosity. The fixed-time cancellation is also
 forcing-insensitive; unforced dynamical control remains a separate obligation.
 
+### Normal vorticity and signed projected dissipation
+
+`Analysis/NormalVorticityEnergy.lean` normalizes the separation rather than
+the vorticity: `eta(a,h) = <h,a>/|h|`. Its square does not contain a high
+vorticity weight. The derivative requires `h != 0`, but zero vorticity is
+allowed. The three coordinate-normal energies sum to `|a|^2`; controlling
+all normal components would already control the full vector.
+
+`LocalNormalVorticity.lean` constructs the actual strain quotient
+`sigma = <h,S h>/|h|^2` and its orthogonal defect `r = S h - sigma*h`.
+Along the actual material lifts it proves
+
+```text
+eta' = sigma*eta + F,
+F = F_nonviscous + nu*eta(Delta omega,h).
+```
+
+The internal forcing retains the strain-normal defect, relative velocity,
+unequal-endpoint velocity gradient, and the derivative of `|h|`.
+`LocalNormalVorticityIntegral.lean` proves absolute continuity and forcing
+integrability on compact interior intervals with nonzero separation. If
+the actual `sigma <= 0` there, then `|eta(b)| <= |eta(a)| + integral |F|`.
+This reuses the OpenAI-derived dissipative comparison through the existing
+absolutely-continuous interface. Neither compression in every image nor
+initial-data control of the forcing integral is assumed to follow.
+
+For `p=2*(n+2)` and an image tensor `c*I+k*h tensor h`,
+`Analysis/RadialAmplitudeBound.lean` and the actual-image corollary prove
+
+```text
+|amplitudeCurvature| <= 2*p*|k|*|h|^2*|omega|^p*|v-w|^2*|eta|.
+```
+
+At `n=1`, the vorticity weight is sixth order. This identifies its degree;
+it does not bound the two-point gradient cost by the one-point weighted
+palinstrophy, or justify an absolute image sum.
+
+`LocalNormalVorticityDiffusion.lean` preserves the viscous sign. For every
+fixed separation, periodic integration by parts gives
+
+```text
+integral eta(omega,h)*eta(Delta omega,h)
+  = -integral sum_j eta(partial_j omega,h)^2.
+```
+
+The actual normal-square material derivative is identified along the
+material paths. Its common-translation spatial integral equals the
+nonviscous material-rate integral minus twice viscosity times this
+projected gradient energy. Common translation fixes the separation;
+relative-separation transport remains in the nonviscous rate. No claim
+that a fixed-separation material-rate integral is itself the time
+derivative of a spatial mean is made.
+
+`NormalVorticityAudit.lean` checks these results and an algebraic tilt
+example: zero initial normal component and zero normal strain quotient
+can still have positive normal derivative. Geometric forcing cannot be
+dropped. The signed all-image, all-scale time budget remains open.
+
 The dependencies guide the work, not a rigid chronological schedule:
 counterexamples to a proposed S3 or S4 estimate can require revising S2.
 Imported fluid-equation results must retain their domain, forcing, and
