@@ -1185,6 +1185,44 @@ center's initial-endpoint energy bound. This is not an unconditional
 regularity theorem or a proof that general solutions approach curl
 eigenfields.
 
+`LocalHelicityCenterEvolution.lean` derives the material derivative of
+`rho_delta` along the actual local NS trajectories. The derivative of
+`curl omega` is reconstructed from the twice-curled full velocity equation;
+its viscous term is exactly `nu * Delta(curl omega)`. The higher-moment
+estimates in `VelocityRHSMoments.lean` justify these differentiations, not
+a global bound on their output.
+
+`Analysis/RegularizedProjection.lean` proves that `rho_delta` minimizes
+`|b - rho*a|^2 + delta*rho^2`, with `a = omega`, `b = curl omega`. The
+center's own derivative cancels from the derivative of this minimum.
+The actual-solution energy derivative is proved, but its remaining source
+has no sign bound. The tests show that the minimized energy is not jointly
+convex in `(a,b)`, so diffusion cannot be declared dissipative merely from
+this minimization.
+
+`LocalRegularizedHelicityBudget.lean` pays the regularized centered cost:
+
+```text
+|<a,b-rho_delta*a>|^2 <= (delta/4)*|b|^2,
+centeredDirectionalDensity <= centeredHelicityDensity
+  <= (delta/2)*|omega|^6*|grad omega|^2.
+```
+
+With fixed `kappa > 0`, `nu > 0`, and `delta = nu^2*kappa^2/3`, the
+actual local unforced solution satisfies
+
+```text
+E8(t)/8 + (nu/2)*integral_0^t G8 + 3*nu*integral_0^t R8
+  + (1/kappa)*integral_0^t (J_kappa - (3/4)*Q_rho_delta)
+  <= E8(0)/8.
+```
+
+The final integral is signed and has not been bounded below by initial
+data. It cannot be dropped. This removes the separate centered-helicity
+square from the unpaid costs, not the dynamical regularity obstruction.
+`RegularizedHelicityAudit.lean` audits the new estimates, derivatives,
+tests, and initial-endpoint inequality.
+
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
 `PressureDyadicSymbol.lean` replaces both annular cutoffs by the smooth
