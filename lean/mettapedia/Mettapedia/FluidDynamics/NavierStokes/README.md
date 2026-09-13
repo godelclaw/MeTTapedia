@@ -2513,6 +2513,35 @@ still requires an initial-data-controlled bound. This unweighted identity
 does not by itself pay the octic amplitude weights or nonlocal mismatch.
 `LongitudinalEnergyAudit.lean` audits these declarations.
 
+`LongitudinalGradientFlux.lean` improves this inequality by projecting
+the full tensor `J` onto the closed `L²` space of actual periodic
+gradients. This fixed orthogonal projection `P` preserves the exact
+source pairing and gives
+
+```text
+integral sum_j <partial_j q,J_j> = <grad q,P J>_L2,
+nu E(t) + nu^2 integral_0^t D
+  <= nu E(0) + integral_0^t ||P J||_L2^2,
+||P J||_L2^2 <= integral sum_j |J_j|^2.
+```
+
+Continuity of the projected flux and the initial-endpoint inequality
+are derived for the actual local NS solution. Smooth real transverse
+mean-zero periodic data construct such a solution and the required
+common Fourier envelope. The construction does not assume a global
+bound on the projected cost.
+
+`LongitudinalShearFlux.lean` proves strict improvement on the exact
+unforced heat evolution of `u = (0,0,A sin(2 pi x))`: for positive
+viscosity and amplitude, the raw flux square is positive at every
+finite time, while `P J = 0`. Each diagonal flux derivative vanishes,
+so the raw tensor does no gradient work. Consequently no constant
+can bound the raw flux square by the projected one on this family.
+This is a test of the energy estimate, not a blowup example.
+`LongitudinalGradientFluxAudit.lean` audits the projection, application,
+and shear witness. The weighted, initial-data-controlled time budget
+and its connection to the full nonlocal test mismatch remain open.
+
 `CoherenceCreationSnapshot.lean` supplies real, mean-zero, transverse,
 finite Fourier coefficients, hence all absolute Fourier moments. Its
 velocity is `(-sin y + sin x sin z, 0, cos x cos z - cos(2x)/2)`, with
