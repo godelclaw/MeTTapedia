@@ -1374,6 +1374,57 @@ The material identities use a local fourth Fourier-moment envelope for
 the calculus; they do not establish an initial-data bound for that envelope.
 `HelicityProjectionAudit.lean` audits this chain and its curvature tests.
 
+`HelicitySourceStrainSplit.lean` separates the same actual source into its
+symmetric-gradient and rotation contributions. If `D_m = partial_m omega`
+and `S_m` is row `m` of the actual strain matrix, then
+
+```text
+F_curl = F_strain + grad(|omega|^2/2),
+F_strain = -2*sum_m S_m cross D_m.
+```
+
+The generic identity in `Analysis/VorticityJetSource.lean` retains a
+`-omega*div(omega)` term before solenoidality is applied. The axial vector
+of the actual velocity gradient is identified with the same vorticity;
+no independent rotation vector is supplied.
+
+`Analysis/SolenoidalRadialPairing.lean` proves the mixed radial-flux
+identity for two continuous differentiable periodic fields. Applying it
+to vorticity and curl vorticity, `LocalHelicityRotationFlux.lean` proves
+
+```text
+integral |omega|^6 * b dot grad(|omega|^2/2) = 0,
+integral |omega|^6 * r dot grad(|omega|^2/2) = Q/8,
+Q = centerTransportIntegral(rho_delta, u).
+```
+
+The second identity uses the derivative of the actual variable center.
+It is not a pointwise cancellation. The code retains the strain-source
+combination before taking absolute values and obtains
+
+```text
+weightedInviscidRate = weightedStrainRate + Q/4,
+signedRemainder = weightedStrainSpectralDefect
+                 - 3*weightedInviscidRate + 3*weightedStrainRate.
+```
+
+`LocalWeightedProjectionEvolution.lean` supplies the actual material
+derivative of `|omega|^6*J`, retaining both the changing weight and viscosity:
+
+```text
+D_t(|omega|^6*J) = 6*|omega|^4*(omega dot S*omega)*J
+                  + |omega|^6*projectionInviscidRate
+                  + nu*(6*|omega|^4*(omega dot Delta omega)*J + |omega|^6*V).
+K = integral |omega|^6*J <= 2*G8.
+```
+
+The bound for `K` is by dissipation, not by the eighth-moment energy.
+Consequently a subtraction of `K` to cancel the transport source does
+not by itself provide a coercive corrected energy. The remaining signed
+strain terms, weighted diffusion, and time budget remain open.
+`VorticityJetSourceTests.lean` checks both signs on curl-compatible
+algebraic jets; `HelicityRotationAudit.lean` audits the full new chain.
+
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
 `PressureDyadicSymbol.lean` replaces both annular cutoffs by the smooth
