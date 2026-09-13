@@ -32,6 +32,12 @@ theorem cross_add_left (u v w : E3) : cross (u + v) w = cross u w + cross v w :=
 theorem cross_add_right (u v w : E3) : cross u (v + w) = cross u v + cross u w := by
   simp [cross]
 
+theorem cross_sub_left (u v w : E3) : cross (u - v) w = cross u w - cross v w := by
+  simp [cross]
+
+theorem cross_sub_right (u v w : E3) : cross u (v - w) = cross u v - cross u w := by
+  simp [cross]
+
 theorem cross_smul_left (r : ℝ) (u v : E3) : cross (r • u) v = r • cross u v := by
   simp [cross]
 
