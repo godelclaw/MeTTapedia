@@ -898,8 +898,9 @@ E8(t)/16 + (nu/2)*integral_0^t G8 <= 3*E8(0)/16 + integral_0^t R_N.
 
 Only the mixed curvature has been absorbed. The signed residual `R_N`
 is explicitly constructed and locally integrable; its initial-data-only,
-cutoff-uniform time budget is **not proved**. The common Fourier envelope
-used for local continuity is not a bound at a maximal existence time.
+cutoff-uniform time budget for arbitrary data is **not proved**. The common
+Fourier envelope used for local continuity is not a bound at a maximal
+existence time.
 
 `Analysis/OcticCorrelationAmplitudeObstruction.lean` rules out a generic
 pointwise pure-curvature payment: for the scalar operator `H=-id`, both
@@ -943,10 +944,51 @@ they do not rule out all smaller coefficients or a signed time-integrated budget
 formula for polynomial test factors. `Analysis/PeriodicRadialPolynomialPairing.lean`
 then proves convergence for the actual regularized kernels to the finite
 limiting multiplier sum, including persistence of strict inequalities for
-sufficiently large cutoffs. The particular witness's quartic polynomial
-expansions and positive slope have **not yet been certified in Lean**; that
-bridge is required before calling this an integrated NS counterexample to a
-candidate monotonicity claim. `ParallelHeatAudit.lean` audits the new declarations.
+sufficiently large cutoffs. `FourierPolynomialRealAlgebra.lean` reuses the
+existing monoid-algebra evaluation map for collected products and real parts.
+`ParallelHeatPolynomial.lean` constructs polynomial coefficients for the actual
+spatial curl, its squared norm, and both quartic factors, and proves the spatial
+evaluation identities. `ParallelHeatPolynomialPairing.lean` identifies the actual
+eighth moment and regularized correlation with finite coefficient sums and proves
+the correlation's cutoff limit. The numerical witness's positive slope has
+**not yet been certified in Lean**; evaluating and differentiating those sums
+is still required for a machine-checked counterexample to monotonicity.
+`ParallelHeatAudit.lean` audits the original solution and kernel-pairing declarations.
+
+### Signed residual payment on the parallel-flow family
+
+`ParallelHeatGeometry.lean` reconstructs the actual velocity gradient and curl,
+proves that strain annihilates vorticity pointwise, and shows that the complete
+nonviscous correlation mean vanishes, including relative kernel transport.
+Consequently the residual is exactly `R_N = -epsilon*nu*P_N` on this family.
+
+`LocalOcticSignedBudget.lean` proves, for the actual local solution and its
+common third Fourier-moment envelope,
+
+```text
+integral_0^t R_N - integral_0^t stretching
+  = epsilon*(C_N(t)-C_N(0)) + nu*epsilon*integral_0^t M_N,
+
+|integral_0^t R_N - integral_0^t stretching|
+  <= |epsilon|*[9*(E8(t)+E8(0)) + 288*nu*integral_0^t G8].
+```
+
+This retains time cancellation. When stretching vanishes, the exact uncorrected
+eighth-moment identity pays the right side by `45*|epsilon|*E8(0)`.
+`ParallelHeatSignedBudget.lean` supplies that vanishing and the actual solution
+from finite horizontal, real, zero-mean initial coefficients, giving
+
+```text
+|integral_0^t R_N| <= 45*|epsilon|*E8(0)
+```
+
+for every `t >= 0`, every cutoff `N`, every real `epsilon`, and `nu >= 0`.
+There is no assumed dynamical budget in this family theorem. The absolute value
+is outside the time integral: this does not bound `integral_0^t |R_N|`.
+In particular, the instantaneous-growth diagnostic does not refute a signed
+integrated budget. For arbitrary flows, stretching and the required uniform
+eighth-moment/dissipation payment remain open. `ParallelHeatBudgetAudit.lean`
+audits the new geometry, coefficient identities, and budget results.
 
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
