@@ -2542,6 +2542,51 @@ This is a test of the energy estimate, not a blowup example.
 and shear witness. The weighted, initial-data-controlled time budget
 and its connection to the full nonlocal test mismatch remain open.
 
+`PeriodicGradientFluxSymbol.lean` identifies this same Hilbert projection
+with the explicit output-frequency multiplier
+
+```text
+(P(n) J)_j = n_j / |n|^2 * sum_l n_l J_l.
+```
+
+The projection acts on the derivative index, not the vector output
+index. Its mean mode is zero. Actual translation jets establish the
+single-mode identity; continuous linearity then gives convergent `L²`
+series for absolutely summable inputs, including pair-indexed series
+with repeated output frequencies. No finite cutoff is introduced.
+`PeriodicGradientFluxPair.lean` proves the exact coefficient energy
+
+```text
+sum_j |(P(n) J)_j|^2 = |sum_j n_j J_j|^2 / |n|^2,
+```
+
+including zero frequency. Here coefficient norms are Euclidean; this
+identity does not assert a time-integrated energy budget.
+
+`PeriodicGradientFluxProduct.lean` identifies actual continuous tensor
+products with absolutely convergent Fourier pair series before applying
+the projection. `LongitudinalViscousFluxFourier.lean` specializes this to
+`sum_r (partial_r omega)_j partial_r omega` from the same actual velocity.
+With `zeta = 2 pi i`, the projected ordered-pair amplitude for coordinate
+derivative `r` and output tensor index `j` is exactly
+
+```text
+zeta^2 k_r l_r * (k+l)_j / |k+l|^2
+  * (l dot omegaHat(k)) * omegaHat(l).
+```
+
+The replacement of `(k+l) dot omegaHat(k)` by `l dot omegaHat(k)` uses
+the actual curl's incompressibility. The infinite `L²` series is proved
+summable under the second absolute velocity Fourier moment. Conjugate
+symmetry identifies its sum with the physical projected viscous tensor.
+The full projected flux is the inviscid part of the same snapshot plus
+`2 nu` times this tensor; no triangle inequality separates their costs.
+`LongitudinalFluxFourierAudit.lean` audits these statements.
+
+The cross-frequency factor exposes the relevant directional cancellation.
+It does not yet bound the weighted scale sum or its time integral by
+initial data; these remain part of the decisive dynamical obligation.
+
 `CoherenceCreationSnapshot.lean` supplies real, mean-zero, transverse,
 finite Fourier coefficients, hence all absolute Fourier moments. Its
 velocity is `(-sin y + sin x sin z, 0, cos x cos z - cos(2x)/2)`, with
