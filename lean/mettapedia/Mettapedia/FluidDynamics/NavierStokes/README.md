@@ -2086,6 +2086,58 @@ subgrid work, any moving-filter costs, and the all-scale continuation
 argument. Paying viscosity at this normalization does not control the
 nonlinear spectral mismatch at the same normalization.
 
+### Signed angular source pairing and the initial-endpoint inequality
+
+`FiniteAngularSourceWork.lean` constructs the angular variational gradient
+from the value, first jets and second jets of the same finite Fourier
+velocity. Integration by parts transfers a derivative off the varied
+vorticity. If `A_ang` denotes this gradient, the corrected gradient is
+
+```text
+F_kappa = |omega|^6 omega - (3/kappa)*A_ang,
+work_kappa(v) = integral <F_kappa, curl(restrict_P v)>.
+```
+
+The incoming velocity source still appears through its curl. This is not
+an estimate free of all source derivatives, nor a norm bound for `F_kappa`.
+The checked amplitude test is `integral <F_kappa,omega> = 8*C_ang`.
+
+`FilteredAngularSourceBalance.lean` recombines resolved and subgrid work
+before taking absolute values. Their sum is
+
+```text
+W_kappa,chi(u) = integral <F_kappa(chi*u), curl(chi*RHS_0(u))>.
+```
+
+Here `chi*` means the Fourier multiplier, not physical multiplication.
+The full nonlinear input is retained, and this expression has no auxiliary
+support-set parameter. `FilteredAngularSourceIntegral.lean` proves continuity
+using the actual coefficient equation and finite retained jets, then
+integrates the dissipative inequality all the way to the initial endpoint.
+For one universal `L > 0`, positive `kappa >= L*(2*pi*R)^2` gives
+
+```text
+E8(chi*u(t))/16 + integral_0^t [(nu/2)*G8(chi*u) + 6*nu*R8(chi*u)]
+  <= E8(chi*u_0)/8 + integral_0^t W_kappa,chi(u).
+```
+
+This is not an initial-data bound on the right-hand source integral.
+No all-scale high-order envelope is imposed on the full solution.
+
+`AngularInviscidWorkLimit.lean` tests this same source on the existing real,
+divergence-free, positive-stretching three-wave field. A constructed filter
+retains the complete instantaneous nonlinear RHS, and the work tends to
+the positive ordinary stretching as `kappa` tends to infinity. Consequently
+an eventual `C/kappa` upper bound is false. Positive work occurs beyond
+every radius-squared normalization threshold at an admissible fixed radius.
+The test is a snapshot, not a blowup example, and it does not refute a
+nonzero signed time-integrated budget.
+
+The decisive remaining task is to control the signed source integral
+uniformly in the output scale, at a normalization compatible with the
+proved coercivity and viscous absorption. Enlarging the normalization
+alone cannot supply that control.
+
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
 `PressureDyadicSymbol.lean` replaces both annular cutoffs by the smooth

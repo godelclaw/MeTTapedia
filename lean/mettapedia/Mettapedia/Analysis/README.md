@@ -20,6 +20,15 @@ costs, without inverse amplitude factors. `AngularCurlCurvatureTests.lean`
 checks both curvature signs on symmetric, divergence-compatible second
 jets; these algebraic tests do not assert periodic NS trajectories.
 
+`AngularCurlVariation.lean` constructs explicit value and first-jet gradients
+of the angular density and proves their signed pairing identity. The Euler
+amplitude response is degree eight, including the outer amplitude weight.
+`AngularCurlSpatialVariation.lean` constructs the corresponding spatial
+variational gradient from actual first and second jets. Periodic integration
+by parts removes the derivative of the varied field; no norm bound on the
+resulting variational gradient is assumed or inferred. The variation tests
+separately check the value response `6` and jet response `2`.
+
 ## Checked modules
 
 | Module | Mathematical content | Scope |

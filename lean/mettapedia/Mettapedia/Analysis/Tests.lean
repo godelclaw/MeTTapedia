@@ -1,4 +1,5 @@
 import Mettapedia.Analysis.ODE.QuadraticFormBound
+import Mettapedia.Analysis.AngularCurlVariationTests
 import Mettapedia.Analysis.WeightedCurlCancellationTests
 import Mettapedia.Analysis.WeightedCurlHelicityTests
 import Mettapedia.Analysis.LongitudinalHelicityBudgetTests
