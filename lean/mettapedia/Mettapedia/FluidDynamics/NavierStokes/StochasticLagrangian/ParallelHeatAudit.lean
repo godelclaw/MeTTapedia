@@ -1,0 +1,52 @@
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.ParallelHeatWitness
+import Mettapedia.Analysis.PeriodicRadialPolynomialPairing
+
+/-!
+# Dependency audit of the parallel heat-flow test and finite pairing limit
+
+The exact solutions and their signed balance are checked. The diagnostic's
+positive corrected-energy derivative is not among these declarations.
+-/
+
+#print axioms Mettapedia.Analysis.UnitTorusPolynomialPairing.integral_polynomial_mul
+#print axioms Mettapedia.Analysis.UnitTorusPolynomialPairing.integral_polynomial_mul_convolution
+#print axioms Mettapedia.Analysis.UnitTorusPolynomialPairing.integral_polynomial_mul_convolution_polynomial
+#print axioms Mettapedia.Analysis.UnitTorusPolynomialPairing.tendsto_integral_polynomial_mul_convolution
+#print axioms Mettapedia.Analysis.PeriodicRadialRiesz.tendsto_polynomial_re_entry_pairing
+#print axioms Mettapedia.Analysis.PeriodicRadialRiesz.real_pairing_eq_re_polynomial_pairing
+#print axioms Mettapedia.Analysis.PeriodicRadialRiesz.tendsto_real_polynomial_entry_pairing
+#print axioms Mettapedia.Analysis.PeriodicRadialRiesz.eventually_lt_real_polynomial_entry_pairing
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.vertical_zero
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.modeDot_vertical
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.vertical_conj
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.transverse
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.outputFiber_eq_zero
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.infiniteConvection_eq_zero
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.infiniteVelocityRHS_eq_viscous
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.decayRate_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.decayRate_neg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.viscous_symbol
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.coefficients_initial
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.coefficients_horizontal
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.coefficients_transverse
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.coefficients_reality
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.coefficients_zero
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.hasDerivAt_coefficients
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.continuous_coefficients
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.exp_decay_le_one
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.coefficients_eq_smul
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.coefficientEnergy_vertical
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.coefficientEnergy_le_initial
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.sobolevEnergy_le_initial
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.solution
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.fourierMoment_le_initial
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.summable_initial_fourierMoment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.exists_global_moment_envelope
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.corrected_energy_add_half_dissipation_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.sineCoefficients_horizontal
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.sineCoefficients_reality
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.sineCoefficients_zero
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.sineData_horizontal
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.sineData_reality
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.sineData_zero
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ParallelHeatFlow.complementarySolution
