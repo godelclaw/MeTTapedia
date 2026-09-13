@@ -1116,6 +1116,75 @@ helicity, and preserves the sharp aligned case. These are algebraic tests,
 not global periodic solutions. `LongitudinalHelicityAudit.lean` audits this
 geometry and the actual initial-endpoint estimate.
 
+### Constant and adaptive helicity centers
+
+`Analysis/SolenoidalRadialFlux.lean` proves the actual periodic flux identity
+
+```text
+integral |omega|^(2*n) * omega dot grad(|omega|^2/2) = 0.
+```
+
+Consequently a spatially constant center `rho` can be subtracted before
+estimating the signed longitudinal-helicity integral. Define
+
+```text
+D = integral |omega|^4 * (omega dot g) * <omega,curl omega>,
+K_rho = integral |omega|^4 * (omega dot g)^2 / |g|^2
+          * <omega,curl omega - rho*omega>^2.
+```
+
+`Analysis/CurlHelicityCentering.lean` proves the pointwise absorption using
+an algebraic skew correction that preserves the amplitude derivatives.
+`LocalCenteredHelicityBudget.lean` supplies the spatial cancellation and
+the actual local-solution inequality
+
+```text
+E8(t)/8 + nu*integral_0^t G8 + 3*nu*integral_0^t R8
+  + (integral_0^t J_kappa)/kappa
+  <= E8(0)/8 + 3/(nu*kappa^2)*integral_0^t K_rho.
+```
+
+Here `rho` and positive `kappa` are constant in space and time. The
+centering identity is integrated, not pointwise. A poorly chosen center
+can increase the nonnegative cost; the tests include this case.
+
+`CurlEigenfieldDefect.lean` relates both costs to the same actual field
+`b = curl u - rho*u` at `kappa = rho^2`:
+
+```text
+curl b = curl omega - rho*omega,
+S(-Delta u) - rho^2*S(u) = S(curl b) + rho*S(b).
+```
+
+These are identities for the full ordinary spatial operators, with
+incompressibility where required, not hypotheses of spectral coherence.
+
+For a spatially varying center, `LocalVariableHelicityCenter.lean` proves
+the extra signed term rather than reusing the constant-center cancellation:
+
+```text
+D_rho = integral |omega|^4 * (omega dot g)
+          * (<omega,curl omega> - rho(x)*|omega|^2),
+Q_rho = integral |omega|^8 * omega dot grad rho,
+D = D_rho - Q_rho/8,
+kappa*S8 = -6*D_rho + (3/4)*Q_rho - J_kappa.
+```
+
+The center `rho_delta = <omega,curl omega>/(delta + |omega|^2)` is
+constructed from the actual velocity for every `delta > 0`. Its
+continuity and locally Lipschitz spatial lift are proved. Its pointwise
+directional cost is exactly the old cost multiplied by
+`(delta/(delta + |omega|^2))^2`, hence cannot increase. Its remaining
+ordinary spatial derivative is expanded explicitly and still contains
+`grad(curl omega)`. No initial-data budget for `Q_rho`, `K_rho`, or their
+signed combination with `J_kappa` has been proved. The local Fourier
+moments justify the calculus; they do not control a possible singular time.
+
+`CenteredHelicityAudit.lean` audits these declarations and the constant
+center's initial-endpoint energy bound. This is not an unconditional
+regularity theorem or a proof that general solutions approach curl
+eigenfields.
+
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
 `PressureDyadicSymbol.lean` replaces both annular cutoffs by the smooth
