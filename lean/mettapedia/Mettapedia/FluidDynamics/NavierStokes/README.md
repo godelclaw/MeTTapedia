@@ -2355,6 +2355,54 @@ that bound, nor the all-scale passage, spatial BKM estimate or unconditional
 A/B theorem. `LowStrainPaymentAudit.lean` checks foundational dependencies,
 the empty-source case and preservation of a negative scalar residual.
 
+### Adjoint-filtered full nonlinear residual
+
+`VorticityFilterAdjoint.lean` moves the output filter onto a continuous
+real test field, using the Fourier coefficients of the actual vorticity.
+Only the filter has finite support; no input interaction is removed.
+`FullVelocityRHSReality.lean` proves the reality symmetry of the complete
+momentum RHS, including viscosity, directly from the coefficient equation.
+
+For `v = chi(D)u`, let `A = chi(D)^* F_kappa(v)`, with the real part
+understood when the symbol is complex. `FullAngularSourceAdjoint.lean`
+then identifies the complete inviscid angular source as
+
+```text
+sourceWork = integral <A, curl(RHS_0(u))>
+           = integral <A, S(u)*omega(u) - u.grad(omega(u))>.
+```
+
+All fields on the second line are the full fields. A third summable
+absolute velocity moment justifies the curl of the full RHS. On the actual
+local solution, the preceding joint residual is exactly
+
+```text
+R = integral <A, S(u)*omega(u)> - integral <A, u.grad(omega(u))>
+      - (3/kappa)*deformationIntegral(v,v) - lowStrainWork(kappa,Q,u,v).
+```
+
+The first integral has the polarized two-point strain representation
+against the full vorticity and the transferred test `A`, with all three
+signed endpoint terms and factor one quarter retained. Its finite-source
+Fourier sums converge to the actual integral at each fixed snapshot.
+Transport is not silently cancelled: the transferred test is not generally
+a radial multiple of the full vorticity.
+
+`FullResidualIntegral.lean` substitutes this expression into the initial-data
+integrating-factor inequality without changing any absorption conditions.
+Its physical-data corollary constructs the needed third-moment envelope
+from nine continuous coordinate derivatives of arbitrary-amplitude real,
+mean-zero, divergence-free periodic initial data. This is local regularity
+supplied by the constructor, not an assumed global residual bound.
+
+The signed full-field residual still needs a cutoff-uniform dynamical
+estimate approaching the existence endpoint. Fixed-snapshot Fourier
+convergence does not justify interchanging an infinite source limit with
+that endpoint or with a time integral without further domination.
+`FullSourceAdjointAudit.lean` checks the dependencies and complex-filter
+regressions. Neither this representation nor its integrated form closes
+unconditional global regularity.
+
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
 `PressureDyadicSymbol.lean` replaces both annular cutoffs by the smooth

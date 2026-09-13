@@ -56,6 +56,15 @@ kernel contributions cancel. Exact tests show both signs at equal endpoint
 values and equal transverse tests for an anisotropic kernel. These are
 algebraic tests, not assertions about Navier--Stokes trajectories.
 
+`UnitTorusFiniteFilter.lean` transfers a finite scalar Fourier filter between
+the legs of an integrated complex inner product. The adjoint conjugates
+the symbol at the same frequency. The input fields are arbitrary continuous
+Hilbert-space-valued fields on a finite-dimensional unit torus; they need
+not have finite support, and the retained set need not be symmetric.
+The monomial and empty-set formulas are explicit. Tests include an imaginary
+symbol for which self-adjointness would be false. These are direct
+derivations from mathlib, not imports from an external fluid construction.
+
 `AngularCurlSourceBound.lean` bounds the angular first variation from bounds
 on the incoming source and its first derivative. The resulting costs are
 weighted first-jet energy and the eighth power of the value; no second-jet
