@@ -2043,10 +2043,48 @@ evolution or an all-scale high-order envelope for the full solution.
 on the same unforced shear where the spectrally matched old correction
 is negative. It does not assert matched-scale coercivity for other fields.
 
-Still required: sign-sensitive viscous-curvature payment, uniform control
-of the signed nonlinear and subgrid work, any moving-filter costs, and
-the all-scale continuation argument. The finite-band coercivity estimate
-does not control the spectral mismatch at that normalization.
+### Angular viscous curvature paid at a universal finite-band threshold
+
+`Analysis/AngularCurlSecondVariation.lean` gives the exact density Hessian
+on value/first-jet variations. `FiniteAngularCurlDiffusion.lean` constructs
+the spatial variations from one finite Fourier velocity, commutes the
+actual higher jets, and proves that the integrated viscous rate is minus
+the curvature integral. The Laplacian, not the curvature, integrates away.
+
+`Analysis/AngularCurlCurvatureBound.lean` proves the explicit upper bound
+
+```text
+Hess K_ang[(v,E),(v,E)]
+  <= 2016*|a|^4*|v|^2*sum_j |D_j|^2 + 672*|a|^6*sum_j |E_j|^2.
+```
+
+`FiniteBandAngularDiffusion.lean` sums the actual coordinate variations
+and reuses the vector-weighted Bernstein and mixed-jet estimates. There
+is one universal constant `C`, chosen before support, velocity and radius,
+such that the curvature integral is at most `C*(2*pi*R)^2*G8`. Thus the
+viscous part of the subtracted angular correction is absorbable; it is
+not necessary, or valid in general, to assume nonnegative curvature.
+
+`FilteredAngularViscousBalance.exists_coercive_dissipative_threshold`
+connects this to the actual infinite NS solution with a finite output
+filter. For one universal `L > 0`, `kappa > 0` and
+`kappa >= L*(2*pi*R)^2` give simultaneously
+
+```text
+E8/16 <= C_ang <= E8/8,
+d_t C_ang + (nu/2)*G8 + 6*nu*R8 <= resolved inviscid work + subgrid work.
+```
+
+The two work terms are the exact angular-energy variations; the subgrid
+term retains all original input frequencies. The result neither evolves
+a closed Galerkin surrogate nor imposes a global high-order envelope on
+the full solution. The curvature tests give `28` and `-92` on compatible
+local second jets; they are not global solution counterexamples.
+
+Still required: uniform, initial-data-controlled signed nonlinear and
+subgrid work, any moving-filter costs, and the all-scale continuation
+argument. Paying viscosity at this normalization does not control the
+nonlinear spectral mismatch at the same normalization.
 
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
