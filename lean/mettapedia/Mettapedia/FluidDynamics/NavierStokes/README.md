@@ -1660,11 +1660,102 @@ proves this estimate for every fixed real projection vector `e`. No factor
 counts Fourier modes. The projection direction here is spatially constant;
 no derivative of an adaptive direction is being suppressed.
 
-The full vector/mixed-spatial-derivative transfer and absorption of `D`
-remain open, as do the signed nonlinear/subgrid budgets and S4. The scalar
-coercivity is not pointwise: `ProjectionCurvatureBoundTests.lean` checks a
+The following section completes the vector/mixed-spatial-derivative
+transfer and fixed-band absorption of `D`. The signed nonlinear/subgrid
+budgets and S4 remain open. The scalar coercivity is not pointwise:
+`ProjectionCurvatureBoundTests.lean` checks a
 jet where the fourth-power second derivative vanishes while `f^6*z^2 > 0`.
 `ProjectionCurvatureAudit.lean` audits the complete new chain.
+
+### Full vector curvature payment and actual viscous absorption
+
+`Analysis/QuadraticProjectionFrame.lean` uses the fixed directions
+`d_k = (1,k,k^2)`, `k = 0,...,4`. For positive natural `m,n`, it proves
+
+```text
+c_mn*|a|^(2*m)*|z|^(2*n)
+  <= sum_k <d_k,a>^(2*m)*<d_k,z>^(2*n)
+  <= C_mn*|a|^(2*m)*|z|^(2*n),     c_mn > 0.
+```
+
+No union of two planes through the origin contains these five directions.
+Compactness on the product of unit spheres gives the uniform lower
+constant. `Analysis/UnitTorusProjectionFrameEnergy.lean` transfers scalar
+projection estimates to integrals of vector norms.
+`FiniteVorticityVectorBernstein.lean` applies this to the actual finite
+Fourier vorticity, bounding both `integral |omega|^6*|partial_j^2 omega|^2`
+and `integral |omega|^4*|partial_j omega|^4` by universal constants times
+`(2*pi*R)^2 * integral |omega|^6*|partial_j omega|^2`.
+
+`Analysis/WeightedMixedDerivative.lean` proves a second integrated
+identity. Write `v = partial_j a`, `w = partial_k a`,
+`b = partial_j^2 a`, `c = partial_k^2 a`, `h = partial_j partial_k a`.
+Subtracting two flux divergences cancels their common third derivative:
+
+```text
+integral |a|^6*|h|^2
+  <= integral |a|^6*|b|^2 + 7*integral |a|^6*|c|^2
+     + 24*integral |a|^4*|v|^4 + 18*integral |a|^4*|w|^4.
+```
+
+`FiniteVorticityMixedJets.lean` constructs these jets by Fourier
+multipliers and verifies their derivatives and commutations. Summing
+the nine mixed bounds, and identifying the gradient of curl vorticity,
+`FiniteBandCurvatureCost.lean` proves
+
+```text
+exists C_D > 0, forall finite supports P, supported fields u, radii R,
+  (forall q in P, |q| <= R) -> D(u) <= C_D*(2*pi*R)^2*G8(u).
+```
+
+The constant precedes the field and support quantifiers. There is no
+support-cardinality loss, inverse regularization, or supremum gradient.
+`FiniteBandProjectionAbsorption.lean` chooses this proved constant and sets
+
+```text
+kappa_R = 48*(8*pi*R)^2 + 12*C_D*(2*pi*R)^2 + 1,
+delta_R = nu^2*kappa_R^2/3,
+C_R(u)  = E8(u)/8 - (3/kappa_R)*K_delta_R(u).
+```
+
+For positive viscosity, it proves `E8/16 <= C_R <= E8/8`. The full
+viscous contribution is at most `-(3*nu/4)*G8 - 6*nu*R8`.
+`FilteredProjectionAbsorption.lean` connects these statements to an
+actual infinite solution with a fixed finite filter:
+
+```text
+d/dt C_R(u_chi(t)) <= W_R(t) - (3*nu/4)*G8(u_chi(t)) - 6*nu*R8(u_chi(t)),
+W_R = signed resolved inviscid work + signed all-input subgrid work.
+```
+
+Curvature uses at most a quarter of `nu*G8`, reserving a further half for
+the existing regularized coherent-stretch payment without exhausting
+`G8`. Every term uses the same `kappa_R` and `delta_R`. Neither work term is
+bounded by this theorem. The next obligation is a cutoff-uniform signed
+nonlinear budget, including all unresolved inputs and any costs of
+changing the cutoff. Fixed-band viscous absorption is not S4 closure or
+global regularity.
+
+`FilteredCoherentProjectionBudget.lean` combines the regularized
+coherent-stretch inequality with this viscous payment, without changing
+the parameters or spending dissipation twice. With `J_R` the existing
+signed spectral/center remainder, it proves
+
+```text
+d/dt C_R + (nu/4)*G8 + 3*nu*R8 <= Q_R,
+Q_R = W_R - stretching(u_chi) - J_R(u_chi)/kappa_R.
+```
+
+The module also checks the equivalent expression
+`Q_R = W_R + (6/kappa_R)*centeredIntegral`. Thus the reduction is explicit:
+renaming the right-hand side has not bounded the nonlinear work. A
+cutoff-uniform time-integrated upper bound on this signed quantity is
+still required.
+
+`ProjectionFrameEnergyTests.lean` checks why coordinate projections alone
+fail and why the mixed estimate cannot be pointwise.
+`ProjectionAbsorptionTests.lean` checks the zero-radius case and the
+dissipative sign. `ProjectionAbsorptionAudit.lean` audits the chain.
 
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
