@@ -104,6 +104,14 @@ theorem contDiff_one_tensor_lift (N : ℕ) : ContDiff ℝ 1 (fun x : Rd ↦ tens
   rw [← he]
   exact contDiff_one_liftSum _
 
+theorem continuous_tensor (N : ℕ) : Continuous (tensor (d := d) N) := by
+  have he : periodize (RadialRieszRegularization.tensorSchwartz (d := d) N) = tensor N := by
+    funext x
+    have hs := liftSum_tensorSchwartz_eq N (representative x)
+    simpa only [liftSum_eq_periodize, torusProjection_representative] using hs
+  rw [← he]
+  exact continuous_periodize _
+
 theorem hasSum_tensorDerivative_images (N : ℕ) (x v : Rd) :
     HasSum (fun z : Lat ↦ RadialRieszRegularization.tensorDerivative N ((z : Rd) + x) v)
       (liftedTensorDerivative N x v) :=

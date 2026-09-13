@@ -133,6 +133,17 @@ theorem hasFDerivAt_liftSum (K : 𝓢(Rd, E)) (x : Rd) :
 theorem continuous_liftSum (K : 𝓢(Rd, E)) : Continuous (liftSum K) :=
   continuous_iff_continuousAt.mpr (fun x ↦ (hasFDerivAt_liftSum K x).continuousAt)
 
+/-- Continuity descends through the product quotient, not through a chosen representative. -/
+theorem continuous_periodize (K : 𝓢(Rd, E)) : Continuous (periodize K) := by
+  have hq := IsOpenQuotientMap.piMap (fun _ : Fin d ↦
+    (QuotientAddGroup.isOpenQuotientMap_mk (N := AddSubgroup.zmultiples (1 : ℝ))))
+  apply hq.continuous_comp_iff.mp
+  let L := (WithLp.linearEquiv 2 ℝ (Fin d → ℝ)).symm.toContinuousLinearEquiv
+  have hc := (continuous_liftSum K).comp L.continuous
+  have he (x : Fin d → ℝ) : torusProjection (L x) =
+      Pi.map (fun _ : Fin d ↦ (QuotientAddGroup.mk : ℝ → UnitAddCircle)) x := rfl
+  simpa only [Function.comp_def, liftSum_eq_periodize, he] using hc
+
 theorem contDiff_one_liftSum (K : 𝓢(Rd, E)) : ContDiff ℝ 1 (liftSum K) := by
   rw [contDiff_one_iff_fderiv]
   refine ⟨fun x ↦ (hasFDerivAt_liftSum K x).differentiableAt, ?_⟩
