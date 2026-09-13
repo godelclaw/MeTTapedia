@@ -815,6 +815,62 @@ Imported fluid-equation results must retain their domain, forcing, and
 regularity hypotheses. A genuine route obstruction is a result to record
 and use to repair the attack, not a completed regularity proof.
 
+### Endpoint correlation correction and its remaining curvature debt
+
+`Analysis/UnitTorusKernelCorrelation.lean` proves that a separation-only
+quadratic average against a fixed vector retains just the operator mean.
+The actual periodic radial Riesz tensor has mean zero, so this average
+vanishes. A receiver weight instead gives the exact increment identity
+
+```text
+integral_y w(y) <a,K(x-y)a>
+  = integral_y (w(y)-w(x)) <a,K(x-y)a>.
+```
+
+`Analysis/PeriodicRadialCorrelationEnergy.lean` constructs the candidate
+
+```text
+C_N(omega) = integral_x integral_y
+  |omega(x)|^2 |omega(y)|^4 <omega(x),K_N(x-y)omega(x)>.
+```
+
+Each real scalar entry of `K_N` has Fourier multiplier of absolute value at
+most one. `Analysis/UnitTorusConvolutionEnergy.lean` proves convolution's
+Fourier identity and its L2 contraction from Parseval, without replacing
+the signed kernel by its absolute value. Applied to the two quartic
+endpoint factors, this proves `|C_N| <= d^2 * integral |omega|^8`, uniformly
+in `N`. `LocalOcticCorrelation.lean` applies the construction to full
+Fourier vorticity and identifies its energy with the existing eighth
+moment. In dimension three, `|epsilon| <= 1/18` implies
+
+```text
+E8/2 <= E8 + epsilon*C_N <= 3*E8/2.
+```
+
+This is equivalence of energies, not a Lyapunov inequality. The actual
+two-endpoint material derivative retains both stretching rates, both
+viscous terms, and the kernel derivative driven by relative velocity.
+
+`Analysis/OcticKernelCorrelation.lean` splits the exact common-translation
+second variation into the pure endpoint curvatures and the mixed product
+of their first variations. `Analysis/PeriodicRadialCorrelationDiffusion.lean`
+proves both quartic first variations are bounded by `4*|omega|^3*|v|`.
+After signed convolution and summing spatial coordinates, the actual mixed
+contribution obeys
+
+```text
+|mixedGradientContribution N u| <= 288 * weightedPalinstrophy u.
+```
+
+Its identity with the integrated mixed curvature is checked. The pure
+curvature is not included in that bound. `OcticCorrelationAudit.lean`
+checks a positive rank-one operator whose source curvature is `-42`,
+ruling out a positivity-implies-convexity shortcut. This is an algebraic
+test, not a self-consistent fluid counterexample. Common-translation
+integration of the complete correction rate, its unforced nonlinear
+control, and its usefulness for the original signed stretching budget
+remain to be proved. The arbitrary-data regularity theorem is still open.
+
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
 `PressureDyadicSymbol.lean` replaces both annular cutoffs by the smooth
