@@ -990,6 +990,53 @@ integrated budget. For arbitrary flows, stretching and the required uniform
 eighth-moment/dissipation payment remain open. `ParallelHeatBudgetAudit.lean`
 audits the new geometry, coefficient identities, and budget results.
 
+### Full-field curl/strain cancellation and its weighted defect
+
+`Analysis/WeightedCurlCancellation.lean` proves a periodic flux identity
+behind the unweighted strain-vorticity cancellation in
+[Evan Miller, Theorem 3.1](https://arxiv.org/html/2407.02691v2#S3).
+`LocalWeightedCurlCancellation.lean` supplies the actual full vorticity,
+curl, gradients, divergence identities and strain from one infinite Fourier
+velocity. Four summable absolute velocity moments justify the spatial
+derivatives; there is no finite-support or imposed-strain assumption.
+For divergence-free velocity, double curl is identified with the negative
+ordinary velocity Laplacian, and the checked identity is
+
+```text
+integral <omega, S(-Delta u) omega> = 0.
+```
+
+The weight used by the eighth-moment route does not pass through that
+cancellation unchanged. The same flux proof gives the exact formula
+
+```text
+D = integral |omega|^4 *
+      (sum_j omega_j <omega, partial_j omega>) * <omega, curl omega>,
+
+integral |omega|^6 <omega, S(-Delta u) omega> = -6*D.
+```
+
+The sum over `j` is half the derivative of squared amplitude along vortex lines.
+Its vanishing is a sufficient condition for zero defect, not a property
+asserted for arbitrary data. All expressions remain defined at zero vorticity.
+
+The existing full eighth-moment stretching source `S8` is connected without
+any new assumption: for every real parameter `kappa`, define
+
+```text
+J_kappa = integral |omega|^6 <omega, (S(-Delta u)-kappa*S(u)) omega>.
+kappa*S8 = -6*D - J_kappa.
+```
+
+Both terms retain their signs. No spectral concentration, helicity bound,
+or initial-data-only payment of `D` and `J_kappa` is proved. Choosing a large
+`kappa` alone does not help: the definition of `J_kappa` retains the original
+stretching. These identities expose a self-consistency cancellation for
+the coupled strain/vorticity analysis; they do not close the dynamical
+misalignment budget. `WeightedCurlCancellationAudit.lean` checks the
+declarations, and algebraic jet tests distinguish the weighted flux rate
+from the unweighted one without asserting a periodic counterexample.
+
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
 `PressureDyadicSymbol.lean` replaces both annular cutoffs by the smooth
