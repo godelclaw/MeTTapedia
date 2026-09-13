@@ -700,6 +700,57 @@ of the surviving weighted gradient increments has been proved.
 `RadialMeanChannelsAudit.lean` checks the generalization, geometry, series,
 time balance, and the distinction between value and gradient tangency.
 
+### Solenoidal cancellation before estimating curvature
+
+`Analysis/PeriodicRadialRieszSolenoidal.lean` proves that the complete radial
+tensor is even, has zero mean, and annihilates transverse Fourier fields.
+The real-part formulation does not require an extra reality assumption.
+`LocalRadialSolenoidal.lean` constructs these cancellations for the full
+vorticity and each full curl-gradient field. No angular restriction of the
+kernel is made: such a restriction need not preserve the multiplier identity.
+
+For continuous periodic `K`, `g`, and `q`, with `K` even, mean-zero, and
+annihilating `g`, the reusable theorem in `Analysis/SolenoidalCrossIncrement.lean`
+proves the exact identity
+
+```text
+integral_x integral_y <cross(g(x)-g(y), q(x)), K(x-y)(g(x)-g(y))>
+  = integral_x integral_y <cross(g(x), q(y)-q(x)), K(x-y)(g(x)-g(y))>.
+```
+
+Thus a constant background cancels; a variable background leaves an explicit
+increment. `Analysis/SignedCrossKernelFreezing.lean` splits the frozen-value
+curvature into this isotropic derivative contribution and a separate
+amplitude contribution. It also gives the full unequal-endpoint remainder,
+whose formula vanishes at equal endpoint values without equating gradients.
+
+`LocalRadialCurvatureChannels.lean` applies the identity with
+`g = fullCurlGradient u j` and `q = |omega|^(2*(n+2)) omega`, then proves that
+the actual signed curvature source is exactly the sum of the background,
+amplitude, and endpoint-mismatch channels, with the spatial half factors
+retained. The reduced source is substituted into the actual joint rate.
+At the eighth-moment exponent, `n=1` and the background weight is `|omega|^6`.
+
+`Analysis/RadialAmplitudeCurvature.lean` identifies the remaining amplitude
+channel in each actual radial image. With `d=v-w`, exponent `p=2*(n+2)`,
+and radial coefficient `k`, it is
+
+```text
+2*p*k*|a|^(p-2) * <a,d> * tripleProduct(d,a,h) * <h,a>.
+```
+
+It vanishes for a tangent endpoint value `<h,a>=0`, without requiring tangent
+gradients. The periodic theorem sums these signed terms with their individual
+image normals; it does not impose simultaneous tangency to all images.
+
+This does not cancel the full frozen curvature. `RadialSolenoidalAudit.lean`
+checks a positive longitudinal rank-one symbol annihilating a transverse
+increment while its amplitude contribution is `-48*c`, hence has either
+sign. These are algebraic symbol tests, not self-consistent fluid solutions.
+No channel has yet been bounded uniformly up to a possible singular time
+using only initial data and viscosity. The fixed-time cancellation is also
+forcing-insensitive; unforced dynamical control remains a separate obligation.
+
 The dependencies guide the work, not a rigid chronological schedule:
 counterexamples to a proposed S3 or S4 estimate can require revising S2.
 Imported fluid-equation results must retain their domain, forcing, and
