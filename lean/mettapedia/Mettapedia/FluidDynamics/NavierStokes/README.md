@@ -1831,6 +1831,75 @@ tests the rotation coefficient. Compatible-jet tests retain both signs
 of the pointwise rotation source. `ProjectionMaterialWorkAudit.lean`
 checks the dependencies of the new chain.
 
+### Oversized normalization retains stretching: an explicit checked test
+
+`WeightedProjectionRateBound.lean` proves first-variation estimates
+independent of every positive regularization parameter. Applied to the
+actual fields, `LocalProjectionStrainBound.lean` gives
+`abs(T_delta(u)) <= B(u)`, where
+
+```text
+B(u) = integral (10*|omega|^6*||S||*|curl omega|^2
+                 + 2*|omega|^6*|curl omega|*|strainSource|).
+```
+
+This is a finite fixed-field envelope, not a time budget or a bound from
+kinetic energy. Keeping that dependence explicit,
+`ProjectionCutoffLimit.lean` proves
+
+```text
+J_delta,kappa(u) := -(D_kappa(u) + 3*T_delta(u))/kappa,
+abs(J_delta,kappa(u) - stretching(u))
+  <= (6*abs(longitudinalHelicityIntegral(u)) + 3*B(u))/kappa.
+```
+
+Consequently, for the normalization and regularization already used in
+the corrected energy,
+
+```text
+J_delta_R,kappa_R(u) --> stretching(u),
+correctedEnergy(nu,R,u) --> meanEnergy(u)/8
+```
+
+as `R` grows, with `u` fixed. Increasing normalization does not by itself
+deplete the original stretching.
+
+This conclusion is also proved for the actual `signedWorkRemainder`,
+not only an auxiliary expression. `FiniteInviscidSupport.lean` constructs
+a symmetric finite filter from the input support and its sumset. It fixes
+both the input and its instantaneous full inviscid RHS, so its subgrid
+force is exactly zero. `ResolvedProjectionCutoffLimit.lean` supplies the
+same limit and a radius admitting that filter for every sufficiently
+large `R`. No invariant finite-dimensional trajectory is asserted.
+
+`PositiveStretchingSnapshot.lean` and `PositiveStretchingMean.lean`
+construct the explicit, real, divergence-free, mean-zero periodic field
+
+```text
+u(x,y,z) = (-sin(2*pi*y), 0,
+             sin(2*pi*x) + sin(2*pi*(x+y))).
+```
+
+Its actual eighth-moment stretching is strictly positive. The proof
+reconstructs the gradient and curl from its six Fourier modes, then uses
+one positive convolution path to prove positivity of the spatial mean.
+`Analysis/UnitTorusPositiveCoefficient.lean` supplies the reusable
+coefficientwise positivity and mean-identification lemmas. No numerical
+sampling or unverified finite calculation is used.
+
+For this field, every proposed eventual upper bound
+`signedWorkRemainder <= C/kappa_R` fails, for every real constant `C`.
+This refutes that decaying-in-normalization estimate, **not** a nonzero
+cutoff-uniform time budget, the full geometric route, or global
+regularity. A successful argument must use actual dynamics or other
+structure beyond making the cutoff oversized. The signed spectral,
+misalignment, strain-source, and general subgrid time costs remain open.
+
+`ProjectionCutoffLimitTests.lean` checks the zero-field first variation,
+the zero-stretching parallel-flow limit, and the positive actual-field
+limit with zero resolved subgrid force. `ProjectionCutoffLimitAudit.lean`
+audits the new chain.
+
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
 `PressureDyadicSymbol.lean` replaces both annular cutoffs by the smooth
