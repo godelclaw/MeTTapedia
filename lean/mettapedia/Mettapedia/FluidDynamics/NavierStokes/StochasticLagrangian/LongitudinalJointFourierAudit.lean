@@ -51,4 +51,3 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PeriodicGradie
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PeriodicGradientFluxAngle.family_projected_energy
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PeriodicGradientFluxAngle.family_saturates_weighted_bound
 #print axioms Mettapedia.FluidDynamics.NavierStokes.PeriodicGradientFluxAngle.not_exists_uniform_cross_energy_bound
-
