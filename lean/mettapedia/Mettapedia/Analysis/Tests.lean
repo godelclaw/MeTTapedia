@@ -64,6 +64,7 @@ import Mettapedia.Analysis.BilinearKernelLocalizationTests
 import Mettapedia.Analysis.FiniteTorusProductTests
 import Mettapedia.Analysis.ODE.AbsolutelyContinuousComparison
 import Mettapedia.Analysis.ODE.VariableGronwall
+import Mettapedia.Analysis.ODE.SignedEnergyBalance
 import Mettapedia.Analysis.LogarithmicScaleBound
 import Mettapedia.Analysis.SimpleImplicitRoot
 import Mettapedia.Analysis.OperatorQuadraticForm
