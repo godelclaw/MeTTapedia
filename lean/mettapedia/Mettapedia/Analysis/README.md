@@ -2,6 +2,14 @@
 
 Reusable analysis, independent of any particular fluid construction.
 
+`LongitudinalJetEvolution.lean` proves the first and second variations of
+`sum_j a_j D_j`, the material velocity-gradient commutator cancellation,
+and the viscous product-rule algebra. `UnitTorusTransportPairing.lean`
+proves integration by parts for continuous vector-valued translation
+derivatives, including skew pairing of divergence-free transport.
+The NS applications identify every derivative with an actual Fourier field;
+the generic lemmas do not prescribe a PDE or a regularity budget.
+
 `CurlCrossProduct.lean` proves the curl-of-cross-product identity for first
 jets, retaining both divergence terms. `OcticCurlCancellation.lean`
 removes the exact gradient of `7/8 * ‖a‖⁸` from the transverse curl of
