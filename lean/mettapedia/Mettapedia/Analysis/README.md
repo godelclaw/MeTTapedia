@@ -2,6 +2,11 @@
 
 Reusable analysis, independent of any particular fluid construction.
 
+`ContinuousFieldBilinear.lean` lifts continuous bilinear maps to compact
+continuous fields in the uniform norm, with an explicit operator-norm
+bound and product rule. Its map into spatial `L²` differentiates the
+integral of the squared norm, without an assumed integral derivative.
+
 `LongitudinalJetEvolution.lean` proves the first and second variations of
 `sum_j a_j D_j`, the material velocity-gradient commutator cancellation,
 and the viscous product-rule algebra. `UnitTorusTransportPairing.lean`
