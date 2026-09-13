@@ -1,0 +1,32 @@
+import Mettapedia.Analysis.WeightedCurlHelicityTests
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.LocalHelicityAbsorption
+
+/-! # Dependency audit of radial absorption and actual helicity energy bounds -/
+
+#print axioms Mettapedia.Analysis.WeightedCurlHelicity.helicity
+#print axioms Mettapedia.Analysis.WeightedCurlHelicity.helicity_add_radial
+#print axioms Mettapedia.Analysis.WeightedCurlHelicity.helicity_radial
+#print axioms Mettapedia.Analysis.WeightedCurlHelicity.longitudinalDefect
+#print axioms Mettapedia.Analysis.WeightedCurlHelicity.radialDensity
+#print axioms Mettapedia.Analysis.WeightedCurlHelicity.helicityDensity
+#print axioms Mettapedia.Analysis.WeightedCurlHelicity.abs_mul_le_weighted_sq
+#print axioms Mettapedia.Analysis.WeightedCurlHelicity.abs_longitudinalDefect_le
+#print axioms Mettapedia.Analysis.WeightedCurlHelicity.continuous_helicity
+#print axioms Mettapedia.Analysis.WeightedCurlHelicity.continuous_longitudinalDefect
+#print axioms Mettapedia.Analysis.WeightedCurlHelicity.continuous_helicityDensity
+#print axioms Mettapedia.Analysis.WeightedCurlHelicityTests.helicity_one
+#print axioms Mettapedia.Analysis.WeightedCurlHelicityTests.longitudinalDefect_one
+#print axioms Mettapedia.Analysis.WeightedCurlHelicityTests.radialDensity_one
+#print axioms Mettapedia.Analysis.WeightedCurlHelicityTests.helicityDensity_one
+#print axioms Mettapedia.Analysis.WeightedCurlHelicityTests.absorption_sharp
+#print axioms Mettapedia.Analysis.WeightedCurlHelicityTests.zero_vorticity
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LocalHelicityAbsorption.helicityMoment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LocalHelicityAbsorption.helicityMoment_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LocalHelicityAbsorption.helicityMoment_eq
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LocalHelicityAbsorption.longitudinalHelicityIntegral_eq_jet
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LocalHelicityAbsorption.abs_longitudinalHelicityIntegral_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LocalHelicityAbsorption.stretching_add_spectral_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LocalHelicityAbsorption.continuousOn_helicityMoment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LocalHelicityAbsorption.continuousOn_longitudinalHelicityIntegral
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LocalHelicityAbsorption.continuousOn_weightedStrainSpectralDefect
+#print axioms Mettapedia.FluidDynamics.NavierStokes.LocalHelicityAbsorption.energy_add_spectral_integral_le
