@@ -537,11 +537,61 @@ integral_time (sum_z complete_signed_image_rate_z)
 
 This is an integral of the image sum, not a claim that time integrals may
 be interchanged termwise. It is not a uniform upper bound on the source.
-For this radial family, the spatially averaged signed balance and the
-initial-data-controlled, cutoff-uniform S4 budget remain to be proved.
+The spatial average and the local cutoff passage are supplied below;
+the initial-data-controlled, cutoff-uniform S4 budget remains open.
 No equality with the earlier annular kernel family is assumed.
 `RadialPeriodicEvolutionAudit.lean` checks the dependencies; BKM continuation
 and unconditional arbitrary-data A/B remain open.
+
+### Spatially averaged radial source and local cutoff passage
+
+`LocalRadialMeanRegularity.lean` constructs the signed density and explicit
+material rate on the product torus. Continuity of the radial periodization
+descends through the product quotient, not through a discontinuous choice
+of representatives. Tangent paths identify the actual derivative everywhere
+on the compact interior interval, including coincident endpoints. The rate
+is exactly half the sum of the complete signed image rates; this image sum
+stays inside the spatial integral.
+
+`LocalRadialMeanBalance.lean` applies the generic incompressible transport
+theorem to this density. Only the product velocity and its proved divergence
+identity are reused from the older annular development. The kernels are not
+identified. With `S_N` the actual radial source and `R_N` the spatial mean of
+the explicit signed rate, it proves
+
+```text
+S_N is absolutely continuous,
+d/dt S_N(t) = R_N(t) almost everywhere,
+integral_a^b S_N(t) dt
+  = (b-a) S_N(a) + integral_a^b (b-t) R_N(t) dt.
+```
+
+`RadialSourceLocalBound.lean` uses the contractive radial Fourier weights
+to bound `abs(S_N)` by a local Fourier-envelope constant times the actual
+eighth moment, uniformly in `N`. `LocalRadialSourceIntegral.lean` uses this
+majorant only to justify dominated convergence on a supplied smooth interval:
+
+```text
+integral_a^b S_N → integral_a^b actual_L8_stretching,
+integral_a^b (b-t) R_N(t) dt
+  → integral_a^b actual_L8_stretching - (b-a) actual_L8_stretching(a).
+```
+
+These are limits of complete signed integrals, not limits of individual
+image rates or a pointwise derivative/cutoff interchange. A concrete sufficient
+upper-budget obligation is exposed with its endpoint term intact:
+
+```text
+(b-a) S_N(a) + integral_a^b (b-t) R_N(t) dt
+  <= (nu/2) integral_a^b weighted_palinstrophy + remainder, for every N.
+```
+
+If supplied, this implies the actual L8 energy-plus-half-dissipation bound
+on that interval. The budget is an explicit hypothesis, not a constructed
+estimate. In particular, the local Fourier majorant is not an initial-data
+bound up to a candidate singular time. S4 and unconditional A/B remain open.
+`RadialMeanBalanceAudit.lean` checks the declarations, coincident density,
+and the necessity of retaining the initial-source term.
 
 The dependencies guide the work, not a rigid chronological schedule:
 counterexamples to a proposed S3 or S4 estimate can require revising S2.
