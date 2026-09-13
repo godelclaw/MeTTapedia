@@ -2635,6 +2635,40 @@ physical derivative multiplier. `LongitudinalJointFourierAudit.lean`
 audits the new declarations. Initial-data-controlled, weighted time
 bounds remain open.
 
+`LerayStretchExchange.lean` uses the actual curl relation to combine
+both orders of a stretching interaction. For `L_k` the velocity Leray
+projection and `w_k = omegaHat(k)`, it proves
+
+```text
+zeta (m dot w_l) uHat(m) + zeta (l dot w_m) uHat(l)
+  = (L_l - L_m) (w_l cross w_m),
+|(L_l - L_m) a| <= 4 |l+m| / max(|l|,|m|) * |a|.
+```
+
+The estimate assumes both input frequencies are nonzero; the algebraic
+identity also covers zero modes. The projector difference is small
+for nearly opposite inputs, since the Leray symbol is even in frequency.
+
+`LongitudinalExchangeFluxFourier.lean` averages the two orders by an
+explicit bijection of the infinite triple index. Summability justifies
+the exchange; the resulting series is exactly the actual inviscid
+projected flux, and enters the same joint cost with the viscous pairs.
+Its averaged coefficient `E_j(k,l,m)` satisfies
+
+```text
+sum_j |E_j(k,l,m)|^2
+  <= 4 (|l+m| / max(|l|,|m|))^2 * |w_k|^2 * |w_l cross w_m|^2.
+```
+
+The outer projection is contractive, so no inverse power of the full
+output `|k+l+m|` remains in this estimate. Angular smallness and the inner
+low-output gain survive together. This paired inviscid estimate does
+not contradict the isolated-pair obstruction above. Fourier-coefficient
+alignment is not itself spatial vorticity-direction coherence, and the
+estimate supplies no time bound on its amplitude factors. Comparable
+inner input/output frequencies still have no small frequency ratio.
+`LongitudinalExchangeFluxAudit.lean` audits these declarations.
+
 `CoherenceCreationSnapshot.lean` supplies real, mean-zero, transverse,
 finite Fourier coefficients, hence all absolute Fourier moments. Its
 velocity is `(-sin y + sin x sin z, 0, cos x cos z - cos(2x)/2)`, with
