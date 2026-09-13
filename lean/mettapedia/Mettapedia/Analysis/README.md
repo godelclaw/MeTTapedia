@@ -5,13 +5,20 @@ Reusable analysis, independent of any particular fluid construction.
 `AngularCurlDecomposition.lean` separates the polynomial angular curl from
 the amplitude-gradient cross term. It preserves the scaled helicity pairing
 and bounds its eighth-degree energy density by twice angular dissipation,
-including at zero amplitude. This is not an evolution estimate for the
+including at zero amplitude. This decomposition alone is not an evolution estimate for the
 resulting functional.
 
 `AngularCurlEvolution.lean` proves its exact first variation, including
 amplitude subtraction and the outer norm weight. It records linearity
 in the supplied rates and eighth-degree common-amplitude growth; the
 algebraic tests check both growth signs without claiming NS trajectories.
+
+`AngularCurlSecondVariation.lean` separates the exact quadratic variation
+from the linear acceleration contribution. `AngularCurlCurvatureBound.lean`
+bounds that curvature by explicit amplitude-weighted first- and second-jet
+costs, without inverse amplitude factors. `AngularCurlCurvatureTests.lean`
+checks both curvature signs on symmetric, divergence-compatible second
+jets; these algebraic tests do not assert periodic NS trajectories.
 
 ## Checked modules
 
