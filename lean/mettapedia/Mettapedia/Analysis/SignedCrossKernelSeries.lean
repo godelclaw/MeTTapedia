@@ -21,6 +21,21 @@ local notation "Op" => R3 →L[ℝ] R3
 def pairedMaterialRate (n : ℕ) (H Hdot : Op) (a b da db : R3) : ℝ :=
   pairedStretch (2 * (n + 1)) Hdot a b + pairedEndpointRate n H a b da db
 
+theorem pairedEndpointRate_add (n : ℕ) (H : Op) (a b da db ea eb : R3) :
+    pairedEndpointRate n H a b (da + ea) (db + eb) =
+      pairedEndpointRate n H a b da db + pairedEndpointRate n H a b ea eb := by
+  simp only [pairedEndpointRate, evenRadialRate, cross_add_left, cross_add_right,
+    inner_add_left, inner_add_right, inner_sub_right, smul_add, add_smul, mul_add, map_add, map_sub]
+  ring
+
+/-- Extract a common scalar multiple of the endpoint increments, retaining the moving kernel. -/
+theorem pairedMaterialRate_add_smul_endpoint (n : ℕ) (H Hdot : Op) (c : ℝ)
+    (a b da db ea eb : R3) :
+    pairedMaterialRate n H Hdot a b (da + c • ea) (db + c • eb) =
+      pairedMaterialRate n H Hdot a b da db + c * pairedEndpointRate n H a b ea eb := by
+  simp only [pairedMaterialRate, pairedEndpointRate_add, pairedEndpointRate_smul]
+  ring
+
 theorem pairedMaterialRate_self (n : ℕ) (H Hdot : Op) (a da db : R3) :
     pairedMaterialRate n H Hdot a a da db = 0 := by
   simp [pairedMaterialRate, pairedStretch, pairedEndpointRate]

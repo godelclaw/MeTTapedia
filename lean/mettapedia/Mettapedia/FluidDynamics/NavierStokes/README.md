@@ -646,6 +646,60 @@ The decisive obligation remains a joint signed, cutoff-uniform dynamical
 budget that also controls amplitude growth and the retained remainders.
 `RadialPancakeCoherenceAudit.lean` checks the new declarations and examples.
 
+### Joint radial rate and plane-sensitive viscous curvature
+
+`LocalPairedKernelDiffusion.lean` generalizes the common-translation identity
+to any continuous periodic operator kernel. It proves that the spatial
+integral of the endpoint Laplacian channel is the negative integral of the
+complete signed curvature. Only continuity of the kernel is required: the
+common translation fixes the separation, so no kernel derivative occurs.
+The older annular identity now uses this generic result as well.
+
+`LocalRadialMeanChannels.lean` applies it to the constructed radial kernel.
+The mean material rate is exactly the spatially integrated deformation and
+relative transport minus `nu` times the signed curvature. Writing that joint
+rate as `J_N`, the actual source satisfies locally
+
+```text
+d/dt S_N(t) = J_N(t) almost everywhere,
+integral_a^b S_N = (b-a) S_N(a) + integral_a^b (b-t) J_N(t),
+integral_a^b (b-t) J_N(t)
+  -> integral_a^b actual_L8_stretching - (b-a) actual_L8_stretching(a).
+```
+
+The last limit is at the eighth-moment exponent and passes only the complete
+signed integral to the cutoff limit. It does not assert separate limits or
+upper bounds for the deformation, transport, or curvature terms.
+
+`Analysis/RadialPancakeCurvature.lean` exposes the geometry of that curvature
+for each nonzero Euclidean image displacement. The scalar identity component
+of the actual tensor cancels. The remaining rank-one component has an exact
+formula in the normal pairings of endpoint values and their gradients.
+It vanishes when both values and both gradients are tangent to the plane
+normal to the image displacement. Tangency of the values alone is not enough.
+
+At equal endpoint values `a`, with `<h,a>=0` and gradient increment `d=v-w`,
+the eighth-moment curvature of one image reduces exactly to
+
+```text
+2*k*|a|^6 * tripleProduct(d,a,h) * <h,d>.
+```
+
+The corresponding bound retains both the transverse cross product and the
+normal gradient increment. Equal normal derivative components make it zero;
+no Lipschitz bound or smallness of those components has been assumed. The
+actual periodic curvature is a convergent sum of these image contributions,
+away from coincident endpoints. Each image keeps its own displacement; the
+sum stays inside the spatial integral. The joint mean balance itself includes
+coincident endpoints and does not use this off-diagonal restriction.
+
+These identities remove kernel differentiation but do not pay the signed
+curvature or the full time-integrated stretching budget. In particular,
+curvature is not a nonnegative dissipation, and no cutoff-uniform estimate
+of the surviving weighted gradient increments has been proved.
+`RadialMeanChannelsAudit.lean` checks the generalization, geometry, series,
+time balance, and the distinction between value and gradient tangency.
+
 The dependencies guide the work, not a rigid chronological schedule:
 counterexamples to a proposed S3 or S4 estimate can require revising S2.
 Imported fluid-equation results must retain their domain, forcing, and
