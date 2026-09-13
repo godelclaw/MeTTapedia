@@ -2761,6 +2761,50 @@ with nine continuous coordinate jets. This is a local identity, not a
 global estimate. The `0` in `projectedFlux(0,u)` selects the inviscid
 part of the flux; the actual evolving solution still has positive viscosity.
 
+`Analysis/ODE/DampedGramHeatRepresentation.lean` realizes the infinite
+correlated pairing by an auxiliary heat-time integral and proves its
+absolute integrability. `FourierHeatFlow.lean` constructs the actual
+multiplier `H_sigma(k) = exp(-gamma_k sigma)`, preserving reality,
+transversality, and absolute Fourier moments. The auxiliary parameter
+`sigma` is distinct from physical solution time.
+
+`ExchangedFluxVariation.lean`, `ExchangedFluxHeatVariation.lean`, and
+`ExchangedFluxHeatRepresentation.lean` identify the full energy and work:
+
+```text
+Q(u) = integral_0^infinity |F(H_sigma u)|_L2^2 d sigma,
+W(u) = integral_0^infinity
+  <V(H_sigma u, H_sigma N(u)), F(H_sigma u)> d sigma,
+H_sigma N(u) = N(H_sigma u) + C_sigma(u).
+```
+
+Here `F` is the projected inviscid flux, `N` is the full nonlinear velocity
+RHS, and `V` is the convergent termwise three-slot flux variation. The
+resolved and commutator variation sums converge separately. The proof
+does not identify smoothing the nonlinear rate with recomputing it after
+smoothing the velocity.
+
+`FourierHeatCommutatorKernel.lean` inserts a division-free Duhamel
+factorization into the actual pressure-corrected nonlinear discrepancy.
+Writing `D = gamma_(k+l)` and `S = gamma_k + gamma_l`, its multiplier is
+
+```text
+exp(-D sigma) - exp(-S sigma)
+  = (S-D) integral_0^sigma exp(-D(sigma-r)) exp(-S r) d r,
+S-D = -2 nu (2 pi)^2 (k dot l).
+```
+
+The kernel integral is nonnegative, but the frequency contraction changes
+sign. Orthogonal input frequencies give exact cancellation. Pairing with
+an additional positive damping rate `c` and integrating in `sigma` gives
+exactly `(S-D)/((c+D)(c+S))`; neither formula divides by `S-D`.
+
+`ExchangedFluxHeatBudget.lean` substitutes both signed channels into the
+actual infinite time identity. It proves integrability of the heat work
+and of its physical-time integral, and constructs the local balance from
+the same admissible physical data. `ExchangedFluxHeatAudit.lean` audits
+the generic analysis, actual nonlinear force, and physical-time bridge.
+
 The signed `fullGramWork` integral remains uncontrolled by initial data.
 The joint viscous contribution, route-specific weights, and BKM
 continuation budget remain open. `ExchangedFluxGramAudit.lean` audits
