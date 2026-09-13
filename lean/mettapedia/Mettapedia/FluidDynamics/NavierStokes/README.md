@@ -2805,6 +2805,47 @@ and of its physical-time integral, and constructs the local balance from
 the same admissible physical data. `ExchangedFluxHeatAudit.lean` audits
 the generic analysis, actual nonlinear force, and physical-time bridge.
 
+`FourierHeatCommutatorEnergy.lean` and `FourierHeatCommutatorDecay.lean`
+combine complementary energy and enstrophy estimates for the actual
+commutator. With `E(u) = sum_q |u_q|^2` and
+`Omega(u) = sum_q |curl(u)_q|^2`, the retained Gaussian bound is
+
+```text
+|C_sigma(u)_q|^2
+  <= 2 nu sigma (2 pi |q|)^2 exp(-gamma_q sigma) E(u) Omega(u).
+```
+
+`FourierHeatCommutatorTime.lean` consumes the actual unforced identity
+`E(t)^2 + 4 nu integral_0^t E Omega = E(0)^2`. Thus each accumulated
+coefficient cost is bounded by
+`(sigma/2) (2 pi |q|)^2 exp(-gamma_q sigma) E(0)^2`.
+`FourierHeatLatticeEnergy.lean` proves convergence of the Gaussian
+quadratic output cost. `FourierHeatCommutatorOutputBudget.lean` proves
+continuity and the initial-energy bound for the entire output energy at
+every fixed positive `sigma`, including construction from physical data.
+
+`Analysis/ExponentialMoments.lean` gives the exact first exponential
+moment. `FourierHeatCommutatorParameter.lean` justifies continuity of the
+physical-time integral in the heat parameter.
+`FourierHeatCommutatorScaleBudget.lean` then proves
+
+```text
+sum_q (1 + |q|)^(-2) integral_0^infinity integral_0^t
+  |C_sigma(u(tau))_q|^2 d tau d sigma
+  <= 2 E(0)^2 / (nu^2 (2 pi)^2) sum_q (1 + |q|)^(-4).
+```
+
+Every heat integral and the final weighted series converge. The zero
+output is treated separately and vanishes. The actual local solution and
+convergence envelopes are constructed from real, transverse, mean-zero
+periodic data with eight continuous coordinate jets. The estimate has no
+common-envelope size, final-time, or input-count factor. It is a
+negative-order velocity-coefficient budget: using it in the signed flux
+variation still requires control of the corresponding differentiated
+test field. It is not a bound for `fullGramWork`, nor an unweighted
+all-heat-parameter energy bound. `FourierHeatCommutatorEnergyAudit.lean`
+audits the complete chain.
+
 The signed `fullGramWork` integral remains uncontrolled by initial data.
 The joint viscous contribution, route-specific weights, and BKM
 continuation budget remain open. `ExchangedFluxGramAudit.lean` audits
