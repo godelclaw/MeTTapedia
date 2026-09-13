@@ -1757,6 +1757,80 @@ fail and why the mixed estimate cannot be pointwise.
 `ProjectionAbsorptionTests.lean` checks the zero-radius case and the
 dissipative sign. `ProjectionAbsorptionAudit.lean` audits the chain.
 
+### Actual signed material work and rotation cancellation
+
+`FilteredProjectionNonlinearWork.lean` recombines the resolved and subgrid
+terms before removing the auxiliary output restriction. Their sum is
+exactly the corrected-gradient pairing with the filtered full inviscid
+RHS, independently of the finite set used to record the filter support.
+`LocalProjectionTransport.lean` proves that common advection of the
+corrected density has zero spatial mean. `SpatialVorticityInviscidRate.lean`
+reconstructs both vorticity material rates from the actual momentum RHS.
+
+For `v = filteredVelocity chi u`, let `P_delta(v)` be the weighted
+projection material-rate density. `LocalProjectionInviscidWork.lean` and
+`FilteredProjectionSourceSplit.lean` prove
+
+```text
+W_R = stretching(v) - (3/kappa_R)*integral P_delta_R(v) + SG_R,
+SG_R = integral <correctedGradient(v), curl(subgridForce chi u)>.
+```
+
+There is no extra output restriction on `SG_R`. Outside the filter support,
+the subgrid RHS equals minus the resolved inviscid RHS; the terms cancel
+there, rather than vanishing separately. Every spatial Fourier moment
+needed for the resolved calculus follows from finite support. The full
+input supplies convergence of its nonlinear fibers, not an assumed
+high-order uniform bound.
+
+The rotation flux now cancels the center-transport term at exactly their
+original coefficients. Write `Z_delta` for the center-transport integral,
+`D_kappa` for the signed strain/spectral defect, and `T_delta` for the
+integral of amplitude-strain rate plus weighted symmetric-strain
+projection rate. `LocalProjectionStrainRate.lean` and
+`FilteredProjectionStrainWork.lean` prove
+
+```text
+integral P_delta = T_delta + Z_delta/4,
+J_delta,kappa    = D_kappa - 3*Z_delta/4,
+Q_R             = SG_R - (D_kappa_R(v) + 3*T_delta_R(v))/kappa_R.
+```
+
+This identity is substituted into the actual corrected-energy inequality.
+No absolute values are taken before cancellation, and neither `Z_delta`
+nor the rotation flux is charged again as an independent error.
+
+The sign of the coherent material contribution is also explicit. At each
+point, put `a = omega`, `rho = <a,curl omega>/(delta+|a|^2)`,
+`r = curl omega - rho*a`, `S = strain`, and let `lambda` be the largest
+eigenvalue of the actual `S`. The coherent density is
+
+```text
+H_delta = |a|^6 * (4*lambda*|r|^2 + 2*delta*rho^2*lambda
+                   + 2*<r,(lambda*I-S)r>) >= 0.
+```
+
+`LocalProjectionSpectralRate.lean` constructs this eigenvalue, proves its
+continuity and nonnegativity from incompressibility, and supplies the
+Rayleigh bound even at eigenvalue collisions. The remaining material
+density is exactly the signed normal-alignment rate plus the
+symmetric-strain derivative-source rate. Their spatial integrability is
+proved. Since the projection correction enters the energy with a minus
+sign, discarding `H_delta` gives a valid upper bound on the actual energy
+derivative, with no gap or alignment hypothesis.
+
+**Still open:** a cutoff-uniform time-integrated upper bound on the
+remaining combination of all-input subgrid work, signed spectral defect,
+normal-alignment rate, and strain derivative-source rate. Spatial
+continuity, coherent positivity, and rotation cancellation do not supply
+that bound or unconditional regularity.
+
+`ProjectionMaterialWorkTests.lean` checks zero inviscid projection work
+and zero subgrid work for actual horizontal parallel Fourier flows, and
+tests the rotation coefficient. Compatible-jet tests retain both signs
+of the pointwise rotation source. `ProjectionMaterialWorkAudit.lean`
+checks the dependencies of the new chain.
+
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
 `PressureDyadicSymbol.lean` replaces both annular cutoffs by the smooth
