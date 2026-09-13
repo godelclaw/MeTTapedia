@@ -866,10 +866,49 @@ Its identity with the integrated mixed curvature is checked. The pure
 curvature is not included in that bound. `OcticCorrelationAudit.lean`
 checks a positive rank-one operator whose source curvature is `-42`,
 ruling out a positivity-implies-convexity shortcut. This is an algebraic
-test, not a self-consistent fluid counterexample. Common-translation
-integration of the complete correction rate, its unforced nonlinear
-control, and its usefulness for the original signed stretching budget
-remain to be proved. The arbitrary-data regularity theorem is still open.
+test, not a self-consistent fluid counterexample.
+
+`LocalOcticDiffusion.lean` now integrates the complete common-translation
+second variation. If `P_N` and `M_N` denote the pure and mixed spatial
+curvatures, respectively, the endpoint viscosity is exactly `-(P_N+M_N)`.
+`LocalOcticMeanBalance.lean` integrates the actual product-torus transport
+and proves the full local time identity
+
+```text
+C_N(b) - C_N(a) = integral_a^b [A_N - nu*(P_N+M_N)].
+```
+
+Here `A_N` is the nonviscous material rate: both endpoint stretching terms
+and the kernel derivative driven by relative velocity. It is not just
+the rate at a fixed separation.
+
+`LocalOcticCorrectedEnergy.lean` combines this identity with the actual
+eighth-moment balance. `LocalOcticEndpointBalance.lean` extends the estimate
+to the initial endpoint and constructs its local solution from real,
+transverse, zero-mean periodic data with nine continuous coordinate jets.
+For `|epsilon| <= 1/576`, it proves
+
+```text
+H_N = E8/8 + epsilon*C_N
+R_N = stretching + epsilon*(A_N - nu*P_N)
+
+H_N(t) + (nu/2)*integral_0^t G8 <= H_N(0) + integral_0^t R_N,
+E8(t)/16 + (nu/2)*integral_0^t G8 <= 3*E8(0)/16 + integral_0^t R_N.
+```
+
+Only the mixed curvature has been absorbed. The signed residual `R_N`
+is explicitly constructed and locally integrable; its initial-data-only,
+cutoff-uniform time budget is **not proved**. The common Fourier envelope
+used for local continuity is not a bound at a maximal existence time.
+
+`Analysis/OcticCorrelationAmplitudeObstruction.lean` rules out a generic
+pointwise pure-curvature payment: for the scalar operator `H=-id`, both
+endpoint amplitudes can be at most one, the local weighted-gradient cost
+can equal one, and the mixed curvature can vanish while the negative pure
+curvature is arbitrarily large. This does not refute an integrated estimate
+for the actual periodic kernel and a self-consistent fluid field.
+`OcticDiffusionAudit.lean` audits the signed balance and endpoint results.
+The arbitrary-data global regularity theorem remains open.
 
 ### Exact low-output dyadic reconstruction with actual kernel costs
 

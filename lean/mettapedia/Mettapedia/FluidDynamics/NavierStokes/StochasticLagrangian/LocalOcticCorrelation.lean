@@ -78,6 +78,19 @@ def periodicRate (N : ℕ) (u : FourierVelocity) (nu : ℝ) (x y : X3) : ℝ :=
     (fullStrainOperator u (torusPoint y) (fullVorticity u (torusPoint y)) +
       nu • fullVorticityLaplacian u (torusPoint y))
 
+def fieldRate (N : ℕ) (u : FourierVelocity) (nu : ℝ) (x y : T3) : ℝ :=
+  OcticKernelCorrelation.materialRate (PeriodicRadialRiesz.tensor N (x - y))
+    (UnitTorusPeriodization.periodize (RadialRieszRegularization.tensorDerivative N) (x - y)
+      (velocity u x - velocity u y))
+    (fullVorticity u x) (fullVorticity u y)
+    (fullStrainOperator u x (fullVorticity u x) + nu • fullVorticityLaplacian u x)
+    (fullStrainOperator u y (fullVorticity u y) + nu • fullVorticityLaplacian u y)
+
+theorem periodicRate_eq_fieldRate (N : ℕ) (u : FourierVelocity) (nu : ℝ) (x y : X3) :
+    periodicRate N u nu x y = fieldRate N u nu (torusPoint x) (torusPoint y) := by
+  simp only [periodicRate, fieldRate, PeriodicRadialRiesz.liftedTensorDerivative_eq_periodize,
+    torusProjection_separation]
+
 theorem hasDerivAt_pairDensity_path {nu T B : ℝ} {u₀ : FourierVelocity}
     (s : LocalInfiniteVelocitySolution nu u₀ T B)
     (g : Wavevector → ℝ) (hg : ∀ q, 0 ≤ g q) (hSum : Summable g)
