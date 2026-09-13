@@ -593,6 +593,59 @@ bound up to a candidate singular time. S4 and unconditional A/B remain open.
 `RadialMeanBalanceAudit.lean` checks the declarations, coincident density,
 and the necessity of retaining the initial-source term.
 
+### Pancake-plane defects and their actual material evolution
+
+`Analysis/RadialPancakeCoherence.lean` bounds the coherent radial image rate
+using both normal components of the endpoint vorticities and the failure of
+the image separation to be a strain eigenvector. With `p = 2*(n+1)`,
+`F_p(a) = |a|^p a`, `D` the scalar triple product, `r = S h - sigma h`,
+and `M_p = |a|^p |<h,a>| + |b|^p |<h,b>|`, the bound is
+
+```text
+abs(coherent_rate)
+  <= abs(D) * ((abs(k') + abs(k)*(2*abs(sigma) + p*norm(S))) * M_p
+               + 2*abs(k)*norm(r)*norm(F_p(a)-F_p(b))).
+```
+
+`LocalRadialCoherentBound.lean` constructs every quantity from the actual
+fields and image separation. Common rotation cancels in the symmetric
+normal action. Exact coplanarity together with an eigen-normal makes this
+coherent channel vanish; coplanarity alone does not. The full rate still
+contains its signed unequal-gradient, image-velocity, and viscous terms.
+No summability or time-integrated bound for the displayed cost is claimed.
+
+`LocalRadialNormalEvolution.lean` follows the actual material lifts. For
+`z = <h,omega>` it proves
+
+```text
+z' = 2*sigma*z + f,
+(z^2)' <= -2*kappa*z^2 + f^2/(2*kappa), if sigma <= -kappa < 0.
+```
+
+Here `f` consists explicitly of the strain-normal defect, image-velocity
+remainder, unequal endpoint gradient, and viscous Laplacian. It is an
+internal remainder, not an external body force. Choosing a more negative
+`sigma` changes this remainder; compression is not obtained for free.
+The endpoint choice at the reference point removes exactly the unequal
+gradient term and no other term. These derivative identities also include
+zero vorticity and zero separation without division by their norms.
+
+The same file differentiates the actual signed weighted heights
+`|omega|^p z`, whose absolute values sum to `M_p`. Their additional amplitude
+rate is retained. Even with a common affine field and an exact eigen-normal,
+the weighted height evolves at rate `(2*sigma + p*alpha)` times itself,
+where `alpha` is the vorticity Rayleigh quotient of that field.
+
+`Analysis/RadialPancakeCoherenceTests.lean` checks the limitation explicitly:
+the symmetric trace-free matrix `diag(1,1,-2)`, normal `(0,0,1)`, and vector
+`(4,0,1)` give unweighted height `1` with derivative `-4`, but weighted
+height `4913` with derivative `4624` at `p=6`. Thus normal damping does not
+imply weighted damping. These are derivatives of explicit finite-dimensional
+curves, not a self-consistent spatial NS solution or an NS counterexample.
+The decisive obligation remains a joint signed, cutoff-uniform dynamical
+budget that also controls amplitude growth and the retained remainders.
+`RadialPancakeCoherenceAudit.lean` checks the new declarations and examples.
+
 The dependencies guide the work, not a rigid chronological schedule:
 counterexamples to a proposed S3 or S4 estimate can require revising S2.
 Imported fluid-equation results must retain their domain, forcing, and
