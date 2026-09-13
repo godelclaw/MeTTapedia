@@ -29,6 +29,21 @@ by parts removes the derivative of the varied field; no norm bound on the
 resulting variational gradient is assumed or inferred. The variation tests
 separately check the value response `6` and jet response `2`.
 
+`UnitTorusDivergenceFreeTransport.lean` proves zero mean for continuous
+incompressible scalar transport. `AngularCurlTransport.lean` retains the
+deformation commutator for angular energy with its positive integration-by-parts
+sign. Its stress annihilates radial first jets before taking norms;
+`AngularCurlTransportBound.lean` bounds its absolute work by `36*M` times
+angular dissipation when every deformation-matrix entry is bounded by `M`.
+
+`AngularCurlRadialVariation.lean` identifies the pointwise radial component
+of the spatial variational gradient: its pairing with the field is eight
+times the angular density. The transverse remainder is orthogonal to the
+field, without division by its norm or derivatives of a chosen scalar
+reference rate. The transport tests check both deformation signs on
+trace-zero local jets and invariance under arbitrary radial jet additions.
+These identities alone do not supply a dynamical growth bound.
+
 ## Checked modules
 
 | Module | Mathematical content | Scope |
