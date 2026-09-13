@@ -3,6 +3,7 @@ import Mettapedia.Analysis.WeightedCurlCancellationTests
 import Mettapedia.Analysis.WeightedCurlHelicityTests
 import Mettapedia.Analysis.LongitudinalHelicityBudgetTests
 import Mettapedia.Analysis.CurlHelicityCenteringTests
+import Mettapedia.Analysis.RegularizedProjectionTests
 import Mettapedia.Analysis.CompactSchwartzFamilyTests
 import Mettapedia.Analysis.CompactFourierEnvelopeTests
 import Mettapedia.Analysis.UnitTorusTranslationEnergyTests

@@ -32,6 +32,12 @@ local instance curlCircleProbability : IsProbabilityMeasure (volume : Measure Un
 def curlJet (D : Fin 3 → R3) : R3 :=
   WithLp.toLp 2 ![D 1 2 - D 2 1, D 2 0 - D 0 2, D 0 1 - D 1 0]
 
+theorem norm_curlJet_sq_le (D : Fin 3 → R3) :
+    ‖curlJet D‖ ^ 2 ≤ 2 * ∑ j : Fin 3, ‖D j‖ ^ 2 := by
+  simp [EuclideanSpace.real_norm_sq_eq, curlJet, Fin.sum_univ_three]
+  nlinarith [sq_nonneg (D 1 2 + D 2 1), sq_nonneg (D 2 0 + D 0 2),
+    sq_nonneg (D 0 1 + D 1 0), sq_nonneg (D 0 0), sq_nonneg (D 1 1), sq_nonneg (D 2 2)]
+
 theorem curl_inner_transport (a : R3) (D : Fin 3 → R3) :
     (∑ j : Fin 3, a j * ⟪D j, curlJet D⟫) =
       ∑ j : Fin 3, ⟪a, D j⟫ * curlJet D j := by
