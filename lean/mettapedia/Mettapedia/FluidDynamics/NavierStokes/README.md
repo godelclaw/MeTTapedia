@@ -2480,10 +2480,38 @@ integral <q,D_t q> + nu sum_k integral |partial_k q|^2
 ```
 
 Here `D_t q` denotes the reconstructed material rate already identified
-on the actual trajectory. This statement does not yet differentiate a
-time-dependent spatial integral or bound either retained signed flux.
-The ordinary Laplacian pairing and both flux transfers are proved,
-not assigned signs by convention.
+on the actual trajectory. The ordinary Laplacian pairing and both flux
+transfers are proved, not assigned signs by convention.
+
+`LongitudinalVorticityTime.lean` now differentiates the actual vorticity
+and its gradient in the uniform continuous-field norm, then differentiates
+the spatial energy through their bilinear product and the continuous map
+into `L²`. `LongitudinalEnergyBalance.lean` identifies Eulerian and material
+rates, removes the transport work by incompressibility, and proves the
+initial-endpoint time identity. Smooth real transverse mean-zero periodic
+data construct a local solution satisfying it; the common fourth Fourier
+moment envelope is constructed, not left as an extra initial-data premise.
+
+`LongitudinalJointFlux.lean` combines the two signed fluxes into
+
+```text
+J_j = -omega_j S omega + 2 nu sum_k (partial_k omega)_j partial_k omega,
+E = integral |q|^2,   D = sum_j integral |partial_j q|^2,
+E(t) + 2 nu integral_0^t D = E(0) + 2 integral_0^t integral sum_j <partial_j q,J_j>.
+```
+
+Completing the square gives the local inequality
+
+```text
+nu E(t) + nu^2 integral_0^t D
+  <= nu E(0) + integral_0^t integral sum_j |J_j|^2.
+```
+
+For positive viscosity this absorbs half the longitudinal diffusion,
+without separating the contributions inside `J`. The joint-flux square
+still requires an initial-data-controlled bound. This unweighted identity
+does not by itself pay the octic amplitude weights or nonlocal mismatch.
+`LongitudinalEnergyAudit.lean` audits these declarations.
 
 `CoherenceCreationSnapshot.lean` supplies real, mean-zero, transverse,
 finite Fourier coefficients, hence all absolute Fourier moments. Its
