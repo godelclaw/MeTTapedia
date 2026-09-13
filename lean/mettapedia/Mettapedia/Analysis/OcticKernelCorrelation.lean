@@ -4,6 +4,8 @@ import Mathlib.Analysis.Calculus.Deriv.Mul
 import Mathlib.Analysis.Calculus.Deriv.Add
 import Mathlib.Analysis.Calculus.FDeriv.Bilinear
 import Mathlib.Tactic.Ring
+import Mathlib.Tactic.FunProp
+import Mettapedia.Analysis.LocallyLipschitz
 
 /-!
 # Signed evolution of an eighth-order kernel correlation
@@ -52,6 +54,25 @@ theorem continuous_density {X : Type*} [TopologicalSpace X] {H : X → Op} {a b 
     (hH : Continuous H) (ha : Continuous a) (hb : Continuous b) :
     Continuous (fun x ↦ density (H x) (a x) (b x)) :=
   ((ha.norm.pow 2).mul (hb.norm.pow 4)).mul (ha.inner (hH.clm_apply ha))
+
+theorem contDiff_density : ContDiff ℝ 1 (fun z : Op × E × E ↦ density z.1 z.2.1 z.2.2) := by
+  have ha : ContDiff ℝ 1 (fun z : Op × E × E ↦ z.2.1) := by fun_prop
+  have hb : ContDiff ℝ 1 (fun z : Op × E × E ↦ z.2.2) := by fun_prop
+  have hK : ContDiff ℝ 1 (fun z : Op × E × E ↦ z.1) := contDiff_fst
+  have hq : ContDiff ℝ 1 (fun z : Op × E × E ↦ ⟪z.2.1, z.1 z.2.1⟫) :=
+    ha.inner ℝ (hK.clm_apply ha)
+  have h : ContDiff ℝ 1 (fun z : Op × E × E ↦
+      ‖z.2.1‖ ^ 2 * (‖z.2.2‖ ^ 2) ^ 2 * ⟪z.2.1, z.1 z.2.1⟫) :=
+    ((ha.norm_sq ℝ).mul ((hb.norm_sq ℝ).pow 2)).mul hq
+  simpa only [density, ← pow_mul] using h
+
+theorem locallyLipschitz_density {X : Type*} [PseudoMetricSpace X]
+    {H : X → Op} {a b : X → E}
+    (hH : LocallyLipschitz H) (ha : LocallyLipschitz a) (hb : LocallyLipschitz b) :
+    LocallyLipschitz (fun x ↦ density (H x) (a x) (b x)) := by
+  have hf : LocallyLipschitz (fun z : Op × E × E ↦ density z.1 z.2.1 z.2.2) :=
+    contDiff_density.locallyLipschitz
+  exact hf.comp (g := fun x ↦ (H x, a x, b x)) (hH.prodMk (ha.prodMk hb))
 
 def sourceForm (H : Op) (a : E) : ℝ := ‖a‖ ^ 2 * ⟪a, H a⟫
 
@@ -119,5 +140,32 @@ theorem hasDerivAt_endpointRate (H : Op) {a b v w : ℝ → E} {z q : E} {t : �
   apply h.congr_deriv
   simp only [pureCurvature, mixedCurvature, amplitudeRate, Nat.cast_ofNat]
   ring
+
+theorem continuous_endpointRate {X : Type*} [TopologicalSpace X]
+    {H : X → Op} {a b v w : X → E} (hH : Continuous H) (ha : Continuous a)
+    (hb : Continuous b) (hv : Continuous v) (hw : Continuous w) :
+    Continuous (fun x ↦ endpointRate (H x) (a x) (b x) (v x) (w x)) := by
+  unfold endpointRate
+  fun_prop
+
+theorem continuous_pureCurvature {X : Type*} [TopologicalSpace X]
+    {H : X → Op} {a b v w : X → E} (hH : Continuous H) (ha : Continuous a)
+    (hb : Continuous b) (hv : Continuous v) (hw : Continuous w) :
+    Continuous (fun x ↦ pureCurvature (H x) (a x) (b x) (v x) (w x)) := by
+  unfold pureCurvature sourceCurvature sourceForm amplitudeCurvature
+  fun_prop
+
+theorem continuous_mixedCurvature {X : Type*} [TopologicalSpace X]
+    {H : X → Op} {a b v w : X → E} (hH : Continuous H) (ha : Continuous a)
+    (hb : Continuous b) (hv : Continuous v) (hw : Continuous w) :
+    Continuous (fun x ↦ mixedCurvature (H x) (a x) (b x) (v x) (w x)) := by
+  unfold mixedCurvature sourceRate amplitudeRate
+  fun_prop
+
+theorem endpointRate_sum {ι : Type*} (J : Finset ι) (H : Op) (a b : E) (v w : ι → E) :
+    endpointRate H a b (∑ j ∈ J, v j) (∑ j ∈ J, w j) =
+      ∑ j ∈ J, endpointRate H a b (v j) (w j) := by
+  simp only [endpointRate, inner_sum, sum_inner, map_sum, Finset.mul_sum,
+    Finset.sum_add_distrib, Finset.sum_mul, mul_add]
 
 end Mettapedia.Analysis.OcticKernelCorrelation
