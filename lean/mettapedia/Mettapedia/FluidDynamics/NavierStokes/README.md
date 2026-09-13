@@ -2138,6 +2138,62 @@ uniformly in the output scale, at a normalization compatible with the
 proved coercivity and viscous absorption. Enlarging the normalization
 alone cannot supply that control.
 
+### Angular transport paid from initial kinetic energy
+
+`FiniteAngularTransport.lean` constructs the actual transport deformation
+matrix and proves its divergence-free trace from transverse coefficients.
+For the angular variational gradient, periodic integration by parts gives
+`integral <A_ang, u.grad omega> = deformationIntegral`, with a positive
+sign. `FiniteAngularInviscidWork.lean` therefore gives the exact source split
+
+```text
+W = stretching - (3/kappa)*angularStrainWork
+      + (3/kappa)*deformationIntegral + fullSubgridWork.
+```
+
+All resolved quantities use the retained velocity. The full subgrid
+pairing includes outputs outside the retained support, where they cancel
+the resolved RHS; those outputs cannot be dropped from only one term.
+
+`FiniteAngularTransportBound.lean` bounds the deformation integral by
+`36*M*(G8-R8)`, after radial first-jet cancellation.
+`FiniteVelocityGradientEnergy.lean` removes the need to assume `M` for a
+fixed filter: Cauchy--Schwarz bounds every retained gradient entry by
+
+```text
+M = sqrt(E0 * sum_{q in P} (2*pi*|q|*|chi(q)|)^2).
+```
+
+Here `E0` is the full initial kinetic energy. The unforced energy identity
+supplies the bound throughout the constructed local solution, not just at
+one snapshot. `AngularTransportAbsorption.lean` proves that choosing
+`nu*kappa >= 432*M`, together with the existing coercivity threshold,
+absorbs the transport work and retains
+
+```text
+C_ang' + (nu/4)*G8 + 6*nu*R8
+  <= stretching - (3/kappa)*angularStrainWork + fullSubgridWork.
+```
+
+For positive viscosity both normalization conditions can be met before
+choosing the solution time. The physical local-solution corollary constructs
+the moment envelope from real, divergence-free, mean-zero data with eight
+continuous coordinate derivatives; no gradient or dissipation budget is
+assumed in that corollary. The normalization remains cutoff-dependent.
+
+`FiniteAngularRadialWork.lean` identifies the angular gradient's radial
+component pointwise. Its transverse remainder pairs only with
+`S*omega - c*omega` for any scalar reference rate `c`, without derivatives
+of `c` or division by vorticity. The corresponding actual source identity
+retains `8*integral c*C_density`, the signed strain defect and full subgrid
+work. Exact alignment does not assign a damping sign to the scalar term;
+mean coercivity alone does not bound a spatially weighted corrected density.
+
+Still open: a cutoff-uniform time-integrated bound for the remaining
+signed strain/subgrid source, moving-filter costs if used, and the passage
+to all-scale continuation. `AngularTransportAudit.lean` audits these
+declarations separately from the unconditional global-regularity target.
+
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
 `PressureDyadicSymbol.lean` replaces both annular cutoffs by the smooth
