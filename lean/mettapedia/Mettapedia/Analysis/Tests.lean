@@ -4,6 +4,7 @@ import Mettapedia.Analysis.AngularCurlTransportTests
 import Mettapedia.Analysis.AngularCurlSkewDeformationTests
 import Mettapedia.Analysis.PolarizedCrossKernelTests
 import Mettapedia.Analysis.UnitTorusFiniteFilterTests
+import Mettapedia.Analysis.OcticCurlCancellationTests
 import Mettapedia.Analysis.WeightedCurlCancellationTests
 import Mettapedia.Analysis.WeightedCurlHelicityTests
 import Mettapedia.Analysis.LongitudinalHelicityBudgetTests
