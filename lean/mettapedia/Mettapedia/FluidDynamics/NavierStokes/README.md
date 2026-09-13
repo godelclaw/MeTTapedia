@@ -1037,6 +1037,44 @@ misalignment budget. `WeightedCurlCancellationAudit.lean` checks the
 declarations, and algebraic jet tests distinguish the weighted flux rate
 from the unweighted one without asserting a periodic counterexample.
 
+### Radial absorption with an explicit helicity remainder
+
+`Analysis/WeightedCurlHelicity.lean` proves that the first-jet helicity
+`<a, curl D>` is unchanged when any derivative `D_j` is replaced by
+`D_j + b_j*a`. Thus pure amplitude derivatives do not contribute to that
+factor. A quantitative Young estimate, including zero vorticity, gives
+
+```text
+R8 = integral |omega|^4 * sum_j <omega, partial_j omega>^2,
+H10 = integral |omega|^6 * <omega, curl omega>^2,
+|D| <= eta*R8 + H10/(4*eta)              (eta > 0).
+```
+
+`LocalHelicityAbsorption.lean` applies this estimate to the actual Fourier
+fields and the existing eighth-moment balance. For positive viscosity and
+constant `kappa > 0`, choosing `eta = nu*kappa/2` proves
+
+```text
+E8(t)/8 + nu*integral_0^t G8 + 3*nu*integral_0^t R8
+  + (integral_0^t J_kappa)/kappa
+  <= E8(0)/8 + 3/(nu*kappa^2)*integral_0^t H10.
+```
+
+Half the radial dissipation has paid the longitudinal factor; the full
+weighted palinstrophy and the other half remain on the left. The spectral
+term remains signed. All local integrability and endpoint continuity are
+derived from a common fourth Fourier moment, not supplied as budget
+hypotheses. That envelope justifies the calculation and is not a bound
+uniform toward a possible singular time.
+
+The remaining dynamical obligation is a useful bound on the combination
+`3/(nu*kappa^2)*integral H10 - integral J_kappa/kappa`. Neither term is
+proved affordable for arbitrary data. In particular, `H10` has an extra
+amplitude weight and must not be identified with `G8` or the kinetic-energy
+dissipation. `WeightedCurlHelicityTests.lean` checks the sharp Young constant
+on an explicit divergence-free first jet, and `HelicityAbsorptionAudit.lean`
+audits the algebra and actual initial-endpoint inequality.
+
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
 `PressureDyadicSymbol.lean` replaces both annular cutoffs by the smooth
