@@ -2669,6 +2669,53 @@ estimate supplies no time bound on its amplitude factors. Comparable
 inner input/output frequencies still have no small frequency ratio.
 `LongitudinalExchangeFluxAudit.lean` audits these declarations.
 
+`FourierVorticityPairDynamics.lean` differentiates the actual Fourier
+vorticity cross product along the unforced local NS solution. Write
+`w_q = omegaHat(q)`, `N_q = curl(infiniteVelocityRHS 0 u)_q`, and
+`gamma_q = nu (2 pi)^2 |q|^2`. Then
+
+```text
+C_lm = w_l cross w_m,
+R_lm = N_l cross w_m + w_l cross N_m,
+d_t C_lm = R_lm - (gamma_l + gamma_m) C_lm.
+```
+
+The nonlinear source retains every input frequency. It is not an external
+body force, a prescribed alignment rate, or a closed Galerkin evolution.
+`FourierStretchingInteractionDynamics.lean` also evolves the outer
+amplitude, giving exactly the factor from the exchanged coefficient bound:
+
+```text
+F_klm = |w_k|^2 |C_lm|^2,
+U_k = 2 Re <w_k,N_k>,
+V_lm = 2 Re <C_lm,R_lm>,
+W_klm = U_k |C_lm|^2 + |w_k|^2 V_lm,
+Gamma_klm = gamma_k + gamma_l + gamma_m,
+d_t F_klm + 2 Gamma_klm F_klm = W_klm.
+```
+
+`FourierStretchingInteractionBudget.lean` proves continuity from the
+actual solution's coefficient continuity and full nonlinear fibers, then
+integrates to the true initial endpoint. No common high-order Fourier
+envelope is added to these per-triple statements. For positive viscosity
+and nonzero inner input frequencies, with
+`rho = |l+m| / max(|l|,|m|)`, it obtains
+
+```text
+F_klm(t) + 2 Gamma_klm integral_0^t F_klm
+  = F_klm(0) + integral_0^t W_klm,
+integral_0^t sum_j |E_j(k,l,m)|^2
+  <= (2 rho^2 / Gamma_klm) * (F_klm(0) + integral_0^t W_klm).
+```
+
+This keeps the nonlinear work signed and evolves the outer amplitude
+instead of inserting a supremum bound. It does not bound that work by
+initial data. It is also a per-triple coefficient estimate: the squared
+norm of the full flux includes interactions between different triples
+with the same output frequency. Those correlations, the weighted scale
+sum, and the resulting global continuation budget remain open.
+`FourierStretchingInteractionAudit.lean` audits these statements.
+
 `CoherenceCreationSnapshot.lean` supplies real, mean-zero, transverse,
 finite Fourier coefficients, hence all absolute Fourier moments. Its
 velocity is `(-sin y + sin x sin z, 0, cos x cos z - cos(2x)/2)`, with
