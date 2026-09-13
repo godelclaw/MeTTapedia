@@ -40,6 +40,18 @@ theorem energy_nonneg (δ : ℝ) (hδ : 0 ≤ δ) (a b : E) : 0 ≤ energy δ a 
   unfold energy
   positivity
 
+theorem inner_residual_eq_energy (δ : ℝ) (hδ : 0 < δ) (a b : E) :
+    ⟪residual δ a b, b⟫ = energy δ a b := by
+  have hb : b = residual δ a b + coefficient δ a b • a := by simp [residual]
+  have hi : ⟪residual δ a b, a⟫ = δ * coefficient δ a b :=
+    (real_inner_comm _ _).trans (inner_residual δ hδ a b)
+  calc
+    _ = ⟪residual δ a b, residual δ a b + coefficient δ a b • a⟫ :=
+      congrArg (fun z ↦ ⟪residual δ a b, z⟫) hb
+    _ = _ := by
+      simp only [inner_add_right, real_inner_smul_right, real_inner_self_eq_norm_sq, hi, energy]
+      ring
+
 /-- Exact excess above the regularized minimum, with no condition on the
 trial coefficient. -/
 theorem objective_eq_energy_add_sq (δ : ℝ) (hδ : 0 < δ) (a b : E) (c : ℝ) :
