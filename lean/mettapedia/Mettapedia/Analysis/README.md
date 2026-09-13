@@ -2,6 +2,12 @@
 
 Reusable analysis, independent of any particular fluid construction.
 
+`AngularCurlDecomposition.lean` separates the polynomial angular curl from
+the amplitude-gradient cross term. It preserves the scaled helicity pairing
+and bounds its eighth-degree energy density by twice angular dissipation,
+including at zero amplitude. This is not an evolution estimate for the
+resulting functional.
+
 ## Checked modules
 
 | Module | Mathematical content | Scope |

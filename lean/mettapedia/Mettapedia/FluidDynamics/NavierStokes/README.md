@@ -1963,6 +1963,53 @@ of `M` for equal nonzero inputs, and zero contribution for a constant
 normalization. These are algebraic sign tests, not NS trajectories.
 `MovingProjectionAudit.lean` audits the new declarations.
 
+### Exact normalization threshold and amplitude-free angular curl
+
+`MonochromaticShearProjection.lean`, `MonochromaticShearCoercivity.lean`,
+and `MonochromaticShearEvolution.lean` test the corrected energy on
+`u = (0, 0, A exp(-nu*lambda*t) sin(2*pi*x))`, with `lambda = (2*pi)^2`.
+This is a constructed solution of the full unforced infinite Fourier
+equation, real, transverse, and mean zero. Spatial integration by parts gives
+
+```text
+K_delta = G8 = R8,       7*G8 = lambda*E8,
+C_delta,kappa = ((7*kappa - 24*lambda)/(56*kappa))*E8.
+```
+
+For positive amplitude, regularization and normalization, nonnegativity
+holds exactly when `7*kappa >= 24*lambda`. Matching `kappa = lambda`
+instead gives `C = -17*E8/56 < 0` at every finite time. This excludes
+spectral matching for this globally subtracted correction, not the
+previously proved large-normalization coercivity theorem or regularity
+of the shear. Increasing regularization does not fix this example:
+vorticity and its curl are orthogonal.
+
+The same solution has zero stretching and `G8-R8 = 0`, but `K_delta > 0`.
+Consequently no finite multiple of angular dissipation controls the full
+projection cost, even on this actual unforced family.
+
+`Analysis/AngularCurlDecomposition.lean` constructs a different quantity,
+polynomial at vorticity zeros. With `a = omega` and `D_j = partial_j omega`,
+
+```text
+J_j = |a|^2 D_j - <a,D_j> a,
+H   = curlJet J = |a|^2 curlJet D - grad(|a|^2/2) cross a,
+<a,H> = |a|^2 <a,curlJet D>.
+```
+
+`LocalAngularCurlBudget.lean` applies this construction to the actual
+vorticity and proves `0 <= integral |omega|^2 |H|^2 <= 2*(G8-R8)`.
+It also rewrites the exact weighted stretching identity using `H`,
+preserving the signed helicity pairing and the spectral defect. The
+new cost vanishes on the shear, as checked alongside the strictly
+positive old projection cost in `MonochromaticShearTests.lean`.
+
+This is an angular repair ingredient, not a replacement energy balance:
+its material evolution, compatibility with a coercive correction, and
+the initial-data-controlled signed dynamical budget remain to be proved.
+The old projection evolution cannot be applied to the new functional
+without deriving its different derivative terms.
+
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
 `PressureDyadicSymbol.lean` replaces both annular cutoffs by the smooth
