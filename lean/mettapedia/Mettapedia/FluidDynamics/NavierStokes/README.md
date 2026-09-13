@@ -2403,6 +2403,52 @@ that endpoint or with a time integral without further domination.
 regressions. Neither this representation nor its integrated form closes
 unconditional global regularity.
 
+### Full nonlinear work with exact gradient cancellation
+
+`FullLambVector.lean` derives `curl(RHS_0(u)) = curl(u cross omega)`
+from the actual full Fourier field, its derivative jets and incompressibility.
+`VorticityFilterDerivatives.lean` constructs derivatives of the finite
+adjoint test. `FullLambSourceWork.lean` transfers curl onto that test,
+retaining the complete source as `integral <u, omega cross curl(A)>`.
+
+Let `F = |omega|^6 omega`, `H = A - F`, and `phi = (7/8)|omega|^8`.
+`FullLambGradientWork.lean` constructs these fields and proves
+
+```text
+Z = omega cross curl(A) - grad(phi)
+  = -(omega.grad)F + omega cross curl(H)
+sourceWork = integral <u,Z>
+|sourceWork(t)| <= sqrt(E_initial) * sqrt(integral |Z(t)|^2).
+```
+
+The last inequality holds on the actual unforced local solution with its
+common summable third-moment envelope and nonnegative viscosity. The
+initial kinetic-energy coefficient has no filter-cardinality factor;
+the spatial remainder still depends on the filter and angular parameter.
+The jet bound is `|Z| <= 7|omega|^6 |(omega.grad)omega| + |omega||curl(H)|`.
+For exact layered jets `partial_j omega = n_j v`, the longitudinal term
+is bounded by `7|omega|^6 |<omega,n>| |v|`. Neither this layered structure
+nor small normal vorticity is assumed for general solutions.
+
+Incompressibility further identifies the longitudinal term as
+`|omega|^4 * (sum_j omega_j B_j - 7 trace(B) omega)`, where
+`B_j = |omega|^2 partial_j omega - <omega,partial_j omega> omega`
+is the existing polynomial angular jet. This removes radial derivatives
+exactly, including at zero amplitude, and is wired to the full vorticity
+jets. The amplitude weights and nonlocal mismatch remain uncontrolled.
+
+Gradient subtraction is optional, not a monotonicity theorem for norms.
+The minimum of the original and gradient-subtracted spatial bounds is
+also proved. Tests exhibit a radial layered jet with raw square `49` and
+subtracted square `0`, and a zero test with raw square `0` and subtracted
+square `49`. These are local algebraic jets, not NS trajectories.
+
+**Still open:** a dynamically affordable bound on the combined remainder
+or the signed residual, uniformly in the cutoffs up to a possible finite
+endpoint. The new identity alone does not pay either its longitudinal
+derivative or its test-mismatch term from the eighth-moment dissipation.
+`FullLambWorkAudit.lean` checks the foundational dependencies.
+
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
 `PressureDyadicSymbol.lean` replaces both annular cutoffs by the smooth

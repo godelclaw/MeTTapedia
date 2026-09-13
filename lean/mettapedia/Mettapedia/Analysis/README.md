@@ -2,6 +2,20 @@
 
 Reusable analysis, independent of any particular fluid construction.
 
+`CurlCrossProduct.lean` proves the curl-of-cross-product identity for first
+jets, retaining both divergence terms. `OcticCurlCancellation.lean`
+removes the exact gradient of `7/8 * ‖a‖⁸` from the transverse curl of
+`‖a‖⁶ a`. What remains is the negative derivative along `a`, plus the
+curl of any test mismatch. The bound retains the normal component for
+layered jets and is valid at zero. Exact regressions show both the useful
+radial cancellation and that a fixed gradient need not reduce every test
+norm. `ContinuousFieldInnerProduct.lean` transfers Hilbert-space
+Cauchy--Schwarz to spatial integrals of continuous fields.
+For divergence-free jets, the longitudinal term is exactly a fourth-power
+amplitude weight times a combination of the existing polynomial angular
+jets; radial derivatives contribute zero. This identity is not a bound
+on the time-integrated angular cost.
+
 `AngularCurlDecomposition.lean` separates the polynomial angular curl from
 the amplitude-gradient cross term. It preserves the scaled helicity pairing
 and bounds its eighth-degree energy density by twice angular dissipation,
