@@ -1223,6 +1223,54 @@ square from the unpaid costs, not the dynamical regularity obstruction.
 `RegularizedHelicityAudit.lean` audits the new estimates, derivatives,
 tests, and initial-endpoint inequality.
 
+`CurlVorticitySource.lean` and `LocalHelicitySourceEvolution.lean` now
+expand the actual material source. With `A = grad u`, `b = curl omega`,
+and `H = omega dot b`, they prove
+
+```text
+D_t b = -A*b + F_curl + nu*Delta b,
+F_curl = 2*sum_j ((partial_j u dot grad) partial_j u) + grad(Delta p),
+D_t H = omega dot F_curl + nu*(Delta omega dot b + omega dot Delta b).
+```
+
+The common-gradient pairing cancels because omega is the axial vector
+of this same velocity gradient. The pressure term is retained until the
+ordinary Poisson and advection-divergence identities are applied.
+`SpatialTransportLaplacian.lean`, `SpatialCurlCurl.lean`, and
+`SpatialAdvectionDivergence.lean` supply these differential identities
+for the reconstructed fields, including `div((u dot grad)u) = trace(A^2)`.
+
+`HelicityAngularSource.lean` combines these terms into the exact angular
+source, without a third pressure derivative or division by vorticity:
+
+```text
+F_curl = -2*sum_m (grad u_m cross partial_m omega),
+omega dot F_curl = 2*sum_m grad u_m dot (omega cross partial_m omega).
+```
+
+Here `grad u_m` is a row of the velocity gradient, not a column.
+Adding any multiple of omega to each vorticity derivative leaves this
+pairing unchanged. Purely parallel derivatives therefore contribute zero,
+including at vorticity zeros. The actual material derivative of the
+regularized center uses this source while retaining the changing denominator.
+
+For every `eta > 0`, `HelicityAngularBudget.lean` proves the spatial bound
+
+```text
+integral |omega|^4 * |omega dot F_curl|
+  <= eta*(G8 - R8) + (1/eta)*integral |omega|^4 * |grad u|_F^2.
+```
+
+The angular dissipation is exactly `G8 - R8`; the mixed gradient cost on
+the right is retained, not assumed bounded by initial data. This estimate
+does not control the full derivative of a weighted helicity functional:
+the changing weight, viscous pairings, and the signed remainder in the
+eighth-moment balance still require estimates. `HelicitySourceTests.lean`
+checks source vanishing on the exact parallel heat-flow family and records
+that the angular pairing has both signs at the algebraic level.
+`HelicitySourceAudit.lean` checks the dependencies. S4 and unconditional
+arbitrary-data A/B remain open.
+
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
 `PressureDyadicSymbol.lean` replaces both annular cutoffs by the smooth
