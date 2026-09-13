@@ -2287,12 +2287,73 @@ has corrected work bounded by
 The constant is independent of the retained support and radius. The
 proof uses the signed first-variation identity and quartic tensor
 Bernstein, not a vorticity-gradient supremum. `M` and `N` remain explicit
-source bounds. Applying this estimate to a fixed low-strain source still
-requires constructing those bounds from the actual solution; applying it
-to the full strain with uncontrolled coefficients does not close S4.
+source bounds. The fixed low-strain application below constructs them from
+the actual solution. Applying the estimate to the full strain with
+uncontrolled coefficients does not close S4.
 Neither this estimate nor the polarized identity controls the complete
 signed high-strain/subgrid time integral. `AngularTwoPointAudit.lean`
 records the new declarations and their foundational dependencies.
+
+### Actual initial-energy low-strain payment and signed residual integral
+
+`FiniteStrainKineticEnergy.lean` constructs bounds for a fixed finite set
+`Q` of source modes from the full kinetic energy `E0`. With unit-torus
+Fourier frequencies, the explicit constants are
+
+```text
+M_Q = sqrt(E0 * sum_{q in Q} [9*(2*pi)*|q|]^2),
+N_Q = sqrt(E0 * sum_{q in Q} [9*(2*pi)^2*|q|^2]^2).
+```
+
+They bound the reconstructed strain operator and each of its first spatial
+derivatives, respectively. Cauchy--Schwarz uses all input kinetic energy;
+the input velocity need not have finite support.
+
+`FiniteLowStrainWork.lean` applies these bounds to
+
+```text
+v = chi(D)u,
+f(x) = S_Q(u,x)*omega(v,x),
+|integral <F_kappa(v),f>| <= (577*M_Q + 360*N_Q)*E8(v).
+```
+
+For the actual unforced local solution, `E0` is its initial kinetic energy.
+The source modes `Q` and retained modes `P` are independent; no inclusion
+or assumption that `chi` is one on `Q` is imposed. The coefficient depends
+on `Q` and `E0`, not on `P`, the retained radius, the local Sobolev envelope,
+or the solution time. The normalization still must satisfy its explicit
+cutoff-dependent conditions.
+
+`LowStrainAngularBalance.lean` retains the exact signed remainder
+
+```text
+R_kappa,Q,chi(u) = integral <F_kappa(v), (S(v)-S_Q(u))*omega(v)>
+                    + fullSubgridWork(kappa,chi,u).
+```
+
+Every subgrid output remains present. In particular, the low strain of the
+full velocity is not silently replaced by low strain of the retained one.
+`LowStrainResidualIntegral.lean` integrates the paid differential balance:
+for `a_Q = 16*(577*M_Q + 360*N_Q)` and
+`D(v) = (nu/4)*G8(v) + 6*nu*R8(v)`,
+
+```text
+exp(-a_Q*t)*E8(v(t))/16 + integral_0^t exp(-a_Q*s)*D(v(s)) ds
+  <= E8(v(0))/8 + integral_0^t exp(-a_Q*s)*R_kappa,Q,chi(u(s)) ds.
+```
+
+The exponential weight is independent of the retained cutoff. The
+physical-data theorem constructs the local solution and common moment
+envelope from real, mean-zero, divergence-free periodic data with eight
+continuous coordinate derivatives. It assumes no strain or residual
+budget. The new scalar integrating-factor lemma preserves the residual's
+sign and is reusable independently of Navier--Stokes.
+
+**Still open:** a cutoff-uniform bound on this joint residual integral
+approaching a maximal existence endpoint. Local continuity does not supply
+that bound, nor the all-scale passage, spatial BKM estimate or unconditional
+A/B theorem. `LowStrainPaymentAudit.lean` checks foundational dependencies,
+the empty-source case and preservation of a negative scalar residual.
 
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
