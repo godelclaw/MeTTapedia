@@ -1315,6 +1315,65 @@ spectral/center remainder is still necessary for S4 and continuation.
 parallel heat-flow family, together with its center-source cancellation.
 `MixedGradientAudit.lean` audits the declarations and tests.
 
+`LocalHelicityCenterParabolic.lean` now identifies the ordinary Laplacian
+inside the actual center's viscous rate. Writing `d = delta + |omega|^2`
+and `b = curl omega`, that rate is
+
+```text
+Delta rho + sum_j (4*(omega dot partial_j omega)/d)*partial_j rho
+          + (2/d)*sum_j (rho*|partial_j omega|^2 - partial_j omega dot partial_j b).
+```
+
+Thus the center does not obey a scalar heat equation alone. Its drift,
+signed gradient production, angular source, and amplitude feedback are
+all retained in the checked material equation.
+
+`Analysis/RegularizedProjectionParabolic.lean` derives the Hessian of the
+regularized moving minimum `J = |b - rho*omega|^2 + delta*rho^2`.
+For `r = b - rho*omega`, `v = partial_j omega`, and `z = partial_j b`,
+the exact correction is
+
+```text
+H_j = 2*|z - rho*v|^2 - 2*d*(partial_j rho)^2,
+H_j >= -(2/delta)*(r dot v)^2.
+```
+
+`LocalHelicityProjectionDiffusion.lean` transfers this to the full Fourier
+fields and proves the spatial estimate on the normalized torus:
+
+```text
+V = 2*r dot (Delta b - rho*Delta omega) = Delta J - sum_j H_j,
+integral V <= (2/delta)*integral sum_j (r dot partial_j omega)^2.
+```
+
+The unfavorable bound has no second derivative of `curl omega`, but its
+first-derivative product still needs a dynamical budget. The inverse-`delta`
+loss is explicit. Scalar sharpness tests rule out a uniform bound for the
+bare Hessian, and a divergence-free, curl-compatible algebraic jet has
+negative total curvature. That jet is not asserted to be a PDE solution.
+
+`LocalHelicityProjectionEvolution.lean` proves, along the actual unforced
+material path, with `S` the strain and `F_curl` the preceding source,
+
+```text
+D_t J = -2*r dot S*r - 4*rho*r dot S*omega + 2*r dot F_curl + nu*V.
+```
+
+For any scalar `sigma`, the same code isolates the coherent cross-feedback:
+writing `tilt = S*omega - sigma*omega`, it uses `r dot omega = delta*rho`
+to rewrite `-4*rho*r dot S*omega` as
+`-4*delta*rho^2*sigma - 4*rho*r dot tilt`. The first term is favorable
+when `sigma >= 0`; the second is bounded by `4*|rho|*|r|*|tilt|`.
+Neither small tilt nor a favorable sign of `r dot S*r` is assumed.
+
+The residual-source pairing here is not the already estimated angular
+pairing `omega dot F_curl`. No estimate for it, the residual-gradient
+product, or the complete signed time remainder is assumed. These results
+identify the remaining dynamics; S4 and unconditional A/B remain open.
+The material identities use a local fourth Fourier-moment envelope for
+the calculus; they do not establish an initial-data bound for that envelope.
+`HelicityProjectionAudit.lean` audits this chain and its curvature tests.
+
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
 `PressureDyadicSymbol.lean` replaces both annular cutoffs by the smooth
