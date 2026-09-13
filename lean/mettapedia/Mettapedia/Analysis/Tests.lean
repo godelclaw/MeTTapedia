@@ -8,6 +8,7 @@ import Mettapedia.Analysis.OcticCurlCancellationTests
 import Mettapedia.Analysis.LongitudinalJetEvolution
 import Mettapedia.Analysis.UnitTorusTransportPairing
 import Mettapedia.Analysis.ContinuousFieldBilinear
+import Mettapedia.Analysis.UnitTorusGradientProjection
 import Mettapedia.Analysis.WeightedCurlCancellationTests
 import Mettapedia.Analysis.WeightedCurlHelicityTests
 import Mettapedia.Analysis.LongitudinalHelicityBudgetTests
