@@ -1601,6 +1601,71 @@ previous lower bound on `C_j` is not an upper bound for this contribution.
 No scale-uniform evolution bound or S4 closure follows yet.
 `ProjectionMeanAudit.lean` audits the new chain.
 
+### Correct-sign viscous estimate and projected weighted Bernstein bound
+
+`Analysis/WeightedProjectionCurvatureBound.lean` proves, for every positive
+`delta` in a real inner-product space,
+
+```text
+C_delta(a,b;v,z) <= 70*|a|^4*|b|^2*|v|^2 + 28*|a|^6*|z|^2.
+```
+
+There is no inverse regularization, derivative of the minimizing coefficient,
+or spatial supremum on the right. The estimate includes `a = 0`.
+`LocalProjectionCurvatureBudget.lean` applies it to the actual spatial jets.
+With `omega = curl u`, define
+
+```text
+D(u) = integral [70*|omega|^4*|curl omega|^2*|grad omega|^2
+                + 28*|omega|^6*|grad curl omega|^2].
+```
+
+`FilteredProjectionViscousBalance.lean` identifies the viscous coefficients
+with the ordinary spatial Laplacian. For the same actual finite-filtered
+solution and corrected energy as above, it derives
+
+```text
+C'(t) = signed resolved inviscid work + signed subgrid work
+        - nu*G8 - 6*nu*R8 + (3*nu/kappa)*integral sum_j C_j,
+C'(t) <= signed resolved inviscid work + signed subgrid work
+         - nu*G8 - 6*nu*R8 + (3*nu/kappa)*D(u_chi),
+                                                   nu >= 0, kappa > 0.
+```
+
+The output restrictions remain on both work terms, and the subgrid source
+retains all input frequencies. No unfiltered high-order envelope is assumed.
+The upper bound repairs the sign issue; it does not pay `D` from `G8`.
+
+For that derivative cost, `Analysis/UnitTorusQuarticSecondEnergy.lean` proves
+an integrated scalar coercivity identity. If `v = partial_j f` and
+`z = partial_j^2 f` are actual continuous translation derivatives, then
+
+```text
+I = integral f^4*v^4,    J = integral f^6*z^2,
+L = integral (12*f^2*v^2 + 4*f^3*z)^2,
+L = 16*(J-I),           25*I <= 9*J,           J <= (25/256)*L.
+```
+
+`ScalarQuarticBernstein.lean` constructs the fourth-power Fourier polynomial,
+accounts for its radius `4*R`, and proves
+
+```text
+integral f^6*(partial_j^2 f)^2
+  <= 25*(2*pi*R)^2 * integral f^6*(partial_j f)^2.
+```
+
+`FiniteVorticityProjectedBernstein.lean` constructs the scalar polynomial
+`f = e dot omega` from the actual finite-support velocity coefficients and
+proves this estimate for every fixed real projection vector `e`. No factor
+counts Fourier modes. The projection direction here is spatially constant;
+no derivative of an adaptive direction is being suppressed.
+
+The full vector/mixed-spatial-derivative transfer and absorption of `D`
+remain open, as do the signed nonlinear/subgrid budgets and S4. The scalar
+coercivity is not pointwise: `ProjectionCurvatureBoundTests.lean` checks a
+jet where the fourth-power second derivative vanishes while `f^6*z^2 > 0`.
+`ProjectionCurvatureAudit.lean` audits the complete new chain.
+
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
 `PressureDyadicSymbol.lean` replaces both annular cutoffs by the smooth
