@@ -1537,6 +1537,70 @@ or transfer between scales. No uniform all-scale time budget follows from
 these inequalities. S4 and unconditional A/B remain open.
 `FiniteBandProjectionAudit.lean` audits the complete new chain.
 
+### Actual filtered time balance and signed source work
+
+`Analysis/WeightedProjectionVariation.lean` proves the exact first variation
+of `W(a,b) = |a|^6 J_delta(a,b)`. With `rho` and `r` as above, its two gradients are
+
+```text
+A = 6*|a|^4*J*a - 2*|a|^6*rho*r,
+B = 2*|a|^6*r,
+DW(a,b)[v,z] = A dot v + B dot z.
+```
+
+The time derivative of the minimizing coefficient cancels in this first
+variation. Its spatial derivative is still present in `grad B`.
+`UnitTorusCurlPairing.lean` proves self-adjointness of curl for actual
+continuous periodic derivatives. `UnitTorusProjectionVariation.lean` uses
+it to remove the extra curl on an additional vorticity source:
+
+```text
+integral DW(omega,curl omega)[f,curl f]
+  = integral (A + curl B) dot f.
+```
+
+`LocalProjectionSourceWork.lean` constructs this variational gradient from
+the actual Fourier field and its spatial jets. For the corrected energy,
+the resulting gradient is `H = |omega|^6*omega - (3/kappa)*(A + curl B)`.
+This is a signed pairing, not a bound or a claim that the work vanishes.
+`WeightedProjectionVariationTests.lean` checks the zero-field response,
+opposite radial signs, and the exact nonnegative radial response for
+positive regularization.
+
+`FiniteVorticityVariation.lean` derives both vorticity time derivatives from
+the actual coefficient equation and differentiates the corrected density.
+Write `u_chi = chi*u`, `Pi_P` for sharp output restriction to the finite
+support of `chi`, and `N_nu` for the infinite velocity coefficient RHS.
+`FilteredProjectionMean.lean` proves the spatial-mean derivative
+
+```text
+d/dt (E8(u_chi)/8 - (3/kappa)*K_delta(u_chi))
+  = integral H dot curl(Pi_P N_nu(u_chi))
+    + integral H dot curl(Pi_P subgridForce(chi,u)).
+```
+
+Both resolved and unresolved terms are restricted on their output. The
+subgrid term still includes all input frequencies, including both-high
+interactions. The filtered field is not treated as a closed Galerkin
+solution. The proof of differentiation under the integral uses
+`Analysis/CompactMeanContinuousRate.lean` and continuity of the full
+solution's actual coefficient RHS; no high-order envelope for the
+unfiltered solution is assumed. The local Sobolev bound supplies continuity,
+not a global estimate.
+
+`hasDerivAt_normalizedEnergy` identifies this evolution with the
+frequency-normalized energy of the preceding section.
+`meanCorrectedEnergy_balance` proves its exact initial-time balance,
+retaining the signed time integral. Finiteness on a given local interval
+does not bound that integral uniformly up to a possible singular time.
+
+The next estimate must control the complete signed work. In particular,
+subtracting `3*K_delta/kappa` reverses the sign of its viscous contribution:
+the corrected energy receives `+(3*nu/kappa)*integral sum_j C_j`. The
+previous lower bound on `C_j` is not an upper bound for this contribution.
+No scale-uniform evolution bound or S4 closure follows yet.
+`ProjectionMeanAudit.lean` audits the new chain.
+
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
 `PressureDyadicSymbol.lean` replaces both annular cutoffs by the smooth
