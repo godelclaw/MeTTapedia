@@ -1486,6 +1486,57 @@ particular, dropping the favorable square is only an upper-bound step,
 not a claim that the resulting cost is payable. S4 and unconditional A/B
 remain open. `CoherentProjectionAudit.lean` audits this chain and both tests.
 
+### Fixed-band coercivity of the projection correction
+
+`Analysis/QuarticTensorEnergy.lean` reuses the polynomial tensor
+`T(a) = |a|^2 a tensor a` and its derivative, proving in every finite
+Euclidean dimension
+
+```text
+sum_ij T(a)_ij^2 = |a|^8,
+sum_ij (DT(a)[v])_ij^2 = 2*|a|^6*|v|^2 + 14*|a|^4*(a dot v)^2.
+```
+
+These identities include `a = 0` and have no dimension-count loss.
+`QuarticTensorEnergyTests.lean` checks the radial, tangential, and zero-field
+cases. `Analysis/UnitTorusPolynomialEnergy.lean` supplies the generic
+Parseval multiplier estimate. `FourierPolynomialDifferential.lean` proves
+finite-support radius bounds under products and real-part reconstruction,
+and the derivative energy estimate with the physical `2*pi` factor.
+
+`FiniteVorticityTensor.lean` constructs the actual tensor of the reconstructed
+vorticity. If the velocity coefficients vanish outside a finite set whose
+integer frequency vectors have norm at most `R`, this tensor has Fourier
+radius at most `4*R`. `FiniteBandProjectionEnergy.lean` proves
+
+```text
+integral |grad T(omega)|^2 = 2*G8 + 14*R8,
+integral |grad T(omega)|^2 <= (8*pi*R)^2 * E8,
+K_delta <= (8*pi*R)^2 * E8,                    delta > 0,
+
+kappa = 48*(8*pi*R)^2 + 1,
+delta = nu^2*kappa^2/3,
+E8/16 <= E8/8 - (3/kappa)*K_delta <= E8/8,      nu > 0.
+```
+
+Here `E8 = integral |omega|^8`, `G8 = integral |omega|^6 |grad omega|^2`,
+`R8 = integral |omega|^4 sum_j (omega dot partial_j omega)^2`, and
+`K_delta = integral |omega|^6 J` with the regularized projection defect `J`
+defined above. The correction uses the same relation between `delta` and
+`kappa` as the signed eighth-moment payment, rather than introducing an
+independent regularization parameter. No factor counts Fourier modes.
+
+`correctedEnergy_filtered_bounds` applies these size bounds to every
+finite-supported multiplier acting on arbitrary velocity coefficients.
+It assumes no closed unforced equation for the filtered field. Its actual
+subgrid force and curl remain in `LocalFilteredVorticity.lean`.
+
+This repairs coercivity only at a fixed frequency cutoff. A large `kappa`
+does not bound the signed strain spectral defect, the correction's evolution,
+or transfer between scales. No uniform all-scale time budget follows from
+these inequalities. S4 and unconditional A/B remain open.
+`FiniteBandProjectionAudit.lean` audits the complete new chain.
+
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
 `PressureDyadicSymbol.lean` replaces both annular cutoffs by the smooth
