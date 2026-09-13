@@ -1900,6 +1900,69 @@ the zero-stretching parallel-flow limit, and the positive actual-field
 limit with zero resolved subgrid force. `ProjectionCutoffLimitAudit.lean`
 audits the new chain.
 
+### Moving scalar normalization: signed cost and a bounded correction
+
+The multiplier in this result is **fixed**; its input is the actual local
+infinite Fourier NS solution, not a closed Galerkin trajectory. Only the
+normalization `kappa(t)` and its tied regularization
+`delta(t) = nu^2*kappa(t)^2/3` vary.
+
+`Analysis/RegularizedProjectionParameter.lean` derives the full chain
+rule. With `a = omega`, `b = curl omega`, minimizing coefficient `rho`,
+and residual `r = b - rho*a`, the extra signed density is
+
+```text
+M = (3*kappa'/kappa^2)*|a|^6*(|r|^2 - delta*rho^2).
+```
+
+`MovingProjectionMean.lean` proves the actual spatial-mean derivative
+and exact initial-data time balance, including this term. The proof
+constructs continuity from finite filtering and the full NS coefficient
+equation. It does not assume the mean derivative or a nonlinear budget.
+`MovingProjectionBudget.lean` then establishes
+
+```text
+C_R' + nu*G8/4 + 3*nu*R8 <= Q_R + integral M.
+```
+
+`LocalProjectionScaleMotion.lean` provides two bounds for the extra work.
+The coarse one is `abs(integral M) <= (abs(kappa')/kappa)*C_R`.
+Keeping the actual support radius `R0` distinct from the larger
+normalization radius gives the stronger estimate
+
+```text
+abs(integral M) <= c0*abs(kappa')/kappa^2 * C_R,
+c0 = 48*(8*pi*R0)^2.
+```
+
+For a positive increasing normalization, its coefficient has integral
+at most `c0/kappa(initial)`. Starting at the fixed band's radius makes
+this bound at most one, uniformly in that initial radius. The reusable
+results in `Analysis/ReciprocalScaleCost.lean` prove the inverse-square
+integral identity. `Analysis/LogarithmicScaleCost.lean` separately records
+why the coarse logarithmic bound is weaker; it is not an obstruction
+to the sharper fixed-band estimate.
+
+`MovingProjectionIntegratingFactor.lean` removes this scalar-motion
+coefficient from the actual NS inequality. For `psi = exp(c0/kappa)`,
+
+```text
+(psi*C_R)' + psi*(nu*G8/4 + 3*nu*R8) <= psi*Q_R.
+1 <= psi <= exp(1) whenever c0 <= kappa.
+```
+
+The signed remainder has not been paid. In particular, bounded positive
+`psi` does not permit replacing the signed integral of `psi*Q_R` by
+`exp(1)` times the signed integral of `Q_R`. A moving multiplier would
+also contribute its own derivative source, absent from this fixed-filter
+calculation. Uniform control of these nonlinear and adaptive-filter
+costs remains required for continuation.
+
+`Analysis/RegularizedProjectionParameterTests.lean` checks both signs
+of `M` for equal nonzero inputs, and zero contribution for a constant
+normalization. These are algebraic sign tests, not NS trajectories.
+`MovingProjectionAudit.lean` audits the new declarations.
+
 ### Exact low-output dyadic reconstruction with actual kernel costs
 
 `PressureDyadicSymbol.lean` replaces both annular cutoffs by the smooth
