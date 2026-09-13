@@ -2712,9 +2712,59 @@ This keeps the nonlinear work signed and evolves the outer amplitude
 instead of inserting a supremum bound. It does not bound that work by
 initial data. It is also a per-triple coefficient estimate: the squared
 norm of the full flux includes interactions between different triples
-with the same output frequency. Those correlations, the weighted scale
-sum, and the resulting global continuation budget remain open.
+with the same output frequency. The correlated identities below account
+for these cross terms; the initial-data-controlled weighted scale sum
+and the resulting global continuation budget remain open.
 `FourierStretchingInteractionAudit.lean` audits these statements.
+
+`Analysis/ODE/DampedGramEnergy.lean` and its evolution and series modules
+give a correlated energy for differently damped Hilbert-space components.
+For positive rates `Gamma_i`, finite families satisfy
+
+```text
+Q(x) = sum_i sum_j <x_i,x_j> / (Gamma_i+Gamma_j)
+     = integral_0^infinity |sum_i exp(-Gamma_i sigma) x_i|^2 >= 0,
+x_i' = r_i - Gamma_i x_i,
+Q'(t) + |sum_i x_i(t)|^2
+  = 2 sum_i sum_j <r_i(t),x_j(t)> / (Gamma_i+Gamma_j).
+```
+
+There is no orthogonality hypothesis or mode-count multiplier. A uniform
+positive lower bound on the rates and local summable envelopes yield
+absolutely convergent infinite Gram pairings. Dominated convergence
+passes the finite time identities to the complete series, and separate
+integrability theorems certify the time integrals.
+
+`ExchangedFluxModeDynamics.lean` constructs the actual exchanged flux
+mode as a fixed linear image of `w_k tensor (L_l-L_m)(w_l cross w_m)`.
+Its derivative has the physical input rate `Gamma_klm`; its source is
+constructed by inserting the actual nonlinear curl in each of the three
+input slots. `ExchangedFluxGramBudget.lean` applies the correlated identity
+to finite partial sums of this full NS evolution.
+
+`ExchangedFluxModeEnvelope.lean` constructs summable mode and source
+envelopes from a common third velocity moment on the local interval.
+`ExchangedFluxSeriesBudget.lean` then identifies the infinite sum with
+the actual spatial projected inviscid flux and proves
+
+```text
+fullGramEnergy(t) + integral_0^t |projectedFlux(0,u(tau))|_L2^2
+  = fullGramEnergy(u0) + 2 integral_0^t fullGramWork(u(tau)),
+fullGramEnergy(t) >= 0.
+```
+
+The series omits only identically zero terms with zero first inner curl
+frequency. No finite-mode evolution or assumed nonlinear budget is used.
+The physical constructor supplies both the local solution and the
+convergence envelopes from real, transverse, mean-zero periodic data
+with nine continuous coordinate jets. This is a local identity, not a
+global estimate. The `0` in `projectedFlux(0,u)` selects the inviscid
+part of the flux; the actual evolving solution still has positive viscosity.
+
+The signed `fullGramWork` integral remains uncontrolled by initial data.
+The joint viscous contribution, route-specific weights, and BKM
+continuation budget remain open. `ExchangedFluxGramAudit.lean` audits
+the generic and NS-specific declarations.
 
 `CoherenceCreationSnapshot.lean` supplies real, mean-zero, transverse,
 finite Fourier coefficients, hence all absolute Fourier moments. Its
