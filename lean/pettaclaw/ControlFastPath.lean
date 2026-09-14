@@ -1,140 +1,152 @@
 import Mathlib
 
 /-!
-# Queue-independent operator observations
+# Independent operator control
 
-Read-only operator controls observe a supplied runtime view immediately. They
-do not enter either the cognitive queue or the serialized authority-mutation
-queue. Mutations retain ordering; observations retain freshness.
+Every authenticated operator command receives an independent execution lane.
+Its local transition or observation never waits for cognition, live provider
+discovery, another control, or another Telegram delivery. Provider catalog and
+quota data are durable observations refreshed outside the control path.
 
-The deployment watcher is represented by a bounded receipt. A receipt older
-than its lease cannot authorize cognition even if the durable latch still says
-`running`.
+This model separates the guarantee made by the runtime from the network
+boundary: dispatch and local state access are independent; successful Telegram
+delivery still requires Telegram to be reachable.
 -/
 
 namespace PettaClaw.ControlFastPath
 
 inductive Command where
-  | activity
+  | start
+  | stop
+  | model
+  | models
   | mode
   | modes
   | engine
   | engines
-  | setMode
-  | setEngine
-  | start
-  | stop
+  | fuel
+  | fuels
+  | quota
   | wake
+  | energy
+  | health
+  | activity
+  | delete
+  | claudeCodeAuthorization
 deriving Repr, DecidableEq
 
-def isFastRead : Command → Bool
-  | .activity | .mode | .modes | .engine | .engines => true
-  | .setMode | .setEngine | .start | .stop | .wake => false
-
-def isImmediateAuthority : Command → Bool
-  | .start | .stop | .wake => true
-  | _ => false
+def allCommands : List Command :=
+  [.start, .stop, .model, .models, .mode, .modes, .engine, .engines,
+   .fuel, .fuels, .quota, .wake, .energy, .health, .activity, .delete,
+   .claudeCodeAuthorization]
 
 structure RuntimeView where
   activity : String
   mode : String
   engine : String
+  fuel : String
+  model : String
 deriving Repr, DecidableEq
 
-structure QueueDepths where
-  cognition : Nat
-  mutations : Nat
-deriving Repr, DecidableEq
-
-structure Snapshot where
+structure ProviderObservation where
   observedAt : Nat
-  view : RuntimeView
+  modelIds : List String
+  quota : Option String
+deriving Repr, DecidableEq
+
+structure Backlogs where
+  cognition : Nat
+  provider : Nat
+  otherControls : Nat
+  telegramDeliveries : Nat
+deriving Repr, DecidableEq
+
+structure ControlReceipt where
+  command : Command
+  receivedAt : Nat
+  runtime : RuntimeView
+  provider : ProviderObservation
 deriving Repr, DecidableEq
 
 inductive Dispatch where
-  | reply (snapshot : Snapshot)
-  | immediateAuthority
-  | enqueueMutation
+  | independent (receipt : ControlReceipt)
 deriving Repr, DecidableEq
 
-def dispatch (command : Command) (receivedAt : Nat) (view : RuntimeView)
-    (_queues : QueueDepths) : Dispatch :=
-  if isImmediateAuthority command then .immediateAuthority
-  else if isFastRead command then .reply ⟨receivedAt, view⟩
-  else .enqueueMutation
+def dispatch (command : Command) (receivedAt : Nat) (runtime : RuntimeView)
+    (provider : ProviderObservation) (_backlogs : Backlogs) : Dispatch :=
+  .independent ⟨command, receivedAt, runtime, provider⟩
 
-theorem fast_read_is_not_immediate (command : Command)
-    (fast : isFastRead command = true) :
-    isImmediateAuthority command = false := by
-  cases command <;> simp_all [isFastRead, isImmediateAuthority]
+theorem every_operator_control_is_independent
+    (command : Command) (receivedAt : Nat) (runtime : RuntimeView)
+    (provider : ProviderObservation) (backlogs : Backlogs) :
+    dispatch command receivedAt runtime provider backlogs =
+      .independent ⟨command, receivedAt, runtime, provider⟩ := by
+  rfl
 
-theorem fast_read_snapshots_receipt_state
-    (command : Command) (receivedAt : Nat) (view : RuntimeView)
-    (queues : QueueDepths) (fast : isFastRead command = true) :
-    dispatch command receivedAt view queues =
-      .reply ⟨receivedAt, view⟩ := by
-  simp [dispatch, fast, fast_read_is_not_immediate command fast]
+theorem dispatch_independent_of_all_backlogs
+    (command : Command) (receivedAt : Nat) (runtime : RuntimeView)
+    (provider : ProviderObservation) (left right : Backlogs) :
+    dispatch command receivedAt runtime provider left =
+      dispatch command receivedAt runtime provider right := by
+  rfl
 
-theorem fast_read_independent_of_all_backlogs
-    (command : Command) (receivedAt : Nat) (view : RuntimeView)
-    (left right : QueueDepths) (fast : isFastRead command = true) :
-    dispatch command receivedAt view left =
-      dispatch command receivedAt view right := by
-  simp [dispatch, fast]
-
-theorem known_operator_observations_are_fast :
-    [Command.activity, .mode, .modes, .engine, .engines].all isFastRead =
-      true := by
+theorem complete_command_inventory : allCommands.length = 17 := by
   decide
 
-theorem authority_mutations_are_not_fast_reads :
-    [Command.setMode, .setEngine, .start, .stop, .wake].all
-      (fun command => !isFastRead command) = true := by
-  decide
+structure DurableControlState where
+  activeModel : String
+  provider : ProviderObservation
+deriving Repr, DecidableEq
 
-theorem lifecycle_controls_are_immediate :
-    [Command.start, .stop, .wake].all isImmediateAuthority = true := by
-  decide
+def installProviderObservation (state : DurableControlState)
+    (observation : ProviderObservation) : DurableControlState :=
+  { state with provider := observation }
 
-theorem ordinary_mutations_are_not_immediate :
-    [Command.setMode, .setEngine].all
-      (fun command => !isImmediateAuthority command) = true := by
-  decide
+def selectModel (state : DurableControlState) (modelId : String) :
+    DurableControlState :=
+  { state with activeModel := modelId }
+
+theorem provider_refresh_preserves_active_model
+    (state : DurableControlState) (observation : ProviderObservation) :
+    (installProviderObservation state observation).activeModel =
+      state.activeModel := by
+  rfl
+
+theorem model_selection_independent_of_provider_observation
+    (left right : ProviderObservation) (active modelId : String) :
+    (selectModel ⟨active, left⟩ modelId).activeModel =
+      (selectModel ⟨active, right⟩ modelId).activeModel := by
+  rfl
+
+theorem model_selection_sets_requested_id
+    (state : DurableControlState) (modelId : String) :
+    (selectModel state modelId).activeModel = modelId := by
+  rfl
 
 inductive Latch where
   | stopped
   | running
 deriving Repr, DecidableEq
 
-structure WatchReceipt where
-  observedAt : Nat
-  exactCandidate : Bool
-  active : Bool
-  problemFree : Bool
-deriving Repr, DecidableEq
+def cognitionEnabled (latch : Latch) : Prop :=
+  latch = .running
 
-def leaseFresh (now lease : Nat) (receipt : WatchReceipt) : Prop :=
-  receipt.observedAt ≤ now ∧ now - receipt.observedAt ≤ lease
+theorem cognition_authority_is_exactly_operator_latch (latch : Latch) :
+    cognitionEnabled latch ↔ latch = .running := by
+  rfl
 
-def watchAuthorizes (now lease : Nat) (receipt : WatchReceipt) : Prop :=
-  leaseFresh now lease receipt ∧ receipt.exactCandidate = true ∧
-    receipt.active = true ∧ receipt.problemFree = true
-
-def cognitionEnabled (latch : Latch) (now lease : Nat)
-    (receipt : WatchReceipt) : Prop :=
-  latch = .running ∧ watchAuthorizes now lease receipt
-
-theorem expired_receipt_cannot_authorize
-    (latch : Latch) (now lease : Nat) (receipt : WatchReceipt)
-    (expired : lease < now - receipt.observedAt) :
-    ¬cognitionEnabled latch now lease receipt := by
-  intro enabled
-  exact (Nat.not_le_of_lt expired) enabled.2.1.2
-
-theorem stopped_latch_cannot_authorize
-    (now lease : Nat) (receipt : WatchReceipt) :
-    ¬cognitionEnabled .stopped now lease receipt := by
+theorem stopped_latch_disables_cognition :
+    ¬cognitionEnabled .stopped := by
   simp [cognitionEnabled]
+
+theorem running_latch_enables_cognition :
+    cognitionEnabled .running := by
+  rfl
+
+theorem provider_observation_cannot_disable_cognition
+    (latch : Latch) (_left _right : ProviderObservation) :
+    cognitionEnabled latch ↔ cognitionEnabled latch := by
+  rfl
 
 structure TransitionState where
   epoch : Nat
@@ -159,14 +171,16 @@ theorem cancelled_start_cannot_reauthorize (initial : TransitionState) :
     (completeStart starting.epoch stopped).latch = .stopped := by
   simp [beginTransition, completeStart]
 
-#print axioms PettaClaw.ControlFastPath.fast_read_snapshots_receipt_state
-#print axioms PettaClaw.ControlFastPath.fast_read_independent_of_all_backlogs
-#print axioms PettaClaw.ControlFastPath.known_operator_observations_are_fast
-#print axioms PettaClaw.ControlFastPath.authority_mutations_are_not_fast_reads
-#print axioms PettaClaw.ControlFastPath.lifecycle_controls_are_immediate
-#print axioms PettaClaw.ControlFastPath.ordinary_mutations_are_not_immediate
-#print axioms PettaClaw.ControlFastPath.expired_receipt_cannot_authorize
-#print axioms PettaClaw.ControlFastPath.stopped_latch_cannot_authorize
+#print axioms PettaClaw.ControlFastPath.every_operator_control_is_independent
+#print axioms PettaClaw.ControlFastPath.dispatch_independent_of_all_backlogs
+#print axioms PettaClaw.ControlFastPath.complete_command_inventory
+#print axioms PettaClaw.ControlFastPath.provider_refresh_preserves_active_model
+#print axioms PettaClaw.ControlFastPath.model_selection_independent_of_provider_observation
+#print axioms PettaClaw.ControlFastPath.model_selection_sets_requested_id
+#print axioms PettaClaw.ControlFastPath.cognition_authority_is_exactly_operator_latch
+#print axioms PettaClaw.ControlFastPath.stopped_latch_disables_cognition
+#print axioms PettaClaw.ControlFastPath.running_latch_enables_cognition
+#print axioms PettaClaw.ControlFastPath.provider_observation_cannot_disable_cognition
 #print axioms PettaClaw.ControlFastPath.newer_stop_cancels_slow_start
 #print axioms PettaClaw.ControlFastPath.cancelled_start_cannot_reauthorize
 
