@@ -116,6 +116,21 @@ with the Hessian-test norm explicit. No bound on that norm or on the other
 terms is supplied. Physical-time evolution, the distinct input-scale heat
 weights in the Gram budget, periodic transfer, and S4 remain obligations.
 
+`GaussianHeatCovariance`, `GaussianHeatEnergy`, and `GaussianHeatIncrement`
+in the integration package now identify the actual whole-space Gaussian
+stress with mathlib covariance and bound its integrated trace. OpenAI's
+parameter integral and mathlib convolution give
+`∫trace(Rτ) = ∫|u|² - ∫|Hτu|²`. OpenAI's translation-increment theorem,
+Bochner realization, and Gaussian quadratic majorant then give
+`∫trace(Rτ) ≤ (2τ)2^(3/2) ‖A.derivative.toLp‖²` for smooth `L²` fields.
+The derivative norm is spatial `L²`, not `L^∞`. The independent energy bound
+applies along actual unforced H³ lifespans with initial energy on the right.
+No covariance, Gaussian moment, convolution, or translation estimate is
+reimplemented. The canonical Fourier heat-source/Duhamel split is already
+proved and is likewise retained. These new estimates do not yet control the
+stress divergence/curl paired with the evolving receiver, identify the
+periodic/input-scale Gram operator, or close the signed physical-time budget.
+
 Useful entry points:
 
 - `NavierStokesEquationTarget.lean` - concrete target surface for the
