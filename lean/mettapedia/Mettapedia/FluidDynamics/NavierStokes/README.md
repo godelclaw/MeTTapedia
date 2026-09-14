@@ -2904,6 +2904,56 @@ Bochner integral of the full absolute coefficient sum is asserted here.
 `ExchangedFluxAdjointAudit.lean` audits the adjoints, convergence,
 geometric transfer, heat balance, and dual-cost declarations.
 
+`PeriodicTensorFourierFrame.lean` constructs the output coefficients of an
+arbitrary tensor Hilbert-space test using the adjoints of the actual
+projected Fourier synthesis maps. `Analysis/HilbertSynthesisBound.lean`
+transfers synthesis contractivity to a Bessel bound with constant one:
+
+```text
+sum_n ||outputCoefficient(F,n)||^2 <= ||F||^2.
+```
+
+`ExchangedFluxOutputAdjoint.lean` factors both coefficient adjoints through
+these output coefficients. The projected cross-product and pair-frequency
+gains remain available before summation. The generic vector-valued
+`Analysis/ShiftedSeriesSquareBound.lean` then controls the shifted double
+series without an input- or output-frequency count factor.
+`ExchangedFluxAdjointSquareSum.lean` applies it to the full combined test:
+
+```text
+sum_q ||(1+|q|)^(-1) A_q||^2
+  <= [54 (2 pi) (sum_k ||omega_k||)^2]^2 ||F||^2.
+```
+
+This negative-order estimate does not pay the positive-order cost above.
+`ExchangedFluxAdjointWeightedSum.lean` proves a weighted version. Write
+`W_r(k) = (1+|k|)^r ||omega_k||` and
+`b_r(n) = (1+|n|)^r ||outputCoefficient(F,n)||`. For each natural `m`,
+assuming the absolute velocity moment of order `m+2` and square
+summability of `b_(m+1)`, it proves
+
+```text
+sum_q ||(1+|q|)^m A_q||^2
+  <= [54 (2 pi) (sum_k W_(m+1)(k))^2]^2 sum_n b_(m+1)(n)^2.
+```
+
+`ExchangedFluxHeatTestEstimate.lean` substitutes the actual heated
+velocity and its projected inviscid stretching flux, with `m=1`, and
+passes this bound through the positive heat-parameter and local-time
+integrals. `Analysis/LowerIntegralSeries.lean` justifies the inequality
+direction without extra measurability assumptions; it does not assert
+an integral/series equality. The original initial-energy commutator
+payment is connected to this explicit output envelope on the actual
+local solution.
+
+**Remaining debt:** output square summability is still a hypothesis in
+this weighted bridge, and the integral of its right-hand side is not
+bounded dynamically. The coarse summed estimate uses the uniform
+projector bound; it does not yet exploit the sharper pair-frequency gain
+to close this debt. Neither the absolute curl moments nor this output
+envelope may be treated as controlled by initial kinetic energy.
+`ExchangedFluxOutputAdjointAudit.lean` audits these declarations.
+
 The signed `fullGramWork` integral remains uncontrolled by initial data.
 The joint viscous contribution, route-specific weights, and BKM
 continuation budget remain open. `ExchangedFluxGramAudit.lean` audits
