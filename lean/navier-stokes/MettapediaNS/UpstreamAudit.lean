@@ -5,6 +5,7 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.PancakeCoheren
 import MettapediaNS.WholeSpaceBKM
 import MettapediaNS.WholeSpaceViscousEnergy
 import MettapediaNS.AlmostOrthogonality
+import MettapediaNS.QuadraticSingularIntegral
 
 /-!
 # Direct upstream dependency audit
@@ -36,3 +37,14 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousEnergy.h3_energyProduction_le_of_nonneg
 #print axioms Mettapedia.Analysis.OperatorAlmostOrthogonality.norm_sum_le_of_adjoint_comp
 #print axioms Mettapedia.Analysis.OperatorAlmostOrthogonality.norm_sum_le_of_star_mul
+#print axioms NS.Lit.CZ.truncated_Lp_uniform
+#print axioms NS.Lit.CZ.pvOp_Lp
+#print axioms NS.Lit.CZ.smoothTruncate_Lp_uniform
+#print axioms Mettapedia.Analysis.QuadraticSingularIntegral.homKer_coordinateProduct
+#print axioms Mettapedia.Analysis.QuadraticSingularIntegral.homKer_coordinateSquareDifference
+#print axioms Mettapedia.Analysis.QuadraticSingularIntegral.exists_truncated_lpBound_coordinateProduct
+#print axioms Mettapedia.Analysis.QuadraticSingularIntegral.exists_truncated_lpBound_coordinateSquareDifference
+#print axioms Mettapedia.Analysis.QuadraticSingularIntegral.exists_pv_eLpNorm_bound_coordinateProduct
+#print axioms Mettapedia.Analysis.QuadraticSingularIntegral.exists_pv_eLpNorm_bound_coordinateSquareDifference
+#print axioms Mettapedia.Analysis.QuadraticSingularIntegral.exists_smoothTruncated_lpBound_coordinateProduct
+#print axioms Mettapedia.Analysis.QuadraticSingularIntegral.exists_smoothTruncated_lpBound_coordinateSquareDifference
