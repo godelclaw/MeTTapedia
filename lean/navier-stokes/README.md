@@ -134,6 +134,40 @@ theorem or an identification of the auxiliary-heat/periodic receiver. The
 input-scale heat weights, moving geometry, signed physical-time budget, and
 unconditional continuation remain open.
 
+`MettapediaNS.GaussianHeatCovariance` identifies OpenAI's literal Gaussian
+product defect `R_ij = Hτ(u_i u_j) - (Hτu)_i (Hτu)_j` with mathlib's
+covariance bilinear form, for arbitrary ordinary whole-space `L²` velocities.
+Its quadratic form is nonnegative. `GaussianHeatEnergy` applies OpenAI's
+parameter-integral theorem to obtain the global `L²` contraction and mathlib's
+convolution integral theorem to prove the exact identity
+
+```text
+∫ trace(Rτ) = ∫ |u|² - ∫ |Hτu|² ≤ ∫ |u|².
+```
+
+`GaussianHeatIncrement` uses mathlib's variance bound after subtraction of a
+constant, OpenAI's actual `L²` translation increment, its Bochner realization,
+and its widened-Gaussian quadratic majorant. For actual `SmoothL2Field`
+velocities it proves
+
+```text
+∫ trace(Rτ) ≤ (2τ) 2^(3/2) ‖A.derivative.toLp‖².
+```
+
+This derivative norm is the `L²` norm of the actual Fréchet derivative with
+its operator norm. No spatial supremum of that derivative is used. The
+separate energy bound is composed with `WholeSpaceUnforcedEnergy` to bound
+the stress trace by initial energy along every given unforced H³ lifespan,
+uniformly in `τ > 0`. The Gaussian convention has generator `Δ/4`; physical
+heat time `νσ` corresponds to `τ = 4νσ`. Although the translation theorem is
+imported from `OrdinaryMollifier`, its statement is about ordinary translations;
+the compact mollifier from that module is not substituted for the Gaussian.
+These bounds control the **undifferentiated** stress. They do not pay its
+divergence/curl against the evolving receiver, establish a physical-time
+dissipation bound in this interface, or identify the periodic/input-scale
+Gram operator. The existing canonical Fourier heat-source split and signed
+Duhamel representation are retained, not reimplemented.
+
 `WholeSpaceBKM.h3_energyProduction_add_dissipation_le_spatialBKMIntegrand`
 combines the first two applications: the actual viscous energy production
 is controlled by the existing spatial BKM integrand and the actual higher
