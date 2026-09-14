@@ -86,6 +86,22 @@ whole-space spatial estimate, not yet an identification or bound for the
 full moving-projector/material NS residual. The periodic/test-class
 extensions and uniform scale/time payment remain open; S4 is unchanged.
 
+`PressureLocalizationDifference` now identifies the actual velocity-tensor
+localization defect as a second difference minus twice a first commutator.
+It retains both terms: the former has the `L¹`-source/`L²`-test bound, while
+the latter uses OpenAI's existing `L¹`-source/`L⁴`-test estimate. Localizing
+both velocity inputs is checked algebraically; the localized velocity is
+not asserted to remain divergence-free.
+`WholeSpaceUnforcedEnergy` specializes OpenAI's actual H³ energy estimate,
+pressure orthogonality, and Grönwall theorem to derive
+`∫|u(t)|² ≤ ∫|u₀|²` for the actual unforced solution on its given lifespan.
+The upstream tensor estimate then pays the second pressure-difference source
+from initial kinetic energy, with every cutoff/test norm explicit and all
+nine pressure tensor components included. This neither assumes energy decay
+nor constructs or extends a solution. The first-order remainder, the actual
+material pressure-Hessian receiver tests, moving projectors, periodic
+transfer, and the decisive signed scale/time budget remain open.
+
 Useful entry points:
 
 - `NavierStokesEquationTarget.lean` - concrete target surface for the
