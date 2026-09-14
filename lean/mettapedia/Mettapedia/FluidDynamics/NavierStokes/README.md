@@ -3120,9 +3120,46 @@ the projected jets, and the actual-field application.
 
 This resolves the algebraic transport contribution, not its dynamical
 payment. The residual is not asserted to be small, and the velocity
-gradient has no initial-data-controlled supremum here. Combining this
-signed deformation-residual term with pressure and viscosity in the
-time-integrated projected evolution remains necessary.
+gradient has no initial-data-controlled supremum here.
+
+`LocalStretchingFluxTime.lean` differentiates the actual raw cubic flux
+in the continuous-field norm and its gradient projection in tensor L2.
+The rate contains the actual velocity RHS, not a supplied time derivative.
+`StretchingFluxMaterialRate.lean` identifies its material rate with the
+pressure Hessian and viscous Laplacians. In the full-gradient formulation,
+`a = (omega . grad) u = S omega` and
+
+```text
+d_a = sum_j omega_j nu Delta(partial_j u)
+      + sum_j (nu Delta omega)_j partial_j u,
+M_j = -a_j a + omega_j (Hess p) omega
+      - (nu Delta omega)_j a - omega_j d_a.
+```
+
+`StretchingFluxProjectedEvolution.lean` proves that the constructed
+spatial transport is the ordinary derivative of this flux, then joins
+the material rate with the exact deformation-remainder pairing:
+
+```text
+(1/2) d_t ||F||_L2^2 = <F, M>_L2 - R,
+R = integral_x sum_{j,k} (partial_j u_k) <F_k, J_j - F_j>.
+```
+
+`LocalStretchingFluxBalance.lean` proves continuity of the combined
+signed work on the closed local existence interval and its exact
+integrated balance, including the actual initial data:
+
+```text
+||F(t)||_L2^2 = ||F(0)||_L2^2 + 2 integral_0^t (<F, M>_L2 - R).
+```
+
+Physical periodic data with nine continuous coordinate derivatives
+construct the local solution and the common third absolute Fourier
+moment used to justify this identity. This supplies no uniform bound
+at a maximal existence time. The remaining task is to bound the signed
+combination using the available initial-data budgets and geometric
+cancellation, including the pressure and viscous contributions.
+`LocalStretchingFluxAudit.lean` audits the declarations.
 
 `CoherenceCreationSnapshot.lean` supplies real, mean-zero, transverse,
 finite Fourier coefficients, hence all absolute Fourier moments. Its
