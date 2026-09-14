@@ -11,6 +11,14 @@ zero gradient work leaves the projection unchanged; the projected norm
 is no larger than any such corrected norm. There is no Fourier cutoff
 or dimension-dependent counting factor in these statements.
 
+`UnitTorusGradientTransport.lean` proves an exact signed transport
+identity for a continuously differentiable tensor and its gradient
+projection. Incompressible transport couples the projected component
+to the orthogonal residual through the velocity gradient. Integration
+by parts removes derivatives of the tensor from this pairing. The
+projected translation jets and curl symmetry are explicit hypotheses;
+the Fourier application constructs them from coefficient summability.
+
 `ContinuousFieldBilinear.lean` lifts continuous bilinear maps to compact
 continuous fields in the uniform norm, with an explicit operator-norm
 bound and product rule. Its map into spatial `L²` differentiates the
