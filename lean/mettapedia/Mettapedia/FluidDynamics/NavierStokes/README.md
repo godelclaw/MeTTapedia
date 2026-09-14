@@ -102,6 +102,20 @@ nor constructs or extends a solution. The first-order remainder, the actual
 material pressure-Hessian receiver tests, moving projectors, periodic
 transfer, and the decisive signed scale/time budget remain open.
 
+The integration package's `WholeSpaceStretchingFlux` now constructs the
+whole-space cubic flux, its genuine gradient projection, and the pressure
+receiver `B_ab = ω_b Σ_j ω_j F_ja` from the velocity using OpenAI's field
+algebra and Helmholtz theorem. The projected columns and receiver have actual
+smooth `L²` jets. `PressureHessianReceiver` identifies the complete spatial
+pressure work with the canonical velocity-tensor/Riesz pairing on
+`∂a∂b(η B_ab)`, using upstream compact integration by parts.
+`PressureHessianLocalization` retains the three cutoff-derivative remainder
+terms and proves the exact first/second commutator split for those actual
+tests. The previous initial-energy estimate applies to the second difference
+with the Hessian-test norm explicit. No bound on that norm or on the other
+terms is supplied. Physical-time evolution, the distinct input-scale heat
+weights in the Gram budget, periodic transfer, and S4 remain obligations.
+
 Useful entry points:
 
 - `NavierStokesEquationTarget.lean` - concrete target surface for the
