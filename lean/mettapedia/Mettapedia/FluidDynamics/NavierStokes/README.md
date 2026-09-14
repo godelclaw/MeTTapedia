@@ -3093,6 +3093,60 @@ global finiteness of `Llog` is asserted. The resolved signed material term
 is not part of `absolutePairingCost` and remains in the full balance.
 `ExchangedFluxLogarithmicHeatAudit.lean` audits every new declaration.
 
+`FourierHeatCommutatorPowerBudget.lean` pays a higher commutator moment
+using the uniform coefficient bound and the preceding integrated square
+bound. Write `N = 2^n`, `E0 = kineticEnergy(u0)`, and
+
+```text
+M0 = 6 (2 pi) E0,
+B = 125 E0^2 / (2 nu^2 (2 pi)^2),
+Bp = B M0^(2/3).
+|C_sigma(u(tau))_q| <= M0 N                    (q in shell n),
+sum_{q in shell n} integral_sigma integral_tau |C_q|^(8/3) <= Bp N^(5/3).
+```
+
+The paid constants contain no future moment-envelope size. The reusable
+`Analysis/WeightedYoung.lean` proves the conjugate-power estimate and its
+extended-integral version, requiring measurability only for the first
+square majorant. `ExchangedFluxPowerHeatCost.lean` obtains
+
+```text
+Lp(t) = sum_n N ((n+1)(n+2))^(3/5)
+  * sum_{q in shell n} integral_sigma integral_tau |A_sigma(u(tau))_q|^(8/5),
+absolutePairingCost(t) <= 2 epsilon Bp + 2 epsilon^(-3/5) Lp(t).
+```
+
+This is an alternative, not a proved domination of the preceding square
+cost. In particular `Lp` is a Fourier-coefficient quantity, not a physical
+`L^(8/5)` norm. `Analysis/FinitePowerInterpolation.lean` proves the sharp
+finite-support factor `card^(1/5)` when converting `8/5` powers to square
+sums; equality holds for constant coefficients. On a three-dimensional
+shell, `ExchangedFluxPowerHeatBudget.lean` consequently proves
+
+```text
+N sum_q |A_q|^(8/5) <= 125^(1/5) (N^2 sum_q |A_q|^2)^(4/5).
+```
+
+Thus this conversion involves a full shell derivative. No estimate by
+weighted vorticity dissipation follows merely from matching amplitude
+powers. The same module constructs one physical local solution satisfying
+the signed balance and both all-scale pairing bounds.
+`ExchangedFluxPowerHeatAudit.lean` audits all the new declarations.
+The new test cost and the resolved signed material contribution remain
+unpaid; no global regularity or global finiteness is asserted.
+
+The exact rational diagnostic
+`tools/navier_stokes/adjoint_low_vorticity_background.py` supplies a
+nonlocality stress-test fixture. On the angle torus,
+`u = (sin(y)(2-cos(z)), sin(x)(3-2cos(z)), 0)` has zero vorticity
+and zero first vorticity jet at the origin, but strain entries
+`S_12 = S_21 = 1` and projected-flux entries `F_12 = 404/315`,
+`F_21 = 59/45` there. Its quadratic flux response to `(sin(z),0,0)`
+contracts with that projected flux to give `-59/45`. This is a signed,
+pointwise diagnostic, not a Lean certificate or a counterexample to an
+integrated norm estimate. Localized oscillatory perturbations still need
+their actual commutator and adjoint estimates.
+
 The signed `fullGramWork` integral remains uncontrolled by initial data.
 The joint viscous contribution, route-specific weights, and BKM
 continuation budget remain open. `ExchangedFluxGramAudit.lean` audits
