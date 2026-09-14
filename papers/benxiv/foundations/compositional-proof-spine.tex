@@ -287,10 +287,46 @@ five, where the fork presentation realizes under two hundred behaviours.
 
 The realized image is not the closure.  A closure must also reach states that
 no single map realizes, and ruling those out is what the structural
-coordinates are for.  Two obligations remain before this becomes a base audit:
-a fork transition system in Lean whose coordinates are proved to describe the
-literal constructed object, and the closure over it rather than the census of
-realized pieces.
+coordinates are for.
+
+The law that composition obeys on the colour coordinate is now proved, against
+literal colourings rather than against another evaluator.  A piece is a finite
+set of edges; what it presents at a vertex is the set of colours its own edges
+carry there.  For edge-disjoint pieces the presentations merge, and clashing at
+no vertex is the only constraint:
+\[
+ \operatorname{support}(A\cup B)
+   =\operatorname{image}(\operatorname{merge})
+     \bigl(\operatorname{filter}\ \textrm{Compatible}\
+       (\operatorname{support}A\times\operatorname{support}B)\bigr).
+\]
+Both inclusions are about actual proper colourings, so this is the fork
+analogue of the serial transfer's exactness, not a restatement of it.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ForkInterfaceSupport.support_union}
+
+Only the interface varies.  Away from the middle set a piece's presentation is
+determined by the piece alone: either it has no edge at that vertex, or it has
+all three and their colours exhaust the palette.  A piece whose interface has
+$k$ vertices therefore realizes at most $8^{k}$ presentations, which is the
+finiteness the regularity step asserts, with an explicit bound.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ForkInterfaceSupport.profile_of_not_mem_mid}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ForkInterfaceSupport.card_support_le}
+
+The instrument runs.  On the smallest simple cubic map, split into two pieces
+of three edges, the interface behaviours are computed and the compatible pairs
+found by kernel evaluation; the fork law then turns that computation into a
+literal proper colouring of the whole map, so the audit is consumed rather than
+merely reported.  Dropping the compatibility filter admits presentations the
+map does not realize, so that filter is load bearing.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ForkInterfaceSupport.fork_audit}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ForkInterfaceSupport.K4_properColouring}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ForkInterfaceSupport.compatibility_is_load_bearing}
+
+What this does not give is the base audit.  The colour coordinate alone cannot
+exclude a merge that no planar map realizes, and excluding those is what the
+structural coordinates are for.  The closure over the full profile, and the
+coverage statement that every bounded-interface map arises as a fork run, both
+remain open.
 
 For the current direct headline, the two load-bearing open inputs are fixed
 ordered-mesh exclusion ($D_{1d}$) and the route-native finite base ($D_{4b}$).
