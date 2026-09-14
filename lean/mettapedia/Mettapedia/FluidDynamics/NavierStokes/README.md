@@ -3059,6 +3059,38 @@ The joint viscous contribution, route-specific weights, and BKM
 continuation budget remain open. `ExchangedFluxGramAudit.lean` audits
 the generic and NS-specific declarations.
 
+`LocalMaterialStretching.lean` transfers the strain-square cancellation
+to the actual stretching vector `a = S omega` along constructed material
+paths. The spin square vanishes on the actual vorticity, giving
+
+```text
+D_t a = -(Hess p) omega + d_a,
+d_a = nu (Delta S) omega + S (nu Delta omega).
+```
+
+`LocalMaterialStretchingFlux.lean` identifies the raw inviscid flux
+`J_j = -omega_j a` and proves its pressure-resolved material rate
+
+```text
+D_t J_j = -a_j a + omega_j (Hess p) omega
+          - (nu Delta omega)_j a - omega_j d_a.
+```
+
+The signed contraction against an arbitrary tensor is retained.
+`LocalMaterialFluxBalance.lean` proves continuity, integrability, and
+the vector and quadratic time identities on every compact subinterval
+of the local existence interval. Physical periodic data with nine
+continuous coordinate derivatives construct both the local solution
+and the material paths; neither is supplied as an extra assumption.
+`LocalMaterialStretchingAudit.lean` audits these declarations.
+
+This cancellation was already implicit in the spectral-defect algebra;
+the new transfer concerns the actual raw flux used in the longitudinal
+estimate. It is not a projected Eulerian Gram estimate. Material
+transport does not commute with spatial gradient projection. The
+projection-transport commutator, signed pressure work, and viscous
+contributions still need a uniform integrated bound.
+
 `CoherenceCreationSnapshot.lean` supplies real, mean-zero, transverse,
 finite Fourier coefficients, hence all absolute Fourier moments. Its
 velocity is `(-sin y + sin x sin z, 0, cos x cos z - cos(2x)/2)`, with
