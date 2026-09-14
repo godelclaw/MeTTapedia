@@ -2846,6 +2846,64 @@ test field. It is not a bound for `fullGramWork`, nor an unweighted
 all-heat-parameter energy bound. `FourierHeatCommutatorEnergyAudit.lean`
 audits the complete chain.
 
+`ExchangedFluxAdjoint.lean` constructs the three real-linear
+velocity-coefficient slots and their Hilbert adjoints. The input curls,
+Leray-projector difference, and output gradient projection remain in the
+operators. `ExchangedFluxVariationSeries.lean` proves absolute convergence
+and exchanges the two inner slots before taking norms.
+`ExchangedFluxAdjointSeries.lean` constructs the coefficient test by two
+absolutely convergent double sums. `ExchangedFluxAdjointPairing.lean` proves
+the exact signed infinite identity
+
+```text
+<fluxVariation(u,v), F> = sum_q <v_q, coefficientTest(u,F)_q>,
+coefficientTest_q = -sum_(l,m) outerTest_(q,l,m)
+                   -2 sum_(k,m) leftTest_(k,q,m).
+```
+
+`ExchangedFluxHeatAdjoint.lean` substitutes the actual heat commutator and
+`F = projectedFlux(0,H_sigma u)`. Its coefficient pairing is absolutely
+convergent, and the heat and physical-time integrability needed for the
+full signed balance are proved. Physical periodic data construct the
+local solution and that balance without any assumed test-field estimate.
+
+`ExchangedFluxAdjointGeometry.lean` retains the exact projected vorticity
+cross product in the outer adjoint bound. The inner adjoint retains the
+Leray difference and satisfies, for nonzero inner frequencies,
+
+```text
+||differenceCLM_(k,l,m)|| ||curlCoefficientCLM_l||
+  <= 12 (2 pi) |l+m|.
+```
+
+Thus the input curl derivative is transferred to the pair frequency.
+The outer adjoint vanishes when the inner vorticity cross product does;
+both adjoints vanish when `m = -l`. These gains precede any summation and
+do not prove that coherence persists under the nonlinear evolution.
+
+`Analysis/WeightedInnerProduct.lean` proves reciprocal-weight real
+inner-product bounds, including a nonnegative extended-integral version.
+`ExchangedFluxHeatDualBudget.lean` applies them over all positive heat
+parameters and local physical time. With `A_sigma` the constructed test,
+it proves
+
+```text
+sum_q integral_sigma integral_tau 2 |<C_sigma,q, A_sigma,q>|
+  <= epsilon B(u0,nu) + epsilon^(-1) positiveTestCost,
+positiveTestCost = sum_q (1+|q|)^2 integral_sigma integral_tau |A_sigma,q|^2,
+B(u0,nu) = 2 E(0)^2 / (nu^2 (2 pi)^2) sum_q (1+|q|)^(-4).
+```
+
+The integrals and sums in this last estimate are explicitly nonnegative
+extended integrals and sums. The paid commutator cost is identified with
+the convergent real integrals above. The test cost is allowed to be
+infinite; no finiteness or initial-data bound for it has been established.
+The signed identity and this separate absolute-value estimate hold for
+the same constructed local physical solution. No interchange with a
+Bochner integral of the full absolute coefficient sum is asserted here.
+`ExchangedFluxAdjointAudit.lean` audits the adjoints, convergence,
+geometric transfer, heat balance, and dual-cost declarations.
+
 The signed `fullGramWork` integral remains uncontrolled by initial data.
 The joint viscous contribution, route-specific weights, and BKM
 continuation budget remain open. `ExchangedFluxGramAudit.lean` audits
