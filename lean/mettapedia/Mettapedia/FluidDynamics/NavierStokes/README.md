@@ -34,8 +34,12 @@ vorticity. For divergence-free inputs, it recovers that vorticity in both
 OpenAI's and the pancake route's curl interfaces. Its actual gradient has a
 checked integral representation with a source derivative; the differentiated
 kernel's trace-free components match the quadratic kernels off the pole.
-The principal-value identification, general-data extension, and physical-time
-budget remain open. This import adds one recorded scoped elaboration setting
+`NewtonianHessianPrincipalValue` now proves the principal-value identification
+for the off-diagonal Hessians and differences of diagonal Hessians, using the
+upstream regularized potential and integration by parts. The imported finite-
+`p` bounds consequently control those actual derivatives by the undifferentiated
+source. Assembly into the full strain, general-data extension, and physical-time
+budget remain open. The potential-theory import adds one recorded scoped elaboration setting
 to an upstream dependency, without changing its mathematical argument.
 
 Two checked whole-space adapters reuse OpenAI's actual logarithmic gradient
