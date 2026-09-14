@@ -2986,6 +2986,34 @@ absorption by itself. The selectors are used algebraically; no material
 transport identity for them is claimed. `ExchangedFluxSectorAudit.lean` audits the split,
 the generalized weighted-series estimate, and the heat-cost transfer.
 
+`Analysis/FiniteEnvelopeSquareBound.lean` allows a fixed finite sum of
+shifted envelopes, with no frequency-count factor.
+`ExchangedFluxTameAdjoint.lean` uses three channels to put two derivatives
+on the output or on one input at a time. If
+`W_s = sum_k (1+|k|)^s ||omega_k||` and `K = 54 (2 pi)`, the full test
+satisfies the alternative positive-order estimate
+
+```text
+sum_q ||(1+|q|) A_q||^2 <= E_tame,
+E_tame = 27 K^2 [W_0^4 sum_n b_2(n)^2 + 2 (W_2 W_0)^2 ||F||^2].
+```
+
+The selected test has the factor `r^2`, and the exact remainder has the
+bound `(1+r)^2 E_tame`. These are regularity-dependent bounds, not
+dynamical payments. The derivative placements are less redundant than
+the multiplicative estimate, but the numerical constant is different;
+neither estimate is asserted to be uniformly smaller.
+
+`ExchangedFluxTameHeatCost.lean` therefore takes the pointwise minimum
+of the two envelopes. The full accumulated cost is bounded by its
+integral, and the selected cost retains `r^2` times that integral. The
+initial-energy payment for the actual local unforced solution is wired
+to this minimum envelope. Input moments and weighted-output square
+summability remain explicit; no global bound for the minimum-envelope
+integral or the signed remainder has been established.
+`ExchangedFluxTameAudit.lean` audits the additive analysis and its NS
+applications.
+
 The signed `fullGramWork` integral remains uncontrolled by initial data.
 The joint viscous contribution, route-specific weights, and BKM
 continuation budget remain open. `ExchangedFluxGramAudit.lean` audits
