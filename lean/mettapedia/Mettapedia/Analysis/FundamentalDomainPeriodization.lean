@@ -98,10 +98,10 @@ theorem integrableOn_addPeriodization
     (setLIntegral_enorm_addPeriodization_le hfund K hKmeas)
     hKint.hasFiniteIntegral
 
-/-- Unfolding a periodized kernel against a lattice-invariant unit character
-recovers the corresponding integral on the Euclidean cover.  This is the
-fundamental-domain core of the Fourier-coefficient transference theorem. -/
-theorem setIntegral_character_smul_addPeriodization_eq
+/-- A lattice-invariant scalar weight can be unfolded from a periodized
+kernel whenever the weighted kernel is integrable. The weight need not be
+a unit character or have constant norm. -/
+theorem setIntegral_smul_addPeriodization_eq
     {G α E : Type*} [AddGroup G] [Countable G] [AddAction G α]
     [MeasurableSpace α] [MeasurableConstVAdd G α]
     {μ : Measure α} [VAddInvariantMeasure G α μ]
@@ -109,32 +109,26 @@ theorem setIntegral_character_smul_addPeriodization_eq
     [SecondCountableTopology E]
     [MeasurableSpace E] [BorelSpace E]
     {s : Set α} (hfund : IsAddFundamentalDomain G s μ)
-    (K : α → E) (hKmeas : Measurable K) (hKint : Integrable K μ)
+    (K : α → E) (hKmeas : Measurable K)
     (χ : α → ℂ) (hχmeas : Measurable χ)
-    (hχnorm : ∀ x, ‖χ x‖ = 1)
-    (hχvadd : ∀ (g : G) (x : α), χ (g +ᵥ x) = χ x) :
+    (hχvadd : ∀ (g : G) (x : α), χ (g +ᵥ x) = χ x)
+    (hweighted : Integrable (fun x ↦ χ x • K x) μ) :
     (∫ x in s, χ x • addPeriodization (G := G) K x ∂μ) =
       ∫ x, χ x • K x ∂μ := by
   let F : G → α → E := fun g x ↦ χ x • K (g +ᵥ x)
   have hFmeas (g : G) : AEStronglyMeasurable (F g) (μ.restrict s) := by
     exact (hχmeas.smul (hKmeas.comp (measurable_const_vadd g))).aestronglyMeasurable
-  have hFenorm (g : G) (x : α) : ‖F g x‖ₑ = ‖K (g +ᵥ x)‖ₑ := by
-    rw [show F g x = χ x • K (g +ᵥ x) by rfl, enorm_smul]
-    have hχenorm : ‖χ x‖ₑ = 1 := by
-      rw [← ofReal_norm (χ x), hχnorm, ENNReal.ofReal_one]
-    rw [hχenorm, one_mul]
+  have hFshift (g : G) (x : α) : F g x = χ (g +ᵥ x) • K (g +ᵥ x) := by
+    simp only [F, hχvadd]
   have hsumFinite :
       ∑' g : G, ∫⁻ x in s, ‖F g x‖ₑ ∂μ ≠ ∞ := by
     have hcover :
         (∑' g : G, ∫⁻ x in s, ‖F g x‖ₑ ∂μ) =
-          ∫⁻ x, ‖K x‖ₑ ∂μ := by
-      simp_rw [hFenorm]
-      exact (hfund.lintegral_eq_tsum'' fun x ↦ ‖K x‖ₑ).symm
+          ∫⁻ x, ‖χ x • K x‖ₑ ∂μ := by
+      simp_rw [hFshift]
+      exact (hfund.lintegral_eq_tsum'' fun x ↦ ‖χ x • K x‖ₑ).symm
     rw [hcover]
-    exact (hasFiniteIntegral_iff_enorm.mp hKint.hasFiniteIntegral).ne
-  have hweighted : Integrable (fun x ↦ χ x • K x) μ := by
-    apply hKint.bdd_smul 1 hχmeas.aestronglyMeasurable
-    exact Filter.Eventually.of_forall fun x ↦ by rw [hχnorm x]
+    exact (hasFiniteIntegral_iff_enorm.mp hweighted.hasFiniteIntegral).ne
   calc
     (∫ x in s, χ x • addPeriodization (G := G) K x ∂μ) =
         ∫ x in s, ∑' g : G, F g x ∂μ := by
@@ -152,6 +146,24 @@ theorem setIntegral_character_smul_addPeriodization_eq
       rw [hχvadd]
     _ = ∫ x, χ x • K x ∂μ :=
       (hfund.integral_eq_tsum'' (fun x ↦ χ x • K x) hweighted).symm
+
+/-- The unit-character interface is a specialization of weighted unfolding. -/
+theorem setIntegral_character_smul_addPeriodization_eq
+    {G α E : Type*} [AddGroup G] [Countable G] [AddAction G α]
+    [MeasurableSpace α] [MeasurableConstVAdd G α]
+    {μ : Measure α} [VAddInvariantMeasure G α μ]
+    [NormedAddCommGroup E] [NormedSpace ℂ E] [CompleteSpace E]
+    [SecondCountableTopology E] [MeasurableSpace E] [BorelSpace E]
+    {s : Set α} (hfund : IsAddFundamentalDomain G s μ)
+    (K : α → E) (hKmeas : Measurable K) (hKint : Integrable K μ)
+    (χ : α → ℂ) (hχmeas : Measurable χ)
+    (hχnorm : ∀ x, ‖χ x‖ = 1)
+    (hχvadd : ∀ (g : G) (x : α), χ (g +ᵥ x) = χ x) :
+    (∫ x in s, χ x • addPeriodization (G := G) K x ∂μ) =
+      ∫ x, χ x • K x ∂μ := by
+  apply setIntegral_smul_addPeriodization_eq hfund K hKmeas χ hχmeas hχvadd
+  exact hKint.bdd_smul 1 hχmeas.aestronglyMeasurable
+    (Filter.Eventually.of_forall fun x ↦ by rw [hχnorm x])
 
 
 /-- A nonnegative lattice-invariant weight survives periodization without

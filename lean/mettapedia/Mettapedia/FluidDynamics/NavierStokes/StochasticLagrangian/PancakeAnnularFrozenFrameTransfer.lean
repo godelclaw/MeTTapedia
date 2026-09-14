@@ -99,9 +99,8 @@ theorem rotatedAnnularSquareDyadicCoverKernel_continuous
     (N : ℕ) : Continuous (rotatedAnnularSquareDyadicCoverKernel R N) := by
   apply continuous_rotateFrequencyPairKernel
   unfold annularSquareDyadicCoverKernel isotropicFrequencyPairKernelRescaling
-  exact continuous_const.smul
-    ((anisotropicAnnularTensorKernel_continuous ((1 : ℝ) / N)).comp
-      (continuous_const.smul continuous_id))
+  exact ((anisotropicAnnularTensorKernel_continuous ((1 : ℝ) / N)).comp
+    (continuous_id.const_smul ((N : ℝ) ^ 2))).const_smul ((((N : ℝ) ^ 2) ^ 6 : ℝ) : ℂ)
 
 theorem rotatedAnnularSquareDyadicCoverKernel_integrable
     (R : EuclideanFrequencyPair ≃ₗᵢ[ℝ] EuclideanFrequencyPair)

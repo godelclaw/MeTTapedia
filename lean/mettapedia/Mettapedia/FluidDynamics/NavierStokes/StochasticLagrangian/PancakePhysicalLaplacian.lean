@@ -77,10 +77,9 @@ end Coefficients
 theorem strainLaplacian_eq (modes : Finset Wavevector) (u : FourierVelocity) (x : T3) :
     strainLaplacian modes u x =
       realMatrixOperator (matrixReconstruction modes (laplacianCoeff (strainCoeff u)) x) := by
-  unfold strainLaplacian strainSecond
-  rw [sum_mappedSecond]
-  simp only [mappedField, fourierField_matrix_eq]
-  rfl
+  have h := sum_mappedSecond realMatrixOperatorCLM modes (strainCoeff u) x
+  simp only [mappedField, fourierField_matrix_eq] at h
+  exact h
 
 theorem vorticityLaplacian_eq (modes : Finset Wavevector) (u : FourierVelocity) (x : T3) :
     vorticityLaplacian modes u x = complexRealPartEuclideanCLM

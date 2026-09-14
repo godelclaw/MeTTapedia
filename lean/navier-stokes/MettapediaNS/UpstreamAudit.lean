@@ -17,6 +17,7 @@ import MettapediaNS.PressureHessianLocalization
 import MettapediaNS.GaussianHeatIncrement
 import MettapediaNS.GaussianHeatWeakStress
 import MettapediaNS.GaussianHeatFourier
+import MettapediaNS.GaussianHeatTorus
 
 /-!
 # Direct upstream dependency audit
@@ -245,3 +246,12 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.GaussianHeatCovariance.fourier_kernel
 #print axioms Mettapedia.FluidDynamics.NavierStokes.GaussianHeatCovariance.average_fourierChar
 #print axioms Mettapedia.FluidDynamics.NavierStokes.GaussianHeatCovariance.mFourierCoeff_periodized_kernel
+#print axioms Mettapedia.Analysis.FundamentalDomainPeriodization.setIntegral_smul_addPeriodization_eq
+#print axioms Mettapedia.Analysis.UnitTorusPeriodization.integrable_periodize_of_integrable
+#print axioms Mettapedia.Analysis.UnitTorusPeriodization.integral_smul_periodize
+#print axioms Mettapedia.FluidDynamics.NavierStokes.GaussianHeatCovariance.periodicKernel_integrable
+#print axioms Mettapedia.FluidDynamics.NavierStokes.GaussianHeatCovariance.mFourierCoeff_periodicKernel
+#print axioms Mettapedia.FluidDynamics.NavierStokes.GaussianHeatCovariance.average_lift_eq_periodicAverage
+#print axioms Mettapedia.FluidDynamics.NavierStokes.GaussianHeatCovariance.continuous_periodicAverage
+#print axioms Mettapedia.FluidDynamics.NavierStokes.GaussianHeatCovariance.hasSum_periodicAverage
+#print axioms Mettapedia.FluidDynamics.NavierStokes.GaussianHeatCovariance.average_lift_eq_tsum

@@ -100,9 +100,8 @@ theorem rotatedLocalizationSquareDyadicCoverKernel_continuous
     (N : ℕ) : Continuous (rotatedLocalizationSquareDyadicCoverKernel R N) := by
   apply continuous_rotateFrequencyPairKernel
   unfold localizationSquareDyadicCoverKernel isotropicFrequencyPairKernelRescaling
-  exact continuous_const.smul
-    ((anisotropicLocalizationTensorKernel_continuous ((1 : ℝ) / N)).comp
-      (continuous_const.smul continuous_id))
+  exact ((anisotropicLocalizationTensorKernel_continuous ((1 : ℝ) / N)).comp
+    (continuous_id.const_smul ((N : ℝ) ^ 2))).const_smul ((((N : ℝ) ^ 2) ^ 6 : ℝ) : ℂ)
 
 theorem rotatedLocalizationSquareDyadicCoverKernel_integrable
     (R : EuclideanFrequencyPair ≃ₗᵢ[ℝ] EuclideanFrequencyPair)
