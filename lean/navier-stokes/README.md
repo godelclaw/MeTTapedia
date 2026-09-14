@@ -102,6 +102,38 @@ the lifespan. The first commutator, the actual material pressure-Hessian
 receiver tests, adaptive cutoff costs, periodic transfer, and the signed
 all-scale/time budget remain obligations.
 
+`MettapediaNS.WholeSpaceStretchingFlux` constructs the cubic flux and its
+gradient projection from an actual `SmoothL2Field` velocity, using upstream
+vorticity, field products, advection, and the genuine Helmholtz projection.
+Writing `ω = curl u` and `s = (ω·∇)u`, the flux is `J_ja = -ω_j s_a`.
+Projection acts on the spatial index `j`: each column is the complement of
+the upstream solenoidal projection. The resulting field `F` and the receiver
+`B_ab = ω_b Σ_j ω_j F_ja` have all actual `L²` jets by the imported field
+algebra. Neither is an independently supplied estimate or field.
+
+`MettapediaNS.PressureHessianReceiver` identifies the corresponding complete
+spatial pressure work with canonical Riesz pairings of `u_i u_j` against
+`∂a∂b(η B_ab)`. It uses the upstream compact integration-by-parts theorem
+and the previously identified constructed Helmholtz pressure. Every index is
+included. For a smooth compact cutoff, the differentiated test is exactly
+
+```text
+∂a∂b(η B) = η ∂a∂b B + (∂aη)(∂b B) + (∂bη)(∂a B) + B ∂a∂bη.
+```
+
+`MettapediaNS.PressureHessianLocalization` constructs the difference between
+this actual test and `η ∂a∂b B` in the upstream Schwartz space. With
+`η = φ⁴`, the full localization difference is **twice the first commutator
+minus the second difference plus the cutoff-derivative pressure pairing**.
+Both multiplier relations required by the earlier estimates are proved for
+the constructed Hessian tests. The initial-energy estimate therefore applies
+to the second difference with its actual Hessian-test `L²` norm; it does not
+bound that norm, remove the first commutator, or pay the three derivative
+remainder terms. These are whole-space spatial identities, not an evolution
+theorem or an identification of the auxiliary-heat/periodic receiver. The
+input-scale heat weights, moving geometry, signed physical-time budget, and
+unconditional continuation remain open.
+
 `WholeSpaceBKM.h3_energyProduction_add_dissipation_le_spatialBKMIntegrand`
 combines the first two applications: the actual viscous energy production
 is controlled by the existing spatial BKM integrand and the actual higher
@@ -161,5 +193,5 @@ The shared `SpatialBKMIntegrand` source needs only a compatibility adjustment
 to six continuity/measurability applications. Its mathematical statements
 are unchanged; no new supremum construction is introduced.
 The adjusted source also passes its original Lean 4.31.0 target. The
-135-declaration integration audit reports only `propext`, `Classical.choice`,
+161-declaration integration audit reports only `propext`, `Classical.choice`,
 and `Quot.sound`; there are no additional analytic axioms in those proofs.
