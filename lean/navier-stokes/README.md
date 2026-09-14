@@ -162,11 +162,39 @@ uniformly in `τ > 0`. The Gaussian convention has generator `Δ/4`; physical
 heat time `νσ` corresponds to `τ = 4νσ`. Although the translation theorem is
 imported from `OrdinaryMollifier`, its statement is about ordinary translations;
 the compact mollifier from that module is not substituted for the Gaussian.
-These bounds control the **undifferentiated** stress. They do not pay its
-divergence/curl against the evolving receiver, establish a physical-time
-dissipation bound in this interface, or identify the periodic/input-scale
-Gram operator. The existing canonical Fourier heat-source split and signed
-Duhamel representation are retained, not reimplemented.
+`GaussianHeatPairing` identifies the full signed contraction with the
+Gaussian expectation of a quadratic form on centered velocity. Consequently
+
+```text
+Rτ : M = E[⟨u - Hτu, M(u - Hτu)⟩],
+Rτ : M = Rτ : sym(M),
+|∫ Rτ : M| ≤ sup_x ‖M(x)‖ ∫ trace(Rτ).
+```
+
+The pointwise one-sided quadratic bound is also retained, including a
+negative upper bound when applicable. There is no component-count factor.
+`GaussianHeatWeakStress` constructs the weak action of `-P div Rτ` by
+applying OpenAI's actual solenoidal projection to the receiver first. It
+proves integrability and bounds this signed action using the energy or
+heat-scale trace bounds above. Only the symmetric derivative contributes;
+the actual projected receiver derivative remains an explicit cost. No
+`L∞` boundedness of the Leray projection is asserted.
+
+`GaussianHeatFourier` directly applies OpenAI's
+`fourierIntegral_gaussian_real` and the existing MeTTapedia
+`UnitTorusPeriodization.mFourierCoeff_periodize`. The result identifies the
+periodized Gaussian's exact multiplier at **every** lattice frequency:
+`exp(-π²τ|n|²)`. It also proves the literal Gaussian averaging identity for
+plane waves, which are not whole-space `L²` functions. Neither Gaussian
+Fourier analysis nor periodization is reimplemented.
+
+These results do not pay the evolving projected receiver derivative,
+establish a physical-time dissipation bound in this interface, or identify
+the full periodic/input-scale Gram work with the spatial stress action.
+The existing canonical Fourier heat-source split, heat-commutator
+energy/enstrophy bounds, and signed coefficient-adjoint/Duhamel
+representation are retained, not reimplemented. Their migration to this
+toolchain is a separate compatibility task.
 
 `WholeSpaceBKM.h3_energyProduction_add_dissipation_le_spatialBKMIntegrand`
 combines the first two applications: the actual viscous energy production
@@ -227,5 +255,5 @@ The shared `SpatialBKMIntegrand` source needs only a compatibility adjustment
 to six continuity/measurability applications. Its mathematical statements
 are unchanged; no new supremum construction is introduced.
 The adjusted source also passes its original Lean 4.31.0 target. The
-161-declaration integration audit reports only `propext`, `Classical.choice`,
+218-declaration integration audit reports only `propext`, `Classical.choice`,
 and `Quot.sound`; there are no additional analytic axioms in those proofs.
