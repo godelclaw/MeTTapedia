@@ -251,6 +251,47 @@ The measured width-three and width-four closures are therefore calibration of
 the vertex-attachment operation, not partial progress toward the base audit,
 and the width-five execution frontier is not the obstacle it appeared to be.
 
+The fork presentation has now been measured on actual maps, and it is small.
+\Sprose{exhaustive interface-behaviour census over duals of planar triangulations, tools/fourcolor/v24\_interface\_behaviour\_gate.py}
+What a piece presents to the rest of a map is its inside-degree at each middle
+vertex, its colour support, its connectivity pairing, and whether it hides a
+component meeting no middle vertex, all taken up to relabelling the middle
+set.  Counting those over connected pieces of simple cubic planar bridgeless
+maps gives
+
+\begin{center}
+\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+interface width & 2 & 3 & 4 & 5\\
+\midrule
+behaviours realized & 2 & 6 & $\approx 28$ & $\approx 187$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Widths two and three saturate exactly and immediately: no map beyond the
+smallest contributes a new behaviour.  Widths four and five are still
+sampling-limited rather than unbounded.  No realized piece has empty colour
+support at any width, which is the emptiness audit on the realized image.  The
+search is validated against exhaustive enumeration on every map small enough
+to enumerate, so the counts are not an artefact of the search order.
+
+Two limits belong with those numbers.  Finiteness of this profile is not what
+was measured and is not in question: the support is a subset of at most $3^{w}$
+tuples, so the profile ranges over an a-priori finite set.  And the profile
+omits capped face-progress, so the counts are lower bounds on the full profile
+count.  What the census does establish is scale, and the scale is the point:
+the refuted linear presentation needed $3{,}696$ letters at frontier width
+five, where the fork presentation realizes under two hundred behaviours.
+
+The realized image is not the closure.  A closure must also reach states that
+no single map realizes, and ruling those out is what the structural
+coordinates are for.  Two obligations remain before this becomes a base audit:
+a fork transition system in Lean whose coordinates are proved to describe the
+literal constructed object, and the closure over it rather than the census of
+realized pieces.
+
 For the current direct headline, the two load-bearing open inputs are fixed
 ordered-mesh exclusion ($D_{1d}$) and the route-native finite base ($D_{4b}$).
 The $D_{1b}$/$D_{1c}$ chain is an alternative global construction, while
