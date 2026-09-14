@@ -154,7 +154,8 @@ theorem hasFDerivAt_radialPower_three_zero :
     HasFDerivAt (radialPower 3 : E → E) (0 : E →L[ℝ] E) 0 := by
   have hs : (fun x : E ↦ ‖x‖ ^ 3) =o[𝓝 0] (fun _ ↦ (1 : ℝ)) := by
     apply (isLittleO_const_iff (by norm_num : (1 : ℝ) ≠ 0)).mpr
-    simpa using (continuous_norm.pow 3).continuousAt.tendsto (x := (0 : E))
+    have hc : Continuous (fun x : E ↦ ‖x‖ ^ 3) := continuous_norm.pow 3
+    simpa using hc.continuousAt.tendsto (x := (0 : E))
   have h := hs.smul_isBigO (isBigO_refl (fun x : E ↦ x) (𝓝 0))
   apply HasFDerivAt.of_isLittleO
   simpa only [radialPower, norm_zero, zero_pow (by omega : 3 ≠ 0), zero_smul,

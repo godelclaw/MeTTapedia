@@ -126,7 +126,9 @@ theorem abs_integral_mul_realConvolution_le (K f g : T → ℝ)
       constructor <;> nlinarith [sq_nonneg (g x - realConvolution K f x),
         sq_nonneg (g x + realConvolution K f x)]
     _ = ((∫ x : T, g x ^ 2) + ∫ x : T, realConvolution K f x ^ 2) / 2 := by
-      rw [integral_div, integral_add (hi _ (hg.pow 2)) (hi _ (hH.pow 2))]
+      have hig : Integrable (fun x : T ↦ g x ^ 2) := hi _ (hg.pow 2)
+      have hiH : Integrable (fun x : T ↦ realConvolution K f x ^ 2) := hi _ (hH.pow 2)
+      rw [integral_div, integral_add hig hiH]
     _ ≤ _ := by linarith [integral_realConvolution_sq_le K f hK hf hm]
 
 end Mettapedia.Analysis.UnitTorusConvolutionEnergy

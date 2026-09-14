@@ -123,8 +123,9 @@ theorem continuous_angularCurlRate {X : Type*} [TopologicalSpace X]
     Continuous (fun x ↦ angularCurlRate (a x) (fun j ↦ D j x) (da x) (fun j ↦ dD j x)) := by
   have hJ (j : Fin 3) : Continuous (fun x ↦ angularJetRate (a x) (fun k ↦ D k x)
       (da x) (fun k ↦ dD k x) j) :=
-    ((((ha.inner hea).const_mul 2).smul (hD j)).add ((ha.norm.pow 2).smul (heD j))).sub
-      (((hea.inner (hD j)).add (ha.inner (heD j))).smul ha) |>.sub ((ha.inner (hD j)).smul hea)
+    ((((ha.inner (𝕜 := ℝ) hea).const_mul 2).smul (hD j)).add ((ha.norm.pow 2).smul (heD j))).sub
+      (((hea.inner (𝕜 := ℝ) (hD j)).add (ha.inner (𝕜 := ℝ) (heD j))).smul ha) |>.sub
+        ((ha.inner (𝕜 := ℝ) (hD j)).smul hea)
   apply (PiLp.continuous_toLp 2 (fun _ : Fin 3 ↦ ℝ)).comp
   apply continuous_pi
   intro i

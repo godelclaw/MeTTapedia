@@ -87,9 +87,9 @@ theorem continuous_angularCurlSecondVariation {X : Type*} [TopologicalSpace X]
   have hJ (j : Fin 3) : Continuous (fun x ↦ angularJetSecondVariation (a x) (fun k ↦ D k x)
       (da x) (fun k ↦ dD k x) j) :=
     ((((hea.norm.pow 2).const_mul 2).smul (hD j)).add
-      (((ha.inner hea).const_mul 4).smul (heD j))).sub
-        (((hea.inner (heD j)).const_mul 2).smul ha) |>.sub
-          ((((hea.inner (hD j)).add (ha.inner (heD j))).const_mul 2).smul hea)
+      (((ha.inner (𝕜 := ℝ) hea).const_mul 4).smul (heD j))).sub
+        (((hea.inner (𝕜 := ℝ) (heD j)).const_mul 2).smul ha) |>.sub
+          ((((hea.inner (𝕜 := ℝ) (hD j)).add (ha.inner (𝕜 := ℝ) (heD j))).const_mul 2).smul hea)
   apply (PiLp.continuous_toLp 2 (fun _ : Fin 3 ↦ ℝ)).comp
   apply continuous_pi
   intro i

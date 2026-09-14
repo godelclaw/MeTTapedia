@@ -71,6 +71,7 @@ theorem integrable_rawSecondMoment (N : ℕ) :
     integrable_finsetSum Finset.univ (fun j _ ↦ PeriodicRieszKernel.integrable_secondMoment i j N))
   apply hi.mono' (((continuous_norm.pow 2).measurable.mul (measurable_rawKernel N).norm).aestronglyMeasurable)
   filter_upwards [] with x
+  change ‖‖x‖ ^ 2 * ‖rawKernel N x‖‖ ≤ _
   rw [Real.norm_of_nonneg (by positivity)]
   simpa only [Finset.mul_sum] using mul_le_mul_of_nonneg_left (norm_rawKernel_le N x) (sq_nonneg ‖x‖)
 
@@ -121,6 +122,7 @@ theorem integrable_secondMoment (N : ℕ) :
   have hi := ((integrable_rawSecondMoment N).add hn).const_mul (1 / 2 : ℝ)
   apply hi.mono' (((continuous_norm.pow 2).measurable.mul (measurable_kernel N).norm).aestronglyMeasurable)
   filter_upwards [] with x
+  change ‖‖x‖ ^ 2 * ‖kernel N x‖‖ ≤ _
   rw [Real.norm_of_nonneg (by positivity)]
   have hb := mul_le_mul_of_nonneg_left (norm_kernel_le N x) (sq_nonneg ‖x‖)
   simpa only [Pi.add_apply, mul_add, mul_left_comm] using hb

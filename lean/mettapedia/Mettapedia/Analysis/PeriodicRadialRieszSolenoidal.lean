@@ -44,8 +44,10 @@ theorem integral_tensor_eq_zero (N : ℕ) : (∫ q : Td, tensor N q) = 0 := by
     ((integrable_entry N i j).re).smul_const _
   simp only [tensor]
   rw [integral_finsetSum _ (fun i _ ↦ integrable_finsetSum _ (fun j _ ↦ hi i j))]
-  simp_rw [integral_finsetSum _ (fun j _ ↦ hi _ j), integral_smul_const,
-    integral_re_entry_eq_zero, zero_smul, Finset.sum_const_zero]
+  simp only [integral_finsetSum _ (fun j _ ↦ hi _ j), integral_smul_const,
+    integral_re_entry_eq_zero]
+  exact Finset.sum_eq_zero (fun i _ ↦ Finset.sum_eq_zero
+    (fun j _ ↦ zero_smul ℝ (PeriodicRieszOperator.basisOperator i j)))
 
 theorem sum_symbol_mul_eq_zero (N : ℕ) (i : Fin d) (k : Fin d → ℤ)
     (a : Fin d → ℂ) (ha : ∑ j : Fin d, (k j : ℂ) * a j = 0) :
