@@ -6,6 +6,7 @@ import MettapediaNS.WholeSpaceBKM
 import MettapediaNS.WholeSpaceViscousEnergy
 import MettapediaNS.AlmostOrthogonality
 import MettapediaNS.QuadraticSingularIntegral
+import MettapediaNS.WholeSpaceBiotSavart
 
 /-!
 # Direct upstream dependency audit
@@ -48,3 +49,16 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.Analysis.QuadraticSingularIntegral.exists_pv_eLpNorm_bound_coordinateSquareDifference
 #print axioms Mettapedia.Analysis.QuadraticSingularIntegral.exists_smoothTruncated_lpBound_coordinateProduct
 #print axioms Mettapedia.Analysis.QuadraticSingularIntegral.exists_smoothTruncated_lpBound_coordinateSquareDifference
+#print axioms EulerBlowup.Ring3D.Lit3.potential_theory_R3
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBiotSavart.curl3_eq_vectorCurl
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBiotSavart.div3_eq_divergence
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBiotSavart.contDiff_velocity
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBiotSavart.memLp_velocity
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBiotSavart.divergence_velocity_eq_zero
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBiotSavart.vectorCurl_velocity_eq
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBiotSavart.curlField_velocity_eq
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBiotSavart.newtonianHessian_eq_integral
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBiotSavart.velocity_partial_eq_integrals
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBiotSavart.partial_gradG3
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBiotSavart.partial_gradG3_eq_coordinateProduct
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBiotSavart.partial_gradG3_sub_eq_coordinateSquareDifference
