@@ -25,8 +25,9 @@ truncations have radius-independent `L^p` bounds, and the principal-value
 operator is bounded on smooth compactly supported inputs for finite `p > 1`.
 The angular hypotheses are proved using mathlib's orthogonal change of
 variables and compactness. The upstream theory needs only five recorded
-lemma-name compatibility updates. These component estimates are not yet
-an identification or a time-budget estimate for the actual full strain.
+lemma-name compatibility updates. The modules below identify and assemble
+the actual whole-space strain; the component estimates alone do not provide
+a time-budget estimate.
 
 `WholeSpaceBiotSavart` now uses their proved three-dimensional potential
 theory to construct a smooth `L²` velocity from smooth compactly supported
@@ -38,8 +39,15 @@ kernel's trace-free components match the quadratic kernels off the pole.
 for the off-diagonal Hessians and differences of diagonal Hessians, using the
 upstream regularized potential and integration by parts. The imported finite-
 `p` bounds consequently control those actual derivatives by the undifferentiated
-source. Assembly into the full strain, general-data extension, and physical-time
-budget remain open. The potential-theory import adds one recorded scoped elaboration setting
+source. `WholeSpaceStrain` assembles these into the existing pancake symmetric
+gradient, identified with mathlib's self-adjoint part of the actual derivative.
+Every entry and the complete operator norm satisfy `L^p` bounds by the
+undifferentiated vorticity norm; actual `MemLp` is proved as well. The assembly
+reuses OpenAI's multilinear coordinate estimate and mathlib's finite-sum
+inequality. These statements concern smooth compactly supported vorticity on
+`ℝ³` and finite `p > 1`; general-data/periodic extension, weighted projector
+costs, and the signed physical-time budget remain open.
+The potential-theory import adds one recorded scoped elaboration setting
 to an upstream dependency, without changing its mathematical argument.
 
 Two checked whole-space adapters reuse OpenAI's actual logarithmic gradient
