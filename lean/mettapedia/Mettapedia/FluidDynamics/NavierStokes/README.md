@@ -58,6 +58,15 @@ dissipation. These remove supporting derivations, not the global
 misalignment budget or the remaining time-evolution/continuation steps.
 See the integration package's README for their precise hypotheses and scope.
 
+`WholeSpaceBiotSavartRegularity` now applies OpenAI's div–curl recovery
+directly: the constructed velocity has all actual Fréchet derivatives in
+`L²` when the given vorticity is smooth, compactly supported, and divergence-free.
+`WholeSpacePressure` reuses their Helmholtz pressure construction and normalized
+scalar potential. The resulting viscous right-hand side is divergence-free,
+and the H³ production bound applies with velocity jets and pressure both
+constructed. These are spatial statements; compact vorticity is not assumed
+to persist under viscosity, and no physical-time budget is supplied.
+
 Before adding general analysis, check mathlib, existing MeTTapedia results,
 and both external fluid developments. Prefer direct imports and explicit
 representation adapters. A toolchain mismatch calls for compatibility work,
