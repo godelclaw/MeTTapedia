@@ -3091,6 +3091,39 @@ transport does not commute with spatial gradient projection. The
 projection-transport commutator, signed pressure work, and viscous
 contributions still need a uniform integrated bound.
 
+`PeriodicProjectedTensorJet.lean` constructs the continuous
+representative and actual first translation derivatives of the gradient
+projection of an indexed Fourier tensor. A frequency-uniform coefficient
+bound preserves absolute summability. Spatial derivative commutation and
+curl symmetry follow from the explicit symbol, including the zero mode
+and repeated output frequencies.
+
+`LongitudinalProjectedTransport.lean` applies this construction to
+the actual raw inviscid flux `J_j = -omega_j S omega`. The second
+absolute velocity moment supplies all coefficient and derivative
+summability. With `F = P J`, the spatial transport work is exactly
+
+```text
+<F, (u . grad) J>_L2
+  = integral_x sum_{j,k} (partial_j u_k) <F_k, J_j - F_j>.
+```
+
+Every field and spatial derivative is constructed from the same
+infinite Fourier velocity. The proof uses incompressibility, symmetry
+of the projected first derivatives, and orthogonality to an actual
+contracted gradient. No derivative of the flux remains on the right,
+and the expression vanishes if the orthogonal residual vanishes.
+Physical periodic data with eight continuous coordinate derivatives
+construct the local solution carrying this identity.
+`LongitudinalProjectedTransportAudit.lean` audits the generic analysis,
+the projected jets, and the actual-field application.
+
+This resolves the algebraic transport contribution, not its dynamical
+payment. The residual is not asserted to be small, and the velocity
+gradient has no initial-data-controlled supremum here. Combining this
+signed deformation-residual term with pressure and viscosity in the
+time-integrated projected evolution remains necessary.
+
 `CoherenceCreationSnapshot.lean` supplies real, mean-zero, transverse,
 finite Fourier coefficients, hence all absolute Fourier moments. Its
 velocity is `(-sin y + sin x sin z, 0, cos x cos z - cos(2x)/2)`, with
