@@ -3161,6 +3161,41 @@ combination using the available initial-data budgets and geometric
 cancellation, including the pressure and viscous contributions.
 `LocalStretchingFluxAudit.lean` audits the declarations.
 
+`PeriodicProjectedTensorDiffusion.lean` proves that the pairing of a
+gradient-projected Fourier tensor with its raw second derivative is
+exactly the negative squared norm of the projected first derivative.
+`StretchingFluxSpatialDiffusion.lean` constructs the ordinary second
+derivatives of the cubic stretching flux. With `a = (omega . grad) u`,
+its viscous product rule is
+
+```text
+M_nu = M_0 + nu (Delta J + 2 C),
+C_j = sum_k [(partial_k omega_j) partial_k a
+        + omega_j sum_r (partial_k omega_r) partial_k partial_r u].
+```
+
+`StretchingFluxProjectedDiffusion.lean` transfers projection commutation
+to the entire cubic flux before squaring its norm. It proves
+`<F, Delta J> = -D`, where `D = sum_k ||partial_k F||_L2^2 >= 0`.
+The mixed term is retained as `X = <F, C>`, without a sign assertion.
+`LocalStretchingFluxDissipation.lean` then proves the exact balance
+
+```text
+W = <F, M_0> - R + 2 nu X,
+||F(t)||_L2^2 + 2 nu integral_0^t D
+  = ||F(0)||_L2^2 + 2 integral_0^t W.
+```
+
+All fields, spatial derivatives, time integrals, and the initial value
+are constructed for the local solution from physical periodic data
+with nine continuous coordinate derivatives. The common third absolute
+Fourier moment justifies the identity; it is not an initial-data-only
+bound at a possible singular time. Viscosity is not asserted to be
+purely dissipative for this cubic functional: the mixed work remains.
+Controlling the accumulated signed `W` with the available initial-data
+budgets and geometric cancellation is still open.
+`LocalStretchingFluxDissipationAudit.lean` audits these declarations.
+
 `CoherenceCreationSnapshot.lean` supplies real, mean-zero, transverse,
 finite Fourier coefficients, hence all absolute Fourier moments. Its
 velocity is `(-sin y + sin x sin z, 0, cos x cos z - cos(2x)/2)`, with
