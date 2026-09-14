@@ -163,7 +163,7 @@ theorem fourierPolynomial_convolutionCoeff {d : Type*} [Fintype d]
       exact addMonoidAlgebraLift_eq_fourierPolynomial _
     _ = evaluation
           (AddMonoidAlgebra.ofCoeff left *
-            AddMonoidAlgebra.ofCoeff right) := by simp
+            AddMonoidAlgebra.ofCoeff right) := by rw [AddMonoidAlgebra.ofCoeff_coeff]
     _ = evaluation (AddMonoidAlgebra.ofCoeff left) *
           evaluation (AddMonoidAlgebra.ofCoeff right) := by
       exact map_mul evaluation _ _
@@ -191,11 +191,12 @@ theorem quadraticFourierCoeff_support_subset {d : Type*}
       quadraticFrequencySet coeff := by
   classical
   rw [quadraticFrequencySet]
-  exact (AddMonoidAlgebra.support_mul
-      (AddMonoidAlgebra.ofCoeff (conjugateReflect coeff))
-      (AddMonoidAlgebra.ofCoeff coeff)).trans
-    (Finset.image₂_subset (conjugateReflect_support_subset coeff)
-      (Finset.Subset.refl _))
+  apply Finset.Subset.trans (s₂ := (conjugateReflect coeff).support + coeff.support)
+  · first
+    | exact AddMonoidAlgebra.support_coeff_mul_subset _ _
+    | exact AddMonoidAlgebra.support_mul _ _
+  · exact Finset.image₂_subset (conjugateReflect_support_subset coeff)
+      (Finset.Subset.refl _)
 
 /-- The candidate margin contains at most the square of the original number
 of Fourier modes. -/

@@ -215,7 +215,8 @@ theorem continuousOn_forcing_of_evolution
       (hS.clm_apply hw.continuousOn)).congr
     intro t ht
     have h := (hd t ht).hasDerivWithinAt.derivWithin (huniq t ht)
-    simp only [h, add_sub_cancel_left]
+    change f t = derivWithin w (Set.uIcc a b) t - S t (w t)
+    rw [h, add_sub_cancel_left]
 
 /-- The collision-safe signed budget for the constructed physical strain
 and vorticity. Initial-data bounds for the displayed forcing integrals

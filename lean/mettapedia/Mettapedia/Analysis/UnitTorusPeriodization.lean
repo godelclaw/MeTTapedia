@@ -135,7 +135,34 @@ theorem lintegral_moment_periodize_le (K : Rd → E) (hK : Measurable K) (m : �
         simpa only [← ofReal_norm] using (ENNReal.ofReal_le_ofReal (norm_torusProjection_le x))
       exact mul_le_mul_left (pow_le_pow_left' hn m) _
 
+/-- Periodization preserves integrability; no Schwartz regularity is needed. -/
+theorem integrable_periodize_of_integrable (K : Rd → E) (hK : Measurable K)
+    (hKi : Integrable K) : Integrable (periodize K) := by
+  refine ⟨(measurable_periodize K hK).aestronglyMeasurable, ?_⟩
+  rw [hasFiniteIntegral_iff_enorm]
+  have hbound := lintegral_moment_periodize_le K hK 0
+  simp only [pow_zero, one_mul] at hbound
+  exact hbound.trans_lt (hasFiniteIntegral_iff_enorm.mp hKi.hasFiniteIntegral)
+
 variable [NormedSpace ℂ E]
+
+/-- A continuous periodic test can be paired before or after periodization.
+This is the same weighted unfolding used for Fourier coefficients. -/
+theorem integral_smul_periodize (K : Rd → E) (hK : Measurable K) (hKi : Integrable K)
+    (f : C(Td, ℂ)) :
+    (∫ q : Td, f q • periodize K q) = ∫ x : Rd, f (torusProjection x) • K x := by
+  have hm : Measurable (fun x : Rd ↦ f (torusProjection x)) :=
+    (f.continuous.comp continuous_torusProjection).measurable
+  calc
+    _ = ∫ x in cell, f (torusProjection x) •
+        addPeriodization (G := Lattice (ι := ι)) K x := by
+      simpa only [torusProjection_representative, periodize] using
+        integral_representative (fun x : Rd ↦ f (torusProjection x) •
+          addPeriodization (G := Lattice (ι := ι)) K x)
+    _ = _ := setIntegral_smul_addPeriodization_eq cell_isAddFundamentalDomain K hK
+      (fun x ↦ f (torusProjection x)) hm (fun g x ↦ by rw [torusProjection_vadd])
+      (hKi.bdd_smul ‖f‖ hm.aestronglyMeasurable
+        (Filter.Eventually.of_forall fun x ↦ f.norm_coe_le_norm _))
 
 theorem mFourierCoeff_periodize (K : Rd → E) (hK : Measurable K) (hKi : Integrable K)
     (n : ι → ℤ) :
@@ -188,9 +215,8 @@ theorem integral_moment_periodize_le (K : 𝓢(Rd, E)) (m : ℕ) :
     (Filter.Eventually.of_forall (fun x ↦ by positivity))]
   simpa only [ht, hx] using hbound
 
-theorem integrable_periodize (K : 𝓢(Rd, E)) : Integrable (periodize K) := by
-  apply (integrable_norm_iff (measurable_periodize K K.continuous.measurable).aestronglyMeasurable).mp
-  simpa only [pow_zero, one_mul] using integrable_moment_periodize K 0
+theorem integrable_periodize (K : 𝓢(Rd, E)) : Integrable (periodize K) :=
+  integrable_periodize_of_integrable K K.continuous.measurable K.integrable
 
 
 end Mettapedia.Analysis.UnitTorusPeriodization

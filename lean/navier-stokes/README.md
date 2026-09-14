@@ -188,6 +188,16 @@ periodized Gaussian's exact multiplier at **every** lattice frequency:
 plane waves, which are not whole-space `L²` functions. Neither Gaussian
 Fourier analysis nor periodization is reimplemented.
 
+`GaussianHeatTorus` identifies the literal whole-space Gaussian average of
+a continuous periodic lift with convolution by that periodized kernel.
+It then applies the existing integrable-convolution theorem and mathlib's
+Fourier reconstruction to obtain the exact series for inputs with summable
+Fourier coefficients. No whole-space `L²` assumption is imposed on a periodic
+lift. The shared periodization proof now handles arbitrary invariant scalar
+tests with integrable weighted kernels; its previous unit-character theorem
+is a specialization, not a second unfolding proof. Periodization integrability
+also uses the existing mass bound instead of requiring Schwartz regularity.
+
 These results do not pay the evolving projected receiver derivative,
 establish a physical-time dissipation bound in this interface, or identify
 the full periodic/input-scale Gram work with the spatial stress action.
@@ -196,12 +206,15 @@ energy/enstrophy bounds, and signed coefficient-adjoint/Duhamel
 representation are retained, not reimplemented. Their migration to this
 toolchain is a separate compatibility task.
 
-A 16-file shared dependency slice now passes selected-module builds on both
+A 21-file shared compatibility slice now passes selected-module builds on both
 Lean 4.31.0 and Lean 4.34.0-rc2. It covers angular-curl continuity, radial
 kernel moments and correlations, the exact Fourier triad, normalized
 Schwartz-kernel decay, annular charts, dyadic rescaling, and frozen-frame
-kernel transfer. The adjustments concern elaboration and explicit scalar
-types; theorem statements are unchanged. This does not yet certify the
+kernel transfer. It also covers buffered annular transfer, quadratic Fourier
+support, the physical forcing-continuity lemma, and the physical Laplacian.
+The two generalized periodization modules are also checked on both versions.
+The compatibility adjustments concern elaboration and mathlib lemma names;
+theorem statements are unchanged. This does not yet certify the
 entire `ExchangedFluxHeatAdjoint` dependency chain on the newer toolchain.
 
 `WholeSpaceBKM.h3_energyProduction_add_dissipation_le_spatialBKMIntegrand`
@@ -263,5 +276,5 @@ The shared `SpatialBKMIntegrand` source needs only a compatibility adjustment
 to six continuity/measurability applications. Its mathematical statements
 are unchanged; no new supremum construction is introduced.
 The adjusted source also passes its original Lean 4.31.0 target. The
-218-declaration integration audit reports only `propext`, `Classical.choice`,
+227-declaration integration audit reports only `propext`, `Classical.choice`,
 and `Quot.sound`; there are no additional analytic axioms in those proofs.
