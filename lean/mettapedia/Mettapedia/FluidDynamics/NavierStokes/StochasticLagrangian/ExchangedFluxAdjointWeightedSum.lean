@@ -22,6 +22,7 @@ open PeriodicTensorFourierFrame
 
 local notation "H" => Mettapedia.Analysis.UnitTorusGradientProjection.TensorL2
   (Fin 3) (EuclideanSpace ℝ (Fin 3))
+local notation "C3" => EuclideanSpace ℂ (Fin 3)
 
 def weightedCurlNorm (m : ℕ) (u : FourierVelocity) (k : Wavevector) : ℝ :=
   (1 + ‖frequencyVec k‖) ^ m * ‖fourierCurl u k‖
@@ -76,10 +77,12 @@ theorem one_add_norm_le_pairShift (p : Wavevector × Wavevector) (q : Wavevector
   nlinarith [mul_nonneg hn₀ hl₀, mul_nonneg hn₀ hm₀, mul_nonneg hl₀ hm₀,
     mul_nonneg (mul_nonneg hn₀ hl₀) hm₀]
 
-theorem norm_weighted_combinedTest_le (m : ℕ) (u : FourierVelocity) (F : H)
-    (p : Wavevector × Wavevector) (q : Wavevector) :
-    ‖((1 + ‖frequencyVec q‖) ^ m : ℝ) • combinedTest u F p q‖ ≤
-      ((54 * (2 * Real.pi)) * (weightedCurlNorm (m + 1) u p.1 *
+theorem norm_weighted_term_le (m : ℕ) (u : FourierVelocity) (F : H)
+    (p : Wavevector × Wavevector) (q : Wavevector) (v : C3) (K : ℝ) (hK : 0 ≤ K)
+    (hv : ‖v‖ ≤ K * ‖frequencyVec q‖ * (‖fourierCurl u p.1‖ * ‖fourierCurl u p.2‖) *
+      ‖outputCoefficient F (pairShift p q)‖) :
+    ‖((1 + ‖frequencyVec q‖) ^ m : ℝ) • v‖ ≤
+      (K * (weightedCurlNorm (m + 1) u p.1 *
         weightedCurlNorm (m + 1) u p.2)) * weightedOutputNorm (m + 1) F (pairShift p q) := by
   rw [norm_smul, Real.norm_of_nonneg (by positivity)]
   have hp := pow_le_pow_left₀ (by positivity : 0 ≤ 1 + ‖frequencyVec q‖)
@@ -92,43 +95,89 @@ theorem norm_weighted_combinedTest_le (m : ℕ) (u : FourierVelocity) (F : H)
     exact mul_le_mul_of_nonneg_left (le_add_of_nonneg_left zero_le_one) (by positivity)
   calc
     _ ≤ (1 + ‖frequencyVec q‖) ^ m *
-        ((54 * (2 * Real.pi)) * ‖frequencyVec q‖ *
+        (K * ‖frequencyVec q‖ *
           (‖fourierCurl u p.1‖ * ‖fourierCurl u p.2‖) * ‖outputCoefficient F (pairShift p q)‖) :=
-      mul_le_mul_of_nonneg_left (norm_combinedTest_le u F p q) (by positivity)
+      mul_le_mul_of_nonneg_left hv (by positivity)
     _ = ((1 + ‖frequencyVec q‖) ^ m * ‖frequencyVec q‖) *
-        ((54 * (2 * Real.pi)) * (‖fourierCurl u p.1‖ * ‖fourierCurl u p.2‖) *
+        (K * (‖fourierCurl u p.1‖ * ‖fourierCurl u p.2‖) *
           ‖outputCoefficient F (pairShift p q)‖) := by ring
     _ ≤ (((1 + ‖frequencyVec (pairShift p q)‖) * (1 + ‖frequencyVec p.1‖) *
         (1 + ‖frequencyVec p.2‖)) ^ (m + 1)) *
-        ((54 * (2 * Real.pi)) * (‖fourierCurl u p.1‖ * ‖fourierCurl u p.2‖) *
+        (K * (‖fourierCurl u p.1‖ * ‖fourierCurl u p.2‖) *
           ‖outputCoefficient F (pairShift p q)‖) := mul_le_mul_of_nonneg_right hq (by positivity)
     _ = _ := by simp only [weightedCurlNorm, weightedOutputNorm, mul_pow]; ring
 
+theorem norm_weighted_combinedTest_le (m : ℕ) (u : FourierVelocity) (F : H)
+    (p : Wavevector × Wavevector) (q : Wavevector) :
+    ‖((1 + ‖frequencyVec q‖) ^ m : ℝ) • combinedTest u F p q‖ ≤
+      ((54 * (2 * Real.pi)) * (weightedCurlNorm (m + 1) u p.1 *
+        weightedCurlNorm (m + 1) u p.2)) * weightedOutputNorm (m + 1) F (pairShift p q) :=
+  norm_weighted_term_le m u F p q (combinedTest u F p q) _ (by positivity)
+    (norm_combinedTest_le u F p q)
+
 set_option maxHeartbeats 800000 in
+theorem sum_weighted_series_sq_le (m : ℕ) (u : FourierVelocity)
+    (hu : Summable (fourierMoment (m + 2) u)) (F : H)
+    (hF : Summable (fun n ↦ weightedOutputNorm (m + 1) F n ^ 2))
+    (f : Wavevector × Wavevector → Wavevector → C3) (K : ℝ) (hK : 0 ≤ K)
+    (hsf : ∀ q, Summable (fun p ↦ f p q))
+    (hf : ∀ p q, ‖f p q‖ ≤ K * ‖frequencyVec q‖ *
+      (‖fourierCurl u p.1‖ * ‖fourierCurl u p.2‖) * ‖outputCoefficient F (pairShift p q)‖)
+    (Q : Finset Wavevector) :
+    (∑ q ∈ Q, ‖((1 + ‖frequencyVec q‖) ^ m : ℝ) • (∑' p, f p q)‖ ^ 2) ≤
+      (K * (∑' k, weightedCurlNorm (m + 1) u k) ^ 2) ^ 2 *
+        ∑' n, weightedOutputNorm (m + 1) F n ^ 2 := by
+  let w := fun p : Wavevector × Wavevector ↦ K *
+    (weightedCurlNorm (m + 1) u p.1 * weightedCurlNorm (m + 1) u p.2)
+  have hw : Summable (weightedCurlNorm (m + 1) u) := summable_weightedCurlNorm (m + 1) u hu
+  have hp := hw.mul_of_nonneg hw (weightedCurlNorm_nonneg _ _) (weightedCurlNorm_nonneg _ _)
+  have hsw : Summable w := hp.mul_left _
+  have he : (∑' p, w p) = K * (∑' k, weightedCurlNorm (m + 1) u k) ^ 2 := by
+    change (∑' p : Wavevector × Wavevector, K *
+      (weightedCurlNorm (m + 1) u p.1 * weightedCurlNorm (m + 1) u p.2)) = _
+    rw [tsum_mul_left, ← hw.tsum_mul_tsum hw hp, pow_two]
+  have h := Mettapedia.Analysis.ShiftedSeriesSquareBound.sum_norm_tsum_sq_le Q
+    (fun p q ↦ ((1 + ‖frequencyVec q‖) ^ m : ℝ) • f p q)
+    w (weightedOutputNorm (m + 1) F) pairShift
+    (fun p ↦ mul_nonneg hK (mul_nonneg
+      (weightedCurlNorm_nonneg _ _ _) (weightedCurlNorm_nonneg _ _ _))) hsw hF
+    (fun q ↦ (hsf q).const_smul _)
+    (fun p q ↦ norm_weighted_term_le m u F p q (f p q) K hK (hf p q))
+  simpa only [tsum_const_smul'', he] using h
+
+theorem summable_weighted_series_sq (m : ℕ) (u : FourierVelocity)
+    (hu : Summable (fourierMoment (m + 2) u)) (F : H)
+    (hF : Summable (fun n ↦ weightedOutputNorm (m + 1) F n ^ 2))
+    (f : Wavevector × Wavevector → Wavevector → C3) (K : ℝ) (hK : 0 ≤ K)
+    (hsf : ∀ q, Summable (fun p ↦ f p q))
+    (hf : ∀ p q, ‖f p q‖ ≤ K * ‖frequencyVec q‖ *
+      (‖fourierCurl u p.1‖ * ‖fourierCurl u p.2‖) * ‖outputCoefficient F (pairShift p q)‖) :
+    Summable (fun q ↦ ‖((1 + ‖frequencyVec q‖) ^ m : ℝ) • (∑' p, f p q)‖ ^ 2) :=
+  summable_of_sum_le (fun _ ↦ sq_nonneg _) (sum_weighted_series_sq_le m u hu F hF f K hK hsf hf)
+
+theorem tsum_weighted_series_sq_le (m : ℕ) (u : FourierVelocity)
+    (hu : Summable (fourierMoment (m + 2) u)) (F : H)
+    (hF : Summable (fun n ↦ weightedOutputNorm (m + 1) F n ^ 2))
+    (f : Wavevector × Wavevector → Wavevector → C3) (K : ℝ) (hK : 0 ≤ K)
+    (hsf : ∀ q, Summable (fun p ↦ f p q))
+    (hf : ∀ p q, ‖f p q‖ ≤ K * ‖frequencyVec q‖ *
+      (‖fourierCurl u p.1‖ * ‖fourierCurl u p.2‖) * ‖outputCoefficient F (pairShift p q)‖) :
+    (∑' q, ‖((1 + ‖frequencyVec q‖) ^ m : ℝ) • (∑' p, f p q)‖ ^ 2) ≤
+      (K * (∑' k, weightedCurlNorm (m + 1) u k) ^ 2) ^ 2 *
+        ∑' n, weightedOutputNorm (m + 1) F n ^ 2 :=
+  (summable_weighted_series_sq m u hu F hF f K hK hsf hf).tsum_le_of_sum_le
+    (sum_weighted_series_sq_le m u hu F hF f K hK hsf hf)
+
 theorem sum_weighted_coefficientTest_sq_le (m : ℕ) (u : FourierVelocity)
     (hu : Summable (fourierMoment (m + 2) u)) (F : H)
     (hF : Summable (fun n ↦ weightedOutputNorm (m + 1) F n ^ 2)) (Q : Finset Wavevector) :
     (∑ q ∈ Q, ‖((1 + ‖frequencyVec q‖) ^ m : ℝ) • coefficientTest u F q‖ ^ 2) ≤
       ((54 * (2 * Real.pi)) * (∑' k, weightedCurlNorm (m + 1) u k) ^ 2) ^ 2 *
         ∑' n, weightedOutputNorm (m + 1) F n ^ 2 := by
-  let w := fun p : Wavevector × Wavevector ↦ (54 * (2 * Real.pi)) *
-    (weightedCurlNorm (m + 1) u p.1 * weightedCurlNorm (m + 1) u p.2)
-  have hw : Summable (weightedCurlNorm (m + 1) u) := summable_weightedCurlNorm (m + 1) u hu
-  have hp := hw.mul_of_nonneg hw (weightedCurlNorm_nonneg _ _) (weightedCurlNorm_nonneg _ _)
-  have hsw : Summable w := hp.mul_left _
-  have he : (∑' p, w p) = (54 * (2 * Real.pi)) * (∑' k, weightedCurlNorm (m + 1) u k) ^ 2 := by
-    change (∑' p : Wavevector × Wavevector, (54 * (2 * Real.pi)) *
-      (weightedCurlNorm (m + 1) u p.1 * weightedCurlNorm (m + 1) u p.2)) = _
-    rw [tsum_mul_left, ← hw.tsum_mul_tsum hw hp, pow_two]
   have hu1 := summable_fourierMoment_of_le u (by omega : 1 ≤ m + 2) hu
-  have h := Mettapedia.Analysis.ShiftedSeriesSquareBound.sum_norm_tsum_sq_le Q
-    (fun p q ↦ ((1 + ‖frequencyVec q‖) ^ m : ℝ) • combinedTest u F p q)
-    w (weightedOutputNorm (m + 1) F) pairShift
-    (fun p ↦ mul_nonneg (by positivity) (mul_nonneg
-      (weightedCurlNorm_nonneg _ _ _) (weightedCurlNorm_nonneg _ _ _))) hsw hF
-    (fun q ↦ (summable_combinedTest u hu1 F q).const_smul _)
-    (norm_weighted_combinedTest_le m u F)
-  simpa only [tsum_const_smul'', tsum_combinedTest u hu1 F, he] using h
+  simpa only [tsum_combinedTest u hu1 F] using sum_weighted_series_sq_le m u hu F hF
+    (combinedTest u F) _ (by positivity) (summable_combinedTest u hu1 F)
+    (norm_combinedTest_le u F) Q
 
 theorem summable_weighted_coefficientTest_sq (m : ℕ) (u : FourierVelocity)
     (hu : Summable (fourierMoment (m + 2) u)) (F : H)

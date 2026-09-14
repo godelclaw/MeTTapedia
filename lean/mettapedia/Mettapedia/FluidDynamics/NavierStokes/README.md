@@ -2954,6 +2954,38 @@ to close this debt. Neither the absolute curl moments nor this output
 envelope may be treated as controlled by initial kinetic energy.
 `ExchangedFluxOutputAdjointAudit.lean` audits these declarations.
 
+`ExchangedFluxAdjointSectors.lean` constructs an exact Fourier-sector
+split of that test. The selected outer terms satisfy
+`||D_(l,m)(omega_l cross omega_m)|| <= delta ||omega_l|| ||omega_m||`;
+the selected inner terms have nonzero inputs and
+`|q+m| <= eta |q|`. Every complementary interaction remains in
+`remainderTest`, with the signed identity
+
+```text
+coefficientTest = selectedTest + remainderTest.
+```
+
+`ExchangedFluxSectorSquareSum.lean` retains the geometric factor
+`r = delta/36 + 4 eta/3` through the entire weighted lattice sum.
+`ExchangedFluxSectorHeatCost.lean` substitutes the actual heated velocity
+and projected stretching flux and proves
+
+```text
+selectedHeatCost <= r^2 integral_sigma integral_tau heatTestEnvelope.
+```
+
+The same input-moment and weighted-output summability hypotheses as in
+the coarse envelope estimate are explicit. This is a gain against that
+envelope, not a claim that the selected cost is at most `r^2` times the
+actual full cost. The envelope may still have infinite integral.
+Zero thresholds annihilate the selected test and leave the entire test
+in the remainder. Fourier sector dominance, a connection to spatial
+pancake coherence, and dynamical control of the complement remain
+unproved. The decomposition does not discard the complement or justify
+absorption by itself. The selectors are used algebraically; no material
+transport identity for them is claimed. `ExchangedFluxSectorAudit.lean` audits the split,
+the generalized weighted-series estimate, and the heat-cost transfer.
+
 The signed `fullGramWork` integral remains uncontrolled by initial data.
 The joint viscous contribution, route-specific weights, and BKM
 continuation budget remain open. `ExchangedFluxGramAudit.lean` audits
