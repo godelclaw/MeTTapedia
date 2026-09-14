@@ -19,6 +19,15 @@ almost-orthogonality theorem directly, with semantic aliases for general
 C*-rings and Hilbert-space operators. Its selected dependency chain compiles
 unchanged on the newer toolchain.
 
+The same package now applies Alpöge–Buckmaster's homogeneous singular-integral
+theory to explicit trace-free quadratic kernel components. Sharp and smooth
+truncations have radius-independent `L^p` bounds, and the principal-value
+operator is bounded on smooth compactly supported inputs for finite `p > 1`.
+The angular hypotheses are proved using mathlib's orthogonal change of
+variables and compactness. The upstream theory needs only five recorded
+lemma-name compatibility updates. These component estimates are not yet
+an identification or a time-budget estimate for the actual full strain.
+
 Two checked whole-space adapters reuse OpenAI's actual logarithmic gradient
 bound and nonlinear H³ energy estimate. They identify the existing spatial
 BKM integrand with the upstream actual curl norm and extend the nonlinear

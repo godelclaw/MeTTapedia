@@ -37,18 +37,19 @@ desired global regularity conclusion.
 | `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |
 | `MettapediaNS.WholeSpaceViscousEnergy` | OpenAI's derivative-word fields, whole-space integration by parts, and nonlinear H³ energy estimate. The constructed Laplacian is identified with mathlib's actual Laplacian; its production is exactly minus twice the derivative-word dissipation. The full unforced NS right-hand side therefore retains the same nonlinear bound with dissipation on the left. | These are spatial right-hand-side identities and estimates. A time-dependent solution must still supply its actual evolution and regularity, and the gradient/vorticity coefficient must be controlled. |
 | `MettapediaNS.AlmostOrthogonality` | Direct semantic aliases of Alpöge–Buckmaster's C*-ring and Hilbert-space Cotlar–Stein theorems. Neither proof is copied or reimplemented. | Both adjoint cross-product bounds and the row/column majorant bounds must be established for the actual localized operators. |
+| `MettapediaNS.QuadraticSingularIntegral` | Alpöge–Buckmaster's sharp-truncation, smooth-truncation, and principal-value `L^p` bounds. The adapter constructs the angular hypotheses for the explicit kernels `x_i*x_j / ‖x‖^5` (`i ≠ j`) and `(x_i² - x_j²) / ‖x‖^5`, using mathlib's orthogonal changes of variables and compactness. | Whole-space inputs: bounded compactly supported fields for the truncations, smooth compactly supported fields for the principal value, finite `p > 1`. The constants are independent of the truncation radii; the smooth version also permits every cutoff satisfying the stated support/range conditions. Assembly and identification with the actual solution's strain, periodic transfer, weighted costs, and physical-time control remain separate obligations. |
 
 `WholeSpaceBKM.h3_energyProduction_add_dissipation_le_spatialBKMIntegrand`
 combines the first two applications: the actual viscous energy production
 is controlled by the existing spatial BKM integrand and the actual higher
 velocity norm. This does not establish integrability up to a singular time.
 
-Further source-backed reuse candidates in the pinned EulerBlowup package
-include `NS.Lit.CZ.truncated_Lp_uniform`, `pvOp_Lp`, and
-`smoothTruncate_Lp_uniform` in `Lit/CZ/CZCore/Homogeneous.lean`. These cover
-general positive dimension and finite real `p > 1`, with kernel hypotheses
-intact. They have been inspected but are not part of this checked import
-target; in particular, no new local proof of these statements is needed.
+`NS.Lit.CZ.truncated_Lp_uniform`, `pvOp_Lp`, and
+`smoothTruncate_Lp_uniform` in `Lit/CZ/CZCore/Homogeneous.lean` are now
+checked imports and used by the quadratic-kernel applications above.
+Their proofs cover general positive dimension; the current concrete
+applications use dimension three. None of these estimates provides an
+`L^∞` endpoint or the global signed time-integrated misalignment budget.
 
 ## Reuse policy
 
@@ -67,6 +68,7 @@ norms, functionals, and interfaces may be improved to use established theory.
 ```sh
 lake update
 lake exe cache get
+bash scripts/prepare-upstreams.sh
 lake build MettapediaNS
 lake env lean MettapediaNS/UpstreamAudit.lean
 ```
@@ -75,10 +77,17 @@ This target checks the imported theorem surface and adapters listed above. The
 arbitrary-data dynamical budget and unconditional continuation theorem remain
 separate mathematical obligations.
 
-The selected target has been checked on Lean 4.34.0-rc2. The upstream source
-trees are unchanged. EulerBlowup declares Lean 4.32.2 and mathlib 4.32.0;
-the selected Cotlar–Stein dependency chain also compiles on this package's
-newer toolchain. This does not certify the entire EulerBlowup development.
+The selected target has been checked on Lean 4.34.0-rc2. OpenAI's source
+tree is unchanged. EulerBlowup declares Lean 4.32.2 and mathlib 4.32.0;
+the Cotlar–Stein dependency chain compiles unchanged on the newer toolchain.
+The larger homogeneous-kernel dependency chain needs exactly five order-
+lemma name updates in `Marcinkiewicz.lean` and `Homogeneous.lean`, recorded
+in `patches/euler-blowup-lean-4.34.patch`. No statement or mathematical
+argument is changed. `scripts/prepare-upstreams.sh` checks the pinned
+revision and applies this patch idempotently, refusing a conflicting patch.
+Run it after dependency setup; it never resets upstream files. The upstream
+files and their Apache-2.0 license remain in their original package.
+This does not certify the entire EulerBlowup development.
 Upstream and existing local sources emit deprecation/unused-variable
 warnings; these are not proof failures.
 
@@ -86,5 +95,5 @@ The shared `SpatialBKMIntegrand` source needs only a compatibility adjustment
 to six continuity/measurability applications. Its mathematical statements
 are unchanged; no new supremum construction is introduced.
 The adjusted source also passes its original Lean 4.31.0 target. The
-21-declaration integration audit reports only `propext`, `Classical.choice`,
+32-declaration integration audit reports only `propext`, `Classical.choice`,
 and `Quot.sound`; there are no additional analytic axioms in those proofs.
