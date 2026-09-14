@@ -3273,15 +3273,15 @@ vanishes: the projected cubic flux and its inviscid variation have
 disjoint horizontal frequency parity. Thus the exact diagnostic obtains
 the same positive work for the full NS tangent at viscosity one.
 
-**Formal boundary:** the generic operator-to-signed-Fourier identity is
-now checked, as described below. Evaluation of the constructed two-shear
-coefficients to identify the displayed rational `W` with the actual
-`TensorL2` pairing `<P J, D J[u][Delta u]>` remains unfinished in Lean.
-This is a checked reduced certificate plus an exact executable physical
-coefficient diagnostic, not a sealed physical-field counterexample.
-In unit-torus coordinates both `W` and `D` acquire the same positive
-factor `(2*pi)^8`. The result targets absorption of the mixed viscous
-work by the extracted dissipation alone; it does not refute global
+**Formal boundary:** `TwoShearViscousWorkCertificate.lean` now identifies
+the displayed rational `W` with the actual `TensorL2` heat-variation
+pairing, including the unit-torus factor `(2*pi)^8`. It also identifies
+the full NS work as `nu * (2*pi)^8 * W`, using the proved inviscid
+cancellation. This seals a physical-field counterexample to absorption
+of the mixed viscous work by the extracted dissipation alone: the actual
+quantities satisfy `2 X > D`. The numerical value displayed for `D`
+remains a reduced spectral certificate; its physical identification is
+not needed for this strict inequality. The result does not refute global
 regularity, Ben's geometric route, or estimates retaining other terms.
 `TwoShearViscousCertificateAudit.lean` audits every declaration.
 
@@ -3334,9 +3334,9 @@ input, reducing each coefficient to two finite input sums.
 input, proves both longitudinal cosine expansions, reality, zero mean,
 incompressibility, all absolute moments, and finite support of the heat
 direction. It instantiates the exact double-sum flux formula. The
-remaining witness-specific obligation is its coefficient evaluation
-and comparison with `TwoShearViscousCertificate`. The inviscid parity
-cancellation is now proved, as described below.
+witness-specific coefficient evaluation, comparison with
+`TwoShearViscousCertificate`, and inviscid parity cancellation are
+now proved, as described below.
 `StretchingFluxSpectralAudit.lean` audits these additions.
 
 `StretchingFluxMixedCoefficients.lean` constructs the three separate
@@ -3373,10 +3373,49 @@ div(J)_(0,1,1) = i (2 pi)^4 * (-429/1024, 0, 0).
 ```
 
 The longitudinal input support and its duplicate-free sum enumeration
-are also checked. This one coefficient is not the positive-work
-certificate: the remaining source coefficients, heat-rate coefficients,
-and final inverse-Laplacian pairing still need their Lean identification
-and evaluation. `StretchingFluxParityAudit.lean` audits these additions.
+are also checked. `StretchingFluxParityAudit.lean` audits these additions.
+
+`StretchingFluxFiniteVariation.lean` proves the finite mixed-input
+convolution and its exact multiplier variation. The symbol is the sum
+of the three input symbols, not the symbol at the output frequency.
+`RationalStretchingFluxHeat.lean` specializes this to the heat direction:
+the varied flux has factor `(2*pi)^5`, its divergence has `i*(2*pi)^6`,
+and the full signed work is `(2*pi)^8` times a finite rational sum.
+`RationalStretchingFluxContraction.lean` contracts the two derivative
+indices before summation, with an exact zero-slot shortcut.
+
+`TwoShearViscousCoefficientFamilies.lean` and
+`TwoShearViscousRemainingFamilies.lean` identify all nonnegative axis,
+mixed-horizontal, and pure-third-harmonic source families, and every
+heat-rate family needed for their pairing. The third harmonics have
+zero source divergence. `TwoShearViscousReflection.lean` proves the
+reflection symmetries by reindexing the complete input sums, while
+`TwoShearViscousOutputGrid.lean` proves that every possible triple output
+lies in the enumerated grid. No negative contribution is discarded.
+`TwoShearViscousWorkFamilies.lean` then accounts for all signs and
+multiplicities. The final theorem is
+
+```text
+spectralRHSWork(nu,u)
+  = nu * (2*pi)^8 * 16932543012172819 / 351018510581760 > 0  (nu > 0),
+2 * mixedWork(u) > dissipation(u).
+```
+
+`StretchingFluxHeatParity.lean` proves a complementary fact about the
+heat-integrated formulation. For any real, transverse input of odd
+horizontal parity with a summable third Fourier moment, the smoothed
+actual inviscid tangent has even parity. Hence its complete signed
+pairing with the smoothed cubic flux vanishes, including the nonlinear
+heat commutator. Thus `materialHeatWork(nu,sigma,u) = 0` for `sigma >= 0`
+and `fullGramWork(nu,u) = 0`. `TwoShearViscousHeatComparison.lean` applies
+this to the same witness whose raw work is strictly positive.
+
+This distinction supports retaining the full heat-integrated balance;
+it does not prove its arbitrary-data budget. These are instantaneous
+identities, and the NS evolution need not preserve odd parity. The
+remaining target is the signed physical-time integral of the complete
+material/commutator work, followed by the other sectors and continuation.
+`TwoShearViscousWorkAudit.lean` audits every new declaration.
 
 `CoherenceCreationSnapshot.lean` supplies real, mean-zero, transverse,
 finite Fourier coefficients, hence all absolute Fourier moments. Its
