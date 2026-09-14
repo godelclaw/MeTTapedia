@@ -69,6 +69,39 @@ without further assumptions. Matching this defect to the full signed NS
 residual, extending beyond the test class, controlling moving projectors,
 and paying the scale/time coefficients remain obligations.
 
+`MettapediaNS.PressureLocalizationDifference` handles distinct source and
+receiver fields. Write `χ = φ²` and `P(g,ψ) = ∫ g Tψ`. For actual Schwartz
+tests `ψh = χψ` and `ψhh = χ²ψ`, it proves the exact decomposition
+
+```text
+P(χ²g,ψ) - P(g,χ²ψ)
+  = [P(g,χ²ψ) - 2P(χg,χψ) + P(χ²g,ψ)]
+      - 2[P(g,χ²ψ) - P(χg,χψ)].
+```
+
+The first bracket is the double commutator and is bounded by
+`C₂(L,R) ‖g‖₁ ‖ψ‖₂`, with `C₂` proportional to `R^(-3/2)`.
+The second is a first commutator, bounded using OpenAI's existing theorem
+by `C₁(L,R) ‖g‖₁ ‖χψ‖₄`, with `C₁` proportional to `R^(-3/4)`.
+The complete bound retains both terms. For `g = u_i u_j`, the localized
+source is literally the tensor of `χu`, and the upstream finite-energy
+tensor estimate gives `‖g‖₁ ≤ ∫|u|²`. No claim is made that `χu` is
+divergence-free or that the first commutator vanishes.
+
+`MettapediaNS.WholeSpaceUnforcedEnergy` supplies the initial-data resource
+for this source on an actual unforced `ClassicalH3Solution`. It specializes
+OpenAI's `difference_rate_le` with both transported field and transporting
+velocity equal to `u`, and zero deformation operator. Its generic pressure
+orthogonality theorem removes the pressure work; pressure-gradient `L²`
+membership is derived from the equation. OpenAI's Grönwall theorem then gives
+`∫|u(t)|² ≤ ∫|u₀|²` throughout the given lifespan. Thus the second pressure
+difference is bounded by `C₂(L,R) ‖u₀‖₂² ‖ψ‖₂`, including a checked sum over
+all nine tensor components. No energy inequality or later-time bound is
+assumed in the solution class. The module neither constructs nor extends
+the lifespan. The first commutator, the actual material pressure-Hessian
+receiver tests, adaptive cutoff costs, periodic transfer, and the signed
+all-scale/time budget remain obligations.
+
 `WholeSpaceBKM.h3_energyProduction_add_dissipation_le_spatialBKMIntegrand`
 combines the first two applications: the actual viscous energy production
 is controlled by the existing spatial BKM integrand and the actual higher
@@ -128,5 +161,5 @@ The shared `SpatialBKMIntegrand` source needs only a compatibility adjustment
 to six continuity/measurability applications. Its mathematical statements
 are unchanged; no new supremum construction is introduced.
 The adjusted source also passes its original Lean 4.31.0 target. The
-117-declaration integration audit reports only `propext`, `Classical.choice`,
+135-declaration integration audit reports only `propext`, `Classical.choice`,
 and `Quot.sound`; there are no additional analytic axioms in those proofs.
