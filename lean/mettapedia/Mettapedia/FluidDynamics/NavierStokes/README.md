@@ -3273,8 +3273,10 @@ vanishes: the projected cubic flux and its inviscid variation have
 disjoint horizontal frequency parity. Thus the exact diagnostic obtains
 the same positive work for the full NS tangent at viscosity one.
 
-**Formal boundary:** identification of `W` with the existing actual
-`TensorL2` pairing `<P J, D J[u][Delta u]>` is not yet proved in Lean.
+**Formal boundary:** the generic operator-to-signed-Fourier identity is
+now checked, as described below. Evaluation of the constructed two-shear
+coefficients to identify the displayed rational `W` with the actual
+`TensorL2` pairing `<P J, D J[u][Delta u]>` remains unfinished in Lean.
 This is a checked reduced certificate plus an exact executable physical
 coefficient diagnostic, not a sealed physical-field counterexample.
 In unit-torus coordinates both `W` and `D` acquire the same positive
@@ -3282,6 +3284,60 @@ factor `(2*pi)^8`. The result targets absorption of the mixed viscous
 work by the extracted dissipation alone; it does not refute global
 regularity, Ben's geometric route, or estimates retaining other terms.
 `TwoShearViscousCertificateAudit.lean` audits every declaration.
+
+`PeriodicFourierCollection.lean` groups absolutely summable indexed
+coefficients by output frequency without changing the reconstructed
+field. Its finite-support specialization retains every interaction
+with a common output. `PeriodicTensorParseval.lean` then proves the
+signed tensor pairing for the actual gradient projection:
+
+```text
+<P J, K>_L2 = sum_q Re <div(J)_q, div(K)_q>_C / ((2 pi)^2 |q|^2).
+```
+
+The zero output contributes zero, as required by the gradient projection.
+The physical divergence coefficient includes `2 pi i`; the two factors
+of `2 pi` in the inverse Laplacian are not dropped. The identity includes
+all cross terms between interaction triples with the same output.
+
+`StretchingFluxCoefficients.lean` constructs the canonical coefficients
+of the actual cubic flux `J_j = -omega_j (omega dot grad)u` and proves
+absolute summability, reality, and reconstruction. Cubic polarization
+identifies the signed work of the actual three-slot product rule with
+the corresponding coefficient pairing. `StretchingFluxSpectralEvolution.lean`
+applies this to the full NS tangent and the ordinary heat tangent:
+
+```text
+spectralRHSWork(nu,u) = <F, M_nu> - R,
+spectralVariationWork(u, Delta u) = 2 X - D,
+spectralRHSWork(nu,u) = spectralRHSWork(0,u) + nu (2 X - D).
+```
+
+Here `D` and `X` are the already constructed projected gradient
+dissipation and mixed work. The module also proves continuity,
+time-integrability, and the exact local initial-data balance
+
+```text
+||F(u(t))||_L2^2 = ||F(u(0))||_L2^2
+  + 2 integral_0^t spectralRHSWork(nu,u(tau)) d tau.
+```
+
+Physical data with nine continuous coordinate derivatives construct
+the solution and its local moment envelope. This does not make the
+envelope a global initial-data bound and does not assign a favorable
+sign to the signed work.
+
+`StretchingFluxFiniteCoefficients.lean` proves exact finite evaluation
+and triple-sum output support. Fixing the output determines the third
+input, reducing each coefficient to two finite input sums.
+`TwoShearViscousData.lean` constructs the complementary two-shear Fourier
+input, proves both longitudinal cosine expansions, reality, zero mean,
+incompressibility, all absolute moments, and finite support of the heat
+direction. It instantiates the exact double-sum flux formula. The
+remaining witness-specific obligation is its coefficient evaluation
+and comparison with `TwoShearViscousCertificate`; the inviscid parity
+cancellation also remains an executable diagnostic rather than a
+Lean theorem. `StretchingFluxSpectralAudit.lean` audits these additions.
 
 `CoherenceCreationSnapshot.lean` supplies real, mean-zero, transverse,
 finite Fourier coefficients, hence all absolute Fourier moments. Its
