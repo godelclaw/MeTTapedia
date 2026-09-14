@@ -159,6 +159,38 @@ $D_5$ & headline assembly from its discharged premises & verified conditional \\
 \end{tabular}
 \end{center}
 
+The $D_{4b}$ premise has been weakened at its joint with $D_{1d}$.  It was
+stated as colourability of every graph-backed bridgeless spherical cubic map
+below the checked vertex threshold, with no width hypothesis.  That threshold
+is a tower, so the premise ranged over maps of arbitrarily large interface
+width, while the route's instrument is an interface closure at width $w$.  At
+the point of use the minimal counterexample already carries the supply's
+rooted connected decomposition, so handing that decomposition to the base
+costs nothing.  The restricted premise retains every hypothesis of the old one
+and adds the decomposition, hence is weaker, and the earlier headlines are
+recovered from it.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DecomposableFiniteBase.taitBaseVerifiedOnDecomposable_of_taitBaseVerifiedAt}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DecomposableFiniteBase.noGraphBackedVertexMinimalTaitCounterexample_of_supply_and_decomposableBase}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DecomposableFiniteBase.combinatorialFourColorStatement_of_raw_and_decomposableBase}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DecomposableFiniteBase.combinatorialFourColorStatement_of_raw_and_base'}
+
+The restriction is not vacuous.  The width parameter bounds the branch middle
+set, and exact branchwidth of small bridgeless planar cubic maps already
+reaches four at eight vertices, so for each fixed $w$ there are maps far below
+the vertex threshold that the base is no longer asked about.
+
+The consequence for the reflection joint is the operative one.  The earlier
+reflection extracted its finite state from the bare map, so an instantiation
+had to manufacture an interface from an arbitrary map below the threshold —
+the one step a fixed-width closure cannot take.  The decomposition-aware
+reflection takes the decomposition as an input to its trace, so a width-$w$
+sweep along that decomposition is a legal instantiation.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DecomposableFiniteBase.DecomposableBaseReflection.taitBaseVerifiedOnDecomposable_of_filter_eq_empty}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DecomposableFiniteBase.DecomposableBaseReflection.combinatorialFourColorStatement_of_raw_and_filter_audit}
+
+Neither coverage, adequacy, nor emptiness is supplied here; $D_{4b}$ remains
+open, with a strictly smaller obligation.
+
 For the current direct headline, the two load-bearing open inputs are fixed
 ordered-mesh exclusion ($D_{1d}$) and the route-native finite base ($D_{4b}$).
 The $D_{1b}$/$D_{1c}$ chain is an alternative global construction, while
