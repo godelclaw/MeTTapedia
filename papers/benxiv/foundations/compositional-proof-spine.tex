@@ -17128,10 +17128,13 @@ closed components are likewise rejected, their mass being four per component.
 \Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeTerminalAcceptance.two_components_rejected}
 
 This supplies the terminal predicate for the direct Count system of
-Proposition~\ref{prop:exact-closure-gate}. An enumerated accepting array and
-its source-realization biconditional are still owed alongside $I$, $E$ and
-the reachability replays. No closure count is supplied, and this is not the
-Lift/Seed accepting array, which remains the cap-composed predicate.
+Proposition~\ref{prop:exact-closure-gate}. Its source-realization
+biconditional is now proved below: on a complete sweep of a source in the
+bridgeless spherical cubic class, terminal acceptance is exactly source
+Tait-colourability. The finite enumerated accepting array is still owed
+alongside $I$, $E$ and the reachability replays. No closure count is supplied,
+and this is not the Lift/Seed accepting array, which remains the cap-composed
+predicate.
 
 \subsection{Source-facing cyclic encoding}
 \label{sec:source-facing-cyclic-encoding}
@@ -17230,6 +17233,35 @@ and constructs the surviving closed trace itself.
 \Sverified{Mettapedia.GraphTheory.FourColor.SourceVertexCodePlanar.source_prefixes_viable}
 \Sverified{Mettapedia.GraphTheory.FourColor.SourceVertexCodePlanar.class_covered}
 
+The remaining structural terminal clause also transports. The model's dart
+and vertex equivalences induce an isomorphism of the literal decoded
+multigraph with the source vertex-side multigraph, including edge identity.
+Ambient bridge-freeness makes that side boundary-essential; on the complete
+sweep its boundary type is empty, so an alleged bridge would construct an
+element of an empty type. Therefore the decoded complete sweep is bridgeless,
+independently of any colouring. Pulling and pushing edge colours through the
+full dart equivalence then identifies decoded and source Tait-colourability.
+Combining connectedness, zero defect, bridgelessness and colour transport gives
+the promised exact terminal statement.
+\Sverified{Mettapedia.GraphTheory.FourColor.SourceVertexCodeTerminalAcceptance.sourceSideIso}
+\Sverified{Mettapedia.GraphTheory.FourColor.SourceVertexCodeTerminalAcceptance.model_bridgeless}
+\Sverified{Mettapedia.GraphTheory.FourColor.SourceVertexCodeTerminalAcceptance.tangle_taitColorable_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.SourceVertexCodeTerminalAcceptance.encoded_terminal_acceptance_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.SourceVertexCodeTerminalAcceptance.class_terminal_covered}
+
+There is also a conservative source-derived finite envelope. Every frontier is
+a subtype of the ambient dart carrier, hence has width at most $|D|=3|V|$ for
+a cubic source, and the decoded trace has exactly one vertex per source
+vertex. Thus a source with at most $N$ vertices has a viable, semantics-
+preserving trace with at most $N$ vertices and every frontier of width at most
+$3N$. This is intentionally not an optimized branchwidth or pathwidth claim;
+it is the finite length--width box required before raw machine states and
+letters can be enumerated.
+\Sverified{Mettapedia.GraphTheory.FourColor.SourceVertexCodeBounds.boundaryDart_card_le}
+\Sverified{Mettapedia.GraphTheory.FourColor.SourceVertexCodeBounds.model_vertex_card}
+\Sverified{Mettapedia.GraphTheory.FourColor.SourceVertexCodeBounds.class_covered_within_vertex_bound}
+\Sverified{Mettapedia.GraphTheory.FourColor.SourceVertexCodeTerminalAcceptance.class_terminal_covered_within_vertex_bound}
+
 An independent dart-level control checked $2{,}000$ generated source maps
 and $17{,}740$ prefixes with arbitrary sweep orders, cyclic roots and boundary
 coordinates: no round-trip failures, including $7{,}792$ disconnected
@@ -17238,8 +17270,10 @@ only the encoded cyclic order preserves incidence but is detected by the
 rotation comparison. These are sampled constructor controls, not exhaustive
 closure computations or configuration data.
 
-The construction does not bound the maximum frontier of its chosen sweep,
-and does not identify raw, cumulative-support and Nerode closures with one
-another. An enumerated accepting array with its source-facing semantics and
-the exact closure certificates remain to be supplied. D2b and the earned
-ledger therefore remain open and $57/100$, respectively.
+The construction now bounds the maximum frontier and trace size conservatively,
+but it does not yet enumerate the finite raw state and letter carriers or
+identify raw, cumulative-support and Nerode closures with one another. The
+enumerated initial/accepting arrays, exact transition semantics, reachability
+replays and all three closure certificates remain to be supplied. D2b is a
+package of those obligations rather than one linchpin; it and the earned ledger
+therefore remain open and $57/100$, respectively.
