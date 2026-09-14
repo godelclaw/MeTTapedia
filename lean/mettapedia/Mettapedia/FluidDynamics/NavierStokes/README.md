@@ -3245,6 +3245,55 @@ justifying the required joint sum/heat-integral regroupings, and obtaining
 an initial-data-controlled time budget remain open.
 `ExchangedFluxSevenInputAudit.lean` audits the new declarations.
 
+`PeriodicTensorFourierPairing.lean` evaluates the actual projected real-mode
+pairing exactly, including the distinct equal/opposite output channels.
+`ExchangedFluxCoefficientFormula.lean` uses it to reduce the complete
+seven-input coefficient test to finite algebra. The convection Leray
+projection disappears under its curl, but the output gradient projection
+and inner Leray difference remain. The transported high-input curl and
+its low-frequency correction are exposed separately.
+
+`ExchangedFluxAntisymmetricWitness.lean` constructs a finite, real,
+mean-zero, transverse velocity field, with all absolute Fourier moments
+summable. For
+
+```text
+k=(1,0,0), l=(2,4,0), m=-l, n=(0,1,1),
+p=((1,0,0),(0,1,0),(0,0,1)), nu=(2 pi)^(-2),
+```
+
+the actual inner tests are `X=4/3` and `Y=-4/3`. The input separation is
+at least fourfold, the total damping is `a=46`, and the kernel shifts are
+`d=4`, `e=-4`. Thus `X+Y=0` but the integrated pair is `-8/1575`.
+Negating the velocity reverses this value to `8/1575`. No finite multiple
+of `|X+Y|` can bound this pair, even as a signed upper bound for the
+negated field. This refutes a **common-test-only coefficient estimate**,
+not the complete signed-work estimate or global regularity.
+
+`FourierFiniteLocalSolution.lean` supplies the generic bridge from
+finite Fourier data to an actual local unforced solution with a
+constructed common moment envelope. The witness uses this bridge:
+its positive pair occurs at the initial time of an actual NS solution.
+No assertion is made about the sign of the complete seven-input sum
+or its physical-time integral. The mismatch term must be paid, or its
+cancellation with other full-work terms must be proved.
+
+Each seven-input heat term with positive remaining damping is also
+proved absolutely integrable. Joint infinite-sum/heat interchange is
+still a separate obligation. `ExchangedFluxAntisymmetricAudit.lean`
+audits these declarations. The exact-rational diagnostic
+`tools/navier_stokes/exchanged_flux_input_exchange.py` checks the
+larger-frequency family and reconstructs the physical projected flux
+from the exchanged tensors; only the stated fixed-frequency obstruction
+and its actual local-solution realization are Lean-certified here.
+Its `--full-work` option also evaluates all resolved and commutator
+nonlinear heat-work terms as an exact perturbation polynomial. In the
+tested family the quartic commutator contribution is negative, while
+the quartic resolved contribution and their sum are positive. This
+checks the need to retain both channels; it is not a sign claim for
+the Gram-energy derivative, which also includes viscous dissipation,
+or a bound on the physical-time integral.
+
 The signed `fullGramWork` integral remains uncontrolled by initial data.
 The joint viscous contribution, route-specific weights, and BKM
 continuation budget remain open. `ExchangedFluxGramAudit.lean` audits

@@ -128,6 +128,26 @@ theorem heatInteraction_eq (inner : Bool) (ν σ : ℝ) (u : FourierVelocity)
   rw [← he]
   ring
 
+/-- Positive remaining damping makes each coefficient absolutely integrable in heat time. -/
+theorem integrableOn_heatInteraction (inner : Bool) {ν : ℝ} (hν : 0 ≤ ν)
+    (u : FourierVelocity) (k l m n : Wavevector) (p : TripleIndex)
+    (hc : 0 < remainingDamping ν m n p) :
+    IntegrableOn (fun σ ↦ heatInteraction inner ν σ u k l m n p) (Set.Ioi 0) := by
+  have hd : 0 ≤ modeDamping ν (k + l) := by unfold modeDamping; positivity
+  have hp := pairDamping_nonneg hν k l
+  have he : (fun σ ↦ heatInteraction inner ν σ u k l m n p) = fun σ ↦
+      (Real.exp (-(remainingDamping ν m n p + modeDamping ν (k + l)) * σ) -
+        Real.exp (-(remainingDamping ν m n p + pairDamping ν k l) * σ)) *
+          interactionTest inner u k l m n p := by
+    funext σ
+    rw [heatInteraction_eq, multiplier_pair]
+    unfold multiplier
+    rw [mul_sub, ← Real.exp_add, ← Real.exp_add]
+    congr 2 <;> congr 1 <;> ring
+  rw [he]
+  exact ((integrableOn_exp_mul_Ioi (by linarith) 0).sub
+    (integrableOn_exp_mul_Ioi (by linarith) 0)).mul_const _
+
 /-- Exact integration of a genuine seven-input coefficient, not a free test field. -/
 theorem integral_heatInteraction (inner : Bool) (ν : ℝ) (u : FourierVelocity)
     (k l m n : Wavevector) (p : TripleIndex) :
