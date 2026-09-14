@@ -14,6 +14,19 @@ positive-viscosity periodic uniqueness imports compile together with the
 existing coherent-pair estimate. Full migration of this directory is not
 yet certified by that selected target.
 
+The integration package also imports Alpöge–Buckmaster's Cotlar–Stein
+almost-orthogonality theorem directly, with semantic aliases for general
+C*-rings and Hilbert-space operators. Its selected dependency chain compiles
+unchanged on the newer toolchain.
+
+Two checked whole-space adapters reuse OpenAI's actual logarithmic gradient
+bound and nonlinear H³ energy estimate. They identify the existing spatial
+BKM integrand with the upstream actual curl norm and extend the nonlinear
+energy estimate to the full NS right-hand side with exact viscous
+dissipation. These remove supporting derivations, not the global
+misalignment budget or the remaining time-evolution/continuation steps.
+See the integration package's README for their precise hypotheses and scope.
+
 Before adding general analysis, check mathlib, existing MeTTapedia results,
 and both external fluid developments. Prefer direct imports and explicit
 representation adapters. A toolchain mismatch calls for compatibility work,
