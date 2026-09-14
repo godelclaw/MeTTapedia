@@ -191,6 +191,66 @@ sweep along that decomposition is a legal instantiation.
 Neither coverage, adequacy, nor emptiness is supplied here; $D_{4b}$ remains
 open, with a strictly smaller obligation.
 
+Sharpening that obligation immediately refutes one candidate instrument for
+it.  The width supply delivers a branch decomposition, which is a tree of edge
+bipartitions.  The physical finite-state closure instead processes vertices in
+a line, and its width is the number of edges leaving a prefix of that order.
+Writing $\mathrm{BW}$ for the minimum over branch decompositions of the
+largest middle-vertex set and $\mathrm{LP}$ for the minimum over vertex
+orderings of the largest leaving-edge set, always $\mathrm{LP}\ge\mathrm{BW}$.
+The two are not equivalent parameters.
+
+\begin{proposition}[a bounded branch decomposition does not bound the linear
+interface]
+\label{prop:tree-vs-linear-width-refuted}
+\Srefuted{exhaustive tube-tree branch/linear width gate, tools/fourcolor/v24\_tree\_vs\_linear\_width\_gate.py}
+There is a family of simple, cubic, planar, bridgeless maps carrying explicit
+branch decompositions of width four at every size, whose exact linear-sweep
+width is unbounded.
+\end{proposition}
+
+The witness is a tube tree: hexagon nodes joined in a tree by two-edge tubes.
+Every member is simple, cubic, planar and bridgeless, hence two-edge
+connected, so it lies in the class the base premise quantifies over and the
+checked width-preserving connectedization applies to it.  Only
+\texttt{WidthAtMost} is asked of the raw supply, so the explicit decomposition
+below is exactly what $D_{1d}$ would hand over.
+
+\begin{center}
+\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+family & vertices & $\mathrm{BW}\le$ & $\mathrm{LP}$ & proved $\mathrm{LP}>$\\
+\midrule
+prism $C_4\times K_2$ & 8 & --- & 5 & 4\\
+prism $C_{10}\times K_2$ & 20 & --- & 5 & 4\\
+tube tree, depth 1 & 24 & 4 & 6 & 5\\
+tube tree, depth 2 & 60 & 4 & 6 & 5\\
+tube tree, depth 3 & 132 & 4 & 8 & 7\\
+tube tree, depth 6 & 1140 & 4 & --- & ---\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The branch width is certified by exhibiting one decomposition and measuring
+it; the linear width is exact, since a prefix search that exhausts at $k$
+proves $\mathrm{LP}>k$.  The prism control keeps both parameters bounded, so
+the measurement separates families rather than reporting growth everywhere.
+
+The consequence is that a fixed-width linear closure cannot be the instrument
+for $D_{4b}$.  Already at twenty-four vertices a map the supply delivers at
+width four forces a linear interface of width six, and the gap grows with the
+tree depth while the supplied width does not move.  The corrected obligation
+is a closure over the branch decomposition itself: states are interfaces of at
+most $w$ middle vertices, and the transition is the binary fork that merges
+two child interfaces, not the attachment of one vertex to a frontier.  Pumping
+survives the change, since a path in the decomposition tree that revisits a
+state is spliceable exactly as a repeated corridor profile is.
+
+The measured width-three and width-four closures are therefore calibration of
+the vertex-attachment operation, not partial progress toward the base audit,
+and the width-five execution frontier is not the obstacle it appeared to be.
+
 For the current direct headline, the two load-bearing open inputs are fixed
 ordered-mesh exclusion ($D_{1d}$) and the route-native finite base ($D_{4b}$).
 The $D_{1b}$/$D_{1c}$ chain is an alternative global construction, while
