@@ -2946,9 +2946,10 @@ an integral/series equality. The original initial-energy commutator
 payment is connected to this explicit output envelope on the actual
 local solution.
 
-**Remaining debt:** output square summability is still a hypothesis in
-this weighted bridge, and the integral of its right-hand side is not
-bounded dynamically. The coarse summed estimate uses the uniform
+Output square summability is a hypothesis of this general weighted
+bridge; it is discharged for the actual physical flux below. The
+integral of its right-hand side is not bounded dynamically.
+The coarse summed estimate uses the uniform
 projector bound; it does not yet exploit the sharper pair-frequency gain
 to close this debt. Neither the absolute curl moments nor this output
 envelope may be treated as controlled by initial kinetic energy.
@@ -3008,11 +3009,50 @@ neither estimate is asserted to be uniformly smaller.
 of the two envelopes. The full accumulated cost is bounded by its
 integral, and the selected cost retains `r^2` times that integral. The
 initial-energy payment for the actual local unforced solution is wired
-to this minimum envelope. Input moments and weighted-output square
-summability remain explicit; no global bound for the minimum-envelope
-integral or the signed remainder has been established.
+to this minimum envelope. Its general formulation retains input moments
+and weighted-output square summability; the latter is constructed below.
+No global bound for the minimum-envelope integral or the signed remainder
+has been established.
 `ExchangedFluxTameAudit.lean` audits the additive analysis and its NS
 applications.
+
+`PeriodicTensorFourierWeight.lean` proves that real projected modes pair
+only at equal or opposite frequencies. Every even real frequency weight
+therefore commutes with the actual output coefficients of a convergent
+indexed mode series, including repeated output frequencies. Applying
+the already proved Bessel bound to the constructed weighted field gives
+weighted square summability without a frequency-count factor.
+
+`ExchangedFluxWeightedOutput.lean` applies this to the exchanged cubic
+series. With `w_s(n) = (1+|n|)^s`, it constructs
+
+```text
+weightedFlux_s(u) = -sum_p w_s(tripleFrequency(p)) mode(u,p),
+outputCoefficient(weightedFlux_s(u),n)
+  = w_s(n) outputCoefficient(projectedFlux(0,u),n),
+sum_n b_s(n)^2 <= ||weightedFlux_s(u)||^2
+  <= [6 embeddingConstant (sum_k W_s(k))^3]^2.
+```
+
+The hypotheses are the absolute velocity moment of order `s+1`,
+coefficient reality, and incompressibility. The field and its series
+convergence are proved, not supplied as a budget assumption. At `s=2`,
+the same third-order velocity moment already used by the adjoint
+construction supplies the missing output hypothesis, also after heat
+smoothing.
+
+`ExchangedFluxConstructedHeatCost.lean` removes that independent
+hypothesis from the full and selected minimum-envelope estimates.
+Physical periodic data with nine continuous coordinate derivatives
+construct one local solution carrying the weighted-output summability,
+the exact signed Gram balance, and the initial-energy-plus-envelope dual
+bound. The cancellation factor remains unchanged.
+`ExchangedFluxWeightedOutputAudit.lean` audits this construction.
+
+**Remaining debt:** the curl moments on the right are not bounded by
+initial kinetic energy. Constructing the output series removes a local
+regularity hypothesis; it does not pay the heat/time-integrated envelope,
+the signed remainder, or the misalignment strain budget dynamically.
 
 The signed `fullGramWork` integral remains uncontrolled by initial data.
 The joint viscous contribution, route-specific weights, and BKM
