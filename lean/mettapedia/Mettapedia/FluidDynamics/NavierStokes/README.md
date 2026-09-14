@@ -73,6 +73,19 @@ representation adapters. A toolchain mismatch calls for compatibility work,
 not an independent reimplementation of an available proof. Preserve the
 coherence/pancake mechanism while allowing auxiliary interfaces to improve.
 
+`RieszDoubleCommutator` in the integration package now retains a signed
+quadratic localization defect until both cutoff differences are present.
+It directly applies OpenAI's actual heat commutator and self-adjoint Riesz
+pairing. An exponent change in mathlib turns the existing upstream radial
+kernel bound into `L²` section control with `R^(-3/2)` scaling. For Schwartz
+tests `f`, `φ² f`, and `φ⁴ f`, the defect is bounded by
+`C max(2L,1)² R^(-3/2) ‖f‖₁ ‖f‖₂` when `0 ≤ φ ≤ 1` and
+`|φ(x)-φ(y)| ≤ (L/R)|x-y|`. This preserves cancellation that a separate
+absolute estimate of the two localized terms would lose. It is a concrete
+whole-space spatial estimate, not yet an identification or bound for the
+full moving-projector/material NS residual. The periodic/test-class
+extensions and uniform scale/time payment remain open; S4 is unchanged.
+
 Useful entry points:
 
 - `NavierStokesEquationTarget.lean` - concrete target surface for the

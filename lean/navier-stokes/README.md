@@ -46,6 +46,29 @@ desired global regularity conclusion.
 | `MettapediaNS.WholeSpacePressureRecovery` | OpenAI's instantaneous weak pressure identities, Fourier `H³` bound, Riesz Poisson identity, and harmonic-functional uniqueness identify the constructed Helmholtz pressure gradient with the double-Riesz pairing of the actual velocity tensor on every compact smooth scalar test. The required instantaneous equation is realized by an explicit affine tangent with the actual constructed viscous right-hand side. | Smooth solenoidal `SmoothL2Field` inputs on `ℝ³`. The tangent satisfies the equation at time one only; no solution on a time interval is asserted. The test identity is not a physical-time estimate. |
 | `MettapediaNS.WholeSpacePressureFlux` | The constructed-pressure test identity discharges OpenAI's generic compact-flux identification theorem. Its complete cutoff-flux estimate, including the localized Sobolev term and heat-kernel commutator term, then bounds the actual scalar pressure flux. The `L³` membership and tensor `L¹` bound are supplied using upstream Sobolev estimates and mathlib integrability. | The flux identity permits every compact smooth cutoff. The quantitative application uses the upstream radial weight with `R ≥ 1`; its constant is independent of `R` but depends on the velocity slice's `L²` and `L³` norms. This is neither a uniform physical-time bound nor an estimate for arbitrary anisotropic pancake/projector weights. All-scale summation and the signed misalignment budget remain open. |
 
+`MettapediaNS.RieszDoubleCommutator` applies OpenAI's heat-kernel
+commutator twice and its Riesz self-adjointness once. The resulting signed
+quadratic localization defect retains the squared difference of the
+multiplier `φ²` before taking norms. For `0 ≤ φ ≤ 1` with Lipschitz bound
+`L/R`, its kernel has majorant
+`C max(2L,1)² |x-y|⁻³ min(|x-y|/R,1)²`.
+This is bounded by `C max(2L,1)² R⁻¹` times the **existing upstream radial
+kernel to the power `2/3`**. Mathlib's power change of exponent and Hölder
+inequality therefore give actual section integrability for `L²` sources
+and an `R^(-3/2)` pointwise bound. No radial integration theorem, Fourier
+operator, or heat representation is reimplemented.
+
+For Schwartz tests representing `f`, `φ² f`, and `φ⁴ f`, the checked defect is
+`∫(φ² f) T(φ² f) - ∫(φ⁴ f) Tf`, where `T` is the actual upstream double
+Riesz transform. Its norm is at most
+`C max(2L,1)² R^(-3/2) ‖f‖₁ ‖f‖₂` with a source-independent constant.
+The identity is bilinear and gives the usual real quadratic-form identity
+on real tests. This differs from the single-commutator `L¹`-`L⁴` estimate;
+the bounds have different source norms and are not pointwise comparable
+without further assumptions. Matching this defect to the full signed NS
+residual, extending beyond the test class, controlling moving projectors,
+and paying the scale/time coefficients remain obligations.
+
 `WholeSpaceBKM.h3_energyProduction_add_dissipation_le_spatialBKMIntegrand`
 combines the first two applications: the actual viscous energy production
 is controlled by the existing spatial BKM integrand and the actual higher
@@ -105,5 +128,5 @@ The shared `SpatialBKMIntegrand` source needs only a compatibility adjustment
 to six continuity/measurability applications. Its mathematical statements
 are unchanged; no new supremum construction is introduced.
 The adjusted source also passes its original Lean 4.31.0 target. The
-102-declaration integration audit reports only `propext`, `Classical.choice`,
+117-declaration integration audit reports only `propext`, `Classical.choice`,
 and `Quot.sound`; there are no additional analytic axioms in those proofs.
