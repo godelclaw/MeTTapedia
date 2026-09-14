@@ -4,6 +4,22 @@ This directory contains the Lean side of the godelclaw Navier-Stokes /
 Fefferman-target route audit. It is not a proof of the Millennium
 Navier-Stokes problem.
 
+## Upstream-first development environment
+
+New upstream integration uses the [Lean 4.34.0-rc2 NS package](../../../../navier-stokes/README.md).
+It directly depends on OpenAI/NavierStokesAndEuler at
+`f9e8bc5b38b6e212696e8a30e3e91517af887bbd` and reads this source tree in
+place. The pressure-commutator, harmonic-uniform viscous-propagator, and
+positive-viscosity periodic uniqueness imports compile together with the
+existing coherent-pair estimate. Full migration of this directory is not
+yet certified by that selected target.
+
+Before adding general analysis, check mathlib, existing MeTTapedia results,
+and both external fluid developments. Prefer direct imports and explicit
+representation adapters. A toolchain mismatch calls for compatibility work,
+not an independent reimplementation of an available proof. Preserve the
+coherence/pancake mechanism while allowing auxiliary interfaces to improve.
+
 Useful entry points:
 
 - `NavierStokesEquationTarget.lean` - concrete target surface for the
