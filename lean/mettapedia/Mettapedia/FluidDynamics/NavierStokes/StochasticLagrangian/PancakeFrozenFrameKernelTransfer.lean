@@ -84,10 +84,11 @@ theorem orientedFrameEuclideanLinearEquiv_norm_map
   rw [← sq_eq_sq₀ (norm_nonneg _) (norm_nonneg _),
     EuclideanSpace.real_norm_sq_eq, EuclideanSpace.real_norm_sq_eq]
   simp only [Fin.sum_univ_three]
-  simpa [orientedFrameEuclideanLinearEquiv,
+  have h := F.map_normSq (euclideanToRealVec3LinearEquiv xi)
+  simp [orientedFrameEuclideanLinearEquiv,
     orientedFrameRealLinearEquiv, euclideanToRealVec3LinearEquiv,
-    normSq, dot, pow_two] using
-      F.map_normSq (euclideanToRealVec3LinearEquiv xi)
+    normSq, dot, pow_two] at h ⊢
+  exact h
 
 /-- Every algebraic oriented frame therefore determines the Euclidean
 linear isometry used by the Fourier kernel construction. -/
@@ -171,9 +172,8 @@ theorem rotatedSquareDyadicCoverKernel_continuous
     (N : ℕ) : Continuous (rotatedSquareDyadicCoverKernel R N) := by
   apply continuous_rotateFrequencyPairKernel
   unfold squareDyadicCoverKernel isotropicFrequencyPairKernelRescaling
-  exact continuous_const.smul
-    ((anisotropicNormalizedStretchTensorKernel_continuous ((1 : ℝ) / N)).comp
-      (continuous_const.smul continuous_id))
+  exact ((anisotropicNormalizedStretchTensorKernel_continuous ((1 : ℝ) / N)).comp
+    (continuous_id.const_smul ((N : ℝ) ^ 2))).const_smul ((((N : ℝ) ^ 2) ^ 6 : ℝ) : ℂ)
 
 /-- The rotated cover kernel is integrable at every square-dyadic scale
 `N ≥ 2`. -/

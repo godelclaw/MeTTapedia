@@ -90,12 +90,13 @@ theorem abs_correlationEntry_le (N : ℕ) (w : Td → Rd) (hw : Continuous w) (i
   have hsq : (∫ x : Td, quarticTensorEntry (w x) i j ^ 2) ≤ eighthMoment w := by
     apply integral_mono (hi _ (hq.pow 2)) (hi _ (hw.norm.pow 8))
     intro x
+    change quarticTensorEntry (w x) i j ^ 2 ≤ ‖w x‖ ^ 8
     have h := pow_le_pow_left₀ (abs_nonneg _) (abs_quarticTensorEntry_le (w x) i j) 2
     simpa only [sq_abs, ← pow_mul] using h
   have h := abs_integral_mul_realConvolution_le _ _ _ (Complex.continuous_re.comp (continuous_entry N i j))
     (hw.norm.pow 4) hq (norm_mFourierCoeff_re_entry_le_one N i j)
   change |correlationEntry N w i j| ≤ _ at h
-  simp only [← pow_mul] at h
+  simp only [Pi.pow_apply, ← pow_mul] at h
   change |correlationEntry N w i j| ≤ ((∫ x : Td, quarticTensorEntry (w x) i j ^ 2) +
     eighthMoment w) / 2 at h
   linarith

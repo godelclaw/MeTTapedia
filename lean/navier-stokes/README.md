@@ -196,6 +196,14 @@ energy/enstrophy bounds, and signed coefficient-adjoint/Duhamel
 representation are retained, not reimplemented. Their migration to this
 toolchain is a separate compatibility task.
 
+A 16-file shared dependency slice now passes selected-module builds on both
+Lean 4.31.0 and Lean 4.34.0-rc2. It covers angular-curl continuity, radial
+kernel moments and correlations, the exact Fourier triad, normalized
+Schwartz-kernel decay, annular charts, dyadic rescaling, and frozen-frame
+kernel transfer. The adjustments concern elaboration and explicit scalar
+types; theorem statements are unchanged. This does not yet certify the
+entire `ExchangedFluxHeatAdjoint` dependency chain on the newer toolchain.
+
 `WholeSpaceBKM.h3_energyProduction_add_dissipation_le_spatialBKMIntegrand`
 combines the first two applications: the actual viscous energy production
 is controlled by the existing spatial BKM integrand and the actual higher

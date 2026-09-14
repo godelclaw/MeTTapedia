@@ -105,7 +105,7 @@ theorem continuous_angularCurl {X : Type*} [TopologicalSpace X]
     (hD : ∀ j, Continuous (D j)) :
     Continuous (fun x ↦ angularCurl (a x) (fun j ↦ D j x)) := by
   have hJ (j : Fin 3) : Continuous (fun x ↦ angularJet (a x) (fun k ↦ D k x) j) :=
-    ((ha.norm.pow 2).smul (hD j)).sub ((ha.inner (hD j)).smul ha)
+    ((ha.norm.pow 2).smul (hD j)).sub ((ha.inner (𝕜 := ℝ) (hD j)).smul ha)
   apply (PiLp.continuous_toLp 2 (fun _ : Fin 3 ↦ ℝ)).comp
   apply continuous_pi
   intro i

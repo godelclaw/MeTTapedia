@@ -162,6 +162,7 @@ theorem integrable_moment_tensor (N m : ℕ) :
     integrable_finsetSum Finset.univ (fun j _ ↦ integrable_moment_entry N m i j))
   apply hi.mono' (((continuous_norm.pow m).measurable.mul (measurable_tensor N).norm).aestronglyMeasurable)
   filter_upwards [] with q
+  change ‖‖q‖ ^ m * ‖tensor N q‖‖ ≤ _
   rw [Real.norm_of_nonneg (by positivity)]
   simpa only [Finset.mul_sum] using mul_le_mul_of_nonneg_left (norm_tensor_le N q) (by positivity : 0 ≤ ‖q‖ ^ m)
 

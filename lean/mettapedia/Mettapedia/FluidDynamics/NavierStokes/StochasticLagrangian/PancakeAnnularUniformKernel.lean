@@ -221,7 +221,9 @@ theorem pow_mul_norm_kernelEntry_le_for_cutoff
   unfold normalizedStretchKernelEntry
   rw [SchwartzMap.fourierInv_coe, Real.fourierInv_eq_fourier_neg,
     ← SchwartzMap.fourier_coe]
-  simpa [f, Finset.sum_product] using hFourier
+  simp at hFourier
+  try dsimp [Function.Embedding.sectR] at hFourier
+  exact hFourier
 
 theorem exists_uniform_pow_mul_norm_kernelEntry_for_cutoff
     (D : BufferedStretchCutoff) (i j l : Fin 3) (m : ℕ) :

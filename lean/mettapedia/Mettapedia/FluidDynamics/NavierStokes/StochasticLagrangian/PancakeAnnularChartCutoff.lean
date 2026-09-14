@@ -34,7 +34,10 @@ open scoped ContDiff
 inductive AxialSign where
   | positive
   | negative
-  deriving DecidableEq, Fintype
+  deriving DecidableEq
+
+instance : Fintype AxialSign :=
+  ⟨{.positive, .negative}, by intro s; cases s <;> simp⟩
 
 def AxialSign.opposite : AxialSign → AxialSign
   | .positive => .negative

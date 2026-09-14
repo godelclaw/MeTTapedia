@@ -105,7 +105,9 @@ theorem pow_mul_norm_fourierInv_le (s : 𝓢(E, ℂ)) (m : ℕ) (x : E) :
     zero_add, Finset.range_one] at h
   change ‖x‖ ^ m * ‖𝓕 s (-x)‖ ≤ _ at h
   rw [SchwartzMap.fourierInv_coe, Real.fourierInv_eq_fourier_neg, ← SchwartzMap.fourier_coe]
-  simpa [Finset.sum_product] using h
+  simp at h
+  try dsimp [Function.Embedding.sectR] at h
+  exact h
 
 theorem exists_uniform_fourierInv_decay (S : T → 𝓢(E, ℂ))
     (hS : ContDiff ℝ ∞ (fun z : T × E ↦ S z.1 z.2))

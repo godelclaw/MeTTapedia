@@ -135,9 +135,10 @@ theorem measurable_periodizedIsotropicFrequencyPairKernel
     Measurable (periodizedIsotropicFrequencyPairKernel r K) := by
   apply measurable_addPeriodization
   unfold isotropicFrequencyPairKernelRescaling
-  have hcomp : Continuous (fun x : EuclideanFrequencyPair ↦ K (r • x)) :=
-    hK.comp (continuous_const.smul continuous_id)
-  exact (continuous_const.smul hcomp).measurable
+  have hr : Continuous (fun x : EuclideanFrequencyPair ↦ r • x) :=
+    continuous_id.const_smul r
+  have hcomp : Continuous (fun x : EuclideanFrequencyPair ↦ K (r • x)) := hK.comp hr
+  exact (hcomp.const_smul ((r ^ 6 : ℝ) : ℂ)).measurable
 
 /-- Rescaling and then periodizing does not increase `L¹` mass on the
 standard fundamental cell. -/
@@ -511,7 +512,7 @@ theorem integrable_bilinearKernelFourier_integrand
   · exact (show Continuous (fun p : BilinearKernelSpace ↦
         ((𝐞 (- (inner ℝ p.1 q.1 + inner ℝ p.2 q.2)) : ℂ))) by
       fun_prop).aestronglyMeasurable
-  · exact Filter.Eventually.of_forall fun p ↦ by simp
+  · exact Filter.Eventually.of_forall fun p ↦ by simp only [Circle.norm_coe, le_refl]
 
 /-- Fubini form of the product-chart Fourier integral. -/
 theorem bilinearKernelFourier_eq_iterated
@@ -700,8 +701,11 @@ theorem continuous_anisotropicFrequencyPairKernelRescaling
     (hK : Continuous K) :
     Continuous (anisotropicFrequencyPairKernelRescaling delta K) := by
   unfold anisotropicFrequencyPairKernelRescaling rescaledBilinearKernel
-  exact continuous_const.smul
-    ((continuous_kernelInBilinearCoordinates K hK).comp (by fun_prop))
+  have hc : Continuous (fun x : EuclideanFrequencyPair ↦
+      (delta • (frequencyPairToBilinearKernelCoordinates x).1,
+        (frequencyPairToBilinearKernelCoordinates x).2)) := by fun_prop
+  exact ((continuous_kernelInBilinearCoordinates K hK).comp hc).const_smul
+    ((delta ^ 5 : ℝ) : ℂ)
 
 /-- Integrability of the Euclidean anisotropic kernel is equivalent to
 integrability of its product-coordinate representative. -/
