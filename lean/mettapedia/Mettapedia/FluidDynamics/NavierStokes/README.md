@@ -3147,6 +3147,55 @@ pointwise diagnostic, not a Lean certificate or a counterexample to an
 integrated norm estimate. Localized oscillatory perturbations still need
 their actual commutator and adjoint estimates.
 
+`tools/navier_stokes/heat_commutator_packet.py` computes the signed
+heat-integrated work for that background plus
+`epsilon * (0,0,sin(N(x+y))*(1+cos(x))/(2*N))` on the angle torus.
+The scalar coefficients retain spatial frequency, heat damping, and
+perturbation degree; integrating each decaying exponential gives an exact
+rational number. It checks the true discrepancy `H N(u) - N(H u)`, the
+projected flux, and its variation against the ungraded finite-Fourier
+implementation, and checks `full = resolved + commutator`.
+For the tested frequencies `N = 1,2,4,8,16,32,64`, the commutator's
+quadratic and quartic perturbation coefficients are positive. The resolved
+quartic coefficient is negative and partly cancels it. This is neither a
+universal sign theorem nor a proved large-frequency asymptotic.
+
+`Analysis/BalancedResolvent.lean` and `FourierHeatCommutatorReflection.lean`
+give an exact reflected identity for the actual heat multiplier kernel.
+With `a = c + pairDamping(nu,k,l)`,
+`d = modeDamping(nu,k+l) - pairDamping(nu,k,l)`, and `c > 0`, write
+
+```text
+K(k,l) = integral_{sigma>0} exp(-c sigma)
+  * (H_sigma(k+l) - H_sigma(k) H_sigma(l)).
+K(k,l) x + K(-k,l) y
+  = d^2 / [a (a^2-d^2)] (x+y) - d / (a^2-d^2) (x-y).
+```
+
+The common-test channel is quadratic in the contraction; the difference
+channel remains linear. `FourierHeatCommutatorLerayReflection.lean` pays
+the projector part of that difference. For `r = |k|/|l| <= 1/4`, `|l| > 0`,
+and `T(q;v,w) = real_inner(P_q v,w)`, it proves
+
+```text
+|K(k,l) T(k+l;v,w) + K(-k,l) T(-k+l;v,w)|
+  <= 80 r^2 / a * |v| |w|.
+```
+
+Allowing different vector factors on the reflected side adds exactly the
+retained bound
+
+```text
+4 r / a * (|v'-v| |w'| + |v| |w'-w|).
+```
+
+These estimates concern constructed Leray projections, not assumed equal
+adjoint tests. The full adjoint also contains curl factors, vorticity
+products, and the projected flux. Pairing its actual interaction indices,
+controlling their vector-factor differences and damping assignments, and
+paying the remaining time-integrated work are still open.
+`FourierHeatCommutatorReflectionAudit.lean` audits all new Lean declarations.
+
 The signed `fullGramWork` integral remains uncontrolled by initial data.
 The joint viscous contribution, route-specific weights, and BKM
 continuation budget remain open. `ExchangedFluxGramAudit.lean` audits
