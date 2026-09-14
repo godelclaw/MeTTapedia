@@ -3231,6 +3231,58 @@ after smoothing. This closes the identification between the two work
 formulations, not the remaining signed material-work or positive-order
 adjoint budget. `StretchingFluxHeatWorkAudit.lean` audits the declarations.
 
+`TwoShearViscousCertificate.lean` checks a reduced spectral certificate
+for the mixed viscous obstruction, using the explicit angle-torus field
+
+```text
+u(x,y,z) = (sin(y) (1+cos(z))^3, sin(x) (1-cos(z))^3, 0).
+```
+
+For general separated profiles `a,b`, write `a'`, `a''` for ordinary
+z-derivatives. The first component of `(omega dot grad)((omega dot grad)u)`
+has the exact algebraic separation
+
+```text
+sin(y) A(z) + sin(y) cos(2x) B(z) + sin(2y) cos(x) C(z),
+A = a' b b' + a'' b^2/2,
+B = a'' b^2/2,
+C = (b ((a')^2 - a a'') - a a' b')/2.
+```
+
+The second component exchanges x/y and a/b. The checked heat direction
+is `a_t = a''-a`, `b_t = b''-b`, retaining the transverse sine eigenvalue.
+Lean proves the ordinary profile derivatives, the three source variations,
+all six finite cosine expansions, and positivity of the reduced sum
+
+```text
+W = sum_(k in Z) [A_k Adot_k/(1+k^2)
+    + (B_k Bdot_k + C_k Cdot_k)/(2(5+k^2))]
+  = 16932543012172819 / 351018510581760 > 0,
+D = sum_(k in Z) [A_k^2 + (B_k^2+C_k^2)/2]
+  = 5565537 / 131072 > 0,   W > D.
+```
+
+The sums have support `|k| <= 9`; the Lean definitions include the
+negative-frequency multiplicities explicitly. The executable diagnostic
+`tools/navier_stokes/projected_flux_viscosity.py` independently computes
+the entire 3D rational Fourier convolution, gradient projection, and
+heat-direction product rule. It verifies the source and rate coefficients
+term by term against the separated polynomials, not only the final sign.
+It also evaluates the full inviscid NS tangent and verifies that its work
+vanishes: the projected cubic flux and its inviscid variation have
+disjoint horizontal frequency parity. Thus the exact diagnostic obtains
+the same positive work for the full NS tangent at viscosity one.
+
+**Formal boundary:** identification of `W` with the existing actual
+`TensorL2` pairing `<P J, D J[u][Delta u]>` is not yet proved in Lean.
+This is a checked reduced certificate plus an exact executable physical
+coefficient diagnostic, not a sealed physical-field counterexample.
+In unit-torus coordinates both `W` and `D` acquire the same positive
+factor `(2*pi)^8`. The result targets absorption of the mixed viscous
+work by the extracted dissipation alone; it does not refute global
+regularity, Ben's geometric route, or estimates retaining other terms.
+`TwoShearViscousCertificateAudit.lean` audits every declaration.
+
 `CoherenceCreationSnapshot.lean` supplies real, mean-zero, transverse,
 finite Fourier coefficients, hence all absolute Fourier moments. Its
 velocity is `(-sin y + sin x sin z, 0, cos x cos z - cos(2x)/2)`, with
