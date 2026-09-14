@@ -1,0 +1,68 @@
+{
+  "positive_resolution_ruled_out": true,
+  "rows": [
+    {
+      "face_length": 5,
+      "resolutions": [
+        {"bad_word": [0, 0, 1, 0, 2], "bad_word_multiplicity": 1, "support": 18, "target_multiplicity": 0, "total": 18},
+        {"bad_word": [0, 0, 1, 0, 2], "bad_word_multiplicity": 1, "support": 24, "target_multiplicity": 0, "total": 24},
+        {"bad_word": [0, 0, 1, 0, 2], "bad_word_multiplicity": 1, "support": 24, "target_multiplicity": 0, "total": 24}
+      ],
+      "target_support": 30,
+      "target_total": 30
+    },
+    {
+      "face_length": 6,
+      "resolutions": [
+        {"bad_word": [0, 0, 1, 0, 0, 1], "bad_word_multiplicity": 1, "support": 45, "target_multiplicity": 0, "total": 54},
+        {"bad_word": [0, 0, 1, 0, 0, 1], "bad_word_multiplicity": 1, "support": 48, "target_multiplicity": 0, "total": 48},
+        {"bad_word": [0, 0, 1, 0, 0, 1], "bad_word_multiplicity": 1, "support": 48, "target_multiplicity": 0, "total": 48}
+      ],
+      "target_support": 63,
+      "target_total": 66
+    },
+    {
+      "face_length": 7,
+      "resolutions": [
+        {"bad_word": [0, 0, 1, 0, 0, 0, 2], "bad_word_multiplicity": 1, "support": 90, "target_multiplicity": 0, "total": 90},
+        {"bad_word": [0, 0, 1, 0, 0, 0, 2], "bad_word_multiplicity": 1, "support": 96, "target_multiplicity": 0, "total": 96},
+        {"bad_word": [0, 0, 1, 0, 0, 0, 2], "bad_word_multiplicity": 1, "support": 96, "target_multiplicity": 0, "total": 96}
+      ],
+      "target_support": 126,
+      "target_total": 126
+    },
+    {
+      "face_length": 8,
+      "resolutions": [
+        {"bad_word": [0, 0, 1, 0, 0, 0, 0, 1], "bad_word_multiplicity": 1, "support": 189, "target_multiplicity": 0, "total": 198},
+        {"bad_word": [0, 0, 1, 0, 0, 0, 0, 1], "bad_word_multiplicity": 1, "support": 192, "target_multiplicity": 0, "total": 192},
+        {"bad_word": [0, 0, 1, 0, 0, 0, 0, 1], "bad_word_multiplicity": 1, "support": 192, "target_multiplicity": 0, "total": 192}
+      ],
+      "target_support": 255,
+      "target_total": 258
+    },
+    {
+      "face_length": 9,
+      "resolutions": [
+        {"bad_word": [0, 0, 1, 0, 0, 0, 0, 0, 2], "bad_word_multiplicity": 1, "support": 378, "target_multiplicity": 0, "total": 378},
+        {"bad_word": [0, 0, 1, 0, 0, 0, 0, 0, 2], "bad_word_multiplicity": 1, "support": 384, "target_multiplicity": 0, "total": 384},
+        {"bad_word": [0, 0, 1, 0, 0, 0, 0, 0, 2], "bad_word_multiplicity": 1, "support": 384, "target_multiplicity": 0, "total": 384}
+      ],
+      "target_support": 510,
+      "target_total": 510
+    },
+    {
+      "face_length": 10,
+      "resolutions": [
+        {"bad_word": [0, 0, 1, 0, 0, 0, 0, 0, 0, 1], "bad_word_multiplicity": 1, "support": 765, "target_multiplicity": 0, "total": 774},
+        {"bad_word": [0, 0, 1, 0, 0, 0, 0, 0, 0, 1], "bad_word_multiplicity": 1, "support": 768, "target_multiplicity": 0, "total": 768},
+        {"bad_word": [0, 0, 1, 0, 0, 0, 0, 0, 0, 1], "bad_word_multiplicity": 1, "support": 768, "target_multiplicity": 0, "total": 768}
+      ],
+      "target_support": 1023,
+      "target_total": 1026
+    }
+  ],
+  "schema": "fourcolor-long-face-local-resolution-v1",
+  "scope": "Only the three adjacent two-vertex smoothings are refuted; arbitrary smaller tangles and context-dependent reductions are not tested.",
+  "tested_face_lengths": [5, 10]
+}
