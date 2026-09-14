@@ -293,9 +293,12 @@ theorem continuous_curlField_of_contDiff {u : R3 → R3} (hu : ContDiff ℝ 2 u)
   apply continuous_pi
   intro i
   fin_cases i
-  · simpa [curlField, PiLp.single_apply] using (hentry 2 1).sub (hentry 1 2)
-  · simpa [curlField, PiLp.single_apply] using (hentry 0 2).sub (hentry 2 0)
-  · simpa [curlField, PiLp.single_apply] using (hentry 1 0).sub (hentry 0 1)
+  · simpa [curlField, PiLp.single_apply, Function.comp_def] using
+      continuous_sub.comp ((hentry 2 1).prodMk (hentry 1 2))
+  · simpa [curlField, PiLp.single_apply, Function.comp_def] using
+      continuous_sub.comp ((hentry 0 2).prodMk (hentry 2 0))
+  · simpa [curlField, PiLp.single_apply, Function.comp_def] using
+      continuous_sub.comp ((hentry 1 0).prodMk (hentry 0 1))
 
 /-- Directional spatial derivatives are measurable in a parameter whenever
 the values are measurable and the spatial derivative exists.  The proof
@@ -334,9 +337,12 @@ theorem measurable_transportedCurl (M : TransportedMomentumData) (x : R3) :
     apply measurable_pi_lambda
     intro i
     fin_cases i
-    · simpa [curlField, PiLp.single_apply] using (he 2 1).sub (he 1 2)
-    · simpa [curlField, PiLp.single_apply] using (he 0 2).sub (he 2 0)
-    · simpa [curlField, PiLp.single_apply] using (he 1 0).sub (he 0 1)
+    · simpa [curlField, PiLp.single_apply, Function.comp_def] using
+        measurable_sub.comp ((he 2 1).prodMk (he 1 2))
+    · simpa [curlField, PiLp.single_apply, Function.comp_def] using
+        measurable_sub.comp ((he 0 2).prodMk (he 2 0))
+    · simpa [curlField, PiLp.single_apply, Function.comp_def] using
+        measurable_sub.comp ((he 1 0).prodMk (he 0 1))
   exact (PiLp.continuous_toLp (p := 2) (β := fun _ : Fin 3 ↦ ℝ)).measurable.comp hp
 
 /-- The actual extended vorticity norm of the transported velocity field. -/
