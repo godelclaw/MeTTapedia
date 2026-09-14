@@ -3054,6 +3054,45 @@ initial kinetic energy. Constructing the output series removes a local
 regularity hypothesis; it does not pay the heat/time-integrated envelope,
 the signed remainder, or the misalignment strain budget dynamically.
 
+`Analysis/IntegerDyadicShell.lean` constructs a disjoint cover of the
+nonzero integer lattice by the shells
+`2^n <= max_i |q_i| < 2^(n+1)`, with cardinality at most `125 * 2^(3n)`.
+It proves the complete extended-sum decomposition and the exact allocation
+`sum_n 1/((n+1)*(n+2)) = 1`.
+
+`FourierHeatCommutatorShellBudget.lean` uses the actual coefficient budget
+before summing output scales. If `C_sigma(u)` is the nonlinear heat
+commutator and `E0 = kineticEnergy(u0)`, then, on every constructed local
+unforced solution and for every shell,
+
+```text
+sum_{q in shell n} integral_{sigma>0} integral_{0<tau<=t}
+  |C_sigma(u(tau))_q|^2
+  <= [125 E0^2 / (2 nu^2 (2 pi)^2)] * 2^n.
+```
+
+Thus the negative half-derivative shell cost is uniform in `n`. It is
+not asserted that these uniform bounds are summable over all shells.
+`ExchangedFluxLogarithmicHeatCost.lean` instead sums with the allocation
+above. For the actual coefficient test `A_sigma(u)`, define
+
+```text
+Llog(t) = sum_n 2^n (n+1)(n+2)
+  * sum_{q in shell n} integral_{sigma>0} integral_{0<tau<=t} |A_sigma(u(tau))_q|^2.
+absolutePairingCost(t)
+  <= epsilon * [125 E0^2 / (2 nu^2 (2 pi)^2)] + epsilon^(-1) * Llog(t).
+```
+
+This replaces the old squared-frequency test weight by a single-frequency
+weight with a logarithmic correction. `ExchangedFluxLogarithmicHeatBudget.lean`
+proves `Llog <= 3 * positiveTestCost` and that the ratio of the new shell
+weight to `4^n` tends to zero. It constructs the same physical local
+solution for this estimate and the exact signed Gram identity. The test
+cost is still an extended nonnegative quantity: no initial-data bound or
+global finiteness of `Llog` is asserted. The resolved signed material term
+is not part of `absolutePairingCost` and remains in the full balance.
+`ExchangedFluxLogarithmicHeatAudit.lean` audits every new declaration.
+
 The signed `fullGramWork` integral remains uncontrolled by initial data.
 The joint viscous contribution, route-specific weights, and BKM
 continuation budget remain open. `ExchangedFluxGramAudit.lean` audits
