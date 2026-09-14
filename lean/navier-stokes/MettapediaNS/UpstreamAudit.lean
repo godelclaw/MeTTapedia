@@ -8,6 +8,7 @@ import MettapediaNS.AlmostOrthogonality
 import MettapediaNS.QuadraticSingularIntegral
 import MettapediaNS.WholeSpaceBiotSavart
 import MettapediaNS.NewtonianHessianPrincipalValue
+import MettapediaNS.WholeSpaceStrain
 
 /-!
 # Direct upstream dependency audit
@@ -76,3 +77,16 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBiotSavart.newtonianHessian_sub_eq_principalValue
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBiotSavart.exists_eLpNorm_newtonianHessian_le
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBiotSavart.exists_eLpNorm_newtonianHessian_sub_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBiotSavart.strainRateApply_axis_apply
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBiotSavart.velocity_partial_eq_hessians
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBiotSavart.strain_diagonal_eq_hessians
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBiotSavart.strain_cyclic_eq_hessians
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBiotSavart.strain_diagonal_eq_principalValue
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBiotSavart.strain_cyclic_eq_principalValue
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBiotSavart.exists_eLpNorm_strain_entry_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBiotSavart.strainOperator_apply
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBiotSavart.continuous_strainOperator
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBiotSavart.norm_linearMap_le_sum_axes
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBiotSavart.norm_strainOperator_le_sum_entries
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBiotSavart.exists_eLpNorm_strainOperator_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBiotSavart.memLp_strainOperator
