@@ -11,6 +11,7 @@ import MettapediaNS.NewtonianHessianPrincipalValue
 import MettapediaNS.WholeSpaceStrain
 import MettapediaNS.WholeSpaceBiotSavartRegularity
 import MettapediaNS.WholeSpacePressureFlux
+import MettapediaNS.RieszDoubleCommutator
 
 /-!
 # Direct upstream dependency audit
@@ -123,3 +124,18 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpacePressureRecovery.integral_pressurePotential_flux_eq_rieszPair
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpacePressureRecovery.integral_pressurePotential_flux_eq_canonicalCutoffFlux
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpacePressureRecovery.exists_uniform_cutoff_pressureFlux_bound
+#print axioms NavierStokesR3.RieszTestOperators.rieszTest_selfAdjoint
+#print axioms Mettapedia.Analysis.RieszDoubleCommutator.kernel_eq_integral
+#print axioms Mettapedia.Analysis.RieszDoubleCommutator.measurable_kernel
+#print axioms Mettapedia.Analysis.RieszDoubleCommutator.norm_kernel_le
+#print axioms Mettapedia.Analysis.RieszDoubleCommutator.riesz_double_commutator_eq_integral
+#print axioms Mettapedia.Analysis.RieszDoubleCommutator.radial_secondDifference_le
+#print axioms Mettapedia.Analysis.RieszDoubleCommutator.memLp_radialMajorant
+#print axioms Mettapedia.Analysis.RieszDoubleCommutator.lpNorm_radialMajorant
+#print axioms Mettapedia.Analysis.RieszDoubleCommutator.norm_kernel_le_radialMajorant
+#print axioms Mettapedia.Analysis.RieszDoubleCommutator.kernel_section_memLp
+#print axioms Mettapedia.Analysis.RieszDoubleCommutator.integrable_kernel_smul
+#print axioms Mettapedia.Analysis.RieszDoubleCommutator.norm_integral_kernel_smul_le
+#print axioms Mettapedia.Analysis.RieszDoubleCommutator.norm_riesz_double_commutator_le
+#print axioms Mettapedia.Analysis.RieszDoubleCommutator.localization_defect_eq_double_commutator
+#print axioms Mettapedia.Analysis.RieszDoubleCommutator.norm_localization_defect_le
