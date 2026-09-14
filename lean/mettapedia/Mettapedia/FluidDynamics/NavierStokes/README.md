@@ -3196,6 +3196,41 @@ Controlling the accumulated signed `W` with the available initial-data
 budgets and geometric cancellation is still open.
 `LocalStretchingFluxDissipationAudit.lean` audits these declarations.
 
+`ExchangedFluxPolarization.lean` and `StretchingFluxVariation.lean`
+identify the infinite exchange-symmetric Fourier variation with the
+continuous-field product rule followed by the actual gradient projection.
+Both equal the exact cubic polarization
+
+```text
+V(u,v) = (F(u+v) - F(u-v))/2 - F(v),   F(u) = P J(u).
+```
+
+Reality, incompressibility, and first absolute Fourier moments are
+retained for both inputs. Absolute summability justifies the series
+rearrangements before any pairing. `StretchingFluxHeatWork.lean`
+applies the identity to the actual momentum RHS, obtaining both its
+material-transport work and its extracted viscous dissipation. The
+inviscid resolved work is also expressed as signed spatial integrals
+with the actual pressure-Hessian action and projection residual.
+
+For `v = H_sigma u`, this replaces the resolved part of the existing
+heat source while keeping the nonlinear smoothing commutator `C_sigma`
+and its constructed adjoint test `A_sigma` unchanged:
+
+```text
+materialHeatWork(nu,sigma,u)
+  = <F(v), M_0(v)> - R(v) + sum_q <C_sigma(q), A_sigma(q)>,
+G(t) + integral_0^t ||F(u(tau))||_L2^2
+  = G(0) + 2 integral_0^t integral_(sigma>0) materialHeatWork(nu,sigma,u(tau)).
+```
+
+The same physical initial data construct the local solution and both
+integrals. Auxiliary heat time is not physical solution time, and the
+smoothed actual nonlinear rate is not equated with the rate recomputed
+after smoothing. This closes the identification between the two work
+formulations, not the remaining signed material-work or positive-order
+adjoint budget. `StretchingFluxHeatWorkAudit.lean` audits the declarations.
+
 `CoherenceCreationSnapshot.lean` supplies real, mean-zero, transverse,
 finite Fourier coefficients, hence all absolute Fourier moments. Its
 velocity is `(-sin y + sin x sin z, 0, cos x cos z - cos(2x)/2)`, with
