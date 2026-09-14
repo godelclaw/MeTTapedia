@@ -3335,9 +3335,48 @@ input, proves both longitudinal cosine expansions, reality, zero mean,
 incompressibility, all absolute moments, and finite support of the heat
 direction. It instantiates the exact double-sum flux formula. The
 remaining witness-specific obligation is its coefficient evaluation
-and comparison with `TwoShearViscousCertificate`; the inviscid parity
-cancellation also remains an executable diagnostic rather than a
-Lean theorem. `StretchingFluxSpectralAudit.lean` audits these additions.
+and comparison with `TwoShearViscousCertificate`. The inviscid parity
+cancellation is now proved, as described below.
+`StretchingFluxSpectralAudit.lean` audits these additions.
+
+`StretchingFluxMixedCoefficients.lean` constructs the three separate
+rate insertions into the physical cubic flux. Their collected
+coefficients reconstruct the actual product rule, and their signed
+projected pairing is the existing physical work. No polarization
+expansion is needed to evaluate these separate slots.
+
+`StretchingFluxHorizontalParity.lean` proves an instantaneous cancellation
+for the full infinite NS convolution. If the input is supported on
+`(q_0 + q_1) mod 2 = 1`, its inviscid velocity RHS has parity zero.
+The cubic flux retains parity one, while its inviscid variation has
+parity zero. Thus the actual projected work vanishes. Applied to the
+constructed two-shear input, the full NS work satisfies
+
+```text
+spectralRHSWork(0,u) = 0,
+spectralRHSWork(nu,u) = nu * spectralVariationWork(u, Delta u).
+```
+
+This does not assert that the nonlinear solution remains in the odd
+sector, or in a finite-dimensional invariant subspace.
+
+`RationalStretchingFlux.lean` proves the exact normalization for imaginary
+rational velocity coefficients `u_hat = i a`: the cubic flux coefficient
+is `(2 pi)^3` times a rational finite convolution, and its divergence
+is `i (2 pi)^4` times the rational divergence coefficient. The rational
+calculation is therefore linked to the actual operator, not a proxy.
+`TwoShearViscousCoefficientEvaluation.lean` applies it to the constructed
+input and checks the first complete vector coefficient:
+
+```text
+div(J)_(0,1,1) = i (2 pi)^4 * (-429/1024, 0, 0).
+```
+
+The longitudinal input support and its duplicate-free sum enumeration
+are also checked. This one coefficient is not the positive-work
+certificate: the remaining source coefficients, heat-rate coefficients,
+and final inverse-Laplacian pairing still need their Lean identification
+and evaluation. `StretchingFluxParityAudit.lean` audits these additions.
 
 `CoherenceCreationSnapshot.lean` supplies real, mean-zero, transverse,
 finite Fourier coefficients, hence all absolute Fourier moments. Its
