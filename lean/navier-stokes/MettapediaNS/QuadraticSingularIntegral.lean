@@ -36,24 +36,32 @@ theorem exists_angularPart_of_contDiff {Ω : Space → ℂ}
   · intro z hz
     exact (hD z (by simpa using hz)).trans ((le_max_right B D).trans (le_max_right _ _))
 
-/-- An orthogonal sign change proves the required annular cancellation.
-No integrability is assumed to justify a change of variables. -/
-theorem integral_homKer_eq_zero_of_isometry {Ω : Space → ℂ}
-    (e : Space ≃ₗᵢ[ℝ] Space) (hΩ : ∀ z, Ω (e z) = -Ω z) :
-    ∫ z in {z : Space | 1 < ‖z‖ ∧ ‖z‖ < 2}, homKer Ω z = 0 := by
+/-- Orthogonal antisymmetry cancels a homogeneous kernel against any radial
+weight on any radial set. The change of variables needs no integrability. -/
+theorem integral_radial_mul_homKer_eq_zero_of_isometry {Ω : Space → ℂ}
+    (e : Space ≃ₗᵢ[ℝ] Space) (hΩ : ∀ z, Ω (e z) = -Ω z)
+    (a : ℝ → ℂ) (s : Set ℝ) :
+    ∫ z in {z : Space | ‖z‖ ∈ s}, a ‖z‖ * homKer Ω z = 0 := by
   have hkernel (z : Space) : homKer Ω (e z) = -homKer Ω z := by
     by_cases hz : z = 0
     · simp [hz, homKer]
     · rw [homKer_smul_aux Ω (by simpa using hz), homKer_smul_aux Ω hz,
         e.norm_map, ← e.map_smul, hΩ, neg_mul]
-  have hpre : e ⁻¹' {z : Space | 1 < ‖z‖ ∧ ‖z‖ < 2} =
-      {z : Space | 1 < ‖z‖ ∧ ‖z‖ < 2} := by ext z; simp
+  have hpre : e ⁻¹' {z : Space | ‖z‖ ∈ s} =
+      {z : Space | ‖z‖ ∈ s} := by ext z; simp
   have h := e.measurePreserving.setIntegral_preimage_emb
-    e.toHomeomorph.measurableEmbedding (homKer Ω)
-    {z : Space | 1 < ‖z‖ ∧ ‖z‖ < 2}
+    e.toHomeomorph.measurableEmbedding (fun z ↦ a ‖z‖ * homKer Ω z)
+    {z : Space | ‖z‖ ∈ s}
   rw [hpre] at h
-  simp_rw [hkernel, integral_neg] at h
+  simp_rw [e.norm_map, hkernel, mul_neg, integral_neg] at h
   exact neg_eq_self.mp h
+
+/-- The annular cancellation required by the upstream angular hypotheses. -/
+theorem integral_homKer_eq_zero_of_isometry {Ω : Space → ℂ}
+    (e : Space ≃ₗᵢ[ℝ] Space) (hΩ : ∀ z, Ω (e z) = -Ω z) :
+    ∫ z in {z : Space | 1 < ‖z‖ ∧ ‖z‖ < 2}, homKer Ω z = 0 := by
+  simpa only [Set.mem_Ioo, one_mul] using
+    integral_radial_mul_homKer_eq_zero_of_isometry e hΩ (fun _ ↦ 1) (Set.Ioo 1 2)
 
 def coordinateSquareDifference (i j : Fin 3) (z : Space) : ℂ :=
   ((z i) ^ 2 - (z j) ^ 2 : ℝ)
