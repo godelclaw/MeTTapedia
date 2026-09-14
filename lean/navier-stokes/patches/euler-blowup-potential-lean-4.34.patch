@@ -1,0 +1,8 @@
+diff --git a/euler-blowup/vendor/cm24-r2/Cm24/S2/Master.lean b/euler-blowup/vendor/cm24-r2/Cm24/S2/Master.lean
+--- a/euler-blowup/vendor/cm24-r2/Cm24/S2/Master.lean
++++ b/euler-blowup/vendor/cm24-r2/Cm24/S2/Master.lean
+@@ -532,3 +532,4 @@
++set_option backward.isDefEq.respectTransparency.types false in
+ theorem L2_6_III_Fc (c : Cutoff) (a b : ℝ) (hab : a ^ 2 + b ^ 2 = 1) (lam : ℝ) (hlam : 0 < lam) :
+     Fc c 0 0 a b lam = b * Fc c 0 0 0 1 lam := by
+   set ψ : ℂ ≃ₗᵢ[ℝ] E2 := Complex.orthonormalBasisOneI.repr with hψ

@@ -28,6 +28,16 @@ variables and compactness. The upstream theory needs only five recorded
 lemma-name compatibility updates. These component estimates are not yet
 an identification or a time-budget estimate for the actual full strain.
 
+`WholeSpaceBiotSavart` now uses their proved three-dimensional potential
+theory to construct a smooth `L²` velocity from smooth compactly supported
+vorticity. For divergence-free inputs, it recovers that vorticity in both
+OpenAI's and the pancake route's curl interfaces. Its actual gradient has a
+checked integral representation with a source derivative; the differentiated
+kernel's trace-free components match the quadratic kernels off the pole.
+The principal-value identification, general-data extension, and physical-time
+budget remain open. This import adds one recorded scoped elaboration setting
+to an upstream dependency, without changing its mathematical argument.
+
 Two checked whole-space adapters reuse OpenAI's actual logarithmic gradient
 bound and nonlinear H³ energy estimate. They identify the existing spatial
 BKM integrand with the upstream actual curl norm and extend the nonlinear

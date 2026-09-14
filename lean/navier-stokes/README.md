@@ -38,6 +38,7 @@ desired global regularity conclusion.
 | `MettapediaNS.WholeSpaceViscousEnergy` | OpenAI's derivative-word fields, whole-space integration by parts, and nonlinear H³ energy estimate. The constructed Laplacian is identified with mathlib's actual Laplacian; its production is exactly minus twice the derivative-word dissipation. The full unforced NS right-hand side therefore retains the same nonlinear bound with dissipation on the left. | These are spatial right-hand-side identities and estimates. A time-dependent solution must still supply its actual evolution and regularity, and the gradient/vorticity coefficient must be controlled. |
 | `MettapediaNS.AlmostOrthogonality` | Direct semantic aliases of Alpöge–Buckmaster's C*-ring and Hilbert-space Cotlar–Stein theorems. Neither proof is copied or reimplemented. | Both adjoint cross-product bounds and the row/column majorant bounds must be established for the actual localized operators. |
 | `MettapediaNS.QuadraticSingularIntegral` | Alpöge–Buckmaster's sharp-truncation, smooth-truncation, and principal-value `L^p` bounds. The adapter constructs the angular hypotheses for the explicit kernels `x_i*x_j / ‖x‖^5` (`i ≠ j`) and `(x_i² - x_j²) / ‖x‖^5`, using mathlib's orthogonal changes of variables and compactness. | Whole-space inputs: bounded compactly supported fields for the truncations, smooth compactly supported fields for the principal value, finite `p > 1`. The constants are independent of the truncation radii; the smooth version also permits every cutoff satisfying the stated support/range conditions. Assembly and identification with the actual solution's strain, periodic transfer, weighted costs, and physical-time control remain separate obligations. |
+| `MettapediaNS.WholeSpaceBiotSavart` | Alpöge–Buckmaster's proved `potential_theory_R3` and actual Newtonian Biot–Savart construction. Its velocity is smooth and in `L²`; for divergence-free vorticity, its divergence vanishes and its curl recovers that vorticity in both OpenAI's and the pancake route's APIs. The actual velocity-gradient entries are represented using the imported Newtonian gradient kernel on source derivatives. Off the pole, its differentiated trace-free components are identified with the bounded quadratic kernels above. | Smooth compactly supported vorticity on `ℝ³`. The gradient representation still differentiates the source. Integration by parts and the singular limit, including any local term, must be justified before applying the principal-value bounds to that actual gradient. General admissible data, all `L²` velocity jets, physical-time evolution, and the signed budget are not supplied by this construction. |
 
 `WholeSpaceBKM.h3_energyProduction_add_dissipation_le_spatialBKMIntegrand`
 combines the first two applications: the actual viscous energy production
@@ -82,9 +83,12 @@ tree is unchanged. EulerBlowup declares Lean 4.32.2 and mathlib 4.32.0;
 the Cotlar–Stein dependency chain compiles unchanged on the newer toolchain.
 The larger homogeneous-kernel dependency chain needs exactly five order-
 lemma name updates in `Marcinkiewicz.lean` and `Homogeneous.lean`, recorded
-in `patches/euler-blowup-lean-4.34.patch`. No statement or mathematical
+in `patches/euler-blowup-lean-4.34.patch`. The potential-theory dependency
+chain additionally needs one scoped elaboration setting around the existing
+`Cm24.L2_6_III_Fc` proof in `Cm24/S2/Master.lean`, recorded in
+`patches/euler-blowup-potential-lean-4.34.patch`. No statement or mathematical
 argument is changed. `scripts/prepare-upstreams.sh` checks the pinned
-revision and applies this patch idempotently, refusing a conflicting patch.
+revision and applies these patches idempotently, refusing a conflicting patch.
 Run it after dependency setup; it never resets upstream files. The upstream
 files and their Apache-2.0 license remain in their original package.
 This does not certify the entire EulerBlowup development.
@@ -95,5 +99,5 @@ The shared `SpatialBKMIntegrand` source needs only a compatibility adjustment
 to six continuity/measurability applications. Its mathematical statements
 are unchanged; no new supremum construction is introduced.
 The adjusted source also passes its original Lean 4.31.0 target. The
-32-declaration integration audit reports only `propext`, `Classical.choice`,
+45-declaration integration audit reports only `propext`, `Classical.choice`,
 and `Quot.sound`; there are no additional analytic axioms in those proofs.
