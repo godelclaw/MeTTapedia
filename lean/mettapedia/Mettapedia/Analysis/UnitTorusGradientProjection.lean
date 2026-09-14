@@ -85,6 +85,15 @@ theorem norm_gradientProjection_le (J : TensorL2 d E) :
     ‖gradientProjection J‖ ≤ ‖J‖ :=
   (gradientSpace (d := d) (E := E)).toSubmodule.norm_starProjection_apply_le J
 
+theorem inner_gradientProjection_gradientProjection (J K : TensorL2 d E) :
+    ⟪gradientProjection J, gradientProjection K⟫ = ⟪gradientProjection J, K⟫ := by
+  have h := (gradientSpace (d := d) (E := E)).toSubmodule.starProjection_inner_eq_zero K _
+    ((gradientSpace (d := d) (E := E)).toSubmodule.starProjection_apply_mem J)
+  have hz := inner_eq_zero_symm.mp h
+  change ⟪gradientProjection J, K - gradientProjection K⟫ = 0 at hz
+  rw [inner_sub_right] at hz
+  exact (sub_eq_zero.mp hz).symm
+
 theorem norm_sq_projection_add_remainder (J : TensorL2 d E) :
     ‖gradientProjection J‖ ^ 2 + ‖J - gradientProjection J‖ ^ 2 = ‖J‖ ^ 2 := by
   have h := (gradientSpace (d := d) (E := E)).toSubmodule.sub_starProjection_mem_orthogonal J
