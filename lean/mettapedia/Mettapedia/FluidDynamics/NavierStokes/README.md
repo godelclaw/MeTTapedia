@@ -3196,6 +3196,55 @@ controlling their vector-factor differences and damping assignments, and
 paying the remaining time-integrated work are still open.
 `FourierHeatCommutatorReflectionAudit.lean` audits all new Lean declarations.
 
+`ExchangedFluxSevenInputHeat.lean` now constructs the complete coefficient
+tests: two convection inputs, two remaining variation inputs, and three
+projected-flux inputs. Both the outer insertion and the exchanged inner
+insertion retain their actual curl, Leray, and output gradient projections.
+`ExchangedFluxSevenInputExpansion.lean` proves that the original infinite
+commutator work is exactly the nested seven-input series, with the outer
+and inner multiplicities `1` and `2`. The proof sums the full convection
+fiber and projected-flux series; it does not restrict to finite data.
+
+Each seven-input term has an exact heat integral. Its denominator center
+`a` is the sum of the seven input damping rates, not an independently
+chosen parameter. Exchanging a convection input `l` with a variation
+input `m` preserves `a` and the total output `k+l+m+n`.
+`ExchangedFluxInputExchange.lean` proves that nonzero real-mode pairings
+require this output to equal the flux output or its negative. It also
+retains the near-reflection error
+
+```text
+d + e = 2 nu (2 pi)^2 k . (l+m),
+|l+m| <= |k+l+m+n| + |k| + |n|.
+```
+
+Writing `X` and `Y` for the two complete, generally different coefficient
+tests, `d` and `e` for their kernel shifts, and `r=|k|/|l|`, the actual
+integrated pair obeys
+
+```text
+|K_l X + K_m Y| <= (8 r^2/a)|X+Y| + (4 r/a)|X-Y|
+                   + (4 |d+e|/a^2)|Y|,
+```
+
+when `|k| <= min(|l|,|m|)/4`, `|l|>0`, and both remaining damping rates
+are positive. These are the two genuine seven-input heat kernels with
+the common center proved above.
+
+The difference term cannot be silently removed: the convection factor
+itself changes under exchange. Incompressibility gives the checked identity
+
+```text
+(k+l).u_k + (k+m).u_k = (k+l+m).u_k.
+```
+
+Thus nearly opposite high inputs can have nearly opposite transport
+factors. The kernel's quadratic common-test gain is not yet a quadratic
+gain for the full nonlinear sum. Controlling this coefficient difference,
+justifying the required joint sum/heat-integral regroupings, and obtaining
+an initial-data-controlled time budget remain open.
+`ExchangedFluxSevenInputAudit.lean` audits the new declarations.
+
 The signed `fullGramWork` integral remains uncontrolled by initial data.
 The joint viscous contribution, route-specific weights, and BKM
 continuation budget remain open. `ExchangedFluxGramAudit.lean` audits
