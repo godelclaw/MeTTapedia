@@ -18,27 +18,24 @@ theorem step_right_inv {α : Type*} (σ : Perm α) (x : α) :
   refine ⟨(-1 : ℤ), ?_⟩
   simp [Equiv.Perm.inv_def]
 
+/-- Mathlib's `Equiv.Perm.sameCycle_apply_right`, re-exported under the name
+this development uses. -/
 theorem sameCycle_apply_right {α : Type*} (σ : Perm α) {a b : α} :
-    σ.SameCycle a (σ b) ↔ σ.SameCycle a b := by
-  constructor
-  · intro h
-    have hb : σ.SameCycle b (σ b) := step_right σ b
-    exact Equiv.Perm.SameCycle.trans h (Equiv.Perm.SameCycle.symm hb)
-  · intro h
-    have hb : σ.SameCycle b (σ b) := step_right σ b
-    exact Equiv.Perm.SameCycle.trans h hb
+    σ.SameCycle a (σ b) ↔ σ.SameCycle a b :=
+  Equiv.Perm.sameCycle_apply_right
 
+/-- Mathlib's `Equiv.Perm.sameCycle_symm_apply_right`, re-exported.  Mathlib
+also keeps `sameCycle_inv_apply_right` as a *deprecated* alias of that lemma,
+so prefer the `symm` name in new code. -/
 theorem sameCycle_inv_apply_right {α : Type*} (σ : Perm α) {a b : α} :
-    σ.SameCycle a (σ.symm b) ↔ σ.SameCycle a b := by
-  constructor
-  · intro h
-    have hb : σ.SameCycle (σ.symm b) b := by
-      simpa using step_right σ (σ.symm b)
-    exact Equiv.Perm.SameCycle.trans h hb
-  · intro h
-    exact Equiv.Perm.SameCycle.trans h (step_right_inv σ b)
+    σ.SameCycle a (σ.symm b) ↔ σ.SameCycle a b :=
+  Equiv.Perm.sameCycle_symm_apply_right
 
-/-- The finite set of points in the same cycle as `x`. -/
+/-- The finite set of points in the same cycle as `x`.
+
+This is deliberately **not** `(σ.cycleOf x).support`: the two differ at a fixed
+point, where the cycle support is empty but the same-cycle set is `{x}`.  Do
+not "simplify" one into the other. -/
 noncomputable def sameCycleFinset {α : Type*} [Fintype α] (σ : Perm α) (x : α) :
     Finset α := by
   classical
