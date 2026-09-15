@@ -44,6 +44,13 @@ require «ks-foundations-of-inference-lean» from "../standalone/ks-foundations-
 
 @[default_target] lean_lib Mettapedia
 
+/-- The Four-Colour lane is a declared target so that it has a build gate of
+its own.  It is deliberately not part of `Mettapedia`'s default closure: the
+lane is large, and forcing it into every build would make ordinary work on the
+rest of the library expensive.  Build it by name. -/
+lean_lib FourColorLane where
+  roots := #[`Mettapedia.GraphTheory.FourColor]
+
 lean_exe mettapedia where root := `Main
 
 lean_exe metamathNIKAudit where
