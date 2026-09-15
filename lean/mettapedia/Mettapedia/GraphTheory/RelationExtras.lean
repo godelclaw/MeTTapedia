@@ -11,14 +11,14 @@ theorem ReflTransGen.reverse_of_symmetric {α : Type*} {R : α → α → Prop}
   | tail _ hab ih =>
       exact .head (hSym hab) ih
 
-/-- Transport a reflexive-transitive path along a relation-preserving map. -/
+/-- Transport a reflexive-transitive path along a relation-preserving map.
+This is Mathlib's `Relation.ReflTransGen.lift`, re-exported under the name this
+development uses. -/
 theorem ReflTransGen.map_rel {α β : Type*} {R : α → α → Prop} {Q : β → β → Prop}
     (f : α → β) (h : ∀ a b, R a b → Q (f a) (f b))
     {a b : α} (p : Relation.ReflTransGen R a b) :
-    Relation.ReflTransGen Q (f a) (f b) := by
-  induction p with
-  | refl => exact .refl
-  | tail _ hab ih => exact .tail ih (h _ _ hab)
+    Relation.ReflTransGen Q (f a) (f b) :=
+  Relation.ReflTransGen.lift f h p
 
 /-- If a reflexive-transitive path through `R ∪ S` is not already an `R`-path, some step of
 the path uses `S`. The returned prefix is an `R`-path up to the first such step. -/

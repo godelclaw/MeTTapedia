@@ -174,10 +174,21 @@ recovered from it.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DecomposableFiniteBase.combinatorialFourColorStatement_of_raw_and_decomposableBase}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DecomposableFiniteBase.combinatorialFourColorStatement_of_raw_and_base'}
 
-The restriction is not vacuous.  The width parameter bounds the branch middle
-set, and exact branchwidth of small bridgeless planar cubic maps already
-reaches four at eight vertices, so for each fixed $w$ there are maps far below
-the vertex threshold that the base is no longer asked about.
+The restriction bites only at small width, and \textbf{no supplier in this
+tree currently produces such a width.}  At a fixed small $w$ it is a real
+weakening: the width parameter bounds the branch middle set, and exact
+branchwidth of small bridgeless planar cubic maps already reaches four at
+eight vertices, so maps far below the vertex threshold are excluded.  But both
+producers of the raw width premise
+(\texttt{SphericalMeshFreeRawDecomposition}, \texttt{SphericalOrderedMeshReduction})
+set $w$ to a \emph{vertex} bound through \texttt{widthAtMost\_of\_card\_le},
+which derives \texttt{WidthAtMost}~$w$ from $\lvert V\rvert\le w$ --- a
+degenerate decomposition every one of whose middle sets is the whole vertex
+set.  At that $w$ the added hypothesis excludes nothing, and the obligation is
+unchanged.  An earlier revision of this subsection asserted the relief without
+that qualification; the assertion was wrong.  Recovering it needs a supplier
+that meets a genuinely small $w$, which is the same open input as fixed-mesh
+exclusion.
 
 The consequence for the reflection joint is the operative one.  The earlier
 reflection extracted its finite state from the bare map, so an instantiation
