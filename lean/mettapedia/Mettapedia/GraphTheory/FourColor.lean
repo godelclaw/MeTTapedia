@@ -632,3 +632,4 @@ import Mettapedia.GraphTheory.FourColor.Compositional.MeshResidualReturnSweep
 import Mettapedia.GraphTheory.FourColor.Compositional.SparseNoncentralMeshAtlas
 import Mettapedia.GraphTheory.FourColor.Compositional.CoherentResidualReturnSweep
 import Mettapedia.GraphTheory.FourColor.Compositional.CoherentResidualReturnConnectivity
+import Mettapedia.GraphTheory.FourColor.GoertzelV24RouteNativeInterfaceReflection
