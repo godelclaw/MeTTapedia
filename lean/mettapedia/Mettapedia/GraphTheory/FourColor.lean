@@ -646,3 +646,4 @@ import Mettapedia.GraphTheory.FourColor.Curriculum.LineGraph
 import Mettapedia.GraphTheory.FourColor.HypermapPatchRingInstance
 import Mettapedia.GraphTheory.FourColor.VertexKempe
 import Mettapedia.GraphTheory.OrbitCountSplittingApplications
+import Mettapedia.GraphTheory.FourColor.HypermapJordanCurve
