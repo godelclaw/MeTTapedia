@@ -633,3 +633,16 @@ import Mettapedia.GraphTheory.FourColor.Compositional.SparseNoncentralMeshAtlas
 import Mettapedia.GraphTheory.FourColor.Compositional.CoherentResidualReturnSweep
 import Mettapedia.GraphTheory.FourColor.Compositional.CoherentResidualReturnConnectivity
 import Mettapedia.GraphTheory.FourColor.GoertzelV24RouteNativeInterfaceReflection
+import Mettapedia.GraphTheory.FourColor.Counterexamples
+import Mettapedia.GraphTheory.FourColor.Curriculum.Actual.CliqueObstructions
+import Mettapedia.GraphTheory.FourColor.Curriculum.Actual.ColoringBasics
+import Mettapedia.GraphTheory.FourColor.Curriculum.Actual.ColoringObstructions
+import Mettapedia.GraphTheory.FourColor.Curriculum.Actual.DegreeBounds
+import Mettapedia.GraphTheory.FourColor.Curriculum.Actual.ExtremalColoring
+import Mettapedia.GraphTheory.FourColor.Curriculum.Actual.FiniteDegreeToolkit
+import Mettapedia.GraphTheory.FourColor.Curriculum.Actual.GraphBasics
+import Mettapedia.GraphTheory.FourColor.Curriculum.Actual.Reachability
+import Mettapedia.GraphTheory.FourColor.Curriculum.LineGraph
+import Mettapedia.GraphTheory.FourColor.HypermapPatchRingInstance
+import Mettapedia.GraphTheory.FourColor.VertexKempe
+import Mettapedia.GraphTheory.OrbitCountSplittingApplications
