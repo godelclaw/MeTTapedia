@@ -34,7 +34,7 @@ theorem not_colorable_of_top_fin_succ_embedding
     ¬ G.Colorable n := by
   intro hcol
   have hcf : G.CliqueFree (n + 1) := hcol.cliqueFree (Nat.lt_succ_self n)
-  exact (SimpleGraph.not_cliqueFree_of_top_embedding f) hcf
+  exact f.isContained.not_cliqueFree hcf
 
 /-- If a graph has a clique with more than `n` vertices, it is not `n`-colorable. -/
 theorem not_colorable_of_isClique_card_gt

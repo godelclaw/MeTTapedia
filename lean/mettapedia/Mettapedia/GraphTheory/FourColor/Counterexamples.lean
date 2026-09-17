@@ -9,7 +9,7 @@ open SimpleGraph
 /-- The path graph with two vertices and one edge. -/
 def P2Graph : SimpleGraph Bool where
   Adj a b := a ≠ b
-  symm _ _ h := h.symm
+  symm := ⟨fun _ _ h => h.symm⟩
   loopless := ⟨fun _ h => h rfl⟩
 
 theorem P2_adj_iff_ne {a b : Bool} : P2Graph.Adj a b ↔ a ≠ b := Iff.rfl
@@ -22,8 +22,7 @@ theorem P2_adj_true_false : P2Graph.Adj true false := by
 
 theorem P2_edge_is_bridge {u v : Bool} (h : P2Graph.Adj u v) :
     P2Graph.IsBridge s(u, v) := by
-  rw [SimpleGraph.isBridge_iff_adj_and_forall_walk_mem_edges]
-  refine ⟨h, ?_⟩
+  rw [SimpleGraph.isBridge_iff_forall_walk_mem_edges]
   intro p
   have huv : u ≠ v := by
     simpa [P2Graph] using h
@@ -58,7 +57,7 @@ theorem bounce_between_adjacent_exceeds_one :
 /-- The complete graph on three vertices. -/
 def K3Graph : SimpleGraph (Fin 3) where
   Adj i j := i ≠ j
-  symm _ _ h := h.symm
+  symm := ⟨fun _ _ h => h.symm⟩
   loopless := ⟨fun _ h => h rfl⟩
 
 theorem K3_edge_01 : K3Graph.Adj 0 1 := by
@@ -90,7 +89,7 @@ theorem K3_edge_01_not_bridge :
     ¬ K3Graph.IsBridge s((0 : Fin 3), (1 : Fin 3)) := by
   intro hbridge
   rcases K3_walk_01_avoiding_edge_01 with ⟨w, hw⟩
-  exact hw _ ((SimpleGraph.isBridge_iff_adj_and_forall_walk_mem_edges.mp hbridge).2 w) rfl
+  exact hw _ (SimpleGraph.isBridge_iff_forall_walk_mem_edges.mp hbridge w) rfl
 
 theorem triangle_tree_edge_not_bridge :
     ∃ (u v : Fin 3) (e : Sym2 (Fin 3)),

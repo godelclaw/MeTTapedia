@@ -68,7 +68,7 @@ theorem not_colorable_four_forces_k5_embedding_or_low_minDegree
     Nonempty (SimpleGraph.completeGraph (Fin 5) ↪g G) ∨
       G.minDegree ≤ 8 * Fintype.card V / 11 := by
   rcases not_colorable_four_forces_k5_or_low_minDegree G hncol with h | h
-  · exact Or.inl ((SimpleGraph.not_cliqueFree_iff (G := G) 5).1 h)
+  · exact Or.inl ⟨SimpleGraph.topEmbeddingOfNotCliqueFree h⟩
   · exact Or.inr h
 
 /-- High minimum degree + no `K₅` embedding forces 4-colorability. -/
@@ -77,7 +77,7 @@ theorem colorable_four_of_no_k5_embedding_and_minDegree
     (hK5 : IsEmpty (SimpleGraph.completeGraph (Fin 5) ↪g G))
     (hdeg : 8 * Fintype.card V / 11 < G.minDegree) :
     G.Colorable 4 := by
-  have hfree : G.CliqueFree 5 := (SimpleGraph.cliqueFree_iff (G := G) (n := 5)).2 hK5
+  have hfree : G.CliqueFree 5 := (SimpleGraph.cliqueFree_iff (G := G) (n := 5)).2 ⟨fun c => hK5.false c.topEmbedding⟩
   exact colorable_four_of_cliqueFree_five_and_minDegree G hfree hdeg
 
 /-- High minimum degree + `K₅`-copy-freeness forces 4-colorability. -/
@@ -95,7 +95,7 @@ theorem minDegree_le_bound_of_not_colorable_four_and_no_k5_embedding
     (hncol : ¬ G.Colorable 4)
     (hK5 : IsEmpty (SimpleGraph.completeGraph (Fin 5) ↪g G)) :
     G.minDegree ≤ 8 * Fintype.card V / 11 := by
-  have hfree : G.CliqueFree 5 := (SimpleGraph.cliqueFree_iff (G := G) (n := 5)).2 hK5
+  have hfree : G.CliqueFree 5 := (SimpleGraph.cliqueFree_iff (G := G) (n := 5)).2 ⟨fun c => hK5.false c.topEmbedding⟩
   exact minDegree_le_eight_mul_card_div_eleven_of_cliqueFree_five_not_colorable_four G hfree hncol
 
 /-- If a graph is not 4-colorable and has high minimum degree, a `K₅` embedding must exist. -/

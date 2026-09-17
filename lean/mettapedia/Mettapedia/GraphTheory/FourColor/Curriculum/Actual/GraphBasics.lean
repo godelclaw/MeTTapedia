@@ -10,7 +10,7 @@ theorem not_adj_self (v : α) : ¬ G.Adj v v :=
 
 /-- Adjacency is symmetric in simple graphs. -/
 theorem adj_symm {v w : α} (h : G.Adj v w) : G.Adj w v :=
-  G.symm h
+  h.symm
 
 /-- A vertex is never in its own neighbor set. -/
 theorem not_mem_neighborSet_self (v : α) : v ∉ G.neighborSet v := by

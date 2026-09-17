@@ -118,7 +118,7 @@ theorem not_colorable_four_of_top_fin5_embedding
     ¬ G.Colorable 4 := by
   intro h4
   have hcf : G.CliqueFree 5 := colorable_four_implies_cliqueFree_five G h4
-  exact (SimpleGraph.not_cliqueFree_of_top_embedding f) hcf
+  exact f.isContained.not_cliqueFree hcf
 
 /-- Any failure of 5-clique-freeness obstructs 4-colorability. -/
 theorem not_colorable_four_of_not_cliqueFree_five
