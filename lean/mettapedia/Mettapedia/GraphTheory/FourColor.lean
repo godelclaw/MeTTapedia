@@ -647,3 +647,7 @@ import Mettapedia.GraphTheory.Hypermap.PatchExample
 import Mettapedia.GraphTheory.FourColor.VertexKempe
 import Mettapedia.GraphTheory.OrbitCountSplittingApplications
 import Mettapedia.GraphTheory.Hypermap.Jordan.Curve
+import Mettapedia.Combinatorics.Reconfiguration.Instances
+import Mettapedia.GraphTheory.Kempe.BoundaryExamples
+import Mettapedia.GraphTheory.Kempe.FourColorInstances
+import Mettapedia.GraphTheory.Kempe.TauSeries
