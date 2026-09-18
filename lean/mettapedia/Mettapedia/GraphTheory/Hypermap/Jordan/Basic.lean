@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.HypermapSmallExamples
+import Mettapedia.GraphTheory.Hypermap.SmallExamples
 
 /-!
 # The Jordan property of a hypermap
@@ -19,7 +19,7 @@ Moebius strip or a higher-genus surface can they cross.
 `Jordan H` says no such path exists.  It is the planarity condition this module
 exists to state.  That it is equivalent to vanishing Euler defect is recorded at
 the end as two propositions; the direction `Planar → Jordan` is proved in
-`HypermapJordanPlanar` (`jordan_of_planar`).
+`Hypermap.Jordan.OfPlanar` (`jordan_of_planar`).
 
 ## Faithfulness
 
@@ -48,7 +48,9 @@ independent confirmations that `Jordan` and `Planar` agree where they can
 currently both be evaluated.
 -/
 
-namespace Mettapedia.GraphTheory.FourColor
+namespace Mettapedia.GraphTheory
+
+open Mettapedia.GraphTheory.FourColor
 
 open Equiv Equiv.Perm
 open GoertzelV24PermutationOrbitSurgery GoertzelV24WordReachability
@@ -236,4 +238,4 @@ theorem jordan_iff_planar_fin_one : PlanarImpliesJordanOn (Fin 1) ∧ JordanImpl
 
 end Hypermap
 
-end Mettapedia.GraphTheory.FourColor
+end Mettapedia.GraphTheory

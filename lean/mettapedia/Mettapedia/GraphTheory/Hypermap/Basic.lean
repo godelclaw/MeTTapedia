@@ -27,7 +27,7 @@ faces.
 Euler's relation is stated here as a defect, without claiming its two
 substantive properties.  That it is non-positive and even — equivalently, that
 it is *minus* twice a genus — is the content of the theory this module exists
-to import, and is deliberately not asserted here.  `HypermapEuler` proves both.
+to import, and is deliberately not asserted here.  `Hypermap.Euler` proves both.
 
 Mind that sign.  The naming is inherited from the hypermap literature, where
 `Euler_lhs` is the dart-and-component side and `Euler_rhs` the orbit side, and
@@ -38,7 +38,9 @@ genus `g` one has `V - E + F = 2 - 2g` and `#darts = 2E`, so `eulerLhs`
 `-2g`.  A statement of non-negativity would be false.
 -/
 
-namespace Mettapedia.GraphTheory.FourColor
+namespace Mettapedia.GraphTheory
+
+open Mettapedia.GraphTheory.FourColor
 
 /-- A finite hypermap: three permutations of the darts whose composite, in the
 order `node ∘ face ∘ edge`, is the identity. -/
@@ -134,4 +136,4 @@ theorem eulerDefect_eq (H : Hypermap D) :
 
 end Hypermap
 
-end Mettapedia.GraphTheory.FourColor
+end Mettapedia.GraphTheory

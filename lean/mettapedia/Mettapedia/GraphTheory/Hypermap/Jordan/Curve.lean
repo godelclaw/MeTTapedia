@@ -1,5 +1,5 @@
-import Mettapedia.GraphTheory.FourColor.HypermapEulerTree
-import Mettapedia.GraphTheory.FourColor.HypermapWalkupChecks
+import Mettapedia.GraphTheory.Hypermap.Jordan.EulerTree
+import Mettapedia.GraphTheory.Hypermap.Walkup.Checks
 
 /-!
 # The combinatorial Jordan curve theorem
@@ -12,7 +12,7 @@ is the combinatorial content of the Jordan curve theorem, and it is what license
 arguing about planar maps by separation rather than by counting.  This is the
 source's `planarP`.
 
-* `jordan_of_planar` (in `HypermapJordanPlanar`) is the direction the source
+* `jordan_of_planar` (in `Hypermap.Jordan.OfPlanar`) is the direction the source
   calls `planar_Jordan`: a minimal planar counterexample is cut down by Walkup
   deletions until it is the three-dart genus-one map.
 * `planar_of_jordan`, below, is `Jordan_planar`: by induction on the dart count.
@@ -20,11 +20,13 @@ source's `planarP`.
   `jordan_walkupE` keeps the Jordan property, and the smaller map is planar.
 
 Nothing is assumed: both directions rest on the genus identities of
-`HypermapWalkupGenus`, which in turn rest on the transposition split/merge law
+`Hypermap.Walkup.Genus`, which in turn rest on the transposition split/merge law
 and the orbit-count splitting tools already in this development.
 -/
 
-namespace Mettapedia.GraphTheory.FourColor
+namespace Mettapedia.GraphTheory
+
+open Mettapedia.GraphTheory.FourColor
 
 open Equiv Equiv.Perm
 open GoertzelV24PermutationOrbitSurgery GoertzelV24WordReachability
@@ -86,7 +88,7 @@ theorem planar_iff_jordan {D : Type u} [Fintype D] [DecidableEq D] (H : Hypermap
     Planar H ↔ Jordan H :=
   ⟨jordan_of_planar H, planar_of_jordan H⟩
 
-/-- Both halves recorded in `HypermapJordan`, discharged on every carrier. -/
+/-- Both halves recorded in `Hypermap.Jordan.Basic`, discharged on every carrier. -/
 theorem jordanImpliesPlanarOn (D : Type u) [Fintype D] [DecidableEq D] :
     JordanImpliesPlanarOn D :=
   fun H hJ => planar_of_jordan H hJ
@@ -123,4 +125,4 @@ example : Jordan (walkupE torusTriple 0) :=
 
 end Hypermap
 
-end Mettapedia.GraphTheory.FourColor
+end Mettapedia.GraphTheory

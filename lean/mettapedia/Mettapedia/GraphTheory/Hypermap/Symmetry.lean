@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.HypermapPatch
+import Mettapedia.GraphTheory.Hypermap.GenusAdditivity
 
 /-!
 # The genus does not see which permutation is called which
@@ -23,7 +23,9 @@ replacing them all by their inverses leaves reachability untouched — on a fini
 carrier an inverse is a positive power, so no new steps are added.
 -/
 
-namespace Mettapedia.GraphTheory.FourColor
+namespace Mettapedia.GraphTheory
+
+open Mettapedia.GraphTheory.FourColor
 
 open Equiv Equiv.Perm
 open GoertzelV24PermutationOrbitSurgery GoertzelV24WordReachability
@@ -187,4 +189,4 @@ theorem planar_dual (H : Hypermap D) : Planar (dual H) ↔ Planar H := by
 
 end Hypermap
 
-end Mettapedia.GraphTheory.FourColor
+end Mettapedia.GraphTheory

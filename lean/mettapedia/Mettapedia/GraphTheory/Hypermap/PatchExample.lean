@@ -1,9 +1,9 @@
-import Mettapedia.GraphTheory.FourColor.HypermapPatchRing
+import Mettapedia.GraphTheory.Hypermap.Patch
 
 /-!
 # A patch with a nonempty ring, written out
 
-`HypermapPatchRing` defines what it is for a hypermap to be the gluing of two
+`Hypermap.Patch` defines what it is for a hypermap to be the gluing of two
 hypermaps along a ring, and derives genus additivity from it.  A definition
 with that many conditions is worth nothing until one knows the conditions can
 all hold *at once, with a ring that is not empty* — the empty-ring case is the
@@ -29,16 +29,18 @@ Every field of `Patch` is checked by `decide`, and the orbit counts of all
 three maps are computed independently of the general theorems (by exhibiting a
 complete invariant for each permutation, and a connecting walk for each map).
 The five counting identities can then be read off and compared with what
-`HypermapPatchRing` proves.
+`Hypermap.Patch` proves.
 -/
 
-namespace Mettapedia.GraphTheory.FourColor
+namespace Mettapedia.GraphTheory
+
+open Mettapedia.GraphTheory.FourColor
 
 open Equiv Equiv.Perm
 open GoertzelV24PermutationOrbitSurgery GoertzelV24WordReachability
 open Mettapedia.GraphTheory.OrbitCountSplitting
 
-namespace HypermapPatchRingInstance
+namespace Hypermap.PatchExample
 
 /-! ## The three maps -/
 
@@ -163,7 +165,7 @@ theorem patch_triangle :
 
 /-! ## The orbit counts, computed independently
 
-Nothing below uses `HypermapPatchRing`: each permutation gets a complete
+Nothing below uses `Hypermap.Patch`: each permutation gets a complete
 invariant, and each map a connecting walk.  These are the numbers the five
 counting identities must reproduce. -/
 
@@ -280,7 +282,7 @@ theorem compCount_rem : Hypermap.compCount remMap = 1 :=
 
 Each of these is stated with its two sides computed by hand from the
 independent counts above, and is therefore a check on the general theorems of
-`HypermapPatchRing` rather than a consequence of them.  Every one of them
+`Hypermap.Patch` rather than a consequence of them.  Every one of them
 matches. -/
 
 /-- Dart count: `4 + 4 = 2 + 6`. -/
@@ -343,7 +345,7 @@ theorem genus_rem : Hypermap.genus remMap = 0 := by
 
 /-! ## The general theorems, against the numbers
 
-Each statement below is the corresponding theorem of `HypermapPatchRing`,
+Each statement below is the corresponding theorem of `Hypermap.Patch`,
 instantiated at this patch and with every count replaced by the value computed
 independently above.  The numbers have to balance for the file to compile, so a
 general statement whose border or ring contribution sat on the wrong side, or
@@ -438,6 +440,6 @@ theorem bridgeless_parts_here :
     Hypermap.Patch.Bridgeless diskMap ∧ Hypermap.Patch.Bridgeless remMap :=
   patch_triangle.bridgeless_parts bridgeless_triangle
 
-end HypermapPatchRingInstance
+end Hypermap.PatchExample
 
-end Mettapedia.GraphTheory.FourColor
+end Mettapedia.GraphTheory

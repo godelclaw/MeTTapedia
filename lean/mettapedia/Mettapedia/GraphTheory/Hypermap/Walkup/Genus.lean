@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.HypermapWalkupComponents
+import Mettapedia.GraphTheory.Hypermap.Walkup.Components
 
 /-!
 # Deleting a dart never raises the genus
@@ -6,7 +6,7 @@ import Mettapedia.GraphTheory.FourColor.HypermapWalkupComponents
 Putting the two counting identities together.  Write `H'` for `walkupE H z`.
 The dart count drops by one; the node and face counts drop by one for each
 permutation fixing `z`; the edge count and the component count move as
-`HypermapWalkupCount` and `HypermapWalkupComponents` describe.  Since
+`Hypermap.Walkup.OrbitCounts` and `Hypermap.Walkup.Components` describe.  Since
 `Hypermap.even_genus` says the genus formula never truncates, the whole thing
 is linear arithmetic once the case values are in hand:
 
@@ -24,15 +24,17 @@ disjunction `Degenerate ∨ ¬ CrossEdge` — which is exactly the source's
 hypothesis on `genus_WalkupE_eq`.
 
 That the drop is real, and not an artefact of a too-weak bound, is witnessed in
-`HypermapSmallExamples`: the genus-one map on three darts has a non-degenerate
+`Hypermap.SmallExamples`: the genus-one map on three darts has a non-degenerate
 cross-edge dart, and Walkup's formula there produces the identity edge
 permutation on two darts — a planar map.
 
 `walkupN` and `walkupF` inherit everything through the role-cycling symmetries,
-which `HypermapSymmetry` already proves genus-invariant.
+which `Hypermap.Symmetry` already proves genus-invariant.
 -/
 
-namespace Mettapedia.GraphTheory.FourColor
+namespace Mettapedia.GraphTheory
+
+open Mettapedia.GraphTheory.FourColor
 
 open Equiv Equiv.Perm
 open GoertzelV24PermutationOrbitSurgery GoertzelV24WordReachability
@@ -199,4 +201,4 @@ theorem walkup_induction
 
 end Hypermap
 
-end Mettapedia.GraphTheory.FourColor
+end Mettapedia.GraphTheory

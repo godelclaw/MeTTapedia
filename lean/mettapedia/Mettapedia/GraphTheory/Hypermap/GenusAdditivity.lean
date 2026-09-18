@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.HypermapEuler
+import Mettapedia.GraphTheory.Hypermap.Euler
 import Mettapedia.GraphTheory.FourColor.GoertzelV24OrbitCountCongr
 import Mettapedia.GraphTheory.FourColor.InvolutionEulerTransport
 
@@ -53,7 +53,9 @@ work; `genus_add_of_orbit_counts` is stated so that it consumes their output
 directly.
 -/
 
-namespace Mettapedia.GraphTheory.FourColor
+namespace Mettapedia.GraphTheory
+
+open Mettapedia.GraphTheory.FourColor
 
 open Equiv Equiv.Perm
 open GoertzelV24PermutationOrbitSurgery GoertzelV24WordReachability
@@ -211,4 +213,4 @@ theorem planar_disjointSum (H₁ : Hypermap D₁) (H₂ : Hypermap D₂) :
 
 end Hypermap
 
-end Mettapedia.GraphTheory.FourColor
+end Mettapedia.GraphTheory

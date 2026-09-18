@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.HypermapJordanPlanar
+import Mettapedia.GraphTheory.Hypermap.Jordan.OfPlanar
 
 /-!
 # The Jordan property survives deleting a dart
@@ -41,7 +41,9 @@ splicing chains at shared endpoints), and the occurrence order of the crossing
 darts (by the `Mem2` splicing lemmas below).
 -/
 
-namespace Mettapedia.GraphTheory.FourColor
+namespace Mettapedia.GraphTheory
+
+open Mettapedia.GraphTheory.FourColor
 
 open Equiv Equiv.Perm
 open GoertzelV24PermutationOrbitSurgery GoertzelV24WordReachability
@@ -544,4 +546,4 @@ end Lift
 
 end Hypermap
 
-end Mettapedia.GraphTheory.FourColor
+end Mettapedia.GraphTheory
