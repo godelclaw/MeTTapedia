@@ -1,5 +1,5 @@
-import Mettapedia.GraphTheory.FourColor.HypermapWalkupGenus
-import Mettapedia.GraphTheory.FourColor.HypermapJordan
+import Mettapedia.GraphTheory.Hypermap.Walkup.Genus
+import Mettapedia.GraphTheory.Hypermap.Jordan.Basic
 
 /-!
 # A planar hypermap has no Moebius path
@@ -34,14 +34,16 @@ Write the path as `x, y, z, …`, and `t` for the dart with `node t` the last on
 7. Delete `z` with `walkupF`, fusing `y → z → w` into a face link.  The path
    `x, y, w, …` is still Moebius, with `t = y = node x`.
 
-Each deletion is justified by the genus results of `HypermapWalkupGenus`, and
+Each deletion is justified by the genus results of `Hypermap.Walkup.Genus`, and
 each link that survives a deletion is checked by the lifting lemmas below: in
 `walkupE` every link avoiding the deleted dart survives; in `walkupF` face links
 survive unless they point at `node⁻¹` of it; in `walkupN` node links survive
 unless they point at `face` of it.
 -/
 
-namespace Mettapedia.GraphTheory.FourColor
+namespace Mettapedia.GraphTheory
+
+open Mettapedia.GraphTheory.FourColor
 
 open Equiv Equiv.Perm
 open GoertzelV24PermutationOrbitSurgery GoertzelV24WordReachability
@@ -719,7 +721,7 @@ theorem jordan_of_planar {D : Type u} [Fintype D] [DecidableEq D] (H : Hypermap 
     (hP : Planar H) : Jordan H :=
   jordan_of_planar_of_card_le _ D H le_rfl hP
 
-/-- The half of the equivalence recorded in `HypermapJordan`, discharged on every
+/-- The half of the equivalence recorded in `Hypermap.Jordan.Basic`, discharged on every
 carrier. -/
 theorem planarImpliesJordanOn (D : Type u) [Fintype D] [DecidableEq D] :
     PlanarImpliesJordanOn D :=
@@ -733,4 +735,4 @@ theorem not_planar_torusTriple_of_moebius : ¬ Planar torusTriple :=
 
 end Hypermap
 
-end Mettapedia.GraphTheory.FourColor
+end Mettapedia.GraphTheory

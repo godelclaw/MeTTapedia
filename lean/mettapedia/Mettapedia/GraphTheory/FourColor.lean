@@ -643,7 +643,7 @@ import Mettapedia.GraphTheory.FourColor.Curriculum.Actual.FiniteDegreeToolkit
 import Mettapedia.GraphTheory.FourColor.Curriculum.Actual.GraphBasics
 import Mettapedia.GraphTheory.FourColor.Curriculum.Actual.Reachability
 import Mettapedia.GraphTheory.FourColor.Curriculum.LineGraph
-import Mettapedia.GraphTheory.FourColor.HypermapPatchRingInstance
+import Mettapedia.GraphTheory.Hypermap.PatchExample
 import Mettapedia.GraphTheory.FourColor.VertexKempe
 import Mettapedia.GraphTheory.OrbitCountSplittingApplications
-import Mettapedia.GraphTheory.FourColor.HypermapJordanCurve
+import Mettapedia.GraphTheory.Hypermap.Jordan.Curve

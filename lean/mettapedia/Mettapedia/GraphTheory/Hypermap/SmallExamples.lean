@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.HypermapWalkup
+import Mettapedia.GraphTheory.Hypermap.Walkup.Basic
 
 /-!
 # Two hypermaps small enough to compute with
@@ -32,7 +32,9 @@ load-bearing, not decoration — and `skipEdgeFun` genuinely differs from naivel
 skipping `z` in `edge`, which the last check below pins down.
 -/
 
-namespace Mettapedia.GraphTheory.FourColor
+namespace Mettapedia.GraphTheory
+
+open Mettapedia.GraphTheory.FourColor
 
 open Equiv Equiv.Perm
 open GoertzelV24PermutationOrbitSurgery GoertzelV24WordReachability
@@ -203,4 +205,4 @@ example : Fintype.card {x : Fin 3 // x ≠ 0} + 1 = Fintype.card (Fin 3) :=
 
 end Hypermap
 
-end Mettapedia.GraphTheory.FourColor
+end Mettapedia.GraphTheory

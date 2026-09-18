@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.HypermapSymmetry
+import Mettapedia.GraphTheory.Hypermap.Symmetry
 import Mettapedia.GraphTheory.OrbitCountSplitting
 
 /-!
@@ -11,7 +11,7 @@ which is what makes it an induction engine: every property of hypermaps that
 survives the transformation can be proved by induction on the dart count.
 
 This module builds the construction and its elementary theory.  It is the
-engine `HypermapWalkupGenus` and the Jordan theory run on.
+engine `Hypermap.Walkup.Genus` and the Jordan theory run on.
 
 ## Skipping a point in a permutation
 
@@ -37,10 +37,12 @@ way round.
 
 `walkupN` and `walkupF` are the same construction performed after cycling the
 roles of the three permutations, using the `permN`/`permF` symmetries that
-`HypermapSymmetry` already proves genus-invariant.
+`Hypermap.Symmetry` already proves genus-invariant.
 -/
 
-namespace Mettapedia.GraphTheory.FourColor
+namespace Mettapedia.GraphTheory
+
+open Mettapedia.GraphTheory.FourColor
 
 open Equiv Equiv.Perm
 open GoertzelV24PermutationOrbitSurgery GoertzelV24WordReachability
@@ -460,7 +462,7 @@ theorem card_walkupE_succ (_H : Hypermap D) (z : D) :
 
 `walkupN` and `walkupF` delete `z` from the same dart set, but repair a
 different one of the three permutations.  They are `walkupE` conjugated by the
-role-cycling symmetries of `HypermapSymmetry`. -/
+role-cycling symmetries of `Hypermap.Symmetry`. -/
 
 /-- Delete `z`, repairing `node`. -/
 noncomputable def walkupN (H : Hypermap D) (z : D) : Hypermap {x : D // x ≠ z} :=
@@ -484,4 +486,4 @@ noncomputable def walkupF (H : Hypermap D) (z : D) : Hypermap {x : D // x ≠ z}
 
 end Hypermap
 
-end Mettapedia.GraphTheory.FourColor
+end Mettapedia.GraphTheory

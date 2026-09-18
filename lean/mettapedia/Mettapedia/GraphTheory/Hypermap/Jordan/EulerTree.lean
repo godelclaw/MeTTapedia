@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.HypermapJordanWalkup
+import Mettapedia.GraphTheory.Hypermap.Jordan.Walkup
 
 /-!
 # Break the dikes: a Jordan map has a leaf on every edge cycle
@@ -37,7 +37,9 @@ Here the arc comes from a single minimality argument over hitting times
 (`hitList`), which gives face-simplicity with no bookkeeping.
 -/
 
-namespace Mettapedia.GraphTheory.FourColor
+namespace Mettapedia.GraphTheory
+
+open Mettapedia.GraphTheory.FourColor
 
 open Equiv Equiv.Perm
 open GoertzelV24PermutationOrbitSurgery GoertzelV24WordReachability
@@ -582,4 +584,4 @@ end EulerTree
 
 end Hypermap
 
-end Mettapedia.GraphTheory.FourColor
+end Mettapedia.GraphTheory

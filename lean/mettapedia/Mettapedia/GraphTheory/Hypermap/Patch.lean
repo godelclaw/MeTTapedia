@@ -1,10 +1,10 @@
-import Mettapedia.GraphTheory.FourColor.HypermapSymmetry
+import Mettapedia.GraphTheory.Hypermap.Symmetry
 import Mettapedia.GraphTheory.OrbitCountSplitting
 
 /-!
 # Patching along a ring: genus additivity with a nonempty border
 
-`HypermapPatch` proves the arithmetic core of genus additivity,
+`Hypermap.GenusAdditivity` proves the arithmetic core of genus additivity,
 `genus_add_of_orbit_counts`, from five counting statements, and supplies those
 statements only in the degenerate case of an empty border, where the gluing is
 a disjoint union.  This module supplies them in general.
@@ -61,7 +61,9 @@ components, `Patch.diskComp` and `Patch.remComp` play the same role with all
 three permutations instead of the face alone.
 -/
 
-namespace Mettapedia.GraphTheory.FourColor
+namespace Mettapedia.GraphTheory
+
+open Mettapedia.GraphTheory.FourColor
 
 open Equiv Equiv.Perm
 open GoertzelV24PermutationOrbitSurgery GoertzelV24WordReachability
@@ -1253,4 +1255,4 @@ end Patch
 
 end Hypermap
 
-end Mettapedia.GraphTheory.FourColor
+end Mettapedia.GraphTheory

@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.HypermapWalkupCount
+import Mettapedia.GraphTheory.Hypermap.Walkup.OrbitCounts
 
 /-!
 # What deleting a dart does to the component count
@@ -37,7 +37,9 @@ corollary of the transposition merge law, through
 and that is already proved in this tree.
 -/
 
-namespace Mettapedia.GraphTheory.FourColor
+namespace Mettapedia.GraphTheory
+
+open Mettapedia.GraphTheory.FourColor
 
 open Equiv Equiv.Perm
 open GoertzelV24PermutationOrbitSurgery GoertzelV24WordReachability
@@ -534,4 +536,4 @@ theorem zCompCount_le_one_of_not_crossEdge (hd : ¬ Degenerate H z) (hc : ¬ Cro
 
 end Hypermap
 
-end Mettapedia.GraphTheory.FourColor
+end Mettapedia.GraphTheory

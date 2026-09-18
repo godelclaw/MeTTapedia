@@ -1,5 +1,5 @@
-import Mettapedia.GraphTheory.FourColor.HypermapWalkupGenus
-import Mettapedia.GraphTheory.FourColor.HypermapSmallExamples
+import Mettapedia.GraphTheory.Hypermap.Walkup.Genus
+import Mettapedia.GraphTheory.Hypermap.SmallExamples
 
 /-!
 # The Walkup genus theorems, checked against a map where the genus drops
@@ -20,7 +20,9 @@ from `skipEdgeFun` evaluated by the kernel, the second from
 twist theorem, not a restatement of it.
 -/
 
-namespace Mettapedia.GraphTheory.FourColor
+namespace Mettapedia.GraphTheory
+
+open Mettapedia.GraphTheory.FourColor
 
 open Equiv Equiv.Perm
 open GoertzelV24PermutationOrbitSurgery GoertzelV24WordReachability
@@ -121,4 +123,4 @@ theorem not_forall_genus_walkupE_eq :
 
 end Hypermap
 
-end Mettapedia.GraphTheory.FourColor
+end Mettapedia.GraphTheory

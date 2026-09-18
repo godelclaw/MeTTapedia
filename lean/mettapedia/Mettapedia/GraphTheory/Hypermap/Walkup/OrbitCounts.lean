@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.HypermapWalkup
+import Mettapedia.GraphTheory.Hypermap.Walkup.Basic
 
 /-!
 # What deleting a dart does to the three orbit counts
@@ -36,7 +36,9 @@ about when two darts remain edge-connected after the transform.  All of that is
 subsumed here by the transposition law, which this development already had.
 -/
 
-namespace Mettapedia.GraphTheory.FourColor
+namespace Mettapedia.GraphTheory
+
+open Mettapedia.GraphTheory.FourColor
 
 open Equiv Equiv.Perm
 open GoertzelV24PermutationOrbitSurgery GoertzelV24WordReachability
@@ -348,4 +350,4 @@ theorem eulerLhs_walkupE_of_not_crossEdge (H : Hypermap D) (z : D)
 
 end Hypermap
 
-end Mettapedia.GraphTheory.FourColor
+end Mettapedia.GraphTheory

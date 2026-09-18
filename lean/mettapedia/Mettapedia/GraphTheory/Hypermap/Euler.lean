@@ -1,4 +1,4 @@
-import Mettapedia.GraphTheory.FourColor.Hypermap
+import Mettapedia.GraphTheory.Hypermap.Basic
 import Mettapedia.GraphTheory.FourColor.MapEulerDefect
 
 /-!
@@ -50,7 +50,9 @@ That quantity is `-2 · genus`: it is *non-positive*, vanishing exactly in the
 planar case.  The positively-signed quantity is `eulerRhs - eulerLhs`.
 -/
 
-namespace Mettapedia.GraphTheory.FourColor
+namespace Mettapedia.GraphTheory
+
+open Mettapedia.GraphTheory.FourColor
 
 open Equiv Equiv.Perm
 open GoertzelV24PermutationOrbitSurgery GoertzelV24WordReachability
@@ -317,4 +319,4 @@ theorem rotationSystem_eulerDefect_even (RS : RotationSystem V E) :
 
 end Hypermap
 
-end Mettapedia.GraphTheory.FourColor
+end Mettapedia.GraphTheory
