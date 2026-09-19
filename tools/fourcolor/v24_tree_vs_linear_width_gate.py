@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""A bounded branch decomposition does not bound the linear sweep interface.
+"""Finite witnesses against width-preserving branch-to-linear conversion.
 
 The width supply hands the finite base a rooted branch decomposition of width
 at most `w`: a TREE of edge bipartitions whose middle sets -- the vertices
@@ -15,9 +15,10 @@ closure.  Write
     BW = min over branch decompositions of max middle-vertex count
     LP = min over vertex orderings    of max leaving-edge count
 
-`LP >= BW` always.  This gate exhibits a family on which `BW` is constant while
-`LP` grows, so no fixed-width linear closure can cover the maps a bounded
-branch decomposition delivers.
+This gate checks several finite depths.  In particular it gives a width-four
+branch decomposition of a 24-vertex map for which every linear sweep has
+width at least six.  The tested depths do not prove that linear width is
+unbounded across the family, or rule out a wider bound depending on `w`.
 
 The witness is a tube tree: hexagon nodes joined in a tree by two-edge tubes.
 It is simple, cubic, planar and bridgeless, so it lies in the class the base
@@ -25,8 +26,9 @@ premise quantifies over, and two-edge-connected, so the connectedization
 applies to it.
 
 `BW` is certified by exhibiting one explicit decomposition and measuring it.
-`LP` is exact: the search over prefixes of interface at most k either reaches
-the whole vertex set or exhausts, and exhausting proves `LP > k`.
+Where the search finishes, `LP` is exact: the search over prefixes of interface
+at most k either reaches the whole vertex set or exhausts, and exhausting
+proves `LP > k`.  A search cap returns an inconclusive result.
 """
 
 from __future__ import annotations

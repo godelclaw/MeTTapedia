@@ -27,8 +27,9 @@ analogue of the serial transfer's exactness, not a restatement of it.
 
 The interface is then shown to be all that varies: off the middle set a
 piece's presentation is determined by the piece alone, so the number of
-behaviours at an interface of `k` vertices is at most `8 ^ k`.  That is the
-finiteness the regularity step asserts, with an explicit bound.
+individual presentations in one support at an interface of `k` vertices is
+at most `8 ^ k`.  This does not bound the number of distinct supports by
+`8 ^ k`: a powerset bound is needed for that separate state count.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor

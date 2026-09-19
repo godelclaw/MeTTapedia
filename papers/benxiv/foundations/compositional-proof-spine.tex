@@ -183,12 +183,14 @@ producers of the raw width premise
 (\texttt{SphericalMeshFreeRawDecomposition}, \texttt{SphericalOrderedMeshReduction})
 set $w$ to a \emph{vertex} bound through \texttt{widthAtMost\_of\_card\_le},
 which derives \texttt{WidthAtMost}~$w$ from $\lvert V\rvert\le w$ --- a
-degenerate decomposition every one of whose middle sets is the whole vertex
-set.  At that $w$ the added hypothesis excludes nothing, and the obligation is
-unchanged.  An earlier revision of this subsection asserted the relief without
-that qualification; the assertion was wrong.  Recovering it needs a supplier
-that meets a genuinely small $w$, which is the same open input as fixed-mesh
-exclusion.
+coarse decomposition bounded by the whole vertex set.  This does not make the
+restricted premise logically vacuous: it excludes some other maps below the
+much larger \texttt{rawVertexBound}.  But at the actual use site it brings no
+small-width leverage.  Moreover the direct mesh-free assembly already uses
+the smaller base threshold $w$, bypassing this wrapper altogether.  An
+earlier revision asserted effective relief without these qualifications; that
+assertion was wrong.  A fixed-width interface audit needs a supplier with an
+independently small $w$.
 
 The consequence for the reflection joint is the operative one.  The earlier
 reflection extracted its finite state from the bare map, so an instantiation
@@ -200,32 +202,33 @@ sweep along that decomposition is a legal instantiation.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24DecomposableFiniteBase.DecomposableBaseReflection.combinatorialFourColorStatement_of_raw_and_filter_audit}
 
 Neither coverage, adequacy, nor emptiness is supplied here; $D_{4b}$ remains
-open, with a strictly smaller obligation.
+open.  This premise is weaker than the original base at
+\texttt{rawVertexBound}, but stronger than the direct base at the mesh-free
+vertex bound already used elsewhere in this spine.
 
-Sharpening that obligation immediately refutes one candidate instrument for
-it.  The width supply delivers a branch decomposition, which is a tree of edge
-bipartitions.  The physical finite-state closure instead processes vertices in
-a line, and its width is the number of edges leaving a prefix of that order.
-Writing $\mathrm{BW}$ for the minimum over branch decompositions of the
-largest middle-vertex set and $\mathrm{LP}$ for the minimum over vertex
-orderings of the largest leaving-edge set, always $\mathrm{LP}\ge\mathrm{BW}$.
-The two are not equivalent parameters.
+Sharpening that obligation gives a finite counterexample to
+\emph{width-preserving} use of the linear instrument.  The width supply delivers a branch
+decomposition, a tree of edge bipartitions.  The physical finite-state closure
+instead processes vertices in a line, and its width is the number of edges
+leaving a prefix.  These are different parameters: write $\mathrm{BW}$ for
+the least maximum middle-vertex count and $\mathrm{LP}$ for the least maximum
+leaving-edge count.  No comparison theorem between them is used here.
 
-\begin{proposition}[a bounded branch decomposition does not bound the linear
-interface]
+\begin{proposition}[width-four branch decomposition does not imply a
+width-four linear sweep]
 \label{prop:tree-vs-linear-width-refuted}
 \Srefuted{exhaustive tube-tree branch/linear width gate, tools/fourcolor/v24\_tree\_vs\_linear\_width\_gate.py}
-There is a family of simple, cubic, planar, bridgeless maps carrying explicit
-branch decompositions of width four at every size, whose exact linear-sweep
-width is unbounded.
+The implication $\mathrm{BW}\le4\Rightarrow\mathrm{LP}\le4$ is false even for
+simple, cubic, planar, bridgeless maps: a 24-vertex tube-tree has an explicit
+branch decomposition of width four and no vertex sweep of width at most five.
 \end{proposition}
 
-The witness is a tube tree: hexagon nodes joined in a tree by two-edge tubes.
-Every member is simple, cubic, planar and bridgeless, hence two-edge
-connected, so it lies in the class the base premise quantifies over and the
-checked width-preserving connectedization applies to it.  Only
-\texttt{WidthAtMost} is asked of the raw supply, so the explicit decomposition
-below is exactly what $D_{1d}$ would hand over.
+The tested witnesses are tube trees: hexagon nodes joined by two-edge tubes.
+The gate checks simplicity, cubicity, planarity, bridgelessness and the
+displayed decomposition for each tested depth.  The 24-vertex witness lies in
+the broad class quantified over by the restricted base premise.  It is not a
+witness about least-counterexample normal forms: its two-edge joins would be
+excluded by stronger connectivity hypotheses.
 
 \begin{center}
 \small
@@ -243,24 +246,20 @@ tube tree, depth 6 & 1140 & 4 & --- & ---\\
 \end{tabular}
 \end{center}
 
-The branch width is certified by exhibiting one decomposition and measuring
-it; the linear width is exact, since a prefix search that exhausts at $k$
-proves $\mathrm{LP}>k$.  The prism control keeps both parameters bounded, so
-the measurement separates families rather than reporting growth everywhere.
+The branch-width upper bounds come from explicit decompositions; where the
+prefix search exhausts, it proves the displayed lower bound on linear width.
+The prism control stays at linear width five.  The finite gate does \emph{not}
+prove that linear width is unbounded along the tube-tree family: that would
+require a uniform lower-bound argument, not four computed depths.
 
-The consequence is that a fixed-width linear closure cannot be the instrument
-for $D_{4b}$.  Already at twenty-four vertices a map the supply delivers at
-width four forces a linear interface of width six, and the gap grows with the
-tree depth while the supplied width does not move.  The corrected obligation
-is a closure over the branch decomposition itself: states are interfaces of at
-most $w$ middle vertices, and the transition is the binary fork that merges
-two child interfaces, not the attachment of one vertex to a frontier.  Pumping
-survives the change, since a path in the decomposition tree that revisits a
-state is spliceable exactly as a repeated corridor profile is.
-
-The measured width-three and width-four closures are therefore calibration of
-the vertex-attachment operation, not partial progress toward the base audit,
-and the width-five execution frontier is not the obstacle it appeared to be.
+Thus the width-four linear closure cannot directly cover even this one
+width-four decomposable map.  It does not follow from the gate that no
+function $f(w)$ could permit a wider linear closure, nor that the same gap
+persists in the stronger least-counterexample normal form.  A fork transition
+over the branch decomposition is the route-native alternative: child states
+must merge on a middle interface.  Its coverage, structural coordinates and
+contextual splice law remain to be proved.  The measured linear closures
+calibrate vertex attachment, but are not yet a finite-base audit.
 
 The fork presentation has now been measured on actual maps, and it is small.
 \Sprose{exhaustive interface-behaviour census over duals of planar triangulations, tools/fourcolor/v24\_interface\_behaviour\_gate.py}
