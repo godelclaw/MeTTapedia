@@ -680,7 +680,11 @@ recurrent set under every genuine ring successor: the good seed never reaches
 a self-looping state at any length.  The two exhaustive successor branches
 both flip the complete profile's frontier phase.  The source's Pascal-index
 ``stay'' therefore does not identify the same colour-and-routing profile
-across a ring.  Thus both unqualified L2 and its
+across a ring.  In fact, no odd number of genuine rings can return to the
+same complete recurrent profile; this uses closure under the \emph{full}
+physical relation, not a selected deterministic path.  The good seed also
+has no two-ring return, making its certified four-ring return the shortest
+positive one.  Thus both unqualified L2 and its
 suggested weak fallback fail for this normalized transfer.  A stronger
 counterexample-specific relevance predicate, or a coarser quotient of
 profiles, could still support a different L2; either would need a physical
@@ -688,6 +692,9 @@ soundness proof, not merely recurrence.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeRingSelfLoopCounterexample.recurrentProfile_no_oneRingSelfLoop}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeRingSelfLoopCounterexample.recurrent_successor_closed}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeRingSelfLoopCounterexample.recurrentStep_phase_flip}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeRingSelfLoopCounterexample.normalizedTubeSeed_oddLength_no_return}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeRingSelfLoopCounterexample.normalizedTubeSeed_no_twoRingReturn}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeRingSelfLoopCounterexample.normalizedTubeSeed_shortestPositiveReturn}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeRingSelfLoopCounterexample.seed_never_reaches_oneRingSelfLoop}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeRingSelfLoopCounterexample.live_recurrent_without_oneRingReturn}
 

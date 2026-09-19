@@ -111,6 +111,52 @@ theorem recurrentStep_phase_flip
   · rcases source with ⟨phase, index⟩
     cases phase <;> rfl
 
+/-- Phase is a length-parity invariant of every physical recurrent path, not
+only of the selected successor used to exhibit the four-ring return. -/
+theorem recurrentTransfer_phase
+    {length : Nat} {source target : RecurrentTubeProfile}
+    (htransfer : ExactRelationalTransfer RecurrentTubeRingStep length source target) :
+    target.1 = (Bool.not^[length]) source.1 := by
+  induction htransfer with
+  | zero => simp
+  | @succ length source next target hstep htail ih =>
+      rw [ih, recurrentStep_phase_flip source next hstep]
+      simp [Function.iterate_succ_apply]
+
+private theorem iterate_bool_not_even (bit : Bool) (cycles : Nat) :
+    (Bool.not^[2 * cycles]) bit = bit := by
+  induction cycles with
+  | zero => simp
+  | succ cycles ih =>
+      calc
+        (Bool.not^[2 * (cycles + 1)]) bit =
+            (Bool.not^[2 + 2 * cycles]) bit := by congr 1; omega
+        _ = (Bool.not^[2]) ((Bool.not^[2 * cycles]) bit) :=
+          Function.iterate_add_apply Bool.not 2 (2 * cycles) bit
+        _ = bit := by simp [ih]
+
+private theorem iterate_bool_not_odd (bit : Bool) (length : Nat)
+    (hodd : Odd length) :
+    (Bool.not^[length]) bit = ! bit := by
+  obtain ⟨cycles, rfl⟩ := hodd
+  calc
+    (Bool.not^[2 * cycles + 1]) bit =
+        (Bool.not^[1 + 2 * cycles]) bit := by congr 1; omega
+    _ = (Bool.not^[1]) ((Bool.not^[2 * cycles]) bit) :=
+      Function.iterate_add_apply Bool.not 1 (2 * cycles) bit
+    _ = ! bit := by simp [iterate_bool_not_even]
+
+/-- In particular a corridor with an odd number of physical rings can
+never return to its complete recurrent profile, even when arbitrary valid
+split choices are allowed at every ring. -/
+theorem recurrent_oddLength_no_return
+    (length : Nat) (hodd : Odd length) (source : RecurrentTubeProfile) :
+    ¬ ExactRelationalTransfer RecurrentTubeRingStep length source source := by
+  intro hreturn
+  have hphase := recurrentTransfer_phase hreturn
+  rw [iterate_bool_not_odd source.1 length hodd] at hphase
+  cases hbit : source.1 <;> simp [hbit] at hphase
+
 /-- The exhaustive two-choice certificate is closure under the *full*
 physical tube-ring relation, not only its named selected successors. -/
 theorem recurrent_successor_closed
@@ -128,21 +174,22 @@ theorem recurrent_successor_closed
     recurrentProfile_fullyRouted_closed source choice hfully
   exact ⟨next, successor_target_unique hchoice hnext⟩
 
-/-- Every exact-length corridor reachable from a recurrent profile remains
-in the exhaustively checked twenty-state set. -/
-theorem recurrent_exactTransfer_closed :
+/-- Every exact-length physical corridor stays in the checked twenty-state
+set, and its final phase records the parity of the complete path. -/
+theorem recurrent_exactTransfer_phase_closed :
     ∀ (length : Nat) (source : RecurrentTubeProfile)
       (target : TubeFrontierState),
       ExactRelationalTransfer TubeRingStep length
         (recurrentProfileState source) target →
       ∃ next : RecurrentTubeProfile,
-        target = recurrentProfileState next := by
+        target = recurrentProfileState next ∧
+        next.1 = (Bool.not^[length]) source.1 := by
   intro length
   induction length with
   | zero =>
       intro source target htransfer
       cases htransfer
-      exact ⟨source, rfl⟩
+      exact ⟨source, rfl, by simp⟩
   | succ length ih =>
       intro source target htransfer
       cases htransfer with
@@ -150,7 +197,103 @@ theorem recurrent_exactTransfer_closed :
           obtain ⟨middle, hmiddle⟩ :=
             recurrent_successor_closed source _ hstep
           rw [hmiddle] at htail
-          exact ih middle target htail
+          obtain ⟨next, htarget, hphase⟩ := ih middle target htail
+          refine ⟨next, htarget, ?_⟩
+          rw [hphase]
+          have hflip : middle.1 = ! source.1 := by
+            apply recurrentStep_phase_flip source middle
+            change TubeRingStep (recurrentProfileState source)
+              (recurrentProfileState middle)
+            rw [← hmiddle]
+            exact hstep
+          rw [hflip]
+          simp [Function.iterate_succ_apply]
+
+/-- The phase certificate entails the earlier full-relation closure fact. -/
+theorem recurrent_exactTransfer_closed
+    (length : Nat) (source : RecurrentTubeProfile)
+    (target : TubeFrontierState)
+    (htransfer : ExactRelationalTransfer TubeRingStep length
+      (recurrentProfileState source) target) :
+    ∃ next : RecurrentTubeProfile,
+      target = recurrentProfileState next := by
+  obtain ⟨next, htarget, _⟩ :=
+    recurrent_exactTransfer_phase_closed length source target htransfer
+  exact ⟨next, htarget⟩
+
+/-- Odd-length return is impossible for the unrestricted *physical* ring
+relation too: the exhaustive closure certificate ensures that no hidden
+successor leaves the phase-graded twenty-state subsystem. -/
+theorem recurrent_rawOddLength_no_return
+    (length : Nat) (hodd : Odd length) (source : RecurrentTubeProfile) :
+    ¬ ExactRelationalTransfer TubeRingStep length
+      (recurrentProfileState source) (recurrentProfileState source) := by
+  intro hreturn
+  obtain ⟨next, htarget, hphase⟩ :=
+    recurrent_exactTransfer_phase_closed length source _ hreturn
+  have hnext : next = source :=
+    recurrentProfileState_injective htarget.symm
+  subst next
+  rw [iterate_bool_not_odd source.1 length hodd] at hphase
+  cases hbit : source.1 <;> simp [hbit] at hphase
+
+/-- The reflected good cap state has no odd-length return in the full
+ring relation. Its certified four-ring return is therefore genuinely
+periodic, not a disguised one-ring padding argument. -/
+theorem normalizedTubeSeed_oddLength_no_return
+    (length : Nat) (hodd : Odd length) :
+    ¬ ExactRelationalTransfer TubeRingStep length
+      normalizedTubeSeed normalizedTubeSeed := by
+  change ¬ ExactRelationalTransfer TubeRingStep length
+    (recurrentProfileState (true, (5 : Fin 10)))
+    (recurrentProfileState (true, (5 : Fin 10)))
+  exact recurrent_rawOddLength_no_return length hodd _
+
+private theorem normalizedTubeSeed_no_twoRingReturn_recurrent :
+    ¬ ∃ middle : RecurrentTubeProfile,
+      RecurrentTubeRingStep (true, (5 : Fin 10)) middle ∧
+      RecurrentTubeRingStep middle (true, (5 : Fin 10)) := by
+  rintro ⟨middle, hfirst, hsecond⟩
+  rcases recurrentStep_target_eq_first_or_second _ middle hfirst with
+    rfl | rfl
+  all_goals
+    rcases recurrentStep_target_eq_first_or_second _ _ hsecond with
+      htarget | htarget
+  all_goals simp [firstFullyRoutedTarget, secondFullyRoutedTarget,
+    phaseAFirstFullyRoutedTarget, phaseASecondFullyRoutedTarget,
+    phaseBFirstFullyRoutedTarget, phaseBSecondFullyRoutedTarget] at htarget
+
+/-- The four-ring return is the *shortest positive return* of the reflected
+good cap state in this complete physical transfer: lengths one and three
+are ruled out by phase, and length two by the exhaustive two-choice table. -/
+theorem normalizedTubeSeed_no_twoRingReturn :
+    ¬ ExactRelationalTransfer TubeRingStep 2
+      normalizedTubeSeed normalizedTubeSeed := by
+  intro hreturn
+  cases hreturn with
+  | succ hfirst htail =>
+      cases htail with
+      | succ hsecond hzero =>
+          cases hzero
+          obtain ⟨middle, hmiddle⟩ :=
+            recurrent_successor_closed (true, (5 : Fin 10)) _ hfirst
+          rw [hmiddle] at hfirst hsecond
+          exact normalizedTubeSeed_no_twoRingReturn_recurrent
+            ⟨middle, hfirst, hsecond⟩
+
+/-- Four rings is the least strictly positive return length for the physical
+normalized tube seed. A zero-length identity is, of course, always possible. -/
+theorem normalizedTubeSeed_shortestPositiveReturn
+    (length : Nat) (hpositive : 0 < length)
+    (hreturn : ExactRelationalTransfer TubeRingStep length
+      normalizedTubeSeed normalizedTubeSeed) :
+    4 ≤ length := by
+  by_contra hshort
+  have hlt : length < 4 := by omega
+  interval_cases length
+  · exact normalizedTubeSeed_oddLength_no_return 1 (by decide) hreturn
+  · exact normalizedTubeSeed_no_twoRingReturn hreturn
+  · exact normalizedTubeSeed_oddLength_no_return 3 (by decide) hreturn
 
 /-- No finite extension from the reflected good cap state reaches any
 one-ring-self-looping state. This refutes the playbook's weak-L2 fallback
