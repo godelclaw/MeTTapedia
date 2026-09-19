@@ -670,6 +670,23 @@ not the physical Cell-3 self-loop claim, which needs its own check.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PeriodicFallbackCounterexample.count_one_positive}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PeriodicFallbackCounterexample.count_two_zero}
 
+The existing normalized $(5,0)$ tube transfer supplies a sharper physical
+test.  All twenty explicitly recurrent frontier profiles lack a one-ring
+self-return in the \emph{full} locally Tait-valid transfer relation.  In
+particular the reflected good cap state has a properly coloured four-ring
+return, so the absence of a one-ring loop is not caused by a dead or
+malformed state.  Moreover the exhaustive two-choice audit closes the entire
+recurrent set under every genuine ring successor: the good seed never reaches
+a self-looping state at any length.  Thus both unqualified L2 and its
+suggested weak fallback fail for this normalized transfer.  A stronger
+counterexample-specific relevance predicate, or a coarser quotient of
+profiles, could still support a different L2; either would need a physical
+soundness proof, not merely recurrence.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeRingSelfLoopCounterexample.recurrentProfile_no_oneRingSelfLoop}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeRingSelfLoopCounterexample.recurrent_successor_closed}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeRingSelfLoopCounterexample.seed_never_reaches_oneRingSelfLoop}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeRingSelfLoopCounterexample.live_recurrent_without_oneRingReturn}
+
 \subsection{The curvature calculation and the missing global implication}
 
 For a connected cubic plane map whose face lengths are at least five, write
