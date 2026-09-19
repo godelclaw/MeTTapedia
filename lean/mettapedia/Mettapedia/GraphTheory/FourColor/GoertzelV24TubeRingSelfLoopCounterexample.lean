@@ -64,6 +64,53 @@ private theorem successor_target_unique
       · exact (computedRoutedTerminal_eq_of_successor hfirst).symm.trans
           (computedRoutedTerminal_eq_of_successor hsecond)
 
+/-- The twenty recurrent state records are distinct; the phase bit cannot
+be erased by equality of their complete colour-and-routing data. -/
+theorem recurrentProfileState_injective :
+    Function.Injective recurrentProfileState := by
+  decide +kernel
+
+/-- Every genuine ring move between recurrent profiles is one of the two
+audited targets. This relates the finite target table to the full physical
+relation, rather than merely certifying two selected moves. -/
+theorem recurrentStep_target_eq_first_or_second
+    (source target : RecurrentTubeProfile)
+    (hstep : RecurrentTubeRingStep source target) :
+    target = firstFullyRoutedTarget source ∨
+      target = secondFullyRoutedTarget source := by
+  change TubeRingStep (recurrentProfileState source)
+    (recurrentProfileState target) at hstep
+  obtain ⟨choice, hchoice⟩ := hstep
+  have hfully : choice.FullyRouted (recurrentProfileState source) := by
+    change IsFullyRoutedTubeRingChoice (recurrentProfileState source) choice
+      (computedRoutedTerminal (recurrentProfileState source) choice)
+    rw [computedRoutedTerminal_eq_of_successor hchoice]
+    exact isFullyRoutedTubeRingChoice_of_successor hchoice
+  rcases (recurrentProfile_fullyRoutedChoice_iff source choice).mp hfully with
+    hfirst | hsecond
+  · subst choice
+    exact Or.inl (recurrentProfileState_injective
+      (successor_target_unique hchoice
+        (firstFullyRoutedChoice_isSuccessor source)))
+  · subst choice
+    exact Or.inr (recurrentProfileState_injective
+      (successor_target_unique hchoice
+        (secondFullyRoutedChoice_isSuccessor source)))
+
+/-- A ring changes the complete frontier's phase on *either* locally valid
+branch. Thus the source's Pascal-index "stay" is not an identity move on the
+complete colour-and-routing profile. -/
+theorem recurrentStep_phase_flip
+    (source target : RecurrentTubeProfile)
+    (hstep : RecurrentTubeRingStep source target) :
+    target.1 = ! source.1 := by
+  rcases recurrentStep_target_eq_first_or_second source target hstep with
+    rfl | rfl
+  · rcases source with ⟨phase, index⟩
+    cases phase <;> rfl
+  · rcases source with ⟨phase, index⟩
+    cases phase <;> rfl
+
 /-- The exhaustive two-choice certificate is closure under the *full*
 physical tube-ring relation, not only its named selected successors. -/
 theorem recurrent_successor_closed

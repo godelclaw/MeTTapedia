@@ -677,13 +677,17 @@ particular the reflected good cap state has a properly coloured four-ring
 return, so the absence of a one-ring loop is not caused by a dead or
 malformed state.  Moreover the exhaustive two-choice audit closes the entire
 recurrent set under every genuine ring successor: the good seed never reaches
-a self-looping state at any length.  Thus both unqualified L2 and its
+a self-looping state at any length.  The two exhaustive successor branches
+both flip the complete profile's frontier phase.  The source's Pascal-index
+``stay'' therefore does not identify the same colour-and-routing profile
+across a ring.  Thus both unqualified L2 and its
 suggested weak fallback fail for this normalized transfer.  A stronger
 counterexample-specific relevance predicate, or a coarser quotient of
 profiles, could still support a different L2; either would need a physical
 soundness proof, not merely recurrence.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeRingSelfLoopCounterexample.recurrentProfile_no_oneRingSelfLoop}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeRingSelfLoopCounterexample.recurrent_successor_closed}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeRingSelfLoopCounterexample.recurrentStep_phase_flip}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeRingSelfLoopCounterexample.seed_never_reaches_oneRingSelfLoop}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeRingSelfLoopCounterexample.live_recurrent_without_oneRingReturn}
 
