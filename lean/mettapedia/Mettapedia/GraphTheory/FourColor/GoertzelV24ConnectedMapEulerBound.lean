@@ -1,5 +1,7 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24CyclicBondBoundary
 import Mettapedia.GraphTheory.FourColor.GoertzelV24InvolutionEdgeList
+import Mettapedia.GraphTheory.Hypermap.Connectivity
+import Mettapedia.GraphTheory.Hypermap.Euler
 
 /-!
 # Euler's inequality for a connected rotation map
@@ -201,30 +203,70 @@ theorem wordReachable_alpha
     (edgeList RS.alpha) dart
   rwa [swapProduct_edgeList RS.alpha RS.alpha_involutive] at hreach
 
-/-- A primal walk lifts to word reachability on its endpoint darts. -/
-theorem wordReachable_of_primalWalk
+/-- A primal walk lifts through any generator family that realizes vertex
+rotation and edge crossing. This separates graph semantics from the choice
+of a permutation presentation. -/
+theorem wordReachable_of_primalWalk_of_steps
     (RS : RotationSystem V E) (hrotation : VertexRotationCyclic RS)
+    (L : List (Perm RS.D))
+    (hrotate : ∀ d, WordReachable L d (RS.rho d))
+    (hflip : ∀ d, WordReachable L d (RS.alpha d))
     {u v : V} (walk : (rotationPrimalGraph RS).Walk u v) :
     ∀ (left right : RS.D), RS.vertOf left = u → RS.vertOf right = v →
-      WordReachable
-        (RS.rho :: swapGenerators (edgeList RS.alpha)) left right := by
+      WordReachable L left right := by
+  have hcycle {left right : RS.D} (h : RS.rho.SameCycle left right) :
+      WordReachable L left right := by
+    obtain ⟨n, hn⟩ := exists_nat_pow_apply_eq h
+    have hp := wordReachable_pow (L := [RS.rho]) (g := RS.rho) (by simp) left n
+    rw [hn] at hp
+    exact wordReachable_absorb (by
+      intro g hg d
+      simpa using (List.mem_singleton.mp hg ▸ hrotate d)) hp
   induction walk with
   | nil =>
       intro left right hleft hright
-      apply wordReachable_of_rho_sameCycle RS
+      apply hcycle
       apply hrotation
       exact hleft.trans hright.symm
   | @cons u w v hadj tail ih =>
       intro left right hleft hright
       obtain ⟨crossing, hcrossingU, hcrossingW⟩ :=
         (rotationPrimalGraph_adj_iff RS).1 hadj
-      have hrotate : WordReachable
-          (RS.rho :: swapGenerators (edgeList RS.alpha)) left crossing :=
-        wordReachable_of_rho_sameCycle RS
+      have hturn : WordReachable L left crossing :=
+        hcycle
           (hrotation left crossing (hleft.trans hcrossingU.symm))
-      have hedge := wordReachable_alpha RS crossing
-      exact hrotate.trans (hedge.trans
+      have hedge := hflip crossing
+      exact hturn.trans (hedge.trans
         (ih (RS.alpha crossing) right hcrossingW hright))
+
+/-- A primal walk lifts to the canonical edge-list presentation. -/
+theorem wordReachable_of_primalWalk
+    (RS : RotationSystem V E) (hrotation : VertexRotationCyclic RS)
+    {u v : V} (walk : (rotationPrimalGraph RS).Walk u v) :
+    ∀ (left right : RS.D), RS.vertOf left = u → RS.vertOf right = v →
+      WordReachable (RS.rho :: swapGenerators (edgeList RS.alpha)) left right :=
+  wordReachable_of_primalWalk_of_steps RS hrotation _
+    (wordReachable_step List.mem_cons_self) (wordReachable_alpha RS) walk
+
+/-- The hypermap forgetful map preserves connectedness when each displayed
+vertex is a single rotation cycle. -/
+theorem hypermap_compCount_eq_one_of_primalConnected
+    (RS : RotationSystem V E)
+    (hconnected : (rotationPrimalGraph RS).Connected)
+    (hrotation : VertexRotationCyclic RS) :
+    Hypermap.compCount (Hypermap.ofRotationSystem RS) = 1 := by
+  rw [Hypermap.compCount_ofRotationSystem]
+  unfold wordOrbitCount
+  rw [Fintype.card_eq_one_iff]
+  refine ⟨Quotient.mk _ RS.outer, ?_⟩
+  intro component
+  induction component using Quotient.inductionOn with
+  | h dart =>
+    apply Quotient.sound
+    obtain ⟨walk⟩ := hconnected (RS.vertOf dart) (RS.vertOf RS.outer)
+    exact wordReachable_of_primalWalk_of_steps RS hrotation [RS.rho, RS.alpha]
+      (wordReachable_step (by simp)) (wordReachable_step (by simp))
+      walk dart RS.outer rfl rfl
 
 /-- Connectedness of the primal graph and cyclicity of the stored vertex
 rotations make every two darts word-reachable. -/
@@ -264,17 +306,15 @@ theorem orbitCount_rho_add_orbitCount_phi_le_edge_add_two
     (hrotation : VertexRotationCyclic RS) :
     orbitCount RS.rho + orbitCount RS.phi ≤
       Fintype.card E + 2 := by
-  have heuler := orbitCount_add_orbitCount_mul_le'
-    RS.rho RS.alpha RS.alpha_involutive
-  have hcomponents := wordOrbitCount_eq_one_of_primalConnected
+  have heuler := Hypermap.eulerLhs_le_eulerRhs (Hypermap.ofRotationSystem RS)
+  have hcomponents := hypermap_compCount_eq_one_of_primalConnected
     RS hconnected hrotation
-  have hlength := length_edgeList_eq_orbitCount
-    RS.alpha RS.alpha_involutive RS.alpha_fixfree
   have halpha :=
     GoertzelV24CompositeSphericity.two_mul_orbitCount_alpha RS
   have hedges := RS.card_darts_eq_twice_card_edges
-  change orbitCount RS.rho + orbitCount (RS.rho * RS.alpha) ≤ _
-  rw [hcomponents] at heuler
+  rw [Hypermap.eulerLhs_eq_orbit_sum, Hypermap.eulerRhs_eq_card_add_two_mul_compCount,
+    Hypermap.ofRotationSystem_edge, Hypermap.orbitCount_node,
+    Hypermap.ofRotationSystem_face, hcomponents] at heuler
   omega
 
 end

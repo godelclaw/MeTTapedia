@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24DualMap
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ConnectedMapEulerBound
 import Mettapedia.GraphTheory.FourColor.GoertzelV24DualRotationSystem
 import Mettapedia.GraphTheory.FourColor.GoertzelV24RotationBridgeFace
 import Mettapedia.GraphTheory.FourColor.GoertzelV24SphericalGraphPresentation
@@ -102,23 +103,10 @@ theorem wordReachable_pair_of_primalWalk
     {first last : V} (walk : (rotationPrimalGraph RS).Walk first last) :
     ∀ (left right : RS.D), RS.vertOf left = first →
       RS.vertOf right = last →
-        WordReachable [RS.rho, RS.alpha] left right := by
-  induction walk with
-  | nil =>
-      intro left right hleft hright
-      exact wordReachable_pair_of_rho_sameCycle RS
-        (hrotation left right (hleft.trans hright.symm))
-  | @cons first middle last hadj tail ih =>
-      intro left right hleft hright
-      obtain ⟨crossing, hcrossingFirst, hcrossingMiddle⟩ :=
-        (rotationPrimalGraph_adj_iff RS).1 hadj
-      have hrotate := wordReachable_pair_of_rho_sameCycle RS
-        (hrotation left crossing (hleft.trans hcrossingFirst.symm))
-      have hcross : WordReachable [RS.rho, RS.alpha]
-          crossing (RS.alpha crossing) :=
-        wordReachable_step (g := RS.alpha) (by simp) crossing
-      exact hrotate.trans
-        (hcross.trans (ih (RS.alpha crossing) right hcrossingMiddle hright))
+        WordReachable [RS.rho, RS.alpha] left right :=
+  GoertzelV24ConnectedMapEulerBound.wordReachable_of_primalWalk_of_steps
+    RS hrotation _ (wordReachable_step (by simp))
+    (wordReachable_step (by simp)) walk
 
 theorem wordReachable_pair_all_of_primalConnected
     (RS : RotationSystem V E)
