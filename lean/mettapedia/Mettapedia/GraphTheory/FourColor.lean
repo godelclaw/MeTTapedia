@@ -651,3 +651,6 @@ import Mettapedia.Combinatorics.Reconfiguration.Instances
 import Mettapedia.GraphTheory.Kempe.BoundaryExamples
 import Mettapedia.GraphTheory.Kempe.FourColorInstances
 import Mettapedia.GraphTheory.Kempe.TauSeries
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ForkTaitBridge
+import Mettapedia.GraphTheory.FourColor.StructuralCutSnipSupply
+import Mettapedia.GraphTheory.FourColor.GoertzelV24ColourOnlyBaseObstruction
