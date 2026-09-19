@@ -1,0 +1,149 @@
+import Mettapedia.GraphTheory.FourColor.GoertzelV24TubeSeedMultiplicity
+
+/-!
+# A physical recurrent tube profile without a one-ring self-loop
+
+The source playbook's L2 asks every alive corridor profile to extend through
+one hexagonal ring back to itself. Its proposed weak fallback infers access
+to such a loop from recurrence. The normalized `(5,0)` tube already separates
+those statements: the reflected good cap state supports a genuine locally
+Tait-coloured four-ring return, but no genuine one-ring self-return.
+
+The previously checked two-choice classification is exhaustive on each of
+the twenty recurrent profiles. Consequently *every* tube-ring successor of
+the good seed remains in that recurrent set, at every length. Since no state
+in the set has a one-ring self-loop, the proposed weak-L2 fallback (reach a
+self-loop after finitely many rings) fails for this specific normalized tube
+transfer too. This does not settle an L2 restricted by a stronger
+counterexample-specific relevance predicate, nor every possible quotient of
+corridor profiles. Such a filter or quotient must establish its own physical
+correspondence and show it preserves the data the splice needs.
+-/
+
+namespace Mettapedia.GraphTheory.FourColor.GoertzelV24TubeRingSelfLoopCounterexample
+
+open GoertzelV24TubeRingTransfer
+open GoertzelV24CorridorPumping
+
+/-- The witness is a legal tracked frontier, not a dead or malformed state. -/
+theorem seed_valid : normalizedTubeSeed.Valid := by
+  decide +kernel
+
+/-- No choice of the five split decisions realizes an exact one-ring return
+with the same colours and the same four tracked-terminal identities. -/
+theorem seed_no_oneRingReturn :
+    ¬ TubeRingStep normalizedTubeSeed normalizedTubeSeed := by
+  decide +kernel
+
+/-- The same obstruction holds at every one of the twenty explicitly
+recurrent normalized tube profiles. This checks the *full* one-ring relation
+at each state, not merely the selected alternating successor relation. -/
+theorem recurrentProfile_no_oneRingSelfLoop
+    (profile : RecurrentTubeProfile) :
+    ¬ RecurrentTubeRingStep profile profile := by
+  obtain ⟨phase, index⟩ := profile
+  cases phase <;> fin_cases index <;>
+    dsimp [RecurrentTubeRingStep, recurrentProfileState] <;> decide +kernel
+
+/-- The new frontier is determined by one locally valid ring choice: its
+colours are computed by the ring, and its terminal locations by the actual
+tracked-component reachability. -/
+private theorem successor_target_unique
+    {source first second : TubeFrontierState} {choice : TubeRingChoice}
+    (hfirst : IsTubeRingSuccessor source first choice)
+    (hsecond : IsTubeRingSuccessor source second choice) :
+    first = second := by
+  cases first with
+  | mk firstColor firstTerminal =>
+    cases second with
+    | mk secondColor secondTerminal =>
+      congr 1
+      · funext position
+        exact (hfirst.2.2.2.1 position).trans
+          (hsecond.2.2.2.1 position).symm
+      · exact (computedRoutedTerminal_eq_of_successor hfirst).symm.trans
+          (computedRoutedTerminal_eq_of_successor hsecond)
+
+/-- The exhaustive two-choice certificate is closure under the *full*
+physical tube-ring relation, not only its named selected successors. -/
+theorem recurrent_successor_closed
+    (source : RecurrentTubeProfile) (target : TubeFrontierState)
+    (hstep : TubeRingStep (recurrentProfileState source) target) :
+    ∃ next : RecurrentTubeProfile,
+      target = recurrentProfileState next := by
+  obtain ⟨choice, hchoice⟩ := hstep
+  have hfully : choice.FullyRouted (recurrentProfileState source) := by
+    change IsFullyRoutedTubeRingChoice (recurrentProfileState source) choice
+      (computedRoutedTerminal (recurrentProfileState source) choice)
+    rw [computedRoutedTerminal_eq_of_successor hchoice]
+    exact isFullyRoutedTubeRingChoice_of_successor hchoice
+  obtain ⟨next, hnext⟩ :=
+    recurrentProfile_fullyRouted_closed source choice hfully
+  exact ⟨next, successor_target_unique hchoice hnext⟩
+
+/-- Every exact-length corridor reachable from a recurrent profile remains
+in the exhaustively checked twenty-state set. -/
+theorem recurrent_exactTransfer_closed :
+    ∀ (length : Nat) (source : RecurrentTubeProfile)
+      (target : TubeFrontierState),
+      ExactRelationalTransfer TubeRingStep length
+        (recurrentProfileState source) target →
+      ∃ next : RecurrentTubeProfile,
+        target = recurrentProfileState next := by
+  intro length
+  induction length with
+  | zero =>
+      intro source target htransfer
+      cases htransfer
+      exact ⟨source, rfl⟩
+  | succ length ih =>
+      intro source target htransfer
+      cases htransfer with
+      | succ hstep htail =>
+          obtain ⟨middle, hmiddle⟩ :=
+            recurrent_successor_closed source _ hstep
+          rw [hmiddle] at htail
+          exact ih middle target htail
+
+/-- No finite extension from the reflected good cap state reaches any
+one-ring-self-looping state. This refutes the playbook's weak-L2 fallback
+for the present normalized tube transfer, without relying on a guessed
+period bound. -/
+theorem seed_never_reaches_oneRingSelfLoop
+    (length : Nat) (target : TubeFrontierState)
+    (htransfer : ExactRelationalTransfer TubeRingStep length
+      normalizedTubeSeed target) :
+    ¬ TubeRingStep target target := by
+  have hseed : normalizedTubeSeed =
+      recurrentProfileState (true, (5 : Fin 10)) := rfl
+  rw [hseed] at htransfer
+  obtain ⟨next, hnext⟩ :=
+    recurrent_exactTransfer_closed length _ target htransfer
+  rw [hnext]
+  exact recurrentProfile_no_oneRingSelfLoop next
+
+/-- In the source cap coordinates, with its proved reflection into the
+normalized ring coordinates, the same one-ring obstruction holds. -/
+theorem reflected_goodCap_no_oneRingReturn :
+    ¬ TubeRingStep
+      (goodTubeCapState.reindex goodTubeCapReflection)
+      (goodTubeCapState.reindex goodTubeCapReflection) := by
+  rw [goodTubeCapState_reindex_eq_normalizedTubeSeed]
+  exact seed_no_oneRingReturn
+
+/-- A live, properly colourable periodic profile need not have the L2
+one-ring self-loop. The four-ring return is a genuine compositional transfer,
+not merely an abstract directed cycle. -/
+theorem live_recurrent_without_oneRingReturn :
+    ∃ state : TubeFrontierState,
+      state.Valid ∧
+      ExactRelationalTransfer TubeRingStep 4 state state ∧
+      (∃ coloring : TubeCorridorTaitColoring 4 state state,
+        coloring.LocallyTait) ∧
+      ¬ TubeRingStep state state := by
+  exact ⟨normalizedTubeSeed, seed_valid,
+    normalizedTubeSeed_fourRingReturn,
+    normalizedTubeSeed_fourRingTaitColoring,
+    seed_no_oneRingReturn⟩
+
+end Mettapedia.GraphTheory.FourColor.GoertzelV24TubeRingSelfLoopCounterexample
