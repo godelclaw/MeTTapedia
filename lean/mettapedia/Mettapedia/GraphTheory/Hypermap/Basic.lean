@@ -23,9 +23,10 @@ theory; any converse needs those extra data and their compatibility laws.
 The correspondence is fixed by the composite law.  With `cancel3 e n f`
 meaning `n (f (e z)) = z`, taking `edge := alpha` and `face := phi` forces
 `node := rho⁻¹`, and that assignment is also the one that makes the orbit
-counts agree: `alpha`-orbits are edges, `rho⁻¹`-orbits are the vertices (a
-permutation and its inverse have the same cycles), and `phi`-orbits are the
-faces.
+counts agree: `alpha`-orbits are edges, `rho⁻¹`-orbits are rotation cycles
+(a permutation and its inverse have the same cycles), and `phi`-orbits are
+faces. Identifying rotation cycles with the displayed vertex labels additionally
+requires cyclicity of each vertex fiber and surjectivity of the vertex map.
 
 Euler's relation is stated here as a defect, without claiming its two
 substantive properties.  That it is non-positive and even — equivalently, that
@@ -60,8 +61,9 @@ open Equiv GoertzelV24PermutationOrbitSurgery GoertzelV24WordReachability
 variable {D : Type*} [Fintype D] [DecidableEq D]
 variable {V E : Type*} [Fintype V] [DecidableEq V] [Fintype E] [DecidableEq E]
 
-/-- **A rotation system is a hypermap.**  Edges are the `alpha`-orbits, vertices
-the `node`-orbits, faces the `phi`-orbits. -/
+/-- Forget the labels and outer dart of a rotation system. The hypermap's nodes
+are rotation orbits; identifying them with displayed vertices requires separate
+fiber-cyclicity and surjectivity hypotheses. -/
 def ofRotationSystem (RS : RotationSystem V E) : Hypermap RS.D where
   edge := RS.alpha
   node := RS.rho⁻¹
