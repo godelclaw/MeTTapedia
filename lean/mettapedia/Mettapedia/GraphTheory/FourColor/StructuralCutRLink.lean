@@ -53,6 +53,61 @@ opposite of `x`.  It is not adjacency in the primal graph. -/
 def AmbientRLink (RS : RotationSystem V E) (x y : RS.D) : Prop :=
   RS.phi.SameCycle (RS.alpha x) y
 
+/-- Two-sided ambient faces rule out a fixed boundary first return. This is
+the port-level reason the ring contains every boundary dart. -/
+theorem retainedSuccessor_ne_self
+    (RS : RotationSystem V E) (keep : V → Prop)
+    (htwo : OrbitFacesTwoSided RS)
+    (b : BoundaryDart RS keep) :
+    retainedRegionBoundarySuccessor RS keep b ≠ b := by
+  intro hfixed
+  apply htwo b.1.1
+  apply Quotient.sound
+  have hface := retainedRegionBoundarySuccessor_sameAmbientFace_alpha RS keep b
+  change RS.phi.SameCycle (RS.alpha b.1.1)
+    (retainedRegionBoundarySuccessor RS keep b).1.1 at hface
+  rw [hfixed] at hface
+  exact hface.symm
+
+/-- The first-return successor of a source-derived ordered contour bond is
+one cycle. This exports the permutation property required by the snip disk,
+without asking a caller to reconstruct the `Cycle` witness below. -/
+theorem retainedSuccessor_isCycle_of_orderedContourBond
+    (rotation : Data G)
+    (hclass : BridgelessSphericalCubicMapData rotation.toRotationSystem)
+    (htwo : OrbitFacesTwoSided rotation.toRotationSystem)
+    (root far : OrbitFace rotation.toRotationSystem)
+    {lo hi width : ℕ}
+    (bond : OrderedContourBond rotation root far lo hi width) :
+    (retainedRegionBoundarySuccessor rotation.toRotationSystem
+      (deletedRegionKeep bond.deleted)).IsCycle := by
+  let RS := rotation.toRotationSystem
+  let keep := deletedRegionKeep bond.deleted
+  have hG : G.Connected := by
+    simpa only [RS, rotationPrimalGraph_toRotationSystem_eq]
+      using hclass.primalConnected
+  obtain ⟨⟨inside, hinside⟩, _⟩ :=
+    (SimpleGraph.connected_iff_exists_forall_reachable _).mp bond.connected
+  obtain ⟨⟨outside, houtside⟩, _⟩ :=
+    (SimpleGraph.connected_iff_exists_forall_reachable _).mp bond.complement_connected
+  have hcard : 2 ≤ Fintype.card (BoundaryDart RS keep) :=
+    two_le_card_boundaryDart_of_connected_edgeBridgeFree RS
+      hclass.primalConnected hclass.edgeBridgeFree keep
+      ⟨inside, hinside⟩ ⟨outside, houtside⟩
+  have hpair : ∃ first second : BoundaryDart RS keep, first ≠ second := by
+    by_contra hnone
+    have hsub : Subsingleton (BoundaryDart RS keep) :=
+      ⟨by intro x y; by_contra hxy; exact hnone ⟨x, y, hxy⟩⟩
+    have hle : Fintype.card (BoundaryDart RS keep) ≤ 1 :=
+      Fintype.card_le_one_iff_subsingleton.mpr hsub
+    omega
+  obtain ⟨first, second, hne⟩ := hpair
+  have hhub : (canonicalHubRotation RS keep).IsCycle :=
+    canonicalHubRotation_isCycle_of_planarBond rotation bond.deleted
+      first.1 hclass.spherical htwo hG hclass.vertexRotationCyclic
+      bond.connected bond.complement_connected first second hne
+  simpa only [RS, keep, canonicalHubRotation, inv_inv] using hhub.inv
+
 /-- Every actual route bond has one exhaustive, face-simple R-link cycle of
 boundary darts, with the orientation opposite the deleted-side first return.
 The cycle is produced from the exact first-return permutation; no noose or
@@ -82,40 +137,11 @@ theorem orderedContourBond_simpleRLinkCycle
   let RS := rotation.toRotationSystem
   let keep := deletedRegionKeep bond.deleted
   let σ := retainedRegionBoundarySuccessor RS keep
-  have hG : G.Connected := by
-    simpa only [RS, rotationPrimalGraph_toRotationSystem_eq]
-      using hclass.primalConnected
-  obtain ⟨⟨inside, hinside⟩, _⟩ :=
-    (SimpleGraph.connected_iff_exists_forall_reachable _).mp bond.connected
-  obtain ⟨⟨outside, houtside⟩, _⟩ :=
-    (SimpleGraph.connected_iff_exists_forall_reachable _).mp bond.complement_connected
-  have hcard : 2 ≤ Fintype.card (BoundaryDart RS keep) :=
-    two_le_card_boundaryDart_of_connected_edgeBridgeFree RS
-      hclass.primalConnected hclass.edgeBridgeFree keep
-      ⟨inside, hinside⟩ ⟨outside, houtside⟩
-  have hpair : ∃ first second : BoundaryDart RS keep, first ≠ second := by
-    by_contra hnone
-    have hsub : Subsingleton (BoundaryDart RS keep) :=
-      ⟨by intro x y; by_contra hxy; exact hnone ⟨x, y, hxy⟩⟩
-    have hle : Fintype.card (BoundaryDart RS keep) ≤ 1 :=
-      Fintype.card_le_one_iff_subsingleton.mpr hsub
-    omega
-  obtain ⟨first, second, hne⟩ := hpair
-  have hhub : (canonicalHubRotation RS keep).IsCycle :=
-    canonicalHubRotation_isCycle_of_planarBond rotation bond.deleted
-      first.1 hclass.spherical htwo hG hclass.vertexRotationCyclic
-      bond.connected bond.complement_connected first second hne
-  have hcycle : σ.IsCycle := by
-    simpa only [σ, canonicalHubRotation, inv_inv] using hhub.inv
-  have hnofix (b : BoundaryDart RS keep) : σ b ≠ b := by
-    intro hfixed
-    apply htwo b.1.1
-    apply Quotient.sound
-    have hface := retainedRegionBoundarySuccessor_sameAmbientFace_alpha
-      RS keep b
-    change RS.phi.SameCycle (RS.alpha b.1.1) (σ b).1.1 at hface
-    rw [hfixed] at hface
-    exact hface.symm
+  have hcycle : σ.IsCycle :=
+    retainedSuccessor_isCycle_of_orderedContourBond rotation hclass htwo
+      root far bond
+  have hnofix (b : BoundaryDart RS keep) : σ b ≠ b :=
+    retainedSuccessor_ne_self RS keep htwo b
   let ring : Cycle (BoundaryDart RS keep) := σ.toCycle hcycle
   have hnodup : ring.Nodup := σ.nodup_toCycle hcycle
   refine ⟨ring, hnodup, ?_, ?_, ?_, ?_⟩
