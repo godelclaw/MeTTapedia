@@ -110,4 +110,3 @@ theorem compCount_ofRotationSystem
     (ofRotationSystem_reachable_iff RS))
 
 end Mettapedia.GraphTheory.Hypermap
-
