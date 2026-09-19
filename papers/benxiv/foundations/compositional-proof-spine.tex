@@ -657,6 +657,19 @@ the equal-profile splice of Theorem~\ref{thm:finite-profile-reductive-pumping}.
 Accordingly profile cardinality has not been removed from the general source
 argument.
 
+Nor does finiteness alone supply the source playbook's suggested weak-L2
+fallback.  The alternating two-state transfer is serial and every state
+returns after two steps, but neither state has a self-loop.  From a fixed
+initial and accepting state its exact Count is positive at length one and
+zero at length two.  Thus a rejected corridor cannot in general be shortened
+by one rung while preserving rejection; eventual periodicity gives only
+congruence-class padding.  This refutes the proposed \emph{generic deduction},
+not the physical Cell-3 self-loop claim, which needs its own check.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PeriodicFallbackCounterexample.alternating_serial}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PeriodicFallbackCounterexample.alternating_no_self_loop}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PeriodicFallbackCounterexample.count_one_positive}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PeriodicFallbackCounterexample.count_two_zero}
+
 \subsection{The curvature calculation and the missing global implication}
 
 For a connected cubic plane map whose face lengths are at least five, write
@@ -10563,6 +10576,27 @@ Lemma~\ref{lem:canonical-hub-face-simple} supplies face-simplicity without
 any topological hypothesis.  Theorem~\ref{thm:exact-rank-forces-one-hub}
 then proves that the canonical hub rotation is a single cycle.
 \end{proof}
+
+The same physical bond also has a Coq-style snip presentation distinct from
+that hub cap.  Its retained real darts form a disk whose border is one edge
+orbit; the deleted-side real darts and hub copies form the remainder.  The
+ambient embeddings satisfy the full hypermap patch laws, so genus is additive
+and both pieces of a spherical map are planar.  Connectedness of the two
+induced sides is sufficient: no contour geometry is required once the cut is
+given.  Consequently every completed literal node at an internal connected
+branch-decomposition fork has this patch, and its actual patch-border carrier
+has cardinality at most the node's interface bound.
+\Sverified{Mettapedia.GraphTheory.FourColor.StructuralCutPlanarBondPatch.planarBond_patch}
+\Sverified{Mettapedia.GraphTheory.FourColor.StructuralCutPlanarBondPatch.literalShoreNode_patch}
+\Sverified{Mettapedia.GraphTheory.FourColor.StructuralCutPlanarBondPatch.literalShoreNode_genus_add}
+\Sverified{Mettapedia.GraphTheory.FourColor.StructuralCutPlanarBondPatch.literalShoreNode_face_count}
+\Sverified{Mettapedia.GraphTheory.FourColor.StructuralCutPlanarBondPatch.literalShoreNode_planar_parts}
+\Sverified{Mettapedia.GraphTheory.FourColor.StructuralCutPlanarBondPatch.literalShoreNode_patch_border_card_le}
+
+These are cut-preservation and interface-bound results, not a base audit:
+they do not provide the finite closure, its physical coverage, or an empty
+accepting set.  They do make the general patch theory available at exactly
+the branch cuts the route's tree instrument consumes.
 
 \begin{theorem}[complementary planar-bond orders are opposite]
 \label{thm:planar-bond-orders-opposite}
