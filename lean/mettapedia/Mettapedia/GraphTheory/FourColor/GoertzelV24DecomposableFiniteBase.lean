@@ -18,9 +18,15 @@ nothing and restricts the obligation to exactly the maps the interface closure
 can see.  The resulting premise has all the hypotheses of the old one and one
 more, so it is weaker; the old headline is recovered as a corollary.
 
-The restriction is not vacuous: branch middle sets are what `w` bounds, and
-bridgeless planar cubic maps of branchwidth above any fixed `w` exist far
-below the vertex bound, so the base is genuinely relieved of them.
+At a genuinely small fixed `w` this restriction can exclude maps.  It does
+not currently give a small-width advantage at the load-bearing use site: the
+available mesh-free suppliers set `w` to a vertex-count bound and obtain a
+decomposition from the trivial inequality
+`middleSet.card ≤ Fintype.card V ≤ w`.  The restriction still excludes some
+other maps below `rawVertexBound k w`; it is not logically vacuous.  But the
+direct mesh-free assembly already asks for colourability only through that
+smaller vertex-count bound.  A useful fixed-width interface audit needs an
+independently small width supplier.
 -/
 
 namespace Mettapedia.GraphTheory.FourColor

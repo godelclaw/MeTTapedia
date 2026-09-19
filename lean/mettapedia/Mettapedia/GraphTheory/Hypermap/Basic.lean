@@ -13,9 +13,12 @@ elsewhere.
 
 This development grew its own presentation instead: a `RotationSystem`, with a
 free involution `alpha`, a rotation `rho`, and a derived face permutation
-`phi = rho * alpha`.  The two are the same object.  Writing the dictionary
-down is the enabling step for reusing the generic theory rather than
-re-deriving it, so that is what this module does.
+`phi = rho * alpha`.  Forgetting the labels and distinguished outer dart
+sends a rotation system to a hypermap.  This is not an equivalence of the
+structures as stated: a general hypermap need not have a fixed-point-free
+edge involution, and it has no chosen vertex or edge labels or outer dart.
+Writing this one-way dictionary is the first step toward reusing generic
+theory; any converse needs those extra data and their compatibility laws.
 
 The correspondence is fixed by the composite law.  With `cancel3 e n f`
 meaning `n (f (e z)) = z`, taking `edge := alpha` and `face := phi` forces
