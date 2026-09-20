@@ -698,6 +698,48 @@ soundness proof, not merely recurrence.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeRingSelfLoopCounterexample.seed_never_reaches_oneRingSelfLoop}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeRingSelfLoopCounterexample.live_recurrent_without_oneRingReturn}
 
+Even the surviving four-ring period is not an identity transfer.  The same
+good seed has a second genuine four-ring path to a different frontier: both
+its five-port colour word and its tracked terminal arrangement change.  That
+path also assembles to a locally Tait-proper corridor colouring.  Thus an
+existential positive-period return alone cannot justify replacing the block
+by an identity in every surrounding context.  A corrected pumping step needs
+a context-sensitive support or absorption law for the actual caps and cuts;
+this observation does not rule out such a law.  In fact the source-crosscut
+library already proves that the \emph{one-way} implication from retained
+seam-word support into removed-piece support suffices for reverse completion.
+Equality of those supports is stronger than the descent consumes.  The open
+mathematics is to obtain that implication from a physically supplied repeated
+corridor, not to re-prove the conditional gluing adapter.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeFourRingNonidentity.normalizedTubeSeed_fourRingOffDiagonal}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeFourRingNonidentity.offDiagonalColorWord_ne_seed}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeFourRingNonidentity.offDiagonalTerminal_ne_seed}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeFourRingNonidentity.normalizedTubeSeed_fourRingOffDiagonalTaitColoring}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeFourRingNonidentity.normalizedTubeSeed_fourRing_not_identity}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularCrosscutProfileDiagonalLift.sourceCrosscutReverseCompletion_ofSeamSupportLift}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24AnnularCrosscutProfileDiagonalLift.not_taitColorable_sourceCrosscutSplice_ofProfileDiagonalLift}
+
+The complete Boolean support of this same normalized physical tube has a
+different, positive periodicity law.  After nine rings, every one of the ten
+recurrent states in the opposite phase is reachable from each recurrent
+start; after eight rings the support is not yet stable under adding two.
+The full locally Tait-valid ring relation has no successors outside these
+twenty states, so this is not an artefact of restricting to a chosen path.
+For every later length, adding two rings preserves exact reachability of
+each complete colour-and-routing frontier, and therefore preserves
+acceptance against \emph{any predicate on the endpoint}.  This supplies a
+correct eventual support-pumping law for this one physical tube, while
+neither restoring L2's one-ring self-loop nor identifying an arbitrary
+source cut with the normalized tube.  Using it in the global descent still
+requires a long enough physical tube in the chosen minimal counterexample,
+a cut-and-cap factorization respecting these complete frontier states, and
+a strictly smaller retained map.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeEventualSupportPeriodicity.recurrentReachSet_nine_saturated}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeEventualSupportPeriodicity.recurrentReachSet_eight_ne_ten}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeEventualSupportPeriodicity.rawTransfer_iff_recurrentTransfer}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeEventualSupportPeriodicity.rawTransfer_period_two_after_nine}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeEventualSupportPeriodicity.rawCapAcceptance_period_two_after_nine}
+
 \subsection{The curvature calculation and the missing global implication}
 
 For a connected cubic plane map whose face lengths are at least five, write
