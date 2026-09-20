@@ -672,7 +672,7 @@ not the physical Cell-3 self-loop claim, which needs its own check.
 
 The existing normalized $(5,0)$ tube transfer supplies a sharper physical
 test.  All twenty explicitly recurrent frontier profiles lack a one-ring
-self-return in the \emph{full} locally Tait-valid transfer relation.  In
+self-return in the \emph{full fully-routed state-transfer relation}.  In
 particular the reflected good cap state has a properly coloured four-ring
 return, so the absence of a one-ring loop is not caused by a dead or
 malformed state.  Moreover the exhaustive two-choice audit closes the entire
@@ -723,7 +723,7 @@ The complete Boolean support of this same normalized physical tube has a
 different, positive periodicity law.  After nine rings, every one of the ten
 recurrent states in the opposite phase is reachable from each recurrent
 start; after eight rings the support is not yet stable under adding two.
-The full locally Tait-valid ring relation has no successors outside these
+The fully-routed state-transfer relation has no successors outside these
 twenty states, so this is not an artefact of restricting to a chosen path.
 For every later length, adding two rings preserves exact reachability of
 each complete colour-and-routing frontier, and therefore preserves
@@ -739,6 +739,49 @@ a strictly smaller retained map.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeEventualSupportPeriodicity.rawTransfer_iff_recurrentTransfer}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeEventualSupportPeriodicity.rawTransfer_period_two_after_nine}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeEventualSupportPeriodicity.rawCapAcceptance_period_two_after_nine}
+
+The routing qualifier matters.  A one-ring choice on the canonical tube
+incidence graph is locally Tait-proper but joins two different incoming
+tracked strands; it therefore has no successor in the four-strand transfer.
+The transfer's nine-to-eleven cap law is an exact law for coherent
+\emph{routed} corridor certificates, not an assertion about every proper
+colouring of a shortened ambient map.  In the colour-only quotient that
+retains every locally proper choice, the normalized seed's endpoint support
+is already stationary after four rings, against any predicate on the output
+colour word.  This is a stronger colourability-level statement with a
+weaker interface; it still needs a theorem relating arbitrary physical
+source and cap pieces to that interface.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeCorridorShortening.escapingChoice_joins_old_terminals}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeCorridorShortening.escapingChoice_no_successor}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeCorridorShortening.corridorCapAcceptance_period_two_after_nine}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeColourOnlyPeriodicity.valid_iff_locallyTait}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeColourOnlyPeriodicity.escapingChoice_isColourStep}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeColourOnlyPeriodicity.reachSet_five_eq_four_seed}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeColourOnlyPeriodicity.capAcceptance_period_two_after_four}
+
+The growth of exact transfer paths is not merely duplicate certificate
+bookkeeping: fully routed histories inject into distinct proper colourings
+of the canonical open tube's line graph, even after the five incoming edge
+colours are fixed.  There are at least $2^n$ such colourings after $n$
+rings.  This does not yet identify the family with the source note's
+$\mathrm{Count}$ functor on its asserted corridor subcategory, so it is not
+called a refutation of that global finite-image claim.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeActualColouringGrowth.historyLineColouring_injective}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeActualColouringGrowth.card_fixedStartColourings_ge_two_pow}
+
+There is also a literal conditional physical result in the pre-existing
+zigzag-slab presentation.  Its five-port stabilisation test is now
+kernel-certified, and the already proved embedded-tube descent consumes it:
+a graph-backed vertex-minimal counterexample satisfying the theorem's
+coherent embedded tube and side-connectivity hypotheses has at most
+$446{,}403$ slabs.  The bound is large because that descent still
+pigeonholes boundary coordinates, hub rotation and shore-size phase.  No
+theorem here supplies this tube in every sufficiently large counterexample,
+nor has the zigzag-slab presentation been formally identified with the
+normalized routed transfer above.  Thus this is a genuine physical
+exclusion of one specified corridor, not the global decomposition theorem.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FiveTubeExclusion.five_ring_stabilizes}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FiveTubeExclusion.embedded_five_tube_length_bound}
 
 \subsection{The curvature calculation and the missing global implication}
 
