@@ -338,6 +338,31 @@ structural coordinates are for.  The closure over the full profile, and the
 coverage statement that every bounded-interface map arises as a fork run, both
 remain open.
 
+The structural coordinate cannot be reduced to one Euler-defect number per
+child.  A physical edge-leaf fork on the tetrahedron gives a finite control:
+the planar and twisted rotations have equal realized boundary-colour support,
+component count, and scalar defect on both children, but their parent defects
+differ by two.  Thus no fork transition on those coarse child states is exact
+for all partial rotation states.  The twisted parent is not spherical, so this
+control does not rule out a transition specialized to states already known to
+be spherical.
+\Srefuted{Mettapedia.GraphTheory.FourColor.GoertzelV24ForkFaceOrderObstruction.no_exact_coarse_defect_fork}
+
+The missing information has a concrete replacement: the permutation of first
+returns of face walks to named interface darts.  For a fresh physical edge,
+the two edge flips commute, and prepending the edge swaps its two marks in the
+old return permutation.  Nested first-return restriction then internalizes
+marks that disappear at the parent boundary.  The same record determines the
+exact Euler-defect increment of this edge-leaf fork and distinguishes the two
+tetrahedral rotations in the control.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ForkFaceReturn.nextHitPerm_cons_of_fresh}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ForkFaceReturn.nextHitPerm_cons_project_of_fresh}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ForkFaceReturn.defect_cons_via_return}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ForkFaceReturn.tetra_bc_return_fork}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ForkFaceReturn.tetra_return_distinguishes_rotations}
+This proves a physical edge-leaf transition, not yet the binary gluing law for
+two nontrivial edge subtrees.  That law and the closure audit remain open.
+
 For the current direct headline, the two load-bearing open inputs are fixed
 ordered-mesh exclusion ($D_{1d}$) and the route-native finite base ($D_{4b}$).
 The $D_{1b}$/$D_{1c}$ chain is an alternative global construction, while
@@ -2479,6 +2504,23 @@ Thus the coordinate-equivalence packaging is closed.  The supplier must still
 supply literal connected shores and a strict material witness; the two
 disc-side hypotheses are then consequences of the planar-bond theorems, not
 extra receipt fields.
+
+The geometric part admits a sharper separation from the colour receipt.
+Two connected planar majority bonds with equally many boundary darts have
+full cyclic hub rotations, so their borders admit an orientation-reversing
+matching. Sewing with that matching produces a connected, bridgeless,
+spherical cubic rotation map without assuming equal normalized states or
+equal Tait supports.
+\Sverified{Mettapedia.GraphTheory.FourColor.StructuralCutCyclicMatching.exists_orientationReversing_of_full_cycles}
+\Sverified{Mettapedia.GraphTheory.FourColor.StructuralCutCyclicMatching.exists_structural_majority_replacement}
+If the two shores are strictly nested in a vertex-minimal counterexample,
+the resulting smaller structural splice must instead have a new Tait
+boundary word absent from the removed inner side; otherwise support
+inclusion would preserve non-colourability and contradict minimality.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TargetAwarePhysicalDescent.exists_unmatched_tait_word_of_equal_width_bonds}
+This identifies the remaining semantic obstruction but does not prove that
+the wall supplies a pair whose new support is contained in the old one, or
+even one matching whose new support avoids the actual exterior support.
 
 \begin{theorem}[constructive physical replacement at equal normalized states]
 \label{thm:constructive-majority-shore-physical-replacement}
