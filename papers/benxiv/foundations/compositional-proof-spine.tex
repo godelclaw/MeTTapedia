@@ -367,13 +367,53 @@ disjoint union before seam rewiring, and the resulting change in face cycles
 is exact, including cycles closed behind the seam.
 \Sverified{Mettapedia.GraphTheory.FourColor.SerialTangleFaceTransfer.combinedReturn_eq}
 \Sverified{Mettapedia.GraphTheory.FourColor.SerialTangleFaceTransfer.serial_face_count}
-What remains is a physical presentation bridge from two edge-shore children
-meeting at branch vertices to that marked-permutation rewiring calculus.  A
-branch fork is not automatically the two-sided serial seam in those theorems:
-both raw children inherit the same ambient vertex rotation, whose cycles can
-alternate darts owned by the two edge pieces.  Their vertex turns must be cut
-into named ports and restored at the fork without duplicating them.
-The closure audit remains open.
+The physical presentation bridge is now proved for an arbitrary partition
+of an edge-permutation carrier.  Restrict the vertex rotation $\rho$ by first
+return to each dart shore, and transport their disjoint union back to the
+parent carrier; call this permutation $\rho_{\rm split}$.  Edge partners
+remain in their own shore.  Thus $p=\rho_{\rm split}\alpha$ is literally the
+disjoint union of the two child face permutations.  Their identification with
+the older ambient edge-shore presentation is also proved: restricting
+$\rho\,\widehat\alpha_A$ to the retained darts gives exactly the left child
+face permutation, and likewise for the right child.
+\Sverified{Mettapedia.GraphTheory.FourColor.EdgeShoreFaceFork.leftFace_eq_raw_return}
+\Sverified{Mettapedia.GraphTheory.FourColor.EdgeShoreFaceFork.rightFace_eq_raw_return}
+\Sverified{Mettapedia.GraphTheory.FourColor.EdgeShoreFaceFork.before_eq_sum}
+
+Restoring the shared vertex turns is the explicit permutation
+$s=\alpha^{-1}\rho_{\rm split}^{-1}\rho\alpha$, so the parent face permutation
+is $ps=\rho\alpha$.  It fixes every dart whose edge partner is not a crossing
+turn.  These changed darts number at most $3w$ when at most $w$ vertices are
+shared and each vertex has at most three darts.  No planarity assumption is
+needed for this identity or bound.
+\Sverified{Mettapedia.GraphTheory.FourColor.EdgeShoreFaceFork.rewire_fixed_of_not_mark}
+\Sverified{Mettapedia.GraphTheory.FourColor.EdgeShoreFaceFork.card_mark_le_of_middle_width}
+
+The first-return record of $p$ is obtained separately from the two child
+records.  Boundary rewiring gives the exact parent face count, including
+cycles missing the interface.  Additional outgoing marks can be retained
+while sewing, then projected to the parent boundary by nested first return.
+\Sverified{Mettapedia.GraphTheory.FourColor.EdgeShoreFaceFork.before_return_left}
+\Sverified{Mettapedia.GraphTheory.FourColor.EdgeShoreFaceFork.before_return_right}
+\Sverified{Mettapedia.GraphTheory.FourColor.EdgeShoreFaceFork.fork_face_count}
+\Sverified{Mettapedia.GraphTheory.FourColor.EdgeShoreFaceFork.parent_return_project}
+
+The tetrahedron control consumes these laws on two nonempty six-dart
+children, using the existing edge-list fork.  Both parent rotations give
+the same split rotation and two pre-sewing faces.  Their boundary corrections
+recover respectively four and two parent faces, exactly distinguishing the
+case the scalar-only summary missed.
+\Sverified{Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkChecks.left_face_from_existing_edge_word}
+\Sverified{Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkChecks.child_sizes}
+\Sverified{Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkChecks.same_split}
+\Sverified{Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkChecks.boundary_correction_distinguishes}
+
+This closes the permutation-level physical two-child face law, not the
+finite-base obligation.  Still required are an executable bounded full-profile
+fork evaluator, its coverage and adequacy proofs over decomposition trees,
+and the empty rejecting-root closure audit.  Global production of the
+decomposition or reductive cut chain is a separate open obligation; none of
+the local counterexamples proves that obligation false.
 
 For the current direct headline, the two load-bearing open inputs are fixed
 ordered-mesh exclusion ($D_{1d}$) and the route-native finite base ($D_{4b}$).
