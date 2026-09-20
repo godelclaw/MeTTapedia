@@ -362,6 +362,75 @@ machine-checked counterexample admits an off-diagonal transition while having
 matching projected color support and no full-profile diagonal.  Connectivity
 and face data are therefore mathematical content, not bookkeeping.
 
+\subsection{Refuted implications, and exactly what each one refutes}
+
+Several implications the route once leaned on are now machine-refuted.  Each
+item below kills a stated implication; none of them refutes the reductive
+programme, and none bears on the open global supply of suitable cuts.  The
+distinction is recorded deliberately, because a refuted proof step is often
+mistaken for a refuted theorem.
+
+\paragraph{Composition of local Kempe reachability.}  The manuscript proof of
+Lemma~8.18 prepares the downstream gadget so that a chosen upstream switch
+lifts.  That preparation fails on the encoded model, and the failure is not an
+artifact of the encoding: on the actual $22$-edge line graph of two gadgets in
+series there is an upstream switch whose resulting colouring has \emph{no}
+downstream extension at all, so no further rearrangement can repair it.  The
+manuscript's preparation step, carried as an explicit hypothesis, is refuted on
+the same graph.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelLemma814.lemma818_pointwise_lift_preparation_obstruction}
+\Sverified{Mettapedia.GraphTheory.Kempe.TauSeries.not_liftsSteps}
+\Sverified{Mettapedia.GraphTheory.Kempe.TauSeries.not_pairingPreparable}
+
+What survives is the conclusion, not the argument: chain reachability for two
+gadgets in series holds by the existing audit.  The repaired composition law
+asks lifting only of those moves whose target extends, and that weakened
+hypothesis is proved \emph{necessary}, so it is the weakest condition that
+works.
+\Sverified{Mettapedia.Combinatorics.Reconfiguration.fibresConnected_of_parts}
+\Sverified{Mettapedia.Combinatorics.Reconfiguration.liftsImageSteps_of_fibresConnected}
+
+\paragraph{The keystone is no longer only an encoded-model audit.}  Lemma~8.14
+and the transparency Lemma~8.15 are now theorems about a genuine graph: on the
+line graph of the canonical three-cell gadget, the encoded model's components
+are the actual Kempe components and its certified moves are actual switches
+avoiding the input stubs.  This closes the graph move-soundness boundary that
+earlier status tables recorded as open for both lemmas.
+\Sverified{Mettapedia.GraphTheory.Kempe.TauGadget.tau_fibreConnected}
+\Sverified{Mettapedia.GraphTheory.Kempe.TauGadget.tau_transparent}
+
+\paragraph{Finite generation does not give a finite counting image.}  A single
+state with a single generator already produces pairwise distinct exact rows, so
+no finite code separates them; and a physical open-tangle family keeps that
+property even after positive rescaling.  Finitely many objects and generating
+morphisms therefore do not imply a finite image of the counting functor.  The
+family carries no counterexample-class restriction, so this refutes the
+unrestricted claim rather than every restricted form of it.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundedInterfacePumpingAudit.no_finite_exact_count_code}
+\Sverified{Mettapedia.GraphTheory.FourColor.ProjectiveTangleCount.no_finite_projective_chain_code}
+
+\paragraph{Recurrence does not supply a self-loop.}  The proposed fallback
+takes eventual periodicity to deliver a reachable self-looping state.  Two
+states alternating forever recur without either carrying a self-loop, and in
+the normalized fully-routed tube transfer the good seed provably never reaches
+a one-ring self-looping state.  A period-respecting deletion argument needs a
+different route.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeRingSelfLoopCounterexample.seed_never_reaches_oneRingSelfLoop}
+
+\paragraph{Scalar child data does not determine the parent.}  For the two
+tetrahedral rotations, equal child colour support, component count and scalar
+Euler defect are compatible with different parent defects, so no fork rule on
+that coarse state can be exact.  The repair is not a larger scalar summary but
+the physical two-child face law: splitting the vertex rotation by first return
+and restoring the shared turns by an explicit boundary permutation gives the
+parent face permutation and an exact face-count correction, including cycles
+invisible at the interface.  On the same tetrahedral control the boundary
+correction recovers four faces against two, which is precisely the distinction
+the coarse state missed.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ForkFaceOrderObstruction.no_exact_coarse_defect_fork}
+\Sverified{Mettapedia.GraphTheory.FourColor.EdgeShoreFaceFork.fork_face_count}
+\Sverified{Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkChecks.boundary_correction_distinguishes}
+
 \subsection{A Lean-side crosscut interface, not a source flag}
 
 The type \texttt{SeparatedAlignedSimpleDualCrosscuts} is a useful Lean-side

@@ -95,6 +95,7 @@ import Mettapedia.GraphTheory.FourColor.UnsplitCapSweep
 import Mettapedia.GraphTheory.FourColor.VertexAttachmentChecks
 import Mettapedia.GraphTheory.FourColor.VertexSideStructuralReplacement
 import Mettapedia.GraphTheory.FourColor.VertexSpliceOrientation
+import Mettapedia.GraphTheory.Kempe.TauSeries
 
 /-!
 # Citation ledger
