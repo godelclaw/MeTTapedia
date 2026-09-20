@@ -17322,9 +17322,16 @@ clause, two components sharing one handle would pass.
 
 The controls are the same two-vertex three-edge pair as before. The planar
 map is accepted; its handled twin, with the same colour support and the same
-cut data, is rejected. Colour acceptance alone cannot separate them, which is
-why the accepting array may not be the colour test on its own. Accumulated
-closed components are likewise rejected, their mass being four per component.
+cut data, is rejected. Colour acceptance alone cannot separate them; even the
+complete closed colour, face-return and cut state agrees. A terminal test
+invariant under those three coordinates therefore cannot equal physical
+acceptance on all closed runs. The Euler mass, or an equivalent
+planarity-sensitive invariant, is indispensable for this direct evaluator.
+This does not prove that its finite closure can be replayed.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ColourOnlyBaseObstruction.same_state_without_mass}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ColourOnlyBaseObstruction.no_mass_free_terminal_test}
+Accumulated closed components are likewise rejected, their mass being four
+per component.
 \Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeTerminalAcceptance.flat_accepted}
 \Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeTerminalAcceptance.twisted_rejected}
 \Sverified{Mettapedia.GraphTheory.FourColor.VertexCodeTerminalAcceptance.two_components_rejected}
