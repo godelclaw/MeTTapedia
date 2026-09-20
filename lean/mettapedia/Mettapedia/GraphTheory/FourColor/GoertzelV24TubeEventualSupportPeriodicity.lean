@@ -1,15 +1,17 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TubeFourRingNonidentity
 
 /-!
-# Eventual support periodicity of the physical normalized tube
+# Eventual support periodicity of the fully-routed normalized tube
 
 The complete recurrent tube transfer has no one-ring self-loop, and a
 four-ring return is not an identity relation.  Nevertheless its *reachable
 support* saturates: after nine physical rings, every recurrent target in the
 opposite frontier phase is reachable.  This is a Boolean-semiring transfer
-fact about all paths, not an existential choice of one path.
+fact about all paths in the fully-routed transfer, not an existential
+choice of one path.  Proper local ring colourings that merge two tracked
+strands are outside this relation.
 
-The finite calculation below is made against the two exhaustive physical
+The finite calculation below is made against the two exhaustive fully-routed
 ring choices from `GoertzelV24TubeSeedMultiplicity`; the following semantic
 lemmas identify its recursively computed support with the literal
 `ExactRelationalTransfer TubeRingStep`.
@@ -21,7 +23,7 @@ open GoertzelV24TubeRingTransfer
 open GoertzelV24CorridorPumping
 open GoertzelV24TubeRingSelfLoopCounterexample
 
-/-- All physical one-ring successors of one recurrent profile, in its
+/-- All fully-routed one-ring successors of one recurrent profile, in its
 exhaustively checked two-choice subsystem. -/
 def recurrentNextSet (source : RecurrentTubeProfile) :
     Finset RecurrentTubeProfile :=
@@ -145,7 +147,7 @@ theorem recurrentReachSet_period_two_after_nine
         (recurrentReachSet (9 + extra) source).biUnion recurrentNextSet
       exact congrArg (fun support => support.biUnion recurrentNextSet) ih
 
-/-- Exact physical transfer acceptance on the recurrent subsystem depends
+/-- Exact fully-routed transfer acceptance on the recurrent subsystem depends
 only on length parity once nine rings have been traversed. This is the
 correct Boolean-support analogue of the source's false self-loop claim. -/
 theorem recurrentTransfer_period_two_after_nine
@@ -158,9 +160,9 @@ theorem recurrentTransfer_period_two_after_nine
     ← mem_recurrentReachSet_iff (9 + extra) source target,
     recurrentReachSet_period_two_after_nine extra source]
 
-/-- Every unrestricted physical path from a recurrent frontier has a
-recurrent presentation throughout. This uses closure under *all* locally
-Tait-valid ring choices, not just the two displayed successor names. -/
+/-- Every fully-routed transfer path from a recurrent frontier has a
+recurrent presentation throughout. This uses closure under all choices
+satisfying `IsTubeRingSuccessor`, not every locally proper ring colouring. -/
 theorem rawTransfer_closed_recurrent :
     ∀ (rings : Nat) (source : RecurrentTubeProfile)
       (target : TubeFrontierState),
@@ -189,7 +191,7 @@ theorem rawTransfer_closed_recurrent :
           rw [← hmiddle]
           exact hstep
 
-/-- The recurrent presentation is exact for unrestricted physical paths
+/-- The recurrent presentation is exact for fully-routed transfer paths
 between its frontier states. -/
 theorem rawTransfer_iff_recurrentTransfer
     (rings : Nat) (source target : RecurrentTubeProfile) :
@@ -209,7 +211,7 @@ theorem rawTransfer_iff_recurrentTransfer
     | succ hstep hrest ih => exact .succ hstep ih
 
 /-- Once nine rings have been traversed, inserting or deleting two rings
-preserves exact reachability of *every* physical complete frontier. -/
+preserves exact reachability of *every* fully-routed complete frontier. -/
 theorem rawTransfer_period_two_after_nine
     (extra : Nat) (source : RecurrentTubeProfile)
     (target : TubeFrontierState) :
