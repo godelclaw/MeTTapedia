@@ -361,7 +361,19 @@ tetrahedral rotations in the control.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ForkFaceReturn.tetra_bc_return_fork}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ForkFaceReturn.tetra_return_distinguishes_rotations}
 This proves a physical edge-leaf transition, not yet the binary gluing law for
-two nontrivial edge subtrees.  That law and the closure audit remain open.
+two nontrivial edge subtrees.  The permutation calculus for two nontrivial
+\emph{serial open tangles} is already proved: their return records combine by
+disjoint union before seam rewiring, and the resulting change in face cycles
+is exact, including cycles closed behind the seam.
+\Sverified{Mettapedia.GraphTheory.FourColor.SerialTangleFaceTransfer.combinedReturn_eq}
+\Sverified{Mettapedia.GraphTheory.FourColor.SerialTangleFaceTransfer.serial_face_count}
+What remains is a physical presentation bridge from two edge-shore children
+meeting at branch vertices to that marked-permutation rewiring calculus.  A
+branch fork is not automatically the two-sided serial seam in those theorems:
+both raw children inherit the same ambient vertex rotation, whose cycles can
+alternate darts owned by the two edge pieces.  Their vertex turns must be cut
+into named ports and restored at the fork without duplicating them.
+The closure audit remains open.
 
 For the current direct headline, the two load-bearing open inputs are fixed
 ordered-mesh exclusion ($D_{1d}$) and the route-native finite base ($D_{4b}$).
