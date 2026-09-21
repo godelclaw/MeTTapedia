@@ -18,6 +18,7 @@ import Mettapedia.GraphTheory.FourColor.CubicDualInternalSixConnectivity
 import Mettapedia.GraphTheory.FourColor.DeletionDisagreementSpanning
 import Mettapedia.GraphTheory.FourColor.DiskExchangeBoundaryControl
 import Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkChecks
+import Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkFoldChecks
 import Mettapedia.GraphTheory.FourColor.FaceRegionHullNode
 import Mettapedia.GraphTheory.FourColor.FiniteImageBaseAudit
 import Mettapedia.GraphTheory.FourColor.FourPortCountRewireControl

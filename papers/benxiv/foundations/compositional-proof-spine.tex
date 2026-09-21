@@ -408,6 +408,40 @@ case the scalar-only summary missed.
 \Sverified{Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkChecks.same_split}
 \Sverified{Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkChecks.boundary_correction_distinguishes}
 
+
+The two-child law now runs up a whole decomposition tree.  For a shore $S$ put
+$\rho_S$ for the first return of the ambient rotation to the darts of $S$ and
+$\alpha_S$ for the restricted edge involution; the node's face permutation is
+$\rho_S\alpha_S$, and this is literally the raw edge-shore presentation already
+used here, because first return commutes with composing an extended matching.
+A node's state is its face-return permutation on the node's interface darts
+together with its face count.  Each fork applies the two-child law inside the
+node's own carrier, using the shared-vertex rotation, and projects away the
+marks that become internal at the parent; the step is well defined because
+duplicate-free leaf labels make sibling shores disjoint.  First-return
+transitivity is what identifies a child of a child with that child taken
+directly, and so closes the induction.
+\Sverified{Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkFold.forkStep_eq}
+\Sverified{Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkFold.fold_exact}
+\Sverified{Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkFold.fold_ret}
+\Sverified{Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkFold.fold_faces}
+
+At the root of a tree whose leaves cover every edge the fold returns the
+ambient face count.  Run on the tetrahedral control, the same edge-leaf tree
+and edge labelling give four faces for the planar rotation and two for the
+twisted one --- the distinction no rule on the scalar child state can make.
+\Sverified{Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkFold.fold_faces_of_cover}
+\Sverified{Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkFoldChecks.planar_fold_faces}
+\Sverified{Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkFoldChecks.twisted_fold_faces}
+\Sverified{Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkFoldChecks.folds_differ}
+
+The scope of this is narrow and worth stating exactly.  Fold exactness changes
+none of the finite-base obligations: finite-state closure, coverage, adequacy
+and empty rejecting-root closure are all untouched, and so is the global
+production of suitable cuts.  What it supplies is the exact structural
+transition those obligations were missing, on the literal folded tree rather
+than on an interface that assumes the fork law.
+
 This closes the permutation-level physical two-child face law, not the
 finite-base obligation.  Still required are an executable bounded full-profile
 fork evaluator, its coverage and adequacy proofs over decomposition trees,
@@ -4805,7 +4839,11 @@ $s_i$, let $R_i$ be the relation consisting of the pairs of concrete proper
 orbit representatives which realise $s_i$.  A clockwise cell state has shared
 corner witnesses precisely when
 \[
-   (R_{m W}\circ R_{m S}\circ R_{m E}\circ R_{m N})
+   (R_{
+m W}\circ R_{
+m S}\circ R_{
+m E}\circ R_{
+m N})
       \cap \Delta \ne \varnothing;
 \]
 that is, the four-step relation on the north-west fibre has a fixed point.
