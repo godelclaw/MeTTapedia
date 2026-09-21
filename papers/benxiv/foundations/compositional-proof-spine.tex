@@ -435,6 +435,13 @@ twisted one --- the distinction no rule on the scalar child state can make.
 \Sverified{Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkFoldChecks.twisted_fold_faces}
 \Sverified{Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkFoldChecks.folds_differ}
 
+Both coordinates now travel together.  The colour support and the structural
+face state read the same computed shore at each node, so they are coordinates
+of one profile, and a single theorem gives their joint exactness at every node
+of a duplicate-free tree.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalProfileFold.profileFold_exact}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalProfileFold.profileFold_faces}
+
 The scope of this is narrow and worth stating exactly.  Fold exactness changes
 none of the finite-base obligations: finite-state closure, coverage, adequacy
 and empty rejecting-root closure are all untouched, and so is the global
