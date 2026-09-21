@@ -79,6 +79,7 @@ import Mettapedia.GraphTheory.FourColor.OrderedMeshCellBoundaryCounterexample
 import Mettapedia.GraphTheory.FourColor.OrderedMeshCommonCorePathSection
 import Mettapedia.GraphTheory.FourColor.PentagonKempePlateau
 import Mettapedia.GraphTheory.FourColor.PersistentWireMatchingObstruction
+import Mettapedia.GraphTheory.FourColor.PhysicalProfileFold
 import Mettapedia.GraphTheory.FourColor.PhysicalSupportIntersection
 import Mettapedia.GraphTheory.FourColor.PresentedEnumCorrect
 import Mettapedia.GraphTheory.FourColor.ProjectiveTangleCount

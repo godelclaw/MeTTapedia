@@ -655,3 +655,4 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24ForkTaitBridge
 import Mettapedia.GraphTheory.FourColor.StructuralCutSnipSupply
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ColourOnlyBaseObstruction
 import Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkFoldChecks
+import Mettapedia.GraphTheory.FourColor.PhysicalProfileFold
