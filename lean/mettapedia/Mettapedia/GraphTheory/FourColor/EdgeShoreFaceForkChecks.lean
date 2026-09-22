@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.EdgeShoreFaceFork
+import Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkFold
 import Mettapedia.GraphTheory.FourColor.GoertzelV24ForkFaceOrderObstruction
 
 /-!
@@ -137,5 +138,51 @@ theorem boundary_correction_distinguishes :
   rw [bp, fp] at hp
   rw [bt, ft] at ht
   omega
+
+/-! ## The same fork, folded up the whole edge-leaf tree
+
+`EdgeShoreFaceForkFold.fold` runs the physical fork law from the leaves of an
+edge-leaf tree to its root.  Here it is run on the very tree used above: two
+spanning trees of the tetrahedron whose children have identical coarse data
+under both rotations.  The folded root still separates them.
+-/
+
+theorem tetra_edge_alpha (dart : TetraDart) :
+    tetraEdgeOf (tetraAlpha dart) = tetraEdgeOf dart := by
+  cases dart <;> rfl
+
+theorem planar_face_card : (tetraRho * tetraAlpha).partition.parts.card = 4 := by
+  rw [← whole_edgeProduct_eq_alpha]
+  exact planar_parent_faceCount
+
+theorem twisted_face_card : (twistedRho * tetraAlpha).partition.parts.card = 2 := by
+  rw [← whole_edgeProduct_eq_alpha]
+  exact twisted_parent_faceCount
+
+/-- The folded tetrahedron has four faces in the spherical rotation. -/
+theorem planar_fold_faces :
+    (EdgeShoreFaceForkFold.fold tetraRho tetraAlpha tetraEdgeOf tetra_edge_alpha
+      wholeTree wholeTree_nodup).faces = 4 := by
+  rw [EdgeShoreFaceForkFold.fold_faces_of_cover tetraRho tetraAlpha tetraEdgeOf
+    tetra_edge_alpha wholeTree wholeTree_nodup wholeTree_cover]
+  exact planar_face_card
+
+/-- The same fold on the same tree, with one vertex rotation reversed, has
+two faces.  The children's colour support and face counts are identical in
+the two worlds; only the interface return differs. -/
+theorem twisted_fold_faces :
+    (EdgeShoreFaceForkFold.fold twistedRho tetraAlpha tetraEdgeOf tetra_edge_alpha
+      wholeTree wholeTree_nodup).faces = 2 := by
+  rw [EdgeShoreFaceForkFold.fold_faces_of_cover twistedRho tetraAlpha tetraEdgeOf
+    tetra_edge_alpha wholeTree wholeTree_nodup wholeTree_cover]
+  exact twisted_face_card
+
+theorem fold_separates_the_two_rotations :
+    (EdgeShoreFaceForkFold.fold tetraRho tetraAlpha tetraEdgeOf tetra_edge_alpha
+        wholeTree wholeTree_nodup).faces ≠
+      (EdgeShoreFaceForkFold.fold twistedRho tetraAlpha tetraEdgeOf tetra_edge_alpha
+        wholeTree wholeTree_nodup).faces := by
+  rw [planar_fold_faces, twisted_fold_faces]
+  decide
 
 end Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkChecks

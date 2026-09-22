@@ -203,5 +203,27 @@ theorem LinkedBand.connected (data : Data G)
     (by omega) (by have := B.depth; omega) (B.linkage.walk ⟨0, hn⟩)
     (B.linkage.start_mem ⟨0, hn⟩) (B.linkage.finish_mem ⟨0, hn⟩) (B.confined ⟨0, hn⟩)
 
+omit [G.LocallyFinite] in
+/-- The number of confined columns is already a lower bound on the size of
+the first complete contour. Thus a large linked band is not a supply of many
+small interfaces: its *first* interface is necessarily large when the column
+parameter grows. This is the quantitative obstruction to applying the
+bounded-width nested-shore pigeonhole to the positive-band branch unchanged. -/
+theorem LinkedBand.columns_le_first_frontier_card (data : Data G)
+    {marks : Finset V} {a n : Nat} (B : LinkedBand data marks a n) :
+    n ≤ Fintype.card {z : V // z ∈ frontier data B.root B.far B.lo} := by
+  let start : Fin n → {z : V // z ∈ frontier data B.root B.far B.lo} :=
+    fun i => ⟨B.linkage.start i, B.linkage.start_mem i⟩
+  have hinj : Function.Injective start := by
+    intro i j hij
+    have hval : B.linkage.start i = B.linkage.start j := congrArg Subtype.val hij
+    by_contra hne
+    have hj : B.linkage.start i ∈ (B.linkage.walk j).support := by
+      rw [hval]
+      exact (B.linkage.walk j).start_mem_support
+    exact B.linkage.disjoint i j hne (B.linkage.start i)
+      (B.linkage.walk i).start_mem_support hj
+  simpa only [Fintype.card_fin] using Fintype.card_le_of_injective start hinj
+
 end
 end Mettapedia.GraphTheory.FourColor.SphericalProtectedLinkedBand
