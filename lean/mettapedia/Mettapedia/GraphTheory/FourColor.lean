@@ -659,3 +659,5 @@ import Mettapedia.GraphTheory.FourColor.PhysicalProfileFold
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FacialBondLaminarity
 import Mettapedia.GraphTheory.FourColor.GoertzelV24BoundedInterfaceObligation
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TargetClassVacuity
+import Mettapedia.GraphTheory.FourColor.GoertzelV24BondDepthObligation
+import Mettapedia.GraphTheory.FourColor.GoertzelV24MeshBondCarrierSeparation
