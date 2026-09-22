@@ -657,3 +657,4 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24ColourOnlyBaseObstruction
 import Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkFoldChecks
 import Mettapedia.GraphTheory.FourColor.PhysicalProfileFold
 import Mettapedia.GraphTheory.FourColor.GoertzelV24FacialBondLaminarity
+import Mettapedia.GraphTheory.FourColor.GoertzelV24BoundedInterfaceObligation
