@@ -456,6 +456,51 @@ and the empty rejecting-root closure audit.  Global production of the
 decomposition or reductive cut chain is a separate open obligation; none of
 the local counterexamples proves that obligation false.
 
+\paragraph{Compatibility between bonds at distinct mesh sites.}
+The residual-defect minimiser supplies, at every site of a supplied ordered
+mesh, a facial bond with two connected dual shores; it asserted nothing about
+how two such bonds relate.  That compatibility is now proved: two separating
+cycles whose vertex sets are disjoint have laminar face sets, so the family of
+site bonds of one global pairing is laminar.  In a cubic map vertex-disjoint
+and edge-disjoint coincide, and the proof needs only cubicity, cyclic vertex
+rotation, and connectedness of one bond's two shores.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FacialBondLaminarity.faces_laminar_of_vertexDisjoint_separating_cycles}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FacialBondLaminarity.vertexDisjoint_iff_edgeDisjoint_of_isCubic}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FacialBondLaminarity.bond_faces_laminar_of_vertexDisjoint}
+
+The hypothesis is sharp, and the primal cycle is load-bearing rather than
+decorative: in the dual four-cycle two face sets with all four induced pieces
+connected, separated by no common dual edge, still cross.  Connected shores
+and edge-disjointness alone therefore do not give laminarity.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FacialBondLaminarity.crossing_edgeDisjoint_bonds_in_dual_four_cycle}
+
+Laminarity does not by itself exclude the mesh.  The shore-tree vertex bound
+consumes nodes of bounded interface arranged in a covering tree, and a laminar
+family may be an antichain whose bonds have unbounded interfaces.  What it
+removes is the disclaimed incompatibility, leaving the interface bound as the
+obligation.
+
+\paragraph{Why no bounded interface is available where it is needed.}
+Every profile mechanism here consumes a decomposition of bounded ambient
+width.  A graph carrying an ordered injective mesh with more branch positions
+than the checked raw bound at $(k,w)$ has no rooted connected branch
+decomposition at $(k,w)$ at all, so the hypothesis of each such mechanism
+fails exactly where the exclusion is wanted.  Separately, the supply actually
+available is a vertex bound: middle sets are sets of vertices, so a width
+claim is automatic once the parameter bounds the vertex count, which is the
+final step of the proved conventional half.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MeshWidthObstruction.no_rootedConnectedBranchDecomposition_of_orderedMesh}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24RawWidthSupplyScope.rawBranchDecompositionSupply_of_vertexBound}
+
+Finally, the finiteness premise of the corridor argument is narrower than the
+note's phrasing suggests.  Splitting discrete Gauss--Bonnet by face size gives
+the Excess Identity exactly: the small-face excess exceeds the large-face
+excess by twelve, so the identity fixes their difference and neither alone.
+Bounded defect is bought by sphericity and cubicity only when no face exceeds
+a hexagon.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ExcessIdentityScope.excess_identity}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24ExcessIdentityScope.smallExcess_eq_twelve_iff}
+
 For the current direct headline, the two load-bearing open inputs are fixed
 ordered-mesh exclusion ($D_{1d}$) and the route-native finite base ($D_{4b}$).
 The $D_{1b}$/$D_{1c}$ chain is an alternative global construction, while
