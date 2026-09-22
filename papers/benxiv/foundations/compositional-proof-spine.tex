@@ -459,9 +459,20 @@ the local counterexamples proves that obligation false.
 \paragraph{Compatibility between bonds at distinct mesh sites.}
 The residual-defect minimiser supplies, at every site of a supplied ordered
 mesh, a facial bond with two connected dual shores; it asserted nothing about
-how two such bonds relate.  That compatibility is now proved: two separating
-cycles whose vertex sets are disjoint have laminar face sets, so the family of
-site bonds of one global pairing is laminar.  In a cubic map vertex-disjoint
+how two such bonds relate.  That compatibility is now proved conditionally: two
+separating cycles whose vertex sets are disjoint have laminar face sets.  An
+earlier revision of this paragraph concluded from it that the family of site
+bonds of one global pairing is laminar.  That does not follow, and the
+correction matters.  The alternating-site witness carries its own second
+pairing $\tau$ as a field, so carriers at two sites are classes of two
+different relations and nothing makes them disjoint; the sites share only the
+residual-defect minimiser.  Worse for that reading, consecutive steps of a mesh
+row provably cannot share $\tau$, since $\tau$ is a perfect matching central at
+its own site and the two sites share a vertex.  What is available instead is a
+bookkeeping criterion: equal $\tau$ with distinct carriers gives the cross-free
+disjunction.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MeshBondCarrierSeparation.bond_faces_crossFree_of_tau_eq_of_carrier_ne}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24MeshBondCarrierSeparation.tau_ne_at_consecutive_globalRowSteps}  In a cubic map vertex-disjoint
 and edge-disjoint coincide, and the proof needs only cubicity, cyclic vertex
 rotation, and connectedness of one bond's two shores.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FacialBondLaminarity.faces_laminar_of_vertexDisjoint_separating_cycles}
@@ -474,11 +485,29 @@ connected, separated by no common dual edge, still cross.  Connected shores
 and edge-disjointness alone therefore do not give laminarity.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24FacialBondLaminarity.crossing_edgeDisjoint_bonds_in_dual_four_cycle}
 
-Laminarity does not by itself exclude the mesh.  The shore-tree vertex bound
-consumes nodes of bounded interface arranged in a covering tree, and a laminar
-family may be an antichain whose bonds have unbounded interfaces.  What it
-removes is the disclaimed incompatibility, leaving the interface bound as the
-obligation.
+Laminarity does not by itself exclude the mesh, and the reason is now sharp
+rather than anecdotal.  A laminar family of $N$ sets forces a strict chain of
+length only $1$, and allowing each bond to be read from either side raises that
+to $2$ --- over all $2^N$ orientations at once.  The side-by-side configuration
+is therefore not an artifact of a bad choice of shores.
+\Sverified{Mettapedia.GraphTheory.CrossFreeLaminarChain.singletonFamily_chain_length_le_one}
+\Sverified{Mettapedia.GraphTheory.CrossFreeLaminarChain.singletonFamily_chain_length_le_two_of_orient}
+
+What a chain costs is exactly a point: for a laminar family the longest strict
+chain through a point is that point's depth, and conversely any strict chain of
+nonempty sets passes through a common point.  Reading every bond away from one
+fixed outside face is free, by replacing a bond with its complementary bond at
+the same site, and upgrades the cross-free disjunction to genuine laminarity.
+The residual obligation is then pointwise: one edge inside every shore.
+\Sverified{Mettapedia.GraphTheory.CrossFreeLaminarChain.exists_strictChain_of_laminar}
+\Sverified{Mettapedia.GraphTheory.CrossFreeLaminarChain.le_depth_of_strictChain}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24BondDepthObligation.rawBranchDecompositionSupply_of_commonEdgeLaminarShoreSupply}
+
+That reshaping is honest about its strength: the pointwise form and the chain
+form are proved equivalent, so it changes the shape of the obligation and not
+its difficulty.  Its value is that a construction can aim at a point, whereas
+it cannot aim at an ordering.
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24BondDepthObligation.commonEdgeLaminarShoreSupply_of_longNestedShoreSupply}
 
 \paragraph{Why no bounded interface is available where it is needed.}
 Every profile mechanism here consumes a decomposition of bounded ambient
