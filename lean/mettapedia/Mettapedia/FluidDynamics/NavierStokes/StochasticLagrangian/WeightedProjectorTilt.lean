@@ -43,6 +43,9 @@ theorem continuous_weighted_transverse_norm_sq {X : Type*} [TopologicalSpace X]
       have h := ((ha.sqrt.continuousAt).inv₀ (ne_of_gt (Real.sqrt_pos.2 hp))).smul hP.continuousAt
       apply h.congr_of_eventuallyEq
       filter_upwards [hloc] with y hy
+      change InnerProductSpace.rankOne ℝ (e y) (e y) =
+        (Real.sqrt (a y))⁻¹ •
+          (Real.sqrt (a y) • InnerProductSpace.rankOne ℝ (e y) (e y))
       simp only [smul_smul, inv_mul_cancel₀ (ne_of_gt (Real.sqrt_pos.2 hy)), one_smul]
     have ht : ContinuousAt (fun y ↦ ‖(ContinuousLinearMap.id ℝ E -
         InnerProductSpace.rankOne ℝ (e y) (e y)) * R y *

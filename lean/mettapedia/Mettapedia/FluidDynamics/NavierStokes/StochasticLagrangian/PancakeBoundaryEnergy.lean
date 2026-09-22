@@ -62,6 +62,8 @@ theorem integral_localized_energy_split (cutoff modes : Finset Wavevector)
       localizedBoundaryField cutoff modes c w x⟫) := hR.inner hB
   have hRs := (hR.norm.pow 2).integrable_of_hasCompactSupport (μ := volume) (HasCompactSupport.of_compactSpace _)
   have hBs := (hB.norm.pow 2).integrable_of_hasCompactSupport (μ := volume) (HasCompactSupport.of_compactSpace _)
+  change Integrable (fun x : T3 ↦ ‖localizedRetainedField cutoff modes c w x‖ ^ 2) at hRs
+  change Integrable (fun x : T3 ↦ ‖localizedBoundaryField cutoff modes c w x‖ ^ 2) at hBs
   have hIs := hI.integrable_of_hasCompactSupport (μ := volume) (HasCompactSupport.of_compactSpace _)
   have he : ∀ x : T3, ‖(finiteScalarFourierReconstruction cutoff c x).re •
       complexRealPartEuclidean (finiteFourierReconstruction modes w x)‖ ^ 2 =
@@ -151,6 +153,8 @@ theorem integral_real_reconstruction_energy_le (modes : Finset Wavevector) (w : 
     (((continuous_coefficientReconstruction modes w).norm.pow 2).integrable_of_hasCompactSupport (μ := volume)
       (HasCompactSupport.of_compactSpace _))
     (Filter.Eventually.of_forall (fun x : T3 ↦ norm_realPart_sq_le (finiteFourierReconstruction modes w x)))
+  change (∫ x : T3, ‖complexRealPartEuclidean (finiteFourierReconstruction modes w x)‖ ^ 2) ≤
+    ∫ x : T3, ‖coefficientVec (finiteFourierReconstruction modes w x)‖ ^ 2 at h
   rw [integral_norm_coefficientReconstruction_sq] at h
   exact h
 

@@ -103,7 +103,11 @@ theorem continuous_meanWeightVariation
   apply (hG.sub hF).congr
   intro t
   have h := integral_gapForcingPairing_reduced chi modes (u t) delta 0 hs (hr t) hchi (hu t)
-  change _ = ∫ x : T3, physicalWeightVariation chi (fun q ↦ chi q - 1) modes (u t) delta x
+  change (∫ x : T3, gapForcingPairing chi modes (u t) delta
+      (reducedVorticityForcing chi modes (u t) 0) x) -
+    (∫ x : T3, gapForcingPairing chi modes (u t) delta
+      (spatialVorticityForcing chi modes (u t) 0) x) =
+    ∫ x : T3, physicalWeightVariation chi (fun q ↦ chi q - 1) modes (u t) delta x
   linarith
 
 end Mettapedia.FluidDynamics.NavierStokes.PancakeReducedForcingContinuity
