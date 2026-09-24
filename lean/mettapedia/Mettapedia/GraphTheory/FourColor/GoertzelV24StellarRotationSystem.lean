@@ -121,6 +121,7 @@ theorem orbitFacesTwoSided (RS : RotationSystem V E) :
       RS.no_self_loops oldDart (vertOf_eq_of_rho_sameCycle RS hcycle)) dart
   exact Quotient.exact hsame
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Each facial orbit of the stellar subdivision contains exactly three
 darts.  This is the cubicity input for its dual map. -/
 theorem orbitFaceDarts_card_three (RS : RotationSystem V E)

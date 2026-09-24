@@ -1142,9 +1142,11 @@ theorem cap5BoundarySwap_rotate
     cap5BoundarySwap a b (cap5RotateBoundarySupport S) (cap5RotateBoundaryWord w) =
       cap5RotateBoundaryWord (cap5BoundarySwap a b S w) := by
   funext i
+  simp only [cap5BoundarySwap, cap5RotateBoundarySupport,
+    Finset.mem_filter, Finset.mem_univ, true_and]
   fin_cases i <;>
     simp [cap5BoundarySwap, cap5RotateBoundarySupport, cap5RotateBoundaryPreimageIndex,
-      cap5RotateBoundaryWord]
+      cap5RotateBoundaryWord] <;> rfl
 
 /-- Rotating a boundary-swap support by `n` steps is compatible with rotating the boundary word
 by `n` steps. -/
@@ -1519,12 +1521,14 @@ def cap5ActiveSupport (a b : Color) (w : CAP5BoundaryWord) : Finset (Fin 5) :=
 theorem cap5BadBoundaryWord2111_activeSupport_red_blue :
     cap5ActiveSupport red blue cap5BadBoundaryWord2111 = ({0, 1, 2, 3} : Finset (Fin 5)) := by
   ext i
+  simp only [cap5ActiveSupport, Finset.mem_filter, Finset.mem_univ, true_and]
   fin_cases i <;> simp [cap5ActiveSupport, cap5BadBoundaryWord2111, red, blue, purple]
 
 /-- In the canonical bad CAP5 word, the red/purple active indices are `{0,1,3,4}`. -/
 theorem cap5BadBoundaryWord2111_activeSupport_red_purple :
     cap5ActiveSupport red purple cap5BadBoundaryWord2111 = ({0, 1, 3, 4} : Finset (Fin 5)) := by
   ext i
+  simp only [cap5ActiveSupport, Finset.mem_filter, Finset.mem_univ, true_and]
   fin_cases i <;> simp [cap5ActiveSupport, cap5BadBoundaryWord2111, red, blue, purple]
 
 /-- The two red/blue pair supports in the exceptional CAP5 pairing pattern. -/
