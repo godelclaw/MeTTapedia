@@ -1,0 +1,32 @@
+diff --git a/euler-blowup/EulerBlowup/Lit/CZ/CZCore/Homogeneous.lean b/euler-blowup/EulerBlowup/Lit/CZ/CZCore/Homogeneous.lean
+--- a/euler-blowup/EulerBlowup/Lit/CZ/CZCore/Homogeneous.lean
++++ b/euler-blowup/EulerBlowup/Lit/CZ/CZCore/Homogeneous.lean
+@@ -603,3 +603,3 @@
+     _ ≤ ENNReal.ofReal (a ^ (-(n : ℝ))) * volume (closedBall (0 : En n) b) :=
+-        mul_le_mul_left' (measure_mono fun x hx => mem_closedBall_zero_iff.mpr hx.2) _
++        mul_le_mul_right (measure_mono fun x hx => mem_closedBall_zero_iff.mpr hx.2) _
+     _ = ENNReal.ofReal (a ^ (-(n : ℝ))) * (ENNReal.ofReal (b ^ n) * volume (ball (0 : En n) 1)) := by
+@@ -705,3 +705,3 @@
+       _ ≤ ENNReal.ofReal (2 ^ n) * volume (ball (0 : En n) 1) :=
+-          mul_le_mul_right' (ENNReal.ofReal_le_ofReal (pow_le_pow_left₀ h1 hba n)) _
++          mul_le_mul_left (ENNReal.ofReal_le_ofReal (pow_le_pow_left₀ h1 hba n)) _
+       _ = ENNReal.ofReal (2 ^ n * (volume (ball (0 : En n) 1)).toReal) := by
+@@ -1698,4 +1698,4 @@
+   intro f hf
+-  exact (kop_Lp_of_integrable hK hf p hp).trans (mul_le_mul_right' hC _)
++  exact (kop_Lp_of_integrable hK hf p hp).trans (mul_le_mul_left hC _)
+
+ theorem truncated_L2_dyadic_aux_geom :
+diff --git a/euler-blowup/EulerBlowup/Lit/CZ/CZCore/Marcinkiewicz.lean b/euler-blowup/EulerBlowup/Lit/CZ/CZCore/Marcinkiewicz.lean
+--- a/euler-blowup/EulerBlowup/Lit/CZ/CZCore/Marcinkiewicz.lean
++++ b/euler-blowup/EulerBlowup/Lit/CZ/CZCore/Marcinkiewicz.lean
+@@ -517,3 +517,3 @@
+           (ENNReal.ofReal (2 * A₁) * Ia s + ENNReal.ofReal ((2 * Ar) ^ r) * Ib s) :=
+-        mul_le_mul_left' (lintegral_mono_ae hbound) _
++        mul_le_mul_right (lintegral_mono_ae hbound) _
+     _ = ENNReal.ofReal p * (ENNReal.ofReal (2 * A₁) *
+@@ -610,3 +610,3 @@
+       ≤ ENNReal.ofReal p * ∫⁻ s in Ioi 0, ENNReal.ofReal (2 * A₁) * Ia s :=
+-        mul_le_mul_left' (lintegral_mono_ae hbound) _
++        mul_le_mul_right (lintegral_mono_ae hbound) _
+     _ = ENNReal.ofReal p * (ENNReal.ofReal (2 * A₁) *

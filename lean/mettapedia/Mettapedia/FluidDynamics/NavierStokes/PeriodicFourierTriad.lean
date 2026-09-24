@@ -20,6 +20,7 @@ claims before any infinite-dimensional continuation machinery is built.
 -/
 
 set_option autoImplicit false
+set_option backward.isDefEq.respectTransparency false
 
 noncomputable section
 

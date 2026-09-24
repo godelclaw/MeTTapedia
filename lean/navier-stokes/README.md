@@ -1,0 +1,280 @@
+# Navier–Stokes upstream integration
+
+This package uses Lean 4.34.0-rc2 to import the existing OpenAI and
+Alpöge–Buckmaster fluid-analysis libraries directly. It is a migration and
+integration surface, not another copy of their mathematical developments
+and not a completed regularity proof.
+
+The existing MeTTapedia sources are available through `MettapediaFluid` with
+`srcDir = ../mettapedia`. The repository's other Lean packages keep their own
+toolchains. Compatibility of an existing module with this package must be
+checked explicitly; adding the source root does not certify its migration.
+
+## Pinned dependencies
+
+- OpenAI/NavierStokesAndEuler:
+  `f9e8bc5b38b6e212696e8a30e3e91517af887bbd`.
+- tristanbuckmaster/fluid_lean, package `euler-blowup`:
+  `d0124689230b58b4f86e7b90ac59de06404b3b6b`.
+- mathlib: `85e3a25e006c35636f0e53b0e9296caca2685bc0`, the upstream
+  Lean 4.34.0-rc2 revision.
+
+The explicit mathlib requirement comes last so that its shared transitive
+dependency versions take precedence over the older EulerBlowup manifest.
+
+Upstream sources remain in their original package with their original
+attribution and licenses. `MettapediaNS.UpstreamAudit` imports the actual
+pressure-commutator, viscous-propagator, and arbitrary-positive-viscosity
+periodic uniqueness theorems and prints their axioms. It also imports the
+existing coherent-pair estimate from the canonical MeTTapedia source tree.
+It does not replace their analytic hypotheses with assumptions about the
+desired global regularity conclusion.
+
+## Checked applications and semantic interfaces
+
+| Module | Reused mathematics | Exact remaining boundary |
+| --- | --- | --- |
+| `MettapediaNS.WholeSpaceBKM` | OpenAI's actual vorticity norm, norm-path continuity, and logarithmic gradient estimate. The adapter proves equality with the existing spatial essential supremum, including its extended value, and applies the estimate to the existing transported-velocity interface. | Euclidean smooth fields with actual L² jets; the physical-time vorticity budget and the required realization of the velocity remain obligations. A nonzero periodic lift is not a whole-space L² field. |
+| `MettapediaNS.WholeSpaceViscousEnergy` | OpenAI's derivative-word fields, whole-space integration by parts, and nonlinear H³ energy estimate. The constructed Laplacian is identified with mathlib's actual Laplacian; its production is exactly minus twice the derivative-word dissipation. The full unforced NS right-hand side therefore retains the same nonlinear bound with dissipation on the left. | These are spatial right-hand-side identities and estimates. A time-dependent solution must still supply its actual evolution and regularity, and the gradient/vorticity coefficient must be controlled. |
+| `MettapediaNS.AlmostOrthogonality` | Direct semantic aliases of Alpöge–Buckmaster's C*-ring and Hilbert-space Cotlar–Stein theorems. Neither proof is copied or reimplemented. | Both adjoint cross-product bounds and the row/column majorant bounds must be established for the actual localized operators. |
+| `MettapediaNS.QuadraticSingularIntegral` | Alpöge–Buckmaster's sharp-truncation, smooth-truncation, and principal-value `L^p` bounds. The adapter constructs the angular hypotheses for the explicit kernels `x_i*x_j / ‖x‖^5` (`i ≠ j`) and `(x_i² - x_j²) / ‖x‖^5`, using mathlib's orthogonal changes of variables and compactness. | Whole-space inputs: bounded compactly supported fields for the truncations, smooth compactly supported fields for the principal value, finite `p > 1`. The constants are independent of the truncation radii; the smooth version also permits every cutoff satisfying the stated support/range conditions. The modules below identify and assemble the actual whole-space strain on smooth compactly supported sources. Periodic transfer, weighted costs, and physical-time control remain separate obligations. |
+| `MettapediaNS.WholeSpaceBiotSavart` | Alpöge–Buckmaster's proved `potential_theory_R3` and actual Newtonian Biot–Savart construction. Its velocity is smooth and in `L²`; for divergence-free vorticity, its divergence vanishes and its curl recovers that vorticity in both OpenAI's and the pancake route's APIs. The actual velocity-gradient entries are represented using the imported Newtonian gradient kernel on source derivatives. | Smooth compactly supported vorticity on `ℝ³`. The modules below supply the trace-free Hessian identification, derivative-free component bounds, full strain assembly, and all `L²` velocity jets for divergence-free inputs. General admissible data, physical-time evolution, and the signed budget remain separate obligations. |
+| `MettapediaNS.NewtonianHessianPrincipalValue` | The upstream regularized Newtonian potential, integration by parts, convergence against test functions, and principal-value integrability. These identify the actual off-diagonal Newtonian Hessians and differences of diagonal Hessians with the upstream principal-value operators, including the factor `-3/(4π)`. The previously imported `L^p` estimates now bound those actual derivatives by the undifferentiated source norm. | Smooth compactly supported scalar sources on `ℝ³`, finite `p > 1`. Radial cancellation removes the local term for these trace-free components; no such cancellation is asserted for an individual diagonal entry. Full-strain assembly is supplied below. General-data/periodic transfer, weighted projector costs, and signed physical-time control remain open. |
+| `MettapediaNS.WholeSpaceStrain` | The existing pancake `strainRateApply` is identified with mathlib's self-adjoint part of the actual Biot–Savart gradient. Its entries are explicit combinations of the imported principal-value operators: local isotropic terms cancel before estimation. All nine entries and the complete operator satisfy `L^p` bounds by the undifferentiated vorticity norm. Assembly uses OpenAI's multilinear coordinate estimate, mathlib's isometric currying, and its finite-sum `L^p` inequality. | Smooth compactly supported vorticity on `ℝ³`, finite `p > 1`; the constant is independent of the source. Actual `MemLp` is also proved. This supplies no `L^∞` endpoint, derivative-weighted projector estimate, general-data/periodic extension, or signed physical-time budget. |
+| `MettapediaNS.WholeSpacePressure` | OpenAI's smooth Helmholtz pressure field, normalized radial scalar potential, and preservation of solenoidality by actual derivative words. The constructed pressure is an actual smooth scalar gradient, and the full viscous right-hand side is divergence-free for solenoidal input. The H³ production estimate no longer takes an independently supplied pressure or gradient-space hypothesis. | An actual `SmoothL2Field` input is required. The module constructs a spatial NS right-hand side, not a solution trajectory. No physical-time equation or budget is assumed to follow from the construction. |
+| `MettapediaNS.WholeSpaceBiotSavartRegularity` | OpenAI's `smoothL2Field_of_curl_compact` applies directly to the smooth finite-energy Biot–Savart velocity constructed using Alpöge–Buckmaster. Every actual Fréchet derivative is in `L²`, and the closed solenoidal-space condition is proved. The existing spatial BKM estimate and viscous H³ production bound now apply with velocity jets and pressure both constructed from the source. | Smooth compactly supported divergence-free vorticity on `ℝ³`. Compact vorticity is not asserted to persist under viscous evolution. General-data extension, actual time evolution, weighted projector costs, and the signed physical-time bound remain open. The constant time path in the BKM notation represents one spatial slice only. |
+| `MettapediaNS.WholeSpacePressureRecovery` | OpenAI's instantaneous weak pressure identities, Fourier `H³` bound, Riesz Poisson identity, and harmonic-functional uniqueness identify the constructed Helmholtz pressure gradient with the double-Riesz pairing of the actual velocity tensor on every compact smooth scalar test. The required instantaneous equation is realized by an explicit affine tangent with the actual constructed viscous right-hand side. | Smooth solenoidal `SmoothL2Field` inputs on `ℝ³`. The tangent satisfies the equation at time one only; no solution on a time interval is asserted. The test identity is not a physical-time estimate. |
+| `MettapediaNS.WholeSpacePressureFlux` | The constructed-pressure test identity discharges OpenAI's generic compact-flux identification theorem. Its complete cutoff-flux estimate, including the localized Sobolev term and heat-kernel commutator term, then bounds the actual scalar pressure flux. The `L³` membership and tensor `L¹` bound are supplied using upstream Sobolev estimates and mathlib integrability. | The flux identity permits every compact smooth cutoff. The quantitative application uses the upstream radial weight with `R ≥ 1`; its constant is independent of `R` but depends on the velocity slice's `L²` and `L³` norms. This is neither a uniform physical-time bound nor an estimate for arbitrary anisotropic pancake/projector weights. All-scale summation and the signed misalignment budget remain open. |
+
+`MettapediaNS.RieszDoubleCommutator` applies OpenAI's heat-kernel
+commutator twice and its Riesz self-adjointness once. The resulting signed
+quadratic localization defect retains the squared difference of the
+multiplier `φ²` before taking norms. For `0 ≤ φ ≤ 1` with Lipschitz bound
+`L/R`, its kernel has majorant
+`C max(2L,1)² |x-y|⁻³ min(|x-y|/R,1)²`.
+This is bounded by `C max(2L,1)² R⁻¹` times the **existing upstream radial
+kernel to the power `2/3`**. Mathlib's power change of exponent and Hölder
+inequality therefore give actual section integrability for `L²` sources
+and an `R^(-3/2)` pointwise bound. No radial integration theorem, Fourier
+operator, or heat representation is reimplemented.
+
+For Schwartz tests representing `f`, `φ² f`, and `φ⁴ f`, the checked defect is
+`∫(φ² f) T(φ² f) - ∫(φ⁴ f) Tf`, where `T` is the actual upstream double
+Riesz transform. Its norm is at most
+`C max(2L,1)² R^(-3/2) ‖f‖₁ ‖f‖₂` with a source-independent constant.
+The identity is bilinear and gives the usual real quadratic-form identity
+on real tests. This differs from the single-commutator `L¹`-`L⁴` estimate;
+the bounds have different source norms and are not pointwise comparable
+without further assumptions. Matching this defect to the full signed NS
+residual, extending beyond the test class, controlling moving projectors,
+and paying the scale/time coefficients remain obligations.
+
+`MettapediaNS.PressureLocalizationDifference` handles distinct source and
+receiver fields. Write `χ = φ²` and `P(g,ψ) = ∫ g Tψ`. For actual Schwartz
+tests `ψh = χψ` and `ψhh = χ²ψ`, it proves the exact decomposition
+
+```text
+P(χ²g,ψ) - P(g,χ²ψ)
+  = [P(g,χ²ψ) - 2P(χg,χψ) + P(χ²g,ψ)]
+      - 2[P(g,χ²ψ) - P(χg,χψ)].
+```
+
+The first bracket is the double commutator and is bounded by
+`C₂(L,R) ‖g‖₁ ‖ψ‖₂`, with `C₂` proportional to `R^(-3/2)`.
+The second is a first commutator, bounded using OpenAI's existing theorem
+by `C₁(L,R) ‖g‖₁ ‖χψ‖₄`, with `C₁` proportional to `R^(-3/4)`.
+The complete bound retains both terms. For `g = u_i u_j`, the localized
+source is literally the tensor of `χu`, and the upstream finite-energy
+tensor estimate gives `‖g‖₁ ≤ ∫|u|²`. No claim is made that `χu` is
+divergence-free or that the first commutator vanishes.
+
+`MettapediaNS.WholeSpaceUnforcedEnergy` supplies the initial-data resource
+for this source on an actual unforced `ClassicalH3Solution`. It specializes
+OpenAI's `difference_rate_le` with both transported field and transporting
+velocity equal to `u`, and zero deformation operator. Its generic pressure
+orthogonality theorem removes the pressure work; pressure-gradient `L²`
+membership is derived from the equation. OpenAI's Grönwall theorem then gives
+`∫|u(t)|² ≤ ∫|u₀|²` throughout the given lifespan. Thus the second pressure
+difference is bounded by `C₂(L,R) ‖u₀‖₂² ‖ψ‖₂`, including a checked sum over
+all nine tensor components. No energy inequality or later-time bound is
+assumed in the solution class. The module neither constructs nor extends
+the lifespan. The first commutator, the actual material pressure-Hessian
+receiver tests, adaptive cutoff costs, periodic transfer, and the signed
+all-scale/time budget remain obligations.
+
+`MettapediaNS.WholeSpaceStretchingFlux` constructs the cubic flux and its
+gradient projection from an actual `SmoothL2Field` velocity, using upstream
+vorticity, field products, advection, and the genuine Helmholtz projection.
+Writing `ω = curl u` and `s = (ω·∇)u`, the flux is `J_ja = -ω_j s_a`.
+Projection acts on the spatial index `j`: each column is the complement of
+the upstream solenoidal projection. The resulting field `F` and the receiver
+`B_ab = ω_b Σ_j ω_j F_ja` have all actual `L²` jets by the imported field
+algebra. Neither is an independently supplied estimate or field.
+
+`MettapediaNS.PressureHessianReceiver` identifies the corresponding complete
+spatial pressure work with canonical Riesz pairings of `u_i u_j` against
+`∂a∂b(η B_ab)`. It uses the upstream compact integration-by-parts theorem
+and the previously identified constructed Helmholtz pressure. Every index is
+included. For a smooth compact cutoff, the differentiated test is exactly
+
+```text
+∂a∂b(η B) = η ∂a∂b B + (∂aη)(∂b B) + (∂bη)(∂a B) + B ∂a∂bη.
+```
+
+`MettapediaNS.PressureHessianLocalization` constructs the difference between
+this actual test and `η ∂a∂b B` in the upstream Schwartz space. With
+`η = φ⁴`, the full localization difference is **twice the first commutator
+minus the second difference plus the cutoff-derivative pressure pairing**.
+Both multiplier relations required by the earlier estimates are proved for
+the constructed Hessian tests. The initial-energy estimate therefore applies
+to the second difference with its actual Hessian-test `L²` norm; it does not
+bound that norm, remove the first commutator, or pay the three derivative
+remainder terms. These are whole-space spatial identities, not an evolution
+theorem or an identification of the auxiliary-heat/periodic receiver. The
+input-scale heat weights, moving geometry, signed physical-time budget, and
+unconditional continuation remain open.
+
+`MettapediaNS.GaussianHeatCovariance` identifies OpenAI's literal Gaussian
+product defect `R_ij = Hτ(u_i u_j) - (Hτu)_i (Hτu)_j` with mathlib's
+covariance bilinear form, for arbitrary ordinary whole-space `L²` velocities.
+Its quadratic form is nonnegative. `GaussianHeatEnergy` applies OpenAI's
+parameter-integral theorem to obtain the global `L²` contraction and mathlib's
+convolution integral theorem to prove the exact identity
+
+```text
+∫ trace(Rτ) = ∫ |u|² - ∫ |Hτu|² ≤ ∫ |u|².
+```
+
+`GaussianHeatIncrement` uses mathlib's variance bound after subtraction of a
+constant, OpenAI's actual `L²` translation increment, its Bochner realization,
+and its widened-Gaussian quadratic majorant. For actual `SmoothL2Field`
+velocities it proves
+
+```text
+∫ trace(Rτ) ≤ (2τ) 2^(3/2) ‖A.derivative.toLp‖².
+```
+
+This derivative norm is the `L²` norm of the actual Fréchet derivative with
+its operator norm. No spatial supremum of that derivative is used. The
+separate energy bound is composed with `WholeSpaceUnforcedEnergy` to bound
+the stress trace by initial energy along every given unforced H³ lifespan,
+uniformly in `τ > 0`. The Gaussian convention has generator `Δ/4`; physical
+heat time `νσ` corresponds to `τ = 4νσ`. Although the translation theorem is
+imported from `OrdinaryMollifier`, its statement is about ordinary translations;
+the compact mollifier from that module is not substituted for the Gaussian.
+`GaussianHeatPairing` identifies the full signed contraction with the
+Gaussian expectation of a quadratic form on centered velocity. Consequently
+
+```text
+Rτ : M = E[⟨u - Hτu, M(u - Hτu)⟩],
+Rτ : M = Rτ : sym(M),
+|∫ Rτ : M| ≤ sup_x ‖M(x)‖ ∫ trace(Rτ).
+```
+
+The pointwise one-sided quadratic bound is also retained, including a
+negative upper bound when applicable. There is no component-count factor.
+`GaussianHeatWeakStress` constructs the weak action of `-P div Rτ` by
+applying OpenAI's actual solenoidal projection to the receiver first. It
+proves integrability and bounds this signed action using the energy or
+heat-scale trace bounds above. Only the symmetric derivative contributes;
+the actual projected receiver derivative remains an explicit cost. No
+`L∞` boundedness of the Leray projection is asserted.
+
+`GaussianHeatFourier` directly applies OpenAI's
+`fourierIntegral_gaussian_real` and the existing MeTTapedia
+`UnitTorusPeriodization.mFourierCoeff_periodize`. The result identifies the
+periodized Gaussian's exact multiplier at **every** lattice frequency:
+`exp(-π²τ|n|²)`. It also proves the literal Gaussian averaging identity for
+plane waves, which are not whole-space `L²` functions. Neither Gaussian
+Fourier analysis nor periodization is reimplemented.
+
+`GaussianHeatTorus` identifies the literal whole-space Gaussian average of
+a continuous periodic lift with convolution by that periodized kernel.
+It then applies the existing integrable-convolution theorem and mathlib's
+Fourier reconstruction to obtain the exact series for inputs with summable
+Fourier coefficients. No whole-space `L²` assumption is imposed on a periodic
+lift. The shared periodization proof now handles arbitrary invariant scalar
+tests with integrable weighted kernels; its previous unit-character theorem
+is a specialization, not a second unfolding proof. Periodization integrability
+also uses the existing mass bound instead of requiring Schwartz regularity.
+
+These results do not pay the evolving projected receiver derivative,
+establish a physical-time dissipation bound in this interface, or identify
+the full periodic/input-scale Gram work with the spatial stress action.
+The existing canonical Fourier heat-source split, heat-commutator
+energy/enstrophy bounds, and signed coefficient-adjoint/Duhamel
+representation are retained, not reimplemented. Their migration to this
+toolchain is a separate compatibility task.
+
+A 21-file shared compatibility slice now passes selected-module builds on both
+Lean 4.31.0 and Lean 4.34.0-rc2. It covers angular-curl continuity, radial
+kernel moments and correlations, the exact Fourier triad, normalized
+Schwartz-kernel decay, annular charts, dyadic rescaling, and frozen-frame
+kernel transfer. It also covers buffered annular transfer, quadratic Fourier
+support, the physical forcing-continuity lemma, and the physical Laplacian.
+The two generalized periodization modules are also checked on both versions.
+The compatibility adjustments concern elaboration and mathlib lemma names;
+theorem statements are unchanged. This does not yet certify the
+entire `ExchangedFluxHeatAdjoint` dependency chain on the newer toolchain.
+
+`WholeSpaceBKM.h3_energyProduction_add_dissipation_le_spatialBKMIntegrand`
+combines the first two applications: the actual viscous energy production
+is controlled by the existing spatial BKM integrand and the actual higher
+velocity norm. This does not establish integrability up to a singular time.
+
+`NS.Lit.CZ.truncated_Lp_uniform`, `pvOp_Lp`, and
+`smoothTruncate_Lp_uniform` in `Lit/CZ/CZCore/Homogeneous.lean` are now
+checked imports and used by the quadratic-kernel applications above.
+Their proofs cover general positive dimension; the current concrete
+applications use dimension three. None of these estimates provides an
+`L^∞` endpoint or the global signed time-integrated misalignment budget.
+
+## Reuse policy
+
+Before a new general-analysis proof, check mathlib, the existing MeTTapedia
+development, and the relevant OpenAI and Alpöge–Buckmaster developments.
+Prefer direct application, then a representation adapter or a generalization
+of an existing proof. Record the exact missing hypothesis before undertaking
+new mathematics. Toolchain differences are migration tasks, not a reason to
+reprove an available theorem.
+
+Ben's coherence/pancake mechanism remains the research target. Auxiliary
+norms, functionals, and interfaces may be improved to use established theory.
+
+## Build
+
+```sh
+lake update
+lake exe cache get
+bash scripts/prepare-upstreams.sh
+lake build MettapediaNS
+lake env lean MettapediaNS/UpstreamAudit.lean
+```
+
+This target checks the imported theorem surface and adapters listed above. The
+arbitrary-data dynamical budget and unconditional continuation theorem remain
+separate mathematical obligations.
+
+The selected target has been checked on Lean 4.34.0-rc2. OpenAI's source
+tree is unchanged. EulerBlowup declares Lean 4.32.2 and mathlib 4.32.0;
+the Cotlar–Stein dependency chain compiles unchanged on the newer toolchain.
+The larger homogeneous-kernel dependency chain needs exactly five order-
+lemma name updates in `Marcinkiewicz.lean` and `Homogeneous.lean`, recorded
+in `patches/euler-blowup-lean-4.34.patch`. The potential-theory dependency
+chain additionally needs one scoped elaboration setting around the existing
+`Cm24.L2_6_III_Fc` proof in `Cm24/S2/Master.lean`, recorded in
+`patches/euler-blowup-potential-lean-4.34.patch`. No statement or mathematical
+argument is changed. `scripts/prepare-upstreams.sh` checks the pinned
+revision and applies these patches idempotently, refusing a conflicting patch.
+Run it after dependency setup; it never resets upstream files. The upstream
+files and their Apache-2.0 license remain in their original package.
+This does not certify the entire EulerBlowup development.
+Upstream and existing local sources emit deprecation/unused-variable
+warnings; these are not proof failures.
+
+The shared `SpatialBKMIntegrand` source needs only a compatibility adjustment
+to six continuity/measurability applications. Its mathematical statements
+are unchanged; no new supremum construction is introduced.
+The adjusted source also passes its original Lean 4.31.0 target. The
+227-declaration integration audit reports only `propext`, `Classical.choice`,
+and `Quot.sound`; there are no additional analytic axioms in those proofs.
