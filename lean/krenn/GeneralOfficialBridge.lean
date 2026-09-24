@@ -24,12 +24,12 @@ namespace GeneralOfficialBridge
 
 open MonochromaticQuantumGraph Amplitude MatchingSum
 
-variable {N D : Nat}
+variable {N D : Nat} {α : Type} [CommSemiring α]
 
 /-- The official weight read on an unordered pair of coloured vertices.  The pair
 is oriented by its vertices; the colours break a tie that no matching edge ever
 produces, since an edge never joins a vertex to itself. -/
-noncomputable def symWeight (W : WeightsN N D ℂ) : Sym2 (Fin N × Fin D) → ℂ :=
+noncomputable def symWeight (W : WeightsN N D α) : Sym2 (Fin N × Fin D) → α :=
   Sym2.lift ⟨fun p q =>
       if p.1 < q.1 then W (mkEdge p.1 q.1 p.2 q.2)
       else if q.1 < p.1 then W (mkEdge q.1 p.1 q.2 p.2)
@@ -50,7 +50,7 @@ noncomputable def symWeight (W : WeightsN N D ℂ) : Sym2 (Fin N × Fin D) → �
 
 /-- On an edge whose endpoints increase, the lifted weight is the official one
 read in that direction. -/
-theorem symWeight_of_lt (W : WeightsN N D ℂ) (ι : Fin N → Fin D) {v u : Fin N}
+theorem symWeight_of_lt (W : WeightsN N D α) (ι : Fin N → Fin D) {v u : Fin N}
     (h : v < u) :
     symWeight W (Sym2.map (paint ι) s(v, u)) = W (mkEdge v u (ι v) (ι u)) := by
   have hmap : Sym2.map (paint ι) s(v, u) = s((v, ι v), (u, ι u)) := rfl
@@ -101,7 +101,7 @@ theorem toFinset_erase {α : Type*} [DecidableEq α] {l : List α} (hl : l.Nodup
 
 /-- **The official matching sum is the library's**, for every increasing list of
 vertices. -/
-theorem pmSumList_eq_pmSum (W : WeightsN N D ℂ) (ι : Fin N → Fin D) :
+theorem pmSumList_eq_pmSum (W : WeightsN N D α) (ι : Fin N → Fin D) :
     ∀ (n : Nat) (L : List (Fin N)), L.length ≤ n → L.Pairwise (· < ·) →
       pmSumList W ι L = pmSum (symWeight W) ι L.toFinset := by
   intro n
@@ -152,7 +152,7 @@ theorem pmSumList_eq_pmSum (W : WeightsN N D ℂ) (ι : Fin N → Fin D) :
 
 /-- **The official perfect-matching sum is the amplitude**, at every vertex count
 and every dimension. -/
-theorem pmSumN_eq_amplitude (W : WeightsN N D ℂ) (ι : Fin N → Fin D) :
+theorem pmSumN_eq_amplitude (W : WeightsN N D α) (ι : Fin N → Fin D) :
     pmSumN N D W ι = amplitude (symWeight W) ι := by
   rw [pmSumN, pmSumList,
     show pmSumListAux W ι (vertices N).length (vertices N) = pmSumList W ι (vertices N) from rfl,
@@ -166,10 +166,10 @@ dimension.
 
 This is what puts the general matching library behind the official statement
 rather than behind a paraphrase of it. -/
-theorem eqSystemN_iff_amplitude (W : WeightsN N D ℂ) :
+theorem eqSystemN_iff_amplitude (W : WeightsN N D α) :
     EqSystemN N D W ↔
       ∀ ι : Fin N → Fin D,
-        amplitude (symWeight W) ι = if allEqual ι then (1 : ℂ) else 0 := by
+        amplitude (symWeight W) ι = if allEqual ι then (1 : α) else 0 := by
   constructor
   · intro h ι
     rw [← pmSumN_eq_amplitude]
@@ -216,10 +216,10 @@ theorem allEqual_iff_const (ι : Fin N → Fin D) :
 /-- **The official equation system, read as a statement about the amplitude.**  A
 weight system solves the official equations exactly when its amplitude is one on
 the constant colourings and zero on all the others. -/
-theorem eqSystemN_iff_amplitude_const (W : WeightsN N D ℂ) :
+theorem eqSystemN_iff_amplitude_const (W : WeightsN N D α) :
     EqSystemN N D W ↔
       ∀ ι : Fin N → Fin D,
-        amplitude (symWeight W) ι = if (∀ x y : Fin N, ι x = ι y) then (1 : ℂ) else 0 := by
+        amplitude (symWeight W) ι = if (∀ x y : Fin N, ι x = ι y) then (1 : α) else 0 := by
   rw [eqSystemN_iff_amplitude]
   exact forall_congr' (fun ι => by rw [if_congr (allEqual_iff_const ι) rfl rfl])
 
@@ -284,12 +284,12 @@ solutions.
 -/
 
 /-- An unordered weight read as an official one. -/
-def officialOf (W' : Sym2 (Fin N × Fin D) → ℂ) : WeightsN N D ℂ :=
+def officialOf (W' : Sym2 (Fin N × Fin D) → α) : WeightsN N D α :=
   fun e => W' s((e.u, e.i), (e.v, e.j))
 
 /-- Reading an unordered weight as an official one and lifting it back is the
 identity: every branch of the orientation agrees, because the pair is unordered. -/
-theorem symWeight_officialOf (W' : Sym2 (Fin N × Fin D) → ℂ) :
+theorem symWeight_officialOf (W' : Sym2 (Fin N × Fin D) → α) :
     symWeight (officialOf W') = W' := by
   funext e
   induction e using Sym2.ind with
@@ -313,7 +313,7 @@ theorem monochromatic_iff_const {V C : Type*} [Nonempty V] (c : V → C) :
     exact ⟨c x, fun v => h v x⟩
 
 /-- A normalised GHZ configuration solves the official equations. -/
-theorem eqSystemN_officialOf [NeZero N] (W' : Sym2 (Fin N × Fin 3) → ℂ)
+theorem eqSystemN_officialOf [NeZero N] (W' : Sym2 (Fin N × Fin 3) → α)
     (h1 : ∀ k : Fin 3, amplitude W' (Amplitude.const k) = 1)
     (h2 : ∀ c : Fin N → Fin 3, ¬ Monochromatic c → amplitude W' c = 0) :
     EqSystemN N 3 (officialOf W') := by

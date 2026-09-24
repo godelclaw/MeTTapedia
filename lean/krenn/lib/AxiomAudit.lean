@@ -3,6 +3,7 @@ import MinimalSupport
 import NoCancellation
 import StarNormalForm
 import GraphMatchingBridge
+import CharTwoSix
 import Mettapedia.Combinatorics.Matching
 
 /-! # Axiom audit
@@ -79,3 +80,12 @@ Every top-level conditional theorem, with its dependency cone printed. -/
 #print axioms StarNormalForm.excess_site_routing_network
 #print axioms StarNormalForm.live_pair_annihilates_complement
 #print axioms StarNormalForm.octet_ghz_relations
+
+/-! Characteristic two: contraction, four-site rigidity, and the six-site base. -/
+#print axioms MatchingCharTwo.capValue_mul_pmSum_contracted
+#print axioms KrennCharTwo.isGHZOver_contract
+#print axioms KrennCharTwo.no_isGHZOver_of_six
+#print axioms KrennCharTwo.fourRigid
+#print axioms KrennCharTwo.rigid_pair
+#print axioms KrennCharTwo.SixCNF.sixFmla_unsat
+#print axioms KrennCharTwo.no_isGHZOver_six
