@@ -4,7 +4,6 @@ open System Lake DSL
 
 package Mettapedia where
   version := v!"0.1.0"
-  weakLeanArgs := #["-j", "1"]
 
 require "leanprover-community" / mathlib @ git "v4.31.0"
 
