@@ -73,15 +73,19 @@ def retainedDartEquivInternalSumBoundary
       right_inv := ?_ }
   · intro dart
     by_cases hopposite : keep (RS.vertOf (RS.alpha dart.1))
-    · simp only [dif_pos hopposite, Sum.elim_inl]
-    · simp only [dif_neg hopposite, Sum.elim_inr]
+    · simp only [dif_pos hopposite]
+      rfl
+    · simp only [dif_neg hopposite]
+      rfl
   · intro dart
     rcases dart with internal | boundary
-    · simp only [Sum.elim_inl, dif_pos internal.2]
+    · dsimp only [Sum.elim]
+      simp only [dif_pos internal.2]
       apply congrArg Sum.inl
       apply Subtype.ext
       rfl
-    · simp only [Sum.elim_inr, dif_neg boundary.2]
+    · dsimp only [Sum.elim]
+      simp only [dif_neg boundary.2]
       apply congrArg Sum.inr
       apply Subtype.ext
       rfl

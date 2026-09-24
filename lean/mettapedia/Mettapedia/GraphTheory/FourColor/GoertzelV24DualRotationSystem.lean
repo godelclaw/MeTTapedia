@@ -61,7 +61,8 @@ def rotationSystem (RS : RotationSystem V E)
 @[simp] theorem rotationSystem_phi (RS : RotationSystem V E)
     (htwoSided : OrbitFacesTwoSided RS) (dart : RS.D) :
     (rotationSystem RS htwoSided).phi dart = RS.rho dart := by
-  simp [RotationSystem.phi_apply, RS.alpha_involutive]
+  change RS.rho (RS.alpha (RS.alpha dart)) = RS.rho dart
+  rw [RS.alpha_involutive]
 
 /-- A facial orbit is exactly one cyclic vertex rotation in the dual. -/
 theorem vertexRotationCyclic (RS : RotationSystem V E)

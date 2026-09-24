@@ -291,7 +291,7 @@ noncomputable def overapprox [Fintype E] [DecidableEq E]
 theorem mem_overapprox_iff [Fintype E] [DecidableEq E]
     (x : E → Color) (α β : Color) {e : E} :
     e ∈ overapprox x α β ↔ inTwoColors x α β e := by
-  simp [overapprox, inTwoColors]
+  simp only [overapprox, Finset.mem_filter, Finset.mem_univ, true_and]
 
 /-- The finite edge-Kempe component is contained in the finite two-color support. -/
 theorem edgeKempeFinset_subset_overapprox [Fintype E] [DecidableEq E]

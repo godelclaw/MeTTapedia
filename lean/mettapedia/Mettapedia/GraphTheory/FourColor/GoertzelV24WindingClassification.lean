@@ -9,6 +9,7 @@ open scoped BigOperators
 
 set_option maxRecDepth 100000
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The three nonzero Tait colors, separated from the ambient four-element
 `Color` type so finite face-word checks never enumerate the forbidden zero. -/
 inductive StrandColor where
