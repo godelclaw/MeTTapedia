@@ -53,7 +53,10 @@ def badEmbedding : PlaneEmbeddingWithBoundary badGraph where
     rcases edge_eq_e01_or_e23 e with rfl | rfl <;>
       simp [badFaces, badFaceBoundary]
 
-def onlyFace : {f // f ∈ badEmbedding.faces} := ⟨(), by decide⟩
+def onlyFace : {f // f ∈ badEmbedding.faces} :=
+  ⟨(), by
+    change () ∈ ({()} : Finset Unit)
+    exact Finset.mem_singleton_self ()⟩
 
 theorem not_planarEmbeddingBoundaryEdgeEndpointAdj_e01_e23 :
     ¬ planarEmbeddingBoundaryEdgeEndpointAdj e01 e23 := by
@@ -346,7 +349,10 @@ def pathEmbedding : PlaneEmbeddingWithBoundary pathGraph where
     rcases path_edge_eq_p01_or_p12_or_p23 e with rfl | rfl | rfl <;>
       simp [pathFaces, pathFaceBoundary]
 
-def pathOnlyFace : {f // f ∈ pathEmbedding.faces} := ⟨(), by decide⟩
+def pathOnlyFace : {f // f ∈ pathEmbedding.faces} :=
+  ⟨(), by
+    change () ∈ ({()} : Finset Unit)
+    exact Finset.mem_singleton_self ()⟩
 
 theorem planarEmbeddingBoundaryEdgeEndpointAdj_p01_p12 :
     planarEmbeddingBoundaryEdgeEndpointAdj p01 p12 := by
