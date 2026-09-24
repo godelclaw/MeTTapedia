@@ -6,7 +6,8 @@ import GeneralOfficialBridge
 # The Krenn–Gu conjecture in characteristic two
 
 Over every field of characteristic two, the official equation system on `2n ≥ 6` vertices,
-with three or more colours, has no solution.
+with three or more colours, has no solution.  Reducing modulo a maximal ideal containing
+`2`, neither has it over any commutative ring in which `2` is not a unit.
 
 The argument: a live pair contracts a GHZ system to one on two fewer sites
 (`CharTwoDescent`), down to six sites, where no GHZ system exists (`CharTwoSix`).  Both steps
@@ -72,7 +73,31 @@ theorem krennGu_charTwo_colours (F : Type) [Field F] (h2 : (2 : F) = 0) {D : ℕ
     intro hconst
     exact hc ⟨c ⟨0, by omega⟩, fun v => Fin.castLE_injective hD (hconst v _)⟩
 
+/-- **No solution over any commutative ring in which `2` is not a unit** — for instance the
+integers, or the ring of integers of a number field, where `2` is never a unit.  A maximal
+ideal containing `2` has a residue field of characteristic two, where the reduced weights
+would solve the system. -/
+theorem krennGu_of_not_isUnit_two (R : Type) [CommRing R] (h : ¬ IsUnit (2 : R)) :
+    ∀ n : ℕ, 3 ≤ n → ¬ ∃ W : WeightsN (2 * n) 3 R, EqSystemN (2 * n) 3 W := by
+  rintro n hn ⟨W, hW⟩
+  obtain ⟨M, hM, h2M⟩ := Ideal.exists_le_maximal (Ideal.span {(2 : R)})
+    (by rw [Ne, Ideal.span_singleton_eq_top]; exact h)
+  letI : Field (R ⧸ M) := Ideal.Quotient.field M
+  have h2 : (2 : R ⧸ M) = 0 := by
+    rw [← map_ofNat (Ideal.Quotient.mk M) 2]
+    exact Ideal.Quotient.eq_zero_iff_mem.mpr (h2M (Ideal.mem_span_singleton_self 2))
+  rw [eqSystemN_iff_amplitude_const] at hW
+  apply no_isGHZOver h2 n hn (Fin (2 * n)) (Fintype.card_fin _)
+    (fun e => Ideal.Quotient.mk M (symWeight W e))
+  refine ⟨fun k => ?_, fun c hc => ?_⟩
+  · rw [amplitude_map_ringHom, hW]
+    simp [Amplitude.const]
+  · rw [amplitude_map_ringHom, hW, if_neg, map_zero]
+    intro hconst
+    exact hc ⟨c ⟨0, by omega⟩, fun v => hconst v _⟩
+
 end KrennCharTwo
 
 #print axioms KrennCharTwo.krennGu_charTwo
 #print axioms KrennCharTwo.krennGu_charTwo_colours
+#print axioms KrennCharTwo.krennGu_of_not_isUnit_two
