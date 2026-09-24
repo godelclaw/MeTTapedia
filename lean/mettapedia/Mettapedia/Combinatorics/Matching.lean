@@ -19,6 +19,7 @@ import Mettapedia.Combinatorics.Matching.FourVertices
 import Mettapedia.Combinatorics.Matching.CapIncidence
 import Mettapedia.Combinatorics.Matching.BlockRank
 import Mettapedia.Combinatorics.Matching.EvenCycle
+import Mettapedia.Combinatorics.Matching.CharTwoContraction
 
 /-!
 # Perfect matching foundations
