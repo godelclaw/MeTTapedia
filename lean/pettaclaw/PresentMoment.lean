@@ -42,7 +42,7 @@ namespace PresentMoment
 def full : Nat := 50
 
 /-- The persistable window for working results — mirrors `maxFeedback`. -/
-def cap : Nat := 50000
+def cap : Nat := 200000
 
 /-- **The present moment** at a turn boundary: what she just did and
 what came of it (as opaque content tokens), how much life she holds,
