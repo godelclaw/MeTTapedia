@@ -636,9 +636,9 @@ hypercubic invariants or imposing relations. -/
 theorem dimension16_rawCarrierCount :
     Fintype.card Dimension16RawAxisCarrier =
       23027949358636282675200 := by
-  rw [Fintype.card_prod, Fintype.card_fun, Fintype.card_fin,
-    Fintype.card_fin, card_dimension16FDLayout,
-    dimension16LayoutMultiplicity_exact]
+  rw [Fintype.card_prod]
+  simp only [Fintype.card_fun, Fintype.card_fin]
+  rw [card_dimension16FDLayout, dimension16LayoutMultiplicity_exact]
   norm_num
 
 /-- The same carrier count on the literal exact-dimension subtype of the

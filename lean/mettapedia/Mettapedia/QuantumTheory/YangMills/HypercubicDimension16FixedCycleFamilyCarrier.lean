@@ -106,6 +106,7 @@ def fixedCycleFamilyCharacter (h : Hypercubic4)
 
 /-! ## Recursive factorization -/
 
+set_option backward.isDefEq.respectTransparency false in
 theorem fixedCycleFamilyCharacter_nil (h : Hypercubic4)
     (remainingDegree : ℕ) :
     fixedCycleFamilyCharacter h [] remainingDegree =
@@ -119,6 +120,7 @@ theorem fixedCycleFamilyCharacter_nil (h : Hypercubic4)
       ⟨fun witness => zeroDegree witness.down⟩
     simp [fixedCycleFamilyCharacter, FixedCycleFamilyCarrier, zeroDegree]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem fixedCycleFamilyCharacter_zero_cons
     (h : Hypercubic4) (rest : List ℕ) (remainingDegree : ℕ) :
     fixedCycleFamilyCharacter h (0 :: rest) remainingDegree = 0 := by

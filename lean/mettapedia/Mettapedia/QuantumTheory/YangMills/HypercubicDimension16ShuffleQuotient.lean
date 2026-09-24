@@ -360,7 +360,7 @@ def localDerivativeLetterEquivList (derivativeBudget : ℕ) :
         change (List.ofFn axes).length = count.1
         simp)).2
       intro position
-      simp [localDerivativeLetterOfList, localDerivativeLetterToList]
+      exact List.get_ofFn axes position
   right_inv axes := by
     apply Subtype.ext
     exact List.ofFn_get axes.1

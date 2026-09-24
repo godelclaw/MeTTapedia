@@ -449,6 +449,7 @@ def cycleBlockFinRotation (parts : List ℕ) :
     Equiv.Perm (Fin parts.sum) :=
   (cycleBlockFinEquiv parts).permCongr (cycleBlockRotation parts)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem partition_parts_finRotate_of_pos {cycleLength : ℕ}
     (positive : 0 < cycleLength) :
     (finRotate cycleLength).partition.parts = {cycleLength} := by
@@ -459,6 +460,7 @@ theorem partition_parts_finRotate_of_pos {cycleLength : ℕ}
   · simp [Equiv.Perm.parts_partition,
       cycleType_finRotate, support_finRotate]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The recursive disjoint rotation has exactly the displayed cycle
 partition, including one-cycles as fixed points. -/
 theorem cycleBlockRotation_partition_parts (parts : List ℕ)
