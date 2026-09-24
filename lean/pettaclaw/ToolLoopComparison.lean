@@ -207,6 +207,107 @@ theorem evidence_barrier_handles_query_then_use_while_precommitment_cannot :
     requiredForEvidence evidence,
     query_and_use_cannot_share_a_correct_precommitted_batch⟩
 
+/-! ## Per-chat freshness: the deployed refinement of the stimulus guard
+
+`runUnlessStimulus` withholds every unexecuted command once newer input
+arrives.  The PeTTa runtime narrows this to what that input could change: a
+conversation effect into a chat whose new input the model has not read, and a
+rest, which would sleep through it.  A withheld step stops the batch there,
+as a failed send does.  This is the per-command form of
+`VerifiedFrontier.pending_same_conversation_blocks_commit`: input for one
+conversation never blocks an effect in another.  Runtimes without the
+per-command check keep the global guard above. -/
+
+/-- A command, as far as unread input can matter to it. -/
+inductive Step where
+  | speak (chat : Nat)
+  | rest
+  | other
+deriving Repr, DecidableEq
+
+/-- Whether a step may run while `unread` chats hold input the model has not
+read. -/
+def unaffected (unread : List Nat) : Step → Bool
+  | .speak chat => !unread.contains chat
+  | .rest => unread.isEmpty
+  | .other => true
+
+/-- Run the chosen steps up to the first one that unread input affects. -/
+def runFresh (unread : List Nat) : List Step → List Step
+  | [] => []
+  | step :: rest =>
+      if unaffected unread step then step :: runFresh unread rest else []
+
+/-- The refinement only ever runs a prefix of the chosen batch, in order. -/
+theorem run_fresh_is_prefix (unread : List Nat) (steps : List Step) :
+    runFresh unread steps <+: steps := by
+  induction steps with
+  | nil => exact List.nil_prefix
+  | cons step rest ih =>
+      unfold runFresh
+      split
+      · exact List.cons_prefix_cons.mpr ⟨rfl, ih⟩
+      · exact List.nil_prefix
+
+theorem no_unread_input_runs_the_whole_batch (steps : List Step) :
+    runFresh [] steps = steps := by
+  induction steps with
+  | nil => rfl
+  | cons step rest ih =>
+      cases step <;> simp [runFresh, unaffected, ih]
+
+/-- A message in one chat never withholds a send to another, nor anything
+that does not speak or rest. -/
+theorem unrelated_input_withholds_nothing (unread : List Nat)
+    (steps : List Step)
+    (unrelated : ∀ step ∈ steps, unaffected unread step = true) :
+    runFresh unread steps = steps := by
+  induction steps with
+  | nil => rfl
+  | cons step rest ih =>
+      have here := unrelated step (by simp)
+      have later : ∀ s ∈ rest, unaffected unread s = true :=
+        fun s member => unrelated s (by simp [member])
+      simp [runFresh, here, ih later]
+
+/-- A reply into a chat with unread input is withheld together with
+everything after it; what ran before it stays run. -/
+theorem reply_into_unread_chat_stops_the_batch (unread : List Nat)
+    (before after : List Step) (chat : Nat) (unreadChat : chat ∈ unread)
+    (ran : ∀ step ∈ before, unaffected unread step = true) :
+    runFresh unread (before ++ .speak chat :: after) = before := by
+  induction before with
+  | nil => simp [runFresh, unaffected, unreadChat]
+  | cons step rest ih =>
+      have here := ran step (by simp)
+      have later : ∀ s ∈ rest, unaffected unread s = true :=
+        fun s member => ran s (by simp [member])
+      simp [runFresh, here, ih later]
+
+/-- A rest waits while anything is unread: sleeping would make the sender
+wait out the whole rest. -/
+theorem rest_waits_on_unread_input (unread : List Nat) (after : List Step)
+    (someUnread : unread ≠ []) :
+    runFresh unread (.rest :: after) = [] := by
+  cases unread with
+  | nil => exact absurd rfl someUnread
+  | cons chat more => simp [runFresh, unaffected]
+
+/-- Where the global guard withholds a whole suffix of steps chosen before
+newer input arrived, the refinement keeps every step that input cannot
+affect. -/
+theorem refinement_keeps_what_the_global_guard_withheld {Command : Type*}
+    (captured changed : Nat) (different : changed ≠ captured)
+    (commands : List Command) (unread : List Nat) (steps : List Step)
+    (unrelated : ∀ step ∈ steps, unaffected unread step = true) :
+    runUnlessStimulus captured (commands.map (fun command => (changed, command)))
+        = [] ∧
+      runFresh unread steps = steps := by
+  refine ⟨?_, unrelated_input_withholds_nothing unread steps unrelated⟩
+  cases commands with
+  | nil => rfl
+  | cons command rest => simp [runUnlessStimulus, different]
+
 end PettaClaw.ToolLoopComparison
 
 #print axioms PettaClaw.ToolLoopComparison.every_mode_retains_five_commands
@@ -220,3 +321,9 @@ end PettaClaw.ToolLoopComparison
 #print axioms PettaClaw.ToolLoopComparison.result_suffix_projection_is_not_injective
 #print axioms PettaClaw.ToolLoopComparison.query_and_use_cannot_share_a_correct_precommitted_batch
 #print axioms PettaClaw.ToolLoopComparison.evidence_barrier_handles_query_then_use_while_precommitment_cannot
+#print axioms PettaClaw.ToolLoopComparison.run_fresh_is_prefix
+#print axioms PettaClaw.ToolLoopComparison.no_unread_input_runs_the_whole_batch
+#print axioms PettaClaw.ToolLoopComparison.unrelated_input_withholds_nothing
+#print axioms PettaClaw.ToolLoopComparison.reply_into_unread_chat_stops_the_batch
+#print axioms PettaClaw.ToolLoopComparison.rest_waits_on_unread_input
+#print axioms PettaClaw.ToolLoopComparison.refinement_keeps_what_the_global_guard_withheld
