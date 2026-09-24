@@ -44,7 +44,9 @@ are derived from the models, deployed, and re-observed live.
 - `ToolLoopComparison.lean` — the deployed five-command envelope against the
   call/result boundary shared by Codex and OpenCode: stimulus-guarded batches,
   a failed prefix that does not stop a mutating suffix, lossy result
-  projections, and query-then-use.
+  projections, and query-then-use.  Its per-chat refinement withholds only a
+  reply into a chat with unread input, or a rest, so input in one chat never
+  cancels a send to another.
 - `ActThenObserve.lean` — what a blind batch costs: a precommitted step is
   wrong with probability at least `min (μ a) (μ b)`, independent blind steps
   compound to `(1 - ε) ^ k` (five steps at `ε = 1/5` are all right less than
