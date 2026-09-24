@@ -95,3 +95,5 @@ Every top-level conditional theorem, with its dependency cone printed. -/
 #print axioms MatchingSiteVectors.pmSum_formW
 #print axioms KrennUniform.pmSum_formW_univ_of_isGHZ
 #print axioms KrennUniform.cap_lemma
+#print axioms MatchingSiteVectors.pmSum_two_over_odd_cut
+#print axioms KrennUniform.split_lemma

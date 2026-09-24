@@ -150,4 +150,106 @@ theorem pmSum_formW (W : Sym2 (V × C) → R) (z : V → C → R) (c₀ : V → 
       pmSum_congr_colour W hgS]
     ring
 
+section Cut
+
+variable {R' : Type*} [CommRing R'] {C' : Type*}
+
+omit [Fintype C] in
+/-- Matching sums split over a cut that no nonzero weight crosses. -/
+theorem pmSum_union_of_no_crossing (W : Sym2 (V × C') → R') (c : V → C') {X Y : Finset V}
+    (hXY : Disjoint X Y) (hcut : ∀ x ∈ X, ∀ y ∈ Y, W s((x, c x), (y, c y)) = 0) :
+    pmSum W c (X ∪ Y) = pmSum W c X * pmSum W c Y := by
+  rw [pmSum_factor_of_no_crossing W c X.card X (X ∪ Y) rfl Finset.subset_union_left
+    (fun x hx y hy => hcut x hx y (by
+      rw [Finset.union_sdiff_left, Finset.sdiff_eq_self_of_disjoint hXY.symm] at hy; exact hy)),
+    Finset.union_sdiff_left, Finset.sdiff_eq_self_of_disjoint hXY.symm]
+
+omit [Fintype C] in
+/-- **Two free sites over an odd cut.**  If the remaining sites split into two parts of odd size
+that no nonzero weight crosses, then the two free sites are matched into different parts, and the
+matching sum is a sum of two products. -/
+theorem pmSum_two_over_odd_cut (W : Sym2 (V × C') → R') (c : V → C') {u v : V} {A B : Finset V}
+    (huv : u ≠ v) (hAB : Disjoint A B) (huA : u ∉ A) (huB : u ∉ B) (hvA : v ∉ A) (hvB : v ∉ B)
+    (hA : ¬ Even A.card) (hB : ¬ Even B.card)
+    (hcut : ∀ x ∈ A, ∀ y ∈ B, W s((x, c x), (y, c y)) = 0) :
+    pmSum W c (insert u (insert v (A ∪ B)))
+      = (∑ w ∈ A, W (Sym2.map (paint c) s(u, w)) * pmSum W c (A.erase w))
+          * (∑ l ∈ B, W (Sym2.map (paint c) s(v, l)) * pmSum W c (B.erase l))
+        + (∑ w ∈ B, W (Sym2.map (paint c) s(u, w)) * pmSum W c (B.erase w))
+          * (∑ l ∈ A, W (Sym2.map (paint c) s(v, l)) * pmSum W c (A.erase l)) := by
+  have hcutXY : ∀ X ⊆ A, ∀ Y ⊆ B, pmSum W c (X ∪ Y) = pmSum W c X * pmSum W c Y :=
+    fun X hX Y hY => pmSum_union_of_no_crossing W c (hAB.mono hX hY)
+      fun x hx y hy => hcut x (hX hx) y (hY hy)
+  have huT : u ∉ A ∪ B := by simp [huA, huB]
+  have hvT : v ∉ A ∪ B := by simp [hvA, hvB]
+  rw [pmSum_expand_pair W c (p := u) (q := v) (Finset.mem_insert_self u _) (by simp [Ne.symm huv]),
+    Finset.erase_insert (by simp [huv, huT]), Finset.erase_insert hvT,
+    hcutXY A (Finset.Subset.refl _) B (Finset.Subset.refl _), pmSum_of_odd W c hA, zero_mul, mul_zero, zero_add]
+  -- each remaining term: expand at `v`
+  have hinner : ∀ w ∈ A ∪ B, pmSum W c ((insert v (A ∪ B)).erase w)
+      = ∑ l ∈ (A ∪ B).erase w, W (Sym2.map (paint c) s(v, l))
+          * pmSum W c (((A ∪ B).erase w).erase l) := by
+    intro w hw
+    have hwv : w ≠ v := fun e => hvT (e ▸ hw)
+    rw [Finset.erase_insert_of_ne (Ne.symm hwv),
+      pmSum_expand W c (Finset.mem_insert_self v _),
+      Finset.erase_insert (fun h => hvT (Finset.mem_of_mem_erase h))]
+  rw [Finset.sum_congr rfl fun w hw => by rw [hinner w hw], Finset.sum_union hAB]
+  have hA0 : pmSum W c A = 0 := pmSum_of_odd W c hA
+  have hB0 : pmSum W c B = 0 := pmSum_of_odd W c hB
+  -- a site of `A` first
+  have partA : ∀ w ∈ A, ∑ l ∈ (A ∪ B).erase w, W (Sym2.map (paint c) s(v, l))
+        * pmSum W c (((A ∪ B).erase w).erase l)
+      = ∑ l ∈ B, W (Sym2.map (paint c) s(v, l)) * (pmSum W c (A.erase w) * pmSum W c (B.erase l)) := by
+    intro w hw
+    have hwB : w ∉ B := Finset.disjoint_left.mp hAB hw
+    rw [Finset.erase_union_distrib, Finset.erase_eq_of_notMem hwB,
+      Finset.sum_union (hAB.mono_left (Finset.erase_subset w A))]
+    rw [Finset.sum_eq_zero (fun l hl => by
+      have hlB : l ∉ B := Finset.disjoint_left.mp hAB (Finset.mem_of_mem_erase hl)
+      rw [Finset.erase_union_distrib, Finset.erase_eq_of_notMem hlB,
+        hcutXY _ ((Finset.erase_subset _ _).trans (Finset.erase_subset _ _)) B (Finset.Subset.refl _), hB0,
+        mul_zero, mul_zero]), zero_add]
+    refine Finset.sum_congr rfl fun l hl => ?_
+    have hlA : l ∉ A.erase w := fun h => Finset.disjoint_left.mp hAB (Finset.mem_of_mem_erase h) hl
+    rw [Finset.erase_union_distrib, Finset.erase_eq_of_notMem hlA,
+      hcutXY _ (Finset.erase_subset w A) _ (Finset.erase_subset l B)]
+  -- a site of `B` first
+  have partB : ∀ w ∈ B, ∑ l ∈ (A ∪ B).erase w, W (Sym2.map (paint c) s(v, l))
+        * pmSum W c (((A ∪ B).erase w).erase l)
+      = ∑ l ∈ A, W (Sym2.map (paint c) s(v, l)) * (pmSum W c (A.erase l) * pmSum W c (B.erase w)) := by
+    intro w hw
+    have hwA : w ∉ A := Finset.disjoint_right.mp hAB hw
+    rw [Finset.erase_union_distrib, Finset.erase_eq_of_notMem hwA,
+      Finset.sum_union (hAB.mono_right (Finset.erase_subset w B))]
+    rw [Finset.sum_eq_zero (s := B.erase w) (fun l hl => by
+      have hlA : l ∉ A := Finset.disjoint_right.mp hAB (Finset.mem_of_mem_erase hl)
+      rw [Finset.erase_union_distrib, Finset.erase_eq_of_notMem hlA,
+        hcutXY A (Finset.Subset.refl _) _ ((Finset.erase_subset _ _).trans (Finset.erase_subset _ _)), hA0,
+        zero_mul, mul_zero]), add_zero]
+    refine Finset.sum_congr rfl fun l hl => ?_
+    have hlB : l ∉ B.erase w := fun h => Finset.disjoint_left.mp hAB hl (Finset.mem_of_mem_erase h)
+    rw [Finset.erase_union_distrib, Finset.erase_eq_of_notMem hlB,
+      hcutXY _ (Finset.erase_subset l A) _ (Finset.erase_subset w B)]
+  have h1 : ∑ w ∈ A, W (Sym2.map (paint c) s(u, w)) * ∑ l ∈ (A ∪ B).erase w,
+        W (Sym2.map (paint c) s(v, l)) * pmSum W c (((A ∪ B).erase w).erase l)
+      = ∑ w ∈ A, W (Sym2.map (paint c) s(u, w)) * ∑ l ∈ B,
+        W (Sym2.map (paint c) s(v, l)) * (pmSum W c (A.erase w) * pmSum W c (B.erase l)) :=
+    Finset.sum_congr rfl fun w hw => by rw [partA w hw]
+  have h2 : ∑ w ∈ B, W (Sym2.map (paint c) s(u, w)) * ∑ l ∈ (A ∪ B).erase w,
+        W (Sym2.map (paint c) s(v, l)) * pmSum W c (((A ∪ B).erase w).erase l)
+      = ∑ w ∈ B, W (Sym2.map (paint c) s(u, w)) * ∑ l ∈ A,
+        W (Sym2.map (paint c) s(v, l)) * (pmSum W c (A.erase l) * pmSum W c (B.erase w)) :=
+    Finset.sum_congr rfl fun w hw => by rw [partB w hw]
+  rw [h1, h2, Finset.sum_mul_sum, Finset.sum_mul_sum]
+  congr 1
+  · refine Finset.sum_congr rfl fun w _ => ?_
+    rw [Finset.mul_sum]
+    exact Finset.sum_congr rfl fun l _ => by ring
+  · refine Finset.sum_congr rfl fun w _ => ?_
+    rw [Finset.mul_sum]
+    exact Finset.sum_congr rfl fun l _ => by ring
+
+end Cut
+
 end MatchingSiteVectors

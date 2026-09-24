@@ -11,6 +11,10 @@ colours of the two free sites, which a GHZ system forces to be diagonal with ent
 `λ k * ∏ z p k`.  Whenever the contracted weights make that matrix visibly of rank at most two, the
 diagonal has a zero entry.  Nothing here depends on the characteristic or on the number of sites.
 
+**The split lemma** (`split_lemma`).  Fix two free sites and split the others into two parts of
+odd size.  If the cross forms `∑ z x i * z y j * W(x i, y j)` all vanish, the free sites must be
+matched into different parts and the contracted matrix again has rank at most two.
+
 **The cap lemma** (`cap_lemma`).  Cap a pair `u, v` with vectors `κ, μ` on which the pair's
 bilinear form vanishes, and contract every other site except two free sites `α, β` against a vector
 orthogonal to both profiles `∑ κ a W(u a, g ·)` and `∑ μ b W(v b, g ·)`.  Then `u` and `v` can only
@@ -180,6 +184,103 @@ theorem cap_lemma {W : Sym2 (V × Fin 3) → F} (hW : IsGHZOver W) {u v α β : 
       (Finset.prod_ne_zero_iff.mpr fun g hg => by
         obtain ⟨h1, h2, h3, h4⟩ := (hmemK g).mp hg
         exact hxt g h1 h2 h3 h4 k))
+  exact mul_ne_zero (mul_ne_zero (hne 0) (hne 1)) (hne 2) hdiag
+
+/-- **The split lemma.**  In a GHZ system, fix two sites `u, v` and split the other sites into
+two parts of odd size.  Then there are no vectors without zero entries at the other sites for which
+every cross form `∑ z x i * z y j * W(x i, y j)` (`x` in one part, `y` in the other) vanishes:
+the two free sites would have to be matched into different parts, making the contracted matrix
+of rank at most two, while a GHZ system makes it an invertible diagonal. -/
+theorem split_lemma {W : Sym2 (V × Fin 3) → F} (hW : IsGHZOver W) {u v : V} (huv : u ≠ v)
+    {A B : Finset V} (hAB : Disjoint A B) (hcover : ∀ g, g ≠ u → g ≠ v → g ∈ A ∨ g ∈ B)
+    (huA : u ∉ A) (huB : u ∉ B) (hvA : v ∉ A) (hvB : v ∉ B)
+    (hA : ¬ Even A.card) (hB : ¬ Even B.card)
+    (z : V → Fin 3 → F) (hzt : ∀ g, g ≠ u → g ≠ v → ∀ c, z g c ≠ 0)
+    (hcross : ∀ x ∈ A, ∀ y ∈ B, ∑ i, ∑ j, z x i * z y j * W s((x, i), (y, j)) = 0) : False := by
+  classical
+  haveI : Nonempty V := ⟨u⟩
+  have huniv : (Finset.univ : Finset V) = insert u (insert v (A ∪ B)) := by
+    ext g
+    simp only [Finset.mem_univ, Finset.mem_insert, Finset.mem_union, true_iff]
+    by_cases hgu : g = u
+    · exact Or.inl hgu
+    · by_cases hgv : g = v
+      · exact Or.inr (Or.inl hgv)
+      · exact Or.inr (Or.inr (hcover g hgu hgv))
+  have hTne : ∀ g ∈ A ∪ B, g ≠ u ∧ g ≠ v := by
+    intro g hg
+    rcases Finset.mem_union.mp hg with h | h
+    · exact ⟨fun e => huA (e ▸ h), fun e => hvA (e ▸ h)⟩
+    · exact ⟨fun e => huB (e ▸ h), fun e => hvB (e ▸ h)⟩
+  let z' : Fin 3 → Fin 3 → V → Fin 3 → F := fun a b p =>
+    if p = u then Pi.single a 1 else if p = v then Pi.single b 1 else z p
+  have z'u : ∀ a b, z' a b u = Pi.single a 1 := fun a b => by simp [z']
+  have z'v : ∀ a b, z' a b v = Pi.single b 1 := fun a b => by simp [z', Ne.symm huv]
+  have z'T : ∀ a b, ∀ g ∈ A ∪ B, z' a b g = z g := fun a b g hg => by
+    simp [z', (hTne g hg).1, (hTne g hg).2]
+  -- the parts' matching sums do not see the free sites
+  let hA' : V → F := fun w => pmSum (formW W z) (fun _ => ()) (A.erase w)
+  let hB' : V → F := fun w => pmSum (formW W z) (fun _ => ()) (B.erase w)
+  have hpart : ∀ a b (X : Finset V), X ⊆ A ∪ B →
+      pmSum (formW W (z' a b)) (fun _ => ()) X = pmSum (formW W z) (fun _ => ()) X :=
+    fun a b X hX => pmSum_congr _ _ _ fun p hp q hq => by
+      simp only [formW_paint, z'T a b p (hX hp), z'T a b q (hX hq)]
+  let lu : V → Fin 3 → F := fun w a => ∑ j, z w j * W s((u, a), (w, j))
+  let lv : V → Fin 3 → F := fun w b => ∑ j, z w j * W s((v, b), (w, j))
+  have hlu : ∀ a b, ∀ w ∈ A ∪ B, formW W (z' a b) (Sym2.map (paint fun _ => ()) s(u, w)) = lu w a :=
+    fun a b w hw => by
+      rw [formW_paint, z'u, z'T a b w hw]; simp [lu, Pi.single_apply]
+  have hlv : ∀ a b, ∀ w ∈ A ∪ B, formW W (z' a b) (Sym2.map (paint fun _ => ()) s(v, w)) = lv w b :=
+    fun a b w hw => by
+      rw [formW_paint, z'v, z'T a b w hw]; simp [lv, Pi.single_apply]
+  have hstruct : ∀ a b, pmSum (formW W (z' a b)) (fun _ => ()) Finset.univ
+      = (∑ w ∈ A, lu w a * hA' w) * (∑ l ∈ B, lv l b * hB' l)
+        + (∑ w ∈ B, lu w a * hB' w) * (∑ l ∈ A, lv l b * hA' l) := by
+    intro a b
+    rw [huniv, pmSum_two_over_odd_cut _ _ huv hAB huA huB hvA hvB hA hB (fun x hx y hy => by
+      rw [formW_apply, z'T a b x (Finset.mem_union_left _ hx), z'T a b y (Finset.mem_union_right _ hy)]
+      exact hcross x hx y hy)]
+    have eA : ∀ w ∈ A, pmSum (formW W (z' a b)) (fun _ => ()) (A.erase w) = hA' w :=
+      fun w _ => hpart a b _ ((Finset.erase_subset w A).trans Finset.subset_union_left)
+    have eB : ∀ w ∈ B, pmSum (formW W (z' a b)) (fun _ => ()) (B.erase w) = hB' w :=
+      fun w _ => hpart a b _ ((Finset.erase_subset w B).trans Finset.subset_union_right)
+    refine congrArg₂ (· + ·) (congrArg₂ (· * ·) ?_ ?_) (congrArg₂ (· * ·) ?_ ?_)
+    · exact Finset.sum_congr rfl fun w hw => by
+        rw [hlu a b w (Finset.mem_union_left _ hw), eA w hw]
+    · exact Finset.sum_congr rfl fun l hl => by
+        rw [hlv a b l (Finset.mem_union_right _ hl), eB l hl]
+    · exact Finset.sum_congr rfl fun w hw => by
+        rw [hlu a b w (Finset.mem_union_right _ hw), eB w hw]
+    · exact Finset.sum_congr rfl fun l hl => by
+        rw [hlv a b l (Finset.mem_union_left _ hl), eA l hl]
+  set d : Fin 3 → F := fun k => amplitude W (Amplitude.const k) * ∏ g ∈ A ∪ B, z g k
+  have hghz : ∀ a b, pmSum (formW W (z' a b)) (fun _ => ()) Finset.univ
+      = if a = b then d a else 0 := by
+    intro a b
+    rw [pmSum_formW_univ_of_isGHZ hW]
+    have hprod : ∀ k, ∏ p, z' a b p k
+        = ((Pi.single a 1 : Fin 3 → F) k * (Pi.single b 1 : Fin 3 → F) k) * ∏ g ∈ A ∪ B, z g k := by
+      intro k
+      have hvT : v ∉ A ∪ B := by simp [hvA, hvB]
+      rw [huniv, Finset.prod_insert (by simp [huv, huA, huB]), Finset.prod_insert hvT, z'u, z'v,
+        Finset.prod_congr rfl fun g hg => by rw [z'T a b g hg]]
+      ring
+    simp only [hprod]
+    split_ifs with hab
+    · subst hab
+      rw [Finset.sum_eq_single a (fun k _ hk => by simp [Ne.symm hk]) (by simp)]
+      simp [d]
+    · refine Finset.sum_eq_zero fun k _ => ?_
+      by_cases hka : k = a
+      · subst hka; simp [Ne.symm hab]
+      · simp [hka]
+  have hdiag := rank_two_diag (P := fun a => ∑ w ∈ A, lu w a * hA' w)
+    (Q := fun b => ∑ l ∈ B, lv l b * hB' l) (R := fun a => ∑ w ∈ B, lu w a * hB' w)
+    (S := fun b => ∑ l ∈ A, lv l b * hA' l) (d := d)
+    (fun a b => by rw [← hghz a b, hstruct a b])
+  have hne : ∀ k, d k ≠ 0 := fun k =>
+    mul_ne_zero (hW.1 k) (Finset.prod_ne_zero_iff.mpr fun g hg =>
+      hzt g (hTne g hg).1 (hTne g hg).2 k)
   exact mul_ne_zero (mul_ne_zero (hne 0) (hne 1)) (hne 2) hdiag
 
 end KrennUniform
