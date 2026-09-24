@@ -4,6 +4,7 @@ import NoCancellation
 import StarNormalForm
 import GraphMatchingBridge
 import CharTwoSix
+import UniformRigidity
 import Mettapedia.Combinatorics.Matching
 
 /-! # Axiom audit
@@ -89,3 +90,8 @@ Every top-level conditional theorem, with its dependency cone printed. -/
 #print axioms KrennCharTwo.rigid_pair
 #print axioms KrennCharTwo.SixCNF.sixFmla_unsat
 #print axioms KrennCharTwo.no_isGHZOver_six
+
+/-! Uniform rigidity: contraction against site vectors, and the cap lemma. -/
+#print axioms MatchingSiteVectors.pmSum_formW
+#print axioms KrennUniform.pmSum_formW_univ_of_isGHZ
+#print axioms KrennUniform.cap_lemma

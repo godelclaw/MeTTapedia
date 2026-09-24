@@ -25,7 +25,7 @@ Built on its own with `lake build KrennLib`; independent of the `N = 6` target. 
 lean_lib KrennLib where
   srcDir := "lib"
   roots := #[`MatchingParity, `GraphMatchingBridge, `Amplitude, `OrbitNormalization, `TripleOrbits,
-    `MatchingBridge, `LocalCancellation, `MatchingSum, `Gauge, `ColourPerMatching, `FourVertices, `SixCycle, `EvenCycle, `CycleSolution, `CapIncidence, `FourVertexRank, `FanStructure, `PurePartner, `MixedColouring, `CycleCoordinates, `SingleFlip, `Covector, `Degenerate, `MainTheorem, `Separation, `LiveDegree, `MinimalSupport, `HardCase, `NoCancellation, `StarNormalForm, `CharTwoDescent, `CharTwoSixCNF, `CharTwoRigidity, `CharTwoSix, `AxiomAudit]
+    `MatchingBridge, `LocalCancellation, `MatchingSum, `Gauge, `ColourPerMatching, `FourVertices, `SixCycle, `EvenCycle, `CycleSolution, `CapIncidence, `FourVertexRank, `FanStructure, `PurePartner, `MixedColouring, `CycleCoordinates, `SingleFlip, `Covector, `Degenerate, `MainTheorem, `Separation, `LiveDegree, `MinimalSupport, `HardCase, `NoCancellation, `StarNormalForm, `CharTwoDescent, `CharTwoSixCNF, `CharTwoRigidity, `CharTwoSix, `UniformRigidity, `AxiomAudit]
 
 def krennRoots : Array Lean.Name := #[`KrennFactorization, `KrennCounterexamples, `KrennRank,
     `KrennSyzygies, `OfficialKrennDefinitions, `KrennOfficialBridge,
