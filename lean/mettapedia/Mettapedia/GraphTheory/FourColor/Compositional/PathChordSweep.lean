@@ -152,6 +152,11 @@ theorem stackAt_length_noncrossingMatchingOfChordDiagram
     apply List.Nodup.filter
     simp
   rw [← List.toFinset_card_of_nodup hnodup]
-  simp [chordArc]
+  simp only [List.toFinset_filter, Finset.sort_toFinset, Function.comp_apply,
+    chordArc]
+  congr 1
+  ext chord
+  simp only [Finset.mem_filter]
+  exact and_congr_right fun _ => ⟨of_decide_eq_true, decide_eq_true⟩
 
 end Mettapedia.GraphTheory.FourColor.Compositional.PathChordSweep

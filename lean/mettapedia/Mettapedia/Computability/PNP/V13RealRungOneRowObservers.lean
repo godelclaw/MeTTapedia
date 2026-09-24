@@ -24,7 +24,9 @@ lemma v13_zmod2_eq_one_of_ne_zero (a : ZMod 2) (h : a ≠ 0) : a = 1 := by
   · rfl
 
 lemma v13_zmod2_add_one_ne_self (a : ZMod 2) : a + 1 ≠ a := by
-  fin_cases a <;> norm_num
+  intro h
+  have hone : (1 : ZMod 2) = 0 := add_left_cancel (h.trans (add_zero a).symm)
+  exact one_ne_zero hone
 
 /-- A single public row exposes the row functional of `A` and the matching RHS
 bit. -/
