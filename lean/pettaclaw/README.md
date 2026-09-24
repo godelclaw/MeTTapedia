@@ -38,6 +38,19 @@ are derived from the models, deployed, and re-observed live.
   broker-mediated workspace effects, the action/evidence barrier, explicit
   cancellation and termination, an unverified-answer counterexample, and
   essential composition with Iter preparation and PettaClaw life.
+- `FeedbackSensitiveBatch.lean` — the exact boundary for precommitted command
+  batches: a continuation chosen before an observation is right for every
+  outcome if and only if the step is observation-invariant.
+- `ToolLoopComparison.lean` — the deployed five-command envelope against the
+  call/result boundary shared by Codex and OpenCode: stimulus-guarded batches,
+  a failed prefix that does not stop a mutating suffix, lossy result
+  projections, and query-then-use.
+- `ActThenObserve.lean` — what a blind batch costs: a precommitted step is
+  wrong with probability at least `min (μ a) (μ b)`, independent blind steps
+  compound to `(1 - ε) ^ k` (five steps at `ε = 1/5` are all right less than
+  a third of the time), deciding after the observation never loses expected
+  value, and a batched absence claim is right only when the item is truly
+  absent.
 - `ContextAttention.lean` — an interruptible task capsule with a separate
   foreground human-event lane, exact acknowledgement, stop dominance, and
   bounded semantic retrieval that cannot erase required context.
@@ -103,9 +116,12 @@ are derived from the models, deployed, and re-observed live.
 - `StiFloorDecay.lean` — the concrete fixed-point floor-division decay model
   and its contraction and loss bounds.
 
-The models use no Mathlib and end with a `#print axioms` audit:
+Most models use no Mathlib and end with a `#print axioms` audit:
 zero `sorry`, axioms at most `propext` and `Quot.sound`, several theorems
-axiom-free. `IterArchitecture.lean` imports the two comparison models.
+axiom-free. Files that import Mathlib, including the three batch files
+above, compile with Mathlib's build directory on `LEAN_PATH` (the revision
+pinned by the MeTTapedia Lake manifest), and their audits may also list
+`Classical.choice`. `IterArchitecture.lean` imports the two comparison models.
 Check with:
 
 ```
