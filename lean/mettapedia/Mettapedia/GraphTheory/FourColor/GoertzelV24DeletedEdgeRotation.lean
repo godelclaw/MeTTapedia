@@ -204,7 +204,6 @@ theorem deletedEdgeData_phi_ambient_eq_of_ne
     forwardDart huv at hforward
   change data.vertexRotation ((deletedGraphDartEquiv huv dart).1).symm ≠
     reverseDart huv at hreverse
-  rw [RotationSystem.phi_apply, RotationSystem.phi_apply]
   change (deletedGraphDartEquiv huv
       (deletedVertexRotation data huv dart.symm)).1 =
     data.vertexRotation ((deletedGraphDartEquiv huv dart).1).symm
