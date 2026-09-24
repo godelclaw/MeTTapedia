@@ -53,6 +53,12 @@ are derived from the models, deployed, and re-observed live.
   a third of the time), deciding after the observation never loses expected
   value, and a batched absence claim is right only when the item is truly
   absent.
+- `PromptCacheLayout.lean` — why a prompt's stable text must lead: laid out
+  least changeable first, the text up to any level is a prefix of the whole,
+  so turns that agree on it share it with the provider's prefix cache; one
+  changing segment ahead of stable text can leave nothing shared.  The
+  deployed head / stable-sources / conversation / per-turn layout is an
+  instance.
 - `ContextAttention.lean` — an interruptible task capsule with a separate
   foreground human-event lane, exact acknowledgement, stop dominance, and
   bounded semantic retrieval that cannot erase required context.
