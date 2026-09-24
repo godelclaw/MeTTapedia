@@ -10916,6 +10916,51 @@ theorem exists_certified_quad_of_colour (W : Sym2 (V × Fin 3) → ℂ) {a : Fin
     exists_partner_ne_zero W (Amplitude.const (V := V) a) hxmem hrest
   exact ⟨w, Finset.ne_of_mem_erase hw, hlive', hrest'⟩
 
+/-- **A certified quad with one dead diagonal satisfies the cross relation.**
+
+If deleting four distinct sites leaves a non-vanishing matching sum in colour `a`, then the
+matching sum on those four sites vanishes in every other colour `b`.  When one diagonal is dead in
+`b`, the four-site expansion leaves exactly the two crossing products.  This is the algebraic
+constraint carried by every certified detour; it does not require either crossing product to be
+non-zero. -/
+theorem certified_quad_cross_relation (W : Sym2 (V × Fin 3) → ℂ)
+    (hzero : ∀ cc : V → Fin 3, ¬ Amplitude.Monochromatic cc → amplitude W cc = 0)
+    (hmono : ∀ (p q : V), q ≠ p → ∀ i j : Fin 3, i ≠ j → W s((p, i), (q, j)) = 0)
+    (hcard : 4 < Fintype.card V)
+    {a b : Fin 3} (hba : b ≠ a)
+    {u v p q : V} (huv : u ≠ v) (hup : u ≠ p) (huq : u ≠ q)
+    (hvp : v ≠ p) (hvq : v ≠ q) (hpq : p ≠ q)
+    (hcert : pmSum W (Amplitude.const (V := V) a)
+      ((Finset.univ : Finset V) \ ({u, v, p, q} : Finset V)) ≠ 0)
+    (hdead : W s((u, b), (v, b)) = 0) :
+    W s((u, b), (p, b)) * W s((v, b), (q, b))
+      + W s((u, b), (q, b)) * W s((v, b), (p, b)) = 0 := by
+  classical
+  have hS : ({u, v, p, q} : Finset V).Nonempty := ⟨u, by simp⟩
+  have hproper : ({u, v, p, q} : Finset V) ≠ (Finset.univ : Finset V) := by
+    intro h
+    have hle : ({u, v, p, q} : Finset V).card ≤ 4 := by
+      calc
+        ({u, v, p, q} : Finset V).card ≤ ({v, p, q} : Finset V).card + 1 :=
+          Finset.card_insert_le _ _
+        _ ≤ ({p, q} : Finset V).card + 2 := by
+          have := Finset.card_insert_le v ({p, q} : Finset V)
+          omega
+        _ ≤ ({q} : Finset V).card + 3 := by
+          have := Finset.card_insert_le p ({q} : Finset V)
+          omega
+        _ = 4 := by simp
+    have huniv : Fintype.card V = ({u, v, p, q} : Finset V).card := by
+      rw [← Finset.card_univ, ← h]
+    omega
+  have hquad : pmSum W (Amplitude.const (V := V) b) ({u, v, p, q} : Finset V) = 0 :=
+    pmSum_zero_of_complement_ne_zero W hzero hmono hS hproper hba hcert
+  have hpaint : Sym2.map (Amplitude.paint (Amplitude.const (V := V) b)) s(u, v)
+      = s((u, b), (v, b)) := rfl
+  rw [MatchingCrossing.pmSum_four_two_terms W (Amplitude.const (V := V) b)
+    huv hup huq hvp hvq hpq (by rw [hpaint]; exact hdead)] at hquad
+  exact hquad
+
 /-- **The composition, with one combinatorial input left.**
 
 Four sites, a live pair of colour `b`, a live pair of colour `c`, and a certificate that the colour

@@ -1,6 +1,7 @@
 import MainTheorem
 import MinimalSupport
 import NoCancellation
+import StarNormalForm
 import GraphMatchingBridge
 import Mettapedia.Combinatorics.Matching
 
@@ -39,3 +40,42 @@ Every top-level conditional theorem, with its dependency cone printed. -/
 #print axioms MixedColouring.mixColouring_of_disconnected
 #print axioms MixedColouring.exists_mixed_model
 #print axioms CycleCoordinates.exists_mixed
+
+/-! Receiving-colour detour compatibility. -/
+#print axioms NoCancellation.certified_quad_cross_relation
+#print axioms StarNormalForm.certified_detour_cross_relation
+#print axioms StarNormalForm.detour_port_reuse_forces_size_one_circuits
+#print axioms StarNormalForm.thirdColour_thirdColour
+#print axioms StarNormalForm.exists_detourPorts
+#print axioms StarNormalForm.same_side_reuse_size_one_circuit
+#print axioms StarNormalForm.crossed_one_port_dichotomy
+#print axioms StarNormalForm.double_certified_detour_overlap_normal_form
+#print axioms StarNormalForm.receiving_pair_normal_form
+#print axioms StarNormalForm.excess_site_receiving_pair_normal_form
+#print axioms MatchingCrossing.exists_dead_pair_detour_on
+#print axioms MatchingCrossing.four_le_card_of_dead_pair_detour
+#print axioms MatchingCrossing.dead_pair_detour_card_two
+#print axioms MatchingCrossing.dead_pair_detour_card_four
+#print axioms StarNormalForm.disjoint_detours_force_outward_routes
+#print axioms StarNormalForm.eight_le_card_of_disjoint_detours
+#print axioms StarNormalForm.disjoint_detours_card_eight_exhaustion
+#print axioms StarNormalForm.receiving_pair_routed_normal_form
+#print axioms StarNormalForm.excess_site_receiving_pair_routed
+#print axioms StarNormalForm.CrossedOnePortCap.r_ne_q
+#print axioms StarNormalForm.exists_crossedCapTails
+#print axioms StarNormalForm.six_le_card_of_crossedCapTails
+#print axioms StarNormalForm.crossedCapTails_card_six
+#print axioms StarNormalForm.seven_le_card_of_distinct_tails
+#print axioms StarNormalForm.crossedCapTails_card_eight
+#print axioms StarNormalForm.disjoint_detours_octet_synchronized
+#print axioms StarNormalForm.exists_disjointDetourOctet
+#print axioms StarNormalForm.pair_overlap_trichotomy
+#print axioms StarNormalForm.outward_route_overlap
+#print axioms StarNormalForm.outward_route_overlap_sized
+#print axioms StarNormalForm.ten_le_card_of_two_beyond_octet
+#print axioms StarNormalForm.routed_pair_dead_with_live_arms
+#print axioms StarNormalForm.certificate_does_not_transfer_upward
+#print axioms StarNormalForm.routing_iteration_obstruction
+#print axioms StarNormalForm.excess_site_routing_network
+#print axioms StarNormalForm.live_pair_annihilates_complement
+#print axioms StarNormalForm.octet_ghz_relations
