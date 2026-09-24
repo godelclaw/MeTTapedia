@@ -116,7 +116,8 @@ theorem continuous_diffusion_spaceTime :
         (spatialLaplacian (spatialCurl (spatialField s z.1)) z.2)) := by
   have hc := continuous_eval.comp
     (((continuous_laplacianCurl_field s g hSum hu).comp continuous_fst).prodMk continuous_snd)
-  simpa only [Function.comp_def, spatialLaplacian_curl_eq s g hSum hu _ (Subtype.prop _)] using
+  simpa only [Function.comp_def, Pi.smul_def,
+    spatialLaplacian_curl_eq s g hSum hu _ (Subtype.prop _)] using
     (complexRealPartEuclideanCLM.continuous.comp hc).const_smul nu
 
 /-- Restrict joint continuity to an actual material path and a compact
