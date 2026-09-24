@@ -27,13 +27,13 @@ local instance : Measure.IsAddHaarMeasure (volume : Measure UnitAddCircle) :=
 local instance : IsProbabilityMeasure (volume : Measure UnitAddCircle) :=
   inferInstanceAs (IsProbabilityMeasure AddCircle.haarAddCircle)
 
-def HasNonnegativeCoefficients (a : A) : Prop := ∀ q, 0 ≤ a q
+def HasNonnegativeCoefficients (a : A) : Prop := ∀ q, 0 ≤ a.coeff q
 
 theorem nonnegative_single (q : d → ℤ) (c : ℝ) (hc : 0 ≤ c) :
     HasNonnegativeCoefficients (AddMonoidAlgebra.single q c) := by
   classical
   intro k
-  simp only [AddMonoidAlgebra.single_apply]
+  simp only [AddMonoidAlgebra.coeff_single, Finsupp.single_apply]
   split_ifs <;> positivity
 
 theorem nonnegative_add {a b : A}
@@ -44,27 +44,28 @@ theorem nonnegative_mul {a b : A}
     (ha : HasNonnegativeCoefficients a) (hb : HasNonnegativeCoefficients b) :
     HasNonnegativeCoefficients (a * b) := by
   intro q
-  rw [AddMonoidAlgebra.mul_apply_left]
+  rw [AddMonoidAlgebra.coeff_mul_apply_left]
   exact Finset.sum_nonneg fun k _ ↦ mul_nonneg (ha k) (hb (-k + q))
 
 /-- One convolution path is a lower bound when every path has nonnegative weight. -/
 theorem mul_coeff_le {a b : A}
     (ha : HasNonnegativeCoefficients a) (hb : HasNonnegativeCoefficients b)
-    (k l : d → ℤ) : a k * b l ≤ (a * b) (k + l) := by
+    (k l : d → ℤ) : a.coeff k * b.coeff l ≤ (a * b).coeff (k + l) := by
   classical
-  rw [AddMonoidAlgebra.mul_apply_left]
+  rw [AddMonoidAlgebra.coeff_mul_apply_left]
   simp only [Finsupp.sum]
-  by_cases hk : k ∈ a.support
+  by_cases hk : k ∈ a.coeff.support
   · simpa only [neg_add_cancel_left] using
-      (Finset.single_le_sum (s := a.support)
+      (Finset.single_le_sum (s := a.coeff.support)
         (fun j _ ↦ mul_nonneg (ha j) (hb (-j + (k + l)))) hk)
-  · have hz : a k = 0 := by simpa only [Finsupp.mem_support_iff, not_not] using hk
+  · have hz : a.coeff k = 0 := by simpa only [Finsupp.mem_support_iff, not_not] using hk
     rw [hz, zero_mul]
     exact Finset.sum_nonneg fun j _ ↦ mul_nonneg (ha j) (hb (-j + (k + l)))
 
 theorem mul_coeff_pos {a b : A}
     (ha : HasNonnegativeCoefficients a) (hb : HasNonnegativeCoefficients b)
-    {k l : d → ℤ} (hk : 0 < a k) (hl : 0 < b l) : 0 < (a * b) (k + l) :=
+    {k l : d → ℤ} (hk : 0 < a.coeff k) (hl : 0 < b.coeff l) :
+    0 < (a * b).coeff (k + l) :=
   lt_of_lt_of_le (mul_pos hk hl) (mul_coeff_le ha hb k l)
 
 variable [Fintype d]
@@ -81,10 +82,10 @@ theorem evaluate_single (q : d → ℤ) (c : ℝ) (x : T) :
     evaluate (AddMonoidAlgebra.single q c) x = (c : ℂ) * UnitAddTorus.mFourier q x := by
   simp [evaluate, AddMonoidAlgebra.lift_single, characterHom, Algebra.smul_def]
 
-theorem integral_evaluate (a : A) : (∫ x : T, evaluate a x) = (a 0 : ℂ) := by
+theorem integral_evaluate (a : A) : (∫ x : T, evaluate a x) = (a.coeff 0 : ℂ) := by
   classical
   have he (x : T) : evaluate a x =
-      ∑ q ∈ a.support, (a q : ℂ) * UnitAddTorus.mFourier q x := by
+      ∑ q ∈ a.coeff.support, (a.coeff q : ℂ) * UnitAddTorus.mFourier q x := by
     simp [evaluate, AddMonoidAlgebra.lift_apply, characterHom, Finsupp.sum,
       Algebra.smul_def, ContinuousMap.sum_apply]
   simp_rw [he]
@@ -95,10 +96,10 @@ theorem integral_evaluate (a : A) : (∫ x : T, evaluate a x) = (a 0 : ℂ) := b
     · intro q _ hq
       simp [hq]
     · intro h
-      have hz : a 0 = 0 := by simpa only [Finsupp.mem_support_iff, not_not] using h
+      have hz : a.coeff 0 = 0 := by simpa only [Finsupp.mem_support_iff, not_not] using h
       simp [hz]
   · intro q _
-    exact ((UnitAddTorus.mFourier q).continuous.const_mul (a q : ℂ)).integrable_of_hasCompactSupport
+    exact ((UnitAddTorus.mFourier q).continuous.const_mul (a.coeff q : ℂ)).integrable_of_hasCompactSupport
       (HasCompactSupport.of_compactSpace _)
 
 def cosinePolynomial (q : d → ℤ) : A :=
@@ -108,18 +109,18 @@ omit [Fintype d] in
 theorem cosine_nonnegative (q : d → ℤ) : HasNonnegativeCoefficients (cosinePolynomial q) :=
   nonnegative_add (nonnegative_single _ _ (by norm_num)) (nonnegative_single _ _ (by norm_num))
 
-theorem cosine_coeff_pos (q : d → ℤ) : 0 < cosinePolynomial q q := by
+theorem cosine_coeff_pos (q : d → ℤ) : 0 < (cosinePolynomial q).coeff q := by
   classical
-  change 0 < AddMonoidAlgebra.single q (1 / 2 : ℝ) q +
-    AddMonoidAlgebra.single (-q) (1 / 2 : ℝ) q
-  simp only [AddMonoidAlgebra.single_apply]
+  change 0 < (AddMonoidAlgebra.single q (1 / 2 : ℝ)).coeff q +
+    (AddMonoidAlgebra.single (-q) (1 / 2 : ℝ)).coeff q
+  simp only [AddMonoidAlgebra.coeff_single, Finsupp.single_apply]
   split_ifs <;> norm_num
 
-theorem cosine_neg_coeff_pos (q : d → ℤ) : 0 < cosinePolynomial q (-q) := by
+theorem cosine_neg_coeff_pos (q : d → ℤ) : 0 < (cosinePolynomial q).coeff (-q) := by
   classical
-  change 0 < AddMonoidAlgebra.single q (1 / 2 : ℝ) (-q) +
-    AddMonoidAlgebra.single (-q) (1 / 2 : ℝ) (-q)
-  simp only [AddMonoidAlgebra.single_apply]
+  change 0 < (AddMonoidAlgebra.single q (1 / 2 : ℝ)).coeff (-q) +
+    (AddMonoidAlgebra.single (-q) (1 / 2 : ℝ)).coeff (-q)
+  simp only [AddMonoidAlgebra.coeff_single, Finsupp.single_apply]
   split_ifs <;> norm_num
 
 theorem evaluate_cosine (q : d → ℤ) (x : T) :
