@@ -60,7 +60,8 @@ noncomputable instance {m q : Nat}
 
 lemma v13_zmod2_eq_of_ne_left {a b c : ZMod 2}
     (hbc : c ≠ b) (hab : a ≠ b) : a = c := by
-  fin_cases a <;> fin_cases b <;> fin_cases c <;> simp at hbc hab ⊢
+  fin_cases a <;> fin_cases b <;> fin_cases c <;>
+    first | exact rfl | exact False.elim (hbc rfl) | exact False.elim (hab rfl)
 
 lemma v13RealLinear_staticRows_decide_same_after_kernel_add {m q : Nat}
     (observer : V13RealLinearStaticRowObserver m q)

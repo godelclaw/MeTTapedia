@@ -89,7 +89,7 @@ theorem boundedKineticEnergy_of_add_scalar_smul_schwartz_of_abs_le
       AEStronglyMeasurable (kineticEnergyDensity u t) (volume : Measure NSSpace) := by
     have hCont :
         Continuous (fun x : NSSpace => kineticEnergyDensity u t x) := by
-      simpa [u, kineticEnergyDensity] using
+      simpa [u, kineticEnergyDensity, Pi.pow_def] using
         (((f.continuous.const_smul (a t)).add (g.continuous.const_smul (b t))).norm.pow 2)
     exact hCont.aestronglyMeasurable
   have hIntDensity : Integrable (kineticEnergyDensity u t) := by
