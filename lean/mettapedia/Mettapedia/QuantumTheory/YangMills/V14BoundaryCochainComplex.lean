@@ -382,6 +382,7 @@ def actionLaplacianTwoBlockAssembly : ExactTwoBlockAssembly where
 
 /-! ## The MOVE-5 descendant cancels only after recombination -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The operator census needed for the acceptance witness has one coordinate,
 the scalar descendant `∂² Tr(F²)`. -/
 inductive ActionLaplacianCensus where

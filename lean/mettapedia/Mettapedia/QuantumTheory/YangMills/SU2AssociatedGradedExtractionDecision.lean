@@ -123,6 +123,7 @@ theorem no_associatedGraded_linearEquiv_atMost1851
 
 /-! ## Exhaustive survivor/transfer audit -/
 
+set_option backward.isDefEq.respectTransparency false in
 inductive ExtractionDecisionRow where
   | independentTraceQuotient
   | independentFullV14Transfer

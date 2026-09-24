@@ -417,8 +417,9 @@ theorem RawFDMonomial.tensorSign_compose
   simp only [RawFDMonomial.tensorSign, hfirst, hsecond, hderivative,
     RawFDMonomial.act_shape, RawFDMonomial.act_fieldFirst,
     RawFDMonomial.act_fieldSecond, RawFDMonomial.act_derivativeAxis]
-  ring
+  ring!
 
+set_option backward.isDefEq.respectTransparency false in
 inductive ContractionParity where
   | scalar
   | pseudoscalar
@@ -457,6 +458,7 @@ theorem rawFDCensus_card_finite : ∃ count : ℕ,
 
 /-! ## Exact relation matrices and separated source policies -/
 
+set_option backward.isDefEq.respectTransparency false in
 inductive FDRelationFamily where
   | fieldAntisymmetry
   | bianchi
@@ -468,6 +470,7 @@ inductive FDRelationFamily where
   | su2CayleyHamilton
 deriving DecidableEq, Fintype, Repr
 
+set_option backward.isDefEq.respectTransparency false in
 inductive FDRelationPolicy where
   | o9OffShell
   | f43OnShell

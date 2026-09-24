@@ -114,6 +114,7 @@ theorem plaquetteCenteredDoubleTrace_gaugeAct
 `a³b`, `a⁴`, and `a⁵`, respectively. -/
 abbrev TraceRelationMonomial := Fin 3
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Closed primitive catalog used by the relation.  These are construction
 forms, not extensible records carrying caller-selected dimensions. -/
 inductive CenteredTracePrimitive where

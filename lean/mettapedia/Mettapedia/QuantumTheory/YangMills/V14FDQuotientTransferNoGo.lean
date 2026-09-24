@@ -358,6 +358,7 @@ theorem not_independentRadialImplementsCanonicalCutoff :
 
 /-! ## The exact integration-by-parts quotient slice -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The smallest source slice needed for the transfer test. -/
 inductive V14FDIBPDensity where
   | zero
@@ -466,6 +467,7 @@ theorem no_rgCompatibleFDTransferSocket
 
 /-! ## Checked two-branch decision -/
 
+set_option backward.isDefEq.respectTransparency false in
 inductive V14FDTransferDecisionRow where
   | actualWilsonBlockWitness
   | homogeneousAssociatedGradedWitness
