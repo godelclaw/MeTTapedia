@@ -118,7 +118,8 @@ theorem hasDerivAt_pairedDefect_heat (f g : ℝ → ℝ) (nu multiplier t : ℝ)
     have horder := (hg.continuousAt.sub hf.continuousAt).eventually
       (lt_mem_nhds (sub_pos.mpr hlt))
     filter_upwards [hpos, horder] with s hs ho
-    rw [pairedDefect_small _ _ hs.le (by linarith)]
+    change 0 < g s - f s at ho
+    rw [pairedDefect_small _ _ hs.le (sub_pos.mp ho).le]
     ring
   · have h := (hf.mul ((hf.pow 2).sub (hg.pow 2))).const_mul 4
     have h' : HasDerivAt (fun s ↦ 4 * (f s * (f s ^ 2 - g s ^ 2)))
@@ -133,7 +134,8 @@ theorem hasDerivAt_pairedDefect_heat (f g : ℝ → ℝ) (nu multiplier t : ℝ)
     have horder := (hf.continuousAt.sub hg.continuousAt).eventually
       (lt_mem_nhds (sub_pos.mpr hgt))
     filter_upwards [hpos, horder] with s hs ho
-    rw [pairedDefect_large _ _ hs.le (by linarith)]
+    change 0 < f s - g s at ho
+    rw [pairedDefect_large _ _ hs.le (sub_pos.mp ho).le]
     ring
 
 theorem pairedHeatRate_lower_bound (nu multiplier f g eps : ℝ)
