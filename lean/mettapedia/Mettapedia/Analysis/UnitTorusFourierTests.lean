@@ -34,7 +34,7 @@ example (k : Fin 1 → ℤ) : projection (mFourier k) {k} = mFourier k := by
 /-- Omitting a unit character leaves error one, not zero. -/
 example : (∫ x : T1,
     ‖projection (mFourier (fun _ : Fin 1 ↦ 1)) ∅ x - mFourier (fun _ ↦ 1) x‖ ^ 2) = 1 := by
-  simp [projection, mFourier, fourier_apply]
+  simp [projection, mFourier, fourier_apply, Circle.norm_coe]
 
 end Mettapedia.Analysis.UnitTorusFourierTests
 

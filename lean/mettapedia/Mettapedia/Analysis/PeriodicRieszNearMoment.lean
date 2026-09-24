@@ -106,6 +106,7 @@ theorem integrable_rawFirstMoment (N : ℕ) :
   apply hi.mono' ((continuous_norm.measurable.mul
     (PeriodicRieszOperator.measurable_rawKernel N).norm).aestronglyMeasurable)
   filter_upwards [] with x
+  simp only [Pi.mul_apply]
   rw [Real.norm_of_nonneg (by positivity)]
   simpa only [Finset.mul_sum] using mul_le_mul_of_nonneg_left
     (PeriodicRieszOperator.norm_rawKernel_le N x) (norm_nonneg x)
@@ -137,6 +138,7 @@ theorem integrable_firstMoment (N : ℕ) :
   apply hi.mono' ((continuous_norm.measurable.mul
     (PeriodicRieszOperator.measurable_kernel N).norm).aestronglyMeasurable)
   filter_upwards [] with x
+  simp only [Pi.mul_apply]
   rw [Real.norm_of_nonneg (by positivity)]
   have hb := mul_le_mul_of_nonneg_left (PeriodicRieszOperator.norm_kernel_le N x) (norm_nonneg x)
   simpa only [Pi.add_apply, mul_add, mul_left_comm] using hb
