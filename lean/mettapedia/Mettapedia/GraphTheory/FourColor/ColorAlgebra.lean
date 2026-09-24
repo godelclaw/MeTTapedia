@@ -425,8 +425,8 @@ theorem support₁_indicatorChain_red {E : Type*} [Fintype E] [DecidableEq E]
     support₁ (indicatorChain red S) = S := by
   ext e
   by_cases he : e ∈ S
-  · simp [support₁, indicatorChain, red, he]
-  · simp [support₁, indicatorChain, red, he]
+  · simp [mem_support₁_iff, indicatorChain, red, he]
+  · simp [mem_support₁_iff, indicatorChain, red, he]
 
 /-- Adding a red indicator chain toggles first-coordinate support by symmetric difference. -/
 theorem support₁_after_indicatorChain_red {E : Type*} [Fintype E] [DecidableEq E]
@@ -437,17 +437,17 @@ theorem support₁_after_indicatorChain_red {E : Type*} [Fintype E] [DecidableEq
   by_cases he : e ∈ S
   · generalize ha : (x e).1 = a
     fin_cases a
-    · simp [support₁, indicatorChain, red, he, ha,
+    · simp [mem_support₁_iff, indicatorChain, red, he, ha,
         Finset.mem_union, Finset.mem_sdiff]
       constructor
       · intro _; rfl
       · intro _ h; cases h
-    · simp [support₁, indicatorChain, red, he, ha,
+    · simp [mem_support₁_iff, indicatorChain, red, he, ha,
         Finset.mem_union, Finset.mem_sdiff]
       constructor
       · intro h; exact False.elim (h rfl)
       · intro h; cases h
-  · simp [support₁, indicatorChain, red, he,
+  · simp [mem_support₁_iff, indicatorChain, red, he,
       Finset.mem_union, Finset.mem_sdiff]
 
 /-- A blue indicator chain has second-coordinate support exactly on its selected set. -/
@@ -456,8 +456,8 @@ theorem support₂_indicatorChain_blue {E : Type*} [Fintype E] [DecidableEq E]
     support₂ (indicatorChain blue S) = S := by
   ext e
   by_cases he : e ∈ S
-  · simp [support₂, indicatorChain, blue, he]
-  · simp [support₂, indicatorChain, blue, he]
+  · simp [mem_support₂_iff, indicatorChain, blue, he]
+  · simp [mem_support₂_iff, indicatorChain, blue, he]
 
 /-- Adding a blue indicator chain toggles second-coordinate support by symmetric difference. -/
 theorem support₂_after_indicatorChain_blue {E : Type*} [Fintype E] [DecidableEq E]
@@ -468,17 +468,17 @@ theorem support₂_after_indicatorChain_blue {E : Type*} [Fintype E] [DecidableE
   by_cases he : e ∈ S
   · generalize ha : (x e).2 = a
     fin_cases a
-    · simp [support₂, indicatorChain, blue, he, ha,
+    · simp [mem_support₂_iff, indicatorChain, blue, he, ha,
         Finset.mem_union, Finset.mem_sdiff]
       constructor
       · intro _; rfl
       · intro _ h; cases h
-    · simp [support₂, indicatorChain, blue, he, ha,
+    · simp [mem_support₂_iff, indicatorChain, blue, he, ha,
         Finset.mem_union, Finset.mem_sdiff]
       constructor
       · intro h; exact False.elim (h rfl)
       · intro h; cases h
-  · simp [support₂, indicatorChain, blue, he,
+  · simp [mem_support₂_iff, indicatorChain, blue, he,
       Finset.mem_union, Finset.mem_sdiff]
 
 /-- Sum of a constant color over a finite set. -/

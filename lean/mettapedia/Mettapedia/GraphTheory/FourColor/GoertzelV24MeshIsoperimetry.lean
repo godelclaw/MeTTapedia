@@ -247,7 +247,7 @@ theorem branchIn_card_le_or_branchOut_card_le [Nonempty Edg] {k : ℕ}
 theorem card_branchIn_add_card_branchOut :
     (M.branchIn S).card + (M.branchOut S).card = a * b := by
   classical
-  have := Finset.filter_card_add_filter_neg_card_eq_card
+  have := Finset.card_filter_add_card_filter_not
     (s := (Finset.univ : Finset (Fin a × Fin b))) (fun p => M.branch p.1 p.2 ∈ S)
   simpa [branchIn, branchOut, Finset.card_univ, Fintype.card_prod, Fintype.card_fin] using this
 

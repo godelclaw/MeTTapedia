@@ -88,11 +88,11 @@ theorem openArcs_pairwise_right_decreasing
   have hiMem : opened.get i ∈ opened := opened.get_mem i
   have hjMem : opened.get j ∈ opened := opened.get_mem j
   have hiOpen : (opened.get i).IsOpenAt cut := by
-    simpa [opened, openArcs, LabeledArc.IsOpenAt] using
-      (List.mem_filter.mp hiMem).2
+    change (opened.get i).left < cut ∧ cut ≤ (opened.get i).right
+    exact of_decide_eq_true (List.mem_filter.mp hiMem).2
   have hjOpen : (opened.get j).IsOpenAt cut := by
-    simpa [opened, openArcs, LabeledArc.IsOpenAt] using
-      (List.mem_filter.mp hjMem).2
+    change (opened.get j).left < cut ∧ cut ≤ (opened.get j).right
+    exact of_decide_eq_true (List.mem_filter.mp hjMem).2
   have hjLeft_lt_hiRight : (opened.get j).left < (opened.get i).right :=
     lt_of_lt_of_le hjOpen.1 hiOpen.2
   by_contra hnot

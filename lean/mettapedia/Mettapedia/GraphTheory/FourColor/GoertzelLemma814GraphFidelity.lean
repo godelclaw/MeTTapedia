@@ -18,7 +18,9 @@ namespace GoertzelLemma814GraphFidelity
 
 open GoertzelLemma814
 
+set_option backward.isDefEq.respectTransparency false in
 deriving instance Fintype for LColor
+set_option backward.isDefEq.respectTransparency false in
 deriving instance Fintype for TauEdge
 
 set_option maxRecDepth 4096

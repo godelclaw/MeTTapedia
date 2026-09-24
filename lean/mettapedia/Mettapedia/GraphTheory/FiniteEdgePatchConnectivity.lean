@@ -274,7 +274,8 @@ private theorem reachable_sup_iff_boundaryClosure
     have hpath : Relation.ReflTransGen
         (fun x y => first.Adj x y ∨ second.Adj x y) left right := by
       have h := (reachable_iff_reflTransGen left right).mp hreach
-      exact h.mono fun x y hxy => (sup_adj first second x y).mp hxy
+      exact Relation.ReflTransGen.mono
+        (fun x y hxy => (sup_adj first second x y).mp hxy) left right h
     have hstate := boundarySplitState_of_reflTransGen
       first second selected left right hswitch hleft hpath
     have hclosure : Relation.ReflTransGen

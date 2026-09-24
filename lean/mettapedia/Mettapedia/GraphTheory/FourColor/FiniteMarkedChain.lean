@@ -96,7 +96,8 @@ theorem exists_constant_window {V : Type*} [DecidableEq V]
     omega
   have hz : windowIndex marks.card n start 0 = coarseIndex marks.card n i := by
     apply Fin.ext
-    simp [windowIndex, coarseIndex, start]
+    change i.val * n + 0 = i.val * n
+    exact Nat.add_zero _
   have hsame : slice (windowIndex marks.card n start p) =
       slice (coarseIndex marks.card n i) :=
     Finset.Subset.antisymm (hslice ▸ hs hhi) (hs hlo)

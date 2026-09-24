@@ -72,12 +72,12 @@ theorem FibresConnected.of_imp {γ : Type w} {label : α → β} {label' : α �
 theorem FibresConnected.mono {step' : α → α → Prop}
     (hle : ∀ x y, step x y → step' x y) {label : α → β}
     (h : FibresConnected step label) : FibresConnected step' label :=
-  fun x y hxy => (h x y hxy).mono hle
+  fun x y hxy => ReflTransGen.mono hle x y (h x y hxy)
 
 theorem Connected.mono {step' : α → α → Prop}
     (hle : ∀ x y, step x y → step' x y) (h : Connected step) :
     Connected step' :=
-  fun x y => (h x y).mono hle
+  fun x y => ReflTransGen.mono hle x y (h x y)
 
 /-- Paths inside an invariant set.  If moves never leave a set `S`, then paths
 of the move relation restricted to `S` are exactly the paths of the move
@@ -87,7 +87,7 @@ theorem reflTransGen_subtype_iff {S : α → Prop}
     ReflTransGen (fun a b : Subtype S => step a.1 b.1) x y ↔ ReflTransGen step x.1 y.1 := by
   constructor
   · intro h
-    exact ReflTransGen.lift Subtype.val (fun _ _ hab => hab) h
+    exact ReflTransGen.lift Subtype.val (fun _ _ hab => hab) x y h
   · intro h
     obtain ⟨x, hx⟩ := x
     obtain ⟨y, hy⟩ := y

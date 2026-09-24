@@ -41,7 +41,7 @@ private theorem dartChainWalk_darts (d : G.Dart) :
         (List.isChain_cons.mp hchain).1 d' (by simp)
       have htail : List.IsChain G.DartAdj (d' :: ds) :=
         (List.isChain_cons.mp hchain).2
-      dsimp [dartChainWalk]
+      change d :: ((dartChainWalk d' ds htail).copy hAdj.symm rfl).darts = d :: d' :: ds
       rw [SimpleGraph.Walk.darts_copy, dartChainWalk_darts d' ds htail]
 
 omit [DecidableEq V] in

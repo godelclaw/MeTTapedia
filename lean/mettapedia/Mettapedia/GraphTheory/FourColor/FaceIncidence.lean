@@ -51,8 +51,7 @@ theorem relativeBoundarySupport_eq_selectedBoundarySupport (faceBoundary : F →
     (allFaces : Finset F) :
     relativeBoundarySupport faceBoundary allFaces =
       selectedBoundarySupport faceBoundary allFaces allFaces := by
-  ext e
-  simp [relativeBoundarySupport, selectedBoundarySupport, subsetIncidenceCount, totalIncidenceCount]
+  rfl
 
 omit [DecidableEq F] in
 theorem mem_relativeBoundarySupport_of_mem_faceBoundary_of_mem_faceBoundary_of_ne_of_mem_of_not_mem
