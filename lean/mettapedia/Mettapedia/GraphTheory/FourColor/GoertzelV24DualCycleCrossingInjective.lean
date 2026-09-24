@@ -108,6 +108,7 @@ theorem edges_get_coreDualWalkGraphEdge
   dsimp only
   simp [coreDualWalkGraphEdge, SimpleGraph.Walk.edges,
     List.get_eq_getElem, SimpleGraph.Walk.darts_getElem_eq_getVert]
+  exact Or.inl ⟨rfl, rfl⟩
 
 /-- A simple facial-dual cycle crosses distinct primal edges. -/
 theorem dualWalkCrossingEdge_injective_of_isCycle_core

@@ -375,9 +375,12 @@ def gluingEquiv (x : X → Color) (z : Z → Color) :
       funext j
       exact congrFun w₁ (Sum.inr j)
     subst hmid
-    simp only [Sigma.mk.injEq, heq_eq_eq, Prod.mk.injEq, true_and]
-    exact ⟨Subtype.ext (restrict₁_glueColoring T₁ T₂ c₁ c₂),
-      Subtype.ext (restrict₂_glueColoring T₁ T₂ c₁ c₂ hmidj)⟩
+    dsimp only
+    refine Sigma.ext ?_ ?_
+    · rfl
+    · apply heq_of_eq
+      exact Prod.ext (Subtype.ext (restrict₁_glueColoring T₁ T₂ c₁ c₂))
+        (Subtype.ext (restrict₂_glueColoring T₁ T₂ c₁ c₂ hmidj))
 
 /-! ## Handing the bijection to the Count law -/
 

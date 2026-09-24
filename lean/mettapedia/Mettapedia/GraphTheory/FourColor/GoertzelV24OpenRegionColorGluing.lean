@@ -91,7 +91,8 @@ theorem openOldDartColor_proper
   have hopenVertex :
       (rotationSystem RS keep root).vertOf (Sum.inl ⟨left, hleft⟩) =
         (rotationSystem RS keep root).vertOf (Sum.inl ⟨right, hright⟩) := by
-    rw [rotationSystem_vertOf_old, rotationSystem_vertOf_old]
+    change (Sum.inl (⟨RS.vertOf left, hleft⟩ : RetainedVertex keep) : Vertex RS keep) =
+      Sum.inl ⟨RS.vertOf right, hright⟩
     apply congrArg Sum.inl
     apply Subtype.ext
     exact hvertex
@@ -107,8 +108,8 @@ theorem openOldDartColor_proper
     apply hopenDartNe
     apply (rotationSystem RS keep root).edgeOf_injOn_dartsAt
       ((rotationSystem RS keep root).vertOf (Sum.inl ⟨left, hleft⟩))
-    · simp [RotationSystem.dartsAt]
-    · simp [RotationSystem.dartsAt, hopenVertex]
+    · exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, rfl⟩
+    · exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hopenVertex.symm⟩
     · exact hedge
   unfold openOldDartColor
   apply coloring.valid
@@ -116,9 +117,10 @@ theorem openOldDartColor_proper
   refine ⟨hopenEdgeNe,
     (rotationSystem RS keep root).vertOf (Sum.inl ⟨left, hleft⟩), ?_, ?_⟩
   · exact ((rotationSystem RS keep root).mem_endpoints_iff).2
-      ⟨Sum.inl ⟨left, hleft⟩, by simp, rfl⟩
+      ⟨Sum.inl ⟨left, hleft⟩, ((rotationSystem RS keep root).mem_dartsOn).2 rfl, rfl⟩
   · exact ((rotationSystem RS keep root).mem_endpoints_iff).2
-      ⟨Sum.inl ⟨right, hright⟩, by simp, hopenVertex.symm⟩
+      ⟨Sum.inl ⟨right, hright⟩, ((rotationSystem RS keep root).mem_dartsOn).2 rfl,
+        hopenVertex.symm⟩
 
 /-- The old-dart reading of a literal open Tait coloring is nonzero. -/
 theorem openOldDartColor_ne_zero
