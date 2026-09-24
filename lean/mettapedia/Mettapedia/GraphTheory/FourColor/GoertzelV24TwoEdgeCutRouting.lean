@@ -368,6 +368,7 @@ theorem sideDartTrackedGraph_degree_untracked
   have hempty :
       (RS.sideDartTrackedGraph keep C a b).neighborFinset d = ∅ := by
     ext x
+    simp only [SimpleGraph.mem_neighborFinset]
     simp [SimpleGraph.mem_neighborFinset, sideDartTrackedGraph, huntracked]
   rw [hempty]
   simp

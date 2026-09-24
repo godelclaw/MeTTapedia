@@ -117,7 +117,7 @@ theorem fibresConnected_nearProj {X B : Set V} (hBX : B ⊆ X)
     FibresConnected (G.KempeStepAvoiding (α := α) B) (nearProj (G := G) X) := by
   intro C D hCD
   have hword : C.boundaryWord X = D.boundaryWord X := Coloring.restrictInduce_eq_iff.1 hCD
-  exact (hfar C D hword).mono fun _ _ h => h.mono hBX
+  exact ReflTransGen.mono (fun _ _ h => h.mono hBX) C D (hfar C D hword)
 
 /-- Preparation for one near-side switch: after switches avoiding `X`, some
 two-colour component meets `X` in exactly the switched set. -/
@@ -164,7 +164,7 @@ theorem lift_of_preparedFor {X B : Set V} (hBX : B ⊆ X) {C : G.Coloring α} {a
     Coloring.restrictInduce_eq_iff.2 (reflTransGen_kempeStepAvoiding_boundaryWord hpath)
   refine ⟨C₁.swapOnKempeComponent a b K₁,
     Coloring.restrictInduce_swapOnKempeComponent_of_eq hres K₁ K hK₁,
-    (hpath.mono fun _ _ h => h.mono hBX).tail ⟨a, b, K₁, ?_, rfl⟩⟩
+    (ReflTransGen.mono (fun _ _ h => h.mono hBX) C C₁ hpath).tail ⟨a, b, K₁, ?_, rfl⟩⟩
   rw [Set.disjoint_left]
   intro w hw hwB
   have hwX : w ∈ X := hBX hwB

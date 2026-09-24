@@ -478,7 +478,9 @@ theorem canonicalBadBoundaryWord_switch_repairType_extendsAcrossCycle
     canonicalFinFive canonicalBadColoring τ.support τ canonicalBadBoundaryWord (by
       apply Finset.ext
       intro i
-      simp [cap5BoundarySupportOfEdges])
+      simp only [cap5BoundarySupportOfEdges, Finset.mem_filter, Finset.mem_univ,
+        true_and]
+      rfl)
 
 end CAP5BoundaryEdgeEnumeration
 

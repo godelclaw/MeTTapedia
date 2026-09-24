@@ -24,7 +24,7 @@ theorem hasCyclicVertexRotations_implies_vertexRotationCyclic
     VertexRotationCyclic data.toRotationSystem := by
   intro left right hvertex
   exact (hcyclic left.fst).2 (x := left) rfl (y := right)
-    (by simpa using hvertex.symm)
+    (by exact hvertex.symm)
 
 /-- The primal graph recomputed from a graph-backed rotation system is the
 original simple graph. -/

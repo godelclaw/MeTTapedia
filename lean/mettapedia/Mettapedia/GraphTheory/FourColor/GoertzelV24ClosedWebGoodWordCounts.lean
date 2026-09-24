@@ -90,6 +90,7 @@ theorem cap5BoundaryWord311Of_colorCounts
               majority) =
         ({0, 1, 2} : Finset (Fin 5)) := by
     ext index
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and]
     fin_cases index <;>
       simp [cap5BoundaryWord311Of, hmajorityFirst.symm,
         hmajoritySecond.symm]
@@ -100,6 +101,7 @@ theorem cap5BoundaryWord311Of_colorCounts
               singletonFirst) =
         ({3} : Finset (Fin 5)) := by
     ext index
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and]
     fin_cases index <;>
       simp [cap5BoundaryWord311Of, hmajorityFirst, hfirstSecond.symm]
   have hsecondSupport :
@@ -109,6 +111,7 @@ theorem cap5BoundaryWord311Of_colorCounts
               singletonSecond) =
         ({4} : Finset (Fin 5)) := by
     ext index
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and]
     fin_cases index <;>
       simp [cap5BoundaryWord311Of, hmajoritySecond, hfirstSecond]
   constructor
