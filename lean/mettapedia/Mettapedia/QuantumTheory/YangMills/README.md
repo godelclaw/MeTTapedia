@@ -55,9 +55,19 @@ Current status:
   `HypercubicDimension16LeibnizRelationOperator.lean` the corrected operator and
   `leibnizJointInvariantRelationSubmodule`, and
   `HypercubicDimension16LeibnizJointRank.lean` proves rank at least `11558` for
-  it. The two operators agree in the sectors with seven or eight fields;
-  statements about sectors with at most six fields are to be re-derived for the
-  corrected operator.
+  it. Every row of the corrected operator vanishes after integration on every
+  gauge background (the equation-of-motion rows on on-shell backgrounds), and
+  the evaluation descends to the corrected joint scalar quotient
+  (`HypercubicDimension16LeibnizCommutatorSoundness`,
+  `HypercubicDimension16RelationRowSoundness`,
+  `HypercubicDimension16RelationEvaluationDescent`). The earlier joint
+  submodule is not a space of relations: it contains the Reynolds-averaged
+  four-field row, whose averaged background value is `32/3`
+  (`HypercubicDimension16RelationEvaluationEquivariance`). The cochain bridge
+  and the source-band reduction of the profile correction hold for the
+  corrected operator, and the two operators agree on the source bands seven and
+  eight (`HypercubicDimension16LeibnizFDIBPCochainBridge`,
+  `HypercubicDimension16LeibnizSourceSix`).
 - `HypercubicDimension16FDIBPCochainJointBridge.lean` now proves that OUR
   finite derivative-alpha-reduced `F,D`/IBP relation cochains, after the
   physical operator and signed-hypercubic Reynolds average, surject onto that
