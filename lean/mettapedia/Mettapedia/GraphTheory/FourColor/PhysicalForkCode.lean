@@ -49,7 +49,7 @@ attribute [local instance] Classical.propDecidable
 positions, whether the set is nonempty, whether its complement in the piece is
 nonempty, and whether exactly one shore edge (`true`) or none (`false`)
 crosses it. -/
-structure CutRecord (n : ℕ) where
+@[ext] structure CutRecord (n : ℕ) where
   bits : Fin n → Bool
   inside : Bool
   outside : Bool
@@ -57,7 +57,7 @@ structure CutRecord (n : ℕ) where
   deriving DecidableEq, Fintype
 
 /-- The finite code of a node with `n` middle vertices. -/
-structure Code (n : ℕ) where
+@[ext] structure Code (n : ℕ) where
   two : Fin n → Bool
   colour : Finset (Fin n → Finset (Fin 3))
   ret : Perm (Fin n)

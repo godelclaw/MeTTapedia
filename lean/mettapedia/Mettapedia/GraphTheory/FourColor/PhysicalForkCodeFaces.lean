@@ -48,6 +48,7 @@ structure Cubic3 : Prop where
   cube : ∀ d, RS.rho (RS.rho (RS.rho d)) = d
   fiber : ∀ d d', RS.vertOf d' = RS.vertOf d →
     d' = d ∨ d' = RS.rho d ∨ d' = RS.rho (RS.rho d)
+  moves : ∀ d, RS.rho d ≠ d
 
 theorem cubic3_of (hcubic : RS.IsCubic) (hrot : VertexRotationCyclic RS) : Cubic3 RS := by
   have hcube := GoertzelV24InducedHexCorridorTypes.rho_cube_apply_of_isCubic RS hcubic hrot
@@ -55,17 +56,30 @@ theorem cubic3_of (hcubic : RS.IsCubic) (hrot : VertexRotationCyclic RS) : Cubic
     ext d
     simp only [pow_succ, pow_zero, one_mul, Perm.mul_apply, Perm.one_apply]
     exact hcube d
-  refine ⟨hcube, ?_⟩
-  intro d d' hv
-  obtain ⟨k, hk⟩ := (hrot d d' hv.symm).exists_nat_pow_eq
-  have hpow : RS.rho ^ k = RS.rho ^ (k % 3) := by
-    conv_lhs => rw [← Nat.div_add_mod k 3, pow_add, pow_mul, h3, one_pow, one_mul]
-  rw [hpow] at hk
-  have hlt : k % 3 < 3 := Nat.mod_lt _ (by norm_num)
-  interval_cases h : k % 3
-  · left; simpa using hk.symm
-  · right; left; simpa using hk.symm
-  · right; right; simpa [pow_succ, Perm.mul_apply] using hk.symm
+  have hfiber : ∀ d d', RS.vertOf d' = RS.vertOf d →
+      d' = d ∨ d' = RS.rho d ∨ d' = RS.rho (RS.rho d) := by
+    intro d d' hv
+    obtain ⟨k, hk⟩ := (hrot d d' hv.symm).exists_nat_pow_eq
+    have hpow : RS.rho ^ k = RS.rho ^ (k % 3) := by
+      conv_lhs => rw [← Nat.div_add_mod k 3, pow_add, pow_mul, h3, one_pow, one_mul]
+    rw [hpow] at hk
+    have hlt : k % 3 < 3 := Nat.mod_lt _ (by norm_num)
+    interval_cases h : k % 3
+    · left; simpa using hk.symm
+    · right; left; simpa using hk.symm
+    · right; right; simpa [pow_succ, Perm.mul_apply] using hk.symm
+  refine ⟨hcube, hfiber, ?_⟩
+  intro d hd
+  have hsub : RS.dartsAt (RS.vertOf d) ⊆ {d} := by
+    intro d' hd'
+    have hv : RS.vertOf d' = RS.vertOf d := (Finset.mem_filter.mp hd').2
+    rcases hfiber d d' hv with h | h | h
+    · simp [h]
+    · simp [h, hd]
+    · simp [h, hd]
+  have := Finset.card_le_card hsub
+  rw [hcubic (RS.vertOf d), Finset.card_singleton] at this
+  omega
 
 /-! ## Middle vertices and interface darts -/
 

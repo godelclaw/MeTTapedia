@@ -661,3 +661,4 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24BoundedInterfaceObligation
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TargetClassVacuity
 import Mettapedia.GraphTheory.FourColor.GoertzelV24BondDepthObligation
 import Mettapedia.GraphTheory.FourColor.GoertzelV24MeshBondCarrierSeparation
+import Mettapedia.GraphTheory.FourColor.PhysicalForkCodeBase
