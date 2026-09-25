@@ -5,6 +5,7 @@ import StarNormalForm
 import GraphMatchingBridge
 import CharTwoSix
 import UniformRigidity
+import TightCut
 import Mettapedia.Combinatorics.Matching
 
 /-! # Axiom audit
@@ -98,3 +99,7 @@ Every top-level conditional theorem, with its dependency cone printed. -/
 #print axioms MatchingSiteVectors.pmSum_two_over_odd_cut
 #print axioms KrennUniform.split_lemma
 #print axioms KrennUniform.three_monoAt
+#print axioms MatchingTightCut.amplitude_shoreContract
+#print axioms KrennTightCut.isGHZOver_shoreContract
+#print axioms KrennTightCut.four_star
+#print axioms KrennTightCut.false_of_shoreTight_six
