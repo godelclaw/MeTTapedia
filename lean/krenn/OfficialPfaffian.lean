@@ -1,6 +1,7 @@
 import Mathlib
 import FermiKrenn
 import OfficialCharTwo
+import OfficialConditional
 
 /-!
 # The Krenn–Gu conjecture for Pfaffian live graphs
@@ -39,5 +40,46 @@ theorem krennGu_pfaffian_complex :
   krennGu_pfaffian ℂ
 
 #print axioms krennGu_pfaffian_complex
+
+/-! ## The heart, with non-Pfaffian live graphs
+
+Combined with the tight-cut reduction (`official_of_heart`), a smallest counterexample now has a
+live graph that is non-Pfaffian and has no shore-tight cut keeping five or more sites.  That is,
+a non-Pfaffian brick or brace. -/
+
+/-- **The non-Pfaffian heart.**  `Heart`, with the additional hypothesis that the live graph
+carries no Pfaffian signs for any order of the sites. -/
+def NonPfaffianHeart : Prop :=
+  ∀ (V : Type) [Fintype V] [DecidableEq V] [LinearOrder V] (W : Sym2 (V × Fin 3) → ℂ),
+    4 < Fintype.card V → MinimalSupport.IsSupportMinimal W →
+    (∀ n : ℕ, 3 ≤ n → 2 * n < Fintype.card V → ¬ KrennGu.Solvable n) →
+    (∀ S : Finset V, 5 ≤ S.card → 3 ≤ (Finset.univ \ S).card →
+      ¬ KrennTightCut.ShoreTight W S) →
+    (∀ (sg : Sym2 V → ℂ) (ε : ℂ), ¬ PfaffianSigns W sg ε) →
+    False
+
+/-- **The official conjecture, from the non-Pfaffian heart.**  A heart configuration whose live
+graph carries Pfaffian signs is excluded outright (`not_isGHZOver_of_pfaffian`). -/
+theorem official_of_nonPfaffianHeart (h : NonPfaffianHeart) : OfficialKrennGu := by
+  refine official_of_heart fun V _ _ W hcard hmin hsmall htight => ?_
+  classical
+  letI : LinearOrder V := LinearOrder.lift' (Fintype.equivFin V) (Fintype.equivFin V).injective
+  by_cases hP : ∃ (sg : Sym2 V → ℂ) (ε : ℂ), PfaffianSigns W sg ε
+  · obtain ⟨sg, ε, hPs⟩ := hP
+    obtain ⟨m, hm⟩ := NoCancellation.even_card_of_isGHZ W hmin.1
+    exact not_isGHZOver_of_pfaffian (n := m) (by omega) (by omega) hmin.1 hPs
+  · push Not at hP
+    exact h V W hcard hmin hsmall htight hP
+
+/-- **The non-Pfaffian heart is an equivalent structural target.** -/
+theorem nonPfaffianHeart_iff_official : NonPfaffianHeart ↔ OfficialKrennGu := by
+  constructor
+  · exact official_of_nonPfaffianHeart
+  · intro h V _ _ _ W hcard hmin _ _ _
+    exact absurd hmin.1
+      (NoCancellation.not_isGHZ_of_not_solvable (notSolvable_of_official h) hcard W)
+
+#print axioms official_of_nonPfaffianHeart
+#print axioms nonPfaffianHeart_iff_official
 
 end KrennFermi
