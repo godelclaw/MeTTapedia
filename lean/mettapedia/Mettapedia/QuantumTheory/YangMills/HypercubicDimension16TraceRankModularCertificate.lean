@@ -342,9 +342,11 @@ theorem modularReplayP1000000009_certificate {rowIndex : Nat}
     exact modularReplayP1000000009_of_range
       modularReplayP1000000009Range_045 (by omega)
 
+set_option maxRecDepth 100000 in
 theorem p1000000007_prime : Nat.Prime 1000000007 := by
   norm_num
 
+set_option maxRecDepth 100000 in
 theorem p1000000009_prime : Nat.Prime 1000000009 := by
   norm_num
 

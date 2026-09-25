@@ -17,6 +17,12 @@ open HypercubicDimension16PackedFiniteDataCodec
   (List.range (values.size / 2)).toArray.map fun entry =>
     (values.getD (2 * entry) 0, values.getD (2 * entry + 1) 0)
 
+/-- `decodeCountPrefixedPackedNat` for numerals packed with 32-bit fields, as these
+payloads are: prime-field residues need 30 bits, more than the codec's 16-bit fields. -/
+@[reducible] def decodeCountPrefixedPackedNat32 (payload fieldWidth : Nat) : Array Nat :=
+  let count := packedNatField payload 32 0
+  decodePackedNatValuesLoop payload 32 (count * fieldWidth) 1 #[]
+
 /-! Bounded pages of packed natural row numerals carry each sparse row family. -/
 @[reducible] def modularBasisPayload0 : Array (Array Nat) :=
   #[#[0x10000000000000001, 0x10000000100000001, 0x10000000200000001, 0x10000000300000001, 0x10000000400000001, 0x10000000500000001, 0x10000000600000001, 0x10000000700000001, 0x10000000800000001, 0x10000000900000001, 0x10000000a00000001, 0x10000000b00000001, 0x10000000c00000001, 0x10000000d00000001, 0x10000000e00000001, 0x10000000f00000001, 0x10000001000000001, 0x10000001100000001, 0x10000001200000001, 0x10000001300000001, 0x10000001400000001, 0x10000001500000001, 0x10000001600000001, 0x10000001700000001, 0x10000001800000001, 0x10000001900000001, 0x10000001a00000001, 0x10000001b00000001, 0x10000001c00000001, 0x10000001d00000001, 0x10000001e00000001, 0x10000001f00000001],
@@ -792,51 +798,51 @@ open HypercubicDimension16PackedFiniteDataCodec
 
 @[irreducible] def decodedModularBasisChunk (chunk : Nat) : Array ModularSparseRow :=
   (match chunk with
-  | 0 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat ((modularBasisPayload0.getD (row / 32) #[]).getD (row % 32) 0) 2
-  | 1 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat ((modularBasisPayload1.getD (row / 32) #[]).getD (row % 32) 0) 2
-  | 2 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat ((modularBasisPayload2.getD (row / 32) #[]).getD (row % 32) 0) 2
-  | 3 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat ((modularBasisPayload3.getD (row / 32) #[]).getD (row % 32) 0) 2
-  | 4 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat ((modularBasisPayload4.getD (row / 32) #[]).getD (row % 32) 0) 2
-  | 5 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat ((modularBasisPayload5.getD (row / 32) #[]).getD (row % 32) 0) 2
-  | 6 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat ((modularBasisPayload6.getD (row / 32) #[]).getD (row % 32) 0) 2
-  | 7 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat ((modularBasisPayload7.getD (row / 32) #[]).getD (row % 32) 0) 2
-  | 8 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat ((modularBasisPayload8.getD (row / 32) #[]).getD (row % 32) 0) 2
-  | 9 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat ((modularBasisPayload9.getD (row / 32) #[]).getD (row % 32) 0) 2
-  | 10 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat ((modularBasisPayload10.getD (row / 32) #[]).getD (row % 32) 0) 2
-  | 11 => (List.range 292).toArray.map fun row => decodeCountPrefixedPackedNat ((modularBasisPayload11.getD (row / 32) #[]).getD (row % 32) 0) 2
+  | 0 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat32 ((modularBasisPayload0.getD (row / 32) #[]).getD (row % 32) 0) 2
+  | 1 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat32 ((modularBasisPayload1.getD (row / 32) #[]).getD (row % 32) 0) 2
+  | 2 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat32 ((modularBasisPayload2.getD (row / 32) #[]).getD (row % 32) 0) 2
+  | 3 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat32 ((modularBasisPayload3.getD (row / 32) #[]).getD (row % 32) 0) 2
+  | 4 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat32 ((modularBasisPayload4.getD (row / 32) #[]).getD (row % 32) 0) 2
+  | 5 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat32 ((modularBasisPayload5.getD (row / 32) #[]).getD (row % 32) 0) 2
+  | 6 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat32 ((modularBasisPayload6.getD (row / 32) #[]).getD (row % 32) 0) 2
+  | 7 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat32 ((modularBasisPayload7.getD (row / 32) #[]).getD (row % 32) 0) 2
+  | 8 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat32 ((modularBasisPayload8.getD (row / 32) #[]).getD (row % 32) 0) 2
+  | 9 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat32 ((modularBasisPayload9.getD (row / 32) #[]).getD (row % 32) 0) 2
+  | 10 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat32 ((modularBasisPayload10.getD (row / 32) #[]).getD (row % 32) 0) 2
+  | 11 => (List.range 292).toArray.map fun row => decodeCountPrefixedPackedNat32 ((modularBasisPayload11.getD (row / 32) #[]).getD (row % 32) 0) 2
   | _ => #[]).map decodeModularSparseRow
 
 @[irreducible] def decodedModularReplayStepsChunk (chunk : Nat) : Array (Array Nat) :=
   match chunk with
-  | 0 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat ((modularReplayStepsPayload0.getD (row / 32) #[]).getD (row % 32) 0) 1
-  | 1 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat ((modularReplayStepsPayload1.getD (row / 32) #[]).getD (row % 32) 0) 1
-  | 2 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat ((modularReplayStepsPayload2.getD (row / 32) #[]).getD (row % 32) 0) 1
-  | 3 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat ((modularReplayStepsPayload3.getD (row / 32) #[]).getD (row % 32) 0) 1
-  | 4 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat ((modularReplayStepsPayload4.getD (row / 32) #[]).getD (row % 32) 0) 1
-  | 5 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat ((modularReplayStepsPayload5.getD (row / 32) #[]).getD (row % 32) 0) 1
-  | 6 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat ((modularReplayStepsPayload6.getD (row / 32) #[]).getD (row % 32) 0) 1
-  | 7 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat ((modularReplayStepsPayload7.getD (row / 32) #[]).getD (row % 32) 0) 1
-  | 8 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat ((modularReplayStepsPayload8.getD (row / 32) #[]).getD (row % 32) 0) 1
-  | 9 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat ((modularReplayStepsPayload9.getD (row / 32) #[]).getD (row % 32) 0) 1
-  | 10 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat ((modularReplayStepsPayload10.getD (row / 32) #[]).getD (row % 32) 0) 1
-  | 11 => (List.range 292).toArray.map fun row => decodeCountPrefixedPackedNat ((modularReplayStepsPayload11.getD (row / 32) #[]).getD (row % 32) 0) 1
+  | 0 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat32 ((modularReplayStepsPayload0.getD (row / 32) #[]).getD (row % 32) 0) 1
+  | 1 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat32 ((modularReplayStepsPayload1.getD (row / 32) #[]).getD (row % 32) 0) 1
+  | 2 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat32 ((modularReplayStepsPayload2.getD (row / 32) #[]).getD (row % 32) 0) 1
+  | 3 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat32 ((modularReplayStepsPayload3.getD (row / 32) #[]).getD (row % 32) 0) 1
+  | 4 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat32 ((modularReplayStepsPayload4.getD (row / 32) #[]).getD (row % 32) 0) 1
+  | 5 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat32 ((modularReplayStepsPayload5.getD (row / 32) #[]).getD (row % 32) 0) 1
+  | 6 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat32 ((modularReplayStepsPayload6.getD (row / 32) #[]).getD (row % 32) 0) 1
+  | 7 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat32 ((modularReplayStepsPayload7.getD (row / 32) #[]).getD (row % 32) 0) 1
+  | 8 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat32 ((modularReplayStepsPayload8.getD (row / 32) #[]).getD (row % 32) 0) 1
+  | 9 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat32 ((modularReplayStepsPayload9.getD (row / 32) #[]).getD (row % 32) 0) 1
+  | 10 => (List.range 1024).toArray.map fun row => decodeCountPrefixedPackedNat32 ((modularReplayStepsPayload10.getD (row / 32) #[]).getD (row % 32) 0) 1
+  | 11 => (List.range 292).toArray.map fun row => decodeCountPrefixedPackedNat32 ((modularReplayStepsPayload11.getD (row / 32) #[]).getD (row % 32) 0) 1
   | _ => #[]
 
 @[irreducible] def modularBasisRow? (index : Nat) : Option ModularSparseRow :=
   (if index < 11556 then
     match index / 1024 with
-  | 0 => some (decodeCountPrefixedPackedNat ((modularBasisPayload0.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 2)
-  | 1 => some (decodeCountPrefixedPackedNat ((modularBasisPayload1.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 2)
-  | 2 => some (decodeCountPrefixedPackedNat ((modularBasisPayload2.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 2)
-  | 3 => some (decodeCountPrefixedPackedNat ((modularBasisPayload3.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 2)
-  | 4 => some (decodeCountPrefixedPackedNat ((modularBasisPayload4.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 2)
-  | 5 => some (decodeCountPrefixedPackedNat ((modularBasisPayload5.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 2)
-  | 6 => some (decodeCountPrefixedPackedNat ((modularBasisPayload6.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 2)
-  | 7 => some (decodeCountPrefixedPackedNat ((modularBasisPayload7.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 2)
-  | 8 => some (decodeCountPrefixedPackedNat ((modularBasisPayload8.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 2)
-  | 9 => some (decodeCountPrefixedPackedNat ((modularBasisPayload9.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 2)
-  | 10 => some (decodeCountPrefixedPackedNat ((modularBasisPayload10.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 2)
-  | 11 => some (decodeCountPrefixedPackedNat ((modularBasisPayload11.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 2)
+  | 0 => some (decodeCountPrefixedPackedNat32 ((modularBasisPayload0.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 2)
+  | 1 => some (decodeCountPrefixedPackedNat32 ((modularBasisPayload1.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 2)
+  | 2 => some (decodeCountPrefixedPackedNat32 ((modularBasisPayload2.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 2)
+  | 3 => some (decodeCountPrefixedPackedNat32 ((modularBasisPayload3.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 2)
+  | 4 => some (decodeCountPrefixedPackedNat32 ((modularBasisPayload4.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 2)
+  | 5 => some (decodeCountPrefixedPackedNat32 ((modularBasisPayload5.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 2)
+  | 6 => some (decodeCountPrefixedPackedNat32 ((modularBasisPayload6.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 2)
+  | 7 => some (decodeCountPrefixedPackedNat32 ((modularBasisPayload7.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 2)
+  | 8 => some (decodeCountPrefixedPackedNat32 ((modularBasisPayload8.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 2)
+  | 9 => some (decodeCountPrefixedPackedNat32 ((modularBasisPayload9.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 2)
+  | 10 => some (decodeCountPrefixedPackedNat32 ((modularBasisPayload10.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 2)
+  | 11 => some (decodeCountPrefixedPackedNat32 ((modularBasisPayload11.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 2)
     | _ => none
   else none).map decodeModularSparseRow
 
@@ -847,18 +853,18 @@ missing or malformed row makes that replay reject rather than certify rank. -/
 @[irreducible] def modularReplayStepRow? (index : Nat) : Option (Array Nat) :=
   if index < 11556 then
     match index / 1024 with
-  | 0 => some (decodeCountPrefixedPackedNat ((modularReplayStepsPayload0.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 1)
-  | 1 => some (decodeCountPrefixedPackedNat ((modularReplayStepsPayload1.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 1)
-  | 2 => some (decodeCountPrefixedPackedNat ((modularReplayStepsPayload2.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 1)
-  | 3 => some (decodeCountPrefixedPackedNat ((modularReplayStepsPayload3.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 1)
-  | 4 => some (decodeCountPrefixedPackedNat ((modularReplayStepsPayload4.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 1)
-  | 5 => some (decodeCountPrefixedPackedNat ((modularReplayStepsPayload5.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 1)
-  | 6 => some (decodeCountPrefixedPackedNat ((modularReplayStepsPayload6.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 1)
-  | 7 => some (decodeCountPrefixedPackedNat ((modularReplayStepsPayload7.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 1)
-  | 8 => some (decodeCountPrefixedPackedNat ((modularReplayStepsPayload8.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 1)
-  | 9 => some (decodeCountPrefixedPackedNat ((modularReplayStepsPayload9.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 1)
-  | 10 => some (decodeCountPrefixedPackedNat ((modularReplayStepsPayload10.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 1)
-  | 11 => some (decodeCountPrefixedPackedNat ((modularReplayStepsPayload11.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 1)
+  | 0 => some (decodeCountPrefixedPackedNat32 ((modularReplayStepsPayload0.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 1)
+  | 1 => some (decodeCountPrefixedPackedNat32 ((modularReplayStepsPayload1.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 1)
+  | 2 => some (decodeCountPrefixedPackedNat32 ((modularReplayStepsPayload2.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 1)
+  | 3 => some (decodeCountPrefixedPackedNat32 ((modularReplayStepsPayload3.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 1)
+  | 4 => some (decodeCountPrefixedPackedNat32 ((modularReplayStepsPayload4.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 1)
+  | 5 => some (decodeCountPrefixedPackedNat32 ((modularReplayStepsPayload5.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 1)
+  | 6 => some (decodeCountPrefixedPackedNat32 ((modularReplayStepsPayload6.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 1)
+  | 7 => some (decodeCountPrefixedPackedNat32 ((modularReplayStepsPayload7.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 1)
+  | 8 => some (decodeCountPrefixedPackedNat32 ((modularReplayStepsPayload8.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 1)
+  | 9 => some (decodeCountPrefixedPackedNat32 ((modularReplayStepsPayload9.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 1)
+  | 10 => some (decodeCountPrefixedPackedNat32 ((modularReplayStepsPayload10.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 1)
+  | 11 => some (decodeCountPrefixedPackedNat32 ((modularReplayStepsPayload11.getD ((index % 1024) / 32) #[]).getD ((index % 1024) % 32) 0) 1)
     | _ => none
   else none
 
