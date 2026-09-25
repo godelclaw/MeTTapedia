@@ -1,3 +1,5 @@
+import Mettapedia.Combinatorics.PolymerGas.Basic
+import Mettapedia.Combinatorics.PolymerGas.Decay
 import Mettapedia.QuantumTheory.YangMills.Clustering
 import Mettapedia.QuantumTheory.YangMills.CompletionSteelman
 import Mettapedia.QuantumTheory.YangMills.CouplingDrift

@@ -2369,8 +2369,19 @@ three different situations.
     \emph{What settles it:} state it precisely and prove it, or carry it as an
     explicit named assumption; once stated, its formalization is immediate.
   \item \textbf{KP convergence at the stopping scale and Wilson-measure
-    reflection positivity.} \emph{Status: abstract results are classical; the
-    route-specific instantiation is open.} One must construct the actual
+    reflection positivity.} \emph{Status: abstract results are classical and
+    their polymer-gas part is now proved in Lean; the route-specific
+    instantiation is open.} For an abstract polymer gas with complex
+    activities, Dobrushin's criterion gives nonvanishing partition functions
+    and two-sided bounds on the effect of removing a polymer, and the
+    Kotecký--Preiss criterion implies it
+    (\texttt{PolymerGas.Basic}). Under Dobrushin's criterion the ratio
+    $Z(\Lambda)Z(\Lambda\setminus(A\cup B))/(Z(\Lambda\setminus A)Z(\Lambda\setminus B))$
+    differs from $1$ by at most a supersolution of an influence recursion, and
+    by an exponentially small amount in the distance between $A$ and $B$ under
+    a size-weighted smallness condition (\texttt{PolymerGas.Decay}). Both
+    proofs are inductions over finite sets of polymers, without a cluster
+    expansion. One must still construct the actual
     stopping-scale Wilson activities in the same norm, prove the KP criterion
     uniformly, and verify reflection and boundary-limit compatibility for the
     same Wilson family and RG kernels.
