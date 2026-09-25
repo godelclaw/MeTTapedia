@@ -15,6 +15,10 @@ diagonal has a zero entry.  Nothing here depends on the characteristic or on the
 odd size.  If the cross forms `∑ z x i * z y j * W(x i, y j)` all vanish, the free sites must be
 matched into different parts and the contracted matrix again has rank at most two.
 
+**Three single-coloured partners** (`three_monoAt`).  With one part a single site, the split lemma
+says: over an infinite field every site has at least three partners whose weights with it are not
+all zero and all use one colour at the partner.
+
 **The cap lemma** (`cap_lemma`).  Cap a pair `u, v` with vectors `κ, μ` on which the pair's
 bilinear form vanishes, and contract every other site except two free sites `α, β` against a vector
 orthogonal to both profiles `∑ κ a W(u a, g ·)` and `∑ μ b W(v b, g ·)`.  Then `u` and `v` can only
@@ -282,5 +286,151 @@ theorem split_lemma {W : Sym2 (V × Fin 3) → F} (hW : IsGHZOver W) {u v : V} (
     mul_ne_zero (hW.1 k) (Finset.prod_ne_zero_iff.mpr fun g hg =>
       hzt g (hTne g hg).1 (hTne g hg).2 k)
   exact mul_ne_zero (mul_ne_zero (hne 0) (hne 1)) (hne 2) hdiag
+
+/-- The pair `w, b` uses a single colour at `b`: its weights are not all zero, and all its nonzero
+weights sit in one colour of `b`. -/
+def MonoAt (W : Sym2 (V × Fin 3) → F) (w b : V) : Prop :=
+  ∃ j, (∃ a, W s((w, a), (b, j)) ≠ 0) ∧ ∀ a c, c ≠ j → W s((w, a), (b, c)) = 0
+
+/-- A GHZ system lives on an even number of sites. -/
+theorem even_card_of_isGHZ {W : Sym2 (V × Fin 3) → F} (hW : IsGHZOver W) :
+    Even (Fintype.card V) := by
+  by_contra h
+  apply hW.1 0
+  rw [← pmSum_univ, pmSum_of_odd _ _ (by rw [Finset.card_univ]; exact h)]
+
+omit [Fintype V] [DecidableEq V] in
+/-- A weight matrix that is nonzero and not single-coloured at `b` has two nonzero colours at `b`. -/
+theorem two_columns_of_not_monoAt {W : Sym2 (V × Fin 3) → F} {w b : V}
+    (hne : ∃ a c, W s((w, a), (b, c)) ≠ 0) (hm : ¬ MonoAt W w b) :
+    ∃ j j', j ≠ j' ∧ (∃ a, W s((w, a), (b, j)) ≠ 0) ∧ ∃ a, W s((w, a), (b, j')) ≠ 0 := by
+  obtain ⟨a, j, hj⟩ := hne
+  have : ¬ ∀ a' c, c ≠ j → W s((w, a'), (b, c)) = 0 := fun h => hm ⟨j, ⟨a, hj⟩, h⟩
+  push Not at this
+  obtain ⟨a', c, hcj, hc⟩ := this
+  exact ⟨j, c, Ne.symm hcj, ⟨a, hj⟩, ⟨a', hc⟩⟩
+
+open MvPolynomial Classical in
+/-- **Every site has three single-coloured partners.**  In a GHZ system over an infinite field, every
+site `w` has at least three partners `b` whose weights with `w` are not all zero and all use one
+colour at `b`.  Otherwise put the at most two such partners among two free sites, pick a vector at
+`w` for which every other partner's weights read in two colours, and make all of `w`'s contracted
+weights vanish: `w` alone is an odd part, and the split lemma applies. -/
+theorem three_monoAt [Infinite F] {W : Sym2 (V × Fin 3) → F} (hW : IsGHZOver W) (w : V)
+    (hcard : 4 ≤ Fintype.card V) :
+    3 ≤ ((Finset.univ.erase w).filter fun b => MonoAt W w b).card := by
+  classical
+  by_contra hlt
+  push Not at hlt
+  set Mw := (Finset.univ.erase w).filter fun b => MonoAt W w b with hMw
+  -- two free sites covering the single-coloured partners
+  have hrest : 3 ≤ (Finset.univ.erase w).card := by
+    rw [Finset.card_erase_of_mem (Finset.mem_univ w), Finset.card_univ]; omega
+  obtain ⟨u, v, huv, huw, hvw, hcov⟩ : ∃ u v, u ≠ v ∧ u ≠ w ∧ v ≠ w ∧ Mw ⊆ {u, v} := by
+    have hsub : Mw ⊆ Finset.univ.erase w := Finset.filter_subset _ _
+    obtain ⟨T, hMT, hT, hTc⟩ := Finset.exists_subsuperset_card_eq hsub (n := 2) (by omega) (by omega)
+    obtain ⟨u, v, huv, rfl⟩ := Finset.card_eq_two.mp hTc
+    exact ⟨u, v, huv, (Finset.mem_erase.mp (hT (by simp))).1,
+      (Finset.mem_erase.mp (hT (by simp))).1, hMT⟩
+  set B := ((Finset.univ.erase w).erase u).erase v with hB
+  have hmemB : ∀ b, b ∈ B ↔ b ≠ w ∧ b ≠ u ∧ b ≠ v := by
+    intro b; simp only [hB, Finset.mem_erase, Finset.mem_univ, and_true]; tauto
+  have hnotmono : ∀ b ∈ B, ¬ MonoAt W w b := by
+    intro b hb hmono
+    obtain ⟨hbw, hbu, hbv⟩ := (hmemB b).mp hb
+    have : b ∈ Mw := by simp [hMw, hbw, hmono]
+    rcases Finset.mem_insert.mp (hcov this) with h | h
+    · exact hbu h
+    · exact hbv (Finset.mem_singleton.mp h)
+  -- two nonzero colours at each partner with nonzero weights
+  let nz : V → Prop := fun b => ∃ a c, W s((w, a), (b, c)) ≠ 0
+  have htwo : ∀ b ∈ B, nz b → ∃ j j', j ≠ j' ∧ (∃ a, W s((w, a), (b, j)) ≠ 0) ∧
+      ∃ a, W s((w, a), (b, j')) ≠ 0 :=
+    fun b hb h => two_columns_of_not_monoAt h (hnotmono b hb)
+  let J : V → Fin 3 × Fin 3 := fun b =>
+    if h : b ∈ B ∧ nz b then ((htwo b h.1 h.2).choose, (htwo b h.1 h.2).choose_spec.choose) else (0, 1)
+  have hJ : ∀ b ∈ B, nz b → (J b).1 ≠ (J b).2 ∧ (∃ a, W s((w, a), (b, (J b).1)) ≠ 0) ∧
+      ∃ a, W s((w, a), (b, (J b).2)) ≠ 0 := by
+    intro b hb h
+    simp only [J, dif_pos (And.intro hb h)]
+    exact (htwo b hb h).choose_spec.choose_spec
+  -- a generic vector at `w`
+  let L : V → Fin 3 → MvPolynomial (Fin 3) F := fun b j => ∑ a, X a * C (W s((w, a), (b, j)))
+  have hevL : ∀ n b j, eval n (L b j) = ∑ a, n a * W s((w, a), (b, j)) := by
+    intro n b j; simp [L]
+  have hLne : ∀ b j, (∃ a, W s((w, a), (b, j)) ≠ 0) → L b j ≠ 0 := by
+    rintro b j ⟨a, ha⟩ h0
+    apply ha
+    have := congrArg (eval (Pi.single a 1)) h0
+    rw [hevL, map_zero] at this
+    simpa [Pi.single_apply] using this
+  set Bnz := B.filter nz with hBnz
+  let P : MvPolynomial (Fin 3) F :=
+    (X 0 * X 1 * X 2) * ∏ b ∈ Bnz, (L b (J b).1 * L b (J b).2)
+  have hP : P ≠ 0 := by
+    refine mul_ne_zero (mul_ne_zero (mul_ne_zero (X_ne_zero _) (X_ne_zero _)) (X_ne_zero _)) ?_
+    rw [Finset.prod_ne_zero_iff]
+    intro b hb
+    obtain ⟨hbB, hbnz⟩ := Finset.mem_filter.mp hb
+    obtain ⟨-, h1, h2⟩ := hJ b hbB hbnz
+    exact mul_ne_zero (hLne b _ h1) (hLne b _ h2)
+  obtain ⟨n, hn⟩ := KrennCharTwo.exists_eval_ne_zero hP
+  simp only [P, map_mul, map_prod, eval_X] at hn
+  have hn0 : ∀ i, n i ≠ 0 := by
+    have h := left_ne_zero_of_mul hn
+    intro i; fin_cases i
+    · exact left_ne_zero_of_mul (left_ne_zero_of_mul h)
+    · exact right_ne_zero_of_mul (left_ne_zero_of_mul h)
+    · exact right_ne_zero_of_mul h
+  have hnB : ∀ b ∈ Bnz, eval n (L b (J b).1) ≠ 0 ∧ eval n (L b (J b).2) ≠ 0 := by
+    intro b hb
+    have := (Finset.prod_ne_zero_iff.mp (right_ne_zero_of_mul hn)) b hb
+    exact ⟨left_ne_zero_of_mul this, right_ne_zero_of_mul this⟩
+  -- a vector at every other site killing the contracted weight to `w`
+  have hzb : ∀ b ∈ B, ∃ y : Fin 3 → F, (∀ c, y c ≠ 0) ∧
+      ∑ j, (∑ a, n a * W s((w, a), (b, j))) * y j = 0 := by
+    intro b hb
+    by_cases hbnz : nz b
+    · obtain ⟨hjj, -, -⟩ := hJ b hb hbnz
+      have h12 := hnB b (Finset.mem_filter.mpr ⟨hb, hbnz⟩)
+      rw [hevL, hevL] at h12
+      exact exists_torus_zero (fun j => ∑ a, n a * W s((w, a), (b, j))) hjj h12.1 h12.2
+    · refine ⟨fun _ => 1, fun _ => one_ne_zero, Finset.sum_eq_zero fun j _ => ?_⟩
+      have : ∀ a, W s((w, a), (b, j)) = 0 := by
+        intro a; by_contra h; exact hbnz ⟨a, j, h⟩
+      simp [this]
+  choose! y hy using hzb
+  let z : V → Fin 3 → F := fun p => if p = w then n else y p
+  have hN := even_card_of_isGHZ hW
+  have hBcard : ¬ Even B.card := by
+    have hc : B.card + 3 = Fintype.card V := by
+      rw [hB, Finset.card_erase_of_mem (by simp [hvw, huv.symm] : v ∈ (Finset.univ.erase w).erase u),
+        Finset.card_erase_of_mem (by simp [huw] : u ∈ Finset.univ.erase w),
+        Finset.card_erase_of_mem (Finset.mem_univ w), Finset.card_univ]
+      omega
+    rw [← hc] at hN
+    intro hB2
+    exact Nat.not_even_iff_odd.mpr (Nat.odd_iff.mpr (by
+      rcases hB2 with ⟨k, hk⟩; rcases hN with ⟨m, hm⟩; omega)) hN
+  refine split_lemma (u := u) (v := v) hW huv (A := {w}) (B := B)
+    (Finset.disjoint_singleton_left.mpr fun h => ((hmemB w).mp h).1 rfl)
+    (fun g hgu hgv => by
+      by_cases hgw : g = w
+      · exact Or.inl (Finset.mem_singleton.mpr hgw)
+      · exact Or.inr ((hmemB g).mpr ⟨hgw, hgu, hgv⟩))
+    (by simp [huw]) (fun h => ((hmemB u).mp h).2.1 rfl) (by simp [hvw])
+    (fun h => ((hmemB v).mp h).2.2 rfl) (by simp) hBcard z ?_ ?_
+  · intro g hgu hgv c
+    by_cases hgw : g = w
+    · simp only [z, if_pos hgw]; exact hn0 c
+    · simp only [z, if_neg hgw]; exact (hy g ((hmemB g).mpr ⟨hgw, hgu, hgv⟩)).1 c
+  · intro a ha b hb
+    rw [Finset.mem_singleton.mp ha]
+    have hbw : b ≠ w := ((hmemB b).mp hb).1
+    simp only [z, if_pos rfl, if_neg hbw]
+    rw [← (hy b hb).2, Finset.sum_comm]
+    refine Finset.sum_congr rfl fun j _ => ?_
+    rw [Finset.sum_mul]
+    exact Finset.sum_congr rfl fun i _ => by ring
 
 end KrennUniform
