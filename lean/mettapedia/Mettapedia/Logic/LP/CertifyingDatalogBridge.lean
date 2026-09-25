@@ -67,6 +67,7 @@ theorem GroundAtom.ofCDL_toCDL (cga : _root_.GroundAtom (LPSignature.toCDLSig σ
   · intro i h1 h2
     simp [List.getElem_ofFn, GroundTerm.toConst_ofConst]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- LP → CDL → LP round-trip: args are preserved. -/
 theorem GroundAtom.toCDL_ofCDL (ga : GroundAtom σ) :
     GroundAtom.ofCDL ga.toCDL = ga := by

@@ -85,6 +85,7 @@ theorem singleton_entrywiseL1Bound
     entrywiseL1Bound (fun _ : Unit ↦ fun _ : Unit ↦ weight) = weight := by
   simp [entrywiseL1Bound, abs_of_nonneg hweight]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Taking only the largest entry is unsound even for a `2 × 2` layer: the
 all-ones matrix has operator norm two while every entry has magnitude one. -/
 theorem maximumEntry_alone_fails :

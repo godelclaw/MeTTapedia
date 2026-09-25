@@ -90,6 +90,7 @@ theorem naiveConsolidateThenContinue_exact_excess {Index : Type*}
   exact ⟨GaussianEvidence.reused_precision_exact prior consolidated fresh,
     GaussianEvidence.reused_naturalParameter_exact prior consolidated fresh⟩
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Positive and negative scalar fixture: unit carry yields precision two,
 whereas the calibrated zero-discount reset yields precision one. -/
 theorem scalarLedger_discount :

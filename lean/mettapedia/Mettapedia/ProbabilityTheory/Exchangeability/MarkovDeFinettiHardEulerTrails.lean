@@ -188,6 +188,7 @@ lemma card_filter_comp_bijective {α β : Type*} [Fintype α] [Fintype β] [Deci
 
 /-! ## Token count invariant -/
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The number of edge tokens from `a` to `b` in the multigraph is `G a b`. -/
 lemma card_tokens_ab (G : EulerGraph k) (a b : Fin k) :
     (Finset.univ.filter (fun (e : edgeTok G) => edgeSrc e = a ∧ edgeTgt e = b)).card =
@@ -219,6 +220,7 @@ lemma card_tokens_ab (G : EulerGraph k) (a b : Fin k) :
     _ = (Finset.univ : Finset (Fin (G a b))).card := Finset.card_map _
     _ = G a b := Fintype.card_fin _
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- In an Euler trail, transition `(a, b)` appears exactly `G a b` times. -/
 theorem edgePairCount_of_isEulerTrail (G : EulerGraph k) (s t : Fin k)
     (f : Fin (totalEdgeTokens G) → edgeTok G) (hf : IsEulerTrail G s t f)

@@ -69,7 +69,7 @@ lemma aemeasurable_rowKernelStepProd
                 (fun ω : ℕ → Fin k =>
                   rowKernelStepProd (k := k) rowKernel ω (b :: tail)) P := by
             simpa using ih
-          simpa [rowKernelStepProd] using hfactor.mul htail
+          simpa [rowKernelStepProd] using hfactor.fun_mul htail
 
 /-- The step-product is uniformly bounded by `1`. -/
 lemma rowKernelStepProd_le_one

@@ -1489,6 +1489,7 @@ noncomputable def finiteRegionSupSeminorm
   if h : Λ.Nonempty then Λ.sup' h d else 0
 
 omit [DecidableEq Atom] in
+set_option backward.isDefEq.respectTransparency.types false in
 theorem le_finiteRegionSupSeminorm
     {Λ : Finset Atom}
     {d : Atom → ℝ}

@@ -952,6 +952,7 @@ lemma thetaFromPrefix_thetaToPrefix0 (θ : LatentTheta) :
   unfold thetaToPrefix0 thetaPrefixZeroIdx
   simp [ThetaBoolTimeline]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Along the partial trajectory started from `thetaToPrefix0 θ`, the extracted
 latent coordinate is deterministic and equal to `θ`. -/
 lemma partialTraj_thetaIidStep_map_thetaFromPrefix_eq_dirac
@@ -1120,6 +1121,7 @@ lemma ae_thetaIidStep_eq_thetaBernoulli_under_partialTraj
   show thetaBernoulliKernel (thetaFromPrefix x) s = thetaBernoulliKernel θ s
   rw [hx]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Composing the one-step kernel `thetaIidStep n` with the partial trajectory
 started from `thetaToPrefix0 θ` yields exactly the Bernoulli law at `θ`. -/
 lemma partialTraj_thetaIidStep_nextLaw_eq_thetaBernoulli
@@ -3255,6 +3257,7 @@ private theorem kleisli_iid_fac_at {A : KleisliGiry}
       ((kleisliHomToKernel f) a).bind (fun θ => iidSequenceKernelTheta θ) := by
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Finite-mass universality follows from Markov-only universality by
 pointwise scaling: normalize each fiber to probability, apply the Markov-only
 chain, and scale the mediator back up. -/

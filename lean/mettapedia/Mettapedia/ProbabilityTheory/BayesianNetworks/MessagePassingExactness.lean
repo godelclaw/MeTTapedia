@@ -147,6 +147,7 @@ theorem twoFactorChain_varToFactor_twoRounds_exact
             (φ := VariableElimination.Factor.ofGraph (fg := fg) f) u)).val x := by
           simpa [σ₁] using hPairwise.symm
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Two-factor chain exactness: in `u - f - w - g - v`, after three
 synchronous rounds from the neutral state, the message `g -> v` is exactly what
 you get by first eliminating the leaf factor `f` into a unary message on `w`,

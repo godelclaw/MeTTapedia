@@ -60,6 +60,7 @@ def residualFamily
       realization.run policy history :=
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Constructive forward composition: the suffix runners consume the mapped
 intermediate history and reconstruct the prefix runners' answers. -/
 def compose
@@ -174,6 +175,7 @@ def reachedSuffixOfComposite
           ((earlier.atCommand command).mapHistory sourceHistory) :=
         (earlierRealization.agrees policy sourceHistory).symm
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Conversely, executable suffix runners on the reached image compose with
 the prefix realization into a source-to-target realization. -/
 def composeFromReachedSuffix
@@ -345,6 +347,7 @@ def embedFirstRoute :
   rw [thinWorld_unique world]
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The prefix is not history-surjective: no source history reaches the second
 middle proof world. -/
 theorem embedFirstRoute_not_history_surjective :

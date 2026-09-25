@@ -352,11 +352,13 @@ theorem causalLE_relabel_iff {Other : Type*} [Fintype Other]
       receipt.CausalLE earlier later := by
   constructor
   · intro path
-    simpa [CausalLE, DirectCause, relabel] using
-      path.lift ids.symm (fun _ _ edge => by simpa [DirectCause, relabel] using edge)
+    simpa [CausalLE, DirectCause, relabel, Function.onFun] using
+      path.lift ids.symm (fun _ _ edge => by
+        simpa [DirectCause, relabel, Function.onFun] using edge)
   · intro path
-    simpa [CausalLE, DirectCause, relabel] using
-      path.lift ids (fun _ _ edge => by simpa [DirectCause, relabel] using edge)
+    simpa [CausalLE, DirectCause, relabel, Function.onFun] using
+      path.lift ids (fun _ _ edge => by
+        simpa [DirectCause, relabel, Function.onFun] using edge)
 
 /-- Relabeling by any bijection leaves the complete raw measure unchanged. -/
 theorem totalRawMeasure_relabel {Other : Type*}

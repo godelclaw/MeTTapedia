@@ -117,6 +117,7 @@ theorem eq_of_app_eq (M : World (WithParams Const)) {σ ρ : Ty Base}
 
 /-! ## Realization correctness: `tval` represents, and representatives are unique -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The denotation `tval τ t` is represented by `t`, and any two closed terms
 representing the same element are provably equal — proved together by type induction.
 The `arr` cases close the loop via `treify`, `eq_of_app_eq` (functional extensionality)

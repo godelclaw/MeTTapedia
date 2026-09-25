@@ -310,7 +310,7 @@ lemma nthVisitTimeExists_of_infinite_visits
     nthVisitTimeExists (k := k) ω i n := by
   classical
   let p : ℕ → Prop := fun t => ω t = i
-  have hinf' : (setOf p).Infinite := by
+  have hinf' : {t | p t}.Infinite := by
     simpa [p] using hinf
   refine ⟨Nat.nth p n, ?_⟩
   refine ⟨?_, ?_⟩

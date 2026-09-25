@@ -199,6 +199,7 @@ def recoverySignSets
     ((Finset.pairwise_disjoint_powersetCard
       (Finset.univ : Finset (Fin width))).set_pairwise _)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Membership is exactly the source criterion: at least `required` compatible
 signs. -/
 theorem mem_recoverySignSets_iff
@@ -207,6 +208,7 @@ theorem mem_recoverySignSets_iff
       required ≤ signSet.card ∧ signSet.card ≤ width := by
   simp [recoverySignSets, Finset.mem_powersetCard]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The number of compatible sign configurations is the upper binomial tail. -/
 theorem card_recoverySignSets
     (width required : ℕ) :

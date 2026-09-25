@@ -203,6 +203,7 @@ def secondAxisPacket : LowRankPacket (Fin 2) (Fin 2) 1 where
   up := fun output _ => if output = 1 then 1 else 0
   down := fun _ input => if input = 1 then 1 else 0
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Two individually rank-one packets accumulate to the rank-two identity. -/
 theorem two_rankOne_packets_consolidate_to_identity :
     consolidatePackets (0 : Matrix (Fin 2) (Fin 2) ℝ)
@@ -247,6 +248,7 @@ def liveScalarState : OnlineLowRankState Unit Unit 1 where
   activeUp := fun _ _ => 1
   activeDown := fun _ _ => 1
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The merge is load-bearing: a bare reset discards a live branch. -/
 theorem reset_without_consolidating_changes_effectiveWeight :
     (liveScalarState.resetWithoutConsolidating

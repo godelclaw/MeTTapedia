@@ -28,6 +28,7 @@ open Mettapedia.ProbabilityTheory.BayesianNetworks
 
 namespace MembershipCounts
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive EmpiricalFactor
   | joint
   deriving DecidableEq, Fintype
@@ -150,6 +151,7 @@ theorem combinedFactor_apply (c : MembershipCounts) (x : (factorGraph c).FullCon
         VariableElimination.FactorGraph.restrict, factorGraph, pairPotential, rawPotential,
         pairScope, hFeature, hWitness]
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem veWeight_eq_pairWeight
     (c : MembershipCounts) (constraints : List (Σ _ : MembershipConcept, Bool)) :
     veWeight c constraints = pairWeight c constraints := by
@@ -205,21 +207,25 @@ theorem pairWeight_feature_witness_true (c : MembershipCounts) :
     pairWeight c [⟨MembershipConcept.feature, true⟩, ⟨MembershipConcept.witness, true⟩] = c.both := by
   simp [pairWeight, pairSatisfies, rawPotential, Fintype.sum_prod_type]
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem veWeight_nil (c : MembershipCounts) :
     veWeight c [] = total c := by
   rw [veWeight_eq_pairWeight]
   exact pairWeight_nil c
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem veWeight_witness_true (c : MembershipCounts) :
     veWeight c [⟨MembershipConcept.witness, true⟩] = witnessSupport c := by
   rw [veWeight_eq_pairWeight]
   exact pairWeight_witness_true c
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem veWeight_feature_true (c : MembershipCounts) :
     veWeight c [⟨MembershipConcept.feature, true⟩] = featureSupport c := by
   rw [veWeight_eq_pairWeight]
   exact pairWeight_feature_true c
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem veWeight_feature_witness_true (c : MembershipCounts) :
     veWeight c [⟨MembershipConcept.feature, true⟩, ⟨MembershipConcept.witness, true⟩] = c.both := by
   rw [veWeight_eq_pairWeight]
@@ -307,6 +313,7 @@ noncomputable def featureMessage (c : MembershipCounts) : Bool → Nat :=
     MembershipConcept.feature
     (by simp [factorGraph, pairScope])
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem witnessMessage_eq (c : MembershipCounts) :
     witnessMessage c = fun b => if b then witnessSupport c else c.neither + c.featureOnly := by
   funext b
@@ -339,6 +346,7 @@ theorem witnessMessage_eq (c : MembershipCounts) :
       rw [hsum]
       simp [rawPotential, witnessSupport, add_comm]
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem featureMessage_eq (c : MembershipCounts) :
     featureMessage c = fun b => if b then featureSupport c else c.neither + c.witnessOnly := by
   funext b
@@ -579,6 +587,7 @@ theorem witnessPrior_eq_bpMessage_ratio (t : FiniteWitnessFeatureTable) :
     witnessPrior t = (witnessMessage t true : ℝ) / veWeight t [] := by
   exact MembershipCounts.priorProbWitness_eq_bpMessage_ratio (toMembershipCounts t)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Generic finite-table BP bridge: the feature-to-witness conditional strength
 is recovered by the BP factor-belief/message ratio on the translated graph. -/
 theorem featureToWitnessStrength_eq_bp_ratio (t : FiniteWitnessFeatureTable) :
@@ -605,6 +614,7 @@ namespace FiniteFeatureWitnessCountTable
 
 variable {Feature Witness : Type} [Fintype Feature] [Fintype Witness]
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive CountFactor
   | joint
   deriving DecidableEq, Fintype
@@ -752,6 +762,7 @@ theorem combinedFactor_apply
     VariableElimination.Factor.ofGraph, VariableElimination.FactorGraph.fullAssign,
     VariableElimination.FactorGraph.restrict, factorGraph, MembershipCounts.pairScope]
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem veWeight_eq_pairWeight
     (t : FiniteFeatureWitnessCountTable Feature Witness)
     (constraints : List (Σ v : MembershipConcept, (factorGraph t).stateSpace v)) :
@@ -831,6 +842,7 @@ theorem pairWeight_witness
     pairWeight t [⟨MembershipConcept.witness, witness⟩] = witnessSupport t witness := by
   simp [pairWeight, pairSatisfies, witnessSupport, Fintype.sum_prod_type]
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem pairWeight_feature_witness
     (t : FiniteFeatureWitnessCountTable Feature Witness)
     (feature : Feature) (witness : Witness) :
@@ -951,6 +963,7 @@ noncomputable def featureMessage
     MembershipConcept.feature
     (by simp [factorGraph, MembershipCounts.pairScope])
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem witnessMessage_eq
     (t : FiniteFeatureWitnessCountTable Feature Witness) :
     witnessMessage t = fun witness => witnessSupport t witness := by
@@ -972,6 +985,7 @@ theorem witnessMessage_eq
     VariableElimination.Factor.extend_apply_eq, VariableElimination.Factor.extend_apply_ne,
     MessagePassing.singletonOtherScopeAssign]
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem featureMessage_eq
     (t : FiniteFeatureWitnessCountTable Feature Witness) :
     featureMessage t = fun feature => featureSupport t feature := by
@@ -1829,6 +1843,7 @@ theorem formedConceptInheritance_exact_via_table
       finitePointwiseLogRatioBits_formedConceptInterpretation_eq_toFiniteWitnessFeatureTable
         (G := G) (M := M) (feature := subConcept) (witness := superConcept)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The same supported formed-concept extensional slice, re-expressed through
 VE and BP on the generated finite witness/feature table. Mixed ASSOC/PAT
 channels are not packaged by this theorem. -/
@@ -2174,6 +2189,7 @@ theorem lowerFormedConceptInheritance_exact_via_table
         (Γ := Γ) (M := M) (feature := subConcept) (witness := superConcept)
 
 omit [Fintype Gate] [Nonempty Gate] in
+set_option backward.isDefEq.respectTransparency.types false in
 theorem lowerFormedConceptInheritance_exact_via_ve_bp
     (Γ : Gate → Mettapedia.KR.ConceptOntology.EvidenceGate Q)
     (M : Obj → Attr → Q)
@@ -2560,6 +2576,7 @@ theorem upperFormedConceptInheritance_exact_via_table
         (Γ := Γ) (M := M) (feature := subConcept) (witness := superConcept)
 
 omit [Fintype Gate] [Nonempty Gate] in
+set_option backward.isDefEq.respectTransparency.types false in
 theorem upperFormedConceptInheritance_exact_via_ve_bp
     (Γ : Gate → EvidenceGate Q)
     (M : Obj → Attr → Q)

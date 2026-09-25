@@ -112,6 +112,7 @@ theorem fullMatrixEffectModel_faithful
   rw [faithfulConsolidation_iff_effect_eq]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A fixed rank-one update space: only the first output row can change. -/
 noncomputable def firstRowMatrixMap :
     Matrix (Fin 1) (Fin 2) ℝ →ₗ[ℝ] Matrix (Fin 2) (Fin 2) ℝ where
@@ -123,6 +124,7 @@ noncomputable def firstRowMatrixMap :
     ext row column
     fin_cases row <;> simp
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every matrix in the first-row update space factors through one adapter
 dimension. -/
 theorem firstRowMatrixMap_rankOne_reachable

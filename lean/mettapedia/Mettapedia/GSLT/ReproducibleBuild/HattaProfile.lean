@@ -455,6 +455,7 @@ def environmentLink :
   attestation := environmentAuthenticatedOccurrence
   authorized := trivial
 
+set_option backward.isDefEq.respectTransparency false in
 theorem environmentLayout_covered :
     LayoutCovered environmentAttestation environmentLayout (7 : Nat) := by
   intro step _required

@@ -11,6 +11,7 @@ namespace Mettapedia.CognitiveArchitecture.GodelClaw.PolicyKernel
 
 /-! ## Secrecy (Context) Tier -/
 
+set_option backward.isDefEq.respectTransparency false in
 inductive ContextTier where
   | pub     -- Public
   | fam     -- Family
@@ -42,6 +43,7 @@ theorem ContextTier.secMax_idem (a : ContextTier) :
 
 /-! ## Integrity Tier -/
 
+set_option backward.isDefEq.respectTransparency false in
 inductive IntegrityTier where
   | untrusted
   | reviewed
@@ -85,6 +87,7 @@ theorem FlowLabel.join_idem (a : FlowLabel) :
     a.join a = a := by
   simp [join, ContextTier.secMax_idem, IntegrityTier.intMin_idem]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem FlowLabel.join_assoc (a b c : FlowLabel) :
     (a.join b).join c = a.join (b.join c) := by
   simp only [join, ContextTier.secMax, IntegrityTier.intMin]
@@ -94,6 +97,7 @@ theorem FlowLabel.join_assoc (a b c : FlowLabel) :
 
 /-! ## Channel Mapping -/
 
+set_option backward.isDefEq.respectTransparency false in
 inductive Channel where
   | telegramPublic
   | telegramFamily

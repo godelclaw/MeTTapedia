@@ -94,6 +94,7 @@ theorem exists_stageProbabilityFamily_tendsto_subseq_of_equiv
   exact exists_stageProbabilityFamily_tendsto_subseq
     (E := E) (M := M) (ξ := ξ)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Any subsequential limit of the stage probability families remains
 projective, because the finite-coordinate restriction maps are continuous and
 the stage families are projective at every finite volume. -/

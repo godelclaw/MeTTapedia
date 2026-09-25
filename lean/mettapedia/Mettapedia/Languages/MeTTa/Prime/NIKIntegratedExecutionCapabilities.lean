@@ -334,6 +334,7 @@ theorem semantic_and_receipt_do_not_imply_profitability :
 
 def collapsedKey : ExecutionTrace operational → Unit := fun _ => ()
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The profitable semantic implementation cannot make a lossy receipt key
 support a policy which distinguishes its collided traces. -/
 theorem semantic_and_profitability_do_not_imply_receipt_sufficiency :

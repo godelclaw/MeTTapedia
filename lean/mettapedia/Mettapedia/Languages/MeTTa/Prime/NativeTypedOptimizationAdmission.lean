@@ -636,6 +636,7 @@ def duplicateSource : SourceProgram Nat String where
   entries := [(7, "first"), (7, "second")]
   queries := [7]
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem positive_recognized :
     (SingleValuedDispatch.recognize source).isSome = true := by
   simp [SingleValuedDispatch.recognize, source, shape,
@@ -645,6 +646,7 @@ theorem positive_recognized :
   simp only [List.eraseDups_cons, List.filter]
   decide
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem duplicate_rejected :
     SingleValuedDispatch.recognize duplicateSource = none := by
   simp [SingleValuedDispatch.recognize, duplicateSource, shape,

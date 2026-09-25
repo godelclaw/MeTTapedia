@@ -216,6 +216,7 @@ theorem sourceLanguage_validate : sourceLanguage.validate = [] := by
       LanguageDef.typeNames, TypeDecl.plain, TermParam.typeExpr,
       TypeExpr.baseNames]
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem generatedPresentation_valid : generatedPresentation.isValidV2 = true := by
   have generatedLanguageValidate :
       generatedPresentation.language.validate = [] := by
@@ -285,6 +286,7 @@ local macro "native_check_core" : tactic =>
       Pattern.hasCanonicalBinderMetadata,
       Pattern.hasCanonicalBinderMetadataList])
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem targetRawProof_checked :
     checkRaw validatedPresentation targetGoal targetRawProof = true := by
   simp only [targetRawProof, targetGoal, targetFormula]
@@ -524,10 +526,12 @@ def missingContextProof : RawProof :=
     (targetHypotheses.map (fun hypothesis => rawNode hypothesis.label) ++
       [rawNode (substitutionRuleId axiomSyllogism)])
 
+set_option backward.isDefEq.respectTransparency.types false in
 example : checkRaw validatedPresentation targetGoal wrongPremiseOrderProof = false := by
   simp only [wrongPremiseOrderProof, targetGoal, targetFormula]
   native_check_core
 
+set_option backward.isDefEq.respectTransparency.types false in
 example : checkRaw validatedPresentation targetGoal missingContextProof = false := by
   simp only [missingContextProof, targetGoal, targetFormula]
   native_check_core

@@ -613,6 +613,7 @@ noncomputable def fullConfigWeightSum (φ : Factor fg)
     infer_instance
   exact ∑ x : fg.FullConfig, φ.potential (FactorGraph.fullAssign (fg := fg) x φ.scope)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem totalWeight_eq_evalConst_of_scope_empty (φ : Factor fg)
     [∀ v, Fintype (fg.stateSpace v)] [AddCommMonoid K] (h : φ.scope = ∅) :
     totalWeight (φ := φ) = evalConst (φ := φ) h := by
@@ -713,6 +714,7 @@ lemma constraintFactors_product_fullAssign
         simp [constraintFactors, Factor.indicator, FactorGraph.fullAssign, hc]
 
 omit [DecidableEq V] in
+set_option backward.isDefEq.respectTransparency false in
 lemma coveringFactors_product_fullAssign
     (x : fg.FullConfig)
     [Fintype V] [CommSemiring K] :

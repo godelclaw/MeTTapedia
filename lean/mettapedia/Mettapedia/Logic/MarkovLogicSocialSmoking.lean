@@ -83,6 +83,7 @@ section SocialSmoking
 
 open Mettapedia.PLN.WorldModel.PLNWorldModel
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Clause identifiers for the social-smoking ground MLN. -/
 inductive SocialClauseId where
   | smokesCancerAlice
@@ -456,6 +457,7 @@ theorem social_totalMass_eq_five :
   rw [tsum_eq_sum (s := Finset.univ) (fun W hW => (hW (Finset.mem_univ W)).elim)]
   exact social_sum_worldWeight_eq_five_aux
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem social_queryMass_smokesBob_eq_three :
     (clauseMassSemantics socialGroundMLN socialFullSupport).queryMass smokesBobQuery = 3 := by
   change CountableMLNSemantics.queryMass
@@ -466,6 +468,7 @@ theorem social_queryMass_smokesBob_eq_three :
   rw [tsum_eq_sum (s := Finset.univ) (fun W hW => (hW (Finset.mem_univ W)).elim)]
   exact social_sum_smokesBob_aux
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem social_queryMass_cancerBob_eq_four :
     (clauseMassSemantics socialGroundMLN socialFullSupport).queryMass cancerBobQuery = 4 := by
   change CountableMLNSemantics.queryMass

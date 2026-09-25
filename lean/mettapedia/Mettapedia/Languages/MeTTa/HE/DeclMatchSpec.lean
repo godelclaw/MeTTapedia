@@ -404,6 +404,7 @@ private theorem foldl_flatMap_bsub {α : Type} (l : List α)
       simp only [List.foldl_cons]
       exact ih (h_step acc acc' a h)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Simultaneous fuel-monotonicity for the matcher family. -/
 private theorem matcher_mono_local : ∀ n : Nat,
     (∀ l r, BSub (matchAtoms l r n) (matchAtoms l r (n + 1))) ∧
@@ -839,6 +840,7 @@ private theorem assignmentKeysNodup_of_singleton_assign
     AssignmentKeysNodup (Bindings.empty.assign v val) :=
   AssignmentKeysNodup.assign AssignmentKeysNodup.empty
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Structural non-variable-valuedness is preserved by the executable HE
     matcher family. This is the real semantic invariant behind later
     loop-freedom: successful matcher/merge outputs never introduce a direct
@@ -1152,6 +1154,7 @@ private theorem mergeBindings_assignmentsNonVar
     AssignmentValuesNonVar out :=
   (matcherAssignmentsNonVar fuel).2.2.1 h hleft hright
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Assignment-key uniqueness is preserved by the same executable HE matcher
     family. This is independent of groundness and of LeaTTa's binding order. -/
 private theorem matcherAssignmentsNodup :

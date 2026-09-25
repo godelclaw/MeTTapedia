@@ -158,6 +158,7 @@ private theorem sigmoid_worldWeight_false :
     sigmoidMLN.worldWeight {()} valFalse = 1 := by
   rw [worldWeight_unit_singleton]; exact sigmoid_eval_false
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem sigmoid_queryMass_true_eq_three :
     (clauseMassSemantics sigmoidMLN ({()} : Finset Unit)).queryMass qTrue = 3 := by
   change CountableMLNSemantics.queryMass
@@ -248,6 +249,7 @@ private theorem conflicting_worldWeight_false :
   unfold conflictingMLN WeightedGroundClause.eval GroundClause.holds Literal.holds valFalse
   simp
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem conflicting_queryMass_true_eq_three :
     (clauseMassSemantics conflictingMLN (Finset.univ : Finset Bool)).queryMass qTrue = 3 := by
   change CountableMLNSemantics.queryMass
@@ -330,6 +332,7 @@ private theorem hardZero_worldWeight_false :
   unfold hardZeroMLN WeightedGroundClause.eval GroundClause.holds Literal.holds valFalse
   simp
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem hardZero_queryMass_false_eq_zero :
     (clauseMassSemantics hardZeroMLN ({()} : Finset Unit)).queryMass qFalse = 0 := by
   change CountableMLNSemantics.queryMass

@@ -410,6 +410,7 @@ theorem CostStaticElementPlan.decorations_reindex
   subst thinning₂
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Mapping a checked plan maps its retained boundary entries pointwise.  This
 is extracted from the stronger dependent packet naturality theorem. -/
 theorem mapCostStaticRegionPlan_boundaryEntries
@@ -469,6 +470,7 @@ theorem mapCostStaticRegionPlan_boundaryDecorations
     CostStaticPlanDecoration.boundaries_map] using
       mapCostStaticRegionPlan_boundaryEntries morphism scope laws plan object
 
+set_option backward.isDefEq.respectTransparency.types false in
 mutual
   /-- Mapping a checked static plan and then forgetting its proof fields is
   exactly the strict map of its complete plan decoration. -/
@@ -649,6 +651,7 @@ mutual
     all_goals simp <;> omega
 end
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Mapping a static node maps the complete decoration of its sole retained
 plan. -/
 theorem CostStaticRegionNode.map_plan_decoration
@@ -667,6 +670,7 @@ theorem CostStaticRegionNode.map_plan_decoration
       mapCostStaticRegionPlan_decoration morphism scope laws node.plan
         node.term.2.2.2.1
 
+set_option backward.isDefEq.respectTransparency.types false in
 private theorem mapCostRegionTree_decoration_of_node
     {source target : CIGSLT} (morphism : source.Morphism target)
     (scope : CostGeneratedReflectiveScopePreserving morphism)
@@ -686,6 +690,7 @@ private theorem mapCostRegionTree_decoration_of_node
   · simp
   · simpa only [CostTreeDecoration.node_map] using nodeEquality
 
+set_option backward.isDefEq.respectTransparency.types false in
 mutual
   /-- Mapping a tree preserves its proof-relevant structural node.  The full
   decoration theorem below adds the four index projections. -/

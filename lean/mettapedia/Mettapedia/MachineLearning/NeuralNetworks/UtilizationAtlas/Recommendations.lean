@@ -36,6 +36,7 @@ inductive Recommendation where
   | useRoutedWorkspace
   deriving DecidableEq, Repr
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Finite family for which completeness is proved. -/
 inductive ModeledUtilizationRegime where
   | wellSpecifiedScalarQuadratic

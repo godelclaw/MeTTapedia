@@ -968,6 +968,7 @@ private theorem foldl_flatMap_sub {α : Type} (l : List α)
       simp only [List.foldl_cons]
       exact ih (h_step acc acc' a h)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The simultaneous fuel-monotonicity statement. -/
 theorem matcher_mono : ∀ n : Nat,
     (∀ l r, Sub (matchAtoms l r n) (matchAtoms l r (n + 1))) ∧

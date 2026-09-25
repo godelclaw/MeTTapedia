@@ -270,6 +270,7 @@ theorem encodeWM_not_collection {s : WMSort} (t : WMTerm s) :
   cases t <;> simp [encodeWM, pRevise, pExtract, pCombine, pEvidenceZero]
 
 set_option linter.unusedSimpArgs false in
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Completeness on image: any core reduction from an encoded term yields an
     encoded result that is a `WMStep` image.
 

@@ -1588,7 +1588,6 @@ def ContextMap.comp {first second third : ContextBase}
     change later.map (earlier.map
         (first.comp earlierSubstitution laterSubstitution)) = _
     rw [earlier.map_comp, later.map_comp]
-    rfl
 
 /-- One guest's contextual judgment.  Claims and accepted proof objects
 reindex contravariantly along substitutions.  The projection law says that
@@ -1970,6 +1969,7 @@ def one : Context := ⟨1⟩
 
 def swap : two ⟶ two := Equiv.swap (0 : Fin 2) (1 : Fin 2)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Positive resource witness: the guest admits a genuine exchange of two
 distinct occurrences. -/
 theorem swap_moves_first_occurrence :
@@ -2895,6 +2895,7 @@ def resultEmission : AdmissionEmission successor where
   Artifact := Nat
   emit := fun _ result => result
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Changing an emission observer cannot change execution. -/
 theorem emission_does_not_control_execution
     (value : positiveNaturals.Carrier) :
@@ -4048,6 +4049,7 @@ instance evidenceRefinement_faithful :
       (fun morphism => morphism.val) equalMaps
     simpa [evidenceRefinement, CategoryTheory.CategoryOfElements.map] using baseEq
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Certificate erasure is not full whenever an authority route relates the
 retained claims but its evidence action misses the chosen target
 certificate.  Thus fullness would be a substantive proof-reconstruction

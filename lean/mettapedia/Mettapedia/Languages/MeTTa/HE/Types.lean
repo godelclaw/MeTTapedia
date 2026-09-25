@@ -551,12 +551,14 @@ def ofLegacyStructuralAtom? : Atom → Option Bindings
     else none
   | _ => none
 
+set_option backward.isDefEq.respectTransparency false in
 private theorem filterMap_decode_encode_assignments (xs : List (String × Atom)) :
     (xs.map encodeAssignment).filterMap decodeAssignment? = xs := by
   induction xs with
   | nil => rfl
   | cons x xs ih => cases x; simp [encodeAssignment, decodeAssignment?]
 
+set_option backward.isDefEq.respectTransparency false in
 private theorem filterMap_decode_encode_equalities (xs : List (String × String)) :
     (xs.map encodeEquality).filterMap decodeEquality? = xs := by
   induction xs with

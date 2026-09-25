@@ -320,8 +320,7 @@ theorem ConservedRouteCreditRuntimeFixture.check_eq_true_iff
     (fixture : ConservedRouteCreditRuntimeFixture) :
     fixture.check = true ↔ fixture.Valid := by
   simp [ConservedRouteCreditRuntimeFixture.check,
-    ConservedRouteCreditRuntimeFixture.Valid]
-  tauto
+    ConservedRouteCreditRuntimeFixture.Valid, and_assoc]
 
 /-! ## General positive and negative transition facts -/
 

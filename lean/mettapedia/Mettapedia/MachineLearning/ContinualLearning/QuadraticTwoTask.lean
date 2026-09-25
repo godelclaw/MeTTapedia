@@ -189,6 +189,7 @@ noncomputable def obliqueSecondTask : QuadraticTask (Fin 2) where
 noncomputable def obliqueParameter : Fin 2 → ℝ :=
   fun i => if i.val = 0 then 0 else 1
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Oblique task subspaces have a nonzero curvature commutator and path
 dependence: the two update orders disagree. -/
 theorem obliqueTasks_curvature_interference :

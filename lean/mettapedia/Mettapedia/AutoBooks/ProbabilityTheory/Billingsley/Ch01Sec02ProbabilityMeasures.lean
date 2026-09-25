@@ -3,7 +3,14 @@ Copyright (c) 2026 Mettapedia Authors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Mettapedia Project
 -/
-import Mathlib.MeasureTheory.Measure.MeasureSpace
+import Mathlib.MeasureTheory.Measure.Basic
+import Mathlib.MeasureTheory.Measure.Continuity
+import Mathlib.MeasureTheory.Measure.OuterMeasure
+import Mathlib.MeasureTheory.Measure.Module
+import Mathlib.MeasureTheory.Measure.CompleteLattice
+import Mathlib.MeasureTheory.Measure.Sum
+import Mathlib.MeasureTheory.Measure.Filter
+import Mathlib.MeasureTheory.Measure.Interval
 import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
 import Mathlib.MeasureTheory.Constructions.BorelSpace.Basic
 import Mathlib.MeasureTheory.Measure.Lebesgue.Basic

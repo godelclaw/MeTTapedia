@@ -5026,6 +5026,7 @@ mutual
           substitutionPatternListMeasure patterns
 end
 
+set_option backward.isDefEq.respectTransparency false in
 mutual
   theorem HasType.ReflectiveSupportSafeAt.availableEquationSetoid_substitute_pointwise
       {language : LanguageDef} (valid : language.validate = [])

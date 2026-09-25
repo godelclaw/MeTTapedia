@@ -53,6 +53,7 @@ def workScheduler (Ground : Type u) :
     (scheduleArchitecture Ground).SchedulerReadout Nat where
   readout := WorkSpan.work
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Work-only scheduling is policy-specific: it exactly supports work-based
 maximum selection on every observed Prime schedule. -/
 theorem workScheduler_supports_workSelection (Ground : Type u) :
@@ -186,6 +187,7 @@ theorem separation_changes_span_not_work :
     · exact coloring_observed_work twoColouring
     · exact coloring_observed_span twoColouring
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Both the one-wave and two-wave schedules are executable members of the
 same declared domain.  Their equal work scores therefore cannot support a
 span-maximizing policy through the work-only scheduler view. -/

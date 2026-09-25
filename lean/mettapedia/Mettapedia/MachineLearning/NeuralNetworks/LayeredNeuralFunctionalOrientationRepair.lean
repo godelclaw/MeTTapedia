@@ -59,6 +59,7 @@ def singleSquareHeadWeightedAttention
           (Sum.inl (row, column)) channel
   | Sum.inr empty, _ => nomatch empty
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Equal unit coefficients recover the executable source attention layer
 exactly on a one-matrix network. -/
 theorem singleSquareHeadWeightedAttention_one_one
@@ -80,6 +81,7 @@ theorem singleSquareHeadWeightedAttention_one_one
     simp
   · exact nomatch empty
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Exact repair law: transposing the matrix exchanges the row and column
 coefficients.  Hence transpose is an internal symmetry only at the symmetric
 coefficient boundary, or on inputs whose two head values coincide. -/

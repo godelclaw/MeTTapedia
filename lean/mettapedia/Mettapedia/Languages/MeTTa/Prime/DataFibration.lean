@@ -394,6 +394,7 @@ def pushforwardLift
     object ⟶ pushforwardObject diagram object route :=
   CategoryTheory.CategoryOfElements.homMk _ _ route rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The Data family earns a strongly cocartesian push-forward lift. -/
 instance pushforwardLift_isStronglyCocartesian
     (diagram : IndexedDataDiagram.{uLang, vLang, uBase, uValue} Lang)
@@ -1018,6 +1019,7 @@ theorem translation_mapBase (model : CurrentModel)
       transportTerm (IndexedLanguageChange.diagram model) route state := by
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Identity transport preserves every intensional Data code. -/
 theorem translation_mapType_id (model : CurrentModel) (stage : Stage)
     (type : DataType (fibre model stage).BaseType) :
@@ -1027,6 +1029,7 @@ theorem translation_mapType_id (model : CurrentModel) (stage : Stage)
   | base state => simp [translation]
   | data payload inductionHypothesis => simp [inductionHypothesis]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Composite transport acts compositionally on intensional Data codes. -/
 theorem translation_mapType_comp (model : CurrentModel)
     {first middle last : Stage}
@@ -1136,6 +1139,7 @@ theorem promote_preserves_exact_state (model : CurrentModel)
       transportTerm (IndexedLanguageChange.diagram model) promote state := by
   exact state_preserved model promote (exactData model zeroStage state stamp)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The selected promotion has the canonical strongly cocartesian Data lift. -/
 theorem promotion_lift_is_strongly_cocartesian
     (model : CurrentModel)

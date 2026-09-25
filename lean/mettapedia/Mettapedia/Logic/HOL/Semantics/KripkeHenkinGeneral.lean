@@ -246,6 +246,7 @@ Denotation commutes with renaming and substitution; these are the semantic
 analogues of the syntactic `subst`/`rename` lemmas and carry the quantifier
 and equality soundness cases. -/
 
+set_option backward.isDefEq.respectTransparency false in
 theorem denote_ext {Γ : Ctx Base} {τ : Ty Base} (t : Term Const Γ τ) :
     ∀ {ρ₁ ρ₂ : M.Valuation Γ},
       (∀ {σ} (v : Var Γ σ), ρ₁ v = ρ₂ v) →
@@ -293,6 +294,7 @@ theorem denote_ext {Γ : Ctx Base} {τ : Ty Base} (t : Term Const Γ τ) :
         | vs v => exact h v
       simp only [hbody]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem denote_rename {Γ : Ctx Base} {τ : Ty Base}
     (t : Term Const Γ τ) :
     ∀ {Δ : Ctx Base} (r : Rename Base Γ Δ) (ρ : M.Valuation Δ),
@@ -356,6 +358,7 @@ theorem denote_weaken {Γ : Ctx Base} {σ τ : Ty Base}
       (M.extend ρ d)).trans
     (M.denote_ext t (by intro σ' v; rfl))
 
+set_option backward.isDefEq.respectTransparency false in
 theorem denote_subst {Γ : Ctx Base} {τ : Ty Base}
     (t : Term Const Γ τ) :
     ∀ {Δ : Ctx Base} (σs : Subst Const Γ Δ) (ρ : M.Valuation Δ),

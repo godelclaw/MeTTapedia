@@ -208,6 +208,7 @@ theorem continuedCommDirectSpent_ticks_eq_length
     ⟨_, _, _, _, hticks⟩
   exact hticks
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The singleton trace contributes one temporal tick. -/
 theorem continuedCommTraceAccount_ticks
     (chan payload body : Pattern) :

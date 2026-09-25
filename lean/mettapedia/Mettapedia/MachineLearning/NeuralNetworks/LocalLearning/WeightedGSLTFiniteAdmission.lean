@@ -193,6 +193,7 @@ theorem bottomAdmissible_iff_fairlyReliable_of_realizable
 
 /-! ## Positive and negative finite examples -/
 
+set_option backward.isDefEq.respectTransparency false in
 inductive BranchState where
   | start
   | good

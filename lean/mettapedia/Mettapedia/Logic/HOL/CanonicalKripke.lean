@@ -34,6 +34,7 @@ def truthSet (φ : ClosedFormula Const) : TruthVal Const where
     W ∈ truthSet (Const := Const) φ ↔ φ ∈ W.carrier :=
   Iff.rfl
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem mem_truthSet_top_iff {W : ClosedTheorySet.World Const} :
     W ∈ truthSet (Const := Const) (.top : ClosedFormula Const) := by
   simpa [truthSet] using W.top_mem

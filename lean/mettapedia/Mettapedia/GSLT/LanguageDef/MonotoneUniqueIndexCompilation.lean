@@ -364,6 +364,7 @@ private def grammarProgram : SourceProgram String Nat :=
     entries := [("term", 7), ("expression", 11), ("document", 19)]
     queries := ["expression", "missing", "term"] }
 
+set_option backward.isDefEq.respectTransparency false in
 example : (certify? grammarProgram).isSome = true := by
   simp [certify?, grammarProgram, admittedShape, recognize, effectSupported,
     Mettapedia.Util.LinearHash.allDistinct_eq_eraseDupsLength]
@@ -395,6 +396,7 @@ example : indexedLookupOperationCost inferenceProgram.entries = 1 ∧
 private def duplicateProgram : SourceProgram String Nat :=
   { grammarProgram with entries := [("term", 7), ("term", 99)] }
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Duplicate insertion is rejected rather than silently overwriting. -/
 example : (certify? duplicateProgram).isSome = false := by
   simp [certify?, duplicateProgram, grammarProgram, admittedShape, recognize,

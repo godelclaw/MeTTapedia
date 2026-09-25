@@ -227,6 +227,7 @@ abbrev exactDefEqRelationTargetType
   exactTargetNativeType
     (defEqRelationGSLT environment universeParameters context expectedType) target
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Generated exact-target inhabitation has exactly the authored Lean4Lean
 declarative meaning at this fibre. -/
 theorem satisfies_exactDefEqRelationTargetType_iff

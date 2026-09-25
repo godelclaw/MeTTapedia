@@ -461,6 +461,7 @@ theorem elaborate_equation (codec : ExactDeclarationCodec Syntax Payload)
   change source.values = target.values at equivalent
   simp [ExactDeclarationCodec.elaborate, equivalent]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Declaration documents carry empty and concatenation internally to their
 GSLT.  Concatenation builds one bundle node; the monoid laws hold through the
 flattening equations. -/
@@ -500,6 +501,7 @@ def documentCompositional (Syntax : Type) : GSLT.Compositional where
     intro _ _ _ impossible
     exact False.elim impossible
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every exact declaration codec is automatically a compositional
 elaboration.  Payload composition is ordered list concatenation, and its
 algebraic laws are consequently derived from the authored bundle equations. -/
@@ -545,6 +547,7 @@ def layer (Base : Type uBase)
   elaborate_rewrite := fun _ =>
     (codec.compositionalElaboration).elaboration.rewrite
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A baseline certified realization of declaration sequences as arrays.
 This is a genuine representation change: the semantic observation is the
 ordered declaration list recovered from the backend array. -/
@@ -577,6 +580,7 @@ private def booleanLayer : ExtensionLayer Unit where
 private def booleanAttachedFalse : booleanLayer.Total := ⟨(), false⟩
 private def booleanAttachedTrue : booleanLayer.Total := ⟨(), true⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Two extension declarations can share one base and still differ.  Therefore
 the fibre is genuine information, not a redundant function of the base. -/
 def booleanLayerNonTrivialFiber :

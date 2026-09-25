@@ -319,6 +319,7 @@ def reinforcingProxy (_ : ScalarOwner) (_ : Fin 2) : ℝ := 3
 
 def reversedProxy (_ : ScalarOwner) (_ : Fin 2) : ℝ := -2
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Two nonzero local errors cancel after tied aggregation.  Therefore the
 occurrencewise `L¹` error budget is sufficient but not necessary. -/
 theorem cancelling_local_errors_preserve_tied_update :
@@ -331,6 +332,7 @@ theorem cancelling_local_errors_preserve_tied_update :
   norm_num [tiedOccurrenceUpdate, allActive, identityDerivative,
     cancellingProxy, exactCredit, Fin.sum_univ_two, Finset.univ_unique]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Equal same-sign local errors reinforce: the aggregate error is twice the
 error of either occurrence.  A bound that silently takes only one tied use is
 unsound. -/
@@ -347,6 +349,7 @@ theorem reinforcing_local_errors_accumulate :
   · intro occurrence
     norm_num [reinforcingProxy, exactCredit]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A stale sign-reversed local proxy becomes an aggregate ascent direction
 even though the shared-parameter occurrence accounting itself is exact. -/
 theorem stale_proxy_reverses_tied_alignment :

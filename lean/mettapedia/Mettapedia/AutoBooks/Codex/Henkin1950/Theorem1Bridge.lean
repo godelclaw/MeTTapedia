@@ -249,6 +249,7 @@ theorem canonicalClassModel_propBivalence
         (.eq (.var (.vz : Var [o] o)) (.top : Formula [o]))
         (.eq (.var (.vz : Var [o] o)) (.bot : Formula [o]))).2 (Or.inr hEqBot)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Any paper-general model satisfying proposition bivalence already yields
 excluded middle for all ambient propositions. This exposes a real semantic
 obstruction to identifying the current `GeneralModel` interface with Henkin's
@@ -267,6 +268,7 @@ theorem excludedMiddle_of_models_propBivalence
       using h
   simpa using hAll (.up p) (M.prop_mem (.up p))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Conversely, ambient excluded middle makes the paper-facing proposition-
 bivalence sentence true in every current general model, because equality at
 type `o` is interpreted as meta-level logical equivalence. -/

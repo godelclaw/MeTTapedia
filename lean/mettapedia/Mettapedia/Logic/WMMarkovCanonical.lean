@@ -88,6 +88,7 @@ noncomputable def markov_binaryEvidenceOfRowEvidence {k : ℕ}
       ∑ a : Fin k, if a = target then (0 : ℝ≥0∞) else (e.counts a : ℝ≥0∞) :=
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem markov_binaryEvidenceOfRowEvidence_zero {k : ℕ}
     (target : Fin k) :
     markov_binaryEvidenceOfRowEvidence (0 : MultiEvidence k) target = 0 := by

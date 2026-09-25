@@ -69,6 +69,7 @@ open Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
 
 /-! ## 1. The ground Maple Court signature -/
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The five ground predicates of the single-unit Maple Court chain. -/
 inductive DemoRel
   | pipeLeak₁
@@ -201,6 +202,7 @@ theorem grounding_univ_singleton :
       gatom₀ r := by
   simpa [atom₀] using groundAtom_atom₀ g r
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- One-step evaluation of the demo rule KB at each named atom. -/
 theorem seededStep_apply_named
     (seed I : DemoKState) (r : DemoRel) :
@@ -237,6 +239,7 @@ def showerClosure : DemoKState :=
 joint state is just the additive merge of the two single-source closures. -/
 def fullClosure : DemoKState := pipeClosure + showerClosure
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Two seeded rounds compute the leak-only closure exactly. -/
 theorem pipeClosure_from_two_steps :
     seededStep pipeSeed (seededStep pipeSeed pipeSeed) = pipeClosure := by
@@ -246,6 +249,7 @@ theorem pipeClosure_from_two_steps :
     simp [pipeClosure, pipeSeed, ev₁, seededStep, T_P_K_LP, ruleKB, wallRule,
       bathroomRule, moldRule, grounding_univ_singleton, atom₀, gatom₀, o₁]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Two seeded rounds compute the shower-only closure exactly. -/
 theorem showerClosure_from_two_steps :
     seededStep showerSeed (seededStep showerSeed showerSeed) = showerClosure := by
@@ -255,6 +259,7 @@ theorem showerClosure_from_two_steps :
     simp [showerClosure, showerSeed, ev₂, seededStep, T_P_K_LP, ruleKB, wallRule,
       bathroomRule, moldRule, grounding_univ_singleton, atom₀, gatom₀, o₂]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Two seeded rounds compute the combined closure exactly. -/
 theorem fullClosure_from_two_steps :
     seededStep bothSeed (seededStep bothSeed bothSeed) = fullClosure := by
@@ -265,6 +270,7 @@ theorem fullClosure_from_two_steps :
       ev₁, ev₂, seededStep, T_P_K_LP, ruleKB, wallRule, bathroomRule, moldRule,
       grounding_univ_singleton, atom₀, gatom₀, o₁, o₂]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The two-round combined closure is already a fixpoint of the seeded operator. -/
 theorem fullClosure_fixpoint :
     seededStep bothSeed fullClosure = fullClosure := by

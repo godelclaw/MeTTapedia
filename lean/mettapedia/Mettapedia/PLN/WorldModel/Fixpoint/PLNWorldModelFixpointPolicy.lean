@@ -91,6 +91,7 @@ def trustedAll : String → Prop := fun _ => True
 
 instance : DecidablePred trustedAll := fun _ => isTrue trivial
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem trustedGate_trustedAll_eq (W : WeightedState) :
     trustedGate trustedAll W = W := by
   simp [trustedGate, trustedAll]

@@ -300,6 +300,7 @@ theorem length_eraseOpen {presentation : ValidatedPresentation}
   | cons head tail =>
       simp [OpenDerivationList.eraseOpen, length_eraseOpen tail]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Positional lookup of an erased environment is erasure of the typed
 lookup. -/
 theorem eraseOpen_getD {presentation : ValidatedPresentation}

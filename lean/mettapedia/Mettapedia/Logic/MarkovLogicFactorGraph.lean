@@ -48,6 +48,7 @@ noncomputable def configOfWorld
   fun _ => w
 
 omit [DecidableEq World] in
+set_option backward.isDefEq.respectTransparency false in
 theorem compiledJoint_eq_restrictedWorldWeight
     (M : CountableMLNSemantics World Query Feature)
     (support : Finset World) (w : RestrictedWorld (World := World) support) :
@@ -131,6 +132,7 @@ noncomputable def compiledMassSemantics
     exact (restrictedMassSemantics M hs).totalMass_ne_top
 
 omit [DecidableEq World] in
+set_option backward.isDefEq.respectTransparency false in
 theorem compiled_queryProb_eq_restricted_queryProb
     (M : CountableMLNSemantics World Query Feature)
     {support : Finset World} (hs : FiniteSupportWitness M support) (q : Query) :

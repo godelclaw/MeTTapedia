@@ -694,6 +694,7 @@ def runtimeRecordBeta : RuntimeActionTraceRecord where
 def runtimeRecordFixture : List RuntimeActionTraceRecord :=
   [runtimeRecordAlphaOne, runtimeRecordAlphaTwo, runtimeRecordBeta]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem runtimeRecordFixture_weights :
     runtimeExpectedWeights runtimeRecordFixture = [1 / 2, 1 / 2, 1] := by
   norm_num [runtimeExpectedWeights, runtimeReciprocalRootWeight,
@@ -796,6 +797,7 @@ def runtimeTargetARows : List RuntimeStateActionRow :=
 def runtimeTargetBRows : List RuntimeStateActionRow :=
   [{ key := [0], action := 2 }]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A target-agnostic flat lookup mixes two unrelated roots at the same state;
 query-first routing selects the root authorized for each target. -/
 theorem targetAgnostic_lookup_mixes_unrelated_roots :

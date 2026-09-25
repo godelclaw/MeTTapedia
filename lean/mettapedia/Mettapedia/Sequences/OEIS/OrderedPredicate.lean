@@ -84,9 +84,9 @@ theorem universal_value (offset : Int) (position : Nat) :
 theorem empty_has_no_first : ¬ Available (fun _ : Nat => False) 0 := by
   intro available
   have finite : (setOf (fun _ : Nat => False)).Finite := by
-    simpa only [setOf_false] using (Set.finite_empty : (∅ : Set Nat).Finite)
+    simpa only [setOf, Set.ofPred_false] using (Set.finite_empty : (∅ : Set Nat).Finite)
   have := available finite
-  simp at this
+  simp [setOf] at this
 
 theorem empty_domain_is_empty (offset : Int) (position : Nat) :
     ¬ (spec offset (fun _ : Nat => False)).Domain
@@ -94,9 +94,9 @@ theorem empty_domain_is_empty (offset : Int) (position : Nat) :
   intro inDomain
   have available := (domain_index_iff offset (fun _ : Nat => False) position).mp inDomain
   have finite : (setOf (fun _ : Nat => False)).Finite := by
-    simpa only [setOf_false] using (Set.finite_empty : (∅ : Set Nat).Finite)
+    simpa only [setOf, Set.ofPred_false] using (Set.finite_empty : (∅ : Set Nat).Finite)
   have below := available finite
-  simp at below
+  simp [setOf] at below
 
 #print axioms value_satisfies
 #print axioms value_strictly_increases

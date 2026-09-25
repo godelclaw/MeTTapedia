@@ -218,6 +218,7 @@ open Mettapedia.Languages.MeTTa.Prime.NativeInteractionFibration.Examples
 open Mettapedia.Languages.MeTTa.Prime.NativeParallelNIKAdmission.Examples.Separated
 open Mettapedia.Languages.MeTTa.Prime.NativeParallelNondeterministicWorlds.Examples.Separated
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem rawOfCertified_pairExecution :
     rawOfCertified pairExecution =
       internalBranchWorld oneColourFamily.parallelStep PUnit.unit := by

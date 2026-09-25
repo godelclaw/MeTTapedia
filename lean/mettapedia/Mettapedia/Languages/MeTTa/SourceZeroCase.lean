@@ -255,6 +255,7 @@ theorem several_answers_flow_through_dispatch :
       [.handledA, .handledB] :=
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- In contrast, `try (case ...) fallback` catches the zero produced after `c`
 fails to match. -/
 theorem post_dispatch_fallback_catches_unmatched_c :

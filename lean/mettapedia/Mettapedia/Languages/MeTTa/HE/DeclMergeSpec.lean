@@ -194,6 +194,7 @@ private theorem execEqFold_seedwise
   simpa using
     (execEqFold_flatMap_acc eqs seeds (fun b => [b]) fuel)
 
+set_option backward.isDefEq.respectTransparency.types false in
 private theorem addVarBinding_mono_step
     (b : Bindings) (v : String) (val : Atom) (fuel : Nat) :
     BSub (addVarBinding b v val fuel) (addVarBinding b v val (fuel + 1)) := by
@@ -239,6 +240,7 @@ private theorem addVarBinding_mono
         addVarBinding_mono_step b v val (fuel + extra)
           out (ih out h)
 
+set_option backward.isDefEq.respectTransparency.types false in
 private theorem addVarEquality_mono_step
     (b : Bindings) (a c : String) (fuel : Nat) :
     BSub (addVarEquality b a c fuel) (addVarEquality b a c (fuel + 1)) := by
@@ -347,6 +349,7 @@ Each executable merge helper produces only declaratively valid merge steps.  We
 prove this by fuel induction, with the assignment/equality folds handled by
 small local inductions over the right-hand relation lists. -/
 
+set_option backward.isDefEq.respectTransparency.types false in
 private theorem mergeSoundFamily : ∀ fuel,
     (∀ {b : Bindings} {v : String} {val : Atom} {out : Bindings},
         out ∈ addVarBinding b v val fuel → AddVarBindingRel b v val out) ∧

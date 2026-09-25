@@ -60,13 +60,16 @@ instance : CommSemiring MaxTimesNat where
   nsmul n a := if n = 0 then 0 else a
   nsmul_zero a := by
     ext
+    show (if (0 : ℕ) = 0 then 0 else a).toNat = 0
     simp
   nsmul_succ n a := by
     by_cases h : n = 0
     · subst h
       ext
+      show (if (1 : ℕ) = 0 then 0 else a).toNat = max (if (0 : ℕ) = 0 then 0 else a).toNat a.toNat
       simp
     · ext
+      show (if n + 1 = 0 then 0 else a).toNat = max (if n = 0 then 0 else a).toNat a.toNat
       simp [h]
   add_comm a b := by
     ext
@@ -98,11 +101,13 @@ instance : CommSemiring MaxTimesNat where
     ext
     simp [Nat.mul_comm]
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive DemoVar
   | hidden
   | target
   deriving DecidableEq, Fintype, Repr
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive DemoFactor
   | pair
   deriving DecidableEq, Fintype, Repr

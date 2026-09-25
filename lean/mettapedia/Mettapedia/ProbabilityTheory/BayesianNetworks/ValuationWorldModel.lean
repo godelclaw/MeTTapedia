@@ -88,6 +88,7 @@ private theorem valuationFullAssign_empty_eq_emptyAssign
   simp at hv
 
 omit [DecidableEq V] in
+set_option backward.isDefEq.respectTransparency.types false in
 private theorem toValuation_val_arbitraryConfig_eq_evalConst
     [∀ v, Nonempty (fg.stateSpace v)]
     (φ : VariableElimination.Factor fg) (h : φ.scope = ∅) :

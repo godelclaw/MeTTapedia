@@ -44,6 +44,7 @@ variable {program : Program} (profile : Profile program)
 
 /-! ## The ordered native observation faces -/
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Native observation faces ordered by distinctions retained. -/
 inductive Face where
   | cardinality
@@ -137,6 +138,7 @@ def runner (face : Face) (policy : Policy)
   | .worlds, .visibleOutcomes => List.map Sigma.fst
   | .worlds, .completeWorlds => id
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem runner_agrees (face : Face) (policy : Policy)
     (supported : supports face policy) (state : State profile command) :
     runner profile command face policy supported (readout profile command face state) =

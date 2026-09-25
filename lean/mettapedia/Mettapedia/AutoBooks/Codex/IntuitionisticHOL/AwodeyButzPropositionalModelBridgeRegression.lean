@@ -111,6 +111,7 @@ theorem semilocalTruth_topConjTop_of_derivable :
   exact SimplePropFormula.semilocalTruth_of_closed_derivable
     (M := model) (φ := topConjTop) derivable_topConjTop emptyEnv emptyEnv_isGlobal
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem semilocalTruth_propSelfImp (p : Prop) :
     SimplePropFormula.semilocalTruth model (propEnv p) propSelfImp = (p → p) := by
   simp [propSelfImp, propSelfFormula, propEnv,

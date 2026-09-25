@@ -233,6 +233,7 @@ def ExecFact.toBaseStep? (ef : ExecFact) : Option BaseStep :=
     some ⟨rmAtom, result, prio, ⟨hlo, hhi⟩⟩
   | _, _, _, _ => none
 
+set_option backward.isDefEq.respectTransparency false in
 /-- If `toBaseStep?` succeeds, the template sinks are `[.remove step.qid, .add step.result]`. -/
 private theorem toBaseStep?_sinks_eq (ef : ExecFact) (step : BaseStep)
     (h : ef.toBaseStep? = some step) :

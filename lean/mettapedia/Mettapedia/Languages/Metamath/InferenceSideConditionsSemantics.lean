@@ -4509,6 +4509,7 @@ theorem dvLists_derivation_iff (substitution : FiniteSubstitution)
     exact dvLists_derivation_sound substitution callerDV calleeDV derivation
   · exact dvLists_derivable substitution callerDV calleeDV
 
+set_option backward.isDefEq.respectTransparency.types false in
 private theorem dvOK_instantiates (substitution : FiniteSubstitution)
     (callerFrame calleeFrame : RuntimeFrame) :
     instantiateRule? validatedSidePresentation

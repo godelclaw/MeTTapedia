@@ -216,6 +216,7 @@ private def threeEmptyLayers :
     and layer (calculusLayer) { ProofCalculus.empty }
     and layer (calculusLayer) { ProofCalculus.empty }
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Negative: changing a layer payload changes the combined definition even
 when the five-field base and every other layer stay fixed. -/
 theorem final_layer_is_not_erased :

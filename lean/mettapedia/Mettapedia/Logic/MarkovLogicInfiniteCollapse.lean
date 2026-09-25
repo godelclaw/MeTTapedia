@@ -102,6 +102,7 @@ theorem regionFactorGraph_unnormalizedJoint_eq_finiteVolumeWeight
           rw [Finset.prod_attach (s := M.regionSupport Λ)
             (f := fun j => (M.clauseData j).eval (patch Λ x ξ))]
 
+set_option backward.isDefEq.respectTransparency.types false in
 lemma regionFactorGraph_weightOfConstraints_eq_queryMass
     (M : InfiniteGroundMLNSpec Atom ClauseId)
     (Λ : Region Atom) (ξ : BoundaryCondition Atom)
@@ -131,6 +132,7 @@ lemma regionFactorGraph_weightOfConstraints_eq_queryMass
   · contradiction
   · rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 lemma regionFactorGraph_veQueryWeight_eq_queryMass
     (M : InfiniteGroundMLNSpec Atom ClauseId)
     (Λ : Region Atom) (ξ : BoundaryCondition Atom)
@@ -139,6 +141,7 @@ lemma regionFactorGraph_veQueryWeight_eq_queryMass
       finiteVolumeQueryMass M Λ ξ q := by
   simpa using regionFactorGraph_weightOfConstraints_eq_queryMass M Λ ξ q
 
+set_option backward.isDefEq.respectTransparency.types false in
 lemma regionFactorGraph_scopedWeight_eq_queryMass
     (M : InfiniteGroundMLNSpec Atom ClauseId)
     (Λ : Region Atom) (ξ : BoundaryCondition Atom)
@@ -183,6 +186,7 @@ noncomputable def regionFactorGraphMassSemantics
     rw [regionFactorGraph_partitionFunction_eq_finiteVolumePartition]
     exact finiteVolumePartition_ne_top M Λ ξ
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem regionFactorGraph_queryProb_eq_finiteVolume_queryProb
     (M : InfiniteGroundMLNSpec Atom ClauseId)
     (Λ : Region Atom) (ξ : BoundaryCondition Atom)

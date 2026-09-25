@@ -139,6 +139,7 @@ def probabilityToWMVertex (v : ProbabilityVertex) : WMVertex :=
     (additivityToWMInterval v.additivity)
     (supportToWMTyping v.support)
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem probabilityToWMVertex_wmToProbabilityVertex (v : WMVertex) :
     probabilityToWMVertex (wmToProbabilityVertex v) = v := by
   funext a

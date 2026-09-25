@@ -304,6 +304,7 @@ abbrev exactCoreRawHeadTargetType
     CoreRawHeadNativeType environment universeParameters :=
   exactTargetNativeType (coreRawHeadGSLT environment universeParameters) target
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Raw OSLF exact-target inhabitation is exactly one evaluator-facing event. -/
 theorem satisfies_exactCoreRawHeadTargetType_iff_event
     (environment : VEnv) (universeParameters : Nat)
@@ -315,6 +316,7 @@ theorem satisfies_exactCoreRawHeadTargetType_iff_event
   rw [satisfies_exactTargetNativeType_iff_step]
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Exact raw-step decision is the first executable comparison contract.  A
 Lean4Lean realization inhabits it only by deciding precisely the GSLT relation,
 not by agreeing on selected examples. -/
@@ -339,6 +341,7 @@ abbrev exactCoreRawHeadClosureTargetType
   exactTargetNativeType
     (coreRawHeadGSLT environment universeParameters).closure target
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Any proved executable normalizer lands in the OSLF type generated from
 the finite-reduction closure.  This is the comparison contract for
 Lean4Lean-style weak-head normalization. -/
@@ -390,6 +393,7 @@ def coreHeadNativeClaim
     (coreHeadGSLT environment universeParameters context expectedType)
     source target
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Unlike the declarative-relation presentation, this exact-target modality
 means the existence of an oriented beta/delta/head-application occurrence. -/
 theorem satisfies_exactCoreHeadTargetType_iff_event
@@ -426,6 +430,7 @@ theorem exactCoreHeadTargetType_to_raw
   exact (satisfies_exactCoreRawHeadTargetType_iff_event environment
     universeParameters source target).mpr ⟨event.toRaw⟩
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The generic OSLF native claim is extensionally complete for the authored
 directed event relation.  This is the exact comparison point for a future
 Lean4Lean step checker. -/
@@ -473,6 +478,7 @@ theorem exactCoreHeadTargetType_endpoints_typed
   (exactCoreHeadTargetType_sound_defEq environment universeParameters context
     expectedType source target inhabited).hasType
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Exact step decision is the algorithmic contract required of any proposed
 Lean4Lean realization of this GSLT fragment.  The theorem compares a checker
 result to OSLF/NTT meaning without identifying the checker with that meaning. -/

@@ -214,6 +214,7 @@ def language : LanguageDef := {
 
 set_option maxHeartbeats 4000000 in
 set_option maxRecDepth 100000 in
+set_option backward.isDefEq.respectTransparency false in
 private theorem rewrites_validate :
     ∀ rewrite ∈ language.rewrites,
       LanguageDef.validateRewrite language rewrite = [] := by

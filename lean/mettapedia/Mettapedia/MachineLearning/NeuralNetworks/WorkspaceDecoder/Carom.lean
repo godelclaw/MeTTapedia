@@ -685,6 +685,7 @@ theorem positiveInterference_simultaneousAverage_remainsExact
   exact ⟨obliqueQuadraticOperators_interferenceEnergy_eq_two,
     obliqueQuadraticMechanisms.gated_step_eq_carom_recurrentWrite workspace slot⟩
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- At the zero parameter, the centered oblique tasks have zero sequential
 connection remainder despite positive interference energy. -/
 theorem oblique_positiveEnergy_zeroConnectionRemainderAtOrigin :

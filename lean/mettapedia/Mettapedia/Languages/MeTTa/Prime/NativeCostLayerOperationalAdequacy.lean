@@ -56,6 +56,7 @@ def compiledOperationalSchedule {Ground : Type}
     (compiledOperationalSchedule separation).waves = 1 :=
   OperationalSchedule.waves_ofIndexed _
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Prime's typed separation license has the same parallel valuation at the
 cost layer operational boundary. -/
 @[simp] theorem compiled_workSpan {Ground : Type}
@@ -119,6 +120,7 @@ def analyzeOperational? {Ground : Type} [DecidableEq Ground]
   (analyzeAndSchedule source left right PUnit.unit).map fun result =>
     ⟨result.1.target, OperationalSchedule.ofIndexed result.2⟩
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The operational producer succeeds exactly on the existing separation
 condition; the bridge adds no new authority. -/
 theorem analyzeOperational_isSome_iff {Ground : Type} [DecidableEq Ground]

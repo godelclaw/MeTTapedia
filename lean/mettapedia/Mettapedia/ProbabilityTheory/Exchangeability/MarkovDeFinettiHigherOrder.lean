@@ -255,6 +255,7 @@ omit [Fact (0 < m)] in
   simp [contextPathOfWord]
 
 omit [Fact (0 < m)] in
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem contextPathOfWord_get
     (xs : List (Fin k)) (hxs : m ≤ xs.length)
     (i : Fin (xs.length - m + 1)) (j : Fin m) :
@@ -266,6 +267,7 @@ omit [Fact (0 < m)] in
   simp [contextPathOfWord]
 
 omit [Fact (0 < m)] in
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem contextPathOfWord_zero
     (xs : List (Fin k)) (hxs : m ≤ xs.length) :
     (contextPathOfWord (k := k) (m := m) xs hxs)[0] =
@@ -875,6 +877,7 @@ theorem contextPathTupleOfWord_mem_matchingContextPrefixFinset
   classical
   simp [matchingContextPrefixFinset, wordOfContextPrefix_contextPathTupleOfWord]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem wordOfContextPrefix_contextPrefixMap_eq_symbolPrefix
     (ω : ℕ → Context k m) (n : ℕ) :
     wordOfContextPrefix (k := k) (m := m)

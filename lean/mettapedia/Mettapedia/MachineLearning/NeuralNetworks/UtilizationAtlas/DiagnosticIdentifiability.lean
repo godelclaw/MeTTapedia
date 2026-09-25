@@ -25,6 +25,7 @@ open Mettapedia.MachineLearning.NeuralNetworks.WorkspaceDecoder
 
 /-! ## T1: primitive telemetry and scalar regime parameters -/
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Exact registry of the primitive v3 fields used by the observable model.
 The two gain observations are positions in the single `gain` trajectory. -/
 inductive PrimitiveTelemetryField where
@@ -259,6 +260,7 @@ noncomputable def regimeMultimodalDecisionGap
     (regime : ScalarDiagnosticRegime) : ℝ :=
   regime.mixtureChoiceMass - regime.gaussianChoiceMass
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Registry of the eleven diagnostics already exposed by v3. -/
 inductive DiagnosticKind where
   | processVarianceQ
@@ -592,6 +594,7 @@ theorem multimodalDecisionGap_not_identifiable :
 
 /-! ## T3: probe checklist and instrument crown -/
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Additional intervention or metadata required to break one confound. -/
 inductive NeededProbe where
   | innovationResidualSeries

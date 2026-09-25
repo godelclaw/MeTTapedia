@@ -1,7 +1,14 @@
 import Mathlib.Data.ENNReal.Basic
 import Mathlib.Topology.Basic
 import Mathlib.Topology.Algebra.Group.Basic
-import Mathlib.MeasureTheory.Measure.MeasureSpace
+import Mathlib.MeasureTheory.Measure.Basic
+import Mathlib.MeasureTheory.Measure.Continuity
+import Mathlib.MeasureTheory.Measure.OuterMeasure
+import Mathlib.MeasureTheory.Measure.Module
+import Mathlib.MeasureTheory.Measure.CompleteLattice
+import Mathlib.MeasureTheory.Measure.Sum
+import Mathlib.MeasureTheory.Measure.Filter
+import Mathlib.MeasureTheory.Measure.Interval
 import Mathlib.MeasureTheory.Measure.Haar.Basic
 import Mathlib.MeasureTheory.OuterMeasure.Basic
 import Mathlib.MeasureTheory.Group.Defs
@@ -274,6 +281,7 @@ def toMeasure {Ω : Type*} [MeasurableSpace Ω]
       exact hpair hij
     simpa using h_sigma f hdisj
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp]
 theorem toMeasure_apply {Ω : Type*} [MeasurableSpace Ω]
     (μ : UnnormalizedValuation (Set Ω))

@@ -108,27 +108,32 @@ theorem transport_path_backward
 
 /-! ## PLN/WM Axis Prototype -/
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive WMLogic where
   | boolean
   | heyting
   deriving DecidableEq, Repr, Fintype
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive WMTruthValue where
   | point
   | bounds
   deriving DecidableEq, Repr, Fintype
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive WMIntervalSemantics where
   | bayesNormal
   | bayesExact
   | walleyIDM
   deriving DecidableEq, Repr, Fintype
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive WMQueryTyping where
   | untyped
   | typedSigma
   deriving DecidableEq, Repr, Fintype
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive WMAxis where
   | logic
   | truthValue

@@ -16,6 +16,7 @@ namespace Mettapedia.CognitiveArchitecture.GodelClaw.Mindlock
 
 /-! ## State Machine -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Mindlock stages, mapped from runtime directory names. -/
 inductive Stage where
   | «in»       -- incoming artifacts

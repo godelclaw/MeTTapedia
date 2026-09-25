@@ -107,6 +107,7 @@ end Generic
 
 namespace LoopBenchmark
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The loop-identity vocabulary used by the current conjecturing benchmark. -/
 inductive LoopProperty where
   | commutative

@@ -32,6 +32,7 @@ structure LocalBranchResolution (Const : Ty Base → Type v) (Γ : Ctx Base) whe
 
 namespace LocalBranchResolution
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem exists_addition (r : LocalBranchResolution Const Γ) :
     ∃ sf : SignedFormula Const Γ, LocalSaturationStep.additions r.step = [sf] := by
   cases r with
@@ -157,6 +158,7 @@ def BranchAdditionCompatible (S : SaturationSearchState Const Γ)
     sf ∈ LocalSaturationStep.additions r.step →
       SignedFormula.flip sf ∉ S.hintikka.close.formulas
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem deterministicAdditionCompatible_trueAnd_iff
     (S : SaturationSearchState Const Γ)
     {φ ψ : Formula Const Γ} :
@@ -168,6 +170,7 @@ theorem deterministicAdditionCompatible_trueAnd_iff
     SignedFormula.flip, Sign.flip]
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem deterministicAdditionCompatible_falseOr_iff
     (S : SaturationSearchState Const Γ)
     {φ ψ : Formula Const Γ} :
@@ -179,6 +182,7 @@ theorem deterministicAdditionCompatible_falseOr_iff
     SignedFormula.flip, Sign.flip]
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem deterministicAdditionCompatible_trueAll_iff
     (S : SaturationSearchState Const Γ)
     {σ : Ty Base} {φ : Formula Const (σ :: Γ)} {t : Term Const Γ σ} :
@@ -189,6 +193,7 @@ theorem deterministicAdditionCompatible_trueAll_iff
     SignedFormula.flip, Sign.flip]
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem deterministicAdditionCompatible_falseAllWitness_iff
     (S : SaturationSearchState Const Γ)
     {σ : Ty Base} {φ : Formula Const (σ :: Γ)} {t : Term Const Γ σ} :
@@ -199,6 +204,7 @@ theorem deterministicAdditionCompatible_falseAllWitness_iff
     SignedFormula.flip, Sign.flip]
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem deterministicAdditionCompatible_trueExWitness_iff
     (S : SaturationSearchState Const Γ)
     {σ : Ty Base} {φ : Formula Const (σ :: Γ)} {t : Term Const Γ σ} :
@@ -209,6 +215,7 @@ theorem deterministicAdditionCompatible_trueExWitness_iff
     SignedFormula.flip, Sign.flip]
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem deterministicAdditionCompatible_falseEx_iff
     (S : SaturationSearchState Const Γ)
     {σ : Ty Base} {φ : Formula Const (σ :: Γ)} {t : Term Const Γ σ} :

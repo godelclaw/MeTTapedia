@@ -200,6 +200,7 @@ set_option maxHeartbeats 1000000 in
 attribute [-simp] isolated Fin.Fin1.eq_one
   LO.LogicalConnective.AndOrClosed.falsum
   LO.LogicalConnective.AndOrClosed.verum in
+set_option backward.isDefEq.respectTransparency.types false in
 theorem language_validate : language.validate = [] := by
   apply LanguageDef.validate_eq_nil_of_constructorEquationsAndRewrites
   case htypes =>
@@ -446,6 +447,7 @@ def currentZeroToPrimePresentation :
       [evaluationDemandRewrite, needRewrite, needReturnRewrite,
        reflectedDemandRewrite] membership
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Prime's new quotation constructor witnesses that the inclusion is proper:
 there is no identity-symbol structural map erasing Prime back to Zero. -/
 theorem no_identity_symbol_retraction :
@@ -632,6 +634,7 @@ private def quoteExtensions (base : LanguageDef)
     (extensions.1.1,
       (extensions.2.1.1, profileDeclarations extensions.2.2.1))
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] private theorem elaborateExtensions?_quoteExtensions
     (base : LanguageDef) (extensions : AdmittedExtensions base) :
     elaborateExtensions? base (quoteExtensions base extensions) =

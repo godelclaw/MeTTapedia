@@ -221,6 +221,7 @@ structure TransportedIndependentSquare
   leftLength : EventPath.pathLength _ leftThenRight = 2
   rightLength : EventPath.pathLength _ rightThenLeft = 2
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- An exact component separation square remains two authenticated histories
 under route transport.  This transports established independence; it does not
 derive a target resource-separation certificate. -/

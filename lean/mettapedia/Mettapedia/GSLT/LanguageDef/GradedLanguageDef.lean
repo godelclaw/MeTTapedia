@@ -451,6 +451,7 @@ theorem toInertGSLT_step_le_toFreeGSLT {source target : Pattern × V}
 
 /-! ### The free-policy laws -/
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The empty table degenerates to the plain language, step for step. -/
 theorem toFreeGSLT_step_of_no_weights (empty : graded.weights = [])
     {source target : Pattern} {before after : V} :

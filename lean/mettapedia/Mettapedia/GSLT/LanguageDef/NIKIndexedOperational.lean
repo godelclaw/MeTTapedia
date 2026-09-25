@@ -335,6 +335,7 @@ def pushforwardLift
     object ⟶ pushforwardObject diagram object route :=
   CategoryTheory.CategoryOfElements.homMk _ _ route rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The chosen push-forward lift satisfies the full strongly cocartesian
 unique-factorization property.  Thus the accepted-evidence category of
 elements earns cocartesian transport; this property is not inferred for an

@@ -41,6 +41,7 @@ def admit? (source : Pat Symbol) : Option (AdmittedLinearHead Symbol) :=
   else
     none
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Admission is exactly the source pattern's no-duplicate-slots property. -/
 theorem admit?_isSome_iff (source : Pat Symbol) :
     (admit? source).isSome = true ↔ Linear source := by

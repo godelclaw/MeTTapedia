@@ -299,6 +299,7 @@ def betaHeadStepDecision :
   decideStep := betaHeadDecideStep
   correct := betaHeadDecideStep_correct
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The same executable algorithm decides the actual environment-indexed raw
 Lean GSLT whenever that environment has no delta equations. -/
 def coreRawStepDecisionOfNoDelta
@@ -319,6 +320,7 @@ abbrev exactBetaHeadTargetType (target : VExpr) :
     GSLTNativeType betaHeadGSLT :=
   exactTargetNativeType betaHeadGSLT target
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The generated exact-target native type means exactly one proof-relevant
 rung-zero event. -/
 theorem satisfies_exactBetaHeadTargetType_iff_event
@@ -329,6 +331,7 @@ theorem satisfies_exactBetaHeadTargetType_iff_event
   rw [satisfies_exactTargetNativeType_iff_step]
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The independently executable decision accepts exactly the generated NTT
 target type. -/
 theorem betaHeadStepDecision_accepts_iff_ntt
@@ -340,6 +343,7 @@ theorem betaHeadStepDecision_accepts_iff_ntt
     satisfies_exactBetaHeadTargetType_iff_event]
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- For a delta-free environment, executable acceptance is exactly
 inhabitation of the NTT generated from the existing raw Lean GSLT. -/
 theorem coreRawStepDecisionOfNoDelta_accepts_iff_ntt
@@ -500,6 +504,7 @@ abbrev exactBetaHeadClosureTargetType (target : VExpr) :
     GSLTNativeType betaHeadGSLT.closure :=
   exactTargetNativeType betaHeadGSLT.closure target
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Every bounded execution result inhabits the exact closure type generated
 by OSLF, whether it stops normally or exhausts fuel. -/
 theorem runBetaHead_result_inhabits_closure_ntt
@@ -510,6 +515,7 @@ theorem runBetaHead_result_inhabits_closure_ntt
   exact ⟨runBetaHead fuel source |>.term,
     (runBetaHead_trace fuel source).toMultiStep, rfl⟩
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The same bounded run inhabits the closure NTT generated from the existing
 environment-indexed raw Lean GSLT. -/
 theorem runBetaHead_result_inhabits_coreRaw_closure_ntt

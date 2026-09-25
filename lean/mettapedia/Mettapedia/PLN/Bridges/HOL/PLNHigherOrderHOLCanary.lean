@@ -743,6 +743,7 @@ theorem canary_hol_two_weightedCapacity_normalized :
   unfold Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.FuzzyCapacity.IsNormalized
   simp [fixtureTwoWeightedCapacity, fixtureTwoLeftObj, fixtureTwoRightObj]
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem canary_hol_two_predLeft_holds_iff (x : FixtureTwoPredObj) :
     Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLInheritanceBridge.predicateHoldsAt
       (Base := FixtureBase) (Const := FixtureTwoConst)
@@ -762,6 +763,7 @@ theorem canary_hol_two_predLeft_holds_iff (x : FixtureTwoPredObj) :
               fixtureTwoModel_constDen_left,
               fixtureTwoPredLeft, fixtureTwoLeftObj]
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem canary_hol_two_predRight_holds_iff (x : FixtureTwoPredObj) :
     Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLInheritanceBridge.predicateHoldsAt
       (Base := FixtureBase) (Const := FixtureTwoConst)
@@ -1312,13 +1314,16 @@ def fixtureModelSpace : ModelSpace FixtureBase FixtureConst :=
 def fixtureEmptyModelSpace : ModelSpace FixtureBase FixtureConst :=
   fixtureSingletonModelSpace fixtureEmptyModel
 
+set_option backward.isDefEq.respectTransparency.types false in
 noncomputable def fixtureHierarchicalState : HierarchicalState FixtureBase FixtureConst :=
   HierarchicalState.ofConstantMeasure fixtureModelSpace (MeasureTheory.Measure.dirac ())
 
+set_option backward.isDefEq.respectTransparency.types false in
 noncomputable def fixtureEmptyHierarchicalState :
     HierarchicalState FixtureBase FixtureConst :=
   HierarchicalState.ofConstantMeasure fixtureEmptyModelSpace (MeasureTheory.Measure.dirac ())
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem canary_hol_hierarchicalPredicateSimilarityTopTop_strength_one :
     Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLProbabilisticBridge.hierarchicalPredicateSimilarityStrength
       (Base := FixtureBase) (Const := FixtureConst)
@@ -1331,6 +1336,7 @@ theorem canary_hol_hierarchicalPredicateSimilarityTopTop_strength_one :
       cases i
       exact canary_hol_predicateTop_mutualInherits_predicateTop)
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem canary_hol_hierarchicalPredicateSimilarityTopBot_strength_zero :
     Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLProbabilisticBridge.hierarchicalPredicateSimilarityStrength
       (Base := FixtureBase) (Const := FixtureConst)
@@ -1343,6 +1349,7 @@ theorem canary_hol_hierarchicalPredicateSimilarityTopBot_strength_zero :
       cases i
       exact canary_hol_not_predicateTop_mutualInherits_predicateBot)
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem canary_hol_empty_hierarchicalPredicateSimilarityTopBot_strength_one :
     Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLProbabilisticBridge.hierarchicalPredicateSimilarityStrength
       (Base := FixtureBase) (Const := FixtureConst)
@@ -1415,6 +1422,7 @@ theorem canary_hol_twoModelSpace_topBotIff_event :
             fixtureEmptyModel FixtureObjTy fixturePredTop fixturePredBot).1
           canary_hol_empty_predicateTop_mutualInherits_predicateBot
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem canary_hol_twoModelSpace_topBotIff_sentenceProb_half :
     sentenceProb fixtureTwoModelSpace fixtureBoolUniformMeasure fixturePredTopBotIff =
       (1 / 2 : ℝ≥0∞) := by
@@ -1425,6 +1433,7 @@ theorem canary_hol_twoModelSpace_topBotIff_sentenceProb_half :
     (1 / 2 : ℝ≥0∞)
   simpa using h
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem canary_hol_twoModelUniform_topBotIff_value_half :
     Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.credalHOLFormulaValue
       fixtureTwoModelUniformState fixturePredTopBotIff = (1 / 2 : ℝ) := by
@@ -1745,6 +1754,7 @@ theorem canary_hol_topBotSimilarityDeductionPointValue_mem_openITV :
       canary_hol_topBotSimilarityDeductionPointValue_open]
     norm_num
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem canary_hol_impTopBot_nonempty_value_zero :
     Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.credalHOLFormulaValue
       fixtureHierarchicalState fixturePredTopBotImp = 0 := by
@@ -1769,6 +1779,7 @@ theorem canary_hol_impTopBot_nonempty_value_zero :
   rw [hierarchicalSentenceProb_bot_eq_zero]
   simp
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem canary_hol_impBotTop_nonempty_value_one :
     Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.credalHOLFormulaValue
       fixtureHierarchicalState fixturePredBotTopImp = 1 := by
@@ -1795,6 +1806,7 @@ theorem canary_hol_impBotTop_nonempty_value_one :
   rw [hierarchicalSentenceProb_top_eq_one]
   simp
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem canary_hol_impTopBot_empty_value_one :
     Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.credalHOLFormulaValue
       fixtureEmptyHierarchicalState fixturePredTopBotImp = 1 := by
@@ -1820,6 +1832,7 @@ theorem canary_hol_impTopBot_empty_value_one :
   rw [hierarchicalSentenceProb_top_eq_one]
   simp
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem canary_hol_impBotTop_empty_value_one :
     Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.credalHOLFormulaValue
       fixtureEmptyHierarchicalState fixturePredBotTopImp = 1 := by
@@ -2204,6 +2217,7 @@ theorem canary_hol_credalPredicateVocabularySimilarityTopTop_interval_one :
       intro _x hx
       exact hx
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem canary_hol_credalPredicateVocabularySimilarityTopTop_ITV :
     let tv :=
       Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.credalPredicateVocabularySimilarityITV
@@ -2312,6 +2326,7 @@ theorem canary_hol_credalPredicateVocabularyPureIntensionalSimilarityTopTop_inte
     cases i
     exact canary_hol_predicateVocabularyTop_sameIntent_self
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem canary_hol_credalPredicateVocabularyPureExtensionalSimilarityTopTop_ITV :
     let tv :=
       Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCredalBridge.credalPredicateVocabularyPureExtensionalSimilarityITV

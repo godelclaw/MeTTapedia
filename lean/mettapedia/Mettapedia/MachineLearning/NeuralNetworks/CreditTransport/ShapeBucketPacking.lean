@@ -345,6 +345,7 @@ def shapeOnlyTrueNode :
     Fiber shapeOnlySignature () :=
   ⟨true, rfl⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Equal feature shapes do not license a shared operator: the shape-only
 packed execution disagrees with the true heterogeneous logical update. -/
 theorem shape_only_bucket_is_not_semantically_sufficient :
@@ -369,6 +370,7 @@ def boolEdgeTarget : Bool → Bool :=
 def boolEdgeContribution (edge : Bool) : ℕ :=
   if edge then 3 else 2
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Dropping the signature tag merges the two singleton buckets and therefore
 changes the segment sum at `false` from two to five. -/
 theorem untagged_bucket_index_merges_distinct_targets :

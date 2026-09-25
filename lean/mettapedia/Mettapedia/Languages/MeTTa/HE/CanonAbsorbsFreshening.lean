@@ -229,7 +229,6 @@ theorem idxOf_map_injOn {g : VarName → VarName}
           exact hg (List.mem_cons_of_mem _ hu) (List.mem_cons_of_mem _ hw) huw
         rw [show (g x == g v) = false from beq_eq_false_iff_ne.mpr hgxv,
             show (x == v) = false from beq_eq_false_iff_ne.mpr hxv]
-        simp only [cond_false]
         simpa [Nat.succ_eq_add_one] using congrArg Nat.succ (ih hgxs hvxs)
 
 /-- Index-of commutes with an injective map. -/

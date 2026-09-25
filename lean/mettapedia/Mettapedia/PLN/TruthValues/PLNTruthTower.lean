@@ -1960,6 +1960,7 @@ noncomputable def credalEnvelopeSource
   credibility := credibility
   credibility_in_unit := hc
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- For a singleton credal set, the lower-prevision ITV view and finite
 credal-envelope ITV view agree on both forced endpoints and on the selected
 credibility coordinate. -/
@@ -2141,6 +2142,7 @@ noncomputable def source
   credibility := credibility
   credibility_in_unit := hc
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- For finite credal sets, the lower-prevision ITV view and finite
 credal-envelope ITV view agree on both forced endpoints and on the selected
 credibility coordinate. -/
@@ -2805,6 +2807,7 @@ theorem finiteDesirableRoundTrip_subset_original
     ring
   simpa [hsum] using hadd
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Negative canary schema for the opposite round-trip: the strict
 lower-prevision view cannot recover any gamble whose induced lower prevision is
 nonpositive.  Thus a coherent desirable set with boundary desirable gambles is
@@ -3128,6 +3131,7 @@ theorem strictlyPositiveDesirableSet_roundtrip_mem_iff
   rw [strictlyPositiveDesirableSet_roundtrip_D_eq]
   exact strictlyPositiveDesirableSet_mem_iff X
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The acceptable prices of a gamble in the strict positive cone are exactly
 the open ray below its finite pointwise minimum. -/
 theorem strictlyPositiveDesirableSet_acceptablePrices_eq_Iio
@@ -3208,6 +3212,7 @@ def nonnegativeNonzeroDesirableSet
       (∀ ω, 0 ≤ X ω) ∧ ∃ ω, 0 < X ω :=
   Iff.rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The closed positive cone induces the same finite lower prevision as the
 strict positive cone: the finite pointwise minimum.  The lower-prevision
 projection therefore forgets the boundary distinction between `X > 0` and
@@ -3362,6 +3367,7 @@ theorem bool_positiveCones_projection_not_injective :
   exact ⟨strictAndClosedPositiveCones_distinct_bool,
     positiveCones_induce_same_finiteLowerPrevision⟩
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The boundary gamble's acceptable-price supremum is exactly zero in the
 closed positive cone.  Price zero itself is acceptable, but every positive price
 makes the `false` coordinate negative. -/

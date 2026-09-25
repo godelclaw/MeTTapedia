@@ -298,7 +298,7 @@ lemma measurable_rowSuccessorEmpiricalCount
             (fun ω : ℕ → Fin k =>
               if rowSuccessorVisitProcess (k := k) i ω m = j then (1 : ℕ) else 0) := by
         exact Measurable.ite hset measurable_const measurable_const
-      simpa [rowSuccessorEmpiricalCount, Nat.count_succ] using ih.add hite
+      simpa [rowSuccessorEmpiricalCount, Nat.count_succ] using ih.fun_add hite
 
 lemma measurable_rowSuccessorEmpiricalFreq
     (i j : Fin k) (m : ℕ) :
@@ -2031,6 +2031,7 @@ lemma wordAllRowsInjectiveTuples_nonempty
     exact Fin.ext hval
   exact ⟨base, by simp [wordAllRowsInjectiveTuples, base, hbase]⟩
 
+set_option backward.isDefEq.respectTransparency.types false in
 lemma wordAllRowsInjectiveTuples_eq_piFinset
     (a : Fin k) (ys : List (Fin k)) (n : ℕ) :
     wordAllRowsInjectiveTuples (k := k) a ys n =

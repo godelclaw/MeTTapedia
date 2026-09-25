@@ -523,6 +523,7 @@ theorem correctedMerge_eq_of_guardedRevise_eq_some
     simp at h
 
 omit [Fintype Obj] [Fintype Attr] in
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem stampSetEvidence_posExtEmbedding_pos
     (S : Finset Obj) :
     (stampSetEvidence
@@ -532,6 +533,7 @@ omit [Fintype Obj] [Fintype Attr] in
   simp [stampContribution, posExtEmbedding]
 
 omit [Fintype Obj] [Fintype Attr] in
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem stampSetEvidence_posExtEmbedding_neg
     (S : Finset Obj) :
     (stampSetEvidence
@@ -540,6 +542,7 @@ omit [Fintype Obj] [Fintype Attr] in
   simp [stampContribution, posExtEmbedding]
 
 omit [Fintype Obj] [Fintype Attr] in
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem stampSetEvidence_negExtEmbedding_pos
     (S : Finset Obj) :
     (stampSetEvidence
@@ -548,6 +551,7 @@ omit [Fintype Obj] [Fintype Attr] in
   simp [stampContribution, negExtEmbedding]
 
 omit [Fintype Obj] [Fintype Attr] in
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem stampSetEvidence_negExtEmbedding_neg
     (S : Finset Obj) :
     (stampSetEvidence
@@ -557,6 +561,7 @@ omit [Fintype Obj] [Fintype Attr] in
   simp [stampContribution, negExtEmbedding]
 
 omit [Fintype Obj] [Fintype Attr] in
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem stampSetEvidence_posIntEmbedding_pos
     (S : Finset Attr) :
     (stampSetEvidence
@@ -566,6 +571,7 @@ omit [Fintype Obj] [Fintype Attr] in
   simp [stampContribution, posIntEmbedding]
 
 omit [Fintype Obj] [Fintype Attr] in
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem stampSetEvidence_posIntEmbedding_neg
     (S : Finset Attr) :
     (stampSetEvidence
@@ -574,6 +580,7 @@ omit [Fintype Obj] [Fintype Attr] in
   simp [stampContribution, posIntEmbedding]
 
 omit [Fintype Obj] [Fintype Attr] in
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem stampSetEvidence_negIntEmbedding_pos
     (S : Finset Attr) :
     (stampSetEvidence
@@ -582,6 +589,7 @@ omit [Fintype Obj] [Fintype Attr] in
   simp [stampContribution, negIntEmbedding]
 
 omit [Fintype Obj] [Fintype Attr] in
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem stampSetEvidence_negIntEmbedding_neg
     (S : Finset Attr) :
     (stampSetEvidence
@@ -887,11 +895,13 @@ These small concrete theorems pin the Revision provenance boundary used by the
 WM-PLN executable witnesses: disjoint stamps reduce to raw additive revision,
 while repeated provenance does not double-count the same witness packet. -/
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive RevisionOverlapCanaryObj where
   | left
   | right
   deriving DecidableEq, Fintype
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive RevisionOverlapCanaryAttr where
   | only
   deriving DecidableEq, Fintype

@@ -101,6 +101,7 @@ end Generic
 
 namespace Fixture
 
+set_option backward.isDefEq.respectTransparency false in
 inductive FixtureArm where
   | left | right
   deriving DecidableEq, Fintype

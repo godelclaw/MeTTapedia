@@ -7752,13 +7752,12 @@ theorem normalDVRightVariable_missing_caller_rejects_obligation
   rcases candidateSpec with ⟨candidateInRead, candidateMatches⟩
   have candidateCases :
       candidateAtom = normalDVRightVariableRule ∨
-        (candidateAtom ≠ normalDVRightVariableRule ∧
-          candidateAtom = normalDVScanRightAtom scopeOwner proofOwner
-            proofPosition assertionLabel nextPairPosition pairEnd leftVariable
-            leftTail (.var rightVariable :: rightTail) rightBody sourceBody
-            context) := by
+        candidateAtom = normalDVScanRightAtom scopeOwner proofOwner
+          proofPosition assertionLabel nextPairPosition pairEnd leftVariable
+          leftTail (.var rightVariable :: rightTail) rightBody sourceBody
+          context := by
     simpa [readCopyAtom, consumeAtom] using candidateInRead
-  rcases candidateCases with ruleCase | ⟨_, cursorCase⟩
+  rcases candidateCases with ruleCase | cursorCase
   · subst candidateAtom
     simp [normalDVRightVariablePatternAtoms, normalDVRightVariableRule,
       normalDVRightVariableLocation, normalDVRightVariableInput,

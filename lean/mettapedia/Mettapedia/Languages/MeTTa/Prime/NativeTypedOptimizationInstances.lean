@@ -80,6 +80,7 @@ def source : SourceProgram String (Option NodeBinding) where
 abbrev spec :=
   SingleValuedDispatch.spec (Key := String) (Value := Option NodeBinding)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The authored production labels and supported table effects pass the
 executable exact-shape recognizer. -/
 private theorem recognitionSucceeded :
@@ -178,6 +179,7 @@ private def duplicateSource : SourceProgram String (Option NodeBinding) where
      ("statement_const", compileNodeSpec? variableSpec)]
   queries := ["statement_const"]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- A duplicated source label is refused rather than assigned an arbitrary
 record.  Ordinary source lookup remains available outside admission. -/
 theorem duplicate_label_refused :

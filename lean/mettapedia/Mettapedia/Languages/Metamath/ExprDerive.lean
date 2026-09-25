@@ -567,6 +567,7 @@ theorem decodeItems_body (db : MMDb) (info : TypecodeInfo)
       simp only [List.map_cons, decodeItems, tokPattern, ih, Option.map_some,
         envVarTypecode?_dbRelationEnv]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- v1 adequacy: the facts decode to exactly the compiled rows — two
 independently defined computations agree. -/
 theorem decodeRows_dbRelationEnv (db : MMDb) (info : TypecodeInfo) :

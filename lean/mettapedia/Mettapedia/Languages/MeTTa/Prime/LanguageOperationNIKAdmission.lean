@@ -251,6 +251,7 @@ theorem no_wrong_observation_square (model : PrimeModel)
     (.refl state : ExecutionPath (SemanticTheoryAt model .zero) state state)
   simp [wrongSourceObservation, wrongTargetObservation] at impossible
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem relevant_change_has_no_alignment :
     ¬ ∃ currentRevision,
       CommonCurrent dependencies (false, false) (true, false)

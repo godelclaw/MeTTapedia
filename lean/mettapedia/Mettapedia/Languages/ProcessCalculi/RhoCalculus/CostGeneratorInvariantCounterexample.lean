@@ -283,6 +283,7 @@ private def rhoCutOrderWrappedDropPreimage :
   costStaticConstructorPreimage rhoCIGSLT .wrapped
     rhoCutOrderWrappedDropDeclared rhoCutOrderWrappedDropRole
 
+set_option backward.isDefEq.respectTransparency.types false in
 private theorem rhoCutOrderWrappedDrop_notBare :
     ¬ UsesBareCollection
       rhoCutOrderWrappedDropPreimage.sourceConstructor.1 := by
@@ -291,6 +292,7 @@ private theorem rhoCutOrderWrappedDrop_notBare :
     UsesBareCollection, rhoCalc, TypeExpr.name, TypeExpr.proc,
     TypeExpr.baseType]
 
+set_option backward.isDefEq.respectTransparency.types false in
 private def rhoCutOrderWrappedFvarPlan (outer : OneHoleContext)
     (name : String)
     (lookup : rhoCutOrderFree name =
@@ -345,6 +347,7 @@ private theorem rhoCutOrderParallelChoice_mem :
   apply rhoCIGSLT.bareCollectionConstructorsWrapped _ membership
   exact ⟨"ps", .hashBag, .base "Proc", rfl⟩
 
+set_option backward.isDefEq.respectTransparency.types false in
 private theorem rhoCutOrderRedex_wellSorted :
     ReflectiveWellSorted.OpenPatternWellSorted
       rhoCIGSLT.costWholeReflectionProfile rhoCIGSLT.costWholeLanguage
@@ -518,6 +521,7 @@ private def rhoCutOrderBaseDropPreimage :
   costStaticConstructorPreimage rhoCIGSLT .base rhoCutOrderBaseDropDeclared
     rhoCutOrderBaseDropRole
 
+set_option backward.isDefEq.respectTransparency.types false in
 private theorem rhoCutOrderBaseDrop_notBare :
     ¬ UsesBareCollection rhoCutOrderBaseDropPreimage.sourceConstructor.1 := by
   simp [rhoCutOrderBaseDropPreimage, costStaticConstructorPreimage,
@@ -531,6 +535,7 @@ private def rhoCutOrderBaseQuotePreimage :
   costStaticConstructorPreimage rhoCIGSLT .base rhoCutOrderBaseQuoteDeclared
     rhoCutOrderBaseQuoteRole
 
+set_option backward.isDefEq.respectTransparency.types false in
 private theorem rhoCutOrderBaseQuote_notBare :
     ¬ UsesBareCollection rhoCutOrderBaseQuotePreimage.sourceConstructor.1 := by
   simp [rhoCutOrderBaseQuotePreimage, costStaticConstructorPreimage,
@@ -910,6 +915,7 @@ private theorem rhoCutOrderRightNode_normalizedThickenedSkeletonRaw :
   rw [rhoCutOrderRightNode_sourceCanonical]
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 private theorem rhoCutOrderWrappedNameType :
     (.base (costBaseSortName "Name") : TypeExpr) =
       mapTypeExpr (CostStaticColor.wrapped.symbols rhoCIGSLT)
@@ -1019,6 +1025,7 @@ private theorem rhoCutOrderRightTree_normalize :
     show rhoCutOrderRightNode.targetBound.length = 0 by rfl,
     Mettapedia.OSLF.MeTTaIL.Substitution.liftBVars_zero]
 
+set_option backward.isDefEq.respectTransparency.types false in
 private theorem rhoCutOrderLeftTree_normalize :
     rhoCutOrderLeftTree.normalize.pattern =
       rhoCutOrderParallel

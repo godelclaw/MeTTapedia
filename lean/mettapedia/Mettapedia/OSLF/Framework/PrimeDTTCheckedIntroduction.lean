@@ -36,6 +36,7 @@ open Mettapedia.Languages.MeTTa
 open Mettapedia.Languages.MeTTa.Prime.Language
 open Mettapedia.OSLF.Framework.GSLTTypeSynthesis
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- OSLF exact-target inhabitation for a Prime `Need` request is exactly the
 operational occurrence bound used by Prime.  This is a behavioral type derived
 from `needGSLT`; it does not assert an authored dependent typing judgment. -/
@@ -65,6 +66,7 @@ theorem need_found_inhabits_exactTarget
   (need_exactTarget_satisfaction_iff_occurrence
     model space subject result occurrence).2 copy
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Negative witness: a terminal `Need` answer inhabits no generated
 exact-target one-step type, because Prime gives answers no outgoing `Need`
 step. -/

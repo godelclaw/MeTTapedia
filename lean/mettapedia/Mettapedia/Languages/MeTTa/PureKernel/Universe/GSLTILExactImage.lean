@@ -49,6 +49,7 @@ def stepEvidenceEquiv (model : PrimeModel) (source target : Claim model) :
       (returnedStepRel model).evidence source target :=
   stepEquiv model
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Exact relational-Chain interpretation.  The intermediate claim and both
 step witnesses survive the comparison. -/
 def chainEvidenceEquiv (model : PrimeModel) (source target : Claim model) :

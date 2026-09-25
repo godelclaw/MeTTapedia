@@ -20,6 +20,7 @@ noncomputable def liveOut (W : Sym2 (V × C) → R) (c : V → C)
     (S A : Finset V) : Finset V :=
   (S \ A).filter (fun y => ∃ x ∈ A, W (Sym2.map (paint c) s(x, y)) ≠ 0)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem mem_liveOut {W : Sym2 (V × C) → R} {c : V → C}
     {S A : Finset V} {y : V} :
     y ∈ liveOut W c S A ↔

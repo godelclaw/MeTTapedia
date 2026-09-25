@@ -101,6 +101,7 @@ def FormedContext.mapHead {sourceRules : Rules HeadOne}
   context := context.context.mapHead map
   wellFormed := context.wellFormed.mapHead morphism
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Typed substitutions transport componentwise along a presentation
 morphism. -/
 def ContextHom.mapHead {sourceRules : Rules HeadOne}

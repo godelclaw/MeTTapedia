@@ -32,6 +32,7 @@ theorem derivable_forallPropSelfImp :
   apply Derivable.impR
   exact Derivable.ax (List.mem_singleton_self _)
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem semilocalTruth_forallPropSelfImp_model :
     SimpleQuantifiedFormula.semilocalTruth model emptyEnv forallPropSelfImp = ⊤ := by
   rw [SimpleQuantifiedFormula.semilocalTruth_toFormula]
@@ -46,6 +47,7 @@ theorem globalTruth_forallPropSelfImp
   exact SimpleQuantifiedFormula.globalTruth_of_closed_derivable
     (M := M) (φ := forallPropSelfImp) derivable_forallPropSelfImp ρ
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem semilocalTruth_existsAtomBot_false :
     ¬ SimpleQuantifiedFormula.semilocalTruth model emptyEnv existsAtomBot := by
   rw [SimpleQuantifiedFormula.semilocalTruth_toFormula]

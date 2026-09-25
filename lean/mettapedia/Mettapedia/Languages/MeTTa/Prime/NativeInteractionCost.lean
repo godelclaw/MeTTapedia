@@ -73,6 +73,7 @@ def pathWorkSpan {theory : GSLT}
       EventPath.pathLength presentation (path context) :=
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Chronological path composition is exactly sequential work/span
 composition. -/
 theorem pathWorkSpan_compose {theory : GSLT}

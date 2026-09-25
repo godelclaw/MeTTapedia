@@ -163,7 +163,6 @@ theorem all_of_const_instance
             rw [hConstSelf]
             rw [abstractConstAt_noOccurrence
               (Base := Base) (Γ := []) (c := c) [σ] φ hφno]
-            rfl
       _ = φ := hInsertCancel φ
   have hAbs :=
     ExtDerivation.abstractConstAt_deriv (Base := Base) (Γ := []) (Ξ := []) c hInst
@@ -959,6 +958,7 @@ def toClosedLocalHintikkaCertificateOfPrimeSeparatingExtension
   cases C
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem exists_closedLocalAgreementWitness_of_exists_semantics_of_not_closedTheorySetProvable
     (C : CertifiedCountermodelCandidate Const [])
     (hNot :
@@ -1089,6 +1089,7 @@ theorem not_derivable_of_exists_closedLocalAgreementWitness_of_not_closedTheoryS
       (exists_candidateClosedHintikkaSemantics_of_exists_closedLocalAgreementWitness_of_not_closedTheorySetProvable
         (C := C) (hNot := hNot) hW)
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem exists_closedLocalAgreementWitness_of_exists_semantics_of_primeSeparatingExtension
     (C : CertifiedCountermodelCandidate Const [])
     {U : ClosedTheorySet Const}

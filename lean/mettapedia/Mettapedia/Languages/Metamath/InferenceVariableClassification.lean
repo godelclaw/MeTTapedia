@@ -17,6 +17,7 @@ open Mettapedia.Languages.Metamath.InferenceEncoding
 open Mettapedia.Languages.Metamath.InferenceProjection
 open Mettapedia.Languages.Metamath.InferenceSideConditionsSemantics
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- On the supported constant-headed carrier, operational `varsInExpr` is the
 runtime name-filtering `varsIn`, mapped to the specification's variable
 wrapper.  Order and duplicates are preserved. -/

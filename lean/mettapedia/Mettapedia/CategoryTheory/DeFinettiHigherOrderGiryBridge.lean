@@ -328,6 +328,7 @@ noncomputable def finiteHigherOrderEncodedMixingLaw
   let hg : Measurable g := measurable_of_finite g
   μ.map hg.aemeasurable
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The long-word weight of the encoded finite discrete mixture is exactly the
 weighted sum of the component higher-order long-word probabilities. -/
 theorem higherOrderLongWordWeightViaProbMarkov_eq_finiteDiracMixture

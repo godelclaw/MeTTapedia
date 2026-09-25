@@ -14,6 +14,7 @@ namespace Mettapedia.MachineLearning.NeuralNetworks.Architecture.TrainingSelecto
 
 open Mettapedia.MachineLearning.NeuralNetworks.UtilizationAtlas
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Checker feedback available to a learning or search rule. -/
 inductive CheckerFeedbackSupport where
   | noFeedback
@@ -22,6 +23,7 @@ inductive CheckerFeedbackSupport where
   | denseFeedback
   deriving DecidableEq, Fintype, Repr
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Training and adaptation regimes represented by the selector. -/
 inductive TrainingMethod where
   | ordinaryBP

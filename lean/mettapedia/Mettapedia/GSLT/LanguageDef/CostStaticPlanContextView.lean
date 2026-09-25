@@ -585,6 +585,7 @@ theorem CostStaticElementPlan.nonempty_activeAt
           exact active.entryEmbedding.comp
             (CostStaticPlanEntryEmbedding.appendRight _ _)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Inventory-preserving total decomposition.  Every successful plan indexed
 by a filled context yields an exact sub-plan or intercepted boundary together
 with a proof that all retained entries belong to the root finite table. -/

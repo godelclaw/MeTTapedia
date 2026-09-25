@@ -30,16 +30,19 @@ open Mettapedia.PLN.WorldModel.SufficientStatisticEncoder
 open Mettapedia.Hyperseed
 open scoped ENNReal
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive AgentObservation where
   | pulse
   deriving DecidableEq, Fintype
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive AgentQuery where
   | sensedSignal
   | readyToAct
   | awareReady
   deriving DecidableEq, Fintype
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive AgentSignal where
   | external
   | introspection

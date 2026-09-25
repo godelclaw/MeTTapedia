@@ -200,6 +200,7 @@ structure CostStaticPlanShapedContextInventoryView (source : CIGSLT)
       rootAbstract rootEntries where
   skeletonComposed : CostStaticPlanSkeletonComposed view.skeletonContext
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Shape-preserving total decomposition.  Every successful plan indexed by a
 filled context yields an exact sub-plan or intercepted boundary, a proof that
 all retained entries belong to the root finite table, and a proof that the

@@ -299,6 +299,7 @@ theorem sourceGrammar_syntax_only :
     sourceGrammar.equations = [] ∧ sourceGrammar.rewrites = [] := by
   exact ⟨rfl, rfl⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem sourceGrammar_valid : sourceGrammar.validate = [] := by
   simp [LanguageDef.validate, sourceGrammar, sourceProductions,
     production, parameter, labelTokenSort, symbolTokenSort,

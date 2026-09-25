@@ -116,6 +116,7 @@ def pullback (eventMap : SourceEvent -> TargetEvent)
       discipline.observe (events.map eventMap) :=
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Pulling back along two event maps agrees extensionally with pulling back
 along their composite. -/
 theorem pullback_comp_observe
@@ -162,6 +163,7 @@ theorem events_mapRoute
             (events rest).map (mapEvent translation)
       rw [inductionHypothesis]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The observation square for a complete proof-relevant path.  Translation
 acts on execution; pullback acts on observation; the two orders agree. -/
 theorem observe_mapRoute

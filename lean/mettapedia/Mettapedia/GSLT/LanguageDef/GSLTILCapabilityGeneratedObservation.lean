@@ -141,6 +141,7 @@ theorem supportsPolicy_pullbackCapabilityDomain
   exact agrees (route.pullbackCapabilityDomain_mapsToTarget targetDiscipline
     chronological parallel Independent sourceMember)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Maximum-score scheduler sufficiency is likewise stable under represented
 route pullback. -/
 theorem supportsMaxSelection_pullbackCapabilityDomain

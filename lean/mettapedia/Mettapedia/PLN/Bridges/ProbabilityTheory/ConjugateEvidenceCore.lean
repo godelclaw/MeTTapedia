@@ -134,6 +134,7 @@ noncomputable instance instConjugateEvidenceDirichlet :
     show (↑(MultiEvidence.zero : MultiEvidence k).total : ℝ≥0∞) = 0
     simp [MultiEvidence.total, MultiEvidence.zero]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Normal-Gamma: observation count = ↑n. -/
 noncomputable instance instConjugateEvidenceNormalGamma :
     ConjugateEvidence NormalGammaEvidence where

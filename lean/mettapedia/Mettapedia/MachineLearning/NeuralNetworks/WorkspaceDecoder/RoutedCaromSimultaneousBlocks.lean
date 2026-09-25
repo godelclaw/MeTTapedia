@@ -161,6 +161,7 @@ theorem simultaneousBlockResidual_commute
     (mapsTo_simultaneousGenBlock_residual transition commutes character second)
 
 omit [FiniteDimensional K V] in
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Exact scalar-plus-residual decomposition on each simultaneous block. -/
 theorem simultaneousBlockTransition_eq_scalar_add_residual
     (transition : Command → Module.End K V)

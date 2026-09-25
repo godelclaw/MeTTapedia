@@ -180,6 +180,7 @@ private theorem duplicateEvaluation :
     model, space, structuralModel, matchPattern, matchArgs,
     MeTTaZero.viewEquation?, equation, subject, result, applyBindings]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Two equal result occurrences survive, while their receipt is selected by
 the shared result value rather than by an exact source occurrence identity. -/
 theorem duplicate_result_occurrences_share_value_receipt :
@@ -344,6 +345,7 @@ noncomputable def executionGSLT (model : QueryFirstModel) (space : model.Space)
 
 set_option maxHeartbeats 4000000 in
 set_option maxRecDepth 100000 in
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Executing an authored Need request produces exactly the semantic Zero
 answer bag decorated with causal receipts. -/
 theorem need_rewrite_bag_adequate (model : QueryFirstModel)
@@ -402,6 +404,7 @@ macro "prime_step_simp" : tactic =>
         applyBindingsForRuleUsing, matchPattern, matchArgs, mergeBindings,
         applyBindings])
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The first leg of the semantic lazy route is executable directly from the
 authored `evaluationDemandRewrite`. -/
 theorem evaluation_demand_exec (model : QueryFirstModel) (space : model.Space)
@@ -412,6 +415,7 @@ theorem evaluation_demand_exec (model : QueryFirstModel) (space : model.Space)
       (needRequestPattern spaceTerm subject) := by
   prime_step_simp
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The same authored root retains the direct extensional evaluation branch. -/
 theorem direct_evaluation_exec (model : QueryFirstModel) (space : model.Space)
     (spaceTerm : Pattern) (revisionTerm : model.Revision → Pattern)
@@ -436,6 +440,7 @@ theorem direct_evaluation_exec (model : QueryFirstModel) (space : model.Space)
           match_zero_evaluation_row spaceTerm subject result]
     simp
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- A Need answer returns to the exact Zero observation under the generic
 executor, independently of the receipt payload. -/
 theorem need_return_exec (model : QueryFirstModel) (space : model.Space)
@@ -446,6 +451,7 @@ theorem need_return_exec (model : QueryFirstModel) (space : model.Space)
       (MeTTaZero.evaluationAnswerPattern answer) := by
   prime_step_simp
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Explicit evaluation of a structural quote enters the same Need request. -/
 theorem reflected_demand_exec (model : QueryFirstModel) (space : model.Space)
     (spaceTerm : Pattern) (revisionTerm : model.Revision → Pattern)
@@ -656,6 +662,7 @@ noncomputable def observeAuthoredArtifact {model : QueryFirstModel}
     directLength := artifact.direct.length
     lazyLength := artifact.lazy.length }
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Prime's five-field interpreter is a certified realization of semantic
 evaluation occurrences.  The certificate preserves the result occurrence and
 the nontrivial direct/lazy route profile; the artifact additionally carries

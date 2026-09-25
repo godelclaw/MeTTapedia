@@ -2046,6 +2046,7 @@ end
 
 /-! ## Exact inverse laws -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Reflection after preservation recovers the exact source derivation,
 including every selected physical rule occurrence. -/
 theorem reflectSourcePlanDerivation_preserve

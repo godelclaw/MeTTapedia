@@ -88,6 +88,7 @@ end FiniteFlow
 
 /-! ## A finite construction DAG with shared terminal -/
 
+set_option backward.isDefEq.respectTransparency false in
 inductive FlowNode where
   | root | left | right | x | y | rejected
   deriving DecidableEq, Fintype, Repr
