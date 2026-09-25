@@ -533,7 +533,14 @@ v14 where v14 does not contain them.
 Thus there is presently no derived constant $C_{\mathrm{true}}$ for the Wilson
 recursion. The support recurrence, two-marked glue identity, stopping-scale
 polymer estimates, Wilson reflection positivity, and continuum/OS construction
-remain route-specific open inputs. The finite $\mathbb{Z}_2$, $\mathbb{Z}_3$,
+remain route-specific open inputs. Numerical evidence (\S\ref{sec:stopping})
+indicates that the stopping-scale step cannot be instantiated as stated: at the
+couplings $\beta_J\geq\beta_{\min}\approx150$ that the bootstrap provides,
+Monte Carlo simulation on periodic $L^4$ lattices ($L\leq16$) finds the block
+correlations of the free massless field, and the argument, which uses no
+non-abelian input there, would equally give a gap for weakly coupled
+$\mathrm{U}(1)$, whose photon is proved to be massless.
+The finite $\mathbb{Z}_2$, $\mathbb{Z}_3$,
 and $Q_8$ gaps checked in Lean are real but Clay-irrelevant
 (single-link, strong-coupling, finite). The Yang--Mills mass gap remains open;
 we make no claim about it.
@@ -616,7 +623,7 @@ affect the universal one-loop beta-function coefficient
 $b_0 = 11/(3\cdot 16\pi^2)$, which is determined entirely by local ultraviolet
 information.
 
-\subsection{The recombination constant and the extraction-projection norm}
+\subsection{The recombination constant and the extraction-projection norm}\label{sec:recombination}
 
 Appendix~O proposes the factorization
 \[
@@ -1495,6 +1502,148 @@ the constructive-QFT prerequisites are all marked unrepresented. The
 formalization makes no claim, in either direction, about the existence of a
 continuum Yang--Mills mass gap.
 
+\section{The stopping-scale step: numerical evidence}\label{sec:stopping}
+
+This section reports a numerical test and a structural observation. Neither is
+a theorem, and the scope of each is stated with it.
+
+\paragraph{What the step requires.}
+The global bootstrap (v14, Lemma~4.4 and Appendix~F.6) keeps
+$\beta_j\geq\beta_{\min}$ for every $j\leq J$, and Appendix~F.6 fixes
+$\beta_{\min}\approx150$. By v14's own description, the effective measure at
+the stopping scale is therefore the Wilson measure at coupling
+$\beta_J\geq\beta_{\min}$, corrected by extracted couplings of size
+$O(\beta_J^{-(d-4)/2})$ and by activities that are small in the KP norm.
+Appendix~D represents the same measure as a hard-core polymer gas over a
+block-decoupled reference measure, a product over $J$-blocks (its \S D.1), and
+the tree-decay theorem of its \S D.5 (the paper's Theorem~3.5) derives
+\[
+  \big|\langle F_1;F_2\rangle_J^{T}\big|
+  \;\leq\; C\,\|F_1\|_\infty\|F_2\|_\infty\,
+  e^{-m_J a_J\,\mathrm{dist}_J(S_1,S_2)},
+  \qquad m_J a_J\;\geq\; c'\kappa,
+\]
+with $C$ and $c'$ depending only on $\varepsilon_*$, the block geometry and the
+range of the interactions. The bound is therefore uniform in
+$\beta_J\geq\beta_{\min}$ and in the volume.
+
+\paragraph{The test.}
+We simulated the Wilson action for $\mathrm{SU}(2)$ and $\mathrm{U}(1)$ on
+periodic $L^4$ lattices with $L=8,12,16$. Each measurement follows one
+heat-bath sweep (Kennedy--Pendleton for $\mathrm{SU}(2)$, von Mises for
+$\mathrm{U}(1)$) and three overrelaxation sweeps; $500$ thermalization sweeps
+precede $4000$ measurements ($3000$ at $L=16$), and errors are jackknife errors
+over $40$ bins. The main observable is the energy of each $2^4$ block of a
+$b=2$ step, the sum of its plaquette energies $1-\frac1N\mathrm{Re}\,\Tr\,U_p$,
+through the correlation coefficient $\rho(R)$ of block energies at block
+distance $R$ along an axis. For near-Gaussian block energies, bounded functions
+of the standardized block energies, whose sup norms do not depend on $\beta$,
+have covariances proportional to $\rho(R)$; so $\rho$ is what the tree-decay
+theorem constrains. For $\mathrm{U}(1)$ we also measured the transverse photon,
+$\sin\theta_{bc}$ at momentum $2\pi/L$ along $b$, and compare its cosh
+effective mass with the massless lattice dispersion
+$2\,\mathrm{arsinh}\,\sin(\pi/L)$. The $\beta\to\infty$ values of $\rho$ are
+exact free-field values on the same tori. The programs are
+\texttt{ym\_stopping\_scale\_mc.c}, \texttt{ym\_stopping\_scale\_free\_field.py}
+and \texttt{ym\_stopping\_scale\_analysis.py}, next to this document; the last
+lists the exact runs.
+
+\begin{center}
+\begin{tabular}{lrrlll}
+\toprule
+group & $\beta$ & $L$ & plaquette energy & $\rho(1)$ \ (free $0.0336$) & photon $m_{\mathrm{eff}}$ \ (massless) \\
+\midrule
+$\mathrm{SU}(2)$ & $150$ & $8$  & $0.005006$ & $0.0344(5)$ & \\
+$\mathrm{SU}(2)$ & $150$ & $12$ & $0.005007$ & $0.0335(2)$ & \\
+$\mathrm{SU}(2)$ & $150$ & $16$ & $0.005007$ & $0.0334(1)$ & \\
+$\mathrm{SU}(2)$ & $2.5$ & $12$ & $0.347985$ & $0.0514(2)$ & \\
+$\mathrm{SU}(2)$ & $2.5$ & $16$ & $0.348024$ & $0.0512(2)$ & \\
+$\mathrm{U}(1)$ & $150$ & $8$  & $0.001667$ & $0.0335(5)$ & $0.740(5)$ \ ($0.748$) \\
+$\mathrm{U}(1)$ & $150$ & $12$ & $0.001668$ & $0.0336(2)$ & $0.523(4)$ \ ($0.512$) \\
+$\mathrm{U}(1)$ & $150$ & $16$ & $0.001668$ & $0.0335(2)$ & $0.386(3)$ \ ($0.388$) \\
+$\mathrm{U}(1)$ & $2.0$ & $8$  & $0.135167$ & $0.0389(5)$ & $0.749(5)$ \ ($0.748$) \\
+$\mathrm{U}(1)$ & $2.0$ & $12$ & $0.135174$ & $0.0386(2)$ & $0.509(2)$ \ ($0.512$) \\
+$\mathrm{U}(1)$ & $2.0$ & $16$ & $0.135181$ & $0.0385(2)$ & $0.387(2)$ \ ($0.388$) \\
+$\mathrm{U}(1)$ & $0.8$ & $8$  & $0.598049$ & $0.0246(4)$ & $3.59(4)$ \\
+$\mathrm{U}(1)$ & $0.8$ & $12$ & $0.597976$ & $0.0239(2)$ & $3.61(3)$ \\
+$\mathrm{U}(1)$ & $0.8$ & $16$ & $0.598015$ & $0.0237(1)$ & $3.60(3)$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+The photon masses are effective masses between times $1$ and $2$, and between
+times $0$ and $1$ at $\beta=0.8$, where the signal ends.
+
+\paragraph{Findings.}
+\begin{enumerate}
+  \item At $\beta=150$ the $\mathrm{SU}(2)$ lattice is the free massless field
+    within the statistical errors. The plaquette energy agrees with the
+    weak-coupling value $3/(4\beta)+O(\beta^{-2})$, and $\rho(1)$ agrees with
+    the exact free value on all three lattices. The free field's correlations
+    decay as a power law: on the $64^4$ torus
+    $\rho(R)\approx1.9\times10^{-3}R^{-8}$, with $\rho(8)/\rho(9)=2.57=(9/8)^8$,
+    so the local decay rate per block, $8\log(1+1/R)$, tends to $0$. A power
+    law eventually exceeds any exponential, whatever $C$ and $c'$ are. Within
+    the reach of the simulation ($R\leq4$) the two cannot be told apart: the
+    statement about the tail is exact at $\beta=\infty$ and perturbative at
+    $\beta=150$.
+  \item At $\beta=2.5$, in the confining regime, the short-distance
+    correlations are larger, not smaller: $\rho(1)=0.051$, and at block
+    distance $2$ the $16^4$ lattice gives $\rho(2)=7.7(1.4)\times10^{-4}$,
+    twenty times the free value. A mass gap governs only the asymptotic decay,
+    so short-distance magnitudes do not separate the two regimes; the tail and
+    the photon do.
+  \item The weakly coupled $\mathrm{U}(1)$ photon is massless on these
+    lattices: its effective mass follows $2\,\mathrm{arsinh}\,\sin(\pi/L)$ at
+    $\beta=150$ and $\beta=2$, while in the confined phase ($\beta=0.8$) it
+    stays at $3.60$ for every $L$.
+  \item Two-loop asymptotic scaling places the $\mathrm{SU}(2)$ confinement
+    scale ($\beta\approx2.5$) about $570$ steps of $b=2$ below $\beta=150$, a
+    length factor of $10^{171.7}$. With the standard lattice values
+    $m_{0^{++}}/\sqrt\sigma\approx3.8$ and $a\sqrt\sigma\approx0.18$ at
+    $\beta=2.5$, the glueball mass at $\beta=150$ is about $10^{-172}$ in lattice
+    units, so a uniform bound $m_Ja_J\geq c'\kappa$ at $\beta_J\geq150$ would
+    contradict asymptotic freedom itself. This is an estimate, not a
+    measurement.
+\end{enumerate}
+
+\paragraph{A structural observation: the abelian test.}
+We found no step of v14 between the bootstrap and the tree-decay theorem that uses a
+property distinguishing $\SUN$ from $\mathrm{U}(1)$. The one group-dependent
+input is the drift coefficient, which vanishes for $\mathrm{U}(1)$; zero drift
+only makes $\beta_j\geq\beta_{\min}$ easier to maintain. Read with
+$G=\mathrm{U}(1)$, the argument would give exponential clustering with a
+volume-independent mass for the weakly coupled four-dimensional $\mathrm{U}(1)$
+lattice gauge theory, and so would the area law that v14's Appendix~N lists as
+accessible by the same methods. Both are false: at weak coupling that theory
+has a perimeter law and a massless photon (Guth 1980; Fr\"ohlich and Spencer
+1982). So some step fails for $\mathrm{U}(1)$, and unless it fails for a
+non-abelian reason we have not found, it also fails for $\SUN$ at
+$\beta_J\geq\beta_{\min}$. The numerical evidence points to the passage from
+the weakly coupled Wilson measure to a KP-small gas over a block-product
+measure: the plaquette coupling between neighbouring blocks, which carries the
+massless modes, has nowhere to go.
+
+\paragraph{The constants.}
+Two of v14's displayed constants were discussed in
+\S\ref{sec:recombination}: the two ledgers for $C_1$ and the
+extraction-projection bound. A third is the drift coefficient. v14 writes
+$\beta_{j+1}=\beta_j-4Nb_0\log b+E_j$ with $b_0=11/(3\cdot16\pi^2)$ and states
+that this matches $\beta(g)=-b_0Ng^3$ under $\beta=2N/g^2$. Those conventions
+give $d\beta/d\log\mu=4N^2b_0$, hence a drift of $4N^2b_0\log b$ per step:
+$0.2575$ rather than $0.1288$ for $\mathrm{SU}(2)$ and $b=2$, in agreement with
+the standard $\mathrm{SU}(2)$ lattice scale $a\Lambda_L\propto
+e^{-3\pi^2\beta/11}$. This changes the choice of $\beta_0$ but no conclusion.
+
+\paragraph{Scope.}
+This evidence does not bear on the finite algebraic results of this lane. What
+changes is the
+status of the stopping-scale step (item~4 of \S\ref{sec:remains}): the evidence
+indicates that it cannot be instantiated in the regime the bootstrap provides.
+Completing the programme would need an input that v14 does not supply: control
+of the flow from $\beta_J\geq\beta_{\min}$ down to a coupling at which a
+cluster expansion over a block-product measure converges. The extended
+extraction does not bear on that crossing.
+
 \section{What remains, exactly}\label{sec:remains}
 
 \subsection*{Machine-checked since the first version of this report}
@@ -2088,6 +2237,11 @@ three different situations.
     stopping-scale Wilson activities in the same norm, prove the KP criterion
     uniformly, and verify reflection and boundary-limit compatibility for the
     same Wilson family and RG kernels.
+    Numerical evidence (\S\ref{sec:stopping}) indicates that the
+    instantiation fails in the regime the bootstrap provides: at
+    $\beta_J\geq\beta_{\min}$ the stopping-scale measure behaves as a free
+    massless field, not as a KP-small gas over a block-product measure, so the
+    step needs a crossing to strong coupling that v14 does not supply.
   \item \textbf{The real RG map satisfies the recursion.}
     \emph{Status: the central claimed content of v14's RG analysis; not
     independently verified here.} Everything above shows the surrounding
@@ -2098,7 +2252,8 @@ three different situations.
 \end{enumerate}
 
 Items (1), (2), (3), and (5) contain route-specific mathematics. The classical
-theorem statements in item (4) do not discharge their Wilson instantiation.
+theorem statements in item (4) do not discharge their Wilson instantiation,
+and \S\ref{sec:stopping} gives evidence that the instantiation fails as posed.
 The actual RG recursion and constructive-QFT promotion remain open, and the
 Yang--Mills mass gap remains open.
 
