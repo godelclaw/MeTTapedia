@@ -8180,6 +8180,29 @@ the initial time (`smoothRapid_of_solution`).
 curve is smooth-rapid on every `[0, S]` (`contDiffOn_physVelocity`): the
 characters have iterated derivatives of size `(6π (1 + |k|))ⁿ`, and the Leibniz
 rule gives summable bounds for every term.
+`StochasticLagrangian/FourierSpatialCalculus.lean` differentiates the series
+`Φₐ(x) = ∑ₖ exp(2π i ⟨k, x⟩) aₖ` of a rapidly decaying coefficient field term
+by term: iterated derivatives multiply `aₖ` by `∏ⱼ 2π i ⟨k, hⱼ⟩` and the
+Laplacian by `(2π i)² |k|²`; real coefficient fields (`a₋ₖ = conj aₖ`) give
+real fields; and for real, transverse fields the transport derivative of `Φₐ`
+along itself regroups by output frequency into `2π i` times the field of the
+Fourier convection `∑ₚ (q · aₚ) a_{q-p}` (`field_transport`, a reindexing of
+the absolutely summable double series by `(q, p) ↦ (q - p, p)`).
+`StochasticLagrangian/FourierOfficialEquation.lean` closes the equation side of
+the bridge. The pressure has coefficients `p̂_q = -(q · conv_q) / |q|²` and is
+smooth on `ℝ³ × [0, ∞)` by the same time regularity; the one-sided time
+derivative of the velocity is the field of the right-hand side, at `t = 0` as
+well; the transport term, the Laplacian and the pressure gradient are fields of
+the convection, of `(2π i)² |q|² c_q` and of `2π i q p̂_q`; mode by mode the
+Fourier system is `ċ_q + 2π i conv_q = ν (2π i)² |q|² c_q - 2π i q p̂_q`
+(`rhs_add_convection`). The velocity is divergence free and velocity and
+pressure are one-periodic. Hence every continuous, real, transverse Fourier
+solution with rapidly decaying coefficients on bounded time intervals gives a
+solution in the official sense for the initial velocity it defines
+(`navierStokesPeriodic_of_fourierSolution`, for every viscosity). The data side
+(Fourier coefficients of a smooth periodic initial velocity, removal of its
+mean by a Galilean change of frame) and the passage from global solutions of
+every order to rapid decay remain.
 
 ### Earlier route-audit layers
 

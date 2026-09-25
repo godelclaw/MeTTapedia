@@ -456,6 +456,40 @@ end RightHandSide
 
 section Solution
 
+/-- **The one-sided equation at every time.** A coefficient curve that is
+continuous, rapidly decaying on `[0, S]` and solves the Fourier system on
+`(0, T)` with `S < T` solves it within `[0, S]` at every time of `[0, S]`,
+including the initial time. -/
+theorem hasDerivWithinAt_of_solution {nu T S : ℝ} (hS : 0 < S) (hST : S < T)
+    {c : ℝ → FourierVelocity} (hcont : ∀ k i, Continuous (fun t ↦ c t k i))
+    (hrapid : RapidOn c (Icc 0 S))
+    (heq : ∀ t ∈ Ioo (0 : ℝ) T, ∀ q i,
+      HasDerivAt (fun τ ↦ c τ q i) (infiniteVelocityRHS nu (c t) q i) t) :
+    ∀ t ∈ Icc (0 : ℝ) S, ∀ q i, HasDerivWithinAt (fun τ ↦ c τ q i)
+      (FourierTimeRegularity.rhsCurve nu c t q i) (Icc 0 S) t := by
+  have h0 : SmoothRapid 0 c (Icc 0 S) := ⟨fun k i ↦ (hcont k i).continuousOn, hrapid⟩
+  have hrhs0 := SmoothRapid.rhsCurve hS nu h0
+  intro t ht q i
+  rcases ht.1.eq_or_lt with h | h
+  · subst h
+    have hd : HasDerivWithinAt (fun τ ↦ c τ q i) (FourierTimeRegularity.rhsCurve nu c 0 q i)
+        (Ici 0) 0 := by
+      refine hasDerivWithinAt_Ici_of_tendsto_deriv (s := Ioo 0 S)
+        (fun x hx ↦ (heq x ⟨hx.1, hx.2.trans hST⟩ q i).differentiableAt.differentiableWithinAt)
+        (hcont q i).continuousWithinAt (Ioo_mem_nhdsGT hS) ?_
+      have hc : ContinuousWithinAt (fun τ ↦ FourierTimeRegularity.rhsCurve nu c τ q i)
+          (Icc 0 S) 0 := hrhs0.1 q i 0 ⟨le_rfl, hS.le⟩
+      have ht : Tendsto (fun τ ↦ FourierTimeRegularity.rhsCurve nu c τ q i) (𝓝[>] 0)
+          (𝓝 (FourierTimeRegularity.rhsCurve nu c 0 q i)) := by
+        rw [← nhdsWithin_Ioo_eq_nhdsGT hS]
+        exact hc.tendsto.mono_left (nhdsWithin_mono _ Ioo_subset_Icc_self)
+      refine ht.congr' ?_
+      rw [← nhdsWithin_Ioo_eq_nhdsGT hS]
+      filter_upwards [self_mem_nhdsWithin] with x hx
+      exact ((heq x ⟨hx.1, hx.2.trans hST⟩ q i).deriv).symm
+    exact hd.mono Icc_subset_Ici_self
+  · exact (heq t ⟨h, ht.2.trans_lt hST⟩ q i).hasDerivWithinAt
+
 /-- **Time regularity of the solutions.** A coefficient curve that is
 continuous, rapidly decaying on `[0, S]` and solves the Fourier system on
 `(0, T)` with `S < T` is smooth-rapid of every order on `[0, S]`, one-sidedly at
@@ -467,29 +501,7 @@ theorem smoothRapid_of_solution {nu T S : ℝ} (hS : 0 < S) (hST : S < T)
       HasDerivAt (fun τ ↦ c τ q i) (infiniteVelocityRHS nu (c t) q i) t) :
     ∀ j, SmoothRapid j c (Icc 0 S) := by
   have h0 : SmoothRapid 0 c (Icc 0 S) := ⟨fun k i ↦ (hcont k i).continuousOn, hrapid⟩
-  have hrhs0 := SmoothRapid.rhsCurve hS nu h0
-  have hder : ∀ t ∈ Icc (0 : ℝ) S, ∀ q i, HasDerivWithinAt (fun τ ↦ c τ q i)
-      (FourierTimeRegularity.rhsCurve nu c t q i) (Icc 0 S) t := by
-    intro t ht q i
-    rcases ht.1.eq_or_lt with h | h
-    · subst h
-      have hd : HasDerivWithinAt (fun τ ↦ c τ q i) (FourierTimeRegularity.rhsCurve nu c 0 q i)
-          (Ici 0) 0 := by
-        refine hasDerivWithinAt_Ici_of_tendsto_deriv (s := Ioo 0 S)
-          (fun x hx ↦ (heq x ⟨hx.1, hx.2.trans hST⟩ q i).differentiableAt.differentiableWithinAt)
-          (hcont q i).continuousWithinAt (Ioo_mem_nhdsGT hS) ?_
-        have hc : ContinuousWithinAt (fun τ ↦ FourierTimeRegularity.rhsCurve nu c τ q i)
-            (Icc 0 S) 0 := hrhs0.1 q i 0 ⟨le_rfl, hS.le⟩
-        have ht : Tendsto (fun τ ↦ FourierTimeRegularity.rhsCurve nu c τ q i) (𝓝[>] 0)
-            (𝓝 (FourierTimeRegularity.rhsCurve nu c 0 q i)) := by
-          rw [← nhdsWithin_Ioo_eq_nhdsGT hS]
-          exact hc.tendsto.mono_left (nhdsWithin_mono _ Ioo_subset_Icc_self)
-        refine ht.congr' ?_
-        rw [← nhdsWithin_Ioo_eq_nhdsGT hS]
-        filter_upwards [self_mem_nhdsWithin] with x hx
-        exact ((heq x ⟨hx.1, hx.2.trans hST⟩ q i).deriv).symm
-      exact hd.mono Icc_subset_Ici_self
-    · exact (heq t ⟨h, ht.2.trans_lt hST⟩ q i).hasDerivWithinAt
+  have hder := hasDerivWithinAt_of_solution hS hST hcont hrapid heq
   intro j
   induction j with
   | zero => exact h0
