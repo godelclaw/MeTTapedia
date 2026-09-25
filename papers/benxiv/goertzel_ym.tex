@@ -430,6 +430,10 @@ physical relation census, a proof that these rows span $J_p$, or descent
 through all of $J_p$
 (\texttt{HypercubicDimension16\allowbreak{}WilsonTraceOrder\allowbreak{}CycleProfile\allowbreak{}SourceSix},
 \texttt{HypercubicDimension16\allowbreak{}FieldEightTracePhysicalCompleteness}).
+The same holds for the Leibniz-corrected operator of Section~\ref{sec:honest}:
+there a six-field commutator row has one conjugate insertion pair for each
+subset of its outer word, and each pair cancels
+(\texttt{HypercubicDimension16\allowbreak{}LeibnizSourceSix}).
 
 \textsc{Ours.} The remaining source-seven boundary is now narrowed by an
 exact counterexample to the present \emph{one-class} repair, rather than left
@@ -1253,15 +1257,29 @@ $11{,}558$ of the earlier modules refers, contains an invariant vector that is
 not a consequence of the field identities
 (\texttt{HypercubicDimension16RelationEvaluationEquivariance}).  The
 corrected operator and joint submodule are defined on the same generators
-(\texttt{HypercubicDimension16LeibnizRelationOperator}).  In every sector with
-seven or eight fields no letter carries more than two derivatives, so the two
-operators agree there.  The bounds $11{,}557$ and $11{,}558$ below hold for the
-corrected submodule: the $11{,}557$ rows are unchanged, and every Leibniz term
-of the four-field separator row misses the separator's orbit, so its
-coordinate is still $-1/24$ (\texttt{HypercubicDimension16LeibnizJointRank}).
-Statements of this report about the joint submodule in sectors with at most
-six fields refer to the earlier operator and are to be re-derived for the
-corrected one.
+(\texttt{HypercubicDimension16LeibnizRelationOperator}).  With seven or eight
+source fields a carrier has at most two derivatives, so a commutator site uses
+both and its field has no outer derivative; the two operators agree on every
+column of those source bands, and the source-seven and source-eight results
+below apply to the corrected operator unchanged.  The bounds $11{,}557$ and
+$11{,}558$ below hold for the corrected submodule: the $11{,}557$ rows are
+unchanged, and every Leibniz term of the four-field separator row misses the
+separator's orbit, so its coordinate is still $-1/24$
+(\texttt{HypercubicDimension16LeibnizJointRank}).  The finite cochain bridge
+carries over: the corrected operator followed by the Reynolds average is
+signed-$H(4)$ equivariant, compatible with the two policies, and maps the
+generator space onto the corrected joint submodule
+(\texttt{HypercubicDimension16LeibnizFDIBPCochainBridge}).  So does the
+source-band reduction of the profile correction summarized in the abstract.  A
+corrected commutator row with six source
+fields has one pair of seven-field insertions for each subset $S$ of the outer
+word; the two insertions of a pair have the same letters and conjugate trace
+permutations, so each pair cancels as the single pair of the four-term row
+does.  With at most five source fields every term of a corrected row has at
+most six fields and is invisible to the correction.  The full profile
+correction therefore annihilates every column of the corrected operator outside
+the source-seven band
+(\texttt{HypercubicDimension16LeibnizSourceSix}).
 
 A literal seven-field, two-derivative instance proves that this
 cross-sector coupling survives both exact contextual normalization and
@@ -2450,7 +2468,12 @@ the corrected relation span), and
 on the field-label orbit space and on the corrected joint quotient), and
 \texttt{HypercubicDimension16RelationEvaluationEquivariance} (the hypercubic
 equivariance of evaluation and the averaged value $32/3$ of the earlier
-invariant four-field row), together with
+invariant four-field row), and
+\texttt{HypercubicDimension16LeibnizFDIBPCochainBridge} with
+\texttt{HypercubicDimension16LeibnizSourceSix} (the cochain bridge onto the
+corrected joint submodule, agreement of the two operators on the source bands
+seven and eight, and the source-band reduction of the profile correction for
+the corrected operator), together with
 \texttt{HypercubicDimension16TraceEvaluation} (ordinary matrix-index
 contraction, field-relabel descent, and exact kernel theorems for the three
 implemented trace-relation families),
