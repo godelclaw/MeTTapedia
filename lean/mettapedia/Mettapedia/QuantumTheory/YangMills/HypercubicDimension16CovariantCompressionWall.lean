@@ -1,5 +1,7 @@
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16PhysicalRelationBlocks
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16PhysicalTraceWitnessSemantics
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16DecoderTableRewrite
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16TraceOrbitChartKernelTables
 
 /-!
 # A nonzero cross-sector block of the physical relation operator
@@ -225,11 +227,15 @@ theorem commutatorAfterSourceCode_valid :
 theorem commutatorBeforeCoordinate_valid :
     EncodedCoordinateOrbitValid commutatorBeforeWitness 0
       commutatorBeforeCoordinate := by
+  rewrite_decoders_to_tables [
+    HypercubicDimension16TraceOrbitChartKernelTables.decodedPositiveRepresentativeWordChunk_eq_table]
   decide +kernel
 
 theorem commutatorAfterCoordinate_valid :
     EncodedCoordinateOrbitValid commutatorAfterWitness 0
       commutatorAfterCoordinate := by
+  rewrite_decoders_to_tables [
+    HypercubicDimension16TraceOrbitChartKernelTables.decodedPositiveRepresentativeWordChunk_eq_table]
   decide +kernel
 
 theorem commutatorBefore_decodedSource :
