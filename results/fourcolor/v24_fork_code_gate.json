@@ -1,0 +1,114 @@
+{
+ "closure": {
+  "2": {
+   "bad_roots": 0,
+   "by_width": {
+    "1": 3,
+    "2": 16
+   },
+   "complete": true,
+   "defect_pruned": 318,
+   "root_codes": [
+    {
+     "colourable": false,
+     "small_cut": true
+    },
+    {
+     "colourable": true,
+     "small_cut": false
+    }
+   ],
+   "roots": 2,
+   "states": 19,
+   "transitions": 1068,
+   "w": 2
+  },
+  "3": {
+   "bad_roots": 0,
+   "by_width": {
+    "1": 3,
+    "2": 16,
+    "3": 78
+   },
+   "complete": true,
+   "defect_pruned": 61826,
+   "root_codes": [
+    {
+     "colourable": false,
+     "small_cut": true
+    },
+    {
+     "colourable": true,
+     "small_cut": false
+    }
+   ],
+   "roots": 2,
+   "states": 97,
+   "transitions": 82844,
+   "w": 3
+  }
+ },
+ "controls": {
+  "codes_with_several_closed_values": 48,
+  "collisions_full": 0,
+  "collisions_ret_cycle_type_only": 0,
+  "collisions_without_cut": 0,
+  "collisions_without_defect": 4,
+  "collisions_without_ret": 1,
+  "forks": 3100,
+  "full_code_mismatches": 0,
+  "identity_rewire_mismatches": 2715,
+  "max_closed": 9,
+  "no_orientation_bit_mismatches": 1071,
+  "relabelling_failures": 0,
+  "roots": [
+   {
+    "bad_full": false,
+    "bad_without_cut": true,
+    "bad_without_defect": false,
+    "genus": 0,
+    "map": "bridged10"
+   },
+   {
+    "bad_full": false,
+    "bad_without_cut": false,
+    "bad_without_defect": true,
+    "genus": 2,
+    "map": "petersen"
+   },
+   {
+    "bad_full": false,
+    "bad_without_cut": false,
+    "bad_without_defect": false,
+    "genus": 1,
+    "map": "K4~1"
+   }
+  ]
+ },
+ "fold": {
+  "bridged_roots_with_small_cut": 2,
+  "forks": 5190,
+  "leaves": 5562,
+  "maps": 62,
+  "max_width": 16,
+  "mismatches": 0,
+  "nerode_collisions": 0,
+  "nerode_keys": 2740,
+  "nonplanar_roots_with_defect": 18,
+  "rejecting_roots": 0,
+  "trees": 372
+ },
+ "limits": {
+  "brute_force_cut_check_max_vertices": 10,
+  "closure_time_limit_seconds": 600,
+  "closure_widths": [
+   2,
+   3
+  ],
+  "control_seed": 7,
+  "fold_max_vertices": 16,
+  "fold_planar_maps": 40,
+  "fold_seed": 20260925,
+  "fold_trees_per_map": 6
+ }
+}

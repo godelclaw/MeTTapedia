@@ -95,10 +95,14 @@ the remaining obligation is global production of the supplied nested states,
 which belongs to $D_1$, not to the local splice \\
 $D_4$ & The route-native finite floor contains no zero-Count obstruction &
 open; the refuted GWCO and $A\ne\varnothing$ systems cannot be inherited.
-The exact finite-state reflection joint is now machine-checked: a trace,
+The exact finite-state reflection joint is machine-checked: a trace,
 reachable-set coverage, counterexample adequacy, and an empty filtered
-reachable set imply the literal spherical finite-base premise.  Constructing
-those three witnesses and replaying the audit remain open \\
+reachable set imply the literal spherical finite-base premise.  For maps
+carrying the supply's rooted connected decomposition the three witnesses are
+now constructed on a finite positional code of the physical fork fold
+(Section~\ref{sec:finite-fork-code}); the remaining input is the audit of
+that code's closure at interface bound $\max(w,2)$, which is not claimed and
+is useful only at a width that $D_1$ supplies \\
 $D_5$ & Well-founded assembly from $D_0$--$D_4$ & proved as the explicit
 conditional Theorem~\ref{thm:direct-count-reductive-assembly} \\
 \bottomrule
@@ -17743,3 +17747,163 @@ identify raw, cumulative-support and Nerode closures with one another. The
 enumerated initial/accepting arrays, exact transition semantics, reachability
 replays and all three closure certificates remain to be supplied. D2b is a
 package of those obligations rather than one linchpin, and remains open.
+
+\subsection{A finite code for the physical fork fold}
+\label{sec:finite-fork-code}
+
+The fold of \texttt{PhysicalProfileFold} over a supplied edge-leaf tree is
+exact, but it was not a finite machine.  Its face state lived on the ambient
+subtype of interface darts, its field \texttt{closed} counted the shore faces
+missing the interface as an unrestricted natural number, and its fork step
+read the ambient rotation.  The consumer
+\texttt{DecomposableBaseReflection} asks instead for a finite state set, a
+trace of every supplied decomposition into it, and a condition forced by
+noncolourability.  This subsection records a representation that supplies all
+three, and the exact point where the finite base now stands.
+
+\paragraph{Positions.}
+Let the vertex rotations be three-cycles on a cubic map.  At a middle vertex
+of an edge shore the shore darts form one contiguous run of the rotation, so
+exactly one shore dart is followed by a dart outside the shore.  Its edge
+partner is the unique interface dart whose far end is that vertex.  Hence
+$d\mapsto\mathrm{vert}(\alpha d)$ is a bijection from interface darts to
+middle vertices, and a node with $n$ middle vertices is coded on the
+positions $\mathrm{Fin}(n)$.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeFaces.ifaceEquiv}
+
+\paragraph{The code.}
+A code on $n$ positions consists of a flag per position recording one or two
+shore edges, the realized colour presentations, the face return as a
+permutation of the positions, and the realized records of vertex sets crossed
+by at most one shore edge (their bits at the positions, whether the set and its
+complement are nonempty, and whether one edge or none crosses).  There is no
+face-count field.  The carrier has exactly
+\[
+  2^{n}\cdot 2^{8^{n}}\cdot n!\cdot 2^{8\cdot 2^{n}}
+\]
+elements, a function of $n$ alone.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCode.card_code}
+Changing the enumeration of a node's middle vertices renames the positions of
+its code, and the closure below is closed under renaming: renaming a parent
+only reorders the kept marks of the fork that produced it, and the leaf code is
+invariant under both permutations of its two positions.  A closure may
+therefore be computed on canonical representatives.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeFold.encode_relabel}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCode.reach_relabel}
+
+\paragraph{The descriptor, and the face correction at a fork.}
+A fork is described by an involution of the child positions, pairing the left
+and right positions that name one vertex, and by the child marks that remain
+interface marks of the parent, in parent order.  The exact fold corrects the
+merged child returns by the permutation \texttt{forkRewire}, defined from the
+ambient rotation.  That correction is proved to be the exchange of the two
+interface darts at every shared vertex and the identity on every other mark.
+The proof is one local identity at a cubic vertex: from the last left shore
+dart, the first return to the parent shore is the right child's own first
+return from its last shore dart, and symmetrically.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeFaces.shared_return}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeFaces.forkRewire_toMarked}
+Consequently the abstract fork, which reads only the two child codes and the
+descriptor, returns the parent's code field by field: face return, degree
+flags, colour support and cut records.  The physical descriptor satisfies the
+legality constraints of the abstract fork whenever the two shores share a
+vertex: at a shared vertex that closes no mark is kept, and at one that stays
+open exactly one of the two marks is kept, according to the cyclic order there.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeFaces.fork_ret}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeFaces.fork_two}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeColour.fork_colour}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeCut.fork_cut}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeFaces.physGlue_legal}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeFold.encode_fork}
+
+\paragraph{What replaces the closed-face count.}
+For connected pieces sharing a vertex the genus changes at a fork by half of
+$s-2+c(r_L)+c(r_R)-c\bigl((r_L\sqcup r_R)\,\pi\bigr)$, where $s$ is the number of
+shared vertices, $c$ counts cycles, $r_L,r_R$ are the child returns and $\pi$
+is the pairing.  The abstract fork is guarded by the vanishing of this change.
+Every fork of connected shores in a connected spherical map satisfies the
+guard.  The input is Euler's formula $V_S+F_S=2+|S|$ for each connected edge
+shore $S$, proved without disc or corridor hypotheses: the capped edge
+presentation of the shore has nonnegative Euler defect, deleting edges cannot
+increase it, and the whole spherical map has defect zero; its components are
+the connected shore and the untouched vertices, and its faces are the shore
+faces and the untouched vertices.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeEuler.defect_alpha_eq_zero}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeEuler.wordOrbitCount_shore}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeEuler.orbitCount_cappedPhi}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeEuler.shore_euler}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeEuler.physGlue_euler}
+Thus the closed-face count is not bounded but eliminated: it is determined by
+the guard for the objects the base quantifies over.  In the program
+comparison below, $48$ parent codes occur with several distinct closed-face
+counts, up to nine, while the code alone determines the parent code.
+
+\paragraph{Leaves, coverage and the root.}
+A single edge is coded by one fixed leaf code, whichever way its two ends are
+labelled.  By induction over the tree, in a connected spherical map the code of
+every node of a duplicate-free tree of connected shores with at most $B\ge2$
+middle vertices lies in the closure generated from the leaf code by legal
+guarded forks with parent interface at most $B$.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeFold.encode_leaf}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeFold.reach_encode}
+At the root there are no positions.  The colour field is empty exactly when
+the map has no Tait colouring, and a connected bridgeless map has no record
+with both flags set.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeBase.root_colour_eq_empty_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeBase.root_not_hasSmallCut}
+
+\paragraph{The consumer.}
+These results instantiate the existing decomposable reflection.  Its state is
+a root code, its trace applies the code to the complete edge-leaf tree of the
+supplied rooted connected decomposition, its reachable set is the finite set
+of root codes in the closure at $B=\max(w,2)$, and its necessary condition is
+an empty colour field with no cut record of size at most one.  Trace coverage
+and the necessary condition are proved; no field of the reflection is an
+assumption.  The remaining input to \texttt{TaitBaseVerifiedOnDecomposable}
+and, with a raw width-$w$ supply, to the combinatorial statement is the audit:
+no reachable root code is rejecting.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeBase.reflection}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeBase.taitBaseVerifiedOnDecomposable_of_audit}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeBase.combinatorialFourColorStatement_of_raw_and_audit}
+
+\paragraph{Parameters.}
+The closure bound depends on the width alone.  The internal forks of the
+decomposition supply at most $w$ middle vertices, the leaves and the node
+above the root edge carry two, and the root none; hence $B=\max(w,2)$.
+Connectedness of every internal shore is supplied by the decomposition; the
+node above the root edge is connected because the map is bridgeless.  No
+vertex bound is used.  In particular the audit is informative only at a width
+that the global supply $D_1$ produces, which remains open; the present
+suppliers set $w$ to a vertex-count bound.
+
+\paragraph{Program evidence and controls.}
+An independent program implements the same code and descriptor on explicit
+rotation maps and compares them with direct evaluation of each shore:
+colourings by exhaustive search, faces by tracing the shore's own face
+permutation, and cuts from bridges, checked by subset enumeration on maps with
+at most ten vertices.  The preregistered run uses $62$ maps (planar maps grown
+by face chords up to sixteen vertices, twisted rotations of them, Petersen and
+$K_{3,3}$ with random rotations, two bridged maps and both theta rotations)
+and $372$ trees, half of them with connected shores.  All $5{,}190$ forks and
+$5{,}562$ leaves agree; grouping $2{,}740$ fork contexts by their encoded input
+finds no two physical parents with different codes.  Replacing the pairing by
+the identity is detected at $2{,}715$ of $3{,}100$ control forks, dropping the
+orientation choice at $1{,}071$, and random relabellings commute with the
+fork at every sampled fork.  Without the cut field a bridged planar map has a
+rejecting root; without the Euler guard so does the Petersen graph.  The
+closure has $19$ canonical states at $B=2$ and $97$ at $B=3$, each with exactly
+two root codes: colourable and bridgeless, or uncolourable with a bridge.
+Neither is rejecting.  A run at $B=4$ stopped at its preregistered
+$1{,}200$-second limit with $1{,}257$ states and the same two root codes; it
+is incomplete and is not a theorem.  These are program results, not kernel
+certificates.
+
+\paragraph{Remaining obligations.}
+First, the audit must be run at a width that $D_1$ supplies; the carrier is
+doubly exponential in the width, so a replayable certificate must list the
+reachable states rather than enumerate the carrier.  Second, the present Lean
+fork uses a nonconstructive first return; a verified executable fork and a
+certificate checker are needed before any closure is replayed in the kernel.
+Third, $D_1$ itself is untouched by this construction: it must produce the
+decompositions of small width to which the audit applies.
+

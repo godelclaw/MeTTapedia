@@ -11,7 +11,7 @@ proved by this route**. The following distinctions matter when resuming work:
 | --- | --- | --- |
 | Physical tree fold | Face-return data, face count and colour support agree with the actual shores of a supplied edge-leaf tree. | A globally supplied decomposition of the required bounded width. |
 | D1: decomposition supply | Conditional bond laminarity; obstructions to several proposed ways of extracting bounded interfaces and long nested chains. | A construction of the required bounded-interface supply, or another source-faithful reductive construction. |
-| D4: route-native finite base | Exact local composition and fold laws are available. | A concrete finite closure with coverage, adequacy and an audit excluding rejecting roots. |
+| D4: route-native finite base | A finite positional code of the fork fold, exact at every physical fork; coverage of supplied decompositions and root adequacy instantiate the decomposable base ([PhysicalForkCodeBase.lean](PhysicalForkCodeBase.lean)). | The audit of that code's closure at interface bound `max w 2`, at a width `w` that D1 supplies. |
 
 The final D1 checkpoint is `fd1040139`, which corrects an earlier overclaim:
 site witnesses share a residual-defect minimizer, but each has its own second
