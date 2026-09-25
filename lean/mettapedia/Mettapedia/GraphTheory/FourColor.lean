@@ -663,3 +663,9 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24BondDepthObligation
 import Mettapedia.GraphTheory.FourColor.GoertzelV24MeshBondCarrierSeparation
 import Mettapedia.GraphTheory.FourColor.PhysicalForkCodeBase
 import Mettapedia.GraphTheory.FourColor.PhysicalForkCodeRelabel
+import Mettapedia.GraphTheory.FourColor.PhysicalForkCodeTransport
+import Mettapedia.GraphTheory.FourColor.PhysicalForkCodeFlat
+import Mettapedia.GraphTheory.FourColor.PhysicalForkCodeFlatPerm
+import Mettapedia.GraphTheory.FourColor.PhysicalForkCodeFlatFork
+import Mettapedia.GraphTheory.FourColor.PhysicalForkCodeFlatCheck
+import Mettapedia.GraphTheory.FourColor.PhysicalForkCodeAuditTwo
