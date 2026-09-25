@@ -8174,6 +8174,12 @@ continuous, uniformly rapidly decaying derivatives is closed under the
 convection and the viscous term, so a solution with rapidly decaying
 coefficients on `[0, S]` has derivatives of every order there, one-sidedly at
 the initial time (`smoothRapid_of_solution`).
+`StochasticLagrangian/FourierPhysicalFields.lean` builds the physical velocity
+`v(x, t) = Re ∑ₖ exp(2π i ⟨k, x⟩) c_k(t)` on `ℝ³` and proves it smooth on
+`ℝ³ × [0, ∞)`, in the form of the official statement, whenever the coefficient
+curve is smooth-rapid on every `[0, S]` (`contDiffOn_physVelocity`): the
+characters have iterated derivatives of size `(6π (1 + |k|))ⁿ`, and the Leibniz
+rule gives summable bounds for every term.
 
 ### Earlier route-audit layers
 
