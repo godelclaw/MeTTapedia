@@ -1217,7 +1217,12 @@ six outer derivatives, has value $64$; it is therefore not a field identity
 subtracts, for every subset $S\subseteq w_1$, the two insertions of $F_{ab}$
 before and after the field in which the derivatives of $S$ have moved onto
 $F_{ab}$.  It is signed-$H(4)$ equivariant and equals the four-term row when
-$w_1$ is empty (\texttt{HypercubicDimension16LeibnizCommutator}).  The
+$w_1$ is empty (\texttt{HypercubicDimension16LeibnizCommutator}).  Every
+corrected row vanishes on every gauge background, for every site: the proof
+identifies each letter as covariant derivatives along an ordered list of
+positions, and combines $[D_a,D_b]Z=[F_{ab},Z]$ with the adjoint Leibniz rule
+over the subsets of $w_1$
+(\texttt{HypercubicDimension16LeibnizCommutatorSoundness}).  The
 corrected operator and joint submodule are defined on the same generators
 (\texttt{HypercubicDimension16LeibnizRelationOperator}).  In every sector with
 seven or eight fields no letter carries more than two derivatives, so the two
@@ -2406,7 +2411,9 @@ $11{,}558$), and
 \texttt{HypercubicDimension16CommutatorRowEvaluation} (gauge backgrounds over a
 differential scalar ring, row evaluation, the trace-insertion and cycle
 identities, and the value $64$ of the earlier four-field commutator row on a
-constant background), together with
+constant background), and
+\texttt{HypercubicDimension16LeibnizCommutatorSoundness} (every corrected
+commutator row vanishes on every background), together with
 \texttt{HypercubicDimension16TraceEvaluation} (ordinary matrix-index
 contraction, field-relabel descent, and exact kernel theorems for the three
 implemented trace-relation families),
