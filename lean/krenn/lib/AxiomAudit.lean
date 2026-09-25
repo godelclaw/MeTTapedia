@@ -108,3 +108,6 @@ Every top-level conditional theorem, with its dependency cone printed. -/
 #print axioms KrennTightCut.shoreTight_of_import_dead
 #print axioms KrennTightCut.exists_common_export
 #print axioms KrennTightCut.false_of_odd_sign_relation
+#print axioms MatchingPfaffian.pfSum_expand
+#print axioms MatchingPfaffian.a_mul_pfSum_update
+#print axioms MatchingPfaffian.capVal_mul_pfSum_update_eq_cap

@@ -22,6 +22,9 @@ import Mettapedia.Combinatorics.Matching.EvenCycle
 import Mettapedia.Combinatorics.Matching.CharTwoContraction
 import Mettapedia.Combinatorics.Matching.SiteVectors
 import Mettapedia.Combinatorics.Matching.TightCut
+import Mettapedia.Combinatorics.Matching.Pfaffian
+import Mettapedia.Combinatorics.Matching.PfaffianUpdate
+import Mettapedia.Combinatorics.Matching.PfaffianContraction
 
 /-!
 # Perfect matching foundations
