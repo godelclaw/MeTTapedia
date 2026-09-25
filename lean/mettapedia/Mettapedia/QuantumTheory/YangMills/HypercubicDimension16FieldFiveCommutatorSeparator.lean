@@ -287,6 +287,7 @@ theorem fieldFour_retainedDerivativeOrderEmbedding
     unfold retainedDerivativeOrderEmbedding
     apply Finset.orderEmbOfFin_unique'
     intro index
+    set_option backward.isDefEq.respectTransparency false in
     fin_cases index <;> decide +kernel
   exact congrArg (fun embedding : Fin 6 ↪o Fin 8 => embedding position)
     hemb.symm
@@ -1076,6 +1077,7 @@ theorem exactFieldFiveProjection_fieldFiveInsertion
         Finsupp.single derivedBeforeFieldFiveOrbit 1 else
           Finsupp.single derivedAfterFieldFiveOrbit 1 := by
   rw [exactFieldFiveProjection_single]
+  set_option backward.isDefEq.respectTransparency false in
   cases side <;>
     simp [exactFieldFiveProjectionBasis, ourFiveFieldCount,
       exactFieldFiveOrbitCast_five]
