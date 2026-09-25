@@ -161,8 +161,21 @@ def yangMillsJointPhysicalRelationRoadmapEntry : YangMillsRoadmapEntry where
   itvLowerPercent := 99
   itvUpperPercent := 100
   progressPercent := 100
-  evidence := "currentYangMillsJointPhysicalRelation_packet gives the lower bound 11558 for the coordinate-free joint invariant relation submodule under either policy; that submodule uses the earlier commutator row, and currentYangMillsEarlierCommutatorRow_not_fieldIdentity proves that row is not a field identity when the commutator's field carries outer derivatives. currentYangMillsLeibnizJointPhysicalRelation_packet gives the same bound 11558 for the Leibniz-corrected joint submodule. OUR finite F,D/IBP cochain bridge realizes the earlier invariant relation range. The trace-order repair sequence exposes and corrects successive canonical obstructions, and the complete three-cut cycle-profile census forces coefficients (6/5, 13/10, -1, -7/10, -3/5) while checking the alternating topology profile on all 210 labels. OUR HypercubicDimension16FundamentalTracePhysicalFamily maps each label to an actual FundamentalTraceSite and then by signed Reynolds semantics to the coordinate-free joint relation submodule; its field-eight, profile, and three-coordinate bridges prove the full current correction is zero on that family. OUR HypercubicDimension16TraceAnticommutatorPhysicalFamily realizes all seven adjacent polarized SU(2) trace-anticommutator placements on the same physical seven-cycle. Each has the common three-coordinate residual 1/2 and profile value -1/2, so the full current correction is zero on its finite cochain family under either policy. OUR arbitrary-carrier field-eight bridge identifies every source-eight physical traceless, anticommutator, and fundamental row with the derivative-free field-eight schema; derivative-bearing sites are empty there. OUR source-six curvature-pair theorem proves exact cancellation of the only cross-sector covariant-commutator branch there. Together with the support theorem below six, the full correction is zero on every arbitrary physical relation column outside source seven. A separate concrete source-seven covariant commutator has exact quotient value -4/3 under a functional that annihilates the one fixed incoming class used by every present compensator. The current one-class correction is therefore refuted for either policy. The two-class augmentation cancels both concrete commutators but has a certified nonzero second-IBP mismatch: its secondary selector has value one there. OUR three-class repair adds the independently calibrated third coordinate, which is zero on both commutators and one on the second-IBP row, so it cancels that mismatch and retains the named IBP, Bianchi, EOM, fundamental, polarized trace, and lifted field-eight checks. This does not constitute a full source-seven descent theorem, a complete rank calculation, conditioning certificate, or Wilson-functional coordinate construction."
+  evidence := "currentYangMillsJointPhysicalRelation_packet gives the lower bound 11558 for the coordinate-free joint invariant relation submodule under either policy; that submodule uses the earlier commutator row, and currentYangMillsEarlierCommutatorRow_not_fieldIdentity proves that row is not a field identity when the commutator's field carries outer derivatives. currentYangMillsLeibnizJointPhysicalRelation_packet gives the same bound 11558 for the Leibniz-corrected joint submodule. OUR finite F,D/IBP cochain bridge realizes the earlier invariant relation range, and currentYangMillsLeibnizFDIBPCochainBridge_surjective the corrected one. The trace-order repair sequence exposes and corrects successive canonical obstructions, and the complete three-cut cycle-profile census forces coefficients (6/5, 13/10, -1, -7/10, -3/5) while checking the alternating topology profile on all 210 labels. OUR HypercubicDimension16FundamentalTracePhysicalFamily maps each label to an actual FundamentalTraceSite and then by signed Reynolds semantics to the coordinate-free joint relation submodule; its field-eight, profile, and three-coordinate bridges prove the full current correction is zero on that family. OUR HypercubicDimension16TraceAnticommutatorPhysicalFamily realizes all seven adjacent polarized SU(2) trace-anticommutator placements on the same physical seven-cycle. Each has the common three-coordinate residual 1/2 and profile value -1/2, so the full current correction is zero on its finite cochain family under either policy. OUR arbitrary-carrier field-eight bridge identifies every source-eight physical traceless, anticommutator, and fundamental row with the derivative-free field-eight schema; derivative-bearing sites are empty there. OUR source-six curvature-pair theorem proves exact cancellation of the only cross-sector covariant-commutator branch there. Together with the support theorem below six, the full correction is zero on every arbitrary physical relation column outside source seven, for the earlier and for the corrected operator. A separate concrete source-seven covariant commutator has exact quotient value -4/3 under a functional that annihilates the one fixed incoming class used by every present compensator. The current one-class correction is therefore refuted for either policy. The two-class augmentation cancels both concrete commutators but has a certified nonzero second-IBP mismatch: its secondary selector has value one there. OUR three-class repair adds the independently calibrated third coordinate, which is zero on both commutators and one on the second-IBP row, so it cancels that mismatch and retains the named IBP, Bianchi, EOM, fundamental, polarized trace, and lifted field-eight checks. This does not constitute a full source-seven descent theorem, a complete rank calculation, conditioning certificate, or Wilson-functional coordinate construction."
   nextObligation := "Parameter-synthesize the full existing source-seven scalar-coordinate family, including the presently fixed cycle-profile base, against the certified commutator, differential, trace, and singleton rows. If its exact compatibility system is empty, certify that impossibility; if it has a solution, prove descent of the resulting map. Only then enlarge the coordinate family, and only a surviving map may be used for sparse rank, conditioning, or Wilson-functional coordinates."
+
+/-- OUR Leibniz correction of the commutator rows: soundness, descent, and the
+refutation of the earlier joint submodule as a space of relations. -/
+def yangMillsCommutatorLeibnizCorrectionRoadmapEntry : YangMillsRoadmapEntry where
+  stage := .jointPhysicalRelationInterface
+  nodeId := yangMillsCommutatorLeibnizCorrectionNode.id
+  status := .checked
+  truthValue := ⟨100, 99⟩
+  itvLowerPercent := 99
+  itvUpperPercent := 100
+  progressPercent := 100
+  evidence := "currentYangMillsLeibnizRelations_integrate_to_zero proves that every corrected relation integrates to zero on every gauge background, and under the on-shell policy on every on-shell background; currentYangMillsLeibnizJointRelations_evaluate_to_zero carries this to the corrected joint submodule; currentYangMillsEarlierJointSubmodule_contains_nonRelation exhibits a vector of the earlier joint submodule with averaged background value 32/3; currentYangMillsLeibnizJointPhysicalRelation_packet, currentYangMillsLeibnizFDIBPCochainBridge_surjective and currentYangMillsLeibnizProfileCorrection_zero_of_source_ne_seven give the rank bound 11558, the cochain bridge and the source-band reduction for the corrected operator."
+  nextObligation := "None inside this correction. The joint-interface obligations continue on the corrected joint submodule only: the earlier joint submodule contains an invariant non-relation and must not be used as a relation space."
 
 /-- OUR checked two-selector separation of the two explicit source-seven
 commutator rows. -/
@@ -303,6 +316,7 @@ def currentYangMillsRoadmap : List YangMillsRoadmapEntry :=
   , yangMillsExtractionConstantErratumRoadmapEntry
   , yangMillsHypercubicCensusDecisionRoadmapEntry
   , yangMillsJointPhysicalRelationRoadmapEntry
+  , yangMillsCommutatorLeibnizCorrectionRoadmapEntry
   , yangMillsSourceSevenTwoClassRepairRoadmapEntry
   , yangMillsSourceSevenTwoClassCompatibilityRoadmapEntry
   , yangMillsSourceSevenThreeClassTracelessRefutationRoadmapEntry
@@ -434,6 +448,29 @@ theorem currentYangMillsRoadmap_records_joint_physical_relation_interface :
     currentYangMillsFDIBPCochainJointBridge_surjective⟩
 
 #print axioms currentYangMillsRoadmap_records_joint_physical_relation_interface
+
+theorem currentYangMillsRoadmap_records_leibniz_correction :
+    yangMillsCommutatorLeibnizCorrectionRoadmapEntry.status = .checked ∧
+      (∀ policy : PhysicalRelationPolicy,
+        11558 ≤ Module.finrank ℚ
+          (HypercubicDimension16LeibnizRelationOperator.leibnizJointInvariantRelationSubmodule
+            policy)) ∧
+      (∀ policy : PhysicalRelationPolicy,
+        Function.Surjective
+          (HypercubicDimension16LeibnizFDIBPCochainBridge.leibnizFDIBPCochainToJointRelation
+            policy)) ∧
+      (HypercubicDimension16FieldFiveCommutatorSeparator.fieldFourInvariantCommutatorRow
+          .offShell ∈ jointInvariantRelationSubmodule .offShell ∧
+        HypercubicDimension16FieldFiveCommutatorSeparator.fieldFourInvariantCommutatorRow
+          .offShell ∉
+          HypercubicDimension16LeibnizRelationOperator.leibnizJointInvariantRelationSubmodule
+            .offShell) := by
+  exact ⟨rfl, currentYangMillsLeibnizJointPhysicalRelation_packet,
+    currentYangMillsLeibnizFDIBPCochainBridge_surjective,
+    currentYangMillsEarlierJointSubmodule_contains_nonRelation.1,
+    currentYangMillsEarlierJointSubmodule_contains_nonRelation.2.2⟩
+
+#print axioms currentYangMillsRoadmap_records_leibniz_correction
 
 set_option maxRecDepth 100000 in
 set_option maxHeartbeats 10000000 in
