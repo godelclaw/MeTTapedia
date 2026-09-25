@@ -7930,9 +7930,10 @@ checks the dependencies of the filtering identities, witness and estimates.
 
 The pinned [OpenAI development](https://github.com/openai/NavierStokesAndEuler)
 states Theorem 1.1 of its [Navier–Stokes paper](https://cdn.openai.com/pdf/32d9f210-8b73-45e0-91bc-82a30aef8a9a/navier-stokes.pdf)
-(whole space) and Corollary 10.6 (torus) as Lean theorems whose manifest
-lists no `sorry` and only the standard axioms. The full construction is not
-rebuilt in this repository. Its whole-space candidates start from rest,
+(whole space) and Corollary 10.6 (torus) as Lean theorems. The whole-space
+theorem `NavierStokesR3.theorem_1_1` is rebuilt by `lean/navier-stokes`, and
+its axiom audit reports only `propext`, `Classical.choice` and `Quot.sound`.
+Its whole-space candidates start from rest,
 are driven by a smooth force compactly supported in positive time, keep
 velocity and pressure in one compact set, have bounded kinetic energy and
 integrable dissipation, and have unbounded speed at time one.
@@ -7943,7 +7944,9 @@ satisfying the statement's `CandidateProperties` and every `p > 3`, that
 eighth moment `E8` is unbounded. Each velocity slice is proved equal to
 the imported Biot–Savart velocity of its own curl, and its speed is
 bounded by `C_K ‖curl u(t)‖_p` through the kernel `1/(4π|z|²)` and
-Hölder's inequality. All six new declarations use only the standard axioms.
+Hölder's inequality. `MettapediaNS.OpenAISolutionVorticity` applies this
+to the constructed solution for every positive viscosity. All new
+declarations use only the standard axioms.
 
 **Consequence for S4.** For such a solution the eighth-moment balance
 acquires the forcing term `∫ |ω|⁶ ω·curl f`, bounded by
