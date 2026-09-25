@@ -16,6 +16,7 @@ import Mettapedia.QuantumTheory.YangMills.ExtractionStateRGCrux
 import Mettapedia.QuantumTheory.YangMills.ExtractionStateRouteCollapse
 import Mettapedia.QuantumTheory.YangMills.ExtendedExtractionTransfer
 import Mettapedia.QuantumTheory.YangMills.FiniteOSReconstruction
+import Mettapedia.QuantumTheory.YangMills.FreeMaxwellNonClustering
 import Mettapedia.QuantumTheory.YangMills.MassGap
 import Mettapedia.QuantumTheory.YangMills.OSGateAudit
 import Mettapedia.QuantumTheory.YangMills.ProofState
