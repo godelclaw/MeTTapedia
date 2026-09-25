@@ -69,7 +69,7 @@
 RG Contraction in the Wilson-Lattice / OS Route\\
 to a 4D Yang--Mills Mass Gap}
 \author{The MeTTapedia formalization effort}
-\date{August 2026}
+\date{September 2026}
 
 \begin{document}
 \maketitle
@@ -1301,6 +1301,23 @@ $\mathbb Q$ theorem above remains the semantic rank result, and the modular
 checks do not by themselves certify exhaustive generation of the physical
 relation operator.
 
+\textsc{Correction (September 2026).} The August 2026 repacking of these
+certificate payloads into bounded packed numerals left three defects that no
+build caught, because the affected modules no longer built on the previous
+toolchain.  The prime-field payloads are packed with $32$-bit fields but were
+decoded with the codec's $16$-bit fields, so all $92$ modular range checks were
+false as written; the kernel refutes the first range at each prime, and no
+selected row replays at width $16$ while all $11{,}556$ replay at width $32$.
+Plain \texttt{decide} could not unfold the new irreducible payload accessors,
+so neither the rational chunks nor the modular checks were being checked.  On
+Lean~4.34 the kernel's decoding of the hexadecimal string payloads is quadratic
+in their length.  The port to Lean~4.34.0-rc2 decodes the modular payloads with
+$32$-bit fields, leaving the payloads, the shared codec, and every statement
+unchanged; it checks the replays with \texttt{decide +kernel}; and it routes the
+string payloads through explicit tables proved equal to their decodings
+(\texttt{HypercubicDimension16HexPayloadBridge}).  Every replay described in
+this section is now checked by the kernel.
+
 The independently defined target does not use the encoded coordinate table.
 On the genuine eight-field field-relabel orbit module, we
 take the span of the literal signed-orbit rows $v-hv$.  This span is proved to
@@ -2229,7 +2246,8 @@ character) --- all
 in the same namespace,
 all axiom-guarded
 to $\{\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}\}$ with
-no \texttt{sorry}. The manuscript analyzed here is Ben Goertzel's
+no \texttt{sorry}. Every module of the lane builds on Lean~4.34.0-rc2 with
+Mathlib~\texttt{85e3a25}. The manuscript analyzed here is Ben Goertzel's
 \emph{Yang--Mills Mass Gap in 4D: RG Bootstrap, Polymer Expansion, OS
 Reconstruction} (v14); constructions explicitly labeled ours are independent
 formal repairs within the same proof programme, not claims about content
