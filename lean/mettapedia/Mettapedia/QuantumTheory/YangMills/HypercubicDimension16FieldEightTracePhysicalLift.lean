@@ -60,7 +60,7 @@ theorem ourNormalizeFieldEightTraceRelationCarrier
     (sector : LabeledLocalWordSector 8 0) :
     normalizeExactContextualBasis (ourFieldEightTraceRelationCarrier sector) =
       Finsupp.single (ourFieldEightTraceOrientedTarget sector) 1 := by
-  set_option backward.isDefEq.respectTransparency false in
+  set_option backward.isDefEq.respectTransparency.types false in
   change normalizeExactContextualBasis
       (canonicalExactContextualCarrier (ourFieldEightTraceOrientedTarget sector)) = _
   rw [normalizeExactContextualBasis_eq_fiberEmbed]
@@ -173,7 +173,7 @@ theorem ourOrbitPhysicalRelationOperator_lift_fundamental
           (ourLiftFieldEightTraceGenerator policy (.fundamental site)) 1) =
       fieldEightExactEmbed
         (fieldEightPhysicalTraceRow (.fundamental site)) := by
-  set_option backward.isDefEq.respectTransparency false in
+  set_option backward.isDefEq.respectTransparency.types false in
   rw [orbitPhysicalRelationOperator, LinearMap.comp_apply,
     normalizedPhysicalRelationOperator, LinearMap.comp_apply,
     physicalRelationOperator_single]
@@ -200,7 +200,7 @@ theorem ourOrbitPhysicalRelationOperator_lift_anticommutator
           (ourLiftFieldEightTraceGenerator policy (.anticommutator site)) 1) =
       fieldEightExactEmbed
         (fieldEightPhysicalTraceRow (.anticommutator site)) := by
-  set_option backward.isDefEq.respectTransparency false in
+  set_option backward.isDefEq.respectTransparency.types false in
   rw [orbitPhysicalRelationOperator, LinearMap.comp_apply,
     normalizedPhysicalRelationOperator, LinearMap.comp_apply,
     physicalRelationOperator_single]

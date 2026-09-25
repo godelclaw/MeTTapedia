@@ -192,7 +192,7 @@ def BoundaryAwareFDOperator.canonicalDimension :
   | .actionLaplacian => 6
   | .highDerivativeScalar => 18
 
-set_option backward.isDefEq.respectTransparency false in
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The boundary current whose coboundary is `∂² Tr(F²)`. -/
 inductive BoundaryCurrent where
   | actionFlux

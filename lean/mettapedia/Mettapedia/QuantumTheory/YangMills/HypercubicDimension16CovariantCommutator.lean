@@ -245,7 +245,7 @@ theorem retainedDerivativeOrderEmbedding_mem {carrier : RelationCarrier}
 
 /-! ## The two curvature-insertion targets -/
 
-set_option backward.isDefEq.respectTransparency false in
+set_option backward.isDefEq.respectTransparency.types false in
 inductive CurvatureInsertionSide where
   | before
   | after

@@ -79,7 +79,7 @@ def cycleBlockRotation :
       Sum.inr (cycleBlockRotation rest label) :=
   rfl
 
-set_option backward.isDefEq.respectTransparency false in
+set_option backward.isDefEq.respectTransparency.types false in
 theorem card_cycleBlockLabel (parts : List ℕ) :
     Fintype.card (CycleBlockLabel parts) = parts.sum := by
   induction parts with
@@ -547,7 +547,7 @@ def fixedBudgetedCycleCarrierCharacter (h : Hypercubic4)
   ∑ carrier : FixedBudgetedCycleCarrier h derivativeBudget parts targetDegree,
     carrier.tensorSign h derivativeBudget parts targetDegree
 
-set_option backward.isDefEq.respectTransparency false in
+set_option backward.isDefEq.respectTransparency.types false in
 theorem fixedBudgetedCycleCarrierCharacter_nil
     (h : Hypercubic4) (derivativeBudget targetDegree : ℕ) :
     fixedBudgetedCycleCarrierCharacter h derivativeBudget [] targetDegree =
@@ -562,7 +562,7 @@ theorem fixedBudgetedCycleCarrierCharacter_nil
     simp [fixedBudgetedCycleCarrierCharacter, FixedBudgetedCycleCarrier,
       targetZero]
 
-set_option backward.isDefEq.respectTransparency false in
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem fixedBudgetedCycleCarrierCharacter_zero_cons
     (h : Hypercubic4) (derivativeBudget targetDegree : ℕ)
     (rest : List ℕ) :
@@ -909,7 +909,7 @@ def fixedCycleBlockDecorationEquivBudgetedCarrier
   right_inv := fixedCycleBlockDecorationToBudgetedCarrier_after_from h
     derivativeBudget parts targetDegree positiveParts
 
-set_option backward.isDefEq.respectTransparency false in
+set_option backward.isDefEq.respectTransparency.types false in
 theorem fixedBudgetedCarrierToCycleBlockDecoration_tensorSign
     (h : Hypercubic4) (derivativeBudget : ℕ)
     (parts : List ℕ) (targetDegree : ℕ)

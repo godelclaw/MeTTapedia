@@ -66,7 +66,7 @@ theorem exactFieldEightProjection_ourSecondaryCommutator_fieldEight
         (exactFieldEightOrbitCast (8 : Fin 9) (by decide)
           (Quotient.mk _ ourSecondaryAfterSource)) 1 =
     ourSecondaryCommutatorVector
-  set_option backward.isDefEq.respectTransparency false in
+  set_option backward.isDefEq.respectTransparency.types false in
   rw [our_exactFieldEightOrbitCast_literal,
     our_exactFieldEightOrbitCast_literal]
   rfl

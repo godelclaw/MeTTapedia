@@ -213,7 +213,7 @@ theorem repairedBoundaryCochain_scalar_bootstrap_closure
 
 /-! ## Honest transfer ledger -/
 
-set_option backward.isDefEq.respectTransparency false in
+set_option backward.isDefEq.respectTransparency.types false in
 inductive BoundaryCochainRouteField where
   | exactTwoBlockComplex
   | globalH0CensusRecovery

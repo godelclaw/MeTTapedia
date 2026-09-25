@@ -54,7 +54,7 @@ theorem exactFieldSevenEightProjection_observableFieldBand_filter
       simp [hleft, hright]
   | single target coefficient =>
       rcases target with ⟨fieldCount, orbit⟩
-      set_option backward.isDefEq.respectTransparency false in
+      set_option backward.isDefEq.respectTransparency.types false in
       fin_cases fieldCount <;>
         simp [orbitFieldFilter, ourCycleProfileObservableFieldBand,
           exactFieldSevenEightProjection,

@@ -577,7 +577,7 @@ theorem no_O9WilsonCensusSpanningCore
       _ = _ := (certificate.spansWilsonQuartic _).symm
   exact hypercubicQuarticJet_not_lorentzInvariant hinvariant
 
-set_option backward.isDefEq.respectTransparency false in
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The two manuscript relation branches.  The obstruction has no derivatives,
 so EOM elimination cannot affect it. -/
 inductive CensusRelationPolicy where
@@ -618,7 +618,7 @@ theorem no_faithfulDimension16WilsonCoordinateCertificate_onShell
 
 /-! ## Reasonable relation-policy variants -/
 
-set_option backward.isDefEq.respectTransparency false in
+set_option backward.isDefEq.respectTransparency.types false in
 inductive CensusConstructionVariant where
   | o9OffShell
   | f43OnShellEOM

@@ -187,7 +187,7 @@ private theorem cycleSeedCarrier_cons_up_eq_iff
     subst right
     rfl
 
-set_option backward.isDefEq.respectTransparency false in
+set_option backward.isDefEq.respectTransparency.types false in
 theorem cycleSeedCharacter_cons
     (h : Hypercubic4) (cycleLength : ℕ) (rest : List ℕ)
     (remainingDegree : ℕ) :
@@ -258,7 +258,7 @@ theorem cycleSeedCharacter_cons
           (CycleSeedCarrier.tensorSign h rest
             (remainingDegree - cycleLength * localDerivativeCount.1)))
 
-set_option backward.isDefEq.respectTransparency false in
+set_option backward.isDefEq.respectTransparency.types false in
 theorem cycleSeedCharacter_nil (h : Hypercubic4)
     (remainingDegree : ℕ) :
     cycleSeedCharacter h [] remainingDegree =
