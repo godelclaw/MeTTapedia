@@ -8258,6 +8258,23 @@ one and constants uniform over the horizon, then the official periodic
 statement holds. The sector estimates for actual solutions are now the whole
 remaining obligation of the route; the relaxation inequality is no longer
 part of it.
+`StochasticLagrangian/FourierVorticitySource.lean` identifies that source with
+the objects of the route: along any coefficient field with zero mean,
+transverse coefficients and a summable envelope of the third moments,
+
+```text
+curl N_k = ∑_p S(u_p) ω_{k-p} + ∑_p ( -(u_p · ∇) ω_{k-p} ),
+```
+
+the stretching series plus the transport series in the amplitudes
+`unitTorusStrainStretchAmp` and `unitTorusNegativeTransportAmp`
+(`vorticitySource_eq_stretching_add_transport`). The curl kills the Leray
+correction, so the source is the curl of the convection; after the exchange
+`p ↔ k - p` of the two modes of each pair this is the curl of the Lamb vector
+`u × ω`, by an algebraic identity that uses only transversality; and the Lamb
+form is the limit of the finite identity checked on exhausting lattice boxes.
+The sector estimates of the route are thereby statements about the stretching
+and transport series of actual solutions.
 
 ### Earlier route-audit layers
 
