@@ -21,6 +21,7 @@ import Mettapedia.Combinatorics.Matching.BlockRank
 import Mettapedia.Combinatorics.Matching.EvenCycle
 import Mettapedia.Combinatorics.Matching.CharTwoContraction
 import Mettapedia.Combinatorics.Matching.SiteVectors
+import Mettapedia.Combinatorics.Matching.TightCut
 
 /-!
 # Perfect matching foundations
