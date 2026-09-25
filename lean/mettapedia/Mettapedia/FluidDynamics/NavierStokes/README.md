@@ -7982,6 +7982,31 @@ flat: every derivative is `O(q^N)` for every `N`, where
 flow satisfies the unforced equations up to that flat residual, and the
 pulses are seeded by exponentially small parts of the force.
 
+**Sector analysis of the conditional pancake route (from the paper's
+scalings; not formalized).** `stochasticLagrangian_conditional_route_of_pancakeBudget`
+consumes a relaxation inequality and three sector estimates whose gains sum
+below one, with constants uniform up to the final time. Along the forced
+candidates `‖ω‖_∞ ≍ τ^(-1-h)` sits in the blocks `λ_q ≍ τ^(-1/2)` of the core
+radius. The core's own shear acting on its own vorticity is a
+comparable-frequency interaction, so it belongs to the paraproduct residual
+rather than to the low-frequency strain `A_q`. Relative to the damping
+`ν λ_q²` it has size `‖∇u‖_∞ / (ν λ_q²) ≍ τ^(-h)`, the azimuthal Reynolds
+number, which is unbounded. Integrated up to `T`, the residual sum grows like
+`(1-T)^(-2h)` while `∫ D_Q` grows like `(1-T)^(-h)`, so
+`ResidualSectorEstimate` fails for every fixed gain with constants uniform up
+to the singular time. The standard commutator and paraproduct bounds give the
+residual exactly this gain, `‖∇u‖_∞ / (ν λ_Q²)`, which is uniformly small only
+when `‖∇u‖_∞` is bounded in advance, that is, under the conclusion. The
+residual interface is therefore not a routine estimate: a proof of it must use
+a property that the forced flow lacks.
+
+The loss comes from the norms. `‖R_q‖_∞` counts the tilting by which the
+swirl carries the vorticity around the axis; it rotates `ω` without
+amplifying `|ω|`. The stretching along the vorticity is only `≍ τ^(-1)|ω|`.
+A direction-aware quantity such as the eighth moment, whose source is
+`∫ |ω|⁶ ω·Sω`, drops the tilting but meets an exactly critical balance at the
+core: stretching `≍ τ^(-1)` against damping `ν / ℓ_r² ≍ τ^(-1)`.
+
 **Where the unforced equation can enter (heuristic).** OpenAI's unforced
 Euler blowup places every packet in the initial data. For the viscous
 pulses above, the radial wavenumber one core time before activation is
