@@ -488,4 +488,24 @@ theorem exists_common_export {W : Sym2 (V × Fin 3) → F} (hcard : 8 ≤ Fintyp
 
 end ThreeSite
 
+section SignParity
+
+/-- **Sign parity.**  If an odd number of two-term cancellations `p i = - q i`, with every `q i`
+nonzero, have equal products on the two sides, the characteristic is two.  In a GHZ system each
+mixed colouring with exactly two contributing matchings gives such a cancellation, and an odd
+integer relation among the matchings' entries gives equal products; so an odd relation is a
+contradiction whenever `2 ≠ 0`. -/
+theorem false_of_odd_sign_relation {ι : Type*} (s : Finset ι) (p q : ι → F)
+    (hpq : ∀ i ∈ s, p i = - q i) (hq : ∀ i ∈ s, q i ≠ 0) (hodd : Odd s.card)
+    (hrel : ∏ i ∈ s, p i = ∏ i ∈ s, q i) (h2 : (2 : F) ≠ 0) : False := by
+  have hprod : ∏ i ∈ s, p i = - ∏ i ∈ s, q i := by
+    rw [Finset.prod_congr rfl hpq, Finset.prod_neg, hodd.neg_one_pow, neg_one_mul]
+  have hq0 : ∏ i ∈ s, q i ≠ 0 := Finset.prod_ne_zero_iff.mpr hq
+  have : (2 : F) * ∏ i ∈ s, q i = 0 := by
+    have h := hrel.symm.trans hprod
+    linear_combination h
+  exact hq0 ((mul_eq_zero.mp this).resolve_left h2)
+
+end SignParity
+
 end KrennTightCut

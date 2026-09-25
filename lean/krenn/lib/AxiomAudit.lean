@@ -107,3 +107,4 @@ Every top-level conditional theorem, with its dependency cone printed. -/
 #print axioms KrennTightCut.shoreTight_of_export_dead
 #print axioms KrennTightCut.shoreTight_of_import_dead
 #print axioms KrennTightCut.exists_common_export
+#print axioms KrennTightCut.false_of_odd_sign_relation
