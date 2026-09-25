@@ -1222,7 +1222,16 @@ corrected row vanishes on every gauge background, for every site: the proof
 identifies each letter as covariant derivatives along an ordered list of
 positions, and combines $[D_a,D_b]Z=[F_{ab},Z]$ with the adjoint Leibniz rule
 over the subsets of $w_1$
-(\texttt{HypercubicDimension16LeibnizCommutatorSoundness}).  The
+(\texttt{HypercubicDimension16LeibnizCommutatorSoundness}).  The other
+families are sound as well: field antisymmetry, the innermost Bianchi row, the
+traceless one-letter trace and the two $\mathrm{SU}(2)$ trace identities
+vanish on every background, the integrated total-derivative row vanishes
+after integration, and the equation-of-motion row vanishes on backgrounds
+satisfying the Yang--Mills equations.  Every integrated evaluation therefore
+vanishes on the corrected relation submodule, off shell on every background
+and on shell on every on-shell background.  The earlier four-field row is a row
+of the earlier operator, yet lies outside the off-shell corrected relation
+submodule (\texttt{HypercubicDimension16RelationRowSoundness}).  The
 corrected operator and joint submodule are defined on the same generators
 (\texttt{HypercubicDimension16LeibnizRelationOperator}).  In every sector with
 seven or eight fields no letter carries more than two derivatives, so the two
@@ -2413,7 +2422,10 @@ differential scalar ring, row evaluation, the trace-insertion and cycle
 identities, and the value $64$ of the earlier four-field commutator row on a
 constant background), and
 \texttt{HypercubicDimension16LeibnizCommutatorSoundness} (every corrected
-commutator row vanishes on every background), together with
+commutator row vanishes on every background) and
+\texttt{HypercubicDimension16RelationRowSoundness} (every row of the corrected
+operator has integrated value zero, and the earlier four-field row lies outside
+the corrected relation span), together with
 \texttt{HypercubicDimension16TraceEvaluation} (ordinary matrix-index
 contraction, field-relabel descent, and exact kernel theorems for the three
 implemented trace-relation families),
