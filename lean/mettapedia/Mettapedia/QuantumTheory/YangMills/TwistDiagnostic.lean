@@ -30,7 +30,10 @@ on tori with polynomial cuts and linear winding diameters,
 Unlike the calibration at `β = ∞` (`CrossingInput.false_of_tendsto_dominating`),
 this one is testable at finite coupling, since the twist free energy can be
 measured by Monte Carlo.  That the twist changes only winding polymers is the
-hypothesis `differ`; it is not derived here from a lattice gauge measure.
+hypothesis `differ`.  It follows from two properties, that moving the twist does
+not change integrated activities and that polymers away from the twist do not see
+it (`differ_of_movable`); these are not derived here from a lattice gauge
+measure.
 -/
 
 set_option autoImplicit false
@@ -62,6 +65,34 @@ structure TwistCompatibleCrossing (K Ktw : ∀ L (S : Finset (Blocks L)), (S →
       ¬ Disjoint (Y L) γ ∧ D L ≤ polymerDiam γ
 
 variable {Blocks E ν₀}
+
+omit [Nonempty E] [IsProbabilityMeasure ν₀] in
+/-- **Where the winding hypothesis comes from.**  Let the twist sit at one of
+several positions `p`, with twisted activities `Ktw p` and a set `stack p` of
+blocks it touches.  If moving the twist does not change integrated activities (a
+change of variables by the centre element) and a polymer disjoint from the stack
+at `p` does not see the twist at `p`, then a polymer whose integrated activity
+changes meets every stack; in particular it meets `stack p₀` and has diameter at
+least the distance between `stack p₀` and `stack q₀`. -/
+theorem differ_of_movable {X : Type*} [Fintype X] [DecidableEq X] [PseudoMetricSpace X]
+    {Pos : Type*}
+    (K : ∀ S : Finset X, (S → E) → ℂ) (Ktw : Pos → ∀ S : Finset X, (S → E) → ℂ)
+    (stack : Pos → Finset X)
+    (hmove : ∀ p q S, integratedActivity ν₀ (Ktw p) S = integratedActivity ν₀ (Ktw q) S)
+    (hlocal : ∀ p S, Disjoint (stack p) S → Ktw p S = K S) (p₀ q₀ : Pos) {D₀ : ℝ}
+    (hsep : ∀ a ∈ stack p₀, ∀ b ∈ stack q₀, D₀ ≤ dist a b) (γ : Finset X)
+    (hne : integratedActivity ν₀ K γ ≠ integratedActivity ν₀ (Ktw p₀) γ) :
+    ¬ Disjoint (stack p₀) γ ∧ D₀ ≤ polymerDiam γ := by
+  have hmeet : ∀ q, ¬ Disjoint (stack q) γ := by
+    intro q hq
+    apply hne
+    rw [hmove p₀ q γ]
+    unfold integratedActivity
+    rw [hlocal q γ hq]
+  refine ⟨hmeet p₀, ?_⟩
+  obtain ⟨a, ha₀, haγ⟩ := Finset.not_disjoint_iff.mp (hmeet p₀)
+  obtain ⟨b, hb₀, hbγ⟩ := Finset.not_disjoint_iff.mp (hmeet q₀)
+  exact (hsep a ha₀ b hb₀).trans (dist_le_polymerDiam haγ hbγ)
 
 /-- The logarithm of the ratio of the moduli of the twisted and untwisted
 partition functions over the polymer set `Λ`: minus the twist free energy. -/
@@ -173,5 +204,6 @@ theorem false_of_twistFreeEnergy_ge_of_poly_linear {Blocks : ℕ → Type*}
 #print axioms false_of_twistFreeEnergy_ge
 #print axioms tendsto_card_mul_exp_of_poly_linear
 #print axioms false_of_twistFreeEnergy_ge_of_poly_linear
+#print axioms differ_of_movable
 
 end Mettapedia.QuantumTheory.YangMills.TwistDiagnostic
