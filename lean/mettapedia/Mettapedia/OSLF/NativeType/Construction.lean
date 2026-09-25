@@ -402,6 +402,7 @@ def constructorReindexDualOrderHom (lang : LanguageDef) {s t : ConstructorObj la
     intro φ ψ h
     exact (constructorReindex_mono lang f) h
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Concrete category-valued fiber functor over constructor sorts (op base),
 ready for Mathlib's `CategoryTheory.Grothendieck`. -/
 def constructorPredFiberFunctorDual (lang : LanguageDef) :
@@ -451,6 +452,7 @@ def grothObj_to_constructorNatType {lang : LanguageDef}
       simpa [constructorPredFiberFunctorDual] using
         (show Pattern → Prop from X.fiber) }
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Object-level roundtrip: constructor native type -> Grothendieck object -> constructor native type. -/
 theorem constructorNatType_obj_roundtrip {lang : LanguageDef}
     (A : ConstructorNatType lang) :
@@ -458,6 +460,7 @@ theorem constructorNatType_obj_roundtrip {lang : LanguageDef}
   cases A
   simp [constructorNatType_toGrothObj, grothObj_to_constructorNatType]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Turn a constructor-transport morphism into a concrete Grothendieck morphism
 on the scoped reversed-base direction (`B → A`). -/
 def constructorNatTypeHom_to_grothHom {lang : LanguageDef}
@@ -474,6 +477,7 @@ def constructorNatTypeHom_to_grothHom {lang : LanguageDef}
       simpa [constructorPredFiberFunctorDual, constructorNatType_toGrothObj,
         constructorReindexDualOrderHom] using hdual }
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Recover a constructor-transport morphism from a concrete Grothendieck morphism
 on the same scoped reversed-base direction (`B → A`). -/
 def grothHom_to_constructorNatTypeHom {lang : LanguageDef}

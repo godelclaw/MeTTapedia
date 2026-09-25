@@ -581,6 +581,7 @@ projection from the combined definition. -/
     language.rewrites = [queryRewrite, evaluationRewrite] :=
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 private theorem rewrites_validate :
   ∀ rewrite ∈ language.rewrites,
       LanguageDef.validateRewrite language rewrite = [] := by
@@ -697,6 +698,7 @@ running Zero without a grounding library. -/
 def logicOnlySource : authoredExtensionGSLT.Term :=
   [Sum.inl (logicAuthoringLayer.quote language logicDeclarations)]
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem logicOnlySource_elaborates :
     authoredExtensionComposition.elaborate language logicOnlySource =
       some (logicDeclarations, []) := by
@@ -721,6 +723,7 @@ theorem grounding_library_changes_extension :
     Option.some.inj equal
   cases impossible
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- End-to-end staging: canonical mixed authoring elaborates and compiles to
 the independently lowered logic and oracle artifacts. -/
 theorem authoredArrayRealization_compile_quote :

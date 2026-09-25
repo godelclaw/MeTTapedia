@@ -245,12 +245,14 @@ def callGuardGSLT : GSLT where
     subst target'
     exact step
 
+set_option backward.isDefEq.respectTransparency.types false in
 def stepDecision : EffectiveStructure.StepDecision callGuardGSLT where
   decideStep source target := decide (MachineStep source target)
   correct := by
     intro source target
     exact decide_eq_true_iff
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The NTT generated from the call-guard GSLT recognizes exactly the selected
 typed-call successor. -/
 theorem decideStep_iff_ntt (source target : Machine) :
@@ -265,6 +267,7 @@ abbrev typedCallNTT (claim : Claim) (declaration : ArrowDeclaration) :
   exactTargetNativeType callGuardGSLT
     (⟨claim, .accepted declaration⟩ : Machine)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- NTT inhabitation is exactly live guarding by the selected declaration,
 including its membership in the current revision. -/
 theorem satisfies_typedCallNTT_iff
@@ -325,6 +328,7 @@ def boundaryProofSystem : NativeProofSystem Claim where
   ProofObject := BoundaryArticle
   Judges := fun article claim => article.Valid claim
 
+set_option backward.isDefEq.respectTransparency.types false in
 def boundaryKernel : NativeProofKernel boundaryProofSystem where
   decide claim article := decide (article.Valid claim)
   correct := by
@@ -437,6 +441,7 @@ theorem duplicate_type_chain_rejected :
 def acceptedTarget : Machine :=
   ⟨claim, .accepted declaration⟩
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem accepted_successor_has_generated_ntt :
     (gsltOSLF callGuardGSLT).satisfies ⟨claim, .pending⟩
       (exactTargetNativeType callGuardGSLT acceptedTarget).pred := by

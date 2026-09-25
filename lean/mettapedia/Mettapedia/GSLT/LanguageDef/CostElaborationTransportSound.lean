@@ -62,6 +62,7 @@ def ArgumentFiberEquation
         rightParameterType rightCanonical rightObject rightScope
         ).reindexFiber fiber.1.symm fiber.2.1.symm fiber.2.2.symm)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- A split-fiber term path automatically preserves a simple authored
 parameter, whose representation predicate imposes no additional syntax. -/
 theorem simpleArgument_of_fiberEquation

@@ -50,6 +50,7 @@ open scoped Classical
 
 -- Basic Types
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Actions available to the agent (finite for simplicity). -/
 inductive Action : Type
   | left : Action

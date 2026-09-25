@@ -817,6 +817,7 @@ noncomputable def betaLiftedFromRaw :
     TypedTypeConversion retainedTower universeOneDisplay betaSource betaTarget :=
   BidirectionalStepTyping.PathTyping.liftCertified betaPathTyping
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The concrete boundary admission retains exactly the authored beta
 receipt as one forward primitive event. -/
 theorem betaLiftedFromRaw_trace :

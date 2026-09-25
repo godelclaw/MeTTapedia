@@ -58,6 +58,7 @@ theorem compressionStep_conditionalTwoPartCode_lt_source
       step.residual.length)
     step.compresses
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A single witnessed program contributes exactly its dyadic weight to the
 finite algorithmic probability formed from that singleton program set. -/
 theorem singletonAlgorithmicProbability_eq_programWeight

@@ -31,6 +31,7 @@ abbrev articleGateFamily : Bool → EvidenceGate BinaryEvidence := gateFamily
 
 abbrev articleExactGate : EvidenceGate BinaryEvidence := exactGate
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive MizarGate where
   | loose
   | strict

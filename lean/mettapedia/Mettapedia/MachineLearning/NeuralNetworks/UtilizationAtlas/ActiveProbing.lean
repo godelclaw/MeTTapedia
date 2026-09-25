@@ -77,6 +77,7 @@ theorem canonicalDecisionRegime_admissible
       spectralEnvelopeDiagnostic, ValidPrecisionOverlap,
       identifiabilityBaseline]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Finite classifier computed only from recoverable primitive v3 values. -/
 inductive PrimitiveRecommendationOutcome where
   | plain
@@ -1271,6 +1272,7 @@ def primitiveRecommendationOutcomeKey :
   | .settlingDetected => "settling_detected"
   | .gainVariationDetected => "gain_variation_detected"
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The only supplement fields admitted as selector inputs. -/
 inductive SupplementSelectorInput where
   | primitiveInputs

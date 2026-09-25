@@ -386,6 +386,7 @@ theorem family_directed {presented : PresentedCandidate}
   · cases first <;> trivial
   · cases second <;> trivial
 
+set_option backward.isDefEq.respectTransparency.types false in
 def uniformRequest {presented : PresentedCandidate}
     (typed : TypedNativePresentation presented)
     (preserves :

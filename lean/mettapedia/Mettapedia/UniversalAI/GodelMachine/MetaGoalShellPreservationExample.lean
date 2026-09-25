@@ -276,6 +276,7 @@ theorem trustTriangle_metaGoal_path_example :
       trustTriangleMetaGoalPath.totalErrorBound := hmain.2
   simpa [trustTriangleMetaGoalPath_totalErrorBound] using hbound
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Concrete exact bridge example via dynamic-individuation closure:
 the first proof-backed rewrite improves utility while preserving the protected
 trust-triangle WM goal exactly. -/

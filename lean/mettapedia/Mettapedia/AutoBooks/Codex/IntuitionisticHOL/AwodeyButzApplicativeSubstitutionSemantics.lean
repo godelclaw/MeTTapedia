@@ -972,6 +972,7 @@ noncomputable def reindexableApplicativeInterp :
     (reindexableApplicativeInterp (M := M)).toApplicative = applicativeInterp M :=
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem decodeEnv_eval
     {Γ Δ : Ctx Base}
     (σs : ApplicativeSubst Base Const Γ Δ)

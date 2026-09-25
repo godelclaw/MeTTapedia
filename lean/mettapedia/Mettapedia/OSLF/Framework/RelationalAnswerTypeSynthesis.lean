@@ -45,6 +45,7 @@ def producesAnswerSatisfying
     (gsltDiamond (evaluationGSLT source)
       (emittedAnswerSatisfies source observation))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Exact operational characterization of the derived two-stage native
 predicate.  The witness retains final state, the whole ordered answer list,
 and the precise occurrence. -/
@@ -83,6 +84,7 @@ def producesAnswerNativeType
   { sort := ()
     pred := producesAnswerSatisfying source observation }
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Base observations are monotone: strengthening the observation narrows the
 derived request type. -/
 theorem producesAnswerSatisfying_mono

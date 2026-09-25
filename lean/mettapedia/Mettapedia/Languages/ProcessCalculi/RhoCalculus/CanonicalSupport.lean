@@ -1109,6 +1109,7 @@ theorem rhoCanonicalizeOpenTerm_preservesReflectiveSupport
       (source := normalizedTyped)
       (target := (rhoCanonicalizeOpenTerm term).2.1) normalizedSafe
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The exact `rhoCalc` root carries a support-stable computable open
 section.  This is the rho witness needed by iterable syntax constructions;
 it introduces neither a second carrier nor a second equality relation. -/

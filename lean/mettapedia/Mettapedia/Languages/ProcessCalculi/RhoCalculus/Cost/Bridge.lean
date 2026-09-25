@@ -194,6 +194,7 @@ def RawCostTerm.isActivePurse : RawCostTerm → Bool
   | .purse _ (_ :: _) => true
   | _ => false
 
+set_option backward.isDefEq.respectTransparency false in
 theorem collectPursesAux_map_toTerm :
     ∀ (config : RawCostConfig) (start : Nat),
       (collectPursesAux config start).map RawIndexedPurse.toTerm =
@@ -216,6 +217,7 @@ theorem collectPursesAux_map_toTerm :
       | drop name =>
           simpa [collectPursesAux, RawCostTerm.isActivePurse] using tail
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The raw collector is exactly the active-purse projection of the decoded
 configuration.  This is the occurrence-preserving bridge used by completeness. -/
 theorem collectPursesAux_map_toLocated :

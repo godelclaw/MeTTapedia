@@ -132,6 +132,7 @@ theorem shrinkCovariance_isUnit
   (shrinkCovariance_posDef shrinkage covariance covariance_posSemidef
     shrinkage_pos shrinkage_le_one).isUnit
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A concrete one-dimensional update: count one, covariance two, mean zero,
 and sample two leave the covariance equal to two. -/
 theorem scalar_covarianceUpdate :

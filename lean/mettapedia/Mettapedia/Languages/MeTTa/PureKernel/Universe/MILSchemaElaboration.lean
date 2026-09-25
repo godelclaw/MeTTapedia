@@ -516,6 +516,7 @@ theorem grandparent_intermediate_is_retained :
           FatherEvidence intermediate Person.carol) :=
   ⟨⟨Person.bob, MotherEvidence.alice_bob, FatherEvidence.bob_carol⟩⟩
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Every hypothesis in this example vocabulary is endosorted, because all
 primitive declarations are endosorted and chain preserves the shared index. -/
 theorem exampleHypothesis_endpoints_eq
@@ -585,6 +586,7 @@ theorem mapTwice_retains_element_chain :
     Nonempty (mapTwiceHypothesis.denote.evidence oneList threeList) :=
   ⟨mapTwiceEvidence⟩
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem exampleHigherOrderHypothesis_endpoints_eq
     {source target : ExampleSort}
     (hypothesis : HigherOrderHypothesis

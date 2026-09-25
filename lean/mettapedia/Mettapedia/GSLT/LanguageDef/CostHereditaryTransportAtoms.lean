@@ -595,6 +595,7 @@ theorem pulledBackNormalizedAtoms_eq_normalizedAtoms
   exact alignedPullbackAtom_eq leftTrees rightTrees planStep children
     targetIndex
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Lookup in a child-normalized value vector realizes the semantic atom of
 the selected proof-relevant child.  If an equal boundary key occurs earlier
 in the table, the finite resolver deliberately selects that earlier value;

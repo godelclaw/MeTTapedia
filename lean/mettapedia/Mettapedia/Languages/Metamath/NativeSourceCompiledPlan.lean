@@ -41,6 +41,7 @@ private theorem mapM_some_length {alpha beta : Type}
               subst ys
               simp [ih tailResult]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The real admitted source slice lies in the locally recognized finite-Horn
 fragment.  This proof reduces the authored presentation itself; it does not
 replace it with a separately written compiler fixture. -/

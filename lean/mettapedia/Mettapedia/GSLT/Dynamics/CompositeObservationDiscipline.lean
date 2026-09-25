@@ -295,6 +295,7 @@ theorem parallelComposite_distinguishes_of_right
   exact map_snd_parallelComposite_observe_of_left_total
     left right leftTotal second
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Independent interleaving order is invisible to a composite whose two
 components observe only their own projected histories. -/
 theorem parallelComposite_commutes_adjacent_cross_events

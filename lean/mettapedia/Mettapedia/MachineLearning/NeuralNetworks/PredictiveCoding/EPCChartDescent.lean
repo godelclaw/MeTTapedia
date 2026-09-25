@@ -139,6 +139,7 @@ theorem concaveEnergy_descent_moves_away_from_critical_point :
     concaveEnergy 2 < concaveEnergy 1 ∧ |(1 : ℝ)| < |(2 : ℝ)| := by
   norm_num [concaveEnergy]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Positive fixture: the identity chart induces the ordinary unit metric. -/
 theorem identityChart_JJt_quadratic :
     ⟪(1 : ℝ),

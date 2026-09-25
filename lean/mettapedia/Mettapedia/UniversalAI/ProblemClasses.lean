@@ -1435,6 +1435,7 @@ theorem μ_le_one (ex : SupervisedLearningProblem) (xs : List (State ex)) : ex.�
 
 set_option maxHeartbeats 1500000
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Summing `μ` over step-consistent percepts yields the total `μ`-mass of all next states.
 
 For a fixed hypothesis `h`, `stepConsistent` selects exactly one reward bit and (in the labeled case)

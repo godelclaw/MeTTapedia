@@ -235,6 +235,7 @@ theorem frequencyWeightedCost_nonnegative_of_nonnegative
     (raw_nonnegative prompt prompt_mem)
     (frequency_nonnegative prompt prompt_mem)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A uniform frequency is a scalar multiplier of the whole selection cost. -/
 theorem selectionCost_frequencyWeightedCost_uniform
     (rawCost : Prompt → ℝ)

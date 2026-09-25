@@ -278,6 +278,7 @@ theorem combinedGSLT_no_crossing (checked : ValidatedPresentation)
       (languageGSLT checked.1.language laws) (proofSearchGSLT checked)
       state pattern⟩
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Derivability is reduction to the empty obligation state inside the
 combined GSLT. -/
 theorem derivability_iff_combinedGSLT (checked : ValidatedPresentation)

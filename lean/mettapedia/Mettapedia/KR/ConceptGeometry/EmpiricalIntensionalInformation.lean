@@ -27,6 +27,7 @@ open Mettapedia.PLN.Evidence.EvidenceClass
 open Mettapedia.PLN.Evidence.EvidenceQuantale
 open Mettapedia.KR.ConceptOntology
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The two concept positions in the empirical 2×2 table. -/
 inductive MembershipConcept
   | feature

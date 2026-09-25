@@ -111,6 +111,7 @@ def reindexProductTermMap {rules : Rules Head}
   (castTermMap (product.type_reindex morphism)).comp
     (reindexTermMap product.type morphism)
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem reindexProductTermMap_mapRaw {rules : Rules Head}
     {source target : FormedContext rules}
     {domain : TypeOver target}
@@ -167,6 +168,7 @@ def reindexApplicationInputMap {rules : Rules Head}
   productMap (reindexProductTermMap product morphism)
     (reindexTermMap domain morphism)
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem application_raw_natural {rules : Rules Head}
     {source target : FormedContext rules}
     {domain : TypeOver target}
@@ -253,6 +255,7 @@ def reindexPairInputMap {rules : Rules Head}
     exact (Term.cast (instantiateType_reindex codomain first morphism)
       (second.reindex morphism)).typed
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem reindexSumTermMap_mapRaw {rules : Rules Head}
     {source target : FormedContext rules}
     {domain : TypeOver target}
@@ -264,6 +267,7 @@ def reindexPairInputMap {rules : Rules Head}
   simp [reindexSumTermMap, ExactMap.comp, reindexTermMap,
     reindexTermAtCodeMap]
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem pair_raw_natural {rules : Rules Head}
     {source target : FormedContext rules}
     {domain : TypeOver target}
@@ -312,6 +316,7 @@ def secondProjectionMap {rules : Rules Head}
       type := inst0 (.fst pair) codomain.code }
   mapExact := fun evidence => ⟨HasType.sndElim evidence.down⟩
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem firstProjection_raw_natural {rules : Rules Head}
     {source target : FormedContext rules}
     {domain : TypeOver target}
@@ -338,6 +343,7 @@ def firstProjectionNaturalitySquare {rules : Rules Head}
       (fun _ => pliftProp_subsingleton _)
       (firstProjection_raw_natural sum morphism raw) _ _
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem secondProjection_raw_natural {rules : Rules Head}
     {source target : FormedContext rules}
     {domain : TypeOver target}
@@ -543,6 +549,7 @@ theorem piBetaReceipt_reindex {rules : Rules Head}
   simp only [StructuralStepReceipt.substitute]
   apply cast_heq
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem piBeta_raw_natural {rules : Rules Head}
     (retained : RetainedRoot rules) {source target : FormedContext rules}
     {domain : TypeOver target}
@@ -723,6 +730,7 @@ def sigmaSecondBetaMap {rules : Rules Head}
           (sum.secondBetaTypeConversion retained first second).receipt
         termReceipt := sum.secondBetaReceipt retained first second }
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem sigmaSecondBeta_raw_natural {rules : Rules Head}
     (retained : RetainedRoot rules) {source target : FormedContext rules}
     {domain : TypeOver target}

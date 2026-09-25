@@ -84,6 +84,7 @@ theorem allows_root (s : PrefixSelector) (hroot : ([] : BytePath) ∈ s)
     (p : BytePath) : Allows s p := by
   exact ⟨[], hroot, by simp⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem restrictPaths_mem_iff {paths selector : Finset BytePath} {p : BytePath} :
     p ∈ restrictPaths paths selector ↔ p ∈ paths ∧ Allows selector p := by
   classical
@@ -136,6 +137,7 @@ theorem restrictPaths_idempotent (paths : Finset BytePath) (selector : PrefixSel
   · intro h
     exact ⟨h, h.2⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem mem_composeSelectors_iff {left right : PrefixSelector} {q : BytePath} :
     q ∈ composeSelectors left right ↔
       (q ∈ left ∧ Allows right q) ∨ (q ∈ right ∧ Allows left q) := by

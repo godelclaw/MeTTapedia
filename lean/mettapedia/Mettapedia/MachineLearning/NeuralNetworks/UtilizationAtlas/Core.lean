@@ -131,6 +131,7 @@ noncomputable def evaluate
     legalityQualification :=
       problem.legalAction finalState (policy.selectAction finalState) }
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Coordinates used by the scalar-free comparison. -/
 inductive OutcomeMetric where
   | targetRisk

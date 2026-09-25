@@ -841,6 +841,7 @@ theorem bird_mem_baseInterpretation_penguin_intent :
     Concept.bird ∈ (baseInterpretation.meaning Concept.penguin).intent := by
   exact penguin_inherits_bird_at_one.2 bird_mem_baseInterpretation_bird_intent
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The `penguin -> bird` stamped evidence carries `pingu` as a positive
 extensional provenance stamp. -/
 theorem posExtPingu_mem_penguinBirdStampedEvidence :
@@ -870,6 +871,7 @@ theorem posExtPingu_mem_penguinBirdStampedEvidence :
   left
   exact hMap
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The `bird -> bird` stamped evidence carries the same `pingu` positive
 extensional provenance stamp. -/
 theorem posExtPingu_mem_birdBirdStampedEvidence :
@@ -899,6 +901,7 @@ theorem posExtPingu_mem_birdBirdStampedEvidence :
   left
   exact hMap
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem posIntBird_mem_penguinBirdStampedEvidence :
     DualConcept.WitnessStamp.posInt Concept.bird ∈ penguinBirdStampedEvidence.stamp := by
   rw [penguinBirdStampedEvidence,
@@ -930,6 +933,7 @@ theorem posIntBird_mem_penguinBirdStampedEvidence :
   right
   exact hMap
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem posIntBird_mem_birdBirdStampedEvidence :
     DualConcept.WitnessStamp.posInt Concept.bird ∈ birdBirdStampedEvidence.stamp := by
   rw [birdBirdStampedEvidence,

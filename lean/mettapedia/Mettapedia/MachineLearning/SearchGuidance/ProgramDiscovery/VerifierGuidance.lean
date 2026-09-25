@@ -76,6 +76,7 @@ def HasAcceptanceBoundary (model : SearchModel Program Action) : Prop :=
   (∃ accepted, model.checker accepted = true) ∧
     (∃ rejected, model.checker rejected = false)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- On a nontrivial checker, preserving the positive support of exact reward
 is equivalent to the two Boolean endpoint conditions. -/
 theorem transformedExactSupport_eq_iff

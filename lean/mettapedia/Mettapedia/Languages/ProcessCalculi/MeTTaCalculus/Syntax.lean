@@ -138,6 +138,7 @@ def mettaCalc : LanguageDef := {
   rewrites := [commSymRule, reflRule, parCongRule]
 }
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The authored MeTTa-calculus definition passes the five-field structural
 validation gate. -/
 theorem mettaCalc_validate_eq_nil : mettaCalc.validate = [] := by

@@ -160,6 +160,7 @@ end HessianIndex
 
 /-! ## Positive and negative fixtures -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The identity chart has no metric distortion. -/
 theorem identityChart_JJt_positiveExample :
     (((ContinuousLinearEquiv.refl ℝ ℝ : ℝ ≃L[ℝ] ℝ) : ℝ →L[ℝ] ℝ) ∘L

@@ -234,6 +234,7 @@ end Proxy
 
 namespace NecessityCanary
 
+set_option backward.isDefEq.respectTransparency false in
 inductive Candidate where
   | lower
   | maxLeft

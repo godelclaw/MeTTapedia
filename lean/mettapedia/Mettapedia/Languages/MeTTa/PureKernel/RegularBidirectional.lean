@@ -695,6 +695,7 @@ theorem checkRegular_identity_formed :
   rw [checkedEq]
   exact ⟨_, rfl⟩
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Positive checking witness for dependent-pair introduction.  The example
 uses an actual term variable, so both components exercise conversion under a
 formed context rather than succeeding vacuously. -/

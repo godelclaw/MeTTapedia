@@ -572,6 +572,7 @@ def IsXInterventionalEquilibrium
 
 end TwoNodeQuadraticResidualModel
 
+set_option backward.isDefEq.respectTransparency false in
 theorem forward_xClampOperatorModel_posteriorMean
     (covariance : PositiveBivariateCovariance) (x : ℝ) :
     ((forwardNodeResidualModel covariance).xClampOperatorModel x).posteriorMean () =
@@ -591,6 +592,7 @@ theorem forward_xClampOperatorModel_posteriorMean
     forwardNodeResidualModel] using
     hcoordinate.resolve_right (ne_of_gt covariance.forwardResidualVariance_pos)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem reverse_xClampOperatorModel_posteriorMean
     (covariance : PositiveBivariateCovariance) (x : ℝ) :
     ((reverseNodeResidualModel covariance).xClampOperatorModel x).posteriorMean () =
@@ -691,6 +693,7 @@ theorem clamp_is_conditioning_and_direction_blind
 
 /-! ## I2: severing changes the equilibrium -/
 
+set_option backward.isDefEq.respectTransparency false in
 theorem forward_xInterveneOperatorModel_posteriorMean
     (covariance : PositiveBivariateCovariance) (x : ℝ) :
     ((forwardNodeResidualModel covariance).xInterveneOperatorModel x).posteriorMean () =
@@ -708,6 +711,7 @@ theorem forward_xInterveneOperatorModel_posteriorMean
     forwardNodeResidualModel] using
     hcoordinate.resolve_right (ne_of_gt covariance.forwardResidualVariance_pos)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem reverse_xInterveneOperatorModel_posteriorMean
     (covariance : PositiveBivariateCovariance) (x : ℝ) :
     ((reverseNodeResidualModel covariance).xInterveneOperatorModel x).posteriorMean () =

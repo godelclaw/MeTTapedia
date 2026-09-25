@@ -79,6 +79,7 @@ def list : IndexedContainer Unit where
   Shape := fun _ => Nat
   Position := fun length => Fin length
 
+set_option backward.isDefEq.respectTransparency false in
 def listFinitary : Finitary list where
   positionFintype := fun {output} length => by
     cases output

@@ -272,6 +272,7 @@ def WellFormedWorld (world : World Term Rule Term Unit Nat Nat) : Prop :=
   ∀ cell : CellId, (world.heap.lookup cell).isSome = true →
     cell.slot < world.nextCell
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The initial world is slot-bounded (only slot 0 is populated). -/
 theorem wellFormedWorld_initial (t : Term) (lineage : LineageId) :
     WellFormedWorld (initialWorld t lineage) := by

@@ -216,6 +216,7 @@ theorem proofKernel_order_iff_capability_inclusion
 
 /-! ## Exact request fibres -/
 
+set_option backward.isDefEq.respectTransparency.types false in
 def nativeProofRequest
     {Claim : Type uClaim} {guest : NativeProofSystem.{uClaim, uProof} Claim}
     (kernel : NativeProofKernel guest) :
@@ -243,6 +244,7 @@ def nativeProofRequest
           simp [proofKernelFamily, supports] at impossible
   candidates_nonempty := by simp
 
+set_option backward.isDefEq.respectTransparency.types false in
 def boundaryReplayRequest
     {Claim : Type uClaim} {guest : NativeProofSystem.{uClaim, uProof} Claim}
     (kernel : NativeProofKernel guest) :

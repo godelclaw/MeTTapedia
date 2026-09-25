@@ -34,11 +34,13 @@ open Mettapedia.Examples.PLN.BioHypothesisGeneration
 open Mettapedia.Hyperseed
 open scoped ENNReal
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive CandidatePair where
   | pairA
   | pairB
   deriving DecidableEq, Fintype
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive Mechanism where
   | regulatory
   | eqtl

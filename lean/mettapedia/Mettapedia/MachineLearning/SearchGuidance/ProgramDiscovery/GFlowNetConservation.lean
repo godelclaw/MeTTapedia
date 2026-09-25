@@ -240,6 +240,7 @@ end LayeredGFlowNet
 
 namespace GFlowFixture
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive Node
   | left
   | right

@@ -76,6 +76,7 @@ theorem step_deterministic (profile : ExecutionProfile)
   rw [profile.toGSLT_step_iff] at leftStep rightStep
   exact Option.some.inj (leftStep.symm.trans rightStep)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Profile quiescence is exactly absence of a next state. -/
 theorem normalForm_iff (profile : ExecutionProfile) (space : Space) :
     profile.toGSLT.IsNormalForm space ↔ profile.step space = none := by
@@ -90,6 +91,7 @@ theorem normalForm_iff (profile : ExecutionProfile) (space : Space) :
     rw [profile.toGSLT_step_iff, stopped] at moved
     simp at moved
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The canonical driver for every MM2 profile has no private control state.
 All pending directives and their scheduling locations remain in the term. -/
 noncomputable def driver (profile : ExecutionProfile) :
@@ -419,6 +421,7 @@ theorem ExecutionProfile.runReport_completed_normalForm
   | none => rfl
   | some next => simp [ExecutionProfile.driver, found] at stopped
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Expiration from any family member certifies that the retained residual
 still has a profile-relative next step. -/
 theorem ExecutionProfile.runReport_expired_has_step
@@ -482,7 +485,7 @@ theorem runReport_zero_of_step {space next : Space}
        | none => none
        | some next => some (next, ())) = some (next, ())
     rw [moved]
-  rw [HostedDriver.runReport, driverMoved]
+  erw [HostedDriver.runReport, driverMoved]
   rfl
 
 /-- A completed report certifies that its residual MM2 space is quiescent. -/

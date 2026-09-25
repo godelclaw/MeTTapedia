@@ -52,6 +52,7 @@ theorem rhoIntrinsicTotalCost_ticks_eq_length
       exact rhoIntrinsicStepCost_apply_one h)
     path
 
+set_option backward.isDefEq.respectTransparency false in
 theorem rhoIntrinsicRewritePathTrace_ticks_eq_length
     {t u : Pattern} (path : rhoGSLT.RewritePath t u) :
     traceAccount (S := rhoGSLT) (A := Nat) (k := 2)

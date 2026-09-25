@@ -79,6 +79,7 @@ def discreteNoRewriteGSLT : GSLT where
     intro _ _ _ step _
     exact step.elim
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The two theories generate the same diamond and box observations because
 their rewrite graphs are equal. -/
 theorem equationOnly_modalities_match_discrete :

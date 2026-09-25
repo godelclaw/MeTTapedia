@@ -386,6 +386,7 @@ theorem lengthScheduler_supports_lengthPolicy :
   intro container member
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The same scheduler cannot implement an order-sensitive policy.  Both
 histories are reachable and have equal scheduler score, but their first
 events differ. -/

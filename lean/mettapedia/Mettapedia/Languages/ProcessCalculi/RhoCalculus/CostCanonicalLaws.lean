@@ -401,6 +401,7 @@ private theorem rhoCostMixedColorCanonicalName_not_typed :
     TypeExpr.base.inj typeEquality
   exact costBaseSortName_ne_wrapped "Proc" sortEquality
 
+set_option backward.isDefEq.respectTransparency.types false in
 private theorem rhoCostMixedColorCanonicalDrop_not_typed :
     ¬ HasType rhoCIGSLT.costWholeLanguage FreeTypeContext.empty []
       rhoCostMixedColorCanonicalDrop (.base costWrappedSortName) := by
@@ -2555,6 +2556,7 @@ theorem rho_costTypedUnaryNormalizationLaws :
   weakeningStable := rho_costOpenPatternEquationWeakeningStable
   canonicalPathSafe := rho_costStaticCanonicalPathSafe
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Pure rho has at most one declaration-derived collection candidate in
 every exact expected fiber.  Its only bare collection declaration is parallel
 composition; direct homogeneous collections and bare constructors inhabit

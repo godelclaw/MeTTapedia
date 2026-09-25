@@ -10,7 +10,7 @@ import Mathlib.Topology.Instances.ENNReal.Lemmas
 import Mathlib.Analysis.SpecialFunctions.Pow.NNReal
 import Mathlib.Algebra.BigOperators.Group.Finset.Piecewise
 import Mathlib.Computability.TuringMachine
-import Mathlib.Computability.TMConfig
+import Mathlib.Computability.TuringMachine.Config
 import Mettapedia.UniversalAI.BayesianAgents
 import Mettapedia.UniversalAI.TimeBoundedAIXI.ProofEnumeration
 import Mettapedia.UniversalAI.TimeBoundedAIXI.ProofEnumerationOracle
@@ -1508,6 +1508,7 @@ def guardPrefixListNat (pref : List ℕ) (yes no : Turing.ToPartrec.Code) : Turi
    | cons x xs ih =>
        simp [prefixHeadI, ih]
 
+ set_option backward.isDefEq.respectTransparency.types false in
  theorem prefixHeadI_encodeHistoryNat_eq (h h' : History)
      (hp : prefixHeadI (Coding.encodeHistoryNat h) (Coding.encodeHistoryNat h') = true) : h = h' := by
    induction h generalizing h' with
@@ -1569,6 +1570,7 @@ theorem constListCode_eval (ns : List ℕ) (v : List ℕ) : (constListCode ns).e
   | cons n ns ih =>
       simp [constListCode, constNatCode_eval, ih]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem dropIfHeadEqNat_eval_constNo (n : ℕ) (yes : Turing.ToPartrec.Code) (outNo : List ℕ) (v : List ℕ) :
     (dropIfHeadEqNat n yes (constListCode outNo)).eval v =
       if v.headI = n then yes.eval v.tail else pure outNo := by
@@ -1683,6 +1685,7 @@ def chooseByFlags : List (List ℕ) → List ℕ → List ℕ
   | [], _ => []
   | out :: outs, flags => if flags.headI = 0 then out else chooseByFlags outs flags.tail
 
+set_option backward.isDefEq.respectTransparency false in
 theorem chooseByFlagsCode_eval (outs : List (List ℕ)) (flags : List ℕ) :
     (chooseByFlagsCode outs).eval flags = pure (chooseByFlags outs flags) := by
   induction outs generalizing flags with
@@ -1696,6 +1699,7 @@ theorem chooseByFlagsCode_eval (outs : List (List ℕ)) (flags : List ℕ) :
           simp [chooseByFlagsCode, chooseByFlags, Turing.ToPartrec.Code.case_eval, h, ih, Turing.ToPartrec.Code.comp_eval,
             constListCode_eval]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem dispatchHistoryCodes_eval (cases : List (List ℕ × List ℕ)) (default : List ℕ) (v : List ℕ) :
     (dispatchHistoryCodes cases default).eval v =
       pure

@@ -30,6 +30,7 @@ open Mettapedia.Logic.LP
 
 /-! ## 1. Signature and atoms -/
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive TossRel
   | coin
   | heads
@@ -390,6 +391,7 @@ theorem gatedToss_normalGroundedStratified :
     FirstOrderNormalProbLogProgram.toGroundNormalProgram,
     FirstOrderNormalProbLogProgram.groundNormalRules, gatedTossProg] at hc
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem gatedToss_locallyStructurablyCompilable :
     gatedTossProg.LocallyStructurablyCompilable := by
   classical

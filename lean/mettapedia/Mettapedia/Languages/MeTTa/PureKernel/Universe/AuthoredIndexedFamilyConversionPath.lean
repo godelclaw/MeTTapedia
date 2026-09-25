@@ -315,6 +315,7 @@ def substituteNativePath (presented : PresentedCandidate)
       .trans (substituteNativePath presented substitution typed first)
         (substituteNativePath presented substitution typed second)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The exact path equivalence is natural under typed substitution.  This is
 path-level naturality: it preserves the complete conversion tree, not only
 the endpoints or propositional reachability. -/
@@ -491,6 +492,7 @@ theorem authored_nil_association_trees_are_distinct :
   intro equality
   cases equality
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Mapping the three-leg path preserves its exact association tree. -/
 theorem authored_nil_left_association_maps_structurally :
     authoredToNativePath nativeListPresentedCandidate

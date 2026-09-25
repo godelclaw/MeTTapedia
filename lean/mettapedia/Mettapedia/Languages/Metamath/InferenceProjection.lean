@@ -209,6 +209,7 @@ def taggedVariableNames : List RuntimeSym → List String
   | .var variableName :: symbols =>
       variableName :: taggedVariableNames symbols
 
+set_option backward.isDefEq.respectTransparency.types false in
 private theorem filterByFrame_eq_taggedVariableNames
     (floatingVariables : List String) (body : List RuntimeSym)
     (hrespect :

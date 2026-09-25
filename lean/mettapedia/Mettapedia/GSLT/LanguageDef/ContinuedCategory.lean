@@ -584,6 +584,7 @@ theorem mapsReflectiveScope_comp {first second third : CIGSLT}
   rw [mapPattern_comp]
   exact right.mapsReflectiveScope (left.mapsReflectiveScope safe)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Composition of continued morphisms. -/
 def comp {first second third : CIGSLT}
     (left : Morphism first second) (right : Morphism second third) :

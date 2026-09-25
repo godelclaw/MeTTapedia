@@ -156,6 +156,7 @@ private def evaluationRowResults (spaceTerm subject : Pattern)
 
 set_option maxHeartbeats 4000000 in
 set_option maxRecDepth 100000 in
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The generic executor applied to an authored query request enumerates
 exactly the semantic query bag. -/
 theorem query_rewrite_bag_adequate (model : Model) (space : model.Space)
@@ -183,6 +184,7 @@ theorem query_rewrite_bag_adequate (model : Model) (space : model.Space)
 
 set_option maxHeartbeats 4000000 in
 set_option maxRecDepth 100000 in
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The generic executor applied to an authored evaluation request enumerates
 exactly the semantic evaluation bag. -/
 theorem evaluation_rewrite_bag_adequate (model : Model) (space : model.Space)
@@ -562,6 +564,7 @@ def executeNativePlanned (relEnv : RelationEnv) (source : Pattern) :
   (nativePlannedRules source).flatMap fun rule =>
     applyRuleWithPremisesUsing relEnv language rule source
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The query head index removes only the impossible evaluation rule. -/
 theorem executeNativePlanned_query (relEnv : RelationEnv)
     (spaceTerm pattern template : Pattern) :
@@ -576,6 +579,7 @@ theorem executeNativePlanned_query (relEnv : RelationEnv)
       evaluationRequestPattern, queryRequestPattern, matchPatternForRule,
       matchPatternForRuleUsing, matchPattern]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The evaluation head index removes only the impossible query rule. -/
 theorem executeNativePlanned_evaluate (relEnv : RelationEnv)
     (spaceTerm subject : Pattern) :

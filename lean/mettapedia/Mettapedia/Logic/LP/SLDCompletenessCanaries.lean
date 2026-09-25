@@ -166,6 +166,7 @@ theorem canary_complete_queryP_via_unaryBody :
   exact sldQuery_complete_of_nullaryUnaryBody
     kbPQ kbPQ_nullaryUnaryBody gaP_in_leastHerbrandModel_kbPQ
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Negative boundary canary for the unary-body fixture: insufficient fuel
 prevents success even though the query is semantically derivable. -/
 theorem canary_negative_unaryBody_insufficientFuel :

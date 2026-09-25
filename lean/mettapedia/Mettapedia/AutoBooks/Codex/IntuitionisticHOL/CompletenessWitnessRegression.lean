@@ -68,18 +68,22 @@ def positiveWitnessOpenState : SaturationSearchState DemoConst [] where
     { formulas := [(Sign.falseE, (.all witnessBody : Formula DemoConst []))] }
   agenda := []
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem leftWitnessFormula_mem_closed :
     (Sign.falseE, leftWitnessFormula) ∈ witnessConflictState.hintikka.close.formulas := by
   exact HintikkaSet.mem_close_of_mem (by simp [witnessConflictState])
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem rightWitnessFormula_mem_closed :
     (Sign.falseE, rightWitnessFormula) ∈ witnessConflictState.hintikka.close.formulas := by
   exact HintikkaSet.mem_close_of_mem (by simp [witnessConflictState])
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem leftWitnessFormula_true_mem_closed :
     (Sign.trueE, leftWitnessFormula) ∈ positiveWitnessConflictState.hintikka.close.formulas := by
   exact HintikkaSet.mem_close_of_mem (by simp [positiveWitnessConflictState])
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem rightWitnessFormula_true_mem_closed :
     (Sign.trueE, rightWitnessFormula) ∈ positiveWitnessConflictState.hintikka.close.formulas := by
   exact HintikkaSet.mem_close_of_mem (by simp [positiveWitnessConflictState])

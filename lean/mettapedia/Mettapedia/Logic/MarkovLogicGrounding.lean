@@ -196,11 +196,13 @@ deriving DecidableEq
 
 instance : ∀ n, DecidableEq (SmokePred n) := fun _ => inferInstance
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Two-element domain. -/
 inductive Person where
   | alice | bob
 deriving DecidableEq, Fintype
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Single variable. -/
 inductive X where
   | x
@@ -595,6 +597,7 @@ theorem smoke_totalMass_eq_nine :
   rw [tsum_eq_sum (s := Finset.univ) (fun W hW => (hW (Finset.mem_univ W)).elim)]
   exact smoke_sum_worldWeight_eq_nine_aux
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem smoke_queryMass_cancerAlice_eq_six :
     (clauseMassSemantics smokeGroundMLN smokeFullSupport).queryMass cancerAliceQuery = 6 := by
   change CountableMLNSemantics.queryMass
@@ -605,6 +608,7 @@ theorem smoke_queryMass_cancerAlice_eq_six :
   rw [tsum_eq_sum (s := Finset.univ) (fun W hW => (hW (Finset.mem_univ W)).elim)]
   exact smoke_sum_cancerAlice_eq_six_aux
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem smoke_queryMass_impossible_eq_zero :
     (clauseMassSemantics smokeGroundMLN smokeFullSupport).queryMass impossibleAliceQuery = 0 := by
   change CountableMLNSemantics.queryMass
@@ -913,11 +917,13 @@ deriving DecidableEq
 
 instance : ∀ n, DecidableEq (RelPred n) := fun _ => inferInstance
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Two-element domain. -/
 inductive Elem where
   | a | b
 deriving DecidableEq, Fintype
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Two variables: x (universal) and y (existential). -/
 inductive XY where
   | x | y
@@ -977,6 +983,7 @@ private noncomputable def existClauseB : WeightedGroundClause (GroundAtom RelPre
   satisfied_ne_top := by norm_num
   unsatisfied_ne_top := by norm_num
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Two-clause index type. -/
 inductive ExistClauseId where | clauseA | clauseB
 deriving DecidableEq, Fintype
@@ -1122,6 +1129,7 @@ theorem exist_totalMass_eq_nine :
   rw [tsum_eq_sum (s := Finset.univ) (fun W hW => (hW (Finset.mem_univ W)).elim)]
   exact exist_sum_worldWeight_eq_nine
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem exist_queryMass_relAB_eq_six :
     (clauseMassSemantics existGroundMLN existFullSupport).queryMass existRelABQuery = 6 := by
   change CountableMLNSemantics.queryMass

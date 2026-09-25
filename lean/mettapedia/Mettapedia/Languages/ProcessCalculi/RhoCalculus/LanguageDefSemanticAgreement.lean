@@ -229,6 +229,7 @@ theorem presentedRhoStep_sound
     presentedRhoEquations_sound targetEquation⟩
   exact (presentedRhoPrimitiveStep_iff redex contractum).mp primitive
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Completeness of the generic equation-saturated rho step under the exact
 carrier equivalence. -/
 theorem presentedRhoStep_complete
@@ -277,6 +278,7 @@ def presentedClosedCommSource : rhoReflectiveGSLT.Term :=
 def presentedClosedCommTarget : rhoReflectiveGSLT.Term :=
   presentedRhoProcessEquiv.symm closedCommTarget
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Positive control: the authored COMM rule fires in the generic semantics. -/
 theorem presentedClosedCommSource_step :
     rhoReflectiveGSLT.Step
@@ -289,6 +291,7 @@ theorem presentedClosedCommSource_step :
 def presentedClosedFreeDrop : rhoReflectiveGSLT.Term :=
   presentedRhoProcessEquiv.symm closedFreeDrop
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Negative control: deriving the semantics from `rhoCalc` does not add an
 executable free-Drop rule. -/
 theorem presentedClosedFreeDrop_irreducible

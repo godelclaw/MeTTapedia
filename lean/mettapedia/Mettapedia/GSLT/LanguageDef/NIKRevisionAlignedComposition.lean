@@ -330,6 +330,7 @@ theorem relevant_change_prevents_alignment :
   intro alignment
   exact relevant_change_not_current alignment.earlierCurrent
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The obstruction is independent of which raw revision is proposed as the
 common current world. -/
 theorem relevant_change_has_no_common_current :

@@ -269,6 +269,7 @@ theorem cylinderSet_measurable (n : ℕ) (bits : Fin n → Bool) :
   have h : Measurable (fun f : CantorSpace => f i.val) := measurable_pi_apply i.val
   exact h (measurableSet_singleton _)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The measure of a cylinder set is 2^{-n}.
 
 This is a key property: fixing n fair coin flips has probability 2^{-n}.

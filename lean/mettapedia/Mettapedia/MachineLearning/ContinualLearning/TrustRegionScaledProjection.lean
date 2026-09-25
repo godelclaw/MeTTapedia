@@ -206,6 +206,7 @@ theorem fourfoldScale_view_separates_from_shared :
     exampleWeight, firstAxisMemory, fourfoldScale,
     Matrix.mul_apply, Fin.sum_univ_two] at firstEntry
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Without orthonormal columns, the nominal scaling matrix does not act as
 the declared coordinate transform on stored-subspace inputs. -/
 theorem nonorthonormal_memory_breaks_scaledCoordinate_action :

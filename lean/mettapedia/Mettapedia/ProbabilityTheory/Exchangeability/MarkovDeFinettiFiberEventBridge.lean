@@ -218,6 +218,7 @@ lemma fiberPrefixSubset_subset_fiber
   intro xs hxs
   exact (Finset.mem_filter.mp hxs).1
 
+set_option backward.isDefEq.respectTransparency.types false in
 lemma mem_fiberPrefixSubset_iff
     (a : Fin k) (ys : List (Fin k))
     (N : ℕ) (hN : ys.length ≤ N) (eN : MarkovState k)
@@ -619,6 +620,7 @@ lemma trajDrop_trajGluePrefix
     omega
   simp [trajDrop, trajGluePrefix, hnot]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Transition counts split exactly into the first `n` transitions and the
 remaining dropped suffix transitions. -/
 lemma transCount_eq_transCount_trajPrefix_add_transCount_trajDrop
@@ -1443,6 +1445,7 @@ def prefixTrajSet
     ∀ j : Fin ys.length,
       xs ⟨j.1 + 1, Nat.succ_lt_succ (Nat.lt_of_lt_of_le j.2 hN)⟩ = ys.get j)
 
+set_option backward.isDefEq.respectTransparency.types false in
 lemma mem_prefixTrajSet_iff
     (a : Fin k) (ys : List (Fin k))
     (N : ℕ) (hN : ys.length ≤ N) (xs : Traj k N) :

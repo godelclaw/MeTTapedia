@@ -352,6 +352,7 @@ private theorem nextBaseParallelRule_params
       (baseParallelRule_wrapped configuration), baseParallelRule_params]
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 private theorem emptyParallel_typed
     (configuration : RhoCostLayerConfiguration) :
     HasType (configuration.source).costWholeLanguage FreeTypeContext.empty []
@@ -615,6 +616,7 @@ private theorem rhoBaseEmptyNodeAt_normalizedThickenedSkeletonRaw
     Mettapedia.Languages.ProcessCalculi.RhoCalculus.Canonical.canonicalize_parallel_empty]
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 private theorem rhoBaseEmptyElaborationAt_normalized_pattern
     {color : CostStaticColor}
     (configuration : RhoCostLayerConfiguration)
@@ -687,6 +689,7 @@ theorem reference_emptyParallelSourceRepresentative
   exact referenceSourceNode_sourceCanonical laws node sourceSortEq
     sourceBoundEq patternEq
 
+set_option backward.isDefEq.respectTransparency.types false in
 private theorem rhoBaseEmptyElaborationAt_normalizedHereditary_pattern
     {color : CostStaticColor}
     (configuration : RhoCostLayerConfiguration)
@@ -831,6 +834,7 @@ def rhoBaseEmptyRepresentative :
       (CostStaticColor.base.mapLangSort rhoCIGSLT rhoProc) :=
   rhoBaseEmpty
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The raw hereditary executor selects rho's base unit on the canonical
 closed empty-parallel input. -/
 theorem rhoCostNormalizeOpenHereditary_baseEmptyRepresentative :

@@ -743,16 +743,7 @@ theorem readCopy_mem_other (s : Space) (ef : ExecFact) (a : Atom)
 theorem readCopy_eq_of_mem (s : Space) (ef : ExecFact) (hm : ef.atom ∈ s) :
     readCopy s ef = s := by
   simp [readCopy, consumeExec]
-  ext a
-  simp [Finset.mem_erase]
-  constructor
-  · rintro (rfl | ⟨_, ha⟩)
-    · exact hm
-    · exact ha
-  · intro ha
-    by_cases h : a = ef.atom
-    · left; exact h
-    · right; exact ⟨h, ha⟩
+  exact hm
 
 /-- `workQueueStep` returns `none` iff no exec facts are in the space. -/
 theorem workQueueStep_none_iff (s : Space) :

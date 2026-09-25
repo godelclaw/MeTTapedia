@@ -267,6 +267,7 @@ def flipProof : IndexedRefinement proofObject proofObject where
   mapExecution := Bool.not
   preservesMeaning := fun _ meaningful => meaningful
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem keepProof_ne_flipProof : keepProof ≠ flipProof := by
   intro equal
   have mapped := congrArg

@@ -2173,6 +2173,7 @@ noncomputable def gaussianPosteriorFromAggregate
     NormalGammaPrior :=
   posterior prior e
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Gaussian/Normal-Gamma posterior model over batches of numeric
 observations. -/
 noncomputable def gaussianConjugatePosteriorModel

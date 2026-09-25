@@ -280,6 +280,7 @@ def restrictSideDerivationList
 
 end
 
+set_option backward.isDefEq.respectTransparency.types false in
 mutual
 
 /-- Restriction preserves the exact raw tree, including every ordered child

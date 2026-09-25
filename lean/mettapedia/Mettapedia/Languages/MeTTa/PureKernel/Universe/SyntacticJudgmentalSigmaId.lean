@@ -130,6 +130,7 @@ def reindexedPair {rules : Rules Head}
     Term source (sum.reindex morphism).type :=
   Term.cast (sum.type_reindex morphism) (pair.reindex morphism)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Pair construction commutes with arbitrary typed context substitution. -/
 theorem pair_reindex {rules : Rules Head}
     {source target : FormedContext rules}
@@ -178,6 +179,7 @@ theorem secondProjectionType_reindex {rules : Rules Head}
   rw [instantiateType_reindex]
   rw [sum.firstProjection_reindex pair morphism]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Second projection commutes with context substitution after transporting
 along its dependent result-type equality. -/
 theorem secondProjection_reindex {rules : Rules Head}

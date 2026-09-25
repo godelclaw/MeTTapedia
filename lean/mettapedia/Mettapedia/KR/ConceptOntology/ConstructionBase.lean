@@ -313,6 +313,7 @@ namespace ControlExample
 open Mettapedia.PLN.Evidence.EvidenceQuantale
 open scoped ENNReal
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- A tiny exact-control base: the abstract side is `Trait`, the phenomenal
 side is `Animal`, and the indexicality is whether we only see the robin/bat
 sample or the whole tiny world. -/
@@ -403,6 +404,7 @@ namespace LoopToyExample
 
 open LoopBenchmark
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Tiny explicit loop population for a benchmark-shaped canary. -/
 inductive ToyLoopObj where
   | order1

@@ -2,7 +2,7 @@ import Mathlib.Computability.Partrec
 import Mathlib.Data.Nat.Basic
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Rat.Cast.Order
-import Mathlib.Data.Real.Archimedean
+import Mathlib.Algebra.Order.Archimedean.Real.Basic
 import Mathlib.Tactic.Linarith
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 

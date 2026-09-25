@@ -369,6 +369,7 @@ theorem replacedCompiler_has_no_proofTwoPremises :
 
 /-! ### Every proof-two premise is material -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The nine independently stated premises of Wheeler proof 2. -/
 inductive ProofTwoRequirement where
   | defineExactlyCorrespond
@@ -542,6 +543,7 @@ theorem every_proofTwo_requirement_is_material
 
 /-! ### Every proof-one premise is material -/
 
+set_option backward.isDefEq.respectTransparency false in
 inductive ProofOneRequirement where
   | defineExactlyCorrespond
   | trustedCompilerTranslatesParent

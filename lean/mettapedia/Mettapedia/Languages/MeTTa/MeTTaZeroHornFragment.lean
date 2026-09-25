@@ -138,6 +138,7 @@ private def embedTerm (rules : List (DefiniteRule String))
       .answer (hornSpace rules assign atom) (hornFact atom) (hornFact atom)
         occurrence (hornFact atom)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The positive Horn step embeds faithfully into Zero's public query GSLT. -/
 def hornQueryEmbedding (rules : List (DefiniteRule String))
     (assign : String → Multiset α) (atom : String) :

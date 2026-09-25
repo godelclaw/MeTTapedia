@@ -1601,6 +1601,7 @@ theorem normalizeHereditary_equationEquiv
   exact normalizeHereditaryRawWithInventory_equationEquiv node values
     (node.semanticAtomEnvironment values).1
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The hereditary rho static normalizer remains in the exact split typing
 fibre of its input.  The proof first maps the source-authored semantic-key
 edge, then changes only the finite boundary assignment.  It never invokes
@@ -1772,6 +1773,7 @@ def rhoHereditaryNormalizationKernel :
     CostStaticNormalizationKernel rhoCIGSLT where
   normalize := rhoHereditaryStaticNormalizer
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Two same-colour rho source frames may be compared at the typed common
 semantic-atom apex.  Canonical equality in that one authored source context
 survives the shared Cost action exactly, including ambient thinning and

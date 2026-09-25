@@ -117,6 +117,7 @@ def erasedEventCount
   operational := erasedOperational interpretation
   observe := fun execution => some execution.2.2.length
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The erasure cell is compatible with event count on every intrinsic
 interaction, not only on the separating canary. -/
 theorem eventCountCompatible

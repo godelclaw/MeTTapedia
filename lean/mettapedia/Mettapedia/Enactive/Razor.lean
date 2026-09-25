@@ -333,6 +333,7 @@ end FiniteReadout
 
 namespace FormalizationCanary
 
+set_option backward.isDefEq.respectTransparency false in
 inductive Candidate where
   | noCommitments
   | adequate
@@ -340,6 +341,7 @@ inductive Candidate where
   | inconsistent
 deriving DecidableEq, Fintype
 
+set_option backward.isDefEq.respectTransparency false in
 inductive Obligation where
   | rulesOutFalse
 deriving DecidableEq, Fintype
@@ -425,6 +427,7 @@ end FormalizationCanary
 
 namespace BennettOckhamCanary
 
+set_option backward.isDefEq.respectTransparency false in
 inductive Candidate where
   | weakLong
   | strongShort

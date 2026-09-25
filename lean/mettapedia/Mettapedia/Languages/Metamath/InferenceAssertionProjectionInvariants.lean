@@ -18,6 +18,7 @@ open Mettapedia.Languages.Metamath.InferenceProjection
 open Mettapedia.Languages.Metamath.InferenceSideConditionsSemantics
 open Mettapedia.GSLT.LanguageDef.InferenceChecker
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The concrete binding-list keys are precisely the floating mandatory
 hypothesis names; essential hypotheses contribute no key.  Both lists retain
 source order. -/

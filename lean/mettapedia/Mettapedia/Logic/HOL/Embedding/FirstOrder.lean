@@ -183,6 +183,7 @@ theorem envVal_extend {L : Language.{u}} {M : Type w} (s : Structure L M) {n : �
       | vz => rfl
       | vs v => rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem denote_mkApps {L : Language.{u}} {M : Type w} (s : Structure L M)
     {Γ : Ctx BaseTy} {τ : Ty BaseTy}
     (ρ : HenkinModel.Valuation (standardModel s) Γ) :
@@ -208,6 +209,7 @@ theorem denote_mkApps {L : Language.{u}} {M : Type w} (s : Structure L M)
               (HenkinModel.denote (standardModel s) (v 0) ρ))
             (fun i => HenkinModel.denote (standardModel s) (v i.succ) ρ) := rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem denote_embedSemiterm {L : Language.{u}} {M : Type w} (s : Structure L M)
     {n : ℕ} (t : ClosedSemiterm L n) (e : Fin n → M) :
     HenkinModel.denote (standardModel s) (embedSemiterm t) (envVal s e) =
@@ -235,6 +237,7 @@ theorem denote_embedSemiterm {L : Language.{u}} {M : Type w} (s : Structure L M)
         exact congrArg ULift.down (ih i e)
       rw [hv]
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem denote_embedSemiformula_iffAux {L : Language.{u}} {M : Type w} (s : Structure L M) :
     ∀ {n : ℕ} (φ : Semisentence L n) (e : Fin n → M),
       (HenkinModel.denote (standardModel s) (embedSemiformula φ) (envVal s e)).down ↔

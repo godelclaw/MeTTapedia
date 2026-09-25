@@ -80,11 +80,13 @@ theorem executable_step_to_mettaCalcGSLT
   apply mem_rewriteAt_iff_stepAt.mp
   simpa [step, reductsUsing] using executes
 
+set_option backward.isDefEq.respectTransparency false in
 theorem mettaCalc_contact_constructor_label :
     mettaCalcInteractivePresentation.contactConstructor.1.label = "MPar" := by
   simp [mettaCalcInteractivePresentation, mettaCalcParallelConstructor,
     mettaCalc]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem mettaCalc_interaction_rewrite_name :
     mettaCalcInteractivePresentation.interactionRewrite.1.name = "CommSym" := by
   simp [mettaCalcInteractivePresentation, mettaCalcCommRewrite, mettaCalc,
@@ -116,6 +118,7 @@ theorem mettaCalc_rho_contact_representation_agrees :
       rhoInteractivePresentation.contactRepresentation := by
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The selected interactions remain different authored rules: symmetric
 unification contact is not rho's asymmetric input/output communication. -/
 theorem mettaCalc_rho_interaction_rewrites_distinct :

@@ -343,6 +343,7 @@ def chronological {Event : Type uEvent} (eventCost : Event -> WorkSpan) :
     ChronologicalCapability (discipline eventCost).collection :=
   chronologicalCapabilityOfValuation (valuation eventCost)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The same work/span container also has a distinct operation for already
 certified independent branches. -/
 def independentParallel {Event : Type uEvent} (eventCost : Event -> WorkSpan) :

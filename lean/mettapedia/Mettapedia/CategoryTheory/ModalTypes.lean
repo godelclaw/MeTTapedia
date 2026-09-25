@@ -165,6 +165,7 @@ theorem deduction_not_reach_false_identity :
 
 /-! ## Existing Quantale-Modal Bridge Endpoints -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Modal composition is meet in the frame fibers. -/
 theorem modalCompose_is_meet
     (m1 m2 : PLNFiber PLNLambdaTheory.Pr) :

@@ -97,6 +97,7 @@ theorem listToBag_order_collision :
         (([true, false] : List Bool) : Multiset Bool)
     decide
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Occurrence multiplicity is a source distinction lost by the bag-to-
 support quotient. -/
 theorem bagToSupport_multiplicity_collision :

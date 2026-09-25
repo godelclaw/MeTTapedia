@@ -2903,6 +2903,7 @@ def bernoulliMixturePrefixProcessMarginalConsistent
         xs (Fin.castLE (prefixWindow_le_jointLength u hi) t))) =
     ((bernoulliMixturePrefixLawAt C hLaw i) M hM).toPrecisePrevision X
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Prefix marginal consistency supplies local coherence for the canonical
 largest-prefix finite joint-window system of an imprecise Bernoulli-mixture
 family. -/
@@ -4786,6 +4787,7 @@ theorem posteriorBernoulliMixture_prefixAtom_eq_zero_of_zeroInteriorMixingMass_o
       hInterior
   rw [hNumZero, zero_div]
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem posteriorBernoulliMixturePrefixProcessWitness_of_zeroInteriorMixingMass
     (M : BernoulliMixture) (k l : ℕ)
     (hZ : M.countEvidenceMass k l ≠ 0)
@@ -5034,6 +5036,7 @@ theorem posteriorBernoulliMixturePrefixProcessCarrierWitness_exists_iff_zeroInte
   simpa [posteriorBernoulliMixturePrefixProcessWitness_iff_existsCarrierWitness M k l hZ] using
     (posteriorBernoulliMixturePrefixProcessWitness_iff_zeroInteriorMixingMass M k l hZ)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Prefix marginal consistency supplies local coherence for the canonical
 largest-prefix finite joint-window system. -/
 theorem posteriorBernoulliMixturePrefixProcessFiniteJointWindowSystem_localCoherent_of_marginalConsistent
@@ -5104,6 +5107,7 @@ noncomputable def prefixTailFalseExtensionPrevision
     (PrecisePrevision.FiniteWeights.ofPrecisePrevision R).pushForwardPrevision
       prefixTailFalseExtension
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem prefixTailFalseExtensionPrevision_marginal_eq
     {n i : ℕ} (hi : i ≤ n)
     (R : PrecisePrevision (Fin n → Bool))
@@ -5960,6 +5964,7 @@ theorem posteriorBernoulliMixture_processLaw_of_prefixCarrierRealization
     (posteriorBernoulliMixturePrefixProcessMarginalConsistent_analytic M k l hZ)
     hRealize
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- A single global carrier witness with the analytic posterior prefix
 marginals implies the stronger canonical finite-joint realization predicate. -/
 theorem posteriorBernoulliMixturePrefixProcess_jointPrevisionsRealizedInCarrier_of_carrierWitness
@@ -6896,6 +6901,7 @@ def BernoulliMixtureAnalyticPrefixProcessWitness
       (bernoulliMixturePrefixProcessCylinderSystem.marginalPrevision n P) X =
         (bernoulliMixturePrefixLaw_analytic M n).toPrecisePrevision X
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- A zero-interior Bernoulli mixture has a raw all-gambles analytic prefix-process
 witness: the infinite process is the two-point mixture of the all-true and
 all-false paths, with weight determined by the one-bit true prefix. -/
@@ -7265,6 +7271,7 @@ theorem AnalyticMixingFamilyRawProcessCompatible_of_respectsLocalLower
     ImpreciseDeFinettiRawProcessCompatible_of_respectsLocalLower
       C (fun M _ n => bernoulliMixturePrefixLaw_analytic M n) hC L hL
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- If one admissible mixture has an all-gambles analytic prefix-process
 witness, then the whole analytic family lower envelope is raw-compatible. -/
 theorem AnalyticMixingFamilyRawProcessCompatible_of_mem_analyticPrefixProcessWitness

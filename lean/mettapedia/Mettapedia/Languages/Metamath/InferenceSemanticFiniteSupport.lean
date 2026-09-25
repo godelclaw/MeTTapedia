@@ -75,6 +75,7 @@ theorem renameExpr_append (ρ : MarioVR → MarioVR)
       (List.map (renameSym ρ) right)
   exact List.map_append
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Renaming after substitution is the same as renaming each substitution
 image first. -/
 theorem renameExpr_subst (ρ : MarioVR → MarioVR)
@@ -91,6 +92,7 @@ theorem renameExpr_subst (ρ : MarioVR → MarioVR)
           simp [Metamath.Expr.subst, renameSubstitution,
             renameExpr_append, ih]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Formula-level fusion of renaming with substitution. -/
 theorem renameFormula_subst (ρ : MarioVR → MarioVR)
     (σ : MarioVR → MarioExpr) (formula : MarioFormula) :
@@ -100,6 +102,7 @@ theorem renameFormula_subst (ρ : MarioVR → MarioVR)
   | mk typecode expression =>
       simp [renameFormula, Metamath.Formula.subst, renameExpr_subst]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- A renamed variable formula is the variable formula of the renamed
 reference when the renaming preserves typecodes. -/
 theorem renameFormula_vhyp {ρ : MarioVR → MarioVR}
@@ -112,6 +115,7 @@ theorem renameFormula_vhyp {ρ : MarioVR → MarioVR}
     renameSym id symbol = symbol := by
   cases symbol <;> rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem renameExpr_id (expression : MarioExpr) :
     renameExpr id expression = expression := by
   unfold renameExpr
@@ -119,6 +123,7 @@ theorem renameFormula_vhyp {ρ : MarioVR → MarioVR}
   | nil => rfl
   | cons symbol tail ih => simp [renameSym_id, ih]
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem renameFormula_id (formula : MarioFormula) :
     renameFormula id formula = formula := by
   cases formula

@@ -309,6 +309,7 @@ open Mettapedia.OSLF.MeTTaIL.Syntax
 We carve out a two-term fragment of the real ρ-calculus: a COMM redex and its
 reduct. The GSLT structure is pulled back along the embedding. -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Two-term fragment: a COMM redex and its reduct. -/
 inductive FragTerm : Type
   | redex
@@ -487,6 +488,7 @@ substitutes `NQuote(q)` for `BVar 0` inside `PDrop`, and quote-drop cancels:
 the reduct is `q` itself. That is genuine ρ-calculus reflection —
 `semanticCommSubst_collapses_bound_drop` — not a step into a vacuous nil. -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Two-term reflection fragment: a COMM redex over a free name whose
 continuation drops the received name. -/
 inductive Frag2Term : Type

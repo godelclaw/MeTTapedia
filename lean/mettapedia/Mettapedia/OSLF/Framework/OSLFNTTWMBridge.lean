@@ -36,6 +36,7 @@ section AtomTriangle
 variable {State : Type*}
 variable [EvidenceType State] [BinaryWorldModel State Pattern]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /--
 Atom-level OSLF -> NTT -> WM triangle endpoint.
 

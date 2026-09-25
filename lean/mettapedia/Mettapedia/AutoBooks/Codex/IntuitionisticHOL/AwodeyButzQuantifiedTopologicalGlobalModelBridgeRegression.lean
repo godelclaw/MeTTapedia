@@ -57,6 +57,7 @@ def Carrier : Ty BaseSort → Type
   | .base _ => PUnit
   | .arr σ τ => Carrier σ → Carrier τ
 
+set_option backward.isDefEq.respectTransparency.types false in
 def model : GlobalModel BaseSort Const where
   toApplicativeStructure :=
     { Carrier := Carrier
@@ -112,6 +113,7 @@ theorem truthEval_forallPropSelfImp_top :
     (simpleInterp.SimpleQuantifiedFormula.truth_eval_of_closed_derivable
       (M := model) (φ := forallPropSelfImp) derivable_forallPropSelfImp)
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem truthEval_forallPropVar_ne_top :
     simpleInterp.SimpleQuantifiedFormula.truthEval model forallPropVar () ≠ ⊤ := by
   intro htop

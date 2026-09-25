@@ -98,6 +98,7 @@ def completionNativeType (initial : EvalState) (request : Pattern)
   { sort := ()
     pred := completionPredicate initial request final answers }
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Inhabiting a completion type is exactly the PeTTa declarative run. -/
 theorem satisfies_completionNativeType_iff_coreDecl
     (initial : EvalState) (request : Pattern) (final : EvalState)

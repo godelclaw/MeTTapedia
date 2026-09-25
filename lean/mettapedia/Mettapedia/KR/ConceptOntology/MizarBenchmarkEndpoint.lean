@@ -114,6 +114,7 @@ theorem objectDerivationCredalInheritanceBenchmark :
     objectDerivationLooseConcept_selfInheritance_widthComplement
   selfInheritanceMidpointReadout := objectDerivationLooseConcept_selfInheritance_midpoint
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Static Lean interface for the current 13-article lattice/FCA-family pilot
 artifacts. This is intentionally a summary object, not a claim that the pilot
 already constitutes a benchmark result. -/
@@ -238,6 +239,7 @@ theorem mizarFamilyThresholdPilot :
   totalUnstableConcepts := totalUnstableConceptCount_eq
   conlat1IsTopUnstableArticle := unstableConceptCount_le_conlat_1
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The three named dual pairs scanned in the current narrow ghost hunt
 artifact. -/
 inductive MizarFamilyDualityTrackedPair where

@@ -113,6 +113,7 @@ noncomputable def aggregateDistinctGaussian {Event Index : Type*}
   precision i j := ∑ event ∈ events, (contribution event).precision i j
   naturalParameter i := ∑ event ∈ events, (contribution event).naturalParameter i
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Gaussian evidence obeys inclusion--exclusion at the declared event
 identity.  This is the additive analogue of overlap correction for counts. -/
 theorem aggregateDistinctGaussian_inclusion_exclusion
@@ -134,6 +135,7 @@ theorem aggregateDistinctGaussian_inclusion_exclusion
         (s₁ := left) (s₂ := right)
         (f := fun event ↦ (contribution event).naturalParameter i))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Disjoint event batches may be added without an overlap correction. -/
 theorem aggregateDistinctGaussian_union_of_disjoint
     {Event Index : Type*} [DecidableEq Event]
@@ -160,6 +162,7 @@ noncomputable def unitScalarEvidence : GaussianEvidence (Fin 1) where
   precision := fun _ _ => 1
   naturalParameter := fun _ => 1
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Positive fixture: reusing unit scalar evidence adds one unit of precision
 and one unit of natural parameter beyond once-each accounting. -/
 theorem scalarEvidence_reuse_doubleCounting :

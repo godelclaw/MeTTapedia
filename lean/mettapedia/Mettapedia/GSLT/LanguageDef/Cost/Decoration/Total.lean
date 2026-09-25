@@ -83,6 +83,7 @@ theorem projection_map_pushforwardLift (object : Cost.Decoration.Total)
     projection.map (pushforwardLift object morphism) = morphism :=
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Strict decoration transport is the strongly cocartesian lift supplied by
 the category of elements. -/
 instance pushforwardLift_isStronglyCocartesian

@@ -804,6 +804,7 @@ structure GradingWitness (M : ModeTheory) where
   f : M.Hom a b
   nontrivial : grading.gradeOf f ≠ grading.unit
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- One genuine stage descent has nonzero cost in the live cost-rho account. -/
 def nativeGradingWitness : GradingWitness stageModeTheory where
   grading := nativeCostGrading
@@ -2976,6 +2977,7 @@ def nativeDecidedConversion :
     · rintro ⟨common, leftEqual, rightEqual⟩
       exact leftEqual.trans rightEqual.symm
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem nativeConversion_lambdaPi_agrees (left right :
     Mettapedia.GSLT.LanguageDef.Pure.Expr) :
     nativeDecidedConversion.decide (.lambdaPi left) (.lambdaPi right) =

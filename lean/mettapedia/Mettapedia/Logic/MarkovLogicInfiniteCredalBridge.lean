@@ -283,6 +283,7 @@ theorem dlrQueryOutcomeCredalSet_nonempty
   exact ⟨dlrQueryOutcomePrevision M q μ,
     mem_dlrQueryOutcomeCredalSet M q μ⟩
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The lower envelope of the binary DLR query-outcome credal set is below
 every projected DLR completion. -/
 theorem dlrQueryOutcomeLowerEnvelope_le_completion
@@ -320,6 +321,7 @@ theorem dlrQueryOutcomeLowerEnvelope_greatest_lower_bound
         exact hL μ Y)
       X
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Every projected DLR completion is below the upper envelope of the binary
 query-outcome credal set. -/
 theorem dlrQueryOutcomeCompletion_le_upperEnvelope
@@ -3424,6 +3426,7 @@ noncomputable def dlrCompletionCylinderPrevision
   ext X
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The finite-volume global-world prevision has the expected same-region
 marginal: pulling a local gamble back along the all-regions cylinder projection
 and evaluating the global finite-support prevision is the same as evaluating
@@ -3452,6 +3455,7 @@ theorem dlrAllRegionsCylinderSystem_marginalPrevision_finiteVolumeWorldPrevision
     rw [hrestrict]
   rw [hcyl]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- More generally, if a finite-volume world prevision is generated on a
 larger region `Δ`, its marginal to a smaller region `Λ ⊆ Δ` is the restriction
 push-forward of the `Δ` assignment prevision.  This is the finite-support
@@ -3965,6 +3969,7 @@ theorem dlrAllRegionsProjectiveSpec_cylinderUpperEnvelope_localGamble_eq_upperEn
     upperEnvelope (dlrRegionCredalSet M Λ) X
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- On finite local regions, the all-regions DLR cylinder natural extension of
 an arbitrary local gamble is the infimum over DLR completions' local prevision
 values for that gamble. -/
@@ -3980,6 +3985,7 @@ theorem dlrAllRegionsProjectiveSpec_cylinderNaturalExtension_localGamble_eq_loca
   rw [dlrAllRegionsProjectiveSpec_cylinderNaturalExtension_localGamble_eq_lowerEnvelope,
     lowerEnvelope_dlrRegionCredalSet_localGamble_eq_lower]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- On finite local regions, the all-regions DLR cylinder upper envelope of an
 arbitrary local gamble is the supremum over DLR completions' local prevision
 values for that gamble. -/
@@ -4070,6 +4076,7 @@ theorem dlrAllRegionsProjectiveSpec_cylinderEnvelopeMidpoint_localGamble_eq_cred
   rw [dlrAllRegionsProjectiveSpec_cylinderNaturalExtension_localGamble_eq_lowerEnvelope,
     dlrAllRegionsProjectiveSpec_cylinderUpperEnvelope_localGamble_eq_upperEnvelope]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- On finite local regions, the all-regions DLR cylinder interval width of an
 arbitrary local gamble is the width of the completion-range lower/upper
 envelope for that gamble. -/
@@ -4085,6 +4092,7 @@ theorem dlrAllRegionsProjectiveSpec_cylinderEnvelopeWidth_localGamble_eq_localGa
   rw [dlrAllRegionsProjectiveSpec_cylinderEnvelopeWidth_localGamble_eq_credalEnvelopeWidth,
     credalEnvelopeWidth_dlrRegionCredalSet_localGamble_eq_width]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- On finite local regions, the all-regions DLR cylinder width-complement of an
 arbitrary local gamble is the width-complement of the completion-range envelope
 for that gamble. -/
@@ -4101,6 +4109,7 @@ theorem dlrAllRegionsProjectiveSpec_cylinderEnvelopeWidthComplement_localGamble_
     dlrAllRegionsProjectiveSpec_cylinderEnvelopeWidthComplement_localGamble_eq_credalEnvelopeWidthComplement,
     credalEnvelopeWidthComplement_dlrRegionCredalSet_localGamble_eq_complement]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- On finite local regions, the all-regions DLR cylinder midpoint of an
 arbitrary local gamble is the midpoint of the completion-range envelope for that
 gamble. -/
@@ -4400,6 +4409,7 @@ theorem dlrAllRegionsProjectiveSpec_finiteCylinderUpperEnvelopePrevision_localGa
   exact dlrAllRegionsProjectiveSpec_cylinderUpperEnvelope_localGamble_eq_upperEnvelope
     M Λ X
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The all-regions finite-cylinder DLR natural extension is below every
 concrete DLR completion's finite-region prevision. -/
 theorem dlrAllRegionsProjectiveSpec_finiteCylinderNaturalExtensionPrevision_le_completion_localGamble
@@ -4418,6 +4428,7 @@ theorem dlrAllRegionsProjectiveSpec_finiteCylinderNaturalExtensionPrevision_le_c
     lowerEnvelope_dlrRegionCredalSet_localGamble_eq_lower]
   exact dlrLocalGambleLowerEnvelope_le_completion M Λ μ X
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The all-regions finite-cylinder DLR natural extension is the greatest lower
 prevision dominated by every concrete DLR completion's finite-region prevision. -/
 theorem dlrAllRegionsProjectiveSpec_finiteCylinderNaturalExtensionPrevision_greatest_lower_bound_localGamble
@@ -4439,6 +4450,7 @@ theorem dlrAllRegionsProjectiveSpec_finiteCylinderNaturalExtensionPrevision_grea
     lowerEnvelope_dlrRegionCredalSet_localGamble_eq_lower]
   exact dlrLocalGambleLowerEnvelope_greatest_lower_bound M Λ L hL X
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Every concrete DLR completion's finite-region prevision is below the
 all-regions finite-cylinder DLR upper envelope. -/
 theorem dlrAllRegionsProjectiveSpec_completion_le_finiteCylinderUpperEnvelopePrevision_localGamble
@@ -4457,6 +4469,7 @@ theorem dlrAllRegionsProjectiveSpec_completion_le_finiteCylinderUpperEnvelopePre
     upperEnvelope_dlrRegionCredalSet_localGamble_eq_upper]
   exact dlrCompletion_le_localGambleUpperEnvelope M Λ μ X
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The all-regions finite-cylinder DLR upper envelope is the least upper
 prevision dominating every concrete DLR completion's finite-region prevision. -/
 theorem dlrAllRegionsProjectiveSpec_finiteCylinderUpperEnvelopePrevision_least_upper_bound_localGamble
@@ -4547,6 +4560,7 @@ theorem dlrAllRegionsProjectiveSpec_finiteCylinderNaturalExtensionPrevision_exis
       (dlrAllRegionsProjectiveSpec_cylinderEnvelopeMidpoint_localGamble_eq_localGambleEnvelopeMidpoint
         M Λ X).symm.trans hMidEq
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The compact bounded-measurable DLR natural extension and the all-regions
 projective cylinder natural extension agree on finite cylinder observables.
 
@@ -4570,6 +4584,7 @@ theorem boundedMeasurableNaturalExtensionPrevision_dlrCompletionCompactCredalSet
     dlrAllRegionsProjectiveSpec_finiteCylinderNaturalExtensionPrevision_localGamble_eq_lowerEnvelope,
     lowerEnvelope_dlrRegionCredalSet_localGamble_eq_lower]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The compact bounded-measurable DLR upper envelope and the all-regions
 projective cylinder upper envelope agree on finite cylinder observables. -/
 theorem boundedMeasurableNaturalUpperEnvelopePrevision_dlrCompletionCompactCredalSet_cylinder_eq_allRegionsFiniteCylinderUpperEnvelopePrevision
@@ -4683,6 +4698,7 @@ theorem boundedMeasurableNaturalUpperEnvelopePrevision_dlrCompletionCompactCreda
     dlrAllRegionsProjectiveSpec_finiteCylinderUpperEnvelopePrevision_least_upper_bound_localGamble
       M Λ U hU X
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The compact bounded-measurable DLR carrier and the all-regions projective
 cylinder interface compute the same PLN-facing interval width on finite
 cylinder observables. -/
@@ -4701,6 +4717,7 @@ theorem boundedMeasurableEnvelopeWidth_dlrCompletionCompactCredalSet_cylinder_eq
     boundedMeasurableEnvelopeWidth_dlrCompletionCompactCredalSet_cylinder_eq_localGambleWidth,
     dlrAllRegionsProjectiveSpec_cylinderEnvelopeWidth_localGamble_eq_localGambleEnvelopeWidth]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The compact bounded-measurable DLR carrier and the all-regions projective
 cylinder interface compute the same PLN-facing width-complement confidence
 coordinate on finite cylinder observables. -/
@@ -4719,6 +4736,7 @@ theorem boundedMeasurableEnvelopeWidthComplement_dlrCompletionCompactCredalSet_c
     boundedMeasurableEnvelopeWidthComplement_dlrCompletionCompactCredalSet_cylinder_eq_localGambleComplement,
     dlrAllRegionsProjectiveSpec_cylinderEnvelopeWidthComplement_localGamble_eq_localGambleEnvelopeWidthComplement]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The compact bounded-measurable DLR carrier and the all-regions projective
 cylinder interface compute the same PLN-facing midpoint strength coordinate on
 finite cylinder observables. -/
@@ -5182,6 +5200,7 @@ theorem dlrAllRegionsProjectiveSpec_finiteCylinderNaturalExtensionPrevision_domi
     (S := dlrAllRegionsProjectiveSpec M)
     (dlrAllRegionsProjectiveSpec_hasCompatibleCylinderCompletion M) Λ
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The packaged finite-region DLR cylinder natural extension computes the same
 local-query lower envelope as the explicit DLR envelope API. -/
 theorem dlrAllRegionsProjectiveSpec_finiteCylinderNaturalExtensionPrevision_localQuery_eq_lower
@@ -5198,6 +5217,7 @@ theorem dlrAllRegionsProjectiveSpec_finiteCylinderNaturalExtensionPrevision_loca
   rw [ProjectiveLocalCredalSpec.finiteCylinderNaturalExtensionPrevision_apply]
   exact dlrAllRegionsProjectiveSpec_cylinderNaturalExtension_localQuery_eq_lower M Λ q
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The packaged finite-region DLR cylinder upper-envelope prevision computes
 the same local-query upper envelope as the explicit DLR envelope API. -/
 theorem dlrAllRegionsProjectiveSpec_finiteCylinderUpperEnvelopePrevision_localQuery_eq_upper
@@ -5214,6 +5234,7 @@ theorem dlrAllRegionsProjectiveSpec_finiteCylinderUpperEnvelopePrevision_localQu
   rw [ProjectiveLocalCredalSpec.finiteCylinderUpperEnvelopePrevision_apply]
   exact dlrAllRegionsProjectiveSpec_cylinderUpperEnvelope_localQuery_eq_upper M Λ q
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The conjugate of the packaged finite-region DLR cylinder natural extension
 computes the explicit DLR local-query upper envelope. -/
 theorem dlrAllRegionsProjectiveSpec_finiteCylinderNaturalExtensionPrevision_conjugate_localQuery_eq_upper
@@ -5230,6 +5251,7 @@ theorem dlrAllRegionsProjectiveSpec_finiteCylinderNaturalExtensionPrevision_conj
   rw [ProjectiveLocalCredalSpec.finiteCylinderNaturalExtensionPrevision_conjugate_eq_upperEnvelope]
   exact dlrAllRegionsProjectiveSpec_cylinderUpperEnvelope_localQuery_eq_upper M Λ q
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The conjugate of the packaged finite-region DLR cylinder upper-envelope
 prevision computes the explicit DLR local-query lower envelope. -/
 theorem dlrAllRegionsProjectiveSpec_finiteCylinderUpperEnvelopePrevision_conjugate_localQuery_eq_lower

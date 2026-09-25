@@ -233,6 +233,7 @@ theorem ghostRename_ghost {support : List MarioVR} {base : Nat}
     ghostRename fr support base v = ⟨v.type, base + posOf support v⟩ := by
   simp [ghostRename, h]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Renaming is the identity on any expression whose variables are all
 frame-declared. -/
 theorem renameExpr_id_of_declared {support : List MarioVR} {base : Nat} :

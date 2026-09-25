@@ -69,6 +69,7 @@ lemma applyPerm_injective {G : EulerGraph k} (σ : CopyPerm G) :
   have hc := (σ a₁ b₁).injective hσ
   subst hc; rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- `applyPerm σ` is surjective on `edgeTok G`. -/
 lemma applyPerm_surjective {G : EulerGraph k} (σ : CopyPerm G) :
     Function.Surjective (applyPerm (k := k) σ) := by

@@ -198,6 +198,7 @@ theorem toWaist_artifact_code
     program.toWaist.artifact.2.code = program.nativeTerm.code :=
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The native program retains an inhabitant of its exact relational fibre,
 not only Boolean endpoint reachability. -/
 noncomputable def nativeEvidence

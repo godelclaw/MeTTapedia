@@ -280,6 +280,7 @@ noncomputable def liftedChoiceProvider :
   hypothesisFiniteSearchProvider branchPrimitiveProviders
     listFiniteSearchLifting liftedChoice
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The generic higher-order recursion reaches the actual List provider and
 retains both branches. -/
 theorem generic_list_lifting_retains_two_occurrences :
@@ -369,6 +370,7 @@ def infinitaryProductExtensionEquiv (Element : Type u) :
     left_inv := by rintro ⟨shape, children⟩; cases shape; rfl
     right_inv := fun _ => rfl }
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Pointwise relation lifting through the infinitary positive product is
 compositionally lawful. -/
 noncomputable def readerLifting : CompositionalLifting (fun Object : Type u =>

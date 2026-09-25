@@ -1320,6 +1320,7 @@ theorem redeem_collateralReceipt :
   simp [redeemAuthenticatedHindsightCredit, collateralReceipt_authorized,
     quarantinedCollateralState]
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem collateral_quarantine_and_unsound_merge_change_routing_fixture :
     let quarantined := redeemAuthenticatedHindsightCredit receiptFixtureAuthority
       collateralReceipt collateralFixtureState

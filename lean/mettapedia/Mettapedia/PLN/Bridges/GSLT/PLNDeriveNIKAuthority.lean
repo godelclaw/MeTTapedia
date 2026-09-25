@@ -318,6 +318,7 @@ def deriveGSLT : GSLT where
     subst target'
     exact step
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Exact executable decision for the authored replay step. -/
 def stepDecision : EffectiveStructure.StepDecision deriveGSLT where
   decideStep source target := decide (MachineStep source target)
@@ -325,6 +326,7 @@ def stepDecision : EffectiveStructure.StepDecision deriveGSLT where
     intro source target
     exact decide_eq_true_iff
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The executable decision accepts exactly the OSLF-generated exact-target
 native predicate. -/
 theorem decideStep_iff_ntt (source target : Machine) :
@@ -379,6 +381,7 @@ def nativeProofSystem : NativeProofSystem Claim where
   ProofObject := List DeductionArticle
   Judges := fun proof claim => Exec claim.source proof claim.target
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- A deterministic replay kernel for native PLN deduction articles. -/
 def nativeKernel : NativeProofKernel nativeProofSystem where
   decide claim proof := decide (run claim.source proof = some claim.target)
@@ -513,6 +516,7 @@ theorem certificate_accepted :
   simp [NativeProofKernel.toChecker, nativeKernel, claim, certificate, run,
     firstArticle_valid, secondArticle_valid, final]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The same accepted certificate is accepted through the typed default NIK
 frontend rather than by an untyped external Boolean. -/
 theorem defaultNIK_accepts :

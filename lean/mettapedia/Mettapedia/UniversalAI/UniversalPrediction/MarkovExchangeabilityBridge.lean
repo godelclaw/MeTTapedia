@@ -556,6 +556,7 @@ def toFin2State (state : BinarySummaryState) : TransCounts 2 × Fin 2 :=
 def ofFin2State (state : TransCounts 2 × Fin 2) : BinarySummaryState :=
   (BinaryTransCounts.ofFin2Counts state.1, fin2ToBool state.2)
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem ofFin2State_toFin2State (state : BinarySummaryState) :
     ofFin2State (toFin2State state) = state := by
   rcases state with ⟨c, b⟩

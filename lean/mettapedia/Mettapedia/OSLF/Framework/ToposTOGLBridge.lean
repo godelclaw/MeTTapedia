@@ -706,6 +706,7 @@ theorem topos_representable_patternPred_piSigma_transport_pack_via_prop12
       (C := Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj lang))
     (f := f)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- OSLF-facing Topos endpoint consuming the canonical representable Π/Σ
 transport pack and returning the paired Σ/Π transport equivalences. -/
 theorem topos_representable_patternPred_piSigma_transport_via_rulePack
@@ -751,6 +752,7 @@ theorem topos_representable_patternPred_piSigma_transport_via_rulePack
       (lang := lang) (s := s) (seed := seed) (φ := φ) (hNat := hNat)
       (hPiSigmaPack := hPiSigmaPack) (f := f) (χ := χ) (ψ := ψ)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- OSLF-facing Topos endpoint consuming the canonical representable Π/Σ
 transport pack and returning the paired Σ/Π transport equivalences. -/
 theorem topos_representable_patternPred_piSigma_transport_via_prop12_pack

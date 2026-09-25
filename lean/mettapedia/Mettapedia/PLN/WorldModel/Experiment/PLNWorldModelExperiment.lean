@@ -89,6 +89,7 @@ def pullbackQuery
     (p : Ω → Prop) : ExperimentQuery Θ Ω :=
   queryOf strong (fun o => p (κ o))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Factorization yields query-level equivalence (evidence equality) under pullback. -/
 theorem wmQueryEq_of_blackwellFactor
     (strong weak : ExperimentChannel Θ Ω)

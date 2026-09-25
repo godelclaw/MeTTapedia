@@ -507,7 +507,6 @@ theorem ds_eq_lattice_belief (A : Finset Ω) :
   -- In the power set lattice, B ≤ A iff B ⊆ A iff B ∈ A.powerset
   simp only [Finset.mem_powerset, Finset.mem_filter, Finset.mem_univ, true_and]
   -- For Finset, the order is ⊆
-  rfl
 
 /-- D-S belief functions form an OrthoadditiveValuation on the power set lattice.
     This connects classical D-S to the generalized lattice valuation framework.
@@ -554,7 +553,7 @@ treat Finset Ω as an instance of OrthomodularLattice.
 -/
 
 /-- The power set complement: Aᶜ = Ω \ A. -/
-instance finsetHasCompl : HasCompl (Finset Ω) where
+instance (priority := low) finsetHasCompl : Compl (Finset Ω) where
   compl := fun A => Finset.univ \ A
 
 /-- Membership in the power-set complement.  Stated as a `simp` lemma because Lean 4.31's
@@ -657,7 +656,6 @@ theorem belief_eq_quantum_belief (m : MassFunction Ω) (A : Finset Ω) :
   ext B
   simp only [Finset.mem_powerset, Finset.mem_filter, Finset.mem_univ, true_and]
   -- B ∈ A.powerset ↔ B ⊆ A, and B ≤ A in the lattice order ↔ B ⊆ A
-  rfl
 
 /-- Corollary: plausibility also matches. -/
 theorem plausibility_eq_quantum_plausibility (m : MassFunction Ω) (A : Finset Ω) :

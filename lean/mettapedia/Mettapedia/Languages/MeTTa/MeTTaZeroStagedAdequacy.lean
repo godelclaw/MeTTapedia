@@ -487,6 +487,7 @@ theorem one_step_report_ne_completed (model : Model)
       .completed (.produced request (produce model request)) () := by
   simp
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- An expired Zero computation resumes from its retained classified control
 term and reaches the same completed occurrence bag. -/
 theorem pipeline_resume_from_zero (model : Model)
@@ -497,6 +498,7 @@ theorem pipeline_resume_from_zero (model : Model)
         (.observed request (produce model request) (run model request)) () := by
   simp
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Running the reified control pipeline to completion and observing its
 public result agrees exactly with the generic interpreter over the authored
 five-field Zero root. -/

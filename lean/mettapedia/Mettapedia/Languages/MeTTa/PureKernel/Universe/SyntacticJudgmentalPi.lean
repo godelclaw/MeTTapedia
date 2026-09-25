@@ -418,6 +418,7 @@ theorem instantiateType_reindex
     exact subst_inst0 morphism.substitution argument.code codomain.code
   · rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Native dependent application is stable under arbitrary typed context
 substitution.  The two casts expose only the equalities of formed fibres;
 the retained application syntax is transported structurally and no typing

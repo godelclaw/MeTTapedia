@@ -163,6 +163,7 @@ def highlyCorrigible : CorrigibilityState :=
     transparency := UnitValue.one
     humanDeference := UnitValue.one }
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Completely corrigible system passes any threshold -/
 theorem highlyCorrigible_is_corrigible (threshold : UnitValue) :
     isCorrigible highlyCorrigible threshold = true := by

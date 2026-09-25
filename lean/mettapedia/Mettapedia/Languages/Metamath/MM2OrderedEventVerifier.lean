@@ -1819,12 +1819,8 @@ theorem sourceTheoremStart_without_prepared_has_no_match (owner : Atom)
   rcases preparedSpec with ⟨preparedAtomMember, preparedMatches⟩
   have classified :
       preparedAtom = sourceTheoremStartRule ∨ preparedAtom = current := by
-    have raw :
-        preparedAtom = sourceTheoremStartRule ∨
-          (preparedAtom ≠ sourceTheoremStartRule ∧ preparedAtom = current) := by
-      simpa [read, blocked, current, statement, readCopyAtom, consumeAtom,
-        sourceTheoremStartUnpreparedPhaseSpace] using preparedAtomMember
-    exact raw.elim Or.inl (fun right => Or.inr right.2)
+    simpa [read, blocked, current, statement, readCopyAtom, consumeAtom,
+      sourceTheoremStartUnpreparedPhaseSpace] using preparedAtomMember
   rcases classified with rfl | rfl
   · have noMatch :
         matchAtom currentPair.1 sourceTheoremPreparedTemplate
@@ -1877,14 +1873,9 @@ theorem sourceTheoremCommit_without_success_has_no_match (owner : Atom)
   have classified :
       successAtom = sourceTheoremCommitRule ∨ successAtom = pending ∨
         successAtom = preparedHeader := by
-    have raw :
-        successAtom = sourceTheoremCommitRule ∨
-          (successAtom ≠ sourceTheoremCommitRule ∧
-            (successAtom = pending ∨ successAtom = preparedHeader)) := by
-      simpa [read, blocked, pending, preparedHeader, statement, readCopyAtom,
-        consumeAtom, sourceTheoremCommitBlockedPhaseSpace] using
-        successAtomMember
-    exact raw.elim Or.inl (fun right => Or.inr right.2)
+    simpa [read, blocked, pending, preparedHeader, statement, readCopyAtom,
+      consumeAtom, sourceTheoremCommitBlockedPhaseSpace] using
+      successAtomMember
   rcases classified with rfl | rfl | rfl
   · simp [sourceTheoremSucceededTemplate, sourceTheoremCommitRule,
       sourceTheoremCommitInput, sourceTheoremCommitOutput,

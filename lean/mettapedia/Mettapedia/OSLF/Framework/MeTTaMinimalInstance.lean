@@ -257,6 +257,7 @@ theorem mettaMinimal_pathOrder
 
 /-! ## End-to-End Bridge (Checker → Fiber → PathSemClosed BC+Graph) -/
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- End-to-end MeTTaMinimal bridge, parallel to TinyML:
 
 `checkLangUsing` soundness at a concrete `State` is lifted to representable-fiber
@@ -396,6 +397,7 @@ theorem mettaMinimal_commDiPathSemLiftPkg_of_liftEq
     Mettapedia.OSLF.Framework.CategoryBridge.commDiPathSemLiftPkg_of_liftEq
       mettaMinimal mettaState seed q hLiftEq
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- No-`hPkg` wrapper: consumes a named MeTTaMinimal `liftEq` law directly. -/
 theorem mettaMinimal_checker_sat_to_pathSemClosed_commDi_bc_graph_of_liftEq
     {relEnv : RelationEnv}
@@ -480,6 +482,7 @@ theorem mettaMinimal_checker_sat_to_pathSemClosed_commDi_bc_graph_of_liftEq
     (hpb := hpb) (hf := hf) (hpi2 := hpi2)
     (X := X) (hArrow := hArrow) (hp := hp)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Internal helper theorem (retained for compatibility):
 checker soundness + package instantiation from an explicit `hPathOrder`
 law + BC/graph square. Prefer
@@ -568,6 +571,7 @@ theorem mettaMinimal_checker_sat_to_pathSemClosed_commDi_bc_graph_autoPkg
     (hpb := hpb) (hf := hf) (hpi2 := hpi2)
     (X := X) (hArrow := hArrow) (hp := hp)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Public no-`hPathOrder` wrapper: `mettaMinimal` discharges package
 instantiation through the concrete path-order law `mettaMinimal_pathOrder`. -/
 theorem mettaMinimal_checker_sat_to_pathSemClosed_commDi_bc_graph_auto

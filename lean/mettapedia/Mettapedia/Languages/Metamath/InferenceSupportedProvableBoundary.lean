@@ -134,6 +134,7 @@ theorem varMapOfFrame_emptyFrame :
 theorem axiomStatement_fmla_eq :
     axiomStatement.fmla = target := by decide
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem axiomStatement_hyps_eq :
     axiomStatement.ctx.hyps =
       [(("wff" : Metamath.CN), [Metamath.Sym.var xVR]),
@@ -209,6 +210,7 @@ theorem no_axiom_concludes_wff
   rw [hfmla]
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Over the empty frame, no supported derivation of a `wff`-typecoded
 formula exists: there are no hypotheses, no supported variables, and no
 axiom concluding at that typecode. -/

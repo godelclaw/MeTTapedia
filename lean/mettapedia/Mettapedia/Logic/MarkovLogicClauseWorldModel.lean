@@ -89,6 +89,7 @@ theorem clauseWM_weight_eq_queryMass
   simpa [VariableElimination.veQueryWeight, CountableMLNSemantics.toMassSemantics] using
     veQueryWeight_eq_queryMass M support constraints
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The bundled scoped-valuation query lane on the clause WM source also
 recovers the MLN query mass. -/
 theorem clauseWM_scopedWeight_eq_queryMass
@@ -102,6 +103,7 @@ theorem clauseWM_scopedWeight_eq_queryMass
   rw [ValuationWorldModel.scopedWeight_eq_weight]
   exact clauseWM_weight_eq_queryMass M support constraints
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The total weight of the clause source equals the MLN total mass. -/
 theorem clauseWM_total_eq_totalMass
     (M : GroundMLN Atom ClauseId)

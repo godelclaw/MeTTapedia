@@ -412,6 +412,7 @@ private theorem restrictTo_idempotent
   by_cases membership : name ∈ names <;>
     simp [WellSorted.FreeTypeContext.restrictTo, membership]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The supported hereditary executor is structurally independent of unused
 ambient free-context entries.  No compiler parametricity assumption is
 needed: both executions run in the same finite restricted context. -/

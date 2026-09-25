@@ -122,6 +122,7 @@ theorem variableToFactor_insert_proper
   rw [variableToFactor_insert others incoming destination hfresh]
   exact hremaining
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Subtracting an arbitrary packet can create negative precision, so a raw
 cavity is not automatically a proper Gaussian belief. -/
 theorem cavity_not_automatically_proper :
@@ -133,6 +134,7 @@ theorem cavity_not_automatically_proper :
   have hdiag := hproper.diag_pos (i := ())
   norm_num [Proper, cavity] at hdiag
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Returning the destination message instead of removing it doubles that
 edge's information.  This concrete fixture separates a cavity update from
 naive reuse of the total belief. -/

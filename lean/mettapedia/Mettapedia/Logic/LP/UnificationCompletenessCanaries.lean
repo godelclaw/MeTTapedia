@@ -72,6 +72,7 @@ def eqNonOccurs : List (Term uSig × Term uSig) := [(xTerm, fcTerm)]
 def eqConflict : List (Term uSig × Term uSig) :=
   [(.const UConst.c0, .const UConst.c1)]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Operational negative canary at the same boundary: `unifyFuel` always rejects
 `x = f(x)` for every fuel budget. -/
 theorem canary_occurs_rejects_all_fuel (fuel : ℕ) :
@@ -95,6 +96,7 @@ theorem canary_occurs_semantic_negative :
 
 def deltaNonOccurs : Subst uSig := Subst.single UVar.x fcTerm
 
+set_option backward.isDefEq.respectTransparency false in
 private theorem deltaNonOccurs_unifies_eqNonOccurs :
     Unifies deltaNonOccurs eqNonOccurs := by
   intro p hp

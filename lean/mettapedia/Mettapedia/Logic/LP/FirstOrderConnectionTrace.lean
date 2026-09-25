@@ -1314,6 +1314,7 @@ def fo_unsat_unify_root : ConnFOClause foFixtureSig := fo_unsat_unify_c1
 def fo_sat_singleton_clauses : ConnFOCNF foFixtureSig := [fo_unsat_ground_c1]
 def fo_sat_singleton_root : ConnFOClause foFixtureSig := fo_unsat_ground_c1
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Named FO fixture lemma: ground contradiction has an executable FO proof witness. -/
 theorem fo_unsat_ground :
     ∃ uFuel tr, connProveFODFS (σ := foFixtureSig)
@@ -1353,6 +1354,7 @@ theorem fo_unsat_ground :
       hDer (by decide) with ⟨tr, hRun⟩
   exact ⟨uFuel, tr, hRun⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Named FO fixture lemma: unification contradiction has an executable FO proof witness. -/
 theorem fo_unsat_unify :
     ∃ uFuel tr, connProveFODFS (σ := foFixtureSig)

@@ -230,8 +230,7 @@ theorem cut_surjective (u : α) : Function.Surjective (cut u) := by
 noncomputable instance (c : α) : HeytingFrame (Set.Iic c) := by
   refine Order.Frame.ofMinimalAxioms ?_
   refine
-    { toCompleteLattice := inferInstance
-      inf_sSup_le_iSup_inf := ?_ }
+    { inf_sSup_le_iSup_inf := ?_ }
   intro a s
   show ((a ⊓ sSup s : Set.Iic c) : α) ≤ ((⨆ b ∈ s, a ⊓ b : Set.Iic c) : Set.Iic c)
   show a.1 ⊓ sSup ((fun x : Set.Iic c => x.1) '' s) ≤
@@ -506,6 +505,7 @@ noncomputable def relativize (M : SemilocalModel Base Const) (u : M.Omega) :
       exact eval_relativize M u
         (ApplicativeStructure.Env.extend M.toApplicativeStructure ρ x) φ
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem formulaTruth_relativize (M : SemilocalModel Base Const)
     (u : M.Omega) (ρ : Env M Γ) (φ : Formula Const Γ) :
     formulaTruth (M.relativize u) ρ φ = IicFrame.cut u (formulaTruth M ρ φ) := by
@@ -519,6 +519,7 @@ noncomputable def relativize (M : SemilocalModel Base Const) (u : M.Omega) :
   rw [formulaTruth_relativize]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem antecedentTruth_relativize (M : SemilocalModel Base Const)
     (u : M.Omega) (ρ : Env M Γ) (Δ : List (Formula Const Γ)) :
     antecedentTruth (M.relativize u) ρ Δ = IicFrame.cut u (antecedentTruth M ρ Δ) := by
@@ -573,6 +574,7 @@ every relativized model `D_u` satisfies the semilocal environment-extension clau
 def SupportsUniformRelativization (M : SemilocalModel Base Const) : Prop :=
   ∀ u : M.Omega, SupportsRelativization (M.relativize u)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem supportsLowerBoundExtension_relativize
     (M : SemilocalModel Base Const)
     (h : SupportsLowerBoundExtension M) (u : M.Omega) :

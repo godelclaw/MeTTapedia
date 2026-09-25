@@ -582,6 +582,7 @@ theorem synchronizedLocalCost_parallel_strictly_below_serial
 
 /-! ## T4: the finite, proof-bearing partition -/
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The named mechanisms audited here.  This is a finite catalog, not a claim
 about every past or future predictive-coding proposal. -/
 inductive NamedPCBenefit where

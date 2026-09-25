@@ -1507,6 +1507,7 @@ theorem rhoIntrinsicLedgerTotalAction_shadow_eq_totalCost
       congrArg (fun x => x + totalCost rhoIntrinsicCostMap rest)
         (rhoIntrinsicStepLedger_shadow h)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The temporal component of the richer rho ledger records exactly one ordered
 tick per rewrite step along any rho path. -/
 theorem rhoIntrinsicLedgerTotalAction_temporalLength_eq_length
@@ -1732,6 +1733,7 @@ theorem rhoIntrinsicDirectSpentStack_semantics
           · exact rhoIntrinsicDirectSpentStack_spentSyntax_eq_totalCost path
           · exact rhoIntrinsicDirectSpentStack_ticks_eq_length path
 
+set_option backward.isDefEq.respectTransparency false in
 theorem rhoIntrinsicDirectSpentStack_rewritePathAppend
     {t u v : Pattern}
     (left : rhoGSLT.RewritePath t u)
@@ -1808,6 +1810,7 @@ noncomputable def rhoIntrinsicDirectSpentTrace
         (rhoIntrinsicDirectStepSpent step)
         (rhoIntrinsicDirectSpentTrace rest)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem rhoIntrinsicDirectSpentTrace_eq_stack
     {t u : Pattern} (path : rhoGSLT.RewritePath t u) :
     rhoIntrinsicDirectSpentTrace path = rhoIntrinsicDirectSpentStack path := by

@@ -66,6 +66,7 @@ abbrev A : Set ChainBN.JointSpace := eventTrue Three.A
 abbrev B : Set ChainBN.JointSpace := eventTrue Three.B
 abbrev C : Set ChainBN.JointSpace := eventTrue Three.C
 
+set_option backward.isDefEq.respectTransparency false in
 lemma measurable_eventTrue (v : Three) : MeasurableSet (eventTrue v) := by
   have hproj : Measurable (fun ω : ChainBN.JointSpace => ω v) := by
     fun_prop
@@ -272,10 +273,12 @@ variable (cpt : ChainBN.DiscreteCPT)
 noncomputable def restB (b : Bool) : Rest :=
   fun v => if v = idxB then b else false
 
+set_option backward.isDefEq.respectTransparency false in
 lemma restB_idxB (b : Bool) : restB b idxB = b := by
   classical
   simp [restB]
 
+set_option backward.isDefEq.respectTransparency false in
 lemma nodeProb_C_eq_of_B_eq (c : Bool) {r r' : Rest} (hB : r idxB = r' idxB) :
     nodeProb cpt (cfg c r) Three.C = nodeProb cpt (cfg c r') Three.C := by
   classical
@@ -293,6 +296,7 @@ lemma nodeProb_C_eq_of_B_eq (c : Bool) {r r' : Rest} (hB : r idxB = r' idxB) :
 noncomputable def qC_givenB (b : Bool) : ℝ≥0∞ :=
   nodeProb cpt (cfg true (restB b)) Three.C
 
+set_option backward.isDefEq.respectTransparency false in
 lemma nodeProb_C_true_eq_qC_givenB {r : Rest} {b : Bool} (hb : r idxB = b) :
     nodeProb cpt (cfg true r) Three.C = qC_givenB (cpt := cpt) b := by
   classical
@@ -311,6 +315,7 @@ open SplitAtC
 
 variable (cpt : ChainBN.DiscreteCPT)
 
+set_option backward.isDefEq.respectTransparency false in
 private lemma mu_B_eq_sum_rest :
     (μ (cpt := cpt)) (B : Set ChainBN.JointSpace) =
       ∑ r : Rest,
@@ -339,6 +344,7 @@ private lemma mu_B_eq_sum_rest :
       refine Fintype.sum_congr (α := Rest) (M := ℝ≥0∞) _ _ (fun r => ?_)
       by_cases h : r idxB = true <;> simp [h]
 
+set_option backward.isDefEq.respectTransparency false in
 private lemma mu_C_inter_B_eq_sum_rest :
     (μ (cpt := cpt)) (C ∩ (B : Set ChainBN.JointSpace)) =
       ∑ r : Rest, (if r idxB = true then cpt.jointWeight (cfg true r) else 0) := by
@@ -349,6 +355,7 @@ private lemma mu_C_inter_B_eq_sum_rest :
   -- Only the `c = true` summand contributes to `C`.
   simp [C, B, eventTrue, Set.indicator]
 
+set_option backward.isDefEq.respectTransparency false in
 private lemma mu_Bc_eq_sum_rest :
     (μ (cpt := cpt)) ((B : Set ChainBN.JointSpace)ᶜ) =
       ∑ r : Rest,
@@ -380,6 +387,7 @@ private lemma mu_Bc_eq_sum_rest :
       refine Fintype.sum_congr (α := Rest) (M := ℝ≥0∞) _ _ (fun r => ?_)
       cases hb : r idxB <;> simp
 
+set_option backward.isDefEq.respectTransparency false in
 private lemma mu_C_inter_Bc_eq_sum_rest :
     (μ (cpt := cpt)) (C ∩ (B : Set ChainBN.JointSpace)ᶜ) =
       ∑ r : Rest, (if r idxB = false then cpt.jointWeight (cfg true r) else 0) := by
@@ -391,6 +399,7 @@ private lemma mu_C_inter_Bc_eq_sum_rest :
   refine Fintype.sum_congr (α := Rest) (M := ℝ≥0∞) _ _ (fun r => ?_)
   cases hb : r idxB <;> simp
 
+set_option backward.isDefEq.respectTransparency false in
 private lemma mu_A_inter_B_eq_sum_rest :
     (μ (cpt := cpt)) (A ∩ (B : Set ChainBN.JointSpace)) =
       ∑ r : Rest,
@@ -421,6 +430,7 @@ private lemma mu_A_inter_B_eq_sum_rest :
       refine Fintype.sum_congr (α := Rest) (M := ℝ≥0∞) _ _ (fun r => ?_)
       by_cases h : r idxA = true ∧ r idxB = true <;> simp [h]
 
+set_option backward.isDefEq.respectTransparency false in
 private lemma mu_C_inter_A_inter_B_eq_sum_rest :
     (μ (cpt := cpt)) (C ∩ (A ∩ (B : Set ChainBN.JointSpace))) =
       ∑ r : Rest, (if r idxA = true ∧ r idxB = true then cpt.jointWeight (cfg true r) else 0) := by
@@ -430,6 +440,7 @@ private lemma mu_C_inter_A_inter_B_eq_sum_rest :
   rw [sum_piSplitAtC (f := fun ω => (C ∩ (A ∩ (B : Set ChainBN.JointSpace))).indicator cpt.jointWeight ω)]
   simp [C, A, B, eventTrue, Set.indicator]
 
+set_option backward.isDefEq.respectTransparency false in
 private lemma mu_A_inter_Bc_eq_sum_rest :
     (μ (cpt := cpt)) (A ∩ (B : Set ChainBN.JointSpace)ᶜ) =
       ∑ r : Rest,
@@ -468,6 +479,7 @@ private lemma mu_A_inter_Bc_eq_sum_rest :
       refine Fintype.sum_congr (α := Rest) (M := ℝ≥0∞) _ _ (fun r => ?_)
       by_cases h : r idxA = true ∧ r idxB = false <;> simp [h]
 
+set_option backward.isDefEq.respectTransparency false in
 private lemma mu_C_inter_A_inter_Bc_eq_sum_rest :
     (μ (cpt := cpt)) (C ∩ (A ∩ (B : Set ChainBN.JointSpace)ᶜ)) =
       ∑ r : Rest, (if r idxA = true ∧ r idxB = false then cpt.jointWeight (cfg true r) else 0) := by
@@ -483,6 +495,7 @@ private lemma mu_C_inter_A_inter_Bc_eq_sum_rest :
 
 open ScreeningOff
 
+set_option backward.isDefEq.respectTransparency false in
 private lemma nodeProb_C_true_add_false (r : Rest) :
     nodeProb cpt (cfg true r) Three.C + nodeProb cpt (cfg false r) Three.C = 1 := by
   classical
@@ -503,6 +516,7 @@ private lemma nodeProb_C_true_add_false (r : Rest) :
   -- Expand `nodeProb` and rewrite parent assignments to `pa`.
   simpa [DiscreteCPT.nodeProb, cfg_apply_C, pa, hpa] using hsum'
 
+set_option backward.isDefEq.respectTransparency false in
 private lemma mu_B_eq_sum_prodNonC :
     (μ (cpt := cpt)) (B : Set ChainBN.JointSpace) =
       ∑ r : Rest, (if r idxB = true then prodNonC (cpt := cpt) (c := true) r else 0) := by
@@ -564,6 +578,7 @@ private lemma mu_C_inter_B_eq_q_mul_mu_B :
     _ = qC_givenB (cpt := cpt) true * ∑ r : Rest, if r idxB = true then prodNonC (cpt := cpt) (c := true) r else 0 := by
       rfl
 
+set_option backward.isDefEq.respectTransparency false in
 private lemma mu_Bc_eq_sum_prodNonC :
     (μ (cpt := cpt)) ((B : Set ChainBN.JointSpace)ᶜ) =
       ∑ r : Rest, (if r idxB = false then prodNonC (cpt := cpt) (c := true) r else 0) := by
@@ -622,6 +637,7 @@ private lemma mu_C_inter_Bc_eq_q_mul_mu_Bc :
     _ = qC_givenB (cpt := cpt) false * ∑ r : Rest, if r idxB = false then prodNonC (cpt := cpt) (c := true) r else 0 := by
       rfl
 
+set_option backward.isDefEq.respectTransparency false in
 private lemma mu_A_inter_B_eq_sum_prodNonC :
     (μ (cpt := cpt)) (A ∩ (B : Set ChainBN.JointSpace)) =
       ∑ r : Rest,
@@ -690,6 +706,7 @@ private lemma mu_C_inter_A_inter_B_eq_q_mul_mu_A_inter_B :
           ∑ r : Rest, if r idxA = true ∧ r idxB = true then prodNonC (cpt := cpt) (c := true) r else 0 := by
       rfl
 
+set_option backward.isDefEq.respectTransparency false in
 private lemma mu_A_inter_Bc_eq_sum_prodNonC :
     (μ (cpt := cpt)) (A ∩ (B : Set ChainBN.JointSpace)ᶜ) =
       ∑ r : Rest,

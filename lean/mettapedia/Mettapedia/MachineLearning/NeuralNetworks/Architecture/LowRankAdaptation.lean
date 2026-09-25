@@ -205,6 +205,7 @@ theorem zeroDown_up_parameter_invisible
       lowRankApply base scale secondUp 0 input := by
   simp [lowRankApply]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Positive first-update fixture: a nonzero input factor leaves the zeroed
 output factor trainable even though the initial update itself is zero. -/
 theorem zeroUp_but_up_direction_live_scalar :
@@ -219,6 +220,7 @@ theorem zeroUp_but_up_direction_live_scalar :
     cases output <;>
     simp [lowRankApply, Matrix.mulVec, dotProduct, Matrix.mul_apply]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- At the asymmetric initialization, the scalar output-factor derivative is
 exactly one in the live fixture. -/
 theorem zeroUp_up_hasDerivAt_scalar :
@@ -243,6 +245,7 @@ theorem zeroUp_up_hasDerivAt_scalar :
   rw [hfunction]
   exact hasDerivAt_id (0 : ℝ)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- In the same fixture, the scalar input-factor derivative is exactly zero
 while the output factor remains zero. -/
 theorem zeroUp_down_hasDerivAt_zero_scalar :

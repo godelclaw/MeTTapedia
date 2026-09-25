@@ -231,6 +231,7 @@ theorem scalarGaussianNatural_add_exact
         firstPrecision + secondPrecision) := by
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The six modeled belief regimes. -/
 inductive BeliefRegime where
   | stationaryIndependentGaussian

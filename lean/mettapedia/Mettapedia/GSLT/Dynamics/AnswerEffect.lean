@@ -401,6 +401,7 @@ theorem listToBag_not_faithful : Not listToBag.{0}.Faithful := by
     faithful sameImage
   simp at impossible
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Quotienting an occurrence bag to support is not faithful. -/
 theorem bagToSupport_not_faithful : Not bagToSupport.{0}.Faithful := by
   intro faithful
@@ -414,6 +415,7 @@ theorem bagToSupport_not_faithful : Not bagToSupport.{0}.Faithful := by
   have cardEquality := congrArg Multiset.card impossible
   simp at cardEquality
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- No post-processing of support can recover every occurrence bag. -/
 theorem no_bag_recovery_from_support :
     Not (exists restore : Finset Unit -> Multiset Unit,

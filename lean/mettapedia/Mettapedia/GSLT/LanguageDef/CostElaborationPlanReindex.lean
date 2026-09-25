@@ -1153,6 +1153,7 @@ private theorem tailMeasure_lt_cons (head : Pattern)
     3 * sizeOf tail + 1 < 3 * sizeOf (head :: tail) + 1 := by
   simp
 
+set_option backward.isDefEq.respectTransparency.types false in
 mutual
   /-- Structural plan reindexing preserves every boundary occurrence and its
   chronological position. -/
@@ -1307,6 +1308,7 @@ mutual
     all_goals simp <;> omega
 end
 
+set_option backward.isDefEq.respectTransparency.types false in
 mutual
   /-- Structural plan mapping preserves the complete typed boundary table,
   not merely its occurrence index. -/
@@ -1541,6 +1543,7 @@ theorem CostStaticRegionPlan.reindex_isStaticRoot
   subst thinning₂
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Structural plan mapping preserves maximal-static-root classification. -/
 theorem mapCostStaticRegionPlan_isStaticRoot {source target : CIGSLT}
     (morphism : source.Morphism target)

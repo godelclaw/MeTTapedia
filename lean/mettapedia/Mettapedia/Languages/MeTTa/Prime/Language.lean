@@ -578,6 +578,7 @@ def baseRuntimeInteraction (model : Model) :
     model.base.occurrenceEmbedding
     (needRuntimeEmbedding model)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The selected base and Prime's lazy reflective runtime share one answer-bag
 interpretation, and both directions of their authored interaction preserve it. -/
 def baseRuntimeElaboration (model : Model) :

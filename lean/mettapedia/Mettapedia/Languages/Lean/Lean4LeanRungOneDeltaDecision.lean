@@ -418,6 +418,7 @@ theorem catalogHeadDecideStep_correct
     rw [catalogHeadStepWithReceipt_complete catalog universeParameters event]
     exact (vExprStructEq_eq_true_iff target target).mpr rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Exact decision for the existing raw Lean core under a finite complete
 definition catalog. -/
 def coreRawStepDecisionOfCatalog
@@ -449,6 +450,7 @@ def coreRawSuccessorEnumerationOfCatalog
         (nonempty_catalogHeadEvent_iff_coreRawHeadEvent catalog
           universeParameters source target)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Catalog-driven execution accepts exactly the generated native target
 type of the existing raw Lean GSLT. -/
 theorem coreRawStepDecisionOfCatalog_accepts_iff_ntt

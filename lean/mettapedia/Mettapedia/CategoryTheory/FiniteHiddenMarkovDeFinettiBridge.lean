@@ -69,7 +69,7 @@ theorem measurable_observedWordProb_borel
         | cons v vs =>
             simpa [FiniteHiddenMarkovModel.observationWeight,
               FiniteHiddenMarkovModel.emissionProb] using
-              measurable_const.mul (ih vs)
+              measurable_const.fun_mul (ih vs)
   exact
     (measurable_wordProb_borel (k := latent) (List.ofFn xs)).mul
       (hweight (List.ofFn xs) ys)
@@ -465,6 +465,7 @@ noncomputable def finiteHMMLatentMixingLaw
   let hg : Measurable g := measurable_of_finite g
   μ.map hg.aemeasurable
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The observed-word weight of the encoded finite discrete latent mixture is
 exactly the weighted sum of the component observed-word probabilities. -/
 theorem observedWordWeightViaProbMarkov_eq_finiteDiracMixture

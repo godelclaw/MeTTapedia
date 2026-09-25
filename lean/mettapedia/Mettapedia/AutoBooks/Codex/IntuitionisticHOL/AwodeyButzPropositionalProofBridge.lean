@@ -144,6 +144,7 @@ def toFormula :
   | _, .disj φ ψ => .or (toFormula φ) (toFormula ψ)
   | _, .impl φ ψ => .imp (toFormula φ) (toFormula ψ)
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem toFormula_atom (t : SimpleTerm Base Const Γ .prop) :
     toFormula (.atom t : SimplePropFormula Base Const Γ) = SimpleTerm.toTerm t :=
   by simp [toFormula]

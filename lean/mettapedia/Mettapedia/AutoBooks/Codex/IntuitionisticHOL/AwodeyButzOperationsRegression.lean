@@ -49,6 +49,7 @@ theorem pulledIdSection_apply_snd (b : Bool) :
     Function.Pullback.snd (pulledIdSection.toContinuousMap b) = true := by
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem pulledIdSection_apply_snd_ne_false (b : Bool) :
     Function.Pullback.snd (pulledIdSection.toContinuousMap b) ≠ false := by
   simp [pulledIdSection_apply_snd]

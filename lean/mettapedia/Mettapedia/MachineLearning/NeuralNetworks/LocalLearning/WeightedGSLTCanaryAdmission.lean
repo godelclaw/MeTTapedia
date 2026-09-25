@@ -23,6 +23,7 @@ namespace WeightedGSLTCanaryAdmission
 open WeightedGSLTBehavioralAdequacy
 open WeightedGSLTFiniteAdmission
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive CanaryPhase where
   | start
   | afterTargetOne

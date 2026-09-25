@@ -89,12 +89,14 @@ end BinaryFcaBenchmarkContext
 
 namespace ControlExample
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive Animal where
   | robin
   | penguin
   | bat
   deriving DecidableEq, Repr, Fintype
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive Trait where
   | winged
   | warmBlooded

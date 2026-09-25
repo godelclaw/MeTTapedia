@@ -268,6 +268,7 @@ def oneStepGSLT : GSLT where
 def noStepDenotation : Unit -> GSLT := fun _ => GSLT.discrete Bool
 def oneStepDenotation : Unit -> GSLT := fun _ => oneStepGSLT
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The same unit payload admits two semantic denotations with observably
 different generated diamonds.  A semantic denotation law is therefore
 necessary data, not something recovered from exact elaboration. -/

@@ -240,6 +240,7 @@ noncomputable def foldHom (targetAlgebra : Algebra polynomial target) :
     cases layer
     rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every algebra homomorphism out of the fixed family is the fold. -/
 theorem hom_eq_fold (targetAlgebra : Algebra polynomial target)
     (homomorphism : Hom (initial polynomial) targetAlgebra) :
@@ -532,6 +533,7 @@ noncomputable def eliminate {A : Type u}
             (consCase head (children .star) (hypotheses .star)))
     .star .star
 
+set_option backward.isDefEq.respectTransparency false in
 /-- List elimination computes at `nil`. -/
 @[simp] theorem eliminate_nil {A : Type u}
     (motive : ListP A → Sort v)
@@ -1034,6 +1036,7 @@ noncomputable def eliminate {A : Type u}
             (consCase length head (children .star) (hypotheses .star)))
     .star
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem eliminate_nil {A : Type u}
     (motive : ∀ length, VectorP A length → Sort v)
     (nilCase : motive 0 nil)
@@ -1206,6 +1209,7 @@ noncomputable def j {A : Type u}
           exact motiveAtRoll motive point children (reflexivity point))
     (left, right) path
 
+set_option backward.isDefEq.respectTransparency false in
 /-- J computes on reflexivity. -/
 @[simp] theorem j_refl {A : Type u}
     (motive : ∀ left right, Identity A left right → Sort v)

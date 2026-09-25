@@ -126,6 +126,7 @@ def mappedPlan {source target : CIGSLT}
     sourceBoundEquality rfl rfl outerEquality patternEquality
       sourceTypeEquality rawPlan
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Transporting a node plan preserves its maximal-static-root witness. -/
 theorem mappedPlan_isStaticRoot {source target : CIGSLT}
     (morphism : source.Morphism target)
@@ -155,6 +156,7 @@ def map {source target : CIGSLT}
     (node.mappedPlan morphism scope laws)
     (node.mappedPlan_isStaticRoot morphism scope laws)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Mapping the retained plan maps the complete ordered boundary packet. -/
 theorem mappedPlan_boundaryPacket {source target : CIGSLT}
     (morphism : source.Morphism target)
@@ -171,6 +173,7 @@ theorem mappedPlan_boundaryPacket {source target : CIGSLT}
   exact mapCostStaticRegionPlan_boundaryPacket morphism scope laws node.plan
     node.term.2.2.2.1
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Node reindexing retains the complete ordered boundary packet generated
 by its source plan. -/
 theorem map_boundaryPacket {source target : CIGSLT}
@@ -211,6 +214,7 @@ theorem map_sourceSort {source target : CIGSLT}
       node.mappedSourceSort morphism :=
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp]
 theorem map_term_pattern {source target : CIGSLT}
     (morphism : source.Morphism target)
