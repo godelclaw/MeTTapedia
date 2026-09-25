@@ -17,7 +17,7 @@ lean_lib MettapediaCombinatorics where
 library, valid at every vertex count.  Built with `lake build KrennGeneralBridge`. -/
 lean_lib KrennGeneralBridge where
   srcDir := "."
-  roots := #[`GeneralOfficialBridge, `OfficialConditional, `OfficialCharTwo, `OfficialPfaffian]
+  roots := #[`GeneralOfficialBridge, `OfficialConditional, `OfficialCharTwo, `OfficialPfaffian, `OfficialScenarios]
 
 /-- The general-vertex-set matching library: amplitude, matching parity,
 exchange, orbit normalisation, and the kernel-checked triple classification.
