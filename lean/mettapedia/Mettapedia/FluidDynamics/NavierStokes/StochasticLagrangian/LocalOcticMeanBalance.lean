@@ -134,7 +134,7 @@ theorem locallyLipschitz_extendedDensity (N : ℕ) :
   have hwy := hw.comp (g := fun z : ℝ × X6 ↦ (z.1, fun i ↦ z.2 (Sum.inr i)))
     (LipschitzWith.prod_fst.locallyLipschitz.prodMk hy)
   let L := (WithLp.linearEquiv 2 ℝ X3).symm.toContinuousLinearEquiv
-  have hsep := L.lipschitz.locallyLipschitz.comp
+  have hsep := L.lipschitzWith.locallyLipschitz.comp
     (g := fun z : ℝ × X6 ↦ (fun i ↦ z.2 (Sum.inl i)) - (fun i ↦ z.2 (Sum.inr i))) (hx.sub hy)
   have hk := (PeriodicRadialRiesz.contDiff_one_tensor_lift (d := 3) N).locallyLipschitz.comp hsep
   exact OcticKernelCorrelation.locallyLipschitz_density hk hwx hwy

@@ -38,7 +38,7 @@ theorem continuous_inviscidRHS_component {ν T B : ℝ} {u₀ : FourierVelocity}
   have hv : Continuous (fun t : Set.Icc (0 : ℝ) T ↦
       unitTorusViscousVorticityCoeff ν (s.coefficients t) q i) := by
     exact ((s.continuous q i).comp continuous_subtype_val).const_mul _
-  have h := (continuous_velocityRHS_component s hB q i).sub hv
+  have h := (continuous_velocityRHS_component s hB q i).fun_sub hv
   simpa only [infiniteVelocityRHS_eq_zero_add_viscous ν, Pi.add_apply, add_sub_cancel_right] using h
 
 theorem continuousOn_sourceWork {ν T B : ℝ} {u₀ : FourierVelocity}
@@ -124,7 +124,7 @@ theorem exists_initial_energy_inequality :
   have he := intervalIntegral.sub_le_integral_of_hasDeriv_right_of_le ht.1 hcf
     (fun τ hτ ↦ (FilteredAngularMean.hasDerivAt_correctedEnergy s hB κ P χ hcut τ
       ⟨hτ.1, hτ.2.trans_le ht.2⟩).hasDerivWithinAt)
-    ((hW.sub hD).integrableOn_Icc) (fun τ hτ ↦ ?_)
+    ((hW.fun_sub hD).integrableOn_Icc) (fun τ hτ ↦ ?_)
   · rw [intervalIntegral.integral_sub (hW.intervalIntegrable_of_Icc ht.1)
       (hD.intervalIntegrable_of_Icc ht.1), s.initial] at he
     have hlow := (correctedEnergy_bounds P (filteredVelocity χ (s.coefficients t))

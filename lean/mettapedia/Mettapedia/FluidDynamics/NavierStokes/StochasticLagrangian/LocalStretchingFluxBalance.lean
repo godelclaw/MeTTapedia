@@ -183,7 +183,7 @@ theorem energy_identity {a b : ℝ} (hab : a ≤ b)
     projectedFluxSquare 0 (s.coefficients b) = projectedFluxSquare 0 (s.coefficients a) +
       2 * ∫ t in a..b, materialWork ν (s.coefficients t) - transportWork (s.coefficients t) := by
   have hi := (intervalIntegrable_signed_work s hB g hg hSum hu hab hI).const_mul 2
-  have hc := (((continuousOn_projectedFlux s g hSum hu).norm).pow 2).mono hI
+  have hc := (((continuousOn_projectedFlux s g hSum hu).norm).fun_pow 2).mono hI
   have ha := (hI (show a ∈ Set.Icc a b from ⟨le_rfl, hab⟩)).1
   have hb := (hI (show b ∈ Set.Icc a b from ⟨hab, le_rfl⟩)).2
   have he := intervalIntegral.integral_eq_sub_of_hasDerivAt_of_le hab hc

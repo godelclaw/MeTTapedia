@@ -124,8 +124,10 @@ theorem integral_assembled_energy_split {ι : Type*} [Fintype ι] (c : ι → Fo
   have hR := continuous_assembledRetainedField c A modes w
   have hB := continuous_assembledBoundaryField c A modes w
   have hIc : Continuous (fun x : T3 ↦ ⟪assembledRetainedField c A modes w x, assembledBoundaryField c A modes w x⟫) := hR.inner hB
-  have hRs := (hR.norm.pow 2).integrable_of_hasCompactSupport (μ := volume) (HasCompactSupport.of_compactSpace _)
-  have hBs := (hB.norm.pow 2).integrable_of_hasCompactSupport (μ := volume) (HasCompactSupport.of_compactSpace _)
+  have hRs : Integrable (fun x : T3 ↦ ‖assembledRetainedField c A modes w x‖ ^ 2) :=
+    (hR.norm.pow 2).integrable_of_hasCompactSupport (μ := volume) (HasCompactSupport.of_compactSpace _)
+  have hBs : Integrable (fun x : T3 ↦ ‖assembledBoundaryField c A modes w x‖ ^ 2) :=
+    (hB.norm.pow 2).integrable_of_hasCompactSupport (μ := volume) (HasCompactSupport.of_compactSpace _)
   have hI := hIc.integrable_of_hasCompactSupport (μ := volume) (HasCompactSupport.of_compactSpace _)
   have hRI : Integrable (fun x : T3 ↦ ‖assembledRetainedField c A modes w x‖ ^ 2 +
       2 * ⟪assembledRetainedField c A modes w x, assembledBoundaryField c A modes w x⟫) := hRs.add (hI.const_mul 2)

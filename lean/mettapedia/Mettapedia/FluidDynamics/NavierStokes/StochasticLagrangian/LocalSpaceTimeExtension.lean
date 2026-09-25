@@ -65,7 +65,7 @@ theorem exists_lipschitzWith_fullCurl_lift : ∃ K,
   let Kt := Real.toNNReal (∑' q, (2 * Real.pi) * velocityEnvelope nu g q)
   let Kx := Real.toNNReal (3 * (2 * Real.pi) * ∑' q, (2 * Real.pi) * g q)
   have ht : LipschitzWith Kt (fun t ↦ fullFourierField id (fourierCurl (coefficients s a b hab t))) := by
-    simpa only [mul_one, Kt, coefficients, Set.restrict, Function.comp_def] using
+    simpa only [mul_one, Kt, coefficients, Set.domRestrict, Function.comp_def] using
       (lipschitzOnWith_fullCurlField s g hg hSum hu hI).to_restrict.comp (LipschitzWith.projIcc hab)
   have htime (r : X3) : LipschitzWith Kt (fun t ↦ fullFourierField id
       (fourierCurl (coefficients s a b hab t)) (torusPoint r)) := by

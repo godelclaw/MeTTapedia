@@ -75,7 +75,7 @@ theorem integrable_workDensity (δ κ : ℝ) (hδ : 0 < δ) (P : Finset Wavevect
     Integrable (fun x : T3 ↦ ⟪correctedGradient δ κ u x, fullVorticity (restrictVelocity P v) x⟫) := by
   have hω := LocalLowDiffusionBudget.continuous_fullVorticity u (summable_firstMoment_of_second u hu)
   have hG : Continuous (correctedGradient δ κ u) :=
-    ((hω.norm.pow 6).smul hω).sub ((continuous_projectionGradient δ hδ u hu).const_smul _)
+    ((hω.norm.pow 6).smul hω).sub ((continuous_projectionGradient δ hδ u hu).fun_const_smul _)
   exact (hG.inner (LocalLowDiffusionBudget.continuous_fullVorticity _
     (summable_fourierMoment P _ (restrictVelocity_eq_zero P v) 1))).integrable_of_hasCompactSupport
       (HasCompactSupport.of_compactSpace _)

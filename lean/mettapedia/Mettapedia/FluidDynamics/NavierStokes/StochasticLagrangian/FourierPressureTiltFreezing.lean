@@ -44,7 +44,7 @@ theorem aestronglyMeasurable_variable_transverse (chi : Wavevector → ℂ) (out
   have happly : Continuous (fun p : (R3 →L[ℝ] R3) × R3 ↦ p.1 p.2) :=
     continuous_fst.clm_apply continuous_snd
   have hv := happly.comp_aestronglyMeasurable (hH.prodMk he)
-  exact hv.sub ((he.inner hv).smul he)
+  exact hv.sub ((he.inner hv).fun_smul he)
 
 theorem integrable_variable_transverse_sq (chi : Wavevector → ℂ) (outputs : Finset Wavevector)
     (u : FourierVelocity) (e : T3 → R3) (hem : AEStronglyMeasurable e) (he : ∀ x, ‖e x‖ = 1) :
@@ -72,7 +72,7 @@ theorem integral_variable_transverse_sq_le_frozen (chi : Wavevector → ℂ)
     (f : R3) (hf : ‖f‖ = 1) (rho : ℝ) (hd : ∀ x, lineDistanceSq (e x) f ≤ rho ^ 2) :
     (∫ x : T3, ‖lineRemainder (e x) (filteredPressureOperator chi outputs u x (e x))‖ ^ 2) ≤
       2 * angularEnergy chi outputs u f + 32 * rho ^ 2 * hessianEnergy chi outputs u := by
-  have hfI := ((continuous_transverse_pressure chi outputs u f).norm.pow 2
+  have hfI := ((continuous_transverse_pressure chi outputs u f).norm.fun_pow 2
     ).integrable_of_hasCompactSupport (μ := (volume : Measure T3)) (HasCompactSupport.of_compactSpace _)
   have hH := integrable_pressure_norm_sq chi outputs u
   have h := integral_mono (integrable_variable_transverse_sq chi outputs u e hem he)

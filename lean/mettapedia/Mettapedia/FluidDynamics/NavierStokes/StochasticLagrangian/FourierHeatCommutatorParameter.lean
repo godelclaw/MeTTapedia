@@ -45,7 +45,7 @@ theorem continuous_parameter_commutator {ν : ℝ} (hν : 0 ≤ ν)
         (norm_outputFiber_le_momentEnvelope u (fourierMoment 2 u)
           (fourierMoment_nonneg _ _) (fun _ ↦ le_rfl) q k i)
   have hl := (lerayLinear q).toContinuousLinearMap.continuous.comp
-    (continuous_const.smul (continuous_pi hc) : Continuous (fun σ : Set.Ici (0 : ℝ) ↦
+    (continuous_const.fun_smul (continuous_pi hc) : Continuous (fun σ : Set.Ici (0 : ℝ) ↦
       (-unitTorusDerivativePhase) • subgridConvection (fun k ↦ (multiplier ν σ k : ℂ)) u q))
   apply hl.congr
   intro σ

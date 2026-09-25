@@ -71,10 +71,10 @@ theorem integrable_clusterSource (chi : Wavevector → ℂ) (modes outputs : Fin
   have hR : Continuous (fun x : T3 ↦ 2 * ⟪residual chi modes u x,
       strainMismatch chi modes u x + nu • fullVorticityLaplacian u x⟫) :=
     continuous_const.mul ((continuous_residual chi modes u hu1).inner
-      ((continuous_strainMismatch chi modes u hu1).add (continuous_const.smul hL)))
+      ((continuous_strainMismatch chi modes u hu1).add (continuous_const.fun_smul hL)))
   have hV : Continuous (vorticityNormRate u nu) :=
     continuous_const.mul (hw.inner (((continuous_fullStrainOperator u hu1).clm_apply hw).add
-      (continuous_const.smul hL)))
+      (continuous_const.fun_smul hL)))
   exact ((integrable_jointEnvelope chi modes outputs u hu1 nu).add
     (hR.integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _))).add
     ((hV.integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)).const_mul delta)

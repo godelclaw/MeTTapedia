@@ -424,6 +424,7 @@ def v13RealLinearNoTargetRowsHistoryField {m : Nat} {i₀ : Fin m}
   atomDecidable := inferInstance
   atom := fun omega => omega.1.val.toEquiv omega.2 row
 
+set_option backward.isDefEq.respectTransparency false in
 /-- For the adjusted real no-target-rows surface, conditioning on one public
 right-hand-side row remains balanced for the target bit.  Together with
 `v13RealLinearNoTargetRows_target_balanced`, this gives an admissible row
@@ -467,6 +468,7 @@ def v13RealLinearNoTargetRowsPublicCoordinateField {m : Nat}
     v13RealLinearCoordinateValue coordinate
       (v13RealLinearNoTargetRowsPublicInput omega)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every single public coordinate of the adjusted real no-target-rows surface
 has balanced target fibers.  This packages the rung-one public-surface
 cardinality theorem as a v13 `BalancedConditioning` statement. -/

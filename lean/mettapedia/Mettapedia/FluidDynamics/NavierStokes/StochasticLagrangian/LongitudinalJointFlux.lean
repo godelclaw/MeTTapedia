@@ -46,7 +46,7 @@ theorem continuous_flux (ν : ℝ) (u : FourierVelocity)
   have hs : Continuous (fun x ↦ fullStrainOperator u x (fullVorticity u x)) := by
     exact (continuous_vorticityStretch u hu).congr (vorticityStretch_eq u hu)
   exact (((EuclideanSpace.proj j).continuous.comp hw).smul hs).neg.add
-    (continuous_const.smul (continuous_finsetSum _ (fun k _ ↦
+    (continuous_const.fun_smul (continuous_finsetSum _ (fun k _ ↦
       ((EuclideanSpace.proj j).continuous.comp (hd k)).smul (hd k))))
 
 theorem pairing_eq (ν : ℝ) (u : FourierVelocity) (x : T3) :
@@ -132,7 +132,7 @@ theorem continuous_flux_spaceTime (j : Fin 3) :
     (fun q i ↦ (s.continuous q i).comp continuous_subtype_val) g hSum
     (fun t q ↦ (fourierMoment_mono _ (by omega : 2 ≤ 4) q).trans (hu t t.2 q))
   exact (((EuclideanSpace.proj j).continuous.comp hw).smul (hs.clm_apply hw)).neg.add
-    (continuous_const.smul (continuous_finsetSum _ (fun k _ ↦
+    (continuous_const.fun_smul (continuous_finsetSum _ (fun k _ ↦
       ((EuclideanSpace.proj j).continuous.comp (hd k)).smul (hd k))))
 
 include hSum hu in

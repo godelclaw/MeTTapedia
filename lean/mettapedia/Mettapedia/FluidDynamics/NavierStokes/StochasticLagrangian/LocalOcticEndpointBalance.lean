@@ -96,7 +96,7 @@ theorem continuousOn_nonviscousMeanRate (N : ℕ) :
   have hy := hw.comp (f := fun z : Icc (0 : ℝ) T × T6 ↦ (z.1, rightPoint z.2)) hr
   have hdx := (hS.clm_apply hw).comp (f := fun z : Icc (0 : ℝ) T × T6 ↦ (z.1, leftPoint z.2)) hl
   have hdy := (hS.clm_apply hw).comp (f := fun z : Icc (0 : ℝ) T × T6 ↦ (z.1, rightPoint z.2)) hr
-  have hvel := (hv.comp (f := fun z : Icc (0 : ℝ) T × T6 ↦ (z.1, leftPoint z.2)) hl).sub
+  have hvel := (hv.comp (f := fun z : Icc (0 : ℝ) T × T6 ↦ (z.1, leftPoint z.2)) hl).fun_sub
     (hv.comp (f := fun z : Icc (0 : ℝ) T × T6 ↦ (z.1, rightPoint z.2)) hr)
   have hsep : Continuous (fun z : Icc (0 : ℝ) T × T6 ↦ leftPoint z.2 - rightPoint z.2) :=
     (continuous_leftPoint.comp continuous_snd).sub (continuous_rightPoint.comp continuous_snd)

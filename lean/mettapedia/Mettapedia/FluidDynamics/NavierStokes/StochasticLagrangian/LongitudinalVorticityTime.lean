@@ -232,7 +232,7 @@ theorem continuous_meanEnergy : ContinuousOn (fun t ↦ meanEnergy (s.coefficien
   rw [continuousOn_iff_continuous_restrict]
   change Continuous (fun t : Set.Icc (0 : ℝ) T ↦ meanEnergy (s.coefficients t))
   have h := ((ContinuousMap.toLp 2 (volume : Measure T3) ℝ).continuous.comp
-    (continuous_longitudinalField s g hSum hu)).norm.pow 2
+    (continuous_longitudinalField s g hSum hu)).norm.fun_pow 2
   have hm (t : Set.Icc (0 : ℝ) T) : Summable (fourierMoment 1 (s.coefficients t)) :=
     summable_fourierMoment_of_le _ (by omega : 1 ≤ 4)
       (hSum.of_nonneg_of_le (fourierMoment_nonneg _ _) (hu t t.2))

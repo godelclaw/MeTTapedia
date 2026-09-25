@@ -191,6 +191,7 @@ theorem energy_sq_identity {nu T B : ℝ} {u₀ : FourierVelocity}
     exact hp.congr_deriv (by norm_num; ring)
   have he := intervalIntegral.integral_eq_sub_of_hasDerivAt_of_le ht.1 (hE.pow 2) hd
     (hint.const_mul (-4 * nu))
+  simp only [Pi.pow_apply] at he
   rw [intervalIntegral.integral_const_mul, s.initial] at he
   linarith
 

@@ -34,7 +34,7 @@ local instance : IsProbabilityMeasure (volume : Measure UnitAddCircle) :=
 
 theorem continuousAt_bottomProjector_of_gap_pos (S : SymmetricStrain) (hg : 0 < bottomGap S) :
     ContinuousAt bottomEigenlineProjector S := by
-  have h := (continuousAt_const (y := ContinuousLinearMap.id ℝ R3)).sub
+  have h := (continuousAt_const (y := ContinuousLinearMap.id ℝ R3)).fun_sub
     (continuousAt_expandingPlaneProjector_of_bottomGap_pos S hg)
   simpa only [expandingPlaneProjector, sub_sub_cancel] using h
 
@@ -60,9 +60,9 @@ theorem continuousAt_source (chi : Wavevector → ℂ) (modes outputs : Finset W
   have hf := (continuous_strainMismatch chi modes u hu1).continuousAt (x := x)
   have hd := (continuous_fullVorticityLaplacian u hu).continuousAt (x := x)
   have hgap := continuous_bottomGap.continuousAt.comp hS
-  exact (continuousAt_const.mul ((hP.clm_apply hw).inner (hf.add (continuousAt_const.smul hd)))).add
-    (((continuousAt_const.mul (hK.norm.pow 2)).div (hgap.pow 3) (pow_ne_zero 3 (ne_of_gt hg))).mul
-      ((hQ.clm_apply hw).norm.pow 2))
+  exact (continuousAt_const.fun_mul ((hP.clm_apply hw).inner (hf.fun_add (continuousAt_const.fun_smul hd)))).fun_add
+    (((continuousAt_const.fun_mul (hK.norm.fun_pow 2)).div (hgap.fun_pow 3) (pow_ne_zero 3 (ne_of_gt hg))).fun_mul
+      ((hQ.clm_apply hw).norm.fun_pow 2))
 
 def gapRegion (chi : Wavevector → ℂ) (modes : Finset Wavevector)
     (u : FourierVelocity) (eta : ℝ) : Set T3 :=

@@ -48,8 +48,8 @@ def jointEnvelope (chi : Wavevector → ℂ) (modes outputs : Finset Wavevector)
 
 theorem continuous_jointRemainder (chi : Wavevector → ℂ) (modes outputs : Finset Wavevector)
     (u : FourierVelocity) (nu : ℝ) : Continuous (jointRemainder chi modes outputs u nu) := by
-  exact (continuous_nonviscousRemainder chi modes outputs u).add
-    (continuous_const.smul (continuous_finsetSum _ (fun _ _ ↦ by
+  exact (continuous_nonviscousRemainder chi modes outputs u).fun_add
+    (continuous_const.fun_smul (continuous_finsetSum _ (fun _ _ ↦ by
       unfold strainSecond PancakeMappedFourierDiffusion.mappedSecond
       exact continuous_mappedField _ _ _)))
 

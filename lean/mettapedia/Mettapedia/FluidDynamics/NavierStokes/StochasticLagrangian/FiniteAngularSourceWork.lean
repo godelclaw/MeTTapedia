@@ -63,7 +63,7 @@ def correctedGradient (κ : ℝ) (u : FourierVelocity) (x : T3) : R3 :=
 theorem continuous_correctedGradient (κ : ℝ) (P : Finset Wavevector) (u : FourierVelocity)
     (hs : ∀ q, q ∉ P → u q = 0) : Continuous (correctedGradient κ u) := by
   have ha := continuous_fullVorticity u (summable_fourierMoment P u hs 1)
-  exact ((ha.norm.pow 6).smul ha).sub ((continuous_angularGradient P u hs).const_smul _)
+  exact ((ha.norm.pow 6).smul ha).sub ((continuous_angularGradient P u hs).fun_const_smul _)
 
 theorem integral_correctedDensityRate_eq (κ : ℝ) (P Q : Finset Wavevector) (u v : FourierVelocity)
     (hs : ∀ q, q ∉ P → u q = 0) (hv : ∀ q, q ∉ Q → v q = 0) :

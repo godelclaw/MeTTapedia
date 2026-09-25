@@ -101,7 +101,7 @@ theorem firstMoment_le_half_one_add_enstrophy (u : FourierVelocity)
   have hw := (continuous_fullVorticity u hu).norm
   have hi := hw.integrable_of_hasCompactSupport (μ := (volume : Measure T3))
     (HasCompactSupport.of_compactSpace _)
-  have hs := (hw.pow 2).integrable_of_hasCompactSupport (μ := (volume : Measure T3))
+  have hs := (hw.fun_pow 2).integrable_of_hasCompactSupport (μ := (volume : Measure T3))
     (HasCompactSupport.of_compactSpace _)
   have hb := integral_mono (hi.const_mul 2) (integrable_const 1 |>.add hs)
     (fun x ↦ by dsimp only [Pi.add_apply]; nlinarith [sq_nonneg (‖fullVorticity u x‖ - 1)])

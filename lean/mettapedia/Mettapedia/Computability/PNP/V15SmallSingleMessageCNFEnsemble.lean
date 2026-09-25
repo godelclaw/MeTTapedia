@@ -2565,6 +2565,7 @@ def xorGaugeSingleMessageAppendixICNFWorldGauge
   simp [xorGaugeSingleMessageAppendixICNFWorldGauge,
     xorGaugeSingleMessageAppendixICNFWorldOf]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The concrete Appendix-I CNF world carrier is exactly a public instance plus
 the free hidden gauge bit. -/
 def xorGaugeSingleMessageAppendixICNFWorldEquiv :

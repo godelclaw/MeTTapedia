@@ -67,6 +67,7 @@ theorem modes_neg_closed (q : Wavevector) : -q ∈ modes ↔ q ∈ modes := by
   simp only [modes, Finset.mem_insert, Finset.mem_singleton, neg_eq_iff_eq_neg, neg_neg]
   tauto
 
+set_option backward.isDefEq.respectTransparency false in
 theorem raw_neg (q : Wavevector) : raw (-q) = -raw q := by
   by_cases hq : q ∈ modes
   · simp only [modes, Finset.mem_insert, Finset.mem_singleton] at hq
@@ -117,6 +118,7 @@ theorem curlConvection_velocity (k l : Wavevector) :
   congr 1
   field_simp [unitTorusDerivativePhase_ne_zero]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem inner_tests :
     interactionTest true velocity lowInput highInput (-highInput) companion target = 4 / 3 ∧
     interactionTest true velocity lowInput (-highInput) highInput companion target = -(4 / 3) := by
