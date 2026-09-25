@@ -8309,6 +8309,29 @@ horizons, then the official periodic statement holds
 (`periodicStatementB_of_misalignmentBudget`). The hypothesis is the route's
 open input in its exact current form.
 
+**The shell-feeding inequality (the unforced ingredient).**
+`StochasticLagrangian/FourierShellFeeding.lean` isolates where the absence of
+forcing enters. Without a force, the source of the mode `k` of the vorticity
+is the convolution of the velocity with itself, and every pair `(p, k - p)`
+with `|k| ≥ 2^(Q+1)` has a member with `|p| ≥ 2^Q`: content above the scale
+`2^(Q+1)` is produced only from content above the scale `2^Q`
+(`high_pair`). With the relaxation inequality this gives, along every tame
+solution,
+
+```text
+∫₀ᴴ W_{≥Q+1}(ω) ≤ R_{Q+1}(ω₀) + (12/ν) ∫₀ᴴ V_{≥Q}(u) · V(u),
+```
+
+where `V(u) = ∑_k |u_k|` is the velocity Wiener norm and `V_{≥Q}` its part
+above `2^Q` (`integral_wienerHigh_succ_le`); and the transverse Biot–Savart
+bound `|u_k| ≤ |ω_k| / (2π|k|)` turns `V_{≥Q}(u)` into the vorticity Wiener
+norm above `2^Q` over `2π 2^Q` (`velocityWienerAbove_le`). The feeding rate
+of the next shell is the Reynolds number of the scale `2^(-Q)`, `V(u) 2^(-Q) / ν`.
+With a force there would be one more source term at every scale; this is the
+inequality a proof that unforced blowup cannot be faster than the critical
+rate would have to iterate, and it is where the seeds of the forced blowup
+candidates are excluded.
+
 ### Earlier route-audit layers
 
 The directory is best read as a route audit and obstruction library. It has
