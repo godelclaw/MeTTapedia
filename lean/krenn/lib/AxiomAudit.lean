@@ -103,3 +103,7 @@ Every top-level conditional theorem, with its dependency cone printed. -/
 #print axioms KrennTightCut.isGHZOver_shoreContract
 #print axioms KrennTightCut.four_star
 #print axioms KrennTightCut.false_of_shoreTight_six
+#print axioms MatchingTightCut.amplitude_eq_crossOne_of_dead
+#print axioms KrennTightCut.shoreTight_of_export_dead
+#print axioms KrennTightCut.shoreTight_of_import_dead
+#print axioms KrennTightCut.exists_common_export
