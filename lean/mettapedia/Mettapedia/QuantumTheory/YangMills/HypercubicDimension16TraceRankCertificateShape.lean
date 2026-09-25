@@ -10,7 +10,7 @@ namespace HypercubicDimension16TraceRankCertificate
 set_option maxRecDepth 1000000 in
 set_option maxHeartbeats 0 in
 theorem certificateShapeCheck_certificate : certificateShapeCheck = true := by
-  decide
+  decide +kernel
 
 end HypercubicDimension16TraceRankCertificate
 end YangMills

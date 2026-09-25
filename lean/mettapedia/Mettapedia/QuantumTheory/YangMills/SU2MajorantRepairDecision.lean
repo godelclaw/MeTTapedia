@@ -107,6 +107,7 @@ theorem no_completedMajorantConstantLedger :
 
 /-! ## Complete sixteen-row transfer/obstruction matrix -/
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The sixteen required fields, in the order of the decision protocol. -/
 inductive DecisionField where
   | exactBlockGeometry

@@ -222,7 +222,7 @@ theorem swapExactFieldAxes_act (h : Hypercubic4)
     · subst index
       simp [Function.update]
     · simp only [Function.update]
-      split <;> simp_all
+      split <;> first | contradiction | simp_all
   · funext index
     change h.perm
         (Function.update sector.fieldSecond slot
@@ -233,7 +233,7 @@ theorem swapExactFieldAxes_act (h : Hypercubic4)
     · subst index
       simp [Function.update]
     · simp only [Function.update]
-      split <;> simp_all
+      split <;> first | contradiction | simp_all
   · rfl
 
 theorem swapExactFieldAxes_tensorSign (h : Hypercubic4)

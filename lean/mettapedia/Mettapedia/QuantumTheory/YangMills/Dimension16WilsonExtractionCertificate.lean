@@ -68,6 +68,7 @@ theorem v14F4RelationPolicy_ne_v14O9RelationPolicy :
     v14F4RelationPolicy ≠ v14O9RelationPolicy := by
   decide
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Named operator templates that v14 itself uses when describing the low
 canonical-dimension action sector.  These are source-level continuum
 templates, not a fabricated lattice basis. -/
@@ -121,6 +122,7 @@ theorem v14_relationPolicies_disagree_inside_dimensionSixteen :
 
 /-! ## Certificate fields and the source transfer table -/
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Fields required to turn the source's range description into the actual
 dimension-`16` Wilson-coordinate certificate requested by the transfer
 theorem. -/

@@ -126,7 +126,7 @@ theorem planeReorderSign_compose :
           planeReorderSign (unsignedHypercubic left)
             (planeActionPerm right plane) := by
   set_option maxRecDepth 10000 in
-    decide
+    decide +kernel
 
 theorem planeTensorSign_compose (left right : Hypercubic4)
     (plane : OrientedPlane) :

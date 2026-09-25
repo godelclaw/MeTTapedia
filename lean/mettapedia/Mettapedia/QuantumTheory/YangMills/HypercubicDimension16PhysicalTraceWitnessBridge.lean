@@ -61,7 +61,7 @@ theorem integerArrayFoldToRational (entries : Array (Nat × Int)) :
           (fun total entry => total + Finsupp.single entry.1 entry.2) 0) =
       sparseRowValue (decodeIntegerSparseRow entries) := by
   have hfold := integerFoldToRational entries.toList 0
-  simpa only [decodeIntegerSparseRow, map_zero, zero_add,
+  simpa only [HypercubicDimension16TraceRankCertificate.decodeIntegerSparseRow, map_zero, zero_add,
     ← Array.foldl_toList] using hfold
 
 theorem encodedSelectedIntegerVector_toRational

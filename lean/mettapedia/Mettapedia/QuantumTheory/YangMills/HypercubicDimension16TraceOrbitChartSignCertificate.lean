@@ -41,6 +41,7 @@ theorem directRepresentativeTensorSign_eq
   unfold LabeledLocalWordSector.tensorSign LocalFieldLetter.tensorSign
   apply Finset.prod_congr rfl
   intro field _
+  set_option backward.isDefEq.respectTransparency.types false in
   simp [decodedPositiveRepresentative]
 
 /-- Every standard plane-histogram stabilizer in the decoded chart has

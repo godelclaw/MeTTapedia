@@ -187,7 +187,7 @@ theorem localDerivativeLetterOfList_map_hypercubic
     simp [localDerivativeLetterOfList]
   · apply (Fin.heq_fun_iff (by simp [localDerivativeLetterOfList])).2
     intro position
-    simp [localDerivativeLetterOfList]
+    exact List.get_eq_getElem.trans (List.getElem_map _)
 
 theorem localFieldLetterOfDerivativeLetter_map_hypercubic
     (h : Hypercubic4) {derivativeBudget : ℕ} (plane : OrientedPlane)
