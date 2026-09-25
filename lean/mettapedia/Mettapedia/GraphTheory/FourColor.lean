@@ -673,3 +673,4 @@ import Mettapedia.GraphTheory.FourColor.PhysicalForkCodePiece
 import Mettapedia.GraphTheory.FourColor.PhysicalForkCodeGlue
 import Mettapedia.GraphTheory.FourColor.PhysicalForkCodeSound
 import Mettapedia.GraphTheory.FourColor.PhysicalForkCodeFlatSplit
+import Mettapedia.GraphTheory.FourColor.PhysicalForkCodeWidthBarrier
