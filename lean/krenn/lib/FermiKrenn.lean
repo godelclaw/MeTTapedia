@@ -20,6 +20,10 @@ of a matching in that expansion.  By Kasteleyn's theorem, not formalized here, e
 admits such signs.  So Krenn–Gu holds for every GHZ system with a planar live graph, over ℂ, for
 every even number of sites from six on, including bicoloured entries and several entries per
 pair.
+
+**Class-coherent signs** (`not_isGHZOver_of_coherentSigns`): the same argument needs far less.
+Put the signs on the entries, and ask only that all perfect matchings live in one colouring share
+their total sign; different colourings may have different signs.
 -/
 
 namespace KrennFermi
@@ -164,6 +168,58 @@ theorem not_isGHZOver_of_pfaffian [Infinite F] {n : ℕ} (hn : 3 ≤ n)
   · rw [pfSum_signW W hP]
     exact mul_ne_zero hP.1 (hW.1 k)
   · rw [pfSum_signW W hP, hW.2 c hc, mul_zero]
+
+/-- The weights with each entry multiplied by its sign. -/
+def entrySignW (sg : Sym2 (V × Fin 3) → F) (W : Sym2 (V × Fin 3) → F) :
+    Sym2 (V × Fin 3) → F :=
+  fun z => sg z * W z
+
+/-- **Class-coherent signs**: signs on the entries and, for every colouring `c`, a nonzero
+`ε c`, such that every perfect matching live in the colouring `c` has total sign `ε c` (its
+matching sign times the signs of the entries it uses in `c`).  Pfaffian signs are the special
+case of signs depending only on the pair and one `ε` for all colourings. -/
+def CoherentSigns (W : Sym2 (V × Fin 3) → F) (sg : Sym2 (V × Fin 3) → F)
+    (ε : (V → Fin 3) → F) : Prop :=
+  (∀ c, ε c ≠ 0) ∧ ∀ c : V → Fin 3, ∀ σ ∈ pairingsOn (Finset.univ : Finset V),
+    (∀ x, W s((x, c x), (σ x, c (σ x))) ≠ 0) →
+      msgn σ Finset.univ * ∏ e ∈ (Finset.univ : Finset V).image (fun x => s(x, σ x)),
+        sg (Sym2.map (paint c) e) = ε c
+
+/-- **With class-coherent signs, each signed matching sum is `ε c` times the amplitude.** -/
+theorem pfSum_entrySignW (W : Sym2 (V × Fin 3) → F) {sg : Sym2 (V × Fin 3) → F}
+    {ε : (V → Fin 3) → F} (h : CoherentSigns W sg ε) (c : V → Fin 3) :
+    pfSum (entrySignW sg W) c Finset.univ = ε c * amplitude W c := by
+  classical
+  rw [pfSum_eq_sum_msgn, ← pmSum_univ, pmSum, Finset.mul_sum]
+  refine Finset.sum_congr rfl fun σ hσ => ?_
+  have hsplit : ∏ e ∈ (Finset.univ : Finset V).image (fun x => s(x, σ x)),
+      entrySignW sg W (Sym2.map (paint c) e)
+        = (∏ e ∈ (Finset.univ : Finset V).image (fun x => s(x, σ x)),
+            sg (Sym2.map (paint c) e)) *
+          ∏ e ∈ (Finset.univ : Finset V).image (fun x => s(x, σ x)),
+            W (Sym2.map (paint c) e) := by
+    rw [← Finset.prod_mul_distrib]
+    rfl
+  rw [hsplit]
+  by_cases hz : ∏ e ∈ (Finset.univ : Finset V).image (fun x => s(x, σ x)),
+      W (Sym2.map (paint c) e) = 0
+  · rw [hz]; ring
+  · have hlive : ∀ x, W s((x, c x), (σ x, c (σ x))) ≠ 0 := by
+      intro x h0
+      exact hz (Finset.prod_eq_zero (Finset.mem_image.mpr ⟨x, Finset.mem_univ x, rfl⟩) h0)
+    rw [← mul_assoc, h.2 c σ hσ hlive]
+
+/-- **Krenn–Gu for class-coherent signs.**  Over an infinite field, a GHZ system on `2n ≥ 6`
+sites admitting class-coherent signs does not exist: the signed weights would form a fermionic
+GHZ system.  This contains `not_isGHZOver_of_pfaffian`, and only asks for one common sign inside
+each colouring class. -/
+theorem not_isGHZOver_of_coherentSigns [Infinite F] {n : ℕ} (hn : 3 ≤ n)
+    (hV : Fintype.card V = 2 * n) {W : Sym2 (V × Fin 3) → F} (hW : IsGHZOver W)
+    {sg : Sym2 (V × Fin 3) → F} {ε : (V → Fin 3) → F} (hC : CoherentSigns W sg ε) : False := by
+  refine krennGu_fermi n hn V hV (entrySignW sg W) ⟨fun k => ?_, fun c hc => ?_⟩
+  · rw [pfSum_entrySignW W hC]
+    exact mul_ne_zero (hC.1 _) (hW.1 k)
+  · rw [pfSum_entrySignW W hC, hW.2 c hc, mul_zero]
 
 end Pfaffian
 
