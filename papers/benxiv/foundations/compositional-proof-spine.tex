@@ -102,7 +102,9 @@ carrying the supply's rooted connected decomposition the three witnesses are
 now constructed on a finite positional code of the physical fork fold
 (Section~\ref{sec:finite-fork-code}); the remaining input is the audit of
 that code's closure at interface bound $\max(w,2)$, which is not claimed and
-is useful only at a width that $D_1$ supplies \\
+is useful only at a width that $D_1$ supplies.  With a width supply for every
+least counterexample, supply and audit give the headline directly, without
+the vertex-count bound \\
 $D_5$ & Well-founded assembly from $D_0$--$D_4$ & proved as the explicit
 conditional Theorem~\ref{thm:direct-count-reductive-assembly} \\
 \bottomrule
@@ -17864,7 +17866,20 @@ and, with a raw width-$w$ supply, to the combinatorial statement is the audit:
 no reachable root code is rejecting.
 \Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeBase.reflection}
 \Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeBase.taitBaseVerifiedOnDecomposable_of_audit}
+
+The audit colours every decomposable map in the class, whatever its size, so
+the headline no longer passes through the vertex-count bound of the pumping
+argument.  A least counterexample with a supplied connected decomposition has
+its root code in the closure, and its noncolourability makes that code
+rejecting.  Hence the combinatorial statement follows from the raw width
+supply, the checked width-preserving connectedization, and the audit alone.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeBase.noGraphBackedVertexMinimalTaitCounterexample_of_supply_and_audit}
 \Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeBase.combinatorialFourColorStatement_of_raw_and_audit}
+This is the regular shape of the compositional note: the counterexample class
+is read into a finite reachable set of interface codes, and emptiness of its
+rejecting part is decided in that set.  The pumping step remains necessary for
+any route whose supply bounds the width only of sufficiently large least
+counterexamples, since the small ones must then be covered by other means.
 
 \paragraph{Parameters.}
 The closure bound depends on the width alone.  The internal forks of the

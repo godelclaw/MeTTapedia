@@ -290,14 +290,41 @@ theorem taitBaseVerifiedOnDecomposable_of_audit (k w : ℕ) (haudit : Audit (max
   (reflection.{u} k w).taitBaseVerifiedOnDecomposable_of_filter_eq_empty
     ((audit_iff_filter_eq_empty _).mp haudit)
 
+/-- **No least counterexample, from the width supply and the audit.**  The
+supplied decomposition places the least counterexample's root code in the
+closure, and noncolourability makes it rejecting.  No vertex bound is used:
+the finite base is the closure itself, not an enumeration of small maps. -/
+theorem noGraphBackedVertexMinimalTaitCounterexample_of_supply_and_audit (k w : ℕ)
+    (supply : ConnectedDecompositionSupply.{u} k w) (haudit : Audit (max w 2)) :
+    GoertzelV24SphericalMinimalCounterexampleSelection.NoGraphBackedVertexMinimalTaitCounterexample.{u} := by
+  intro V _ _ G _ rotation minimal
+  have mapData := minimal.toBridgelessSphericalCubicMapData
+  have hreach := reach_encode_of_eq mapData.spherical mapData.primalConnected
+    mapData.vertexRotationCyclic (endpoints_cubic mapData.spherical.cubic)
+    (le_max_right w 2) (wholeTree (supply rotation minimal)) (wholeTree_nodup _)
+    (goodTree_wholeTree rotation mapData _) (computedShore_wholeTree _) rootLabel
+  exact haudit _ hreach
+    ⟨(root_colour_eq_empty_iff _ rootLabel).mpr minimal.notColorable,
+      root_not_hasSmallCut _ rootLabel mapData.primalConnected mapData.edgeBridgeFree⟩
+
+/-- The combinatorial Four-Colour statement from a connected width supply and
+the audit. -/
+theorem combinatorialFourColorStatement_of_supply_and_audit (k w : ℕ)
+    (supply : ConnectedDecompositionSupply.{u} k w) (haudit : Audit (max w 2)) :
+    GoertzelV24SphericalGraphPresentation.CombinatorialFourColorStatement.{u} :=
+  (GoertzelV24SphericalGraphPresentation.combinatorialFourColorStatement_iff_spherical.{u}).2
+    (GoertzelV24SphericalMinimalCounterexampleSelection.sphericalFourColorStatement_of_no_minimal
+      (noGraphBackedVertexMinimalTaitCounterexample_of_supply_and_audit k w supply haudit))
+
 /-- **Consumer-facing assembly.**  A raw width-`w` decomposition supply and an
 audited finite closure at interface bound `max w 2` give the combinatorial
-Four-Colour statement. -/
+Four-Colour statement.  The width-preserving connectedization is the checked
+one; the vertex-count bound of the pumping argument is not used. -/
 theorem combinatorialFourColorStatement_of_raw_and_audit (w : ℕ)
     (raw : RawBranchDecompositionSupply.{u} w) (haudit : Audit (max w 2)) :
     GoertzelV24SphericalGraphPresentation.CombinatorialFourColorStatement.{u} :=
-  combinatorialFourColorStatement_of_raw_and_decomposableBase w raw
-    (taitBaseVerifiedOnDecomposable_of_audit w w haudit)
+  combinatorialFourColorStatement_of_supply_and_audit w w
+    (connectedDecompositionSupply_of_raw w raw) haudit
 
 end Graph
 
