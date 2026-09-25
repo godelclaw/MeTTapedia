@@ -116,3 +116,4 @@ Every top-level conditional theorem, with its dependency cone printed. -/
 #print axioms KrennFermi.no_isFermiGHZ_six
 #print axioms KrennFermi.krennGu_fermi
 #print axioms KrennFermi.not_isGHZOver_of_pfaffian
+#print axioms KrennFermi.not_isGHZOver_of_coherentSigns
