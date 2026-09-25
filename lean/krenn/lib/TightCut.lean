@@ -508,4 +508,62 @@ theorem false_of_odd_sign_relation {ι : Type*} (s : Finset ι) (p q : ι → F)
 
 end SignParity
 
+section ForcedPort
+
+variable {V : Type} [Fintype V] [DecidableEq V]
+
+/-- **A port with one partner forces its pair.**  If every entry with colour `a` at `u` lies on
+the pair `{u, v}`, then at every colouring painting `u` with `a`, every live matching uses the
+pair `{u, v}`. -/
+theorem forcedEdge_of_port {W : Sym2 (V × Fin 3) → F} {u v : V} {a : Fin 3}
+    (hport : ∀ w, w ≠ v → ∀ b, W s((u, a), (w, b)) = 0) {c : V → Fin 3} (hc : c u = a) :
+    ForcedEdge W c u v := by
+  intro σ _ hall
+  by_contra hne
+  have he : s(u, σ u) ∈ edges σ := Finset.mem_image_of_mem _ (Finset.mem_univ u)
+  apply hall _ he
+  simp only [Sym2.map_mk, paint, hc]
+  exact hport _ hne _
+
+/-- **A forced port makes the rest a product state.**  In a GHZ system, if every entry with colour
+`a` at `u` lies on the pair `{u, v}`, the sites other than `u, v` carry a product state in colour
+`a`: with the restricted weights, the constant colouring `a` has a nonzero amplitude and every
+other colouring of the rest a vanishing one.  (Paint `u` and `v` with `a`: the pair is forced,
+so the amplitude factors as its weight times the amplitude of the rest.) -/
+theorem productState_of_port {W : Sym2 (V × Fin 3) → F} (hW : IsGHZOver W) {u v : V}
+    [DecidableEq (Rest u v)] [Fintype (Rest u v)] (huv : u ≠ v) {a : Fin 3}
+    (hport : ∀ w, w ≠ v → ∀ b, W s((u, a), (w, b)) = 0) :
+    amplitude (restrictWeight (u := u) (v := v) W) (const a) ≠ 0 ∧
+      ∀ c : Rest u v → Fin 3, c ≠ const a →
+        amplitude (restrictWeight (u := u) (v := v) W) c = 0 := by
+  have h0 := hW.1 a
+  rw [amplitude_eq_of_forcedEdge huv W (const a) (forcedEdge_of_port hport rfl)] at h0
+  have hwuv : W s((u, a), (v, a)) ≠ 0 := by
+    have := left_ne_zero_of_mul h0
+    simpa [Sym2.map_mk, paint, const] using this
+  refine ⟨by simpa using right_ne_zero_of_mul h0, fun c hc => ?_⟩
+  have hu : extendColouring (u := u) (v := v) c a u = a := by simp [extendColouring]
+  have hv : extendColouring (u := u) (v := v) c a v = a := by
+    unfold extendColouring
+    split_ifs with h1 h2
+    · rfl
+    · rfl
+    · exact absurd rfl h2
+  have hmixed : ¬ Monochromatic (extendColouring (u := u) (v := v) c a) := by
+    rintro ⟨m, hm⟩
+    have hma : a = m := hu.symm.trans (hm u)
+    apply hc
+    funext x
+    have hx := hm x.1
+    simp only [extendColouring, dif_neg x.2.1, dif_neg x.2.2] at hx
+    rw [const, hma]
+    exact hx
+  have hext := amplitude_eq_of_forcedEdge huv W _ (forcedEdge_of_port hport hu)
+  rw [hW.2 _ hmixed, restrictColouring_extendColouring] at hext
+  have hw : W (Sym2.map (paint (extendColouring (u := u) (v := v) c a)) s(u, v)) ≠ 0 := by
+    simpa [Sym2.map_mk, paint, hu, hv] using hwuv
+  exact (mul_eq_zero.mp hext.symm).resolve_left hw
+
+end ForcedPort
+
 end KrennTightCut
