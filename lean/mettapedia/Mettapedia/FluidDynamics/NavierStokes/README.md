@@ -8377,6 +8377,38 @@ weight above `2^(Q+1)`, the pancake stretching is at most
 the cone (`sum_sharp_pancakeStretch_le`): the aperture times the pancake
 Reynolds number times the pancake mass.
 
+**The triad sine law.** `StochasticLagrangian/FourierTriadSineLaw.lean`
+removes the axis from that depletion. For two vorticity modes `p`, `r`, the
+pair-symmetrized stretching is at most `2 sin∠(p, r) ‖ω_p‖ ‖ω_r‖`
+(`norm_pair_stretch_le_sine`), and the transport of any coefficient at `r` by
+the velocity of `p` is at most `sin∠(p, r) (|r| / |p|) ‖ω_p‖ ‖ω_r‖`
+(`norm_transport_le_sine`). Collinear wavevectors do not interact at all
+(`pair_stretch_eq_zero_of_collinear`, `transport_eq_zero_of_collinear`), which
+is why plane-parallel flows solve the heat equation. Over the pairs of a set
+of modes whose angles have sine at most `σ`, the stretching at any set of
+outputs is at most `σ` times the square of the vorticity Wiener mass of the
+set, and with the sharp relaxation weight above `2^(Q+1)` at most
+`3σ / (4π²ν 4^(Q+1))` times that square (`sum_sharp_collinearStretch_le`).
+
+**What the smooth-force breakdown says about this route.** OpenAI's
+breakdown construction for the forced problem, formalized upstream and
+imported by the lane gate, collapses a slender swirling vortex column.
+Oscillatory ring pulses at the edge of the column supply the momentum flux
+that the column lacks. An exponentially small force seeds each pulse; the
+shear of the column amplifies it and tilts its wavevector toward its own
+until the amplification switches off, and viscosity then damps it. Two
+consequences follow. First, the sine law is the mechanism that switches each
+pulse off, but it does not reach the column itself, whose wavevectors fill a
+disk and interact at wide angles. Second, near the singular point the force
+is negligible against the local dynamics, and its content at small scales is
+super-polynomially small. A forced version of the cascade argument would
+carry one more source term, bounded by the content of the force above `2^Q`;
+since the forced solution breaks down, its contraction fails at every scale.
+So no estimate that survives a smooth force can prove the unforced
+statement: a proof must use the absence of forcing exactly, for instance
+through the origin of the small-scale seeds, which the shell-feeding
+inequality records only in its robust form.
+
 ### Earlier route-audit layers
 
 The directory is best read as a route audit and obstruction library. It has
