@@ -8,12 +8,18 @@ the certificate against all members), and the assembly into
 by kernel evaluation (`decide +kernel`) in its own declaration, which bounds
 the memory of every check.
 
-Usage: gen_audit.py DUMP BOUND OUTDIR [--split PAGES_PER_MODULE]
+Usage: gen_audit.py DUMP BOUND OUTDIR [--split PAGES_PER_MODULE | --layout RANGES]
+                    [--chunk PAGE:PARTS ...]
 
-Without --split one module PhysicalForkCodeAudit<Bound>.lean is written.  With
-it, the certificate goes to ...Cert.lean, the pages to ...Pages<k>.lean, and
-the assembly to PhysicalForkCodeAudit<Bound>.lean, so that the page modules can
-be checked one at a time.
+Without --split or --layout one module PhysicalForkCodeAudit<Bound>.lean is
+written.  With them, the certificate goes to ...Cert.lean, the pages to
+...Pages<k>.lean, and the assembly to PhysicalForkCodeAudit<Bound>.lean, so
+that the page modules can be checked one at a time.  --layout gives the page
+range of every module, in module order, as comma-separated `a-b` ranges (`x`
+for an unused module slot); it lets heavy pages sit in smaller modules.
+--chunk checks one page in PARTS modules, each gluing the page's member with a
+block of partners (`PhysicalForkCodeFlat.pairsOk`), and assembles the page with
+`pageOk_of_chunks`.
 """
 import os
 import sys
@@ -61,10 +67,36 @@ def page_part(bound, pages):
             f"  decide +kernel\n" for i in pages]
 
 
-def assembly_part(bound, count):
+def chunk_step(count, parts):
+    return (count + parts - 1) // parts
+
+
+def chunk_part(bound, count, page, parts, t):
+    W, w, c, codes = names(bound)
+    step = chunk_step(count, parts)
+    return [f"theorem page_{w}_{page}_c{t} :\n"
+            f"    pairsOk {bound} {codes} ({codes}.getD {page} leafF) {t * step} {step} = true := by\n"
+            f"  decide +kernel\n"]
+
+
+def chunk_assembly(bound, count, page, parts):
+    W, w, c, codes = names(bound)
+    step = chunk_step(count, parts)
+    arms = "\n".join(f"    | {t}, _ => page_{w}_{page}_c{t}" for t in range(parts))
+    return f"""theorem page_{w}_{page} :
+    pageOk {bound} {codes} ({codes}.getD {page} leafF) = true :=
+  pageOk_of_chunks {step} (by norm_num) fun t ht =>
+    match t, ht with
+{arms}
+    | _ + {parts}, h => absurd h (by rw [certCodes_{w}_length]; omega)
+"""
+
+
+def assembly_part(bound, count, chunks=()):
     W, w, c, codes = names(bound)
     arms = "\n".join(f"  | {i}, _ => exact page_{w}_{i}" for i in range(count))
-    return [f"""theorem pages_{w} : ∀ L ∈ {codes}, pageOk {bound} {codes} L = true := by
+    pre = [chunk_assembly(bound, count, page, parts) for page, parts in chunks]
+    return pre + [f"""theorem pages_{w} : ∀ L ∈ {codes}, pageOk {bound} {codes} L = true := by
   apply forall_mem_of_getD
   rw [certCodes_{w}_length]
   intro i hi
@@ -89,18 +121,34 @@ def write_module(path, imports, doc, parts):
 
 
 def main(argv):
-    if len(argv) not in (3, 5):
+    if len(argv) < 3:
         print(__doc__, file=sys.stderr)
         return 2
     dump, bound, outdir = argv[0], int(argv[1]), argv[2]
-    split = int(argv[4]) if len(argv) == 5 and argv[3] == "--split" else None
+    chunks = []
+    rest = argv[3:]
+    while "--chunk" in rest:
+        k = rest.index("--chunk")
+        page, parts = rest[k + 1].split(":")
+        chunks.append((int(page), int(parts)))
+        rest = rest[:k] + rest[k + 2:]
+    split = int(rest[1]) if len(rest) == 2 and rest[0] == "--split" else None
+    layout = None
+    if len(rest) == 2 and rest[0] == "--layout":
+        layout = []
+        for part in rest[1].split(","):
+            if part == "x":
+                layout.append(None)
+                continue
+            a, b = part.split("-")
+            layout.append(range(int(a), int(b) + 1))
     with open(dump) as fh:
         lines = [line for line in fh.readlines() if line.split()]
     cert, count = convert(lines), len(lines)
     W = names(bound)[0]
     base = f"PhysicalForkCodeAudit{W}"
     checker = PREFIX + "PhysicalForkCodeFlatCheck"
-    if split is None:
+    if split is None and layout is None:
         write_module(os.path.join(outdir, base + ".lean"), [checker], header(bound, count),
                      cert_part(cert, bound, count) + page_part(bound, range(count)) +
                      assembly_part(bound, count))
@@ -108,16 +156,34 @@ def main(argv):
     write_module(os.path.join(outdir, base + "Cert.lean"), [checker],
                  f"/-! The certificate of the audit at interface bound {bound}. -/\n",
                  cert_part(cert, bound, count))
+    if layout is None:
+        layout = [range(start, min(count, start + split)) for start in range(0, count, split)]
+    covered = sorted([i for r in layout if r is not None for i in r] +
+                     [page for page, _ in chunks])
+    if covered != list(range(count)):
+        print("layout does not cover every page exactly once", file=sys.stderr)
+        return 2
     page_modules = []
-    for k, start in enumerate(range(0, count, split)):
+    for k, pages in enumerate(layout):
+        if pages is None:
+            continue
         mod = f"{base}Pages{k}"
         page_modules.append(PREFIX + mod)
-        stop = min(count, start + split)
         write_module(os.path.join(outdir, mod + ".lean"), [PREFIX + base + "Cert"],
-                     f"/-! Pages {start} to {stop - 1} of the audit at interface bound {bound}. -/\n",
-                     page_part(bound, range(start, stop)))
-    write_module(os.path.join(outdir, base + ".lean"), page_modules, header(bound, count),
-                 assembly_part(bound, count))
+                     f"/-! Pages {pages.start} to {pages.stop - 1} of the audit at interface bound "
+                     f"{bound}. -/\n",
+                     page_part(bound, pages))
+    for page, parts in chunks:
+        for t in range(parts):
+            mod = f"{base}Chunk{page}x{t}"
+            page_modules.append(PREFIX + mod)
+            write_module(os.path.join(outdir, mod + ".lean"),
+                         [PREFIX + base + "Cert", PREFIX + "PhysicalForkCodeFlatSplit"],
+                         f"/-! Part {t} of page {page} of the audit at interface bound {bound}. -/\n",
+                         chunk_part(bound, count, page, parts, t))
+    imports = page_modules + ([PREFIX + "PhysicalForkCodeFlatSplit"] if chunks else [])
+    write_module(os.path.join(outdir, base + ".lean"), imports, header(bound, count),
+                 assembly_part(bound, count, chunks))
     return 0
 
 

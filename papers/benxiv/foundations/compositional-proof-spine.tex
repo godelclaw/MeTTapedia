@@ -101,10 +101,11 @@ reachable set imply the literal spherical finite-base premise.  For maps
 carrying the supply's rooted connected decomposition the three witnesses are
 now constructed on a finite positional code of the physical fork fold
 (Section~\ref{sec:finite-fork-code}); the remaining input is the audit of
-that code's closure at interface bound $\max(w,2)$, which is not claimed and
-is useful only at a width that $D_1$ supplies.  With a width supply for every
-least counterexample, supply and audit give the headline directly, without
-the vertex-count bound \\
+that code's closure at interface bound $\max(w,2)$.  The audit is exact (every
+root code of the closure is realized by a spherical cubic map), kernel-checked
+at $B=2$ and $B=3$, program-checked at $B=4$, and useful only at a width that
+$D_1$ supplies.  With a width supply for every least counterexample, supply and
+audit give the headline directly, without the vertex-count bound \\
 $D_5$ & Well-founded assembly from $D_0$--$D_4$ & proved as the explicit
 conditional Theorem~\ref{thm:direct-count-reductive-assembly} \\
 \bottomrule
@@ -17905,20 +17906,122 @@ finds no two physical parents with different codes.  Replacing the pairing by
 the identity is detected at $2{,}715$ of $3{,}100$ control forks, dropping the
 orientation choice at $1{,}071$, and random relabellings commute with the
 fork at every sampled fork.  Without the cut field a bridged planar map has a
-rejecting root; without the Euler guard so does the Petersen graph.  The
-closure has $19$ canonical states at $B=2$ and $97$ at $B=3$, each with exactly
-two root codes: colourable and bridgeless, or uncolourable with a bridge.
-Neither is rejecting.  A run at $B=4$ stopped at its preregistered
-$1{,}200$-second limit with $1{,}257$ states and the same two root codes; it
-is incomplete and is not a theorem.  These are program results, not kernel
-certificates.
+rejecting root; without the Euler guard so does the Petersen graph.  These
+are program results, not kernel certificates.
+
+\paragraph{The closure, measured.}
+A compiled program implements the code, the descriptor and the guarded fork as
+the Lean definitions state them, keeps one canonical representative per
+renaming class, and glues every unordered pair of states once with every
+descriptor.  It reproduces the Python counts and completes the next width.
+\begin{center}
+\begin{tabular}{rrrr}
+\toprule
+$B$ & states & forks & time \\
+\midrule
+$2$ & $19$ & $375$ & $<0.1$\,s \\
+$3$ & $97$ & $10{,}509$ & $<0.1$\,s \\
+$4$ & $1{,}468$ & $3{,}470{,}227$ & $1.1$\,s \\
+$5$ & $\ge 77{,}989$ & $\ge 3.3\cdot 10^{9}$ & incomplete \\
+\bottomrule
+\end{tabular}
+\end{center}
+At every completed width the closure has exactly the two root codes above:
+colourable without a small cut, and uncolourable with a bridge.  Neither is
+rejecting.  At $B=5$ the first run had discovered $77{,}989$ states and
+processed $53{,}214$ of them after $69$ minutes on twelve threads when its
+buffers of undeduplicated forks exceeded the $16$\,GiB memory cap; the state
+count is a lower bound.  From one width to the next the number of states grows
+by factors of about $5$, $15$ and at least $53$, so $B=6$ was not attempted.
+These are program results.  The cases $B=2$ and $B=3$ are replayed in the
+kernel below.
+
+\paragraph{A verified checker, and the audits at $B=2$ and $B=3$.}
+A flat code stores a code as lists of natural numbers: the degree flags, the
+return as a list of positions, each colour presentation as a base-three word
+(at a vertex with two shore edges the digit is the missing colour), and each
+cut record as a binary word followed by its three flags.  Renaming positions
+acts on flat codes as it acts on codes.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeFlat.represents_relabel}
+Permutations are stored as lists as well.  A first return found by a search of
+bounded length is the semantic first return, and the number of cycles is the
+number of points least on their cycle.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeFlat.firstRet_stores}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeFlat.cycF_stores}
+The executable fork reads two flat codes, the partner of every child position,
+and the kept child positions.  When its inputs store two codes and a legal
+descriptor, its output stores the abstract fork.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeFlat.represents_flatFork}
+The checker enumerates flat descriptors from pairing words and orientation
+bits.  Every legal planar descriptor is enumerated up to the order of its kept
+marks, which only renames the parent; canonical forms are least renamings.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeFlat.exists_mem_forksOf}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeFlat.represents_canon}
+If the leaf check, one page per member of a list of flat codes, and the root
+check pass, then every code of the closure is stored, up to renaming, by a
+member of the list or by a root that is not rejecting, and the audit holds.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeFlat.reach_stored}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeFlat.audit_of_checks}
+The certificate is a flat list of numbers decoded by the checker; the checker
+recomputes every fork and canonical form, so the program that produced the list
+is not trusted.  At $B=2$ the nineteen pages are checked by kernel evaluation
+in the lane gate, in about thirty seconds.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeFlat.audit_two}
+At $B=3$ the ninety-seven pages are checked outside the lane gate, in modules
+of at most four pages; four heavy pages, among them the two whose member has
+one shore edge at each of its three positions, are each checked in two halves
+of partners and assembled by a proved lemma.  No module needs more than about $14$\,GiB, and
+the whole check takes about two hours.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodeFlat.pageOk_of_chunks}  The module
+\texttt{PhysicalForkCodeAuditThree} states \texttt{audit\_three}.  At $B=4$ the
+list-based kernel checker is out of reach: the closure has fifteen times as
+many states, and each page glues every state.
+
+\paragraph{Soundness of the closure.}
+Coverage places the code of every supplied node in the closure.  The converse
+also holds: every code of the closure is the code of an actual piece.  An open
+piece is a finite graph whose vertices carry three cyclically ordered slots,
+each holding an end of an edge or left open.  A piece embedded in a cubic map
+sends its slots to the rotation of the map; the image of its edges is an edge
+shore whose middle vertices are the images of the vertices with an open slot,
+and whose degree flags are the piece's own.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodePiece.Emb.mem_mid_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodePiece.Emb.codeTwo_eq}
+Two pieces are glued along a legal descriptor by identifying the paired open
+vertices and rotating the right ends into the open left slots; at a vertex
+where both pieces have one end, the right end goes directly after the left end
+when the descriptor keeps the right mark and directly before it otherwise.  In
+every cubic map containing the glued piece, the descriptor read off the map is
+the descriptor glued along.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodePiece.physGlue_glue}
+Hence the fork theorem applies in every such map, and Euler's formula and
+connectedness pass from the children to the parent through the guard.  By
+induction over the closure, every code is realized by a piece: in every cubic
+map in which the piece is embedded, its shore has the code, is connected, and
+satisfies Euler's formula for the sphere.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodePiece.reach_realized}
+A piece realizing a root code has no open slot and is itself a cubic map.  So
+every root code of the closure is the root code of a connected cubic map
+satisfying $V+F=2+E$, glued from single edges by the forks of the closure, and
+a rejecting root code would be such a map with no Tait colouring in which every
+nontrivial vertex set is crossed by at least two edges.
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodePiece.reach_root_realized}
+\Sverified{Mettapedia.GraphTheory.FourColor.PhysicalForkCodePiece.rejecting_root_realized}
+The audit at bound $B$ is therefore exactly the Four-Colour statement, in
+Tait's form, for the maps that the closure's forks build.  These maps may have
+parallel edges; the consumer's class is simple, and the audit direction it
+consumes does not need the converse.  A program lab builds the same witnesses
+fork by fork, caps each piece by a ring of new vertices per face, and computes
+their codes directly: all $19$ states at $B=2$ and all $97$ at $B=3$, with
+their root codes, are realized.
 
 \paragraph{Remaining obligations.}
-First, the audit must be run at a width that $D_1$ supplies; the carrier is
-doubly exponential in the width, so a replayable certificate must list the
-reachable states rather than enumerate the carrier.  Second, the present Lean
-fork uses a nonconstructive first return; a verified executable fork and a
-certificate checker are needed before any closure is replayed in the kernel.
-Third, $D_1$ itself is untouched by this construction: it must produce the
-decompositions of small width to which the audit applies.
+First, $D_1$ is untouched by this construction: it must produce, for every
+least counterexample, connected decompositions of a width at which the audit is
+checked.  The audit is kernel-checked at $B=2$ and $B=3$ and program-checked at
+$B=4$; the closure grows too fast for the present certificates beyond that.
+Second, if $D_1$ supplies only a larger width, the audit there needs either a
+different certificate (for example one that records, for every fork, the
+member it lands in, so that the kernel need not recompute canonical forms) or
+an invariant of the closure that is checked without listing it.
 
