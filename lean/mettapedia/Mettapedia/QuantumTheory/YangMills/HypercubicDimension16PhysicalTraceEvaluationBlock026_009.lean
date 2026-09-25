@@ -1,5 +1,7 @@
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16PhysicalTraceEvaluationTraceCertificate
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16PhysicalTraceConditioningExecutable
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16DecoderTableRewrite
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16TraceOrbitChartKernelTables
 
 set_option autoImplicit false
 noncomputable section
@@ -25,6 +27,8 @@ theorem unsigned :
       fourPairUnsignedReynoldsEvaluation
           (assignmentIndex assignmentLocalIndex) (columnIndex columnLocalIndex) =
         expectedUnsignedEvaluation (assignmentIndex assignmentLocalIndex) (columnIndex columnLocalIndex) := by
+  rewrite_decoders_to_tables [
+    HypercubicDimension16TraceOrbitChartKernelTables.decodedPositiveRepresentativeWordChunk_eq_table]
   decide +kernel
 
 /-- Kernel replay of one bounded inverse block. -/

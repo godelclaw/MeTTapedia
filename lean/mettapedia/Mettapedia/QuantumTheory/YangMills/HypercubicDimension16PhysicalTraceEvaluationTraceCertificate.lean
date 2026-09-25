@@ -1,4 +1,6 @@
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16PhysicalTraceEvaluationSemantics
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16DecoderTableRewrite
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16TraceOrbitChartKernelTables
 
 /-! # Checked trace shape of the 98 free physical columns -/
 
@@ -19,6 +21,8 @@ stored labels paired as `(0,1)`, `(2,3)`, `(4,5)`, `(6,7)`. -/
 theorem freeRepresentatives_have_fourPairTrace :
     ∀ freeIndex : Fin 98,
       FreeRepresentativeHasFourPairTrace freeIndex := by
+  rewrite_decoders_to_tables [
+    HypercubicDimension16TraceOrbitChartKernelTables.decodedPositiveRepresentativeWordChunk_eq_table]
   decide +kernel
 
 #print axioms freeRepresentatives_have_fourPairTrace
