@@ -122,7 +122,7 @@ example (policy : PhysicalRelationPolicy) :
   ourCycleProfileInvariantTraceOrderCorrection_ourSecondaryCommutator_ne_zero policy
 
 example (policy : PhysicalRelationPolicy) :
-    incomingQuotientTraceEvaluation ⟨2, by decide⟩
+    HypercubicDimension16IncomingCommutatorTraceCertificate.incomingQuotientTraceEvaluation ⟨2, by decide⟩
       (ourCycleProfileInvariantTraceOrderCorrection
         (orbitPhysicalRelationOperator policy
           (Finsupp.single (ourSecondaryFieldSevenCommutatorGenerator policy) 1))) =
