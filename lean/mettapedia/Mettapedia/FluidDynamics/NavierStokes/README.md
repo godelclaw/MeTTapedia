@@ -8275,6 +8275,21 @@ correction, so the source is the curl of the convection; after the exchange
 form is the limit of the finite identity checked on exhausting lattice boxes.
 The sector estimates of the route are thereby statements about the stretching
 and transport series of actual solutions.
+`StochasticLagrangian/FourierCoherentDepletion.lean` transports the coherent
+pair estimate of the route, proved in a real three-vector model, to the
+periodic stretching amplitude acting on the coherent components of complex
+lattice coefficients: the periodic coherent mode is the Leray image of the
+reference direction, hence `|k|⁻²` times the model's coherent polarization,
+and the complex stretching amplitude of real vectors is the complexified model
+amplitude. Two modes in pancake cones of squared apertures `d₁, d₂ ≤ 1/4`
+stretch each other's coherent components with
+`|S(u_p^c) ω_r^c| ≤ √(6 (d₁ + d₂)) |ω_p^c| |ω_r^c|`
+(`norm_stretch_coherent_le`), and summed over the pairs of two finite mode
+sets in cones the coherent–coherent stretching over any set of outputs is at
+most the aperture gain times the product of the coherent Wiener norms
+(`sum_norm_coherentStretch_le`). This is the kinematic depletion on actual
+coefficients; the Wiener norms on the right are those of the solution, which
+is exactly the quadratic obstruction the dynamical budget must address.
 
 ### Earlier route-audit layers
 
