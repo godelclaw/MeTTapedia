@@ -37,7 +37,7 @@ bounded-description-length obligation without committing to one concrete
 learning algorithm. -/
 structure BitCodeData
     (T : ActualSwitchedLocalInterface Z k Index Block) (s : ℕ) where
-  codeFamily : BitEncodedClassifierFamily (ExactVisiblePostSwitchSurface Z k) s
+  codeFamily : BitEncodedClassifierFamily (ExactVisiblePostSwitchData Z k) s
   realized : ∀ i, ∃ c, codeFamily.decode c = T.localRule i
 
 namespace BitCodeData
@@ -166,7 +166,7 @@ the full exact-visible Boolean predictor image. -/
 theorem not_surjective_predict_of_lt_surfaceCard
     [Fintype Z]
     (h : ZABDecisionListData T zfeat)
-    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective T.predictorFamily.predict := by
   exact h.targetData.not_surjective_predict_of_lt_surfaceCard hs
 
@@ -225,7 +225,7 @@ noncomputable def zabDecisionListData_of_eq_exactZABDecisionListERMFamily
     {r : ℕ}
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (zfeat : Z → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (hT :
       T.predictorFamily =
         exactZABDecisionListERMFamily
@@ -245,7 +245,7 @@ noncomputable def bitCodeData_of_eq_exactZABDecisionListERMFamily
     {r : ℕ}
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (zfeat : Z → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (hT :
       T.predictorFamily =
         exactZABDecisionListERMFamily
@@ -261,7 +261,7 @@ noncomputable def zabDecisionListData_of_eq_bitVecZABDecisionListERMFamily
     {r : ℕ}
     (T : ActualSwitchedLocalInterface (BitVec r) k Index Block)
     (samples :
-      Index → Sample (ExactVisiblePostSwitchSurface (BitVec r) k) Bool)
+      Index → Sample (ExactVisiblePostSwitchData (BitVec r) k) Bool)
     (hT :
       T.predictorFamily =
         bitVecZABDecisionListERMFamily
@@ -279,7 +279,7 @@ noncomputable def bitCodeData_of_eq_bitVecZABDecisionListERMFamily
     {r : ℕ}
     (T : ActualSwitchedLocalInterface (BitVec r) k Index Block)
     (samples :
-      Index → Sample (ExactVisiblePostSwitchSurface (BitVec r) k) Bool)
+      Index → Sample (ExactVisiblePostSwitchData (BitVec r) k) Bool)
     (hT :
       T.predictorFamily =
         bitVecZABDecisionListERMFamily
@@ -298,7 +298,7 @@ variable {Z : Type v} {k s r : ℕ}
 truth-table budget it rules out the full-rule actual-local counterexample. -/
 theorem fullRuleActualSwitchedLocalInterface_not_bitCodeData_of_lt_surfaceCard
     [Fintype Z]
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.BitCodeData
           (fullRuleActualSwitchedLocalInterface Z k) s) := by
@@ -314,7 +314,7 @@ the exact visible truth-table budget. -/
 theorem fullRuleActualSwitchedLocalInterface_not_zabDecisionListData_of_lt_surfaceCard
     [Fintype Z]
     (zfeat : Z → BitVec r)
-    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.ZABDecisionListData
           (fullRuleActualSwitchedLocalInterface Z k) zfeat) := by

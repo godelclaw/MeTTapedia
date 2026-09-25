@@ -33,7 +33,7 @@ def projectedZExtractor
 `BitVec n → BitVec r`. -/
 noncomputable def projectedZABDecisionListERMFamily
     (coords : Fin r → Fin n)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool) :
     ExactVisibleSwitchedFamily (BitVec n) k Index :=
   exactZABDecisionListERMFamily
     (Z := BitVec n) (r := r) (k := k)
@@ -41,7 +41,7 @@ noncomputable def projectedZABDecisionListERMFamily
 
 @[simp] theorem projectedZABDecisionListERMFamily_eq
     (coords : Fin r → Fin n)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool) :
     projectedZABDecisionListERMFamily (n := n) (r := r) (k := k) (Index := Index) coords samples =
       exactZABDecisionListERMFamily
         (Z := BitVec n) (r := r) (k := k)
@@ -97,7 +97,7 @@ theorem ProjectedZABERMRecoveryData.compressionTarget
   exact (h.canonicalData).compressionTarget
 
 theorem ProjectedZABERMRecoveryData.finitePredictorCover
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {coords : Fin r → Fin n}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
@@ -107,7 +107,7 @@ theorem ProjectedZABERMRecoveryData.finitePredictorCover
   exact (h.canonicalData).finitePredictorCover
 
 theorem ProjectedZABERMRecoveryData.finiteIndexRepresentativeCover
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {coords : Fin r → Fin n}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
@@ -117,7 +117,7 @@ theorem ProjectedZABERMRecoveryData.finiteIndexRepresentativeCover
   exact (h.canonicalData).finiteIndexRepresentativeCover
 
 theorem ProjectedZABERMRecoveryData.finitePredictorQuotient
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {coords : Fin r → Fin n}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
@@ -129,7 +129,7 @@ theorem ProjectedZABERMRecoveryData.finitePredictorQuotient
 omit [Fintype (BitVec n)] in
 theorem projectedZABDecisionListERMCompressionTarget
     (coords : Fin r → Fin n)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool) :
     ExactVisibleCompressionTarget
       (Z := BitVec n) (k := k) (Index := Index)
       (projectedZABDecisionListERMFamily (n := n) (r := r) (k := k) (Index := Index) coords samples)
@@ -142,7 +142,7 @@ theorem projectedZABDecisionListERMCompressionTarget
 omit [Fintype (BitVec n)] in
 theorem projectedZABDecisionListERMCandidateData
     (coords : Fin r → Fin n)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool) :
     CanonicalZABDecisionListCandidateData
       (Z := BitVec n) (r := r) (k := k) (Index := Index)
       (projectedZExtractor (n := n) (r := r) coords)
@@ -155,7 +155,7 @@ theorem projectedZABDecisionListERMCandidateData
 omit [Fintype (BitVec n)] in
 theorem projectedZABDecisionListERMTargetData
     (coords : Fin r → Fin n)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool) :
     ExactZABDecisionListTargetData
       (Z := BitVec n) (r := r) (k := k) (Index := Index)
       (projectedZExtractor (n := n) (r := r) coords)
@@ -167,7 +167,7 @@ theorem projectedZABDecisionListERMTargetData
 omit [Fintype (BitVec n)] in
 theorem projectedZABDecisionListERMFinitePredictorCover
     (coords : Fin r → Fin n)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool) :
     (projectedZABDecisionListERMFamily
       (n := n) (r := r) (k := k) (Index := Index) coords samples).FinitePredictorCover
       (2 ^ (r + 2 * k + 1)) := by
@@ -178,7 +178,7 @@ theorem projectedZABDecisionListERMFinitePredictorCover
 omit [Fintype (BitVec n)] in
 theorem projectedZABDecisionListERMFiniteIndexRepresentativeCover
     (coords : Fin r → Fin n)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool) :
     (projectedZABDecisionListERMFamily
       (n := n) (r := r) (k := k) (Index := Index) coords samples).FiniteIndexRepresentativeCover
       (2 ^ (r + 2 * k + 1)) := by
@@ -189,7 +189,7 @@ theorem projectedZABDecisionListERMFiniteIndexRepresentativeCover
 omit [Fintype (BitVec n)] in
 theorem projectedZABDecisionListERMFinitePredictorQuotient
     (coords : Fin r → Fin n)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool) :
     (projectedZABDecisionListERMFamily
       (n := n) (r := r) (k := k) (Index := Index) coords samples).FinitePredictorQuotient
       (2 ^ (r + 2 * k + 1)) := by
@@ -199,12 +199,12 @@ theorem projectedZABDecisionListERMFinitePredictorQuotient
 
 theorem projectedZABDecisionListERMFamily_surfaceCard_le_of_surjective_predict
     (coords : Fin r → Fin n)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hsurj :
       Function.Surjective
         (projectedZABDecisionListERMFamily
           (n := n) (r := r) (k := k) (Index := Index) coords samples).predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ≤ r + 2 * k + 1 := by
+    Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ≤ r + 2 * k + 1 := by
   exact
     (projectedZABDecisionListERMCandidateData
       (n := n) (r := r) (k := k) (Index := Index) coords samples).surfaceCard_le_of_surjective_predict
@@ -212,8 +212,8 @@ theorem projectedZABDecisionListERMFamily_surfaceCard_le_of_surjective_predict
 
 theorem projectedZABDecisionListERMFamily_not_surjective_of_lt_surfaceCard
     (coords : Fin r → Fin n)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
-    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k)) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
+    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData (BitVec n) k)) :
     ¬ Function.Surjective
         (projectedZABDecisionListERMFamily
           (n := n) (r := r) (k := k) (Index := Index) coords samples).predict := by
@@ -223,24 +223,24 @@ theorem projectedZABDecisionListERMFamily_not_surjective_of_lt_surfaceCard
       hs
 
 theorem ProjectedZABERMRecoveryData.surfaceCard_le_of_surjective_predict
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {coords : Fin r → Fin n}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
     (h : ProjectedZABERMRecoveryData
       (n := n) (r := r) (k := k) (Index := Index) μ coords G q)
     (hsurj : Function.Surjective G.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ≤ r + 2 * k + 1 := by
+    Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ≤ r + 2 * k + 1 := by
   exact (h.canonicalData).surfaceCard_le_of_surjective_predict hsurj
 
 theorem ProjectedZABERMRecoveryData.not_surjective_predict_of_lt_surfaceCard
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {coords : Fin r → Fin n}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
     (h : ProjectedZABERMRecoveryData
       (n := n) (r := r) (k := k) (Index := Index) μ coords G q)
-    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k)) :
+    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData (BitVec n) k)) :
     ¬ Function.Surjective G.predict := by
   exact (h.canonicalData).not_surjective_predict_of_lt_surfaceCard hs
 

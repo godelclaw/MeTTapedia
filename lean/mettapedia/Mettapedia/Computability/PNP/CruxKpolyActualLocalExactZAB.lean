@@ -20,7 +20,7 @@ the explicit decision-list budget. -/
 theorem kpolyCoverage_anchor_exactZABDecisionListERMClockedKpolyFiniteLearningPayload
     {Z : Type*} [Fintype Z] {r k clock : ℕ} {Index : Type*}
     (zfeat : Z → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ClockedKpolyFiniteLearningPayload
       (exactZABDecisionListERMFamily
         (Z := Z) (r := r) (k := k) (Index := Index) zfeat samples)
@@ -33,7 +33,7 @@ budget. -/
 theorem kpolyCoverage_anchor_bitVecZABDecisionListERMClockedKpolyFiniteLearningPayload
     {r k clock : ℕ} {Index : Type*} [Fintype (BitVec r)]
     (samples :
-      Index → Sample (ExactVisiblePostSwitchSurface (BitVec r) k) Bool) :
+      Index → Sample (ExactVisiblePostSwitchData (BitVec r) k) Bool) :
     ClockedKpolyFiniteLearningPayload
       (bitVecZABDecisionListERMFamily
         (r := r) (k := k) (Index := Index) samples)
@@ -46,7 +46,7 @@ manuscript-facing family variable. -/
 theorem kpolyCoverage_anchor_clockedPayload_of_eq_bitVecZABDecisionListERMFamily
     {r k clock : ℕ} {Index : Type*} [Fintype (BitVec r)]
     (samples :
-      Index → Sample (ExactVisiblePostSwitchSurface (BitVec r) k) Bool)
+      Index → Sample (ExactVisiblePostSwitchData (BitVec r) k) Bool)
     {G : ExactVisibleSwitchedFamily (BitVec r) k Index}
     (hG :
       G =
@@ -60,7 +60,7 @@ localizes the obligation to every finite region whose sampling mass exceeds the
 advertised threshold. -/
 theorem kpolyCoverage_anchor_exactZABERMRecoveryData_exists_pos_mass_disagreement_in_region_of_badCode
     {Z : Type*} [Fintype Z] {r k : ℕ} {Index : Type*}
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -71,7 +71,7 @@ theorem kpolyCoverage_anchor_exactZABERMRecoveryData_exists_pos_mass_disagreemen
     (c :
       (rawExactZABDecisionListBitFamily Z r k zfeat).toEncodedFamily.BadCodes
         (G.predict i))
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
+    (region : Finset (ExactVisiblePostSwitchData Z k))
     (hmass : q < region.sum (fun x => μ x)) :
     ∃ x, x ∈ region ∧ μ x ≠ 0 ∧
       (rawExactZABDecisionListBitFamily Z r k zfeat).decode c.1 x ≠
@@ -82,7 +82,7 @@ theorem kpolyCoverage_anchor_exactZABERMRecoveryData_exists_pos_mass_disagreemen
 the clocked payload below the full exact-visible surface threshold. -/
 theorem kpolyCoverage_anchor_currentExactVisibleInterface_not_forall_clockedPayload_of_lt_surfaceCard
     {Z : Type v} [Fintype Z] {k s clock : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (∀ {Index : Type v} (G : ExactVisibleSwitchedFamily Z k Index),
         ClockedKpolyFiniteLearningPayload G s clock) :=
   currentExactVisibleInterface_not_forall_clockedKpolyFiniteLearningPayload_of_lt_surfaceCard

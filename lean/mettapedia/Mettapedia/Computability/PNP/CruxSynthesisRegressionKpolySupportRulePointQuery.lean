@@ -13,8 +13,8 @@ universe u v w z
 
 theorem kpoly_anchor_support_full_rule_eval_decoder_iff_mem_range_regression
     {Z : Type v} {Block : Type v} {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
-    (u₀ : ExactVisiblePostSwitchSurface Z k) :
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
+    (u₀ : ExactVisiblePostSwitchData Z k) :
     (∃ decode : (Block → Bool) → Bool,
       ∀ rule : ExactVisibleRule Z k,
         decode
@@ -26,8 +26,8 @@ theorem kpoly_anchor_support_full_rule_eval_decoder_iff_mem_range_regression
 
 theorem kpoly_anchor_support_full_rule_all_eval_decoders_iff_surjective_regression
     {Z : Type v} {Block : Type v} {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k) :
-    (∀ u₀ : ExactVisiblePostSwitchSurface Z k,
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k) :
+    (∀ u₀ : ExactVisiblePostSwitchData Z k,
       ∃ decode : (Block → Bool) → Bool,
         ∀ rule : ExactVisibleRule Z k,
           decode
@@ -39,8 +39,8 @@ theorem kpoly_anchor_support_full_rule_all_eval_decoders_iff_surjective_regressi
 
 theorem kpoly_anchor_support_full_rule_query_decoder_iff_forall_mem_range_regression
     {Z : Type v} {Block : Type v} {Query : Type v} {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
-    (queryOf : Query → ExactVisiblePostSwitchSurface Z k) :
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
+    (queryOf : Query → ExactVisiblePostSwitchData Z k) :
     (∃ decode : (Block → Bool) → Query → Bool,
       ∀ rule : ExactVisibleRule Z k,
         decode
@@ -52,8 +52,8 @@ theorem kpoly_anchor_support_full_rule_query_decoder_iff_forall_mem_range_regres
 
 theorem kpoly_anchor_support_full_rule_no_query_decoder_of_missed_query_regression
     {Z : Type v} {Block : Type v} {Query : Type v} {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
-    (queryOf : Query → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
+    (queryOf : Query → ExactVisiblePostSwitchData Z k)
     (q₀ : Query) (hmiss : ∀ phi, visibleOf phi ≠ queryOf q₀) :
     ¬ ∃ decode : (Block → Bool) → Query → Bool,
       ∀ rule : ExactVisibleRule Z k,

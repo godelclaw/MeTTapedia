@@ -21,16 +21,16 @@ variable {Z : Type*} {k : ℕ}
 /-- A Boolean rule on the exact visible surface is invariant on every raw
 `(a,b)` fiber when it gives equal outputs to exact inputs with the same
 `abVisibleData`. -/
-def ABFiberInvariantRule (rule : ExactVisiblePostSwitchSurface Z k → Bool) : Prop :=
+def ABFiberInvariantRule (rule : ExactVisiblePostSwitchData Z k → Bool) : Prop :=
   ∀ u v, abVisibleData u = abVisibleData v → rule u = rule v
 
 /-- A Boolean rule separates the raw `(a,b)` quotient when it distinguishes two
 exact inputs with the same raw `(a,b)` data. -/
-def ABFiberSeparatingRule (rule : ExactVisiblePostSwitchSurface Z k → Bool) : Prop :=
+def ABFiberSeparatingRule (rule : ExactVisiblePostSwitchData Z k → Bool) : Prop :=
   ∃ u v, abVisibleData u = abVisibleData v ∧ rule u ≠ rule v
 
 theorem not_abFiberSeparatingRule_of_abFiberInvariantRule
-    {rule : ExactVisiblePostSwitchSurface Z k → Bool}
+    {rule : ExactVisiblePostSwitchData Z k → Bool}
     (hrule : ABFiberInvariantRule (Z := Z) (k := k) rule) :
     ¬ ABFiberSeparatingRule (Z := Z) (k := k) rule := by
   rintro ⟨u, v, hab, hneq⟩
@@ -40,7 +40,7 @@ theorem abFiberInvariantRule_of_eq_predict_of_abVisibleInvariant
     {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     (hinv : ABVisibleInvariant (Z := Z) (k := k) G)
-    {i : Index} {rule : ExactVisiblePostSwitchSurface Z k → Bool}
+    {i : Index} {rule : ExactVisiblePostSwitchData Z k → Bool}
     (hi : G.predict i = rule) :
     ABFiberInvariantRule (Z := Z) (k := k) rule := by
   intro u v hab
@@ -50,7 +50,7 @@ theorem not_exists_predict_eq_of_abVisibleInvariant_of_abFiberSeparatingRule
     {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     (hinv : ABVisibleInvariant (Z := Z) (k := k) G)
-    {rule : ExactVisiblePostSwitchSurface Z k → Bool}
+    {rule : ExactVisiblePostSwitchData Z k → Bool}
     (hsep : ABFiberSeparatingRule (Z := Z) (k := k) rule) :
     ¬ ∃ i, G.predict i = rule := by
   rintro ⟨i, hi⟩
@@ -77,7 +77,7 @@ theorem not_exists_predict_eq_of_factorsThrough_abVisibleData_of_abFiberSeparati
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index}
     (hfactor : G.FactorsThrough abVisibleData H)
-    {rule : ExactVisiblePostSwitchSurface Z k → Bool}
+    {rule : ExactVisiblePostSwitchData Z k → Bool}
     (hsep : ABFiberSeparatingRule (Z := Z) (k := k) rule) :
     ¬ ∃ i, G.predict i = rule :=
   not_exists_predict_eq_of_abVisibleInvariant_of_abFiberSeparatingRule
@@ -87,7 +87,7 @@ theorem not_exists_predict_eq_of_factorsThrough_abVisibleData_of_abFiberSeparati
     hsep
 
 /-- The concrete rule reading the hidden `z` bit on the exact visible surface. -/
-def boolZProjectionRule (u : ExactVisiblePostSwitchSurface Bool k) : Bool := u.z
+def boolZProjectionRule (u : ExactVisiblePostSwitchData Bool k) : Bool := u.z
 
 theorem boolZProjectionRule_abFiberSeparatingRule :
     ABFiberSeparatingRule (Z := Bool) (k := k)

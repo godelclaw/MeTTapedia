@@ -18,7 +18,7 @@ variable {n r k : ℕ} {Index : Type*}
 /-- The shared raw exact `(a, b)` affine-feature recovery interface inherits
 the same exact-surface lower bound on `BitVec n`. -/
 theorem SharedABAffineFeatureRecoveryData.bitVecSurfaceCard_le_of_surjective_predict
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
     (h :
@@ -32,7 +32,7 @@ theorem SharedABAffineFeatureRecoveryData.bitVecSurfaceCard_le_of_surjective_pre
 cannot be surjective once its exponential feature budget sits below the full
 exact-surface threshold. -/
 theorem SharedABAffineFeatureRecoveryData.not_surjective_predict_of_budget_lt
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
     (h :
@@ -46,7 +46,7 @@ theorem SharedABAffineFeatureRecoveryData.not_surjective_predict_of_budget_lt
 interface cannot be surjective when its shared affine width is strictly smaller
 than the full exact visible width. -/
 theorem SharedABAffineFeatureRecoveryData.not_surjective_predict_of_lt_visibleWidth
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
     (h :
@@ -59,7 +59,7 @@ theorem SharedABAffineFeatureRecoveryData.not_surjective_predict_of_lt_visibleWi
 /-- The shared raw exact `(a, b)` sparse-threshold recovery interface inherits
 the same exact-surface lower bound on `BitVec n`. -/
 theorem SharedABSparseThresholdRecoveryData.bitVecSurfaceCard_le_of_surjective_predict
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
     (h :
@@ -73,7 +73,7 @@ theorem SharedABSparseThresholdRecoveryData.bitVecSurfaceCard_le_of_surjective_p
 cannot be surjective once its linear threshold budget sits below the full
 exact-surface threshold. -/
 theorem SharedABSparseThresholdRecoveryData.not_surjective_predict_of_budget_lt
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
     (h :

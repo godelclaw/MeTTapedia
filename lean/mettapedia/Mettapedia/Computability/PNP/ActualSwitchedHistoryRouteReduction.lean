@@ -223,7 +223,7 @@ theorem switchedHistoryExactVisibleCompressionWrapper_card_le_of_true_fieldedSwi
     (hfield : V13FieldSwitchingInstantiatedFrom hist items)
     (hsurj : Function.Surjective T.predictorFamily.predict)
     (hwrap : SwitchedHistoryExactVisibleCompressionWrapper Ω T s hist items) :
-    2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ 2 ^ s := by
+    2 ^ Fintype.card (ExactVisiblePostSwitchData Z k) ≤ 2 ^ s := by
   exact
     exactVisible_finitePredictorCover_card_le_of_surjective_predict
       (Index := Index) hsurj
@@ -241,7 +241,7 @@ theorem switchedHistoryClockedKpolyFiniteLearningWrapper_card_le_of_true_fielded
     (hfield : V13FieldSwitchingInstantiatedFrom hist items)
     (hsurj : Function.Surjective T.predictorFamily.predict)
     (hwrap : SwitchedHistoryClockedKpolyFiniteLearningWrapper Ω T s clock hist items) :
-    2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ 2 ^ s := by
+    2 ^ Fintype.card (ExactVisiblePostSwitchData Z k) ≤ 2 ^ s := by
   exact
     exactVisible_finitePredictorCover_card_le_of_surjective_predict
       (Index := Index) hsurj
@@ -258,7 +258,7 @@ theorem switchedHistoryExactVisibleCompressionWrapper_surfaceCard_le_of_true_fie
     (hfield : V13FieldSwitchingInstantiatedFrom hist items)
     (hsurj : Function.Surjective T.predictorFamily.predict)
     (hwrap : SwitchedHistoryExactVisibleCompressionWrapper Ω T s hist items) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ s := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ s := by
   exact
     (Nat.pow_le_pow_iff_right Nat.one_lt_two).1
       (switchedHistoryExactVisibleCompressionWrapper_card_le_of_true_fieldedSwitching_of_surjective_predict
@@ -274,7 +274,7 @@ theorem switchedHistoryClockedKpolyFiniteLearningWrapper_surfaceCard_le_of_true_
     (hfield : V13FieldSwitchingInstantiatedFrom hist items)
     (hsurj : Function.Surjective T.predictorFamily.predict)
     (hwrap : SwitchedHistoryClockedKpolyFiniteLearningWrapper Ω T s clock hist items) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ s := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ s := by
   exact
     (Nat.pow_le_pow_iff_right Nat.one_lt_two).1
       (switchedHistoryClockedKpolyFiniteLearningWrapper_card_le_of_true_fieldedSwitching_of_surjective_predict
@@ -290,7 +290,7 @@ theorem not_switchedHistoryExactVisibleCompressionWrapper_of_true_fieldedSwitchi
     {s : ℕ} {hist : List (FiniteEvent Ω)} {items : List (V13FieldedStep Ω)}
     (hfield : V13FieldSwitchingInstantiatedFrom hist items)
     (hsurj : Function.Surjective T.predictorFamily.predict)
-    (hcard : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hcard : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ SwitchedHistoryExactVisibleCompressionWrapper Ω T s hist items := by
   intro hwrap
   exact
@@ -307,7 +307,7 @@ theorem not_switchedHistoryClockedKpolyFiniteLearningWrapper_of_true_fieldedSwit
     {s clock : ℕ} {hist : List (FiniteEvent Ω)} {items : List (V13FieldedStep Ω)}
     (hfield : V13FieldSwitchingInstantiatedFrom hist items)
     (hsurj : Function.Surjective T.predictorFamily.predict)
-    (hcard : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hcard : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ SwitchedHistoryClockedKpolyFiniteLearningWrapper Ω T s clock hist items := by
   intro hwrap
   exact

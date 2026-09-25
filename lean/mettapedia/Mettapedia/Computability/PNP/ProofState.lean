@@ -437,12 +437,12 @@ theorem currentPNPKpolyBridgeCoverageCore_node_refutation_packet :
           ClockedKpolyFiniteLearningPayload G s clock ↔
             G.FinitePredictorCover (2 ^ s)) ∧
       (∀ {Ω Z : Type*} [Fintype Ω] [Fintype Z] {k s clock : ℕ},
-        s < Fintype.card (ExactVisiblePostSwitchSurface Z k) →
+        s < Fintype.card (ExactVisiblePostSwitchData Z k) →
           ¬ ProductBoundOnlyClockedKpolyFiniteLearningBridge
               Ω Z k s clock
               ([] : List (FiniteEvent Ω)) ([] : List (V13FieldedStep Ω))) ∧
       (∀ {Ω Z : Type*} [Fintype Ω] [Fintype Z] {k s clock : ℕ},
-        s < Fintype.card (ExactVisiblePostSwitchSurface Z k) →
+        s < Fintype.card (ExactVisiblePostSwitchData Z k) →
           ¬ FieldedSwitchingOnlyClockedKpolyFiniteLearningBridge
               Ω Z k s clock
               ([] : List (FiniteEvent Ω)) ([] : List (V13FieldedStep Ω))) := by

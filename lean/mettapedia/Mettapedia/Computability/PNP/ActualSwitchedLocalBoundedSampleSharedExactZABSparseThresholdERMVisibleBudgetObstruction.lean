@@ -51,8 +51,8 @@ theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_surfaceCard_le_o
         (SharedExactZABSparseThresholdERMData
           (boundedSamplePluginMajorityActualSwitchedLocalInterface Z k sampleBound)
           zfeat))
-    (hsample : Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤
+    (hsample : Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound) :
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤
       2 * allAffinePointBlockFeatureCount (r + (k + k)) := by
   rcases hdata with ⟨h⟩
   exact
@@ -64,10 +64,10 @@ theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_surfaceCard_le_o
 carry shared exact sparse-threshold ERM data when the exact visible surface is
 already larger than the point-block sparse-threshold bit budget. -/
 theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMData_of_lt_surfaceCard
-    (hsample : Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound)
+    (hsample : Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound)
     (hs :
       2 * allAffinePointBlockFeatureCount (r + (k + k)) <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+        Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (SharedExactZABSparseThresholdERMData
           (boundedSamplePluginMajorityActualSwitchedLocalInterface Z k sampleBound)
@@ -100,7 +100,7 @@ theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_visibleWidth_le_
             (BitVec n) k sampleBound)
           zfeat))
     (hsample :
-      Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ≤ sampleBound) :
+      Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ≤ sampleBound) :
     n ≤ 2 * r + 2 * k + 1 := by
   rcases hdata with ⟨h⟩
   exact
@@ -113,7 +113,7 @@ carry shared exact sparse-threshold ERM data below the unconditional
 point-block visible-width threshold, even without the counting-gap packet. -/
 theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMData_of_two_mul_extractorWidth_add_two_mul_k_succ_lt_visibleWidth
     (hsample :
-      Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ≤ sampleBound)
+      Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ≤ sampleBound)
     (hgap : 2 * r + 2 * k + 1 < n) :
     ¬ Nonempty
         (SharedExactZABSparseThresholdERMData

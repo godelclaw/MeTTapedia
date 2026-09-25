@@ -71,7 +71,7 @@ variable {G : ExactVisibleSwitchedFamily Z k Index}
 /-- On the exact visible post-switch surface, clocked realization is exactly the
 existing exact visible compression target. -/
 theorem exists_clockedExactVisibleRealization_iff_exactVisibleCompressionTarget :
-    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         G.RealizedByClockedBitFamily F) ↔
       ExactVisibleCompressionTarget (Z := Z) (k := k) (Index := Index) G s := by
   exact IndexedPredictorFamily.exists_clockedBitFamily_iff_hasBitBudget
@@ -80,9 +80,9 @@ theorem exists_clockedExactVisibleRealization_iff_exactVisibleCompressionTarget 
 /-- The clock parameter is expressivity-irrelevant for exact visible switched
 families. -/
 theorem exists_clockedExactVisibleRealization_iff_of_clock :
-    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         G.RealizedByClockedBitFamily F) ↔
-      ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock',
+      ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock',
         G.RealizedByClockedBitFamily F := by
   exact IndexedPredictorFamily.exists_clockedBitFamily_iff_exists_clockedBitFamily_of_clock
     (G := G) (s := s) (clock := clock) (clock' := clock')
@@ -90,7 +90,7 @@ theorem exists_clockedExactVisibleRealization_iff_of_clock :
 /-- Failing to prove an exact visible compression target is the same as failing
 to produce a clocked realization family with the same bit budget. -/
 theorem not_exists_clockedExactVisibleRealization_iff_not_exactVisibleCompressionTarget :
-    (¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    (¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         G.RealizedByClockedBitFamily F) ↔
       ¬ ExactVisibleCompressionTarget (Z := Z) (k := k) (Index := Index) G s := by
   rw [exists_clockedExactVisibleRealization_iff_exactVisibleCompressionTarget]
@@ -99,7 +99,7 @@ theorem not_exists_clockedExactVisibleRealization_iff_not_exactVisibleCompressio
 compression target used by the rest of the `Kpoly` ledger. -/
 theorem exactVisibleCompressionTarget_of_exists_clockedExactVisibleRealization
     (hclocked :
-      ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+      ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         G.RealizedByClockedBitFamily F) :
     ExactVisibleCompressionTarget (Z := Z) (k := k) (Index := Index) G s :=
   (exists_clockedExactVisibleRealization_iff_exactVisibleCompressionTarget
@@ -109,7 +109,7 @@ theorem exactVisibleCompressionTarget_of_exists_clockedExactVisibleRealization
 clocked realization family for any chosen external clock. -/
 theorem exists_clockedExactVisibleRealization_of_exactVisibleCompressionTarget
     (hsmall : ExactVisibleCompressionTarget (Z := Z) (k := k) (Index := Index) G s) :
-    ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
       G.RealizedByClockedBitFamily F :=
   (exists_clockedExactVisibleRealization_iff_exactVisibleCompressionTarget
     (G := G) (s := s) (clock := clock)).2 hsmall

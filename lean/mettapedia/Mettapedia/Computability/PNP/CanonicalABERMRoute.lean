@@ -23,7 +23,7 @@ variable {Z : Type*} {k : ℕ} {Index : Type*}
 /-- The canonical raw `(a, b)` decision-list code chosen by ERM for each
 indexed sample. -/
 noncomputable def canonicalABDecisionListERMCode
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     Index → SharedAffineDecisionListCode (k + k) :=
   fun i =>
     (sharedAffineDecisionListCodeEquivBitCode (k + k)).symm
@@ -32,12 +32,12 @@ noncomputable def canonicalABDecisionListERMCode
 /-- The indexed exact-surface family obtained by running ERM inside the raw
 `(a, b)` decision-list class. -/
 noncomputable def canonicalABDecisionListERMFamily
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ExactVisibleSwitchedFamily Z k Index :=
   (rawExactABDecisionListBitFamily Z k).indexedEmpiricalRiskFamily samples
 
 theorem canonicalABDecisionListERMFamily_eq_canonicalABCodeFamily
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     canonicalABDecisionListERMFamily (Z := Z) (k := k) samples =
       canonicalABCodeFamily
         (Z := Z) (k := k)
@@ -48,7 +48,7 @@ theorem canonicalABDecisionListERMFamily_eq_canonicalABCodeFamily
 
 theorem canonicalABDecisionListERMCandidateData
     [Inhabited Z]
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     CanonicalABDecisionListCandidateData
       (Z := Z) (k := k) (Index := Index)
       (canonicalABDecisionListERMFamily (Z := Z) (k := k) samples) := by
@@ -61,7 +61,7 @@ theorem canonicalABDecisionListERMCandidateData
 
 theorem canonicalABDecisionListERMCompressionTarget
     [Inhabited Z]
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ExactVisibleCompressionTarget
       (Z := Z) (k := k) (Index := Index)
       (canonicalABDecisionListERMFamily (Z := Z) (k := k) samples)
@@ -72,12 +72,12 @@ theorem canonicalABDecisionListERMCompressionTarget
 
 theorem canonicalABDecisionListERMFamily_surfaceCard_le_of_surjective_predict
     [Inhabited Z] [Fintype Z]
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (hsurj :
       Function.Surjective
         (canonicalABDecisionListERMFamily
           (Z := Z) (k := k) samples).predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ 2 * k + 1 := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ 2 * k + 1 := by
   exact
     (canonicalABDecisionListERMCandidateData
       (Z := Z) (k := k) (Index := Index) samples).surfaceCard_le_of_surjective_predict
@@ -85,8 +85,8 @@ theorem canonicalABDecisionListERMFamily_surfaceCard_le_of_surjective_predict
 
 theorem canonicalABDecisionListERMFamily_not_surjective_of_lt_surfaceCard
     [Inhabited Z] [Fintype Z]
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
-    (hs : 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
+    (hs : 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective
         (canonicalABDecisionListERMFamily
           (Z := Z) (k := k) samples).predict := by
@@ -100,8 +100,8 @@ section
 variable [Inhabited Z] [Fintype Z]
 
 noncomputable def canonicalABDecisionListERMRecoveryData
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (q : ℝ≥0∞)
     (hq :
       ∀ i,
@@ -126,8 +126,8 @@ noncomputable def canonicalABDecisionListERMRecoveryData
   ⟩
 
 theorem canonicalABDecisionListERMRecoveryLowerBound
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (q : ℝ≥0∞)
     (hq :
       ∀ i,

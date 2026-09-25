@@ -96,7 +96,7 @@ theorem canonicalABCodeFamily_not_exists_predict_eq_boolZProjectionRule
 theorem CanonicalABDecisionListCandidateData.exists_pos_mass_disagreement_boolZProjectionRule
     {G : ExactVisibleSwitchedFamily Bool k Index}
     (h : CanonicalABDecisionListCandidateData (Z := Bool) (k := k) (Index := Index) G)
-    {μ : PMF (ExactVisiblePostSwitchSurface Bool k)}
+    {μ : PMF (ExactVisiblePostSwitchData Bool k)}
     (i : Index)
     (hfalse : μ ⟨false, default, default⟩ ≠ 0)
     (htrue : μ ⟨true, default, default⟩ ≠ 0) :
@@ -107,7 +107,7 @@ theorem CanonicalABDecisionListCandidateData.exists_pos_mass_disagreement_boolZP
 
 theorem canonicalABCodeFamily_exists_pos_mass_disagreement_boolZProjectionRule
     (codes : Index → SharedAffineDecisionListCode (k + k))
-    {μ : PMF (ExactVisiblePostSwitchSurface Bool k)}
+    {μ : PMF (ExactVisiblePostSwitchData Bool k)}
     (i : Index)
     (hfalse : μ ⟨false, default, default⟩ ≠ 0)
     (htrue : μ ⟨true, default, default⟩ ≠ 0) :
@@ -123,7 +123,7 @@ theorem canonicalABCodeFamily_exists_pos_mass_disagreement_boolZProjectionRule
 theorem CanonicalABDecisionListCandidateData.agreementMass_lt_one_boolZProjectionRule
     {G : ExactVisibleSwitchedFamily Bool k Index}
     (h : CanonicalABDecisionListCandidateData (Z := Bool) (k := k) (Index := Index) G)
-    {μ : PMF (ExactVisiblePostSwitchSurface Bool k)}
+    {μ : PMF (ExactVisiblePostSwitchData Bool k)}
     (i : Index)
     (hfalse : μ ⟨false, default, default⟩ ≠ 0)
     (htrue : μ ⟨true, default, default⟩ ≠ 0) :
@@ -134,7 +134,7 @@ theorem CanonicalABDecisionListCandidateData.agreementMass_lt_one_boolZProjectio
 
 theorem canonicalABCodeFamily_agreementMass_lt_one_boolZProjectionRule
     (codes : Index → SharedAffineDecisionListCode (k + k))
-    {μ : PMF (ExactVisiblePostSwitchSurface Bool k)}
+    {μ : PMF (ExactVisiblePostSwitchData Bool k)}
     (i : Index)
     (hfalse : μ ⟨false, default, default⟩ ≠ 0)
     (htrue : μ ⟨true, default, default⟩ ≠ 0) :
@@ -149,7 +149,7 @@ theorem canonicalABCodeFamily_agreementMass_lt_one_boolZProjectionRule
 theorem CanonicalABDecisionListCandidateData.not_exists_agreementMass_eq_one_boolZProjectionRule
     {G : ExactVisibleSwitchedFamily Bool k Index}
     (h : CanonicalABDecisionListCandidateData (Z := Bool) (k := k) (Index := Index) G)
-    {μ : PMF (ExactVisiblePostSwitchSurface Bool k)}
+    {μ : PMF (ExactVisiblePostSwitchData Bool k)}
     (hfalse : μ ⟨false, default, default⟩ ≠ 0)
     (htrue : μ ⟨true, default, default⟩ ≠ 0) :
     ¬ ∃ i, agreementMass μ (boolZProjectionRule (k := k)) (G.predict i) = 1 := by
@@ -159,7 +159,7 @@ theorem CanonicalABDecisionListCandidateData.not_exists_agreementMass_eq_one_boo
 
 theorem canonicalABCodeFamily_not_exists_agreementMass_eq_one_boolZProjectionRule
     (codes : Index → SharedAffineDecisionListCode (k + k))
-    {μ : PMF (ExactVisiblePostSwitchSurface Bool k)}
+    {μ : PMF (ExactVisiblePostSwitchData Bool k)}
     (hfalse : μ ⟨false, default, default⟩ ≠ 0)
     (htrue : μ ⟨true, default, default⟩ ≠ 0) :
     ¬ ∃ i, agreementMass μ (boolZProjectionRule (k := k))
@@ -177,7 +177,7 @@ section
 variable [Inhabited Z] [Fintype Z] [Nontrivial Z]
 
 theorem SharedABAffineFeatureRecoveryData.not_surjective_predict_of_nontrivial
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
@@ -187,7 +187,7 @@ theorem SharedABAffineFeatureRecoveryData.not_surjective_predict_of_nontrivial
   exact h.targetData.not_surjective_predict_of_nontrivial
 
 theorem SharedABSparseThresholdRecoveryData.not_surjective_predict_of_nontrivial
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
@@ -197,7 +197,7 @@ theorem SharedABSparseThresholdRecoveryData.not_surjective_predict_of_nontrivial
   exact h.targetData.not_surjective_predict_of_nontrivial
 
 theorem SharedABDecisionListRecoveryData.not_surjective_predict_of_nontrivial
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {features : Fin r → AffineColumnCode (k + k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -209,7 +209,7 @@ theorem SharedABDecisionListRecoveryData.not_surjective_predict_of_nontrivial
   exact h.targetData.not_surjective_predict_of_nontrivial
 
 theorem SharedExactABAffineFeatureERMRecoveryData.not_surjective_predict_of_nontrivial
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
@@ -219,7 +219,7 @@ theorem SharedExactABAffineFeatureERMRecoveryData.not_surjective_predict_of_nont
   exact h.targetData.not_surjective_predict_of_nontrivial
 
 theorem SharedExactABSparseThresholdERMRecoveryData.not_surjective_predict_of_nontrivial
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
@@ -229,7 +229,7 @@ theorem SharedExactABSparseThresholdERMRecoveryData.not_surjective_predict_of_no
   exact h.targetData.not_surjective_predict_of_nontrivial
 
 theorem SharedExactABERMRecoveryData.not_surjective_predict_of_nontrivial
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :

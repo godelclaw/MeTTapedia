@@ -163,7 +163,7 @@ theorem regression_switchedHistoryExactVisibleCompressionWrapper_card_le_of_surj
         0
         ([] : List (FiniteEvent Bool))
         ([] : List (V13FieldedStep Bool)) →
-      2 ^ Fintype.card (ExactVisiblePostSwitchSurface Bool 0) ≤ 1 := by
+      2 ^ Fintype.card (ExactVisiblePostSwitchData Bool 0) ≤ 1 := by
   intro hwrap
   simpa using
     switchedHistoryExactVisibleCompressionWrapper_card_le_of_true_fieldedSwitching_of_surjective_predict
@@ -183,7 +183,7 @@ theorem regression_switchedHistoryClockedKpolyFiniteLearningWrapper_card_le_of_s
         0
         ([] : List (FiniteEvent Bool))
         ([] : List (V13FieldedStep Bool)) →
-      2 ^ Fintype.card (ExactVisiblePostSwitchSurface Bool 0) ≤ 1 := by
+      2 ^ Fintype.card (ExactVisiblePostSwitchData Bool 0) ≤ 1 := by
   intro hwrap
   simpa using
     switchedHistoryClockedKpolyFiniteLearningWrapper_card_le_of_true_fieldedSwitching_of_surjective_predict
@@ -202,7 +202,7 @@ theorem regression_switchedHistoryExactVisibleCompressionWrapper_surfaceCard_le_
         0
         ([] : List (FiniteEvent Bool))
         ([] : List (V13FieldedStep Bool)) →
-      Fintype.card (ExactVisiblePostSwitchSurface Bool 0) ≤ 0 := by
+      Fintype.card (ExactVisiblePostSwitchData Bool 0) ≤ 0 := by
   intro hwrap
   simpa using
     switchedHistoryExactVisibleCompressionWrapper_surfaceCard_le_of_true_fieldedSwitching_of_surjective_predict
@@ -222,7 +222,7 @@ theorem regression_switchedHistoryClockedKpolyFiniteLearningWrapper_surfaceCard_
         0
         ([] : List (FiniteEvent Bool))
         ([] : List (V13FieldedStep Bool)) →
-      Fintype.card (ExactVisiblePostSwitchSurface Bool 0) ≤ 0 := by
+      Fintype.card (ExactVisiblePostSwitchData Bool 0) ≤ 0 := by
   intro hwrap
   simpa using
     switchedHistoryClockedKpolyFiniteLearningWrapper_surfaceCard_le_of_true_fieldedSwitching_of_surjective_predict
@@ -235,7 +235,7 @@ theorem regression_switchedHistoryClockedKpolyFiniteLearningWrapper_surfaceCard_
       hwrap
 
 theorem regression_not_switchedHistoryExactVisibleCompressionWrapper_of_zero_lt_surfaceCard :
-    0 < Fintype.card (ExactVisiblePostSwitchSurface Bool 0) →
+    0 < Fintype.card (ExactVisiblePostSwitchData Bool 0) →
       ¬ SwitchedHistoryExactVisibleCompressionWrapper
           Bool
           (fullRuleActualSwitchedLocalInterface Bool 0)
@@ -254,7 +254,7 @@ theorem regression_not_switchedHistoryExactVisibleCompressionWrapper_of_zero_lt_
       hcard
 
 theorem regression_not_switchedHistoryClockedKpolyFiniteLearningWrapper_of_zero_lt_surfaceCard :
-    0 < Fintype.card (ExactVisiblePostSwitchSurface Bool 0) →
+    0 < Fintype.card (ExactVisiblePostSwitchData Bool 0) →
       ¬ SwitchedHistoryClockedKpolyFiniteLearningWrapper
           Bool
           (fullRuleActualSwitchedLocalInterface Bool 0)

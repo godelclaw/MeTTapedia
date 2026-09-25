@@ -124,7 +124,7 @@ surface is nontrivial. -/
 theorem switchedHistoryBudget_lt_surfaceCard_of_le_of_two_le
     (hr : r ≤ n)
     (hwidth : 2 ≤ n + 2 * k) :
-    r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) := by
+    r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) := by
   have hbudget :
       r + 2 * k + 1 < 2 ^ (n + 2 * k) :=
     exactZABDecisionListBudget_lt_bitVecTruthTable_of_le_of_two_le

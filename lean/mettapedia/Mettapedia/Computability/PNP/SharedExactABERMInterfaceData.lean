@@ -17,11 +17,11 @@ variable {Z : Type*} {r k : ℕ} {Index : Type*}
 
 structure SharedExactABERMRecoveryData
     [Inhabited Z] [Fintype Z]
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (G : ExactVisibleSwitchedFamily Z k Index)
     (q : ℝ≥0∞) where
   features : Fin r → AffineColumnCode (k + k)
-  samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool
+  samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool
   exact_family :
     G = sharedExactABAffineDecisionListERMFamily (Z := Z) (r := r) (k := k) features samples
   agreement_le :

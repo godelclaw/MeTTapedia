@@ -20,7 +20,7 @@ theorem kpolyCoverage_anchor_not_finitePredictorCover_of_factorsThrough_ab_and_s
     {Z : Type*} [Inhabited Z] {k : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index} {N : ℕ}
-    (hN : N < 2 ^ Fintype.card (ABVisibleSurface k))
+    (hN : N < 2 ^ Fintype.card (ABVisibleState k))
     (hfactor : G.FactorsThrough abVisibleData H)
     (hsurj : Function.Surjective H.predict) :
     ¬ G.FinitePredictorCover N :=
@@ -35,7 +35,7 @@ theorem kpolyCoverage_anchor_abVisible_finitePredictorCover_card_le_of_factorsTh
     {k : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index} {N : ℕ}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ i, H.predict i = target p)
     (hfactor : G.FactorsThrough abVisibleData H)
@@ -51,7 +51,7 @@ theorem kpolyCoverage_anchor_not_exactVisibleCompressionTarget_of_factorsThrough
     {k s : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ i, H.predict i = target p)
     (hs : 2 ^ s < Fintype.card Probe)
@@ -66,7 +66,7 @@ theorem kpolyCoverage_anchor_not_finiteIndexRepresentativeCover_of_factorsThroug
     {Z : Type*} [Inhabited Z] {k : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index} {N : ℕ}
-    (hN : N < 2 ^ Fintype.card (ABVisibleSurface k))
+    (hN : N < 2 ^ Fintype.card (ABVisibleState k))
     (hfactor : G.FactorsThrough abVisibleData H)
     (hsurj : Function.Surjective H.predict) :
     ¬ G.FiniteIndexRepresentativeCover N :=
@@ -80,7 +80,7 @@ theorem kpolyCoverage_anchor_abVisible_finiteIndexRepresentativeCover_card_le_of
     {k : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index} {N : ℕ}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ i, H.predict i = target p)
     (hfactor : G.FactorsThrough abVisibleData H)
@@ -95,7 +95,7 @@ theorem kpolyCoverage_anchor_not_finitePredictorQuotient_of_factorsThrough_ab_an
     {Z : Type*} [Inhabited Z] {k : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index} {N : ℕ}
-    (hN : N < 2 ^ Fintype.card (ABVisibleSurface k))
+    (hN : N < 2 ^ Fintype.card (ABVisibleState k))
     (hfactor : G.FactorsThrough abVisibleData H)
     (hsurj : Function.Surjective H.predict) :
     ¬ G.FinitePredictorQuotient N :=
@@ -109,7 +109,7 @@ theorem kpolyCoverage_anchor_abVisible_finitePredictorQuotient_card_le_of_factor
     {k : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index} {N : ℕ}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ i, H.predict i = target p)
     (hfactor : G.FactorsThrough abVisibleData H)
@@ -126,12 +126,12 @@ theorem kpolyCoverage_anchor_not_clockedRealization_of_factorsThrough_ab_and_inj
     {k s clock : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ i, H.predict i = target p)
     (hs : 2 ^ s < Fintype.card Probe)
     (hfactor : G.FactorsThrough abVisibleData H) :
-    ¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    ¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         G.RealizedByClockedBitFamily F :=
   not_exists_clockedExactVisibleRealization_of_factorsThrough_ab_and_injective_realization_of_lt_card
     target hinj hreal hs hfactor

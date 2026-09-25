@@ -20,12 +20,12 @@ section
 variable {Z : Type*} {r k : ℕ} {Index : Type*}
 
 noncomputable def exactABAffineDecisionListERMFamily
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ExactVisibleSwitchedFamily Z k Index :=
   (exactABAffineDecisionListBitFamily Z r k).indexedEmpiricalRiskFamily samples
 
 theorem exactABAffineDecisionListERMTargetData
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ExactABAffineDecisionListTargetData
       (Z := Z) (r := r) (k := k) (Index := Index)
       (exactABAffineDecisionListERMFamily (Z := Z) (r := r) (k := k) samples) := by
@@ -54,7 +54,7 @@ theorem exactABAffineDecisionListERMTargetData
                 (Z := Z) (r := r) (k := k) code) u
 
 theorem exactABAffineDecisionListERMCompressionTarget
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ExactVisibleCompressionTarget
       (Z := Z) (k := k) (Index := Index)
       (exactABAffineDecisionListERMFamily (Z := Z) (r := r) (k := k) samples)
@@ -65,11 +65,11 @@ theorem exactABAffineDecisionListERMCompressionTarget
 
 theorem exactABAffineDecisionListERMFamily_surfaceCard_le_of_surjective_predict
     [Fintype Z]
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (hsurj :
       Function.Surjective
         (exactABAffineDecisionListERMFamily (Z := Z) (r := r) (k := k) samples).predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ r * ((k + k) + 2) + 1 := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ r * ((k + k) + 2) + 1 := by
   exact
     (exactABAffineDecisionListERMTargetData
       (Z := Z) (r := r) (k := k) (Index := Index) samples).surfaceCard_le_of_surjective_predict
@@ -77,8 +77,8 @@ theorem exactABAffineDecisionListERMFamily_surfaceCard_le_of_surjective_predict
 
 theorem exactABAffineDecisionListERMFamily_not_surjective_of_lt_surfaceCard
     [Fintype Z]
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
-    (hs : r * ((k + k) + 2) + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
+    (hs : r * ((k + k) + 2) + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective
         (exactABAffineDecisionListERMFamily (Z := Z) (r := r) (k := k) samples).predict := by
   exact
@@ -91,8 +91,8 @@ section
 variable [Fintype Z]
 
 def exactABAffineDecisionListERMRecoveryData
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (q : ℝ≥0∞)
     (hq :
       ∀ i,
@@ -114,8 +114,8 @@ def exactABAffineDecisionListERMRecoveryData
       (Z := Z) (r := r) (k := k) (Index := Index) samples).realized
 
 theorem exactABAffineDecisionListERMRecoveryLowerBound
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (q : ℝ≥0∞)
     (hq :
       ∀ i,

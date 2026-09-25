@@ -31,7 +31,7 @@ structure ActualSwitchedLocalInterface
   zOf : Block → Z
   aOf : Index → Block → BitVec k
   bOf : Block → BitVec k
-  localRule : Index → ExactVisiblePostSwitchSurface Z k → Bool
+  localRule : Index → ExactVisiblePostSwitchData Z k → Bool
   output : Index → Block → Bool
   output_eq_local :
     ∀ i phi, output i phi = localRule i ⟨zOf phi, aOf i phi, bOf phi⟩
@@ -44,7 +44,7 @@ variable {Z : Type v} {k : ℕ} {Index : Type u} {Block : Type w}
 index `i` on block `phi`. -/
 def visibleInput
     (T : ActualSwitchedLocalInterface Z k Index Block) (i : Index) (phi : Block) :
-    ExactVisiblePostSwitchSurface Z k :=
+    ExactVisiblePostSwitchData Z k :=
   ⟨T.zOf phi, T.aOf i phi, T.bOf phi⟩
 
 @[simp] theorem visibleInput_z
@@ -67,7 +67,7 @@ def predictorFamily
 
 @[simp] theorem predictorFamily_predict
     (T : ActualSwitchedLocalInterface Z k Index Block)
-    (i : Index) (u : ExactVisiblePostSwitchSurface Z k) :
+    (i : Index) (u : ExactVisiblePostSwitchData Z k) :
     T.predictorFamily.predict i u = T.localRule i u := rfl
 
 /-- The local-normal-form equation, stated using `visibleInput`. -/
@@ -84,7 +84,7 @@ theorem clockedKpolyFiniteLearningPayload_of_eq_exactZABDecisionListERMFamily
     {r clock : ℕ}
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (zfeat : Z → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (hT :
       T.predictorFamily =
         exactZABDecisionListERMFamily
@@ -102,7 +102,7 @@ theorem clockedKpolyFiniteLearningPayload_of_eq_bitVecZABDecisionListERMFamily
     {r clock : ℕ}
     [Fintype (BitVec r)]
     (T : ActualSwitchedLocalInterface (BitVec r) k Index Block)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec r) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec r) k) Bool)
     (hT :
       T.predictorFamily =
         bitVecZABDecisionListERMFamily
@@ -124,7 +124,7 @@ rule family: take blocks to be exact visible inputs and let each index be the
 local rule itself. -/
 def fullRuleActualSwitchedLocalInterface :
     ActualSwitchedLocalInterface
-      Z k (ExactVisibleRule Z k) (ExactVisiblePostSwitchSurface Z k) where
+      Z k (ExactVisibleRule Z k) (ExactVisiblePostSwitchData Z k) where
   zOf := fun u => u.z
   aOf := fun _ u => u.a
   bOf := fun u => u.b
@@ -150,7 +150,7 @@ variable {Z k}
 the exact visible truth-table budget. -/
 theorem fullRuleActualSwitchedLocalInterface_not_finitePredictorCover_of_lt_surfaceCard
     [Fintype Z] {s : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (fullRuleActualSwitchedLocalInterface Z k).predictorFamily.FinitePredictorCover
         (2 ^ s) := by
   simpa using
@@ -161,7 +161,7 @@ theorem fullRuleActualSwitchedLocalInterface_not_finitePredictorCover_of_lt_surf
 finite-learning payload below the exact visible truth-table budget. -/
 theorem fullRuleActualSwitchedLocalInterface_not_clockedKpolyFiniteLearningPayload_of_lt_surfaceCard
     [Fintype Z] {s clock : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (fullRuleActualSwitchedLocalInterface Z k).predictorFamily s clock := by
   simpa using
@@ -172,7 +172,7 @@ theorem fullRuleActualSwitchedLocalInterface_not_clockedKpolyFiniteLearningPaylo
 small finite predictor-image theorem for every switched local family. -/
 theorem actualSwitchedLocalInterface_not_forall_finitePredictorCover_of_lt_surfaceCard
     [Fintype Z] {s : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (∀ {Index : Type v} {Block : Type v}
         (T : ActualSwitchedLocalInterface Z k Index Block),
         T.predictorFamily.FinitePredictorCover (2 ^ s)) := by
@@ -182,14 +182,14 @@ theorem actualSwitchedLocalInterface_not_forall_finitePredictorCover_of_lt_surfa
       (Z := Z) (k := k) (s := s) hs
       (hforall
         (Index := ExactVisibleRule Z k)
-        (Block := ExactVisiblePostSwitchSurface Z k)
+        (Block := ExactVisiblePostSwitchData Z k)
         (fullRuleActualSwitchedLocalInterface Z k))
 
 /-- Therefore the present actual-locality interface alone cannot imply the
 clocked finite-learning payload for every switched local family. -/
 theorem actualSwitchedLocalInterface_not_forall_clockedKpolyFiniteLearningPayload_of_lt_surfaceCard
     [Fintype Z] {s clock : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (∀ {Index : Type v} {Block : Type v}
         (T : ActualSwitchedLocalInterface Z k Index Block),
         ClockedKpolyFiniteLearningPayload T.predictorFamily s clock) := by
@@ -199,7 +199,7 @@ theorem actualSwitchedLocalInterface_not_forall_clockedKpolyFiniteLearningPayloa
       (Z := Z) (k := k) (s := s) (clock := clock) hs
       (hforall
         (Index := ExactVisibleRule Z k)
-        (Block := ExactVisiblePostSwitchSurface Z k)
+        (Block := ExactVisiblePostSwitchData Z k)
         (fullRuleActualSwitchedLocalInterface Z k))
 
 end FullRuleCounterexample

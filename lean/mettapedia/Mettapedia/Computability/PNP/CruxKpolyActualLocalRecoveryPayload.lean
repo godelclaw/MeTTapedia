@@ -19,13 +19,13 @@ finite-learning payload, so it is impossible below the full predictor-image
 cardinality. -/
 theorem kpolyCoverage_anchor_surjectiveActualLocal_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_lt_predictorCard
     {Z : Type v} [Fintype Z] {k r : ℕ} {Index : Type u} {Block : Type w}
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (zfeat : Z → BitVec r)
     (q : ℝ≥0∞)
     (hs :
       2 ^ (2 * allAffinePointBlockFeatureCount (r + (k + k))) <
-        2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k))
+        2 ^ Fintype.card (ExactVisiblePostSwitchData Z k))
     (hsurj : Function.Surjective T.predictorFamily.predict) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.SharedExactZABSparseThresholdERMRecoveryData
@@ -37,12 +37,12 @@ theorem kpolyCoverage_anchor_surjectiveActualLocal_not_nonempty_sharedExactZABSp
 the extractor choice itself on surjective actual-local endpoints. -/
 theorem kpolyCoverage_anchor_surjectiveActualLocal_not_exists_sharedExactZABSparseThresholdERMRecoveryData_of_lt_predictorCard
     {Z : Type v} [Fintype Z] {k r : ℕ} {Index : Type u} {Block : Type w}
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (q : ℝ≥0∞)
     (hs :
       2 ^ (2 * allAffinePointBlockFeatureCount (r + (k + k))) <
-        2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k))
+        2 ^ Fintype.card (ExactVisiblePostSwitchData Z k))
     (hsurj : Function.Surjective T.predictorFamily.predict) :
     ¬ ∃ zfeat : Z → BitVec r,
         Nonempty
@@ -58,11 +58,11 @@ surjectivity. -/
 theorem kpolyCoverage_anchor_actualLocal_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_injective_realization_of_lt_card
     {Probe : Type*} [Fintype Probe]
     {Z : Type v} [Fintype Z] {k r : ℕ} {Index : Type u} {Block : Type w}
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (zfeat : Z → BitVec r)
     (q : ℝ≥0∞)
-    (target : Probe → ExactVisiblePostSwitchSurface Z k → Bool)
+    (target : Probe → ExactVisiblePostSwitchData Z k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ i, T.predictorFamily.predict i = target p)
     (hs :
@@ -79,10 +79,10 @@ also removes the extractor choice itself. -/
 theorem kpolyCoverage_anchor_actualLocal_not_exists_sharedExactZABSparseThresholdERMRecoveryData_of_injective_realization_of_lt_card
     {Probe : Type*} [Fintype Probe]
     {Z : Type v} [Fintype Z] {k r : ℕ} {Index : Type u} {Block : Type w}
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (q : ℝ≥0∞)
-    (target : Probe → ExactVisiblePostSwitchSurface Z k → Bool)
+    (target : Probe → ExactVisiblePostSwitchData Z k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ i, T.predictorFamily.predict i = target p)
     (hs :

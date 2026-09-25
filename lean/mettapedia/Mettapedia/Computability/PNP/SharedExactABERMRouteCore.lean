@@ -18,14 +18,14 @@ variable {Z : Type*} {r k : ℕ} {Index : Type*}
 raw exact `(a, b)` decision-list class. -/
 noncomputable def sharedExactABAffineDecisionListERMFamily
     (features : Fin r → AffineColumnCode (k + k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ExactVisibleSwitchedFamily Z k Index :=
   (sharedExactABAffineDecisionListBitFamily Z features).indexedEmpiricalRiskFamily samples
 
 theorem sharedExactABAffineDecisionListERMFamily_invariant
     [Inhabited Z]
     (features : Fin r → AffineColumnCode (k + k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ABVisibleInvariant
       (Z := Z) (k := k)
       (sharedExactABAffineDecisionListERMFamily
@@ -61,7 +61,7 @@ theorem sharedExactABAffineDecisionListERMFamily_invariant
 theorem sharedExactABAffineDecisionListERMFamily_realized
     [Inhabited Z]
     (features : Fin r → AffineColumnCode (k + k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     RealizedBySharedABAffineDecisionListFamily
       (r := r) (k := k) features
       (liftToABVisibleFamily

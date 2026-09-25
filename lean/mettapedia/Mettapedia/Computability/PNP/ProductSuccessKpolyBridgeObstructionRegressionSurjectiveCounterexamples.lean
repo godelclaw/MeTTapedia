@@ -16,7 +16,7 @@ theorem product_bound_bridge_surjective_family_counterexample_regression
     {Index : Type v} {G : ExactVisibleSwitchedFamily Z k Index}
     (hprod : V13FieldedProductBoundFrom Ω hist items)
     (hsurj : Function.Surjective G.predict)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (V13FieldedProductBoundFrom Ω hist items →
         ExactVisibleCompressionTarget (Z := Z) (k := k) (Index := Index) G s) := by
   exact
@@ -29,7 +29,7 @@ theorem fielded_switching_bridge_surjective_family_counterexample_regression
     {Index : Type v} {G : ExactVisibleSwitchedFamily Z k Index}
     (hfield : V13FieldSwitchingInstantiatedFrom hist items)
     (hsurj : Function.Surjective G.predict)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (V13FieldSwitchingInstantiatedFrom hist items →
         ExactVisibleCompressionTarget (Z := Z) (k := k) (Index := Index) G s) := by
   exact
@@ -42,7 +42,7 @@ theorem product_bound_semantic_bridge_surjective_family_counterexample_regressio
     {Index : Type v} {G : ExactVisibleSwitchedFamily Z k Index}
     (hprod : V13FieldedProductBoundFrom Ω hist items)
     (hsurj : Function.Surjective G.predict)
-    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ProductBoundSemanticFiniteImageBridge Ω Z k s hist items G := by
   exact
     not_productBoundSemanticFiniteImageBridge_of_true_productBound_of_surjective_predict_of_lt_predictorCard
@@ -54,7 +54,7 @@ theorem fielded_switching_semantic_bridge_surjective_family_counterexample_regre
     {Index : Type v} {G : ExactVisibleSwitchedFamily Z k Index}
     (hfield : V13FieldSwitchingInstantiatedFrom hist items)
     (hsurj : Function.Surjective G.predict)
-    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ FieldedSwitchingSemanticFiniteImageBridge Ω Z k s hist items G := by
   exact
     not_fieldedSwitchingSemanticFiniteImageBridge_of_true_fieldedSwitching_of_surjective_predict_of_lt_predictorCard
@@ -66,7 +66,7 @@ theorem product_bound_clocked_payload_bridge_surjective_family_counterexample_re
     {Index : Type v} {G : ExactVisibleSwitchedFamily Z k Index}
     (hprod : V13FieldedProductBoundFrom Ω hist items)
     (hsurj : Function.Surjective G.predict)
-    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (V13FieldedProductBoundFrom Ω hist items →
         ClockedKpolyFiniteLearningPayload G s clock) := by
   exact
@@ -79,7 +79,7 @@ theorem fielded_switching_clocked_payload_bridge_surjective_family_counterexampl
     {Index : Type v} {G : ExactVisibleSwitchedFamily Z k Index}
     (hfield : V13FieldSwitchingInstantiatedFrom hist items)
     (hsurj : Function.Surjective G.predict)
-    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (V13FieldSwitchingInstantiatedFrom hist items →
         ClockedKpolyFiniteLearningPayload G s clock) := by
   exact
@@ -92,7 +92,7 @@ theorem product_bound_only_bridge_surjective_family_counterexample_regression
     {Index : Type v} (G : ExactVisibleSwitchedFamily Z k Index)
     (hprod : V13FieldedProductBoundFrom Ω hist items)
     (hsurj : Function.Surjective G.predict)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ProductBoundOnlyExactVisibleCompressionBridge Ω Z k s hist items := by
   exact
     not_productBoundOnlyExactVisibleCompressionBridge_of_true_productBound_of_surjective_predict_of_lt_surfaceCard
@@ -104,7 +104,7 @@ theorem fielded_switching_only_bridge_surjective_family_counterexample_regressio
     {Index : Type v} (G : ExactVisibleSwitchedFamily Z k Index)
     (hfield : V13FieldSwitchingInstantiatedFrom hist items)
     (hsurj : Function.Surjective G.predict)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ FieldedSwitchingOnlyExactVisibleCompressionBridge Ω Z k s hist items := by
   exact
     not_fieldedSwitchingOnlyExactVisibleCompressionBridge_of_true_fieldedSwitching_of_surjective_predict_of_lt_surfaceCard
@@ -116,7 +116,7 @@ theorem product_bound_only_clocked_payload_bridge_surjective_family_counterexamp
     {Index : Type v} (G : ExactVisibleSwitchedFamily Z k Index)
     (hprod : V13FieldedProductBoundFrom Ω hist items)
     (hsurj : Function.Surjective G.predict)
-    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ProductBoundOnlyClockedKpolyFiniteLearningBridge
         Ω Z k s clock hist items := by
   exact
@@ -129,7 +129,7 @@ theorem fielded_switching_only_clocked_payload_bridge_surjective_family_countere
     {Index : Type v} (G : ExactVisibleSwitchedFamily Z k Index)
     (hfield : V13FieldSwitchingInstantiatedFrom hist items)
     (hsurj : Function.Surjective G.predict)
-    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ FieldedSwitchingOnlyClockedKpolyFiniteLearningBridge
         Ω Z k s clock hist items := by
   exact

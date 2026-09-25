@@ -32,8 +32,8 @@ theorem kpoly_anchor_clocked_finite_learning_payload_card_le_of_factorsThrough_r
     {Index View : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : IndexedPredictorFamily Index View}
-    {view : ExactVisiblePostSwitchSurface Z k → View}
-    {sec : View → ExactVisiblePostSwitchSurface Z k}
+    {view : ExactVisiblePostSwitchData Z k → View}
+    {sec : View → ExactVisiblePostSwitchData Z k}
     (target : Probe → View → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ i, H.predict i = target p)
@@ -50,8 +50,8 @@ theorem kpoly_anchor_not_clocked_finite_learning_payload_of_factorsThrough_right
     {Index View : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : IndexedPredictorFamily Index View}
-    {view : ExactVisiblePostSwitchSurface Z k → View}
-    {sec : View → ExactVisiblePostSwitchSurface Z k}
+    {view : ExactVisiblePostSwitchData Z k → View}
+    {sec : View → ExactVisiblePostSwitchData Z k}
     (target : Probe → View → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ i, H.predict i = target p)

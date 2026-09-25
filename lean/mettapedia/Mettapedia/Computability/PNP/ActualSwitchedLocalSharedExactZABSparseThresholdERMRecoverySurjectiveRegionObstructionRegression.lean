@@ -12,7 +12,7 @@ injective because the first Boolean coordinate is ignored. -/
 def duplicatedFullRuleActualSwitchedLocalInterface
     (Z : Type*) (k : ℕ) :
     ActualSwitchedLocalInterface
-      Z k (Bool × ExactVisibleRule Z k) (ExactVisiblePostSwitchSurface Z k) where
+      Z k (Bool × ExactVisibleRule Z k) (ExactVisiblePostSwitchData Z k) where
   zOf := fun u => u.z
   aOf := fun _ u => u.a
   bOf := fun u => u.b

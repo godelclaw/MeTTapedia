@@ -12,7 +12,7 @@ namespace Mettapedia.Computability.PNP.SharedABFeatureRoutesRegression
 open Mettapedia.Computability.PNP
 
 def fullABRuleFamily (k : ℕ) :
-    ABVisibleSwitchedFamily k (ABVisibleSurface k → Bool) where
+    ABVisibleSwitchedFamily k (ABVisibleState k → Bool) where
   predict f := f
 
 theorem fullABRuleFamily_surjective (k : ℕ) :
@@ -26,7 +26,7 @@ theorem fullABRuleFamily_not_realizedBySharedABAffineFeatureFamily_regression
   exact
     not_realizedBySharedABAffineFeatureFamily_of_surjective_predict_of_lt_surfaceCard
       (r := 1) (k := 1)
-      (by simp [card_abVisibleSurface (k := 1)])
+      (by simp [card_abVisibleDataDomain (k := 1)])
       (fullABRuleFamily_surjective 1)
 
 theorem fullABRuleFamily_not_realizedBySharedABSparseThresholdAffineFamily_regression
@@ -36,7 +36,7 @@ theorem fullABRuleFamily_not_realizedBySharedABSparseThresholdAffineFamily_regre
   exact
     not_realizedBySharedABSparseThresholdAffineFamily_of_surjective_predict_of_lt_surfaceCard
       (r := 1) (k := 1)
-      (by simp [card_abVisibleSurface (k := 1)])
+      (by simp [card_abVisibleDataDomain (k := 1)])
       (fullABRuleFamily_surjective 1)
 
 theorem fullABRuleFamily_not_realizedBySharedABAffineDecisionListFamily_regression
@@ -46,7 +46,7 @@ theorem fullABRuleFamily_not_realizedBySharedABAffineDecisionListFamily_regressi
   exact
     not_realizedBySharedABAffineDecisionListFamily_of_surjective_predict_of_lt_surfaceCard
       (r := 2) (k := 1)
-      (by simp [card_abVisibleSurface (k := 1)])
+      (by simp [card_abVisibleDataDomain (k := 1)])
       (fullABRuleFamily_surjective 1)
 
 end Mettapedia.Computability.PNP.SharedABFeatureRoutesRegression

@@ -13,8 +13,8 @@ universe u v w z
 
 theorem kpoly_anchor_support_full_rule_observed_small_not_full_cover_regression
     {Z : Type v} [Fintype Z] {Block : Type v} [Fintype Block] {k s : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     (supportFullRuleActualSwitchedLocalInterface visibleOf).outputFamily.FinitePredictorCover
         (2 ^ Fintype.card Block) ∧
       ¬ (supportFullRuleActualSwitchedLocalInterface visibleOf).predictorFamily.FinitePredictorCover
@@ -25,8 +25,8 @@ theorem kpoly_anchor_support_full_rule_observed_small_not_full_cover_regression
 
 theorem kpoly_anchor_support_full_rule_not_clocked_payload_regression
     {Z : Type v} [Fintype Z] {Block : Type v} {k s clock : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (supportFullRuleActualSwitchedLocalInterface visibleOf).predictorFamily s clock := by
   exact

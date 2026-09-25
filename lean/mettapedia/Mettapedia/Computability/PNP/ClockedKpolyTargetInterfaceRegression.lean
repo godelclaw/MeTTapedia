@@ -71,7 +71,7 @@ theorem exact_visible_exactRecoveryRate_ge_one_sub_uniformMissRatio_pow_regressi
     {G : ExactVisibleSwitchedFamily Z k Index}
     (h : ExactVisibleCompressionTarget (Z := Z) (k := k) (Index := Index) G s)
     (i : Index) (m : ℕ) :
-    1 - (2 ^ s : ℚ) * uniformMissRatio (ExactVisiblePostSwitchSurface Z k) ^ m ≤
+    1 - (2 ^ s : ℚ) * uniformMissRatio (ExactVisiblePostSwitchData Z k) ^ m ≤
       (IndexedPredictorFamily.clockedBitCodeFamilyOfHasBitBudget
         (G := G) (s := s) clock h).exactRecoveryRate (G.predict i) m := by
   exact
@@ -84,7 +84,7 @@ theorem exact_visible_nondeceptiveRate_ge_one_sub_uniformMissRatio_pow_regressio
     {G : ExactVisibleSwitchedFamily Z k Index}
     (h : ExactVisibleCompressionTarget (Z := Z) (k := k) (Index := Index) G s)
     (i : Index) (m : ℕ) :
-    1 - (2 ^ s : ℚ) * uniformMissRatio (ExactVisiblePostSwitchSurface Z k) ^ m ≤
+    1 - (2 ^ s : ℚ) * uniformMissRatio (ExactVisiblePostSwitchData Z k) ^ m ≤
       (IndexedPredictorFamily.clockedBitCodeFamilyOfHasBitBudget
         (G := G) (s := s) clock h).nondeceptiveRate (G.predict i) m := by
   exact
@@ -135,9 +135,9 @@ theorem exact_visible_exists_nondeceptiveSample_of_bitBudget_bound_lt_regression
     (h : ExactVisibleCompressionTarget (Z := Z) (k := k) (Index := Index) G s)
     (i : Index) (m : ℕ)
     (hbound :
-      2 ^ s * (Fintype.card (ExactVisiblePostSwitchSurface Z k) - 1) ^ m <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k) ^ m) :
-    ∃ sample : PointSample (ExactVisiblePostSwitchSurface Z k) m,
+      2 ^ s * (Fintype.card (ExactVisiblePostSwitchData Z k) - 1) ^ m <
+        Fintype.card (ExactVisiblePostSwitchData Z k) ^ m) :
+    ∃ sample : PointSample (ExactVisiblePostSwitchData Z k) m,
       ¬ EncodedFamily.IsDeceptiveSample
           (BitEncodedClassifierFamily.toEncodedFamily
             (ClockedBitCodeFamily.toBitEncodedClassifierFamily
@@ -155,9 +155,9 @@ theorem exact_visible_exists_sample_empiricalRiskPredictor_eq_target_of_bitBudge
     (h : ExactVisibleCompressionTarget (Z := Z) (k := k) (Index := Index) G s)
     (i : Index) (m : ℕ)
     (hbound :
-      2 ^ s * (Fintype.card (ExactVisiblePostSwitchSurface Z k) - 1) ^ m <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k) ^ m) :
-    ∃ sample : PointSample (ExactVisiblePostSwitchSurface Z k) m,
+      2 ^ s * (Fintype.card (ExactVisiblePostSwitchData Z k) - 1) ^ m <
+        Fintype.card (ExactVisiblePostSwitchData Z k) ^ m) :
+    ∃ sample : PointSample (ExactVisiblePostSwitchData Z k) m,
       ClockedBitCodeFamily.empiricalRiskPredictor
           (IndexedPredictorFamily.clockedBitCodeFamilyOfHasBitBudget
             (G := G) (s := s) clock h)

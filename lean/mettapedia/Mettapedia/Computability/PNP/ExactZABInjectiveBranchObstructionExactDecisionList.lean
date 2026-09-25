@@ -15,7 +15,7 @@ variable {n r k : ℕ} {Index : Type*}
 
 theorem exactZABDecisionListERMFamily_extractorWidthLowerBound_of_surjective_predict
     (zfeat : BitVec n → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hsurj :
       Function.Surjective
         (exactZABDecisionListERMFamily
@@ -31,7 +31,7 @@ theorem exactZABDecisionListERMFamily_extractorWidthLowerBound_of_surjective_pre
 
 theorem exactZABDecisionListERMFamily_not_surjective_of_extractorWidth_lt_truthTableGap
     (zfeat : BitVec n → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hgap : r < 2 ^ (n + 2 * k) - (2 * k + 1)) :
     ¬ Function.Surjective
         (exactZABDecisionListERMFamily

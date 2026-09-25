@@ -10,7 +10,7 @@ open Mettapedia.Computability.PNP
 
 theorem product_bound_only_bridge_empty_counterexample_regression
     {Ω : Type*} [Fintype Ω] {Z : Type*} [Fintype Z] {k s : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ProductBoundOnlyExactVisibleCompressionBridge
         Ω Z k s ([] : List (FiniteEvent Ω)) ([] : List (V13FieldedStep Ω)) := by
   exact not_productBoundOnlyExactVisibleCompressionBridge_nil_of_lt_surfaceCard
@@ -18,7 +18,7 @@ theorem product_bound_only_bridge_empty_counterexample_regression
 
 theorem fielded_switching_only_bridge_empty_counterexample_regression
     {Ω : Type*} [Fintype Ω] {Z : Type*} [Fintype Z] {k s : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ FieldedSwitchingOnlyExactVisibleCompressionBridge
         Ω Z k s ([] : List (FiniteEvent Ω)) ([] : List (V13FieldedStep Ω)) := by
   exact not_fieldedSwitchingOnlyExactVisibleCompressionBridge_nil_of_lt_surfaceCard
@@ -26,7 +26,7 @@ theorem fielded_switching_only_bridge_empty_counterexample_regression
 
 theorem product_bound_only_clocked_payload_bridge_empty_counterexample_regression
     {Ω : Type*} [Fintype Ω] {Z : Type*} [Fintype Z] {k s clock : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ProductBoundOnlyClockedKpolyFiniteLearningBridge
         Ω Z k s clock
         ([] : List (FiniteEvent Ω)) ([] : List (V13FieldedStep Ω)) := by
@@ -35,7 +35,7 @@ theorem product_bound_only_clocked_payload_bridge_empty_counterexample_regressio
 
 theorem fielded_switching_only_clocked_payload_bridge_empty_counterexample_regression
     {Ω : Type*} [Fintype Ω] {Z : Type*} [Fintype Z] {k s clock : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ FieldedSwitchingOnlyClockedKpolyFiniteLearningBridge
         Ω Z k s clock
         ([] : List (FiniteEvent Ω)) ([] : List (V13FieldedStep Ω)) := by

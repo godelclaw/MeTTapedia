@@ -27,7 +27,7 @@ finite quotient-code presentation of size at most `2^s`. -/
 theorem kpolyCoverage_anchor_clockedRealization_iff_finitePredictorQuotient
     {Z : Type*} {k s clock : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index} :
-    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         G.RealizedByClockedBitFamily F) ↔
       G.FinitePredictorQuotient (2 ^ s) :=
   exists_clockedExactVisibleRealization_iff_finitePredictorQuotient
@@ -67,7 +67,7 @@ finite representative-index cover of size at most `2^s`. -/
 theorem kpolyCoverage_anchor_clockedRealization_iff_finiteIndexRepresentativeCover
     {Z : Type*} {k s clock : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index} :
-    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         G.RealizedByClockedBitFamily F) ↔
       G.FiniteIndexRepresentativeCover (2 ^ s) :=
   exists_clockedExactVisibleRealization_iff_finiteIndexRepresentativeCover
@@ -78,7 +78,7 @@ most `2^s`. -/
 theorem kpolyCoverage_anchor_not_clockedRealization_iff_not_finiteIndexRepresentativeCover
     {Z : Type*} {k s clock : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index} :
-    (¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    (¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         G.RealizedByClockedBitFamily F) ↔
       ¬ G.FiniteIndexRepresentativeCover (2 ^ s) :=
   not_exists_clockedExactVisibleRealization_iff_not_finiteIndexRepresentativeCover
@@ -89,7 +89,7 @@ most `2^s`. -/
 theorem kpolyCoverage_anchor_not_clockedRealization_iff_not_finitePredictorQuotient
     {Z : Type*} {k s clock : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index} :
-    (¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    (¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         G.RealizedByClockedBitFamily F) ↔
       ¬ G.FinitePredictorQuotient (2 ^ s) :=
   not_exists_clockedExactVisibleRealization_iff_not_finitePredictorQuotient

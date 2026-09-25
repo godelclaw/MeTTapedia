@@ -15,7 +15,7 @@ theorem kpoly_anchor_not_exists_predict_eq_of_abVisibleInvariant_separating_rule
     {Z : Type*} {k : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     (hinv : ABVisibleInvariant (Z := Z) (k := k) G)
-    {rule : ExactVisiblePostSwitchSurface Z k → Bool}
+    {rule : ExactVisiblePostSwitchData Z k → Bool}
     (hsep : ABFiberSeparatingRule (Z := Z) (k := k) rule) :
     ¬ ∃ i, G.predict i = rule := by
   exact
@@ -35,10 +35,10 @@ theorem kpoly_anchor_exists_pos_mass_disagreement_of_abVisibleInvariant_predict_
     {Z : Type*} {k : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     (hinv : ABVisibleInvariant (Z := Z) (k := k) G)
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
-    {target : ExactVisiblePostSwitchSurface Z k → Bool}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
+    {target : ExactVisiblePostSwitchData Z k → Bool}
     (i : Index)
-    {u v : ExactVisiblePostSwitchSurface Z k}
+    {u v : ExactVisiblePostSwitchData Z k}
     (hab : abVisibleData u = abVisibleData v)
     (hsep : target u ≠ target v)
     (huμ : μ u ≠ 0) (hvμ : μ v ≠ 0) :
@@ -51,7 +51,7 @@ theorem kpoly_anchor_exists_pos_mass_disagreement_boolZProjectionRule_of_abVisib
     {k : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Bool k Index}
     (hinv : ABVisibleInvariant (Z := Bool) (k := k) G)
-    {μ : PMF (ExactVisiblePostSwitchSurface Bool k)}
+    {μ : PMF (ExactVisiblePostSwitchData Bool k)}
     (i : Index)
     (hfalse : μ ⟨false, default, default⟩ ≠ 0)
     (htrue : μ ⟨true, default, default⟩ ≠ 0) :
@@ -64,10 +64,10 @@ theorem kpoly_anchor_agreementMass_lt_one_of_abVisibleInvariant_predict_regressi
     {Z : Type*} [Fintype Z] {k : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     (hinv : ABVisibleInvariant (Z := Z) (k := k) G)
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
-    {target : ExactVisiblePostSwitchSurface Z k → Bool}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
+    {target : ExactVisiblePostSwitchData Z k → Bool}
     (i : Index)
-    {u v : ExactVisiblePostSwitchSurface Z k}
+    {u v : ExactVisiblePostSwitchData Z k}
     (hab : abVisibleData u = abVisibleData v)
     (hsep : target u ≠ target v)
     (huμ : μ u ≠ 0) (hvμ : μ v ≠ 0) :
@@ -80,7 +80,7 @@ theorem kpoly_anchor_agreementMass_lt_one_boolZProjectionRule_of_abVisibleInvari
     {k : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Bool k Index}
     (hinv : ABVisibleInvariant (Z := Bool) (k := k) G)
-    {μ : PMF (ExactVisiblePostSwitchSurface Bool k)}
+    {μ : PMF (ExactVisiblePostSwitchData Bool k)}
     (i : Index)
     (hfalse : μ ⟨false, default, default⟩ ≠ 0)
     (htrue : μ ⟨true, default, default⟩ ≠ 0) :
@@ -93,9 +93,9 @@ theorem kpoly_anchor_not_exists_agreementMass_eq_one_of_abVisibleInvariant_regre
     {Z : Type*} [Fintype Z] {k : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     (hinv : ABVisibleInvariant (Z := Z) (k := k) G)
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
-    {target : ExactVisiblePostSwitchSurface Z k → Bool}
-    {u v : ExactVisiblePostSwitchSurface Z k}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
+    {target : ExactVisiblePostSwitchData Z k → Bool}
+    {u v : ExactVisiblePostSwitchData Z k}
     (hab : abVisibleData u = abVisibleData v)
     (hsep : target u ≠ target v)
     (huμ : μ u ≠ 0) (hvμ : μ v ≠ 0) :
@@ -108,7 +108,7 @@ theorem kpoly_anchor_not_exists_agreementMass_eq_one_boolZProjectionRule_of_abVi
     {k : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Bool k Index}
     (hinv : ABVisibleInvariant (Z := Bool) (k := k) G)
-    {μ : PMF (ExactVisiblePostSwitchSurface Bool k)}
+    {μ : PMF (ExactVisiblePostSwitchData Bool k)}
     (hfalse : μ ⟨false, default, default⟩ ≠ 0)
     (htrue : μ ⟨true, default, default⟩ ≠ 0) :
     ¬ ∃ i, agreementMass μ (boolZProjectionRule (k := k)) (G.predict i) = 1 := by

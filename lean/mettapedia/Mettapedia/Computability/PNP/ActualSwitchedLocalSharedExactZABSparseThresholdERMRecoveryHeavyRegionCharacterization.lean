@@ -31,17 +31,17 @@ section Abstract
 
 variable {Z : Type v} [Fintype Z] {k r : ℕ} {Index : Type u} {Block : Type w}
 variable {T : ActualSwitchedLocalInterface Z k Index Block}
-variable {μ : PMF (ExactVisiblePostSwitchSurface Z k)} {zfeat : Z → BitVec r}
+variable {μ : PMF (ExactVisiblePostSwitchData Z k)} {zfeat : Z → BitVec r}
 variable {q : ℝ≥0∞}
 
 /-- On the finite exact-visible surface, having some proper region of mass
 above `q` is equivalent to having some point whose complement already has mass
 above `q`. -/
 theorem exists_heavyProperRegion_iff_exists_lt_one_sub_apply :
-    (∃ region : Finset (ExactVisiblePostSwitchSurface Z k),
-        (∃ x₀ : ExactVisiblePostSwitchSurface Z k, x₀ ∉ region) ∧
+    (∃ region : Finset (ExactVisiblePostSwitchData Z k),
+        (∃ x₀ : ExactVisiblePostSwitchData Z k, x₀ ∉ region) ∧
           q < region.sum (fun x => μ x)) ↔
-      ∃ y : ExactVisiblePostSwitchSurface Z k, q < 1 - μ y := by
+      ∃ y : ExactVisiblePostSwitchData Z k, q < 1 - μ y := by
   classical
   simpa using
     (PMF.exists_heavyProperRegion_iff_exists_lt_one_sub_apply (μ := μ) (q := q))
@@ -50,9 +50,9 @@ theorem exists_heavyProperRegion_iff_exists_lt_one_sub_apply :
 equivalent to a single sharp threshold determined by the lightest visible
 point. -/
 theorem exists_heavyProperRegion_iff_lt_one_sub_apply_lightestPoint
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)] :
-    (∃ region : Finset (ExactVisiblePostSwitchSurface Z k),
-        (∃ x₀ : ExactVisiblePostSwitchSurface Z k, x₀ ∉ region) ∧
+    [Nonempty (ExactVisiblePostSwitchData Z k)] :
+    (∃ region : Finset (ExactVisiblePostSwitchData Z k),
+        (∃ x₀ : ExactVisiblePostSwitchData Z k, x₀ ∉ region) ∧
           q < region.sum (fun x => μ x)) ↔
       q < 1 - μ (PMF.lightestPoint μ) := by
   classical
@@ -63,9 +63,9 @@ theorem exists_heavyProperRegion_iff_lt_one_sub_apply_lightestPoint
 lightest-point threshold.  So the strongest proper-region obstruction is the
 region omitting the lightest visible point. -/
 theorem allProperRegionMass_le_iff_one_sub_apply_lightestPoint_le
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)] :
-    (∀ region : Finset (ExactVisiblePostSwitchSurface Z k),
-        (∃ x₀ : ExactVisiblePostSwitchSurface Z k, x₀ ∉ region) →
+    [Nonempty (ExactVisiblePostSwitchData Z k)] :
+    (∀ region : Finset (ExactVisiblePostSwitchData Z k),
+        (∃ x₀ : ExactVisiblePostSwitchData Z k, x₀ ∉ region) →
           region.sum (fun x => μ x) ≤ q) ↔
       1 - μ (PMF.lightestPoint μ) ≤ q := by
   classical
@@ -82,7 +82,7 @@ theorem not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_injective_z
     (hinj : Function.Injective zfeat)
     (hwidth : 0 < r + (k + k))
     (i : Index)
-    {y : ExactVisiblePostSwitchSurface Z k}
+    {y : ExactVisiblePostSwitchData Z k}
     (hq_lt : q < 1 - μ y) :
     ¬ Nonempty (SharedExactZABSparseThresholdERMRecoveryData μ T zfeat q) := by
   rintro ⟨h⟩
@@ -94,7 +94,7 @@ theorem not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_injective_z
 /-- Therefore every injective manuscript-facing recovery packet already forces
 `q` above the complement mass of the lightest visible point. -/
 theorem one_sub_apply_lightestPoint_le_of_injective_zfeat
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
     (h : SharedExactZABSparseThresholdERMRecoveryData μ T zfeat q)
     (hinj : Function.Injective zfeat)
     (hwidth : 0 < r + (k + k))
@@ -105,13 +105,13 @@ theorem one_sub_apply_lightestPoint_le_of_injective_zfeat
 /-- Therefore an injective recovery packet already enforces the entire proper-
 region mass family exactly up to the lightest-point threshold. -/
 theorem allProperRegionMass_le_of_injective_zfeat
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
     (h : SharedExactZABSparseThresholdERMRecoveryData μ T zfeat q)
     (hinj : Function.Injective zfeat)
     (hwidth : 0 < r + (k + k))
     (i : Index) :
-    ∀ region : Finset (ExactVisiblePostSwitchSurface Z k),
-      (∃ x₀ : ExactVisiblePostSwitchSurface Z k, x₀ ∉ region) →
+    ∀ region : Finset (ExactVisiblePostSwitchData Z k),
+      (∃ x₀ : ExactVisiblePostSwitchData Z k, x₀ ∉ region) →
         region.sum (fun x => μ x) ≤ q := by
   intro region hout
   exact
@@ -125,7 +125,7 @@ theorem allProperRegionMass_le_of_injective_zfeat
 /-- On the bounded-sample plug-in-majority endpoint, the empty sample already
 forces `q` above the lightest-point complement on the injective branch. -/
 theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_one_sub_apply_lightestPoint_le_of_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_injective_zfeat
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
     {sampleBound : ℕ}
     (h :
       SharedExactZABSparseThresholdERMRecoveryData
@@ -154,7 +154,7 @@ theorem not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_injective_z
     (hwidth : 0 < r + (k + k))
     (i : Index)
     (hlight :
-      ∃ y : ExactVisiblePostSwitchSurface Z k, q < 1 - μ y) :
+      ∃ y : ExactVisiblePostSwitchData Z k, q < 1 - μ y) :
     ¬ Nonempty (SharedExactZABSparseThresholdERMRecoveryData μ T zfeat q) := by
   rcases hlight with ⟨y, hy⟩
   exact
@@ -164,7 +164,7 @@ theorem not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_injective_z
 /-- So on the injective branch, falling below the lightest-point threshold is
 already impossible. -/
 theorem not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_injective_zfeat_of_lt_one_sub_apply_lightestPoint
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (zfeat : Z → BitVec r)
     (hinj : Function.Injective zfeat)
@@ -183,7 +183,7 @@ theorem not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_injective_z
 below the lightest-point threshold on the injective branch; no surjectivity
 assumption is needed because the empty sample supplies the challenged index. -/
 theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_injective_zfeat_of_lt_one_sub_apply_lightestPoint
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
     {sampleBound : ℕ}
     (hinj : Function.Injective zfeat)
     (hwidth : 0 < r + (k + k))
@@ -213,8 +213,8 @@ theorem not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_injective_z
     (hwidth : 0 < r + (k + k))
     (i : Index)
     (hregion :
-      ∃ region : Finset (ExactVisiblePostSwitchSurface Z k),
-        (∃ x₀ : ExactVisiblePostSwitchSurface Z k, x₀ ∉ region) ∧
+      ∃ region : Finset (ExactVisiblePostSwitchData Z k),
+        (∃ x₀ : ExactVisiblePostSwitchData Z k, x₀ ∉ region) ∧
           q < region.sum (fun x => μ x)) :
     ¬ Nonempty (SharedExactZABSparseThresholdERMRecoveryData μ T zfeat q) := by
   classical

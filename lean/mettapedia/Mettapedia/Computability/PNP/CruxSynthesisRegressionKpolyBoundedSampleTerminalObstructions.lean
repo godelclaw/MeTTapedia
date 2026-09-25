@@ -15,8 +15,8 @@ universe u v w z
 
 theorem kpoly_anchor_bounded_sample_majority_no_clocked_payload_regression
     {Z : Type v} [Fintype Z] {k s sampleBound clock : ℕ}
-    (hbound : Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hbound : Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound)
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (boundedSamplePluginMajorityActualSwitchedLocalInterface Z k sampleBound).predictorFamily
         s clock := by
@@ -27,9 +27,9 @@ theorem kpoly_anchor_bounded_sample_majority_no_clocked_payload_regression
 
 theorem kpoly_anchor_bounded_sample_majority_no_zab_data_regression
     {Z : Type v} [Fintype Z] {k r sampleBound : ℕ}
-    (hbound : Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound)
+    (hbound : Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound)
     (zfeat : Z → BitVec r)
-    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.ZABDecisionListData
           (boundedSamplePluginMajorityActualSwitchedLocalInterface Z k sampleBound) zfeat) := by

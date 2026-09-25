@@ -30,17 +30,17 @@ threshold, both a non-deceptive point sample and an exact ERM recovery sample
 for every selected predictor. -/
 def ClockedKpolyFiniteLearningPayload
     (G : ExactVisibleSwitchedFamily Z k Index) (s clock : ℕ) : Prop :=
-  ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+  ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
     G.RealizedByClockedBitFamily F ∧
       ∀ (i : Index) (m : ℕ),
-        2 ^ s * (Fintype.card (ExactVisiblePostSwitchSurface Z k) - 1) ^ m <
-            Fintype.card (ExactVisiblePostSwitchSurface Z k) ^ m →
-          (∃ sample : PointSample (ExactVisiblePostSwitchSurface Z k) m,
+        2 ^ s * (Fintype.card (ExactVisiblePostSwitchData Z k) - 1) ^ m <
+            Fintype.card (ExactVisiblePostSwitchData Z k) ^ m →
+          (∃ sample : PointSample (ExactVisiblePostSwitchData Z k) m,
             ¬ EncodedFamily.IsDeceptiveSample
                 (BitEncodedClassifierFamily.toEncodedFamily
                   (ClockedBitCodeFamily.toBitEncodedClassifierFamily F))
                 (G.predict i) sample) ∧
-            ∃ sample : PointSample (ExactVisiblePostSwitchSurface Z k) m,
+            ∃ sample : PointSample (ExactVisiblePostSwitchData Z k) m,
               ClockedBitCodeFamily.empiricalRiskPredictor F
                   (labeledByTarget (G.predict i) sample) =
                 G.predict i
@@ -102,7 +102,7 @@ finite-learning payload is impossible below the full Boolean predictor-space
 cardinality. -/
 theorem not_clockedKpolyFiniteLearningPayload_of_surjective_predict_of_lt_predictorCard
     {G : ExactVisibleSwitchedFamily Z k Index}
-    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k))
+    (hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchData Z k))
     (hsurj : Function.Surjective G.predict) :
     ¬ ClockedKpolyFiniteLearningPayload G s clock := by
   intro hpayload
@@ -116,7 +116,7 @@ full bundled payload below the probe-cardinality threshold. -/
 theorem not_clockedKpolyFiniteLearningPayload_of_injective_realization_of_lt_card
     {Probe : Type*} [Fintype Probe]
     {G : ExactVisibleSwitchedFamily Z k Index}
-    (target : Probe → ExactVisiblePostSwitchSurface Z k → Bool)
+    (target : Probe → ExactVisiblePostSwitchData Z k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ i, G.predict i = target p)
     (hs : 2 ^ s < Fintype.card Probe) :

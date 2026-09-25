@@ -31,7 +31,7 @@ section Abstract
 
 variable {Z : Type v} [Fintype Z] {k r : ℕ} {Index : Type u} {Block : Type w}
 variable {T : ActualSwitchedLocalInterface Z k Index Block}
-variable {μ : PMF (ExactVisiblePostSwitchSurface Z k)} {zfeat : Z → BitVec r}
+variable {μ : PMF (ExactVisiblePostSwitchData Z k)} {zfeat : Z → BitVec r}
 variable {q : ℝ≥0∞}
 
 /-- Any two distinct realized predictors in a manuscript-facing sparse-threshold

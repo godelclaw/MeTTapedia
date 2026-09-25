@@ -24,31 +24,31 @@ theorem residualSideInformationCoverage_anchor_exactPostSwitch_activeOrbit_suppo
         (activeOrbitWeight z0)
         activeOrbitClassifier ∧
       0 < resolvedMass tiInputMap
-        (fun u : ExactVisiblePostSwitchSurface Z 1 => u.b)
+        (fun u : ExactVisiblePostSwitchData Z 1 => u.b)
         (activeOrbitWeight z0) ∧
       ¬ SideInfoDeterminedBy invariantVisibleData
-          (fun u : ExactVisiblePostSwitchSurface Z 1 => u.b) ∧
+          (fun u : ExactVisiblePostSwitchData Z 1 => u.b) ∧
       ¬ SupportwiseSourceOnlyPairClassifier
           invariantVisibleData
-          (fun u : ExactVisiblePostSwitchSurface Z 1 => u.b)
+          (fun u : ExactVisiblePostSwitchData Z 1 => u.b)
           (activeOrbitWeight z0)
           activeOrbitClassifier ∧
-      (∃ u : ExactVisiblePostSwitchSurface Z 1,
+      (∃ u : ExactVisiblePostSwitchData Z 1,
         0 < activeOrbitWeight z0 u ∧
           invariantVisibleData (tiInputMap u) = invariantVisibleData u ∧
           (tiInputMap u).b ≠ u.b) ∧
-      (∃ u : ExactVisiblePostSwitchSurface Z 1,
+      (∃ u : ExactVisiblePostSwitchData Z 1,
         0 < activeOrbitWeight z0 u ∧
           ¬ SourceOnlyPredicateCapturesSideEq
             invariantVisibleData
-            (fun u : ExactVisiblePostSwitchSurface Z 1 => u.b) (u.b)) ∧
-      (∃ u : ExactVisiblePostSwitchSurface Z 1,
+            (fun u : ExactVisiblePostSwitchData Z 1 => u.b) (u.b)) ∧
+      (∃ u : ExactVisiblePostSwitchData Z 1,
         0 < activeOrbitWeight z0 u ∧
           activeOrbitClassifier (activeOrbitFeatures (tiInputMap u)) ≠
             activeOrbitClassifier (activeOrbitFeatures u)) ∧
       ¬ SupportwiseVisiblePairBalancing
           invariantVisibleData
-          (fun u : ExactVisiblePostSwitchSurface Z 1 => u.b)
+          (fun u : ExactVisiblePostSwitchData Z 1 => u.b)
           activeOrbitTarget
           (activeOrbitWeight z0) := by
   exact
@@ -63,7 +63,7 @@ resolving budget. -/
 theorem residualSideInformationCoverage_anchor_exactPostSwitch_activeOrbit_full_resolution_budget
     {Z : Type*} [Fintype Z] (z0 : Z) :
     resolvedMass tiInputMap
-        (fun u : ExactVisiblePostSwitchSurface Z 1 => u.b)
+        (fun u : ExactVisiblePostSwitchData Z 1 => u.b)
         (activeOrbitWeight z0) =
       weightedTotalMass (activeOrbitWeight z0) ∧
     doubledAdvantage
@@ -72,7 +72,7 @@ theorem residualSideInformationCoverage_anchor_exactPostSwitch_activeOrbit_full_
         (activeOrbitWeight z0)
         activeOrbitClassifier =
       resolvedMass tiInputMap
-        (fun u : ExactVisiblePostSwitchSurface Z 1 => u.b)
+        (fun u : ExactVisiblePostSwitchData Z 1 => u.b)
         (activeOrbitWeight z0) := by
   exact ⟨resolvedMass_activeOrbit_eq_weightedTotalMass (Z := Z) z0,
     doubledAdvantage_activeOrbit_eq_resolvedMass (Z := Z) z0⟩

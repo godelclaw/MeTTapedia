@@ -24,7 +24,7 @@ theorem regression_exactZABDecisionListERMConstruction_switchedHistoryExactVisib
     (aOf : Index → Block → BitVec k)
     (bOf : Block → BitVec k)
     (zfeat : Z → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     SwitchedHistoryExactVisibleCompressionWrapper
       Ω
       (exactZABDecisionListERMConstruction
@@ -45,7 +45,7 @@ theorem regression_exactZABDecisionListERMConstruction_switchedHistoryClockedKpo
     (aOf : Index → Block → BitVec k)
     (bOf : Block → BitVec k)
     (zfeat : Z → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     SwitchedHistoryClockedKpolyFiniteLearningWrapper
       Ω
       (exactZABDecisionListERMConstruction

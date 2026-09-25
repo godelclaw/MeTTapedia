@@ -17,16 +17,16 @@ namespace Mettapedia.Computability.PNP.BoundedSampleMajorityObstructionRegressio
 open Mettapedia.Computability.PNP
 
 example {Z : Type} {k s sampleBound : ℕ} [Fintype Z]
-    (hbound : Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hbound : Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound)
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (boundedSamplePluginMajorityActualSwitchedLocalInterface Z k sampleBound).predictorFamily.FinitePredictorCover
         (2 ^ s) :=
   boundedSamplePluginMajorityActualSwitchedLocalInterface_not_finitePredictorCover_of_lt_surfaceCard
     (Z := Z) (k := k) (s := s) (sampleBound := sampleBound) hbound hs
 
 example {Z : Type} {k s sampleBound clock : ℕ} [Fintype Z]
-    (hbound : Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hbound : Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound)
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (boundedSamplePluginMajorityActualSwitchedLocalInterface Z k sampleBound).predictorFamily
         s clock :=
@@ -34,8 +34,8 @@ example {Z : Type} {k s sampleBound clock : ℕ} [Fintype Z]
     (Z := Z) (k := k) (s := s) (sampleBound := sampleBound) (clock := clock) hbound hs
 
 example {Z : Type} {k s sampleBound : ℕ} [Fintype Z]
-    (hbound : Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hbound : Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound)
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.BitCodeData
           (boundedSamplePluginMajorityActualSwitchedLocalInterface Z k sampleBound) s) :=
@@ -43,9 +43,9 @@ example {Z : Type} {k s sampleBound : ℕ} [Fintype Z]
     (Z := Z) (k := k) (s := s) (sampleBound := sampleBound) hbound hs
 
 example {Z : Type} {k r sampleBound : ℕ} [Fintype Z]
-    (hbound : Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound)
+    (hbound : Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound)
     (zfeat : Z → BitVec r)
-    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.ZABDecisionListData
           (boundedSamplePluginMajorityActualSwitchedLocalInterface Z k sampleBound) zfeat) :=

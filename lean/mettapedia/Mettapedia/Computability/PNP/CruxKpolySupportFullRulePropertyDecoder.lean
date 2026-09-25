@@ -13,7 +13,7 @@ universe u v w z
 block-output traces must be constant on observed-output fibers. -/
 theorem kpolyCoverage_anchor_supportFullRule_propertyDecoder_constant_on_observedFibers
     {Z : Type v} {Block : Type v} {α : Type v} {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (property : ExactVisibleRule Z k → α)
     (decode : (Block → Bool) → α)
     (hdecode :
@@ -33,7 +33,7 @@ theorem kpolyCoverage_anchor_supportFullRule_propertyDecoder_constant_on_observe
 block-output traces exactly when it is constant on observed-output fibers. -/
 theorem kpolyCoverage_anchor_supportFullRule_propertyDecoder_iff_constant_on_observedFibers
     {Z : Type v} {Block : Type v} {α : Type v} {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (property : ExactVisibleRule Z k → α) :
     (∃ decode : (Block → Bool) → α,
       ∀ rule : ExactVisibleRule Z k,
@@ -51,7 +51,7 @@ theorem kpolyCoverage_anchor_supportFullRule_propertyDecoder_iff_constant_on_obs
 fiber cannot be decoded from observed block-output traces. -/
 theorem kpolyCoverage_anchor_supportFullRule_no_propertyDecoder_of_same_output_ne
     {Z : Type v} {Block : Type v} {α : Type v} {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (property : ExactVisibleRule Z k → α)
     {rule₀ rule₁ : ExactVisibleRule Z k}
     (hsame :

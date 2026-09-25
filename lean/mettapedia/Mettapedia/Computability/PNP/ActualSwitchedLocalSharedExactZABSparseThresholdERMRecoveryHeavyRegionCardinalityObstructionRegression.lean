@@ -8,7 +8,7 @@ namespace Mettapedia.Computability.PNP
 open scoped ENNReal
 
 def exactVisiblePostSwitchSurfaceFin30EquivActualSparseRecoveryHeavyRegionCardinality :
-    ExactVisiblePostSwitchSurface (Fin 3) 0 ≃ Fin 3 where
+    ExactVisiblePostSwitchData (Fin 3) 0 ≃ Fin 3 where
   toFun u := u.z
   invFun z := ⟨z, zeroVec, zeroVec⟩
   left_inv := by
@@ -25,27 +25,27 @@ def exactVisiblePostSwitchSurfaceFin30EquivActualSparseRecoveryHeavyRegionCardin
     rfl
 
 noncomputable def fin3ZeroOneHalfMeasureActualSparseRecoveryHeavyRegionCardinality :
-    PMF (ExactVisiblePostSwitchSurface (Fin 3) 0) :=
+    PMF (ExactVisiblePostSwitchData (Fin 3) 0) :=
   PMF.ofFintype
     (fun u => if u.z = 2 then 0 else (2 : ℝ≥0∞)⁻¹)
     (by
       classical
       have hsum :
-          ∑ a : ExactVisiblePostSwitchSurface (Fin 3) 0,
+          ∑ a : ExactVisiblePostSwitchData (Fin 3) 0,
               (if a.z = 2 then 0 else (2 : ℝ≥0∞)⁻¹)
             =
           ∑ b : Fin 3, (if b = 2 then 0 else (2 : ℝ≥0∞)⁻¹) := by
         simpa using
           (Fintype.sum_equiv
             exactVisiblePostSwitchSurfaceFin30EquivActualSparseRecoveryHeavyRegionCardinality
-            (fun u : ExactVisiblePostSwitchSurface (Fin 3) 0 =>
+            (fun u : ExactVisiblePostSwitchData (Fin 3) 0 =>
               if u.z = 2 then 0 else (2 : ℝ≥0∞)⁻¹)
             (fun b : Fin 3 => if b = 2 then 0 else (2 : ℝ≥0∞)⁻¹)
             (by
               intro b
               rfl))
       calc
-        ∑ a : ExactVisiblePostSwitchSurface (Fin 3) 0,
+        ∑ a : ExactVisiblePostSwitchData (Fin 3) 0,
             (if a.z = 2 then 0 else (2 : ℝ≥0∞)⁻¹)
           =
             ∑ b : Fin 3, (if b = 2 then 0 else (2 : ℝ≥0∞)⁻¹) := hsum
@@ -54,7 +54,7 @@ noncomputable def fin3ZeroOneHalfMeasureActualSparseRecoveryHeavyRegionCardinali
           simpa [two_mul] using ENNReal.inv_two_add_inv_two)
 
 noncomputable def fin3ZeroOneRegionActualSparseRecoveryHeavyRegionCardinality :
-    Finset (ExactVisiblePostSwitchSurface (Fin 3) 0) :=
+    Finset (ExactVisiblePostSwitchData (Fin 3) 0) :=
   by
     classical
     exact

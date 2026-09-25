@@ -38,7 +38,7 @@ theorem pluginSampleMajorityActualSwitchedLocalInterface_not_nonempty_sharedExac
     (zfeat : Z → BitVec r)
     (hs :
       2 * allAffinePointBlockFeatureCount (r + (k + k)) <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+        Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.SharedExactZABSparseThresholdERMData
           (pluginSampleMajorityActualSwitchedLocalInterface Z k)
@@ -54,12 +54,12 @@ theorem pluginSampleMajorityActualSwitchedLocalInterface_not_nonempty_sharedExac
 impossible on the unrestricted sample-level plug-in majority endpoint below the
 same visible-budget threshold. -/
 theorem pluginSampleMajorityActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_lt_surfaceCard
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (zfeat : Z → BitVec r)
     (q : ℝ≥0∞)
     (hs :
       2 * allAffinePointBlockFeatureCount (r + (k + k)) <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+        Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.SharedExactZABSparseThresholdERMRecoveryData
           μ
@@ -115,7 +115,7 @@ theorem pluginSampleMajorityActualSwitchedLocalInterface_not_nonempty_sharedExac
 the same half-width obstruction on the unrestricted sample-level plug-in
 majority endpoint. -/
 theorem pluginSampleMajorityActualSwitchedLocalInterface_visibleWidth_le_two_mul_extractorWidth_add_two_mul_k_succ_of_nonempty_sharedExactZABSparseThresholdERMRecoveryData
-    (μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k))
+    (μ : PMF (ExactVisiblePostSwitchData (BitVec n) k))
     (zfeat : BitVec n → BitVec r)
     (q : ℝ≥0∞)
     (h :
@@ -135,7 +135,7 @@ theorem pluginSampleMajorityActualSwitchedLocalInterface_visibleWidth_le_two_mul
 carry the stronger sparse-threshold recovery packet below the same half-width
 threshold. -/
 theorem pluginSampleMajorityActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_two_mul_extractorWidth_add_two_mul_k_succ_lt_visibleWidth
-    (μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k))
+    (μ : PMF (ExactVisiblePostSwitchData (BitVec n) k))
     (zfeat : BitVec n → BitVec r)
     (q : ℝ≥0∞)
     (hgap : 2 * r + 2 * k + 1 < n) :

@@ -45,7 +45,7 @@ budget. -/
 theorem SharedExactZABSparseThresholdERMData.surfaceCard_le_of_surjective_predict
     (h : SharedExactZABSparseThresholdERMData T zfeat)
     (hsurj : Function.Surjective T.predictorFamily.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤
       2 * allAffinePointBlockFeatureCount (r + (k + k)) := by
   exact
     exactVisibleCompressionTarget_surfaceCard_le_of_surjective_predict
@@ -60,7 +60,7 @@ theorem SharedExactZABSparseThresholdERMData.not_surjective_predict_of_lt_surfac
     (h : SharedExactZABSparseThresholdERMData T zfeat)
     (hs :
       2 * allAffinePointBlockFeatureCount (r + (k + k)) <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+        Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective T.predictorFamily.predict := by
   intro hsurj
   exact Nat.not_le_of_lt hs (h.surfaceCard_le_of_surjective_predict hsurj)
@@ -73,7 +73,7 @@ theorem not_nonempty_sharedExactZABSparseThresholdERMData_of_surjective_predict_
     (hsurj : Function.Surjective T.predictorFamily.predict)
     (hs :
       2 * allAffinePointBlockFeatureCount (r + (k + k)) <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+        Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty (SharedExactZABSparseThresholdERMData T zfeat) := by
   rintro ⟨h⟩
   exact h.not_surjective_predict_of_lt_surfaceCard hs hsurj
@@ -84,7 +84,7 @@ theorem fullRuleActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseTh
     (zfeat : Z → BitVec r)
     (hs :
       2 * allAffinePointBlockFeatureCount (r + (k + k)) <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+        Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (SharedExactZABSparseThresholdERMData
           (fullRuleActualSwitchedLocalInterface Z k)

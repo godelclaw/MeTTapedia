@@ -54,8 +54,8 @@ theorem zFiberAHeadRule_not_eq_rawExactZABDecisionListPredict_of_firstActive_z
     zFiberAHeadRule (Z := Z) (k := k) hk z0 ≠
       rawExactZABDecisionListPredict (Z := Z) (r := r) (k := k) zfeat code := by
   intro heq
-  let u0 : ExactVisiblePostSwitchSurface Z k := ⟨z0, zeroVec, zeroVec⟩
-  let u1 : ExactVisiblePostSwitchSurface Z k := ⟨z0, headOneVec hk, zeroVec⟩
+  let u0 : ExactVisiblePostSwitchData Z k := ⟨z0, zeroVec, zeroVec⟩
+  let u1 : ExactVisiblePostSwitchData Z k := ⟨z0, headOneVec hk, zeroVec⟩
   have hpred0 :
       rawExactZABDecisionListPredict (Z := Z) (r := r) (k := k) zfeat code u0 =
         code.1 (Fin.castAdd (k + k) j) := by
@@ -92,8 +92,8 @@ theorem zHeadRule_not_eq_rawExactZABDecisionListPredict_of_forall_zero
   intro heq
   let z0 : BitVec n := zeroVec
   let z1 : BitVec n := headOneVec hn
-  let u0 : ExactVisiblePostSwitchSurface (BitVec n) k := ⟨z0, zeroVec, zeroVec⟩
-  let u1 : ExactVisiblePostSwitchSurface (BitVec n) k := ⟨z1, zeroVec, zeroVec⟩
+  let u0 : ExactVisiblePostSwitchData (BitVec n) k := ⟨z0, zeroVec, zeroVec⟩
+  let u1 : ExactVisiblePostSwitchData (BitVec n) k := ⟨z1, zeroVec, zeroVec⟩
   have hpred :
       rawExactZABDecisionListPredict (Z := BitVec n) (r := r) (k := k) zfeat code u0 =
         rawExactZABDecisionListPredict (Z := BitVec n) (r := r) (k := k) zfeat code u1 := by

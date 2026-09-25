@@ -15,7 +15,7 @@ data interface.  If the resulting predictor family is still surjective on the
 full exact visible surface, then:
 
 * abstractly, the extractor width must be at least
-  `|ExactVisiblePostSwitchSurface Z k| - (2k + 1)`;
+  `|ExactVisiblePostSwitchData Z k| - (2k + 1)`;
 * on the bit-valued surface `Z = BitVec n`, this becomes
   `r ≥ 2^(n + 2k) - (2k + 1)`.
 
@@ -41,8 +41,8 @@ must absorb the whole visible-surface cardinality gap. -/
 theorem ZABDecisionListData.visibleCardGapLowerBound_of_surjective_predict
     (h : ZABDecisionListData T zfeat)
     (hsurj : Function.Surjective T.predictorFamily.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) - (2 * k + 1) ≤ r := by
-  have hs : Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ r + 2 * k + 1 :=
+    Fintype.card (ExactVisiblePostSwitchData Z k) - (2 * k + 1) ≤ r := by
+  have hs : Fintype.card (ExactVisiblePostSwitchData Z k) ≤ r + 2 * k + 1 :=
     h.targetData.surfaceCard_le_of_surjective_predict hsurj
   rw [Nat.sub_le_iff_le_add]
   simpa [Nat.add_assoc, Nat.add_left_comm, Nat.add_comm] using hs
@@ -53,7 +53,7 @@ theorem not_nonempty_zabDecisionListData_of_surjective_predict_of_lt_visibleCard
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (zfeat : Z → BitVec r)
     (hsurj : Function.Surjective T.predictorFamily.predict)
-    (hgap : r < Fintype.card (ExactVisiblePostSwitchSurface Z k) - (2 * k + 1)) :
+    (hgap : r < Fintype.card (ExactVisiblePostSwitchData Z k) - (2 * k + 1)) :
     ¬ Nonempty (ZABDecisionListData T zfeat) := by
   rintro ⟨h⟩
   exact Nat.not_le_of_lt hgap <|

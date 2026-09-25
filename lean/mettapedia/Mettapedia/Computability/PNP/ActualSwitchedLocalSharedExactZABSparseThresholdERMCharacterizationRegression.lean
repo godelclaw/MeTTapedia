@@ -19,7 +19,7 @@ theorem constBitVec1ActualSparseChar_not_injective :
   exact Bool.false_ne_true h
 
 def exactVisiblePostSwitchSurfaceBool0EquivActualSparseChar :
-    ExactVisiblePostSwitchSurface Bool 0 ≃ Bool where
+    ExactVisiblePostSwitchData Bool 0 ≃ Bool where
   toFun u := u.z
   invFun z := ⟨z, fun i => Fin.elim0 i, fun i => Fin.elim0 i⟩
   left_inv := by
@@ -36,7 +36,7 @@ def exactVisiblePostSwitchSurfaceBool0EquivActualSparseChar :
     rfl
 
 theorem card_exactVisiblePostSwitchSurface_bool0_actualSparseChar :
-    Fintype.card (ExactVisiblePostSwitchSurface Bool 0) = 2 := by
+    Fintype.card (ExactVisiblePostSwitchData Bool 0) = 2 := by
   simpa using Fintype.card_congr exactVisiblePostSwitchSurfaceBool0EquivActualSparseChar
 
 theorem fullRuleActualSwitchedLocalInterface_nonempty_sharedExactZABSparseThresholdERMData_iff_injective_zfeat_bool0_regression :

@@ -19,21 +19,21 @@ package. -/
 def ResidualSideInformationExactPostSwitchCoverage : Prop :=
   (∀ {Z : Type} [Fintype Z] (z0 : Z),
       0 < resolvedMass tiInputMap
-          (fun u : ExactVisiblePostSwitchSurface Z 1 => u.b)
+          (fun u : ExactVisiblePostSwitchData Z 1 => u.b)
           (activeOrbitWeight z0) ∧
         ¬ SideInfoDeterminedBy invariantVisibleData
-            (fun u : ExactVisiblePostSwitchSurface Z 1 => u.b) ∧
+            (fun u : ExactVisiblePostSwitchData Z 1 => u.b) ∧
         PositiveWeightSideInfoCollisionOverBase invariantVisibleData
-          (fun u : ExactVisiblePostSwitchSurface Z 1 => u.b)
+          (fun u : ExactVisiblePostSwitchData Z 1 => u.b)
           (activeOrbitWeight z0) ∧
-        (∃ u : ExactVisiblePostSwitchSurface Z 1,
+        (∃ u : ExactVisiblePostSwitchData Z 1,
           0 < activeOrbitWeight z0 u ∧
             invariantVisibleData (tiInputMap u) = invariantVisibleData u ∧
             (tiInputMap u).b ≠ u.b) ∧
-        (∃ u : ExactVisiblePostSwitchSurface Z 1,
+        (∃ u : ExactVisiblePostSwitchData Z 1,
           0 < activeOrbitWeight z0 u ∧
             ¬ SourceOnlyPredicateCapturesSideEq invariantVisibleData
-              (fun u : ExactVisiblePostSwitchSurface Z 1 => u.b) (u.b))) ∧
+              (fun u : ExactVisiblePostSwitchData Z 1 => u.b) (u.b))) ∧
   (∀ {Z : Type} [Fintype Z] (z0 : Z),
       0 <
         doubledAdvantage
@@ -42,38 +42,38 @@ def ResidualSideInformationExactPostSwitchCoverage : Prop :=
           (activeOrbitWeight z0)
           activeOrbitClassifier ∧
         0 < resolvedMass tiInputMap
-          (fun u : ExactVisiblePostSwitchSurface Z 1 => u.b)
+          (fun u : ExactVisiblePostSwitchData Z 1 => u.b)
           (activeOrbitWeight z0) ∧
         ¬ SideInfoDeterminedBy invariantVisibleData
-            (fun u : ExactVisiblePostSwitchSurface Z 1 => u.b) ∧
+            (fun u : ExactVisiblePostSwitchData Z 1 => u.b) ∧
         ¬ SupportwiseSourceOnlyPairClassifier
             invariantVisibleData
-            (fun u : ExactVisiblePostSwitchSurface Z 1 => u.b)
+            (fun u : ExactVisiblePostSwitchData Z 1 => u.b)
             (activeOrbitWeight z0)
             activeOrbitClassifier ∧
-        (∃ u : ExactVisiblePostSwitchSurface Z 1,
+        (∃ u : ExactVisiblePostSwitchData Z 1,
           0 < activeOrbitWeight z0 u ∧
             invariantVisibleData (tiInputMap u) = invariantVisibleData u ∧
             (tiInputMap u).b ≠ u.b) ∧
-        (∃ u : ExactVisiblePostSwitchSurface Z 1,
+        (∃ u : ExactVisiblePostSwitchData Z 1,
           0 < activeOrbitWeight z0 u ∧
             ¬ SourceOnlyPredicateCapturesSideEq invariantVisibleData
-              (fun u : ExactVisiblePostSwitchSurface Z 1 => u.b) (u.b)) ∧
-        (∃ u : ExactVisiblePostSwitchSurface Z 1,
+              (fun u : ExactVisiblePostSwitchData Z 1 => u.b) (u.b)) ∧
+        (∃ u : ExactVisiblePostSwitchData Z 1,
           0 < activeOrbitWeight z0 u ∧
             activeOrbitClassifier (activeOrbitFeatures (tiInputMap u)) ≠
               activeOrbitClassifier (activeOrbitFeatures u)) ∧
         ¬ SupportwiseVisiblePairBalancing
             invariantVisibleData
-            (fun u : ExactVisiblePostSwitchSurface Z 1 => u.b)
+            (fun u : ExactVisiblePostSwitchData Z 1 => u.b)
             activeOrbitTarget
             (activeOrbitWeight z0)) ∧
   (∀ {Z : Type} [Fintype Z] (z0 : Z),
-      ((∀ u : ExactVisiblePostSwitchSurface Z 1,
+      ((∀ u : ExactVisiblePostSwitchData Z 1,
           invariantVisibleData (tiInputMap u) = invariantVisibleData u) ∧
-        (∀ u : ExactVisiblePostSwitchSurface Z 1,
+        (∀ u : ExactVisiblePostSwitchData Z 1,
           activeOrbitWeight z0 (tiInputMap u) = activeOrbitWeight z0 u) ∧
-        (∀ u : ExactVisiblePostSwitchSurface Z 1, 0 < activeOrbitWeight z0 u →
+        (∀ u : ExactVisiblePostSwitchData Z 1, 0 < activeOrbitWeight z0 u →
           activeOrbitTarget (tiInputMap u) = !(activeOrbitTarget u)) ∧
         0 <
           doubledAdvantage
@@ -81,7 +81,7 @@ def ResidualSideInformationExactPostSwitchCoverage : Prop :=
             activeOrbitTarget
             (activeOrbitWeight z0)
             activeOrbitClassifier ∧
-        (∃ u : ExactVisiblePostSwitchSurface Z 1,
+        (∃ u : ExactVisiblePostSwitchData Z 1,
           0 < activeOrbitWeight z0 u ∧
             activeOrbitClassifier (activeOrbitFeatures (tiInputMap u)) ≠
               activeOrbitClassifier (activeOrbitFeatures u))) ∧
@@ -93,7 +93,7 @@ def ResidualSideInformationExactPostSwitchCoverage : Prop :=
             activeOrbitClassifier ∧
         0 <
           sliceMass
-            (fun u : ExactVisiblePostSwitchSurface Z 1 => nonzeroColumn u.a)
+            (fun u : ExactVisiblePostSwitchData Z 1 => nonzeroColumn u.a)
             (activeOrbitWeight z0) ∧
         ¬ exactInputInvariantWeightedSupport (activeOrbitWeight z0))
 

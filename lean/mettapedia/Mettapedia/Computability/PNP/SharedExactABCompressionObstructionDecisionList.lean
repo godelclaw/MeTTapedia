@@ -76,7 +76,7 @@ theorem SharedABDecisionListTargetData.not_surjective_predict_of_le_of_two_le
 /-- The same contradiction applies to the recovery wrapper, since it already
 packages the same exact compression target. -/
 theorem SharedABDecisionListRecoveryData.not_surjective_predict_of_budget_lt
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {features : Fin r → AffineColumnCode (k + k)}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
@@ -90,7 +90,7 @@ theorem SharedABDecisionListRecoveryData.not_surjective_predict_of_budget_lt
 /-- And likewise under the natural width hypothesis `r ≤ 2k` with
 `2 ≤ n + 2k`. -/
 theorem SharedABDecisionListRecoveryData.not_surjective_predict_of_le_of_two_le
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {features : Fin r → AffineColumnCode (k + k)}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
@@ -106,7 +106,7 @@ theorem SharedABDecisionListRecoveryData.not_surjective_predict_of_le_of_two_le
 family wrapper itself. -/
 theorem sharedExactABAffineDecisionListERMFamily_bitVecSurfaceCard_le_of_surjective_predict
     (features : Fin r → AffineColumnCode (k + k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hsurj :
       Function.Surjective
         (sharedExactABAffineDecisionListERMFamily
@@ -121,7 +121,7 @@ theorem sharedExactABAffineDecisionListERMFamily_bitVecSurfaceCard_le_of_surject
 its linear budget sits below the full exact-surface threshold. -/
 theorem sharedExactABAffineDecisionListERMFamily_not_surjective_of_budget_lt
     (features : Fin r → AffineColumnCode (k + k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hbudget : r + 1 < 2 ^ (n + 2 * k)) :
     ¬ Function.Surjective
         (sharedExactABAffineDecisionListERMFamily
@@ -135,7 +135,7 @@ theorem sharedExactABAffineDecisionListERMFamily_not_surjective_of_budget_lt
 when `r ≤ 2k` and the full exact visible width `n + 2k` is at least `2`. -/
 theorem sharedExactABAffineDecisionListERMFamily_not_surjective_of_le_of_two_le
     (features : Fin r → AffineColumnCode (k + k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hfeat : r ≤ 2 * k)
     (hwidth : 2 ≤ n + 2 * k) :
     ¬ Function.Surjective
@@ -150,7 +150,7 @@ theorem sharedExactABAffineDecisionListERMFamily_not_surjective_of_le_of_two_le
 /-- The final shared raw exact ERM interface inherits the same budget-threshold
 obstruction. -/
 theorem SharedExactABERMRecoveryData.not_surjective_predict_of_budget_lt
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
     (h :
@@ -163,7 +163,7 @@ theorem SharedExactABERMRecoveryData.not_surjective_predict_of_budget_lt
 /-- And likewise under the natural width hypotheses `r ≤ 2k` and
 `2 ≤ n + 2k`. -/
 theorem SharedExactABERMRecoveryData.not_surjective_predict_of_le_of_two_le
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
     (h :

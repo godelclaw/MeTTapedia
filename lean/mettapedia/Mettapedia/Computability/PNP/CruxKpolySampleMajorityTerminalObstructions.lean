@@ -14,8 +14,8 @@ alphabet size, bounded sample-level plug-in majority has no clocked
 finite-learning payload below the truth-table budget. -/
 theorem kpolyCoverage_anchor_boundedSampleMajority_not_clockedPayload_of_lt_surfaceCard
     {Z : Type v} [Fintype Z] {k s sampleBound clock : ℕ}
-    (hbound : Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hbound : Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound)
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (boundedSamplePluginMajorityActualSwitchedLocalInterface Z k sampleBound).predictorFamily
         s clock :=
@@ -27,9 +27,9 @@ alphabet size, bounded sample-level plug-in majority still cannot be treated as
 bounded ZAB decision-list constructor data below the truth-table budget. -/
 theorem kpolyCoverage_anchor_boundedSampleMajority_not_zabDecisionListData_of_lt_surfaceCard
     {Z : Type v} [Fintype Z] {k r sampleBound : ℕ}
-    (hbound : Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound)
+    (hbound : Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound)
     (zfeat : Z → BitVec r)
-    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.ZABDecisionListData
           (boundedSamplePluginMajorityActualSwitchedLocalInterface Z k sampleBound) zfeat) :=

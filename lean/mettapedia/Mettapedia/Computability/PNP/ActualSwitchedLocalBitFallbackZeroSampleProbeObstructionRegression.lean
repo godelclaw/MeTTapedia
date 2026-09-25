@@ -14,7 +14,7 @@ open Mettapedia.Computability.PNP
 example {Probe : Type} [Fintype Probe]
     {Z : Type} {k fallbackBits N : ℕ}
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k)
-    (target : Probe → ExactVisiblePostSwitchSurface Z k → Bool)
+    (target : Probe → ExactVisiblePostSwitchData Z k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ code : BitCode fallbackBits, fallback code = target p)
     (hcover :
@@ -26,7 +26,7 @@ example {Probe : Type} [Fintype Probe]
 example {Probe : Type} [Fintype Probe]
     {Z : Type} {k fallbackBits N : ℕ}
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k)
-    (target : Probe → ExactVisiblePostSwitchSurface Z k → Bool)
+    (target : Probe → ExactVisiblePostSwitchData Z k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ code : BitCode fallbackBits, fallback code = target p)
     (hrep :
@@ -38,7 +38,7 @@ example {Probe : Type} [Fintype Probe]
 example {Probe : Type} [Fintype Probe]
     {Z : Type} {k fallbackBits N : ℕ}
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k)
-    (target : Probe → ExactVisiblePostSwitchSurface Z k → Bool)
+    (target : Probe → ExactVisiblePostSwitchData Z k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ code : BitCode fallbackBits, fallback code = target p)
     (hN : N < Fintype.card Probe) :
@@ -49,7 +49,7 @@ example {Probe : Type} [Fintype Probe]
 example {Probe : Type} [Fintype Probe]
     {Z : Type} {k fallbackBits s : ℕ}
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k)
-    (target : Probe → ExactVisiblePostSwitchSurface Z k → Bool)
+    (target : Probe → ExactVisiblePostSwitchData Z k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ code : BitCode fallbackBits, fallback code = target p)
     (hs : 2 ^ s < Fintype.card Probe) :
@@ -63,11 +63,11 @@ example {Probe : Type} [Fintype Probe]
 example {Probe : Type} [Fintype Probe]
     {Z : Type} {k fallbackBits s clock : ℕ}
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k)
-    (target : Probe → ExactVisiblePostSwitchSurface Z k → Bool)
+    (target : Probe → ExactVisiblePostSwitchData Z k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ code : BitCode fallbackBits, fallback code = target p)
     (hs : 2 ^ s < Fintype.card Probe) :
-    ¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    ¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         (BitFallbackZeroSampleImage.zeroSampleWrapperFamily fallback).RealizedByClockedBitFamily F :=
   BitFallbackZeroSampleProbeObstruction.not_exists_clockedExactVisibleRealization_of_fallback_injective_realization_of_lt_card
     fallback target hinj hreal hs

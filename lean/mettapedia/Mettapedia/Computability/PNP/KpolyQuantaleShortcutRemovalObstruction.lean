@@ -26,8 +26,8 @@ structure KpolyQuantaleShortcutRemovalRoute
     {SurfaceFeature : Type v} [Fintype SurfaceFeature]
     {Block : Type w}
     (k N : ℕ)
-    (surfaceFeature : ExactVisiblePostSwitchSurface Z k → SurfaceFeature)
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (surfaceFeature : ExactVisiblePostSwitchData Z k → SurfaceFeature)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     {α : Type x} [Fintype α] {WeakFeature : Type y}
     (τ : α → α) (weakFeature : α → WeakFeature)
     (target : α → Bool) (weight : α → ℕ) (classifier : WeakFeature → Bool) :
@@ -37,7 +37,7 @@ structure KpolyQuantaleShortcutRemovalRoute
   finiteFeatureCover :
     (featureReadoutFamily surfaceFeature).FinitePredictorCover N
   allSupportPointQueries :
-    ∀ u₀ : ExactVisiblePostSwitchSurface Z k,
+    ∀ u₀ : ExactVisiblePostSwitchData Z k,
       ∃ decode : (Block → Bool) → Bool,
         ∀ rule : ExactVisibleRule Z k,
           decode
@@ -54,8 +54,8 @@ theorem kpolyQuantaleShortcutRemovalRoute_necessary_obligations
     {Z : Type u} [Fintype Z]
     {SurfaceFeature : Type v} [Fintype SurfaceFeature]
     {Block : Type w} {k N : ℕ}
-    {surfaceFeature : ExactVisiblePostSwitchSurface Z k → SurfaceFeature}
-    {visibleOf : Block → ExactVisiblePostSwitchSurface Z k}
+    {surfaceFeature : ExactVisiblePostSwitchData Z k → SurfaceFeature}
+    {visibleOf : Block → ExactVisiblePostSwitchData Z k}
     {α : Type x} [Fintype α] {WeakFeature : Type y}
     {τ : α → α} {weakFeature : α → WeakFeature}
     {target : α → Bool} {weight : α → ℕ} {classifier : WeakFeature → Bool}
@@ -65,9 +65,9 @@ theorem kpolyQuantaleShortcutRemovalRoute_necessary_obligations
     (route :
       KpolyQuantaleShortcutRemovalRoute
         k N surfaceFeature visibleOf τ weakFeature target weight classifier) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤
         Fintype.card SurfaceFeature ∧
-      2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ N ∧
+      2 ^ Fintype.card (ExactVisiblePostSwitchData Z k) ≤ N ∧
       Function.Surjective visibleOf ∧
       FeatureResolvesPositivePair τ weakFeature weight := by
   have hfloors :=
@@ -92,8 +92,8 @@ theorem not_kpolyQuantaleShortcutRemovalRoute_of_missing_obligation
     {Z : Type u} [Fintype Z]
     {SurfaceFeature : Type v} [Fintype SurfaceFeature]
     {Block : Type w} {k N : ℕ}
-    {surfaceFeature : ExactVisiblePostSwitchSurface Z k → SurfaceFeature}
-    {visibleOf : Block → ExactVisiblePostSwitchSurface Z k}
+    {surfaceFeature : ExactVisiblePostSwitchData Z k → SurfaceFeature}
+    {visibleOf : Block → ExactVisiblePostSwitchData Z k}
     {α : Type x} [Fintype α] {WeakFeature : Type y}
     {τ : α → α} {weakFeature : α → WeakFeature}
     {target : α → Bool} {weight : α → ℕ} {classifier : WeakFeature → Bool}
@@ -102,7 +102,7 @@ theorem not_kpolyQuantaleShortcutRemovalRoute_of_missing_obligation
     (hweight : ∀ x, weight (τ x) = weight x)
     (hblocked :
       Fintype.card SurfaceFeature <
-          Fintype.card (ExactVisiblePostSwitchSurface Z k) ∨
+          Fintype.card (ExactVisiblePostSwitchData Z k) ∨
         ¬ Function.Surjective visibleOf ∨
         (∀ x, 0 < weight x → weakFeature (τ x) = weakFeature x)) :
     ¬ KpolyQuantaleShortcutRemovalRoute
@@ -135,8 +135,8 @@ theorem kpolyQuantaleShortcutRemoval_obstruction_packet
     {Z : Type u} [Fintype Z]
     {SurfaceFeature : Type v} [Fintype SurfaceFeature]
     {Block : Type w} {k N : ℕ}
-    {surfaceFeature : ExactVisiblePostSwitchSurface Z k → SurfaceFeature}
-    {visibleOf : Block → ExactVisiblePostSwitchSurface Z k}
+    {surfaceFeature : ExactVisiblePostSwitchData Z k → SurfaceFeature}
+    {visibleOf : Block → ExactVisiblePostSwitchData Z k}
     {α : Type x} [Fintype α] {WeakFeature : Type y}
     {τ : α → α} {weakFeature : α → WeakFeature}
     {target : α → Bool} {weight : α → ℕ} {classifier : WeakFeature → Bool}
@@ -145,15 +145,15 @@ theorem kpolyQuantaleShortcutRemoval_obstruction_packet
     (hweight : ∀ x, weight (τ x) = weight x)
     (hblocked :
       Fintype.card SurfaceFeature <
-          Fintype.card (ExactVisiblePostSwitchSurface Z k) ∨
+          Fintype.card (ExactVisiblePostSwitchData Z k) ∨
         ¬ Function.Surjective visibleOf ∨
         (∀ x, 0 < weight x → weakFeature (τ x) = weakFeature x)) :
     (∀ _ :
       KpolyQuantaleShortcutRemovalRoute
         k N surfaceFeature visibleOf τ weakFeature target weight classifier,
-      Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤
+      Fintype.card (ExactVisiblePostSwitchData Z k) ≤
           Fintype.card SurfaceFeature ∧
-        2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ N ∧
+        2 ^ Fintype.card (ExactVisiblePostSwitchData Z k) ≤ N ∧
         Function.Surjective visibleOf ∧
         FeatureResolvesPositivePair τ weakFeature weight) ∧
       ¬ KpolyQuantaleShortcutRemovalRoute

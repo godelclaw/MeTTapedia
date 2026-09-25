@@ -17,11 +17,11 @@ variable {Z : Type*} {p r k : ℕ} {Index : Type*}
 
 structure ExactZABAffineFeatureERMRecoveryData
     [Fintype Z]
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (zfeat : Z → BitVec r)
     (G : ExactVisibleSwitchedFamily Z k Index)
     (q : ℝ≥0∞) where
-  samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool
+  samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool
   exact_family :
     G = exactZABAffineFeatureERMFamily (Z := Z) (p := p) (r := r) (k := k) zfeat samples
   agreement_le :
@@ -33,11 +33,11 @@ structure ExactZABAffineFeatureERMRecoveryData
 
 structure ExactZABSparseThresholdERMRecoveryData
     [Fintype Z]
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (zfeat : Z → BitVec r)
     (G : ExactVisibleSwitchedFamily Z k Index)
     (q : ℝ≥0∞) where
-  samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool
+  samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool
   exact_family :
     G =
       exactZABSparseThresholdAffineERMFamily (Z := Z) (p := p) (r := r) (k := k) zfeat samples
@@ -54,7 +54,7 @@ section
 variable [Fintype Z]
 
 def ExactZABAffineFeatureERMRecoveryData.targetData
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -68,7 +68,7 @@ def ExactZABAffineFeatureERMRecoveryData.targetData
     (Z := Z) (p := p) (r := r) (k := k) (Index := Index) zfeat samples
 
 theorem ExactZABAffineFeatureERMRecoveryData.compressionTarget
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -83,7 +83,7 @@ theorem ExactZABAffineFeatureERMRecoveryData.compressionTarget
     (Z := Z) (p := p) (r := r) (k := k) (Index := Index) zfeat samples
 
 theorem ExactZABAffineFeatureERMRecoveryData.surfaceCard_le_of_surjective_predict
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -91,23 +91,23 @@ theorem ExactZABAffineFeatureERMRecoveryData.surfaceCard_le_of_surjective_predic
       ExactZABAffineFeatureERMRecoveryData
         (Z := Z) (p := p) (r := r) (k := k) (Index := Index) μ zfeat G q)
     (hsurj : Function.Surjective G.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ p * ((r + (k + k)) + 1) + 2 ^ p := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ p * ((r + (k + k)) + 1) + 2 ^ p := by
   exact (h.targetData).surfaceCard_le_of_surjective_predict hsurj
 
 theorem ExactZABAffineFeatureERMRecoveryData.not_surjective_predict_of_lt_surfaceCard
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
       ExactZABAffineFeatureERMRecoveryData
         (Z := Z) (p := p) (r := r) (k := k) (Index := Index) μ zfeat G q)
-    (hs : p * ((r + (k + k)) + 1) + 2 ^ p < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : p * ((r + (k + k)) + 1) + 2 ^ p < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective G.predict := by
   exact (h.targetData).not_surjective_predict_of_lt_surfaceCard hs
 
 theorem ExactZABAffineFeatureERMRecoveryData.recoveryLowerBound
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -124,7 +124,7 @@ theorem ExactZABAffineFeatureERMRecoveryData.recoveryLowerBound
     μ zfeat samples q agreement_le i m
 
 def ExactZABSparseThresholdERMRecoveryData.targetData
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -138,7 +138,7 @@ def ExactZABSparseThresholdERMRecoveryData.targetData
     (Z := Z) (p := p) (r := r) (k := k) (Index := Index) zfeat samples
 
 theorem ExactZABSparseThresholdERMRecoveryData.compressionTarget
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -153,7 +153,7 @@ theorem ExactZABSparseThresholdERMRecoveryData.compressionTarget
     (Z := Z) (p := p) (r := r) (k := k) (Index := Index) zfeat samples
 
 theorem ExactZABSparseThresholdERMRecoveryData.surfaceCard_le_of_surjective_predict
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -161,23 +161,23 @@ theorem ExactZABSparseThresholdERMRecoveryData.surfaceCard_le_of_surjective_pred
       ExactZABSparseThresholdERMRecoveryData
         (Z := Z) (p := p) (r := r) (k := k) (Index := Index) μ zfeat G q)
     (hsurj : Function.Surjective G.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ p * ((r + (k + k)) + 3) := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ p * ((r + (k + k)) + 3) := by
   exact (h.targetData).surfaceCard_le_of_surjective_predict hsurj
 
 theorem ExactZABSparseThresholdERMRecoveryData.not_surjective_predict_of_lt_surfaceCard
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
       ExactZABSparseThresholdERMRecoveryData
         (Z := Z) (p := p) (r := r) (k := k) (Index := Index) μ zfeat G q)
-    (hs : p * ((r + (k + k)) + 3) < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : p * ((r + (k + k)) + 3) < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective G.predict := by
   exact (h.targetData).not_surjective_predict_of_lt_surfaceCard hs
 
 theorem ExactZABSparseThresholdERMRecoveryData.recoveryLowerBound
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}

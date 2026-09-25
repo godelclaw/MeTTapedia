@@ -47,12 +47,12 @@ theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_visibleWidthBudg
             (BitVec n) k sampleBound)
           zfeat))
     (hsample :
-      Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ≤ sampleBound)
+      Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ≤ sampleBound)
     (hvis : 0 < n + (k + k))
     (hbound :
       2 ^ (2 * allAffinePointBlockFeatureCount (r + (k + k))) *
-          (Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) - 1) ^ sampleBound <
-        Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ^ sampleBound) :
+          (Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) - 1) ^ sampleBound <
+        Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ^ sampleBound) :
     2 ^ (2 * (n + (k + k)) + 1) < sampleBound := by
   exact
     visibleWidthBudget_lt_sampleSize_of_nonempty_sharedExactZABSparseThresholdERMData_of_surjective_predict
@@ -73,13 +73,13 @@ pre-existing manuscript-facing sparse-threshold ERM witness. -/
 theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_visibleWidthBudget_lt_sampleBound_of_visibleSurfaceCard_le_of_width_le
     (hnr : n ≤ r)
     (hsample :
-      Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ≤ sampleBound)
+      Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ≤ sampleBound)
     (hvis : 0 < n + (k + k))
     (hwidth : 0 < r + (k + k))
     (hbound :
       2 ^ (2 * allAffinePointBlockFeatureCount (r + (k + k))) *
-          (Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) - 1) ^ sampleBound <
-        Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ^ sampleBound) :
+          (Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) - 1) ^ sampleBound <
+        Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ^ sampleBound) :
     2 ^ (2 * (n + (k + k)) + 1) < sampleBound := by
   let zfeat : BitVec n → BitVec r := bitVecPrefixEmbedding (n := n) (r := r)
   have hdata :
@@ -109,12 +109,12 @@ sample bound. -/
 theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMData_of_sampleBound_le_visibleWidthBudget
     {zfeat : BitVec n → BitVec r}
     (hsample :
-      Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ≤ sampleBound)
+      Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ≤ sampleBound)
     (hvis : 0 < n + (k + k))
     (hbound :
       2 ^ (2 * allAffinePointBlockFeatureCount (r + (k + k))) *
-          (Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) - 1) ^ sampleBound <
-        Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ^ sampleBound)
+          (Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) - 1) ^ sampleBound <
+        Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ^ sampleBound)
     (hsmall : sampleBound ≤ 2 ^ (2 * (n + (k + k)) + 1)) :
     ¬ Nonempty
         (SharedExactZABSparseThresholdERMData

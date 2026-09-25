@@ -9,11 +9,11 @@ open scoped ENNReal
 def idBitVec1ActualSparseRecoveryInjectiveThresholdBoundedSample : BitVec 1 → BitVec 1 := fun x => x
 
 local instance exactVisiblePostSwitchSurfaceBitVec1k1NonemptyActualSparseRecoveryInjectiveThresholdBoundedSample :
-    Nonempty (ExactVisiblePostSwitchSurface (BitVec 1) 1) :=
+    Nonempty (ExactVisiblePostSwitchData (BitVec 1) 1) :=
   ⟨⟨zeroVec, zeroVec, zeroVec⟩⟩
 
 noncomputable def uniformMeasureBitVec1k1ActualSparseRecoveryInjectiveThresholdBoundedSample :
-    PMF (ExactVisiblePostSwitchSurface (BitVec 1) 1) :=
+    PMF (ExactVisiblePostSwitchData (BitVec 1) 1) :=
   PMF.uniformOfFintype _
 
 theorem boundedSamplePluginMajorityActualSwitchedLocalInterfaceBitVec1k1SampleBound0_not_surjective :

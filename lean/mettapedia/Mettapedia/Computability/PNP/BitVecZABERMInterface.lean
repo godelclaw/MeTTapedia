@@ -77,7 +77,7 @@ theorem BitVecZABERMRecoveryData.compressionTarget
   exact (h.canonicalData).compressionTarget
 
 theorem bitVecZABDecisionListERMFinitePredictorCover
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec r) k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec r) k) Bool) :
     (bitVecZABDecisionListERMFamily
       (r := r) (k := k) (Index := Index) samples).FinitePredictorCover
       (2 ^ (r + 2 * k + 1)) := by
@@ -86,7 +86,7 @@ theorem bitVecZABDecisionListERMFinitePredictorCover
       (Z := BitVec r) (r := r) (k := k) (Index := Index) identityZExtractor samples)
 
 theorem bitVecZABDecisionListERMFiniteIndexRepresentativeCover
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec r) k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec r) k) Bool) :
     (bitVecZABDecisionListERMFamily
       (r := r) (k := k) (Index := Index) samples).FiniteIndexRepresentativeCover
       (2 ^ (r + 2 * k + 1)) := by
@@ -95,7 +95,7 @@ theorem bitVecZABDecisionListERMFiniteIndexRepresentativeCover
       (Z := BitVec r) (r := r) (k := k) (Index := Index) identityZExtractor samples)
 
 theorem bitVecZABDecisionListERMFinitePredictorQuotient
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec r) k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec r) k) Bool) :
     (bitVecZABDecisionListERMFamily
       (r := r) (k := k) (Index := Index) samples).FinitePredictorQuotient
       (2 ^ (r + 2 * k + 1)) := by
@@ -105,7 +105,7 @@ theorem bitVecZABDecisionListERMFinitePredictorQuotient
 
 theorem BitVecZABERMRecoveryData.finitePredictorCover
     [Fintype (BitVec r)]
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec r) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec r) k)}
     {G : ExactVisibleSwitchedFamily (BitVec r) k Index}
     {q : ℝ≥0∞}
     (h : BitVecZABERMRecoveryData (r := r) (k := k) (Index := Index) μ G q) :
@@ -114,7 +114,7 @@ theorem BitVecZABERMRecoveryData.finitePredictorCover
 
 theorem BitVecZABERMRecoveryData.finiteIndexRepresentativeCover
     [Fintype (BitVec r)]
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec r) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec r) k)}
     {G : ExactVisibleSwitchedFamily (BitVec r) k Index}
     {q : ℝ≥0∞}
     (h : BitVecZABERMRecoveryData (r := r) (k := k) (Index := Index) μ G q) :
@@ -123,7 +123,7 @@ theorem BitVecZABERMRecoveryData.finiteIndexRepresentativeCover
 
 theorem BitVecZABERMRecoveryData.finitePredictorQuotient
     [Fintype (BitVec r)]
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec r) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec r) k)}
     {G : ExactVisibleSwitchedFamily (BitVec r) k Index}
     {q : ℝ≥0∞}
     (h : BitVecZABERMRecoveryData (r := r) (k := k) (Index := Index) μ G q) :
@@ -132,21 +132,21 @@ theorem BitVecZABERMRecoveryData.finitePredictorQuotient
 
 theorem BitVecZABERMRecoveryData.surfaceCard_le_of_surjective_predict
     [Fintype (BitVec r)]
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec r) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec r) k)}
     {G : ExactVisibleSwitchedFamily (BitVec r) k Index}
     {q : ℝ≥0∞}
     (h : BitVecZABERMRecoveryData (r := r) (k := k) (Index := Index) μ G q)
     (hsurj : Function.Surjective G.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface (BitVec r) k) ≤ r + 2 * k + 1 := by
+    Fintype.card (ExactVisiblePostSwitchData (BitVec r) k) ≤ r + 2 * k + 1 := by
   exact (h.canonicalData).surfaceCard_le_of_surjective_predict hsurj
 
 theorem BitVecZABERMRecoveryData.not_surjective_predict_of_lt_surfaceCard
     [Fintype (BitVec r)]
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec r) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec r) k)}
     {G : ExactVisibleSwitchedFamily (BitVec r) k Index}
     {q : ℝ≥0∞}
     (h : BitVecZABERMRecoveryData (r := r) (k := k) (Index := Index) μ G q)
-    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface (BitVec r) k)) :
+    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData (BitVec r) k)) :
     ¬ Function.Surjective G.predict := by
   exact (h.canonicalData).not_surjective_predict_of_lt_surfaceCard hs
 

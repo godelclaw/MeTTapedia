@@ -36,7 +36,7 @@ namespace ActualSwitchedLocalInterface
 section BitVec
 
 variable {n k r : ℕ}
-variable {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+variable {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
 variable {q : ℝ≥0∞} {zfeat : BitVec n → BitVec r}
 
 /-- A recovery threshold below the point-block boundary value
@@ -89,7 +89,7 @@ theorem fullRuleActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseTh
 plug-in-majority once the sample bound is large enough for surjectivity. -/
 theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_visibleWidth_le_two_mul_extractorWidth_add_two_mul_k_add_slack_of_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_lt_one_sub_pow_inv
     {sampleBound slack : ℕ}
-    (hsample : Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ≤ sampleBound)
+    (hsample : Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ≤ sampleBound)
     (h : SharedExactZABSparseThresholdERMRecoveryData
       μ
       (boundedSamplePluginMajorityActualSwitchedLocalInterface (BitVec n) k sampleBound)
@@ -115,7 +115,7 @@ theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_visibleWidth_le_
 the visible width exceeds that sharpened point-block budget. -/
 theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_lt_one_sub_pow_inv_of_two_mul_extractorWidth_add_two_mul_k_add_slack_lt_visibleWidth
     {sampleBound slack : ℕ}
-    (hsample : Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ≤ sampleBound)
+    (hsample : Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ≤ sampleBound)
     (hgap : 2 * r + 2 * k + slack < n)
     (hq_lt : q < 1 - (2 ^ (2 * r + 4 * k + slack + 1) : ℝ≥0∞)⁻¹) :
     ¬ Nonempty

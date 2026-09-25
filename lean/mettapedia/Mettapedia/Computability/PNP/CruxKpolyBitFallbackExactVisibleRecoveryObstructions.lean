@@ -18,8 +18,8 @@ decoder cannot rescue the wrapped bounded-sample endpoint below the same
 lightest-point recovery threshold. -/
 theorem kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_not_nonempty_recovery_of_exactVisibleRuleDecode_of_lt_one_sub_apply_lightestPoint
     {Z : Type v} [Fintype Z] {k r sampleBound : ℕ}
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)} {q : ℝ≥0∞}
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
+    {μ : PMF (ExactVisiblePostSwitchData Z k)} {q : ℝ≥0∞}
     (zfeat : Z → BitVec r)
     (hq_lt : q < 1 - μ (PMF.lightestPoint μ)) :
     ¬ Nonempty
@@ -27,7 +27,7 @@ theorem kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_not_none
           μ
           (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
             Z k sampleBound
-            (Fintype.card (ExactVisiblePostSwitchSurface Z k))
+            (Fintype.card (ExactVisiblePostSwitchData Z k))
             (exactVisibleRuleDecode (Z := Z) (k := k)))
           zfeat
           q) :=
@@ -39,8 +39,8 @@ threshold, the canonical truth-table fallback decoder admits no extractor at
 all for the manuscript-facing sparse-threshold recovery packet. -/
 theorem kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_not_exists_recovery_of_exactVisibleRuleDecode_of_lt_one_sub_apply_lightestPoint
     {Z : Type v} [Fintype Z] {k sampleBound r : ℕ}
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (q : ℝ≥0∞)
     (hq_lt : q < 1 - μ (PMF.lightestPoint μ)) :
     ¬ ∃ zfeat : Z → BitVec r,
@@ -49,7 +49,7 @@ theorem kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_not_exis
             μ
             (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
               Z k sampleBound
-              (Fintype.card (ExactVisiblePostSwitchSurface Z k))
+              (Fintype.card (ExactVisiblePostSwitchData Z k))
               (exactVisibleRuleDecode (Z := Z) (k := k)))
             zfeat
             q) := by
@@ -59,7 +59,7 @@ theorem kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_not_exis
       (μ := μ)
       (T := boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
         Z k sampleBound
-        (Fintype.card (ExactVisiblePostSwitchSurface Z k))
+        (Fintype.card (ExactVisiblePostSwitchData Z k))
         (exactVisibleRuleDecode (Z := Z) (k := k)))
       (q := q)
       (kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_surjective_exactVisibleRuleDecode
@@ -71,8 +71,8 @@ decoder, violating either the visible-width ceiling or the lightest-point
 threshold already rules out the manuscript-facing recovery packet. -/
 theorem kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_not_nonempty_recovery_of_exactVisibleRuleDecode_of_visibleWidth_gap_or_lt_one_sub_apply_lightestPoint
     {n k r sampleBound : ℕ}
-    [Nonempty (ExactVisiblePostSwitchSurface (BitVec n) k)]
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)} {q : ℝ≥0∞}
+    [Nonempty (ExactVisiblePostSwitchData (BitVec n) k)]
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)} {q : ℝ≥0∞}
     (zfeat : BitVec n → BitVec r)
     (hbad : 2 * r + 2 * k + 1 < n ∨ q < 1 - μ (PMF.lightestPoint μ)) :
     ¬ Nonempty
@@ -80,7 +80,7 @@ theorem kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_not_none
           μ
           (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
             (BitVec n) k sampleBound
-            (Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k))
+            (Fintype.card (ExactVisiblePostSwitchData (BitVec n) k))
             (exactVisibleRuleDecode (Z := BitVec n) (k := k)))
           zfeat
           q) := by
@@ -88,7 +88,7 @@ theorem kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_not_none
   · exact
       kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_fallback_surjective_of_two_mul_extractorWidth_add_two_mul_k_succ_lt_visibleWidth
         (sampleBound := sampleBound)
-        (fallbackBits := Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k))
+        (fallbackBits := Fintype.card (ExactVisiblePostSwitchData (BitVec n) k))
         (exactVisibleRuleDecode (Z := BitVec n) (k := k))
         (kpolyCoverage_anchor_exactVisibleRuleDecode_surjective
           (Z := BitVec n) (k := k))
@@ -103,8 +103,8 @@ decoder, an unconditional visible-width gap already rules out the manuscript-
 facing sparse-threshold recovery packet. -/
 theorem kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_not_nonempty_recovery_of_exactVisibleRuleDecode_of_two_mul_extractorWidth_add_two_mul_k_succ_lt_visibleWidth
     {n k r sampleBound : ℕ}
-    [Nonempty (ExactVisiblePostSwitchSurface (BitVec n) k)]
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)} {q : ℝ≥0∞}
+    [Nonempty (ExactVisiblePostSwitchData (BitVec n) k)]
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)} {q : ℝ≥0∞}
     (zfeat : BitVec n → BitVec r)
     (hgap : 2 * r + 2 * k + 1 < n) :
     ¬ Nonempty
@@ -112,14 +112,14 @@ theorem kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_not_none
           μ
           (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
             (BitVec n) k sampleBound
-            (Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k))
+            (Fintype.card (ExactVisiblePostSwitchData (BitVec n) k))
             (exactVisibleRuleDecode (Z := BitVec n) (k := k)))
           zfeat
           q) := by
   exact
     kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_fallback_surjective_of_two_mul_extractorWidth_add_two_mul_k_succ_lt_visibleWidth
       (sampleBound := sampleBound)
-      (fallbackBits := Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k))
+      (fallbackBits := Fintype.card (ExactVisiblePostSwitchData (BitVec n) k))
       (exactVisibleRuleDecode (Z := BitVec n) (k := k))
       (kpolyCoverage_anchor_exactVisibleRuleDecode_surjective
         (Z := BitVec n) (k := k))
@@ -131,8 +131,8 @@ out every extractor for the manuscript-facing sparse-threshold recovery
 packet. -/
 theorem kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_not_exists_recovery_of_exactVisibleRuleDecode_of_two_mul_extractorWidth_add_two_mul_k_succ_lt_visibleWidth
     {n k sampleBound r : ℕ}
-    [Nonempty (ExactVisiblePostSwitchSurface (BitVec n) k)]
-    (μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k))
+    [Nonempty (ExactVisiblePostSwitchData (BitVec n) k)]
+    (μ : PMF (ExactVisiblePostSwitchData (BitVec n) k))
     (q : ℝ≥0∞)
     (hgap : 2 * r + 2 * k + 1 < n) :
     ¬ ∃ zfeat : BitVec n → BitVec r,
@@ -141,7 +141,7 @@ theorem kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_not_exis
             μ
             (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
               (BitVec n) k sampleBound
-              (Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k))
+              (Fintype.card (ExactVisiblePostSwitchData (BitVec n) k))
               (exactVisibleRuleDecode (Z := BitVec n) (k := k)))
             zfeat
             q) := by
@@ -151,7 +151,7 @@ theorem kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_not_exis
       (μ := μ)
       (T := boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
         (BitVec n) k sampleBound
-        (Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k))
+        (Fintype.card (ExactVisiblePostSwitchData (BitVec n) k))
         (exactVisibleRuleDecode (Z := BitVec n) (k := k)))
       (q := q)
       (kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_surjective_exactVisibleRuleDecode
@@ -163,8 +163,8 @@ truth-table fallback decoder, a visible-width gap or lightest-point deficit
 already rules out every extractor for the manuscript-facing recovery packet. -/
 theorem kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_not_exists_recovery_of_exactVisibleRuleDecode_of_visibleWidth_gap_or_lt_one_sub_apply_lightestPoint
     {n k sampleBound r : ℕ}
-    [Nonempty (ExactVisiblePostSwitchSurface (BitVec n) k)]
-    (μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k))
+    [Nonempty (ExactVisiblePostSwitchData (BitVec n) k)]
+    (μ : PMF (ExactVisiblePostSwitchData (BitVec n) k))
     (q : ℝ≥0∞)
     (hbad : 2 * r + 2 * k + 1 < n ∨ q < 1 - μ (PMF.lightestPoint μ)) :
     ¬ ∃ zfeat : BitVec n → BitVec r,
@@ -173,7 +173,7 @@ theorem kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_not_exis
             μ
             (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
               (BitVec n) k sampleBound
-              (Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k))
+              (Fintype.card (ExactVisiblePostSwitchData (BitVec n) k))
               (exactVisibleRuleDecode (Z := BitVec n) (k := k)))
             zfeat
             q) := by
@@ -183,7 +183,7 @@ theorem kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_not_exis
       (μ := μ)
       (T := boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
         (BitVec n) k sampleBound
-        (Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k))
+        (Fintype.card (ExactVisiblePostSwitchData (BitVec n) k))
         (exactVisibleRuleDecode (Z := BitVec n) (k := k)))
       (q := q)
       (kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_surjective_exactVisibleRuleDecode

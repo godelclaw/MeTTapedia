@@ -67,9 +67,9 @@ theorem exactVisible_surfaceCard_le_of_clockedRealization_of_surjective_predict
     {G : ExactVisibleSwitchedFamily Z k Index}
     (hsurj : Function.Surjective G.predict)
     (hclocked :
-      ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+      ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         G.RealizedByClockedBitFamily F) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ s := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ s := by
   classical
   rcases hclocked with ⟨F, hreal⟩
   exact
@@ -82,9 +82,9 @@ the full Boolean rule space there. -/
 theorem not_exists_clockedExactVisibleRealization_of_surjective_predict
     [Fintype Z]
     {G : ExactVisibleSwitchedFamily Z k Index}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k))
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k))
     (hsurj : Function.Surjective G.predict) :
-    ¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    ¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         G.RealizedByClockedBitFamily F := by
   exact
     IndexedPredictorFamily.not_exists_clockedBitFamily_of_surjective_predict_fintype
@@ -97,12 +97,12 @@ theorem not_exists_clockedExactVisibleRealization_of_surjective_predict_of_lt_ca
     {G : ExactVisibleSwitchedFamily Z k Index}
     (hs : s < Fintype.card Z * 2 ^ k * 2 ^ k)
     (hsurj : Function.Surjective G.predict) :
-    ¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    ¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         G.RealizedByClockedBitFamily F := by
   exact
     not_exists_clockedExactVisibleRealization_of_surjective_predict
       (Z := Z) (k := k) (s := s) (clock := clock) (Index := Index)
-      (by simpa [card_exactVisiblePostSwitchSurface (Z := Z) (k := k)] using hs)
+      (by simpa [card_exactVisiblePostSwitchDataDomain (Z := Z) (k := k)] using hs)
       hsurj
 
 end ExactVisible

@@ -22,7 +22,7 @@ theorem kpolyCoverage_anchor_pluginLookup_surjective
 finite-learning payload below the full exact-visible truth-table budget. -/
 theorem kpolyCoverage_anchor_pluginLookup_not_clockedPayload_of_lt_surfaceCard
     {Z : Type v} [Fintype Z] {k s clock : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (pluginLookupActualSwitchedLocalInterface Z k).predictorFamily s clock :=
   pluginLookupActualSwitchedLocalInterface_not_clockedKpolyFiniteLearningPayload_of_lt_surfaceCard
@@ -34,7 +34,7 @@ truth-table budget. -/
 theorem kpolyCoverage_anchor_pluginLookup_not_zabDecisionListData_of_lt_surfaceCard
     {Z : Type v} [Fintype Z] {k r : ℕ}
     (zfeat : Z → BitVec r)
-    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.ZABDecisionListData
           (pluginLookupActualSwitchedLocalInterface Z k) zfeat) :=
@@ -53,7 +53,7 @@ theorem kpolyCoverage_anchor_pluginMajority_surjective
 finite-learning payload below the exact-visible truth-table budget. -/
 theorem kpolyCoverage_anchor_pluginMajority_not_clockedPayload_of_lt_surfaceCard
     {Z : Type v} [Fintype Z] {k s clock : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (pluginMajorityActualSwitchedLocalInterface Z k).predictorFamily s clock :=
   pluginMajorityActualSwitchedLocalInterface_not_clockedKpolyFiniteLearningPayload_of_lt_surfaceCard
@@ -65,7 +65,7 @@ budget. -/
 theorem kpolyCoverage_anchor_pluginMajority_not_zabDecisionListData_of_lt_surfaceCard
     {Z : Type v} [Fintype Z] {k r : ℕ}
     (zfeat : Z → BitVec r)
-    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.ZABDecisionListData
           (pluginMajorityActualSwitchedLocalInterface Z k) zfeat) :=
@@ -84,7 +84,7 @@ theorem kpolyCoverage_anchor_pluginSampleMajority_surjective
 finite-learning payload below the exact-visible truth-table budget. -/
 theorem kpolyCoverage_anchor_pluginSampleMajority_not_clockedPayload_of_lt_surfaceCard
     {Z : Type v} [Fintype Z] {k s clock : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (pluginSampleMajorityActualSwitchedLocalInterface Z k).predictorFamily s clock :=
   pluginSampleMajorityActualSwitchedLocalInterface_not_clockedKpolyFiniteLearningPayload_of_lt_surfaceCard
@@ -96,7 +96,7 @@ budget. -/
 theorem kpolyCoverage_anchor_pluginSampleMajority_not_zabDecisionListData_of_lt_surfaceCard
     {Z : Type v} [Fintype Z] {k r : ℕ}
     (zfeat : Z → BitVec r)
-    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.ZABDecisionListData
           (pluginSampleMajorityActualSwitchedLocalInterface Z k) zfeat) :=
@@ -111,7 +111,7 @@ theorem kpolyCoverage_anchor_pluginSampleMajority_not_nonempty_sharedExactZABSpa
     (zfeat : Z → BitVec r)
     (hs :
       2 * allAffinePointBlockFeatureCount (r + (k + k)) <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+        Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.SharedExactZABSparseThresholdERMData
           (pluginSampleMajorityActualSwitchedLocalInterface Z k)

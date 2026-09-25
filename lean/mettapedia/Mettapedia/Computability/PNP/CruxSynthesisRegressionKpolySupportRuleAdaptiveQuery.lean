@@ -13,8 +13,8 @@ universe u v w z
 
 theorem kpoly_anchor_support_full_rule_adaptive_query_decoder_of_all_queries_reachable_regression
     {Z : Type v} {Block : Type v} {α : Type v} {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
-    (tree : AdaptiveBoolQueryTree (ExactVisiblePostSwitchSurface Z k) α)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
+    (tree : AdaptiveBoolQueryTree (ExactVisiblePostSwitchData Z k) α)
     (hreach : AdaptiveBoolQueryTree.AllQueriesReachable visibleOf tree) :
     ∃ decode : (Block → Bool) → α,
       ∀ rule : ExactVisibleRule Z k,
@@ -27,8 +27,8 @@ theorem kpoly_anchor_support_full_rule_adaptive_query_decoder_of_all_queries_rea
 
 theorem kpoly_anchor_support_full_rule_adaptive_query_decoder_iff_constant_regression
     {Z : Type v} {Block : Type v} {α : Type v} {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
-    (tree : AdaptiveBoolQueryTree (ExactVisiblePostSwitchSurface Z k) α) :
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
+    (tree : AdaptiveBoolQueryTree (ExactVisiblePostSwitchData Z k) α) :
     (∃ decode : (Block → Bool) → α,
       ∀ rule : ExactVisibleRule Z k,
         decode
@@ -45,8 +45,8 @@ theorem kpoly_anchor_support_full_rule_adaptive_query_decoder_iff_constant_regre
 
 theorem kpoly_anchor_support_full_rule_no_adaptive_query_decoder_of_same_output_eval_ne_regression
     {Z : Type v} {Block : Type v} {α : Type v} {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
-    (tree : AdaptiveBoolQueryTree (ExactVisiblePostSwitchSurface Z k) α)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
+    (tree : AdaptiveBoolQueryTree (ExactVisiblePostSwitchData Z k) α)
     {rule₀ rule₁ : ExactVisibleRule Z k}
     (hsame :
       (supportFullRuleActualSwitchedLocalInterface visibleOf).outputFamily.predict rule₀ =
@@ -65,8 +65,8 @@ theorem kpoly_anchor_support_full_rule_no_adaptive_query_decoder_of_same_output_
 
 theorem kpoly_anchor_support_full_rule_no_root_adaptive_query_decoder_regression
     {Z : Type v} {Block : Type v} {α : Type v} {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
-    (u₀ : ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
+    (u₀ : ExactVisiblePostSwitchData Z k)
     {valueFalse valueTrue : α}
     (hmiss : ∀ phi, visibleOf phi ≠ u₀)
     (hne : valueFalse ≠ valueTrue) :

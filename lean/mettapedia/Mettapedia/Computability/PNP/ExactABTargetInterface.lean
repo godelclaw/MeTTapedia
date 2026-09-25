@@ -53,7 +53,7 @@ theorem ExactABAffineFeatureTargetData.surfaceCard_le_of_surjective_predict
     {G : ExactVisibleSwitchedFamily Z k Index}
     (h : ExactABAffineFeatureTargetData (Z := Z) (r := r) (k := k) (Index := Index) G)
     (hsurj : Function.Surjective G.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ r * ((k + k) + 1) + 2 ^ r := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ r * ((k + k) + 1) + 2 ^ r := by
   exact
     exactVisibleCompressionTarget_surfaceCard_le_of_surjective_predict
       (Z := Z) (k := k) (s := r * ((k + k) + 1) + 2 ^ r) (Index := Index) hsurj
@@ -63,7 +63,7 @@ theorem ExactABAffineFeatureTargetData.not_surjective_predict_of_lt_surfaceCard
     [Fintype Z]
     {G : ExactVisibleSwitchedFamily Z k Index}
     (h : ExactABAffineFeatureTargetData (Z := Z) (r := r) (k := k) (Index := Index) G)
-    (hs : r * ((k + k) + 1) + 2 ^ r < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r * ((k + k) + 1) + 2 ^ r < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective G.predict := by
   intro hsurj
   exact Nat.not_le_of_lt hs (h.surfaceCard_le_of_surjective_predict hsurj)
@@ -81,7 +81,7 @@ theorem ExactABSparseThresholdTargetData.surfaceCard_le_of_surjective_predict
     {G : ExactVisibleSwitchedFamily Z k Index}
     (h : ExactABSparseThresholdTargetData (Z := Z) (r := r) (k := k) (Index := Index) G)
     (hsurj : Function.Surjective G.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ r * ((k + k) + 3) := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ r * ((k + k) + 3) := by
   exact
     exactVisibleCompressionTarget_surfaceCard_le_of_surjective_predict
       (Z := Z) (k := k) (s := r * ((k + k) + 3)) (Index := Index) hsurj
@@ -91,7 +91,7 @@ theorem ExactABSparseThresholdTargetData.not_surjective_predict_of_lt_surfaceCar
     [Fintype Z]
     {G : ExactVisibleSwitchedFamily Z k Index}
     (h : ExactABSparseThresholdTargetData (Z := Z) (r := r) (k := k) (Index := Index) G)
-    (hs : r * ((k + k) + 3) < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r * ((k + k) + 3) < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective G.predict := by
   intro hsurj
   exact Nat.not_le_of_lt hs (h.surfaceCard_le_of_surjective_predict hsurj)
@@ -113,7 +113,7 @@ theorem ExactABAffineDecisionListTargetData.surfaceCard_le_of_surjective_predict
       ExactABAffineDecisionListTargetData
         (Z := Z) (r := r) (k := k) (Index := Index) G)
     (hsurj : Function.Surjective G.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ r * ((k + k) + 2) + 1 := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ r * ((k + k) + 2) + 1 := by
   exact
     exactVisibleCompressionTarget_surfaceCard_le_of_surjective_predict
       (Z := Z) (k := k) (s := r * ((k + k) + 2) + 1) (Index := Index) hsurj
@@ -125,7 +125,7 @@ theorem ExactABAffineDecisionListTargetData.not_surjective_predict_of_lt_surface
     (h :
       ExactABAffineDecisionListTargetData
         (Z := Z) (r := r) (k := k) (Index := Index) G)
-    (hs : r * ((k + k) + 2) + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r * ((k + k) + 2) + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective G.predict := by
   intro hsurj
   exact Nat.not_le_of_lt hs (h.surfaceCard_le_of_surjective_predict hsurj)
@@ -134,7 +134,7 @@ end
 
 structure ExactABAffineFeatureRecoveryData
     [Fintype Z]
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (G : ExactVisibleSwitchedFamily Z k Index)
     (q : ℝ≥0∞) where
   realized :
@@ -148,7 +148,7 @@ structure ExactABAffineFeatureRecoveryData
 
 structure ExactABSparseThresholdRecoveryData
     [Fintype Z]
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (G : ExactVisibleSwitchedFamily Z k Index)
     (q : ℝ≥0∞) where
   realized :
@@ -163,7 +163,7 @@ structure ExactABSparseThresholdRecoveryData
 
 structure ExactABAffineDecisionListRecoveryData
     [Fintype Z]
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (G : ExactVisibleSwitchedFamily Z k Index)
     (q : ℝ≥0∞) where
   realized :
@@ -181,7 +181,7 @@ section
 variable [Fintype Z]
 
 def ExactABAffineFeatureRecoveryData.targetData
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
@@ -191,7 +191,7 @@ def ExactABAffineFeatureRecoveryData.targetData
   exact ⟨h.realized⟩
 
 theorem ExactABAffineFeatureRecoveryData.compressionTarget
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
@@ -202,29 +202,29 @@ theorem ExactABAffineFeatureRecoveryData.compressionTarget
   exact (h.targetData).compressionTarget
 
 theorem ExactABAffineFeatureRecoveryData.surfaceCard_le_of_surjective_predict
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
       ExactABAffineFeatureRecoveryData
         (Z := Z) (r := r) (k := k) (Index := Index) μ G q)
     (hsurj : Function.Surjective G.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ r * ((k + k) + 1) + 2 ^ r := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ r * ((k + k) + 1) + 2 ^ r := by
   exact (h.targetData).surfaceCard_le_of_surjective_predict hsurj
 
 theorem ExactABAffineFeatureRecoveryData.not_surjective_predict_of_lt_surfaceCard
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
       ExactABAffineFeatureRecoveryData
         (Z := Z) (r := r) (k := k) (Index := Index) μ G q)
-    (hs : r * ((k + k) + 1) + 2 ^ r < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r * ((k + k) + 1) + 2 ^ r < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective G.predict := by
   exact (h.targetData).not_surjective_predict_of_lt_surfaceCard hs
 
 theorem ExactABAffineFeatureRecoveryData.recoveryLowerBound
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
@@ -239,7 +239,7 @@ theorem ExactABAffineFeatureRecoveryData.recoveryLowerBound
     (h.realized i) (h.agreement_le i)
 
 def ExactABSparseThresholdRecoveryData.targetData
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
@@ -249,7 +249,7 @@ def ExactABSparseThresholdRecoveryData.targetData
   exact ⟨h.realized⟩
 
 theorem ExactABSparseThresholdRecoveryData.compressionTarget
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
@@ -260,29 +260,29 @@ theorem ExactABSparseThresholdRecoveryData.compressionTarget
   exact (h.targetData).compressionTarget
 
 theorem ExactABSparseThresholdRecoveryData.surfaceCard_le_of_surjective_predict
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
       ExactABSparseThresholdRecoveryData
         (Z := Z) (r := r) (k := k) (Index := Index) μ G q)
     (hsurj : Function.Surjective G.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ r * ((k + k) + 3) := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ r * ((k + k) + 3) := by
   exact (h.targetData).surfaceCard_le_of_surjective_predict hsurj
 
 theorem ExactABSparseThresholdRecoveryData.not_surjective_predict_of_lt_surfaceCard
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
       ExactABSparseThresholdRecoveryData
         (Z := Z) (r := r) (k := k) (Index := Index) μ G q)
-    (hs : r * ((k + k) + 3) < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r * ((k + k) + 3) < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective G.predict := by
   exact (h.targetData).not_surjective_predict_of_lt_surfaceCard hs
 
 theorem ExactABSparseThresholdRecoveryData.recoveryLowerBound
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
@@ -298,7 +298,7 @@ theorem ExactABSparseThresholdRecoveryData.recoveryLowerBound
     (h.realized i) (h.agreement_le i)
 
 def ExactABAffineDecisionListRecoveryData.targetData
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
@@ -309,7 +309,7 @@ def ExactABAffineDecisionListRecoveryData.targetData
   exact ⟨h.realized⟩
 
 theorem ExactABAffineDecisionListRecoveryData.compressionTarget
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
@@ -320,29 +320,29 @@ theorem ExactABAffineDecisionListRecoveryData.compressionTarget
   exact (h.targetData).compressionTarget
 
 theorem ExactABAffineDecisionListRecoveryData.surfaceCard_le_of_surjective_predict
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
       ExactABAffineDecisionListRecoveryData
         (Z := Z) (r := r) (k := k) (Index := Index) μ G q)
     (hsurj : Function.Surjective G.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ r * ((k + k) + 2) + 1 := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ r * ((k + k) + 2) + 1 := by
   exact (h.targetData).surfaceCard_le_of_surjective_predict hsurj
 
 theorem ExactABAffineDecisionListRecoveryData.not_surjective_predict_of_lt_surfaceCard
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
       ExactABAffineDecisionListRecoveryData
         (Z := Z) (r := r) (k := k) (Index := Index) μ G q)
-    (hs : r * ((k + k) + 2) + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r * ((k + k) + 2) + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective G.predict := by
   exact (h.targetData).not_surjective_predict_of_lt_surfaceCard hs
 
 theorem ExactABAffineDecisionListRecoveryData.recoveryLowerBound
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :

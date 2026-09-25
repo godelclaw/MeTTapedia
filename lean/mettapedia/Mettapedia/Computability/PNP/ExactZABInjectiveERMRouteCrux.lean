@@ -27,7 +27,7 @@ theorem not_exists_exactZABDecisionListERMFamily_eq_fullExactVisibleRuleFamily_o
     (hgap : r < 2 ^ (n + 2 * k) - (2 * k + 1)) :
     ¬ ∃ samples :
         ExactVisibleRule (BitVec n) k →
-          Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool,
+          Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool,
         exactZABDecisionListERMFamily
             (Z := BitVec n) (r := r) (k := k)
             (Index := ExactVisibleRule (BitVec n) k)
@@ -53,7 +53,7 @@ theorem not_exists_sharedExactZABAffineFeatureERMFamily_eq_fullExactVisibleRuleF
     (hfeat : p < n + 2 * k) :
     ¬ ∃ samples :
         ExactVisibleRule (BitVec n) k →
-          Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool,
+          Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool,
         sharedExactZABAffineFeatureERMFamily
             (Z := BitVec n) (p := p) (r := r) (k := k)
             (Index := ExactVisibleRule (BitVec n) k)
@@ -79,7 +79,7 @@ theorem not_exists_sharedExactZABAffineDecisionListERMFamily_eq_fullExactVisible
     (hgap : p < 2 ^ (n + 2 * k) - 1) :
     ¬ ∃ samples :
         ExactVisibleRule (BitVec n) k →
-          Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool,
+          Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool,
         sharedExactZABAffineDecisionListERMFamily
             (Z := BitVec n) (p := p) (r := r) (k := k)
             (Index := ExactVisibleRule (BitVec n) k)

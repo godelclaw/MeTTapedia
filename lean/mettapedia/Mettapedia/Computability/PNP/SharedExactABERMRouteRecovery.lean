@@ -17,9 +17,9 @@ variable {Z : Type*} {r k : ℕ} {Index : Type*}
 variable [Inhabited Z] [Fintype Z]
 
 theorem sharedExactABAffineDecisionListERMRecoveryData
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (features : Fin r → AffineColumnCode (k + k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (q : ℝ≥0∞)
     (hq :
       ∀ i,
@@ -45,9 +45,9 @@ theorem sharedExactABAffineDecisionListERMRecoveryData
         (Z := Z) (r := r) (k := k) (Index := Index) features samples
 
 theorem sharedExactABAffineDecisionListERMRecoveryLowerBound
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (features : Fin r → AffineColumnCode (k + k))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (q : ℝ≥0∞)
     (hq :
       ∀ i,

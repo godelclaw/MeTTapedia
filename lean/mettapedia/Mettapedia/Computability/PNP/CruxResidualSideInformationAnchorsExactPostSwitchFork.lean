@@ -18,11 +18,11 @@ it already brings strict half-accuracy success, positive nonzero-column mass,
 and failure of exact-input-invariant support. -/
 theorem residualSideInformationCoverage_anchor_exactPostSwitch_prediction_witness_forces_fork_obstruction
     {Z : Type*} [Fintype Z] (z0 : Z) :
-    ((∀ u : ExactVisiblePostSwitchSurface Z 1,
+    ((∀ u : ExactVisiblePostSwitchData Z 1,
         invariantVisibleData (tiInputMap u) = invariantVisibleData u) ∧
-      (∀ u : ExactVisiblePostSwitchSurface Z 1,
+      (∀ u : ExactVisiblePostSwitchData Z 1,
         activeOrbitWeight z0 (tiInputMap u) = activeOrbitWeight z0 u) ∧
-      (∀ u : ExactVisiblePostSwitchSurface Z 1, 0 < activeOrbitWeight z0 u →
+      (∀ u : ExactVisiblePostSwitchData Z 1, 0 < activeOrbitWeight z0 u →
         activeOrbitTarget (tiInputMap u) = !(activeOrbitTarget u)) ∧
       0 <
         doubledAdvantage
@@ -30,7 +30,7 @@ theorem residualSideInformationCoverage_anchor_exactPostSwitch_prediction_witnes
           activeOrbitTarget
           (activeOrbitWeight z0)
           activeOrbitClassifier ∧
-      (∃ u : ExactVisiblePostSwitchSurface Z 1,
+      (∃ u : ExactVisiblePostSwitchData Z 1,
         0 < activeOrbitWeight z0 u ∧
           activeOrbitClassifier (activeOrbitFeatures (tiInputMap u)) ≠
             activeOrbitClassifier (activeOrbitFeatures u))) ∧
@@ -42,7 +42,7 @@ theorem residualSideInformationCoverage_anchor_exactPostSwitch_prediction_witnes
           activeOrbitClassifier ∧
       0 <
         sliceMass
-          (fun u : ExactVisiblePostSwitchSurface Z 1 => nonzeroColumn u.a)
+          (fun u : ExactVisiblePostSwitchData Z 1 => nonzeroColumn u.a)
           (activeOrbitWeight z0) ∧
       ¬ exactInputInvariantWeightedSupport (activeOrbitWeight z0) := by
   exact ⟨

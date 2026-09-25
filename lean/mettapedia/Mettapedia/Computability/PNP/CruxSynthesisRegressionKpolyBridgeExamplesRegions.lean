@@ -14,7 +14,7 @@ open scoped ENNReal
 
 universe u v w z
 
-noncomputable local instance : DecidableEq (ExactVisiblePostSwitchSurface (BitVec 1) 0) :=
+noncomputable local instance : DecidableEq (ExactVisiblePostSwitchData (BitVec 1) 0) :=
   Classical.decEq _
 
 private noncomputable def fin3ThreeQuartersActualSparseRecoveryHeavyRegionTraceBridge :

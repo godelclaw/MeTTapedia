@@ -34,7 +34,7 @@ theorem finitePredictorCover_card_le_of_fallback_injective_realization
     {Probe : Type*} [Fintype Probe]
     {Z : Type v} {k fallbackBits N : ℕ}
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k)
-    (target : Probe → ExactVisiblePostSwitchSurface Z k → Bool)
+    (target : Probe → ExactVisiblePostSwitchData Z k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ code : BitCode fallbackBits, fallback code = target p)
     (hcover :
@@ -59,7 +59,7 @@ theorem not_finitePredictorCover_of_fallback_injective_realization_of_lt_card
     {Probe : Type*} [Fintype Probe]
     {Z : Type v} {k fallbackBits N : ℕ}
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k)
-    (target : Probe → ExactVisiblePostSwitchSurface Z k → Bool)
+    (target : Probe → ExactVisiblePostSwitchData Z k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ code : BitCode fallbackBits, fallback code = target p)
     (hN : N < Fintype.card Probe) :
@@ -75,7 +75,7 @@ theorem finiteIndexRepresentativeCover_card_le_of_fallback_injective_realization
     {Probe : Type*} [Fintype Probe]
     {Z : Type v} {k fallbackBits N : ℕ}
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k)
-    (target : Probe → ExactVisiblePostSwitchSurface Z k → Bool)
+    (target : Probe → ExactVisiblePostSwitchData Z k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ code : BitCode fallbackBits, fallback code = target p)
     (hrep :
@@ -101,7 +101,7 @@ theorem not_finiteIndexRepresentativeCover_of_fallback_injective_realization_of_
     {Probe : Type*} [Fintype Probe]
     {Z : Type v} {k fallbackBits N : ℕ}
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k)
-    (target : Probe → ExactVisiblePostSwitchSurface Z k → Bool)
+    (target : Probe → ExactVisiblePostSwitchData Z k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ code : BitCode fallbackBits, fallback code = target p)
     (hN : N < Fintype.card Probe) :
@@ -117,7 +117,7 @@ theorem finitePredictorQuotient_card_le_of_fallback_injective_realization
     {Probe : Type*} [Fintype Probe]
     {Z : Type v} {k fallbackBits N : ℕ}
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k)
-    (target : Probe → ExactVisiblePostSwitchSurface Z k → Bool)
+    (target : Probe → ExactVisiblePostSwitchData Z k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ code : BitCode fallbackBits, fallback code = target p)
     (hquot :
@@ -142,7 +142,7 @@ theorem not_finitePredictorQuotient_of_fallback_injective_realization_of_lt_card
     {Probe : Type*} [Fintype Probe]
     {Z : Type v} {k fallbackBits N : ℕ}
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k)
-    (target : Probe → ExactVisiblePostSwitchSurface Z k → Bool)
+    (target : Probe → ExactVisiblePostSwitchData Z k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ code : BitCode fallbackBits, fallback code = target p)
     (hN : N < Fintype.card Probe) :
@@ -158,7 +158,7 @@ theorem not_exactVisibleCompressionTarget_of_fallback_injective_realization_of_l
     {Probe : Type*} [Fintype Probe]
     {Z : Type v} {k fallbackBits s : ℕ}
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k)
-    (target : Probe → ExactVisiblePostSwitchSurface Z k → Bool)
+    (target : Probe → ExactVisiblePostSwitchData Z k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ code : BitCode fallbackBits, fallback code = target p)
     (hs : 2 ^ s < Fintype.card Probe) :
@@ -177,11 +177,11 @@ theorem not_exists_clockedExactVisibleRealization_of_fallback_injective_realizat
     {Probe : Type*} [Fintype Probe]
     {Z : Type v} {k fallbackBits s clock : ℕ}
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k)
-    (target : Probe → ExactVisiblePostSwitchSurface Z k → Bool)
+    (target : Probe → ExactVisiblePostSwitchData Z k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ code : BitCode fallbackBits, fallback code = target p)
     (hs : 2 ^ s < Fintype.card Probe) :
-    ¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    ¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         (BitFallbackZeroSampleImage.zeroSampleWrapperFamily fallback).RealizedByClockedBitFamily F := by
   rw [exists_clockedExactVisibleRealization_iff_finitePredictorCover]
   exact

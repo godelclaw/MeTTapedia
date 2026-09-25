@@ -63,7 +63,7 @@ theorem shared_ab_affine_feature_not_realized_of_injective_probe_regression
     {Probe : Type*} [Fintype Probe] {r k : ℕ} {Index : Type*}
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hprobe : ∀ p, ∃ i, H.predict i = target p)
     (hcard : 2 ^ (2 ^ r) < Fintype.card Probe) :
@@ -76,7 +76,7 @@ theorem shared_ab_sparse_threshold_not_realized_of_injective_probe_regression
     {Probe : Type*} [Fintype Probe] {r k : ℕ} {Index : Type*}
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hprobe : ∀ p, ∃ i, H.predict i = target p)
     (hcard : 2 ^ (2 * r) < Fintype.card Probe) :
@@ -89,7 +89,7 @@ theorem shared_ab_decision_list_not_realized_of_injective_probe_regression
     {Probe : Type*} [Fintype Probe] {r k : ℕ} {Index : Type*}
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hprobe : ∀ p, ∃ i, H.predict i = target p)
     (hcard : 2 ^ (r + 1) < Fintype.card Probe) :
@@ -103,7 +103,7 @@ theorem shared_exact_ab_affine_feature_not_realized_of_factorsThrough_injective_
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hprobe : ∀ p, ∃ i, H.predict i = target p)
     (hcard : 2 ^ (2 ^ r) < Fintype.card Probe)
@@ -119,7 +119,7 @@ theorem shared_exact_ab_sparse_threshold_not_realized_of_factorsThrough_injectiv
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hprobe : ∀ p, ∃ i, H.predict i = target p)
     (hcard : 2 ^ (2 * r) < Fintype.card Probe)
@@ -135,7 +135,7 @@ theorem shared_exact_ab_decision_list_not_realized_of_factorsThrough_injective_p
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hprobe : ∀ p, ∃ i, H.predict i = target p)
     (hcard : 2 ^ (r + 1) < Fintype.card Probe)

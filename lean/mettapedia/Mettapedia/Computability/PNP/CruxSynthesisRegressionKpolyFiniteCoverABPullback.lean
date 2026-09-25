@@ -15,7 +15,7 @@ theorem kpoly_anchor_not_finitePredictorCover_of_factorsThrough_ab_and_surjectiv
     {Z : Type*} [Inhabited Z] {k : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index} {N : ℕ}
-    (hN : N < 2 ^ Fintype.card (ABVisibleSurface k))
+    (hN : N < 2 ^ Fintype.card (ABVisibleState k))
     (hfactor : G.FactorsThrough abVisibleData H)
     (hsurj : Function.Surjective H.predict) :
     ¬ G.FinitePredictorCover N := by
@@ -26,7 +26,7 @@ theorem kpoly_anchor_not_finiteIndexRepresentativeCover_of_factorsThrough_ab_and
     {Z : Type*} [Inhabited Z] {k : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index} {N : ℕ}
-    (hN : N < 2 ^ Fintype.card (ABVisibleSurface k))
+    (hN : N < 2 ^ Fintype.card (ABVisibleState k))
     (hfactor : G.FactorsThrough abVisibleData H)
     (hsurj : Function.Surjective H.predict) :
     ¬ G.FiniteIndexRepresentativeCover N := by
@@ -37,7 +37,7 @@ theorem kpoly_anchor_not_finitePredictorQuotient_of_factorsThrough_ab_and_surjec
     {Z : Type*} [Inhabited Z] {k : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index} {N : ℕ}
-    (hN : N < 2 ^ Fintype.card (ABVisibleSurface k))
+    (hN : N < 2 ^ Fintype.card (ABVisibleState k))
     (hfactor : G.FactorsThrough abVisibleData H)
     (hsurj : Function.Surjective H.predict) :
     ¬ G.FinitePredictorQuotient N := by
@@ -49,7 +49,7 @@ theorem kpoly_anchor_abVisible_finitePredictorCover_card_le_of_factorsThrough_in
     {k : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index} {N : ℕ}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ i, H.predict i = target p)
     (hfactor : G.FactorsThrough abVisibleData H)
@@ -64,7 +64,7 @@ theorem kpoly_anchor_not_exact_visible_compression_target_of_factorsThrough_ab_i
     {k s : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ i, H.predict i = target p)
     (hs : 2 ^ s < Fintype.card Probe)
@@ -79,7 +79,7 @@ theorem kpoly_anchor_abVisible_finiteIndexRepresentativeCover_card_le_of_factors
     {k : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index} {N : ℕ}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ i, H.predict i = target p)
     (hfactor : G.FactorsThrough abVisibleData H)
@@ -94,7 +94,7 @@ theorem kpoly_anchor_abVisible_finitePredictorQuotient_card_le_of_factorsThrough
     {k : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index} {N : ℕ}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ i, H.predict i = target p)
     (hfactor : G.FactorsThrough abVisibleData H)
@@ -109,12 +109,12 @@ theorem kpoly_anchor_not_clocked_realization_of_factorsThrough_ab_injective_prob
     {k s clock : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ i, H.predict i = target p)
     (hs : 2 ^ s < Fintype.card Probe)
     (hfactor : G.FactorsThrough abVisibleData H) :
-    ¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    ¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         G.RealizedByClockedBitFamily F := by
   exact
     kpolyCoverage_anchor_not_clockedRealization_of_factorsThrough_ab_and_injective_realization_of_lt_card

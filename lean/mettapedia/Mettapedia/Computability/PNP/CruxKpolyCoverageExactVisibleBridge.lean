@@ -34,7 +34,7 @@ theorem kpolyCoverage_anchor_fieldedSwitchingOnlyExactVisibleCompressionBridge_i
 the exact-visible surface threshold by the full exact-visible Boolean family. -/
 theorem kpolyCoverage_anchor_not_productBoundOnlyExactVisibleCompressionBridge_nil_of_lt_surfaceCard
     {Ω Z : Type*} [Fintype Ω] [Fintype Z] {k s : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ProductBoundOnlyExactVisibleCompressionBridge
         Ω Z k s ([] : List (FiniteEvent Ω)) ([] : List (V13FieldedStep Ω)) :=
   not_productBoundOnlyExactVisibleCompressionBridge_nil_of_lt_surfaceCard
@@ -45,7 +45,7 @@ refuted below the exact-visible surface threshold by the full exact-visible
 Boolean family. -/
 theorem kpolyCoverage_anchor_not_fieldedSwitchingOnlyExactVisibleCompressionBridge_nil_of_lt_surfaceCard
     {Ω Z : Type*} [Fintype Ω] [Fintype Z] {k s : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ FieldedSwitchingOnlyExactVisibleCompressionBridge
         Ω Z k s ([] : List (FiniteEvent Ω)) ([] : List (V13FieldedStep Ω)) :=
   not_fieldedSwitchingOnlyExactVisibleCompressionBridge_nil_of_lt_surfaceCard
@@ -55,7 +55,7 @@ theorem kpolyCoverage_anchor_not_fieldedSwitchingOnlyExactVisibleCompressionBrid
 also refuted below the exact-visible surface threshold. -/
 theorem kpolyCoverage_anchor_not_productBoundOnlyExactVisibleCompressionBridge_boolPair_one_step_of_lt_surfaceCard
     {Z : Type*} [Fintype Z] {k s : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ProductBoundOnlyExactVisibleCompressionBridge
         (Bool × Bool) Z k s
         ([] : List (FiniteEvent (Bool × Bool)))
@@ -67,7 +67,7 @@ theorem kpolyCoverage_anchor_not_productBoundOnlyExactVisibleCompressionBridge_b
 bridge is also refuted below the exact-visible surface threshold. -/
 theorem kpolyCoverage_anchor_not_fieldedSwitchingOnlyExactVisibleCompressionBridge_boolPair_one_step_of_lt_surfaceCard
     {Z : Type*} [Fintype Z] {k s : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ FieldedSwitchingOnlyExactVisibleCompressionBridge
         (Bool × Bool) Z k s
         ([] : List (FiniteEvent (Bool × Bool)))
@@ -83,7 +83,7 @@ theorem kpolyCoverage_anchor_not_productBoundOnlyExactVisibleCompressionBridge_o
     {Index : Type v} (G : ExactVisibleSwitchedFamily Z k Index)
     (hprod : V13FieldedProductBoundFrom Ω hist items)
     (hsurj : Function.Surjective G.predict)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ProductBoundOnlyExactVisibleCompressionBridge Ω Z k s hist items :=
   not_productBoundOnlyExactVisibleCompressionBridge_of_true_productBound_of_surjective_predict_of_lt_surfaceCard
     G hprod hsurj hs
@@ -97,7 +97,7 @@ theorem kpolyCoverage_anchor_not_fieldedSwitchingOnlyExactVisibleCompressionBrid
     {Index : Type v} (G : ExactVisibleSwitchedFamily Z k Index)
     (hfield : V13FieldSwitchingInstantiatedFrom hist items)
     (hsurj : Function.Surjective G.predict)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ FieldedSwitchingOnlyExactVisibleCompressionBridge Ω Z k s hist items :=
   not_fieldedSwitchingOnlyExactVisibleCompressionBridge_of_true_fieldedSwitching_of_surjective_predict_of_lt_surfaceCard
     G hfield hsurj hs

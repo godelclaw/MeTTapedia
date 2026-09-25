@@ -41,7 +41,7 @@ section BitVec
 
 variable {n k r sampleBound : ℕ}
 variable {zfeat : BitVec n → BitVec r}
-variable {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+variable {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
 variable {q : ℝ≥0∞}
 
 /-- Under the current point-block counting-gap packet, any bounded-sample
@@ -58,12 +58,12 @@ theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_sampleBound_lt_v
     (hvis : 0 < n + (k + k))
     (hbound :
       2 ^ (2 * allAffinePointBlockFeatureCount (r + (k + k))) *
-          (Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) - 1) ^ sampleBound <
-        Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ^ sampleBound) :
+          (Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) - 1) ^ sampleBound <
+        Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ^ sampleBound) :
     sampleBound < 2 ^ (n + 2 * k) ∨
       2 ^ (2 * (n + (k + k)) + 1) < sampleBound := by
   by_cases hsample :
-      Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ≤ sampleBound
+      Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ≤ sampleBound
   · right
     exact
       boundedSamplePluginMajorityActualSwitchedLocalInterface_visibleWidthBudget_lt_sampleBound_of_nonempty_sharedExactZABSparseThresholdERMData
@@ -88,8 +88,8 @@ theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_not_nonempty_sha
     (hvis : 0 < n + (k + k))
     (hbound :
       2 ^ (2 * allAffinePointBlockFeatureCount (r + (k + k))) *
-          (Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) - 1) ^ sampleBound <
-        Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ^ sampleBound)
+          (Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) - 1) ^ sampleBound <
+        Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ^ sampleBound)
     (hupper : sampleBound ≤ 2 ^ (2 * (n + (k + k)) + 1)) :
     ¬ Nonempty
         (SharedExactZABSparseThresholdERMData
@@ -119,8 +119,8 @@ theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_not_nonempty_sha
     (hvis : 0 < n + (k + k))
     (hbound :
       2 ^ (2 * allAffinePointBlockFeatureCount (r + (k + k))) *
-          (Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) - 1) ^ sampleBound <
-        Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ^ sampleBound)
+          (Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) - 1) ^ sampleBound <
+        Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ^ sampleBound)
     (hupper : sampleBound ≤ 2 ^ (2 * (n + (k + k)) + 1)) :
     ¬ Nonempty
         (SharedExactZABSparseThresholdERMRecoveryData

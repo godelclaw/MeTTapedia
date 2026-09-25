@@ -13,7 +13,7 @@ universe u v w z
 
 theorem kpoly_anchor_support_full_rule_property_decoder_constant_regression
     {Z : Type v} {Block : Type v} {α : Type v} {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (property : ExactVisibleRule Z k → α)
     (decode : (Block → Bool) → α)
     (hdecode :
@@ -32,7 +32,7 @@ theorem kpoly_anchor_support_full_rule_property_decoder_constant_regression
 
 theorem kpoly_anchor_support_full_rule_property_decoder_iff_constant_regression
     {Z : Type v} {Block : Type v} {α : Type v} {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (property : ExactVisibleRule Z k → α) :
     (∃ decode : (Block → Bool) → α,
       ∀ rule : ExactVisibleRule Z k,
@@ -49,7 +49,7 @@ theorem kpoly_anchor_support_full_rule_property_decoder_iff_constant_regression
 
 theorem kpoly_anchor_support_full_rule_no_property_decoder_regression
     {Z : Type v} {Block : Type v} {α : Type v} {k : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (property : ExactVisibleRule Z k → α)
     {rule₀ rule₁ : ExactVisibleRule Z k}
     (hsame :

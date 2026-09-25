@@ -7,25 +7,25 @@ namespace Mettapedia.Computability.PNP
 open scoped ENNReal
 
 local instance exactVisiblePostSwitchSurfaceBitVec1k0NonemptyActualSparseRecoveryBitFallback :
-    Nonempty (ExactVisiblePostSwitchSurface (BitVec 1) 0) :=
+    Nonempty (ExactVisiblePostSwitchData (BitVec 1) 0) :=
   ⟨bitVec1ZeroVisiblePointActualSparseRecoveryRegion⟩
 
 noncomputable local instance
     exactVisiblePostSwitchSurfaceBitVec1k0DecidableEqActualSparseRecoveryBitFallback :
-    DecidableEq (ExactVisiblePostSwitchSurface (BitVec 1) 0) :=
+    DecidableEq (ExactVisiblePostSwitchData (BitVec 1) 0) :=
   Classical.decEq _
 
 noncomputable def oneSampleExactVisibleRuleDecodeActualSwitchedLocalInterface :
     ActualSwitchedLocalInterface
       (BitVec 1) 0
       (BoundedSampleFallbackFamilyIndex
-        (ULift.{0} (BitCode (Fintype.card (ExactVisiblePostSwitchSurface (BitVec 1) 0))))
-        (ExactVisiblePostSwitchSurface (BitVec 1) 0)
+        (ULift.{0} (BitCode (Fintype.card (ExactVisiblePostSwitchData (BitVec 1) 0))))
+        (ExactVisiblePostSwitchData (BitVec 1) 0)
         1)
-      (ExactVisiblePostSwitchSurface (BitVec 1) 0) :=
+      (ExactVisiblePostSwitchData (BitVec 1) 0) :=
   boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
     (BitVec 1) 0 1
-    (Fintype.card (ExactVisiblePostSwitchSurface (BitVec 1) 0))
+    (Fintype.card (ExactVisiblePostSwitchData (BitVec 1) 0))
     (exactVisibleRuleDecode (Z := BitVec 1) (k := 0))
 
 private theorem three_quarters_lt_four_fifths_actualSparseRecoveryBitFallback :
@@ -91,7 +91,7 @@ theorem oneSampleExactVisibleRuleDecodeActualSwitchedLocalInterface_one_sub_appl
       (k := 0)
       (r := 1)
       (sampleBound := 1)
-      (fallbackBits := Fintype.card (ExactVisiblePostSwitchSurface (BitVec 1) 0))
+      (fallbackBits := Fintype.card (ExactVisiblePostSwitchData (BitVec 1) 0))
       (μ := bitVec1SkewMeasureActualSparseRecoveryRegion)
       (q := q)
       (fallback := exactVisibleRuleDecode (Z := BitVec 1) (k := 0))

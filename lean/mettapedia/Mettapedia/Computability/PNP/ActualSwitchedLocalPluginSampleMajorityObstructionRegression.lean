@@ -18,21 +18,21 @@ example (Z : Type) (k : ℕ) [Fintype Z] :
   pluginSampleMajorityActualSwitchedLocalInterface_surjective Z k
 
 example {Z : Type} {k s : ℕ} [Fintype Z]
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (pluginSampleMajorityActualSwitchedLocalInterface Z k).predictorFamily.FinitePredictorCover
         (2 ^ s) :=
   pluginSampleMajorityActualSwitchedLocalInterface_not_finitePredictorCover_of_lt_surfaceCard
     (Z := Z) (k := k) (s := s) hs
 
 example {Z : Type} {k s clock : ℕ} [Fintype Z]
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (pluginSampleMajorityActualSwitchedLocalInterface Z k).predictorFamily s clock :=
   pluginSampleMajorityActualSwitchedLocalInterface_not_clockedKpolyFiniteLearningPayload_of_lt_surfaceCard
     (Z := Z) (k := k) (s := s) (clock := clock) hs
 
 example {Z : Type} {k s : ℕ} [Fintype Z]
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.BitCodeData
           (pluginSampleMajorityActualSwitchedLocalInterface Z k) s) :=
@@ -41,7 +41,7 @@ example {Z : Type} {k s : ℕ} [Fintype Z]
 
 example {Z : Type} {k r : ℕ} [Fintype Z]
     (zfeat : Z → BitVec r)
-    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.ZABDecisionListData
           (pluginSampleMajorityActualSwitchedLocalInterface Z k) zfeat) :=

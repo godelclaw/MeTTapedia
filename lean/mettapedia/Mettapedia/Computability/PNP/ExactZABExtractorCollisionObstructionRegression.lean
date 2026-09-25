@@ -38,7 +38,7 @@ example {Index : Type}
   h.not_surjective_predict_of_not_injective_zfeat zeroExtractor_not_injective
 
 example {Index : Type}
-    {μ : PMF (ExactVisiblePostSwitchSurface Bool 0)}
+    {μ : PMF (ExactVisiblePostSwitchData Bool 0)}
     {G : ExactVisibleSwitchedFamily Bool 0 Index}
     {q : ℝ≥0∞}
     (h :
@@ -64,7 +64,7 @@ example {Index : Type}
   h.not_surjective_predict_of_not_injective_zfeat zeroExtractor_not_injective
 
 example {Index : Type}
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Bool 0) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Bool 0) Bool) :
     ¬ Function.Surjective
         (exactZABDecisionListERMFamily
           (Z := Bool) (r := 0) (k := 0) zeroExtractor samples).predict :=

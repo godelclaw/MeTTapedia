@@ -17,7 +17,7 @@ variable {n k : ℕ} {Index : Type*}
 
 theorem exactZABDecisionListERMFamily_not_surjective_of_sameWidth
     (zfeat : BitVec n → BitVec n)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hvisible : 2 ≤ n + 2 * k) :
     ¬ Function.Surjective
         (exactZABDecisionListERMFamily

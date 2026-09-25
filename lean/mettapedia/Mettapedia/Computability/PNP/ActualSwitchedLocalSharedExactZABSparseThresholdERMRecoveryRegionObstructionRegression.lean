@@ -7,17 +7,17 @@ namespace Mettapedia.Computability.PNP
 open scoped ENNReal
 
 def bitVec1ZeroVisiblePointActualSparseRecoveryRegion :
-    ExactVisiblePostSwitchSurface (BitVec 1) 0 :=
+    ExactVisiblePostSwitchData (BitVec 1) 0 :=
   ⟨zeroVec, zeroVec, zeroVec⟩
 
 def bitVec1OneVisiblePointActualSparseRecoveryRegion :
-    ExactVisiblePostSwitchSurface (BitVec 1) 0 :=
+    ExactVisiblePostSwitchData (BitVec 1) 0 :=
   ⟨fun _ => true, zeroVec, zeroVec⟩
 
 def idBitVec1ActualSparseRecoveryRegion : BitVec 1 → BitVec 1 := fun x => x
 
 noncomputable local instance exactVisiblePostSwitchSurfaceBitVec1k0DecidableEqActualSparseRecoveryRegion :
-    DecidableEq (ExactVisiblePostSwitchSurface (BitVec 1) 0) :=
+    DecidableEq (ExactVisiblePostSwitchData (BitVec 1) 0) :=
   Classical.decEq _
 
 theorem bitVec1ZeroVisiblePointActualSparseRecoveryRegion_ne :
@@ -30,7 +30,7 @@ theorem bitVec1ZeroVisiblePointActualSparseRecoveryRegion_ne :
     bitVec1OneVisiblePointActualSparseRecoveryRegion, zeroVec] at hbit
 
 noncomputable def bitVec1SkewSupportActualSparseRecoveryRegion :
-    Multiset (ExactVisiblePostSwitchSurface (BitVec 1) 0) :=
+    Multiset (ExactVisiblePostSwitchData (BitVec 1) 0) :=
   ({bitVec1ZeroVisiblePointActualSparseRecoveryRegion} : Multiset _) +
     {bitVec1ZeroVisiblePointActualSparseRecoveryRegion} +
     {bitVec1ZeroVisiblePointActualSparseRecoveryRegion} +
@@ -38,12 +38,12 @@ noncomputable def bitVec1SkewSupportActualSparseRecoveryRegion :
     {bitVec1OneVisiblePointActualSparseRecoveryRegion}
 
 noncomputable def bitVec1SkewMeasureActualSparseRecoveryRegion :
-    PMF (ExactVisiblePostSwitchSurface (BitVec 1) 0) :=
+    PMF (ExactVisiblePostSwitchData (BitVec 1) 0) :=
   PMF.ofMultiset bitVec1SkewSupportActualSparseRecoveryRegion (by
     simp [bitVec1SkewSupportActualSparseRecoveryRegion])
 
 def bitVec1HeavyRegionActualSparseRecoveryRegion :
-    Finset (ExactVisiblePostSwitchSurface (BitVec 1) 0) :=
+    Finset (ExactVisiblePostSwitchData (BitVec 1) 0) :=
   {bitVec1ZeroVisiblePointActualSparseRecoveryRegion}
 
 theorem bitVec1OneVisiblePointActualSparseRecoveryRegion_not_mem_heavyRegion :

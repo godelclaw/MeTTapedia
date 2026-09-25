@@ -21,11 +21,11 @@ variable {Z : Type*} {r k : ℕ} {Index : Type*}
 
 structure ExactZABERMRecoveryData
     [Fintype Z]
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (zfeat : Z → BitVec r)
     (G : ExactVisibleSwitchedFamily Z k Index)
     (q : ℝ≥0∞) where
-  samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool
+  samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool
   exact_family :
     G = exactZABDecisionListERMFamily (Z := Z) (r := r) (k := k) zfeat samples
   agreement_le :
@@ -40,7 +40,7 @@ section
 variable [Fintype Z]
 
 def ExactZABERMRecoveryData.targetData
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -54,7 +54,7 @@ def ExactZABERMRecoveryData.targetData
     (Z := Z) (r := r) (k := k) (Index := Index) zfeat samples
 
 theorem ExactZABERMRecoveryData.compressionTarget
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -68,7 +68,7 @@ theorem ExactZABERMRecoveryData.compressionTarget
     (Z := Z) (r := r) (k := k) (Index := Index) zfeat samples
 
 theorem ExactZABERMRecoveryData.finitePredictorCover
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -79,7 +79,7 @@ theorem ExactZABERMRecoveryData.finitePredictorCover
   exact (h.targetData).finitePredictorCover_twoMul
 
 theorem ExactZABERMRecoveryData.finiteIndexRepresentativeCover
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -90,7 +90,7 @@ theorem ExactZABERMRecoveryData.finiteIndexRepresentativeCover
   exact (h.targetData).finiteIndexRepresentativeCover_twoMul
 
 theorem ExactZABERMRecoveryData.finitePredictorQuotient
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -101,7 +101,7 @@ theorem ExactZABERMRecoveryData.finitePredictorQuotient
   exact (h.targetData).finitePredictorQuotient_twoMul
 
 theorem ExactZABERMRecoveryData.surfaceCard_le_of_surjective_predict
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -109,23 +109,23 @@ theorem ExactZABERMRecoveryData.surfaceCard_le_of_surjective_predict
       ExactZABERMRecoveryData
         (Z := Z) (r := r) (k := k) (Index := Index) μ zfeat G q)
     (hsurj : Function.Surjective G.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ r + 2 * k + 1 := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ r + 2 * k + 1 := by
   exact (h.targetData).surfaceCard_le_of_surjective_predict hsurj
 
 theorem ExactZABERMRecoveryData.not_surjective_predict_of_lt_surfaceCard
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
       ExactZABERMRecoveryData
         (Z := Z) (r := r) (k := k) (Index := Index) μ zfeat G q)
-    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective G.predict := by
   exact (h.targetData).not_surjective_predict_of_lt_surfaceCard hs
 
 theorem ExactZABERMRecoveryData.recoveryLowerBound
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}

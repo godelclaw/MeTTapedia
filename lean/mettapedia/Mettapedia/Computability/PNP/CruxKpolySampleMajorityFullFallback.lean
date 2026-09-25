@@ -36,7 +36,7 @@ the endpoint has no small finite predictor cover below the exact-visible
 truth-table budget. -/
 theorem kpolyCoverage_anchor_boundedSampleMajorityWithFallback_not_finitePredictorCover_of_lt_surfaceCard
     {Z : Type v} [Fintype Z] {k s sampleBound : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface
         Z k sampleBound).predictorFamily.FinitePredictorCover (2 ^ s) :=
   boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface_not_finitePredictorCover_of_lt_surfaceCard
@@ -47,10 +47,10 @@ finite selected-index representative cover below the exact-visible truth-table
 budget. -/
 theorem kpolyCoverage_anchor_boundedSampleMajorityWithFallback_not_finiteIndexRepresentativeCover_of_lt_surfaceCard
     {Z : Type v} [Fintype Z] {k s sampleBound : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface
         Z k sampleBound).predictorFamily.FiniteIndexRepresentativeCover (2 ^ s) := by
-  have hpow : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k) :=
+  have hpow : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchData Z k) :=
     Nat.pow_lt_pow_right Nat.one_lt_two hs
   exact
     not_exactVisible_finiteIndexRepresentativeCover_of_surjective_predict
@@ -63,10 +63,10 @@ theorem kpolyCoverage_anchor_boundedSampleMajorityWithFallback_not_finiteIndexRe
 finite quotient-code presentation below the exact-visible truth-table budget. -/
 theorem kpolyCoverage_anchor_boundedSampleMajorityWithFallback_not_finitePredictorQuotient_of_lt_surfaceCard
     {Z : Type v} [Fintype Z] {k s sampleBound : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface
         Z k sampleBound).predictorFamily.FinitePredictorQuotient (2 ^ s) := by
-  have hpow : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k) :=
+  have hpow : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchData Z k) :=
     Nat.pow_lt_pow_right Nat.one_lt_two hs
   exact
     not_exactVisible_finitePredictorQuotient_of_surjective_predict
@@ -79,11 +79,11 @@ theorem kpolyCoverage_anchor_boundedSampleMajorityWithFallback_not_finitePredict
 exact-visible compression target below the exact-visible truth-table budget. -/
 theorem kpolyCoverage_anchor_boundedSampleMajorityWithFallback_not_exactVisibleCompressionTarget_of_lt_surfaceCard
     {Z : Type v} [Fintype Z] {k s sampleBound : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ExactVisibleCompressionTarget
         (Z := Z) (k := k)
         (Index := BoundedSampleFallbackIndex
-          (ExactVisiblePostSwitchSurface Z k) sampleBound)
+          (ExactVisiblePostSwitchData Z k) sampleBound)
         (boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface
           Z k sampleBound).predictorFamily s := by
   intro hcomp
@@ -93,7 +93,7 @@ theorem kpolyCoverage_anchor_boundedSampleMajorityWithFallback_not_exactVisibleC
     (exactVisibleCompressionTarget_iff_finitePredictorCover
       (Z := Z) (k := k) (s := s)
       (Index := BoundedSampleFallbackIndex
-        (ExactVisiblePostSwitchSurface Z k) sampleBound)
+        (ExactVisiblePostSwitchData Z k) sampleBound)
       (G := (boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface
         Z k sampleBound).predictorFamily)).1 hcomp
   exact
@@ -104,11 +104,11 @@ theorem kpolyCoverage_anchor_boundedSampleMajorityWithFallback_not_exactVisibleC
 exact-visible realization below the exact-visible truth-table budget. -/
 theorem kpolyCoverage_anchor_boundedSampleMajorityWithFallback_not_clockedRealization_of_lt_surfaceCard
     {Z : Type v} [Fintype Z] {k s sampleBound clock : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
-    ¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
+    ¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         (boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface
           Z k sampleBound).predictorFamily.RealizedByClockedBitFamily F := by
-  have hpow : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k) :=
+  have hpow : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchData Z k) :=
     Nat.pow_lt_pow_right Nat.one_lt_two hs
   exact
     not_exists_clockedExactVisibleRealization_of_surjective_predict_of_lt_predictorCard
@@ -121,7 +121,7 @@ theorem kpolyCoverage_anchor_boundedSampleMajorityWithFallback_not_clockedRealiz
 clocked finite-learning payload below the exact-visible truth-table budget. -/
 theorem kpolyCoverage_anchor_boundedSampleMajorityWithFallback_not_clockedPayload_of_lt_surfaceCard
     {Z : Type v} [Fintype Z] {k s sampleBound clock : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface
           Z k sampleBound).predictorFamily s clock :=

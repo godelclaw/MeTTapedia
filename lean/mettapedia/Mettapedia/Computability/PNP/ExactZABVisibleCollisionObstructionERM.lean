@@ -19,7 +19,7 @@ variable {Z : Type*} {p r k : ℕ} {Index : Type*}
 
 theorem exactZABAffineFeatureERMFamily_not_surjective_of_not_injective_zfeat
     (zfeat : Z → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (hni : ¬ Function.Injective zfeat) :
     ¬ Function.Surjective
         (exactZABAffineFeatureERMFamily
@@ -31,7 +31,7 @@ theorem exactZABAffineFeatureERMFamily_not_surjective_of_not_injective_zfeat
 
 theorem exactZABSparseThresholdAffineERMFamily_not_surjective_of_not_injective_zfeat
     (zfeat : Z → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (hni : ¬ Function.Injective zfeat) :
     ¬ Function.Surjective
         (exactZABSparseThresholdAffineERMFamily
@@ -44,7 +44,7 @@ theorem exactZABSparseThresholdAffineERMFamily_not_surjective_of_not_injective_z
 theorem sharedExactZABAffineFeatureERMFamily_not_surjective_of_not_injective_zfeat
     (zfeat : Z → BitVec r)
     (features : Fin p → AffineColumnCode (r + (k + k)))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (hni : ¬ Function.Injective zfeat) :
     ¬ Function.Surjective
         (sharedExactZABAffineFeatureERMFamily
@@ -57,7 +57,7 @@ theorem sharedExactZABAffineFeatureERMFamily_not_surjective_of_not_injective_zfe
 theorem sharedExactZABSparseThresholdAffineERMFamily_not_surjective_of_not_injective_zfeat
     (zfeat : Z → BitVec r)
     (features : Fin p → AffineColumnCode (r + (k + k)))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (hni : ¬ Function.Injective zfeat) :
     ¬ Function.Surjective
         (sharedExactZABSparseThresholdAffineERMFamily
@@ -70,7 +70,7 @@ theorem sharedExactZABSparseThresholdAffineERMFamily_not_surjective_of_not_injec
 theorem sharedExactZABAffineDecisionListERMFamily_not_surjective_of_not_injective_zfeat
     (zfeat : Z → BitVec r)
     (features : Fin p → AffineColumnCode (r + (k + k)))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     (hni : ¬ Function.Injective zfeat) :
     ¬ Function.Surjective
         (sharedExactZABAffineDecisionListERMFamily

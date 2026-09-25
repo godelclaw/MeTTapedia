@@ -163,7 +163,7 @@ theorem canonicalABDecisionList_surfaceCard_le_of_surjective_predict
       RealizedByABDecisionListFamily (k := k)
         (liftToABVisibleFamily (Z := Z) (k := k) G))
     (hsurj : Function.Surjective G.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ 2 * k + 1 := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ 2 * k + 1 := by
   simpa [two_mul, Nat.mul_comm, Nat.add_assoc] using
     (canonicalABDecisionListTargetData
       (Z := Z) (k := k) (Index := Index) G hinv hreal).surfaceCard_le_of_surjective_predict
@@ -177,9 +177,9 @@ theorem canonicalABDecisionList_not_surjective_of_lt_surfaceCard
     (hreal :
       RealizedByABDecisionListFamily (k := k)
         (liftToABVisibleFamily (Z := Z) (k := k) G))
-    (hs : 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective G.predict := by
-  have hs' : k + k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k) := by
+  have hs' : k + k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k) := by
     simpa [two_mul, Nat.mul_comm, Nat.add_assoc] using hs
   exact
     (canonicalABDecisionListTargetData

@@ -15,8 +15,8 @@ block-output behaviour bounded by a finite support while its full exact-visible
 local-rule image still has no below-surface predictor cover. -/
 theorem kpolyCoverage_anchor_supportFullRule_observedSmall_and_not_exactVisibleCover
     {Z : Type v} [Fintype Z] {Block : Type v} [Fintype Block] {k s : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     (supportFullRuleActualSwitchedLocalInterface visibleOf).outputFamily.FinitePredictorCover
         (2 ^ Fintype.card Block) ∧
       ¬ (supportFullRuleActualSwitchedLocalInterface visibleOf).predictorFamily.FinitePredictorCover
@@ -28,8 +28,8 @@ give the clocked finite-learning payload below the full exact-visible surface
 threshold. -/
 theorem kpolyCoverage_anchor_supportFullRule_not_clockedPayload_of_lt_surfaceCard
     {Z : Type v} [Fintype Z] {Block : Type v} {k s clock : ℕ}
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (supportFullRuleActualSwitchedLocalInterface visibleOf).predictorFamily s clock :=
   supportFullRule_not_clockedKpolyFiniteLearningPayload_of_lt_surfaceCard visibleOf hs

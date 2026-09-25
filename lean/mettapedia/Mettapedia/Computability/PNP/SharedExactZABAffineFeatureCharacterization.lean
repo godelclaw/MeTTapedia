@@ -31,13 +31,13 @@ variable {Z : Type*} {p r k : ℕ}
 
 /-- A rule is summary-invariant if it depends only on one visible summary map. -/
 def ExactVisibleSummaryInvariantRule
-    (summary : ExactVisiblePostSwitchSurface Z k → BitVec p)
+    (summary : ExactVisiblePostSwitchData Z k → BitVec p)
     (rule : ExactVisibleRule Z k) : Prop :=
   ∀ u v, summary u = summary v → rule u = rule v
 
 theorem not_surjective_predict_of_all_exactVisibleSummaryInvariant
     {Index : Type*}
-    {summary : ExactVisiblePostSwitchSurface Z k → BitVec p}
+    {summary : ExactVisiblePostSwitchData Z k → BitVec p}
     {G : ExactVisibleSwitchedFamily Z k Index}
     (hinv :
       ∀ i, ExactVisibleSummaryInvariantRule

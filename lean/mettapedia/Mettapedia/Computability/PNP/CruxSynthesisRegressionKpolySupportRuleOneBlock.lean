@@ -13,8 +13,8 @@ universe u v w z
 
 theorem kpoly_anchor_one_block_full_rule_observed_small_not_exact_visible_cover_regression
     {Z : Type v} [Fintype Z] {k s : ℕ}
-    (u0 : ExactVisiblePostSwitchSurface Z k)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (u0 : ExactVisiblePostSwitchData Z k)
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     (oneBlockFullRuleActualSwitchedLocalInterface u0).outputFamily.FinitePredictorCover 2 ∧
       ¬ (oneBlockFullRuleActualSwitchedLocalInterface u0).predictorFamily.FinitePredictorCover
         (2 ^ s) := by
@@ -24,8 +24,8 @@ theorem kpoly_anchor_one_block_full_rule_observed_small_not_exact_visible_cover_
 
 theorem kpoly_anchor_one_block_full_rule_not_clocked_payload_regression
     {Z : Type v} [Fintype Z] {k s clock : ℕ}
-    (u0 : ExactVisiblePostSwitchSurface Z k)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (u0 : ExactVisiblePostSwitchData Z k)
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (oneBlockFullRuleActualSwitchedLocalInterface u0).predictorFamily s clock := by
   exact
@@ -34,8 +34,8 @@ theorem kpoly_anchor_one_block_full_rule_not_clocked_payload_regression
 
 theorem kpoly_anchor_one_block_full_rule_no_exact_decoder_regression
     {Z : Type v} [Fintype Z] {k : ℕ}
-    (u0 : ExactVisiblePostSwitchSurface Z k)
-    (hcard : 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (u0 : ExactVisiblePostSwitchData Z k)
+    (hcard : 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ∃ decode : (Unit → Bool) → ExactVisibleRule Z k,
       ∀ rule : ExactVisibleRule Z k,
         decode ((oneBlockFullRuleActualSwitchedLocalInterface u0).outputFamily.predict rule) =
@@ -46,9 +46,9 @@ theorem kpoly_anchor_one_block_full_rule_no_exact_decoder_regression
 
 theorem kpoly_anchor_one_block_full_rule_exists_unobservable_eval_regression
     {Z : Type v} [Fintype Z] {k : ℕ}
-    (u0 : ExactVisiblePostSwitchSurface Z k)
-    (hcard : 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
-    ∃ u : ExactVisiblePostSwitchSurface Z k,
+    (u0 : ExactVisiblePostSwitchData Z k)
+    (hcard : 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
+    ∃ u : ExactVisiblePostSwitchData Z k,
       ¬ ∃ decode : (Unit → Bool) → Bool,
         ∀ rule : ExactVisibleRule Z k,
           decode ((oneBlockFullRuleActualSwitchedLocalInterface u0).outputFamily.predict rule) =

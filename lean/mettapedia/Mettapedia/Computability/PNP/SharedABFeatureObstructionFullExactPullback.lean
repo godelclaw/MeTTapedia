@@ -18,7 +18,7 @@ shared affine features below the reduced truth-table threshold. -/
 theorem fullExactABRuleFamily_not_realizedBySharedExactABAffineFeatureFamily_of_lt_surfaceCard
     [Inhabited Z]
     (features : Fin r → AffineColumnCode (k + k))
-    (hs : 2 ^ r < Fintype.card (ABVisibleSurface k)) :
+    (hs : 2 ^ r < Fintype.card (ABVisibleState k)) :
     ¬ RealizedBySharedExactABAffineFeatureFamily
         (Z := Z) (r := r) (k := k) features (fullExactABRuleFamily Z k) := by
   exact
@@ -38,14 +38,14 @@ theorem fullExactABRuleFamily_not_realizedBySharedExactABAffineFeatureFamily_of_
   exact
     fullExactABRuleFamily_not_realizedBySharedExactABAffineFeatureFamily_of_lt_surfaceCard
       (Z := Z) (r := r) (k := k) features
-      (by simpa [card_abVisibleSurface (k := k)] using hs)
+      (by simpa [card_abVisibleDataDomain (k := k)] using hs)
 
 /-- The exact pullback of the full raw `(a,b)` rule family cannot be realized by
 shared sparse-threshold features below the reduced truth-table threshold. -/
 theorem fullExactABRuleFamily_not_realizedBySharedExactABSparseThresholdAffineFamily_of_lt_surfaceCard
     [Inhabited Z]
     (features : Fin r → AffineColumnCode (k + k))
-    (hs : 2 * r < Fintype.card (ABVisibleSurface k)) :
+    (hs : 2 * r < Fintype.card (ABVisibleState k)) :
     ¬ RealizedBySharedExactABSparseThresholdAffineFamily
         (Z := Z) (r := r) (k := k) features (fullExactABRuleFamily Z k) := by
   exact
@@ -65,14 +65,14 @@ theorem fullExactABRuleFamily_not_realizedBySharedExactABSparseThresholdAffineFa
   exact
     fullExactABRuleFamily_not_realizedBySharedExactABSparseThresholdAffineFamily_of_lt_surfaceCard
       (Z := Z) (r := r) (k := k) features
-      (by simpa [card_abVisibleSurface (k := k)] using hs)
+      (by simpa [card_abVisibleDataDomain (k := k)] using hs)
 
 /-- The exact pullback of the full raw `(a,b)` rule family cannot be realized by
 shared decision-list features below the reduced truth-table threshold. -/
 theorem fullExactABRuleFamily_not_realizedBySharedExactABAffineDecisionListFamily_of_lt_surfaceCard
     [Inhabited Z]
     (features : Fin r → AffineColumnCode (k + k))
-    (hs : r + 1 < Fintype.card (ABVisibleSurface k)) :
+    (hs : r + 1 < Fintype.card (ABVisibleState k)) :
     ¬ RealizedBySharedExactABAffineDecisionListFamily
         (Z := Z) (r := r) (k := k) features (fullExactABRuleFamily Z k) := by
   exact
@@ -92,7 +92,7 @@ theorem fullExactABRuleFamily_not_realizedBySharedExactABAffineDecisionListFamil
   exact
     fullExactABRuleFamily_not_realizedBySharedExactABAffineDecisionListFamily_of_lt_surfaceCard
       (Z := Z) (r := r) (k := k) features
-      (by simpa [card_abVisibleSurface (k := k)] using hs)
+      (by simpa [card_abVisibleDataDomain (k := k)] using hs)
 
 end FullExactPullback
 

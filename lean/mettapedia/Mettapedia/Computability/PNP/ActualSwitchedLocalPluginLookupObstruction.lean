@@ -26,7 +26,7 @@ tables themselves, so this is the finite-alphabet rule class before any
 additional ZAB decision-list/code restriction is imposed. -/
 abbrev pluginLookupActualSwitchedLocalInterface (Z : Type v) (k : ℕ) :
     ActualSwitchedLocalInterface
-      Z k (ExactVisibleRule Z k) (ExactVisiblePostSwitchSurface Z k) :=
+      Z k (ExactVisibleRule Z k) (ExactVisiblePostSwitchData Z k) :=
   fullRuleActualSwitchedLocalInterface Z k
 
 @[simp] theorem pluginLookupActualSwitchedLocalInterface_predictorFamily
@@ -57,7 +57,7 @@ theorem pluginLookupActualSwitchedLocalInterface_surjective
 exact visible truth-table budget. -/
 theorem pluginLookupActualSwitchedLocalInterface_not_finitePredictorCover_of_lt_surfaceCard
     {Z : Type v} {k s : ℕ} [Fintype Z]
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (pluginLookupActualSwitchedLocalInterface Z k).predictorFamily.FinitePredictorCover
         (2 ^ s) := by
   simpa [pluginLookupActualSwitchedLocalInterface] using
@@ -68,7 +68,7 @@ theorem pluginLookupActualSwitchedLocalInterface_not_finitePredictorCover_of_lt_
 payload below the exact visible truth-table budget. -/
 theorem pluginLookupActualSwitchedLocalInterface_not_clockedKpolyFiniteLearningPayload_of_lt_surfaceCard
     {Z : Type v} {k s clock : ℕ} [Fintype Z]
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (pluginLookupActualSwitchedLocalInterface Z k).predictorFamily s clock := by
   simpa [pluginLookupActualSwitchedLocalInterface] using
@@ -79,7 +79,7 @@ theorem pluginLookupActualSwitchedLocalInterface_not_clockedKpolyFiniteLearningP
 minimal missing assumption below the exact visible truth-table budget. -/
 theorem pluginLookupActualSwitchedLocalInterface_not_bitCodeData_of_lt_surfaceCard
     {Z : Type v} {k s : ℕ} [Fintype Z]
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.BitCodeData
           (pluginLookupActualSwitchedLocalInterface Z k) s) := by
@@ -94,7 +94,7 @@ the already-closed ZAB/code route without an additional identification theorem. 
 theorem pluginLookupActualSwitchedLocalInterface_not_zabDecisionListData_of_lt_surfaceCard
     {Z : Type v} {k r : ℕ} [Fintype Z]
     (zfeat : Z → BitVec r)
-    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.ZABDecisionListData
           (pluginLookupActualSwitchedLocalInterface Z k) zfeat) := by

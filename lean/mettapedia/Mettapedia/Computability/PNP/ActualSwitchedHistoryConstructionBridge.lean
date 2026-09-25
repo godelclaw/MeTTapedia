@@ -28,7 +28,7 @@ theorem exactZABDecisionListERMConstruction_switchedHistoryExactVisibleCompressi
     (aOf : Index → Block → BitVec k)
     (bOf : Block → BitVec k)
     (zfeat : Z → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     {Ω : Type x} [Fintype Ω]
     {hist : List (FiniteEvent Ω)} {items : List (V13FieldedStep Ω)} :
     SwitchedHistoryExactVisibleCompressionWrapper
@@ -51,7 +51,7 @@ theorem exactZABDecisionListERMConstruction_switchedHistoryClockedKpolyFiniteLea
     (aOf : Index → Block → BitVec k)
     (bOf : Block → BitVec k)
     (zfeat : Z → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool)
     {Ω : Type x} [Fintype Ω]
     {hist : List (FiniteEvent Ω)} {items : List (V13FieldedStep Ω)} :
     SwitchedHistoryClockedKpolyFiniteLearningWrapper

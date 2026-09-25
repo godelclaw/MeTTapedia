@@ -19,16 +19,16 @@ noncomputable def boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLoc
     ActualSwitchedLocalInterface
       Z k
       (BoundedSampleFallbackFamilyIndex
-        FallbackIndex (ExactVisiblePostSwitchSurface Z k) sampleBound)
-      (ExactVisiblePostSwitchSurface Z k) where
+        FallbackIndex (ExactVisiblePostSwitchData Z k) sampleBound)
+      (ExactVisiblePostSwitchData Z k) where
   zOf := fun u => u.z
   aOf := fun _ u => u.a
   bOf := fun u => u.b
   localRule := fun index u =>
-    letI := Classical.decEq (ExactVisiblePostSwitchSurface Z k)
+    letI := Classical.decEq (ExactVisiblePostSwitchData Z k)
     PluginSampleMajority.predictWithFallback (fallback index.1) index.2.1 u
   output := fun index u =>
-    letI := Classical.decEq (ExactVisiblePostSwitchSurface Z k)
+    letI := Classical.decEq (ExactVisiblePostSwitchData Z k)
     PluginSampleMajority.predictWithFallback (fallback index.1) index.2.1 u
   output_eq_local := by
     intro index u
@@ -44,8 +44,8 @@ noncomputable def boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitched
       Z k
       (BoundedSampleFallbackFamilyIndex
         (ULift.{v} (BitCode fallbackBits))
-        (ExactVisiblePostSwitchSurface Z k) sampleBound)
-      (ExactVisiblePostSwitchSurface Z k) :=
+        (ExactVisiblePostSwitchData Z k) sampleBound)
+      (ExactVisiblePostSwitchData Z k) :=
   boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterface
     (ULift.{v} (BitCode fallbackBits)) Z k sampleBound
     (fun code => fallback code.down)
@@ -57,9 +57,9 @@ theorem boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterfac
     (fallback : FallbackIndex → ExactVisibleRule Z k)
     (index :
       BoundedSampleFallbackFamilyIndex
-        FallbackIndex (ExactVisiblePostSwitchSurface Z k) sampleBound) :
+        FallbackIndex (ExactVisiblePostSwitchData Z k) sampleBound) :
     (PluginSampleMajority.disagreementSupport (fallback index.1)
-      (fun u : ExactVisiblePostSwitchSurface Z k =>
+      (fun u : ExactVisiblePostSwitchData Z k =>
         (boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterface
           FallbackIndex Z k sampleBound fallback).predictorFamily.predict index u)).card ≤
         sampleBound := by
@@ -128,6 +128,7 @@ theorem boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterfac
       boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterface_surjective_of_fallback_surjective
         (Z := Z) (k := k) (sampleBound := 0) fallback hfallback
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Thus a structured fallback family can realize a target rule only if some
 fallback code is within `sampleBound` point changes of that target. -/
 theorem boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterface_not_realizes_rule_of_forall_sampleBound_lt_disagreementSupport_card
@@ -149,7 +150,7 @@ theorem boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterfac
       (Z := Z) (k := k) (sampleBound := sampleBound) fallback index
   have hsupport :
       PluginSampleMajority.disagreementSupport (fallback index.1)
-          (fun u : ExactVisiblePostSwitchSurface Z k =>
+          (fun u : ExactVisiblePostSwitchData Z k =>
             (boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterface
               FallbackIndex Z k sampleBound fallback).predictorFamily.predict index u) =
         PluginSampleMajority.disagreementSupport (fallback index.1) rule := by
@@ -187,7 +188,7 @@ theorem boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterfac
   have hlen : sample.length ≤ sampleBound := by
     simpa [sample, support] using hcard
   refine ⟨⟨code, ⟨sample, hlen⟩⟩, ?_⟩
-  have hoff : ∀ u : ExactVisiblePostSwitchSurface Z k,
+  have hoff : ∀ u : ExactVisiblePostSwitchData Z k,
       u ∉ support → fallback code u = rule u := by
     intro u hu
     have hnot : ¬ rule u ≠ fallback code u := by
@@ -205,6 +206,7 @@ theorem boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterfac
   simpa [boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterface,
     ActualSwitchedLocalInterface.predictorFamily] using congrFun hpredict u
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- A structured fallback family plus bounded samples realizes precisely the
 finite Hamming-radius cover around its fallback codes. -/
 theorem boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterface_realizes_rule_iff_mem_fallbackFamilyRadiusCover
@@ -225,7 +227,7 @@ theorem boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterfac
         (Z := Z) (k := k) (sampleBound := sampleBound) fallback index
     have hsupport :
         PluginSampleMajority.disagreementSupport (fallback index.1)
-            (fun u : ExactVisiblePostSwitchSurface Z k =>
+            (fun u : ExactVisiblePostSwitchData Z k =>
               (boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterface
                 FallbackIndex Z k sampleBound fallback).predictorFamily.predict index u) =
           PluginSampleMajority.disagreementSupport (fallback index.1) rule := by
@@ -284,7 +286,7 @@ theorem boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterfac
     {FallbackIndex : Type v} {Z : Type v} {k sampleBound : ℕ}
     [Fintype FallbackIndex] [Nonempty FallbackIndex] [Fintype Z]
     (fallback : FallbackIndex → ExactVisibleRule Z k)
-    (hbound : Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound) :
+    (hbound : Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound) :
     Function.Surjective
         (boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterface
           FallbackIndex Z k sampleBound fallback).predictorFamily.predict := by
@@ -341,7 +343,7 @@ theorem boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterfac
         FallbackIndex Z k sampleBound fallback).predictorFamily.FinitePredictorCover
       (Fintype.card FallbackIndex *
         (PluginSampleMajority.smallSubsets
-          (ExactVisiblePostSwitchSurface Z k) sampleBound).card) := by
+          (ExactVisiblePostSwitchData Z k) sampleBound).card) := by
   classical
   refine
     ⟨PluginSampleMajority.fallbackFamilyRadiusCover fallback sampleBound, ?_, ?_⟩
@@ -369,15 +371,15 @@ theorem boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterfac
     (hcard :
       Fintype.card FallbackIndex *
           (PluginSampleMajority.smallSubsets
-            (ExactVisiblePostSwitchSurface Z k) sampleBound).card <
-        2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+            (ExactVisiblePostSwitchData Z k) sampleBound).card <
+        2 ^ Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective
       (boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterface
         FallbackIndex Z k sampleBound fallback).predictorFamily.predict := by
   classical
   rcases
       PluginSampleMajority.exists_rule_forall_radius_lt_disagreementSupport_card_of_code_mul_smallSubsets_card_lt
-        (U := ExactVisiblePostSwitchSurface Z k)
+        (U := ExactVisiblePostSwitchData Z k)
         fallback hcard with
     ⟨rule, hfar⟩
   intro hsurj
@@ -398,10 +400,10 @@ theorem boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterfac
       Function.Surjective
         (boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterface
           FallbackIndex Z k sampleBound fallback).predictorFamily.predict) :
-    2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤
+    2 ^ Fintype.card (ExactVisiblePostSwitchData Z k) ≤
       Fintype.card FallbackIndex *
         (PluginSampleMajority.smallSubsets
-          (ExactVisiblePostSwitchSurface Z k) sampleBound).card := by
+          (ExactVisiblePostSwitchData Z k) sampleBound).card := by
   classical
   have hcover :=
     (boundedSamplePluginMajorityWithFallbackFamilyActualSwitchedLocalInterface_surjective_iff_fallbackFamilyRadiusCover_eq_univ

@@ -7,12 +7,12 @@ namespace Mettapedia.Computability.PNP
 open scoped ENNReal
 
 local instance exactVisiblePostSwitchSurfaceBitVec1k0NonemptyActualSparseRecoveryPluginSample :
-    Nonempty (ExactVisiblePostSwitchSurface (BitVec 1) 0) :=
+    Nonempty (ExactVisiblePostSwitchData (BitVec 1) 0) :=
   ⟨bitVec1ZeroVisiblePointActualSparseRecoveryRegion⟩
 
 noncomputable local instance
     exactVisiblePostSwitchSurfaceBitVec1k0DecidableEqActualSparseRecoveryPluginSample :
-    DecidableEq (ExactVisiblePostSwitchSurface (BitVec 1) 0) :=
+    DecidableEq (ExactVisiblePostSwitchData (BitVec 1) 0) :=
   Classical.decEq _
 
 private theorem three_quarters_lt_four_fifths_actualSparseRecoveryPluginSample :

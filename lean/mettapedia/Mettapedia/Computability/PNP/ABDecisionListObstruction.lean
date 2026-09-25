@@ -25,7 +25,7 @@ variable {k : ℕ}
 /-- The fixed-order decision-list decoder directly on the reduced raw
 `(a,b)` surface. -/
 noncomputable def abDecisionListBitFamily (k : ℕ) :
-    BitEncodedClassifierFamily (ABVisibleSurface k) (k + k + 1) where
+    BitEncodedClassifierFamily (ABVisibleState k) (k + k + 1) where
   decode raw x :=
     let code := (sharedAffineDecisionListCodeEquivBitCode (k + k)).symm raw
     abDecisionListPredict (k := k) code x
@@ -89,7 +89,7 @@ theorem abVisible_surfaceCard_le_of_realizedByABDecisionListFamily_of_surjective
     {H : ABVisibleSwitchedFamily k Index}
     (hsurj : Function.Surjective H.predict)
     (hreal : RealizedByABDecisionListFamily (k := k) H) :
-    Fintype.card (ABVisibleSurface k) ≤ 2 * k + 1 := by
+    Fintype.card (ABVisibleState k) ≤ 2 * k + 1 := by
   exact
     IndexedPredictorFamily.bitBudget_lowerBound_of_surjective_predict_fintype
       (G := H) (s := 2 * k + 1) hsurj
@@ -102,7 +102,7 @@ threshold. -/
 theorem not_realizedByABDecisionListFamily_of_surjective_predict_of_budget_lt
     {Index : Type*}
     {H : ABVisibleSwitchedFamily k Index}
-    (hbudget : 2 * k + 1 < Fintype.card (ABVisibleSurface k))
+    (hbudget : 2 * k + 1 < Fintype.card (ABVisibleState k))
     (hsurj : Function.Surjective H.predict) :
     ¬ RealizedByABDecisionListFamily (k := k) H := by
   intro hreal
@@ -120,7 +120,7 @@ theorem not_realizedByABDecisionListFamily_of_surjective_predict_of_lt_cardFormu
   exact
     not_realizedByABDecisionListFamily_of_surjective_predict_of_budget_lt
       (k := k)
-      (by simpa [card_abVisibleSurface (k := k)] using hbudget)
+      (by simpa [card_abVisibleDataDomain (k := k)] using hbudget)
       hsurj
 
 /-- Positive-width form: for every `k > 0`, full expressivity on `(a,b)` is
@@ -151,7 +151,7 @@ theorem abVisible_surfaceCard_le_of_realizedByRawExactABDecisionListFamily_of_fa
     (hfactor : G.FactorsThrough abVisibleData H)
     (hsurj : Function.Surjective H.predict)
     (hreal : RealizedByRawExactABDecisionListFamily (Z := Z) (k := k) G) :
-    Fintype.card (ABVisibleSurface k) ≤ 2 * k + 1 := by
+    Fintype.card (ABVisibleState k) ≤ 2 * k + 1 := by
   exact
     abVisible_surfaceCard_le_of_exactVisibleCompressionTarget_of_factorsThrough
       (Z := Z) (k := k) (s := 2 * k + 1) hfactor hsurj
@@ -165,7 +165,7 @@ theorem not_realizedByRawExactABDecisionListFamily_of_factorsThrough_ab_and_surj
     [Inhabited Z]
     {G : ExactVisibleSwitchedFamily Z k Index}
     {H : ABVisibleSwitchedFamily k Index}
-    (hbudget : 2 * k + 1 < Fintype.card (ABVisibleSurface k))
+    (hbudget : 2 * k + 1 < Fintype.card (ABVisibleState k))
     (hfactor : G.FactorsThrough abVisibleData H)
     (hsurj : Function.Surjective H.predict) :
     ¬ RealizedByRawExactABDecisionListFamily (Z := Z) (k := k) G := by
@@ -186,7 +186,7 @@ theorem not_realizedByRawExactABDecisionListFamily_of_factorsThrough_ab_and_surj
   exact
     not_realizedByRawExactABDecisionListFamily_of_factorsThrough_ab_and_surjective_predict_of_budget_lt
       (Z := Z) (k := k)
-      (by simpa [card_abVisibleSurface (k := k)] using hbudget)
+      (by simpa [card_abVisibleDataDomain (k := k)] using hbudget)
       hfactor hsurj
 
 /-- Positive-width form of the lifted raw exact decision-list obstruction. -/
@@ -210,7 +210,7 @@ section FullRuleFamily
 
 /-- The full Boolean rule family on the reduced raw `(a,b)` surface. -/
 def fullABRuleFamily (k : ℕ) :
-    ABVisibleSwitchedFamily k (ABVisibleSurface k → Bool) where
+    ABVisibleSwitchedFamily k (ABVisibleState k → Bool) where
   predict rule := rule
 
 theorem fullABRuleFamily_surjective (k : ℕ) :
@@ -221,7 +221,7 @@ theorem fullABRuleFamily_surjective (k : ℕ) :
 /-- The pullback of the full raw `(a,b)` rule family to the exact visible
 surface. -/
 def fullExactABRuleFamily (Z : Type*) (k : ℕ) :
-    ExactVisibleSwitchedFamily Z k (ABVisibleSurface k → Bool) where
+    ExactVisibleSwitchedFamily Z k (ABVisibleState k → Bool) where
   predict rule u := rule (abVisibleData u)
 
 theorem fullExactABRuleFamily_factorsThrough_ab (Z : Type*) (k : ℕ) :

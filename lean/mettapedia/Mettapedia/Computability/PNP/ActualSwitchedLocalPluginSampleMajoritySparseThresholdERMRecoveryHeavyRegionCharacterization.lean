@@ -30,13 +30,13 @@ universe v
 section Abstract
 
 variable {Z : Type v} [Fintype Z] {k r : ℕ}
-variable {μ : PMF (ExactVisiblePostSwitchSurface Z k)} {q : ℝ≥0∞}
+variable {μ : PMF (ExactVisiblePostSwitchData Z k)} {q : ℝ≥0∞}
 
 /-- Because unrestricted sample-level plug-in majority is surjective on the
 full exact-visible rule family, any hypothetical sparse-threshold recovery
 packet already forces `q` above the lightest-point complement mass. -/
 theorem pluginSampleMajorityActualSwitchedLocalInterface_one_sub_apply_lightestPoint_le_of_nonempty_sharedExactZABSparseThresholdERMRecoveryData
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
     (zfeat : Z → BitVec r)
     (h :
       Nonempty
@@ -55,7 +55,7 @@ theorem pluginSampleMajorityActualSwitchedLocalInterface_one_sub_apply_lightestP
 shared sparse-threshold recovery packet below the same lightest-point
 threshold. -/
 theorem pluginSampleMajorityActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_lt_one_sub_apply_lightestPoint
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
     (zfeat : Z → BitVec r)
     (hq_lt : q < 1 - μ (PMF.lightestPoint μ)) :
     ¬ Nonempty

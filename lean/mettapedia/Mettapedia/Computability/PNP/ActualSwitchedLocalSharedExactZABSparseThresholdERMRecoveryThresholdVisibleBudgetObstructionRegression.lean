@@ -13,19 +13,19 @@ def lowBitBitVec3ToBitVec1ActualSparseRecoveryThresholdVisibleBudget : BitVec 3 
   fun _ => zeroVec
 
 local instance exactVisiblePostSwitchSurfaceBitVec1k1NonemptyThresholdVisibleBudget :
-    Nonempty (ExactVisiblePostSwitchSurface (BitVec 1) 1) :=
+    Nonempty (ExactVisiblePostSwitchData (BitVec 1) 1) :=
   ⟨⟨zeroVec, zeroVec, zeroVec⟩⟩
 
 local instance exactVisiblePostSwitchSurfaceBitVec3k0NonemptyThresholdVisibleBudget :
-    Nonempty (ExactVisiblePostSwitchSurface (BitVec 3) 0) :=
+    Nonempty (ExactVisiblePostSwitchData (BitVec 3) 0) :=
   ⟨⟨zeroVec, zeroVec, zeroVec⟩⟩
 
 noncomputable def bitVec1k1UniformMeasureActualSparseRecoveryThresholdVisibleBudget :
-    PMF (ExactVisiblePostSwitchSurface (BitVec 1) 1) :=
+    PMF (ExactVisiblePostSwitchData (BitVec 1) 1) :=
   PMF.uniformOfFintype _
 
 noncomputable def bitVec3k0UniformMeasureActualSparseRecoveryThresholdVisibleBudget :
-    PMF (ExactVisiblePostSwitchSurface (BitVec 3) 0) :=
+    PMF (ExactVisiblePostSwitchData (BitVec 3) 0) :=
   PMF.uniformOfFintype _
 
 private theorem half_lt_one_sub_pow_inv_of_two_lt_pow {p : ℕ}

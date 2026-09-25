@@ -10,7 +10,7 @@ open Mettapedia.Computability.PNP
 
 theorem product_bound_only_bridge_bool_pair_one_step_counterexample_regression
     {Z : Type*} [Fintype Z] {k s : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ProductBoundOnlyExactVisibleCompressionBridge
         (Bool × Bool) Z k s
         ([] : List (FiniteEvent (Bool × Bool)))
@@ -21,7 +21,7 @@ theorem product_bound_only_bridge_bool_pair_one_step_counterexample_regression
 
 theorem fielded_switching_only_bridge_bool_pair_one_step_counterexample_regression
     {Z : Type*} [Fintype Z] {k s : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ FieldedSwitchingOnlyExactVisibleCompressionBridge
         (Bool × Bool) Z k s
         ([] : List (FiniteEvent (Bool × Bool)))
@@ -32,7 +32,7 @@ theorem fielded_switching_only_bridge_bool_pair_one_step_counterexample_regressi
 
 theorem product_bound_only_clocked_payload_bridge_bool_pair_one_step_counterexample_regression
     {Z : Type*} [Fintype Z] {k s clock : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ProductBoundOnlyClockedKpolyFiniteLearningBridge
         (Bool × Bool) Z k s clock
         ([] : List (FiniteEvent (Bool × Bool)))
@@ -43,7 +43,7 @@ theorem product_bound_only_clocked_payload_bridge_bool_pair_one_step_counterexam
 
 theorem fielded_switching_only_clocked_payload_bridge_bool_pair_one_step_counterexample_regression
     {Z : Type*} [Fintype Z] {k s clock : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ FieldedSwitchingOnlyClockedKpolyFiniteLearningBridge
         (Bool × Bool) Z k s clock
         ([] : List (FiniteEvent (Bool × Bool)))
@@ -60,7 +60,7 @@ theorem product_bound_only_bridge_bool_pair_concrete_counterexample_regression :
   refine
     not_productBoundOnlyExactVisibleCompressionBridge_boolPair_one_step_of_lt_surfaceCard
       (Z := Bool) (k := 1) (s := 0) ?_
-  rw [card_exactVisiblePostSwitchSurface (Z := Bool) (k := 1)]
+  rw [card_exactVisiblePostSwitchDataDomain (Z := Bool) (k := 1)]
   decide
 
 theorem fielded_switching_only_bridge_bool_pair_concrete_counterexample_regression :
@@ -71,7 +71,7 @@ theorem fielded_switching_only_bridge_bool_pair_concrete_counterexample_regressi
   refine
     not_fieldedSwitchingOnlyExactVisibleCompressionBridge_boolPair_one_step_of_lt_surfaceCard
       (Z := Bool) (k := 1) (s := 0) ?_
-  rw [card_exactVisiblePostSwitchSurface (Z := Bool) (k := 1)]
+  rw [card_exactVisiblePostSwitchDataDomain (Z := Bool) (k := 1)]
   decide
 
 theorem product_bound_only_clocked_payload_bridge_bool_pair_concrete_counterexample_regression :
@@ -82,7 +82,7 @@ theorem product_bound_only_clocked_payload_bridge_bool_pair_concrete_counterexam
   refine
     not_productBoundOnlyClockedKpolyFiniteLearningBridge_boolPair_one_step_of_lt_surfaceCard
       (Z := Bool) (k := 1) (s := 0) (clock := 0) ?_
-  rw [card_exactVisiblePostSwitchSurface (Z := Bool) (k := 1)]
+  rw [card_exactVisiblePostSwitchDataDomain (Z := Bool) (k := 1)]
   decide
 
 theorem fielded_switching_only_clocked_payload_bridge_bool_pair_concrete_counterexample_regression :
@@ -93,7 +93,7 @@ theorem fielded_switching_only_clocked_payload_bridge_bool_pair_concrete_counter
   refine
     not_fieldedSwitchingOnlyClockedKpolyFiniteLearningBridge_boolPair_one_step_of_lt_surfaceCard
       (Z := Bool) (k := 1) (s := 0) (clock := 0) ?_
-  rw [card_exactVisiblePostSwitchSurface (Z := Bool) (k := 1)]
+  rw [card_exactVisiblePostSwitchDataDomain (Z := Bool) (k := 1)]
   decide
 
 end Mettapedia.Computability.PNP.ProductSuccessKpolyBridgeObstructionRegression

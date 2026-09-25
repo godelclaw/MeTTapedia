@@ -18,7 +18,7 @@ small-class theorem for the actual switched family, not clock bookkeeping. -/
 theorem kpolyCoverage_anchor_clockedRealization_iff_exactVisibleCompressionTarget
     {Z : Type*} {k s clock : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index} :
-    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         G.RealizedByClockedBitFamily F) ↔
       ExactVisibleCompressionTarget (Z := Z) (k := k) (Index := Index) G s :=
   exists_clockedExactVisibleRealization_iff_exactVisibleCompressionTarget
@@ -38,7 +38,7 @@ the same finite predictor-image content. -/
 theorem kpolyCoverage_anchor_clockedRealization_iff_finitePredictorCover
     {Z : Type*} {k s clock : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index} :
-    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         G.RealizedByClockedBitFamily F) ↔
       G.FinitePredictorCover (2 ^ s) :=
   exists_clockedExactVisibleRealization_iff_finitePredictorCover

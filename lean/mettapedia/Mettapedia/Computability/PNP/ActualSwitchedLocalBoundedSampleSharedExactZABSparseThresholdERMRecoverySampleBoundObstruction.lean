@@ -28,7 +28,7 @@ namespace ActualSwitchedLocalInterface
 section BitVec
 
 variable {n k r sampleBound : ℕ}
-variable {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+variable {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
 variable {zfeat : BitVec n → BitVec r}
 variable {q : ℝ≥0∞}
 
@@ -44,12 +44,12 @@ theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_visibleWidthBudg
           zfeat
           q))
     (hsample :
-      Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ≤ sampleBound)
+      Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ≤ sampleBound)
     (hvis : 0 < n + (k + k))
     (hbound :
       2 ^ (2 * allAffinePointBlockFeatureCount (r + (k + k))) *
-          (Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) - 1) ^ sampleBound <
-        Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ^ sampleBound) :
+          (Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) - 1) ^ sampleBound <
+        Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ^ sampleBound) :
     2 ^ (2 * (n + (k + k)) + 1) < sampleBound := by
   rcases h with ⟨h⟩
   exact
@@ -66,12 +66,12 @@ exist at or below the visible-width budget, provided the same point-block
 counting-gap packet is demanded at that sample bound. -/
 theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_sampleBound_le_visibleWidthBudget
     (hsample :
-      Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ≤ sampleBound)
+      Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ≤ sampleBound)
     (hvis : 0 < n + (k + k))
     (hbound :
       2 ^ (2 * allAffinePointBlockFeatureCount (r + (k + k))) *
-          (Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) - 1) ^ sampleBound <
-        Fintype.card (ExactVisiblePostSwitchSurface (BitVec n) k) ^ sampleBound)
+          (Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) - 1) ^ sampleBound <
+        Fintype.card (ExactVisiblePostSwitchData (BitVec n) k) ^ sampleBound)
     (hsmall : sampleBound ≤ 2 ^ (2 * (n + (k + k)) + 1)) :
     ¬ Nonempty
         (SharedExactZABSparseThresholdERMRecoveryData

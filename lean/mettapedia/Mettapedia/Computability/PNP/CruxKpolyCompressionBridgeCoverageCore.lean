@@ -43,23 +43,23 @@ def KpolyCompressionBridgeCoverage : Prop :=
         ∀ {Index : Type} (G : ExactVisibleSwitchedFamily Z k Index),
           FieldedSwitchingSemanticFiniteImageBridge Ω Z k s hist items G) ∧
   (∀ {Ω Z : Type} [Fintype Ω] [Fintype Z] {k s clock : ℕ}
-    (_hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)),
+    (_hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)),
       ¬ ProductBoundOnlyClockedKpolyFiniteLearningBridge
           Ω Z k s clock
           ([] : List (FiniteEvent Ω)) ([] : List (V13FieldedStep Ω))) ∧
   (∀ {Ω Z : Type} [Fintype Ω] [Fintype Z] {k s clock : ℕ}
-    (_hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)),
+    (_hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)),
       ¬ FieldedSwitchingOnlyClockedKpolyFiniteLearningBridge
           Ω Z k s clock
           ([] : List (FiniteEvent Ω)) ([] : List (V13FieldedStep Ω))) ∧
   (∀ {Z : Type} [Fintype Z] {k s clock : ℕ}
-    (_hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)),
+    (_hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)),
       ¬ ProductBoundOnlyClockedKpolyFiniteLearningBridge
           (Bool × Bool) Z k s clock
           ([] : List (FiniteEvent (Bool × Bool)))
           [v13BoolPairUnitFieldedStep]) ∧
   (∀ {Z : Type} [Fintype Z] {k s clock : ℕ}
-    (_hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)),
+    (_hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)),
       ¬ FieldedSwitchingOnlyClockedKpolyFiniteLearningBridge
           (Bool × Bool) Z k s clock
           ([] : List (FiniteEvent (Bool × Bool)))
@@ -69,7 +69,7 @@ def KpolyCompressionBridgeCoverage : Prop :=
     {Index : Type} (G : ExactVisibleSwitchedFamily Z k Index)
     (_hprod : V13FieldedProductBoundFrom Ω hist items)
     (_hsurj : Function.Surjective G.predict)
-    (_hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k)),
+    (_hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchData Z k)),
       ¬ ProductBoundOnlyClockedKpolyFiniteLearningBridge
           Ω Z k s clock hist items) ∧
   (∀ {Ω Z : Type} [Fintype Ω] [Fintype Z] {k s clock : ℕ}
@@ -77,7 +77,7 @@ def KpolyCompressionBridgeCoverage : Prop :=
     {Index : Type} (G : ExactVisibleSwitchedFamily Z k Index)
     (_hfield : V13FieldSwitchingInstantiatedFrom hist items)
     (_hsurj : Function.Surjective G.predict)
-    (_hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k)),
+    (_hs : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchData Z k)),
       ¬ FieldedSwitchingOnlyClockedKpolyFiniteLearningBridge
           Ω Z k s clock hist items) ∧
   (∀ {Z : Type} [Fintype Z] {k s clock : ℕ} {Index : Type}

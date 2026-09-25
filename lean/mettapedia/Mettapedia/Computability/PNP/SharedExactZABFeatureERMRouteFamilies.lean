@@ -20,7 +20,7 @@ variable {Z : Type*} {p r k : ℕ} {Index : Type*}
 noncomputable def sharedExactZABAffineFeatureERMFamily
     (zfeat : Z → BitVec r)
     (features : Fin p → AffineColumnCode (r + (k + k)))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ExactVisibleSwitchedFamily Z k Index :=
   (sharedExactZABAffineFeatureBitFamily Z zfeat features).indexedEmpiricalRiskFamily samples
 
@@ -28,7 +28,7 @@ noncomputable def sharedExactZABAffineFeatureERMFamily
 noncomputable def sharedExactZABSparseThresholdAffineERMFamily
     (zfeat : Z → BitVec r)
     (features : Fin p → AffineColumnCode (r + (k + k)))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     ExactVisibleSwitchedFamily Z k Index :=
   (sharedExactZABSparseThresholdAffineBitFamily Z zfeat features).indexedEmpiricalRiskFamily samples
 

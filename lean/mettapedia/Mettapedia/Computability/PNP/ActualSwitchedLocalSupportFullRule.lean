@@ -22,7 +22,7 @@ local rules are still the full exact-visible Boolean rule family.  The observed
 block output only probes `rule` through `visibleOf`; all values outside the
 image of `visibleOf` remain unconstrained by the observed output. -/
 def supportFullRuleActualSwitchedLocalInterface
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k) :
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k) :
     ActualSwitchedLocalInterface
       Z k (ExactVisibleRule Z k) Block where
   zOf := fun phi => (visibleOf phi).z
@@ -36,13 +36,13 @@ def supportFullRuleActualSwitchedLocalInterface
     rfl
 
 @[simp] theorem supportFullRule_predictorFamily
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k) :
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k) :
     (supportFullRuleActualSwitchedLocalInterface visibleOf).predictorFamily =
       fullExactVisibleRuleFamily Z k := by
   rfl
 
 theorem supportFullRule_surjective
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k) :
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k) :
     Function.Surjective
       (supportFullRuleActualSwitchedLocalInterface visibleOf).predictorFamily.predict := by
   simpa using fullExactVisibleRuleFamily_surjective Z k
@@ -50,7 +50,7 @@ theorem supportFullRule_surjective
 /-- The observed block-output family has a truth-table budget bounded by the
 size of the actual block support. -/
 theorem supportFullRule_outputFamily_hasBitBudget_card
-    [Fintype Block] (visibleOf : Block → ExactVisiblePostSwitchSurface Z k) :
+    [Fintype Block] (visibleOf : Block → ExactVisiblePostSwitchData Z k) :
     (supportFullRuleActualSwitchedLocalInterface visibleOf).outputFamily.HasBitBudget
       (Fintype.card Block) := by
   simpa using
@@ -61,7 +61,7 @@ theorem supportFullRule_outputFamily_hasBitBudget_card
 /-- Equivalently, the observed block-output family has a predictor cover of
 size at most `2 ^ |Block|`. -/
 theorem supportFullRule_outputFamily_finitePredictorCover_card
-    [Fintype Block] (visibleOf : Block → ExactVisiblePostSwitchSurface Z k) :
+    [Fintype Block] (visibleOf : Block → ExactVisiblePostSwitchData Z k) :
     (supportFullRuleActualSwitchedLocalInterface visibleOf).outputFamily.FinitePredictorCover
       (2 ^ Fintype.card Block) := by
   have hbudget :=
@@ -73,7 +73,7 @@ theorem supportFullRule_outputFamily_finitePredictorCover_card
 /-- The observed block-output family is exactly the pullback of the full
 exact-visible local-rule family along the reachable-support map `visibleOf`. -/
 theorem supportFullRule_outputFamily_factorsThrough_predictorFamily
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k) :
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k) :
     (supportFullRuleActualSwitchedLocalInterface visibleOf).outputFamily.FactorsThrough
       visibleOf (supportFullRuleActualSwitchedLocalInterface visibleOf).predictorFamily := by
   intro rule phi
@@ -82,7 +82,7 @@ theorem supportFullRule_outputFamily_factorsThrough_predictorFamily
 /-- If the reachable-support map misses an exact-visible input, two distinct
 exact-visible rules have identical observed block-output behaviour. -/
 theorem supportFullRule_exists_distinct_rules_same_outputFamily_of_not_surjective
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (hnot : ¬ Function.Surjective visibleOf) :
     ∃ rule₀ rule₁ : ExactVisibleRule Z k,
       rule₀ ≠ rule₁ ∧
@@ -112,7 +112,7 @@ theorem supportFullRule_exists_distinct_rules_same_outputFamily_of_not_surjectiv
 /-- Exact recovery from observed block-output behaviour forces the support map
 to hit every exact-visible input. -/
 theorem supportFullRule_observedRuleMap_injective_forces_visibleOf_surjective
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (hinj :
       Function.Injective
         (supportFullRuleActualSwitchedLocalInterface visibleOf).outputFamily.predict) :
@@ -128,7 +128,7 @@ theorem supportFullRule_observedRuleMap_injective_forces_visibleOf_surjective
 observed block-output trace forces the support map to hit every exact-visible
 input.  This is the decoder form of the quotient-loss obstruction. -/
 theorem supportFullRule_exactDecoder_forces_visibleOf_surjective
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (decode : (Block → Bool) → ExactVisibleRule Z k)
     (hdecode :
       ∀ rule : ExactVisibleRule Z k,
@@ -158,7 +158,7 @@ theorem supportFullRule_exactDecoder_forces_visibleOf_surjective
 decoder can reconstruct all full exact-visible rules from observed block
 outputs. -/
 theorem supportFullRule_not_exists_exactDecoder_of_not_surjective
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     (hnot : ¬ Function.Surjective visibleOf) :
     ¬ ∃ decode : (Block → Bool) → ExactVisibleRule Z k,
       ∀ rule : ExactVisibleRule Z k,
@@ -173,7 +173,7 @@ theorem supportFullRule_not_exists_exactDecoder_of_not_surjective
 /-- More generally, any downstream property decoded from observed block-output
 traces must be constant on the fibers of the observed quotient map. -/
 theorem supportFullRule_propertyDecoder_constant_on_observedFibers
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     {α : Type*} (property : ExactVisibleRule Z k → α)
     (decode : (Block → Bool) → α)
     (hdecode :
@@ -202,7 +202,7 @@ exactly when it is constant on the fibers of the observed quotient map.  This
 is the precise factorization criterion for replacing a full-rule target by a
 reachable-support quotient. -/
 theorem supportFullRule_exists_propertyDecoder_iff_constant_on_observedFibers
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     {α : Type*} (property : ExactVisibleRule Z k → α) :
     (∃ decode : (Block → Bool) → α,
       ∀ rule : ExactVisibleRule Z k,
@@ -241,7 +241,7 @@ theorem supportFullRule_exists_propertyDecoder_iff_constant_on_observedFibers
 /-- Therefore any property separating two rules in the same observed-output
 fiber cannot be decoded from observed block outputs. -/
 theorem supportFullRule_not_exists_propertyDecoder_of_same_output_ne
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     {α : Type*} (property : ExactVisibleRule Z k → α)
     {rule₀ rule₁ : ExactVisibleRule Z k}
     (hsame :
@@ -262,8 +262,8 @@ theorem supportFullRule_not_exists_propertyDecoder_of_same_output_ne
 bit "what is the rule value at this input?" cannot be decoded from observed
 block outputs. -/
 theorem supportFullRule_not_exists_evalDecoder_of_missed_point
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
-    (u₀ : ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
+    (u₀ : ExactVisiblePostSwitchData Z k)
     (hmiss : ∀ phi, visibleOf phi ≠ u₀) :
     ¬ ∃ decode : (Block → Bool) → Bool,
       ∀ rule : ExactVisibleRule Z k,
@@ -291,8 +291,8 @@ theorem supportFullRule_not_exists_evalDecoder_of_missed_point
 block outputs exactly when that exact-visible input is actually reached by
 some block. -/
 theorem supportFullRule_exists_evalDecoder_iff_mem_range
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
-    (u₀ : ExactVisiblePostSwitchSurface Z k) :
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
+    (u₀ : ExactVisiblePostSwitchData Z k) :
     (∃ decode : (Block → Bool) → Bool,
       ∀ rule : ExactVisibleRule Z k,
         decode
@@ -316,8 +316,8 @@ theorem supportFullRule_exists_evalDecoder_iff_mem_range
 /-- A decoder for every exact-visible point query exists exactly when the
 reachable support hits the whole exact-visible surface. -/
 theorem supportFullRule_all_evalDecoders_iff_visibleOf_surjective
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k) :
-    (∀ u₀ : ExactVisiblePostSwitchSurface Z k,
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k) :
+    (∀ u₀ : ExactVisiblePostSwitchData Z k,
       ∃ decode : (Block → Bool) → Bool,
         ∀ rule : ExactVisibleRule Z k,
           decode
@@ -337,8 +337,8 @@ theorem supportFullRule_all_evalDecoders_iff_visibleOf_surjective
 from observed block outputs exactly when every queried exact-visible point is
 in the reachable support. -/
 theorem supportFullRule_exists_queryDecoder_iff_forall_mem_range
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
-    {Query : Type*} (queryOf : Query → ExactVisiblePostSwitchSurface Z k) :
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
+    {Query : Type*} (queryOf : Query → ExactVisiblePostSwitchData Z k) :
     (∃ decode : (Block → Bool) → Query → Bool,
       ∀ rule : ExactVisibleRule Z k,
         decode
@@ -365,8 +365,8 @@ theorem supportFullRule_exists_queryDecoder_iff_forall_mem_range
 /-- Hence a query family containing even one unreachable exact-visible point
 cannot be decoded from observed block outputs. -/
 theorem supportFullRule_not_exists_queryDecoder_of_missed_query
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
-    {Query : Type*} (queryOf : Query → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
+    {Query : Type*} (queryOf : Query → ExactVisiblePostSwitchData Z k)
     (q₀ : Query) (hmiss : ∀ phi, visibleOf phi ≠ queryOf q₀) :
     ¬ ∃ decode : (Block → Bool) → Query → Bool,
       ∀ rule : ExactVisibleRule Z k,
@@ -386,9 +386,9 @@ block outputs whenever every point it may query lies in the reachable support.
 This covers downstream algorithms whose later probes depend on earlier rule
 answers. -/
 theorem supportFullRule_exists_adaptiveQueryDecoder_of_allQueriesReachable
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     {α : Type*}
-    (tree : AdaptiveBoolQueryTree (ExactVisiblePostSwitchSurface Z k) α)
+    (tree : AdaptiveBoolQueryTree (ExactVisiblePostSwitchData Z k) α)
     (hreach : AdaptiveBoolQueryTree.AllQueriesReachable visibleOf tree) :
     ∃ decode : (Block → Bool) → α,
       ∀ rule : ExactVisibleRule Z k,
@@ -408,9 +408,9 @@ theorem supportFullRule_exists_adaptiveQueryDecoder_of_allQueriesReachable
 adaptive query tree can be decoded from observed traces exactly when its final
 output is constant on observed-output fibers. -/
 theorem supportFullRule_exists_adaptiveQueryDecoder_iff_constant_on_observedFibers
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     {α : Type*}
-    (tree : AdaptiveBoolQueryTree (ExactVisiblePostSwitchSurface Z k) α) :
+    (tree : AdaptiveBoolQueryTree (ExactVisiblePostSwitchData Z k) α) :
     (∃ decode : (Block → Bool) → α,
       ∀ rule : ExactVisibleRule Z k,
         decode
@@ -430,9 +430,9 @@ theorem supportFullRule_exists_adaptiveQueryDecoder_iff_constant_on_observedFibe
 but different adaptive-tree outputs is a complete certificate that the
 adaptive computation cannot be decoded from observed traces. -/
 theorem supportFullRule_not_exists_adaptiveQueryDecoder_of_same_output_eval_ne
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
     {α : Type*}
-    (tree : AdaptiveBoolQueryTree (ExactVisiblePostSwitchSurface Z k) α)
+    (tree : AdaptiveBoolQueryTree (ExactVisiblePostSwitchData Z k) α)
     {rule₀ rule₁ : ExactVisibleRule Z k}
     (hsame :
       (supportFullRuleActualSwitchedLocalInterface visibleOf).outputFamily.predict rule₀ =
@@ -454,8 +454,8 @@ theorem supportFullRule_not_exists_adaptiveQueryDecoder_of_same_output_eval_ne
 /-- A one-step adaptive query at an unreachable root already cannot be decoded
 when its two root branches produce different final outputs. -/
 theorem supportFullRule_not_exists_rootAdaptiveQueryDecoder_of_missed_point_ne
-    (visibleOf : Block → ExactVisiblePostSwitchSurface Z k)
-    (u₀ : ExactVisiblePostSwitchSurface Z k)
+    (visibleOf : Block → ExactVisiblePostSwitchData Z k)
+    (u₀ : ExactVisiblePostSwitchData Z k)
     {α : Type*} {valueFalse valueTrue : α}
     (hmiss : ∀ phi, visibleOf phi ≠ u₀)
     (hne : valueFalse ≠ valueTrue) :

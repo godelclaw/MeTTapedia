@@ -20,7 +20,7 @@ section
 variable [Fintype Z]
 
 def SharedExactZABAffineFeatureERMRecoveryData.targetData
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -36,7 +36,7 @@ def SharedExactZABAffineFeatureERMRecoveryData.targetData
     zfeat features samples
 
 theorem SharedExactZABAffineFeatureERMRecoveryData.compressionTarget
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -51,7 +51,7 @@ theorem SharedExactZABAffineFeatureERMRecoveryData.compressionTarget
     zfeat features samples
 
 theorem SharedExactZABAffineFeatureERMRecoveryData.finitePredictorCover
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -62,7 +62,7 @@ theorem SharedExactZABAffineFeatureERMRecoveryData.finitePredictorCover
   exact (h.targetData).finitePredictorCover
 
 theorem SharedExactZABAffineFeatureERMRecoveryData.finiteIndexRepresentativeCover
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -73,7 +73,7 @@ theorem SharedExactZABAffineFeatureERMRecoveryData.finiteIndexRepresentativeCove
   exact (h.targetData).finiteIndexRepresentativeCover
 
 theorem SharedExactZABAffineFeatureERMRecoveryData.finitePredictorQuotient
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -84,7 +84,7 @@ theorem SharedExactZABAffineFeatureERMRecoveryData.finitePredictorQuotient
   exact (h.targetData).finitePredictorQuotient
 
 theorem SharedExactZABAffineFeatureERMRecoveryData.surfaceCard_le_of_surjective_predict
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -92,23 +92,23 @@ theorem SharedExactZABAffineFeatureERMRecoveryData.surfaceCard_le_of_surjective_
       SharedExactZABAffineFeatureERMRecoveryData
         (Z := Z) (p := p) (r := r) (k := k) (Index := Index) μ zfeat G q)
     (hsurj : Function.Surjective G.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ 2 ^ p := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ 2 ^ p := by
   exact (h.targetData).surfaceCard_le_of_surjective_predict hsurj
 
 theorem SharedExactZABAffineFeatureERMRecoveryData.not_surjective_predict_of_lt_surfaceCard
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
       SharedExactZABAffineFeatureERMRecoveryData
         (Z := Z) (p := p) (r := r) (k := k) (Index := Index) μ zfeat G q)
-    (hs : 2 ^ p < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : 2 ^ p < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective G.predict := by
   exact (h.targetData).not_surjective_predict_of_lt_surfaceCard hs
 
 theorem SharedExactZABAffineFeatureERMRecoveryData.recoveryLowerBound
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}

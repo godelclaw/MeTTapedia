@@ -69,7 +69,7 @@ theorem canonical_zab_code_family_finite_predictor_quotient_regression
 
 theorem canonical_zab_recovery_finite_predictor_cover_regression
     [Fintype Z]
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {q : ℝ≥0∞}
     (h :
       CanonicalZABDecisionListRecoveryData
@@ -79,7 +79,7 @@ theorem canonical_zab_recovery_finite_predictor_cover_regression
 
 theorem canonical_zab_recovery_finite_representative_cover_regression
     [Fintype Z]
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {q : ℝ≥0∞}
     (h :
       CanonicalZABDecisionListRecoveryData
@@ -89,7 +89,7 @@ theorem canonical_zab_recovery_finite_representative_cover_regression
 
 theorem canonical_zab_recovery_finite_predictor_quotient_regression
     [Fintype Z]
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {q : ℝ≥0∞}
     (h :
       CanonicalZABDecisionListRecoveryData
@@ -98,7 +98,7 @@ theorem canonical_zab_recovery_finite_predictor_quotient_regression
   exact h.finitePredictorQuotient
 
 theorem canonical_zab_erm_family_finite_predictor_cover_regression
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     (exactZABDecisionListERMFamily
       (Z := Z) (r := r) (k := k) zfeat samples).FinitePredictorCover
       (2 ^ (r + 2 * k + 1)) := by
@@ -106,7 +106,7 @@ theorem canonical_zab_erm_family_finite_predictor_cover_regression
     (Z := Z) (r := r) (k := k) (Index := Index) zfeat samples
 
 theorem canonical_zab_erm_family_finite_representative_cover_regression
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     (exactZABDecisionListERMFamily
       (Z := Z) (r := r) (k := k) zfeat samples).FiniteIndexRepresentativeCover
       (2 ^ (r + 2 * k + 1)) := by
@@ -114,7 +114,7 @@ theorem canonical_zab_erm_family_finite_representative_cover_regression
     (Z := Z) (r := r) (k := k) (Index := Index) zfeat samples
 
 theorem canonical_zab_erm_family_finite_predictor_quotient_regression
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool) :
     (exactZABDecisionListERMFamily
       (Z := Z) (r := r) (k := k) zfeat samples).FinitePredictorQuotient
       (2 ^ (r + 2 * k + 1)) := by
@@ -123,7 +123,7 @@ theorem canonical_zab_erm_family_finite_predictor_quotient_regression
 
 theorem canonical_zab_erm_recovery_finite_predictor_cover_regression
     [Fintype Z]
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {q : ℝ≥0∞}
     (h :
       CanonicalZABERMRecoveryData
@@ -133,7 +133,7 @@ theorem canonical_zab_erm_recovery_finite_predictor_cover_regression
 
 theorem canonical_zab_erm_recovery_finite_representative_cover_regression
     [Fintype Z]
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {q : ℝ≥0∞}
     (h :
       CanonicalZABERMRecoveryData
@@ -143,7 +143,7 @@ theorem canonical_zab_erm_recovery_finite_representative_cover_regression
 
 theorem canonical_zab_erm_recovery_finite_predictor_quotient_regression
     [Fintype Z]
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {q : ℝ≥0∞}
     (h :
       CanonicalZABERMRecoveryData
@@ -156,7 +156,7 @@ end FiniteImageObjects
 variable {Index : Type*}
 
 theorem canonical_zab_decision_list_small_width_regression
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec 2) 1)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec 2) 1)}
     {zfeat : BitVec 2 → BitVec 1}
     {G : ExactVisibleSwitchedFamily (BitVec 2) 1 Index}
     {q : ℝ≥0∞}
@@ -167,7 +167,7 @@ theorem canonical_zab_decision_list_small_width_regression
   exact h.not_surjective_predict_of_le_of_two_le (by norm_num) (by norm_num)
 
 theorem canonical_zab_raw_erm_small_width_regression
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec 2) 1)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec 2) 1)}
     {zfeat : BitVec 2 → BitVec 1}
     {G : ExactVisibleSwitchedFamily (BitVec 2) 1 Index}
     {q : ℝ≥0∞}
@@ -179,7 +179,7 @@ theorem canonical_zab_raw_erm_small_width_regression
 
 theorem canonical_zab_route_small_width_regression
     (zfeat : BitVec 2 → BitVec 1)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec 2) 1) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec 2) 1) Bool) :
     ¬ Function.Surjective
         (exactZABDecisionListERMFamily
           (Z := BitVec 2) (r := 1) (k := 1) zfeat samples).predict := by

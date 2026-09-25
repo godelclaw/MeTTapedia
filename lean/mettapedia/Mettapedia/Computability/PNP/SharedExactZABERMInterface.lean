@@ -27,12 +27,12 @@ variable {Z : Type*} {p r k : ℕ} {Index : Type*}
 
 structure SharedExactZABERMRecoveryData
     [Fintype Z]
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (zfeat : Z → BitVec r)
     (G : ExactVisibleSwitchedFamily Z k Index)
     (q : ℝ≥0∞) where
   features : Fin p → AffineColumnCode (r + (k + k))
-  samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool
+  samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool
   exact_family :
     G = sharedExactZABAffineDecisionListERMFamily
       (Z := Z) (p := p) (r := r) (k := k) zfeat features samples
@@ -49,7 +49,7 @@ section
 variable [Fintype Z]
 
 theorem SharedExactZABERMRecoveryData.targetData
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -65,7 +65,7 @@ theorem SharedExactZABERMRecoveryData.targetData
     zfeat features samples
 
 theorem SharedExactZABERMRecoveryData.compressionTarget
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -80,7 +80,7 @@ theorem SharedExactZABERMRecoveryData.compressionTarget
     zfeat features samples
 
 theorem SharedExactZABERMRecoveryData.finitePredictorCover
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -91,7 +91,7 @@ theorem SharedExactZABERMRecoveryData.finitePredictorCover
   exact (h.targetData).finitePredictorCover
 
 theorem SharedExactZABERMRecoveryData.finiteIndexRepresentativeCover
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -102,7 +102,7 @@ theorem SharedExactZABERMRecoveryData.finiteIndexRepresentativeCover
   exact (h.targetData).finiteIndexRepresentativeCover
 
 theorem SharedExactZABERMRecoveryData.finitePredictorQuotient
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -113,7 +113,7 @@ theorem SharedExactZABERMRecoveryData.finitePredictorQuotient
   exact (h.targetData).finitePredictorQuotient
 
 theorem SharedExactZABERMRecoveryData.surfaceCard_le_of_surjective_predict
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -121,23 +121,23 @@ theorem SharedExactZABERMRecoveryData.surfaceCard_le_of_surjective_predict
       SharedExactZABERMRecoveryData
         (Z := Z) (p := p) (r := r) (k := k) (Index := Index) μ zfeat G q)
     (hsurj : Function.Surjective G.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ p + 1 := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ p + 1 := by
   exact (h.targetData).surfaceCard_le_of_surjective_predict hsurj
 
 theorem SharedExactZABERMRecoveryData.not_surjective_predict_of_lt_surfaceCard
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
       SharedExactZABERMRecoveryData
         (Z := Z) (p := p) (r := r) (k := k) (Index := Index) μ zfeat G q)
-    (hs : p + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : p + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective G.predict := by
   exact (h.targetData).not_surjective_predict_of_lt_surfaceCard hs
 
 theorem SharedExactZABERMRecoveryData.recoveryLowerBound
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}

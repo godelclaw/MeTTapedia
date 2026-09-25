@@ -30,14 +30,14 @@ theorem bitFallbackWrapperBitVec2k0_oneSample_exactVisibleRuleDecode_visibleWidt
         (ActualSwitchedLocalInterface.SharedExactZABSparseThresholdERMData
           (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
             (BitVec 2) 0 1
-            (Fintype.card (ExactVisiblePostSwitchSurface (BitVec 2) 0))
+            (Fintype.card (ExactVisiblePostSwitchData (BitVec 2) 0))
             (exactVisibleRuleDecode (Z := BitVec 2) (k := 0)))
           zeroExtractorBitVec2To0BitFallbackSparseThreshold)) :
     2 ≤ 1 := by
   simpa [zeroExtractorBitVec2To0BitFallbackSparseThreshold] using
     boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface_visibleWidth_le_two_mul_extractorWidth_add_two_mul_k_succ_of_nonempty_sharedExactZABSparseThresholdERMData_of_fallback_surjective
       (n := 2) (k := 0) (r := 0) (sampleBound := 1)
-      (fallbackBits := Fintype.card (ExactVisiblePostSwitchSurface (BitVec 2) 0))
+      (fallbackBits := Fintype.card (ExactVisiblePostSwitchData (BitVec 2) 0))
       (fallback := exactVisibleRuleDecode (Z := BitVec 2) (k := 0))
       exactVisibleRuleDecode_surjective_bitVec2k0
       zeroExtractorBitVec2To0BitFallbackSparseThreshold
@@ -51,13 +51,13 @@ theorem bitFallbackWrapperBitVec2k0_oneSample_exactVisibleRuleDecode_not_nonempt
         (ActualSwitchedLocalInterface.SharedExactZABSparseThresholdERMData
           (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
             (BitVec 2) 0 1
-            (Fintype.card (ExactVisiblePostSwitchSurface (BitVec 2) 0))
+            (Fintype.card (ExactVisiblePostSwitchData (BitVec 2) 0))
             (exactVisibleRuleDecode (Z := BitVec 2) (k := 0)))
           zeroExtractorBitVec2To0BitFallbackSparseThreshold) := by
   exact
     boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMData_of_fallback_surjective_of_two_mul_extractorWidth_add_two_mul_k_succ_lt_visibleWidth
       (n := 2) (k := 0) (r := 0) (sampleBound := 1)
-      (fallbackBits := Fintype.card (ExactVisiblePostSwitchSurface (BitVec 2) 0))
+      (fallbackBits := Fintype.card (ExactVisiblePostSwitchData (BitVec 2) 0))
       (fallback := exactVisibleRuleDecode (Z := BitVec 2) (k := 0))
       exactVisibleRuleDecode_surjective_bitVec2k0
       zeroExtractorBitVec2To0BitFallbackSparseThreshold
@@ -66,21 +66,21 @@ theorem bitFallbackWrapperBitVec2k0_oneSample_exactVisibleRuleDecode_not_nonempt
 /-- The stronger sparse-threshold recovery packet is likewise impossible on the
 same one-sample fallback-wrapped endpoint at extractor width `0`. -/
 theorem bitFallbackWrapperBitVec2k0_oneSample_exactVisibleRuleDecode_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_regression
-    (μ : PMF (ExactVisiblePostSwitchSurface (BitVec 2) 0))
+    (μ : PMF (ExactVisiblePostSwitchData (BitVec 2) 0))
     (q : ℝ≥0∞) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.SharedExactZABSparseThresholdERMRecoveryData
           μ
           (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
             (BitVec 2) 0 1
-            (Fintype.card (ExactVisiblePostSwitchSurface (BitVec 2) 0))
+            (Fintype.card (ExactVisiblePostSwitchData (BitVec 2) 0))
             (exactVisibleRuleDecode (Z := BitVec 2) (k := 0)))
           zeroExtractorBitVec2To0BitFallbackSparseThreshold
           q) := by
   exact
     boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_fallback_surjective_of_two_mul_extractorWidth_add_two_mul_k_succ_lt_visibleWidth
       (n := 2) (k := 0) (r := 0) (sampleBound := 1)
-      (fallbackBits := Fintype.card (ExactVisiblePostSwitchSurface (BitVec 2) 0))
+      (fallbackBits := Fintype.card (ExactVisiblePostSwitchData (BitVec 2) 0))
       (fallback := exactVisibleRuleDecode (Z := BitVec 2) (k := 0))
       exactVisibleRuleDecode_surjective_bitVec2k0
       (μ := μ)

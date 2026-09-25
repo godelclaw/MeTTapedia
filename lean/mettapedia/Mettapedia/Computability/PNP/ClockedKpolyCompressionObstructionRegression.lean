@@ -38,9 +38,9 @@ theorem indexed_clockedBitBudget_lowerBound_of_surjective_predict_fintype_regres
 theorem exactVisible_not_exists_clockedRealization_of_surjective_predict_regression
     {Z : Type*} [Fintype Z] {k s clock : ℕ} {Index : Type u}
     {G : ExactVisibleSwitchedFamily Z k Index}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k))
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k))
     (hsurj : Function.Surjective G.predict) :
-    ¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    ¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         G.RealizedByClockedBitFamily F := by
   exact
     not_exists_clockedExactVisibleRealization_of_surjective_predict
@@ -51,7 +51,7 @@ theorem exactVisible_not_exists_clockedRealization_of_surjective_predict_of_lt_c
     {G : ExactVisibleSwitchedFamily Z k Index}
     (hs : s < Fintype.card Z * 2 ^ k * 2 ^ k)
     (hsurj : Function.Surjective G.predict) :
-    ¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    ¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         G.RealizedByClockedBitFamily F := by
   exact
     not_exists_clockedExactVisibleRealization_of_surjective_predict_of_lt_cardFormula

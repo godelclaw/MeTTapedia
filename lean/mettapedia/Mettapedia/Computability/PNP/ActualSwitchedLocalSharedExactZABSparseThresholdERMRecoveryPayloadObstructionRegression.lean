@@ -19,30 +19,30 @@ theorem fullRuleActualSwitchedLocalInterface_sharedExactZABSparseThresholdERMRec
 def fin3ToBitVec0ActualSparseRecoveryPayload : Fin 3 → BitVec 0 := fun _ => zeroVec
 
 noncomputable def fin3ZeroVisiblePointActualSparseRecoveryPayload :
-    ExactVisiblePostSwitchSurface (Fin 3) 0 :=
+    ExactVisiblePostSwitchData (Fin 3) 0 :=
   ⟨0, zeroVec, zeroVec⟩
 
 noncomputable def fin3OneVisiblePointActualSparseRecoveryPayload :
-    ExactVisiblePostSwitchSurface (Fin 3) 0 :=
+    ExactVisiblePostSwitchData (Fin 3) 0 :=
   ⟨1, zeroVec, zeroVec⟩
 
 noncomputable def fin3TwoVisiblePointActualSparseRecoveryPayload :
-    ExactVisiblePostSwitchSurface (Fin 3) 0 :=
+    ExactVisiblePostSwitchData (Fin 3) 0 :=
   ⟨2, zeroVec, zeroVec⟩
 
 noncomputable def fin3PureMeasureActualSparseRecoveryPayload :
-    PMF (ExactVisiblePostSwitchSurface (Fin 3) 0) :=
+    PMF (ExactVisiblePostSwitchData (Fin 3) 0) :=
   PMF.pure fin3ZeroVisiblePointActualSparseRecoveryPayload
 
 theorem fullRuleActualSwitchedLocalInterface_lt_predictorCard_fin3k0r0_payload_regression :
     2 ^ (2 * allAffinePointBlockFeatureCount (0 + (0 + 0))) <
-      2 ^ Fintype.card (ExactVisiblePostSwitchSurface (Fin 3) 0) := by
-  rw [card_exactVisiblePostSwitchSurface (Z := Fin 3) (k := 0)]
+      2 ^ Fintype.card (ExactVisiblePostSwitchData (Fin 3) 0) := by
+  rw [card_exactVisiblePostSwitchDataDomain (Z := Fin 3) (k := 0)]
   norm_num [allAffinePointBlockFeatureCount_eq]
 
 def fin5ProbeFamilyActualSparseRecoveryPayload
     (p : Fin 5) :
-    ExactVisiblePostSwitchSurface (Fin 3) 0 → Bool :=
+    ExactVisiblePostSwitchData (Fin 3) 0 → Bool :=
   match p.1 with
   | 0 => fun _ => false
   | 1 => fun u => decide (u.z = 0)
@@ -59,7 +59,7 @@ def fin5ProbeActualSwitchedLocalInterfaceActualSparseRecoveryPayload :
       (Fin 3)
       0
       (Fin 5)
-      (ExactVisiblePostSwitchSurface (Fin 3) 0) where
+      (ExactVisiblePostSwitchData (Fin 3) 0) where
   zOf := fun u => u.z
   aOf := fun _ u => u.a
   bOf := fun u => u.b
@@ -70,7 +70,7 @@ def fin5ProbeActualSwitchedLocalInterfaceActualSparseRecoveryPayload :
     rfl
 
 def fin3TwoPointRuleActualSparseRecoveryPayload :
-    ExactVisiblePostSwitchSurface (Fin 3) 0 → Bool :=
+    ExactVisiblePostSwitchData (Fin 3) 0 → Bool :=
   fun u => decide (u.z = 0 ∨ u.z = 1)
 
 theorem fin5ProbeActualSwitchedLocalInterfaceActualSparseRecoveryPayload_not_surjective :

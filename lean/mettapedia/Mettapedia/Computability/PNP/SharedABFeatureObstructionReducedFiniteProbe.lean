@@ -19,7 +19,7 @@ inside the finite predictor image of the shared truth-table combiner. -/
 theorem probeCard_le_of_realizedBySharedABAffineFeatureFamily_of_injective_probe
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hprobe : ∀ p, ∃ i, H.predict i = target p)
     (hreal : RealizedBySharedABAffineFeatureFamily (r := r) (k := k) features H) :
@@ -36,7 +36,7 @@ their finite predictor image. -/
 theorem not_realizedBySharedABAffineFeatureFamily_of_injective_probe_of_lt_budgetImageCard
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hprobe : ∀ p, ∃ i, H.predict i = target p)
     (hcard : 2 ^ (2 ^ r) < Fintype.card Probe) :
@@ -51,7 +51,7 @@ theorem not_realizedBySharedABAffineFeatureFamily_of_injective_probe_of_lt_budge
 theorem probeCard_le_of_realizedBySharedABSparseThresholdAffineFamily_of_injective_probe
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hprobe : ∀ p, ∃ i, H.predict i = target p)
     (hreal :
@@ -69,7 +69,7 @@ larger than their finite predictor image. -/
 theorem not_realizedBySharedABSparseThresholdAffineFamily_of_injective_probe_of_lt_budgetImageCard
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hprobe : ∀ p, ∃ i, H.predict i = target p)
     (hcard : 2 ^ (2 * r) < Fintype.card Probe) :
@@ -84,7 +84,7 @@ surface. -/
 theorem probeCard_le_of_realizedBySharedABAffineDecisionListFamily_of_injective_probe
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hprobe : ∀ p, ∃ i, H.predict i = target p)
     (hreal :
@@ -102,7 +102,7 @@ larger than their finite predictor image. -/
 theorem not_realizedBySharedABAffineDecisionListFamily_of_injective_probe_of_lt_budgetImageCard
     {H : ABVisibleSwitchedFamily k Index}
     {features : Fin r → AffineColumnCode (k + k)}
-    (target : Probe → ABVisibleSurface k → Bool)
+    (target : Probe → ABVisibleState k → Bool)
     (hinj : Function.Injective target)
     (hprobe : ∀ p, ∃ i, H.predict i = target p)
     (hcard : 2 ^ (r + 1) < Fintype.card Probe) :

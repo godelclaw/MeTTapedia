@@ -91,7 +91,7 @@ theorem ExactZABDecisionListTargetData.surfaceCard_le_of_surjective_predict
     {G : ExactVisibleSwitchedFamily Z k Index}
     (h : ExactZABDecisionListTargetData (Z := Z) (r := r) (k := k) (Index := Index) zfeat G)
     (hsurj : Function.Surjective G.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ r + 2 * k + 1 := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ r + 2 * k + 1 := by
   exact
     exactVisibleCompressionTarget_surfaceCard_le_of_surjective_predict
       (Z := Z) (k := k) (s := r + 2 * k + 1) (Index := Index) hsurj
@@ -102,7 +102,7 @@ theorem ExactZABDecisionListTargetData.not_surjective_predict_of_lt_surfaceCard
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     (h : ExactZABDecisionListTargetData (Z := Z) (r := r) (k := k) (Index := Index) zfeat G)
-    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective G.predict := by
   intro hsurj
   exact Nat.not_le_of_lt hs (h.surfaceCard_le_of_surjective_predict hsurj)
@@ -162,7 +162,7 @@ theorem ExactZABDecisionListRecoveryData.compressionTarget_twoMul
   exact (h.targetData).compressionTarget_twoMul
 
 theorem ExactZABDecisionListRecoveryData.finitePredictorCover_twoMul
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -173,7 +173,7 @@ theorem ExactZABDecisionListRecoveryData.finitePredictorCover_twoMul
   exact (h.targetData).finitePredictorCover_twoMul
 
 theorem ExactZABDecisionListRecoveryData.finiteIndexRepresentativeCover_twoMul
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -184,7 +184,7 @@ theorem ExactZABDecisionListRecoveryData.finiteIndexRepresentativeCover_twoMul
   exact (h.targetData).finiteIndexRepresentativeCover_twoMul
 
 theorem ExactZABDecisionListRecoveryData.finitePredictorQuotient_twoMul
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -195,7 +195,7 @@ theorem ExactZABDecisionListRecoveryData.finitePredictorQuotient_twoMul
   exact (h.targetData).finitePredictorQuotient_twoMul
 
 theorem ExactZABDecisionListRecoveryData.surfaceCard_le_of_surjective_predict
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -203,18 +203,18 @@ theorem ExactZABDecisionListRecoveryData.surfaceCard_le_of_surjective_predict
       ExactZABDecisionListRecoveryData
         (Z := Z) (r := r) (k := k) (Index := Index) μ zfeat G q)
     (hsurj : Function.Surjective G.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ r + 2 * k + 1 := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ r + 2 * k + 1 := by
   exact (h.targetData).surfaceCard_le_of_surjective_predict hsurj
 
 theorem ExactZABDecisionListRecoveryData.not_surjective_predict_of_lt_surfaceCard
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
       ExactZABDecisionListRecoveryData
         (Z := Z) (r := r) (k := k) (Index := Index) μ zfeat G q)
-    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective G.predict := by
   exact (h.targetData).not_surjective_predict_of_lt_surfaceCard hs
 

@@ -18,7 +18,7 @@ section
 variable {Index : Type*}
 
 theorem shared_exact_ab_decision_list_small_width_regression
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec 2) 1)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec 2) 1)}
     {features : Fin 1 → AffineColumnCode (1 + 1)}
     {G : ExactVisibleSwitchedFamily (BitVec 2) 1 Index}
     {q : ℝ≥0∞}
@@ -29,7 +29,7 @@ theorem shared_exact_ab_decision_list_small_width_regression
   exact h.not_surjective_predict_of_le_of_two_le (by norm_num) (by norm_num)
 
 theorem shared_exact_ab_affine_feature_erm_small_width_regression
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec 2) 1)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec 2) 1)}
     {G : ExactVisibleSwitchedFamily (BitVec 2) 1 Index}
     {q : ℝ≥0∞}
     (h :
@@ -39,7 +39,7 @@ theorem shared_exact_ab_affine_feature_erm_small_width_regression
   exact h.not_surjective_predict_of_lt_visibleWidth (by norm_num)
 
 theorem shared_exact_ab_sparse_threshold_erm_small_budget_regression
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec 2) 1)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec 2) 1)}
     {G : ExactVisibleSwitchedFamily (BitVec 2) 1 Index}
     {q : ℝ≥0∞}
     (h :
@@ -49,7 +49,7 @@ theorem shared_exact_ab_sparse_threshold_erm_small_budget_regression
   exact h.not_surjective_predict_of_budget_lt (by norm_num)
 
 theorem shared_exact_ab_raw_erm_small_width_regression
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec 2) 1)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec 2) 1)}
     {G : ExactVisibleSwitchedFamily (BitVec 2) 1 Index}
     {q : ℝ≥0∞}
     (h :
@@ -60,7 +60,7 @@ theorem shared_exact_ab_raw_erm_small_width_regression
 
 theorem shared_exact_ab_route_small_width_regression
     (features : Fin 1 → AffineColumnCode (1 + 1))
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec 2) 1) Bool) :
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec 2) 1) Bool) :
     ¬ Function.Surjective
         (sharedExactABAffineDecisionListERMFamily
           (Z := BitVec 2) (r := 1) (k := 1) features samples).predict := by

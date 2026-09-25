@@ -18,14 +18,14 @@ theorem regression_pluginLookup_surjective (Z : Type v) (k : ℕ) :
 
 theorem regression_pluginLookup_no_small_cover
     {Z : Type v} {k s : ℕ} [Fintype Z]
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (pluginLookupActualSwitchedLocalInterface Z k).predictorFamily.FinitePredictorCover
         (2 ^ s) :=
   pluginLookupActualSwitchedLocalInterface_not_finitePredictorCover_of_lt_surfaceCard hs
 
 theorem regression_pluginLookup_no_bitCodeData
     {Z : Type v} {k s : ℕ} [Fintype Z]
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.BitCodeData
           (pluginLookupActualSwitchedLocalInterface Z k) s) :=
@@ -34,7 +34,7 @@ theorem regression_pluginLookup_no_bitCodeData
 theorem regression_pluginLookup_no_zabDecisionListData
     {Z : Type v} {k r : ℕ} [Fintype Z]
     (zfeat : Z → BitVec r)
-    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.ZABDecisionListData
           (pluginLookupActualSwitchedLocalInterface Z k) zfeat) :=

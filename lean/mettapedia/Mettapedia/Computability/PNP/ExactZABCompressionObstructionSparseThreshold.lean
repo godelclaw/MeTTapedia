@@ -41,7 +41,7 @@ theorem ExactZABSparseThresholdTargetData.not_surjective_predict_of_budget_lt
     h.bitVecSurfaceCard_le_of_surjective_predict hsurj
 
 theorem ExactZABSparseThresholdRecoveryData.bitVecSurfaceCard_le_of_surjective_predict
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {zfeat : BitVec n → BitVec r}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
@@ -53,7 +53,7 @@ theorem ExactZABSparseThresholdRecoveryData.bitVecSurfaceCard_le_of_surjective_p
   exact h.targetData.bitVecSurfaceCard_le_of_surjective_predict hsurj
 
 theorem ExactZABSparseThresholdRecoveryData.not_surjective_predict_of_budget_lt
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {zfeat : BitVec n → BitVec r}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
@@ -66,7 +66,7 @@ theorem ExactZABSparseThresholdRecoveryData.not_surjective_predict_of_budget_lt
 
 theorem exactZABSparseThresholdAffineERMFamily_bitVecSurfaceCard_le_of_surjective_predict
     (zfeat : BitVec n → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hsurj :
       Function.Surjective
         (exactZABSparseThresholdAffineERMFamily
@@ -79,7 +79,7 @@ theorem exactZABSparseThresholdAffineERMFamily_bitVecSurfaceCard_le_of_surjectiv
 
 theorem exactZABSparseThresholdAffineERMFamily_not_surjective_of_budget_lt
     (zfeat : BitVec n → BitVec r)
-    (samples : Index → Sample (ExactVisiblePostSwitchSurface (BitVec n) k) Bool)
+    (samples : Index → Sample (ExactVisiblePostSwitchData (BitVec n) k) Bool)
     (hbudget : p * ((r + (k + k)) + 3) < 2 ^ (n + 2 * k)) :
     ¬ Function.Surjective
         (exactZABSparseThresholdAffineERMFamily
@@ -90,7 +90,7 @@ theorem exactZABSparseThresholdAffineERMFamily_not_surjective_of_budget_lt
       (n := n) (p := p) (r := r) (k := k) (Index := Index) zfeat samples hsurj
 
 theorem ExactZABSparseThresholdERMRecoveryData.bitVecSurfaceCard_le_of_surjective_predict
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {zfeat : BitVec n → BitVec r}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}
@@ -102,7 +102,7 @@ theorem ExactZABSparseThresholdERMRecoveryData.bitVecSurfaceCard_le_of_surjectiv
   exact h.targetData.bitVecSurfaceCard_le_of_surjective_predict hsurj
 
 theorem ExactZABSparseThresholdERMRecoveryData.not_surjective_predict_of_budget_lt
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
     {zfeat : BitVec n → BitVec r}
     {G : ExactVisibleSwitchedFamily (BitVec n) k Index}
     {q : ℝ≥0∞}

@@ -17,13 +17,13 @@ namespace Mettapedia.Computability.PNP.BoundedSampleMajorityObstructionRegressio
 open Mettapedia.Computability.PNP
 
 example (Z : Type) (k sampleBound : ℕ) [Fintype Z]
-    (hbound : Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound) :
+    (hbound : Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound) :
     Function.Surjective
       (boundedSamplePluginMajorityActualSwitchedLocalInterface Z k sampleBound).predictorFamily.predict :=
   boundedSamplePluginMajorityActualSwitchedLocalInterface_surjective Z k sampleBound hbound
 
 example {Z : Type} {k sampleBound : ℕ} [Fintype Z]
-    (hbound : sampleBound < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hbound : sampleBound < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective
       (boundedSamplePluginMajorityActualSwitchedLocalInterface Z k sampleBound).predictorFamily.predict :=
   boundedSamplePluginMajorityActualSwitchedLocalInterface_not_surjective_of_sampleBound_lt_surfaceCard
@@ -32,7 +32,7 @@ example {Z : Type} {k sampleBound : ℕ} [Fintype Z]
 example (Z : Type) (k sampleBound : ℕ) [Fintype Z] :
     Function.Surjective
         (boundedSamplePluginMajorityActualSwitchedLocalInterface Z k sampleBound).predictorFamily.predict ↔
-      Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound :=
+      Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound :=
   boundedSamplePluginMajorityActualSwitchedLocalInterface_surjective_iff Z k sampleBound
 
 example {U : Type} [Fintype U] [DecidableEq U] {sampleBound : ℕ}
@@ -43,9 +43,9 @@ example {U : Type} [Fintype U] [DecidableEq U] {sampleBound : ℕ}
 
 example {Z : Type} {k sampleBound : ℕ} [Fintype Z]
     (sample :
-      BoundedSampleIndex (ExactVisiblePostSwitchSurface Z k) sampleBound) :
+      BoundedSampleIndex (ExactVisiblePostSwitchData Z k) sampleBound) :
     (PluginSampleMajority.falseSupport
-      (fun u : ExactVisiblePostSwitchSurface Z k =>
+      (fun u : ExactVisiblePostSwitchData Z k =>
         (boundedSamplePluginMajorityActualSwitchedLocalInterface Z k sampleBound).predictorFamily.predict
           sample u)).card ≤ sampleBound :=
   boundedSamplePluginMajorityActualSwitchedLocalInterface_falseSupport_card_le_sampleBound
@@ -71,9 +71,9 @@ example {U : Type} [Fintype U] [DecidableEq U] {sampleBound : ℕ}
 example {Z : Type} {k sampleBound : ℕ} [Fintype Z]
     (default : Bool)
     (sample :
-      BoundedSampleIndex (ExactVisiblePostSwitchSurface Z k) sampleBound) :
+      BoundedSampleIndex (ExactVisiblePostSwitchData Z k) sampleBound) :
     (PluginSampleMajority.nondefaultSupport default
-      (fun u : ExactVisiblePostSwitchSurface Z k =>
+      (fun u : ExactVisiblePostSwitchData Z k =>
         (boundedSamplePluginMajorityWithDefaultActualSwitchedLocalInterface
           default Z k sampleBound).predictorFamily.predict sample u)).card ≤ sampleBound :=
   boundedSamplePluginMajorityWithDefaultActualSwitchedLocalInterface_nondefaultSupport_card_le_sampleBound
@@ -91,7 +91,7 @@ example {Z : Type} {k sampleBound : ℕ} [Fintype Z]
 
 example {Z : Type} {k sampleBound : ℕ} [Fintype Z]
     (default : Bool)
-    (hbound : sampleBound < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hbound : sampleBound < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective
       (boundedSamplePluginMajorityWithDefaultActualSwitchedLocalInterface
         default Z k sampleBound).predictorFamily.predict :=
@@ -102,7 +102,7 @@ example (Z : Type) (k sampleBound : ℕ) [Fintype Z] (default : Bool) :
     Function.Surjective
         (boundedSamplePluginMajorityWithDefaultActualSwitchedLocalInterface
           default Z k sampleBound).predictorFamily.predict ↔
-      Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound :=
+      Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound :=
   boundedSamplePluginMajorityWithDefaultActualSwitchedLocalInterface_surjective_iff
     default Z k sampleBound
 
@@ -128,14 +128,14 @@ example (Z : Type) (k sampleBound : ℕ) :
     Z k sampleBound
 
 example {Z : Type} {k s sampleBound : ℕ} [Fintype Z]
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface
         Z k sampleBound).predictorFamily.FinitePredictorCover (2 ^ s) :=
   boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface_not_finitePredictorCover_of_lt_surfaceCard
     (Z := Z) (k := k) (s := s) (sampleBound := sampleBound) hs
 
 example {Z : Type} {k s sampleBound clock : ℕ} [Fintype Z]
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface
           Z k sampleBound).predictorFamily s clock :=

@@ -20,7 +20,7 @@ section
 variable [Inhabited Z] [Fintype Z]
 
 def SharedABSparseThresholdRecoveryData.targetData
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
@@ -33,7 +33,7 @@ def SharedABSparseThresholdRecoveryData.targetData
   realized := h.realized
 
 theorem SharedABSparseThresholdRecoveryData.compressionTarget
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
@@ -44,29 +44,29 @@ theorem SharedABSparseThresholdRecoveryData.compressionTarget
   exact (h.targetData).compressionTarget
 
 theorem SharedABSparseThresholdRecoveryData.surfaceCard_le_of_surjective_predict
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
       SharedABSparseThresholdRecoveryData
         (Z := Z) (r := r) (k := k) (Index := Index) μ G q)
     (hsurj : Function.Surjective G.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ 2 * r := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ 2 * r := by
   exact (h.targetData).surfaceCard_le_of_surjective_predict hsurj
 
 theorem SharedABSparseThresholdRecoveryData.not_surjective_predict_of_lt_surfaceCard
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :
       SharedABSparseThresholdRecoveryData
         (Z := Z) (r := r) (k := k) (Index := Index) μ G q)
-    (hs : 2 * r < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : 2 * r < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective G.predict := by
   exact (h.targetData).not_surjective_predict_of_lt_surfaceCard hs
 
 theorem SharedABSparseThresholdRecoveryData.recoveryLowerBound
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
     (h :

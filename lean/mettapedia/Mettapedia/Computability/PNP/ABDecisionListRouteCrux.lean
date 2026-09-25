@@ -21,7 +21,7 @@ section
 variable {Z : Type*} {k : ℕ} {Index : Type*}
 
 /-- The factored `(a,b)` decision-list route is inconsistent whenever the
-reduced family remains fully expressive on `ABVisibleSurface k`. -/
+reduced family remains fully expressive on `ABVisibleState k`. -/
 theorem not_factorsThrough_ab_and_decisionList_of_surjective_predict_of_pos
     [Inhabited Z]
     {G : ExactVisibleSwitchedFamily Z k Index}
@@ -36,11 +36,11 @@ theorem not_factorsThrough_ab_and_decisionList_of_surjective_predict_of_pos
     exactVisibleCompressionTarget_of_factorsThrough_ab_and_decisionList_twoMul
       (Z := Z) (k := k) hfactor hreal
   have hle :
-      Fintype.card (ABVisibleSurface k) ≤ 2 * k + 1 :=
+      Fintype.card (ABVisibleState k) ≤ 2 * k + 1 :=
     abVisible_surfaceCard_le_of_exactVisibleCompressionTarget_of_factorsThrough
       (Z := Z) (k := k) (s := 2 * k + 1) hfactor hsurj hsmall
-  have hlt : 2 * k + 1 < Fintype.card (ABVisibleSurface k) := by
-    simpa [card_abVisibleSurface (k := k)] using
+  have hlt : 2 * k + 1 < Fintype.card (ABVisibleState k) := by
+    simpa [card_abVisibleDataDomain (k := k)] using
       abDecisionListBudget_lt_abTruthTable_of_pos (k := k) hk
   exact (Nat.not_le_of_lt hlt hle).elim
 
@@ -68,12 +68,12 @@ theorem not_invariant_and_decisionList_of_surjective_lift_of_pos
 theorem fullExactABRuleFamily_not_exactVisibleCompressionTarget_of_pos
     (Z : Type*) [Inhabited Z] {k : ℕ} (hk : 0 < k) :
     ¬ ExactVisibleCompressionTarget
-        (Z := Z) (k := k) (Index := ABVisibleSurface k → Bool)
+        (Z := Z) (k := k) (Index := ABVisibleState k → Bool)
         (fullExactABRuleFamily Z k) (2 * k + 1) := by
   exact
     not_exactVisibleCompressionTarget_of_factorsThrough_ab_and_surjective_predict_of_lt_cardFormula
       (Z := Z) (k := k) (s := 2 * k + 1)
-      (by simpa [card_abVisibleSurface (k := k)] using
+      (by simpa [card_abVisibleDataDomain (k := k)] using
         abDecisionListBudget_lt_abTruthTable_of_pos (k := k) hk)
       (fullExactABRuleFamily_factorsThrough_ab Z k)
       (fullABRuleFamily_surjective k)

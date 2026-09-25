@@ -61,7 +61,7 @@ theorem SharedABAffineFeatureTargetData.surfaceCard_le_of_surjective_predict
     {G : ExactVisibleSwitchedFamily Z k Index}
     (h : SharedABAffineFeatureTargetData (Z := Z) (r := r) (k := k) (Index := Index) G)
     (hsurj : Function.Surjective G.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ 2 ^ r := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ 2 ^ r := by
   exact
     exactVisibleCompressionTarget_surfaceCard_le_of_surjective_predict
       (Z := Z) (k := k) (s := 2 ^ r) (Index := Index) hsurj
@@ -71,7 +71,7 @@ theorem SharedABAffineFeatureTargetData.not_surjective_predict_of_lt_surfaceCard
     [Fintype Z]
     {G : ExactVisibleSwitchedFamily Z k Index}
     (h : SharedABAffineFeatureTargetData (Z := Z) (r := r) (k := k) (Index := Index) G)
-    (hs : 2 ^ r < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : 2 ^ r < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective G.predict := by
   intro hsurj
   exact Nat.not_le_of_lt hs (h.surfaceCard_le_of_surjective_predict hsurj)
@@ -88,7 +88,7 @@ theorem SharedABSparseThresholdTargetData.surfaceCard_le_of_surjective_predict
     {G : ExactVisibleSwitchedFamily Z k Index}
     (h : SharedABSparseThresholdTargetData (Z := Z) (r := r) (k := k) (Index := Index) G)
     (hsurj : Function.Surjective G.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ 2 * r := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ 2 * r := by
   exact
     exactVisibleCompressionTarget_surfaceCard_le_of_surjective_predict
       (Z := Z) (k := k) (s := 2 * r) (Index := Index) hsurj
@@ -98,7 +98,7 @@ theorem SharedABSparseThresholdTargetData.not_surjective_predict_of_lt_surfaceCa
     [Fintype Z]
     {G : ExactVisibleSwitchedFamily Z k Index}
     (h : SharedABSparseThresholdTargetData (Z := Z) (r := r) (k := k) (Index := Index) G)
-    (hs : 2 * r < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : 2 * r < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective G.predict := by
   intro hsurj
   exact Nat.not_le_of_lt hs (h.surfaceCard_le_of_surjective_predict hsurj)
@@ -115,7 +115,7 @@ theorem SharedABDecisionListTargetData.surfaceCard_le_of_surjective_predict
     {G : ExactVisibleSwitchedFamily Z k Index}
     (h : SharedABDecisionListTargetData (Z := Z) (r := r) (k := k) (Index := Index) G)
     (hsurj : Function.Surjective G.predict) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ r + 1 := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ r + 1 := by
   exact
     exactVisibleCompressionTarget_surfaceCard_le_of_surjective_predict
       (Z := Z) (k := k) (s := r + 1) (Index := Index) hsurj
@@ -125,7 +125,7 @@ theorem SharedABDecisionListTargetData.not_surjective_predict_of_lt_surfaceCard
     [Fintype Z]
     {G : ExactVisibleSwitchedFamily Z k Index}
     (h : SharedABDecisionListTargetData (Z := Z) (r := r) (k := k) (Index := Index) G)
-    (hs : r + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective G.predict := by
   intro hsurj
   exact Nat.not_le_of_lt hs (h.surfaceCard_le_of_surjective_predict hsurj)

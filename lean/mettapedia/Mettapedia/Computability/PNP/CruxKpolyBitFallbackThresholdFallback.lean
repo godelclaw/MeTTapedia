@@ -28,7 +28,7 @@ theorem kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_not_none
     (zfeat : Z → BitVec r)
     (hs :
       2 * allAffinePointBlockFeatureCount (r + (k + k)) <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+        Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.SharedExactZABSparseThresholdERMData
           (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
@@ -46,18 +46,18 @@ theorem kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_not_none
     (zfeat : Z → BitVec r)
     (hs :
       2 * allAffinePointBlockFeatureCount (r + (k + k)) <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+        Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.SharedExactZABSparseThresholdERMData
           (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
             Z k sampleBound
-            (Fintype.card (ExactVisiblePostSwitchSurface Z k))
+            (Fintype.card (ExactVisiblePostSwitchData Z k))
             (exactVisibleRuleDecode (Z := Z) (k := k)))
           zfeat) := by
   exact
     kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_not_nonempty_sharedExactZABSparseThresholdERMData_of_fallback_surjective_of_lt_surfaceCard
       (k := k) (r := r) (sampleBound := sampleBound)
-      (fallbackBits := Fintype.card (ExactVisiblePostSwitchSurface Z k))
+      (fallbackBits := Fintype.card (ExactVisiblePostSwitchData Z k))
       (exactVisibleRuleDecode (Z := Z) (k := k))
       (kpolyCoverage_anchor_exactVisibleRuleDecode_surjective
         (Z := Z) (k := k))
@@ -72,13 +72,13 @@ theorem kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_not_exis
     {Z : Type v} [Fintype Z] {k sampleBound r : ℕ}
     (hs :
       2 * allAffinePointBlockFeatureCount (r + (k + k)) <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+        Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ∃ zfeat : Z → BitVec r,
         Nonempty
           (ActualSwitchedLocalInterface.SharedExactZABSparseThresholdERMData
             (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
               Z k sampleBound
-              (Fintype.card (ExactVisiblePostSwitchSurface Z k))
+              (Fintype.card (ExactVisiblePostSwitchData Z k))
               (exactVisibleRuleDecode (Z := Z) (k := k)))
             zfeat) := by
   intro h
@@ -94,7 +94,7 @@ theorem kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_not_none
     {n k r sampleBound fallbackBits : ℕ}
     (fallback : BitCode fallbackBits → ExactVisibleRule (BitVec n) k)
     (hsurj : Function.Surjective fallback)
-    (μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k))
+    (μ : PMF (ExactVisiblePostSwitchData (BitVec n) k))
     (zfeat : BitVec n → BitVec r)
     (q : ℝ≥0∞)
     (hgap : 2 * r + 2 * k + 1 < n) :
@@ -114,8 +114,8 @@ full-rule expressive, then any sparse-threshold recovery packet on the wrapped
 bounded-sample endpoint still forces the later lightest-point threshold. -/
 theorem kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_one_sub_apply_lightestPoint_le_of_nonempty_recovery_of_fallback_surjective
     {Z : Type v} [Fintype Z] {k r sampleBound fallbackBits : ℕ}
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)} {q : ℝ≥0∞}
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
+    {μ : PMF (ExactVisiblePostSwitchData Z k)} {q : ℝ≥0∞}
     (fallback : BitCode fallbackBits → ExactVisibleRule Z k)
     (hsurj : Function.Surjective fallback)
     (zfeat : Z → BitVec r)
@@ -138,8 +138,8 @@ once.  Any hypothetical recovery witness must satisfy both the visible-width
 budget and the lightest-point threshold. -/
 theorem kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_visibleWidth_and_lightestPoint_threshold_of_nonempty_recovery_of_fallback_surjective
     {n k r sampleBound fallbackBits : ℕ}
-    [Nonempty (ExactVisiblePostSwitchSurface (BitVec n) k)]
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)} {q : ℝ≥0∞}
+    [Nonempty (ExactVisiblePostSwitchData (BitVec n) k)]
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)} {q : ℝ≥0∞}
     (fallback : BitCode fallbackBits → ExactVisibleRule (BitVec n) k)
     (hsurj : Function.Surjective fallback)
     (zfeat : BitVec n → BitVec r)

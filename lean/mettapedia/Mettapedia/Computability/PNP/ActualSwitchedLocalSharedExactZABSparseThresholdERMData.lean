@@ -46,7 +46,7 @@ structure SharedExactZABSparseThresholdERMData
     {r : ℕ}
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (zfeat : Z → BitVec r) where
-  samples : Index → Sample (ExactVisiblePostSwitchSurface Z k) Bool
+  samples : Index → Sample (ExactVisiblePostSwitchData Z k) Bool
   exact_family :
     T.predictorFamily =
       sharedExactZABSparseThresholdAffineERMFamily

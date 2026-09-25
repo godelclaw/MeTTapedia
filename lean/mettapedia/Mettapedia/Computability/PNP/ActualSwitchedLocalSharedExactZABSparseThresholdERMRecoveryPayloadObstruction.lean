@@ -37,7 +37,7 @@ section Abstract
 
 variable {Z : Type v} [Fintype Z] {k r : ℕ} {Index : Type u} {Block : Type w}
 variable {T : ActualSwitchedLocalInterface Z k Index Block}
-variable {μ : PMF (ExactVisiblePostSwitchSurface Z k)} {zfeat : Z → BitVec r}
+variable {μ : PMF (ExactVisiblePostSwitchData Z k)} {zfeat : Z → BitVec r}
 variable {q : ℝ≥0∞}
 
 /-- If the actual switched predictor family is still fully expressive on the
@@ -48,7 +48,7 @@ theorem not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_surjective_
     (zfeat : Z → BitVec r)
     (hs :
       2 ^ (2 * allAffinePointBlockFeatureCount (r + (k + k))) <
-        2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k))
+        2 ^ Fintype.card (ExactVisiblePostSwitchData Z k))
     (hsurj : Function.Surjective T.predictorFamily.predict) :
     ¬ Nonempty (SharedExactZABSparseThresholdERMRecoveryData μ T zfeat q) := by
   rintro ⟨h⟩
@@ -71,7 +71,7 @@ theorem not_exists_sharedExactZABSparseThresholdERMRecoveryData_of_surjective_pr
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (hs :
       2 ^ (2 * allAffinePointBlockFeatureCount (r + (k + k))) <
-        2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k))
+        2 ^ Fintype.card (ExactVisiblePostSwitchData Z k))
     (hsurj : Function.Surjective T.predictorFamily.predict) :
     ¬ ∃ zfeat : Z → BitVec r,
         Nonempty (SharedExactZABSparseThresholdERMRecoveryData μ T zfeat q) := by
@@ -93,7 +93,7 @@ theorem not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_injective_r
     {Probe : Type*} [Fintype Probe]
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (zfeat : Z → BitVec r)
-    (target : Probe → ExactVisiblePostSwitchSurface Z k → Bool)
+    (target : Probe → ExactVisiblePostSwitchData Z k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ i, T.predictorFamily.predict i = target p)
     (hs :
@@ -121,7 +121,7 @@ switched family. -/
 theorem not_exists_sharedExactZABSparseThresholdERMRecoveryData_of_injective_realization_of_lt_card
     {Probe : Type*} [Fintype Probe]
     (T : ActualSwitchedLocalInterface Z k Index Block)
-    (target : Probe → ExactVisiblePostSwitchSurface Z k → Bool)
+    (target : Probe → ExactVisiblePostSwitchData Z k → Bool)
     (hinj : Function.Injective target)
     (hreal : ∀ p, ∃ i, T.predictorFamily.predict i = target p)
     (hs :
@@ -198,7 +198,7 @@ theorem fullRuleActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseTh
     (zfeat : Z → BitVec r)
     (hs :
       2 ^ (2 * allAffinePointBlockFeatureCount (r + (k + k))) <
-        2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+        2 ^ Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (SharedExactZABSparseThresholdERMRecoveryData
           μ
@@ -220,7 +220,7 @@ cardinality, no extractor at all can support the packet. -/
 theorem fullRuleActualSwitchedLocalInterface_not_exists_sharedExactZABSparseThresholdERMRecoveryData_of_lt_predictorCard
     (hs :
       2 ^ (2 * allAffinePointBlockFeatureCount (r + (k + k))) <
-        2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+        2 ^ Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ∃ zfeat : Z → BitVec r,
         Nonempty
           (SharedExactZABSparseThresholdERMRecoveryData

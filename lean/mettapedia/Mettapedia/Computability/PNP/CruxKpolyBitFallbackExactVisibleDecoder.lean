@@ -16,7 +16,7 @@ theorem kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_surjecti
     {Z : Type v} [Fintype Z] {k sampleBound : ℕ} :
     Function.Surjective
       (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
-        Z k sampleBound (Fintype.card (ExactVisiblePostSwitchSurface Z k))
+        Z k sampleBound (Fintype.card (ExactVisiblePostSwitchData Z k))
         (exactVisibleRuleDecode (Z := Z) (k := k))).predictorFamily.predict :=
   boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface_surjective_exactVisibleRuleDecode
     (Z := Z) (k := k) (sampleBound := sampleBound)
@@ -38,17 +38,17 @@ clocked finite-learning payload below the full exact-visible surface
 threshold. -/
 theorem kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_not_clockedPayload_of_exactVisibleRuleDecode_of_lt_surfaceCard
     {Z : Type v} [Fintype Z] {k sampleBound s clock : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
-          Z k sampleBound (Fintype.card (ExactVisiblePostSwitchSurface Z k))
+          Z k sampleBound (Fintype.card (ExactVisiblePostSwitchData Z k))
           (exactVisibleRuleDecode (Z := Z) (k := k))).predictorFamily s clock := by
-  have hpow : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k) :=
+  have hpow : 2 ^ s < 2 ^ Fintype.card (ExactVisiblePostSwitchData Z k) :=
     Nat.pow_lt_pow_right Nat.one_lt_two hs
   exact
     not_clockedKpolyFiniteLearningPayload_of_surjective_predict_of_lt_predictorCard
       (G := (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
-        Z k sampleBound (Fintype.card (ExactVisiblePostSwitchSurface Z k))
+        Z k sampleBound (Fintype.card (ExactVisiblePostSwitchData Z k))
         (exactVisibleRuleDecode (Z := Z) (k := k))).predictorFamily)
       (clock := clock) hpow
       (kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_surjective_exactVisibleRuleDecode
@@ -59,10 +59,10 @@ truth-table fallback decoder already admits no clocked finite-learning payload
 below the truth-table bit budget. -/
 theorem kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_zeroSample_exactVisibleRuleDecode_not_clockedPayload_of_lt_surfaceCard
     {Z : Type v} [Fintype Z] {k s clock : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (boundedSamplePluginMajorityWithBitFallbackFamilyActualSwitchedLocalInterface
-          Z k 0 (Fintype.card (ExactVisiblePostSwitchSurface Z k))
+          Z k 0 (Fintype.card (ExactVisiblePostSwitchData Z k))
           (exactVisibleRuleDecode (Z := Z) (k := k))).predictorFamily s clock := by
   simpa using
     (kpolyCoverage_anchor_boundedSampleMajorityWithBitFallbackFamily_not_clockedPayload_of_exactVisibleRuleDecode_of_lt_surfaceCard

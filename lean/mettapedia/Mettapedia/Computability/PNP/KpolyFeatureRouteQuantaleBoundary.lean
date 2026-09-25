@@ -114,11 +114,11 @@ variable {k N : ℕ}
 /-- Exact-visible specialization: full-rule feature repair forces both the
 surface-cardinality floor and the full Boolean image floor. -/
 theorem exactVisibleFeatureRoute_fullRuleRepair_forces_floors
-    (featureOf : ExactVisiblePostSwitchSurface Z k → Feature)
+    (featureOf : ExactVisiblePostSwitchData Z k → Feature)
     (hsurj : Function.Surjective (featureReadoutFamily featureOf).predict)
     (hcover : (featureReadoutFamily featureOf).FinitePredictorCover N) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ Fintype.card Feature ∧
-      2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ N := by
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤ Fintype.card Feature ∧
+      2 ^ Fintype.card (ExactVisiblePostSwitchData Z k) ≤ N := by
   exact
     ⟨featureReadoutFamily_surfaceCard_le_featureCard_of_surjective
         featureOf hsurj,
@@ -128,9 +128,9 @@ theorem exactVisibleFeatureRoute_fullRuleRepair_forces_floors
 feature encoding can realize every full rule, even though its feature image is
 finite. -/
 theorem exactVisibleFeatureRoute_cardinality_obstruction_packet
-    (featureOf : ExactVisiblePostSwitchSurface Z k → Feature)
+    (featureOf : ExactVisiblePostSwitchData Z k → Feature)
     (hcard :
-      Fintype.card Feature < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+      Fintype.card Feature < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     (featureReadoutFamily featureOf).FinitePredictorCover
         (2 ^ Fintype.card Feature) ∧
       ¬ Function.Surjective (featureReadoutFamily featureOf).predict := by
@@ -230,7 +230,7 @@ pair. -/
 theorem kpolyFeatureRouteQuantale_shortcutRemoval_boundary_packet
     {Z : Type u} [Fintype Z] {SurfaceFeature : Type v} [Fintype SurfaceFeature]
     {k N : ℕ}
-    (surfaceFeature : ExactVisiblePostSwitchSurface Z k → SurfaceFeature)
+    (surfaceFeature : ExactVisiblePostSwitchData Z k → SurfaceFeature)
     (hsurj : Function.Surjective (featureReadoutFamily surfaceFeature).predict)
     (hcover : (featureReadoutFamily surfaceFeature).FinitePredictorCover N)
     {α : Type w} [Fintype α] {WeakFeature : Type v}
@@ -239,9 +239,9 @@ theorem kpolyFeatureRouteQuantale_shortcutRemoval_boundary_packet
     (hτ : Function.Involutive τ)
     (hy : ∀ x, y (τ x) = !(y x))
     (hw : ∀ x, wgt (τ x) = wgt x) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤
         Fintype.card SurfaceFeature ∧
-      2 ^ Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ N ∧
+      2 ^ Fintype.card (ExactVisiblePostSwitchData Z k) ≤ N ∧
       (∀ _ : ∀ x, 0 < wgt x → weakFeature (τ x) = weakFeature x,
         (¬ 0 < doubledAdvantage weakFeature y wgt h) ∧
           ¬ weightedTotalMass wgt < 2 * weightedCorrectMass weakFeature y wgt h) ∧

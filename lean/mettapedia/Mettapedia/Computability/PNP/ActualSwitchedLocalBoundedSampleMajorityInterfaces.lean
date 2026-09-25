@@ -16,16 +16,16 @@ noncomputable def boundedSamplePluginMajorityActualSwitchedLocalInterface
     (Z : Type v) (k sampleBound : ℕ) :
     ActualSwitchedLocalInterface
       Z k
-      (BoundedSampleIndex (ExactVisiblePostSwitchSurface Z k) sampleBound)
-      (ExactVisiblePostSwitchSurface Z k) where
+      (BoundedSampleIndex (ExactVisiblePostSwitchData Z k) sampleBound)
+      (ExactVisiblePostSwitchData Z k) where
   zOf := fun u => u.z
   aOf := fun _ u => u.a
   bOf := fun u => u.b
   localRule := fun sample u =>
-    letI := Classical.decEq (ExactVisiblePostSwitchSurface Z k)
+    letI := Classical.decEq (ExactVisiblePostSwitchData Z k)
     PluginSampleMajority.predict sample.1 u
   output := fun sample u =>
-    letI := Classical.decEq (ExactVisiblePostSwitchSurface Z k)
+    letI := Classical.decEq (ExactVisiblePostSwitchData Z k)
     PluginSampleMajority.predict sample.1 u
   output_eq_local := by
     intro sample u
@@ -35,7 +35,7 @@ noncomputable def boundedSamplePluginMajorityActualSwitchedLocalInterface
 is still realized by the graph sample of that lookup table. -/
 theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_realizes_every_lookupTable
     {Z : Type v} {k sampleBound : ℕ} [Fintype Z]
-    (hbound : Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound)
+    (hbound : Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound)
     (rule : ExactVisibleRule Z k) :
     ∃ sample,
       (boundedSamplePluginMajorityActualSwitchedLocalInterface Z k sampleBound).predictorFamily.predict
@@ -53,7 +53,7 @@ theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_realizes_every_l
 at least the exact-visible alphabet size. -/
 theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_surjective
     (Z : Type v) (k sampleBound : ℕ) [Fintype Z]
-    (hbound : Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound) :
+    (hbound : Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound) :
     Function.Surjective
       (boundedSamplePluginMajorityActualSwitchedLocalInterface Z k sampleBound).predictorFamily.predict := by
   intro rule
@@ -67,14 +67,14 @@ input, where the tie-breaking majority predicts `true`, so the all-false rule is
 not realizable. -/
 theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_not_surjective_of_sampleBound_lt_surfaceCard
     {Z : Type v} {k sampleBound : ℕ} [Fintype Z]
-    (hbound : sampleBound < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hbound : sampleBound < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective
       (boundedSamplePluginMajorityActualSwitchedLocalInterface Z k sampleBound).predictorFamily.predict := by
   classical
   intro hsurj
   let allFalse : ExactVisibleRule Z k := fun _ => false
   rcases hsurj allFalse with ⟨sample, hsample⟩
-  have hlen : sample.1.length < Fintype.card (ExactVisiblePostSwitchSurface Z k) :=
+  have hlen : sample.1.length < Fintype.card (ExactVisiblePostSwitchData Z k) :=
     lt_of_le_of_lt sample.2 hbound
   rcases PluginSampleMajority.exists_true_prediction_of_length_lt_card
       (sample := sample.1) hlen with ⟨u, hu⟩
@@ -93,7 +93,7 @@ theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_surjective_iff
     (Z : Type v) (k sampleBound : ℕ) [Fintype Z] :
     Function.Surjective
         (boundedSamplePluginMajorityActualSwitchedLocalInterface Z k sampleBound).predictorFamily.predict ↔
-      Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound := by
+      Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound := by
   constructor
   · intro hsurj
     by_contra hnot
@@ -110,9 +110,9 @@ at most `sampleBound` exact-visible inputs. -/
 theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_falseSupport_card_le_sampleBound
     {Z : Type v} {k sampleBound : ℕ} [Fintype Z]
     (sample :
-      BoundedSampleIndex (ExactVisiblePostSwitchSurface Z k) sampleBound) :
+      BoundedSampleIndex (ExactVisiblePostSwitchData Z k) sampleBound) :
     (PluginSampleMajority.falseSupport
-      (fun u : ExactVisiblePostSwitchSurface Z k =>
+      (fun u : ExactVisiblePostSwitchData Z k =>
         (boundedSamplePluginMajorityActualSwitchedLocalInterface Z k sampleBound).predictorFamily.predict
           sample u)).card ≤ sampleBound := by
   classical
@@ -121,6 +121,7 @@ theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_falseSupport_car
     PluginSampleMajority.falseSupport_predict_card_le_bound
       (sample := sample)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Consequently, any target rule whose false-support is larger than the sample
 bound is not realized by the bounded sample-level plug-in majority endpoint. -/
 theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_not_realizes_rule_of_sampleBound_lt_falseSupport_card
@@ -138,7 +139,7 @@ theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_not_realizes_rul
       (Z := Z) (k := k) (sampleBound := sampleBound) sample
   have hsupport :
       PluginSampleMajority.falseSupport
-          (fun u : ExactVisiblePostSwitchSurface Z k =>
+          (fun u : ExactVisiblePostSwitchData Z k =>
             (boundedSamplePluginMajorityActualSwitchedLocalInterface Z k sampleBound).predictorFamily.predict
               sample u) =
         PluginSampleMajority.falseSupport rule := by
@@ -158,16 +159,16 @@ noncomputable def boundedSamplePluginMajorityWithDefaultActualSwitchedLocalInter
     (default : Bool) (Z : Type v) (k sampleBound : ℕ) :
     ActualSwitchedLocalInterface
       Z k
-      (BoundedSampleIndex (ExactVisiblePostSwitchSurface Z k) sampleBound)
-      (ExactVisiblePostSwitchSurface Z k) where
+      (BoundedSampleIndex (ExactVisiblePostSwitchData Z k) sampleBound)
+      (ExactVisiblePostSwitchData Z k) where
   zOf := fun u => u.z
   aOf := fun _ u => u.a
   bOf := fun u => u.b
   localRule := fun sample u =>
-    letI := Classical.decEq (ExactVisiblePostSwitchSurface Z k)
+    letI := Classical.decEq (ExactVisiblePostSwitchData Z k)
     PluginSampleMajority.predictWithDefault default sample.1 u
   output := fun sample u =>
-    letI := Classical.decEq (ExactVisiblePostSwitchSurface Z k)
+    letI := Classical.decEq (ExactVisiblePostSwitchData Z k)
     PluginSampleMajority.predictWithDefault default sample.1 u
   output_eq_local := by
     intro sample u
@@ -178,7 +179,7 @@ sample-level plug-in majority realizes every Boolean lookup table. -/
 theorem boundedSamplePluginMajorityWithDefaultActualSwitchedLocalInterface_realizes_every_lookupTable
     {Z : Type v} {k sampleBound : ℕ} [Fintype Z]
     (default : Bool)
-    (hbound : Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound)
+    (hbound : Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound)
     (rule : ExactVisibleRule Z k) :
     ∃ sample,
       (boundedSamplePluginMajorityWithDefaultActualSwitchedLocalInterface
@@ -196,7 +197,7 @@ theorem boundedSamplePluginMajorityWithDefaultActualSwitchedLocalInterface_reali
 the sample bound reaches the exact-visible alphabet size. -/
 theorem boundedSamplePluginMajorityWithDefaultActualSwitchedLocalInterface_surjective
     (default : Bool) (Z : Type v) (k sampleBound : ℕ) [Fintype Z]
-    (hbound : Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound) :
+    (hbound : Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound) :
     Function.Surjective
       (boundedSamplePluginMajorityWithDefaultActualSwitchedLocalInterface
         default Z k sampleBound).predictorFamily.predict := by
@@ -211,9 +212,9 @@ theorem boundedSamplePluginMajorityWithDefaultActualSwitchedLocalInterface_nonde
     {Z : Type v} {k sampleBound : ℕ} [Fintype Z]
     (default : Bool)
     (sample :
-      BoundedSampleIndex (ExactVisiblePostSwitchSurface Z k) sampleBound) :
+      BoundedSampleIndex (ExactVisiblePostSwitchData Z k) sampleBound) :
     (PluginSampleMajority.nondefaultSupport default
-      (fun u : ExactVisiblePostSwitchSurface Z k =>
+      (fun u : ExactVisiblePostSwitchData Z k =>
         (boundedSamplePluginMajorityWithDefaultActualSwitchedLocalInterface
           default Z k sampleBound).predictorFamily.predict sample u)).card ≤ sampleBound := by
   classical
@@ -222,6 +223,7 @@ theorem boundedSamplePluginMajorityWithDefaultActualSwitchedLocalInterface_nonde
     PluginSampleMajority.nondefaultSupport_predictWithDefault_card_le_bound
       default (sample := sample)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Consequently, any target rule whose nondefault support is larger than the
 sample bound is not realized by the explicit-default bounded sample-level
 plug-in majority endpoint. -/
@@ -240,7 +242,7 @@ theorem boundedSamplePluginMajorityWithDefaultActualSwitchedLocalInterface_not_r
       (Z := Z) (k := k) (sampleBound := sampleBound) default sample
   have hsupport :
       PluginSampleMajority.nondefaultSupport default
-          (fun u : ExactVisiblePostSwitchSurface Z k =>
+          (fun u : ExactVisiblePostSwitchData Z k =>
             (boundedSamplePluginMajorityWithDefaultActualSwitchedLocalInterface
               default Z k sampleBound).predictorFamily.predict sample u) =
         PluginSampleMajority.nondefaultSupport default rule := by
@@ -260,7 +262,7 @@ nondefault support equal to the whole surface. -/
 theorem boundedSamplePluginMajorityWithDefaultActualSwitchedLocalInterface_not_surjective_of_sampleBound_lt_surfaceCard
     {Z : Type v} {k sampleBound : ℕ} [Fintype Z]
     (default : Bool)
-    (hbound : sampleBound < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hbound : sampleBound < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Function.Surjective
       (boundedSamplePluginMajorityWithDefaultActualSwitchedLocalInterface
         default Z k sampleBound).predictorFamily.predict := by
@@ -282,7 +284,7 @@ theorem boundedSamplePluginMajorityWithDefaultActualSwitchedLocalInterface_surje
     Function.Surjective
         (boundedSamplePluginMajorityWithDefaultActualSwitchedLocalInterface
           default Z k sampleBound).predictorFamily.predict ↔
-      Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound := by
+      Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound := by
   constructor
   · intro hsurj
     by_contra hnot
@@ -301,16 +303,16 @@ noncomputable def boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInte
     (Z : Type v) (k sampleBound : ℕ) :
     ActualSwitchedLocalInterface
       Z k
-      (BoundedSampleFallbackIndex (ExactVisiblePostSwitchSurface Z k) sampleBound)
-      (ExactVisiblePostSwitchSurface Z k) where
+      (BoundedSampleFallbackIndex (ExactVisiblePostSwitchData Z k) sampleBound)
+      (ExactVisiblePostSwitchData Z k) where
   zOf := fun u => u.z
   aOf := fun _ u => u.a
   bOf := fun u => u.b
   localRule := fun index u =>
-    letI := Classical.decEq (ExactVisiblePostSwitchSurface Z k)
+    letI := Classical.decEq (ExactVisiblePostSwitchData Z k)
     PluginSampleMajority.predictWithFallback index.1 index.2.1 u
   output := fun index u =>
-    letI := Classical.decEq (ExactVisiblePostSwitchSurface Z k)
+    letI := Classical.decEq (ExactVisiblePostSwitchData Z k)
     PluginSampleMajority.predictWithFallback index.1 index.2.1 u
   output_eq_local := by
     intro index u
@@ -361,7 +363,7 @@ cover below the exact visible truth-table budget.  The obstruction no longer
 depends on the sample bound, because the fallback is already a full rule. -/
 theorem boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface_not_finitePredictorCover_of_lt_surfaceCard
     {Z : Type v} {k s sampleBound : ℕ} [Fintype Z]
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface
         Z k sampleBound).predictorFamily.FinitePredictorCover (2 ^ s) := by
   intro hcover
@@ -369,13 +371,13 @@ theorem boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface_not_
       ExactVisibleCompressionTarget
         (Z := Z) (k := k)
         (Index := BoundedSampleFallbackIndex
-          (ExactVisiblePostSwitchSurface Z k) sampleBound)
+          (ExactVisiblePostSwitchData Z k) sampleBound)
         (boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface
           Z k sampleBound).predictorFamily s :=
     (exactVisibleCompressionTarget_iff_finitePredictorCover
       (Z := Z) (k := k) (s := s)
       (Index := BoundedSampleFallbackIndex
-        (ExactVisiblePostSwitchSurface Z k) sampleBound)
+        (ExactVisiblePostSwitchData Z k) sampleBound)
       (G := (boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface
         Z k sampleBound).predictorFamily)).2
       hcover
@@ -383,7 +385,7 @@ theorem boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface_not_
     (not_exactVisibleCompressionTarget_of_surjective_predict
       (Z := Z) (k := k) (s := s)
       (Index := BoundedSampleFallbackIndex
-        (ExactVisiblePostSwitchSurface Z k) sampleBound)
+        (ExactVisiblePostSwitchData Z k) sampleBound)
       (G := (boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface
         Z k sampleBound).predictorFamily)
       hs
@@ -394,7 +396,7 @@ theorem boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface_not_
 payload below the exact visible truth-table budget. -/
 theorem boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface_not_clockedKpolyFiniteLearningPayload_of_lt_surfaceCard
     {Z : Type v} {k s sampleBound clock : ℕ} [Fintype Z]
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface
           Z k sampleBound).predictorFamily s clock := by
@@ -403,19 +405,19 @@ theorem boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface_not_
       ExactVisibleCompressionTarget
         (Z := Z) (k := k)
         (Index := BoundedSampleFallbackIndex
-          (ExactVisiblePostSwitchSurface Z k) sampleBound)
+          (ExactVisiblePostSwitchData Z k) sampleBound)
         (boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface
           Z k sampleBound).predictorFamily s :=
     exactVisibleCompressionTarget_of_clockedKpolyFiniteLearningPayload
       (Z := Z) (k := k) (s := s) (clock := clock)
       (Index := BoundedSampleFallbackIndex
-        (ExactVisiblePostSwitchSurface Z k) sampleBound)
+        (ExactVisiblePostSwitchData Z k) sampleBound)
       hpayload
   exact
     (not_exactVisibleCompressionTarget_of_surjective_predict
       (Z := Z) (k := k) (s := s)
       (Index := BoundedSampleFallbackIndex
-        (ExactVisiblePostSwitchSurface Z k) sampleBound)
+        (ExactVisiblePostSwitchData Z k) sampleBound)
       (G := (boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface
         Z k sampleBound).predictorFamily)
       hs

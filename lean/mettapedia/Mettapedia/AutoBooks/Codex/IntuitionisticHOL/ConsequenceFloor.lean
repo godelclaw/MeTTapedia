@@ -90,7 +90,7 @@ global-model soundness endpoint.
 -/
 structure SemanticFloor (F : CompletenessFrontier Const Γ) : Prop where
   semilocal :
-    SemilocalSurface.{u, v, w, w'} (Base := Base) (Const := Const) (Γ := Γ) F
+    SemilocalInterface.{u, v, w, w'} (Base := Base) (Const := Const) (Γ := Γ) F
   global_sound :
     DerivabilityGoal (Base := Base) (Const := Const) F →
       CompletenessFrontier.GlobalSemanticConsequence.{u, v, w, w'}

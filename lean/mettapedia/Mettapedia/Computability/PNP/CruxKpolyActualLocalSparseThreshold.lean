@@ -26,7 +26,7 @@ theorem kpolyCoverage_anchor_surjectiveActualLocal_surfaceCard_le_pointBlockVisi
       Nonempty
         (ActualSwitchedLocalInterface.SharedExactZABSparseThresholdERMData
           T zfeat)) :
-    Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤
+    Fintype.card (ExactVisiblePostSwitchData Z k) ≤
       2 * allAffinePointBlockFeatureCount (r + (k + k)) := by
   rcases h with ⟨h⟩
   exact h.surfaceCard_le_of_surjective_predict hsurj
@@ -41,7 +41,7 @@ theorem kpolyCoverage_anchor_surjectiveActualLocal_not_nonempty_sharedExactZABSp
     (zfeat : Z → BitVec r)
     (hs :
       2 * allAffinePointBlockFeatureCount (r + (k + k)) <
-        Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+        Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.SharedExactZABSparseThresholdERMData
           T zfeat) :=
@@ -55,7 +55,7 @@ The concrete plug-in-majority and fallback repairs are only instances of this
 surjective actual-local boundary. -/
 theorem kpolyCoverage_anchor_surjectiveActualLocal_not_exists_sharedExactZABSparseThresholdERMRecoveryData_of_two_mul_extractorWidth_add_two_mul_k_succ_lt_visibleWidth
     {n k r : ℕ} {Index : Type u} {Block : Type w}
-    (μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k))
+    (μ : PMF (ExactVisiblePostSwitchData (BitVec n) k))
     (T : ActualSwitchedLocalInterface (BitVec n) k Index Block)
     (q : ℝ≥0∞)
     (hsurj : Function.Surjective T.predictorFamily.predict)
@@ -72,7 +72,7 @@ endpoint cannot carry the stronger sparse-threshold recovery packet once the
 visible width exceeds the unconditional half-width ceiling. -/
 theorem kpolyCoverage_anchor_pluginSampleMajority_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_two_mul_extractorWidth_add_two_mul_k_succ_lt_visibleWidth
     {n k r : ℕ}
-    (μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k))
+    (μ : PMF (ExactVisiblePostSwitchData (BitVec n) k))
     (zfeat : BitVec n → BitVec r)
     (q : ℝ≥0∞)
     (hgap : 2 * r + 2 * k + 1 < n) :

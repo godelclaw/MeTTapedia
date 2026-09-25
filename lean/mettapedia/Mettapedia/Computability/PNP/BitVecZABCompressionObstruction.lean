@@ -29,12 +29,12 @@ variable {r k s : ℕ} {Index : Type*}
 /-- For bit-valued latent data, the full exact visible post-switch surface has
 cardinality `2^(r + 2k)`. -/
 theorem card_exactVisiblePostSwitchSurface_bitVec (r k : ℕ) :
-    Fintype.card (ExactVisiblePostSwitchSurface (BitVec r) k) = 2 ^ (r + 2 * k) := by
+    Fintype.card (ExactVisiblePostSwitchData (BitVec r) k) = 2 ^ (r + 2 * k) := by
   calc
-    Fintype.card (ExactVisiblePostSwitchSurface (BitVec r) k)
+    Fintype.card (ExactVisiblePostSwitchData (BitVec r) k)
         = Fintype.card (BitVec r) * 2 ^ k * 2 ^ k := by
             simpa using
-              (card_exactVisiblePostSwitchSurface (Z := BitVec r) (k := k))
+              (card_exactVisiblePostSwitchDataDomain (Z := BitVec r) (k := k))
     _ = 2 ^ r * 2 ^ k * 2 ^ k := by simp [BitVec]
     _ = 2 ^ (r + 2 * k) := by
       rw [← Nat.pow_add, ← Nat.pow_add]
@@ -119,7 +119,7 @@ theorem ExactZABDecisionListTargetData.not_surjective_predict_of_identity_of_two
 /-- The same contradiction applies to the recovery wrapper, since it already
 packages the same exact compression target. -/
 theorem ExactZABDecisionListRecoveryData.not_surjective_predict_of_identity_of_two_le
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec r) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec r) k)}
     {G : ExactVisibleSwitchedFamily (BitVec r) k Index}
     {q : ℝ≥0∞}
     (h :
@@ -131,7 +131,7 @@ theorem ExactZABDecisionListRecoveryData.not_surjective_predict_of_identity_of_t
 
 /-- Likewise for the final bit-valued ERM interface. -/
 theorem BitVecZABERMRecoveryData.not_surjective_predict_of_two_le
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec r) k)}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec r) k)}
     {G : ExactVisibleSwitchedFamily (BitVec r) k Index}
     {q : ℝ≥0∞}
     (h : BitVecZABERMRecoveryData (r := r) (k := k) (Index := Index) μ G q)

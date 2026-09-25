@@ -15,7 +15,7 @@ universe u v w z
 theorem kpoly_anchor_clocked_realization_regression
     {Z : Type*} {k s clock : ℕ} {Index : Type*}
     {G : ExactVisibleSwitchedFamily Z k Index} :
-    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    (∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         G.RealizedByClockedBitFamily F) ↔
       ExactVisibleCompressionTarget (Z := Z) (k := k) (Index := Index) G s := by
   exact
@@ -49,7 +49,7 @@ theorem kpoly_anchor_fielded_switching_only_bridge_iff_forall_semantic_finite_im
 
 theorem kpoly_anchor_not_product_bound_only_bridge_nil_of_lt_surface_card_regression
     {Ω Z : Type*} [Fintype Ω] [Fintype Z] {k s : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ProductBoundOnlyExactVisibleCompressionBridge
         Ω Z k s ([] : List (FiniteEvent Ω)) ([] : List (V13FieldedStep Ω)) := by
   exact
@@ -58,7 +58,7 @@ theorem kpoly_anchor_not_product_bound_only_bridge_nil_of_lt_surface_card_regres
 
 theorem kpoly_anchor_not_fielded_switching_only_bridge_nil_of_lt_surface_card_regression
     {Ω Z : Type*} [Fintype Ω] [Fintype Z] {k s : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ FieldedSwitchingOnlyExactVisibleCompressionBridge
         Ω Z k s ([] : List (FiniteEvent Ω)) ([] : List (V13FieldedStep Ω)) := by
   exact
@@ -67,7 +67,7 @@ theorem kpoly_anchor_not_fielded_switching_only_bridge_nil_of_lt_surface_card_re
 
 theorem kpoly_anchor_not_product_bound_only_bridge_bool_pair_one_step_of_lt_surface_card_regression
     {Z : Type*} [Fintype Z] {k s : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ProductBoundOnlyExactVisibleCompressionBridge
         (Bool × Bool) Z k s
         ([] : List (FiniteEvent (Bool × Bool)))
@@ -78,7 +78,7 @@ theorem kpoly_anchor_not_product_bound_only_bridge_bool_pair_one_step_of_lt_surf
 
 theorem kpoly_anchor_not_fielded_switching_only_bridge_bool_pair_one_step_of_lt_surface_card_regression
     {Z : Type*} [Fintype Z] {k s : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ FieldedSwitchingOnlyExactVisibleCompressionBridge
         (Bool × Bool) Z k s
         ([] : List (FiniteEvent (Bool × Bool)))
@@ -93,7 +93,7 @@ theorem kpoly_anchor_not_product_bound_only_bridge_surjective_family_regression
     {Index : Type v} (G : ExactVisibleSwitchedFamily Z k Index)
     (hprod : V13FieldedProductBoundFrom Ω hist items)
     (hsurj : Function.Surjective G.predict)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ProductBoundOnlyExactVisibleCompressionBridge Ω Z k s hist items := by
   exact
     kpolyCoverage_anchor_not_productBoundOnlyExactVisibleCompressionBridge_of_true_productBound_of_surjective_predict_of_lt_surfaceCard
@@ -105,7 +105,7 @@ theorem kpoly_anchor_not_fielded_switching_only_bridge_surjective_family_regress
     {Index : Type v} (G : ExactVisibleSwitchedFamily Z k Index)
     (hfield : V13FieldSwitchingInstantiatedFrom hist items)
     (hsurj : Function.Surjective G.predict)
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ FieldedSwitchingOnlyExactVisibleCompressionBridge Ω Z k s hist items := by
   exact
     kpolyCoverage_anchor_not_fieldedSwitchingOnlyExactVisibleCompressionBridge_of_true_fieldedSwitching_of_surjective_predict_of_lt_surfaceCard

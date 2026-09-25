@@ -11,7 +11,7 @@ theorem no_widened_small_exactZABERM_matches_full_rule_regression
     (zfeat : BitVec 2 → BitVec 3) :
     ¬ ∃ samples :
         ExactVisibleRule (BitVec 2) 1 →
-          Sample (ExactVisiblePostSwitchSurface (BitVec 2) 1) Bool,
+          Sample (ExactVisiblePostSwitchData (BitVec 2) 1) Bool,
         exactZABDecisionListERMFamily
             (Z := BitVec 2) (r := 3) (k := 1)
             (Index := ExactVisibleRule (BitVec 2) 1)
@@ -26,7 +26,7 @@ theorem no_widened_small_sharedFeatureERM_matches_full_rule_regression
     (features : Fin 3 → AffineColumnCode (3 + (1 + 1))) :
     ¬ ∃ samples :
         ExactVisibleRule (BitVec 2) 1 →
-          Sample (ExactVisiblePostSwitchSurface (BitVec 2) 1) Bool,
+          Sample (ExactVisiblePostSwitchData (BitVec 2) 1) Bool,
         sharedExactZABAffineFeatureERMFamily
             (Z := BitVec 2) (p := 3) (r := 3) (k := 1)
             (Index := ExactVisibleRule (BitVec 2) 1)
@@ -41,7 +41,7 @@ theorem no_widened_small_sharedDecisionListERM_matches_full_rule_regression
     (features : Fin 4 → AffineColumnCode (3 + (1 + 1))) :
     ¬ ∃ samples :
         ExactVisibleRule (BitVec 2) 1 →
-          Sample (ExactVisiblePostSwitchSurface (BitVec 2) 1) Bool,
+          Sample (ExactVisiblePostSwitchData (BitVec 2) 1) Bool,
         sharedExactZABAffineDecisionListERMFamily
             (Z := BitVec 2) (p := 4) (r := 3) (k := 1)
             (Index := ExactVisibleRule (BitVec 2) 1)

@@ -22,8 +22,8 @@ unconditional half-width ceiling.  The fallback-side visible-width repairs are
 only concrete specializations of this surjective actual-local barrier. -/
 theorem kpolyCoverage_anchor_surjectiveActualLocal_visibleWidth_le_two_mul_extractorWidth_add_two_mul_k_succ_of_nonempty_recovery
     {n k r : ℕ} {Index : Type u} {Block : Type w}
-    [Nonempty (ExactVisiblePostSwitchSurface (BitVec n) k)]
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)} {q : ℝ≥0∞}
+    [Nonempty (ExactVisiblePostSwitchData (BitVec n) k)]
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)} {q : ℝ≥0∞}
     (T : ActualSwitchedLocalInterface (BitVec n) k Index Block)
     (hsurj : Function.Surjective T.predictorFamily.predict)
     (zfeat : BitVec n → BitVec r)
@@ -40,8 +40,8 @@ endpoint, the manuscript-facing sparse-threshold recovery packet already
 forces `q` above the uniform-complement threshold `1 - |surface|⁻¹`. -/
 theorem kpolyCoverage_anchor_surjectiveActualLocal_one_sub_inv_card_le_of_nonempty_recovery
     {Z : Type v} [Fintype Z] {k r : ℕ} {Index : Type u} {Block : Type w}
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)} {q : ℝ≥0∞}
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
+    {μ : PMF (ExactVisiblePostSwitchData Z k)} {q : ℝ≥0∞}
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (hsurj : Function.Surjective T.predictorFamily.predict)
     (zfeat : Z → BitVec r)
@@ -49,7 +49,7 @@ theorem kpolyCoverage_anchor_surjectiveActualLocal_one_sub_inv_card_le_of_nonemp
       Nonempty
         (ActualSwitchedLocalInterface.SharedExactZABSparseThresholdERMRecoveryData
           μ T zfeat q)) :
-    1 - (Fintype.card (ExactVisiblePostSwitchSurface Z k) : ℝ≥0∞)⁻¹ ≤ q := by
+    1 - (Fintype.card (ExactVisiblePostSwitchData Z k) : ℝ≥0∞)⁻¹ ≤ q := by
   rcases h with ⟨h⟩
   exact h.one_sub_inv_card_le_of_surjective_predict hsurj
 
@@ -59,8 +59,8 @@ positive combined width already forces `q` above the same uniform-complement
 threshold `1 - |surface|⁻¹`. -/
 theorem kpolyCoverage_anchor_actualLocal_one_sub_inv_card_le_of_nonempty_recovery_of_injective_zfeat
     {Z : Type v} [Fintype Z] {k r : ℕ} {Index : Type u} {Block : Type w}
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)} {q : ℝ≥0∞}
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
+    {μ : PMF (ExactVisiblePostSwitchData Z k)} {q : ℝ≥0∞}
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (zfeat : Z → BitVec r)
     (i : Index)
@@ -70,7 +70,7 @@ theorem kpolyCoverage_anchor_actualLocal_one_sub_inv_card_le_of_nonempty_recover
       Nonempty
         (ActualSwitchedLocalInterface.SharedExactZABSparseThresholdERMRecoveryData
           μ T zfeat q)) :
-    1 - (Fintype.card (ExactVisiblePostSwitchSurface Z k) : ℝ≥0∞)⁻¹ ≤ q := by
+    1 - (Fintype.card (ExactVisiblePostSwitchData Z k) : ℝ≥0∞)⁻¹ ≤ q := by
   rcases h with ⟨h⟩
   exact h.one_sub_inv_card_le_of_injective_zfeat hinj hwidth i
 
@@ -79,14 +79,14 @@ injective extractor of positive combined width can support the manuscript-
 facing sparse-threshold recovery packet on that actual-local endpoint. -/
 theorem kpolyCoverage_anchor_actualLocal_not_exists_injective_sharedExactZABSparseThresholdERMRecoveryData_of_lt_one_sub_inv_card
     {Z : Type v} [Fintype Z] {k r : ℕ} {Index : Type u} {Block : Type w}
-    [Nonempty (ExactVisiblePostSwitchSurface Z k)]
-    (μ : PMF (ExactVisiblePostSwitchSurface Z k))
+    [Nonempty (ExactVisiblePostSwitchData Z k)]
+    (μ : PMF (ExactVisiblePostSwitchData Z k))
     (T : ActualSwitchedLocalInterface Z k Index Block)
     (q : ℝ≥0∞)
     (i : Index)
     (hwidth : 0 < r + (k + k))
     (hq_lt :
-      q < 1 - (Fintype.card (ExactVisiblePostSwitchSurface Z k) : ℝ≥0∞)⁻¹) :
+      q < 1 - (Fintype.card (ExactVisiblePostSwitchData Z k) : ℝ≥0∞)⁻¹) :
     ¬ ∃ zfeat : Z → BitVec r,
         Function.Injective zfeat ∧
           Nonempty
@@ -127,7 +127,7 @@ manuscript-facing recovery packet already forces the explicit threshold
 `q ≥ 1 - 2^-(n + 2*k)`. -/
 theorem kpolyCoverage_anchor_fullRuleActualLocal_one_sub_pow_inv_le_of_nonempty_recovery
     {n k r : ℕ}
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)} {q : ℝ≥0∞}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)} {q : ℝ≥0∞}
     (zfeat : BitVec n → BitVec r)
     (h :
       Nonempty
@@ -150,7 +150,7 @@ injective extractor of positive combined width already forces the explicit
 threshold `q ≥ 1 - 2^-(n + 2*k)`. -/
 theorem kpolyCoverage_anchor_actualLocal_one_sub_pow_inv_le_of_nonempty_recovery_of_injective_zfeat
     {n k r : ℕ} {Index : Type u} {Block : Type w}
-    {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)} {q : ℝ≥0∞}
+    {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)} {q : ℝ≥0∞}
     (T : ActualSwitchedLocalInterface (BitVec n) k Index Block)
     (zfeat : BitVec n → BitVec r)
     (i : Index)
@@ -177,7 +177,7 @@ injective extractor of positive combined width can support the manuscript-
 facing sparse-threshold recovery packet on that actual-local endpoint. -/
 theorem kpolyCoverage_anchor_actualLocal_not_exists_injective_sharedExactZABSparseThresholdERMRecoveryData_of_lt_one_sub_pow_inv
     {n k r : ℕ} {Index : Type u} {Block : Type w}
-    (μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k))
+    (μ : PMF (ExactVisiblePostSwitchData (BitVec n) k))
     (T : ActualSwitchedLocalInterface (BitVec n) k Index Block)
     (q : ℝ≥0∞)
     (i : Index)
@@ -204,7 +204,7 @@ theorem kpolyCoverage_anchor_actualLocal_not_exists_injective_sharedExactZABSpar
 extractor at all can support the full-rule manuscript-facing recovery packet. -/
 theorem kpolyCoverage_anchor_fullRuleActualLocal_not_exists_sharedExactZABSparseThresholdERMRecoveryData_of_lt_one_sub_pow_inv
     {n k r : ℕ}
-    (μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k))
+    (μ : PMF (ExactVisiblePostSwitchData (BitVec n) k))
     (q : ℝ≥0∞)
     (hq_lt : q < 1 - (2 ^ (n + 2 * k) : ℝ≥0∞)⁻¹) :
     ¬ ∃ zfeat : BitVec n → BitVec r,

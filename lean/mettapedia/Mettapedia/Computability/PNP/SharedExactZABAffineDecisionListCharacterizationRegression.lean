@@ -121,8 +121,8 @@ theorem fullExactVisibleRuleFamily_not_realizedBySharedExactZABAffineDecisionLis
       (fun i => nomatch i)
       (by
         intro hinj
-        let uTrue : ExactVisiblePostSwitchSurface Bool 0 := ⟨true, zeroVec, zeroVec⟩
-        let uFalse : ExactVisiblePostSwitchSurface Bool 0 := ⟨false, zeroVec, zeroVec⟩
+        let uTrue : ExactVisiblePostSwitchData Bool 0 := ⟨true, zeroVec, zeroVec⟩
+        let uFalse : ExactVisiblePostSwitchData Bool 0 := ⟨false, zeroVec, zeroVec⟩
         have heqSig :
             exactZABAffineDecisionListSignature
               (Z := Bool) (p := 0) (r := 0) (k := 0)

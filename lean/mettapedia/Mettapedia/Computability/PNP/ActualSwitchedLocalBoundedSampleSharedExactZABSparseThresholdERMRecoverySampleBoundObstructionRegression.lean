@@ -7,7 +7,7 @@ namespace Mettapedia.Computability.PNP
 def constBitVec0BoundedSampleRecoverySampleBound : BitVec 1 → BitVec 0 := fun _ i => Fin.elim0 i
 
 local instance exactVisiblePostSwitchSurfaceBitVec1k0NonemptyBoundedSampleRecoverySampleBound :
-    Nonempty (ExactVisiblePostSwitchSurface (BitVec 1) 0) :=
+    Nonempty (ExactVisiblePostSwitchData (BitVec 1) 0) :=
   ⟨⟨zeroVec, zeroVec, zeroVec⟩⟩
 
 theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_visibleWidthBudget_lt_sampleBound_of_nonempty_sharedExactZABSparseThresholdERMRecoveryData_1_1_0_17_regression
@@ -15,7 +15,7 @@ theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_visibleWidthBudg
     (h :
       Nonempty
         (ActualSwitchedLocalInterface.SharedExactZABSparseThresholdERMRecoveryData
-          (μ := PMF.uniformOfFintype (ExactVisiblePostSwitchSurface (BitVec 1) 0))
+          (μ := PMF.uniformOfFintype (ExactVisiblePostSwitchData (BitVec 1) 0))
           (boundedSamplePluginMajorityActualSwitchedLocalInterface
             (BitVec 1) 0 17)
           zfeat
@@ -24,7 +24,7 @@ theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_visibleWidthBudg
   exact
     ActualSwitchedLocalInterface.boundedSamplePluginMajorityActualSwitchedLocalInterface_visibleWidthBudget_lt_sampleBound_of_nonempty_sharedExactZABSparseThresholdERMRecoveryData
       (n := 1) (r := 1) (k := 0) (sampleBound := 17)
-      (μ := PMF.uniformOfFintype (ExactVisiblePostSwitchSurface (BitVec 1) 0))
+      (μ := PMF.uniformOfFintype (ExactVisiblePostSwitchData (BitVec 1) 0))
       (zfeat := zfeat)
       (q := 0)
       h
@@ -39,7 +39,7 @@ theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_visibleWidthBudg
 theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_1_0_0_3_regression :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.SharedExactZABSparseThresholdERMRecoveryData
-          (μ := PMF.uniformOfFintype (ExactVisiblePostSwitchSurface (BitVec 1) 0))
+          (μ := PMF.uniformOfFintype (ExactVisiblePostSwitchData (BitVec 1) 0))
           (boundedSamplePluginMajorityActualSwitchedLocalInterface
             (BitVec 1) 0 3)
           constBitVec0BoundedSampleRecoverySampleBound
@@ -47,7 +47,7 @@ theorem boundedSamplePluginMajorityActualSwitchedLocalInterface_not_nonempty_sha
   exact
     ActualSwitchedLocalInterface.boundedSamplePluginMajorityActualSwitchedLocalInterface_not_nonempty_sharedExactZABSparseThresholdERMRecoveryData_of_sampleBound_le_visibleWidthBudget
       (n := 1) (r := 0) (k := 0) (sampleBound := 3)
-      (μ := PMF.uniformOfFintype (ExactVisiblePostSwitchSurface (BitVec 1) 0))
+      (μ := PMF.uniformOfFintype (ExactVisiblePostSwitchData (BitVec 1) 0))
       (zfeat := constBitVec0BoundedSampleRecoverySampleBound)
       (q := 0)
       (by

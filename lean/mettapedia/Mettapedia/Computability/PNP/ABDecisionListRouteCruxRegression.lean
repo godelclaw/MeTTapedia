@@ -24,7 +24,7 @@ example {Index : Type}
 
 example :
     ¬ ExactVisibleCompressionTarget
-        (Z := Unit) (k := 1) (Index := ABVisibleSurface 1 → Bool)
+        (Z := Unit) (k := 1) (Index := ABVisibleState 1 → Bool)
         (fullExactABRuleFamily Unit 1) 3 :=
   fullExactABRuleFamily_not_exactVisibleCompressionTarget_of_pos
     Unit (k := 1) (by decide)

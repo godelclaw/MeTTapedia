@@ -116,16 +116,16 @@ noncomputable def pluginSampleMajorityActualSwitchedLocalInterface
     (Z : Type v) (k : ℕ) :
     ActualSwitchedLocalInterface
       Z k
-      (Sample (ExactVisiblePostSwitchSurface Z k) Bool)
-      (ExactVisiblePostSwitchSurface Z k) where
+      (Sample (ExactVisiblePostSwitchData Z k) Bool)
+      (ExactVisiblePostSwitchData Z k) where
   zOf := fun u => u.z
   aOf := fun _ u => u.a
   bOf := fun u => u.b
   localRule := fun sample u =>
-    letI := Classical.decEq (ExactVisiblePostSwitchSurface Z k)
+    letI := Classical.decEq (ExactVisiblePostSwitchData Z k)
     PluginSampleMajority.predict sample u
   output := fun sample u =>
-    letI := Classical.decEq (ExactVisiblePostSwitchSurface Z k)
+    letI := Classical.decEq (ExactVisiblePostSwitchData Z k)
     PluginSampleMajority.predict sample u
   output_eq_local := by
     intro sample u
@@ -158,24 +158,24 @@ theorem pluginSampleMajorityActualSwitchedLocalInterface_surjective
 exact visible truth-table budget. -/
 theorem pluginSampleMajorityActualSwitchedLocalInterface_not_finitePredictorCover_of_lt_surfaceCard
     {Z : Type v} {k s : ℕ} [Fintype Z]
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (pluginSampleMajorityActualSwitchedLocalInterface Z k).predictorFamily.FinitePredictorCover
         (2 ^ s) := by
   intro hcover
   have hsmall :
       ExactVisibleCompressionTarget
         (Z := Z) (k := k)
-        (Index := Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+        (Index := Sample (ExactVisiblePostSwitchData Z k) Bool)
         (pluginSampleMajorityActualSwitchedLocalInterface Z k).predictorFamily s :=
     (exactVisibleCompressionTarget_iff_finitePredictorCover
       (Z := Z) (k := k) (s := s)
-      (Index := Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+      (Index := Sample (ExactVisiblePostSwitchData Z k) Bool)
       (G := (pluginSampleMajorityActualSwitchedLocalInterface Z k).predictorFamily)).2
       hcover
   exact
     (not_exactVisibleCompressionTarget_of_surjective_predict
       (Z := Z) (k := k) (s := s)
-      (Index := Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+      (Index := Sample (ExactVisiblePostSwitchData Z k) Bool)
       (G := (pluginSampleMajorityActualSwitchedLocalInterface Z k).predictorFamily)
       hs (pluginSampleMajorityActualSwitchedLocalInterface_surjective Z k)) hsmall
 
@@ -183,23 +183,23 @@ theorem pluginSampleMajorityActualSwitchedLocalInterface_not_finitePredictorCove
 payload below the exact visible truth-table budget. -/
 theorem pluginSampleMajorityActualSwitchedLocalInterface_not_clockedKpolyFiniteLearningPayload_of_lt_surfaceCard
     {Z : Type v} {k s clock : ℕ} [Fintype Z]
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (pluginSampleMajorityActualSwitchedLocalInterface Z k).predictorFamily s clock := by
   intro hpayload
   have hsmall :
       ExactVisibleCompressionTarget
         (Z := Z) (k := k)
-        (Index := Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+        (Index := Sample (ExactVisiblePostSwitchData Z k) Bool)
         (pluginSampleMajorityActualSwitchedLocalInterface Z k).predictorFamily s :=
     exactVisibleCompressionTarget_of_clockedKpolyFiniteLearningPayload
       (Z := Z) (k := k) (s := s) (clock := clock)
-      (Index := Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+      (Index := Sample (ExactVisiblePostSwitchData Z k) Bool)
       hpayload
   exact
     (not_exactVisibleCompressionTarget_of_surjective_predict
       (Z := Z) (k := k) (s := s)
-      (Index := Sample (ExactVisiblePostSwitchSurface Z k) Bool)
+      (Index := Sample (ExactVisiblePostSwitchData Z k) Bool)
       (G := (pluginSampleMajorityActualSwitchedLocalInterface Z k).predictorFamily)
       hs (pluginSampleMajorityActualSwitchedLocalInterface_surjective Z k)) hsmall
 
@@ -207,7 +207,7 @@ theorem pluginSampleMajorityActualSwitchedLocalInterface_not_clockedKpolyFiniteL
 assumption below the exact visible truth-table budget. -/
 theorem pluginSampleMajorityActualSwitchedLocalInterface_not_bitCodeData_of_lt_surfaceCard
     {Z : Type v} {k s : ℕ} [Fintype Z]
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.BitCodeData
           (pluginSampleMajorityActualSwitchedLocalInterface Z k) s) := by
@@ -221,7 +221,7 @@ constructor data below the exact visible truth-table budget. -/
 theorem pluginSampleMajorityActualSwitchedLocalInterface_not_zabDecisionListData_of_lt_surfaceCard
     {Z : Type v} {k r : ℕ} [Fintype Z]
     (zfeat : Z → BitVec r)
-    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : r + 2 * k + 1 < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ Nonempty
         (ActualSwitchedLocalInterface.ZABDecisionListData
           (pluginSampleMajorityActualSwitchedLocalInterface Z k) zfeat) := by

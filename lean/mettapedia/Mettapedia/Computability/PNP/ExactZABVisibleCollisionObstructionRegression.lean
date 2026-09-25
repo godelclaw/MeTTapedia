@@ -24,7 +24,7 @@ theorem zeroExtractor_not_injective :
   cases h
 
 theorem exactZABAffineFeatureERMFamily_zeroExtractor_regression
-    (samples : Unit → Sample (ExactVisiblePostSwitchSurface Bool 0) Bool) :
+    (samples : Unit → Sample (ExactVisiblePostSwitchData Bool 0) Bool) :
     ¬ Function.Surjective
         (exactZABAffineFeatureERMFamily
           (Z := Bool) (p := 1) (r := 0) (k := 0) zeroExtractor samples).predict := by
@@ -34,7 +34,7 @@ theorem exactZABAffineFeatureERMFamily_zeroExtractor_regression
       zeroExtractor samples zeroExtractor_not_injective
 
 theorem exactZABSparseThresholdAffineERMFamily_zeroExtractor_regression
-    (samples : Unit → Sample (ExactVisiblePostSwitchSurface Bool 0) Bool) :
+    (samples : Unit → Sample (ExactVisiblePostSwitchData Bool 0) Bool) :
     ¬ Function.Surjective
         (exactZABSparseThresholdAffineERMFamily
           (Z := Bool) (p := 1) (r := 0) (k := 0) zeroExtractor samples).predict := by
@@ -45,7 +45,7 @@ theorem exactZABSparseThresholdAffineERMFamily_zeroExtractor_regression
 
 theorem sharedExactZABAffineFeatureERMFamily_zeroExtractor_regression
     {features : Fin 1 → AffineColumnCode (0 + (0 + 0))}
-    (samples : Unit → Sample (ExactVisiblePostSwitchSurface Bool 0) Bool) :
+    (samples : Unit → Sample (ExactVisiblePostSwitchData Bool 0) Bool) :
     ¬ Function.Surjective
         (sharedExactZABAffineFeatureERMFamily
           (Z := Bool) (p := 1) (r := 0) (k := 0) zeroExtractor features samples).predict := by
@@ -56,7 +56,7 @@ theorem sharedExactZABAffineFeatureERMFamily_zeroExtractor_regression
 
 theorem sharedExactZABSparseThresholdAffineERMFamily_zeroExtractor_regression
     {features : Fin 1 → AffineColumnCode (0 + (0 + 0))}
-    (samples : Unit → Sample (ExactVisiblePostSwitchSurface Bool 0) Bool) :
+    (samples : Unit → Sample (ExactVisiblePostSwitchData Bool 0) Bool) :
     ¬ Function.Surjective
         (sharedExactZABSparseThresholdAffineERMFamily
           (Z := Bool) (p := 1) (r := 0) (k := 0) zeroExtractor features samples).predict := by
@@ -67,7 +67,7 @@ theorem sharedExactZABSparseThresholdAffineERMFamily_zeroExtractor_regression
 
 theorem sharedExactZABAffineDecisionListERMFamily_zeroExtractor_regression
     {features : Fin 1 → AffineColumnCode (0 + (0 + 0))}
-    (samples : Unit → Sample (ExactVisiblePostSwitchSurface Bool 0) Bool) :
+    (samples : Unit → Sample (ExactVisiblePostSwitchData Bool 0) Bool) :
     ¬ Function.Surjective
         (sharedExactZABAffineDecisionListERMFamily
           (Z := Bool) (p := 1) (r := 0) (k := 0) zeroExtractor features samples).predict := by

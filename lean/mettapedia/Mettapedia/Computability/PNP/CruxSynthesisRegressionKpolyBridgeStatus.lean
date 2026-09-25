@@ -328,7 +328,7 @@ theorem kpoly_anchor_fielded_switching_clocked_payload_bridge_iff_finite_image_r
 
 theorem kpoly_anchor_exact_zab_recovery_large_region_disagreement_regression
     {Z : Type u} [Fintype Z] {r k : ℕ} {Index : Type v}
-    {μ : PMF (ExactVisiblePostSwitchSurface Z k)}
+    {μ : PMF (ExactVisiblePostSwitchData Z k)}
     {zfeat : Z → BitVec r}
     {G : ExactVisibleSwitchedFamily Z k Index}
     {q : ℝ≥0∞}
@@ -339,7 +339,7 @@ theorem kpoly_anchor_exact_zab_recovery_large_region_disagreement_regression
     (c :
       (rawExactZABDecisionListBitFamily Z r k zfeat).toEncodedFamily.BadCodes
         (G.predict i))
-    (region : Finset (ExactVisiblePostSwitchSurface Z k))
+    (region : Finset (ExactVisiblePostSwitchData Z k))
     (hmass : q < region.sum (fun x => μ x)) :
     ∃ x, x ∈ region ∧ μ x ≠ 0 ∧
       (rawExactZABDecisionListBitFamily Z r k zfeat).decode c.1 x ≠

@@ -17,7 +17,7 @@ theorem kpoly_anchor_bounded_sample_majority_surjective_iff_regression
     (Z : Type v) (k sampleBound : ℕ) [Fintype Z] :
     Function.Surjective
         (boundedSamplePluginMajorityActualSwitchedLocalInterface Z k sampleBound).predictorFamily.predict ↔
-      Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound := by
+      Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound := by
   exact
     kpolyCoverage_anchor_boundedSampleMajority_surjective_iff
       Z k sampleBound
@@ -25,9 +25,9 @@ theorem kpoly_anchor_bounded_sample_majority_surjective_iff_regression
 theorem kpoly_anchor_bounded_sample_majority_false_support_card_regression
     {Z : Type v} [Fintype Z] {k sampleBound : ℕ}
     (sample :
-      BoundedSampleIndex (ExactVisiblePostSwitchSurface Z k) sampleBound) :
+      BoundedSampleIndex (ExactVisiblePostSwitchData Z k) sampleBound) :
     (PluginSampleMajority.falseSupport
-      (fun u : ExactVisiblePostSwitchSurface Z k =>
+      (fun u : ExactVisiblePostSwitchData Z k =>
         (boundedSamplePluginMajorityActualSwitchedLocalInterface Z k sampleBound).predictorFamily.predict
           sample u)).card ≤ sampleBound := by
   exact
@@ -50,9 +50,9 @@ theorem kpoly_anchor_bounded_sample_majority_default_nondefault_support_card_reg
     {Z : Type v} [Fintype Z] {k sampleBound : ℕ}
     (default : Bool)
     (sample :
-      BoundedSampleIndex (ExactVisiblePostSwitchSurface Z k) sampleBound) :
+      BoundedSampleIndex (ExactVisiblePostSwitchData Z k) sampleBound) :
     (PluginSampleMajority.nondefaultSupport default
-      (fun u : ExactVisiblePostSwitchSurface Z k =>
+      (fun u : ExactVisiblePostSwitchData Z k =>
         (boundedSamplePluginMajorityWithDefaultActualSwitchedLocalInterface
           default Z k sampleBound).predictorFamily.predict sample u)).card ≤ sampleBound := by
   exact
@@ -76,7 +76,7 @@ theorem kpoly_anchor_bounded_sample_majority_default_surjective_iff_regression
     Function.Surjective
         (boundedSamplePluginMajorityWithDefaultActualSwitchedLocalInterface
           default Z k sampleBound).predictorFamily.predict ↔
-      Fintype.card (ExactVisiblePostSwitchSurface Z k) ≤ sampleBound := by
+      Fintype.card (ExactVisiblePostSwitchData Z k) ≤ sampleBound := by
   exact
     kpolyCoverage_anchor_boundedSampleMajorityWithDefault_surjective_iff
       default Z k sampleBound
@@ -103,7 +103,7 @@ theorem kpoly_anchor_bounded_sample_majority_fallback_surjective_regression
 
 theorem kpoly_anchor_bounded_sample_majority_fallback_no_finite_cover_regression
     {Z : Type v} [Fintype Z] {k s sampleBound : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface
         Z k sampleBound).predictorFamily.FinitePredictorCover (2 ^ s) := by
   exact
@@ -112,7 +112,7 @@ theorem kpoly_anchor_bounded_sample_majority_fallback_no_finite_cover_regression
 
 theorem kpoly_anchor_bounded_sample_majority_fallback_no_finite_index_representative_cover_regression
     {Z : Type v} [Fintype Z] {k s sampleBound : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface
         Z k sampleBound).predictorFamily.FiniteIndexRepresentativeCover (2 ^ s) := by
   exact
@@ -121,7 +121,7 @@ theorem kpoly_anchor_bounded_sample_majority_fallback_no_finite_index_representa
 
 theorem kpoly_anchor_bounded_sample_majority_fallback_no_finite_predictor_quotient_regression
     {Z : Type v} [Fintype Z] {k s sampleBound : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ (boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface
         Z k sampleBound).predictorFamily.FinitePredictorQuotient (2 ^ s) := by
   exact
@@ -130,11 +130,11 @@ theorem kpoly_anchor_bounded_sample_majority_fallback_no_finite_predictor_quotie
 
 theorem kpoly_anchor_bounded_sample_majority_fallback_no_exact_visible_compression_regression
     {Z : Type v} [Fintype Z] {k s sampleBound : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ExactVisibleCompressionTarget
         (Z := Z) (k := k)
         (Index := BoundedSampleFallbackIndex
-          (ExactVisiblePostSwitchSurface Z k) sampleBound)
+          (ExactVisiblePostSwitchData Z k) sampleBound)
         (boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface
           Z k sampleBound).predictorFamily s := by
   exact
@@ -143,8 +143,8 @@ theorem kpoly_anchor_bounded_sample_majority_fallback_no_exact_visible_compressi
 
 theorem kpoly_anchor_bounded_sample_majority_fallback_no_clocked_realization_regression
     {Z : Type v} [Fintype Z] {k s sampleBound clock : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
-    ¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchSurface Z k) s clock,
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
+    ¬ ∃ F : ClockedBitCodeFamily (ExactVisiblePostSwitchData Z k) s clock,
         (boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface
           Z k sampleBound).predictorFamily.RealizedByClockedBitFamily F := by
   exact
@@ -153,7 +153,7 @@ theorem kpoly_anchor_bounded_sample_majority_fallback_no_clocked_realization_reg
 
 theorem kpoly_anchor_bounded_sample_majority_fallback_no_clocked_payload_regression
     {Z : Type v} [Fintype Z] {k s sampleBound clock : ℕ}
-    (hs : s < Fintype.card (ExactVisiblePostSwitchSurface Z k)) :
+    (hs : s < Fintype.card (ExactVisiblePostSwitchData Z k)) :
     ¬ ClockedKpolyFiniteLearningPayload
         (boundedSamplePluginMajorityWithFallbackActualSwitchedLocalInterface
           Z k sampleBound).predictorFamily s clock := by

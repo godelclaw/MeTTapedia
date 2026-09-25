@@ -37,7 +37,7 @@ namespace ActualSwitchedLocalInterface
 section BitVec
 
 variable {n k r : ℕ}
-variable {μ : PMF (ExactVisiblePostSwitchSurface (BitVec n) k)}
+variable {μ : PMF (ExactVisiblePostSwitchData (BitVec n) k)}
 variable {q : ℝ≥0∞} {zfeat : BitVec n → BitVec r}
 
 /-- On the injective branch, even a bounded-sample plug-in-majority endpoint
