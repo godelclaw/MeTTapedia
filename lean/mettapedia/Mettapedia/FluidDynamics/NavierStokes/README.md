@@ -206,7 +206,7 @@ fractions of a completed proof.
 | S2. Spatial field transfer | Transfer the coherent/misaligned geometry to the actual localized operator fields, retaining uniform kernel constants and the inverse-scale gain through integration and limits. | **Partial.** High-input pressure and the low-input complement are identified; moving-line and divergence decompositions retain their source costs. Common periodic envelopes and actual localized weak derivatives in L² are constructed. `PressureCoherentWeakFieldTransfer.lean` identifies both input-coordinate channels, retaining the uniform ratio²/input-scale² energy gain. `GaussianRootWeakChannelBudget.lean` transfers both patch-square sums to the integrable two-point derivative density without individual input suprema or a patch-count factor. `GaussianRootTwoPointDerivative.lean` bounds that density by actual gap/projector derivatives and Gaussian two-point moments, on a common null set that survives translation. `PressureCoherentRelativeMoment.lean` retains the ratio in every prescribed relative kernel moment and integrates squared field separation with an explicit Lipschitz cost. `GaussianRootTwoPointIntegral.lean` proves integrability of the full Gaussian derivative cost and transfers both actual channel-energy sums to it using one constructed envelope. `GaussianRootIncrementBudget.lean` replaces projector separation by actual vorticity/strain increments inside both integrated channel costs, using constructed adaptive centers. `GaussianRootWeightedIncrement.lean` controls the bare vorticity increment by actual sixth-power-weighted palinstrophy with the relative second-moment gain, and splits the full cost while retaining its two-endpoint projector coefficient. Quantitative control of the derivative-weighted costs, remaining interactions, and time affordability are still required. |
 | S3. All scales and sectors | Sum over input scales and pay for the other frequency interactions, angular tails, collision sectors, and adaptive cutoff terms without uncontrolled scale, patch-count, or regularization losses. | **Partial.** `PressureHighInputAction.lean` sums all high-input scales in bilinear operator norm. `GaussianRootHighInputBudget.lean` retains the quarter-geometric tail gain after localization and spatial integration, with explicit vorticity-supremum and patch-gradient costs. `PressureHighInputComplement.lean` identifies the remaining input sector as an exact finite sum. Finite support does not establish a uniform or dynamically affordable bound. The other sectors, scale-critical time control, and regularization limits are open. |
 | S4. Dynamical misalignment budget | Prove the signed time-integrated nonlinear estimate from the actual unforced evolution, with bounds that remain finite up to any candidate finite singular time. Construct `MisalignmentStrainBudget`, rather than pass it in as a hypothesis. | **Open; decisive mathematical core.** `LocalExcessAlignmentEnergy.lean` supplies an actual-data absorption inequality with explicit source costs. `LocalVorticityEighthEnergy.lean` derives the exact initial-data eighth-moment identity with both positive dissipation terms and signed stretching, using the same weighted palinstrophy as the increment estimate. `VorticityWeightedStretching.lean` identifies that actual full source as the limit of signed two-point cross-product/radial-difference integrals. `VorticityHighAmplitudeSource.lean` pays the bounded-amplitude part at each finite cutoff with actual weighted dissipation, retaining a signed high-amplitude remainder. `VorticityRegularizedIncrement.lean` supplies a cutoff-uniform increment payment for a constructed smooth-annular Riesz regularization. `VorticityRegularizedSource.lean` now identifies its limit with actual stretching; `VorticityRegularizedPayment.lean` pays its low-amplitude source with a single positive threshold independent of cutoff and field. The signed time-integrated high-amplitude bound remains open. `MisalignmentRefinedPin.lean` proves a conditional reduction, not the required dynamical budget. `MettapediaNS.ForcedCandidateVorticity` proves that `E8` is unbounded along every forced whole-space blowup candidate of OpenAI's Theorem 1.1, so an S4 derivation that remains valid for smooth compactly supported forcing is excluded; see "Forced-construction pressure test". |
-| S5. Vorticity control and continuation | Construct the spatial essential-supremum vorticity integrand, prove its finite-time integral is controlled by the preceding estimates, and apply the continuation theorem to the actual solution. | **Open.** Continuation target surfaces and conditional reductions exist. The current `||omega||_sup² sqrt(G)` spatial cost is not yet a controlled BKM integrand. |
+| S5. Vorticity control and continuation | Construct the spatial essential-supremum vorticity integrand, prove its finite-time integral is controlled by the preceding estimates, and apply the continuation theorem to the actual solution. | **Partial.** `StochasticLagrangian/FourierContinuation.lean` proves the continuation principle for the Galerkin-limit Fourier solutions: a solution on `[0,T)` whose order-`m` velocity energy (`m ≥ 2`) stays at most `M` extends to `[0, T + δ/2)`, `δ = window m ν M`, and near a finite maximal time that energy is at least `1/(4(C_m+1)(T_max - T)) - 1`. No uniqueness theorem is used. The analytic half remains open: bounding the order-`m` energy up to a candidate singular time from the S4 output. The current `||omega||_sup² sqrt(G)` spatial cost is not yet a controlled BKM integrand. |
 | S6. Unconditional theorem and audit | Assemble the arbitrary-data theorem for each claimed domain; check every hypothesis, forcing/pressure convention, limit, and imported result against the target. Compile and audit the final theorem with no assumed analytic budgets or extra axioms. | **Open.** Local lemma builds and foundational-axiom audits are necessary evidence, not completion of this obligation. |
 
 ```text
@@ -7995,6 +7995,32 @@ None of this closes the scale-critical dynamical misalignment budget,
 the remaining field-transfer estimates, or unconditional BKM continuation.
 The older route-audit summary below describes earlier layers, not the full
 extent of the current local PDE construction.
+
+### Continuation for the Fourier solution class
+
+`StochasticLagrangian/FourierContinuation.lean` turns the existing local
+existence theory into a continuation principle. The Galerkin-limit
+solutions from admissible Fourier data have the explicit lifespan
+`window m ν B₀ = 1/(2(C_m+1)(B₀+1))`, where `B₀` bounds the order-`m`
+velocity energy of the data and `C_m = orderGrowthConstant m ν`. Their right-hand side is a
+continuous path on the closed interval, so each limit curve also satisfies
+the equation from the right at its initial time.
+
+`SolutionOn ν u₀ T` records continuous Fourier coefficients on `[0,T)`
+with the reality, transversality and zero-mean constraints, local Sobolev
+bounds, and the infinite equation at interior times. Local closed-interval
+solutions restrict to it, and admissible physical data start one
+(`exists_solutionOn`). `SolutionOn.extend` restarts a solution at
+`max 0 (T - δ/2)` and glues at that single time: the one-sided derivatives
+agree there, so the glued curve is again a solution. If `T_max` bounds all
+existence times, `SolutionOn.orderEnergy_rate_of_maximal` gives the lower
+bound `M + 1 ≥ 1/(4(C_m+1)(T_max - T))` for every order-`m` energy bound
+`M` on `[0,T)`. The extension agrees with the original solution only up to
+the restart time, since no uniqueness theorem is used.
+
+This is the soft half of continuation. It does not bound the order-`m`
+energy; S4 must supply that bound, or a BKM-type integrand that controls it,
+up to a candidate singular time.
 
 ### Earlier route-audit layers
 
