@@ -8332,6 +8332,51 @@ inequality a proof that unforced blowup cannot be faster than the critical
 rate would have to iterate, and it is where the seeds of the forced blowup
 candidates are excluded.
 
+**The cascade contraction.** `StochasticLagrangian/FourierCascadeContraction.lean`
+closes the loop of the shell-feeding inequality. The Wiener norm above `2^Q`
+is the shell `2^Q` plus the Wiener norm above `2^(Q+1)`, and one shell is
+bounded by the energy of the data, which every tame solution keeps below its
+initial value (`integral_wienerHigh_split`). So one contracting step of the
+cascade is enough: if at some scale `2^Q` the feeding
+`(12/ν) ∫ V_{≥Q}(u) V(u)` is at most `A + θ ∫ W_{≥Q}(ω)` with `θ < 1`,
+uniformly along the solutions of each horizon, then
+
+```text
+∫₀ᴴ W_{≥Q}(ω) ≤ (H · shellConst Q · √E₀ + R_{Q+1}(ω₀) + A) / (1 - θ),
+```
+
+the vorticity supremum is integrable up to every horizon, and the official
+periodic statement follows (`periodicStatementB_of_cascadeContraction`). A
+bound `K` on the velocity Wiener norm gives the contraction at the scale
+`2^Q ≥ 12 K / (π ν)`, where the Reynolds number of the sweeping velocity is
+below one half (`periodicStatementB_of_velocityWienerBound`). That criterion
+is subcritical, since the velocity Wiener norm dominates the velocity
+supremum: the Fourier feeding counts transport as feeding, although transport
+only moves vorticity. The open input is therefore the contraction with
+transport removed, in the frame that follows the flow, where only stretching
+feeds the high shells.
+
+**Pancake pair depletion by transversality.**
+`StochasticLagrangian/FourierPancakePairDepletion.lean` bounds the stretching
+that remains. The stretching of a pair of vorticity modes `p`, `r`,
+symmetrized over the pair, is `(ω_p · ∇) u_r + (ω_r · ∇) u_p`: the
+antisymmetric parts of the two velocity gradients cancel between the two
+orders (`pair_stretch_eq`). A vorticity coefficient is transverse to its own
+wavevector, so `ω_p · r` only sees the part of `r` orthogonal to `p`; in the
+pancake cones of squared apertures `d₁`, `d₂ ≤ 1/4` about the third axis,
+
+```text
+‖S(u_p) ω_r + S(u_r) ω_p‖ ≤ 8 (√d₁ + √d₂) ‖ω_p‖ ‖ω_r‖
+```
+
+(`norm_pair_stretch_le`). No coherent projection is needed: a flat vortex
+layer does not stretch itself, whatever the in-plane directions of its
+vorticity. Summed over the cone modes `P` and weighted by the sharp relaxation
+weight above `2^(Q+1)`, the pancake stretching is at most
+`3 / (4π²ν 4^(Q+1)) · 8√d · M_P²`, with `M_P` the vorticity Wiener mass of
+the cone (`sum_sharp_pancakeStretch_le`): the aperture times the pancake
+Reynolds number times the pancake mass.
+
 ### Earlier route-audit layers
 
 The directory is best read as a route audit and obstruction library. It has
