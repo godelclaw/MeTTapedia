@@ -1,5 +1,7 @@
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16TraceOrbitExecutableSignature
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16TraceOrbitProductSignatureData
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16TraceOrbitChartKernelTables
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16TraceOrbitProductSignatureKernelTables
 
 set_option autoImplicit false
 set_option maxRecDepth 10000000
@@ -28,6 +30,11 @@ theorem chunk_product_signatures :
     ∀ localIndex : Fin 64,
       directRepresentativeCanonicalProductSignature (chunkIndex localIndex) =
         expectedProductSignature localIndex := by
+  simp only [directRepresentativeCanonicalProductSignature, positiveRepresentativeCode,
+    HypercubicDimension16TraceOrbitChartData.positiveRepresentativeCode?,
+    HypercubicDimension16TraceOrbitChartKernelTables.decodedPositiveRepresentativeWordChunk_eq_table,
+    expectedProductSignature, representativeCanonicalProductSignatureCode?,
+    HypercubicDimension16TraceOrbitProductSignatureKernelTables.decodedRepresentativeCanonicalProductSignatureCodeChunk_eq_table]
   decide +kernel
 
 end HypercubicDimension16TraceOrbitProductSignatureChunk068
