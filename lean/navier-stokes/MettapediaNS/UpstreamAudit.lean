@@ -18,6 +18,7 @@ import MettapediaNS.GaussianHeatIncrement
 import MettapediaNS.GaussianHeatWeakStress
 import MettapediaNS.GaussianHeatFourier
 import MettapediaNS.GaussianHeatTorus
+import MettapediaNS.ForcedCandidateVorticity
 
 /-!
 # Direct upstream dependency audit
@@ -255,3 +256,9 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.GaussianHeatCovariance.continuous_periodicAverage
 #print axioms Mettapedia.FluidDynamics.NavierStokes.GaussianHeatCovariance.hasSum_periodicAverage
 #print axioms Mettapedia.FluidDynamics.NavierStokes.GaussianHeatCovariance.average_lift_eq_tsum
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ForcedCandidateVorticity.biotSavart3_curl3
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ForcedCandidateVorticity.coord_eq_kernel
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ForcedCandidateVorticity.kernel_integral_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ForcedCandidateVorticity.norm_le_vorticity_moment
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ForcedCandidateVorticity.candidate_vorticityMoment_unbounded
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ForcedCandidateVorticity.candidate_eighthVorticityMoment_unbounded

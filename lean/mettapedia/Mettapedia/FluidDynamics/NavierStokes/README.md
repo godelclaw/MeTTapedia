@@ -205,7 +205,7 @@ fractions of a completed proof.
 | S1. Actual equation and objects | Construct the solution, stochastic/material objects, and frequency decomposition from arbitrary admissible data; derive every evolution identity used later from the actual unforced equation. Track the periodic and Euclidean realizations separately. | **Partial.** The local periodic solution, common-interval material flow, vorticity and strain equations are constructed; see `StochasticLagrangian/LocalMaterialVorticity.lean`, `LocalMaterialStrain.lean`, and `LocalSpectralResidual.lean`. This is not a complete arbitrary-data stochastic/Euclidean realization. |
 | S2. Spatial field transfer | Transfer the coherent/misaligned geometry to the actual localized operator fields, retaining uniform kernel constants and the inverse-scale gain through integration and limits. | **Partial.** High-input pressure and the low-input complement are identified; moving-line and divergence decompositions retain their source costs. Common periodic envelopes and actual localized weak derivatives in L² are constructed. `PressureCoherentWeakFieldTransfer.lean` identifies both input-coordinate channels, retaining the uniform ratio²/input-scale² energy gain. `GaussianRootWeakChannelBudget.lean` transfers both patch-square sums to the integrable two-point derivative density without individual input suprema or a patch-count factor. `GaussianRootTwoPointDerivative.lean` bounds that density by actual gap/projector derivatives and Gaussian two-point moments, on a common null set that survives translation. `PressureCoherentRelativeMoment.lean` retains the ratio in every prescribed relative kernel moment and integrates squared field separation with an explicit Lipschitz cost. `GaussianRootTwoPointIntegral.lean` proves integrability of the full Gaussian derivative cost and transfers both actual channel-energy sums to it using one constructed envelope. `GaussianRootIncrementBudget.lean` replaces projector separation by actual vorticity/strain increments inside both integrated channel costs, using constructed adaptive centers. `GaussianRootWeightedIncrement.lean` controls the bare vorticity increment by actual sixth-power-weighted palinstrophy with the relative second-moment gain, and splits the full cost while retaining its two-endpoint projector coefficient. Quantitative control of the derivative-weighted costs, remaining interactions, and time affordability are still required. |
 | S3. All scales and sectors | Sum over input scales and pay for the other frequency interactions, angular tails, collision sectors, and adaptive cutoff terms without uncontrolled scale, patch-count, or regularization losses. | **Partial.** `PressureHighInputAction.lean` sums all high-input scales in bilinear operator norm. `GaussianRootHighInputBudget.lean` retains the quarter-geometric tail gain after localization and spatial integration, with explicit vorticity-supremum and patch-gradient costs. `PressureHighInputComplement.lean` identifies the remaining input sector as an exact finite sum. Finite support does not establish a uniform or dynamically affordable bound. The other sectors, scale-critical time control, and regularization limits are open. |
-| S4. Dynamical misalignment budget | Prove the signed time-integrated nonlinear estimate from the actual unforced evolution, with bounds that remain finite up to any candidate finite singular time. Construct `MisalignmentStrainBudget`, rather than pass it in as a hypothesis. | **Open; decisive mathematical core.** `LocalExcessAlignmentEnergy.lean` supplies an actual-data absorption inequality with explicit source costs. `LocalVorticityEighthEnergy.lean` derives the exact initial-data eighth-moment identity with both positive dissipation terms and signed stretching, using the same weighted palinstrophy as the increment estimate. `VorticityWeightedStretching.lean` identifies that actual full source as the limit of signed two-point cross-product/radial-difference integrals. `VorticityHighAmplitudeSource.lean` pays the bounded-amplitude part at each finite cutoff with actual weighted dissipation, retaining a signed high-amplitude remainder. `VorticityRegularizedIncrement.lean` supplies a cutoff-uniform increment payment for a constructed smooth-annular Riesz regularization. `VorticityRegularizedSource.lean` now identifies its limit with actual stretching; `VorticityRegularizedPayment.lean` pays its low-amplitude source with a single positive threshold independent of cutoff and field. The signed time-integrated high-amplitude bound remains open. `MisalignmentRefinedPin.lean` proves a conditional reduction, not the required dynamical budget. |
+| S4. Dynamical misalignment budget | Prove the signed time-integrated nonlinear estimate from the actual unforced evolution, with bounds that remain finite up to any candidate finite singular time. Construct `MisalignmentStrainBudget`, rather than pass it in as a hypothesis. | **Open; decisive mathematical core.** `LocalExcessAlignmentEnergy.lean` supplies an actual-data absorption inequality with explicit source costs. `LocalVorticityEighthEnergy.lean` derives the exact initial-data eighth-moment identity with both positive dissipation terms and signed stretching, using the same weighted palinstrophy as the increment estimate. `VorticityWeightedStretching.lean` identifies that actual full source as the limit of signed two-point cross-product/radial-difference integrals. `VorticityHighAmplitudeSource.lean` pays the bounded-amplitude part at each finite cutoff with actual weighted dissipation, retaining a signed high-amplitude remainder. `VorticityRegularizedIncrement.lean` supplies a cutoff-uniform increment payment for a constructed smooth-annular Riesz regularization. `VorticityRegularizedSource.lean` now identifies its limit with actual stretching; `VorticityRegularizedPayment.lean` pays its low-amplitude source with a single positive threshold independent of cutoff and field. The signed time-integrated high-amplitude bound remains open. `MisalignmentRefinedPin.lean` proves a conditional reduction, not the required dynamical budget. `MettapediaNS.ForcedCandidateVorticity` proves that `E8` is unbounded along every forced whole-space blowup candidate of OpenAI's Theorem 1.1, so an S4 derivation that remains valid for smooth compactly supported forcing is excluded; see "Forced-construction pressure test". |
 | S5. Vorticity control and continuation | Construct the spatial essential-supremum vorticity integrand, prove its finite-time integral is controlled by the preceding estimates, and apply the continuation theorem to the actual solution. | **Open.** Continuation target surfaces and conditional reductions exist. The current `||omega||_sup² sqrt(G)` spatial cost is not yet a controlled BKM integrand. |
 | S6. Unconditional theorem and audit | Assemble the arbitrary-data theorem for each claimed domain; check every hypothesis, forcing/pressure convention, limit, and imported result against the target. Compile and audit the final theorem with no assumed analytic budgets or extra axioms. | **Open.** Local lemma builds and foundational-axiom audits are necessary evidence, not completion of this obligation. |
 
@@ -7928,20 +7928,68 @@ checks the dependencies of the filtering identities, witness and estimates.
 
 ### Forced-construction pressure test
 
-The [OpenAI forced blowup construction](https://cdn.openai.com/pdf/32d9f210-8b73-45e0-91bc-82a30aef8a9a/navier-stokes.pdf)
-claims bounded-energy singular solutions with smooth compactly supported
-forcing (Theorem 1.1 and Corollary 10.6). If correct, this excludes a complete
-regularity argument that would also cover those solutions. Its oscillatory
-pulses have nonzero mean quadratic stresses despite zero angular mean;
-mean-zero oscillation alone cannot justify discarding their feedback.
+The pinned [OpenAI development](https://github.com/openai/NavierStokesAndEuler)
+states Theorem 1.1 of its [Navier–Stokes paper](https://cdn.openai.com/pdf/32d9f210-8b73-45e0-91bc-82a30aef8a9a/navier-stokes.pdf)
+(whole space) and Corollary 10.6 (torus) as Lean theorems whose manifest
+lists no `sorry` and only the standard axioms. The full construction is not
+rebuilt in this repository. Its whole-space candidates start from rest,
+are driven by a smooth force compactly supported in positive time, keep
+velocity and pressure in one compact set, have bounded kinetic energy and
+integrable dissipation, and have unbounded speed at time one.
 
-This does not refute the local identities above or automatically refute the
-unforced misalignment-budget conjecture. An external body force adds
-`sym ∇F` to the strain rate and `curl F` to the vorticity rate, with pressure
-still determined by the actual equation. Setting `F = 0` removes these direct
-inputs, not `R` or `νΔω`. Any proposed uniform closure must control the
-surviving terms and identify its genuinely unforced mechanism. Integrability
-on each compact local interval is not a bound uniform up to a singular time.
+`MettapediaNS.ForcedCandidateVorticity` proves, for every candidate
+satisfying the statement's `CandidateProperties` and every `p > 3`, that
+`∫ ‖curl u(t)‖^p` is unbounded for `0 < t < 1`. In particular the
+eighth moment `E8` is unbounded. Each velocity slice is proved equal to
+the imported Biot–Savart velocity of its own curl, and its speed is
+bounded by `C_K ‖curl u(t)‖_p` through the kernel `1/(4π|z|²)` and
+Hölder's inequality. All six new declarations use only the standard axioms.
+
+**Consequence for S4.** For such a solution the eighth-moment balance
+acquires the forcing term `∫ |ω|⁶ ω·curl f`, bounded by
+`‖curl f‖_∞ (E8 + ‖ω‖₂²)`; this forced identity is not formalized here.
+Since the dissipation is integrable up to time one and `E8` is unbounded,
+no coefficients `a, b` with finite time integrals up to time one satisfy
+`stretching ≤ (ν/2) G8 + b E8 + a` along a candidate. A derivation of the
+S4 inequality whose steps remain valid, with force-dependent constants,
+for smooth compactly supported forcing would contradict Theorem 1.1. The
+existing S4 identities use `F = 0` only perturbatively: an external force
+adds `sym ∇F` to the strain rate and `curl F` to the vorticity rate, and
+setting `F = 0` removes only these direct inputs. A successful S4 argument
+must use the absence of forcing non-perturbatively.
+
+**Geometry of the forced candidates.** The following is read from the
+paper's stated scalings, with `τ = 1 - t` and a fixed `0 < h < 1/100`; it
+is not formalized here. The core is a swirling column of radius `≍ τ^(1/2)`
+and height `≍ τ^(1/2-h)`, with azimuthal and axial speeds `≍ τ^(-1/2-h)`.
+The dominant strain `≍ τ^(-1-h)` is a shear of rank two, and the vorticity
+is tangent to the cylinders `r = const`, so the leading stretching cancels.
+The remaining stretching rate is `≍ τ^(-1)`: smaller than the strain by the
+factor `τ^h`, yet its time integral diverges logarithmically. Misalignment
+alone therefore does not prevent this singularity. For every frequency `λ`
+between `τ^(-1/2)` and `γ/ν` with `γ ≍ τ^(-1-h)`, the local strain violates
+`γ ≤ ν λ`, the condition of `pancakeApertureCovered_iff_strain_le`; the
+oscillatory pulses that supply the missing annular stress have frequency
+`≍ τ^(-(1+h)/2)`, inside this band. Their shear amplification is
+comparable to their viscous damping. They have zero angular mean but
+nonzero mean quadratic stress, so mean-zero oscillation alone cannot
+justify discarding their feedback. Near the singular point the force is
+flat: every derivative is `O(q^N)` for every `N`, where
+`q ≍ τ + |z|^(1/(1/2-h))` is the paper's concentration scale. There the
+flow satisfies the unforced equations up to that flat residual, and the
+pulses are seeded by exponentially small parts of the force.
+
+**Where the unforced equation can enter (heuristic).** OpenAI's unforced
+Euler blowup places every packet in the initial data. For the viscous
+pulses above, the radial wavenumber one core time before activation is
+larger by a factor `≍ τ^(-h)`, and the resulting viscous loss exceeds the
+available shear amplification. This scaling estimate suggests that, without
+forcing, each seed must be generated by the flow itself shortly before its
+growth window, with the phase and structure the stress balance requires.
+A dynamical bound on such self-generated, phase-coherent gap-band content
+would be a genuinely unforced S4 ingredient; none is proved.
+Integrability on each compact local interval is not a bound uniform up to
+a singular time.
 
 None of this closes the scale-critical dynamical misalignment budget,
 the remaining field-transfer estimates, or unconditional BKM continuation.
