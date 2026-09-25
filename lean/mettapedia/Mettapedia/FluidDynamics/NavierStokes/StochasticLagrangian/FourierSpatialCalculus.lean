@@ -434,21 +434,24 @@ theorem Rapid.bounded (ha : Rapid a) : ∃ C, ∀ k, ‖a k‖ ≤ C := by
   obtain ⟨C, hC⟩ := ha 0
   exact ⟨C, fun k ↦ by simpa using (norm_le_moment a 0 k).trans (hC k)⟩
 
+/-- The convection terms of a rapid field are summable. -/
+theorem summable_convTerm (ha : Rapid a) (q : Wavevector) :
+    Summable (fun p ↦ modeDot q (a p) • a (q - p)) := by
+  obtain ⟨C, hC⟩ := ha.bounded
+  refine (ha.summable_norm.mul_left (3 * (1 + ‖frequencyVec q‖) * C)).of_norm_bounded
+    fun p ↦ ?_
+  rw [norm_smul]
+  have h1 := norm_modeDot_le_sup q (a p)
+  have hC0 : 0 ≤ C := (norm_nonneg _).trans (hC 0)
+  calc ‖modeDot q (a p)‖ * ‖a (q - p)‖ ≤ (3 * (1 + ‖frequencyVec q‖) * ‖a p‖) * C :=
+        mul_le_mul h1 (hC _) (norm_nonneg _) (by positivity)
+    _ = _ := by ring
+
 /-- The Fourier convection as a series of vectors. -/
 theorem infiniteConvection_eq (ha : Rapid a) (q : Wavevector) :
     infiniteConvection a q = ∑' p, modeDot q (a p) • a (q - p) := by
-  have hs : Summable (fun p ↦ modeDot q (a p) • a (q - p)) := by
-    obtain ⟨C, hC⟩ := ha.bounded
-    refine (ha.summable_norm.mul_left (3 * (1 + ‖frequencyVec q‖) * C)).of_norm_bounded
-      fun p ↦ ?_
-    rw [norm_smul]
-    have h1 := norm_modeDot_le_sup q (a p)
-    have hC0 : 0 ≤ C := (norm_nonneg _).trans (hC 0)
-    calc ‖modeDot q (a p)‖ * ‖a (q - p)‖ ≤ (3 * (1 + ‖frequencyVec q‖) * ‖a p‖) * C :=
-          mul_le_mul h1 (hC _) (norm_nonneg _) (by positivity)
-      _ = _ := by ring
   funext i
-  rw [tsum_apply hs]
+  rw [tsum_apply (summable_convTerm ha q)]
   rfl
 
 theorem modeDot_field (ha : Rapid a) (k : Wavevector) (x : ℝ³) :

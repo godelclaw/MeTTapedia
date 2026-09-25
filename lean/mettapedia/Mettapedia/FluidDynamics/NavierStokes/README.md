@@ -8163,7 +8163,8 @@ target of the periodic lane, alternative (B) of the Clay problem for the unit
 torus with zero force, in the Formal Conjectures formalization
 (`PeriodicStatementB`: smooth one-periodic solutions on `ℝ³ × [0, ∞)` with the
 time derivative taken within `[0, ∞)`); it is a definition, not an assumption.
-The bridge from the Fourier solutions to that statement is under construction.
+The bridge from the Fourier solutions to that statement is complete; the
+missing input is exactly the Fourier regularity hypothesis.
 `Mettapedia/Analysis/SmoothSeriesClosure.lean` proves smoothness of a series on
 the closure of an open convex set from summable bounds on its iterated
 within-derivatives (termwise differentiation on the interior, extension of the
@@ -8199,10 +8200,38 @@ Fourier system is `ċ_q + 2π i conv_q = ν (2π i)² |q|² c_q - 2π i q p̂_q`
 pressure are one-periodic. Hence every continuous, real, transverse Fourier
 solution with rapidly decaying coefficients on bounded time intervals gives a
 solution in the official sense for the initial velocity it defines
-(`navierStokesPeriodic_of_fourierSolution`, for every viscosity). The data side
-(Fourier coefficients of a smooth periodic initial velocity, removal of its
-mean by a Galilean change of frame) and the passage from global solutions of
-every order to rapid decay remain.
+(`navierStokesPeriodic_of_fourierSolution`, for every viscosity).
+`StochasticLagrangian/FourierAllOrders.lean` lowers tame and global solutions to
+every lower order and, through the order-free bound on `∫ ‖ω‖_∞`, raises a
+global solution of order `m ≥ 7` to every higher order for which the data are
+admissible; data admissible of every order therefore have rapidly decaying
+coefficients on bounded time intervals (`fourierSolution_of_globalSolution`).
+`StochasticLagrangian/FourierGalilean.lean` restores a nonzero mean `m` by the
+Galilean change of frame `c̃_q(t) = exp(-2π i ⟨q, m⟩ t) c_q(t) + δ_{q0} m`: the
+convection of `c̃` is the phased convection of `c` plus the transport by the
+mean, whose phase derivative cancels it (`fourierSolution_galilean`).
+`StochasticLagrangian/FourierInitialData.lean` handles the data: a smooth
+one-periodic velocity descends to a continuous function on the torus through
+the product quotient map; periodic integration by parts gives the multiplier
+`2π i kⱼ` for each coordinate derivative, so the coefficients decay faster
+than every power; they are real for a real velocity and transverse for a
+divergence-free one; the Fourier series reconstructs the velocity pointwise;
+and the fluctuation data, the coefficients with the zero mode removed, are
+admissible of every order, the velocity being its mean plus their field.
+`StochasticLagrangian/FourierOfficialTheorems.lean` assembles the bridge:
+
+- `exists_official_of_globalSolution`: a global solution of order `m ≥ 7` for
+  the fluctuation data of a smooth periodic initial velocity gives a solution
+  of the official statement;
+- `periodicStatementB_of_periodicRegularity`: `PeriodicRegularity m` for one
+  `m ≥ 7` implies `PeriodicStatementB`. The hypothesis remains open; it is
+  equivalent to the finite-horizon bound on `∫ ‖ω‖_∞`;
+- `exists_official_of_small`: data whose fluctuation is small in the Sobolev
+  energy of order `m ≥ 5`, relative to the viscosity, have global smooth
+  periodic solutions in the official sense, unconditionally;
+- `exists_official_of_planar`: planar data (independent of the third
+  coordinate, with no third component) of any size have global smooth
+  periodic solutions in the official sense, unconditionally.
 
 ### Earlier route-audit layers
 
