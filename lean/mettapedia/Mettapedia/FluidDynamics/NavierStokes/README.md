@@ -8396,6 +8396,21 @@ and `q` are collinear (`stressTerm_eq_zero_of_collinear`). A disturbance whose
 wavevector has been tilted onto that of a mean-flow mode exerts no stress on
 that mode.
 
+**Shear alignment.** `StochasticLagrangian/FourierShearAlignment.lean` shows
+why sheared disturbances fall silent. On the lattice of the periodic shearing
+box, `n` shear periods map a wavevector `k` to `(k₀, k₁ - n k₀, k₂)`. The cross
+product of two sheared wavevectors is `(c₀ + n c₁, c₁, c₂)` with `c = p × r`,
+so it grows at most like `1 + |n|` (`norm_cross_shearMap_le`), while a sheared
+wavevector with nonzero streamwise component grows at least like `|n| |k₀|`
+(`sub_le_norm_shearMap`). Hence the sine of the angle between two sheared
+modes decays like `1 / |n|`: once `|n| ≥ 2|p|, 2|r|` it is at most
+`8 |p × r| / |n|` (`sine_shearMap_le_div`), and by the sine law their pair
+stretching is at most `16 |p × r| / |n|` times the product of the coefficients
+(`norm_pair_stretch_shearMap_le`). A shear flattens the disturbance it carries
+into layers normal to the shear gradient, and the layers stop stretching one
+another. This depletes the disturbances carried by a shear, not the shear
+flow that carries them.
+
 **What the smooth-force breakdown says about this route.** OpenAI's
 breakdown construction for the forced problem, formalized upstream and
 imported by the lane gate, collapses a slender swirling vortex column.
