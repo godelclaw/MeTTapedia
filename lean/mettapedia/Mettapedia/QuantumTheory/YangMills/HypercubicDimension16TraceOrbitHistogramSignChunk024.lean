@@ -1,4 +1,5 @@
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16TraceOrbitHistogramExecutable
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16TraceOrbitChartKernelTables
 
 set_option autoImplicit false
 set_option maxRecDepth 10000000
@@ -23,6 +24,9 @@ theorem chunk_reflection_signs_positive :
     ∀ localIndex : Fin 256, ∀ reflection : Fin 16,
       directRepresentativeTensorSign (chunkIndex localIndex)
           (decodedHypercubicCharacterElement 0 reflection) = 1 := by
+  simp only [directRepresentativeTensorSign,
+    positiveRepresentativeCode, HypercubicDimension16TraceOrbitChartData.positiveRepresentativeCode?,
+    HypercubicDimension16TraceOrbitChartKernelTables.decodedPositiveRepresentativeWordChunk_eq_table]
   decide +kernel
 
 /-- Every unsigned plane-histogram stabilizer has positive sign in this range. -/
@@ -33,6 +37,9 @@ theorem chunk_unsigned_histogram_stabilizers_positive :
         directRepresentativePlaneHistogramAt (chunkIndex localIndex) 1 →
       directRepresentativeTensorSign (chunkIndex localIndex)
           (decodedHypercubicCharacterElement permutation 0) = 1 := by
+  simp only [directRepresentativeTensorSign, directRepresentativePlaneHistogramAt,
+    positiveRepresentativeCode, HypercubicDimension16TraceOrbitChartData.positiveRepresentativeCode?,
+    HypercubicDimension16TraceOrbitChartKernelTables.decodedPositiveRepresentativeWordChunk_eq_table]
   decide +kernel
 
 end HypercubicDimension16TraceOrbitHistogramSignChunk024
