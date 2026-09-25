@@ -583,12 +583,12 @@ theorem sourceCorridorSerialInputFaceGraph_next_reachable_iff_faceStepCode
   constructor
   · intro hclosure
     exact Relation.ReflTransGen.lift coordinate
-      (fun first second h => (hstep first second).1 h) hclosure
+      (fun first second h => (hstep first second).1 h) _ _ hclosure
   · intro hclosure
     have hlift := Relation.ReflTransGen.lift coordinate.symm
       (fun first second h => (hstep (coordinate.symm first)
-        (coordinate.symm second)).2 (by simpa using h)) hclosure
-    simpa [coordinate, carrier] using hlift
+        (coordinate.symm second)).2 (by simpa using h)) _ _ hclosure
+    simpa [Function.onFun, coordinate, carrier] using hlift
 
 end AnnularEmbedding
 

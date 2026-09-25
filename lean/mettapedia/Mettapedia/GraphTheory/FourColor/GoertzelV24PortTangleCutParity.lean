@@ -43,6 +43,7 @@ darts, where a boundary port contributes one dart. -/
 def IsCubic (T : PortTangle V I P) : Prop :=
   ∀ vertex : V, (dartsAt T vertex).card = 3
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Forgetting the rotations of an open cubic tangle preserves cubicity. -/
 theorem isCubic_ofOpenTangleData
     (T : OpenTangleData V I P) (hcubic : OpenIsCubic T) :

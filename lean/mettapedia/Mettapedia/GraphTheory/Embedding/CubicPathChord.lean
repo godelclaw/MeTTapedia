@@ -180,6 +180,7 @@ theorem symm_lastDart_exteriorInterval_eq_backwardDart
   rw [hlast]
   exact SimpleGraph.Dart.symm_symm _
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The complementary arc of a simple outer cycle identifies the exterior
 face sides of two interleaving chords.  Starting at the later chord, cross
 its non-cut edge and follow the outer-cycle interval back to the selected

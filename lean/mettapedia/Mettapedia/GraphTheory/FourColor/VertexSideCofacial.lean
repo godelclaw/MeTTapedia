@@ -52,6 +52,7 @@ theorem physicalCofacial_iff_ambient {A B : V → Prop}
     exact ⟨d, e, (observes_iff_ambient RS a b matching mark m d).mpr hd,
       (observes_iff_ambient RS a b matching mark n e).mpr he, hc⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem ambientDart_rho {A B : V → Prop}
     (a : RetainedDart RS A) (b : RetainedDart RS B)
     (matching : BoundaryDart RS A ≃ BoundaryDart RS B)

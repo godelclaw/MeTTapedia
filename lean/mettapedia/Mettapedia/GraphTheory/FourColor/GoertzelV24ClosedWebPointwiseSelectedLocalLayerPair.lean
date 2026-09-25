@@ -105,6 +105,7 @@ noncomputable def secondLayer
   walk := layers.secondWalk
   isPath := layers.secondWalk_isPath
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The two local rails meet only in their two named endpoint faces. -/
 theorem localLayers_tail_disjoint
     {data : AnnularBoundaryData G 5}
@@ -187,6 +188,7 @@ noncomputable def pointwiseSelectedSecondLayer
       (Finset.univ : Finset (OrbitFace formation.annular.RS))
       layers.secondWalk (layers.secondWalkStepUnique hinterior) step
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The two exact pointwise crossing supports are disjoint.  A reused edge
 would be incident with three distinct annular faces, contradicting the local
 two-face incidence law. -/

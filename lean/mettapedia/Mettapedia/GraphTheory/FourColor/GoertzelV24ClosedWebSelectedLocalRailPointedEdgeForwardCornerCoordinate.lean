@@ -108,6 +108,7 @@ private theorem cornerDarts_pairwise_ne_of_card_eq_three
   simpa only [first, RotationSystem.phi_apply] using
     ⟨hfirstStep.symm, hfirstThird, hsecondStep.symm⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The two literal boundary arms and the crossed third edge form the complete
 three-edge star retained by a forward receipt.  Local degree three is read
 from the receipt; no global cubicity is assumed on the opened carrier. -/

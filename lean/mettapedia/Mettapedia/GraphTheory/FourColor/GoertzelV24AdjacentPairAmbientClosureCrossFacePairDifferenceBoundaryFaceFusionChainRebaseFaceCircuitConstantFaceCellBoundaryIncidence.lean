@@ -156,6 +156,7 @@ theorem targetCross_not_incident_root_snd
   exact cell.faceDart_snd_not_mem_centralEdgeValue split.root
     split.root_face
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The target cross does not meet the initial endpoint of the rooted source
 cross either. -/
 theorem targetCross_not_incident_root_fst

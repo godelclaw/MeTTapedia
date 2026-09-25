@@ -421,6 +421,7 @@ def EvenKempePortPath.crossPairingBit
   decide ((first.firstCrossExitDart second hab hbc site).fst =
     (first.secondCrossExitDart second hac hbc site).fst)
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem EvenKempePortPath.crossPairingBit_eq_true_iff
     {portCount : Nat} {data : DegreeTwoBoundaryData G portCount}
     {C : G.EdgeColoring Color} {a b c : Color}

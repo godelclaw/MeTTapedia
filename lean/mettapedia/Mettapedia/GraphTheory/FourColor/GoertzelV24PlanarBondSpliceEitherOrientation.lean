@@ -64,6 +64,7 @@ def CutsFollowEitherDeletedBoundaryOrientation
         hboundary hleftInjective hrightInjective hdisjoint).permCongr
         (oppositeBoundaryCycle n)⁻¹
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The planar-bond splice face count is independent of the coherent global
 orientation used to enumerate the two crosscuts.  The forward case is the
 existing theorem; the reverse case computes the retained boundary directly.

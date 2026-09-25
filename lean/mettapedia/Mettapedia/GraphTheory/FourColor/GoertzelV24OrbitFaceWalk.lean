@@ -21,6 +21,7 @@ face-permutation order. -/
 def faceOrbitDarts (graphData : Data G) (root : G.Dart) : List G.Dart :=
   List.ofFn (faceCycleDart graphData.toRotationSystem root)
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem length_faceOrbitDarts
     (graphData : Data G) (root : G.Dart) :
     (faceOrbitDarts graphData root).length =
@@ -36,6 +37,7 @@ theorem faceOrbitDarts_ne_nil
     Finset.card_pos.mpr
       ⟨root, graphData.toRotationSystem.mem_faceOrbit_self root⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every dart in the bounded facial enumeration represents the same
 quotient face as its root. -/
 theorem dartOrbitFace_eq_of_mem_faceOrbitDarts
@@ -50,6 +52,7 @@ theorem dartOrbitFace_eq_of_mem_faceOrbitDarts
   rw [orbitFaceDarts_dartOrbitFace_eq_faceOrbit]
   exact faceCycleDart_mem graphData.toRotationSystem root position
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The bounded facial enumeration contains exactly the darts in the root
 face orbit. -/
 theorem mem_faceOrbitDarts_iff
@@ -69,6 +72,7 @@ theorem mem_faceOrbitDarts_iff
     simp only [faceOrbitDarts, List.mem_ofFn]
     exact ⟨position, hposition⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A face-permutation step is a valid consecutive-dart step in the
 underlying simple graph. -/
 theorem dartAdj_phi (graphData : Data G) (dart : G.Dart) :
@@ -77,6 +81,7 @@ theorem dartAdj_phi (graphData : Data G) (dart : G.Dart) :
   simpa using
     (graphData.toRotationSystem.vert_phi_eq_vert_alpha dart).symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Consecutive darts in the bounded facial enumeration have exactly the
 edge obtained by one face-permutation step. -/
 theorem faceOrbitDarts_isPhiEdgeChain
@@ -99,6 +104,7 @@ theorem faceOrbitDarts_isPhiEdgeChain
       Function.comp_apply]
   exact congrArg graphData.toRotationSystem.edgeOf hsuccessor
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The bounded face-orbit enumeration is a graph-dart chain. -/
 theorem faceOrbitDarts_isChain
     (graphData : Data G) (root : G.Dart) :
@@ -116,6 +122,7 @@ theorem faceOrbitDarts_isChain
   rw [hsuccessor]
   exact dartAdj_phi graphData _
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The first bounded face-orbit dart is the chosen root. -/
 theorem faceOrbitDarts_head
     (graphData : Data G) (root : G.Dart) :
@@ -124,6 +131,7 @@ theorem faceOrbitDarts_head
   rw [List.head_eq_getElem_zero]
   simp [faceOrbitDarts, faceCycleDart]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The last enumerated face dart is adjacent back to the chosen root. -/
 theorem faceOrbitDarts_getLast_dartAdj_root
     (graphData : Data G) (root : G.Dart) :
@@ -166,6 +174,7 @@ theorem faceOrbitDarts_getLast_dartAdj_root
       dartAdj_phi graphData _
     _ = root.fst := congrArg (fun dart : G.Dart => dart.fst) hwrap
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Under two-sidedness, the facial dart enumeration has no repeated
 underlying edge. -/
 theorem map_edge_faceOrbitDarts_nodup
@@ -179,6 +188,7 @@ theorem map_edge_faceOrbitDarts_nodup
   apply Subtype.ext
   exact hedge
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The rooted facial enumeration realizes a closed graph walk.  Unlike the
 trail refinement below, this applies to open boundary faces whose dart
 enumeration can legitimately revisit an underlying edge. -/
@@ -226,6 +236,7 @@ theorem exists_rootedFaceWalk
   rw [← hedgeEq]
   exact hboundary
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The rooted facial enumeration realizes a closed graph trail, with its
 edge list exactly the ordered underlying face edges. -/
 theorem exists_rootedFaceTrail

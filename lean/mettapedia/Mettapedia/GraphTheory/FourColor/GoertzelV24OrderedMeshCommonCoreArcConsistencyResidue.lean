@@ -92,6 +92,7 @@ def assignmentWithPair
       first source)
     second target
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem assignmentWithPair_first
     (row : Fin a) (slot : Fin 9 ↪ Fin n)
     (first second : Fin 9) (hne : first ≠ second)
@@ -156,6 +157,7 @@ def HasArcConsistentNoSectionResidue
   HasPairwiseTaitRepairSurjectivity rotation minimal ordered row slot ∧
     ¬ HasNineSiteCommonCoreSection rotation minimal ordered row slot
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Absence of the branching and boundary horns makes every distinct
 two-site repair constraint surjective. -/
 theorem pairwiseTaitRepairSurjectivity_of_no_branchingOrBoundary

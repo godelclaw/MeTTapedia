@@ -434,6 +434,7 @@ exactly that face. -/
       coordinates.potential face +
         faceSetColorIndicator data faces delta face := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- If exactly one dart-side face of an edge is selected, the coloured
 face-set boundary has value `delta` on that edge. -/
 theorem faceSetBoundaryColor_eq_delta_of_separates
@@ -488,6 +489,7 @@ theorem faceSetBoundaryColor_eq_delta_of_separates
         data.toRotationSystem htwoSided]
       simp [faceSetColorIndicator, hleft, hrightSymm]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- If the two dart-side faces of an edge have the same membership in the
 selected set, the coloured face-set boundary vanishes on that edge. -/
 theorem faceSetBoundaryColor_eq_zero_of_sameSide

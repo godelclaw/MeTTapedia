@@ -164,6 +164,7 @@ theorem capTargetRho_sameCycle_inr (left right : Fin 3) :
   rw [hsum]
   exact congrArg Sum.inr hpower
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The three-star cap inherits one cyclic dart order at every retained
 vertex, while the new cap vertex carries the standard three-cycle. -/
 theorem capRotationSystem_vertexRotationCyclic

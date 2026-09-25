@@ -46,6 +46,7 @@ theorem rotationSystem_phi_stub_eq_retainedCappedFacePerm
     retainedCappedAlpha_apply_boundary]
   exact boundary.2
 
+set_option backward.isDefEq.respectTransparency false in
 /-- On an old retained dart whose opposite endpoint is retained, an opened
 face step is the corresponding capped-retained face step. -/
 theorem rotationSystem_phi_old_eq_retainedCappedFacePerm_of_internal
@@ -63,6 +64,7 @@ theorem rotationSystem_phi_old_eq_retainedCappedFacePerm_of_internal
     rotationSystem_rho_old]
   rw [retainedCappedFacePerm, Equiv.Perm.mul_apply, hcapped]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- An old exposed dart takes one opened face step to its fresh boundary
 stub. -/
 theorem rotationSystem_phi_old_boundary
@@ -78,6 +80,7 @@ theorem rotationSystem_phi_old_boundary
   apply Subtype.ext
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Before the capped retained walk returns to an exposed dart, its positive
 iterates are followed literally by the opened face permutation after leaving
 the fresh stub. -/
@@ -135,6 +138,7 @@ theorem rotationSystem_phi_pow_stub_eq_old_cappedFacePerm_pow
                 boundary.1) := by
               rw [pow_succ', Equiv.Perm.mul_apply]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- One full first-return step on the capped retained boundary is realized by
 an actual opened face orbit from one fresh stub to the next fresh stub. -/
 theorem dartOrbitFace_stub_eq_boundarySuccessor

@@ -199,23 +199,23 @@ theorem localLayerRightPrefixTrackedGraph_reachable_iff_incomingProfileFactoredC
       (trackedColorPairColors pair).2 left right]
   constructor
   · intro hclosure
-    exact hclosure.mono (by
+    exact Relation.ReflTransGen.mono (by
       intro first second hstep
       rcases hstep with hfirst | hcell | hseam
       · exact Or.inl
           ((aligned.localLayerLeftPrefixTrackedGraph_reachable_iff_profileComponentStep
             color hcolor pair first second).1 hfirst)
       · exact Or.inr (Or.inl hcell)
-      · exact Or.inr (Or.inr hseam))
+      · exact Or.inr (Or.inr hseam)) _ _ hclosure
   · intro hclosure
-    exact hclosure.mono (by
+    exact Relation.ReflTransGen.mono (by
       intro first second hstep
       rcases hstep with hfirst | hcell | hseam
       · exact Or.inl
           ((aligned.localLayerLeftPrefixTrackedGraph_reachable_iff_profileComponentStep
             color hcolor pair first second).2 hfirst)
       · exact Or.inr (Or.inl hcell)
-      · exact Or.inr (Or.inr hseam))
+      · exact Or.inr (Or.inr hseam)) _ _ hclosure
 
 end SourceCornerAlignedSlabInterface
 

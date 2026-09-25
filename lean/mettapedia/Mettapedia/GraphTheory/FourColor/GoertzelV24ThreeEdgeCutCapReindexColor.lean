@@ -93,6 +93,7 @@ theorem capReindexDartColor_alpha
               (data.crossingBoundaryDartEquiv step).1)
       rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Local properness of a reindexed cap coloring is preserved by pulling it
 back through retained incidences. -/
 theorem capReindexDartColor_proper

@@ -41,6 +41,7 @@ abbrev vertexSidePortTangle
   ofOpenTangleData
     (ofVertexSide graphData.toRotationSystem keep outer)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Literal internal darts in a shore of a simple graph are determined by
 their ordered endpoint pair. -/
 theorem interiorEndpointInjective_vertexSide
@@ -104,6 +105,7 @@ def primalKempeWalkToSide
     (G.induce {vertex | keep vertex}).Walk first second :=
   (walk.map (primalKempeToSide graphData keep outer coloring pair)).copy rfl rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The induced-shore image of a primal Kempe path is a path. -/
 theorem primalKempeWalkToSide_isPath
     (graphData : Data G) (keep : V → Prop)
@@ -116,6 +118,7 @@ theorem primalKempeWalkToSide_isPath
   simpa [primalKempeWalkToSide] using
     Walk.map_isPath_of_injective (fun _ _ heq ↦ heq) hwalk
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Edge-disjoint primal Kempe walks remain edge-disjoint in the induced
 shore graph. -/
 theorem primalKempeWalkToSide_edges_disjoint
@@ -166,6 +169,7 @@ def primalKempeWalkToAmbient
       first second) : G.Walk first.1 second.1 :=
   (walk.map (primalKempeToAmbient graphData keep outer coloring pair)).copy rfl rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Injective vertex inclusion preserves pathhood. -/
 theorem primalKempeWalkToAmbient_isPath
     (graphData : Data G) (keep : V → Prop)
@@ -178,6 +182,7 @@ theorem primalKempeWalkToAmbient_isPath
   simpa [primalKempeWalkToAmbient] using
     Walk.map_isPath_of_injective Subtype.val_injective hwalk
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Injective vertex inclusion preserves trailhood. -/
 theorem primalKempeWalkToAmbient_isTrail
     (graphData : Data G) (keep : V → Prop)
@@ -190,6 +195,7 @@ theorem primalKempeWalkToAmbient_isTrail
   simpa [primalKempeWalkToAmbient] using
     Walk.map_isTrail_of_injective Subtype.val_injective hwalk
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Injective vertex inclusion preserves a simple closed primal cycle. -/
 theorem primalKempeWalkToAmbient_isCycle
     (graphData : Data G) (keep : V → Prop)
@@ -235,6 +241,7 @@ theorem exists_ambientPrimalKempeCycle_of_boundaryFree
     primalKempeWalkToAmbient_isCycle
       graphData keep outer coloring pair hcycle⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Edge-disjoint primal Kempe walks remain edge-disjoint in the ambient
 graph because the retained-vertex inclusion is injective. -/
 theorem primalKempeWalkToAmbient_edges_disjoint

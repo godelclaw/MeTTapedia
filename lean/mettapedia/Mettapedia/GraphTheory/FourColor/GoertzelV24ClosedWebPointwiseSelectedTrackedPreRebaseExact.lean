@@ -152,6 +152,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialTrackedLocalGraphAt_support_subse
   refine ⟨carrierCoordinate carrier ⟨edge, hcarrier⟩, ?_⟩
   simp [carrier]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The selected Boolean Cell/seam row is exactly the literal local tracked
 graph on all live current coordinates. -/
 theorem pointwiseSelectedSourceLocalLayerSerialTrackedLocalAdjacencyAt_exact
@@ -287,6 +288,7 @@ theorem pointwiseSelectedRegionalTrackedEdgeGraph_spliced_eq_prefix
 
 /-! ## Exact lift to the complete interaction carrier -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The native selected physical factor reads precisely the selected
 Cell/seam Boolean adjacency row. -/
 theorem pointwiseSelectedSourceLocalLayerSerialPhysicalTrackedLocalAdjacencyAt_eq

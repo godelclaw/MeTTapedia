@@ -65,6 +65,7 @@ def positions (RS : RotationSystem V E) (side : V → Prop) (k : ℕ)
   if h : side (RS.vertOf (mark m)) ∧ ¬ side (RS.vertOf (RS.alpha (mark m))) then
     some (coordinate ⟨⟨mark m, h.1⟩, h.2⟩) else none
 
+set_option backward.isDefEq.respectTransparency false in
 theorem positions_boundary (RS : RotationSystem V E) (side : V → Prop) (k : ℕ)
     (coordinate : BoundaryDart RS side ≃ StandardPort.{u} k)
     (mark : M → RS.D) (m : M) (b : BoundaryDart RS side)
@@ -73,6 +74,7 @@ theorem positions_boundary (RS : RotationSystem V E) (side : V → Prop) (k : �
   unfold positions
   simp [← hb, b.val.property, b.property]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Equality of optional coordinates fixes the actual named dart, not just
 its rank among the marked subset. It also derives membership on the new side. -/
 theorem matching_fixes_mark (RS : RotationSystem V E) (oldSide newSide : V → Prop)

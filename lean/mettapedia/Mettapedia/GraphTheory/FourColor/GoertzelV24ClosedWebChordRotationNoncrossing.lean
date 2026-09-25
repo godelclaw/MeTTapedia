@@ -122,6 +122,7 @@ theorem leftBackwardDart_mem_cycleWalk_of_inside
     SimpleGraph.Walk.darts_cons]
   simpa only [List.mem_cons] using (Or.inr hreverseMember)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- At the interior left endpoint of an interleaving chord, its chord-face
 label is the selected cycle-side label indexed by its own rotation bit. -/
 theorem labels_chordDart_eq_selectedSide_rotationSector_of_right_interleaving
@@ -244,6 +245,7 @@ theorem labels_chordDart_eq_selectedSide_rotationSector_of_right_interleaving
     simpa [hsectorFalse] using
       (hcross.trans ((congrArg labels hface).trans htransport.symm))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The side opposite the rotation bit opens toward the radial prefix and
 therefore carries the inner-hole label.  Equivalently, the rotation bit is
 the side cut off from both holes. -/

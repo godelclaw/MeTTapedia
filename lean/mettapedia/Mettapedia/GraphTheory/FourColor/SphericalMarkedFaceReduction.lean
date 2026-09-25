@@ -39,6 +39,7 @@ def edgeDarts (rotation : Data G) (holes : Finset G.Dart) : Finset G.Dart :=
 def vertexMarks (rotation : Data G) (holes : Finset G.Dart) : Finset V :=
   (edgeDarts rotation holes).image (fun d => d.fst)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem edgeDarts_alpha (rotation : Data G) (holes : Finset G.Dart)
     {d : G.Dart} (hd : d ∈ edgeDarts rotation holes) :
     rotation.toRotationSystem.alpha d ∈ edgeDarts rotation holes := by

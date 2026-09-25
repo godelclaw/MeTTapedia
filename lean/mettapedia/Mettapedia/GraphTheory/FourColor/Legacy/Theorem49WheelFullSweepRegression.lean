@@ -35,18 +35,21 @@ private def wheelWithInnerTriangleParametricEdgeColor
     wheelWithInnerTriangleParametricEdgeColor a b u v wit01 = a := by
   simp [wheelWithInnerTriangleParametricEdgeColor]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] private theorem wheelWithInnerTriangleParametricEdgeColor_wit02
     (a b u v : Color) :
     wheelWithInnerTriangleParametricEdgeColor a b u v wit02 = b := by
   simp [wheelWithInnerTriangleParametricEdgeColor, wheelWithInnerTriangleGraph, wit01, wit02,
     wit03, wit12, wit23, wit31, wit45, wit56]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] private theorem wheelWithInnerTriangleParametricEdgeColor_wit03
     (a b u v : Color) :
     wheelWithInnerTriangleParametricEdgeColor a b u v wit03 = a + b := by
   simp [wheelWithInnerTriangleParametricEdgeColor, wheelWithInnerTriangleGraph, wit01, wit02,
     wit03, wit12, wit23, wit31, wit45, wit56]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] private theorem wheelWithInnerTriangleParametricEdgeColor_wit12
     (a b u v : Color) :
     wheelWithInnerTriangleParametricEdgeColor a b u v wit12 = a + b := by
@@ -58,24 +61,28 @@ private def wheelWithInnerTriangleParametricEdgeColor
     wheelWithInnerTriangleParametricEdgeColor a b u v wit23 = a := by
   simp [wheelWithInnerTriangleParametricEdgeColor, wheelWithInnerTriangleGraph, wit01, wit23]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] private theorem wheelWithInnerTriangleParametricEdgeColor_wit31
     (a b u v : Color) :
     wheelWithInnerTriangleParametricEdgeColor a b u v wit31 = b := by
   simp [wheelWithInnerTriangleParametricEdgeColor, wheelWithInnerTriangleGraph, wit01, wit02,
     wit03, wit12, wit23, wit31, wit45, wit56]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] private theorem wheelWithInnerTriangleParametricEdgeColor_wit45
     (a b u v : Color) :
     wheelWithInnerTriangleParametricEdgeColor a b u v wit45 = u := by
   simp [wheelWithInnerTriangleParametricEdgeColor, wheelWithInnerTriangleGraph, wit01, wit02,
     wit03, wit12, wit23, wit31, wit45]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] private theorem wheelWithInnerTriangleParametricEdgeColor_wit56
     (a b u v : Color) :
     wheelWithInnerTriangleParametricEdgeColor a b u v wit56 = v := by
   simp [wheelWithInnerTriangleParametricEdgeColor, wheelWithInnerTriangleGraph, wit01, wit02,
     wit03, wit12, wit23, wit31, wit45, wit56]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] private theorem wheelWithInnerTriangleParametricEdgeColor_wit64
     (a b u v : Color) :
     wheelWithInnerTriangleParametricEdgeColor a b u v wit64 = u + v := by
@@ -407,6 +414,7 @@ private theorem wheelEdgeCluster_eq_of_bicoloredReachable
   intro p
   exact wheelEdgeCluster_eq_of_bicoloredWalk p
 
+set_option backward.isDefEq.respectTransparency false in
 private theorem wheelWithInnerTriangleTaitEdgeColoring_eq_parametric :
     wheelWithInnerTriangleTaitEdgeColoring =
       wheelWithInnerTriangleParametricTaitEdgeColoring red blue red blue

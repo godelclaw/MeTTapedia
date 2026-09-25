@@ -276,6 +276,7 @@ theorem localLayerRightPrefixBoundedProfile_faceContinues_eq_true_iff_eq
     subst right
     rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The outgoing profile's port-incidence matrix is exactly the fixed
 three-role path pattern. -/
 theorem localLayerRightPrefixBoundedProfile_fragmentContainsPort_eq_role

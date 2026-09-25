@@ -127,6 +127,7 @@ noncomputable def sourceCorridorSerialBoundaryRebaseStableTrackedStepCodeAt
     (sourceCorridorSerialBoundaryRebaseTrackedSwitchSlotAtCoordinate realization
       hcubic hrotation htwoSided hunique offset hnext)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The graph-free finite decoder reconstructs every accumulated old-prefix
 component bit of the literal tracked-step code. -/
 theorem sourceCorridorSerialBoundaryRebaseStableTrackedStepCodeAt_oldComponent_eq_true_iff_literal
@@ -283,11 +284,11 @@ theorem sourceCorridorSerialBoundaryRebaseStableTrackedClosure_iff_literal
   · exact Relation.ReflTransGen.mono (fun first second step =>
       (sourceCorridorSerialBoundaryRebaseStableTrackedComponentStep_iff_literal
         realization hcubic hrotation htwoSided hunique offset hnext color
-          hcolor pair first second).1 step)
+          hcolor pair first second).1 step) _ _
   · exact Relation.ReflTransGen.mono (fun first second step =>
       (sourceCorridorSerialBoundaryRebaseStableTrackedComponentStep_iff_literal
         realization hcubic hrotation htwoSided hunique offset hnext color
-          hcolor pair first second).2 step)
+          hcolor pair first second).2 step) _ _
 
 end
 

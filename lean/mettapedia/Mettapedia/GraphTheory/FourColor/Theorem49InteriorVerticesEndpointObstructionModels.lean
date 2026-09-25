@@ -43,6 +43,7 @@ def sharedFaceBoundary : SharedFace → Finset sharedEndpointGraph.edgeSet
   | ⟨0, _⟩ => {eb01, ei12}
   | ⟨1, _⟩ => {ei12}
 
+set_option backward.isDefEq.respectTransparency false in
 theorem totalIncidenceCount_eb01 :
     totalIncidenceCount sharedFaceBoundary sharedFaces eb01 = 1 := by
   unfold totalIncidenceCount
@@ -53,6 +54,7 @@ theorem totalIncidenceCount_eb01 :
   rw [hfilter]
   simp
 
+set_option backward.isDefEq.respectTransparency false in
 theorem totalIncidenceCount_ei12 :
     totalIncidenceCount sharedFaceBoundary sharedFaces ei12 = 2 := by
   unfold totalIncidenceCount
@@ -113,6 +115,7 @@ theorem planarEmbeddingBoundaryEdgeEndpointAdj_eb01_ei12 :
     planarEmbeddingBoundaryEdgeEndpointAdj eb01 ei12 := by
   exact ⟨eb01_ne_ei12, 1, vertex_one_mem_eb01, vertex_one_mem_ei12⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The same weak incidence model still has a linear endpoint-sharing order on every face
 boundary.  Thus linear boundary-order data alone cannot prove the raw endpoint-support
 separation needed below. -/
@@ -385,6 +388,7 @@ theorem totalIncidenceCount_d01 :
   rw [hfilter]
   simp
 
+set_option backward.isDefEq.respectTransparency false in
 theorem totalIncidenceCount_d12 :
     totalIncidenceCount diamondFaceBoundary diamondFaces d12 = 2 := by
   unfold totalIncidenceCount
@@ -508,6 +512,7 @@ theorem diamondAdj_d23_d13 : planarEmbeddingBoundaryEdgeEndpointAdj d23 d13 := b
 theorem diamondAdj_d13_d12 : planarEmbeddingBoundaryEdgeEndpointAdj d13 d12 := by
   refine ⟨d12_ne_d13.symm, 1, ?_, ?_⟩ <;> simp [d13, d12]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The diamond has genuine cyclic closed face-boundary runs on both triangular faces. -/
 def diamondCyclicOrderedFaceBoundaryData :
     PlaneEmbeddingWithBoundary.CyclicOrderedFaceBoundaryData diamondEmbedding where
@@ -569,6 +574,7 @@ def dart23 : diamondGraph.Dart := ⟨((2 : Fin 4), 3), by simp [diamondGraph]⟩
 
 def dart31 : diamondGraph.Dart := ⟨((3 : Fin 4), 1), by simp [diamondGraph]⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The lower triangular face of the diamond as an honest oriented facial dart cycle. -/
 def diamondFace0PureDartCycle
     (hf : (0 : DiamondFace) ∈ diamondEmbedding.faces) :
@@ -590,6 +596,7 @@ def diamondFace0PureDartCycle
     rcases he' with rfl | rfl | rfl <;>
       simp [d01, d12, d02, dart01, dart12, dart20]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The upper triangular face of the diamond as an honest oriented facial dart cycle. -/
 def diamondFace1PureDartCycle
     (hf : (1 : DiamondFace) ∈ diamondEmbedding.faces) :
@@ -632,6 +639,7 @@ theorem nonempty_faceBoundaryClosedWalkGeometry_diamond :
     Nonempty (PlaneEmbeddingWithBoundary.FaceBoundaryClosedWalkGeometry diamondEmbedding) :=
   ⟨diamondFaceBoundaryPureDartCycleGeometry.toFaceBoundaryClosedWalkGeometry⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A rotated lower-face dart cycle whose induced linear edge run begins with the two selected
 boundary edges. This is used to show that selected-arc contiguity is still not enough to force
 endpoint separation. -/
@@ -655,6 +663,7 @@ def diamondFace0SelectedArcPureDartCycle
     rcases he' with rfl | rfl | rfl <;>
       simp [d01, d12, d02, dart20, dart01, dart12]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A rotated upper-face dart cycle whose induced linear edge run begins with the two selected
 boundary edges. -/
 def diamondFace1SelectedArcPureDartCycle

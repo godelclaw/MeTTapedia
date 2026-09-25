@@ -136,6 +136,7 @@ theorem labels_eq_iterate_of_boundaryEdges_not_cut
       exact (ih hprefix).trans (by
         simpa only [Function.iterate_succ_apply'] using hlast)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A closed trail which crosses one boundary edge separates the two cyclic
 boundary arcs adjacent to it.  Hence an edge-disjoint trail cannot join a
 port reached along the forward arc to a port whose forward arc returns to

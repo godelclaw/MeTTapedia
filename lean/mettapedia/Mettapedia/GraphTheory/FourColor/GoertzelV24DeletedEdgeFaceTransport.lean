@@ -113,6 +113,7 @@ theorem deletedFaceDart_phi
     deletedEdgeData_phi_ambient_eq_of_ne data huv outer
       (deletedFaceDart data huv root hface point) havoids.1 havoids.2
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Map the complete untouched ambient face cycle into the corresponding
 deleted-graph face cycle. -/
 def deletedFaceCycleMap
@@ -151,6 +152,7 @@ theorem deletedFaceCycleMap_injective
   apply deletedFaceDart_injective data huv root hface
   exact congrArg Subtype.val heq
 
+set_option backward.isDefEq.respectTransparency false in
 /-- An untouched ambient face and its face in the edge-deleted graph have
 exactly the same complete dart cycle. -/
 def deletedFaceCycleEquiv
@@ -223,6 +225,7 @@ theorem deletedGraphDartEquiv_deletedFaceRoot
       (deletedFaceRoot data huv root hface)).1 = root :=
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Distinct untouched ambient faces remain distinct after deleting the edge.
 The result is derived from the complete cycle equivalence, not from a count of
 face classes. -/
@@ -315,6 +318,7 @@ theorem ambient_edge_eq_of_deletedFaceEdge_eq_two_faces
   exact congrArg
     (fun edge : (DeletedEdgeGraph G u v).edgeSet => edge.1) hedge
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A shared surviving ambient edge makes the two transported untouched faces
 adjacent in the facial dual of the deleted graph. -/
 theorem deletedFaceOrbit_adj_of_shared_ambient_edge
@@ -362,6 +366,7 @@ theorem deletedFaceOrbit_adj_of_shared_ambient_edge
     apply Quotient.sound
     exact (deletedFaceCycleMap data huv outer rightRoot hright right).2.symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Conversely, every facial-dual adjacency between two transported untouched
 faces comes from a shared ambient edge occurrence. -/
 theorem exists_shared_ambient_edge_of_deletedFaceOrbit_adj

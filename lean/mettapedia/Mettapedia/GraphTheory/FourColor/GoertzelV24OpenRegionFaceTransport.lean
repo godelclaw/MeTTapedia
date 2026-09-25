@@ -114,6 +114,7 @@ theorem alpha_endpoint_keep_of_faceFullyRetained
   have hkeep := hface (RS.phi point.1) hnext
   rwa [RS.vert_phi_eq_vert_alpha] at hkeep
 
+set_option backward.isDefEq.respectTransparency false in
 /-- On a fully retained ambient face, one literal-open face step is exactly
 the old ambient face step after embedding old darts into the open carrier. -/
 theorem openFaceDart_phi
@@ -177,6 +178,7 @@ theorem openFaceCycleMap_injective
   apply Subtype.ext
   exact congrArg (forgetOpenDart RS keep) (congrArg Subtype.val heq)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A fully retained ambient face and its literal-open image have exactly the
 same complete dart cycle.  Surjectivity is not postulated: it follows from
 finite-cycle cardinality and the one-step commutation theorem above. -/
@@ -350,6 +352,7 @@ def openFaceEdge
   (rewiredDartSystem RS keep outer).edgeOf
       (openFaceDart RS keep root hface point)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Equal ambient edges on a fully retained face remain the same computed
 edge after literally opening the retained region. -/
 theorem openFaceEdge_eq_of_ambient_edge_eq
@@ -386,6 +389,7 @@ theorem openFaceEdge_eq_of_ambient_edge_eq
               (openFaceDart RS keep root hface left))
     exact ((rewiredDartSystem RS keep outer).edgeOf_alpha _).symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Equal ambient edges belonging to two possibly different fully retained
 faces become the same edge of one fixed literal-open rotation system.  This
 is the cross-face form needed to transport facial-dual adjacency. -/
@@ -424,6 +428,7 @@ theorem openFaceEdge_eq_of_ambient_edge_eq_two_faces
     rw [hdarts]
     exact ((rewiredDartSystem RS keep outer).edgeOf_alpha _).symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Conversely, the literal opening does not identify ambient edges that
 belong to two different fully retained faces. -/
 theorem ambient_edge_eq_of_openFaceEdge_eq_two_faces
@@ -473,6 +478,7 @@ theorem openFaceEdge_eq_iff_ambient_edge_eq_two_faces
     openFaceEdge_eq_of_ambient_edge_eq_two_faces
       RS keep outer leftRoot rightRoot hleft hright left right⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The literal opening does not identify two distinct old ambient edges on
 a fully retained face. -/
 theorem ambient_edge_eq_of_openFaceEdge_eq
@@ -517,6 +523,7 @@ theorem openFaceEdge_eq_iff_ambient_edge_eq
   ⟨ambient_edge_eq_of_openFaceEdge_eq RS keep outer root hface left right,
     openFaceEdge_eq_of_ambient_edge_eq RS keep outer root hface left right⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A shared ambient edge between two distinct fully retained faces remains
 an edge of the facial dual after the literal opening.  Thus the opening does
 not merely preserve each face separately: it preserves the corresponding

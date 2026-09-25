@@ -48,6 +48,7 @@ namespace Instance
 
 namespace LocalLayerFormation
 
+set_option backward.isDefEq.respectTransparency false in
 /-- One actual complementary source Cell with both literal boundaries
 coordinatized by the common two-position corridor interface. -/
 noncomputable def sourceLocalLayerCoordinatizedComplementTangle

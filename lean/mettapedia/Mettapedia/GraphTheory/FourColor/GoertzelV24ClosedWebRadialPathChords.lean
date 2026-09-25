@@ -599,6 +599,7 @@ theorem cycleWalk_isCycle
   change chord.chordDart.edge ∉ chord.subarc.reverse.edges
   simpa using chord.chord_not_mem_subarc htriple
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The finite wall sent to the face trace has exactly the edges of the
 simple chord cycle. -/
 theorem mem_boundary_wall_iff_mem_cycleWalk_edges

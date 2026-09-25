@@ -494,6 +494,7 @@ def routeOrderedFusionFaceCrossing
       (bOrderedFusionFaceSymbol graphData data lens hab hac)).trans
         (lens.fusionArmReindexing hab hac))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Pulling a route-ordered crossing back through the arm reindexing
 recovers the canonical indexed crossing. -/
 theorem fusionArmReindexing_symm_routeOrderedFusionFaceCrossing

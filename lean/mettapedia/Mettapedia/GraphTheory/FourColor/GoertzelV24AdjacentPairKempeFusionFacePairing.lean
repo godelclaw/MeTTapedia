@@ -198,6 +198,7 @@ theorem ambientFusionExit_rotationCycle
       if_neg hturn, if_neg hturn]
     exact ⟨hfirst, hcycle⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The nonselected entry neighbor is the face predecessor of the
 forward fusion dart. -/
 theorem phi_alpha_fusionEntryOtherDart_eq_ambientBFusionDart
@@ -221,6 +222,7 @@ theorem phi_alpha_fusionEntryOtherDart_eq_ambientBFusionDart
   exact (ambientFusionEntry_rotationCycle
     graphData hcubic hrotation data lens hab hac hbc site).2.2
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The nonselected exit neighbor is the face predecessor of the
 reversed fusion dart. -/
 theorem phi_alpha_fusionExitOtherDart_eq_ambientBExitFusionDart

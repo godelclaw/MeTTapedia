@@ -147,6 +147,7 @@ def EvenKempeFusionLens.cFusionChiralityWord {portCount : Nat}
       lens.cFusionSites.length := by
   simp [EvenKempeFusionLens.cFusionChiralityWord]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem EvenKempeFusionLens.bFusionChiralityWord_get
     {portCount : Nat}
     {data : DegreeTwoBoundaryData G portCount}
@@ -160,6 +161,7 @@ def EvenKempeFusionLens.cFusionChiralityWord {portCount : Nat}
         ⟨position, by simpa using position.isLt⟩ := by
   simp [EvenKempeFusionLens.bFusionChiralityWord]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem EvenKempeFusionLens.cFusionChiralityWord_get
     {portCount : Nat}
     {data : DegreeTwoBoundaryData G portCount}

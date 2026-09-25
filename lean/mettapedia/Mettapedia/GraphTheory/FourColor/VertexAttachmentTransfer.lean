@@ -54,6 +54,7 @@ def star (order : Fin 3 ≃ P ⊕ R) : TwoSidedOpenTangleData Unit Empty P R whe
   interior_no_self_loops := fun d => d.elim
   outer := .inr (order 0)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem star_rotation (order : Fin 3 ≃ P ⊕ R) (i : Fin 3) :
     (star order).rho (.inr (order i)) = .inr (order (i + 1)) := by
   simp [star, Equiv.permCongr_apply, dartOrder, turn]

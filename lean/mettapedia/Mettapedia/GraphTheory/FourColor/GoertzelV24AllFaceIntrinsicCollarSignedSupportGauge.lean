@@ -54,6 +54,7 @@ universe u
 
 variable {Vertex : Type u} {Graph : SimpleGraph Vertex}
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A trail traverses a given unoriented edge in at most one orientation. -/
 theorem IsTrail.dart_eq_of_mem_darts_of_edge_eq
     {left right : Vertex} {walk : Graph.Walk left right}

@@ -109,6 +109,7 @@ attribute [local instance]
   fusionFaceNetworkRetainedVertexFintype
   fusionFaceNetworkRetainedVertexDecidableEq
 
+set_option backward.isDefEq.respectTransparency false in
 /-- On the first restored side, the exact paired closure coordinate is
 nonzero exactly at its original coordinate-indexed boundary edge. -/
 theorem CrossCentralExactFaceCutPair.crossFaceCoordinate_edgeTransfer_firstSide_ne_zero_iff
@@ -141,6 +142,7 @@ theorem CrossCentralExactFaceCutPair.crossFaceCoordinate_edgeTransfer_firstSide_
     rw [data.boundaryEdgeValue_mem_crossSidePortClosure_edges_iff]
     fin_cases candidate <;> simp
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The same exact coordinate-indexed boundary support holds on the second
 restored side. -/
 theorem CrossCentralExactFaceCutPair.crossFaceCoordinate_edgeTransfer_secondSide_ne_zero_iff

@@ -52,6 +52,7 @@ def deletedCycleToAmbient (data : AdjacentPairData G)
     (GoertzelV24AdjacentPairInsertion.AdjacentPairData.retainedGraphEmbedding
       data).toHom).copy rfl rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Injectivity of retained-vertex inclusion preserves simple cycles. -/
 theorem deletedCycleToAmbient_isCycle (data : AdjacentPairData G)
     {start : retainedVertexSet data.firstVertex data.secondVertex}

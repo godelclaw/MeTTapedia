@@ -405,6 +405,7 @@ def dtDart56 : diamondWithTriangleGraph.Dart := ⟨((5 : Fin 7), 6), by
 def dtDart64 : diamondWithTriangleGraph.Dart := ⟨((6 : Fin 7), 4), by
   simp [diamondWithTriangleGraph]⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def diamondWithTriangleFace0SelectedArcPureDartCycle
     (hf : (0 : DiamondWithTriangleFace) ∈ diamondWithTriangleEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
@@ -427,6 +428,7 @@ def diamondWithTriangleFace0SelectedArcPureDartCycle
     rcases he' with rfl | rfl | rfl <;>
       simp [dt02, dt01, dt12, dtDart20, dtDart01, dtDart12]
 
+set_option backward.isDefEq.respectTransparency false in
 def diamondWithTriangleFace1SelectedArcPureDartCycle
     (hf : (1 : DiamondWithTriangleFace) ∈ diamondWithTriangleEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
@@ -449,6 +451,7 @@ def diamondWithTriangleFace1SelectedArcPureDartCycle
     rcases he' with rfl | rfl | rfl <;>
       simp [dt23, dt13, dt12, dtDart23, dtDart31, dtDart12]
 
+set_option backward.isDefEq.respectTransparency false in
 def diamondWithTriangleFace2PureDartCycle
     (hf : (2 : DiamondWithTriangleFace) ∈ diamondWithTriangleEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle

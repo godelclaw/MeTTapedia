@@ -120,6 +120,7 @@ theorem orderedChordAmbientPath_vertex_not_mem_orderedReturnSeparator
     · exact hneLeft hleft
     · exact hneRight hright
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The carrier interval used to close a residual return is contained in the
 support of the resulting separator.  The only vertex omitted by the tail of
 the reversed interval is its right endpoint, which already belongs to the
@@ -234,6 +235,7 @@ theorem label_ne_outer_inner_thirdDarts_of_triple_nested
       rotation minimal.spherical.cubic minimal.vertexRotationCyclic hG sigma
         hSigma bond inner.left middle.left hshoreMiddleInner.symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- If the outer complementary cycle is declared outside the selected side
 of the middle separator, the inner return's first third dart reads exactly
 the selected label.  This is the binary face-side choice that nesting needs. -/

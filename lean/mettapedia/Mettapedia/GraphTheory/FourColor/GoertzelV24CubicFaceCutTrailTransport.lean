@@ -187,6 +187,7 @@ local instance cubicFaceCutTrailGraphEdgeSetDecidableEq :
     DecidableEq G.edgeSet :=
   Subtype.instDecidableEq
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Graph-level trail transport. If every edge traversed by a nonempty
 primal trail avoids an exact cut, its first dart and the reverse of its last
 dart carry the same face-side label. -/

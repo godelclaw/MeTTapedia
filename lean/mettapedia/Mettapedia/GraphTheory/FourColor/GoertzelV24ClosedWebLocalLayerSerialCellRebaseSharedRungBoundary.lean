@@ -47,6 +47,7 @@ namespace Instance
 
 namespace LocalLayerFormation
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every dart over the consumed shared rung has both immediate face
 neighbours in the old rolling facial carrier.  The two orientations are
 handled by the current and next literal hexagons respectively. -/
@@ -199,6 +200,7 @@ theorem sourceLocalLayerSerialCellRebase_sharedRung_faceNeighbors_mem_oldCarrier
       rw [hafterCrossing]
       exact (mem_indexedCrossingEdgeSet_iff _ _).2 ⟨1, rfl⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The forward face neighbour of a consumed-rung occurrence lies over a
 literal Cell crossing: the second incoming crossing on the current face, or
 the first outgoing crossing on the successor face according to orientation. -/

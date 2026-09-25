@@ -284,6 +284,7 @@ theorem reductionVertex_card_lt
     (deletedRegionKeep data.deletedVertices) data.firstVertex
   simp [deletedRegionKeep, deletedVertices]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- An ordered retained splice merely transports the old vertex rotations to
 the surviving dart fibers, so cyclicity at every retained vertex is
 preserved. -/
@@ -339,6 +340,7 @@ theorem reduction_vertexRotationCyclic
   change parts (((retainedRho RS keep) ^ power) (parts.symm left)) = right
   rw [hpower, parts.apply_symm_apply]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Connectedness of the retained induced graph makes either square
 reduction connected after its two seam edges are added. -/
 theorem reduction_primalConnected
@@ -363,6 +365,7 @@ theorem reduction_primalConnected
     rotationPrimalGraph_toRotationSystem_eq]
     using hretainedConnected
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The planar-bond Euler theorem discharges spherical cubicity for either
 square reduction once the actual port order and retained-side connectedness
 are known. -/
@@ -394,6 +397,7 @@ theorem reduction_orbitSphericalCubicMapData
   · exact hretainedConnected
   · exact data.deletedRegion_connected
 
+set_option backward.isDefEq.respectTransparency false in
 /-- All structural fields needed by vertex minimality except bridge-freeness
 are now consequences of the adjacent-pair geometry. -/
 def reductionBridgelessSphericalCubicMapData

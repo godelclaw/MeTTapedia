@@ -141,6 +141,7 @@ structure RadialCorePath
   path_isPath : path.IsPath
   edges_eq : path.edges = (ambientRadialPath radial).edges.tail.dropLast
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every radial support path has the canonical trimmed internal core. -/
 theorem exists_radialCorePath
     {data : AnnularBoundaryData G outerCount} (hdata : data.WellFormed)

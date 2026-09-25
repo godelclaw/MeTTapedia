@@ -68,6 +68,7 @@ theorem getVert_succ_eq_getVert_finRotate_of_isCycle
         Nat.mod_eq_of_lt hone, hlast, Nat.mod_self]
     rw [hlast, hrotate, walk.getVert_length, walk.getVert_zero]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Positional reading of a walk edge gives the unordered pair of its two
 successive vertices. -/
 theorem edges_get_cast_eq_s_getVert

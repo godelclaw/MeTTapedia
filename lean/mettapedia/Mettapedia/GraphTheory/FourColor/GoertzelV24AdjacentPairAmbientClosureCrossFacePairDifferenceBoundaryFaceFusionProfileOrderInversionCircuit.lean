@@ -187,6 +187,7 @@ theorem lineGraphWalkOfTrail_isPath {left right : Vertex}
     walk.lineGraphWalkOfTrail_support hpositive htrail]
   exact htrail.edgeSubtypeSupport_nodup
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The junction at a step of the canonical line-graph path is exactly the
 intermediate vertex of the primal trail. -/
 theorem lineGraphWalkOfTrail_lineGraphJunctionAt_eq_getVert
@@ -1078,7 +1079,6 @@ theorem LocalizedSharedEdgePathIntervalInversion.prefixLineGraphPath_support_val
       (pair.prefixSharedEdgeInterval witness.first witness.second
         witness.first_lt_second.le).edges := by
   simp [LocalizedSharedEdgePathIntervalInversion.prefixLineGraphPath]
-  exact SimpleGraph.Walk.edgeSubtypeSupport_unattach _
 
 /-- The reversed suffix line-graph support is the reverse of the complete
 suffix-order primal interval. -/

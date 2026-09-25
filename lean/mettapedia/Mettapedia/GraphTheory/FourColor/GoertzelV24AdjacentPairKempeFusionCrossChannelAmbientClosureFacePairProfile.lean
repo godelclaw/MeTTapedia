@@ -13,6 +13,7 @@ open SimpleGraphDartRotation
 
 namespace GoertzelV24MinimalFaceIntersections
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The five possible oriented incidence profiles of two edge-face pairs
 when the pairs share at most one quotient face. -/
 inductive EdgeOrbitFacePairProfile where

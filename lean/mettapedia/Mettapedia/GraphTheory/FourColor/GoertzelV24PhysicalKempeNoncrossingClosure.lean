@@ -256,6 +256,7 @@ theorem mem_physicalSelectedPorts_iff
     port ∈ physicalSelectedPorts order selected ↔ order.symm port ∈ selected := by
   simp [physicalSelectedPorts]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every selected union of physical matched components can be switched in
 the original tangle, and its cyclic-coordinate boundary word stays in the
 same exact ordered support. -/

@@ -76,6 +76,7 @@ theorem fragmentReindexClosedWebVertexThreshold_eq :
   rw [fragmentReindexClosedWebVertexThreshold,
     fragmentReindexRadialVertexThreshold_eq]
 
+set_option maxRecDepth 100000 in
 /-- Above the total threshold, the exact ten-stub partition puts the interior
 above the radial-order threshold. -/
 theorem interiorVertices_large_of_fragmentReindexClosedWebVertices_large

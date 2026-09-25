@@ -70,6 +70,7 @@ theorem glueColor_layer (ci : SideColoring RS inner)
     (hi : ¬ inner (RS.vertOf d.1)) :
     glueColor ci cs d = cs.color ⟨d.1, ⟨d.2, hi⟩⟩ := by simp [glueColor, hi]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Glue two actual vertex pieces. Equality is required precisely on edges
 joining the pieces; persistent outer boundary edges are not internalized. -/
 def glue (ci : SideColoring RS inner) (cs : SideColoring RS (layer inner outer))

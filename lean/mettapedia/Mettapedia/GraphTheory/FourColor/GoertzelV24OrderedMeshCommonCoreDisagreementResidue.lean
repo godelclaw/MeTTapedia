@@ -490,6 +490,7 @@ theorem nineSiteStrictRepairStep_ne
   apply hstrict
   exact congrArg Subtype.val (congrFun heq first)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every nine-site state either exposes branching/boundary geometry or has a
 strict one-coordinate successor in the Tait repair system. -/
 theorem branchingOrBoundary_or_exists_strictRepairStep

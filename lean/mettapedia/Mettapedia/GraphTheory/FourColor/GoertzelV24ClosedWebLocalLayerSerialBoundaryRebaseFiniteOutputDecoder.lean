@@ -135,6 +135,7 @@ theorem sourceLocalLayerBoundaryRebaseFiniteOutputLetterCodeAt_outputCount
           (sourceLocalLayerNextOffset offset hnext)).faceFragmentCount := by
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The canonical graph-free output letter decodes exactly to the next
 terminal-aware source profile. -/
 theorem sourceLocalLayerBoundaryRebaseFiniteOutputLetterCodeAt_outputProfile_eq

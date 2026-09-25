@@ -112,6 +112,7 @@ theorem rho_ambientBExitFusionDart_eq_fusionExitTurnDart
     exact (fusionExitTurn_eq_false_iff_companion
       graphData hcubic hrotation data lens hab hac hbc site).1 hfalse
 
+set_option backward.isDefEq.respectTransparency false in
 /-- On the entry side, the face permutation crosses the fusion edge and
 then takes the entry turn. -/
 theorem phi_alpha_ambientBFusionDart_eq_fusionEntryTurnDart
@@ -135,6 +136,7 @@ theorem phi_alpha_ambientBFusionDart_eq_fusionEntryTurnDart
   exact rho_ambientBFusionDart_eq_fusionEntryTurnDart
     graphData hcubic hrotation data lens hab hac hbc site
 
+set_option backward.isDefEq.respectTransparency false in
 /-- On the exit side, the face permutation crosses the fusion edge and
 then takes the exit turn. -/
 theorem phi_ambientBFusionDart_eq_fusionExitTurnDart
@@ -193,6 +195,7 @@ theorem phi_ambientCFusionDart_eq_chiralityTurnDart
     exact phi_alpha_ambientBFusionDart_eq_fusionEntryTurnDart
       graphData hcubic hrotation data lens hab hac hbc site
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Reversing the `c`-oriented fusion dart exchanges the entry and exit
 successors selected by chirality. -/
 theorem phi_alpha_ambientCFusionDart_eq_chiralityTurnDart

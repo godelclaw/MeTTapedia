@@ -132,6 +132,7 @@ noncomputable def sourceLocalLayerSerialSplicedCellFiniteSupportLetterAt
     faceRole := sourceLocalLayerSerialOutputFaceRoleCodeAt corridor hunique offset
   }
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every compatible prefix/Cell splice is supported by the same exact finite
 letter relation as the ambient specialization. -/
 theorem sourceLocalLayerSerialSplicedCellFiniteSupportLetterAt_supports

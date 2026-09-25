@@ -254,6 +254,7 @@ theorem labels_alpha_chordDart_eq_innerHole_of_left_before
       hprefixTransport.symm
     _ = labels embedded.cellulation.innerHole := congrArg labels hfirstFace
 
+set_option backward.isDefEq.respectTransparency false in
 /-- If another actual chord ends strictly after the selected chord interval,
 the face on the near side of that oriented chord is on the outer-hole side of
 the selected exact cycle cut. -/

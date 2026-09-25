@@ -118,6 +118,7 @@ theorem mem_both_retainedWalkToAmbient_edges_iff_exists_commonRetainedEdge
       (retainedEdgeToAmbientEdge_mem_retainedWalkToAmbient_edges_iff
         data suffixTrail shared).2 hboth.2⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Closing complementary retained walks adds the central edge to their
 finite common retained-edge profile and adds no other common edge. -/
 theorem mem_both_oppositePortClosures_iff_exists_commonRetainedEdge

@@ -281,6 +281,7 @@ def cFusionEndpointDartOnCount
       (lens.cFusionSiteAt
         (finCongr lens.fusionSites_length_eq state.1))) state.2
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Transporting a position by fusion monodromy identifies the same
 underlying fusion site in the second route order. -/
 theorem cFusionSiteAtOnCount_fusionMonodromy

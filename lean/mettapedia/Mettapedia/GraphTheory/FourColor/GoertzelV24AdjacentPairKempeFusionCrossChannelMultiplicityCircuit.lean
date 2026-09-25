@@ -42,6 +42,7 @@ def EvenKempeFusionLens.bcSecondForwardInterval
     (lens01.support_get_bcCrossMonodromy_eq lens23 first).symm
     (lens01.support_get_bcCrossMonodromy_eq lens23 second).symm
 
+set_option backward.isDefEq.respectTransparency false in
 theorem EvenKempeFusionLens.bcSecondForwardInterval_isPath
     {data : DegreeTwoBoundaryData G 4}
     {C : G.EdgeColoring Color} {a b c : Color}
@@ -59,6 +60,7 @@ theorem EvenKempeFusionLens.bcSecondForwardInterval_isPath
     SimpleGraph.Walk.isPath_copy]
   exact lens23.cRoute.ambientPath_isPath.supportInterval _ _ horder.le
 
+set_option backward.isDefEq.respectTransparency false in
 theorem EvenKempeFusionLens.bcSecondForwardInterval_support_subset
     {data : DegreeTwoBoundaryData G 4}
     {C : G.EdgeColoring Color} {a b c : Color}
@@ -87,6 +89,7 @@ theorem EvenKempeFusionLens.bcSecondForwardInterval_support_subset
   exact (lens23.cRoute.ambientPath.supportInterval_isSubwalk _ _
     horder.le).support_subset hraw
 
+set_option backward.isDefEq.respectTransparency false in
 theorem EvenKempeFusionLens.bcSecondForwardInterval_length_pos
     {data : DegreeTwoBoundaryData G 4}
     {C : G.EdgeColoring Color} {a b c : Color}
@@ -236,6 +239,7 @@ theorem EvenKempeFusionLens.bcFirstOrderInterval_tail_disjoint_secondForwardReve
       hsecondOrder).reverse.cons_tail_support] at hnodup
     exact (List.nodup_cons.mp hnodup).1 hsecondTail
 
+set_option backward.isDefEq.respectTransparency false in
 theorem EvenKempeFusionLens.bcSecondForwardInterval_length_lt_ambientPath
     {data : DegreeTwoBoundaryData G 4}
     {C : G.EdgeColoring Color} {a b c : Color}

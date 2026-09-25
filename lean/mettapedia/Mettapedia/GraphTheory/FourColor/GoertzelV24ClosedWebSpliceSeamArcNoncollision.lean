@@ -109,6 +109,7 @@ theorem orderedSeamRoot_seamPositionOf
       data.leftCrosses data.rightCrosses data.leftInjective
       data.rightInjective).apply_symm_apply root)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Internal simplicity and pairwise disjointness of the finite canonical
 arcs make every seam-root output face boundary simple. -/
 theorem seamFacesBoundarySimple_of_arcNoncollision

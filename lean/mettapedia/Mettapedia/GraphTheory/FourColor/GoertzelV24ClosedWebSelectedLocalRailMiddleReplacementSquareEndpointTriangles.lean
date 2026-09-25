@@ -394,6 +394,7 @@ theorem SquareBondRealization.original_support_covered_by_endpointTriangles
         simpa using face_mem_support_of_mem_crossingEdges_of_mem_boundary
           secondTriangle.selectedCycle hsecond hboundary)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The oriented internal bond and the two following darts at its first cubic
 endpoint form a literal selected dual triangle whose three primal crossings
 all meet that endpoint. -/

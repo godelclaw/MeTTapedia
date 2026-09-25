@@ -100,15 +100,15 @@ theorem
   apply or_congr Iff.rfl
   constructor
   · rintro ⟨hleft, hright, hclosure⟩
-    exact ⟨hleft, hright, hclosure.mono fun first second hstep =>
+    exact ⟨hleft, hright, Relation.ReflTransGen.mono (fun first second hstep =>
       (sourceLocalLayerSerialTrackedDeletionStablePreRebaseStateForColorAt_step_iff
         graphData minimal caps coloring web corridor hunique offset color pair
-        first.1 second.1).1 hstep⟩
+        first.1 second.1).1 hstep) _ _ hclosure⟩
   · rintro ⟨hleft, hright, hclosure⟩
-    exact ⟨hleft, hright, hclosure.mono fun first second hstep =>
+    exact ⟨hleft, hright, Relation.ReflTransGen.mono (fun first second hstep =>
       (sourceLocalLayerSerialTrackedDeletionStablePreRebaseStateForColorAt_step_iff
         graphData minimal caps coloring web corridor hunique offset color pair
-        first.1 second.1).2 hstep⟩
+        first.1 second.1).2 hstep) _ _ hclosure⟩
 
 /-- One outgoing crossing as an actual, unpadded coordinate of the common
 Cell carrier. -/

@@ -75,6 +75,7 @@ theorem codeValues_nodup_of_arcLength_le_three
                 simp [arcLength, hrest, htail, hfinal]
               omega
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Hence the position-to-code map of any recovery circuit of length at
 most three is injective. -/
 theorem codeAt_injective_of_arcLength_le_three

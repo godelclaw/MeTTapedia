@@ -20,6 +20,7 @@ def sharedInteriorPairSecondClosureEdgeColor
     sharedInteriorPairSecondClosureEdgeColor sip01 = red := by
   simp [sharedInteriorPairSecondClosureEdgeColor]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] private theorem sharedInteriorPairSecondClosureEdgeColor_sip12 :
     sharedInteriorPairSecondClosureEdgeColor sip12 = blue := by
   simp [sharedInteriorPairSecondClosureEdgeColor, sharedInteriorPairAnnulusGraph, sip01, sip12,
@@ -29,16 +30,19 @@ def sharedInteriorPairSecondClosureEdgeColor
     sharedInteriorPairSecondClosureEdgeColor sip23 = red := by
   simp [sharedInteriorPairSecondClosureEdgeColor, sharedInteriorPairAnnulusGraph, sip01, sip23]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] private theorem sharedInteriorPairSecondClosureEdgeColor_sip30 :
     sharedInteriorPairSecondClosureEdgeColor sip30 = purple := by
   simp [sharedInteriorPairSecondClosureEdgeColor, sharedInteriorPairAnnulusGraph, sip01, sip12,
     sip23, sip30, sip40, sip56, sip67]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] private theorem sharedInteriorPairSecondClosureEdgeColor_sip24 :
     sharedInteriorPairSecondClosureEdgeColor sip24 = purple := by
   simp [sharedInteriorPairSecondClosureEdgeColor, sharedInteriorPairAnnulusGraph, sip01, sip12,
     sip23, sip24, sip40, sip56, sip67]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] private theorem sharedInteriorPairSecondClosureEdgeColor_sip40 :
     sharedInteriorPairSecondClosureEdgeColor sip40 = blue := by
   simp [sharedInteriorPairSecondClosureEdgeColor, sharedInteriorPairAnnulusGraph, sip01, sip12,
@@ -49,11 +53,13 @@ def sharedInteriorPairSecondClosureEdgeColor
   simp [sharedInteriorPairSecondClosureEdgeColor, sharedInteriorPairAnnulusGraph, sip01, sip23,
     sip56]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] private theorem sharedInteriorPairSecondClosureEdgeColor_sip67 :
     sharedInteriorPairSecondClosureEdgeColor sip67 = blue := by
   simp [sharedInteriorPairSecondClosureEdgeColor, sharedInteriorPairAnnulusGraph, sip01, sip12,
     sip23, sip40, sip56, sip67]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] private theorem sharedInteriorPairSecondClosureEdgeColor_sip75 :
     sharedInteriorPairSecondClosureEdgeColor sip75 = purple := by
   simp [sharedInteriorPairSecondClosureEdgeColor, sharedInteriorPairAnnulusGraph, sip01, sip12,

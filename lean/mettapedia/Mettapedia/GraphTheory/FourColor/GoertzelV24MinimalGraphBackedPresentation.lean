@@ -179,6 +179,7 @@ theorem graphData_isCubic
     RS hinjective vertex]
   exact hCubic vertex
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Local two-sidedness is invariant under the facial-orbit equivalence. -/
 theorem graphData_orbitFacesTwoSided
     (RS : RotationSystem V E)

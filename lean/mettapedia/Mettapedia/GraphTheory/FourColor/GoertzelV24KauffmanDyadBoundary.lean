@@ -571,6 +571,7 @@ private theorem rho_triple_pairwise_ne
     exact hstep hrho
   exact ⟨hstep.symm, hfirstThird, hnext.symm⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Advancing once around a cyclic cubic graph vertex changes the graph
 edge.  This light local lemma avoids importing any adjacent-pair machinery. -/
 private theorem edgeOf_rho_ne_edgeOf
@@ -600,6 +601,7 @@ private theorem edgeOf_rho_ne_edgeOf
   exact (rho_triple_pairwise_ne data.toRotationSystem hcubic hrotation dart).1
     hdart.symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Two steps around a cyclic cubic graph vertex also change the graph
 edge. -/
 private theorem edgeOf_rho_rho_ne_edgeOf
@@ -638,6 +640,7 @@ private theorem edgeOf_rho_rho_ne_edgeOf
   exact (rho_triple_pairwise_ne data.toRotationSystem hcubic hrotation dart).2.1
     hdart.symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- At a boundary dart the ribbon walk returns after one face turn, unless
 that turn encounters the internal `x`-edge.  In the latter case it crosses
 that edge and returns after the next turn.  This is the local, picture-free
@@ -771,6 +774,7 @@ theorem dyadBoundaryReturnPerm_apply_fst
     exact hphi
   · exact hphi
 
+set_option backward.isDefEq.respectTransparency false in
 /-- One compressed ribbon step follows one of the two ordinary neighbours of
 the corresponding complementary-colour edge. -/
 theorem lineGraph_adj_dyadBoundaryReturnPerm
@@ -1126,6 +1130,7 @@ theorem bicoloredBoundaryPerm_sameCycle_iff_reachable
 
 /-! ## Equality of ribbon orbits and Kempe components -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every ribbon orbit meets the literal dyad boundary.  Starting at an
 arbitrary selected corner, either the next face turn is already a boundary
 edge, or it is the internal `x`-edge and the following turn is a boundary

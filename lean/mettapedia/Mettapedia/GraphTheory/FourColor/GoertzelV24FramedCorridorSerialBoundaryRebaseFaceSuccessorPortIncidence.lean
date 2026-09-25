@@ -51,6 +51,7 @@ namespace SourceTrail
 
 namespace AnnularEmbedding
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The canonical cut position of a successor boundary fragment, regarded as
 one coordinate of the finite facial switch on its ambient orbit face. -/
 noncomputable def sourceCorridorSerialBoundaryRebaseSuccessorFacePositionAt
@@ -134,6 +135,7 @@ def SourceCorridorSerialBoundaryRebaseSuccessorFaceContainsPortAt
             hcubic hrotation htwoSided hunique offset hnext fragment))
         (carrierCoordinate carrier occurrence)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Successor `fragmentContainsPort` is computed exactly by the finite facial
 switch closure, including the choice of facial occurrence over the port edge. -/
 theorem sourceCorridorSerialInputBoundedProfileAt_next_fragmentContainsPort_iff_faceStepCode

@@ -299,9 +299,11 @@ def realizedInsideCycleWalk : realizedGraph.Walk (0 : RealizedV) 0 :=
     (Walk.cons' 1 2 0 (by simp [realizedGraph])
       (Walk.cons' 2 0 0 (by simp [realizedGraph]) Walk.nil))
 
+set_option backward.isDefEq.respectTransparency false in
 theorem realizedInsideCycleWalk_isCycle : realizedInsideCycleWalk.IsCycle := by
   simp [realizedInsideCycleWalk, Walk.cons_isCycle_iff, Walk.cons_isPath_iff]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem realizedInsideCycleWalk_support_side :
     ∀ v, v ∈ realizedInsideCycleWalk.support → realizedSide v := by
   intro v hv
@@ -316,9 +318,11 @@ def realizedOutsideCycleWalk : realizedGraph.Walk (3 : RealizedV) 3 :=
     (Walk.cons' 4 5 3 (by simp [realizedGraph])
       (Walk.cons' 5 3 3 (by simp [realizedGraph]) Walk.nil))
 
+set_option backward.isDefEq.respectTransparency false in
 theorem realizedOutsideCycleWalk_isCycle : realizedOutsideCycleWalk.IsCycle := by
   simp [realizedOutsideCycleWalk, Walk.cons_isCycle_iff, Walk.cons_isPath_iff]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem realizedOutsideCycleWalk_support_not_side :
     ∀ v, v ∈ realizedOutsideCycleWalk.support → ¬ realizedSide v := by
   intro v hv
@@ -532,6 +536,7 @@ theorem forcedCandidate_r01_not_mem : r01 ∉ forcedCandidate.edgeSupport := by
 theorem forcedCandidate_r03_mem : r03 ∈ forcedCandidate.edgeSupport := by
   exact (forced_support_simp r03).2 (Or.inl rfl)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The bypass walk avoids the whole forced candidate support. -/
 theorem forcedCandidateBypassWalk_avoids_forcedCandidate :
     ∀ e : realizedGraph.edgeSet, e ∈ forcedCandidate.edgeSupport →
@@ -542,6 +547,7 @@ theorem forcedCandidateBypassWalk_avoids_forcedCandidate :
   · simp [forcedCandidateBypassWalk, r04] at heEdges
   · simp [forcedCandidateBypassWalk, r25] at heEdges
 
+set_option backward.isDefEq.respectTransparency false in
 theorem forced_node_forcedCounterexampleEdge_r13 :
     (CAP5ExceptionalAnnulusGeneratorReport.latentNode
       realizedCAP5BoundaryEdge realizedSide forcedLatent).ForcedCounterexampleEdge r13 := by
@@ -797,6 +803,7 @@ theorem realizedCAP5Report_forcedLatent_exists_oneEdge_crossing_walk :
   realizedCAP5Report.exists_oneEdge_forcedCounterexampleWalk_of_mem_forcedCounterexampleLatents
     realizedCAP5Report_forcedLatent_mem_forcedCounterexampleLatents
 
+set_option backward.isDefEq.respectTransparency false in
 /--
 The report-level forced branch is witnessed by the specific one-edge walk over `r13`.  This is
 the concrete finite-generator payload behind the existential one-edge-walk theorem above.
@@ -830,6 +837,7 @@ theorem realizedCAP5Report_forcedLatent_exact_oneEdge_crossing_walk :
         CAP5ExceptionalAnnulusSideCase.separatorPortalSet,
         forcedCounterexampleWalk, r03, r04, r25] at hi hiEdges
 
+set_option backward.isDefEq.respectTransparency false in
 /--
 The exact one-edge forced walk contributes exactly the `𝔽₂` weight of the emitted edge.  This
 is the algebraic readout of the concrete generator witness.
@@ -840,6 +848,7 @@ theorem realizedCAP5Report_forcedLatent_exact_oneEdge_pathXor
       weight (r13 : Sym2 RealizedV) := by
   simp [Curriculum.pathXor, forcedCounterexampleWalk, r13]
 
+set_option backward.isDefEq.respectTransparency false in
 /--
 If a finite algebraic detector marks the emitted crossing edge, the concrete forced walk has a
 nonzero `𝔽₂` path-xor signal.
@@ -851,6 +860,7 @@ theorem realizedCAP5Report_forcedLatent_exact_oneEdge_pathXor_ne_zero
   simpa [forcedCounterexampleWalk, r13] using
     Curriculum.pathXor_singleton_ne_zero weight (e := (r13 : Sym2 RealizedV)) hweight
 
+set_option backward.isDefEq.respectTransparency false in
 /--
 For the exact one-edge forced walk, a finite detector has nonzero path-xor precisely when it
 marks the emitted crossing edge `r13`.
@@ -871,6 +881,7 @@ theorem realizedCAP5Report_forcedLatent_exists_edge_weight_ne_zero_of_pathXor_ne
     ∃ e, e ∈ forcedCounterexampleWalk.edges ∧ weight e ≠ 0 :=
   Curriculum.exists_mem_weight_ne_zero_of_pathXor_ne_zero weight hxor
 
+set_option backward.isDefEq.respectTransparency false in
 /--
 For the exact one-edge forced walk, exposing a marked path edge is equivalent to marking the
 emitted crossing edge `r13` itself.
@@ -881,6 +892,7 @@ theorem realizedCAP5Report_forcedLatent_exists_edge_weight_ne_zero_iff
       weight (r13 : Sym2 RealizedV) ≠ 0 := by
   simp [forcedCounterexampleWalk, r13]
 
+set_option backward.isDefEq.respectTransparency false in
 /--
 For the exact forced branch, a nonzero finite detector signal exposes the graph obstruction it
 detected: the emitted edge is outside the forced candidate support, crosses the side predicate,
@@ -923,6 +935,7 @@ theorem realizedCAP5Report_forcedLatent_detector_refutes_separator
     realizedCAP5Report_forcedLatent_pathXor_ne_zero_exposes_outside_crossing_edge
       weight hxor⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /--
 The concrete detector sees the exact one-edge forced walk as a nonzero `𝔽₂` signal.
 This is the finite algebraic readout of the emitted CAP5 crossing edge.
@@ -936,6 +949,7 @@ theorem realizedCAP5Report_forcedLatent_concrete_detector_pathXor_ne_zero :
   rw [realizedCAP5Report_forcedLatent_concrete_detector_pathXor]
   decide
 
+set_option backward.isDefEq.respectTransparency false in
 /--
 Concrete algebraic calibration of the forced branch: the benchmark instantiates the reusable
 edge-indicator detector on the emitted edge `r13`.

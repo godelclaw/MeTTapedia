@@ -293,6 +293,7 @@ def orderedRetainedBoundaryPositionEquiv
       (orderedCut leftCrossing) (orderedCut rightCrossing)
       hcover hdisjoint).symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The boundary predicate on retained darts is exactly the seam predicate
 after the concrete three-part decomposition. -/
 theorem retainedBoundary_iff_isSeamDart_parts
@@ -332,6 +333,7 @@ def retainedBoundaryEquivSeamDart
   (boundaryDartEquivCutSum RS keep leftCut rightCut
     hcover hdisjoint).trans seamDartEquiv
 
+set_option backward.isDefEq.respectTransparency false in
 /-- This explicit boundary-to-seam map is exactly the subtype equivalence
 induced by the full retained-dart decomposition. -/
 theorem retainedBoundaryEquivSeamDart_eq_subtypeEquiv_parts
@@ -403,6 +405,7 @@ theorem orderedRetainedBoundaryPositionEquiv_trans_seam
       retainedBoundaryEquivSeamDart, orderedSeamPositionEquiv,
       Equiv.trans_apply]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp]
 theorem orderedBoundarySeamSwap_apply_leftDart
     (RS : RotationSystem V E) (keep : V → Prop)
@@ -433,6 +436,7 @@ theorem orderedBoundarySeamSwap_apply_leftDart
     boundaryDartEquivCutSum, boundaryDartToCutSum,
     cutSumUnderlyingBoundary, dart.2]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp]
 theorem orderedBoundarySeamSwap_apply_rightDart
     (RS : RotationSystem V E) (keep : V → Prop)

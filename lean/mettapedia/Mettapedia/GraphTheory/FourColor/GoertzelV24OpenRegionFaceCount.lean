@@ -73,6 +73,7 @@ theorem nonHitOpenOrbit_all_old
           (rotationSystem RS keep outer).phi (IsBoundaryStub RS keep)
           orbit (Sum.inr stub) hcycle (by simp [IsBoundaryStub]))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Along a stub-free opened face, forgetting the open tag commutes with one
 face-permutation step. -/
 theorem nonHitOpenOrbit_forget_commutes
@@ -330,6 +331,7 @@ def openNonBoundaryOrbitEquivAmbientRetainedFaceOrbit
     ⟨nonHitOpenOrbitToAmbient_injective RS keep outer,
       nonHitOpenOrbitToAmbient_surjective RS keep outer⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Exact generic count of the opened faces which avoid every new stub. -/
 theorem card_openNonBoundaryOrbit_eq_ambientRetainedFaceOrbit
     (RS : RotationSystem V E) (keep : V → Prop)
@@ -340,6 +342,7 @@ theorem card_openNonBoundaryOrbit_eq_ambientRetainedFaceOrbit
   Fintype.card_congr
     (openNonBoundaryOrbitEquivAmbientRetainedFaceOrbit RS keep outer)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Geometric form of the exact count: stub-free opened faces are counted by
 the ambient face orbits all of whose darts lie on the retained side. -/
 theorem card_openNonBoundaryOrbit_eq_allOnSide
@@ -424,6 +427,7 @@ def boundaryOrbitEquivOpenHitOrbit
     ⟨boundaryOrbitToOpenHitOrbit_injective RS keep outer,
       boundaryOrbitToOpenHitOrbit_surjective RS keep outer⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Exact count of opened faces which touch at least one fresh stub. -/
 theorem card_openBoundaryHitOrbit_eq_boundarySuccessor_parts
     (RS : RotationSystem V E) (keep : V → Prop)

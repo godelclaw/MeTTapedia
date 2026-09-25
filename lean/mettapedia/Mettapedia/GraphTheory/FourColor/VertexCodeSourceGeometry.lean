@@ -37,6 +37,7 @@ def joinVertices (hv : ¬ inner v) : {w // inner w} ⊕ Unit ≃ {w // enlarged 
     · rfl
     · exact Subtype.ext (w.2.resolve_left h).symm
 
+set_option backward.isDefEq.respectTransparency false in
 def joinDarts : RetainedDart RS inner ⊕ NewDart RS inner v ≃
     RetainedDart RS (enlarged inner v) where
   toFun := Sum.elim (fun d => ⟨d.1, .inl d.2⟩) (fun d => ⟨d.1, d.2.1⟩)

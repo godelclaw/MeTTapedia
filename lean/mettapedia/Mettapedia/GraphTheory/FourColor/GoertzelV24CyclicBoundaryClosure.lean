@@ -116,6 +116,7 @@ theorem boundaryEdge_injective
   apply Subtype.ext
   exact hedge
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every recorded boundary coordinate is an edge crossing the vertex-side
 predicate. -/
 theorem boundaryEdge_crosses

@@ -78,6 +78,7 @@ theorem component_exact (t : Cases) :
 noncomputable def physicalBoundary (s : Finset (Fin 8)) : Finset (Fin 270) :=
   boundaryEdges ambient (FaceRegionHull.filled (G := graph) (marked (rawMask s)) anchor).toFinset
 
+set_option backward.isDefEq.respectTransparency false in
 theorem boundary_exact (t : Cases) : physicalBoundary (selected t) = computedBoundary t := by
   classical
   have hside : FaceRegionHull.filled (G := graph) (marked (rawMask (selected t))) anchor =

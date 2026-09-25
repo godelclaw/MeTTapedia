@@ -605,7 +605,7 @@ theorem successorTrackedForColor_reachable_iff_collarCode
   constructor
   · intro hclosure
     exact Relation.ReflTransGen.lift coordinate
-      (fun first second h => (hstep first second).1 h) hclosure
+      (fun first second h => (hstep first second).1 h) _ _ hclosure
   · intro hclosure
     have hlift : Relation.ReflTransGen
         (fun first second : {edge // edge ∈ carrier} =>
@@ -621,8 +621,8 @@ theorem successorTrackedForColor_reachable_iff_collarCode
             ← Equiv.apply_symm_apply coordinate second] at h
           exact
             (hstep (coordinate.symm first) (coordinate.symm second)).2 h)
-        hclosure
-    simpa only [Equiv.symm_apply_apply] using hlift
+        _ _ hclosure
+    simpa only [Function.onFun, Equiv.symm_apply_apply] using hlift
 
 /-- At the ambient web colouring the generalized code is definitionally the
 previously proved code. -/

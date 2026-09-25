@@ -57,6 +57,7 @@ theorem mem_filledCycleSide_of_mem_support
     cut.filledCycleSide data cycle selected vertex :=
   Or.inl hvertex
 
+set_option backward.isDefEq.respectTransparency false in
 /-- An edge based at a vertex outside a walk cannot occur in the walk. -/
 theorem edge_not_mem_cycle_of_vert_not_mem_support
     (data : Data G) {base : V} (cycle : G.Walk base base)

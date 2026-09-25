@@ -202,7 +202,7 @@ theorem maximal_acyclic_dichotomy (G : RotationDiskData V E)
       let S : G.Face → G.Face → Prop :=
         fun x y => e ∈ x.1 ∧ e ∈ y.1
       have h_path_RS : ReflTransGen (fun x y => R x y ∨ S x y) f g := by
-        refine ReflTransGen.mono ?_ h_path
+        refine ReflTransGen.mono ?_ f g h_path
         intro x y hstep
         rcases hstep with ⟨e', he'_insert, hne, hx, hy⟩
         rcases Finset.mem_insert.mp he'_insert with rfl | he'_tree
@@ -253,7 +253,7 @@ theorem maximal_acyclic_dichotomy (G : RotationDiskData V E)
         rcases hR with ⟨e', he', _hneWitness, ha, hb⟩
         exact ⟨e', he', by intro heq; exact he_tree (heq ▸ he'), ha, hb⟩
       have h_x_f_T : ReflTransGen TRel x f :=
-        Relation.ReflTransGen.mono hR_to_TRel h_x_f
+        Relation.ReflTransGen.mono hR_to_TRel x f h_x_f
       have h_f_g_T : ReflTransGen TRel f g := by
         apply Relation.ReflTransGen.single
         exact ⟨eWitness, heWitness_tree,
@@ -264,7 +264,7 @@ theorem maximal_acyclic_dichotomy (G : RotationDiskData V E)
       have h_g_y : ReflTransGen R g y := by
         simpa [h_y_eq_u] using h_g_u
       have h_g_y_T : ReflTransGen TRel g y :=
-        Relation.ReflTransGen.mono hR_to_TRel h_g_y
+        Relation.ReflTransGen.mono hR_to_TRel g y h_g_y
       have h_x_y : ReflTransGen TRel x y :=
         Relation.ReflTransGen.trans h_x_f_T
           (Relation.ReflTransGen.trans h_f_g_T h_g_y_T)

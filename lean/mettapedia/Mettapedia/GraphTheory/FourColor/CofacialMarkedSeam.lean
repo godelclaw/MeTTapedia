@@ -34,6 +34,7 @@ def FaceEq (pair : SeamPair rotation marks mark w) : Prop :=
   CofacialSeamState.faceOfShore rotation pair.inner.shore pair.inner.innerOuter mark
     pair.width pair.innerWidth
 
+set_option backward.isDefEq.respectTransparency false in
 theorem physicalCofacial_candidate_iff (pair : SeamPair rotation marks mark w)
     (hmarks : ∀ m, (mark m).fst ∈ marks) (m n : M) :
     PhysicalCofacial (outsideTangle rotation pair.outer.shore pair.outer.outsideOuter)

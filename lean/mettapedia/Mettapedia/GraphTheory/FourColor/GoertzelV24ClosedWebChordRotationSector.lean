@@ -199,6 +199,7 @@ theorem rho_chordDart_eq_backward_or_forward
       (chordDart_ne_leftForwardDart chord hdata htriple)
       (leftBackwardDart_ne_leftForwardDart chord hdata htriple)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Intrinsic Boolean side of a chord: `true` means that the forward radial
 dart is the immediate successor of the chord dart in the vertex rotation. -/
 def rotationSector
@@ -209,6 +210,7 @@ def rotationSector
   decide (embedded.RS.rho chord.chordDart =
     leftForwardDart chord hdata htriple)
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem rotationSector_eq_true_iff
     (embedded : ClosedWebAnnularEmbedding data)
     (chord : MajorityChordOnRadialPath C majority first second radial)

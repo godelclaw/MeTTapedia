@@ -138,6 +138,7 @@ theorem three_le_odd_component_boundary
   change 3 ≤ boundary.card
   omega
 
+set_option backward.isDefEq.respectTransparency false in
 /-- An edge cannot lie on the boundaries of two distinct components of a
 deleted graph. -/
 theorem component_eq_of_common_boundary_edge
@@ -253,6 +254,7 @@ theorem oddComponentBoundaries_pairwiseDisjoint
   intro edge hfirst hsecond
   exact hne (component_eq_of_common_boundary_edge data hfirst hsecond)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every edge leaving a component of `G - S` is incident to `S`. -/
 theorem component_boundary_subset_removed_incidentEdges
     (data : SimpleGraphDartRotation.Data G)

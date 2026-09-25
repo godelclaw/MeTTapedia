@@ -1302,7 +1302,10 @@ theorem IntrinsicCollarTerminalRawState.hasAdmissibleTerminalSignature
 theorem card_intrinsicCollarTerminalRawState :
     @Fintype.card IntrinsicCollarTerminalRawState
       intrinsicCollarTerminalRawStateFintype = 42768 := by
-  rw [Fintype.card_prod, Fintype.card_coe,
+  rw [@Fintype.card_prod _ _ admissibleIntrinsicCollarPortOverlapProfileFintype
+      (Finset.fintypeCoeSort locallyRealizableCorrectionWords),
+    @Fintype.card_coe _ locallyRealizableCorrectionWords
+      (Finset.fintypeCoeSort locallyRealizableCorrectionWords),
     card_admissibleIntrinsicCollarPortOverlapProfile,
     card_locallyRealizableCorrectionWords]
 

@@ -68,6 +68,7 @@ theorem sourceSlabLiteralCellRegionAt_eq_vertexSetRegionEdges_compl
             hcubic).component)ᶜ := by
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every edge crossing the literal Cell's vertex cut is one of its two
 incoming or two outgoing source crossings. -/
 theorem sourceSlabLiteralCellCrossing_eq_input_or_output

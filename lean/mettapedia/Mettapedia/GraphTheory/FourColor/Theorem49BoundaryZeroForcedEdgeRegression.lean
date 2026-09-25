@@ -295,12 +295,15 @@ theorem sharedInteriorPair_interiorEdgeSupport_eq :
     rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
     decide
 
+set_option backward.isDefEq.respectTransparency false in
 def sipFace0 : AmbientFace sharedInteriorPairEmbedding.faces :=
   ⟨(0 : SharedInteriorPairFace), by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def sipFace1 : AmbientFace sharedInteriorPairEmbedding.faces :=
   ⟨(1 : SharedInteriorPairFace), by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def sipFace2 : AmbientFace sharedInteriorPairEmbedding.faces :=
   ⟨(2 : SharedInteriorPairFace), by decide⟩
 
@@ -1895,6 +1898,7 @@ def ccbDart51 : crossComponentBridgeAnnulusGraph.Dart := ⟨((5 : Fin 6), 1), by
 def ccbDart32 : crossComponentBridgeAnnulusGraph.Dart := ⟨((3 : Fin 6), 2), by
   simp [crossComponentBridgeAnnulusGraph]⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def crossComponentBridgeAnnulusFace0PureDartCycle
     (hf : (0 : CrossComponentBridgeAnnulusFace) ∈ crossComponentBridgeAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
@@ -1918,6 +1922,7 @@ def crossComponentBridgeAnnulusFace0PureDartCycle
     rcases he' with rfl | rfl | rfl <;>
       simp [ccbO01, ccbR14, ccbD04, ccbDart01, ccbDart14, ccbDart40]
 
+set_option backward.isDefEq.respectTransparency false in
 def crossComponentBridgeAnnulusFace1PureDartCycle
     (hf : (1 : CrossComponentBridgeAnnulusFace) ∈ crossComponentBridgeAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
@@ -1941,6 +1946,7 @@ def crossComponentBridgeAnnulusFace1PureDartCycle
     rcases he' with rfl | rfl | rfl <;>
       simp [ccbI34, ccbD04, ccbR03, ccbDart34, ccbDart40, ccbDart03]
 
+set_option backward.isDefEq.respectTransparency false in
 def crossComponentBridgeAnnulusFace2PureDartCycle
     (hf : (2 : CrossComponentBridgeAnnulusFace) ∈ crossComponentBridgeAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
@@ -1964,6 +1970,7 @@ def crossComponentBridgeAnnulusFace2PureDartCycle
     rcases he' with rfl | rfl | rfl <;>
       simp [ccbO12, ccbR25, ccbD15, ccbDart12, ccbDart25, ccbDart51]
 
+set_option backward.isDefEq.respectTransparency false in
 def crossComponentBridgeAnnulusFace3PureDartCycle
     (hf : (3 : CrossComponentBridgeAnnulusFace) ∈ crossComponentBridgeAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
@@ -1987,6 +1994,7 @@ def crossComponentBridgeAnnulusFace3PureDartCycle
     rcases he' with rfl | rfl | rfl <;>
       simp [ccbI45, ccbD15, ccbR14, ccbDart45, ccbDart51, ccbDart14]
 
+set_option backward.isDefEq.respectTransparency false in
 def crossComponentBridgeAnnulusFace4PureDartCycle
     (hf : (4 : CrossComponentBridgeAnnulusFace) ∈ crossComponentBridgeAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
@@ -2010,6 +2018,7 @@ def crossComponentBridgeAnnulusFace4PureDartCycle
     rcases he' with rfl | rfl | rfl <;>
       simp [ccbO20, ccbR03, ccbD23, ccbDart20, ccbDart03, ccbDart32]
 
+set_option backward.isDefEq.respectTransparency false in
 def crossComponentBridgeAnnulusFace5PureDartCycle
     (hf : (5 : CrossComponentBridgeAnnulusFace) ∈ crossComponentBridgeAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
@@ -3175,12 +3184,15 @@ theorem selectedEndpointFreeFace_interiorEdgeSupport_eq :
     rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
     decide
 
+set_option backward.isDefEq.respectTransparency false in
 def gseFree0 : AmbientFace selectedEndpointFreeFaceEmbedding.faces :=
   ⟨(1 : SelectedEndpointFreeFaceFace), by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def gseFree1 : AmbientFace selectedEndpointFreeFaceEmbedding.faces :=
   ⟨(4 : SelectedEndpointFreeFaceFace), by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def gseFree2 : AmbientFace selectedEndpointFreeFaceEmbedding.faces :=
   ⟨(7 : SelectedEndpointFreeFaceFace), by decide⟩
 
@@ -3466,6 +3478,7 @@ theorem selectedEndpointFreeFaceBoundaryFreeIncidentFaceSelector_strictDescent
         exact hne (hmem.trans hsel.symm)
       exact False.elim hfalse
 
+set_option backward.isDefEq.respectTransparency false in
 theorem selectedEndpointFreeFace_pathEdges_have_boundaryFree_incident_face :
     ∀ e ∈ ({gseP0, gseP1, gseP2} : Finset selectedEndpointFreeFaceGraph.edgeSet),
       ∃ f ∈ selectedEndpointFreeFaceEmbedding.faces,
@@ -3847,6 +3860,7 @@ theorem gtfP2_not_mem_selectedBoundarySupport :
   rw [totalIncidenceCount_gtfP2] at hcount'
   norm_num at hcount'
 
+set_option backward.isDefEq.respectTransparency false in
 theorem touchingFreeFace_pathEdges_have_boundaryFree_incident_face :
     ∀ e ∈ ({gtfP0, gtfP1, gtfP2} : Finset touchingFreeFaceGraph.edgeSet),
       ∃ f ∈ touchingFreeFaceEmbedding.faces,
@@ -4327,21 +4341,27 @@ theorem positiveTwoCollarToy_exists_interiorEdgeSupportEdge_not_enumeratedForced
       ptcP45_mem_interiorEdgeSupport
       ptcP53_mem_interiorEdgeSupport
 
+set_option backward.isDefEq.respectTransparency false in
 def ptcFace0 : AmbientFace positiveTwoCollarToyEmbedding.faces :=
   ⟨(0 : PositiveTwoCollarToyFace), by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def ptcFace1 : AmbientFace positiveTwoCollarToyEmbedding.faces :=
   ⟨(1 : PositiveTwoCollarToyFace), by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def ptcFace2 : AmbientFace positiveTwoCollarToyEmbedding.faces :=
   ⟨(2 : PositiveTwoCollarToyFace), by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def ptcFace3 : AmbientFace positiveTwoCollarToyEmbedding.faces :=
   ⟨(3 : PositiveTwoCollarToyFace), by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def ptcFace4 : AmbientFace positiveTwoCollarToyEmbedding.faces :=
   ⟨(4 : PositiveTwoCollarToyFace), by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def ptcFace5 : AmbientFace positiveTwoCollarToyEmbedding.faces :=
   ⟨(5 : PositiveTwoCollarToyFace), by decide⟩
 
@@ -4381,6 +4401,7 @@ theorem positiveTwoCollarToy_nonempty_planarBoundaryHeightOrderedFacePeelWitness
             hrest := by
               decide }⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem positiveTwoCollarToy_pathEdges_have_boundaryFree_incident_face :
     ∀ e ∈ ({ptcP34, ptcP45, ptcP53} : Finset positiveTwoCollarToyGraph.edgeSet),
       ∃ f ∈ positiveTwoCollarToyEmbedding.faces,
@@ -6733,6 +6754,7 @@ macro "tba_dart_cycle" : tactic =>
     tbaDart52, tbaDart34, tbaDart47, tbaDart76, tbaDart63, tbaDart45, tbaDart58,
     tbaDart87, tbaDart74, tbaDart53, tbaDart36, tbaDart68, tbaDart85])
 
+set_option backward.isDefEq.respectTransparency false in
 def twoBandAnnulusFace0PureDartCycle
     (hf : (0 : TwoBandAnnulusFace) ∈ twoBandAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
@@ -6755,6 +6777,7 @@ def twoBandAnnulusFace0PureDartCycle
       simp [tbaO01, tbaR14, tbaM34, tbaR03, tbaDart01, tbaDart14,
         tbaDart43, tbaDart30]
 
+set_option backward.isDefEq.respectTransparency false in
 def twoBandAnnulusFace1PureDartCycle
     (hf : (1 : TwoBandAnnulusFace) ∈ twoBandAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
@@ -6777,6 +6800,7 @@ def twoBandAnnulusFace1PureDartCycle
       simp [tbaO12, tbaR25, tbaM45, tbaR14, tbaDart12, tbaDart25,
         tbaDart54, tbaDart41]
 
+set_option backward.isDefEq.respectTransparency false in
 def twoBandAnnulusFace2PureDartCycle
     (hf : (2 : TwoBandAnnulusFace) ∈ twoBandAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
@@ -6799,6 +6823,7 @@ def twoBandAnnulusFace2PureDartCycle
       simp [tbaO20, tbaR03, tbaM53, tbaR25, tbaDart20, tbaDart03,
         tbaDart35, tbaDart52]
 
+set_option backward.isDefEq.respectTransparency false in
 def twoBandAnnulusFace3PureDartCycle
     (hf : (3 : TwoBandAnnulusFace) ∈ twoBandAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
@@ -6821,6 +6846,7 @@ def twoBandAnnulusFace3PureDartCycle
       simp [tbaM34, tbaR47, tbaI67, tbaR36, tbaDart34, tbaDart47,
         tbaDart76, tbaDart63]
 
+set_option backward.isDefEq.respectTransparency false in
 def twoBandAnnulusFace4PureDartCycle
     (hf : (4 : TwoBandAnnulusFace) ∈ twoBandAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
@@ -6843,6 +6869,7 @@ def twoBandAnnulusFace4PureDartCycle
       simp [tbaM45, tbaR58, tbaI78, tbaR47, tbaDart45, tbaDart58,
         tbaDart87, tbaDart74]
 
+set_option backward.isDefEq.respectTransparency false in
 def twoBandAnnulusFace5PureDartCycle
     (hf : (5 : TwoBandAnnulusFace) ∈ twoBandAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
@@ -11384,12 +11411,15 @@ theorem oneBandAnnulus3_interiorEdgeSupport_eq :
     rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
     decide
 
+set_option backward.isDefEq.respectTransparency false in
 def obaFace0 : AmbientFace oneBandAnnulus3Embedding.faces :=
   ⟨(0 : OneBandAnnulus3Face), by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def obaFace1 : AmbientFace oneBandAnnulus3Embedding.faces :=
   ⟨(1 : OneBandAnnulus3Face), by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def obaFace2 : AmbientFace oneBandAnnulus3Embedding.faces :=
   ⟨(2 : OneBandAnnulus3Face), by decide⟩
 

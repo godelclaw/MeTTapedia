@@ -176,7 +176,7 @@ theorem nextTransferAt_eq_transferAt_finRotate
       (finRotate circuit.arcLength position)
   convert hnext using 1
   · congr 1
-  · rw [List.get_eq_getElem]
+  · erw [List.get_eq_getElem]
     apply getElem_congr_idx
     haveI : NeZero circuit.arcLength := position.neZero
     rw [finRotate_apply]

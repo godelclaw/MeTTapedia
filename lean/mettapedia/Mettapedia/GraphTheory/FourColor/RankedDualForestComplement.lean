@@ -104,6 +104,7 @@ theorem complement_connected (hconn : G.Connected)
     | cons h q ih => exact fun ha => ih (hstep h ha)
   exact hwalk p .rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Euler supplies the complementary tree size when the forest spans all faces. -/
 theorem complement_isTree (hconn : G.Connected)
     (htwo : OrbitFacesTwoSided data.toRotationSystem)

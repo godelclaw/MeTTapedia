@@ -257,6 +257,7 @@ def boundaryEdgeSetInducedGraph_walk_of_mem_edges_share_endpoint
       (boundaryEdgeSetInducedGraph_walk_of_mem_edge_endpoints
         (G := G) (edges := edges) hf hxF hv)
 
+set_option backward.isDefEq.respectTransparency false in
 /--
 Every carrier edge used by the canonical shared-endpoint step maps back to one
 of the two selected ambient edges that form that step.
@@ -338,6 +339,7 @@ theorem exists_boundaryEdgeSetInducedGraph_walk_of_sharedEndpointGraph_walk
           tail,
         trivial⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /--
 A shared-endpoint walk of selected boundary edges whose visited edges avoid a
 mapped carrier cut induces a carrier walk avoiding that carrier cut.

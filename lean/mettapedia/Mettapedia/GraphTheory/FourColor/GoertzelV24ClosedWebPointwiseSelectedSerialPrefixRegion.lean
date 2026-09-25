@@ -106,6 +106,7 @@ noncomputable def pointwiseSelectedSourceLocalLayerLeftCrossingAt
       Formation.LocalLayerPair.firstLayer,
       Formation.LocalLayerPair.firstWalk] using step.isLt⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Outgoing selected crossing of the same literal Cell. -/
 noncomputable def pointwiseSelectedSourceLocalLayerRightCrossingAt
     {data : AnnularBoundaryData G 5} (formation : Formation data)
@@ -155,6 +156,7 @@ theorem pointwiseSelectedSourceLocalLayerLeftCrossingAt_injective
   apply Fin.ext
   exact congrArg Fin.val hindex
 
+set_option backward.isDefEq.respectTransparency false in
 theorem pointwiseSelectedSourceLocalLayerRightCrossingAt_injective
     {data : AnnularBoundaryData G 5} (formation : Formation data)
     {blockLength : Nat}
@@ -240,6 +242,7 @@ theorem pointwiseSelectedSourceLocalLayerCellRegionAt_leftCrossing
     pointwiseSelectedSourceLocalLayerLeftCrossingAt, layers, pair, boundary,
     cellData, index] using hport
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every outgoing selected crossing belongs to the same literal Cell. -/
 theorem pointwiseSelectedSourceLocalLayerCellRegionAt_rightCrossing
     {data : AnnularBoundaryData G 5} (formation : Formation data)

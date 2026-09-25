@@ -47,6 +47,7 @@ theorem stepDarts_consumed (a : Code l r) (h : Valid a) (p : Consumed a) :
   rw [Equiv.symm_apply_apply]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem stepDarts_new (a : Code l r) (h : Valid a) (b : Consumed a ⊕ Fresh a) :
     stepDarts (I := I) a h (.inr ((starOrder a h).symm b)) =
       match b with
@@ -108,6 +109,7 @@ theorem vert_new (a : Code l r) (h : Valid a)
 def initialDarts (a : Code 0 r) (h : Valid a) : Fin 3 ≃ Empty ⊕ Fin r :=
   (((dartOrder (starOrder a h)).trans (darts (initialCoordinates a)).symm).trans compact.symm)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem initialDarts_new (a : Code 0 r) (h : Valid a) (p : Fresh a) :
     initialDarts a h ((starOrder a h).symm (.inr p)) = .inr p.1 := by
   simp only [initialDarts, Equiv.trans_apply, dartOrder, Equiv.coe_fn_mk,

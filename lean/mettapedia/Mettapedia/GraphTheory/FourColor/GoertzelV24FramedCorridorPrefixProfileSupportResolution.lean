@@ -119,6 +119,7 @@ theorem localLayerLeftFactorHasProfileFragmentCoordinate_or_containsSharedRung
           fragment factor htouches)
   · exact Or.inr hshared
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A support-selected incoming coordinate carries the occurrence-sensitive
 cap of that same factor.  This is an indexed form of the earlier existential
 cap theorem; it prevents a later proof from switching to a different

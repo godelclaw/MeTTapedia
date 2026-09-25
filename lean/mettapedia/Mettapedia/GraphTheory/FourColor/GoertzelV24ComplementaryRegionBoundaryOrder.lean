@@ -272,6 +272,7 @@ theorem mem_faceSideCurrentDarts_iff
   classical
   simp [faceSideCurrentDarts]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp]
 theorem mem_faceSideNextDarts_iff
     (RS : RotationSystem V E) (side : V -> Prop) (root dart : RS.D) :

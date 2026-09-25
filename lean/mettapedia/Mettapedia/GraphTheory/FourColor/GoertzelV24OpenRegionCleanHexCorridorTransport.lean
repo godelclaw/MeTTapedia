@@ -36,6 +36,7 @@ variable {V E : Type*} [Fintype V] [DecidableEq V]
 
 noncomputable section
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **L1 (one-sided neighbour pullback).** Every open neighbour of a fully
 retained face is the exact open image of an ambient neighbour, provided that
 the ambient neighbour across each boundary edge is itself fully retained.

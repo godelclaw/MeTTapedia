@@ -69,6 +69,7 @@ theorem supportedBy_residualGraph_iff (sigma tau : Pairing V) :
   · rintro ⟨htau, hne⟩ v
     exact ⟨htau v, hne v⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem neighborFinset_residualGraph
     (sigma : Pairing V) (v : V) :
     (residualGraph G sigma).neighborFinset v =

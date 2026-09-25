@@ -730,6 +730,7 @@ theorem EvenKempeFusionLens.leftConnectorVertex_ne_rightConnectorVertex
   intro hvertices
   exact hleftRight (hdata.1 hvertices)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every junction coordinate of the one-step closing walk is the left
 boundary connector vertex. -/
 theorem EvenKempeFusionLens.leftClosingStep_junction_eq_connectorVertex

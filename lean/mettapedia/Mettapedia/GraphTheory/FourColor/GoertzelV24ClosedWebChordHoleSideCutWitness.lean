@@ -39,6 +39,7 @@ local instance chordHoleSideCutGraphEdgeSetDecidableEq :
     DecidableEq G.edgeSet :=
   Subtype.instDecidableEq
 
+set_option backward.isDefEq.respectTransparency false in
 /-- In the two-element field, equality of one pair and inequality across
 both corresponding cut edges determines equality of the opposite pair. -/
 private theorem f2_opposite_eq_of_eq_of_ne_of_ne

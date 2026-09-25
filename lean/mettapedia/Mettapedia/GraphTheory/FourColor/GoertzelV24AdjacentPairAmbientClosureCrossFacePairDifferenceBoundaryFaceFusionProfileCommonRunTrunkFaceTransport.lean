@@ -193,6 +193,7 @@ local instance trunkFaceTransportGraphEdgeSetDecidableEq :
     DecidableEq G.edgeSet :=
   Subtype.instDecidableEq
 
+set_option backward.isDefEq.respectTransparency false in
 /-- An edge-simple graph walk contained in one quotient-face boundary has
 the same canonical face-side coordinate on its first and last darts. -/
 theorem walk_incidentFaceSide_firstDart_eq_lastDart_of_edges_mem_face

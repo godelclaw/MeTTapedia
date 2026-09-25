@@ -342,6 +342,7 @@ theorem card_radialForbiddenEdgeSupport_le
       rfl
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+set_option backward.isDefEq.respectTransparency false in
 /-- Positional reading of a walk edge gives the unordered pair of successive
 vertices. -/
 private theorem edges_get_cast_eq_s_getVert

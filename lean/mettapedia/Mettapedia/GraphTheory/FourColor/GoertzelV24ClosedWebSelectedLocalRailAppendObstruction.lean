@@ -114,10 +114,12 @@ def walk (triangle : AdjacentDualTriangle successor) :
     (.cons triangle.rightCenter_adj_third
       (.cons triangle.leftCenter_adj_third.symm .nil))
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem walk_length (triangle : AdjacentDualTriangle successor) :
     triangle.walk.length = 3 := by
   simp [walk]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The obstruction walk is a genuine dual cycle, not merely a closed walk.
 Its three distinct vertices follow directly from the three adjacency
 witnesses. -/

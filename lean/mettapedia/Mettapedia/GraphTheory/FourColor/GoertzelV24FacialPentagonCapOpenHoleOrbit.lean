@@ -108,6 +108,7 @@ end OrientedFacialPentagonCap
 
 variable {data : Data G}
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Planar-bond transfer puts all five source-ordered cap spokes in one cycle
 of the retained first-return boundary order.  The deleted-side connectedness
 premise is supplied internally by the literal pentagon cycle; only the

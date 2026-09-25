@@ -154,6 +154,7 @@ theorem ring_images_equal (RS : RotationSystem V E)
     rw [complementBoundaryAlphaEquiv_val]
     exact RS.alpha_involutive _
 
+set_option backward.isDefEq.respectTransparency false in
 theorem mem_range_diskEmbed_iff (RS : RotationSystem V E)
     (deleted : Finset V) (x : RS.D) :
     x ∈ Set.range (diskEmbed RS deleted) ↔
@@ -170,6 +171,7 @@ theorem mem_range_diskEmbed_iff (RS : RotationSystem V E)
     rw [diskEmbed_eq_retained]
     simp [d]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The two images cover every ambient dart and intersect exactly at the
 actual cut ports. This is the `Patch.cover` law on the physical vertex cut. -/
 theorem cover (RS : RotationSystem V E) (deleted : Finset V) (x : RS.D) :

@@ -126,6 +126,7 @@ noncomputable def sourceCrosscutLiteralOpenRightTerminalProfile
         web.annular.cellulation.rotation boundary coloring hcoloring
         (hports (.inl crossing)))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Forgetting terminal observations on the enriched left state recovers the
 existing literal left source-interface profile. -/
 @[simp] theorem forgetTerminals_sourceCrosscutLiteralOpenLeftTerminalProfile
@@ -161,6 +162,7 @@ existing literal left source-interface profile. -/
     withInnerBoundaryTerminals,
     SeparatedAlignedSimpleDualCrosscuts.sourceCrosscutLiteralOpenLeftProfile]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Forgetting terminal observations on the enriched right state likewise
 recovers the existing aligned right source-interface profile. -/
 @[simp] theorem forgetTerminals_sourceCrosscutLiteralOpenRightTerminalProfile

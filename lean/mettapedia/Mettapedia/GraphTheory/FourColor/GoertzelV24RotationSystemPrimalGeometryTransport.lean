@@ -36,6 +36,7 @@ local instance rotationPrimalGraphEdgeDecidableEq (RS : RotationSystem V E) :
     DecidableEq (rotationPrimalGraph RS).edgeSet :=
   Subtype.instDecidableEq
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The canonical graph-backing dart equivalence restricts to an equivalence
 on every complete facial orbit. -/
 def graphFaceDartEquiv
@@ -77,6 +78,7 @@ theorem graphFaceEquiv_orbitFaceDarts_card
   rw [Fintype.card_coe, Fintype.card_coe] at hcard
   exact hcard.symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Representative-level form of facial-orbit cardinality preservation. -/
 theorem graphData_faceOrbit_card_eq
     (RS : RotationSystem V E)
@@ -115,6 +117,7 @@ theorem graphData_edgeOf_primalDartEquiv_eq_edgeEquiv
     rw [hchosen, RS.alpha_involutive]
     exact Sym2.eq_swap
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Graph backing sends the literal boundary support of one quotient face
 exactly to the graph-backed boundary support. -/
 theorem graphFaceEquiv_orbitFaceBoundary_eq_map

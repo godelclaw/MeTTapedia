@@ -128,6 +128,7 @@ noncomputable def finiteBoolSupportLetterForColorAt
   outputCode := finiteBoolOutputLetterCodeForColorAt corridor hunique offset
     hnext color hrole
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every literal rebase collar is supported at the supplied colouring.  The
 tracked clause is the exact two-factor closure theorem; the facial clauses are
 the already proved occurrence-sensitive receipt and therefore do not change

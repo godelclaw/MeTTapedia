@@ -154,6 +154,7 @@ def diamondWithTriangleFace2DartSuccessor (d : diamondWithTriangleGraph.Dart) :
   else if d = dtDart56 then dtDart64
   else dtDart45
 
+set_option backward.isDefEq.respectTransparency false in
 def diamondWithTriangleFace0DartSuccessorCycle
     (hf : (0 : DiamondWithTriangleFace) ∈ diamondWithTriangleEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryDartSuccessorCycle
@@ -177,6 +178,7 @@ def diamondWithTriangleFace0DartSuccessorCycle
     intro e he
     exact (diamondWithTriangleFace0SelectedArcPureDartCycle hf).hface_sub e he
 
+set_option backward.isDefEq.respectTransparency false in
 def diamondWithTriangleFace1DartSuccessorCycle
     (hf : (1 : DiamondWithTriangleFace) ∈ diamondWithTriangleEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryDartSuccessorCycle
@@ -200,6 +202,7 @@ def diamondWithTriangleFace1DartSuccessorCycle
     intro e he
     exact (diamondWithTriangleFace1SelectedArcPureDartCycle hf).hface_sub e he
 
+set_option backward.isDefEq.respectTransparency false in
 def diamondWithTriangleFace2DartSuccessorCycle
     (hf : (2 : DiamondWithTriangleFace) ∈ diamondWithTriangleEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryDartSuccessorCycle

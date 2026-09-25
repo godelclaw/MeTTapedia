@@ -162,6 +162,7 @@ def planarOrdered (htwoSided : OrbitFacesTwoSided RS) :
     Mettapedia.GraphTheory.FourColor.RotationSystem.ThreeEdgeCutSideData RS :=
   data.reindex (data.planarReindex htwoSided)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The planar reindexing makes cap rotation exactly cancel the retained
 boundary successor. -/
 theorem planarOrdered_capBoundaryCycle

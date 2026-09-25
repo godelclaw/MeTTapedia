@@ -354,6 +354,7 @@ theorem capEdgeOfRetainedDart_alpha_of_internal
   rw [hcapAlpha, hcap]
   exact data.capRewiredDartSystem.edgeOf_alpha (Sum.inl internal)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Distinct retained darts based at one old vertex determine adjacent,
 distinct edges of the capped rotation system. -/
 theorem capEdgeAdj_of_retainedDarts

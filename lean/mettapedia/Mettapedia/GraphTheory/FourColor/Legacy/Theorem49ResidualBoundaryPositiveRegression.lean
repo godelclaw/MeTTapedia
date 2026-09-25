@@ -82,6 +82,7 @@ def twoTriangleInnerFaceDartSuccessor (d : twoTriangleAnnulusGraph.Dart) :
   else if d = ttaDart45 then ttaDart53
   else ttaDart34
 
+set_option backward.isDefEq.respectTransparency false in
 def twoTriangleOuterFaceDartSuccessorCycle
     (hf : (0 : TwoTriangleAnnulusFace) ∈ twoTriangleAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryDartSuccessorCycle
@@ -105,6 +106,7 @@ def twoTriangleOuterFaceDartSuccessorCycle
     intro e he
     exact (twoTriangleOuterFacePureDartCycle hf).hface_sub e he
 
+set_option backward.isDefEq.respectTransparency false in
 def twoTriangleInnerFaceDartSuccessorCycle
     (hf : (1 : TwoTriangleAnnulusFace) ∈ twoTriangleAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryDartSuccessorCycle

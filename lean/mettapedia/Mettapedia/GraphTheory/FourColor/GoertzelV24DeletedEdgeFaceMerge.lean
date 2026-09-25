@@ -48,6 +48,7 @@ theorem eraseTwoPoints_apply_predecessor_first
         (perm.symm first) hpre (by simpa [hfirst] using hsucc)
     _ = perm first := hfirst
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The exact facial splice produced by deleting one edge.  If an old facial
 step lands on the forward dart of the removed edge, then the induced face step
 lands at the old successor of the reverse dart.  In a two-sided closed map the

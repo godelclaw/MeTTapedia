@@ -140,6 +140,7 @@ noncomputable def restoringPositionAt
     Fin rebaseCircuit.arcLength :=
   (circuit.dependencyAt position).restoringPosition
 
+set_option backward.isDefEq.respectTransparency false in
 /-- On a shortest recovery circuit, the positional assignment into the
 underlying rebase circuit is injective. -/
 theorem IsLengthMinimal.restoringPositionAt_injective

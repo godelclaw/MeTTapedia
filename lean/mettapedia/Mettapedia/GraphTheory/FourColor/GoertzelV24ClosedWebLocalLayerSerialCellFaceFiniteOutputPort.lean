@@ -303,6 +303,7 @@ theorem sourceLocalLayerSerialFaceOutputFragmentContainsPortFinite_iff
     · simpa [side, sourceLocalLayerSerialFaceOutputPortTransitionDartAt] using
         hreachable
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The finite port-incidence predicate is exactly the corresponding Boolean
 coordinate of the actual graph-derived outgoing profile. -/
 theorem sourceLocalLayerSerialFaceOutputFragmentContainsPortFinite_iff_profile

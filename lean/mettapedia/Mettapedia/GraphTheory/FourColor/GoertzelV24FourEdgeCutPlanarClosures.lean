@@ -100,6 +100,7 @@ theorem closureVertex_card_lt
   apply card_retainedVertex_lt (deletedRegionKeep deleted) removed
   simpa [deletedRegionKeep] using hremoved
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A retained seam closure only transports the old cyclic vertex rotations
 to the surviving dart fibers. -/
 theorem closure_vertexRotationCyclic

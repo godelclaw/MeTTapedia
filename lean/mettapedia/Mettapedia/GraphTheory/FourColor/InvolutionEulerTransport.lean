@@ -46,6 +46,7 @@ theorem pair_count_congr (e : D ≃ E) (r a : Perm D) :
   unfold wordOrbitCount
   exact (Fintype.card_congr (Quotient.congr e (fun x y => (pair_congr e r a x y).symm))).symm
 
+set_option backward.isDefEq.respectTransparency false in
 theorem moved_count_congr (e : D ≃ E) (a : Perm D) :
     (movedFinset (e.permCongr a)).card = (movedFinset a).card := by
   have he : movedFinset (e.permCongr a) = (movedFinset a).map e.toEmbedding := by

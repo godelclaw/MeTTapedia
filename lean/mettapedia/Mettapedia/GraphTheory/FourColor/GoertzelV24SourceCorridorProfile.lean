@@ -24,6 +24,7 @@ open GoertzelV24CorridorProfile
 open GoertzelV24BoundaryProfileFiniteState
 open GoertzelV24WindingClassification
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The two connectivity roles named in the manuscript's length profile. -/
 inductive SourceTrackedColorPair where
   | alphaBeta

@@ -379,6 +379,7 @@ theorem sourceLocalLayerSerialRootedInteractionRollingCellFactorAt_supportsBool
         factored.2.1 splice hrole)
 
 set_option maxHeartbeats 800000 in
+set_option backward.isDefEq.respectTransparency false in
 /-- Applying the literal finite rolling factor returns the canonical rooted
 interaction state of the spliced colouring at the following cut. -/
 theorem sourceLocalLayerSerialRootedInteractionRollingCellFactorAt_successor_exact

@@ -232,6 +232,7 @@ noncomputable def localLayerRightPrefixBoundaryFragmentAt
       (indexedCrossingEdgeSet interface.nextLocalLayerPrefixCrossing)
       interface.localLayerRightPrefixRegion index)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The outgoing `faceContinues` coordinate compares the ambient faces named
 by the two reindexed prefix-plus-Cell fragments.  Thus reindexing does not
 silently weaken the face-identity component of the complete profile. -/
@@ -371,6 +372,7 @@ theorem localLayerRightPrefixBoundaryFragment_cap_eq_factorCaps
   simpa [RS, root, localLayerFactorFragmentCapSum,
     localLayerFactorFragmentOverlapCard] using hcap
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The cap field stored at every actual outgoing finite-profile coordinate
 is the overlap-corrected capped sum of the old-prefix and Cell factor
 fragments that meet it. -/
@@ -419,6 +421,7 @@ theorem localLayerRightPrefixBoundedProfile_faceLengthCap_eq_factorCaps
   exact interface.localLayerRightPrefixBoundaryFragment_cap_eq_factorCaps
     (interface.localLayerRightPrefixBoundaryFragmentAt index)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The outgoing profile says that a right crossing belongs to a named
 fragment exactly when that crossing belongs to one of the genuine Cell
 factor fragments contributing to it.  Thus `fragmentContainsPort` is joined

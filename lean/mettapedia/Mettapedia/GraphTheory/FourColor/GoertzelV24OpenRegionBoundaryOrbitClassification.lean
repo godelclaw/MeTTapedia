@@ -66,6 +66,7 @@ theorem collapseOpenDart_phi_eq_self_or_capped
       RS keep outer boundary]
     rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every finite opened face walk projects to some finite capped retained-face
 walk; inserted stub steps may contribute zero projected advances. -/
 theorem exists_capped_pow_eq_collapse_phi_pow
@@ -110,6 +111,7 @@ theorem retainedCappedFacePerm_sameCycle_of_open_stub_sameCycle
       (Equiv.Perm.SameCycle.refl (retainedCappedFacePerm RS keep) first.1)
   exact hpow.trans (hcollapsed.sameCycle (retainedCappedFacePerm RS keep)).symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Fresh stubs share an opened face exactly when their boundary coordinates
 share a cycle of the retained first-return permutation. -/
 theorem dartOrbitFace_stub_eq_iff_boundarySuccessor_sameCycle

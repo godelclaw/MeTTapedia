@@ -70,6 +70,7 @@ theorem openBoundaryDart_injective (data : Data G) (cap : PentagonCap G) :
   simpa [openBoundaryDart,
     GoertzelV24PentagonCapOpeningComparison.PentagonCap.spokeBoundaryDart] using hdarts
 
+set_option backward.isDefEq.respectTransparency false in
 /-- No extra exposed dart is created by opening a pentagon cap: every literal
 open-boundary dart is one of the five source-ordered spokes. -/
 theorem exists_openBoundaryDart_eq (data : Data G) (cap : PentagonCap G)

@@ -205,6 +205,7 @@ theorem sourceLocalLayerBoundaryRebaseFiniteBoolOutputLetterCodeAt_outputProfile
   exact sourceLocalLayerBoundaryRebaseFiniteOutputProfileBoolAt_eq corridor
     hunique offset hnext
 
+set_option backward.isDefEq.respectTransparency false in
 /-- On an actual source rebase, the reflected facial closure recognizes the
 successor regional-fragment partition exactly. -/
 theorem sourceLocalLayerBoundaryRebaseFiniteBoolFaceReceiptAt_fragmentClosure_iff_eq

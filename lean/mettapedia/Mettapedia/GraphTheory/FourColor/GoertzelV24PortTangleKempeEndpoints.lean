@@ -499,6 +499,7 @@ theorem card_componentPortDarts_eq_two
   rw [hidentify]
   exact hendpoints
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A physical bichromatic component with no boundary dart is a graph of
 cycles.  The statement is deliberately about the exact active-dart web:
 contracting its vertex wires to obtain an ambient primal cycle is a separate
@@ -538,6 +539,7 @@ theorem activeComponent_isCycles_of_componentPortDarts_eq_empty
         rw [hboundaryFree] at hport
         simp at hport
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A boundary-free physical bichromatic component contains a simple closed
 walk through its chosen root. -/
 theorem exists_activeComponent_cycle_of_componentPortDarts_eq_empty

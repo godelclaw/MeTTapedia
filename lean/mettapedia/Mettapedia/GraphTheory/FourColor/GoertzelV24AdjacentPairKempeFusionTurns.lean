@@ -604,6 +604,7 @@ theorem rho_ambientBExitFusionDart_eq_exitNeighbor_or_companion
   · exact hpairs.2.1
   · exact hpairs.2.2
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Boolean encoding of the entry-end cyclic turn: `true` selects the
 `b`-neighbor and `false` selects the `c`-companion. -/
 def fusionEntryTurn (graphData : SimpleGraphDartRotation.Data G)
@@ -618,6 +619,7 @@ def fusionEntryTurn (graphData : SimpleGraphDartRotation.Data G)
     (ambientBFusionDart data lens hab site) =
       ambientBEntryNeighborDart data lens hab site)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Boolean encoding of the exit-end cyclic turn. -/
 def fusionExitTurn (graphData : SimpleGraphDartRotation.Data G)
     (data : AdjacentPairData G)
@@ -631,6 +633,7 @@ def fusionExitTurn (graphData : SimpleGraphDartRotation.Data G)
     (ambientBExitFusionDart data lens hab site) =
       ambientBExitNeighborDart data lens hab site)
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem fusionEntryTurn_eq_true_iff
     (graphData : SimpleGraphDartRotation.Data G)
     (data : AdjacentPairData G)
@@ -646,6 +649,7 @@ def fusionExitTurn (graphData : SimpleGraphDartRotation.Data G)
         ambientBEntryNeighborDart data lens hab site := by
   simp [fusionEntryTurn]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem fusionExitTurn_eq_true_iff
     (graphData : SimpleGraphDartRotation.Data G)
     (data : AdjacentPairData G)

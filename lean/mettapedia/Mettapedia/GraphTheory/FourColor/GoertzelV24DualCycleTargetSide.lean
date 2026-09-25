@@ -177,6 +177,7 @@ theorem dualWalkTargetFaceDart_eq_alpha_sourceFaceDart
     exact hsourceFace.symm.trans (by simpa [heq] using htargetFace)
   · simpa using heq
 
+set_option backward.isDefEq.respectTransparency false in
 /-- On a two-sided face, the open facial arc beginning immediately after
 `first` and ending immediately before `alpha second` avoids both endpoint
 edges.  Its endpoints are the terminal vertices of `first` and `second`.

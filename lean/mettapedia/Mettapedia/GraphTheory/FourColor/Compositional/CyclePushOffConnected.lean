@@ -117,6 +117,7 @@ theorem induce_filledCycleSide_connected
   rcases hall vertex.1 vertex.2 with ⟨_hvertex, hreachable⟩
   simpa [component] using hreachable
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Choose the binary face label opposite a specified disjoint cycle, while
 retaining that very cycle as the complement witness.  This strengthens the
 older existential `HasCycleOnSide` interface with the provenance needed to

@@ -351,6 +351,7 @@ theorem exists_carrierPreservingStep_of_confinedRepairCycle
       rotation minimal ordered row slot Relation.ReflTransGen.refl
         step returnRun⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every nine-site state either exposes the geometric horns or has a
 confined strict-repair successor. -/
 theorem branchingOrBoundary_or_exists_confinedStrictRepairStep

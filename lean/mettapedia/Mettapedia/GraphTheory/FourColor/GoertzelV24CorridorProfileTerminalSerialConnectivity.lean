@@ -230,7 +230,7 @@ theorem serialTerminalProfileConnectivityClosure_of_forgetTerminals
     (fun left right step =>
       serialTerminalProfileConnectivityStep_of_forgetTerminals
         input cell leftIndex pair left right step)
-    hclosure
+    first second hclosure
 
 /-- An incoming component is available to the serial closure. -/
 theorem serialTerminalProfileConnectivityClosure_of_input

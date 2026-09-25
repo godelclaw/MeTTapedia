@@ -275,6 +275,7 @@ theorem eq_start_or_eq_finish_of_mem_orderedReturnPath_support_of_mem_carrier
         (congrArg Subtype.val hpartner).symm
       _ = finish.1 := congrArg Subtype.val hfinish.symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The ambient spelling of a return meets the operated cycle only at its two
 endpoints. -/
 theorem eq_start_or_eq_finish_of_mem_orderedAmbientReturnPath_support_of_mem_carrier

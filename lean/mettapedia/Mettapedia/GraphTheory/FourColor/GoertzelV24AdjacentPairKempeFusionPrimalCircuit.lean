@@ -408,6 +408,7 @@ theorem EvenKempeFusionLens.fusionSupportEdgeAt_eq_bFusionSiteAt
     lens.fusionSupportEdgeAt position = (lens.bFusionSiteAt position).1 :=
   (lens.bFusionSupportOrderEmbedding_preserves_edge position).symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Fusion monodromy transports a first-route position to the second-route
 position naming the same shared edge. -/
 theorem EvenKempeFusionLens.cFusionSiteAt_fusionMonodromy
@@ -496,6 +497,7 @@ theorem EvenKempeFusionLens.bFusionOrderInterval_getVert_penultimate
       rw [lens.bRoute.ambientPath_getVert]
       rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem EvenKempeFusionLens.cFusionOrderInterval_reverse_getVert
     {portCount : Nat}
     {data : DegreeTwoBoundaryData G portCount}
@@ -532,6 +534,7 @@ theorem EvenKempeFusionLens.cFusionOrderInterval_reverse_getVert
         SimpleGraph.Walk.length_copy, SimpleGraph.Walk.length_reverse,
         SimpleGraph.Walk.supportInterval_length] using hoffset)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem EvenKempeFusionLens.cFusionOrderInterval_reverse_getVert_one
     {portCount : Nat}
     {data : DegreeTwoBoundaryData G portCount}
@@ -575,6 +578,7 @@ theorem EvenKempeFusionLens.cFusionOrderInterval_reverse_getVert_one
     _ = (lens.cNextVertex (lens.bFusionSiteAt second)).1 := by
       rw [lens.cFusionSiteAt_fusionMonodromy second]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem EvenKempeFusionLens.cFusionOrderInterval_reverse_getVert_penultimate
     {portCount : Nat}
     {data : DegreeTwoBoundaryData G portCount}
@@ -647,6 +651,7 @@ theorem EvenKempeFusionLens.bFusionOrderInterval_length_pos
   rw [lens.bRoute.ambientPath.supportInterval_length]
   omega
 
+set_option backward.isDefEq.respectTransparency false in
 theorem EvenKempeFusionLens.cFusionOrderInterval_length_pos
     {portCount : Nat}
     {data : DegreeTwoBoundaryData G portCount}
@@ -916,6 +921,7 @@ theorem EvenKempeFusionLens.eq_endpoint_of_mem_bFusionOrderInterval_of_mem_cSupp
     exact hfusionValue.symm.trans
       (lens.bFusionSupportOrderEmbedding_preserves_edge second)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Between consecutive fusion positions on the second route, a common
 route edge in the corresponding reversed interval is one of its endpoints. -/
 theorem EvenKempeFusionLens.eq_endpoint_of_mem_cFusionOrderInterval_of_mem_bSupport

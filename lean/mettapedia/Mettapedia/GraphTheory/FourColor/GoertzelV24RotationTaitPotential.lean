@@ -56,6 +56,7 @@ theorem dual_incidentEdges_eq_orbitFaceBoundary
     exact ((rotationSystem RS htwoSided).mem_incidentEdges_iff).2
       ⟨dart, hdartEdge, (mem_orbitFaceDarts_iff RS face dart).1 hdartFace⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Connectedness of the literal facial-dual primal graph implies
 connectedness of the equivalent full face-incidence graph used by the rank
 calculation. -/

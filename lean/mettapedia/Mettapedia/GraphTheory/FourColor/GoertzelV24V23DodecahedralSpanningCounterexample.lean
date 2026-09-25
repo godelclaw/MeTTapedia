@@ -74,6 +74,7 @@ def ReachWithinSet {V : Type*} (G : SimpleGraph V) (selected : Set V) :
   | n + 1, u, v =>
       u = v ∨ ∃ w, selected w ∧ G.Adj u w ∧ ReachWithinSet G selected n w v
 
+set_option backward.isDefEq.respectTransparency false in
 instance reachWithinSetDecidable {V : Type*} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj] (selected : Set V)
     [DecidablePred selected] :
@@ -104,6 +105,7 @@ def root01 : sourceTaitColoring.bicoloredSet 0 1 := by
   left
   decide
 
+set_option backward.isDefEq.respectTransparency false in
 theorem root01_path
     (e : dodecahedralGraph.edgeSet)
     (he : e ∈ sourceTaitColoring.bicoloredSet 0 1) :
@@ -144,6 +146,7 @@ def root02 : sourceTaitColoring.bicoloredSet 0 2 := by
   left
   decide
 
+set_option backward.isDefEq.respectTransparency false in
 theorem root02_path
     (e : dodecahedralGraph.edgeSet)
     (he : e ∈ sourceTaitColoring.bicoloredSet 0 2) :
@@ -173,6 +176,7 @@ def root12 : sourceTaitColoring.bicoloredSet 1 2 := by
   left
   decide
 
+set_option backward.isDefEq.respectTransparency false in
 theorem root12_path
     (e : dodecahedralGraph.edgeSet)
     (he : e ∈ sourceTaitColoring.bicoloredSet 1 2) :

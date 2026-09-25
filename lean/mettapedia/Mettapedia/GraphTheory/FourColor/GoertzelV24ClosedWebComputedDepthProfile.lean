@@ -771,6 +771,7 @@ theorem closedWebDepthProfile_edgeColor_eq_of_eq
   cases hprofiles
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Equal coordinate-aware depth profiles identify the actual Tait colors on
 their corresponding crossing edges.  This is the properness entry of the
 source splice checklist, stated against real graph edges rather than only the

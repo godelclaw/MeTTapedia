@@ -7,6 +7,7 @@ namespace RotationSystem.CommonRunFusionSkeleton
 
 open GoertzelV24CurvatureScope
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The four branch vertices left after suppressing the interiors of the
 four arms and the common trunk of a clean common-run splice. -/
 inductive Vertex where
@@ -16,6 +17,7 @@ inductive Vertex where
   | right
   deriving DecidableEq, Fintype
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The six suppressed path edges of the common-run skeleton. -/
 inductive Edge where
   | leftPrefix
@@ -26,6 +28,7 @@ inductive Edge where
   | central
   deriving DecidableEq, Fintype
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Named half-edges of the common-run skeleton. The constructor suffix is
 the branch vertex at which the half-edge is based. -/
 inductive Dart where

@@ -44,6 +44,7 @@ local instance pointwiseSelectedFaceFiniteRepresentativesEdgeSetDecidableEq :
     DecidableEq G.edgeSet :=
   Subtype.instDecidableEq
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every pointwise-selected source Cell supplies the component-equivalence,
 presence, and cap-coherence laws required by the generic predecessor
 representative selector. -/
@@ -158,6 +159,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialFaceFinitePredecessorSemanticAt
         (sourceLocalLayerBoundaryRebaseFaceComponentEdges_eq_of_reachable
           formation.annular.RS region ((hconnected left right).1 hsame)))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The exact selected primal-edge equality table supplies the equivalence
 laws required by the generic new-edge representative selector. -/
 theorem pointwiseSelectedSourceLocalLayerSerialFaceFiniteNewEdgeSemanticAt

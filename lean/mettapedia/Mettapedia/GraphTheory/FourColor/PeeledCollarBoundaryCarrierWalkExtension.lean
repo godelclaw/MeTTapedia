@@ -758,6 +758,7 @@ theorem not_edgeTouchesOutsideVertexSupport_of_mem_boundaryEdgeSetInduced_mapped
     rw [← hw]
     exact boundaryEdgeSetEndpointVertex_mem w)
 
+set_option backward.isDefEq.respectTransparency false in
 /--
 No-avoiding-walk side separation implies off-carrier walk consistency for the
 canonical endpoint-support carrier.  No inducedness hypothesis is needed:

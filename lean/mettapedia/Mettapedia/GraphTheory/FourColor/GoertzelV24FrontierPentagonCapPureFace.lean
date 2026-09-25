@@ -54,6 +54,7 @@ variable {data : Data G}
 private abbrev capOf (walk : FacialPentagonCapBoundaryWalk data) : PentagonCap G :=
   walk.toOrientedFacialPentagonCap.toFacialPentagonCap.toPentagonCap
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A pure cap-side face cannot be rooted in the reverse orientation of a
 named pentagon edge: two face steps would reach the retained spoke endpoint. -/
 private theorem dartOrbitFace_eq_named_of_allOnVertexSupport

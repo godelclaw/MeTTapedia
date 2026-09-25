@@ -161,6 +161,7 @@ def orderedCutRetainedVertexRotationSystem
     hleftInjective hrightInjective hcover hdisjoint houter
     hseamEndpoints).toRotationSystem
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Darts based at a retained vertex are in bijection with all old darts
 based at its ambient vertex. -/
 def retainedVertexDartsEquiv

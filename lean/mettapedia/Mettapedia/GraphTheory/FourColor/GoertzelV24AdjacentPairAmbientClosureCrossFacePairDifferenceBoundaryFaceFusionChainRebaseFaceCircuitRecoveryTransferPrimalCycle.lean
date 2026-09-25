@@ -92,6 +92,7 @@ theorem dualWalkGraphEdge_eq_of_crossingEdge_eq
   · exact False.elim (hsecondFaces (hleft.trans hright.symm))
 
 omit [Fintype F] [DecidableEq F] [Fintype E] in
+set_option backward.isDefEq.respectTransparency false in
 /-- Positional reading of the dual graph edge agrees with positional
 reading of the walk's edge list. -/
 theorem edges_get_dualWalkGraphEdge

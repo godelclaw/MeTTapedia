@@ -387,9 +387,10 @@ theorem activeWeb_reachable_of_kempeConnected
       exact Relation.ReflTransGen.tail Relation.ReflTransGen.refl
         ⟨by simpa using heq, hxy⟩
   have hEqv : Relation.EqvGen R first.1 second.1 :=
-    Relation.EqvGen.mono hstep hconnected
+    Relation.EqvGen.mono hstep first.1 second.1 hconnected
   exact (hR.eqvGen_iff.mp hEqv).2 first.2 second.2
 
+set_option backward.isDefEq.respectTransparency false in
 /-- If one physical component has no boundary port, its contraction to the
 selected primal graph is a graph of cycles. -/
 theorem primalKempeComponent_isCycles_of_boundaryFree
@@ -464,6 +465,7 @@ theorem primalKempeComponent_isCycles_of_boundaryFree
       primal.card_neighborSet_eq_degree vertex.1
     _ = 2 := hparentDegree
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A boundary-free physical component yields a simple cycle in the selected
 primal graph through the base vertex of the chosen active dart. -/
 theorem exists_primalKempeCycle_of_boundaryFree

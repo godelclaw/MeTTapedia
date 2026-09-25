@@ -76,6 +76,7 @@ def residualCycleInterval
       _ = (cycleVertexOrder sigma site chord.right).1 :=
         (cycleVertexOrder_val_eq_getVert sigma site chord.right).symm)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A cycle interval is a simple path. -/
 theorem residualCycleInterval_isPath
     (sigma : Pairing V) {first second : V}
@@ -151,6 +152,7 @@ def orderedChordAmbientPath
   (orderedAmbientReturnPath hG sigma hSigma site chord.left).copy rfl (by
     rw [chord.partner_left])
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The chord-typed ambient return remains a simple path. -/
 theorem orderedChordAmbientPath_isPath
     (hG : HasCubicIncidentEdgeTriples G)
@@ -163,6 +165,7 @@ theorem orderedChordAmbientPath_isPath
   simpa [orderedChordAmbientPath] using
     orderedAmbientReturnPath_isPath hG sigma hSigma site chord.left
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A chord-typed ambient return is nonempty. -/
 theorem orderedChordAmbientPath_not_nil
     (hG : HasCubicIncidentEdgeTriples G)
@@ -175,6 +178,7 @@ theorem orderedChordAmbientPath_not_nil
   simpa [orderedChordAmbientPath] using
     orderedAmbientReturnPath_not_nil hG sigma hSigma site chord.left
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A chord-typed ambient return meets the operated cycle only at its two
 ordered endpoints. -/
 theorem eq_left_or_eq_right_of_mem_orderedChordAmbientPath_support_of_mem_carrier
@@ -376,6 +380,7 @@ theorem orderedReturnChord_left_eq
   · simp [orderedReturnChord, chord.partner_left,
       max_eq_right chord.left_lt_right.le]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Canonical ambient paths belonging to distinct return components have
 disjoint vertex supports. -/
 theorem orderedChordAmbientPath_support_disjoint_of_ne
@@ -422,6 +427,7 @@ theorem orderedChordAmbientPath_edges_disjoint_of_ne
         ((orderedChordAmbientPath hG sigma hSigma site right).fst_mem_support_of_mem_edges
           hright)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every edge of the literal cycle interval is an edge of the full operated
 cycle. -/
 theorem mem_cycle_edges_of_mem_residualCycleInterval_edges
@@ -441,6 +447,7 @@ theorem mem_cycle_edges_of_mem_residualCycleInterval_edges
     simpa [residualCycleInterval] using hedge
   exact (site.cycle.isSubwalk_rfl.tail.edges_subset) hintervalTail
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The separator edge list is exactly the union of the physical return and
 the selected cycle interval. -/
 theorem mem_orderedReturnSeparator_edges_iff
@@ -457,6 +464,7 @@ theorem mem_orderedReturnSeparator_edges_iff
   simp [orderedReturnSeparator, SimpleGraph.Walk.edges_append,
     SimpleGraph.Walk.edges_reverse]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A second return component avoids every edge of the separator formed from
 a distinct first return. -/
 theorem orderedChordAmbientPath_edge_not_orderedReturnSeparator_of_ne
@@ -533,6 +541,7 @@ theorem siteThirdDart_edge_not_orderedReturnSeparator_of_ne_endpoints
     exact mem_cycle_edges_of_mem_residualCycleInterval_edges
       sigma site separatorChord hinterval
 
+set_option backward.isDefEq.respectTransparency false in
 /-- At the left endpoint, the residual third edge is the first edge of the
 physical return and therefore belongs to its separator. -/
 theorem siteThirdDart_left_edge_mem_orderedReturnSeparator
@@ -561,6 +570,7 @@ theorem siteThirdDart_left_edge_mem_orderedReturnSeparator
     hG sigma hSigma site chord.left] at hfirstMem
   simpa [orderedChordAmbientPath, SimpleGraph.Walk.edges_copy] using hfirstMem
 
+set_option backward.isDefEq.respectTransparency false in
 /-- At the right endpoint, the residual third edge is the reverse of the
 last edge of the physical return and therefore belongs to its separator. -/
 theorem siteThirdDart_right_edge_mem_orderedReturnSeparator
@@ -598,6 +608,7 @@ theorem siteThirdDart_right_edge_mem_orderedReturnSeparator
   rw [hedge]
   simpa [orderedChordAmbientPath, SimpleGraph.Walk.edges_copy] using hlastMem
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Any exact face-cut labeling of one return separator is transported
 unchanged between the two canonical third darts of a distinct return. -/
 theorem separatorLabels_eq_otherChord_thirdDarts

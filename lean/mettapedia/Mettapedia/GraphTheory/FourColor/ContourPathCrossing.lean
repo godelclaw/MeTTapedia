@@ -65,6 +65,7 @@ open SphericalDistanceContours FaceDistanceFrontiers
 variable {V : Type*} [Fintype V] [DecidableEq V]
   {G : SimpleGraph V} [DecidableRel G.Adj]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- One side of each original edge is a face incident at both endpoints. -/
 theorem adjacent_share_face (data : Data G) {u v : V} (h : G.Adj u v) :
     ∃ f, f ∈ vertexFaces data u ∧ f ∈ vertexFaces data v := by

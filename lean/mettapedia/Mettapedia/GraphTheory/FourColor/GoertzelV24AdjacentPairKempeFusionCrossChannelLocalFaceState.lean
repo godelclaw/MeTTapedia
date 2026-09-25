@@ -96,7 +96,7 @@ strict-tail edge. -/
         ((first.firstSuffixFromCrossSite second site).getVert 1) := by
   apply Subtype.ext
   simp [ambientFirstCrossExitDart]
-  rfl
+  erw [first.firstCrossExitDart_edge second hab hbc site]
 
 /-- The second ambient outgoing arm carries the retained second
 strict-tail edge. -/
@@ -118,7 +118,7 @@ strict-tail edge. -/
         ((first.secondSuffixFromCrossSite second site).getVert 1) := by
   apply Subtype.ext
   simp [ambientSecondCrossExitDart]
-  rfl
+  erw [first.secondCrossExitDart_edge second hac hbc site]
 
 /-- In the reversed endpoint-pairing branch, the remaining local facial
 choice is the xor of the cyclic turns at the two ends of the cross edge. -/
@@ -197,6 +197,7 @@ theorem crossExitFaceTransferBit_eq_opposite_of_pairing_false
   rw [crossExitFaceTransferBit, hpairing]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The rejected local state is exactly reversed endpoint pairing together
 with equal cyclic turns at the two ends of the cross edge. -/
 theorem crossExitFaceTransferBit_eq_false_iff_pairing_false_and_turns_eq

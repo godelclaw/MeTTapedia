@@ -324,6 +324,7 @@ theorem outputGraph_boundaryEdgeDarts_on_holeFace
     rw [primalDartEquiv_alpha splice.output hinjective literal] at hfaceOut
     exact hfaceOut.symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every ordered inner boundary dart of the shortened graph lies on the
 transported inner hole. -/
 theorem outputGraph_innerBoundaryEdgeDarts_on_innerHole
@@ -351,6 +352,7 @@ theorem outputGraph_innerBoundaryEdgeDarts_on_innerHole
     exact web.annular.innerBoundaryEdgeDarts_on_innerHole inner source hsource
   · simpa [outputBoundaryData, outputInnerBoundaryEdge, hkept] using hdart
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every ordered outer boundary dart of the shortened graph lies on the
 transported outer hole. -/
 theorem outputGraph_outerBoundaryEdgeDarts_on_outerHole

@@ -52,9 +52,11 @@ def counterEmbedding : PlaneEmbeddingWithBoundary counterGraph where
 def fOuter : CounterFace := ⟨0, by decide⟩
 def fInner : CounterFace := ⟨1, by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def outerFace : AmbientFace counterEmbedding.faces :=
   ⟨fOuter, by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def innerFace : AmbientFace counterEmbedding.faces :=
   ⟨fInner, by decide⟩
 

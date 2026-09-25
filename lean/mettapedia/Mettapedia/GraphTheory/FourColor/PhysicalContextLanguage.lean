@@ -143,6 +143,7 @@ def blockVertex (ts : Fin n → Kind) (d : BD n) : BP n :=
 def blockColors (w : BP n → Color) (c : Fin n → Fin 4 → Color) (d : BD n) : Color :=
   colors (fun p => w ((bundle d).1, p)) (c (bundle d).1) (bundle d).2
 
+set_option backward.isDefEq.respectTransparency false in
 def blockData [NeZero n] (ts : Fin n → Kind) : OpenTangleData (BP n) (BI n) (BP n) where
   interiorVert := fun d => blockVertex ts (.inl d)
   boundaryVert := fun p => blockVertex ts (.inr p)

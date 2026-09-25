@@ -230,6 +230,7 @@ theorem sourceLocalLayerSerialTrackedBoolCodeOfNativeGeometry_adjacency_eq_true_
     · rintro ⟨hgeometric, hfirst, hsecond, hseam⟩
       exact ⟨⟨⟨hgeometric, hfirst⟩, hsecond⟩, hseam⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Rebuilding simple graphs from the native Boolean reconstruction changes
 neither the Cell factor nor the seam factor. -/
 theorem sourceLocalLayerSerialTrackedBoolCodeOfNativeGeometry_toGraph
@@ -272,7 +273,7 @@ theorem sourceLocalLayerSerialTrackedBoolCodeOfNativeGeometry_reachable_eq_true_
           left right = true ↔
       ((sourceLocalLayerSerialTrackedCodeOfFiniteColors geometry oldCode
         cellCode).graph factor).Reachable left right := by
-  rw [BoundedCarrierBoolGraphFamilyCode.reachable_eq_true_iff,
+  erw [BoundedCarrierBoolGraphFamilyCode.reachable_eq_true_iff,
     sourceLocalLayerSerialTrackedBoolCodeOfNativeGeometry_toGraph]
   rfl
 
@@ -363,7 +364,7 @@ theorem sourceLocalLayerSerialTrackedBoolCodeOfNativeGeometryAt_reachable_eq_tru
           caps coloring web corridor hunique offset
           (sourceLocalLayerSerialCellSplicedColorAt corridor hunique offset
             coloring cellColor)).graph factor).Reachable left right := by
-  rw [BoundedCarrierBoolGraphFamilyCode.reachable_eq_true_iff,
+  erw [BoundedCarrierBoolGraphFamilyCode.reachable_eq_true_iff,
     sourceLocalLayerSerialTrackedBoolCodeOfNativeGeometryAt_toGraph_eq]
   rfl
 

@@ -192,6 +192,7 @@ theorem thirdCornerEdge_mem_sharedInteriorEdges
       (orbitFace_incidence_le_two RS) (Finset.mem_univ _) (Finset.mem_univ _)
         hfacesNe hleft hright
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The three rotation-system edges encountered at a cubic facial corner are
 pairwise distinct and all incident to the corner vertex. -/
 theorem cornerEdges_pairwise_ne_and_incident (RS : RotationSystem V E)

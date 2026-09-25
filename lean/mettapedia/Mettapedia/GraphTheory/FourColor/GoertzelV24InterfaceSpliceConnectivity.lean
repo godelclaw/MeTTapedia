@@ -39,11 +39,11 @@ theorem reachable_sup_iff_of_interface_component_equiv
       exterior right interface start finish hstart hfinish hswitchRight]
   constructor
   · intro hreach
-    exact hreach.mono fun u v hstep =>
-      hstep.elim Or.inl (fun hlocal => Or.inr ((hcomponents u v).1 hlocal))
+    exact Relation.ReflTransGen.mono (fun u v hstep =>
+      hstep.elim Or.inl (fun hlocal => Or.inr ((hcomponents u v).1 hlocal))) _ _ hreach
   · intro hreach
-    exact hreach.mono fun u v hstep =>
-      hstep.elim Or.inl (fun hlocal => Or.inr ((hcomponents u v).2 hlocal))
+    exact Relation.ReflTransGen.mono (fun u v hstep =>
+      hstep.elim Or.inl (fun hlocal => Or.inr ((hcomponents u v).2 hlocal))) _ _ hreach
 
 variable {V E : Type*} [Fintype V] [DecidableEq V]
   [Fintype E] [DecidableEq E]

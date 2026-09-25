@@ -151,6 +151,7 @@ theorem primalJunctionSupport_ne_nil {edge : G.edgeSet}
     walk.primalJunctionSupport hpositive ≠ [] := by
   simp [primalJunctionSupport]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem primalJunctionSupport_head {edge : G.edgeSet}
     (walk : G.lineGraph.Walk edge edge) (hpositive : 0 < walk.length) :
     (walk.primalJunctionSupport hpositive).head
@@ -225,6 +226,7 @@ noncomputable def primalLift {edge : G.edgeSet}
       walk.primalJunctionSupport hpositive := by
   simp [primalLift]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem primalLift_length {edge : G.edgeSet}
     (walk : G.lineGraph.Walk edge edge) (hpositive : 0 < walk.length)
     (hcoherent : walk.IsPrimalCoherentClosed) :

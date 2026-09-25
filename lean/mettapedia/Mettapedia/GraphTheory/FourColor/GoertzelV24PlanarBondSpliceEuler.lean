@@ -178,6 +178,7 @@ theorem card_ambientRetainedFaceOrbit_eq_allOnSide
       Fintype.card_congr (ambientRetainedFaceOrbitEquivAllOnSide RS keep)
     _ = (orbitFacesAllOnSide RS keep).card := Fintype.card_coe _
 
+set_option backward.isDefEq.respectTransparency false in
 /-- For a graph-backed rotation, the abstract surviving-edge carrier is
 exactly the ambient graph edges whose two endpoints lie on the selected
 side. -/
@@ -396,6 +397,7 @@ theorem planarBond_deletedRegionEulerBalance
     omega
   omega
 
+set_option backward.isDefEq.respectTransparency false in
 /-- For a planar bond presented as two equally sized ordered interfaces, the
 actual splice face-return permutation has exactly `n + 1` cycles. The count is
 derived from the ambient graph rotation: connectedness of both induced sides

@@ -165,6 +165,7 @@ noncomputable def reversePath :
     (lens.firstTurn.toScalarCompanionTurn_junction_eq_finishJunction.trans
       lens.finishJunction_eq_before)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Endpoint normalization preserves the exact reversed edge word. -/
 theorem reversePath_edgeWord :
     lens.reversePath.edgeSubtypeSupport =

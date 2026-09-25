@@ -351,18 +351,21 @@ private def sharedInteriorPairFirstClassParametricEdgeColor
     sharedInteriorPairFirstClassParametricEdgeColor a b u v sip01 = a := by
   simp [sharedInteriorPairFirstClassParametricEdgeColor]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] private theorem sharedInteriorPairFirstClassParametricEdgeColor_sip12
     (a b u v : Color) :
     sharedInteriorPairFirstClassParametricEdgeColor a b u v sip12 = b := by
   simp [sharedInteriorPairFirstClassParametricEdgeColor, sharedInteriorPairAnnulusGraph,
     sip01, sip12, sip23, sip24, sip30, sip40, sip56, sip67]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] private theorem sharedInteriorPairFirstClassParametricEdgeColor_sip23
     (a b u v : Color) :
     sharedInteriorPairFirstClassParametricEdgeColor a b u v sip23 = a + b := by
   simp [sharedInteriorPairFirstClassParametricEdgeColor, sharedInteriorPairAnnulusGraph,
     sip01, sip12, sip23, sip24, sip30, sip40, sip56, sip67]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] private theorem sharedInteriorPairFirstClassParametricEdgeColor_sip30
     (a b u v : Color) :
     sharedInteriorPairFirstClassParametricEdgeColor a b u v sip30 = b := by
@@ -375,24 +378,28 @@ private def sharedInteriorPairFirstClassParametricEdgeColor
   simp [sharedInteriorPairFirstClassParametricEdgeColor, sharedInteriorPairAnnulusGraph,
     sip01, sip24]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] private theorem sharedInteriorPairFirstClassParametricEdgeColor_sip40
     (a b u v : Color) :
     sharedInteriorPairFirstClassParametricEdgeColor a b u v sip40 = a + b := by
   simp [sharedInteriorPairFirstClassParametricEdgeColor, sharedInteriorPairAnnulusGraph,
     sip01, sip12, sip23, sip24, sip30, sip40, sip56, sip67]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] private theorem sharedInteriorPairFirstClassParametricEdgeColor_sip56
     (a b u v : Color) :
     sharedInteriorPairFirstClassParametricEdgeColor a b u v sip56 = u := by
   simp [sharedInteriorPairFirstClassParametricEdgeColor, sharedInteriorPairAnnulusGraph,
     sip01, sip12, sip23, sip24, sip30, sip40, sip56]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] private theorem sharedInteriorPairFirstClassParametricEdgeColor_sip67
     (a b u v : Color) :
     sharedInteriorPairFirstClassParametricEdgeColor a b u v sip67 = v := by
   simp [sharedInteriorPairFirstClassParametricEdgeColor, sharedInteriorPairAnnulusGraph,
     sip01, sip12, sip23, sip24, sip30, sip40, sip56, sip67]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] private theorem sharedInteriorPairFirstClassParametricEdgeColor_sip75
     (a b u v : Color) :
     sharedInteriorPairFirstClassParametricEdgeColor a b u v sip75 = u + v := by
@@ -512,6 +519,7 @@ private def sharedInteriorPairSecondClassParametricEdgeColor
     sharedInteriorPairSecondClassParametricEdgeColor a b u v sip01 = a := by
   simp [sharedInteriorPairSecondClassParametricEdgeColor]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] private theorem sharedInteriorPairSecondClassParametricEdgeColor_sip12
     (a b u v : Color) :
     sharedInteriorPairSecondClassParametricEdgeColor a b u v sip12 = b := by
@@ -524,36 +532,42 @@ private def sharedInteriorPairSecondClassParametricEdgeColor
   simp [sharedInteriorPairSecondClassParametricEdgeColor, sharedInteriorPairAnnulusGraph,
     sip01, sip23]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] private theorem sharedInteriorPairSecondClassParametricEdgeColor_sip30
     (a b u v : Color) :
     sharedInteriorPairSecondClassParametricEdgeColor a b u v sip30 = a + b := by
   simp [sharedInteriorPairSecondClassParametricEdgeColor, sharedInteriorPairAnnulusGraph,
     sip01, sip12, sip23, sip24, sip30, sip40, sip56, sip67]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] private theorem sharedInteriorPairSecondClassParametricEdgeColor_sip24
     (a b u v : Color) :
     sharedInteriorPairSecondClassParametricEdgeColor a b u v sip24 = a + b := by
   simp [sharedInteriorPairSecondClassParametricEdgeColor, sharedInteriorPairAnnulusGraph,
     sip01, sip12, sip23, sip24, sip30, sip40, sip56, sip67]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] private theorem sharedInteriorPairSecondClassParametricEdgeColor_sip40
     (a b u v : Color) :
     sharedInteriorPairSecondClassParametricEdgeColor a b u v sip40 = b := by
   simp [sharedInteriorPairSecondClassParametricEdgeColor, sharedInteriorPairAnnulusGraph,
     sip01, sip12, sip23, sip24, sip30, sip40, sip56, sip67]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] private theorem sharedInteriorPairSecondClassParametricEdgeColor_sip56
     (a b u v : Color) :
     sharedInteriorPairSecondClassParametricEdgeColor a b u v sip56 = u := by
   simp [sharedInteriorPairSecondClassParametricEdgeColor, sharedInteriorPairAnnulusGraph,
     sip01, sip12, sip23, sip24, sip30, sip40, sip56]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] private theorem sharedInteriorPairSecondClassParametricEdgeColor_sip67
     (a b u v : Color) :
     sharedInteriorPairSecondClassParametricEdgeColor a b u v sip67 = v := by
   simp [sharedInteriorPairSecondClassParametricEdgeColor, sharedInteriorPairAnnulusGraph,
     sip01, sip12, sip23, sip24, sip30, sip40, sip56, sip67]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] private theorem sharedInteriorPairSecondClassParametricEdgeColor_sip75
     (a b u v : Color) :
     sharedInteriorPairSecondClassParametricEdgeColor a b u v sip75 = u + v := by
@@ -659,6 +673,7 @@ private theorem sharedInteriorPairSecondClassParametricTaitEdgeColoring_isTait
     | simpa using huv.2.1
     | simpa using huv0
 
+set_option backward.isDefEq.respectTransparency false in
 private theorem sharedInteriorPairTaitEdgeColoring_eq_firstClassParametric :
     sharedInteriorPairTaitEdgeColoring =
       sharedInteriorPairFirstClassParametricTaitEdgeColoring red blue red blue
@@ -673,6 +688,7 @@ private theorem sharedInteriorPairTaitEdgeColoring_eq_firstClassParametric :
       sharedInteriorPairAnnulusGraph, sip01, sip12, sip23, sip24, sip30, sip40, sip56, sip67,
       sip75]
 
+set_option backward.isDefEq.respectTransparency false in
 private theorem sharedInteriorPairSecondClosureTaitEdgeColoring_eq_secondClassParametric :
     sharedInteriorPairSecondClosureTaitEdgeColoring =
       sharedInteriorPairSecondClassParametricTaitEdgeColoring red blue red blue

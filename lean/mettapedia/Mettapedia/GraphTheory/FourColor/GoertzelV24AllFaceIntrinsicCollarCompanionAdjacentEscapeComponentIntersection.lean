@@ -347,7 +347,7 @@ theorem rootColor_eq_breakOuter :
       intersection.closure.returnData.lastOverlap.overlap.breakTarget
       intersection.intersectionSource :=
     Relation.ReflTransGen.mono (fun _ _ retained => retained.1)
-      intersection.reach_intersection
+      _ _ intersection.reach_intersection
   simpa only [collar.sourceCommonColoring_apply_commonEdgeInSource] using
     intersection.closure.returnData.suffixStateColor_eq_breakOuter reachable
 

@@ -86,6 +86,7 @@ theorem planeEdges_of_spherical (RS : RotationSystem V E)
   have he := hsphere.euler
   omega
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The extension is constructed from actual internal edges of the two sides.
 The remaining ambient edges certify its planarity by deletion. -/
 theorem exists_capped_edge_extension (RS : RotationSystem V E)

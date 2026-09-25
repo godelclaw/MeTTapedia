@@ -354,6 +354,7 @@ theorem capRotationSystem_vertOf_capDartOfRetained
   unfold capDartOfRetained
   rw [matchedPartUnderlyingDart_equiv]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Distinct retained darts based at one old vertex determine adjacent,
 distinct cap edges. -/
 theorem capEdgeAdj_of_retainedDarts

@@ -146,6 +146,7 @@ theorem outerFrontier_wellFormed_of_isRegularOfDegree_three
   · intro vertex houter
     exact hopen.cubic_elsewhere vertex houter (fun impossible => Fin.elim0 impossible)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The transported inner cap is interior to the constructed frontier: its
 vertices miss the outer stubs and its spokes miss the outer boundary edges. -/
 theorem innerInOuterOpenGraph_interior

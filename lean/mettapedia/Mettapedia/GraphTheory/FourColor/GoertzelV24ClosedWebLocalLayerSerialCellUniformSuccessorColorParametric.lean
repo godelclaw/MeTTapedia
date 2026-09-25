@@ -241,6 +241,7 @@ theorem sourceLocalLayerSerialCellUniformSuccessorLetterForColorAt_faceLengthCap
   exact sourceLocalLayerBoundaryRebaseFiniteProfileReceiptAt_faceLengthCap
     corridor hunique offset hnext fragment
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp]
 theorem
     sourceLocalLayerSerialCellUniformSuccessorLetterForColorAt_fragmentContainsPort
@@ -302,6 +303,7 @@ theorem
     sourceLocalLayerSerialTerminalInputBoundedProfileAt] using
     congrArg (fun value => value = true) hprofile
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp]
 theorem sourceLocalLayerSerialCellUniformSuccessorLetterForColorAt_strandConnected
     (graphData : Data G)

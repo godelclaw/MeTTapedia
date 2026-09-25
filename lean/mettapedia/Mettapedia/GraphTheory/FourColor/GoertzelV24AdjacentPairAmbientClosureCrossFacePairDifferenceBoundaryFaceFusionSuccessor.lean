@@ -122,6 +122,7 @@ theorem exists_retainedCycle_of_forall_edge_retained
     retainedCycle, hretainedCycle, hmapped⟩
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+set_option backward.isDefEq.respectTransparency false in
 /-- A simple retained path between the alternate opposite ports also closes
 to a simple ambient cycle through the deleted adjacent pair. -/
 theorem alternateOppositePortClosure_isCycle

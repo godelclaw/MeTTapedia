@@ -45,6 +45,7 @@ attribute [local instance] graphEdgeSetDecidableEq
 
 namespace SeparatedAlignedSimpleDualCrosscuts
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Read an ambient regional edge from the complementary open coloring rooted
 by the literal source-boundary dart. -/
 noncomputable def sourceCrosscutBoundaryRootedLiteralColorOnVertexSide
@@ -314,6 +315,7 @@ theorem sourceCrosscutBoundaryRootedProfileCount_pos_iff
       (pair.mem_sourceCrosscutBoundaryRootedProfilePairFiber_iff
         data boundary left right coloring).2 ⟨hleft, hright⟩⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The source-boundary-rooted profile reader chooses the opposite dart on a
 literal crossing edge, exactly as the complementary boundary word does. -/
 theorem sourceCrosscutBoundaryRootedLiteralColorOnVertexSide_eq_boundaryWord

@@ -122,6 +122,7 @@ theorem getLast_destutter_ne_cons
     List.getLast?_eq_getLast_of_ne_nil (by simp)] at hlast?
   exact Option.some.inj hlast?
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every nonempty adjacency chain is the support of a graph walk with the
 computed first and last vertices. -/
 theorem exists_walk_support_eq_of_isChain

@@ -285,6 +285,7 @@ noncomputable def sourceLocalLayerSerialCellFiniteSupportLetterAt
     faceRole := sourceLocalLayerSerialOutputFaceRoleCodeAt corridor hunique offset
   }
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every actual literal source Cell is included in the finite support
 relation.  This is the sound direction needed before computing a conservative
 reachable closure; it does not assert that every finite code is realizable. -/

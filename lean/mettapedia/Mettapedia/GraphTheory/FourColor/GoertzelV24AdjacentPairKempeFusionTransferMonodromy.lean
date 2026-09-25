@@ -163,6 +163,7 @@ def cFusionFaceWordOnCount
   List.ofFn
     (cOrderedFusionFaceSymbolOnCount graphData data lens hab hac)
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem cFusionFaceWordOnCount_length
     (graphData : SimpleGraphDartRotation.Data G)
     (data : AdjacentPairData G)

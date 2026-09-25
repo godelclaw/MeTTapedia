@@ -26,6 +26,7 @@ namespace RotationSystem.TwoEdgeCutSideData
 
 variable {RS : RotationSystem V E} (data : RS.TwoEdgeCutSideData)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Transporting the old vertex permutation to an exact two-edge cap
 preserves the fact that each vertex fiber is one cyclic order. -/
 theorem capRotationSystem_vertexRotationCyclic

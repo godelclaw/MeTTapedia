@@ -103,6 +103,7 @@ theorem sourceCrosscutInheritedOpen_insideBoundaryWord_eq_ambient
   exact pair.sourceCrosscutInheritedOpenColoring_stubColor data boundary coloring
     (pair.sourceCrosscutBoundaryDartAt data boundary index)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The complementary literal boundary word of an inherited coloring is the
 same ambient edge-color word, read at the opposite source dart. -/
 theorem sourceCrosscutInheritedComplement_outsideBoundaryWord_eq_ambient

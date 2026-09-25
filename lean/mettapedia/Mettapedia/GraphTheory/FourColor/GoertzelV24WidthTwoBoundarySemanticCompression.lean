@@ -260,6 +260,7 @@ theorem regionalBoundaryProfile_faceLengthCapPositive
   · exact (Finset.card_ne_zero.mpr hnonempty) hzero
   · norm_num at hfive
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The actual indexed regional-boundary profile satisfies every law used by
 the refined compression. -/
 theorem regionalBoundaryProfile_isBoundarySemantic

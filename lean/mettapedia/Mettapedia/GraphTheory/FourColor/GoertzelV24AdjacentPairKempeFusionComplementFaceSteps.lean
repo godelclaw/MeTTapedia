@@ -38,7 +38,7 @@ theorem toRotationSystem_edgeOf_ambientBEntryNeighborDart
       retainedEdgeToAmbientEdge data (lens.bPreviousVertex site).1 := by
   apply Subtype.ext
   simp [ambientBEntryNeighborDart]
-  rfl
+  erw [lens.bEntryNeighborDart_edge hab site]
 
 /-- The ambient exit-side `b` dart carries the retained next `b` arm. -/
 theorem toRotationSystem_edgeOf_ambientBExitNeighborDart
@@ -55,8 +55,9 @@ theorem toRotationSystem_edgeOf_ambientBExitNeighborDart
       retainedEdgeToAmbientEdge data (lens.bNextVertex site).1 := by
   apply Subtype.ext
   simp [ambientBExitNeighborDart]
-  rfl
+  erw [lens.bExitNeighborDart_edge hab site]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The ambient entry companion carries the chirality-selected `c` arm. -/
 theorem toRotationSystem_edgeOf_ambientCEntryCompanionDart
     (graphData : Data G)
@@ -74,6 +75,7 @@ theorem toRotationSystem_edgeOf_ambientCEntryCompanionDart
   apply Subtype.ext
   simp [ambientCEntryCompanionDart]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The ambient exit companion carries the other chirality-selected `c` arm. -/
 theorem toRotationSystem_edgeOf_ambientCExitCompanionDart
     (graphData : Data G)

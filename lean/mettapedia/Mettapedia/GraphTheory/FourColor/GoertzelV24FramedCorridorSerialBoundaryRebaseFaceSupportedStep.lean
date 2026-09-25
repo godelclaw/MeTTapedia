@@ -250,6 +250,7 @@ theorem sourceCorridorSerialBoundaryRebaseSupportedFaceStepCodeAt_oldActive_iff
   rw [faceRegionalAmbientPositionGraph_mem_support_iff_dartGraph]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The finite output-activity calculation agrees exactly with support of the
 literal successor regional face graph on every switch occurrence. -/
 theorem sourceCorridorSerialBoundaryRebaseSupportedFaceOutputActive_iff

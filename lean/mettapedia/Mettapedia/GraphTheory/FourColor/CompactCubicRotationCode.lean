@@ -112,6 +112,7 @@ def CompactCode.decode {n m : Nat} (code : CompactCode n m) :
 def RotationCode.compress {n m : Nat} (code : RotationCode n m) : CompactCode n m :=
   ⟨code.incidence, orientation code⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem decode_compress {n m : Nat} (code : RotationCode n m) (h : code.Valid) :
     code.compress.decode = some code := by
   simp only [CompactCode.decode, RotationCode.compress, dif_pos h.1]

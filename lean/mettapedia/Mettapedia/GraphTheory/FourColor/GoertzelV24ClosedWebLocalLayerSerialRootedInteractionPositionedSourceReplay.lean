@@ -405,7 +405,9 @@ theorem card_realizedSourceCompressedProfileEdgeSet_le
         graphData minimal caps coloring web corridor hunique).card ≤ 784806951168 * 784806951168 := by
   classical
   refine le_trans (Finset.card_le_univ _) ?_
-  rw [Fintype.card_prod, card_boundedSourceTerminalAwareCompressedProfile,
+  rw [@Fintype.card_prod _ _ (boundedSourceTerminalAwareCompressedProfileFintype 2 1 4)
+      (boundedSourceTerminalAwareCompressedProfileFintype 2 1 4),
+    card_boundedSourceTerminalAwareCompressedProfile,
     boundedSourceTerminalAwareCompressedProfileCount_two_one_four]
 
 end

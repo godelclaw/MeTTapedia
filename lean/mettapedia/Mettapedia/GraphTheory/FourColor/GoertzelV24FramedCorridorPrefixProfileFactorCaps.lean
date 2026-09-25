@@ -69,6 +69,7 @@ def localLayerLeftFactorPositionCap
       aligned.toInterface.localLayerLeftPrefixRegion factor).card
     5
 
+set_option backward.isDefEq.respectTransparency false in
 /-- At a genuine incoming profile coordinate, the stored edge cap is exactly
 the edge-support cap of the corresponding old-prefix factor. -/
 theorem exists_localLayerLeftPrefixProfileFaceLengthCap_eq_factorEdgeCap

@@ -42,6 +42,7 @@ attribute [local instance] graphEdgeSetDecidableEq
 
 namespace SeparatedAlignedSimpleDualCrosscuts
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Read a regional edge from a coloring of the complementary open region,
 using the removed dart already stored in the source boundary datum. -/
 noncomputable def sourceCrosscutComplementLiteralColorOnVertexSideOfBoundary

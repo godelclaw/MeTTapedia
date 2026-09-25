@@ -38,6 +38,7 @@ noncomputable section
 variable {V E : Type*} [Fintype V] [DecidableEq V]
   [Fintype E] [DecidableEq E]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Darts based at one retained vertex, before and after the literal
 internal/boundary partition. -/
 def ambientDartsAtEquivOpenDartsAt

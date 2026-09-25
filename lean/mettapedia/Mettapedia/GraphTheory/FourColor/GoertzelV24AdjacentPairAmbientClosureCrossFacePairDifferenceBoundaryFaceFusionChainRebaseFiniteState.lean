@@ -58,6 +58,7 @@ attribute [local instance]
   fusionFaceNetworkRetainedVertexFintype
   fusionFaceNetworkRetainedVertexDecidableEq
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Exactness of the closed prefix cut makes its retained part a trail. -/
 theorem CrossCentralExactFaceCutPair.prefixRetained_isTrail
     {graphData : Data G} {data : AdjacentPairData G}

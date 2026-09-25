@@ -165,7 +165,7 @@ theorem activeWeb_reachable_iff_kempeConnected
         exact Relation.ReflTransGen.tail Relation.ReflTransGen.refl
           ⟨by simpa using heq, hxy⟩
     have hEqv : Relation.EqvGen R first.1 second.1 :=
-      Relation.EqvGen.mono hstep h
+      Relation.EqvGen.mono hstep first.1 second.1 h
     exact (hR.eqvGen_iff.mp hEqv).2 first.2 second.2
 
 /-- Boundary ports in the physical bichromatic component of one active root
@@ -521,6 +521,7 @@ theorem pairSwap_eq_self_of_not_active
   · intro h
     exact hinactive (Or.inr h)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every selected union of physical matched components induces the literal
 boundary switch and stays inside the exact Tait support. -/
 theorem swapBoundaryWord_mem_taitSupport_of_isComponentUnion

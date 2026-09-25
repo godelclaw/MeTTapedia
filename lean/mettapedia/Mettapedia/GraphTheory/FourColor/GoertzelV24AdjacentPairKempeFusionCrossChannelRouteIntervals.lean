@@ -170,6 +170,7 @@ theorem EvenKempeFusionLens.bcFirstOrderInterval_isPath
     (lens01.bcFirstOrderInterval lens23 first second horder).IsPath := by
   exact lens01.bRoute.ambientPath_isPath.supportInterval _ _ horder.le
 
+set_option backward.isDefEq.respectTransparency false in
 theorem EvenKempeFusionLens.bcSecondOrderInterval_isPath
     {data : DegreeTwoBoundaryData G 4}
     {C : G.EdgeColoring Color} {a b c : Color}
@@ -201,6 +202,7 @@ theorem EvenKempeFusionLens.bcFirstOrderInterval_support_subset
   exact (lens01.bRoute.ambientPath.supportInterval_isSubwalk _ _
     horder.le).support_subset
 
+set_option backward.isDefEq.respectTransparency false in
 theorem EvenKempeFusionLens.bcSecondOrderInterval_support_subset
     {data : DegreeTwoBoundaryData G 4}
     {C : G.EdgeColoring Color} {a b c : Color}
@@ -310,6 +312,7 @@ theorem EvenKempeFusionLens.bcFirstOrderInterval_length_lt_ambientPath
     _ _ horder.le
     (lens01.bcFirstSupportOrderEmbedding_pos lens23 hab hbc first)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The reversed second interval is likewise strictly shorter than its
 ambient route. -/
 theorem EvenKempeFusionLens.bcSecondOrderInterval_length_lt_ambientPath
@@ -446,6 +449,7 @@ theorem EvenKempeFusionLens.exists_bcLineCycle_of_ambient_order_inversion
     (lens01.bcFirstOrderInterval_ne_bcSecondOrderInterval lens23 hbc
       first second hfirstOrder hsecondOrder)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Nonidentity first-channel monodromy therefore produces a genuine
 line-graph cycle inside the two cross routes. -/
 theorem EvenKempeFusionLens.exists_bcLineCycle_of_monodromy_ne_refl

@@ -85,6 +85,7 @@ theorem firstWalk_getVert_internal
   · simpa [firstWalk] using corridor.face_internal leftInterior.center
   · simpa [firstWalk] using layers.second_internal
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every visited face of the second two-step walk is annular-interior. -/
 theorem secondWalk_getVert_internal
     {data : AnnularBoundaryData G 5}

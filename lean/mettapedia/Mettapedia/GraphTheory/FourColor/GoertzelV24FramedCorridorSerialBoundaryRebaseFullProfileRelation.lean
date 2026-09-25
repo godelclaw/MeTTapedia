@@ -215,6 +215,7 @@ structure SourceCorridorSerialBoundaryRebaseFullProfileRelation
           (sourceCorridorSerialBoundaryRebaseFaceSeamAt realization hcubic
             hrotation htwoSided hunique offset hnext root)) left right
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The two graph-derived profiles on either side of a literal rebase satisfy
 the exact joint relation. -/
 theorem sourceCorridorSerialBoundaryRebaseFullProfileRelation

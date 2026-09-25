@@ -154,6 +154,7 @@ theorem sourceLocalLayerSerialFaceLocalGraph_support_subset_range
   refine ⟨carrierCoordinate carrier ⟨dart, hcarrier⟩, ?_⟩
   simp [carrier]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem sourceLocalLayerSerialFaceLocalAdjacency_exact
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
     {web : GoertzelV24ClosedWebAtGoodWord.Instance data coloring}
@@ -362,13 +363,13 @@ theorem sourceLocalLayerSerialFaceDeletionStablePreRebaseStateAt_reachable_iff
   rw [restrictedByMask_reachable_iff_interfaceExteriorClosure]
   constructor
   · intro hclosure
-    exact hclosure.mono fun first second hstep =>
+    exact Relation.ReflTransGen.mono (fun first second hstep =>
       (sourceLocalLayerSerialFaceDeletionStablePreRebaseStateAt_step_iff
-        corridor hunique offset hcell first.1 second.1).2 hstep
+        corridor hunique offset hcell first.1 second.1).2 hstep) _ _ hclosure
   · intro hclosure
-    exact hclosure.mono fun first second hstep =>
+    exact Relation.ReflTransGen.mono (fun first second hstep =>
       (sourceLocalLayerSerialFaceDeletionStablePreRebaseStateAt_step_iff
-        corridor hunique offset hcell first.1 second.1).1 hstep
+        corridor hunique offset hcell first.1 second.1).1 hstep) _ _ hclosure
 
 end
 

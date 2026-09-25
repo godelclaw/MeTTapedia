@@ -46,6 +46,7 @@ namespace Instance
 
 namespace LocalLayerFormation
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The three literal darts contributed by one changed occurrence to the
 one-step face collar. -/
 inductive SourceLocalLayerSerialCellRebaseFaceCollarDirection

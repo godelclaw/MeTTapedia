@@ -148,6 +148,7 @@ noncomputable def cappedPrimalMiddleLift
       (walk.cappedPrimalLift_penultimate hpositive hcoherent
         startVertex endVertex hstartMem hendMem hstartNe hendNe))
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem cappedPrimalMiddleLift_length
     {first last : G.edgeSet}
     (walk : G.lineGraph.Walk first last)
@@ -353,6 +354,7 @@ theorem cappedPrimalMiddleLift_isTrail_of_isPath
     (walk.cappedPrimalLift_isTrail_of_isPath hpositive hcoherent hpath
       startVertex endVertex hstartMem hendMem hstartNe hendNe)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The trimmed lift traverses precisely the internal line-graph vertices,
 with the two cap vertices removed from the represented support. -/
 theorem cappedPrimalMiddleLift_edges_eq_map_support_tail_dropLast

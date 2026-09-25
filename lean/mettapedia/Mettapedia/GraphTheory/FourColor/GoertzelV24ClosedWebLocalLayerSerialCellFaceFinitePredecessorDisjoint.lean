@@ -47,6 +47,7 @@ local instance closedWebLocalLayerSerialCellFaceFinitePredecessorDisjointEdgeSet
     DecidableEq G.edgeSet :=
   Subtype.instDecidableEq
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every actual outgoing fragment of a literal source Cell lies on an
 annular-interior face.  The proof follows its canonical cut edge into the
 second local layer; no global two-sidedness property is used. -/
@@ -157,6 +158,7 @@ theorem sourceLocalLayerBoundaryRebaseFaceComponentEdges_disjoint_of_same_interi
   apply hnotReachable
   exact hleftReachable.trans (hdarts ▸ hrightReachable.symm)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The cap stored at any live finite predecessor coordinate is exactly the
 cap at five of that coordinate's literal predecessor-component edge support. -/
 theorem sourceLocalLayerSerialFaceFinitePredecessor_componentCap_eq
@@ -236,6 +238,7 @@ theorem sourceLocalLayerSerialFaceFinitePredecessor_componentCap_val
     (sourceLocalLayerSerialFaceFinitePredecessor_componentCap_eq corridor
       hunique offset hcell coordinateIndex)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Distinct canonical predecessor components that contribute to one actual
 outgoing fragment have disjoint old primal-edge supports.  This is the exact
 non-overlap fact needed before their capped sizes may be added. -/

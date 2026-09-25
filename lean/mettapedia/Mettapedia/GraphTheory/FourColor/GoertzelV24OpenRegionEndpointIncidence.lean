@@ -26,6 +26,7 @@ variable {V E : Type*} [Fintype V] [DecidableEq V]
 
 noncomputable section
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A retained endpoint of an ambient edge on a fully retained face remains
 an endpoint of the corresponding computed edge in the literal opening. -/
 theorem retainedVertex_mem_openFaceEdge_endpoints

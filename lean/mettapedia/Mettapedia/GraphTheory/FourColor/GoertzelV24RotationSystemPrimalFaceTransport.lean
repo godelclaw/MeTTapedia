@@ -39,6 +39,7 @@ local instance rotationPrimalGraphEdgeDecidableEq (RS : RotationSystem V E) :
     DecidableEq (rotationPrimalGraph RS).edgeSet :=
   Subtype.instDecidableEq
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Facial permutation on the computed primal graph is conjugate to the
 literal facial permutation. -/
 theorem graphData_phi_eq_permCongr (RS : RotationSystem V E)

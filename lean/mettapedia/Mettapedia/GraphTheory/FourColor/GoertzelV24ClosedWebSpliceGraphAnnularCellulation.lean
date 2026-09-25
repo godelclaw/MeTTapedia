@@ -61,6 +61,7 @@ local instance rotationPrimalGraphEdgeDecidableEq
     DecidableEq (rotationPrimalGraph RS).edgeSet :=
   Subtype.instDecidableEq
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Ordered deletion and sewing retains the complete cyclic order at each
 surviving vertex. -/
 theorem output_vertexRotationCyclic

@@ -32,6 +32,7 @@ def vertexMarks (rotation : Data G) (holes frozen : Finset G.Dart) : Finset V :=
   (namedDarts rotation holes frozen).image (fun d => d.fst)
 
 omit [G.LocallyFinite] in
+set_option backward.isDefEq.respectTransparency false in
 theorem namedDarts_alpha (rotation : Data G) (holes frozen : Finset G.Dart)
     {d : G.Dart} (hd : d ∈ namedDarts rotation holes frozen) :
     rotation.toRotationSystem.alpha d ∈ namedDarts rotation holes frozen := by

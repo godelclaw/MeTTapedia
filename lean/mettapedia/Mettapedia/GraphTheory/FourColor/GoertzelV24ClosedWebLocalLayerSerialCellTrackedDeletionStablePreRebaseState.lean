@@ -213,6 +213,7 @@ theorem sourceLocalLayerSerialTrackedLocalGraph_support_subset_range
   refine ⟨carrierCoordinate carrier ⟨edge, hcarrier⟩, ?_⟩
   simp [carrier]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem sourceLocalLayerSerialTrackedLocalAdjacency_exact
     (graphData : Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample graphData)
@@ -352,11 +353,18 @@ theorem
       coloring web corridor hunique offset color pair)
     (sourceLocalLayerSerialTrackedLocalAdjacency_exact graphData minimal caps
       coloring web corridor hunique offset color pair)
-  change addInterfaceAdjacency
-      (exactInterfaceExteriorCode prefixGraph edgeAt)
-      (sourceLocalLayerSerialTrackedLocalAdjacencyForColorAt graphData minimal
-        caps coloring web corridor hunique offset color pair) =
-    _
+  have hcode : (sourceLocalLayerSerialTrackedDeletionStablePreRebaseStateForColorAt graphData
+      minimal caps coloring web corridor hunique offset color).code pair =
+      addInterfaceAdjacency (exactInterfaceExteriorCode prefixGraph edgeAt)
+        (sourceLocalLayerSerialTrackedLocalAdjacencyForColorAt graphData minimal
+          caps coloring web corridor hunique offset color pair) := by
+    unfold sourceLocalLayerSerialTrackedDeletionStablePreRebaseStateForColorAt
+      sourceLocalLayerSerialTrackedLocalAdjacencyForColorAt
+    dsimp only
+    congr 1
+    funext left right
+    congr
+  rw [hcode]
   rw [sourceLocalLayerSerialPreRebaseTrackedGraph_eq_three_factor corridor
     hunique offset color (trackedColorPairColors pair).1
       (trackedColorPairColors pair).2, sup_assoc]
@@ -418,12 +426,18 @@ theorem
     (sourceLocalLayerSerialTrackedLocalAdjacency_exact graphData minimal caps
       coloring web corridor hunique offset color pair)
     left right
-  change InterfaceExteriorFactoredStep
-      (addInterfaceAdjacency
-        (exactInterfaceExteriorCode prefixGraph edgeAt)
+  have hcode : (sourceLocalLayerSerialTrackedDeletionStablePreRebaseStateForColorAt graphData
+      minimal caps coloring web corridor hunique offset color).code pair =
+      addInterfaceAdjacency (exactInterfaceExteriorCode prefixGraph edgeAt)
         (sourceLocalLayerSerialTrackedLocalAdjacencyForColorAt graphData minimal
-          caps coloring web corridor hunique offset color pair))
-      left right ↔ _
+          caps coloring web corridor hunique offset color pair) := by
+    unfold sourceLocalLayerSerialTrackedDeletionStablePreRebaseStateForColorAt
+      sourceLocalLayerSerialTrackedLocalAdjacencyForColorAt
+    dsimp only
+    congr 1
+    funext left right
+    congr
+  rw [hcode]
   rw [sourceLocalLayerSerialPreRebaseTrackedGraph_eq_three_factor corridor
     hunique offset color (trackedColorPairColors pair).1
       (trackedColorPairColors pair).2, sup_assoc]
@@ -481,15 +495,15 @@ theorem
   rw [restrictedByMask_reachable_iff_interfaceExteriorClosure]
   constructor
   · intro hclosure
-    exact hclosure.mono fun first second hstep =>
+    exact Relation.ReflTransGen.mono (fun first second hstep =>
       (sourceLocalLayerSerialTrackedDeletionStablePreRebaseStateForColorAt_step_iff
         graphData minimal caps coloring web corridor hunique offset color pair
-        first.1 second.1).2 hstep
+        first.1 second.1).2 hstep) _ _ hclosure
   · intro hclosure
-    exact hclosure.mono fun first second hstep =>
+    exact Relation.ReflTransGen.mono (fun first second hstep =>
       (sourceLocalLayerSerialTrackedDeletionStablePreRebaseStateForColorAt_step_iff
         graphData minimal caps coloring web corridor hunique offset color pair
-        first.1 second.1).1 hstep
+        first.1 second.1).1 hstep) _ _ hclosure
 
 end
 

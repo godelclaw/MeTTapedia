@@ -32,6 +32,7 @@ attribute [local instance] graphEdgeSetDecidableEq
 
 namespace SeparatedAlignedSimpleDualCrosscuts
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The literal complementary color obtained by inheriting an ambient
 coloring agrees with that ambient coloring throughout the retained region. -/
 theorem sourceCrosscutComplementLiteralColorOnVertexSideOfBoundary_inherited

@@ -186,6 +186,7 @@ private theorem mem_faceOrbit_of_orbitFace_eq
   exact (mem_orbitFaceDarts_iff graphData.toRotationSystem
     (dartOrbitFace graphData.toRotationSystem root) target).2 hface
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Two darts known to lie on one named face determine the core facial walk
 from the terminal vertex of the first dart to the terminal vertex of the
 second.  The cut starts after `first` and stops before `alpha second`. -/
@@ -241,6 +242,7 @@ theorem exists_coreFaceArcWalk
 two-sided.  This deliberately proves only edge simplicity; vertex simplicity
 and the resulting Jordan placement remain separate obligations. -/
 
+set_option backward.isDefEq.respectTransparency false in
 theorem exists_coreFaceArcWalk_isTrail
     (graphData : Data G)
     (face : OrbitFace graphData.toRotationSystem)
@@ -297,6 +299,7 @@ theorem exists_coreFaceArcWalk_isTrail
 facial prefix.  A framed hole can contain a bridge stub, so global
 `OrbitFacesTwoSided` is intentionally not required here. -/
 
+set_option backward.isDefEq.respectTransparency false in
 theorem exists_coreFaceArcWalk_isTrail_of_local_twoSided
     (graphData : Data G)
     (face : OrbitFace graphData.toRotationSystem)
@@ -352,6 +355,7 @@ theorem exists_coreFaceArcWalk_isTrail_of_local_twoSided
     rw [harcLength, hlength]
     exact hpositionLt
 
+set_option backward.isDefEq.respectTransparency false in
 /-- With the two degree-one successor equations and non-wrapping endpoint
 facts, the core facial arc contains neither endpoint edge. -/
 theorem exists_coreFaceArcWalk_avoids_endpoint_edges
@@ -465,6 +469,7 @@ theorem exists_coreFaceArcWalk_avoids_endpoint_edges
 
 /-! The endpoint-avoiding form with the same prefix-local trail premise. -/
 
+set_option backward.isDefEq.respectTransparency false in
 theorem exists_coreFaceArcWalk_isTrail_of_local_twoSided_avoids_endpoint_edges
     (graphData : Data G)
     (face : OrbitFace graphData.toRotationSystem)

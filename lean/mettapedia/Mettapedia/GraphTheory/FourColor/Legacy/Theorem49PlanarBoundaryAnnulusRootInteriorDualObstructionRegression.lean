@@ -204,10 +204,12 @@ def twoBandAnnulusEmbedding : PlaneEmbeddingWithBoundary twoBandAnnulusGraph whe
         rfl | rfl | rfl <;>
       decide
 
+set_option backward.isDefEq.respectTransparency false in
 def twoBandOuterFace0 : AmbientFace twoBandAnnulusEmbedding.faces :=
   ⟨(0 : TwoBandAnnulusFace), by
     decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def twoBandInnerFace0 : AmbientFace twoBandAnnulusEmbedding.faces :=
   ⟨(3 : TwoBandAnnulusFace), by
     decide⟩
@@ -573,6 +575,7 @@ macro "tba_dart_cycle" : tactic =>
     tbaDart52, tbaDart34, tbaDart47, tbaDart76, tbaDart63, tbaDart45, tbaDart58,
     tbaDart87, tbaDart74, tbaDart53, tbaDart36, tbaDart68, tbaDart85])
 
+set_option backward.isDefEq.respectTransparency false in
 def twoBandOuterFace0PureDartCycle
     (hf : (0 : TwoBandAnnulusFace) ∈ twoBandAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
@@ -595,6 +598,7 @@ def twoBandOuterFace0PureDartCycle
       simp [tbaO01, tbaR1, tbaM01, tbaR0, tbaDart01, tbaDart14, tbaDart43,
         tbaDart30]
 
+set_option backward.isDefEq.respectTransparency false in
 def twoBandOuterFace1PureDartCycle
     (hf : (1 : TwoBandAnnulusFace) ∈ twoBandAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
@@ -617,6 +621,7 @@ def twoBandOuterFace1PureDartCycle
       simp [tbaO12, tbaR2, tbaM12, tbaR1, tbaDart12, tbaDart25, tbaDart54,
         tbaDart41]
 
+set_option backward.isDefEq.respectTransparency false in
 def twoBandOuterFace2PureDartCycle
     (hf : (2 : TwoBandAnnulusFace) ∈ twoBandAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
@@ -639,6 +644,7 @@ def twoBandOuterFace2PureDartCycle
       simp [tbaO20, tbaR0, tbaM20, tbaR2, tbaDart20, tbaDart03, tbaDart35,
         tbaDart52]
 
+set_option backward.isDefEq.respectTransparency false in
 def twoBandInnerFace0PureDartCycle
     (hf : (3 : TwoBandAnnulusFace) ∈ twoBandAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
@@ -661,6 +667,7 @@ def twoBandInnerFace0PureDartCycle
       simp [tbaM01, tbaS1, tbaI01, tbaS0, tbaDart34, tbaDart47, tbaDart76,
         tbaDart63]
 
+set_option backward.isDefEq.respectTransparency false in
 def twoBandInnerFace1PureDartCycle
     (hf : (4 : TwoBandAnnulusFace) ∈ twoBandAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
@@ -683,6 +690,7 @@ def twoBandInnerFace1PureDartCycle
       simp [tbaM12, tbaS2, tbaI12, tbaS1, tbaDart45, tbaDart58, tbaDart87,
         tbaDart74]
 
+set_option backward.isDefEq.respectTransparency false in
 def twoBandInnerFace2PureDartCycle
     (hf : (5 : TwoBandAnnulusFace) ∈ twoBandAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
@@ -741,6 +749,7 @@ def twoBandAnnulusPureDartCycleGeometry :
               subst f
               exact twoBandInnerFace2PureDartCycle hfmem
 
+set_option backward.isDefEq.respectTransparency false in
 theorem twoBandAnnulusFace_cases
     (f : AmbientFace twoBandAnnulusEmbedding.faces) :
     f = twoBandOuterFace0 ∨
@@ -860,6 +869,7 @@ def twoBandInnerFace2DartSuccessor (d : twoBandAnnulusGraph.Dart) :
   else if d = tbaDart68 then tbaDart85
   else tbaDart53
 
+set_option backward.isDefEq.respectTransparency false in
 def twoBandOuterFace0DartSuccessorCycle
     (hf : (0 : TwoBandAnnulusFace) ∈ twoBandAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryDartSuccessorCycle
@@ -883,6 +893,7 @@ def twoBandOuterFace0DartSuccessorCycle
     intro e he
     exact (twoBandOuterFace0PureDartCycle hf).hface_sub e he
 
+set_option backward.isDefEq.respectTransparency false in
 def twoBandOuterFace1DartSuccessorCycle
     (hf : (1 : TwoBandAnnulusFace) ∈ twoBandAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryDartSuccessorCycle
@@ -906,6 +917,7 @@ def twoBandOuterFace1DartSuccessorCycle
     intro e he
     exact (twoBandOuterFace1PureDartCycle hf).hface_sub e he
 
+set_option backward.isDefEq.respectTransparency false in
 def twoBandOuterFace2DartSuccessorCycle
     (hf : (2 : TwoBandAnnulusFace) ∈ twoBandAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryDartSuccessorCycle
@@ -929,6 +941,7 @@ def twoBandOuterFace2DartSuccessorCycle
     intro e he
     exact (twoBandOuterFace2PureDartCycle hf).hface_sub e he
 
+set_option backward.isDefEq.respectTransparency false in
 def twoBandInnerFace0DartSuccessorCycle
     (hf : (3 : TwoBandAnnulusFace) ∈ twoBandAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryDartSuccessorCycle
@@ -952,6 +965,7 @@ def twoBandInnerFace0DartSuccessorCycle
     intro e he
     exact (twoBandInnerFace0PureDartCycle hf).hface_sub e he
 
+set_option backward.isDefEq.respectTransparency false in
 def twoBandInnerFace1DartSuccessorCycle
     (hf : (4 : TwoBandAnnulusFace) ∈ twoBandAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryDartSuccessorCycle
@@ -975,6 +989,7 @@ def twoBandInnerFace1DartSuccessorCycle
     intro e he
     exact (twoBandInnerFace1PureDartCycle hf).hface_sub e he
 
+set_option backward.isDefEq.respectTransparency false in
 def twoBandInnerFace2DartSuccessorCycle
     (hf : (5 : TwoBandAnnulusFace) ∈ twoBandAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryDartSuccessorCycle

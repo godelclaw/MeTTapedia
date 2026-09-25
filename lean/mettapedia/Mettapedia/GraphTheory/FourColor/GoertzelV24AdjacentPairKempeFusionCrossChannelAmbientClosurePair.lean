@@ -69,6 +69,7 @@ def alternateOppositePortCentralReturnRetained
   data.alternateOppositePortCentralReturn.copy rfl rfl
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem alternateOppositePortCentralReturnRetained_edges
     (data : AdjacentPairData G) :
     data.alternateOppositePortCentralReturnRetained.edges =
@@ -76,6 +77,7 @@ omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
   simp [alternateOppositePortCentralReturnRetained]
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+set_option backward.isDefEq.respectTransparency false in
 theorem alternateOppositePortCentralReturnRetained_isPath
     (data : AdjacentPairData G) :
     data.alternateOppositePortCentralReturnRetained.IsPath := by
@@ -243,6 +245,7 @@ theorem mem_both_retainedWalkToAmbient_edges_iff_of_exact
         data suffixPath shared).2 hshared.2⟩
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+set_option backward.isDefEq.respectTransparency false in
 /-- Closing two exact complementary retained trails through the deleted
 adjacent pair adds exactly one common edge: the restored central edge. -/
 theorem mem_both_oppositePortClosures_iff_of_exact_retained_intersection

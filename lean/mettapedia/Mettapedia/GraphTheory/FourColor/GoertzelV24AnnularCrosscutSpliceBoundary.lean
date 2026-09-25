@@ -532,6 +532,7 @@ noncomputable def sourceCrosscutBoundaryIndexing
     ((sourceCrosscutSumEquiv pair.left.walk.length pair.right.walk.length).symm.trans
       (pair.sourceCrosscutPortEquiv data boundary))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The first coordinate block of the source-ordered boundary profile is
 definitionally the first simple transversal. -/
 @[simp]
@@ -560,6 +561,7 @@ theorem sourceCrosscutBoundaryIndexing_left
     sourceCrosscutPortEquiv, sourceCrosscutPort,
     vertexSetCrossingEdgeAtWithIndexing]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The second coordinate block of the source-ordered boundary profile is
 definitionally the second simple transversal. -/
 @[simp]

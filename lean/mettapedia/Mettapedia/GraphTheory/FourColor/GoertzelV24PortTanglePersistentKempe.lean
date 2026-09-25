@@ -56,13 +56,13 @@ theorem kempeConnected_switchRegion_iff
       (fun x y hstep =>
         (kempeStep_switchRegion_iff T coloring pair selected region x y).1
           hstep)
-      hconnected
+      first second hconnected
   · intro hconnected
     exact Relation.EqvGen.mono
       (fun x y hstep =>
         (kempeStep_switchRegion_iff T coloring pair selected region x y).2
           hstep)
-      hconnected
+      first second hconnected
 
 section Finite
 

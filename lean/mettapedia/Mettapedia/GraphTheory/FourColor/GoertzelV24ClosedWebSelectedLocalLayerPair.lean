@@ -71,6 +71,7 @@ noncomputable def selectedSecondLayer
       layers.firstFace layers.secondFace :=
   SelectedDualPathTransversal.ofCrosscut layers.secondLayer
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The two locally selected transverse interfaces cannot reuse a primal
 edge.  Any reused edge would be incident with three distinct faces: the next
 corridor centre and the two faces on one step of the first interface. -/

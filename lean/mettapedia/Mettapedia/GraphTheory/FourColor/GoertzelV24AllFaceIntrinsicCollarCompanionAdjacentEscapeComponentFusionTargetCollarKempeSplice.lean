@@ -250,6 +250,7 @@ theorem support_retainedWalkToAmbient_mem_retainedVertexSet
   rw [← hvalue]
   exact retained.2
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A simple ambient path whose endpoints survive the adjacent-pair
 deletion and which avoids the central edge can be rerouted past the first
 deleted vertex using any retained bypass from port `0` to port `1`.
@@ -370,6 +371,7 @@ theorem exists_path_avoiding_firstVertex_of_central_not_mem_of_portBypass
   · exact ⟨walk, hpath, hfirst, fun hsecond => hsecond, hcentral,
       fun _ hedge => Or.inl hedge⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The symmetric surgery reroutes a simple ambient path past the second
 deleted vertex using a retained bypass from port `2` to port `3`. -/
 theorem exists_path_avoiding_secondVertex_of_central_not_mem_of_portBypass

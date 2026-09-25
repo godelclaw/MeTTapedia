@@ -202,6 +202,7 @@ theorem sourceLocalLayerSerialFaceFiniteNewEdgeContributesAt_iff
           (coordinate.symm coordinateIndex)).1 hreachable
     simpa [state, code, output, coordinate, carrier] using hfinite
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Canonical finite new-edge representatives are in explicit bijection with
 the literal distinct new Cell edges of one output component. -/
 noncomputable def sourceLocalLayerSerialFaceFiniteNewEdgeRepresentativeEquiv

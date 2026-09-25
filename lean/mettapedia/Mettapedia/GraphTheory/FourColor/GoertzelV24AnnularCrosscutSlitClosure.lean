@@ -46,6 +46,7 @@ def slitStubColor
     (port : CutDart RS cut) : Color :=
   slitDartColor RS cut coloring (Sum.inr port)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A slit edge coloring is constant across its own edge involution. -/
 theorem slitDartColor_alpha
     (RS : RotationSystem V E) (cut : Finset E)

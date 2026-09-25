@@ -91,6 +91,7 @@ theorem card_cutSideTransitionFaces_eq_five
   · exact cutFacesHaveUniqueRetainedBoundaryDart_of_capBoundaryFacesUnique
       walk hunique
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every pair of literal cap-boundary coordinates lies in one cycle of the
 retained first-return permutation. -/
 theorem retainedBoundarySuccessor_openBoundary_sameCycle
