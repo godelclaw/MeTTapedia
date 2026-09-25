@@ -202,6 +202,125 @@ def _root_.Mettapedia.FluidDynamics.NavierStokes.PancakeLocalInfiniteVelocity.Lo
   sobolev_local := fun _ hS ↦ ⟨B, fun t ht F ↦ s.sobolev_bound t ⟨ht.1, ht.2.trans hS.le⟩ F⟩
   equation := s.equation
 
+/-- A restarted curve on `[0, δ)`: the constraints, a Sobolev bound on
+`[0, δ]`, the equation at interior times, and the one-sided equation at
+time zero. -/
+structure RestartData (nu : ℝ) (v : FourierVelocity) (δ : ℝ) where
+  curve : ℝ → FourierVelocity
+  continuous : ∀ q i, Continuous (fun t ↦ curve t q i)
+  initial : curve 0 = v
+  reality : ∀ t q, curve t (-q) = coefficientConjugate (curve t q)
+  transverse : ∀ t q, modeDot q (curve t q) = 0
+  zero : ∀ t, curve t 0 = 0
+  sobolev : ∃ B : ℝ, ∀ t ∈ Icc (0 : ℝ) δ, ∀ F : Finset Wavevector,
+    sobolevEnergy F (curve t) ≤ B
+  equation : ∀ t ∈ Ioo (0 : ℝ) δ, ∀ q i,
+    HasDerivAt (fun τ ↦ curve τ q i) (infiniteVelocityRHS nu (curve t) q i) t
+  start : ∀ q i, HasDerivWithinAt (fun τ ↦ curve τ q i)
+    (infiniteVelocityRHS nu (curve 0) q i) (Ici 0) 0
+
+/-- **Gluing.** A restart at `t₁ < T` of a solution on `[0, T)` gives a
+solution on `[0, T')` for every `T' ≤ t₁ + δ`; its coefficients are the old
+ones up to `t₁` and the restarted ones afterwards. -/
+def SolutionOn.glue {nu : ℝ} {u₀ : FourierVelocity} {T : ℝ} (c : SolutionOn nu u₀ T)
+    {t₁ δ T' : ℝ} (ht₁0 : 0 ≤ t₁) (ht₁T : t₁ < T)
+    (d : RestartData nu (c.coefficients t₁) δ) (hT' : T' ≤ t₁ + δ) :
+    SolutionOn nu u₀ T' where
+  coefficients := fun t ↦ if t ≤ t₁ then c.coefficients t else d.curve (t - t₁)
+  continuous := fun q i ↦ by
+    have hc : Continuous (fun t ↦ if t ≤ t₁ then c.coefficients t q i else d.curve (t - t₁) q i) :=
+      Continuous.if_le (c.continuous q i)
+        ((d.continuous q i).comp (continuous_id.sub continuous_const)) continuous_id
+        continuous_const (fun x hx ↦ by
+          have hx' : x = t₁ := hx
+          subst hx'
+          simp [d.initial])
+    refine hc.congr fun t ↦ ?_
+    by_cases h : t ≤ t₁ <;> simp [h]
+  initial := by simp [ht₁0, c.initial]
+  reality := fun t q ↦ by
+    by_cases h : t ≤ t₁
+    · simp only [h, ↓reduceIte]
+      exact c.reality t q
+    · simp only [h, ↓reduceIte]
+      exact d.reality (t - t₁) q
+  transverse := fun t q ↦ by
+    by_cases h : t ≤ t₁
+    · simp only [h, ↓reduceIte]
+      exact c.transverse t q
+    · simp only [h, ↓reduceIte]
+      exact d.transverse (t - t₁) q
+  zero := fun t ↦ by
+    by_cases h : t ≤ t₁
+    · simp only [h, ↓reduceIte]
+      exact c.zero t
+    · simp only [h, ↓reduceIte]
+      exact d.zero (t - t₁)
+  sobolev_local := fun S hS ↦ by
+    obtain ⟨Bc, hBc⟩ := c.sobolev_local t₁ ht₁T
+    obtain ⟨Bd, hBd⟩ := d.sobolev
+    refine ⟨max Bc Bd, fun t ht F ↦ ?_⟩
+    by_cases h : t ≤ t₁
+    · simp only [h, ↓reduceIte]
+      exact (hBc t ⟨ht.1, h⟩ F).trans (le_max_left _ _)
+    · simp only [h, ↓reduceIte]
+      exact (hBd (t - t₁) ⟨by linarith [not_le.mp h], by linarith [ht.2]⟩ F).trans
+        (le_max_right _ _)
+  equation := fun t ht q i ↦ by
+    rcases lt_trichotomy t t₁ with h | h | h
+    · have hev : (fun τ ↦ (if τ ≤ t₁ then c.coefficients τ else d.curve (τ - t₁)) q i) =ᶠ[𝓝 t]
+          fun τ ↦ c.coefficients τ q i := by
+        filter_upwards [Iio_mem_nhds h] with τ hτ
+        simp [(show τ < t₁ from hτ).le]
+      have hc := (c.equation t ⟨ht.1, lt_trans h ht₁T⟩ q i).congr_of_eventuallyEq hev
+      simpa [le_of_lt h] using hc
+    · rw [h] at ht ⊢
+      have hfun : (fun τ ↦ (if τ ≤ t₁ then c.coefficients τ else d.curve (τ - t₁)) q i) =
+          fun τ ↦ if τ ≤ t₁ then c.coefficients τ q i else d.curve (τ - t₁) q i := by
+        funext τ
+        by_cases h' : τ ≤ t₁ <;> simp [h']
+      rw [hfun]
+      have hg : HasDerivWithinAt (fun τ ↦ d.curve τ q i)
+          (infiniteVelocityRHS nu (c.coefficients t₁) q i) (Ici 0) 0 := by
+        simpa [d.initial] using d.start q i
+      simpa using glue_hasDerivAt (c.equation t₁ ⟨ht.1, ht₁T⟩ q i) hg (by simp [d.initial])
+    · have hev : (fun τ ↦ (if τ ≤ t₁ then c.coefficients τ else d.curve (τ - t₁)) q i) =ᶠ[𝓝 t]
+          fun τ ↦ d.curve (τ - t₁) q i := by
+        filter_upwards [Ioi_mem_nhds h] with τ hτ
+        simp [not_le.mpr (show t₁ < τ from hτ)]
+      have hd := (d.equation (t - t₁) ⟨by linarith, by linarith [ht.2]⟩ q i).comp_sub_const t t₁
+      have hc := hd.congr_of_eventuallyEq hev
+      simpa [not_le.mpr h] using hc
+
+theorem SolutionOn.glue_coefficients {nu : ℝ} {u₀ : FourierVelocity} {T : ℝ}
+    (c : SolutionOn nu u₀ T) {t₁ δ T' : ℝ} (ht₁0 : 0 ≤ t₁) (ht₁T : t₁ < T)
+    (d : RestartData nu (c.coefficients t₁) δ) (hT' : T' ≤ t₁ + δ) (t : ℝ) :
+    (c.glue ht₁0 ht₁T d hT').coefficients t =
+      if t ≤ t₁ then c.coefficients t else d.curve (t - t₁) := rfl
+
+/-- The restart of `exists_restart`, packaged, with its order-`m` bound. -/
+theorem exists_restartData (m : ℕ) (hm : 2 ≤ m) {nu : ℝ} (hnu : 0 < nu)
+    (v : FourierVelocity) (hr : ∀ q, v (-q) = coefficientConjugate (v q))
+    (hd : ∀ q, modeDot q (v q) = 0) (hz : v 0 = 0) {B₀ : ℝ} (hB₀ : 0 ≤ B₀)
+    (hE₀ : ∀ M : Finset Wavevector, velocityEnergy m M v ≤ B₀) :
+    ∃ d : RestartData nu v (window m nu B₀),
+      ∀ t ∈ Icc (0 : ℝ) (window m nu B₀), ∀ F,
+        velocityEnergy m F (d.curve t) ≤ 2 * (B₀ + 1) := by
+  obtain ⟨d, hdcont, hd0, hdre, hdtr, hdz, hdE, hdeq, hdend⟩ :=
+    exists_restart m hm hnu v hr hd hz hB₀ hE₀
+  let D : RestartData nu v (window m nu B₀) :=
+    { curve := d
+      continuous := hdcont
+      initial := hd0
+      reality := hdre
+      transverse := hdtr
+      zero := hdz
+      sobolev := ⟨2 * (B₀ + 1), fun t ht F ↦
+        (sobolevEnergy_le_velocityEnergy m hm F _).trans (hdE t ht F)⟩
+      equation := hdeq
+      start := hdend }
+  exact ⟨D, hdE⟩
+
 /-- **Continuation.** A solution on `[0, T)` whose order-`m` energy stays at
 most `M` extends to `[0, T + δ/2)`, `δ = window m ν M`. The extension agrees
 with the original solution up to `T - δ/2`, and its order-`m` energy stays at
@@ -225,85 +344,17 @@ theorem SolutionOn.extend (m : ℕ) (hm : 2 ≤ m) {nu : ℝ} (hnu : 0 < nu)
       linarith
     · rw [ht₁def, max_eq_left h]
       linarith
-  obtain ⟨d, hdcont, hd0, hdre, hdtr, hdz, hdE, hdeq, hdend⟩ :=
-    exists_restart m hm hnu (c.coefficients t₁) (c.reality t₁) (c.transverse t₁)
-      (c.zero t₁) hM0 (hM t₁ ⟨ht₁0, ht₁T⟩)
-  let glued : ℝ → FourierVelocity := fun t ↦ if t ≤ t₁ then c.coefficients t else d (t - t₁)
-  have hglued : ∀ t q i, glued t q i =
-      if t ≤ t₁ then c.coefficients t q i else d (t - t₁) q i := by
-    intro t q i
-    by_cases h : t ≤ t₁ <;> simp [glued, h]
-  have hsob : ∀ t, 0 ≤ t → t < T + δ / 2 → ∀ F,
-      velocityEnergy m F (glued t) ≤ 2 * (M + 1) := by
-    intro t ht0 htT F
-    by_cases h : t ≤ t₁
-    · simp only [glued, h, ↓reduceIte]
-      linarith [hM t ⟨ht0, lt_of_le_of_lt h ht₁T⟩ F]
-    · simp only [glued, h, ↓reduceIte]
-      exact hdE (t - t₁) ⟨by linarith [not_le.mp h], by linarith⟩ F
-  refine ⟨{
-    coefficients := glued
-    continuous := fun q i ↦ ?_
-    initial := by simp [glued, ht₁0, c.initial]
-    reality := fun t q ↦ by
-      by_cases h : t ≤ t₁
-      · simp only [glued, h, ↓reduceIte]
-        exact c.reality t q
-      · simp only [glued, h, ↓reduceIte]
-        exact hdre (t - t₁) q
-    transverse := fun t q ↦ by
-      by_cases h : t ≤ t₁
-      · simp only [glued, h, ↓reduceIte]
-        exact c.transverse t q
-      · simp only [glued, h, ↓reduceIte]
-        exact hdtr (t - t₁) q
-    zero := fun t ↦ by
-      by_cases h : t ≤ t₁
-      · simp only [glued, h, ↓reduceIte]
-        exact c.zero t
-      · simp only [glued, h, ↓reduceIte]
-        exact hdz (t - t₁)
-    sobolev_local := fun S hS ↦ ⟨2 * (M + 1), fun t ht F ↦
-      (sobolevEnergy_le_velocityEnergy m hm _ _).trans
-        (hsob t ht.1 (lt_of_le_of_lt ht.2 hS) F)⟩
-    equation := fun t ht q i ↦ ?_ }, fun t ht ↦ ?_, fun t ht F ↦ hsob t ht.1 ht.2 F⟩
-  · have hc : Continuous (fun t ↦ if t ≤ t₁ then c.coefficients t q i else d (t - t₁) q i) :=
-      Continuous.if_le (c.continuous q i)
-        ((hdcont q i).comp (continuous_id.sub continuous_const)) continuous_id continuous_const
-        (fun x hx ↦ by
-          have hx' : x = t₁ := hx
-          subst hx'
-          simp [hd0])
-    exact hc.congr (fun t ↦ (hglued t q i).symm)
-  · rcases lt_trichotomy t t₁ with h | h | h
-    · have hev : (fun τ ↦ glued τ q i) =ᶠ[𝓝 t] fun τ ↦ c.coefficients τ q i := by
-        filter_upwards [Iio_mem_nhds h] with τ hτ
-        simp [hglued, (show τ < t₁ from hτ).le]
-      have hc := (c.equation t ⟨ht.1, lt_trans h ht₁T⟩ q i).congr_of_eventuallyEq hev
-      have hval : glued t = c.coefficients t := by simp [glued, le_of_lt h]
-      rw [hval]
-      exact hc
-    · subst h
-      have hval : glued t₁ = c.coefficients t₁ := by simp [glued]
-      rw [hval]
-      have hfun : (fun τ ↦ glued τ q i) =
-          fun τ ↦ if τ ≤ t₁ then c.coefficients τ q i else d (τ - t₁) q i :=
-        funext fun τ ↦ hglued τ q i
-      rw [hfun]
-      have hg : HasDerivWithinAt (fun τ ↦ d τ q i)
-          (infiniteVelocityRHS nu (c.coefficients t₁) q i) (Ici 0) 0 := by
-        simpa [hd0] using hdend q i
-      exact glue_hasDerivAt (c.equation t₁ ⟨ht.1, ht₁T⟩ q i) hg (by simp [hd0])
-    · have hev : (fun τ ↦ glued τ q i) =ᶠ[𝓝 t] fun τ ↦ d (τ - t₁) q i := by
-        filter_upwards [Ioi_mem_nhds h] with τ hτ
-        simp [hglued, not_le.mpr (show t₁ < τ from hτ)]
-      have hd := (hdeq (t - t₁) ⟨by linarith, by linarith [ht.2]⟩ q i).comp_sub_const t t₁
-      have hc := hd.congr_of_eventuallyEq hev
-      have hval : glued t = d (t - t₁) := by simp [glued, not_le.mpr h]
-      rw [hval]
-      exact hc
+  obtain ⟨d, hdE⟩ := exists_restartData m hm hnu (c.coefficients t₁) (c.reality t₁)
+    (c.transverse t₁) (c.zero t₁) hM0 (hM t₁ ⟨ht₁0, ht₁T⟩)
+  refine ⟨c.glue ht₁0 ht₁T d ht₁end, fun t ht ↦ ?_, fun t ht F ↦ ?_⟩
   · have hle : t ≤ t₁ := le_trans ht (le_max_right _ _)
-    simp [glued, hle]
+    simp [SolutionOn.glue_coefficients, hle]
+  · rw [SolutionOn.glue_coefficients]
+    by_cases h : t ≤ t₁
+    · simp only [h, ↓reduceIte]
+      linarith [hM t ⟨ht.1, lt_of_le_of_lt h ht₁T⟩ F]
+    · simp only [h, ↓reduceIte]
+      exact hdE (t - t₁) ⟨by linarith [not_le.mp h], by linarith [ht.2]⟩ F
 
 /-! ### Existence from admissible physical data and the blowup alternative -/
 
