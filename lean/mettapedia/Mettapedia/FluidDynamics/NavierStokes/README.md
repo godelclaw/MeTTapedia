@@ -8299,6 +8299,15 @@ of the Fourier class is therefore exactly the finite-horizon bound on the time
 integral of the route's integrand (`periodicRegularity_iff_spatialBKM`), and
 that bound gives the official periodic statement
 (`periodicStatementB_of_spatialBKM`).
+`StochasticLagrangian/FourierRefinedPin.lean` composes the sharpest pin of the
+route with the relaxation data of actual solutions: if the vorticity source of
+every tame solution admits a sector split whose pancake share carries a
+coherent/misalignment split with coherent gain at most `γ` and a misalignment
+budget `(B, ε)`, and whose coercive and residual shares obey their sector
+estimates, with `γ + ε + εc + εr < 1` and constants uniform over bounded
+horizons, then the official periodic statement holds
+(`periodicStatementB_of_misalignmentBudget`). The hypothesis is the route's
+open input in its exact current form.
 
 ### Earlier route-audit layers
 
