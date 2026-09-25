@@ -24,7 +24,8 @@ the coupling, lies between `2 L^{d-4}` and `π² L^{d-4}/2`.  It is bounded in f
 dimensions and grows linearly in the side in five.  Only the `(0,1)`-planes are
 modelled: the plaquettes of the other planes add nonnegative terms to the full
 Wilson action, and they vanish for the uniform configuration, whose link angles do
-not depend on the transverse position.
+not depend on the transverse position.  In `SU(2)` the same twist costs no
+classical action (`TwistEater`).
 -/
 
 set_option autoImplicit false

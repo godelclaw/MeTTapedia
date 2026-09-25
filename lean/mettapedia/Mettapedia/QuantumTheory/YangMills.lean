@@ -48,3 +48,4 @@ import Mettapedia.QuantumTheory.YangMills.Z3StrongCouplingGap
 import Mettapedia.QuantumTheory.YangMills.MarginalBlindness
 import Mettapedia.QuantumTheory.YangMills.TwistDiagnostic
 import Mettapedia.QuantumTheory.YangMills.TwistCost
+import Mettapedia.QuantumTheory.YangMills.TwistEater
