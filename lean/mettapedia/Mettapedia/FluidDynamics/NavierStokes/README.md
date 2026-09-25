@@ -8158,6 +8158,23 @@ enstrophy below its initial value, and planar data of any size have a unique
 global solution. The stretching term is the only three-dimensional
 obstruction.
 
+**Toward the official statement.** `OfficialPeriodicProblem.lean` states the
+target of the periodic lane, alternative (B) of the Clay problem for the unit
+torus with zero force, in the Formal Conjectures formalization
+(`PeriodicStatementB`: smooth one-periodic solutions on `ℝ³ × [0, ∞)` with the
+time derivative taken within `[0, ∞)`); it is a definition, not an assumption.
+The bridge from the Fourier solutions to that statement is under construction.
+`Mettapedia/Analysis/SmoothSeriesClosure.lean` proves smoothness of a series on
+the closure of an open convex set from summable bounds on its iterated
+within-derivatives (termwise differentiation on the interior, extension of the
+derivatives to the boundary), which gives smoothness up to the initial time.
+`StochasticLagrangian/FourierTimeRegularity.lean` shows that the class of
+coefficient curves that are `j` times differentiable on `[0, S]` with
+continuous, uniformly rapidly decaying derivatives is closed under the
+convection and the viscous term, so a solution with rapidly decaying
+coefficients on `[0, S]` has derivatives of every order there, one-sidedly at
+the initial time (`smoothRapid_of_solution`).
+
 ### Earlier route-audit layers
 
 The directory is best read as a route audit and obstruction library. It has
