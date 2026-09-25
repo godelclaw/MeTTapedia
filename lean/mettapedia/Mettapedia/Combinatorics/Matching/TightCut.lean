@@ -157,4 +157,104 @@ theorem amplitude_shoreContract (W : Sym2 (V × C) → R) (S : Finset V) (cS : �
   rw [hcol, hw]
   ring
 
+/-! ### Three-site shores
+
+When one side of the cut has three sites, a matching crosses it once or three times.  If one of
+the three sites has no weight across the cut at the colouring in question, three crossings are
+impossible, so the matching sum is exactly its single-crossing part.  This is the criterion the
+applications use to recognise a shore-tight cut from the weights that vanish. -/
+
+/-- The single-crossing sum is symmetric in the two sides of the cut. -/
+theorem crossOne_compl (W : Sym2 (V × C) → R) (S : Finset V) (c : V → C) :
+    crossOne W (Finset.univ \ S) c = crossOne W S c := by
+  classical
+  have hSS : Finset.univ \ (Finset.univ \ S) = S :=
+    Finset.sdiff_sdiff_eq_self (Finset.subset_univ S)
+  rw [crossOne, crossOne, hSS, Finset.sum_comm]
+  refine Finset.sum_congr rfl fun t _ => Finset.sum_congr rfl fun s _ => ?_
+  rw [show Sym2.map (paint c) s(t, s) = Sym2.map (paint c) s(s, t) by rw [Sym2.eq_swap]]
+  ring
+
+/-- **A dead site on a three-site shore.**  If the site `a` of the three-site set `K = {a, b, d}`
+carries no weight across the cut at `c`, the matching sum is its single-crossing part. -/
+theorem amplitude_eq_crossOne_of_dead (W : Sym2 (V × C) → R) (c : V → C) {a b d : V}
+    (hab : a ≠ b) (had : a ≠ d) (hbd : b ≠ d)
+    (hdead : ∀ v, v ≠ a → v ≠ b → v ≠ d → W (Sym2.map (paint c) s(a, v)) = 0) :
+    amplitude W c = crossOne W {a, b, d} c := by
+  classical
+  set K : Finset V := {a, b, d} with hK
+  set O : Finset V := Finset.univ \ K with hO
+  have hmemO : ∀ v, v ∈ O ↔ v ≠ a ∧ v ≠ b ∧ v ≠ d := by
+    intro v; simp [hO, hK, not_or]
+  have hdO : d ∉ O := fun h => ((hmemO d).mp h).2.2 rfl
+  have hbO' : b ∉ O := fun h => ((hmemO b).mp h).2.1 rfl
+  -- expand the amplitude at the dead site
+  rw [← pmSum_univ, pmSum_expand W c (Finset.mem_univ a)]
+  have hsplit : (Finset.univ : Finset V).erase a = insert b (insert d O) := by
+    ext v
+    simp only [Finset.mem_erase, Finset.mem_univ, and_true, Finset.mem_insert, hmemO]
+    constructor
+    · intro hva
+      by_cases hvb : v = b
+      · exact Or.inl hvb
+      · by_cases hvd : v = d
+        · exact Or.inr (Or.inl hvd)
+        · exact Or.inr (Or.inr ⟨hva, hvb, hvd⟩)
+    · rintro (rfl | rfl | ⟨h, -, -⟩)
+      · exact Ne.symm hab
+      · exact Ne.symm had
+      · exact h
+  have hbO : b ∉ insert d O := by
+    rw [Finset.mem_insert, not_or]
+    exact ⟨hbd, hbO'⟩
+  rw [hsplit, Finset.sum_insert hbO, Finset.sum_insert hdO,
+    Finset.sum_eq_zero (fun v hv => by
+      obtain ⟨h1, h2, h3⟩ := (hmemO v).mp hv
+      rw [hdead v h1 h2 h3, zero_mul]), add_zero]
+  rw [Finset.erase_insert hbO, Finset.erase_insert_of_ne hbd, Finset.erase_insert hdO,
+    pmSum_expand W c (Finset.mem_insert_self d O), Finset.erase_insert hdO,
+    pmSum_expand W c (Finset.mem_insert_self b O), Finset.erase_insert hbO']
+  -- the single-crossing sum, read from the side of `K`
+  rw [crossOne, ← hO]
+  have hKsum : K = insert a (insert b {d}) := by simp [hK]
+  have ha' : a ∉ insert b ({d} : Finset V) := by simp [hab, had]
+  have hb' : b ∉ ({d} : Finset V) := by simp [hbd]
+  rw [hKsum, Finset.sum_insert ha', Finset.sum_insert hb', Finset.sum_singleton]
+  have hdeadO : ∀ o ∈ O, W (Sym2.map (paint c) s(a, o)) = 0 := fun o ho => by
+    obtain ⟨h1, h2, h3⟩ := (hmemO o).mp ho
+    exact hdead o h1 h2 h3
+  have hA : ∑ t ∈ O, pmSum W c ((insert a (insert b ({d} : Finset V))).erase a) *
+      W (Sym2.map (paint c) s(a, t)) * pmSum W c (O.erase t) = 0 :=
+    Finset.sum_eq_zero (fun o ho => by rw [hdeadO o ho, mul_zero, zero_mul])
+  rw [hA, zero_add]
+  have e1 : (insert a (insert b ({d} : Finset V))).erase b = {a, d} := by
+    ext v; simp only [Finset.mem_erase, Finset.mem_insert, Finset.mem_singleton]
+    constructor
+    · rintro ⟨hvb, rfl | rfl | rfl⟩
+      · exact Or.inl rfl
+      · exact absurd rfl hvb
+      · exact Or.inr rfl
+    · rintro (rfl | rfl)
+      · exact ⟨hab, Or.inl rfl⟩
+      · exact ⟨Ne.symm hbd, Or.inr (Or.inr rfl)⟩
+  have e2 : (insert a (insert b ({d} : Finset V))).erase d = {a, b} := by
+    ext v; simp only [Finset.mem_erase, Finset.mem_insert, Finset.mem_singleton]
+    constructor
+    · rintro ⟨hvd, rfl | rfl | rfl⟩
+      · exact Or.inl rfl
+      · exact Or.inr rfl
+      · exact absurd rfl hvd
+    · rintro (rfl | rfl)
+      · exact ⟨had, Or.inl rfl⟩
+      · exact ⟨hbd, Or.inr (Or.inl rfl)⟩
+  rw [e1, e2, pmSum_pair W c (Ne.symm had), pmSum_pair W c (Ne.symm hab), Finset.mul_sum,
+    Finset.mul_sum, add_comm]
+  congr 1
+  · refine Finset.sum_congr rfl fun o _ => ?_
+    show W s((a, c a), (d, c d)) * (W (Sym2.map (paint c) s(b, o)) * pmSum W c (O.erase o)) = _
+    ring
+  · refine Finset.sum_congr rfl fun o _ => ?_
+    show W s((a, c a), (b, c b)) * (W (Sym2.map (paint c) s(d, o)) * pmSum W c (O.erase o)) = _
+    ring
+
 end MatchingTightCut

@@ -398,4 +398,94 @@ theorem false_of_shoreTight_six [Infinite F] {W : Sym2 (V × Fin 3) → F} (hW :
 
 end Six
 
+section ThreeSite
+
+variable {V : Type} [Fintype V] [DecidableEq V]
+
+omit [Fintype V] in
+theorem triple_rotate {a b d : V} : ({b, a, d} : Finset V) = {a, b, d} := Finset.insert_comm b a {d}
+
+omit [Fintype V] in
+theorem triple_rotate' {a b d : V} : ({d, a, b} : Finset V) = {a, b, d} := by
+  ext v; simp only [Finset.mem_insert, Finset.mem_singleton]; tauto
+
+/-- **Export criterion.**  If for every colour `k` one of three sites has no weight of colour `k`,
+at its own end, to the sites outside the three, then the sites outside are shore-tight: at a
+colouring constant on the three, that site cannot cross, so no matching crosses three times. -/
+theorem shoreTight_of_export_dead {W : Sym2 (V × Fin 3) → F} {a b d : V}
+    (hab : a ≠ b) (had : a ≠ d) (hbd : b ≠ d)
+    (h : ∀ k : Fin 3, ∃ t ∈ ({a, b, d} : Finset V),
+      ∀ v, v ≠ a → v ≠ b → v ≠ d → ∀ j, W s((t, k), (v, j)) = 0) :
+    ShoreTight W (Finset.univ \ {a, b, d}) := by
+  intro cS k
+  set c := glue (Finset.univ \ {a, b, d}) cS k
+  have hcT : ∀ t ∈ ({a, b, d} : Finset V), c t = k := fun t ht =>
+    glue_of_not_mem cS k (fun h' => (Finset.mem_sdiff.mp h').2 ht)
+  rw [crossOne_compl]
+  obtain ⟨t, ht, hdead⟩ := h k
+  have hdead' : ∀ v, v ≠ a → v ≠ b → v ≠ d → W (Sym2.map (paint c) s(t, v)) = 0 := by
+    intro v h1 h2 h3
+    show W s((t, c t), (v, c v)) = 0
+    rw [hcT t ht]
+    exact hdead v h1 h2 h3 (c v)
+  simp only [Finset.mem_insert, Finset.mem_singleton] at ht
+  rcases ht with rfl | rfl | rfl
+  · exact amplitude_eq_crossOne_of_dead W c hab had hbd hdead'
+  · rw [← triple_rotate]
+    exact amplitude_eq_crossOne_of_dead W c (Ne.symm hab) hbd had
+      (fun v h1 h2 h3 => hdead' v h2 h1 h3)
+  · rw [← triple_rotate']
+    exact amplitude_eq_crossOne_of_dead W c (Ne.symm had) (Ne.symm hbd) hab
+      (fun v h1 h2 h3 => hdead' v h2 h3 h1)
+
+/-- **Import criterion.**  If for every colour `k` one of three sites has no weight to the sites
+outside the three that is coloured `k` at the far end, then the three sites are shore-tight. -/
+theorem shoreTight_of_import_dead {W : Sym2 (V × Fin 3) → F} {a b d : V}
+    (hab : a ≠ b) (had : a ≠ d) (hbd : b ≠ d)
+    (h : ∀ k : Fin 3, ∃ t ∈ ({a, b, d} : Finset V),
+      ∀ v, v ≠ a → v ≠ b → v ≠ d → ∀ i, W s((t, i), (v, k)) = 0) :
+    ShoreTight W {a, b, d} := by
+  intro cS k
+  set c := glue ({a, b, d} : Finset V) cS k
+  have hcO : ∀ v, v ≠ a → v ≠ b → v ≠ d → c v = k := fun v h1 h2 h3 =>
+    glue_of_not_mem cS k (by simp [h1, h2, h3])
+  obtain ⟨t, ht, hdead⟩ := h k
+  have hdead' : ∀ v, v ≠ a → v ≠ b → v ≠ d → W (Sym2.map (paint c) s(t, v)) = 0 := by
+    intro v h1 h2 h3
+    show W s((t, c t), (v, c v)) = 0
+    rw [hcO v h1 h2 h3]
+    exact hdead v h1 h2 h3 (c t)
+  simp only [Finset.mem_insert, Finset.mem_singleton] at ht
+  rcases ht with rfl | rfl | rfl
+  · exact amplitude_eq_crossOne_of_dead W c hab had hbd hdead'
+  · rw [← triple_rotate]
+    exact amplitude_eq_crossOne_of_dead W c (Ne.symm hab) hbd had
+      (fun v h1 h2 h3 => hdead' v h2 h1 h3)
+  · rw [← triple_rotate']
+    exact amplitude_eq_crossOne_of_dead W c (Ne.symm had) (Ne.symm hbd) hab
+      (fun v h1 h2 h3 => hdead' v h2 h3 h1)
+
+/-- **Three sites always export a common colour** once no cut keeping five or more sites is
+shore-tight: for some colour `k`, each of the three sites has weight of colour `k`, at its own
+end, to a site outside the three. -/
+theorem exists_common_export {W : Sym2 (V × Fin 3) → F} (hcard : 8 ≤ Fintype.card V)
+    (hheart : ∀ S : Finset V, 5 ≤ S.card → 3 ≤ (Finset.univ \ S).card → ¬ ShoreTight W S)
+    {a b d : V} (hab : a ≠ b) (had : a ≠ d) (hbd : b ≠ d) :
+    ∃ k : Fin 3, ∀ t ∈ ({a, b, d} : Finset V),
+      ∃ v, v ≠ a ∧ v ≠ b ∧ v ≠ d ∧ ∃ j, W s((t, k), (v, j)) ≠ 0 := by
+  classical
+  by_contra hno
+  push Not at hno
+  have hT : ({a, b, d} : Finset V).card = 3 := by
+    rw [Finset.card_insert_of_notMem (by simp [hab, had]),
+      Finset.card_insert_of_notMem (by simp [hbd]), Finset.card_singleton]
+  refine hheart _ ?_ ?_ (shoreTight_of_export_dead hab had hbd fun k => ?_)
+  · rw [Finset.card_sdiff_of_subset (Finset.subset_univ _), Finset.card_univ, hT]
+    omega
+  · rw [Finset.sdiff_sdiff_eq_self (Finset.subset_univ _), hT]
+  · obtain ⟨t, ht, hall⟩ := hno k
+    exact ⟨t, ht, fun v h1 h2 h3 j => hall v h1 h2 h3 j⟩
+
+end ThreeSite
+
 end KrennTightCut
