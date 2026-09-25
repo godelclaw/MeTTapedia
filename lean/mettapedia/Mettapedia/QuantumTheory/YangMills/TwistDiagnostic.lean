@@ -24,7 +24,9 @@ growing linearly in the side (`tendsto_card_mul_exp_of_poly_linear`).  The
 untwisted half is a crossing input (`TwistCompatibleCrossing.crossingInput`).
 
 **Calibration by the twist.**  A family whose twist free energy stays away from
-zero admits no twist-compatible crossing input (`false_of_twistFreeEnergy_ge`).
+zero admits no twist-compatible crossing input (`false_of_twistFreeEnergy_ge`;
+on tori with polynomial cuts and linear winding diameters,
+`false_of_twistFreeEnergy_ge_of_poly_linear`).
 Unlike the calibration at `β = ∞` (`CrossingInput.false_of_tendsto_dominating`),
 this one is testable at finite coupling, since the twist free energy can be
 measured by Monte Carlo.  That the twist changes only winding polymers is the
@@ -154,8 +156,22 @@ theorem tendsto_card_mul_exp_of_poly_linear {Blocks : ℕ → Type*} [∀ L, Fin
         field_simp
         ring
 
+/-- **Calibration by the twist on tori.**  On tori indexed by the side, with cuts
+of polynomial size and winding diameters growing linearly, no twist-compatible
+crossing family has twist free energy bounded below by a positive constant. -/
+theorem false_of_twistFreeEnergy_ge_of_poly_linear {Blocks : ℕ → Type*}
+    [∀ L, Fintype (Blocks L)] [∀ L, DecidableEq (Blocks L)] [∀ L, PseudoMetricSpace (Blocks L)]
+    {K Ktw : ∀ L (S : Finset (Blocks L)), (S → E) → ℂ} {Y : ∀ L, Finset (Blocks L)}
+    {D : ℕ → ℝ} (h : TwistCompatibleCrossing Blocks E ν₀ K Ktw Y D) (C : ℝ) (m : ℕ)
+    (α β : ℝ) (hα : 0 < α) (hY : ∀ L, ((Y L).card : ℝ) ≤ C * (L : ℝ) ^ m)
+    (hD : ∀ L, α * L - β ≤ D L) (Λ : ∀ L, Finset (Finset (Blocks L))) {f₀ : ℝ} (hf₀ : 0 < f₀)
+    (hF : ∀ L, f₀ ≤ |logTwistRatio (ν₀ := ν₀) K Ktw L (Λ L)|) : False :=
+  false_of_twistFreeEnergy_ge h (tendsto_card_mul_exp_of_poly_linear C m α β hα hY hD) Λ hf₀
+    (Eventually.of_forall hF)
+
 #print axioms abs_logTwistRatio_le
 #print axioms false_of_twistFreeEnergy_ge
 #print axioms tendsto_card_mul_exp_of_poly_linear
+#print axioms false_of_twistFreeEnergy_ge_of_poly_linear
 
 end Mettapedia.QuantumTheory.YangMills.TwistDiagnostic

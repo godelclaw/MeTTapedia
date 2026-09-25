@@ -185,8 +185,8 @@ def yangMillsCrossingInputRoadmapEntry : YangMillsRoadmapEntry where
   truthValue := ⟨0, 90⟩
   itvLowerPercent := 0
   itvUpperPercent := 10
-  progressPercent := 20
-  evidence := "CrossingInput states the missing stopping-scale input with its Kotecky-Preiss norm written out; CrossingInput.clustering proves it sufficient for uniform exponential clustering; CrossingInput.false_of_tendsto_dominating and currentYangMillsFreeMaxwell_barrier calibrate it: it fails at beta = infinity for four-dimensional U(1) and five-dimensional gauge fields."
+  progressPercent := 25
+  evidence := "CrossingInput states the missing stopping-scale input with its Kotecky-Preiss norm written out; CrossingInput.clustering proves it sufficient for uniform exponential clustering; CrossingInput.false_of_tendsto_dominating and currentYangMillsFreeMaxwell_barrier calibrate it: it fails at beta = infinity for four-dimensional U(1) and five-dimensional gauge fields. TwistDiagnostic.false_of_twistFreeEnergy_ge_of_poly_linear calibrates it at finite coupling through the twist free energy, under a stated winding hypothesis; MarginalBlindness rules out criteria on one-site marginal laws."
   nextObligation := "Prove the crossing input for four-dimensional SU(2) by a flow from beta_min to strong coupling that fails for four-dimensional U(1) and five-dimensional SU(2)."
 
 /-- OUR checked two-selector separation of the two explicit source-seven

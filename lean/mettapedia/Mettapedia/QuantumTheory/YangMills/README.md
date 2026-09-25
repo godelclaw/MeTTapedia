@@ -82,8 +82,14 @@ Current status:
   spatial decay, polymer representations of product measures, the truncated
   two-point function, lattice geometry, exponential clustering), without a
   cluster expansion. `CouplingDrift.lean` checks v14's drift constant (it is `N`
-  times too small). Proving the crossing input for four-dimensional `SU(2)` is
-  open.
+  times too small). `TwistDiagnostic.lean` adds a calibration that can be tested
+  at finite coupling: a crossing family whose twisted and untwisted polymer
+  representations differ only on polymers winding around the torus has twist
+  free energy tending to zero (`PolymerGas/Twist.lean`), so a family whose twist
+  free energy stays away from zero is not crossing; the winding hypothesis is
+  stated, not derived. `MarginalBlindness.lean` proves that no condition on
+  one-site marginal laws implies clustering. Proving the crossing input for
+  four-dimensional `SU(2)` is open.
 - `HypercubicDimension16FDIBPCochainJointBridge.lean` now proves that OUR
   finite derivative-alpha-reduced `F,D`/IBP relation cochains, after the
   physical operator and signed-hypercubic Reynolds average, surject onto that
