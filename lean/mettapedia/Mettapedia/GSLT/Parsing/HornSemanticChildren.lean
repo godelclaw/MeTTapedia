@@ -58,6 +58,7 @@ mutual
             components.2 term member
 end
 
+set_option backward.isDefEq.respectTransparency false in
 theorem semanticQuerySubstitution_apply_parserQuery
     (substitution : SymbolicSubstitution) (parseRelation : String)
     (grammar input value output : Term)

@@ -193,6 +193,7 @@ private theorem dualSquareWalk_isCycle
 
 include rungs
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Literal four-step cycle for the first-to-third distance-two branch. -/
 private noncomputable def firstThirdSquareCycle
     {face : SelectedFace (web := web)}
@@ -512,6 +513,7 @@ noncomputable def squareDualCycle_of_secondFourthSquare
     MiddleReplacementSquareDualCycle (web := web) face :=
   secondFourthSquareCycle (rungs := rungs) hsecond hfourth hfaceThird
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every normalized non-centre collision produces an actual simple short
 dual cycle.  The two centre cases remain explicit and are not converted into
 spurious cycles. -/

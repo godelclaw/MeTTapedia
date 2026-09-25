@@ -1020,6 +1020,7 @@ theorem EquivalenceReductionRule.sound
 
 /-! ### Concrete Context/Hyp Fixtures (Chapter-10 §10.11 style) -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Tiny finite domain for contextual Ben fixtures. -/
 inductive BenContextObj
   | benMath

@@ -64,6 +64,7 @@ def centralAugmentedColorClassGraph
     (insertAdjacentPairColorFunction data coloring (taitColor colour))
     (taitColor colour)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Edge membership in a central-augmented colour class is literal equality
 with the corresponding value of the total insertion labelling. -/
 theorem mem_centralAugmentedColorClassGraph_edgeSet_iff

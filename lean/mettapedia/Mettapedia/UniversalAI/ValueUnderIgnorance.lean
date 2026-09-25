@@ -1,4 +1,11 @@
-import Mathlib.MeasureTheory.Measure.MeasureSpace
+import Mathlib.MeasureTheory.Measure.Basic
+import Mathlib.MeasureTheory.Measure.Continuity
+import Mathlib.MeasureTheory.Measure.OuterMeasure
+import Mathlib.MeasureTheory.Measure.Module
+import Mathlib.MeasureTheory.Measure.CompleteLattice
+import Mathlib.MeasureTheory.Measure.Sum
+import Mathlib.MeasureTheory.Measure.Filter
+import Mathlib.MeasureTheory.Measure.Interval
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 import Mathlib.MeasureTheory.Integral.Bochner.L1
 import Mathlib.MeasureTheory.Integral.Layercake
@@ -360,6 +367,7 @@ to the next percept only (since this file currently models only one-step expecta
 noncomputable def minNextUtility (U : Utility) (h : History) : ℝ :=
   Finset.inf' Finset.univ (Finset.univ_nonempty) (fun p : Percept => U (h ++ [HistElem.per p]))
 
+set_option backward.isDefEq.respectTransparency false in
 theorem minNextUtility_bounds (U : Utility) (h : History)
     (h_U_bound : ∀ h', 0 ≤ U h' ∧ U h' ≤ 1) :
     0 ≤ minNextUtility U h ∧ minNextUtility U h ≤ 1 := by
@@ -491,6 +499,7 @@ theorem semimeasureLoss_toReal_le_one (ν : Semimeasure) (x : BinString) :
     _ ≤ (1 : ENNReal).toReal := ENNReal.toReal_mono ENNReal.one_ne_top h3
     _ = 1 := by norm_num
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Theorem 2a** (One-step decomposition): Choquet value is lower semicomputable (Σ⁰₁).
 
     The one-step Choquet value function (valueChoquet) is lower semicomputable when
@@ -1956,6 +1965,7 @@ lemma integral_utilityOnPerceptsWithLoss_eq_valueChoquet (ν : Semimeasure) (U :
         unfold valueNeutral
         ring
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Choquet value equals the layer-cake integral of capacityAtLevel. -/
 lemma valueChoquet_eq_integral_capacity (ν : Semimeasure) (U : Utility) (h : History)
     (h_U_bound : ∀ h', 0 ≤ U h' ∧ U h' ≤ 1) :
@@ -2417,6 +2427,7 @@ theorem valueChoquet_riemann_converges (ν : Semimeasure) (U : Utility) (h : His
     _ ≤ (1 / (m : ℝ)) * perceptMass ν h := h_bound
     _ < ε := h_final
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Capacity at level is lower semicomputable (requires l.s.c. U and computable ν). -/
 noncomputable def capacityAtLevel_lower_semicomputable (ν : Semimeasure) (U : Utility) (t : ℝ)
     (h_U_lsc : Mettapedia.Computability.ArithmeticalHierarchy.LowerSemicomputable U)

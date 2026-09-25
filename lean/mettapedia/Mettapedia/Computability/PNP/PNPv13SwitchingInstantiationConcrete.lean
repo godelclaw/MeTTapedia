@@ -131,7 +131,7 @@ theorem v13ConcretePrefixCount_decomp {Ω Cell : Type u}
     (hist : List (FiniteEvent Ω)) (cellOf : Ω → Cell) :
     finiteHistoryCount Ω hist =
       Finset.univ.sum (v13ConcretePrefixCount (Ω := Ω) hist cellOf) := by
-  simpa [finiteHistoryCount, v13ConcretePrefixCount] using
+  exact
     finiteEventCount_cell_partition (Ω := Ω) (Cell := Cell)
       (E := allEvents hist) cellOf
 

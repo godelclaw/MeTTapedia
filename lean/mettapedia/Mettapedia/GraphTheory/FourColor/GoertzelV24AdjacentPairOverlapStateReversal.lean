@@ -54,6 +54,7 @@ def reverseOverlapKempeStateEquiv :
   left_inv := reverseOverlapKempeState_involutive
   right_inv := reverseOverlapKempeState_involutive
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Reversing and exchanging two sites transposes their literal port-overlap
 matrix after the four-port reversal. -/
 theorem portOverlapProfile_reverse_swap

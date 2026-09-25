@@ -27,6 +27,7 @@ open GoertzelV24RawNooseCountPumping
 def standardTaitColors : List TaitColor :=
   [⟨red, red_ne_zero⟩, ⟨blue, blue_ne_zero⟩, ⟨purple, purple_ne_zero⟩]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every Tait colour occurs in `standardTaitColors`. -/
 theorem mem_standardTaitColors (start : TaitColor) :
     start ∈ standardTaitColors := by

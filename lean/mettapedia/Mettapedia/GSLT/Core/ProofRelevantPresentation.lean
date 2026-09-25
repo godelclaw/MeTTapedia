@@ -308,6 +308,7 @@ def boolToOption : ExactTranslation boolSystem optionSystem := by
   · intro sourceTerm sourceTarget evidence
     cases evidence <;> rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem boolToOption_distinguishes_occurrences :
     boolToOption.toTranslation.mapEvidence (sourceTerm := ())
         (sourceTarget := ()) false ≠

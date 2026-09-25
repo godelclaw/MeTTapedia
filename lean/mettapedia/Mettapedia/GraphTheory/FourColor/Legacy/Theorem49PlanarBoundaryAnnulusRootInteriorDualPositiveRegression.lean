@@ -103,9 +103,11 @@ def twoTriangleAnnulusEmbedding : PlaneEmbeddingWithBoundary twoTriangleAnnulusG
       rfl | rfl | rfl | rfl | rfl | rfl <;>
       decide
 
+set_option backward.isDefEq.respectTransparency false in
 def twoTriangleOuterFace : AmbientFace twoTriangleAnnulusEmbedding.faces :=
   ⟨(0 : TwoTriangleAnnulusFace), by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def twoTriangleInnerFace : AmbientFace twoTriangleAnnulusEmbedding.faces :=
   ⟨(1 : TwoTriangleAnnulusFace), by decide⟩
 
@@ -322,6 +324,7 @@ macro "tta_dart_cycle" : tactic =>
   `(tactic| simp [SimpleGraph.DartAdj, ttaDart01, ttaDart12, ttaDart20,
     ttaDart34, ttaDart45, ttaDart53])
 
+set_option backward.isDefEq.respectTransparency false in
 def twoTriangleOuterFacePureDartCycle
     (hf : (0 : TwoTriangleAnnulusFace) ∈ twoTriangleAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
@@ -343,6 +346,7 @@ def twoTriangleOuterFacePureDartCycle
     rcases he' with rfl | rfl | rfl <;>
       simp [tta01, tta12, tta20, ttaDart01, ttaDart12, ttaDart20]
 
+set_option backward.isDefEq.respectTransparency false in
 def twoTriangleInnerFacePureDartCycle
     (hf : (1 : TwoTriangleAnnulusFace) ∈ twoTriangleAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle

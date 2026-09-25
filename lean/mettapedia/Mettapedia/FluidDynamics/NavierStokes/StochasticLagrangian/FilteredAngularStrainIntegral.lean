@@ -121,7 +121,7 @@ theorem exists_initial_energy_inequality :
   have he := intervalIntegral.sub_le_integral_of_hasDeriv_right_of_le ht.1 hcf
     (fun τ hτ ↦ (FilteredAngularMean.hasDerivAt_correctedEnergy s hB κ P χ hcut τ
       ⟨hτ.1, hτ.2.trans_le ht.2⟩).hasDerivWithinAt)
-    ((hW.sub hD).integrableOn_Icc) (fun τ hτ ↦ ?_)
+    ((hW.fun_sub hD).integrableOn_Icc) (fun τ hτ ↦ ?_)
   · rw [intervalIntegral.integral_sub (hW.intervalIntegrable_of_Icc ht.1)
       (hD.intervalIntegrable_of_Icc ht.1), s.initial] at he
     have hlow := (correctedEnergy_bounds P (filteredVelocity χ (s.coefficients t))

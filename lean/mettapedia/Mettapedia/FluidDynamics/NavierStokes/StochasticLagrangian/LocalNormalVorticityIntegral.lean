@@ -49,7 +49,7 @@ theorem absolutelyContinuousOnInterval_component_path :
   let h : ℝ → R3 := fun t ↦ imageSeparation z (X (p t)) (Y (p t))
   let L := (WithLp.linearEquiv 2 ℝ X3).symm.toContinuousLinearEquiv
   have hh : LocallyLipschitz h := (LocallyLipschitz.const z).add
-    (L.lipschitz.locallyLipschitz.comp ((hX.comp hp).sub (hY.comp hp)))
+    (L.lipschitzWith.locallyLipschitz.comp ((hX.comp hp).sub (hY.comp hp)))
   let w : ℝ → R3 := fun t ↦ fullVorticity (LocalSpaceTimeExtension.coefficients s a b hab t)
     (torusPoint (W (p t)))
   have hw : LocallyLipschitz w :=
@@ -89,7 +89,7 @@ theorem continuousOn_strainQuotient_path
   have hh : Continuous (fun t ↦ imageSeparation z (X t) (Y t)) :=
     continuous_const.add (L.continuous.comp (hX.continuous.sub hY.continuous))
   have hc := ((hh.inner (hs.clm_apply hh)).continuousOn).div
-    (hh.norm.pow 2).continuousOn (fun t ht ↦ pow_ne_zero _ (norm_ne_zero_iff.mpr (hne t ht)))
+    (hh.norm.fun_pow 2).continuousOn (fun t ht ↦ pow_ne_zero _ (norm_ne_zero_iff.mpr (hne t ht)))
   apply hc.congr
   intro t ht
   simp only [strainQuotient, Pi.div_apply, Function.comp_apply, id_eq,

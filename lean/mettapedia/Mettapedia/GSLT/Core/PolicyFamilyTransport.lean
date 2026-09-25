@@ -76,6 +76,7 @@ theorem supportsReadout_pullback
   obtain ⟨realization⟩ := supported
   exact ⟨realization.pullback mapState⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A surjective state map makes policy support reflect as well as preserve:
 the source sees every target state on which a policy could distinguish a
 readout collision. -/

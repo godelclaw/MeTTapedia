@@ -188,6 +188,7 @@ theorem hasCycleOnSide_of_crossing_le_four_of_free_vertex
   · exact hcycle.mono hcompSide
   · omega
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Seam surgery.**  Two distinct outward boundary darts of a
 nontrivial exact cyclic five-edge cut never share their retained
 endpoint: sharing it would trade their two crossing edges for the at

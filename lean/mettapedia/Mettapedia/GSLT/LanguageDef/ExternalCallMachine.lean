@@ -309,6 +309,7 @@ def externalCallLanguage : LanguageDef := {
 
 set_option maxHeartbeats 4000000 in
 set_option maxRecDepth 100000 in
+set_option backward.isDefEq.respectTransparency.types false in
 private theorem externalCallLanguage_rewrites_validate :
     ∀ rewrite ∈ externalCallLanguage.rewrites,
       LanguageDef.validateRewrite externalCallLanguage rewrite = [] := by

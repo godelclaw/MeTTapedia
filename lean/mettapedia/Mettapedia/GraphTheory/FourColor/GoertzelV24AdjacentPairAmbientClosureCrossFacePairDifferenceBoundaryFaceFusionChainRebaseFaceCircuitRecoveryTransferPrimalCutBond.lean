@@ -34,6 +34,7 @@ namespace GoertzelV24DualCycleBond
 attribute [local instance]
   GoertzelV24DualCycleSeparator.graphEdgeSetDecidableEq
 
+set_option backward.isDefEq.respectTransparency false in
 /-- For a graph-backed rotation system, a dart changes vertex sides along
 its facial step exactly when its underlying graph edge crosses the side. -/
 theorem edgeCrosses_toRotationSystem_edgeOf_iff_transition

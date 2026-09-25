@@ -251,6 +251,7 @@ the wall.  This is the local incidence construction needed by the primal
 side/Jordan seam; it is stronger than merely assuming an adjacent rotational
 successor. -/
 
+set_option backward.isDefEq.respectTransparency false in
 theorem all_other_incident_edges_in_wall_of_chord_cycle_turn
     {data : AnnularBoundaryData G outerCount}
     (embedded : ClosedWebAnnularEmbedding data)
@@ -903,6 +904,7 @@ theorem faceComponentSide_of_off_cycleWalk_endpoint_of_seed_reaches_dart
 predicate.  This is the useful interface for a later annulus/Jordan proof:
 only the two oriented off-support port routes are geometric input. -/
 
+set_option backward.isDefEq.respectTransparency false in
 theorem filledFaceComponentSide_wallDartSideSeam_of_externalPortReachability
     {data : AnnularBoundaryData G outerCount}
     (embedded : ClosedWebAnnularEmbedding data)
@@ -981,6 +983,7 @@ theorem filledFaceComponentSide_wallDartSideSeam_of_externalPortReachability
       exact (hreach edge hedge dart hdart).2 hright hleft
     simp [filledFaceComponentSide, hleft, hright, hleftSide]
 
+set_option backward.isDefEq.respectTransparency false in
 noncomputable def cyclicEdgeCutRealization_of_filledFaceComponentSide
     {data : AnnularBoundaryData G outerCount}
     (embedded : ClosedWebAnnularEmbedding data)
@@ -1214,6 +1217,7 @@ theorem exactCutLabelSide_iff_of_other_label_of_total_nonwall_port
 the other label is `selected + 1`.  The finite two-value facts are discharged
 by the same kernel computation used throughout the face-cut algebra. -/
 
+set_option backward.isDefEq.respectTransparency false in
 theorem exactCutLabelSide_iff_of_add_one_label_of_total_nonwall_port
     {E : Type*} [Fintype E] [DecidableEq E]
     (RS : RotationSystem V E) (wall : Finset E)
@@ -1493,6 +1497,7 @@ theorem hasCycleOnSide_of_filledFaceComponentSide_chord_cycle
 rotated cycle makes the predecessor/successor choice canonical; the cycle
 nondegeneracy supplies the required nonbacktracking fact. -/
 
+set_option backward.isDefEq.respectTransparency false in
 theorem exists_chord_cycle_turn_at_vertex_of_external_port
     {data : AnnularBoundaryData G outerCount}
     (embedded : ClosedWebAnnularEmbedding data)
@@ -1826,6 +1831,7 @@ theorem exactCutLabelSide_iff_of_chord_port
   · intro hselected
     exact ⟨port, hportVertex, hportAway, hselected⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem edgeCrossesVertexSide_of_f2_label_inequality
     {e : G.edgeSet} {u v : V}
     {side : V → Prop} {labelU labelV selected : F2}
@@ -1930,6 +1936,7 @@ def ChordWallRotatedExternalPorts
       embedded.RS.edgeOf (embedded.RS.rho wallDart) ∉
         (chord.boundary htriple).wall
 
+set_option backward.isDefEq.respectTransparency false in
 theorem wall_port_face_assignment_of_rotated_external_ports
     {data : AnnularBoundaryData G outerCount}
     (embedded : ClosedWebAnnularEmbedding data)

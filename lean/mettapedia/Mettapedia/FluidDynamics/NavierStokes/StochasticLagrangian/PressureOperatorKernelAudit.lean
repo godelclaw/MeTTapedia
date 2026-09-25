@@ -58,6 +58,7 @@ example (e : R3) (he : ‖e‖ = 1) (k p : Wavevector) (w v : C3) :
     pressurePairOperator e he k p (Complex.I • w) v =
       Complex.I • pressurePairOperator e he k p w v := by simp
 
+set_option synthInstance.maxHeartbeats 40000 in
 /-- Opposite lattice inputs have identically zero pressure symbol. -/
 example (N : ℝ) (hN : 0 < N) (t : ℝ) (e : R3) (he : ‖e‖ = 1)
     (k : Wavevector) :

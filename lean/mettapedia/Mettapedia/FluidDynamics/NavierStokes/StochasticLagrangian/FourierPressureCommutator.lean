@@ -30,6 +30,7 @@ def pressureModeAmplitude (chi : Wavevector → ℂ) (u : FourierVelocity)
     (q : Wavevector) (x : T3) : ℝ :=
   (UnitAddTorus.mFourier q x * chi q * unitTorusDerivativePhase ^ 2 * infinitePressureCoeff u q).re
 
+set_option backward.isDefEq.respectTransparency false in
 theorem realMatrixOperator_rankOne (a : ℂ) (v : R3) :
     realMatrixOperator (fun i j ↦ a * (v i : ℂ) * (v j : ℂ)) =
       a.re • InnerProductSpace.rankOne ℝ v v := by

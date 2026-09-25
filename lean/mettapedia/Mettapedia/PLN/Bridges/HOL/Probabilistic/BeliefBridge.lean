@@ -249,6 +249,7 @@ theorem empiricalBeliefDay_tracks_empiricalSentenceProb
   simpa using empiricalDayStrength_eq_staticQueryStrength
     (Base := Base) (Const := Const) W (encodeClosedFormula φ)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The empirical belief-day construction exactly tracks hierarchical semantic
 probability through the constant-measure embedding of the empirical sample. -/
 theorem empiricalBeliefDay_tracks_empiricalHierarchicalProb

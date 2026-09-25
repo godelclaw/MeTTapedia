@@ -1,6 +1,6 @@
 import Mettapedia.GSLT.Logic.ContextHML
 import Mathlib.Data.Finset.Card
-import Mathlib.Data.Nat.Lattice
+import Mathlib.Order.Lattice.Nat
 
 /-!
 # Assembly Theory and Namespace Copy Number

@@ -224,6 +224,7 @@ theorem card_placementSideSlot_eq_four
   change Fintype.card ↥(placementSidePositions placement) = 4
   rw [Fintype.card_coe, card_placementSidePositions_eq_four placement]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Oriented local types retained by an induced hex corridor. The names are
 the exact forward distances in the chosen face-permutation orientation. -/
 inductive OrientedInducedHexSlabType where

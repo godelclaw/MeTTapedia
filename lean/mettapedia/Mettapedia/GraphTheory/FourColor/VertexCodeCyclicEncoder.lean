@@ -291,6 +291,7 @@ theorem encodeWith_none_iff (j : Fin r) :
   · exact ⟨fun h => absurd h (by simp), fun h => absurd hi h⟩
   · exact ⟨fun _ => hi, fun _ => rfl⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A slot emits a new port exactly when that port is based at the new vertex. -/
 theorem encodeWith_inr_iff (j : Fin r) :
     (∃ t, (encodeWith se mi mo).1 t = Sum.inr j) ↔ ¬ inner (RS.vertOf (mo j).1.1) := by
@@ -313,6 +314,7 @@ theorem encodeWith_inr_iff (j : Fin r) :
     rw [dif_neg hout]
     exact congrArg Sum.inr (by rw [show outgoing _ hout = mo j from rfl, mo.symm_apply_apply])
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A slot consumes an old port exactly when that port's mate is at the new
 vertex; otherwise the port persists as a wire. The two cases are exclusive
 and exhaustive, which is the content of the remaining validity clause. -/
@@ -344,6 +346,7 @@ theorem encodeWith_inl_iff (hv : ¬ inner v) (i : Fin l) :
       Subtype.ext (Subtype.ext (RS.alpha_involutive _))
     rw [this, mi.symm_apply_apply]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem encodeWith_some_iff (i : Fin l) :
     (∃ j, (encodeWith se mi mo).2 j = some i) ↔
       RS.vertOf (RS.alpha (mi i).1.1) ≠ v := by

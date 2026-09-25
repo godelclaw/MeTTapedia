@@ -87,7 +87,7 @@ theorem reachable_of_boundaryComposed {a b : α}
   | tail hab hbc ih =>
       refine ih.trans ?_
       rcases hbc with ⟨-, -, hrun⟩ | hstep
-      · exact hrun.mono fun _ _ hr => Or.inl hr
+      · exact Relation.ReflTransGen.mono (fun _ _ hr => Or.inl hr) _ _ hrun
       · exact Relation.ReflTransGen.single (Or.inr hstep)
 
 /-- **Cap restoration computes the closure.**  Between boundary points, literal
@@ -222,7 +222,7 @@ def RestoredReachable (strand : Fin 5 → Fin 5 → Prop) (v : Fin 5) :
 
 theorem restoredReachable_of_capConn {strand : Fin 5 → Fin 5 → Prop} {i j : Fin 5}
     (h : CapConn v i j) : RestoredReachable strand v i j :=
-  h.mono fun _ _ hs => Or.inr hs
+  Relation.ReflTransGen.mono (fun _ _ hs => Or.inr hs) _ _ h
 
 theorem restoredReachable_symm {strand : Fin 5 → Fin 5 → Prop} {i j : Fin 5}
     (h : RestoredReachable strand v i j) : RestoredReachable strand v j i := by

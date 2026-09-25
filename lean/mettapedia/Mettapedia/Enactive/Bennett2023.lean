@@ -121,27 +121,27 @@ instance : DecidableEq layer.Statement := inferInstance
 /-- Translate the 2023 vocabulary pointwise to its 2024 finite fact
 presentation. -/
 def toFinite : Mettapedia.Enactive.Finite.Layer World where
-  vocabulary := programFactEquiv.finsetCongr layer.vocabulary
+  vocabulary := (Equiv.Finset.congr programFactEquiv) layer.vocabulary
 
 theorem realizes_finsetCongr_iff
     (world : World) (programs : Finset (Program World)) :
     Mettapedia.Enactive.Finite.Realizes world
-        (programFactEquiv.finsetCongr programs) ↔
+        ((Equiv.Finset.congr programFactEquiv) programs) ↔
       Realizes world programs := by
   constructor
   · intro realized program member
-    have mapped : truthSet program ∈ programFactEquiv.finsetCongr programs := by
-      rw [Equiv.finsetCongr_apply]
+    have mapped : truthSet program ∈ (Equiv.Finset.congr programFactEquiv) programs := by
+      rw [Equiv.Finset.congr_apply]
       exact Finset.mem_map.mpr ⟨program, member, rfl⟩
     exact (mem_truthSet program world).mp (realized (truthSet program) mapped)
   · intro realized fact member
-    rw [Equiv.finsetCongr_apply, Finset.mem_map] at member
+    rw [Equiv.Finset.congr_apply, Finset.mem_map] at member
     obtain ⟨program, programMember, rfl⟩ := member
     exact (mem_truthSet program world).mpr (realized program programMember)
 
 theorem realizable_finsetCongr_iff (programs : Finset (Program World)) :
     Mettapedia.Enactive.Finite.Realizable
-        (programFactEquiv.finsetCongr programs) ↔
+        ((Equiv.Finset.congr programFactEquiv) programs) ↔
       Realizable programs := by
   constructor
   · rintro ⟨world, realized⟩
@@ -153,7 +153,7 @@ theorem realizable_finsetCongr_iff (programs : Finset (Program World)) :
 finite language. -/
 theorem finsetCongr_mem_statements_iff
     (programs : Finset (Program World)) :
-    programFactEquiv.finsetCongr programs ∈ layer.toFinite.statements ↔
+    (Equiv.Finset.congr programFactEquiv) programs ∈ layer.toFinite.statements ↔
       programs ∈ layer.statements := by
   rw [Mettapedia.Enactive.Finite.Layer.mem_statements,
     mem_statements]
@@ -163,36 +163,36 @@ theorem finsetCongr_mem_statements_iff
     exact ⟨by
       intro program member
       have mapped : programFactEquiv program ∈
-          programFactEquiv.finsetCongr layer.vocabulary :=
+          (Equiv.Finset.congr programFactEquiv) layer.vocabulary :=
         included (by simp [member])
       simpa using mapped,
       (realizable_finsetCongr_iff programs).mp realized⟩
   · rintro ⟨included, realized⟩
     exact ⟨by
       intro fact member
-      rw [Equiv.finsetCongr_apply, Finset.mem_map] at member
+      rw [Equiv.Finset.congr_apply, Finset.mem_map] at member
       obtain ⟨program, programMember, rfl⟩ := member
       simp [included programMember],
       (realizable_finsetCongr_iff programs).mpr realized⟩
 
 /-- Translate a 2023 statement to the canonical finite 2024 statement. -/
 def Statement.toFinite (source : layer.Statement) : layer.toFinite.Statement :=
-  ⟨programFactEquiv.finsetCongr source.val,
+  ⟨(Equiv.Finset.congr programFactEquiv) source.val,
     (finsetCongr_mem_statements_iff layer source.val).mpr source.property⟩
 
 /-- Recover a 2023 statement from its finite fact representation. -/
 def Statement.ofFinite (source : layer.toFinite.Statement) : layer.Statement :=
-  ⟨programFactEquiv.symm.finsetCongr source.val, by
+  ⟨(Equiv.Finset.congr programFactEquiv.symm) source.val, by
     apply (finsetCongr_mem_statements_iff layer _).mp
     have membership :
-        programFactEquiv.finsetCongr
-            (programFactEquiv.symm.finsetCongr source.val) ∈
+        (Equiv.Finset.congr programFactEquiv)
+            ((Equiv.Finset.congr programFactEquiv.symm) source.val) ∈
           layer.toFinite.statements := by
       have equality :
-          programFactEquiv.finsetCongr
-              (programFactEquiv.symm.finsetCongr source.val) = source.val := by
-        rw [← Equiv.finsetCongr_symm]
-        exact (programFactEquiv.finsetCongr).apply_symm_apply source.val
+          (Equiv.Finset.congr programFactEquiv)
+              ((Equiv.Finset.congr programFactEquiv.symm) source.val) = source.val := by
+        rw [← Equiv.Finset.congr_symm]
+        exact ((Equiv.Finset.congr programFactEquiv)).apply_symm_apply source.val
       rw [equality]
       exact source.property
     exact membership⟩
@@ -203,16 +203,16 @@ def statementEquiv : layer.Statement ≃ layer.toFinite.Statement where
   invFun := Statement.ofFinite layer
   left_inv source := by
     apply Subtype.ext
-    change programFactEquiv.symm.finsetCongr
-        (programFactEquiv.finsetCongr source.val) = source.val
-    rw [← Equiv.finsetCongr_symm]
-    exact (programFactEquiv.finsetCongr).symm_apply_apply source.val
+    change (Equiv.Finset.congr programFactEquiv.symm)
+        ((Equiv.Finset.congr programFactEquiv) source.val) = source.val
+    rw [← Equiv.Finset.congr_symm]
+    exact ((Equiv.Finset.congr programFactEquiv)).symm_apply_apply source.val
   right_inv source := by
     apply Subtype.ext
-    change programFactEquiv.finsetCongr
-        (programFactEquiv.symm.finsetCongr source.val) = source.val
-    rw [← Equiv.finsetCongr_symm]
-    exact (programFactEquiv.finsetCongr).apply_symm_apply source.val
+    change (Equiv.Finset.congr programFactEquiv)
+        ((Equiv.Finset.congr programFactEquiv.symm) source.val) = source.val
+    rw [← Equiv.Finset.congr_symm]
+    exact ((Equiv.Finset.congr programFactEquiv)).apply_symm_apply source.val
 
 /-- Translation preserves and reflects the completion order. -/
 theorem statementEquiv_le_iff {left right : layer.Statement} :
@@ -224,38 +224,38 @@ theorem statementEquiv_le_iff {left right : layer.Statement} :
         (statementEquiv layer right).val :=
       included (by
         change programFactEquiv program ∈
-          programFactEquiv.finsetCongr left.val
+          (Equiv.Finset.congr programFactEquiv) left.val
         simp [member])
     change programFactEquiv program ∈
-      programFactEquiv.finsetCongr right.val at mapped
+      (Equiv.Finset.congr programFactEquiv) right.val at mapped
     simpa using mapped
   · intro included fact member
-    change fact ∈ programFactEquiv.finsetCongr left.val at member
-    rw [Equiv.finsetCongr_apply, Finset.mem_map] at member
+    change fact ∈ (Equiv.Finset.congr programFactEquiv) left.val at member
+    rw [Equiv.Finset.congr_apply, Finset.mem_map] at member
     obtain ⟨program, programMember, rfl⟩ := member
     change programFactEquiv program ∈
-      programFactEquiv.finsetCongr right.val
+      (Equiv.Finset.congr programFactEquiv) right.val
     simp [included programMember]
 
 /-- The induced equivalence on finite collections preserves and reflects
 subset. -/
 theorem statementFinsetEquiv_subset_iff
     {left right : Finset layer.Statement} :
-    (statementEquiv layer).finsetCongr left ⊆
-        (statementEquiv layer).finsetCongr right ↔
+    (Equiv.Finset.congr (statementEquiv layer)) left ⊆
+        (Equiv.Finset.congr (statementEquiv layer)) right ↔
       left ⊆ right := by
   constructor
   · intro included source sourceMember
     have mapped : statementEquiv layer source ∈
-        (statementEquiv layer).finsetCongr right :=
+        (Equiv.Finset.congr (statementEquiv layer)) right :=
       included (by
-        rw [Equiv.finsetCongr_apply]
+        rw [Equiv.Finset.congr_apply]
         exact Finset.mem_map.mpr ⟨source, sourceMember, rfl⟩)
-    rw [Equiv.finsetCongr_apply, Finset.mem_map] at mapped
+    rw [Equiv.Finset.congr_apply, Finset.mem_map] at mapped
     obtain ⟨target, targetMember, equal⟩ := mapped
     exact (statementEquiv layer).injective equal ▸ targetMember
   · intro included target targetMember
-    rw [Equiv.finsetCongr_apply, Finset.mem_map] at targetMember ⊢
+    rw [Equiv.Finset.congr_apply, Finset.mem_map] at targetMember ⊢
     obtain ⟨source, sourceMember, rfl⟩ := targetMember
     exact ⟨source, included sourceMember, rfl⟩
 
@@ -287,12 +287,12 @@ theorem mem_extensionSet {sources : Finset layer.Statement}
 /-- Characteristic-set translation carries the entire 2023 extension to the
 2024 extension. -/
 theorem extension_agreement (source : layer.Statement) :
-    (statementEquiv layer).finsetCongr (layer.extension source) =
+    (Equiv.Finset.congr (statementEquiv layer)) (layer.extension source) =
       layer.toFinite.extension (statementEquiv layer source) := by
   ext target
   constructor
   · intro member
-    rw [Equiv.finsetCongr_apply, Finset.mem_map] at member
+    rw [Equiv.Finset.congr_apply, Finset.mem_map] at member
     obtain ⟨original, originalMember, rfl⟩ := member
     rw [Mettapedia.Enactive.Finite.Layer.mem_extension]
     exact (statementEquiv_le_iff (layer := layer)).mpr
@@ -305,7 +305,7 @@ theorem extension_agreement (source : layer.Statement) :
       (mem_extension (layer := layer)).mpr <|
         (statementEquiv_le_iff (layer := layer)).mp <| by
         simpa using included
-    simpa [Equiv.finsetCongr_apply] using originalMember
+    simpa [Equiv.Finset.congr_apply] using originalMember
 
 /-- Weakness is representation-invariant: counting Boolean-program
 completions and counting their finite characteristic sets give the same number.
@@ -316,30 +316,30 @@ theorem weakness_agreement (source : layer.Statement) :
   rw [weakness, Mettapedia.Enactive.Finite.Layer.weakness]
   have congruence := extension_agreement layer source
   have cards := congrArg Finset.card congruence
-  simpa [Equiv.finsetCongr_apply] using cards
+  simpa [Equiv.Finset.congr_apply] using cards
 
 /-- Characteristic-set translation also carries extensions of situation sets.
 This is the set-valued `Z_S`/`E_I` agreement needed by the task bridge. -/
 theorem extensionSet_agreement (sources : Finset layer.Statement) :
-    (statementEquiv layer).finsetCongr (layer.extensionSet sources) =
+    (Equiv.Finset.congr (statementEquiv layer)) (layer.extensionSet sources) =
       layer.toFinite.extensionSet
-        ((statementEquiv layer).finsetCongr sources) := by
+        ((Equiv.Finset.congr (statementEquiv layer)) sources) := by
   ext target
   constructor
   · intro member
-    rw [Equiv.finsetCongr_apply, Finset.mem_map] at member
+    rw [Equiv.Finset.congr_apply, Finset.mem_map] at member
     obtain ⟨original, originalMember, rfl⟩ := member
     obtain ⟨source, sourceMember, included⟩ :=
       (mem_extensionSet (layer := layer)).mp originalMember
     rw [Mettapedia.Enactive.Finite.Layer.mem_extensionSet]
     exact ⟨statementEquiv layer source, by
-      rw [Equiv.finsetCongr_apply]
+      rw [Equiv.Finset.congr_apply]
       exact Finset.mem_map.mpr ⟨source, sourceMember, rfl⟩,
       (statementEquiv_le_iff (layer := layer)).mpr included⟩
   · intro member
     rw [Mettapedia.Enactive.Finite.Layer.mem_extensionSet] at member
     obtain ⟨source, sourceMember, included⟩ := member
-    rw [Equiv.finsetCongr_apply, Finset.mem_map] at sourceMember
+    rw [Equiv.Finset.congr_apply, Finset.mem_map] at sourceMember
     obtain ⟨originalSource, originalSourceMember, rfl⟩ := sourceMember
     have originalTargetMember :
         (statementEquiv layer).symm target ∈
@@ -348,7 +348,7 @@ theorem extensionSet_agreement (sources : Finset layer.Statement) :
         ⟨originalSource, originalSourceMember,
           (statementEquiv_le_iff (layer := layer)).mp (by
             simpa using included)⟩
-    rw [Equiv.finsetCongr_apply]
+    rw [Equiv.Finset.congr_apply]
     exact Finset.mem_map.mpr
       ⟨(statementEquiv layer).symm target, originalTargetMember, by simp⟩
 
@@ -397,17 +397,17 @@ theorem mem_models {task : Task layer} {hypothesis : layer.Statement} :
 /-- The 2023 triple translated to the finite 2024 task/policy presentation. -/
 def toFinite (task : Task layer) :
     Mettapedia.Enactive.Finite.Task layer.toFinite where
-  inputs := (Layer.statementEquiv layer).finsetCongr task.situations
+  inputs := (Equiv.Finset.congr (Layer.statementEquiv layer)) task.situations
   correctOutputs :=
-    (Layer.statementEquiv layer).finsetCongr task.correctDecisions
+    (Equiv.Finset.congr (Layer.statementEquiv layer)) task.correctDecisions
   correctOutputs_subset := by
     intro output outputMember
-    rw [Equiv.finsetCongr_apply, Finset.mem_map] at outputMember
+    rw [Equiv.Finset.congr_apply, Finset.mem_map] at outputMember
     obtain ⟨decision, decisionMember, rfl⟩ := outputMember
     obtain ⟨situation, situationMember, included⟩ :=
       task.correctDecisions_subset decision decisionMember
     exact ⟨Layer.statementEquiv layer situation, by
-      rw [Equiv.finsetCongr_apply]
+      rw [Equiv.Finset.congr_apply]
       exact Finset.mem_map.mpr ⟨situation, situationMember, rfl⟩,
       (Layer.statementEquiv_le_iff (layer := layer)).mpr included⟩
 
@@ -415,17 +415,17 @@ def toFinite (task : Task layer) :
 selected by the translated 2024 policy. -/
 theorem inferredOutputs_agreement (task : Task layer)
     (hypothesis : layer.Statement) :
-    (Layer.statementEquiv layer).finsetCongr
+    (Equiv.Finset.congr (Layer.statementEquiv layer))
         (task.decisions ∩ layer.extension hypothesis) =
       task.toFinite.inferredOutputs (Layer.statementEquiv layer hypothesis) := by
-  change (Layer.statementEquiv layer).finsetCongr
+  change (Equiv.Finset.congr (Layer.statementEquiv layer))
       (layer.extensionSet task.situations ∩ layer.extension hypothesis) =
     layer.toFinite.extensionSet
-        ((Layer.statementEquiv layer).finsetCongr task.situations) ∩
+        ((Equiv.Finset.congr (Layer.statementEquiv layer)) task.situations) ∩
       layer.toFinite.extension (Layer.statementEquiv layer hypothesis)
-  rw [Equiv.finsetCongr_apply, Finset.map_inter,
-    ← Equiv.finsetCongr_apply, Layer.extensionSet_agreement,
-    ← Equiv.finsetCongr_apply, Layer.extension_agreement]
+  rw [Equiv.Finset.congr_apply, Finset.map_inter,
+    ← Equiv.Finset.congr_apply, Layer.extensionSet_agreement,
+    ← Equiv.Finset.congr_apply, Layer.extension_agreement]
 
 /-- The theorem-level recovery of the 2023 `M` component: a statement is a
 2023 model iff its characteristic-set image is a correct 2024 policy. -/
@@ -437,14 +437,14 @@ theorem isModel_iff_isCorrectPolicy (task : Task layer)
   · intro model
     unfold Mettapedia.Enactive.Finite.Task.IsCorrectPolicy
     rw [← inferredOutputs_agreement task hypothesis]
-    change (Layer.statementEquiv layer).finsetCongr
+    change (Equiv.Finset.congr (Layer.statementEquiv layer))
         (task.decisions ∩ layer.extension hypothesis) =
-      (Layer.statementEquiv layer).finsetCongr task.correctDecisions
+      (Equiv.Finset.congr (Layer.statementEquiv layer)) task.correctDecisions
     rw [model]
   · intro correct
     unfold Mettapedia.Enactive.Finite.Task.IsCorrectPolicy at correct
     rw [← inferredOutputs_agreement task hypothesis] at correct
-    apply (Layer.statementEquiv layer).finsetCongr.injective
+    apply (Equiv.Finset.congr (Layer.statementEquiv layer)).injective
     exact correct
 
 /-- The 2023 child relation. -/
@@ -465,7 +465,7 @@ theorem isChild_iff_toFinite_isChild (child parent : Task layer) :
     exact ⟨by
       constructor
       · intro source member
-        rw [Equiv.finsetCongr_apply, Finset.mem_map] at member ⊢
+        rw [Equiv.Finset.congr_apply, Finset.mem_map] at member ⊢
         obtain ⟨original, originalMember, rfl⟩ := member
         exact ⟨original, situations.1 originalMember, rfl⟩
       · intro equal
@@ -474,7 +474,7 @@ theorem isChild_iff_toFinite_isChild (child parent : Task layer) :
           (layer := layer)).mp equal,
       by
         intro source member
-        rw [Equiv.finsetCongr_apply, Finset.mem_map] at member ⊢
+        rw [Equiv.Finset.congr_apply, Finset.mem_map] at member ⊢
         obtain ⟨original, originalMember, rfl⟩ := member
         exact ⟨original, decisions originalMember, rfl⟩⟩
   · rintro ⟨situations, decisions⟩
@@ -482,11 +482,11 @@ theorem isChild_iff_toFinite_isChild (child parent : Task layer) :
       constructor
       · intro source member
         have mapped : Layer.statementEquiv layer source ∈
-            (Layer.statementEquiv layer).finsetCongr parent.situations :=
+            (Equiv.Finset.congr (Layer.statementEquiv layer)) parent.situations :=
           situations.1 (by
-            rw [Equiv.finsetCongr_apply]
+            rw [Equiv.Finset.congr_apply]
             exact Finset.mem_map.mpr ⟨source, member, rfl⟩)
-        rw [Equiv.finsetCongr_apply, Finset.mem_map] at mapped
+        rw [Equiv.Finset.congr_apply, Finset.mem_map] at mapped
         obtain ⟨target, targetMember, equal⟩ := mapped
         exact (Layer.statementEquiv layer).injective equal ▸ targetMember
       · intro equal
@@ -496,11 +496,11 @@ theorem isChild_iff_toFinite_isChild (child parent : Task layer) :
       by
         intro source member
         have mapped : Layer.statementEquiv layer source ∈
-            (Layer.statementEquiv layer).finsetCongr parent.correctDecisions :=
+            (Equiv.Finset.congr (Layer.statementEquiv layer)) parent.correctDecisions :=
           decisions (by
-            rw [Equiv.finsetCongr_apply]
+            rw [Equiv.Finset.congr_apply]
             exact Finset.mem_map.mpr ⟨source, member, rfl⟩)
-        rw [Equiv.finsetCongr_apply, Finset.mem_map] at mapped
+        rw [Equiv.Finset.congr_apply, Finset.mem_map] at mapped
         obtain ⟨target, targetMember, equal⟩ := mapped
         exact (Layer.statementEquiv layer).injective equal ▸ targetMember⟩
 

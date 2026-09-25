@@ -65,6 +65,7 @@ theorem commonCutEdge_val
         (cyclicCutVertexSide cut) cyclicData.boundaryOrder port :=
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The common cyclic coordinates enumerate the exact cut edges
 bijectively. -/
 theorem commonCutEdge_bijective
@@ -82,6 +83,7 @@ theorem commonCutEdge_bijective
     exact congrArg Subtype.val heq
   · simpa using hcard.symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Translate the common cyclic boundary coordinates to the arbitrary
 finite enumeration used by the generic exact-cut boundary package. -/
 def commonPortReindex
@@ -94,6 +96,7 @@ def commonPortReindex
     (Fintype.equivFinOfCardEq (by simpa using hcard) :
       cut.compl.edgeCut ≃ Fin 4)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The generic cut enumeration at the translated coordinate is the
 actual edge named by the common cyclic boundary coordinate. -/
 theorem cyclicCutCrossingOfCardFour_commonPortReindex
@@ -644,6 +647,7 @@ private theorem add_eq_of_three_nonzero_pairwise_distinct :
       first + second = third := by
   decide
 
+set_option backward.isDefEq.respectTransparency false in
 /-- At a genuine cut port incident with a new seam, the missing color of
 the two retained edges is exactly the seam color. -/
 theorem commonBoundaryColorWord_eq_seamColor_of_port

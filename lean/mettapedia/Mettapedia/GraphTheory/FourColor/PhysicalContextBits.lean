@@ -16,6 +16,7 @@ open GoertzelV24OpenTangleComposition GoertzelV24PortTangleGluing
 open GoertzelV24PortTangleGluing.PortTangle
 open GoertzelV24PhysicalClosedCountBridge GoertzelV24ClosedCountReplacement
 
+set_option backward.isDefEq.respectTransparency false in
 inductive Kind | a | b | test
   deriving DecidableEq, Fintype
 
@@ -63,6 +64,7 @@ def rhoPerm (t : Kind) : Equiv.Perm (Fin 12) where
   left_inv := by cases t <;> decide
   right_inv := by cases t <;> decide
 
+set_option backward.isDefEq.respectTransparency false in
 def localData (t : Kind) : OpenTangleData (Fin 4) I (Fin 4) where
   interiorVert := fun d => vertex t (.inl d)
   boundaryVert := port t

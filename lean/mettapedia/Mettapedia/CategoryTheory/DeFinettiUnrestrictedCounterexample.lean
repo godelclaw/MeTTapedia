@@ -36,6 +36,7 @@ private lemma singleton_subset_seqPrefixEvent (ω : GlobalBinarySeq) (n : ℕ) :
 -- Section 2: Prefix count computation for mixedSeq
 -- ============================================================
 
+set_option backward.isDefEq.respectTransparency.types false in
 private lemma mixedSeq_prefix_countTrue (n : ℕ) (hn : 1 ≤ n) :
     Mettapedia.ProbabilityTheory.Exchangeability.countTrue (fun i : Fin n => mixedSeq i) = 1 := by
   simp only [Mettapedia.ProbabilityTheory.Exchangeability.countTrue, mixedSeq]

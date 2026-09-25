@@ -235,6 +235,7 @@ theorem unitOblique_orderSensitive_negativeExample :
   rw [linearPhases_orderIndependent_iff_interferenceEnergy_zero]
   norm_num [unitOblique_interferenceEnergy_positive_negativeExample]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Linear commutation alone does not settle affine command order: these
 one-dimensional generators commute, but their biases are incompatible. -/
 theorem scalarAffine_biasObstruction_negativeExample :

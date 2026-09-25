@@ -275,6 +275,7 @@ def realizationRefinement {Ground : Type} (source : CostConfig Ground) :
   mapExecution := realizeWorlds
   preservesMeaning := fun _ _ => trivial
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The independently defined target observations agree exactly. -/
 theorem realizationRefinement_compatible {Ground : Type}
     (source : CostConfig Ground) :
@@ -360,6 +361,7 @@ theorem targetScheduler_isLossy :
   · exact raw_and_certified_values_differ
   · rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Consequently the target-only scheduler cannot implement a policy that
 needs to know whether native parallel realization was earned. -/
 theorem targetScheduler_not_supports_nativeSchedulePolicy :

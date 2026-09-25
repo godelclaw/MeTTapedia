@@ -200,6 +200,7 @@ noncomputable local instance colorPairGraphNeighborSetFintype
   classical
   exact Subtype.fintype _
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The incidence finset in the selected primal graph is exactly the image of
 the filtered ambient incident-edge finset. -/
 theorem colorPairGraph_incidenceFinset_eq_map_incidentEdges

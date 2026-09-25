@@ -69,6 +69,7 @@ noncomputable def boundaryRegionalFragmentFaceEquivCutIncidentFace
       boundaryRegionalFragmentFace_surjective_of_cut_subset_region
         RS htwoSided cut region hcut⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Stable semantic roles of the three outgoing faces of a literal Cell.
 Unlike the ambient fragment enumeration, these names do not depend on a
 choice of `Fintype.equivFin`. -/

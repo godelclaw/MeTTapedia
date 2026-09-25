@@ -113,6 +113,7 @@ private theorem placementSideEdge_mem_shared_rev
       (htwoSided := htwoSided) (hunique := hunique) placement position)
   exact ⟨hshared.1, hshared.2.2, hshared.2.1⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The first crossing of the left source layer is its literal side edge
 immediately before the outgoing rung. -/
 theorem localLayerPrefixCrossing_zero_eq_leftBeforeEdge
@@ -134,6 +135,7 @@ theorem localLayerPrefixCrossing_zero_eq_leftBeforeEdge
     SourceConsecutiveSlabInterface.leftBeforeEdge] using
     hshared
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The second crossing of the left source layer is its literal side edge
 immediately after the outgoing rung. -/
 theorem localLayerPrefixCrossing_one_eq_leftAfterEdge
@@ -154,6 +156,7 @@ theorem localLayerPrefixCrossing_one_eq_leftAfterEdge
     SourceConsecutiveSlabInterface.centerLayerFace,
     SourceConsecutiveSlabInterface.leftAfterEdge] using hshared
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The first crossing of the right source layer is the literal side edge
 chosen on the next corridor hexagon. -/
 theorem nextLocalLayerPrefixCrossing_zero_eq_rightBeforeEdge
@@ -177,6 +180,7 @@ theorem nextLocalLayerPrefixCrossing_zero_eq_rightBeforeEdge
     SourceConsecutiveSlabInterface.nextCenterLayerFace,
     aligned.toInterface.firstLayerFace_eq_next_firstLayerFace] using hshared
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The second crossing of the right source layer is the other literal side
 edge chosen on the next corridor hexagon. -/
 theorem nextLocalLayerPrefixCrossing_one_eq_rightAfterEdge

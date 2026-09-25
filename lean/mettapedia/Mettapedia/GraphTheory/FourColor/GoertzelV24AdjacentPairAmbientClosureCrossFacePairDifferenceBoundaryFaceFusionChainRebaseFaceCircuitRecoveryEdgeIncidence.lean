@@ -48,6 +48,7 @@ def targetFaceAt
     circuit.targetFaces.length = circuit.arcLength := by
   simp [targetFaces, arcLength]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Target-face positions are injective on a shortest recovery circuit. -/
 theorem IsLengthMinimal.targetFaceAt_injective
     {circuit : ClosureRecoveryFaceCircuit rebaseCircuit}

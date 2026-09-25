@@ -55,7 +55,7 @@ theorem reflTransGen_equiv_iff {Alpha Beta : Type*}
       Relation.ReflTransGen targetStep left right := by
   constructor
   · intro hpath
-    simpa using hpath.lift equiv.symm (by
+    simpa [Function.onFun] using hpath.lift equiv.symm (by
       intro sourceLeft sourceRight hsource
       apply (hstep (equiv.symm sourceLeft) (equiv.symm sourceRight)).1
       simpa using hsource)

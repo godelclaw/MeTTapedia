@@ -56,6 +56,7 @@ theorem vertexSidePortTangle_vert_boundary
       ⟨graphData.toRotationSystem.vertOf port.1.1, port.1.2⟩ := by
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Physical common-web noncrossing, in cyclic-arc form.**
 
 `cutPort` and `separatorPort` are the endpoints of one selected Kempe

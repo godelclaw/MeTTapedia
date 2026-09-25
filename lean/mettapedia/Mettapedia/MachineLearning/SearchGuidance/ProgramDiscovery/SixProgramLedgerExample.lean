@@ -11,14 +11,17 @@ coverage from lineage-dependent evidence licensing.
 namespace Mettapedia.MachineLearning.SearchGuidance.ProgramDiscovery.AdaptivePortfolio
 namespace SixProgramLedgerExample
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive Arm where
   | bpPrimary | bpOpportunity | pc | dfa
   deriving DecidableEq, Fintype, Repr
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive Generation where
   | generation1 | generation2 | generation3
   deriving DecidableEq, Fintype, Repr
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive Source where
   | world1BP | world1PC | world2PC | independentPC
   deriving DecidableEq, Fintype, Repr

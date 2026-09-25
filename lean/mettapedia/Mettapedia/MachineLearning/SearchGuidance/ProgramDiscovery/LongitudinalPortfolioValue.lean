@@ -71,14 +71,17 @@ end LongitudinalValue
 
 namespace DelayedYieldExample
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive Generation where
   | first | second
   deriving DecidableEq, Fintype, Repr
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive Arm where
   | primaryBP | opportunityBP | pc
   deriving DecidableEq, Fintype, Repr
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive World where
   | compounding | fading
   deriving DecidableEq, Fintype, Repr

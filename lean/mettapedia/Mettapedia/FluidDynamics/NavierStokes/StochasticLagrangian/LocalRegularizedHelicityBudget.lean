@@ -182,7 +182,7 @@ theorem continuousOn_centeredIntegral (δ : ℝ) (hδ : 0 < δ) :
         ∀ z : Icc (0 : ℝ) T × T3, δ + ‖fullVorticity (s.coefficients z.1) z.2‖ ^ 2 ≠ 0)
     apply hc.congr
     intro z
-    simp only [Pi.div_apply, Pi.add_apply, regularizedCenter, helicity, ← fullVorticity_curl_eq_curlJet _
+    simp only [Pi.div_apply, Pi.add_apply, Pi.pow_apply, regularizedCenter, helicity, ← fullVorticity_curl_eq_curlJet _
       (hSum.of_nonneg_of_le (fourierMoment_nonneg _ _) (hu2 z.1 z.1.2))]
   apply LocalAlignmentContinuity.continuousOn_spatialIntegral
   exact ((hw.norm.pow 4).mul (continuous_finsetSum _ (fun j _ ↦

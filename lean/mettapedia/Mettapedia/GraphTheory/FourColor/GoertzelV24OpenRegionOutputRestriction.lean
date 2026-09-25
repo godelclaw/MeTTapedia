@@ -80,6 +80,7 @@ def outputOpenDartColor
     Dart RS data.keep → Color :=
   fun dart => coloring (data.output.edgeOf (openDartToOutputDart data dart))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The matched-parts equivalence sends an intact retained dart to its
 literal interior summand.  Keeping this elementary transport named avoids
 unfolding the whole ordered seam when reading output colors on an open
@@ -151,6 +152,7 @@ theorem openDartToOutputDart_boundary_eq_stub
       openDartToOutputDart data (Sum.inr ⟨dart, hboundary⟩) :=
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The left ordered boundary stub of the literal open region reads the
 sewn output edge at that same source position. -/
 theorem outputOpenDartColor_leftBoundary_eq_seamColorWord
@@ -188,6 +190,7 @@ theorem outputOpenDartColor_leftBoundary_eq_seamColorWord
         data.leftCrosses step))))
   rw [hparts]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The right ordered boundary stub reads the same sewn output edge as its
 matched left stub.  This is the literal-open form of the splice's boundary
 color agreement. -/

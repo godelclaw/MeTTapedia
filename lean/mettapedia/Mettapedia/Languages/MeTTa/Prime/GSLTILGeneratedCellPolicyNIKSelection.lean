@@ -303,6 +303,7 @@ def readoutObject : AdmissionObject where
     | .inl cell => 0 < constructorCount cell
     | .inr cell => 0 < constructorCount cell
 
+set_option backward.isDefEq.respectTransparency.types false in
 def collapsedOperation : sourceObject ⟶ readoutObject where
   run := fun cell => Sum.inl (mapGenerators collapseDuplicate cell)
   preserves := by

@@ -22,6 +22,7 @@ attribute [local instance]
   fusionFaceNetworkRetainedVertexFintype
   fusionFaceNetworkRetainedVertexDecidableEq
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Exactness of the closed prefix trail implies that its retained part is
 itself a trail. -/
 theorem RetainedIntersectionExactFaceCutPair.prefixRetained_isTrail

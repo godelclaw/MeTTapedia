@@ -288,6 +288,7 @@ theorem capCutsFollowOppositeDeletedBoundaryOrder
     data.leftCrossing_injective data.rightCrossing_injective
     data.cutsDisjoint htwoSided
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A graph-backed exact two-edge cap preserves the spherical cubic-map
 equation when both sides of the bond are connected. -/
 theorem cap_orbitSphericalCubicMapData

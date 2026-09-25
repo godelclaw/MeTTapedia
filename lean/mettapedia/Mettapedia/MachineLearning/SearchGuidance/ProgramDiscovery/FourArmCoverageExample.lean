@@ -12,14 +12,17 @@ ledger.
 namespace Mettapedia.MachineLearning.SearchGuidance.ProgramDiscovery.VerifierGuidance
 namespace FourArmCoverageExample
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive Program where
   | p0 | p1 | p2 | p3 | p4 | p5
   deriving DecidableEq, Fintype, Repr
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive Action where
   | a0 | a1
   deriving DecidableEq, Fintype, Repr
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive Lineage where
   | source0 | source1 | shared2 | independent4a | independent4b
   deriving DecidableEq, Fintype, Repr
@@ -129,6 +132,7 @@ def model : SearchModel Program Action where
 theorem checker_boundary_nontrivial : HasAcceptanceBoundary model := by
   exact ⟨⟨.p1, rfl⟩, ⟨.p0, rfl⟩⟩
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem checker_set_exact : checkerSet model = {.p1, .p4} := by
   ext program
   fin_cases program <;> simp [checkerSet, model, checker]
@@ -138,6 +142,7 @@ theorem exact_reward_support :
   rw [positiveSupport_exactReward]
   exact checker_set_exact
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem squared_reward_support :
     positiveSupport (fun program ↦ (exactReward model program) ^ 2) =
       {.p1, .p4} := by
@@ -159,6 +164,7 @@ theorem additive_partial_support :
       checker, partialPriority]
   all_goals decide
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem additive_partial_creates_rejected_support :
     ({.p0, .p2, .p3} : Finset Program) ⊆
         positiveSupport additivePartialReward ∧
@@ -329,6 +335,7 @@ theorem baseline_submission_times :
       [0, 3, 6, 9, 12, 15] := by
   decide
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem semantic_only_budget_one_omits_accepted :
     .p1 ∈ checkerSet model ∧ .p1 ∉ guidedQueue.take 1 := by
   constructor

@@ -581,6 +581,7 @@ theorem applySubst_fvar_rhoPar_comm (y z : String) (P Q : Pattern)
 
 /-! ## Encoding commutes with free-variable substitution -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Core lemma: fvar→fvar substitution on encoding equals encoding of π-substituted process.
 
     `applySubst [(y, .fvar z)] (encode Q n v) = encode (Q.substitute y z) n v`
@@ -994,6 +995,7 @@ private theorem encode_rf_rhoProcCoreShape {P : Process}
   | nu _ _ => exact absurd hrf id
   | replicate _ _ _ => exact absurd hrf id
 
+set_option backward.isDefEq.respectTransparency false in
 private theorem encode_rf_rhoNoLiteralQuote {P : Process}
     (hrf : RestrictionFree P) (n v : String) :
     rhoNoLiteralQuote (encode P n v) = true := by

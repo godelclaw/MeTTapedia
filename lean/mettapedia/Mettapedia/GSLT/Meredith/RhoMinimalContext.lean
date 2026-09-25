@@ -51,9 +51,9 @@ instance : HasMinimalContexts rhoGSLT where
   IsOneHole := IsEvalGenerated
   IsReactive := IsEvalGenerated
   IsMinimal := IsEvalGenerated
-  id_oneHole := ⟨EvalContext.hole, fun p => by simp [GSLTContext.id, fillEvalContext]⟩
-  id_reactive := ⟨EvalContext.hole, fun p => by simp [GSLTContext.id, fillEvalContext]⟩
-  id_minimal := ⟨EvalContext.hole, fun p => by simp [GSLTContext.id, fillEvalContext]⟩
+  id_oneHole := ⟨EvalContext.hole, fun _ => rfl⟩
+  id_reactive := ⟨EvalContext.hole, fun _ => rfl⟩
+  id_minimal := ⟨EvalContext.hole, fun _ => rfl⟩
   minimal_reactive := id
   minimal_oneHole := id
 

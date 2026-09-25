@@ -110,6 +110,7 @@ theorem vertOf_reassoc (x : (I ⊕ L) ⊕ (J ⊕ R)) :
     (compositeRS left right matching).vertOf (reassoc x) = disjointVertOf left right x :=
   composeData_vertOf_composeDartEquiv left right matching x
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Composite darts over a left vertex correspond to the left darts over it. -/
 theorem mem_dartsAt_inl_iff (v : V) (x : MatchedSeam.Dart (I ⊕ J) L R) :
     x ∈ (compositeRS left right matching).dartsAt (Sum.inl v) ↔
@@ -131,6 +132,7 @@ theorem mem_dartsAt_inl_iff (v : V) (x : MatchedSeam.Dart (I ⊕ J) L R) :
     rw [vertOf_reassoc]
     simpa [disjointVertOf] using hd
 
+set_option backward.isDefEq.respectTransparency false in
 theorem mem_dartsAt_inr_iff (w : W) (x : MatchedSeam.Dart (I ⊕ J) L R) :
     x ∈ (compositeRS left right matching).dartsAt (Sum.inr w) ↔
       ∃ d : J ⊕ R, right.vertOf d = w ∧ reassoc (Sum.inr d) = x := by

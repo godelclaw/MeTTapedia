@@ -313,6 +313,7 @@ noncomputable def sourceSelectedComplementOpenRegion
     (fun vertex => vertex ∉ pair.componentSide boundary.component)
     (pair.sourceSelectedComplementRoot data boundary)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Read an ambient edge colour from a colouring of the selected open Cell. -/
 noncomputable def sourceSelectedComplementColor
     (data : Data G)

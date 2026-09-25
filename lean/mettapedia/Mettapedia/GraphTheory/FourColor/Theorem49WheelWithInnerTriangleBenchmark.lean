@@ -840,16 +840,19 @@ def wheelWithInnerTriangleEdgeColor
     wheelWithInnerTriangleEdgeColor wit01 = red := by
   simp [wheelWithInnerTriangleEdgeColor]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem wheelWithInnerTriangleEdgeColor_wit02 :
     wheelWithInnerTriangleEdgeColor wit02 = blue := by
   simp [wheelWithInnerTriangleEdgeColor, wheelWithInnerTriangleGraph, wit01, wit02,
     wit23, wit45]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem wheelWithInnerTriangleEdgeColor_wit03 :
     wheelWithInnerTriangleEdgeColor wit03 = purple := by
   simp [wheelWithInnerTriangleEdgeColor, wheelWithInnerTriangleGraph, wit01, wit02,
     wit03, wit23, wit31, wit45, wit56]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem wheelWithInnerTriangleEdgeColor_wit12 :
     wheelWithInnerTriangleEdgeColor wit12 = purple := by
   simp [wheelWithInnerTriangleEdgeColor, wheelWithInnerTriangleGraph, wit01, wit02,
@@ -859,6 +862,7 @@ def wheelWithInnerTriangleEdgeColor
     wheelWithInnerTriangleEdgeColor wit23 = red := by
   simp [wheelWithInnerTriangleEdgeColor, wheelWithInnerTriangleGraph, wit01, wit23]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem wheelWithInnerTriangleEdgeColor_wit31 :
     wheelWithInnerTriangleEdgeColor wit31 = blue := by
   simp [wheelWithInnerTriangleEdgeColor, wheelWithInnerTriangleGraph, wit01, wit02,
@@ -869,11 +873,13 @@ def wheelWithInnerTriangleEdgeColor
   simp [wheelWithInnerTriangleEdgeColor, wheelWithInnerTriangleGraph, wit01, wit23,
     wit45]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem wheelWithInnerTriangleEdgeColor_wit56 :
     wheelWithInnerTriangleEdgeColor wit56 = blue := by
   simp [wheelWithInnerTriangleEdgeColor, wheelWithInnerTriangleGraph, wit01, wit02,
     wit23, wit31, wit45, wit56]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem wheelWithInnerTriangleEdgeColor_wit64 :
     wheelWithInnerTriangleEdgeColor wit64 = purple := by
   simp [wheelWithInnerTriangleEdgeColor, wheelWithInnerTriangleGraph, wit01, wit02,
@@ -1098,6 +1104,7 @@ def wheelDart56 : wheelWithInnerTriangleGraph.Dart := ⟨((5 : Fin 7), 6), by
 def wheelDart64 : wheelWithInnerTriangleGraph.Dart := ⟨((6 : Fin 7), 4), by
   simp [wheelWithInnerTriangleGraph]⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def wheelFace0PureDartCycle
     (hf : (0 : WheelWithInnerTriangleFace) ∈ wheelWithInnerTriangleEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
@@ -1120,6 +1127,7 @@ def wheelFace0PureDartCycle
     rcases he' with rfl | rfl | rfl <;>
       simp [wit01, wit02, wit12, wheelDart01, wheelDart12, wheelDart20]
 
+set_option backward.isDefEq.respectTransparency false in
 def wheelFace1PureDartCycle
     (hf : (1 : WheelWithInnerTriangleFace) ∈ wheelWithInnerTriangleEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
@@ -1142,6 +1150,7 @@ def wheelFace1PureDartCycle
     rcases he' with rfl | rfl | rfl <;>
       simp [wit02, wit03, wit23, wheelDart02, wheelDart23, wheelDart30]
 
+set_option backward.isDefEq.respectTransparency false in
 def wheelFace2PureDartCycle
     (hf : (2 : WheelWithInnerTriangleFace) ∈ wheelWithInnerTriangleEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
@@ -1164,6 +1173,7 @@ def wheelFace2PureDartCycle
     rcases he' with rfl | rfl | rfl <;>
       simp [wit03, wit01, wit31, wheelDart03, wheelDart31, wheelDart10]
 
+set_option backward.isDefEq.respectTransparency false in
 def wheelFace3PureDartCycle
     (hf : (3 : WheelWithInnerTriangleFace) ∈ wheelWithInnerTriangleEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
@@ -1237,6 +1247,7 @@ def wheelFace3DartSuccessor (d : wheelWithInnerTriangleGraph.Dart) :
   else if d = wheelDart56 then wheelDart64
   else wheelDart45
 
+set_option backward.isDefEq.respectTransparency false in
 def wheelFace0DartSuccessorCycle
     (hf : (0 : WheelWithInnerTriangleFace) ∈ wheelWithInnerTriangleEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryDartSuccessorCycle
@@ -1260,6 +1271,7 @@ def wheelFace0DartSuccessorCycle
     intro e he
     exact (wheelFace0PureDartCycle hf).hface_sub e he
 
+set_option backward.isDefEq.respectTransparency false in
 def wheelFace1DartSuccessorCycle
     (hf : (1 : WheelWithInnerTriangleFace) ∈ wheelWithInnerTriangleEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryDartSuccessorCycle
@@ -1283,6 +1295,7 @@ def wheelFace1DartSuccessorCycle
     intro e he
     exact (wheelFace1PureDartCycle hf).hface_sub e he
 
+set_option backward.isDefEq.respectTransparency false in
 def wheelFace2DartSuccessorCycle
     (hf : (2 : WheelWithInnerTriangleFace) ∈ wheelWithInnerTriangleEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryDartSuccessorCycle
@@ -1306,6 +1319,7 @@ def wheelFace2DartSuccessorCycle
     intro e he
     exact (wheelFace2PureDartCycle hf).hface_sub e he
 
+set_option backward.isDefEq.respectTransparency false in
 def wheelFace3DartSuccessorCycle
     (hf : (3 : WheelWithInnerTriangleFace) ∈ wheelWithInnerTriangleEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryDartSuccessorCycle

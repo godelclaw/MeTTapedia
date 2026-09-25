@@ -796,6 +796,7 @@ theorem rankedTensorChain4_zero_terminal_innovation_negative :
 noncomputable def rankedTensorChain4TerminalForce : Fin 4 → ℝ :=
   fun coordinate => if coordinate = 3 then 1 else 0
 
+set_option backward.isDefEq.respectTransparency false in
 theorem rankedTensorChain4_completeReverseForce_all_one :
     rankedDAGCompleteReverseForce rankedTensorChain4
       rankedTensorChain4TerminalForce = fun _coordinate => 1 := by

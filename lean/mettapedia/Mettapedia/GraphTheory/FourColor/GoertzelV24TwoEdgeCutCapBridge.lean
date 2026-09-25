@@ -102,6 +102,7 @@ theorem capRotationSystem_edgeOf_leftCapDart :
     data.capRotationSystem.edgeOf (leftCapDart data) = data.capEdge :=
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp]
 theorem capRotationSystem_edgeOf_rightCapDart :
     data.capRotationSystem.edgeOf (rightCapDart data) = data.capEdge := by

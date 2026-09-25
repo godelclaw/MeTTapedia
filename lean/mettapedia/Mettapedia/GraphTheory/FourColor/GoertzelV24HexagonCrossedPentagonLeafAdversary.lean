@@ -241,6 +241,7 @@ theorem card_extensionFiber_eq_card_candidates (word : HexagonTaitWord) :
 private def threeTaitColors : List TaitColor :=
   [⟨red, red_ne_zero⟩, ⟨blue, blue_ne_zero⟩, ⟨purple, purple_ne_zero⟩]
 
+set_option backward.isDefEq.respectTransparency false in
 private theorem mem_threeTaitColors (color : TaitColor) :
     color ∈ threeTaitColors := by
   rcases color with ⟨color, hcolor⟩

@@ -54,7 +54,7 @@ theorem abs_integral_angularGradient_source_le :
     ha hf hD hE).integrable_of_hasCompactSupport (μ := volume) (HasCompactSupport.of_compactSpace _)
   have hG := (continuous_weightedPalinstrophyDensity u hu).integrable_of_hasCompactSupport
     (μ := volume) (HasCompactSupport.of_compactSpace _)
-  have h₈ := (ha.norm.pow 8).integrable_of_hasCompactSupport
+  have h₈ := (ha.norm.fun_pow 8).integrable_of_hasCompactSupport
     (μ := volume) (HasCompactSupport.of_compactSpace _)
   rw [← he]
   apply abs_integral_le_integral_abs.trans
@@ -76,7 +76,7 @@ theorem abs_integral_correctedGradient_source_le (κ R : ℝ) (hκ : 0 < κ)
     ((ha.norm.pow 6).mul (ha.inner hf)).integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
   have hA : Integrable (fun x : T3 ↦ ⟪angularGradient u x, f x⟫) :=
     ((continuous_angularGradient P u hs).inner hf).integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)
-  have h₈ := (ha.norm.pow 8).integrable_of_hasCompactSupport
+  have h₈ := (ha.norm.fun_pow 8).integrable_of_hasCompactSupport
     (μ := volume) (HasCompactSupport.of_compactSpace _)
   have hbase : |∫ x : T3, ‖fullVorticity u x‖ ^ 6 * ⟪fullVorticity u x, f x⟫| ≤ M * meanEnergy u := by
     apply abs_integral_le_integral_abs.trans

@@ -79,6 +79,7 @@ theorem decodeSourceOutgoingProfileAt_eq
 
 noncomputable section
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Decoding the code extracted from an explicit joint witness recovers the
 complete outgoing profile.  Stating the core round trip at witness level
 avoids making it depend on the proof term selected from an existential

@@ -704,7 +704,7 @@ theorem mem_togglesOn_iff {v : V} {d₀ d : RS.D} :
     d ∈ RS.togglesOn v d₀ ↔
       d ∈ RS.faceOrbit d₀ ∧
         decide (RS.vertOf d = v) ≠ decide (RS.vertOf (RS.phi d) = v) := by
-  simp [togglesOn]
+  simp only [togglesOn, Finset.mem_filter]
 
 private theorem zmod2_add_self_local (x : ZMod 2) : x + x = 0 := by
   fin_cases x <;> rfl
@@ -787,6 +787,7 @@ theorem togglesOn_card_even (d₀ : RS.D) (v : V) :
             (fun d => RS.vertexIndicator v d + RS.vertexIndicator v (RS.phi d) = 1) =
           RS.togglesOn v d₀ := by
       ext d
+      simp only [Finset.mem_filter, mem_togglesOn_iff]
       by_cases h₁ : RS.vertOf d = v <;>
         by_cases h₂ : RS.vertOf (RS.rho (RS.alpha d)) = v <;>
         simp [togglesOn, vertexIndicator, RotationSystem.phi_apply, h₁, h₂]

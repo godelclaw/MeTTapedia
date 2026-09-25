@@ -282,6 +282,7 @@ theorem capSeamData_rho_vert (dart : data.CapDart) :
     data.capTargetVert (data.capDartEquiv dart)
   rw [data.capDartEquiv_capRho, data.capTargetRho_vert]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Rewired dart system obtained by seaming the first two exposed
 half-edges to each other and starring the remaining three into one new
 cubic vertex. -/

@@ -8,6 +8,7 @@ namespace GoertzelV24FourEdgeCutStateOverlap
 set_option maxRecDepth 100000
 set_option maxHeartbeats 4000000
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The four equality types permitted by parity on a nonzero four-edge
 boundary, with the cyclic order retained in the two adjacent-pair cases. -/
 inductive FourBoundaryClass

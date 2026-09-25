@@ -466,7 +466,7 @@ noncomputable def exp (F E : EtaleSpace X) : EtaleSpace X where
       have hSubOpenEmb : IsOpenEmbedding ((↑) : a.2.nbhd → X) := a.2.nbhd.isOpenEmbedding'
       have hComp :
           ((↑) : a.2.nbhd → X) ∘ (chartHomeomorph f).symm =
-            (chartRangeOfLocalMorphism f).restrict (expProj F E) := by
+            (chartRangeOfLocalMorphism f).domRestrict (expProj F E) := by
         funext p
         have hEq : chartToRange f ((chartHomeomorph f).symm p) = p := by
           change chartHomeomorph f ((chartHomeomorph f).symm p) = p
@@ -791,6 +791,7 @@ noncomputable def curry {F E G : EtaleSpace X}
       exact (hEqOnRange z).symm
     exact (hcontRange x hsx).continuousAt ((LocalSection.isOpen_range s).mem_nhds hsx)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem curry_proj {F E G : EtaleSpace X}
     (f : C((prod G F).Carrier, E.Carrier))
     (hf : E.proj ∘ f = (prod G F).proj) :
@@ -799,6 +800,7 @@ theorem curry_proj {F E G : EtaleSpace X}
   change expProj F E (curry f hf x) = G.proj x
   simp [curry, expProj]
 
+set_option backward.isDefEq.respectTransparency false in
 /--
 Uncurrying: a morphism G → E^F over X corresponds to a morphism G × F → E over X.
 -/
@@ -832,6 +834,7 @@ theorem uncurry_proj {F E G : EtaleSpace X}
       Function.Pullback.snd] using congrFun hg p.fst
   exact hEval.trans hBase
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Curry and uncurry are inverse operations. -/
 theorem curry_uncurry {F E G : EtaleSpace X}
     (g : C(G.Carrier, (exp F E).Carrier))
@@ -950,6 +953,7 @@ theorem curry_uncurry {F E G : EtaleSpace X}
           ⟨a.1, a.2.mem_nbhd⟩).2 hsame
     exact hcurry.trans <| by simpa [ha, exp, sectionMapOfLocalMorphism] using hEq
 
+set_option backward.isDefEq.respectTransparency false in
 theorem uncurry_curry {F E G : EtaleSpace X}
     (f : C((prod G F).Carrier, E.Carrier))
     (hf : E.proj ∘ f = (prod G F).proj)
@@ -1035,6 +1039,7 @@ noncomputable def expSectionOfLocalMorphism (E F : EtaleSpace X) (U : Opens X)
     funext x
     exact expProj_sectionMapOfLocalMorphism f x
 
+set_option backward.isDefEq.respectTransparency false in
 /--
 A section of the exponential gives a local morphism.
 -/
@@ -1063,6 +1068,7 @@ noncomputable def localMorphismOfExpSection (E F : EtaleSpace X) (U : Opens X)
     simpa [q, Function.comp_apply, prodSnd, Function.Pullback.fst, Function.Pullback.snd] using
       evalMorphism_proj F E q
 
+set_option backward.isDefEq.respectTransparency false in
 theorem expSectionOfLocalMorphism_localMorphismOfExpSection
     (E F : EtaleSpace X) (U : Opens X) (s : (exp F E).SectionOn U) :
     expSectionOfLocalMorphism E F U (localMorphismOfExpSection E F U s) = s :=
@@ -1148,6 +1154,7 @@ theorem expSectionOfLocalMorphism_localMorphismOfExpSection
           a.2.morphism x ⟨a.1, a.2.mem_nbhd⟩).2 hsame
     simpa [ha, sectionMapOfLocalMorphism] using hEq
 
+set_option backward.isDefEq.respectTransparency false in
 theorem localMorphismOfExpSection_expSectionOfLocalMorphism
     (E F : EtaleSpace X) (U : Opens X) (f : LocalMorphism F E U) :
     localMorphismOfExpSection E F U (expSectionOfLocalMorphism E F U f) = f :=

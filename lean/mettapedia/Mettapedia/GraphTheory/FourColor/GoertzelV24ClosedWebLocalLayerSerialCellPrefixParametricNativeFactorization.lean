@@ -142,6 +142,7 @@ noncomputable def sourceLocalLayerSerialSplicedCellFiniteSupportLetterForColorAt
     faceRole := sourceLocalLayerSerialOutputFaceRoleCodeAt corridor hunique offset
   }
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every literal compatible prefix/Cell splice satisfies all five coordinates
 of its prefix-parametric finite support letter. -/
 theorem sourceLocalLayerSerialSplicedCellFiniteSupportLetterForColorAt_supports

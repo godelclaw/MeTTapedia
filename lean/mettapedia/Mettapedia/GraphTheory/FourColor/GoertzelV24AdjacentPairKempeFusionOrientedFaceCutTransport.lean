@@ -192,6 +192,7 @@ same physical ambient dart. -/
     routeOrderedFusionArmDart_fusionArmReindexing]
   simp [bIndexedFusionArmDart, bOrderedFusionFaceSymbol]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The conjugated finite crossing sends the nonselected entry state to
 the selected exit state. -/
 @[simp] theorem routeOrderedFusionFaceCrossing_entryOtherState
@@ -217,6 +218,7 @@ the selected exit state. -/
   rw [indexedFusionFaceCrossing_apply]
   simp
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The other directed crossing sends the nonselected exit state to the
 selected entry state. -/
 @[simp] theorem routeOrderedFusionFaceCrossing_exitOtherState

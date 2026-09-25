@@ -190,6 +190,7 @@ theorem mem_pointwiseSelectedSourceLocalLayerSerialFaceOldOutputComponentEdgesAt
   classical
   simp [pointwiseSelectedSourceLocalLayerSerialFaceOldOutputComponentEdgesAt]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The canonical predecessor union is exactly the old-region part of the
 complete outgoing component.  Thus the finite selector misses neither an
 old component nor an isolated old occurrence. -/

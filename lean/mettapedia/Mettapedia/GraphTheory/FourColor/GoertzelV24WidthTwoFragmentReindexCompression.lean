@@ -90,6 +90,7 @@ theorem card_boundedWidthTwoFragmentReindexProfile
   simp_rw [Fintype.card_prod, card_widthTwoStrandCode]
   rfl
 
+set_option maxRecDepth 100000 in
 theorem boundedWidthTwoFragmentReindexProfileCount_three :
     boundedWidthTwoFragmentReindexProfileCount 3 = 37944 := by
   norm_num [boundedWidthTwoFragmentReindexProfileCount, Fin.sum_univ_succ,
@@ -98,6 +99,7 @@ theorem boundedWidthTwoFragmentReindexProfileCount_three :
     card_widthTwoUnlabelledFragmentPayload_two,
     card_widthTwoUnlabelledFragmentPayload_three]
 
+set_option maxRecDepth 100000 in
 /-- The exact quotient carrier through the four-fragment bound used by the
 literal serial-prefix word. -/
 theorem boundedWidthTwoFragmentReindexProfileCount_four :

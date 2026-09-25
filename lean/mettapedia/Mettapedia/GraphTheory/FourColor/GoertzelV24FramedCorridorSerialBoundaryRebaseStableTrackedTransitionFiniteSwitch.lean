@@ -169,6 +169,7 @@ transition interpretation. -/
         hrotation htwoSided hunique offset hnext role := by
   simp [sourceCorridorSerialBoundaryRebaseTrackedTransitionEdgeAtSlot]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every actual edge in the current exact switch occurs in the twelve-edge
 transition carrier. -/
 theorem sourceCorridorSerialBoundaryRebaseFiniteSwitchAt_subset_stableTransitionFiniteSwitch
@@ -315,6 +316,7 @@ the stable transition carrier. -/
     rw [sourceCorridorSerialBoundaryRebaseTrackedTransitionEdgeAtSlot?_successorFresh]
     rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every actual edge in the successor exact switch occurs in the same
 twelve-edge transition carrier. -/
 theorem sourceCorridorSerialBoundaryRebaseSuccessorFiniteSwitchAt_subset_stableTransitionFiniteSwitch

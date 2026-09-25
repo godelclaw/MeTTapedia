@@ -73,6 +73,7 @@ abbrev lastStep (triangle : AdjacentDualTriangle successor) :
     Fin triangle.walk.length :=
   ⟨2, by rw [triangle.walk_length]; decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The obstruction triangle equipped with one actual shared primal edge at
 each of its three dual steps.  Its first crossing is definitionally the
 selected outgoing rung between the two consecutive corridor centres; only the

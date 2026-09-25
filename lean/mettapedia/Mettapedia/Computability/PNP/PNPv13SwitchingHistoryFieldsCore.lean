@@ -76,6 +76,7 @@ theorem v13SuccessHistoryField_determinesSuccess {Ω : Type u}
   rw [decide_eq_true hsucc] at hbool
   exact of_decide_eq_true hbool.symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- In the success-revealing field, the `true` cell is exactly the next success
 event. -/
 theorem v13SuccessHistoryField_prefix_true_count
@@ -94,6 +95,7 @@ theorem v13SuccessHistoryField_prefix_true_count
       intro ω
       simp [v13SuccessHistoryField])
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Once the fixed field has already selected the next-success cell, intersecting
 that cell with the next success event does not reduce it. -/
 theorem v13SuccessHistoryField_success_true_count_eq_prefix_true_count

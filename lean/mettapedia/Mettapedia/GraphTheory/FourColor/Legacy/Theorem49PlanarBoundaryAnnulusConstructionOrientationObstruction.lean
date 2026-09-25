@@ -66,10 +66,15 @@ def f2 : CounterFace := ⟨2, by decide⟩
 def f3 : CounterFace := ⟨3, by decide⟩
 def f4 : CounterFace := ⟨4, by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def fo : AmbientFace counterEmbedding.faces := ⟨f0, by decide⟩
+set_option backward.isDefEq.respectTransparency false in
 def fg : AmbientFace counterEmbedding.faces := ⟨f1, by decide⟩
+set_option backward.isDefEq.respectTransparency false in
 def fh : AmbientFace counterEmbedding.faces := ⟨f2, by decide⟩
+set_option backward.isDefEq.respectTransparency false in
 def fd : AmbientFace counterEmbedding.faces := ⟨f3, by decide⟩
+set_option backward.isDefEq.respectTransparency false in
 def fi : AmbientFace counterEmbedding.faces := ⟨f4, by decide⟩
 
 /-- The construction-side annulus object. The peeled faces form two strata:

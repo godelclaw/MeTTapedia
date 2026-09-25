@@ -667,6 +667,7 @@ theorem rotationDeletedFace_three
       (graphData.toRotationSystem.alpha data.rotationCentralDart)
   exact hcube
 
+set_option backward.isDefEq.respectTransparency false in
 theorem rotationDeletedFace_oppositeCentral
     (graphData : Data G) (data : AdjacentPairData G)
     (hcubic : graphData.toRotationSystem.IsCubic)

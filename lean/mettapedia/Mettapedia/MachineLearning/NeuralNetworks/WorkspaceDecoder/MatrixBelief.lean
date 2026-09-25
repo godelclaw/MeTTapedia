@@ -263,6 +263,7 @@ theorem fusedInformation_covariance_eq_matrixRiccatiStep
 
 /-! ## Positive and negative fixtures -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Natural parameters and precisions add componentwise on a concrete
 one-dimensional information packet. -/
 theorem gaussianInformation_add_positiveExample :

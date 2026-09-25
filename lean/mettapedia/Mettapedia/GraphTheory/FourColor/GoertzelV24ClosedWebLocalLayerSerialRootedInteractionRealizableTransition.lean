@@ -1130,6 +1130,7 @@ theorem sourceLocalLayerSerialRootedInteractionRealizedStepAt_trackedRebase_eq
             rightPrefix.1 cellColor)
   exact hrebase
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Once the color-sensitive rebase agrees, the complete tracked rolling
 factor agrees: every remaining field is fixed by the two consecutive corridor
 positions. -/

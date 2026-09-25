@@ -157,6 +157,7 @@ def unwrapQueryAnswer : Pattern → Pattern
     unwrapQueryAnswer (queryAnswerPattern answer) = answer :=
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The generic premise-aware interpreter over Zero's five-field root,
 restricted to PeTTa query requests. -/
 noncomputable def authoredQueryRealization
@@ -253,6 +254,7 @@ theorem rule_atom_mem_queryAll
   rw [queryAll_eq_storedAtoms]
   exact PeTTaSpace.mem_storedAtoms_of_premiseFreeRule ruleMember premiseFree
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The result of every premise-free PeTTa rule application occurs in the
 query-derived equation results.  This is the load-bearing fact: evaluation
 does not consult a hidden rule table. -/

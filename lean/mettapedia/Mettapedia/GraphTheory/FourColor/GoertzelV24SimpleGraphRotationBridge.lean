@@ -47,7 +47,7 @@ theorem mem_simpleGraphRotationSystem_endpoints_iff
       exact edge.property
     let dart : G.Dart := ⟨(vertex, other), hadj⟩
     refine ⟨dart, ?_, rfl⟩
-    rw [data.toRotationSystem.mem_dartsOn]
+    apply (data.toRotationSystem.mem_dartsOn).2
     apply Subtype.ext
     change s(vertex, other) = (edge : Sym2 V)
     exact Sym2.other_spec' hvertex

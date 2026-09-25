@@ -70,12 +70,15 @@ def descendedColoring (data : RewiredDartSystem V D)
       intro hdarts
       apply hedgeNe
       rw [← hleftEdge, ← hrightEdge, hdarts]
-    rw [← hleftEdge, ← hrightEdge,
-      data.descendedEdgeColor_edgeOf dartColor hAlpha,
-      data.descendedEdgeColor_edgeOf dartColor hAlpha]
-    apply hProper
-    · exact hleftDartVertex.trans hrightDartVertex.symm
-    · exact hdartNe
+    have hleftColor : data.descendedEdgeColor dartColor leftEdge = dartColor leftDart := by
+      exact (congrArg (data.descendedEdgeColor dartColor) hleftEdge.symm).trans
+        (data.descendedEdgeColor_edgeOf dartColor hAlpha leftDart)
+    have hrightColor : data.descendedEdgeColor dartColor rightEdge = dartColor rightDart := by
+      exact (congrArg (data.descendedEdgeColor dartColor) hrightEdge.symm).trans
+        (data.descendedEdgeColor_edgeOf dartColor hAlpha rightDart)
+    intro hcolor
+    exact hProper (hleftDartVertex.trans hrightDartVertex.symm) hdartNe
+      (hleftColor.symm.trans (hcolor.trans hrightColor))
 
 /-- Nonzero dart colors descend to a Tait edge coloring. -/
 theorem descendedColoring_isTait

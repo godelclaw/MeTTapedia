@@ -182,6 +182,7 @@ noncomputable def supportArc :
   (route.rootedAtLaunch.cycle.take firstTurn.turnPosition).copy rfl
     firstTurn.finishJunction_eq_getVert_and_ne_launch.1.symm
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp]
 theorem supportArc_length :
     firstTurn.supportArc.length = firstTurn.turnPosition := by
@@ -194,6 +195,7 @@ theorem supportArc_positive : 0 < firstTurn.supportArc.length := by
   unfold turnPosition
   omega
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The edge word of the typed support arc is exactly the normalized
 straight prefix selected at the first change. -/
 theorem supportArc_edgeSubtypeSupport :
@@ -216,6 +218,7 @@ theorem supportArc_edgeSubtypeSupport :
   rw [List.take_succ_cons]
   rw [List.take_zero]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The initial arc of the rooted simple support cycle is a simple path. -/
 theorem supportArc_isPath : firstTurn.supportArc.IsPath := by
   rw [supportArc, SimpleGraph.Walk.isPath_copy]
@@ -421,6 +424,7 @@ structure ExactPrimalArc
   lastEdge_eq_targetFirst :
     path.edgeSubtypeSupport.getLast? = some target.1.first
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every exact next-state proof contains a positive straight primal arc. -/
 theorem IsExactNext.nonempty_exactPrimalArc
     {source target : collar.ScalarCompanionTurnState sourceEscape}

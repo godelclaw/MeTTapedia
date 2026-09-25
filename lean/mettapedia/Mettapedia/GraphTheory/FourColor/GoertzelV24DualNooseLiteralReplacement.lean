@@ -148,6 +148,7 @@ theorem exactBoundary_connectedSides
       (pairwiseUniqueSharedInteriorEdges graphData minimal)
       noose.walk noose.isCycle noose.component)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The middle width of the noose shore is bounded by the literal length of
 the facial-dual cycle. -/
 theorem middle_card_le_walk_length

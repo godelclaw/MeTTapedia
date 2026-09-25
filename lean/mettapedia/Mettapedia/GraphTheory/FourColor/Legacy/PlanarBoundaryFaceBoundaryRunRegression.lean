@@ -35,6 +35,7 @@ theorem edgeVertex_eq_be01_or_be23 (x : PlanarBoundaryEdgeVertex badEmbedding) :
   · right
     exact Subtype.ext h
 
+set_option backward.isDefEq.respectTransparency false in
 theorem supportGraph_eq_bot :
     planarBoundarySupportEndpointAdjGraph badEmbedding = ⊥ := by
   ext x y
@@ -253,7 +254,7 @@ private theorem path_sym2_edges_length_le_three {l : List (Sym2 (Fin 4))} (hnodu
 
 theorem path_no_triangle {a b c : Fin 4} :
     ¬ (pathGraph.Adj a b ∧ pathGraph.Adj b c ∧ pathGraph.Adj c a) := by
-  fin_cases a <;> fin_cases b <;> fin_cases c <;> simp [pathGraph]
+  fin_cases a <;> fin_cases b <;> fin_cases c <;> simp [OrderedPlanarEmbeddingWithBoundaryRegression.pathGraph]
 
 theorem path_edges_length_le_three {v w : Fin 4} (p : pathGraph.Walk v w) (htrail : p.IsTrail) :
     p.length ≤ 3 := by
@@ -261,7 +262,7 @@ theorem path_edges_length_le_three {v w : Fin 4} (p : pathGraph.Walk v w) (htrai
     intro e he
     have hedge : e ∈ pathGraph.edgeSet := p.edges_subset_edgeSet he
     have h : (e = s(0, 1) ∨ e = s(1, 2) ∨ e = s(2, 3)) ∧ ¬ e.IsDiag := by
-      simpa [pathGraph] using hedge
+      simpa [OrderedPlanarEmbeddingWithBoundaryRegression.pathGraph] using hedge
     exact h.1
   have hle_edges : p.edges.length ≤ 3 := path_sym2_edges_length_le_three htrail.edges_nodup hsub
   simpa [SimpleGraph.Walk.length_edges] using hle_edges
@@ -698,12 +699,15 @@ def doubleStarEmbedding : PlaneEmbeddingWithBoundary doubleStarGraph where
 def doubleLeftFaceIdx : DoubleStarFace := ⟨0, by decide⟩
 def doubleRightFaceIdx : DoubleStarFace := ⟨1, by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def doubleLeftFace : AmbientFace doubleStarEmbedding.faces :=
   ⟨doubleLeftFaceIdx, by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def doubleRightFace : AmbientFace doubleStarEmbedding.faces :=
   ⟨doubleRightFaceIdx, by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem doubleStarFace_eq_cases (f : AmbientFace doubleStarEmbedding.faces) :
     f = doubleLeftFace ∨ f = doubleRightFace := by
   rcases f with ⟨f, hf⟩

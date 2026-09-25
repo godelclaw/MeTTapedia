@@ -101,10 +101,10 @@ theorem wcStar_of_both_sides
   rcases hcover x with ⟨a, rfl⟩ | ⟨a, rfl⟩
   · obtain ⟨b, hb, hpath⟩ := hleft a
     exact ⟨includeLeft b, hb,
-      Relation.ReflTransGen.lift includeLeft (fun {u v} h => hleftStep u v h) hpath⟩
+      Relation.ReflTransGen.lift includeLeft (fun u v h => hleftStep u v h) a b hpath⟩
   · obtain ⟨b, hb, hpath⟩ := hright a
     exact ⟨includeRight b, hb,
-      Relation.ReflTransGen.lift includeRight (fun {u v} h => hrightStep u v h) hpath⟩
+      Relation.ReflTransGen.lift includeRight (fun u v h => hrightStep u v h) a b hpath⟩
 
 end TwoSides
 

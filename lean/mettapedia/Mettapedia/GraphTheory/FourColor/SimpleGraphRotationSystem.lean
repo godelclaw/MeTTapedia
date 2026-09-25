@@ -284,7 +284,8 @@ theorem toRotationSystem_rho (d : G.Dart) :
 @[simp]
 theorem toRotationSystem_phi (d : G.Dart) :
     data.toRotationSystem.phi d = data.faceSuccessor d := by
-  simp [RotationSystem.phi]
+  change data.faceSuccessor d.symm.symm = data.faceSuccessor d
+  simp
 
 end FaceSuccessorData
 

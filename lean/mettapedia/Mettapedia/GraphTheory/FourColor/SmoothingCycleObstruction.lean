@@ -522,7 +522,7 @@ theorem no_coloring_joins (c : Coloring) (hp : Proper ends c) : ¬ Joined c := b
   apply samples_not_joined i
   refine ⟨σ.symm t, ?_⟩
   rw [← hi]
-  apply Relation.ReflTransGen.mono (r := TwoColorAdj c t) _ h
+  apply Relation.ReflTransGen.mono (r := TwoColorAdj c t) _ 8 9 h
   intro e f hs
   exact ⟨hs.1, fun he => hs.2.1 (σ.symm.injective he),
     fun hf => hs.2.2 (σ.symm.injective hf)⟩

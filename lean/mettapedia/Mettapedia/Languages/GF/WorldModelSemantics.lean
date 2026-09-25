@@ -464,6 +464,7 @@ private theorem langReduces_rootRule
   rw [premisesNil]
   exact .nil bindings
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Generic identity-wrapper reduction: a rewrite rule with pattern
 `apply name [fvar v]` ⇝ `fvar v` and no premises induces
 `langReduces gfLegacySemanticLanguageDef (.apply name [p]) p` for all p. -/
@@ -537,6 +538,7 @@ The active clause `PredVP(np₁, ComplSlash(SlashV2a(v), np₂))` — "np₁ ver
 reduces to the passive clause `PredVP(np₂, PassV2(v))` — "np₂ is verbed".
 This captures the semantic entailment: active → agentless passive. -/
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Active → passive reduction at the clause level.
     PredVP(np₁, ComplSlash(SlashV2a(v), np₂)) ⇝ PredVP(np₂, PassV2(v)) -/
 theorem langReduces_activePassive (np₁ np₂ v : Pattern) :
@@ -728,6 +730,7 @@ Present ↛ past: a present-tense clause does NOT reduce to a past-tense clause
 (no rewrite rule in that direction), so ◇(past-φ)(present-cl) is not guaranteed.
 -/
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Past tense reduction: UseCl(TTAnt(TPast, ASimul), PPos, cl) ⇝ ⊛temporal(cl, -1). -/
 theorem langReduces_pastTense (cl : Pattern) :
     langReduces gfLegacySemanticLanguageDef
@@ -750,6 +753,7 @@ theorem langReduces_pastTense (cl : Pattern) :
       applyBindings, List.find?, BEq.beq, List.map,
       gfLegacySemanticLanguageDef]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Present tense reduction: UseCl(TTAnt(TPres, ASimul), PPos, cl) ⇝ ⊛temporal(cl, 0). -/
 theorem langReduces_presentTense (cl : Pattern) :
     langReduces gfLegacySemanticLanguageDef
@@ -772,6 +776,7 @@ theorem langReduces_presentTense (cl : Pattern) :
       applyBindings, List.find?, BEq.beq, List.map,
       gfLegacySemanticLanguageDef]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Future tense reduction: UseCl(TTAnt(TFut, ASimul), PPos, cl) ⇝ ⊛temporal(cl, 1). -/
 theorem langReduces_futureTense (cl : Pattern) :
     langReduces gfLegacySemanticLanguageDef
@@ -825,6 +830,7 @@ private theorem matchPattern_apply_ne_nil {c1 c2 : String} {args1 args2 : List P
     matchPattern (.apply c1 args1) (.apply c2 args2) = [] := by
   simp [matchPattern, hne]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Every rewrite rule in the GF RGL language has a top-level LHS constructor
     that is a standard GF function name (not `"⊛temporal"`).
 

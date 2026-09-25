@@ -100,6 +100,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialPreRebaseTrackedGraph_eq_three_fa
     (pointwiseSelectedSourceLocalLayerCellRegionAt formation corridor
       hinterior offset) color first second
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every edge crossing the selected Cell side is one of the two incoming or
 two outgoing selected crossings. -/
 theorem pointwiseSelectedSourceLocalLayerCellCrossingAt_eq_left_or_right

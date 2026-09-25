@@ -82,13 +82,20 @@ def f3 : CounterFace := ⟨3, by decide⟩
 def f4 : CounterFace := ⟨4, by decide⟩
 def f5 : CounterFace := ⟨5, by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def fa : AmbientFace counterEmbedding.faces := ⟨f0, by decide⟩
+set_option backward.isDefEq.respectTransparency false in
 def fbPrev : AmbientFace counterEmbedding.faces := ⟨f1, by decide⟩
+set_option backward.isDefEq.respectTransparency false in
 def fbBad : AmbientFace counterEmbedding.faces := ⟨f2, by decide⟩
+set_option backward.isDefEq.respectTransparency false in
 def fcq : AmbientFace counterEmbedding.faces := ⟨f3, by decide⟩
+set_option backward.isDefEq.respectTransparency false in
 def fcr1 : AmbientFace counterEmbedding.faces := ⟨f4, by decide⟩
+set_option backward.isDefEq.respectTransparency false in
 def fcr2 : AmbientFace counterEmbedding.faces := ⟨f5, by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem ambientFace_eq_cases (f : AmbientFace counterEmbedding.faces) :
     f = fa ∨ f = fbPrev ∨ f = fbBad ∨ f = fcq ∨ f = fcr1 ∨ f = fcr2 := by
   rcases f with ⟨f, hf⟩
@@ -364,12 +371,15 @@ def cwf0 : CanonicalWitnessCounterFace := ⟨0, by decide⟩
 def cwf1 : CanonicalWitnessCounterFace := ⟨1, by decide⟩
 def cwf2 : CanonicalWitnessCounterFace := ⟨2, by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def cwOuterFace : AmbientFace canonicalWitnessCounterEmbedding.faces :=
   ⟨cwf0, by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def cwMiddleFace : AmbientFace canonicalWitnessCounterEmbedding.faces :=
   ⟨cwf1, by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def cwInnerFace : AmbientFace canonicalWitnessCounterEmbedding.faces :=
   ⟨cwf2, by decide⟩
 

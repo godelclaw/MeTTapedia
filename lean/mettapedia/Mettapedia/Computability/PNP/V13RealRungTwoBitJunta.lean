@@ -194,6 +194,7 @@ noncomputable instance {m j : Nat}
   unfold V13RealLinearBitJuntaFixedIncorrect
   infer_instance
 
+set_option backward.isDefEq.respectTransparency false in
 noncomputable def v13RealLinearBitJuntaFixedWorldCorrectIncorrectEquiv
     {m j : Nat} (observer : V13RealLinearBitJuntaObserver m j)
     (A : V13F2LinearEquiv m) (i₀ : Fin m) :
@@ -915,6 +916,7 @@ theorem
     v13RealLinearRowsTargetCoefficient_twoSupport_exists_pair_sum_target
       A.val.val i₀ targetCoeff (by simpa [support] using hsupportEq)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem
     v13RealLinearRowFunctionalTargetCosetHit_of_pair_sum_target
     {m : Nat} (A : V13F2LinearEquiv m) (i₀ row₀ row₁ : Fin m)
@@ -1824,6 +1826,7 @@ noncomputable def v13RealLinearFreshFullSupport {m : Nat}
   insert ⟨row, Finset.mem_insert_self row rows⟩
     (support.map (v13RealLinearInsertRowsEmbedding rows row))
 
+set_option backward.isDefEq.respectTransparency false in
 theorem v13RealLinearFreshFullSupport_card
     {m : Nat} {rows : Finset (Fin m)} {row : Fin m}
     (hrow : row ∉ rows) (support : Finset {r : Fin m // r ∈ rows}) :
@@ -1843,6 +1846,7 @@ theorem v13RealLinearFreshFullSupport_card
     exact hrow (by simpa [hval] using oldRow.2)
   simp [v13RealLinearFreshFullSupport, newRow, emb, hnewNot]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem v13RealLinearFreshFullSupport_sum
     {m : Nat} {rows : Finset (Fin m)} {row : Fin m}
     (A : V13F2LinearEquiv m) (hrow : row ∉ rows)
@@ -1866,6 +1870,7 @@ theorem v13RealLinearFreshFullSupport_sum
   rw [v13RealLinearFreshFullSupport, Finset.sum_insert hnewNot]
   simp [newRow, emb, v13RealLinearInsertRowsEmbedding]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem
     v13RealLinearNoTargetRows_freshRowFunctionalTargetCosetHit_exists_support_sum
     {m : Nat} {i₀ : Fin m} {rows : Finset (Fin m)} {row : Fin m}
@@ -2106,7 +2111,7 @@ theorem
                 (v13RealLinearFreshFullSupport rows row support.val)) =
           sigmaFinset.card := by
       have hsigUniv : sigmaFinset = Finset.univ := by
-        dsimp [sigmaFinset]
+        dsimp only [sigmaFinset]
         exact Finset.univ_sigma_univ
       rw [← Finset.card_univ, ← hsigUniv]
     have hsigma :
@@ -2298,7 +2303,7 @@ theorem
                 i₀ support.val) =
           sigmaFinset.card := by
       have hsigUniv : sigmaFinset = Finset.univ := by
-        dsimp [sigmaFinset]
+        dsimp only [sigmaFinset]
         exact Finset.univ_sigma_univ
       rw [← Finset.card_univ, ← hsigUniv]
     have hsigma :
@@ -6170,6 +6175,7 @@ noncomputable def
               (v13RealLinearSequentialPrefixTranscriptVectorRowView
                 pref row).1 w))
 
+set_option backward.isDefEq.respectTransparency false in
 noncomputable def
     v13RealLinearNoTargetSequentialPrefixPinnedSupportShearMap
     {m q : Nat} (i₀ : Fin m)
@@ -7098,6 +7104,7 @@ theorem
   ⟨v13RealLinearNoTargetSequentialPrefixWorldSetToOrderedPrefixHitOfNextRowMemOfPrefixRowsGenerateTarget
     i₀ observer t pref omega hmem hgen⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem
     v13RealLinearNoTargetSequentialPrefixWorldSet_rowsGenerateTarget_of_same_prefix
     {m q : Nat} (i₀ : Fin m)
@@ -10315,6 +10322,7 @@ noncomputable def
         _ = omega₁.val.2 row := by
               rw [f2_add_right_self]
 
+set_option backward.isDefEq.respectTransparency false in
 noncomputable def
     v13RealLinearNoTargetBitJuntaCorrectToUnblockedOrBlocked
     {m j : Nat} (i₀ : Fin m)
@@ -10351,6 +10359,7 @@ noncomputable def
                 omega.val)
             hmap)
 
+set_option backward.isDefEq.respectTransparency false in
 noncomputable def
     v13RealLinearNoTargetBitJuntaWorldCorrectIncorrectEquiv
     {m j : Nat} (i₀ : Fin m)

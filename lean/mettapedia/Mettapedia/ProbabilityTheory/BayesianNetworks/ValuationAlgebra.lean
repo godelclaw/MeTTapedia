@@ -544,6 +544,7 @@ noncomputable def bundleRespectsAll (fs : List (Valuation V β K))
       ⟨φ, h φ (by simp)⟩ :: bundleRespectsAll fs hfs
 
 omit [DecidableEq V] in
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem bundleRespectsAll_map_coe
     (fs : List (Valuation V β K))
     (h : RespectsAll (V := V) (β := β) (K := K) fs) :

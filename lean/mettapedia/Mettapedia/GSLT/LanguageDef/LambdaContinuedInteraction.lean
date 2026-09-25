@@ -109,6 +109,7 @@ def lambdaCoreContact :
   representation := .binary
   representsCore := by rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Beta reduction factored into an introduced abstraction and a direct
 argument, with substitution as its authored residual. -/
 def lambdaInteractionCut : InteractionCutPresentation lambdaIGSLT where
@@ -261,6 +262,7 @@ theorem lambdaBareCollectionConstructorsWrapped :
   · subst rule
     simp [lambdaCalc, UsesBareCollection] at bare
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp]
 theorem lambda_costBaseApplication_params :
     (costBaseConstructor lambdaInteractionCut lambdaCalc.terms[0]).params =
@@ -273,6 +275,7 @@ theorem lambda_costBaseApplication_params :
     lambdaAbstractionConstructor, mapParameterType, costBaseTypeExpr,
     costWrappedTypeExpr, TypeDecl.plain]
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp]
 theorem lambda_costBaseAbstraction_params :
     (costBaseConstructor lambdaInteractionCut lambdaCalc.terms[1]).params =

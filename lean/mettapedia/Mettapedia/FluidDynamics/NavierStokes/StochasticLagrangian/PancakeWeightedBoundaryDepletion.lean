@@ -107,7 +107,7 @@ theorem integral_gapBoundary_energy_le_width_defect {ι : Type*} [Fintype ι]
   have hC0 : 0 ≤ C := (Finset.sum_nonneg (fun i _ ↦
     (show 0 ≤ quadraticWeight (c i) (0 : T3) from Complex.normSq_nonneg _))).trans (hC 0)
   have hz (i : ι) : Continuous (fun x : T3 ↦ spectralResidual (S i).1 (topEigenvalue (S i)) (W x)) :=
-    (hw.const_smul _).sub ((S i).1.continuous.comp hw)
+    (hw.fun_const_smul _).fun_sub ((S i).1.continuous.comp hw)
   have hd (i : ι) : Continuous (fun x : T3 ↦ topSpectralDefect (S i) (W x)) :=
     ((hw.norm.pow 2).const_mul _).sub (hw.inner ((S i).1.continuous.comp hw))
   apply (integral_gapBoundary_energy_depleted c S modes w C hs hC).trans
@@ -120,7 +120,7 @@ theorem integral_gapBoundary_energy_le_width_defect {ι : Type*} [Fintype ι]
   intro x
   apply Finset.sum_le_sum
   intro i _
-  simpa only [Pi.mul_apply, mul_assoc] using mul_le_mul_of_nonneg_left
+  simpa only [Pi.mul_apply, Pi.pow_apply, mul_assoc] using mul_le_mul_of_nonneg_left
     (norm_topSpectralResidual_sq_le_width_defect (S i) (W x))
     (show 0 ≤ quadraticWeight (c i) x from Complex.normSq_nonneg _)
 

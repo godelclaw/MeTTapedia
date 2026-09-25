@@ -151,6 +151,7 @@ theorem cyclicBoundaryOrder_permCongr_finRotate
       (finRotate 4)) = positions.permCongr (oppositeBoundaryCycle 2)
   rw [permCongr_trans_equiv, hfinite]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The adjacent-pair deletion has a common cyclic boundary coordinate on
 both sides of its planar bond. -/
 def cyclicFourBoundaryDataOfOrder
@@ -193,6 +194,7 @@ def cyclicFourBoundaryDataOfOrder
     rw [hinverse, horder,
       data.cyclicBoundaryOrder_permCongr_finRotate graphData]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Two retained trails joining the opposite port pairs of a cyclically
 ordered adjacent-pair deletion cannot be edge-disjoint. -/
 theorem no_edge_disjoint_opposite_retained_trails_of_order

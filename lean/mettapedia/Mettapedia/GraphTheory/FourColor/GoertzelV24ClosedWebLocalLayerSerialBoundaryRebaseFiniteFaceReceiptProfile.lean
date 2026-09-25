@@ -120,6 +120,7 @@ theorem sourceLocalLayerBoundaryRebaseSuccessorCutDataAt_regionalFragmentEdges
       corridor hunique (sourceLocalLayerNextOffset offset hnext))]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The receipt and the literal successor profile have the same ambient-face
 continuation rows. -/
 theorem sourceLocalLayerBoundaryRebaseFiniteFaceReceiptAt_faceContinues_profile

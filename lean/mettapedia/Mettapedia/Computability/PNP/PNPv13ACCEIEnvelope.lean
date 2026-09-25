@@ -180,6 +180,7 @@ theorem oneGoodOneBadACCEIEnvelope_goodCount (threshold : ℕ) :
       (Finset.univ.filter fun b : Bool =>
         oneGoodOneBadACCEIEnvelope threshold b ≤ threshold) = {false} := by
     ext b
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and]
     cases b <;> simp [oneGoodOneBadACCEIEnvelope]
   rw [hfilter]
   simp
@@ -193,6 +194,7 @@ theorem oneGoodOneBadACCEIEnvelope_badCount (threshold : ℕ) :
       (Finset.univ.filter fun b : Bool =>
         threshold < oneGoodOneBadACCEIEnvelope threshold b) = {true} := by
     ext b
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and]
     cases b <;> simp [oneGoodOneBadACCEIEnvelope]
   rw [hfilter]
   simp

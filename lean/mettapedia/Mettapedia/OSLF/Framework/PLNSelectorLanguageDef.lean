@@ -166,6 +166,7 @@ end
 abbrev plnSelectorLangReduces (p q : Pattern) : Prop :=
   langReducesUsing RelationEnv.empty plnSelectorLanguageDef p q
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem plnSelector_lang_extBayes2 (pp qq ll : Pattern) :
     plnSelectorLangReduces
       (pUpdate (pFuse pp qq) ll)
@@ -180,6 +181,7 @@ theorem plnSelector_lang_extBayes2 (pp qq ll : Pattern) :
   · simp [applyBindingsForRule, bs0, ruleExtBayes2, pUpdate, pFuse,
       applyBindings]
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem plnSelector_lang_extBayesFamily (xsp ll : Pattern) :
     plnSelectorLangReduces
       (pUpdate (pFuseFamily xsp) ll)
@@ -194,6 +196,7 @@ theorem plnSelector_lang_extBayesFamily (xsp ll : Pattern) :
   · simp [applyBindingsForRule, bs0, ruleExtBayesFamily, pFuseFamily,
       pFMapUpdate, applyBindings]
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem plnSelector_lang_normalize (ep : Pattern) :
     plnSelectorLangReduces (pNormalizeNZ ep) ep := by
   unfold plnSelectorLangReduces langReducesUsing

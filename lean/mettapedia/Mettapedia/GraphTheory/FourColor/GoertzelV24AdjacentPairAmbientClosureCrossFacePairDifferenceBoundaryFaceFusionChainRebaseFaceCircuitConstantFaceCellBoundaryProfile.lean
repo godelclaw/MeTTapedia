@@ -281,6 +281,7 @@ theorem faceEdge_isRetained
     have hedge' : edge = boundaryEdge data 3 := Subtype.ext hedge
     exact cell.forward.boundary_not_mem_face 3 (hedge' ▸ hface)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A vertex reached while traversing the selected cell face cannot be one
 of the two endpoints of the restored central edge. -/
 theorem faceDart_snd_not_mem_centralEdgeValue
@@ -314,6 +315,7 @@ theorem faceDart_snd_not_mem_centralEdgeValue
   · exact hsndRetained.1 hfirst
   · exact hsndRetained.2 hsecond
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Along the oriented selected-face boundary, a change from the prefix
 closure to the suffix closure can occur only at an endpoint of the source
 cross. -/
@@ -351,6 +353,7 @@ theorem sourcePrefix_then_suffix_vertex_mem_sourceCross
   · exact False.elim
       (cell.faceDart_snd_not_mem_centralEdgeValue dart hface hcentral)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The opposite directed ownership change has the same unique location:
 an endpoint of the source cross. -/
 theorem sourceSuffix_then_prefix_vertex_mem_sourceCross

@@ -52,8 +52,8 @@ theorem angularIntegral_le_of_projectiveLipschitz (C : ℝ) (hC : 0 ≤ C)
     angularIntegral N u ≤ 2 * K ^ 2 * C * LocalVorticityEighthMoment.meanEnergy u *
       InfiniteConvectionEnergy.kineticEnergy (fourierCurl u) := by
   have hw := (continuous_fullVorticity u hu).norm
-  have h₂ := hw.pow 2
-  have h₈ := hw.pow 8
+  have h₂ := hw.fun_pow 2
+  have h₈ := hw.fun_pow 8
   have hi₁ : Integrable (fun p : T3 × T3 ↦ ‖fullVorticity u p.2‖ ^ 8 *
       ‖fullVorticity u (p.2 - p.1)‖ ^ 2) ((volume : Measure T3).prod volume) :=
     ((h₈.comp continuous_snd).mul (h₂.comp (continuous_snd.sub continuous_fst))).integrable_of_hasCompactSupport

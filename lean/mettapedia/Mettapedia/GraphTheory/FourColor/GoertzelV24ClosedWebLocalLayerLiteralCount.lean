@@ -73,6 +73,7 @@ The bound eight is occurrence-sensitive and keeps the complete five fields. -/
 abbrev SourceLocalLayerCellBoundedProfile :=
   BoundedCorridorCutProfile 2 0 8
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The actual complementary Cell has at most eight boundary-local face
 fragments.  This uses its literal four-edge wall and no global cubicity. -/
 theorem sourceLocalLayerCell_faceFragmentCount_le_eight

@@ -44,6 +44,7 @@ namespace SourceTrail
 
 namespace AnnularEmbedding
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A contributing representative stores exactly the cap of the literal old
 factor fragment to which the finite equivalence sends it. -/
 theorem sourceCorridorSerialBoundaryRebaseRepresentative_oldComponentCap

@@ -402,6 +402,7 @@ noncomputable def restoringPositionAt
     Fin rebaseCircuit.arcLength :=
   (circuit.transferAt position).recovery.restoringPosition
 
+set_option backward.isDefEq.respectTransparency false in
 /-- On a shortest transfer circuit, the loss-position assignment into
 the rebase circuit is injective. -/
 theorem IsLengthMinimal.lossPositionAt_injective
@@ -427,6 +428,7 @@ theorem IsLengthMinimal.lossPositionAt_injective
   exact Fin.cast_injective circuit.lossPositions_length.symm
     (hinjective hget)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- On a shortest transfer circuit, the restoring-position assignment
 into the rebase circuit is injective. -/
 theorem IsLengthMinimal.restoringPositionAt_injective

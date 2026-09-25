@@ -111,6 +111,7 @@ noncomputable def sourceLocalLayerLeftCrossingAt
     ⟨step.val, by
       simpa [LocalLayerPair.firstLayer, LocalLayerPair.firstWalk] using step.isLt⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The outgoing two-edge crossing of the same literal Cell. -/
 noncomputable def sourceLocalLayerRightCrossingAt
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
@@ -172,6 +173,7 @@ noncomputable def sourceLocalLayerCellRegionAt
   (pair.sourceCrosscutComplementBoundaryProfileData
     web.annular.cellulation.rotation boundary).regionEdges
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The incoming crossing is part of its literal Cell carrier. -/
 theorem sourceLocalLayerCellRegionAt_leftCrossing
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}
@@ -203,6 +205,7 @@ theorem sourceLocalLayerCellRegionAt_leftCrossing
     pair, boundary, cellData, index,
     LocalLayerPair.separatedLocalLayerPair] using hport
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The outgoing crossing is part of the same literal Cell carrier. -/
 theorem sourceLocalLayerCellRegionAt_rightCrossing
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}

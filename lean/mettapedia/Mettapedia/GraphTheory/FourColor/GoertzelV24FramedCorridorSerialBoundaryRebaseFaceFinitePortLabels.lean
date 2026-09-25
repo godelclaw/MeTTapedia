@@ -174,6 +174,7 @@ theorem sourceCorridorSerialBoundaryRebaseFacePortLabelCodeAt_isOneHot
     embedded.cellulation.rotation.toRotationSystem htwoSided root
       (hleftEdge.trans hrightEdge.symm)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The graph-level successor-port predicate is exactly the graph-free finite
 label-and-closure decoder. -/
 theorem sourceCorridorSerialBoundaryRebaseSuccessorFaceContainsPortAt_iff_finiteCode

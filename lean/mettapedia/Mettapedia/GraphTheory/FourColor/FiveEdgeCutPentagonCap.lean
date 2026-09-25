@@ -268,6 +268,7 @@ theorem capSeamData_rho_vert (dart : data.CapDart) :
     data.capTargetVert (data.capDartEquiv dart)
   rw [data.capDartEquiv_capRho, data.capTargetRho_vert]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Rewired dart system of the pentagon cap. -/
 def capRewiredDartSystem :
     RewiredDartSystem data.CapVertex data.CapDart :=

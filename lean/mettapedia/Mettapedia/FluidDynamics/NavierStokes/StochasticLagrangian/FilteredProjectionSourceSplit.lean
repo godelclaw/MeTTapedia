@@ -87,7 +87,7 @@ theorem fullSubgridWork_eq_sub (δ κ : ℝ) (hδ : 0 < δ) (P : Finset Wavevect
   have hg := continuous_fullVorticity _ hv
   have ha := continuous_fullVorticity _ (hm u 1)
   have hJ : Continuous (correctedGradient δ κ (filteredVelocity χ u)) :=
-    ((ha.norm.pow 6).smul ha).sub ((continuous_projectionGradient δ hδ _ (hm u 2)).const_smul _)
+    ((ha.norm.pow 6).smul ha).sub ((continuous_projectionGradient δ hδ _ (hm u 2)).fun_const_smul _)
   have hiF : Integrable (fun x : T3 ↦ ⟪correctedGradient δ κ (filteredVelocity χ u) x,
       fullVorticity (filteredVelocity χ (infiniteVelocityRHS 0 u)) x⟫) :=
     (hJ.inner hf).integrable_of_hasCompactSupport (HasCompactSupport.of_compactSpace _)

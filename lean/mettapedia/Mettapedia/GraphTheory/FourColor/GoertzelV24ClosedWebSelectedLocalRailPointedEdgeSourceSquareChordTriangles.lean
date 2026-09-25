@@ -302,6 +302,7 @@ namespace MiddleReplacementSquareDualCycle.SourceChordSelectedTriangles
 variable {face : SelectedFace web}
   {square : MiddleReplacementSquareDualCycle (web := web) face}
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every selected crossing of the reselected source square survives in one
 of its two chord triangles at the corresponding dual step. -/
 theorem original_crossing_covered

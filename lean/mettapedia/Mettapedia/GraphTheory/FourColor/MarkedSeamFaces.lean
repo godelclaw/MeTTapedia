@@ -78,6 +78,7 @@ theorem ambientDart_compose_right (pair : SeamPair rotation marks mark w)
       ((retainedDartEquivInternalSumBoundary _ _).symm d).val := by
   cases d <;> rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Sewing changes edge partners, never the rotation of a surviving vertex. -/
 theorem ambientDart_rho (pair : SeamPair rotation marks mark w)
     (d : pair.candidate.D) :
@@ -108,6 +109,7 @@ theorem ambientDart_phi_mark (pair : SeamPair rotation marks mark w)
   rw [pair.ambientDart_rho, pair.candidate_alpha_mark hclosed d m hd]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Facial iteration commutes on a designated orbit. Only that orbit must
 be covered by the edge-reversal-closed named family. -/
 theorem ambientDart_phi_pow (pair : SeamPair rotation marks mark w)

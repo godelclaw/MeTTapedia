@@ -496,6 +496,7 @@ theorem toyObservation_penguinBird_prior_eq_generated_ve_ratio :
       (feature := Concept.penguin)
       (witness := Concept.bird)
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem toyObservation_penguinBird_ext_eq_generated_bp_ratio :
     letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType (Multiset ToyMembershipObservation) :=
       Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType ToyMembershipObservation
@@ -520,6 +521,7 @@ theorem toyObservation_penguinBird_ext_eq_generated_bp_ratio :
       (feature := Concept.penguin)
       (witness := Concept.bird)
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem toyObservation_birdFly_score_eq_generated_ve_query_score :
     letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType (Multiset ToyMembershipObservation) :=
       Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType ToyMembershipObservation

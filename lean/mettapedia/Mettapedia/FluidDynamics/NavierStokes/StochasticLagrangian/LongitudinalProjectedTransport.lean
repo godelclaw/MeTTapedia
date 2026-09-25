@@ -183,6 +183,7 @@ theorem rawFluxJet_gradient
   simpa only [realCoordinateDerivative, hs, PancakeHaarTransportRate.coordinateShift_zero,
     add_zero] using h.deriv.symm
 
+set_option backward.isDefEq.respectTransparency false in
 theorem transport_rawFluxJet_apply
     (hr : ∀ n, u (-n) = coefficientConjugate (u n)) (j : Fin 3) (x : T3) :
     transport (velocityComponentJet u hu) (rawFluxJet u hu j) x =
@@ -190,6 +191,7 @@ theorem transport_rawFluxJet_apply
   simp only [transport, ContinuousMap.sum_apply, ContinuousMap.smul_apply',
     velocityComponentJet, ContinuousMap.coe_mk, rawFluxJet_gradient u hu hr]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The spatial integral retains the off-diagonal coupling with its sign. -/
 theorem transport_work_eq_integral
     (hr : ∀ n, u (-n) = coefficientConjugate (u n))

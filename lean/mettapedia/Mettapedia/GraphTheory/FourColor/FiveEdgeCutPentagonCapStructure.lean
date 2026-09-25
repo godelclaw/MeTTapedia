@@ -285,6 +285,7 @@ theorem capTargetVert_inr (dart : (Fin 5 × Bool) ⊕ Fin 5) :
   · rfl
   · rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The pentagon cap inherits one cyclic dart order at every vertex. -/
 theorem capRotationSystem_vertexRotationCyclic
     (hcyclic : VertexRotationCyclic RS) :

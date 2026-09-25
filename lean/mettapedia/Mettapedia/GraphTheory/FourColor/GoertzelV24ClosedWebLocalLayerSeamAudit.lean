@@ -40,6 +40,7 @@ namespace Instance
 
 namespace LocalLayerFormation
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The two first crossed edges of a source-local Cell-3 layer share the
 literal corner immediately before the outgoing rung. -/
 theorem SourceLocalLayerPairWitness.exists_common_first_crossing_endpoint
@@ -79,6 +80,7 @@ theorem SourceLocalLayerPairWitness.exists_common_first_crossing_endpoint
       (RS.vert_rho (RS.phi beforeDart)).trans
         (RS.vert_phi_eq_vert_alpha beforeDart)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A local Cell-3 tile cannot itself meet the endpoint-disjointness premise
 of the *closed* retained-vertex splice: its first matched crossings meet at
 the source corner proved above.  The source's primary operation remains the

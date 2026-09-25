@@ -80,6 +80,8 @@ theorem realScale_triad_cutoffFlux (lambda : ℝ) :
     lerayMode, modeSquare, modeDot, realScale,
     triadSupport, triadVelocity, p, q, k, a, b, c,
     Fin.sum_univ_succ, Complex.I_mul_I]
+  unfold p
+  norm_num
   ring_nf
 
 /-- The exact triad's high-mode viscous form is quadratic in amplitude. -/
@@ -88,6 +90,8 @@ theorem realScale_triad_high_viscousQuadratic (lambda : ℝ) :
       8 * lambda ^ 2 := by
   norm_num [viscousQuadratic, coefficientEnergy, modeSquareNat, realScale,
     triadVelocity, p, q, k, c, Fin.sum_univ_succ, Complex.normSq_apply]
+  unfold p
+  norm_num
   ring
 
 /-- Even after all six modes are charged, the total viscous form remains
@@ -98,6 +102,8 @@ theorem realScale_triad_total_viscousQuadratic (lambda : ℝ) :
   norm_num [viscousQuadratic, coefficientEnergy, modeSquareNat, realScale,
     triadSupport, triadVelocity, p, q, k, a, b, c,
     Fin.sum_univ_succ, Complex.normSq_apply]
+  unfold p
+  norm_num
   ring
 
 /-- The proposed weakest static rigidity statement on the exact support: a

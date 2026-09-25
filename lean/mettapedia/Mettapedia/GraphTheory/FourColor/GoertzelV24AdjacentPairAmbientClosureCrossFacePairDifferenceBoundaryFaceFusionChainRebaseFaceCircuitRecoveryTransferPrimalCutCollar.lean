@@ -228,6 +228,7 @@ theorem face_mem_walk_support_of_mem_crossingEdge_of_mem_boundary
     rw [hvertices]
     exact walk.getVert_mem_support (step.val + 1)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- In a cubic cyclic vertex rotation, advancing one dart around its vertex
 changes the underlying graph edge. -/
 theorem edgeOf_rho_ne_edgeOf_of_isCubic
@@ -249,6 +250,7 @@ theorem edgeOf_rho_ne_edgeOf_of_isCubic
     (GoertzelV24AdjacentPairBoundary.AdjacentPairData.rho_triple_pairwise_ne
       data.toRotationSystem hcubic hrotation dart).1 hdart.symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The first rotation away from either orientation of an adjacent pair's
 internal dart is one of the four edges crossing the pair boundary. -/
 theorem rho_edges_mem_crossingEdgeFinset_pair
@@ -357,6 +359,7 @@ theorem rho_edges_mem_crossingEdgeFinset_pair
   rw [hpairs] at hsecondCrossingReversed
   exact ⟨hfirstCrossing, hsecondCrossingReversed⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- If a facial-dual walk is the exact boundary of an adjacent vertex pair,
 the pair's internal edge joins two distinct faces on the walk while not
 being one of its crossing edges. Thus it is an off-walk edge of the full

@@ -201,6 +201,7 @@ noncomputable def pointwiseSelectedSourceLocalLayerSerialCellFiniteSupportLetter
         corridor hinterior offset
   }
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every compatible arbitrary prefix and positive literal selected Cell
 satisfies the complete five-coordinate finite support relation. -/
 theorem pointwiseSelectedSourceLocalLayerSerialCellFiniteSupportLetterAt_supports

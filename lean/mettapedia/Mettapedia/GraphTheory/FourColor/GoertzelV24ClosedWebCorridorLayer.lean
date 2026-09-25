@@ -314,6 +314,7 @@ noncomputable def secondLayer
   walk := layers.secondWalk
   isPath := layers.secondWalk_isPath
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The two local source layers meet only at their named exterior endpoints.
 After deleting those endpoints from the two path supports, the remaining two
 corridor faces are distinct.  This is a finite, checked separation fact for
@@ -609,6 +610,7 @@ theorem localLayerLoop_crossingEdge_injective
     (orbitFace_incidence_le_two web.annular.RS) hunique
     layers.localLayerLoop layers.localLayerLoop_isCycle
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The two literal local layers cross disjoint primal-edge supports.  Read
 both crossings into their common simple four-cell dual loop; injectivity of
 that loop then forbids a shared source edge. -/
@@ -698,6 +700,7 @@ theorem localLayers_crossing_disjoint
     simp [secondLoopStep]
   omega
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The local Cell-3 tile now has exactly the finite interface shape used by
 the open splice: two equal-width simple paths whose crossed primal edges are
 disjoint.  This remains a local layer pair; it is not yet claimed to be the
@@ -721,6 +724,7 @@ noncomputable def alignedLocalLayerPair
     simp [firstLayer, secondLayer, firstWalk, secondWalk]
   crossing_disjoint := layers.localLayers_crossing_disjoint hunique
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The local source layers are separated as facial-dual paths except at
 their two named endpoints.  Their closed composite is therefore a genuine
 source-derived layer cycle, ready for the later annular formation step. -/
@@ -782,6 +786,7 @@ theorem separatedLocalLayerPair_dualLoop_isCycle
     (layers.separatedLocalLayerPair hunique).dualLoop.IsCycle := by
   exact (layers.separatedLocalLayerPair hunique).dualLoop_isCycle
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The literal Cell-3 two-tile layer loop has exactly four dual steps.  This
 is kept separate from its simplicity certificate because the four-edge collar
 analysis consumes the numerical fact directly. -/

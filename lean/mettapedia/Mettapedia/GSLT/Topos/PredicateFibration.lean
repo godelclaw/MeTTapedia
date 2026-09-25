@@ -115,8 +115,7 @@ noncomputable instance presheafSubfunctorFrame
     {C : Type u} [Category.{v} C] (F : C ⥤ Type w) : Order.Frame (CategoryTheory.Subfunctor F) := by
   refine Order.Frame.ofMinimalAxioms ?_
   refine
-    { toCompleteLattice := inferInstance
-      inf_sSup_le_iSup_inf := ?_ }
+    { inf_sSup_le_iSup_inf := ?_ }
   intro a s
   have hs :
       (sSup s : CategoryTheory.Subfunctor F) =
@@ -199,6 +198,7 @@ private theorem subfunctor_preimage_iSup
   rw [hleft, hright]
   simp [CategoryTheory.Subfunctor.preimage]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Concrete change-of-base structure on `Psh(C)` for the Ω/subobject-backed
 fiber:
 

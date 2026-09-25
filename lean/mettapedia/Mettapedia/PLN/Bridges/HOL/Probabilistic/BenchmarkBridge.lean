@@ -47,6 +47,7 @@ inductive BenchmarkConst : Ty BenchmarkBase → Type
   | query : BenchmarkConst .prop
 deriving DecidableEq, Repr
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Benchmark-side hidden-context status carried as an explicit latent
 coordinate.  The current benchmark bridge is still query-focused, but making
 this coordinate first-class now keeps later Pathfinder/Hailfinder refinements
@@ -56,6 +57,7 @@ inductive BenchmarkContextStatus where
   | contextComplete
   deriving DecidableEq, Repr, Fintype
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Benchmark-side trust/calibration regime carried as an explicit latent
 coordinate. -/
 inductive BenchmarkTrustRegime where
@@ -64,6 +66,7 @@ inductive BenchmarkTrustRegime where
   | confident
   deriving DecidableEq, Repr, Fintype
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Benchmark-side topology class carried as an explicit latent coordinate. -/
 inductive BenchmarkTopologyClass where
   | unspecified
@@ -347,6 +350,7 @@ noncomputable def benchmarkLatentHierarchicalState
         (measurable_attachBenchmarkProfile profile).aemeasurable
   }
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Each guarded branch value is realized as a semantic sentence probability in
 the benchmark bridge. -/
 theorem componentSentenceProb_eq_branchMass
@@ -361,6 +365,7 @@ theorem componentSentenceProb_eq_branchMass
   rw [PMF.toMeasure_apply_singleton _ true (measurableSet_singleton true)]
   simp [branchPMF_apply_true]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The richer latent hierarchy still realizes each branch value as the
 semantic sentence probability of the benchmark query. -/
 theorem latentComponentSentenceProb_eq_branchMass

@@ -245,6 +245,7 @@ private def fieldInventory : Inventory Field where
   keys := [.binder, .body, .support, .apartness]
   nodup := by decide
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A role-shaped support compiles to the expected four-bit carrier. -/
 example :
     compile? fieldInventory [.binder, .apartness] =
@@ -258,12 +259,14 @@ example :
     decodeMember inventory (encode inventory [20, 50]) 50 = true := by
   decide
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Disjoint admitted supports have a zero packed intersection. -/
 example :
     encode fieldInventory [.binder, .body] &&&
         encode fieldInventory [.support, .apartness] = BitVec.zero 4 := by
   decide
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A shared key remains visible to the packed intersection test. -/
 example :
     encode fieldInventory [.binder, .body] &&&

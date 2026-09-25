@@ -218,6 +218,7 @@ variable {R : Type uRing} [Ring R]
 variable {Index : Type uIndex} [DecidableEq Index]
 variable {Ambient : Type uAmbient} [AddCommGroup Ambient] [Module R Ambient]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The internal-direct-sum equivalence intertwines a globally linear
 transition with the componentwise restrictions to invariant summands. -/
 theorem internalDirectSumEquiv_intertwines

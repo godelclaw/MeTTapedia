@@ -1369,6 +1369,7 @@ theorem rhoProcOSLFUsingPred_to_languageSortFiber_mem_iff
   simpa [rhoProcOSLFUsingPred_to_languageSortFiber] using
     (rhoProc_langOSLF_predicate_to_fiber_mem_iff seed φ hNat h)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Sort-indexed predicate fibration induced from the canonical language
 presheaf λ-theory by evaluating fibers on Yoneda-representable sorts. -/
 noncomputable def languageSortPredicateFibration (lang : LanguageDef) :

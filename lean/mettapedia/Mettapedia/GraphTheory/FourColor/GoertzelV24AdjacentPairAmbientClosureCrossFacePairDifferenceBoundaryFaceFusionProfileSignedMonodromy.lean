@@ -15,6 +15,7 @@ def dartAtEdgePosition {left right : Vertex}
     (position : Fin walk.edges.length) : Graph.Dart :=
   walk.darts.get (Fin.cast (by simp) position)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Forgetting the orientation of the position dart recovers the edge at
 that exact list position. -/
 @[simp] theorem dartAtEdgePosition_edge {left right : Vertex}

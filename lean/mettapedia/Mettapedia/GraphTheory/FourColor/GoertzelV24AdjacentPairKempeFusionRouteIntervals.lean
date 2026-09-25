@@ -142,6 +142,7 @@ theorem EvenKempeFusionLens.bFusionOrderInterval_isPath
     (lens.bFusionOrderInterval first second horder).IsPath := by
   exact lens.bRoute.ambientPath_isPath.supportInterval _ _ horder.le
 
+set_option backward.isDefEq.respectTransparency false in
 theorem EvenKempeFusionLens.cFusionOrderInterval_isPath
     {portCount : Nat}
     {data : DegreeTwoBoundaryData G portCount}
@@ -175,6 +176,7 @@ theorem EvenKempeFusionLens.bFusionOrderInterval_support_subset
   exact (lens.bRoute.ambientPath.supportInterval_isSubwalk _ _
     horder.le).support_subset
 
+set_option backward.isDefEq.respectTransparency false in
 theorem EvenKempeFusionLens.cFusionOrderInterval_support_subset
     {portCount : Nat}
     {data : DegreeTwoBoundaryData G portCount}
@@ -241,6 +243,7 @@ theorem EvenKempeFusionLens.bFusionOrderInterval_length_le_ambientPath
       lens.bRoute.ambientPath.length := by
   exact lens.bRoute.ambientPath.supportInterval_length_le _ _ horder.le
 
+set_option backward.isDefEq.respectTransparency false in
 theorem EvenKempeFusionLens.cFusionOrderInterval_length_le_ambientPath
     {portCount : Nat}
     {data : DegreeTwoBoundaryData G portCount}

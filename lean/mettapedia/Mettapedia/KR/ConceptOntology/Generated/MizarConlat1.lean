@@ -8,6 +8,7 @@ open Mettapedia.KR.ConceptOntology
 open Mettapedia.PLN.Evidence.EvidenceQuantale
 open scoped ENNReal
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive Item where
   | definition_1 -- definition ::$CD struct (2-sorted) ContextStr (# carrier, carrier' -> set, Information -> Relation of the carrier,the ca
   | registration_2 -- registration cluster strict non empty non void for ContextStr; existence proof ContextStr(#{{}},{{}},the Relation of {{}
@@ -41,6 +42,7 @@ def itemLabel : Item → String
   | .theorem_4 => "theorem_4"
   | .theorem_5 => "theorem_5"
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive Attribute where
   | AttributeCtor -- Attribute
   | AttributeDerivation -- AttributeDerivation

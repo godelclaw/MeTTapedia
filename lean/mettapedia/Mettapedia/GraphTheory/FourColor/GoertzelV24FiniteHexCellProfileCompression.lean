@@ -247,6 +247,7 @@ private theorem bool_eq_of_true_iff_true {left right : Bool}
     (h : left = true ↔ right = true) : left = right := by
   cases left <;> cases right <;> simp_all
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Encoding followed by decoding is exactly the original semantic Cell
 profile, including every tracked-connectivity entry. -/
 theorem decode_encode (profile : CorridorCutProfile 6 0 0)

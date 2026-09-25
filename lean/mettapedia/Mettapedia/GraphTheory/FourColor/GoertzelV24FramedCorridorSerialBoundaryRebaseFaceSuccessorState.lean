@@ -201,6 +201,7 @@ theorem dartOrbitFace_successorFaceOccurrenceAt
   simp only [boundaryRegionalFragmentDartOccurrence]
   rw [dartOrbitFace_faceCycleDart, dartOrbitFace_orbitFaceRoot]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The successor profile's face-continuation bit is exactly ambient orbit
 face equality on its finite stable occurrence coordinates.  This keeps face
 identity distinct from regional graph reachability. -/

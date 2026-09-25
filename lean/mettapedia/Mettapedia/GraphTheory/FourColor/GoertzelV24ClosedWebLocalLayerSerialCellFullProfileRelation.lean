@@ -231,6 +231,7 @@ structure SourceLocalLayerSerialCellFullProfileRelation
           (sourceLocalLayerSerialTerminalFaceSeamAt corridor hunique offset root))
         left right
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The two actual graph-derived profiles satisfy the complete serial Cell
 relation for every coloring nonzero on the displayed crossings. -/
 theorem sourceLocalLayerSerialCellFullProfileRelation

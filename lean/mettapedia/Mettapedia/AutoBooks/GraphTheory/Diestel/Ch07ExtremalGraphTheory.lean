@@ -99,7 +99,7 @@ theorem turan_theorem (n r : ℕ) (hr : 2 ≤ r) (hn : r ≤ n) :
   unfold turanEdges
   have hcf' : G.CliqueFree ((r - 1) + 1) := by rwa [show r - 1 + 1 = r from by omega]
   have hmathlib := hcf'.card_edgeFinset_le
-  simp only [Fintype.card_fin] at hmathlib
+  simp only [Fintype.card_fin, SimpleGraph.turanNumber_eq] at hmathlib
   exact le_trans hmathlib (turan_bound_le n r hr)
 
 /-! ### Erdős–Stone theorem (Diestel §7.1) -/

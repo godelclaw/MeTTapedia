@@ -159,7 +159,7 @@ theorem integrable_and_integral_translated_field_sub_sq_le (M : T6 → ℝ)
       (hP.continuous.comp (continuous_const.sub continuous_secondTorusDisplacement))).norm.pow 2
   have hg : Integrable (fun q ↦
       ‖P (x - firstTorusDisplacement q) - P (x - secondTorusDisplacement q)‖ ^ 2 * M q) := by
-    apply (hi.const_mul ((L : ℝ) ^ 2)).mono' (hc.measurable.mul hm).aestronglyMeasurable
+    apply (hi.const_mul ((L : ℝ) ^ 2)).mono' (hc.measurable.fun_mul hm).aestronglyMeasurable
     filter_upwards [] with q
     rw [Real.norm_eq_abs, abs_of_nonneg (mul_nonneg (sq_nonneg _) (hn q))]
     exact hb q

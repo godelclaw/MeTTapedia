@@ -124,6 +124,7 @@ end NetValue
 
 namespace OpportunityFixture
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive Arm where
   | primaryBP | opportunityBP | pc
   deriving DecidableEq, Fintype, Repr

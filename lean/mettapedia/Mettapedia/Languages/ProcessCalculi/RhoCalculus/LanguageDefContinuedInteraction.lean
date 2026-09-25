@@ -57,6 +57,7 @@ def rhoContinuationRetyping : ContinuationRetypingPlan rhoInteractionCut where
       rhoContinuationParallelConstructor).2
     constructor <;> decide
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Rho's authored COMM contractum is well-sorted on wrapped continuations.
 This is the declaration-level wrappability obligation of the continued
 interaction structure. -/
@@ -126,6 +127,7 @@ theorem rho_costBaseParallelConstructor_params :
     rhoInteractionCut_environment_continuation_index,
     TypeExpr.proc, TypeExpr.baseType, TypeExpr.bag]
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp]
 theorem rho_costWrappedParallelConstructor_params :
     (costWrappedConstructor (theory := rhoIGSLT) rhoCalc.terms[3]).params =
@@ -194,6 +196,7 @@ theorem no_raw_normalizer_selects_both_rhoCost_units
     injection unitsEqual
   exact costBaseConstructorName_ne_wrapped "PZero" "PZero" labelsEqual
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp]
 theorem rho_costBaseInputConstructor_params :
     (costBaseConstructor rhoInteractionCut rhoCalc.terms[5]).params =
@@ -210,6 +213,7 @@ theorem rho_costBaseInputConstructor_params :
     rhoIGSLT, rhoInteractivePresentation, TypeDecl.plain,
     TypeExpr.name, TypeExpr.proc, TypeExpr.funType, TypeExpr.baseType]
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp]
 theorem rho_costBaseOutputConstructor_params :
     (costBaseConstructor rhoInteractionCut rhoCalc.terms[4]).params =
@@ -244,6 +248,7 @@ theorem rho_costBaseDropConstructor_params :
     rhoInteractionCut_environment_constructor_value,
     TypeExpr.name, TypeExpr.baseType]
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp]
 theorem rho_costWrappedQuoteConstructor_params :
     (costWrappedConstructor (theory := rhoIGSLT) rhoCalc.terms[2]).params =
@@ -252,6 +257,7 @@ theorem rho_costWrappedQuoteConstructor_params :
     costWrappedTypeExpr, rhoIGSLT, rhoInteractivePresentation,
     TypeDecl.plain, TypeExpr.proc, TypeExpr.baseType]
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp]
 theorem rho_costWrappedDropConstructor_params :
     (costWrappedConstructor (theory := rhoIGSLT) rhoCalc.terms[1]).params =
@@ -454,6 +460,7 @@ theorem rhoContinuationRetyping_equationsRetypable :
       apply HasType.fvar
       simp [FreeTypeContext.ofList]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Rho's reflective quote, drop, and parallel-unit constructors are all
 residual constructors, never the input/output interaction principals. -/
 theorem rhoContinuationRetyping_reflectivePresentationsRetypable :
@@ -747,6 +754,7 @@ def rhoCIGSLT : CIGSLT where
 theorem rhoCIGSLT_forget : CIGSLT.forget.obj rhoCIGSLT = rhoIGSLT :=
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Positive control: the generated continuation signature assigns the
 wrapped sort to rho's input continuation. -/
 theorem rho_input_continuation_retyped :

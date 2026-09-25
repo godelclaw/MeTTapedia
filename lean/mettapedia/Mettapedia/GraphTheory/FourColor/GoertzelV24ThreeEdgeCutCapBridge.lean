@@ -102,6 +102,7 @@ theorem collapseComplementToCapVertex_of_not_keep
     data.collapseComplementToCapVertex vertex = Sum.inr () := by
   simp [collapseComplementToCapVertex, hkeep]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every ambient adjacency avoiding a retained internal edge either
 collapses inside the deleted side or survives in the corresponding
 edge-deleted cap. -/

@@ -310,13 +310,13 @@ theorem restrictedByMask_reachable_iff_exactInterfaceExteriorFactoredClosure
   rw [restrictedByMask_reachable_iff_interfaceExteriorClosure]
   constructor
   · intro hclosure
-    exact hclosure.mono fun first second hstep =>
+    exact Relation.ReflTransGen.mono (fun first second hstep =>
       (exactInterfaceExteriorCode_step_iff graph interfaceVertex
-        first.1 second.1).2 hstep
+        first.1 second.1).2 hstep) left right hclosure
   · intro hclosure
-    exact hclosure.mono fun first second hstep =>
+    exact Relation.ReflTransGen.mono (fun first second hstep =>
       (exactInterfaceExteriorCode_step_iff graph interfaceVertex
-        first.1 second.1).1 hstep
+        first.1 second.1).1 hstep) left right hclosure
 
 /-- A bounded family of deletion-stable interface codes sharing one literal
 carrier.  The carrier cardinality is stored dependently, so no dummy vertices

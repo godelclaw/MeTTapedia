@@ -183,7 +183,6 @@ private theorem ourLiteralEightOrbitAnticommutator
     fieldEightSwapAdjacentTraceOrder, fieldEightSplitAdjacentTraceOrder,
     swapAdjacentTraceOrder, splitAdjacentTraceOrder,
     smul_add, smul_sub]
-  rfl
 
 private def ourLiteralEightFundamentalSite
     (sector : DerivativeAlphaReducedSector 8 0)

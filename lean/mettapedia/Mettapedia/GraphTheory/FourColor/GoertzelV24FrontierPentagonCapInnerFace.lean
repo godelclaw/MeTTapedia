@@ -166,6 +166,7 @@ def openingInnerFace
     (Sum.inr (PentagonCap.openBoundaryDart data
       walk.toOrientedFacialPentagonCap.toFacialPentagonCap.toPentagonCap 0))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Addendum V inner-hole orbit.** Under the exact five-occurrence collar
 condition, every fresh cap stub lies on the literal opened inner face.  The
 proof compares the two first-return permutations and then invokes the computed

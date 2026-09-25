@@ -80,9 +80,9 @@ theorem alphaFun_involutive (RS : RotationSystem V E) (keep : V → Prop)
   classical
   rcases dart with dart | boundary
   · by_cases hinternal : keep (RS.vertOf (RS.alpha dart.1))
-    · simp [alphaFun, hinternal, dart.2, RS.alpha_involutive]
-    · simp [alphaFun, hinternal]
-  · simp [alphaFun, boundary.2]
+    · simp [alphaFun, hinternal, dart.2, RS.alpha_involutive] <;> rfl
+    · simp [alphaFun, hinternal] <;> rfl
+  · simp [alphaFun, boundary.2] <;> rfl
 
 /-- The involutive open-region edge flip. -/
 def alpha (RS : RotationSystem V E) (keep : V → Prop) :

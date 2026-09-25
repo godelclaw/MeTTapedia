@@ -98,6 +98,7 @@ private theorem edgeOf_phi_ne_edgeOf_of_dartsAt_card_eq_three
       (RS.vert_phi_eq_vert_alpha dart)
   · exact hrho (by simpa [RotationSystem.phi_apply] using hopposite)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every face incident to an outgoing crossing of a literal Cell is an
 annular-interior face. -/
 theorem sourceLocalLayerRightCrossingAt_incidentFace_internal

@@ -443,21 +443,27 @@ theorem ccbD23_not_mem_selectedBoundarySupport :
   rw [crossComponentBridge_selectedBoundarySupport_eq]
   decide
 
+set_option backward.isDefEq.respectTransparency false in
 def crossComponentBridgeFace0 : AmbientFace crossComponentBridgeEmbedding.faces :=
   ⟨(0 : CrossComponentBridgeFace), by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def crossComponentBridgeFace1 : AmbientFace crossComponentBridgeEmbedding.faces :=
   ⟨(1 : CrossComponentBridgeFace), by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def crossComponentBridgeFace2 : AmbientFace crossComponentBridgeEmbedding.faces :=
   ⟨(2 : CrossComponentBridgeFace), by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def crossComponentBridgeFace3 : AmbientFace crossComponentBridgeEmbedding.faces :=
   ⟨(3 : CrossComponentBridgeFace), by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def crossComponentBridgeFace4 : AmbientFace crossComponentBridgeEmbedding.faces :=
   ⟨(4 : CrossComponentBridgeFace), by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def crossComponentBridgeFace5 : AmbientFace crossComponentBridgeEmbedding.faces :=
   ⟨(5 : CrossComponentBridgeFace), by decide⟩
 
@@ -1131,12 +1137,15 @@ def diamondWithTriangleOuterAmbientBoundary : Finset diamondWithTriangleGraph.ed
 def diamondWithTriangleInnerAmbientBoundary : Finset diamondWithTriangleGraph.edgeSet :=
   {dt45, dt56, dt64}
 
+set_option backward.isDefEq.respectTransparency false in
 def diamondWithTriangleFace0 : AmbientFace diamondWithTriangleEmbedding.faces :=
   ⟨(0 : DiamondWithTriangleFace), by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def diamondWithTriangleFace1 : AmbientFace diamondWithTriangleEmbedding.faces :=
   ⟨(1 : DiamondWithTriangleFace), by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def diamondWithTriangleFace2 : AmbientFace diamondWithTriangleEmbedding.faces :=
   ⟨(2 : DiamondWithTriangleFace), by decide⟩
 
@@ -1656,18 +1665,23 @@ theorem cdt45_not_mem_selectedBoundarySupport :
   rw [hcount'] at hcount
   omega
 
+set_option backward.isDefEq.respectTransparency false in
 def chainedDiamondsFace0 : AmbientFace chainedDiamondsWithTriangleEmbedding.faces :=
   ⟨(0 : ChainedDiamondsWithTriangleFace), by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def chainedDiamondsFace1 : AmbientFace chainedDiamondsWithTriangleEmbedding.faces :=
   ⟨(1 : ChainedDiamondsWithTriangleFace), by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def chainedDiamondsFace2 : AmbientFace chainedDiamondsWithTriangleEmbedding.faces :=
   ⟨(2 : ChainedDiamondsWithTriangleFace), by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def chainedDiamondsFace3 : AmbientFace chainedDiamondsWithTriangleEmbedding.faces :=
   ⟨(3 : ChainedDiamondsWithTriangleFace), by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def chainedDiamondsFace4 : AmbientFace chainedDiamondsWithTriangleEmbedding.faces :=
   ⟨(4 : ChainedDiamondsWithTriangleFace), by decide⟩
 

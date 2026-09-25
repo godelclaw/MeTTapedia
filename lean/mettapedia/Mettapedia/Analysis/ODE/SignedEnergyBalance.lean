@@ -34,7 +34,8 @@ theorem exp_mul_add_integral_le_of_deriv_le
     (hw.continuousOn.mul hF) (fun τ hτ ↦ (hprod τ hτ).hasDerivWithinAt)
     (((hw.continuousOn.mul hW).sub (hw.continuousOn.mul hD)).integrableOn_Icc)
     (fun τ hτ ↦ ?_)
-  · rw [intervalIntegral.integral_sub
+  · simp only [Pi.sub_apply] at he
+    rw [intervalIntegral.integral_sub
       ((hw.continuousOn.mul hW).intervalIntegrable_of_Icc ht)
       ((hw.continuousOn.mul hD).intervalIntegrable_of_Icc ht)] at he
     simp only [Pi.mul_apply, mul_zero, Real.exp_zero, one_mul] at he

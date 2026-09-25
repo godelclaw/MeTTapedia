@@ -284,6 +284,7 @@ theorem v13RealLinearGaugeSwitchPivot_eq_of_eq {m : Nat}
   subst y1
   simp [v13RealLinearGaugeSwitchPivot]
 
+set_option backward.isDefEq.respectTransparency false in
 noncomputable def
     v13RealLinearColumnSketchRhsCorrectToOffCornerOrCorner
     {m j : Nat} (observer : V13RealLinearColumnSketchRhsObserver m j)
@@ -322,6 +323,7 @@ noncomputable def
                 omega.val)
             hmap)
 
+set_option backward.isDefEq.respectTransparency false in
 noncomputable def
     v13RealLinearColumnSketchRhsWorldCorrectIncorrectEquiv
     {m j : Nat} (observer : V13RealLinearColumnSketchRhsObserver m j)

@@ -121,12 +121,12 @@ theorem contributingPredecessorsBool_ofGraphFamilyCode_eq
   unfold sourceLocalLayerSerialFaceFiniteContributingPredecessors
   apply Finset.ext
   intro representative
-  change Fin code.vertexCount.val at representative
   simp only [Finset.mem_filter, Finset.mem_univ, true_and, Bool.and_eq_true]
+  change Fin code.vertexCount.val at representative
   rw [predecessorRepresentativeBool_ofGraphFamilyCode_eq_true_iff state code
     semantic]
   rw [faceFiniteComponentClosureBool_ofGraphFamilyCode_eq_true_iff]
-  exact ⟨Finset.mem_filter.mpr, Finset.mem_filter.mp⟩
+  exact Finset.mem_filter.symm
 
 /-- Executable capped contribution of all distinct predecessor components. -/
 def sourceLocalLayerSerialFaceFinitePredecessorCapSumBool
@@ -174,6 +174,7 @@ def SourceLocalLayerSerialFaceFiniteNewEdgeRepresentativeBool
           (BoundedCarrierBoolLiveSlot code coordinate) = true →
         coordinate ≤ candidate)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The least-coordinate test selects exactly one name for each genuinely new
 primal edge when the equality-table laws hold. -/
 @[simp]
@@ -259,9 +260,9 @@ theorem newEdgeRepresentativesBool_ofGraphFamilyCode_eq
       sourceLocalLayerSerialFaceFiniteNewEdgeRepresentatives state code
         edgeState output semantic := by
   ext coordinate
-  change Fin code.vertexCount.val at coordinate
   simp only [sourceLocalLayerSerialFaceFiniteNewEdgeRepresentativesBool,
     Finset.mem_filter, Finset.mem_univ, true_and]
+  change Fin code.vertexCount.val at coordinate
   rw [newEdgeRepresentativeBool_ofGraphFamilyCode_eq_true_iff state code
     edgeState output semantic]
   exact Iff.rfl
@@ -318,6 +319,7 @@ def SourceLocalLayerSerialFaceFiniteCapAtBool
         SourceLocalLayerSerialFaceFiniteOutputCapBool state code edgeState
           output = cap)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The executable cap query is exactly the original cap support relation on a
 reflected proof-facing graph code. -/
 @[simp]

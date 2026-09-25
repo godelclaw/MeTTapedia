@@ -225,6 +225,7 @@ theorem faceGraph_dist_le (f g : OrbitFace data.toRotationSystem) :
   have h := SimpleGraph.dist_le (p.append q.reverse)
   simpa only [SimpleGraph.Walk.length_append, SimpleGraph.Walk.length_reverse, hp, hq] using h
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Each selected edge changes the root rank by exactly one. -/
 theorem rank_le_length_add {f g : OrbitFace data.toRotationSystem}
     (p : T.faceGraph.Walk f g) : T.rank f ≤ p.length + T.rank g := by
@@ -253,6 +254,7 @@ theorem exists_root_path (f : OrbitFace data.toRotationSystem) :
   obtain ⟨p, hp⟩ := T.exists_root_walk f
   exact ⟨p, p.isPath_of_length_eq_dist (hp.trans (T.dist_root_eq f).symm), hp⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The face edges are precisely the endpoint pairs of the selected original edges. -/
 theorem faceGraph_edgeFinset :
     T.faceGraph.edgeFinset = T.edges.image (fun e => s(T.child e, T.parent e)) := by

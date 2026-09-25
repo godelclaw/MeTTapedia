@@ -414,6 +414,7 @@ These work for any BN and any state value. -/
 These are corollaries of the Bool-generic helpers for `val = true`,
 bridging to `eventTrue` used in `chainBN_plnDeductionStrength_exact`. -/
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- `eventEq v true` (VEBridge) equals `eventTrue v` (FastRules). -/
 private lemma eventEq_true_eq_eventTrue (v : Three) :
     eventEq (bn := chainBN) v true = eventTrue v := by
@@ -421,6 +422,7 @@ private lemma eventEq_true_eq_eventTrue (v : Three) :
 
 /-! ### Bridge lemmas: queryProb → jointMeasure -/
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- queryProb for prop at `true` = marginal measure μ(event). -/
 private lemma queryProb_prop_true_eq
     (cpt : ChainBN.DiscreteCPT) (v : Three) :
@@ -430,6 +432,7 @@ private lemma queryProb_prop_true_eq
   rw [propProbVE_eq_jointMeasure_eventEq, eventEq_true_eq_eventTrue]
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- queryProb for link at `true` = conditional probability ratio μ(a∩b)/μ(a). -/
 private lemma queryProb_link_true_eq
     (cpt : ChainBN.DiscreteCPT) (a b : Three)
@@ -451,6 +454,7 @@ private lemma queryProb_prop_true_le_one
     queryProb (bn := chainBN) cpt (AtomQuery.prop ⟨v, true⟩) ≤ 1 := by
   rw [queryProb_prop_true_eq]; exact prob_le_one
 
+set_option backward.isDefEq.respectTransparency.types false in
 private lemma queryProb_link_true_le_one
     (cpt : ChainBN.DiscreteCPT) (a b : Three) :
     queryProb (bn := chainBN) cpt (AtomQuery.link ⟨a, true⟩ ⟨b, true⟩) ≤ 1 := by
@@ -919,6 +923,7 @@ private abbrev fB' := eventEq (bn := forkBN) Three.B true
 private abbrev fC' := eventEq (bn := forkBN) Three.C true
 
 -- Local bridge helpers (fork-specific, avoiding name clash with chain's private helpers)
+set_option backward.isDefEq.respectTransparency.types false in
 private lemma fork_qS_link_toReal (cpt : forkBN.DiscreteCPT) (a b : Three)
     (ha : cpt.jointMeasure (eventEq (bn := forkBN) a true) ≠ 0) :
     (BinaryWorldModel.queryStrength ({cpt} : BNWorldModel.State (bn := forkBN))
@@ -935,6 +940,7 @@ private lemma fork_qS_link_toReal (cpt : forkBN.DiscreteCPT) (a b : Three)
     · exact le_trans (ENNReal.div_le_div_right (measure_mono Set.inter_subset_left) _)
         ENNReal.div_self_le_one
 
+set_option backward.isDefEq.respectTransparency.types false in
 private lemma fork_qS_prop_toReal (cpt : forkBN.DiscreteCPT) (v : Three) :
     (BinaryWorldModel.queryStrength ({cpt} : BNWorldModel.State (bn := forkBN))
       (AtomQuery.prop (⟨v, true⟩ : BNQuery.Atom (bn := forkBN)))).toReal =
@@ -1274,6 +1280,7 @@ omit
   [(v : Three) → Inhabited (colliderBN.stateSpace v)]
   [∀ v : Three, StandardBorelSpace (colliderBN.stateSpace v)]
   [StandardBorelSpace colliderBN.JointSpace] in
+set_option backward.isDefEq.respectTransparency.types false in
 private lemma collider_queryProb_prop_eq
     (cpt : colliderBN.DiscreteCPT) (v : Three) (val : Bool) :
     queryProb (bn := colliderBN) cpt (AtomQuery.prop ⟨v, val⟩) =

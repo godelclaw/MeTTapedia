@@ -45,6 +45,7 @@ namespace SourceTrail
 
 namespace AnnularEmbedding
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Two present finite coordinates decode to the same literal old-prefix face
 fragment exactly when the finite predecessor-component bit relates them. -/
 theorem sourceCorridorSerialBoundaryRebaseOldFactorFragmentAt_eq_iff
@@ -121,6 +122,7 @@ theorem sourceCorridorSerialBoundaryRebaseOldFactorFragmentAt_eq_iff
       leftPosition rightPosition).2
     exact hcomponent.1 hsame
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every literal predecessor factor of a chosen successor fragment is named
 by one of the finite decoder's contributing canonical representatives. -/
 theorem exists_contributingOldComponentRepresentative_for_factorFragment

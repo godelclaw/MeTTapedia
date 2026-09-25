@@ -11,7 +11,7 @@ set_option maxRecDepth 1000000 in
 set_option maxHeartbeats 0 in
 theorem rationalReplayRangeCheck_009 :
     rationalReplayRangeCheck 2304 256 = true := by
-  decide
+  decide +kernel
 
 end HypercubicDimension16TraceRankCertificate
 end YangMills

@@ -138,6 +138,7 @@ private abbrev innerStubDart
     (Sum.inr (_root_.Mettapedia.GraphTheory.FourColor.GoertzelV24FacialPentagonCapOpenBoundary.PentagonCap.openBoundaryDart
       data (capOf walk) step))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The transported inner boundary edge is literally the edge underlying its
 fresh cap-stub dart in the graph-backed opening. -/
 private theorem openedBoundary_innerBoundaryEdge_eq_edgeOf_innerStubDart
@@ -290,6 +291,7 @@ private theorem innerBoundaryEdgeDarts_on_innerHole
     frontier hfrontier walk hinterior houterRetained step]
   exact hdart
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A retained ambient dart over a named old outer edge becomes a graph dart
 over the corresponding transported outer boundary edge. -/
 private theorem openedBoundary_outerBoundaryEdge_eq_edgeOf_openFaceDart
@@ -404,6 +406,7 @@ private theorem openedBoundary_outerBoundaryEdge_eq_edgeOf_openFaceDart
   rw [hedgeVal]
   simp [SimpleGraph.Dart.edge, hsourceInv, htargetInv]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Both graph darts over each old outer-interface edge lie on the completely
 retained outer face.  The proof transports both ambient orientations; it does
 not infer the opposite face from the unoriented edge alone. -/

@@ -42,6 +42,7 @@ local instance openPrimalGraphDecidableRel
     DecidableRel (PrimalGraph data.toRotationSystem keep outer).Adj :=
   Classical.decRel _
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The graph-backed face permutation is the conjugate of the literal
 open-region face permutation under the canonical dart equivalence. -/
 theorem graphData_phi_eq_permCongr

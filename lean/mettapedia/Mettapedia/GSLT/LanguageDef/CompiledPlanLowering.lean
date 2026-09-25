@@ -1818,6 +1818,7 @@ theorem sparseWireProgram_rules :
     sparseWireProgram.rules = [sparseWireRule] := by
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem sparse_typed_program_rejected_by_physical_admission :
     (lower? [sparseTypedRule]).isSome = false := by
   unfold lower?

@@ -81,6 +81,7 @@ private theorem edgeAdjacencyGraph_adj_of_faceCyclePositionGraph_adj_of_ne
     · apply (RS.mem_incidentEdges_iff).2
       exact ⟨faceCycleDart RS root left, rfl, by simp [hbackward]⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every edge crossing the literal Cell's vertex cut is one of its two
 incoming or two outgoing source crossings. -/
 theorem sourceLocalLayerCellCrossingAt_eq_left_or_right

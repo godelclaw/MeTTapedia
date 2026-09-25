@@ -211,6 +211,7 @@ theorem active_composite_observation_agrees :
       (coloredObserved Ground source).observe Colored.twoWaveExecution :=
   activeComposite.observationAgreement Colored.twoWaveExecution
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- A relevant dependency change admits no common world at which the two
 stored stages could be composed. -/
 theorem relevant_change_has_no_common_current :

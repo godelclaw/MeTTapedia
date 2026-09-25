@@ -6517,6 +6517,7 @@ theorem abstractCostStaticApplicationFromTable_none_supportedSafe
   exact globalTable.boundaryFvar_reflectiveSupportSafeAt boundary
     globalMembership sourceSupportEquality typed.toHasType
 
+set_option backward.isDefEq.respectTransparency.types false in
 mutual
   /-- Table-native abstraction of a declaration-certified monochromatic image
   is exactly hygienic source-variable retagging, under every surrounding
@@ -6831,6 +6832,7 @@ theorem WellSorted.HasTypeWithConstructors.abstractCostStaticRegionFromTable_map
   exact typed.abstractCostStaticRegionFromTableAt_mapCostStatic source color
     .hole _
 
+set_option backward.isDefEq.respectTransparency.types false in
 mutual
   /-- Finite abstraction followed by any resolver covering exactly the table
   entries reconstructs the original pattern.  The proof is structural and
@@ -12376,6 +12378,7 @@ theorem mem_buildForColorCandidates_iff
   · rintro ⟨sourceName, built⟩
     exact ⟨sourceName, by simp, built⟩
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Every compiler-selected plan has a corresponding member of the finite
 executable root family carrying the same color and source sort. -/
 theorem exists_mem_buildForColorCandidates_of_plan
@@ -13150,6 +13153,7 @@ theorem skeletonIn_pattern {source : CIGSLT} {color : CostStaticColor}
   rw [node.skeleton_pattern]
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Enlarging the finite boundary table without changing any entry used by a
 region does not change the exact representative chosen for its authored
 source skeleton.  This is free-context naturality of the sole authored open
@@ -13282,6 +13286,7 @@ theorem recompose_eq_term {source : CIGSLT} {color : CostStaticColor}
   apply Subtype.ext
   exact node.recomposeRaw_eq
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Map the unnormalized authored skeleton into its selected static Cost fiber
 and reinsert exactly the target-only ambient binders.  This is the rigid-
 boundary source endpoint paired with `normalizedThickenedSkeleton`. -/
@@ -13324,6 +13329,7 @@ theorem mappedThickenedSkeleton_pattern {source : CIGSLT}
         (mapPattern (color.symbols source) node.skeleton.toCore.1) := by
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The mapped rigid-boundary endpoint retains the independently authored
 quote-scope certificate selected by the generated Cost reflection profile. -/
 def mappedThickenedReflectiveSkeleton {source : CIGSLT}
@@ -13460,6 +13466,7 @@ theorem normalizedThickenedSkeleton_pattern {source : CIGSLT}
       node.normalizedThickenedSkeletonRaw := by
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Canonicalization, static mapping, and binder reinsertion preserve the
 quote-scope certificate independently of ordinary typing. -/
 def normalizedThickenedReflectiveSkeleton {source : CIGSLT}
@@ -13814,6 +13821,7 @@ def mappedThickenedOpenTerm {source : CIGSLT} {color : CostStaticColor}
   · simpa [WellSorted.ScopeSafeAt] using
       (mapped.2.1.thickenAmbientBVars (inner := []) thinning).isWellScopedAt
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The mapped endpoint together with the independently authored quote-scope
 certificate selected by the Cost reflection profile. -/
 def mappedThickenedReflectiveOpenTerm
@@ -14768,6 +14776,7 @@ def CostRegionTree.buildStatic? {source : CIGSLT}
   (CostRegionBoundaryTrees.build? decompose node.finiteBoundaryTable).map
     (CostRegionTree.static node)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Pointwise success on the entries actually emitted by one node is enough
 for executable construction of the complete static subtree. -/
 theorem CostRegionTree.exists_buildStatic?_eq_some
@@ -14788,6 +14797,7 @@ theorem CostRegionTree.exists_buildStatic?_eq_some
   exact ⟨.static node children, by
     simp [CostRegionTree.buildStatic?, childrenBuilt]⟩
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Inversion for one completed static node.  A successful result contains
 exactly the recursively built finite boundary forest; no other tree
 constructor can be introduced by this layer. -/
@@ -19272,6 +19282,7 @@ structure CostRawFiberNormalizationLaws (source : CIGSLT) : Prop where
     source.costWholeReflectionProfile defaultBasePremises
       source.costWholeLanguage
 
+set_option backward.isDefEq.respectTransparency.types false in
 mutual
   /-- Every valid proof-relevant region tree normalizes inside the contextual
   equation class of its exact input.  Static nodes use the one-root canonical

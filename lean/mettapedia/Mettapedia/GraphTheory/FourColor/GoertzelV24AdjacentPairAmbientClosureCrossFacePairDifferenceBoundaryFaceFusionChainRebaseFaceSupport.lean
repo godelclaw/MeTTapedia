@@ -27,6 +27,7 @@ attribute [local instance]
   fusionFaceNetworkRetainedVertexDecidableEq
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+set_option backward.isDefEq.respectTransparency false in
 /-- An opposite-port closure is supported by any walk containing its
 retained arc and all three restored return edges. -/
 theorem oppositePortClosure_edges_subset_of_retained_and_return

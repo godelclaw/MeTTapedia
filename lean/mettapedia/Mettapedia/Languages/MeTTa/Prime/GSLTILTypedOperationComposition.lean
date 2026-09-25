@@ -340,6 +340,7 @@ def eventCount (system : GSLT) : GSLTObservation system where
   Value := Nat
   readout := List.length
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- A real promotion followed by target identity exercises the generic
 typed/represented/admitted composition in the current finite signature. -/
 theorem currentComposite_runs_promotion

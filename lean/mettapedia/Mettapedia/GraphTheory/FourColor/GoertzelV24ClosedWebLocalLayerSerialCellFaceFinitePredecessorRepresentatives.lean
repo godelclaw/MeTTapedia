@@ -270,6 +270,7 @@ theorem sourceLocalLayerBoundaryRebaseFaceComponentEdges_eq_of_reachable
   · rintro ⟨dart, hedge, hdart⟩
     exact ⟨dart, hedge, hreachable.trans hdart⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every actual opened-source Cell supplies the equivalence, activity, and
 cap-coherence laws required by the finite predecessor selector. -/
 theorem sourceLocalLayerSerialFaceFinitePredecessorSemanticAt

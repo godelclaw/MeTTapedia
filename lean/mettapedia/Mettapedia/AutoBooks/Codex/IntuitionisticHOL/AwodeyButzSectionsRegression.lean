@@ -68,6 +68,7 @@ theorem topSection_restrict_comp :
       topSection.toSectionOnTop.restrict (emptyInclTrue ≫ trueInclTop) := by
   exact topSection.toSectionOnTop.restrict_comp emptyInclTrue trueInclTop
 
+set_option backward.isDefEq.respectTransparency false in
 theorem false_not_mem_trueRestriction_range :
     false ∉
       ((topSection.toSectionOnTop.restrict trueInclTop).toLocalSection.range : Set reflEtale.Carrier) := by

@@ -90,6 +90,7 @@ theorem compiledClauseFactorGraph_unnormalizedJoint_eq_worldWeight
   exact WeightedGroundClause.evalOnScope_eq_eval _ W
 
 omit [DecidableEq ClauseId] in
+set_option backward.isDefEq.respectTransparency.types false in
 /-- VE-style constraint event for the compiled clause factor graph. -/
 lemma weightOfConstraints_eq_worldWeight_sum
     [Fintype Atom]
@@ -126,6 +127,7 @@ lemma weightOfConstraints_eq_worldWeight_sum
   · rfl
 
 omit [DecidableEq ClauseId] in
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The countable query mass for finite constraint queries agrees with VE constraint weight. -/
 lemma weightOfConstraints_eq_queryMass
     [Fintype Atom]
@@ -148,6 +150,7 @@ lemma weightOfConstraints_eq_queryMass
   split_ifs <;> rfl
 
 omit [DecidableEq ClauseId] in
+set_option backward.isDefEq.respectTransparency.types false in
 lemma veQueryWeight_eq_worldWeight_sum
     [Fintype Atom]
     (M : GroundMLN Atom ClauseId)
@@ -159,6 +162,7 @@ lemma veQueryWeight_eq_worldWeight_sum
   simpa using weightOfConstraints_eq_worldWeight_sum M support constraints
 
 omit [DecidableEq ClauseId] in
+set_option backward.isDefEq.respectTransparency.types false in
 lemma veQueryWeight_eq_queryMass
     [Fintype Atom]
     (M : GroundMLN Atom ClauseId)

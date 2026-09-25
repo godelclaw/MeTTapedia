@@ -20,6 +20,7 @@ open Mettapedia.KR.ConceptGeometry.AbstractInheritance
 
 universe u v
 
+set_option backward.isDefEq.respectTransparency.types false in
 deriving instance Fintype for MoralValueAttribute
 
 /-- A direct case/value evidence table for value attribution. -/

@@ -49,6 +49,7 @@ theorem EvenKempeFusionLens.bcFirstOrderInterval_length_pos
     0 < (lens01.bcFirstOrderInterval lens23 first second horder).length := by
   exact lens01.bRoute.ambientPath.supportInterval_pos _ _ horder
 
+set_option backward.isDefEq.respectTransparency false in
 theorem EvenKempeFusionLens.bcSecondOrderInterval_length_pos
     {data : DegreeTwoBoundaryData G 4}
     {C : G.EdgeColoring Color} {a b c : Color}

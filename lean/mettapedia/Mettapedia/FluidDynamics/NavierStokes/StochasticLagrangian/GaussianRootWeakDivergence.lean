@@ -158,7 +158,7 @@ theorem integrable_weighted_divergence_energy (gamma : ℝ) (hg : 0 < gamma)
   have h := PancakePeriodicWeakDerivative.integrable_mul_continuous _ _
     (memLp_divergence gamma hg chi modes u hu centers hc tau i).integrable_sq
     ((continuous_rootPatch gamma hg chi modes u
-      (summable_fourierMoment_of_le u (by omega : 1 ≤ 2) hu) centers hc tau i).pow 2)
+      (summable_fourierMoment_of_le u (by omega : 1 ≤ 2) hu) centers hc tau i).fun_pow 2)
   simpa only [mul_comm] using h
 
 theorem integrable_weighted_coordinate_energy (gamma : ℝ) (hg : 0 < gamma)
@@ -172,7 +172,7 @@ theorem integrable_weighted_coordinate_energy (gamma : ℝ) (hg : 0 < gamma)
   have h := PancakePeriodicWeakDerivative.integrable_mul_continuous _ _
     (memLp_coordinateDerivative gamma hg chi modes u hu centers hc tau i j).norm.integrable_sq
     ((continuous_rootPatch gamma hg chi modes u
-      (summable_fourierMoment_of_le u (by omega : 1 ≤ 2) hu) centers hc tau i).pow 2)
+      (summable_fourierMoment_of_le u (by omega : 1 ≤ 2) hu) centers hc tau i).fun_pow 2)
   simpa only [mul_comm] using h
 
 theorem integral_weighted_divergence_le_coordinate_energy (gamma : ℝ) (hg : 0 < gamma)

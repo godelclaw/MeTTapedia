@@ -54,6 +54,7 @@ namespace OrientedFacialPentagonCapPair
 
 variable {data : Data G}
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Regard one retained boundary dart of the simultaneous vertex cut as the
 corresponding manuscript-side boundary port. -/
 def boundaryPortOfBoundaryDart

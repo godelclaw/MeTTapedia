@@ -33,6 +33,7 @@ open scoped ENNReal
 
 /-! ## Architecture-neutral observation coordinates -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- ONA control quantities that can be observed as nonnegative intensities.
 These are observation coordinates, not a replacement for ONA's event, memory,
 or cycle state. -/

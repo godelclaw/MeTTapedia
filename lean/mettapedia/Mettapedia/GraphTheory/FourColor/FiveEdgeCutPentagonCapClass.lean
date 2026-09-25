@@ -43,7 +43,7 @@ theorem card_capVertex_lt
   classical
   have hcap := data.card_capVertex
   have hsplit :=
-    Finset.filter_card_add_filter_neg_card_eq_card
+    Finset.card_filter_add_card_filter_not
       (s := (Finset.univ : Finset V)) (p := data.keep)
   have hretained : Fintype.card (RetainedVertex data.keep) =
       (Finset.univ.filter data.keep).card := by

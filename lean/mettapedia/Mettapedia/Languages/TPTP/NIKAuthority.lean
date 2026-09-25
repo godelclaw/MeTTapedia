@@ -417,6 +417,7 @@ theorem boolSatisfiable_iff_all_true (formulas : List Bool) :
   · intro allTrue
     exact ⟨(), (boolSatisfiesAll_iff_all_true () formulas).mpr allTrue⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem boolStatusPredicate_iff_meaning
     (status : Status) (claim : RelationClaim Bool) :
     boolStatusPredicate status claim <->

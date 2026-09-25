@@ -106,6 +106,7 @@ structure InteriorOccurrence.SourceSquareTwoHopBypass
             (nextCorridorInterior firstInterior hfirstNext) hbridgeNext).center ∨
       vertex = occurrence.successor
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **L1 finite residual-row bypass.**  Each of the three non-old-forward
 origin rows constructs a two-step pointed bypass through the successor
 Cell--3 centre, retaining the fact that this centre is its only new support

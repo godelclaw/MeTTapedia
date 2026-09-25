@@ -379,6 +379,7 @@ actual `rhoCalc` language presentation. -/
 abbrev RhoNameNativeFiber :=
   languageSortFiber rhoCalc rhoName
 
+set_option backward.isDefEq.respectTransparency.types false in
 noncomputable instance : Order.Frame RhoNameNativeFiber := by
   dsimp [RhoNameNativeFiber, languageSortFiber, languagePresheafLambdaTheory]
   infer_instance
@@ -433,6 +434,7 @@ private theorem truthIndicator_modular (p q : Prop) :
   by_cases hp : p <;> by_cases hq : q <;>
     simp [truthIndicator, hp, hq]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- A normalized modular valuation on the concrete rho native-type fiber.
 It observes whether a native predicate contains the identity at `Name` and
 whether it contains `NQuote`, assigning equal weight to the two observations.
@@ -486,6 +488,7 @@ theorem rhoQuotePredicate_value :
   norm_num [rhoNameNativeValuation, truthIndicator,
     nameIdentity_not_mem_rhoQuotePredicate, nquote_mem_rhoQuotePredicate]
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem nquote_not_mem_rhoQuotePredicate_compl :
     ¬ (rhoQuotePredicateᶜ).obj (op rhoProcObj) nquoteMor := by
   intro hcompl

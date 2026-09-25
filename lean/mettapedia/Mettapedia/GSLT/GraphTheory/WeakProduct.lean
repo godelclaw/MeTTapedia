@@ -52,6 +52,7 @@ def projectRight {α β : Type*} [DecidableEq β] (s : Finset (α ⊕ β)) : Fin
   s.filterMap (fun x => match x with | .inl _ => none | .inr b => some b)
     (by intro a b; cases a <;> cases b <;> simp [eq_comm])
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The weak product of two graph models D₁ ◇ D₂.
 
     The weak product construction allows combining graph models

@@ -60,6 +60,7 @@ inductive UWPred : ℕ → Type where
   | advisedBy : UWPred 2
 deriving DecidableEq
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Two persons from the language area. -/
 inductive UWPerson where
   | p335  -- professor, Faculty
@@ -129,6 +130,7 @@ section UWCSE
 
 open Mettapedia.PLN.WorldModel.PLNWorldModel
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Clause identifiers for the UW-CSE micro-slice ground MLN.
 Naming: rule family + grounding substitution. -/
 inductive UWClauseId where
@@ -546,6 +548,7 @@ theorem uwcse_totalMass_eq_two :
   rw [tsum_eq_sum (s := Finset.univ) (fun W hW => (hW (Finset.mem_univ W)).elim)]
   exact uwcse_sum_worldWeight_eq_two
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem uwcse_queryMass_advisedBy_eq_one :
     (clauseMassSemantics uwcseGroundMLN uwcseFullSupport).queryMass
       advisedBy429_335Query = 1 := by

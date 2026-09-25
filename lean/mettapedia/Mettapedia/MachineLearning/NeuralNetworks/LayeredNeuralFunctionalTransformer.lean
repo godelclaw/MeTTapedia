@@ -199,12 +199,14 @@ def movedFirstRowFeatures :
     LayeredWeightFeatures squareShape (Fin 1) :=
   transportRows partialRowCellSwap firstRowFeatures
 
+set_option backward.isDefEq.respectTransparency false in
 theorem movedFirstRowFeatures_grid00 :
     movedFirstRowFeatures grid00 0 = 0 := by
   simp
     [movedFirstRowFeatures, transportRows, partialRowCellSwap,
       firstRowFeatures, grid00, grid10]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem movedFirstRowFeatures_grid10 :
     movedFirstRowFeatures grid10 0 = 1 := by
   simp
@@ -228,6 +230,7 @@ theorem movedFirstRowFeatures_grid11 :
       simp at equality]
   norm_num [firstRowFeatures, grid11]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem firstRowFeatures_sum :
     (∑ coordinate : LayeredWeightCoordinate squareShape,
       firstRowFeatures coordinate 0) = 2 := by

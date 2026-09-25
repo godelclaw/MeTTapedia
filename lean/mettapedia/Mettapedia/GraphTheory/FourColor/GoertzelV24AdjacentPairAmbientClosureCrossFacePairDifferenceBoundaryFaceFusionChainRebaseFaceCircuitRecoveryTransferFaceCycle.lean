@@ -1330,6 +1330,7 @@ theorem selectedFaceAt_injective_of_saturated
     _ = circuit.lossPositionAt secondTransfer := by rw [htransfer]
     _ = second := hsecond
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Hence saturation makes the complete physical selected-face word
 duplicate-free. -/
 theorem selectedFaceWord_nodup_of_saturated
@@ -1384,6 +1385,7 @@ theorem selectedFaces_card_eq_rebase_arcLength_of_saturated
     (circuit.selectedFaceWord_nodup_of_saturated hminimal hlength)
     |>.trans rebaseCircuit.selectedFaceWord_length
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The physical selected-face word is a permutation of the shortest
 transfer circuit's source-face word. -/
 theorem selectedFaceWord_perm_sourceFaces_of_saturated

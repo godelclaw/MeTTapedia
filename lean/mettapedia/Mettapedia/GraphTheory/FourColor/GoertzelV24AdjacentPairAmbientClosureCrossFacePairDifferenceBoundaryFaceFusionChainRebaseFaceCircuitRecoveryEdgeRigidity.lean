@@ -248,6 +248,7 @@ theorem supportEdgeValues_nodup_of_arcLength_le_three
                 simp [arcLength, hrest, htail, hfinal]
               omega
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Hence support-edge positions are injective for every recovery
 circuit of length at most three. -/
 theorem supportEdgeAt_injective_of_arcLength_le_three

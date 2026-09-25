@@ -279,6 +279,7 @@ theorem reflective_step :
       (rule := rhoCommRewrite) ?_ reflective_match (.nil _) rfl⟩
   simp [language]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The syntactic interpretation of the identical five-field core cannot
 produce that step. -/
 theorem syntactic_step_rejects :

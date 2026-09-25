@@ -77,15 +77,16 @@ theorem manuscriptS2AllOuterStubsFixedForCollar_iff (outerStubs : Finset G.edgeS
     have hpath' := (reflTransGen_subtype_iff (S := edgeColoringsAgreeOnOuterStubs outerStubs C)
       (hclosed C) ⟨C, fun _ _ => rfl⟩
       ⟨D, (edgeColoringsAgreeOnOuterStubs_iff outerStubs C D).2 hCD⟩).1 hpath
-    exact hpath'.mono fun a b hab => (outerStubAvoidingEdgeKempeStep_iff outerStubs a b).1 hab
+    exact Relation.ReflTransGen.mono
+      (fun a b hab => (outerStubAvoidingEdgeKempeStep_iff outerStubs a b).1 hab) _ _ hpath'
   · intro h base x y
     have hword : x.1.boundaryWord (↑outerStubs : Set G.edgeSet) =
         y.1.boundaryWord (↑outerStubs : Set G.edgeSet) :=
       ((edgeColoringsAgreeOnOuterStubs_iff outerStubs _ _).1 x.2).symm.trans
         ((edgeColoringsAgreeOnOuterStubs_iff outerStubs _ _).1 y.2)
     exact (reflTransGen_subtype_iff (S := edgeColoringsAgreeOnOuterStubs outerStubs base)
-      (hclosed base) x y).2 ((h x.1 y.1 hword).mono fun a b hab =>
-        (outerStubAvoidingEdgeKempeStep_iff outerStubs a b).2 hab)
+      (hclosed base) x y).2 (Relation.ReflTransGen.mono (fun a b hab =>
+        (outerStubAvoidingEdgeKempeStep_iff outerStubs a b).2 hab) _ _ (h x.1 y.1 hword))
 
 end Collar
 

@@ -117,6 +117,7 @@ theorem sourceTwoTileAlignedEnclosedTerminalProfileDataAt_regionEdges_subset
     sourceTwoTileAlignedEnclosedOrderedProfileDataAt,
     vertexSetBoundaryGraphCutDataWithIndexing] using hedge
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Read an enclosed regional edge from an arbitrary literal open coloring. -/
 noncomputable def sourceTwoTileAlignedEnclosedLiteralColorOnVertexSide
     {source : SourceTrail G}

@@ -2000,6 +2000,7 @@ private theorem length_step_rewrite_id (name : String) :
   have prefixLength : ("step-rewrite-" : String).length = 13 := rfl
   simp [String.length_append, prefixLength]
 
+set_option backward.isDefEq.respectTransparency.types false in
 private theorem mapped_find?_fixed_none (source : DirectTraceLanguage)
     {fixedId : RuleId} (shortLength : fixedId.value.length < 13) :
     (source.language.rewrites.map rewriteStepRule).find?

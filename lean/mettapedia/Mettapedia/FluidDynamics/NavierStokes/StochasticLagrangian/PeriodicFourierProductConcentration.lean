@@ -111,7 +111,7 @@ theorem exists_unit_energy_fourthEnergy_gt (C : ℝ) :
   obtain ⟨n, hn⟩ := exists_packet_productEnergy_gt C
   let E : ℝ := 2 * n + 1
   have hE : 0 < E := by dsimp only [E]; positivity
-  let f : C(T3, ℂ) := ⟨fun x ↦ (Real.sqrt E)⁻¹ • packet n x, continuous_const.smul (continuous_packet n)⟩
+  let f : C(T3, ℂ) := ⟨fun x ↦ (Real.sqrt E)⁻¹ • packet n x, continuous_const.fun_smul (continuous_packet n)⟩
   have hnorm (x : T3) : ‖f x‖ ^ 2 = E⁻¹ * ‖packet n x‖ ^ 2 := by
     simp only [f, ContinuousMap.coe_mk, norm_smul, mul_pow, Real.norm_eq_abs,
       sq_abs, inv_pow, Real.sq_sqrt hE.le]

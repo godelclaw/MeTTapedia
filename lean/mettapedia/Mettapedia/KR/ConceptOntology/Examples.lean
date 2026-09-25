@@ -18,6 +18,7 @@ open Mettapedia.PLN.Evidence.EvidenceQuantale
 open Mettapedia.PLN.WorldModel.PLNWorldModel
 open Mettapedia.KR.ConceptOntology
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Tiny object domain for ontology examples. -/
 inductive Creature where
   | tweety
@@ -25,6 +26,7 @@ inductive Creature where
   | plane
   deriving DecidableEq, Repr, Fintype
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Tiny concept domain separating extensional inheritance from typicality. -/
 inductive Concept where
   | bird
@@ -32,6 +34,7 @@ inductive Concept where
   | fly
   deriving DecidableEq, Repr, Fintype
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Separate query sorts for membership and typicality/default evidence. -/
 inductive ToySort where
   | membership

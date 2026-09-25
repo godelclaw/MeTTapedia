@@ -76,7 +76,8 @@ private theorem reachable_sup_iff_selected_componentClosure
   · intro huv
     have hpath : Relation.ReflTransGen (fun x y => G.Adj x y ∨ H.Adj x y) u v := by
       have h := (SimpleGraph.reachable_iff_reflTransGen u v).mp huv
-      exact h.mono fun x y hxy => (SimpleGraph.sup_adj G H x y).mp hxy
+      exact Relation.ReflTransGen.mono
+        (fun x y hxy => (SimpleGraph.sup_adj G H x y).mp hxy) u v h
     have hstate : SelectedSplitState G H Selected u v :=
       selectedSplitState_of_reflTransGen G H Selected u v hswitch hu hpath
     rcases hstate with ⟨_, h⟩ | ⟨last, hlastSel, h, _, hreach⟩ |
@@ -269,8 +270,7 @@ theorem localTrackedEdgeGraph_reachable_lineEdge_iff
     (C : E → Color) (a b : Color) (u v : SquareLocalNode) :
     (Q.localTrackedEdgeGraph C a b).Reachable (Q.lineEdge u) (Q.lineEdge v) ↔
       (squareLineGraph (Q.boundaryWord C) (Q.internalColoring C) a b).Reachable u v := by
-  simpa [localTrackedEdgeGraph, lineEdgeEmbedding] using
-    reachable_map_embedding_iff
+  exact reachable_map_embedding_iff
       (squareLineGraph (Q.boundaryWord C) (Q.internalColoring C) a b)
       (Q.lineEdgeEmbedding hdist) u v
 
@@ -532,7 +532,7 @@ private theorem componentClosure_iff_contractedReachable
       exact ihxy.trans ihyz
   · intro hef
     have hpath := (SimpleGraph.reachable_iff_reflTransGen e f).mp hef
-    exact hpath.mono fun x y hxy => hxy.2
+    exact Relation.ReflTransGen.mono (fun _ _ hxy => hxy.2) e f hpath
 
 /-- Exact graph-level composition theorem for a facial square. Between any
 two edges outside the square, ambient tracked-color reachability is precisely
@@ -563,21 +563,23 @@ theorem trackedEdgeGraph_reachable_exterior_iff_contracted
       Relation.ReflTransGen (Q.facialSquareComponentStep RS hdist C a b) e f := by
         constructor
         · intro h
-          exact h.mono fun x y hxy => by
-            rcases hxy with hExt | hLocal
-            · exact Or.inr (Or.inl hExt)
-            · rcases (Q.localTrackedEdgeGraph_reachable_exterior_iff
-                  hdist C a b x y).mp hLocal with heq | hPortal
-              · exact Or.inl heq
-              · exact Or.inr (Or.inr hPortal)
+          refine Relation.ReflTransGen.mono ?_ e f h
+          intro x y hxy
+          rcases hxy with hExt | hLocal
+          · exact Or.inr (Or.inl hExt)
+          · rcases (Q.localTrackedEdgeGraph_reachable_exterior_iff
+                hdist C a b x y).mp hLocal with heq | hPortal
+            · exact Or.inl heq
+            · exact Or.inr (Or.inr hPortal)
         · intro h
-          exact h.mono fun x y hxy => by
-            rcases hxy with rfl | hExt | hPortal
-            · exact Or.inl SimpleGraph.Reachable.rfl
-            · exact Or.inl hExt
-            · exact Or.inr
-                ((Q.localTrackedEdgeGraph_reachable_exterior_iff
-                  hdist C a b x y).mpr (Or.inr hPortal))
+          refine Relation.ReflTransGen.mono ?_ e f h
+          intro x y hxy
+          rcases hxy with rfl | hExt | hPortal
+          · exact Or.inl SimpleGraph.Reachable.rfl
+          · exact Or.inl hExt
+          · exact Or.inr
+              ((Q.localTrackedEdgeGraph_reachable_exterior_iff
+                hdist C a b x y).mpr (Or.inr hPortal))
     _ ↔ _ := Q.componentClosure_iff_contractedReachable RS hdist C a b e f
 
 /-- Ambient tracked-color reachability on all non-square edges is computed

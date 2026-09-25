@@ -420,12 +420,14 @@ def queryGSLT : GSLT where
     subst target'
     exact step
 
+set_option backward.isDefEq.respectTransparency.types false in
 def stepDecision : EffectiveStructure.StepDecision queryGSLT where
   decideStep source target := decide (MachineStep source target)
   correct := by
     intro source target
     exact decide_eq_true_iff
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The OSLF-generated exact-target NTT accepts exactly one successful
 mainline type-query transition. -/
 theorem decideStep_iff_ntt (source target : Machine) :

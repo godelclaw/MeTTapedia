@@ -438,6 +438,7 @@ theorem visible_expansive_budget3_eq_univ :
     | awareReady =>
         exact awareReady_mem_visible_expansive_budget3
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem thatsAllAt_expansive_budget3_readyToAct :
     expansiveConstructionBase.thatsAllAt (3 : ℕ) readyToActPremise := by
   rw [ConstructionBase.thatsAllAt, ConstructionBase.closureAt,

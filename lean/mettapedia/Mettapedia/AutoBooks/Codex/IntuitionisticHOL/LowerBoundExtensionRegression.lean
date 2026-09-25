@@ -61,6 +61,7 @@ def Good : {τ : Ty BaseSort} → Carrier τ → Prop
   | .base _, x => x = .good
   | .arr _ _, f => ∀ x, Good x → Good (f x)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The tiny semilocal model validating closed-good terms but not bad extensions. -/
 def model : SemilocalModel BaseSort Const where
   toApplicativeStructure :=
@@ -119,6 +120,7 @@ theorem good_const : {τ : Ty BaseSort} → (c : Const τ) → Good (constInterp
       rcases hx with rfl
       rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem goodEnv_extend {ρ : Env Γ} (hρ : GoodEnv ρ) {σ : Ty BaseSort}
     {x : Carrier σ} (hx : Good x) :
     GoodEnv (ApplicativeStructure.Env.extend model.toApplicativeStructure ρ x) := by
@@ -150,6 +152,7 @@ theorem eval_good {Γ : Ctx BaseSort} (ρ : Env Γ) (hρ : GoodEnv ρ) :
   | _, .all _ => trivial
   | _, .ex _ => trivial
 
+set_option backward.isDefEq.respectTransparency false in
 theorem good_implies_extent {τ : Ty BaseSort} {x : Carrier τ} (hx : Good x) :
     extent x := by
   cases τ with
@@ -195,6 +198,7 @@ def extendedCollapseEnv : Env [atomTy, atomTy ⇒ atomTy] :=
       badCollapseTerm = Atom.worse := by
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The paper-facing lower-bound extension law is not forced by the bare model fields. -/
 theorem not_supportsLowerBoundExtension :
     ¬ SemilocalModel.SupportsLowerBoundExtension model := by

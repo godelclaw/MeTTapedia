@@ -35,6 +35,7 @@ variable {V E : Type*} [Fintype V] [DecidableEq V]
 
 noncomputable section
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **L1 (retained face length).** A fully retained face of a two-sided
 ambient rotation system has exactly the same boundary-support cardinality
 after a literal vertex-region opening.

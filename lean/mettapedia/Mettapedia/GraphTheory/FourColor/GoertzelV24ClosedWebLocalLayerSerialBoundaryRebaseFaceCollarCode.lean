@@ -302,7 +302,7 @@ theorem sourceLocalLayerBoundaryRebaseSuccessor_reachable_iff_faceCollarCode
   constructor
   · intro hclosure
     exact Relation.ReflTransGen.lift coordinate
-      (fun first second h => (hstep first second).1 h) hclosure
+      (fun first second h => (hstep first second).1 h) _ _ hclosure
   · intro hclosure
     have hlift : Relation.ReflTransGen
         (fun first second : {dart // dart ∈ carrier} =>
@@ -315,8 +315,8 @@ theorem sourceLocalLayerBoundaryRebaseSuccessor_reachable_iff_faceCollarCode
       Relation.ReflTransGen.lift coordinate.symm
         (fun first second h =>
           (hstep (coordinate.symm first) (coordinate.symm second)).2 (by
-            simpa using h)) hclosure
-    simpa [coordinate, carrier] using hlift
+            simpa using h)) _ _ hclosure
+    simpa [Function.onFun, coordinate, carrier] using hlift
 
 end LocalLayerFormation
 

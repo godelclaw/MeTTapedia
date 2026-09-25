@@ -178,6 +178,7 @@ theorem v13M4Concrete_buffer_distance_protected {m t : Nat}
         omega
       exact hpos
 
+set_option backward.isDefEq.respectTransparency false in
 noncomputable def v13M4ConcreteComponents :
     V13M4LocalComponents V13M4ConcreteE V13M4ConcreteG where
   GaugeIndex _ m _ := V13M4ConcreteGaugeIndex m
@@ -923,6 +924,7 @@ theorem v13M4Concrete_formula_length {m t : Nat}
 def v13M4ConcreteCNFSizeBound (_ : Unit) (m t : Nat) : Nat :=
   4 * (2 * (m + 1) + (t + 1))
 
+set_option backward.isDefEq.respectTransparency false in
 noncomputable def v13M4ConcreteCNFCompilation :
     V13M4UniformCNFCompilation V13M4ConcreteE
       (fun _ m t => V13M4ConcreteCNFVar m t) where

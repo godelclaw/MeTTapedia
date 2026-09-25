@@ -36,7 +36,8 @@ def edgeEquiv (iso : G ≃g H) : G.edgeSet ≃ H.edgeSet :=
   (sym2Equiv iso).subtypeEquiv (fun edge => by
     induction edge using Sym2.inductionOn with
     | _ left right =>
-      simpa [sym2Equiv] using ((iso.map_rel_iff).symm :
+      change s(left, right) ∈ G.edgeSet ↔ Sym2.map iso s(left, right) ∈ H.edgeSet
+      simpa using ((iso.map_rel_iff).symm :
         G.Adj left right ↔ H.Adj (iso left) (iso right)))
 
 omit [Fintype V] [DecidableEq V] [Fintype W] [DecidableEq W]
@@ -55,7 +56,8 @@ theorem edgeEquiv_mem_incidentEdgeFinset_iff
   rcases edge with ⟨edge, hedge⟩
   induction edge using Sym2.inductionOn with
   | _ left right =>
-    simp [edgeEquiv, sym2Equiv, Sym2.mem_iff]
+    change iso vertex ∈ Sym2.map iso s(left, right) ↔ vertex ∈ s(left, right)
+    simp [Sym2.mem_iff]
 
 /-- An isomorphism maps the complete incident-edge finite set at a vertex
 onto the complete incident-edge finite set at its image. -/

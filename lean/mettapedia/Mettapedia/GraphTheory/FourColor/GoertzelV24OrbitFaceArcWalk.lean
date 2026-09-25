@@ -62,6 +62,7 @@ def faceArcDarts (graphData : Data G) (root target : G.Dart)
     faceCycleDart graphData.toRotationSystem root
       ⟨index.val, lt_trans index.isLt position.isLt⟩
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem length_faceArcDarts
     (graphData : Data G) (root target : G.Dart)
     (htarget : target ∈ graphData.toRotationSystem.faceOrbit root) :
@@ -69,6 +70,7 @@ def faceArcDarts (graphData : Data G) (root target : G.Dart)
       (faceArcPosition graphData root target htarget).val := by
   simp [faceArcDarts]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every retained dart belongs to the same face orbit as the root. -/
 theorem mem_faceOrbit_of_mem_faceArcDarts
     (graphData : Data G) (root target dart : G.Dart)
@@ -79,6 +81,7 @@ theorem mem_faceOrbit_of_mem_faceArcDarts
   rcases hdart with ⟨index, rfl⟩
   exact faceCycleDart_mem graphData.toRotationSystem root _
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The target is the first omitted dart, hence is not itself retained. -/
 theorem target_not_mem_faceArcDarts
     (graphData : Data G) (root target : G.Dart)
@@ -94,6 +97,7 @@ theorem target_not_mem_faceArcDarts
   have hvals := congrArg Fin.val hpositions
   exact (Nat.ne_of_lt index.isLt) hvals
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A strict facial prefix cannot contain a predecessor of its root. -/
 theorem predecessor_not_mem_faceArcDarts
     (graphData : Data G) (root target predecessor : G.Dart)
@@ -135,6 +139,7 @@ theorem predecessor_not_mem_faceArcDarts
   change index.val + 1 = 0 at hvals
   omega
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A retained facial dart keeps its successor in the prefix unless that
 successor is exactly the omitted target. -/
 theorem phi_mem_faceArcDarts_of_mem_of_ne_target
@@ -188,6 +193,7 @@ theorem phi_mem_faceArcDarts_of_mem_of_ne_target
     _ = graphData.toRotationSystem.phi dart :=
       congrArg graphData.toRotationSystem.phi hindex
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Provided it does not wrap to the root, the target's successor lies after
 the cut and is absent from the retained prefix. -/
 theorem phi_target_not_mem_faceArcDarts
@@ -246,6 +252,7 @@ theorem phi_target_not_mem_faceArcDarts
   change index.val = position.val + 1 at hvals
   omega
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The retained facial darts form a graph-dart chain. -/
 theorem faceArcDarts_isChain
     (graphData : Data G) (root target : G.Dart)
@@ -274,6 +281,7 @@ underlying edge.  This is the prefix form of
 graph-side fact needed to upgrade a canonical hole arc from a walk to a
 trail, without asserting vertex simplicity or Jordan separation. -/
 
+set_option backward.isDefEq.respectTransparency false in
 theorem map_edge_faceArcDarts_nodup
     (graphData : Data G)
     (htwoSided : OrbitFacesTwoSided graphData.toRotationSystem)
@@ -303,6 +311,7 @@ the form appropriate to annular hole faces: the full face may contain a
 bridge stub and therefore fail global two-sidedness, while the particular
 open arc can still be certified edge-simple. -/
 
+set_option backward.isDefEq.respectTransparency false in
 theorem map_edge_faceArcDarts_nodup_of_local_twoSided
     (graphData : Data G)
     (root target : G.Dart)
@@ -368,6 +377,7 @@ theorem map_edge_faceArcDarts_nodup_of_local_twoSided
       exact hsame.symm
     exact (hlocal rightDart hrightArc hsameAlpha).elim
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Cutting a face orbit immediately before a target dart gives an actual
 walk between the two dart roots.  Its length is the target's forward cyclic
 position and its darts are exactly the retained facial segment. -/

@@ -288,6 +288,7 @@ theorem hiddenSwap_moves_secondMatrix_column :
       Sum.inr (Sum.inl ((0 : Fin 1), (1 : Fin 2)))
   simp
 
+set_option backward.isDefEq.respectTransparency false in
 /-- An arbitrary cross-layer coordinate swap violates the matrix-layer label
 preserved by every genuine neuron relabeling. -/
 theorem crossLayerSwap_changes_layer :

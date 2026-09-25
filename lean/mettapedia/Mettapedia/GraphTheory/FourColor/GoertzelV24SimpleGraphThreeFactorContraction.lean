@@ -80,9 +80,10 @@ theorem reachable_sup_sup_iff_subtype_threeFactorComponentClosure
               first second Selected left.1 right.1 left.2 right.2
                 hswitchFirstSecond).1
               hfirstSecond
-          exact hfirstSecondClosure.mono (by
+          exact Relation.ReflTransGen.mono (by
             intro left right hfactor
             exact hfactor.elim Or.inl (fun h => Or.inr (Or.inl h)))
+            left right hfirstSecondClosure
         · exact Relation.ReflTransGen.single (Or.inr (Or.inr hthird)))
       (fun _ _ hleft hright => hleft.trans hright)
   · intro hclosure

@@ -334,10 +334,12 @@ def eraseUnit : Set Unit →o Set Unit where
     intro _ _ _
     exact Set.Subset.rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem forceUnit_lfp : forceUnit.lfp = Set.univ := by
   rw [lfp_eq_iterate_empty]
   simp [forceUnit]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem eraseUnit_gfp : eraseUnit.gfp = ∅ := by
   rw [gfp_eq_iterate_univ]
   simp [eraseUnit]

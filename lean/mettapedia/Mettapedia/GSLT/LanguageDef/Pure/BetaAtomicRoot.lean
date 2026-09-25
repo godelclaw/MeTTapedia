@@ -793,6 +793,7 @@ theorem run_of_rawRun :
             (tokens + 1) budget htailBudget hrun hdone
           simpa [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using htailRun
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Interface completion is exactly the finite viability predicate. -/
 theorem hasCompletion_iff_viable (goal : Expr) (state : State) :
     (betaAtomicRoot goal).asRefinementInterface.HasCompletion state ↔ viable state := by

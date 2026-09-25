@@ -362,6 +362,7 @@ private theorem assertionHypothesisFormalNames_nodup_of_lookup
   simp [encodeDVPair, Builder.dvPair, Pattern.isGroundAt,
     Pattern.isGroundListAt]
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] private theorem encodeFrame_isGroundAt (depth : Nat)
     (frame : RuntimeFrame) :
     (encodeFrame frame).isGroundAt depth = true := by

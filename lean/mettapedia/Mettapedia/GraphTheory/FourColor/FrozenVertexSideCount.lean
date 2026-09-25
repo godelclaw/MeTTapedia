@@ -29,6 +29,7 @@ def sideObservation (keep : V → Prop) (mark : M → RS.D) (m : M) :
   exact if h : keep (RS.vertOf (mark m)) then
     some (retainedDartEquivInternalSumBoundary RS keep ⟨mark m, h⟩) else none
 
+set_option backward.isDefEq.respectTransparency false in
 theorem sideObservation_some_iff (keep : V → Prop) (mark : M → RS.D) (m : M)
     (d : InternalDart RS keep ⊕ BoundaryDart RS keep) :
     sideObservation RS keep mark m = some d ↔

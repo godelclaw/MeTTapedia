@@ -102,8 +102,7 @@ theorem innerStub_mem_colorPairGraph_support_of_mem_activeSupport
     data.innerStub inner ∈ (colorPairGraph C first second).support := by
   have hselected : C (data.innerBoundaryEdge inner) = first ∨
       C (data.innerBoundaryEdge inner) = second := by
-    simpa [cap5ActiveSupport, AnnularBoundaryData.innerBoundaryWord,
-      cap5BoundaryWordOfEdges] using hinner
+    exact (Finset.mem_filter.mp hinner).2
   apply ((colorPairGraph C first second).degree_pos_iff_mem_support
     (data.innerStub inner)).mp
   rw [AnnularBoundaryData.colorPairGraph_degree_innerStub
@@ -134,8 +133,7 @@ theorem mem_activeSupport_of_componentContainsInnerStub
     rw [AnnularBoundaryData.colorPairGraph_degree_innerStub
       data hdata C first second inner] at hdegreePositive
     simp [hnotSelected] at hdegreePositive
-  simpa [cap5ActiveSupport, AnnularBoundaryData.innerBoundaryWord,
-    cap5BoundaryWordOfEdges] using hselected
+  exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hselected⟩
 
 /-- If the inner pair support has cardinality two and every component is
 radial, then the selected support graph has exactly two connected
@@ -323,8 +321,7 @@ theorem nonempty_componentRadialPath
         ⟨start, hstartComponent, hstartEq⟩
   have hstartSelected : C (data.innerBoundaryEdge inner) = first ∨
       C (data.innerBoundaryEdge inner) = second := by
-    simpa [cap5ActiveSupport, AnnularBoundaryData.innerBoundaryWord,
-      cap5BoundaryWordOfEdges] using hstartActive
+    exact (Finset.mem_filter.mp hstartActive).2
   have hstartDegree :
       (colorPairSupportGraph C first second).degree start = 1 := by
     rw [colorPairSupportGraph_degree_eq C first second start]

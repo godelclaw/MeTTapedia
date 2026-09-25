@@ -257,6 +257,7 @@ noncomputable instance {α : Type*} [DecidableEq α] :
 
 /-! ## Section 8: Connection to PLN STV -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The PLN strength (truth value) derived from a PathMap store equals
     the empirical hit rate: the fraction of store paths matching the query.
 

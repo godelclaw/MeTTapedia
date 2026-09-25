@@ -385,6 +385,7 @@ theorem regionalTrackedEdgeGraph_univ_reachable_iff_bicoloredSubgraph
   exact trackedEdgeGraph_reachable_iff_bicoloredSubgraph
     graphData C first second left right
 
+set_option backward.isDefEq.respectTransparency false in
 theorem connectionTable_eq_regionalTrackedConnectivity
     {outerCount : Nat}
     (graphData : SimpleGraphDartRotation.Data G)
@@ -539,6 +540,7 @@ theorem isTaitEdgeColoring_relabelEdgeColoring
   exact relabel.injective (hzeroColor.trans hzero.symm)
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+set_option backward.isDefEq.respectTransparency false in
 theorem mem_activeSupport_relabelEdgeColoring_iff
     {outerCount : Nat}
     (data : AnnularBoundaryData G outerCount)

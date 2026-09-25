@@ -374,6 +374,7 @@ theorem alpha_cycleForwardDart_ne_next
   exact rotation.toRotationSystem.alpha_fixfree previous
     (hback.trans hdart.symm)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- At the next coordinate of the simple cycle, the residual dart is the
 unique third dart besides the arriving and outgoing cycle darts. -/
 theorem eq_siteThirdDart_of_next_base_of_ne_cycleDarts

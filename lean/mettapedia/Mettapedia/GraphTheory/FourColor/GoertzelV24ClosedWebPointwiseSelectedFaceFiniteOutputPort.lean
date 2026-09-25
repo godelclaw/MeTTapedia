@@ -204,6 +204,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialFaceOutputFragmentContainsPortFin
         pointwiseSelectedSourceLocalLayerSerialFaceOutputPortTransitionDartAt]
         using hreachable
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The finite selected predicate is exactly the corresponding Boolean of the
 actual graph-derived pre-rebase profile. -/
 theorem pointwiseSelectedSourceLocalLayerSerialFaceOutputFragmentContainsPortFinite_iff_profile

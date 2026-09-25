@@ -430,6 +430,7 @@ theorem image_comprehension_roundtrip (F : Cᵒᵖ ⥤ Type v)
     (φ : Subfunctor F) : imagePredicate φ.ι = φ :=
   le_antisymm (image_of_ι_le_subfunctor F φ) (subfunctor_le_image_of_ι F φ)
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem imageComprehension_galois_key {G F : Cᵒᵖ ⥤ Type v}
     (p : G ⟶ F) (φ : Subfunctor F)
     (h : imagePredicate p ≤ φ) :

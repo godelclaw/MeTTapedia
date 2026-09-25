@@ -126,6 +126,7 @@ def pairedOrbitFaceLabels {Face : Type*}
     (firstLabels secondLabels : Face → F2) : Face → Color :=
   fun face => (firstLabels face, secondLabels face)
 
+set_option backward.isDefEq.respectTransparency false in
 private theorem f2_opposite_unique {common firstOpposite secondOpposite : F2}
     (hfirst : common ≠ firstOpposite)
     (hsecond : common ≠ secondOpposite) :

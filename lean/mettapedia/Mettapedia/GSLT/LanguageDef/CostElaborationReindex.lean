@@ -1028,6 +1028,7 @@ theorem mapStatic_typed_boundary {source target : CIGSLT}
       boundary.typed.boundary.map morphism := by
   exact castTargetType_typed_boundary _ _
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Changing the displayed spelling of a statically mapped certificate does
 not alter the mapped typed boundary retained in a finite occurrence table. -/
 @[simp]
@@ -1260,6 +1261,7 @@ def map_append {source target : CIGSLT}
         rightOccurrences)
 termination_by leftOccurrences.length
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Componentwise table naturality assembles across chronological append.
 The occurrence equality is the canonical composite from the two component
 equalities and structural list mapping. -/

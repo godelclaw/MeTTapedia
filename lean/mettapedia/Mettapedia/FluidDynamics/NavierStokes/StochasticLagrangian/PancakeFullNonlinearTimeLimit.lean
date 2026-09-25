@@ -88,7 +88,8 @@ theorem continuous_parametric_fullErrorPairingMass {P : Type*} [TopologicalSpace
   have hp : Continuous (fun z : P × T3 ↦
       |⟪physicalGapWeight chi M (u z.1) 0 z.2 (spatialVorticity M (u z.1) z.2), fullNonlinearError M (u z.1) z.2⟫|) := by
     simpa only [physicalGapWeight, PancakeRegularizedDiffusion.regularizedGap,
-      add_zero, sub_apply, smul_apply, one_apply_eq_self, Function.comp_apply] using (hz.inner he).abs
+      add_zero, sub_apply, smul_apply, one_apply_eq_self, Function.comp_apply,
+      Pi.sub_apply, Pi.smul_apply'] using (hz.inner he).abs
   have h := continuous_parametric_integral_of_continuous (μ := (volume : Measure T3))
     (f := fun (t : P) (x : T3) ↦
       |⟪physicalGapWeight chi M (u t) 0 x (spatialVorticity M (u t) x), fullNonlinearError M (u t) x⟫|)

@@ -31,6 +31,7 @@ universe u v w x y z a b c d e f g h i j k l
 
 /-! ## Appendix D.1: regioned geometry -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The five disjoint regions in Definition D.1. -/
 inductive V13M4Region where
   | neutral

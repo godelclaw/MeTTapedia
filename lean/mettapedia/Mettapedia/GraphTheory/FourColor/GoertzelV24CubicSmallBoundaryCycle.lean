@@ -76,9 +76,11 @@ noncomputable def sideDartEquivInternalSumCrossing
       rfl
   · intro dart
     rcases dart with internal | crossing
-    · simp only [dif_pos internal.2.2, Sum.elim_inl]
+    · dsimp only [Sum.elim]
+      simp only [dif_pos internal.2.2]
       rfl
-    · simp only [dif_neg crossing.2.2, Sum.elim_inr]
+    · dsimp only [Sum.elim]
+      simp only [dif_neg crossing.2.2]
       rfl
 
 /-- A side dart is equivalently a side vertex together with one of its graph

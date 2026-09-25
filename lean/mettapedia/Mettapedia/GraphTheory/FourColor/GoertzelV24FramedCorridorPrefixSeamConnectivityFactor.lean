@@ -321,15 +321,15 @@ theorem localLayerRightPrefixTrackedGraph_reachable_iff_finiteProfileClosure
     hcubic hrotation color hleftColor pair left right]
   constructor
   · intro hclosure
-    exact hclosure.mono (by
+    exact Relation.ReflTransGen.mono (by
       intro first second hstep
       exact (aligned.localLayerIncomingAndCellProfileFactoredComponentStep_iff_finiteProfileStep
-        hcubic hrotation color hcolor hleftColor pair first second).1 hstep)
+        hcubic hrotation color hcolor hleftColor pair first second).1 hstep) _ _ hclosure
   · intro hclosure
-    exact hclosure.mono (by
+    exact Relation.ReflTransGen.mono (by
       intro first second hstep
       exact (aligned.localLayerIncomingAndCellProfileFactoredComponentStep_iff_finiteProfileStep
-        hcubic hrotation color hcolor hleftColor pair first second).2 hstep)
+        hcubic hrotation color hcolor hleftColor pair first second).2 hstep) _ _ hclosure
 
 end SourceCornerAlignedSlabInterface
 

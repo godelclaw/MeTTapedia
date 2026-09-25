@@ -265,6 +265,7 @@ theorem successorCrossingNonzeroForColorAt
   simpa [sourceLocalLayerBoundaryRebaseSuccessorCutDataAt,
     GraphCorridorCutData.portEdge] using h
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The color-parametric native packet decodes all five fields of the literal
 successor profile.  Thus changing the local Cell coloring changes exactly the
 two color-sensitive fields while retaining the proved facial receipt. -/

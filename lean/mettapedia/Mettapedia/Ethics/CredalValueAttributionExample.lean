@@ -24,6 +24,7 @@ open Mettapedia.KR.ConceptOntology
 open Mettapedia.KR.ConceptGeometry
 open Mettapedia.KR.ConceptGeometry.AbstractInheritance
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive CaseStudy where
   | returningWallet
   | betrayal

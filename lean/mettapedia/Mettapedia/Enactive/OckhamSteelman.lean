@@ -85,6 +85,7 @@ theorem codeLengthSelector_strictlyPrefersShorter
 
 namespace OntologicalCanary
 
+set_option backward.isDefEq.respectTransparency false in
 inductive Theory where
   | sufficient
   | redundantEntity

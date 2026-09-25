@@ -108,7 +108,7 @@ theorem reachable_sup_sup_iff_threeFactorComponentClosure {N : Type*}
   · intro hreachable
     have hpath :=
       (SimpleGraph.reachable_iff_reflTransGen x y).mp hreachable
-    exact hpath.mono (by
+    exact Relation.ReflTransGen.mono (by
       intro u v huv
       rcases (SimpleGraph.sup_adj (left ⊔ right) seam u v).mp huv with
         hfactor | hseamAdj
@@ -116,7 +116,7 @@ theorem reachable_sup_sup_iff_threeFactorComponentClosure {N : Type*}
           hleftAdj | hrightAdj
         · exact Or.inl hleftAdj.reachable
         · exact Or.inr (Or.inl hrightAdj.reachable)
-      · exact Or.inr (Or.inr hseamAdj))
+      · exact Or.inr (Or.inr hseamAdj)) x y hpath
   · intro hclosure
     exact Relation.ReflTransGen.trans_induction_on
       (motive := fun {u v} _ => ((left ⊔ right) ⊔ seam).Reachable u v)

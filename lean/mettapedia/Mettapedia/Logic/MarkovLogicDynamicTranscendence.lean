@@ -223,6 +223,7 @@ private theorem infiniteQueryEvent_eq_localQueryEvent_restrictQueryToRegion
   simp only [infiniteQueryEvent, localQueryEvent, Set.mem_setOf_eq]
   exact hiff.symm
 
+set_option backward.isDefEq.respectTransparency.types false in
 private lemma infiniteMLNMassSemantics_queryProb_empty_eq_one
     (M : ClassicalInfiniteGroundMLNSpec Atom ClauseId)
     (μ : ProbabilityMeasure (InfiniteWorld Atom))

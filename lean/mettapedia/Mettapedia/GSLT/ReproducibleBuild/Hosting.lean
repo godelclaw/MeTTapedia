@@ -217,6 +217,7 @@ namespace ProofRelevantHosting
 variable {Value : Type}
   {source target : ObservedOperationalObject Value}
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Exact proof-relevant hosting equates the complete result/execution fibre at
 each initial source term, not merely its inhabited public-result support. -/
 def executionFibreEquiv

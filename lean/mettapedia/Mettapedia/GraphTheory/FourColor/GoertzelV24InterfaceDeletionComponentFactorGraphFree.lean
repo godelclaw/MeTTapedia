@@ -115,7 +115,7 @@ theorem reindexInterfaceExteriorCode_closure_iff
         (reindexInterfaceExteriorCode_factoredStep_iff code coordinate
           (coordinate.symm first) (coordinate.symm second)).2 (by
             simpa using hstep))
-    simpa [InterfaceExteriorClosure] using hpulled
+    simpa only [InterfaceExteriorClosure, Function.onFun, Equiv.symm_apply_apply] using hpulled
 
 end GoertzelV24InterfaceDeletionComponentFactorGraphFree
 

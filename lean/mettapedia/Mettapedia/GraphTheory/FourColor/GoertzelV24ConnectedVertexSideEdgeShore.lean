@@ -540,7 +540,7 @@ theorem edgeShoreConnected_complement_incidentEdgeShore
   rcases List.mem_map.mp hvertexSupport with
     ⟨sourceVertex, _hsource, hvalue⟩
   have hvalue' : sourceVertex.1 = vertex := by
-    simpa [inclusion] using hvalue
+    exact hvalue
   rw [← hvalue'] at hvertexSide
   exact sourceVertex.2 hvertexSide
 

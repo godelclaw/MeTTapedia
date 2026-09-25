@@ -187,6 +187,7 @@ theorem identityCostFits :
     (betaAtomicRoot betaRootIdentityGoal).programCost betaRootIdentityTerm ≤ 1 := by
   decide
 
+set_option backward.isDefEq.respectTransparency false in
 theorem identityInitialNode_completes :
     identityInitialNode.Completes betaRootIdentityTerm := by
   refine ⟨identityInitialNode_reached,

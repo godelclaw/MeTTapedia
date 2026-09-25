@@ -69,7 +69,7 @@ theorem reflTransGen_lift_condition_or_exists_failure
       · by_cases holds : condition middle finish
         · exact Or.inl (hall.tail ⟨step, holds⟩)
         · exact Or.inr ⟨middle, finish,
-            Relation.ReflTransGen.mono (fun _ _ retained => retained.1) hall,
+            Relation.ReflTransGen.mono (fun _ _ retained => retained.1) _ _ hall,
             step, holds, Relation.ReflTransGen.refl⟩
       · exact Or.inr ⟨before, after, hprefix, hfailure, hnot,
           hsuffix.tail step⟩
@@ -173,7 +173,7 @@ theorem suffix_reachable : Relation.ReflTransGen
     (CompanionAdjacentEscapeTransition collar)
     lastOverlap.overlap.breakTarget lastOverlap.overlap.repairSource := by
   exact Relation.ReflTransGen.mono (fun _ _ step => step.1)
-    lastOverlap.suffix_avoids_target
+    _ _ lastOverlap.suffix_avoids_target
 
 /-- Every state reached along the retained suffix still differs from the
 fixed target color at the shared edge. -/
@@ -242,7 +242,7 @@ theorem nonempty_companionLastRepairBreakOverlap_of_closedCircuit
       reach_break := hbreakReach
       reach_repair_after_break :=
         Relation.ReflTransGen.mono (fun _ _ step => step.1)
-          hrestrictedSuffix
+          _ _ hrestrictedSuffix
       repairSource_ne_target := hrepairSource
       start_eq_target := hstart
       breakSource_eq_target := hbefore

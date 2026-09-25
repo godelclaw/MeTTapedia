@@ -158,6 +158,7 @@ theorem sourceTwoTileAlignedSecondTerminalProfileDataAt_eq_withTerminalEdges
   exact sourceTwoTileAlignedTransverseProfileIndexAt_secondTerminalCrossing
     realization hcubic hrotation htwoSided hunique offset step
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Forgetting the two rail observations from an incoming graph-derived
 regional profile recovers its crossing-only presentation exactly. -/
 @[simp]
@@ -203,6 +204,7 @@ theorem forgetTerminals_sourceTwoTileAlignedFirstTerminalRegionalProfile
   rw [hprofile]
   simp [cut]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The analogous local projection for the outgoing source transversal. -/
 @[simp]
 theorem forgetTerminals_sourceTwoTileAlignedSecondTerminalRegionalProfile

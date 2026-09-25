@@ -146,6 +146,7 @@ noncomputable def packetExperimentEvidence
     (query : Program × Target) : PLNBinaryEvidence :=
   experimentEvidence packets (packetExperimentQuery query)
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem packetExperimentEvidence_pos_eq_countP
     (packets : Multiset (SourcePacket Program Target Lineage))
     (query : Program × Target) :

@@ -82,6 +82,7 @@ theorem sourceLocalLayerCellVertexSide_eq_retained_compl
   ext vertex
   simp [sourceLocalLayerCellVertexSide, sourceLocalLayerRetainedVertexSide]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The ordered source boundary of a local Cell has exactly four ports. -/
 theorem sourceLocalLayerRetainedCrossing_card_eq_four
     {data : AnnularBoundaryData G 5} {coloring : G.EdgeColoring Color}

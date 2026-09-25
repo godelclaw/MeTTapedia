@@ -408,7 +408,7 @@ theorem sourceCorridorSerialInputTrackedGraph_next_reachable_iff_trackedStepCode
   constructor
   · intro hclosure
     have hlift := Relation.ReflTransGen.lift coordinate
-      (fun first second h => (hstep first second).1 h) hclosure
+      (fun first second h => (hstep first second).1 h) _ _ hclosure
     have hleftPoint :
         coordinate
             ⟨sourceCorridorSerialBoundaryRebaseCrossingAt realization hcubic
@@ -453,12 +453,13 @@ theorem sourceCorridorSerialInputTrackedGraph_next_reachable_iff_trackedStepCode
         (sourceCorridorSerialBoundaryRebaseFiniteSwitchTrackedCodeAt_point
           realization hcubic hrotation htwoSided hunique offset hnext color
             right).symm
+    simp only [Function.onFun] at hlift
     rw [hleftPoint, hrightPoint] at hlift
     exact hlift
   · intro hclosure
     have hlift := Relation.ReflTransGen.lift coordinate.symm
       (fun first second h => (hstep (coordinate.symm first)
-        (coordinate.symm second)).2 (by simpa using h)) hclosure
+        (coordinate.symm second)).2 (by simpa using h)) _ _ hclosure
     have hleftPoint :
         coordinate.symm (code.localCode.point left) =
           ⟨sourceCorridorSerialBoundaryRebaseCrossingAt realization hcubic
@@ -487,6 +488,7 @@ theorem sourceCorridorSerialInputTrackedGraph_next_reachable_iff_trackedStepCode
                 color).point right) = _
       rw [sourceCorridorSerialBoundaryRebaseFiniteSwitchTrackedCodeAt_point]
       exact (carrierCoordinate carrier).symm_apply_apply _
+    simp only [Function.onFun] at hlift
     rw [hleftPoint, hrightPoint] at hlift
     exact hlift
 

@@ -48,6 +48,7 @@ theorem mem_localCrossingEdgeFinset_iff (side : V → Prop) (edge : G.edgeSet) :
       EdgeCrossesVertexSide G side edge := by
   simp [localCrossingEdgeFinset]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- For a graph-backed rotation system, a dart changes vertex sides along
 its facial step exactly when its underlying graph edge crosses the side. -/
 private theorem edgeCrosses_toRotationSystem_edgeOf_iff_transition

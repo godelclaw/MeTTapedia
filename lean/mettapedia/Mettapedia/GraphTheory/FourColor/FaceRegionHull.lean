@@ -105,6 +105,7 @@ theorem dart_snd_mem_face (data : Data G) (d : G.Dart) :
   refine ⟨data.toRotationSystem.phi d, ?_, dartOrbitFace_phi_eq data.toRotationSystem d⟩
   exact data.toRotationSystem.vert_phi_eq_vert_alpha d
 
+set_option backward.isDefEq.respectTransparency false in
 theorem adjacent_faces_overlap (data : Data G) {f g : OrbitFace data.toRotationSystem}
     (h : (orbitFaceDualGraph data).Adj f g) :
     (faceVertices data f ∩ faceVertices data g).Nonempty := by

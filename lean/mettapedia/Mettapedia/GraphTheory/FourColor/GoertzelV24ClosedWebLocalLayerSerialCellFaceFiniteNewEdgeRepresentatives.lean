@@ -276,6 +276,7 @@ local instance closedWebLocalLayerSerialCellFaceFiniteNewEdgeRepresentativesEdge
     DecidableEq G.edgeSet :=
   Subtype.instDecidableEq
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The exact primal-edge equality table of an actual source Cell satisfies
 the finite selector laws at every output coordinate. -/
 theorem sourceLocalLayerSerialFaceFiniteNewEdgeSemanticAt

@@ -194,6 +194,7 @@ instance instDecidableEqCompilerGSLTTerm
     [DecidableEq State] : DecidableEq compilerChecker.toGSLT.Term :=
   inferInstanceAs (DecidableEq State)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The compiler's local evidence checker, viewed as an exact OSLF edge
 authority for `compilerChecker.toGSLT`. -/
 def stepAuthority
@@ -223,6 +224,7 @@ def stepAuthority
     next mismatch =>
       simp at accepted
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The generated local edge authority is complete because every edge of
 `toGSLT` was defined by existence of accepted compiler evidence. -/
 theorem stepAuthority_complete

@@ -196,6 +196,7 @@ def mkPred {Γ : List (SimpleTy Base)}
     funext γ
     simp
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem mkPred_val
     {Γ : List (SimpleTy Base)}
     (f : ((simpleInterp M).ctxSpace Γ).Carrier → M.Carrier .prop)
@@ -280,6 +281,7 @@ end CtxTerm
 
 end SimpleTopologicalInterpretation
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem top_val
     {Γ : List (SimpleTy Base)}
     (γ : ((simpleInterp M).ctxSpace Γ).Carrier) :
@@ -293,6 +295,7 @@ end SimpleTopologicalInterpretation
     M.topP
   rw [mkPred_val]
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem bot_val
     {Γ : List (SimpleTy Base)}
     (γ : ((simpleInterp M).ctxSpace Γ).Carrier) :
@@ -306,6 +309,7 @@ end SimpleTopologicalInterpretation
     M.botP
   rw [mkPred_val]
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem conj_val
     {Γ : List (SimpleTy Base)}
     (p q : SimpleTopologicalInterpretation.Pred (simpleInterp M) Γ)
@@ -401,6 +405,7 @@ end SimpleTopologicalInterpretation
       hhead₂
   exact h1.trans (h2.trans h3)
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem disj_val
     {Γ : List (SimpleTy Base)}
     (p q : SimpleTopologicalInterpretation.Pred (simpleInterp M) Γ)
@@ -496,6 +501,7 @@ end SimpleTopologicalInterpretation
       hhead₂
   exact h1.trans (h2.trans h3)
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem impl_val
     {Γ : List (SimpleTy Base)}
     (p q : SimpleTopologicalInterpretation.Pred (simpleInterp M) Γ)
@@ -726,6 +732,7 @@ end SimpleTopologicalInterpretation
 
 namespace SimpleQuantifiedFormula
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem eval_val_decode
     {Γ : List (SimpleTy Base)}
     (φ : SimpleQuantifiedFormula Base Const Γ)

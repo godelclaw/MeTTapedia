@@ -624,6 +624,7 @@ noncomputable def rewiredDartOf (Q : @FacialSquareData V E)
     (Q.boundaryCover RS hQ hdist side) (Q.orderedCut_disjoint hdist side)
     ⟨dart, hdart⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **The correspondence does not move the dart.** -/
 theorem matchedPartUnderlyingDart_rewiredDartOf (Q : @FacialSquareData V E)
     (hQ : Q.WellFormed RS) (hdist : Q.LocalEdgesDistinct)
@@ -702,6 +703,7 @@ theorem splicedColoring_reductionEdgeOfDart (Q : @FacialSquareData V E)
     at hval
   exact hval
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Normal form of an internal dart under the correspondence.**  When both
 ends of a dart's edge are retained, the correspondence classifies it as an
 intact dart and leaves it untouched. -/

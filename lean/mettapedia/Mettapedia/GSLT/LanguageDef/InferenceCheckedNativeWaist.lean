@@ -143,6 +143,7 @@ def first : collapsing.Graph () :=
 def second : collapsing.Graph () :=
   Graph.embed (realization := collapsing) true
 
+set_option backward.isDefEq.respectTransparency false in
 theorem retained_points_distinct : first ≠ second := by
   intro equality
   have evidenceEquality := congrArg Graph.evidence equality

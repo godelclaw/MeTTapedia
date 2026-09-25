@@ -46,6 +46,7 @@ local instance graphEdgeSetDecidableEq : DecidableEq G.edgeSet :=
 
 noncomputable section
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The actual ordered seam-return map of a planar-bond splice is one of the
 two explicit capped boundary returns allowed by the source orientation. -/
 theorem actualOrderedCutFaceReturnSuccessor_eq_forward_or_inverse

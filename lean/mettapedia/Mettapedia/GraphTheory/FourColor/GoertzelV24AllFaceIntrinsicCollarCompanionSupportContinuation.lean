@@ -383,6 +383,7 @@ noncomputable def initialState :
     ScalarDiscrepancyColorState (!firstHit.transfer.coordinate) :=
   continued.stateWord.head continued.stateWord_ne_nil
 
+set_option backward.isDefEq.respectTransparency false in
 theorem initialState_eq_stateOf :
     continued.initialState =
       scalarDiscrepancyColorStateOf

@@ -1333,6 +1333,7 @@ def v13RealLinearRowFunctional {m : Nat}
         intro x y
         exact congrFun (A.map_add x y) row })
 
+set_option backward.isDefEq.respectTransparency false in
 theorem v13RealLinearRowFunctional_injective {m : Nat}
     (A : V13F2LinearEquiv m) :
     Function.Injective (v13RealLinearRowFunctional A) := by
@@ -1400,6 +1401,7 @@ theorem v13RealLinearRowFunctionalTable_card_le_four_mul_equiv
   rw [v13RealLinearRowFunctionalTable_card]
   exact v13F2LinearEquiv_card_density_quarter m
 
+set_option backward.isDefEq.respectTransparency false in
 theorem v13RealLinearRowFunctionalTableOfEquiv_injective {m : Nat} :
     Function.Injective
       (v13RealLinearRowFunctionalTableOfEquiv :
@@ -1432,6 +1434,7 @@ def v13RealLinearFunctionalTableSequentialRowPrefixTraceOf
   (v13RealLinearFunctionalTableSequentialRowPrefixTranscriptOf
     observer table x n).map Prod.fst
 
+set_option backward.isDefEq.respectTransparency false in
 theorem v13RealLinearFunctionalTableRowView_of_equiv {m : Nat}
     (A : V13F2LinearEquiv m) (x : F2Vec m) (row : Fin m) :
     v13RealLinearFunctionalTableRowView
@@ -2501,6 +2504,7 @@ noncomputable instance {m : Nat} (A : V13F2LinearEquiv m)
         exact Subtype.ext h)
   exact Fintype.ofFinite _
 
+set_option backward.isDefEq.respectTransparency false in
 theorem v13RealLinearRowsGenerateTarget_iff_targetFunctional_mem_span
     {m : Nat} (A : V13F2LinearEquiv m) (rows : Finset (Fin m))
     (i₀ : Fin m) :
@@ -2628,6 +2632,7 @@ theorem v13RealLinear_rowFunctionalTargetCosetHit_of_insert_generates
   refine ⟨z, hz, ?_⟩
   simpa [ha] using htarget
 
+set_option backward.isDefEq.respectTransparency false in
 theorem v13RealLinearRowFunctional_not_mem_rowsFunctionalSpan_of_not_mem
     {m : Nat} (A : V13F2LinearEquiv m) {rows : Finset (Fin m)}
     {row : Fin m} (hrow : row ∉ rows) :
@@ -3395,6 +3400,7 @@ theorem v13RealLinear_rowsBlockTarget_of_rowsGenerateTarget {m : Nat}
     w i₀ = v13RealLinearRowCombinationEval A rows coeff w := (hcoeff w).symm
     _ = 0 := hsum
 
+set_option backward.isDefEq.respectTransparency false in
 theorem v13RealLinear_rowsGenerateTarget_of_rowsBlockTarget {m : Nat}
     (A : V13F2LinearEquiv m) (rows : Finset (Fin m)) (i₀ : Fin m)
     (hblock : V13RealLinearRowsBlockTarget A rows i₀) :
@@ -7949,6 +7955,7 @@ noncomputable def v13RealLinearAdaptiveQRowUnblockedCorrectToIncorrect
         _ = omega₁.val.2 j := by
           rw [f2_add_right_self]
 
+set_option backward.isDefEq.respectTransparency false in
 noncomputable def v13RealLinearAdaptiveQRowCorrectToUnblockedOrBlocked
     {m q : Nat} {Seed : Type*}
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m) :
@@ -7979,6 +7986,7 @@ noncomputable def v13RealLinearAdaptiveQRowCorrectToUnblockedOrBlocked
               omega.val)
             hmap)
 
+set_option backward.isDefEq.respectTransparency false in
 noncomputable def v13RealLinearAdaptiveQRowWorldCorrectIncorrectEquiv
     {m q : Nat} {Seed : Type*}
     (E : V13RealLinearAdaptiveQRowExperiment m q Seed) (i₀ : Fin m) :
@@ -9529,6 +9537,7 @@ def V13RealLinearNoTargetRowsSequentialTraceCosetHitCountingBound
     i₀
     (v13RealLinearNoTargetRowsSequentialQRowTrace i₀ observer)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem
     v13RealLinearNoTargetRows_rowFunctionalTargetCosetHit_empty_false
     {m : Nat} (i₀ row : Fin m)
@@ -9570,6 +9579,7 @@ theorem v13RealLinearNoTargetRows_rowTraceCosetHit_zero_false
       i₀ (trace.get ⟨0, h⟩) A
       (by simpa [v13RealLinearRowTracePrefixRows_zero] using hrowHit)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem
     v13RealLinearNoTargetRows_rowFunctionalTargetCosetHit_singleton_pair_sum
     {m : Nat} (i₀ row₀ row₁ : Fin m)
@@ -12749,6 +12759,7 @@ theorem v13RealLinearFixedTargetRowOccurrence_two_card_le_two
   · exact v13RealLinearFixedTargetRowOccurrence_one_zero_card_le_two
   · exact v13RealLinearFixedTargetRowOccurrence_one_one_card_le_two
 
+set_option backward.isDefEq.respectTransparency false in
 noncomputable def
     v13RealLinear_causalSingleRowGeneratedCoefficientEquivFixedOccurrenceProd
     {m : Nat} (row i₀ : Fin m) :
@@ -13077,6 +13088,7 @@ theorem v13RealLinear_causalSingleRow_two_coefficientCounting
       v13RealLinear_fixedTargetRowOccurrence_two_counting row i₀
   nlinarith
 
+set_option backward.isDefEq.respectTransparency false in
 noncomputable def v13RealLinearCausalSingleRowIdentityFiberEmbedding :
     F2Vec 2 ↪
       V13RealLinearAdaptiveQRowGeneratedCoefficientFiber

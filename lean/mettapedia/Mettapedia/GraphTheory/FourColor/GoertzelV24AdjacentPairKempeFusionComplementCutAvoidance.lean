@@ -320,6 +320,7 @@ theorem retainedEdgeToAmbientEdge_not_mem_oppositePortCentralReturn_edges
       (Subtype.ext hzero)
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+set_option backward.isDefEq.respectTransparency false in
 /-- For retained edges, membership in an opposite-port closure is exactly
 membership in its retained path. The restored three-edge return contributes
 no retained edge. -/

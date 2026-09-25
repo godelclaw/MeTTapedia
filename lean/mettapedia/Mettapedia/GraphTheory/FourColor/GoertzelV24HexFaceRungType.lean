@@ -308,6 +308,7 @@ theorem hexCyclicDistance_eq_one_or_two_or_three (left right : Fin 6)
   fin_cases left <;> fin_cases right <;>
     norm_num [hexCyclicDistance, hexForwardDistance] at *
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The finite local type of the two corridor rungs on an internal hexagon. -/
 inductive HexRungType where
   | adjacent

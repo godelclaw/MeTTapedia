@@ -294,6 +294,7 @@ theorem leftFaceDartAt_mem_face
       cycle.crossingAt step :=
   (Classical.choose_spec (cycle.exists_leftFaceDartAt step)).2
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Along an exact primal boundary, consecutive left-face crossing darts
 of the remote dual cycle have the same current-side orientation. -/
 theorem leftFaceDartAt_side_coherent_of_boundary_eq
@@ -602,6 +603,7 @@ def supportDartAt
       ⟨state.targetRootedCrossingValue position,
         state.targetRootedCrossingValue_mem_supportCycle position⟩)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every support dart selected at a singleton separator crossing changes
 from the singleton side to its complement, or conversely. -/
 theorem supportDartAt_crosses_singletonSide

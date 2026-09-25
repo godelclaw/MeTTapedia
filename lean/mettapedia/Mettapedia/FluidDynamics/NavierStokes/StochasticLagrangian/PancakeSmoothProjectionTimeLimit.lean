@@ -73,7 +73,8 @@ theorem continuous_meanProjectionPairing (chi : Wavevector → ℂ) (modes outpu
       ⟪physicalGapWeight chi modes (u z.1) 0 z.2 (spatialVorticity modes (u z.1) z.2),
         discardedNonlinearField modes outputs (u z.1) z.2⟫) := by
     simpa only [physicalGapWeight, PancakeRegularizedDiffusion.regularizedGap,
-      add_zero, sub_apply, smul_apply, one_apply_eq_self, Function.comp_apply] using
+      add_zero, sub_apply, smul_apply, one_apply_eq_self, Function.comp_apply,
+      Pi.sub_apply, Pi.smul_apply'] using
       hz.inner (continuous_parametric_discardedNonlinearField modes outputs u hc)
   exact continuous_spatialMean _ hp
 

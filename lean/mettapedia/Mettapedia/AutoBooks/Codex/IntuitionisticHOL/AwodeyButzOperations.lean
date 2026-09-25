@@ -287,11 +287,13 @@ def pullback (f : C(Y, X)) {W : Opens X} (s : E.SectionOn W) :
   ext x
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem snd_pair (s : E.SectionOn U) (t : F.SectionOn U) :
     (pair s t).snd = t := by
   ext x
   simp [snd, pair, prodSnd, Function.Pullback.snd]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem pair_fst_snd (s : (prod E F).SectionOn U) :
     pair s.fst s.snd = s := by
   ext x

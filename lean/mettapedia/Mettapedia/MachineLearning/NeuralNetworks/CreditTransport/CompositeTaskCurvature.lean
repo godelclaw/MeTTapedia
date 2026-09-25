@@ -98,6 +98,7 @@ theorem weightedTask_hasDirectionalTaskUpperModelAt
 
 /-! ## The registered TGAD loss schema -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The eight component families occurring in the registered TGAD task loss. -/
 inductive TGADTaskSite
   | primary

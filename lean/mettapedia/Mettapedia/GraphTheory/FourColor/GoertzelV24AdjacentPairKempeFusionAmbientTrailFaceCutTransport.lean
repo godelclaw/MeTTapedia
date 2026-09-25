@@ -45,6 +45,7 @@ theorem retainedWalkToAmbient_isTrail
   exact SimpleGraph.Walk.map_isTrail_of_injective
     Subtype.val_injective htrail
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The first dart of an included retained walk is the included first dart. -/
 theorem retainedWalkToAmbient_firstDart
     (data : AdjacentPairData G)
@@ -63,6 +64,7 @@ theorem retainedWalkToAmbient_firstDart
     SimpleGraph.Embedding.induce]
   constructor <;> rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The last dart of an included retained walk is the included last dart. -/
 theorem retainedWalkToAmbient_lastDart
     (data : AdjacentPairData G)

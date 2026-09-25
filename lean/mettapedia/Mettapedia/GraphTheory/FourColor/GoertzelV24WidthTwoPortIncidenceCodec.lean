@@ -117,6 +117,7 @@ theorem faceRelation_symmetric
       have hrev : right ≠ left := Ne.symm heq
       simp [faceRelation, heq, hrev, hlt, hgt]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every finite code decodes to a profile satisfying the complete semantic
 laws used by the lossless compression. -/
 theorem decodePortIncidence_isPortIncidenceSemantic

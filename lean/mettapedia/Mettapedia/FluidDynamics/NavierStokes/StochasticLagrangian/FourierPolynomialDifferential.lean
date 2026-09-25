@@ -73,7 +73,7 @@ theorem hasRadius_product {a b : FourierCoeff (Fin 3)} {R S : ℝ}
     (ha : HasRadius a R) (hb : HasRadius b S) : HasRadius (productCoeff a b) (R + S) := by
   intro q hq
   have hs : (productCoeff a b).support ⊆ a.support + b.support :=
-    AddMonoidAlgebra.support_mul (AddMonoidAlgebra.ofCoeff a) (AddMonoidAlgebra.ofCoeff b)
+    AddMonoidAlgebra.support_coeff_mul_subset (AddMonoidAlgebra.ofCoeff a) (AddMonoidAlgebra.ofCoeff b)
   obtain ⟨k, hk, l, hl, rfl⟩ := Finset.mem_add.mp (hs hq)
   rw [frequencyVec_add]
   exact (norm_add_le _ _).trans (add_le_add (ha k hk) (hb l hl))

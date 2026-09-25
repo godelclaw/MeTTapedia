@@ -83,6 +83,7 @@ def transportedSequentialBoundaryData (caps : PentagonCapPair G)
       caps.boundaryData.outerStub step :=
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The transported inner boundary edge has the same underlying primal edge
 as the simultaneous inner opening spoke. -/
 @[simp] theorem transportedSequentialBoundaryData_innerBoundaryEdge_val

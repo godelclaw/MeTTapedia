@@ -64,7 +64,7 @@ theorem velocity_conjugate (epsilon : ℝ) (q : Wavevector) :
     rcases hq with hq | hq | hq | hq | hq | hq | hq | hq <;> subst q <;>
       ext i <;> fin_cases i <;>
       norm_num [velocity, axisX, axisY, axisZ, doubleY, coefficientConjugate,
-        funext_iff, Fin.forall_fin_succ, map_ofNat]
+        funext_iff, Fin.forall_fin_succ, map_ofNat, ite_apply]
   · rw [velocity_eq_zero_of_not_mem epsilon q hq,
       velocity_eq_zero_of_not_mem epsilon (-q) (by simpa only [modes_neg_closed] using hq)]
     ext i

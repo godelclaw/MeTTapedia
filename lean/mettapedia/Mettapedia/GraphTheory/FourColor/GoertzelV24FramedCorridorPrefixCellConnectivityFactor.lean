@@ -335,23 +335,23 @@ theorem localLayerRightPrefixTrackedGraph_reachable_iff_incomingAndCellProfileFa
     hcubic hrotation color hcolor pair left right]
   constructor
   · intro hclosure
-    exact hclosure.mono (by
+    exact Relation.ReflTransGen.mono (by
       intro first second hstep
       rcases hstep with hfirst | hcell | hseam
       · exact Or.inl hfirst
       · exact Or.inr (Or.inl
           ((aligned.localLayerCellTrackedGraph_reachable_iff_profileComponentStep
             color pair first second).1 hcell))
-      · exact Or.inr (Or.inr hseam))
+      · exact Or.inr (Or.inr hseam)) _ _ hclosure
   · intro hclosure
-    exact hclosure.mono (by
+    exact Relation.ReflTransGen.mono (by
       intro first second hstep
       rcases hstep with hfirst | hcell | hseam
       · exact Or.inl hfirst
       · exact Or.inr (Or.inl
           ((aligned.localLayerCellTrackedGraph_reachable_iff_profileComponentStep
             color pair first second).2 hcell))
-      · exact Or.inr (Or.inr hseam))
+      · exact Or.inr (Or.inr hseam)) _ _ hclosure
 
 end SourceCornerAlignedSlabInterface
 

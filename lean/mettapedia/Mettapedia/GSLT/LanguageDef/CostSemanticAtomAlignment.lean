@@ -318,6 +318,7 @@ def reifyWith
         (elements.map (cospan.reifyWith resolve leg)) rest
 termination_by pattern => sizeOf pattern
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Reversing a cospan does not change reification through a fixed leg: the
 common semantic quotient and its internal atom names are retained exactly. -/
 theorem symm_reifyWith

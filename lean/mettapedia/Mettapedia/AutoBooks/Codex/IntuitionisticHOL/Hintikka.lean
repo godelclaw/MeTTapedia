@@ -43,6 +43,7 @@ namespace SignedFormula
 def flip (sf : SignedFormula Const Γ) : SignedFormula Const Γ :=
   (Sign.flip sf.1, sf.2)
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem flip_flip (sf : SignedFormula Const Γ) : flip (flip sf) = sf := by
   cases sf
   simp [flip]
@@ -135,6 +136,7 @@ def additions (s : DeterministicLocalSaturationStep Const Γ) :
     List (SignedFormula Const Γ) :=
   LocalSaturationStep.additions s.toLocalSaturationStep
 
+set_option backward.isDefEq.respectTransparency false in
 theorem flip_not_mem_additions_of_mem
     {s : DeterministicLocalSaturationStep Const Γ}
     {sf : SignedFormula Const Γ}
@@ -296,6 +298,7 @@ theorem premise_mem_of_mem_localBranchTargets {H : HintikkaSet Const Γ}
     sf ∈ (H.saturateWithStep s).formulas :=
   mem_insertAll_left h
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem mem_close_of_mem {H : HintikkaSet Const Γ}
     {sf : SignedFormula Const Γ}
     (h : sf ∈ H.formulas) :
@@ -312,18 +315,21 @@ theorem premise_mem_of_mem_localBranchTargets {H : HintikkaSet Const Γ}
   unfold close
   exact List.mem_cons_of_mem _ List.mem_cons_self
 
+set_option backward.isDefEq.respectTransparency false in
 theorem mem_close_insertAll_singleton_iff {H : HintikkaSet Const Γ}
     {added sf : SignedFormula Const Γ} :
     sf ∈ (H.insertAll [added]).close.formulas ↔
       sf = added ∨ sf ∈ H.close.formulas := by
   simp [close, insertAll, or_assoc, or_comm]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem mem_close_insertAll_iff {H : HintikkaSet Const Γ}
     {Δ : List (SignedFormula Const Γ)} {sf : SignedFormula Const Γ} :
     sf ∈ (H.insertAll Δ).close.formulas ↔
       sf ∈ Δ ∨ sf ∈ H.close.formulas := by
   simp [close, insertAll, or_assoc, or_comm]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem premise_mem_of_mem_close {H : HintikkaSet Const Γ}
     {s : LocalSaturationStep Const Γ}
     (h : LocalSaturationStep.premise s ∈ H.close.formulas) :
@@ -438,6 +444,7 @@ theorem exists_resolvingStep_of_mem_localBranchTargets {H : HintikkaSet Const Γ
   exists_resolvingStep_of_branchClosed hH
     (premise_mem_of_mem_localBranchTargets hb)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem trueAnd_mem_of_locallySaturated {H : HintikkaSet Const Γ}
     (hH : H.LocallySaturated)
     {φ ψ : Formula Const Γ}
@@ -455,6 +462,7 @@ theorem trueAnd_mem_of_locallySaturated {H : HintikkaSet Const Γ}
       simp [DeterministicLocalSaturationStep.additions,
         DeterministicLocalSaturationStep.toLocalSaturationStep, LocalSaturationStep.additions])
 
+set_option backward.isDefEq.respectTransparency false in
 theorem falseAnd_mem_of_branchClosed {H : HintikkaSet Const Γ}
     (hH : H.BranchClosed)
     {φ ψ : Formula Const Γ}
@@ -473,6 +481,7 @@ theorem falseAnd_mem_of_branchClosed {H : HintikkaSet Const Γ}
   · right
     exact hsupp _ (by simp [LocalSaturationStep.additions])
 
+set_option backward.isDefEq.respectTransparency false in
 theorem trueOr_mem_of_branchClosed {H : HintikkaSet Const Γ}
     (hH : H.BranchClosed)
     {φ ψ : Formula Const Γ}
@@ -491,6 +500,7 @@ theorem trueOr_mem_of_branchClosed {H : HintikkaSet Const Γ}
   · right
     exact hsupp _ (by simp [LocalSaturationStep.additions])
 
+set_option backward.isDefEq.respectTransparency false in
 theorem falseOr_mem_of_locallySaturated {H : HintikkaSet Const Γ}
     (hH : H.LocallySaturated)
     {φ ψ : Formula Const Γ}
@@ -508,6 +518,7 @@ theorem falseOr_mem_of_locallySaturated {H : HintikkaSet Const Γ}
       simp [DeterministicLocalSaturationStep.additions,
         DeterministicLocalSaturationStep.toLocalSaturationStep, LocalSaturationStep.additions])
 
+set_option backward.isDefEq.respectTransparency false in
 theorem trueAll_mem_of_locallySaturated {H : HintikkaSet Const Γ}
     (hH : H.LocallySaturated)
     {σ : Ty Base} {φ : Formula Const (σ :: Γ)}
@@ -523,6 +534,7 @@ theorem trueAll_mem_of_locallySaturated {H : HintikkaSet Const Γ}
       simp [DeterministicLocalSaturationStep.additions,
         DeterministicLocalSaturationStep.toLocalSaturationStep, LocalSaturationStep.additions])
 
+set_option backward.isDefEq.respectTransparency false in
 theorem falseAll_mem_of_locallySaturated {H : HintikkaSet Const Γ}
     (hH : H.LocallySaturated)
     {σ : Ty Base} {φ : Formula Const (σ :: Γ)}
@@ -538,6 +550,7 @@ theorem falseAll_mem_of_locallySaturated {H : HintikkaSet Const Γ}
       simp [DeterministicLocalSaturationStep.additions,
         DeterministicLocalSaturationStep.toLocalSaturationStep, LocalSaturationStep.additions])
 
+set_option backward.isDefEq.respectTransparency false in
 theorem trueEx_mem_of_locallySaturated {H : HintikkaSet Const Γ}
     (hH : H.LocallySaturated)
     {σ : Ty Base} {φ : Formula Const (σ :: Γ)}
@@ -553,6 +566,7 @@ theorem trueEx_mem_of_locallySaturated {H : HintikkaSet Const Γ}
       simp [DeterministicLocalSaturationStep.additions,
         DeterministicLocalSaturationStep.toLocalSaturationStep, LocalSaturationStep.additions])
 
+set_option backward.isDefEq.respectTransparency false in
 theorem falseEx_mem_of_locallySaturated {H : HintikkaSet Const Γ}
     (hH : H.LocallySaturated)
     {σ : Ty Base} {φ : Formula Const (σ :: Γ)}

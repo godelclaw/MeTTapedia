@@ -141,6 +141,7 @@ abbrev laneValuation := chronological fun occurrence :
       rightFirst, leftAfter, laneValuation, chronological,
       Valuation.historyGrade, chronologicalListPartialMonoid]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Chronological observation has work two and span two. -/
 theorem chronological_pair_workSpan :
     pathWorkSpan

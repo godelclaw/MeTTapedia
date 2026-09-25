@@ -330,6 +330,7 @@ theorem arrivalCycleInReturnGraph_takeUntil_middle_length :
       _ = supportCycle.getVert turnPosition := by
         exact boundary.arrivalCycleInReturnGraph_getVert_turnPosition.symm
 
+set_option backward.isDefEq.respectTransparency false in
 theorem arrivalCycleInReturnGraph_takeUntil_edgeSubtypeSupport :
     (boundary.arrivalCycleInReturnGraph.takeUntil boundary.middle.junction
       boundary.middle_mem_arrivalCycleInReturnGraph_support

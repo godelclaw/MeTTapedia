@@ -257,6 +257,7 @@ theorem U_L_conf_round_trip (n : NARSTruthValue) : (U (L n)).c = n.c := by
   -- Now: c2w(c) / (c2w(c) + 1) = w2c(c2w(c)) = c
   exact w2c_c2w_id n.c n.c_nonneg n.c_lt_one
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Round-trip: U ∘ L preserves frequency (when c > 0). -/
 theorem U_L_freq_round_trip (n : NARSTruthValue) (hc : n.c > 0) : (U (L n)).f = n.f := by
   simp only [U, L, BinaryEvidence.total]

@@ -60,6 +60,7 @@ def PlanarBoundaryCanonicalWitnessChoice.toPlanarBoundaryAnnulusWitnessAssignmen
         apply Finset.mem_image.2
         refine ⟨f, ?_, hfe⟩
         simp [planarBoundaryAnnulusDecomposition_of_boundaryData]
+        exact Finset.mem_univ _
       hwitness := by
         intro i f _hf
         exact data.hwitness f
@@ -72,7 +73,7 @@ def PlanarBoundaryCanonicalWitnessChoice.toPlanarBoundaryAnnulusWitnessAssignmen
         have hiLast :
             i.1 + 1 =
               (planarBoundaryAnnulusDecomposition_of_boundaryData boundaryData).numCollars := by
-          simp [planarBoundaryAnnulusDecomposition_of_boundaryData]
+          simp [planarBoundaryAnnulusDecomposition_of_boundaryData, hi0]
         rcases Finset.mem_union.1 (data.hrest f e he) with houter | hinner
         · exact Or.inl ⟨hi0, houter⟩
         · exact Or.inr <| Or.inr ⟨hiLast, hinner⟩

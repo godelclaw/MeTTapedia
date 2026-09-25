@@ -50,7 +50,7 @@ theorem predecessorConnectedBool_ofGraphFamilyCode_eq_true_iff
         (ofGraphFamilyCode code) left right = true ↔
       SourceLocalLayerSerialFaceFinitePredecessorConnected state code left
         right := by
-  rw [SourceLocalLayerSerialFaceFinitePredecessorConnectedBool,
+  erw [SourceLocalLayerSerialFaceFinitePredecessorConnectedBool,
     supportedPortResidualFactoredReachabilityBool_eq_true_iff]
   · simp only [decide_eq_true_eq,
       SourceLocalLayerSerialFaceFinitePredecessorConnected,
@@ -237,6 +237,7 @@ def SourceLocalLayerSerialFaceFiniteNewEdgeSemanticBool
             (BoundedCarrierBoolLiveSlot code left)
             (BoundedCarrierBoolLiveSlot code right) = true))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The executable new-edge-law check is exactly the proof-facing semantic
 certificate on reflected graph codes. -/
 @[simp]

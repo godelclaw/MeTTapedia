@@ -154,6 +154,7 @@ theorem sourceSlabOutputCrossingAt_eq_successorPredecessorRole
         (.inr (⟨offset, rfl⟩, step)) := by
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The successor input profile's tracked-connectivity coordinate is computed
 exactly by the finite rebase step code.  This is the tracked half of the
 boundary-rebase decoder equation; the occurrence-sensitive face coordinates

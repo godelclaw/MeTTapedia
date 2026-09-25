@@ -262,6 +262,7 @@ def signedTailCounterexample : Bool → ℝ
   | false => -100
   | true => 1
 
+set_option backward.isDefEq.respectTransparency false in
 theorem signedObservable_breaks_Markov_spine :
     uniformAverage signedTailCounterexample <
       uniformTailFraction signedTailCounterexample 1 * 1 := by

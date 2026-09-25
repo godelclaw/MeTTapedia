@@ -305,6 +305,7 @@ theorem totalTheory_step_iff_mem_executor (catalog : Catalog)
   simp [matchRelationArgs, matchRelationArgument, Bindings.lookup,
     mergeBindings, metavariable]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- A returned fibre command enumerates exactly the catalogued local
 successors of its state. -/
 theorem execute_at (catalog : Catalog) (stage state : Pattern) :
@@ -326,6 +327,7 @@ theorem execute_at (catalog : Catalog) (stage state : Pattern) :
       simp [matchRelationArgs, matchRelationArgument, Bindings.lookup,
         mergeBindings, atPattern, inductionHypothesis]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- A pending route exposes both kinds of enabled work without conflating
 them: source-fibre steps retain the route, while a catalogued transport
 returns an `at` command in the target fibre. -/
@@ -624,6 +626,7 @@ theorem authored_step_iff_abstract_step
 
 end StepPreservingCommandEncoding
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- An unknown top-level form is neither accidentally interpreted nor
 reported as a host-language error. -/
 theorem unknown_command_inert (catalog : Catalog) (arguments : List Pattern) :

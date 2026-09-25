@@ -257,6 +257,7 @@ def scanStep (fileId : String) (state : IncrementalScanState)
   applySeparatorDecision fileId state <|
     if sourceWhitespace byte then .separator else .content
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The generic plan compiler's decision on a singleton byte is exactly the
 classifier used by the streaming scanner. -/
 theorem decideAt_singleton_eq_sourceDecision (byte : UInt8) :

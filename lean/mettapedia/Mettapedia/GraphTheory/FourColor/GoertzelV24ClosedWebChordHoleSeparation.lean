@@ -43,6 +43,7 @@ variable {V : Type*} [Fintype V] [DecidableEq V]
 
 noncomputable section
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A same-path chord cycle carried by one radial component admits an exact
 face cut in which the two annular hole faces have the same label. -/
 theorem exists_exact_chordCycle_faceCut_with_holes_sameSide

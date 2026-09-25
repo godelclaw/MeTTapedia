@@ -100,7 +100,7 @@ theorem continuous_energy (N : ℝ) (hN : 0 < N) (J : ℕ)
   convert h using 1
   ext x
   simp only [energy, QuarticGapTiltWeight.weight, SquaredGapTiltWeight.weight,
-    localAmplitude, mul_pow, mul_assoc, Function.comp_def, Pi.mul_apply]
+    localAmplitude, mul_pow, mul_assoc, Function.comp_def, Pi.mul_apply, Pi.pow_apply]
 
 theorem integrable_energy (N : ℝ) (hN : 0 < N) (J : ℕ)
     (gamma : ℝ) (hg : 0 < gamma) (chi : Wavevector → ℂ) (modes : Finset Wavevector)

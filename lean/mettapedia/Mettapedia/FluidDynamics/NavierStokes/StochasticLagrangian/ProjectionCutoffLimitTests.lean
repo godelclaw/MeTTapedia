@@ -41,7 +41,7 @@ theorem positive_snapshot_limit (ν : ℝ) (hν : 0 < ν) :
       (resolvedModes PositiveStretchingSnapshot.modes)
       (sharpFilter (resolvedModes PositiveStretchingSnapshot.modes))
       PositiveStretchingSnapshot.coefficients) Filter.atTop
-        (𝓝 ((2 * Real.pi) ^ 9 * PositiveStretchingSnapshot.stretchingPolynomial 0)) := by
+        (𝓝 ((2 * Real.pi) ^ 9 * PositiveStretchingSnapshot.stretchingPolynomial.coeff 0)) := by
   rw [← PositiveStretchingSnapshot.stretching_eq_zeroCoefficient]
   exact ResolvedProjectionCutoffLimit.tendsto_resolved_signedWorkRemainder ν hν _ _
     PositiveStretchingSnapshot.supported PositiveStretchingSnapshot.transverse

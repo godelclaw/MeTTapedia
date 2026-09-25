@@ -216,6 +216,7 @@ theorem sourceCrosscutComplementBoundaryProfileData_regionEdges_subset
   simpa [sourceCrosscutComplementBoundaryProfileData,
     vertexSetBoundaryGraphCutDataWithIndexing] using hedge
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Read a regional ambient edge from a coloring of the literal complementary
 open tangle.  As on the retained side, values outside the selected region are
 zero and cannot enter a profile coordinate. -/

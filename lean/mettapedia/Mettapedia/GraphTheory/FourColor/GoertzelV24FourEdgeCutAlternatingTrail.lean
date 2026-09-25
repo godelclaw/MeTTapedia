@@ -220,6 +220,7 @@ theorem commonBoundaryEdge_mem_cut
         (cyclicData.boundaryOrder port).1.1).2⟩ ∈ cut.edgeCut := by
   exact (commonCutEdge graphData cut cyclicData port).2
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Distinct cyclic boundary coordinates name distinct ambient edges. -/
 theorem commonBoundaryEdge_injective
     (graphData : Data G) (cut : SmallCyclicEdgeCut G)
@@ -491,6 +492,7 @@ theorem boundaryOrder_sameFace_alpha_next
     graphData deleted cyclicData port] at hface
   exact hface
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A closed trail crossing the first edge of a cyclic four-boundary, but
 not its two adjacent boundary edges, separates the retained endpoints of
 the two adjacent ports. Consequently a trail between those endpoints must

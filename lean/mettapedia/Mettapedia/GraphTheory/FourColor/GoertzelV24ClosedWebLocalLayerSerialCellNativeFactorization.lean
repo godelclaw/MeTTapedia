@@ -503,26 +503,9 @@ theorem sourceLocalLayerSerialCellPhysicalFaceCapSixPreRebase?_at
       funext left right
       change Fin (sourceLocalLayerSerialFaceTransitionCarrierAt corridor
         hunique offset).card at left right
-      change decide
-          ((((ofGraphFamilyCode
-              (sourceLocalLayerSerialFaceTransitionCodeAt corridor hunique
-                offset
-                  (sourceLocalLayerCellRegionAt_card_le_six graphData minimal
-                    caps coloring web corridor hunique offset))).toGraph false) ⊔
-            (ofGraphFamilyCode
-              (sourceLocalLayerSerialFaceTransitionCodeAt corridor hunique
-                offset
-                  (sourceLocalLayerCellRegionAt_card_le_six graphData minimal
-                    caps coloring web corridor hunique offset))).toGraph true
-              ).Adj left right) =
-        decide
-          ((((sourceLocalLayerSerialFaceTransitionCodeAt corridor hunique offset
-                (sourceLocalLayerCellRegionAt_card_le_six graphData minimal caps
-                  coloring web corridor hunique offset)).graph false) ⊔
-            (sourceLocalLayerSerialFaceTransitionCodeAt corridor hunique offset
-                (sourceLocalLayerCellRegionAt_card_le_six graphData minimal caps
-                  coloring web corridor hunique offset)).graph true).Adj
-            left right)
+      unfold sourceLocalLayerSerialCellPhysicalFaceLocalAdjacency
+        GoertzelV24ClosedWebLocalLayerSerialCellFaceDeletionStablePreRebaseState.sourceLocalLayerSerialFaceLocalAdjacencyAt
+      dsimp only
       simp only [ofGraphFamilyCode_toGraph]
       apply Bool.eq_iff_iff.mpr
       simp only [decide_eq_true_eq]
@@ -550,7 +533,7 @@ theorem sourceLocalLayerSerialCellPhysicalFaceCapSixPreRebase?_at
                   offset)).symm slot) := by
         apply Fin.ext
         simp [sourceLocalLayerSerialFaceTransitionSlotAt,
-          GoertzelV24FramedTrail.boundedFiniteSlot, carrierCoordinate]
+          GoertzelV24FramedTrail.boundedFiniteSlot, carrierCoordinate] <;> rfl
       rw [hslot,
         sourceLocalLayerSerialFaceFiniteEdgeStateAt_cellPresent_iff]
       simp only [decide_eq_true_eq]

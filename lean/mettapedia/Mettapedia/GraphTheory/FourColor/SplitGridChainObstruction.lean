@@ -63,6 +63,7 @@ theorem boundary_compl (S : Finset (Vertex n)) :
     IsBoundaryEdge, Finset.mem_compl, not_not]
   tauto
 
+set_option backward.isDefEq.respectTransparency false in
 /-- This is a full-vertex bound, with no branch-growth assumption. -/
 theorem small_side_of_cut (S : Finset (Vertex n)) {k : Nat} (hk : k < n + 1)
     (hcut : (boundaryEdges (graph n) S).card ≤ k) :

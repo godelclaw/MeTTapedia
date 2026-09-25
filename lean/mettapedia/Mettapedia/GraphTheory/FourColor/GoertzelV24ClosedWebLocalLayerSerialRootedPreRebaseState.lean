@@ -62,6 +62,7 @@ local instance rootedPreRebaseOpenedGraphDecidableRel
       caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.Adj :=
   Classical.decRel _
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Read the reconstructed Cell and seam adjacency on the rooted state's
 dependent predecessor carrier. -/
 def sourceLocalLayerSerialRootedTrackedLocalAdjacency
@@ -185,6 +186,7 @@ theorem
     coloring cellColor hcompatible (trackedColorPairColors pair).1
       (trackedColorPairColors pair).2]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- On a literal source Cell, the native graph-free local adjacency is the
 same table used by the already verified source recurrence. -/
 theorem sourceLocalLayerSerialRootedTrackedLocalAdjacencyAt_eq
@@ -259,6 +261,7 @@ theorem sourceLocalLayerSerialRootedTrackedLocalAdjacencyAt_eq
     (Eq.to_iff (congrArg (fun graph => graph.Adj left right) (hgraph false)))
     (Eq.to_iff (congrArg (fun graph => graph.Adj left right) (hgraph true)))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The guarded graph-free update succeeds on every literal compatible Cell
 and is exactly the already verified source pre-rebase exterior state. -/
 theorem sourceLocalLayerSerialRootedTrackedPreRebaseState?_at

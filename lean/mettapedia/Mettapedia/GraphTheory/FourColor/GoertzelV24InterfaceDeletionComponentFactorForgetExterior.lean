@@ -189,10 +189,10 @@ theorem forgottenCoordinateReachable_exact_eq_true_iff
       apply Mettapedia.GraphTheory.ReflTransGen.map_rel coordinateEquiv
       · intro before after hstep
         exact hstep
-      · exact hclosure.mono fun before after hstep =>
+      · exact Relation.ReflTransGen.mono (fun before after hstep =>
           (interfaceExteriorFactoredStepBool_eq_true_iff
             (exactInterfaceExteriorCode graph largerVertex)
-            before.1 after.1).1 hstep
+            before.1 after.1).1 hstep) _ _ hclosure
     exact (exteriorGraph_reachable_iff_exactClosure_partialRetained graph
       largerVertex retainedVertex retain hsome hnone
       (coordinateEquiv left) (coordinateEquiv right)).2 hliteral
@@ -225,10 +225,10 @@ theorem forgottenCoordinateReachable_exact_eq_true_iff
             codeSurvivingExactEquiv_symm_apply_val] using hstep
         · exact hliteral
       simpa [coordinateEquiv] using hmapped
-    exact hcode.mono fun before after hstep =>
+    exact Relation.ReflTransGen.mono (fun before after hstep =>
       (interfaceExteriorFactoredStepBool_eq_true_iff
         (exactInterfaceExteriorCode graph largerVertex)
-        before.1 after.1).2 hstep
+        before.1 after.1).2 hstep) _ _ hcode
 
 private theorem exteriorGraph_larger_le_target
     {N Larger Retained : Type*}
@@ -456,10 +456,10 @@ theorem partialExteriorConnection_exact_sound
           true := by
       unfold forgottenCoordinateReachable
       rw [boolRelationReachable_eq_true_iff]
-      exact hmiddle.mono fun before after hstep =>
+      exact Relation.ReflTransGen.mono (fun before after hstep =>
         (interfaceExteriorFactoredStepBool_eq_true_iff
           (exactInterfaceExteriorCode graph largerVertex)
-          before.1 after.1).2 hstep
+          before.1 after.1).2 hstep) _ _ hmiddle
     have hmiddleReach : (exteriorGraph graph retainedVertex).Reachable
         (largerVertex first.1) (largerVertex last.1) :=
       (forgottenCoordinateReachable_exact_eq_true_iff graph largerVertex
@@ -780,12 +780,13 @@ private theorem partialExteriorConnection_bool_iff
     · exact Or.inr ⟨first, last,
         (interfaceExteriorFactoredStepBool_eq_true_iff
           code largerLeft first.1).1 hfirst,
-        (boolRelationReachable_eq_true_iff
-          (fun before after : CodeSurvivingSlot code retain =>
-            interfaceExteriorFactoredStepBool code before.1 after.1)
-          first last).1 hmiddle |>.mono fun before after hstep =>
-            (interfaceExteriorFactoredStepBool_eq_true_iff
-              code before.1 after.1).1 hstep,
+        Relation.ReflTransGen.mono (fun before after hstep =>
+          (interfaceExteriorFactoredStepBool_eq_true_iff
+            code before.1 after.1).1 hstep) first last
+          ((boolRelationReachable_eq_true_iff
+            (fun before after : CodeSurvivingSlot code retain =>
+              interfaceExteriorFactoredStepBool code before.1 after.1)
+            first last).1 hmiddle),
         (interfaceExteriorFactoredStepBool_eq_true_iff
           code last.1 largerRight).1 hlast⟩
   · rintro (hold | ⟨first, last, hfirst, hmiddle, hlast⟩)
@@ -797,9 +798,9 @@ private theorem partialExteriorConnection_bool_iff
           code last.1 largerRight).2 hlast⟩
       unfold forgottenCoordinateReachable
       rw [boolRelationReachable_eq_true_iff]
-      exact hmiddle.mono fun before after hstep =>
+      exact Relation.ReflTransGen.mono (fun before after hstep =>
         (interfaceExteriorFactoredStepBool_eq_true_iff
-          code before.1 after.1).2 hstep
+          code before.1 after.1).2 hstep) _ _ hmiddle
 
 /-- The executable contracted row says exactly the proof-facing contraction
 formula. -/

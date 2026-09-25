@@ -222,6 +222,7 @@ structure SourceCorridorSerialPrefixFullProfileRelation
           (sourceCorridorSerialInputFaceSeamGraphAt realization hcubic
             hrotation htwoSided hunique offset root)) left right
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The two actual graph-derived profiles on either side of one literal
 source Cell satisfy the joint five-field serial relation. -/
 theorem sourceCorridorSerialPrefixFullProfileRelation

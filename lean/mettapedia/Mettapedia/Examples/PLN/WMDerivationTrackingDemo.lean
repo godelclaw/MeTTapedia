@@ -28,6 +28,7 @@ open Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
 
 /-! ## 1. Signature and atoms -/
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive MapleCourtRel
   | pipeLeak
   | showerRunning

@@ -59,7 +59,7 @@ theorem continuous_nonlinearCommutator {σ : ℝ} (hν : 0 ≤ ν) (hσ : 0 ≤ 
     Continuous (fun t : Set.Icc (0 : ℝ) T ↦ nonlinearCommutator ν σ (s.coefficients t) q) := by
   have hc := continuous_pi (continuous_heat_subgrid_component s g hg hsg hu hν hσ q)
   have hl := (lerayLinear q).toContinuousLinearMap.continuous.comp
-    (continuous_const.smul hc : Continuous (fun t : Set.Icc (0 : ℝ) T ↦
+    (continuous_const.fun_smul hc : Continuous (fun t : Set.Icc (0 : ℝ) T ↦
       (-unitTorusDerivativePhase) •
         subgridConvection (fun k ↦ (multiplier ν σ k : ℂ)) (s.coefficients t) q))
   apply hl.congr

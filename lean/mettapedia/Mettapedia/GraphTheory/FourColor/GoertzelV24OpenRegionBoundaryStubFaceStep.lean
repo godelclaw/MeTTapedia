@@ -27,6 +27,7 @@ variable {V E : Type*} [Fintype V] [DecidableEq V]
 
 noncomputable section
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A face-permutation step out of a fresh degree-one stub is literally the
 retained rotation after crossing its unique stub edge. -/
 @[simp]
@@ -39,6 +40,7 @@ theorem rotationSystem_phi_stub
   rw [RotationSystem.phi_apply, rotationSystem_alpha_stub,
     rotationSystem_rho_old]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The old retained dart and fresh stub dart of one exposed edge already lie
 on the same opened facial orbit.  The remaining collar calculation is only
 about joining the orbits of *different* exposed edges. -/

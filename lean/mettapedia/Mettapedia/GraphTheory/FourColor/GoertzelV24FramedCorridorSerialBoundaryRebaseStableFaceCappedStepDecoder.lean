@@ -129,6 +129,7 @@ noncomputable def sourceCorridorSerialBoundaryRebaseStableCappedFaceStepCodeAt
         (sourceCorridorSerialBoundaryRebaseFaceStepCoordinateDartAt realization
           hcubic hrotation htwoSided hunique offset hnext root coordinate))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The stable decoder reconstructs every accumulated predecessor component
 bit of the literal per-face capped receipt. -/
 theorem sourceCorridorSerialBoundaryRebaseStableCappedFaceStepCodeAt_oldComponent_eq_true_iff_literal

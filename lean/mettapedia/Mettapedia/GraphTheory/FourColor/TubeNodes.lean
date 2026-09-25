@@ -506,6 +506,7 @@ def deletedOfSide {side : V → Prop} (hgood : GoodSide (G := G) side) (d : G.Da
     rw [majorityDeletedKeep_iff, ← majorityRetainedKeep_iff, majorityRetainedKeep_sideShore hgood]
     exact hd⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- the partner of a boundary dart of the side is a boundary dart of the deleted side -/
 def deletedBoundaryOfSide {side : V → Prop} (hgood : GoodSide (G := G) side)
     (b : BoundaryDart rotation.toRotationSystem side) :
@@ -518,6 +519,7 @@ def deletedBoundaryOfSide {side : V → Prop} (hgood : GoodSide (G := G) side)
       majorityRetainedKeep_sideShore hgood]
     exact fun h => h b.1.2⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem deletedBoundaryOfSide_injective {side : V → Prop} (hgood : GoodSide (G := G) side) :
     Function.Injective (deletedBoundaryOfSide (rotation := rotation) hgood) := by
   intro b b' h

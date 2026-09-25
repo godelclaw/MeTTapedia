@@ -818,6 +818,7 @@ theorem retainedClosureVertex_val
     (retainedClosureVertex cut vertex).1 = vertex.1 :=
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- An old internal dart of a rooted exact-cut closure is the same oriented
 edge in the complement-side induced graph. -/
 def retainedCutDartOfInternal
@@ -863,6 +864,7 @@ theorem retainedCutDartOfInternal_snd
       internal.1.1.snd :=
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- An adjacency in the complement-side induced graph avoiding one old
 edge transports to an adjacency of the closure avoiding the corresponding
 internal output edge. -/

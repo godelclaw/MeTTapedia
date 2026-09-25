@@ -15,6 +15,7 @@ theorem cap5BadBoundaryWord2111_activeSupport_blue_purple :
     cap5ActiveSupport blue purple cap5BadBoundaryWord2111 =
       ({2, 4} : Finset (Fin 5)) := by
   ext i
+  simp only [cap5ActiveSupport, Finset.mem_filter, Finset.mem_univ, true_and]
   fin_cases i <;>
     simp [cap5ActiveSupport, cap5BadBoundaryWord2111, red, blue, purple]
 
@@ -218,7 +219,7 @@ theorem singletonBluePurpleStubs_reachable_of_exact_boundary_odd_vertices
     have hiActive :
         i ∈ cap5ActiveSupport blue purple cap5BadBoundaryWord2111 := by
       rw [← hword]
-      simpa [cap5ActiveSupport, cap5BoundaryWordOfEdges] using hiColor
+      exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hiColor⟩
     rw [cap5BadBoundaryWord2111_activeSupport_blue_purple] at hiActive
     simp only [Finset.mem_insert, Finset.mem_singleton] at hiActive
     rcases hiActive with hiTwo | hiFour

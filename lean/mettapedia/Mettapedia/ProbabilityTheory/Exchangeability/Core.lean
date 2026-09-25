@@ -314,6 +314,7 @@ theorem measurableSet_cylinder
   rw [this]
   exact MeasurableSet.iInter fun i => (hX i) (measurableSet_singleton (vals i))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The number of binary sequences of length n with exactly k true values is n.choose k. -/
 theorem card_filter_countTrue_eq (m k : ℕ) :
     ((Finset.univ : Finset (Fin m → Bool)).filter (fun v => countTrue v = k)).card =

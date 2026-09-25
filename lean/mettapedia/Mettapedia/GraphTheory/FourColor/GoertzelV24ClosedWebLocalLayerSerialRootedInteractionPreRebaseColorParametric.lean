@@ -57,6 +57,7 @@ local instance rootedInteractionPreRebaseColorParametricOpenedGraphDecidableRel
       caps.toFacialPentagonCapPair.toPentagonCapPair.openGraph.Adj :=
   Classical.decRel _
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The finite local adjacency reconstructed from a rooted arbitrary-prefix
 state and the prefix-independent Cell factor is the source local table of the
 literal splice. -/

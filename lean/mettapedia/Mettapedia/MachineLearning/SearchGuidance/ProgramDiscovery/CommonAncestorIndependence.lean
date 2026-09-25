@@ -286,6 +286,7 @@ end PacketDerivation
 
 namespace LineageFixtures
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive Source where
   | root | left | right | otherWorld
   deriving DecidableEq, Fintype, Repr

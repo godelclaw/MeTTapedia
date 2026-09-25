@@ -42,7 +42,7 @@ def fluxField (ν : ℝ) (u : FourierVelocity) (j : Fin 3) : C(T3, R3) :=
     exact (((EuclideanSpace.proj j).continuous.comp hw).smul
       (continuous_finsetSum _ (fun k _ ↦ ((EuclideanSpace.proj k).continuous.comp hw).smul
         (continuous_velocityJet u k)))).neg.add
-      (continuous_const.smul (continuous_finsetSum _ (fun k _ ↦
+      (continuous_const.fun_smul (continuous_finsetSum _ (fun k _ ↦
         ((EuclideanSpace.proj j).continuous.comp (hd k)).smul (hd k))))⟩
 
 theorem fluxField_apply (ν : ℝ) (u : FourierVelocity)

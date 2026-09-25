@@ -209,6 +209,7 @@ theorem faceFiniteComponentStepBool_ofGraphFamilyCode_eq_true_iff
     sourceLocalLayerSerialFaceFiniteStableSlot]
   tauto
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Boolean saturation of a reflected tracked code is exactly the original
 proof-facing reflexive-transitive closure. -/
 @[simp]
@@ -227,13 +228,14 @@ theorem trackedFiniteComponentClosureBool_ofGraphFamilyCode_eq_true_iff
   rw [SourceLocalLayerSerialTrackedFiniteComponentClosureBool,
     boolRelationReachable_eq_true_iff]
   constructor
-  · exact Relation.ReflTransGen.mono fun first second hstep =>
+  · exact Relation.ReflTransGen.mono (fun first second hstep =>
       (trackedFiniteComponentStepBool_ofGraphFamilyCode_eq_true_iff
-        state input code pair first second).1 hstep
-  · exact Relation.ReflTransGen.mono fun first second hstep =>
+        state input code pair first second).1 hstep) _ _
+  · exact Relation.ReflTransGen.mono (fun first second hstep =>
       (trackedFiniteComponentStepBool_ofGraphFamilyCode_eq_true_iff
-        state input code pair first second).2 hstep
+        state input code pair first second).2 hstep) _ _
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Boolean saturation of a reflected facial code is exactly the original
 proof-facing reflexive-transitive closure. -/
 @[simp]
@@ -249,13 +251,14 @@ theorem faceFiniteComponentClosureBool_ofGraphFamilyCode_eq_true_iff
   rw [SourceLocalLayerSerialFaceFiniteComponentClosureBool,
     boolRelationReachable_eq_true_iff]
   constructor
-  · exact Relation.ReflTransGen.mono fun first second hstep =>
+  · exact Relation.ReflTransGen.mono (fun first second hstep =>
       (faceFiniteComponentStepBool_ofGraphFamilyCode_eq_true_iff
-        state code first second).1 hstep
-  · exact Relation.ReflTransGen.mono fun first second hstep =>
+        state code first second).1 hstep) _ _
+  · exact Relation.ReflTransGen.mono (fun first second hstep =>
       (faceFiniteComponentStepBool_ofGraphFamilyCode_eq_true_iff
-        state code first second).2 hstep
+        state code first second).2 hstep) _ _
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The fixed-slot tracked query is executable without changing the support
 letter's proposition-valued meaning. -/
 @[simp]
@@ -279,6 +282,7 @@ theorem trackedFiniteConnectedBool_ofGraphFamilyCode_eq_true_iff
     exact ⟨leftCoordinate, rightCoordinate, by simpa using hleft,
       by simpa using hright, hclosure⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The fixed-slot facial query is executable without changing the support
 letter's proposition-valued meaning. -/
 @[simp]

@@ -260,10 +260,10 @@ theorem exists_reachable_rotationOrderedFusionStructuralTarget_or_crossFaceDartK
         graphData minimal start with
     hterminal | hcycle
   · rcases hterminal with ⟨finish, hreach, hfinish⟩
-    exact Or.inl ⟨finish, hreach.mono refineStep, hfinish⟩
+    exact Or.inl ⟨finish, Relation.ReflTransGen.mono refineStep start finish hreach, hfinish⟩
   · rcases hcycle with ⟨cycleDart, hreach, hclosed⟩
-    exact Or.inr ⟨cycleDart, hreach.mono refineStep,
-      hclosed.mono refineStep⟩
+    exact Or.inr ⟨cycleDart, Relation.ReflTransGen.mono refineStep start cycleDart hreach,
+      Relation.TransGen.mono refineStep cycleDart cycleDart hclosed⟩
 
 end GoertzelV24AdjacentPairInsertion.AdjacentPairData
 

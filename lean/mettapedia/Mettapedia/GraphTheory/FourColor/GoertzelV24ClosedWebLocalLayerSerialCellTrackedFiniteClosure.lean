@@ -324,13 +324,13 @@ theorem sourceLocalLayerSerialPreRebaseTrackedReachableForColor_iff_finiteClosur
   constructor
   · intro hclosure
     exact Relation.ReflTransGen.lift coordinate
-      (fun first second h => (hstep first second).1 h) hclosure
+      (fun first second h => (hstep first second).1 h) _ _ hclosure
   · intro hclosure
     have hlift := Relation.ReflTransGen.lift coordinate.symm
       (fun first second h =>
         (hstep (coordinate.symm first) (coordinate.symm second)).2 (by
-          simpa using h)) hclosure
-    simpa [coordinate, carrier] using hlift
+          simpa using h)) _ _ hclosure
+    simpa [Function.onFun, coordinate, carrier] using hlift
 
 /-- Complete tracked reachability after adjoining one literal source Cell is
 the closure of a graph-free relation on at most twenty-one coordinates.  Its
@@ -437,13 +437,13 @@ theorem sourceLocalLayerSerialPreRebaseTrackedReachable_iff_finiteClosure
   constructor
   · intro hclosure
     exact Relation.ReflTransGen.lift coordinate
-      (fun first second h => (hstep first second).1 h) hclosure
+      (fun first second h => (hstep first second).1 h) _ _ hclosure
   · intro hclosure
     have hlift := Relation.ReflTransGen.lift coordinate.symm
       (fun first second h =>
         (hstep (coordinate.symm first) (coordinate.symm second)).2 (by
-          simpa using h)) hclosure
-    simpa [coordinate, carrier] using hlift
+          simpa using h)) _ _ hclosure
+    simpa [Function.onFun, coordinate, carrier] using hlift
 
 /-- The actual outgoing profile's tracked-connectivity field is exactly the
 finite closure above, guarded by the two displayed output colours.  This is

@@ -34,6 +34,7 @@ namespace SourceTrail
 
 namespace AnnularEmbedding
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Each terminal of the source-aligned `4 + 2` profile is one of the two
 actual primal crossings of the exterior rails. -/
 theorem sourceTwoTileAlignedTerminalProfileDataAt_terminalEdge_mem_railCrossingEdges

@@ -142,6 +142,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialFaceLocalGraph_support_subset_ran
   refine ⟨carrierCoordinate carrier ⟨dart, hcarrier⟩, ?_⟩
   simp [carrier]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The selected Boolean Cell/seam row is exactly the literal local facial
 graph on all live current coordinates. -/
 theorem pointwiseSelectedSourceLocalLayerSerialFaceLocalAdjacencyAt_exact
@@ -224,6 +225,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialFaceLocalAdjacencyAt_exact
 
 /-! ## Exact lift to the complete interaction carrier -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The native selected local factor reads precisely the selected Cell/seam
 Boolean adjacency row. -/
 theorem pointwiseSelectedSourceLocalLayerSerialPhysicalFaceLocalAdjacencyAt_eq

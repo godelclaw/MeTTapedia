@@ -66,9 +66,10 @@ theorem reachable_map_of_adj_eq_or_adj
   have hlift : Relation.ReflTransGen target.Reachable
       (mapVertex left) (mapVertex right) :=
     Relation.ReflTransGen.lift mapVertex (fun first second hadj => by
+      change target.Reachable (mapVertex first) (mapVertex second)
       rcases hmap hadj with heq | htarget
       · rw [heq]
-      · exact htarget.reachable) hreachable
+      · exact htarget.reachable) left right hreachable
   exact Relation.ReflTransGen.trans_induction_on
     (motive := fun {first second} _ =>
       target.Reachable first second) hlift
@@ -104,7 +105,7 @@ theorem edgeDeletedPrimalGraph_toRotationSystem_eq
     intro hedgeValue
     apply hedge
     apply Subtype.ext
-    simpa [SimpleGraph.Dart.edge] using hedgeValue
+    exact hedgeValue
   · rintro ⟨hadj, hedge⟩
     let dart : G.Dart := ⟨(left, right), hadj⟩
     refine ⟨dart, ?_, rfl, rfl⟩
@@ -130,7 +131,7 @@ theorem edgeBridgeFree_toRotationSystem_iff
     intro hnotReachable
     apply hfree dart
     apply SimpleGraph.isBridge_iff.mpr
-    simpa [SimpleGraph.Dart.edge] using hnotReachable
+    exact hnotReachable
 
 end
 

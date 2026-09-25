@@ -38,6 +38,7 @@ private def targetAddTwo (world : targetTheory.World) : targetTheory.World := by
   change Nat at world ⊢
   exact world + 2
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The old increment meaning is preserved by the richer target stage. -/
 private def sourceTargetTranslation : Translation sourceTheory targetTheory where
   mapWorld := id

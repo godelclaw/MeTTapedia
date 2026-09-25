@@ -203,6 +203,7 @@ theorem pointwiseSelectedSourceLocalLayerBoundaryRebaseNormalizedTrackedCodeForC
         coordinate := by
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The occupied channel of the normalized code represents the actual
 successor component relation exactly. -/
 theorem pointwiseSelectedSourceLocalLayerBoundaryRebaseNormalizedTrackedCodeForColorAt_reachable_false_iff
@@ -238,6 +239,7 @@ theorem pointwiseSelectedSourceLocalLayerBoundaryRebaseNormalizedTrackedCodeForC
     pointwiseSelectedSourceLocalLayerBoundaryRebaseSuccessorComponentGraphForColorAt_reachable_iff
       formation corridor hinterior offset hnext color pair left right
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The unused channel is the discrete graph, hence contributes only
 reflexivity to the union-closure. -/
 theorem pointwiseSelectedSourceLocalLayerBoundaryRebaseNormalizedTrackedCodeForColorAt_reachable_true_iff
@@ -257,6 +259,7 @@ theorem pointwiseSelectedSourceLocalLayerBoundaryRebaseNormalizedTrackedCodeForC
   change (⊥ : SimpleGraph (Fin 4)).Reachable left right ↔ left = right
   simp
 
+set_option backward.isDefEq.respectTransparency false in
 /-- One normalized tracked finite step is already the complete actual
 successor component relation. -/
 theorem pointwiseSelectedSourceLocalLayerBoundaryRebaseNormalizedTrackedFiniteStepForColorAt_iff
@@ -294,6 +297,7 @@ theorem pointwiseSelectedSourceLocalLayerBoundaryRebaseNormalizedTrackedFiniteSt
       exact ⟨.nil⟩
   · exact fun hreachable => Or.inl hreachable
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Saturating the normalized finite step changes nothing: it remains exactly
 the actual successor tracked component relation. -/
 theorem pointwiseSelectedSourceLocalLayerBoundaryRebaseNormalizedTrackedFiniteClosureForColorAt_iff
@@ -541,6 +545,7 @@ noncomputable def pointwiseSelectedSourceLocalLayerBoundaryRebaseNormalizedSuppo
     pointwiseSelectedSourceLocalLayerBoundaryRebaseNormalizedOutputCodeForColorAt
       formation corridor hinterior offset hnext color hrole
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every pointwise-selected positive rebase has a supported canonical finite
 letter.  No physical carrier presentation survives in the conclusion. -/
 theorem pointwiseSelectedSourceLocalLayerBoundaryRebaseNormalizedSupportLetterForColorAt_supports

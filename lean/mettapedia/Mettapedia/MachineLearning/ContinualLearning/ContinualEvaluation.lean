@@ -330,6 +330,7 @@ theorem continualWindow_orderedPairs_nonempty :
   simp only [orderedPairs, Finset.mem_filter, Finset.mem_product]
   exact ⟨by simp [continualWindow], by decide⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem endpoint_sampling_reports_no_drop :
     maximalDrop stabilityGapTrace endpointWindow
       endpointWindow_orderedPairs_nonempty = 0 := by
@@ -350,6 +351,7 @@ theorem endpoint_sampling_reports_no_drop :
       hmem
     simpa [stabilityGapTrace] using hle
 
+set_option backward.isDefEq.respectTransparency false in
 theorem continual_sampling_exposes_unit_drop :
     maximalDrop stabilityGapTrace continualWindow
       continualWindow_orderedPairs_nonempty = 1 := by

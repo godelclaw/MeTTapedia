@@ -380,6 +380,7 @@ def chainModel : Model := structuralModel fun _ => 0
     structuralModel, interpretedResults, equationResults, queryAll, query,
     viewEquation?, matchPattern, applyBindings]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Bare Zero exposes only the first link of the chain. -/
 @[simp] theorem chain_evaluateOne_a :
     evaluateOne chainModel chainSpace chainA = {chainB} := by

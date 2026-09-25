@@ -275,9 +275,11 @@ def slabDart (x : AllDart k) : RetainedDart RS S.inner' := ⟨S.ι x, S.slab_inn
 def inPartnerDart' (i : Fin k) : RetainedDart RS S.inner' :=
   ⟨RS.alpha (S.ι (Sum.inr (Sum.inl i))), Or.inl (S.in_inner i)⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem outEquiv_symm_outPort (i : Fin k) : S.outEquiv.symm (S.outPort i) = i := by
   simp [outEquiv, Equiv.ofBijective_symm_apply_apply]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem inEquiv_symm_inPartner (i : Fin k) : S.inEquiv.symm (S.inPartner i) = i := by
   simp [inEquiv, Equiv.ofBijective_symm_apply_apply]
 
@@ -366,6 +368,7 @@ theorem inPartnerDart'_eq_alpha_slabDart (i : Fin k) :
     S.inPartnerDart' i = ⟨RS.alpha (S.slabDart (Sum.inr (Sum.inl i))).1, Or.inl (S.in_inner i)⟩ :=
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **gluing** -/
 theorem mem_sideSupport_inner'_of (w w' : Fin k → Color)
     (hw : ∀ i, c₀.color (S.inPartner i).1 = w i)

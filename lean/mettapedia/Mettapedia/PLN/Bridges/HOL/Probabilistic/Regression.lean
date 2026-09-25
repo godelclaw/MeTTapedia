@@ -81,6 +81,7 @@ private theorem halfUnitInterval_ne_zero : halfUnitInterval ≠ 0 := by
   have hval := congrArg Subtype.val h
   norm_num [halfUnitInterval] at hval
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Positive infinitary canary: under a geometric measure on the genuinely
 infinite index type `Nat`, the sentence probability of `flag` is `1/2`. -/
 theorem regression_nat_geometric_flag_half :

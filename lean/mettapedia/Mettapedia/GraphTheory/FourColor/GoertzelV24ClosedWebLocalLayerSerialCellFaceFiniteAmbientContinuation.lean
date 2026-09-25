@@ -39,6 +39,7 @@ local instance closedWebLocalLayerSerialCellFaceFiniteAmbientContinuationEdgeSet
     DecidableEq G.edgeSet :=
   Subtype.instDecidableEq
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The three literal facial roles on the outgoing two-step layer. -/
 inductive SourceLocalLayerSerialOutputFaceRole
   | first
@@ -86,6 +87,7 @@ theorem sourceLocalLayerSerialOutputFaceOfRole_injective
       (Subtype.ext heq.symm))
   · rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The ambient face of every actual outgoing fragment is one of the three
 faces of the literal two-step outgoing layer. -/
 theorem exists_sourceLocalLayerSerialOutputFaceRole

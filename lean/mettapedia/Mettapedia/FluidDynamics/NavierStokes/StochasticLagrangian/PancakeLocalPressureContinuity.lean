@@ -76,7 +76,8 @@ theorem continuous_pressureDerivative_field (j : Fin 3) :
   have hc (q : Wavevector) : Continuous (fun t : Set.Icc (0 : ℝ) T ↦
       indexedDerivativeCoeff id j (infinitePressureCoeff (s.coefficients t)) q) := by
     unfold indexedDerivativeCoeff
-    exact continuous_const.smul (continuous_infinitePressureCoeff s hB q)
+    exact (continuous_const (y := unitTorusDerivativePhase * (q j : ℂ))).smul
+      (continuous_infinitePressureCoeff s hB q)
   apply continuous_scalarFullFourierField _ hc
     (fun q ↦ ((2 * Real.pi) * 3) * convolutionEnvelope g q)
     ((summable_convolutionEnvelope g hg hSum).mul_left _)
@@ -94,7 +95,9 @@ theorem continuous_pressureSecondDerivative_field (i j : Fin 3) :
       indexedDerivativeCoeff id j
         (indexedDerivativeCoeff id i (infinitePressureCoeff (s.coefficients t))) q) := by
     unfold indexedDerivativeCoeff
-    exact continuous_const.smul (continuous_const.smul (continuous_infinitePressureCoeff s hB q))
+    exact (continuous_const (y := unitTorusDerivativePhase * (q j : ℂ))).smul
+      ((continuous_const (y := unitTorusDerivativePhase * (q i : ℂ))).smul
+        (continuous_infinitePressureCoeff s hB q))
   apply continuous_scalarFullFourierField _ hc
     (fun q ↦ ((2 * Real.pi)^2 * 3) * convolutionEnvelope g q)
     ((summable_convolutionEnvelope g hg hSum).mul_left _)

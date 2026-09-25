@@ -70,7 +70,7 @@ theorem Completable.mono_target {target' : Set α} (hsub : target ⊆ target')
 theorem Completable.mono_step {step' : α → α → Prop}
     (hle : ∀ x y, step x y → step' x y) (h : Completable step target) :
     Completable step' target :=
-  fun x => (h x).imp fun _ hy => ⟨hy.1, hy.2.mono hle⟩
+  fun x => (h x).imp fun y hy => ⟨hy.1, ReflTransGen.mono hle x y hy.2⟩
 
 theorem WeaklyCompletable.mono_step {step' : α → α → Prop}
     (hle : ∀ x y, step x y → step' x y) (h : WeaklyCompletable step target) :
@@ -126,7 +126,7 @@ theorem Completable.of_map (f : β → α)
   intro x
   obtain ⟨a, rfl⟩ := hcover x
   obtain ⟨b, hb, hab⟩ := h a
-  exact ⟨f b, hb, ReflTransGen.lift f (fun u v huv => hstep u v huv) hab⟩
+  exact ⟨f b, hb, ReflTransGen.lift f (fun u v huv => hstep u v huv) a b hab⟩
 
 variable {L : Type v} {R : Type w} {stepL : L → L → Prop} {stepR : R → R → Prop}
 
@@ -139,11 +139,11 @@ theorem completable_sum {targetL : Set L} {targetR : Set R}
   | inl a =>
       obtain ⟨b, hb, hab⟩ := hL a
       exact ⟨Sum.inl b, hb,
-        ReflTransGen.lift Sum.inl (fun _ _ h => Sum.LiftRel.inl h) hab⟩
+        ReflTransGen.lift Sum.inl (fun _ _ h => Sum.LiftRel.inl h) a b hab⟩
   | inr a =>
       obtain ⟨b, hb, hab⟩ := hR a
       exact ⟨Sum.inr b, hb,
-        ReflTransGen.lift Sum.inr (fun _ _ h => Sum.LiftRel.inr h) hab⟩
+        ReflTransGen.lift Sum.inr (fun _ _ h => Sum.LiftRel.inr h) a b hab⟩
 
 /-- **Two-sided cover.**  If every state lies in the image of one of two sides
 whose moves embed as moves, and each side is completable towards the preimage

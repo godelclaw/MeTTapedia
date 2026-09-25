@@ -79,18 +79,15 @@ def restrictToSubgraph
       rcases hambient with hfirst | hsecond | hspoke
       · apply Or.inl
         apply Subtype.ext
-        simpa [ambientEdge] using
-          congrArg (fun named : G.edgeSet => named.1) hfirst
+        exact congrArg (fun named : G.edgeSet => named.1) hfirst
       · apply Or.inr
         apply Or.inl
         apply Subtype.ext
-        simpa [ambientEdge] using
-          congrArg (fun named : G.edgeSet => named.1) hsecond
+        exact congrArg (fun named : G.edgeSet => named.1) hsecond
       · apply Or.inr
         apply Or.inr
         apply Subtype.ext
-        simpa [ambientEdge] using
-          congrArg (fun named : G.edgeSet => named.1) hspoke
+        exact congrArg (fun named : G.edgeSet => named.1) hspoke
     · intro hedge
       simp only [Finset.mem_insert, Finset.mem_singleton] at hedge
       rcases hedge with hfirst | hsecond | hspokeEq

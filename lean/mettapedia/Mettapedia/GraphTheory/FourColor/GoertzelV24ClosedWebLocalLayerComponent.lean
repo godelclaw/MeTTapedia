@@ -98,6 +98,7 @@ noncomputable def cutEdges
     (Finset.univ : Finset (OrbitFace web.annular.RS)) hunique
     (layers.separatedLocalLayerPair hunique).dualLoop
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The literal two-tile Cell-3 layer boundary crosses exactly four distinct
 primal edges.  This is the finite collar around the local rung pair: it is
 read from the constructed facial-dual loop, rather than supplied as an

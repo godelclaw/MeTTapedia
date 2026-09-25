@@ -85,6 +85,7 @@ def binderOccurrenceLanguage : LanguageDef where
   equations := [quoteDropEquation]
   rewrites := []
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem binderOccurrenceLanguage_valid :
     binderOccurrenceLanguage.validate = [] := by
   apply LanguageDef.validate_eq_nil_of_constructorEquationsAndRewrites

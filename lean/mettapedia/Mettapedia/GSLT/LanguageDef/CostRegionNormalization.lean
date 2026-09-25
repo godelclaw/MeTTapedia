@@ -842,6 +842,7 @@ The recursive proof follows the proof-relevant region forest itself.  Each
 intermediate vertex remains in the exact split binder and authored parameter
 fiber carried by the corresponding tree index. -/
 
+set_option backward.isDefEq.respectTransparency.types false in
 mutual
   /-- Child-first normalization of one complete region tree is an authored
   equation path in its exact split binder and typing fiber. -/
@@ -2103,6 +2104,7 @@ theorem CostOpenNormalizer.reindexFree_pattern
   cases freeEquality
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Finite-support factorization supplies exact naturality under extension or
 replacement of unused ambient free-context entries.  The proof compares both
 executions in their common finite restriction; it never asks the two ambient

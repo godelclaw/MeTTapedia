@@ -8,6 +8,7 @@ namespace GoertzelV24CorridorProfile
 open GoertzelV24CorridorPumping
 open GoertzelV24WindingClassification
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The three two-color subgraphs whose component data crosses a corridor
 section. -/
 inductive TrackedColorPair where

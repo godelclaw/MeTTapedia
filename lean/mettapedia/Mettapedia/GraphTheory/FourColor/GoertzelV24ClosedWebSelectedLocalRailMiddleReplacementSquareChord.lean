@@ -57,6 +57,7 @@ namespace MiddleReplacementShortDualCycle
 
 variable {face : SelectedFace (web := web)}
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A locally three-dart cyclic vertex rotation changes the underlying graph
 edge at its first step. -/
 theorem edgeOf_rho_ne_edgeOf_of_dartsAt_card_eq_three
@@ -166,6 +167,7 @@ structure SquareBondRealization.InternalDualAdjacency
     (orbitFaceBoundary web.annular.RS)
     (Finset.univ : Finset (OrbitFace web.annular.RS))).Adj leftFace rightFace
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **L1 square-bond local consumer.**  The internal edge of the exact
 two-vertex residue produces a literal dual adjacency inside the selected
 four-cycle support, using only local cubicity and local face two-sidedness. -/

@@ -213,6 +213,7 @@ local instance graphEdgeSetFintype : Fintype G.edgeSet :=
 local instance graphEdgeSetDecidableEq : DecidableEq G.edgeSet :=
   Subtype.instDecidableEq
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Graph darts crossing a vertex predicate are exactly the literal boundary
 darts of graph-backed rotation data. -/
 def boundaryDartEquivCrossingSideDart

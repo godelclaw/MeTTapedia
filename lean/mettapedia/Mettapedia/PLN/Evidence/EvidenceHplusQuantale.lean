@@ -28,6 +28,7 @@ namespace EvidenceHplus
 
 @[simp] lemma toDual_ofEvidence (e : BinaryEvidence) : (OrderDual.toDual e : EvidenceHplus) = e := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] lemma pos_image_toDual_preimage (S : Set EvidenceHplus) :
     BinaryEvidence.pos '' (OrderDual.toDual ⁻¹' S)
       = (fun b : EvidenceHplus => (OrderDual.ofDual b).pos) '' S := by
@@ -40,6 +41,7 @@ namespace EvidenceHplus
     refine ⟨OrderDual.ofDual b, ?_, rfl⟩
     simpa using hb
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] lemma neg_image_toDual_preimage (S : Set EvidenceHplus) :
     BinaryEvidence.neg '' (OrderDual.toDual ⁻¹' S)
       = (fun b : EvidenceHplus => (OrderDual.ofDual b).neg) '' S := by
@@ -52,6 +54,7 @@ namespace EvidenceHplus
     refine ⟨OrderDual.ofDual b, ?_, rfl⟩
     simpa using hb
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] lemma image_toDual_preimage {β} (f : BinaryEvidence → β) (S : Set EvidenceHplus) :
     f '' (OrderDual.toDual ⁻¹' S) = (fun b : EvidenceHplus => f (OrderDual.ofDual b)) '' S := by
   ext y
@@ -124,6 +127,7 @@ noncomputable instance : Semigroup EvidenceHplus where
 noncomputable instance : CommSemigroup EvidenceHplus where
   mul_comm := hplus_comm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- hplus distributes over sSup in the **dual** lattice. -/
 lemma hplus_sSup_right (a : EvidenceHplus) (S : Set EvidenceHplus) :
     a * sSup S = ⨆ b ∈ S, a * b := by

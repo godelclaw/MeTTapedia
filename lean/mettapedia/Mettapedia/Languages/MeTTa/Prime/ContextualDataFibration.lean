@@ -158,6 +158,7 @@ def translation {source target : ContextualLanguage}
       (mapLangSort_authoredSortToLangSort morphism.route type)
   mapStamp := _root_.id
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp]
 theorem translation_mapBaseEl_pattern
     {source target : ContextualLanguage}
@@ -193,6 +194,7 @@ theorem translation_mapType_comp
       exact StructuralMorphism.mapSort_comp earlier.route later.route sort
   | data payload inductionHypothesis => simp [inductionHypothesis]
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem translation_mapInterpret_id (code : ContextualLanguage)
     (type : DataType (fibre code).BaseType)
     (value : interpret (fibre code).Stamp (fibre code).BaseEl type) :
@@ -214,6 +216,7 @@ theorem translation_mapInterpret_id (code : ContextualLanguage)
       simp only [FibreTranslation.mapInterpret, translation, DataType.map_data]
       exact FibreTranslation.prod_heq HEq.rfl (inductionHypothesis inner)
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem translation_mapInterpret_comp
     {first middle last : ContextualLanguage}
     (earlier : ContextualMorphism first middle)

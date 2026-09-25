@@ -59,6 +59,7 @@ def pointwiseSelectedSourceLocalLayerSerialOutputFaceOfRole
         offset).secondWalk.getVert
           (pointwiseSelectedSourceLocalLayerSerialOutputFaceRoleIndex role)).1
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The three selected outgoing roles name distinct ambient faces. -/
 theorem pointwiseSelectedSourceLocalLayerSerialOutputFaceOfRole_injective
     {data : AnnularBoundaryData G 5} (formation : Formation data)
@@ -95,6 +96,7 @@ theorem pointwiseSelectedSourceLocalLayerSerialOutputFaceOfRole_injective
   cases left <;> cases right <;>
     simp_all [pointwiseSelectedSourceLocalLayerSerialOutputFaceRoleIndex]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every selected outgoing fragment lies on one of the three literal faces
 of the second local-layer walk. -/
 theorem exists_pointwiseSelectedSourceLocalLayerSerialOutputFaceRole

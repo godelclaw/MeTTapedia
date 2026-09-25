@@ -106,6 +106,7 @@ theorem faceFiniteStepBool_ofGraphFamilyCode_eq_true_iff
   simp only [SourceLocalLayerBoundaryRebaseFaceFiniteStepBool,
     Bool.or_eq_true, ofGraphFamilyCode_reachable_eq_true_iff]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Boolean saturation of a reflected tracked collar is exactly the
 proof-facing two-factor closure. -/
 @[simp]
@@ -124,13 +125,14 @@ theorem trackedFiniteClosureBool_ofGraphFamilyCode_eq_true_iff
   rw [SourceLocalLayerBoundaryRebaseTrackedFiniteClosureBool,
     boolRelationReachable_eq_true_iff]
   constructor
-  · exact Relation.ReflTransGen.mono fun first second hstep =>
+  · exact Relation.ReflTransGen.mono (fun first second hstep =>
       (trackedFiniteStepBool_ofGraphFamilyCode_eq_true_iff
-        code pair first second).1 hstep
-  · exact Relation.ReflTransGen.mono fun first second hstep =>
+        code pair first second).1 hstep) _ _
+  · exact Relation.ReflTransGen.mono (fun first second hstep =>
       (trackedFiniteStepBool_ofGraphFamilyCode_eq_true_iff
-        code pair first second).2 hstep
+        code pair first second).2 hstep) _ _
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Boolean saturation of a reflected facial collar is exactly the
 proof-facing two-factor closure. -/
 @[simp]
@@ -147,13 +149,14 @@ theorem faceFiniteClosureBool_ofGraphFamilyCode_eq_true_iff
   rw [SourceLocalLayerBoundaryRebaseFaceFiniteClosureBool,
     boolRelationReachable_eq_true_iff]
   constructor
-  · exact Relation.ReflTransGen.mono fun first second hstep =>
+  · exact Relation.ReflTransGen.mono (fun first second hstep =>
       (faceFiniteStepBool_ofGraphFamilyCode_eq_true_iff
-        code first second).1 hstep
-  · exact Relation.ReflTransGen.mono fun first second hstep =>
+        code first second).1 hstep) _ _
+  · exact Relation.ReflTransGen.mono (fun first second hstep =>
       (faceFiniteStepBool_ofGraphFamilyCode_eq_true_iff
-        code first second).2 hstep
+        code first second).2 hstep) _ _
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The Boolean tracked collar query computes actual successor tracked
 reachability exactly between any two collar edges. -/
 theorem sourceLocalLayerBoundaryRebaseTrackedFiniteClosureBoolAt_eq_true_iff
@@ -182,6 +185,7 @@ theorem sourceLocalLayerBoundaryRebaseTrackedFiniteClosureBoolAt_eq_true_iff
   exact (sourceLocalLayerBoundaryRebaseSuccessorTracked_reachable_iff_collarCode
     corridor hunique offset hnext pair left right hleft hright).symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The Boolean facial collar query computes actual successor facial
 reachability exactly between any two collar darts. -/
 theorem sourceLocalLayerBoundaryRebaseFaceFiniteClosureBoolAt_eq_true_iff

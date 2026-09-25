@@ -70,6 +70,7 @@ def toPrimalDart (RS : RotationSystem V E) (keep : V → Prop)
         ((GoertzelV24OpenRegionRotation.rotationSystem RS keep outer).alpha dart) :=
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Distinct literal-open darts have distinct ordered endpoint pairs.  The
 fresh boundary vertex remembers the exact exposed ambient half-dart, while
 two retained endpoints determine the original graph dart because the ambient
@@ -223,6 +224,7 @@ edge flip. -/
       ((GoertzelV24OpenRegionRotation.rotationSystem
         data.toRotationSystem keep outer).alpha_involutive dart)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Bare graph-backed rotation data on the simple graph computed from a
 literal open region.  The cyclic order is transported, not postulated. -/
 def graphData
@@ -276,6 +278,7 @@ rotations. -/
         (primalDartEquiv data keep outer dart) := by
   rw [graphData_vertexRotation, Equiv.symm_apply_apply]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Consequently the equivalence preserves facial steps, which is the
 load-bearing compatibility for transporting quotient faces and facial-dual
 crosscuts onto the computed simple graph. -/

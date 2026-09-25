@@ -43,6 +43,7 @@ namespace Instance
 
 namespace LocalLayerPair
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The concrete Cell-3 local layer supplies the complete geometric boundary
 package used by the ordered source splice.  The retained side is selected by
 the distinguished outer dart; every crossing orientation and every boundary

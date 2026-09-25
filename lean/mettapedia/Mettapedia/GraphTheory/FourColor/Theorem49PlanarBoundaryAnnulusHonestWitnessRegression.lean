@@ -578,6 +578,7 @@ def sipDart67 : sharedInteriorPairAnnulusGraph.Dart := ⟨((6 : Fin 8), 7), by
 def sipDart75 : sharedInteriorPairAnnulusGraph.Dart := ⟨((7 : Fin 8), 5), by
   simp [sharedInteriorPairAnnulusGraph]⟩
 
+set_option backward.isDefEq.respectTransparency false in
 def sipFace0PureDartCycle
     (hf : (0 : SharedInteriorPairFace) ∈ sharedInteriorPairAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
@@ -601,6 +602,7 @@ def sipFace0PureDartCycle
       simp [sip01, sip12, sip23, sip30,
         sipDart01, sipDart12, sipDart23, sipDart30]
 
+set_option backward.isDefEq.respectTransparency false in
 def sipFace1PureDartCycle
     (hf : (1 : SharedInteriorPairFace) ∈ sharedInteriorPairAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
@@ -624,6 +626,7 @@ def sipFace1PureDartCycle
       simp [sip01, sip12, sip24, sip40,
         sipDart01, sipDart12, sipDart24, sipDart40]
 
+set_option backward.isDefEq.respectTransparency false in
 def sipFace2PureDartCycle
     (hf : (2 : SharedInteriorPairFace) ∈ sharedInteriorPairAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryPureDartCycle
@@ -687,6 +690,7 @@ def sipFace2DartSuccessor (d : sharedInteriorPairAnnulusGraph.Dart) :
   else if d = sipDart67 then sipDart75
   else sipDart56
 
+set_option backward.isDefEq.respectTransparency false in
 def sipFace0DartSuccessorCycle
     (hf : (0 : SharedInteriorPairFace) ∈ sharedInteriorPairAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryDartSuccessorCycle
@@ -710,6 +714,7 @@ def sipFace0DartSuccessorCycle
     intro e he
     exact (sipFace0PureDartCycle hf).hface_sub e he
 
+set_option backward.isDefEq.respectTransparency false in
 def sipFace1DartSuccessorCycle
     (hf : (1 : SharedInteriorPairFace) ∈ sharedInteriorPairAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryDartSuccessorCycle
@@ -733,6 +738,7 @@ def sipFace1DartSuccessorCycle
     intro e he
     exact (sipFace1PureDartCycle hf).hface_sub e he
 
+set_option backward.isDefEq.respectTransparency false in
 def sipFace2DartSuccessorCycle
     (hf : (2 : SharedInteriorPairFace) ∈ sharedInteriorPairAnnulusEmbedding.faces) :
     PlaneEmbeddingWithBoundary.FaceBoundaryDartSuccessorCycle
@@ -2104,6 +2110,7 @@ theorem
       sharedInteriorPairClosedWalkAnnulusBoundarySource,
       not_exists_threeCollar_planarBoundaryAnnulusCollarGeometry_with_sharedInteriorPairBoundaryData⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem card_ambientFace_sharedInteriorPairAnnulusEmbedding :
     Fintype.card (AmbientFace sharedInteriorPairAnnulusEmbedding.faces) = 3 := by
   simp [AmbientFace, sharedInteriorPairAnnulusEmbedding, sharedInteriorPairFaces]

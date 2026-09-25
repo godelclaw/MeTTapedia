@@ -186,6 +186,7 @@ theorem fillUnknown_extractUnknown (v : PartialVector n) (u : BitVector n)
     simp only [hb, beq_iff_eq] at hu
     simp [hb, hu]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The number of completions is 2^(number of unknowns).
 
 This is a fundamental combinatorial fact: each unknown bit can be filled

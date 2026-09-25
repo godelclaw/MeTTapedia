@@ -31,6 +31,7 @@ universe u
 variable {V : Type u} [Fintype V] [DecidableEq V]
   {G : SimpleGraph V} [DecidableRel G.Adj]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- If a connected outer complement avoids an inner cycle, then saturating
 the inner filled side at their common exterior root remains inside the outer
 side. -/

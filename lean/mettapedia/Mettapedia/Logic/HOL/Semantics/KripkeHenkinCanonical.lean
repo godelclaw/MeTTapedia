@@ -348,6 +348,7 @@ theorem canonicalLevelKripkeHenkin_forces_iff_mem
       φ ∈ W.carrier := by
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Empty-context forcing in the level-respecting canonical membership model is
 exactly carrier membership. -/
 theorem canonicalLevelKripkeHenkin_forcesAt_empty_iff_mem

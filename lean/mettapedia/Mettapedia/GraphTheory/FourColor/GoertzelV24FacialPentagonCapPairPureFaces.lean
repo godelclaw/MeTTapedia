@@ -141,6 +141,7 @@ namespace OrientedFacialPentagonCap
 
 variable {data : Data G}
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The named facial pentagon is a pure face of its own cap-vertex side. -/
 theorem namedFace_mem_allOnVertexSupport (cap : OrientedFacialPentagonCap data) :
     dartOrbitFace data.toRotationSystem cap.toFacialPentagonCap.faceDart ∈
@@ -264,6 +265,7 @@ theorem not_adj_of_mem_innerSupport_of_mem_outerSupport
     GoertzelV24FacialPentagonCapPairDeletedCycle.FacialPentagonCapBoundaryWalkPair.not_adj_inner_outerVertices
       caps innerStep outerStep
 
+set_option backward.isDefEq.respectTransparency false in
 /-- On an ambient face wholly supported by the two remote caps, membership in
 the inner cap is constant around the facial permutation. -/
 theorem innerSupport_eq_on_face_allOn_deletedSupport

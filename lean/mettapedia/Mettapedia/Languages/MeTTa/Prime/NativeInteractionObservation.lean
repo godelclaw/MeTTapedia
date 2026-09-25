@@ -349,6 +349,7 @@ def beginsAtCheap : List (Occurrence loopPresentation) → Bool
     beginsAtCheap (events dearComputation) = false :=
   by simp [beginsAtCheap, dearOccurrence, dearEvent]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Both one-event worlds have equal count, but count cannot implement a
 policy that distinguishes their authenticated sites. -/
 theorem eventCountScheduler_not_supports_sitePolicy :

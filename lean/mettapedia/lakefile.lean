@@ -5,7 +5,7 @@ open System Lake DSL
 package Mettapedia where
   version := v!"0.1.0"
 
-require "leanprover-community" / mathlib @ git "v4.31.0"
+require "leanprover-community" / mathlib @ git "85e3a25e006c35636f0e53b0e9296caca2685bc0"
 
 -- Editable local repos live in ../externals.
 require ordered_semigroups from "../externals/ordered_semigroups"

@@ -139,6 +139,7 @@ def LocalLayerFiniteOneCellDecoderStep
   ∃ code : LocalLayerFiniteOneCellLetterCode,
     code.decode input = some output
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every complete terminal-aware receipt is accepted by the deterministic
 one-Cell decoder.  This is the source-sound direction needed before the
 decoder can safely generate an over-approximate reachable closure. -/
@@ -209,6 +210,7 @@ theorem exists_letter_decode_eq_some_of_receipt
     rw [receipt.roleIndex.apply_symm_apply] at hlength
     convert hlength.symm using 1 <;> rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The profile computed by a count-compatible letter carries the receipt
 from which that letter was decoded. -/
 theorem receipt_outputProfile

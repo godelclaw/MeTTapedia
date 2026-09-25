@@ -451,6 +451,7 @@ theorem sourceCorridorSerialBoundaryRebaseTrackedSwitchEdgeAt_roleAtCoordinate
               role)).1 := (hrole role).symm
     _ = ((carrierCoordinate carrier).symm coordinate).1 := by rw [hcoordinate]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The entire formerly prefix-extracted `oldComponent` matrix is computed by
 the incoming profile and the stable eight-slot residual state. -/
 theorem sourceCorridorSerialBoundaryRebaseTrackedStepCodeAt_oldComponent_iff_stableSwitchState

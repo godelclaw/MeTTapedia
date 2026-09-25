@@ -85,6 +85,7 @@ def lambdaCalc : LanguageDef := {
   ]
 }
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The sole authored lambda-calculus presentation passes the structural
 declaration gate. -/
 theorem lambdaCalc_validate_eq_nil : lambdaCalc.validate = [] := by

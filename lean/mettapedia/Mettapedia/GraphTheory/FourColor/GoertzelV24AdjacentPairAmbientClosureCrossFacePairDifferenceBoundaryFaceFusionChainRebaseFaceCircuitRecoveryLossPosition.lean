@@ -46,6 +46,7 @@ private theorem sum_transitionScore_eq_gain_sub_loss
           omega
         · simp [transitionScore, hsource, htarget, ih]
 
+set_option backward.isDefEq.respectTransparency false in
 private theorem sum_transitionScore_eq_endpoints
     (source target : Entry → State) (property : State → Prop)
     [DecidablePred property]
@@ -430,6 +431,7 @@ namespace ClosureRecoveryFaceCircuit
 variable {rebaseCircuit :
   CrossCentralExactFaceCertifiedRebaseCircuit graphData minimal baseData}
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every displayed recovery occurrence has its restoring position in the
 claimed-position image. -/
 theorem restoringPosition_mem_claimedRebasePositions_of_mem

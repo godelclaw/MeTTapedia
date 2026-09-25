@@ -127,6 +127,7 @@ theorem deletedFacePerm_extendedBoundary_eq_internal
     walk (fun capStep : Fin 5 => hcubic ((capOf walk).vertex capStep))
       hrotation step
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The second deleted-face step exits through the preceding named spoke also
 in the simultaneous carrier. -/
 theorem deletedFacePerm_extendedInternal_eq_previousBoundary
@@ -302,6 +303,7 @@ theorem not_adj_inner_outerVertices
   exact caps.toPentagonCapPair.not_openGraph_adj_inner_outerVertices
     innerStep outerStep hopen
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The simultaneous capped deleted-face permutation preserves the inner cap
 component. -/
 theorem deletedFacePerm_preserves_innerSupport

@@ -92,6 +92,7 @@ namespace RotationSystem.TwoEdgeCutPairData
 
 variable {RS : RotationSystem V E} (data : RS.TwoEdgeCutPairData)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The vertex carrier of the chosen cap has the cardinality of the chosen
 finite side. -/
 theorem card_sideCapVertex_eq_card_side :

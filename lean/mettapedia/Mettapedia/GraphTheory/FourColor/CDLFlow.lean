@@ -284,6 +284,8 @@ theorem zeroEdgeFinset_cdlOneStepMoveOn_eq
     zeroEdgeFinset G (cdlOneStepMoveOn G C g x) =
       (zeroEdgeFinset G x).filter (fun e => e ∉ C) ∪ C.filter (fun e => x e = g) := by
   ext e
+  simp only [zeroEdgeFinset, Finset.mem_filter, Finset.mem_univ, true_and,
+    Finset.mem_union]
   by_cases heC : e ∈ C
   · simp [zeroEdgeFinset, cdlOneStepMoveOn, heC, add_eq_zero_iff_eq]
   · simp [zeroEdgeFinset, cdlOneStepMoveOn, heC]

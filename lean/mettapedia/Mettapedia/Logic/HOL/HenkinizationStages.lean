@@ -157,6 +157,7 @@ theorem lift_eq_cast_liftOffset
     exact Nat.add_sub_of_le h
   simpa [k, hk]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem liftOffset_comp : LiftOffsetCompGoal (Base := Base) (Const := Const) := by
   intro k₁ k₂
   induction k₂ with
@@ -394,6 +395,7 @@ theorem liftBaseClosedFormula_comp
       liftBaseClosedFormula (Base := Base) (Const := Const) n φ :=
   liftBaseFormula_comp (Base := Base) (Const := Const) hmn φ
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem down_lift_ofBase_zero {τ : Ty Base} (c : Const τ) :
     (lift (Base := Base) (Const := Const) (Nat.zero_le 0)
       (ofBase (Base := Base) c)).down = c := by
@@ -405,6 +407,7 @@ theorem liftBaseClosedFormula_comp
   cases c
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem reflectZero_liftBaseTerm
     {Γ : Ctx Base} {τ : Ty Base}
     (t : Term Const Γ τ) :
@@ -427,6 +430,7 @@ theorem liftBaseClosedFormula_comp
       (liftBaseClosedFormula (Base := Base) (Const := Const) 0 φ) = φ :=
   reflectZero_liftBaseFormula (Base := Base) (Const := Const) φ
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem reflectZero_liftBaseClosedTheory
     (Δ : List (ClosedFormula Const)) :
     List.map
@@ -482,6 +486,7 @@ theorem liftBase_closedTheory_zero_of_original
       (liftBaseClosedFormula (Base := Base) (Const := Const) 0 φ) :=
   liftBase_formulaProvable (Base := Base) (Const := Const) 0 d
 
+set_option backward.isDefEq.respectTransparency false in
 theorem original_closedTheory_of_stageZero
     {Δ : List (ClosedFormula Const)} {φ : ClosedFormula Const}
     (d : ExtDerivation (HenkinConstStage Base Const 0)

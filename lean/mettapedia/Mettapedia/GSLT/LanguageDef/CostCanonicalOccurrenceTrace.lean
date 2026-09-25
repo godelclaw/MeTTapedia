@@ -478,6 +478,7 @@ def parallelSpliceOccurrenceSource
   | subst body replacement =>
       exact singletonListOccurrenceRoot occurrence
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem parallelSpliceOccurrenceSource_name
     (declaration : ReflectivePresentationDecl) {pattern : Pattern}
     (occurrence : CostStaticFVarListOccurrence

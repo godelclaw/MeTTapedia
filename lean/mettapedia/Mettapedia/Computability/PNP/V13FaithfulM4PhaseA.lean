@@ -255,6 +255,7 @@ noncomputable def v13M4ScaffoldOneStepDerivative {m t : Nat}
   if transcript (coupling.left base) = transcript (coupling.right base)
     then 0 else coupling.pairWeight base
 
+set_option backward.isDefEq.respectTransparency false in
 theorem v13M4ScaffoldOneStep_partition {m t : Nat}
     {j : V13M4ConcreteMessageIndex t}
     (requests : List (V13M4ScaffoldRequest m t)) :

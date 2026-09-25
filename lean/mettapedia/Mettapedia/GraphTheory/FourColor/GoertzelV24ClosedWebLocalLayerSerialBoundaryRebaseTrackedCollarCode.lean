@@ -343,7 +343,7 @@ theorem sourceLocalLayerBoundaryRebaseSuccessorTracked_reachable_iff_collarCode
   constructor
   · intro hclosure
     exact Relation.ReflTransGen.lift coordinate
-      (fun first second h => (hstep first second).1 h) hclosure
+      (fun first second h => (hstep first second).1 h) _ _ hclosure
   · intro hclosure
     have hlift : Relation.ReflTransGen
         (fun first second : {edge // edge ∈ carrier} =>
@@ -356,8 +356,8 @@ theorem sourceLocalLayerBoundaryRebaseSuccessorTracked_reachable_iff_collarCode
       Relation.ReflTransGen.lift coordinate.symm
         (fun first second h =>
           (hstep (coordinate.symm first) (coordinate.symm second)).2 (by
-            simpa only [Equiv.apply_symm_apply] using h)) hclosure
-    simpa only [Equiv.symm_apply_apply] using hlift
+            simpa only [Equiv.apply_symm_apply] using h)) _ _ hclosure
+    simpa only [Function.onFun, Equiv.symm_apply_apply] using hlift
 
 end LocalLayerFormation
 

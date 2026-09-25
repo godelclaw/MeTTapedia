@@ -745,6 +745,7 @@ theorem loopWiden_succ (fuel : Nat) (body : Prog) (loopY acc : AbsVal) (steps : 
          analyzeFuel.loopWiden fuel body loopY steps next) := by
   simp [analyzeFuel.loopWiden]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem loopWiden_succ_step (fuel : Nat) (body : Prog) (loopY acc : AbsVal) (steps : Nat) :
     analyzeFuel.loopWiden fuel body loopY (steps + 1) acc =
       (let next := loopWidenStep fuel body loopY acc
@@ -929,6 +930,7 @@ theorem loop2Widen_succ (fuel : Nat) (f g : Prog) (accX accY : AbsVal) (steps : 
          analyzeFuel.loop2Widen fuel f g steps nextX nextY) := by
   simp [analyzeFuel.loop2Widen]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem loop2Widen_succ_step (fuel : Nat) (f g : Prog) (accX accY : AbsVal) (steps : Nat) :
     analyzeFuel.loop2Widen fuel f g (steps + 1) accX accY =
       (let next := loop2WidenStep fuel f g accX accY

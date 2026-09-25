@@ -303,6 +303,7 @@ theorem weightOfConstraintsList_mapPotential
     | nil =>
         intro x
         simp [combineAll, oneFactor, FactorGraph.mapPotential]
+        rfl
     | cons φ fs ih =>
         intro x
         calc
@@ -404,6 +405,7 @@ theorem weightOfConstraintsList_mapPotential
           else 0 := by
             rw [if_neg hs]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem weightOfConstraints_mapPotential
     {K L : Type*} {fg : FactorGraph V K}
     [CommSemiring K] [CommSemiring L]
@@ -417,6 +419,7 @@ theorem weightOfConstraints_mapPotential
     weightOfConstraintsList_mapPotential
       (fg := fg) (h := h) (fs := factorsOfGraph (fg := fg)) constraints
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The fully operational VE query weight commutes with semiring-hom
 regrading of an explicit factor list. -/
 theorem veQueryWeightList_mapPotential
@@ -560,10 +563,12 @@ open VariableElimination
 /-! A tiny one-variable canary showing that exact queries on `(weight, lineage)`
 recover the same weight and lineage as querying the two projected factor graphs. -/
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive DemoVar
   | target
   deriving DecidableEq, Fintype
 
+set_option backward.isDefEq.respectTransparency.types false in
 inductive DemoFactor
   | left
   | right

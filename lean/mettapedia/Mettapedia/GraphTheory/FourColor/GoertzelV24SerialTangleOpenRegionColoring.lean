@@ -253,6 +253,7 @@ theorem splitVertexSideColoring_openRegionColoringOfSplitVertexSideColoring
   rw [openRegionColoringOfSplitVertexSideColoring_openOldDartColor]
   simp
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Reading a literal open-region coloring on the serial carrier and then
 restoring the fresh stubs returns the original edge coloring.  Together with
 the preceding theorem this makes the two Tait-coloring presentations inverse

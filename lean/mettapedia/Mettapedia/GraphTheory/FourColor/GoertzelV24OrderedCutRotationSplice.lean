@@ -64,11 +64,13 @@ theorem boundaryDartToCutSum_underlyingBoundary
   rcases side with left | right
   · by_cases hleft : RS.edgeOf left.1.1.1 ∈ leftCut
     · simp [boundaryDartToCutSum, cutSumUnderlyingBoundary, hleft]
+      rfl
     · exact False.elim (hleft left.2)
   · have hnotLeft : RS.edgeOf right.1.1.1 ∉ leftCut := by
       intro hleft
       exact Finset.disjoint_left.1 hdisjoint hleft right.2
     simp [boundaryDartToCutSum, cutSumUnderlyingBoundary, hnotLeft]
+    rfl
 
 /-- Exposed darts split between two disjoint cuts that cover the entire
 boundary of the retained region. -/

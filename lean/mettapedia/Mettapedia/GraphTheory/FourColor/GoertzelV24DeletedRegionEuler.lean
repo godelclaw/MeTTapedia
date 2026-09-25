@@ -303,6 +303,7 @@ theorem retainedSpliceLocalEulerBalance_deletedRegionKeep_iff
   rw [card_removedEdge_deletedRegionKeep RS deleted,
     card_deletedVertex_deletedRegionKeep deleted]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- For an actual cubic deleted region bounded by two ordered transversals,
 Euler preservation of the shortened rotation system is equivalent to the
 remaining face-return equation. All vertex, edge, and boundary terms have

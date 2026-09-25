@@ -224,6 +224,7 @@ private theorem argument_normalize_eq_of_unambiguous
 set_option maxRecDepth 5000
 set_option maxHeartbeats 300000
 
+set_option backward.isDefEq.respectTransparency.types false in
 mutual
   /-- Hereditary rho normalization is invariant when an ambient binder suffix
   is moved into the active availability of an object tree.  The two trees may

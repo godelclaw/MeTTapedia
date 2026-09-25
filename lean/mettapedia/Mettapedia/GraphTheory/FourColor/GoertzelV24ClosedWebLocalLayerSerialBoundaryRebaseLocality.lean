@@ -41,6 +41,7 @@ variable {V : Type*} [Fintype V] [DecidableEq V]
 
 noncomputable section
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every incoming crossing of a literal source Cell lies on that Cell's
 named corridor-centre face. -/
 theorem sourceLocalLayerLeftCrossingAt_mem_centerFaceBoundary
@@ -99,6 +100,7 @@ theorem sourceLocalLayerLeftCrossingAt_mem_centerFaceBoundary
           simp [layers, sourceLocalLayerPairAt, LocalLayerPair.firstLayer,
             LocalLayerPair.firstWalk]⟩)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every outgoing crossing of a literal source Cell lies on the successor
 corridor-centre face of that Cell. -/
 theorem sourceLocalLayerRightCrossingAt_mem_nextCenterFaceBoundary

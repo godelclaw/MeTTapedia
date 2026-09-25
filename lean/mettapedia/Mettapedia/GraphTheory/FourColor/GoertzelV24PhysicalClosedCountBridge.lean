@@ -351,6 +351,7 @@ noncomputable def seriesColoringOfPhysical
     rw [seriesCompositeDartEquiv_alpha]
     rw [(compositeDarts left right matching).edgeOf_alpha]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The pulled-back physical colouring is proper at every series vertex. -/
 theorem seriesColoringOfPhysical_isProper
     (left : OpenTangleData V I L) (right : OpenTangleData W J R)

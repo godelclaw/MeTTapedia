@@ -165,6 +165,7 @@ theorem boundaryDart_edge_eq_vertices
   simpa [SimpleGraphDartRotation.Data.toRotationSystem_edgeOf,
     walk.toOrientedFacialPentagonCap.cycleEdge_eq_vertices step] using hedge
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Consecutive entries in the literal facial walk meet at the actual terminal
 vertex of the preceding dart. -/
 theorem boundaryDart_snd_eq_next_fst
@@ -238,6 +239,7 @@ private theorem fin5_sub_one_add_one (step : Fin 5) :
     (step - 1) + 1 = step := by
   fin_cases step <;> rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The closed facial walk supplies the first of the three local rotations at
 each cap vertex. -/
 theorem boundaryDart_rho_alpha_pred_eq
@@ -427,6 +429,7 @@ theorem deletedFacePerm_capDeletedBoundaryDart_eq_internal
       (capDeletedBoundaryDart data cap step).2]
   exact rho_capDeletedBoundaryDart_eq_alpha_boundaryPred walk hcubic hrotation step
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The following capped deleted-side face step exits the internal cap edge
 through the preceding named spoke. -/
 theorem deletedFacePerm_capInternalFaceDart_eq_previousBoundary

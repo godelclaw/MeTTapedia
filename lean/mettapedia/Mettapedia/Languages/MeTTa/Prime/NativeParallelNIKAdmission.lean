@@ -315,6 +315,7 @@ def coloredCompiler {Ground : Type u} (initial : CostConfig Ground) :
   mapExecution := compileColoredExecution
   preservesMeaning := fun _ reachable => reachable
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Exact receipts, occurrence work, and supplied wave count agree between
 the independently defined colouring and operational observations. -/
 theorem coloredCompiler_compatible {Ground : Type u}

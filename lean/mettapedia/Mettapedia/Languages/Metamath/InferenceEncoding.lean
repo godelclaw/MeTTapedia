@@ -286,6 +286,7 @@ def decodeFrame : Pattern → Option RuntimeFrame
         none
   | _ => none
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem decodeFrame_encodeFrame (frame : RuntimeFrame) :
     decodeFrame (encodeFrame frame) = some frame := by
   cases frame

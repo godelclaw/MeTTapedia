@@ -521,6 +521,7 @@ noncomputable def squareDualCycleWithSecondRung
         hfirst hthird hfaceSecond).cycle.walk := by
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem squareDualCycleWithSecondRung_crossingEdge_secondStep
     {face : AmbientFace
       (Finset.univ : Finset (OrbitFace web.annular.RS))}

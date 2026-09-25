@@ -221,6 +221,7 @@ theorem shippedAfter_ignores_reward_annotations {Key : Type*} [DecidableEq Key]
 
 /-! ## Rewarded two-choice canary -/
 
+set_option backward.isDefEq.respectTransparency false in
 inductive ChoiceSynapse where
   | target
   | distractor

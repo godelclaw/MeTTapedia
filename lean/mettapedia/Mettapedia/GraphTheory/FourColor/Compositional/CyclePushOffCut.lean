@@ -243,6 +243,7 @@ theorem hasCycleOnSide_or_complement_of_disjoint_cycle
       ((filledCycleSide_iff_of_walk_avoids_support data hrotation cycle cut
         selected (other.takeUntil vertex hvertex) hpathAvoid).2 hvertexSide)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A cycle disjoint from the bounding cycle canonically supplies the
 opposite-side witness needed for a cyclic edge cut.  Read the exact-cut label
 at the disjoint cycle's first dart and select the other binary label.  The

@@ -77,6 +77,7 @@ noncomputable def sourceCorridorSerialBoundaryRebaseOldAttachmentCoordinateAt
       sourceCorridorSerialBoundaryRebaseOldAttachmentEdgeAt_mem_finiteSwitch
         realization hcubic hrotation htwoSided hunique offset hnext role⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- On the six literal old-role coordinates, the old matrix stored by the
 finite switch step is exactly the preceding residual-aware state interpreted
 through the incoming two-port profile. -/

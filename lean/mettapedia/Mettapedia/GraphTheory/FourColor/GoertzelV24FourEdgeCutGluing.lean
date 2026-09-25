@@ -210,6 +210,7 @@ theorem complement_commonRetainedBoundaryData_defectVertex_neg_port
   rw [boundaryOrder_retainedBoundaryPort]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A crossing dart based on the selected side has reflected coordinate
 `-port` in the complementary boundary system. -/
 theorem complement_retainedBoundaryPort_eq_neg
@@ -371,6 +372,7 @@ theorem gluedDartColor_retained_internal
         (retainedInternalEdge cut dart hfst hsnd)) := by
   simp [gluedDartColor, hfst, hsnd]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The canonical retained orientation of a crossing edge makes the
 piecewise dart color invariant under edge reversal. -/
 theorem gluedDartColor_symm

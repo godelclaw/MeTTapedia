@@ -167,7 +167,7 @@ theorem hasDerivAt_meanCorrectedEnergy_split {ν T B : ℝ} {u₀ : FourierVeloc
   have hω := LocalLowDiffusionBudget.continuous_fullVorticity _
     (summable_firstMoment_of_second _ hu2)
   have hG : Continuous (correctedGradient δ κ (filteredVelocity χ (s.coefficients t))) :=
-    ((hω.norm.pow 6).smul hω).sub ((continuous_projectionGradient δ hδ _ hu2).const_smul _)
+    ((hω.norm.pow 6).smul hω).sub ((continuous_projectionGradient δ hδ _ hu2).fun_const_smul _)
   have hIv (v : FourierVelocity) : Integrable (fun x : T3 ↦
       ⟪correctedGradient δ κ (filteredVelocity χ (s.coefficients t)) x,
         fullVorticity (restrictVelocity P v) x⟫) :=

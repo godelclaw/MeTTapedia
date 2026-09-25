@@ -130,7 +130,7 @@ theorem smul_kernelAction_eq_ae
       tendsto_toLpAction_right B hB a ha (fun g ↦ g) g tendsto_id)
   have hclosed : IsClosed {g : C(T3, C3) |
       z • toLpAction K hK f hf g = toLpAction L hL d hd g} :=
-    isClosed_eq (continuous_const.smul (hcont K hK f hf)) (hcont L hL d hd)
+    isClosed_eq (continuous_const.fun_smul (hcont K hK f hf)) (hcont L hL d hd)
   apply hclosed.closure_subset_iff.mpr ?_
     (Mettapedia.Analysis.UnitTorusFourierApproximation.dense_polynomial_range g)
   rintro _ ⟨⟨Q, v⟩, rfl⟩

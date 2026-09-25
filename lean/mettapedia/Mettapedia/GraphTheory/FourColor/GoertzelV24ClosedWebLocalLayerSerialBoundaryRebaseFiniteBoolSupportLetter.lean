@@ -195,6 +195,7 @@ private theorem sourceLocalLayerBoundaryRebaseTrackedCollarPointAt_role
   apply Subtype.ext
   simp [sourceLocalLayerBoundaryRebaseTrackedCollarPointAt]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every actual literal source rebase satisfies the executable support
 condition.  This is the source-sound direction for the later heterogeneous
 reachable closure. -/

@@ -302,6 +302,7 @@ theorem mem_negativeAt_of_mem
     simp [KSignedFormula.falseAt]⟩
 
 omit [DecidableEq K] in
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem positiveAt_ofHintikkaSet
     (p : K) (H : HintikkaSet Const []) :
     (ofHintikkaSet (Base := Base) (Const := Const) p H).positiveAt p = H.trueFormulas := by
@@ -316,6 +317,7 @@ omit [DecidableEq K] in
               cases s <;> simpa [ofHintikkaSet, positiveAt, HintikkaSet.trueFormulas] using ih
 
 omit [Preorder K] [DecidableRel ((· ≤ ·) : K → K → Prop)] in
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem negativeAt_ofHintikkaSet
     (p : K) (H : HintikkaSet Const []) :
     (ofHintikkaSet (Base := Base) (Const := Const) p H).negativeAt p = H.falseFormulas := by

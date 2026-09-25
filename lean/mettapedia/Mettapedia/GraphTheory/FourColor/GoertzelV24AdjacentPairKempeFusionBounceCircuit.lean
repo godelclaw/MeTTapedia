@@ -196,7 +196,7 @@ theorem lineGraphJunctionAt_cons_tail_last
         (⟨(SimpleGraph.Walk.cons hadj walk.tail).length - 1,
             Nat.sub_lt (by simp) Nat.zero_lt_one⟩ :
           Fin (SimpleGraph.Walk.cons hadj walk.tail).length) =
-        ⟨tailLast.val + 1, by simp⟩ := by
+        ⟨tailLast.val + 1, by simp; omega⟩ := by
       apply Fin.ext
       dsimp only [tailLast]
       simp only [SimpleGraph.Walk.length_cons]

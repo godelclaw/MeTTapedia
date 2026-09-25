@@ -490,6 +490,7 @@ theorem forkRewritePath_length_le_one
           rewritePath_length_zero_of_normal forkRight_normal rest
         simp [GSLT.RewritePath.length, restLength]
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem forkPath_length_le_one
     {source target : ForkState}
     (path : EventPath forkPresentation source target) :

@@ -126,6 +126,7 @@ theorem regression_empiricalBeliefDay_tracks_empiricalPair_sample :
       (hμ := by infer_instance)]
     exact empiricalPair_day_strength_top_one
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Positive bridge canary: the same empirical belief day also tracks the
 hierarchical constant-measure lift of that semantic sample. -/
 theorem regression_empiricalBeliefDay_tracks_empiricalHierarchicalSample :

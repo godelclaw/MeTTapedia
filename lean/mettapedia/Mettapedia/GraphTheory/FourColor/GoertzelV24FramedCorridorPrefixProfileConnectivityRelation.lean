@@ -56,6 +56,7 @@ variable {source : SourceTrail G}
   {leftInterior : CorridorInterior blockLength}
   {hnext : leftInterior.center.val + 2 < blockLength}
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The incoming profile records exactly the old-prefix connectivity between
 its two actual crossing ports, together with the two tracked-color tests. -/
 theorem localLayerLeftPrefixBoundedProfile_strandConnected_eq_true_iff
@@ -93,6 +94,7 @@ theorem localLayerLeftPrefixBoundedProfile_strandConnected_eq_true_iff
   simp only [hleft, hright, true_and]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The actual outgoing connectivity bit is true exactly when both queried
 crossings carry the tracked color pair and the source's three-factor
 one-Cell relation connects them. -/

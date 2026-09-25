@@ -40,7 +40,7 @@ theorem integrated_dissipation_of_rate_le (E dE D : ℝ → ℝ) (mu A T : ℝ)
     hD.intervalIntegrable_of_Icc hT
   rw [intervalIntegral.integral_sub (hDi.const_mul mu) intervalIntegrable_const,
     intervalIntegral.integral_const_mul, intervalIntegral.integral_const] at hi
-  simp only [sub_zero, smul_eq_mul] at hi
+  simp only [sub_zero, smul_eq_mul, Pi.neg_apply] at hi
   linarith
 
 theorem continuousOn_sobolevDissipation {M : Finset Wavevector} {nu T : ℝ}

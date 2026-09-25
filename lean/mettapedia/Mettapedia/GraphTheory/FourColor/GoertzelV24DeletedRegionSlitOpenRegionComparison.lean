@@ -45,6 +45,7 @@ def portToBoundaryDart (data : Data G) {deleted : Finset V}
   ⟨⟨port.dart, by simpa [keep] using port.retained⟩,
     by simpa [keep] using port.removed⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Read an exposed dart of the literal open-region construction as the
 corresponding manuscript-side fresh port. -/
 def boundaryDartToPort (data : Data G) {deleted : Finset V}
@@ -89,6 +90,7 @@ def slitToOpenRegionVertexEquiv (data : Data G) (deleted : Finset V) :
       Sum.inr (portToBoundaryDart data port) :=
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- On retained vertices, the computed literal open-region graph has exactly
 the ambient adjacency. -/
 theorem primalGraph_adj_old_old_iff (data : Data G) (deleted : Finset V)

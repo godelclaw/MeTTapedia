@@ -52,7 +52,7 @@ theorem absolutelyContinuousOnInterval_sourceDensity_path (n N : ℕ) (z : R3)
       (by simp : (1 : WithTop ℕ∞) ≤ ∞)).locallyLipschitz
     let L := (WithLp.linearEquiv 2 ℝ X3).symm.toContinuousLinearEquiv
     have hsep : LocallyLipschitz (fun τ ↦ imageSeparation z (X τ) (Y τ)) :=
-      (LocallyLipschitz.const z).add (L.lipschitz.locallyLipschitz.comp (g := fun τ ↦ X τ - Y τ) (hX.sub hY))
+      (LocallyLipschitz.const z).add (L.lipschitzWith.locallyLipschitz.comp (g := fun τ ↦ X τ - Y τ) (hX.sub hY))
     exact hk.comp hsep
   have hac := AbsolutelyContinuousComposition.of_locallyLipschitz
     (a := a) (b := b) (locallyLipschitz_pairedStretch_even (n + 1) hkernel hx hy)

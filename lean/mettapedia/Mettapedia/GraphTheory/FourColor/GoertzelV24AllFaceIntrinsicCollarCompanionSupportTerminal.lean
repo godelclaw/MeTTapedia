@@ -412,6 +412,7 @@ noncomputable def terminalState :
     ScalarDiscrepancyColorState (!firstHit.transfer.coordinate) :=
   strand.stateWord.getLast strand.stateWord_ne_nil
 
+set_option backward.isDefEq.respectTransparency false in
 theorem terminalState_eq_stateOf :
     strand.terminalState =
       scalarDiscrepancyColorStateOf

@@ -54,7 +54,7 @@ theorem strainPolynomial_nonnegative : HasNonnegativeCoefficients strainPolynomi
   nonnegative_mul (nonnegative_mul (cosine_nonnegative _)
     (nonnegative_add (cosine_nonnegative _) (cosine_nonnegative _))) (cosine_nonnegative _)
 
-theorem normPolynomial_zero_pos : 0 < normPolynomial 0 := by
+theorem normPolynomial_zero_pos : 0 < normPolynomial.coeff 0 := by
   have h := mul_coeff_pos (cosine_nonnegative diagonalMode) (cosine_nonnegative diagonalMode)
     (cosine_coeff_pos diagonalMode) (cosine_neg_coeff_pos diagonalMode)
   simp only [add_neg_cancel] at h
@@ -62,11 +62,14 @@ theorem normPolynomial_zero_pos : 0 < normPolynomial 0 := by
     (nonnegative_add (cosine_nonnegative xMode) (cosine_nonnegative diagonalMode))
     (nonnegative_add (cosine_nonnegative xMode) (cosine_nonnegative diagonalMode)) (0 : Wavevector)
   have h2 := nonnegative_mul (cosine_nonnegative yMode) (cosine_nonnegative yMode) (0 : Wavevector)
-  change (0 : ℝ) < _ + _ + _
+  change (0 : ℝ) < ((cosinePolynomial xMode + cosinePolynomial diagonalMode) *
+      (cosinePolynomial xMode + cosinePolynomial diagonalMode)).coeff 0 +
+    (cosinePolynomial diagonalMode * cosinePolynomial diagonalMode).coeff 0 +
+    (cosinePolynomial yMode * cosinePolynomial yMode).coeff 0
   linarith only [h, h1, h2]
 
-theorem strainPolynomial_zero_pos : 0 < strainPolynomial 0 := by
-  have hx : 0 < (cosinePolynomial xMode + cosinePolynomial diagonalMode) xMode :=
+theorem strainPolynomial_zero_pos : 0 < strainPolynomial.coeff 0 := by
+  have hx : 0 < (cosinePolynomial xMode + cosinePolynomial diagonalMode).coeff xMode :=
     add_pos_of_pos_of_nonneg (cosine_coeff_pos xMode) (cosine_nonnegative diagonalMode xMode)
   have h1 := mul_coeff_pos (cosine_nonnegative yMode)
     (nonnegative_add (cosine_nonnegative xMode) (cosine_nonnegative diagonalMode))
@@ -79,7 +82,7 @@ theorem strainPolynomial_zero_pos : 0 < strainPolynomial 0 := by
     (cosine_nonnegative diagonalMode) h1 (cosine_neg_coeff_pos diagonalMode)
   simpa only [add_neg_cancel, strainPolynomial] using h2
 
-theorem stretchingPolynomial_zero_pos : 0 < stretchingPolynomial 0 := by
+theorem stretchingPolynomial_zero_pos : 0 < stretchingPolynomial.coeff 0 := by
   have h2 := mul_coeff_pos normPolynomial_nonnegative normPolynomial_nonnegative
     normPolynomial_zero_pos normPolynomial_zero_pos
   simp only [zero_add] at h2
@@ -100,7 +103,7 @@ theorem evaluate_stretchingPolynomial (x : T3) :
   ring
 
 theorem stretching_eq_zeroCoefficient :
-    stretching coefficients = (2 * Real.pi) ^ 9 * stretchingPolynomial 0 := by
+    stretching coefficients = (2 * Real.pi) ^ 9 * stretchingPolynomial.coeff 0 := by
   have h := integral_evaluate stretchingPolynomial
   have hi := congrArg (fun z : ℂ ↦ (2 * Real.pi : ℂ) ^ 9 * z) h
   rw [← integral_const_mul] at hi

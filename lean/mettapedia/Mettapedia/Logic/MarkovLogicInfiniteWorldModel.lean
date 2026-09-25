@@ -185,6 +185,7 @@ theorem infiniteMLN_queryStrength_eq_gibbsProb
     (infiniteMLNMassSemantics M μ hμ).queryProb q := by
   exact MassState.queryStrength_singleton_eq_queryProb _ q
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- **Uniqueness: the bridge is specification-determined under Dobrushin.**
 
     When `M.PaperUniformSmallTotalInfluence` holds — i.e., the Dobrushin

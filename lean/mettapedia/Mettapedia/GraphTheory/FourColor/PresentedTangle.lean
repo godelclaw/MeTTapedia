@@ -127,6 +127,7 @@ theorem vertOf_rho (hP : P.Valid) (d : D (N := N) (k := k)) :
   rw [P.pos_dartAt hP]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **the tangle of a valid presentation** -/
 noncomputable def toTangle [NeZero k] (hP : P.Valid) :
     TwoSidedOpenTangleData (Fin V) (IDart (N := N)) (Fin k) (Fin k) where

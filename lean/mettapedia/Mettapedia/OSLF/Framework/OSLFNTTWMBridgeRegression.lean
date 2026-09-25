@@ -51,6 +51,7 @@ theorem formula_graph_triangle_fixture
     (relEnv := relEnv) (W := W) (queryOfAtom := queryOfAtom)
     (φf := φf) (Xobj := Xobj) (X := Xgr) (p := p)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Canonical regression fixture:
 consume representable BC-square transport together with the Π-facing transport
 endpoint that is routed explicitly via `prop12_piSigmaPredicateRulePack`. -/
@@ -93,6 +94,7 @@ theorem representable_bc_with_prop12_pi_fixture
         (lang := lang) (s := s) (seed := seed) (φ := φ) (hNat := hNat)
         (f := f) (χ := χ) (ψ := (⊤ : CategoryTheory.Subfunctor D))).2
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Canonical regression fixture:
 consume BC-square transport together with the unified Π/Σ transport endpoint
 that is routed explicitly via the Prop-12 ΠΣ pack. -/
@@ -143,6 +145,7 @@ theorem representable_bc_with_prop12_piSigma_fixture
   · exact (pack.piSigma_transport χ ψ).1
   · exact (pack.piSigma_transport χ ψ).2
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Canonical regression fixture: consume the packaged representable Π/Σ
 transport API directly (Σ-BC + Σ/Π transport). -/
 theorem representable_transport_pack_fixture
@@ -644,6 +647,7 @@ theorem canonical_context_fixpoint_endpoint_fixture
       (p := p) (q := q) (hstar := hstar) (φcat := φcat)
       (hStrengthFromEvidence := hStrengthFromEvidence))
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Canonical-closure regression fixture:
 consume the explicit rule-pack transport interface and the fixpoint closure
 endpoint from one shared `CanonicalClosureContext`. -/
@@ -786,6 +790,7 @@ theorem canonical_context_rulePack_fixpoint_endpoint_fixture
         (C := ConstructorObj ctx.lang))
       (transportGoal := transportGoal)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Canonical-closure regression fixture:
 transport-goal bundled variant consuming the explicit Prop-12 Π/Σ transport-pack
 compatibility endpoint together with WM fixpoint closure. -/
@@ -835,6 +840,7 @@ theorem canonical_context_transportGoal_rulePack_fixpoint_endpoint_fixture_via_r
     (hPiSigmaPack := hPiSigmaPack)
     (transportGoal := transportGoal)
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Canonical-closure regression fixture:
 transport-goal bundled Prop-12 compatibility route over the rule-pack-first
 transport-goal endpoint. -/

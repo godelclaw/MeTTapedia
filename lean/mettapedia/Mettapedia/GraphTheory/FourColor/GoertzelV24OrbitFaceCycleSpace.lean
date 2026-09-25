@@ -141,6 +141,7 @@ theorem mem_toRotationSystem_incidentEdges_iff
     have hedgeValue : dart.edge = edge.1 :=
       congrArg Subtype.val hdartEdge
     rw [← hedgeValue, ← hdartVertex]
+    change dart.fst ∈ dart.edge
     simp [SimpleGraph.Dart.edge]
   · intro hedge
     rcases (Sym2.mem_iff_exists).1 hedge with ⟨other, hedgeValue⟩

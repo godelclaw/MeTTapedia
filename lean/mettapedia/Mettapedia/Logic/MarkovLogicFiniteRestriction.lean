@@ -94,6 +94,7 @@ noncomputable def restrictedMassSemantics
     rw [← totalMass_eq_restrictedTotalMass_of_finiteSupport M hs]
     exact M.totalMass_ne_top
 
+set_option backward.isDefEq.respectTransparency false in
 theorem restricted_queryProb_eq_full_queryProb_of_finite_support
     (M : CountableMLNSemantics World Query Feature)
     {support : Finset World} (hs : FiniteSupportWitness M support) (q : Query) :

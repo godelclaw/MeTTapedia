@@ -218,6 +218,7 @@ local instance localCycleWalkGraphEdgeSetDecidableEq :
     DecidableEq G.edgeSet :=
   Subtype.instDecidableEq
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The dart list of a simple cycle forms the exact locally cubic turn chain
 used by face-side transport. -/
 theorem isChain_faceCutCycleTurnStep_darts_of_local_cubic

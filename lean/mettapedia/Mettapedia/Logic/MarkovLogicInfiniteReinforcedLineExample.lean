@@ -406,6 +406,7 @@ theorem reinforcedLineRegionSupport_exhaustion_region (n : Nat) :
       rw [← hk]
       exact le_trans (Nat.sub_le x 1) hx
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- If the origin is false while the plus boundary to the right is true, then
 some edge in the prefix volume is the first false-to-true domain wall. -/
 theorem exists_reinforcedLine_firstDomainWall_of_origin_false
@@ -1076,6 +1077,7 @@ theorem reinforcedLine_originFalseQueryMass_le_wallFactorSum_mul_originTrueQuery
           finiteVolumeQueryMass M Λ linePlusBoundary qTrue := by
         rw [Finset.sum_mul]
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem reinforcedLine_clauseData_eval_spinFlip_eq_flip
     (edgeLogWeight : Nat → ℝ) (k : ReinforcedLineClauseId)
     (W : InfiniteWorld LineNode) :

@@ -114,6 +114,7 @@ open Mettapedia.ProbabilityTheory.BayesianNetworks.BayesianNetwork
 variable {V : Type*} [Fintype V] [DecidableEq V]
 variable (bn : BayesianNetwork V)
 
+set_option backward.isDefEq.respectTransparency.types false in
 lemma weightOfConstraints_eq_jointWeight_sum
     (cpt : bn.DiscreteCPT) (cs : List (Σ v : V, bn.stateSpace v))
     [DecidableRel bn.graph.edges]
@@ -174,6 +175,7 @@ lemma weightOfConstraints_eq_jointWeight_sum
             cpt.jointWeight x else 0) := by
           exact (if_neg hmem).symm
 
+set_option backward.isDefEq.respectTransparency.types false in
 lemma veQueryWeight_eq_jointWeight_sum
     (cpt : bn.DiscreteCPT) (cs : List (Σ v : V, bn.stateSpace v))
     [DecidableRel bn.graph.edges]
@@ -202,6 +204,7 @@ lemma weightOfConstraints_eq_jointMeasure_eventOfConstraints
   -- Align both sums.
   simpa [hsum] using hμ.symm
 
+set_option backward.isDefEq.respectTransparency.types false in
 lemma veQueryWeight_eq_jointMeasure_eventOfConstraints
     (cpt : bn.DiscreteCPT) (cs : List (Σ v : V, bn.stateSpace v))
     [DecidableRel bn.graph.edges]

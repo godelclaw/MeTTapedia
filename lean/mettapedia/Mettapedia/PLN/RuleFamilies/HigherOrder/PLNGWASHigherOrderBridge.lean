@@ -23,6 +23,7 @@ namespace Mettapedia.PLN.RuleFamilies.HigherOrder
 
 open Mettapedia.PLN.RuleFamilies.HigherOrder.PLNRegimeMixtureTheorems
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Coarse fine-mapping regimes for GWAS hypotheses. -/
 inductive GWASFineMappingRegime where
   | singleSignal
@@ -30,6 +31,7 @@ inductive GWASFineMappingRegime where
   | diffuseCredibleSet
   deriving DecidableEq, Fintype, Repr
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Coarse tissue or cell-type regimes. -/
 inductive GWASTissueRegime where
   | tissueSpecific
@@ -37,6 +39,7 @@ inductive GWASTissueRegime where
   | unknownTissue
   deriving DecidableEq, Fintype, Repr
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Coarse mechanism-family regimes. -/
 inductive GWASMechanismRegime where
   | coding
@@ -45,6 +48,7 @@ inductive GWASMechanismRegime where
   | pathwayMediated
   deriving DecidableEq, Fintype, Repr
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Trust / calibration regimes for the evidence-integration layer. -/
 inductive GWASTrustRegime where
   | calibrated

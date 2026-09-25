@@ -64,6 +64,7 @@ theorem dartOrbitFace_boundaryDart_eq_faceDart
   · exact (hnext 2).trans ((hnext 1).trans (hnext 0))
   · exact (hnext 3).trans ((hnext 2).trans ((hnext 1).trans (hnext 0)))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The retained-side face at a named spoke is distinct from the cap face.
 The spoke belongs to the former and is excluded from the latter's exact
 five-cycle edge support. -/
@@ -92,6 +93,7 @@ theorem boundaryFace_ne_capFace
   apply cap.spokeEdge_not_mem_faceEdges step
   exact hedge
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A retained-side spoke face is one edge away from its named cap face in
 the full facial dual.  This is the local geometric atom behind remote
 two-cap separation. -/

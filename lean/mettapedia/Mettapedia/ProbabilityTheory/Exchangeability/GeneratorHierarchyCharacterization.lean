@@ -130,6 +130,7 @@ def towerWordLaw (xs : List (Fin k)) :
   | 0, μ => ∫⁻ θ, wordProb (k := k) θ xs ∂μ
   | Nat.succ n, P => ∫⁻ τ, towerWordLaw xs n τ ∂P
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Iterated Giry mixtures of Markov parameters collapse to their single joined
 law. This is a law-level statement only: it does not identify computational
 descriptions, search costs, or generator syntax. -/

@@ -370,6 +370,7 @@ theorem LocalizedAlignedCommonRunSplice.suffixThroughTrunk_disjoint_prefixOutgoi
       splice.trunk.prefixOutgoingArm_disjoint_suffixTrail)
     hprefix (splice.suffixThroughTrunk_edges_subset hsuffix)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The split vertex does not occur on the prefix incoming arm. -/
 theorem LocalizedAlignedCommonRunSplice.split_not_mem_prefixIncoming_support
     {graphData : Data G} {data : AdjacentPairData G}

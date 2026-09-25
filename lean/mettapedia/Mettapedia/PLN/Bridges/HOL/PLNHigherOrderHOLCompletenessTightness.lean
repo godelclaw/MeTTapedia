@@ -98,6 +98,7 @@ noncomputable def singletonModelSpace
           simp [holSatisfies, hφ]
       simp [hEvent]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The Dirac hierarchical ProbHOL state concentrated on one pointed model. -/
 noncomputable def diracHierarchicalStateOfModel
     (M : ClassicalHOLPointed (Base := Base) (Const := Const)) :
@@ -122,6 +123,7 @@ noncomputable def extensionalTheoryModelHierarchicalState
     HierarchicalState Base (WithParams Const) :=
   diracHierarchicalStateOfModel (Base := Base) (Const := Const) M.1
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Formula probability in a singleton model-space is `1` when the model
 satisfies the formula. -/
 theorem sentenceProb_singletonModelSpace_eq_one_of_models

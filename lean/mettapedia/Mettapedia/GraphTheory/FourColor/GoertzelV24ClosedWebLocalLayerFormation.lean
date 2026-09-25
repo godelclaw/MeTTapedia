@@ -1311,6 +1311,7 @@ noncomputable def localLayerPairOfCorridor
     LocalLayerPair web corridor leftInterior hnext :=
   (localLayerPairWitnessOfCorridor corridor hunique leftInterior hnext).toLocalLayerPair
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The first step of the source-local layer crosses the literal boundary
 edge at the slot immediately before the outgoing rung. -/
 theorem SourceLocalLayerPairWitness.firstWalk_crossingEdge_zero_eq_beforeEdge
@@ -1372,6 +1373,7 @@ theorem SourceLocalLayerPairWitness.firstWalk_crossingEdge_zero_eq_beforeEdge
   simpa [SourceLocalLayerPairWitness.toLocalLayerPair,
     LocalLayerPair.firstWalk] using hshared
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The second step of the source-local layer crosses the literal boundary
 edge at the slot immediately after the outgoing rung. -/
 theorem SourceLocalLayerPairWitness.firstWalk_crossingEdge_one_eq_afterEdge
@@ -1433,6 +1435,7 @@ theorem SourceLocalLayerPairWitness.firstWalk_crossingEdge_one_eq_afterEdge
   simpa [SourceLocalLayerPairWitness.toLocalLayerPair,
     LocalLayerPair.firstWalk] using hshared
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The first step through the next corridor hexagon crosses the third edge
 at the corner before the outgoing rung. -/
 theorem SourceLocalLayerPairWitness.secondWalk_crossingEdge_zero_eq_beforeThirdEdge
@@ -1471,6 +1474,7 @@ theorem SourceLocalLayerPairWitness.secondWalk_crossingEdge_zero_eq_beforeThirdE
   simpa [SourceLocalLayerPairWitness.toLocalLayerPair,
     LocalLayerPair.secondWalk, beforeDart] using hshared
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The second step through the next corridor hexagon crosses the other third
 edge at the outgoing rung. -/
 theorem SourceLocalLayerPairWitness.secondWalk_crossingEdge_one_eq_afterThirdEdge
@@ -1564,6 +1568,7 @@ private theorem dualWalkCrossingEdges_eq_pair_of_length_two
     · refine ⟨⟨1, by omega⟩, ?_⟩
       exact hone.trans hsecond.symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The literal Cell-3 dual loop cuts the four source edges read from its
 two flanking slots and their two locally cubic corners.  This is the exact
 finite wall, not merely a four-edge cardinality bound. -/

@@ -809,6 +809,7 @@ theorem satisfyDatalogAtom_mem_ground_terms
   obtain ⟨rel, args, hmem, hmatch⟩ := h
   exact ⟨(rel, args), hmem, matchDatalogAtomOnTuple?_grounds_terms hmatch⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem satisfyDatalogAtom_mem_arity_ground_atom
     {known : List GroundTuple} {bindings bindings' : DatalogBindings}
     {atom : DatalogAtom}
@@ -1007,6 +1008,7 @@ theorem satisfyDatalogBody_mem_ground_terms
   unfold satisfyDatalogBody at h
   exact satisfyDatalogBody_fold_mem_ground_terms known body [seed] h hatom
 
+set_option backward.isDefEq.respectTransparency false in
 theorem satisfyDatalogBody_mem_arity_ground_atom
     {known : List GroundTuple} {body : List DatalogAtom}
     {seed bindings : DatalogBindings} {atom : DatalogAtom}
@@ -1138,6 +1140,7 @@ theorem instantiateDatalogAtom?_allNullaryConst
   cases h
   exact instantiateDatalogTerms?_allNullaryConst hb hargs
 
+set_option backward.isDefEq.respectTransparency false in
 theorem instantiateDatalogAtom?_groundAtom_eq
     {bindings : DatalogBindings} {atom : DatalogAtom} {tuple : GroundTuple}
     (h : instantiateDatalogAtom? bindings atom = some tuple) :

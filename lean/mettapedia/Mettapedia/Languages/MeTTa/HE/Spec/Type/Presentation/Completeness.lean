@@ -333,7 +333,7 @@ decreasing_by
   all_goals simp_wf
   all_goals subst_vars
   all_goals dsimp at *
-  all_goals simp_all
+  all_goals (try simp)
   all_goals omega
 
 end

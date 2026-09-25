@@ -229,6 +229,7 @@ theorem firstWeightMatrix_singleSquareTranspose
   funext row column channel
   rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The complete boundary-aware neural-functional attention layer commutes
 with transpose on a network consisting of one square matrix.  The proof
 uses the exchange of the row and column heads and ordinary coordinate

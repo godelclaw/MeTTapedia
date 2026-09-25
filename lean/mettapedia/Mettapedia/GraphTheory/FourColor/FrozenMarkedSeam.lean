@@ -45,6 +45,7 @@ theorem liftedMark_name (pair : SeamPair rotation marks mark w)
   Classical.choose_spec (pair.mark_survives hmarks m)
 
 omit [G.LocallyFinite] in
+set_option backward.isDefEq.respectTransparency false in
 theorem physicalAccepts_candidate_iff (pair : SeamPair rotation marks mark w)
     (hmarks : ∀ m, (mark m).fst ∈ marks) (value : M → Color) :
     PhysicalAccepts (outsideTangle rotation pair.outer.shore pair.outer.outsideOuter)

@@ -166,6 +166,7 @@ theorem cubicDualInternallySixConnected_of_vertexMinimalTaitCounterexample
     graphData minimal
 
 omit [DecidableEq V] [DecidableRel G.Adj] in
+set_option backward.isDefEq.respectTransparency false in
 /-- Consumer form of the normal form: every realized cyclic cut with at most
 five edges has a shore with at most five vertices.  Cuts of size at most four
 are impossible; the remaining exact-five case is W1. -/
@@ -216,6 +217,7 @@ theorem CyclicEdgeCutRealization.not_both_shores_large_of_card_le_five
     hcard
   rcases hsmall with hsmall | hsmall <;> omega
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The bounded shore of an exact cyclic five-cut has exactly five vertices.
 Both shores contain cycles, hence have at least five vertices; W1 supplies
 the reverse inequality on one shore. -/
@@ -239,6 +241,7 @@ theorem exactCyclicFiveEdgeCut_has_five_vertex_shore_of_vertexMinimalTaitCounter
   · exact Or.inl (Nat.le_antisymm hsmall hinside)
   · exact Or.inr (Nat.le_antisymm hsmall houtside)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Geometric classification of the W1 conclusion: one shore of every exact
 cyclic five-cut is precisely a pentagonal cycle shore. -/
 theorem exactCyclicFiveEdgeCut_has_pentagonal_shore_of_vertexMinimalTaitCounterexample
@@ -260,6 +263,7 @@ theorem exactCyclicFiveEdgeCut_has_pentagonal_shore_of_vertexMinimalTaitCountere
         (by simpa [exactCutVertexSide, ExactSizedCyclicEdgeCut.compl]
           using hsmall))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Cardinality-free consumer form: every realized cyclic cut with at most
 five edges in a minimal counterexample has an exactly five-vertex shore.
 The cut itself must therefore also have exactly five edges. -/

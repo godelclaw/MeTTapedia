@@ -69,11 +69,13 @@ theorem separatedFragmentReindexSerialProfileBlockLength_eq :
   rw [separatedFragmentReindexSerialProfileBlockLength,
     boundedWidthTwoFragmentReindexProfileCount_four]
 
+set_option maxRecDepth 100000 in
 theorem separatedFragmentReindexSerialProfileBlockLength_pos :
     0 < separatedFragmentReindexSerialProfileBlockLength := by
   unfold separatedFragmentReindexSerialProfileBlockLength
   omega
 
+set_option maxRecDepth 100000 in
 theorem separatedFragmentReindexSerialProfileBlockLength_large :
     4 * boundedWidthTwoFragmentReindexProfileCount 4 + 1 ≤
       separatedFragmentReindexSerialProfileBlockLength - 3 := by

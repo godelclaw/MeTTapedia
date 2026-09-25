@@ -49,36 +49,36 @@ clone_or_sync_repo() {
 # Integration repos are pinned to the exact revisions that the root Mettapedia
 # build was verified against. Standalone repos are pinned too, so repeated
 # bootstraps select the same source revisions.
-clone_or_sync_repo "externals/Foundation" "mettapedia" \
-  "85314e340ea03e62c38a78e2d24c0643578d10ee" "mettapedia" \
+clone_or_sync_repo "externals/Foundation" "port/lean-4.34" \
+  "6769009b4ca6006aefcf4176e0c7297a108a28df" "port/lean-4.34" \
   "https://github.com/zariuq/Foundation.git" \
   "https://github.com/FormalizedFormalLogic/Foundation.git"
-clone_or_sync_repo "externals/exchangeability" "mettapedia" \
-  "05330d5c92f4400161d5e31632efcaa4a2d91361" "mettapedia" \
+clone_or_sync_repo "externals/exchangeability" "port/lean-4.34" \
+  "772f04604bc1c503f514b5624a0a9014f15de5ac" "port/lean-4.34" \
   "https://github.com/zariuq/exchangeability.git" \
   "https://github.com/cameronfreer/exchangeability.git"
-clone_or_sync_repo "externals/Metatheory" "main" \
-  "8f3275528034ceb002e7e3dba0bbeacc8de258c4" "main" \
+clone_or_sync_repo "externals/Metatheory" "port/lean-4.34" \
+  "19129cc90a9cfb76340d69242c531a0786f8baff" "port/lean-4.34" \
   "https://github.com/zariuq/Metatheory.git" \
   "https://github.com/Arthur742Ramos/Metatheory.git"
-clone_or_sync_repo "externals/LeaTTa" "integration/mettapedia-20260827" \
-  "26d05f0663a1083085565b2e161a683542df53a8" "mettapedia-integration" \
+clone_or_sync_repo "externals/LeaTTa" "port/lean-4.34" \
+  "0bd84692cec20b8c605923cf7d387fda4902cfbc" "port/lean-4.34" \
   "https://github.com/godelclaw/LeaTTa.git" \
   "https://github.com/zariuq/LeaTTa.git"
-clone_or_sync_repo "externals/certifyingDatalog" "main" \
-  "91adc633bfd8d2a1565f46ba7876b73dcda55471" "main" \
+clone_or_sync_repo "externals/certifyingDatalog" "port/lean-4.34" \
+  "66e6308fe8382cbda43b0361d41c863ffca68040" "port/lean-4.34" \
   "https://github.com/zariuq/CertifyingDatalog.git" \
   "https://github.com/knowsys/CertifyingDatalog.git"
-clone_or_sync_repo "externals/ordered_semigroups" "mettapedia" \
-  "4324a78c436f2150403159b96b91d0f8692f3b80" "mettapedia" \
+clone_or_sync_repo "externals/ordered_semigroups" "port/lean-4.34" \
+  "fdc9df6998d1e6b3844f794371663bedc628233d" "port/lean-4.34" \
   "https://github.com/zariuq/OrderedSemigroups.git" \
   "https://github.com/ericluap/OrderedSemigroups.git"
-clone_or_sync_repo "externals/provenance" "update/4.28" \
-  "fe0bb6d4b2a7acf99edb13d672b7483da95937a5" "update/4.28" \
+clone_or_sync_repo "externals/provenance" "port/lean-4.34" \
+  "77d0609534f3e856371e8531f46a051934cea5d5" "port/lean-4.34" \
   "https://github.com/zariuq/provenance-lean.git" \
   "https://github.com/PierreSenellart/provenance-lean.git"
-clone_or_sync_repo "externals/lean4lean" "master" \
-  "ef849dfbd94ab5a6f3ad2793a57b8a1cbe19d923" "mettapedia-4.31" \
+clone_or_sync_repo "externals/lean4lean" "port/lean-4.34" \
+  "3885cb8dc3b65d0f1dc4e7c43f0cecffea2b9add" "port/lean-4.34" \
   "https://github.com/zariuq/lean4lean.git" \
   "https://github.com/digama0/lean4lean.git"
 clone_or_sync_repo "externals/CeTTa" "main" \
@@ -98,15 +98,15 @@ fi
 clone_or_sync_repo "externals/dedukti" "master" \
   "f3c0eba869ddd46f2e75c123a59f2b612076dba0" "mettapedia-runtime" \
   "https://github.com/Deducteam/dedukti.git"
-clone_or_sync_repo "externals/mm-lean4" "verified-mm-latest" \
-  "c5bbaa0d6d11dccf614dadd279ca56730887fe78" "verified-mm-latest" \
+clone_or_sync_repo "externals/mm-lean4" "port/lean-4.34" \
+  "198f0b42b7164b66bc2ce92870226e7c35de1f7a" "port/lean-4.34" \
   "https://github.com/zariuq/mm-lean4.git" \
   "https://github.com/digama0/mm-lean4.git"
 
-clone_or_sync_repo "standalone/mm-lean4" "verified-mm-latest" \
-  "54801711a39ebfedab9700c8989deee30196a948" "mettapedia-4.31" \
+clone_or_sync_repo "standalone/mm-lean4" "port/lean-4.34" \
+  "4ccd2babdf4b9d16650d8846a21c7dee2f22e1f9" "port/lean-4.34" \
   "https://github.com/zariuq/mm-lean4.git" \
   "https://github.com/digama0/mm-lean4.git"
-clone_or_sync_repo "standalone/ks-foundations-of-inference" "lean-upgrade/4.31" \
-  "0072878914cfbc012ccb6ce1d2f1f8840e2b2c6a" "mettapedia-4.31" \
+clone_or_sync_repo "standalone/ks-foundations-of-inference" "port/lean-4.34" \
+  "a329e75e33fa0515eaade0a9b0597c2cdf794313" "port/lean-4.34" \
   "https://github.com/zariuq/ks-foundations-of-inference.git"

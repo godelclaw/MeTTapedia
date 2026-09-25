@@ -240,6 +240,7 @@ theorem orderedCutRetainedVertexRotationSystem_alpha_right
           hleftCrosses hrightCrosses hleftInjective hrightInjective).symm dart)) :=
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The primal graph of the concrete retained-vertex splice is exactly the
 graph computed before gluing from retained old edges and ordered seam pairs. -/
 theorem rotationPrimalGraph_orderedCutRetainedVertexRotationSystem_eq

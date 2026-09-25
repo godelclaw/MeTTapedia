@@ -62,6 +62,7 @@ def operationalFrame (frame : RuntimeFrame)
   simp [operationalExpr, ConstantHeadedFormula.toRuntime,
     Metamath.Kernel.toExpr, Metamath.Kernel.toSym]
 
+set_option backward.isDefEq.respectTransparency.types false in
 @[simp] theorem operationalFrame_vars
     (frame : RuntimeFrame) (hypotheses : List HypothesisView) :
     (operationalFrame frame hypotheses).vars =
@@ -114,6 +115,7 @@ private theorem mapM_convertHyp_of_forall₂
   | cons hhead _htail ih =>
       simp [convertHyp_of_projectHypothesis db _ _ hhead, ih]
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Successful hypothesis projection determines the exact mm-lean4
 operational frame conversion, including hypothesis and DV order. -/
 theorem toFrame_of_projectHypotheses

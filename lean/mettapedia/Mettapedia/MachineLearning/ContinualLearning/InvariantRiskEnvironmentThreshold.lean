@@ -640,6 +640,7 @@ private noncomputable def horizontalConstraint :
     intro scalar point
     simp
 
+set_option backward.isDefEq.respectTransparency false in
 private theorem horizontalConstraint_certificate :
     MinimumNormConstraintBase
       horizontalConstraint (2 : ℝ) horizontalBase := by

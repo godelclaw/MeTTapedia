@@ -347,6 +347,7 @@ theorem commonComponent_ne_of_mem_orientedOrbit_of_ne
         left right := hleftCycle.symm.trans hrightCycle
     simpa only [returns, hpartner] using hcycle
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A canonical return path exhausts its connected component in the common
 residual graph.  Endpoints have degree one and every internal path vertex has
 degree two, so the path already uses every incident edge at each of its
@@ -476,6 +477,7 @@ theorem orderedReturnPath_toSubgraph_verts_eq_commonComponent_supp
   simpa only [H, path, start] using hcomponent.trans
     (congrArg SimpleGraph.ConnectedComponent.supp hcomponentEq)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The support cardinality of one common return component is its canonical
 return length plus its initial endpoint. -/
 theorem commonComponent_ncard_eq_orderedReturnPath_length_add_one

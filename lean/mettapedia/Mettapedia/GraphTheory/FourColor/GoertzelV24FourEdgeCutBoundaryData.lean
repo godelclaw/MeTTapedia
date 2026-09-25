@@ -229,11 +229,6 @@ theorem map_neighborFinset_cyclicCutSideGraph
   classical
   ext point
   simp [cyclicCutSideEmbedding, mem_cyclicCutVertexSide_iff]
-  constructor
-  · rintro ⟨hside, hadj⟩
-    exact ⟨hadj, hside⟩
-  · rintro ⟨hadj, hside⟩
-    exact ⟨hside, hadj⟩
 
 omit [Fintype V] [DecidableRel G.Adj] in
 /-- Every edge from a selected-side vertex to an outside neighbor is one

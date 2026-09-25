@@ -70,7 +70,7 @@ theorem absolutelyContinuousOnInterval_periodicDensity_path (n N : ℕ) :
     have hk := (PeriodicRadialRiesz.contDiff_one_tensor_lift (d := 3) N).locallyLipschitz
     let L := (WithLp.linearEquiv 2 ℝ X3).symm.toContinuousLinearEquiv
     have hsep : LocallyLipschitz (fun τ ↦ LocalVorticitySeparation.separation (X τ) (Y τ)) :=
-      L.lipschitz.locallyLipschitz.comp (g := fun τ ↦ X τ - Y τ) (hX.sub hY)
+      L.lipschitzWith.locallyLipschitz.comp (g := fun τ ↦ X τ - Y τ) (hX.sub hY)
     simpa only [Function.comp_def, torusProjection_separation] using hk.comp hsep
   have hac := AbsolutelyContinuousComposition.of_locallyLipschitz
     (a := a) (b := b) (locallyLipschitz_pairedStretch_even (n + 1) hkernel hx hy)

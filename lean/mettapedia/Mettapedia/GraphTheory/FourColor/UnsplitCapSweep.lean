@@ -77,6 +77,7 @@ theorem outside_caps {k : Nat} (S : Finset (Vertex k))
     intro e he
     obtain ⟨⟨b, i⟩, hp, rfl⟩ := Finset.mem_image.mp he
     have hs := (Finset.mem_filter.mp hp).2
+    simp only [boundaryEdges, Finset.mem_filter, Finset.mem_univ, true_and]
     fin_cases b <;> simp_all [seen, shellVertex, spoke, boundaryEdges, IsBoundaryEdge, graph]
   exact (Finset.card_image_of_injective _ spoke_injective).symm.trans_le
     (Finset.card_le_card hsub)
@@ -105,6 +106,7 @@ theorem opposite_caps {k : Nat} (S : Finset (Vertex k))
   have hsub : Finset.univ.image f ⊆ boundaryEdges (graph k) S := by
     intro e he
     obtain ⟨i, _, rfl⟩ := Finset.mem_image.mp he
+    simp only [boundaryEdges, Finset.mem_filter, Finset.mem_univ, true_and]
     dsimp [f]
     split_ifs <;> simp_all [boundaryEdges, IsBoundaryEdge, graph]
   have h := (Finset.card_image_of_injective Finset.univ hinj).symm.trans_le

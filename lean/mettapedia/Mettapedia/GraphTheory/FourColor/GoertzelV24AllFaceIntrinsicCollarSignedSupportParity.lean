@@ -339,8 +339,8 @@ theorem transGen_intrinsicOddSigned_or_contains_recoveryGeometric
           hintrinsic | hrecovery
         · exact Or.inl (.tail hallIntrinsic hintrinsic)
         · exact Or.inr ⟨_, _,
-            (hallIntrinsic.mono (fun _ _ intrinsic => intrinsic.1)
-              ).to_reflTransGen,
+            (Relation.TransGen.mono (fun _ _ intrinsic => intrinsic.1)
+              _ _ hallIntrinsic).to_reflTransGen,
             hrecovery, .refl⟩
       · exact Or.inr ⟨recoverySource, recoveryTarget, hprefix, hrecovery,
           Relation.ReflTransGen.tail hsuffix step⟩

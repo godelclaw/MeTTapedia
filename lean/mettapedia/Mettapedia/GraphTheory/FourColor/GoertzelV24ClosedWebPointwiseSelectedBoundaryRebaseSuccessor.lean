@@ -259,6 +259,7 @@ theorem pointwiseSelectedSourceLocalLayerBoundaryRebaseSuccessorTrackedStateForC
           formation corridor hinterior offset hnext color hrole)
         crossing).symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The selected successor state supplies exactly every tracked-connectivity
 bit of the successor profile, including the terminal rung. -/
 theorem pointwiseSelectedSourceLocalLayerBoundaryRebaseSuccessorTrackedStateForColorAt_connected_output

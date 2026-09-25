@@ -84,7 +84,7 @@ theorem continuousOn_residualStrainSubgridWork {ν T B : ℝ} {u₀ : FourierVel
     (P Q : Finset Wavevector) (χ : Wavevector → ℂ) (hcut : ∀ q, q ∉ P → χ q = 0)
     (C : ℝ) (hχ : ∀ q, ‖χ q‖ ≤ C) (hχr : ∀ q, χ (-q) = conj (χ q)) :
     ContinuousOn (fun t ↦ residualStrainSubgridWork κ Q χ (s.coefficients t)) (Set.Icc (0 : ℝ) T) := by
-  apply ((continuousOn_strainSubgridWork s hB κ P χ hcut C hχ hχr).sub
+  apply ((continuousOn_strainSubgridWork s hB κ P χ hcut C hχ hχr).fun_sub
     (continuousOn_lowStrainWork s κ P Q χ hcut)).congr
   intro t _
   have h := strainSubgridWork_eq_low_add_residual κ P Q χ hcut (s.coefficients t)

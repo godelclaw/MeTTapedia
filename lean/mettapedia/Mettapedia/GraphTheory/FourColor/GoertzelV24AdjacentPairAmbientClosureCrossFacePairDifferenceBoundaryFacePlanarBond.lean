@@ -142,6 +142,7 @@ theorem cutFacesHaveAtMostTwoTransitions_of_minimal
       hconnected minimal.vertexRotationCyclic hretainedConnected
         data.deletedRegion_connected
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The retained orientation of a rotation-indexed adjacent-pair boundary
 edge, bundled as an exposed dart of the deleted-pair cut. -/
 def rotationRetainedBoundaryDart

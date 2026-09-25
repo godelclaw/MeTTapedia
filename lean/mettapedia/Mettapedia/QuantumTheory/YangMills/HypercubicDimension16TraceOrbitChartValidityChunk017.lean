@@ -1,4 +1,5 @@
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16TraceOrbitChartCore
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16TraceOrbitChartKernelTables
 
 set_option autoImplicit false
 set_option maxRecDepth 1000000
@@ -21,7 +22,10 @@ theorem chunk_valid :
     ∀ index : Fin 256,
       EncodedRepresentativeValid
         (positiveRepresentativeCode (chunkIndex index)) := by
-  decide
+  simp only [positiveRepresentativeCode,
+    HypercubicDimension16TraceOrbitChartData.positiveRepresentativeCode?,
+    HypercubicDimension16TraceOrbitChartKernelTables.decodedPositiveRepresentativeWordChunk_eq_table]
+  decide +kernel
 
 end HypercubicDimension16TraceOrbitChartValidityChunk017
 end YangMills

@@ -202,6 +202,7 @@ theorem exists_oldRole_coordinate_eq_of_switchEdge_mem_old
     apply Subtype.ext
     exact hedge
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Under new-in-old coverage, the complete accumulated-prefix component
 matrix on the exhaustive switch is exactly identity plus the incoming
 residual-aware relation transported along old-role coordinates. -/

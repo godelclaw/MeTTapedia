@@ -1,4 +1,4 @@
-import Mathlib.Computability.TMConfig
+import Mathlib.Computability.TuringMachine.Config
 import Mathlib.Tactic.DeriveEncodable
 
 /-!

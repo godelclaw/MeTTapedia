@@ -53,7 +53,8 @@ theorem cuts_reindex :
   rw [side_reindex]
   have hb : (asOpen (reindex T e)).boundaryVert = (asOpen T).boundaryVert ∘ e :=
     funext (boundary_reindex T e)
-  rw [hb, BoundarySmallCutProfile.profile_reindex]
+  rw [hb]
+  erw [BoundarySmallCutProfile.profile_reindex]
   rfl
 
 theorem face_reindex : SerialTangleFaceCode.encode (reindex T e) =

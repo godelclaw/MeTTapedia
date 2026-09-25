@@ -297,6 +297,7 @@ theorem innerEndComponent_eq_of_contains
       ⟨endpoint.1, component⟩
   rw [hvertexCanonical, hcomponentEq]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- An explicit inner endpoint incidence exists in every indexed-pair
 component under the source's total-closure, inner-touching semantics. -/
 theorem exists_innerEnd_with_component
@@ -348,6 +349,7 @@ theorem chosenInnerIndex_contains
   Classical.choose_spec
     (hinnerTouching pair.firstColor pair.secondColor pair.valid component)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Choose the inner endpoint of a component.  The pair index is preserved
 definitionally.  The choice is used only for the finite injection argument;
 no geometric claim depends on which endpoint is chosen when an inner--inner
@@ -525,6 +527,7 @@ theorem outerToInnerEnd_surjective_at_five
       ⟨outerToInnerEnd_injective data hdata C hC hinnerTouching,
         hcard⟩).2
 
+set_option backward.isDefEq.respectTransparency false in
 /-- For one indexed color-pair orientation, the five-by-five endpoint
 bijection rules
 out an inner--inner component. -/

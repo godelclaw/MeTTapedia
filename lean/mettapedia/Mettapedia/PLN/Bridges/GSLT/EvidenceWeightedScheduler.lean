@@ -44,6 +44,7 @@ instance on a carrier that also supports the distinct tensor product. -/
 def evidencePathUnit : EvidenceHplus :=
   OrderDual.toDual BinaryEvidence.zero
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem evidencePathUnit_mul (grade : EvidenceHplus) :
     evidencePathUnit * grade = grade := by
   change OrderDual.toDual
@@ -51,6 +52,7 @@ theorem evidencePathUnit_mul (grade : EvidenceHplus) :
   simpa using congrArg OrderDual.toDual
     (BinaryEvidence.zero_hplus (OrderDual.ofDual grade))
 
+set_option backward.isDefEq.respectTransparency.types false in
 theorem mul_evidencePathUnit (grade : EvidenceHplus) :
     grade * evidencePathUnit = grade := by
   change OrderDual.toDual

@@ -94,6 +94,7 @@ theorem pointwiseSelectedSourceLocalLayerLeftCrossingAt_mem_centerFaceBoundary
       Formation.LocalLayerPair.firstLayer, Formation.LocalLayerPair.firstWalk,
       hone, hstepEq] using hmem
 
+set_option backward.isDefEq.respectTransparency false in
 theorem pointwiseSelectedSourceLocalLayerRightCrossingAt_mem_nextCenterFaceBoundary
     {data : AnnularBoundaryData G 5} (formation : Formation data)
     {blockLength : Nat}

@@ -70,6 +70,7 @@ def hubTargetPhi
   (hubTargetEquiv RS keep).permCongr
     (hubPhi (ofVertexSide RS keep outer) ρ)
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp]
 theorem hubTargetPhi_internal
     (RS : RotationSystem V E) (keep : V → Prop)
@@ -97,6 +98,7 @@ theorem hubTargetPhi_internal
   rw [ofVertexSide_rho_underlying]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp]
 theorem hubTargetPhi_boundary
     (RS : RotationSystem V E) (keep : V → Prop)

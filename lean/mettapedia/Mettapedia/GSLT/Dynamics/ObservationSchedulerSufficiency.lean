@@ -108,6 +108,7 @@ theorem workOnly_retains_container :
     workOnly.collection = full.collection :=
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The full work/span readout supports a span-maximizing policy. -/
 theorem full_supports_spanSelection :
     full.SupportsMaxSelection WorkSpan.span := by
@@ -116,6 +117,7 @@ theorem full_supports_spanSelection :
   change first = second at sameReadout
   exact congrArg WorkSpan.span sameReadout
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A work-only readout contains exactly the information required by a
 work-maximizing policy. -/
 theorem workOnly_supports_workSelection :

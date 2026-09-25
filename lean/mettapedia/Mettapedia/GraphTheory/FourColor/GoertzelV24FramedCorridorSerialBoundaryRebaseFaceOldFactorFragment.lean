@@ -238,6 +238,7 @@ theorem sourceCorridorSerialBoundaryRebaseOldFaceComponentSupportAt_eq_positions
       regionalPosition.1).1 regionalPosition.2, ?_⟩
     simpa [anchor, carrier] using hambient
 
+set_option backward.isDefEq.respectTransparency false in
 /-- If a present old coordinate is connected to a chosen successor coordinate
 by the exact finite rebase closure, its decoded old fragment is one of the
 literal old-prefix factors of that successor face fragment. -/

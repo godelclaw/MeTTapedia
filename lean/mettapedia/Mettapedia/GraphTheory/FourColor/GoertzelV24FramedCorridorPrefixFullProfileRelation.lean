@@ -132,6 +132,7 @@ theorem localLayerRightPrefixBoundedProfile_edgeColor_toColor
   exact aligned.toInterface.localLayerRightPrefixGraphCutData
     |>.regionalProfile_edgeColor_toColor color hcolor step
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The input profile's face-identity matrix names exactly the ambient faces
 of its two finite boundary-fragment coordinates. -/
 theorem localLayerLeftPrefixBoundedProfile_faceContinues_eq_true_iff
@@ -151,6 +152,7 @@ theorem localLayerLeftPrefixBoundedProfile_faceContinues_eq_true_iff
   rw [GraphCorridorCutData.regionalProfile_faceContinues_eq_true_iff]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The input profile's incidence matrix records membership of an incoming
 crossing in the exact incoming boundary-fragment support. -/
 theorem localLayerLeftPrefixBoundedProfile_fragmentContainsPort_eq_true_iff

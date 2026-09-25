@@ -28,6 +28,7 @@ attribute [local instance]
   fusionFaceNetworkRetainedVertexFintype
   fusionFaceNetworkRetainedVertexDecidableEq
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Over the two-element field, two values distinct from a fixed value are
 equal. -/
 theorem f2_eq_of_ne_of_ne (fixed first second : F2)
@@ -646,6 +647,7 @@ theorem boundaryPortDart_three_not_cut
     path 3).1 hcut
   omega
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The first suffix-incoming dart and restored port `1` dart expose the
 same exact-cut label. -/
 theorem LocalizedAlignedCommonRunSplice.suffixIncomingFirst_label_eq_port_one
@@ -700,6 +702,7 @@ theorem LocalizedAlignedCommonRunSplice.suffixIncomingFirst_label_eq_port_one
     rwa [hedge]
   · exact boundaryPortDart_one_not_cut data pair.prefixTrail
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The reversed last suffix-outgoing dart and restored port `3` dart expose
 the same exact-cut label. -/
 theorem LocalizedAlignedCommonRunSplice.suffixOutgoingLast_label_eq_port_three

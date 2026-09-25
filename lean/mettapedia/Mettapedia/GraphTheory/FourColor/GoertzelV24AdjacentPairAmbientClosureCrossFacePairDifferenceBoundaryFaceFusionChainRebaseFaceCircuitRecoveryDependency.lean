@@ -25,6 +25,7 @@ attribute [local instance]
   fusionFaceNetworkRetainedVertexFintype
   fusionFaceNetworkRetainedVertexDecidableEq
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The two closed-trail support channels transported by an exact rebase. -/
 inductive ExactClosureChannel where
   | prefix

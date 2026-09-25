@@ -37,6 +37,7 @@ attribute [local instance] graphEdgeSetDecidableEq
 
 namespace SeparatedAlignedSimpleDualCrosscuts
 
+set_option backward.isDefEq.respectTransparency false in
 /-- On the complementary literal source tangle, the profile reader chooses
 the color of the opposite source boundary dart.  The other dart over that
 edge belongs to the retained component, so the vertex-side choice cannot

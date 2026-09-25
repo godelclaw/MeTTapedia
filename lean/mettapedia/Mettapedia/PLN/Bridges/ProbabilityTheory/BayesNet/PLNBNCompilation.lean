@@ -150,8 +150,6 @@ noncomputable instance [Fintype V] [DecidableEq V] :
   evidence_zero q := by
     classical
     dsimp [evidence]
-    change (0 : Multiset BinaryEvidence).sum = 0
-    exact Multiset.sum_zero
 
 /-! ### Singleton-CPT bridge -/
 

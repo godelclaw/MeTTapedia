@@ -568,6 +568,7 @@ def rhoCoreContact : CoreContactPresentation rhoValidatedLanguageDef where
   representation := rhoInteractivePresentation.contactRepresentation
   representsCore := by rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Pure rho's COMM rule, factored as the ordered input/output interaction
 cut selected from `rhoCalc`. -/
 def rhoInteractionCut : InteractionCutPresentation rhoIGSLT where

@@ -401,6 +401,7 @@ theorem rho_boundaryPortDart_eq_rightB_or_rightC
   · exact hpairs.2.1
   · exact hpairs.2.2
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Boolean encoding of the left boundary turn: `true` selects the
 `b` route and `false` selects the `c` route. -/
 def fusionLeftTerminalTurn
@@ -414,6 +415,7 @@ def fusionLeftTerminalTurn
   decide (graphData.toRotationSystem.rho (boundaryPortDart data left) =
     ambientBLeftTerminalDart data lens)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Boolean encoding of the right boundary turn. -/
 def fusionRightTerminalTurn
     (graphData : SimpleGraphDartRotation.Data G)
@@ -426,6 +428,7 @@ def fusionRightTerminalTurn
   decide (graphData.toRotationSystem.rho (boundaryPortDart data right) =
     ambientBRightTerminalDart data lens)
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem fusionLeftTerminalTurn_eq_true_iff
     (graphData : SimpleGraphDartRotation.Data G)
     (data : AdjacentPairData G)
@@ -439,6 +442,7 @@ def fusionRightTerminalTurn
         ambientBLeftTerminalDart data lens := by
   simp [fusionLeftTerminalTurn]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem fusionRightTerminalTurn_eq_true_iff
     (graphData : SimpleGraphDartRotation.Data G)
     (data : AdjacentPairData G)
@@ -671,6 +675,7 @@ theorem ambientFusionRightTerminal_rotationCycle
       if_neg hturn, if_neg hturn]
     exact ⟨hfirst, hcycle⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Across the left boundary edge, the face successor enters the route
 terminal selected by the boundary rotation. -/
 theorem phi_alpha_boundaryPortDart_eq_leftTerminalTurnDart
@@ -692,6 +697,7 @@ theorem phi_alpha_boundaryPortDart_eq_leftTerminalTurnDart
   exact (ambientFusionLeftTerminal_rotationCycle
     graphData hcubic hrotation data lens hbc).1
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The selected left terminal and the other route terminal are paired
 by one face step after crossing the selected edge. -/
 theorem phi_alpha_leftTerminalTurnDart_eq_otherDart
@@ -714,6 +720,7 @@ theorem phi_alpha_leftTerminalTurnDart_eq_otherDart
   exact (ambientFusionLeftTerminal_rotationCycle
     graphData hcubic hrotation data lens hbc).2.1
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The nonselected left terminal closes the local face corner back to
 the restored boundary dart. -/
 theorem phi_alpha_leftTerminalOtherDart_eq_boundaryPortDart
@@ -736,6 +743,7 @@ theorem phi_alpha_leftTerminalOtherDart_eq_boundaryPortDart
   exact (ambientFusionLeftTerminal_rotationCycle
     graphData hcubic hrotation data lens hbc).2.2
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Across the right boundary edge, the face successor enters the route
 terminal selected by the boundary rotation. -/
 theorem phi_alpha_boundaryPortDart_eq_rightTerminalTurnDart
@@ -757,6 +765,7 @@ theorem phi_alpha_boundaryPortDart_eq_rightTerminalTurnDart
   exact (ambientFusionRightTerminal_rotationCycle
     graphData hcubic hrotation data lens hbc).1
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The selected right terminal is similarly paired with the other
 route terminal. -/
 theorem phi_alpha_rightTerminalTurnDart_eq_otherDart
@@ -779,6 +788,7 @@ theorem phi_alpha_rightTerminalTurnDart_eq_otherDart
   exact (ambientFusionRightTerminal_rotationCycle
     graphData hcubic hrotation data lens hbc).2.1
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The nonselected right terminal closes the local face corner back to
 the restored boundary dart. -/
 theorem phi_alpha_rightTerminalOtherDart_eq_boundaryPortDart

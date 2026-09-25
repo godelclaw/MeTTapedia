@@ -152,8 +152,9 @@ theorem ofGraphFamilyCode_reachable_eq_true_iff
     (family : Family) (left right : Fin code.vertexCount.val) :
     (ofGraphFamilyCode code).reachable family left right = true ↔
       (code.graph family).Reachable left right := by
-  rw [BoundedCarrierBoolGraphFamilyCode.reachable_eq_true_iff,
-    ofGraphFamilyCode_reachable_iff]
+  exact (BoundedCarrierBoolGraphFamilyCode.reachable_eq_true_iff
+    (ofGraphFamilyCode code) family left right).trans
+      (ofGraphFamilyCode_reachable_iff code family left right)
 
 end GoertzelV24BoundedCarrierBoolGraphFamilyCode
 

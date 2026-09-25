@@ -100,6 +100,7 @@ def unitCost : system.LabeledStep -> WorkSpan :=
 def workOnly : GSLTObservation system :=
   WorkSpanObservation.workOnly unitCost
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- A represented identity route preserves the fact that the work-only
 readout supports work selection. -/
 theorem identity_workOnly_supports_workSelection :

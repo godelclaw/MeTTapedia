@@ -20,6 +20,7 @@ theorem biUnion_attach_ambientFaceBoundary_eq {E : Type*} [DecidableEq E]
   simp [ambientFaceBoundary]
 
 omit [DecidableEq F] in
+set_option backward.isDefEq.respectTransparency false in
 theorem totalIncidenceCount_ambientFaceBoundary_eq {E : Type*} [DecidableEq E]
     (faceBoundary : F → Finset E) (allFaces : Finset F) (e : E) :
     totalIncidenceCount (ambientFaceBoundary (allFaces := allFaces) faceBoundary)

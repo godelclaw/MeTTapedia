@@ -246,6 +246,7 @@ theorem oppositePortClosure_isTrail
           path⟩
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+set_option backward.isDefEq.respectTransparency false in
 /-- The opposite-port closure contains exactly boundary edges `0` and `2`;
 its retained arc contains none of the restored boundary edges. -/
 theorem boundaryEdgeValue_mem_oppositePortClosure_edges_iff
@@ -381,6 +382,7 @@ theorem secondVertex_mem_oppositePortClosure_support
   simp
 
 omit [Fintype V] [DecidableEq V] [DecidableRel G.Adj] in
+set_option backward.isDefEq.respectTransparency false in
 /-- The closure uses the restored central edge. -/
 theorem centralEdgeValue_mem_oppositePortClosure_edges
     (data : AdjacentPairData G)

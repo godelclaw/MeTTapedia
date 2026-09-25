@@ -168,6 +168,7 @@ def LocalLayerSemanticOneCellReceiptThree
     (widenFaceFragmentBoundThreeToFour input)
     (widenFaceFragmentBoundThreeToFour output)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- An explicit semantic receipt decodes through the compact alphabet without
 forgetting which Cell profile supplied its connectivity matrix. -/
 theorem exists_compressed_letter_decode_eq_some_of_semanticReceipt

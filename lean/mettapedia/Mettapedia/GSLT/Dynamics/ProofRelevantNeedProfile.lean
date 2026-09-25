@@ -342,6 +342,7 @@ def id {Request Answer : Type} [DecidableEq Answer]
   base_commutes := by intro; rfl
   revision_commutes := by intro; rfl
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- Revisioned operational arrows compose without discarding their layer
 squares. -/
 def comp {Request Answer : Type} [DecidableEq Answer]
@@ -561,6 +562,7 @@ theorem no_hostedRevisionDemand_of_no_request [DecidableEq Answer]
 
 /-! ## Exact operator fragments -/
 
+set_option backward.isDefEq.respectTransparency.types false in
 /-- The finite event vocabulary of the generic protocol. -/
 inductive Operation where
   | allocate

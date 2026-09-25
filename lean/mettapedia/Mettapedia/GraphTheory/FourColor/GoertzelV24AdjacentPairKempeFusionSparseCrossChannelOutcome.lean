@@ -85,6 +85,7 @@ attribute [local instance]
   adjacentFusionLensRetainedVertexSetFintype
   adjacentFusionLensRetainedVertexSetDecidableEq
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Sparse cross-channel normal form for an adjacent-pair deletion.  The
 opposite-port alternative is restored to a simple ambient cycle through the
 central edge, while retaining the exact route support of its deleted arc. -/
@@ -150,10 +151,10 @@ theorem EvenKempeFusionLens.exists_oppositePortCycle_or_disjoint_of_sparse_or_sh
       refine Or.inl ⟨path, hpath, hcycle,
         data.centralEdgeValue_mem_oppositePortClosure_edges path, ?_⟩
       rcases hrouteSupport with hbcSupport | hcbSupport
-      · exact Or.inl (hpathSubset.trans (by
+      · exact Or.inl (List.Subset.trans hpathSubset (by
           simpa only [retainedTrail, SimpleGraph.Walk.edges_copy] using
             hbcSupport))
-      · exact Or.inr (hpathSubset.trans (by
+      · exact Or.inr (List.Subset.trans hpathSubset (by
           simpa only [retainedTrail, SimpleGraph.Walk.edges_copy] using
             hcbSupport))
     · exact Or.inr hdisjoint

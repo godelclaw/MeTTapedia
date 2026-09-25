@@ -104,9 +104,7 @@ theorem cellSide_connected_of_component_boundary
           (layers.cutEdges hunique) other =
           localComponentCrossingEdges (layers.cutEdges hunique) other := by
         ext edge
-        simp only [GoertzelV24FiniteEdgeDeletion.mem_componentCrossingEdges_iff,
-          mem_localComponentCrossingEdges_iff]
-        rfl
+        erw [GoertzelV24FiniteEdgeDeletion.mem_componentCrossingEdges_iff]
       _ = layers.cutEdges hunique := hlocal
   exact induce_complement_connected_of_component_boundary_saturation
     (G := G) (removed := layers.cutEdges hunique) component hcutNonempty hsaturation
@@ -162,9 +160,7 @@ theorem sourceLocalLayerPair_cellSide_connected
             (pair.primalCutEdges web.annular.cellulation.rotation)
             boundary.component := by
         ext edge
-        simp only [mem_localComponentCrossingEdges_iff,
-          GoertzelV24FiniteEdgeDeletion.mem_componentCrossingEdges_iff]
-        rfl
+        erw [mem_localComponentCrossingEdges_iff]
       _ = pair.primalCutEdges web.annular.cellulation.rotation :=
         boundary.component_boundary
       _ = layers.cutEdges hunique := by rfl
