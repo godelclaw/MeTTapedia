@@ -18,11 +18,15 @@ between the regions of `A` and `B`, then differs from `1` by at most
 `e^{2 ∑_A c} ∑_{a ∈ A} Φ a` (`norm_twoRegionRatio_sub_one_le`).
 
 If a distance `d` to `B` grows by at most a size `ℓ s` across each
-incompatibility with `s`, and the influence factors weighted by `e^{κ ℓ}` sum to
-at most `1` over the polymers incompatible with any one polymer, then
-`2 · influenceFactor · e^{-κ d}` is a supersolution, and the two-region ratio
-decays exponentially in `d` (`norm_twoRegionRatio_sub_one_le_exp`).  The proofs
-are inductions over finite sets of polymers; no cluster expansion is used.
+incompatibility with `s`, and a weight `ρ ≥ 1` satisfies
+`∑_{s ∈ S} influenceFactor c s · e^{κ ℓ s} · ρ s ≤ ρ a` for every finite set `S`
+of polymers incompatible with a polymer `a`, then
+`2 · influenceFactor · ρ · e^{-κ d}` is a supersolution, and the two-region ratio
+decays exponentially in `d` (`norm_twoRegionRatio_sub_one_le_exp_weighted`).  On
+a lattice the weight `ρ a = e^{τ |a|}` turns the condition into a bound on the
+polymers through a single block; `ρ = 1` gives
+`norm_twoRegionRatio_sub_one_le_exp`.  The proofs are inductions over finite sets
+of polymers; no cluster expansion is used.
 -/
 
 set_option autoImplicit false
@@ -362,25 +366,35 @@ theorem exp_sub_one_le_influenceFactor {c : V → ℝ} {a : V} (hc : 0 ≤ c a) 
 
 omit [DecidableRel G.Adj] in
 /-- **Exponential supersolution.**  Let `d` be a distance to `B` that grows by at
-most `ℓ s` across an incompatibility with `s`, and suppose the influence factors
-weighted by `e^{κ ℓ}` sum to at most `1` over every finite set of polymers
-incompatible with one polymer.  Then `2 · influenceFactor · e^{-κ d}` is a
-supersolution of the influence recursion for removing `B`. -/
-theorem isInfluenceSupersolution_exp {c : V → ℝ} (hc : ∀ γ, 0 ≤ c γ) {B : Finset V}
-    {d ℓ : V → ℝ} {κ : ℝ} (hκ : 0 ≤ κ)
+most `ℓ s` across an incompatibility with `s`, and let `ρ ≥ 1` be a weight such
+that for every polymer `a` and every finite set `S` of polymers incompatible
+with it, `∑_{s ∈ S} influenceFactor c s · e^{κ ℓ s} · ρ s ≤ ρ a`.  Then
+`2 · influenceFactor · ρ · e^{-κ d}` is a supersolution of the influence
+recursion for removing `B`.  On a lattice the weight `ρ a = e^{τ |a|}` makes the
+condition a bound on the sum over polymers through one block. -/
+theorem isInfluenceSupersolution_exp_weighted {c : V → ℝ} (hc : ∀ γ, 0 ≤ c γ)
+    {B : Finset V} {d ℓ ρ : V → ℝ} {κ : ℝ} (hκ : 0 ≤ κ) (hρ : ∀ γ, 1 ≤ ρ γ)
     (hlip : ∀ a, a ∉ B → ∀ s, G.Adj a s → d a ≤ (if s ∈ B then 0 else d s) + ℓ s)
     (hsmall : ∀ a (S : Finset V), (∀ s ∈ S, G.Adj a s) →
-      ∑ s ∈ S, influenceFactor c s * Real.exp (κ * ℓ s) ≤ 1) :
+      ∑ s ∈ S, influenceFactor c s * Real.exp (κ * ℓ s) * ρ s ≤ ρ a) :
     IsInfluenceSupersolution (G := G) (c := c) B
-      fun a => 2 * influenceFactor c a * Real.exp (-κ * d a) := by
-  refine ⟨fun a => mul_nonneg (mul_nonneg (by norm_num) (influenceFactor_nonneg (hc a)))
-    (Real.exp_pos _).le, fun a haB S hS => ?_⟩
+      fun a => 2 * influenceFactor c a * ρ a * Real.exp (-κ * d a) := by
+  have hΦnn : ∀ a, 0 ≤ 2 * influenceFactor c a * ρ a * Real.exp (-κ * d a) := fun a =>
+    mul_nonneg (mul_nonneg (mul_nonneg (by norm_num) (influenceFactor_nonneg (hc a)))
+      (by linarith [hρ a])) (Real.exp_pos _).le
+  refine ⟨hΦnn, fun a haB S hS => ?_⟩
   have hterm : ∀ s ∈ S, influenceWeight B c
-      (fun a => 2 * influenceFactor c a * Real.exp (-κ * d a)) s ≤
-        2 * Real.exp (-κ * d a) * (influenceFactor c s * Real.exp (κ * ℓ s)) := by
+      (fun a => 2 * influenceFactor c a * ρ a * Real.exp (-κ * d a)) s ≤
+        2 * Real.exp (-κ * d a) * (influenceFactor c s * Real.exp (κ * ℓ s) * ρ s) := by
     intro s hs
     have hlips := hlip a haB s (hS s hs)
     have hfs := influenceFactor_nonneg (hc s)
+    have hρs := hρ s
+    have hfρ : 0 ≤ influenceFactor c s * ρ s := mul_nonneg hfs (by linarith)
+    have hrhs : 2 * Real.exp (-κ * d a) * (influenceFactor c s * Real.exp (κ * ℓ s) * ρ s) =
+        2 * (Real.exp (-κ * d a) * Real.exp (κ * ℓ s)) * (influenceFactor c s * ρ s) := by
+      ring
+    rw [hrhs]
     unfold influenceWeight
     split_ifs with hsB
     · simp only [hsB, ↓reduceIte, zero_add] at hlips
@@ -388,35 +402,69 @@ theorem isInfluenceSupersolution_exp {c : V → ℝ} (hc : ∀ γ, 0 ≤ c γ) {
       have hexp : 1 ≤ Real.exp (-κ * d a) * Real.exp (κ * ℓ s) := by
         rw [← Real.exp_add]
         exact Real.one_le_exp (by nlinarith)
-      nlinarith
+      calc Real.exp (c s) - 1 ≤ influenceFactor c s := hle
+        _ ≤ influenceFactor c s * ρ s := le_mul_of_one_le_right hfs hρs
+        _ ≤ 2 * (Real.exp (-κ * d a) * Real.exp (κ * ℓ s)) * (influenceFactor c s * ρ s) := by
+            have : 1 ≤ 2 * (Real.exp (-κ * d a) * Real.exp (κ * ℓ s)) := by linarith
+            exact le_mul_of_one_le_left hfρ this
     · simp only [hsB, ↓reduceIte] at hlips
       have hexp : Real.exp (-κ * d s) ≤ Real.exp (-κ * d a) * Real.exp (κ * ℓ s) := by
         rw [← Real.exp_add]
         exact Real.exp_le_exp.mpr (by nlinarith)
-      nlinarith
+      calc 2 * influenceFactor c s * ρ s * Real.exp (-κ * d s)
+          = 2 * Real.exp (-κ * d s) * (influenceFactor c s * ρ s) := by ring
+        _ ≤ 2 * (Real.exp (-κ * d a) * Real.exp (κ * ℓ s)) * (influenceFactor c s * ρ s) := by
+            gcongr
   have hsum : ∑ s ∈ S, influenceWeight B c
-      (fun a => 2 * influenceFactor c a * Real.exp (-κ * d a)) s ≤
-        2 * Real.exp (-κ * d a) := by
+      (fun a => 2 * influenceFactor c a * ρ a * Real.exp (-κ * d a)) s ≤
+        2 * Real.exp (-κ * d a) * ρ a := by
     calc ∑ s ∈ S, influenceWeight B c
-          (fun a => 2 * influenceFactor c a * Real.exp (-κ * d a)) s
-        ≤ ∑ s ∈ S, 2 * Real.exp (-κ * d a) * (influenceFactor c s * Real.exp (κ * ℓ s)) :=
-          sum_le_sum hterm
-      _ = 2 * Real.exp (-κ * d a) * ∑ s ∈ S, influenceFactor c s * Real.exp (κ * ℓ s) := by
-          rw [mul_sum]
-      _ ≤ 2 * Real.exp (-κ * d a) * 1 := by
+          (fun a => 2 * influenceFactor c a * ρ a * Real.exp (-κ * d a)) s
+        ≤ ∑ s ∈ S, 2 * Real.exp (-κ * d a) *
+            (influenceFactor c s * Real.exp (κ * ℓ s) * ρ s) := sum_le_sum hterm
+      _ = 2 * Real.exp (-κ * d a) *
+            ∑ s ∈ S, influenceFactor c s * Real.exp (κ * ℓ s) * ρ s := by rw [mul_sum]
+      _ ≤ 2 * Real.exp (-κ * d a) * ρ a := by
           gcongr
           exact hsmall a S hS
-      _ = 2 * Real.exp (-κ * d a) := mul_one _
   show influenceFactor c a * _ ≤ _
   have hfa := influenceFactor_nonneg (hc a)
   calc influenceFactor c a * ∑ s ∈ S, influenceWeight B c
-        (fun a => 2 * influenceFactor c a * Real.exp (-κ * d a)) s
-      ≤ influenceFactor c a * (2 * Real.exp (-κ * d a)) := by gcongr
-    _ = 2 * influenceFactor c a * Real.exp (-κ * d a) := by ring
+        (fun a => 2 * influenceFactor c a * ρ a * Real.exp (-κ * d a)) s
+      ≤ influenceFactor c a * (2 * Real.exp (-κ * d a) * ρ a) := by gcongr
+    _ = 2 * influenceFactor c a * ρ a * Real.exp (-κ * d a) := by ring
+
+omit [DecidableRel G.Adj] in
+/-- The unweighted case `ρ = 1`. -/
+theorem isInfluenceSupersolution_exp {c : V → ℝ} (hc : ∀ γ, 0 ≤ c γ) {B : Finset V}
+    {d ℓ : V → ℝ} {κ : ℝ} (hκ : 0 ≤ κ)
+    (hlip : ∀ a, a ∉ B → ∀ s, G.Adj a s → d a ≤ (if s ∈ B then 0 else d s) + ℓ s)
+    (hsmall : ∀ a (S : Finset V), (∀ s ∈ S, G.Adj a s) →
+      ∑ s ∈ S, influenceFactor c s * Real.exp (κ * ℓ s) ≤ 1) :
+    IsInfluenceSupersolution (G := G) (c := c) B
+      fun a => 2 * influenceFactor c a * Real.exp (-κ * d a) := by
+  have h := isInfluenceSupersolution_exp_weighted (G := G) hc (ρ := fun _ => 1) hκ
+    (fun _ => le_refl 1) hlip (by simpa using hsmall)
+  simpa using h
 
 /-- **Exponential two-region decay.**  Under Dobrushin's criterion and the
-hypotheses of `isInfluenceSupersolution_exp`, the two-region ratio differs from
-`1` by at most `e^{2 ∑_A c} ∑_{a∈A} 2 · influenceFactor c a · e^{-κ d a}`. -/
+hypotheses of `isInfluenceSupersolution_exp_weighted`, the two-region ratio
+differs from `1` by at most
+`e^{2 ∑_A c} ∑_{a∈A} 2 · influenceFactor c a · ρ a · e^{-κ d a}`. -/
+theorem norm_twoRegionRatio_sub_one_le_exp_weighted {w : V → ℂ} {c : V → ℝ}
+    (hD : DobrushinCondition G w c) {A B : Finset V} (hAB : Disjoint A B)
+    {d ℓ ρ : V → ℝ} {κ : ℝ} (hκ : 0 ≤ κ) (hρ : ∀ γ, 1 ≤ ρ γ)
+    (hlip : ∀ a, a ∉ B → ∀ s, G.Adj a s → d a ≤ (if s ∈ B then 0 else d s) + ℓ s)
+    (hsmall : ∀ a (S : Finset V), (∀ s ∈ S, G.Adj a s) →
+      ∑ s ∈ S, influenceFactor c s * Real.exp (κ * ℓ s) * ρ s ≤ ρ a) (Λ : Finset V) :
+    ‖partitionFunction G w Λ * partitionFunction G w (Λ \ (A ∪ B)) /
+        (partitionFunction G w (Λ \ A) * partitionFunction G w (Λ \ B)) - 1‖ ≤
+      Real.exp (2 * ∑ a ∈ A, c a) *
+        ∑ a ∈ A, 2 * influenceFactor c a * ρ a * Real.exp (-κ * d a) :=
+  norm_twoRegionRatio_sub_one_le hD hAB
+    (isInfluenceSupersolution_exp_weighted hD.nonneg hκ hρ hlip hsmall) Λ
+
+/-- **Exponential two-region decay**, unweighted. -/
 theorem norm_twoRegionRatio_sub_one_le_exp {w : V → ℂ} {c : V → ℝ}
     (hD : DobrushinCondition G w c) {A B : Finset V} (hAB : Disjoint A B)
     {d ℓ : V → ℝ} {κ : ℝ} (hκ : 0 ≤ κ)
@@ -433,5 +481,6 @@ theorem norm_twoRegionRatio_sub_one_le_exp {w : V → ℂ} {c : V → ℝ}
 #print axioms norm_removalRatio_sub_le_of_supersolution
 #print axioms norm_twoRegionRatio_sub_one_le
 #print axioms norm_twoRegionRatio_sub_one_le_exp
+#print axioms norm_twoRegionRatio_sub_one_le_exp_weighted
 
 end Mettapedia.Combinatorics.PolymerGas
