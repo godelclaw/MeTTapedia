@@ -1709,6 +1709,34 @@ the weakly coupled Wilson measure to a KP-small gas over a block-product
 measure: the plaquette coupling between neighbouring blocks, which carries the
 massless modes, has nowhere to go.
 
+\paragraph{A barrier suite, and the hierarchical lattice.}
+A replacement for the stopping-scale step has to fail wherever its conclusion
+is false: for weakly coupled $\mathrm{U}(1)$ in four dimensions, which has a
+massless photon (Guth 1980; Fr\"ohlich and Spencer 1982), and for weakly
+coupled $\mathrm{SU}(2)$ in five dimensions, which lies beyond a bulk phase
+transition (Creutz 1979). It also has to be consistent with asymptotic
+freedom, which places the four-dimensional mass at $\beta=150$ near
+$10^{-172}$ (finding~4). The diamond hierarchical lattice, on which the
+Migdal--Kadanoff recursion with block factor $2$ is exact, is a natural
+testbed, because the whole flow can be computed there. One step raises the
+plaquette weight to the power $2^{d-2}$ and then raises its normalized character
+coefficients to the fourth power. We iterated it on character coefficients in
+$110$-digit arithmetic (\texttt{ym\_hierarchical\_flow.py}). In five dimensions
+both groups flow to weak coupling: $\beta$ doubles at each step for
+$\mathrm{U}(1)$, and $1/t$ roughly doubles for $\mathrm{SU}(2)$, with $t$ the
+heat-kernel time. In four dimensions $\mathrm{SU}(2)$ crosses to strong
+coupling: at weak coupling $1/t$ decreases by $1/8$ per step, so $\beta\approx
+2/t$ decreases by $0.25$, against $4N^2b_0\log2=0.2575$ on the cubic lattice.
+But $\mathrm{U}(1)$ crosses as well. Its coupling decreases at every $\beta$,
+by $1.1\times10^{-5}$ per step at $\beta=1$, $6.1\times10^{-12}$ at $\beta=2$
+and $1.0\times10^{-31}$ at $\beta=5$; the drift is $-C\beta^2e^{-a\beta}$ with
+$a=15.7914$, which agrees with $8\pi^2/5$ to all digits computed. So
+four-dimensional $\mathrm{U}(1)$ confines on the hierarchical lattice at every
+coupling, with a correlation length that grows doubly exponentially in $\beta$.
+The hierarchical lattice fails the abelian test in four dimensions: a
+weak-to-strong flow proved there cannot be the mechanism on the cubic lattice
+unless the proof uses an ingredient that the hierarchical lattice lacks.
+
 \paragraph{The constants.}
 Two of v14's displayed constants were discussed in
 \S\ref{sec:recombination}: the two ledgers for $C_1$ and the
@@ -1718,7 +1746,11 @@ that this matches $\beta(g)=-b_0Ng^3$ under $\beta=2N/g^2$. Those conventions
 give $d\beta/d\log\mu=4N^2b_0$, hence a drift of $4N^2b_0\log b$ per step:
 $0.2575$ rather than $0.1288$ for $\mathrm{SU}(2)$ and $b=2$, in agreement with
 the standard $\mathrm{SU}(2)$ lattice scale $a\Lambda_L\propto
-e^{-3\pi^2\beta/11}$. This changes the choice of $\beta_0$ but no conclusion.
+e^{-3\pi^2\beta/11}$. The computation is checked in Lean: along any one-loop
+flow a block step lowers $2N/g^2$ by exactly $4N^2b_0\log b$, and for
+$\mathrm{SU}(2)$ and $b=2$ this lies between $0.2575$ and $0.2576$
+(\texttt{CouplingDrift}). This changes the choice of $\beta_0$ but no
+conclusion.
 
 \paragraph{Scope.}
 This evidence does not bear on the finite algebraic results of this lane. What
@@ -2329,7 +2361,9 @@ three different situations.
     instantiation fails in the regime the bootstrap provides: at
     $\beta_J\geq\beta_{\min}$ the stopping-scale measure behaves as a free
     massless field, not as a KP-small gas over a block-product measure, so the
-    step needs a crossing to strong coupling that v14 does not supply.
+    step needs a crossing to strong coupling that v14 does not supply. That
+    crossing must fail for weakly coupled $\mathrm{U}(1)$ in four dimensions;
+    on the hierarchical lattice, where the flow is exact, it does not.
   \item \textbf{The real RG map satisfies the recursion.}
     \emph{Status: the central claimed content of v14's RG analysis; not
     independently verified here.} Everything above shows the surrounding
