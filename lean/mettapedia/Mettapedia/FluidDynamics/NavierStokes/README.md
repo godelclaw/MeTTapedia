@@ -8244,9 +8244,11 @@ coefficient plus `∫₀ᴴ |N_k|`, divided by the damping. Summed over the dyad
 shells `2^q ≤ |k| < 2^(q+1)`, `q ≥ Q`, in the Wiener (`ℓ¹`) norm of the
 vorticity coefficients, this gives `∫₀ᴴ W_Q ≤ R + ∫₀ᴴ S` along every tame
 solution (`integral_wienerHigh_le`): `W_Q` dominates the block sum `D_Q` of the
-continuation theorem, `R` depends only on the data and `S` is the weighted
-Wiener norm of the vorticity nonlinearity over the high shells, with a
-summable envelope from the convolution of the moment envelope with itself.
+continuation theorem, `R` depends only on the data and `S` is the Wiener norm
+of the vorticity nonlinearity (the curl of the Leray-projected convection,
+stretching minus transport) over the high shells with the weight
+`3 / (4π²ν|k|²)`, the `λ_q^{-2}` weight of the route, with a summable envelope
+from the convolution of the moment envelope with itself.
 `relaxData` realizes the route's `DyadicVorticityStretchingData` on a tame
 solution for every split of `S` into pancake, coercive and residual shares,
 and `periodicStatementB_of_sectorEstimates` closes the chain: if for every
