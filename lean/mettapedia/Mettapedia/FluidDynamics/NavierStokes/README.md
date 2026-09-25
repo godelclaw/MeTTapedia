@@ -8233,6 +8233,30 @@ admissible of every order, the velocity being its mean plus their field.
   coordinate, with no third component) of any size have global smooth
   periodic solutions in the official sense, unconditionally.
 
+**The relaxation inequality on actual solutions.**
+`StochasticLagrangian/FourierRelaxation.lean` proves the transported dyadic
+relaxation estimate of the pancake route for the Fourier solutions instead
+of assuming it. Mode by mode the Fourier system is the damped equation
+`ċ_k = -4π²ν|k|² c_k + N_k` with `N_k` the Leray projection of the phased
+convection, and Duhamel's formula (proved for any continuous forcing of a
+damped equation in a Banach space) bounds `∫₀ᴴ |c_k|` by the initial
+coefficient plus `∫₀ᴴ |N_k|`, divided by the damping. Summed over the dyadic
+shells `2^q ≤ |k| < 2^(q+1)`, `q ≥ Q`, in the Wiener (`ℓ¹`) norm of the
+vorticity coefficients, this gives `∫₀ᴴ W_Q ≤ R + ∫₀ᴴ S` along every tame
+solution (`integral_wienerHigh_le`): `W_Q` dominates the block sum `D_Q` of the
+continuation theorem, `R` depends only on the data and `S` is the weighted
+Wiener norm of the vorticity nonlinearity over the high shells, with a
+summable envelope from the convolution of the moment envelope with itself.
+`relaxData` realizes the route's `DyadicVorticityStretchingData` on a tame
+solution for every split of `S` into pancake, coercive and residual shares,
+and `periodicStatementB_of_sectorEstimates` closes the chain: if for every
+viscosity, admissible datum and horizon the source of every tame solution
+admits a split whose three sector estimates hold with gains summing below
+one and constants uniform over the horizon, then the official periodic
+statement holds. The sector estimates for actual solutions are now the whole
+remaining obligation of the route; the relaxation inequality is no longer
+part of it.
+
 ### Earlier route-audit layers
 
 The directory is best read as a route audit and obstruction library. It has

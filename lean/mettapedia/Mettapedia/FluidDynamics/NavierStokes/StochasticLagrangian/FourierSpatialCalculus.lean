@@ -447,12 +447,18 @@ theorem summable_convTerm (ha : Rapid a) (q : Wavevector) :
         mul_le_mul h1 (hC _) (norm_nonneg _) (by positivity)
     _ = _ := by ring
 
-/-- The Fourier convection as a series of vectors. -/
-theorem infiniteConvection_eq (ha : Rapid a) (q : Wavevector) :
+/-- The Fourier convection as a series of vectors, from summability of the terms. -/
+theorem infiniteConvection_eq_of_summable {a : FourierVelocity} {q : Wavevector}
+    (hs : Summable (fun p ↦ modeDot q (a p) • a (q - p))) :
     infiniteConvection a q = ∑' p, modeDot q (a p) • a (q - p) := by
   funext i
-  rw [tsum_apply (summable_convTerm ha q)]
+  rw [tsum_apply hs]
   rfl
+
+/-- The Fourier convection as a series of vectors. -/
+theorem infiniteConvection_eq (ha : Rapid a) (q : Wavevector) :
+    infiniteConvection a q = ∑' p, modeDot q (a p) • a (q - p) :=
+  infiniteConvection_eq_of_summable (summable_convTerm ha q)
 
 theorem modeDot_field (ha : Rapid a) (k : Wavevector) (x : ℝ³) :
     modeDot k (field a x) = ∑' p, character p x * modeDot k (a p) := by
