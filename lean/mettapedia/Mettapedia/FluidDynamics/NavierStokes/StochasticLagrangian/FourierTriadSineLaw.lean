@@ -25,6 +25,12 @@ Summed over the pairs of a finite set of modes whose angles have sine at most
 the vorticity Wiener mass of the set. The cone bound of the pancake pair
 depletion is the special case of pairs inside one narrow cone; here the
 depletion is by the relative angle of each pair, whatever the directions.
+
+The same bound holds for the momentum flux of the velocity equation: the
+term `(q · u_p) u_r` that a transverse velocity mode `p` contributes at the
+output `q` is at most `sin ∠(p, q) |q| ‖u_p‖ ‖u_r‖`, and vanishes when `p` and
+`q` are collinear. A disturbance whose wavevector has been tilted onto the
+wavevector of a mean-flow mode exerts no stress on that mode.
 -/
 
 set_option autoImplicit false
@@ -231,6 +237,51 @@ theorem transport_eq_zero_of_collinear {p r : Wavevector} (hc : wavevectorCross 
   rw [PancakePeriodicCoherentSplit.modeDot_smul, modeDot_cross, wavevectorCross_swap, hc, neg_zero]
   have : modeDot 0 a = 0 := by simp [modeDot]
   rw [this, mul_zero, zero_smul]
+
+/-- **The sine law for the momentum flux.** For `a` transverse to `p`, the
+term `(q · a) b` at the output `q` is at most `sin ∠(p, q) |q| ‖a‖ ‖b‖`. -/
+theorem norm_stressTerm_le_sine {p : Wavevector} (hp : p ≠ 0) (q : Wavevector)
+    {a : VelocityCoefficient} (hpa : modeDot p a = 0) (b : VelocityCoefficient) :
+    ‖coefficientVec (modeDot q a • b)‖ ≤
+      sine p q * ‖frequencyVec q‖ * ‖coefficientVec a‖ * ‖coefficientVec b‖ := by
+  have hP := one_le_norm_frequencyVec hp
+  have hP0 : 0 < ‖frequencyVec p‖ := by linarith
+  have hA := norm_nonneg (coefficientVec a)
+  have hB := norm_nonneg (coefficientVec b)
+  rw [norm_cv_smul]
+  rcases eq_or_ne q 0 with rfl | hq
+  · have : modeDot 0 a = 0 := by simp [modeDot]
+    rw [this, norm_zero, zero_mul]
+    exact mul_nonneg (mul_nonneg (mul_nonneg (sine_nonneg p 0) (norm_nonneg _)) hA) hB
+  have hQ := one_le_norm_frequencyVec hq
+  have hQ0 : 0 < ‖frequencyVec q‖ := by linarith
+  have h := norm_modeDot_le_sine hp q hpa
+  have e : sine p q * ‖frequencyVec q‖ = ‖frequencyVec (wavevectorCross p q)‖ / ‖frequencyVec p‖ := by
+    unfold sine
+    field_simp
+  have hq' : ‖modeDot q a‖ ≤ ‖frequencyVec (wavevectorCross p q)‖ / ‖frequencyVec p‖ *
+      ‖coefficientVec a‖ := by
+    rw [div_mul_eq_mul_div, le_div_iff₀ hP0, mul_comm]
+    exact h
+  calc ‖modeDot q a‖ * ‖coefficientVec b‖
+      ≤ ‖frequencyVec (wavevectorCross p q)‖ / ‖frequencyVec p‖ * ‖coefficientVec a‖ *
+          ‖coefficientVec b‖ := mul_le_mul_of_nonneg_right hq' hB
+    _ = _ := by rw [← e]
+
+/-- **A mode collinear with the output exerts no stress there.** -/
+theorem stressTerm_eq_zero_of_collinear {p q : Wavevector} (hp : p ≠ 0)
+    (hc : wavevectorCross p q = 0) {a : VelocityCoefficient} (hpa : modeDot p a = 0)
+    (b : VelocityCoefficient) : modeDot q a • b = 0 := by
+  have hP := one_le_norm_frequencyVec hp
+  have hP0 : 0 < ‖frequencyVec p‖ := by linarith
+  have hz : frequencyVec (0 : Wavevector) = 0 := by
+    ext i
+    simp [frequencyVec, coefficientVec, wavevectorCoefficient]
+  have h := norm_modeDot_le_sine hp q hpa
+  rw [hc, hz, norm_zero, zero_mul] at h
+  have h0 : ‖modeDot q a‖ = 0 :=
+    le_antisymm (nonpos_of_mul_nonpos_right h hP0) (norm_nonneg _)
+  rw [norm_eq_zero.mp h0, zero_smul]
 
 end Laws
 

@@ -8389,6 +8389,12 @@ of modes whose angles have sine at most `σ`, the stretching at any set of
 outputs is at most `σ` times the square of the vorticity Wiener mass of the
 set, and with the sharp relaxation weight above `2^(Q+1)` at most
 `3σ / (4π²ν 4^(Q+1))` times that square (`sum_sharp_collinearStretch_le`).
+The momentum flux obeys the same law: the term `(q · u_p) u_r` that a
+transverse velocity mode `p` contributes at the output `q` is at most
+`sin∠(p, q) |q| ‖u_p‖ ‖u_r‖` (`norm_stressTerm_le_sine`) and vanishes when `p`
+and `q` are collinear (`stressTerm_eq_zero_of_collinear`). A disturbance whose
+wavevector has been tilted onto that of a mean-flow mode exerts no stress on
+that mode.
 
 **What the smooth-force breakdown says about this route.** OpenAI's
 breakdown construction for the forced problem, formalized upstream and
