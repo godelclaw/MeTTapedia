@@ -17,7 +17,7 @@ lean_lib MettapediaCombinatorics where
 library, valid at every vertex count.  Built with `lake build KrennGeneralBridge`. -/
 lean_lib KrennGeneralBridge where
   srcDir := "."
-  roots := #[`GeneralOfficialBridge, `OfficialConditional, `OfficialCharTwo]
+  roots := #[`GeneralOfficialBridge, `OfficialConditional, `OfficialCharTwo, `OfficialPfaffian]
 
 /-- The general-vertex-set matching library: amplitude, matching parity,
 exchange, orbit normalisation, and the kernel-checked triple classification.
@@ -25,7 +25,7 @@ Built on its own with `lake build KrennLib`; independent of the `N = 6` target. 
 lean_lib KrennLib where
   srcDir := "lib"
   roots := #[`MatchingParity, `GraphMatchingBridge, `Amplitude, `OrbitNormalization, `TripleOrbits,
-    `MatchingBridge, `LocalCancellation, `MatchingSum, `Gauge, `ColourPerMatching, `FourVertices, `SixCycle, `EvenCycle, `CycleSolution, `CapIncidence, `FourVertexRank, `FanStructure, `PurePartner, `MixedColouring, `CycleCoordinates, `SingleFlip, `Covector, `Degenerate, `MainTheorem, `Separation, `LiveDegree, `MinimalSupport, `HardCase, `NoCancellation, `StarNormalForm, `CharTwoDescent, `CharTwoSixCNF, `CharTwoRigidity, `CharTwoSix, `UniformRigidity, `TightCut, `AxiomAudit]
+    `MatchingBridge, `LocalCancellation, `MatchingSum, `Gauge, `ColourPerMatching, `FourVertices, `SixCycle, `EvenCycle, `CycleSolution, `CapIncidence, `FourVertexRank, `FanStructure, `PurePartner, `MixedColouring, `CycleCoordinates, `SingleFlip, `Covector, `Degenerate, `MainTheorem, `Separation, `LiveDegree, `MinimalSupport, `HardCase, `NoCancellation, `StarNormalForm, `CharTwoDescent, `CharTwoSixCNF, `CharTwoRigidity, `CharTwoSix, `UniformRigidity, `TightCut, `FermiDescent, `FermiRigidity, `FermiSix, `FermiKrenn, `AxiomAudit]
 
 def krennRoots : Array Lean.Name := #[`KrennFactorization, `KrennCounterexamples, `KrennRank,
     `KrennSyzygies, `OfficialKrennDefinitions, `KrennOfficialBridge,

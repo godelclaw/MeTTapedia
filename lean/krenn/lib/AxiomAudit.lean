@@ -6,6 +6,7 @@ import GraphMatchingBridge
 import CharTwoSix
 import UniformRigidity
 import TightCut
+import FermiKrenn
 import Mettapedia.Combinatorics.Matching
 
 /-! # Axiom audit
@@ -111,3 +112,7 @@ Every top-level conditional theorem, with its dependency cone printed. -/
 #print axioms MatchingPfaffian.pfSum_expand
 #print axioms MatchingPfaffian.a_mul_pfSum_update
 #print axioms MatchingPfaffian.capVal_mul_pfSum_update_eq_cap
+#print axioms KrennFermi.isFermiGHZ_contract
+#print axioms KrennFermi.no_isFermiGHZ_six
+#print axioms KrennFermi.krennGu_fermi
+#print axioms KrennFermi.not_isGHZOver_of_pfaffian
