@@ -8290,6 +8290,15 @@ most the aperture gain times the product of the coherent Wiener norms
 (`sum_norm_coherentStretch_le`). This is the kinematic depletion on actual
 coefficients; the Wiener norms on the right are those of the solution, which
 is exactly the quadratic obstruction the dynamical budget must address.
+`StochasticLagrangian/FourierBKMIntegrand.lean` identifies the route's spatial
+essential-supremum integrand with the vorticity supremum of the Fourier
+solutions: the vorticity is continuous on the torus and the Haar measure is
+positive on open sets, so the essential supremum is the supremum, attained on
+the compact torus (`spatialBKMIntegrand_eq_vorticitySup`). Global regularity
+of the Fourier class is therefore exactly the finite-horizon bound on the time
+integral of the route's integrand (`periodicRegularity_iff_spatialBKM`), and
+that bound gives the official periodic statement
+(`periodicStatementB_of_spatialBKM`).
 
 ### Earlier route-audit layers
 
