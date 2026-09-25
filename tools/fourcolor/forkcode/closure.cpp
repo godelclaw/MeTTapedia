@@ -471,8 +471,11 @@ int main(int argc, char** argv) {
   // Batch-parallel worklist: every state i is glued once with every j <= i.
   // New states found in a batch are appended after it; they are processed in
   // later batches against all earlier states, so no pair is missed.
+  // Each thread keeps only codes new to the global index (read-only during a
+  // batch) and new to itself, so memory stays proportional to the new states.
   struct Local {
     std::vector<Code> found;
+    std::unordered_map<uint64_t, std::vector<uint32_t>> seen;
     bool roots[2][2] = {{false, false}, {false, false}};
     Stats st;
   };
@@ -501,7 +504,15 @@ int main(int argc, char** argv) {
             return;
           }
           if (pruneDead && hasDeadBridge(q)) { loc.st.deadBridgePruned++; return; }
-          loc.found.push_back(canonical(q));
+          const Code c = canonical(q);
+          const uint64_t h = codeHash(c);
+          auto g = index.find(h);
+          if (g != index.end())
+            for (uint32_t k : g->second) if (codeEq(states[k], c)) return;
+          auto& mine = loc.seen[h];
+          for (uint32_t k : mine) if (codeEq(loc.found[k], c)) return;
+          mine.push_back((uint32_t)loc.found.size());
+          loc.found.push_back(c);
         };
         for (size_t j = 0; j <= a; ++j) {
           loc.st.pairs++;

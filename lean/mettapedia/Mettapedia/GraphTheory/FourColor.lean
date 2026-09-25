@@ -669,3 +669,6 @@ import Mettapedia.GraphTheory.FourColor.PhysicalForkCodeFlatPerm
 import Mettapedia.GraphTheory.FourColor.PhysicalForkCodeFlatFork
 import Mettapedia.GraphTheory.FourColor.PhysicalForkCodeFlatCheck
 import Mettapedia.GraphTheory.FourColor.PhysicalForkCodeAuditTwo
+import Mettapedia.GraphTheory.FourColor.PhysicalForkCodePiece
+import Mettapedia.GraphTheory.FourColor.PhysicalForkCodeGlue
+import Mettapedia.GraphTheory.FourColor.PhysicalForkCodeSound
