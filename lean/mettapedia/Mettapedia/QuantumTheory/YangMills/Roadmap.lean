@@ -177,6 +177,18 @@ def yangMillsCommutatorLeibnizCorrectionRoadmapEntry : YangMillsRoadmapEntry whe
   evidence := "currentYangMillsLeibnizRelations_integrate_to_zero proves that every corrected relation integrates to zero on every gauge background, and under the on-shell policy on every on-shell background; currentYangMillsLeibnizJointRelations_evaluate_to_zero carries this to the corrected joint submodule; currentYangMillsEarlierJointSubmodule_contains_nonRelation exhibits a vector of the earlier joint submodule with averaged background value 32/3; currentYangMillsLeibnizJointPhysicalRelation_packet, currentYangMillsLeibnizFDIBPCochainBridge_surjective and currentYangMillsLeibnizProfileCorrection_zero_of_source_ne_seven give the rank bound 11558, the cochain bridge and the source-band reduction for the corrected operator."
   nextObligation := "None inside this correction. The joint-interface obligations continue on the corrected joint submodule only: the earlier joint submodule contains an invariant non-relation and must not be used as a relation space."
 
+/-- OUR crossing input for the stopping-scale step. -/
+def yangMillsCrossingInputRoadmapEntry : YangMillsRoadmapEntry where
+  stage := .fiveInputCompletionSteelman
+  nodeId := yangMillsCrossingInputNode.id
+  status := .openGoal
+  truthValue := ⟨0, 90⟩
+  itvLowerPercent := 0
+  itvUpperPercent := 10
+  progressPercent := 20
+  evidence := "CrossingInput states the missing stopping-scale input with its Kotecky-Preiss norm written out; CrossingInput.clustering proves it sufficient for uniform exponential clustering; CrossingInput.false_of_tendsto_dominating and currentYangMillsFreeMaxwell_barrier calibrate it: it fails at beta = infinity for four-dimensional U(1) and five-dimensional gauge fields."
+  nextObligation := "Prove the crossing input for four-dimensional SU(2) by a flow from beta_min to strong coupling that fails for four-dimensional U(1) and five-dimensional SU(2)."
+
 /-- OUR checked two-selector separation of the two explicit source-seven
 commutator rows. -/
 def yangMillsSourceSevenTwoClassRepairRoadmapEntry : YangMillsRoadmapEntry where
@@ -317,6 +329,7 @@ def currentYangMillsRoadmap : List YangMillsRoadmapEntry :=
   , yangMillsHypercubicCensusDecisionRoadmapEntry
   , yangMillsJointPhysicalRelationRoadmapEntry
   , yangMillsCommutatorLeibnizCorrectionRoadmapEntry
+  , yangMillsCrossingInputRoadmapEntry
   , yangMillsSourceSevenTwoClassRepairRoadmapEntry
   , yangMillsSourceSevenTwoClassCompatibilityRoadmapEntry
   , yangMillsSourceSevenThreeClassTracelessRefutationRoadmapEntry
@@ -471,6 +484,15 @@ theorem currentYangMillsRoadmap_records_leibniz_correction :
     currentYangMillsEarlierJointSubmodule_contains_nonRelation.2.2⟩
 
 #print axioms currentYangMillsRoadmap_records_leibniz_correction
+
+theorem currentYangMillsRoadmap_records_crossing_input :
+    yangMillsCrossingInputRoadmapEntry.status = .openGoal ∧
+      (∀ K μ : ℝ, 0 < μ → ¬ ∀ k : Fin (1 + 3) → ℤ,
+        ‖FreeMaxwellNonClustering.fieldStrengthCorrelation (n := 1) k‖ ≤
+          K * Real.exp (-μ * ∑ i, |((k i : ℤ) : ℝ)|)) :=
+  ⟨rfl, currentYangMillsFreeMaxwell_barrier.1⟩
+
+#print axioms currentYangMillsRoadmap_records_crossing_input
 
 set_option maxRecDepth 100000 in
 set_option maxHeartbeats 10000000 in

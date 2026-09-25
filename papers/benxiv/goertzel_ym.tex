@@ -1758,6 +1758,44 @@ direction-dependent limits at zero momentum. It does not cover finite $\beta$,
 where the masslessness of the photon is the theorem of Fr\"ohlich and
 Spencer.
 
+\paragraph{The crossing input, stated and calibrated.}
+The missing input can be stated precisely and tested. Call a family of block
+lattices, indexed by the volume, \emph{crossing} if at one block scale every
+effective measure is a hard-core polymer gas over a block-product reference
+measure whose activity bounds satisfy
+$\sum_{\gamma\ni x}k_\gamma e^{4|\gamma|+\kappa\operatorname{diam}\gamma}\leq\varepsilon$
+at every block $x$, with $\varepsilon e\leq1$, $k_\varnothing=0$ and $\kappa>0$, all
+independent of the volume. This is the regime v14's tree-decay theorem
+presupposes, with the Kotecký--Preiss norm written out. Under it, for bounded
+observables $F_1,F_2$ on block sets $S_1,S_2$,
+\[
+  \big|\langle F_1F_2\rangle-\langle F_1\rangle\langle F_2\rangle\big|
+  \;\leq\;3\,\|F_1\|_\infty\|F_2\|_\infty\,e^{3(|S_1|+|S_2|)}\,
+  e^{-\kappa\,d(S_1,S_2)},
+\]
+uniformly in the volume and the polymer set (\texttt{PolymerGas.LatticeClustering},
+\texttt{CrossingInput}). The proof uses no cluster expansion: Dobrushin's
+criterion, implied by Kotecký--Preiss, gives nonvanishing partition functions and
+two-sided single-removal bounds by induction on the polymer set; the effect of
+removing a far set of polymers is bounded by an exponential supersolution of an
+influence recursion; and the truncated two-point function decomposes, by
+conditioning on the support of $F_1$, into families that stay away from $S_2$ and
+families that bridge to it (\texttt{PolymerGas.Basic}, \texttt{PolymerGas.Decay},
+\texttt{PolymerGas.Measure}, \texttt{PolymerGas.Clustering},
+\texttt{PolymerGas.Lattice}). The input is calibrated by the barrier: no crossing
+family can have bounded two-point functions whose limits dominate the
+field-strength two-point function of the free lattice Maxwell field, since the
+uniform bound would pass to the limit. For the bounded observable
+$e^{i\sqrt t F_{01}}$ of a Gaussian field with $t\leq1/2$ the truncated two-point
+function $e^{-t\sigma^2}(e^{tC(n)}-1)$ dominates $|C(n)|$, because $|C(n)|\leq1$
+(\texttt{CrossingInput}). So the crossing input fails at $\beta=\infty$ for
+four-dimensional $\mathrm{U}(1)$ and for the abelian components of
+five-dimensional $\mathrm{SU}(2)$, in agreement with the barrier suite. Neither
+the Gaussian limit of the finite-coupling measures nor the persistence of
+weak coupling at every scale for those theories is formalized. For
+four-dimensional $\mathrm{SU}(2)$ the input can hold only after the coupling has
+run to strong coupling; establishing that flow is the open crossing.
+
 \paragraph{The constants.}
 Two of v14's displayed constants were discussed in
 \S\ref{sec:recombination}: the two ledgers for $C_1$ and the
@@ -2395,7 +2433,12 @@ three different situations.
     massless field, not as a KP-small gas over a block-product measure, so the
     step needs a crossing to strong coupling that v14 does not supply. That
     crossing must fail for weakly coupled $\mathrm{U}(1)$ in four dimensions;
-    on the hierarchical lattice, where the flow is exact, it does not.
+    on the hierarchical lattice, where the flow is exact, it does not. The
+    crossing input is now stated in Lean; that it implies exponential
+    clustering uniformly in the volume, and that it fails at $\beta=\infty$
+    for four-dimensional $\mathrm{U}(1)$ and five-dimensional gauge fields, are
+    proved (\texttt{CrossingInput}); proving it for four-dimensional
+    $\mathrm{SU}(2)$ is the open problem.
   \item \textbf{The real RG map satisfies the recursion.}
     \emph{Status: the central claimed content of v14's RG analysis; not
     independently verified here.} Everything above shows the surrounding

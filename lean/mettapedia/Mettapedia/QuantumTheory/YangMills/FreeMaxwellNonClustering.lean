@@ -352,6 +352,29 @@ theorem not_exponentialDecay_sq_fieldStrengthCorrelation (K μ : ℝ) (hμ : 0 <
     _ = Real.sqrt K * Real.exp (-(μ / 2) * s) := by
         rw [Real.sqrt_mul hK, Real.sqrt_sq (Real.exp_pos _).le]
 
+/-- The field-strength two-point function is bounded by `1`: it is a Fourier
+coefficient of a symbol with values in `[0, 1]`. -/
+theorem norm_fieldStrengthCorrelation_le (k : Fin (n + 3) → ℤ) :
+    ‖fieldStrengthCorrelation (n := n) k‖ ≤ 1 := by
+  unfold fieldStrengthCorrelation mFourierCoeff
+  have hbound : ∀ t : UnitAddTorus (Fin (n + 3)),
+      ‖mFourier (-k) t • ((symbol (n := n) t : ℝ) : ℂ)‖ ≤ 1 := by
+    intro t
+    rw [norm_smul]
+    have h1 : ‖mFourier (-k) t‖ ≤ 1 :=
+      (ContinuousMap.norm_coe_le_norm (mFourier (-k)) t).trans (le_of_eq mFourier_norm)
+    have h2 : ‖((symbol (n := n) t : ℝ) : ℂ)‖ ≤ 1 := by
+      have hx := symbol_mem_Icc (n := n) t
+      rw [Complex.norm_real, Real.norm_eq_abs, abs_le]
+      exact ⟨by linarith [hx.1], hx.2⟩
+    calc ‖mFourier (-k) t‖ * ‖((symbol (n := n) t : ℝ) : ℂ)‖ ≤ 1 * 1 :=
+          mul_le_mul h1 h2 (norm_nonneg _) zero_le_one
+      _ = 1 := one_mul 1
+  calc ‖∫ t, mFourier (-k) t • ((symbol (n := n) t : ℝ) : ℂ)‖
+      ≤ 1 * (volume : Measure (UnitAddTorus (Fin (n + 3)))).real Set.univ :=
+        norm_integral_le_of_norm_le_const (ae_of_all _ hbound)
+    _ = 1 := by simp
+
 /-- **No family approaching the free field clusters uniformly.**  If two-point
 functions `C L` converge pointwise to that of the free lattice Maxwell field, no
 exponential bound holds for all of them with the same constants. -/
@@ -373,5 +396,6 @@ end FreeMaxwell
 #print axioms not_exponentialDecay_fieldStrengthCorrelation
 #print axioms not_exponentialDecay_sq_fieldStrengthCorrelation
 #print axioms not_uniform_exponentialDecay_of_tendsto
+#print axioms norm_fieldStrengthCorrelation_le
 
 end Mettapedia.QuantumTheory.YangMills.FreeMaxwellNonClustering

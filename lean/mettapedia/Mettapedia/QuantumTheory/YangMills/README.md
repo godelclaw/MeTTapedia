@@ -68,6 +68,22 @@ Current status:
   corrected operator, and the two operators agree on the source bands seven and
   eight (`HypercubicDimension16LeibnizFDIBPCochainBridge`,
   `HypercubicDimension16LeibnizSourceSix`).
+- The stopping-scale step. `FreeMaxwellNonClustering.lean` proves that the
+  field-strength two-point function of the free lattice Maxwell field is not
+  absolutely summable and has no exponential bound, in every dimension `d ≥ 3`.
+  `CrossingInput.lean` states the input the stopping-scale step needs (at one
+  block scale, uniformly in the volume, a Kotecký–Preiss-small polymer gas over a
+  block-product reference measure), proves that it implies exponential
+  clustering of bounded block observables uniformly in the volume, and proves
+  that it fails for families whose bounded two-point functions approach the free
+  field, so at `β = ∞` for four-dimensional `U(1)` and five-dimensional gauge
+  fields. The polymer-gas theory it uses is general and lives in
+  `Mettapedia/Combinatorics/PolymerGas/` (Dobrushin and Kotecký–Preiss criteria,
+  spatial decay, polymer representations of product measures, the truncated
+  two-point function, lattice geometry, exponential clustering), without a
+  cluster expansion. `CouplingDrift.lean` checks v14's drift constant (it is `N`
+  times too small). Proving the crossing input for four-dimensional `SU(2)` is
+  open.
 - `HypercubicDimension16FDIBPCochainJointBridge.lean` now proves that OUR
   finite derivative-alpha-reduced `F,D`/IBP relation cochains, after the
   physical operator and signed-hypercubic Reynolds average, surject onto that

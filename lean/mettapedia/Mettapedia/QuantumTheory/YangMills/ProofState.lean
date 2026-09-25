@@ -17,6 +17,7 @@ import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16CommutatorRowEval
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16RelationEvaluationEquivariance
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16LeibnizFDIBPCochainBridge
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16LeibnizSourceSix
+import Mettapedia.QuantumTheory.YangMills.CrossingInput
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FDIBPCochainJointBridge
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderRepair
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderCoordinateCompletion
@@ -960,6 +961,15 @@ def yangMillsCommutatorLeibnizCorrectionNode : YangMillsProofNode where
   evidence := "The covariant-commutator row of HypercubicDimension16CovariantCommutator keeps every outer derivative of the commutator's field on that field, so it is a field identity only when the field has no derivative outside the pair. OUR HypercubicDimension16CommutatorRowEvaluation evaluates rows on gauge backgrounds and proves that the earlier four-field commutator row has value 64 on an explicit constant SU(2) background, so it is not a consequence of the field identities. OUR HypercubicDimension16LeibnizCommutator defines the Leibniz-correct row, which distributes the outer derivatives over both factors; OUR HypercubicDimension16LeibnizRelationOperator assembles the corrected operator and its joint invariant relation submodule under either policy; OUR HypercubicDimension16LeibnizJointRank proves the certified lower bounds 11557 and 11558 for that submodule. OUR HypercubicDimension16LeibnizCommutatorSoundness and HypercubicDimension16RelationRowSoundness prove every row of the corrected operator sound: its integrated value vanishes on every gauge background, and that of the equation-of-motion rows on every on-shell background. OUR HypercubicDimension16RelationEvaluationDescent carries the evaluation to the field-label orbit space and to the corrected joint scalar quotient. OUR HypercubicDimension16RelationEvaluationEquivariance proves evaluation equivariant under the signed hypercubic group and shows that the Reynolds-averaged earlier four-field row, a vector of the earlier joint submodule, has averaged value 32/3 on the constant background, so the earlier joint submodule is not a space of relations. OUR HypercubicDimension16LeibnizFDIBPCochainBridge maps the finite cochains onto the corrected joint submodule, and OUR HypercubicDimension16LeibnizSourceSix proves that the full profile correction annihilates every corrected column outside source seven and that the two operators agree on the source bands seven and eight."
   nextObligation := "None inside this correction. The joint-interface obligations continue on the corrected joint submodule only: the earlier joint submodule contains an invariant non-relation and must not be used as a relation space. Background evaluations give certified non-membership, hence lower bounds, for the corrected scalar quotient."
 
+/-- OUR crossing input for the stopping-scale step: stated, sufficient for
+uniform clustering, and calibrated against the free-field barrier. -/
+def yangMillsCrossingInputNode : YangMillsProofNode where
+  id := "yang-mills.rg.crossing-input"
+  status := .openGoal
+  truthValue := ⟨0, 90⟩
+  evidence := "CrossingInput states the input the stopping-scale step needs: at one block scale, uniformly in the volume, the effective measure is a polymer gas over a block-product reference measure whose activity bounds satisfy the per-block Kotecky-Preiss smallness with a positive rate. CrossingInput.clustering proves that it implies exponential clustering of bounded block observables uniformly in the volume (PolymerGas.LatticeClustering, by Dobrushin's criterion, an influence recursion and conditioning, without a cluster expansion). CrossingInput.false_of_tendsto_dominating proves that no family satisfying it has bounded two-point functions whose limits dominate the free lattice Maxwell field-strength two-point function; currentYangMillsFreeMaxwell_barrier records that this function has no exponential bound in four and five dimensions, and CrossingInput.norm_fieldStrengthCorrelation_le_gaussian gives the domination for the bounded Gaussian observables exp(i sqrt t F01). So the input fails at beta = infinity for four-dimensional U(1) and for the abelian components of five-dimensional SU(2). goertzel_ym.tex records the numerical stopping-scale test and the hierarchical-lattice barrier, where U(1) confines too."
+  nextObligation := "Prove the crossing input for four-dimensional SU(2) at some block scale: control of the flow from beta_min to a strong effective coupling with Kotecky-Preiss-small activities, by a mechanism that fails for four-dimensional U(1) and five-dimensional SU(2)."
+
 /-- Conditional OS reconstruction scaffold for the continuum endpoint. -/
 def yangMillsContinuumOSConditionalScaffoldNode : YangMillsProofNode where
   id := "yang-mills.continuum-os-reconstruction-conditional"
@@ -1044,6 +1054,7 @@ def currentYangMillsProofNodes : List YangMillsProofNode :=
   , yangMillsHypercubicDimension16PaddedCensusNode
   , yangMillsJointPhysicalRelationNode
   , yangMillsCommutatorLeibnizCorrectionNode
+  , yangMillsCrossingInputNode
   , yangMillsContinuumOSConditionalScaffoldNode
   , yangMillsCompletionSteelmanNode
   , yangMillsConstructiveQFTNode
@@ -1197,6 +1208,20 @@ theorem currentYangMillsLeibnizProfileCorrection_zero_of_source_ne_seven
     policy generator coefficient hseven
 
 #print axioms currentYangMillsLeibnizProfileCorrection_zero_of_source_ne_seven
+
+/-- The free-field barrier in four and five dimensions: the field-strength
+two-point function of the free lattice Maxwell field has no exponential bound. -/
+theorem currentYangMillsFreeMaxwell_barrier :
+    (∀ K μ : ℝ, 0 < μ → ¬ ∀ k : Fin (1 + 3) → ℤ,
+      ‖FreeMaxwellNonClustering.fieldStrengthCorrelation (n := 1) k‖ ≤
+        K * Real.exp (-μ * ∑ i, |((k i : ℤ) : ℝ)|)) ∧
+    (∀ K μ : ℝ, 0 < μ → ¬ ∀ k : Fin (2 + 3) → ℤ,
+      ‖FreeMaxwellNonClustering.fieldStrengthCorrelation (n := 2) k‖ ≤
+        K * Real.exp (-μ * ∑ i, |((k i : ℤ) : ℝ)|)) :=
+  ⟨fun K μ hμ => FreeMaxwellNonClustering.not_exponentialDecay_fieldStrengthCorrelation K μ hμ,
+    fun K μ hμ => FreeMaxwellNonClustering.not_exponentialDecay_fieldStrengthCorrelation K μ hμ⟩
+
+#print axioms currentYangMillsFreeMaxwell_barrier
 
 /-- OUR finite `F,D`/IBP relation cochains surject onto the honest joint
 relation submodule under either relation policy. -/
