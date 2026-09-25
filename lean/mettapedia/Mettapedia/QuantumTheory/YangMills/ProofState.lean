@@ -13,6 +13,7 @@ import Mettapedia.QuantumTheory.YangMills.V14HypercubicQuarticBasis
 import Mettapedia.QuantumTheory.YangMills.V14HypercubicQuarticWilsonBridge
 import Mettapedia.QuantumTheory.YangMills.V14HypercubicFDCensusPaddingNoGo
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FieldFiveCommutatorSeparator
+import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16CommutatorRowEvaluation
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FDIBPCochainJointBridge
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderRepair
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderCoordinateCompletion
@@ -945,8 +946,16 @@ def yangMillsJointPhysicalRelationNode : YangMillsProofNode where
   id := "yang-mills.rg.joint-physical-relation-interface"
   status := .checked
   truthValue := ⟨100, 99⟩
-  evidence := "HypercubicDimension16JointPhysicalQuotient defines the invariant physical relation submodule as the coordinate-free preimage of the full relation range and proves off-shell inclusion into the on-shell policy. HypercubicDimension16FieldFiveCommutatorSeparator proves joint invariant relation rank at least 11558 for either policy from 11556 field-eight trace rows, a seven-to-eight commutator row, and a field-five separator. OUR HypercubicDimension16FDIBPCochainJointBridge gives an equivariant finite F,D/IBP cochain realization with that same range. OUR trace-order repairs identify and correct successive explicit canonical obstructions, while the complete three-cut cycle-profile census forces coefficients (6/5, 13/10, -1, -7/10, -3/5) and checks its alternating topology profile on all 210 labels. OUR HypercubicDimension16FundamentalTracePhysicalFamily realizes each label as an actual policy-indexed FundamentalTraceSite and carries its finite cochains by signed Reynolds semantics into the coordinate-free joint relation submodule. Its field-eight, profile, and three-coordinate bridges prove that the full current correction annihilates that 210-label physical family. OUR HypercubicDimension16TraceAnticommutatorPhysicalFamily realizes all seven adjacent polarized SU(2) trace-anticommutator placements on the same physical seven-cycle. Each has the common three-coordinate residual 1/2 and profile value -1/2, so the full current correction annihilates its complete finite cochain family under either policy. OUR arbitrary-carrier field-eight bridge identifies every source-eight physical traceless, anticommutator, and fundamental row with the derivative-free field-eight schema; derivative-bearing sites are empty there. OUR source-six curvature-pair theorem proves exact cancellation of the only cross-sector covariant-commutator branch there. Together with support below six, the full correction annihilates every arbitrary physical relation column outside source seven. In the remaining source-seven band, a genuine singleton-trace row refutes every choice of the three added selector values with the cycle-profile base held fixed. OUR signed-H(4)-invariant reparameterization then uses only the six already constructed scalar coordinates and cancels that singleton row while retaining the two explicit source-seven commutators, the displayed first- and second-IBP rows, Bianchi, the on-shell EOM row, the canonical fundamental three-cut row, and the polarized trace-anticommutator row. This nine-row audit is not a complete source-seven relation census, a descent theorem, rank calculation, conditioning certificate, or Wilson-functional coordinate construction."
+  evidence := "HypercubicDimension16JointPhysicalQuotient defines the invariant physical relation submodule as the coordinate-free preimage of the full relation range and proves off-shell inclusion into the on-shell policy. HypercubicDimension16FieldFiveCommutatorSeparator proves joint invariant relation rank at least 11558 for either policy from 11556 field-eight trace rows, a seven-to-eight commutator row, and a field-five separator; that submodule uses the earlier commutator row, which is not a field identity when the commutator's field carries outer derivatives (see the Leibniz-correction node). OUR HypercubicDimension16LeibnizJointRank proves the same bound 11558 for the Leibniz-corrected joint submodule, where the two operators agree in the sectors with seven or eight fields. OUR HypercubicDimension16FDIBPCochainJointBridge gives an equivariant finite F,D/IBP cochain realization with that same range. OUR trace-order repairs identify and correct successive explicit canonical obstructions, while the complete three-cut cycle-profile census forces coefficients (6/5, 13/10, -1, -7/10, -3/5) and checks its alternating topology profile on all 210 labels. OUR HypercubicDimension16FundamentalTracePhysicalFamily realizes each label as an actual policy-indexed FundamentalTraceSite and carries its finite cochains by signed Reynolds semantics into the coordinate-free joint relation submodule. Its field-eight, profile, and three-coordinate bridges prove that the full current correction annihilates that 210-label physical family. OUR HypercubicDimension16TraceAnticommutatorPhysicalFamily realizes all seven adjacent polarized SU(2) trace-anticommutator placements on the same physical seven-cycle. Each has the common three-coordinate residual 1/2 and profile value -1/2, so the full current correction annihilates its complete finite cochain family under either policy. OUR arbitrary-carrier field-eight bridge identifies every source-eight physical traceless, anticommutator, and fundamental row with the derivative-free field-eight schema; derivative-bearing sites are empty there. OUR source-six curvature-pair theorem proves exact cancellation of the only cross-sector covariant-commutator branch there. Together with support below six, the full correction annihilates every arbitrary physical relation column outside source seven; this statement concerns the earlier operator and is to be re-derived for the corrected one below seven fields. In the remaining source-seven band, a genuine singleton-trace row refutes every choice of the three added selector values with the cycle-profile base held fixed. OUR signed-H(4)-invariant reparameterization then uses only the six already constructed scalar coordinates and cancels that singleton row while retaining the two explicit source-seven commutators, the displayed first- and second-IBP rows, Bianchi, the on-shell EOM row, the canonical fundamental three-cut row, and the polarized trace-anticommutator row. This nine-row audit is not a complete source-seven relation census, a descent theorem, rank calculation, conditioning certificate, or Wilson-functional coordinate construction."
   nextObligation := "The existing six-scalar deformation is now refuted by a second actual singleton-trace relation with the independent second-IBP derivative geometry. Construct and semantically identify an enlarged coordinate family, or machine-check a further impossibility theorem for that larger family. Do not use the refuted map for sparse rank, conditioning, or Wilson-functional coordinates."
+
+/-- OUR Leibniz correction of the covariant-derivative commutator rows. -/
+def yangMillsCommutatorLeibnizCorrectionNode : YangMillsProofNode where
+  id := "yang-mills.rg.commutator-leibniz-correction"
+  status := .checked
+  truthValue := ⟨100, 99⟩
+  evidence := "The covariant-commutator row of HypercubicDimension16CovariantCommutator keeps every outer derivative of the commutator's field on that field, so it is a field identity only when the field has no derivative outside the pair. OUR HypercubicDimension16CommutatorRowEvaluation evaluates rows on gauge backgrounds and proves that the earlier four-field commutator row has value 64 on an explicit constant SU(2) background, so it is not a consequence of the field identities. OUR HypercubicDimension16LeibnizCommutator defines the Leibniz-correct row, which distributes the outer derivatives over both factors; OUR HypercubicDimension16LeibnizRelationOperator assembles the corrected operator and its joint invariant relation submodule under either policy; OUR HypercubicDimension16LeibnizJointRank proves the certified lower bounds 11557 and 11558 for that submodule. The two operators agree in every sector with seven or eight fields, where no field carries more than two derivatives."
+  nextObligation := "Prove every generator row of the corrected operator sound on gauge backgrounds, which gives the evaluation descent; then re-derive, for the corrected operator, the statements that range over sectors with at most six fields, among them the source-six curvature-pair bridge and the F,D/IBP cochain bridge."
 
 /-- Conditional OS reconstruction scaffold for the continuum endpoint. -/
 def yangMillsContinuumOSConditionalScaffoldNode : YangMillsProofNode where
@@ -1031,6 +1040,7 @@ def currentYangMillsProofNodes : List YangMillsProofNode :=
   , yangMillsHypercubicQuarticCensusNode
   , yangMillsHypercubicDimension16PaddedCensusNode
   , yangMillsJointPhysicalRelationNode
+  , yangMillsCommutatorLeibnizCorrectionNode
   , yangMillsContinuumOSConditionalScaffoldNode
   , yangMillsCompletionSteelmanNode
   , yangMillsConstructiveQFTNode
@@ -1085,6 +1095,32 @@ theorem currentYangMillsJointPhysicalRelation_packet
   exact jointInvariantRelationSubmodule_rank_lower_bound_fieldFiveCommutator policy
 
 #print axioms currentYangMillsJointPhysicalRelation_packet
+
+theorem yangMillsCommutatorLeibnizCorrectionNode_checked :
+    yangMillsCommutatorLeibnizCorrectionNode.status = .checked := by
+  rfl
+
+/-- OUR certified lower bound for the Leibniz-corrected joint invariant
+relation submodule, for either relation policy. -/
+theorem currentYangMillsLeibnizJointPhysicalRelation_packet
+    (policy : PhysicalRelationPolicy) :
+    11558 ≤ Module.finrank ℚ
+      (HypercubicDimension16LeibnizRelationOperator.leibnizJointInvariantRelationSubmodule
+        policy) :=
+  HypercubicDimension16LeibnizJointRank.leibnizJointInvariantRelationSubmodule_rank_lower_bound_fieldFiveCommutator
+    policy
+
+#print axioms currentYangMillsLeibnizJointPhysicalRelation_packet
+
+/-- The earlier four-field commutator row is not a consequence of the field
+identities: it does not vanish on some gauge background. -/
+theorem currentYangMillsEarlierCommutatorRow_not_fieldIdentity :
+    ∃ bg : HypercubicDimension16BackgroundCalculus.GaugeBackground ℚ,
+      HypercubicDimension16CommutatorRowEvaluation.relationValue bg
+        (HypercubicDimension16CovariantCommutator.covariantCommutatorRow fieldFourSite) ≠ 0 :=
+  HypercubicDimension16CommutatorRowEvaluation.covariantCommutatorRow_fieldFour_not_fieldIdentity
+
+#print axioms currentYangMillsEarlierCommutatorRow_not_fieldIdentity
 
 /-- OUR finite `F,D`/IBP relation cochains surject onto the honest joint
 relation submodule under either relation policy. -/

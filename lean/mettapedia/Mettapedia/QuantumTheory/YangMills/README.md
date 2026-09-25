@@ -46,6 +46,18 @@ Current status:
   and a field-five commutator separator certify rank at least `11558` for
   either policy. This is a lower bound only: it neither supplies the complete
   relation census nor the joint quotient dimension or conditioning.
+- The covariant-commutator row of `HypercubicDimension16CovariantCommutator`
+  is a field identity only when the commutator's field has no derivative
+  outside the pair. `HypercubicDimension16CommutatorRowEvaluation.lean`
+  evaluates rows on gauge backgrounds and shows that the four-field row used by
+  the separator has value `64` on a constant `SU(2)` background.
+  `HypercubicDimension16LeibnizCommutator.lean` defines the Leibniz-correct row,
+  `HypercubicDimension16LeibnizRelationOperator.lean` the corrected operator and
+  `leibnizJointInvariantRelationSubmodule`, and
+  `HypercubicDimension16LeibnizJointRank.lean` proves rank at least `11558` for
+  it. The two operators agree in the sectors with seven or eight fields;
+  statements about sectors with at most six fields are to be re-derived for the
+  corrected operator.
 - `HypercubicDimension16FDIBPCochainJointBridge.lean` now proves that OUR
   finite derivative-alpha-reduced `F,D`/IBP relation cochains, after the
   physical operator and signed-hypercubic Reynolds average, surject onto that

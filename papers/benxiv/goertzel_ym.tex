@@ -217,7 +217,10 @@ $-1/24$ give the certified bound
   11558 \leq \dim_{\mathbb Q}\mathcal J_p.
 \]
 This is a lower bound, not a complete joint rank, quotient dimension, or
-conditioning certificate.
+conditioning certificate. The commutator row used there is a field identity
+only when its field carries no outer derivative; the same bound holds for the
+Leibniz-corrected submodule (\S\ref{sec:honest}, the correction to the
+covariant-derivative commutator).
 Our finite derivative-alpha-reduced $F,D$/IBP relation cochains now map by
 the physical relation operator followed by signed $H(4)$ Reynolds averaging
 onto this same $J_p$. The map is $H(4)$-equivariant, surjective for both
@@ -1195,6 +1198,37 @@ constructs the relation operator; it does not infer its rank or the rank of
 the combined quotient.  The higher $\mathrm{SU}(2)$ trace identities are
 supplied next as independent row schemas.
 
+\paragraph{Correction (September 2026): the commutator row needs the Leibniz
+rule.}
+The four-term row above is a consequence of the field identities only when the
+selected field letter has no derivatives outside the pair.  If
+$X=D_{w_1}D_aD_bZ$ with a nonempty outer word $w_1$, the identity is
+$D_{w_1}(D_aD_b-D_bD_a)Z=D_{w_1}(F_{ab}Z-ZF_{ab})$, and the adjoint Leibniz
+rule distributes $w_1$ over both factors,
+\[
+  D_{w_1}(F_{ab}Z)=\sum_{S\subseteq w_1}(D_SF_{ab})(D_{w_1\setminus S}Z),
+\]
+each factor keeping the order of its derivatives.  The four-term row keeps only
+$S=\varnothing$.  On an explicit constant $\mathrm{SU}(2)$ background, with
+covariant derivative $\operatorname{ad}A$ and curvature $[A,A]$, the
+four-field row used below for the field-five separator, whose field carries
+six outer derivatives, has value $64$; it is therefore not a field identity
+(\texttt{HypercubicDimension16CommutatorRowEvaluation}).  The corrected row
+subtracts, for every subset $S\subseteq w_1$, the two insertions of $F_{ab}$
+before and after the field in which the derivatives of $S$ have moved onto
+$F_{ab}$.  It is signed-$H(4)$ equivariant and equals the four-term row when
+$w_1$ is empty (\texttt{HypercubicDimension16LeibnizCommutator}).  The
+corrected operator and joint submodule are defined on the same generators
+(\texttt{HypercubicDimension16LeibnizRelationOperator}).  In every sector with
+seven or eight fields no letter carries more than two derivatives, so the two
+operators agree there.  The bounds $11{,}557$ and $11{,}558$ below hold for the
+corrected submodule: the $11{,}557$ rows are unchanged, and every Leibniz term
+of the four-field separator row misses the separator's orbit, so its
+coordinate is still $-1/24$ (\texttt{HypercubicDimension16LeibnizJointRank}).
+Statements of this report about the joint submodule in sectors with at most
+six fields refer to the earlier operator and are to be re-derived for the
+corrected one.
+
 A literal seven-field, two-derivative instance proves that this
 cross-sector coupling survives both exact contextual normalization and
 simultaneous field relabeling.  Its two eight-field curvature insertions are
@@ -2162,7 +2196,9 @@ claim that the manuscript already contains the needed census.
     $11{,}556$ transferred trace rows, one seven-to-eight commutator row, and
     one four-to-five-field commutator row give a certified joint
     relation-rank lower bound of $11{,}558$ for either policy; the last is
-    separated by an exact field-five Reynolds coordinate $-1/24$. The
+    separated by an exact field-five Reynolds coordinate $-1/24$.  The bound
+    also holds for the Leibniz-corrected joint submodule, whose commutator
+    rows are field identities. The
     remaining finite problem is the complete joint rank and conditioning after
     Bianchi, EOM, IBP, commutator, and trace rows are assembled across all
     sectors. The
@@ -2361,6 +2397,16 @@ seven-to-eight commutator extension), and
 \texttt{HypercubicDimension16FieldFiveCommutatorSeparator} (the explicit
 four-to-five-field separator and the joint relation-rank lower bound
 $11{,}558$), together with
+\texttt{HypercubicDimension16LeibnizCommutator},
+\texttt{HypercubicDimension16LeibnizRelationOperator}, and
+\texttt{HypercubicDimension16LeibnizJointRank} (the Leibniz-correct commutator
+row, the corrected operator and joint submodule, and its bounds $11{,}557$ and
+$11{,}558$), and
+\texttt{HypercubicDimension16BackgroundCalculus} with
+\texttt{HypercubicDimension16CommutatorRowEvaluation} (gauge backgrounds over a
+differential scalar ring, row evaluation, the trace-insertion and cycle
+identities, and the value $64$ of the earlier four-field commutator row on a
+constant background), together with
 \texttt{HypercubicDimension16TraceEvaluation} (ordinary matrix-index
 contraction, field-relabel descent, and exact kernel theorems for the three
 implemented trace-relation families),
