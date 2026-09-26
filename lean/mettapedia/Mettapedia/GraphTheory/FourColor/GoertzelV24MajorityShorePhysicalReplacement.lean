@@ -2,10 +2,10 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24MajorityShoreNormalizedState
 import Mettapedia.GraphTheory.FourColor.GoertzelV24OpenTangleBoundaryReindexColor
 
 /-!
-# Physical replacement at equal normalized majority-shore states
+# Physical replacement by inclusion of normalized colour supports
 
 This is the consumer-facing M2 adapter.  It keeps three logically separate
-facts visible: the exact Count receipt preserves non-colorability, a strict
+facts visible: inclusion of colour supports preserves non-colorability, a strict
 majority-shore vertex makes the new carrier smaller, and the two disc sides
 with the transported orientation produce the cap-stable structural class.
 -/
@@ -96,11 +96,11 @@ theorem orientationReversing_symm
   apply ρR.injective
   simpa using hrev (ρL (matching.symm right))
 
-/-- **Semantic half of M2.**  Equal normalized states replace the old inner
+/-- **Semantic half of M2.**  Inclusion of normalized supports replaces the old inner
 majority shore by the new one while preserving non-Tait-colorability of the
 literal physical composite.  Boundary reindexing is discharged by an exact
 dart isomorphism, rather than treated as a semantic convention. -/
-theorem not_taitColorable_replacement_of_normalizedState_eq
+theorem not_taitColorable_replacement_of_support_subset
     (rotation : SimpleGraphDartRotation.Data G)
     (oldShore newShore : Finset G.edgeSet)
     (outsideOuter : RetainedDart rotation.toRotationSystem
@@ -112,8 +112,8 @@ theorem not_taitColorable_replacement_of_normalizedState_eq
     (k : Nat)
     (oldWidth : boundaryWidth rotation oldShore = k)
     (newWidth : boundaryWidth rotation newShore = k)
-    (hstate : normalizedState rotation oldShore oldInnerOuter k oldWidth =
-      normalizedState rotation newShore newInnerOuter k newWidth)
+    (hsupport : (normalizedState rotation newShore newInnerOuter k newWidth).support ⊆
+      (normalizedState rotation oldShore oldInnerOuter k oldWidth).support)
     (hzero : ¬ RotationSystemTaitColorable rotation.toRotationSystem) :
     ¬ RotationSystemTaitColorable
       ((outsideTangle rotation oldShore outsideOuter).composeRotationSystem
@@ -129,11 +129,9 @@ theorem not_taitColorable_replacement_of_normalizedState_eq
   let outsideCoordinate := oldMatching.trans oldCoordinate
   let newMatching := replacementMatching rotation oldShore newShore k
     oldWidth newWidth
-  have hsupport :
-      normalizedTaitInnerSupport k oldInner oldCoordinate =
-        normalizedTaitInnerSupport k newInner newCoordinate := by
-    have := congrArg (fun state => state.support) hstate
-    simpa [oldInner, newInner, oldCoordinate, newCoordinate] using this
+  have hsupport' :
+      normalizedTaitInnerSupport k newInner newCoordinate ⊆
+        normalizedTaitInnerSupport k oldInner oldCoordinate := hsupport
   have hzeroOld :
       ¬ RotationSystemTaitColorable
         (outside.composeRotationSystem oldInner oldMatching) := by
@@ -170,9 +168,9 @@ theorem not_taitColorable_replacement_of_normalizedState_eq
         (OpenTangleData.composeRotationSystem
           (outside.reindexBoundary outsideCoordinate.symm)
           newInner newCoordinate.symm) :=
-    not_composeRotationSystem_taitColorable_of_normalized_eq
+    not_composeRotationSystem_taitColorable_of_normalized_subset
       k (outside.reindexBoundary outsideCoordinate.symm)
-      oldInner oldCoordinate newInner newCoordinate hsupport hzeroCoordinateOld
+      oldInner oldCoordinate newInner newCoordinate hsupport' hzeroCoordinateOld
   have hmatchingNew :
       outsideCoordinate.symm.trans newMatching = newCoordinate.symm := by
     ext port
@@ -192,6 +190,31 @@ theorem not_taitColorable_replacement_of_normalizedState_eq
   exact hzeroReindexedNew
     ((rotationSystemTaitColorable_reindexedLeftComposite_iff
       outside newInner newMatching outsideCoordinate).2 hcolorable)
+
+/-- Equal-state specialization of one-sided colour-support replacement. -/
+theorem not_taitColorable_replacement_of_normalizedState_eq
+    (rotation : SimpleGraphDartRotation.Data G)
+    (oldShore newShore : Finset G.edgeSet)
+    (outsideOuter : RetainedDart rotation.toRotationSystem
+      (majorityDeletedKeep G oldShore))
+    (oldInnerOuter : RetainedDart rotation.toRotationSystem
+      (majorityRetainedKeep G oldShore))
+    (newInnerOuter : RetainedDart rotation.toRotationSystem
+      (majorityRetainedKeep G newShore))
+    (k : Nat)
+    (oldWidth : boundaryWidth rotation oldShore = k)
+    (newWidth : boundaryWidth rotation newShore = k)
+    (hstate : normalizedState rotation oldShore oldInnerOuter k oldWidth =
+      normalizedState rotation newShore newInnerOuter k newWidth)
+    (hzero : ¬ RotationSystemTaitColorable rotation.toRotationSystem) :
+    ¬ RotationSystemTaitColorable
+      ((outsideTangle rotation oldShore outsideOuter).composeRotationSystem
+        (innerTangle rotation newShore newInnerOuter)
+        (replacementMatching rotation oldShore newShore k
+          oldWidth newWidth)) := by
+  exact not_taitColorable_replacement_of_support_subset
+    rotation oldShore newShore outsideOuter oldInnerOuter newInnerOuter
+    k oldWidth newWidth (congrArg (fun state => state.support) hstate).ge hzero
 
 /-- A strict inclusion of the retained predicate, witnessed by a vertex in
 the difference, makes the exterior-plus-new-interior vertex carrier strictly
@@ -231,10 +254,10 @@ theorem card_complement_add_subtype_lt
 
 /-- **Structural half of M2.**  The exterior of the old majority shore and
 the interior of the new majority shore form a connected bridgeless spherical
-cubic map.  Equality of normalized states supplies precisely the transported
+cubic map.  Equality of normalized hub rotations supplies the transported
 orientation equation; the two side Euler equalities come independently from
 the two ambient planar bonds. -/
-def replacementStructuralData_of_normalizedState_eq
+def replacementStructuralData_of_normalizedHubRotation_eq
     (rotation : SimpleGraphDartRotation.Data G)
     (oldShore newShore : Finset G.edgeSet)
     (hOldConnected : EdgeShoreConnected G oldShore)
@@ -260,8 +283,8 @@ def replacementStructuralData_of_normalizedState_eq
     (k : Nat)
     (oldWidth : boundaryWidth rotation oldShore = k)
     (newWidth : boundaryWidth rotation newShore = k)
-    (hstate : normalizedState rotation oldShore oldInnerOuter k oldWidth =
-      normalizedState rotation newShore newInnerOuter k newWidth)
+    (hhub : (normalizedState rotation oldShore oldInnerOuter k oldWidth).hubRotation =
+      (normalizedState rotation newShore newInnerOuter k newWidth).hubRotation)
     (hsphere : OrbitSphericalCubicMapData rotation.toRotationSystem)
     (htwoSided : OrbitFacesTwoSided rotation.toRotationSystem)
     (hconnected : G.Connected)
@@ -350,11 +373,14 @@ def replacementStructuralData_of_normalizedState_eq
       (canonicalHubRotation RS (majorityRetainedKeep G oldShore))
       (canonicalHubRotation RS (majorityDeletedKeep G oldShore))
       hrevOldForward
-  have hreceipt := replacement_receipt_of_normalizedState_eq
-    rotation oldShore newShore oldInnerOuter newInnerOuter
-    k oldWidth newWidth (oldExteriorMatching rotation oldShore)
+  have hrevNew := GoertzelV24NormalizedSeamState.orientationReversing_replacement
+    k (oldExteriorMatching rotation oldShore)
     (canonicalHubRotation RS (majorityDeletedKeep G oldShore))
-    hrevOld hstate
+    (canonicalHubRotation RS (majorityRetainedKeep G oldShore))
+    (canonicalHubRotation RS (majorityRetainedKeep G newShore))
+    (boundaryCoordinate rotation oldShore k oldWidth)
+    (boundaryCoordinate rotation newShore k newWidth)
+    hrevOld hhub
   exact bridgelessSphericalCubicMapData_ofVertexSides
       RS (majorityDeletedKeep G oldShore)
       (majorityRetainedKeep G newShore)
@@ -368,7 +394,7 @@ def replacementStructuralData_of_normalizedState_eq
         (majorityDeletedKeep G oldShore) outsideOuter)
       (hubFacesDistinct_canonical RS
         (majorityRetainedKeep G newShore) newInnerOuter)
-      hreceipt.1
+      hrevNew
       (closedSideSpherical_canonical_deletedSide_of_planarBond
         rotation (majorityDeletedVertices G oldShore) outsideOuter
         hsphere htwoSided hconnected hrotation
@@ -377,6 +403,57 @@ def replacementStructuralData_of_normalizedState_eq
         rotation (majorityDeletedVertices G newShore) newInnerOuter
         hsphere htwoSided hconnected hrotation
         hNewRetainedConnected hNewDeletedConnected)
+
+/-- Equal-state specialization of the structural splice. -/
+def replacementStructuralData_of_normalizedState_eq
+    (rotation : SimpleGraphDartRotation.Data G)
+    (oldShore newShore : Finset G.edgeSet)
+    (hOldConnected : EdgeShoreConnected G oldShore)
+    (hOldComplementConnected :
+      EdgeShoreConnected G (Finset.univ \ oldShore))
+    (hOldMajorityNonempty :
+      ∃ vertex, majorityVertexSide G oldShore vertex)
+    (hOldComplementNonempty :
+      ∃ vertex, ¬ majorityVertexSide G oldShore vertex)
+    (hNewConnected : EdgeShoreConnected G newShore)
+    (hNewComplementConnected :
+      EdgeShoreConnected G (Finset.univ \ newShore))
+    (hNewMajorityNonempty :
+      ∃ vertex, majorityVertexSide G newShore vertex)
+    (hNewComplementNonempty :
+      ∃ vertex, ¬ majorityVertexSide G newShore vertex)
+    (outsideOuter : RetainedDart rotation.toRotationSystem
+      (majorityDeletedKeep G oldShore))
+    (oldInnerOuter : RetainedDart rotation.toRotationSystem
+      (majorityRetainedKeep G oldShore))
+    (newInnerOuter : RetainedDart rotation.toRotationSystem
+      (majorityRetainedKeep G newShore))
+    (k : Nat)
+    (oldWidth : boundaryWidth rotation oldShore = k)
+    (newWidth : boundaryWidth rotation newShore = k)
+    (hstate : normalizedState rotation oldShore oldInnerOuter k oldWidth =
+      normalizedState rotation newShore newInnerOuter k newWidth)
+    (hsphere : OrbitSphericalCubicMapData rotation.toRotationSystem)
+    (htwoSided : OrbitFacesTwoSided rotation.toRotationSystem)
+    (hconnected : G.Connected)
+    (hrotation : VertexRotationCyclic rotation.toRotationSystem)
+    (hbridgeless :
+      (toMultigraph rotation.toRotationSystem).Bridgeless)
+    (first second : BoundaryDart rotation.toRotationSystem
+      (majorityDeletedKeep G oldShore))
+    (hne : first ≠ second) :
+    BridgelessSphericalCubicMapData
+      ((outsideTangle rotation oldShore outsideOuter).composeRotationSystem
+        (innerTangle rotation newShore newInnerOuter)
+        (replacementMatching rotation oldShore newShore k
+          oldWidth newWidth)) := by
+  exact replacementStructuralData_of_normalizedHubRotation_eq
+    rotation oldShore newShore
+    hOldConnected hOldComplementConnected hOldMajorityNonempty hOldComplementNonempty
+    hNewConnected hNewComplementConnected hNewMajorityNonempty hNewComplementNonempty
+    outsideOuter oldInnerOuter newInnerOuter k oldWidth newWidth
+    (congrArg (fun state => state.hubRotation) hstate)
+    hsphere htwoSided hconnected hrotation hbridgeless first second hne
 
 /-- A vertex whose complete cubic star lies in the edge slab between two
 nested shores witnesses strict material loss in the physical replacement. -/
@@ -424,7 +501,7 @@ noncomputable abbrev replacementCandidate
     (innerTangle rotation newShore newInnerOuter)
     (replacementMatching rotation oldShore newShore k oldWidth newWidth)
 
-/-- The complete output of physical equal-state replacement before
+/-- The complete output of physical support replacement before
 minimality is invoked.  It records one literal smaller rotation system, its
 full cap-stable structural class, and preservation of zero Count (equivalently
 non-Tait-colorability). -/
@@ -450,8 +527,9 @@ structure StrictPhysicalReplacementData
     (replacementCandidate rotation oldShore newShore outsideOuter
       newInnerOuter k oldWidth newWidth)
 
-/-- **Constructive form of M2.**  Equal normalized states on two nested
-connected literal edge shores construct a specific strictly smaller
+/-- **Constructive form of M2.**  Equal hub rotations and inclusion of the new
+colour support in the old one on two nested connected literal edge shores
+construct a specific strictly smaller
 zero-Count map in the same connected, bridgeless, spherical, cubic
 rotation-system class.  The theorem returns the map certificate itself;
 minimality is not used.
@@ -460,6 +538,77 @@ The connected edge-shore hypotheses are the combinatorial planar-bond data
 supplied by an actual noose (or directly by a connected branch
 decomposition).  All cap orders, orientation reversal, face counting and
 physical gluing are derived inside the theorem. -/
+noncomputable def strictPhysicalReplacement_of_support_subset
+    (rotation : SimpleGraphDartRotation.Data G)
+    (ambient : BridgelessSphericalCubicMapData rotation.toRotationSystem)
+    (hfacesTwoSided : OrbitFacesTwoSided rotation.toRotationSystem)
+    (hzero : ¬ RotationSystemTaitColorable rotation.toRotationSystem)
+    (oldShore newShore : Finset G.edgeSet)
+    (hsubset : newShore ⊆ oldShore)
+    (hOldConnected : EdgeShoreConnected G oldShore)
+    (hOldComplementConnected :
+      EdgeShoreConnected G (Finset.univ \ oldShore))
+    (hOldMajorityNonempty :
+      ∃ vertex, majorityVertexSide G oldShore vertex)
+    (hOldComplementNonempty :
+      ∃ vertex, ¬ majorityVertexSide G oldShore vertex)
+    (hNewConnected : EdgeShoreConnected G newShore)
+    (hNewComplementConnected :
+      EdgeShoreConnected G (Finset.univ \ newShore))
+    (hNewMajorityNonempty :
+      ∃ vertex, majorityVertexSide G newShore vertex)
+    (hNewComplementNonempty :
+      ∃ vertex, ¬ majorityVertexSide G newShore vertex)
+    (outsideOuter : RetainedDart rotation.toRotationSystem
+      (majorityDeletedKeep G oldShore))
+    (oldInnerOuter : RetainedDart rotation.toRotationSystem
+      (majorityRetainedKeep G oldShore))
+    (newInnerOuter : RetainedDart rotation.toRotationSystem
+      (majorityRetainedKeep G newShore))
+    (k : Nat)
+    (oldWidth : boundaryWidth rotation oldShore = k)
+    (newWidth : boundaryWidth rotation newShore = k)
+    (hhub : (normalizedState rotation oldShore oldInnerOuter k oldWidth).hubRotation =
+      (normalizedState rotation newShore newInnerOuter k newWidth).hubRotation)
+    (hsupport : (normalizedState rotation newShore newInnerOuter k newWidth).support ⊆
+      (normalizedState rotation oldShore oldInnerOuter k oldWidth).support)
+    (first second : BoundaryDart rotation.toRotationSystem
+      (majorityDeletedKeep G oldShore))
+    (hne : first ≠ second)
+    (strictVertex : V)
+    (hall : ∀ edge ∈ incidentEdgeFinset G strictVertex,
+      edge ∈ oldShore \ newShore) :
+    StrictPhysicalReplacementData rotation oldShore newShore outsideOuter
+      newInnerOuter k oldWidth newWidth := by
+  have hgraphConnected : G.Connected := by
+    rw [← rotationPrimalGraph_toRotationSystem_eq G rotation]
+    exact ambient.primalConnected
+  have hbridgeless :
+      (toMultigraph rotation.toRotationSystem).Bridgeless :=
+    (bridgeless_iff_edgeBridgeFree
+      (RS := rotation.toRotationSystem)).2 ambient.edgeBridgeFree
+  refine
+    { structural := ?_
+      vertexCount_lt := ?_
+      notColorable := ?_ }
+  · exact replacementStructuralData_of_normalizedHubRotation_eq
+      rotation oldShore newShore
+      hOldConnected hOldComplementConnected
+      hOldMajorityNonempty hOldComplementNonempty
+      hNewConnected hNewComplementConnected
+      hNewMajorityNonempty hNewComplementNonempty
+      outsideOuter oldInnerOuter newInnerOuter
+      k oldWidth newWidth hhub
+      ambient.spherical hfacesTwoSided hgraphConnected
+      ambient.vertexRotationCyclic hbridgeless first second hne
+  · exact replacementVertexCount_lt_of_incident_sdiff
+      rotation oldShore newShore hsubset strictVertex hall
+      ambient.spherical.cubic
+  · exact not_taitColorable_replacement_of_support_subset
+      rotation oldShore newShore outsideOuter oldInnerOuter newInnerOuter
+      k oldWidth newWidth hsupport hzero
+
+/-- Equal-state specialization of strict physical support replacement. -/
 noncomputable def strictPhysicalReplacement_of_normalizedState_eq
     (rotation : SimpleGraphDartRotation.Data G)
     (ambient : BridgelessSphericalCubicMapData rotation.toRotationSystem)
@@ -500,40 +649,77 @@ noncomputable def strictPhysicalReplacement_of_normalizedState_eq
       edge ∈ oldShore \ newShore) :
     StrictPhysicalReplacementData rotation oldShore newShore outsideOuter
       newInnerOuter k oldWidth newWidth := by
-  have hgraphConnected : G.Connected := by
-    rw [← rotationPrimalGraph_toRotationSystem_eq G rotation]
-    exact ambient.primalConnected
-  have hbridgeless :
-      (toMultigraph rotation.toRotationSystem).Bridgeless :=
-    (bridgeless_iff_edgeBridgeFree
-      (RS := rotation.toRotationSystem)).2 ambient.edgeBridgeFree
-  refine
-    { structural := ?_
-      vertexCount_lt := ?_
-      notColorable := ?_ }
-  · exact replacementStructuralData_of_normalizedState_eq
-      rotation oldShore newShore
-      hOldConnected hOldComplementConnected
-      hOldMajorityNonempty hOldComplementNonempty
-      hNewConnected hNewComplementConnected
-      hNewMajorityNonempty hNewComplementNonempty
-      outsideOuter oldInnerOuter newInnerOuter
-      k oldWidth newWidth hstate
-      ambient.spherical hfacesTwoSided hgraphConnected
-      ambient.vertexRotationCyclic hbridgeless first second hne
-  · exact replacementVertexCount_lt_of_incident_sdiff
-      rotation oldShore newShore hsubset strictVertex hall
-      ambient.spherical.cubic
-  · exact not_taitColorable_replacement_of_normalizedState_eq
-      rotation oldShore newShore outsideOuter oldInnerOuter newInnerOuter
-      k oldWidth newWidth hstate hzero
+  exact strictPhysicalReplacement_of_support_subset
+    rotation ambient hfacesTwoSided hzero oldShore newShore hsubset
+    hOldConnected hOldComplementConnected hOldMajorityNonempty hOldComplementNonempty
+    hNewConnected hNewComplementConnected hNewMajorityNonempty hNewComplementNonempty
+    outsideOuter oldInnerOuter newInnerOuter k oldWidth newWidth
+    (congrArg (fun state => state.hubRotation) hstate)
+    (congrArg (fun state => state.support) hstate).ge
+    first second hne strictVertex hall
 
-/-- **Physical equal-state descent.**  Two connected nested edge shores with
-equal canonical normalized states and one untouched cubic star in their slab
+/-- **Physical support descent.**  Two connected nested edge shores with
+equal normalized hub rotations, the inner support included in the outer
+support, and one untouched cubic star in their slab
 cannot occur in a graph-backed vertex-minimal Tait counterexample.  The proof
 constructs the literal replacement rotation system, proves it lies in the
 same cap-stable class, proves it is strictly smaller, and transports zero
 Count/non-colorability to it before invoking minimality. -/
+theorem no_nested_support_subset_of_strict_material
+    (rotation : SimpleGraphDartRotation.Data G)
+    (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)
+    (oldShore newShore : Finset G.edgeSet)
+    (hsubset : newShore ⊆ oldShore)
+    (hOldConnected : EdgeShoreConnected G oldShore)
+    (hOldComplementConnected :
+      EdgeShoreConnected G (Finset.univ \ oldShore))
+    (hOldMajorityNonempty :
+      ∃ vertex, majorityVertexSide G oldShore vertex)
+    (hOldComplementNonempty :
+      ∃ vertex, ¬ majorityVertexSide G oldShore vertex)
+    (hNewConnected : EdgeShoreConnected G newShore)
+    (hNewComplementConnected :
+      EdgeShoreConnected G (Finset.univ \ newShore))
+    (hNewMajorityNonempty :
+      ∃ vertex, majorityVertexSide G newShore vertex)
+    (hNewComplementNonempty :
+      ∃ vertex, ¬ majorityVertexSide G newShore vertex)
+    (outsideOuter : RetainedDart rotation.toRotationSystem
+      (majorityDeletedKeep G oldShore))
+    (oldInnerOuter : RetainedDart rotation.toRotationSystem
+      (majorityRetainedKeep G oldShore))
+    (newInnerOuter : RetainedDart rotation.toRotationSystem
+      (majorityRetainedKeep G newShore))
+    (k : Nat)
+    (oldWidth : boundaryWidth rotation oldShore = k)
+    (newWidth : boundaryWidth rotation newShore = k)
+    (hhub : (normalizedState rotation oldShore oldInnerOuter k oldWidth).hubRotation =
+      (normalizedState rotation newShore newInnerOuter k newWidth).hubRotation)
+    (hsupport : (normalizedState rotation newShore newInnerOuter k newWidth).support ⊆
+      (normalizedState rotation oldShore oldInnerOuter k oldWidth).support)
+    (first second : BoundaryDart rotation.toRotationSystem
+      (majorityDeletedKeep G oldShore))
+    (hne : first ≠ second)
+    (strictVertex : V)
+    (hall : ∀ edge ∈ incidentEdgeFinset G strictVertex,
+      edge ∈ oldShore \ newShore) : False := by
+  let candidate := replacementCandidate rotation oldShore newShore
+    outsideOuter newInnerOuter k oldWidth newWidth
+  have replacement := strictPhysicalReplacement_of_support_subset
+    rotation minimal.toBridgelessSphericalCubicMapData
+    minimal.facesTwoSided minimal.notColorable
+    oldShore newShore hsubset
+    hOldConnected hOldComplementConnected
+    hOldMajorityNonempty hOldComplementNonempty
+    hNewConnected hNewComplementConnected
+    hNewMajorityNonempty hNewComplementNonempty
+    outsideOuter oldInnerOuter newInnerOuter
+    k oldWidth newWidth hhub hsupport first second hne strictVertex hall
+  exact replacement.notColorable
+    (minimal.smallerColorable candidate replacement.vertexCount_lt
+      replacement.structural)
+
+/-- Equal-state descent follows from the more general support-inclusion descent. -/
 theorem no_nested_equal_normalizedState_of_strict_material
     (rotation : SimpleGraphDartRotation.Data G)
     (minimal : GraphBackedVertexMinimalTaitCounterexample rotation)

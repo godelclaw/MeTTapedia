@@ -80,7 +80,8 @@ also proved equivalent to Tait-colourability of the literal sewn rotation
 system.  The
 specialized Cell--3 closure is now an optional state-minimization and
 finite-base instrument, not a correctness premise of the direct descent \\
-$D_3$ & Equal cumulative rooted states admit a strictly smaller physical
+$D_3$ & Compatible rooted states with new support contained in old support
+admit a strictly smaller physical
 deletion splice in the same bridgeless cubic spherical counterexample class,
 preserving boundary order and zero accepting Count & the ordinary noose
 construction, port-tangle gluing, bridgelessness proof, rotation-system to
@@ -88,8 +89,11 @@ multigraph adapter, strict vertex accounting, exact rotation-system
 composition, complementary boundary order, orientation-reversed seam match,
 and sphericity are machine-checked on the literal shore carriers.  Support
 replacement, the structural class, strict decrease and the minimality
-contradiction are now machine-checked together for equal normalized nested
-majority-shore states.  The standard decomposition-to-literal-shore adapter
+contradiction are now machine-checked together for nested majority shores
+with equal normalized hub rotations and inclusion of the new colour support
+in the old one.  Equality of full states is a sufficient special case;
+existing equal-state consumers use the more general replacement theorem.
+The standard decomposition-to-literal-shore adapter
 and the terminating digon/parallel-seam normalization are machine-checked;
 the remaining obligation is global production of the supplied nested states,
 which belongs to $D_1$, not to the local splice \\
@@ -111,6 +115,31 @@ conditional Theorem~\ref{thm:direct-count-reductive-assembly} \\
 \bottomrule
 \end{tabular}
 \end{center}
+
+\paragraph{One-sided colour support in physical descent.}
+Write $S_{\rm old}$ and $S_{\rm new}$ for the sets of boundary words realized
+by the two inner pieces, in their common ordered coordinates.  The colouring
+step needs only
+\[
+  S_{\rm new}\subseteq S_{\rm old}.
+\]
+A colouring after replacement restricts to a word in $S_{\rm new}$; this
+word extends through the old piece, with the exterior colouring unchanged.
+Thus zero Count is preserved.  The geometric step separately consumes equality
+of the normalized hub rotations, and strict vertex loss is unchanged.  The
+Lean theorem \texttt{strictPhysicalReplacement\_of\_support\_subset} constructs
+the literal smaller bridgeless spherical cubic map; its equal-state
+specialization remains available.
+
+The pentagon cap and one five-port zigzag ring give a checked strict support
+inclusion.  Every cap word extends through the cap-plus-ring composite, while
+the cap's excluded $(2,1,1,1)$ word is admitted by that composite.  Monotonicity
+of relational composition proves inclusion for every number of appended
+rings.  This demonstrates that support equality excludes some sound colour
+extensions.  It does not supply a new reduction in a least counterexample:
+the nontrivial five-cut is already excluded there.  Universal production of
+suitable nested shores, and the route-native finite floor at a supplied
+interface bound, remain open.
 
 \begin{center}
 \small
