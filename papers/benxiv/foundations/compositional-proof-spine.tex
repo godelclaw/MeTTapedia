@@ -125,7 +125,17 @@ step needs only
 \]
 A colouring after replacement restricts to a word in $S_{\rm new}$; this
 word extends through the old piece, with the exterior colouring unchanged.
-Thus zero Count is preserved.  The geometric step separately consumes equality
+The forward map is explicit at the port-tangle level:
+\texttt{extendClosedColoring} splits the given colouring, retains its exterior
+and seam word, selects a realization of that word in the larger support, and
+glues.  Its exterior-preservation theorem fixes every exterior dart colour.
+The physical colourability theorem
+\texttt{composeRotationSystem\_taitColorable\_of\_normalized\_subset}
+transports this construction to the sewn rotation system; the zero-Count
+consumer is its contrapositive.  Selecting the inner realization currently
+uses classical choice, so this theorem is not yet an executable colouring
+algorithm.
+The geometric step separately consumes equality
 of the normalized hub rotations, and strict vertex loss is unchanged.  The
 Lean theorem \texttt{strictPhysicalReplacement\_of\_support\_subset} constructs
 the literal smaller bridgeless spherical cubic map; its equal-state

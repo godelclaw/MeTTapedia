@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.FourColor.GoertzelV24PhysicalClosedCountBridge
+import Mettapedia.GraphTheory.FourColor.GoertzelV24PortTangleColorExtension
 
 /-!
 # A finite normalized Count receipt
@@ -22,6 +23,7 @@ open GoertzelV24OpenTangleComposition
 open GoertzelV24PhysicalClosedCountBridge
 open GoertzelV24RawNooseCountPumping
 open GoertzelV24ClosedCountReplacement
+open GoertzelV24PortTangleColorExtension
 
 universe u
 
@@ -67,9 +69,47 @@ theorem taitInnerSupport_eq_of_normalized_eq (k : Nat)
   have hmem := congrArg (fun support => word ∈ support) hsupport
   simpa using hmem
 
-/-- A smaller inner support preserves zero Count: every boundary word of a
-colouring of the replacement also extends through the original inner piece.
-The inclusion points from the new piece to the old piece. -/
+/-- Forward extension across a physical seam: a colouring using the smaller
+support yields a colouring using the larger support. The port-tangle
+construction preserves the exterior colouring. -/
+theorem composeRotationSystem_taitColorable_of_normalized_subset
+    (k : Nat)
+    {V I : Type u} [Fintype V] [DecidableEq V]
+    [Fintype I] [DecidableEq I]
+    (left : OpenTangleData V I (StandardPort k))
+    (right : OpenTangleData W J R) (coordinate : R ≃ StandardPort k)
+    {W' J' R' : Type u} [Fintype W'] [DecidableEq W']
+    [Fintype J'] [DecidableEq J'] [Fintype R'] [DecidableEq R']
+    (right' : OpenTangleData W' J' R')
+    (coordinate' : R' ≃ StandardPort k)
+    (hsupport : normalizedTaitInnerSupport k right' coordinate' ⊆
+      normalizedTaitInnerSupport k right coordinate)
+    (hnew : ∃ coloring :
+        (left.composeRotationSystem right' coordinate'.symm).EdgeColoring Color,
+      (left.composeRotationSystem right' coordinate'.symm).IsTaitEdgeColoring
+        coloring) :
+    ∃ coloring :
+        (left.composeRotationSystem right coordinate.symm).EdgeColoring Color,
+      (left.composeRotationSystem right coordinate.symm).IsTaitEdgeColoring
+        coloring := by
+  apply (closedColorable_iff_composeRotationSystem_taitColorable
+    left right coordinate.symm).1
+  apply closedColorable_of_innerSupport_subset
+    (leftClosedPortTangle left) (rightClosedPortTangle right' coordinate'.symm)
+    (rightClosedPortTangle right coordinate.symm)
+  · intro word hinner
+    obtain ⟨taitWord, htait, hforget⟩ := exists_cutWord_of_mem_innerSupport
+      (rightClosedPortTangle right' coordinate'.symm) hinner
+    have hold := (mem_normalizedTaitInnerSupport k right coordinate taitWord).1
+      (hsupport ((mem_normalizedTaitInnerSupport k right' coordinate' taitWord).2 htait))
+    change cutWordColor taitWord ∈
+      innerSupport (rightClosedPortTangle right coordinate.symm) at hold
+    simpa only [hforget] using hold
+  · exact (closedColorable_iff_composeRotationSystem_taitColorable
+      left right' coordinate'.symm).2 hnew
+
+/-- Uncolourability descends because every colouring after replacement
+extends through the original piece by the forward construction. -/
 theorem not_composeRotationSystem_taitColorable_of_normalized_subset
     (k : Nat)
     {V I : Type u} [Fintype V] [DecidableEq V]
@@ -89,27 +129,9 @@ theorem not_composeRotationSystem_taitColorable_of_normalized_subset
     ¬ ∃ coloring :
         (left.composeRotationSystem right' coordinate'.symm).EdgeColoring Color,
       (left.composeRotationSystem right' coordinate'.symm).IsTaitEdgeColoring
-        coloring := by
-  intro hnew
-  have hclosed := (closedColorable_iff_composeRotationSystem_taitColorable
-    left right' coordinate'.symm).2 hnew
-  obtain ⟨word, houter, hinner⟩ := (closedColorable_iff
-    (leftClosedPortTangle left)
-    (rightClosedPortTangle right' coordinate'.symm)).1 hclosed
-  obtain ⟨taitWord, htait, hforget⟩ := exists_cutWord_of_mem_innerSupport
-    (rightClosedPortTangle right' coordinate'.symm) hinner
-  have hold := (mem_normalizedTaitInnerSupport k right coordinate taitWord).1
-    (hsupport ((mem_normalizedTaitInnerSupport k right' coordinate' taitWord).2
-      htait))
-  apply hzero
-  apply (closedColorable_iff_composeRotationSystem_taitColorable
-    left right coordinate.symm).1
-  apply (closedColorable_iff (leftClosedPortTangle left)
-    (rightClosedPortTangle right coordinate.symm)).2
-  refine ⟨word, houter, ?_⟩
-  change cutWordColor taitWord ∈
-    innerSupport (rightClosedPortTangle right coordinate.symm) at hold
-  simpa only [hforget] using hold
+        coloring :=
+  fun hnew => hzero (composeRotationSystem_taitColorable_of_normalized_subset
+    k left right coordinate right' coordinate' hsupport hnew)
 
 /-- Equality is a sufficient special case of one-sided support replacement. -/
 theorem not_composeRotationSystem_taitColorable_of_normalized_eq
