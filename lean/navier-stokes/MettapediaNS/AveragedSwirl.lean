@@ -1,5 +1,6 @@
 import MettapediaNS.SwirlBudget
 import Mathlib.Analysis.Calculus.ParametricIntervalIntegral
+import Mathlib.MeasureTheory.Integral.IntervalIntegral.Periodic
 
 /-!
 # The averaged swirl of a general flow and the torque that must feed it
@@ -20,7 +21,13 @@ critical point of the average, because
 `x₀ ∂₀Γ + x₁ ∂₁Γ = r² ω₃ + ∂_θ(x₀ u₀ + x₁ u₁)` holds for every velocity and
 angular derivatives average to zero. For an axisymmetric flow the average of
 the advection vanishes at the maximum; for a general flow it is the angular
-momentum that the non-axisymmetric part carries into the maximum.
+momentum that the non-axisymmetric part carries into the maximum. Indeed the
+rotation-equivariant average `ū` of the velocity satisfies
+`ū(rot φ x) = rot φ (ū x)`, so its contribution is the derivative of the
+circle integral along the line through `x` in the direction `ū x`, which
+vanishes at a maximum: only the fluctuation `u - ū` carries swirl into it.
+Integrated in time, the maximal averaged swirl grows by at most the time
+integral of this torque.
 -/
 
 noncomputable section
@@ -645,5 +652,147 @@ theorem circleInt_swirl_le_budget {ν : ℝ} (hν : 0 ≤ ν) {u : ℝ × Space 
   linarith
 
 end Budget
+
+section Fluctuation
+
+theorem rot_rot (φ ψ : ℝ) (x : Space) : rot φ (rot ψ x) = rot (φ + ψ) x := by
+  ext i
+  fin_cases i <;> simp [rot, Real.cos_add, Real.sin_add] <;> ring
+
+theorem rot_add_two_pi (φ : ℝ) (x : Space) : rot (φ + 2 * Real.pi) x = rot φ x := by
+  ext i
+  fin_cases i <;> simp [rot]
+
+/-- Rotation about the third axis as a continuous linear map. -/
+def rotCLM (φ : ℝ) : Space →L[ℝ] Space :=
+  LinearMap.toContinuousLinearMap
+    { toFun := rot φ
+      map_add' := rot_add φ
+      map_smul' := fun c y ↦ rot_smul φ c y }
+
+theorem rotCLM_apply (φ : ℝ) (y : Space) : rotCLM φ y = rot φ y := rfl
+
+/-- The mean velocity: the rotation-equivariant average of a velocity over the
+circles about the third axis. -/
+def meanVel (U : Space → Space) (x : Space) : Space :=
+  (2 * Real.pi)⁻¹ • ∫ ψ in (0 : ℝ)..(2 * Real.pi), rot (-ψ) (U (rot ψ x))
+
+/-- **The mean velocity commutes with the rotations.** -/
+theorem meanVel_rot {U : Space → Space} (hU : Continuous U) (φ : ℝ) (x : Space) :
+    meanVel U (rot φ x) = rot φ (meanVel U x) := by
+  set h : ℝ → Space := fun ψ ↦ rot (-ψ) (U (rot ψ x)) with hh
+  have hc : Continuous h := by
+    have h1 : Continuous (fun ψ : ℝ ↦ U (rot ψ x)) := by
+      have := Continuous.comp hU (show Continuous (fun ψ : ℝ ↦ rot ψ x) by fun_prop)
+      exact this
+    have := Continuous.comp continuous_rot (Continuous.prodMk continuous_neg h1)
+    exact this
+  have hper : Function.Periodic h (2 * Real.pi) := by
+    intro ψ
+    simp only [hh]
+    rw [rot_add_two_pi, show -(ψ + 2 * Real.pi) = -ψ - 2 * Real.pi by ring]
+    have e : rot (-ψ - 2 * Real.pi) = rot (-ψ) := by
+      funext v
+      rw [← rot_add_two_pi (-ψ - 2 * Real.pi) v]
+      ring_nf
+    rw [e]
+  have hpt : ∀ ψ : ℝ, rot (-ψ) (U (rot ψ (rot φ x))) = rotCLM φ (h (ψ + φ)) := by
+    intro ψ
+    rw [rotCLM_apply, hh]
+    simp only
+    rw [rot_rot, rot_rot, show φ + -(ψ + φ) = -ψ by ring, show ψ + φ = ψ + φ from rfl,
+      add_comm ψ φ]
+  have hint : ∫ ψ in (0 : ℝ)..(2 * Real.pi), rot (-ψ) (U (rot ψ (rot φ x))) =
+      rot φ (∫ ψ in (0 : ℝ)..(2 * Real.pi), h ψ) := by
+    simp only [hpt]
+    have hi : IntervalIntegrable (fun ψ : ℝ ↦ h (ψ + φ)) MeasureTheory.volume 0 (2 * Real.pi) := by
+      have hc' : Continuous (fun ψ : ℝ ↦ h (ψ + φ)) := by
+        have := Continuous.comp hc (continuous_add_const φ)
+        exact this
+      exact hc'.intervalIntegrable _ _
+    rw [ContinuousLinearMap.intervalIntegral_comp_comm (rotCLM φ) hi,
+      intervalIntegral.integral_comp_add_right, rotCLM_apply]
+    congr 1
+    have := Function.Periodic.intervalIntegral_add_eq hper φ 0
+    rw [zero_add, add_comm φ (2 * Real.pi)] at this
+    rw [zero_add]
+    exact this
+  unfold meanVel
+  rw [hint, rot_smul]
+
+/-- **At a local maximum of the circle integral, the mean velocity carries no
+net swirl into the maximum.** -/
+theorem integral_fderiv_meanVel_eq_zero {g : Space → ℝ} (hg : ContDiff ℝ 1 g)
+    {U : Space → Space} (hU : Continuous U) {x : Space} (hmax : IsLocalMax (circleInt g) x) :
+    ∫ φ in (0 : ℝ)..(2 * Real.pi), fderiv ℝ g (rot φ x) (meanVel U (rot φ x)) = 0 := by
+  set w := meanVel U x with hw
+  have e : ∀ φ : ℝ, fderiv ℝ g (rot φ x) (meanVel U (rot φ x)) =
+      fderiv ℝ g (rot φ (x + (0 : ℝ) • w)) (rot φ w) := by
+    intro φ
+    rw [meanVel_rot hU, zero_smul, add_zero]
+  simp only [e]
+  have hline := hasDerivAt_circleInt_line hg x w 0
+  have hlmax : IsLocalMax (fun s : ℝ ↦ circleInt g (x + s • w)) 0 := by
+    have hx0 : (fun s : ℝ ↦ x + s • w) 0 = x := by simp
+    have h1 : IsLocalMax (circleInt g) ((fun s : ℝ ↦ x + s • w) 0) := by
+      rw [hx0]
+      exact hmax
+    have h2 := IsLocalMax.comp_continuous (g := fun s : ℝ ↦ x + s • w) (b := 0) h1
+      (hasDerivAt_line x w 0).continuousAt
+    exact h2
+  exact hline.deriv.symm.trans (IsLocalMax.deriv_eq_zero hlmax)
+
+set_option maxHeartbeats 1000000 in
+/-- **Only the fluctuation carries swirl into the maximum.** Under the
+hypotheses of `deriv_circleInt_swirl_le`, with `U' = u - ū` the deviation of the
+velocity from its rotation-equivariant average,
+`∂ₜ ∮Γ ≤ -∮ (U' · ∇)Γ + ∮ (x₀ f₁ - x₁ f₀)` at every spatial local maximum off
+the axis. For an axisymmetric velocity `U' = 0`. -/
+theorem deriv_circleInt_swirl_le_fluct {ν : ℝ} (hν : 0 ≤ ν) {u : ℝ × Space → Space}
+    {p : ℝ × Space → ℝ} {f : ℝ × Space → Space} {t : ℝ} {x : Space} (hu : ContDiff ℝ 2 u)
+    (hp : ContDiff ℝ 1 (fun y : Space ↦ p (t, y))) (hf : Continuous (fun y : Space ↦ f (t, y)))
+    (hres : ∀ y, NavierStokesR3.ProblemStatement.navierStokesResidual ν u p t y = f (t, y))
+    (hmax : IsLocalMax (circleInt (swirlSlice (fun y ↦ u (t, y)))) x) (hr : x 0 ^ 2 + x 1 ^ 2 ≠ 0) :
+    deriv (fun s ↦ circleInt (swirlSlice (fun y ↦ u (s, y))) x) t ≤
+      -(∫ φ in (0 : ℝ)..(2 * Real.pi), fderiv ℝ (swirlSlice (fun y ↦ u (t, y))) (rot φ x)
+          (u (t, rot φ x) - meanVel (fun y ↦ u (t, y)) (rot φ x))) +
+        ∫ φ in (0 : ℝ)..(2 * Real.pi), torque f t (rot φ x) := by
+  have hbase := deriv_circleInt_swirl_le hν hu hp hf hres hmax hr
+  have hu1 : ContDiff ℝ 1 u := hu.of_le (by norm_num)
+  have hslice : ContDiff ℝ 1 (fun y : Space ↦ u (t, y)) := by
+    have h := ContDiff.comp hu1 (contDiff_const.prodMk contDiff_id : ContDiff ℝ 1
+      (fun y : Space ↦ ((t, y) : ℝ × Space)))
+    exact h
+  have hΓ1 : ContDiff ℝ 1 (swirlSlice (fun y ↦ u (t, y))) := contDiff_swirlSlice hslice
+  have hDΓ : Continuous (fderiv ℝ (swirlSlice (fun y ↦ u (t, y)))) :=
+    hΓ1.continuous_fderiv (by norm_num)
+  have hcu : Continuous (fun y : Space ↦ u (t, y)) := hslice.continuous
+  have hmean := integral_fderiv_meanVel_eq_zero hΓ1 hcu hmax
+  set w := meanVel (fun y ↦ u (t, y)) x with hw
+  have hA : Continuous (fun φ : ℝ ↦
+      fderiv ℝ (swirlSlice (fun y ↦ u (t, y))) (rot φ x) (u (t, rot φ x))) := by
+    have h1 : Continuous (fun φ : ℝ ↦ u (t, rot φ x)) := by
+      have := Continuous.comp hcu (show Continuous (fun φ : ℝ ↦ rot φ x) by fun_prop)
+      exact this
+    fun_prop
+  have hM : Continuous (fun φ : ℝ ↦ fderiv ℝ (swirlSlice (fun y ↦ u (t, y))) (rot φ x)
+      (meanVel (fun y ↦ u (t, y)) (rot φ x))) := by
+    have e : (fun φ : ℝ ↦ fderiv ℝ (swirlSlice (fun y ↦ u (t, y))) (rot φ x)
+        (meanVel (fun y ↦ u (t, y)) (rot φ x))) =
+        fun φ ↦ fderiv ℝ (swirlSlice (fun y ↦ u (t, y))) (rot φ x) (rot φ w) :=
+      funext fun φ ↦ by rw [meanVel_rot hcu]
+    rw [e]
+    fun_prop
+  have hsplit : ∫ φ in (0 : ℝ)..(2 * Real.pi), fderiv ℝ (swirlSlice (fun y ↦ u (t, y))) (rot φ x)
+      (u (t, rot φ x) - meanVel (fun y ↦ u (t, y)) (rot φ x)) =
+      ∫ φ in (0 : ℝ)..(2 * Real.pi), fderiv ℝ (swirlSlice (fun y ↦ u (t, y))) (rot φ x)
+        (u (t, rot φ x)) := by
+    simp only [map_sub]
+    rw [intervalIntegral.integral_sub (hA.intervalIntegrable _ _) (hM.intervalIntegrable _ _),
+      hmean, sub_zero]
+  rw [hsplit]
+  exact hbase
+
+end Fluctuation
 
 end Mettapedia.FluidDynamics.NavierStokes.AveragedSwirl
