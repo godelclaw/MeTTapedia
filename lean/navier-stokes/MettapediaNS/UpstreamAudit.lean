@@ -22,6 +22,7 @@ import MettapediaNS.ForcedCandidateVorticity
 import MettapediaNS.OpenAISolutionVorticity
 import MettapediaNS.OpenAIPeriodicWiener
 import MettapediaNS.OpenAIPulseSeeds
+import MettapediaNS.SwirlBudget
 
 /-!
 # Direct upstream dependency audit
@@ -276,3 +277,6 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.OpenAIPulseSeeds.actualSolution_smul
 #print axioms Mettapedia.FluidDynamics.NavierStokes.OpenAIPulseSeeds.seeded_eq_smul_fundamental
 #print axioms Mettapedia.FluidDynamics.NavierStokes.OpenAIPulseSeeds.norm_seeded_ge
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SwirlBudget.fderiv_swirlSlice_apply
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SwirlBudget.fderiv_fderiv_swirlSlice
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SwirlBudget.swirl_identity
