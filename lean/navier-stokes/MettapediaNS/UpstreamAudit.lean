@@ -273,3 +273,6 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.OpenAIPulseSeeds.seed_bounds
 #print axioms Mettapedia.FluidDynamics.NavierStokes.OpenAIPulseSeeds.amplification_ge
 #print axioms Mettapedia.FluidDynamics.NavierStokes.OpenAIPulseSeeds.seed_le_rpow
+#print axioms Mettapedia.FluidDynamics.NavierStokes.OpenAIPulseSeeds.actualSolution_smul
+#print axioms Mettapedia.FluidDynamics.NavierStokes.OpenAIPulseSeeds.seeded_eq_smul_fundamental
+#print axioms Mettapedia.FluidDynamics.NavierStokes.OpenAIPulseSeeds.norm_seeded_ge
