@@ -9,6 +9,8 @@ The existing MeTTapedia sources are available through `MettapediaFluid` with
 `srcDir = ../mettapedia`. The repository's other Lean packages keep their own
 toolchains. Compatibility of an existing module with this package must be
 checked explicitly; adding the source root does not certify its migration.
+The shared library also includes the existing Markov-category kernel interface
+imported by the Navier–Stokes semigroup module.
 
 ## Pinned dependencies
 
