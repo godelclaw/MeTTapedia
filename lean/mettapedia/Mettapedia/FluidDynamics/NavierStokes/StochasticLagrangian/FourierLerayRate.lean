@@ -29,6 +29,12 @@ earlier time `t₀`
 
 (`one_le_lerayRate`). A singularity at `T` forces the order-one energy to blow
 up at least like `ν^(3/2) / √(T - t)`.
+
+The same rate, with the interpolation `E₁² ≤ 4 K D₁` on nonzero modes and the
+non-increasing kinetic energy `K`, puts the cubic term under the dissipation when
+`64 C K₀ E₀ ≤ ν (2π)²`. Data with `K₀ E₀ ≲ ν⁴`, a smallness condition invariant
+under the Navier–Stokes scaling, therefore have a unique global solution
+(`nonempty_globalSolution_of_small_product`).
 -/
 
 set_option autoImplicit false
@@ -370,5 +376,257 @@ theorem one_le_lerayRate (hm : 7 ≤ m) (hnu : 0 < nu)
   exact (hmax (t₀ + S') (by linarith)).false c'
 
 end Rate
+
+/-! ## Scale-invariant small data -/
+
+section SmallProduct
+
+variable {nu : ℝ} {m : ℕ} {u₀ : FourierVelocity}
+
+/-- **Interpolation.** On nonzero modes `E₁² ≤ 4 K D₁`, with `K` the kinetic energy. -/
+theorem orderEnergy_one_sq_le (M : Finset Wavevector) (hM : ∀ k ∈ M, k ≠ 0)
+    (a : Wavevector → ℝ) :
+    orderEnergy 1 M a ^ 2 ≤ 4 * orderEnergy 0 M a * orderDissipation 1 M a := by
+  have hcs := Finset.sum_mul_sq_le_sq_mul_sq M a (fun k ↦ (1 + ‖frequencyVec k‖) ^ 2 * a k)
+  have e1 : ∑ k ∈ M, a k * ((1 + ‖frequencyVec k‖) ^ 2 * a k) = orderEnergy 1 M a := by
+    unfold orderEnergy orderWeight
+    refine Finset.sum_congr rfl fun k _ ↦ ?_
+    ring
+  have e2 : ∑ k ∈ M, a k ^ 2 = orderEnergy 0 M a := by
+    unfold orderEnergy orderWeight
+    refine Finset.sum_congr rfl fun k _ ↦ ?_
+    ring
+  have h3 : ∑ k ∈ M, ((1 + ‖frequencyVec k‖) ^ 2 * a k) ^ 2 ≤ 4 * orderDissipation 1 M a := by
+    unfold orderDissipation orderEnergy orderWeight
+    rw [Finset.mul_sum]
+    refine Finset.sum_le_sum fun k hk ↦ ?_
+    have h1 := PancakeInfinitePressureCoefficients.one_le_norm_frequencyVec (hM k hk)
+    have hw : (1 + ‖frequencyVec k‖) ^ 2 ≤ 4 * ‖frequencyVec k‖ ^ 2 := by nlinarith
+    have ha : 0 ≤ (1 + ‖frequencyVec k‖) ^ 2 * a k ^ 2 := by positivity
+    calc ((1 + ‖frequencyVec k‖) ^ 2 * a k) ^ 2 =
+          (1 + ‖frequencyVec k‖) ^ 2 * ((1 + ‖frequencyVec k‖) ^ 2 * a k ^ 2) := by ring
+      _ ≤ (4 * ‖frequencyVec k‖ ^ 2) * ((1 + ‖frequencyVec k‖) ^ 2 * a k ^ 2) :=
+          mul_le_mul_of_nonneg_right hw ha
+      _ = 4 * ((1 + ‖frequencyVec k‖) ^ 1 * (‖frequencyVec k‖ * a k)) ^ 2 := by ring
+  rw [e1, e2] at hcs
+  have hE0 : 0 ≤ orderEnergy 0 M a := orderEnergy_nonneg 0 M a
+  calc orderEnergy 1 M a ^ 2 ≤ orderEnergy 0 M a *
+        ∑ k ∈ M, ((1 + ‖frequencyVec k‖) ^ 2 * a k) ^ 2 := hcs
+    _ ≤ orderEnergy 0 M a * (4 * orderDissipation 1 M a) := mul_le_mul_of_nonneg_left h3 hE0
+    _ = 4 * orderEnergy 0 M a * orderDissipation 1 M a := by ring
+
+/-- The kinetic energy of every tame solution stays below every bound for the data. -/
+theorem velocityEnergy_zero_le_of_tame (hm : 7 ≤ m) (hnu : 0 < nu) {T : ℝ}
+    (c : TameSolutionOn nu m u₀ T) {K₀ : ℝ} (hK₀ : ∀ F, velocityEnergy 0 F u₀ ≤ K₀) :
+    ∀ τ ∈ Ico (0 : ℝ) T, ∀ F, velocityEnergy 0 F (c.coefficients τ) ≤ K₀ := by
+  intro τ hτ F
+  obtain ⟨B, s, hs, g, hg, hSum, hu3⟩ := FourierUniqueness.local_envelope_at hm c hτ.2
+  have hu2 : ∀ t ∈ Icc (0 : ℝ) τ, ∀ k, fourierMoment 2 (s.coefficients t) k ≤ g k :=
+    fun t ht k ↦ (PancakeHigherDerivativeMoments.fourierMoment_mono _ (by omega : 2 ≤ 3) k).trans
+      (hu3 t ht k)
+  have hkin := LocalKineticEnergy.energy_le_initial s hnu.le g hg hSum hu2 τ ⟨hτ.1, le_rfl⟩
+  have hveq : ∀ (v : FourierVelocity) (G : Finset Wavevector),
+      velocityEnergy 0 G v = ∑ k ∈ G, ‖coefficientVec (v k)‖ ^ 2 := by
+    intro v G
+    simp [velocityEnergy, orderEnergy, orderWeight, amplitude]
+  have hsum : Summable (fun k ↦ ‖coefficientVec (s.coefficients τ k)‖ ^ 2) := by
+    refine (hSum.mul_left (∑' k, g k)).of_nonneg_of_le (fun k ↦ sq_nonneg _) fun k ↦ ?_
+    have h1 := LocalKineticEnergy.amplitude_le_envelope _ g (hu2 τ ⟨hτ.1, le_rfl⟩) k
+    have h2 : g k ≤ ∑' k, g k := hSum.le_tsum k fun j _ ↦ hg j
+    rw [pow_two]
+    exact mul_le_mul (h1.trans h2) h1 (norm_nonneg _) (tsum_nonneg hg)
+  have hdata : InfiniteConvectionEnergy.kineticEnergy u₀ ≤ K₀ := by
+    refine Real.tsum_le_of_sum_le (fun k ↦ sq_nonneg _) fun G ↦ ?_
+    rw [← hveq]
+    exact hK₀ G
+  rw [hveq, ← hs]
+  exact (hsum.sum_le_tsum F fun k _ ↦ sq_nonneg _).trans (hkin.trans hdata)
+
+theorem integrated_product_step_one (hnu : 0 < nu) {T : ℝ} (c : SolutionOn nu u₀ T)
+    {S : ℝ} (hS : 0 < S) (hST : S < T) {B K₀ E X : ℝ} (hK₀ : 0 ≤ K₀) (hE : 0 ≤ E)
+    (hB : ∀ τ ∈ Icc (0 : ℝ) S, ∀ F, velocityEnergy 3 F (c.coefficients τ) ≤ B)
+    (hK : ∀ τ ∈ Icc (0 : ℝ) S, ∀ F, velocityEnergy 1 F (c.coefficients τ) ≤ E)
+    (hKin : ∀ τ ∈ Icc (0 : ℝ) S, ∀ F, velocityEnergy 0 F (c.coefficients τ) ≤ K₀)
+    (hX : ∀ G, ∫ τ in (0 : ℝ)..S, velocityDissipation 1 G (c.coefficients τ) ≤ X)
+    (F : Finset Wavevector) :
+    velocityEnergy 1 F (c.coefficients S) + 2 * nu * (2 * Real.pi) ^ 2 *
+        (∫ τ in (0 : ℝ)..S, velocityDissipation 1 F (c.coefficients τ)) ≤
+      velocityEnergy 1 F (c.coefficients 0) +
+        (nu * (2 * Real.pi) ^ 2 + 4 * cubicConst nu * K₀ * E) * X := by
+  have hν : 0 < nu * (2 * Real.pi) ^ 2 := by positivity
+  have hC := (cubicConst_pos hnu).le
+  have hβ : 0 ≤ nu * (2 * Real.pi) ^ 2 + 4 * cubicConst nu * K₀ * E := by positivity
+  refine integrated_step_of_rate' 1 3 (by norm_num) c hS hST hB hK F fun N ↦ ?_
+  let Dc : ℝ → ℝ := fun τ ↦
+    velocityDissipation 1 (carrier F (wavevectorBox N)) (c.coefficients τ)
+  have hDc_cont : Continuous Dc := continuous_velocityDissipation_along 1 _ c.continuous
+  have hpt : ∀ τ ∈ Icc (0 : ℝ) S,
+      truncConvectionRate 1 F (wavevectorBox N) (c.coefficients τ) ≤
+        (nu * (2 * Real.pi) ^ 2 + 4 * cubicConst nu * K₀ * E) * Dc τ := by
+    intro τ hτ
+    have h := truncConvectionRate_le_agmon F (wavevectorBox N) (c.coefficients τ) (c.zero τ) hν
+    have hconst : agmonRateConst ^ 4 / (8 * (nu * (2 * Real.pi) ^ 2) ^ 3) = cubicConst nu := rfl
+    rw [hconst] at h
+    set G := carrier F (wavevectorBox N)
+    have hEc := hK τ hτ G
+    have hKc := hKin τ hτ G
+    have hEc0 : 0 ≤ velocityEnergy 1 G (c.coefficients τ) := orderEnergy_nonneg 1 _ _
+    have hKc0 : 0 ≤ velocityEnergy 0 G (c.coefficients τ) := orderEnergy_nonneg 0 _ _
+    have hDc0 : 0 ≤ Dc τ := orderDissipation_nonneg 1 _ _
+    have hint := orderEnergy_one_sq_le G (fun k hk ↦ mem_carrier_ne_zero hk)
+      (amplitude (c.coefficients τ))
+    change velocityEnergy 1 G (c.coefficients τ) ^ 2 ≤
+      4 * velocityEnergy 0 G (c.coefficients τ) * Dc τ at hint
+    have hcube : velocityEnergy 1 G (c.coefficients τ) ^ 3 ≤ 4 * K₀ * E * Dc τ := by
+      calc velocityEnergy 1 G (c.coefficients τ) ^ 3 =
+            velocityEnergy 1 G (c.coefficients τ) * velocityEnergy 1 G (c.coefficients τ) ^ 2 := by
+            ring
+        _ ≤ E * (4 * velocityEnergy 0 G (c.coefficients τ) * Dc τ) :=
+            mul_le_mul hEc hint (by positivity) hE
+        _ ≤ E * (4 * K₀ * Dc τ) := by gcongr
+        _ = 4 * K₀ * E * Dc τ := by ring
+    have := mul_le_mul_of_nonneg_left hcube hC
+    change _ ≤ nu * (2 * Real.pi) ^ 2 * Dc τ + _ at h
+    nlinarith
+  calc ∫ τ in (0 : ℝ)..S, truncConvectionRate 1 F (wavevectorBox N) (c.coefficients τ)
+      ≤ ∫ τ in (0 : ℝ)..S, (nu * (2 * Real.pi) ^ 2 + 4 * cubicConst nu * K₀ * E) * Dc τ :=
+        intervalIntegral.integral_mono_on hS.le
+          ((continuous_truncConvectionRate 1 F _ c.continuous).intervalIntegrable 0 S)
+          ((continuous_const.mul hDc_cont).intervalIntegrable 0 S) hpt
+    _ = (nu * (2 * Real.pi) ^ 2 + 4 * cubicConst nu * K₀ * E) * ∫ τ in (0 : ℝ)..S, Dc τ :=
+        intervalIntegral.integral_const_mul _ _
+    _ ≤ (nu * (2 * Real.pi) ^ 2 + 4 * cubicConst nu * K₀ * E) * X :=
+        mul_le_mul_of_nonneg_left (hX _) hβ
+
+/-- **The product step.** While `E₁ ≤ E` and the kinetic energy stays at most `K₀`,
+with `16 C K₀ E ≤ ν (2π)²`, the order-one energy is at most `8/3` times its initial
+bound. -/
+theorem velocityEnergy_le_of_product (hnu : 0 < nu) {T : ℝ} (c : SolutionOn nu u₀ T)
+    {S : ℝ} (hS : 0 < S) (hST : S < T) {B K₀ E X₀ E₀ : ℝ} (hK₀ : 0 ≤ K₀) (hE : 0 ≤ E)
+    (hsmall : 16 * cubicConst nu * K₀ * E ≤ nu * (2 * Real.pi) ^ 2)
+    (hB : ∀ τ ∈ Icc (0 : ℝ) S, ∀ F, velocityEnergy 3 F (c.coefficients τ) ≤ B)
+    (hK : ∀ τ ∈ Icc (0 : ℝ) S, ∀ F, velocityEnergy 1 F (c.coefficients τ) ≤ E)
+    (hKin : ∀ τ ∈ Icc (0 : ℝ) S, ∀ F, velocityEnergy 0 F (c.coefficients τ) ≤ K₀)
+    (hX₀ : ∀ G, ∫ τ in (0 : ℝ)..S, velocityDissipation 1 G (c.coefficients τ) ≤ X₀)
+    (hE₀ : ∀ F, velocityEnergy 1 F u₀ ≤ E₀) (F : Finset Wavevector) :
+    velocityEnergy 1 F (c.coefficients S) ≤ 8 / 3 * E₀ := by
+  let I : Finset Wavevector → ℝ := fun G ↦
+    ∫ τ in (0 : ℝ)..S, velocityDissipation 1 G (c.coefficients τ)
+  have hbdd : BddAbove (Set.range I) := ⟨X₀, by rintro _ ⟨G, rfl⟩; exact hX₀ G⟩
+  obtain ⟨X, hXdef⟩ : ∃ X, X = sSup (Set.range I) := ⟨_, rfl⟩
+  have hIX : ∀ G, I G ≤ X := fun G ↦ hXdef ▸ le_csSup hbdd ⟨G, rfl⟩
+  have hI0 : ∀ G, 0 ≤ I G := fun G ↦
+    intervalIntegral.integral_nonneg hS.le fun τ _ ↦ orderDissipation_nonneg 1 G _
+  have hX0 : 0 ≤ X := (hI0 ∅).trans (hIX ∅)
+  have hstep := fun G ↦ integrated_product_step_one hnu c hS hST hK₀ hE hB hK hKin hIX G
+  have hinit : ∀ G, velocityEnergy 1 G (c.coefficients 0) ≤ E₀ := fun G ↦ by
+    rw [c.initial]
+    exact hE₀ G
+  set ν' := nu * (2 * Real.pi) ^ 2 with hν'
+  have hν : 0 < ν' := by positivity
+  set β := 4 * cubicConst nu * K₀ * E with hβdef
+  have hβ0 : 0 ≤ β := by have := (cubicConst_pos hnu).le; positivity
+  have hβ : 4 * β ≤ ν' := by rw [hβdef]; linarith
+  have hXle : 2 * ν' * X ≤ E₀ + (ν' + β) * X := by
+    have hpos : 0 < 2 * ν' := by positivity
+    have hle : X ≤ (E₀ + (ν' + β) * X) / (2 * ν') := by
+      rw [hXdef]
+      refine csSup_le (Set.range_nonempty I) ?_
+      rintro _ ⟨G, rfl⟩
+      rw [le_div_iff₀ hpos, ← hXdef]
+      have h := hstep G
+      have hE' := orderEnergy_nonneg 1 G (amplitude (c.coefficients S))
+      change velocityEnergy 1 G (c.coefficients S) + 2 * nu * (2 * Real.pi) ^ 2 * I G ≤ _ at h
+      change 0 ≤ velocityEnergy 1 G (c.coefficients S) at hE'
+      have h2 : 2 * nu * (2 * Real.pi) ^ 2 * I G = I G * (2 * ν') := by rw [hν']; ring
+      linarith [hinit G]
+    rw [le_div_iff₀ hpos] at hle
+    linarith
+  have hXE : 3 * ν' * X ≤ 4 * E₀ := by nlinarith
+  have h := hstep F
+  have hD := hI0 F
+  change velocityEnergy 1 F (c.coefficients S) + 2 * nu * (2 * Real.pi) ^ 2 * I F ≤ _ at h
+  have hDpos : 0 ≤ 2 * nu * (2 * Real.pi) ^ 2 * I F := by positivity
+  have hmain : (ν' + β) * X ≤ 5 / 3 * E₀ := by nlinarith
+  linarith [hinit F]
+
+/-- **The small-product bootstrap.** For order `m ≥ 7`, data with kinetic energy at most
+`K₀` and order-one energy at most `E₀ > 0`, with `64 C K₀ E₀ ≤ ν (2π)²`, keep
+`E₁ ≤ 3 E₀` along every tame solution, for all time. -/
+theorem velocityEnergy_le_three_of_small_product (hm : 7 ≤ m) (hnu : 0 < nu) {T : ℝ}
+    (c : TameSolutionOn nu m u₀ T) {K₀ E₀ : ℝ} (hK₀ : ∀ F, velocityEnergy 0 F u₀ ≤ K₀)
+    (hE₀ : 0 < E₀) (hdata : ∀ F, velocityEnergy 1 F u₀ ≤ E₀)
+    (hsmall : 64 * cubicConst nu * K₀ * E₀ ≤ nu * (2 * Real.pi) ^ 2) :
+    ∀ τ ∈ Ico (0 : ℝ) T, ∀ F, velocityEnergy 1 F (c.coefficients τ) ≤ 3 * E₀ := by
+  have hK₀0 : 0 ≤ K₀ := (orderEnergy_nonneg 0 ∅ _).trans (hK₀ ∅)
+  have hkin := velocityEnergy_zero_le_of_tame hm hnu c hK₀
+  let c3 := c.ofLe (by omega : 3 ≤ m)
+  intro τ₁ hτ₁
+  have hτS' : τ₁ < (τ₁ + T) / 2 := by linarith [hτ₁.2]
+  have hS'T : (τ₁ + T) / 2 < T := by linarith [hτ₁.2]
+  have hec := continuousOn_fullEnergy (m := 1) c3 hS'T
+  let e : ℝ → ℝ := fun t ↦ fullEnergy 1 (c.coefficients t)
+  have hstep : ∀ s ∈ Icc (0 : ℝ) τ₁, (∀ τ ∈ Icc 0 s, e τ ≤ 4 * E₀) → e s ≤ 3 * E₀ := by
+    intro s hs hsmall'
+    apply fullEnergy_le_of_forall
+    intro F
+    rcases hs.1.eq_or_lt with h0 | hpos
+    · rw [← h0, c.initial]
+      linarith [hdata F]
+    · have hsT : s < T := lt_of_le_of_lt hs.2 hτ₁.2
+      obtain ⟨B, hB⟩ := c3.order_local s hsT
+      obtain ⟨X, hX⟩ := c3.dissipation_local s hsT
+      have hsm : ∀ τ ∈ Icc (0 : ℝ) s, ∀ G, velocityEnergy 1 G (c.coefficients τ) ≤ 4 * E₀ :=
+        fun τ hτ G ↦ (velocityEnergy_le_fullEnergy 1 _ (hB τ hτ) G).trans (hsmall' τ hτ)
+      have hXm : ∀ G, ∫ τ in (0 : ℝ)..s, velocityDissipation 1 G (c.coefficients τ) ≤ X := by
+        intro G
+        refine le_trans (intervalIntegral.integral_mono_on hpos.le ?_ ?_ fun τ _ ↦ ?_) (hX G)
+        · exact (continuous_velocityDissipation_along 1 G c.continuous).intervalIntegrable 0 s
+        · exact (continuous_velocityDissipation_along 3 G c3.continuous).intervalIntegrable 0 s
+        · unfold velocityDissipation orderDissipation orderEnergy
+          refine Finset.sum_le_sum fun k _ ↦ ?_
+          have hw : orderWeight 1 k ≤ orderWeight 3 k :=
+            pow_le_pow_right₀ (by linarith [norm_nonneg (frequencyVec k)]) (by omega)
+          have h0 : 0 ≤ orderWeight 1 k := by unfold orderWeight; positivity
+          have ha : 0 ≤ ‖frequencyVec k‖ * amplitude (c.coefficients τ) k := by
+            unfold amplitude; positivity
+          exact pow_le_pow_left₀ (mul_nonneg h0 ha) (mul_le_mul_of_nonneg_right hw ha) 2
+      have hkin' : ∀ τ ∈ Icc (0 : ℝ) s, ∀ G, velocityEnergy 0 G (c.coefficients τ) ≤ K₀ :=
+        fun τ hτ G ↦ hkin τ ⟨hτ.1, lt_of_le_of_lt hτ.2 hsT⟩ G
+      have hsm' : 16 * cubicConst nu * K₀ * (4 * E₀) ≤ nu * (2 * Real.pi) ^ 2 := by linarith
+      have h : velocityEnergy 1 F (c.coefficients s) ≤ 8 / 3 * E₀ :=
+        velocityEnergy_le_of_product hnu c3.toSolutionOn hpos hsT hK₀0 (by positivity)
+          hsm' hB hsm hkin' hXm hdata F
+      linarith
+  have hsub : Icc (0 : ℝ) τ₁ ⊆ Icc 0 ((τ₁ + T) / 2) := Icc_subset_Icc le_rfl hτS'.le
+  have he0 : e 0 ≤ 3 * E₀ := by
+    apply fullEnergy_le_of_forall
+    intro F
+    rw [c.initial]
+    linarith [hdata F]
+  have hall := bootstrap_le (by linarith : 3 * E₀ < 4 * E₀) (hec.mono hsub) he0 hstep
+  intro F
+  obtain ⟨B', hB'⟩ := c3.order_local ((τ₁ + T) / 2) hS'T
+  exact (velocityEnergy_le_fullEnergy 1 _ (hB' τ₁ ⟨hτ₁.1, hτS'.le⟩) F).trans
+    (hall τ₁ ⟨hτ₁.1, le_rfl⟩)
+
+/-- **Global regularity for scale-invariant small data.** For order `m ≥ 7`, admissible
+data of finite order-`m` energy whose kinetic energy `K₀` and order-one energy `E₀`
+satisfy `64 C K₀ E₀ ≤ ν (2π)²` have a unique global solution. Since
+`C = cubicConst ν ≍ ν⁻³`, the condition is `K₀ E₀ ≲ ν⁴`, invariant under the
+Navier–Stokes scaling. -/
+theorem nonempty_globalSolution_of_small_product (hm : 7 ≤ m) (hnu : 0 < nu)
+    (hr : ∀ q, u₀ (-q) = coefficientConjugate (u₀ q)) (hd : ∀ q, modeDot q (u₀ q) = 0)
+    (hz : u₀ 0 = 0) {Em : ℝ} (hEm0 : 0 ≤ Em) (hEm : ∀ F, velocityEnergy m F u₀ ≤ Em)
+    {K₀ E₀ : ℝ} (hK₀ : ∀ F, velocityEnergy 0 F u₀ ≤ K₀) (hE₀ : 0 < E₀)
+    (hdata : ∀ F, velocityEnergy 1 F u₀ ≤ E₀)
+    (hsmall : 64 * cubicConst nu * K₀ * E₀ ≤ nu * (2 * Real.pi) ^ 2) :
+    Nonempty (GlobalSolution nu m u₀) :=
+  nonempty_globalSolution hm hnu
+    (exists_tameSolutionOn_of_orderOne m (by omega) hnu u₀ hr hd hz hEm0 hEm
+      fun _ _ ↦ ⟨3 * E₀, fun _ _ c τ hτ F ↦
+        velocityEnergy_le_three_of_small_product hm hnu c hK₀ hE₀ hdata hsmall τ hτ F⟩)
+
+end SmallProduct
 
 end Mettapedia.FluidDynamics.NavierStokes.FourierLerayRate
