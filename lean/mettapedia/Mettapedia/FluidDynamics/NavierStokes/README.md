@@ -8754,6 +8754,18 @@ is `L²/(L²+2)`. This is an exact initial right-hand-side calculation, includin
 pressure and the unit-torus phase; it assumes no closed finite support and
 does not refute a bound on the energy of the polarization remainder.
 
+`FourierAxialLeraySource.lean` splits the actual axial nonlinear coefficient
+into pressure production and transport of existing axial velocity, reusing
+the constructed pressure and its output-derivative identity. The pressure
+pair is bounded by `2π|q·n| |u_p| |u_r|`; the transport pair by
+`2π|q| |u_p| |u_r·n|`. Both retain cancellation at zero output. The existing
+finite Young inequality gives squared-energy bounds for all output modes:
+one input belt contributes a pressure factor `8πN` and a transport factor
+`8πN²`, before squaring. The velocity coefficient ℓ¹ factor remains in these
+bounds. The exact split also identifies the infinite unforced right-hand
+side at finitely supported transverse data, including the signed viscous
+term. No closed finite support or time-integrated leakage control is claimed.
+
 `StochasticLagrangian/FourierStrainModeIdentity.lean` retains the signs in a
 different part of the interaction: a complex symmetric strain matrix acting
 between transverse modes. Its matrix-weighted cross-product identity splits
