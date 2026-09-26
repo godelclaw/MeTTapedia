@@ -8773,8 +8773,29 @@ planar area `(p₁q₂-p₂q₁)²/L²`, so selected interactions give a checked
 bound on the pressure force without cancellation from the remaining terms.
 The actual infinite unforced axial right-hand side equals that pressure
 force: axial transport and axial viscosity vanish at the datum. The module
-also computes its kinetic energy. No quantitative lattice-counting lower
-bound or persistence of these phases is asserted here.
+also computes its kinetic energy. Persistence of these phases is not asserted.
+
+`FourierPlanarPressureBox.lean` supplies an explicit lattice-counting lower
+bound for that family. Put `λ = 10000 m²`, `w = 100 m²`, and `N = 100 m`,
+with `m ≥ 1`. Two boxes near the first two coordinate axes and their
+negatives lie in the belt `N² ≤ |k| ≤ 2N²`, `|k₃| ≤ |k|/N`.
+Every output in `[λ+w,λ+2w]² × [4m,5m]` has at least `2 w² m` ordered
+parent interactions with planar area at least `λ²/2` in absolute value.
+All other pressure terms have the same sign. For the actual infinite
+unforced Fourier right-hand side `Fν`, the resulting estimate is
+`m³ E² ≤ 160000000000 Σq∈Q (|Fν(u)q·e₃|/|q|)²`, where
+`E = Σk∈P |u_k|²`. It holds for every viscosity; the axial viscous term
+vanishes at these data.
+
+`FourierPlanarPressureGrowth.lean` normalizes this family to `E = 1`.
+The coefficients remain real in the Fourier sense, transverse, supported
+in the same belt, and exactly planar. The weighted squared axial production
+is at least `m³/160000000000`, and hence exceeds every fixed constant as
+the frequency increases (`unit_energy_unbounded`). Thus kinetic energy
+alone cannot bound this instantaneous production uniformly in frequency.
+This is a statement about initial data and the actual unforced vector
+field. It does not bound the duration of production, refute an integrated
+polarization budget, or supply a singular unforced solution.
 
 `StochasticLagrangian/FourierStrainModeIdentity.lean` retains the signs in a
 different part of the interaction: a complex symmetric strain matrix acting
