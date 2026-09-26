@@ -18152,3 +18152,53 @@ different certificate (for example one that records, for every fork, the
 member it lands in, so that the kernel need not recompute canonical forms) or
 an invariant of the closure that is checked without listing it.
 
+\subsection{Witness semantics for open constructions}
+
+Composition can retain the colourings themselves.  For an open piece $P$,
+let $W_P(x,y)$ be the type of actual dart colourings with prescribed input
+and output words $x,y$.  For serial gluing along a common interface, restriction
+and gluing are inverse:
+\[
+ W_{P;Q}(x,z)\;\cong\;\coprod_y W_P(x,y)\times W_Q(y,z).
+\]
+This equivalence is proved on the literal dart functions, including both
+inverse laws.
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleWitnessComposition.serialEquiv}
+For finite dart carriers, taking cardinalities gives ordinary matrix
+multiplication of boundary-refined colouring counts.
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleWitnessComposition.count_serial}
+A boundary-preserving map from the colouring fibres of one piece to those of
+another extends through every fixed serial exterior.  Its direction matters:
+colour reconstruction after a reduction needs a map from the smaller piece's
+fibres to the original piece's fibres.  Geometric validity and strict decrease
+of size are separate obligations.
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleWitnessComposition.replaceInContext}
+
+The GSLT interpretation gives each authored construction step a relation with
+witnesses.  Concatenating routes corresponds to composing these relations;
+local witness transports extend through serial contexts and finite composites
+of rewrite cells.
+\Sverified{Mettapedia.GSLT.RelationalRouteSemantics.Semantics.appendEquiv}
+\Sverified{Mettapedia.GSLT.RelationalRouteSemantics.Semantics.interpretCells}
+The interpretation of a vertex-code trace is equivalent to colouring its
+actual decoded tangle.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexConstructionGSLT.supports_realization_iff}
+The existing source sweep represents every bridgeless spherical cubic map in
+the source class by such a trace, preserving the vertex count and the literal
+geometric model.  Terminal support is exactly colourability of that source
+map.
+\Sverified{Mettapedia.GraphTheory.FourColor.SourceConstructionGSLT.class_represented}
+Different complete sweep orders have the same terminal support observation.
+\Sverified{Mettapedia.GraphTheory.FourColor.SourceConstructionGSLT.sweep_support_iff}
+
+Thus coverage by the unrestricted vertex-code language is available.  The
+remaining constructive problem is compatible witnesses for all source maps,
+or a terminating reduction with reconstruction.  Coverage by the more
+restricted, already-colourable buffered family is still unproved.  Requiring
+every admissible word to survive every structural move is too strong: the
+nonconstant, nonzero, zero-sum word $(a,a,b,b)$, for distinct nonzero $a,b$,
+cannot pass a cubic merge of its first two ports.
+\Sverified{Mettapedia.GraphTheory.FourColor.VertexConstructionLiftBoundary.not_every_required_word_lifts}
+Backward viability along a route composes exactly, but its compositional law
+does not assert that the viable set is inhabited.
+\Sverified{Mettapedia.GSLT.RelationalRouteSemantics.Semantics.viable_append_iff}
