@@ -1048,6 +1048,43 @@ support richness.
 \Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.transfer_rotation_of_missing}
 \Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.two_colour_nonmixing}
 
+There is now a construction with changing boundary width. Write $A_k$ for
+the nonzero, zero-sum words and $I_k$ for its nonconstant words; when $k$ is
+odd, $I_k=A_k$. A merge of two adjacent ports sends any support containing
+$I_k$ onto a support containing all of $A_{k-1}$. A split followed by
+sufficiently many actual rings restores $I_{k+1}$, with a finite threshold
+depending only on the new width. For a three-colour target, a repeated
+colour can be retained while an unequal pair is contracted, leaving a
+nonconstant predecessor in the same count class after re-expansion. For a
+two-colour target, a rotation exposes an unequal pair; contracting it
+introduces the absent colour, and shift/identity rings rotate back.
+
+A split followed immediately by merging the second fresh port with its
+old neighbour needs no ring buffer: this two-vertex cell sends $I_k$ onto
+a support containing every word in $A_k$, for every $k\geq3$. The local
+choice also covers constant target words by choosing a nonconstant
+predecessor. Both vertices are realized by the literal attachment API.
+Starting with a cubic star or a sufficiently long odd-capped tube,
+these rules and cyclic changes of boundary origin generate pieces at every
+width at least three. At a final three-port boundary, one more cubic vertex
+closes the piece and the theorem supplies a Tait colouring of the whole
+constructed object. Selection of mixing thresholds and colouring witnesses
+uses classical choice; an executable algorithm and a sharp buffer formula
+are not extracted. The formal result does not assert spherical validity of
+the generated rotation systems or a decomposition of arbitrary planar maps
+into these pieces. Merges may create parallel edges, so simplicity and
+normal form also require separate geometric arguments. Inserting ring
+buffers into an existing map does not by itself colour the original map. Arbitrary
+pentagon-complement support richness remains open.
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundaryWordFrontier.split_recovery}
+\Sverified{Mettapedia.GraphTheory.FourColor.BoundaryWordFrontier.cell_covers_admissible}
+\Sverified{Mettapedia.GraphTheory.FourColor.BufferedFrontierConstruction.merge_support}
+\Sverified{Mettapedia.GraphTheory.FourColor.BufferedFrontierConstruction.split_rings_adequate}
+\Sverified{Mettapedia.GraphTheory.FourColor.BufferedFrontierConstruction.cell_support}
+\Sverified{Mettapedia.GraphTheory.FourColor.BufferedFrontierConstruction.Built.adequate}
+\Sverified{Mettapedia.GraphTheory.FourColor.BufferedFrontierConstruction.exists_built_width}
+\Sverified{Mettapedia.GraphTheory.FourColor.BufferedFrontierConstruction.Built.closed_colourable}
+
 The growth of exact transfer paths is not merely duplicate certificate
 bookkeeping: fully routed histories inject into distinct proper colourings
 of the canonical open tube's line graph, even after the five incoming edge
