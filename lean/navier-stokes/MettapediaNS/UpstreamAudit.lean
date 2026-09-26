@@ -28,6 +28,10 @@ import MettapediaNS.CirculationFlux
 import MettapediaNS.WholeSpaceViscousFlow
 import MettapediaNS.WholeSpaceNSContinuation
 import MettapediaNS.WholeSpaceNSBlowup
+import MettapediaNS.WholeSpaceTimeSmooth
+import MettapediaNS.WholeSpaceJointSmooth
+import MettapediaNS.WholeSpacePressurePotential
+import MettapediaNS.WholeSpaceOfficialStatement
 
 /-!
 # Direct upstream dependency audit
@@ -351,3 +355,14 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSLifespan.spatialEssentialSupNorm_lintegral_eq_top
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.global_or_vorticity_blowup
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.hasNSEvolution_of_vorticityIntegral_bound
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceTimeSmooth.TimeDeriv.advection
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSEvolution.isTimeSmooth
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceTimeSmooth.hasFDerivWithinAt_joint
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceTimeSmooth.contDiffOn_joint_infty
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSEvolution.velocity_contDiffOn
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceTimeSmooth.contDiffOn_potential_infty
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSEvolution.scalarPressure_contDiffOn
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceOfficial.memLp_of_decay
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceOfficial.global_navier_stokes
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceOfficial.wholeSpaceStatementA_of_global
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceOfficial.wholeSpaceStatementA_of_vorticityIntegral_bound
