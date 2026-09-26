@@ -22,6 +22,7 @@ import Mettapedia.QuantumTheory.YangMills.MarginalBlindness
 import Mettapedia.QuantumTheory.YangMills.TwistDiagnostic
 import Mettapedia.QuantumTheory.YangMills.TwistEater
 import Mettapedia.QuantumTheory.YangMills.StrongCouplingCrossing
+import Mettapedia.QuantumTheory.YangMills.StrongCouplingTwist
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FDIBPCochainJointBridge
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderRepair
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderCoordinateCompletion
@@ -980,7 +981,7 @@ def yangMillsCrossingInputStrongCouplingNode : YangMillsProofNode where
   id := "yang-mills.rg.crossing-input.strong-coupling"
   status := .checked
   truthValue := ⟨100, 95⟩
-  evidence := "StrongCouplingCrossing.crossingInput proves CrossingInput for the connected plaquette activities of every Wilson-type measure on the tori (Z/(n+3))^d: independent link variables, any measurable four-link potential with values in [0, 2] (the Wilson action 1 - Re tr U_p / N for SU(N) with Haar measure is one), and 0 <= beta <= beta0 d = exp(-18) / (4 (4 d^2 + 1) (16 d^2 + 1)^2), with decay rate one and smallness exp(-1) at every volume. StrongCouplingCrossing.wilson_clustering gives exponential clustering of the Wilson expectations, uniformly in the volume. The proof uses the connected plaquette expansion (PolymerGas.PlaquetteExpansion, from PolymerGas.ConnectedDecomposition and PolymerGas.SupportRegrouping), the count of connected sets through a vertex, at most (Delta + 1)^(2n) (PolymerGas.ConnectedCount), and the explicit smallness threshold (PolymerGas.PlaquetteSmallness). So the crossing input holds where clustering is known and fails at the barrier theories."
+  evidence := "StrongCouplingCrossing.crossingInput proves CrossingInput for the connected plaquette activities of every Wilson-type measure on the tori (Z/(n+3))^d: independent link variables, any measurable four-link potential with values in [0, 2] (the Wilson action 1 - Re tr U_p / N for SU(N) with Haar measure is one), and 0 <= beta <= beta0 d = exp(-18) / (4 (4 d^2 + 1) (16 d^2 + 1)^2), with decay rate one and smallness exp(-1) at every volume. StrongCouplingCrossing.wilson_clustering gives exponential clustering of the Wilson expectations, uniformly in the volume. The proof uses the connected plaquette expansion (PolymerGas.PlaquetteExpansion, from PolymerGas.ConnectedDecomposition and PolymerGas.SupportRegrouping), the count of connected sets through a vertex, at most (Delta + 1)^(2n) (PolymerGas.ConnectedCount), and the explicit smallness threshold (PolymerGas.PlaquetteSmallness). So the crossing input holds where clustering is known and fails at the barrier theories. StrongCouplingTwist verifies the twist diagnostic there: for a group with a central involution z (the centre element -1 of SU(2)), a z-invariant probability measure and a measurable plaquette function psi in [0, 2], moving the twist is a measure-preserving change of variables and distant polymers do not see it, so the untwisted and twisted activities form a twist-compatible crossing family (StrongCouplingTwist.twistCompatibleCrossing), and the Wilson twist free energy -log (Z_tw / Z), both partition functions real Wilson integrals, tends to zero as the volume grows (StrongCouplingTwist.tendsto_twistFreeEnergy)."
   nextObligation := "None at strong coupling. The open crossing is the passage from weak coupling to this regime for four-dimensional SU(2)."
 
 /-- Conditional OS reconstruction scaffold for the continuum endpoint. -/
@@ -1250,6 +1251,21 @@ theorem currentYangMillsStrongCoupling_crossingInput (d : ℕ) {E : Type*} [Meas
     StrongCouplingCrossing.crossingInput d base hφ hφ0 hφ2 hβ hβ0⟩
 
 #print axioms currentYangMillsStrongCoupling_crossingInput
+
+/-- At strong coupling the centre-twist free energy of Wilson-type measures with a
+central involution tends to zero as the volume grows. -/
+theorem currentYangMillsStrongCoupling_twistFreeEnergy (d : ℕ) {E : Type*} [Group E]
+    [MeasurableSpace E] [MeasurableMul₂ E] [MeasurableInv E]
+    (ν₀ : MeasureTheory.Measure E) [MeasureTheory.IsProbabilityMeasure ν₀]
+    {z : E} (hz : ∀ g, z * g = g * z) (hzz : z * z = 1)
+    (hν : ν₀.map (fun g => z * g) = ν₀) {ψ : E → ℝ} (hψ : Measurable ψ)
+    (hψ0 : ∀ g, 0 ≤ ψ g) (hψ2 : ∀ g, ψ g ≤ 2)
+    {β : ℝ} (hβ : 0 ≤ β) (hβ0 : β ≤ StrongCouplingCrossing.beta0 (d + 2)) :
+    Filter.Tendsto (fun n => StrongCouplingTwist.twistFreeEnergy d n ν₀ z ψ β)
+      Filter.atTop (nhds 0) :=
+  StrongCouplingTwist.tendsto_twistFreeEnergy d ν₀ hz hzz hν hψ hψ0 hψ2 hβ hβ0
+
+#print axioms currentYangMillsStrongCoupling_twistFreeEnergy
 
 /-- OUR finite `F,D`/IBP relation cochains surject onto the honest joint
 relation submodule under either relation policy. -/

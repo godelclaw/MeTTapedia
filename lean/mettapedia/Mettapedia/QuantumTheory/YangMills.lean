@@ -51,3 +51,4 @@ import Mettapedia.QuantumTheory.YangMills.TwistDiagnostic
 import Mettapedia.QuantumTheory.YangMills.TwistCost
 import Mettapedia.QuantumTheory.YangMills.TwistEater
 import Mettapedia.QuantumTheory.YangMills.StrongCouplingCrossing
+import Mettapedia.QuantumTheory.YangMills.StrongCouplingTwist
