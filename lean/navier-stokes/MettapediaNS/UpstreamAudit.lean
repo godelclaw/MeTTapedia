@@ -21,6 +21,7 @@ import MettapediaNS.GaussianHeatTorus
 import MettapediaNS.ForcedCandidateVorticity
 import MettapediaNS.OpenAISolutionVorticity
 import MettapediaNS.OpenAIPeriodicWiener
+import MettapediaNS.OpenAIPulseSeeds
 
 /-!
 # Direct upstream dependency audit
@@ -269,3 +270,6 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.OpenAIPeriodicWiener.norm_realField_le_velocityWiener
 #print axioms Mettapedia.FluidDynamics.NavierStokes.OpenAIPeriodicWiener.candidate_velocityWiener_unbounded
 #print axioms Mettapedia.FluidDynamics.NavierStokes.OpenAIPeriodicWiener.openAI_periodic_velocityWiener_unbounded
+#print axioms Mettapedia.FluidDynamics.NavierStokes.OpenAIPulseSeeds.seed_bounds
+#print axioms Mettapedia.FluidDynamics.NavierStokes.OpenAIPulseSeeds.amplification_ge
+#print axioms Mettapedia.FluidDynamics.NavierStokes.OpenAIPulseSeeds.seed_le_rpow
