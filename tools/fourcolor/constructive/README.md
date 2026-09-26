@@ -136,3 +136,73 @@ Every exception has the same profile:
 - it supports 54 of the 60 admissible words, and no inadmissible word extends;
 - the six missing words form one colour-permutation orbit of good words (three cyclically consecutive spokes of equal colour);
 - 24 of the pentagon's own 30 words remain, so each such map is still colourable through that pentagon.
+
+## Width-change rule
+
+The invariant is I_w: the admissible words of width w that are not constant. For odd w this is every admissible word. The operations act on frontier supports:
+- **split at p:** colour c is replaced by an ordered pair of distinct colours with sum c;
+- **merge at p:** two adjacent different colours are replaced by their sum;
+- **zigzag ring:** as above;
+- **cell:** a split, then a merge of one fresh port with its outer neighbour.
+
+```sh
+g++ -O2 -std=c++17 -o split_merge_check split_merge_check.cpp
+./split_merge_check 3 10
+python3 cell_checks.py
+```
+
+`split_merge_check` gives three results:
+- merge(I_k) is every admissible word of width k − 1, for k = 4..10.
+- After a split of I_k at one port, the least number of zigzag rings whose result contains I_{k+1} is k − 2. For the new width K = k + 1 that is K − 3 rings. The result then stays so for at least 12 more rings and equals I_{k+1} exactly.
+- This threshold is tested for K = 4..11 only; it is not a proved uniform bound.
+
+`cell_checks.py` gives three results:
+- A cell maps I_w, and all admissible words, onto all admissible words, on either side, for w = 3..8. Paper proof: a target word determines the fresh colours and a predecessor.
+- Two splits followed by two merges at arbitrary positions miss part of I_w in 0/240, 296/600, 790/1260 and 1680/2352 cases for w = 3, 4, 5, 6.
+- Cells applied cyclically to a single word never reach every admissible word (w = 4..8); the supports stay in small orbits.
+
+## Frontier sweeps
+
+`frontier_track.py` sweeps the complement of a pentagon one vertex at a time, farthest vertex first, and follows the frontier support.
+
+```sh
+python3 frontier_track.py c60
+python3 frontier_track.py witnesses
+plantri -c5m5 -d -a 22 | python3 frontier_track.py stats
+```
+
+- **C60:** the support contains I_w only in the final steps, from width 8 down. At width 10 each split-then-merge step raises the density, and the last merges take it from 0.923 to 1.000.
+- **Witnesses:** all six end at density 0.900 and never contain I_w mid-sweep.
+- **Statistics over all 627 normal-form maps with 40 vertices**, first pentagon of each:
+  - 466 maps reach I_w mid-sweep, first at width 6 (450) or 7 (16);
+  - 161 do not before the last step;
+  - no lapses follow;
+  - one map ends at 0.900.
+
+For a merge, an output word is missing exactly when both of its predecessors are missing. The predecessors differ by an adjacent swap, which preserves colour counts. So a missing set closed under that swap yields a missing output for every missing pair.
+
+## Structured falsifier maps
+
+`gen_structured.py` writes 55 normal-form maps in plantri ASCII:
+- capped zigzag tubes, k = 5..10;
+- dumbbells: two copies of C60 minus a pentagon or hexagon, joined by a zigzag tube;
+- tadpoles.
+
+The normal form is checked through cycles of the dual.
+
+```sh
+python3 gen_structured.py > structured.txt
+./pentagon_census < structured.txt
+fullgen 84 code 1 mod 0 10;  python3 planar_code_to_ascii.py Full_codes_84_m_0_10 | ./pentagon_census
+fullgen 90 code 1 mod 0 20;  python3 planar_code_to_ascii.py Full_codes_90_m_0_20 | ./pentagon_census
+fullgen 100 ipr code 1;      python3 planar_code_to_ascii.py Full_codes_100_ipr | ./pentagon_census
+fullgen 120 ipr code 1 mod 0 10; python3 planar_code_to_ascii.py Full_codes_120_ipr_m_0_10 | ./pentagon_census
+```
+
+| input | maps | pentagon complements | non-full |
+|---|---|---|---|
+| structured maps | 55 | 878 | 0 |
+| C84, one tenth of all isomers | 5,326 | 63,912 | 0 |
+| C90, one twentieth | 4,495 | 53,940 | 0 |
+| C100 IPR, all | 450 | 5,400 | 0 |
+| C120 IPR, one tenth | 1,074 | 12,888 | 0 |
