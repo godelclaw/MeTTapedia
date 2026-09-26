@@ -282,3 +282,9 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.SwirlBudget.swirl_identity
 #print axioms Mettapedia.FluidDynamics.NavierStokes.SwirlBudget.integral_angularDeriv_rot
 #print axioms Mettapedia.FluidDynamics.NavierStokes.SwirlBudget.integral_angularDerivative_rot
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SwirlBudget.deriv_deriv_nonpos_of_isLocalMax
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SwirlBudget.secondDeriv_nonpos_of_isLocalMax
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SwirlBudget.angularDerivative_eq_zero
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SwirlBudget.fderiv_angular_eq
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SwirlBudget.axialVorticity_eq_zero_of_critical
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SwirlBudget.deriv_swirl_le_torque_of_isLocalMax

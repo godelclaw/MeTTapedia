@@ -8,6 +8,9 @@ import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Deriv
 import Mathlib.Analysis.Calculus.Deriv.Prod
+import Mathlib.Analysis.Calculus.DerivativeTest
+import Mathlib.Analysis.Calculus.LocalExtr.Basic
+import Mathlib.Analysis.Calculus.ContDiff.Operations
 
 /-!
 # The swirl identity: how pressure and force enter the angular momentum
@@ -24,13 +27,19 @@ twice differentiable in space and differentiable in time,
 with `ω₃ = ∂₀u₁ - ∂₁u₀` the axial vorticity. The pressure enters only through
 its angular derivative `x₀ ∂₁p - x₁ ∂₀p`, which is the derivative along the
 rotations about the axis, so its integral over every circle about the axis
-vanishes; the force enters only through its torque. For an axisymmetric unforced flow this is the swirl
-equation `∂ₜΓ + u·∇Γ = ν (∂ᵣ² - r⁻¹∂ᵣ + ∂_z²) Γ`, whose maximum principle
-bounds the swirl by its initial maximum. In the breakdown construction for the
-forced problem, the maximal swirl of the axisymmetric background grows without
-bound near the singular point, while the force and its torque vanish there to
-every order; its growth is supplied by the angular average of the torque of
-the oscillatory pulses.
+vanishes; the force enters only through its torque.
+
+For an axisymmetric flow, at every spatial local maximum of the swirl off the
+axis, the gradient of the swirl vanishes, its Laplacian is nonpositive, the
+angular derivative of the pressure vanishes, and so does the axial vorticity,
+since `x₀ ∂₀Γ + x₁ ∂₁Γ = r² ω₃` there. Hence `∂ₜΓ ≤ x₀ f₁ - x₁ f₀` at such
+maxima: without a force the swirl cannot grow at its maxima, which is the
+pointwise core of the swirl maximum principle.
+
+In the breakdown construction for the forced problem, the maximal swirl of the
+axisymmetric background grows without bound near the singular point, while the
+force and its torque vanish there to every order; its growth is supplied by the
+angular average of the torque of the oscillatory pulses.
 -/
 
 noncomputable section
@@ -258,5 +267,160 @@ theorem integral_angularDerivative_rot {p : PressureField} {t : ℝ}
   exact integral_angularDeriv_rot hp x
 
 end Average
+
+section MaximumPrinciple
+
+/-- **At a local maximum the second derivative is nonpositive.** Otherwise
+the second-derivative test would make the point a local minimum as well, the
+function would be locally constant, and its second derivative would vanish. -/
+theorem deriv_deriv_nonpos_of_isLocalMax {f : ℝ → ℝ} {x₀ : ℝ} (hmax : IsLocalMax f x₀)
+    (hc : ContinuousAt f x₀) : deriv (deriv f) x₀ ≤ 0 := by
+  by_contra h
+  push Not at h
+  have hmin : IsLocalMin f x₀ := isLocalMin_of_deriv_deriv_pos h (IsLocalMax.deriv_eq_zero hmax) hc
+  have hconst : f =ᶠ[𝓝 x₀] fun _ ↦ f x₀ :=
+    (Filter.Eventually.and hmax hmin).mono fun y hy ↦ le_antisymm hy.1 hy.2
+  have hderiv : deriv f =ᶠ[𝓝 x₀] fun _ ↦ 0 :=
+    hconst.eventuallyEq_nhds.mono fun y hy ↦ by rw [hy.deriv_eq]; simp
+  rw [hderiv.deriv_eq] at h
+  simp at h
+
+theorem hasDerivAt_line (x v : Space) (s : ℝ) : HasDerivAt (fun s : ℝ ↦ x + s • v) v s := by
+  have h := HasDerivAt.const_add x (HasDerivAt.smul_const (hasDerivAt_id s) v)
+  simpa using h
+
+/-- **At a local maximum every second directional derivative is nonpositive.** -/
+theorem secondDeriv_nonpos_of_isLocalMax {g : Space → ℝ} {x : Space} (hg : ContDiffAt ℝ 2 g x)
+    (hmax : IsLocalMax g x) (v : Space) : fderiv ℝ (fun y ↦ fderiv ℝ g y v) x v ≤ 0 := by
+  have hx0 : (fun s : ℝ ↦ x + s • v) 0 = x := by simp
+  have hcont : ContinuousAt (fun s : ℝ ↦ g (x + s • v)) 0 :=
+    ContinuousAt.comp_of_eq hg.continuousAt (hasDerivAt_line x v 0).continuousAt hx0
+  have hmax' : IsLocalMax (fun s : ℝ ↦ g (x + s • v)) 0 := by
+    have h1 : IsLocalMax g ((fun s : ℝ ↦ x + s • v) 0) := by rw [hx0]; exact hmax
+    exact IsLocalMax.comp_continuous h1 (hasDerivAt_line x v 0).continuousAt
+  have hev : ∀ᶠ y in 𝓝 x, DifferentiableAt ℝ g y :=
+    (hg.eventually (by simp)).mono fun y hy ↦ hy.differentiableAt (by norm_num)
+  have hev' : ∀ᶠ s in 𝓝 (0 : ℝ), DifferentiableAt ℝ g (x + s • v) := by
+    have ht : Tendsto (fun s : ℝ ↦ x + s • v) (𝓝 0) (𝓝 x) := by
+      have := (hasDerivAt_line x v 0).continuousAt.tendsto
+      simpa using this
+    exact ht.eventually hev
+  have hd1 : deriv (fun s : ℝ ↦ g (x + s • v)) =ᶠ[𝓝 0] fun s ↦ fderiv ℝ g (x + s • v) v :=
+    hev'.mono fun s hs ↦ HasDerivAt.deriv (HasFDerivAt.comp_hasDerivAt s hs.hasFDerivAt
+      (hasDerivAt_line x v s))
+  have hDg : DifferentiableAt ℝ (fun y ↦ fderiv ℝ g y v) x :=
+    ((hg.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)).clm_apply
+      (differentiableAt_const _)
+  have hd2 : deriv (fun s : ℝ ↦ fderiv ℝ g (x + s • v) v) 0 =
+      fderiv ℝ (fun y ↦ fderiv ℝ g y v) x v :=
+    HasDerivAt.deriv (HasFDerivAt.comp_hasDerivAt_of_eq 0 hDg.hasFDerivAt
+      (hasDerivAt_line x v 0) hx0.symm)
+  have h := deriv_deriv_nonpos_of_isLocalMax hmax' hcont
+  rw [hd1.deriv_eq, hd2] at h
+  exact h
+
+/-- A velocity that commutes with the rotations about the third axis at time `t`. -/
+def AxisymmetricVelocity (u : VelocityField) (t : ℝ) : Prop :=
+  ∀ φ y, u (t, rot φ y) = rot φ (u (t, y))
+
+/-- A pressure invariant under the rotations about the third axis at time `t`. -/
+def AxisymmetricPressure (p : PressureField) (t : ℝ) : Prop := ∀ φ y, p (t, rot φ y) = p (t, y)
+
+theorem hasDerivAt_rot_zero (x : Space) : HasDerivAt (fun φ ↦ rot φ x) (angular x) 0 := by
+  have h := hasDerivAt_rot 0 x
+  rwa [rot_zero] at h
+
+/-- The angular derivative of an axisymmetric pressure vanishes. -/
+theorem angularDerivative_eq_zero {p : PressureField} {t : ℝ} {x : Space}
+    (hp : AxisymmetricPressure p t) (hd : DifferentiableAt ℝ (fun y ↦ p (t, y)) x) :
+    angularDerivative p t x = 0 := by
+  have h1 : HasDerivAt (fun φ ↦ p (t, rot φ x)) (fderiv ℝ (fun y ↦ p (t, y)) x (angular x)) 0 :=
+    HasFDerivAt.comp_hasDerivAt_of_eq 0 hd.hasFDerivAt (hasDerivAt_rot_zero x) (rot_zero x).symm
+  have h2 : HasDerivAt (fun φ ↦ p (t, rot φ x)) 0 0 := by
+    have e : (fun φ ↦ p (t, rot φ x)) = fun _ ↦ p (t, x) := funext fun φ ↦ hp φ x
+    rw [e]
+    exact hasDerivAt_const _ _
+  have h3 := h1.unique h2
+  have e : angularDerivative p t x = angularDeriv (fun y ↦ p (t, y)) x := by
+    rw [angularDeriv_eq]
+    rfl
+  rw [e]
+  exact h3
+
+/-- The angular derivative of an axisymmetric velocity is its rotation generator. -/
+theorem fderiv_angular_eq {u : VelocityField} {t : ℝ} {x : Space}
+    (hu : AxisymmetricVelocity u t) (hd : DifferentiableAt ℝ (fun y ↦ u (t, y)) x) :
+    fderiv ℝ (fun y ↦ u (t, y)) x (angular x) = angular (u (t, x)) := by
+  have h1 : HasDerivAt (fun φ ↦ u (t, rot φ x)) (fderiv ℝ (fun y ↦ u (t, y)) x (angular x)) 0 :=
+    HasFDerivAt.comp_hasDerivAt_of_eq 0 hd.hasFDerivAt (hasDerivAt_rot_zero x) (rot_zero x).symm
+  have h2 : HasDerivAt (fun φ ↦ u (t, rot φ x)) (angular (u (t, x))) 0 := by
+    have e : (fun φ ↦ u (t, rot φ x)) = fun φ ↦ rot φ (u (t, x)) := funext fun φ ↦ hu φ x
+    rw [e]
+    exact hasDerivAt_rot_zero _
+  exact h1.unique h2
+
+/-- **At a critical point of the swirl of an axisymmetric velocity, off the
+axis, the axial vorticity vanishes**: `x₀ ∂₀Γ + x₁ ∂₁Γ = r² ω₃`. -/
+theorem axialVorticity_eq_zero_of_critical {u : VelocityField} {t : ℝ} {x : Space}
+    (hu : AxisymmetricVelocity u t) (hd : DifferentiableAt ℝ (fun y ↦ u (t, y)) x)
+    (hcrit : fderiv ℝ (swirlSlice (fun y ↦ u (t, y))) x = 0) (hr : x 0 ^ 2 + x 1 ^ 2 ≠ 0) :
+    axialVorticity u t x = 0 := by
+  have hE := fderiv_angular_eq hu hd
+  rw [angular_eq, map_sub, map_smul, map_smul] at hE
+  have hE0 := congrArg (fun v : Space ↦ v 0) hE
+  have hE1 := congrArg (fun v : Space ↦ v 1) hE
+  simp only [angular, PiLp.sub_apply, PiLp.smul_apply, smul_eq_mul] at hE0 hE1
+  have hC0 := fderiv_swirlSlice_apply hd (e 0)
+  have hC1 := fderiv_swirlSlice_apply hd (e 1)
+  rw [hcrit] at hC0 hC1
+  simp only [e_apply] at hC0 hC1
+  simp at hE0 hE1 hC0 hC1
+  have key : (x 0 ^ 2 + x 1 ^ 2) * axialVorticity u t x = 0 := by
+    unfold axialVorticity spatialDerivative
+    linear_combination (-x 0) * hC0 - x 0 * hE0 - x 1 * hE1 + (-x 1) * hC1
+  rcases mul_eq_zero.mp key with h | h
+  · exact absurd h hr
+  · exact h
+
+theorem contDiffAt_swirlSlice {U : Space → Space} {x : Space} (hU : ContDiffAt ℝ 2 U x) :
+    ContDiffAt ℝ 2 (swirlSlice U) x := by
+  have c0 : ContDiffAt ℝ 2 (fun z : Space ↦ z 0) x :=
+    (EuclideanSpace.proj 0 : Space →L[ℝ] ℝ).contDiff.contDiffAt
+  have c1 : ContDiffAt ℝ 2 (fun z : Space ↦ z 1) x :=
+    (EuclideanSpace.proj 1 : Space →L[ℝ] ℝ).contDiff.contDiffAt
+  have u0 : ContDiffAt ℝ 2 (fun z ↦ U z 0) x :=
+    (EuclideanSpace.proj 0 : Space →L[ℝ] ℝ).contDiff.contDiffAt.comp x hU
+  have u1 : ContDiffAt ℝ 2 (fun z ↦ U z 1) x :=
+    (EuclideanSpace.proj 1 : Space →L[ℝ] ℝ).contDiff.contDiffAt.comp x hU
+  exact ContDiffAt.sub (ContDiffAt.mul c0 u1) (ContDiffAt.mul c1 u0)
+
+/-- **The pointwise core of the swirl maximum principle.** For an axisymmetric
+flow with Navier–Stokes residual `f` and nonnegative viscosity, at every
+spatial local maximum of the swirl off the axis, the swirl grows no faster
+than the torque of the force: `∂ₜΓ ≤ x₀ f₁ - x₁ f₀`. Without a force, the
+swirl cannot increase at its maxima. -/
+theorem deriv_swirl_le_torque_of_isLocalMax {ν : ℝ} (hν : 0 ≤ ν) {u : VelocityField}
+    {p : PressureField} {f : VelocityField} {t : ℝ} {x : Space}
+    (hu : ContDiffAt ℝ 2 (fun y ↦ u (t, y)) x) (ht : DifferentiableAt ℝ (fun s ↦ u (s, x)) t)
+    (hres : NavierStokesR3.ProblemStatement.navierStokesResidual ν u p t x = f (t, x))
+    (hmax : IsLocalMax (swirlSlice (fun y ↦ u (t, y))) x)
+    (haxi : AxisymmetricVelocity u t) (hpaxi : AxisymmetricPressure p t)
+    (hp : DifferentiableAt ℝ (fun y ↦ p (t, y)) x) (hr : x 0 ^ 2 + x 1 ^ 2 ≠ 0) :
+    deriv (fun s ↦ swirlSlice (fun y ↦ u (s, y)) x) t ≤ torque f t x := by
+  have hid := swirl_identity hu ht hres
+  have hUx : DifferentiableAt ℝ (fun y ↦ u (t, y)) x := hu.differentiableAt (by norm_num)
+  have hcrit : fderiv ℝ (swirlSlice (fun y ↦ u (t, y))) x = 0 := IsLocalMax.fderiv_eq_zero hmax
+  have hadv : fderiv ℝ (swirlSlice (fun y ↦ u (t, y))) x (u (t, x)) = 0 := by
+    rw [hcrit]
+    rfl
+  have hlap : ∑ i : Fin 3, fderiv ℝ (fun y ↦ fderiv ℝ (swirlSlice (fun y ↦ u (t, y))) y (e i)) x
+      (e i) ≤ 0 :=
+    Finset.sum_nonpos fun i _ ↦ secondDeriv_nonpos_of_isLocalMax (contDiffAt_swirlSlice hu) hmax (e i)
+  have hω := axialVorticity_eq_zero_of_critical haxi hUx hcrit hr
+  have hθ := angularDerivative_eq_zero hpaxi hp
+  rw [hadv, hω, hθ] at hid
+  nlinarith [mul_nonpos_of_nonneg_of_nonpos hν hlap]
+
+end MaximumPrinciple
 
 end Mettapedia.FluidDynamics.NavierStokes.SwirlBudget
