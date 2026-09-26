@@ -322,3 +322,6 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.regularizedViscous_all_order
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.viscous_error
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.regularizedViscous_cauchy
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.laplacianPath_convergence
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.viscous_derivative_convergence
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.exists_local_nsEvolution

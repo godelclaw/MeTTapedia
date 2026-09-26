@@ -1,6 +1,7 @@
 import Euler.OrdinaryRegularizedFlow
 import Euler.OrdinaryRegularizedEnergy
 import Euler.OrdinaryRegularizedCauchy
+import Euler.OrdinaryEulerLocalExistence
 import MettapediaNS.WholeSpaceViscousEnergy
 
 /-!
@@ -21,7 +22,22 @@ operator on `L²` (`SmoothingOperator.laplacian`), and the regularized viscous
 term `ν S Δ S` dissipates energy: `⟪u, ν S Δ S u⟫ = -ν ∑ᵢ ‖∂ᵢ S u‖²`
 (`SmoothingOperator.inner_viscous`). The regularized Navier–Stokes equation
 therefore has a global forward `L²` solution whose energy never increases
-(`SmoothingOperator.exists_forward_regularized`).
+(`exists_forward_regularized`), and smooth regularized evolutions exist from every
+smooth solenoidal datum (`exists_regularizedViscous`).
+
+The viscous term contributes `-2ν` times the dissipation of the smoothed field to
+every integer-order energy production (`viscousField_production`), so the upstream
+tame estimate bounds every Sobolev order on the upstream regularized Euler time,
+uniformly in the smoothing and the viscosity (`regularizedViscous_all_order`). On
+solenoidal fields `‖S Δ S A - Δ A‖ ≤ 6 ε M` (`viscous_error`), and the regularized
+evolutions are Cauchy in continuous `L²` as the smoothing is removed
+(`regularizedViscous_cauchy`). Along the upstream smooth limit the Laplacians
+converge with the second-order word paths, the regularized derivatives converge to
+`P(-(u·∇)u) + ν Δu`, and the limit satisfies the Navier–Stokes equations pointwise
+with a constructed pressure (`nsEvolution`). Every smooth solenoidal field with all
+derivatives in `L²` therefore starts a smooth Navier–Stokes evolution on `ℝ³`, for
+every `ν ≥ 0`, on the regularized Euler time of its `H³` energy
+(`exists_local_nsEvolution`).
 -/
 
 set_option autoImplicit false
@@ -762,5 +778,302 @@ theorem regularizedViscous_cauchy {ν T : ℝ} {hT : 0 ≤ T} (hν : 0 ≤ ν)
   nlinarith
 
 end Cauchy
+
+/-! ## The limit: smooth Navier–Stokes evolutions on `ℝ³` -/
+
+section Limit
+
+open EulerSmoothLimit EulerLpTranslation EulerLpTranslation.SmoothL2Field EulerOrdinarySobolev
+  EulerMeanSolenoidal EulerVolterraConvolution EulerContinuousTimeIntegral EulerSmoothFieldSobolevTime
+  WholeSpaceViscousEnergy Finset Laplacian
+
+/-- **A smooth Navier–Stokes evolution on `ℝ³`** over `[0, T]`: velocity and pressure
+force with all `L²` jets, continuous in time, the velocity solenoidal and the pressure
+force a gradient, and the equation `∂ₜu = -(u·∇)u - ∇p + ν Δu` at every point and
+every interior time. -/
+structure NSEvolution (ν T : ℝ) (hT : 0 ≤ T) where
+  velocity : Icc (0 : ℝ) T → SmoothL2Field Space
+  pressureForce : Icc (0 : ℝ) T → SmoothL2Field Space
+  velocity_continuous : ∀ n, Continuous (fun t ↦ (velocity t).jetLp n)
+  pressure_continuous : ∀ n, Continuous (fun t ↦ (pressureForce t).jetLp n)
+  solenoidal : ∀ t, (velocity t).toLp ∈ solenoidalSpace
+  gradient : ∀ t, (pressureForce t).toLp ∈ gradientSpace
+  time_law : ∀ t (ht : t ∈ Ioo 0 T) x,
+    HasDerivAt (fun r ↦ (velocity (projIcc 0 T hT r)).field x)
+      (-fderiv ℝ (velocity ⟨t, ht.1.le, ht.2.le⟩).field x ((velocity ⟨t, ht.1.le, ht.2.le⟩).field x) -
+        (pressureForce ⟨t, ht.1.le, ht.2.le⟩).field x +
+          ν • Δ (velocity ⟨t, ht.1.le, ht.2.le⟩).field x) t
+
+theorem laplacianField_eq_add (A : SmoothL2Field Space) :
+    laplacianField A = addField (addField
+      ((A.directionalField (axis 0)).directionalField (axis 0))
+      ((A.directionalField (axis 1)).directionalField (axis 1)))
+      ((A.directionalField (axis 2)).directionalField (axis 2)) := by
+  apply field_ext
+  funext x
+  simp only [laplacianField, sumField_field, addField_field, Fin.sum_univ_three]
+
+theorem continuous_jetLp_laplacianField {K : Type*} [TopologicalSpace K]
+    (A : K → SmoothL2Field Space) (hA : ∀ n, Continuous (fun t ↦ (A t).jetLp n)) (n : ℕ) :
+    Continuous (fun t ↦ (laplacianField (A t)).jetLp n) := by
+  simp only [laplacianField_eq_add]
+  have hdd : ∀ i : Fin 3, ∀ n,
+      Continuous (fun t ↦ (((A t).directionalField (axis i)).directionalField (axis i)).jetLp n) :=
+    fun i ↦ continuous_jetLp_directionalField _
+      (continuous_jetLp_directionalField A hA (axis i)) (axis i)
+  exact continuous_jetLp_addField _ _ (continuous_jetLp_addField _ _ (hdd 0) (hdd 1)) (hdd 2) n
+
+variable {T : ℝ}
+
+/-- The Laplacian path of a jet-continuous path of fields. -/
+def laplacianPath (A : Icc (0 : ℝ) T → SmoothL2Field Space)
+    (hA : ∀ n, Continuous (fun t ↦ (A t).jetLp n)) : C(Icc (0 : ℝ) T, L2) :=
+  fieldPath (fun t ↦ laplacianField (A t)) (continuous_jetLp_laplacianField A hA)
+
+theorem laplacianPath_apply (A : Icc (0 : ℝ) T → SmoothL2Field Space)
+    (hA : ∀ n, Continuous (fun t ↦ (A t).jetLp n)) (t : Icc (0 : ℝ) T) :
+    laplacianPath A hA t = (laplacianField (A t)).toLp := rfl
+
+theorem laplacianPath_eq_words (A : Icc (0 : ℝ) T → SmoothL2Field Space)
+    (hA : ∀ n, Continuous (fun t ↦ (A t).jetLp n)) :
+    laplacianPath A hA = ∑ i : Fin 3, ordinaryWordPath A hA (doubleWord i) := by
+  apply ContinuousMap.ext
+  intro t
+  rw [laplacianPath_apply, toLp_laplacianField, ContinuousMap.sum_apply]
+  simp only [ordinaryWordPath_apply]
+
+/-- **The Laplacians converge** along a smooth limit. -/
+theorem laplacianPath_convergence {A : ℕ → Icc (0 : ℝ) T → SmoothL2Field Space}
+    {hA : ∀ k n, Continuous (fun t ↦ (A k t).jetLp n)} (L : SmoothLimitData A hA) :
+    Tendsto (fun k ↦ laplacianPath (A k) (hA k)) atTop
+      (𝓝 (laplacianPath L.field L.field_continuous)) := by
+  simp only [laplacianPath_eq_words]
+  refine tendsto_finsetSum _ fun i _ ↦ ?_
+  let C := (ordinaryWordOperator (doubleWord i)).compLeftContinuous ℝ (Icc (0 : ℝ) T)
+  have h := (C.continuous.tendsto (L.tower.realization 2)).comp (L.sobolev_convergence 2)
+  have ha : ∀ k, C (sobolevPath (A k) (hA k) 2) = ordinaryWordPath (A k) (hA k) (doubleWord i) :=
+    fun k ↦ rfl
+  have hb : C (L.tower.realization 2) =
+      ordinaryWordPath L.field L.field_continuous (doubleWord i) := by
+    rw [← L.tower.smoothField_path 2]
+    rfl
+  simpa only [Function.comp_def, ha, hb] using h
+
+/-- The Navier–Stokes right-hand side path `P(-(u·∇)u) + ν Δu`. -/
+def nsRhsPath (ν : ℝ) (A : Icc (0 : ℝ) T → SmoothL2Field Space)
+    (hA : ∀ n, Continuous (fun t ↦ (A t).jetLp n)) : C(Icc (0 : ℝ) T, L2) :=
+  projectedRhsPath A hA + ν • laplacianPath A hA
+
+namespace RegularizedViscousEvolution
+
+variable {S : SmoothingOperator} {ν : ℝ} {hT : 0 ≤ T} (U : RegularizedViscousEvolution S ν T hT)
+
+def derivativePath : C(Icc (0 : ℝ) T, L2) := fieldPath U.derivative U.derivative_continuous
+
+theorem integral_equation (t : Icc (0 : ℝ) T) :
+    (U.velocity t).toLp = (U.velocity ⟨0, le_rfl, hT⟩).toLp + integral T hT U.derivativePath t := by
+  have h := eq_initial_add_integral T hT U.derivativePath
+    (fun r ↦ (U.velocity (projIcc 0 T hT r)).toLp) U.l2_time t
+  simpa only [projIcc_of_mem hT t.property,
+    projIcc_of_mem hT (show (0 : ℝ) ∈ Icc 0 T from ⟨le_rfl, hT⟩)] using h
+
+end RegularizedViscousEvolution
+
+section Passage
+
+variable {ν : ℝ} {hT : 0 ≤ T} {U : ∀ n, RegularizedViscousEvolution (regularizer n) ν T hT}
+  (L : SmoothLimitData (fun n ↦ (U n).velocity) (fun n ↦ (U n).velocity_continuous))
+
+omit L in
+theorem derivativePath_sub_norm_le (n : ℕ) (M : ℝ)
+    (hM : ∀ t, WordBound 4 M ((U n).velocity t)) (hM0 : 0 ≤ M) (hν : 0 ≤ ν) :
+    ‖(U n).derivativePath - nsRhsPath ν (U n).velocity (U n).velocity_continuous‖ ≤
+      regularizerError n * (regularizationCost M + ν * (6 * M)) := by
+  apply (ContinuousMap.norm_le _ (by
+    have := regularizerError_nonneg n
+    have := regularizationCost_nonneg M
+    positivity)).mpr
+  intro t
+  have he := regularized_rhs_error n _ ((U n).solenoidal t) M (hM t)
+  have hv := viscous_error n ((U n).velocity t) ((U n).solenoidal t) (wordBound_mono (hM t) (by omega))
+  have hsplit : ((U n).derivativePath - nsRhsPath ν (U n).velocity (U n).velocity_continuous) t =
+      ((((regularizer n).rhs ((U n).velocity t).toLp).toLp - (projectedRhs ((U n).velocity t)).toLp) +
+        ν • ((regularizer n).op (laplacianOp (regularizer n) ((U n).velocity t).toLp) -
+          (laplacianField ((U n).velocity t)).toLp)) := by
+    simp only [ContinuousMap.sub_apply, nsRhsPath, ContinuousMap.add_apply, ContinuousMap.smul_apply,
+      RegularizedViscousEvolution.derivativePath, fieldPath, ContinuousMap.coe_mk,
+      RegularizedViscousEvolution.derivative, viscousRhs, toLp_addField, viscousField_toLp,
+      viscousOp_apply, projectedRhsPath, laplacianPath_apply, laplacianOp_apply, smul_sub]
+    abel
+  rw [hsplit]
+  calc _ ≤ ‖((regularizer n).rhs ((U n).velocity t).toLp).toLp - (projectedRhs ((U n).velocity t)).toLp‖ +
+        ‖ν • ((regularizer n).op (laplacianOp (regularizer n) ((U n).velocity t).toLp) -
+          (laplacianField ((U n).velocity t)).toLp)‖ := norm_add_le _ _
+    _ ≤ regularizerError n * regularizationCost M + ν * (6 * (regularizerError n * M)) := by
+        rw [norm_smul, Real.norm_of_nonneg hν]
+        exact add_le_add he (mul_le_mul_of_nonneg_left hv hν)
+    _ = regularizerError n * (regularizationCost M + ν * (6 * M)) := by ring
+
+/-- **The regularized derivatives converge** to the Navier–Stokes right-hand side of
+the limit. -/
+theorem viscous_derivative_convergence (hν : 0 ≤ ν) (M : ℝ)
+    (hM : ∀ n t, WordBound 4 M ((U n).velocity t)) :
+    Tendsto (fun n ↦ (U n).derivativePath) atTop (𝓝 (nsRhsPath ν L.field L.field_continuous)) := by
+  have hM0 : 0 ≤ M := wordBound_nonneg (hM 0 ⟨0, le_rfl, hT⟩)
+  have hp := L.projectedRhsPath_convergence hT (40 * M)
+    (fun n t ↦ tensorNorm_three_le _ M (wordBound_mono (hM n t) (by omega)))
+  have hl := laplacianPath_convergence L
+  have hrhs : Tendsto (fun n ↦ nsRhsPath ν (U n).velocity (U n).velocity_continuous) atTop
+      (𝓝 (nsRhsPath ν L.field L.field_continuous)) := hp.add (hl.const_smul ν)
+  have hz : Tendsto (fun n ↦ (U n).derivativePath -
+      nsRhsPath ν (U n).velocity (U n).velocity_continuous) atTop (𝓝 0) := by
+    apply tendsto_iff_norm_sub_tendsto_zero.mpr
+    simp only [sub_zero]
+    apply squeeze_zero (fun _ ↦ norm_nonneg _)
+      (fun n ↦ derivativePath_sub_norm_le n M (hM n) hM0 hν)
+    simpa only [zero_mul] using
+      regularizerError_tendsto.mul_const (regularizationCost M + ν * (6 * M))
+  have h := hz.add hrhs
+  simpa only [sub_add_cancel, zero_add] using h
+
+theorem ns_integral_equation (hν : 0 ≤ ν) (M : ℝ)
+    (hM : ∀ n t, WordBound 4 M ((U n).velocity t)) (t : Icc (0 : ℝ) T) :
+    (L.field t).toLp = (L.field ⟨0, le_rfl, hT⟩).toLp +
+      integral T hT (nsRhsPath ν L.field L.field_continuous) t := by
+  have hi := (ContinuousMap.evalCLM ℝ t).continuous.tendsto
+    (integral T hT (nsRhsPath ν L.field L.field_continuous)) |>.comp
+      (((integral (E := L2) T hT).continuous.tendsto _).comp
+        (viscous_derivative_convergence L hν M hM))
+  have hs := (L.toLp_convergence ⟨0, le_rfl, hT⟩).add hi
+  exact tendsto_nhds_unique (L.toLp_convergence t)
+    (hs.congr (fun n ↦ ((U n).integral_equation t).symm))
+
+/-- The Navier–Stokes right-hand side of a field, as a smooth field. -/
+def nsRhsField (ν : ℝ) (A : SmoothL2Field Space) : SmoothL2Field Space :=
+  addField (projectedRhs A) (EulerOrdinarySobolev.scaleField ν (laplacianField A))
+
+omit L in
+theorem nsRhsField_toLp (A : Icc (0 : ℝ) T → SmoothL2Field Space)
+    (hA : ∀ n, Continuous (fun t ↦ (A t).jetLp n)) (t : Icc (0 : ℝ) T) :
+    (nsRhsField ν (A t)).toLp = nsRhsPath ν A hA t := by
+  simp only [nsRhsField, toLp_addField, EulerOrdinarySobolev.scaleField_toLp, nsRhsPath,
+    ContinuousMap.add_apply, ContinuousMap.smul_apply, projectedRhsPath, fieldPath,
+    ContinuousMap.coe_mk, laplacianPath_apply]
+
+omit L in
+theorem nsRhsField_continuous (A : Icc (0 : ℝ) T → SmoothL2Field Space)
+    (hA : ∀ n, Continuous (fun t ↦ (A t).jetLp n)) (n : ℕ) :
+    Continuous (fun t ↦ (nsRhsField ν (A t)).jetLp n) :=
+  continuous_jetLp_addField _ _ (projectedRhs_continuous A hA)
+    (fun k ↦ continuous_jetLp_mapField _ _ (continuous_jetLp_laplacianField A hA) k) n
+
+theorem ns_time (hν : 0 ≤ ν) (M : ℝ) (hM : ∀ n t, WordBound 4 M ((U n).velocity t))
+    (t : Icc (0 : ℝ) T) :
+    HasDerivWithinAt (fun r ↦ (L.field (projIcc 0 T hT r)).toLp)
+      (nsRhsPath ν L.field L.field_continuous t) (Icc (0 : ℝ) T) t := by
+  have he : (fun r ↦ (L.field (projIcc 0 T hT r)).toLp) =
+      fun r ↦ (L.field ⟨0, le_rfl, hT⟩).toLp +
+        extendPath T hT (integral T hT (nsRhsPath ν L.field L.field_continuous)) r := by
+    funext r
+    exact ns_integral_equation L hν M hM (projIcc 0 T hT r)
+  rw [he]
+  exact (integral_hasDerivWithinAt T hT (nsRhsPath ν L.field L.field_continuous) t).const_add _
+
+/-- The limit, as a smooth Navier–Stokes evolution. -/
+def nsEvolution (hν : 0 ≤ ν) (M : ℝ) (hM : ∀ n t, WordBound 4 M ((U n).velocity t)) :
+    NSEvolution ν T hT where
+  velocity := L.field
+  pressureForce t := pressureField (L.field t)
+  velocity_continuous := L.field_continuous
+  pressure_continuous := pressureField_continuous L.field L.field_continuous
+  solenoidal t := gradientSpace.isClosed_orthogonal.mem_of_tendsto (L.toLp_convergence t)
+    (Eventually.of_forall (fun n ↦ (U n).solenoidal t))
+  gradient t := pressureField_mem_gradient (L.field t)
+  time_law t ht x := by
+    have hd : ∀ r (hr : r ∈ Ioo 0 T),
+        HasDerivAt (fun s ↦ (L.field (projIcc 0 T hT s)).toLp)
+          (nsRhsField ν (L.field ⟨r, hr.1.le, hr.2.le⟩)).toLp r := by
+      intro r hr
+      rw [nsRhsField_toLp L.field L.field_continuous]
+      exact (ns_time L hν M hM ⟨r, hr.1.le, hr.2.le⟩).hasDerivAt (Icc_mem_nhds hr.1 hr.2)
+    have h := pointwise_derivative_of_l2 T hT L.field (fun s ↦ nsRhsField ν (L.field s))
+      L.field_continuous (nsRhsField_continuous L.field L.field_continuous) hd
+      ⟨t, ht.1.le, ht.2.le⟩ x
+    have hf : (nsRhsField ν (L.field ⟨t, ht.1.le, ht.2.le⟩)).field x =
+        -fderiv ℝ (L.field ⟨t, ht.1.le, ht.2.le⟩).field x ((L.field ⟨t, ht.1.le, ht.2.le⟩).field x) -
+          (pressureField (L.field ⟨t, ht.1.le, ht.2.le⟩)).field x +
+            ν • Δ (L.field ⟨t, ht.1.le, ht.2.le⟩).field x := by
+      simp only [nsRhsField, addField_field, projectedRhs_field, EulerOrdinarySobolev.scaleField_field,
+        laplacianField_field]
+    rw [← hf]
+    exact h.hasDerivAt (Icc_mem_nhds ht.1 ht.2)
+
+end Passage
+
+/-- The regularized viscous evolution from `A` with the `n`-th regularizer. -/
+def regularizedViscousSolution {ν : ℝ} (hν : 0 ≤ ν) (A : SmoothL2Field Space)
+    (hA : A.toLp ∈ solenoidalSpace) (n : ℕ) :
+    RegularizedViscousEvolution (regularizer n) ν (regularizedTime A) (regularizedTime_pos A).le :=
+  Classical.choose (exists_regularizedViscous (regularizer n) hν (regularizedTime A)
+    (regularizedTime_pos A).le A hA)
+
+theorem regularizedViscousSolution_initial {ν : ℝ} (hν : 0 ≤ ν) (A : SmoothL2Field Space)
+    (hA : A.toLp ∈ solenoidalSpace) (n : ℕ) :
+    (regularizedViscousSolution hν A hA n).velocity ⟨0, le_rfl, (regularizedTime_pos A).le⟩ = A :=
+  Classical.choose_spec (exists_regularizedViscous (regularizer n) hν (regularizedTime A)
+    (regularizedTime_pos A).le A hA)
+
+theorem regularizedViscousSolution_bounds {ν : ℝ} (hν : 0 ≤ ν) (A : SmoothL2Field Space)
+    (hA : A.toLp ∈ solenoidalSpace) :
+    ∀ q, ∃ M : ℝ, ∀ n t, tensorNorm q ((regularizedViscousSolution hν A hA n).velocity t) ≤ M := by
+  intro q
+  obtain ⟨M, hM⟩ := regularizedViscous_all_order A q
+  exact ⟨M, fun n t ↦ hM _ hν _ (regularizedViscousSolution_initial hν A hA n) t⟩
+
+theorem regularizedViscousSolution_cauchy {ν : ℝ} (hν : 0 ≤ ν) (A : SmoothL2Field Space)
+    (hA : A.toLp ∈ solenoidalSpace) :
+    CauchySeq (fun n ↦ fieldPath (regularizedViscousSolution hν A hA n).velocity
+      (regularizedViscousSolution hν A hA n).velocity_continuous) := by
+  obtain ⟨M, hM⟩ := regularizedViscousSolution_bounds hν A hA 4
+  apply regularizedViscous_cauchy hν (regularizedViscousSolution hν A hA) M
+    (fun n t k hk w ↦ (wordBound_tensorNorm 4 _ k hk w).trans (hM n t))
+  intro j k
+  simp only [regularizedViscousSolution_initial]
+
+/-- The smooth limit of the regularized viscous evolutions from `A`. -/
+def viscousLocalLimit {ν : ℝ} (hν : 0 ≤ ν) (A : SmoothL2Field Space) (hA : A.toLp ∈ solenoidalSpace) :
+    SmoothLimitData (fun n ↦ (regularizedViscousSolution hν A hA n).velocity)
+      (fun n ↦ (regularizedViscousSolution hν A hA n).velocity_continuous) :=
+  smoothLimitData (regularizedTime_pos A).le _ _
+    (regularizedViscousSolution_bounds hν A hA) (regularizedViscousSolution_cauchy hν A hA)
+
+/-- The local smooth Navier–Stokes evolution from `A`. -/
+def localNSEvolution {ν : ℝ} (hν : 0 ≤ ν) (A : SmoothL2Field Space)
+    (hA : A.toLp ∈ solenoidalSpace) :
+    NSEvolution ν (regularizedTime A) (regularizedTime_pos A).le :=
+  nsEvolution (viscousLocalLimit hν A hA) hν
+    (Classical.choose (regularizedViscousSolution_bounds hν A hA 4))
+    (fun n t k hk w ↦ (wordBound_tensorNorm 4 _ k hk w).trans
+      (Classical.choose_spec (regularizedViscousSolution_bounds hν A hA 4) n t))
+
+theorem localNSEvolution_initial {ν : ℝ} (hν : 0 ≤ ν) (A : SmoothL2Field Space)
+    (hA : A.toLp ∈ solenoidalSpace) :
+    (localNSEvolution hν A hA).velocity ⟨0, le_rfl, (regularizedTime_pos A).le⟩ = A := by
+  apply smoothField_eq_of_toLp_eq
+  have h := (viscousLocalLimit hν A hA).toLp_convergence ⟨0, le_rfl, (regularizedTime_pos A).le⟩
+  simp only [regularizedViscousSolution_initial] at h
+  exact tendsto_nhds_unique h tendsto_const_nhds
+
+/-- **Local existence for the Navier–Stokes equations on `ℝ³`.** Every smooth solenoidal
+velocity field with all derivatives in `L²` starts a smooth Navier–Stokes evolution, for
+every viscosity `ν ≥ 0`, on an interval whose length depends only on the `H³` energy of the
+datum (the upstream regularized Euler time, which does not depend on `ν`). -/
+theorem exists_local_nsEvolution {ν : ℝ} (hν : 0 ≤ ν) (A : SmoothL2Field Space)
+    (hA : A.toLp ∈ solenoidalSpace) :
+    ∃ (T : ℝ) (hT : 0 < T), ∃ U : NSEvolution ν T hT.le, U.velocity ⟨0, le_rfl, hT.le⟩ = A :=
+  ⟨regularizedTime A, regularizedTime_pos A, localNSEvolution hν A hA,
+    localNSEvolution_initial hν A hA⟩
+
+end Limit
 
 end Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow
