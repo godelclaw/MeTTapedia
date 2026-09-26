@@ -76,8 +76,11 @@ Current status:
   block-product reference measure), proves that it implies exponential
   clustering of bounded block observables uniformly in the volume, and proves
   that it fails for families whose bounded two-point functions approach the free
-  field, so at `β = ∞` for four-dimensional `U(1)` and five-dimensional gauge
-  fields. The polymer-gas theory it uses is general and lives in
+  field. `FreeFieldNoCrossing.lean` makes this concrete: the periodic Gaussian
+  `F₀₁` field of the free Maxwell theory admits no crossing representation that
+  reproduces its phase correlations on the tori; that weakly coupled `U(1)`
+  approaches this field as `β → ∞` is not formalized. The polymer-gas theory
+  these modules use is general and lives in
   `Mettapedia/Combinatorics/PolymerGas/` (Dobrushin and Kotecký–Preiss criteria,
   spatial decay, polymer representations of product measures, the truncated
   two-point function, lattice geometry, exponential clustering), without a

@@ -1809,11 +1809,16 @@ the two-point functions remain as hypotheses. For $0<t\leq1/2$ the
 expression $e^{-t\sigma^2}(e^{tC(n)}-1)$, the truncated two-point function of the
 phase $e^{i\sqrt t F_{01}}$ and its conjugate for a centred Gaussian field of
 covariance $C$, controls $|C(n)|$ up to the factor $2e^{t\sigma^2}/t$, because
-$|C(n)|\leq1$; Lean proves this comparison of expressions. The Gaussian
-covariance identity itself, and the $\beta\to\infty$ limit that would put
-weakly coupled four-dimensional $\mathrm{U}(1)$ and the abelian components of
-five-dimensional $\mathrm{SU}(2)$ in this situation, are not formalized; nor is
-the persistence of weak coupling at every scale for those theories. For
+$|C(n)|\leq1$. For the free field itself the calibration is complete. Let the
+centred Gaussian field $F_{01}$ on the tori have the periodic Maxwell
+covariance; its covariances converge to the free ones as the volume grows (a
+Riemann-sum argument for the bounded symbol, continuous away from zero). Then no
+crossing family reproduces its two phase marginals $e^{\pm iF_{01}/2}$ and their
+joint expectation at every volume (\texttt{FreeFieldNoCrossing}). Not formalized
+are the $\beta\to\infty$ limit that would put weakly coupled four-dimensional
+$\mathrm{U}(1)$ and the abelian components of five-dimensional $\mathrm{SU}(2)$
+near this field, and the persistence of weak coupling at every scale for those
+theories. For
 four-dimensional $\mathrm{SU}(2)$, reaching a regime with these bounds by
 running the coupling from weak to strong is the proposed mechanism; establishing
 it is the open crossing.
