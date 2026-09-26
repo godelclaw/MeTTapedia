@@ -18202,3 +18202,42 @@ cannot pass a cubic merge of its first two ports.
 Backward viability along a route composes exactly, but its compositional law
 does not assert that the viable set is inhabited.
 \Sverified{Mettapedia.GSLT.RelationalRouteSemantics.Semantics.viable_append_iff}
+
+\subsection{The exact exceptional five-port Kempe language}
+
+The five-port obstruction can be stated without a support-richness bound.
+An admissible word has multiplicities $(3,1,1)$, so its orbit under colour
+renaming is determined by the two singleton positions.  There are ten such
+orbits.  The five with cyclically adjacent singleton positions extend over
+the pentagon; the five diagonal pairs do not.  Call the latter profile $D$.
+
+For a repeated-colour pair, the four active boundary ports have two possible
+noncrossing matchings.  A physical colouring supplies one of them, and
+switching a component preserves support.  If a nonempty support avoids the
+pentagon, these choices force the cycle
+\[
+ \{0,2\}\longrightarrow\{0,3\}\longrightarrow\{1,3\}
+ \longrightarrow\{1,4\}\longrightarrow\{2,4\}
+ \longrightarrow\{0,2\}.
+\]
+Consequently that support is exactly $D$.  The finite transition entries
+are checked against literal boundary switches, and the classification lifts
+to an equality of literal word languages: all thirty rejected words.
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.PentagonKempeSupport.language_eq_rejected_of_avoids}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.PentagonKempeSupport.rejected_card}
+
+For a spherical vertex shore, the existing physical separation theorem
+supplies noncrossing in its actual cyclic boundary order.  With a starting
+proper shore colouring and the stated connectivity and embedding conditions,
+a compatible shore--pentagon colouring pair exists if and only if the shore's
+orbit support differs from $D$.
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.PentagonKempeSupport.spherical_compatiblePentagon_iff_ne_bad}
+
+The exception cannot be eliminated from the abstract closure rules alone.
+The thirty rejected words themselves form a nonempty boundary language,
+including closure under every component-union switch of explicitly supplied
+noncrossing mates.  This is an abstract countermodel, not a planar graph
+realization.  Any successful exclusion must use additional physical
+information, for example compatibility among the matchings in one common
+graph, or a geometric reconstruction argument.
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.PentagonKempeSupport.exists_nonempty_boundaryLanguage_avoiding_pentagon}

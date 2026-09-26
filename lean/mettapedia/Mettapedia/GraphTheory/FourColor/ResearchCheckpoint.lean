@@ -10,6 +10,8 @@ import Mettapedia.GraphTheory.FourColor.OpenTangleWitnessComposition
 import Mettapedia.GraphTheory.FourColor.VertexConstructionLiftBoundary
 import Mettapedia.GraphTheory.Representation.ColoringTransport
 import Mettapedia.GraphTheory.Representation.MatrixOperationalTranslation
+import Mettapedia.GraphTheory.FourColor.Compositional.PentagonKempeShore
+import Mettapedia.GraphTheory.FourColor.Compositional.PentagonKempeCountermodel
 import Mettapedia.GraphTheory.FourColor.GoertzelV24MinimalCounterexampleSelection
 import Mettapedia.GraphTheory.FourColor.GoertzelV24IrreducibleBaseBurden
 
@@ -35,6 +37,11 @@ An explicit admissible word refutes unrestricted lifting through every merge.
 Simple-graph layout conversions transport existing vertex-colouring witnesses
 and boundary counts exactly. This transport does not create an initial
 colouring or supply an embedding-aware Tait-colouring representation.
+A nonempty five-port boundary language avoiding the pentagon is exactly the
+thirty rejected words. This language itself satisfies the abstract parity,
+colour-relabelling and noncrossing component-union closure rules. The physical
+spherical-shore adapter retains all geometric hypotheses and a starting
+proper colouring; excluding the exceptional physical support remains open.
 This build root does not establish either decomposition supply or finite-base
 verification, and is deliberately separate from `FourColorLane`.
 -/
