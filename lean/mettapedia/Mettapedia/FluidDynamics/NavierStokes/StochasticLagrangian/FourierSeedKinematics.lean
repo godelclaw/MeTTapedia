@@ -30,10 +30,21 @@ debris. Only an echo, a pair with streamwise components of opposite signs,
 can extrapolate to a fresh mode that is still to cross, and an echo of two
 pieces of debris has opposite cross-stream components, so the fresh mode is
 no finer along the shear gradient than the finer input: debris cannot seed
-finer amplifiable structure along the gradient. By the shear alignment, after `n` shear periods such a pair has an angle whose sine is at
-most `8 |p × r| / |n|`, so by the sine law its coupling falls like `1 / |n|`.
-The unforced flow can therefore seed a new amplification only through echoes
-of debris that the shear keeps silencing.
+amplifiable structure finer along the gradient than it already is.
+
+The shear silences only some echoes. Two modes sheared together from
+wavevectors much shorter than `n` have, after `n` shear periods, an angle whose
+sine is at most `8 |p × r| / |n|`, so by the sine law their coupling falls like
+`1 / |n|`. A mode that is crossing now behaves differently. Its angle with any
+mode is at least as wide as that mode's tilt toward the gradient, so its angle
+with old debris opens toward a right angle. Its echo with debris `n` periods
+old crosses `n` periods in the future, as fine along the gradient as the
+debris, and at full coupling. What limits such echoes is the viscous decay of
+the debris: the squared wavenumbers along its shear orbit sum to at least
+`k₀² n³ / 3`, so its damping grows like the cube of its age. The kinematics
+therefore do not stop an unforced flow from seeding its own amplification.
+Echoes with ever older debris supply ever smaller seeds; whether the seeds
+have the size and phase that an amplification needs is a dynamical question.
 -/
 
 set_option autoImplicit false
@@ -42,7 +53,8 @@ noncomputable section
 
 namespace Mettapedia.FluidDynamics.NavierStokes.FourierSeedKinematics
 
-open PeriodicFourierTriad FourierShearAlignment
+open PeriodicFourierTriad FourierShearAlignment FourierTriadSineLaw
+open PancakeFrequencyProjectorCommutator
 
 /-- The shear count at which the mode `k` crosses the direction orthogonal to
 the flow. -/
@@ -156,5 +168,102 @@ theorem exists_echo : ∃ p r : Wavevector, crossing p ≤ 0 ∧ crossing r ≤ 
     0 < crossing (p - r) := by
   refine ⟨![3, -1, 0], ![2, -2, 0], ?_, ?_, ?_⟩ <;>
     norm_num [crossing]
+
+/-- The shear orbit of a mode that is crossing, with no component along the
+gradient. -/
+theorem shearMap_of_crossing (n a c : ℤ) : shearMap n ![a, 0, c] = ![a, -(n * a), c] := by
+  ext i
+  fin_cases i <;> simp [shearMap]
+
+/-- **A crossing mode is as transverse to any mode as that mode is tilted.** If
+`p` has no component along the shear gradient, the squared sine of its angle
+with any mode `r` is at least the squared share of `r` along the gradient. Old
+debris lies almost along the gradient, so its angle with every crossing mode is
+nearly a right angle. -/
+theorem sq_div_le_sine_sq {p r : Wavevector} (hp : p ≠ 0) (hr : r ≠ 0) (hp1 : p 1 = 0) :
+    (r 1 : ℝ) ^ 2 / ‖frequencyVec r‖ ^ 2 ≤ sine p r ^ 2 := by
+  have hP : 0 < ‖frequencyVec p‖ := norm_pos_iff.mpr (frequencyVec_ne_zero hp)
+  have hR : 0 < ‖frequencyVec r‖ := norm_pos_iff.mpr (frequencyVec_ne_zero hr)
+  have hc := norm_frequencyVec_sq_three (wavevectorCross p r)
+  have hp2 := norm_frequencyVec_sq_three p
+  have hp1' : ((p 1 : ℤ) : ℝ) = 0 := by exact_mod_cast hp1
+  have hc0 : ((wavevectorCross p r 0 : ℤ) : ℝ) = (p 1 : ℝ) * (r 2 : ℝ) - (p 2 : ℝ) * (r 1 : ℝ) := by
+    simp [wavevectorCross]
+  have hc2 : ((wavevectorCross p r 2 : ℤ) : ℝ) = (p 0 : ℝ) * (r 1 : ℝ) - (p 1 : ℝ) * (r 0 : ℝ) := by
+    simp [wavevectorCross]
+  have hlow : ‖frequencyVec p‖ ^ 2 * (r 1 : ℝ) ^ 2 ≤
+      ‖frequencyVec (wavevectorCross p r)‖ ^ 2 := by
+    rw [hc, hp2, hc0, hc2, hp1']
+    nlinarith [sq_nonneg ((wavevectorCross p r 1 : ℤ) : ℝ)]
+  unfold sine
+  rw [div_pow, mul_pow, le_div_iff₀ (by positivity)]
+  calc (r 1 : ℝ) ^ 2 / ‖frequencyVec r‖ ^ 2 * (‖frequencyVec p‖ ^ 2 * ‖frequencyVec r‖ ^ 2)
+      = ‖frequencyVec p‖ ^ 2 * (r 1 : ℝ) ^ 2 := by field_simp
+    _ ≤ _ := hlow
+
+/-- **The echo of a crossing mode with old debris is not silenced.** The mode
+`(2, 0, 0)` crosses now, and the debris `(-1, n, 0)` is the crossing mode
+`(-1, 0, 0)` after `n` shear periods. Their echo `(1, n, 0)` crosses `n`
+periods from now, as far ahead as the debris lies behind, and is as fine along
+the gradient as the debris. The squared sine of the pair's angle is
+`n² / (1 + n²)`, at least one half, and the angle opens toward a right angle
+as the debris ages. -/
+theorem echo_of_crossing_unsilenced {n : ℤ} (hn : 1 ≤ n) :
+    shearMap n ![-1, 0, 0] = ![-1, n, 0] ∧
+      crossing ![2, 0, 0] = 0 ∧ crossing ![-1, n, 0] = -n ∧
+      crossing (![2, 0, 0] + ![-1, n, 0]) = n ∧
+      (((![2, 0, 0] + ![-1, n, 0] : Wavevector) 1 : ℤ) : ℝ) = n ∧
+      sine ![2, 0, 0] ![-1, n, 0] ^ 2 = (n : ℝ) ^ 2 / (1 + (n : ℝ) ^ 2) ∧
+      1 / 2 ≤ sine ![2, 0, 0] ![-1, n, 0] ^ 2 := by
+  have hn' : (1 : ℝ) ≤ n := by exact_mod_cast hn
+  have hsine : sine ![2, 0, 0] ![-1, n, 0] ^ 2 = (n : ℝ) ^ 2 / (1 + (n : ℝ) ^ 2) := by
+    unfold sine
+    rw [div_pow, mul_pow, norm_frequencyVec_sq_three, norm_frequencyVec_sq_three,
+      norm_frequencyVec_sq_three]
+    simp [wavevectorCross]
+    field_simp
+  refine ⟨?_, ?_, ?_, ?_, ?_, hsine, ?_⟩
+  · ext i
+    fin_cases i <;> simp [shearMap]
+  · simp [crossing]
+  · simp [crossing, div_neg]
+  · simp [crossing]
+  · simp
+  · rw [hsine, le_div_iff₀ (by positivity)]
+    nlinarith
+
+/-- The squares of `0, …, n` sum to at least `n³ / 3`. -/
+theorem cube_div_three_le_sum_sq (n : ℕ) :
+    (n : ℝ) ^ 3 / 3 ≤ ∑ j ∈ Finset.range (n + 1), (j : ℝ) ^ 2 := by
+  induction n with
+  | zero => simp
+  | succ m ih =>
+    rw [Finset.sum_range_succ]
+    have hm : (0 : ℝ) ≤ m := Nat.cast_nonneg m
+    push_cast
+    nlinarith [ih]
+
+/-- **The viscous damping of debris grows like the cube of its age.** Along the
+shear orbit of a crossing mode `k`, the squared wavenumbers of the first `n + 1`
+shear periods sum to at least `k₀² n³ / 3`. Viscosity damps each mode at a rate
+proportional to its squared wavenumber, so the damping exponent of debris
+`n` periods old grows at least like `n³`. -/
+theorem cube_le_sum_norm_shearMap_sq {k : Wavevector} (hk1 : k 1 = 0) (n : ℕ) :
+    (k 0 : ℝ) ^ 2 * ((n : ℝ) ^ 3 / 3) ≤
+      ∑ j ∈ Finset.range (n + 1), ‖frequencyVec (shearMap j k)‖ ^ 2 := by
+  have hk1' : ((k 1 : ℤ) : ℝ) = 0 := by exact_mod_cast hk1
+  calc (k 0 : ℝ) ^ 2 * ((n : ℝ) ^ 3 / 3)
+      ≤ (k 0 : ℝ) ^ 2 * ∑ j ∈ Finset.range (n + 1), (j : ℝ) ^ 2 :=
+        mul_le_mul_of_nonneg_left (cube_div_three_le_sum_sq n) (sq_nonneg _)
+    _ = ∑ j ∈ Finset.range (n + 1), (k 0 : ℝ) ^ 2 * (j : ℝ) ^ 2 := by rw [Finset.mul_sum]
+    _ ≤ _ := by
+        apply Finset.sum_le_sum
+        intro j _
+        rw [norm_frequencyVec_sq_three]
+        have e : ((shearMap (j : ℤ) k 1 : ℤ) : ℝ) = (k 1 : ℝ) - (j : ℝ) * (k 0 : ℝ) := by
+          simp [shearMap]
+        have e0 : ((shearMap (j : ℤ) k 0 : ℤ) : ℝ) = (k 0 : ℝ) := by simp [shearMap]
+        rw [e, e0, hk1']
+        nlinarith [sq_nonneg (k 0 : ℝ), sq_nonneg ((shearMap (j : ℤ) k 2 : ℤ) : ℝ)]
 
 end Mettapedia.FluidDynamics.NavierStokes.FourierSeedKinematics
