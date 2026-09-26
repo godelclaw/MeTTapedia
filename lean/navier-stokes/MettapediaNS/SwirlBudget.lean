@@ -5,6 +5,9 @@ import Mathlib.Analysis.Calculus.Deriv.Comp
 import Mathlib.Analysis.Calculus.Deriv.Add
 import Mathlib.Analysis.Calculus.ContDiff.Comp
 import Mathlib.Analysis.InnerProductSpace.PiL2
+import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
+import Mathlib.Analysis.SpecialFunctions.Trigonometric.Deriv
+import Mathlib.Analysis.Calculus.Deriv.Prod
 
 /-!
 # The swirl identity: how pressure and force enter the angular momentum
@@ -19,8 +22,9 @@ twice differentiable in space and differentiable in time,
 ```
 
 with `ω₃ = ∂₀u₁ - ∂₁u₀` the axial vorticity. The pressure enters only through
-its angular derivative, which averages to zero around the axis, and the force
-only through its torque. For an axisymmetric unforced flow this is the swirl
+its angular derivative `x₀ ∂₁p - x₁ ∂₀p`, which is the derivative along the
+rotations about the axis, so its integral over every circle about the axis
+vanishes; the force enters only through its torque. For an axisymmetric unforced flow this is the swirl
 equation `∂ₜΓ + u·∇Γ = ν (∂ᵣ² - r⁻¹∂ᵣ + ∂_z²) Γ`, whose maximum principle
 bounds the swirl by its initial maximum. In the breakdown construction for the
 forced problem, the maximal swirl of the axisymmetric background grows without
@@ -165,5 +169,94 @@ theorem swirl_identity {ν : ℝ} {u : VelocityField} {p : PressureField} {f : V
   rw [hT, hA, hL]
   unfold angularDerivative torque
   linear_combination (x 0) * hr 1 - (x 1) * hr 0
+
+section Average
+
+/-- Rotation by the angle `φ` about the third axis. -/
+def rot (φ : ℝ) (x : Space) : Space :=
+  !₂[Real.cos φ * x 0 - Real.sin φ * x 1, Real.sin φ * x 0 + Real.cos φ * x 1, x 2]
+
+/-- The generator of the rotations, `(-x₁, x₀, 0)`. -/
+def angular (x : Space) : Space := !₂[-x 1, x 0, 0]
+
+theorem rot_zero (x : Space) : rot 0 x = x := by
+  ext i
+  fin_cases i <;> simp [rot]
+
+theorem rot_two_pi (x : Space) : rot (2 * Real.pi) x = x := by
+  ext i
+  fin_cases i <;> simp [rot]
+
+theorem hasDerivAt_rot (φ : ℝ) (x : Space) :
+    HasDerivAt (fun φ ↦ rot φ x) (angular (rot φ x)) φ := by
+  have h0 : HasDerivAt (fun φ ↦ Real.cos φ * x 0 - Real.sin φ * x 1)
+      (-(Real.sin φ * x 0 + Real.cos φ * x 1)) φ :=
+    HasDerivAt.congr_deriv (HasDerivAt.sub (HasDerivAt.mul_const (Real.hasDerivAt_cos φ) (x 0))
+      (HasDerivAt.mul_const (Real.hasDerivAt_sin φ) (x 1))) (by ring)
+  have h1 : HasDerivAt (fun φ ↦ Real.sin φ * x 0 + Real.cos φ * x 1)
+      (Real.cos φ * x 0 - Real.sin φ * x 1) φ :=
+    HasDerivAt.congr_deriv (HasDerivAt.add (HasDerivAt.mul_const (Real.hasDerivAt_sin φ) (x 0))
+      (HasDerivAt.mul_const (Real.hasDerivAt_cos φ) (x 1))) (by ring)
+  have h2 : HasDerivAt (fun _ : ℝ ↦ x 2) 0 φ := hasDerivAt_const _ _
+  have hv : HasDerivAt (fun φ ↦ ![Real.cos φ * x 0 - Real.sin φ * x 1,
+      Real.sin φ * x 0 + Real.cos φ * x 1, x 2])
+      ![-(Real.sin φ * x 0 + Real.cos φ * x 1), Real.cos φ * x 0 - Real.sin φ * x 1, 0] φ := by
+    rw [hasDerivAt_pi]
+    intro i
+    fin_cases i
+    · simpa using h0
+    · simpa using h1
+    · simpa using h2
+  have hL := HasFDerivAt.comp_hasDerivAt φ
+    ((EuclideanSpace.equiv (Fin 3) ℝ).symm.toContinuousLinearMap.hasFDerivAt) hv
+  have hL' : HasDerivAt (fun φ ↦ rot φ x) ((EuclideanSpace.equiv (Fin 3) ℝ).symm
+      ![-(Real.sin φ * x 0 + Real.cos φ * x 1), Real.cos φ * x 0 - Real.sin φ * x 1, 0]) φ := hL
+  refine HasDerivAt.congr_deriv hL' ?_
+  ext i
+  fin_cases i <;> simp [angular, rot]
+
+/-- The angular derivative `x₀ ∂₁g - x₁ ∂₀g` of a scalar field. -/
+def angularDeriv (g : Space → ℝ) (x : Space) : ℝ := fderiv ℝ g x (angular x)
+
+theorem angular_eq (x : Space) : angular x = x 0 • e 1 - x 1 • e 0 := by
+  ext i
+  fin_cases i <;> simp [angular, e_apply]
+
+theorem angularDeriv_eq (g : Space → ℝ) (x : Space) :
+    angularDeriv g x = x 0 * fderiv ℝ g x (e 1) - x 1 * fderiv ℝ g x (e 0) := by
+  rw [angularDeriv, angular_eq, map_sub, map_smul, map_smul, smul_eq_mul, smul_eq_mul]
+
+/-- **Angular derivatives average to zero around the axis.** -/
+theorem integral_angularDeriv_rot {g : Space → ℝ} (hg : ContDiff ℝ 1 g) (x : Space) :
+    ∫ φ in (0 : ℝ)..(2 * Real.pi), angularDeriv g (rot φ x) = 0 := by
+  have hd : ∀ φ : ℝ, HasDerivAt (fun φ ↦ g (rot φ x)) (angularDeriv g (rot φ x)) φ := by
+    intro φ
+    have hg' : HasFDerivAt g (fderiv ℝ g (rot φ x)) (rot φ x) :=
+      (hg.differentiable (by norm_num) (rot φ x)).hasFDerivAt
+    exact HasFDerivAt.comp_hasDerivAt φ hg' (hasDerivAt_rot φ x)
+  have hcont : Continuous (fun φ ↦ angularDeriv g (rot φ x)) := by
+    have hrot : Continuous (fun φ : ℝ ↦ rot φ x) :=
+      continuous_iff_continuousAt.mpr fun φ ↦ (hasDerivAt_rot φ x).continuousAt
+    have hang : Continuous angular := by
+      have : angular = fun y : Space ↦ y 0 • e 1 - y 1 • e 0 := funext angular_eq
+      rw [this]
+      fun_prop
+    have hf : Continuous (fderiv ℝ g) := hg.continuous_fderiv (by norm_num)
+    exact (hf.comp hrot).clm_apply (hang.comp hrot)
+  rw [intervalIntegral.integral_eq_sub_of_hasDerivAt (fun φ _ ↦ hd φ)
+    (hcont.intervalIntegrable _ _), rot_two_pi, rot_zero, sub_self]
+
+/-- **The pressure drops out of the averaged swirl equation.** The angular
+derivative of the pressure averages to zero over every circle about the axis. -/
+theorem integral_angularDerivative_rot {p : PressureField} {t : ℝ}
+    (hp : ContDiff ℝ 1 (fun y : Space ↦ p (t, y))) (x : Space) :
+    ∫ φ in (0 : ℝ)..(2 * Real.pi), angularDerivative p t (rot φ x) = 0 := by
+  have e : ∀ y, angularDerivative p t y = angularDeriv (fun y : Space ↦ p (t, y)) y := fun y ↦ by
+    rw [angularDeriv_eq]
+    rfl
+  simp only [e]
+  exact integral_angularDeriv_rot hp x
+
+end Average
 
 end Mettapedia.FluidDynamics.NavierStokes.SwirlBudget

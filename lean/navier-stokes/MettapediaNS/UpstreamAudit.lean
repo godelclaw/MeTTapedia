@@ -280,3 +280,5 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.SwirlBudget.fderiv_swirlSlice_apply
 #print axioms Mettapedia.FluidDynamics.NavierStokes.SwirlBudget.fderiv_fderiv_swirlSlice
 #print axioms Mettapedia.FluidDynamics.NavierStokes.SwirlBudget.swirl_identity
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SwirlBudget.integral_angularDeriv_rot
+#print axioms Mettapedia.FluidDynamics.NavierStokes.SwirlBudget.integral_angularDerivative_rot
