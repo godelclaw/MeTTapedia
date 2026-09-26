@@ -4,6 +4,7 @@ import Mettapedia.GraphTheory.FourColor.GoertzelV24TubeCountGrowth
 import Mettapedia.GraphTheory.FourColor.GoertzelV24PentagonTubeSaturation
 import Mettapedia.GraphTheory.FourColor.OddCappedTubeSaturation
 import Mettapedia.GraphTheory.FourColor.ZigzagRingTwoColour
+import Mettapedia.GraphTheory.FourColor.ZigzagTubeCompression
 import Mettapedia.GraphTheory.FourColor.BufferedFrontierConstruction
 import Mettapedia.GraphTheory.FourColor.SourceConstructionGSLT
 import Mettapedia.GraphTheory.FourColor.OpenTangleWitnessComposition
@@ -53,6 +54,15 @@ selected component. Its literal endpoint graph, rotation system, boundary
 order, proper colourings and channel connectedness are linked by exact
 transport theorems. Neither a bound on the attachments nor a general escape from
 the rejected pentagon support follows from these results.
+For every circumference at least three, the complete zigzag-ring support
+stabilizes after the explicit bound `2 * 4^k + k`: full-colour words are
+classified by multiplicities, and missing-colour words by cyclic rotation.
+Longer literal tubes therefore admit a strict vertex-count decrease and
+colouring reconstruction in both directions. The GSLT replacement retains
+the complete colouring witnesses of both serial exterior pieces. This is
+support preservation, not equality of counting matrices. Embedding-aware
+class preservation and supply of such tubes inside general linked bands
+remain separate geometric obligations.
 This build root does not establish either decomposition supply or finite-base
 verification, and is deliberately separate from `FourColorLane`.
 -/

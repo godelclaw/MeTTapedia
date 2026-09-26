@@ -18295,3 +18295,67 @@ law retains internal attachments and does not bound their number.  To obtain
 a finite reconfiguration semantics or exclude the exceptional pentagon
 language, a further geometric argument must control those attachments or
 justify a sufficient quotient of them.
+
+
+\subsection{Uniform shortening of zigzag tubes with exterior witnesses}
+
+For the literal zigzag ring of circumference $k\geq3$, write $T_k$ for
+its ordered boundary-colouring relation and set
+\[
+                         B(k)=2\cdot4^k+k.
+\]
+The following exact description holds for every $n\geq B(k)$. A pair
+$(x,y)$ belongs to $T_k^n$ if and only if $x$ is nonzero at every port and:
+\begin{itemize}
+\item if $x$ uses all three nonzero colours, $x$ and $y$ have the same
+multiplicity of every colour;
+\item if a nonzero colour is missing from $x$, $y$ is a cyclic rotation
+of $x$.
+\end{itemize}
+Thus the two-colour sectors retain cyclic order; multiplicity alone would
+be too coarse there. Zero entries never occur on an accepted boundary.
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.transfer_iff_stable}
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.transfer_stabilizes}
+
+The explicit bound requires no new finite census. Adjacent-swap programs
+already connect rearrangements of a word. Erasing loops from such a walk
+in the graph of all $4^k$ words gives a program of length less than $4^k$;
+idle moves pad it to every larger length. The two-ring swap construction,
+with its moving boundary origin accounted for, gives every sufficiently
+long even transfer. A first physical ring handles odd lengths. In a
+missing-colour sector each ring either idles or shifts; $k$ rings suffice
+to realize every rotation, with idle padding thereafter.
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.moves_after_word_bound}
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.full_transfer_after_word_bound}
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.missing_transfer_iff_rotation}
+
+Serial composition identifies these paths with colourings of the actual
+ring tangles. A tube of $n$ rings has $2kn$ vertices. Consequently a tube
+longer than $B(k)$ rings can be replaced by the tube of exactly $B(k)$
+rings with the same full ordered support and a strict decrease of actual
+vertex cardinality. Colouring witnesses transport in both directions.
+The maps are GSLT cells with identity boundary functions; they are not
+claimed to be bijections of colouring fibres.
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.HiddenTangle.appendRings_accepts_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.tube_vertex_card}
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.strict_tube_shortening}
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.tubeLengthCell}
+
+The reconstruction acts only on the replaced piece. In an arbitrary
+three-piece serial context, both exterior colouring witnesses and both
+seam words remain identical. In particular, every marked exterior dart
+keeps its colour. Every exterior fibre is empty before replacement if and
+only if it is empty afterwards, although its number of colourings may change.
+The exterior-preservation theorem applies to every compatible middle-piece
+cell, independently of tubes.
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleWitnessComposition.replaceInContext_exteriorWitnesses}
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.reconstructTubeInContext_exterior}
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.tube_context_nonempty_iff}
+
+This discharges the colouring and size portions of one explicit annular
+construction family at arbitrary circumference. The formal statements do
+not yet prove that replacing this subobject preserves the spherical
+bridgeless class of an arbitrary ambient rotation system. Nor do they
+supply regular zigzag tubes inside the general linked band. Those geometric
+obligations remain open; the circumference-dependent threshold is not a
+uniform bound on all minimal counterexamples.

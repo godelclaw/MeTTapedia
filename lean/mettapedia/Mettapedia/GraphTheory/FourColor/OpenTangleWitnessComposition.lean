@@ -121,6 +121,21 @@ theorem count_serial [Finite I] [Finite J] [Finite L] [Fintype R] [DecidableEq R
 
 variable {A B K P Q T : Type u}
 
+/-- Both exterior colouring witnesses and both seam words, extracted from
+a three-piece composite. The middle carrier is absent from the result. -/
+def exteriorWitnesses
+    (initial : TwoSidedOpenTangleData A K P L)
+    (middle : TwoSidedOpenTangleData V I L R)
+    (final : TwoSidedOpenTangleData W J R Q)
+    {x : P → Color} {z : Q → Color}
+    (witness : colourRelation (serialCompose
+      (serialCompose initial middle (Equiv.refl L)) final (Equiv.refl R)) x z) :
+    ((l : L → Color) × colourRelation initial x l) ×
+      ((r : R → Color) × colourRelation final r z) :=
+  let outer := serialEquiv (serialCompose initial middle (Equiv.refl L)) final x z witness
+  let inner := serialEquiv initial middle x outer.1 outer.2.1
+  (⟨inner.1, inner.2.1⟩, ⟨outer.1, outer.2.2⟩)
+
 /-- A witness-preserving replacement of the middle tangle preserves the
 literal colouring witnesses of every fixed serial exterior. -/
 def replaceInContext
@@ -142,6 +157,25 @@ def replaceInContext
       ⟨inner.1, inner.2.1, changed⟩
     exact (serialEquiv (serialCompose initial replacement (Equiv.refl L)) final x z).symm
       ⟨outer.1, joined, outer.2.2⟩
+
+/-- Replacement retains the complete exterior colourings, not just the
+outermost boundary values. In particular every marked exterior dart keeps
+its colour. -/
+theorem replaceInContext_exteriorWitnesses
+    (initial : TwoSidedOpenTangleData A K P L)
+    {original : TwoSidedOpenTangleData V I L R}
+    {replacement : TwoSidedOpenTangleData B T L R}
+    (transport : Cell id id (colourRelation original) (colourRelation replacement))
+    (final : TwoSidedOpenTangleData W J R Q)
+    {x : P → Color} {z : Q → Color}
+    (witness : colourRelation (serialCompose
+      (serialCompose initial original (Equiv.refl L)) final (Equiv.refl R)) x z) :
+    exteriorWitnesses initial replacement final
+        ((replaceInContext initial transport final).map witness) =
+      exteriorWitnesses initial original final witness := by
+  dsimp only [replaceInContext, exteriorWitnesses, id_eq]
+  erw [(serialEquiv (serialCompose initial replacement (Equiv.refl L)) final x z).apply_symm_apply]
+  erw [(serialEquiv initial replacement x _).apply_symm_apply]
 
 end
 end Mettapedia.GraphTheory.FourColor.OpenTangleWitnessComposition
