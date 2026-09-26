@@ -8,6 +8,8 @@ import Mettapedia.GraphTheory.FourColor.BufferedFrontierConstruction
 import Mettapedia.GraphTheory.FourColor.SourceConstructionGSLT
 import Mettapedia.GraphTheory.FourColor.OpenTangleWitnessComposition
 import Mettapedia.GraphTheory.FourColor.VertexConstructionLiftBoundary
+import Mettapedia.GraphTheory.Representation.ColoringTransport
+import Mettapedia.GraphTheory.Representation.MatrixOperationalTranslation
 import Mettapedia.GraphTheory.FourColor.GoertzelV24MinimalCounterexampleSelection
 import Mettapedia.GraphTheory.FourColor.GoertzelV24IrreducibleBaseBurden
 
@@ -30,6 +32,9 @@ and literal serial gluing gives an equivalence of colouring fibres. The raw
 vertex-code language represents every map in the source class exactly;
 existence of compatible witnesses on those source routes remains unproved.
 An explicit admissible word refutes unrestricted lifting through every merge.
+Simple-graph layout conversions transport existing vertex-colouring witnesses
+and boundary counts exactly. This transport does not create an initial
+colouring or supply an embedding-aware Tait-colouring representation.
 This build root does not establish either decomposition supply or finite-base
 verification, and is deliberately separate from `FourColorLane`.
 -/
