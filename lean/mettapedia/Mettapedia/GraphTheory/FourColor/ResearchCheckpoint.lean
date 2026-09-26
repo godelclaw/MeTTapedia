@@ -2,6 +2,8 @@ import Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkChecks
 import Mettapedia.GraphTheory.FourColor.SphericalProtectedLinkedBand
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TubeCountGrowth
 import Mettapedia.GraphTheory.FourColor.GoertzelV24PentagonTubeSaturation
+import Mettapedia.GraphTheory.FourColor.OddCappedTubeSaturation
+import Mettapedia.GraphTheory.FourColor.ZigzagRingTwoColour
 import Mettapedia.GraphTheory.FourColor.GoertzelV24MinimalCounterexampleSelection
 import Mettapedia.GraphTheory.FourColor.GoertzelV24IrreducibleBaseBurden
 

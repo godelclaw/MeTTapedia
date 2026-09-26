@@ -1021,6 +1021,33 @@ tubes; support richness of arbitrary pentagon complements remains open.
 \Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.consecutive_returns}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PentagonTubeSupportInclusion.pentagon_tube_eventually_full}
 
+The cap construction extends to every odd circumference. Given three odd
+colour counts, take three alternating walks around the triangle of nonzero
+colours, with those lengths. Their odd lengths make the walks concatenate
+and close. Reading the walk vertices as internal edge colours gives a
+proper cycle cap with precisely the desired spoke counts. Combining this
+construction with tube mixing proves that every nonzero, zero-sum boundary
+word extends across every sufficiently long odd-capped tube. The conclusion
+is a Tait colouring of the literal serial composite of the cap and rings.
+\Sverified{Mettapedia.GraphTheory.FourColor.CycleCap.coloringOf_isTait}
+\Sverified{Mettapedia.GraphTheory.FourColor.CycleCap.cap_meets_odd_count_class}
+\Sverified{Mettapedia.GraphTheory.FourColor.CycleCap.oddCounts_of_sum_eq_zero}
+\Sverified{Mettapedia.GraphTheory.FourColor.CycleCap.odd_cappedTube_eventually_full}
+
+The three-colour hypothesis in the mixing theorem is essential. If a
+nonzero colour is absent from the input, a valid cursor either uses that
+colour everywhere or nowhere. These cases produce a single cyclic shift
+or the original word, respectively. Thus any number of rings preserves
+the word up to rotation. For example, the admissible words $aabb$ and
+$abab$ have the same colour counts but cannot be connected by a tube.
+Width-changing layers can encounter these two-colour sectors, so their
+cyclic order must be retained or a separate operation must be shown to
+overcome it. These results do not supply arbitrary pentagon-complement
+support richness.
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.step_iff_of_missing}
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.transfer_rotation_of_missing}
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.two_colour_nonmixing}
+
 The growth of exact transfer paths is not merely duplicate certificate
 bookkeeping: fully routed histories inject into distinct proper colourings
 of the canonical open tube's line graph, even after the five incoming edge
