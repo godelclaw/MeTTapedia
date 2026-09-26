@@ -8735,6 +8735,15 @@ in scale and real axis, allows arbitrary complex phases, and concerns one
 belt in one shell at a fixed time. Persistence of the geometry, interactions
 between pieces, and the dynamical remainder budget are separate obligations.
 
+`FourierBeltPolarizationLeak.lean` checks a limitation of exact planar velocity
+polarization. A real four-mode datum at `±(L,0,1)` and `±(0,L,1)` is transverse
+and has zero axial velocity. The actual infinite unforced Fourier right-hand
+side at the initially absent mode `(L,L,2)` has a nonzero axial component,
+for every nonzero integer `L` and every viscosity. Its squared axial fraction
+is `L²/(L²+2)`. This is an exact initial right-hand-side calculation, including
+pressure and the unit-torus phase; it assumes no closed finite support and
+does not refute a bound on the energy of the polarization remainder.
+
 `StochasticLagrangian/FourierStrainModeIdentity.lean` retains the signs in a
 different part of the interaction: a complex symmetric strain matrix acting
 between transverse modes. Its matrix-weighted cross-product identity splits

@@ -41,6 +41,7 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierPairedS
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierSingleConeStretch
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierBeltKernel
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierSingleBeltStretch
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierBeltPolarizationLeak
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierStrainModeIdentity
 
 /-!
@@ -102,6 +103,11 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FourierBeltPolarization.norm_doubleCross_le_polarized
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FourierSingleBeltStretch.norm_pair_stretch_le_polarized
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FourierSingleBeltStretch.weighted_stretch_le_energy
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierBeltPolarizationLeak.velocity_reality
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierBeltPolarizationLeak.velocity_transverse
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierBeltPolarizationLeak.infinite_rhs_output
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierBeltPolarizationLeak.rhs_axial_ne_zero
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierBeltPolarizationLeak.rhs_axial_energy_identity
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FourierStrainModeIdentity.cross_pair_trace
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FourierStrainModeIdentity.cross_pair_gap
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FourierStrainModeIdentity.cross_pair_same_mode
