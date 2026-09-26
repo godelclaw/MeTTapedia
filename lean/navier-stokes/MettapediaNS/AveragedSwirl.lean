@@ -504,4 +504,146 @@ theorem deriv_circleInt_swirl_le {ν : ℝ} (hν : 0 ≤ ν) {u : ℝ × Space �
 
 end Assembly
 
+section Budget
+
+theorem continuous_circleInt_swirl {u : ℝ × Space → Space} (hu : Continuous u) :
+    Continuous (fun z : ℝ × Space ↦ circleInt (swirlSlice (fun y ↦ u (z.1, y))) z.2) := by
+  have c0 := continuous_coord 0
+  have c1 := continuous_coord 1
+  have h : Continuous (Function.uncurry (fun (z : ℝ × Space) (φ : ℝ) ↦
+      swirlSlice (fun y ↦ u (z.1, y)) (rot φ z.2))) := by
+    unfold swirlSlice Function.uncurry
+    fun_prop
+  exact intervalIntegral.continuous_parametric_intervalIntegral_of_continuous' h 0 (2 * Real.pi)
+
+theorem circleInt_swirl_axis {U : Space → Space} {x : Space} (h0 : x 0 = 0) (h1 : x 1 = 0) :
+    circleInt (swirlSlice U) x = 0 := by
+  unfold circleInt swirlSlice
+  have : ∀ φ : ℝ, (rot φ x) 0 = 0 ∧ (rot φ x) 1 = 0 := fun φ ↦ by simp [rot, h0, h1]
+  simp [this]
+
+set_option maxHeartbeats 1000000 in
+/-- **The swirl budget.** Let the velocity be space-time `C²`, the pressure `C¹`
+and the force continuous in space, with Navier–Stokes residual equal to the
+force on `(0, T]`, and let the circle integral of the swirl be nonpositive
+outside a compact set. If at every spatial local maximum of the circle
+integral of the swirl the averaged advection and torque are at most `g(t)`,
+for a continuous `g ≥ 0`, then the circle integral of the swirl never exceeds
+its initial maximum `M₀ ≥ 0` plus `∫₀ᵗ g`. -/
+theorem circleInt_swirl_le_budget {ν : ℝ} (hν : 0 ≤ ν) {u : ℝ × Space → Space}
+    {p : ℝ × Space → ℝ} {f : ℝ × Space → Space} {T M₀ : ℝ} {K : Set Space} (hK : IsCompact K)
+    (hM₀ : 0 ≤ M₀) {g : ℝ → ℝ} (hg : Continuous g) (hg0 : ∀ t, 0 ≤ g t) (hu : ContDiff ℝ 2 u)
+    (hp : ∀ t, ContDiff ℝ 1 (fun y : Space ↦ p (t, y)))
+    (hf : ∀ t, Continuous (fun y : Space ↦ f (t, y)))
+    (hres : ∀ t ∈ Set.Ioc (0 : ℝ) T, ∀ y,
+      NavierStokesR3.ProblemStatement.navierStokesResidual ν u p t y = f (t, y))
+    (hout : ∀ t ∈ Set.Icc (0 : ℝ) T, ∀ x ∉ K, circleInt (swirlSlice (fun y ↦ u (t, y))) x ≤ 0)
+    (hinit : ∀ x, circleInt (swirlSlice (fun y ↦ u (0, y))) x ≤ M₀)
+    (hbudget : ∀ t ∈ Set.Ioc (0 : ℝ) T, ∀ x, IsLocalMax (circleInt (swirlSlice (fun y ↦ u (t, y)))) x →
+      -(∫ φ in (0 : ℝ)..(2 * Real.pi),
+          fderiv ℝ (swirlSlice (fun y ↦ u (t, y))) (rot φ x) (u (t, rot φ x))) +
+        ∫ φ in (0 : ℝ)..(2 * Real.pi), torque f t (rot φ x) ≤ g t) :
+    ∀ t ∈ Set.Icc (0 : ℝ) T, ∀ x,
+      circleInt (swirlSlice (fun y ↦ u (t, y))) x ≤ M₀ + ∫ s in (0 : ℝ)..t, g s := by
+  intro t ht x
+  by_contra hlt
+  push Not at hlt
+  have hT : 0 ≤ T := ht.1.trans ht.2
+  have hu1 : ContDiff ℝ 1 u := hu.of_le (by norm_num)
+  set Γb : ℝ × Space → ℝ := fun z ↦ circleInt (swirlSlice (fun y ↦ u (z.1, y))) z.2 with hΓb
+  set I : ℝ → ℝ := fun s ↦ ∫ r in (0 : ℝ)..s, g r with hI
+  have hIc : Continuous I := intervalIntegral.continuous_primitive (fun a b ↦ hg.intervalIntegrable a b) 0
+  have hI0 : I 0 = 0 := by simp [hI]
+  have hInn : ∀ s, 0 ≤ s → 0 ≤ I s := fun s hs ↦
+    intervalIntegral.integral_nonneg hs fun r _ ↦ hg0 r
+  have hΓc : Continuous Γb := continuous_circleInt_swirl hu1.continuous
+  -- the tilt
+  set ex : ℝ := Γb (t, x) - M₀ - I t with hex
+  have hex0 : 0 < ex := by
+    have : Γb (t, x) = circleInt (swirlSlice (fun y ↦ u (t, y))) x := rfl
+    linarith [hex]
+  set ε : ℝ := ex / (2 * (T + 1)) with hε
+  have hε0 : 0 < ε := div_pos hex0 (by linarith)
+  set G : ℝ × Space → ℝ := fun z ↦ Γb z - I z.1 - ε * z.1 with hG
+  have hGc : Continuous G := (hΓc.sub (hIc.comp continuous_fst)).sub (continuous_const.mul continuous_fst)
+  have hGtx : M₀ < G (t, x) := by
+    have h1 : ε * t ≤ ex / 2 := by
+      rw [hε, div_mul_eq_mul_div, div_le_div_iff₀ (by linarith) (by norm_num)]
+      nlinarith [ht.1, ht.2]
+    show M₀ < Γb (t, x) - I t - ε * t
+    linarith
+  have hxK : x ∈ K := by
+    by_contra hx
+    have h1 := hout t ht x hx
+    have h2 := hInn t ht.1
+    have : Γb (t, x) = circleInt (swirlSlice (fun y ↦ u (t, y))) x := rfl
+    linarith
+  -- a maximum of the tilted average on the compact region
+  have hcpt : IsCompact (Set.Icc (0 : ℝ) T ×ˢ K) := isCompact_Icc.prod hK
+  obtain ⟨z, hz, hmax⟩ := hcpt.exists_isMaxOn ⟨(t, x), ⟨ht, hxK⟩⟩ hGc.continuousOn
+  obtain ⟨ts, xs⟩ := z
+  have hts : ts ∈ Set.Icc (0 : ℝ) T := hz.1
+  have hxs : xs ∈ K := hz.2
+  have hGz : M₀ < G (ts, xs) :=
+    lt_of_lt_of_le hGtx (hmax (show ((t, x) : ℝ × Space) ∈ Set.Icc (0 : ℝ) T ×ˢ K from ⟨ht, hxK⟩))
+  have hts0 : 0 < ts := by
+    rcases eq_or_lt_of_le hts.1 with h | h
+    · exfalso
+      have h1 : G (ts, xs) = circleInt (swirlSlice (fun y ↦ u (0, y))) xs := by
+        simp only [hG, hΓb, ← h, hI0, mul_zero, sub_zero]
+      have := hinit xs
+      linarith
+    · exact h
+  have hts' : ts ∈ Set.Ioc (0 : ℝ) T := ⟨hts0, hts.2⟩
+  have hGs : G (ts, xs) = Γb (ts, xs) - I ts - ε * ts := rfl
+  have hΓpos : 0 < Γb (ts, xs) := by
+    have := hInn ts hts.1
+    nlinarith
+  -- off the axis
+  have hr : xs 0 ^ 2 + xs 1 ^ 2 ≠ 0 := by
+    intro h
+    have h0 : xs 0 = 0 := by nlinarith [sq_nonneg (xs 0), sq_nonneg (xs 1)]
+    have h1 : xs 1 = 0 := by nlinarith [sq_nonneg (xs 0), sq_nonneg (xs 1)]
+    have : Γb (ts, xs) = 0 := circleInt_swirl_axis h0 h1
+    linarith
+  -- a spatial maximum
+  have hsmax : IsLocalMax (circleInt (swirlSlice (fun y ↦ u (ts, y)))) xs := by
+    refine IsMaxOn.isLocalMax (s := Set.univ) (fun y _ ↦ ?_) Filter.univ_mem
+    show circleInt (swirlSlice (fun y ↦ u (ts, y))) y ≤ Γb (ts, xs)
+    by_cases hy : y ∈ K
+    · have := hmax (show ((ts, y) : ℝ × Space) ∈ Set.Icc (0 : ℝ) T ×ˢ K from ⟨hts, hy⟩)
+      simp only [Set.mem_ofPred_eq] at this
+      have e : G (ts, y) = circleInt (swirlSlice (fun y ↦ u (ts, y))) y - I ts - ε * ts := rfl
+      linarith
+    · have := hout ts hts y hy
+      linarith
+  -- the budget at the maximum
+  have hcore := (deriv_circleInt_swirl_le hν hu (hp ts) (hf ts) (hres ts hts') hsmax hr).trans
+    (hbudget ts hts' xs hsmax)
+  -- the left slopes of `Γb(·, xs) - I` are at least `ε`
+  have hΓd := hasDerivAt_circleInt_time hu1 xs ts
+  have hId : HasDerivAt I (g ts) ts :=
+    intervalIntegral.integral_hasDerivAt_right (hg.intervalIntegrable _ _)
+      (hg.stronglyMeasurableAtFilter _ _) hg.continuousAt
+  have hhd := HasDerivAt.sub hΓd hId
+  have hlim := HasDerivAt.tendsto_slope_zero_left hhd
+  have hev : ∀ᶠ h in 𝓝[<] (0 : ℝ), ε ≤ h⁻¹ •
+      ((circleInt (swirlSlice (fun y ↦ u (ts + h, y))) xs - I (ts + h)) -
+        (circleInt (swirlSlice (fun y ↦ u (ts, y))) xs - I ts)) := by
+    have hmem : Set.Ioo (-ts) 0 ∈ 𝓝[<] (0 : ℝ) := Ioo_mem_nhdsLT (by linarith)
+    filter_upwards [hmem] with h hh
+    have hsIcc : ts + h ∈ Set.Icc (0 : ℝ) T := ⟨by linarith [hh.1], by linarith [hh.2, hts.2]⟩
+    have hle := hmax (show ((ts + h, xs) : ℝ × Space) ∈ Set.Icc (0 : ℝ) T ×ˢ K from ⟨hsIcc, hxs⟩)
+    simp only [Set.mem_ofPred_eq] at hle
+    have e1 : G (ts + h, xs) = circleInt (swirlSlice (fun y ↦ u (ts + h, y))) xs - I (ts + h) -
+        ε * (ts + h) := rfl
+    have e2 : G (ts, xs) = circleInt (swirlSlice (fun y ↦ u (ts, y))) xs - I ts - ε * ts := rfl
+    rw [smul_eq_mul, ← div_eq_inv_mul, le_div_iff_of_neg hh.2]
+    linarith
+  have hge := ge_of_tendsto hlim hev
+  rw [← hΓd.deriv] at hge
+  linarith
+
+end Budget
+
 end Mettapedia.FluidDynamics.NavierStokes.AveragedSwirl

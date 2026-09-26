@@ -296,3 +296,4 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.AveragedSwirl.integral_laplacian_nonpos
 #print axioms Mettapedia.FluidDynamics.NavierStokes.AveragedSwirl.hasDerivAt_circleInt_time
 #print axioms Mettapedia.FluidDynamics.NavierStokes.AveragedSwirl.deriv_circleInt_swirl_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.AveragedSwirl.circleInt_swirl_le_budget
