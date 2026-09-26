@@ -8114,6 +8114,18 @@ Hölder's inequality. `MettapediaNS.OpenAISolutionVorticity` applies this
 to the constructed solution for every positive viscosity. All new
 declarations use only the standard axioms.
 
+`MettapediaNS.ForcedCandidatePancake` now tests the middle-eigenvalue criterion
+itself. The actual candidate fields form forced smooth `L²` paths on every
+compact slab starting at time `1/2`. A uniform integral bound for nonnegative
+continuous majorants of the middle strain eigenvalue would bound the first
+and second derivative energies, then the speed by the existing `H²` embedding.
+This contradicts the candidate's unbounded speed. The majorants may vary with
+the slab; only the integral bound must be uniform.
+`MettapediaNS.OpenAISolutionPancake` applies the contradiction to OpenAI's
+constructed solution for each positive viscosity. The precise checked result
+concerns continuous majorants; a literal middle-eigenvalue essential-supremum
+integral is not identified by this adapter.
+
 **Consequence for S4.** For such a solution the eighth-moment balance
 acquires the forcing term `∫ |ω|⁶ ω·curl f`, bounded by
 `‖curl f‖_∞ (E8 + ‖ω‖₂²)`; this forced identity is not formalized here.
@@ -8668,6 +8680,37 @@ transverse velocity mode `p` contributes at the output `q` is at most
 and `q` are collinear (`stressTerm_eq_zero_of_collinear`). A disturbance whose
 wavevector has been tilted onto that of a mean-flow mode exerts no stress on
 that mode.
+
+`StochasticLagrangian/FourierPairedStretchIdentity.lean` strengthens the
+paired stretching bound to `sin∠(p, r) ‖ω_p‖ ‖ω_r‖`, with constant one.
+The exact identity is
+`S(k,a)(l × b) + S(l,b)(k × a) = (k × l) × (a × b)` for
+`S(k,a) = (a ⊗ k + k ⊗ a)/2`. It holds for arbitrary complex amplitudes;
+both physical Fourier derivative phases are retained in its application to
+the unit-torus strain symbol. The identity also assembles over finite Fourier
+blocks before taking norms. Since `p × r = p × (p+r)`, the sine is at most
+`|p+r| / max(|p|, |r|)`, giving an additional useful expression of the gain
+when high inputs produce a low output. These are spatial identities and
+estimates; the time-integrated sector budget remains open.
+
+`StochasticLagrangian/FourierPairedStretchSchur.lean` turns a row bound `C`
+for `w(p+r) sin∠(p,r)` into a weighted stretching bound by `C/2` times the
+input vorticity energy, reusing the existing finite Schur theorem.
+`FourierShearedLatticeCount.lean` counts integer modes in tubes about any
+real axis using a dominant coordinate and two sheared integer windows.
+`FourierTubeKernel.lean` proves `∑ |k|⁻² ≤ 150 N` in a tube of integer
+coordinate width `N`, independently of the axis, excluding the zero mode
+or assigning it weight zero. It combines ordinary three-dimensional shells
+near the origin with a telescoping sum over axial slices farther away.
+`FourierSingleConeStretch.lean` applies this to a shell `N² ≤ |k| ≤ 2 N²`
+with aperture `1/N`, specified by a real axial component and a Euclidean
+remainder, about any unit real axis. The inverse-square angular kernel has
+row bound `1200`, so the actual paired stretching satisfies
+`∑ₖ |k|⁻² ‖pancakeStretch u P k‖ ≤ 600 ∑ₚ∈P ‖ωₚ‖²` over any finite set of
+outputs. These constants are uniform in `N` and the axis, with arbitrary
+complex input phases and polarizations. This is one cone in one shell at a
+fixed time. Transport, cross-shell and cross-axis assembly, angular
+multiplicity, and the evolving sector budget are not supplied by this result.
 
 **Shear alignment.** `StochasticLagrangian/FourierShearAlignment.lean` shows
 why sheared disturbances fall silent. On the lattice of the periodic shearing

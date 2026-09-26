@@ -36,6 +36,9 @@ import MettapediaNS.WholeSpaceOrderEnergy
 import MettapediaNS.WholeSpaceEnstrophyContinuation
 import MettapediaNS.WholeSpaceBetchov
 import MettapediaNS.OpenAISolutionPancake
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierPairedStretchIdentity
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierPairedStretchSchur
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierSingleConeStretch
 
 /-!
 # Direct upstream dependency audit
@@ -72,6 +75,19 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.ForcedCandidatePancake.forcedPath
 #print axioms Mettapedia.FluidDynamics.NavierStokes.ForcedCandidatePancake.no_uniform_middle_majorants
 #print axioms Mettapedia.FluidDynamics.NavierStokes.ForcedCandidatePancake.openAI_solution_no_uniform_middle_majorants
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierPairedStretchIdentity.strain_pair_cross
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierPairedStretchIdentity.norm_coefficientCross_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierPairedStretchIdentity.pair_stretch_cross
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierPairedStretchIdentity.norm_pair_stretch_le_sine
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierPairedStretchIdentity.norm_pair_stretch_le_output_ratio
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierPairedStretchIdentity.two_smul_pancakeStretch_eq_cross
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierPairedStretchIdentity.norm_pancakeStretch_le_weighted
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierPairedStretchSchur.weighted_stretch_le_of_schur
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierShearedLatticeCount.card_tube_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierTubeKernel.sum_inv_sq_tube_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierSingleConeStretch.sine_le_of_cone
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierSingleConeStretch.cone_row_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierSingleConeStretch.weighted_stretch_le_energy
 #print axioms Mettapedia.Analysis.OperatorAlmostOrthogonality.norm_sum_le_of_adjoint_comp
 #print axioms Mettapedia.Analysis.OperatorAlmostOrthogonality.norm_sum_le_of_star_mul
 #print axioms NS.Lit.CZ.truncated_Lp_uniform
