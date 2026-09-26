@@ -8712,6 +8712,16 @@ complex input phases and polarizations. This is one cone in one shell at a
 fixed time. Transport, cross-shell and cross-axis assembly, angular
 multiplicity, and the evolving sector budget are not supplied by this result.
 
+`StochasticLagrangian/FourierStrainModeIdentity.lean` retains the signs in a
+different part of the interaction: a complex symmetric strain matrix acting
+between transverse modes. Its matrix-weighted cross-product identity splits
+the vorticity pairing into a normal-compression term, a frequency-weighted
+velocity pairing, and two terms containing the frequency difference `k-l`.
+For a trace-free matrix the formula is exact, including complex phases; when
+`k=l` the difference terms vanish. A spatially varying strain couples distinct
+frequencies and retains those terms. This algebraic decomposition supplies
+no time-integrated bound on either compression or weighted energy transfer.
+
 **Shear alignment.** `StochasticLagrangian/FourierShearAlignment.lean` shows
 why sheared disturbances fall silent. On the lattice of the periodic shearing
 box, `n` shear periods map a wavevector `k` to `(k₀, k₁ - n k₀, k₂)`. The cross

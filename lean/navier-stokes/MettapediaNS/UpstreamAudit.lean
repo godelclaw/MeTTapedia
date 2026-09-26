@@ -39,6 +39,7 @@ import MettapediaNS.OpenAISolutionPancake
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierPairedStretchIdentity
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierPairedStretchSchur
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierSingleConeStretch
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierStrainModeIdentity
 
 /-!
 # Direct upstream dependency audit
@@ -88,6 +89,9 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FourierSingleConeStretch.sine_le_of_cone
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FourierSingleConeStretch.cone_row_le
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FourierSingleConeStretch.weighted_stretch_le_energy
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierStrainModeIdentity.cross_pair_trace
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierStrainModeIdentity.cross_pair_gap
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierStrainModeIdentity.cross_pair_same_mode
 #print axioms Mettapedia.Analysis.OperatorAlmostOrthogonality.norm_sum_le_of_adjoint_comp
 #print axioms Mettapedia.Analysis.OperatorAlmostOrthogonality.norm_sum_le_of_star_mul
 #print axioms NS.Lit.CZ.truncated_Lp_uniform
