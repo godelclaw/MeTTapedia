@@ -24,6 +24,7 @@ import Mettapedia.QuantumTheory.YangMills.TwistEater
 import Mettapedia.QuantumTheory.YangMills.StrongCouplingCrossing
 import Mettapedia.QuantumTheory.YangMills.StrongCouplingTwist
 import Mettapedia.QuantumTheory.YangMills.WilsonReflectionPositivity
+import Mettapedia.QuantumTheory.YangMills.StrongCouplingTransferGap
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FDIBPCochainJointBridge
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderRepair
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderCoordinateCompletion
@@ -994,6 +995,15 @@ def yangMillsWilsonReflectionPositivityNode : YangMillsProofNode where
   evidence := "WilsonReflectionPositivity proves site reflection positivity of the Wilson-type measure on the tori (Z/2(n+2))^(d+1): for a group with measurable operations, an inversion-invariant probability measure on link variables, a bounded measurable class function psi with psi(g^-1) = psi(g), any real beta and every bounded measurable observable F of the links with both ends in the closed half 0 <= x0 <= n+2, the reflection form int conj(F o Theta) F prod_p exp(-beta psi(U_p)) is integrable, real and nonnegative (Lattice.bounded_wilson_reflection_positive), and so is its normalization, the Wilson expectation of the strong-coupling construction (Lattice.wilsonExpectation_reflection_positive). Theta reflects x0 -> -x0 and inverts the reflected temporal variables; the density factors as W+ (W+ o Theta) with fixed-plane plaquettes contributing half their action (Lattice.density_factorization), and conditioning on the plane variables turns the form into an integral of squared moduli (Lattice.wilson_conditional_square). This is the lattice Wilson-measure reflection positivity of the route; the reflection compatibility of its RG kernels is a separate, open input."
   nextObligation := "Reflection compatibility of the route's RG kernels; a transfer-matrix gap from reflection positivity and strong-coupling clustering."
 
+/-- OUR strong-coupling transfer-matrix gap for finite gauge groups, uniform in
+the spatial volume. -/
+def yangMillsStrongCouplingTransferGapNode : YangMillsProofNode where
+  id := "yang-mills.lattice.strong-coupling-transfer-gap"
+  status := .checked
+  truthValue := ⟨100, 95⟩
+  evidence := "StrongCouplingTransferGap.WilsonFinite.uniform_transfer_gap proves, for every finite gauge group, every class function psi with psi(g^-1) = psi(g) and values in [0, 2], and 0 <= beta <= beta0 (d + 1), that there is a mass m > 0 such that for every spatial side the Wilson transfer matrix (temporal links summed, half of each spatial action on either side) has a positive leading eigenvalue lambda0 with |lambda_j / lambda0| <= exp(-m) for every other eigenvalue, on the full spatial state space. Wilson expectations on rectangular tori are exact cyclic products of the transfer matrix (WilsonFinite.wilsonExpectation_eq_cycle), time-slice clustering from the strong-coupling crossing input is uniform in both extents (Rectangular.slice_clustering), and the finite-dimensional spectral theorem converts the bound on squared traces into the gap (Spectral.absolute_gap_of_squared_correlations). This is a lattice mass gap at strong coupling, not the continuum Yang-Mills mass gap."
+  nextObligation := "None at strong coupling for finite groups. Compact groups need an infinite-dimensional spectral argument; the continuum problem needs the open crossing and the continuum limit."
+
 /-- Conditional OS reconstruction scaffold for the continuum endpoint. -/
 def yangMillsContinuumOSConditionalScaffoldNode : YangMillsProofNode where
   id := "yang-mills.continuum-os-reconstruction-conditional"
@@ -1081,6 +1091,7 @@ def currentYangMillsProofNodes : List YangMillsProofNode :=
   , yangMillsCrossingInputNode
   , yangMillsCrossingInputStrongCouplingNode
   , yangMillsWilsonReflectionPositivityNode
+  , yangMillsStrongCouplingTransferGapNode
   , yangMillsContinuumOSConditionalScaffoldNode
   , yangMillsCompletionSteelmanNode
   , yangMillsConstructiveQFTNode

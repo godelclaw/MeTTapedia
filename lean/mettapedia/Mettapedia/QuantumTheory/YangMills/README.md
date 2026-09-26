@@ -104,6 +104,8 @@ Current status:
   as the volume grows. `WilsonReflectionPositivity.lean` proves site reflection
   positivity of the Wilson-type measure at every real coupling, for class
   functions even under inversion and inversion-invariant reference measures.
+  `StrongCouplingTransferGap.lean` proves, for every finite gauge group, a
+  transfer-matrix gap at strong coupling that is uniform in the spatial volume.
   Proving the crossing input for four-dimensional `SU(2)` at weak coupling is
   open.
 - `HypercubicDimension16FDIBPCochainJointBridge.lean` now proves that OUR

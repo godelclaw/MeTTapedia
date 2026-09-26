@@ -557,7 +557,9 @@ volume, which gives exponential clustering there; this, too, is irrelevant to th
 Clay problem.
 The finite $\mathbb{Z}_2$, $\mathbb{Z}_3$,
 and $Q_8$ gaps checked in Lean are real but Clay-irrelevant
-(single-link, strong-coupling, finite). The Yang--Mills mass gap remains open;
+(single-link, strong-coupling, finite); so is the transfer-matrix gap, uniform in
+the spatial volume, now proved at strong coupling for every finite gauge group
+on lattice tori. The Yang--Mills mass gap remains open;
 we make no claim about it.
 \end{abstract}
 
@@ -2047,7 +2049,15 @@ as open, and sharpened others into theorems:
     what the manuscript's Assumptions K.7/M.5 need to supply. A regression
     records that an additive $t$-independent tail defeats the conclusion
     (\texttt{moment\_decay\_additive\_defeat}), so large-field remainders must
-    decay, not merely be small.
+    decay, not merely be small. On lattice tori with any finite gauge group and
+    a class function even under inversion as plaquette potential, the transfer
+    matrix at strong coupling has a positive leading eigenvalue that dominates
+    every other eigenvalue by a factor $e^{-m}$, with $m>0$ independent of the
+    spatial volume (\texttt{StrongCouplingTransferGap}). Wilson expectations
+    are exact cyclic products of the transfer matrix, the time-slice
+    clustering that the strong-coupling crossing input gives bounds the excess
+    of squared traces over traces of squares, and the finite-dimensional
+    spectral theorem turns that bound into the gap.
   \item \textbf{A non-abelian instance.} The quaternion group
     $Q_8\subset SU(2)$ single-link model: machine-checked non-commutativity
     ($ij=k\neq -k=ji$), reflection positivity, spectral gap carried by the
