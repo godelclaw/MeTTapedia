@@ -2585,8 +2585,15 @@ three different situations.
     explicit named assumption; once stated, its formalization is immediate.
   \item \textbf{KP convergence at the stopping scale and Wilson-measure
     reflection positivity.} \emph{Status: abstract results are classical and
-    their polymer-gas part is now proved in Lean; the route-specific
-    instantiation is open.} For an abstract polymer gas with complex
+    their polymer-gas part is now proved in Lean, as is lattice reflection
+    positivity of the Wilson measure; the route-specific instantiation is
+    open.} Site reflection positivity holds for the Wilson-type measure on even
+    tori at every real coupling, for plaquette functions that are class
+    functions even under inversion and link measures invariant under
+    inversion: the density factors into a half-space weight and its
+    reflection, and conditioning on the two fixed planes turns the reflection
+    form into an integral of squared moduli
+    (\texttt{WilsonReflectionPositivity}). For an abstract polymer gas with complex
     activities, Dobrushin's criterion gives nonvanishing partition functions
     and two-sided bounds on the effect of removing a polymer, and the
     Kotecký--Preiss criterion implies it

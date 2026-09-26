@@ -23,6 +23,7 @@ import Mettapedia.QuantumTheory.YangMills.TwistDiagnostic
 import Mettapedia.QuantumTheory.YangMills.TwistEater
 import Mettapedia.QuantumTheory.YangMills.StrongCouplingCrossing
 import Mettapedia.QuantumTheory.YangMills.StrongCouplingTwist
+import Mettapedia.QuantumTheory.YangMills.WilsonReflectionPositivity
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FDIBPCochainJointBridge
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderRepair
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderCoordinateCompletion
@@ -984,6 +985,15 @@ def yangMillsCrossingInputStrongCouplingNode : YangMillsProofNode where
   evidence := "StrongCouplingCrossing.crossingInput proves CrossingInput for the connected plaquette activities of every Wilson-type measure on the tori (Z/(n+3))^d: independent link variables, any measurable four-link potential with values in [0, 2] (the Wilson action 1 - Re tr U_p / N for SU(N) with Haar measure is one), and 0 <= beta <= beta0 d = exp(-18) / (4 (4 d^2 + 1) (16 d^2 + 1)^2), with decay rate one and smallness exp(-1) at every volume. StrongCouplingCrossing.wilson_clustering gives exponential clustering of the Wilson expectations, uniformly in the volume. The proof uses the connected plaquette expansion (PolymerGas.PlaquetteExpansion, from PolymerGas.ConnectedDecomposition and PolymerGas.SupportRegrouping), the count of connected sets through a vertex, at most (Delta + 1)^(2n) (PolymerGas.ConnectedCount), and the explicit smallness threshold (PolymerGas.PlaquetteSmallness). So the crossing input holds where clustering is known and fails at the barrier theories. StrongCouplingTwist verifies the twist diagnostic there: for a group with a central involution z (the centre element -1 of SU(2)), a z-invariant probability measure and a measurable plaquette function psi in [0, 2], moving the twist is a measure-preserving change of variables and distant polymers do not see it, so the untwisted and twisted activities form a twist-compatible crossing family (StrongCouplingTwist.twistCompatibleCrossing), and the Wilson twist free energy -log (Z_tw / Z), both partition functions real Wilson integrals, tends to zero as the volume grows (StrongCouplingTwist.tendsto_twistFreeEnergy)."
   nextObligation := "None at strong coupling. The open crossing is the passage from weak coupling to this regime for four-dimensional SU(2)."
 
+/-- OUR lattice reflection positivity of the Wilson-type measure (site
+reflection), at every real coupling. -/
+def yangMillsWilsonReflectionPositivityNode : YangMillsProofNode where
+  id := "yang-mills.lattice.wilson-reflection-positivity"
+  status := .checked
+  truthValue := ⟨100, 95⟩
+  evidence := "WilsonReflectionPositivity proves site reflection positivity of the Wilson-type measure on the tori (Z/2(n+2))^(d+1): for a group with measurable operations, an inversion-invariant probability measure on link variables, a bounded measurable class function psi with psi(g^-1) = psi(g), any real beta and every bounded measurable observable F of the links with both ends in the closed half 0 <= x0 <= n+2, the reflection form int conj(F o Theta) F prod_p exp(-beta psi(U_p)) is integrable, real and nonnegative (Lattice.bounded_wilson_reflection_positive), and so is its normalization, the Wilson expectation of the strong-coupling construction (Lattice.wilsonExpectation_reflection_positive). Theta reflects x0 -> -x0 and inverts the reflected temporal variables; the density factors as W+ (W+ o Theta) with fixed-plane plaquettes contributing half their action (Lattice.density_factorization), and conditioning on the plane variables turns the form into an integral of squared moduli (Lattice.wilson_conditional_square). This is the lattice Wilson-measure reflection positivity of the route; the reflection compatibility of its RG kernels is a separate, open input."
+  nextObligation := "Reflection compatibility of the route's RG kernels; a transfer-matrix gap from reflection positivity and strong-coupling clustering."
+
 /-- Conditional OS reconstruction scaffold for the continuum endpoint. -/
 def yangMillsContinuumOSConditionalScaffoldNode : YangMillsProofNode where
   id := "yang-mills.continuum-os-reconstruction-conditional"
@@ -1070,6 +1080,7 @@ def currentYangMillsProofNodes : List YangMillsProofNode :=
   , yangMillsCommutatorLeibnizCorrectionNode
   , yangMillsCrossingInputNode
   , yangMillsCrossingInputStrongCouplingNode
+  , yangMillsWilsonReflectionPositivityNode
   , yangMillsContinuumOSConditionalScaffoldNode
   , yangMillsCompletionSteelmanNode
   , yangMillsConstructiveQFTNode
@@ -1266,6 +1277,24 @@ theorem currentYangMillsStrongCoupling_twistFreeEnergy (d : ℕ) {E : Type*} [Gr
   StrongCouplingTwist.tendsto_twistFreeEnergy d ν₀ hz hzz hν hψ hψ0 hψ2 hβ hβ0
 
 #print axioms currentYangMillsStrongCoupling_twistFreeEnergy
+
+/-- Site reflection positivity of the Wilson-type measure at every real coupling,
+for bounded observables of the closed positive half. -/
+theorem currentYangMillsWilson_reflectionPositive {d n : ℕ} {E : Type*} [Group E]
+    [MeasurableSpace E] [MeasurableMul₂ E] [MeasurableInv E]
+    (ν₀ : MeasureTheory.Measure E) [MeasureTheory.IsProbabilityMeasure ν₀]
+    (hν : ν₀.map Inv.inv = ν₀) {ψ : E → ℝ} (hψ : Measurable ψ) {C : ℝ}
+    (hbound : ∀ g, |ψ g| ≤ C) (β : ℝ) (hclass : ∀ g h, ψ (g * h * g⁻¹) = ψ h)
+    (hinv : ∀ g, ψ g⁻¹ = ψ g)
+    {F : (WilsonReflectionPositivity.Lattice.Link d n → E) → ℂ} (hF : Measurable F) {M : ℝ}
+    (hFb : ∀ ω, ‖F ω‖ ≤ M) (hlocal : WilsonReflectionPositivity.Lattice.HalfLocal F) :
+    0 ≤ (∫ ω, (starRingEnd ℂ) (F (WilsonReflectionPositivity.Lattice.theta ω)) * F ω *
+        (WilsonReflectionPositivity.Lattice.density ψ β ω : ℂ)
+        ∂MeasureTheory.Measure.pi (fun _ : WilsonReflectionPositivity.Lattice.Link d n => ν₀)).re :=
+  (WilsonReflectionPositivity.Lattice.bounded_wilson_reflection_positive ν₀ hν hψ hbound β
+    hclass hinv hF hFb hlocal).2.2
+
+#print axioms currentYangMillsWilson_reflectionPositive
 
 /-- OUR finite `F,D`/IBP relation cochains surject onto the honest joint
 relation submodule under either relation policy. -/

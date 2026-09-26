@@ -101,8 +101,11 @@ Current status:
   diagnostic in that regime: for a central involution (the centre element `-1`
   of `SU(2)`) the twisted and untwisted activities form a twist-compatible
   crossing family, and the twist free energy of the Wilson measure tends to zero
-  as the volume grows. Proving the crossing input for four-dimensional `SU(2)`
-  at weak coupling is open.
+  as the volume grows. `WilsonReflectionPositivity.lean` proves site reflection
+  positivity of the Wilson-type measure at every real coupling, for class
+  functions even under inversion and inversion-invariant reference measures.
+  Proving the crossing input for four-dimensional `SU(2)` at weak coupling is
+  open.
 - `HypercubicDimension16FDIBPCochainJointBridge.lean` now proves that OUR
   finite derivative-alpha-reduced `F,D`/IBP relation cochains, after the
   physical operator and signed-hypercubic Reynolds average, surject onto that
