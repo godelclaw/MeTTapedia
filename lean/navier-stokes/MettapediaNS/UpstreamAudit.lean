@@ -325,3 +325,5 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.laplacianPath_convergence
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.viscous_derivative_convergence
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.exists_local_nsEvolution
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSEvolution.l2_stability
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSEvolution.velocity_eq_of_initial

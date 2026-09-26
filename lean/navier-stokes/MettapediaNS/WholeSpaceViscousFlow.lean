@@ -2,6 +2,7 @@ import Euler.OrdinaryRegularizedFlow
 import Euler.OrdinaryRegularizedEnergy
 import Euler.OrdinaryRegularizedCauchy
 import Euler.OrdinaryEulerLocalExistence
+import Euler.OrdinaryGradientStability
 import MettapediaNS.WholeSpaceViscousEnergy
 
 /-!
@@ -1075,5 +1076,186 @@ theorem exists_local_nsEvolution {ν : ℝ} (hν : 0 ≤ ν) (A : SmoothL2Field 
     localNSEvolution_initial hν A hA⟩
 
 end Limit
+
+/-! ## Uniqueness -/
+
+section Uniqueness
+
+open EulerSmoothLimit EulerLpTranslation EulerLpTranslation.SmoothL2Field EulerOrdinarySobolev
+  EulerMeanSolenoidal EulerMeanClassical EulerVolterraConvolution WholeSpaceViscousEnergy
+  Finset Laplacian
+
+namespace NSEvolution
+
+variable {ν T : ℝ} {hT : 0 ≤ T}
+
+/-- The Euler part `-(u·∇)u - ∇p` of the right-hand side, as a smooth field. -/
+def eulerPart (U : NSEvolution ν T hT) (t : Icc (0 : ℝ) T) : SmoothL2Field Space :=
+  EulerSmoothEulerEvolution.rhs U.velocity U.velocity_continuous U.pressureForce t
+
+/-- The full right-hand side `-(u·∇)u - ∇p + ν Δu`, as a smooth field. -/
+def derivative (U : NSEvolution ν T hT) (t : Icc (0 : ℝ) T) : SmoothL2Field Space :=
+  addField (U.eulerPart t) (EulerOrdinarySobolev.scaleField ν (laplacianField (U.velocity t)))
+
+theorem derivative_field (U : NSEvolution ν T hT) (t : Icc (0 : ℝ) T) (x : Space) :
+    (U.derivative t).field x = -fderiv ℝ (U.velocity t).field x ((U.velocity t).field x) -
+      (U.pressureForce t).field x + ν • Δ (U.velocity t).field x := by
+  simp only [derivative, addField_field, eulerPart, EulerSmoothEulerEvolution.rhs_field,
+    EulerOrdinarySobolev.scaleField_field, laplacianField_field]
+
+theorem derivative_continuous (U : NSEvolution ν T hT) (n : ℕ) :
+    Continuous (fun t ↦ (U.derivative t).jetLp n) :=
+  continuous_jetLp_addField _ _
+    (EulerSmoothEulerEvolution.rhs_jet_continuous U.velocity U.velocity_continuous
+      U.pressureForce U.pressure_continuous)
+    (fun k ↦ continuous_jetLp_mapField _ _
+      (continuous_jetLp_laplacianField U.velocity U.velocity_continuous) k) n
+
+def difference (U V : NSEvolution ν T hT) (t : Icc (0 : ℝ) T) : SmoothL2Field Space :=
+  fieldSub (V.velocity t) (U.velocity t)
+
+def pressureDifference (U V : NSEvolution ν T hT) (t : Icc (0 : ℝ) T) : SmoothL2Field Space :=
+  fieldSub (V.pressureForce t) (U.pressureForce t)
+
+def differenceDerivative (U V : NSEvolution ν T hT) (t : Icc (0 : ℝ) T) : SmoothL2Field Space :=
+  fieldSub (V.derivative t) (U.derivative t)
+
+theorem difference_continuous (U V : NSEvolution ν T hT) (n : ℕ) :
+    Continuous (fun t ↦ (U.difference V t).jetLp n) :=
+  continuous_jet_fieldSub V.velocity U.velocity V.velocity_continuous U.velocity_continuous n
+
+theorem differenceDerivative_continuous (U V : NSEvolution ν T hT) (n : ℕ) :
+    Continuous (fun t ↦ (U.differenceDerivative V t).jetLp n) :=
+  continuous_jet_fieldSub V.derivative U.derivative V.derivative_continuous
+    U.derivative_continuous n
+
+theorem difference_time_law (U V : NSEvolution ν T hT) :
+    ∀ t (ht : t ∈ Ioo 0 T) x,
+      HasDerivAt (fun r ↦ (U.difference V (projIcc 0 T hT r)).field x)
+        ((U.differenceDerivative V ⟨t, ht.1.le, ht.2.le⟩).field x) t := by
+  intro t ht x
+  have h := (V.time_law t ht x).sub (U.time_law t ht x)
+  convert! h using 1
+  simp only [differenceDerivative, fieldSub_field, derivative_field]
+
+theorem eulerPart_sub (U V : NSEvolution ν T hT) (t : Icc (0 : ℝ) T) :
+    fieldSub (V.eulerPart t) (U.eulerPart t) =
+      differenceRhs (U.velocity t) (U.difference V t) (U.pressureDifference V t) := by
+  apply field_ext
+  funext x
+  have he : (U.difference V t).field = (V.velocity t).field - (U.velocity t).field :=
+    funext (fieldSub_field (V.velocity t) (U.velocity t))
+  rw [differenceRhs_field, he, fderiv_sub ((V.velocity t).smooth.differentiable (by simp) x)
+    ((U.velocity t).smooth.differentiable (by simp) x)]
+  simp only [pressureDifference, fieldSub_field, eulerPart, EulerSmoothEulerEvolution.rhs_field,
+    Pi.sub_apply, sub_apply, map_sub]
+  abel_nf
+
+theorem differenceDerivative_toLp (U V : NSEvolution ν T hT) (t : Icc (0 : ℝ) T) :
+    (U.differenceDerivative V t).toLp =
+      (differenceRhs (U.velocity t) (U.difference V t) (U.pressureDifference V t)).toLp +
+        ν • (laplacianField (U.difference V t)).toLp := by
+  rw [← U.eulerPart_sub V t, difference, toLp_laplacianField_fieldSub]
+  simp only [differenceDerivative, derivative, toLp_fieldSub, toLp_addField,
+    EulerOrdinarySobolev.scaleField_toLp, smul_sub]
+  abel
+
+def l2EnergyPath (U V : NSEvolution ν T hT) : C(Icc (0 : ℝ) T, ℝ) :=
+  ⟨fun t ↦ ‖(U.difference V t).toLp‖ ^ 2, by
+    have h := (ordinaryWordPath (U.difference V) (U.difference_continuous V)
+      (Fin.elim0 : Fin 0 → Fin 3)).continuous
+    simpa only [Function.comp_def, ordinaryWordPath_apply, wordField_zero] using
+      (continuous_pow 2).comp h.norm⟩
+
+def l2EnergyDerivative (U V : NSEvolution ν T hT) (t : Icc (0 : ℝ) T) : ℝ :=
+  2 * ⟪(U.difference V t).toLp, (U.differenceDerivative V t).toLp⟫_ℝ
+
+theorem l2Energy_hasDerivWithinAt (U V : NSEvolution ν T hT) (t : Icc (0 : ℝ) T) :
+    HasDerivWithinAt (extendPath T hT (U.l2EnergyPath V)) (U.l2EnergyDerivative V t)
+      (Icc (0 : ℝ) T) t := by
+  have hd := (ordinaryWord_hasDerivWithinAt T hT (U.difference V)
+    (U.differenceDerivative V) (U.difference_continuous V)
+    (U.differenceDerivative_continuous V) (U.difference_time_law V)
+    (Fin.elim0 : Fin 0 → Fin 3) t).norm_sq
+  change HasDerivWithinAt (fun r ↦ ‖(U.difference V (projIcc 0 T hT r)).toLp‖ ^ 2)
+    (2 * ⟪(U.difference V t).toLp, (U.differenceDerivative V t).toLp⟫_ℝ) (Icc (0 : ℝ) T) t
+  simpa only [wordField_zero, projIcc_of_mem hT t.property] using hd
+
+/-- **The viscous term only helps the stability estimate.** -/
+theorem l2EnergyDerivative_bound (hν : 0 ≤ ν) (U V : NSEvolution ν T hT) (K : ℝ)
+    (hK : ∀ t x, ‖fderiv ℝ (U.velocity t).field x‖ ≤ K) (t : Icc (0 : ℝ) T) :
+    U.l2EnergyDerivative V t ≤ 2 * K * U.l2EnergyPath V t := by
+  have hE := differenceRhs_l2_bound (U.velocity t) (U.difference V t) (U.pressureDifference V t)
+    K (hK t) (by
+      have he : (addField (U.velocity t) (U.difference V t)).field = (V.velocity t).field := by
+        funext x
+        simp only [addField_field, difference, fieldSub_field]
+        abel
+      rw [he]
+      exact solenoidal_representative_divergence _ (V.solenoidal t) _ (V.velocity t).smooth
+        (V.velocity t).toLp_ae)
+    (by rw [difference, toLp_fieldSub]; exact solenoidalSpace.sub_mem (V.solenoidal t) (U.solenoidal t))
+    (by rw [pressureDifference, toLp_fieldSub]; exact gradientSpace.sub_mem (V.gradient t) (U.gradient t))
+  have hL := inner_laplacianField (U.difference V t)
+  have hS : 0 ≤ ∑ i : Fin 3, ‖((U.difference V t).directionalField (axis i)).toLp‖ ^ 2 :=
+    Finset.sum_nonneg fun i _ ↦ sq_nonneg _
+  change 2 * ⟪(U.difference V t).toLp, (U.differenceDerivative V t).toLp⟫_ℝ ≤
+    2 * K * ‖(U.difference V t).toLp‖ ^ 2
+  rw [differenceDerivative_toLp, inner_add_right, inner_smul_right, hL]
+  nlinarith [mul_nonneg hν hS]
+
+/-- **`L²` stability.** Two smooth Navier–Stokes evolutions separate at most like
+`exp (K t)`, with `K` a bound on the gradient of the first. -/
+theorem l2_stability (hν : 0 ≤ ν) (U V : NSEvolution ν T hT) (K : ℝ)
+    (hK : ∀ t x, ‖fderiv ℝ (U.velocity t).field x‖ ≤ K) (t : Icc (0 : ℝ) T) :
+    ‖(U.difference V t).toLp‖ ≤ ‖(U.difference V ⟨0, le_rfl, hT⟩).toLp‖ * Real.exp (K * t) := by
+  have hd (r : ℝ) (hr : r ∈ Ico 0 T) :
+      HasDerivWithinAt (extendPath T hT (U.l2EnergyPath V))
+        (U.l2EnergyDerivative V (projIcc 0 T hT r)) (Icc 0 T) r := by
+    have h := U.l2Energy_hasDerivWithinAt V ⟨r, hr.1, hr.2.le⟩
+    simpa only [projIcc_of_mem hT (show r ∈ Icc 0 T from ⟨hr.1, hr.2.le⟩)] using h
+  have hb (r : ℝ) (_hr : r ∈ Ico 0 T) :
+      U.l2EnergyDerivative V (projIcc 0 T hT r) ≤
+        (2 * K) * extendPath T hT (U.l2EnergyPath V) r :=
+    U.l2EnergyDerivative_bound hν V K hK (projIcc 0 T hT r)
+  have h := linear_stability_within (extendPath T hT (U.l2EnergyPath V))
+    (fun r ↦ U.l2EnergyDerivative V (projIcc 0 T hT r)) (2 * K) T
+    ((U.l2EnergyPath V).continuous.comp continuous_projIcc).continuousOn hd hb t t.property
+  have h2 : ‖(U.difference V t).toLp‖ ^ 2 ≤
+      ‖(U.difference V ⟨0, le_rfl, hT⟩).toLp‖ ^ 2 * Real.exp (2 * K * t) := by
+    simpa only [extendPath, projIcc_of_mem hT t.property,
+      projIcc_of_mem hT (show (0 : ℝ) ∈ Icc 0 T from ⟨le_rfl, hT⟩),
+      l2EnergyPath, ContinuousMap.coe_mk] using h
+  rw [show 2 * K * (t : ℝ) = K * t + K * t by ring, Real.exp_add] at h2
+  have hp : 0 ≤ ‖(U.difference V ⟨0, le_rfl, hT⟩).toLp‖ * Real.exp (K * t) := by positivity
+  nlinarith [norm_nonneg (U.difference V t).toLp]
+
+/-- **Uniqueness of smooth Navier–Stokes evolutions on `ℝ³`.** Two evolutions with the
+same initial velocity agree at every time. -/
+theorem velocity_eq_of_initial (hν : 0 ≤ ν) (U V : NSEvolution ν T hT)
+    (hinit : (V.velocity ⟨0, le_rfl, hT⟩).toLp = (U.velocity ⟨0, le_rfl, hT⟩).toLp)
+    (t : Icc (0 : ℝ) T) : V.velocity t = U.velocity t := by
+  -- a gradient bound for `U` from the continuity of its `H³` norm on the compact interval
+  obtain ⟨M, hM⟩ : ∃ M, ∀ s, tensorNorm 3 (U.velocity s) ≤ M := by
+    have hc : Continuous (fun s ↦ tensorNorm 3 (U.velocity s)) :=
+      continuous_finsetSum _ fun n _ ↦ (U.velocity_continuous n).norm
+    obtain ⟨M, hM⟩ := (isCompact_univ.image hc).isBounded.bddAbove
+    exact ⟨M, fun s ↦ hM ⟨s, Set.mem_univ _, rfl⟩⟩
+  have hK : ∀ s x, ‖fderiv ℝ (U.velocity s).field x‖ ≤
+      (9 * EulerSmoothSobolev.smoothEmbeddingConstant * M) := by
+    intro s x
+    have hb := EulerSmoothSobolev.real_smooth_fderiv_le_H3 3 (U.velocity s).field
+      (U.velocity s).smooth (fun j _ ↦ (U.velocity s).integrable j) x
+    rw [← tensorNorm_eq] at hb
+    exact hb.trans (mul_le_mul_of_nonneg_left (hM s)
+      (mul_nonneg (by norm_num) EulerSmoothSobolev.smoothEmbeddingConstant_nonneg))
+  have h := U.l2_stability hν V _ hK t
+  simp only [difference, toLp_fieldSub, hinit, sub_self, norm_zero, zero_mul] at h
+  apply smoothField_eq_of_toLp_eq
+  exact sub_eq_zero.mp (norm_eq_zero.mp (le_antisymm h (norm_nonneg _)))
+
+end NSEvolution
+
+end Uniqueness
 
 end Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow
