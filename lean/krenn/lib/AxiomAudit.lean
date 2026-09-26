@@ -118,3 +118,7 @@ Every top-level conditional theorem, with its dependency cone printed. -/
 #print axioms KrennFermi.not_isGHZOver_of_pfaffian
 #print axioms KrennFermi.not_isGHZOver_of_coherentSigns
 #print axioms KrennTightCut.productState_of_port
+#print axioms KrennTightCut.pair_elimination
+#print axioms KrennTightCut.not_isGHZOver_of_pair
+#print axioms KrennTightCut.paired_port_identity
+#print axioms KrennTightCut.not_isGHZOver_of_paired_port

@@ -566,4 +566,146 @@ theorem productState_of_port {W : Sym2 (V × Fin 3) → F} (hW : IsGHZOver W) {u
 
 end ForcedPort
 
+section PairElimination
+
+variable {V : Type} [Fintype V] [DecidableEq V] {C R : Type*} [CommRing R]
+
+/-- The part of the amplitude carried by the matchings that avoid the pair `{u, v}`. -/
+def avoidSum (W : Sym2 (V × C) → R) (c : V → C) (u v : V) : R :=
+  ∑ σ ∈ (pairings V).filter (fun σ => ¬ σ u = v), ∏ e ∈ edges σ, W (Sym2.map (paint c) e)
+
+/-- The amplitude is the pair's weight times the amplitude of the rest, plus the matchings that
+avoid the pair. -/
+theorem amplitude_eq_pair_add_avoid {u v : V} [DecidableEq (Rest u v)] [Fintype (Rest u v)]
+    (huv : u ≠ v) (W : Sym2 (V × C) → R) (c : V → C) :
+    amplitude W c = W (Sym2.map (paint c) s(u, v)) *
+        amplitude (restrictWeight (u := u) (v := v) W) (restrictColouring (u := u) (v := v) c)
+      + avoidSum W c u v := by
+  rw [← sum_using_eq_amplitude_restrict huv W c, avoidSum, amplitude,
+    Finset.sum_filter_add_sum_filter_not]
+
+/-- **Pair elimination.**  Two colourings that agree off `{u, v}` share the amplitude of the rest,
+so it cancels from the right combination of their amplitudes.  Over any commutative ring. -/
+theorem pair_elimination {u v : V} [DecidableEq (Rest u v)] [Fintype (Rest u v)] (huv : u ≠ v)
+    (W : Sym2 (V × C) → R) {β γ : V → C} (hagree : ∀ x, x ≠ u → x ≠ v → β x = γ x) :
+    W (Sym2.map (paint γ) s(u, v)) * amplitude W β - W (Sym2.map (paint β) s(u, v)) * amplitude W γ
+      = W (Sym2.map (paint γ) s(u, v)) * avoidSum W β u v
+        - W (Sym2.map (paint β) s(u, v)) * avoidSum W γ u v := by
+  have hr : restrictColouring (u := u) (v := v) β = restrictColouring (u := u) (v := v) γ := by
+    funext x
+    exact hagree x.1 x.2.1 x.2.2
+  rw [amplitude_eq_pair_add_avoid huv W β, amplitude_eq_pair_add_avoid huv W γ, hr]
+  ring
+
+/-- **A pair-elimination certificate excludes a GHZ system.**  If two mixed colourings agree off
+`{u, v}` and the eliminated combination of their avoiding parts is nonzero, the weights are not a
+GHZ system.  This is the exact rule behind the census's pair minors. -/
+theorem not_isGHZOver_of_pair {F : Type*} [Field F] {W : Sym2 (V × Fin 3) → F} (hW : IsGHZOver W)
+    {u v : V} [DecidableEq (Rest u v)] [Fintype (Rest u v)] (huv : u ≠ v) {β γ : V → Fin 3}
+    (hagree : ∀ x, x ≠ u → x ≠ v → β x = γ x) (hβ : ¬ Monochromatic β) (hγ : ¬ Monochromatic γ)
+    (hne : W (Sym2.map (paint γ) s(u, v)) * avoidSum W β u v
+        - W (Sym2.map (paint β) s(u, v)) * avoidSum W γ u v ≠ 0) : False := by
+  apply hne
+  rw [← pair_elimination huv W hagree, hW.2 β hβ, hW.2 γ hγ]
+  ring
+
+end PairElimination
+
+section PairedPort
+
+/-- The first word of the paired-port certificate: colour 0 on sites 0, 1 and colour 1 elsewhere. -/
+abbrev portβ : Fin 8 → Fin 3 := ![0, 0, 1, 1, 1, 1, 1, 1]
+/-- The second word: as `portβ`, with colour 2 on sites 6, 7. -/
+abbrev portγ : Fin 8 → Fin 3 := ![0, 0, 1, 1, 1, 1, 2, 2]
+
+/-- **The paired-port identity** (first found in an external review of the census data,
+2026-09-26).  Under seventeen zero entries, `d A(β) - r A(γ) = d c b a z` for the words `portβ`,
+`portγ`, where `d = W_67^22`, `r = W_67^11`, `c = W_57^11`, `b = W_46^11`, `a = W_01^00`,
+`z = W_23^11`; all other entries are arbitrary.  In `portγ` site 7 can only pair with 6, so
+`A(γ) = d H`; in `portβ` either `{6,7}` is used (`r H`) or `{4,6}` and `{5,7}` are, leaving `a z`
+on `{0,1,2,3}`.  Over any commutative ring. -/
+theorem paired_port_identity {R : Type*} [CommRing R] (W : Sym2 (Fin 8 × Fin 3) → R)
+    (h70 : W s((7, 2), (0, 0)) = 0) (h71 : W s((7, 2), (1, 0)) = 0) (h72 : W s((7, 2), (2, 1)) = 0)
+    (h73 : W s((7, 2), (3, 1)) = 0) (h74 : W s((7, 2), (4, 1)) = 0) (h75 : W s((7, 2), (5, 1)) = 0)
+    (g70 : W s((7, 1), (0, 0)) = 0) (g71 : W s((7, 1), (1, 0)) = 0) (g72 : W s((7, 1), (2, 1)) = 0)
+    (g73 : W s((7, 1), (3, 1)) = 0)
+    (k60 : W s((6, 1), (0, 0)) = 0) (k61 : W s((6, 1), (1, 0)) = 0) (k62 : W s((6, 1), (2, 1)) = 0)
+    (k63 : W s((6, 1), (3, 1)) = 0) (k65 : W s((6, 1), (5, 1)) = 0)
+    (m02 : W s((0, 0), (2, 1)) = 0) (m12 : W s((1, 0), (2, 1)) = 0) :
+    W s((7, 2), (6, 2)) * amplitude W portβ - W s((7, 1), (6, 1)) * amplitude W portγ
+      = W s((7, 2), (6, 2)) * W s((7, 1), (5, 1)) * W s((6, 1), (4, 1)) * W s((0, 0), (1, 0))
+          * W s((2, 1), (3, 1)) := by
+  have hH : pmSum W portγ ({0, 1, 2, 3, 4, 5} : Finset (Fin 8))
+      = pmSum W portβ ({0, 1, 2, 3, 4, 5} : Finset (Fin 8)) := by
+    refine pmSum_congr_colour W (fun x hx => ?_)
+    fin_cases x <;> simp_all [portβ, portγ]
+  have hγ : amplitude W portγ = W s((7, 2), (6, 2)) * pmSum W portβ ({0, 1, 2, 3, 4, 5} : Finset (Fin 8)) := by
+    rw [← pmSum_univ, pmSum_expand W portγ (Finset.mem_univ 7),
+      show (Finset.univ : Finset (Fin 8)).erase 7 = {0, 1, 2, 3, 4, 5, 6} by decide, ← hH]
+    simp [Finset.sum_insert, paint, portγ, h70, h71, h72, h73, h74, h75,
+      show ({0, 1, 2, 3, 4, 5, 6} : Finset (Fin 8)).erase 6 = {0, 1, 2, 3, 4, 5} by decide]
+  have h4 : pmSum W portβ ({0, 1, 2, 3, 5, 6} : Finset (Fin 8)) = 0 := by
+    rw [pmSum_expand W portβ (show (6 : Fin 8) ∈ ({0, 1, 2, 3, 5, 6} : Finset (Fin 8)) by decide),
+      show ({0, 1, 2, 3, 5, 6} : Finset (Fin 8)).erase 6 = {0, 1, 2, 3, 5} by decide]
+    simp [Finset.sum_insert, paint, portβ, k60, k61, k62, k63, k65]
+  have h0123 : pmSum W portβ ({0, 1, 2, 3} : Finset (Fin 8))
+      = W s((0, 0), (1, 0)) * W s((2, 1), (3, 1)) := by
+    rw [pmSum_expand W portβ (show (0 : Fin 8) ∈ ({0, 1, 2, 3} : Finset (Fin 8)) by decide),
+      show ({0, 1, 2, 3} : Finset (Fin 8)).erase 0 = {1, 2, 3} by decide]
+    simp [Finset.sum_insert, paint, portβ, m02,
+      show ({1, 2, 3} : Finset (Fin 8)).erase 1 = {2, 3} by decide,
+      show ({1, 2, 3} : Finset (Fin 8)).erase 2 = {1, 3} by decide,
+      show ({1, 2, 3} : Finset (Fin 8)).erase 3 = {1, 2} by decide,
+      pmSum_pair W portβ (show (3 : Fin 8) ≠ 2 by decide),
+      pmSum_pair W portβ (show (2 : Fin 8) ≠ 1 by decide), m12]
+  have h5 : pmSum W portβ ({0, 1, 2, 3, 4, 6} : Finset (Fin 8))
+      = W s((6, 1), (4, 1)) * (W s((0, 0), (1, 0)) * W s((2, 1), (3, 1))) := by
+    rw [pmSum_expand W portβ (show (6 : Fin 8) ∈ ({0, 1, 2, 3, 4, 6} : Finset (Fin 8)) by decide),
+      show ({0, 1, 2, 3, 4, 6} : Finset (Fin 8)).erase 6 = {0, 1, 2, 3, 4} by decide]
+    simp [Finset.sum_insert, paint, portβ, k60, k61, k62, k63,
+      show ({0, 1, 2, 3, 4} : Finset (Fin 8)).erase 4 = {0, 1, 2, 3} by decide, h0123]
+  have hβ : amplitude W portβ = W s((7, 1), (5, 1)) * (W s((6, 1), (4, 1))
+        * (W s((0, 0), (1, 0)) * W s((2, 1), (3, 1))))
+      + W s((7, 1), (6, 1)) * pmSum W portβ ({0, 1, 2, 3, 4, 5} : Finset (Fin 8)) := by
+    rw [← pmSum_univ, pmSum_expand W portβ (Finset.mem_univ 7),
+      show (Finset.univ : Finset (Fin 8)).erase 7 = {0, 1, 2, 3, 4, 5, 6} by decide]
+    simp [Finset.sum_insert, paint, portβ, g70, g71, g72, g73,
+      show ({0, 1, 2, 3, 4, 5, 6} : Finset (Fin 8)).erase 4 = {0, 1, 2, 3, 5, 6} by decide,
+      show ({0, 1, 2, 3, 4, 5, 6} : Finset (Fin 8)).erase 5 = {0, 1, 2, 3, 4, 6} by decide,
+      show ({0, 1, 2, 3, 4, 5, 6} : Finset (Fin 8)).erase 6 = {0, 1, 2, 3, 4, 5} by decide, h4, h5]
+  rw [hβ, hγ]
+  ring
+
+/-- **The paired-port certificate excludes a GHZ system** over any field: both words are mixed,
+so the left side of `paired_port_identity` vanishes while the monomial on the right does not. -/
+theorem not_isGHZOver_of_paired_port {F : Type*} [Field F] {W : Sym2 (Fin 8 × Fin 3) → F}
+    (hW : IsGHZOver W)
+    (h70 : W s((7, 2), (0, 0)) = 0) (h71 : W s((7, 2), (1, 0)) = 0) (h72 : W s((7, 2), (2, 1)) = 0)
+    (h73 : W s((7, 2), (3, 1)) = 0) (h74 : W s((7, 2), (4, 1)) = 0) (h75 : W s((7, 2), (5, 1)) = 0)
+    (g70 : W s((7, 1), (0, 0)) = 0) (g71 : W s((7, 1), (1, 0)) = 0) (g72 : W s((7, 1), (2, 1)) = 0)
+    (g73 : W s((7, 1), (3, 1)) = 0)
+    (k60 : W s((6, 1), (0, 0)) = 0) (k61 : W s((6, 1), (1, 0)) = 0) (k62 : W s((6, 1), (2, 1)) = 0)
+    (k63 : W s((6, 1), (3, 1)) = 0) (k65 : W s((6, 1), (5, 1)) = 0)
+    (m02 : W s((0, 0), (2, 1)) = 0) (m12 : W s((1, 0), (2, 1)) = 0)
+    (hd : W s((7, 2), (6, 2)) ≠ 0) (hc : W s((7, 1), (5, 1)) ≠ 0) (hb : W s((6, 1), (4, 1)) ≠ 0)
+    (ha : W s((0, 0), (1, 0)) ≠ 0) (hz : W s((2, 1), (3, 1)) ≠ 0) : False := by
+  have key := paired_port_identity W h70 h71 h72 h73 h74 h75 g70 g71 g72 g73 k60 k61 k62 k63 k65
+    m02 m12
+  have hβ : ¬ Monochromatic portβ := by
+    rintro ⟨k, hk⟩
+    have h0 := hk 0
+    have h2 := hk 2
+    simp at h0 h2
+    exact absurd (h0.trans h2.symm) (by decide)
+  have hγ : ¬ Monochromatic portγ := by
+    rintro ⟨k, hk⟩
+    have h0 := hk 0
+    have h2 := hk 2
+    simp at h0 h2
+    exact absurd (h0.trans h2.symm) (by decide)
+  rw [hW.2 _ hβ, hW.2 _ hγ, mul_zero, mul_zero, sub_zero] at key
+  exact mul_ne_zero (mul_ne_zero (mul_ne_zero (mul_ne_zero hd hc) hb) ha) hz key.symm
+
+end PairedPort
+
 end KrennTightCut
