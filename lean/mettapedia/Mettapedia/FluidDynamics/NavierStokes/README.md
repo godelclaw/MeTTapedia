@@ -185,6 +185,46 @@ regularity, blowup, or any other Millennium-problem conclusion.
 
 ## Current Status
 
+### The open crux in one statement
+
+Every obligation except one estimate is proved for both official targets. For the periodic
+statement (B) and the whole-space statement (A), a finite-horizon bound on the positive
+middle strain eigenvalue `λ₁`, for every viscosity, every admissible datum and every
+horizon `H`, completes the proof (`periodicRegularity_iff_middleBound`,
+`WholeSpaceOfficial.wholeSpaceStatementA_of_middle_bound`):
+
+```text
+∫₀ᴴ sup_x max(λ₁(x, t), 0) dt < ∞.
+```
+
+The lane proves the same completion from each of these equivalent inputs: finite-horizon
+bounds on `∫ ‖ω‖_∞`, on the gradient energy `‖∇u‖₂²` (`exists_tameSolutionOn_of_orderOne`,
+`WholeSpaceOfficial.wholeSpaceStatementA_of_orderOne_bound`), threshold coherence of the
+vorticity direction, or one contracting cascade step. In the route's own terms the input
+is the scale-local pancake strain budget, whose single-mode case is proved: a plane-wave
+pancake mode does not generate the strain that stretches it (`PlaneWaveSelfStrain`), which
+is the configuration `λ₁ = 0` with the vorticity along the middle eigenvector. The open part
+is the strain that different modes of a pancake cone, and the comparable-frequency
+interactions, generate on each other.
+
+Proved constraints on any argument for the bound:
+
+- Enstrophy grows only where two directions expand (Betchov's identity, both domains).
+- Along fluid paths `λ₁` is braked by `-λ₁²`, driven by the component of the vorticity off
+  the middle eigenvector, and pushed by the trace-free pressure Hessian
+  (`hasDerivAt_secondEigenvalueAlong_anisotropic`). Without the trace-free pressure Hessian
+  and viscosity, the law blows up a sheet in finite time (`restricted_sheet`).
+- For imposed strains, pancake alignment gains no uniform diffusive decay
+  (`frozenStrain_no_uniform_amplification_bound`): an argument must use the
+  self-consistency of the Navier–Stokes strain.
+- OpenAI's forced candidates break down with unbounded vorticity moments
+  (`MettapediaNS.ForcedCandidateVorticity`), and near their singular point the force is flat
+  in the paper's construction. An argument must use the absence of forcing, not only the
+  local structure near a singular point (see "Forced-construction pressure test").
+
+None of these is a bound. The estimate above is the Navier–Stokes regularity problem in the
+form the pancake route addresses.
+
 ### Completion outline: proof obligations, not percentages
 
 The end target is an unconditional arbitrary-data unforced regularity theorem
