@@ -73,19 +73,18 @@ theorem noisyVelocity_continuousOn (s : LocalInfiniteVelocitySolution nu u₀ T 
     (spatialField_joint_continuous s).comp (continuous_id.prodMk hpath)
   exact Complex.continuous_re.comp ((continuous_apply i).comp hjoint)
 
-/-- Integer translations do not move points of the torus. -/
-theorem torusPoint_add_intVec (x : X3) (k : Fin 3 → ℤ) :
-    torusPoint (x + fun i ↦ (k i : ℝ)) = torusPoint x := by
+/-- Integer vectors represent the origin of the torus. -/
+theorem torusPoint_intVec (k : Fin 3 → ℤ) : torusPoint (fun i ↦ (k i : ℝ)) = 0 := by
   funext i
-  simp only [torusPoint, Pi.add_apply, AddCircle.coe_add, add_eq_left]
   exact (AddCircle.coe_eq_zero_iff (1 : ℝ)).mpr ⟨k i, by simp⟩
 
 /-- The velocity seen at the displaced position is periodic. -/
 theorem noisyVelocity_add_intVec (s : LocalInfiniteVelocitySolution nu u₀ T B) (a : ℝ → X3)
     (t : ℝ) (y : X3) (k : Fin 3 → ℤ) :
     noisyVelocity s a t (y + fun i ↦ (k i : ℝ)) = noisyVelocity s a t y := by
-  unfold noisyVelocity liftedVelocity
-  rw [add_right_comm, torusPoint_add_intVec]
+  unfold noisyVelocity
+  rw [add_right_comm]
+  exact PancakeMaterialFlowQuotient.liftedVelocity_period s t (y + a t) _ (torusPoint_intVec k)
 
 /-- **Trajectories commute with the lattice.** A trajectory shifted by a vector of
 integers is again a trajectory, since the velocity is periodic. -/
