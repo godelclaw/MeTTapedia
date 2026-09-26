@@ -8411,6 +8411,22 @@ into layers normal to the shear gradient, and the layers stop stretching one
 another. This depletes the disturbances carried by a shear, not the shear
 flow that carries them.
 
+**Seed kinematics in a shear.** `StochasticLagrangian/FourierSeedKinematics.lean`
+tracks when a sheared mode is amplified. A mode `k` with streamwise component
+`k₀ ≠ 0` crosses the direction orthogonal to the flow at the shear count
+`τ(k) = k₁ / k₀`, and `n` shear periods lower it by `n`
+(`crossing_shearMap`); a mode with `τ(k) ≤ 0` has passed its amplification
+window. The crossing count of a product `p + r` is the barycentre of the
+inputs' counts weighted by their streamwise components (`crossing_add`), so
+two modes whose streamwise components have the same sign produce a mode
+that crosses no later than the later input (`crossing_add_le`): debris seeds
+only debris. Only an echo, a pair with streamwise components of opposite
+signs, can extrapolate to a mode still to cross (`exists_echo`). Such a fresh
+mode is never finer along the shear gradient than the finer of its two
+inputs (`fresh_of_debris_coarser`), so debris cannot seed finer amplifiable
+structure along the gradient, and after `n` shear periods the shear
+alignment bounds the echo's coupling by `1 / |n|`.
+
 **What the smooth-force breakdown says about this route.** OpenAI's
 breakdown construction for the forced problem, formalized upstream and
 imported by the lane gate, collapses a slender swirling vortex column.
