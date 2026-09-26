@@ -87,8 +87,9 @@ Current status:
   representations differ only on polymers winding around the torus has twist
   free energy tending to zero (`PolymerGas/Twist.lean`), so a family whose twist
   free energy stays away from zero is not crossing; the winding hypothesis is
-  stated, not derived. `MarginalBlindness.lean` proves that no condition on
-  one-site marginal laws implies clustering. `TwistCost.lean` and
+  stated, not derived. `MarginalBlindness.lean` proves that one-site marginal
+  criteria admitting a nonzero one-site covariance cannot by themselves imply
+  clustering. `TwistCost.lean` and
   `TwistEater.lean` compare the classical cost of a centre twist: at least
   `2βL^{d-4}` for every `U(1)` configuration, zero for `SU(2)`, where the
   anticommuting `iσ₁`, `iσ₂` absorb it. `StrongCouplingCrossing.lean` proves

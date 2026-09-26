@@ -13,19 +13,20 @@ function of bounded block observables decays exponentially in the block
 distance with constants independent of the volume (`CrossingInput.clustering`).
 
 **Calibration.**  The input cannot hold for a family whose bounded two-point
-functions converge, at each separation, to values that dominate the
-field-strength two-point function of the free lattice Maxwell field
+functions, on block sets of bounded size whose separation eventually grows like
+`|k|₁` as the volume grows, converge at each separation `k` to values that
+dominate the field-strength two-point function of the free lattice Maxwell field
 (`CrossingInput.false_of_tendsto_dominating`): uniform clustering passes to the
 limit, and the free field-strength function has no exponential bound
-(`FreeMaxwellNonClustering`, in every dimension `d ≥ 3`).  For the bounded
-observable `e^{i t F₀₁}` of a Gaussian field the truncated two-point function is
-`e^{-t²σ²}(e^{t² C(n)} - 1)`; since `‖C(n)‖ ≤ 1` (`norm_fieldStrengthCorrelation_le`)
-it dominates `‖C(n)‖` once `t² ≤ 1/2` (`norm_le_two_mul_norm_exp_sub_one`).  So the
-input fails at `β = ∞` for four-dimensional `U(1)` and for the abelian
-components of five-dimensional `SU(2)`.  That these theories stay near the free
-field at every scale at finite weak coupling (the massless photon, the
-five-dimensional bulk transition) is not formalized here; it is what fails for
-four-dimensional `SU(2)`, whose coupling runs to strong coupling.
+(`FreeMaxwellNonClustering`, in every dimension `d ≥ 3`).  For `0 < t ≤ 1/2` the
+expression `e^{-t σ²}(e^{t C(n)} - 1)`, the truncated two-point function of the
+phase `e^{i √t F₀₁}` and its conjugate for a centred Gaussian field of covariance
+`C`, controls `‖C(n)‖` up to the factor `2 e^{t σ²} / t`, because `‖C(n)‖ ≤ 1`
+(`norm_fieldStrengthCorrelation_le_gaussian`).  The Gaussian covariance identity
+itself and the `β → ∞` limit that would place weakly coupled four-dimensional
+`U(1)` and the abelian components of five-dimensional `SU(2)` in this situation
+are not formalized here, nor is the persistence of weak coupling at every scale
+at finite coupling (the massless photon, the five-dimensional bulk transition).
 -/
 
 set_option autoImplicit false
@@ -114,15 +115,16 @@ theorem norm_fieldStrengthCorrelation_le_gaussian {n : ℕ} {t σ2 : ℝ} (ht : 
               ‖Complex.exp ((t : ℂ) * fieldStrengthCorrelation k) - 1‖ by ring, hexp, mul_one]
 
 /-- **Calibration.**  No family satisfying the crossing input can have bounded
-two-point functions at block separations growing with `|k|₁`, on block sets of
-bounded size, whose limits dominate the free field-strength two-point function. -/
+two-point functions on block sets of bounded size whose separation eventually
+grows like `|k|₁` as the volume grows, for each fixed `k`, and whose limits
+dominate the free field-strength two-point function. -/
 theorem false_of_tendsto_dominating {n : ℕ} {K : ∀ L (S : Finset (Blocks L)), (S → E) → ℂ}
     (h : CrossingInput Blocks E K) {l : Filter ι} [l.NeBot]
     (Λ : ∀ L, Finset (Finset (Blocks L)))
     (S₁ S₂ : ∀ L, (Fin (n + 3) → ℤ) → Finset (Blocks L))
     (hS₁ : ∀ L k, (S₁ L k).Nonempty) (M : ℕ) (hM₁ : ∀ L k, (S₁ L k).card ≤ M)
     (hM₂ : ∀ L k, (S₂ L k).card ≤ M) (α β : ℝ) (hα : 0 < α)
-    (hdist : ∀ L k, α * ∑ i, |((k i : ℤ) : ℝ)| - β ≤ polymerDist (S₁ L k) (S₂ L k))
+    (hdist : ∀ k, ∀ᶠ L in l, α * ∑ i, |((k i : ℤ) : ℝ)| - β ≤ polymerDist (S₁ L k) (S₂ L k))
     (F₁ : ∀ L k, (S₁ L k → E) → ℂ) (F₂ : ∀ L k, (S₂ L k → E) → ℂ)
     (hF₁ : ∀ L k, Measurable (F₁ L k)) (hF₂ : ∀ L k, Measurable (F₂ L k))
     (hF₁b : ∀ L k v, ‖F₁ L k v‖ ≤ 1) (hF₂b : ∀ L k v, ‖F₂ L k v‖ ≤ 1)
@@ -138,12 +140,11 @@ theorem false_of_tendsto_dominating {n : ℕ} {K : ∀ L (S : Finset (Blocks L))
   have hbound : ∀ k, ‖T k‖ ≤ K₀ * Real.exp (-(κ * α) * ∑ i, |((k i : ℤ) : ℝ)|) := by
     intro k
     refine le_of_tendsto ((continuous_norm.tendsto _).comp (hT k))
-      (Eventually.of_forall fun L => ?_)
+      ((hdist k).mono fun L hd => ?_)
     refine (hclust L (Λ L) (S₁ L k) (S₂ L k) (hS₁ L k) (F₁ L k) (F₂ L k) 1 1 (hF₁ L k)
       (hF₂ L k) (hF₁b L k) (hF₂b L k)).trans ?_
     have hc1 : ((S₁ L k).card : ℝ) ≤ M := by exact_mod_cast hM₁ L k
     have hc2 : ((S₂ L k).card : ℝ) ≤ M := by exact_mod_cast hM₂ L k
-    have hd := hdist L k
     rw [hK₀, mul_one, mul_one, mul_assoc, mul_assoc, ← Real.exp_add, ← Real.exp_add]
     apply mul_le_mul_of_nonneg_left _ (by norm_num)
     apply Real.exp_le_exp.mpr

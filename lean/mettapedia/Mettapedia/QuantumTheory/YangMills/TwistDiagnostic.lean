@@ -27,7 +27,7 @@ untwisted half is a crossing input (`TwistCompatibleCrossing.crossingInput`).
 zero admits no twist-compatible crossing input (`false_of_twistFreeEnergy_ge`;
 on tori with polynomial cuts and linear winding diameters,
 `false_of_twistFreeEnergy_ge_of_poly_linear`).
-Unlike the calibration at `β = ∞` (`CrossingInput.false_of_tendsto_dominating`),
+Unlike the free-field calibration (`CrossingInput.false_of_tendsto_dominating`),
 this one is testable at finite coupling, since the twist free energy can be
 measured by Monte Carlo.  That the twist changes only winding polymers is the
 hypothesis `differ`.  It follows from two properties, that moving the twist does

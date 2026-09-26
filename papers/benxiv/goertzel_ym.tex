@@ -539,7 +539,7 @@ v14 where v14 does not contain them.
 
 Thus there is presently no derived constant $C_{\mathrm{true}}$ for the Wilson
 recursion. The support recurrence, two-marked glue identity, stopping-scale
-polymer estimates, Wilson reflection positivity, and continuum/OS construction
+polymer estimates, reflection compatibility of the RG kernels, and continuum/OS construction
 remain route-specific open inputs. Numerical evidence (\S\ref{sec:stopping})
 indicates that the stopping-scale step cannot be instantiated as stated: at the
 couplings $\beta_J\geq\beta_{\min}\approx150$ that the bootstrap provides,
@@ -548,7 +548,8 @@ correlations of the free massless field, and the argument, which uses no
 non-abelian input there, would equally give a gap for weakly coupled
 $\mathrm{U}(1)$, whose photon is proved to be massless. A necessary condition
 for the missing crossing input, testable at finite coupling, is proved in Lean:
-the twist free energy of a crossing family vanishes on large tori. Monte Carlo
+the twist free energy of a twist-compatible crossing family vanishes on large
+tori. Monte Carlo
 finds that it does for four-dimensional $\mathrm{SU}(2)$ and not for the weakly
 coupled barrier theories, four-dimensional $\mathrm{U}(1)$ and
 five-dimensional $\mathrm{SU}(2)$. At strong coupling the crossing input itself
@@ -1776,8 +1777,11 @@ measure whose activity bounds satisfy
 $\sum_{\gamma\ni x}k_\gamma e^{4|\gamma|+\kappa\operatorname{diam}\gamma}\leq\varepsilon$
 at every block $x$, with $\varepsilon e\leq1$, $k_\varnothing=0$ and $\kappa>0$, all
 independent of the volume. This is the regime v14's tree-decay theorem
-presupposes, with the Kotecký--Preiss norm written out. Under it, for bounded
-observables $F_1,F_2$ on block sets $S_1,S_2$,
+presupposes, with the Kotecký--Preiss norm written out. The Lean record
+\texttt{CrossingInput} contains the bounds on the activities; that an actual
+stopped Wilson or RG measure admits such a representation is part of what the
+route has to supply. Under the bounds, for bounded measurable observables
+$F_1,F_2$ on block sets $S_1,S_2$ with $S_1$ nonempty,
 \[
   \big|\langle F_1F_2\rangle-\langle F_1\rangle\langle F_2\rangle\big|
   \;\leq\;3\,\|F_1\|_\infty\|F_2\|_\infty\,e^{3(|S_1|+|S_2|)}\,
@@ -1792,19 +1796,24 @@ influence recursion; and the truncated two-point function decomposes, by
 conditioning on the support of $F_1$, into families that stay away from $S_2$ and
 families that bridge to it (\texttt{PolymerGas.Basic}, \texttt{PolymerGas.Decay},
 \texttt{PolymerGas.Measure}, \texttt{PolymerGas.Clustering},
-\texttt{PolymerGas.Lattice}). The input is calibrated by the barrier: no crossing
-family can have bounded two-point functions whose limits dominate the
-field-strength two-point function of the free lattice Maxwell field, since the
-uniform bound would pass to the limit. For the bounded observable
-$e^{i\sqrt t F_{01}}$ of a Gaussian field with $t\leq1/2$ the truncated two-point
-function $e^{-t\sigma^2}(e^{tC(n)}-1)$ dominates $|C(n)|$, because $|C(n)|\leq1$
-(\texttt{CrossingInput}). So the crossing input fails at $\beta=\infty$ for
-four-dimensional $\mathrm{U}(1)$ and for the abelian components of
-five-dimensional $\mathrm{SU}(2)$, in agreement with the barrier suite. Neither
-the Gaussian limit of the finite-coupling measures nor the persistence of
-weak coupling at every scale for those theories is formalized. For
-four-dimensional $\mathrm{SU}(2)$ the input can hold only after the coupling has
-run to strong coupling; establishing that flow is the open crossing.
+\texttt{PolymerGas.Lattice}). The input is calibrated by the barrier. Take bounded
+observables on block sets of bounded size whose separation, for each fixed
+displacement $k$, eventually exceeds $\alpha|k|_1-\beta$ with $\alpha>0$ as the
+volume grows. No crossing family can have two-point functions of such
+observables whose limits dominate the field-strength two-point function of the
+free lattice Maxwell field, since the uniform bound would pass to the limit
+(\texttt{CrossingInput.false\_of\_tendsto\_dominating}). For $0<t\leq1/2$ the
+expression $e^{-t\sigma^2}(e^{tC(n)}-1)$, the truncated two-point function of the
+phase $e^{i\sqrt t F_{01}}$ and its conjugate for a centred Gaussian field of
+covariance $C$, controls $|C(n)|$ up to the factor $2e^{t\sigma^2}/t$, because
+$|C(n)|\leq1$; Lean proves this comparison of expressions. The Gaussian
+covariance identity itself, and the $\beta\to\infty$ limit that would put
+weakly coupled four-dimensional $\mathrm{U}(1)$ and the abelian components of
+five-dimensional $\mathrm{SU}(2)$ in this situation, are not formalized; nor is
+the persistence of weak coupling at every scale for those theories. For
+four-dimensional $\mathrm{SU}(2)$, reaching a regime with these bounds by
+running the coupling from weak to strong is the proposed mechanism; establishing
+it is the open crossing.
 
 The input is not vacuous. Take the tori $(\mathbb{Z}/L)^d$ with $L\geq3$,
 independent link variables, and any measurable plaquette potential $\phi$ with
@@ -1820,8 +1829,8 @@ sets of $n$ plaquettes through a given one in a graph of degree at most
 $\Delta$ (\texttt{PolymerGas.ConnectedCount}), and the explicit threshold
 (\texttt{PolymerGas.PlaquetteSmallness}). The threshold is far from sharp, and
 the regime is irrelevant to the Clay problem. What it shows is that the input
-holds where clustering is known and fails at the barrier theories, so the
-crossing is exactly the passage between the two regimes.
+holds where clustering is known and is expected to fail at the barrier
+theories; the open problem is to reach this regime from weak coupling.
 
 \paragraph{Candidate mechanisms for the crossing.}
 What four-dimensional $\SUN$ has and four-dimensional $\mathrm{U}(1)$ and
@@ -1834,13 +1843,14 @@ mechanisms built on them against the barrier suite, the calibration at
 $\beta=\infty$, and two further theorems, one of which can be tested at finite
 coupling. In the order tested:
 \begin{enumerate}
-\item \emph{Thresholds on one-scale marginals}, such as block energies, the
-  fraction of blocks whose field strength exceeds the small-field cutoff of a
+\item \emph{Thresholds on one-scale marginals}, such as the mean block
+  energy, the probability that a block exceeds the small-field cutoff of a
   multiscale analysis, or the law of a blocked plaquette. Refuted as sufficient
-  conditions, formally: the product measure and the diagonal measure, in which
-  every site carries the same $\mu$-distributed value, have the same marginal
-  at every site, but the first has no correlations at distinct sites and the
-  second has the covariance at every pair, whatever their distance
+  conditions, formally, whenever the admitted one-site law has a bounded
+  observable of nonzero variance: the product measure and the diagonal measure,
+  in which every site carries the same $\mu$-distributed value, have the same
+  marginal at every site, but the first has no correlations at distinct sites
+  and the second has the covariance at every pair, whatever their distance
   (\texttt{MarginalBlindness}). The stopping-scale test of this section is of
   this kind: it can refute a crossing but not certify one.
 \item \emph{Reflection positivity, infrared bounds, chessboard estimates.}
@@ -1881,37 +1891,42 @@ coupling. In the order tested:
   of variables that multiplies link variables by the centre element moves the
   twist, and polymers away from the twist do not see it, so only the integrated
   activities of polymers that meet every position of the twist change
-  (\texttt{TwistDiagnostic.differ\_of\_movable}). Two representations under common
-  Kotecký--Preiss bounds that differ only on polymers meeting a cut $Y$ with
-  diameter at least $D$ have
-  $\big|\log|Z_{\rm tw}|/|Z|\big|\leq2|Y|\varepsilon e^{-\kappa D}$
-  (\texttt{PolymerGas.Twist}). So a crossing family compatible with the twist
-  has $F(L)\to0$ on tori, and a family whose twist free energy stays away from
-  zero is not crossing (\texttt{TwistDiagnostic}). That moving the twist is such
+  (\texttt{TwistDiagnostic.differ\_of\_movable}). If two representations under
+  common Kotecký--Preiss bounds differ only on polymers that meet a cut $Y$ and
+  have diameter at least $D$, then
+  $\left|\log\frac{|Z_{\rm tw}|}{|Z|}\right|\leq2|Y|\varepsilon e^{-\kappa D}$
+  (\texttt{PolymerGas.Twist}). So a twist-compatible crossing family, with cuts
+  of polynomial size and separations growing linearly in $L$, has $F(L)\to0$,
+  and a family whose twist free energy stays away from zero admits no such
+  twist-compatible representation (\texttt{TwistDiagnostic}). That moving the twist is such
   a change of variables, and that distant polymers do not see it, are
   hypotheses there. For the connected plaquette expansion of Wilson-type
   measures with a central involution $z$ (the centre element $-1$ of
-  $\mathrm{SU}(2)$) and a $z$-invariant reference measure they are proved, and at
+  $\mathrm{SU}(2)$), a $z$-invariant probability measure on link variables and a
+  measurable plaquette function with values in $[0,2]$ they are proved, and at
   strong coupling the twist free energy of the Wilson measure, with both
   partition functions genuine Wilson integrals, tends to zero as the volume
   grows (\texttt{StrongCouplingTwist}). The calibration at
   $\beta=\infty$ needed a limit; this one can be measured at the coupling of
   interest. Taking direction~$0$ as time, the $\mathbb{Z}_2$ Fourier transform in
   the twist gives the free energy $-\log\tanh(F/2)$ of one unit of electric flux
-  along direction~$1$ ('t~Hooft 1979), so $F\to0$ means that this flux costs
-  unboundedly much.
+  along direction~$1$ ('t~Hooft 1979), so $F\to0$ from above means that this
+  flux costs unboundedly much. This relation and the thermodynamic-integration
+  formula above are standard identities used for the numerics, with $Z(b)$ as
+  defined there; they are not part of the formal statements.
 
-  In one respect the twist is specifically non-abelian. In $\mathrm{U}(1)$ every
-  twisted configuration has action at least $2\beta L^{d-4}$ in the twisted
-  planes, and the uniform one at most $\frac{\pi^2}{2}\beta L^{d-4}$
-  (\texttt{TwistCost}). In $\mathrm{SU}(2)$ the matrices $i\sigma_1$ and
+  In one respect the twist is specifically non-abelian. In $\mathrm{U}(1)$, for
+  $\beta\geq0$, every twisted configuration has action at least $2\beta L^{d-4}$
+  in the twisted planes, and the uniform one at most
+  $\frac{\pi^2}{2}\beta L^{d-4}$ (\texttt{TwistCost}). In $\mathrm{SU}(2)$ the matrices $i\sigma_1$ and
   $i\sigma_2$ anticommute, so with $i\sigma_1$ on the links of direction~$0$ in
   one column, $i\sigma_2$ on those of direction~$1$ in one row and the identity
   elsewhere, every plaquette of the twisted planes has maximal weight and their
-  twisted action vanishes (\texttt{TwistEater}); the other plaquettes are the
-  identity. The twist free
-  energy of $\mathrm{SU}(2)$ is therefore not a classical energy proportional to
-  $\beta$; it is set by fluctuations. We measured $F(L)$ by heat-bath Monte
+  twisted action vanishes (\texttt{TwistEater}); extended to the other
+  directions, with the identity on the remaining links, it makes every other
+  plaquette the identity as well. So the classical minima give $\mathrm{SU}(2)$
+  no action cost of the $\mathrm{U}(1)$ kind: whatever twist free energy there
+  is comes from the integrals themselves, including their fluctuations. We measured $F(L)$ by heat-bath Monte
   Carlo, integrating in $b$ by Gauss--Legendre quadrature
   (\texttt{ym\_vortex\_free\_energy.c}, \texttt{ym\_vortex\_driver.py}); errors
   are one standard deviation:
@@ -2050,12 +2065,15 @@ as open, and sharpened others into theorems:
     records that an additive $t$-independent tail defeats the conclusion
     (\texttt{moment\_decay\_additive\_defeat}), so large-field remainders must
     decay, not merely be small. On lattice tori with any finite gauge group and
-    a class function even under inversion as plaquette potential, the transfer
-    matrix at strong coupling has a positive leading eigenvalue that dominates
-    every other eigenvalue by a factor $e^{-m}$, with $m>0$ independent of the
-    spatial volume (\texttt{StrongCouplingTransferGap}). Wilson expectations
-    are exact cyclic products of the transfer matrix, the time-slice
-    clustering that the strong-coupling crossing input gives bounds the excess
+    a class function $\psi$ even under inversion, with $0\leq\psi\leq2$, as
+    plaquette potential, the transfer matrix at $0\leq\beta\leq\beta_0$ (the
+    strong-coupling threshold in the total dimension) has a positive leading
+    eigenvalue $\lambda_0$ with $|\lambda_j|\leq e^{-m}\lambda_0$ for every other
+    eigenvalue, where $m>0$ does not depend on the spatial volume
+    (\texttt{StrongCouplingTransferGap}). Wilson expectations are exact cyclic
+    products of the transfer matrix; the time-slice clustering that the
+    strong-coupling crossing input gives, with a rate independent of both
+    extents and a prefactor that grows with the spatial volume, bounds the excess
     of squared traces over traces of squares, and the finite-dimensional
     spectral theorem turns that bound into the gap.
   \item \textbf{A non-abelian instance.} The quaternion group
@@ -2598,9 +2616,10 @@ three different situations.
     their polymer-gas part is now proved in Lean, as is lattice reflection
     positivity of the Wilson measure; the route-specific instantiation is
     open.} Site reflection positivity holds for the Wilson-type measure on even
-    tori at every real coupling, for plaquette functions that are class
-    functions even under inversion and link measures invariant under
-    inversion: the density factors into a half-space weight and its
+    tori at every real coupling, for bounded measurable plaquette functions
+    that are class functions even under inversion, link probability measures
+    invariant under inversion, and bounded measurable observables of the closed
+    half: the density factors into a half-space weight and its
     reflection, and conditioning on the two fixed planes turns the reflection
     form into an integral of squared moduli
     (\texttt{WilsonReflectionPositivity}). For an abstract polymer gas with complex
@@ -2624,14 +2643,17 @@ three different situations.
     step needs a crossing to strong coupling that v14 does not supply. That
     crossing must fail for weakly coupled $\mathrm{U}(1)$ in four dimensions;
     on the hierarchical lattice, where the flow is exact, it does not. The
-    crossing input is now stated in Lean; that it implies exponential
-    clustering uniformly in the volume, and that it fails at $\beta=\infty$
-    for four-dimensional $\mathrm{U}(1)$ and five-dimensional gauge fields, are
-    proved (\texttt{CrossingInput}); proving it for four-dimensional
-    $\mathrm{SU}(2)$ is the open problem. A necessary condition that can be
-    measured at finite coupling is also proved: a crossing family compatible
-    with the centre twist has twist free energy tending to zero on large tori
-    (\texttt{TwistDiagnostic}). Monte Carlo finds it tending to zero for
+    crossing input is now stated in Lean. That it implies exponential
+    clustering uniformly in the volume is proved, and so is its failure for
+    families whose two-point functions converge to values dominating the free
+    Maxwell ones (\texttt{CrossingInput}); that weakly coupled four-dimensional
+    $\mathrm{U}(1)$ and five-dimensional gauge fields have such limits is not
+    formalized. Proving the input along the proposed weak-coupling RG
+    trajectory for four-dimensional $\mathrm{SU}(2)$ is the open problem. A
+    necessary condition that can be measured at finite coupling is also proved:
+    a twist-compatible crossing family, with cuts of polynomial size and
+    separations growing linearly, has twist free energy tending to zero on
+    large tori (\texttt{TwistDiagnostic}). Monte Carlo finds it tending to zero for
     four-dimensional $\mathrm{SU}(2)$ and not for four-dimensional
     $\mathrm{U}(1)$ or five-dimensional $\mathrm{SU}(2)$
     (\S\ref{sec:stopping}); this is consistent with the input, not a proof of
