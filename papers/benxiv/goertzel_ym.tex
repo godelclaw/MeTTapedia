@@ -551,7 +551,10 @@ for the missing crossing input, testable at finite coupling, is proved in Lean:
 the twist free energy of a crossing family vanishes on large tori. Monte Carlo
 finds that it does for four-dimensional $\mathrm{SU}(2)$ and not for the weakly
 coupled barrier theories, four-dimensional $\mathrm{U}(1)$ and
-five-dimensional $\mathrm{SU}(2)$.
+five-dimensional $\mathrm{SU}(2)$. At strong coupling the crossing input itself
+is proved for Wilson-type measures with any compact group, uniformly in the
+volume, which gives exponential clustering there; this, too, is irrelevant to the
+Clay problem.
 The finite $\mathbb{Z}_2$, $\mathbb{Z}_3$,
 and $Q_8$ gaps checked in Lean are real but Clay-irrelevant
 (single-link, strong-coupling, finite). The Yang--Mills mass gap remains open;
@@ -1801,6 +1804,23 @@ weak coupling at every scale for those theories is formalized. For
 four-dimensional $\mathrm{SU}(2)$ the input can hold only after the coupling has
 run to strong coupling; establishing that flow is the open crossing.
 
+The input is not vacuous. Take the tori $(\mathbb{Z}/L)^d$ with $L\geq3$,
+independent link variables, and any measurable plaquette potential $\phi$ with
+$0\leq\phi\leq2$; the Wilson action $1-\operatorname{Re}\operatorname{tr}U_p/N$
+with Haar measure is one. The connected plaquette expansion writes
+$\prod_pe^{-\beta\phi_p}$ exactly as a polymer density over link sets. For
+$0\leq\beta\leq\beta_0(d)=e^{-18}/\bigl(4(4d^2+1)(16d^2+1)^2\bigr)$ its
+activities satisfy the per-block smallness with rate $1$ and $\varepsilon=e^{-1}$
+at every volume, and the Wilson expectations cluster exponentially, uniformly in
+the volume (\texttt{StrongCouplingCrossing}). The ingredients are the expansion
+(\texttt{PolymerGas.PlaquetteExpansion}), the bound $(\Delta+1)^{2n}$ on connected
+sets of $n$ plaquettes through a given one in a graph of degree at most
+$\Delta$ (\texttt{PolymerGas.ConnectedCount}), and the explicit threshold
+(\texttt{PolymerGas.PlaquetteSmallness}). The threshold is far from sharp, and
+the regime is irrelevant to the Clay problem. What it shows is that the input
+holds where clustering is known and fails at the barrier theories, so the
+crossing is exactly the passage between the two regimes.
+
 \paragraph{Candidate mechanisms for the crossing.}
 What four-dimensional $\SUN$ has and four-dimensional $\mathrm{U}(1)$ and
 five-dimensional $\mathrm{SU}(2)$ lack is a short list: a positive one-loop
@@ -2591,7 +2611,8 @@ three different situations.
     four-dimensional $\mathrm{SU}(2)$ and not for four-dimensional
     $\mathrm{U}(1)$ or five-dimensional $\mathrm{SU}(2)$
     (\S\ref{sec:stopping}); this is consistent with the input, not a proof of
-    it.
+    it. At strong coupling the input is proved for Wilson-type measures,
+    uniformly in the volume (\texttt{StrongCouplingCrossing}).
   \item \textbf{The real RG map satisfies the recursion.}
     \emph{Status: the central claimed content of v14's RG analysis; not
     independently verified here.} Everything above shows the surrounding

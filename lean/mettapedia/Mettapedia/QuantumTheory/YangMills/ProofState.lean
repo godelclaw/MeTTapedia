@@ -21,6 +21,7 @@ import Mettapedia.QuantumTheory.YangMills.CrossingInput
 import Mettapedia.QuantumTheory.YangMills.MarginalBlindness
 import Mettapedia.QuantumTheory.YangMills.TwistDiagnostic
 import Mettapedia.QuantumTheory.YangMills.TwistEater
+import Mettapedia.QuantumTheory.YangMills.StrongCouplingCrossing
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16FDIBPCochainJointBridge
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderRepair
 import Mettapedia.QuantumTheory.YangMills.HypercubicDimension16WilsonTraceOrderCoordinateCompletion
@@ -973,6 +974,15 @@ def yangMillsCrossingInputNode : YangMillsProofNode where
   evidence := "CrossingInput states the input the stopping-scale step needs: at one block scale, uniformly in the volume, the effective measure is a polymer gas over a block-product reference measure whose activity bounds satisfy the per-block Kotecky-Preiss smallness with a positive rate. CrossingInput.clustering proves that it implies exponential clustering of bounded block observables uniformly in the volume (PolymerGas.LatticeClustering, by Dobrushin's criterion, an influence recursion and conditioning, without a cluster expansion). CrossingInput.false_of_tendsto_dominating proves that no family satisfying it has bounded two-point functions whose limits dominate the free lattice Maxwell field-strength two-point function; currentYangMillsFreeMaxwell_barrier records that this function has no exponential bound in four and five dimensions, and CrossingInput.norm_fieldStrengthCorrelation_le_gaussian gives the domination for the bounded Gaussian observables exp(i sqrt t F01). So the input fails at beta = infinity for four-dimensional U(1) and for the abelian components of five-dimensional SU(2). TwistDiagnostic adds a calibration that can be tested at finite coupling: if the untwisted and twisted representations share the Kotecky-Preiss bounds and the twist changes only the integrated activities of polymers that meet a cut and wind around the torus, the twist free energy is at most 2|Y| eps exp(-kappa D) (TwistDiagnostic.abs_logTwistRatio_le, from PolymerGas.Twist), and TwistDiagnostic.false_of_twistFreeEnergy_ge_of_poly_linear proves that on tori with cuts of polynomial size and linearly growing winding diameters no such family has twist free energy bounded below by a positive constant; the winding hypothesis is stated, not derived from a lattice measure. MarginalBlindness proves that no condition on one-site marginal laws implies clustering: the product and diagonal measures share their marginals, the first with no correlations at distinct sites and the second with the covariance at every pair. TwistCost proves that every twisted U(1) configuration costs at least 2 beta L^(d-4) in the twisted planes, and TwistEater that in SU(2) the anticommuting i sigma_1, i sigma_2 absorb the twist at zero action, so the SU(2) twist free energy is set by fluctuations. goertzel_ym.tex records the numerical stopping-scale test, the hierarchical-lattice barrier, where U(1) confines too, and the candidate crossing mechanisms with Monte Carlo twist free energies."
   nextObligation := "Prove the crossing input for four-dimensional SU(2) at some block scale: control of the flow from beta_min to a strong effective coupling with Kotecky-Preiss-small activities, by a mechanism that fails for four-dimensional U(1) and five-dimensional SU(2)."
 
+/-- OUR strong-coupling instance of the crossing input: it holds for Wilson-type
+lattice measures at small coupling, uniformly in the volume. -/
+def yangMillsCrossingInputStrongCouplingNode : YangMillsProofNode where
+  id := "yang-mills.rg.crossing-input.strong-coupling"
+  status := .checked
+  truthValue := ⟨100, 95⟩
+  evidence := "StrongCouplingCrossing.crossingInput proves CrossingInput for the connected plaquette activities of every Wilson-type measure on the tori (Z/(n+3))^d: independent link variables, any measurable four-link potential with values in [0, 2] (the Wilson action 1 - Re tr U_p / N for SU(N) with Haar measure is one), and 0 <= beta <= beta0 d = exp(-18) / (4 (4 d^2 + 1) (16 d^2 + 1)^2), with decay rate one and smallness exp(-1) at every volume. StrongCouplingCrossing.wilson_clustering gives exponential clustering of the Wilson expectations, uniformly in the volume. The proof uses the connected plaquette expansion (PolymerGas.PlaquetteExpansion, from PolymerGas.ConnectedDecomposition and PolymerGas.SupportRegrouping), the count of connected sets through a vertex, at most (Delta + 1)^(2n) (PolymerGas.ConnectedCount), and the explicit smallness threshold (PolymerGas.PlaquetteSmallness). So the crossing input holds where clustering is known and fails at the barrier theories."
+  nextObligation := "None at strong coupling. The open crossing is the passage from weak coupling to this regime for four-dimensional SU(2)."
+
 /-- Conditional OS reconstruction scaffold for the continuum endpoint. -/
 def yangMillsContinuumOSConditionalScaffoldNode : YangMillsProofNode where
   id := "yang-mills.continuum-os-reconstruction-conditional"
@@ -1058,6 +1068,7 @@ def currentYangMillsProofNodes : List YangMillsProofNode :=
   , yangMillsJointPhysicalRelationNode
   , yangMillsCommutatorLeibnizCorrectionNode
   , yangMillsCrossingInputNode
+  , yangMillsCrossingInputStrongCouplingNode
   , yangMillsContinuumOSConditionalScaffoldNode
   , yangMillsCompletionSteelmanNode
   , yangMillsConstructiveQFTNode
@@ -1225,6 +1236,20 @@ theorem currentYangMillsFreeMaxwell_barrier :
     fun K μ hμ => FreeMaxwellNonClustering.not_exponentialDecay_fieldStrengthCorrelation K μ hμ⟩
 
 #print axioms currentYangMillsFreeMaxwell_barrier
+
+/-- The crossing input holds at strong coupling for every Wilson-type measure,
+below a positive threshold depending only on the dimension. -/
+theorem currentYangMillsStrongCoupling_crossingInput (d : ℕ) {E : Type*} [MeasurableSpace E]
+    (base : E) {φ : (Fin 4 → E) → ℝ} (hφ : Measurable φ) (hφ0 : ∀ v, 0 ≤ φ v)
+    (hφ2 : ∀ v, φ v ≤ 2) :
+    0 < StrongCouplingCrossing.beta0 d ∧
+      ∀ β : ℝ, 0 ≤ β → β ≤ StrongCouplingCrossing.beta0 d →
+        CrossingInput.CrossingInput (StrongCouplingCrossing.Link d) E
+          (StrongCouplingCrossing.activity d base φ β) :=
+  ⟨StrongCouplingCrossing.beta0_pos d, fun _ hβ hβ0 =>
+    StrongCouplingCrossing.crossingInput d base hφ hφ0 hφ2 hβ hβ0⟩
+
+#print axioms currentYangMillsStrongCoupling_crossingInput
 
 /-- OUR finite `F,D`/IBP relation cochains surject onto the honest joint
 relation submodule under either relation policy. -/

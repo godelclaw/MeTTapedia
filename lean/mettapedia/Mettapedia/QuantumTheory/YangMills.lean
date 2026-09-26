@@ -2,6 +2,7 @@ import Mettapedia.Combinatorics.PolymerGas.Basic
 import Mettapedia.Combinatorics.PolymerGas.Decay
 import Mettapedia.Combinatorics.PolymerGas.LatticeClustering
 import Mettapedia.Combinatorics.PolymerGas.Twist
+import Mettapedia.Combinatorics.PolymerGas.PlaquetteSmallness
 import Mettapedia.QuantumTheory.YangMills.Clustering
 import Mettapedia.QuantumTheory.YangMills.CompletionSteelman
 import Mettapedia.QuantumTheory.YangMills.CouplingDrift
@@ -49,3 +50,4 @@ import Mettapedia.QuantumTheory.YangMills.MarginalBlindness
 import Mettapedia.QuantumTheory.YangMills.TwistDiagnostic
 import Mettapedia.QuantumTheory.YangMills.TwistCost
 import Mettapedia.QuantumTheory.YangMills.TwistEater
+import Mettapedia.QuantumTheory.YangMills.StrongCouplingCrossing

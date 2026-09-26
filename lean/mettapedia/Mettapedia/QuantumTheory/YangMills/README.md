@@ -91,8 +91,14 @@ Current status:
   one-site marginal laws implies clustering. `TwistCost.lean` and
   `TwistEater.lean` compare the classical cost of a centre twist: at least
   `2βL^{d-4}` for every `U(1)` configuration, zero for `SU(2)`, where the
-  anticommuting `iσ₁`, `iσ₂` absorb it. Proving the crossing input for
-  four-dimensional `SU(2)` is open.
+  anticommuting `iσ₁`, `iσ₂` absorb it. `StrongCouplingCrossing.lean` proves
+  the crossing input at strong coupling: for Wilson-type measures on the tori
+  `(ℤ/(n+3))^d` with any measurable plaquette potential in `[0, 2]` and
+  `0 ≤ β ≤ β₀(d)`, the connected plaquette activities are Kotecký–Preiss small
+  uniformly in the volume, and the Wilson expectations cluster exponentially
+  (`PolymerGas/PlaquetteExpansion.lean`, `ConnectedCount.lean`,
+  `PlaquetteSmallness.lean`). Proving the crossing input for four-dimensional
+  `SU(2)` at weak coupling is open.
 - `HypercubicDimension16FDIBPCochainJointBridge.lean` now proves that OUR
   finite derivative-alpha-reduced `F,D`/IBP relation cochains, after the
   physical operator and signed-hypercubic Reynolds average, surject onto that
