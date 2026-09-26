@@ -8050,6 +8050,12 @@ the swirl maximum. `MettapediaNS.AveragedSwirl` proves this for flows with no
 symmetry: at a maximum of the swirl averaged over the circles about the axis,
 the averaged swirl grows only through the fluctuation torque `−∮(u′·∇)Γ′` and
 the torque of the force, and its maximum grows at most by their time integral.
+`MettapediaNS.CirculationFlux` states this in the language of vorticity. The
+averaged swirl is the circulation around the circle, which is the flux of
+axial vorticity through the disk the circle bounds, and the fluctuation torque
+is the swirl `r (u′_z ω′_r − u′_r ω′_z)` of the fluctuation vortex force: the
+largest vortex flux through a disk about the axis grows only as fast as the
+fluctuation velocity carries fluctuation vorticity across the disk's rim.
 
 None of this closes the scale-critical dynamical misalignment budget,
 the remaining field-transfer estimates, or unconditional BKM continuation.

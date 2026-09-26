@@ -24,6 +24,7 @@ import MettapediaNS.OpenAIPeriodicWiener
 import MettapediaNS.OpenAIPulseSeeds
 import MettapediaNS.SwirlBudget
 import MettapediaNS.AveragedSwirl
+import MettapediaNS.CirculationFlux
 
 /-!
 # Direct upstream dependency audit
@@ -304,3 +305,13 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.AveragedSwirl.circleInt_rot
 #print axioms Mettapedia.FluidDynamics.NavierStokes.AveragedSwirl.isLocalMax_circleInt_rot
 #print axioms Mettapedia.FluidDynamics.NavierStokes.AveragedSwirl.deriv_circleInt_swirl_le_reynolds
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CirculationFlux.fderiv_swirl_ray
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CirculationFlux.hasDerivAt_circleInt_ray
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CirculationFlux.circleInt_swirl_eq_flux
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CirculationFlux.swirlSlice_meanVel
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CirculationFlux.hasFDerivAt_meanVel
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CirculationFlux.contDiff_meanVel
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CirculationFlux.fderiv_swirl_self
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CirculationFlux.circleInt_advection_eq_vortexForce
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CirculationFlux.deriv_circleInt_swirl_le_vortexForce
+#print axioms Mettapedia.FluidDynamics.NavierStokes.CirculationFlux.deriv_circleInt_swirl_le_eddyFlux
