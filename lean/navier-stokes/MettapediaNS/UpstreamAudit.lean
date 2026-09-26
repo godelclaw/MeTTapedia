@@ -300,3 +300,7 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.AveragedSwirl.meanVel_rot
 #print axioms Mettapedia.FluidDynamics.NavierStokes.AveragedSwirl.integral_fderiv_meanVel_eq_zero
 #print axioms Mettapedia.FluidDynamics.NavierStokes.AveragedSwirl.deriv_circleInt_swirl_le_fluct
+#print axioms Mettapedia.FluidDynamics.NavierStokes.AveragedSwirl.hasFDerivAt_circleInt
+#print axioms Mettapedia.FluidDynamics.NavierStokes.AveragedSwirl.circleInt_rot
+#print axioms Mettapedia.FluidDynamics.NavierStokes.AveragedSwirl.isLocalMax_circleInt_rot
+#print axioms Mettapedia.FluidDynamics.NavierStokes.AveragedSwirl.deriv_circleInt_swirl_le_reynolds

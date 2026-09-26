@@ -26,6 +26,10 @@ rotation-equivariant average `ū` of the velocity satisfies
 `ū(rot φ x) = rot φ (ū x)`, so its contribution is the derivative of the
 circle integral along the line through `x` in the direction `ū x`, which
 vanishes at a maximum: only the fluctuation `u - ū` carries swirl into it.
+The circle integral is differentiable and invariant under the rotations, so
+every point of the maximizing circle is itself a maximum and the gradient of
+the average vanishes along it: the torque at the peak is the fluctuation
+term `-∮ (u' · ∇)Γ'`, with `Γ'` the deviation of the swirl from its average.
 Integrated in time, the maximal averaged swirl grows by at most the time
 integral of this torque.
 -/
@@ -794,5 +798,111 @@ theorem deriv_circleInt_swirl_le_fluct {ν : ℝ} (hν : 0 ≤ ν) {u : ℝ × S
   exact hbase
 
 end Fluctuation
+
+section Reynolds
+
+/-- **The circle integral is differentiable.** -/
+theorem hasFDerivAt_circleInt {g : Space → ℝ} (hg : ContDiff ℝ 1 g) (y₀ : Space) :
+    HasFDerivAt (circleInt g)
+      (∫ φ in (0 : ℝ)..(2 * Real.pi), (fderiv ℝ g (rot φ y₀)).comp (rotCLM φ)) y₀ := by
+  have hgd : ∀ y, HasFDerivAt g (fderiv ℝ g y) y :=
+    fun y ↦ (hg.differentiable (by norm_num) y).hasFDerivAt
+  have hDg : Continuous (fderiv ℝ g) := hg.continuous_fderiv (by norm_num)
+  have hF'c : Continuous (fun z : Space × ℝ ↦ (fderiv ℝ g (rot z.2 z.1)).comp (rotCLM z.2)) := by
+    refine continuous_clm_apply.mpr fun v ↦ ?_
+    simp only [ContinuousLinearMap.comp_apply, rotCLM_apply]
+    fun_prop
+  have hK : IsCompact (Metric.closedBall y₀ 1 ×ˢ uIcc (0 : ℝ) (2 * Real.pi)) :=
+    (isCompact_closedBall y₀ 1).prod isCompact_uIcc
+  obtain ⟨C, hC⟩ := hK.exists_bound_of_continuousOn hF'c.continuousOn
+  have hFc : ∀ y, Continuous (fun φ : ℝ ↦ g (rot φ y)) := fun y ↦ by
+    have hc := hg.continuous
+    fun_prop
+  have hF'1 : Continuous (fun φ : ℝ ↦ (fderiv ℝ g (rot φ y₀)).comp (rotCLM φ)) := by
+    have hl : Continuous (fun φ : ℝ ↦ ((y₀, φ) : Space × ℝ)) :=
+      Continuous.prodMk continuous_const continuous_id
+    have := Continuous.comp hF'c hl
+    exact this
+  have h := intervalIntegral.hasFDerivAt_integral_of_dominated_of_fderiv_le
+    (F := fun y φ ↦ g (rot φ y)) (F' := fun y φ ↦ (fderiv ℝ g (rot φ y)).comp (rotCLM φ))
+    (bound := fun _ ↦ C) (μ := MeasureTheory.volume) (a := 0) (b := 2 * Real.pi)
+    (Metric.closedBall_mem_nhds y₀ one_pos)
+    (Eventually.of_forall fun y ↦ (hFc y).aestronglyMeasurable)
+    ((hFc y₀).intervalIntegrable _ _) hF'1.aestronglyMeasurable
+    (Eventually.of_forall fun φ hφ y hy ↦ hC (y, φ) ⟨hy, uIoc_subset_uIcc hφ⟩)
+    intervalIntegrable_const
+    (Eventually.of_forall fun φ _ y _ ↦ by
+      have hc := HasFDerivAt.comp y (hgd (rot φ y)) (rotCLM φ).hasFDerivAt
+      exact hc)
+  exact h
+
+/-- **The circle integral is invariant under the rotations about the axis.** -/
+theorem circleInt_rot {g : Space → ℝ} (hg : Continuous g) (ψ : ℝ) (y : Space) :
+    circleInt g (rot ψ y) = circleInt g y := by
+  set h : ℝ → ℝ := fun φ ↦ g (rot φ y) with hh
+  have hc : Continuous h := by fun_prop
+  have hper : Function.Periodic h (2 * Real.pi) := fun φ ↦ by simp only [hh, rot_add_two_pi]
+  unfold circleInt
+  have e : ∀ φ : ℝ, g (rot φ (rot ψ y)) = h (φ + ψ) := fun φ ↦ by simp only [hh, rot_rot]
+  simp only [e]
+  rw [intervalIntegral.integral_comp_add_right]
+  have := Function.Periodic.intervalIntegral_add_eq hper ψ 0
+  rw [zero_add, add_comm ψ (2 * Real.pi)] at this
+  rw [zero_add]
+  exact this
+
+/-- **Every point of a maximizing circle is a maximum.** -/
+theorem isLocalMax_circleInt_rot {g : Space → ℝ} (hg : Continuous g) {x : Space}
+    (hmax : IsLocalMax (circleInt g) x) (ψ : ℝ) : IsLocalMax (circleInt g) (rot ψ x) := by
+  have h1 : IsLocalMax (circleInt g) (rot (-ψ) (rot ψ x)) := by
+    rw [rot_rot, neg_add_cancel, rot_zero]
+    exact hmax
+  have hc : Continuous (rot (-ψ)) := by fun_prop
+  have h2 := IsLocalMax.comp_continuous (g := rot (-ψ)) (b := rot ψ x) h1 hc.continuousAt
+  have e : circleInt g ∘ rot (-ψ) = circleInt g := funext fun y ↦ by
+    simp only [Function.comp]
+    rw [← circleInt_rot hg ψ (rot (-ψ) y), rot_rot, add_neg_cancel, rot_zero]
+  rw [e] at h2
+  exact h2
+
+set_option maxHeartbeats 1000000 in
+/-- **The torque at the peak is a fluctuation–fluctuation term.** With
+`Γ' = Γ - (2π)⁻¹ ∮Γ` the deviation of the swirl from its circle average and
+`u' = u - ū` that of the velocity, at every spatial local maximum off the
+axis `∂ₜ ∮Γ ≤ -∮ (u' · ∇)Γ' + ∮ (x₀ f₁ - x₁ f₀)`: every point of the maximizing
+circle is a maximum of the rotation-invariant average, so the gradient of the
+average vanishes along the circle. -/
+theorem deriv_circleInt_swirl_le_reynolds {ν : ℝ} (hν : 0 ≤ ν) {u : ℝ × Space → Space}
+    {p : ℝ × Space → ℝ} {f : ℝ × Space → Space} {t : ℝ} {x : Space} (hu : ContDiff ℝ 2 u)
+    (hp : ContDiff ℝ 1 (fun y : Space ↦ p (t, y))) (hf : Continuous (fun y : Space ↦ f (t, y)))
+    (hres : ∀ y, NavierStokesR3.ProblemStatement.navierStokesResidual ν u p t y = f (t, y))
+    (hmax : IsLocalMax (circleInt (swirlSlice (fun y ↦ u (t, y)))) x) (hr : x 0 ^ 2 + x 1 ^ 2 ≠ 0) :
+    deriv (fun s ↦ circleInt (swirlSlice (fun y ↦ u (s, y))) x) t ≤
+      -(∫ φ in (0 : ℝ)..(2 * Real.pi),
+          fderiv ℝ (fun y ↦ swirlSlice (fun y ↦ u (t, y)) y -
+              (2 * Real.pi)⁻¹ * circleInt (swirlSlice (fun y ↦ u (t, y))) y) (rot φ x)
+            (u (t, rot φ x) - meanVel (fun y ↦ u (t, y)) (rot φ x))) +
+        ∫ φ in (0 : ℝ)..(2 * Real.pi), torque f t (rot φ x) := by
+  have hbase := deriv_circleInt_swirl_le_fluct hν hu hp hf hres hmax hr
+  have hu1 : ContDiff ℝ 1 u := hu.of_le (by norm_num)
+  have hslice : ContDiff ℝ 1 (fun y : Space ↦ u (t, y)) := by
+    have h := ContDiff.comp hu1 (contDiff_const.prodMk contDiff_id : ContDiff ℝ 1
+      (fun y : Space ↦ ((t, y) : ℝ × Space)))
+    exact h
+  set Γ := swirlSlice (fun y ↦ u (t, y)) with hΓ
+  have hΓ1 : ContDiff ℝ 1 Γ := contDiff_swirlSlice hslice
+  have hpt : ∀ φ : ℝ, fderiv ℝ (fun y ↦ Γ y - (2 * Real.pi)⁻¹ * circleInt Γ y) (rot φ x) =
+      fderiv ℝ Γ (rot φ x) := by
+    intro φ
+    have hd1 : DifferentiableAt ℝ Γ (rot φ x) := hΓ1.differentiable (by norm_num) _
+    have hd2 : DifferentiableAt ℝ (circleInt Γ) (rot φ x) :=
+      (hasFDerivAt_circleInt hΓ1 (rot φ x)).differentiableAt
+    have hz : fderiv ℝ (circleInt Γ) (rot φ x) = 0 :=
+      IsLocalMax.fderiv_eq_zero (isLocalMax_circleInt_rot hΓ1.continuous hmax φ)
+    rw [fderiv_fun_sub hd1 (hd2.const_mul _), fderiv_const_mul hd2, hz, smul_zero, sub_zero]
+  simp only [hpt]
+  exact hbase
+
+end Reynolds
 
 end Mettapedia.FluidDynamics.NavierStokes.AveragedSwirl
