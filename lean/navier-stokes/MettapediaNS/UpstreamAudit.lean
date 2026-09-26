@@ -34,6 +34,7 @@ import MettapediaNS.WholeSpacePressurePotential
 import MettapediaNS.WholeSpaceOfficialStatement
 import MettapediaNS.WholeSpaceOrderEnergy
 import MettapediaNS.WholeSpaceEnstrophyContinuation
+import MettapediaNS.WholeSpaceBetchov
 
 /-!
 # Direct upstream dependency audit
@@ -386,3 +387,11 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSLifespan.orderOne_unbounded
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.hasNSEvolution_of_orderOne_bound
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceOfficial.wholeSpaceStatementA_of_orderOne_bound
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBetchov.integral_pair_directional
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBetchov.integral_trSq_eq_zero
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBetchov.integral_trCube_eq_zero
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBetchov.orderProduction_one_eq
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBetchov.orderProduction_one_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSEvolution.orderEnergy_one_le_of_middle
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.hasNSEvolution_of_middle_bound
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceOfficial.wholeSpaceStatementA_of_middle_bound
