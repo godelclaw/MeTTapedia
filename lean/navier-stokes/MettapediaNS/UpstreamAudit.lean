@@ -39,6 +39,7 @@ import MettapediaNS.OpenAISolutionPancake
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierPairedStretchIdentity
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierPairedStretchSchur
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierSingleConeStretch
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierBeltKernel
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierStrainModeIdentity
 
 /-!
@@ -89,6 +90,11 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FourierSingleConeStretch.sine_le_of_cone
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FourierSingleConeStretch.cone_row_le
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FourierSingleConeStretch.weighted_stretch_le_energy
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierSlabKernel.card_transverseShell
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierSlabKernel.sum_inv_radius_columns_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierSlabKernel.sum_inv_radius_slab_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierSlabKernel.sum_inv_radius_slab_le_with_zero
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierBeltKernel.belt_row_le
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FourierStrainModeIdentity.cross_pair_trace
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FourierStrainModeIdentity.cross_pair_gap
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FourierStrainModeIdentity.cross_pair_same_mode

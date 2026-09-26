@@ -8712,6 +8712,16 @@ complex input phases and polarizations. This is one cone in one shell at a
 fixed time. Transport, cross-shell and cross-axis assembly, angular
 multiplicity, and the evolving sector budget are not supplied by this result.
 
+`StochasticLagrangian/FourierSlabKernel.lean` proves an arbitrary-axis slab
+estimate: for a real unit normal, positive integer width `N` and outer
+sup-norm radius `R`, the inverse-frequency sum is at most `54 N R`.
+It counts integer columns and two-dimensional square shells without rotating
+the lattice. `FourierBeltKernel.lean` uses it for modes of size `N²` in a belt
+of angular width `1/N`: the inverse-square output weight times `1/N` times
+the output-frequency gain has row sum at most `864`, independent of the
+scale and axis. This is a geometric kernel estimate; deriving the `1/N`
+factor for a belt's actual stretching requires a velocity-polarization bound.
+
 `StochasticLagrangian/FourierStrainModeIdentity.lean` retains the signs in a
 different part of the interaction: a complex symmetric strain matrix acting
 between transverse modes. Its matrix-weighted cross-product identity splits
