@@ -35,6 +35,7 @@ import MettapediaNS.WholeSpaceOfficialStatement
 import MettapediaNS.WholeSpaceOrderEnergy
 import MettapediaNS.WholeSpaceEnstrophyContinuation
 import MettapediaNS.WholeSpaceBetchov
+import MettapediaNS.OpenAISolutionPancake
 
 /-!
 # Direct upstream dependency audit
@@ -64,6 +65,13 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousEnergy.integerEnergyProduction_navierStokesRhs
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousEnergy.h3_energyProduction_add_dissipation_le
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousEnergy.h3_energyProduction_le_of_nonneg
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ForcedPathEnergy.ForcedPath.orderEnergy_one_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ForcedPathEnergy.ForcedPath.orderEnergy_two_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ForcedPathEnergy.ForcedPath.orderEnergy_one_uniform
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ForcedPathEnergy.ForcedPath.orderEnergy_two_uniform
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ForcedCandidatePancake.forcedPath
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ForcedCandidatePancake.no_uniform_middle_majorants
+#print axioms Mettapedia.FluidDynamics.NavierStokes.ForcedCandidatePancake.openAI_solution_no_uniform_middle_majorants
 #print axioms Mettapedia.Analysis.OperatorAlmostOrthogonality.norm_sum_le_of_adjoint_comp
 #print axioms Mettapedia.Analysis.OperatorAlmostOrthogonality.norm_sum_le_of_star_mul
 #print axioms NS.Lit.CZ.truncated_Lp_uniform
