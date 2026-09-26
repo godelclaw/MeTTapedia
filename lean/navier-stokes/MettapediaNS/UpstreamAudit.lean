@@ -32,6 +32,8 @@ import MettapediaNS.WholeSpaceTimeSmooth
 import MettapediaNS.WholeSpaceJointSmooth
 import MettapediaNS.WholeSpacePressurePotential
 import MettapediaNS.WholeSpaceOfficialStatement
+import MettapediaNS.WholeSpaceOrderEnergy
+import MettapediaNS.WholeSpaceEnstrophyContinuation
 
 /-!
 # Direct upstream dependency audit
@@ -366,3 +368,21 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceOfficial.global_navier_stokes
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceOfficial.wholeSpaceStatementA_of_global
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceOfficial.wholeSpaceStatementA_of_vorticityIntegral_bound
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceOrderEnergy.orderProduction_navierStokesRhs
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceOrderEnergy.integral_triple_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceOrderEnergy.lpNorm_six_sq_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceOrderEnergy.lpNorm_four_pow_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceOrderEnergy.transportCommutator_three
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceOrderEnergy.commutator_pairing_three
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceOrderEnergy.quarticEnergy_pow_four_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceOrderEnergy.orderProduction_two_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceOrderEnergy.orderProduction_three_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSEvolution.orderEnergy_two_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSEvolution.dissipation_three_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSEvolution.orderEnergy_three_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSEvolution.wordEnergy_three_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSLifespan.not_wordEnergy_bounded
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSLifespan.not_orderOne_bounded
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSLifespan.orderOne_unbounded
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.hasNSEvolution_of_orderOne_bound
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceOfficial.wholeSpaceStatementA_of_orderOne_bound
