@@ -1,4 +1,5 @@
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierUniqueness
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierTameRestart
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierSmallData
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierPlanarRegularity
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierOfficialTheorems
@@ -429,84 +430,6 @@ theorem velocityEnergy_le_two_diff (m : ℕ) (F : Finset Wavevector) (c d : Four
 
 end Energies
 
-section Constructions
-
-variable {nu : ℝ} {u₀ : FourierVelocity} {T : ℝ}
-
-/-- A tame solution of a higher order is a tame solution of every lower order. -/
-def _root_.Mettapedia.FluidDynamics.NavierStokes.FourierTameContinuation.TameSolutionOn.ofLe {m m' : ℕ} (hmm' : m ≤ m') (c : TameSolutionOn nu m' u₀ T) :
-    TameSolutionOn nu m u₀ T where
-  toSolutionOn := c.toSolutionOn
-  order_local := fun S hS ↦ by
-    obtain ⟨B, hB⟩ := c.order_local S hS
-    exact ⟨B, fun τ hτ F ↦ (velocityEnergy_le_of_order_le hmm' _ F).trans (hB τ hτ F)⟩
-  dissipation_local := fun S hS ↦ by
-    obtain ⟨X, hX⟩ := c.dissipation_local S hS
-    refine ⟨max X 0, fun G ↦ ?_⟩
-    rcases le_or_gt 0 S with hS0 | hS0
-    · have hmono : ∫ τ in (0 : ℝ)..S, velocityDissipation m G (c.coefficients τ) ≤
-          ∫ τ in (0 : ℝ)..S, velocityDissipation m' G (c.coefficients τ) := by
-        refine intervalIntegral.integral_mono_on hS0
-          ((continuous_velocityDissipation_along m G c.continuous).intervalIntegrable 0 S)
-          ((continuous_velocityDissipation_along m' G c.continuous).intervalIntegrable 0 S)
-          fun τ _ ↦ ?_
-        unfold velocityDissipation orderDissipation orderEnergy
-        refine Finset.sum_le_sum fun k _ ↦ ?_
-        have hw : orderWeight m k ≤ orderWeight m' k :=
-          pow_le_pow_right₀ (by linarith [norm_nonneg (frequencyVec k)]) hmm'
-        have h0 : 0 ≤ orderWeight m k := by unfold orderWeight; positivity
-        have ha : 0 ≤ ‖frequencyVec k‖ * amplitude (c.coefficients τ) k := by
-          unfold amplitude; positivity
-        exact pow_le_pow_left₀ (mul_nonneg h0 ha) (mul_le_mul_of_nonneg_right hw ha) 2
-      exact hmono.trans ((hX G).trans (le_max_left _ _))
-    · have h : ∫ τ in (0 : ℝ)..S, velocityDissipation m G (c.coefficients τ) ≤ 0 := by
-        rw [intervalIntegral.integral_symm]
-        have : 0 ≤ ∫ τ in S..(0 : ℝ), velocityDissipation m G (c.coefficients τ) :=
-          intervalIntegral.integral_nonneg (μ := MeasureTheory.volume) hS0.le fun τ _ ↦
-            orderDissipation_nonneg m G (amplitude (c.coefficients τ))
-        change -(∫ τ in S..(0 : ℝ), velocityDissipation m G (c.coefficients τ)) ≤ 0
-        linarith
-      exact h.trans (le_max_right _ _)
-
-/-- **Restarting a tame solution at a later time.** -/
-def _root_.Mettapedia.FluidDynamics.NavierStokes.FourierTameContinuation.TameSolutionOn.shift {m : ℕ} (c : TameSolutionOn nu m u₀ T) {T₀ : ℝ} (h0 : 0 ≤ T₀) : TameSolutionOn nu m (c.coefficients T₀) (T - T₀) where
-  coefficients := fun t ↦ c.coefficients (t + T₀)
-  continuous := fun q i ↦ (c.continuous q i).comp (continuous_id.add continuous_const)
-  initial := by simp
-  reality := fun t q ↦ c.reality _ q
-  transverse := fun t q ↦ c.transverse _ q
-  zero := fun t ↦ c.zero _
-  sobolev_local := fun S hS ↦ by
-    obtain ⟨B, hB⟩ := c.sobolev_local (S + T₀) (by linarith)
-    exact ⟨B, fun t ht F ↦ hB (t + T₀) ⟨by linarith [ht.1], by linarith [ht.2]⟩ F⟩
-  equation := fun t ht q i ↦ by
-    have h := c.equation (t + T₀) ⟨by linarith [ht.1], by linarith [ht.2]⟩ q i
-    exact h.comp_add_const t T₀
-  order_local := fun S hS ↦ by
-    obtain ⟨B, hB⟩ := c.order_local (S + T₀) (by linarith)
-    exact ⟨B, fun t ht F ↦ hB (t + T₀) ⟨by linarith [ht.1], by linarith [ht.2]⟩ F⟩
-  dissipation_local := fun S hS ↦ by
-    obtain ⟨X, hX⟩ := c.dissipation_local (S + T₀) (by linarith)
-    refine ⟨max X 0, fun G ↦ ?_⟩
-    have hc := continuous_velocityDissipation_along m G c.continuous
-    have hsh : (∫ τ in (0 : ℝ)..S, velocityDissipation m G (c.coefficients (τ + T₀))) =
-        ∫ τ in T₀..(S + T₀), velocityDissipation m G (c.coefficients τ) := by
-      have h := intervalIntegral.integral_comp_add_right
-        (fun τ ↦ velocityDissipation m G (c.coefficients τ)) (a := 0) (b := S) T₀
-      simpa only [zero_add] using h
-    have hsplit : (∫ τ in T₀..(S + T₀), velocityDissipation m G (c.coefficients τ)) =
-        (∫ τ in (0 : ℝ)..(S + T₀), velocityDissipation m G (c.coefficients τ)) -
-          ∫ τ in (0 : ℝ)..T₀, velocityDissipation m G (c.coefficients τ) := by
-      rw [intervalIntegral.integral_interval_sub_left (hc.intervalIntegrable _ _)
-        (hc.intervalIntegrable _ _)]
-    have hT₀ : 0 ≤ ∫ τ in (0 : ℝ)..T₀, velocityDissipation m G (c.coefficients τ) :=
-      intervalIntegral.integral_nonneg h0 fun τ _ ↦
-        orderDissipation_nonneg m G (amplitude (c.coefficients τ))
-    change (∫ τ in (0 : ℝ)..S, velocityDissipation m G (c.coefficients (τ + T₀))) ≤ max X 0
-    rw [hsh, hsplit]
-    linarith [hX G, le_max_left X 0]
-
-end Constructions
 
 section PlanarDecay
 
@@ -739,36 +662,27 @@ let the data `u₀` differ from `v₀` by at most `ε` in the order-eleven energ
 from `u₀` keeps its order-one energy below `K` up to time `T₀`, and its difference
 from `g` stays below `η₀` in the order-one energy, as long as `ε` is small against
 the Grönwall rate of the energy difference over `[0, T₀]`. -/
-theorem bootstrap (hnu : 0 < nu) (hv : IsPlanar v₀) (g : GlobalSolution nu 11 v₀)
-    {T : ℝ} (c : TameSolutionOn nu 11 u₀ T) {E₁₁v T₀ η₀ ε : ℝ}
+theorem bootstrap (hnu : 0 < nu) (g : GlobalSolution nu 11 v₀)
+    {T : ℝ} (c : TameSolutionOn nu 11 u₀ T) {Kv E₁₁v T₀ η₀ ε : ℝ} (hKv0 : 0 ≤ Kv)
+    (hvK : ∀ t, 0 ≤ t → t ≤ T₀ → ∀ F, velocityEnergy 1 F (g.coefficients t) ≤ Kv)
     (hEv : ∀ F, velocityEnergy 11 F v₀ ≤ E₁₁v) (hη₀0 : 0 < η₀) (hη₀ : η₀ ≤ 1 / 4)
     (hεη : ε ≤ η₀)
-    (hεsmall : ε * Real.exp (stabKappa nu
-        (stabM nu 7 (2 * (meanEnstrophy v₀ / Real.pi ^ 2) + 1) (2 * E₁₁v + 1) T₀) * T₀) *
-        (4 * stabM nu 2 (2 * (meanEnstrophy v₀ / Real.pi ^ 2) + 1) (2 * E₁₁v + 1) T₀) ≤ η₀ ^ 2)
+    (hεsmall : ε * Real.exp (stabKappa nu (stabM nu 7 (2 * Kv + 1) (2 * E₁₁v + 1) T₀) * T₀) *
+        (4 * stabM nu 2 (2 * Kv + 1) (2 * E₁₁v + 1) T₀) ≤ η₀ ^ 2)
     (hw : ∀ F, velocityEnergy 11 F (FourierUniqueness.diff u₀ v₀) ≤ ε) :
     ∀ τ ∈ Ico (0 : ℝ) T, τ ≤ T₀ →
-      (∀ F, velocityEnergy 1 F (c.coefficients τ) ≤ 2 * (meanEnstrophy v₀ / Real.pi ^ 2) + 1) ∧
+      (∀ F, velocityEnergy 1 F (c.coefficients τ) ≤ 2 * Kv + 1) ∧
       (∀ F, velocityEnergy 1 F
         (FourierUniqueness.diff (c.coefficients τ) (g.coefficients τ)) ≤ η₀) := by
-  set Kv := meanEnstrophy v₀ / Real.pi ^ 2 with hKvdef
   set K := 2 * Kv + 1 with hKdef
   set Eu := 2 * E₁₁v + 1 with hEudef
   set M₂ := stabM nu 2 K Eu T₀ with hM₂
   set M₇ := stabM nu 7 K Eu T₀ with hM₇
   set κ := stabKappa nu M₇ with hκdef
-  have hKv0 : 0 ≤ Kv := by
-    have : 0 ≤ meanEnstrophy v₀ := integral_nonneg fun x ↦ by
-      unfold LocalEnstrophyDiffusion.energy
-      positivity
-    positivity
   have hK0 : 0 ≤ K := by positivity
   have hEv0 : 0 ≤ E₁₁v := le_trans (velocityEnergy_nonneg' 11 ∅ _) (hEv ∅)
   have hε0 : 0 ≤ ε := le_trans (velocityEnergy_nonneg' 11 ∅ _) (hw ∅)
   have hκ0 : 0 ≤ κ := stabKappa_nonneg hnu M₇
-  -- the planar solution's order-one bound
-  have hvK : ∀ t, 0 ≤ t → ∀ F, velocityEnergy 1 F (g.coefficients t) ≤ Kv := fun t ht F ↦
-    velocityEnergy_one_le_of_planar (by norm_num) hnu hv (g.toTame (t + 1)) ⟨ht, by linarith⟩ F
   -- data bounds up to order eleven
   have hdu : ∀ j, j ≤ 11 → ∀ F, velocityEnergy j F u₀ ≤ Eu := by
     intro j hj F
@@ -800,14 +714,14 @@ theorem bootstrap (hnu : 0 < nu) (hv : IsPlanar v₀) (g : GlobalSolution nu 11 
         ((velocityEnergy_le_of_order_le (by norm_num) _ F).trans (hw F)).trans hεη
       refine ⟨hd1, fun F ↦ ?_⟩
       have h1 := velocityEnergy_le_two_diff 1 F u₀ v₀
-      have h2 := hvK 0 le_rfl F
+      have h2 := hvK 0 le_rfl (le_trans hs.1 hsT₀) F
       rw [hg0] at h2
       have h3 := hd1 F
       rw [hKdef]
       linarith
     · -- tame bounds for both solutions on `[0, s]`
       have hKg : ∀ τ ∈ Icc (0 : ℝ) s, ∀ F, velocityEnergy 1 F ((g.toTame T).coefficients τ) ≤ K :=
-        fun τ hτ F ↦ (hvK τ hτ.1 F).trans (by rw [hKdef]; linarith)
+        fun τ hτ F ↦ (hvK τ hτ.1 (hτ.2.trans hsT₀) F).trans (by rw [hKdef]; linarith)
       have hc2 := velocityEnergy_le_of_orderOne_bound hnu (j := 2) (by norm_num) (by norm_num) c hs
         hsT₀ hK0 hK (hdu 2 (by norm_num))
       have hc7 := velocityEnergy_le_of_orderOne_bound hnu (j := 7) (by norm_num) (by norm_num) c hs
@@ -865,12 +779,12 @@ theorem bootstrap (hnu : 0 < nu) (hv : IsPlanar v₀) (g : GlobalSolution nu 11 
         have hsq : velocityEnergy 1 F
             (FourierUniqueness.diff (c.coefficients s) (g.coefficients s)) ^ 2 ≤ η₀ ^ 2 := by
           have : ε * Real.exp (κ * T₀) * (4 * M₂) ≤ η₀ ^ 2 := by
-            simpa only [hκdef, hM₇, hM₂, hKdef, hKvdef, hEudef] using hεsmall
+            simpa only [hκdef, hM₇, hM₂, hKdef, hEudef] using hεsmall
           linarith
         nlinarith [hη₀0]
       refine ⟨hd1, fun F ↦ ?_⟩
       have h1 := velocityEnergy_le_two_diff 1 F (c.coefficients s) (g.coefficients s)
-      have h2 := hvK s hpos.le F
+      have h2 := hvK s hpos.le hsT₀ F
       have h3 := hd1 F
       rw [hKdef]
       linarith
@@ -900,7 +814,7 @@ theorem bootstrap (hnu : 0 < nu) (hv : IsPlanar v₀) (g : GlobalSolution nu 11 
         have hc0 : c.coefficients 0 = u₀ := c.initial
         rw [hc0]
         have h1 := velocityEnergy_le_two_diff 1 F u₀ v₀
-        have h2 := hvK 0 le_rfl F
+        have h2 := hvK 0 le_rfl (le_trans hτ₁.1 hτ₁T₀) F
         rw [g.initial] at h2
         have h3 := (velocityEnergy_le_of_order_le (by norm_num : 1 ≤ 11) _ F).trans (hw F)
         rw [hKdef]
@@ -1016,9 +930,8 @@ theorem exists_nhds_globalSolution_of_planar (hnu : 0 < nu) {v₀ : FourierVeloc
   set ε := min η₀ (η₀ ^ 2 / (E * (4 * M₂) + 1)) with hεdef
   have hε0 : 0 < ε := lt_min hη₀0 (by positivity)
   have hεη : ε ≤ η₀ := min_le_left _ _
-  have hεsmall : ε * Real.exp (stabKappa nu
-      (stabM nu 7 (2 * (meanEnstrophy v₀ / Real.pi ^ 2) + 1) (2 * E₁₁v + 1) T₀) * T₀) *
-      (4 * stabM nu 2 (2 * (meanEnstrophy v₀ / Real.pi ^ 2) + 1) (2 * E₁₁v + 1) T₀) ≤ η₀ ^ 2 := by
+  have hεsmall : ε * Real.exp (stabKappa nu (stabM nu 7 (2 * Kv + 1) (2 * E₁₁v + 1) T₀) * T₀) *
+      (4 * stabM nu 2 (2 * Kv + 1) (2 * E₁₁v + 1) T₀) ≤ η₀ ^ 2 := by
     change ε * E * (4 * M₂) ≤ η₀ ^ 2
     have h := min_le_right η₀ (η₀ ^ 2 / (E * (4 * M₂) + 1))
     rw [← hεdef, le_div_iff₀ (by positivity)] at h
@@ -1035,7 +948,10 @@ theorem exists_nhds_globalSolution_of_planar (hnu : 0 < nu) {v₀ : FourierVeloc
     (by positivity) hEu0 ?_
   intro H _
   refine ⟨max K (δ ^ 2 / 4), fun T _ c τ hτ F ↦ ?_⟩
-  have hboot := bootstrap hnu hv g c hEv hη₀0 hη₀ hεη hεsmall hw
+  have hvK : ∀ t, 0 ≤ t → t ≤ T₀ → ∀ F, velocityEnergy 1 F (g.coefficients t) ≤ Kv :=
+    fun t ht _ F ↦ velocityEnergy_one_le_of_planar (by norm_num) hnu hv (g.toTame (t + 1))
+      ⟨ht, by linarith⟩ F
+  have hboot := bootstrap hnu g c hKv0 hvK hEv hη₀0 hη₀ hεη hεsmall hw
   rcases le_or_gt τ T₀ with hτT₀ | hτT₀
   · exact ((hboot τ hτ hτT₀).1 F).trans (le_max_left _ _)
   · -- after the planar flow has become small, the small-data theorem takes over
