@@ -81,6 +81,21 @@ theorem symm_trace (A : GradMatrix) :
   simp only [symm]
   ring
 
+/-- The antisymmetric part (spin) of a gradient. -/
+def spin (A : GradMatrix) : GradMatrix := fun a b ↦ (A a b - A b a) / 2
+
+theorem spin_apply (A : GradMatrix) (a b : Fin 3) : spin A a b = (A a b - A b a) / 2 := rfl
+
+/-- **The spin rotates by half the vorticity.** Since `Ω v = ω × v / 2`,
+`|Ω v|² = (|ω|² |v|² - ⟪ω, v⟫²) / 4`: a quarter of `|v|²` times the squared component of
+the vorticity orthogonal to `v`. -/
+theorem sum_spin_sq (A : GradMatrix) (v : Fin 3 → ℝ) :
+    ∑ a, (∑ b, spin A a b * v b) * (∑ b, spin A a b * v b) =
+      ((∑ a, vort A a * vort A a) * (∑ a, v a * v a) - (∑ a, vort A a * v a) ^ 2) / 4 := by
+  simp only [spin, vort, Fin.sum_univ_three, Matrix.cons_val_zero, Matrix.cons_val_one,
+    Matrix.cons_val_two, Matrix.head_cons, Matrix.tail_cons]
+  ring
+
 /-! ## Divergence form of the traces
 
 Let `v` be a velocity, `A a b = ∂_b v_a` its gradient and `D i j k = ∂_i ∂_j v_k` its second
