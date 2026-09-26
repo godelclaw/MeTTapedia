@@ -26,6 +26,8 @@ import MettapediaNS.SwirlBudget
 import MettapediaNS.AveragedSwirl
 import MettapediaNS.CirculationFlux
 import MettapediaNS.WholeSpaceViscousFlow
+import MettapediaNS.WholeSpaceNSContinuation
+import MettapediaNS.WholeSpaceNSBlowup
 
 /-!
 # Direct upstream dependency audit
@@ -327,3 +329,25 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.exists_local_nsEvolution
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSEvolution.l2_stability
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSEvolution.velocity_eq_of_initial
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.laplacianField_mem_solenoidal
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSEvolution.derivative_toLp_projected
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSEvolution.pressureForce_eq
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSEvolution.concatenate
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSEvolution.exists_extension
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSEvolution.h3_energy_gradientIntegral
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.exists_nsLifespan
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.global_or_lifespan
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSLifespan.evolution_agrees
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSLifespan.not_gradientIntegral_bounded
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSLifespan.gradientIntegral_unbounded
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSLifespan.gradient_unbounded
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSLifespan.gradient_unbounded_near_endpoint
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSEvolution.l2_norm_le
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSEvolution.gradientIntegral_of_vorticity_bound
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSLifespan.vorticityIntegral_unbounded
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSLifespan.maximalField_eq_evolution
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSLifespan.maximalField_jet_continuous
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSLifespan.vorticityDensity_lintegral_eq_top
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.NSLifespan.spatialEssentialSupNorm_lintegral_eq_top
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.global_or_vorticity_blowup
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.hasNSEvolution_of_vorticityIntegral_bound
