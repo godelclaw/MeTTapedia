@@ -8766,6 +8766,16 @@ bounds. The exact split also identifies the infinite unforced right-hand
 side at finitely supported transverse data, including the signed viscous
 term. No closed finite support or time-integrated leakage control is claimed.
 
+`FourierPlanarPressureSign.lean` constructs the transverse, axial-free
+coefficients `u_k = i(-k₂,k₁,0)/L` on a finite support. Symmetric support gives
+a real velocity. Every pressure numerator term is the nonnegative squared
+planar area `(p₁q₂-p₂q₁)²/L²`, so selected interactions give a checked lower
+bound on the pressure force without cancellation from the remaining terms.
+The actual infinite unforced axial right-hand side equals that pressure
+force: axial transport and axial viscosity vanish at the datum. The module
+also computes its kinetic energy. No quantitative lattice-counting lower
+bound or persistence of these phases is asserted here.
+
 `StochasticLagrangian/FourierStrainModeIdentity.lean` retains the signs in a
 different part of the interaction: a complex symmetric strain matrix acting
 between transverse modes. Its matrix-weighted cross-product identity splits

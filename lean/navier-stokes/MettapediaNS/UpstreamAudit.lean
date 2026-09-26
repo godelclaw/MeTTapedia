@@ -44,6 +44,7 @@ import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierSingleB
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierBeltWeightedPolarization
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierBeltPolarizationLeak
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierAxialLeraySource
+import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierPlanarPressureSign
 import Mettapedia.FluidDynamics.NavierStokes.StochasticLagrangian.FourierStrainModeIdentity
 
 /-!
@@ -121,6 +122,12 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FourierAxialLeraySource.sum_belt_pressureSource_sq_le
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FourierAxialLeraySource.sum_belt_transportSource_sq_le
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FourierAxialLeraySource.axial_infiniteVelocityRHS
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierPlanarPressureSign.velocity_transverse
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierPlanarPressureSign.velocity_reality
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierPlanarPressureSign.fullEnergy_eq
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierPlanarPressureSign.pressure_pair_eq_square
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierPlanarPressureSign.axialPressureSource_lower
+#print axioms Mettapedia.FluidDynamics.NavierStokes.FourierPlanarPressureSign.infinite_rhs_axial
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FourierStrainModeIdentity.cross_pair_trace
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FourierStrainModeIdentity.cross_pair_gap
 #print axioms Mettapedia.FluidDynamics.NavierStokes.FourierStrainModeIdentity.cross_pair_same_mode
