@@ -103,6 +103,31 @@ claim counts are tracked in `OSLF/Framework/NTTClaimTracker.lean`,
 `PaperClaimTracker.lean`, and `FULLStatus.lean` (those trackers are authoritative —
 prefer them over prose here for exact status).
 
+## Compatible choices along routes
+
+[`Core/RelationalRouteSemantics.lean`](Core/RelationalRouteSemantics.lean)
+interprets authored steps as relations that retain witnesses. Splitting a route
+gives exactly an intermediate state and compatible witnesses for both parts.
+A witness-preserving replacement extends through every fixed serial context
+and through finite composites of rewrite cells. Individual steps may be partial;
+the backward-viability law does not assert that a successful route exists.
+
+Two checked applications consume this composition machinery:
+
+- [Open-tangle colouring](../GraphTheory/FourColor/OpenTangleWitnessComposition.lean)
+  gives a bijection between actual colourings of glued pieces and compatible
+  pairs of colourings. Finite colouring counts consequently obey matrix
+  multiplication. The [construction adapter](../GraphTheory/FourColor/VertexConstructionGSLT.lean)
+  connects route support to the literal vertex-code decoder. This does not prove
+  colourability of every planar map.
+- [MeTTa premise execution](../OSLF/MeTTaIL/PremiseRouteSemantics.lean)
+  identifies route support with membership in the existing premise engine's
+  result list. `deduplicate_freshness_iff` uses context replacement to remove
+  one of two adjacent identical freshness checks inside any premise sequence, preserving
+  possible final bindings. Shared-binding examples distinguish compatible
+  composition from two separately successful but conflicting queries. This
+  interpretation observes possible answers, not their enumeration multiplicity.
+
 ## Formalization status
 
 GSLT mixes settled classical theory with active research, so the proof state is
