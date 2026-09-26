@@ -8720,7 +8720,20 @@ the lattice. `FourierBeltKernel.lean` uses it for modes of size `N²` in a belt
 of angular width `1/N`: the inverse-square output weight times `1/N` times
 the output-frequency gain has row sum at most `864`, independent of the
 scale and axis. This is a geometric kernel estimate; deriving the `1/N`
-factor for a belt's actual stretching requires a velocity-polarization bound.
+factor for a belt's actual stretching requires velocity polarization.
+
+`FourierBeltPolarization.lean` projects a transverse complex velocity onto
+the real direction `n × k` and controls the remainder by its axial component.
+The paired symbol is bounded by `8 δ + 2 α + 2 β` times the input cross product
+and velocity norms, for belt width `δ ≤ 1/2` and axial fractions `α, β`.
+The output-frequency gain therefore survives the polarization error.
+`FourierSingleBeltStretch.weighted_stretch_le_energy` applies this to the
+actual unit-torus stretching: for `N ≥ 2`, belt width `1/N`, and axial velocity
+fraction at most `A/N`, its inverse-square-weighted output mass is at most
+`(3456 + 1728 A)` times the input vorticity energy. The estimate is uniform
+in scale and real axis, allows arbitrary complex phases, and concerns one
+belt in one shell at a fixed time. Persistence of the geometry, interactions
+between pieces, and the dynamical remainder budget are separate obligations.
 
 `StochasticLagrangian/FourierStrainModeIdentity.lean` retains the signs in a
 different part of the interaction: a complex symmetric strain matrix acting
