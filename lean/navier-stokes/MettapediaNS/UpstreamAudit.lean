@@ -23,6 +23,7 @@ import MettapediaNS.OpenAISolutionVorticity
 import MettapediaNS.OpenAIPeriodicWiener
 import MettapediaNS.OpenAIPulseSeeds
 import MettapediaNS.SwirlBudget
+import MettapediaNS.AveragedSwirl
 
 /-!
 # Direct upstream dependency audit
@@ -289,3 +290,9 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.SwirlBudget.axialVorticity_eq_zero_of_critical
 #print axioms Mettapedia.FluidDynamics.NavierStokes.SwirlBudget.deriv_swirl_le_torque_of_isLocalMax
 #print axioms Mettapedia.FluidDynamics.NavierStokes.SwirlBudget.swirl_le_of_axisymmetric
+#print axioms Mettapedia.FluidDynamics.NavierStokes.AveragedSwirl.fderiv_swirl_horiz
+#print axioms Mettapedia.FluidDynamics.NavierStokes.AveragedSwirl.integral_axialVorticity_eq_zero
+#print axioms Mettapedia.FluidDynamics.NavierStokes.AveragedSwirl.sum_rot_basis
+#print axioms Mettapedia.FluidDynamics.NavierStokes.AveragedSwirl.integral_laplacian_nonpos
+#print axioms Mettapedia.FluidDynamics.NavierStokes.AveragedSwirl.hasDerivAt_circleInt_time
+#print axioms Mettapedia.FluidDynamics.NavierStokes.AveragedSwirl.deriv_circleInt_swirl_le
