@@ -25,6 +25,7 @@ import MettapediaNS.OpenAIPulseSeeds
 import MettapediaNS.SwirlBudget
 import MettapediaNS.AveragedSwirl
 import MettapediaNS.CirculationFlux
+import MettapediaNS.WholeSpaceViscousFlow
 
 /-!
 # Direct upstream dependency audit
@@ -315,3 +316,6 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.CirculationFlux.circleInt_advection_eq_vortexForce
 #print axioms Mettapedia.FluidDynamics.NavierStokes.CirculationFlux.deriv_circleInt_swirl_le_vortexForce
 #print axioms Mettapedia.FluidDynamics.NavierStokes.CirculationFlux.deriv_circleInt_swirl_le_eddyFlux
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.exists_forward_viscous
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.inner_viscousOp
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.exists_regularizedViscous
