@@ -997,6 +997,30 @@ source and cap pieces to that interface.
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeColourOnlyPeriodicity.reachSet_five_eq_four_seed}
 \Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24TubeColourOnlyPeriodicity.capAcceptance_period_two_after_four}
 
+The literal zigzag-ring tangle now has a uniform mixing theorem at every
+circumference $k\geq3$.  Each ring conserves the multiplicity of each of the
+three nonzero colours.  A cyclic cursor construction realizes an adjacent
+swap followed by a boundary shift in two rings whenever the third colour
+occurs.  A complementary second ring also realizes the shift without a
+swap.  In rotating coordinates these are adjacent transpositions and idle
+steps.  Generation of the finite permutation group, followed by idle
+padding, proves that every two words using all three colours with identical
+multiplicities are connected by exactly $r$ rings for every sufficiently
+large $r$.  The threshold depends only on $k$; no bound on $k$ is imposed.
+The theorem proves positive consecutive return lengths as well as
+connectivity.  It concerns all proper ring colourings, without tracked
+terminal-routing constraints.  The current formal proof establishes a
+finite threshold but does not extract a numerical bound for it.
+Since the pentagon cap meets every admissible five-port count class, the
+existing capped-tube support consequently contains every admissible word
+after sufficiently many rings.  These statements concern actual zigzag
+tubes; support richness of arbitrary pentagon complements remains open.
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.Valid.colourCount_eq}
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.two_ring_swap}
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.tube_ergodicity}
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.consecutive_returns}
+\Sverified{Mettapedia.GraphTheory.FourColor.GoertzelV24PentagonTubeSupportInclusion.pentagon_tube_eventually_full}
+
 The growth of exact transfer paths is not merely duplicate certificate
 bookkeeping: fully routed histories inject into distinct proper colourings
 of the canonical open tube's line graph, even after the five incoming edge
