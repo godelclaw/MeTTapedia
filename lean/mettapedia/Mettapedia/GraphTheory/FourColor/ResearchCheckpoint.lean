@@ -12,6 +12,8 @@ import Mettapedia.GraphTheory.Representation.ColoringTransport
 import Mettapedia.GraphTheory.Representation.MatrixOperationalTranslation
 import Mettapedia.GraphTheory.FourColor.Compositional.PentagonKempeShore
 import Mettapedia.GraphTheory.FourColor.Compositional.PentagonKempeCountermodel
+import Mettapedia.GraphTheory.FourColor.Compositional.KempeChannelSplice
+import Mettapedia.GraphTheory.FourColor.Compositional.PentagonKempeMateDependence
 import Mettapedia.GraphTheory.FourColor.GoertzelV24MinimalCounterexampleSelection
 import Mettapedia.GraphTheory.FourColor.GoertzelV24IrreducibleBaseBurden
 
@@ -42,6 +44,12 @@ thirty rejected words. This language itself satisfies the abstract parity,
 colour-relabelling and noncrossing component-union closure rules. The physical
 spherical-shore adapter retains all geometric hypotheses and a starting
 proper colouring; excluding the exceptional physical support remains open.
+The physical Kempe-channel update is exactly a composition of two cut pieces
+of the common graph, retaining their internal attachment darts. An explicit
+endpoint graph refutes determining this update from the boundary word and
+the three boundary connectedness relations, even for the same selected
+component. Neither a bound on the attachments nor a general escape from
+the rejected pentagon support follows from these results.
 This build root does not establish either decomposition supply or finite-base
 verification, and is deliberately separate from `FourColorLane`.
 -/

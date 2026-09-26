@@ -18241,3 +18241,44 @@ realization.  Any successful exclusion must use additional physical
 information, for example compatibility among the matchings in one common
 graph, or a geometric reconstruction argument.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.PentagonKempeSupport.exists_nonempty_boundaryLanguage_avoiding_pentagon}
+
+\subsection{Physical Kempe channels compose through internal attachments}
+
+The idemposition step can be stated as an exact relation on the original
+dart carrier.  Let $A$ be a saturated region of the switched colour pair
+$p$, let $q$ be the observed pair, and let $p\cdot q$ be $q$ with its
+colours permuted by the switch.  Form two relations: $R_{\rm out}$ consists
+of old $q$-channel steps with both ends outside $A$, and $R_{\rm in}$
+consists of old $(p\cdot q)$-channel steps with at least one end in $A$.
+The new local channel is exactly their union.  Consequently its
+connectedness is
+\[
+ \operatorname{Eqv}(R_{\rm out}\cup R_{\rm in})
+ =\operatorname{Eqv}\bigl(\operatorname{Eqv}(R_{\rm out})
+       \cup\operatorname{Eqv}(R_{\rm in})\bigr).
+\]
+Here $\operatorname{Eqv}$ denotes equivalence closure; all attachment darts
+remain in the carrier.  For a finite proper cubic tangle this relation
+recovers the actual new boundary mates.  Any inserted step from a selected
+dart to an unselected dart meets the colour excluded from $p$.
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.KempeChannelSplice.step_after_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.KempeChannelSplice.connected_after_iff_components}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.KempeChannelSplice.physicalMate_after_eq_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.KempeChannelSplice.inserted_attachment_colour}
+
+The external observations alone lose relevant information.  On one explicit
+forty-edge endpoint graph, two proper colourings have the same five-port
+word and all three boundary connectedness relations.  The same seven edges
+are exactly the bichromatic component rooted at the first port in both.
+Switching that same component gives different boundary connectedness
+relations.  Literal walks establish positive connectivity, and labels
+constant on every local step establish negative connectivity.  The finite
+theorem does not assert a spherical embedding.
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.PentagonKempeMateDependence.fixed_component_update_not_determined_by_boundary}
+
+This obstruction concerns deterministic recolouring updates, not the
+compositionality of boundary-support semantics for gluing.  The exact update
+law retains internal attachments and does not bound their number.  To obtain
+a finite reconfiguration semantics or exclude the exceptional pentagon
+language, a further geometric argument must control those attachments or
+justify a sufficient quotient of them.
