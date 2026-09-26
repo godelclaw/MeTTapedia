@@ -418,18 +418,16 @@ theorem exists_tameSolutionOn (m : ℕ) (hm : 2 ≤ m) {nu : ℝ} (hnu : 0 < nu)
   obtain ⟨d, hdB, hdX⟩ := exists_tameRestart m hm hnu u₀ hr hd hz hE₀0 hE₀
   exact ⟨TameSolutionOn.ofRestart m d hdB hdX⟩
 
-/-- **Global existence under order-one control.** If on every finite horizon
-the order-one energy of every tame solution from `u₀` is bounded by a common
-constant, tame solutions exist on every interval `[0, H)`. -/
-theorem exists_tameSolutionOn_of_orderOne (m : ℕ) (hm : 2 ≤ m) {nu : ℝ} (hnu : 0 < nu)
+/-- **Existence up to a horizon under order-one control.** If the order-one energy
+of every tame solution from `u₀` on an interval `[0, T)` with `T ≤ H` is bounded by
+a common constant, a tame solution exists on `[0, H)`. -/
+theorem exists_tameSolutionOn_of_orderOne_at (m : ℕ) (hm : 2 ≤ m) {nu : ℝ} (hnu : 0 < nu)
     (u₀ : FourierVelocity) (hr : ∀ q, u₀ (-q) = coefficientConjugate (u₀ q))
     (hd : ∀ q, modeDot q (u₀ q) = 0) (hz : u₀ 0 = 0) {E₀ : ℝ} (hE₀0 : 0 ≤ E₀)
-    (hE₀ : ∀ F, velocityEnergy m F u₀ ≤ E₀)
-    (horder : ∀ H, 0 < H → ∃ K, ∀ T, T ≤ H → ∀ c : TameSolutionOn nu m u₀ T,
+    (hE₀ : ∀ F, velocityEnergy m F u₀ ≤ E₀) {H : ℝ} (hH : 0 < H) {K : ℝ}
+    (hK : ∀ T, T ≤ H → ∀ c : TameSolutionOn nu m u₀ T,
       ∀ τ ∈ Ico (0 : ℝ) T, ∀ F, velocityEnergy 1 F (c.coefficients τ) ≤ K) :
-    ∀ H, 0 < H → Nonempty (TameSolutionOn nu m u₀ H) := by
-  intro H hH
-  obtain ⟨K, hK⟩ := horder H hH
+    Nonempty (TameSolutionOn nu m u₀ H) := by
   have hK0 : 0 ≤ max K 0 := le_max_right _ _
   set M := 2 * (E₀ + tameRateConst m nu * max K 0 ^ (4 * m + 1) * H) with hMdef
   have hC0 : 0 ≤ tameRateConst m nu * max K 0 ^ (4 * m + 1) :=
@@ -490,5 +488,18 @@ theorem exists_tameSolutionOn_of_orderOne (m : ℕ) (hm : 2 ≤ m) {nu : ℝ} (h
   have hc := hstep n
   rw [hHle] at hc
   exact hc
+
+/-- **Global existence under order-one control.** If on every finite horizon
+the order-one energy of every tame solution from `u₀` is bounded by a common
+constant, tame solutions exist on every interval `[0, H)`. -/
+theorem exists_tameSolutionOn_of_orderOne (m : ℕ) (hm : 2 ≤ m) {nu : ℝ} (hnu : 0 < nu)
+    (u₀ : FourierVelocity) (hr : ∀ q, u₀ (-q) = coefficientConjugate (u₀ q))
+    (hd : ∀ q, modeDot q (u₀ q) = 0) (hz : u₀ 0 = 0) {E₀ : ℝ} (hE₀0 : 0 ≤ E₀)
+    (hE₀ : ∀ F, velocityEnergy m F u₀ ≤ E₀)
+    (horder : ∀ H, 0 < H → ∃ K, ∀ T, T ≤ H → ∀ c : TameSolutionOn nu m u₀ T,
+      ∀ τ ∈ Ico (0 : ℝ) T, ∀ F, velocityEnergy 1 F (c.coefficients τ) ≤ K) :
+    ∀ H, 0 < H → Nonempty (TameSolutionOn nu m u₀ H) := fun H hH ↦
+  let ⟨_, hK⟩ := horder H hH
+  exists_tameSolutionOn_of_orderOne_at m hm hnu u₀ hr hd hz hE₀0 hE₀ hH hK
 
 end Mettapedia.FluidDynamics.NavierStokes.FourierTameContinuation
