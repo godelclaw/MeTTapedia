@@ -1,4 +1,6 @@
 import Euler.OrdinaryRegularizedFlow
+import Euler.OrdinaryRegularizedEnergy
+import Euler.OrdinaryRegularizedCauchy
 import MettapediaNS.WholeSpaceViscousEnergy
 
 /-!
@@ -361,5 +363,404 @@ theorem exists_regularizedViscous {ν : ℝ} (hν : 0 ≤ ν) (T : ℝ) (hT : 0 
     exact (hu t ht.1.le).congr_of_eventuallyEq he
 
 end Evolution
+
+/-! ## Uniform Sobolev bounds -/
+
+section Energy
+
+open EulerSmoothLimit EulerLpTranslation EulerLpTranslation.SmoothL2Field EulerOrdinarySobolev
+  EulerMeanSolenoidal EulerMeanClassical EulerVolterraConvolution EulerContinuousTimeIntegral
+  WholeSpaceViscousEnergy Finset
+
+variable (S : SmoothingOperator)
+
+/-- **The regularized viscous term dissipates at every order.** Its energy production
+is minus twice the viscosity times the dissipation of the smoothed field. -/
+theorem viscousField_production (m : ℕ) (ν : ℝ) (A : SmoothL2Field Space) :
+    integerEnergyProduction m A (viscousField S ν A.toLp) =
+      -2 * ν * wordDissipation m (S.field A.toLp) := by
+  have hw : ∀ {n : ℕ} (w : Fin n → Fin 3),
+      ⟪(wordField A w).toLp, (wordField (viscousField S ν A.toLp) w).toLp⟫_ℝ =
+        ν * ⟪(wordField (S.field A.toLp) w).toLp,
+          (wordField (laplacianField (S.field A.toLp)) w).toLp⟫_ℝ := by
+    intro n w
+    have e1 : wordField (viscousField S ν A.toLp) w =
+        EulerOrdinarySobolev.scaleField ν (wordField (S.field (laplacianOp S A.toLp)) w) :=
+      wordField_map _ _ _
+    have e2 : (wordField (S.field (laplacianOp S A.toLp)) w).toLp =
+        S.op (wordField (laplacianField (S.field A.toLp)) w).toLp := by
+      rw [laplacianOp_apply]
+      exact S.field_word _ w
+    rw [e1, EulerOrdinarySobolev.scaleField_toLp, inner_smul_right, e2, ← S.symmetric,
+      ← S.field_word A w]
+  have hp := integerEnergyProduction_laplacianField m (S.field A.toLp)
+  simp only [integerEnergyProduction, hw, ← mul_sum] at hp ⊢
+  rw [mul_left_comm, hp]
+  ring
+
+/-- The full regularized right-hand side obeys the upstream tame bound. -/
+theorem viscousRhs_energy (m : ℕ) (hm : 3 ≤ m) {ν : ℝ} (hν : 0 ≤ ν) (M : ℝ)
+    (A : SmoothL2Field Space) (hM : WordBound 3 M A) :
+    integerEnergyProduction m A (viscousRhs S ν A.toLp) ≤
+      tameEnergyConstant m * M * wordEnergy m A := by
+  have hsplit : integerEnergyProduction m A (viscousRhs S ν A.toLp) =
+      integerEnergyProduction m A (S.rhs A.toLp) +
+        integerEnergyProduction m A (viscousField S ν A.toLp) := by
+    simp only [integerEnergyProduction, viscousRhs, wordField_add, toLp_addField,
+      inner_add_right, sum_add_distrib]
+    ring
+  rw [hsplit, viscousField_production]
+  have h1 := S.rhs_energy A m hm M hM
+  have h2 := wordDissipation_nonneg m (S.field A.toLp)
+  nlinarith [mul_nonneg hν h2]
+
+namespace RegularizedViscousEvolution
+
+variable {S} {ν T : ℝ} {hT : 0 ≤ T} (U : RegularizedViscousEvolution S ν T hT)
+
+def derivative (t : Icc (0 : ℝ) T) : SmoothL2Field Space := viscousRhs S ν (U.velocity t).toLp
+
+theorem derivative_continuous (n : ℕ) : Continuous (fun t ↦ (U.derivative t).jetLp n) :=
+  viscousRhs_continuous S ν _ (fieldPath U.velocity U.velocity_continuous).continuous n
+
+theorem pointwise_time (t : Icc (0 : ℝ) T) (x : Space) :
+    HasDerivWithinAt (fun r ↦ (U.velocity (projIcc 0 T hT r)).field x)
+      ((U.derivative t).field x) (Icc (0 : ℝ) T) t := by
+  apply pointwise_derivative_of_l2 T hT U.velocity U.derivative
+    U.velocity_continuous U.derivative_continuous _ t x
+  intro r hr
+  simpa only [derivative, viscousRhs_toLp] using U.time_law r hr
+
+def energy (m : ℕ) : C(Icc (0 : ℝ) T, ℝ) :=
+  ⟨fun t ↦ wordEnergy m (U.velocity t), wordEnergy_continuous U.velocity U.velocity_continuous m⟩
+
+def energyDerivative (m : ℕ) (t : Icc (0 : ℝ) T) : ℝ :=
+  integerEnergyProduction m (U.velocity t) (U.derivative t)
+
+theorem energy_time (m : ℕ) (t : Icc (0 : ℝ) T) :
+    HasDerivWithinAt (extendPath T hT (U.energy m)) (U.energyDerivative m t)
+      (Icc (0 : ℝ) T) t := by
+  apply wordEnergy_hasDerivWithinAt T hT U.velocity U.derivative
+    U.velocity_continuous U.derivative_continuous
+  intro r hr x
+  exact (U.pointwise_time ⟨r, hr.1.le, hr.2.le⟩ x).hasDerivAt (Icc_mem_nhds hr.1 hr.2)
+
+theorem energy_tame (hν : 0 ≤ ν) (m : ℕ) (hm : 3 ≤ m) (M : ℝ) (t : Icc (0 : ℝ) T)
+    (hM : WordBound 3 M (U.velocity t)) :
+    U.energyDerivative m t ≤ tameEnergyConstant m * M * U.energy m t :=
+  viscousRhs_energy S m hm hν M (U.velocity t) hM
+
+theorem energy_quadratic (hν : 0 ≤ ν) (t : Icc (0 : ℝ) T) :
+    U.energyDerivative 3 t ≤ tameEnergyConstant 3 * (1 + U.energy 3 t) ^ 2 := by
+  have h := U.energy_tame hν 3 (le_refl 3) _ t (wordBound_sqrt_energy 3 (U.velocity t))
+  change U.energyDerivative 3 t ≤
+    tameEnergyConstant 3 * Real.sqrt (U.energy 3 t) * U.energy 3 t at h
+  apply h.trans
+  have hx : 0 ≤ U.energy 3 t := wordEnergy_nonneg 3 _
+  have hr : 0 ≤ Real.sqrt (U.energy 3 t) := Real.sqrt_nonneg _
+  have hs := Real.sq_sqrt hx
+  have hsq : Real.sqrt (U.energy 3 t) * U.energy 3 t ≤ (1 + U.energy 3 t) ^ 2 := by
+    have hl : Real.sqrt (U.energy 3 t) ≤ 1 + U.energy 3 t := by nlinarith
+    nlinarith [mul_le_mul_of_nonneg_right hl hx]
+  simpa only [mul_assoc] using mul_le_mul_of_nonneg_left hsq (tameEnergyConstant_nonneg 3)
+
+theorem short_energy (hν : 0 ≤ ν)
+    (hsmall : tameEnergyConstant 3 * T ≤ (1 + U.energy 3 ⟨0, le_rfl, hT⟩)⁻¹ / 2)
+    (t : Icc (0 : ℝ) T) : U.energy 3 t ≤ 2 * U.energy 3 ⟨0, le_rfl, hT⟩ + 1 := by
+  have hp (r : ℝ) (hr : r ∈ Icc 0 T) : projIcc 0 T hT r = ⟨r, hr⟩ := projIcc_of_mem hT hr
+  have h := quadratic_energy_bound T (tameEnergyConstant 3) hT
+    (extendPath T hT (U.energy 3)) (fun r ↦ U.energyDerivative 3 (projIcc 0 T hT r))
+    ((U.energy 3).continuous.comp continuous_projIcc).continuousOn
+    (fun r _hr ↦ wordEnergy_nonneg 3 (U.velocity (projIcc 0 T hT r)))
+    (fun r hr ↦ by simpa only [hp r hr] using U.energy_time 3 ⟨r, hr⟩)
+    (fun r _hr ↦ U.energy_quadratic hν (projIcc 0 T hT r)) (tameEnergyConstant_nonneg 3)
+    (by simpa only [extendPath, hp 0 ⟨le_rfl, hT⟩] using hsmall) t t.property
+  simpa only [extendPath, hp (t : ℝ) t.property, hp 0 ⟨le_rfl, hT⟩] using h
+
+theorem energy_uniform (hν : 0 ≤ ν) (m : ℕ) (hm : 3 ≤ m) (M : ℝ)
+    (hM : ∀ t, WordBound 3 M (U.velocity t)) (t : Icc (0 : ℝ) T) :
+    wordEnergy m (U.velocity t) ≤ wordEnergy m (U.velocity ⟨0, le_rfl, hT⟩) *
+      Real.exp (tameEnergyConstant m * M * T) := by
+  have hd (r : ℝ) (hr : r ∈ Ico 0 T) :
+      HasDerivWithinAt (extendPath T hT (U.energy m))
+        (U.energyDerivative m (projIcc 0 T hT r)) (Icc 0 T) r := by
+    simpa only [projIcc_of_mem hT (show r ∈ Icc 0 T from ⟨hr.1, hr.2.le⟩)] using
+      U.energy_time m ⟨r, hr.1, hr.2.le⟩
+  have he := linear_stability_within (extendPath T hT (U.energy m))
+    (fun r ↦ U.energyDerivative m (projIcc 0 T hT r)) (tameEnergyConstant m * M) T
+    ((U.energy m).continuous.comp continuous_projIcc).continuousOn hd
+    (fun r _hr ↦ U.energy_tame hν m hm M (projIcc 0 T hT r) (hM _)) t t.property
+  have hi : wordEnergy m (U.velocity t) ≤ wordEnergy m (U.velocity ⟨0, le_rfl, hT⟩) *
+      Real.exp (tameEnergyConstant m * M * t) := by
+    simpa only [extendPath, projIcc_of_mem hT t.property,
+      projIcc_of_mem hT (show (0 : ℝ) ∈ Icc 0 T from ⟨le_rfl, hT⟩), energy,
+      ContinuousMap.coe_mk] using he
+  apply hi.trans
+  apply mul_le_mul_of_nonneg_left _ (wordEnergy_nonneg m _)
+  apply Real.exp_le_exp.mpr
+  exact mul_le_mul_of_nonneg_left t.property.2
+    (mul_nonneg (tameEnergyConstant_nonneg m) (wordBound_nonneg (hM t)))
+
+end RegularizedViscousEvolution
+
+/-- **Uniform `H³` bound on the Euler time.** Every regularized viscous evolution from
+`A` keeps the upstream `H³` bound on the regularized Euler lifespan of `A`,
+uniformly in the smoothing and in the viscosity. -/
+theorem regularizedViscous_h3 (A : SmoothL2Field Space) {ν : ℝ} (hν : 0 ≤ ν)
+    (U : RegularizedViscousEvolution S ν (regularizedTime A) (regularizedTime_pos A).le)
+    (hinit : U.velocity ⟨0, le_rfl, (regularizedTime_pos A).le⟩ = A)
+    (t : Icc (0 : ℝ) (regularizedTime A)) : WordBound 3 (regularizedH3 A) (U.velocity t) := by
+  have he : U.energy 3 ⟨0, le_rfl, (regularizedTime_pos A).le⟩ = wordEnergy 3 A :=
+    congrArg (wordEnergy 3) hinit
+  have hc : 0 < 1 + tameEnergyConstant 3 := by linarith [tameEnergyConstant_nonneg 3]
+  have ha : 0 < 1 + wordEnergy 3 A := by linarith [wordEnergy_nonneg 3 A]
+  have hs : tameEnergyConstant 3 * regularizedTime A ≤ (1 + wordEnergy 3 A)⁻¹ / 2 := by
+    calc
+      _ ≤ (1 + tameEnergyConstant 3) * regularizedTime A := by
+        nlinarith [regularizedTime_pos A]
+      _ = _ := by unfold regularizedTime; field_simp [hc.ne', ha.ne']
+  have hu := U.short_energy hν (by simpa only [he] using hs) t
+  rw [he] at hu
+  intro n hn w
+  exact (wordBound_sqrt_energy 3 (U.velocity t) n hn w).trans (Real.sqrt_le_sqrt hu)
+
+/-- **All orders, uniformly.** Every Sobolev order of every regularized viscous
+evolution from `A` is bounded on the regularized Euler lifespan of `A` by a constant
+independent of the smoothing and of the viscosity. -/
+theorem regularizedViscous_all_order (A : SmoothL2Field Space) (q : ℕ) :
+    ∃ C : ℝ, ∀ (S : SmoothingOperator) {ν : ℝ} (_ : 0 ≤ ν)
+      (U : RegularizedViscousEvolution S ν (regularizedTime A) (regularizedTime_pos A).le),
+      U.velocity ⟨0, le_rfl, (regularizedTime_pos A).le⟩ = A →
+      ∀ t, tensorNorm q (U.velocity t) ≤ C := by
+  let m := max 3 q
+  refine ⟨wordCount q * Real.sqrt (wordEnergy m A *
+    Real.exp (tameEnergyConstant m * regularizedH3 A * regularizedTime A)), ?_⟩
+  intro S ν hν U hinit t
+  have hu := U.energy_uniform hν m (le_max_left 3 q) (regularizedH3 A)
+    (regularizedViscous_h3 S A hν U hinit) t
+  rw [hinit] at hu
+  apply tensorNorm_le_wordCount
+  intro n hn w
+  exact (wordBound_sqrt_energy m (U.velocity t) n (hn.trans (le_max_right 3 q)) w).trans
+    (Real.sqrt_le_sqrt hu)
+
+end Energy
+
+/-! ## The Cauchy property as the smoothing is removed -/
+
+section Cauchy
+
+open EulerSmoothLimit EulerLpTranslation EulerLpTranslation.SmoothL2Field EulerOrdinarySobolev
+  EulerMeanSolenoidal EulerVolterraConvolution EulerSmoothSobolev WholeSpaceViscousEnergy Finset
+
+theorem toLp_laplacianField_fieldSub (X Y : SmoothL2Field Space) :
+    (laplacianField (fieldSub X Y)).toLp = (laplacianField X).toLp - (laplacianField Y).toLp := by
+  simp only [toLp_laplacianField, fieldSub, wordField_add, wordField_neg, toLp_addField,
+    toLp_fieldNeg, Finset.sum_add_distrib, Finset.sum_neg_distrib, sub_eq_add_neg]
+
+theorem norm_laplacianField_le (X : SmoothL2Field Space) {M : ℝ} (hM : WordBound 2 M X) :
+    ‖(laplacianField X).toLp‖ ≤ 3 * M := by
+  rw [toLp_laplacianField]
+  calc ‖∑ i : Fin 3, (wordField X (doubleWord i)).toLp‖
+      ≤ ∑ i : Fin 3, ‖(wordField X (doubleWord i)).toLp‖ := norm_sum_le _ _
+    _ ≤ ∑ _i : Fin 3, M := Finset.sum_le_sum fun i _ ↦ hM 2 le_rfl (doubleWord i)
+    _ = 3 * M := by
+        simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
+        push_cast
+        ring
+
+theorem op_laplacianField (S : SmoothingOperator) (B : SmoothL2Field Space) :
+    S.op (laplacianField B).toLp = (laplacianField (S.field B.toLp)).toLp := by
+  simp only [toLp_laplacianField, map_sum, S.field_word]
+
+/-- **The regularized viscous term approximates the Laplacian** on solenoidal fields,
+with the upstream regularization error. -/
+theorem viscous_error (n : ℕ) (A : SmoothL2Field Space) (hA : A.toLp ∈ solenoidalSpace)
+    {M : ℝ} (hM : WordBound 3 M A) :
+    ‖(regularizer n).op (laplacianOp (regularizer n) A.toLp) - (laplacianField A).toLp‖ ≤
+      6 * (regularizerError n * M) := by
+  have hB : ((regularizer n).field A.toLp).toLp ∈ solenoidalSpace := by
+    rw [SmoothingOperator.field_toLp]
+    exact (regularizer n).solenoidal _
+  have hBM : WordBound 3 M ((regularizer n).field A.toLp) :=
+    (regularizer n).field_wordBound A 3 M hM
+  have e1 := regularizer_error_words n ((regularizer n).field A.toLp) hB 2 M hBM
+  have e2 := regularizer_error_words n A hA 2 M hM
+  have hsplit : (regularizer n).op (laplacianOp (regularizer n) A.toLp) - (laplacianField A).toLp =
+      (laplacianField (fieldSub ((regularizer n).field ((regularizer n).field A.toLp).toLp)
+        ((regularizer n).field A.toLp))).toLp +
+      (laplacianField (fieldSub ((regularizer n).field A.toLp) A)).toLp := by
+    rw [toLp_laplacianField_fieldSub, toLp_laplacianField_fieldSub, laplacianOp_apply,
+      op_laplacianField]
+    abel
+  rw [hsplit]
+  calc _ ≤ ‖(laplacianField (fieldSub ((regularizer n).field ((regularizer n).field A.toLp).toLp)
+          ((regularizer n).field A.toLp))).toLp‖ +
+        ‖(laplacianField (fieldSub ((regularizer n).field A.toLp) A)).toLp‖ := norm_add_le _ _
+    _ ≤ 3 * (regularizerError n * M) + 3 * (regularizerError n * M) :=
+        add_le_add (norm_laplacianField_le _ e1) (norm_laplacianField_le _ e2)
+    _ = 6 * (regularizerError n * M) := by ring
+
+namespace RegularizedViscousEvolution
+
+variable {S : SmoothingOperator} {ν T : ℝ} {hT : 0 ≤ T} (U : RegularizedViscousEvolution S ν T hT)
+
+theorem l2_time (t : Icc (0 : ℝ) T) :
+    HasDerivWithinAt (fun r ↦ (U.velocity (projIcc 0 T hT r)).toLp)
+      (U.derivative t).toLp (Icc (0 : ℝ) T) t := by
+  have h := ordinaryWord_hasDerivWithinAt T hT U.velocity U.derivative
+    U.velocity_continuous U.derivative_continuous
+    (fun r hr x ↦ (U.pointwise_time ⟨r, hr.1.le, hr.2.le⟩ x).hasDerivAt (Icc_mem_nhds hr.1 hr.2))
+    (n := 0) Fin.elim0 t
+  simpa only [wordField_zero] using h
+
+end RegularizedViscousEvolution
+
+theorem viscousRhs_sub (S₁ S₂ : SmoothingOperator) (ν : ℝ) (A B : SmoothL2Field Space) :
+    (viscousRhs S₂ ν B.toLp).toLp - (viscousRhs S₁ ν A.toLp).toLp =
+      ((S₂.rhs B.toLp).toLp - (S₁.rhs A.toLp).toLp) +
+        ν • (((S₂.op (laplacianOp S₂ B.toLp) - (laplacianField B).toLp) -
+            (S₁.op (laplacianOp S₁ A.toLp) - (laplacianField A).toLp)) +
+          ((laplacianField B).toLp - (laplacianField A).toLp)) := by
+  simp only [viscousRhs, toLp_addField, viscousField_toLp, viscousOp_apply, laplacianOp_apply,
+    smul_add, smul_sub]
+  abel
+
+/-- The comparison constant for two regularized viscous evolutions. -/
+def viscousComparisonCost (ν T M : ℝ) : ℝ :=
+  Real.sqrt (regularizationCost M ^ 2 + 36 * ν * M ^ 2) *
+    Real.sqrt (Real.exp ((2 * ((360 * smoothEmbeddingConstant) * M) + 1 + ν) * T))
+
+theorem viscousComparisonCost_nonneg (ν T M : ℝ) : 0 ≤ viscousComparisonCost ν T M :=
+  mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
+
+/-- **Two regularized viscous evolutions stay close in `L²`.** Their distance is at most
+the sum of the two regularization errors times a constant fixed by the `H⁴` bound, the
+viscosity and the time. -/
+theorem regularizedViscous_l2_comparison {ν T : ℝ} {hT : 0 ≤ T} (hν : 0 ≤ ν) {j k : ℕ}
+    (U : RegularizedViscousEvolution (regularizer j) ν T hT)
+    (V : RegularizedViscousEvolution (regularizer k) ν T hT)
+    (M : ℝ) (hU : ∀ t, WordBound 4 M (U.velocity t))
+    (hV : ∀ t, WordBound 4 M (V.velocity t))
+    (hinit : (V.velocity ⟨0, le_rfl, hT⟩).toLp = (U.velocity ⟨0, le_rfl, hT⟩).toLp) :
+    ‖fieldPath V.velocity V.velocity_continuous - fieldPath U.velocity U.velocity_continuous‖ ≤
+      (regularizerError j + regularizerError k) * viscousComparisonCost ν T M := by
+  let G := (360 * smoothEmbeddingConstant) * M
+  let C := 2 * G + 1 + ν
+  let E := (regularizerError j + regularizerError k) *
+    Real.sqrt (regularizationCost M ^ 2 + 36 * ν * M ^ 2)
+  have hM : 0 ≤ M := wordBound_nonneg (hU ⟨0, le_rfl, hT⟩)
+  have hG : 0 ≤ G := mul_nonneg (mul_nonneg (by norm_num) smoothEmbeddingConstant_nonneg) hM
+  have hC : 1 ≤ C := by dsimp [C]; linarith
+  have herr : 0 ≤ regularizerError j + regularizerError k :=
+    add_nonneg (regularizerError_nonneg j) (regularizerError_nonneg k)
+  have hE : 0 ≤ E := mul_nonneg herr (Real.sqrt_nonneg _)
+  have hE2 : E ^ 2 = (regularizerError j + regularizerError k) ^ 2 *
+      (regularizationCost M ^ 2 + 36 * ν * M ^ 2) := by
+    dsimp [E]
+    rw [mul_pow, Real.sq_sqrt (by positivity)]
+  let X (r : ℝ) := ‖(V.velocity (projIcc 0 T hT r)).toLp - (U.velocity (projIcc 0 T hT r)).toLp‖ ^ 2
+  let X' (r : ℝ) := 2 * ⟪(V.velocity (projIcc 0 T hT r)).toLp - (U.velocity (projIcc 0 T hT r)).toLp,
+    (V.derivative (projIcc 0 T hT r)).toLp - (U.derivative (projIcc 0 T hT r)).toLp⟫_ℝ
+  have hc : ContinuousOn X (Icc 0 T) :=
+    ((((fieldPath V.velocity V.velocity_continuous).continuous.sub
+      (fieldPath U.velocity U.velocity_continuous).continuous).comp
+        continuous_projIcc).norm.pow 2).continuousOn
+  have hx0 : X 0 = 0 := by
+    simp only [X, projIcc_of_mem hT (show (0 : ℝ) ∈ Icc 0 T from ⟨le_rfl, hT⟩),
+      hinit, sub_self, norm_zero, zero_pow (by decide : 2 ≠ 0)]
+  have hd (r : ℝ) (hr : r ∈ Icc 0 T) : HasDerivWithinAt X (X' r) (Icc 0 T) r := by
+    have h := ((V.l2_time ⟨r, hr⟩).sub (U.l2_time ⟨r, hr⟩)).norm_sq
+    simpa only [X, X', Pi.sub_apply, projIcc_of_mem hT hr] using h
+  have hb (r : ℝ) (_hr : r ∈ Icc 0 T) : X' r ≤ C * X r + E ^ 2 := by
+    set Ur := U.velocity (projIcc 0 T hT r)
+    set Vr := V.velocity (projIcc 0 T hT r)
+    set W := Vr.toLp - Ur.toLp with hW
+    change 2 * ⟪W, (viscousRhs (regularizer k) ν Vr.toLp).toLp -
+        (viscousRhs (regularizer j) ν Ur.toLp).toLp⟫_ℝ ≤ C * ‖W‖ ^ 2 + E ^ 2
+    rw [viscousRhs_sub]
+    set eu := (regularizer j).op (laplacianOp (regularizer j) Ur.toLp) - (laplacianField Ur).toLp
+    set ev := (regularizer k).op (laplacianOp (regularizer k) Vr.toLp) - (laplacianField Vr).toLp
+    -- the transport parts
+    have htr := perturbed_difference_energy Ur Vr (U.solenoidal _) (V.solenoidal _)
+      ((regularizer j).rhs Ur.toLp).toLp ((regularizer k).rhs Vr.toLp).toLp
+      G (regularizerError j * regularizationCost M) (regularizerError k * regularizationCost M)
+      (wordBound_gradient (wordBound_mono (hU _) (by omega)))
+      (regularized_rhs_error j _ (U.solenoidal _) M (hU _))
+      (regularized_rhs_error k _ (V.solenoidal _) M (hV _))
+    -- the viscous parts
+    have hvu : ‖eu‖ ≤ 6 * (regularizerError j * M) :=
+      viscous_error j Ur (U.solenoidal _) (wordBound_mono (hU _) (by omega))
+    have hvv : ‖ev‖ ≤ 6 * (regularizerError k * M) :=
+      viscous_error k Vr (V.solenoidal _) (wordBound_mono (hV _) (by omega))
+    have hlap : ⟪W, (laplacianField Vr).toLp - (laplacianField Ur).toLp⟫_ℝ ≤ 0 := by
+      rw [← toLp_laplacianField_fieldSub]
+      have hWe : W = (fieldSub Vr Ur).toLp := by
+        rw [hW, fieldSub, toLp_addField, toLp_fieldNeg, sub_eq_add_neg]
+      rw [hWe, inner_laplacianField]
+      have := Finset.sum_nonneg fun i (_ : i ∈ (Finset.univ : Finset (Fin 3))) ↦
+        sq_nonneg ‖((fieldSub Vr Ur).directionalField (axis i)).toLp‖
+      linarith
+    have hev : ‖ev - eu‖ ≤ 6 * M * (regularizerError j + regularizerError k) := by
+      calc ‖ev - eu‖ ≤ ‖ev‖ + ‖eu‖ := norm_sub_le _ _
+        _ ≤ 6 * (regularizerError k * M) + 6 * (regularizerError j * M) := add_le_add hvv hvu
+        _ = 6 * M * (regularizerError j + regularizerError k) := by ring
+    have hcs : ⟪W, ev - eu⟫_ℝ ≤ ‖W‖ * (6 * M * (regularizerError j + regularizerError k)) :=
+      (real_inner_le_norm _ _).trans (mul_le_mul_of_nonneg_left hev (norm_nonneg _))
+    have hamgm : 2 * ν * ⟪W, ev - eu⟫_ℝ ≤
+        ν * ‖W‖ ^ 2 + ν * (6 * M * (regularizerError j + regularizerError k)) ^ 2 := by
+      have h1 := mul_le_mul_of_nonneg_left hcs (by positivity : (0 : ℝ) ≤ 2 * ν)
+      have h2 : 2 * ν * (‖W‖ * (6 * M * (regularizerError j + regularizerError k))) ≤
+          ν * ‖W‖ ^ 2 + ν * (6 * M * (regularizerError j + regularizerError k)) ^ 2 := by
+        nlinarith [mul_nonneg hν (sq_nonneg (‖W‖ - 6 * M * (regularizerError j + regularizerError k)))]
+      linarith
+    have hlap' : 2 * ν * ⟪W, (laplacianField Vr).toLp - (laplacianField Ur).toLp⟫_ℝ ≤ 0 :=
+      mul_nonpos_of_nonneg_of_nonpos (by positivity) hlap
+    have hsum : (regularizerError j * regularizationCost M +
+          regularizerError k * regularizationCost M) ^ 2 +
+        ν * (6 * M * (regularizerError j + regularizerError k)) ^ 2 = E ^ 2 := by
+      rw [hE2]
+      ring
+    rw [inner_add_right, inner_smul_right, inner_add_right]
+    change 2 * ⟪W, ((regularizer k).rhs Vr.toLp).toLp - ((regularizer j).rhs Ur.toLp).toLp⟫_ℝ ≤
+        (2 * G + 1) * ‖W‖ ^ 2 +
+          (regularizerError j * regularizationCost M + regularizerError k * regularizationCost M) ^ 2
+      at htr
+    dsimp [C]
+    nlinarith [hsum]
+  have hnorm (t : Icc (0 : ℝ) T) :
+      ‖(V.velocity t).toLp - (U.velocity t).toLp‖ ≤ E * Real.sqrt (Real.exp (C * T)) := by
+    have h := forced_linear_zero_bound T C E hC X X' hc hx0 hd hb t t.property
+    simp only [X, projIcc_of_mem hT t.property] at h
+    have hs := Real.sq_sqrt ((Real.exp_pos (C * T)).le)
+    have he : 0 ≤ E * Real.sqrt (Real.exp (C * T)) := mul_nonneg hE (Real.sqrt_nonneg _)
+    nlinarith [norm_nonneg ((V.velocity t).toLp - (U.velocity t).toLp)]
+  apply (ContinuousMap.norm_le _ (mul_nonneg herr (viscousComparisonCost_nonneg ν T M))).mpr
+  intro t
+  exact (hnorm t).trans_eq (by dsimp [E, C, G, viscousComparisonCost]; ring)
+
+/-- **The regularized viscous evolutions are Cauchy** in continuous `L²` on a common
+interval with a common `H⁴` bound. -/
+theorem regularizedViscous_cauchy {ν T : ℝ} {hT : 0 ≤ T} (hν : 0 ≤ ν)
+    (U : ∀ n, RegularizedViscousEvolution (regularizer n) ν T hT)
+    (M : ℝ) (hM : ∀ n t, WordBound 4 M ((U n).velocity t))
+    (hinit : ∀ j k, ((U k).velocity ⟨0, le_rfl, hT⟩).toLp = ((U j).velocity ⟨0, le_rfl, hT⟩).toLp) :
+    CauchySeq (fun n ↦ fieldPath (U n).velocity (U n).velocity_continuous) := by
+  have he : Tendsto (fun n ↦ regularizerError n * viscousComparisonCost ν T M) atTop
+      (𝓝 (0 : ℝ)) := by
+    simpa only [zero_mul] using regularizerError_tendsto.mul_const (viscousComparisonCost ν T M)
+  apply Metric.cauchySeq_iff.mpr
+  intro ε hε
+  have hh : ∀ᶠ n in atTop, regularizerError n * viscousComparisonCost ν T M < ε / 2 :=
+    (tendsto_order.mp he).2 _ (half_pos hε)
+  obtain ⟨N, hN⟩ := eventually_atTop.mp hh
+  refine ⟨N, fun j hj k hk ↦ ?_⟩
+  rw [dist_eq_norm, norm_sub_rev]
+  apply (regularizedViscous_l2_comparison hν (U j) (U k) M (hM j) (hM k) (hinit j k)).trans_lt
+  have hj' := hN j hj
+  have hk' := hN k hk
+  nlinarith
+
+end Cauchy
 
 end Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow

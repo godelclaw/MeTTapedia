@@ -319,3 +319,6 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.exists_forward_viscous
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.inner_viscousOp
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.exists_regularizedViscous
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.regularizedViscous_all_order
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.viscous_error
+#print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceViscousFlow.regularizedViscous_cauchy
