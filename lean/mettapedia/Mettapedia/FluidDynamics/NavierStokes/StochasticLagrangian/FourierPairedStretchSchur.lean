@@ -23,6 +23,8 @@ namespace Mettapedia.FluidDynamics.NavierStokes.FourierPairedStretchSchur
 open scoped BigOperators
 open PeriodicFourierTriad PancakeGalerkinKineticEnergy PancakeFrequencyProjectorCommutator
   FourierRelaxation FourierTriadSineLaw FourierPancakePairDepletion FourierPairedStretchIdentity
+  PancakePeriodicCoherentSplit PancakePeriodicComplexStretch
+  PancakePeriodicVorticityEquation FourierVorticitySource
 
 /-- Summing selected convolution outputs uses each ordered input pair at most once. -/
 theorem sum_output_pairs_le (P K : Finset Wavevector) (A : Wavevector → Wavevector → ℝ)
@@ -44,6 +46,37 @@ theorem sum_output_pairs_le (P K : Finset Wavevector) (A : Wavevector → Waveve
     exact le_rfl
   · intro r _ _
     exact hA p r
+
+/-- A majorant for paired physical symbols controls any finite collection of outputs. -/
+theorem weighted_stretch_le_pair_majorant (u : FourierVelocity) (P K : Finset Wavevector)
+    (w : Wavevector → ℝ) (hw : ∀ k, 0 ≤ w k)
+    (B : Wavevector → Wavevector → ℝ) (hB : ∀ p r, 0 ≤ B p r)
+    (hpair : ∀ p ∈ P, ∀ r ∈ P,
+      w (p + r) * ‖coefficientVec
+        (unitTorusStrainStretchAmp p (fourierCurl u p) (fourierCurl u r) +
+          unitTorusStrainStretchAmp r (fourierCurl u r) (fourierCurl u p))‖ ≤ B p r) :
+    (∑ k ∈ K, w k * ‖coefficientVec (pancakeStretch u P k)‖) ≤
+      (1 / 2 : ℝ) * ∑ p ∈ P, ∑ r ∈ P, B p r := by
+  have houtput : ∀ k, w k * ‖coefficientVec (pancakeStretch u P k)‖ ≤
+      (1 / 2 : ℝ) * ∑ p ∈ P.filter (fun p ↦ k - p ∈ P), B p (k - p) := by
+    intro k
+    have hle : w k * ‖coefficientVec ((2 : ℂ) • pancakeStretch u P k)‖ ≤
+        ∑ p ∈ P.filter (fun p ↦ k - p ∈ P), B p (k - p) := by
+      rw [two_smul_pancakeStretch, PancakeFixedOutputVelocityBound.coefficientVec_sum]
+      refine (mul_le_mul_of_nonneg_left (norm_sum_le _ _) (hw k)).trans ?_
+      rw [Finset.mul_sum]
+      refine Finset.sum_le_sum fun p hp ↦ ?_
+      obtain ⟨hpP, hkpP⟩ := Finset.mem_filter.mp hp
+      simpa only [show p + (k - p) = k from by abel] using hpair p hpP (k - p) hkpP
+    rw [norm_cv_smul] at hle
+    norm_num only [Complex.norm_ofNat] at hle
+    linarith
+  calc
+    _ ≤ ∑ k ∈ K, (1 / 2 : ℝ) * ∑ p ∈ P.filter (fun p ↦ k - p ∈ P), B p (k - p) :=
+      Finset.sum_le_sum fun k _ ↦ houtput k
+    _ = (1 / 2 : ℝ) * ∑ k ∈ K, ∑ p ∈ P.filter (fun p ↦ k - p ∈ P), B p (k - p) := by
+      rw [Finset.mul_sum]
+    _ ≤ _ := mul_le_mul_of_nonneg_left (sum_output_pairs_le P K B hB) (by norm_num)
 
 /-- Output weight times the paired angular depletion. -/
 def angularKernel (w : Wavevector → ℝ) (p r : Wavevector) : ℝ :=

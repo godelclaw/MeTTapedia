@@ -8735,6 +8735,16 @@ in scale and real axis, allows arbitrary complex phases, and concerns one
 belt in one shell at a fixed time. Persistence of the geometry, interactions
 between pieces, and the dynamical remainder budget are separate obligations.
 
+`FourierBeltWeightedPolarization.lean` obtains the same bound from the weaker
+energy condition `Σ axialMass² ≤ (A/N)² Σ curlEnergy`, where
+`axialMass(k) = 2π|k| |u(k)·n|`. The pointwise polarization condition implies
+this condition by a checked velocity-to-curl normalization. A mode may have
+a large axial fraction when its contribution to the axial energy is small.
+The mixed term uses the existing scaled Young–Schur estimate; the common
+paired-symbol output summation is in `FourierPairedStretchSchur`. This remains
+a fixed-time belt self-interaction estimate. No persistence of the weighted
+condition or bound on the full nonlinear evolution is asserted.
+
 `FourierBeltPolarizationLeak.lean` checks a limitation of exact planar velocity
 polarization. A real four-mode datum at `±(L,0,1)` and `±(0,L,1)` is transverse
 and has zero axial velocity. The actual infinite unforced Fourier right-hand
