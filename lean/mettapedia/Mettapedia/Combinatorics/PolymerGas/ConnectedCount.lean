@@ -19,7 +19,7 @@ open Finset
 
 namespace Mettapedia.Combinatorics.PolymerGas
 
-namespace SimpleGraph
+namespace ConnectedCount
 namespace Walk
 
 def insertLeafAtSupport {V : Type*} [DecidableEq V] {G : SimpleGraph V}
@@ -65,7 +65,6 @@ theorem rotate_length {V : Type*} [DecidableEq V] {G : SimpleGraph V}
   SimpleGraph.Walk.length_rotate p root hroot
 
 end Walk
-end SimpleGraph
 
 theorem fintype_card_compl_singleton_set
     {V : Type*} [Fintype V] [DecidableEq V] (v : V) :
@@ -80,8 +79,6 @@ theorem fintype_card_compl_singleton_set
   exact Finset.card_erase_of_mem (by simp)
 
 universe u
-
-namespace SimpleGraph
 
 theorem Connected.exists_closedWalk_cover_length_le
     {V : Type u} [Fintype V] [DecidableEq V] {G : SimpleGraph V}
@@ -149,10 +146,10 @@ theorem Connected.exists_closedWalk_cover_length_le
                 (List.mem_map_of_mem (f := fun z : S => (z : V)) hxSub)
             have hyLift : y ∈ pLift.support := hcoverLift y hyS
             let pIns :=
-              SimpleGraph.Walk.insertLeafAtSupport pLift hyLift hvy.symm
+              ConnectedCount.Walk.insertLeafAtSupport pLift hyLift hvy.symm
             have hrootIns : root ∈ pIns.support := by
               simpa [pIns] using
-                SimpleGraph.Walk.leaf_mem_insertLeafAtSupport
+                ConnectedCount.Walk.leaf_mem_insertLeafAtSupport
                   pLift hyLift hvy.symm
             refine ⟨pIns.rotate root hrootIns, ?_, ?_⟩
             · intro x
@@ -161,7 +158,7 @@ theorem Connected.exists_closedWalk_cover_length_le
               · subst x
                 exact hrootIns
               · exact
-                  SimpleGraph.Walk.support_subset_insertLeafAtSupport
+                  ConnectedCount.Walk.support_subset_insertLeafAtSupport
                     pLift hyLift hvy.symm
                     (hcoverLift x (by
                       show x ≠ root
@@ -170,11 +167,11 @@ theorem Connected.exists_closedWalk_cover_length_le
                 exact SimpleGraph.Walk.length_map _ _
               have hlenIns : pIns.length = pLift.length + 2 := by
                 simpa [pIns] using
-                  SimpleGraph.Walk.insertLeafAtSupport_length
+                  ConnectedCount.Walk.insertLeafAtSupport_length
                     pLift hyLift hvy.symm
               calc
                 (pIns.rotate root hrootIns).length = pIns.length :=
-                  SimpleGraph.Walk.rotate_length pIns hrootIns
+                  ConnectedCount.Walk.rotate_length pIns hrootIns
                 _ = pLift.length + 2 := hlenIns
                 _ = pSub.length + 2 := by omega
                 _ ≤ 2 * (Fintype.card S - 1) + 2 := by omega
@@ -215,16 +212,16 @@ theorem Connected.exists_closedWalk_cover_length_le
                 (List.mem_map_of_mem (f := fun z : S => (z : V)) hxSub)
             have hyLift : y ∈ pLift.support := hcoverLift y hyS
             let pIns :=
-              SimpleGraph.Walk.insertLeafAtSupport pLift hyLift hvy.symm
+              ConnectedCount.Walk.insertLeafAtSupport pLift hyLift hvy.symm
             refine ⟨pIns, ?_, ?_⟩
             · intro x
               by_cases hxv : x = v
               · subst x
                 simpa [pIns] using
-                  SimpleGraph.Walk.leaf_mem_insertLeafAtSupport
+                  ConnectedCount.Walk.leaf_mem_insertLeafAtSupport
                     pLift hyLift hvy.symm
               · exact
-                  SimpleGraph.Walk.support_subset_insertLeafAtSupport
+                  ConnectedCount.Walk.support_subset_insertLeafAtSupport
                     pLift hyLift hvy.symm
                     (hcoverLift x (by
                       show x ≠ v
@@ -233,7 +230,7 @@ theorem Connected.exists_closedWalk_cover_length_le
                 exact SimpleGraph.Walk.length_map _ _
               have hlenIns : pIns.length = pLift.length + 2 := by
                 simpa [pIns] using
-                  SimpleGraph.Walk.insertLeafAtSupport_length
+                  ConnectedCount.Walk.insertLeafAtSupport_length
                     pLift hyLift hvy.symm
               calc
                 pIns.length = pLift.length + 2 := hlenIns
@@ -244,7 +241,7 @@ theorem Connected.exists_closedWalk_cover_length_le
                   omega
   exact hmain (Fintype.card V) V G rfl hconn root
 
-end SimpleGraph
+end ConnectedCount
 
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
@@ -308,7 +305,7 @@ theorem connected_mem_walkSupportSets {S : Finset V} {root : V}
     S ∈ walkSupportSets G (2 * S.card) root := by
   classical
   obtain ⟨p, hcover, hlen⟩ :=
-    SimpleGraph.Connected.exists_closedWalk_cover_length_le hconn ⟨root, hroot⟩
+    ConnectedCount.Connected.exists_closedWalk_cover_length_le hconn ⟨root, hroot⟩
   let q := p.map (SimpleGraph.Embedding.induce (S : Set V)).toHom
   have hq : q.support.toFinset = S := by
     ext x
@@ -336,7 +333,7 @@ theorem card_rootedConnectedSets_le {Δ : ℕ} (hdeg : ∀ v, G.degree v ≤ Δ)
   obtain ⟨_, hroot, hcard, hconn⟩ := mem_filter.mp hS
   simpa only [hcard] using connected_mem_walkSupportSets G hroot hconn
 
-#print axioms SimpleGraph.Connected.exists_closedWalk_cover_length_le
+#print axioms ConnectedCount.Connected.exists_closedWalk_cover_length_le
 #print axioms card_rootedConnectedSets_le
 
 end Mettapedia.Combinatorics.PolymerGas
