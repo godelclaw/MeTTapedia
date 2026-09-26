@@ -18267,14 +18267,27 @@ dart to an unselected dart meets the colour excluded from $p$.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.KempeChannelSplice.inserted_attachment_colour}
 
 The external observations alone lose relevant information.  On one explicit
-forty-edge endpoint graph, two proper colourings have the same five-port
+forty-edge graph, two proper colourings have the same five-port
 word and all three boundary connectedness relations.  The same seven edges
 are exactly the bichromatic component rooted at the first port in both.
 Switching that same component gives different boundary connectedness
 relations.  Literal walks establish positive connectivity, and labels
-constant on every local step establish negative connectivity.  The finite
-theorem does not assert a spherical embedding.
+constant on every local step establish negative connectivity.
 \Sverified{Mettapedia.GraphTheory.FourColor.Compositional.PentagonKempeMateDependence.fixed_component_update_not_determined_by_boundary}
+
+The same literal graph now has a certified connected planar rotation system:
+80 darts, 40 edge cycles, 30 vertex cycles and 12 face cycles.  The five
+degree-one terminals occur in the prescribed order on a single outer face;
+all other vertices have degree three.  Exact incidence and connectedness
+transport identifies the four proper edge colourings and their Kempe
+observations with those of the endpoint model.  Thus the obstruction occurs
+on a planar five-pole, not merely on an abstract endpoint graph.  No claim
+about every capped normal-form map is needed for this counterexample.
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.PentagonKempePlaneWitness.planar}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.PentagonKempePlaneWitness.terminals_in_order}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.PentagonKempePlaneWitness.vertex_degrees}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.PentagonKempePlaneWitness.channelConnected_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.Compositional.PentagonKempePlaneWitness.planar_fixed_component_obstruction}
 
 This obstruction concerns deterministic recolouring updates, not the
 compositionality of boundary-support semantics for gluing.  The exact update
