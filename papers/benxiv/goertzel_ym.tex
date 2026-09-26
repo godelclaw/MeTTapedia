@@ -546,7 +546,12 @@ couplings $\beta_J\geq\beta_{\min}\approx150$ that the bootstrap provides,
 Monte Carlo simulation on periodic $L^4$ lattices ($L\leq16$) finds the block
 correlations of the free massless field, and the argument, which uses no
 non-abelian input there, would equally give a gap for weakly coupled
-$\mathrm{U}(1)$, whose photon is proved to be massless.
+$\mathrm{U}(1)$, whose photon is proved to be massless. A necessary condition
+for the missing crossing input, testable at finite coupling, is proved in Lean:
+the twist free energy of a crossing family vanishes on large tori. Monte Carlo
+finds that it does for four-dimensional $\mathrm{SU}(2)$ and not for the weakly
+coupled barrier theories, four-dimensional $\mathrm{U}(1)$ and
+five-dimensional $\mathrm{SU}(2)$.
 The finite $\mathbb{Z}_2$, $\mathbb{Z}_3$,
 and $Q_8$ gaps checked in Lean are real but Clay-irrelevant
 (single-link, strong-coupling, finite). The Yang--Mills mass gap remains open;
@@ -1796,6 +1801,147 @@ weak coupling at every scale for those theories is formalized. For
 four-dimensional $\mathrm{SU}(2)$ the input can hold only after the coupling has
 run to strong coupling; establishing that flow is the open crossing.
 
+\paragraph{Candidate mechanisms for the crossing.}
+What four-dimensional $\SUN$ has and four-dimensional $\mathrm{U}(1)$ and
+five-dimensional $\mathrm{SU}(2)$ lack is a short list: a positive one-loop
+coefficient in the dimension where the coupling is dimensionless, gluon
+self-interaction, a finite centre with $\pi_1(\SUN/\mathbb{Z}_N)=\mathbb{Z}_N$, and
+instantons, $\pi_3(\SUN)=\mathbb{Z}$. Only the first is specific to four
+dimensions; the others are present in five as well. We screened candidate
+mechanisms built on them against the barrier suite, the calibration at
+$\beta=\infty$, and two further theorems, one of which can be tested at finite
+coupling. In the order tested:
+\begin{enumerate}
+\item \emph{Thresholds on one-scale marginals}, such as block energies, the
+  fraction of blocks whose field strength exceeds the small-field cutoff of a
+  multiscale analysis, or the law of a blocked plaquette. Refuted as sufficient
+  conditions, formally: the product measure and the diagonal measure, in which
+  every site carries the same $\mu$-distributed value, have the same marginal
+  at every site, but the first has no correlations at distinct sites and the
+  second has the covariance at every pair, whatever their distance
+  (\texttt{MarginalBlindness}). The stopping-scale test of this section is of
+  this kind: it can refute a crossing but not certify one.
+\item \emph{Reflection positivity, infrared bounds, chessboard estimates.}
+  Refuted: the free lattice Maxwell field and weakly coupled four-dimensional
+  $\mathrm{U}(1)$ are reflection positive and do not cluster. These methods
+  prove long-range order, not decay (Fr\"ohlich, Simon and Spencer 1976;
+  Fr\"ohlich and Spencer 1982).
+\item \emph{Decimation bounds and their interpolation.} Refuted by the abelian
+  test on the hierarchical lattice. There the twist free energy of one coarse
+  plaquette, $F=-\log f(-1)/f(1)$, with $f$ the effective plaquette weight and
+  $-1$ the centre element (the flux $\pi$ for $\mathrm{U}(1)$), behaves as
+  follows (\texttt{ym\_hierarchical\_flow.py}). In four dimensions, for
+  $\mathrm{SU}(2)$ from $t=0.5$, it falls by about $1.2$ per step,
+  $15.4\to14.2\to\cdots\to1.61$, and then collapses: $0.665$, $0.063$,
+  $7.9\times10^{-6}$, $2\times10^{-21}$. For $\mathrm{U}(1)$ from $\beta=1.5$ it
+  stays at $6.709$ to four digits over twelve steps, but its coupling falls at
+  the exponentially small rate found above, so it collapses as well. In five
+  dimensions it doubles at every step for both groups. An argument that
+  derives the collapse without using the size of the drift proves it for
+  $\mathrm{U}(1)$ too, which is false on the cubic lattice.
+\item \emph{Centre decompositions.} Writing $\mathrm{SU}(2)$ link variables as
+  $\mathrm{SO}(3)$ variables together with $\mathbb{Z}_2$ plaquette variables uses
+  only a central $\mathbb{Z}_2$, which $\mathrm{U}(1)$ also has, with
+  $\mathrm{U}(1)/\mathbb{Z}_2\cong\mathrm{U}(1)$. Refuted as a mechanism by the
+  abelian test: what separates the groups is the dynamics, not the
+  decomposition.
+\item \emph{The twist free energy.} Survives the barrier suite numerically,
+  and is tied to the crossing input by a theorem. On the torus $(\mathbb{Z}/L)^d$
+  let the plaquettes $(x;0,1)$ with $x_0=x_1=0$, one in every $(0,1)$-plane,
+  carry the coupling $b$ and all others $\beta$. Then $Z(-\beta)$ is the
+  partition function with a twist through every $(0,1)$-plane, and
+  \[
+    F(L)=-\log\frac{Z(-\beta)}{Z(\beta)}
+    =\int_{-\beta}^{\beta}\langle E_{\rm stack}\rangle_b\,db,
+  \]
+  with $E_{\rm stack}$ the sum of $\operatorname{Re}\operatorname{tr}U_p/N$ over those
+  plaquettes. In a polymer representation built from plaquette factors, a change
+  of variables that multiplies link variables by the centre element moves the
+  twist, and polymers away from the twist do not see it, so only the integrated
+  activities of polymers that meet every position of the twist change
+  (\texttt{TwistDiagnostic.differ\_of\_movable}). Two representations under common
+  Kotecký--Preiss bounds that differ only on polymers meeting a cut $Y$ with
+  diameter at least $D$ have
+  $\big|\log|Z_{\rm tw}|/|Z|\big|\leq2|Y|\varepsilon e^{-\kappa D}$
+  (\texttt{PolymerGas.Twist}). So a crossing family compatible with the twist
+  has $F(L)\to0$ on tori, and a family whose twist free energy stays away from
+  zero is not crossing (\texttt{TwistDiagnostic}). That moving the twist is such
+  a change of variables, and that distant polymers do not see it, are stated
+  there, not derived from a lattice gauge measure. The calibration at
+  $\beta=\infty$ needed a limit; this one can be measured at the coupling of
+  interest. Taking direction~$0$ as time, the $\mathbb{Z}_2$ Fourier transform in
+  the twist gives the free energy $-\log\tanh(F/2)$ of one unit of electric flux
+  along direction~$1$ ('t~Hooft 1979), so $F\to0$ means that this flux costs
+  unboundedly much.
+
+  In one respect the twist is specifically non-abelian. In $\mathrm{U}(1)$ every
+  twisted configuration has action at least $2\beta L^{d-4}$ in the twisted
+  planes, and the uniform one at most $\frac{\pi^2}{2}\beta L^{d-4}$
+  (\texttt{TwistCost}). In $\mathrm{SU}(2)$ the matrices $i\sigma_1$ and
+  $i\sigma_2$ anticommute, so with $i\sigma_1$ on the links of direction~$0$ in
+  one column, $i\sigma_2$ on those of direction~$1$ in one row and the identity
+  elsewhere, every plaquette of the twisted planes has maximal weight and their
+  twisted action vanishes (\texttt{TwistEater}); the other plaquettes are the
+  identity. The twist free
+  energy of $\mathrm{SU}(2)$ is therefore not a classical energy proportional to
+  $\beta$; it is set by fluctuations. We measured $F(L)$ by heat-bath Monte
+  Carlo, integrating in $b$ by Gauss--Legendre quadrature
+  (\texttt{ym\_vortex\_free\_energy.c}, \texttt{ym\_vortex\_driver.py}); errors
+  are one standard deviation:
+  \begin{center}\small
+  \begin{tabular}{llllll}
+    & $\beta$ & $L=4$ & $L=6$ & $L=8$ & $L=10$\\ \hline
+    $\mathrm{SU}(2)$, $d=4$ & $2.3$ & 0.881(26) & 0.106(39) & 0.023(48) &  \\
+     & $2.5$ & 1.717(27) & 1.197(39) & 0.635(53) & 0.384(89) \\
+     & $3.0$ & 2.848(29) & 2.559(45) & 2.409(74) &  \\
+    $\mathrm{U}(1)$, $d=4$ & $0.9$ & 0.016(24) & 0.017(24) & 0.012(33) &  \\
+     & $1.1$ & 2.810(14) & 2.831(22) & 2.859(36) & 2.848(46) \\
+     & $1.5$ & 5.144(16) & 5.187(28) & 5.290(41) &  \\
+    $\mathrm{SU}(2)$, $d=5$ & $1.5$ & $-$0.001(35) & $-$0.014(68) &  &  \\
+     & $1.8$ & 5.173(54) & 5.98(14) &  &  \\
+     & $2.0$ & 5.962(66) & 6.74(12) &  &  \\
+  \end{tabular}
+  \end{center}
+  In the confined phases the integrand is smooth, and $16$-point
+  Gauss--Legendre quadrature suffices. In the ordered phases it changes sign
+  across a window near $b=0$ whose width shrinks like $L^{2-d}$ and whose
+  position carries most of $F$; there we used a composite rule with $24$ to
+  $32$ nodes in that window. The plain $16$-point rule underestimated $F$ there
+  by up to $20\%$ at $L=8$.
+
+  In the confined phases, four-dimensional $\mathrm{U}(1)$ at $\beta=0.9$ and
+  five-dimensional $\mathrm{SU}(2)$ at $\beta=1.5$, below its bulk transition,
+  $F$ vanishes within errors. In the Coulomb phase of four-dimensional
+  $\mathrm{U}(1)$ it does not depend on $L$ within errors: about $2.84$ at
+  $\beta=1.1$ and $5.2$ at $\beta=1.5$, that is $\frac{\pi^2}{2}\beta_R$ with
+  $\beta_R\approx0.58$ and $1.05$. For five-dimensional $\mathrm{SU}(2)$ above
+  the transition it grows with $L$, from $5.17$ to $5.98$ at $\beta=1.8$ and from
+  $5.96$ to $6.74$ at $\beta=2.0$ between $L=4$ and $L=6$. For four-dimensional
+  $\mathrm{SU}(2)$ it decreases with $L$ at every coupling: at $\beta=2.3$ from
+  $0.88$ to $0.02$ between $L=4$ and $L=8$, at $\beta=2.5$ from $1.72$ to $0.38$
+  between $L=4$ and $L=10$. At $\beta=3.0$, where these volumes are small in
+  physical units, it is of order one, far below the $\frac{\pi^2}{2}\beta\approx
+  14.8$ that a classical cost would give. So the diagnostic separates
+  four-dimensional $\mathrm{SU}(2)$ from both barrier theories, in which $F$
+  stays away from zero, as the theorem requires of a family without the
+  crossing input.
+\item \emph{The running coupling.} Twist eaters exist in five dimensions too,
+  so they do not by themselves make $F$ vanish. In four dimensions the
+  coupling runs, and the data follow it: $F$ decreases slowly at $\beta=3.0$, from $2.85$ to $2.41$ between $L=4$ and
+  $L=8$, and falls to zero at $\beta=2.3$, where the same $L$ are larger in
+  physical units. In five dimensions weak coupling persists and $F$ grows. This
+  is consistent with a flow in which $F$ decreases with $L$ at every coupling
+  and vanishes once $L$ is large compared with the confinement scale; it is
+  evidence, not proof. Proving that the twist free energy of four-dimensional $\mathrm{SU}(2)$ vanishes on large tori,
+  with the uniformity the crossing input needs, is the crossing itself; we have
+  no candidate proof of that step.
+\item \emph{Assessed, not tested here.} Instantons: a dilute instanton gas
+  produces no area law, and its integral over sizes is governed by the same
+  running coupling. The Gribov horizon: it is specific to non-abelian groups,
+  but it is formulated after gauge fixing, and no route is known from
+  gauge-fixed propagators to clustering of gauge-invariant observables.
+\end{enumerate}
+
 \paragraph{The constants.}
 Two of v14's displayed constants were discussed in
 \S\ref{sec:recombination}: the two ledgers for $C_1$ and the
@@ -2438,7 +2584,14 @@ three different situations.
     clustering uniformly in the volume, and that it fails at $\beta=\infty$
     for four-dimensional $\mathrm{U}(1)$ and five-dimensional gauge fields, are
     proved (\texttt{CrossingInput}); proving it for four-dimensional
-    $\mathrm{SU}(2)$ is the open problem.
+    $\mathrm{SU}(2)$ is the open problem. A necessary condition that can be
+    measured at finite coupling is also proved: a crossing family compatible
+    with the centre twist has twist free energy tending to zero on large tori
+    (\texttt{TwistDiagnostic}). Monte Carlo finds it tending to zero for
+    four-dimensional $\mathrm{SU}(2)$ and not for four-dimensional
+    $\mathrm{U}(1)$ or five-dimensional $\mathrm{SU}(2)$
+    (\S\ref{sec:stopping}); this is consistent with the input, not a proof of
+    it.
   \item \textbf{The real RG map satisfies the recursion.}
     \emph{Status: the central claimed content of v14's RG analysis; not
     independently verified here.} Everything above shows the surrounding

@@ -16,6 +16,9 @@ Output:
      and the local exponent a in drift = -C beta^2 exp(-a beta).
   2. d = 4, SU(2): the change of 1/t_eff per step (weak coupling: -1/8, i.e. -0.25 in beta).
   3. d = 5: both groups flow to weak coupling.
+  4. The twist free energy of one coarse plaquette, F_n = -log f_n(-1) / f_n(1), with f_n the plaquette
+     weight after n steps and -1 the centre element of SU(2), or the flux pi for U(1).  In d = 4 it flows
+     to 0 for both groups, in d = 5 it grows for both.
 """
 from decimal import Decimal, getcontext
 import math
@@ -70,6 +73,19 @@ def su2_inv_t(c):
     return -3 / (4 * c[1].ln())
 
 
+def u1_twist(c):
+    """-log f(pi) / f(0) for f = sum_k c_k e^{ik theta}."""
+    return -(sum(((-1) ** abs(k)) * v for k, v in c.items()) / sum(c.values())).ln()
+
+
+def su2_twist(c):
+    """-log f(-1) / f(1) for f = sum_n (n+1) c_n chi_{n/2}, chi_{n/2}(+-1) = (+-1)^n (n+1)."""
+    N = len(c) - 1
+    num = sum(((-1) ** n) * D(n + 1) ** 2 * c[n] for n in range(N + 1))
+    den = sum(D(n + 1) ** 2 * c[n] for n in range(N + 1))
+    return -(num / den).ln()
+
+
 def main():
     K, N = 40, 40
     print("1. d = 4, U(1), Villain start: drift of beta_eff per step after 9 steps")
@@ -113,6 +129,34 @@ def main():
             traj.append(float(su2_inv_t(c)))
         print(f"   SU(2), t = {s}:  1/t_eff " + " -> ".join(f"{x:.4g}" for x in traj))
 
+    print("4. The twist free energy of one coarse plaquette along the flow")
+    for s, n in (("1.5", 12), ("3", 12)):
+        c = u1_villain(D(s), K)
+        traj = [float(u1_twist(c))]
+        for _ in range(n):
+            c = u1_step(c, 4, K)
+            traj.append(float(u1_twist(c)))
+        print(f"   d = 4, U(1),  beta = {s:>3}:  F " + " -> ".join(f"{x:.4g}" for x in traj))
+    for s, n in (("0.5", 16), ("0.2", 12)):
+        c = su2_heat(D(s), N)
+        traj = [float(su2_twist(c))]
+        for _ in range(n):
+            c = su2_step(c, 4, N)
+            traj.append(float(su2_twist(c)))
+        print(f"   d = 4, SU(2), t = {s:>3}:  F " + " -> ".join(f"{x:.3g}" for x in traj))
+    K5 = N5 = 100   # weak coupling grows in d = 5: more characters keep the ratio resolved
+    c = u1_villain(D("1.5"), K5)
+    traj = [float(u1_twist(c))]
+    for _ in range(3):
+        c = u1_step(c, 5, K5)
+        traj.append(float(u1_twist(c)))
+    print("   d = 5, U(1),  beta = 1.5:  F " + " -> ".join(f"{x:.4g}" for x in traj))
+    c = su2_heat(D("0.5"), N5)
+    traj = [float(su2_twist(c))]
+    for _ in range(2):
+        c = su2_step(c, 5, N5)
+        traj.append(float(su2_twist(c)))
+    print("   d = 5, SU(2), t = 0.5:  F " + " -> ".join(f"{x:.4g}" for x in traj))
 
 if __name__ == "__main__":
     main()
