@@ -34,7 +34,11 @@ axis, the gradient of the swirl vanishes, its Laplacian is nonpositive, the
 angular derivative of the pressure vanishes, and so does the axial vorticity,
 since `x₀ ∂₀Γ + x₁ ∂₁Γ = r² ω₃` there. Hence `∂ₜΓ ≤ x₀ f₁ - x₁ f₀` at such
 maxima: without a force the swirl cannot grow at its maxima, which is the
-pointwise core of the swirl maximum principle.
+pointwise core of the swirl maximum principle. Maximizing `Γ - ε t` over a
+compact region of space-time turns it into the maximum principle: for an
+axisymmetric flow whose force has nonpositive torque and whose swirl is
+nonpositive outside a compact set, the swirl never exceeds its initial
+maximum.
 
 In the breakdown construction for the forced problem, the maximal swirl of the
 axisymmetric background grows without bound near the singular point, while the
@@ -420,6 +424,132 @@ theorem deriv_swirl_le_torque_of_isLocalMax {ν : ℝ} (hν : 0 ≤ ν) {u : Vel
   have hθ := angularDerivative_eq_zero hpaxi hp
   rw [hadv, hω, hθ] at hid
   nlinarith [mul_nonpos_of_nonneg_of_nonpos hν hlap]
+
+/-- The swirl of the time slices, as a function on space-time. -/
+def swirlField (u : VelocityField) (z : ℝ × Space) : ℝ := swirlSlice (fun y ↦ u (z.1, y)) z.2
+
+theorem continuousOn_swirlField {u : VelocityField} {S : Set (ℝ × Space)} (hu : ContinuousOn u S) :
+    ContinuousOn (swirlField u) S := by
+  have c : ∀ i : Fin 3, ContinuousOn (fun z : ℝ × Space ↦ u z i) S := fun i ↦
+    ((EuclideanSpace.proj i : Space →L[ℝ] ℝ).continuous.comp_continuousOn hu)
+  have d : ∀ i : Fin 3, ContinuousOn (fun z : ℝ × Space ↦ z.2 i) S := fun i ↦
+    ((EuclideanSpace.proj i : Space →L[ℝ] ℝ).continuous.comp continuous_snd).continuousOn
+  exact ContinuousOn.sub (ContinuousOn.mul (d 0) (c 1)) (ContinuousOn.mul (d 1) (c 0))
+
+/-- **The swirl maximum principle for axisymmetric flows.** Let the velocity
+be continuous on `[0, T] × ℝ³`, with swirl nonpositive outside a compact set
+`K`, twice differentiable in space and differentiable in time on `(0, T]`,
+axisymmetric with axisymmetric pressure, and with a force whose torque is
+nonpositive. Then the swirl never exceeds its initial maximum `M₀ ≥ 0`. In
+particular, without a force the maximal swirl of an axisymmetric flow cannot
+grow. -/
+theorem swirl_le_of_axisymmetric {ν : ℝ} (hν : 0 ≤ ν) {u : VelocityField} {p : PressureField}
+    {f : VelocityField} {T M₀ : ℝ} {K : Set Space} (hK : IsCompact K) (hM₀ : 0 ≤ M₀)
+    (hcont : ContinuousOn u (Set.Icc 0 T ×ˢ Set.univ))
+    (hout : ∀ t ∈ Set.Icc (0 : ℝ) T, ∀ x ∉ K, swirlSlice (fun y ↦ u (t, y)) x ≤ 0)
+    (hinit : ∀ x, swirlSlice (fun y ↦ u (0, y)) x ≤ M₀)
+    (hreg : ∀ t ∈ Set.Ioc (0 : ℝ) T, ∀ x, ContDiffAt ℝ 2 (fun y ↦ u (t, y)) x ∧
+      DifferentiableAt ℝ (fun s ↦ u (s, x)) t ∧ DifferentiableAt ℝ (fun y ↦ p (t, y)) x)
+    (hres : ∀ t ∈ Set.Ioc (0 : ℝ) T, ∀ x,
+      NavierStokesR3.ProblemStatement.navierStokesResidual ν u p t x = f (t, x))
+    (haxi : ∀ t ∈ Set.Ioc (0 : ℝ) T, AxisymmetricVelocity u t)
+    (hpaxi : ∀ t ∈ Set.Ioc (0 : ℝ) T, AxisymmetricPressure p t)
+    (htorque : ∀ t ∈ Set.Ioc (0 : ℝ) T, ∀ x, torque f t x ≤ 0) :
+    ∀ t ∈ Set.Icc (0 : ℝ) T, ∀ x, swirlSlice (fun y ↦ u (t, y)) x ≤ M₀ := by
+  intro t ht x
+  by_contra hlt
+  push Not at hlt
+  set Γ₀ := swirlSlice (fun y ↦ u (t, y)) x with hΓ₀
+  have hT : 0 ≤ T := ht.1.trans ht.2
+  -- the tilt
+  set ε : ℝ := (Γ₀ - M₀) / (2 * (T + 1)) with hε
+  have hε0 : 0 < ε := div_pos (by linarith) (by linarith)
+  set G : ℝ × Space → ℝ := fun z ↦ swirlField u z - ε * z.1 with hG
+  have hGc : ContinuousOn G (Set.Icc 0 T ×ˢ Set.univ) :=
+    (continuousOn_swirlField hcont).sub (continuousOn_const.mul continuous_fst.continuousOn)
+  -- the tilted swirl exceeds `M₀` at `(t, x)`
+  have hGtx : M₀ < G (t, x) := by
+    have h1 : ε * t ≤ (Γ₀ - M₀) / 2 := by
+      rw [hε, div_mul_eq_mul_div, div_le_div_iff₀ (by linarith) (by norm_num)]
+      nlinarith [ht.1, ht.2]
+    show M₀ < swirlField u (t, x) - ε * t
+    have : swirlField u (t, x) = Γ₀ := rfl
+    linarith
+  have hxK : x ∈ K := by
+    by_contra hx
+    have := hout t ht x hx
+    linarith
+  -- a maximum of the tilted swirl on the compact region
+  have hcpt : IsCompact (Set.Icc (0 : ℝ) T ×ˢ K) := isCompact_Icc.prod hK
+  obtain ⟨z, hz, hmax⟩ := hcpt.exists_isMaxOn ⟨(t, x), ⟨ht, hxK⟩⟩
+    (hGc.mono (Set.prod_mono subset_rfl (Set.subset_univ K)))
+  obtain ⟨ts, xs⟩ := z
+  have hts : ts ∈ Set.Icc (0 : ℝ) T := hz.1
+  have hxs : xs ∈ K := hz.2
+  have hGz : M₀ < G (ts, xs) := lt_of_lt_of_le hGtx (hmax ⟨ht, hxK⟩)
+  -- the maximum is at a positive time
+  have hts0 : 0 < ts := by
+    rcases eq_or_lt_of_le hts.1 with h | h
+    · exfalso
+      have h1 : G (ts, xs) = swirlSlice (fun y ↦ u (0, y)) xs := by
+        simp only [hG, swirlField, ← h, mul_zero, sub_zero]
+      have := hinit xs
+      linarith
+    · exact h
+  have hts' : ts ∈ Set.Ioc (0 : ℝ) T := ⟨hts0, hts.2⟩
+  set Γs := swirlSlice (fun y ↦ u (ts, y)) xs with hΓs
+  have hGs : G (ts, xs) = Γs - ε * ts := rfl
+  have hΓpos : 0 < Γs := by nlinarith
+  -- off the axis
+  have hr : xs 0 ^ 2 + xs 1 ^ 2 ≠ 0 := by
+    intro h
+    have h0 : xs 0 = 0 := by nlinarith [sq_nonneg (xs 0), sq_nonneg (xs 1)]
+    have h1 : xs 1 = 0 := by nlinarith [sq_nonneg (xs 0), sq_nonneg (xs 1)]
+    have : Γs = 0 := by simp [hΓs, swirlSlice, h0, h1]
+    linarith
+  -- a spatial maximum
+  have hsmax : IsLocalMax (swirlSlice (fun y ↦ u (ts, y))) xs := by
+    refine IsMaxOn.isLocalMax (s := Set.univ) (fun y _ ↦ ?_) Filter.univ_mem
+    show swirlSlice (fun y ↦ u (ts, y)) y ≤ Γs
+    by_cases hy : y ∈ K
+    · have := hmax (show ((ts, y) : ℝ × Space) ∈ Set.Icc (0 : ℝ) T ×ˢ K from ⟨hts, hy⟩)
+      simp only [Set.mem_ofPred_eq] at this
+      have e : G (ts, y) = swirlSlice (fun y ↦ u (ts, y)) y - ε * ts := rfl
+      linarith
+    · have := hout ts hts y hy
+      linarith
+  -- the pointwise core at the maximum
+  obtain ⟨hu2, htd, hpd⟩ := hreg ts hts' xs
+  have hcore := deriv_swirl_le_torque_of_isLocalMax hν hu2 htd (hres ts hts' xs) hsmax
+    (haxi ts hts') (hpaxi ts hts') hpd hr
+  have hcore' : deriv (fun s ↦ swirlSlice (fun y ↦ u (s, y)) xs) ts ≤ 0 :=
+    hcore.trans (htorque ts hts' xs)
+  -- the time derivative from the left is at least `ε`
+  set g : ℝ → ℝ := fun s ↦ swirlSlice (fun y ↦ u (s, y)) xs with hg
+  have hgd : DifferentiableAt ℝ g ts := by
+    have h0 : DifferentiableAt ℝ (fun s ↦ u (s, xs) 0) ts :=
+      DifferentiableAt.comp ts (ContinuousLinearMap.differentiableAt
+        (EuclideanSpace.proj 0 : Space →L[ℝ] ℝ)) htd
+    have h1 : DifferentiableAt ℝ (fun s ↦ u (s, xs) 1) ts :=
+      DifferentiableAt.comp ts (ContinuousLinearMap.differentiableAt
+        (EuclideanSpace.proj 1 : Space →L[ℝ] ℝ)) htd
+    exact DifferentiableAt.sub (DifferentiableAt.const_mul h1 (xs 0))
+      (DifferentiableAt.const_mul h0 (xs 1))
+  have hlim := HasDerivAt.tendsto_slope_zero_left (DifferentiableAt.hasDerivAt hgd)
+  have hev : ∀ᶠ h in 𝓝[<] (0 : ℝ), ε ≤ h⁻¹ • (g (ts + h) - g ts) := by
+    have hmem : Set.Ioo (-ts) 0 ∈ 𝓝[<] (0 : ℝ) := Ioo_mem_nhdsLT (by linarith)
+    filter_upwards [hmem] with h hh
+    have hsIcc : ts + h ∈ Set.Icc (0 : ℝ) T := ⟨by linarith [hh.1], by linarith [hh.2, hts.2]⟩
+    have hle := hmax (show ((ts + h, xs) : ℝ × Space) ∈ Set.Icc (0 : ℝ) T ×ˢ K from ⟨hsIcc, hxs⟩)
+    simp only [Set.mem_ofPred_eq] at hle
+    have e1 : G (ts + h, xs) = g (ts + h) - ε * (ts + h) := rfl
+    have e2 : G (ts, xs) = g ts - ε * ts := rfl
+    have hdiff : g (ts + h) - g ts ≤ ε * h := by linarith
+    rw [smul_eq_mul, ← div_eq_inv_mul, le_div_iff_of_neg hh.2]
+    linarith
+  have hge : ε ≤ deriv g ts := ge_of_tendsto hlim hev
+  have : deriv g ts = deriv (fun s ↦ swirlSlice (fun y ↦ u (s, y)) xs) ts := rfl
+  linarith
 
 end MaximumPrinciple
 
