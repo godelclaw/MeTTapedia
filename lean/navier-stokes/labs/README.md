@@ -933,6 +933,39 @@ with a gradient part. Those checks do not certify the whole-space heat
 inequality or a physical-time evolution, and no unforced renewal estimate
 is proved.
 
+The caloric return also has an explicit split isolating high-frequency
+parents. Let `v=P_(>=K)u`, `T(u)=DK(u)[N(u)]` and
+`T_K(u)=DK(v)[P_(>=K)N(v)]`. All three discarded terms are retained in
+the exact ledger:
+
+```text
+T(u) = T_K(u)
+       + DK(u)[N(u)-N(v)]
+       + (DK(u)-DK(v))[N(v)]
+       + DK(v)[P_(<K)N(v)].
+```
+
+The first two corrections obey
+`|T(u)-T(v)| <= epsilon*nu*D + C2*Y^2 + C32*Y^(3/2)` for every
+`epsilon>0`, with explicit constants fixed by the kinetic-energy cap,
+viscosity and cutoff. Since `G=(Y+K(u))/2 >= Y/2`, their contribution is
+controlled by an energy-integrable Gronwall coefficient and an arbitrarily
+small part of the positive cost. The last correction has an absolute
+energy-paid time integral. A bound on the remaining `T_K` with a fixed
+initial-data allowance and fraction below one would therefore suffice;
+no such high-frequency history bound is established.
+
+The proof uses the bounded ordered quartic heat kernel, with all heat-rate
+interference kept. Fourier absolute values are used only for these lower
+frequency corrections. It assumes neither a general `L_p` bound for the
+sharp ball multiplier nor pointwise domination by a Fourier projection.
+The checker verifies the split for four cutoffs and its signed reversal,
+including the nonzero low-output contribution `-1937/14400` at `K^2=3/2`.
+This is the quintic caloric return, distinct from ordinary tail stretching
+and from positive Wiener feeding. On the actual forced construction its
+high-frequency budget fails for every fixed cutoff and fraction `<1`;
+the corresponding unforced bound remains the open target.
+
 `kida_pelz_history.py` evolves the real Kida–Pelz initial field
 
 ```text

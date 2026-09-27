@@ -27,8 +27,10 @@ The Fourier-tail extension below is an analytic proof, not a formalized
 projector theorem. We also bound the forcing derivative of a quartic
 caloric stretching functional using only energy-level velocity controls
 and smooth force norms. Its signed nonlinear renewal must therefore fail
-a uniform absorption budget on the same forced construction. No unforced
-regularity estimate is obtained.
+a uniform absorption budget on the same forced construction. A Fourier
+multiplier estimate separates every low-frequency parent and every low
+renewal output, leaving an explicit high-frequency history target. That
+target is unproved; no unforced regularity estimate is obtained.
 \end{abstract}
 
 \section{An exact split and finite allowances}
@@ -340,6 +342,182 @@ The estimate does not bound $\mathcal T$: substituting $N(u)$ for $g$
 would require velocity-dependent supremum norms that are not controlled
 by the energy inequality.
 
+\section{Low parents and high-frequency caloric renewal}
+
+The caloric return admits a further frequency separation. Fix $K\geq0$,
+write $v=P_{\geq K}u$, $\ell=u-v$, and retain $E=\norm u_2^2$,
+$Y=\norm{\nabla u}_2^2$, $D=\norm{\Delta u}_2^2$.
+Choose a universal homogeneous Sobolev constant $S$ such that
+$\norm w_6\leq S\norm{\nabla w}_2$ for real scalar, vector and matrix
+fields on $\R^3$. The constant $c_K$ is as in Proposition~\ref{prop:allowances}.
+
+\begin{proposition}\label{prop:lowparents}
+If $E\leq M$, then for every $\varepsilon>0$,
+\begin{equation}\label{eq:lowparents}
+ |\mathcal T(u)-\mathcal T(v)|
+ \leq\varepsilon\nu D+C_2Y^2+C_{3/2}Y^{3/2},
+\end{equation}
+where all constants depend only on $K,\nu,M,\varepsilon$ and $S$:
+\[
+ a_K=\frac{2c_KS^3}{\nu^2},\qquad
+ b_K=\frac{6c_KS^3}{\nu^2},\qquad
+ C_2=a_K\sqrt M+\frac{3b_K^{4/3}M}{4(4\varepsilon\nu)^{1/3}},
+ \qquad C_{3/2}=a_KKM.
+\]
+In particular, the two last terms in~\eqref{eq:lowparents} are at most
+$2(C_2Y+C_{3/2}\sqrt Y)\mathcal G$. Their coefficient is integrable
+in physical time under the energy bounds.
+\end{proposition}
+\begin{proof}
+We first bound the complete quartic Fourier kernel of $\mathcal K$.
+For ordered inputs $a,b$ let
+$\mathcal M_b(a,b)=R((\curl a\cdot\nabla)b)$.
+At frequencies $p,q$ with output $k=p+q$, its coefficient satisfies
+\begin{equation}\label{eq:orderedkernel}
+ |\widehat{\mathcal M_b}(p,q)|
+ \leq |p|\,|\widehat a(p)|\,|\widehat b(q)|.
+\end{equation}
+Indeed, $p\times\widehat a(p)$ is perpendicular to $p$, so its dot
+product with $q$ equals its dot product with $k$. This cancels the
+$|k|^{-1}$ multiplier of $R$. The zero output is zero as well. Thus no
+lower bound on the output frequency is needed.
+
+In an ordered quartic pairing of two such sources, heat integration gives
+the denominator $\nu^2(|p|^2+|q|^2+|r|^2+|s|^2)$. Its kernel is bounded by
+\begin{equation}\label{eq:quartickernel}
+ \frac{|p|\,|r|}{\nu^2(|p|^2+|q|^2+|r|^2+|s|^2)}
+ \leq\frac1{2\nu^2}.
+\end{equation}
+All parent pairs and all interference between their heat rates are included.
+
+For a real field $a$, let $a^\#$ be the real scalar field with Fourier
+transform $|\widehat a|$. It has the same $L^2$ norm and homogeneous
+Sobolev norms as $a$. Its physical values need not be nonnegative.
+The absolute ordered quartic pairing is bounded by $1/(2\nu^2)$ times
+the nonnegative Fourier convolution corresponding to
+$\int a^\#b^\#c^\#d^\#$. Applying H\"older and Sobolev after this
+Fourier majorization gives
+\begin{equation}\label{eq:derivativeL2}
+ |D\mathcal K(u)[h]|\leq\frac{2}{\nu^2}
+                    \norm{u^\#}_6^3\norm h_2
+ \leq\frac{2S^3}{\nu^2}Y^{3/2}\norm h_2.
+\end{equation}
+There are four differentiated slots. Subtracting the derivatives at $u$
+and $v$ telescopes each of the three other slots, giving twelve terms.
+Since $v$ is a Fourier restriction of $u$, coefficient majorization yields
+\begin{align}
+ |(D\mathcal K(u)-D\mathcal K(v))[h]|
+ &\leq\frac6{\nu^2}\norm{\ell^\#}_\infty
+                         \norm{u^\#}_4^2\norm h_2\notag\\
+ &\leq\frac{6c_KS^{3/2}}{\nu^2}
+                      E^{3/4}Y^{3/4}\norm h_2.\label{eq:derivativeDifference}
+\end{align}
+The coefficient comparison takes place inside the Fourier convolution;
+it does not assert a pointwise inequality between $|v^\#|$ and $|u^\#|$.
+Here we used $\norm{\ell^\#}_\infty\leq c_K\sqrt E$ and interpolation
+$\norm{u^\#}_4^2\leq S^{3/2}E^{1/4}Y^{3/4}$.
+
+Write $\mathcal B(a,b)=-P((a\cdot\nabla)b)$. Then
+\[
+ N(u)-N(v)=\mathcal B(\ell,u)+\mathcal B(v,\ell),\qquad
+ \norm{N(u)-N(v)}_2\leq c_K\sqrt{EY}+Kc_KE.
+\]
+Also Sobolev and interpolation give
+\[
+ \norm{N(v)}_2\leq\norm v_6\norm{\nabla v}_3
+       \leq S^{3/2}Y^{3/4}D^{1/4}.
+\]
+Only the $L^2$ contraction and derivative commutation of the sharp
+projector are used; no general $L^p$ bound for the ball multiplier is assumed.
+Split the return exactly as
+\[
+ \mathcal T(u)-\mathcal T(v)
+ =D\mathcal K(u)[N(u)-N(v)]
+       +(D\mathcal K(u)-D\mathcal K(v))[N(v)].
+\]
+Equations~\eqref{eq:derivativeL2}--\eqref{eq:derivativeDifference} bound
+these terms by
+\[
+ a_K(E^{1/2}Y^2+KEY^{3/2})
+                  +b_KE^{3/4}Y^{3/2}D^{1/4}.
+\]
+Young's inequality with exponents $4$ and $4/3$ bounds the last term by
+$\varepsilon\nu D+3b_K^{4/3}EY^2/(4(4\varepsilon\nu)^{1/3})$.
+Use $E\leq M$ and $Y\leq2\mathcal G$ to finish.
+\end{proof}
+
+Low renewal outputs are paid separately, even when both source parents
+are arbitrarily high. Set
+\[
+ g_K=P_{<K}N(v),\qquad
+ \mathcal T_K(u)=D\mathcal K(v)[P_{\geq K}N(v)].
+\]
+The full source $N(v)$ is formed before splitting its output.
+Cauchy--Schwarz in the unitary Fourier convolution gives
+$|\widehat{N(v)}(\xi)|\leq(2\pi)^{-3/2}|\xi|E$.
+Integrating this over the ball, with an extra $|\xi|$ for curl, proves
+\begin{equation}\label{eq:lowoutputnorms}
+ \norm{g_K}_\infty\leq\frac{K^4E}{8\pi^2},\qquad
+ \norm{\curl g_K}_\infty\leq\frac{K^5E}{10\pi^2}.
+\end{equation}
+The derivative is the output frequency because the nonlinearity is in
+divergence form; this estimate assumes no bound on parent gradients.
+Proposition~\ref{prop:caloricforce}, applied at the slice $v$, therefore gives
+\begin{equation}\label{eq:lowoutputpayment}
+ \int_a^t|D\mathcal K(v)[g_K]|\dd s\leq C_{\rm out},
+\end{equation}
+where $C_{\rm out}$ is the right side of~\eqref{eq:caloricforceintegral}
+with $Q_0=K^4M/(8\pi^2)$ and $Q_1=K^5M/(10\pi^2)$.
+Although $v$ is not an autonomous solution, its energy and integrated
+gradient energy are bounded by those of $u$, which is all that this
+application uses.
+
+\begin{corollary}\label{cor:highrenewal}
+Suppose $A_0\geq0$ and $\theta<1$ satisfy, on every shorter prefix,
+\begin{equation}\label{eq:highrenewaltarget}
+ \int_a^t\mathcal T_K(u)\dd s
+            \leq A_0+\theta\int_a^t\mathcal W(u)\dd s.
+\end{equation}
+Choose $0<\varepsilon<1-\theta$, and let
+$C_f=C_{\mathcal K}+2L\sqrt M F_\Delta$ for the forced equation, or $C_f=0$
+when $f=0$. Then
+\[
+ \mathcal G(t)\leq
+ \left(\mathcal G(a)+\frac{A_0+C_{\rm out}+C_f}{2}\right)
+           \exp\!\left(C_2B+C_{3/2}\sqrt{LB}\right).
+\]
+\end{corollary}
+\begin{proof}
+The exact split is
+$\mathcal T(u)=\mathcal T_K(u)+\mathcal T(u)-\mathcal T(v)
+                       +D\mathcal K(v)[g_K]$.
+Insert this in~\eqref{eq:caloricbalance}, integrate, and use
+Propositions~\ref{prop:caloricforce} and~\ref{prop:lowparents}.
+Since $\nu D\leq\mathcal W$, the remaining cost has coefficient
+$1-\theta-\varepsilon>0$ and can be dropped. Gr\"onwall applies with
+coefficient $C_2Y+C_{3/2}\sqrt Y$, whose integral is at most
+$C_2B+C_{3/2}\sqrt{LB}$.
+\end{proof}
+
+For an unforced regularity argument, $K$ and $A_0$ in
+\eqref{eq:highrenewaltarget} must be chosen from the full initial datum,
+viscosity and a prescribed finite horizon, uniformly over every shorter
+lifespan and prefix. That high-frequency signed-history estimate is not
+proved here. The result pays low parents and low outputs; it does not
+pay repeated high-frequency regeneration.
+
+The same estimates also sharpen the forced test: on every actual forced
+candidate, for each fixed $K$ and every $\theta<1$,
+\[
+ \sup_{1/2\leq t<1}\int_{1/2}^t
+       (\mathcal T_K(u)-\theta\mathcal W(u))\dd s=+\infty.
+\]
+A finite upper bound would give a uniform gradient-energy bound by
+Corollary~\ref{cor:highrenewal}, contradicting the constructed candidate.
+Unlike Corollary~\ref{cor:caloricforced}, this argument requires
+$\theta<1$ because the low-parent estimate spends an arbitrarily small,
+positive part of the dissipation.
+
 \section{Verification boundary}
 
 The Lean theorem
@@ -349,9 +527,11 @@ the full-field spatial cubic integral. The sharp Fourier-tail extension
 and all caloric results here are analytic proofs, not Lean theorems or
 axioms. The companion \texttt{labs/caloric\_force.py} checks the complete
 caloric balance by exact rational Fourier arithmetic on the periodic cube,
-including forces with a gradient part. These checks do not certify the
-whole-space estimates or a physical-time bound. Arbitrary-data unforced
-regularity remains open.
+including forces with a gradient part. It also checks the three-part
+frequency split, including a nonzero low-output contribution, and the
+ordered mode bound on nearly cancelling parents. These checks do not
+certify the whole-space estimates or a physical-time bound.
+Arbitrary-data unforced regularity remains open.
 
 \begin{thebibliography}{9}
 \bibitem{OAI}
