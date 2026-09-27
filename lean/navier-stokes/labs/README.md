@@ -1294,6 +1294,67 @@ is globally regular. Positive coupled renewal therefore measures more
 than instantaneous amplification or pressure work; the full-datum
 history allowance is still essential.
 
+### Repeated positive renewal with a bounded signed primitive
+
+Run `python3 -O labs/shear_caloric_cycles.py`, or add `--fft-check`
+for independent physical products, inverse curl and heat quadrature.
+The construction uses the normalized `2*pi` torus and the full caloric
+stretching functional. It does not construct a singularity.
+
+Choose a smooth shear `U(y)` with flat regions of speeds `+1` and `-1`,
+and smooth scalar packets `phi_+`, `phi_-` supported strictly inside
+those respective regions. The actual Euler solution is
+
+```text
+v(tau) = (U(y), 0, phi_+(y) sin(x-tau) + phi_-(y) sin(x+tau)).
+```
+
+Its physical vorticity stretching vanishes. Artificial heat mixes the
+separate regions, and the caloric capacity is
+
+```text
+K^1(v(tau)) = K_+ + K_- + 2 C cos(2 tau),
+T^1(v(tau)) = -4 C sin(2 tau),                  C > 1/512.
+```
+
+The analytic construction proves the strict cross-pairing bound first
+for step profiles, then transfers it to smooth flat profiles with an
+explicit heat-map continuity estimate. Step profiles are not used as
+PDE data. Each period contributes `4C` to the positive-part integral
+and zero to the signed integral.
+
+The actual unforced viscous flow is a heat-evolved shear transporting
+a diffusing scalar. With fixed physical viscosity `nu` and initial
+data `alpha*v(0)`, its normalized history stays close to the periodic
+Euler reference for `gamma*log(alpha)` turnover times. The comparison
+is an analytic Sobolev estimate, not a numerical time enclosure. At
+physical time `gamma*log(alpha)/alpha`, for sufficiently large `alpha`,
+
+```text
+integral positive_part(T^nu) >= c_nu alpha^4 log(alpha),
+abs(integral T^nu)           <= C_nu alpha^4,
+integral W^nu               <= C_nu (alpha^2 + alpha^4).
+```
+
+The last two bounds hold on every time prefix. Thus the positive-part
+budget cannot be paid by any fixed initial allowance homogeneous of
+degree at most four, even when the positive cost is also allowed.
+The signed budget is paid by the initial shear supremum and scalar
+energy. A general full-datum allowance with faster growth is not refuted.
+
+With input/output floor `J=0` and data-selected separations, the same
+distinction persists for `T_coupled`: the separated returns and modified
+positive cost remain quartically bounded, while positive coupled renewal
+accumulates the logarithmic factor. This does not exclude a separately
+selected input cutoff. The example has repeated cycles at fixed spatial
+scales; it does not supply a frequency cascade.
+
+The checker verifies the rational constants and finite heat pairings.
+Its finite Fejer profiles have a checked nonzero plateau-equation
+residual and are used only to test the heat formulas. The smooth
+construction, viscous comparison and all-prefix bounds in
+`papers/ns_forced_tail_budget.tex` remain analytic, not Lean-certified.
+
 ### Kida–Pelz evolution
 
 `kida_pelz_history.py` evolves the real Kida–Pelz initial field

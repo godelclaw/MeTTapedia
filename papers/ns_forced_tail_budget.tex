@@ -43,7 +43,12 @@ complete Navier--Stokes source. A second estimate absorbs sufficiently
 separated parents inside the nonlinear derivative slot. More generally,
 an isolated pair of very high inputs can be absorbed wherever it occurs
 among the five inputs. The remaining signed history bound is unproved;
-no arbitrary-data unforced regularity estimate is obtained.
+no arbitrary-data unforced regularity estimate is obtained. A separate
+periodic shear construction has recurrent positive caloric renewal on
+actual globally regular unforced flows. Its signed primitive and positive
+cost have quartic initial-data bounds, while its positive-part integral
+exceeds every fixed quartic allowance. This distinction persists after
+the separated-sector payments.
 \end{abstract}
 
 \section{An exact split and finite allowances}
@@ -1305,6 +1310,269 @@ It remains smooth for all time. Thus positive coupled renewal need not
 mean positive physical enstrophy production or positive pressure work.
 This calibration does not refute a full-datum history allowance.
 
+\section{Recurrent caloric renewal in a regular shear}
+
+In this section only, space is the normalized $2\pi$ torus. The symbols
+$\mathcal K^\nu,\mathcal T^\nu,\mathcal W^\nu$ denote the periodic
+counterparts of the full, unmasked functionals. The following example
+concerns repeated renewal, rather than an initial derivative or one burst.
+
+\begin{proposition}\label{prop:recurrentcaloric}
+There is a fixed smooth, real, mean-zero solenoidal periodic field $v_0$
+such that the globally smooth unforced solutions $u^\alpha$ with initial
+data $\alpha v_0$ have the following property. For every fixed $\nu,H>0$,
+there are $c_\nu,C_\nu>0$ and times
+$t_\alpha=\gamma\log\alpha/\alpha\leq H$ for all sufficiently large
+$\alpha$, with
+\begin{align}
+ \int_0^{t_\alpha}(\mathcal T^\nu(u^\alpha))_+\dd t
+     &\geq c_\nu\alpha^4\log\alpha,\label{eq:cyclepositive}\\
+ \left|\int_0^t\mathcal T^\nu(u^\alpha)\dd s\right|
+     &\leq C_\nu\alpha^4,\qquad
+ \int_0^t\mathcal W^\nu(u^\alpha)\dd s
+       \leq C_\nu(\alpha^2+\alpha^4) \quad(t\geq0).
+       \label{eq:cyclesigned}
+\end{align}
+In particular,
+\[
+ \frac{\displaystyle\int_0^{t_\alpha}(\mathcal T^\nu(u^\alpha))_+\dd t}
+ {\displaystyle Y(u^\alpha_0)+\nu^{-2}\norm{u^\alpha_0}_4^4
+       +\mathcal K^\nu(u^\alpha_0)
+       +\int_0^{t_\alpha}\mathcal W^\nu(u^\alpha)\dd t}
+       \longrightarrow+\infty.
+\]
+The same exclusion holds after adding any fixed nonnegative initial functional
+homogeneous of degree at most four and finite on $v_0$.
+\end{proposition}
+
+\begin{proof}
+We first construct a smooth inviscid periodic reference with nonconstant
+caloric capacity. Let $U_*(y)=\operatorname{sgn}(\cos y)$ and
+$\phi_{\pm,*}=(1\pm U_*)/2$. These nonsmooth functions are used only
+to estimate a heat pairing; they will not be used as Euler or
+Navier--Stokes initial data.
+
+For a shear $U$ and a scalar profile $\phi$ define its unit-viscosity
+caloric image $\Phi(U,\phi)$ in $L^2(\dd r;L^2_{x,y})$ by
+\[
+ \Phi(U,\phi)(r,x,y)
+   =e^{-r}\cos x\,(1-\partial_y^2)^{-1}
+           \partial_y\bigl((e^{r\partial_y^2}U)'
+                                  e^{r\partial_y^2}\phi\bigr).
+\]
+This is the third component of $\mathcal M$ for the heat-smoothed
+velocity $(U(y),0,\phi(y)\sin x)$; the other components vanish.
+The elementary multiplier bounds are
+\[
+ \norm{\partial_y(1-\partial_y^2)^{-1}}_{2\to2}\leq\frac12,
+ \qquad
+ \norm{\partial_y^2(1-\partial_y^2)^{-1}}_{2\to2}\leq1.
+\]
+Heat contraction and its energy identity give
+\begin{equation}\label{eq:cyclecontinuity}
+ \norm{\Phi(U,\phi)}\leq\frac14\norm U_2\norm\phi_\infty,
+ \qquad
+ \norm{\Phi(U,\phi)}\leq\frac34\norm U_\infty\norm\phi_2.
+\end{equation}
+For the second bound write $U_r'\phi_r=(U_r\phi_r)'-U_r\phi_r'$.
+The two contributions to the image norm, including the cosine factor,
+are at most $\norm U_\infty\norm\phi_2/2$ and
+$\norm U_\infty\norm\phi_2/4$. Here one uses
+\[
+ \int_0^\infty e^{-2r}\dd r=\frac12,
+ \qquad
+ \int_0^\infty\norm{\phi_r'}_2^2\dd r\leq\frac12\norm\phi_2^2.
+\]
+The first bound in~\eqref{eq:cyclecontinuity} uses the same heat
+energy inequality for $U_r'$. These estimates also define the images
+for the step profiles by $L^2$ approximation.
+
+Put $K_0=\norm{\Phi(U_*,1)}^2$ and
+$K_1=\norm{\Phi(U_*,U_*)}^2$. The first Fourier coefficients of
+$U_*$, at $n=\pm1$, are $2/\pi$. Their contribution alone gives
+\[
+ K_0\geq\frac1{4\pi^2}>\frac1{40}.
+\]
+For $U_r=e^{r\partial_y^2}U_*$ put $a(r)=\norm{U_r}_2^2$.
+The bounds $|U_r|\leq1$ and $a(r)\leq e^{-2r}$ imply
+\[
+ \norm{U_r^2-\textstyle\int U_r^2}_2^2
+       \leq a(r)(1-a(r))\leq\min\{1/4,e^{-2r}\}.
+\]
+Since $U_r'U_r=(U_r^2)'/2$, the second multiplier bound yields
+\[
+ K_1\leq\frac18\int_0^\infty e^{-2r}
+                \min\{1/4,e^{-2r}\}\dd r=\frac7{512}.
+\]
+The integral is split at $r=\log2$. The two images
+$\Phi(U_*,1)$ and $\Phi(U_*,U_*)$ have disjoint odd and even
+$y$-frequencies. Consequently their packet cross pairing satisfies
+\[
+ C_*:=\langle\Phi(U_*,\phi_{+,*}),\Phi(U_*,\phi_{-,*})\rangle
+       =\frac{K_0-K_1}{4}>\frac{29}{10240}.
+\]
+
+Choose smooth real $U,\phi_+,\phi_-$, agreeing with the step profiles
+outside a set of normalized $y$-measure $d\leq2^{-20}$, such that
+\[
+ |U|\leq1,\quad 0\leq\phi_\pm\leq1,\quad
+ U\phi_\pm=\pm\phi_\pm,\quad U'\phi_\pm=0.
+\]
+They can be obtained by symmetric smooth transitions near the two jump
+points, with the packet cutoffs supported strictly inside the flat
+regions. Choose $U(y+\pi)=-U(y)$ and
+$\phi_-(y)=\phi_+(y+\pi)$, so $U$ has mean zero and the packet supports
+are disjoint. Their $L^2$ errors are at most $2\sqrt d,\sqrt d,\sqrt d$.
+By bilinearity and~\eqref{eq:cyclecontinuity}, each packet image changes
+by at most $5\sqrt d/4$, and every image has norm at most $1/4$.
+Thus the smooth cross pairing $C$ satisfies
+\[
+ |C-C_*|\leq\frac58\sqrt d\leq\frac5{8192},
+ \qquad C>\frac{91}{40960}>\frac1{512}.
+\]
+
+The actual Euler reference is
+\[
+ v^0(\tau)=\bigl(U(y),0,
+       \phi_+(y)\sin(x-\tau)+\phi_-(y)\sin(x+\tau)\bigr).
+\]
+It is smooth, $2\pi$-periodic in $\tau$, solves Euler with zero pressure,
+and has $(\curl v^0\cdot\nabla)v^0=0$. Its Sobolev norms are uniformly
+bounded. Nevertheless, if $K_\pm=\norm{\Phi(U,\phi_\pm)}^2$,
+\begin{equation}\label{eq:cycleformula}
+ \mathcal K^1(v^0(\tau))=K_++K_-+2C\cos(2\tau),\qquad
+ \mathcal T^1(v^0(\tau))=-4C\sin(2\tau).
+\end{equation}
+The positive part has integral $4C$ on every period of length $\pi$.
+Artificial heat mixes the separated shear regions; the actual inviscid
+packets experience only constant translations.
+
+Let $v^\delta$ be the actual unforced viscous evolution from
+$v_0=v^0(0)$. It stays in the globally regular class
+\[
+ U_\tau^\delta=\delta U_{yy}^\delta,\qquad
+ \Theta_\tau^\delta+U^\delta\Theta_x^\delta
+                       =\delta\Delta\Theta^\delta.
+\]
+For a fixed sufficiently high Sobolev order, the heat estimate for
+$U^\delta-U$ and the differentiated passive-scalar energy estimate give
+\begin{equation}\label{eq:cycleviscouscomparison}
+ \norm{v^\delta(\tau)-v^0(\tau)}_{H^s}
+       \leq C_s\delta(1+\tau)^2 e^{C_s\tau},\qquad 0<\delta\leq1.
+\end{equation}
+Indeed $\norm{U^\delta-U}_{H^{s+1}}\leq
+\delta\tau\norm U_{H^{s+3}}$. The scalar difference is transported by
+$U^\delta$, whose spatial derivatives are bounded by those of $U$;
+its inhomogeneous terms are
+$-(U^\delta-U)\Theta_x^0+\delta\Delta\Theta^0$.
+The uniform Sobolev bounds of the periodic reference bound these terms
+by $C_s\delta(1+\tau)$, and Gr\"onwall proves the displayed comparison.
+No unknown three-dimensional continuation estimate is used.
+
+Set $\delta=\nu/\alpha$ and
+$u^\alpha(t)=\alpha v^{\nu/\alpha}(\alpha t)$.
+Choose a fixed $\gamma>0$ with $C_s\gamma<1/2$.
+On $0\leq\tau\leq\gamma\log\alpha$, the comparison tends to zero
+uniformly as $\alpha\to\infty$. The ordered quintic kernel of
+$\mathcal T^1$ makes it locally Lipschitz on a sufficiently high
+Sobolev ball. Hence~\eqref{eq:cycleformula} still gives a positive-part
+integral bounded below by a positive constant times $\log\alpha$
+on these actual viscous histories. Homogeneity gives
+\[
+ \mathcal T^\nu(\alpha v)=\frac{\alpha^5}{\nu^2}\mathcal T^1(v),
+ \qquad \dd t=\dd\tau/\alpha,
+\]
+which proves~\eqref{eq:cyclepositive}.
+
+Finally, for any actual shear evolution $(F(y,t),0,\Theta(x,y,t))$,
+put $M_0=\norm{F(0)}_\infty$ and
+$B_0=M_0^2\norm{\Theta(0)}_2^2/(2\nu^2)$.
+The maximum principle and scalar energy equality imply
+\[
+ \mathcal K^\nu(u(t))+\int_0^t\frac{\norm{\mathcal M(u)}_2^2}{\nu}\dd s
+       \leq B_0.
+\]
+To see this, write the horizontal stretching as
+$\operatorname{div}_{x,y}(F e_x\otimes J\nabla\Theta)$, where
+$J\nabla\Theta=(\Theta_y,-\Theta_x)$, and use
+$\norm{\mathcal M(u)}_2\leq M_0\norm{\nabla\Theta}_2$.
+More explicitly, the auxiliary heat energy identity and the actual
+scalar energy equality give the complementary bounds
+\[
+ \mathcal K^\nu(u(t))\leq\frac{M_0^2}{2\nu^2}\norm{\Theta(t)}_2^2,
+ \qquad
+ \int_0^t\frac{\norm{\mathcal M(u)}_2^2}{\nu}\dd s
+ \leq\frac{M_0^2}{2\nu^2}
+       \bigl(\norm{\Theta(0)}_2^2-\norm{\Theta(t)}_2^2\bigr).
+\]
+The capacity identity and the complete positive balance therefore give,
+for every prefix,
+\[
+ -\mathcal K^\nu(u_0)\leq\int_0^t\mathcal T^\nu\dd s
+       \leq B_0-\mathcal K^\nu(u_0),\qquad
+ Y(u(t))+\mathcal K^\nu(u(t))+\int_0^t\mathcal W^\nu\dd s
+       \leq Y(u_0)+B_0.
+\]
+Here $B_0$ is quartic under amplitude scaling and $Y(u_0)$ is quadratic.
+This proves~\eqref{eq:cyclesigned} and the ratio assertion.
+\end{proof}
+
+The lower bound uses a family of different data and a shrinking physical
+interval containing a growing number of turnover cycles. It is not
+infinite renewal on one fixed finite interval for one datum, and it is
+not a singularity. A general full-datum allowance can grow faster than
+quartically; the signed target is already paid in this example.
+
+\begin{corollary}\label{cor:coupledcycles}
+Use the periodic frequency separations above with $J=0$, and fix
+$\eta,\zeta,\chi>0$, with $\eta<1/2$. For each datum $\alpha v_0$ choose
+$r,\rho,\sigma$ from its energy and viscosity so that the periodic
+versions of the three estimates give
+\[
+ \norm{\mathcal M_{\rm far}}_2\leq\eta\nu\sqrt D,\qquad
+ |\mathcal T_{\rm inner}|\leq\zeta\nu D,\qquad
+ |\mathcal T_{\rm pair}|\leq\chi\nu D,
+\]
+and take $r\to\infty$ as $\alpha\to\infty$. Then the positive-part
+lower bound~\eqref{eq:cyclepositive} also holds for
+$\mathcal T_{\rm coupled}$, after reducing its constant.
+Its signed primitive and $\int\mathcal W_{\rm keep}$ still have
+$O_\nu(\alpha^2+\alpha^4)$ bounds on every prefix.
+The conservative lattice constants $200$, $10^6$ and $10^7$, respectively,
+suffice for these choices of the three separations.
+\end{corollary}
+\begin{proof}
+All nonzero velocity and nonlinear-direction modes have magnitude at
+least one, so $\mathcal T_{\rm core}=\mathcal T_{\rm keep}$.
+There is no low stretching output. The symmetric parent mask preserves
+the cancellation between two purely vertical inputs. Thus on $v^0$ its
+capacity has the form~\eqref{eq:cycleformula}, with a masked cross
+pairing $C_r$. Absolute convergence of the smooth quartic Fourier
+formula gives $C_r\to C>0$. The quintic kernel bound is uniform in
+the mask, so the viscous comparison remains uniform in $r$.
+Consequently $\int(\mathcal T_{\rm keep})_+$ has the same
+$\alpha^4\log\alpha$ lower bound.
+
+The two excluded returns have combined absolute integral at most
+$(\zeta+\chi)\int\nu D\leq(\zeta+\chi)(Y(u_0)+B_0)$.
+Subtracting them cannot remove the logarithmic growth. Moreover,
+\[
+ \mathcal W_{\rm keep}\leq2\mathcal W+2\eta^2\nu D,
+ \qquad \mathcal K_{\rm keep}\leq2\mathcal K+\eta^2Y.
+\]
+The second inequality follows by integrating the far-source bound along
+the auxiliary heat flow. The modified positive identity, with
+$2|\langle Au,\mathcal M_{\rm far}\rangle|\leq2\eta\nu D$,
+then bounds the signed primitive of $\mathcal T_{\rm keep}$ by a
+constant times $Y(u_0)+B_0$. Subtract the two already paid returns.
+\end{proof}
+
+This corollary concerns the specified input/output floor and its
+data-selected separations. It neither rules out a separately chosen
+input cutoff nor refutes the signed remaining budget. It shows that
+cancellation over repeated history can remain necessary inside the
+coupled sector even after all three absolute sector payments.
+
 \section{Verification boundary}
 
 The Lean theorem
@@ -1359,6 +1627,17 @@ the whole-space $100$; the same lattice counting gives
 $80\cdot81\sqrt3\,2^{9/2}(136/7)<10^7$.
 The checker verifies that the earlier positive generated-child
 coefficient remains after all these separations.
+The checker \texttt{labs/shear\_caloric\_cycles.py} verifies the rational
+constants in the recurrent shear construction and finite heat pairings,
+including their phase dependence, viscosity scaling and behavior under
+the symmetric parent mask. It also checks the cancellation between two
+purely vertical inputs before applying that mask. Independent
+physical products, inverse curl and heat quadrature agree with those
+pairings. The finite Fej\'er profiles are explicitly checked to have a
+nonzero plateau-equation residual: they test the heat formula, not the
+smooth Euler reference. The flat-plateau construction, logarithmic-time
+viscous comparison and all-prefix bounds are analytic proofs, not Lean
+certificates or numerical PDE time enclosures.
 Arbitrary-data unforced regularity remains open.
 
 \begin{thebibliography}{9}
