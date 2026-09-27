@@ -1,0 +1,171 @@
+# Exact Fourier interaction lab
+
+`fourier_interactions.py` checks explicit trigonometric examples against the
+complete unforced Navier–Stokes quadratic source. It uses Python's standard
+library and exact rational arithmetic. All generated convolution modes are
+retained, including modes outside the input family. It does not integrate a
+truncated dynamical system.
+
+From this package directory:
+
+```sh
+python3 labs/fourier_interactions.py
+python3 labs/fourier_interactions.py --case chain --generations 12
+```
+
+The program prints JSON after all selected checks pass and raises an error on
+failure. Checks remain enabled with `python3 -O`. There are no input files,
+network requests or generated files. The `matched`, `chain` and `cyclic`
+cases can also be run separately.
+
+These are reproducible algebra calculations, **not Lean certificates**.
+The jet calculations identify derivatives of a smooth solution at time zero;
+they supply no uniform Taylor remainder, time window, or global regularity
+bound. Sample checks of a formula indexed by an integer are distinguished
+below from polynomial identities certified by a degree bound and enough
+exact samples.
+
+## Conventions and equation
+
+The domain is the torus of period `2π`, with normalized spatial measure. Write
+`u(x) = Σ_k û(k) exp(i k·x)` and `A = -Δ`, so `A` multiplies each coefficient
+by `|k|²`. The stored vector at `k` is the real rational amplitude `a(k)` in
+`û(k) = i a(k)`. Each velocity obeys `a(-k) = -a(k)` and `k·a(k) = 0`.
+This is a closed subclass for the source and time-jet operations used here;
+it is not a representation of every real Fourier field.
+
+For `P_k z = z - k(k·z)/|k|²`, with `P_0` the identity, the stored amplitude of
+`B(u,v) = -P[(u·∇)v]` is
+
+```text
+B(u,v)(k) = P_k Σ_(p+q=k) (a(p)·q) b(q).
+u_t = -ν A u + N(u),          N(u) = B(u,u).
+```
+
+The positive sign in this amplitude formula accounts for all three factors
+of `i` in the advection term. Projection happens after the complete sum.
+The zero mode is retained by the operator and checked to vanish for the
+solenoidal data. There is no Fourier cutoff.
+
+For the formal expansion `u(t) = Σ_r u_r t^r`, the program applies
+
+```text
+(r+1) u_(r+1) = -ν A u_r + Σ_(i=0)^r B(u_i,u_(r-i)).
+```
+
+At every computed order it checks reality, zero mean, incompressibility,
+the kinetic-energy identity and the enstrophy identity. In particular, with
+`E = ||u||₂²/2`, `Y = ||∇u||₂²/2` and `Π = <Au,N(u)>`,
+
+```text
+E' = -2νY,                  Y' = Π - ν||Au||₂².
+```
+
+These conventions differ from the period-one Fourier normalization in the
+Lean lane. A bridge must retain the corresponding factors of `2π`.
+
+## Equal initial sources, opposite later corrections
+
+The two initial velocities are
+
+```text
+u_s = (-sin y-sin z, -sin x-sin z, -sin x-sin y),
+u_a = ( sin y-sin z, -sin x+sin z,  sin x-sin y).
+```
+
+Both have squared velocity norm `3`, satisfy `Au=u`, and have the same
+**complete** source
+
+```text
+n = N(u) = -(sin(y+z), sin(x+z), sin(x+y)),
+An = 2n,                    ||n||₂² = 3/2.
+```
+
+Their unprojected stretching fields `(curl u·∇)u` also agree. The program
+checks this directly, checks `curl A⁻¹P[(curl u·∇)u] = n/2`, and checks the
+vanishing heat commutator `DN(u)[Au] - AN(u)`. Since both inputs occupy the
+same Laplacian eigenspace, their sources under heat evolution also agree.
+
+The first Picard approximation is
+`v(t) = exp(-νt)u + t exp(-2νt)n`. Its production is exactly
+`Π(v(t)) = (3/2)t exp(-4νt)`. The actual solution's production has coefficients
+
+```text
+Π_s(t) = (3/2)t - 6νt² + (12ν² - 1/12)t³ + O(t⁴),
+Π_a(t) = (3/2)t - 6νt² + (12ν² + 3/4 )t³ + O(t⁴).
+```
+
+Thus the cubic corrections to first Picard production have opposite signs.
+The leading production itself is positive for both fields. These examples
+exclude a determination of that correction from their common initial source
+and heat-source history alone; they do not exclude rules using the full
+initial velocity or the subsequent nonlinear history.
+
+The coefficient of `t^r` is a polynomial in `ν` of degree at most `r`:
+this follows inductively from the displayed recurrence. The production
+coefficients through `t³` therefore have degree at most three. The four exact
+viscosity samples `0, 1, 3/2, 2` determine them for every viscosity. This finite
+polynomial argument does not assert a viscosity-uniform Taylor remainder.
+
+## A quadratic chain and its mixed outputs
+
+Let `S=(1,1,1)`, `b_n=(-1)^n`, `a_n=(2^n-b_n)/3`, and, for `i=1,2,3`, set
+
+```text
+k_(n,i) = a_n S + b_n e_i,
+v_(n,i) = (a_n+b_n)S - (3a_n+b_n)e_i,
+r_n = |k_(n,i)|² = (4^n+2)/3,
+U_n = Σ_i v_(n,i) sin(k_(n,i)·x),     ||U_n||₂² = 3r_n.
+```
+
+The program checks the full diagonal identity
+`N(U_n) = γ_n U_(n+1)`, where
+`γ_n = b_n 2^n r_n/r_(n+1)`. With `W_n=U_n/sqrt(3r_n)`, its normalized
+multiplier has square `β_n² = 4^n/(4^(n+1)+2)`.
+
+This diagonal identity does **not** make the family invariant. For
+`C_n = B(W_n,W_(n+1)) + B(W_(n+1),W_n)`, the full mixed source has 24 modes:
+six return to `W_n`, and eighteen lie outside the chain. Writing `r=4^n`,
+the squared norms checked against the complete convolution are
+
+| Part of the mixed source | Squared norm |
+| --- | --- |
+| Retained, equal to `-β_n W_n` | `r/(4r+2)` |
+| Escaping sums, 12 modes | `r/[2(r+2)]` |
+| Escaping differences, 6 modes | `9r³/[2(r+2)(r+8)(2r+1)]` |
+| Total | `3r(4r²+9r+8)/[2(r+2)(r+8)(2r+1)]` |
+
+Normalization uses ratios of squared rational norms, so the program needs
+no floating-point square roots. It also checks the exact reverse vector
+field and kinetic-energy cancellation, not just the norms.
+
+The displayed rational expressions give limiting total squared norm `3`
+and escaping squared norm `11/4`; their ratio tends to `11/12`. The program
+checks these expressions for the requested finite set of generations
+(eight by default). That sample calculation alone is not a proof of the
+formulas for every generation. It does establish explicit failures of
+closure. The escaping fraction concerns the mixed **source**, not a fraction
+of kinetic energy lost by a solution or a persistent leakage rate in time.
+
+## Cyclic shears: a cancellation that ends at the next order
+
+For `u=(sin(cz),sin(ax),sin(by))`, with positive integer radii, put
+`T=DN(u)[N(u)]`. The squared norm of the part of `T` whose wavevectors have
+all three coordinates nonzero is
+
+```text
+[a²(b²-c²)² + b²(c²-a²)² + c²(a²-b²)²] / [2(a²+b²+c²)].
+```
+
+The code checks the full vector formula at all eight signed wavevectors
+`(±a,±b,±c)`, and then the norm, for five radius triples. Equal radii cancel
+this part under the Leray projection. For example, `(1,1,2)` gives `3/2`
+and `(2,3,4)` gives `946/29`.
+
+Even at `(a,b,c)=(1,1,1)`, this is not an invariant absence of such modes.
+The coefficient `u_3` of `t³` has 24 of them, with squared norm `31/1152`.
+At wavevector `(2,1,1)` its stored imaginary amplitude is
+`(-5/288, 1/144, 1/36)`. Four exact viscosity samples, together with the
+degree bound at most three, check that this entire part of `u_3` is
+independent of viscosity. Again this is an initial-derivative statement,
+not a quantitative lower bound at a specified positive time.

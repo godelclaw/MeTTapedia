@@ -262,6 +262,16 @@ reprove an available theorem.
 Ben's coherence/pancake mechanism remains the research target. Auxiliary
 norms, functionals, and interfaces may be improved to use established theory.
 
+## Reproducible Fourier calculations
+
+The [exact Fourier interaction lab](labs/README.md) checks explicit
+trigonometric data using the complete Leray-projected quadratic source and
+rational arithmetic. It covers equal initial sources with opposite cubic
+corrections to later production, mixed interactions escaping a generated
+frequency chain, and a cyclic-shear cancellation that ends at the next
+order. These are executable algebra checks, not Lean certificates or
+physical-time budget estimates.
+
 ## Build
 
 ```sh
