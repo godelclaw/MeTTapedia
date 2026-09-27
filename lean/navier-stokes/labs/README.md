@@ -669,6 +669,17 @@ evidence that the initial real sign does not describe the subsequent
 history. It establishes neither an infinite-time forcing tail nor control
 of an actual nonlinear remainder.
 
+Continuing the side-14 calculation to time 6 with step `.005` gives
+recipient norm `850.70874132` and
+`q=-11.95861001+38.87926611i` on grid 512. Refinement from grid 384
+changes the norm by `5.9e-5`, the two components of `q` by less than
+`1.5e-8`, and the signed discounted forcing components by less than
+`2.1e-9`. The recipient's upper-frequency velocity fraction decreases
+from `6.49e-5` to `2.10e-9`; the grid-512 ledger error is `1.63e-10`.
+Both parents evolve throughout. A large unscaled cubic response does
+not justify continuing a truncated amplitude expansion after its
+contribution becomes comparable to the full field.
+
 ### Full nonlinear viscous history
 
 `full_history.py` evolves the complete retained velocity, with both parents,
@@ -822,6 +833,54 @@ squared energy stays at most one and the relative defect tends to zero.
 Constants depend on `K`. This is an analytic family obstruction to a
 uniform estimate from these inputs; the higher initial norms grow, so
 it does not refute an allowance depending on the full initial datum.
+
+### Testing the first permitted fast mean
+
+`helical_mean_jet.py` computes the first permitted interaction for the
+normalized Gaussian parents of angular indices `m,m+2`, with even `m`.
+For `m=6`, four copies of the positive first parent and three copies of
+the conjugate second parent have labels `(0,1)`. All 19 ancestral words
+inside that parent count are retained, including every ordered binary
+partition and every intermediate pressure projection.
+
+The recursion computes the coefficient of `t^6` of parent amplitude
+degree seven. Background interactions and viscosity would require an
+additional time derivative, so they do not enter this coefficient.
+It is a time coefficient, not the sixth derivative: no extra factorial
+is included. With real parent amplitudes `ε`, its contribution and its
+conjugate are `ε⁷ Re(U exp(2iz)) t⁶/64`.
+
+```sh
+python3 labs/helical_mean_jet.py --calibration
+python3 labs/helical_mean_jet.py --n 256
+python3 labs/helical_mean_jet.py --n 256 --form advection
+python3 labs/helical_mean_jet.py --n 384 --box 20
+```
+
+The calibration recovers the known cubic circulation coefficient
+`-16/(5 exp(3))` at radius one with relative error `4.7e-13`.
+For the normalized `6,8` parents the coefficient is:
+
+| Horizontal grid | Side length | Real mean circulation at radius one | Recipient velocity norm |
+| --- | --- | --- | --- |
+| 256 | 14 | -0.00853258187 | 2.1117880420 |
+| 384 | 14 | -0.00853258374 | 2.1117880420 |
+| 384 | 20 | -0.00853258246 | 2.1117873529 |
+| 512 | 28 | -0.00853258187 | 2.1117873136 |
+
+The norm is `sqrt(∫ |U|² dx_h/(2π))`. The independently evaluated
+advective and vorticity forms at grid 256 agree in the radius-one
+coefficient within `2.2e-13`. The circular observable uses the exact
+Bessel integral of the retained Fourier polynomial, rather than angular
+sampling. The output also reports other radii, the upper-frequency
+velocity fraction and the divergence defect.
+
+This is evidence that the first permitted coefficient does not cancel,
+not a rigorous continuum nonvanishing certificate. The periodic square
+only approximates the continuum angular symmetry, and neither grid nor
+box comparison supplies an error enclosure. No positive-time lower
+bound, sustained signed stretching or repeated cascade follows from
+this coefficient alone.
 
 ### Full signed work during delayed mean production
 
