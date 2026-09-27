@@ -1085,6 +1085,60 @@ cost, failure of the allowed full-datum initial allowance, or obstruction
 to arbitrary-data regularity follows. These calculations are not Lean
 certificates and do not close the recurrent high-frequency budget.
 
+### Whole-space concentration of generated renewal
+
+Run `python3 -O labs/caloric_localization.py`. The standard-library
+checker verifies a strict spectral gap, an exact slowly varying
+streamfunction envelope, and the scaling of the complete viscous cost.
+The analytic whole-space argument is in the unforced-activation section
+of [the tail-budget paper](../../../papers/ns_forced_tail_budget.pdf).
+
+The positive three-parent coefficient above is unchanged when the
+squared cutoff is moved from 16 to 14, which avoids every internal
+frequency center. For the envelope `phi(X)=1+cos(X)/2`, use
+`u_L=(-partial_y,partial_x,0)[phi(x/L)*psi]`, including the derivative of
+the envelope. It has 18 initial modes and 58 first generated high modes.
+The predicted renewal limit is the original coefficient times
+`mean(phi^10)=3308407/262144`. Exact rational computations at `L=16,64`
+give relative differences `6.96e-4` and `4.36e-5`, respectively. The
+calculations form all outputs and retain every heat-rate cross term.
+This is a periodic-envelope check, not a certificate of the continuum
+localization limit.
+
+For that limit, replace the periodic envelope by a nonnegative Schwartz
+function with compact Fourier support. The strict gaps make the retained
+multiplier symbols smooth near each packet. After dividing by the
+localization volume, the degree-ten coefficient tends to the positive
+periodic coefficient times `integral(phi^10)`. Fix a sufficiently wide
+envelope and normalize the initial squared `L2` norm to one. Uniform local
+smooth estimates for effective viscosities `delta in [0,1]` then yield a
+fixed short interval with positive integrated fully high renewal.
+
+The actual unforced rescaling
+
+```text
+u_lambda(t,x) = lambda^(3/2) w_delta(lambda^(5/2)*t, lambda*x),
+delta = nu/sqrt(lambda),   Q_lambda = lambda*Q
+```
+
+preserves initial energy. On the corresponding shrinking physical prefix,
+renewal is at least `c*lambda^3/nu^2`, while the integral of the **original
+full cost** is at most `C*lambda^(5/2)/nu`. Consequently, even with an
+initially empty tail, no energy-only allowance can work uniformly over
+the data and these prescribed cutoffs. The thin family above allows the
+initial data to remain planar polarized in an arbitrarily thin Fourier
+belt. The order is: fix thinness, then localization, then concentrate.
+
+The cutoff varies with the data. This does **not** exclude a
+cutoff-dependent or full-datum allowance, or the existence of a different
+cutoff for the same datum. The common local interval is an analytic
+existence argument, without a certified numerical endpoint. The script
+checks finite Fourier algebra and homogeneities; the localization and
+actual-time argument are not Lean theorems. The sufficient recurrent
+budget remains open.
+
+### Kida–Pelz evolution
+
 `kida_pelz_history.py` evolves the real Kida–Pelz initial field
 
 ```text

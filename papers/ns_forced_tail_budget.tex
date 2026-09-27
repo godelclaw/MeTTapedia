@@ -9,7 +9,7 @@
 \newcommand{\dd}{\,\mathrm d}
 \newcommand{\norm}[1]{\left\lVert#1\right\rVert}
 \newcommand{\curl}{\operatorname{curl}}
-\title{Separating forcing and low-frequency feeding\protect\\in a signed Navier--Stokes tail budget}
+\title{Signed Navier--Stokes tail budgets:\protect\\forcing, low frequencies and unforced activation}
 \author{}
 \date{September 27, 2026}
 \begin{document}
@@ -31,8 +31,13 @@ a uniform absorption budget on the same forced construction. A Fourier
 multiplier estimate separates every low-frequency parent and every low
 renewal output. Low stretching outputs have a separate energy-paid
 history bound, leaving a target with every parent and both internal
-frequencies high. That target is unproved; no unforced regularity
-estimate is obtained.
+frequencies high. Finally, actual unforced whole-space solutions with
+unit initial energy and an initially empty tail refute an allowance
+uniform over the data and the prescribed cutoff. Their initial fields
+can be planar polarized in an arbitrarily thin Fourier belt. This does
+not exclude an allowance depending on the full datum or a separately
+chosen cutoff. The sufficient target remains unproved; no arbitrary-data
+unforced regularity estimate is obtained.
 \end{abstract}
 
 \section{An exact split and finite allowances}
@@ -652,6 +657,207 @@ would bound $\mathcal G_+\geq Y/2$, contrary to the candidate's unbounded
 gradient energy. This further separation pays low stretching outputs;
 it does not bound regeneration among the remaining high frequencies.
 
+\section{Unforced activation with unit initial energy}
+
+The allowance in~\eqref{eq:fullyhightarget} is permitted to depend on the
+full initial datum. That permission is substantive even when the initial
+tail is empty. In this section a subscript $Q$ on a projector means
+$P_Q=\mathbf1_{\{|\xi|\geq Q\}}(D)$; the superscript on
+$\mathcal T_{Q,Q}^\nu$ or $\mathcal W^\nu$ specifies the viscosity in the
+functional. In particular, $\mathcal W^\nu$ is the original full-field
+cost, not a cost computed from $P_Qu$ alone.
+
+\begin{proposition}\label{prop:unforcedactivation}
+For every $\nu,H,\varepsilon>0$, $\theta\geq0$ and finite $B\geq0$,
+there are a real solenoidal Schwartz datum $u_0$ on $\R^3$, a cutoff
+$Q_*>0$, and an actual smooth unforced solution from $u_0$ on a prefix
+$[0,t_*]$, $0<t_*<H$, such that
+\[
+ \norm{u_0}_2^2=1,\qquad (u_0)_3=0,\qquad
+ \operatorname{supp}\widehat u_0\subset
+ \{\xi:0<|\xi|<Q_*,\ |\xi_3|\leq\varepsilon|\xi|\},
+\]
+but
+\begin{equation}\label{eq:activationexcess}
+ \int_0^{t_*}\mathcal T_{Q_*,Q_*}^\nu(u(t))\dd t
+ > B+\theta\int_0^{t_*}\mathcal W^\nu(u(t))\dd t.
+\end{equation}
+Thus an energy-only allowance uniform over the datum and the prescribed
+cutoff is false. The cutoff varies in this construction; the proposition
+does not rule out a cutoff-dependent allowance, an allowance using the
+full datum, or the existence of a different cutoff for that datum.
+\end{proposition}
+
+\begin{proof}
+We first obtain a positive first-generation coefficient on the torus,
+then localize it, and finally use a common local smooth time interval.
+
+\emph{Discrete coefficient.}
+On the $2\pi$ torus with normalized volume, write
+$Jk=(-k_2,k_1,0)$. The real trigonometric field with coefficients
+\[
+ \widehat w(k)=i a_kJk,\qquad
+ (k,a_k)\in\{((3,1,1),\tfrac12),((1,3,1),1),
+                    ((1,-1,3),\tfrac12)\},
+\]
+and their reality partners has no tail above $Q^2=14$.
+For its actual first tail derivative $v_1=P_QN(w)$, finite Fourier
+convolution and integration of all parent heat rates give
+\begin{equation}\label{eq:positivechild}
+ \mathcal T_{Q,Q}^1(v_1)
+ =\frac{15667851179107579904}{95414925477178125}>0.
+\end{equation}
+Every parent has squared radius $11$. The internal output centers have
+even coordinates and hence squared radii divisible by $4$; none lies
+on the cutoff $14$. Using the cutoff $16$ produces the same value.
+
+For arbitrary thinness, use instead
+\[
+ p_m=(m,3,1),\quad q_m=(3,m,1),\quad r_m=(m,1,3),
+ \qquad Q_m^2=3m^2/2,
+\]
+with planar coefficients $i a_kJk/m$, weights $(2,1,1)$ and reality
+partners. The parent radii are $\sqrt{m^2+10}$ and their axial ratios
+are at most $3/m$. Keeping all frequency labels distinct, the same
+finite rational calculation gives
+\begin{equation}\label{eq:thinpositivechild}
+ \mathcal T_{Q_m,Q_m}^1\big(P_{Q_m}N(w_m)\big)
+ =\frac{52224}{25m^3}-\frac{7422976}{375m^4}+O(m^{-5}).
+\end{equation}
+One way to check this identity is to put $\delta=1/m$ and represent
+each scaled frequency as $a+b\delta$. The scaled return has coefficients
+zero through order eight, followed by $52224/25$ and $-7422976/375$ at
+orders nine and ten. Restoring the frequencies and the first generated
+velocity multiplies it by $m^6$. Every denominator has nonzero constant
+term. The finitely many projector decisions are stable for small
+$\delta$: their leading squared radii are integers, whereas the scaled
+cutoff squared is $3/2$. These are rational identities, not an assumed
+invariant finite-mode evolution. Fix a sufficiently large $m$ to make
+the coefficient positive and the axial ratio strictly smaller than
+$\varepsilon$.
+
+\emph{Whole-space localization.}
+Denote the chosen periodic parent by $w_{\rm per}=J\nabla\psi$, where
+$J\nabla=(-\partial_2,\partial_1,0)$, and its cutoff by $Q$.
+Choose a nonzero nonnegative Schwartz function $\phi$ with compact
+Fourier support. Such a function is the square of the real inverse
+Fourier transform of a nonzero real even function in $C_c^\infty$.
+Set
+\[
+ w_L(x)=J\nabla\big(\phi(x/L)\psi(x)\big),\qquad
+ v_L=P_QN(w_L).
+\]
+This datum is exactly solenoidal and has zero axial velocity. Its
+Fourier support lies in $O(L^{-1})$ neighborhoods of the parent centers;
+for sufficiently large $L$ it lies strictly below $Q$, away from zero,
+and within the required Fourier belt.
+
+The degree-ten functional $\mathcal T_{Q,Q}^1(v_L)$ has a finite packet
+expansion. Each sharp projector is evaluated near one of the finitely
+many internal centers, all separated from its cutoff. Each retained
+Leray or inverse-curl multiplier is separated from zero. Nonresonant
+terms vanish for large $L$, since the sum of their Fourier supports
+cannot contain zero. In a resonant term, rescale the Fourier offsets
+by $L$. The multiplier converges uniformly to its value at the centers.
+The parent heat frequencies are bounded away from zero, so the heat
+integrals are dominated by a polynomial in heat time times
+$e^{-cs}$ for some $c>0$. The compact envelope spectra then justify
+dominated convergence term by term. It follows that
+\begin{align}
+ L^{-3}\mathcal T_{Q,Q}^1(v_L)
+ &\longrightarrow
+ \mathcal T_{Q,Q,\mathrm{per}}^1(P_QN(w_{\rm per}))
+             \int_{\R^3}\phi^{10}>0,\label{eq:packetlimit}\\
+ L^{-3}\norm{w_L}_2^2
+ &\longrightarrow \norm{w_{\rm per}}_{2,\mathrm{per}}^2
+             \int_{\R^3}\phi^2>0.\nonumber
+\end{align}
+The extra velocity term from differentiating $\phi(x/L)$ is of order
+$L^{-1}$ and has zero limit in these normalizations. The tenth power
+in~\eqref{eq:packetlimit} retains the actual quadratic generation of
+the child followed by the quintic renewal functional.
+
+Fix a sufficiently large $L$ and normalize $w_L$ by its exact $L^2$
+norm, obtaining a Schwartz datum $w_0$ with squared norm one and
+$P_Qw_0=0$. Its child $v_1=P_QN(w_0)$ satisfies
+$c=\mathcal T_{Q,Q}^1(v_1)>0$; the normalization multiplies the
+coefficient by $\norm{w_L}_2^{-10}$.
+
+\emph{An actual common time interval.}
+For $0\leq\delta\leq1$, let $w^\delta$ solve the unforced equation
+with viscosity $\delta$ and initial datum $w_0$. Local high-Sobolev
+energy estimates discard the nonpositive viscous term, giving a common
+smooth interval and uniform high-Sobolev bounds. Applying the equation
+twice also bounds two time derivatives in $H^2$, uniformly in $\delta$.
+Since the initial tail vanishes,
+\[
+ P_Qw^\delta(\tau)=\tau v_1+O(\tau^2)\quad\text{in }H^2,
+\]
+uniformly for $\delta\in[0,1]$. The quartic kernel bound above gives
+$|D\mathcal K_+(v)[h]|\leq C\norm{\nabla v}_2^3\norm h_2$ at
+viscosity one, and $N:H^2\to L^2$ is continuous. Hence the quintic
+$\mathcal T_{Q,Q}^1$ is continuous on $H^2$, with bounded multilinear
+coefficients there, and
+\[
+ \mathcal T_{Q,Q}^1(w^\delta(\tau))=c\tau^5+O(\tau^6)
+\]
+uniformly in $\delta$. Choose a sufficiently small fixed $\tau_*>0$.
+There are $\kappa,C_0>0$, independent of $\delta$, such that
+\begin{align}
+ \int_0^{\tau_*}\mathcal T_{Q,Q}^1(w^\delta)\dd\tau
+ &\geq\kappa,\label{eq:unitactivation}\\
+ \int_0^{\tau_*}\left[
+ \delta^2\norm{Aw^\delta}_2^2+
+ \norm{M(w^\delta)-\delta Aw^\delta}_2^2\right]\dd\tau
+ &\leq C_0.\label{eq:unitcost}
+\end{align}
+Here $A=-\Delta$. The second assertion follows directly from the common
+$H^2$ bound and $\norm{M(w)}_2\leq\norm w_\infty\norm{\curl w}_2$.
+The time $\tau_*$ is fixed only after $m,L,w_0$ have been fixed; no
+numerical value or uniformity in the thinness parameter is asserted.
+
+\emph{Energy-preserving concentration.}
+For sufficiently large $\lambda$, set
+\[
+ \delta=\nu/\sqrt\lambda,\quad
+ u_\lambda(t,x)=\lambda^{3/2}
+    w^\delta(\lambda^{5/2}t,\lambda x),\quad
+ Q_\lambda=\lambda Q,\quad t_\lambda=\tau_*/\lambda^{5/2}.
+\]
+This is the actual unforced equation with physical viscosity $\nu$;
+its initial squared $L^2$ norm is one. Its initial tail is empty above
+$Q_\lambda$, and the initial polarization and belt condition persist
+under this spatial rescaling. Keeping the spatial Jacobian and the
+physical-time factor gives the exact identities
+\begin{align}
+ \int_0^{t_\lambda}\mathcal T_{Q_\lambda,Q_\lambda}^\nu(u_\lambda)\dd t
+ &=\frac{\lambda^3}{\nu^2}
+      \int_0^{\tau_*}\mathcal T_{Q,Q}^1(w^\delta)\dd\tau,
+       \label{eq:scaledreturn}\\
+ \int_0^{t_\lambda}\mathcal W^\nu(u_\lambda)\dd t
+ &=\frac{\lambda^{5/2}}\nu\int_0^{\tau_*}
+       \left[\delta^2\norm{Aw^\delta}_2^2+
+        \norm{M(w^\delta)-\delta Aw^\delta}_2^2\right]\dd\tau.
+       \label{eq:scaledcost}
+\end{align}
+In particular, the square in the full cost is retained. By
+\eqref{eq:unitactivation}--\eqref{eq:unitcost}, the excess in
+\eqref{eq:activationexcess} is at least
+\[
+ \frac{\kappa\lambda^3}{\nu^2}
+       -\frac{\theta C_0\lambda^{5/2}}\nu\longrightarrow+\infty.
+\]
+Also $t_\lambda\to0$, so the prefix lies within the prescribed horizon.
+This proves the proposition.
+\end{proof}
+
+This obstruction concerns a family of different data and different
+prescribed cutoffs. It neither produces a singularity for one datum nor
+contradicts~\eqref{eq:fullyhightarget} with its full-data allowance and
+existential cutoff. In this family the full initial caloric resource
+already scales as $\lambda^3/\nu^2$; retaining it can pay the finite
+activation that an energy-only or empty-tail-only allowance misses.
+
 \section{Verification boundary}
 
 The Lean theorem
@@ -667,6 +873,14 @@ ordered mode bound on nearly cancelling parents. Separate source-output
 checks retain the original positive cost and include parent frequency
 parameters up to one million that feed low stretching outputs. These checks do not
 certify the whole-space estimates or a physical-time bound.
+The checks \texttt{labs/generated\_caloric\_renewal.py} and
+\texttt{labs/thin\_caloric\_renewal.py} reproduce the finite coefficients
+used in Proposition~\ref{prop:unforcedactivation}.
+\texttt{labs/caloric\_localization.py} checks the strict cutoff gap,
+the complete scaling factors and a finite periodic streamfunction
+envelope. Its rational calculations retain the envelope derivative and
+all generated modes. They do not certify the Schwartz localization limit
+or the common local PDE time interval, which are analytic arguments above.
 Arbitrary-data unforced regularity remains open.
 
 \begin{thebibliography}{9}
