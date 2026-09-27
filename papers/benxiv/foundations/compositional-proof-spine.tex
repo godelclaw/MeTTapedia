@@ -19089,6 +19089,59 @@ the resulting boundary runs and short-step colour constraints, remain
 necessary. General compatible reduction supply and the route-native
 generating base remain open.
 
+\subsection{Choosing two facial extensions jointly}
+
+A pair of face additions can succeed by choosing the first colouring
+with the second constraint in view. Let $S\to R\to T$ be two actual
+facial events. Suppose that the first exposes at least four edges and
+the second exposes exactly two. Suppose that these latter edges meet
+an original vertex $w$ and a vertex $v$ joined to an original vertex $u$
+by an edge exposed in the first event. These are conditions on the
+original edge identifiers and incidence, with no colouring supplier.
+Then every proper colouring of $S$ admits compatible witnesses on both
+$R$ and $T$, each agreeing with the preceding chosen witness.
+\Sverified{Mettapedia.GraphTheory.FourColor.FacePairColourExtension.extends_pair_of_adjacent_contact}
+
+Cubic incidence derives the positions required by the transfer law.
+The vertex $v$ is new: if it were original, the two events would add
+two different edges to a vertex with only one free incident slot.
+The vertex $w$ acquires no edge in the first event, for the same reason.
+Thus its profile remains exactly the original one, and $v$ lies next
+to an end of the first exposed path. Both contacts are proved to be
+the endpoints of the second exposed path.
+\Sverified{Mettapedia.GraphTheory.FourColor.FacePairColourExtension.old_endpoint_untouched}
+\Sverified{Mettapedia.GraphTheory.FourColor.FacePairColourExtension.profile_eq_old_at_endpoint}
+
+Let $q$ be the missing colour at $w$. On a path of at least four edges,
+the first two colours may be prescribed, provided they differ, while
+independently prescribing the last. Reversing the path gives the same
+freedom at its other end. Consequently the first extension can be chosen
+to use $q$ at $v$. The missing colour there then differs from $q$, which
+is precisely the extension criterion for the second two-edge path.
+All original edge colours remain fixed.
+\Sverified{Mettapedia.GraphTheory.FourColor.OrderedEdgePath.Path.prescribed_second}
+\Sverified{Mettapedia.GraphTheory.FourColor.OrderedEdgePath.Path.prescribed_using_neighbour}
+\Sverified{Mettapedia.GraphTheory.FourColor.FacePairColourExtension.extends_using_adjacent}
+
+A fifteen-edge incidence example isolates the quantifiers. The first
+new path is $1\!-\!2\!-\!6\!-\!7\!-\!8$, and the second is
+$2\!-\!3\!-\!19$. Colouring the first path $(1,2,0,1)$ is proper but
+leaves colour zero missing at both second-path endpoints, preventing
+extension. The joint choice $(1,0,2,1)$ retains the same original
+colouring and allows the second path colours $(2,0)$. Properness,
+preservation of the nine original edges, and impossibility of extending
+the first choice are all kernel-checked. This example certifies the
+incidence and colour statements; it does not construct a spherical
+rotation-system instance.
+\Sverified{Mettapedia.GraphTheory.FourColor.DeferredFaceChoiceExample.joint_choice_exists_but_not_every_first_choice}
+
+The pair theorem supplies one uniform construction rule through a short
+step that can reject an earlier choice. It does not require every
+intermediate colouring to survive. The existence of a suitable pair in
+arbitrary unfinished regions, repetition of such progress, other endpoint
+contacts and the one-new-edge case remain open. No general construction
+or strict-reduction supply, or generating base, follows yet.
+
 \subsection{Physical component repair and its single-switch limit}
 
 The colouring semantics now retains actual Kempe components of the old

@@ -6,6 +6,8 @@ import Mettapedia.GraphTheory.FourColor.FaceBoundaryJunctions
 import Mettapedia.GraphTheory.FourColor.FaceColourTransfer
 import Mettapedia.GraphTheory.FourColor.FacePathExtension
 import Mettapedia.GraphTheory.FourColor.FaceExposedDegrees
+import Mettapedia.GraphTheory.FourColor.FacePairColourExtension
+import Mettapedia.GraphTheory.FourColor.DeferredFaceChoiceExample
 import Mettapedia.GraphTheory.FourColor.FaceKempeRepair
 import Mettapedia.GraphTheory.FourColor.ShortStepKempeCounterexample
 import Mettapedia.GraphTheory.FourColor.LockedKempeOrbitGeometry
@@ -173,6 +175,16 @@ step from an alternating contour, curvature six forces consecutive threes
 as well. Neither alternation nor exclusion of consecutive threes propagates
 through all single-face steps. Compatible groups of steps or control of the
 resulting boundary runs remain open, along with general reduction supply.
+A two-event family now admits jointly chosen colourings: the first face
+exposes at least four edges; the second exposes two and joins an original
+vertex to a new vertex adjacent to the original patch. Actual incidences
+construct the endpoint positions and both colouring witnesses. Cubicity
+keeps the original contact's profile unchanged; freedom near an end of
+the first path makes the other missing colour different. The original
+patch's colouring is preserved throughout. A fifteen-edge incidence
+example proves that a valid first choice can fail even though the pair
+has a successful joint choice. General availability and repeated progress
+for such pairs, the one-edge case and other contacts remain open.
 Physical Kempe switches now act on the same original edge assignments and
 transport each vertex profile exactly. Every failed facial extension supplies
 a colour pair and a component through its first endpoint; the chosen switch
