@@ -421,6 +421,60 @@ Initial higher norms grow with `λ`. This is one finite concentrating event;
 it does not establish repeated events from one fixed datum, an infinite
 cascade, or failure of a history bound depending on that datum's higher norms.
 
+### Fast axial seeds and mean geometry
+
+Run `python3 -O labs/axial_seed_geometry.py` from the NS workspace.
+This checker compares two Schwartz horizontal solenoidal defects whose
+physical axial phase is `α=λz`. Write
+
+```text
+Ψ_α = exp(-R²-Z²)[R² cos(2φ+α) - R⁴ sin(2φ+α)],
+W_α = curl_h(Ψ_α e_z).
+```
+
+The standing seed is `W₀ cos α`; the helical seed is `W_α`.
+Their exact mean radial–azimuthal stresses are respectively
+
+```text
+-2R⁴ exp(-2R²-2Z²) cos²α,
+-2R⁴ exp(-2R²-2Z²).
+```
+
+The helical cancellation persists in the full nonlinear evolution on
+a common local interval. The note constructs an extended solution with
+an independent periodic phase and axial derivative `δ∂Z+∂α`, then
+restricts it to `α=Z/δ`. Its joint symmetry under horizontal rotation
+by `β` and phase shift by `-2β` makes the angular mean independent of
+the fast phase. Uniform Sobolev bounds on this extended solution give
+the actual unforced flow, including its pressure and all generated modes.
+
+Consequently the inward-growth and critical-history conclusions above
+also hold with these fast helical seeds. The meridional maximum may
+move axially; no fixed axial coordinate is asserted. The full mean
+geometry persists for a common normalized interval, with a relative
+circulation gain and inward motion of order `ε²`.
+
+The standing seed instead creates fast axial curvature in the mean.
+For `G=R(PU)_θ`, `J=δ∂Z+∂α` and `F(s)=J²G(1,0,0,s)`, the checker gives
+
+```text
+F(0)  = -4δ²/e,
+F'(0) = ηδ²(16+24δ²)/e - ε²(16δ²+8)/e².
+```
+
+The note's uniform bound on `F''` proves, at `s*=cε²`, the actual estimate
+`|∂zz (Pu)_θ| ≥ c ε⁴ Aλ²`. Its size relative to the stated mean bound
+grows as `ε⁴ λ^(4h)`. Both families have the same initial mean, bounded
+kinetic energy and arbitrarily small relative defect. Thus those initial
+controls do not alone propagate the mean geometry uniformly.
+
+The script also checks the joint symmetry, restriction derivatives on
+all bivariate polynomials through degree four, the Gaussian energy
+factor and the angular mean of the initial pressure source. Persistence
+is an analytic argument, not a symbolic or Lean certificate. Different
+helical families need not share the preserved symmetry, and no estimate
+over a recurrent sequence or all smooth prefixes is proved here.
+
 ### A kinematic path satisfying the energy inequality
 
 A separate time-dependent rescaling of `W_+` has zero mean and unit initial

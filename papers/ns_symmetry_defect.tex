@@ -1097,6 +1097,202 @@ The initial higher norms grow with $\lambda$. No infinite cascade from
 one fixed datum, data-dependent history obstruction, or singularity
 follows from this family.
 
+\subsection{Fast axial seeds and the mean geometry}
+
+The preceding example has slow axial variation in both its mean and its
+defect. Fast axial oscillations need not remove its finite inward growth.
+Their phase relation matters, however, for the regularity of the angular
+mean. In cylindrical coordinates write
+\[
+ \Psi_\alpha(R,\phi,Z)=e^{-R^2-Z^2}
+       \big[R^2\cos(2\phi+\alpha)-R^4\sin(2\phi+\alpha)\big],
+ \qquad W_\alpha=\curl_h(\Psi_\alpha e_z).
+\]
+Here $\curl_h$ takes only the two horizontal derivatives and has zero
+axial component. These expressions extend smoothly across $R=0$;
+$W_0=W_-$. Two defects with a phase variable $\alpha$ are
+\[
+ W^{\rm st}(y_h,Z,\alpha)=W_0(y_h,Z)\cos\alpha,
+ \qquad W^{\rm hel}(y_h,Z,\alpha)=W_\alpha(y_h,Z).
+\]
+The first is a standing axial wave, while the second rotates its
+horizontal pattern with its axial phase.
+
+\begin{proposition}\label{prop:fastseeds}
+Fix $\nu>0$, $0<\epsilon\leq1$, and $0<h\leq1/6$. With
+$\delta=\lambda^{-2h}$, $\mu=\lambda^{1-2h}$ and
+$A=\lambda^{1+2h}/\sqrt{C_\epsilon}$ as in
+Proposition~\ref{prop:inwardwindow}, set
+\[
+ u^j_\lambda(x_h,z)
+   =A\big[V(\lambda x_h,\mu z)
+       +\epsilon W^j(\lambda x_h,\mu z,\lambda z)\big],
+ \qquad j\in\{{\rm st},{\rm hel}\}.
+\]
+Both are real Schwartz solenoidal data, with the same angular mean,
+squared energy at most one and relative $L^2$ defect at most
+$3\epsilon/2$. Their initial means obey
+\eqref{eq:meanr}--\eqref{eq:meanz} with $\tau=\lambda^{-2}$ and
+a constant independent of $\lambda$ and $\epsilon$.
+
+For all sufficiently large $\lambda$, the helical data have all the
+conclusions of Proposition~\ref{prop:inwardwindow}, with universal
+constants, except that the maximum branch may also move axially:
+it is $(r_\lambda(t),z_\lambda(t))$, initially $(\lambda^{-1},0)$.
+In particular the mean geometry persists on $0\leq t\leq c_0/(A\lambda)$,
+the branch moves inward and gains circulation by relative amounts
+at least $c_1\epsilon^2$, and its actual defect history is at least
+$c_2\epsilon^2\lambda^{2h}$. Its squared energy is exactly one
+when $h=1/6$.
+
+For the standing data, there instead exist universal $c_3,c_4>0$
+such that, at $t_*=c_3\epsilon^2/(A\lambda)$ and
+$\tau_* =\lambda^{-2}-t_*>0$, the actual unforced solution satisfies
+\begin{equation}\label{eq:fastMeanCurvature}
+ \tau_*^{3/2-h}
+ \left|\partial_{zz}(\PP u^{\rm st}_\lambda)_\theta
+                         (\lambda^{-1},0,t_*)\right|
+                        \geq c_4\epsilon^4\lambda^{4h}.
+\end{equation}
+Thus initial mean geometry, a bounded kinetic energy and a small relative
+defect alone do not propagate these mean bounds with a uniform constant.
+All thresholds on $\lambda$ may depend on $\nu,\epsilon,h$.
+\end{proposition}
+
+\begin{proof}
+Introduce an independent periodic variable
+$\alpha\in\R/(2\pi\mathbb Z)$ and solve on
+$\R^2\times\R\times(\R/(2\pi\mathbb Z))$ with
+\[
+ D_{\delta,*}=(\partial_1,\partial_2,
+                   \delta\partial_Z+\partial_\alpha),\qquad
+ \eta=\nu\lambda/A,
+\]
+\[
+ U_s=-\mathbb P_{\delta,*}[(U\cdot D_{\delta,*})U]
+                 +\eta\Delta_{\delta,*}U,\qquad
+ D_{\delta,*}\cdot U=0,
+ \quad U(0)=V+\epsilon W^j.
+\]
+The projection has symbol
+$I-\kappa\otimes\kappa/|\kappa|^2$, where
+$\kappa=(k_1,k_2,\delta k_Z+n)$ and $n\in\mathbb Z$ is the
+phase frequency. It has norm at most one in every Sobolev space.
+The four-dimensional transport field
+$(U_1,U_2,\delta U_3,U_3)$ is divergence free. Thus the same
+transport cancellation, commutator estimates and nonpositive diffusion
+as before give a common smooth interval with a uniform $H^{12}$ bound,
+for $0<\delta\leq1$, $0\leq\eta\leq1$, and $0<\epsilon\leq1$.
+The first three time derivatives are bounded in $H^{10},H^8,H^6$,
+respectively. These estimates use the full phase derivative, not a
+truncation of the generated modes.
+
+Restrict this solution to $\alpha=Z/\delta$.
+The restricted axial derivative $\delta\partial_Z$ is exactly
+$\delta\partial_Z+\partial_\alpha$ before restriction. Hence the
+restriction solves the actual three-dimensional projected equation,
+with its pressure, from the stated initial datum. The elementary
+$H^1$ bound in the periodic variable controls this restriction in
+$L^2_{y_h,Z}$; applying it to derivatives gives smoothness and finite
+Sobolev norms for each fixed $\delta>0$. The pressure has the same
+property, so this is the finite-energy unforced evolution, by uniqueness.
+Rescaling $y_h=\lambda x_h$, $Z=\mu z$, and $s=A\lambda t$
+gives the physical flow. In particular its phase is $\lambda z$.
+
+For the helical field the extended initial datum obeys the joint
+symmetry
+\[
+ U(R_\beta y_h,Z,\alpha-2\beta)
+                  =R_\beta U(y_h,Z,\alpha),
+\]
+where the rotation fixes the third velocity component. The equation
+commutes with this action, so uniqueness preserves it. Angular
+averaging therefore makes $v^*=\PP U$ independent of $\alpha$
+throughout the interval. This is a nonlinear symmetry assertion, not
+only a cancellation of the initial quadratic source.
+Consequently the physical mean's axial derivatives involve only its
+slow $Z$ derivatives, which are uniformly bounded. Its divergence
+constraint is
+\[
+ \partial_Rv^*_r+R^{-1}v^*_r+\delta\partial_Zv^*_z=0.
+\]
+The radial primitive and slice estimates in the preceding proof give
+the required $O(\delta)$ radial gain. All the mean bounds thus transfer
+to the physical scale exactly as in
+Proposition~\ref{prop:inwardwindow}.
+
+Angular averaging is orthogonal in the extended isotropic Sobolev
+spaces too. The exact homogeneous fluctuation equation therefore gives
+$\norm{U-\PP U}_{H^8}+\norm{\partial_s(U-\PP U)}_{H^6}
+\leq C\epsilon$. Its stress and the time derivative of that stress
+are $O(\epsilon^2)$ in spatial $C^3$ on a fixed annulus.
+Direct angular integration gives
+\begin{align}
+ \PP(W^{\rm st}_rW^{\rm st}_\theta)
+     &=-2R^4e^{-2R^2-2Z^2}\cos^2\alpha,\label{eq:standingstress}\\
+ \PP(W^{\rm hel}_rW^{\rm hel}_\theta)
+     &=-2R^4e^{-2R^2-2Z^2}.\label{eq:helicalstress}
+\end{align}
+The latter gives the same initial circulation and radial rates as
+in the preceding proof, and the initial axial rate of the critical
+point is zero. The mean equation again bounds its circulation time
+derivatives by $C(\delta+\eta+\epsilon^2)$.
+Use the two-variable implicit function theorem for the negative
+definite meridional Hessian. The initial inward radial rate and positive
+circulation rate persist on a universal interval when
+$\delta+\eta$ is sufficiently small compared with $\epsilon^2$.
+This proves the assertions about the moving critical point without
+assuming that its axial coordinate stays zero. At the fixed point
+$(y_h,Z,\alpha)=((1,0),0,0)$ the initial defect is
+$\epsilon(-2/e,0,0)$. Its uniform $O(\epsilon)$ time-derivative bound
+proves the same critical-history lower bound.
+
+For the standing field put $G=R(\PP U)_\theta$ and
+$J=\delta\partial_Z+\partial_\alpha$.
+Initially the mean has no meridional component, so its exact equation is
+\[
+ G_s=\eta(G_{RR}-R^{-1}G_R+J^2G)
+        +4\epsilon^2R^4(3-2R^2)e^{-2R^2-2Z^2}\cos^2\alpha
+                          \quad\hbox{at }s=0.
+\]
+At $(R,Z,\alpha)=(1,0,0)$ define $F(s)=J^2G(1,0,0,s)$.
+The two exact initial values are
+\[
+ F(0)=-4\delta^2/e,\qquad
+ F'(0)=\eta\delta^2(16+24\delta^2)/e
+                     -\epsilon^2(16\delta^2+8)/e^2.
+\]
+The uniform time and space bounds above give $|F''(s)|\leq C$.
+For sufficiently small $\delta$, $F'(0)\leq-4\epsilon^2/e^2$.
+Choosing a universal small $c_3>0$, Taylor's theorem at
+$s_*=c_3\epsilon^2$ gives $F(s_*)\leq-c\epsilon^4$.
+On restriction and physical rescaling,
+\[
+ \partial_{zz}(\PP u^{\rm st}_\lambda)_\theta
+                 (\lambda^{-1},0,t_*)=A\lambda^2F(s_*).
+\]
+Since $\tau_*\geq\lambda^{-2}/2$ for large $\lambda$, this is
+\eqref{eq:fastMeanCurvature}.
+
+Finally angular integration makes the helical defect's squared norm
+independent of its phase; it is $\tfrac92 g_2$ before the factor
+$\epsilon^2$. The standing defect's squared norm is instead
+\[
+ \tfrac94 g_2(1+e^{-1/(2\delta^2)}).
+\]
+Both are orthogonal to $V$. This proves the energy and relative-defect
+claims, while the common initial mean is $A V$.
+\end{proof}
+
+The standing example disproves a uniform propagation claim based only
+on the displayed initial controls. It does not disprove a bound depending
+on the full initial datum. The helical example shows why an argument
+cannot assume that fast axial oscillations must destroy the mean geometry.
+Its exact phase symmetry concerns one family; superposing families with
+different phase relations need not preserve it. The uniform Sobolev
+control proved here still ends after a fixed normalized time. Neither
+example establishes a recurrent cascade or an arbitrary-data history bound.
+
 \subsection{The energy inequality alone permits the stress cost}
 
 The time-integrated energy inequality cannot by itself exclude the cost
