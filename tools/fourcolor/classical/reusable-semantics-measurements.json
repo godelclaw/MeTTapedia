@@ -1,0 +1,156 @@
+{
+  "completed": true,
+  "exit_code": 0,
+  "audit_sha256": "42fabe5f561570f3a43f3c96207b01aa8a32369b15481bdea243d25e2654e686",
+  "lean_version": "leanprover/lean4:v4.34.0-rc2",
+  "dependency_build_seconds": 1.543,
+  "audit_wall_seconds": 4.726,
+  "peak_rss_kib": 3551556,
+  "memory_method": "GNU time maximum resident set size for the audit command and its children",
+  "dependencies": [
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.OpenTangleWitnessComposition",
+      "source_sha256": "2d9bbc43065951e0548520c329a0df6ea88551656926713c2194fa968807e5ca",
+      "artifact_sha256": "4f471f90a8899796da58f28b72688de896bb0d07b805244ae10898e99b58e157"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.FourColor.SourceConstructionGSLT",
+      "source_sha256": "5e8ded42b15cff09d951adea7eb8b75659e1daee46bbb33e8d65bafbfdbaf2b5",
+      "artifact_sha256": "4913967f840a278d58d32379ad0326a3f1ddcd3035f7e0ca576d8b833c467867"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.Representation.ColoringTransport",
+      "source_sha256": "fb4ec9d12d65d67242f8ce6f2ab6ed03f0fef789bf1f6fb96e2a46f9cec843bf",
+      "artifact_sha256": "05a01e5e3283609d68f26496b382b5dc30fc7ba4efe13d5c3419d35163abb761"
+    },
+    {
+      "module": "Mettapedia.GraphTheory.Representation.MatrixOperationalTranslation",
+      "source_sha256": "b70c66b03d3ea1d54de8de74a388d0df16d25fd28125cbdc2a929cf64e6700cc",
+      "artifact_sha256": "244516c0a793ce1691ef3bc79aad9efd3f07d9ae42243b2654f66243bc5e46a9"
+    },
+    {
+      "module": "Mettapedia.OSLF.MeTTaIL.PremiseRouteSemantics",
+      "source_sha256": "f53b33c5b3ce3dc14b39d40072068e3cf9519905750295dc9ce6900050e36b53",
+      "artifact_sha256": "e78f51f8eb83f48dc1482b0817fe5646caf58e1ac4b6994d06293ab39feed0c0"
+    }
+  ],
+  "verification": "Lean-checked audit of named roots and their transitive dependencies",
+  "scope": "Existing reusable compositional semantics and its Four Colour, graph-representation and MeTTa applications",
+  "audit_source": "tools/fourcolor/classical/audit/ReusableSemanticsAudit.lean",
+  "mathlib_revision": "85e3a25e006c35636f0e53b0e9296caca2685bc0",
+  "allowed_axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "roots": [
+    {
+      "declaration": "Mettapedia.GSLT.RelationalRouteSemantics.Semantics.supports_append_iff",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "declaration": "Mettapedia.GSLT.RelationalRouteSemantics.Semantics.replaceInContext",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "declaration": "Mettapedia.GSLT.RelationalRouteSemantics.Semantics.viable_append_iff",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "declaration": "Mettapedia.GraphTheory.FourColor.OpenTangleWitnessComposition.count_serial",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "declaration": "Mettapedia.GraphTheory.FourColor.OpenTangleWitnessComposition.replaceInContext_exteriorWitnesses",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "declaration": "Mettapedia.GraphTheory.FourColor.VertexConstructionGSLT.supports_realization_iff",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "declaration": "Mettapedia.GraphTheory.FourColor.SourceConstructionGSLT.encoded_support_iff",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "declaration": "Mettapedia.GraphTheory.Representation.ColoringTransport.path_boundary_card_eq",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "declaration": "Mettapedia.GraphTheory.Representation.ColoringTransport.liftPath_preserves_colour",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "declaration": "Mettapedia.GraphTheory.Representation.MatrixOperationalTranslation.embedding",
+      "axioms": []
+    },
+    {
+      "declaration": "Mettapedia.GraphTheory.Representation.MatrixOperationalTranslation.no_scan_to_matrix_step_translation",
+      "axioms": [
+        "propext",
+        "Quot.sound"
+      ]
+    },
+    {
+      "declaration": "Mettapedia.OSLF.MeTTaIL.PremiseRouteSemantics.deduplicate_freshness_iff",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    },
+    {
+      "declaration": "Mettapedia.OSLF.MeTTaIL.PremiseRouteSemantics.SharedBinding.conflicting_route",
+      "axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ]
+    }
+  ],
+  "root_count": 13,
+  "combined_dependency_closure_declarations": 11486,
+  "measurement_scope": "Dependency preparation uses the existing Lake cache. Audit time includes loading dependencies and executing the dependency and axiom checks; it is not a clean rebuild time.",
+  "limitations": [
+    "Does not prove universal colourability.",
+    "Does not audit unrelated imported declarations.",
+    "Does not claim an exhaustive mathematical dependency specification.",
+    "Does not remove a configuration or earn compression credit."
+  ]
+}

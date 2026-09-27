@@ -464,3 +464,34 @@ python3 tools/fourcolor/classical/probe_common_support.py \
 
 The default rings reproduce the measured search. The output includes every
 trial and all input hashes; configuration indices in the JSON are zero-based.
+
+## Reusable semantics audit
+
+`audit/ReusableSemanticsAudit.lean` follows thirteen roots through 11,486
+declarations in their combined dependency closure. It checks their axiom sets
+and required links to witness composition, literal graph decoding, boundary
+colouring transport, counting, and the actual MeTTa premise engine. All roots
+use only `propext`, `Classical.choice` and `Quot.sound`.
+
+The counting theorem obtains matrix multiplication from a bijection of
+colouring witnesses. The MeTTa consumer preserves possible final bindings
+when a repeated freshness condition is removed inside any serial context;
+it does not claim preservation of answer order or multiplicity. Graph
+representation conversion transports an existing colouring. This is separate
+from establishing that every planar graph has a colouring.
+
+After dependency preparation, the audit took 4.726 seconds with a maximum RSS
+of 3,551,556 KiB. `reusable-semantics-measurements.json` records the source and
+artifact hashes, roots, axiom sets and measurement scope. This audit does not
+rebuild every dependency, inspect unrelated imported declarations, or earn
+compression credit. Reproduce it from `lean/mettapedia` with:
+
+```sh
+lake build \
+  Mettapedia.GraphTheory.FourColor.OpenTangleWitnessComposition \
+  Mettapedia.GraphTheory.FourColor.SourceConstructionGSLT \
+  Mettapedia.GraphTheory.Representation.ColoringTransport \
+  Mettapedia.GraphTheory.Representation.MatrixOperationalTranslation \
+  Mettapedia.OSLF.MeTTaIL.PremiseRouteSemantics
+lake env lean ../../tools/fourcolor/classical/audit/ReusableSemanticsAudit.lean
+```
