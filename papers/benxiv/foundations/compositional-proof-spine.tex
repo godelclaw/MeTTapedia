@@ -18822,3 +18822,46 @@ existence and support statements; they are not counted as additional
 colouring witnesses. Controlling compatibility across whole constructions
 or strict replacements, obtaining general reduction supply, and verifying
 the generating base remain open.
+
+\subsection{Which facial steps extend a fixed colouring}
+
+The two endpoint constraints admit an exact classification. At either
+attachment vertex, an old face is incident and a new edge is absent from
+the old shore. The cubic rotation law therefore forces exactly two old
+incident edges. A proper old colouring $a$ assigns them distinct colours,
+so each endpoint profile omits exactly one colour. Write these missing
+colours as $r$ at $u_0$ and $t$ at $u_s$. They are constructed from the
+actual incidence and $a$, not supplied as an extension hypothesis.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionMissingColour.incident_card_two}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionMissingColour.existsUnique_missing}
+\Sverified{Mettapedia.GraphTheory.FourColor.FacePathExtension.endpoint_colours}
+
+For every actual facial event and every proper old colouring $a$,
+\[
+ \begin{split}
+ &\exists d\text{ proper on }E(S\cup\{f\}),\quad d|_{E(S)}=a|_{E(S)}\\
+ &\qquad\Longleftrightarrow
+ (s=1\land r=t)\ \lor\ (s=2\land r\ne t)\ \lor\ s\ge3,
+ \qquad s=|X|.
+ \end{split}
+\]
+The elementary word lemma counts adjacent pairs: zero pairs force equal
+ends, one pair forces distinct ends, and two pairs admit every prescribed
+pair of ends by choosing a third colour between them. Induction extends
+this to every greater length. Transport along the actual edge bijection
+and the proved gluing equivalence give the displayed criterion.
+\Sverified{Mettapedia.GraphTheory.FourColor.ThreeColourPathWords.admits_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.OrderedEdgePath.Path.endpoint_extension_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.FacePathExtension.extension_classification}
+
+The final existence theorem constructs the path and this classified law
+from the source map and event. In particular, every event exposing at
+least three new edges extends every proper old colouring while retaining
+all old edge colours.
+\Sverified{Mettapedia.GraphTheory.FourColor.FacePathExtension.exists_classified_transfer}
+\Sverified{Mettapedia.GraphTheory.FourColor.FacePathExtension.extends_of_three_le}
+This isolates the restrictions for a fixed colouring at the one-edge and
+two-edge steps. It does not prove that a whole source sweep has compatible
+choices: the missing colours depend on the earlier colouring, and short
+steps can test incompatible choices. Successful construction order,
+recolouring, or strict replacement still requires a geometric argument.

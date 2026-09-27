@@ -4,6 +4,7 @@ import Mettapedia.GraphTheory.FourColor.FaceRegionCurvature
 import Mettapedia.GraphTheory.FourColor.FaceRegionSweep
 import Mettapedia.GraphTheory.FourColor.FaceBoundaryJunctions
 import Mettapedia.GraphTheory.FourColor.FaceColourTransfer
+import Mettapedia.GraphTheory.FourColor.FacePathExtension
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TubeCountGrowth
 import Mettapedia.GraphTheory.FourColor.GoertzelV24PentagonTubeSaturation
 import Mettapedia.GraphTheory.FourColor.OddCappedTubeSaturation
@@ -119,8 +120,13 @@ endpoint profile. Every extension is recovered, and successful local choices
 construct extensions retaining all old colours. The existing finite support
 fork law specializes to compatibility tests at just these two endpoints.
 These statements derive the path from every facial event. They do not assert
-that every old colouring extends, or that a whole source route has compatible
-witnesses. No bounded width or general reduction supply follows from them.
+that a whole source route has compatible witnesses. Each attachment endpoint
+has exactly two old incident edges and hence a unique missing colour in every
+proper old colouring. The exact extension classification is now proved:
+one new edge requires equal missing colours, two require different missing
+colours, and three or more always extend the fixed old colouring. All old
+edge colours are preserved. These local facts leave the short-step conditions
+along whole routes open. No bounded width or general reduction supply follows.
 This build root does not establish either decomposition supply or finite-base
 verification, and is deliberately separate from `FourColorLane`.
 -/
