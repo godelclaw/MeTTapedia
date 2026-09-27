@@ -29,8 +29,10 @@ caloric stretching functional using only energy-level velocity controls
 and smooth force norms. Its signed nonlinear renewal must therefore fail
 a uniform absorption budget on the same forced construction. A Fourier
 multiplier estimate separates every low-frequency parent and every low
-renewal output, leaving an explicit high-frequency history target. That
-target is unproved; no unforced regularity estimate is obtained.
+renewal output. Low stretching outputs have a separate energy-paid
+history bound, leaving a target with every parent and both internal
+frequencies high. That target is unproved; no unforced regularity
+estimate is obtained.
 \end{abstract}
 
 \section{An exact split and finite allowances}
@@ -518,6 +520,138 @@ Unlike Corollary~\ref{cor:caloricforced}, this argument requires
 $\theta<1$ because the low-parent estimate spends an arbitrarily small,
 positive part of the dissipation.
 
+\section{Low stretching outputs along the actual history}
+
+The output of $\mathcal M$ is distinct from the output of the nonlinear
+direction $N$. It too can be separated without restricting its parents.
+Fix $J\geq0$, put $Q_-=P_{<J}$, $Q_+=P_{\geq J}$, and define
+\[
+ \mathcal K_\pm(u)=\frac1\nu\int_0^\infty
+          \norm{Q_\pm\mathcal M(H_su)}_2^2\dd s,\qquad
+ \mathcal Z_\pm(u)=\frac1\nu\norm{Q_\pm\mathcal M(u)}_2^2,\qquad
+ \mathcal T_\pm(u)=D\mathcal K_\pm(u)[N(u)].
+\]
+Orthogonality gives $\mathcal K=\mathcal K_-+\mathcal K_+$ and
+$\mathcal T=\mathcal T_-+\mathcal T_+$. All source outputs are formed
+before the projection is applied.
+
+\begin{proposition}\label{prop:lowstretching}
+With $c_J^2=J^3/(6\pi^2)$,
+\begin{equation}\label{eq:lowstretchingbounds}
+ 0\leq\mathcal K_-(u)\leq\frac{c_J^2E^2}{4\nu^2},\qquad
+ 0\leq\mathcal Z_-(u)\leq\frac{c_J^2EY}{\nu}.
+\end{equation}
+Along the actual forced evolution,
+\begin{equation}\label{eq:lowstretchinghistory}
+ \frac{\dd}{\dd t}\mathcal K_-(u)
+       =-\mathcal Z_-(u)+\mathcal T_-(u)+D\mathcal K_-(u)[g].
+\end{equation}
+Consequently, uniformly for all shorter prefixes,
+\[
+ \left|\int_a^t\mathcal T_-(u)\dd s\right|
+ \leq\frac{c_J^2M^2}{4\nu^2}+\frac{c_J^2MB}{\nu}+C_{\mathcal K}.
+\]
+The last term is zero for an unforced evolution. This bounds the signed
+primitive, not the integral of $|\mathcal T_-|$.
+\end{proposition}
+\begin{proof}
+The ordered bound~\eqref{eq:orderedkernel} and Cauchy--Schwarz in the
+full convolution give, at every nonzero output $k$,
+\[
+ |\widehat{\mathcal M(u)}(k)|
+ \leq(2\pi)^{-3/2}\int |p|\,|\widehat u(p)|\,
+                  |\widehat u(k-p)|\dd p
+ \leq(2\pi)^{-3/2}\sqrt{EY}.
+\]
+Integrating its square over $|k|<J$ proves the $\mathcal Z_-$ bound.
+No upper bound on the parent frequencies was used. If $E_s=\norm{H_su}_2^2$
+and $Y_s=\norm{\nabla H_su}_2^2$, then $E_s'=-2\nu Y_s$, so
+\[
+ \mathcal K_-(u)\leq\frac{c_J^2}{\nu}\int_0^\infty E_sY_s\dd s
+                  \leq\frac{c_J^2E^2}{4\nu^2}.
+\]
+Heat translation gives $D\mathcal K_-(u)[-\nu Au]=-\mathcal Z_-(u)$.
+The actual equation therefore proves~\eqref{eq:lowstretchinghistory}.
+Proposition~\ref{prop:caloricforce} applies to $\mathcal K_-$ with
+unchanged constants: inserting an orthogonal output projection in both
+factors of its derivative can only improve the two $L^2$ norm bounds.
+Integrate the identity, use
+$|\mathcal K_-(u(t))-\mathcal K_-(u(a))|\leq c_J^2M^2/(4\nu^2)$,
+and use $\int\mathcal Z_-\leq c_J^2MB/\nu$.
+\end{proof}
+
+For the unforced equation there is a sharper payment, independent even
+of the horizon. The actual kinetic-energy equality is $E'=-2\nu Y$,
+so~\eqref{eq:lowstretchingbounds} gives
+\begin{equation}\label{eq:lowstretchingreserve}
+ \mathcal K_-(u(t))+\int_a^t\mathcal Z_-(u)\dd s
+ \leq \frac{c_J^2 E(a)^2}{4\nu^2}.
+\end{equation}
+Indeed, the bound for the integral is
+$c_J^2(E(a)^2-E(t)^2)/(4\nu^2)$, which complements the bound for
+the remaining capacity. Therefore every unforced prefix satisfies
+\[
+ -\mathcal K_-(u(a))\leq\int_a^t\mathcal T_-(u)\dd s
+ \leq\frac{c_J^2 E(a)^2}{4\nu^2}-\mathcal K_-(u(a)).
+\]
+This is a bound on repeated low-output renewal from the initial kinetic
+energy; its constant grows with the fixed output cutoff.
+
+There is a more direct way to use this payment in the regularity target.
+Keep the original, full positive cost $\mathcal W$, and set
+$\mathcal G_+=(Y+\mathcal K_+)/2\geq Y/2$. Subtracting
+\eqref{eq:lowstretchinghistory} from~\eqref{eq:caloricbalance} gives
+the exact identity
+\begin{equation}\label{eq:highstretchingbalance}
+ 2\mathcal G_+'+\mathcal W
+ =\mathcal T_++\mathcal Z_-+D\mathcal K_+(u)[g]+2\langle Au,f\rangle.
+\end{equation}
+Thus only the spent low-output cost, bounded by
+$C_{\rm src}=c_J^2MB/\nu$, is needed on the right. The endpoint
+$\mathcal K_-$ allowance is unnecessary in this identity. In the unforced
+case one may take $C_{\rm src}=c_J^2E(a)^2/(4\nu^2)$ by
+\eqref{eq:lowstretchingreserve}.
+
+With the input cutoff $K$ from the preceding section, define
+\[
+ v=P_{\geq K}u,\qquad
+ \mathcal T_{K,J}(u)=D\mathcal K_+(v)[P_{\geq K}N(v)].
+\]
+The estimates of Proposition~\ref{prop:lowparents} hold with
+$\mathcal K_+$ in place of $\mathcal K$: its ordered quartic kernel
+is restricted at the common output, and has the same bound.
+The force estimate and the low nonlinear-output payment hold as well.
+Consequently, if fixed $A_0\geq0$ and $\theta<1$ obey
+\begin{equation}\label{eq:fullyhightarget}
+ \int_a^t\mathcal T_{K,J}(u)\dd s
+          \leq A_0+\theta\int_a^t\mathcal W(u)\dd s
+\end{equation}
+on every shorter prefix, the same Gr\"onwall argument gives
+\[
+ \mathcal G_+(t)\leq
+ \left(\mathcal G_+(a)+\frac{A_0+C_{\rm src}+C_{\rm out}+C_f}{2}\right)
+       \exp\!\left(C_2B+C_{3/2}\sqrt{LB}\right).
+\]
+Here $0<\varepsilon<1-\theta$ defines $C_2,C_{3/2}$ as before. The
+exact decomposition used in~\eqref{eq:highstretchingbalance} is
+\begin{align*}
+ \mathcal T_+(u)={}&\mathcal T_{K,J}(u)
+       +D\mathcal K_+(u)[N(u)-N(v)]\\
+ &+(D\mathcal K_+(u)-D\mathcal K_+(v))[N(v)]
+       +D\mathcal K_+(v)[P_{<K}N(v)].
+\end{align*}
+In particular, no autonomous evolution is assigned to the filtered field $v$.
+
+Taking $J=K$ leaves a quintic term whose five original velocity inputs,
+nonlinear-direction output, and stretching output are all above the
+same fixed cutoff. Its physical-time bound~\eqref{eq:fullyhightarget}
+remains open, with the same initial-data and shorter-lifespan quantifiers
+as~\eqref{eq:highrenewaltarget}. On the actual forced construction it
+fails for every fixed $K,J$ and every $\theta<1$: a finite upper allowance
+would bound $\mathcal G_+\geq Y/2$, contrary to the candidate's unbounded
+gradient energy. This further separation pays low stretching outputs;
+it does not bound regeneration among the remaining high frequencies.
+
 \section{Verification boundary}
 
 The Lean theorem
@@ -529,7 +663,9 @@ axioms. The companion \texttt{labs/caloric\_force.py} checks the complete
 caloric balance by exact rational Fourier arithmetic on the periodic cube,
 including forces with a gradient part. It also checks the three-part
 frequency split, including a nonzero low-output contribution, and the
-ordered mode bound on nearly cancelling parents. These checks do not
+ordered mode bound on nearly cancelling parents. Separate source-output
+checks retain the original positive cost and include arbitrarily high
+parent frequencies that feed low stretching outputs. These checks do not
 certify the whole-space estimates or a physical-time bound.
 Arbitrary-data unforced regularity remains open.
 

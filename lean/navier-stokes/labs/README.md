@@ -966,6 +966,43 @@ and from positive Wiener feeding. On the actual forced construction its
 high-frequency budget fails for every fixed cutoff and fraction `<1`;
 the corresponding unforced bound remains the open target.
 
+Low outputs of the stretching source `M` have a separate history payment.
+They differ from low outputs of the nonlinear direction `N`. Let `K_-`
+be the caloric capacity with only stretching outputs below a fixed `J`,
+and `Z_-=||P_(<J)M(u)||_2^2/nu`. In the whole space,
+
+```text
+K_-(u) <= c_J^2 E^2/(4 nu^2),   Z_-(u) <= c_J^2 E Y/nu,
+c_J^2 = J^3/(6 pi^2).
+```
+
+The exact physical-time identity `d K_-/dt = -Z_- + DK_-[N] + DK_-[g]`
+therefore bounds every signed renewal prefix using energy and smooth
+force norms. Arbitrarily high parents remain included. This does not
+bound the integral of the absolute renewal.
+
+For an unforced history the kinetic-energy equality improves this to
+`K_-(u(t)) + integral Z_- <= c_J^2 E(a)^2/(4 nu^2)`: the remaining
+capacity and the spent cost are paid together from the initial energy.
+Hence every signed low-output renewal prefix is at most that initial
+allowance minus `K_-(u(a))`, independently of the horizon. The factor
+`c_J^2` grows with the fixed output cutoff.
+
+Equivalently, set `K_+=K-K_-` and `G_+=(Y+K_+)/2`. Its exact equation is
+`2 G_+' + W = DK_+[N] + Z_- + DK_+[g] + 2<Au,f>`, with the original
+full positive cost `W`. Combining the two frequency splits leaves
+`DK_+(v)[P_(>=K)N(v)]`, where all five velocity parents and both internal
+outputs are high when `J=K`. Its history estimate remains open. The
+forced construction violates a uniform strict-fraction budget for this
+term at every fixed pair of cutoffs as well.
+
+The checker verifies this additional balance, both output splits, and
+the periodic bounds with the full low lattice count. A reversed fixture
+has positive low stretching renewal `118763/443520`; the history payment
+does not assume a favorable instantaneous sign. Nearly opposite parents
+with frequency parameters up to one million exercise nonzero low
+stretching outputs. These are exact algebra checks, not PDE enclosures.
+
 `kida_pelz_history.py` evolves the real Kida–Pelz initial field
 
 ```text

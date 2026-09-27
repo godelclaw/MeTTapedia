@@ -4,10 +4,13 @@
 The analytic whole-space force estimate is in ns_forced_tail_budget.tex.
 These rational finite Fourier calculations check the functional and its
 forced derivative, not that estimate or a time-dependent PDE enclosure.
-Every convolution output and every interfering heat rate is retained.
+Convolutions are formed in full before output projections; all interference
+between parent heat rates is retained.
 """
 from fractions import Fraction as F
+import itertools
 import json
+import math
 
 from fourier_interactions import (A, B, ZERO, add, cross, dot, inverse_curl,
                                   pair, project, radius_squared, require,
@@ -40,31 +43,32 @@ def heat_blocks(u):
     return bilinear_heat_blocks(u, u)
 
 
-def block_pair(left, right, nu):
+def block_pair(left, right, nu, output_floor_squared=F(0)):
     by_mode = {}
     for (k, s), w in right.items():
-        by_mode.setdefault(k, []).append((s, w))
+        if radius_squared(k) >= output_floor_squared:
+            by_mode.setdefault(k, []).append((s, w))
     return sum((dot(v, w)/(nu*nu*(r+s))
                 for (k, r), v in left.items()
                 for s, w in by_mode.get(k, ())), F(0))
 
 
-def capacity(u, nu):
+def capacity(u, nu, output_floor_squared=F(0)):
     blocks = heat_blocks(u)
-    return block_pair(blocks, blocks, nu)
+    return block_pair(blocks, blocks, nu, output_floor_squared)
 
 
-def parent_derivative(u, direction, nu):
-    """Derivative from both ordered parent slots; no source outputs discarded."""
+def parent_derivative(u, direction, nu, output_floor_squared=F(0)):
+    """Both ordered parent slots, with optional projection after convolution."""
     tangent = add(bilinear_heat_blocks(u, direction),
                   bilinear_heat_blocks(direction, u))
-    return 2*block_pair(heat_blocks(u), tangent, nu)
+    return 2*block_pair(heat_blocks(u), tangent, nu, output_floor_squared)
 
 
-def derivative(u, direction, nu):
+def derivative(u, direction, nu, output_floor_squared=F(0)):
     """Exact polarization of the quartic polynomial K(u+z*direction)."""
     def value(z):
-        return capacity(add(u, scale(F(z), direction)), nu)
+        return capacity(add(u, scale(F(z), direction)), nu, output_floor_squared)
     return (8*(value(1)-value(-1))-value(2)+value(-2))/12
 
 
@@ -150,6 +154,76 @@ def check_mode_kernel():
     return checks
 
 
+def low_lattice_count(cutoff_squared):
+    """All nonzero low modes, independent of the field's active support."""
+    ceiling = -(-cutoff_squared.numerator // cutoff_squared.denominator)
+    radius = math.isqrt(ceiling)+1
+    return sum(0 < radius_squared(k) < cutoff_squared
+               for k in itertools.product(range(-radius, radius+1), repeat=3))
+
+
+def check_stretching_output(u, force, cutoff_squared, nu=F(1)):
+    """Keep the nonlinear direction output distinct from the M source output."""
+    validate(u)
+    validate(force)
+    n, au = B(u, u), A(u)
+    m = inverse_curl(stretching(u))
+    low_m = {k: a for k, a in m.items() if radius_squared(k) < cutoff_squared}
+    count = low_lattice_count(cutoff_squared)
+    energy, gradient = pair(u, u), pair(au, u)
+    low_cost = pair(low_m, low_m)/nu
+    low_capacity = capacity(u, nu)-capacity(u, nu, cutoff_squared)
+    require(0 <= low_capacity <= count*energy**2/(4*nu**2),
+            'low stretching capacity is bounded by kinetic energy alone')
+    require(low_cost <= count*energy*gradient/nu,
+            'low stretching loss is energy-integrable')
+    actual = add(n, scale(-nu, au), force)
+    d_high = parent_derivative(u, actual, nu, cutoff_squared)
+    require(d_high == derivative(u, actual, nu, cutoff_squared),
+            'filtered parent derivative agrees with exact polarization')
+    low_derivative = parent_derivative(u, actual, nu)-d_high
+    low_renewal = parent_derivative(u, n, nu)-parent_derivative(u, n, nu, cutoff_squared)
+    low_force = parent_derivative(u, force, nu)-parent_derivative(u, force, nu, cutoff_squared)
+    require(low_derivative == -low_cost+low_renewal+low_force,
+            'low stretching history retains full actual velocity direction')
+    energy_derivative = 2*pair(u, actual)
+    require(energy_derivative == -2*nu*gradient+2*pair(u, force),
+            'actual kinetic energy retains only viscosity and force work')
+    reserve_derivative = count*energy*energy_derivative/(2*nu**2)-low_derivative
+    reserve_balance = (reserve_derivative+low_renewal+low_force
+                       -count*energy*pair(u, force)/nu**2)
+    require(reserve_balance == low_cost-count*energy*gradient/nu <= 0,
+            'initial kinetic reserve pays repeated low-output renewal')
+    pi, force_work = pair(au, n), pair(au, force)
+    dissipation = nu*pair(au, au)
+    material = add(m, scale(-nu, au))
+    full_cost = dissipation+pair(material, material)/nu
+    high_renewal = parent_derivative(u, n, nu, cutoff_squared)
+    high_force = parent_derivative(u, force, nu, cutoff_squared)
+    twice_gdot = 2*(pi-dissipation+force_work)+d_high
+    require(twice_gdot+full_cost == high_renewal+low_cost+high_force+2*force_work,
+            'high stretching capacity retains the original positive cost')
+
+    v = {k: a for k, a in u.items() if radius_squared(k) >= cutoff_squared}
+    nv = B(v, v)
+    low_n = {k: a for k, a in nv.items() if radius_squared(k) < cutoff_squared}
+    high_n = add(nv, scale(-1, low_n))
+    fully_high = parent_derivative(v, high_n, nu, cutoff_squared)
+    low_inputs = parent_derivative(u, add(n, scale(-1, nv)), nu, cutoff_squared)
+    low_parents = (parent_derivative(u, nv, nu, cutoff_squared)
+                   -parent_derivative(v, nv, nu, cutoff_squared))
+    low_nonlinear_output = parent_derivative(v, low_n, nu, cutoff_squared)
+    require(high_renewal == fully_high+low_inputs+low_parents+low_nonlinear_output,
+            'both internal frequencies are retained before the high split')
+    return {'cutoff_squared': str(cutoff_squared), 'low_lattice_modes': count,
+            'low_stretching_capacity': str(low_capacity),
+            'low_stretching_cost': str(low_cost),
+            'low_stretching_renewal': str(low_renewal),
+            'low_stretching_force': str(low_force),
+            'fully_high_renewal': str(fully_high),
+            'nonlinear_low_output_renewal': str(low_nonlinear_output)}
+
+
 def main():
     u = add(sine((1, 0, 0), (0, 1, 1)),
             sine((0, 1, 0), (1, 0, 1)),
@@ -179,9 +253,29 @@ def main():
     for key in ('full_renewal', 'all_high_renewal', 'low_input_direction',
                 'low_capacity_parent', 'low_output_renewal'):
         require(F(reverse[key]) == -F(splits[1][key]), 'signed quintic reversal')
+    output_splits = [check_stretching_output(split_field, force, q)
+                     for q in (F(0), F(3, 2), F(7, 2), F(6))]
+    reversed_output = check_stretching_output(scale(-1, split_field), force, F(3, 2))
+    for key in ('low_stretching_renewal', 'fully_high_renewal',
+                'nonlinear_low_output_renewal'):
+        require(F(reversed_output[key]) == -F(output_splits[1][key]),
+                'signed reversal also holds after the stretching output split')
+    require(F(reversed_output['low_stretching_renewal']) > 0,
+            'the low stretching sector need not have a favorable sign')
+    near_opposite = []
+    for size in (4, 1000, 1000000):
+        parents = add(sine((size, 1, 0), (F(1, size), -1, 0)),
+                      sine((1-size, 0, 1), (F(1, size-1), 0, 1)))
+        near_opposite.append(check_stretching_output(parents, {}, F(4)))
+        require(F(near_opposite[-1]['low_stretching_capacity']) > 0,
+                'arbitrarily high parents contribute to low stretching outputs')
+        near_opposite[-1]['parent_frequency_parameter'] = size
     print(json.dumps({'scope': 'Exact rational identities; no time evolution or Lean certificate.',
                       'rows': rows, 'low_splits': splits,
                       'reversed_field_split': reverse,
+                      'stretching_output_splits': output_splits,
+                      'reversed_stretching_output_split': reversed_output,
+                      'near_opposite_stretching_outputs': near_opposite,
                       'mode_kernel_checks': check_mode_kernel()}, indent=2))
 
 
