@@ -53,9 +53,10 @@ licence notices listed above, which must accompany any reused source.
 
 The geometry checks traverse the supplied rotation systems: symmetric simple
 adjacency, connectivity, an outer ring, triangular inner faces and Euler
-characteristic two. They are program checks. They do not prove reducibility,
+characteristic two. These initial inventory checks do not prove reducibility,
 validate discharging, or establish an isomorphism between an original free
-completion and its construction program.
+completion and its construction program. The separate map comparison below
+checks the latter correspondence at the program level.
 
 Given the four pinned source files, reproduce the inventory with:
 
@@ -65,6 +66,36 @@ python3 tools/fourcolor/classical_source_inventory.py \
   --rocq-programs configurations.v --lean-programs Configurations.lean \
   --output inventory.json
 ```
+
+`configuration_map_isomorphism.py` compares all 633 original free completions
+with a finite-array mirror of the pinned Lean decoder. Each saved dart
+bijection preserves edge reversal and cyclic order, allowing a global reversal
+of orientation. The specified outer ring is preserved up to rotation and
+reversal. A second verifier checks cyclic adjacency on the face quotient.
+All 384 nonzero-residual contraction edge sets also match under such a
+bijection. The 249 zero-residual original records supply no contraction to
+compare with the reference's chosen contract.
+
+`configuration-map-isomorphism.json` records the successful comparison of
+59,664 darts, the input and decoder hashes, and the saved-witness hash. Negative
+controls reject swapped dart images, reversed orientation with an unchanged
+mapping, duplicate vertex images, and missing contraction edges. Every saved
+witness is read back and checked again. The original data and generated
+witness file are supplied separately:
+
+```sh
+python3 tools/fourcolor/classical/configuration_map_isomorphism.py \
+  --configurations unavoidable.conf \
+  --lean-programs lean/externals/fourcolor/FourColor/Configurations.lean \
+  --lean-geometry lean/externals/fourcolor/FourColor/CfMap.lean \
+  --lean-contract lean/externals/fourcolor/FourColor/CfContract.lean \
+  --witnesses configuration-map-witnesses.json \
+  --output configuration-map-results.json
+```
+
+This is source-fidelity evidence. Equivalence of the finite-array mirror with
+the noncomputable Lean decoder is not proved by this program. The comparison
+does not establish reducibility, validate discharging or remove a configuration.
 
 ## What the compositional bridge must preserve
 

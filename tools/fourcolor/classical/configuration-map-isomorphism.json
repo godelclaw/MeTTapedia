@@ -1,0 +1,43 @@
+{
+  "verification": "Program-checked embedded map and contraction correspondence",
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "configurations": 633,
+  "all_isomorphic": true,
+  "matched_darts": 59664,
+  "contract_sets_compared": 384,
+  "zero_residual_cases_without_original_contract": 249,
+  "orientation_histogram": {
+    "-1": 232,
+    "1": 401
+  },
+  "negative_controls": {
+    "swapped_dart_images_rejected": 633,
+    "wrong_orientation_rejected": 633,
+    "duplicate_vertex_image_rejected": 633,
+    "missing_contract_edge_rejected": 384
+  },
+  "source_sha256": {
+    "configurations": "1c92fc280a9b384f736b94077fc59aac75e3d830d441ffd2d18683ee4b524e84",
+    "lean_programs": "7a05039e76944dd51616721039edb872ccb2f1a6d90fa8b93ef4834095760966",
+    "lean_geometry": "a4cc5372a705b583a6ed4d96349cbe3fbf41b5c5e0dee73917b52f472c648301",
+    "lean_contract": "5de89d9a2d83b41f6320c812e5a805d2ec5557af7228397c3adcae39cb5acca7",
+    "audit_program": "0a13ca6e636f79ce8a38ab6b40ee406f0ce68d6cbe6748c9a37e6253fbaf6fe8",
+    "inventory_program": "54505d34c179ae322a5eb874fd5259315cab833c43529f9b973deaff653853f2"
+  },
+  "witnesses_sha256": "aaf0ecfea6de85c3023c2980144f45dcc5bb623afe26901a4ce772c35a65e645",
+  "saved_witnesses_rechecked": true,
+  "seconds": 1.975,
+  "scope": [
+    "Complete dart bijections commute with edge reversal and vertex rotation.",
+    "A global reversal of orientation is permitted.",
+    "The specified outer ring is preserved up to cyclic shift and reversal.",
+    "Cyclic adjacency rows are checked separately on the face quotient.",
+    "All 384 nonzero-residual contraction edge sets are preserved."
+  ],
+  "limitations": [
+    "The finite-array mirror is not proved equivalent to the Lean decoder.",
+    "The 249 zero-residual cases have no original contraction to compare.",
+    "No header colour counts, reducibility or discharging claims are checked.",
+    "No kernel theorem or compression credit results from this program audit."
+  ]
+}
