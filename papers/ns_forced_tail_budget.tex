@@ -1,0 +1,229 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools}
+\usepackage[colorlinks=true,allcolors=blue]{hyperref}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}[proposition]{Corollary}
+\newcommand{\R}{\mathbb R}
+\newcommand{\dd}{\,\mathrm d}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\curl}{\operatorname{curl}}
+\title{Separating forcing and low-frequency feeding\protect\\in a signed Navier--Stokes tail budget}
+\author{}
+\date{September 27, 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+For a smooth finite-energy forced Navier--Stokes evolution, we bound the
+absolute time integrals of direct force work and low-frequency feeding
+in the high-frequency enstrophy balance. The bounds use kinetic energy,
+total energy dissipation, a fixed cutoff, and derivatives of the force;
+they spend none of the high-frequency viscous dissipation. Consequently,
+for the forced singularities constructed in~\cite{OAI}, the accumulated
+tail self-stretching minus even the full tail dissipation is unbounded
+at every fixed cutoff. The full-field obstruction is checked in Lean.
+The Fourier-tail extension below is an analytic proof, not a formalized
+projector theorem. No unforced regularity estimate is obtained.
+\end{abstract}
+
+\section{An exact split and finite allowances}
+
+Let $u,p,f$ solve
+\[
+ \partial_tu+(u\cdot\nabla)u=-\nabla p+\nu\Delta u+f,
+ \qquad \nabla\cdot u=0,\qquad \nu>0,
+\]
+on $\R^3\times[a,T)$, where $0<L=T-a<\infty$. Assume smoothness and, on
+each compact slab $[a,b]\subset[a,T)$, $u\in C^1([a,b];H^m(\R^3))$
+and $f,\nabla p\in C([a,b];H^m(\R^3))$ for every integer $m\geq0$.
+These hypotheses justify the following strong energy identities and
+integrations by parts. Write
+\[
+ E(t)=\norm{u(t)}_2^2,\quad Y(t)=\norm{\nabla u(t)}_2^2
+       =\norm{\omega(t)}_2^2,\quad \omega=\curl u.
+\]
+Suppose
+\[
+ E(t)\leq M,\quad \norm{f(t)}_2\leq F_0,
+ \quad\norm{\Delta f(t)}_2\leq F_\Delta\qquad(a\leq t<T).
+\]
+All constants in this note are independent of the shorter endpoint $t$.
+The kinetic-energy identity gives
+\begin{equation}\label{eq:B}
+ \int_a^tY(s)\dd s\leq B,
+ \qquad B=\frac{E(a)}{2\nu}+\frac{L\sqrt M F_0}{\nu}.
+\end{equation}
+Indeed, $E'/2=-\nu Y+\langle u,f\rangle$ and $E(t)\geq0$.
+
+Fix an angular Fourier cutoff $K\geq0$, and set
+\[
+ u_L=\mathbf1_{\{|\xi|<K\}}(D)u,\quad u_H=u-u_L,
+ \quad\omega_H=\curl u_H,\quad S_H=\tfrac12(\nabla u_H+\nabla u_H^\mathsf T).
+\]
+These are orthogonal $L^2$ projections commuting with derivatives.
+Define the physical tail quantities
+\[
+ Z_H=\tfrac12\norm{\omega_H}_2^2,\qquad
+ D_H=\norm{\nabla\omega_H}_2^2=\norm{\Delta u_H}_2^2,
+ \qquad \Pi_H=\int_{\R^3}\omega_H\cdot S_H\omega_H\dd x.
+\]
+In particular, $\Pi_H$ uses the high field in all three factors. With
+$\Pi=\int\omega\cdot S\omega$, introduce
+\[
+ P_L=\langle-\Delta u_L,u\times\omega\rangle,
+ \quad P_H=\langle-\Delta u_H,u\times\omega\rangle,
+ \quad X_H=P_H-\Pi_H,\quad F_H=\langle-\Delta u_H,f\rangle.
+\]
+Then $P_L+P_H=\Pi$, and the exact tail balance is
+\begin{equation}\label{eq:balance}
+ Z_H'=\Pi_H+X_H-\nu D_H+F_H.
+\end{equation}
+The filtered velocity is not assumed to solve an autonomous
+Navier--Stokes equation: $X_H$ retains every lower-frequency input.
+
+\begin{proposition}\label{prop:allowances}
+Let $c_K=(K^3/(6\pi^2))^{1/2}$. Under the preceding assumptions,
+\begin{align}
+ \int_a^t|F_H(s)|\dd s&\leq L\sqrt M F_\Delta,\label{eq:force}\\
+ \int_a^t|X_H(s)|\dd s&\leq
+  3Kc_K\sqrt M B+K^2c_KM\sqrt{LB}=:C_L.\label{eq:low}
+\end{align}
+Neither bound uses a gradient supremum or tail dissipation of the velocity.
+\end{proposition}
+\begin{proof}
+Integration by parts gives $F_H=-\langle u_H,\Delta f\rangle$, so
+$|F_H|\leq\sqrt M F_\Delta$. This proves~\eqref{eq:force}.
+
+For the unitary Fourier convention, Cauchy--Schwarz on the ball gives
+\[
+ \norm{\nabla u_L}_\infty\leq Kc_K\sqrt{E},\qquad
+ \norm{\Delta u_L}_\infty\leq K^2c_K\sqrt{E}.
+\]
+Here the gradient uses the Frobenius norm, and
+$c_K^2=(2\pi)^{-3}|B_K|$. The vector and matrix bounds follow by
+Cauchy--Schwarz before taking a component sum.
+
+For matrices define the trilinear form
+\[
+ b(A,B,C)=\sum_{i,j,k} A_{ji}B_{kj}C_{ki},
+ \qquad |b(A,B,C)|\leq |A|_F|B|_F|C|_F.
+\]
+The integrated stretching identity is
+$\Pi=-\int b(\nabla u,\nabla u,\nabla u)$, and the same identity holds
+for the smooth solenoidal field $u_H$. Put $A=\nabla u$, $H=\nabla u_H$
+and $G=\nabla u_L=A-H$. The exact telescoping identity
+\[
+ b(A,A,A)-b(H,H,H)=b(G,A,A)+b(H,G,A)+b(H,H,G)
+\]
+and $\norm{H}_2\leq\norm{A}_2$ imply
+\begin{equation}\label{eq:cubic}
+ |\Pi-\Pi_H|\leq 3\norm{\nabla u_L}_\infty Y
+       \leq3Kc_K\sqrt M\,Y.
+\end{equation}
+Also
+\[
+ |P_L|\leq\norm{\Delta u_L}_\infty\norm{u}_2\norm{\omega}_2
+       \leq K^2c_K M\sqrt Y.
+\]
+Now $X_H=\Pi-\Pi_H-P_L$. Integrate these two bounds and use
+\eqref{eq:B} and $\int_a^t\sqrt Y\leq\sqrt{LB}$.
+\end{proof}
+
+\begin{corollary}\label{cor:gradient}
+If a finite constant $A$ satisfies
+\begin{equation}\label{eq:target}
+ \int_a^t(\Pi_H-\nu D_H)\dd s\leq A\qquad(a\leq t<T),
+\end{equation}
+then the complete gradient energy obeys
+\[
+ Y(t)\leq 2Z_H(a)+2A+2C_L+2L\sqrt M F_\Delta+K^2M.
+\]
+In particular, a half-dissipation budget implies this conclusion, but
+the strictly smaller fraction is unnecessary for this fixed-cutoff
+gradient-energy implication.
+\end{corollary}
+\begin{proof}
+Integrate~\eqref{eq:balance}, apply Proposition~\ref{prop:allowances},
+and use $Y=2Z_H+\norm{\nabla u_L}_2^2\leq2Z_H+K^2M$.
+\end{proof}
+
+For an unforced solution, one can take $M=E(a)$ and $B=E(a)/(2\nu)$.
+Thus the low-frequency allowance is controlled by the datum, viscosity,
+cutoff and horizon. This does not prove~\eqref{eq:target}: its uniform
+signed high-frequency history remains the open estimate. Allowing the
+full dissipation simply exposes its relation to the gradient-energy
+continuation criterion; it is not a new coercive estimate.
+
+\section{Application to the actual forced construction}
+
+The whole-space construction in~\cite{OAI} has smooth compactly supported
+forcing, bounded kinetic energy, zero initial velocity, and unbounded
+speed as $t\uparrow1$. On slabs exhausting $[1/2,1)$, all hypotheses
+above hold with fixed $M,F_0,F_\Delta$.
+
+The module \texttt{MettapediaNS.\allowbreak ForcedSignedBudget} in the Lean
+library applies directly to the construction's \texttt{CandidateProperties}.
+It proves
+that its gradient energy cannot have a uniform bound: such a bound
+would control the order-two energy via the forced viscous estimate,
+and the $H^2$ embedding would bound speed. It also proves the full-field
+signed-production obstruction directly, with force work bounded by
+$6\sqrt{E_0(u)}\sqrt{E_2(f)}$ in the doubled energy convention, where
+$E_j(v)=\norm{\nabla^jv}_2^2$ sums all ordered derivative components.
+The constructor theorem is imported at the pinned revision
+\texttt{f9e8bc5b38b6e212696e8a30e3e91517af887bbd}.
+
+\begin{corollary}\label{cor:forced}
+For every such candidate, every fixed finite $K\geq0$, and every
+$\beta\leq1$,
+\[
+ \sup_{1/2\leq t<1}\int_{1/2}^t
+       (\Pi_H(s)-\beta\nu D_H(s))\dd s=+\infty.
+\]
+Meanwhile $\int_{1/2}^1|X_H|$ and $\int_{1/2}^1|F_H|$ are finite.
+\end{corollary}
+\begin{proof}
+For $\beta=1$, a finite upper bound would give a uniform gradient-energy
+bound by Corollary~\ref{cor:gradient}, contradicting the preceding
+forced-candidate theorem. For $\beta\leq1$, the accumulated quantity
+only increases because $D_H\geq0$. The other assertions follow from
+Proposition~\ref{prop:allowances}.
+\end{proof}
+
+Thus the signed tail self-interaction is the term that defeats the
+budget; an infinite direct forcing-work allowance is not the cause.
+This conclusion applies to the complete constructed solution, without
+replacing its oscillatory corrections by a finite numerical model.
+
+Forcing is still essential to that constructed history. With its zero
+datum and zero force, the kinetic-energy identity forces the smooth
+finite-energy solution to remain zero. In the construction the force
+is the smoothly extended momentum residual of the designed field
+(Section~10 of~\cite{OAI}). Removing it while keeping that field would
+change the equation. Restarting an unforced evolution from a later
+nonzero slice is a different problem, whose subsequent history is not
+settled by this argument. A proposed unforced budget must therefore
+use more than bounded forcing norms or bounded direct force work.
+
+\section{Verification boundary}
+
+The formal theorem
+\texttt{openAI\_solution\_no\_uniform\_signed\_production\_budget}
+quantifies over every positive viscosity and the actual imported
+construction. It concerns the full-field production path, identified
+in Lean with the spatial cubic integral, and has no frequency projector.
+The proof of Proposition~\ref{prop:allowances} and the extension to
+every fixed Fourier cutoff in Corollary~\ref{cor:forced} are analytic
+arguments given here. They have not been registered as Lean axioms or
+as kernel-checked projector theorems. No conclusion about arbitrary-data
+unforced regularity follows from the forced obstruction.
+
+\begin{thebibliography}{9}
+\bibitem{OAI}
+OpenAI, \emph{Finite time blowup for Navier--Stokes},
+\href{https://cdn.openai.com/pdf/32d9f210-8b73-45e0-91bc-82a30aef8a9a/navier-stokes.pdf}{manuscript},
+with formalization in
+\href{https://github.com/openai/NavierStokesAndEuler}{NavierStokesAndEuler}, 2026.
+\end{thebibliography}
+\end{document}

@@ -894,6 +894,67 @@ and allowance. At normalized time 1, the upper-frequency palinstrophy
 fractions are `.1054` and `.07522`; the later history still needs spatial
 resolution before its finer-scale behavior can be interpreted.
 
+### Adversarial signed-tail tests
+
+[The forced-tail note](../../../papers/ns_forced_tail_budget.pdf)
+([source](../../../papers/ns_forced_tail_budget.tex)) applies the exact
+self-stretching / lower-frequency feeding / dissipation split to OpenAI's
+constructed forced singularities. At every fixed Fourier cutoff, both
+direct force work and lower-frequency feeding have finite absolute time
+integrals. The accumulated self-stretching minus even full viscous
+dissipation therefore has unbounded upper supremum. The full-field
+obstruction is kernel checked in `MettapediaNS.ForcedSignedBudget`; the
+Fourier-projector extension in the note is an analytic proof. The force
+changes the realized history despite its bounded direct work. This is no
+bound on an unforced solution.
+
+`kida_pelz_history.py` evolves the real Kida–Pelz initial field
+
+```text
+u_x = sin(x) [cos(3y) cos(z) - cos(y) cos(3z)],
+u_y, u_z by cyclic permutation,
+```
+
+on the `2π`-periodic cube with constant positive viscosity. This is the
+explicit three-dimensional singularity-search datum given, for example,
+in [Siegel–Caflisch, Physica D 238 (2009)](https://doi.org/10.1016/j.physd.2009.09.016).
+Only the real initial field is used; the solver evolves the complete
+unforced Navier–Stokes nonlinearity. Its initial physical energies are
+`K = 3π³`, `Y = 33π³`, `D = 726νπ³`, and its initial total production is zero.
+
+```sh
+python3 -O labs/kida_pelz_check.py
+python3 -O labs/kida_pelz_history.py --n 48 --check-only
+python3 labs/kida_pelz_history.py --n 384 --backend reflections --time 1.5
+python3 labs/kida_pelz_history.py --n 512 --backend reflections --time 1.5
+```
+
+The `reflections` backend stores real sine/cosine coefficients on a
+midpoint grid in `(0,π)³`. Velocity is odd in its own coordinate and even
+in the other two, a symmetry preserved by the equation. `--n` always
+means the equivalent **full-cube** grid size. Both backends retain exactly
+`|k_j| < n/3`; neither uses hyperviscosity, a moving cutoff, or an averaged
+nonlinearity. The reflection representation retains all dynamics in this
+symmetry class.
+
+The crosscheck compares both evolved fields on the same shifted nodes,
+their complete right-hand sides, signed rates, and integrals through
+`t = 0.1` at `n = 48`. Relative field and RHS differences were below
+`5e-15`; the largest absolute rate difference was below `3e-12`.
+An independent filtered-RHS calculation agrees with the Betchov
+self-stretching formula within `9e-14`. Halving the time step from `.004`
+to `.002` changes velocity relatively by `1.6e-10`.
+
+Selected cutoffs `4, 8, 12` have self-stretching integrals evaluated at
+every RK stage, alongside full tail production and dissipation. Their
+difference is the lower-frequency feeding. The output also reports
+sampled prefix maxima, energy-balance errors, divergence, peak vorticity,
+and the fraction of palinstrophy in the highest retained frequency band.
+The default run stops when that fraction exceeds `.005`. This is a
+resolution warning, not a continuum error bound. Larger histories require
+comparison across grids and time steps; the short consistency checks
+establish no endpoint-independent budget.
+
 ### Simultaneous stretching and mean-circulation gain
 
 Run `python3 -O labs/helical_mean_feedback.py`; this checker requires Sympy.
