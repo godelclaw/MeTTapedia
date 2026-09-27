@@ -277,6 +277,47 @@ require_zero(radial_diffusion.subs(r, 1)+8,
 require_zero(((4*z*z-2)*circulation).subs({r: 1, z: 0})+4,
              'Gaussian axial circulation diffusion at maximum')
 
+# A different radial phase exports mean kinetic energy while increasing
+# and moving inward the mean circulation peak. These are initial jets;
+# the short actual unforced interval is justified in the analytic note.
+export_radius_sq = x*x+y*y
+export_phase = (20*export_radius_sq-15*export_radius_sq**2
+                +4*export_radius_sq**3)
+export_defect = gaussian_planar_curl(x*x-y*y+2*x*y*export_phase)
+export_gradient = gaussian_gradient(export_defect)
+require_zero(mean_vector(export_defect), 'exporting defect has zero angular mean')
+export_stress = mean_tensor(export_defect*export_defect.T)
+require_zero(at(export_stress[0, 1])-2*r**4*(20-30*r*r+12*r**4),
+             'exporting defect radial-azimuthal stress')
+export_transfer = gaussian_integral_factor(export_defect.dot(ggv*export_defect), 3)
+require_zero(export_transfer+s.Rational(320, 27), 'negative transfer into the mean')
+export_torque = -r*at(mean_vector(export_gradient*export_defect)[1])
+require_zero(export_torque-(96*r**10-480*r**8+640*r**6-240*r**4),
+             'exporting defect full mean circulation source')
+require_zero(export_torque.subs(r, 1)-16, 'positive circulation source at peak')
+require_zero((s.diff(export_torque, r)-4*r*export_torque).subs(r, 1)+64,
+             'negative radial derivative of circulation source at peak')
+export_norms = [
+    gaussian_integral_factor(export_defect.dot(export_defect), 2),
+    gaussian_integral_factor(sum(export_gradient[i, j]**2
+                                for i in range(3) for j in range(2)), 2),
+    gaussian_integral_factor(sum(export_gradient[i, 2]**2 for i in range(3)), 2)]
+for actual, expected in zip(export_norms, [s.Rational(2601, 4), 4512, s.Rational(2601, 4)]):
+    require_zero(actual-expected, 'exporting defect Gaussian norm')
+require_zero(20-30*r*r+12*r**4-(12*(r*r-s.Rational(5, 4))**2+s.Rational(5, 4)),
+             'strict positivity of the stress polynomial')
+export_e = at(export_stress[0, 1])*s.exp(-2*(r*r+z*z))
+export_vtheta = 2*r*s.exp(-(r*r+z*z))
+export_local_work = export_vtheta*export_torque*s.exp(-2*(r*r+z*z))/r
+export_exchange = export_e*(s.diff(export_vtheta, r)-export_vtheta/r)
+export_flux = s.diff(r*export_vtheta*export_e, r)/r
+require_zero(s.simplify(export_local_work-export_exchange+export_flux),
+             'local work keeps the spatial flux divergence')
+for actual, expected in [(export_local_work, 32), (export_exchange, -16),
+                         (-export_flux, 48)]:
+    require_zero(s.simplify(actual.subs({r: 1, z: 0})*s.exp(3))-expected,
+                 'local work, exchange and influx at the peak')
+
 # Motion of the nondegenerate mean circulation peak for the phase -1.
 # The mean has no meridional advection initially. All the quantities below
 # are obtained from the already checked actual torque and viscous terms.
@@ -441,6 +482,10 @@ print(json.dumps({
     'gaussian_circulation_diffusion_at_max_divided_by_exp_minus_1': [-8, -4],
     'gaussian_peak_initial_radial_velocity': str(peak_radial_velocity),
     'gaussian_peak_initial_circulation_rate': str(s.simplify(gamma_time_at_peak)),
+    'exporting_mean_transfer_over_g3': str(export_transfer),
+    'exporting_mean_defect_norms_over_g2': [str(value) for value in export_norms],
+    'exporting_mean_peak_torque_and_radial_derivative_over_exp_minus_2': [16, -64],
+    'exporting_mean_local_work_exchange_influx_over_exp_minus_3': [32, -16, 48],
     'radial_mean_divergence_constraint': 'checked for an arbitrary axial profile',
     'scaled_fluctuation_equation': 'mean and defect split checked before Leray projection',
     'actual_flow_energy_power': '-1+6h; 0<h<=1/6',

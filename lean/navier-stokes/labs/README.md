@@ -974,6 +974,43 @@ norms grow, and no infinite recurrence within one datum follows. The
 conclusion concerns velocity history, not the sign of accumulated
 stretching over the longer interval.
 
+### A growing circulation peak can export energy
+
+Proposition 21 changes the radial phase of the original Gaussian defect to
+`P(q)=20q-15q²+4q³`:
+
+```text
+W = curl([(x²-y² + 2xy P(r²)) exp(-ρ)] e_z).
+```
+
+Its global nonlinear kinetic transfer into the Gaussian mean is
+`T=-320(π/3)^(3/2)/27`, although its circulation torque and the torque's
+radial derivative at the initial peak are `16/e²` and `-64/e²`.
+The full Cartesian calculation and Gaussian integrals are checked by
+`python3 -O labs/reynolds_stress.py`.
+
+The analytic uniform local construction then gives actual unforced flows
+on a short normalized interval during which the mean exports kinetic
+energy to the fluctuation, its kinetic energy decreases, and its circulation
+peak grows while moving inward. The fluctuation's kinetic energy increases
+as well, after choosing concentration large enough to pay viscous loss.
+Initial squared energy is at most one, relative angular defect can be
+arbitrarily small, and the mean geometry bounds persist on that interval.
+
+Initially the angularly averaged exchange density is negative at every
+positive radius, since `P'(q)=12(q-5/4)²+5/4>0` and the mean shear is
+negative. At the peak the unscaled local nonlinear work is `32/e³`: exchange
+contributes `-16/e³` and the spatial flux divergence contributes `48/e³`.
+The checker retains this flux identity. The pointwise sign is an initial
+statement; persistence is proved for the global transfer.
+
+In particular, the positive peak increment cannot be bounded solely by
+a constant times `∫ max(T,0) dt`: that integral is zero on this interval.
+Local concentration and global kinetic energy have different signs here.
+This is an analytic finite-event result, not a Lean theorem, an estimate
+of total enstrophy production, or a refutation of a full-datum allowance
+for repeated concentration.
+
 ### A kinematic path satisfying the energy inequality
 
 A separate time-dependent rescaling of `W_+` has zero mean and unit initial

@@ -3102,6 +3102,130 @@ through a number of normalized turnover times tending to infinity.
 No sign of the accumulated stretching over the longer interval, and no
 renewal of this configuration from one fixed datum, is asserted.
 
+\subsection{An inward-growing mean peak can export kinetic energy}
+
+The mean's kinetic energy and its largest circulation need not grow
+together. In particular, positive circulation increments cannot always
+be charged to the positive part of the global kinetic transfer into
+the mean.
+
+\begin{proposition}\label{prop:exportingMeanPeak}
+Fix $\nu>0$, $0<\epsilon\leq1$, and $0<h\leq1/6$.
+There are real Schwartz solenoidal data of squared energy at most one
+whose actual unforced flow has, on a nonzero interval, all of the
+following properties: the mean kinetic energy strictly decreases,
+the fluctuation kinetic energy strictly increases, and a branch of
+mean circulation peaks strictly increases while its radius strictly
+decreases. The branch starts at the global circulation maximum.
+The nonlinear kinetic transfer $T$ into the mean is strictly negative
+throughout this interval. The mean satisfies
+\eqref{eq:meanr}--\eqref{eq:meanz} there.
+
+The initial relative angular defect can be arbitrarily small.
+More precisely, the construction below has relative defect
+$51\epsilon/(2\sqrt2)$, normalized interval $0\leq s\leq c_0$
+with $c_0>0$ independent of the concentration, and squared initial
+energy $\lambda^{-1+6h}$.
+\end{proposition}
+
+\begin{proof}
+Keep $\rho=x^2+y^2+z^2$, $r^2=x^2+y^2$ and
+$V=\curl(e^{-\rho}e_z)$, and set
+\[
+ P(q)=20q-15q^2+4q^3,\qquad
+ W=\curl\big[(x^2-y^2+2xyP(r^2))e^{-\rho}e_z\big].
+\]
+The field $W$ is horizontal and Schwartz, with $\PP W=0$.
+Its radial--azimuthal stress and its nonlinear transfer into $V$ are
+\begin{align*}
+ e_*:=\PP(W_rW_\theta)&=2r^4(20-30r^2+12r^4)e^{-2\rho},\\
+ \int W\cdot(W\cdot\nabla)V&=-\frac{320}{27}g_3.
+\end{align*}
+Indeed $V_{\theta,r}-V_\theta/r=-4r^2e^{-\rho}$, and integrating
+its product with $e_*$ gives the second identity. The full torque is
+\[
+ G:=-r\partial_r e_*-2e_*
+   =(96r^{10}-480r^8+640r^6-240r^4)e^{-2\rho}.
+\]
+At $(r,z)=(1,0)$ it satisfies $G=16/e^2$ and $G_r=-64/e^2$.
+Gaussian integration also gives
+\[
+ \norm W_2^2=\frac{2601}{4}g_2,\qquad
+ \norm{\nabla_hW}_2^2=4512g_2,\qquad
+ \norm{\partial_zW}_2^2=\frac{2601}{4}g_2.
+\]
+
+Put $C_\epsilon=g_2(2+2601\epsilon^2/4)$,
+$\mu=\lambda^{1-2h}$ and $A=\lambda^{1+2h}/\sqrt{C_\epsilon}$,
+and start the flow at $A(V+\epsilon W)(\lambda x_h,\mu z)$.
+Angular orthogonality proves the energy and relative-defect statements.
+Use the normalized equation \eqref{eq:anisotropicNS}, with
+$\delta=\mu/\lambda$ and $\eta=\nu\lambda/A$.
+The uniform local construction, defect estimates and radial-mean
+primitive from Proposition~\ref{prop:inwardwindow} apply to this
+fixed polynomial Gaussian profile as well.
+
+Write $v^*=\PP U$, $w^*=U-v^*$ and
+$T_*(s)=\int w^*\cdot(w^*\cdot D_\delta)v^*$.
+Initially $T_*(0)=-320\epsilon^2g_3/27$. The established bounds
+$\norm{w^*}_{H^8}+\norm{w^*_s}_{H^6}\leq C\epsilon$ and the
+uniform bounds for $v^*,v^*_s$ imply
+$|T_*'(s)|\leq C\epsilon^2$. Shrinking a common $c_0>0$ gives
+\[
+ T_*(s)\leq-160\epsilon^2g_3/27,\qquad
+ \norm{D_\delta w^*(s)}_2^2\leq C\epsilon^2
+                         \quad(0\leq s\leq c_0).
+\]
+Choose $\lambda$ so large that $\eta C<80g_3/27$.
+The exact two kinetic-energy identities then give strict decrease
+of the mean energy and strict increase of the fluctuation energy.
+Physical transfer is $A^3T_*/(\lambda\mu)$, so its sign is unchanged.
+
+For $\widetilde\Gamma=R v^*_\theta$ the initial peak rates are
+\[
+ \widetilde\Gamma_s(1,0,0)
+       =16\epsilon^2/e^2-4\eta(2+\delta^2)/e,\qquad
+ R_*'(0)=2\eta-8\epsilon^2/e.
+\]
+These use the same nondegenerate initial Hessian and diffusion
+derivatives as Proposition~\ref{prop:inwardwindow}.
+Reflection keeps the peak branch in $Z=0$.
+Taking $\delta+\eta$ sufficiently small relative to $\epsilon^2$
+and then reducing $c_0$ makes the positive circulation rate and
+negative radius rate persist throughout the interval, by the
+same time-derivative estimates. The radial primitive gives the
+claimed mean geometry, with $\tau=\lambda^{-2}-t$ and
+$0\leq t\leq c_0/(A\lambda)$. The peak starts at the initial
+global maximum, so its increasing value exceeds that maximum
+at every positive time in this interval.
+\end{proof}
+
+Consequently a bound of the form
+$\Gamma_{\rm peak}(t)-\Gamma_{\rm peak}(0)
+\leq C\int_0^t\max(T(s),0)\dd s$ fails even on an actual smooth
+unforced interval: its right side is zero and its left side is
+positive. The mean concentrates while exporting kinetic energy.
+These kinetic transfers are not total enstrophy production, and this
+finite event does not refute an allowance depending on the full datum
+or control repeated concentration.
+
+The initial angularly averaged exchange density is actually negative
+at every positive radius: $P'(q)=12(q-5/4)^2+5/4>0$ makes
+$e_*>0$, whereas $V_{\theta,r}-V_\theta/r<0$.
+This is compatible with positive local nonlinear work on the mean because the
+full local identity contains a flux divergence:
+\[
+ V_\theta F_\theta
+ =e_*(V_{\theta,r}-V_\theta/r)
+          -\frac1r\partial_r(rV_\theta e_*).
+\]
+At $(1,0)$ the two terms on the right are $-16/e^3$ and
+$48/e^3$, respectively, while the left side is $32/e^3$.
+Thus even the sign of the local exchange density cannot replace
+the spatial transport term. Only the initial pointwise sign is
+asserted here; the proposition proves persistence of the global
+transfer sign on its short interval.
+
 \subsection{The energy inequality alone permits the stress cost}
 
 The time-integrated energy inequality cannot by itself exclude the cost
