@@ -19419,6 +19419,53 @@ existing joined edges and still requires its own operation-level bridge.
 Neither arbitrary-map supply nor the route-native generating base is
 established by this identification.
 
+\subsubsection{The terminal geometry is supplied in minimal normal form}
+
+For a cubic two-sided map, a walk through retained facial edges lifts to
+a walk through selected original faces: at each vertex the incident
+face sectors form a clique in the facial dual. Hence a nonempty facial
+selection is dual-connected exactly when its literal retained edge
+shore is connected. This equivalence needs no sphere hypothesis.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionConnectivityConverse.connected_iff_shoreConnected}
+
+Now let $G$ be a graph-backed vertex-minimal Tait counterexample and
+choose any adjacent vertices $v,w$. Select all original faces touching
+neither vertex. These retain precisely the edges of $G-\{v,w\}$.
+Indeed, an additional erased edge would join two surrounding faces.
+If those faces both meet one central vertex, uniqueness of their shared
+edge forces the edge to meet that vertex. Otherwise the dual-triangle
+classification forces a common neighbour of $v,w$, contradicting
+triangle-freedom. This proves equality on original edge identifiers.
+\Sverified{Mettapedia.GraphTheory.FourColor.AdjacentPairFaceRegion.surrounding_edge_incident}
+\Sverified{Mettapedia.GraphTheory.FourColor.AdjacentPairFaceRegion.retained_edge_iff}
+
+The induced deletion is connected by the existing minimality theorem.
+The connectivity equivalence therefore makes the selected faces
+connected. Their complement is the union of two intersecting local
+cliques, so it too is connected. This constructs an actual facial GSLT
+state $S$, with exactly five omitted original edges.
+\Sverified{Mettapedia.GraphTheory.FourColor.AdjacentPairFaceRegion.region}
+\Sverified{Mettapedia.GraphTheory.FourColor.AdjacentPairFaceRegion.missing_edges_card}
+
+Add a face incident with the central edge $vw$. The two complementary
+local cliques still intersect through the opposite face of $vw$, and
+the new face meets an old retained vertex. Thus this is a genuine event
+$S\longrightarrow R$. It restores exactly the two missing vertices;
+the disk Euler equations force exactly three new edges, leaving two
+edges outside $R$. The earlier shelling theorem constructs a route
+from one original face to $S$.
+\Sverified{Mettapedia.GraphTheory.FourColor.AdjacentPairFacialTail.exposed_card}
+\Sverified{Mettapedia.GraphTheory.FourColor.AdjacentPairFacialTail.missing_card}
+\Sverified{Mettapedia.GraphTheory.FourColor.AdjacentPairFacialTail.exists_construction}
+
+Consequently the three-edge-tail/two-edge-cap geometry is no longer a
+supplier assumption in minimal normal form. Combined with the preceding
+extension test, the remaining burden is existence of an earlier proper
+colouring whose four requests escape the blocked sector. The uncoloured
+route does not prove that its colouring choices can be made compatible.
+Universal coloured progress and the route-native generating base remain
+open; this result supplies no bounded interface or strict reduction.
+
 \subsubsection{Actual component switches}
 
 The colouring semantics now retains actual Kempe components of the old

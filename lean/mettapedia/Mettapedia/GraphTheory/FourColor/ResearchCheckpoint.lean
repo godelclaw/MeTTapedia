@@ -15,6 +15,7 @@ import Mettapedia.GraphTheory.FourColor.ThreeTwoFaceRepair
 import Mettapedia.GraphTheory.FourColor.ThreeTwoChoiceKempe
 import Mettapedia.GraphTheory.FourColor.MatchingCapThreeSwitchGeometry
 import Mettapedia.GraphTheory.FourColor.FaceMatchingCapColouring
+import Mettapedia.GraphTheory.FourColor.AdjacentPairFacialTail
 import Mettapedia.GraphTheory.FourColor.DeferredFaceChoiceExample
 import Mettapedia.GraphTheory.FourColor.FaceKempeRepair
 import Mettapedia.GraphTheory.FourColor.ShortStepKempeCounterexample
@@ -264,6 +265,15 @@ on both same-vertex port pairs. Every restored boundary edge must carry its
 old port's requested colour. Thus looking back one construction step exposes
 the existing adjacent-pair compatibility problem, rather than a new mixing
 mechanism. Universal availability of an accepted old witness remains open.
+The terminal geometry is now supplied around any adjacent pair of a
+vertex-minimal Tait counterexample. Selecting precisely the original faces
+avoiding the pair retains exactly the induced deletion's edges. Both facial
+shores are connected. Adding a face through the central edge is an actual
+event exposing three original edges and leaving two missing; a complete
+uncoloured prefix starts from a single original face. The construction uses
+normal-form face intersections, dual triangles, and disk Euler counts. It
+assumes neither a terminal patch nor a boundary ordering. It supplies no
+accepted old colouring, successful coloured route, or finite generating base.
 Physical Kempe switches now act on the same original edge assignments and
 transport each vertex profile exactly. Every failed facial extension supplies
 a colour pair and a component through its first endpoint; the chosen switch
