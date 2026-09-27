@@ -268,7 +268,7 @@ def main():
                       sine((1-size, 0, 1), (F(1, size-1), 0, 1)))
         near_opposite.append(check_stretching_output(parents, {}, F(4)))
         require(F(near_opposite[-1]['low_stretching_capacity']) > 0,
-                'arbitrarily high parents contribute to low stretching outputs')
+                'high parents contribute to low stretching outputs')
         near_opposite[-1]['parent_frequency_parameter'] = size
     print(json.dumps({'scope': 'Exact rational identities; no time evolution or Lean certificate.',
                       'rows': rows, 'low_splits': splits,
