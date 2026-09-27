@@ -1,6 +1,7 @@
 import Mettapedia.GraphTheory.FourColor.EdgeShoreFaceForkChecks
 import Mettapedia.GraphTheory.FourColor.SphericalProtectedLinkedBand
 import Mettapedia.GraphTheory.FourColor.FaceRegionCurvature
+import Mettapedia.GraphTheory.FourColor.FaceRegionSweep
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TubeCountGrowth
 import Mettapedia.GraphTheory.FourColor.GoertzelV24PentagonTubeSaturation
 import Mettapedia.GraphTheory.FourColor.OddCappedTubeSaturation
@@ -92,6 +93,18 @@ applies directly to the deep distance regions. Their signed curvature is
 curvature six, hence six pentagons when the selected faces have length five
 or six. A shell of hexagonal faces preserves this degree imbalance; neither
 equal boundary lengths nor alternating boundary codes follow from that law.
+The actual facial dual has no cut vertex. A finite connected-bipartition
+argument now refines every nested pair of connected facial sides with
+connected complements into single-face additions. These are authored GSLT
+routes, of exactly the face-count difference, and every state realizes as
+the literal plane patch. Every source map supplies a sweep from one face to
+all but its designated outer face; the last state retains all original
+vertices and edges. Nested distance contours admit the same refinement.
+Each event toggles exactly its face edges in the complete contour. Its
+boundary length changes by face length minus twice the attachment-edge
+count, while its degree imbalance changes by face length minus six. These
+are geometric construction paths, without a colouring-lifting premise or
+conclusion. No bounded width or reduction supply follows from their existence.
 This build root does not establish either decomposition supply or finite-base
 verification, and is deliberately separate from `FourColorLane`.
 -/

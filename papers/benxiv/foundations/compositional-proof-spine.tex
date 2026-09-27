@@ -18591,3 +18591,85 @@ band with a zigzag tube, or produce a uniform interface bound. The next
 geometric supply argument must accommodate these actual degree codes and
 the signed contributions of nonhexagonal faces. The global compatible
 reduction supply and route-native generating base remain open.
+
+\subsection{Facial regions have actual construction paths}
+
+There is now a proved refinement between nested complete contours. The
+underlying graph lemma is independent of planarity: in a finite graph for
+which deletion of any vertex leaves a connected graph, let
+$S\subsetneq R$ and suppose $S$, $R$, and their complements induce
+connected graphs. Then some $y\in R\setminus S$ is adjacent to $S$ and
+both $S\cup\{y\}$ and its complement remain connected.
+\Sverified{Mettapedia.GraphTheory.FourColor.ConnectedBipartitionGrowth.exists_connected_insert}
+
+The proof fixes a root outside $R$ and, for each candidate $y$, fills all
+components of the complement of $S\cup\{y\}$ except the root component.
+Choose a candidate minimizing the resulting filled side. If an unwanted
+component remains, connectivity after deleting $y$ gives another candidate
+inside it. The old root component is retained and $y$ becomes reachable
+from the root, strictly decreasing the filled side, a contradiction.
+This is the connected-bipartition property associated with
+$st$-numberings; the relative form above is proved directly rather than
+assuming a numbering.\footnote{For the standard numbering theorem and its
+algorithmic setting, see S.~Even and R.~E.~Tarjan, ``Computing an
+$st$-numbering,'' \emph{Theoretical Computer Science} 2 (1976), 339--344,
+\url{https://www.sciencedirect.com/science/article/pii/0304397576900864}.}
+
+For the actual facial dual of a graph-backed bridgeless spherical cubic
+map, the vertex-deletion hypothesis follows from the existing geometry.
+Each face has a simple primal boundary cycle. The facial-bond theorem
+therefore makes the remaining faces connected. No dual connectivity
+condition is added to the source class.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceDualNoCutVertex.delete_face_connected}
+
+The resulting GSLT has as states the original face subsets with both sides
+connected. An authored event retains the identity of the face being added
+and its adjacency to the previous region. Every nested pair admits a
+route, and the route length is exactly the face-count difference. Every
+state realizes as the literal retained-edge patch with its complete
+original mixed-vertex boundary.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionShelling.theory}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionShelling.exists_route}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionShelling.route_length}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionShelling.Region.realizes}
+
+Every source map supplies a sweep starting from one face and ending with
+all faces except its designated outer face. The final state retains every
+original edge and vertex. The same refinement applies directly between
+nested distance regions, so intermediate patches are constructed rather
+than supplied as a decomposition hypothesis.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionSweep.source_sweep}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionSweep.coSingle_retains_all_edges}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionSweep.coSingle_retains_all_vertices}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionSweep.exists_deep_route}
+
+Let $C(S)$ be the complete contour edge set and let $B(f)$ be the original
+boundary of an added face. The geometric event has the exact update
+\[
+ C(S\cup\{f\})=C(S)\mathbin{\triangle}B(f).
+\]
+The outer darts of the literal patch list these contour edges bijectively.
+Thus, if $\ell$ denotes actual outer-boundary length and
+$r=|C(S)\cap B(f)|$ counts attachment edges, then
+\[
+ \ell(S\cup\{f\})+2r=\ell(S)+|f|.
+\]
+The curvature law gives, on the same two actual boundaries,
+\[
+ (n_2-n_3)(S\cup\{f\})=(n_2-n_3)(S)+|f|-6.
+\]
+These are exact changes of original carriers and boundary counts, not
+equalities of a chosen abstract profile.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionStepBoundary.event_retained_edges}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionStepBoundary.event_contour_update}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionStepBoundary.outer_length_eq_contour_card}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionStepBoundary.event_contour_length}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionStepBoundary.event_degree_imbalance}
+
+This supplies a geometric face-construction language for all source maps
+and for the bands already extracted from them. Its states may have
+unbounded boundary width. No theorem here extends every partial colouring,
+chooses a colourable route, recognizes arbitrary bands as literal tubes,
+or supplies a strict reduction. The remaining local geometric task is
+to identify attachment arcs in boundary order and their induced operations;
+the global compatible reduction supply and generating base remain open.
