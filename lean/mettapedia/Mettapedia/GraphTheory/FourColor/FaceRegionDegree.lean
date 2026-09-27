@@ -130,6 +130,28 @@ theorem degree_two_iff_one_sector (hC : Cubic3 RS)
   rw [hd]
   split_ifs <;> simp_all
 
+/-- At a vertex already touched by selected faces, at most one incident
+dart has its edge outside the retained shore. -/
+theorem nonretained_dart_unique (hC : Cubic3 RS) {v : V}
+    (hv : v ∈ touched RS (edges RS R)) {d x : RS.D}
+    (hdv : RS.vertOf d = v) (hxv : RS.vertOf x = v)
+    (hd : RS.edgeOf d ∉ edges RS R) (hx : RS.edgeOf x ∉ edges RS R) : d = x := by
+  obtain ⟨a, hav, ha⟩ := (touched_iff RS R v).mp hv
+  have unique (y : RS.D) (hyv : RS.vertOf y = v) (hy : RS.edgeOf y ∉ edges RS R) :
+      y = RS.rho a := by
+    rcases hC.fiber a y (hyv.trans hav.symm) with he | he | he
+    · subst y
+      exact (hy ((edge_mem_iff RS R a).mpr (Or.inl ha))).elim
+    · exact he
+    · subst y
+      apply False.elim
+      apply hy
+      apply (edge_mem_iff_sectors RS R _).mpr
+      right
+      rw [hC.cube]
+      exact ha
+  exact (unique d hdv hd).trans (unique x hxv hx).symm
+
 section Contours
 
 open _root_.SimpleGraph SimpleGraphDartRotation

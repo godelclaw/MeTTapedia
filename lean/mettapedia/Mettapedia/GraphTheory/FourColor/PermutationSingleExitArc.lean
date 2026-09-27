@@ -44,6 +44,24 @@ theorem Arc.mem (a : Arc p A) {i : ℕ} (hi : i < a.length) : (p ^ i) a.first �
 theorem Arc.first_mem (a : Arc p A) : a.first ∈ A := by
   simpa using a.mem a.positive
 
+/-- Including the first point after the arc still gives no repetition. -/
+theorem Arc.extended_injective (a : Arc p A) :
+    Function.Injective (fun i : Fin (a.length + 1) => (p ^ i.val) a.first) := by
+  intro i j hij
+  change (p ^ i.val) a.first = (p ^ j.val) a.first at hij
+  apply Fin.ext
+  by_cases hi : i.val < a.length
+  · by_cases hj : j.val < a.length
+    · exact congrArg (fun k : Fin a.length => k.val) (a.injective (show
+        (p ^ (⟨i.val, hi⟩ : Fin a.length).val) a.first =
+          (p ^ (⟨j.val, hj⟩ : Fin a.length).val) a.first from hij))
+    · have hj' : j.val = a.length := by omega
+      exact (a.after_outside (by rw [← hj', ← hij]; exact a.mem hi)).elim
+  · have hi' : i.val = a.length := by omega
+    by_cases hj : j.val < a.length
+    · exact (a.after_outside (by rw [← hi', hij]; exact a.mem hj)).elim
+    · omega
+
 theorem Arc.length_eq_card (a : Arc p A) : a.length = A.card := by
   have hi : Set.InjOn (fun i => (p ^ i) a.first) (Finset.range a.length) := by
     intro i hi j hj hij

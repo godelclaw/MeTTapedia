@@ -18747,8 +18747,78 @@ This seals the local ordered geometry for every event of the actual
 facial GSLT. The final existence theorem constructs the outer darts,
 both intervals, and their junctions from the source map and event.
 It assumes no supplied attachment interval, boundary word, or colouring.
-The next task is to interpret these exact splices in the existing
-boundary-constraint semantics and preserve the complete compatible
-choices under composition. Existence of successful colouring choices,
+The following transfer law interprets these exact splices in the existing
+boundary-constraint semantics. Existence of successful colouring choices,
 uniform reduction supply, and the route-native generating base remain
 open; the ordered construction theorem alone asserts none of them.
+
+\subsection{Exact colouring transfer through a facial splice}
+
+The newly exposed edge set $X$ is an actual simple path. Write its
+ordered vertices and edges as
+\[
+ u_0,x_0,u_1,x_1,\ldots,x_{s-1},u_s,\qquad s=|X|>0.
+\]
+All these identifiers belong to the original graph. The edge enumeration
+is a bijection onto $X$, the vertices are pairwise distinct, and
+$\operatorname{ends}(x_i)=\{u_i,u_{i+1}\}$. The last vertex is the
+first point after the exposed permutation arc; it cannot repeat a
+vertex of that arc because the outer boundary is simple and that final
+dart lies outside the arc.
+\Sverified{Mettapedia.GraphTheory.FourColor.PermutationSingleExitArc.Arc.extended_injective}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceExposedPath.path}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceExposedPath.path_length}
+
+The vertices $u_0,u_s$ belong to the old patch, and every intermediate
+vertex is new. The cubic incidence argument is local: at a vertex touched
+by a selected face, at most one incident dart has its edge outside the
+retained shore. An internal vertex of $X$ has two distinct new incident
+edges, so it cannot already be touched. Thus precisely the two endpoints
+can contribute compatibility constraints between the two edge shores.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceRegionDegree.nonretained_dart_unique}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceExposedEndpoints.vertex_old_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceExposedEndpoints.shared_vertex}
+
+For an old edge-colouring assignment $a$, let
+$P_a(u)$ be the set of its colours on old edges incident with $u$.
+Given a new-edge assignment $c$, retain $a$ on $E(S)$ and use $c$ on
+$X$. This gluing is a proper three-edge-colouring of the new patch if
+and only if $a$ is proper on $E(S)$ and
+\[
+ c(x_i)\ne c(x_{i+1})\quad(0\le i<s-1),\qquad
+ c(x_0)\notin P_a(u_0),\qquad
+ c(x_{s-1})\notin P_a(u_s).
+\]
+These conditions are derived from the actual event. Proper colouring of
+an ordered simple path is exactly its consecutive inequalities; its
+profile at each endpoint is a singleton. No additional nonconsecutive
+or internal attachment constraints are omitted.
+\Sverified{Mettapedia.GraphTheory.FourColor.OrderedEdgePath.Path.proper_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.OrderedEdgePath.Path.profile_first}
+\Sverified{Mettapedia.GraphTheory.FourColor.OrderedEdgePath.Path.profile_last}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceColourTransfer.compatible_iff_endpoints}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceColourTransfer.glue_proper_iff}
+
+The reconstruction keeps every old edge colour. Conversely every proper
+extension of $a$ is recovered by the same transfer criterion. Thus the
+criterion describes all compatible choices for a fixed old colouring,
+rather than selecting one arbitrary choice and requiring it to survive.
+The finite support version reuses the existing fork law: form the
+product of the two supports, filter by profile disjointness at $u_0$
+and $u_s$, and merge the profiles. Testing all other vertices is redundant.
+\Sverified{Mettapedia.GraphTheory.FourColor.EdgeColouringGluing.glue_proper_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceColourTransfer.reconstructed_profile}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceColourTransfer.extension_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceColourTransfer.support_transfer}
+
+The final existence theorem constructs the path and transfer law for
+every facial event from the source geometry, with no supplied boundary
+arc and no colouring-lifting hypothesis.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceColourTransfer.exists_exact_transfer}
+It does not assert that the set of successful choices is nonempty for
+every old colouring, or that compatible choices exist along a whole
+source sweep. Assignments away from a shore are irrelevant to these
+existence and support statements; they are not counted as additional
+colouring witnesses. Controlling compatibility across whole constructions
+or strict replacements, obtaining general reduction supply, and verifying
+the generating base remain open.

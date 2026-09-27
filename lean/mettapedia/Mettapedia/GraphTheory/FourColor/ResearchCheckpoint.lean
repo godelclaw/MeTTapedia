@@ -3,6 +3,7 @@ import Mettapedia.GraphTheory.FourColor.SphericalProtectedLinkedBand
 import Mettapedia.GraphTheory.FourColor.FaceRegionCurvature
 import Mettapedia.GraphTheory.FourColor.FaceRegionSweep
 import Mettapedia.GraphTheory.FourColor.FaceBoundaryJunctions
+import Mettapedia.GraphTheory.FourColor.FaceColourTransfer
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TubeCountGrowth
 import Mettapedia.GraphTheory.FourColor.GoertzelV24PentagonTubeSaturation
 import Mettapedia.GraphTheory.FourColor.OddCappedTubeSaturation
@@ -109,9 +110,17 @@ in the old boundary order, with pointwise agreement under the dart inclusion.
 The new edges form one arc of the actual new boundary. The surviving darts
 exhaust its complement, their successor steps are unchanged away from the
 junctions, and the exact entry and rejoining equations identify the ordered
-splice. These are geometric construction paths, without a colouring-lifting
-premise or conclusion. No bounded width or reduction supply follows from
-their existence.
+splice. The exposed arc now gives a simple path on the original edge and
+vertex identifiers, including its distinct terminal vertex. It meets the
+old patch exactly at its two ends. Gluing specified old and new colouring
+witnesses is proper exactly when the old colouring is proper, consecutive
+new-edge colours differ, and each end colour avoids the corresponding old
+endpoint profile. Every extension is recovered, and successful local choices
+construct extensions retaining all old colours. The existing finite support
+fork law specializes to compatibility tests at just these two endpoints.
+These statements derive the path from every facial event. They do not assert
+that every old colouring extends, or that a whole source route has compatible
+witnesses. No bounded width or general reduction supply follows from them.
 This build root does not establish either decomposition supply or finite-base
 verification, and is deliberately separate from `FourColorLane`.
 -/
