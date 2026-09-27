@@ -6,6 +6,7 @@ import Mettapedia.GraphTheory.FourColor.OddCappedTubeSaturation
 import Mettapedia.GraphTheory.FourColor.ZigzagRingTwoColour
 import Mettapedia.GraphTheory.FourColor.ZigzagTubeCompression
 import Mettapedia.GraphTheory.FourColor.ZigzagRingGeometry
+import Mettapedia.GraphTheory.FourColor.ZigzagTubeStructural
 import Mettapedia.GraphTheory.FourColor.BufferedFrontierConstruction
 import Mettapedia.GraphTheory.FourColor.SourceConstructionGSLT
 import Mettapedia.GraphTheory.FourColor.OpenTangleWitnessComposition
@@ -64,9 +65,15 @@ the complete colouring witnesses of both serial exterior pieces. This is
 support preservation, not equality of counting matrices. The same literal
 tubes have a proved oriented boundary-face return, independent of length,
 and open Euler mass four. The exact face-sewing law counts internal cycles
-created at every seam. Connectedness and bridge-freedom under ambient
-replacement, and supply of such tubes inside general linked bands, remain
-separate geometric obligations.
+created at every seam. The actual interior multigraph of every tube of
+circumference at least two is connected and bridgeless. Replacing one tube
+length by another preserves the conjunction of connectedness and
+bridge-freedom in every fixed closed sewing context. This follows from a
+general replacement criterion: only realized cut states of cost at most one
+affect that conjunction, and nonempty connected bridgeless pieces have the
+same two constant states there. Contextual Euler preservation, cubic and
+rotation-fibre conditions, and supply of such tubes inside general linked
+bands remain separate geometric obligations.
 This build root does not establish either decomposition supply or finite-base
 verification, and is deliberately separate from `FourColorLane`.
 -/

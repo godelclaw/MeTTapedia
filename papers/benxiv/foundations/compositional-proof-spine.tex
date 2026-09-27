@@ -18405,6 +18405,50 @@ These are the actual tubes used by the support-shortening theorem.
 \Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.tube_eulerMass}
 
 This establishes the face-return and open-Euler coordinates of the
-replacement. Ambient connectedness and bridge-freedom require their own
-proofs, and regular tube supply in a general linked band remains open.
-Euler equality alone is not asserted to discharge those conditions.
+replacement. The following cut argument supplies ambient connectedness and
+bridge-freedom independently of Euler equality. Contextual Euler transport,
+cubic and rotation-fibre conditions, and regular tube supply in a general
+linked band remain separate obligations.
+
+\subsection{Connectivity and bridges depend only on the small-cut fragment}
+
+A boundary cut state records the selected ports, whether selected and
+unselected vertices occur inside, and the internal cut cost truncated at
+two. In a sewn graph, a nontrivial cut of cost at most one can use only
+states whose internal cost is at most one. Equality of this fragment of
+the two replacement profiles therefore preserves the conjunction of
+connectedness and bridge-freedom in every fixed exterior. The remaining
+cost-two states need not agree.
+\Sverified{Mettapedia.GraphTheory.FourColor.SmallCutReplacementCore.replacement_connected_bridgeless}
+
+For a nonempty connected bridgeless interior, the fragment consists of
+exactly two states: all vertices selected or none selected, both of
+internal cost zero. Consequently any two such interiors are interchangeable
+for this structural test, even with different vertex carriers and port
+placements. The exterior need not be connected or bridgeless on its own.
+The theorem applies directly to the primal multigraph and edge bridges
+of the actual sewn rotation system.
+\Sverified{Mettapedia.GraphTheory.FourColor.SmallCutReplacementCore.core_eq_uniform}
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleInternalReplacement.replacement_structural}
+
+The literal ring's interior is the alternating cycle
+$d_i,e_i,d_{i+1}$. Its edge-orbit cut count equals that of this explicit
+cycle, retaining the two parallel edges at circumference one. A finite
+permutation cycle cannot have exactly one crossing edge: the signed
+Boolean differences around it sum to zero. Thus the ring is connected
+and bridgeless at every positive circumference.
+\Sverified{Mettapedia.GraphTheory.FourColor.SmallCutReplacementCore.permutation_small_cut}
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.ring_cutSize}
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.ring_connected_bridgeless}
+
+Serially sewing two such interiors through at least two ports preserves
+these properties. Any cut of cost at most one is constant on each piece;
+if the constants differ, every seam edge crosses, contradicting the cost
+bound. Induction therefore covers all nonempty literal tubes at every
+circumference $k\geq2$, without a bound on length or width. Exchanging
+their lengths preserves connectedness and bridge-freedom in an arbitrary
+fixed closed sewing context. This includes the shorter tube used by the
+colouring-reconstruction theorem.
+\Sverified{Mettapedia.GraphTheory.FourColor.OpenTangleInternalReplacement.serial_no_small_cut}
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.tube_connected_bridgeless}
+\Sverified{Mettapedia.GraphTheory.FourColor.ZigzagRing.tube_replacement_structural}
