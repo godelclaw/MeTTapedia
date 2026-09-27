@@ -380,8 +380,46 @@ circulation maximum `r=1/λ, z=0`,
 
 The phase `σ=-1` therefore increases the maximum when
 `ε²A/(νλ) > e[2+(μ/λ)²]`, with energy transferred out of the defect.
-This is an initial growth example in the actual unforced equation, not
-a demonstration of repeated spin-up or a uniform evolution time window.
+The script also checks the initial motion of that peak. In variables
+`s=Aλt`, `R=λr`, `Z=μz`, put `δ=μ/λ` and `η=νλ/A`. Then
+
+```text
+∂s Γ̃_peak = 4ε²/e² - 4η(2+δ²)/e,
+d_s R_peak = 2η - 2ε²/e.
+```
+
+Both growth and inward motion hold for sufficiently large `λ`.
+The note proves that these signs persist for `0≤s≤c₀`, with `c₀>0`
+independent of the concentration. It uses the full projected equation:
+the anisotropic Leray multiplier has Sobolev norm at most one, yielding
+uniform local bounds and time-derivative control. The exact defect equation
+keeps its `H⁸` norm and the `H⁶` norm of its time derivative proportional
+to `ε`, so the Reynolds stress and its time derivative stay of order `ε²`.
+At the interval's end
+the circulation has increased and the radius has decreased by relative
+amounts at least `c₁ε²`. This concerns a branch of meridional local maxima
+starting at the global maximum; its later global maximality is not assumed.
+
+More generally, choose any `0<h≤1/6`, set `μ=λ^(1-2h)` and
+`A=λ^(1+2h)/√C_ε`. The initial squared energy is `λ^(-1+6h)≤1`,
+equal to one for `h=1/6`. The full mean geometry with this `h` holds
+throughout the interval.
+Its radial gain follows from actual incompressibility,
+`v_r=-(δ/R)∫₀ᴿ q ∂Z v_z dq`, and uniform Sobolev bounds. The script
+checks the radial derivative identities used for that gain; the uniform
+existence and persistence argument is analytic, not a symbolic certificate.
+The actual critical defect history also obeys
+
+```text
+∫[0,c₀/(Aλ)] ||u-Pu||∞(B1)² dt ≥ c₂ ε² λ^(2h).
+```
+
+Thus bounded-energy unforced data, including unit-energy data at `h=1/6`,
+can produce an arbitrarily large value on a shrinking smooth interval,
+while the displayed mean geometry holds.
+Initial higher norms grow with `λ`. This is one finite concentrating event;
+it does not establish repeated events from one fixed datum, an infinite
+cascade, or failure of a history bound depending on that datum's higher norms.
 
 ### A kinematic path satisfying the energy inequality
 

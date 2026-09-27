@@ -276,6 +276,66 @@ require_zero(radial_diffusion.subs(r, 1)+8,
              'Gaussian radial circulation diffusion at maximum')
 require_zero(((4*z*z-2)*circulation).subs({r: 1, z: 0})+4,
              'Gaussian axial circulation diffusion at maximum')
+
+# Motion of the nondegenerate mean circulation peak for the phase -1.
+# The mean has no meridional advection initially. All the quantities below
+# are obtained from the already checked actual torque and viscous terms.
+scaled_viscosity, scaled_aspect, perturbation = s.symbols(
+    'scaled_viscosity scaled_aspect perturbation', real=True)
+# Rotation covariance gives the exact mean/defect split for the scaled
+# derivative too, before applying its Leray projection.
+scaled_derivative = s.diag(1, 1, scaled_aspect)
+scaled_adv = lambda a, b: b.jacobian(coords)*scaled_derivative*a
+linear_defect = scaled_adv(v, w)+scaled_adv(w, v)
+quadratic_defect = scaled_adv(w, w)
+full_convection = scaled_adv(u, u)
+require_zero(mean_vector(linear_defect), 'scaled mean of the linear defect terms')
+require_zero(full_convection-mean_vector(full_convection)-linear_defect
+             -quadratic_defect+mean_vector(quadratic_defect),
+             'exact scaled fluctuation equation split')
+initial_point = {r: 1, z: 0}
+gamma_rr = radial_derivative(radial_derivative(circulation)).subs(initial_point)/s.E
+gamma_zz = ((4*z*z-2)*circulation).subs(initial_point)/s.E
+torque_at_peak = gtorque.subs({r: 1, z: 0, phase: -1})/s.E**2
+torque_radial_at_peak = (s.diff(gtorque, r)-4*r*gtorque).subs(
+    {r: 1, z: 0, phase: -1})/s.E**2
+diffusion_radial_at_peak = radial_derivative(radial_diffusion).subs(initial_point)/s.E
+axial_diffusion_radial_at_peak = radial_derivative(
+    (4*z*z-2)*circulation).subs(initial_point)/s.E
+gamma_time_at_peak = (scaled_viscosity*(radial_diffusion.subs(initial_point)/s.E
+                        +scaled_aspect**2*gamma_zz)
+                      +perturbation**2*torque_at_peak)
+gamma_time_radial_at_peak = (scaled_viscosity*(diffusion_radial_at_peak
+                               +scaled_aspect**2*axial_diffusion_radial_at_peak)
+                             +perturbation**2*torque_radial_at_peak)
+peak_radial_velocity = s.simplify(-gamma_time_radial_at_peak/gamma_rr)
+require_zero(gamma_rr+8/s.E, 'Gaussian radial Hessian at mean peak')
+require_zero(gamma_zz+4/s.E, 'Gaussian axial Hessian at mean peak')
+require_zero(gamma_time_at_peak-4*perturbation**2/s.E**2
+             +4*scaled_viscosity*(2+scaled_aspect**2)/s.E,
+             'Gaussian spin-up rate with full anisotropic viscosity')
+require_zero(peak_radial_velocity-2*scaled_viscosity+2*perturbation**2/s.E,
+             'Gaussian inward peak velocity')
+require_zero(gamma_time_at_peak/(2/s.E)+peak_radial_velocity
+             +2*scaled_viscosity*(1+scaled_aspect**2),
+             'initial logarithmic rate of radius times circulation')
+require_zero(gw.subs({x: 1, y: 0, z: 0, phase: -1})-s.Matrix([-2, 0, 0]),
+             'Gaussian defect at the fixed point used for the history lower bound')
+
+# The axisymmetric radial mean is determined by its actual anisotropic
+# divergence constraint. These are FTC identities, with no chosen profile.
+dummy_radius = s.symbols('dummy_radius', real=True)
+axial_derivative_fun = s.Function('axial_mean_derivative')
+radial_primitive = s.Integral(dummy_radius*axial_derivative_fun(dummy_radius, z),
+                             (dummy_radius, 0, r))
+radial_mean = -scaled_aspect*radial_primitive/r
+require_zero(s.diff(radial_mean, r)+scaled_aspect*axial_derivative_fun(r, z)
+             +radial_mean/r, 'radial mean from anisotropic incompressibility')
+require_zero(s.diff(radial_mean, r, 2)
+             +scaled_aspect*s.diff(axial_derivative_fun(r, z), r)
+             -scaled_aspect*axial_derivative_fun(r, z)/r-2*radial_mean/r**2,
+             'second radial derivative of the actual mean')
+
 gtransfer = gaussian_integral_factor(gw.dot(ggv*gw), 3)
 require_zero(gtransfer+16*phase/9, 'Gaussian signed mean transfer')
 amplitude = s.symbols('amplitude', real=True)
@@ -308,6 +368,24 @@ for name, expected in [('mean', [2, 8, 2]),
     for value in gaussian_norms[name]:
         require_zero(value.subs(phase, 1)-value.subs(phase, -1),
                      'Gaussian opposite-phase norms: '+name)
+
+# The concentrating actual-flow interval uses the same normalized data
+# for every aspect ratio. Check its physical scaling independently.
+concentration, geometry_exponent, normalization_energy = s.symbols(
+    'concentration geometry_exponent normalization_energy', positive=True)
+axial_concentration = concentration**(1-2*geometry_exponent)
+velocity_amplitude = concentration**(1+2*geometry_exponent)/s.sqrt(normalization_energy)
+aspect_ratio = axial_concentration/concentration
+initial_physical_energy = (velocity_amplitude**2*normalization_energy
+                           /(concentration**2*axial_concentration))
+require_zero(s.simplify(initial_physical_energy-concentration**(-1+6*geometry_exponent)),
+             'actual-flow family initial energy scaling')
+require_zero(s.simplify(velocity_amplitude*aspect_ratio
+                        -concentration/s.sqrt(normalization_energy)),
+             'actual radial mean amplitude gain')
+require_zero(s.simplify(velocity_amplitude/concentration
+                        -concentration**(2*geometry_exponent)/s.sqrt(normalization_energy)),
+             'actual critical history lower-bound scaling')
 
 # This time-dependent rescaling is a kinematic path, not an unforced flow.
 # Its exact energy inequality does not pay its critical defect history.
@@ -361,6 +439,12 @@ print(json.dumps({
     'gaussian_transfer_divided_by_pi_over_3_to_3_over_2': str(gtransfer),
     'gaussian_mean_circulation_source_polynomial': str(s.factor(gtorque)),
     'gaussian_circulation_diffusion_at_max_divided_by_exp_minus_1': [-8, -4],
+    'gaussian_peak_initial_radial_velocity': str(peak_radial_velocity),
+    'gaussian_peak_initial_circulation_rate': str(s.simplify(gamma_time_at_peak)),
+    'radial_mean_divergence_constraint': 'checked for an arbitrary axial profile',
+    'scaled_fluctuation_equation': 'mean and defect split checked before Leray projection',
+    'actual_flow_energy_power': '-1+6h; 0<h<=1/6',
+    'actual_flow_critical_history_power': '2h; finite interval, initial data vary with concentration',
     'kinematic_path_energy_exponent': str(energy_exponent),
     'kinematic_path_balance_divided_by_energy': str(s.simplify(
         path_balance_formula/path_energy)),

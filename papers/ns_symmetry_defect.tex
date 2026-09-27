@@ -886,6 +886,217 @@ axisymmetric circulation cannot be extended by dropping the Reynolds
 torque, even for arbitrarily small relative angular defect. This is an
 initial growth example, not repeated spin-up or singularity formation.
 
+\begin{proposition}\label{prop:inwardwindow}
+There are constants $c_0,c_1,c_2,C_0>0$ with the following property.
+Fix $\nu>0$, $0<\epsilon\leq1$, and $0<h\leq1/6$. Set
+\[
+ \mu=\lambda^{1-2h},\qquad A=\lambda^{1+2h}/\sqrt{C_\epsilon},
+ \qquad u_\lambda(x_h,z)=A(V+\epsilon W_-)(\lambda x_h,\mu z).
+\]
+For every sufficiently large $\lambda$, the actual unforced solution
+from $u_\lambda$ exists at least until
+\[
+ t_\lambda=\frac{c_0}{A\lambda}.
+\]
+These data have $\norm{u_\lambda}_2^2=\lambda^{-1+6h}\leq1$
+and relative $L^2$ defect $3\epsilon/2$. For $h=1/6$ they are the
+unit-energy data $u_-$ of Proposition~\ref{prop:transfer}.
+Its mean circulation has a smooth branch of local maxima in the
+meridional variables, at $(r,z)=(r_\lambda(t),0)$, starting at
+$(\lambda^{-1},0)$. Along this branch the radius strictly decreases
+and the circulation strictly increases. At the last time,
+\begin{align}
+ r_\lambda(t_\lambda)&\leq\lambda^{-1}(1-c_1\epsilon^2),
+ \label{eq:inwardradius}\\
+ \Gamma(r_\lambda(t_\lambda),0,t_\lambda)
+ &\geq\frac{2A}{e\lambda}(1+c_1\epsilon^2).
+ \label{eq:inwardgain}
+\end{align}
+On this whole interval the mean satisfies
+\eqref{eq:meanr}--\eqref{eq:meanz} with this $h$, constant $C_0$,
+and $\tau=\lambda^{-2}-t>0$. Furthermore
+\begin{equation}\label{eq:actualhistorylower}
+ \int_0^{t_\lambda}\norm{u(t)-\PP u(t)}_{L^\infty(B(1))}^2\dd t
+                      \geq c_2\epsilon^2\lambda^{2h}.
+\end{equation}
+All constants are independent of $\nu,\epsilon,h,\lambda$; the required
+lower threshold on $\lambda$ may depend on $\nu,\epsilon,h$.
+The number $\lambda^{-2}$ specifies a comparison scale, not an asserted
+singular time.
+\end{proposition}
+\begin{proof}
+Put $y_h=\lambda x_h$, $Z=\mu z$, $s=A\lambda t$,
+$U=u/A$, and
+\[
+ \delta=\mu/\lambda=\lambda^{-2h},\qquad
+ \eta=\nu\lambda/A,\qquad
+ D_\delta=(\partial_{y_1},\partial_{y_2},\delta\partial_Z),\qquad
+ \Delta_\delta=\partial_{y_1y_1}+\partial_{y_2y_2}
+                                      +\delta^2\partial_{ZZ}.
+\]
+The full projected equation, including pressure, is
+\begin{equation}\label{eq:anisotropicNS}
+ U_s=-\mathbb P_\delta[(U\cdot D_\delta)U]
+                  +\eta\Delta_\delta U,\qquad
+ D_\delta\cdot U=0,
+\end{equation}
+with initial field $V+\epsilon W_-$. Here $\mathbb P_\delta$ has
+Fourier multiplier $I-k_\delta\otimes k_\delta/|k_\delta|^2$,
+$k_\delta=(k_1,k_2,\delta k_3)$. It is an orthogonal projection of
+norm at most one in every isotropic Sobolev space and commutes with
+derivatives. No estimate of an inverse power of $\delta$ is used.
+
+For $0<\delta\leq1$ and $0\leq\eta\leq1$, differentiated energy
+estimates for \eqref{eq:anisotropicNS} give
+\[
+ \frac{\mathrm d}{\mathrm ds}\norm U_{H^{10}}^2
+                         \leq C\norm U_{H^{10}}^3.
+\]
+Indeed the leading transport cancels by $D_\delta\cdot U=0$,
+the commutators have the usual Sobolev product bounds with
+$|k_\delta|\leq|k|$, and the diffusion is nonpositive in the energy.
+Friedrichs regularization, this estimate, and the corresponding
+difference estimate construct a common interval $[0,s_0]$ with
+$\norm U_{H^{10}}\leq M$, uniformly in these parameters and
+$0<\epsilon\leq1$. The initial norm is bounded by
+$\norm V_{H^{10}}+\norm{W_-}_{H^{10}}$.
+Higher derivative estimates propagate smoothness on that interval.
+The equation also bounds $U_s$ in $H^8$ and, after one time
+derivative, $U_{ss}$ in $H^6$, uniformly. Sobolev embedding therefore
+gives uniform spatial bounds for the needed time derivatives.
+
+The fluctuation $w^*=U-\PP U$ satisfies the exact equation
+\begin{equation}\label{eq:scaledDefect}
+ w^*_s=-\mathbb P_\delta\big[(v^*\cdot D_\delta)w^*
+       +(w^*\cdot D_\delta)v^*
+       +(1-\PP)((w^*\cdot D_\delta)w^*)\big]
+       +\eta\Delta_\delta w^*,\qquad v^*=\PP U.
+\end{equation}
+Angular averaging is an orthogonal projection in isotropic $H^8$,
+commutes with the isotropic Sobolev multiplier and with
+$\mathbb P_\delta$, and annihilates $w^*$. Thus the mean correction
+in the quadratic term does no $H^8$ work on $w^*$.
+Transport cancellation and product bounds, using the uniform $H^{10}$
+bound on $U$, give
+\[
+ \frac{\mathrm d}{\mathrm ds}\norm{w^*}_{H^8}^2
+        \leq C_M\norm{w^*}_{H^8}^2,\qquad
+ \norm{w^*}_{H^8}+\norm{w^*_s}_{H^6}\leq C\epsilon
+                         \quad(0\leq s\leq s_0).
+\]
+The time-derivative estimate follows directly from
+\eqref{eq:scaledDefect}. In particular the stress
+$\PP(w^*\otimes w^*)$ and its time derivative have spatial $C^3$
+norm at most $C\epsilon^2$ on any fixed annulus.
+
+Let $\widetilde\Gamma=R(\PP U)_\theta$, where $R=|y_h|$.
+Initially $\widetilde\Gamma=2R^2e^{-R^2-Z^2}$. At $(1,0)$ its
+meridional Hessian is diagonal with entries $-8/e$ and $-4/e$.
+The actual mean equation and the Gaussian torque above give exactly
+\begin{align*}
+ \widetilde\Gamma_s(1,0,0)
+       &=4\epsilon^2/e^2-4\eta(2+\delta^2)/e,\\
+ \widetilde\Gamma_{sR}(1,0,0)
+       &=-16\epsilon^2/e^2+16\eta/e.
+\end{align*}
+Reflection in $Z$, with the axial velocity component reflected too,
+is a symmetry of \eqref{eq:anisotropicNS} and its initial data.
+Uniqueness keeps $\widetilde\Gamma$ even in $Z$.
+The implicit function theorem and the uniform derivative bounds
+therefore give a uniform short interval with a nearby meridional
+local maximum at $(R_*(s),0)$, $R_*(0)=1$. Its Hessian remains
+negative definite, with $|\widetilde\Gamma_{RR}|\leq12/e$ there.
+
+Axisymmetry and the mean's actual divergence constraint give
+\[
+ v^*_r(R,Z)=-\frac\delta R\int_0^R q\partial_Zv^*_z(q,Z)\dd q.
+\]
+Cauchy--Schwarz and the $H^1_Z$ trace bound into $L^2_{y_h}$
+bound this by $C\delta$ uniformly in space. With
+$f=\partial_Zv^*_z$ its first two radial derivatives are
+\[
+ \partial_Rv^*_r=-\delta f(R)+\delta\int_0^1qf(qR)\dd q,
+ \qquad
+ \partial_{RR}v^*_r=-\delta f_R(R)
+                              +\delta\int_0^1q^2f_R(qR)\dd q.
+\]
+The same estimates after axial derivatives and the uniform Sobolev
+bounds give $|\partial_R^a\partial_Z^b v^*_r|\leq C\delta$
+for $a+b\leq2$. The other two components have uniformly bounded
+cylindrical derivatives of these orders. Applying the same argument
+to $v^*_s$, bounded in $H^8$, also gives an $O(\delta)$ bound on
+the first two derivatives of $v^*_{r,s}$.
+
+On the fixed rectangle about $(1,0)$, the mean circulation equation is
+\[
+ \widetilde\Gamma_s+v^*_r\widetilde\Gamma_R
+        +\delta v^*_z\widetilde\Gamma_Z
+ =\eta(\widetilde\Gamma_{RR}-R^{-1}\widetilde\Gamma_R
+                     +\delta^2\widetilde\Gamma_{ZZ})
+       -R e_R-2e-\delta R f_Z,
+\]
+where $e=\PP(w^*_rw^*_\theta)$ and $f=\PP(w^*_zw^*_\theta)$.
+The preceding bounds, and then one time derivative of this equation,
+give
+\[
+ \norm{\widetilde\Gamma_s}_{C^2}
+       +\norm{\widetilde\Gamma_{ss}}_{C^1}
+                         \leq C(\delta+\eta+\epsilon^2).
+\]
+For the diffusive term after that derivative, the uniform $H^8$ bound
+on $U_s$ supplies the required derivatives of
+$\widetilde\Gamma_s$. Hence, if $\lambda$ is large enough that
+$\delta+\eta\leq\epsilon^2/(12e)$, the two displayed initial rates,
+evaluated along the maximum branch, change by at most $C\epsilon^2s$.
+After reducing a universal $c_0>0$, for every $0\leq s\leq c_0$,
+\[
+ \frac{\mathrm d}{\mathrm ds}
+       \widetilde\Gamma(R_*(s),0,s)\geq2\epsilon^2/e^2,
+ \qquad
+ R_*'(s)=-\frac{\widetilde\Gamma_{sR}}
+                    {\widetilde\Gamma_{RR}}
+                              \leq-\frac{2\epsilon^2}{3e}.
+\]
+Integrating and using $r_\lambda=R_*/\lambda$ and
+$\Gamma=(A/\lambda)\widetilde\Gamma$ proves
+\eqref{eq:inwardradius}--\eqref{eq:inwardgain} for some universal
+$c_1>0$. The branch starts at the global circulation maximum and
+its value exceeds that initial maximum. It need not be identified
+with the global maximizer at later times.
+
+For the stated physical mean geometry, the radial estimates and
+$A\delta=\lambda/\sqrt{C_\epsilon}$ give exactly the
+claimed mean bounds at scale $\tau_\lambda=\lambda^{-2}$.
+For large $\lambda$, $t_\lambda<\tau_\lambda/2$; using
+$\tau_\lambda-t$ only enlarges their right-hand sides.
+
+Finally $W_-(1,0,0)=(-2/e,0,0)$ and the bound on $w^*_s$ gives
+\[
+ \norm{U(s)-\PP U(s)-\epsilon W_-}_\infty\leq C\epsilon s.
+\]
+Reduce $c_0$ once more so that the defect at this fixed point has
+magnitude at least $\epsilon/e$ throughout the interval.
+Its physical point $(\lambda^{-1},0,0)$ belongs to $B(1)$.
+Consequently the integral in \eqref{eq:actualhistorylower} is at least
+\[
+ \frac{A^2\epsilon^2}{e^2}\,
+       \frac{c_0}{A\lambda}
+ =\frac{c_0\epsilon^2}{e^2\sqrt{C_\epsilon}}\lambda^{2h}.
+\]
+The uniform upper bound on $C_\epsilon$ proves the assertion.
+\end{proof}
+
+This is a finite concentrating event in the actual unforced equation,
+with all nonlinear feedback retained. It excludes a rule that such
+feedback always prevents inward motion and growth of a mean circulation
+peak. It also excludes a bound on the critical defect history depending
+only on kinetic energy, viscosity and an upper bound for the length of
+the smooth interval: the interval here tends to zero, whereas
+\eqref{eq:actualhistorylower} tends to infinity for fixed $\epsilon$.
+The initial higher norms grow with $\lambda$. No infinite cascade from
+one fixed datum, data-dependent history obstruction, or singularity
+follows from this family.
+
 \subsection{The energy inequality alone permits the stress cost}
 
 The time-integrated energy inequality cannot by itself exclude the cost
