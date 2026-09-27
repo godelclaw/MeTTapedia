@@ -856,6 +856,36 @@ They do not construct a recurrent cascade. Initial higher norms grow
 faster than the finite gains, so a full-datum history allowance remains
 an open possibility.
 
+### A parent velocity need not decorrelate
+
+Proposition 19 gives an exact obstruction in the inviscid linearization
+about the Gaussian swirl. For an angular mode `m≥3` and axial wave number
+two, write its cylindrical coefficients as `(A,B,C)` and set `Q=2rB-mC`.
+The full pressure cancels:
+
+```text
+Q_t + i m Ω Q = -2r ζ A,
+Ω=2 exp(-r²),  ζ=4(1-r²) exp(-r²).
+```
+
+At radius one, `ζ=0`, so `|Q|` stays constant. For the normalized Gaussian
+parent the real velocity supremum on that circle is therefore at least
+`2(m-2)/(e sqrt(d_m) sqrt(4+m²))`, with `d_m=(m+1)!/2^(m+1)`.
+Its squared velocity history grows at least linearly in time.
+
+The viscous linearization about the actual heat-evolved swirl stays within
+`C η (1+t)² exp(Ct)` of the inviscid parent in a fixed high Sobolev norm.
+Its squared velocity history through time `a_m log(1/η)` is therefore
+at least `b_m log(1/η)` for small positive viscosity `η`. Hence these
+histories have no bound uniform in both time and viscosity.
+This is a linear-variation statement on the periodic
+cylinder; it neither controls a nonlinear remainder on a growing interval
+nor constructs a whole-space cascade.
+
+`MettapediaNS.HelicalParentMomentum` kernel-checks the pressure cancellation,
+the scalar ODE's norm conservation and the Gram inequality. The cylindrical
+PDE interpretation and the viscous convergence argument remain analytic.
+
 ### A kinematic path satisfying the energy inequality
 
 A separate time-dependent rescaling of `W_+` has zero mean and unit initial

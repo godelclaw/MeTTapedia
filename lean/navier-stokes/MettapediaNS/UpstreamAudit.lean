@@ -27,6 +27,7 @@ import MettapediaNS.AveragedSwirl
 import MettapediaNS.CirculationFlux
 import MettapediaNS.HelicalPhaseSelection
 import MettapediaNS.HelicalHighModeFeedback
+import MettapediaNS.HelicalParentMomentum
 import MettapediaNS.WholeSpaceViscousFlow
 import MettapediaNS.WholeSpaceNSContinuation
 import MettapediaNS.WholeSpaceNSBlowup
@@ -74,6 +75,12 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.HelicalPhaseSelection.ParentCounts.seventhOrderWitness_indices
 #print axioms Mettapedia.FluidDynamics.NavierStokes.HelicalHighModeFeedback.circulationHeatBracket_pos
 #print axioms Mettapedia.FluidDynamics.NavierStokes.HelicalHighModeFeedback.pressureAllowanceRatio_lt_one
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HelicalParentMomentum.pressure_cancel
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HelicalParentMomentum.hasDerivAt_momentum
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HelicalParentMomentum.hasDerivAt_normSq_zero
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HelicalParentMomentum.normSq_eq_initial
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HelicalParentMomentum.momentum_normSq_identity
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HelicalParentMomentum.momentum_normSq_le
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBKM.curlField_eq_vectorCurl
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBKM.spatialBKMIntegrand_curl_eq_vorticityNorm
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBKM.spatialEssentialSupNorm_curl_eq_ofReal_vorticityNorm

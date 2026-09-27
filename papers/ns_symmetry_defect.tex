@@ -2826,6 +2826,97 @@ enstrophy gain. These are finite events across different initial data.
 The initial circulation peak and enstrophy grow faster than their
 increments, and no repeated growth from one fixed datum is established.
 
+\subsection{A parent velocity need not decorrelate}
+
+The positivity calculation does not imply that the parents soon disappear
+from the critical velocity norm. There is a simple obstruction already
+in the exact linearized equation.
+
+\begin{proposition}\label{prop:parentNondecay}
+Fix an integer $m\geq3$ and put $d_m=(m+1)!/2^{m+1}$.
+On $\R^2\times(\R/\pi\mathbb{Z})$, let $w_m$ solve the inviscid
+linearized equation about $V_h=2r e^{-r^2}e_\theta$, with initial
+datum $\operatorname{Re}(\widehat Z_m e^{2iz})$ from
+Corollary~\ref{cor:finiteMeanDerivatives}. Then, for every $s\geq0$,
+\begin{equation}\label{eq:parentNondecay}
+ \sup_{\phi,z}|w_m(1,\phi,z,s)|\geq
+ c_m:=\frac{2(m-2)}{e\sqrt{d_m}\sqrt{4+m^2}}>0.
+\end{equation}
+In particular $\int_0^T\norm{w_m}_\infty^2\dd s\geq c_m^2T$.
+
+Let $w_{m,\eta}$ instead be the viscous linearization, with the same
+initial datum, about the actual heat-evolved swirl
+\[
+ V_\eta(r,s)=\frac{2r}{(1+4\eta s)^2}
+                 e^{-r^2/(1+4\eta s)}e_\theta.
+\]
+There are constants $a_m,b_m,\eta_m>0$ such that, for
+$0<\eta<\eta_m$,
+\begin{equation}\label{eq:viscousParentLogHistory}
+ \int_0^{a_m\log(1/\eta)}\norm{w_{m,\eta}}_\infty^2\dd s
+       \geq b_m\log(1/\eta).
+\end{equation}
+In particular these histories have no bound uniform in both time
+and positive viscosity.
+\end{proposition}
+
+\begin{proof}
+Write the complex cylindrical mode of $w_m$ as
+$(A e_r+B e_\theta+C e_z)e^{im\phi+2iz}$, and its pressure
+coefficient as $P$. Put $\Omega=2e^{-r^2}$ and
+$\zeta=4(1-r^2)e^{-r^2}$. The tangential and axial equations are
+\[
+ B_s+im\Omega B+\zeta A=-\frac{im}{r}P,
+ \qquad C_s+im\Omega C=-2iP.
+\]
+Their combination $Q=2rB-mC$ satisfies
+\[
+ Q_s+im\Omega Q=-2r\zeta A.
+\]
+At the initial peak-circulation circle $r=1$, $\zeta=0$. Thus
+$Q(1,s)=e^{-2ims/e}Q(1,0)$, with
+$Q(1,0)=-2(m-2)/(e\sqrt{d_m})$.
+The Gram identity
+\[
+ (4+m^2)(|B|^2+|C|^2)-|2B-mC|^2=|mB+2C|^2
+\]
+gives the corresponding complex velocity lower bound. For the real
+field, choose the angular phase so that $Qe^{im\phi+2iz}$ is real
+with maximal modulus, and apply the same real linear functional
+$2w_\theta-mw_z$. This proves \eqref{eq:parentNondecay}.
+
+The smooth linearized solutions exist on every finite interval by the
+$H^j$ transport estimate. Fix an integer $j\geq3$. The background
+Sobolev norms are bounded uniformly in time and $0\leq\eta\leq1$,
+while $\norm{w_m(s)}_{H^{j+2}}\leq C e^{Cs}$ and
+$\norm{V_\eta(s)-V_h}_{H^{j+1}}\leq C\eta s$ by the heat formula.
+The equation for their difference has forcing $\eta\Delta w_m$
+and the two linear advection terms containing $V_\eta-V_h$.
+The same transport estimate, with the viscous dissipation retained on
+the left, therefore gives
+\[
+ \norm{w_{m,\eta}(s)-w_m(s)}_{H^j}
+       \leq C\eta(1+s)^2e^{Cs}.
+\]
+All constants here depend only on the fixed parent and Sobolev order.
+Choose $a_m>0$ sufficiently small that the exponential factor on
+$0\leq s\leq a_m\log(1/\eta)$ is at most $\eta^{-1/2}$.
+Sobolev embedding then makes the velocity difference at most $c_m/2$
+throughout that interval, once $\eta$ is small enough. Integrating
+the resulting lower bound proves \eqref{eq:viscousParentLogHistory},
+with $b_m=a_mc_m^2/4$.
+\end{proof}
+
+The \texttt{HelicalParentMomentum} module in \texttt{MettapediaNS}
+checks the pressure
+cancellation, the scalar rotating-momentum ODE and its norm conservation,
+and the Gram inequality. The cylindrical PDE derivation and the viscous
+comparison above are analytic. This is a statement about linear
+variations on the periodic cylinder, not a nonlinear remainder estimate,
+a whole-space background, or recurrent concentration in one solution.
+It excludes a viscosity-uniform parent-history argument based simply on
+decay of the linearized velocity supremum.
+
 \subsection{The energy inequality alone permits the stress cost}
 
 The time-integrated energy inequality cannot by itself exclude the cost
