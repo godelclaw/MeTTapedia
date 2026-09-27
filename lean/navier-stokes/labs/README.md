@@ -722,6 +722,66 @@ grid. That observable is not a maximization over radius. Neither this
 finite history nor the earlier cubic calculation establishes recurrence
 or a uniform allowance for arbitrary data.
 
+### Matching the amplitude expansion to the viscous flow
+
+`amplitude_history.py` evolves the complete Taylor hierarchy through
+amplitude degree three about the evolving zero-amplitude Galerkin solution.
+It uses the same datum, viscosity and domain as `full_history.py`. The
+stored `(amplitude degree, axial index)` sectors are
+`(0,0), (1,1), (2,0), (2,2), (3,1), (3,3)`; conjugates supply the negative
+indices. Every ordered partition, Leray projection and viscous term is
+retained. Coefficients multiply `ε^j`, without factorial. The full solver's
+axial cutoff must include indices `-3` through `3`, as it does for `nz≥12`.
+
+```sh
+python3 labs/amplitude_history.py --n 192 --check-only --check-full-rhs
+python3 labs/amplitude_history.py --n 256 --box 14 --viscosity .001 --time 3
+python3 labs/full_history.py --n 256 --nz 48 --box 14 --viscosity .001 --time 3
+```
+
+The independent RHS check evaluates the full three-dimensional equation
+at seven complex amplitudes and extracts its polynomial coefficients.
+At grid 192, all six sectors agree within `5.7e-13` in maximum coefficient
+error; the largest relative sector error is below `4.6e-14`. The initial
+cubic second-time derivative agrees with the independent analytic source
+within `8.6e-12`.
+
+The second-order energy coefficients include the pairing of the base with
+the generated mean, as well as the squared first variation. They obey
+`K2'=-2νY2` and `Y2'=P2-D2`. These are signed coefficients, not positive
+energies of separate solutions; in particular `D2` need not be positive.
+Initial `(K0,Y0,K2,Y2)=(.25,1,.45,8.25)`. At time 3, with `ε=.1`,
+viscosity `.001`, grid 256 and step `.005`:
+
+| Quantity | Quadratic amplitude prediction | Full nonlinear flow |
+| --- | --- | --- |
+| Enstrophy | 1.08865852248 | 1.09416368675 |
+| Integrated signed production | .06369319526 | .07344871144 |
+| Integrated enstrophy dissipation | .05753467279 | .06178502470 |
+| Production minus half the dissipation | .03492585887 | .04255619909 |
+
+The second-order enstrophy ledger error is below `1.2e-9`. For the fixed
+radial test, the scaled cubic prediction is `q_cubic+q_linear/ε²`, approximately
+`-1.10743655+3.29226722i`; the full observable is
+`-1.01349806+2.95094315i`. Thus suppression of this selected observable
+coexists with larger total signed production. The linear term is retained
+to expose angular leakage on the periodic square. This test is not an
+eigenmode identity for the evolving viscous base.
+
+The earlier five-branch `cubic_history.py` uses an inviscid stationary
+column and continuum angular ancestry. Its difference from a viscous full
+flow cannot be attributed solely to nonlinear feedback. Even at zero
+viscosity the complete and five-branch calculations differ slightly on a
+periodic square: at time one their `q` difference is `6.61e-5` for box 14
+and grid 256, versus `1.59e-5` for box 20 and grid 384. Refining box 14 from
+grid 128 to 256 does not remove that discrepancy. This is consistent with
+the boundary breaking continuous angular symmetry; it is not a certified
+boundary-error estimate.
+
+These calculations provide neither an amplitude-remainder bound nor a
+continuum error enclosure. They test a finite history and do not establish
+an arbitrary-data stretching budget.
+
 ### Simultaneous stretching and mean-circulation gain
 
 Run `python3 -O labs/helical_mean_feedback.py`; this checker requires Sympy.
