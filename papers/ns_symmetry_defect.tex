@@ -3226,6 +3226,98 @@ the spatial transport term. Only the initial pointwise sign is
 asserted here; the proposition proves persistence of the global
 transfer sign on its short interval.
 
+\subsection{Pressure can initially increase total stretching}
+
+The full pressure response need not immediately decrease the signed
+stretching production. The following datum has three nonzero velocity
+components and uses the whole-space Leray projection.
+Write $\rho=x^2+y^2+z^2$ and $g_j=(\pi/j)^{3/2}$.
+
+\begin{proposition}\label{prop:triaxialFeedback}
+Let
+\[
+ V=\curl\big((0,xz,2xy)e^{-\rho}\big)
+   =e^{-\rho}(x-4xy^2+2xz^2,\,-2y+4x^2y,\,z-2x^2z).
+\]
+For a smooth unforced whole-space evolution starting from $V$, set
+$\Pi(u)=\int_{\R^3}\omega\cdot S\omega\dd x$, where
+$\omega=\curl u$ and $S=(\nabla u+\nabla u^T)/2$.
+Then
+\begin{align*}
+ \norm V_2^2&=13g_2/8,&
+ \norm{\nabla V}_2^2&=9\norm V_2^2,&
+ \norm{\nabla^2V}_2^2&=99\norm V_2^2,\\
+ \Pi(V)&=32g_3/27,&
+ \left.\frac{\dd}{\dd t}\Pi(u(t))\right|_{t=0}
+ &=\frac{56064597}{82001920}\pi^{3/2}
+                -\nu\frac{128}{3}g_3.
+\end{align*}
+In this derivative the pressure contribution is
+$\frac{4610503}{20500480}\pi^{3/2}>0$.
+Consequently, for
+\[
+ 0<\nu<\frac{56064597\,\pi^{3/2}/82001920}{(128/3)g_3},
+\]
+the stretching production is positive and strictly increasing on some
+initial interval of the actual unforced solution.
+No common length of that interval is asserted.
+\end{proposition}
+
+\begin{proof}
+The datum is real, solenoidal, and Schwartz, so the local smooth solution
+exists. All quantities below are evaluated at this datum.
+The variational derivative of $\Pi$ is
+\[
+ G=2\curl(S\omega)-\diver(\omega\otimes\omega),\qquad
+ D\Pi(V)[v]=\int_{\R^3}G\cdot v\dd x.
+\]
+This follows by differentiating its three factors and integrating by
+parts. Put $N=-(V\cdot\nabla)V$ and choose the decaying pressure $p_0$
+with $\Delta p_0=\diver N$. Thus
+$u_t(0)=N-\nabla p_0+\nu\Delta V$.
+Direct Gaussian integration gives
+\begin{align*}
+ \int G\cdot N\dd x&=\frac{7517}{16384}\pi^{3/2},\\
+ \int G\cdot(-\nabla p_0)\dd x
+      &=\frac{4610503}{20500480}\pi^{3/2},\\
+ \int G\cdot\Delta V\dd x&=-\frac{128}{3}g_3.
+\end{align*}
+Here the pressure integral uses the nonlocal projection, not a local
+replacement. For completeness, both $G$ and $N$ are polynomials times
+$e^{-2\rho}$. With the Fourier convention
+$\widehat f(k)=\int f(x)e^{-ik\cdot x}\dd x$, obtain their transforms
+by applying $i\partial_{k_j}$ for each factor $x_j$ to
+$(\pi/2)^{3/2}e^{-|k|^2/8}$.
+If the resulting polynomials are $G_F,N_F$, Parseval gives
+\[
+ \int G\cdot(N-\nabla p_0)\dd x
+ =\frac1{64}\int e^{-|k|^2/4}
+ \left(\overline{G_F}\cdot N_F
+       -\frac{\overline{k\cdot G_F}\,(k\cdot N_F)}{|k|^2}\right)\dd k.
+\]
+Every term is evaluated by the Gaussian moment formula. For even
+multi-degree $2\alpha$, with $M=\alpha_1+\alpha_2+\alpha_3$, its
+version with the pressure denominator is
+\[
+ \int\frac{k^{2\alpha}}{|k|^2}e^{-a|k|^2}\dd k
+   =\frac{a}{M+1/2}\int k^{2\alpha}e^{-a|k|^2}\dd k;
+\]
+odd moments vanish. This identity follows by separating radius and
+direction and taking the ratio of the two radial Gamma integrals.
+It reduces all three displayed values to finite rational arithmetic.
+The independent variation of $-4\int\det S$, namely
+$4\diver(\operatorname{cof}S)$ on solenoidal directions, gives the same
+total derivative. The exact checker \texttt{triaxial\_jet.py} verifies
+both variations, the advective and rotational forms of the projected
+equation, and these moments. Continuity of the derivative along the
+local smooth solution gives the final assertion.
+\end{proof}
+
+This excludes a universal initial damping sign for pressure in the
+stretching equation. It supplies no bound on the accumulated production
+or on repeated transfer to higher frequencies, and a finite initial
+episode is compatible with an allowance depending on the complete datum.
+
 \subsection{The energy inequality alone permits the stress cost}
 
 The time-integrated energy inequality cannot by itself exclude the cost
@@ -3303,7 +3395,10 @@ convection work in Proposition~\ref{prop:transfer}. The polynomial fields
 are local algebra tests, whereas the Gaussian fields are finite-energy
 initial data. It also checks the signed dual-work integrations and the
 scaling of the final kinematic path. That path is explicitly distinct
-from the actual unforced initial jets. The program does not integrate solutions or certify the
+from the actual unforced initial jets. The separate
+\texttt{triaxial\_jet.py} checks the whole-space pressure and production
+derivative in Proposition~\ref{prop:triaxialFeedback} through exact Gaussian
+Fourier moments. These programs do not integrate solutions or certify the
 analytic proof. No statement in this
 note has been added as an axiom or a theorem to the Lean library.
 

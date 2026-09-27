@@ -826,6 +826,22 @@ It independently computes the last integral as `-4∫det(strain(V))`.
 More generally the potential `(a*y*z,b*z*x,c*x*y) exp(-rho)` has production
 `-16(a-b)(a-c)(b-c)g₃/27`. These are spatial identities, not a time estimate.
 
+`python3 -O labs/triaxial_jet.py` separately evaluates the initial rate
+of change of the total production in the actual unforced equation:
+
+```text
+Pi'(0) = (56064597/82001920) π^(3/2) - ν (128/3) g₃.
+```
+
+It keeps the whole-space Leray projection. The pressure contribution is
+positive, `(4610503/20500480) π^(3/2)`; the heat contribution is negative.
+The proof and the resulting initial interval of increasing production
+appear in `papers/ns_symmetry_defect.tex`, in the subsection
+"Pressure can initially increase total stretching". The checker uses
+Gaussian Fourier moments, including the `1/|k|²` denominator, and verifies
+the derivative through both vorticity and strain-determinant formulas.
+It gives no uniform interval length or integrated history allowance.
+
 The numerical datum is the Fourier periodization of `A V(κx)` on the
 `π`-periodic cube, with `κ=14/π` and `A=κ^(3/2)/sqrt(E)` by default.
 The initial Fourier moments are checked against the whole-space formulas.
