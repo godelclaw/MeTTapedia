@@ -2511,6 +2511,86 @@ here are finite, so the example is consistent with
 Theorem~\ref{thm:main}; it supplies neither an infinite sequence of
 concentrating events from one datum nor a singularity.
 
+The same mechanism applies to any fixed finite number of mean
+derivatives. Increasing the amplitude within the geometric allowance
+then makes the critical history diverge across the data family.
+
+\begin{corollary}\label{cor:finiteMeanDerivatives}
+Fix an integer $K\geq2$, $\nu>0$, and $0<h\leq1/6$.
+There is a family of real Schwartz solenoidal data of squared energy
+$\lambda^{-1+6h}\leq1$, whose relative $L^2$ angular defect tends to
+zero, with the following properties. Their actual unforced flows
+exist through $t_\lambda=s_*/(A\lambda)$, where $s_*>0$ is independent
+of $\lambda$ and $A$ is comparable to $\lambda^{1+2h}$.
+The angular means satisfy \eqref{eq:meanr}--\eqref{eq:meanz} for
+\emph{every} $a+b\leq K$, with $\tau=\lambda^{-2}-t$ and a
+constant independent of $\lambda$. Nevertheless
+\begin{equation}\label{eq:finiteMeanHistory}
+ c\lambda^{2h/(2K+3)}
+ \leq\int_0^{t_\lambda}\norm{u_\lambda-\PP u_\lambda}_\infty^2\dd t
+ \leq C\lambda^{2h/(2K+3)}.
+\end{equation}
+The same bounds hold for the difference from either of the two
+one-parent deletion references used in the construction below.
+Constants may depend on $K$; no uniformity as $K\to\infty$ is asserted.
+\end{corollary}
+
+\begin{proof}
+Put $m=2K+2$, $p=2K+3$, and
+\[
+ d_j=\frac{(j+1)!}{2^{j+1}},\qquad
+ \widehat Z_j=d_j^{-1/2}\curl_h(q^j e^{-|y_h|^2}e_z),
+                       \quad j=m,m+2.
+\]
+The horizontal squared energy of each real $\widehat Z_j$ is $\pi$.
+Use the datum \eqref{eq:delayedMeanDatum} with $Z_6+Z_8$ replaced
+by $\widehat Z_m+\widehat Z_{m+2}$, and now choose
+\[
+ \delta=\lambda^{-2h},\qquad
+ \epsilon=\delta^{(K+1)/p},\qquad
+ C_\epsilon=\pi\norm g_2^2(1+2\epsilon^2),\qquad
+ A=\lambda^{1+2h}/\sqrt{C_\epsilon}.
+\]
+The relative initial defect is exactly $\sqrt2\epsilon$.
+Retain this $A$ and the same viscosity in both deletion references.
+
+For these two angular indices, the phase-count theorem with $k=K+1$
+excludes a fast angular mean before amplitude order $p$.
+Start the extended construction in $H^{2p+K+8}$ and take $p$ finite
+amplitude derivatives. The differentiated estimates leave $H^{K+8}$
+regularity, more than needed for the uniform $C^K$ bound. Thus
+\[
+ \norm{(\PP U)_{\rm f}}_{C^K}\leq C\epsilon^p
+                                      =C\delta^{K+1}.
+\]
+The slow mean retains the radial primitive and axial derivative
+gains in the preceding proof. For $b\leq K$,
+$\delta^{K+1}\leq\delta^{b+1}\leq\delta^b$, so the fast part
+pays every required mean derivative as well.
+
+At $(R,\phi,Z,\alpha)=(1,0,0,0)$ the two real azimuthal
+velocities are $-(j-2)/(e\sqrt{d_j})$, both strictly negative.
+The same pointwise persistence argument gives upper and lower
+bounds of order $\epsilon$ for the fluctuation and for the
+differences from either reference, on a common smaller interval.
+Their physical histories are therefore comparable to
+\[
+ \frac A\lambda\epsilon^2
+   =\frac{\delta^{-1+2(K+1)/p}}{\sqrt{C_\epsilon}}
+   =\frac{\lambda^{2h/(2K+3)}}{\sqrt{C_\epsilon}}.
+\]
+This proves \eqref{eq:finiteMeanHistory}.
+\end{proof}
+
+Already $K=2$ gives histories of order $\lambda^{2h/7}$ despite
+uniform mean geometry and a relative defect tending to zero.
+Thus no bound uniform over these data follows from bounded kinetic
+energy, an upper bound on the interval length, small relative defect,
+and any fixed finite set of these mean derivative bounds alone.
+The higher norms of the initial data grow with $\lambda$.
+A finite allowance depending on the full initial datum, uniform over
+all shorter evolution intervals from that datum, remains unrefuted.
+
 \subsection{The energy inequality alone permits the stress cost}
 
 The time-integrated energy inequality cannot by itself exclude the cost

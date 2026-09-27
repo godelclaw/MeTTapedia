@@ -770,6 +770,17 @@ normalized interval. It does not refute the conditional regularity
 criterion, since the histories remain finite, and does not establish
 repeated concentration from one fixed datum.
 
+Corollary 17 strengthens this limitation to any fixed finite number `K`
+of mean derivatives. Adjacent angular indices `2K+2,2K+4` delay the fast
+mean to amplitude order `p=2K+3`. Taking `ε=δ^((K+1)/p)` makes that
+mean small enough for every prescribed derivative through order `K`,
+while the actual critical fluctuation history and both deletion-reference
+histories are comparable to `λ^(2h/(2K+3))`, which diverges. The initial
+squared energy stays at most one and the relative defect tends to zero.
+Constants depend on `K`. This is an analytic family obstruction to a
+uniform estimate from these inputs; the higher initial norms grow, so
+it does not refute an allowance depending on the full initial datum.
+
 ### A kinematic path satisfying the energy inequality
 
 A separate time-dependent rescaling of `W_+` has zero mean and unit initial
