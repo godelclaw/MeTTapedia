@@ -9,8 +9,8 @@ upstream attribution.
 
 The current root exposes the checked reconstruction and conditional assembly.
 The additional `OrbitAssembly` endpoint supplies the arity-ten presentation
-using two shared periodic certificates. Reducibility and the other six arities
-remain explicit inputs to that endpoint. The full baseline replay must pass
+using rotation and reflection to share certificates. Reducibility and the
+other six arities remain explicit inputs to that endpoint. The full baseline replay must pass
 before an unconditional integration root is accepted.
 
 The source dependency is `../externals/fourcolor`, prepared by the repository's
@@ -60,16 +60,17 @@ lake build kernelOrbitPresentation
 
 This target reconstructs eight presentation modules from exact, hashed
 reference sources, in the namespace `FourColor.Orbit10`. It removes the twenty
-checks for `f10_128` and `f10_242`, supplies those theorems from
-`PeriodicHubcap.fit` and `HalfTurnHubcap.fit`, and retains every other proof
-body. Import names and namespaces change so the
+checks for `f10_128` and `f10_242`. It supplies `f10_128` from
+`PeriodicHubcap.fit`, removes `f10_242`, and replaces its sole consumer with
+`ReflectedHubcap.succeeds`. Every other proof body is retained.
+Import names and namespaces change so the
 original and modified developments remain distinct. The generated sources,
 including the reference licence and credits, are available in
 `.lake/orbit-audit/src`; compilation receipts are in `orbit-results.json` in
 the same audit directory.
 
 `OrbitAssembly.fourColorTheorem_of_checks` consumes the resulting `exclude10`.
-The audit verifies that its dependency graph includes both periodic sharing
+The audit verifies that its dependency graph includes rotation and reflection sharing
 and the explicit colouring reconstruction, and that the original twenty checks
 and original arity-ten theorem are absent.
 
@@ -127,7 +128,16 @@ lemma to `p10_241r`: its period-five boundary reduces the ten checks for
 `f10_242` to five representatives, again with a separate finite check of the
 rotated-part equalities.
 
-The reduction of thirteen independent discharging checks is consumed by the
+`ReflectedHubcap` further reduces those five representatives to three.
+`ChargeBound` converts a checker result into a bound on the actual edge
+charge. The reference's mirror-map and charge-invariance theorems transport
+this bound through reflection; a general summation lemma combines bounds
+around the hub to rule out a positive charge. This proof does not assume
+that the Boolean checker commutes with reflection. The intermediate
+`HalfTurnHubcap` remains available as a comparison, but the coverage proof
+now consumes the stronger semantic certificate.
+
+The reduction of fifteen independent discharging checks is consumed by the
 complete arity-ten coverage proof and the conditional `OrbitAssembly` endpoint.
 All 633 configurations remain. An unconditional assembly with all seven
 arities and all reducibility certificates is still pending. Exact counts and

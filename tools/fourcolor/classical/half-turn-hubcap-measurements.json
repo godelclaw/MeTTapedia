@@ -42,8 +42,10 @@
     "unexpected": [],
     "original_ten_checks_and_hubcap_imported": false
   },
-  "assembly_scope": "Consumed by complete arity-ten coverage and the conditional graph-colouring assembly; the unconditional root remains pending.",
+  "assembly_scope": "Historical rotation-only integration, replaced in current coverage by the reflected certificate. The same coverage theorem name now denotes the stronger replacement.",
   "coverage_consumer": "FourColor.Orbit10.exclude10",
   "conditional_graph_consumer": "FourColor.OrbitAssembly.colorable_of_planeDrawing",
-  "coverage_measurements": "orbit-presentation-measurements.json"
+  "coverage_measurements": "orbit-presentation-measurements.json",
+  "historical_integration_commit": "17e56f2d146969389a2ce5543ada526374f057b4",
+  "current_coverage_replacement": "reflected-hubcap-measurements.json"
 }

@@ -4,6 +4,7 @@ import MettapediaFourColor.ClassicalAssembly
 import MettapediaFourColor.GraphColoringBridge
 import MettapediaFourColor.PeriodicHubcap
 import MettapediaFourColor.HalfTurnHubcap
+import MettapediaFourColor.ReflectedHubcap
 import MettapediaFourColor.PlaneDrawing
 import FourColor.Present7Chk85
 import FourColor.Bulk.Cfg.Hyb218
@@ -16,6 +17,9 @@ import FourColor.Bulk.Cfg.Hyb218
 #print axioms FourColor.f7_4555
 #print axioms FourColor.PeriodicHubcap.succeeds
 #print axioms FourColor.HalfTurnHubcap.succeeds
+#print axioms FourColor.ChargeBound.reflect
+#print axioms FourColor.ChargeBound.successful_of_bounds
+#print axioms FourColor.ReflectedHubcap.succeeds
 #print axioms Mettapedia.Topology.NearestRegions.isConnected_region
 #print axioms FourColor.CompactPlaneMap.Sites.adjacent_of_contact
 #print axioms FourColor.PlaneDrawing.colorable

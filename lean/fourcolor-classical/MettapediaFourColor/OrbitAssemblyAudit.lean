@@ -16,7 +16,8 @@ run_cmd do
         let name := Name.str rootName s!"c10_{case}_{i + 1}"
         if env.contains name then
           throwError m!"Removed certificate is present: {name}"
-  for name in [`FourColor.f10_128, `FourColor.f10_242, `FourColor.exclude10] do
+  for name in [`FourColor.f10_128, `FourColor.f10_242, `FourColor.Orbit10.f10_242,
+      `FourColor.HalfTurnHubcap.fit, `FourColor.exclude10] do
     if env.contains name then
       throwError m!"Original presentation theorem is present: {name}"
   let mut seen : NameSet := {}
@@ -29,7 +30,9 @@ run_cmd do
       if let some info := env.find? name then
         todo := info.getUsedConstantsAsSet.toList ++ todo
   for name in [``FourColor.PeriodicHubcap.fit,
-      ``FourColor.HalfTurnHubcap.fit,
+      ``FourColor.ReflectedHubcap.succeeds,
+      ``FourColor.ChargeBound.reflect,
+      ``FourColor.ChargeBound.successful_of_bounds,
       ``FourColor.HubcapOrbit.oneEntries_fit_periodic,
       ``FourColor.ClassicalAssembly.no_embedded_reduction,
       ``FourColor.PlaneDrawing.core_eq_openStar,
@@ -47,6 +50,6 @@ run_cmd do
         unless allowed.contains axiomName do
           throwError m!"Unexpected axiom in {name}: {axiomName}"
   logInfo m!"Audited {count} imported public declarations; only the three permitted axioms."
-  logInfo "The assembly consumes periodic sharing and explicit colouring reconstruction."
+  logInfo "The assembly consumes rotation, semantic reflection and colouring reconstruction."
   logInfo "The graph endpoint consumes the constructed sites and nearest-region geometry."
   logInfo "The twenty original checks and the original arity-ten theorem are absent."

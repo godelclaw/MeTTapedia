@@ -20,6 +20,7 @@ MODULES = [
     "CompatibleTraces", "PatchWitness", "HypermapDictionary",
     "EmbeddedReconstruction", "Config4Reconstruction", "ClassicalAssembly",
     "GraphColoringBridge", "HubcapOrbit", "PeriodicHubcap", "HalfTurnHubcap",
+    "ChargeBound", "ReflectedHubcap",
     "NearestRegions", "CompactPlaneMap", "PlaneDrawing", "BridgeAudit",
 ]
 OPTIONS = [

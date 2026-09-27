@@ -154,6 +154,8 @@ reference's MIT notice and Gonthier/Werner attribution.
 | `HubcapOrbit` | Equal rotated boundary inputs and equal bounds share a checker certificate |
 | `PeriodicHubcap` | Two representative checks close the same ten-position discharging case as the reference's `f10_128` |
 | `HalfTurnHubcap` | Five representatives close `f10_242` by the same orbit lemma, using its period-five boundary |
+| `ChargeBound` | Checker results become semantic charge bounds, transport through reflection, and compose around a hub |
+| `ReflectedHubcap` | Three representatives close the same `f10_242` part, combining rotation and semantic reflection |
 | `NearestRegions` | Compact sites with connected exclusive cores have connected strict nearest regions in any real normed space |
 | `CompactPlaneMap` | A two-site contact is non-corner map adjacency, and map colours transfer to graph colours |
 | `PlaneDrawing` | Actual noncrossing injective paths construct all the compact-site hypotheses, including isolated vertices |
@@ -274,12 +276,19 @@ ten check theorems.
 The second case, `f10_242`, has period five. `HalfTurnHubcap.succeeds` uses the
 same generic theorem to replace its ten checks by five representatives, with
 a separate check of the complete rotated inputs. Its measurement record is
-`half-turn-hubcap-measurements.json`.
+`half-turn-hubcap-measurements.json`. This is an intermediate comparison:
+`ReflectedHubcap.succeeds` now uses only three representatives. The generic
+`ChargeBound.reflect` transports the actual charge inequality through the
+reference's mirror map. `ChargeBound.successful_of_bounds` composes the
+individual inequalities around the hub. The coverage proof consumes this
+semantic certificate directly, without importing `HalfTurnHubcap` or
+asserting that the Boolean checker is reflection invariant. The current
+measurements are in `reflected-hubcap-measurements.json`.
 
 Both replacements are consumed by the complete arity-ten presentation and
 the conditional `OrbitAssembly` endpoint. Its 2,580 explicit hubcap checker
-obligations become 2,567, with two separate checks of the boundary-rotation
-equalities. These are counts of independent checker proof obligations, not
+obligations become 2,565, with two separate finite checks classifying the
+boundary inputs. These are counts of independent checker proof obligations, not
 all reductions performed by the kernel. All 633 configurations remain.
 An unconditional assembly with every catalogue certificate and all seven
 presentations is still pending, so that full replay is credited no saving yet.
@@ -296,8 +305,9 @@ discharging computations and its checked local consumer.
 `orbit_presentation.py` reconstructs the arity-ten coverage proof from eight
 hashed reference files. It changes import names and namespaces, removes the
 twenty declarations `c10_128_1` through `c10_128_10` and `c10_242_1` through
-`c10_242_10`, and replaces the two combining proofs with `PeriodicHubcap.fit`
-and `HalfTurnHubcap.fit`. Every other proof body is retained. The
+`c10_242_10`. It replaces the first combining proof with `PeriodicHubcap.fit`,
+removes `f10_242`, and replaces its sole consuming hubcap step with
+`ReflectedHubcap.succeeds`. Every other proof body is retained. The
 generated source includes the reference's licence and attribution. The final
 audit checks the axiom set and follows proof dependencies to both the orbit
 lemma and the explicit colouring reconstruction; it also rejects the original
@@ -323,6 +333,18 @@ The generated source and compilation receipts are in `.lake/orbit-audit`.
 frontend times and artifact sizes. Compilation uses the ordinary Lean kernel
 and emits no native C code. This integration establishes consumption of the
 shared certificate; it does not establish a runtime or artifact-size saving.
+
+`reflection_candidates.py` searches the pinned single-edge queries for pairs
+with equal bounds and reflected full input parts. It finds 450 possible
+additional identifications beyond exact-input equality, including the two
+used by `ReflectedHubcap`. These are program-discovered candidates; only the
+consumed, kernel-checked applications enter the compression ledger. Dual-edge
+queries are outside this search. Replay it with:
+
+```sh
+python3 tools/fourcolor/classical/reflection_candidates.py \
+  --reference lean/externals/fourcolor --output reflection-results.json
+```
 
 `compression-ledger.json` keeps the baseline and credited changes separate.
 The first bounded experiment tested whether two configurations could share a

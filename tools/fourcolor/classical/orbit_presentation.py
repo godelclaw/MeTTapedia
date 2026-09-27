@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Rebuild the arity-ten presentation with two periodic hubcaps shared.
+"""Rebuild the arity-ten presentation with rotation and reflection sharing.
 
 The eight generated modules retain the pinned reference's proof bodies,
-except for twenty removed checks and their two combining theorems. A separate
-namespace allows comparison with the original presentation. Both versions
+except for twenty removed checks, their combining theorems and one consumer.
+A separate namespace allows comparison with the original presentation. Both versions
 use the same part, rule and configuration definitions.
 """
 
@@ -32,7 +32,7 @@ MODULES = {
 PREFIX = "MettapediaFourColor.Orbit10"
 REPLACEMENTS = {
     "Present10Chk2": (128, "PeriodicHubcap"),
-    "Present10Chk4": (242, "HalfTurnHubcap"),
+    "Present10Chk4": (242, None),
 }
 
 
@@ -48,14 +48,35 @@ def transform(name, source):
         names = re.findall(r"^theorem (\w+)", removed, re.M)
         if names != [f"c10_{case}_{i}" for i in range(1, 11)]:
             raise ValueError("The selected block is not the original ten checks")
-        source = source[:first] + source[last:]
         old = "  simp [hubcapFit, " + ", ".join(names) + "]"
         if source.count(old) != 1:
             raise ValueError("The combining proof differs from the recorded form")
-        source = source.replace(old, f"  exact FourColor.{consumer}.fit")
-        source = f"import MettapediaFourColor.{consumer}\n" + source
+        if consumer is None:
+            proof_end = source.index("\n\n", end)
+            if old not in source[last:proof_end]:
+                raise ValueError("The complete combining proof was not located")
+            source = source[:first] + source[proof_end + 2:]
+        else:
+            source = source[:first] + source[last:]
+            source = source.replace(old, f"  exact FourColor.{consumer}.fit")
+            source = f"import MettapediaFourColor.{consumer}\n" + source
         if re.search(rf"\bc10_{case}_\d+\b", source):
             raise ValueError("A removed certificate remains in the source")
+    if name == "Present10Step1":
+        bounds = [4, 5, 5, 4, 2] * 2
+        old = "\n".join([
+            "  exact succeed_by_hubcap10 hred",
+            *[("    (" if j == 0 else "     ") + f"Hubcap.one {j} {b} <|"
+              for j, b in enumerate(bounds)],
+            "     Hubcap.nil)",
+            "    rfl (by decide +kernel) (by decide +kernel) f10_242",
+        ])
+        if source.count(old) != 1:
+            raise ValueError("The f10_242 consumer differs from the recorded form")
+        source = source.replace(old, "  exact FourColor.ReflectedHubcap.succeeds hred _")
+        source = "import MettapediaFourColor.ReflectedHubcap\n" + source
+        if re.search(r"\bf10_242\b", source):
+            raise ValueError("The removed hubcap theorem still has a consumer")
     for old, new in MODULES.items():
         source = re.sub(rf"(?m)^import FourColor\.{old}$",
                         f"import {PREFIX}.{new}", source)
@@ -125,7 +146,7 @@ def main():
             raise SystemExit(f"Missing prepared reference module: FourColor.Present10Chk{n}")
     library = (args.library_output or output / "lib").resolve()
     adapters = package / ".lake/build/lib/lean"
-    for name in ("PeriodicHubcap", "HalfTurnHubcap", "ClassicalAssembly"):
+    for name in ("PeriodicHubcap", "ReflectedHubcap", "ClassicalAssembly"):
         if not (adapters / f"MettapediaFourColor/{name}.olean").is_file():
             raise SystemExit("Build the adapter package first: " + name)
     # Lean resolves a top-level module prefix from one search directory.

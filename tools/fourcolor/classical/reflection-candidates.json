@@ -1,0 +1,81 @@
+{
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "evidence": "Program search only; no additional compression credited.",
+  "scope": "All explicit single-edge checkDbound2 queries in arities 5 through 11; exact equal bounds; no dual-edge queries.",
+  "mechanism": "Semantic charge transport along reflectDrule; no Boolean checker-equivariance assumption.",
+  "arities": [
+    {
+      "arity": 5,
+      "single_edge_queries": 10,
+      "exact_input_duplicates": 0,
+      "reflection_orbit_savings": 0,
+      "additional_reflection_savings": 0,
+      "source_sha256": "9cf22376feb74d3004e747714bf8d57229bde12e8e51c7c119574fcb4fb9b9c9",
+      "checker_sources_digest": "f52c903376e003640737df4f846d24a9288108fbf46c94609e05cc8b5ec06192",
+      "groups_with_reflected_matches": 0
+    },
+    {
+      "arity": 6,
+      "single_edge_queries": 0,
+      "exact_input_duplicates": 0,
+      "reflection_orbit_savings": 0,
+      "additional_reflection_savings": 0,
+      "source_sha256": "8b1ec8151aec440598fd7efe37d1fd6814e684943d9469450885d93770e7858c",
+      "checker_sources_digest": "ebcbf8848423f94b7587853cfc09d49dd8fdfc2e1fc99622db676bb282d04ad1",
+      "groups_with_reflected_matches": 0
+    },
+    {
+      "arity": 7,
+      "single_edge_queries": 9095,
+      "exact_input_duplicates": 2,
+      "reflection_orbit_savings": 138,
+      "additional_reflection_savings": 136,
+      "source_sha256": "2f19ce23037498d295b71c6c11ff3f710abb80f563d7d97f85158ce9f1473896",
+      "checker_sources_digest": "67d67f23de437f6b6752034722adb45e0414df268caad55be4b848453374636a",
+      "groups_with_reflected_matches": 136
+    },
+    {
+      "arity": 8,
+      "single_edge_queries": 8516,
+      "exact_input_duplicates": 16,
+      "reflection_orbit_savings": 132,
+      "additional_reflection_savings": 116,
+      "source_sha256": "862c636b083afcc0aae9290aaabcb1175dd14ed60ee500eb2f63bef6244527f7",
+      "checker_sources_digest": "d89bffdc3e5f3aa0e4b0d7bbe991a2236123f459706a843746943e107e37b578",
+      "groups_with_reflected_matches": 116
+    },
+    {
+      "arity": 9,
+      "single_edge_queries": 6381,
+      "exact_input_duplicates": 2,
+      "reflection_orbit_savings": 72,
+      "additional_reflection_savings": 70,
+      "source_sha256": "d3ac9e654afda85c508f5112c21e7fea0f0a126078020169370e47c332be5772",
+      "checker_sources_digest": "a0174776120d805fa2aa13bb42c5045a63e02d4e638a487dab739698415e7b83",
+      "groups_with_reflected_matches": 70
+    },
+    {
+      "arity": 10,
+      "single_edge_queries": 2244,
+      "exact_input_duplicates": 13,
+      "reflection_orbit_savings": 79,
+      "additional_reflection_savings": 66,
+      "source_sha256": "ede0f1d43e29c49f6af5ea7a3643635f87e4cc4d528660776215fe8bbdda73d7",
+      "checker_sources_digest": "3a732bb9132aaade55dca11a9c17b7424489048d490783b048ae7c21446c4d3f",
+      "groups_with_reflected_matches": 66
+    },
+    {
+      "arity": 11,
+      "single_edge_queries": 548,
+      "exact_input_duplicates": 0,
+      "reflection_orbit_savings": 62,
+      "additional_reflection_savings": 62,
+      "source_sha256": "0aaf8ab0194915ea7ff5fd8dced26b89005ce58cb62576d5f06b23b8b5f5c0ea",
+      "checker_sources_digest": "413c34ed080eba6a9d65f2c835ed1fda534f0f47eef866bd7a363180f4acdb73",
+      "groups_with_reflected_matches": 62
+    }
+  ],
+  "additional_reflection_savings": 450,
+  "replay_tool": "reflection_candidates.py",
+  "limits": "These candidates are not credited compression. Each requires a kernel-checked semantic bound and a consuming coverage proof. The two extra identifications used in the p10_241r application are included in this inventory, not additional to it."
+}

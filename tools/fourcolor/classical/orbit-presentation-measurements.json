@@ -12,7 +12,7 @@
       "module": "MettapediaFourColor.Orbit10.Checks4",
       "original_module": "FourColor.Present10Chk4",
       "original_sha256": "b648a962c1f224bc4a5a34e898c7b7486a2058e6e09f967e65f1cdaae369dd59",
-      "source_sha256": "8d7054aae37cfbeec20bd921810674026872180ed31b5c695af526a878336de7"
+      "source_sha256": "520b0b6f28ecc7c38c71e0752b7c443f6117701239efcfb9dad609da0beae8d5"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Hub1",
@@ -30,7 +30,7 @@
       "module": "MettapediaFourColor.Orbit10.Step1",
       "original_module": "FourColor.Present10Step1",
       "original_sha256": "9f020042fb99b7f10bc82f6d6f92b8e24e20f7750fd64361b3b14cd2a8e2397f",
-      "source_sha256": "e911bc924a883605e1cb9b335ab5f3cf2cf1064249612f637aa9179221a495b4"
+      "source_sha256": "3718394f22aeeb4406091e550bceb1bc331fed2b5381ec707da4b51ce8a3fed4"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Step2",
@@ -52,11 +52,11 @@
     },
     {
       "module": "MettapediaFourColor.OrbitAssembly",
-      "source_sha256": "d9cc47f2eecc270ae222142486124bfaf283b474145ee164abfc6c13eca4057f"
+      "source_sha256": "eb3b787640e6f1bb28954d0b7f75f36583c4eef4fcb031cf17ac845db8f7a99d"
     },
     {
       "module": "MettapediaFourColor.OrbitAssemblyAudit",
-      "source_sha256": "d6a504e20dd1c5b865480408328bdb6083c5cfb1e5f88a61240ff558b782f655"
+      "source_sha256": "6fbfd8dbfb18f5f07062a295a5eb9c8faccd6c3a3453bb2435abd72590421df8"
     }
   ],
   "compiler_options": [
@@ -72,23 +72,23 @@
       "module": "MettapediaFourColor.Orbit10.Checks",
       "source_sha256": "ed145a1ab848868d7d9afa873eb74729883f669ea2fdbcf76b172a4e18ea5199",
       "exit_code": 0,
-      "frontend_wall_seconds": 28.199,
+      "frontend_wall_seconds": 27.266,
       "olean_bytes": 220360,
       "olean_sha256": "174e0adfc130ea4127e49963c06ecd945bb1db7a11c2e091470be98fe5f50d8c"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Checks4",
-      "source_sha256": "8d7054aae37cfbeec20bd921810674026872180ed31b5c695af526a878336de7",
+      "source_sha256": "520b0b6f28ecc7c38c71e0752b7c443f6117701239efcfb9dad609da0beae8d5",
       "exit_code": 0,
-      "frontend_wall_seconds": 26.294,
-      "olean_bytes": 227904,
-      "olean_sha256": "d5b73c84eca3844f3f77c0ab1622aa10c61152fd124fcb9ea3ba019b474ed8ff"
+      "frontend_wall_seconds": 30.995,
+      "olean_bytes": 226112,
+      "olean_sha256": "e5e241c5081ec9619d4d5238761ddf5f16942c9347dafde30c6f4f78abba26d9"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Hub1",
       "source_sha256": "c6d497e34ef5cb732e4a947cb1fa88d8f94c2a309d6c23809f8d7bab872bac97",
       "exit_code": 0,
-      "frontend_wall_seconds": 2.332,
+      "frontend_wall_seconds": 2.535,
       "olean_bytes": 136080,
       "olean_sha256": "2725217d808de48679d19394ffeda958623d76ae1aef3874831800ca7832489f"
     },
@@ -96,23 +96,23 @@
       "module": "MettapediaFourColor.Orbit10.Hub2",
       "source_sha256": "1aa63b7954ccc05ed505fdf5f6afeb0825149c68bb046b84075fc9d39561a6fa",
       "exit_code": 0,
-      "frontend_wall_seconds": 2.264,
+      "frontend_wall_seconds": 2.512,
       "olean_bytes": 135680,
       "olean_sha256": "ae70bbaa204f4a7e62548e7fd9b683b88a08a8ff8184cf78db021b5e051aff76"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Step1",
-      "source_sha256": "e911bc924a883605e1cb9b335ab5f3cf2cf1064249612f637aa9179221a495b4",
+      "source_sha256": "3718394f22aeeb4406091e550bceb1bc331fed2b5381ec707da4b51ce8a3fed4",
       "exit_code": 0,
-      "frontend_wall_seconds": 4.907,
-      "olean_bytes": 492208,
-      "olean_sha256": "1797c7a5a643aeb9b4013b4a123821882a7b5752daf5e65dd713c8e4a9bfb596"
+      "frontend_wall_seconds": 4.981,
+      "olean_bytes": 490584,
+      "olean_sha256": "f8ef1b1d68564b2ad7929b53f16e96342bad82a46b2832edb23f0b318198aaf2"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Step2",
       "source_sha256": "a5fef6f2137900ed3a14849a99933caa260ea5cb05c6fd1beed6542a75ff0c6f",
       "exit_code": 0,
-      "frontend_wall_seconds": 8.04,
+      "frontend_wall_seconds": 8.548,
       "olean_bytes": 976040,
       "olean_sha256": "8e08d601e6cbd0e1a2d26e0cddbaa49e6535ddb5ca86a1390dcba73d1ea1e398"
     },
@@ -120,7 +120,7 @@
       "module": "MettapediaFourColor.Orbit10.Step3",
       "source_sha256": "a0d9d3b6509d92f26e50faeb788ca7a8b57c3a3a023e565b8d9c473cd9d1b658",
       "exit_code": 0,
-      "frontend_wall_seconds": 5.289,
+      "frontend_wall_seconds": 5.569,
       "olean_bytes": 552512,
       "olean_sha256": "ed7039a85dc47c34af446ce2fb27d1838b09500bb9895a34a63da1636288651c"
     },
@@ -128,23 +128,23 @@
       "module": "MettapediaFourColor.Orbit10.Coverage",
       "source_sha256": "bf273573d436e77cbab9effbbd05fe27dd124f0f658b7c08990b81cfe814269b",
       "exit_code": 0,
-      "frontend_wall_seconds": 1.862,
+      "frontend_wall_seconds": 1.902,
       "olean_bytes": 22664,
       "olean_sha256": "2fb13e0dd2309622d34f9bdd3de702d52062aaf6d83f7fcf405cb030904e29a5"
     },
     {
       "module": "MettapediaFourColor.OrbitAssembly",
-      "source_sha256": "d9cc47f2eecc270ae222142486124bfaf283b474145ee164abfc6c13eca4057f",
+      "source_sha256": "eb3b787640e6f1bb28954d0b7f75f36583c4eef4fcb031cf17ac845db8f7a99d",
       "exit_code": 0,
-      "frontend_wall_seconds": 3.112,
+      "frontend_wall_seconds": 3.655,
       "olean_bytes": 17600,
-      "olean_sha256": "513c83b0a8caf5f28b819fdb85688e4a7e017975e4989480d8d13215e106f104"
+      "olean_sha256": "3e54bd39c30b0c4887e98ce0007cb00d78d9a14d054ce535c217a0f9661da76d"
     },
     {
       "module": "MettapediaFourColor.OrbitAssemblyAudit",
-      "source_sha256": "d6a504e20dd1c5b865480408328bdb6083c5cfb1e5f88a61240ff558b782f655",
+      "source_sha256": "6fbfd8dbfb18f5f07062a295a5eb9c8faccd6c3a3453bb2435abd72590421df8",
       "exit_code": 0,
-      "frontend_wall_seconds": 5.315,
+      "frontend_wall_seconds": 5.643,
       "olean_bytes": 3624,
       "olean_sha256": "7615eabca34ba3ccfe322a0c0f53271c053d8de1849f1a0a34c20c1c939418ea"
     }
@@ -223,10 +223,10 @@
   },
   "checker_obligations": {
     "arity10_before": 2580,
-    "arity10_after": 2567,
-    "replaced": 13,
+    "arity10_after": 2565,
+    "replaced": 15,
     "counting_method": "Explicit independent hubcap checker proof obligations; not all kernel reductions during conversion.",
-    "additional_rotation_equality_checks": 2
+    "additional_input_classification_checks": 2
   },
   "consumption": {
     "coverage": "FourColor.Orbit10.exclude10",
@@ -245,8 +245,13 @@
     "original_checks_replaced": 20,
     "shared_certificates": [
       "FourColor.PeriodicHubcap.fit",
-      "FourColor.HalfTurnHubcap.fit"
-    ]
+      "FourColor.ReflectedHubcap.succeeds"
+    ],
+    "semantic_transport": [
+      "FourColor.ChargeBound.reflect",
+      "FourColor.ChargeBound.successful_of_bounds"
+    ],
+    "rotation_only_five_check_certificate_present": false
   },
   "axiom_audit": {
     "imported_public_declarations": 11730,
@@ -262,5 +267,5 @@
     "All 633 configurations remain.",
     "No runtime or artifact-size improvement is claimed; timings include frontend loading, elaboration, kernel checking and serialization."
   ],
-  "measurement_scope": "The ten replacement-module timings use prepared dependencies, including the unchanged reference check modules and the two periodic certificates. They are not a from-scratch arity-ten time. The complete reference total covers its 31 presentation modules; common lower-level dependencies were already prepared. No speed comparison is inferred from these unequal scopes."
+  "measurement_scope": "The ten replacement-module timings use prepared dependencies, including unchanged reference check modules and the rotation/reflection certificates. They are not a from-scratch arity-ten time. The complete reference total covers its 31 presentation modules; common lower-level dependencies were already prepared. No speed comparison is inferred from these unequal scopes."
 }

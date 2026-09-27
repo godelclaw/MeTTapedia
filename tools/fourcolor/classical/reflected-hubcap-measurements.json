@@ -1,0 +1,74 @@
+{
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "lean_version": "4.34.0-rc2",
+  "reference_obligation": "FourColor.f10_242",
+  "target_part": "FourColor.p10_241r",
+  "reference_source": "FourColor/Present10Chk4.lean",
+  "reference_source_sha256": "b648a962c1f224bc4a5a34e898c7b7486a2058e6e09f967e65f1cdaae369dd59",
+  "uniform_theorems": [
+    "FourColor.ChargeBound.of_check",
+    "FourColor.ChargeBound.reflect",
+    "FourColor.ChargeBound.successful_of_bounds"
+  ],
+  "consumer": "FourColor.ReflectedHubcap.succeeds",
+  "checker_obligations": {
+    "reference": 10,
+    "rotation_only": 5,
+    "rotation_and_reflection": 3,
+    "avoided_from_reference": 7,
+    "additional_avoided_after_rotation": 2,
+    "additional_finite_input_classification": 1,
+    "counting_method": "Independent explicit checker proof obligations; not all kernel reductions during conversion."
+  },
+  "modules": [
+    {
+      "module": "MettapediaFourColor.ChargeBound",
+      "source_sha256": "b393fdde5f2eba9880fb6b1522dd4096081db8dea824362ec85ff628786508b0",
+      "exit_code": 0,
+      "frontend_wall_seconds": 1.839,
+      "olean_bytes": 110688,
+      "olean_sha256": "725d21e873637dab00038f73a2ecbb75706a8907c3fd5bd32c0b7ab994485929"
+    },
+    {
+      "module": "MettapediaFourColor.ReflectedHubcap",
+      "source_sha256": "b678dbc66451a1e433b6d0561b120ba14ad6b69dcd26ab1e734c0c1f089b15f5",
+      "exit_code": 0,
+      "frontend_wall_seconds": 2.36,
+      "olean_bytes": 73232,
+      "olean_sha256": "2b35c2a8099684bc9cc5caf014b3647b4ba5df580d1d0fe295a02084d89b4ea6"
+    }
+  ],
+  "compiler_options": [
+    "-Dpp.unicode.fun=true",
+    "-DautoImplicit=false",
+    "-DrelaxedAutoImplicit=false",
+    "-Dweak.linter.mathlibStandardSet=true",
+    "-DmaxSynthPendingDepth=3"
+  ],
+  "native_code_generation": false,
+  "axiom_audit": {
+    "allowed": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "unexpected": [],
+    "imported_public_declarations": 16515
+  },
+  "semantics": "Bounds on actual dscore2 transfer through the reference mirror map; no Boolean checker-equivariance hypothesis.",
+  "measurement_scope": "Frontend compilation with prepared dependencies; includes loading, elaboration, kernel checking and serialization.",
+  "performance_claim": "No runtime or artifact-size saving claimed.",
+  "prior_comparison": "half-turn-hubcap-measurements.json",
+  "candidate_inventory": "reflection-candidates.json",
+  "coverage_consumer": "FourColor.Orbit10.exclude10",
+  "conditional_graph_consumer": "FourColor.OrbitAssembly.colorable_of_planeDrawing",
+  "coverage_measurements": "orbit-presentation-measurements.json",
+  "dependency_audit": {
+    "passed": true,
+    "imported_public_declarations": 11730,
+    "original_twenty_checks_present": false,
+    "original_f10_242_present": false,
+    "rotation_only_five_check_certificate_present": false
+  },
+  "assembly_scope": "Consumed by complete arity-ten coverage and the conditional graph-colouring assembly; the unconditional root remains pending."
+}
