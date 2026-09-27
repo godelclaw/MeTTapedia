@@ -3,7 +3,8 @@
 
 The polynomial fields test local differential identities. The Gaussian
 fields are Schwartz initial data; their kinetic energy jets use the exact
-unforced equation. Neither calculation integrates a solution. Requires Sympy.
+unforced equation. A final scaling check concerns a prescribed path which
+is not a Navier--Stokes solution. No solution is integrated. Requires Sympy.
 """
 import json
 from math import factorial
@@ -177,6 +178,42 @@ swirl_operator = (s.diff(sv, time_var)+vrift*s.diff(sv, r)
                    -s.diff(sv, r)/r+sv/r**2)
 require_zero(gamma_operator-r*swirl_operator, 'ancient circulation equation')
 
+# Signed work before taking a norm of the Reynolds stress. All coefficient
+# functions and the test density are arbitrary; the remainder is a divergence.
+aspect = s.symbols('aspect', positive=True)
+test_density = s.Function('test_density')(r, z, time_var)
+circulation_fun = s.Function('circulation')(r, z, time_var)
+radial_drift = s.Function('radial_drift')(r, z, time_var)
+axial_drift = s.Function('axial_drift')(r, z, time_var)
+radial_stress = s.Function('radial_azimuthal_stress')(r, z, time_var)
+axial_stress = s.Function('axial_azimuthal_stress')(r, z, time_var)
+transport_drift = radial_drift+1/r
+primal = (s.diff(circulation_fun, r, 2)
+          +aspect**2*s.diff(circulation_fun, z, 2)
+          -transport_drift*s.diff(circulation_fun, r)
+          -axial_drift*s.diff(circulation_fun, z))
+adjoint = (s.diff(test_density, r, 2)
+           +aspect**2*s.diff(test_density, z, 2)
+           +s.diff(transport_drift*test_density, r)
+           +s.diff(axial_drift*test_density, z))
+dual_radial_flux = (test_density*s.diff(circulation_fun, r)
+                   -circulation_fun*s.diff(test_density, r)
+                   -transport_drift*circulation_fun*test_density)
+dual_axial_flux = (aspect**2*(test_density*s.diff(circulation_fun, z)
+                              -circulation_fun*s.diff(test_density, z))
+                  -axial_drift*circulation_fun*test_density)
+require_zero(primal*test_density-circulation_fun*adjoint
+             -s.diff(dual_radial_flux, r)-s.diff(dual_axial_flux, z),
+             'circulation adjoint identity')
+source_pairing = (-r*s.diff(radial_stress, r)-2*radial_stress
+                  -aspect*r*s.diff(axial_stress, z))*test_density
+signed_work = (radial_stress*(r*s.diff(test_density, r)-test_density)
+               +aspect*axial_stress*r*s.diff(test_density, z))
+require_zero(source_pairing-signed_work
+             +s.diff(r*radial_stress*test_density, r)
+             +aspect*s.diff(r*axial_stress*test_density, z),
+             'signed dual Reynolds work')
+
 # Finite-energy data: each stored vector is the polynomial multiplying
 # exp(-x^2-y^2-z^2). Rotation preserves this common Gaussian factor.
 phase = s.symbols('phase', real=True)
@@ -272,9 +309,39 @@ for name, expected in [('mean', [2, 8, 2]),
         require_zero(value.subs(phase, 1)-value.subs(phase, -1),
                      'Gaussian opposite-phase norms: '+name)
 
+# This time-dependent rescaling is a kinematic path, not an unforced flow.
+# Its exact energy inequality does not pay its critical defect history.
+tau, h, viscosity, window_ratio = s.symbols(
+    'tau h viscosity window_ratio', positive=True)
+energy_exponent = s.Rational(1, 2)-2*h
+radial_width_sq = 160*viscosity/(3*energy_exponent)
+axial_width_sq = 8*viscosity/energy_exponent
+path_energy = tau**energy_exponent
+horizontal_ratio = (gaussian_norms['defect'][1]
+                    /gaussian_norms['defect'][0]).subs(phase, 1)
+axial_ratio = (gaussian_norms['defect'][2]
+               /gaussian_norms['defect'][0]).subs(phase, 1)
+path_dissipation = path_energy*(horizontal_ratio/(radial_width_sq*tau)
+                               +axial_ratio/(axial_width_sq*tau**(1-2*h)))
+path_balance = -s.diff(path_energy, tau)/2+viscosity*path_dissipation
+path_balance_formula = energy_exponent*path_energy*(tau**(2*h)-3)/(8*tau)
+require_zero(s.simplify(path_balance-path_balance_formula),
+             'kinematic path energy loss')
+total_viscous_dissipation = energy_exponent*s.Rational(1, 8)*(
+    1/energy_exponent+1/(energy_exponent+2*h))
+require_zero(total_viscous_dissipation-(1-2*h)/4,
+             'kinematic path finite total dissipation')
+stress_primitive = -tau**(-h)/h
+require_zero(s.simplify(s.diff(stress_primitive, tau)-tau**(-1-h)),
+             'stress time primitive')
+window_stress = tau**h*(stress_primitive.subs(tau, window_ratio*tau)
+                        -stress_primitive)
+require_zero(s.simplify(window_stress-(1-window_ratio**(-h))/h),
+             'nonvanishing normalized stress on each time interval')
+
 print(json.dumps({
     'status': 'all exact residuals zero',
-    'scope': 'polynomial identities and Gaussian initial energy jets; no evolution',
+    'scope': 'differential identities, initial energy jets, and a kinematic path; no NS evolution',
     'mean_velocity': [str(e) for e in v],
     'lifted_force': str(s.cancel(g)),
     'stress_entries_nonzero': sum(e != 0 for e in [a, b, cc, d, e, f]),
@@ -284,6 +351,8 @@ print(json.dumps({
     'general_cylindrical_stretching': 'checked for arbitrary component symbols',
     'localized_radial_hardy': 'checked for arbitrary swirl and cutoff functions',
     'ancient_circulation_operator': 'checked for an arbitrary swirl function',
+    'signed_dual_reynolds_work': 'checked for arbitrary stress and test functions',
+    'circulation_adjoint': 'checked for arbitrary drift and test functions',
     'gaussian_norms_divided_by_pi_over_2_to_3_over_2': {
         name: [str(value) for value in values]
         for name, values in gaussian_norms.items()
@@ -292,4 +361,10 @@ print(json.dumps({
     'gaussian_transfer_divided_by_pi_over_3_to_3_over_2': str(gtransfer),
     'gaussian_mean_circulation_source_polynomial': str(s.factor(gtorque)),
     'gaussian_circulation_diffusion_at_max_divided_by_exp_minus_1': [-8, -4],
+    'kinematic_path_energy_exponent': str(energy_exponent),
+    'kinematic_path_balance_divided_by_energy': str(s.simplify(
+        path_balance_formula/path_energy)),
+    'kinematic_path_total_viscous_dissipation': str(s.simplify(
+        total_viscous_dissipation)),
+    'kinematic_path_conditions': '0<h<1/4, 0<tau<=1; not a Navier-Stokes solution',
 }, indent=2))

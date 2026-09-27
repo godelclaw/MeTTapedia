@@ -273,6 +273,24 @@ identity and the ancient circulation equation. An additional scalar check
 verifies a weighted Hardy constant on a power profile. Errors raise
 exceptions even under `python3 -O`.
 
+The note also proves a necessary stress input for persistent nonzero
+rescaled mean swirl. With `e=P(w_r w_theta)`, `f=P(w_z w_theta)` and
+`τ=-t`, some fixed `T>1` and `ε>0` then obey
+
+```text
+τ^h ∫[-Tτ,-τ] (||e||∞ + τ^h ||f||∞) dt ≥ ε
+```
+
+at every sufficiently late time where the rescaled swirl exceeds a fixed
+positive threshold. In particular the interval average of `||w||∞²` is
+at least a constant times `τ^(-1-h)`. The proof retains the same uniform
+mean geometry and uses the ancient circulation comparison. It gives no
+bound on this stress from initial data. Before taking norms, the signed
+stress pairs with a test density `ψ` as
+`e(R ∂Rψ-ψ) + δ f R ∂Zψ`; the script checks this integration by parts
+and the full circulation adjoint identity for arbitrary coefficient
+functions. A global adjoint kernel construction is not claimed.
+
 The polynomial fields test local identities; they are not finite-energy
 whole-space data or Navier–Stokes solutions. The script does not certify
 the analytic proof in the note. Its main regularity criterion assumes
@@ -364,3 +382,30 @@ The phase `σ=-1` therefore increases the maximum when
 `ε²A/(νλ) > e[2+(μ/λ)²]`, with energy transferred out of the defect.
 This is an initial growth example in the actual unforced equation, not
 a demonstration of repeated spin-up or a uniform evolution time window.
+
+### A kinematic path satisfying the energy inequality
+
+A separate time-dependent rescaling of `W_+` has zero mean and unit initial
+squared velocity norm. For `0<h<1/4`, put `α=1/2-2h`,
+`c²=160ν/(3α)`, `d²=8ν/α`, and
+`A₀=((9/2)(π/2)^(3/2)c²d)^(-1/2)`. The prescribed path is
+
+```text
+u(x,-τ) = A₀ τ^(-1/2-h/2) W_+(x_h/(c√τ), z/(d τ^(1/2-h))).
+```
+
+Its energy and dissipation satisfy the exact formulas
+
+```text
+E=||u||₂²=τ^α,
+(1/2)E' + ν||∇u||₂² = αE(τ^(2h)-3)/(8τ) < 0,
+ν ∫[-1,0] ||∇u||₂² dt = (1-2h)/4.
+```
+
+Nevertheless its critical defect history diverges, and the normalized
+stress on each fixed-ratio time interval stays positive. The script checks
+these scaling identities. This path is **not a Navier–Stokes solution**:
+its strict energy loss violates the equality for an unforced smooth flow,
+and a force would be needed to cancel its nonzero mean Reynolds torque.
+It shows only that energy inequality, finite dissipation and mean geometry
+alone cannot pay the required stress history.

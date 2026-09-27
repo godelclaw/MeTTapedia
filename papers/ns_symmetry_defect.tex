@@ -301,6 +301,95 @@ If its scaled radial coordinate tends to zero, the conclusion instead
 follows directly from $\partial_ZS_n(0,Z,s)=0$ and the mixed
 second-derivative bound. This proves \eqref{eq:axialSwirlSmall}.
 
+\subsection{A necessary stress input on late time intervals}
+
+The same compactness argument also gives a requirement for sustaining a
+nonzero rescaled mean swirl, without assuming \eqref{eq:history}.
+It concerns the actual radial and axial fluxes of angular momentum.
+
+\begin{proposition}\label{prop:stressgap}
+Fix $0<b<1$, $\kappa>0$, $0<h<1/2$, and constants $C,F_0\geq0$.
+Consider smooth divergence-free solutions on $B(1)\times(-1,0)$
+whose mean satisfies \eqref{eq:meanr}--\eqref{eq:meanz} with constant
+$C$, allowing an original force of supremum at most $F_0$.
+Let $e=\PP(w_rw_\theta)$, $f=\PP(w_zw_\theta)$ and define
+\[
+ \mathcal B_\tau(T)=\tau^h\int_{-T\tau}^{-\tau}
+       \big(\norm{e(t)}_\infty+\tau^h\norm{f(t)}_\infty\big)\dd t.
+\]
+There are $T>1$, $\varepsilon>0$, and $0<\tau_0<1/T$, depending
+only on the listed constants, such that, for every such solution and
+$0<\tau<\tau_0$,
+\begin{equation}\label{eq:stressgap}
+ \tau^{1/2+h}\norm{v_\theta(-\tau)}_{L^\infty(B(b))}\geq\kappa
+       \quad\Longrightarrow\quad
+       \mathcal B_\tau(T)\geq\varepsilon.
+\end{equation}
+The stress norms are over $B(1)$. Infinite integrals satisfy the
+conclusion automatically. No local energy or suitability hypothesis is
+needed for this swirl statement.
+\end{proposition}
+\begin{proof}
+If no such constants existed, choose solutions and scales with
+$T_n=n$, $\tau_n<n^{-2}$, and
+$\mathcal B_{\tau_n}(n)<1/n$, while the left side of
+\eqref{eq:stressgap} is at least $\kappa$. Choose spatial points
+realizing at least half this supremum. On every fixed rescaled time
+slab the Reynolds source in \eqref{eq:scaledSwirl} then tends to zero
+in $L^1_tW^{-1,p}_x$ away from the scaled axis. The original force
+contributes at most $\lambda_n^3\delta_n F_0$, which also vanishes.
+The uniform mean bounds give precisely the spatial compactness,
+time increment bounds, and weak-* drift limits used above.
+
+If the selected radii divided by $\lambda_n$ stay bounded, the
+limit is the ancient swirl of Lemma~\ref{lem:ancientswirl}, hence zero.
+A selected scaled radius tending to zero is already excluded by
+$S_n(0,Z,s)=0$ and the uniform radial derivative bound.
+If those radii tend to infinity, recenter there; the limiting bounded
+scalar equation is the receding-axis equation above, whose ancient
+solution is also zero. In either case convergence at $s=-1$
+contradicts the selected value of size at least $\kappa/2$.
+The fixed distance of $B(b)$ from the boundary permits every compact
+rescaled spatial set in these limits.
+\end{proof}
+
+Since $|e|,|f|\leq K^2$, persistent nonzero rescaled mean swirl therefore
+requires, on every sufficiently late interval of this fixed ratio,
+\begin{equation}\label{eq:stresscost}
+ \int_{-T\tau}^{-\tau}K(t)^2\dd t
+       \geq\frac{\varepsilon}{2}\tau^{-h}.
+\end{equation}
+Its root-mean-square defect amplitude on that interval is at least a
+constant times $\tau^{-1/2-h/2}$. This is an interval estimate;
+it permits intermittency and gives no pointwise lower bound at every time.
+
+The signed quantity preceding this norm estimate has a useful exact form.
+Write $\Gamma_n=RS_n$ and let $\psi$ be a smooth test function with
+compact spatial support away from $R=0$. Set
+\[
+ \mathcal A_n^*\psi=\psi_{RR}+\delta_n^2\psi_{ZZ}
+       +\partial_R\big((V_n+R^{-1})\psi\big)+\partial_Z(W_n\psi).
+\]
+For $s_0<s_1$, with spatial integrals in $\dd R\dd Z$, the circulation
+equation gives
+\begin{equation}\label{eq:dualwork}
+\begin{split}
+ \left[\int\Gamma_n\psi\right]_{s_0}^{s_1}
+ -\int_{s_0}^{s_1}\!\!\int
+       \Gamma_n(\psi_s+\mathcal A_n^*\psi)
+ =\lambda_n^2\delta_n\int_{s_0}^{s_1}\!\!\int
+ \big[e_n(R\psi_R-\psi)+\delta_n f_nR\psi_Z\big].
+\end{split}
+\end{equation}
+Here the original force is zero; otherwise its circulation work is added
+on the right. Both sides retain the signs of the actual stress.
+The identity follows by integrating
+$-R\partial_Re_n-2e_n-\delta_nR\partial_Zf_n$ against $\psi$.
+For a backward adjoint solution the bulk mean term would cancel;
+\eqref{eq:dualwork} itself needs no such kernel construction.
+Neither this identity nor \eqref{eq:stresscost} estimates the recurrent
+work from initial data.
+
 \section{Meridional smallness}
 
 Define, on a smaller ball,
@@ -687,8 +776,8 @@ orthogonal to $w$. In particular the signed net kinetic transfer obeys
                          -\nu\int_0^t\norm{\nabla v}_2^2\dd s
  \leq\tfrac12\norm{v(0)}_2^2.
 \]
-This does not bound its positive variation or the amplitude integral
-\eqref{eq:amplitude}. The following example also excludes an automatic
+This does not bound its positive variation or the critical amplitude
+integral \eqref{eq:history}. The following example also excludes an automatic
 viscous damping argument based just on small relative angular defect.
 
 \begin{proposition}\label{prop:transfer}
@@ -797,6 +886,57 @@ axisymmetric circulation cannot be extended by dropping the Reynolds
 torque, even for arbitrarily small relative angular defect. This is an
 initial growth example, not repeated spin-up or singularity formation.
 
+\subsection{The energy inequality alone permits the stress cost}
+
+The time-integrated energy inequality cannot by itself exclude the cost
+in \eqref{eq:stresscost}. An explicit path shows this while keeping all
+the mean geometry bounds. This path is not a Navier--Stokes solution.
+Use $W_+$ from Proposition~\ref{prop:transfer}, choose $0<h<1/4$, and set
+\[
+ \alpha=\tfrac12-2h,\qquad
+ c^2=\frac{160\nu}{3\alpha},\qquad d^2=\frac{8\nu}{\alpha},\qquad
+ A_0=\big(\tfrac92g_2c^2d\big)^{-1/2}.
+\]
+For $0<\tau\leq1$ define the whole-space smooth solenoidal path
+\[
+ u(x,-\tau)=A_0\tau^{-1/2-h/2}
+  W_+\left(\frac{x_1}{c\sqrt\tau},
+           \frac{x_2}{c\sqrt\tau},
+           \frac{z}{d\tau^{1/2-h}}\right).
+\]
+It has zero angular mean. Its squared velocity norm $E$ and squared
+gradient norm $D$ are exactly
+\[
+ E(-\tau)=\tau^\alpha,\qquad
+ D(-\tau)=E(-\tau)\left(\frac{20}{3c^2\tau}
+                        +\frac{1}{d^2\tau^{1-2h}}\right).
+\]
+Since $t=-\tau$, these imply
+\[
+ \tfrac12E'(t)+\nu D(t)
+   =\frac{\alpha E(t)}{8\tau}(\tau^{2h}-3)<0,\qquad
+ \nu\int_{-1}^0D(t)\dd t=\frac{1-2h}{4}<\infty.
+\]
+Thus the path starts with unit squared velocity norm and satisfies the
+energy inequality on every time interval, with finite total dissipation.
+On sufficiently late slices,
+\[
+ K(-\tau)=A_0\norm{W_+}_{L^\infty(\R^3)}\tau^{-1/2-h/2},
+\]
+so the critical history is infinite. Its radial--azimuthal stress has supremum
+$2A_0^2e^{-2}\tau^{-1-h}$ and its axial--azimuthal stress is zero, so
+\[
+ \mathcal B_\tau(T)=\frac{2A_0^2e^{-2}}h(1-T^{-h})>0
+\]
+for fixed $T>1$ and sufficiently small $\tau$. The stress maximum then
+lies in $B(1)$ throughout the interval.
+
+The strict energy loss already shows why this is not an unforced smooth
+solution, which would satisfy energy equality. Its zero mean also has
+nonzero Reynolds torque, so an original force would be needed to keep
+that mean zero. The example only separates the energy inequality and
+mean geometry from the actual evolution required to control the history.
+
 \section{Scope of the calculation}
 
 The theorem allows an unbounded angular fluctuation, but requires its
@@ -821,7 +961,9 @@ stretching and local radial integration identities, and the Gaussian
 moments and complete
 convection work in Proposition~\ref{prop:transfer}. The polynomial fields
 are local algebra tests, whereas the Gaussian fields are finite-energy
-initial data. The program does not integrate solutions or certify the
+initial data. It also checks the signed dual-work integrations and the
+scaling of the final kinematic path. That path is explicitly distinct
+from the actual unforced initial jets. The program does not integrate solutions or certify the
 analytic proof. No statement in this
 note has been added as an axiom or a theorem to the Lean library.
 
