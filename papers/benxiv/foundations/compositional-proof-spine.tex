@@ -19258,10 +19258,58 @@ rotation-system instance.
 \Sverified{Mettapedia.GraphTheory.FourColor.ThreeTwoChoiceExample.original_choice_matters}
 
 This exact transfer handles a positive-deficit pair when the original
-witness has the required missing-colour pattern. It also identifies what
-a revision of the original witness must change. A general source repair
-of the forbidden pattern and universal progress through such groups
-remain separate obligations.
+witness has the required missing-colour pattern. Its forbidden pattern
+can now be repaired by an actual component switch, as follows.
+
+\subsubsection{Reconstruction through the pair by one physical switch}
+
+In any properly coloured finite incidence graph whose edges have at most
+two endpoints, a selected two-colour component has at most two distinct
+contacts where one of its selected colours is missing. To prove this on
+the literal retained edges, map each neighbour of an edge in the
+two-colour line graph to their common original endpoint. This map is
+injective: two such neighbours have the same colour and cannot meet.
+The line graph therefore has maximum degree two. A terminal contact
+gives a terminal vertex of that line graph. If two distinct contacts
+select the same edge, it is isolated, and every contact lies on its two
+original endpoints. Otherwise the contacts inject into the terminal
+vertices of a finite connected graph of maximum degree two, of which
+there are at most two.
+\Sverified{Mettapedia.GraphTheory.FourColor.IncidenceKempeSwitch.terminal_contacts_card_le_two}
+
+For the forbidden triple $q=s\ne r$, take the actual $(q,r)$ component
+through $w$ and switch it. The missing colour at $w$ becomes $r$.
+If the component avoids $t$, the missing colours at $w,t$ are now
+different. If it touches $t$, it must avoid $u$: otherwise all three
+distinct contacts would be terminal contacts of one component. The
+missing colours at $w,u$ are then equal. Either case satisfies the exact
+transfer criterion. Properness and the transformation of each missing
+colour follow from the physical component-switch operation.
+\Sverified{Mettapedia.GraphTheory.FourColor.IncidenceKempeSwitch.exists_compatible_three_contacts}
+
+Applied to the actual facial events, this constructs, from every proper
+old colouring, a revised old colouring with a proof-relevant Kempe
+history of length at most one, and then proper colourings of both larger
+patches. The first extension agrees with the revised witness; the second
+agrees with the first on the entire intermediate patch. Restriction
+supplies the converse, so existence of a colouring is equivalent before
+and after this paired construction.
+\Sverified{Mettapedia.GraphTheory.FourColor.ThreeTwoFaceRepair.extends_after_at_most_one_switch}
+\Sverified{Mettapedia.GraphTheory.FourColor.ThreeTwoFaceRepair.colourable_iff}
+
+In the explicit eighteen-edge example, the original edges with indices
+$12,1,2,17$ form a connected, saturated $(0,1)$ chain. Its one physical
+switch is exactly the four-edge revision described above, and the
+displayed final colouring extends it.
+\Sverified{Mettapedia.GraphTheory.FourColor.ThreeTwoChoiceExample.repair_component_edges}
+\Sverified{Mettapedia.GraphTheory.FourColor.ThreeTwoChoiceExample.repaired_history_extends}
+
+This reconstruction allows changes throughout the old component; one
+switch does not mean a bounded number of recoloured edges. No bound on
+interface width, preservation of externally frozen colours, universal
+occurrence of these pairs, or termination of a global reconstruction
+procedure follows. Those remain distinct obligations of the
+compositional route.
 
 \subsubsection{Actual component switches}
 

@@ -11,6 +11,8 @@ import Mettapedia.GraphTheory.FourColor.FaceOrderExchange
 import Mettapedia.GraphTheory.FourColor.FaceSweepEdgeBudget
 import Mettapedia.GraphTheory.FourColor.ThreeTwoFaceTransfer
 import Mettapedia.GraphTheory.FourColor.ThreeTwoChoiceExample
+import Mettapedia.GraphTheory.FourColor.ThreeTwoFaceRepair
+import Mettapedia.GraphTheory.FourColor.ThreeTwoChoiceKempe
 import Mettapedia.GraphTheory.FourColor.DeferredFaceChoiceExample
 import Mettapedia.GraphTheory.FourColor.FaceKempeRepair
 import Mettapedia.GraphTheory.FourColor.ShortStepKempeCounterexample
@@ -217,10 +219,20 @@ constraint that cannot be replaced by two unconditional long steps.
 An eighteen-edge incidence witness has the forbidden missing pattern and
 no extension preserving its original colouring, even though a first-step
 extension exists. Revising four original edge colours supplies a proper
-colouring of the whole pair. This example checks incidences and colourings,
-not a spherical rotation-system instance. A general repair by revising old
-choices, general occurrence of suitable groups and repeated progress remain
-open.
+colouring of the whole pair. Those four edges are now certified as one
+complete two-colour component of the original patch, and its actual switch
+produces the stated revision. This example checks incidences, components
+and colourings, not a spherical rotation-system instance.
+For every pair with the stated adjacent-contact geometry, every proper
+original colouring now admits a physical Kempe history of length at most
+one followed by jointly compatible proper extensions through both events.
+The proof derives a generic endpoint bound: a two-colour component of an
+ordinary incidence graph can touch at most two distinct vertices missing
+one of its selected colours. Switching the component through w therefore
+repairs the only forbidden triple. The pair preserves existence of a
+colouring in both directions. The old witness may change along a component
+of unbounded length; no bound on that length or on contour width is implied.
+General occurrence of suitable groups and repeated progress remain open.
 Physical Kempe switches now act on the same original edge assignments and
 transport each vertex profile exactly. Every failed facial extension supplies
 a colour pair and a component through its first endpoint; the chosen switch
