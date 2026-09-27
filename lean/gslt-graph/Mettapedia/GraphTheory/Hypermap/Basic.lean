@@ -1,0 +1,144 @@
+import Mettapedia.GraphTheory.FourColor.GoertzelV24MapEulerBound
+import Mettapedia.GraphTheory.FourColor.RotationSystem
+
+/-!
+# Hypermaps, and the rotation systems of this development as hypermaps
+
+A hypermap is a finite dart set carrying three permutations whose composite is
+the identity.  It is the presentation under which the generic theory of
+combinatorial maps — Euler's formula, genus, planarity, the Jordan property,
+and above all the behaviour of all of these under cutting and gluing — is
+usually developed, and under which that theory has been machine-checked
+elsewhere.
+
+This development grew its own presentation instead: a `RotationSystem`, with a
+free involution `alpha`, a rotation `rho`, and a derived face permutation
+`phi = rho * alpha`.  Forgetting the labels and distinguished outer dart
+sends a rotation system to a hypermap.  This is not an equivalence of the
+structures as stated: a general hypermap need not have a fixed-point-free
+edge involution, and it has no chosen vertex or edge labels or outer dart.
+Writing this one-way dictionary is the first step toward reusing generic
+theory; any converse needs those extra data and their compatibility laws.
+
+The correspondence is fixed by the composite law.  With `cancel3 e n f`
+meaning `n (f (e z)) = z`, taking `edge := alpha` and `face := phi` forces
+`node := rho⁻¹`, and that assignment is also the one that makes the orbit
+counts agree: `alpha`-orbits are edges, `rho⁻¹`-orbits are rotation cycles
+(a permutation and its inverse have the same cycles), and `phi`-orbits are
+faces. Identifying rotation cycles with the displayed vertex labels additionally
+requires cyclicity of each vertex fiber and surjectivity of the vertex map.
+
+Euler's relation is stated here as a defect, without claiming its two
+substantive properties.  That it is non-positive and even — equivalently, that
+it is *minus* twice a genus — is the content of the theory this module exists
+to import, and is deliberately not asserted here.  `Hypermap.Euler` proves both.
+
+Mind that sign.  The naming is inherited from the hypermap literature, where
+`Euler_lhs` is the dart-and-component side and `Euler_rhs` the orbit side, and
+it is the reverse of the convention below: here `eulerLhs` counts orbits and
+`eulerRhs` counts darts plus twice the components.  For a connected map of
+genus `g` one has `V - E + F = 2 - 2g` and `#darts = 2E`, so `eulerLhs`
+`= E + V + F = 2E + 2 - 2g` while `eulerRhs = 2E + 2`, making the difference
+`-2g`.  A statement of non-negativity would be false.
+-/
+
+namespace Mettapedia.GraphTheory
+
+open Mettapedia.GraphTheory.FourColor
+
+/-- A finite hypermap: three permutations of the darts whose composite, in the
+order `node ∘ face ∘ edge`, is the identity. -/
+structure Hypermap (D : Type*) [Fintype D] [DecidableEq D] where
+  edge : Equiv.Perm D
+  node : Equiv.Perm D
+  face : Equiv.Perm D
+  cancel3 : ∀ d, node (face (edge d)) = d
+
+namespace Hypermap
+
+open Equiv GoertzelV24PermutationOrbitSurgery GoertzelV24WordReachability
+
+variable {D : Type*} [Fintype D] [DecidableEq D]
+variable {V E : Type*} [Fintype V] [DecidableEq V] [Fintype E] [DecidableEq E]
+
+/-- Forget the labels and outer dart of a rotation system. The hypermap's nodes
+are rotation orbits; identifying them with displayed vertices requires separate
+fiber-cyclicity and surjectivity hypotheses. -/
+def ofRotationSystem (RS : RotationSystem V E) : Hypermap RS.D where
+  edge := RS.alpha
+  node := RS.rho⁻¹
+  face := RS.phi
+  cancel3 := by
+    intro d
+    show RS.rho⁻¹ (RS.phi (RS.alpha d)) = d
+    have hphi : RS.phi (RS.alpha d) = RS.rho (RS.alpha (RS.alpha d)) := rfl
+    rw [hphi, RS.alpha_involutive d]
+    exact RS.rho.symm_apply_apply d
+
+@[simp] theorem ofRotationSystem_edge (RS : RotationSystem V E) :
+    (ofRotationSystem RS).edge = RS.alpha := rfl
+
+@[simp] theorem ofRotationSystem_face (RS : RotationSystem V E) :
+    (ofRotationSystem RS).face = RS.phi := rfl
+
+@[simp] theorem ofRotationSystem_node (RS : RotationSystem V E) :
+    (ofRotationSystem RS).node = RS.rho⁻¹ := rfl
+
+/-! ## The node orbits are the rotation's orbits
+
+A permutation and its inverse have the same cycles, so nothing is lost by the
+inversion the composite law forces. -/
+
+omit [Fintype D] [DecidableEq D] in
+theorem sameCycle_inv_iff (σ : Equiv.Perm D) (x y : D) :
+    σ⁻¹.SameCycle x y ↔ σ.SameCycle x y := by
+  constructor
+  · rintro ⟨n, hn⟩
+    exact ⟨-n, by simpa [zpow_neg, inv_zpow] using hn⟩
+  · rintro ⟨n, hn⟩
+    exact ⟨-n, by simpa [zpow_neg, inv_zpow] using hn⟩
+
+omit [DecidableEq D] in
+theorem orbitCount_inv (σ : Equiv.Perm D) : orbitCount σ⁻¹ = orbitCount σ := by
+  unfold orbitCount
+  exact Fintype.card_congr (Quotient.congr (Equiv.refl D) (fun x y =>
+    sameCycle_inv_iff σ x y))
+
+theorem orbitCount_node (RS : RotationSystem V E) :
+    orbitCount (ofRotationSystem RS).node = orbitCount RS.rho := by
+  simpa using orbitCount_inv RS.rho
+
+/-! ## Euler's relation as a defect
+
+`eulerLhs` counts the three orbit families; `eulerRhs` counts darts plus twice
+the number of connected components, where connectivity is generated by all
+three permutations.  The defect is their difference.
+
+Non-positivity and evenness of this defect — that it is minus twice a genus —
+are exactly the imported theory, and are not claimed here. -/
+
+noncomputable def eulerLhs (H : Hypermap D) : ℕ :=
+  orbitCount H.edge + orbitCount H.node + orbitCount H.face
+
+noncomputable def eulerRhs (H : Hypermap D) : ℕ :=
+  Fintype.card D + 2 * wordOrbitCount [H.edge, H.node, H.face]
+
+/-- Minus twice the genus, stated over `ℤ` so that no truncation hides a sign.
+Non-positive; see the module docstring for why the orientation is this way. -/
+noncomputable def eulerDefect (H : Hypermap D) : ℤ :=
+  (eulerLhs H : ℤ) - (eulerRhs H : ℤ)
+
+/-- Planarity is vanishing Euler defect. -/
+def Planar (H : Hypermap D) : Prop := eulerDefect H = 0
+
+theorem eulerDefect_eq (H : Hypermap D) :
+    eulerDefect H
+      = (orbitCount H.edge : ℤ) + orbitCount H.node + orbitCount H.face
+        - Fintype.card D - 2 * wordOrbitCount [H.edge, H.node, H.face] := by
+  unfold eulerDefect eulerLhs eulerRhs
+  push_cast
+  ring
+
+end Hypermap
+
+end Mettapedia.GraphTheory
