@@ -276,8 +276,10 @@ the analytic proof in the note. That proof assumes prescribed anisotropic
 bounds on the angular mean and the two finite history integrals
 
 ```text
-∫ ||w(t)||∞² dt,        ∫ √(T-t) ||w(t)||∞ ||∇w(t)||∞ dt.
+∫ ||w(t)||∞² dt,        ∫ √(T-t) ||(P[(w·∇)w])θ(t)||∞ dt.
 ```
 
+Angular averaging precedes the absolute value in the second integrand.
+The stronger product bound `∫ √(T-t) ||w||∞ ||∇w||∞ dt < ∞` also suffices.
 Neither assumption has been established for arbitrary data. The note and
 this symbolic calculation are separate from the kernel-checked Lean lane.

@@ -56,16 +56,18 @@ Suppose $0<h<1/2$ and, for every $a+b\leq2$,
  |\partial_r^a\partial_z^b v_z|+|\partial_r^a\partial_z^b v_\theta|
  &\leq C\tau^{-1/2-h-a/2-(1/2-h)b}.\label{eq:meanz}
 \end{align}
-Set $K(t)=\norm{w(t)}_\infty$ and $L(t)=\norm{\nabla w(t)}_\infty$,
-where the derivative is Cartesian. If
+Set $K(t)=\norm{w(t)}_\infty$ and
+$\mathcal T(t)=\norm{(\PP[(w\cdot\nabla)w])_\theta}_\infty$.
+If
 \begin{equation}\label{eq:history}
  \int_{-1}^0 K(t)^2\dd t<\infty,
  \qquad
- \int_{-1}^0\sqrt{-t}\,K(t)L(t)\dd t<\infty,
+ \int_{-1}^0\sqrt{-t}\,\mathcal T(t)\dd t<\infty,
 \end{equation}
 then $(0,0)$ is a regular point of $u$.
 \end{theorem}
 
+Angular averaging in $\mathcal T$ precedes the absolute value.
 The mean bounds are those used in \cite{CIV}. Their validity and
 \eqref{eq:history} are hypotheses, not consequences of the energy inequality.
 The axis and the ball are fixed; the theorem makes no assertion about
@@ -73,7 +75,8 @@ propagating approximate symmetry from a shrinking core.
 
 \begin{corollary}\label{cor:powers}
 In Theorem~\ref{thm:main}, a sufficient replacement for
-\eqref{eq:history} is
+\eqref{eq:history}, with $L(t)=\norm{\nabla w(t)}_\infty$ using
+Cartesian derivatives, is
 \[
  K(t)\leq C\tau^{-\beta},\qquad
  L(t)\leq C\tau^{-\beta-\sigma},\qquad
@@ -83,6 +86,8 @@ with $\beta,\sigma\geq0$. In particular, the derivative cost
 $\sigma=1/2$ permits every $\beta<1/2$.
 \end{corollary}
 
+Indeed $\mathcal T\leq KL$, so a sufficient history condition is
+$\int K^2<\infty$ and $\int\sqrt{-t}\,KL<\infty$.
 These are two separate bounds. No derivative estimate is inferred from
 the amplitude estimate. Another sufficient choice near zero is
 $K\leq C\tau^{-1/2}\log(e/\tau)^{-p}$ and
@@ -168,7 +173,7 @@ same bounds for $v$ and $w$. This argument uses suitability of $u$;
 it does not require a partial-regularity theorem for \eqref{eq:mean}.
 
 Choose a sphere in this annulus, and take $f(\tau)$ to be the supremum
-of $|F(-\tau)|$ on its enclosed closed ball. This is continuous on
+of $|F_\theta(-\tau)|$ on its enclosed closed ball. This is continuous on
 compact time prefixes and satisfies $J_f<\infty$ by
 \eqref{eq:history}. Lemma~\ref{lem:barrier} applies to the mean.
 
