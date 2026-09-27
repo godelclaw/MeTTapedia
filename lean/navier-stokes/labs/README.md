@@ -1028,6 +1028,32 @@ These Taylor coefficients give no certified turnover window, remainder
 bound, or allowance for repeated production; the fixed-datum signed
 history estimate remains open.
 
+The Lean module `FourierGeneratedTailStretch` supplies a smaller exact
+companion example. Its initial support is the six modes
+`±(3,1,1), ±(1,3,1), ±(1,-1,3)`, with coefficient
+`u_hat(k) = i*(-k_y,k_x,0)/2`. All have squared radius 11, so its entire
+initial tail above radius 4 is zero. The complete projected nonlinear
+source has five conjugate pairs; its high tail `v` consists of the four
+pairs at `±(4,4,2), ±(4,0,4), ±(2,2,4), ±(0,4,-2)`.
+
+With normalized Fourier sums and the common derivative factors omitted,
+the kernel certificates give
+
+```text
+sum |k|^2 Re(conj(v_hat(k)) . N(v)_hat(k)) = 512/5 > 0,
+sum |k|^2 |v_hat(k)|^2 = 1472,
+sum |k|^4 |v_hat(k)|^2 = 40704.
+```
+
+Both fields are real and transverse. `complete_source` covers every
+output, and `actual_generated_tail` identifies the entire high part of
+the **infinite unforced velocity right-hand side** as `2*pi*v`, for every
+viscosity. The tail's own convection retains all eight input modes and
+every output; the pairing needs only its receiving modes because the
+tail is zero elsewhere. This certifies positive production of the first
+generated tail coefficient. It does not certify the larger Kida Taylor
+calculation, a physical-time remainder, or a cumulative-history estimate.
+
 `bent_tube_history.py` supplies a second, explicitly defined concentration
 geometry on the same periodic cube. For radius `a`, separation parameter
 `d`, bend `b`, and positive integer `m`, set
