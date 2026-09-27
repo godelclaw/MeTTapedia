@@ -982,6 +982,50 @@ this particular cutoff. The regularity target permits a finite allowance
 and a data-dependent cutoff, so this finite positive episode does not
 refute it. The comparisons are not rigorous continuum error bounds.
 
+`bent_tube_history.py` supplies a second, explicitly defined concentration
+geometry on the same periodic cube. For radius `a`, separation parameter
+`d`, bend `b`, and positive integer `m`, set
+
+```text
+eta(y) = d - b cos(my),
+F+ = exp([cos(x) + cos(z-eta(y)) - 2]/a^2),
+F- = exp([cos(x) + cos(z+eta(y)) - 2]/a^2),
+omega = Gamma (0, F+ - F-, eta'(y) (F+ + F-)).
+```
+
+The y and z derivatives cancel in `div omega`, and the mean vanishes.
+The velocity is `curl(-Delta)^(-1) omega`; `Gamma` normalizes kinetic
+energy after Fourier truncation. This analytic periodic family consists
+of two bent tubes with opposite orientation. The tangent is used with
+its displayed parameterization, without division by its speed, to retain
+the divergence cancellation. It is not a reproduction of a named
+Hou or Kerr dataset.
+
+The defaults `a=.2, d=.5, b=.15, m=2` give kinetic energy `3π³`, initial
+enstrophy about `1019.726117`, and peak vorticity about `36.8`. The
+viscosity and kinetic energy match the Kida test above. The two reflection
+planes preserved by these data reduce storage to `n × (n/2) × (n/2)`,
+using Fourier coefficients in x and sine/cosine coefficients in y and z.
+The equation, strict two-thirds truncation, RK-stage signed accounting,
+and resolution warning are unchanged.
+
+```sh
+python3 -O labs/bent_tube_check.py
+python3 -O labs/bent_tube_history.py --n 128 --check-only
+python3 -O labs/bent_tube_history.py --n 96 --time .5 --report-every .025
+python3 -O labs/bent_tube_history.py --n 128 --time .5 --report-every .025
+```
+
+The independent full-Fourier comparison includes evolved fields and
+right-hand sides at `n=64, a=.35, t=.02` and at `n=96, a=.2, t=.002`.
+Relative field and RHS differences were below `3e-15`; signed rate
+differences were below `2e-13`. The independent filtered-RHS stretching
+agrees with the strain-determinant formula within `1.2e-13`. Halving the
+time step changes velocity relatively by less than `4.7e-10`. At n=128,
+the initial reconstructed vorticity differs from the analytic profile by
+`9e-15` relatively. These are consistency checks; interpreting later
+history requires comparison across grids and time steps.
+
 ### Simultaneous stretching and mean-circulation gain
 
 Run `python3 -O labs/helical_mean_feedback.py`; this checker requires Sympy.
