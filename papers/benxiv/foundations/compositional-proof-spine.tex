@@ -19104,3 +19104,60 @@ merely a feature of the displayed two-step path.
 \Sverified{Mettapedia.GraphTheory.FourColor.FacialRollbackKempeRepair.no_reconstructible_route}
 Universal existence of a successful rollback, a route which exits and
 returns to the image, and a geometric progress argument remain open.
+
+\subsection{Long facial rollbacks preserve old Kempe classes}
+
+The length of the removed path imposes a further restriction. A generic
+relative version of the low-degree Kempe argument lifts three-colour
+histories across a restored vertex of degree at most two. A preliminary
+recolouring of that vertex makes the smaller transposition compatible
+with its neighbours; component decomposition realizes the change by
+actual switches. This is the standard low-degree mechanism of
+Las Vergnas and Meyniel, whose proof is recalled in Lemma~1.1 of
+\emph{Kempe changes in degenerate graphs}
+(\url{https://arxiv.org/abs/2112.02313}).
+\Sverified{SimpleGraph.Coloring.partial_swap_lifts_vertex}
+\Sverified{SimpleGraph.Coloring.kempeClosure_lifts_vertex}
+
+Let $A$ be an arbitrary retained core and $S$ a disjoint deleted set.
+Suppose every nonempty remaining subset $T\subseteq S$ contains a vertex
+of degree at most two in the graph induced on $A\cup T$. Any smaller
+Kempe history then lifts from a specified old reconstruction to
+\emph{any specified proper target reconstruction}, agreeing on all of
+$A\cup S$. No degree or width bound is imposed on the core. The
+representation is parameterized by an exact induced-adjacency law, so
+the theorem applies to the existing incidence graphs without changing
+identifiers. Values at unused identifiers outside the retained union
+are not part of the asserted agreement.
+\Sverified{SimpleGraph.KempeRelativeElimination.restriction_mono}
+\Sverified{SimpleGraph.KempeRelativeElimination.lifts}
+
+For a simple attached path with at least three edges, its internal
+edges have at most two neighbours in the incidence graph. If no
+internal edges remain, the two end edges are nonadjacent; each meets
+at most two core edges. Thus every nonempty remaining subset has the
+required low-degree element. This proves the elimination hypothesis
+from the path geometry, independently of any colouring.
+\Sverified{Mettapedia.GraphTheory.FourColor.LongPathKempeLifting.peel}
+\Sverified{Mettapedia.GraphTheory.FourColor.LongPathKempeLifting.history_lifts}
+
+For every actual facial event in a graph-backed bridgeless spherical
+cubic map, the existing geometry constructs this path, proves that only
+its ends meet the retained core, and supplies the two endpoint degree
+bounds. Hence a rollback deleting at least three exposed edges cannot
+connect previously separated old Kempe classes, even if the prescribed
+target changes every restored edge colour.
+\Sverified{Mettapedia.GraphTheory.FourColor.FacialRollbackLength.long_route_lifts}
+
+Consequently any one-face rollback which escapes an old Kempe class
+must delete one or two exposed edges. Combining this with short-path
+lifting and uniqueness of short reconstruction proves that every such
+escape must leave the image of reconstruction along its smaller history.
+The statement applies to all actual facial events, rather than only to
+the earlier twelve-vertex witness.
+\Sverified{Mettapedia.GraphTheory.FourColor.FacialRollbackLength.escape_requires_short}
+\Sverified{Mettapedia.GraphTheory.FourColor.FacialRollbackLength.escape_leaves_reconstruction_image}
+These restrictions narrow the repair question; they supply neither a
+useful short rollback nor a route through its extra states. Universal
+compatible construction, a progress argument for repeated rollback,
+and the generating base remain open.

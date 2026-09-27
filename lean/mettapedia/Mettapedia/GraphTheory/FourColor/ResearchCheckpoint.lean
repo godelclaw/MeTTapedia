@@ -9,6 +9,7 @@ import Mettapedia.GraphTheory.FourColor.FaceKempeRepair
 import Mettapedia.GraphTheory.FourColor.ShortStepKempeCounterexample
 import Mettapedia.GraphTheory.FourColor.LockedKempeOrbitGeometry
 import Mettapedia.GraphTheory.FourColor.FacialRollbackKempeRepair
+import Mettapedia.GraphTheory.FourColor.FacialRollbackLength
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TubeCountGrowth
 import Mettapedia.GraphTheory.FourColor.GoertzelV24PentagonTubeSaturation
 import Mettapedia.GraphTheory.FourColor.OddCappedTubeSaturation
@@ -183,6 +184,19 @@ stays in that image. Thus leaving reconstructibility is necessary for
 every escape between those endpoints, not only the exhibited two switches.
 This identifies a necessary feature of repair without supplying such an
 escape for arbitrary maps.
+For a facial rollback deleting at least three exposed edges, every smaller
+Kempe history lifts to any specified proper old reconstruction, including
+its colours on all restored edges. The proof first lifts across vertices
+of degree at most two in an arbitrary finite graph. A relative elimination
+theorem then iterates this over the deleted set. The literal incidence graph
+of a long exposed path supplies such an elimination: internal edges have
+degree at most two, and after their removal the two end edges are separated
+and have at most two retained neighbours each. The spherical event supplies
+the path and endpoint degree bounds. Consequently an actual one-face rollback
+which escapes an old Kempe class must delete one or two edges. Combining
+this with short-path lifting proves that every such escape must leave the
+reconstruction image. These are necessary conditions; neither the existence
+of a useful short rollback nor progress of repeated rollback is established.
 This build root does not establish either decomposition supply or finite-base
 verification, and is deliberately separate from `FourColorLane`.
 -/
