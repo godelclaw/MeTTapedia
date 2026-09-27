@@ -1054,6 +1054,141 @@ tail is zero elsewhere. This certifies positive production of the first
 generated tail coefficient. It does not certify the larger Kida Taylor
 calculation, a physical-time remainder, or a cumulative-history estimate.
 
+### Escape from a Fourier family over a fixed interval
+
+`escape_history.py --check` tests a quantitative limitation of finite-support
+rigidity. [Kishimoto--Yoneda, Theorem 5.1](https://arxiv.org/abs/2110.08039)
+classify mean-zero unforced Navier--Stokes flows whose Fourier support stays
+finite on an interval: their projected nonlinearity vanishes and they evolve
+linearly.
+This is a statement about the entire interval, not one instantaneous source.
+
+For a **fixed** finite symmetric family `S`, an energy cap, viscosity and
+interval, compactness consequently gives the following qualitative fact.
+Among Galerkin trajectories in `S` with net enstrophy growth at least a
+fixed positive amount, the time integral of the squared nonlinear source
+outside `S` has a positive lower bound. Indeed, zero escaping source makes
+the Galerkin trajectory an actual finite-support solution, which can only
+lose enstrophy; continuous dependence and compactness then give the bound.
+The bound can depend on `S`. The example below first treats projections of
+one actual solution. The finite-section comparison at the end also gives
+Galerkin trajectories with the same fixed datum and interval, showing that
+the dependence on `S` cannot be dropped in the compactness statement.
+
+On the normalized `2*pi` torus take `nu=1/1000`, `0<=t<=1`, and the exact
+unforced class
+
+```text
+u(t,x,y,z) = (U(t)*sin(y), 0, Re(exp(i*x)*a(t,y))),  U(t)=exp(-nu*t),
+a_t = nu*(a_yy-a) - i*U(t)*sin(y)*a,                 a(0,y)=1.
+```
+
+The pressure is zero. These are full three-component Navier--Stokes
+solutions, independent of `z`; they are not genuinely three-dimensional
+singularity candidates. The scalar equation constructs a globally smooth
+solution and retains every generated Fourier mode. Writing
+`a(t,y)=sum a_j(t)*exp(i*j*y)` gives real coefficients with
+
+```text
+a'_j = -nu*(1+j^2)*a_j - (U/2)*(a_(j-1)-a_(j+1)),
+a_(-j)=(-1)^j*a_j,              |a_j(t)| <= exp(t)*t^|j|/|j|!.
+```
+
+The last bound follows from the convergent iterated Duhamel series: heat
+is a contraction on coefficient `l1`, each interaction shifts the index by
+one, and the sum of the two shift magnitudes is at most one. This also gives
+convergence in every spatial Sobolev norm on each finite time interval.
+
+Let `S_M` contain `(0,+/-1,0)` and every `(1,j,0),(-1,-j,0)` with `|j|<=M`.
+Set `v_M=P_(S_M)u`, `N(v)=-P((v.grad)v)`,
+`Pi(v)=<-Delta v,N(v)>`, and `D(v)=||Delta v||_2^2`. Every `v_M` below
+comes from the same actual solution. The complete nonlinear source of `v_M`
+has boundary outputs at `j=+/-(M+1)`, and exactly
+
+```text
+R_M := integral_0^1 ||P_(S_M complement) N(v_M)||_2^2
+     = integral_0^1 U^2*a_M^2/4
+     <= exp(2) / (4*(2*M+1)*(M!)^2).
+```
+
+Nevertheless, for every `M>=6`,
+
+```text
+F_M := integral_0^1 (Pi(v_M)-nu*D(v_M)) > 1/10.
+```
+
+Here is an analytic lower bound, independent of the numerical solver. At
+zero viscosity the scalar is `a^0=exp(-i*t*sin(y))` and the full
+half-enstrophy at `t=1` is `5/8`, compared with its initial value `1/2`.
+The difference from `a^0` satisfies an `H1` energy inequality with growth
+coefficient at most `1/2` and forcing norm at most `10*nu` on `[0,1]`.
+For example, the first three spatial derivatives of `a^0` have pointwise
+magnitudes at most `1,2,5`; also `|U-1|<=nu`. Thus
+`||a-a^0||_H1 <= 20*nu`, and the full net half-enstrophy gain is at least
+`1/8-(31/2)*nu = 0.1095`.
+
+Projection removes terminal half-enstrophy at most
+`9*(1+(M+1)^2)/((M+1)!)^2`. Its unresolved-input work is exactly
+`X_M=(U/2)*(1+M^2)*a_M*a_(M+1)`, with
+
+```text
+integral_0^1 |X_M| <= 9*(1+M^2)/(4*(M+1)*M!*(M+1)!).
+F_M >= 1/8-(31/2)*nu
+       -9*(1+(M+1)^2)/((M+1)!)^2
+       -9*(1+M^2)/(4*(M+1)*M!*(M+1)!).
+```
+
+These bounds use `exp(2)<9` and the factorial tail estimate. At `M=6`
+the lower bound is `2059957/18816000 > 1/10`, and the subtracted terms
+decrease with `M`. The exact filtered balance retains `X_M`:
+`Z_M(1)-Z_M(0)=F_M+integral X_M`.
+
+Consequently no modulus tending to zero with `R_M`, independent of the
+family, bounds `F_M`, even with this fixed datum, viscosity and interval.
+More specifically, `F_M <= C*M^p*R_M^alpha` fails for every fixed finite
+`C,p` and every `alpha>0`. Taking any fixed number of spatial derivatives
+of the escaping source only introduces another polynomial factor, so it
+does not repair such an estimate.
+Integer Navier--Stokes scaling `u_L(t,x)=L*u(L^2*t,L*x)` places the whole
+example above any prescribed lower frequency cutoff: all frequencies have
+length at least `L`. Both displayed integrals scale by `L^4` on
+`[0,1/L^2]`. The example therefore does not rely on lower-frequency feeding
+into that high tail. It does **not** exclude an additive initial-data
+allowance or prove that repeated growth is unbounded. It limits a uniform
+deduction from qualitative support rigidity; the sufficient signed-history
+budget remains open.
+
+The numerical checker uses one reference history for all family projections,
+with `b_j=(-1)^j*2^j*j!*a_j` to avoid losing tiny boundary coefficients to an
+absolute ODE tolerance. For reference order `R`, the iterated Duhamel series
+bounds the `H1` error of the exact finite-section trajectory by
+`2*sum_(n>=R+1) (1+n)/n! <= 6*(R+2)/(R+1)!` on `[0,1]`: the two series
+agree until a path can leave the reference indices. This bound does not
+include numerical integration error.
+
+It also proves the claim about Galerkin trajectories: write `a^[M]` for
+the scalar evolved with indices restricted to `|j|<=M` from the same initial
+datum. Its distance in `H1` from the actual scalar is at most
+`delta_M=6*(M+2)/(M+1)!`. Combining this with the Euler comparison gives
+`||a^[M](1)||_H1 >= sqrt(3/2)-20*nu-delta_M`. Consequently its net
+half-enstrophy growth is at least
+`1/8-(31/2)*nu-(3/4)*delta_M`. For `M>=6` this is at least
+`1433/14000 > 1/10`. The factorial bound on each coefficient, and hence the
+displayed upper bound on the escaping source, also holds for this finite
+section. Thus the fixed-family compactness bound has no family-independent
+modulus. This argument distinguishes these Galerkin trajectories from
+the projections `v_M` of the actual PDE history above.
+
+Reference orders 32 and 40, halved maximum steps
+and increased quadrature agree in `F_M` within `1.4e-17`; relative differences
+in `R_M` are below `2e-11`. The complete filtered ledger has residual below
+`2e-16`. A separate physical-space convection and vorticity-stretching check
+at `M=6` agrees within `3e-17`, with relative escape error below `5e-13`.
+For example, `F_6=0.12335688758`, `R_6=8.23e-12`, while
+`F_20=0.12335688759`, `R_20=6.86e-52`. These are numerical diagnostics;
+the analytic inequalities above, including their rational final comparison,
+are not a Lean certificate or a numerical interval enclosure.
+
 `bent_tube_history.py` supplies a second, explicitly defined concentration
 geometry on the same periodic cube. For radius `a`, separation parameter
 `d`, bend `b`, and positive integer `m`, set
