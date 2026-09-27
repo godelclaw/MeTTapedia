@@ -7,6 +7,7 @@ import Mettapedia.GraphTheory.FourColor.FaceColourTransfer
 import Mettapedia.GraphTheory.FourColor.FacePathExtension
 import Mettapedia.GraphTheory.FourColor.FaceKempeRepair
 import Mettapedia.GraphTheory.FourColor.ShortStepKempeCounterexample
+import Mettapedia.GraphTheory.FourColor.LockedKempeOrbitGeometry
 import Mettapedia.GraphTheory.FourColor.GoertzelV24TubeCountGrowth
 import Mettapedia.GraphTheory.FourColor.GoertzelV24PentagonTubeSaturation
 import Mettapedia.GraphTheory.FourColor.OddCappedTubeSaturation
@@ -139,8 +140,22 @@ An explicit rectangular-shore colouring on triangular-prism incidence admits
 no extension after any single component switch, but an explicit two-switch
 sequence does extend. This control is proved in incidence semantics; its
 spherical facial-event adapter is not formalized here. The source-map repair
-criterion is independent of this control. Neither successful arbitrary repair
-sequences nor a global bound on their length have been proved.
+criterion is independent of this control.
+A second, twelve-vertex witness rules out arbitrary finite Kempe repair of a
+prescribed old colouring. A finite family of retained assignments is closed
+under every actual component switch, certified by connected saturated chains.
+Induction over the existing GSLT route type then proves that no reachable
+assignment extends to any strict superset of the old edges. Both missing
+ambient edges remain blocked, so changing the next addition does not help.
+The actual connected bridgeless spherical cubic rotation, its eight face
+cycles, and connected sides of the old and enlarged regions are kernel checked.
+Those literal face unions retain exactly the edges used by the obstruction.
+A different assignment properly colours the entire ambient map. This is a
+failure of universal repair from arbitrary old choices, not of existential
+compatible construction. The witness contains triangles and squares and
+does not refute a repair theorem restricted to the stronger normal form.
+Construction with earlier choices revised, or strict replacement and
+reconstruction, still needs a geometric progress argument.
 This build root does not establish either decomposition supply or finite-base
 verification, and is deliberately separate from `FourColorLane`.
 -/

@@ -18937,3 +18937,58 @@ repair guarantee and demonstrates why sequences carry additional power.
 It proves no bound on successful repair lengths and no universal existence
 of such a sequence. The global compatible-construction and strict-reduction
 supply questions remain open.
+
+\subsection{A spherical patch whose Kempe histories cannot extend}
+
+Arbitrarily many component switches do not repair every prescribed old
+colouring. A checked witness has twelve vertices, eighteen edges and eight
+faces. Its old retained graph omits just the edges $\{3,9\}$ and
+$\{6,10\}$. The displayed rotation is connected, bridgeless, cubic and
+spherical, with one cyclic order at every vertex. The eight indexed
+boundaries enumerate its actual face cycles exactly once. An old region
+and its enlargement by one face both have connected complementary sides;
+their retained edges are respectively the old graph and the old graph
+with $\{3,9\}$ restored.
+\Sverified{Mettapedia.GraphTheory.FourColor.LockedKempeOrbitGeometry.ambient}
+\Sverified{Mettapedia.GraphTheory.FourColor.LockedKempeOrbitGeometry.face_partition_exact}
+\Sverified{Mettapedia.GraphTheory.FourColor.LockedKempeOrbitGeometry.boundary_eq}
+\Sverified{Mettapedia.GraphTheory.FourColor.LockedKempeOrbitGeometry.connected_sides}
+\Sverified{Mettapedia.GraphTheory.FourColor.LockedKempeOrbitGeometry.retained_edges}
+
+The obstruction is a family of old assignments given by two representatives
+and their six colour permutations. To certify its closure, a generic lemma
+identifies an actual bichromatic component with a connected list of active
+edges closed under active neighbours. Such a list is a finite certificate
+for the existing component operation, not a replacement definition of it.
+The witness supplies these lists and checks that every possible switch
+returns to the family. Unretained edge identifiers are isolated; switches
+there leave the observed old assignment unchanged.
+\Sverified{SimpleGraph.Coloring.kempe_component_iff_mem_chain}
+\Sverified{SimpleGraph.Coloring.swap_apply_of_chain}
+\Sverified{Mettapedia.GraphTheory.FourColor.LockedKempeOrbit.locked_switch}
+
+Physical switches form an instance of the existing proof-relevant GSLT
+route type. Induction over a route carries the closed-family invariant
+through any finite number of switches. In every member of this family,
+each omitted edge has endpoints with distinct unique missing colours.
+Consequently no assignment reached from the specified seed extends to
+\emph{any strict superset} of the old edges while preserving its final old
+colours. The theorem quantifies over all finite histories, without a
+length bound, and uses the endpoints of the checked spherical rotation.
+\Sverified{Mettapedia.GraphTheory.FourColor.KempeChainCertificate.history_preserves}
+\Sverified{Mettapedia.GraphTheory.FourColor.LockedKempeOrbit.no_history_strict_extension}
+\Sverified{Mettapedia.GraphTheory.FourColor.LockedKempeOrbitGeometry.no_history_strict_extension_on_rotation}
+
+A separate explicit assignment properly colours all eighteen ambient
+edges. Thus the obstruction concerns repair of earlier choices, not
+colourability of the map. Switching components of the fixed old patch,
+or merely choosing a different next edge, cannot escape this example.
+Revising earlier construction choices or changing the retained patch is
+not covered by that impossibility theorem.
+\Sverified{Mettapedia.GraphTheory.FourColor.LockedKempeOrbitGeometry.global_source_proper}
+The witness contains triangles and squares, so it does not refute a
+stronger repair statement restricted to minimal-counterexample normal
+form, nor the pentagon-support conjecture. The unconditional repair claim
+for arbitrary prescribed old colourings is removed from the construction
+plan. Existence of compatible choices along a whole source construction,
+or a terminating strict reduction with reconstruction, remains open.
