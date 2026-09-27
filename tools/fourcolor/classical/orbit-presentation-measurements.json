@@ -6,55 +6,55 @@
       "module": "MettapediaFourColor.Orbit10.Checks1",
       "original_module": "FourColor.Present10Chk1",
       "original_sha256": "fecd9cf21fccb52943f6f0fb71794d2847a547222c7a1a1516faa5f958727b71",
-      "source_sha256": "4f9941ca3fc666923fe386590d36bd9f73c362ca71ad813a9b7995942816a01a"
+      "source_sha256": "b96f9e57b9b7317eb70e6cc030126cf42008ae077140155ccf5253f54fba346b"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Checks",
       "original_module": "FourColor.Present10Chk2",
       "original_sha256": "cd4be95af1527bf3edaff3d7a06df9db645d0667cb0aafda324c20451833bf1e",
-      "source_sha256": "2008f2009e593aa65ead867ff734f331177418e8b3ec38b2d22c8b4c2b64cf82"
+      "source_sha256": "542cef3bc845615222c3fadedc0a5027927b6e264a6e2d53c78b054ac2f2f781"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Checks4",
       "original_module": "FourColor.Present10Chk4",
       "original_sha256": "b648a962c1f224bc4a5a34e898c7b7486a2058e6e09f967e65f1cdaae369dd59",
-      "source_sha256": "4e27ddf9986d218049b65e84982bbfc4c3828079e55493d3e61504359c2020af"
+      "source_sha256": "d5a4044cb763f0afdb47a9cad7ea242fd6451e990333abbc82af6b240520c18d"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Checks13",
       "original_module": "FourColor.Present10Chk13",
       "original_sha256": "ad3543d0f6e63626c515a7bb414c6df9d7b58f322a350ff227a3207b48725093",
-      "source_sha256": "b4d16940f612c9811708ed3187d7eb43356e0b8598d449e6fad24b95eaef7785"
+      "source_sha256": "c526a0435dd823eafd3682e225d26a4b660b23357a4948943e42eaf6e0505d67"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Checks18",
       "original_module": "FourColor.Present10Chk18",
       "original_sha256": "0d75814c007b3dce6e5325b97806715caa943f20050f0c1c8d88f945e56e00d4",
-      "source_sha256": "2df86542d7e6f90c2cb84e3b704e9f3d6658bfdce5f3b2e5988f683cad83ee60"
+      "source_sha256": "3ade0da5f6c4d62c7e7e8f88b6df35dfa83698ca809890dda09eb5629fd4641d"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Checks20",
       "original_module": "FourColor.Present10Chk20",
       "original_sha256": "f5b4634690cfaac126b69279c37bf3b6d7d0783d20883e0f9b6124b797afcaac",
-      "source_sha256": "c5eedc5236e163869b5180ad5ce4952ff44970b5a8750388968b46f55c17d61f"
+      "source_sha256": "308d7d18495537522390d2854806a9cae70b2083d264998b9849121c702fadc0"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Checks22",
       "original_module": "FourColor.Present10Chk22",
       "original_sha256": "9de780d824fa015a6b38de8144cecaa13f4dedb811b0ac08d26092f2b2178e94",
-      "source_sha256": "88d72ac5d7d22dc7673e4cbde16cf09712fcd115f69ab7a8eeccf571075d0ce5"
+      "source_sha256": "0b909707e3bf8b34a16f6986a776ecf085b0540b3dcc62e3398793c51777330e"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Checks23",
       "original_module": "FourColor.Present10Chk23",
       "original_sha256": "8bde147b1ae7d00b9039daefcfd90c94dc0bca738a1ace436bb8dea941336794",
-      "source_sha256": "12218e9b5122eb21b3e27f5ca7717b7634469e2bd076da2a68ddeeb9d024e8f0"
+      "source_sha256": "6d2dafcc29477d1e73b8d5e0440b74aae483c11d7035456b8176954d2ab4a8ef"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Checks24",
       "original_module": "FourColor.Present10Chk24",
       "original_sha256": "14ffdfb639df0520d142147213a027f9329b866e96250cb2b7b21e5ce6e21852",
-      "source_sha256": "b85f42bb130768462b7533579dfd4bf48e61cc9c18bd41152ca6a6d1a15f2901"
+      "source_sha256": "fd30eef858a896c47f7486c9ca52e9e066790ecfbe9b14f64403ae4f568caf37"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Hub1",
@@ -98,11 +98,11 @@
     },
     {
       "module": "MettapediaFourColor.OrbitAssemblyAudit",
-      "source_sha256": "d7aebf55b1f1ce54abfd4b07b61d73ca790bb3938f1f7ad69d613703835199aa"
+      "source_sha256": "d4bfb06f5838dc7bb2902a83ecefd25d85a35ab8774bf32023592a01478a4a73"
     },
     {
       "module": "MettapediaFourColor.Orbit10.SemanticSharingAudit",
-      "source_sha256": "b4412d24553e1a9f2528aec1fc8a9cd4cf3ba2c0576e8892eed3422c4acfd557"
+      "source_sha256": "0e8420147cbbd152886dbfdd02961e7893a7a9c00cbf13430d9b830ebe97a319"
     }
   ],
   "compiler_options": [
@@ -116,81 +116,81 @@
   "modules": [
     {
       "module": "MettapediaFourColor.Orbit10.Checks1",
-      "source_sha256": "4f9941ca3fc666923fe386590d36bd9f73c362ca71ad813a9b7995942816a01a",
+      "source_sha256": "b96f9e57b9b7317eb70e6cc030126cf42008ae077140155ccf5253f54fba346b",
       "exit_code": 0,
-      "frontend_wall_seconds": 18.282,
-      "olean_bytes": 258632,
-      "olean_sha256": "370d85d1ecd64efa306704ebe1bacabc125a1f608a139a00d958307652a6c82f"
+      "frontend_wall_seconds": 18.172,
+      "olean_bytes": 258640,
+      "olean_sha256": "590daf8628f1e20514525826cf7cd4c3707740fd49c5b18330cca7b99c95a429"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Checks",
-      "source_sha256": "2008f2009e593aa65ead867ff734f331177418e8b3ec38b2d22c8b4c2b64cf82",
+      "source_sha256": "542cef3bc845615222c3fadedc0a5027927b6e264a6e2d53c78b054ac2f2f781",
       "exit_code": 0,
-      "frontend_wall_seconds": 26.723,
-      "olean_bytes": 236360,
-      "olean_sha256": "e08ab75740b06747288ff78489425ebfc390873c4ed309e935ae71f58d4ae36b"
+      "frontend_wall_seconds": 31.568,
+      "olean_bytes": 236416,
+      "olean_sha256": "b060097efda75bc3c4b696d8b1b2f5767177e55de74756aebc9bc2d0b7083e8c"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Checks4",
-      "source_sha256": "4e27ddf9986d218049b65e84982bbfc4c3828079e55493d3e61504359c2020af",
+      "source_sha256": "d5a4044cb763f0afdb47a9cad7ea242fd6451e990333abbc82af6b240520c18d",
       "exit_code": 0,
-      "frontend_wall_seconds": 25.301,
-      "olean_bytes": 242672,
-      "olean_sha256": "f2ed8ad48ef20ec4159ae37c8ea0fdd1ddaaec764f7c59bcae3df1e38c455599"
+      "frontend_wall_seconds": 30.081,
+      "olean_bytes": 242728,
+      "olean_sha256": "e153b944a55e58fb340d1a9f43cc120ee0226fec641d9e2aecfa9ce649e82164"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Checks13",
-      "source_sha256": "b4d16940f612c9811708ed3187d7eb43356e0b8598d449e6fad24b95eaef7785",
+      "source_sha256": "c526a0435dd823eafd3682e225d26a4b660b23357a4948943e42eaf6e0505d67",
       "exit_code": 0,
-      "frontend_wall_seconds": 32.147,
-      "olean_bytes": 246760,
-      "olean_sha256": "0d1b7d24f33bc68d1bf9c454978dee4050339e532cb59bcf03ec169d2e17b584"
+      "frontend_wall_seconds": 36.064,
+      "olean_bytes": 246816,
+      "olean_sha256": "23c16f660b645b222454b2e3b35981653eb7443cca0c11d6af5359ad90a4e6a0"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Checks18",
-      "source_sha256": "2df86542d7e6f90c2cb84e3b704e9f3d6658bfdce5f3b2e5988f683cad83ee60",
+      "source_sha256": "3ade0da5f6c4d62c7e7e8f88b6df35dfa83698ca809890dda09eb5629fd4641d",
       "exit_code": 0,
-      "frontend_wall_seconds": 33.458,
-      "olean_bytes": 249408,
-      "olean_sha256": "590f2b169cbc05b5f8c33a59aba11bf7308feb9185a996ed6ed43327e3d29b1f"
+      "frontend_wall_seconds": 31.953,
+      "olean_bytes": 251584,
+      "olean_sha256": "187e4912b13a65dba9ebebf07565ac463a4b310ec80cdc9aeff86f85cb493be3"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Checks20",
-      "source_sha256": "c5eedc5236e163869b5180ad5ce4952ff44970b5a8750388968b46f55c17d61f",
+      "source_sha256": "308d7d18495537522390d2854806a9cae70b2083d264998b9849121c702fadc0",
       "exit_code": 0,
-      "frontend_wall_seconds": 25.462,
-      "olean_bytes": 265040,
-      "olean_sha256": "d22382233492992fa58727ab0c13504459b32256ab95fb4bdcb61526f5e86b70"
+      "frontend_wall_seconds": 29.323,
+      "olean_bytes": 266704,
+      "olean_sha256": "cb9031761978ef0834b3237646bc6dc6b282691a6e8d9772bbeb93837171e595"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Checks22",
-      "source_sha256": "88d72ac5d7d22dc7673e4cbde16cf09712fcd115f69ab7a8eeccf571075d0ce5",
+      "source_sha256": "0b909707e3bf8b34a16f6986a776ecf085b0540b3dcc62e3398793c51777330e",
       "exit_code": 0,
-      "frontend_wall_seconds": 31.758,
-      "olean_bytes": 273064,
-      "olean_sha256": "9d8873848d2e21ff72f249e2ddb59f9ced1954016de21c6d8307cbcabbff7fe7"
+      "frontend_wall_seconds": 37.177,
+      "olean_bytes": 274680,
+      "olean_sha256": "982e4c81eb287b4bc902c6dcbf4af536820777e99901badb141bb6b44a3a3db0"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Checks23",
-      "source_sha256": "12218e9b5122eb21b3e27f5ca7717b7634469e2bd076da2a68ddeeb9d024e8f0",
+      "source_sha256": "6d2dafcc29477d1e73b8d5e0440b74aae483c11d7035456b8176954d2ab4a8ef",
       "exit_code": 0,
-      "frontend_wall_seconds": 31.544,
-      "olean_bytes": 245264,
-      "olean_sha256": "45bf71f2ec38aabd3b2a8f89e7a206e9f961e15cd43fd3f964656147716de349"
+      "frontend_wall_seconds": 29.332,
+      "olean_bytes": 245320,
+      "olean_sha256": "61323771623f0d74253fcb2eead93aaa0a80a65adcacf2956ec3d8220fda32b8"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Checks24",
-      "source_sha256": "b85f42bb130768462b7533579dfd4bf48e61cc9c18bd41152ca6a6d1a15f2901",
+      "source_sha256": "fd30eef858a896c47f7486c9ca52e9e066790ecfbe9b14f64403ae4f568caf37",
       "exit_code": 0,
-      "frontend_wall_seconds": 27.353,
-      "olean_bytes": 208832,
-      "olean_sha256": "3eaf1cb0952bb03792431ab14d1702896e1db3cf67367b64dc9534281bebf74d"
+      "frontend_wall_seconds": 27.673,
+      "olean_bytes": 208888,
+      "olean_sha256": "cbc73f37b710ea21ce679a2990cdc9cc0980fbfc2a6a7d0046e73f46d9bdf09c"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Hub1",
       "source_sha256": "e93c67fb916fc5687e1fd78b163ca115a9fca6ce158ee631c6d7adf96eb88dfc",
       "exit_code": 0,
-      "frontend_wall_seconds": 2.311,
+      "frontend_wall_seconds": 2.507,
       "olean_bytes": 136216,
       "olean_sha256": "7775bd32ba645ff5b2e4e61886ad9eb6ba0cd3494305fd0728253575299d93f9"
     },
@@ -198,7 +198,7 @@
       "module": "MettapediaFourColor.Orbit10.Hub2",
       "source_sha256": "1aa63b7954ccc05ed505fdf5f6afeb0825149c68bb046b84075fc9d39561a6fa",
       "exit_code": 0,
-      "frontend_wall_seconds": 2.3,
+      "frontend_wall_seconds": 2.429,
       "olean_bytes": 135680,
       "olean_sha256": "1966429dccf51a4660295a2743b28aa384dee63d78f953ed762c0b09f5107641"
     },
@@ -206,7 +206,7 @@
       "module": "MettapediaFourColor.Orbit10.Step1",
       "source_sha256": "5162ffc26b46e569ec6c87c68091d9eaf219d0743e11947fd25935f5b17c589a",
       "exit_code": 0,
-      "frontend_wall_seconds": 4.835,
+      "frontend_wall_seconds": 5.059,
       "olean_bytes": 490776,
       "olean_sha256": "278dedd771ddb8f9f6f026251639621629c5857da4cf18a42be7248e9f3fc1aa"
     },
@@ -214,7 +214,7 @@
       "module": "MettapediaFourColor.Orbit10.Step2",
       "source_sha256": "11bbfb807f445f8550aa66f8ca7b39cee978be43771e691d62b7fd76cf898bfe",
       "exit_code": 0,
-      "frontend_wall_seconds": 8.104,
+      "frontend_wall_seconds": 8.419,
       "olean_bytes": 976280,
       "olean_sha256": "895a6338b1e91bd11f544cf4de4e94a504338b96c00273b9ff65fe79e339d141"
     },
@@ -222,7 +222,7 @@
       "module": "MettapediaFourColor.Orbit10.Step3",
       "source_sha256": "2ae58c6f01ee76eb45aa135d9a7822fbca29a647fbe558a51e02ae6a1ca4d633",
       "exit_code": 0,
-      "frontend_wall_seconds": 5.232,
+      "frontend_wall_seconds": 5.421,
       "olean_bytes": 553008,
       "olean_sha256": "9f512489aa06c76add9ac3b62d0637bc486130470be17924fcc33a8c4103c803"
     },
@@ -230,7 +230,7 @@
       "module": "MettapediaFourColor.Orbit10.Coverage",
       "source_sha256": "bf273573d436e77cbab9effbbd05fe27dd124f0f658b7c08990b81cfe814269b",
       "exit_code": 0,
-      "frontend_wall_seconds": 1.905,
+      "frontend_wall_seconds": 1.928,
       "olean_bytes": 22664,
       "olean_sha256": "2fb13e0dd2309622d34f9bdd3de702d52062aaf6d83f7fcf405cb030904e29a5"
     },
@@ -238,23 +238,23 @@
       "module": "MettapediaFourColor.OrbitAssembly",
       "source_sha256": "56edea0e392baa76f6c32f412b907e4039d0b9905762ecff796b4a1e1866c925",
       "exit_code": 0,
-      "frontend_wall_seconds": 3.647,
+      "frontend_wall_seconds": 3.989,
       "olean_bytes": 31160,
       "olean_sha256": "de3abc2cc879f9d877bc5b167a24413495084bf9c2bc0b936716902ae3764d79"
     },
     {
       "module": "MettapediaFourColor.OrbitAssemblyAudit",
-      "source_sha256": "d7aebf55b1f1ce54abfd4b07b61d73ca790bb3938f1f7ad69d613703835199aa",
+      "source_sha256": "d4bfb06f5838dc7bb2902a83ecefd25d85a35ab8774bf32023592a01478a4a73",
       "exit_code": 0,
-      "frontend_wall_seconds": 6.738,
+      "frontend_wall_seconds": 6.77,
       "olean_bytes": 3624,
       "olean_sha256": "7615eabca34ba3ccfe322a0c0f53271c053d8de1849f1a0a34c20c1c939418ea"
     },
     {
       "module": "MettapediaFourColor.Orbit10.SemanticSharingAudit",
-      "source_sha256": "b4412d24553e1a9f2528aec1fc8a9cd4cf3ba2c0576e8892eed3422c4acfd557",
+      "source_sha256": "0e8420147cbbd152886dbfdd02961e7893a7a9c00cbf13430d9b830ebe97a319",
       "exit_code": 0,
-      "frontend_wall_seconds": 6.634,
+      "frontend_wall_seconds": 6.666,
       "olean_bytes": 2672,
       "olean_sha256": "c324b863da6f188aae4d0896e46f6f6a842175ffdbf0e49a0bd61390a0ac57f0"
     }
@@ -389,10 +389,10 @@
   },
   "checker_obligations": {
     "arity10_before": 2580,
-    "arity10_after": 2501,
-    "replaced": 79,
+    "arity10_after": 2498,
+    "replaced": 82,
     "counting_method": "Explicit independent hubcap checker proof obligations; not all kernel reductions during conversion.",
-    "additional_input_classification_checks": 66
+    "additional_input_classification_checks": 69
   },
   "consumption": {
     "coverage": "FourColor.Orbit10.exclude10",
@@ -408,7 +408,7 @@
       "Mettapedia.Topology.NearestRegions.isConnected_region"
     ],
     "original_replaced_checks_present": false,
-    "original_checks_replaced": 84,
+    "original_checks_replaced": 87,
     "shared_certificates": [
       "FourColor.PeriodicHubcap.fit",
       "FourColor.ReflectedHubcap.succeeds"
@@ -418,7 +418,10 @@
       "FourColor.ChargeBound.successful_of_bounds",
       "FourColor.PairChargeBound.of_check",
       "FourColor.Hubcap.successful",
-      "FourColor.Hubcap.charge_le"
+      "FourColor.Hubcap.charge_le",
+      "FourColor.PairChargeBound.swap",
+      "FourColor.PairChargeBound.reflect",
+      "FourColor.PairChargeBound.reflect_swap"
     ],
     "rotation_only_five_check_certificate_present": false,
     "semantic_hubcap_certificates": [
@@ -444,7 +447,7 @@
       "FourColor.Orbit10.f10_1106",
       "FourColor.Orbit10.f10_1110"
     ],
-    "semantic_hubcap_dependency_audit": "All 21 combining theorems are transitive dependencies of each endpoint independently; all 64 removed checks are absent in both namespaces.",
+    "semantic_hubcap_dependency_audit": "All 21 combining theorems are transitive dependencies of each endpoint independently; all 67 removed checks are absent in both namespaces.",
     "source_construction_endpoint": "FourColor.OrbitAssembly.supported_source_construction_of_checks",
     "source_construction_dependencies": [
       "FourColor.SourceConstruction.supported_construction_of_unavoidability",
@@ -457,9 +460,13 @@
       "FourColor.ClassicalAssembly.no_embedded_reduction",
       "FourColor.PeriodicHubcap.fit",
       "FourColor.ReflectedHubcap.succeeds",
-      "FourColor.Hubcap.successful"
+      "FourColor.Hubcap.successful",
+      "FourColor.PairChargeBound.swap",
+      "FourColor.PairChargeBound.reflect",
+      "FourColor.PairChargeBound.reflect_swap"
     ],
-    "source_construction_measurements": "source-tait-measurements.json"
+    "source_construction_measurements": "source-tait-measurements.json",
+    "paired_charge_measurements": "paired-charge-measurements.json"
   },
   "axiom_audit": {
     "imported_public_declarations": 20232,
@@ -572,11 +579,12 @@
       "case": 835,
       "part": "p10_824l",
       "before": 8,
-      "after": 5,
+      "after": 4,
       "removed_checks": [
         "c10_835_3",
         "c10_835_4",
-        "c10_835_6"
+        "c10_835_6",
+        "c10_835_8"
       ]
     },
     {
@@ -606,18 +614,20 @@
       "case": 951,
       "part": "p10_932l",
       "before": 7,
-      "after": 6,
+      "after": 5,
       "removed_checks": [
-        "c10_951_3"
+        "c10_951_3",
+        "c10_951_6"
       ]
     },
     {
       "case": 998,
       "part": "p10_969l",
       "before": 7,
-      "after": 6,
+      "after": 5,
       "removed_checks": [
-        "c10_998_3"
+        "c10_998_3",
+        "c10_998_6"
       ]
     },
     {
@@ -712,8 +722,8 @@
   ],
   "replacement_build": {
     "modules": 18,
-    "summed_frontend_wall_seconds": 293.734,
-    "build_monitor_max_lean_rss_mib": 2999,
+    "summed_frontend_wall_seconds": 314.531,
+    "build_monitor_max_lean_rss_mib": 2908,
     "memory_scope": "Largest Lean RSS sampled by the build monitor across this gate, not a per-module maximum."
   }
 }

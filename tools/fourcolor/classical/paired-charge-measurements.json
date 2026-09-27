@@ -1,0 +1,112 @@
+{
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "lean_version": "4.34.0-rc2",
+  "generic_module": {
+    "module": "MettapediaFourColor.PairChargeTransport",
+    "source_sha256": "48674f6ba16f42e61a352d5da36e11b97f00dc6032c6337420ce0a398fa24027",
+    "exit_code": 0,
+    "frontend_wall_seconds": 2.072,
+    "olean_bytes": 99688,
+    "olean_sha256": "357cab47079d9ceb6a80112311c3b98c46731758cc4dba737722692d9d45d6cc"
+  },
+  "uniform_theorems": [
+    "FourColor.PairChargeBound.swap",
+    "FourColor.PairChargeBound.reflect",
+    "FourColor.PairChargeBound.reflect_swap"
+  ],
+  "mathematical_scope": "A semantic paired charge bound transports through reflection and exchange of endpoints for arbitrary positive hub size and offset at most that size; both the part and the offset change. No checker-equivariance assumption is used.",
+  "paired_replacements": [
+    {
+      "case": 835,
+      "consumer": "FourColor.Orbit10.f10_835",
+      "removed_check": "c10_835_8",
+      "representative": "c10_835_7",
+      "part": "p10_824l",
+      "offset": 1,
+      "bound": 8,
+      "transport": "reflect_swap"
+    },
+    {
+      "case": 951,
+      "consumer": "FourColor.Orbit10.f10_951",
+      "removed_check": "c10_951_6",
+      "representative": "c10_951_5",
+      "part": "p10_932l",
+      "offset": 5,
+      "bound": 8,
+      "transport": "reflect_swap"
+    },
+    {
+      "case": 998,
+      "consumer": "FourColor.Orbit10.f10_998",
+      "removed_check": "c10_998_6",
+      "representative": "c10_998_5",
+      "part": "p10_969l",
+      "offset": 2,
+      "bound": 7,
+      "transport": "reflect_swap"
+    }
+  ],
+  "checker_obligations": {
+    "paired_queries_before": 6,
+    "paired_queries_after": 3,
+    "additional_replacements": 3,
+    "additional_part_identity_checks": 3,
+    "arity10_before": 2580,
+    "arity10_after": 2498,
+    "total_replacements_including_prior_sharing": 82
+  },
+  "adapter_gate": {
+    "modules": 21,
+    "summed_frontend_wall_seconds": 73.486,
+    "public_declarations_audited": 24782,
+    "build_monitor_max_lean_rss_mib": 3805
+  },
+  "coverage_gate": {
+    "modules": 18,
+    "summed_frontend_wall_seconds": 314.531,
+    "public_declarations_audited": 20232,
+    "build_monitor_max_lean_rss_mib": 2908,
+    "measurements": "orbit-presentation-measurements.json"
+  },
+  "audit": {
+    "endpoints": [
+      "FourColor.OrbitAssembly.colorable_of_planeDrawing",
+      "FourColor.OrbitAssembly.supported_source_construction_of_checks"
+    ],
+    "paired_transport_required_in_each_endpoint": true,
+    "all_21_semantic_hubcaps_required_in_each_endpoint": true,
+    "all_87_superseded_reference_checks_absent": true,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "unexpected_axioms": []
+  },
+  "candidate_inventory": {
+    "file": "paired-charge-candidates.json",
+    "sha256": "6992d51d7461b1048dafb96fb3dcd7665d17da1d54739e0fe4275432afca9593",
+    "paired_queries": 8618,
+    "additional_symmetry_matches": 91,
+    "arity10_consumed_matches": 3,
+    "remaining_matches_are_program_candidates": 88
+  },
+  "generators": [
+    {
+      "file": "paired_charge_candidates.py",
+      "sha256": "0a905e514c7970c8f7aed120c0776aed7de2476648a320ee48dcf41b7d7295dd"
+    },
+    {
+      "file": "semantic_hubcaps.py",
+      "sha256": "e47ab567588ef045e54896be33d353e581fde8f5c4346f97cadfd738c71f9e4c"
+    }
+  ],
+  "limits": [
+    "The three new replacements extend the prior 79 to 82; they must not be added again to the ledger total.",
+    "All 633 configurations remain; no new unavoidable set is claimed.",
+    "The assembly still takes reducibility and six other arity presentations as inputs.",
+    "No runtime or artifact-size improvement is claimed.",
+    "Frontend timings use prepared dependencies and include loading, elaboration, kernel checking and serialization. Memory records the largest Lean RSS sampled across each full gate."
+  ]
+}

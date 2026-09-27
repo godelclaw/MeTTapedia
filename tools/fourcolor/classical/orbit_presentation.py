@@ -182,7 +182,7 @@ def main():
     library = (args.library_output or output / "lib").resolve()
     adapters = package / ".lake/build/lib/lean"
     for name in ("PeriodicHubcap", "ReflectedHubcap", "HubcapCharges", "ClassicalAssembly",
-                 "SourceTait"):
+                 "PairChargeTransport", "SourceTait"):
         if not (adapters / f"MettapediaFourColor/{name}.olean").is_file():
             raise SystemExit("Build the adapter package first: " + name)
     # Lean resolves a top-level module prefix from one search directory.

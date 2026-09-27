@@ -35,6 +35,7 @@ run_cmd do
       ``FourColor.ChargeBound.reflect,
       ``FourColor.ChargeBound.successful_of_bounds,
       ``FourColor.PairChargeBound.of_check,
+      ``FourColor.PairChargeBound.reflect_swap,
       ``FourColor.Hubcap.successful,
       ``FourColor.Hubcap.charge_le,
       ``FourColor.HubcapOrbit.oneEntries_fit_periodic,
@@ -62,7 +63,7 @@ run_cmd do
       ``Mettapedia.GraphTheory.FourColor.SourceConstructionGSLT.class_represented,
       ``FourColor.ClassicalAssembly.no_embedded_reduction,
       ``FourColor.PeriodicHubcap.fit, ``FourColor.ReflectedHubcap.succeeds,
-      ``FourColor.Hubcap.successful] do
+      ``FourColor.Hubcap.successful, ``FourColor.PairChargeBound.reflect_swap] do
     unless sourceSeen.contains name do
       throwError m!"Required source-construction dependency is missing: {name}"
   let allowed : List Name := [``propext, ``Classical.choice, ``Quot.sound]

@@ -20,10 +20,10 @@
     "discharging_rules_removed": 0,
     "certificate_bytes_saved": 0,
     "kernel_seconds_saved": 0,
-    "local_discharging_computations_replaced": 79,
+    "local_discharging_computations_replaced": 82,
     "whole_assembly_discharging_computations_replaced": 0,
-    "arity10_coverage_checker_obligations_replaced": 79,
-    "conditional_assembly_checker_obligations_replaced": 79
+    "arity10_coverage_checker_obligations_replaced": 82,
+    "conditional_assembly_checker_obligations_replaced": 82
   },
   "experiments": [
     {
@@ -39,9 +39,16 @@
       "status": "Candidate inventory; all 66 arity-ten reflected identifications have checked consumers.",
       "evidence": "program search; checked applications are recorded in local_certificates",
       "credited_compression": false
+    },
+    {
+      "name": "paired charge reflection and endpoint exchange",
+      "record": "paired-charge-candidates.json",
+      "status": "All three arity-ten matches have checked consumers; 88 matches at other arities remain candidates.",
+      "evidence": "program search; checked applications are recorded in local_certificates",
+      "credited_compression": false
     }
   ],
-  "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local, arity-ten and conditional-assembly counts describe the same 79 shared checks and must not be added. Whole-assembly credit waits for the unconditional root.",
+  "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local, arity-ten and conditional-assembly counts describe the same 82 shared checks and must not be added. Whole-assembly credit waits for the unconditional root.",
   "local_certificates": [
     {
       "reference_obligation": "FourColor.f10_128",
@@ -155,6 +162,37 @@
       "coverage_measurements": "orbit-presentation-measurements.json",
       "conditional_source_construction_consumer": "FourColor.OrbitAssembly.supported_source_construction_of_checks",
       "source_construction_measurements": "source-tait-measurements.json"
+    },
+    {
+      "reference_obligations": [
+        "FourColor.f10_835",
+        "FourColor.f10_951",
+        "FourColor.f10_998"
+      ],
+      "scope": "Only the six paired-query subcertificates; other obligations in these hubcaps are already accounted for in earlier entries.",
+      "before": 6,
+      "after": 3,
+      "replaced": 3,
+      "additional_check": "Three complete boundary-part identities; offsets are also matched by kernel reduction.",
+      "uniform_theorems": [
+        "FourColor.PairChargeBound.swap",
+        "FourColor.PairChargeBound.reflect",
+        "FourColor.PairChargeBound.reflect_swap"
+      ],
+      "consumers": [
+        "FourColor.Orbit10.f10_835",
+        "FourColor.Orbit10.f10_951",
+        "FourColor.Orbit10.f10_998"
+      ],
+      "evidence": "kernel checked",
+      "integrated_into_full_unavoidability": false,
+      "integrated_into_arity10_coverage": true,
+      "coverage_consumer": "FourColor.Orbit10.exclude10",
+      "conditional_assembly_consumer": "FourColor.OrbitAssembly.fourColorTheorem_of_checks",
+      "conditional_graph_consumer": "FourColor.OrbitAssembly.colorable_of_planeDrawing",
+      "conditional_source_construction_consumer": "FourColor.OrbitAssembly.supported_source_construction_of_checks",
+      "measurements": "paired-charge-measurements.json",
+      "coverage_measurements": "orbit-presentation-measurements.json"
     }
   ]
 }

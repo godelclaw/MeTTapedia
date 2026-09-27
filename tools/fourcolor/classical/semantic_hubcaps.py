@@ -1,8 +1,8 @@
-"""Generate semantic hubcaps from reflected single-edge certificates.
+"""Generate semantic hubcaps from symmetric single-edge and paired certificates.
 
 This generator is untrusted: every retained computation, part identity,
-transport and consuming coverage proof is checked by Lean. It preserves
-two-edge computations and shares only equal-bound single-edge inputs.
+transport and consuming coverage proof is checked by Lean. Bounds must agree;
+paired inputs transport both their part and their relative endpoint offset.
 """
 
 from collections import defaultdict
@@ -10,24 +10,30 @@ from functools import lru_cache
 import re
 
 from reflection_candidates import inspect_arity, parse_part, read_queries, reflect, rotate
+from paired_charge_candidates import inspect_arity as inspect_pairs
+from paired_charge_candidates import pair_orbit, read_paired_queries
 
 
 @lru_cache(maxsize=None)
 def selected_cases(reference, n=10):
     """The remaining reflection candidates within individual hubcaps."""
-    inventory = inspect_arity(reference, n)
+    inventories = [inspect_arity(reference, n), inspect_pairs(reference, n)]
     selected = set()
-    for group in inventory["new_groups"]:
-        cases = {int(name.split("_")[1]) for name in group}
-        if len(cases) != 1:
-            raise ValueError("Cross-hubcap sharing needs a separate dependency plan")
-        selected.update(cases)
+    for inventory in inventories:
+        for group in inventory["new_groups"]:
+            cases = {int(name.split("_")[1]) for name in group}
+            if len(cases) != 1:
+                raise ValueError("Cross-hubcap sharing needs a separate dependency plan")
+            selected.update(cases)
     # These two cases already have separately audited uniform consumers.
-    selected.difference_update((128, 242))
+    if n == 10:
+        selected.difference_update((128, 242))
     data = (reference / f"FourColor/Present{n}Defs.lean").read_text()
     parts = {name: parse_part(body) for name, body in
              re.findall(r"^def (\w+) : Part := (.*)$", data, re.M)}
     rows, _ = read_queries(reference, n)
+    pair_rows, _, _ = read_paired_queries(reference, n)
+    pairs = {row["name"]: row for row in pair_rows}
     by_case = defaultdict(list)
     for row in rows:
         case = int(row["name"].split("_")[1])
@@ -47,7 +53,11 @@ def selected_cases(reference, n=10):
             item["bound"] = int(tail.strip("()"))
             part = rotate(parts[part_name], int(j) - 2 if int(j) >= 2 else n + int(j) - 2)
             item["part"] = part
-            item["key"] = (min(part, reflect(part)), item["bound"])
+            item["key"] = ("single", min(part, reflect(part)), item["bound"])
+        else:
+            item.update(pairs[row["name"]])
+            item["key"] = ("pair", min(pair_orbit(item["part"], item["offset"]).values()),
+                           item["bound"])
         by_case[case].append(item)
     result = {}
     for case in sorted(selected):
@@ -56,15 +66,19 @@ def selected_cases(reference, n=10):
             raise ValueError("A hubcap uses different parts")
         representatives = {}
         for q in queries:
-            if q["kind"] != "checkDbound2":
-                q["representative"] = q["name"]
-                continue
             rep = representatives.setdefault(q["key"], q)
             q["representative"] = rep["name"]
             q["representative_expression"] = rep["part_expression"]
-            q["reflected"] = q["part"] != rep["part"]
-            if q["reflected"] and q["part"] != reflect(rep["part"]):
-                raise ValueError("The proposed reflection does not match")
+            if q["kind"] == "checkDbound2":
+                q["reflected"] = q["part"] != rep["part"]
+                if q["reflected"] and q["part"] != reflect(rep["part"]):
+                    raise ValueError("The proposed reflection does not match")
+            else:
+                q["representative_offset"] = rep["offset"]
+                q["transport"] = next((name for name, value in pair_orbit(
+                    rep["part"], rep["offset"]).items() if value == (q["part"], q["offset"])), None)
+                if q["transport"] is None:
+                    raise ValueError("The proposed pair transport does not match")
         kept = [q for q in queries if q["representative"] == q["name"]]
         result[case] = dict(queries=queries, kept=kept, before=len(queries),
                             after=len(kept), part=queries[0]["part_name"])
@@ -103,7 +117,20 @@ def replace_checks(source, cases, n=10):
         for q in data["queries"]:
             rep = q["representative"]
             if q["kind"] == "check2Dbound2":
-                proof.append(f"  · exact PairChargeBound.of_check hred rf{n} rfl (by decide) {rep}")
+                if rep == q["name"]:
+                    proof.append(f"  · exact PairChargeBound.of_check hred rf{n} rfl (by decide) {rep}")
+                    continue
+                operation, offset = q["transport"], q["representative_offset"]
+                part = f"({q['representative_expression']})"
+                target = dict(identity=part, swap=f"Part.rot {offset} {part}",
+                              reflect=f"reflectDrule {part}",
+                              reflect_swap=f"Part.rot ({n} - {offset}) (reflectDrule {part})")[operation]
+                proof.append(f"  · rw [show {q['part_expression']} = {target} by decide +kernel]")
+                if operation != "identity":
+                    side_conditions = "(by decide)" if operation == "swap" else "(by decide) (by decide)"
+                    proof.append(f"    apply PairChargeBound.{operation} (p := {part}) "
+                                 f"(n := {n}) (j := {offset}) (b := ({q['bound']})) rfl {side_conditions}")
+                proof.append(f"    exact PairChargeBound.of_check hred rf{n} rfl (by decide) {rep}")
             elif rep == q["name"]:
                 proof.append(f"  · exact ChargeBound.of_check hred rf{n} rfl {rep}")
             else:
@@ -119,7 +146,7 @@ def replace_checks(source, cases, n=10):
         source = source[:first] + "\n\n".join(declarations) + source[end:]
         used.append(case)
     if used:
-        source = "import MettapediaFourColor.HubcapCharges\n" + source
+        source = "import MettapediaFourColor.PairChargeTransport\n" + source
     return source, used
 
 

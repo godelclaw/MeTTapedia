@@ -61,10 +61,11 @@ lake build kernelOrbitPresentation
 This target reconstructs fifteen presentation modules from exact, hashed
 reference sources, in the namespace `FourColor.Orbit10`. It replaces the twenty
 checks for `f10_128` and `f10_242` with the five representatives supplied by
-`PeriodicHubcap` and `ReflectedHubcap`. It also removes 64 checks from 21 other
-hubcaps, using semantic reflection to assemble each hubcap from retained
-representatives. The cover data and split trees are preserved. Unaffected
-proof bodies are retained. Import names and namespaces change so the original
+`PeriodicHubcap` and `ReflectedHubcap`. It also removes 67 checks from 21 other
+hubcaps, using semantic reflection and exchange of paired endpoints to
+assemble each hubcap from retained representatives. The cover data and
+split trees are preserved. Unaffected proof bodies are retained. Import names
+and namespaces change so the original
 and modified developments remain distinct. The generated sources,
 including the reference licence and credits, are available in
 `.lake/orbit-audit/src`; compilation receipts are in `orbit-results.json` in
@@ -72,7 +73,7 @@ the same audit directory.
 
 `OrbitAssembly.fourColorTheorem_of_checks` consumes the resulting `exclude10`.
 The audits verify that its dependency graph includes every semantic replacement
-and the explicit colouring reconstruction, and that all 84 superseded check
+and the explicit colouring reconstruction, and that all 87 superseded check
 declarations and the original arity-ten theorem are absent.
 
 ## What is preserved
@@ -161,13 +162,16 @@ now consumes the stronger semantic certificate.
 Its arithmetic theorem applies to arbitrary integer charges constrained by
 single-edge or paired-edge bounds. `PairChargeBound.of_check` supplies semantic
 paired-edge bounds, and `Hubcap.successful` combines these with transported
-single-edge bounds. This removes 64 more computations across 21 hubcaps,
-reducing their 188 checks to 124. Every replacement is verified as a dependency
-of the graph-colouring endpoint.
+single-edge bounds. `PairChargeTransport` proves that paired bounds also
+transport through reflection and exchange of endpoints, with the part and
+offset changed together. The combined symmetries remove 67 computations
+across 21 hubcaps, reducing their 188 checks to 121. Every replacement is
+verified as a dependency of both the graph-colouring and source-construction
+endpoints.
 
-The reduction of 79 independent discharging checks is consumed by the
+The reduction of 82 independent discharging checks is consumed by the
 complete arity-ten coverage proof and the conditional `OrbitAssembly` endpoint.
-Its 2,580 explicit checker obligations become 2,501, with 66 separate finite
+Its 2,580 explicit checker obligations become 2,498, with 69 separate finite
 checks of boundary-input identities or classifications. All 633 configurations
 remain. An unconditional assembly with all seven
 arities and all reducibility certificates is still pending. Exact counts and

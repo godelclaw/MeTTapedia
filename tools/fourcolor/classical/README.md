@@ -152,6 +152,7 @@ reference's MIT notice and Gonthier/Werner attribution.
 | `HypermapDictionary` | The two hypermap presentations agree on permutations, components and planarity on the same finite dart type |
 | `HypermapTransport` | Exact relabelling preserves the hypermap and its colourings, allowing finite dart carriers in any universe |
 | `SourceTait` | Classical face colours descend to literal Tait edge colours and supply compatible witnesses along exact source construction traces |
+| `PairChargeTransport` | Paired semantic bounds survive reflection and exchange of endpoints, with the part and offset transported together |
 | `GraphColoringBridge` | Colours on actual graph darts descend to Mathlib vertex colourings, using vertexwise cyclicity and preserving every supplied dart colour |
 | `HubcapOrbit` | Equal rotated boundary inputs and equal bounds share a checker certificate |
 | `PeriodicHubcap` | Two representative checks close the same ten-position discharging case as the reference's `f10_128` |
@@ -262,7 +263,7 @@ python3 tools/fourcolor/classical/replay_adapters.py \
 ```
 
 The script checks the reference revision and common toolchain, compiles the
-nineteen adapter and audit modules and the package root without native C emission, and runs
+twenty adapter and audit modules and the package root without native C emission, and runs
 the axiom audit. It records source hashes, exit statuses and wall times. Its
 default output is a dedicated directory; the package target instead writes the
 proof artifacts to the package's ordinary build directory. It does not generate
@@ -311,12 +312,17 @@ arbitrary integer charges. Single-edge and paired-edge semantic bounds can
 therefore be combined regardless of whether they came directly from the
 checker or through transport. The reference's cover data and split trees
 remain the same. `semantic_hubcaps.py` applies this theorem to 21 further
-arity-ten hubcaps: 188 independent checks become 124, with a kernel-checked
-part identity for each of the 64 replacements.
+arity-ten hubcaps. `PairChargeTransport` additionally transports paired
+bounds through reflection and exchange of endpoints. The part and the
+relative offset both transform; reflecting only the part would be unsound.
+Together the single-edge and paired transports reduce these 188 independent
+checks to 121, with a kernel-checked part identity for each of the 67
+replacements. The three paired replacements occur in `f10_835`, `f10_951`
+and `f10_998`; `paired-charge-measurements.json` records their consumers.
 
 All these replacements are consumed by the complete arity-ten presentation
 and the conditional `OrbitAssembly` endpoint. Its 2,580 explicit hubcap checker
-obligations become 2,501, with 66 separate finite checks classifying or
+obligations become 2,498, with 69 separate finite checks classifying or
 identifying boundary inputs. These are counts of independent checker proof obligations, not
 all reductions performed by the kernel. All 633 configurations remain.
 An unconditional assembly with every catalogue certificate and all seven
@@ -343,10 +349,11 @@ Each consuming step invokes `Hubcap.succeeds` with the original cover.
 Unaffected proof bodies are retained. The generated source includes the
 reference's licence and attribution. The final audits check the axiom set,
 follow proof dependencies through every replacement and the explicit colouring
-reconstruction, and reject all 84 superseded check declarations and the original
-`exclude10` theorem. `semantic-hubcap-measurements.json` records the additional
-generic theorem and all 21 consumers; `orbit-presentation-measurements.json`
-records the coverage build.
+reconstruction, and reject all 87 superseded check declarations and the original
+`exclude10` theorem. `semantic-hubcap-measurements.json` records the weighted-cover
+theorem and the earlier single-edge sharing across all 21 consumers;
+`paired-charge-measurements.json` records the paired extension, and
+`orbit-presentation-measurements.json` records the coverage build.
 
 The audit also follows the finite graph endpoint
 `OrbitAssembly.colorable_of_planeDrawing`. Its geometric bridge constructs
@@ -379,6 +386,19 @@ Dual-edge reflection is outside this search. Replay it with:
 ```sh
 python3 tools/fourcolor/classical/reflection_candidates.py \
   --reference lean/externals/fourcolor --output reflection-results.json
+```
+
+`paired_charge_candidates.py` searches paired queries under reflection and
+exchange of endpoints. It finds 91 additional matches beyond exact-input
+equality, including the three arity-ten replacements consumed above. The
+other 88 remain candidates, including some that cross hubcaps. Equal bounds
+and complete part data are required. This inventory is a program search;
+each credited application separately checks its identity and semantic proof
+in Lean.
+
+```sh
+python3 tools/fourcolor/classical/paired_charge_candidates.py \
+  --reference lean/externals/fourcolor --output paired-charge-results.json
 ```
 
 `compression-ledger.json` keeps the baseline and credited changes separate.

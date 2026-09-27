@@ -3,6 +3,7 @@ import MettapediaFourColor.Config4Reconstruction
 import MettapediaFourColor.ClassicalAssembly
 import MettapediaFourColor.GraphColoringBridge
 import MettapediaFourColor.SourceTait
+import MettapediaFourColor.PairChargeTransport
 import MettapediaFourColor.PeriodicHubcap
 import MettapediaFourColor.HalfTurnHubcap
 import MettapediaFourColor.ReflectedHubcap
@@ -18,6 +19,7 @@ import FourColor.Bulk.Cfg.Hyb218
 #print axioms FourColor.Hypermap.fourColorable_of_small_unavoidability
 #print axioms FourColor.SourceConstruction.taitColoring_dart
 #print axioms FourColor.SourceConstruction.supported_construction_of_unavoidability
+#print axioms FourColor.PairChargeBound.reflect_swap
 #print axioms FourColor.Bulk.Hyb218.reducible
 #print axioms FourColor.f7_4555
 #print axioms FourColor.PeriodicHubcap.succeeds

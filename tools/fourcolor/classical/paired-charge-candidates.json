@@ -1,0 +1,454 @@
+{
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "evidence": "Program search; checked consumers are recorded separately in the ledger.",
+  "scope": "Explicit paired charge queries at arities five through eleven, with equal bounds.",
+  "arities": [
+    {
+      "arity": 5,
+      "paired_queries": 20,
+      "exact_input_duplicates": 1,
+      "reflection_orbit_savings": 1,
+      "reflection_and_swap_savings": 1,
+      "additional_symmetry_savings": 0,
+      "new_groups": [],
+      "source_sha256": "9cf22376feb74d3004e747714bf8d57229bde12e8e51c7c119574fcb4fb9b9c9",
+      "checker_sources_digest": "f52c903376e003640737df4f846d24a9288108fbf46c94609e05cc8b5ec06192"
+    },
+    {
+      "arity": 6,
+      "paired_queries": 708,
+      "exact_input_duplicates": 5,
+      "reflection_orbit_savings": 16,
+      "reflection_and_swap_savings": 31,
+      "additional_symmetry_savings": 26,
+      "new_groups": [
+        [
+          "c6_28_2",
+          "c6_28_3"
+        ],
+        [
+          "c6_41_2",
+          "c6_41_3"
+        ],
+        [
+          "c6_44_2",
+          "c6_44_3"
+        ],
+        [
+          "c6_86_1",
+          "c6_86_2"
+        ],
+        [
+          "c6_87_1",
+          "c6_87_2"
+        ],
+        [
+          "c6_94_1",
+          "c6_94_2"
+        ],
+        [
+          "c6_140_1",
+          "c6_140_2"
+        ],
+        [
+          "c6_146_1",
+          "c6_146_2"
+        ],
+        [
+          "c6_159_2",
+          "c6_159_3"
+        ],
+        [
+          "c6_162_2",
+          "c6_162_3"
+        ],
+        [
+          "c6_209_2",
+          "c6_209_3"
+        ],
+        [
+          "c6_475_2",
+          "c6_475_3"
+        ],
+        [
+          "c6_499_1",
+          "c6_499_2"
+        ],
+        [
+          "c6_507_1",
+          "c6_507_2"
+        ],
+        [
+          "c6_515_1",
+          "c6_515_2"
+        ],
+        [
+          "c6_518_1",
+          "c6_518_2"
+        ],
+        [
+          "c6_560_2",
+          "c6_572_1"
+        ],
+        [
+          "c6_561_2",
+          "c6_573_1"
+        ],
+        [
+          "c6_567_1",
+          "c6_567_2"
+        ],
+        [
+          "c6_568_1",
+          "c6_568_2"
+        ],
+        [
+          "c6_576_1",
+          "c6_576_2"
+        ],
+        [
+          "c6_577_1",
+          "c6_577_2"
+        ],
+        [
+          "c6_638_2",
+          "c6_699_2"
+        ],
+        [
+          "c6_638_3",
+          "c6_641_3"
+        ],
+        [
+          "c6_642_2",
+          "c6_703_2"
+        ],
+        [
+          "c6_700_3",
+          "c6_703_3"
+        ]
+      ],
+      "source_sha256": "8b1ec8151aec440598fd7efe37d1fd6814e684943d9469450885d93770e7858c",
+      "checker_sources_digest": "ebcbf8848423f94b7587853cfc09d49dd8fdfc2e1fc99622db676bb282d04ad1"
+    },
+    {
+      "arity": 7,
+      "paired_queries": 2668,
+      "exact_input_duplicates": 1,
+      "reflection_orbit_savings": 8,
+      "reflection_and_swap_savings": 26,
+      "additional_symmetry_savings": 25,
+      "new_groups": [
+        [
+          "c7_5494_4",
+          "c7_5494_5"
+        ],
+        [
+          "c7_5810_4",
+          "c7_5810_5"
+        ],
+        [
+          "c7_5814_4",
+          "c7_5814_5"
+        ],
+        [
+          "c7_5821_4",
+          "c7_5821_5"
+        ],
+        [
+          "c7_635_4",
+          "c7_822_4"
+        ],
+        [
+          "c7_635_5",
+          "c7_822_5"
+        ],
+        [
+          "c7_637_6",
+          "c7_824_6"
+        ],
+        [
+          "c7_639_4",
+          "c7_826_4"
+        ],
+        [
+          "c7_639_5",
+          "c7_826_5"
+        ],
+        [
+          "c7_872_4",
+          "c7_872_5"
+        ],
+        [
+          "c7_966_4",
+          "c7_966_5"
+        ],
+        [
+          "c7_1091_4",
+          "c7_1091_5"
+        ],
+        [
+          "c7_153_4",
+          "c7_153_5"
+        ],
+        [
+          "c7_154_4",
+          "c7_154_5"
+        ],
+        [
+          "c7_1279_4",
+          "c7_1279_5"
+        ],
+        [
+          "c7_1283_4",
+          "c7_1283_5"
+        ],
+        [
+          "c7_187_4",
+          "c7_187_5"
+        ],
+        [
+          "c7_195_4",
+          "c7_195_5"
+        ],
+        [
+          "c7_204_4",
+          "c7_204_5"
+        ],
+        [
+          "c7_3506_4",
+          "c7_3506_5"
+        ],
+        [
+          "c7_506_3",
+          "c7_506_6"
+        ],
+        [
+          "c7_506_4",
+          "c7_506_7"
+        ],
+        [
+          "c7_5072_4",
+          "c7_5072_5"
+        ],
+        [
+          "c7_5089_3",
+          "c7_5089_6"
+        ],
+        [
+          "c7_5204_4",
+          "c7_5204_5"
+        ]
+      ],
+      "source_sha256": "2f19ce23037498d295b71c6c11ff3f710abb80f563d7d97f85158ce9f1473896",
+      "checker_sources_digest": "67d67f23de437f6b6752034722adb45e0414df268caad55be4b848453374636a"
+    },
+    {
+      "arity": 8,
+      "paired_queries": 3032,
+      "exact_input_duplicates": 2,
+      "reflection_orbit_savings": 3,
+      "reflection_and_swap_savings": 22,
+      "additional_symmetry_savings": 20,
+      "new_groups": [
+        [
+          "c8_5438_5",
+          "c8_5438_6"
+        ],
+        [
+          "c8_751_3",
+          "c8_751_4"
+        ],
+        [
+          "c8_774_6",
+          "c8_788_5"
+        ],
+        [
+          "c8_85_5",
+          "c8_85_6"
+        ],
+        [
+          "c8_90_1",
+          "c8_90_4"
+        ],
+        [
+          "c8_90_2",
+          "c8_90_3"
+        ],
+        [
+          "c8_100_1",
+          "c8_100_2"
+        ],
+        [
+          "c8_100_3",
+          "c8_100_4"
+        ],
+        [
+          "c8_1110_5",
+          "c8_1110_6"
+        ],
+        [
+          "c8_1544_5",
+          "c8_1544_6"
+        ],
+        [
+          "c8_1551_3",
+          "c8_1551_4"
+        ],
+        [
+          "c8_1844_7",
+          "c8_1863_6"
+        ],
+        [
+          "c8_1846_7",
+          "c8_1865_6"
+        ],
+        [
+          "c8_1945_5",
+          "c8_1945_6"
+        ],
+        [
+          "c8_2025_5",
+          "c8_2025_6"
+        ],
+        [
+          "c8_2328_3",
+          "c8_2328_4"
+        ],
+        [
+          "c8_2375_3",
+          "c8_2375_5"
+        ],
+        [
+          "c8_2484_5",
+          "c8_2484_6"
+        ],
+        [
+          "c8_304_5",
+          "c8_304_6"
+        ],
+        [
+          "c8_3164_5",
+          "c8_3164_6"
+        ]
+      ],
+      "source_sha256": "862c636b083afcc0aae9290aaabcb1175dd14ed60ee500eb2f63bef6244527f7",
+      "checker_sources_digest": "d89bffdc3e5f3aa0e4b0d7bbe991a2236123f459706a843746943e107e37b578"
+    },
+    {
+      "arity": 9,
+      "paired_queries": 1831,
+      "exact_input_duplicates": 2,
+      "reflection_orbit_savings": 7,
+      "reflection_and_swap_savings": 19,
+      "additional_symmetry_savings": 17,
+      "new_groups": [
+        [
+          "c9_22_4",
+          "c9_22_6"
+        ],
+        [
+          "c9_732_3",
+          "c9_732_5"
+        ],
+        [
+          "c9_858_6",
+          "c9_858_7"
+        ],
+        [
+          "c9_950_6",
+          "c9_950_7"
+        ],
+        [
+          "c9_1779_6",
+          "c9_1779_7"
+        ],
+        [
+          "c9_1821_1",
+          "c9_1821_2"
+        ],
+        [
+          "c9_1821_4",
+          "c9_1821_7"
+        ],
+        [
+          "c9_1821_5",
+          "c9_1821_6"
+        ],
+        [
+          "c9_2446_4",
+          "c9_2446_5"
+        ],
+        [
+          "c9_2692_5",
+          "c9_2692_6"
+        ],
+        [
+          "c9_276_4",
+          "c9_276_5"
+        ],
+        [
+          "c9_295_6",
+          "c9_295_7"
+        ],
+        [
+          "c9_2900_1",
+          "c9_2900_2"
+        ],
+        [
+          "c9_2900_5",
+          "c9_2900_6"
+        ],
+        [
+          "c9_3336_6",
+          "c9_3336_7"
+        ],
+        [
+          "c9_3384_6",
+          "c9_3384_7"
+        ],
+        [
+          "c9_3556_6",
+          "c9_3556_7"
+        ]
+      ],
+      "source_sha256": "d3ac9e654afda85c508f5112c21e7fea0f0a126078020169370e47c332be5772",
+      "checker_sources_digest": "a0174776120d805fa2aa13bb42c5045a63e02d4e638a487dab739698415e7b83"
+    },
+    {
+      "arity": 10,
+      "paired_queries": 336,
+      "exact_input_duplicates": 0,
+      "reflection_orbit_savings": 0,
+      "reflection_and_swap_savings": 3,
+      "additional_symmetry_savings": 3,
+      "new_groups": [
+        [
+          "c10_835_7",
+          "c10_835_8"
+        ],
+        [
+          "c10_951_5",
+          "c10_951_6"
+        ],
+        [
+          "c10_998_5",
+          "c10_998_6"
+        ]
+      ],
+      "source_sha256": "ede0f1d43e29c49f6af5ea7a3643635f87e4cc4d528660776215fe8bbdda73d7",
+      "checker_sources_digest": "3a732bb9132aaade55dca11a9c17b7424489048d490783b048ae7c21446c4d3f"
+    },
+    {
+      "arity": 11,
+      "paired_queries": 23,
+      "exact_input_duplicates": 0,
+      "reflection_orbit_savings": 0,
+      "reflection_and_swap_savings": 0,
+      "additional_symmetry_savings": 0,
+      "new_groups": [],
+      "source_sha256": "0aaf8ab0194915ea7ff5fd8dced26b89005ce58cb62576d5f06b23b8b5f5c0ea",
+      "checker_sources_digest": "413c34ed080eba6a9d65f2c835ed1fda534f0f47eef866bd7a363180f4acdb73"
+    }
+  ],
+  "additional_symmetry_savings": 91
+}
