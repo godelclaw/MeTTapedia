@@ -1026,6 +1026,31 @@ the initial reconstructed vorticity differs from the analytic profile by
 `9e-15` relatively. These are consistency checks; interpreting later
 history requires comparison across grids and time steps.
 
+For the default tube data at `t=.1`, integrated self-stretching is below
+half the accumulated dissipation at all three measured cutoffs. At cutoff 4:
+
+| Full grid | Maximum step | Self-stretching | Half dissipation | Excess |
+| --- | --- | --- | --- | --- |
+| 96³ | .001 | 1.053966 | 2.388679 | -1.334713 |
+| 96³ | .0005 | 1.053966 | 2.388679 | -1.334713 |
+| 128³ | .001 | 1.054208 | 2.388687 | -1.334478 |
+
+Time-step refinement changes the excess by `6.18e-8`; spatial refinement
+changes it by `2.35e-4`. On the finer grid, the cutoff-8 and cutoff-12
+excesses are `-.793245` and `-.106209`, and the upper-band palinstrophy
+fraction is `2.99e-5`. The additional time-step check is:
+
+```sh
+python3 -O labs/bent_tube_history.py --n 96 --time .1 --step .0005 --report-every .025
+```
+
+The 96³ and 128³ longer runs stop at their resolution warnings at
+`t=.175` and `t=.2`, respectively. Their later histories are not resolved
+by these comparisons. Enstrophy remains close to its initial value in
+the shared prefix, so this result does not establish control of a strong
+growth episode. Neither this negative prefix nor the positive Kida prefix
+settles the endpoint-independent finite-allowance budget.
+
 ### Simultaneous stretching and mean-circulation gain
 
 Run `python3 -O labs/helical_mean_feedback.py`; this checker requires Sympy.
