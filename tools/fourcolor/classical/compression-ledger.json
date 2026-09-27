@@ -1,0 +1,34 @@
+{
+  "baseline_reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "baseline": {
+    "configurations": 633,
+    "maximum_ring_size": 14,
+    "published_discharging_rule_labels": 32,
+    "directed_rule_entries": 67,
+    "bulk_configurations": 523,
+    "bulk_plus_residual_configurations": 110,
+    "measurement_sources": [
+      "inventory.json",
+      "pilot-measurements.json",
+      "reconstruction-measurements.json"
+    ],
+    "full_kernel_replay": "in progress"
+  },
+  "credited_compression": {
+    "catalogue_entries_removed": 0,
+    "configuration_checks_replaced_by_new_uniform_lemmas": 0,
+    "discharging_rules_removed": 0,
+    "certificate_bytes_saved": 0,
+    "kernel_seconds_saved": 0
+  },
+  "experiments": [
+    {
+      "name": "common-boundary-support certificates",
+      "record": "common-support-probe.json",
+      "status": "stopped after bounded negative search",
+      "evidence": "program check",
+      "credited_compression": false
+    }
+  ],
+  "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that."
+}

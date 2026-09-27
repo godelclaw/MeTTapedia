@@ -248,3 +248,43 @@ The ledger starts with zero new catalogue eliminations and zero checks replaced
 by this development's uniform lemmas. Fewer separate checks, fewer distinct
 arguments, and a smaller unavoidable set are different results. Removing a
 configuration from the unavoidable set also requires a new coverage proof.
+
+`compression-ledger.json` keeps the baseline and credited changes separate.
+The first bounded experiment tested whether two configurations could share a
+bulk certificate built from their common colourings. For each pair, the base
+was the intersection of their boundary supports, and the demand was the union
+of their contraction supports. The second configuration was tested in every
+cyclic rotation and reflection, after closing both supports under colour
+permutations.
+
+The program checked all 9,964 pair alignments at ring sizes 8, 9 and 10. None
+closed under the reference's bulk certificate rule. The smallest remaining
+demand was 49 orbits for configurations 19 and 48 (one-based), both at ring 10.
+The stronger reference residual search also left contract traces unresolved
+for that pair. These results rule out this particular sharing experiment;
+they do not prove that the configurations cannot share a different certificate,
+or that either configuration is not reducible.
+
+The separate comparison of all 633 stored supports found no same-ring
+inclusions in their original boundary order. That comparison did not search
+all boundary orientations. The shared-certificate search did search all
+orientations, but only at the three ring sizes above.
+
+`common-support-probe.json` records the input manifest hash, controls, trial
+counts and scope. The positive control closed the support of configuration 3;
+the same demand with an empty base left 101 orbits. A second implementation
+reproduced every trial's support sizes and residual count. All of this is
+program evidence, not a kernel-checked obstruction theorem. The experiment
+earns zero compression credit.
+
+After generating the pinned reference's `cpc.py` inputs and compiling its
+`tools/planes.c`, reproduce the pair search with:
+
+```sh
+python3 tools/fourcolor/classical/probe_common_support.py \
+  --inputs generated-inputs --planes reference-tools/planes \
+  --output common-support-results.json
+```
+
+The default rings reproduce the measured search. The output includes every
+trial and all input hashes; configuration indices in the JSON are zero-based.

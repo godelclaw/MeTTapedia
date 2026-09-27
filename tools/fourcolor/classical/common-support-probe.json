@@ -1,0 +1,139 @@
+{
+  "evidence": "program check; not a Lean theorem",
+  "reference": {
+    "repository": "https://github.com/corun1024/4ct",
+    "revision": "3db71e0a786a1f19be04c5266fe3d06fed216885"
+  },
+  "probe_sha256": "11ea2346e446b4c4911ae03fe0b00d49bfbdd636eb36c062a5332472a9d588ca",
+  "reference_sources_sha256": {
+    "tools/cpc.py": "46d42f576727034938d600628b6fa577288bece1fa03e2c577fafa16680fdab5",
+    "tools/planes.c": "5d8d2e22ed5e6562c30b5c2d73a484c1d4e64e2e240f8508a5b0fdf2d57db70e",
+    "tools/residual.c": "1b0dc727676385e474a147e5bdd29cbc84a7e53937f757aba229104c29d4ca80",
+    "FourColor/Configurations.lean": "7a05039e76944dd51616721039edb872ccb2f1a6d90fa8b93ef4834095760966"
+  },
+  "input_count": 633,
+  "input_manifest_sha256": "e94fb04d217f408400c28868bd005c9d69e36ce39facd832d339c2e791e4afed",
+  "input_manifest_format": "One line per index in increasing order: INDEX RING SHA256 followed by newline.",
+  "input_ring_counts": {
+    "6": 1,
+    "7": 1,
+    "8": 5,
+    "9": 8,
+    "10": 31,
+    "11": 81,
+    "12": 175,
+    "13": 194,
+    "14": 137
+  },
+  "configuration_indices": "zero-based",
+  "fixed_order_stored_support_inclusions": [],
+  "rings": [
+    8,
+    9,
+    10
+  ],
+  "pair_alignments_by_ring": {
+    "8": 160,
+    "9": 504,
+    "10": 9300
+  },
+  "pair_alignments": 9964,
+  "bulk_successes": 0,
+  "controls": [
+    {
+      "index": 2,
+      "positive_residual": 0,
+      "empty_base_residual": 101
+    }
+  ],
+  "closest_bulk_trials": [
+    {
+      "indices": [
+        18,
+        47
+      ],
+      "ring": 10,
+      "rotation": 0,
+      "reflected": false,
+      "common_support": 2370,
+      "contract_union": 4815,
+      "residual_orbits": 49
+    },
+    {
+      "indices": [
+        2,
+        23
+      ],
+      "ring": 8,
+      "rotation": 4,
+      "reflected": true,
+      "common_support": 342,
+      "contract_union": 834,
+      "residual_orbits": 56
+    },
+    {
+      "indices": [
+        2,
+        23
+      ],
+      "ring": 8,
+      "rotation": 6,
+      "reflected": false,
+      "common_support": 342,
+      "contract_union": 864,
+      "residual_orbits": 60
+    },
+    {
+      "indices": [
+        2,
+        23
+      ],
+      "ring": 8,
+      "rotation": 0,
+      "reflected": true,
+      "common_support": 342,
+      "contract_union": 846,
+      "residual_orbits": 61
+    },
+    {
+      "indices": [
+        13,
+        343
+      ],
+      "ring": 10,
+      "rotation": 4,
+      "reflected": false,
+      "common_support": 2292,
+      "contract_union": 4041,
+      "residual_orbits": 62
+    }
+  ],
+  "full_residual_followup": {
+    "indices": [
+      18,
+      47
+    ],
+    "ring": 10,
+    "rotation": 0,
+    "reflected": false,
+    "result": "contract still live: no certificate",
+    "common_support": 2370,
+    "contract_union": 4815,
+    "live_after_search": 2016,
+    "cycles": 15,
+    "full_operations": 2125900
+  },
+  "reproduction": {
+    "compared_pair_alignments": 9964,
+    "matched_fields": [
+      "indices",
+      "ring",
+      "rotation",
+      "reflected",
+      "common_support",
+      "contract_union",
+      "residual_orbits"
+    ]
+  },
+  "scope": "No tested common-support pair yielded a complete bulk certificate. The full residual engine also failed for the closest pair. This is not a proof of nonreducibility or of impossibility of other shared certificates."
+}
