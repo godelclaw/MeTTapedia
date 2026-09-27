@@ -1,10 +1,12 @@
 import FourColor.Pilot.HypermapDictionary
 import FourColor.Pilot.Config4Reconstruction
+import FourColor.Pilot.ClassicalAssembly
 import FourColor.Present7Chk85
 import FourColor.Bulk.Cfg.Hyb218
 
 #print axioms Mettapedia.GraphTheory.Hypermap.Reference.planar_iff
 #print axioms FourColor.Config4Reconstruction.repair
+#print axioms FourColor.ClassicalAssembly.fourColorTheorem_of_checks
 #print axioms FourColor.Bulk.Hyb218.reducible
 #print axioms FourColor.f7_4555
 

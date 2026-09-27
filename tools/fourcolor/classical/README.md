@@ -146,6 +146,7 @@ LICENSE retains the reference's MIT notice and Gonthier/Werner attribution.
 | `PatchWitness` | An explicit glued colour function reads back the two supplied assignments, after a constant colour shift on the disk |
 | `EmbeddedReconstruction` | The matching assignments remain data at the middle interface of a GSLT reconstruction route |
 | `Config4Reconstruction` | The route consumes configuration 4's actual ring-eight certificate and proved decoded-map geometry |
+| `ClassicalAssembly` | The conditional real-plane theorem consumes witness reconstruction for every fitted catalogue entry, with the reference's discharging obligations retained |
 | `HypermapDictionary` | The two hypermap presentations agree on permutations, components and planarity on the same finite dart type |
 | `BridgeAudit` | The imported reference and GSLT declarations use only the three permitted axioms |
 
@@ -171,6 +172,14 @@ Four Colour theorem. The configuration consumer supplies its own checked
 reducibility and embeddability; the surrounding map and contract colouring
 remain inputs. Unavoidability and strict reduction supply are separate.
 
+`ClassicalAssembly.fourColorTheorem_of_checks` connects the reconstruction to
+the main argument. Minimality supplies a contract colouring; the explicit
+reconstructed assignment contradicts noncolourability. This replaces the
+reference's terminal embedding argument inside the quiz-tree soundness proof.
+The resulting real-plane theorem still assumes all 633 reducibility results
+and the seven discharging presentation results. It does not invoke the
+reference's already assembled conditional or unconditional theorem.
+
 The hypermap dictionary is an equivalence on a fixed finite dart type, not a
 bijection between arbitrary hypermaps and labelled rotation systems. Its
 planarity proof explicitly handles the differing Euler conventions and the
@@ -190,12 +199,12 @@ python3 tools/fourcolor/classical/replay_adapters.py \
 ```
 
 The script checks the reference revision and common toolchain, makes a
-dependency overlay in its dedicated output directory, compiles the six adapter
+dependency overlay in its dedicated output directory, compiles the seven adapter
 modules without native C emission, and finishes with the axiom audit. It records
 source hashes, exit statuses and wall times. It changes neither input checkout
 and does not generate or check the whole classical catalogue.
 
-The complete adapter replay passed; its final audit covered 14,508 imported
+The complete adapter replay passed; its final audit covered 15,360 imported
 public declarations and found only `propext`, `Classical.choice` and `Quot.sound`.
 `reconstruction-measurements.json` records the exact source hashes and results.
 The additional kernel measurements were:

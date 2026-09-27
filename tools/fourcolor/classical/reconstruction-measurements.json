@@ -140,42 +140,48 @@
         "module": "FourColor.Pilot.CompatibleTraces",
         "source_sha256": "04394bf495147ec5ef7e875d2d82976715b5028cf18635aad90917f90e4660a9",
         "exit_code": 0,
-        "frontend_wall_seconds": 2.063
+        "frontend_wall_seconds": 2.721
       },
       {
         "module": "FourColor.Pilot.PatchWitness",
         "source_sha256": "5c807b6e55f719d6c1a91535110d3a2bfb793e38207587aea2aa44671d122e77",
         "exit_code": 0,
-        "frontend_wall_seconds": 2.178
+        "frontend_wall_seconds": 2.192
       },
       {
         "module": "FourColor.Pilot.HypermapDictionary",
         "source_sha256": "e666e22c9899f5c82140e6df8b0be69c42c84c21756f81740d0524f78822da10",
         "exit_code": 0,
-        "frontend_wall_seconds": 2.073
+        "frontend_wall_seconds": 2.131
       },
       {
         "module": "FourColor.Pilot.EmbeddedReconstruction",
         "source_sha256": "0d83cfcaf5e068c6659c75dabf071093bef6cd359b154af9decf568b4eb3314e",
         "exit_code": 0,
-        "frontend_wall_seconds": 3.679
+        "frontend_wall_seconds": 3.612
       },
       {
         "module": "FourColor.Pilot.Config4Reconstruction",
         "source_sha256": "bb3c0897f6ceaceb1a425a8cb547930d804b3880f283057ed644a0eee2c07c5c",
         "exit_code": 0,
-        "frontend_wall_seconds": 3.563
+        "frontend_wall_seconds": 4.31
+      },
+      {
+        "module": "FourColor.Pilot.ClassicalAssembly",
+        "source_sha256": "598400103603b68e8eacd91f16dffa7ab73ff43d65b0c1e74ef8a42804edcbd1",
+        "exit_code": 0,
+        "frontend_wall_seconds": 2.995
       },
       {
         "module": "FourColor.Pilot.BridgeAudit",
-        "source_sha256": "73a8c8cd5aabcd43995a506a4d2db4b26aea5697da906539c4731cde0af79b0a",
+        "source_sha256": "a918be8c94d0970aef1ca0ee80140085303e94f776b8c84a14c4984d1b30029d",
         "exit_code": 0,
-        "frontend_wall_seconds": 4.086
+        "frontend_wall_seconds": 4.741
       }
     ]
   },
   "axiom_audit": {
-    "declarations": 14508,
+    "declarations": 15360,
     "scope": "Imported public FourColor, Mettapedia and Foundation declarations",
     "allowed": [
       "propext",
@@ -186,6 +192,7 @@
   },
   "roots": [
     "FourColor.Config4Reconstruction.repair",
+    "FourColor.ClassicalAssembly.fourColorTheorem_of_checks",
     "Mettapedia.GraphTheory.Hypermap.Reference.planar_iff",
     "FourColor.Bulk.Hyb218.reducible",
     "FourColor.f7_4555"

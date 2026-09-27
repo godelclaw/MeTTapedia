@@ -17,7 +17,7 @@ import time
 REFERENCE_REVISION = "3db71e0a786a1f19be04c5266fe3d06fed216885"
 MODULES = [
     "CompatibleTraces", "PatchWitness", "HypermapDictionary",
-    "EmbeddedReconstruction", "Config4Reconstruction", "BridgeAudit",
+    "EmbeddedReconstruction", "Config4Reconstruction", "ClassicalAssembly", "BridgeAudit",
 ]
 OPTIONS = [
     "-Dpp.unicode.fun=true", "-DautoImplicit=false",
@@ -50,7 +50,7 @@ def main():
     if ((reference / "lean-toolchain").read_text().strip() !=
             (mettapedia / "lean-toolchain").read_text().strip()):
         raise SystemExit("The two inputs must use the same Lean toolchain")
-    required = ["Embed", "Euler", "CfQuiz", "Pilot/Cfg003",
+    required = ["Embed", "Euler", "CfQuiz", "Main", "Pilot/Cfg003",
                 "Present7Chk85", "Bulk/Cfg/Hyb218"]
     for stem in required:
         if not (artifacts / "FourColor" / (stem + ".olean")).is_file():
