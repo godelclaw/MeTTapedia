@@ -9,6 +9,8 @@ import Mettapedia.GraphTheory.FourColor.FaceExposedDegrees
 import Mettapedia.GraphTheory.FourColor.FacePairColourExtension
 import Mettapedia.GraphTheory.FourColor.FaceOrderExchange
 import Mettapedia.GraphTheory.FourColor.FaceSweepEdgeBudget
+import Mettapedia.GraphTheory.FourColor.ThreeTwoFaceTransfer
+import Mettapedia.GraphTheory.FourColor.ThreeTwoChoiceExample
 import Mettapedia.GraphTheory.FourColor.DeferredFaceChoiceExample
 import Mettapedia.GraphTheory.FourColor.FaceKempeRepair
 import Mettapedia.GraphTheory.FourColor.ShortStepKempeCounterexample
@@ -202,6 +204,23 @@ zero or less. Thus a sweep starting from a pentagon necessarily has at least
 three short additions. Reordering can move the constraints but cannot remove
 all of them. Compatible choices for the unavoidable short steps remain part
 of the universal construction problem.
+The three-edge/two-edge adjacent-contact pair now has an exact transfer
+criterion. Its three old contact vertices u,t,w are constructed or identified
+from incidence and proved distinct. If their original missing colours are
+r,s,q, where u is the old neighbour of the new branching vertex and t is
+the other first-path endpoint, jointly chosen extensions exist exactly when
+q=r or q differs from s. The only forbidden pattern is q=s different from r.
+The geometric path, its orientation, its other endpoint and all missing
+colours are derived; no successful-transfer supplier is assumed in this
+source theorem. The pair has signed deficit one, so it addresses a short
+constraint that cannot be replaced by two unconditional long steps.
+An eighteen-edge incidence witness has the forbidden missing pattern and
+no extension preserving its original colouring, even though a first-step
+extension exists. Revising four original edge colours supplies a proper
+colouring of the whole pair. This example checks incidences and colourings,
+not a spherical rotation-system instance. A general repair by revising old
+choices, general occurrence of suitable groups and repeated progress remain
+open.
 Physical Kempe switches now act on the same original edge assignments and
 transport each vertex profile exactly. Every failed facial extension supplies
 a colour pair and a component through its first endpoint; the chosen switch

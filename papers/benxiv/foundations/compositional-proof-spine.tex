@@ -19212,6 +19212,59 @@ route-native generating base is supplied by these local results.
 
 \subsection{Physical component repair and its single-switch limit}
 
+\subsubsection{An exact three-contact constraint from a short pair}
+
+A pair exposing three edges and then two has signed deficit one. The
+first exposed path runs from an old vertex $u$, through a new vertex $v$,
+to its other old endpoint $t$. The second path runs from $v$ to an old
+vertex $w$. Actual facial incidence constructs the oriented first path
+and its other endpoint, and proves that $u,t,w$ are distinct.
+For any proper original colouring, let $r,s,q$ be the unique missing
+colours at $u,t,w$, respectively. These colours are derived from the
+source degrees and the original witness. Then jointly chosen extensions
+through the pair exist if and only if
+\[
+ q=r\quad\hbox{or}\quad q\ne s.
+\]
+The only obstruction is $q=s\ne r$: the two more distant contacts
+request the same colour, different from the request at $u$.
+\Sverified{Mettapedia.GraphTheory.FourColor.ThreeTwoFaceTransfer.exists_exact_criterion}
+
+The calculation is elementary but preserves the original edge identities.
+If the middle edge of the first path has colour $m$, properness requires
+$m\ne r,s$. The colour $q$ can occur at $v$ precisely when $q=r$ or
+$q=m$, which is possible exactly under the displayed condition. In the
+new patch the profile at $w$ remains its original one. The two-edge
+extension succeeds precisely when the colour missing at $w$ already
+occurs at $v$.
+\Sverified{Mettapedia.GraphTheory.FourColor.OrderedEdgePath.Path.prescribed_using_next_three_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceOrientedTransfer.exists_oriented_transfer}
+\Sverified{Mettapedia.GraphTheory.FourColor.ThreeTwoFaceTransfer.two_edge_extension_iff_used}
+
+An eighteen-edge incidence example has first path
+$9\!-\!13\!-\!14\!-\!7$ and second path
+$13\!-\!12\!-\!11$. Its thirteen original edges admit a proper
+colouring with missing colours $(r,s,q)=(0,1,1)$. These force the first
+path colours $(0,2,1)$; both second-path edges would then be forced to
+colour one. Thus no joint extension preserves this original witness,
+regardless of the intermediate choice. Revising four original edges
+changes the missing triple to $(0,1,0)$ and supplies an explicit proper
+colouring of the whole pair, retaining the first-path colours.
+The kernel checks the incidence, properness, missing-colour and
+nonextension statements. This example does not construct a spherical
+rotation-system instance.
+\Sverified{Mettapedia.GraphTheory.FourColor.ThreeTwoChoiceExample.original_cannot_extend}
+\Sverified{Mettapedia.GraphTheory.FourColor.ThreeTwoChoiceExample.revised_changes}
+\Sverified{Mettapedia.GraphTheory.FourColor.ThreeTwoChoiceExample.original_choice_matters}
+
+This exact transfer handles a positive-deficit pair when the original
+witness has the required missing-colour pattern. It also identifies what
+a revision of the original witness must change. A general source repair
+of the forbidden pattern and universal progress through such groups
+remain separate obligations.
+
+\subsubsection{Actual component switches}
+
 The colouring semantics now retains actual Kempe components of the old
 patch. Its incidence graph has the original edge identifiers as vertices;
 distinct retained edges are adjacent precisely when they share an original
