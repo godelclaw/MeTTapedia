@@ -151,60 +151,72 @@
         "module": "MettapediaFourColor.CompatibleTraces",
         "source_sha256": "04394bf495147ec5ef7e875d2d82976715b5028cf18635aad90917f90e4660a9",
         "exit_code": 0,
-        "frontend_wall_seconds": 1.799
+        "frontend_wall_seconds": 1.96
       },
       {
         "module": "MettapediaFourColor.PatchWitness",
         "source_sha256": "5c807b6e55f719d6c1a91535110d3a2bfb793e38207587aea2aa44671d122e77",
         "exit_code": 0,
-        "frontend_wall_seconds": 1.822
+        "frontend_wall_seconds": 1.935
       },
       {
         "module": "MettapediaFourColor.HypermapDictionary",
         "source_sha256": "e666e22c9899f5c82140e6df8b0be69c42c84c21756f81740d0524f78822da10",
         "exit_code": 0,
-        "frontend_wall_seconds": 1.762
+        "frontend_wall_seconds": 1.875
       },
       {
         "module": "MettapediaFourColor.EmbeddedReconstruction",
         "source_sha256": "4a414dc0c12f7cbc7a8288e8ad34bd1a21adbc70a010e926e34d54078cc84455",
         "exit_code": 0,
-        "frontend_wall_seconds": 3.057
+        "frontend_wall_seconds": 3.348
       },
       {
         "module": "MettapediaFourColor.Config4Reconstruction",
         "source_sha256": "26276c35742e4258714684de42476992804c2cd712847d80274b76cb4f7876f1",
         "exit_code": 0,
-        "frontend_wall_seconds": 3.437
+        "frontend_wall_seconds": 3.643
       },
       {
         "module": "MettapediaFourColor.ClassicalAssembly",
         "source_sha256": "f0da5e30e9405f8ccfd093253ead33a0a81e1a9efc875973c7d1413b7d85427a",
         "exit_code": 0,
-        "frontend_wall_seconds": 2.881
+        "frontend_wall_seconds": 3.059
       },
       {
         "module": "MettapediaFourColor.GraphColoringBridge",
         "source_sha256": "d2eefdcde862f23d5cc349a4ce1ee1f560cd0a38a5dd9a5c62a911770af6763f",
         "exit_code": 0,
-        "frontend_wall_seconds": 3.072
+        "frontend_wall_seconds": 3.424
+      },
+      {
+        "module": "MettapediaFourColor.HubcapOrbit",
+        "source_sha256": "fffbc43b4fd33327cc9607cf57850711154d4e3be5178506cdaea0ea8b4bbb81",
+        "exit_code": 0,
+        "frontend_wall_seconds": 1.805
+      },
+      {
+        "module": "MettapediaFourColor.PeriodicHubcap",
+        "source_sha256": "b385f76fa18e23b4c8c36bf4071a16b7f329a21b1ee10cea2dc27a6577ee1d87",
+        "exit_code": 0,
+        "frontend_wall_seconds": 1.897
       },
       {
         "module": "MettapediaFourColor.BridgeAudit",
-        "source_sha256": "3274d687c2e81c8565a39f5ed8e9ee018c99e8d730e12bfc9b0c634a98a3ead3",
+        "source_sha256": "a4f5ccdb5cf5896486e26db5daee8a5098f3bf2d1c729dd77b939e6db49575f8",
         "exit_code": 0,
-        "frontend_wall_seconds": 3.998
+        "frontend_wall_seconds": 4.281
       },
       {
         "module": "MettapediaFourColor",
-        "source_sha256": "c2577060c0a852329231a58e01b58193b8cc321250f0b1991b9ddf8789887cca",
+        "source_sha256": "5bd3c5c6586c2e8a5400bf5bef39cfa7616340cdca3dca4d315610c41355d477",
         "exit_code": 0,
-        "frontend_wall_seconds": 3.237
+        "frontend_wall_seconds": 3.406
       }
     ]
   },
   "axiom_audit": {
-    "declarations": 15517,
+    "declarations": 16409,
     "scope": "Imported public FourColor, MettapediaFourColor, Mettapedia and Foundation declarations",
     "allowed": [
       "propext",
@@ -219,7 +231,9 @@
     "FourColor.SimpleGraphBridge.colorable_of_checks",
     "Mettapedia.GraphTheory.Hypermap.Reference.planar_iff",
     "FourColor.Bulk.Hyb218.reducible",
-    "FourColor.f7_4555"
+    "FourColor.f7_4555",
+    "FourColor.PeriodicHubcap.fit",
+    "FourColor.PeriodicHubcap.succeeds"
   ],
   "limits": [
     "One complete large residual configuration, not all 633 certificates",
@@ -227,10 +241,15 @@
     "Reconstruction is conditional on the exact geometric hypotheses and a supplied contract colouring",
     "Classical trace selection does not extract a sequence of Kempe moves",
     "The unconditional root and the construction of a planar graph rotation from a topological embedding are not established by this pilot",
-    "The integration package exposes conditional assembly; the full reference replay remains separate"
+    "The integration package exposes conditional assembly; the full reference replay remains separate",
+    "The periodic hubcap replacement is consumed by a local success theorem; the complete unavoidability assembly still uses the reference presentations"
   ],
   "compression": {
     "new_configurations_removed": 0,
-    "new_certificate_checks_replaced": 0
+    "local_discharging_checks_before": 10,
+    "local_discharging_checks_after": 2,
+    "local_discharging_checks_replaced": 8,
+    "whole_assembly_checks_replaced": 0,
+    "configuration_reducibility_checks_replaced": 0
   }
 }

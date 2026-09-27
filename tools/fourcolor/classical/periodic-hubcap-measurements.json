@@ -1,0 +1,74 @@
+{
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "reference_source": "FourColor/Present10Chk2.lean",
+  "reference_source_sha256": "cd4be95af1527bf3edaff3d7a06df9db645d0667cb0aafda324c20451833bf1e",
+  "reference_declarations": [
+    "FourColor.c10_128_1",
+    "FourColor.c10_128_2",
+    "FourColor.c10_128_3",
+    "FourColor.c10_128_4",
+    "FourColor.c10_128_5",
+    "FourColor.c10_128_6",
+    "FourColor.c10_128_7",
+    "FourColor.c10_128_8",
+    "FourColor.c10_128_9",
+    "FourColor.c10_128_10",
+    "FourColor.f10_128"
+  ],
+  "baseline_preparation": "Extract the ten check declarations and their combining f10_128 declaration from the pinned source; import only Present10Defs and rename their namespace to FourColor.PeriodicBaseline.",
+  "baseline": {
+    "module": "FourColor.PeriodicBaseline",
+    "source_sha256": "44b9282bbd483474149795d29e852bc1f77c256ed46cc646ba7b3b1c7bc5b90b",
+    "source_bytes": 3241,
+    "exit_code": 0,
+    "frontend_wall_seconds": 1.88,
+    "peak_rss_kib": 1995640,
+    "memory_method": "GNU time maximum resident set size; one Lean child",
+    "native_code_generation": false,
+    "olean_bytes": 34568
+  },
+  "comparison_scope": "Single-run frontend compilation with prepared dependencies, including loading, elaboration, kernel checking and proof serialization. Different module scaffolding and imports; not a stable runtime comparison.",
+  "checker_computations": {
+    "baseline": 10,
+    "replacement": 2,
+    "avoided": 8,
+    "additional_rotation_equality_check": 1
+  },
+  "performance_claim": "No speed or artifact-size saving claimed.",
+  "assembly_scope": "The replacement is consumed by PeriodicHubcap.succeeds for p10_127r. The full unavoidability assembly still uses the original presentation.",
+  "replacement_modules": [
+    {
+      "module": "MettapediaFourColor.HubcapOrbit",
+      "source_sha256": "fffbc43b4fd33327cc9607cf57850711154d4e3be5178506cdaea0ea8b4bbb81",
+      "exit_code": 0,
+      "frontend_wall_seconds": 1.805,
+      "olean_bytes": 72360
+    },
+    {
+      "module": "MettapediaFourColor.PeriodicHubcap",
+      "source_sha256": "b385f76fa18e23b4c8c36bf4071a16b7f329a21b1ee10cea2dc27a6577ee1d87",
+      "exit_code": 0,
+      "frontend_wall_seconds": 1.897,
+      "olean_bytes": 51920
+    }
+  ],
+  "lean_version": "4.34.0-rc2",
+  "compiler_options": [
+    "-Dpp.unicode.fun=true",
+    "-DautoImplicit=false",
+    "-DrelaxedAutoImplicit=false",
+    "-Dweak.linter.mathlibStandardSet=true",
+    "-DmaxSynthPendingDepth=3"
+  ],
+  "native_code_generation": false,
+  "axiom_audit": {
+    "allowed": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "unexpected": [],
+    "imported_public_declarations": 16409,
+    "original_ten_checks_and_hubcap_imported": false
+  }
+}

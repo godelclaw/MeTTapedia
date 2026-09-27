@@ -2,6 +2,7 @@ import MettapediaFourColor.HypermapDictionary
 import MettapediaFourColor.Config4Reconstruction
 import MettapediaFourColor.ClassicalAssembly
 import MettapediaFourColor.GraphColoringBridge
+import MettapediaFourColor.PeriodicHubcap
 import FourColor.Present7Chk85
 import FourColor.Bulk.Cfg.Hyb218
 
@@ -11,6 +12,7 @@ import FourColor.Bulk.Cfg.Hyb218
 #print axioms FourColor.SimpleGraphBridge.colorable_of_checks
 #print axioms FourColor.Bulk.Hyb218.reducible
 #print axioms FourColor.f7_4555
+#print axioms FourColor.PeriodicHubcap.succeeds
 
 open Lean Elab Command in
 run_cmd do

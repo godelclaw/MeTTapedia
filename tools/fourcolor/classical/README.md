@@ -151,6 +151,8 @@ reference's MIT notice and Gonthier/Werner attribution.
 | `ClassicalAssembly` | The conditional real-plane theorem consumes witness reconstruction for every fitted catalogue entry, with the reference's discharging obligations retained |
 | `HypermapDictionary` | The two hypermap presentations agree on permutations, components and planarity on the same finite dart type |
 | `GraphColoringBridge` | Colours on actual graph darts descend to Mathlib vertex colourings, using vertexwise cyclicity and preserving every supplied dart colour |
+| `HubcapOrbit` | Equal rotated boundary inputs and equal bounds share a checker certificate |
+| `PeriodicHubcap` | Two representative checks close the same ten-position discharging case as the reference's `f10_128` |
 | `BridgeAudit` | The imported reference and GSLT declarations use only the three permitted axioms |
 
 The operational sequence is:
@@ -209,7 +211,8 @@ To replay the adapters, prepare the pinned reference with the dependency
 revisions above and build Mettapedia's imported GSLT and hypermap modules.
 The reference artifacts must include the generated ring-eight group
 `FourColor.Bulk.Cfg.Grp08_00`, `FourColor.Bulk.Cfg.Hyb218`, and
-`FourColor.Present7Chk85`.
+`FourColor.Present7Chk85`, together with `FourColor.Present10Defs` for the
+periodic discharging consumer.
 The following directory names are example input and output locations:
 
 ```sh
@@ -219,13 +222,13 @@ python3 tools/fourcolor/classical/replay_adapters.py \
 ```
 
 The script checks the reference revision and common toolchain, compiles the
-eight adapter modules and the package root without native C emission, and runs
+ten adapter modules and the package root without native C emission, and runs
 the axiom audit. It records source hashes, exit statuses and wall times. Its
 default output is a dedicated directory; the package target instead writes the
 proof artifacts to the package's ordinary build directory. It does not generate
 or check the whole classical catalogue.
 
-The complete adapter replay passed; its audit covered 15,517 imported
+The complete adapter replay passed; its audit covered 16,409 imported
 public declarations and found only `propext`, `Classical.choice` and `Quot.sound`.
 `reconstruction-measurements.json` records the exact source hashes and results.
 The additional kernel measurements were:
@@ -244,10 +247,25 @@ has not yet been reproduced by these measurements.
 
 ## Compression ledger
 
-The ledger starts with zero new catalogue eliminations and zero checks replaced
-by this development's uniform lemmas. Fewer separate checks, fewer distinct
-arguments, and a smaller unavoidable set are different results. Removing a
-configuration from the unavoidable set also requires a new coverage proof.
+The first checked local compression is the periodic case `f10_128`: ten
+independent discharging computations become two representative computations,
+plus a finite check of their boundary-input equalities. The general orbit
+lemma assembles the full hubcap, and `PeriodicHubcap.succeeds` closes the
+actual part using discharging soundness. It does not import the reference's
+ten check theorems.
+
+This saves eight independent checks in that local certificate. The complete
+unavoidability assembly still uses the original presentations, so no saving
+in its full replay is credited yet. All 633 configurations remain. Fewer
+separate checks, fewer distinct arguments, and a smaller unavoidable set are
+different results. Removing a configuration from the unavoidable set also
+requires a new coverage proof.
+
+`periodic-hubcap-measurements.json` compares the original ten-check fragment
+with the replacement and records the shared lemma's separate cost. This small
+example does not establish a runtime or artifact-size improvement. The new
+generic proof has overhead; the measured result is the reduction in independent
+discharging computations and its checked local consumer.
 
 `compression-ledger.json` keeps the baseline and credited changes separate.
 The first bounded experiment tested whether two configurations could share a

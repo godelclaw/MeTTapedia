@@ -65,8 +65,23 @@ remains separate.
 
 The reference contains 633 configurations, rings up to size 14, and 32 published
 discharging-rule labels. Its own packed-data and uniform checker techniques
-belong to the baseline. No configuration or independent certificate check has
-yet been removed by the added compositional theory.
+belong to the baseline.
+
+`HubcapOrbit.oneEntries_fit_periodic` assembles a hubcap from one certificate
+per distinct rotated boundary input. Its consumer `PeriodicHubcap.succeeds`
+closes the reference's part `p10_127r` with two representative checker
+computations instead of the ten used for `f10_128`. A finite kernel check also
+verifies the equalities of the rotated parts; the general lemma transports
+the two certificates to all ten positions. The original ten check theorems
+are not imported by this consumer.
+
+This is a local reduction of eight independent discharging computations. All
+633 configurations remain. The complete unavoidability assembly still uses
+the reference presentations; integrating the replacement throughout that
+assembly is a separate step. Exact counts and measurement scope are recorded
+in the [compression ledger](../../tools/fourcolor/classical/compression-ledger.json).
+The small pilot shows no measured runtime or artifact-size improvement after
+including the generic lemma; those savings are recorded as zero.
 
 A compression result must identify the uniform lemma, the configurations or
 checks it replaces, and the kernel-checked consumer. Removing configurations

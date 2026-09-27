@@ -19,7 +19,9 @@
     "configuration_checks_replaced_by_new_uniform_lemmas": 0,
     "discharging_rules_removed": 0,
     "certificate_bytes_saved": 0,
-    "kernel_seconds_saved": 0
+    "kernel_seconds_saved": 0,
+    "local_discharging_computations_replaced": 8,
+    "whole_assembly_discharging_computations_replaced": 0
   },
   "experiments": [
     {
@@ -30,5 +32,20 @@
       "credited_compression": false
     }
   ],
-  "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that."
+  "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that.",
+  "local_certificates": [
+    {
+      "reference_obligation": "FourColor.f10_128",
+      "target_part": "FourColor.p10_127r",
+      "before": 10,
+      "after": 2,
+      "replaced": 8,
+      "additional_check": "Finite boundary-rotation equality, separate from the two discharging computations",
+      "uniform_theorem": "FourColor.HubcapOrbit.oneEntries_fit_periodic",
+      "consumer": "FourColor.PeriodicHubcap.succeeds",
+      "evidence": "kernel checked",
+      "integrated_into_full_unavoidability": false,
+      "measurements": "periodic-hubcap-measurements.json"
+    }
+  ]
 }
