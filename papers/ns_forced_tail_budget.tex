@@ -31,13 +31,16 @@ a uniform absorption budget on the same forced construction. A Fourier
 multiplier estimate separates every low-frequency parent and every low
 renewal output. Low stretching outputs have a separate energy-paid
 history bound, leaving a target with every parent and both internal
-frequencies high. Finally, actual unforced whole-space solutions with
+frequencies high. Actual unforced whole-space solutions with
 unit initial energy and an initially empty tail refute an allowance
 uniform over the data and the prescribed cutoff. Their initial fields
 can be planar polarized in an arbitrarily thin Fourier belt. This does
 not exclude an allowance depending on the full datum or a separately
-chosen cutoff. The sufficient target remains unproved; no arbitrary-data
-unforced regularity estimate is obtained.
+chosen cutoff. A further positive estimate absorbs stretching pairs whose
+parents are sufficiently far above their output, uniformly over all
+occupied shells. The corresponding modified caloric balance retains the
+complete Navier--Stokes source. Its remaining signed history bound is
+unproved; no arbitrary-data unforced regularity estimate is obtained.
 \end{abstract}
 
 \section{An exact split and finite allowances}
@@ -858,6 +861,213 @@ existential cutoff. In this family the full initial caloric resource
 already scales as $\lambda^3/\nu^2$; retaining it can pay the finite
 activation that an energy-only or empty-tail-only allowance misses.
 
+\section{Absorbing separated parents across all output scales}
+
+There is a sector of the stretching source that can be paid without
+an angular or sign assumption. Fix integers $J\geq0$, $r\geq3$, and put
+$K=2^J$. For an output $k\in\Omega_j:=\{2^j\leq|k|<2^{j+1}\}$,
+$j\geq J$, write $c_j=\lceil3j/2\rceil$. An ordered pair $p+q=k$
+belongs to the separated sector if
+\[
+ n:=\left\lfloor\log_2\max\{|p|,|q|\}\right\rfloor\geq c_j+r.
+\]
+Let $\mathcal M_{\rm far}$ retain these contributions in the ordered
+Fourier formula for $\mathcal M$, before summing the pairs, and define
+\[
+ \mathcal M_{\rm lo}=P_{<K}\mathcal M,\qquad
+ \mathcal M_{\rm keep}=\mathcal M-\mathcal M_{\rm lo}-\mathcal M_{\rm far}.
+\]
+These are fixed bilinear multipliers, with a mask symmetric in the two
+parent frequencies. Neither the velocity nor its evolution is truncated.
+In particular, $\mathcal M_{\rm keep}$ is not an orthogonal projection
+of the already summed field $\mathcal M$.
+
+\begin{proposition}\label{prop:separatedparents}
+For every smooth solenoidal whole-space field, with the unitary Fourier
+convention and $E=\norm u_2^2$, $Y=\norm{\nabla u}_2^2$,
+$D=\norm{\Delta u}_2^2$,
+\begin{equation}\label{eq:separatedparents}
+ \norm{\mathcal M_{\rm far}(u)}_2
+ \leq 2\sqrt{17}\,2^{-r}\sqrt{ED}
+ \leq 10\,2^{-r}\sqrt{ED}.
+\end{equation}
+The bound is independent of $J$ and the number of occupied shells.
+Its auxiliary heat capacity satisfies
+\begin{equation}\label{eq:separatedcapacity}
+ \mathcal K_{\rm far}(u):=\frac1\nu\int_0^\infty
+             \norm{\mathcal M_{\rm far}(H_su)}_2^2\dd s
+ \leq \frac{50\,2^{-2r}}{\nu^2}EY.
+\end{equation}
+\end{proposition}
+\begin{proof}
+Since $n\geq j+3$, both parents belong to
+$B_n=\{2^{n-1}\leq|\xi|<2^{n+1}\}$. Write
+$E_n=\int_{B_n}|\widehat u|^2$ and $d_n=2^{2n}E_n$.
+The ordered bound~\eqref{eq:orderedkernel}, followed by
+Cauchy--Schwarz in the parent frequency, gives
+\[
+ |\widehat{\mathcal M_{j,n}}(k)|
+ \leq(2\pi)^{-3/2}2^{n+1}E_n\qquad(k\in\Omega_j).
+\]
+As $|\Omega_j|=(28\pi/3)2^{3j}$,
+\[
+ \norm{P_{\Omega_j}\mathcal M_{\rm far}}_2
+ \leq 2\sqrt{\frac7{6\pi^2}}\!
+       \sum_{n\geq c_j+r}2^{3j/2-n}d_n
+ \leq\sum_n A_{jn}d_n,\qquad
+ A_{jn}=2^{c_j-n}\mathbf1_{\{n\geq c_j+r\}}.
+\]
+Every row sum of $A$ is $2^{1-r}$. Every column sum is at most
+$2^{1-r}$, since the integers $c_j$ strictly increase. Applying weighted
+Cauchy--Schwarz to each row and then the column bound proves
+\[
+ \sum_j\left(\sum_n A_{jn}d_n\right)^2
+ \leq 2^{2-2r}\sum_n d_n^2.
+\]
+The argument first applies to finite submatrices, and then passes to
+the increasing limit of their nonnegative sums. This summation avoids
+paying the same high-frequency tail separately at every output shell.
+
+Each frequency of dyadic index $\ell$ belongs to just $B_\ell$ and
+$B_{\ell+1}$. Their fourth-order weights sum to
+$2^{4\ell}+2^{4\ell+4}\leq17|\xi|^4$. Consequently
+\[
+ \sum_n d_n^2=\sum_n2^{4n}E_n^2
+ \leq E\sum_n2^{4n}E_n\leq17ED.
+\]
+The output shells are orthogonal, proving~\eqref{eq:separatedparents}.
+For~\eqref{eq:separatedcapacity}, apply that bound at $H_su$ and use
+$E(H_su)\leq E$ and $\int_0^\infty D(H_su)\dd s=Y/(2\nu)$.
+\end{proof}
+
+Fix an energy bound $E\leq M$, choose $0<\eta<1/2$, and choose $r$
+so that $10\,2^{-r}\sqrt M\leq\eta\nu$. Then
+\begin{equation}\label{eq:separatedpayment}
+ 2|\langle Au,\mathcal M_{\rm far}\rangle|\leq2\eta\nu D,
+ \qquad \mathcal K_{\rm far}\leq\eta^2Y/2.
+\end{equation}
+The separation is fixed from $M,\nu,\eta$; it is not adjusted from a
+future solution norm.
+
+To use this source payment, change the auxiliary capacity and its
+positive cost explicitly:
+\begin{align*}
+ \mathcal K_{\rm keep}(u)
+   &=\frac1\nu\int_0^\infty\norm{\mathcal M_{\rm keep}(H_su)}_2^2\dd s,
+ &\mathcal G_{\rm keep}&=(Y+\mathcal K_{\rm keep})/2,\\
+ \mathcal W_{\rm keep}
+   &=\nu D+\frac1\nu\norm{\mathcal M_{\rm keep}-\nu Au}_2^2,
+ &\mathcal T_{\rm keep}&=D\mathcal K_{\rm keep}(u)[N(u)].
+\end{align*}
+In particular $\mathcal G_{\rm keep}\geq Y/2$ and
+$\mathcal W_{\rm keep}\geq\nu D$. This is a modified cost, not an
+identification with the original $\mathcal W$. Heat translation for
+the fixed mask, the full enstrophy identity, and expansion of the square
+give, along the actual equation $u_t=N(u)-\nu Au+g$,
+\begin{equation}\label{eq:retainedbalance}
+\begin{split}
+ 2\mathcal G_{\rm keep}'+\mathcal W_{\rm keep}
+ ={}&\mathcal T_{\rm keep}+D\mathcal K_{\rm keep}(u)[g]
+        +2\langle Au,g\rangle\\
+    &+2\langle Au,\mathcal M_{\rm lo}\rangle
+        +2\langle Au,\mathcal M_{\rm far}\rangle .
+\end{split}
+\end{equation}
+There is no claim that $\mathcal K$ is the sum of the three capacities:
+the retained and separated pairs can interfere at the same output.
+The identity uses the complete $N(u)$ in the derivative direction.
+
+The low-output estimate $\norm{\mathcal M_{\rm lo}}_2\leq c_K\sqrt{EY}$
+implies
+\[
+ |\langle Au,\mathcal M_{\rm lo}\rangle|
+ \leq K^2c_KE\sqrt Y,\qquad
+ 2\int_a^t|\langle Au,\mathcal M_{\rm lo}\rangle|\dd s
+ \leq 2K^2c_KM\sqrt{LB}=:C_{\rm lo}.
+\]
+Thus the two last terms of~\eqref{eq:retainedbalance} cost a finite
+allowance and a fraction $2\eta$ of $\mathcal W_{\rm keep}$.
+
+For completeness, the other payments must respect the parent mask.
+Every retained ordered symbol still obeys~\eqref{eq:orderedkernel};
+the two masks in the quartic pairing are bounded by one. Hence
+Proposition~\ref{prop:lowparents} applies to $\mathcal K_{\rm keep}$
+with exactly the same constants. For the forcing estimate use the
+Fourier moments
+\[
+ Q_\ell^\#=(2\pi)^{-3/2}
+                \int_{\R^3}|\xi|^\ell|\widehat g(\xi)|\dd\xi,
+ \qquad \ell=0,1,
+\]
+rather than asserting an $L^\infty$ bound for the masked bilinear operator.
+Fourier convolution and Young's inequality give, with $w=H_su$,
+\[
+ \norm{\mathcal M_{\rm keep}(w)}_2
+ \leq\norm{w^\#}_\infty\norm{\nabla w}_2,\qquad
+ \norm{D\mathcal M_{\rm keep}(w)[H_sg]}_2
+ \leq Q_0^\#\norm{\nabla w}_2+Q_1^\#\sqrt E.
+\]
+Here $\norm{w^\#}_\infty=(2\pi)^{-3/2}\int|\widehat w|$;
+the physical values of $w^\#$ need not be nonnegative.
+The heat-splitting proof of Proposition~\ref{prop:caloricforce} now
+applies with $Q_0^\#,Q_1^\#$ in place of $Q_0,Q_1$. These moments are
+bounded by the $H^2$ and $H^3$ norms of $g$, respectively.
+They are finite uniformly in time for the force in the construction.
+
+For $v=P_{\geq K}u$ and $g_K=P_{<K}N(v)$, the Fourier proof
+of~\eqref{eq:lowoutputnorms} bounds these same moments:
+\[
+ Q_0^\#(g_K)\leq K^4E/(8\pi^2),\qquad
+ Q_1^\#(g_K)\leq K^5E/(10\pi^2).
+\]
+It therefore also pays the low nonlinear output of the retained capacity.
+Let $C_{\rm out}$ be the resulting time-integral allowance, and let
+$C_f$ include the two explicit force terms of~\eqref{eq:retainedbalance}.
+They are finite under the preceding energy and force assumptions.
+
+The remaining signed term is exactly
+\[
+ \mathcal T_{\rm core}(u)
+   =D\mathcal K_{\rm keep}(v)[P_{\geq K}N(v)],\qquad v=P_{\geq K}u.
+\]
+Its five original velocity inputs, nonlinear-direction output and
+stretching output are all above $K$. The outer stretching pairs additionally
+satisfy
+\[
+ \max\{|p|,|q|\}<2^{c_j+r}
+            \leq\sqrt2\,2^r|p+q|^{3/2}\qquad(p+q\in\Omega_j).
+\]
+This restriction is imposed on the two slots of each stretching source.
+In a differentiated slot, $N(v)$ has two further parents; the displayed
+restriction imposes no corresponding comparability on those two parents.
+Their transfer and the signed time history remain to be controlled.
+
+If constants $A_0\geq0$, $\theta<1-2\eta$ obey
+\begin{equation}\label{eq:retainedtarget}
+ \int_a^t\mathcal T_{\rm core}(u)\dd s
+       \leq A_0+\theta\int_a^t\mathcal W_{\rm keep}(u)\dd s
+\end{equation}
+on every shorter prefix, choose $0<\varepsilon<1-2\eta-\theta$ in
+Proposition~\ref{prop:lowparents}. The same exact low-parent decomposition
+and integral Gr\"onwall argument then yield
+\[
+ \mathcal G_{\rm keep}(t)\leq
+ \left(\mathcal G_{\rm keep}(a)
+       +\frac{A_0+C_{\rm lo}+C_{\rm out}+C_f}{2}\right)
+       \exp\!\left(C_2B+C_{3/2}\sqrt{LB}\right).
+\]
+The target~\eqref{eq:retainedtarget} remains open. For regularity its
+cutoffs, separation and allowances must be fixed from the full initial
+datum, viscosity and horizon, uniformly over shorter solution intervals.
+The actual forced singularities violate this target: otherwise the
+displayed bound would control their unbounded gradient energy.
+
+The positive generated-child example~\eqref{eq:positivechild} is retained
+at $J=2$, $r=3$ with exactly the same coefficient. Thus the absorption
+does not remove all positive renewal or make a sign claim about the
+remaining term. It pays one frequency sector uniformly, leaving a
+smaller physical-time problem.
+
 \section{Verification boundary}
 
 The Lean theorem
@@ -881,6 +1091,16 @@ the complete scaling factors and a finite periodic streamfunction
 envelope. Its rational calculations retain the envelope derivative and
 all generated modes. They do not certify the Schwartz localization limit
 or the common local PDE time interval, which are analytic arguments above.
+The rational checker \texttt{labs/separated\_caloric.py} tests the Schur
+matrix bounds, enlarged-band overlap, exact source partition, heat
+translation, and~\eqref{eq:retainedbalance} with the full actual source.
+An independent quartic polarization checks the masked derivative.
+It also verifies the unchanged positive generated-child coefficient.
+Its finite periodic source tests use the conservative lattice constant
+$200$, not the whole-space constant $10$: counting at most
+$125\,2^{3j}$ lattice points in $\Omega_j$ replaces
+$2\sqrt{17}$ by $20\sqrt{85}<200$ in the proof.
+The infinite-shell estimate and its whole-space use remain analytic.
 Arbitrary-data unforced regularity remains open.
 
 \begin{thebibliography}{9}

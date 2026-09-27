@@ -1137,6 +1137,71 @@ checks finite Fourier algebra and homogeneities; the localization and
 actual-time argument are not Lean theorems. The sufficient recurrent
 budget remains open.
 
+### Uniform absorption of separated stretching parents
+
+Run `python3 -O labs/separated_caloric.py`. This standard-library checker
+accompanies the separated-parent proposition in
+[the tail-budget paper](../../../papers/ns_forced_tail_budget.pdf).
+With `A=-Delta` and `M(u)=curl A^-1 P[(curl u . grad)u]`, fix integers
+`J>=0`, `r>=3` and the output cutoff `K=2^J`. At an output frequency in
+shell `j`, a pair is separated when its maximal parent shell `n` obeys
+
+```text
+n >= ceil(3j/2)+r.
+```
+
+The mask acts on ordered pairs before their sum. On the whole space,
+with `E=||u||_2^2`, `Y=||grad u||_2^2` and `D=||Delta u||_2^2`,
+the analytic estimate is
+
+```text
+||M_far(u)||_2 <= 10 * 2^(-r) * sqrt(E D),
+K_far(u)      <= 50 * 2^(-2r) * E Y / nu^2.
+```
+
+Here `K_far=(1/nu) integral_0^infinity ||M_far(exp(-nu s A)u)||_2^2 ds`.
+The proof sums the output-to-parent matrix before using total energy.
+Both its row and column sums are at most `2^(1-r)`; the enlarged
+parent bands have fourth-order overlap at most `17`. The bound has no
+factor counting occupied shells. Taking `r` large enough from the
+initial energy and viscosity absorbs this source's enstrophy work into
+any prescribed positive fraction of the dissipation.
+
+Remove the low-output source and the separated pairs from `M`, giving
+`M_keep`, and build its own capacity `K_keep`. The exact balance uses
+
+```text
+G_keep = (Y+K_keep)/2,
+W_keep = nu D + ||M_keep-nu Au||_2^2/nu,
+T_keep = D K_keep(u)[N(u)],
+
+2 G_keep' + W_keep = T_keep + force terms
+                    + 2<Au,M_lo> + 2<Au,M_far>.
+```
+
+The derivative direction is the **full actual** Navier–Stokes source.
+`W_keep` is a modified cost, and the three capacities do not generally
+add to the original capacity. The low-output work is absolutely paid.
+The existing low-parent estimate also applies to the retained kernel.
+For forces and low nonlinear outputs, Fourier `L1` moments provide the
+needed bounds without assuming a sharp pair mask is bounded on `L∞`.
+
+The remaining quintic return has every original input and both internal
+outputs above `K`. Its outer stretching pairs satisfy
+`max(|p|,|q|) < sqrt(2)*2^r*|p+q|^(3/2)`. This imposes no comparability
+on the two additional parents inside the differentiated `N` slot.
+The signed history of these remaining interactions is open.
+
+The checker retains every heat-rate cross term, tests the matrix bounds
+and band overlap, and checks the source partition and modified balance
+at two viscosities. Independent quartic polarization verifies the
+derivative. The finite periodic norm checks use the separate conservative
+lattice constant `200`, rather than the whole-space constant `10`.
+The positive first-generation example above remains in the retained core
+at `J=2,r=3`, with exactly the same coefficient. These rational checks
+are not a Lean certificate or a physical-time enclosure; the uniform
+whole-space estimate is proved analytically in the paper.
+
 ### Kida–Pelz evolution
 
 `kida_pelz_history.py` evolves the real Kida–Pelz initial field
