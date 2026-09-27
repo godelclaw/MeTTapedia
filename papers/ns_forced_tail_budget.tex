@@ -24,7 +24,11 @@ for the forced singularities constructed in~\cite{OAI}, the accumulated
 tail self-stretching minus even the full tail dissipation is unbounded
 at every fixed cutoff. The full-field obstruction is checked in Lean.
 The Fourier-tail extension below is an analytic proof, not a formalized
-projector theorem. No unforced regularity estimate is obtained.
+projector theorem. We also bound the forcing derivative of a quartic
+caloric stretching functional using only energy-level velocity controls
+and smooth force norms. Its signed nonlinear renewal must therefore fail
+a uniform absorption budget on the same forced construction. No unforced
+regularity estimate is obtained.
 \end{abstract}
 
 \section{An exact split and finite allowances}
@@ -206,18 +210,148 @@ nonzero slice is a different problem, whose subsequent history is not
 settled by this argument. A proposed unforced budget must therefore
 use more than bounded forcing norms or bounded direct force work.
 
+\section{Forcing in a caloric stretching functional}
+
+The preceding obstruction can also test a functional that records
+stretching beyond the instantaneous enstrophy. Let
+\[
+ A=-\Delta,\qquad H_s=e^{-\nu sA},\qquad
+ R=\curl A^{-1}P,\qquad
+ \mathcal M(v)=R\bigl((\curl v\cdot\nabla)v\bigr),
+\]
+where $P$ is the whole-space Leray projection. The multiplier $R$ is
+used on a divergence: $\mathcal M(v)=R\operatorname{div}(v\otimes\curl v)$.
+Thus its low-frequency singularity causes no $L^2$ difficulty. Parseval's
+identity gives $\norm{R\operatorname{div}Q}_2\leq\norm Q_2$, where the
+tensor norm is Frobenius. For solenoidal $v$,
+\begin{equation}\label{eq:Mbound}
+ \norm{\mathcal M(v)}_2\leq\norm v_\infty\norm{\nabla v}_2,
+ \qquad \langle Av,\mathcal M(v)\rangle=\Pi(v).
+\end{equation}
+Define the nonnegative functional
+\begin{equation}\label{eq:Kdef}
+ \mathcal K(u)=\frac1\nu\int_0^\infty
+                  \norm{\mathcal M(H_su)}_2^2\dd s.
+\end{equation}
+It is finite for the smooth $L^2$ fields considered here: the integrand
+is bounded near zero and is $O(s^{-5/2})$ at infinity by heat smoothing.
+
+The effective force in the projected velocity equation is $g=Pf$, not
+necessarily $f$ itself. Suppose in addition that
+\[
+ \norm{g(t)}_\infty\leq Q_0,\qquad
+ \norm{\curl g(t)}_\infty\leq Q_1\qquad(a\leq t<T).
+\]
+These constants are finite for the smooth compactly supported force in
+the construction: $P$ is bounded on every $H^m$, Sobolev embedding controls
+$Pf$, and $\curl Pf=\curl f$. No $L^\infty$ boundedness of $P$ is assumed.
+
+\begin{proposition}\label{prop:caloricforce}
+Put $c_h=(8\pi)^{-3/4}$. For a fixed smooth solenoidal slice $u$ and
+direction $g$ as above, with $E=\norm u_2^2$ and $Y=\norm{\nabla u}_2^2$,
+\begin{equation}\label{eq:caloricforce}
+ |D\mathcal K(u)[g]|\leq\frac{c_h}{\nu^2}
+ \left(\frac{32}{3}Q_0 E^{3/4}Y^{3/4}
+                 +16Q_1 E^{5/4}Y^{1/4}\right).
+\end{equation}
+Consequently the standing evolution satisfies, uniformly for $t<T$,
+\begin{equation}\label{eq:caloricforceintegral}
+ \int_a^t|D\mathcal K(u)[g]|\dd s\leq C_{\mathcal K}:=
+ \frac{c_h}{\nu^2}\left(
+ \frac{32}{3}Q_0 M^{3/4}L^{1/4}B^{3/4}
+       +16Q_1 M^{5/4}L^{3/4}B^{1/4}\right).
+\end{equation}
+This payment spends no order-two velocity dissipation.
+\end{proposition}
+\begin{proof}
+Use the auxiliary heat parameter $r=\nu s$, and write
+$w_r=e^{-rA}u$, $h_r=e^{-rA}g$. Differentiating both parent slots gives
+\[
+ D\mathcal M(w)[h]
+ =R\operatorname{div}(h\otimes\curl w+w\otimes\curl h).
+\]
+The multiplier bound, heat contraction and~\eqref{eq:Mbound} imply
+\begin{align*}
+ |D\mathcal K(u)[g]|\leq\frac2{\nu^2}
+ \int_0^\infty \norm{w_r}_\infty\norm{\nabla w_r}_2
+ \bigl(Q_0\norm{\nabla w_r}_2+Q_1\sqrt E\bigr)\dd r.
+\end{align*}
+The Gaussian kernel has $L^2$ norm $c_hr^{-3/4}$, and its Fourier
+multiplier gives
+\[
+ \norm{w_r}_\infty\leq c_hr^{-3/4}\sqrt E,\qquad
+ \norm{\nabla w_r}_2\leq\min\{\sqrt Y,r^{-1/2}\sqrt E\}.
+\]
+When $E,Y>0$, split each integral at $r_*=E/Y$. Direct integration yields
+\begin{align*}
+ \int_0^\infty\norm{w_r}_\infty\norm{\nabla w_r}_2^2\dd r
+ &\leq\frac{16}{3}c_h E^{3/4}Y^{3/4},\\
+ \sqrt E\int_0^\infty\norm{w_r}_\infty\norm{\nabla w_r}_2\dd r
+ &\leq 8c_h E^{5/4}Y^{1/4}.
+\end{align*}
+These bounds also justify differentiation under the heat integral for
+the smooth slices. If $E$ or $Y$ vanishes, $u=0$ as an $L^2$ whole-space
+field and the result is immediate. This proves~\eqref{eq:caloricforce}.
+Finally apply H\"older in physical time, using $E\leq M$,
+$\int Y\leq B$, and the interval length at most $L$.
+\end{proof}
+
+Let $N(u)=-P((u\cdot\nabla)u)$ be the actual unforced velocity source, and set
+\[
+ \mathcal G=\frac{Y+\mathcal K}{2},\qquad
+ \mathcal T=D\mathcal K(u)[N(u)],\qquad
+ \mathcal W=\nu\norm{Au}_2^2+
+                   \frac1\nu\norm{\mathcal M(u)-\nu Au}_2^2.
+\]
+In particular $\mathcal G\geq Y/2$ and $\mathcal W\geq0$.
+Heat translation in~\eqref{eq:Kdef} gives
+$D\mathcal K(u)[-\nu Au]=-\norm{\mathcal M(u)}_2^2/\nu$.
+Combine this with the actual forced enstrophy identity and expand the
+square in $\mathcal W$ to obtain the exact balance
+\begin{equation}\label{eq:caloricbalance}
+ 2\mathcal G'+\mathcal W
+ =\mathcal T+D\mathcal K(u)[g]+2\langle Au,f\rangle.
+\end{equation}
+Both extra force terms have absolutely bounded physical-time integrals:
+their sum is bounded by $C_{\mathcal K}+2L\sqrt M F_\Delta$.
+
+\begin{corollary}\label{cor:caloricforced}
+On every forced candidate of the preceding section, for every $\beta\leq1$,
+\[
+ \sup_{1/2\leq t<1}\int_{1/2}^t
+          (\mathcal T-\beta\mathcal W)\dd s=+\infty.
+\]
+\end{corollary}
+\begin{proof}
+Integrating~\eqref{eq:caloricbalance} expresses
+$\int(\mathcal T-\mathcal W)$ as
+$2\mathcal G(t)-2\mathcal G(1/2)$ minus a uniformly bounded force integral.
+The candidate's gradient energy has no uniform upper bound, and
+$\mathcal G\geq Y/2$. This proves the case $\beta=1$; decreasing $\beta$
+only increases the integral since $\mathcal W\geq0$.
+\end{proof}
+
+Thus the smooth force does not hide an infinite payment in the derivative
+of this quartic functional. Its signed nonlinear renewal is itself
+unbounded relative to its positive cost on the forced history. A proof
+of the corresponding unforced budget must exploit the zero-force
+evolution; estimating these explicit force terms is insufficient.
+The estimate does not bound $\mathcal T$: substituting $N(u)$ for $g$
+would require velocity-dependent supremum norms that are not controlled
+by the energy inequality.
+
 \section{Verification boundary}
 
-The formal theorem
+The Lean theorem
 \texttt{openAI\_solution\_no\_uniform\_signed\_production\_budget}
-quantifies over every positive viscosity and the actual imported
-construction. It concerns the full-field production path, identified
-in Lean with the spatial cubic integral, and has no frequency projector.
-The proof of Proposition~\ref{prop:allowances} and the extension to
-every fixed Fourier cutoff in Corollary~\ref{cor:forced} are analytic
-arguments given here. They have not been registered as Lean axioms or
-as kernel-checked projector theorems. No conclusion about arbitrary-data
-unforced regularity follows from the forced obstruction.
+applies to the actual construction at every positive viscosity and concerns
+the full-field spatial cubic integral. The sharp Fourier-tail extension
+and all caloric results here are analytic proofs, not Lean theorems or
+axioms. The companion \texttt{labs/caloric\_force.py} checks the complete
+caloric balance by exact rational Fourier arithmetic on the periodic cube,
+including forces with a gradient part. These checks do not certify the
+whole-space estimates or a physical-time bound. Arbitrary-data unforced
+regularity remains open.
 
 \begin{thebibliography}{9}
 \bibitem{OAI}

@@ -908,6 +908,31 @@ Fourier-projector extension in the note is an analytic proof. The force
 changes the realized history despite its bounded direct work. This is no
 bound on an unforced solution.
 
+The note also treats the quartic caloric functional
+`K(u)=(1/nu)*integral_0^infinity ||M(exp(nu*s*Delta)u)||_2^2 ds`, with
+`M(u)=curl*(-Delta)^(-1)*P[(curl u.grad)u]`. For the effective force `g=P f`,
+its derivative obeys the whole-space estimate
+
+```text
+|DK(u)[g]| <= (8*pi)^(-3/4)/nu^2 *
+  [(32/3)*||g||_infinity*E^(3/4)*Y^(3/4)
+        +16*||curl g||_infinity*E^(5/4)*Y^(1/4)],
+E=||u||_2^2, Y=||grad u||_2^2.
+```
+
+The velocity energy bound and its integrated enstrophy therefore pay this
+force term absolutely on a finite horizon, without an order-two velocity
+bound. This shows that the signed caloric nonlinear renewal itself exceeds
+every uniform allowance relative to its positive cost on the forced
+construction. The analytic proof retains both differentiated parents and
+uses Sobolev bounds on the original smooth force; it does not assume that
+the Leray projector is bounded on `L_infinity`.
+Run `python3 -O labs/caloric_force.py` for exact rational checks of the
+complete forced caloric identity on the periodic cube, including forces
+with a gradient part. Those checks do not certify the whole-space heat
+inequality or a physical-time evolution, and no unforced renewal estimate
+is proved.
+
 `kida_pelz_history.py` evolves the real Kida–Pelz initial field
 
 ```text
@@ -1156,7 +1181,9 @@ length at least `L`. Both displayed integrals scale by `L^4` on
 into that high tail. It does **not** exclude an additive initial-data
 allowance or prove that repeated growth is unbounded. It limits a uniform
 deduction from qualitative support rigidity; the sufficient signed-history
-budget remains open.
+budget remains open. Here the family grows while the energetically active
+part of the flow stays essentially fixed. No claim is made about a bound
+restricted to minimal active families or to annuli of fixed relative width.
 
 The numerical checker uses one reference history for all family projections,
 with `b_j=(-1)^j*2^j*j!*a_j` to avoid losing tiny boundary coefficients to an
@@ -1188,6 +1215,8 @@ For example, `F_6=0.12335688758`, `R_6=8.23e-12`, while
 `F_20=0.12335688759`, `R_20=6.86e-52`. These are numerical diagnostics;
 the analytic inequalities above, including their rational final comparison,
 are not a Lean certificate or a numerical interval enclosure.
+
+### Bent antiparallel vortex tubes
 
 `bent_tube_history.py` supplies a second, explicitly defined concentration
 geometry on the same periodic cube. For radius `a`, separation parameter
