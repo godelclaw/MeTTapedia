@@ -7,6 +7,8 @@ import Mettapedia.GraphTheory.FourColor.FaceColourTransfer
 import Mettapedia.GraphTheory.FourColor.FacePathExtension
 import Mettapedia.GraphTheory.FourColor.FaceExposedDegrees
 import Mettapedia.GraphTheory.FourColor.FacePairColourExtension
+import Mettapedia.GraphTheory.FourColor.FaceOrderExchange
+import Mettapedia.GraphTheory.FourColor.FaceSweepEdgeBudget
 import Mettapedia.GraphTheory.FourColor.DeferredFaceChoiceExample
 import Mettapedia.GraphTheory.FourColor.FaceKempeRepair
 import Mettapedia.GraphTheory.FourColor.ShortStepKempeCounterexample
@@ -184,7 +186,22 @@ the first path makes the other missing colour different. The original
 patch's colouring is preserved throughout. A fifteen-edge incidence
 example proves that a valid first choice can fail even though the pair
 has a successful joint choice. General availability and repeated progress
-for such pairs, the one-edge case and other contacts remain open.
+for such pairs and the remaining short-step contacts remain open.
+The order of two actual additions can also be exchanged. If k newly exposed
+edges are common to the two faces, more than k attachment edges of the second
+face and more than k exposed edges of the first construct both connected
+shores of the exchanged middle region. The new exposure counts are n₂+k
+and n₁-k. When both are at least three, every original colouring extends
+through the exchanged order; restriction of the final witness also supplies
+jointly chosen witnesses for the original order. A four/two pair sharing one
+new edge is a special case. No general supply of such pairs is asserted.
+An exact budget limits this mechanism: summing 3-n over a complete facial
+sweep gives the initial face length, independently of the ordering. Each
+one- or two-edge addition contributes at most two; longer additions contribute
+zero or less. Thus a sweep starting from a pentagon necessarily has at least
+three short additions. Reordering can move the constraints but cannot remove
+all of them. Compatible choices for the unavoidable short steps remain part
+of the universal construction problem.
 Physical Kempe switches now act on the same original edge assignments and
 transport each vertex profile exactly. Every failed facial extension supplies
 a colour pair and a component through its first endpoint; the chosen switch

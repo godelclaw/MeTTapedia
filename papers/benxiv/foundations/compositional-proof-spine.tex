@@ -19139,8 +19139,76 @@ The pair theorem supplies one uniform construction rule through a short
 step that can reject an earlier choice. It does not require every
 intermediate colouring to survive. The existence of a suitable pair in
 arbitrary unfinished regions, repetition of such progress, other endpoint
-contacts and the one-new-edge case remain open. No general construction
+contacts and the remaining one-new-edge cases remain open. No general construction
 or strict-reduction supply, or generating base, follows yet.
+
+\subsection{Exchanging face order and the invariant edge budget}
+
+Compatible witnesses can also be obtained by changing the construction
+order. For actual events $S\xrightarrow{e}R\xrightarrow{f}T$, let $X$
+and $Y$ be their newly exposed original edges and set
+$K=X\cap\partial f$, $k=|K|$. If the attachment of $f$ has more than
+$k$ edges and $|X|>k$, the opposite ordering exists as actual facial
+events. Its intermediate selected faces are $S\cup\{f\}$.
+
+Both connected shores are derived. An attachment edge of $f$ outside
+$K$ has its other face in $S$, connecting the new inside. An edge of
+$X$ outside $K$ has its other face outside $T$, connecting the new
+outside, which is the outside of $T$ together with $e$. These witnesses
+come from the original edge incidence; neither an intermediate disk nor
+a commuting square is assumed.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceOrderExchange.exists_exchange}
+
+The exchanged exposures are exactly $Y\cup K$ and
+$X\setminus\partial f$, of cardinalities $|Y|+k$ and $|X|-k$.
+If both are at least three, the existing path-extension theorem supplies
+both colouring witnesses while retaining the original colours. Restricting
+the final witness back to $R$ also supplies jointly chosen colourings for
+the original order. In particular, a pair with exposure counts $(4,2)$
+and one shared new edge becomes $(3,3)$, provided the second attachment
+has at least two edges. The first count may be larger than four.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceOrderExchange.first_edges}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceOrderExchange.second_edges}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceOrderExchange.extends_by_exchange}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceOrderExchange.extends_original_pair}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceOrderExchange.extends_four_two_pair}
+
+There is a global limit on eliminating short steps by reordering. For a
+route $p$ with $r$ events exposing $n_1,\ldots,n_r$ new edges, define
+the signed deficit
+\[
+ D(p)=\sum_{i=1}^{r}(3-n_i)
+     =3r+|E(S)|-|E(T)|.
+\]
+Original edges are introduced disjointly, so the equality telescopes.
+The route length is fixed by its endpoint face counts; therefore $D$
+is independent of the face ordering between the same two regions.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceSweepEdgeBudget.deficit_eq}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceSweepEdgeBudget.deficit_eq_of_same_endpoints}
+
+For a complete sweep from one face to all but the designated outer face,
+cubic incidence and the spherical Euler equation give $|E|=3|F|-6$,
+while $r=|F|-2$. Consequently $D(p)$ is exactly the initial face length
+$\ell$. Every event exposes at least one edge. A short event contributes
+at most two to $D$, and an event exposing at least three edges contributes
+zero or less. If $N_{\mathrm{short}}$ counts events exposing one or two
+edges, then
+\[
+ \ell\leq 2N_{\mathrm{short}}.
+\]
+A pentagonal start therefore requires at least three short events under
+every complete face ordering.
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceSweepEdgeBudget.sweep_deficit}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceSweepEdgeBudget.sweep_shortCount_bound}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceSweepEdgeBudget.sweep_has_short_step}
+\Sverified{Mettapedia.GraphTheory.FourColor.FaceSweepEdgeBudget.pentagonal_sweep_has_three_short_steps}
+
+The exchange constructs a useful family of compatible operations. The
+budget proves that the unconditional three-edge extension rule cannot
+complete a facial sweep by itself. Selecting compatible colourings for
+the unavoidable short steps, or combining construction with strict
+reductions, remains essential. No universal successful schedule or
+route-native generating base is supplied by these local results.
 
 \subsection{Physical component repair and its single-switch limit}
 
