@@ -26,6 +26,7 @@ import MettapediaNS.SwirlBudget
 import MettapediaNS.AveragedSwirl
 import MettapediaNS.CirculationFlux
 import MettapediaNS.HelicalPhaseSelection
+import MettapediaNS.HelicalHighModeFeedback
 import MettapediaNS.WholeSpaceViscousFlow
 import MettapediaNS.WholeSpaceNSContinuation
 import MettapediaNS.WholeSpaceNSBlowup
@@ -71,6 +72,8 @@ unforced Navier–Stokes solutions.
 #print axioms Mettapedia.FluidDynamics.NavierStokes.HelicalPhaseSelection.ParentCounts.axial_zero_before_seven
 #print axioms Mettapedia.FluidDynamics.NavierStokes.HelicalPhaseSelection.ParentCounts.cubicWitness_indices
 #print axioms Mettapedia.FluidDynamics.NavierStokes.HelicalPhaseSelection.ParentCounts.seventhOrderWitness_indices
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HelicalHighModeFeedback.circulationHeatBracket_pos
+#print axioms Mettapedia.FluidDynamics.NavierStokes.HelicalHighModeFeedback.pressureAllowanceRatio_lt_one
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBKM.curlField_eq_vectorCurl
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBKM.spatialBKMIntegrand_curl_eq_vorticityNorm
 #print axioms Mettapedia.FluidDynamics.NavierStokes.WholeSpaceBKM.spatialEssentialSupNorm_curl_eq_ofReal_vorticityNorm

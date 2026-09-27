@@ -2591,6 +2591,213 @@ The higher norms of the initial data grow with $\lambda$.
 A finite allowance depending on the full initial datum, uniform over
 all shorter evolution intervals from that datum, remains unrefuted.
 
+\subsection{Circulation and total enstrophy can grow during the delayed interaction}
+
+The large critical histories above need not be accompanied by a loss
+of mean circulation. The same profiles give positive full enstrophy
+production and raise the mean circulation above its initial maximum.
+
+\begin{corollary}\label{cor:highModeSimultaneous}
+In the family of Corollary~\ref{cor:finiteMeanDerivatives}, after
+decreasing the fixed $s_*>0$ and increasing the lower threshold on
+$\lambda$ if necessary, put $\Gamma_\lambda=r(\PP u_\lambda)_\theta$.
+Then
+\begin{align}
+ \Gamma_\lambda(\lambda^{-1},0,t_\lambda)
+       -\sup_{r,z}\Gamma_\lambda(r,z,0)
+      &\geq c\lambda^{2h/(2K+3)},\label{eq:highModeCirculation}\\
+ \tfrac12\norm{\nabla u_\lambda(t_\lambda)}_2^2
+       -\tfrac12\norm{\nabla u_\lambda(0)}_2^2
+      &\geq c\lambda^{1+4h+2h/(2K+3)}.\label{eq:highModeEnstrophy}
+\end{align}
+All the mean derivative bounds and history estimates of that corollary
+continue to hold. The full integrated viscous enstrophy dissipation obeys
+\[
+ \nu\int_0^{t_\lambda}\norm{\Delta u_\lambda}_2^2\dd t
+                              \leq C\nu\lambda^{1+4h}.
+\]
+Thus the signed nonlinear production in the full enstrophy identity
+exceeds this dissipation by the amount in \eqref{eq:highModeEnstrophy}.
+\end{corollary}
+
+\begin{proof}
+First compute the two signs for one unnormalized parent
+$f_m(r)e^{i(m\phi+2z)}$, where $f_m=r^me^{-r^2}$ and $m\geq6$,
+about the same Gaussian swirl. Write
+\[
+ \Omega=2e^{-r^2},\quad \zeta=4(1-r^2)e^{-r^2},\quad
+ L_m=\partial_{rr}+r^{-1}\partial_r-m^2r^{-2},\quad
+ q_m=r^me^{-2r^2},\quad \mathcal R_m=(-L_m+4)^{-1}.
+\]
+The full linear-pressure source and its smooth decaying solution are
+\begin{align*}
+ S_m&=8(4r^2+m^2-3m-2)q_m,\\
+ p_m&=-2q_m+\gamma_m\mathcal R_mq_m,
+              \qquad \gamma_m=8(m^2-m+1).
+\end{align*}
+Indeed $(-L_m+4)p_m=S_m$ follows by differentiation.
+The complete mean stress derivative is
+\[
+ T_m=\frac12\left[2\Omega(f_m')^2
+       -\frac{m^2\zeta f_m^2}{r^2}+f_m'p_m'
+       -\frac{m^2f_mp_m}{r^2}\right].
+\]
+As in \eqref{eq:helicalPeakAcceleration}, the circulation acceleration
+divided by $\epsilon^2$ at $r=1$ is
+\[
+ \sigma_m=-\left.\frac1r\partial_r(r^2T_m)\right|_{r=1}
+  =\frac{4m(m-4)}{e^3}-\frac{2(m-2)}e p_m(1)
+                                      +\frac{2m}e p_m'(1).
+\]
+The heat formula
+\[
+ e^{sL_m}q_m=r^m(1+8s)^{-m-1}e^{-2r^2/(1+8s)}
+\]
+identifies the resolvent and its radial derivative. With $a=1+8s$,
+substitution gives
+\[
+ \sigma_m=\frac{4(m-2)}{e^3}
+ +\frac{\gamma_m}e\int_0^\infty e^{-4s}a^{-m-1}e^{-2/a}
+           \left[2m\left(m-\frac4a\right)-2(m-2)\right]\dd s.
+\]
+The bracket is at least $2(m^2-5m+2)>0$ for $m\geq5$.
+In particular $\sigma_m>4(m-2)e^{-3}>0$.
+
+The sign of total enstrophy work requires a separate calculation.
+Retaining all parent-vorticity components and the full pressure pairing,
+the coefficient of $\epsilon^2$ in the derivative of the initial
+nonlinear production is
+\[
+ \chi_m=4\pi I_m+8\pi\int_0^\infty e^{-4s}J_m(s)\dd s,
+\]
+where
+\begin{align*}
+ I_m&=\int_0^\infty r(-4r^2e^{-r^2})
+       \left(\frac{m^2\zeta f_m^2}{r^2}
+                                -2\Omega(f_m')^2\right)\dd r
+       =d_m\frac{(m-1)(m-2)}{2^m},\\
+ J_m(s)&=\int_0^\infty r\zeta'f_m'
+                                  (e^{sL_m}S_m)\dd r,
+       \qquad d_m=\frac{(m+1)!}{2^{m+1}}.
+\end{align*}
+These are the general-angular-index forms of the complete identities
+used in Proposition~\ref{prop:helicalMeanFeedback}.
+The pressure term need not be positive. Its negative part can be paid
+explicitly. Gaussian integration yields
+\[
+ \frac{J_m(s)}{d_m}
+             =-\frac{16P_m(a)}{(m+1)(a+1)^{m+4}},
+\]
+with
+\begin{align*}
+ P_m(a)={}&2m(m-1)^2a^3
+       +(-m^4+6m^3-15m^2+6m+4)a^2\\
+       &+(-m^4+10m^3-13m^2+8m+8)a
+       +4m^3-14m^2-18m-8.
+\end{align*}
+For $m\geq6$ and $a\geq1$, its quadratic coefficient is negative,
+its linear coefficient is at most $2m^3+20$, and its constant
+coefficient is at most $4m^3$. Hence
+\[
+ P_m(a)\leq 2m(m-1)^2a^3+(2m^3+20)a+4m^3.
+\]
+Use this positive majorant to give a nonpositive lower bound for
+$J_m(s)$, and discard $e^{-4s}$ only from that lower bound.
+The resulting three elementary integrals give
+\[
+ 2\int_0^\infty e^{-4s}J_m(s)\dd s\geq-I_m\rho_m,
+ \qquad
+ \rho_m=\frac{4m^5+18m^4+23m^3+3m^2-14m+88}
+ {(m-2)(m-1)(m+1)^2(m+2)(m+3)}<1.
+\]
+For example, writing $j=m-6\geq0$, the numerator of $1-\rho_m$
+over the displayed positive denominator is
+\[
+ j^6+36j^5+520j^4+3797j^3+14332j^2+24594j+11048,
+\]
+which is strictly positive. Consequently
+\begin{equation}\label{eq:highModeProductionCoefficient}
+ \chi_m\geq4\pi I_m(1-\rho_m)>0\qquad(m\geq6).
+\end{equation}
+The checker \texttt{helical\_high\_mode\_feedback.py} verifies the
+pressure equation, full stress and vorticity identities, heat formulas,
+Gaussian reductions and polynomial sign certificates exactly.
+The Lean module \texttt{MettapediaNS.}\allowbreak\texttt{HelicalHighModeFeedback}
+checks the circulation heat bracket and $\rho_m<1$. Its scope is these
+algebraic signs; the integral identities and evolution estimates remain
+analytic.
+
+Return to the normalized two-parent data of
+Corollary~\ref{cor:finiteMeanDerivatives}, with $m=2K+2$ and $p=2K+3$.
+At quadratic amplitude order, angular orthogonality adds the two
+coefficients: the circulation coefficient is
+$\sigma_m/d_m+\sigma_{m+2}/d_{m+2}>0$, and the enstrophy coefficient
+is $\chi_m/d_m+\chi_{m+2}/d_{m+2}>0$.
+There is no angular mean at first amplitude order, and every angular
+mean at second order has zero axial phase. Thus the quadratic
+coefficients in both observables are independent of the fast phase
+after angular integration. Restriction to the physical trace creates
+no rapid-phase averaging error at this order.
+
+Here is the uniform time argument. At zero amplitude, the frozen
+field $g(Z)V_h$ has pressure $-g(Z)^2e^{-2r^2}$ at $\delta=\eta=0$.
+In the extended equation at nonzero $\delta,\eta$ its residual has
+Sobolev norm $O(\delta+\eta)$: the omitted axial pressure derivative
+carries $\delta$, and diffusion carries $\eta$.
+The local transport stability estimate therefore keeps the base
+within $O(\delta+\eta)$ of this stationary field on the common interval.
+In particular both its circulation and its normalized enstrophy change
+by $O(\delta+\eta)$.
+
+Take three finite amplitude derivatives of the actual extended flow,
+holding $\delta$ and $\eta$ fixed.
+Taylor's theorem gives each observable's increment as its base increment
+plus a quadratic coefficient times $\epsilon^2$, with remainder
+$O(\epsilon^3)$, uniformly on a common interval. The physical $L^2$
+remainder is controlled by the periodic-variable trace estimate already
+used in Proposition~\ref{prop:fastseeds}.
+The quadratic coefficients converge as $(\delta,\eta)\to(0,0)$ by
+the bounded strong convergence of the Leray multipliers and the
+differentiated local evolution equations. Their phase independence
+just established also justifies this convergence for the physical
+enstrophy integral.
+
+At that limit, both increments and their first time derivatives vanish
+at $s=0$: the initial mean stress is zero, and the quadratic initial
+total production is the real part of a purely imaginary pairing.
+Their second derivatives are the positive coefficients above;
+for the enstrophy integral there is the additional positive factor
+$\int g^4$. Choose a fixed small $s_*>0$ for which both quadratic
+increments are positive. For small $\delta,\eta$, both actual increments
+are consequently at least
+\[
+ c\epsilon^2-C(\delta+\eta)-C\epsilon^3.
+\]
+Since $\epsilon^2=\delta^{1-1/p}$ and
+$\eta=\nu\sqrt{C_\epsilon}\delta$, this is at least
+$c'\epsilon^2$ for all sufficiently large $\lambda$.
+
+Circulation rescales by $A/\lambda$ and enstrophy by $A^2/\mu$.
+Therefore their respective increments are bounded below by constants
+times
+\[
+ \frac A\lambda\epsilon^2\asymp\lambda^{2h/p},\qquad
+ \frac{A^2}{\mu}\epsilon^2\asymp\lambda^{1+4h+2h/p}.
+\]
+Initially $(r,z)=(\lambda^{-1},0)$ is a global circulation maximum,
+since $|g|\leq1$ and $\max_R2R^2e^{-R^2}=2/e$.
+This proves \eqref{eq:highModeCirculation}--\eqref{eq:highModeEnstrophy}.
+Finally the uniform spatial Sobolev and trace estimates bound the
+integrated dissipation by
+$C\nu A\lambda/\mu=C\nu A/\delta\leq C'\nu\lambda^{1+4h}$.
+\end{proof}
+
+Thus controlled mean geometry, small relative defect, and incompatible
+phases can coexist with a growing circulation peak and net total
+enstrophy gain. These are finite events across different initial data.
+The initial circulation peak and enstrophy grow faster than their
+increments, and no repeated growth from one fixed datum is established.
+
 \subsection{The energy inequality alone permits the stress cost}
 
 The time-integrated energy inequality cannot by itself exclude the cost

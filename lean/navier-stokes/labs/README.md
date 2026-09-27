@@ -781,6 +781,39 @@ Constants depend on `K`. This is an analytic family obstruction to a
 uniform estimate from these inputs; the higher initial norms grow, so
 it does not refute an allowance depending on the full initial datum.
 
+### Full signed work during delayed mean production
+
+Corollary 18 shows that the same family can raise its mean circulation
+above the initial global maximum and increase its total enstrophy,
+while retaining all the bounds in Corollary 17. The gains are at least
+`c λ^(2h/(2K+3))` and `c λ^(1+4h+2h/(2K+3))`, respectively. Integrated
+viscous enstrophy dissipation is at most `C ν λ^(1+4h)`.
+
+The general Gaussian parent of angular index `m ≥ 6` has both a positive
+initial circulation acceleration and positive total enstrophy curvature.
+The calculation keeps the complete pressure term, which has a negative
+part. An explicit rational bound pays that part using the remaining
+signed production; a polynomial with positive coefficients proves the
+margin for every integer `m ≥ 6`. Check the identities with:
+
+```sh
+python3 -O labs/helical_high_mode_feedback.py
+```
+
+The module `MettapediaNS.HelicalHighModeFeedback` separately kernel-checks
+positivity of the circulation heat bracket and the strict inequality
+for the rational negative-pressure allowance. It proves these algebraic
+inequalities, not their PDE interpretation.
+
+The Python checker requires Sympy. Its exact initial identities support the
+analytic time argument: finite amplitude derivatives have a uniform
+remainder, the quadratic coefficients have zero axial phase, and the
+viscosity and slow-envelope errors are smaller than `ε²`. These estimates
+give a common short interval of actual unforced whole-space solutions.
+They do not construct a recurrent cascade. Initial higher norms grow
+faster than the finite gains, so a full-datum history allowance remains
+an open possibility.
+
 ### A kinematic path satisfying the energy inequality
 
 A separate time-dependent rescaling of `W_+` has zero mean and unit initial
