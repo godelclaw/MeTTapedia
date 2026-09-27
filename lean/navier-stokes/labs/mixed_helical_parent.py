@@ -85,6 +85,12 @@ require_zero(circulation.subs({w:1,b:1})+s.Rational(32,5)*s.exp(-3),
              'nonzero output at radius one')
 require_zero(w*s.diff(circulation,w)-b*s.diff(circulation,b),
              'zero angular index of the circulation output')
+radial_flux=s.factor((w+b)*cubic[0]/2+(w-b)*cubic[1]/(2*I))
+expected_radial=(s.Rational(8,5)*I*radial
+                 *(8*radial**4+136*radial**3-262*radial**2+27*radial+18)*decay**3)
+expected_axial=-s.Rational(32,5)*radial**3*(6*radial**2-25*radial+20)*decay**3
+require_zero(radial_flux-expected_radial,'full radial preprojection source')
+require_zero(cubic[2]-expected_axial,'full axial preprojection source')
 
 # Phase counts also rule out every base and viscous contribution to this
 # mode in the second time derivative. A linear derivative preserves labels.
@@ -138,6 +144,8 @@ require_zero(concentration**(-3+2*h)*amplitude*concentration**2*epsilon**3
 result.update(status='all exact residuals zero',
               pressure_AA=str(pAA),pressure_ABbar=str(pAB),
               mixed_circulation_second_derivative=str(circulation),
+              radial_preprojection_flux=str(radial_flux),
+              axial_preprojection_source=str(s.factor(cubic[2])),
               radial_form=str(s.factor(circulation.subs(b,a/w))),
               real_cosine_coefficient_at_radius_one=str(
                   s.simplify(real_cosine_coefficient.subs({w:1,b:1}))),

@@ -581,6 +581,47 @@ The uniform evolution argument is analytic, not a Lean or symbolic
 certificate. This is a finite event from different data, with no asserted
 recurrent cascade or failure of the conditional regularity theorem.
 
+### Does the generated seed couple to linear growth?
+
+Run `python3 -O labs/generated_mode_coupling.py` from the NS workspace.
+This checker needs only the Python standard library. It uses exact
+fractions throughout, with no numerical eigensolver or quadrature.
+
+The mixed-parent seed has three velocity components. The updated
+`mixed_helical_parent.py` checks the full radial and axial sources as
+well as the azimuthal source. The final Leray projection leaves an
+imaginary radial coefficient, a real azimuthal coefficient, and a real
+axial coefficient in the axisymmetric carrier-2 mode.
+
+For the inviscid linearization about the fixed Gaussian swirl, radial
+motion obeys `A a_tt = -Φ a`, with `A=I-L₁/4` and
+`Φ=16(1-r²) exp(-2r²)`. The coupling checker supplies a 32-term rational
+Laguerre polynomial `f`. Its exact residual at `μ=21/200` verifies
+
+```text
+<f,Af>              < 101/100
+<h,f>              > 27/100
+||h||²             < 28
+||-Φf - μAf||²     < 1/160000,
+```
+
+where `h` is the radial acceleration source induced by the generated
+azimuthal seed. These inequalities force a nonzero projection onto the
+positive spectrum above `1/20`; the proof uses the bounded self-adjoint
+operator `-A^(-1/2) Φ A^(-1/2)`. No discrete-spectrum assumption is needed.
+Proposition 12 of the note gives the resulting lower bound
+`sqrt(20)/40 * sinh(t/sqrt(20))` for the meridional norm of the unscaled
+complex mode in this fixed inviscid linearization. The other generated
+components cannot cancel this contribution because they have the opposite
+complex phase in the radial equation.
+
+This establishes coupling, not amplification in the actual nonlinear
+solution. The evolving parents supply an inhomogeneous forcing history;
+later contributions could offset the initial one. Viscosity, the slow
+envelope and a controlled longer nonlinear interval remain to be handled.
+The spectral argument is analytic and the finite certificate is rational
+arithmetic; neither is a new Lean theorem.
+
 ### A kinematic path satisfying the energy inequality
 
 A separate time-dependent rescaling of `W_+` has zero mean and unit initial

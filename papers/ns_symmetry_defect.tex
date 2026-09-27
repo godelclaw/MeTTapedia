@@ -1762,6 +1762,165 @@ larger than the increase just proved. No sequence of these events within
 one fixed solution, and no failure of the conditional regularity theorem,
 is asserted.
 
+\subsection{The generated seed couples to a growing linearized component}
+
+The mean mode in Proposition~\ref{prop:mixedParents} is not automatically
+a growing perturbation of the base. The following calculation checks
+that coupling, but only for the inviscid linearization about the fixed
+column $v(R)e_\theta=2Re^{-R^2}e_\theta$. This distinction matters:
+in the nonlinear evolution the parents and the mean keep changing.
+The norms below are radial Fourier-mode norms; the fixed column itself
+is not a finite-energy field on the whole space.
+The columnar-vortex linearization is classical; see, for example,
+\cite[Eq.~(1.6)]{GS}. The stability assumptions of that reference are
+not satisfied by this column, whose vorticity changes sign.
+
+In the axisymmetric axial mode $e^{i\kappa z}$, write the velocity
+components as $(a,b,c)$. At $\kappa=2$ their linearized equations are
+\begin{gather}
+ a_s-2\Omega b=-p_R,\qquad b_s+\zeta a=0,\qquad
+ c_s=-2ip,\qquad a_R+a/R+2ic=0,\label{eq:linearColumn}\\
+ \Omega=2e^{-R^2},\qquad \zeta=4(1-R^2)e^{-R^2},\qquad
+ \Phi=2\Omega\zeta=16(1-R^2)e^{-2R^2}.
+\end{gather}
+In $H=L^2((0,\infty),R\dd R)$ let $A$ be the Friedrichs realization of
+\[
+ I-\tfrac14L_1,\qquad
+ L_1=\partial_{RR}+R^{-1}\partial_R-R^{-2}.
+\]
+Its quadratic form, initially on $C_c^\infty(0,\infty)$, is
+\[
+ \mathfrak a(f,f)=\int_0^\infty
+ R\left[|f|^2+\tfrac14(|f'|^2+|f/R|^2)\right]\dd R.
+\]
+Thus $A\geq I$, and $B=-A^{-1/2}\Phi A^{-1/2}$ is a bounded
+self-adjoint operator on $H$. No discrete-spectrum assumption will be
+needed. Elimination of the pressure in \eqref{eq:linearColumn} gives
+\[
+ Aa_s=2\Omega b,\qquad Aa_{ss}=-\Phi a,
+ \qquad x_{ss}=Bx,\quad x=A^{1/2}a.
+\]
+Conversely these equations recover \eqref{eq:linearColumn} using
+$b_s=-\zeta a$, $c=i(a_R+a/R)/2$, and
+$p=-(a_{sR}+a_s/R)/4$. The form domain imposes the regular axis boundary
+condition. The Gaussian test functions below lie in the form domain by
+radial cutoff approximation, and their distributional $Af$ lies in $H$.
+Integration by parts and form density therefore put them in the operator
+domain as well.
+
+Put $q=R^2$ and $Q_4(q)=8q^4-110q^3+346q^2-275q+27$.
+The full cubic source computed in Proposition~\ref{prop:mixedParents},
+before its last Leray projection, has components
+\begin{align*}
+ iP_r&=\frac{8i}{5}R(8q^4+136q^3-262q^2+27q+18)e^{-3q},\\
+ P_\theta&=\frac85 R^3Q_4(q)e^{-3q},\qquad
+ P_z=-\frac{32}{5}R^6(6q^2-25q+20)e^{-3q}.
+\end{align*}
+The checker verifies all three components. Its divergence is purely
+imaginary, so the last pressure amplitude is purely imaginary too.
+Consequently the fully projected source $C$ has a purely imaginary
+radial component, the real azimuthal component $P_\theta$, and a real
+axial component. Here $C$ is the unscaled complex cubic coefficient;
+the real initial jet in \eqref{eq:mixedRealJet} has the additional
+factor $\epsilon^3g(Z)^3/4$.
+
+\begin{proposition}\label{prop:linearSeedCoupling}
+Initialize the fixed-column linearized equation \eqref{eq:linearColumn}
+with the fully projected coefficient $C$. Its meridional components
+satisfy, for all $s\geq0$,
+\[
+ \big(\norm{a(s)}_H^2+\norm{c(s)}_H^2\big)^{1/2}
+       \geq\frac{\sqrt{20}}{40}\sinh(s/\sqrt{20}).
+\]
+This is a statement about the complex Fourier coefficient in the fixed
+inviscid linearization. It is not a growth bound for the actual nonlinear
+solution from Proposition~\ref{prop:mixedParents}.
+\end{proposition}
+
+\begin{proof}
+The radial second-order equation has real coefficients. Set
+$x_{\mathrm R}=\operatorname{Re}x$. Then $x_{\mathrm R}(0)=0$ and
+\[
+ (x_{\mathrm R})_s(0)=z:=A^{-1/2}h,\qquad
+ h=2\Omega P_\theta=\tfrac{32}{5}R^3Q_4(R^2)e^{-4R^2}.
+\]
+The imaginary meridional part of the generated seed cannot cancel this
+real solution in the complex Hilbert norm. It suffices to prove that
+the spectral projection of $z$ onto $B>1/20$ has norm greater than $1/40$.
+
+Here is a finite rational certificate. Let $L_j^1$ denote the generalized
+Laguerre polynomial, and set
+\[
+ f(R)=10^{-5}Re^{-R^2}\sum_{j=0}^{31}d_jL_j^1(2R^2),
+ \qquad \mu=\frac{21}{200},\qquad
+ \mathcal R=-\Phi f-\mu Af.
+\]
+The coefficients $d_0,\ldots,d_{31}$, in row order, are
+\[
+ \begin{array}{rrrrrrrr}
+ 129288&-103710&405&2339&11058&4912&3067&42\\
+ -645&-1238&-1012&-844&-499&-285&-77&28\\
+ 104&123&128&110&91&65&46&25\\
+ 14&0&-3&-13&-8&-18&-6&-19
+ \end{array}.
+\]
+Exact Gaussian integration gives the strict inequalities
+\begin{equation}\label{eq:seedCertificate}
+ \mathfrak a(f,f)<\frac{101}{100},\qquad
+ \langle h,f\rangle>\frac{27}{100},\qquad
+ \norm h_H^2<28,\qquad
+ \norm{\mathcal R}_H^2<\frac1{160000}.
+\end{equation}
+The accompanying checker constructs the polynomial coefficients and
+integrates each monomial using
+$\int_0^\infty q^ne^{-tq}\dd q=n!/t^{n+1}$.
+All comparisons use rational arithmetic, without a numerical eigensolver
+or rounded quadrature. It independently checks the form norm against
+the differential expression for $Af$.
+
+To see why these four inequalities suffice, put $y=A^{1/2}f$ and let
+$E_-$ be the spectral projection onto $B\leq\rho$, where $\rho=1/20$.
+Then
+\[
+ (B-\mu)y=A^{-1/2}\mathcal R,\qquad
+ \norm{E_-y}_H\leq\frac{\norm{\mathcal R}_H}{\mu-\rho},\qquad
+ \langle z,y\rangle=\langle h,f\rangle.
+\]
+Use $\norm{A^{-1/2}}\leq1$ and
+$\mu-\rho=11/200$. Equation~\eqref{eq:seedCertificate} gives
+\[
+ |\langle E_-z,E_-y\rangle|
+ <\frac{(16/3)(1/400)}{11/200}=\frac8{33},\qquad
+ \norm y_H<\frac{101}{100}.
+\]
+Since $27/100-8/33>(101/100)/40$, Cauchy--Schwarz yields
+$\norm{(I-E_-)z}_H>1/40$.
+
+The bounded self-adjoint equation $(x_{\mathrm R})_{ss}=Bx_{\mathrm R}$
+with $x_{\mathrm R}(0)=0$ has, on
+the positive spectral subspace, multiplier
+$\sinh(s\sqrt\sigma)/\sqrt\sigma$ applied to $z$.
+For $\sigma>\rho$ this multiplier is at least
+$\sinh(s\sqrt\rho)/\sqrt\rho$, as follows directly from its power
+series. Thus
+\[
+ \norm{x_{\mathrm R}(s)}_H
+       \geq\frac{\sqrt{20}}{40}\sinh(s/\sqrt{20}).
+\]
+Finally incompressibility and the radial integration by parts give
+$\norm a_H^2+\norm c_H^2=\mathfrak a(a,a)=\norm x_H^2$.
+This also follows by density from the form domain and completes the proof.
+\end{proof}
+
+The certificate establishes coupling to growth, not persistence of the
+actual forcing that created the seed. At cubic order the evolving parents
+drive an inhomogeneous equation. Their subsequent signed contributions
+could reinforce or offset the initial one; a nonzero initial jet does not
+determine that history. Viscosity, the slow envelope, and a controlled
+longer nonlinear time interval also remain to be included. The classical
+fixed-column instability and this explicit seed coupling supply none of
+the arbitrary-data physical-time budget required for continuation.
+
 \subsection{The energy inequality alone permits the stress cost}
 
 The time-integrated energy inequality cannot by itself exclude the cost
@@ -1854,5 +2013,9 @@ S. Gustafson, K. Kang, and T.-P. Tsai,
 \emph{Interior regularity criteria for suitable weak solutions of the
 Navier--Stokes equations}, Comm. Math. Phys. \textbf{273} (2007), 161--176,
 \href{https://arxiv.org/abs/math/0607114}{arXiv:math/0607114}.
+\bibitem{GS}
+T. Gallay and D. Smets,
+\emph{On the linear stability of vortex columns in the energy space},
+\href{https://arxiv.org/abs/1811.07584}{arXiv:1811.07584v2}, 2019.
 \end{thebibliography}
 \end{document}
