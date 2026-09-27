@@ -145,6 +145,38 @@ bound_sq = 1/((1-2*eta)*(s.Rational(3, 2)-alpha)**2)
 require_zero(bound_sq-norm_sq-2/((3-2*alpha)**2*(2-eta-alpha)),
              'power-profile Hardy slack')
 
+# General cylindrical stretching, after substituting the three vorticity
+# identities. No particular velocity field is chosen in this calculation.
+ar, bt, cz, jj, rr0, r0, z0, rz0 = s.symbols(
+    'omega_r omega_theta omega_z swirl_over_r radial_r radial_over_r axial_z radial_z')
+omega_general = s.Matrix([ar, bt, cz])
+gradient_general = s.Matrix([[rr0, -jj, rz0],
+                             [cz-jj, r0, -ar], [rz0-bt, 0, z0]])
+stretch_general = (ar**2*rr0+bt**2*r0+cz**2*z0
+                   +2*ar*cz*rz0-ar*bt*cz-2*ar*bt*jj)
+require_zero(omega_general.dot(gradient_general*omega_general)-stretch_general,
+             'general cylindrical stretching identity')
+
+theta_fun = s.Function('v_theta')(r, z)
+cutoff_fun = s.Function('radial_cutoff')(r, z)
+hardy_cross = cutoff_fun**2*r*((s.diff(theta_fun, r)+theta_fun/r)**2
+                               -s.diff(theta_fun, r)**2-theta_fun**2/r**2)
+hardy_boundary = (s.diff(cutoff_fun**2*theta_fun**2, r)
+                  -2*cutoff_fun*s.diff(cutoff_fun, r)*theta_fun**2)
+require_zero(hardy_cross-hardy_boundary, 'localized radial Hardy identity')
+
+time_var = s.symbols('time', real=True)
+sv = s.Function('scaled_swirl')(r, z, time_var)
+vrift, wrift = s.symbols('radial_drift axial_drift')
+gamma = r*sv
+gamma_operator = (s.diff(gamma, time_var)+vrift*s.diff(gamma, r)
+                   +wrift*s.diff(gamma, z)-s.diff(gamma, r, 2)
+                   +s.diff(gamma, r)/r)
+swirl_operator = (s.diff(sv, time_var)+vrift*s.diff(sv, r)
+                   +wrift*s.diff(sv, z)+vrift*sv/r-s.diff(sv, r, 2)
+                   -s.diff(sv, r)/r+sv/r**2)
+require_zero(gamma_operator-r*swirl_operator, 'ancient circulation equation')
+
 # Finite-energy data: each stored vector is the polynomial multiplying
 # exp(-x^2-y^2-z^2). Rotation preserves this common Gaussian factor.
 phase = s.symbols('phase', real=True)
@@ -249,6 +281,9 @@ print(json.dumps({
     'arbitrary_stress_identity': 'checked by symbolic differentiation',
     'stretching_difference_nonzero': s.expand(delta) != 0,
     'hardy_profile_conditions': '0<=eta<1/2 and alpha<3/2',
+    'general_cylindrical_stretching': 'checked for arbitrary component symbols',
+    'localized_radial_hardy': 'checked for arbitrary swirl and cutoff functions',
+    'ancient_circulation_operator': 'checked for an arbitrary swirl function',
     'gaussian_norms_divided_by_pi_over_2_to_3_over_2': {
         name: [str(value) for value in values]
         for name, values in gaussian_norms.items()

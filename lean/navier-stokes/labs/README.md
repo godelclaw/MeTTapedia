@@ -266,37 +266,49 @@ cylindrical divergence formula and its lifted potential-vorticity source
 are checked against the Cartesian calculation. A second calculation
 verifies the lifted identity for arbitrary symbolic stress components.
 The program also checks the stretching difference as an exact divergence
-plus terms with an undifferentiated `w`, and checks the weighted Hardy
-constant on a symbolic power profile. Errors raise exceptions even under
-`python3 -O`.
+plus terms with an undifferentiated `w`. For arbitrary component symbols
+it checks the cylindrical stretching identity used in the mean's enstrophy
+estimate; for arbitrary functions it checks the local radial integration
+identity and the ancient circulation equation. An additional scalar check
+verifies a weighted Hardy constant on a power profile. Errors raise
+exceptions even under `python3 -O`.
 
 The polynomial fields test local identities; they are not finite-energy
 whole-space data or Navier–Stokes solutions. The script does not certify
-the analytic proof in the note. That proof assumes prescribed anisotropic
-bounds on the angular mean and the two finite history integrals
+the analytic proof in the note. Its main regularity criterion assumes
+prescribed anisotropic second-order bounds on the angular mean and only
+the critical amplitude history
 
 ```text
-∫ ||w(t)||∞² dt,        ∫ √(T-t) ||(P[(w·∇)w])θ(t)||∞ dt.
+∫ ||w(t)||∞² dt < ∞.
 ```
 
-Angular averaging precedes the absolute value in the second integrand.
-The stronger product bound `∫ √(T-t) ||w||∞ ||∇w||∞ dt < ∞` also suffices.
-Neither assumption has been established for arbitrary data. The note and
-this symbolic calculation are separate from the kernel-checked Lean lane.
+No derivative or torque integral of the defect is assumed. The proof first
+eliminates swirl in the ancient limit, then controls the mean's stretching
+using derivatives smaller than `1/(T-t)`. It uses the full second-order
+mean swirl bounds. For the defect amplitude, every power `β<1/2` suffices;
+the borderline `τ^(-1/2) log(e/τ)^(-p)` suffices when `p>1/2`.
+Neither the mean geometry nor the critical history has been established
+for arbitrary data. The note and the symbolic calculations are separate
+from the kernel-checked Lean lane.
 
 For a smooth whole-space flow with a uniform energy bound and canonical
-pressure, the note also derives both histories from the single condition
+pressure, a separate estimate controls the additional gradient history
+`∫ √(T-t) ||w||∞ ||∇w||∞ dt`, and therefore the averaged torque history,
+under the stronger condition
 
 ```text
 ∫₀ᵃ τ^(-h/2) √log(e/τ) ||w(-τ)||∞² dτ < ∞,       τ = -t.
 ```
 
-Here `0<h<1/2` is the exponent in the separate mean-geometry assumption.
+This estimate only needs the mean's velocity and Cartesian gradient bounds
+stated in the note, with `0<h<1/2`; it does not need the full second-order
+anisotropic geometry of the regularity criterion.
 The proof follows the mean over short viscous intervals and retains the
-nonlocal pressure kernel. A power bound `||w(-τ)||∞ ≤ C τ^(-β)` therefore
-suffices for `β < 1/2-h/4`, without a separate gradient bound. This is an
-analytic smoothing argument, not a result checked by the symbolic script;
-the amplitude condition itself remains unproved for arbitrary data.
+nonlocal pressure kernel. For this additional gradient estimate, a power
+bound `||w(-τ)||∞ ≤ C τ^(-β)` suffices for `β < 1/2-h/4`. This is an
+analytic smoothing argument, not a result checked by the symbolic script.
+The stronger weight is not required by the main regularity criterion.
 
 ### Finite-energy angular transfer
 
