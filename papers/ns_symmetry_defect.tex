@@ -6,6 +6,7 @@
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
 \theoremstyle{remark}
 \newtheorem{remark}[theorem]{Remark}
 \newcommand{\R}{\mathbb R}
@@ -578,6 +579,137 @@ logarithmic consequences follow by integrating
 $\tau^{-h/2-2\beta}\ell(\tau)^{1/2-2p}$.
 \end{proof}
 
+\section{The sign of kinetic mean--defect transfer}
+
+For a smooth finite-energy whole-space unforced flow, orthogonality of
+angular averaging and integration by parts give
+\begin{equation}\label{eq:kinetictransfer}
+ \frac12\frac{\mathrm d}{\mathrm dt}\norm w_2^2
+       +\nu\norm{\nabla w}_2^2=-T,
+ \qquad
+ \frac12\frac{\mathrm d}{\mathrm dt}\norm v_2^2
+       +\nu\norm{\nabla v}_2^2=T,
+ \quad T=\int w\cdot(w\cdot\nabla)v.
+\end{equation}
+We display viscosity explicitly in this section. Defect self-advection
+and pressure do no kinetic work on $w$; the averaging correction is
+orthogonal to $w$. In particular the signed net kinetic transfer obeys
+\[
+ -\int_0^t T(s)\dd s
+ =\tfrac12\norm{v(0)}_2^2-\tfrac12\norm{v(t)}_2^2
+                         -\nu\int_0^t\norm{\nabla v}_2^2\dd s
+ \leq\tfrac12\norm{v(0)}_2^2.
+\]
+This does not bound its positive variation or the amplitude integral
+\eqref{eq:amplitude}. The following example also excludes an automatic
+viscous damping argument based just on small relative angular defect.
+
+\begin{proposition}\label{prop:transfer}
+For every $\nu>0$, $C>0$, and $0<\epsilon\leq1$, there are real
+Schwartz solenoidal data $u_+$ and $u_-$ with $\norm{u_\pm}_2=1$
+and the same angular mean $v$. Their defects $w_\pm=u_\pm-v$ have
+equal squared $L^2$ and gradient norms, and
+$\norm{w_\pm}_2=(3\epsilon/2)\norm v_2$.
+Their nonlinear kinetic transfers have opposite signs, and the
+unforced solution from $u_+$ satisfies at its initial time
+\[
+ \frac12\frac{\mathrm d}{\mathrm dt}\norm{w_+(t)}_2^2
+                         >C\nu\norm{\nabla w_+}_2^2.
+\]
+The mean satisfies the spatial bounds
+\eqref{eq:meanr}--\eqref{eq:meanz} at a time $t=-\tau_\lambda$,
+with $h=1/6$ and a constant independent of the concentration parameter
+$\lambda$ and of $\epsilon\in(0,1]$.
+This last assertion concerns that time slice, not an entire evolution.
+\end{proposition}
+
+\begin{proof}
+Set $\rho=x^2+y^2+z^2$, $r^2=x^2+y^2$, and, for $\sigma=\pm1$,
+\[
+ V=\curl(e^{-\rho}e_z),\qquad
+ W_\sigma=\curl\big((x^2-y^2+2\sigma xy r^2)e^{-\rho}e_z\big).
+\]
+Both fields are horizontal, divergence free and Schwartz;
+$\PP V=V$ and $\PP W_\sigma=0$. Write $g_a=(\pi/a)^{3/2}$.
+Gaussian moments give
+\begin{align*}
+ \norm V_2^2&=2g_2,& \norm{W_\sigma}_2^2&=\tfrac92 g_2,\\
+ \norm{\nabla_h W_\sigma}_2^2&=30g_2,&
+ \norm{\partial_z W_\sigma}_2^2&=\tfrac92 g_2,\\
+ \int W_\sigma\cdot(W_\sigma\cdot\nabla)V
+       &=-\sigma\tfrac{16}{9}g_3.
+\end{align*}
+For example, the radial--azimuthal entry of
+$\PP(W_\sigma\otimes W_\sigma)$ is
+$2\sigma r^4e^{-2\rho}$, while
+$\partial_r V_\theta-V_\theta/r=-4r^2e^{-\rho}$;
+their product directly gives the last integral.
+
+Let $\mu=\lambda^{2/3}$, $\lambda\geq1$, and put
+\[
+ C_\epsilon=g_2(2+\tfrac92\epsilon^2),\qquad
+ A=\frac{\lambda\sqrt\mu}{\sqrt{C_\epsilon}},\qquad
+ u_\sigma(x,y,z)=A(V+\epsilon W_\sigma)(\lambda x,\lambda y,\mu z).
+\]
+The absence of an axial component preserves incompressibility under
+this anisotropic scaling. Orthogonality proves the stated unit norm
+and relative defect norm. The positive nonlinear injection $I_+=-T_+$
+and its viscous cost $\nu D_+$ obey
+\[
+ \frac{I_+}{\nu D_+}
+ =\frac{A\lambda(16g_3/9)}
+        {\nu g_2(30\lambda^2+\tfrac92\mu^2)}
+ \longrightarrow\infty.
+\]
+Indeed this ratio grows as a positive constant times
+$\lambda^{1/3}/\nu$, with $\epsilon$ fixed. Choose it larger than
+$C+1$ and apply \eqref{eq:kinetictransfer}. For $\sigma=-1$ the
+injection changes sign while the dissipation is unchanged. These are
+jets of actual local unforced solutions from Schwartz data; no imposed
+strain or truncated source is used. Continuity also gives a nonzero
+initial interval with the strict inequality, but no uniform length
+of that interval is asserted.
+
+Finally take $\tau_\lambda=\lambda^{-2}$. The mean has only an
+azimuthal component, whose $(a,b)$ derivative is bounded by
+\[
+ C_{ab}\lambda^{4/3+a+(2/3)b}
+ =C_{ab}\tau_\lambda^{-1/2-1/6-a/2-(1/2-1/6)b}.
+\]
+The constants are uniform for $0<\epsilon\leq1$ because
+$C_\epsilon\geq2g_2$. This proves the asserted spatial bounds.
+\end{proof}
+
+The example refutes zero-allowance viscous absorption of kinetic
+mean--defect transfer, even with small relative defect and the stated
+spatial geometry. It does not refute a data-dependent history allowance,
+control of repeated interactions, or Theorems~\ref{thm:main}
+and~\ref{thm:amplitude}. In particular these transfers are kinetic
+energy transfers, not vorticity stretching integrals.
+
+There is also an exact circulation test. The initial mean circulation
+$\Gamma=r v_\theta$ has its global maximum at $r=1/\lambda$, $z=0$,
+with value $2A/(e\lambda)$. For the base Gaussian defect,
+\[
+ rF_\theta=4\sigma r^4(2r^2-3)e^{-2\rho},
+ \qquad F=-\PP[(W_\sigma\cdot\nabla)W_\sigma].
+\]
+At that maximum the radial and axial diffusion of the base circulation
+are $-8/e$ and $-4/e$. Consequently the actual initial mean equation gives
+\begin{equation}\label{eq:gaussiancirculation}
+ \Gamma_t(1/\lambda,0)
+ =-\frac{4\nu A}{e\lambda}(2\lambda^2+\mu^2)
+                         -\frac{4\sigma\epsilon^2A^2}{e^2}.
+\end{equation}
+For $\sigma=-1$, choose $\lambda$ still larger so that
+$\epsilon^2 A/(\nu\lambda)>e[2+(\mu/\lambda)^2]$.
+The value at the old maximum then increases initially, and hence exceeds
+the initial global maximum. Its energy comes from the defect in
+\eqref{eq:kinetictransfer}. Thus the maximum principle for exactly
+axisymmetric circulation cannot be extended by dropping the Reynolds
+torque, even for arbitrarily small relative angular defect. This is an
+initial growth example, not repeated spin-up or singularity formation.
+
 \section{Scope of the calculation}
 
 The theorem allows an unbounded angular fluctuation, but requires its
@@ -597,9 +729,11 @@ The accompanying symbolic calculation checks the mean equation,
 cylindrical stress divergence, lifted force identity, and the
 stretching integration by parts on explicit polynomial fields with
 all six stress components nonzero. It also checks the Hardy constant
-on a symbolic power profile. Such calculations check algebra only;
-the fields are not finite-energy Navier--Stokes solutions, and the
-program does not certify the analytic proof. No statement in this
+on a symbolic power profile, and the Gaussian moments and complete
+convection work in Proposition~\ref{prop:transfer}. The polynomial fields
+are local algebra tests, whereas the Gaussian fields are finite-energy
+initial data. The program does not integrate solutions or certify the
+analytic proof. No statement in this
 note has been added as an axiom or a theorem to the Lean library.
 
 \begin{thebibliography}{9}

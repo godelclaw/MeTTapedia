@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Exact local checks for the angular-mean defect calculation.
+"""Exact checks for the angular-mean defect calculation.
 
-These polynomial fields test differential identities, not PDE solutions.
-The fields are not finite-energy whole-space data. Requires Sympy.
+The polynomial fields test local differential identities. The Gaussian
+fields are Schwartz initial data; their kinetic energy jets use the exact
+unforced equation. Neither calculation integrates a solution. Requires Sympy.
 """
 import json
 from math import factorial
@@ -144,13 +145,116 @@ bound_sq = 1/((1-2*eta)*(s.Rational(3, 2)-alpha)**2)
 require_zero(bound_sq-norm_sq-2/((3-2*alpha)**2*(2-eta-alpha)),
              'power-profile Hardy slack')
 
+# Finite-energy data: each stored vector is the polynomial multiplying
+# exp(-x^2-y^2-z^2). Rotation preserves this common Gaussian factor.
+phase = s.symbols('phase', real=True)
+
+
+def gaussian_derivative(p, j):
+    return s.diff(p, coords[j])-2*coords[j]*p
+
+
+def gaussian_planar_curl(p):
+    return s.Matrix([gaussian_derivative(p, 1),
+                     -gaussian_derivative(p, 0), 0])
+
+
+def gaussian_gradient(p):
+    return s.Matrix(3, 3, lambda i, j: gaussian_derivative(p[i], j))
+
+
+def gaussian_integral_factor(p, rate):
+    """Integral of p exp(-rate |x|^2), divided by (pi/rate)^(3/2)."""
+    rate = s.sympify(rate)
+    answer = 0
+    for powers, coefficient in s.Poly(s.expand(p), *coords).terms():
+        if any(j % 2 for j in powers):
+            continue
+        for j in powers:
+            n = j//2
+            coefficient *= (s.Rational(factorial(2*n), 4**n*factorial(n))
+                            / rate**n)
+        answer += coefficient
+    return s.factor(answer)
+
+
+gv = gaussian_planar_curl(s.Integer(1))
+gw = gaussian_planar_curl(x*x-y*y+2*phase*x*y*(x*x+y*y))
+ggv, ggw = gaussian_gradient(gv), gaussian_gradient(gw)
+require_zero(sum(gaussian_derivative(gv[i], i) for i in range(3)),
+             'Gaussian mean divergence')
+require_zero(sum(gaussian_derivative(gw[i], i) for i in range(3)),
+             'Gaussian defect divergence')
+require_zero(mean_vector(gv)-gv, 'Gaussian mean invariance')
+require_zero(mean_vector(gw), 'Gaussian zero angular mean')
+require_zero(gaussian_integral_factor(gv.dot(gw), 2),
+             'Gaussian energy orthogonality')
+require_zero(gaussian_integral_factor(gw.dot(ggw*gw), 3),
+             'Gaussian defect self-advection energy cancellation')
+gstress = mean_tensor(gw*gw.T)
+require_zero(at(gstress[0, 1])-2*phase*r**4,
+             'Gaussian radial-azimuthal stress')
+gtorque = -r*at(mean_vector(ggw*gw)[1])
+require_zero(gtorque-4*phase*r**4*(2*r**2-3),
+             'Gaussian actual mean circulation source')
+require_zero(gtorque.subs({r: 1, z: 0})+4*phase,
+             'Gaussian circulation source at its initial maximum')
+circulation = 2*r*r
+radial_derivative = lambda p: s.diff(p, r)-2*r*p
+radial_diffusion = radial_derivative(radial_derivative(circulation))
+radial_diffusion -= radial_derivative(circulation)/r
+require_zero(radial_diffusion.subs(r, 1)+8,
+             'Gaussian radial circulation diffusion at maximum')
+require_zero(((4*z*z-2)*circulation).subs({r: 1, z: 0})+4,
+             'Gaussian axial circulation diffusion at maximum')
+gtransfer = gaussian_integral_factor(gw.dot(ggv*gw), 3)
+require_zero(gtransfer+16*phase/9, 'Gaussian signed mean transfer')
+amplitude = s.symbols('amplitude', real=True)
+gfull = gv+amplitude*gw
+gfull_gradient = ggv+amplitude*ggw
+require_zero(gaussian_integral_factor(
+    (amplitude*gw).dot(gfull_gradient*gfull), 3)-amplitude**2*gtransfer,
+    'Gaussian complete convection work on the defect')
+require_zero(gaussian_integral_factor(gv.dot(gfull_gradient*gfull), 3)
+             +amplitude**2*gtransfer,
+             'Gaussian complete convection work on the mean')
+require_zero(gaussian_integral_factor(sum(ggv[i,j]*ggw[i,j]
+                                         for i in range(3) for j in range(3)),2),
+             'Gaussian gradient orthogonality')
+
+gaussian_norms = {}
+for name, field in [('mean', gv), ('defect', gw)]:
+    gradient = gaussian_gradient(field)
+    gaussian_norms[name] = [
+        gaussian_integral_factor(field.dot(field), 2),
+        gaussian_integral_factor(sum(gradient[i, j]**2
+                                    for i in range(3) for j in range(2)), 2),
+        gaussian_integral_factor(sum(gradient[i, 2]**2 for i in range(3)), 2),
+    ]
+for name, expected in [('mean', [2, 8, 2]),
+                       ('defect', [3*(2*phase**2+1)/2,
+                                   6*(3*phase**2+2), 3*(2*phase**2+1)/2])]:
+    for value, target in zip(gaussian_norms[name], expected):
+        require_zero(value-target, 'Gaussian squared norm: '+name)
+    for value in gaussian_norms[name]:
+        require_zero(value.subs(phase, 1)-value.subs(phase, -1),
+                     'Gaussian opposite-phase norms: '+name)
+
 print(json.dumps({
     'status': 'all exact residuals zero',
-    'scope': 'local polynomial identities; not Navier-Stokes solutions',
+    'scope': 'polynomial identities and Gaussian initial energy jets; no evolution',
     'mean_velocity': [str(e) for e in v],
     'lifted_force': str(s.cancel(g)),
     'stress_entries_nonzero': sum(e != 0 for e in [a, b, cc, d, e, f]),
     'arbitrary_stress_identity': 'checked by symbolic differentiation',
     'stretching_difference_nonzero': s.expand(delta) != 0,
     'hardy_profile_conditions': '0<=eta<1/2 and alpha<3/2',
+    'gaussian_norms_divided_by_pi_over_2_to_3_over_2': {
+        name: [str(value) for value in values]
+        for name, values in gaussian_norms.items()
+    },
+    'gaussian_norm_order': ['velocity', 'horizontal_gradient', 'axial_gradient'],
+    'gaussian_transfer_divided_by_pi_over_3_to_3_over_2': str(gtransfer),
+    'gaussian_mean_circulation_source_polynomial': str(s.factor(gtorque)),
+    'gaussian_circulation_diffusion_at_max_divided_by_exp_minus_1': [-8, -4],
 }, indent=2))

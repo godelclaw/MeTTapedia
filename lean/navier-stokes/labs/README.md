@@ -297,3 +297,58 @@ nonlocal pressure kernel. A power bound `||w(-τ)||∞ ≤ C τ^(-β)` therefore
 suffices for `β < 1/2-h/4`, without a separate gradient bound. This is an
 analytic smoothing argument, not a result checked by the symbolic script;
 the amplitude condition itself remains unproved for arbitrary data.
+
+### Finite-energy angular transfer
+
+The same script checks a separate pair of Schwartz initial data. Let
+`ρ=x²+y²+z²`, `r²=x²+y²`, `σ=±1`, and set
+
+```text
+V  = curl(exp(-ρ) e_z),
+Wσ = curl((x²-y²+2σxy r²) exp(-ρ) e_z),
+P V=V,             P Wσ=0.
+```
+
+Writing `g_a=(π/a)^(3/2)`, their exact integrals are
+
+```text
+||V||₂² = 2 g₂,               ||Wσ||₂² = (9/2) g₂,
+||∇h Wσ||₂² = 30 g₂,          ||∂z Wσ||₂² = (9/2) g₂,
+∫ Wσ·(Wσ·∇)V = -σ (16/9) g₃.
+```
+
+These are Gaussian moments, evaluated exactly without spatial truncation.
+The script also checks the work of the complete convection term for
+`u=V+εWσ`. For the actual unforced equation, pressure does no work on the
+divergence-free defect, and
+
+```text
+(1/2) d_t ||w||₂² + ν||∇w||₂² = -∫ w·(w·∇)v.
+```
+
+Thus opposite phases have identical defect energy and dissipation but
+opposite nonlinear transfer. The paper normalizes the anisotropically
+concentrated data `A(V+εWσ)(λx,λy,λ^(2/3)z)` to unit squared velocity norm.
+Their relative defect norm is `3ε/2`; the positive transfer divided by
+its viscous cost grows like `λ^(1/3)/ν`. The mean also obeys the paper's
+spatial geometry bounds at the initial slice with `h=1/6`, uniformly in
+the concentration parameter. Persistence of those bounds through a
+fixed horizon is not asserted.
+
+This excludes automatic viscous damping from small relative angular defect.
+It concerns kinetic transfer, not vorticity stretching, and does not exclude
+a data-dependent history allowance or establish a singular solution. The
+script checks the initial energy identities, not a time interval of evolution.
+
+It also checks the actual mean circulation source
+`r Fθ = 4σ r⁴(2r²-3) exp(-2ρ)`. For the scaled data, at the initial
+circulation maximum `r=1/λ, z=0`,
+
+```text
+Γ_t = -4νA(2λ²+μ²)/(eλ) - 4σ ε²A²/e²,       μ=λ^(2/3).
+```
+
+The phase `σ=-1` therefore increases the maximum when
+`ε²A/(νλ) > e[2+(μ/λ)²]`, with energy transferred out of the defect.
+This is an initial growth example in the actual unforced equation, not
+a demonstration of repeated spin-up or a uniform evolution time window.
