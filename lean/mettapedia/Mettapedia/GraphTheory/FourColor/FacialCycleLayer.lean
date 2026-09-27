@@ -25,7 +25,9 @@ set_option backward.isDefEq.respectTransparency false
 
 variable {V : Type*} [Fintype V] [DecidableEq V]
 variable {G : SimpleGraph V} [DecidableRel G.Adj] [G.LocallyFinite]
-variable {k : ℕ} [NeZero k] (C : Cycle G k) (hk : 2 ≤ k)
+section Frame
+
+variable {k : ℕ} [NeZero k] (C : Frame G k) (hk : 2 ≤ k)
   (hG : G.IsRegularOfDegree 3) (data : Data G)
 
 local instance : Fintype G.edgeSet := SimpleGraph.fintypeEdgeSet G
@@ -37,13 +39,13 @@ omit [Fintype V] [DecidableRel G.Adj] in
 theorem star_forward_symm (v : Vtx k) :
     (C.star hk hG v 1).symm = C.star hk hG (next k v) 2 := by
   apply SimpleGraph.Dart.ext
-  simp [Cycle.star, prev_next]
+  simp [Frame.star, prev_next]
 
 omit [Fintype V] [DecidableRel G.Adj] in
 theorem star_backward_symm (v : Vtx k) :
     (C.star hk hG v 2).symm = C.star hk hG (prev k v) 1 := by
   apply SimpleGraph.Dart.ext
-  simp [Cycle.star, next_prev]
+  simp [Frame.star, next_prev]
 
 variable (R : Finset (OrbitFace (RS data)))
 
@@ -205,7 +207,7 @@ theorem rotation_at (hC : Cubic3 (RS data)) (v : Vtx k) :
   fin_cases j
   · have ha := three_cycle hC (a := C.star hk hG v 1)
       (b := C.star hk hG v 0) (c := C.star hk hG v 2)
-      (by simp only [RS, Data.toRotationSystem_vertOf, Cycle.star_fst])
+      (by simp only [RS, Data.toRotationSystem_vertOf, Frame.star_fst])
       h12.symm h02.symm hj.symm
     right
     refine ⟨?_, ha.1, hj.symm, ha.2⟩
@@ -218,7 +220,7 @@ theorem rotation_at (hC : Cubic3 (RS data)) (v : Vtx k) :
   · exact (hC.moves _ hj.symm).elim
   · have ha := three_cycle hC (a := C.star hk hG v 1)
       (b := C.star hk hG v 2) (c := C.star hk hG v 0)
-      (by simp only [RS, Data.toRotationSystem_vertOf, Cycle.star_fst])
+      (by simp only [RS, Data.toRotationSystem_vertOf, Frame.star_fst])
       h01 h02 hj.symm
     left
     refine ⟨?_, ha.2, hj.symm, ha.1⟩
@@ -283,6 +285,22 @@ theorem port_not_interior (hC : Cubic3 (RS data)) (v : Vtx k)
   have hh := (h.port_faces hC v).2.mp (hi (C.star hk hG v 0).symm rfl)
   omega
 
+end BoundsFaces
+end Frame
+
+section Induced
+
+variable {k : ℕ} [NeZero k] {C : Cycle G k} {hk : 2 ≤ k}
+  {hG : G.IsRegularOfDegree 3} {data : Data G}
+local instance : Fintype G.edgeSet := SimpleGraph.fintypeEdgeSet G
+local instance : DecidableEq G.edgeSet := Subtype.instDecidableEq
+variable {R : Finset (OrbitFace (RS data))}
+
+namespace BoundsFaces
+
+variable (h : BoundsFaces C.toFrame hk hG data R)
+include h
+
 variable (ambient : BridgelessSphericalCubicMapData (RS data))
   (hR : ((orbitFaceDualGraph data).induce (R : Set _)).Connected)
   (hRc : ((orbitFaceDualGraph data).induce (R : Set _)ᶜ).Connected)
@@ -344,7 +362,7 @@ theorem interior_or_cycle_iff_touched (v : V) :
 
 /-- Alternating retained degrees derive every input/output attachment
 condition. The old region is the actual interior of the selected faces. -/
-theorem attachment (ha : AlternatingDegrees C data R) :
+theorem attachment (ha : AlternatingDegrees C.toFrame data R) :
     C.Attachment (Interior data R) := by
   have hC := cubic3_of (RS data) ambient.spherical.cubic ambient.vertexRotationCyclic
   have hlow (i : Fin k) : ∀ w, G.Adj (C.vertex (.inr i)) w → ¬ Interior data R w := by
@@ -375,22 +393,23 @@ theorem attachment (ha : AlternatingDegrees C data R) :
     · exact ⟨i, hv⟩
     · exact (hlow i u (hv ▸ huw.symm) hu).elim
 
-def toSlab (ha : AlternatingDegrees C data R) :
+def toSlab (ha : AlternatingDegrees C.toFrame data R) :
     TubeSlab.ZigzagSlab (RS data) k (Interior data R) :=
   C.toSlab hk hG data (h.attachment ambient hR hRc ha)
 
-theorem toSlab_inner_iff (ha : AlternatingDegrees C data R) (v : V) :
+theorem toSlab_inner_iff (ha : AlternatingDegrees C.toFrame data R) (v : V) :
     (h.toSlab ambient hR hRc ha).inner' v ↔
       v ∈ touched (RS data) (edges (RS data) R) :=
   h.interior_or_cycle_iff_touched ambient hR hRc v
 
 /-- Exact witness composition for the facially recognized ring, with the
 interior side and all ports derived from the selected region. -/
-def colouringEquiv (ha : AlternatingDegrees C data R) :
+def colouringEquiv (ha : AlternatingDegrees C.toFrame data R) :
     TubeSlab.SideColoring (RS data) (h.toSlab ambient hR hRc ha).inner' ≃
       (h.toSlab ambient hR hRc ha).CompatibleColorings :=
   (h.toSlab ambient hR hRc ha).colouringEquiv
 
 end BoundsFaces
+end Induced
 end
 end Mettapedia.GraphTheory.FourColor.FacialCycleLayer

@@ -97,8 +97,8 @@ theorem coordinate_alpha (d : AllDart k) :
 
 variable {C hk hG data}
 variable {R : Finset (GoertzelV24FaceOrbitIncidence.OrbitFace (RS data))}
-variable (h : BoundsFaces C hk hG data R) (hC : Cubic3 (RS data))
-  (ha : AlternatingDegrees C data R)
+variable (h : BoundsFaces C.toFrame hk hG data R) (hC : Cubic3 (RS data))
+  (ha : AlternatingDegrees C.toFrame data R)
 
 include h hC ha
 

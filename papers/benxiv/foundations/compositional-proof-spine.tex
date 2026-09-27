@@ -18613,6 +18613,59 @@ flatness, supply a succession of coherently attached rows in every
 large map, or establish general strict-reduction supply. Those remain
 geometric obligations of the compositional programme.
 
+\subsection{Short incident faces force chordlessness}
+
+The induced-cycle requirement in the preceding construction can now be
+proved from local facial geometry. Start with only an injective cyclic
+row of $2k$ vertices, $k\geq2$, and its consecutive graph edges. An
+ambient chord is allowed in this input. Retain the oriented facial-side
+condition and alternating retained degrees, and assume that the face
+orbit at each outgoing third dart has length five or six.
+
+For either oriented port family, reverse the indices on the output side
+and write $p_i$ for its actual port darts. The ambient edge reversal is
+$\alpha$ and the ambient face permutation is $\phi$. The derived vertex
+rotations give actual intermediate darts $q_i,r_i$ with
+\[
+ \phi\alpha p_i=q_i,\qquad \phi q_i=r_i,\qquad
+ \phi r_i=p_{i+1}.
+\]
+No port dart is a $q$ dart. If $\alpha p_i=p_j$, then
+$\phi^3p_j=p_{i+1}$. A five-step return would identify $p_{i+1}$ with
+$q_{j-1}$, which is impossible. A six-step return instead forces
+$\alpha p_{i+1}=p_{j-1}$. Thus the oriented cyclic gap decreases by two.
+Gap zero contradicts fixed-point-free edge reversal; gap one gives a
+three-step facial return, excluded by the exact face-orbit lengths.
+This argument is uniform in $k$.
+\Sverified{Mettapedia.GraphTheory.FourColor.CyclicPortChordExclusion.Arcs.not_five_of_chord}
+\Sverified{Mettapedia.GraphTheory.FourColor.CyclicPortChordExclusion.Arcs.shorter_chord}
+\Sverified{Mettapedia.GraphTheory.FourColor.CyclicPortChordExclusion.Arcs.no_chord}
+
+The two different port families cannot be joined to each other, since
+both incident faces of an input port are selected and both incident
+faces of an output port are unselected. Every third edge consequently
+leaves the row. This constructs a chordless cycle and hence the previous
+physical slab, exact colouring-witness bijection and open-face transport.
+For the slab construction the connected facial shores and bridgeless
+spherical ambient class are still required; the local chord exclusion
+itself needs neither sphericality nor strict-interior connectedness.
+\Sverified{Mettapedia.GraphTheory.FourColor.FacialCycleChord.alpha_port_ne_port}
+\Sverified{Mettapedia.GraphTheory.FourColor.FacialCycleChord.port_off_row}
+\Sverified{Mettapedia.GraphTheory.FourColor.FacialCycleChord.toCycle}
+\Sverified{Mettapedia.GraphTheory.FourColor.FacialCycleChord.toSlab}
+\Sverified{Mettapedia.GraphTheory.FourColor.FacialCycleChord.colouringEquiv}
+\Sverified{Mettapedia.GraphTheory.FourColor.FacialCycleChord.face_conjugate}
+
+There is also a local alternative without the upper face-size bound:
+if all port faces have length at least five, any chord forces a port
+face of length at least seven.
+\Sverified{Mettapedia.GraphTheory.FourColor.FacialCycleChord.chord_forces_long_face}
+
+This removes the chordlessness premise when the row's port faces are
+pentagons or hexagons. It does not supply alternating contours or compatible successive layers
+in arbitrary large maps. Those availability and strict-reduction
+obligations remain part of the compositional programme.
+
 \subsection{Actual contour patches and their compositional curvature}
 
 Let $R$ be a set of quotient faces of a graph-backed bridgeless spherical

@@ -20,6 +20,7 @@ import Mettapedia.GraphTheory.FourColor.ZigzagTubeStructural
 import Mettapedia.GraphTheory.FourColor.ZigzagTubeReplacement
 import Mettapedia.GraphTheory.FourColor.InducedCycleLayer
 import Mettapedia.GraphTheory.FourColor.FacialCycleTangle
+import Mettapedia.GraphTheory.FourColor.FacialCycleChord
 import Mettapedia.GraphTheory.FourColor.BufferedFrontierConstruction
 import Mettapedia.GraphTheory.FourColor.SourceConstructionGSLT
 import Mettapedia.GraphTheory.FourColor.OpenTangleWitnessComposition
@@ -112,9 +113,14 @@ and the ambient ring rotation. The interior is the original vertices whose
 incident faces are all selected; the interior plus the row is exactly the
 vertices touched by the selected faces. Opening the graph on the row gives
 an equivalence with literal ring darts that conjugates the complete open-face
-permutation. This proves geometric recognition for that boundary pattern;
-occurrence of such a pattern, consecutive-layer compatibility and general
-strict-reduction supply remain open.
+permutation. This proves geometric recognition for that boundary pattern.
+For an alternating facial cycle, chordlessness is now derived if every port
+face has length five or six. Three-step facial arcs propagate any hypothetical
+chord to a shorter cyclic gap, ending at a fixed edge reversal or a three-step
+face. This constructs the induced cycle and consumes the same physical slab
+and open-face transport results. More generally, when port faces have length
+at least five, a chord forces a port face of length at least seven. Alternation,
+consecutive-layer compatibility and general strict-reduction supply remain open.
 Every connected face region with connected complement now constructs a
 literal plane patch on its retained edges. The outer facial orbit is exactly
 the complete original mixed-vertex contour; its inner faces correspond
