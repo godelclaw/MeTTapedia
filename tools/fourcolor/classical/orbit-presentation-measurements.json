@@ -3,22 +3,64 @@
   "lean_version": "4.34.0-rc2",
   "generated": [
     {
+      "module": "MettapediaFourColor.Orbit10.Checks1",
+      "original_module": "FourColor.Present10Chk1",
+      "original_sha256": "fecd9cf21fccb52943f6f0fb71794d2847a547222c7a1a1516faa5f958727b71",
+      "source_sha256": "4f9941ca3fc666923fe386590d36bd9f73c362ca71ad813a9b7995942816a01a"
+    },
+    {
       "module": "MettapediaFourColor.Orbit10.Checks",
       "original_module": "FourColor.Present10Chk2",
       "original_sha256": "cd4be95af1527bf3edaff3d7a06df9db645d0667cb0aafda324c20451833bf1e",
-      "source_sha256": "ed145a1ab848868d7d9afa873eb74729883f669ea2fdbcf76b172a4e18ea5199"
+      "source_sha256": "2008f2009e593aa65ead867ff734f331177418e8b3ec38b2d22c8b4c2b64cf82"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Checks4",
       "original_module": "FourColor.Present10Chk4",
       "original_sha256": "b648a962c1f224bc4a5a34e898c7b7486a2058e6e09f967e65f1cdaae369dd59",
-      "source_sha256": "520b0b6f28ecc7c38c71e0752b7c443f6117701239efcfb9dad609da0beae8d5"
+      "source_sha256": "4e27ddf9986d218049b65e84982bbfc4c3828079e55493d3e61504359c2020af"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit10.Checks13",
+      "original_module": "FourColor.Present10Chk13",
+      "original_sha256": "ad3543d0f6e63626c515a7bb414c6df9d7b58f322a350ff227a3207b48725093",
+      "source_sha256": "b4d16940f612c9811708ed3187d7eb43356e0b8598d449e6fad24b95eaef7785"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit10.Checks18",
+      "original_module": "FourColor.Present10Chk18",
+      "original_sha256": "0d75814c007b3dce6e5325b97806715caa943f20050f0c1c8d88f945e56e00d4",
+      "source_sha256": "2df86542d7e6f90c2cb84e3b704e9f3d6658bfdce5f3b2e5988f683cad83ee60"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit10.Checks20",
+      "original_module": "FourColor.Present10Chk20",
+      "original_sha256": "f5b4634690cfaac126b69279c37bf3b6d7d0783d20883e0f9b6124b797afcaac",
+      "source_sha256": "c5eedc5236e163869b5180ad5ce4952ff44970b5a8750388968b46f55c17d61f"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit10.Checks22",
+      "original_module": "FourColor.Present10Chk22",
+      "original_sha256": "9de780d824fa015a6b38de8144cecaa13f4dedb811b0ac08d26092f2b2178e94",
+      "source_sha256": "88d72ac5d7d22dc7673e4cbde16cf09712fcd115f69ab7a8eeccf571075d0ce5"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit10.Checks23",
+      "original_module": "FourColor.Present10Chk23",
+      "original_sha256": "8bde147b1ae7d00b9039daefcfd90c94dc0bca738a1ace436bb8dea941336794",
+      "source_sha256": "12218e9b5122eb21b3e27f5ca7717b7634469e2bd076da2a68ddeeb9d024e8f0"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit10.Checks24",
+      "original_module": "FourColor.Present10Chk24",
+      "original_sha256": "14ffdfb639df0520d142147213a027f9329b866e96250cb2b7b21e5ce6e21852",
+      "source_sha256": "b85f42bb130768462b7533579dfd4bf48e61cc9c18bd41152ca6a6d1a15f2901"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Hub1",
       "original_module": "FourColor.Present10Hub1",
       "original_sha256": "05ae99010fc20859b7dec29a3bcbc290eb1996cce4d3c91292e70701d864072a",
-      "source_sha256": "c6d497e34ef5cb732e4a947cb1fa88d8f94c2a309d6c23809f8d7bab872bac97"
+      "source_sha256": "e93c67fb916fc5687e1fd78b163ca115a9fca6ce158ee631c6d7adf96eb88dfc"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Hub2",
@@ -30,19 +72,19 @@
       "module": "MettapediaFourColor.Orbit10.Step1",
       "original_module": "FourColor.Present10Step1",
       "original_sha256": "9f020042fb99b7f10bc82f6d6f92b8e24e20f7750fd64361b3b14cd2a8e2397f",
-      "source_sha256": "3718394f22aeeb4406091e550bceb1bc331fed2b5381ec707da4b51ce8a3fed4"
+      "source_sha256": "5162ffc26b46e569ec6c87c68091d9eaf219d0743e11947fd25935f5b17c589a"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Step2",
       "original_module": "FourColor.Present10Step2",
       "original_sha256": "8e00fece639326196fe1e4879fb935884be4f0bd4a8f7327ad74279cfd70fac3",
-      "source_sha256": "a5fef6f2137900ed3a14849a99933caa260ea5cb05c6fd1beed6542a75ff0c6f"
+      "source_sha256": "11bbfb807f445f8550aa66f8ca7b39cee978be43771e691d62b7fd76cf898bfe"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Step3",
       "original_module": "FourColor.Present10Step3",
       "original_sha256": "418ca0b2d4c6b8594263da8aee8c029a83f5e870b104a53b636d50331b441e1b",
-      "source_sha256": "a0d9d3b6509d92f26e50faeb788ca7a8b57c3a3a023e565b8d9c473cd9d1b658"
+      "source_sha256": "2ae58c6f01ee76eb45aa135d9a7822fbca29a647fbe558a51e02ae6a1ca4d633"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Coverage",
@@ -56,7 +98,11 @@
     },
     {
       "module": "MettapediaFourColor.OrbitAssemblyAudit",
-      "source_sha256": "6fbfd8dbfb18f5f07062a295a5eb9c8faccd6c3a3453bb2435abd72590421df8"
+      "source_sha256": "ff43a5edc98c447239178ab10e82a6005b62b01588bdfb5e21acb4d529c91d3d"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit10.SemanticSharingAudit",
+      "source_sha256": "ec7b548c913bf0c696d44d812e50596b6dc8eecdcccbc963aaae02eeb088034d"
     }
   ],
   "compiler_options": [
@@ -69,66 +115,122 @@
   "native_code_generation": false,
   "modules": [
     {
-      "module": "MettapediaFourColor.Orbit10.Checks",
-      "source_sha256": "ed145a1ab848868d7d9afa873eb74729883f669ea2fdbcf76b172a4e18ea5199",
+      "module": "MettapediaFourColor.Orbit10.Checks1",
+      "source_sha256": "4f9941ca3fc666923fe386590d36bd9f73c362ca71ad813a9b7995942816a01a",
       "exit_code": 0,
-      "frontend_wall_seconds": 27.266,
-      "olean_bytes": 220360,
-      "olean_sha256": "174e0adfc130ea4127e49963c06ecd945bb1db7a11c2e091470be98fe5f50d8c"
+      "frontend_wall_seconds": 18.394,
+      "olean_bytes": 258632,
+      "olean_sha256": "370d85d1ecd64efa306704ebe1bacabc125a1f608a139a00d958307652a6c82f"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit10.Checks",
+      "source_sha256": "2008f2009e593aa65ead867ff734f331177418e8b3ec38b2d22c8b4c2b64cf82",
+      "exit_code": 0,
+      "frontend_wall_seconds": 28.743,
+      "olean_bytes": 236360,
+      "olean_sha256": "e08ab75740b06747288ff78489425ebfc390873c4ed309e935ae71f58d4ae36b"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Checks4",
-      "source_sha256": "520b0b6f28ecc7c38c71e0752b7c443f6117701239efcfb9dad609da0beae8d5",
+      "source_sha256": "4e27ddf9986d218049b65e84982bbfc4c3828079e55493d3e61504359c2020af",
       "exit_code": 0,
-      "frontend_wall_seconds": 30.995,
-      "olean_bytes": 226112,
-      "olean_sha256": "e5e241c5081ec9619d4d5238761ddf5f16942c9347dafde30c6f4f78abba26d9"
+      "frontend_wall_seconds": 29.553,
+      "olean_bytes": 242672,
+      "olean_sha256": "f2ed8ad48ef20ec4159ae37c8ea0fdd1ddaaec764f7c59bcae3df1e38c455599"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit10.Checks13",
+      "source_sha256": "b4d16940f612c9811708ed3187d7eb43356e0b8598d449e6fad24b95eaef7785",
+      "exit_code": 0,
+      "frontend_wall_seconds": 30.963,
+      "olean_bytes": 246760,
+      "olean_sha256": "0d1b7d24f33bc68d1bf9c454978dee4050339e532cb59bcf03ec169d2e17b584"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit10.Checks18",
+      "source_sha256": "2df86542d7e6f90c2cb84e3b704e9f3d6658bfdce5f3b2e5988f683cad83ee60",
+      "exit_code": 0,
+      "frontend_wall_seconds": 39.336,
+      "olean_bytes": 249408,
+      "olean_sha256": "590f2b169cbc05b5f8c33a59aba11bf7308feb9185a996ed6ed43327e3d29b1f"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit10.Checks20",
+      "source_sha256": "c5eedc5236e163869b5180ad5ce4952ff44970b5a8750388968b46f55c17d61f",
+      "exit_code": 0,
+      "frontend_wall_seconds": 29.101,
+      "olean_bytes": 265040,
+      "olean_sha256": "d22382233492992fa58727ab0c13504459b32256ab95fb4bdcb61526f5e86b70"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit10.Checks22",
+      "source_sha256": "88d72ac5d7d22dc7673e4cbde16cf09712fcd115f69ab7a8eeccf571075d0ce5",
+      "exit_code": 0,
+      "frontend_wall_seconds": 36.1,
+      "olean_bytes": 273064,
+      "olean_sha256": "9d8873848d2e21ff72f249e2ddb59f9ced1954016de21c6d8307cbcabbff7fe7"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit10.Checks23",
+      "source_sha256": "12218e9b5122eb21b3e27f5ca7717b7634469e2bd076da2a68ddeeb9d024e8f0",
+      "exit_code": 0,
+      "frontend_wall_seconds": 32.822,
+      "olean_bytes": 245264,
+      "olean_sha256": "45bf71f2ec38aabd3b2a8f89e7a206e9f961e15cd43fd3f964656147716de349"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit10.Checks24",
+      "source_sha256": "b85f42bb130768462b7533579dfd4bf48e61cc9c18bd41152ca6a6d1a15f2901",
+      "exit_code": 0,
+      "frontend_wall_seconds": 26.97,
+      "olean_bytes": 208832,
+      "olean_sha256": "3eaf1cb0952bb03792431ab14d1702896e1db3cf67367b64dc9534281bebf74d"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Hub1",
-      "source_sha256": "c6d497e34ef5cb732e4a947cb1fa88d8f94c2a309d6c23809f8d7bab872bac97",
+      "source_sha256": "e93c67fb916fc5687e1fd78b163ca115a9fca6ce158ee631c6d7adf96eb88dfc",
       "exit_code": 0,
-      "frontend_wall_seconds": 2.535,
-      "olean_bytes": 136080,
-      "olean_sha256": "2725217d808de48679d19394ffeda958623d76ae1aef3874831800ca7832489f"
+      "frontend_wall_seconds": 2.376,
+      "olean_bytes": 136216,
+      "olean_sha256": "7775bd32ba645ff5b2e4e61886ad9eb6ba0cd3494305fd0728253575299d93f9"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Hub2",
       "source_sha256": "1aa63b7954ccc05ed505fdf5f6afeb0825149c68bb046b84075fc9d39561a6fa",
       "exit_code": 0,
-      "frontend_wall_seconds": 2.512,
+      "frontend_wall_seconds": 2.356,
       "olean_bytes": 135680,
-      "olean_sha256": "ae70bbaa204f4a7e62548e7fd9b683b88a08a8ff8184cf78db021b5e051aff76"
+      "olean_sha256": "1966429dccf51a4660295a2743b28aa384dee63d78f953ed762c0b09f5107641"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Step1",
-      "source_sha256": "3718394f22aeeb4406091e550bceb1bc331fed2b5381ec707da4b51ce8a3fed4",
+      "source_sha256": "5162ffc26b46e569ec6c87c68091d9eaf219d0743e11947fd25935f5b17c589a",
       "exit_code": 0,
-      "frontend_wall_seconds": 4.981,
-      "olean_bytes": 490584,
-      "olean_sha256": "f8ef1b1d68564b2ad7929b53f16e96342bad82a46b2832edb23f0b318198aaf2"
+      "frontend_wall_seconds": 5.117,
+      "olean_bytes": 490776,
+      "olean_sha256": "278dedd771ddb8f9f6f026251639621629c5857da4cf18a42be7248e9f3fc1aa"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Step2",
-      "source_sha256": "a5fef6f2137900ed3a14849a99933caa260ea5cb05c6fd1beed6542a75ff0c6f",
+      "source_sha256": "11bbfb807f445f8550aa66f8ca7b39cee978be43771e691d62b7fd76cf898bfe",
       "exit_code": 0,
-      "frontend_wall_seconds": 8.548,
-      "olean_bytes": 976040,
-      "olean_sha256": "8e08d601e6cbd0e1a2d26e0cddbaa49e6535ddb5ca86a1390dcba73d1ea1e398"
+      "frontend_wall_seconds": 8.537,
+      "olean_bytes": 976280,
+      "olean_sha256": "895a6338b1e91bd11f544cf4de4e94a504338b96c00273b9ff65fe79e339d141"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Step3",
-      "source_sha256": "a0d9d3b6509d92f26e50faeb788ca7a8b57c3a3a023e565b8d9c473cd9d1b658",
+      "source_sha256": "2ae58c6f01ee76eb45aa135d9a7822fbca29a647fbe558a51e02ae6a1ca4d633",
       "exit_code": 0,
-      "frontend_wall_seconds": 5.569,
-      "olean_bytes": 552512,
-      "olean_sha256": "ed7039a85dc47c34af446ce2fb27d1838b09500bb9895a34a63da1636288651c"
+      "frontend_wall_seconds": 5.518,
+      "olean_bytes": 553008,
+      "olean_sha256": "9f512489aa06c76add9ac3b62d0637bc486130470be17924fcc33a8c4103c803"
     },
     {
       "module": "MettapediaFourColor.Orbit10.Coverage",
       "source_sha256": "bf273573d436e77cbab9effbbd05fe27dd124f0f658b7c08990b81cfe814269b",
       "exit_code": 0,
-      "frontend_wall_seconds": 1.902,
+      "frontend_wall_seconds": 2.031,
       "olean_bytes": 22664,
       "olean_sha256": "2fb13e0dd2309622d34f9bdd3de702d52062aaf6d83f7fcf405cb030904e29a5"
     },
@@ -136,20 +238,36 @@
       "module": "MettapediaFourColor.OrbitAssembly",
       "source_sha256": "eb3b787640e6f1bb28954d0b7f75f36583c4eef4fcb031cf17ac845db8f7a99d",
       "exit_code": 0,
-      "frontend_wall_seconds": 3.655,
+      "frontend_wall_seconds": 4.025,
       "olean_bytes": 17600,
       "olean_sha256": "3e54bd39c30b0c4887e98ce0007cb00d78d9a14d054ce535c217a0f9661da76d"
     },
     {
       "module": "MettapediaFourColor.OrbitAssemblyAudit",
-      "source_sha256": "6fbfd8dbfb18f5f07062a295a5eb9c8faccd6c3a3453bb2435abd72590421df8",
+      "source_sha256": "ff43a5edc98c447239178ab10e82a6005b62b01588bdfb5e21acb4d529c91d3d",
       "exit_code": 0,
-      "frontend_wall_seconds": 5.643,
+      "frontend_wall_seconds": 5.633,
       "olean_bytes": 3624,
       "olean_sha256": "7615eabca34ba3ccfe322a0c0f53271c053d8de1849f1a0a34c20c1c939418ea"
+    },
+    {
+      "module": "MettapediaFourColor.Orbit10.SemanticSharingAudit",
+      "source_sha256": "ec7b548c913bf0c696d44d812e50596b6dc8eecdcccbc963aaae02eeb088034d",
+      "exit_code": 0,
+      "frontend_wall_seconds": 5.561,
+      "olean_bytes": 2568,
+      "olean_sha256": "3292007ea5ed54bd5a4d4334f562ef43c8191c6c4d95709fc2157656f9cef641"
     }
   ],
   "original_modules": [
+    {
+      "module": "FourColor.Present10Chk1",
+      "source_sha256": "fecd9cf21fccb52943f6f0fb71794d2847a547222c7a1a1516faa5f958727b71",
+      "frontend_wall_seconds": 18.34,
+      "peak_rss_kib": 2941004,
+      "olean_bytes": 243712,
+      "finished_utc": "2026-09-27T17:12:20.360064+00:00"
+    },
     {
       "module": "FourColor.Present10Chk2",
       "source_sha256": "cd4be95af1527bf3edaff3d7a06df9db645d0667cb0aafda324c20451833bf1e",
@@ -165,6 +283,54 @@
       "peak_rss_kib": 2974688,
       "olean_bytes": 246304,
       "finished_utc": "2026-09-27T17:11:10.459069+00:00"
+    },
+    {
+      "module": "FourColor.Present10Chk13",
+      "source_sha256": "ad3543d0f6e63626c515a7bb414c6df9d7b58f322a350ff227a3207b48725093",
+      "frontend_wall_seconds": 30.24,
+      "peak_rss_kib": 3543552,
+      "olean_bytes": 236088,
+      "finished_utc": "2026-09-27T17:06:41.590109+00:00"
+    },
+    {
+      "module": "FourColor.Present10Chk18",
+      "source_sha256": "0d75814c007b3dce6e5325b97806715caa943f20050f0c1c8d88f945e56e00d4",
+      "frontend_wall_seconds": 31.62,
+      "peak_rss_kib": 3049856,
+      "olean_bytes": 234248,
+      "finished_utc": "2026-09-27T17:06:02.901930+00:00"
+    },
+    {
+      "module": "FourColor.Present10Chk20",
+      "source_sha256": "f5b4634690cfaac126b69279c37bf3b6d7d0783d20883e0f9b6124b797afcaac",
+      "frontend_wall_seconds": 25.05,
+      "peak_rss_kib": 2742872,
+      "olean_bytes": 243056,
+      "finished_utc": "2026-09-27T17:10:26.702009+00:00"
+    },
+    {
+      "module": "FourColor.Present10Chk22",
+      "source_sha256": "9de780d824fa015a6b38de8144cecaa13f4dedb811b0ac08d26092f2b2178e94",
+      "frontend_wall_seconds": 31.78,
+      "peak_rss_kib": 3057800,
+      "olean_bytes": 246256,
+      "finished_utc": "2026-09-27T17:05:22.978933+00:00"
+    },
+    {
+      "module": "FourColor.Present10Chk23",
+      "source_sha256": "8bde147b1ae7d00b9039daefcfd90c94dc0bca738a1ace436bb8dea941336794",
+      "frontend_wall_seconds": 28.45,
+      "peak_rss_kib": 2533784,
+      "olean_bytes": 234272,
+      "finished_utc": "2026-09-27T17:09:30.071374+00:00"
+    },
+    {
+      "module": "FourColor.Present10Chk24",
+      "source_sha256": "14ffdfb639df0520d142147213a027f9329b866e96250cb2b7b21e5ce6e21852",
+      "frontend_wall_seconds": 30.53,
+      "peak_rss_kib": 2498492,
+      "olean_bytes": 182000,
+      "finished_utc": "2026-09-27T17:07:21.853434+00:00"
     },
     {
       "module": "FourColor.Present10Hub1",
@@ -223,10 +389,10 @@
   },
   "checker_obligations": {
     "arity10_before": 2580,
-    "arity10_after": 2565,
-    "replaced": 15,
+    "arity10_after": 2501,
+    "replaced": 79,
     "counting_method": "Explicit independent hubcap checker proof obligations; not all kernel reductions during conversion.",
-    "additional_input_classification_checks": 2
+    "additional_input_classification_checks": 66
   },
   "consumption": {
     "coverage": "FourColor.Orbit10.exclude10",
@@ -242,19 +408,46 @@
       "Mettapedia.Topology.NearestRegions.isConnected_region"
     ],
     "original_replaced_checks_present": false,
-    "original_checks_replaced": 20,
+    "original_checks_replaced": 84,
     "shared_certificates": [
       "FourColor.PeriodicHubcap.fit",
       "FourColor.ReflectedHubcap.succeeds"
     ],
     "semantic_transport": [
       "FourColor.ChargeBound.reflect",
-      "FourColor.ChargeBound.successful_of_bounds"
+      "FourColor.ChargeBound.successful_of_bounds",
+      "FourColor.PairChargeBound.of_check",
+      "FourColor.Hubcap.successful",
+      "FourColor.Hubcap.charge_le"
     ],
-    "rotation_only_five_check_certificate_present": false
+    "rotation_only_five_check_certificate_present": false,
+    "semantic_hubcap_certificates": [
+      "FourColor.Orbit10.f10_28",
+      "FourColor.Orbit10.f10_69",
+      "FourColor.Orbit10.f10_89",
+      "FourColor.Orbit10.f10_144",
+      "FourColor.Orbit10.f10_233",
+      "FourColor.Orbit10.f10_253",
+      "FourColor.Orbit10.f10_620",
+      "FourColor.Orbit10.f10_822",
+      "FourColor.Orbit10.f10_835",
+      "FourColor.Orbit10.f10_917",
+      "FourColor.Orbit10.f10_924",
+      "FourColor.Orbit10.f10_951",
+      "FourColor.Orbit10.f10_998",
+      "FourColor.Orbit10.f10_1013",
+      "FourColor.Orbit10.f10_1042",
+      "FourColor.Orbit10.f10_1056",
+      "FourColor.Orbit10.f10_1082",
+      "FourColor.Orbit10.f10_1100",
+      "FourColor.Orbit10.f10_1101",
+      "FourColor.Orbit10.f10_1106",
+      "FourColor.Orbit10.f10_1110"
+    ],
+    "semantic_hubcap_dependency_audit": "All 21 combining theorems are transitive dependencies; all 64 removed checks are absent in both namespaces."
   },
   "axiom_audit": {
-    "imported_public_declarations": 11730,
+    "imported_public_declarations": 11678,
     "allowed": [
       "propext",
       "Classical.choice",
@@ -267,5 +460,245 @@
     "All 633 configurations remain.",
     "No runtime or artifact-size improvement is claimed; timings include frontend loading, elaboration, kernel checking and serialization."
   ],
-  "measurement_scope": "The ten replacement-module timings use prepared dependencies, including unchanged reference check modules and the rotation/reflection certificates. They are not a from-scratch arity-ten time. The complete reference total covers its 31 presentation modules; common lower-level dependencies were already prepared. No speed comparison is inferred from these unequal scopes."
+  "measurement_scope": "The eighteen replacement-module timings use prepared dependencies, including unchanged reference check modules and the generic semantic and symmetry lemmas. They are not a from-scratch arity-ten time. The complete reference total covers its 31 presentation modules; common lower-level dependencies were already prepared. No speed comparison is inferred from these unequal scopes.",
+  "semantic_sharing": [
+    {
+      "case": 28,
+      "part": "p10_27r",
+      "before": 10,
+      "after": 6,
+      "removed_checks": [
+        "c10_28_3",
+        "c10_28_8",
+        "c10_28_9",
+        "c10_28_10"
+      ]
+    },
+    {
+      "case": 69,
+      "part": "p10_33l",
+      "before": 10,
+      "after": 6,
+      "removed_checks": [
+        "c10_69_6",
+        "c10_69_7",
+        "c10_69_8",
+        "c10_69_9"
+      ]
+    },
+    {
+      "case": 89,
+      "part": "p10_74r",
+      "before": 9,
+      "after": 6,
+      "removed_checks": [
+        "c10_89_6",
+        "c10_89_7",
+        "c10_89_8"
+      ]
+    },
+    {
+      "case": 144,
+      "part": "p10_137l",
+      "before": 9,
+      "after": 6,
+      "removed_checks": [
+        "c10_144_6",
+        "c10_144_7",
+        "c10_144_8"
+      ]
+    },
+    {
+      "case": 233,
+      "part": "p10_96l",
+      "before": 9,
+      "after": 6,
+      "removed_checks": [
+        "c10_233_3",
+        "c10_233_7",
+        "c10_233_8"
+      ]
+    },
+    {
+      "case": 253,
+      "part": "p10_252r",
+      "before": 10,
+      "after": 5,
+      "removed_checks": [
+        "c10_253_4",
+        "c10_253_5",
+        "c10_253_6",
+        "c10_253_9",
+        "c10_253_10"
+      ]
+    },
+    {
+      "case": 620,
+      "part": "p10_592l",
+      "before": 9,
+      "after": 7,
+      "removed_checks": [
+        "c10_620_3",
+        "c10_620_8"
+      ]
+    },
+    {
+      "case": 822,
+      "part": "p10_821r",
+      "before": 9,
+      "after": 6,
+      "removed_checks": [
+        "c10_822_3",
+        "c10_822_4",
+        "c10_822_8"
+      ]
+    },
+    {
+      "case": 835,
+      "part": "p10_824l",
+      "before": 8,
+      "after": 5,
+      "removed_checks": [
+        "c10_835_3",
+        "c10_835_4",
+        "c10_835_6"
+      ]
+    },
+    {
+      "case": 917,
+      "part": "p10_845l",
+      "before": 10,
+      "after": 6,
+      "removed_checks": [
+        "c10_917_5",
+        "c10_917_6",
+        "c10_917_7",
+        "c10_917_10"
+      ]
+    },
+    {
+      "case": 924,
+      "part": "p10_920l",
+      "before": 9,
+      "after": 6,
+      "removed_checks": [
+        "c10_924_5",
+        "c10_924_6",
+        "c10_924_7"
+      ]
+    },
+    {
+      "case": 951,
+      "part": "p10_932l",
+      "before": 7,
+      "after": 6,
+      "removed_checks": [
+        "c10_951_3"
+      ]
+    },
+    {
+      "case": 998,
+      "part": "p10_969l",
+      "before": 7,
+      "after": 6,
+      "removed_checks": [
+        "c10_998_3"
+      ]
+    },
+    {
+      "case": 1013,
+      "part": "p10_1012r",
+      "before": 9,
+      "after": 7,
+      "removed_checks": [
+        "c10_1013_3",
+        "c10_1013_8"
+      ]
+    },
+    {
+      "case": 1042,
+      "part": "p10_1041r",
+      "before": 10,
+      "after": 5,
+      "removed_checks": [
+        "c10_1042_4",
+        "c10_1042_5",
+        "c10_1042_6",
+        "c10_1042_9",
+        "c10_1042_10"
+      ]
+    },
+    {
+      "case": 1056,
+      "part": "p10_1033l",
+      "before": 9,
+      "after": 5,
+      "removed_checks": [
+        "c10_1056_4",
+        "c10_1056_5",
+        "c10_1056_6",
+        "c10_1056_8"
+      ]
+    },
+    {
+      "case": 1082,
+      "part": "p10_1080l",
+      "before": 9,
+      "after": 5,
+      "removed_checks": [
+        "c10_1082_4",
+        "c10_1082_5",
+        "c10_1082_6",
+        "c10_1082_8"
+      ]
+    },
+    {
+      "case": 1100,
+      "part": "p10_1099r",
+      "before": 8,
+      "after": 6,
+      "removed_checks": [
+        "c10_1100_4",
+        "c10_1100_5"
+      ]
+    },
+    {
+      "case": 1101,
+      "part": "p10_1099l",
+      "before": 9,
+      "after": 7,
+      "removed_checks": [
+        "c10_1101_4",
+        "c10_1101_5"
+      ]
+    },
+    {
+      "case": 1106,
+      "part": "p10_1104l",
+      "before": 9,
+      "after": 6,
+      "removed_checks": [
+        "c10_1106_4",
+        "c10_1106_5",
+        "c10_1106_8"
+      ]
+    },
+    {
+      "case": 1110,
+      "part": "p10_1095l",
+      "before": 9,
+      "after": 6,
+      "removed_checks": [
+        "c10_1110_3",
+        "c10_1110_4",
+        "c10_1110_8"
+      ]
+    }
+  ],
+  "replacement_build": {
+    "modules": 18,
+    "summed_frontend_wall_seconds": 313.136,
+    "build_monitor_max_lean_rss_mib": 2906,
+    "memory_scope": "Largest Lean RSS sampled by the build monitor across this gate, not a per-module maximum."
+  }
 }

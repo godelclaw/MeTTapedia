@@ -4,4 +4,5 @@ import MettapediaFourColor.GraphColoringBridge
 import MettapediaFourColor.PeriodicHubcap
 import MettapediaFourColor.HalfTurnHubcap
 import MettapediaFourColor.ReflectedHubcap
+import MettapediaFourColor.HubcapCharges
 import MettapediaFourColor.PlaneDrawing

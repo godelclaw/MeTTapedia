@@ -156,6 +156,7 @@ reference's MIT notice and Gonthier/Werner attribution.
 | `HalfTurnHubcap` | Five representatives close `f10_242` by the same orbit lemma, using its period-five boundary |
 | `ChargeBound` | Checker results become semantic charge bounds, transport through reflection, and compose around a hub |
 | `ReflectedHubcap` | Three representatives close the same `f10_242` part, combining rotation and semantic reflection |
+| `HubcapCharges` | Arbitrary integer charges obey the weighted-cover inequality; semantic single-edge and paired-edge bounds assemble a successful hubcap |
 | `NearestRegions` | Compact sites with connected exclusive cores have connected strict nearest regions in any real normed space |
 | `CompactPlaneMap` | A two-site contact is non-corner map adjacency, and map colours transfer to graph colours |
 | `PlaneDrawing` | Actual noncrossing injective paths construct all the compact-site hypotheses, including isolated vertices |
@@ -241,7 +242,7 @@ python3 tools/fourcolor/classical/replay_adapters.py \
 ```
 
 The script checks the reference revision and common toolchain, compiles the
-thirteen adapter modules and the package root without native C emission, and runs
+seventeen adapter and audit modules and the package root without native C emission, and runs
 the axiom audit. It records source hashes, exit statuses and wall times. Its
 default output is a dedicated directory; the package target instead writes the
 proof artifacts to the package's ordinary build directory. It does not generate
@@ -285,10 +286,18 @@ semantic certificate directly, without importing `HalfTurnHubcap` or
 asserting that the Boolean checker is reflection invariant. The current
 measurements are in `reflected-hubcap-measurements.json`.
 
-Both replacements are consumed by the complete arity-ten presentation and
-the conditional `OrbitAssembly` endpoint. Its 2,580 explicit hubcap checker
-obligations become 2,565, with two separate finite checks classifying the
-boundary inputs. These are counts of independent checker proof obligations, not
+`HubcapCharges` generalizes the reference's weighted-cover argument to
+arbitrary integer charges. Single-edge and paired-edge semantic bounds can
+therefore be combined regardless of whether they came directly from the
+checker or through transport. The reference's cover data and split trees
+remain the same. `semantic_hubcaps.py` applies this theorem to 21 further
+arity-ten hubcaps: 188 independent checks become 124, with a kernel-checked
+part identity for each of the 64 replacements.
+
+All these replacements are consumed by the complete arity-ten presentation
+and the conditional `OrbitAssembly` endpoint. Its 2,580 explicit hubcap checker
+obligations become 2,501, with 66 separate finite checks classifying or
+identifying boundary inputs. These are counts of independent checker proof obligations, not
 all reductions performed by the kernel. All 633 configurations remain.
 An unconditional assembly with every catalogue certificate and all seven
 presentations is still pending, so that full replay is credited no saving yet.
@@ -302,16 +311,22 @@ example does not establish a runtime or artifact-size improvement. The new
 generic proof has overhead; the measured result is the reduction in independent
 discharging computations and its checked local consumer.
 
-`orbit_presentation.py` reconstructs the arity-ten coverage proof from eight
-hashed reference files. It changes import names and namespaces, removes the
+`orbit_presentation.py` reconstructs fifteen modules of the arity-ten coverage
+proof, checking exact hashes for all input checker sources and definitions.
+It changes import names and namespaces, removes the
 twenty declarations `c10_128_1` through `c10_128_10` and `c10_242_1` through
 `c10_242_10`. It replaces the first combining proof with `PeriodicHubcap.fit`,
 removes `f10_242`, and replaces its sole consuming hubcap step with
-`ReflectedHubcap.succeeds`. Every other proof body is retained. The
-generated source includes the reference's licence and attribution. The final
-audit checks the axiom set and follows proof dependencies to both the orbit
-lemma and the explicit colouring reconstruction; it also rejects the original
-twenty certificates and the original `exclude10` theorem.
+`ReflectedHubcap.succeeds`. The additional 21 hubcaps retain representative
+checks and convert their combining theorems to semantic certificates.
+Each consuming step invokes `Hubcap.succeeds` with the original cover.
+Unaffected proof bodies are retained. The generated source includes the
+reference's licence and attribution. The final audits check the axiom set,
+follow proof dependencies through every replacement and the explicit colouring
+reconstruction, and reject all 84 superseded check declarations and the original
+`exclude10` theorem. `semantic-hubcap-measurements.json` records the additional
+generic theorem and all 21 consumers; `orbit-presentation-measurements.json`
+records the coverage build.
 
 The audit also follows the finite graph endpoint
 `OrbitAssembly.colorable_of_planeDrawing`. Its geometric bridge constructs
@@ -336,10 +351,10 @@ shared certificate; it does not establish a runtime or artifact-size saving.
 
 `reflection_candidates.py` searches the pinned single-edge queries for pairs
 with equal bounds and reflected full input parts. It finds 450 possible
-additional identifications beyond exact-input equality, including the two
-used by `ReflectedHubcap`. These are program-discovered candidates; only the
-consumed, kernel-checked applications enter the compression ledger. Dual-edge
-queries are outside this search. Replay it with:
+additional identifications beyond exact-input equality. All 66 arity-ten
+identifications now have checked consumers; the remaining 384 are candidates.
+Only consumed, kernel-checked applications enter the compression ledger.
+Dual-edge reflection is outside this search. Replay it with:
 
 ```sh
 python3 tools/fourcolor/classical/reflection_candidates.py \

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Rebuild the arity-ten presentation with rotation and reflection sharing.
 
-The eight generated modules retain the pinned reference's proof bodies,
-except for twenty removed checks, their combining theorems and one consumer.
-A separate namespace allows comparison with the original presentation. Both versions
-use the same part, rule and configuration definitions.
+The generated modules retain the pinned reference's split and coverage trees.
+Selected hubcaps use semantic bounds assembled from representative checks.
+A separate namespace allows comparison with the original presentation. Both
+versions use the same part, rule and configuration definitions.
 """
 
 import argparse
@@ -17,11 +17,19 @@ import subprocess
 import time
 
 from replay_adapters import OPTIONS, REFERENCE_REVISION, capture
+from semantic_hubcaps import audit_source, replace_checks, replace_consumers, selected_cases
 
 
 MODULES = {
+    "Present10Chk1": "Checks1",
     "Present10Chk2": "Checks",
     "Present10Chk4": "Checks4",
+    "Present10Chk13": "Checks13",
+    "Present10Chk18": "Checks18",
+    "Present10Chk20": "Checks20",
+    "Present10Chk22": "Checks22",
+    "Present10Chk23": "Checks23",
+    "Present10Chk24": "Checks24",
     "Present10Hub1": "Hub1",
     "Present10Hub2": "Hub2",
     "Present10Step1": "Step1",
@@ -36,7 +44,7 @@ REPLACEMENTS = {
 }
 
 
-def transform(name, source):
+def transform(name, source, cases):
     """Apply the exact, bounded substitution to one pinned source."""
     if name in REPLACEMENTS:
         case, consumer = REPLACEMENTS[name]
@@ -77,6 +85,10 @@ def transform(name, source):
         source = "import MettapediaFourColor.ReflectedHubcap\n" + source
         if re.search(r"\bf10_242\b", source):
             raise ValueError("The removed hubcap theorem still has a consumer")
+    if "Chk" in name:
+        source, _ = replace_checks(source, cases)
+    if "Step" in name or "Hub" in name:
+        source, _ = replace_consumers(source, cases)
     for old, new in MODULES.items():
         source = re.sub(rf"(?m)^import FourColor\.{old}$",
                         f"import {PREFIX}.{new}", source)
@@ -109,6 +121,11 @@ def main():
     if ((reference / "lean-toolchain").read_text().strip() !=
             (mettapedia / "lean-toolchain").read_text().strip()):
         raise SystemExit("The reference and Mettapedia must use the same toolchain")
+    for name, digest in pin["sources"].items():
+        data = (reference / "FourColor" / (name + ".lean")).read_bytes()
+        if hashlib.sha256(data).hexdigest() != digest:
+            raise SystemExit("Reference source differs from the pin: " + name)
+    cases = selected_cases(reference)
     source_root = output / "src"
     source_root.mkdir(parents=True, exist_ok=True)
     (source_root / "LICENSE").write_bytes((package / "LICENSE").read_bytes())
@@ -118,7 +135,7 @@ def main():
         original_hash = hashlib.sha256(original).hexdigest()
         if original_hash != pin["sources"][old]:
             raise SystemExit("Reference source differs from the pin: " + old)
-        data = transform(old, original.decode()).encode()
+        data = transform(old, original.decode(), cases).encode()
         module = PREFIX + "." + new
         path = source_root / (module.replace(".", "/") + ".lean")
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -126,27 +143,45 @@ def main():
         generated.append(dict(module=module, original_module="FourColor." + old,
                               original_sha256=original_hash,
                               source_sha256=hashlib.sha256(data).hexdigest()))
+    presentation = "\n".join((source_root / (r["module"].replace(".", "/") + ".lean")).read_text()
+                              for r in generated)
+    for case, data in cases.items():
+        for pattern in (rf"theorem f10_{case} \(hred", rf"\(f10_{case} hred\)"):
+            if len(re.findall(pattern, presentation)) != 1:
+                raise SystemExit("Expected exactly one semantic certificate and consumer: " + str(case))
+        for q in data["queries"]:
+            if q["name"] != q["representative"] and re.search(rf"\b{q['name']}\b", presentation):
+                raise SystemExit("Removed check remains in the presentation: " + q["name"])
     for name in ("OrbitAssembly", "OrbitAssemblyAudit"):
         module = "MettapediaFourColor." + name
         relative = Path(module.replace(".", "/") + ".lean")
         data = (package / relative).read_bytes()
         (source_root / relative).write_bytes(data)
         generated.append(dict(module=module, source_sha256=hashlib.sha256(data).hexdigest()))
+    module = "MettapediaFourColor.Orbit10.SemanticSharingAudit"
+    data = audit_source(cases).encode()
+    (source_root / (module.replace(".", "/") + ".lean")).write_bytes(data)
+    generated.append(dict(module=module, source_sha256=hashlib.sha256(data).hexdigest()))
+    sharing = [dict(case=case, part=data["part"], before=data["before"], after=data["after"],
+                    removed_checks=[q["name"] for q in data["queries"]
+                                    if q["name"] != q["representative"]])
+               for case, data in cases.items()]
     report = dict(reference_revision=REFERENCE_REVISION, generated=generated,
+                  semantic_sharing=sharing,
                   compiler_options=OPTIONS, native_code_generation=False, modules=[])
     receipt = output / "orbit-results.json"
     receipt.write_text(json.dumps(report, indent=2) + "\n")
     if args.prepare_only:
-        print("Prepared eight presentation modules and two assembly/audit modules.")
+        print(f"Prepared {len(MODULES)} presentation modules and three assembly/audit modules.")
         return
     artifacts = (args.reference_artifacts or Path(os.environ.get(
         "FOURCOLOR_REFERENCE_ARTIFACTS", str(reference / ".lake/build/lib/lean")))).resolve()
     for n in range(1, 25):
-        if n not in (2, 4) and not (artifacts / f"FourColor/Present10Chk{n}.olean").is_file():
+        if f"Present10Chk{n}" not in MODULES and not (artifacts / f"FourColor/Present10Chk{n}.olean").is_file():
             raise SystemExit(f"Missing prepared reference module: FourColor.Present10Chk{n}")
     library = (args.library_output or output / "lib").resolve()
     adapters = package / ".lake/build/lib/lean"
-    for name in ("PeriodicHubcap", "ReflectedHubcap", "ClassicalAssembly"):
+    for name in ("PeriodicHubcap", "ReflectedHubcap", "HubcapCharges", "ClassicalAssembly"):
         if not (adapters / f"MettapediaFourColor/{name}.olean").is_file():
             raise SystemExit("Build the adapter package first: " + name)
     # Lean resolves a top-level module prefix from one search directory.

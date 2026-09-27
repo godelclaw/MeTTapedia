@@ -77,5 +77,13 @@
   ],
   "additional_reflection_savings": 450,
   "replay_tool": "reflection_candidates.py",
-  "limits": "These candidates are not credited compression. Each requires a kernel-checked semantic bound and a consuming coverage proof. The two extra identifications used in the p10_241r application are included in this inventory, not additional to it."
+  "limits": "These counts describe the original program search. All 66 additional arity-ten reflection identifications now have kernel-checked consumers recorded in the ledger; the remaining 384 candidates are not credited compression. Dual-edge reflection remains outside this search.",
+  "checked_reflection_identifications": {
+    "arity10": 66,
+    "remaining_candidates": 384,
+    "measurements": [
+      "reflected-hubcap-measurements.json",
+      "semantic-hubcap-measurements.json"
+    ]
+  }
 }

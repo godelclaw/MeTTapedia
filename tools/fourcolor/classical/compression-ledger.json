@@ -20,10 +20,10 @@
     "discharging_rules_removed": 0,
     "certificate_bytes_saved": 0,
     "kernel_seconds_saved": 0,
-    "local_discharging_computations_replaced": 15,
+    "local_discharging_computations_replaced": 79,
     "whole_assembly_discharging_computations_replaced": 0,
-    "arity10_coverage_checker_obligations_replaced": 15,
-    "conditional_assembly_checker_obligations_replaced": 15
+    "arity10_coverage_checker_obligations_replaced": 79,
+    "conditional_assembly_checker_obligations_replaced": 79
   },
   "experiments": [
     {
@@ -36,12 +36,12 @@
     {
       "name": "reflected single-edge charge queries",
       "record": "reflection-candidates.json",
-      "status": "candidate inventory; two additional identifications have checked consumers",
+      "status": "Candidate inventory; all 66 arity-ten reflected identifications have checked consumers.",
       "evidence": "program search; checked applications are recorded in local_certificates",
       "credited_compression": false
     }
   ],
-  "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local, arity-ten and conditional-assembly counts describe the same fifteen shared checks and must not be added. Whole-assembly credit waits for the unconditional root.",
+  "limits": "Baseline uniform techniques belong to the reference. A smaller unavoidable catalogue requires a new coverage proof; sharing certificates alone does not establish that. Local, arity-ten and conditional-assembly counts describe the same 79 shared checks and must not be added. Whole-assembly credit waits for the unconditional root.",
   "local_certificates": [
     {
       "reference_obligation": "FourColor.f10_128",
@@ -85,6 +85,70 @@
         "FourColor.ChargeBound.successful_of_bounds"
       ],
       "prior_rotation_only_measurements": "half-turn-hubcap-measurements.json"
+    },
+    {
+      "reference_obligations": [
+        "FourColor.f10_28",
+        "FourColor.f10_69",
+        "FourColor.f10_89",
+        "FourColor.f10_144",
+        "FourColor.f10_233",
+        "FourColor.f10_253",
+        "FourColor.f10_620",
+        "FourColor.f10_822",
+        "FourColor.f10_835",
+        "FourColor.f10_917",
+        "FourColor.f10_924",
+        "FourColor.f10_951",
+        "FourColor.f10_998",
+        "FourColor.f10_1013",
+        "FourColor.f10_1042",
+        "FourColor.f10_1056",
+        "FourColor.f10_1082",
+        "FourColor.f10_1100",
+        "FourColor.f10_1101",
+        "FourColor.f10_1106",
+        "FourColor.f10_1110"
+      ],
+      "before": 188,
+      "after": 124,
+      "replaced": 64,
+      "additional_check": "64 full-Part reflection identities, separate from discharging computations.",
+      "uniform_theorems": [
+        "FourColor.ChargeBound.reflect",
+        "FourColor.Hubcap.successful"
+      ],
+      "consumers": [
+        "FourColor.Orbit10.f10_28",
+        "FourColor.Orbit10.f10_69",
+        "FourColor.Orbit10.f10_89",
+        "FourColor.Orbit10.f10_144",
+        "FourColor.Orbit10.f10_233",
+        "FourColor.Orbit10.f10_253",
+        "FourColor.Orbit10.f10_620",
+        "FourColor.Orbit10.f10_822",
+        "FourColor.Orbit10.f10_835",
+        "FourColor.Orbit10.f10_917",
+        "FourColor.Orbit10.f10_924",
+        "FourColor.Orbit10.f10_951",
+        "FourColor.Orbit10.f10_998",
+        "FourColor.Orbit10.f10_1013",
+        "FourColor.Orbit10.f10_1042",
+        "FourColor.Orbit10.f10_1056",
+        "FourColor.Orbit10.f10_1082",
+        "FourColor.Orbit10.f10_1100",
+        "FourColor.Orbit10.f10_1101",
+        "FourColor.Orbit10.f10_1106",
+        "FourColor.Orbit10.f10_1110"
+      ],
+      "evidence": "kernel checked",
+      "integrated_into_full_unavoidability": false,
+      "integrated_into_arity10_coverage": true,
+      "coverage_consumer": "FourColor.Orbit10.exclude10",
+      "conditional_assembly_consumer": "FourColor.OrbitAssembly.fourColorTheorem_of_checks",
+      "conditional_graph_consumer": "FourColor.OrbitAssembly.colorable_of_planeDrawing",
+      "measurements": "semantic-hubcap-measurements.json",
+      "coverage_measurements": "orbit-presentation-measurements.json"
     }
   ]
 }

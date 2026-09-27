@@ -1,0 +1,295 @@
+{
+  "reference_revision": "3db71e0a786a1f19be04c5266fe3d06fed216885",
+  "lean_version": "4.34.0-rc2",
+  "generic_module": {
+    "module": "MettapediaFourColor.HubcapCharges",
+    "source_sha256": "7b2bd77051e3e172bac11b35e2393fef7ff1a6af49e7b5296885ee8d035d25bf",
+    "exit_code": 0,
+    "frontend_wall_seconds": 2.478,
+    "olean_bytes": 689112,
+    "olean_sha256": "1a2723af4b7b477aa6a1e21d946ced1892c043a7d7068059d3c21afed533bfb2"
+  },
+  "uniform_theorems": [
+    "FourColor.Hubcap.coverRec_le",
+    "FourColor.Hubcap.charge_le",
+    "FourColor.PairChargeBound.of_check",
+    "FourColor.Hubcap.successful"
+  ],
+  "mathematical_scope": "The weighted-cover inequality holds for arbitrary integer charges; actual edge-charge bounds are then assembled at a valid hub.",
+  "new_hubcaps": [
+    {
+      "case": 28,
+      "part": "p10_27r",
+      "before": 10,
+      "after": 6,
+      "removed_checks": [
+        "c10_28_3",
+        "c10_28_8",
+        "c10_28_9",
+        "c10_28_10"
+      ]
+    },
+    {
+      "case": 69,
+      "part": "p10_33l",
+      "before": 10,
+      "after": 6,
+      "removed_checks": [
+        "c10_69_6",
+        "c10_69_7",
+        "c10_69_8",
+        "c10_69_9"
+      ]
+    },
+    {
+      "case": 89,
+      "part": "p10_74r",
+      "before": 9,
+      "after": 6,
+      "removed_checks": [
+        "c10_89_6",
+        "c10_89_7",
+        "c10_89_8"
+      ]
+    },
+    {
+      "case": 144,
+      "part": "p10_137l",
+      "before": 9,
+      "after": 6,
+      "removed_checks": [
+        "c10_144_6",
+        "c10_144_7",
+        "c10_144_8"
+      ]
+    },
+    {
+      "case": 233,
+      "part": "p10_96l",
+      "before": 9,
+      "after": 6,
+      "removed_checks": [
+        "c10_233_3",
+        "c10_233_7",
+        "c10_233_8"
+      ]
+    },
+    {
+      "case": 253,
+      "part": "p10_252r",
+      "before": 10,
+      "after": 5,
+      "removed_checks": [
+        "c10_253_4",
+        "c10_253_5",
+        "c10_253_6",
+        "c10_253_9",
+        "c10_253_10"
+      ]
+    },
+    {
+      "case": 620,
+      "part": "p10_592l",
+      "before": 9,
+      "after": 7,
+      "removed_checks": [
+        "c10_620_3",
+        "c10_620_8"
+      ]
+    },
+    {
+      "case": 822,
+      "part": "p10_821r",
+      "before": 9,
+      "after": 6,
+      "removed_checks": [
+        "c10_822_3",
+        "c10_822_4",
+        "c10_822_8"
+      ]
+    },
+    {
+      "case": 835,
+      "part": "p10_824l",
+      "before": 8,
+      "after": 5,
+      "removed_checks": [
+        "c10_835_3",
+        "c10_835_4",
+        "c10_835_6"
+      ]
+    },
+    {
+      "case": 917,
+      "part": "p10_845l",
+      "before": 10,
+      "after": 6,
+      "removed_checks": [
+        "c10_917_5",
+        "c10_917_6",
+        "c10_917_7",
+        "c10_917_10"
+      ]
+    },
+    {
+      "case": 924,
+      "part": "p10_920l",
+      "before": 9,
+      "after": 6,
+      "removed_checks": [
+        "c10_924_5",
+        "c10_924_6",
+        "c10_924_7"
+      ]
+    },
+    {
+      "case": 951,
+      "part": "p10_932l",
+      "before": 7,
+      "after": 6,
+      "removed_checks": [
+        "c10_951_3"
+      ]
+    },
+    {
+      "case": 998,
+      "part": "p10_969l",
+      "before": 7,
+      "after": 6,
+      "removed_checks": [
+        "c10_998_3"
+      ]
+    },
+    {
+      "case": 1013,
+      "part": "p10_1012r",
+      "before": 9,
+      "after": 7,
+      "removed_checks": [
+        "c10_1013_3",
+        "c10_1013_8"
+      ]
+    },
+    {
+      "case": 1042,
+      "part": "p10_1041r",
+      "before": 10,
+      "after": 5,
+      "removed_checks": [
+        "c10_1042_4",
+        "c10_1042_5",
+        "c10_1042_6",
+        "c10_1042_9",
+        "c10_1042_10"
+      ]
+    },
+    {
+      "case": 1056,
+      "part": "p10_1033l",
+      "before": 9,
+      "after": 5,
+      "removed_checks": [
+        "c10_1056_4",
+        "c10_1056_5",
+        "c10_1056_6",
+        "c10_1056_8"
+      ]
+    },
+    {
+      "case": 1082,
+      "part": "p10_1080l",
+      "before": 9,
+      "after": 5,
+      "removed_checks": [
+        "c10_1082_4",
+        "c10_1082_5",
+        "c10_1082_6",
+        "c10_1082_8"
+      ]
+    },
+    {
+      "case": 1100,
+      "part": "p10_1099r",
+      "before": 8,
+      "after": 6,
+      "removed_checks": [
+        "c10_1100_4",
+        "c10_1100_5"
+      ]
+    },
+    {
+      "case": 1101,
+      "part": "p10_1099l",
+      "before": 9,
+      "after": 7,
+      "removed_checks": [
+        "c10_1101_4",
+        "c10_1101_5"
+      ]
+    },
+    {
+      "case": 1106,
+      "part": "p10_1104l",
+      "before": 9,
+      "after": 6,
+      "removed_checks": [
+        "c10_1106_4",
+        "c10_1106_5",
+        "c10_1106_8"
+      ]
+    },
+    {
+      "case": 1110,
+      "part": "p10_1095l",
+      "before": 9,
+      "after": 6,
+      "removed_checks": [
+        "c10_1110_3",
+        "c10_1110_4",
+        "c10_1110_8"
+      ]
+    }
+  ],
+  "checker_obligations": {
+    "before": 188,
+    "after": 124,
+    "replaced": 64,
+    "additional_part_identity_checks": 64
+  },
+  "adapter_gate": {
+    "modules": 18,
+    "summed_frontend_wall_seconds": 65.151,
+    "public_declarations_audited": 16527,
+    "build_monitor_max_lean_rss_mib": 2704
+  },
+  "coverage_gate": {
+    "modules": 18,
+    "summed_frontend_wall_seconds": 313.136,
+    "public_declarations_audited": 11678,
+    "build_monitor_max_lean_rss_mib": 2906,
+    "measurements": "orbit-presentation-measurements.json"
+  },
+  "audit": {
+    "every_new_hubcap_consumed_by": "FourColor.OrbitAssembly.colorable_of_planeDrawing",
+    "original_and_replacement_namespaces_checked": true,
+    "removed_check_declarations_present": false,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "unexpected_axioms": []
+  },
+  "generator": {
+    "file": "semantic_hubcaps.py",
+    "sha256": "a0e6c5e82e12838b5a2cb7d2ce8554fde968bfc22ee9bfc29658f04b13ab6ae2",
+    "trust": "Untrusted source generation; every identity, computation, semantic bound and coverage consumer is kernel checked."
+  },
+  "limits": [
+    "These 64 replacements extend the prior 15 to 79; the counts are not additional to the ledger total.",
+    "All 633 configurations remain.",
+    "The assembly remains conditional on reducibility and six other presentations.",
+    "No runtime or artifact-size improvement is claimed.",
+    "Timings use prepared dependencies; the RSS observations cover entire gates."
+  ]
+}

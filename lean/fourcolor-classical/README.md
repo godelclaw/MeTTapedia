@@ -10,8 +10,8 @@ upstream attribution.
 The current root exposes the checked reconstruction and conditional assembly.
 The additional `OrbitAssembly` endpoint supplies the arity-ten presentation
 using rotation and reflection to share certificates. Reducibility and the
-other six arities remain explicit inputs to that endpoint. The full baseline replay must pass
-before an unconditional integration root is accepted.
+other six arities remain explicit inputs to that endpoint. The full baseline
+replay must pass before an unconditional integration root is accepted.
 
 The source dependency is `../externals/fourcolor`, prepared by the repository's
 `lean/bootstrap_local_repos.sh`. It uses Lean 4.34.0-rc2 and the same pinned
@@ -49,30 +49,31 @@ source hashes and exit statuses in `.lake/adapter-audit/adapter-results.json`.
 If reference artifacts live elsewhere, set `FOURCOLOR_REFERENCE_ARTIFACTS` to
 that artifact directory.
 
-To check the coverage proof that consumes periodic sharing, also prepare the
-reference checker modules `Present10Chk1` through `Present10Chk24`, except
-`Present10Chk2` and `Present10Chk4`,
-then run:
+To check the coverage proof that consumes shared certificates, also prepare
+the reference checker modules `Present10Chk1` through `Present10Chk24`.
+The nine modules reconstructed by the target need their source but do not
+need their original proof artifacts. Then run:
 
 ```sh
 lake build kernelOrbitPresentation
 ```
 
-This target reconstructs eight presentation modules from exact, hashed
-reference sources, in the namespace `FourColor.Orbit10`. It removes the twenty
-checks for `f10_128` and `f10_242`. It supplies `f10_128` from
-`PeriodicHubcap.fit`, removes `f10_242`, and replaces its sole consumer with
-`ReflectedHubcap.succeeds`. Every other proof body is retained.
-Import names and namespaces change so the
-original and modified developments remain distinct. The generated sources,
+This target reconstructs fifteen presentation modules from exact, hashed
+reference sources, in the namespace `FourColor.Orbit10`. It replaces the twenty
+checks for `f10_128` and `f10_242` with the five representatives supplied by
+`PeriodicHubcap` and `ReflectedHubcap`. It also removes 64 checks from 21 other
+hubcaps, using semantic reflection to assemble each hubcap from retained
+representatives. The cover data and split trees are preserved. Unaffected
+proof bodies are retained. Import names and namespaces change so the original
+and modified developments remain distinct. The generated sources,
 including the reference licence and credits, are available in
 `.lake/orbit-audit/src`; compilation receipts are in `orbit-results.json` in
 the same audit directory.
 
 `OrbitAssembly.fourColorTheorem_of_checks` consumes the resulting `exclude10`.
-The audit verifies that its dependency graph includes rotation and reflection sharing
-and the explicit colouring reconstruction, and that the original twenty checks
-and original arity-ten theorem are absent.
+The audits verify that its dependency graph includes every semantic replacement
+and the explicit colouring reconstruction, and that all 84 superseded check
+declarations and the original arity-ten theorem are absent.
 
 ## What is preserved
 
@@ -137,9 +138,19 @@ that the Boolean checker commutes with reflection. The intermediate
 `HalfTurnHubcap` remains available as a comparison, but the coverage proof
 now consumes the stronger semantic certificate.
 
-The reduction of fifteen independent discharging checks is consumed by the
+`HubcapCharges` separates the weighted-cover argument from its graph input.
+Its arithmetic theorem applies to arbitrary integer charges constrained by
+single-edge or paired-edge bounds. `PairChargeBound.of_check` supplies semantic
+paired-edge bounds, and `Hubcap.successful` combines these with transported
+single-edge bounds. This removes 64 more computations across 21 hubcaps,
+reducing their 188 checks to 124. Every replacement is verified as a dependency
+of the graph-colouring endpoint.
+
+The reduction of 79 independent discharging checks is consumed by the
 complete arity-ten coverage proof and the conditional `OrbitAssembly` endpoint.
-All 633 configurations remain. An unconditional assembly with all seven
+Its 2,580 explicit checker obligations become 2,501, with 66 separate finite
+checks of boundary-input identities or classifications. All 633 configurations
+remain. An unconditional assembly with all seven
 arities and all reducibility certificates is still pending. Exact counts and
 measurement scope are recorded in the
 [compression ledger](../../tools/fourcolor/classical/compression-ledger.json).
