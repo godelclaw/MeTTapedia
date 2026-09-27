@@ -19311,6 +19311,62 @@ occurrence of these pairs, or termination of a global reconstruction
 procedure follows. Those remain distinct obligations of the
 compositional route.
 
+\subsubsection{Matching closure and a sharp three-switch example}
+
+Let $A$ be the retained edges and $B$ a disjoint set of new edges whose
+endpoint sets are pairwise disjoint. A proper colouring $a$ of $A$
+extends to $A\cup B$ exactly when every $e\in B$ has a colour absent
+from $P_a(v)$ at every endpoint $v$ of $e$. The reverse implication
+chooses one such colour per new edge and glues the assignments. There
+are no additional constraints between edges of the matching. With
+unique missing colours at the two endpoints, this is their equality.
+\Sverified{Mettapedia.GraphTheory.FourColor.MatchingEdgeClosure.extension_iff}
+\Sverified{Mettapedia.GraphTheory.FourColor.MatchingEdgeClosure.no_extension_of_distinct_requests}
+
+For unequal missing colours $r,s$, a single switch can equalize them
+only by swapping $r,s$ and touching exactly one endpoint. If a connected,
+saturated $(r,s)$ chain joins the contacts, every component of those
+colours touches both or neither, so this repair is impossible. This is
+a statement about physical components, derived from the chain certificate
+and exact missing-colour transport.
+\Sverified{Mettapedia.GraphTheory.FourColor.IncidenceKempeSwitch.touches_iff_of_chain}
+\Sverified{Mettapedia.GraphTheory.FourColor.IncidenceKempeSwitch.switched_requests_distinct}
+
+A concrete cubic sphere has thirty vertices, forty-five edges and
+seventeen faces, all of length five or six. Remove the disjoint edges
+$\{6,12\}$ and $\{13,19\}$ on its hexagonal face
+$2,7,13,19,12,6$. The remaining edges are exactly a connected facial
+region with connected complement. The rotation, literal endpoints,
+connectedness, bridge-freedom and facial boundaries are checked.
+\Sverified{Mettapedia.GraphTheory.FourColor.MatchingCapThreeSwitchGeometry.ambient}
+\Sverified{Mettapedia.GraphTheory.FourColor.MatchingCapThreeSwitchGeometry.face_partition_exact}
+\Sverified{Mettapedia.GraphTheory.FourColor.MatchingCapThreeSwitchGeometry.face_lengths}
+\Sverified{Mettapedia.GraphTheory.FourColor.MatchingCapThreeSwitchGeometry.face_dart_lengths}
+\Sverified{Mettapedia.GraphTheory.FourColor.MatchingCapThreeSwitchGeometry.connected_sides}
+\Sverified{Mettapedia.GraphTheory.FourColor.MatchingCapThreeSwitchGeometry.retained_edges}
+\Sverified{Mettapedia.GraphTheory.FourColor.MatchingCapThreeSwitchGeometry.cofacial_matching_cap}
+
+For the prescribed old colouring, five nontrivial physical components
+cover every possible first switch; equal-colour and unretained-component
+switches leave its observed assignment unchanged. In each of these six
+states, the missing colours at vertices $6,12$ remain unequal and are
+joined by their own saturated two-colour chain. No single further
+switch can equalize them. Consequently no history of length at most two
+extends across the cap. Three explicitly certified component switches
+do extend, with a displayed proper colouring of all forty-five edges.
+The lower and upper bounds concern the same initial colouring and the
+same proof-relevant GSLT history type.
+\Sverified{Mettapedia.GraphTheory.FourColor.MatchingCapThreeSwitch.minimum_repair_length}
+\Sverified{Mettapedia.GraphTheory.FourColor.MatchingCapThreeSwitchGeometry.no_two_switch_extension_on_rotation}
+\Sverified{Mettapedia.GraphTheory.FourColor.MatchingCapThreeSwitchGeometry.three_switch_extension_on_rotation}
+
+The example rules out a uniform two-switch matching-cap repair guarantee
+even with these facial lengths. It proves neither an all-map repair bound
+nor that every old witness can be repaired. The stronger cut conditions
+of minimal-counterexample normal form are not asserted by this geometry
+certificate. Universal compatible construction and the route-native
+generating base remain open.
+
 \subsubsection{Actual component switches}
 
 The colouring semantics now retains actual Kempe components of the old

@@ -13,6 +13,7 @@ import Mettapedia.GraphTheory.FourColor.ThreeTwoFaceTransfer
 import Mettapedia.GraphTheory.FourColor.ThreeTwoChoiceExample
 import Mettapedia.GraphTheory.FourColor.ThreeTwoFaceRepair
 import Mettapedia.GraphTheory.FourColor.ThreeTwoChoiceKempe
+import Mettapedia.GraphTheory.FourColor.MatchingCapThreeSwitchGeometry
 import Mettapedia.GraphTheory.FourColor.DeferredFaceChoiceExample
 import Mettapedia.GraphTheory.FourColor.FaceKempeRepair
 import Mettapedia.GraphTheory.FourColor.ShortStepKempeCounterexample
@@ -233,6 +234,23 @@ repairs the only forbidden triple. The pair preserves existence of a
 colouring in both directions. The old witness may change along a component
 of unbounded length; no bound on that length or on contour width is implied.
 General occurrence of suitable groups and repeated progress remain open.
+A matching of fresh edges admits a strict extension exactly when each
+fresh edge has a colour absent at all its old endpoint profiles. This
+constructs the enlarged witness on the same original edge identifiers.
+For distinct unique endpoint requests, only their own colour transposition
+can equalize them in one switch, and a saturated chain joining the contacts
+prevents that repair. A concrete thirty-vertex cubic sphere has a prescribed
+old colouring requiring exactly three physical switches before a matching
+of two missing edges can be restored. All seventeen actual faces have five
+or six boundary edges; the omitted edges are disjoint and cofacial on a
+hexagon. The old edges are exactly a selected facial region with connected
+complement. Every possible first switch is covered by five actual component
+chains and the unchanged case; each resulting state still has a blocked
+endpoint pair after every single further switch. An explicit three-step
+GSLT history and full forty-five-edge colouring attain the lower bound.
+This refutes a uniform two-switch repair claim in this geometry. It does
+not supply a bound for all matching caps, a proof of all normal-form cut
+conditions, or a successful colouring history for every source construction.
 Physical Kempe switches now act on the same original edge assignments and
 transport each vertex profile exactly. Every failed facial extension supplies
 a colour pair and a component through its first endpoint; the chosen switch
