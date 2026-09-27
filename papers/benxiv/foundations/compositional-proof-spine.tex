@@ -18517,6 +18517,47 @@ general linked bands with these tubes, give a uniform bound on all minimal
 counterexamples, or verify the route's generating base. Those supply and
 base questions remain the global Four-Colour obligations.
 
+\subsection{Recognizing a colouring layer from an induced cycle}
+
+In an actual cubic simple graph, let
+\(d_0,e_0,d_1,e_1,\ldots,d_{k-1},e_{k-1}\), with $k\geq2$, be
+distinct vertices forming a chordless cycle in that order. Let $K$ be a
+vertex region disjoint from the cycle. Assume every $d_i$ has a neighbour
+in $K$, no $e_i$ has a neighbour in $K$, and every edge leaving $K$ ends
+at some $d_i$. These are statements about the graph and the chosen cut;
+no dart embedding, port bijection or colouring-transfer law is an input.
+
+Each cycle vertex has a unique third neighbour. Chordlessness puts that
+neighbour outside the entire cycle. The cut conditions direct the third
+edge at $d_i$ into $K$ and the third edge at $e_i$ outside the enlarged
+region. The three outgoing darts at each vertex exhaust its actual dart
+fibre. They construct an injective map of all ring darts into the ambient
+rotation system, preserving vertices and internal edge reversal. The
+incoming and outgoing ports exhaust the respective boundary cuts. This
+constructs the existing \texttt{ZigzagSlab} package from graph incidence.
+\Sverified{Mettapedia.GraphTheory.FourColor.InducedCycleLayer.Cycle.existsUnique_port}
+\Sverified{Mettapedia.GraphTheory.FourColor.InducedCycleLayer.Cycle.port_not_cycle}
+\Sverified{Mettapedia.GraphTheory.FourColor.InducedCycleLayer.Cycle.embedding_covers}
+\Sverified{Mettapedia.GraphTheory.FourColor.InducedCycleLayer.Cycle.toSlab}
+
+Consequently the enlarged region's support is exactly the image of the
+old support under the ring relation in the constructed port order. More
+precisely, its actual dart colourings are equivalent to pairs consisting
+of an old colouring and a proper ring colouring agreeing at the seam.
+Restriction and gluing are inverse. Given either such pair, construction
+retains every old colour and every chosen ring colour.
+\Sverified{Mettapedia.GraphTheory.FourColor.TubeSlab.ZigzagSlab.colouringEquiv}
+\Sverified{Mettapedia.GraphTheory.FourColor.InducedCycleLayer.Cycle.support_after_cycle}
+\Sverified{Mettapedia.GraphTheory.FourColor.InducedCycleLayer.Cycle.colouringEquiv}
+\Sverified{Mettapedia.GraphTheory.FourColor.InducedCycleLayer.Cycle.extend_inner}
+\Sverified{Mettapedia.GraphTheory.FourColor.InducedCycleLayer.Cycle.extend_row}
+
+The theorem concerns incidence and colouring and needs no planarity. It
+does not conjugate vertex rotations or identify face permutations. In
+particular, it does not establish that the extracted distance contours
+are chordless with alternating attachments, or that general flat bands
+are literal tubes. Those geometric supply and face-order requirements
+remain separate obligations for applying physical tube replacement.
 
 \subsection{Actual contour patches and their compositional curvature}
 

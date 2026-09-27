@@ -18,6 +18,7 @@ import Mettapedia.GraphTheory.FourColor.ZigzagTubeCompression
 import Mettapedia.GraphTheory.FourColor.ZigzagRingGeometry
 import Mettapedia.GraphTheory.FourColor.ZigzagTubeStructural
 import Mettapedia.GraphTheory.FourColor.ZigzagTubeReplacement
+import Mettapedia.GraphTheory.FourColor.InducedCycleLayer
 import Mettapedia.GraphTheory.FourColor.BufferedFrontierConstruction
 import Mettapedia.GraphTheory.FourColor.SourceConstructionGSLT
 import Mettapedia.GraphTheory.FourColor.OpenTangleWitnessComposition
@@ -95,6 +96,15 @@ equivalent in both closed composites, and explicit colouring reconstruction
 keeps every exterior dart's edge colour. This is a full reduction for the
 literal tube family, not a supply theorem for general linked bands or a
 uniform bound on minimal counterexamples.
+An induced cyclic row in an actual cubic graph now constructs the complete
+zigzag-slab dart embedding from its adjacency and cut attachment conditions.
+Cubicity supplies the unique unused edge at each row vertex; chordlessness
+makes it leave the row. The resulting boundary maps exhaust both cuts.
+Colourings of the enlarged region are equivalent to compatible pairs of an
+inner colouring and a ring colouring, with both given witnesses retained.
+This is an incidence and colouring theorem, independent of vertex rotation.
+It does not establish that extracted contours are induced and alternating,
+or identify the face permutation of an arbitrary annulus with a literal tube.
 Every connected face region with connected complement now constructs a
 literal plane patch on its retained edges. The outer facial orbit is exactly
 the complete original mixed-vertex contour; its inner faces correspond

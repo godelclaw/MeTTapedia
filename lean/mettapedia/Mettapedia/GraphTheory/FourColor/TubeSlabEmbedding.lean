@@ -39,6 +39,12 @@ structure SideColoring where
   proper : ∀ d d' : RetainedDart RS keep, RS.vertOf d.1 = RS.vertOf d'.1 → d ≠ d' →
     color d ≠ color d'
 
+@[ext] theorem SideColoring.ext {a b : SideColoring RS keep} (h : a.color = b.color) : a = b := by
+  cases a
+  cases b
+  cases h
+  rfl
+
 /-- the words a side reads on its boundary darts -/
 def sideSupport : Set (BoundaryDart RS keep → Color) :=
   {w | ∃ c : SideColoring RS keep, ∀ b : BoundaryDart RS keep, c.color b.1 = w b}
@@ -355,11 +361,11 @@ noncomputable def glueColor (x : RetainedDart RS S.inner') : Color :=
 
 theorem glueColor_inner (x : RetainedDart RS S.inner') (h : inner (RS.vertOf x.1)) :
     S.glueColor c₀ rc x = c₀.color ⟨x.1, h⟩ := by
-  unfold glueColor; rw [dif_pos h]
+  unfold glueColor; rw [dite_eq_left h]
 
 theorem glueColor_slab (y : AllDart k) : S.glueColor c₀ rc (S.slabDart y) = rc y := by
   unfold glueColor
-  rw [dif_neg (show ¬ inner (RS.vertOf (S.slabDart y).1) from S.slab_not_inner y)]
+  rw [dite_eq_right (show ¬ inner (RS.vertOf (S.slabDart y).1) from S.slab_not_inner y)]
   congr 1
   apply S.ι_inj
   exact Classical.choose_spec (S.exists_slab_of_not_inner (S.slabDart y) (S.slab_not_inner y))
@@ -369,15 +375,17 @@ theorem inPartnerDart'_eq_alpha_slabDart (i : Fin k) :
   rfl
 
 set_option backward.isDefEq.respectTransparency false in
-/-- **gluing** -/
-theorem mem_sideSupport_inner'_of (w w' : Fin k → Color)
+/-- Glue the specified witnesses into an actual proper colouring of the
+enlarged side. The old colouring and the chosen ring colouring are retained. -/
+noncomputable def glueSideColoring (w : Fin k → Color)
     (hw : ∀ i, c₀.color (S.inPartner i).1 = w i)
     (hrc : (ring k).IsTaitColoring rc)
-    (hl : ∀ i, rc (Sum.inr (Sum.inl i)) = w i)
-    (hr : ∀ i, rc (Sum.inr (Sum.inr i)) = w' i) :
-    (fun b => w' (S.outEquiv.symm b)) ∈ sideSupport RS S.inner' := by
-  obtain ⟨halpha, hvert, hnz⟩ := hrc
-  refine ⟨⟨S.glueColor c₀ rc, ?_, ?_, ?_⟩, ?_⟩
+    (hl : ∀ i, rc (Sum.inr (Sum.inl i)) = w i) : SideColoring RS S.inner' := by
+  have halpha := hrc.1
+  have hvert : ∀ {first second : AllDart k}, (ring k).vertOf first = (ring k).vertOf second →
+      first ≠ second → rc first ≠ rc second := hrc.2.1
+  have hnz := hrc.2.2
+  refine ⟨S.glueColor c₀ rc, ?_, ?_, ?_⟩
   · intro x h
     by_cases hx : inner (RS.vertOf x.1)
     · by_cases hp : inner (RS.vertOf (RS.alpha x.1))
@@ -447,10 +455,33 @@ theorem mem_sideSupport_inner'_of (w w' : Fin k → Color)
         apply hne
         rw [show x = S.slabDart y from Subtype.ext hy.symm,
           show x' = S.slabDart y' from Subtype.ext hy'.symm, h]
-  · intro b
-    obtain ⟨i, rfl⟩ := S.outPort_surjective b
-    show S.glueColor c₀ rc (S.slabDart (Sum.inr (Sum.inr i))) = w' (S.outEquiv.symm (S.outPort i))
-    rw [S.glueColor_slab, hr, outEquiv_symm_outPort]
+
+theorem glueSideColoring_inner (w : Fin k → Color)
+    (hw : ∀ i, c₀.color (S.inPartner i).1 = w i)
+    (hrc : (ring k).IsTaitColoring rc)
+    (hl : ∀ i, rc (Sum.inr (Sum.inl i)) = w i) (d : RetainedDart RS inner) :
+    (S.glueSideColoring c₀ rc w hw hrc hl).color ⟨d.val, Or.inl d.property⟩ = c₀.color d :=
+  S.glueColor_inner c₀ rc ⟨d.val, Or.inl d.property⟩ d.property
+
+theorem glueSideColoring_slab (w : Fin k → Color)
+    (hw : ∀ i, c₀.color (S.inPartner i).1 = w i)
+    (hrc : (ring k).IsTaitColoring rc)
+    (hl : ∀ i, rc (Sum.inr (Sum.inl i)) = w i) (d : AllDart k) :
+    (S.glueSideColoring c₀ rc w hw hrc hl).color (S.slabDart d) = rc d :=
+  S.glueColor_slab c₀ rc d
+
+/-- Gluing compatible specified colourings realizes the requested output word. -/
+theorem mem_sideSupport_inner'_of (w w' : Fin k → Color)
+    (hw : ∀ i, c₀.color (S.inPartner i).1 = w i)
+    (hrc : (ring k).IsTaitColoring rc)
+    (hl : ∀ i, rc (Sum.inr (Sum.inl i)) = w i)
+    (hr : ∀ i, rc (Sum.inr (Sum.inr i)) = w' i) :
+    (fun b => w' (S.outEquiv.symm b)) ∈ sideSupport RS S.inner' := by
+  refine ⟨S.glueSideColoring c₀ rc w hw hrc hl, ?_⟩
+  intro b
+  obtain ⟨i, rfl⟩ := S.outPort_surjective b
+  show S.glueColor c₀ rc (S.slabDart (Sum.inr (Sum.inr i))) = w' (S.outEquiv.symm (S.outPort i))
+  rw [S.glueColor_slab, hr, outEquiv_symm_outPort]
 
 /-- **The slab lemma.**  The enlarged side accepts `w'` iff `inner` accepts some `w`
 with `(w, w')` in the ring relation. -/
@@ -467,6 +498,56 @@ theorem mem_sideSupport_inner'_iff (w' : Fin k → Color) :
     have := hc₀ (S.inPartner i)
     simp only [inEquiv_symm_inPartner] at this
     exact this
+
+/-- Both actual witnesses and their common seam colours. -/
+structure CompatibleColorings where
+  old : SideColoring RS inner
+  row : AllDart k → Color
+  row_tait : (ring k).IsTaitColoring row
+  seam : ∀ i, old.color (S.inPartner i).1 = row (.inr (.inl i))
+
+@[ext] theorem CompatibleColorings.ext {a b : S.CompatibleColorings}
+    (ho : a.old = b.old) (hr : a.row = b.row) : a = b := by
+  cases a
+  cases b
+  cases ho
+  cases hr
+  rfl
+
+def splitColoring (c : SideColoring RS S.inner') : S.CompatibleColorings where
+  old := S.restrict c
+  row := S.ringColoring c
+  row_tait := S.ringColoring_isTait c
+  seam := S.color_inPartnerDart' c
+
+noncomputable def joinColoring (c : S.CompatibleColorings) : SideColoring RS S.inner' :=
+  S.glueSideColoring c.old c.row (fun i => c.row (.inr (.inl i)))
+    c.seam c.row_tait (fun _ => rfl)
+
+/-- Physical gluing is an equivalence of colouring witnesses, with the
+specified inner colouring and ring colouring recovered by restriction. -/
+noncomputable def colouringEquiv : SideColoring RS S.inner' ≃ S.CompatibleColorings where
+  toFun := S.splitColoring
+  invFun := S.joinColoring
+  left_inv c := by
+    apply SideColoring.ext
+    funext d
+    change S.glueColor (S.restrict c) (S.ringColoring c) d = c.color d
+    by_cases hd : inner (RS.vertOf d.val)
+    · rw [S.glueColor_inner _ _ d hd]
+      rfl
+    · obtain ⟨x, hx⟩ := S.exists_slab_of_not_inner d hd
+      have he : d = S.slabDart x := Subtype.ext hx.symm
+      rw [he, S.glueColor_slab]
+      rfl
+  right_inv c := by
+    apply CompatibleColorings.ext
+    · apply SideColoring.ext
+      funext d
+      change S.glueColor c.old c.row ⟨d.val, Or.inl d.property⟩ = c.old.color d
+      exact S.glueColor_inner _ _ _ d.property
+    · funext d
+      exact S.glueColor_slab c.old c.row d
 
 end ZigzagSlab
 
